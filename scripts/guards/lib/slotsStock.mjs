@@ -244,6 +244,12 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "qualities.json", champ: "beats", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "qualities.json", champ: "escapeStrength", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "qualities.json", champ: "opposed", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // #1467 L1b V-FLIP-ENTITE-b : SURFACÉ par l'adoption, pas ajouté à la donnée. `passive` porte
+  // l'op `{op:'testMod', amount:-10, char:'sociabilite'}` (qualities.json:1058-1064, 1 occurrence,
+  // inchangée) ; tant que le def déclarait ses champs dans un `z.strictObject` nommé, l'AST couvrait
+  // le champ — sous `document()` les champs vivent dans un littéral `champs`, et le scan de slots le
+  // voit désormais tel qu'il est : un champ porteur de réf sans slot déclaré. Se solde avec les ops.
+  { dataset: "qualities.json", champ: "passive", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-28" },
   { dataset: "qualities.json", champ: "ops", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "qualities.json", champ: "test", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "raceAppearance.json", champ: "featureKeys", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },

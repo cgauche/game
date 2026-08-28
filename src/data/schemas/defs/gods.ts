@@ -4,16 +4,16 @@
  * sort) — même petite forme que `TrappingRef`/`AdvancementRef`, PROMUE dans `grammaire/reference.ts`.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { refSchema } from '../grammaire/reference';
 
 export const file = 'gods.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'gods',
+  famille,
+  {
     /** Ids de `groups.json` accordés au fidèle de ce culte — poussés par un Talent qui porte
      *  `grantSpecGroups` et dont le `spec` nomme ce dieu (`groupsFor`). Absent = aucun Groupe. */
     grantGroups: z.array(z.string()).optional(),
@@ -23,10 +23,26 @@ export const schema = z.array(
     /** Sorts du Chaos accordés (LDB 10 « Magie du Chaos »/Domaine du Chaos) — 3/41 dieux (Nurgle/
      *  Slaanesh/Tzeentch). */
     chaosSpells: z.array(refSchema).optional(),
-    desc: z.string().optional(),
-    source: sourceRefSchema.optional(),
     /** VERROU de Péché (MDG 11 l.148, Stromfels) : seuil de Points de Péché retirant l'usage du
      *  Talent de Prière (Béni/Invocation). 1/41 dieu observé (Stromfels). */
     sinLocks: z.strictObject({ beni: z.number().optional(), invocation: z.number().optional() }).optional(),
-  }),
+  },
+  {
+    grantGroups: { label: 'Groupes accordés' },
+    title: { label: 'Épithète', hint: 'Sous-titre affiché sous le nom du dieu' },
+    blessings: { label: 'Bénédictions' },
+    miracles: { label: 'Miracles' },
+    chaosSpells: { label: 'Sorts du Chaos accordés' },
+    sinLocks: {
+      label: 'Verrou de Péché',
+      hint: 'Seuil de Points de Péché à partir duquel le dieu retire l’usage d’un Talent de Prière',
+    },
+  },
+  {
+    codex: { keys: ['gods'] },
+    edit: { dataset: 'gods' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

@@ -1,6 +1,7 @@
 [
   {
     "id": "capacite-de-combat",
+    "type": "characteristics",
     "abr": "CC",
     "label": "Capacité de Combat",
     "nature": "roll",
@@ -12,6 +13,7 @@
   },
   {
     "id": "capacite-de-tir",
+    "type": "characteristics",
     "abr": "CT",
     "label": "Capacité de Tir",
     "nature": "roll",
@@ -23,6 +25,7 @@
   },
   {
     "id": "force",
+    "type": "characteristics",
     "abr": "F",
     "label": "Force",
     "nature": "roll",
@@ -34,6 +37,7 @@
   },
   {
     "id": "endurance",
+    "type": "characteristics",
     "abr": "E",
     "label": "Endurance",
     "nature": "roll",
@@ -45,6 +49,7 @@
   },
   {
     "id": "initiative",
+    "type": "characteristics",
     "abr": "I",
     "label": "Initiative",
     "nature": "roll",
@@ -56,6 +61,7 @@
   },
   {
     "id": "agilite",
+    "type": "characteristics",
     "abr": "Ag",
     "label": "Agilité",
     "nature": "roll",
@@ -67,6 +73,7 @@
   },
   {
     "id": "dexterite",
+    "type": "characteristics",
     "abr": "Dex",
     "label": "Dextérité",
     "nature": "roll",
@@ -78,6 +85,7 @@
   },
   {
     "id": "intelligence",
+    "type": "characteristics",
     "abr": "Int",
     "label": "Intelligence",
     "nature": "roll",
@@ -89,6 +97,7 @@
   },
   {
     "id": "force-mentale",
+    "type": "characteristics",
     "abr": "FM",
     "label": "Force Mentale",
     "nature": "roll",
@@ -100,6 +109,7 @@
   },
   {
     "id": "sociabilite",
+    "type": "characteristics",
     "abr": "Soc",
     "label": "Sociabilité",
     "nature": "roll",
@@ -111,6 +121,7 @@
   },
   {
     "id": "blessure",
+    "type": "characteristics",
     "abr": "B",
     "label": "Blessure",
     "nature": "wounds",
@@ -122,6 +133,7 @@
   },
   {
     "id": "destin",
+    "type": "characteristics",
     "abr": "",
     "label": "Destin",
     "nature": "extra",
@@ -133,6 +145,7 @@
   },
   {
     "id": "chance",
+    "type": "characteristics",
     "abr": "",
     "label": "Chance",
     "nature": "compteur",
@@ -144,6 +157,7 @@
   },
   {
     "id": "resilience",
+    "type": "characteristics",
     "abr": "",
     "label": "Résilience",
     "nature": "extra",
@@ -177,6 +191,7 @@
   },
   {
     "id": "determination",
+    "type": "characteristics",
     "abr": "",
     "label": "Détermination",
     "nature": "compteur",
@@ -189,6 +204,7 @@
   },
   {
     "id": "extra-points",
+    "type": "characteristics",
     "abr": "",
     "label": "Extra Points",
     "nature": "points",
@@ -200,6 +216,7 @@
   },
   {
     "id": "mouvement",
+    "type": "characteristics",
     "abr": "M",
     "label": "Mouvement",
     "nature": "mv",
@@ -211,6 +228,7 @@
   },
   {
     "id": "corruption",
+    "type": "characteristics",
     "abr": "",
     "label": "Corruption",
     "nature": "compteur",
@@ -222,6 +240,7 @@
   },
   {
     "id": "peche",
+    "type": "characteristics",
     "abr": "",
     "label": "Péché",
     "nature": "compteur",

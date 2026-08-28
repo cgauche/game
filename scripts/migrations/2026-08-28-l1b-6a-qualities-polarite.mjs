@@ -41,13 +41,22 @@ else if (data.length !== ATTENDU) echecs.push(`cardinal ${data.length} ≠ ${ATT
 let migres = 0;
 let dejaMigres = 0;
 
+/**
+ * `type` D'ENVELOPPE (#1467 L1b V-FLIP-ENTITE-b) : depuis l'adoption de `document()`, chaque entrée
+ * porte `type: "qualities"` — le NOM DU DOCUMENT, pas l'ancienne polarité. Sans cette distinction, la
+ * migration lisait l'enveloppe comme un `type` ressuscité et exigeait un arbitrage sur les 59 entrées.
+ * L'ancien `type` était une valeur de `VALEURS` ({atout, defaut}), jamais le nom du dataset.
+ */
+const TYPE_ENVELOPPE = 'qualities';
+const typeAncien = (e) => (e?.type !== undefined && e.type !== TYPE_ENVELOPPE ? e.type : undefined);
+
 const sortie = Array.isArray(data)
   ? data.map((e, i) => {
-      const aType = e?.type !== undefined;
+      const aType = typeAncien(e) !== undefined;
       const aPol = e?.polarite !== undefined;
       if (aType && aPol) { echecs.push(`entrée #${i} (${e.id}) : porte À LA FOIS \`type\` et \`polarite\` — arbitrage requis`); return e; }
       if (!aType && !aPol) { echecs.push(`entrée #${i} (${e?.id}) : ni \`type\` ni \`polarite\` — polarité PERDUE`); return e; }
-      const valeur = aPol ? e.polarite : e.type;
+      const valeur = aPol ? e.polarite : typeAncien(e);
       if (!VALEURS.has(valeur)) { echecs.push(`entrée #${i} (${e.id}) : polarité ${JSON.stringify(valeur)} hors {atout, defaut}`); return e; }
       if (aPol) { dejaMigres++; return e; }
       migres++;
@@ -66,8 +75,8 @@ if (out !== brut) fs.writeFileSync(CIBLE, out, 'utf8');
 
 // PREUVE post-écriture : plus aucun `type`, chaque entrée porte sa polarité, valeurs conservées.
 const apres = JSON.parse(out);
-const residus = apres.filter((e) => e.type !== undefined).length;
-const avant = data.map((e) => e.type ?? e.polarite).join(',');
+const residus = apres.filter((e) => typeAncien(e) !== undefined).length;
+const avant = data.map((e) => typeAncien(e) ?? e.polarite).join(',');
 const rendu = apres.map((e) => e.polarite).join(',');
 if (residus || avant !== rendu || apres.length !== ATTENDU) {
   console.error(`VÉRIFICATION POST-ÉCRITURE ROUGE : ${residus} \`type\` résiduel(s), ${apres.length} entrée(s), valeurs ${avant === rendu ? 'conservées' : 'ALTÉRÉES'}`);

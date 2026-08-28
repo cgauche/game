@@ -425,6 +425,12 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "psychology.json", champ: "targetCauses", signature: "kind+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "qualities.json", champ: "escapeStrength", signature: "charOf", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "qualities.json", champ: "opposed", signature: "attackerSkill+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L2 #1463", date: "2026-08-23" },
+  // #1467 L1b V-FLIP-ENTITE-b — SURFACÉE par l'adoption, PAS ajoutée à la donnée : `passive` porte
+  // l'op `{op:'testMod', amount:-10, char:'sociabilite'}` (qualities.json:1058-1064), inchangée. Tant
+  // que le def déclarait ses champs dans un `z.strictObject` nommé, l'AST la couvrait ; sous
+  // `document()` les champs vivent dans un littéral `champs` et le scan la voit. ANGLE DIT : c'est
+  // un GameOp, pas une référence — le scan de références classe `char` comme telle. Se solde avec les ops (#1468).
+  { concept: "reference", dataset: "qualities.json", champ: "passive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "qualities.json", champ: "ops", signature: "disease+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "qualities.json", champ: "ops", signature: "id,unlessCondition,value+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "qualities.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
@@ -829,12 +835,24 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "criticals.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "criticals.ts", champ: "", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "criticals.ts", champ: "loss", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
+  // #1467 L1b V-FLIP-ENTITE-b — 8 lignes SURFACÉES par l'extension du scan à l'argument `champs` de
+  // `document()` (`structures-scan.mts#litterauxZod`) : la donnée et les defs sont INCHANGÉS, c'est la
+  // COUVERTURE du relevé qui rattrape la forme dominante (43 defs adoptés). Sans l'extension,
+  // l'adoption faisait DISPARAÎTRE ces déclarations et le cliquet décroissant lisait la perte comme
+  // un solde. `interludeEvents` était déjà stockée avant 11b — elle REVIT à l'identique.
+  { def: "driving-mishap.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
+  { def: "drunkenness.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
+  { def: "interludeEvents.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
+  { def: "montures.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
+  { def: "naval-progression.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
+  { def: "obsessions.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
+  { def: "surincantation.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
+  { def: "vents-tourbillonnants.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "criticals.ts", champ: "resist", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { def: "domains.ts", champ: "requiresSkill", concept: "reference", signature: "id,spec", statut: "cible", commun: "refSchema", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { def: "driving-mishap.ts", champ: "entries", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "drunkenness.ts", champ: "entries", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "etats.ts", champ: "", concept: "test", signature: "characteristic,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "interludeEvents.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "land-cargo.ts", champ: "gossip", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "land-cargo.ts", champ: "price", concept: "prix", signature: "dice", statut: "declaree", commun: "formulaSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "land-cargo.ts", champ: "rumours", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },

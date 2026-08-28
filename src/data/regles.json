@@ -1,6 +1,7 @@
 [
   {
     "id": "encombrement",
+    "type": "regles",
     "label": "Surchargé",
     "desc": "Les Personnages qui dépassent leur capacité d'Encombrement peuvent être ralentis, et seront fatigués par le voyage. La réduction de Mouvement et la Fatigue du voyage résultant de l'Encombrement se cumulent avec toutes les pénalités d'Armure. De plus, chaque fois que vous gagnez un État *Exténué* en étant Surchargé, pour une raison autre que la Surcharge, gagnez +1 État supplémentaire.\n\n| Enc | Pénalité |\n|---|---|\n| Jusqu'à la limite | Pas de pénalité |\n| Jusqu'au double de la limite | -1 Mouvement (min : 3), -10 en Agilité, +1 Fatigue du voyage |\n| Jusqu'au triple de la limite | -2 Mouvement (min : 2), -20 en Agilité, +2 Fatigue du voyage |\n| Plus de x 3 | Vous ne pouvez pas vous déplacer. |",
     "source": {
@@ -11,6 +12,7 @@
   },
   {
     "id": "soutien",
+    "type": "regles",
     "label": "Soutien",
     "desc": "Dans certaines situations, il est évident que plusieurs Personnages œuvrant de concert à une même tâche ont plus de chance d'y parvenir qu'un Personnage isolé. Avec l'accord du MJ, un Personnage peut apporter son soutien à un autre sur le point d'effectuer un Test. Lorsque c'est le cas, le Personnage qui possède la plus forte chance de réussite lance les dés. Chaque Personnage qui apporte son soutien octroie un bonus de +10 au Test. Ceci mis à part, le Test est effectué normalement.\n\n**Limites du Soutien**\n\nLes Joueurs peuvent se soutenir dans la plupart des cas, mais il existe certaines limites.\n\n- Pour apporter leur soutien, tous les Personnages doivent posséder au moins une Augmentation dans la Compétence utilisée pour le Test.\n- Le Personnage qui soutient doit normalement être adjacent à celui qui effectue le Test.\n- Vous ne pouvez pas soutenir les Personnages qui font des Tests pour résister à la maladie, au poison, à la peur, au danger, ou toute autre tentative que le MJ jugera inappropriée.\n- Le Personnage qui effectue le Test ne peut pas être soutenu par plus de Personnages que son propre bonus dans la Caractéristique appropriée (voir page 33).",
     "source": {
@@ -21,6 +23,7 @@
   },
   {
     "id": "sombre-pacte",
+    "type": "regles",
     "label": "Sombre Pacte",
     "desc": "Quelquefois, vous devez l'emporter. La plupart du temps, cela signifie réussir un Test important. Si ce Test aboutit à un échec, vous pouvez utiliser un Point de Chance pour le relancer, en espérant que la seconde tentative sera couronnée de succès. Mais qu'en sera-t-il si ce second Test se solde lui aussi par un échec ? Ou qu'il ne vous reste plus de Points de Chance à utiliser ? Il est temps de conclure un Sombre Pacte.\n\nVous pouvez décider de recevoir volontairement un Point de Corruption pour pouvoir relancer un Test, même si un deuxième jet a déjà été effectué. C'est toujours un choix qui vous appartient – jamais le MJ ne peut prendre cette décision à votre place – même s'il n'y à rien d'anormal à ce que le MJ vous rappelle gentiment qu'il existe un moyen de pouvoir relancer une fois de plus. Après tout, c'est quoi, le pire ?",
     "source": {
@@ -31,6 +34,7 @@
   },
   {
     "id": "combat-deux-armes",
+    "type": "regles",
     "label": "Combat à deux armes",
     "desc": "Certains guerriers préfèrent se battre avec une arme dans chaque main – comme utiliser une épée et un brise-épée, ou une épée et un bouclier. Les règles suivantes s'appliquent lorsque vous combattez avec deux armes.\n\n- Vous pouvez utiliser n'importe quelle arme de combat rapproché à une main ou n'importe quel pistolet lorsque vous vous battez à deux armes.\n- Vous pouvez utiliser n'importe quelle main pour effectuer une attaque. Les attaques effectuées avec votre main secondaire subissent une pénalité de -20 sur tous les Tests applicables (voir Difficulté de Combat pour plus d'informations.)\n- Si vous possédez le talent Maniement de deux armes, vous pouvez attaquer avec les deux armes. Voir le **Chapitre 4 : Compétences et Talents** pour plus d'informations.",
     "source": {
@@ -41,6 +45,7 @@
   },
   {
     "id": "main-secondaire",
+    "type": "regles",
     "label": "Attaque de la main secondaire",
     "desc": "Vous pouvez utiliser n'importe quelle main pour effectuer une attaque. Les attaques effectuées avec votre main secondaire subissent une pénalité de -20 sur tous les Tests applicables (voir Difficulté de Combat pour plus d'informations.)",
     "source": {
@@ -51,6 +56,7 @@
   },
   {
     "id": "viser-une-localisation",
+    "type": "regles",
     "label": "Viser une Localisation",
     "desc": "Une attaque ou un tir qui cherche à atteindre une Localisation particulière. Sur un succès, vous touchez à l'endroit désiré.",
     "source": {
@@ -61,6 +67,7 @@
   },
   {
     "id": "viser",
+    "type": "regles",
     "label": "Viser",
     "desc": "Tirer alors que vous avez passé votre dernière action à viser (pas de Test exigé pour viser).",
     "source": {
@@ -71,6 +78,7 @@
   },
   {
     "id": "tirer-dans-le-tas",
+    "type": "regles",
     "label": "Tirer dans le tas",
     "desc": "Les Tests de **Capacité de Tir** effectués pour toucher un groupe de cibles sont **Accessibles (+20)** si le groupe comporte entre 3 et 6 personnes, **Faciles (+40)** s'ils sont entre 7 et 12, et **Très Faciles (+60)** s'ils sont 13 ou plus. Tout succès est appliqué au hasard parmi les cibles éligibles, à la discrétion du MJ. Si ce modificateur vous permet de toucher alors que le Test aurait sinon échoué, vous réussissez avec 0 DR.",
     "source": {
@@ -81,6 +89,7 @@
   },
   {
     "id": "tir-en-mouvement",
+    "type": "regles",
     "label": "Tirer en se déplaçant",
     "desc": "Tirer pendant un Round où vous utilisez aussi votre Mouvement.",
     "source": {
@@ -91,6 +100,7 @@
   },
   {
     "id": "empoignade",
+    "type": "regles",
     "label": "Empoignade",
     "desc": "Au lieu d'infliger des Dégâts suite à une attaque à mains nues, vous pouvez tenter d'Empoigner et d'immobiliser votre adversaire. Vous devez déclarer cette intention avant d'effectuer le lancer pour toucher votre adversaire. Si vous remportez le Test opposé, vous et votre adversaire êtes Empoignés, et votre adversaire gagne l'État *Empêtré*.\n\nSi vous commencez votre tour Empoigné, vous pouvez briser l'Empoignade si vous disposez d'un Avantage supérieur à celui de votre adversaire, et vous n'êtes pas considéré comme *Engagé* pour votre Mouvement ; autrement, vous devez effectuer un Test opposé de **Force** pour votre Action, Sur un succès, vous pouvez choisir une des deux options suivantes :\n\n• Infliger BF + DR Dégâts en utilisant votre lancer de Force pour déterminer la Localisation affectée. Vous ignorez tous les PA car vous ne faites qu'effectuer des clefs de bras tout en tirant sur les muscles.\n\n• Soit : 1) Conférer l'État *Empêtré* à votre adversaire, ou 2) vous défaire de ce même État et vous débarrasser d'un État *Empêtré* supplémentaire pour chaque DR obtenu.\n\nSi vous perdez le Test opposé, vous ne pouvez rien faire d'autre que de vous débattre et votre adversaire gagne +1 Avantage.\n\nCeux qui ne sont pas partie prenante dans cette Empoignade gagnent un bonus de +20 pour toucher le Personnage Empoigné avec le plus faible Avantage, et de +10 pour celui qui dispose de l'avantage le plus important.",
     "source": {
@@ -101,6 +111,7 @@
   },
   {
     "id": "retenir-ses-coups",
+    "type": "regles",
     "label": "Retenir ses coups (maîtriser sans tuer)",
     "desc": "Les règles partent du principe que vous voulez infliger toutes les Blessures Critiques que vous pouvez. Cependant, vous pourriez désirer maîtriser un adversaire sans le tuer. Dans ce cas, vous devez déclarer que vous Retenez vos coups avant de faire le jet pour toucher votre ennemi, ce qui veut dire que vous utilisez le plat de votre lame ou une technique vous permettant d'éviter de blesser gravement votre opposant. Dans ce cas, vous infligez tout de même des Blessures, mais vous n'infligez de Blessure Critique que si votre adversaire tombe à 0 Blessure.",
     "source": {
@@ -111,6 +122,7 @@
   },
   {
     "id": "double-critique-maladresse",
+    "type": "regles",
     "label": "Critique et Maladresse (double)",
     "desc": "Nous proposons des règles additionnelles pour les Critiques et la Maladresse en Combat un peu plus loin dans ce chapitre. Ces dernières peuvent être utilisées pour rajouter de la tension à **tous** les Tests, offrant ainsi une perspective épique où les résultats extraordinaires deviennent monnaie courante. Si cela correspond à votre groupe, vous pouvez vous servir de ce qui suit comme d'une règle optionnelle.\n\nTout Test dont le résultat est à la fois un succès et un double est appelé un **Critique**, ce qui signifie que vous avez obtenu un Succès Stupéfiant sur le **Tableau des Résultats** ; de même, un échec qui est également un double est appelé une **Maladresse**, et devient un Échec Stupéfiant sur le **Tableau des Résultats**. C'est avec les Tests simples que cette règle fonctionne le mieux, ajoutant un côté plus amusant aux résultats « oui » ou « non » obtenus normalement.",
     "source": {
@@ -121,6 +133,7 @@
   },
   {
     "id": "focalisation-etendue",
+    "type": "regles",
     "label": "Test de Focalisation (étendu)",
     "desc": "Certains Sorts magiques nécessitent beaucoup plus de magie que ce que l'on peut normalement trouver à travers le monde. Pour alimenter de tels Sorts, il est possible d'attirer les Vents de la Magie et de les concentrer en une forme beaucoup plus puissante en utilisant la Compétence Focalisation. Concentrer les Vents de la Magie peut s'avérer être une procédure dangereuse, mais c'est le seul moyen sûr de lancer certains Sorts puissants. Pour focaliser la magie pour un Sort, effectuez un Test étendu de Focalisation.",
     "source": {
@@ -131,6 +144,7 @@
   },
   {
     "id": "lecture-au-grimoire",
+    "type": "regles",
     "label": "Lancer un Sort depuis un grimoire",
     "desc": "Certains lanceurs de Sorts possèdent un livre de Sorts, ou grimoire, dans lequel ils transcrivent leurs Sorts. Les Apprentis copient les Sorts de leurs maîtres, tandis que les Magisters expérimentés rechercheront activement de nouveaux Sorts auprès d'autres Magisters, les échangeant souvent contre des faveurs. Un lanceur de Sorts peut en activer un depuis un grimoire si le Sort appartient au Domaine qu'il possède, mais cela double le Niveau d'Incantation.",
     "source": {
@@ -141,6 +155,7 @@
   },
   {
     "id": "ragot-au-marche",
+    "type": "regles",
     "label": "Ragot au marché (bonus de Disponibilité)",
     "desc": "Les pourcentages de Disponibilité peuvent être augmentés de +10 % ou +20 % si un Personnage est particulièrement assidu, appartient à une Carrière cohérente telle que Marchand ou Receleur, ou passe une journée entière à effectuer des achats et des Tests de Ragot.",
     "source": {
@@ -151,6 +166,7 @@
   },
   {
     "id": "calme-d-approche",
+    "type": "regles",
     "label": "Calme d'approche (Peur)",
     "desc": "Lorsque vous êtes sous le coup de la *Peur*, vous subissez -1 DR à tous les Tests en rapport avec la source de votre peur. Vous êtes incapable de vous rapprocher de ce qui provoque cette *Peur* à moins de réussir un Test de **Calme Intermédiaire (+0)**. Si la source de votre *Peur* se rapproche de vous, vous devez réussir un Test de **Calme Intermédiaire (+0)** ou gagner un État *Brisé*.",
     "source": {
@@ -161,6 +177,7 @@
   },
   {
     "id": "sur-la-defensive",
+    "type": "regles",
     "label": "Sur la défensive",
     "desc": "Qu'en est-il si vous souhaitez vous préparer à éviter ou parer les coups, à tenir une position défensive ou utiliser Langue (Magick) afin de lancer une salve de dissipations ? Pour votre Action, choisissez une Compétence que vous allez utiliser en défense et vous gagnerez un bonus de +20 à tous les Tests de défense que vous effectuerez jusqu'au début du prochain Tour.",
     "source": {
@@ -171,6 +188,7 @@
   },
   {
     "id": "faim-et-soif",
+    "type": "regles",
     "label": "Faim et Soif",
     "desc": "Se retrouver à cours de provisions n'est jamais bon. Ne plus avoir d'eau est encore pire. Les Tests de Résistance pour supporter la faim et la soif sont de plus en plus difficiles (-10 % de plus pour chaque Test). Les Personnages qui n'ont ni nourriture ni boisson ne peuvent pas récupérer de Points de Blessure ou se débarrasser de l'État *Exténué* de manière naturelle.\n\n**Eau :** chaque jour sans eau nécessite un Test de Résistance. Sur un premier échec, vous subissez une pénalité de -10 en **Intelligence***,*  **Force Mentale** et **Sociabilité**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.\n\n**Nourriture :** lorsque vous n'avez plus de nourriture, vous devez effectuer un Test de Résistance tous les deux jours. Sur un premier échec, vous subissez une pénalité de –10 en **Force**  et **Endurance**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.",
     "source": {
@@ -181,6 +199,7 @@
   },
   {
     "id": "tableau-augure",
+    "type": "regles",
     "label": "Tableau d'Augure",
     "desc": "Notez tous les Tests d'Augure réussis et les symboles qui y sont associés. Après avoir reçu un augure, un Personnage peut bénéficier de +1 DR (ou −1 DR s'il préfère) au premier Test qu'il effectue en lien avec la Compétence listée dans le Tableau des Symboles. Ceci représente un signe avant-coureur de ses actions.\n\nLe MJ prend en note toute inversion qui résulte des Tests d'Augure échoués. Une pénalité de −1 DR est imposée au premier Test en lien avec celles-ci, puisque le Personnage est induit en erreur à cause de sa compréhension erronée du futur. Si plusieurs Compétences sont listées, le Personnage n'en obtient (ou subit) les effets qu'une seule fois pour chacune.\n\n| TABLEAU D'AUGURE |                       |                                                                                  |  |  |\n|------------------|-----------------------|----------------------------------------------------------------------------------|--|--|\n| DR               | Résultat              | Effet                                                                            |  |  |\n| +6 ou plus       | Succès Stupéfiant     | Choisissez deux symboles sur le Tableau des Symboles.                            |  |  |\n| +4 à +5          | Succès Impressionnant | Effectuez deux lancers sur le Tableau des Symboles.                              |  |  |\n| +2 à +3          | Succès                | Choisissez un symbole sur le Tableau des Symboles.                               |  |  |\n| +0 à +1          | Succès Minime         | Effectuez un lancer sur le Tableau des Symboles.                                 |  |  |\n| −0 à −1          | Échec Minime          | Aucune information n'est reçue.                                                  |  |  |\n| −2 à −3 Échec |                       | Effectuez un lancer sur le Tableau des Symboles. Le symbole est inversé.         |  |  |\n| −4 à −5          | Échec Impressionnant  | Effectuez deux lancers sur le Tableau des Symboles. Les symboles sont inversés.  |  |  |\n| −6 ou moins      | Échec Stupéfiant      | Effectuez trois lancers sur le Tableau des Symboles. Les symboles sont inversés. |  |  |",
     "source": {
@@ -191,6 +210,7 @@
   },
   {
     "id": "surincantation-des-sorts-d-augure",
+    "type": "regles",
     "label": "Surincantation des Sorts d'Augure",
     "desc": "| DR         | Effet                                                    |  |\n|------------|----------------------------------------------------------|--|\n| 1          | Effectuez un lancer sur le Tableau des Symboles.      |  |\n| 2          | Effectuez un lancer sur le Tableau des Symboles.      |  |\n| 3          | Choisissez un symbole sur le Tableau des Symboles.    |  |\n| 5          | Choisissez un symbole sur le Tableau des Symboles.    |  |\n| 8          | Effectuez deux lancers sur le Tableau des Symboles.   |  |\n| 13         | Effectuez deux lancers sur le Tableau des Symboles.   |  |\n| 21 ou plus | Choisissez deux symboles sur le Tableau des Symboles. |  |",
     "source": {
@@ -201,6 +221,7 @@
   },
   {
     "id": "resultat-de-psychometrie",
+    "type": "regles",
     "label": "Résultat de Psychométrie",
     "desc": "|                | TABLEAU DU RÉSULTAT DE PSYCHOMÉTRIE |                                                                                             |                                                                                                                                               |  |  |\n|----------------|-------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|--|--|\n| DR Résultat |                                     | Général                                                                                     | Exemple de cambriolage                                                                                                                        |  |  |\n| +6 ou plus  | Succès Stupéfiant                   | Au moins trois informations sont reçues, dont l'une est extrêmement pertinente.       | Le devin ressent un profond sentiment de peur. Il voit un groupe de rustres casser une fenêtre. Une voix dit : « T'as rien vu, pigé ? » |  |  |\n| +4 à +5        | Succès Impressionnant               | Deux informations sont reçues.                                                              | Le devin voit l'un des rançonneurs s'approcher d'une fenêtre avec un caillou dans la main et se sent incapable de parler.               |  |  |\n| +2 à +3        | Succès                              | Une information est reçue.                                                                  | Le devin entend du verre se briser.                                                                                                           |  |  |\n| +0 à +1        | Succès Minime                       | Vague impression de l'évènement. Une information est révélée de manière métaphorique. | Le devin voit un poisson dans l'eau. La bande de rançonneurs appartient à une organisation connue sous le nom du « Poisson ».           |  |  |\n| −0 à −1        | Échec Minime                        | Aucune information n'est reçue.                                                             | Le devin ne parvient pas à lire quoi que ce soit d'utile.                                                                                  |  |  |\n| −2 à −3        | Échec                               | Une information légèrement trompeuse est reçue.                                          | Le devin comprend que la victime avait peur de quelqu'un qui n'a aucun lien avec le crime.                                                 |  |  |\n| −4 à −5        | Échec Impressionnant                | Le Devin reçoit des impressions dérangeantes et trompeuses.                              | Le devin est envahi par des émotions et des images, mais rien de pertinent.                                                                |  |  |\n| −6 ou moins | Échec Stupéfiant                    | Submergé par des impressions cauchemardesques. Plus un point de Corruption.           | Le devin est submergé par un sentiment de peur, d'impuissance et de honte. Il reçoit un point de Corruption.                            |  |  |",
     "source": {
@@ -211,6 +232,7 @@
   },
   {
     "id": "avantage",
+    "type": "regles",
     "label": "Avantage",
     "desc": "Chaque Avantage ajoute +10 à un Test de Combat ou de Psychologie appropriés (voir **Psychologie** à la page 190). De ce fait, si vous disposez de 5 pions Avantage, vous obtenez un impressionnant +50 à tous les Tests pour toucher, vous défendre, et résister à l'influence des autres.",
     "source": {
@@ -221,6 +243,7 @@
   },
   {
     "id": "amputation",
+    "type": "regles",
     "label": "Amputation",
     "desc": "Les Blessures critiques les plus graves aboutissent généralement à la perte d'une partie du corps, comme les doigts, les mains, les pieds ou même une jambe ! Si un Personnage se fait trancher plusieurs parties du corps, il est peut-être temps de penser à les remplacer de façon à atténuer au maximum les éventuelles pénalités (voir **Chapitre 11 : Équipement**).\n\nÀ chaque fois que vous subissez une Blessure critique où il est indiqué *Amputation (Difficulté)*, vous devez réussir un Test de **Résistance** (la difficulté est indiquée entre parenthèses) ou gagner 1 État *À Terre*. Sur un échec (-2 DR) ou pire, vous recevez également un État *Sonné*. Si vous échouez avec au moins -4 DR, gagnez un État *Inconscient*.\n\nToutes les amputations nécessitent d'être traitées par la chirurgie, ce qui signifie qu'une Blessure ne peut pas être soignée tant que vous n'êtes pas passé entre les mains d'un chirurgien. Voir Chirurgie à la page 181.\n\n**Bras**\n\nUtilisez les règles pour la perte de la main, et il vous est impossible de sangler un bouclier à ce bras, puisqu'absent. Perdre ses deux bras est encore pire que de perdre ses deux mains, car il devient difficile de se laver ou d'accomplir quoi que ce soit d'autre.\n\n**Dents**\n\nLa perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité. De plus, une fois qu'il vous manque plus de la moitié de vos dents (humains 16 ; elfes 18 ; nains et halflings : 20), vous avez beaucoup plus de mal à consommer de la nourriture solide que vos pairs, doublant le temps nécessaire aux repas et rendant certaines denrées alimentaires très difficiles à manger, ce qui, pour le coup dépend surtout de votre interprétation et de vos capacités narratives.\n\n**Doigts**\n\nAvec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. Pour le premier doigt perdu, sur un échec à tout Test en rapport dont le chiffre des unités est 1 est considéré comme une Maladresse. Pour deux doigts perdus, ce seront les résultats dont le chiffre des unités sera 1 ou 2 qui seront considérés comme des Maladresses, etc. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée.\n\n**Jambe**\n\nUtilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.\n\n**Langue**\n\nDépourvu de langue, vous ne pouvez plus que marmonner et grommeler, ou vous servir d'un système de signes maison pour communiquer. Tous les Tests de Langue qui impliquent la parole se soldent automatiquement par un échec.\n\n**Main**\n\nVous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d'armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d'Arme effectués avec votre main secondaire. Vous pouvez réduire cette pénalité de 5 par tranche de 100 PX dépensés, car vous apprenez à tout effectuer avec cette seconde main.\n\nSi vous perdez les deux mains, il sera temps d'apprendre à maîtriser le combat au crochet.\n\n**Nez**\n\nLa perte d'un nez rend le visage plutôt effrayant. Votre Sociabilité est réduite de -20 de façon permanente et vous subissez une pénalité de -30 à tous les Tests qui impliquent l'odorat.\n\n**Œil**\n\nMême s'il est horrible de perdre un œil, vous apprendrez très vite à compenser. Si vous avez la malchance de perdre vos deux yeux, subissez une pénalité de -30 à tous les Tests en rapport avec la vue, comme les Tests d'Arme, les Tests d'Esquive, les Tests de Chevaucher, et autres. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par orbite vide que les autres peuvent voir.\n\n**Oreille**\n\nPerdre une oreille est douloureux, mais on apprend à vivre sans assez vite. Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l'ouïe. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par oreille perdue lorsque les autres voient votre visage.\n\n**Orteils**\n\nLa perte d'orteils a un effet sur votre équilibre. Pour chaque orteil perdu, vous subissez une perte définitive de -1 à votre Agilité et à votre Capacité de Combat.\n\n**Pied**\n\nRéduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Si vous perdez vos deux pieds, il devient très compliqué de marcher. Peut-être pourriez-vous engager un homme de main afin de vous porter ?",
     "source": {
@@ -231,6 +254,7 @@
   },
   {
     "id": "maladresse-tableau-des-oups",
+    "type": "regles",
     "label": "Maladresse (Tableau des Oups !)",
     "desc": "Vous avez mal négocié votre manœuvre, ce qui vous met en mauvaise posture, ou vous perdez la prise de votre arme à distance. Au cours du prochain Round, votre Action subira une pénalité de -10.",
     "source": {
@@ -241,6 +265,7 @@
   },
   {
     "id": "portee-d-une-arme",
+    "type": "regles",
     "label": "Portée d'une arme",
     "desc": "La Portée d'une arme est sa portée moyenne en mètres. Le Chapitre 5 : Règles présente les modificateurs selon si une arme est à Bout portant, Courte, Longue ou Extrême. Calculez les Portées comme suit :\n\n**CALCUL DES FOURCHETTES DE PORTÉE**\n\nBout portant = Portée ÷ 10\n\nCourte = Portée ÷ 2\n\nLongue = Portée x 2\n\nExtrême = Portée x 3",
     "source": {
@@ -251,6 +276,7 @@
   },
   {
     "id": "allonge-longueur-d-arme",
+    "type": "regles",
     "label": "Longueur d'arme et combat au contact",
     "desc": "Ce sont des règles simples pour ceux qui aiment utiliser la longueur de l'Arme pour plus qu'une simple description de l'apparence, et un obstacle possible pour ajuster ses coups dans les tunnels sombres.\n\n**LONGUEUR D'ARME**\n\nSi votre arme est plus longue que celle de vos adversaires, ils subissent une pénalité de -10 pour vous toucher car vous trouvez plus facile de les tenir à distance.\n\n**AU CONTACT**\n\nPour votre Action, vous pouvez effectuer un Test opposé de **Corps à corps** pour tenter d'entrer dans la longueur d'arme de votre adversaire. Le vainqueur choisit si le combat continue normalement ou « au contact ». Pendant un combat au contact, n'importe quelle arme plus longue que Courte est considérée comme une Arme improvisée.",
     "source": {
@@ -261,6 +287,7 @@
   },
   {
     "id": "taille-modificateurs-en-combat",
+    "type": "regles",
     "label": "Modificateurs de Taille en Combat",
     "desc": "Si la créature est plus grande :\n\n- Ses armes gagnent l'Atout Dévastatrice si la créature est d'une catégorie de Taille supérieure, et Percutante si elle est plus grande d'au moins deux catégories de Taille.\n- Vous multipliez les Dégâts infligés par le nombre de catégories de Taille supérieures (ainsi, 2 catégories = x2, 3 catégories = x3, et ainsi de suite) : cette multiplication est calculée après l'application des modificateurs.\n- Toutes les frappes réussies activent la règle optionnelle Frappe Mortelle (voir page 160), même si la cible survit.\n\nSi la créature est plus petite :\n\n• Elle gagne un bonus de +10 pour toucher.",
     "source": {
@@ -271,6 +298,7 @@
   },
   {
     "id": "taille-cible-au-tir",
+    "type": "regles",
     "label": "Taille de la cible au tir",
     "desc": "La taille est un facteur important lorsqu'on tire sur une cible : il est bien plus facile d'atteindre la porte d'une grange qu'une pomme. Si ce modificateur vous permet de toucher, alors que le Test aurait du être un échec, vous obtenez un succès avec 0 DR. Pour en apprendre plus sur les tailles, référez-vous au **Chapitre 12 : Bestiaire** .",
     "source": {
@@ -281,6 +309,7 @@
   },
   {
     "id": "superiorite-numerique",
+    "type": "regles",
     "label": "Supériorité numérique",
     "desc": "Si vous êtes en supériorité numérique sur un adversaire à 2 contre 1, vous gagnez un bonus de +20 pour le toucher en combat au Corps à corps. Si vous êtes à 3 contre 1, vous obtenez un bonus encore plus grand de +40 pour toucher. De plus, à la fin de chaque Round, tous les adversaires surpassés en nombre perdent 1 Avantage. La supériorité numérique est en générale déterminée par le nombre de Personnages *Engagés* avec d'autres ; s'il y a le moindre doute, le MJ décide qui des deux camps est en supériorité numérique.",
     "source": {
@@ -291,6 +320,7 @@
   },
   {
     "id": "attaque-de-flanc-ou-de-dos",
+    "type": "regles",
     "label": "Attaquer de flanc ou de dos",
     "desc": "Attaquer un adversaire Engagé dans le dos ou sur les côtés.",
     "source": {
@@ -301,6 +331,7 @@
   },
   {
     "id": "cible-en-contrebas",
+    "type": "regles",
     "label": "Attaquer en contrebas de la cible",
     "desc": "Attaquer alors que vous êtes À Terre (voir page 168) ou en-dessous de votre cible.",
     "source": {
@@ -311,6 +342,7 @@
   },
   {
     "id": "tir-dans-un-combat-au-corps-a-corps",
+    "type": "regles",
     "label": "Tirer dans un combat au corps à corps",
     "desc": "Pour la plupart d'entre nous, le fait de choisir une cible et de lancer les dés pour tenter de la toucher est suffisant. Cependant, certains vont préférer des règles plus précises lorsqu'il s'agit de tirer sur une cible déjà *Engagée*. Si c'est votre cas, utilisez les règles suivantes :\n\nIl peut arriver que vous souhaitiez tirer sur une cible qui est déjà *Engagée* avec une ou plusieurs cibles alliées. Les Tests de Capacité de Tir contre ces adversaires sont résolus comme d'habitude, mais vous subissez une pénalité de -20 parce que vous faites de votre mieux pour toucher la cible désirée. Si cette pénalité vous fait échouer à votre Test alors qu'il était réussi sans ce modificateur, vous touchez à la place l'un des adversaires de la cible, déterminé au hasard par le MJ. Si vous n'avez cure de savoir sur qui vous tirez, vous gagnez un bonus allant de +20 à +60, voir Tirer dans le tas.",
     "source": {
@@ -321,6 +353,7 @@
   },
   {
     "id": "cible-dissimulee",
+    "type": "regles",
     "label": "Cible dissimulée (brouillard, brume, obscurité)",
     "desc": "La cible du tir est dissimulée par le brouillard, la brume ou l'obscurité.",
     "source": {
@@ -331,6 +364,7 @@
   },
   {
     "id": "combat-monte",
+    "type": "regles",
     "label": "Combat monté",
     "desc": "Chevaucher en combat, l'épée fauchant l'air ou faisant feu de toute part n'est pas seulement terrifiant pour ceux qui subissent la charge, mais confère également un bonus au cavalier. Le Combat monté utilise les mêmes règles que tout autre Combat, avec ces ajouts :\n\n- En ce qui concerne votre Mouvement, on considère que le cavalier possède l'Attribut de Mouvement de sa monture. En outre, les Cavaliers doivent effectuer des Tests de Chevaucher pour tous les Tests de course, de saut ou similaires, et utilisent l'attribut de Mouvement de leur monture.\n- Toute attaque effectuée par un Cavalier sur une cible plus petite que sa Monture se voit accorder un bonus de +20 au toucher.\n- Si vous tentez de toucher un Personnage qui est sur une monture, vous choisissez de toucher soit le cavalier soit sa monture. Si vous êtes en combat rapproché, vous subissez une pénalité de -10 à vos Tests de Compétence d'Armes si vous ciblez le cavalier et que vous êtes plus petit que la monture (voir Taille page 162).\n- Une monture sans le Trait Nerveux est un autre combattant à part entière, et peut effectuer sa propre Action pour attaquer les cibles *Engagées*.\n- Lorsque vous Chargez, vous pouvez utiliser la Force et la règle de Taille de votre monture pour calculer les Dégâts.\n- Lorsque vous chevauchez, vous subissez une pénalité de -20 pour toute tentative d'utiliser la Compétence Esquive, sauf si vous possédez le Talent Acrobaties équestres.",
     "source": {
@@ -341,6 +375,7 @@
   },
   {
     "id": "equipe-incomplete-machine-de-guerre",
+    "type": "regles",
     "label": "Équipe incomplète (machine de guerre)",
     "desc": "La section suivante comprend les statistiques des machines de guerre pouvant être utilisées en combat pendant les Scènes cinématiques. Elle inclut également des statistiques pour les structures susceptibles d'être visées par les armes de siège. Une Équipe est un groupe d'individus entraînés requis pour faire fonctionner une machine de guerre correctement. Les armes sans Équipe complète peuvent être utilisées avec une pénalité de –20. Elles ne peuvent être utilisées avec moins de la moitié de l'Équipe nécessaire. Toutes les machines de guerre ont les Atouts Dévastatrice et Percutante. Elles utilisent toutes la Compétence Projectiles (Machine de guerre), à l'exception du bélier, qui utilise Force.",
     "source": {
@@ -351,6 +386,7 @@
   },
   {
     "id": "possession-pas-a-sa-taille",
+    "type": "regles",
     "label": "Possession pas prévue pour sa taille",
     "desc": "Un ogre subit une pénalité de -20 à tous les Tests lorsqu'il tente d'utiliser des possessions qui ne sont pas prévues pour sa taille, en plus de trouver certaines choses impossibles à faire. Par exemple, un doigt d'ogre ne peut tout simplement pas presser la détente d'un pistolet à répétition humain.",
     "source": {
@@ -361,6 +397,7 @@
   },
   {
     "id": "navigation-agilite-de-rame",
+    "type": "regles",
     "label": "Navigation — Agilité de rame",
     "desc": "Ramer est une Compétence de base, ce qui veut dire que tous les Personnages ont le droit de faire des Tests de **Ramer**, qu'ils aient augmenté la compétence ou pas. Ce n'est pas le cas de la Compétence Voile. Les Personnages qui ne l'ont pas ont peu de chance de réussir à faire quoi que ce soit d'utile sur un voilier. Au début de chaque jour de voyage, demandez aux Personnages concernés un Test d'**Agilité Intermédiaire (+0)**. Si le Test est un échec, la vitesse de déplacement du bateau est réduite ce jour-là de 20%. Toutefois, si le résultat est un Échec spectaculaire (-6DR), la vitesse de mouvement du bateau est divisée par deux pour la journée.",
     "source": {
@@ -371,6 +408,7 @@
   },
   {
     "id": "navigation-derive",
+    "type": "regles",
     "label": "Navigation — Dérive",
     "desc": "- 2. Le bateau dérive en aval à 25 % de sa vitesse de mouvement normale ; les Tests de **Navigation** subissent un malus de –10.",
     "source": {
@@ -381,6 +419,7 @@
   },
   {
     "id": "navigation-louvoyage",
+    "type": "regles",
     "label": "Navigation — Louvoyage",
     "desc": "- 3. Cette augmentation de la vitesse n'est possible qu'en faisant louvoyer le bateau ; pour cela, un Test de **Navigation Accessible (+20)** est nécessaire.",
     "source": {
@@ -391,6 +430,7 @@
   },
   {
     "id": "navigation-chavirage",
+    "type": "regles",
     "label": "Navigation — Chavirage et redressement",
     "desc": "- 4. Un Test de **Navigation Accessible (+20)** doit être effectué pour retirer la voile avant que le bateau ne soit renversé. Si le Test échoue, la voile et le gréement tombent, le bateau se renverse et commence à prendre l'eau. Les Personnages peuvent faire un seul Test de **Navigation Accessible (+20)** par Round pour essayer de redresser le bateau ; chaque Test échoué ajoute un malus de -5 au Test suivant. S'il n'est pas redressé, le bateau coule en un nombre de tours égal à son Bonus d'Endurance.",
     "source": {
@@ -401,6 +441,7 @@
   },
   {
     "id": "navigation-greement",
+    "type": "regles",
     "label": "Navigation — Avarie de gréement",
     "desc": "- 5. Un Test de **Navigation Accessible (+20)** est nécessaire pour éviter que la voile et le gréement subissent des dégâts. Si le Test échoue, traitez le résultat comme un Coup Critique au gréement (voir plus bas). Le bateau dérive, hors de contrôle, à 25 % de sa vitesse normale, sans compter la force et la direction du vent qu'il faudra aussi ajouter. Les Tests de **Navigation** pour tenter de diriger le bateau subissent un malus de -20.",
     "source": {
@@ -411,6 +452,7 @@
   },
   {
     "id": "navigation-echouage",
+    "type": "regles",
     "label": "Navigation — Échouage et renflouage",
     "desc": "Dans certaines circonstances, il est possible qu'un bateau s'échoue ; les chances que cela arrive sont données quand un danger se présente. Quand un bateau s'échoue, il s'arrête soudainement et sa coque subit 12 Dégâts. Il doit être tiré afin d'être remis à l'eau. Pour un bateau chargé, cette tâche nécessite un Test de **Force** avec un malus égal au nombre total de Points d'Encombrement du bateau et de sa cargaison. N'importe quel Personnage ou animal de trait peut contribuer à la tâche, tant qu'il y a assez de cordes pour tout le monde (il est préférable que les Personnages qui aident ne soient pas déjà encombrés par des armures lourdes, des sacs à dos, etc.)",
     "source": {
@@ -421,6 +463,7 @@
   },
   {
     "id": "navigation-coque-percee",
+    "type": "regles",
     "label": "Navigation — Coque percée",
     "desc": "Un bateau à la coque percée coule en un nombre de minutes égal à son Endurance, à moins que des réparations temporaires soient effectuées (voir plus bas). Une fois que c'est fait, le bateau peut être vidé de son eau (si les Personnages ont accès à des seaux). Pour savoir combien de Tours seront nécessaires, prenez le nombre de minutes durant lesquelles le bateau prenait l'eau et multipliez par deux ce nombre. Par exemple, s'il y a eu 3 minutes entre l'apparition du trou dans la coque et sa réparation, il faudra 6 Tours pour évacuer l'eau.",
     "source": {
@@ -431,6 +474,7 @@
   },
   {
     "id": "test-equipage-progression",
+    "type": "regles",
     "label": "Test d’équipage — Progression du bateau",
     "desc": "Quand vous déterminez la progression d'un grand navire dans des conditions normales, vous pouvez effectuer un Test d'équipage au lieu d'un Test de Navigation.",
     "source": {
@@ -441,6 +485,7 @@
   },
   {
     "id": "test-equipage-progression-poursuite",
+    "type": "regles",
     "label": "Test d’équipage — Progression lors d’une Poursuite",
     "desc": "Ce genre de Test sert à déterminer la vitesse. Il suit généralement les règles de poursuite et de course en page 109. Ce sont les Mousses qui réduisent la voilure ou qui rament, ils sont donc essentiels pour cette tâche.",
     "source": {
@@ -451,6 +496,7 @@
   },
   {
     "id": "test-equipage-manoeuvre",
+    "type": "regles",
     "label": "Test d’équipage — Manœuvres",
     "desc": "Chaque fois qu'un vaisseau doit entreprendre un Test de Navigation afin de manœuvrer pour prendre un virage serré ou contourner un obstacle, ce Test peut être remplacé par un Test d'équipage. Le Timonier est le personnage le plus important dans ce cas.",
     "source": {
@@ -461,6 +507,7 @@
   },
   {
     "id": "test-equipage-perception",
+    "type": "regles",
     "label": "Test d’équipage — Perception",
     "desc": "Chaque fois que les circonstances nécessitent qu'un personnage à bord d'un vaisseau effectue un Test de Perception pour repérer un péril imminent, une terre à l'horizon ou le signal d'un phare, ce Test peut être remplacé par un Test d'équipage. La Vigie est la plus utile ici, mais les réactions rapides des autres sur le pont peuvent aider à empêcher une collision.",
     "source": {
@@ -471,6 +518,7 @@
   },
   {
     "id": "test-equipage-orientation",
+    "type": "regles",
     "label": "Test d’équipage — Orientation",
     "desc": "S'assurer que le bateau garde le cap est la responsabilité du Navigateur, mais les conseils de ceux qui se trouvent sur le pont l'aident indéniablement.",
     "source": {
@@ -481,6 +529,7 @@
   },
   {
     "id": "test-equipage-affaler",
+    "type": "regles",
     "label": "Test d’équipage — Affaler les voiles",
     "desc": "Là où un petit navire effectuerait des Tests de Navigation pour éviter les Dégâts résultant de forts vents, un grand vaisseau peut être protégé par une prise de décision rapide de son Capitaine et par les actions promptes de l'équipage.",
     "source": {
@@ -491,6 +540,7 @@
   },
   {
     "id": "test-equipage-extermination-nuisibles",
+    "type": "regles",
     "label": "Test d’équipage — Extermination des nuisibles",
     "desc": "Parfois, des rats ou d'autres nuisibles peuvent infester un navire. Pour régler ce problème, l'équipage doit effectuer un Test étendu d'Extermination des nuisibles. Chaque Test nécessite que l'équipage consacre 1d10 heures à purger la vermine. La Difficulté et le nombre total de DR nécessaires pour terminer l'extermination dépendent du degré d'infestation. Un nid de rats à bord nécessiterait un Test étendu d'**Extermination des nuisibles Intermédiaire (+0)** pour un total de 10 DR.\n\nSi un Ratier se trouve à bord, il peut occuper le rôle essentiel et utiliser sa Compétence Projectiles (Fronde) pour le Test. La présence d'un chat de bord ou d'un chien petit, mais féroce ajoute +1 DR au résultat.",
     "source": {
@@ -501,6 +551,7 @@
   },
   {
     "id": "test-equipage-rude-epreuve",
+    "type": "regles",
     "label": "Test d’équipage — Rude épreuve",
     "desc": "Ce genre de Test est nécessaire lors des voyages où le navire n'a pas vu de terre depuis bien trop longtemps, l'objectif est incertain ou les mers inconnues, ou si l'équipage commence à manquer de nourriture, que la maladie s'est répandue à bord ou que les gens ont peur de ce que pourrait prochainement subir le bateau.\n\nLa fatigue du voyage peut commencer à se faire sentir et le moral de l'équipage va dégringoler. Les Personnages peuvent persévérer malgré tout, mais les PNJ membres de l'équipage vont commencer à flancher. Si le total de ce Test donne un ou plusieurs DR négatifs, réduisez le Moral d'un nombre égal au nombre de ces DR en plus des autres conséquences négatives.",
     "source": {
@@ -511,6 +562,7 @@
   },
   {
     "id": "test-equipage-entretien",
+    "type": "regles",
     "label": "Test d’équipage — Entretien",
     "desc": "Les petits navires risquent de souffrir de l'absence de charpentier, de tailleur ou de constructeur de navires expérimenté quand il faut réparer les dégâts et faire en sorte que le bateau reste fonctionnel. Un grand vaisseau peut compter sur la sagesse collective de son équipage s'il n'a pas d'individu possédant ces compétences.\n\nTout Test entrepris pour effectuer des réparations sur le navire peut être remplacé par un Test d'équipage d'Entretien.\n\nCe Test peut être effectué à la place d'un Test de Compétence Métier nécessaire pour réparer le bateau. Cependant, même si la force du nombre aide à réaliser le travail, elle ne compense pas l'absence de l'expertise qu'un charpentier ou un tailleur bien formé pourrait fournir. C'est pourquoi si ce Test d'équipage est effectué pour se substituer à ces Compétences, il subit –2 DR.",
     "source": {
@@ -521,6 +573,7 @@
   },
   {
     "id": "test-equipage-batterie",
+    "type": "regles",
     "label": "Test d’équipage — Tir de batterie",
     "desc": "Si un ennemi se trouve à portée de tir du vaisseau, ce Test d'équipage peut être entrepris si le Capitaine veut lui lâcher une bordée. Plutôt que de lancer les dés pour toucher pour chaque canon, le Test d'équipage de Tir de batterie peut être effectué et le total de DR s'applique à toutes les armes à feu tournées vers l'ennemi, pour le meilleur et pour le pire.",
     "source": {
@@ -531,6 +584,7 @@
   },
   {
     "id": "navigation-progression",
+    "type": "regles",
     "label": "Navigation — Tableau de progression",
     "desc": "Les résultats du Test de Navigation peuvent ensuite être comparés au tableau de progression qui suit.\n\n| DR          | Effet                                                                                     |\n|-------------|-------------------------------------------------------------------------------------------|\n| 4 ou plus   | Le bateau progresse à sa vitesse maximale. Il se déplace de son score de M+2.              |\n| 1 à 3       | Le navire progresse bien. Il se déplace de son score de M+1.                               |\n| –2 à 0      | Le vaisseau progresse normalement. Il se déplace de son score de M.                        |\n| –3 à –4     | Le bateau progresse lentement. Il se déplace de son score de M–1.                          |\n| –5 ou moins | Le navire lutte pour avancer. Il se déplace de la moitié de son score de M (arrondie à l'inférieur). |",
     "source": {
@@ -541,6 +595,7 @@
   },
   {
     "id": "guerison-des-blessures",
+    "type": "regles",
     "label": "Guérison des Blessures",
     "desc": "Vous êtes considéré comme étant blessé si vous avez perdu au moins un Point de Blessure.\n\nUne fois par jour, vous pouvez tenter, sans aide médicale, un Test de **Résistance Accessible (+20)**, après avoir passé une bonne nuit de sommeil. Vous guérissez un nombre de Points de Blessure équivalent à votre DR + Bonus d'Endurance. Pour chaque journée passée à vous reposer, vous guérissez également un nombre de Points de Blessure équivalent à votre Bonus d'Endurance.\n\nSi vous voulez Guérir plus de Points de Blessure, alors vous devez être assisté par quelqu'un possédant la Compétence Guérison (voir **Chapitre 4 : Compétences et Talents.**) ou alors aurez besoin de bandages, d'un cataplasme de soin ou de tout autre équivalent (voir **Chapitre 11 : Équipement**).\n\nIl n'y a aucune pénalité liée au fait d'être blessé. Les Points de Blessure perdus sont considérés comme des petites coupures, des bleus et autres traumatismes mineurs.",
     "source": {
@@ -551,6 +606,7 @@
   },
   {
     "id": "exposition",
+    "type": "regles",
     "label": "Exposition",
     "desc": "Après 4 heures passées dans un environnement difficile – comme lorsque les températures sont négatives, dans un désert brûlant ou une tempête, vous devez effectuer un Test de Résistance. Lorsque vous vous retrouvez dans un environnement aux conditions extrêmes, ce Test doit être effectué toutes les deux heures.\n\n**Chaleur :** sur un premier échec, vous subissez une pénalité de -10 en **Intelligence** et en **Force Mentale**, et vous gagnez un État *Exténué*. Le deuxième échec réduit toutes les autres caractéristiques de -10 % et vous gagnez un second État *Exténué*. À partir du troisième échec, vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure perdue.\n\nVous débarrasser d'une Possession lourde annule 1 Test échoué.\n\n**Froid :** sur un premier échec, vous subissez une pénalité de -10 à votre Compétence de **CT**, à votre **Agilité** et votre **Dextérité**. Le deuxième échec réduit la valeur de toutes vos autres caractéristiques de -10 %. À partir du troisième échec, vous subissez 1d10 Dégâts, qui ignorent les PA, avec un minimum de 1 Blessure perdue. Si vous atteignez 0 Blessure, vous recevez immédiatement un État *Inconscient*. Certaines Possessions accordent des bonus et des pénalités pour ces Tests (voir p. 302 et 309).",
     "source": {
@@ -561,6 +617,7 @@
   },
   {
     "id": "fractures",
+    "type": "regles",
     "label": "Fractures",
     "desc": "Les fractures peu importantes guérissent d'elles-mêmes, mais certaines autres, lorsque les os dépassent de la plaie en adoptant des angles étranges, présentent un tout autre problème. Si vous souffrez d'une *Fracture*, elle sera majeure ou mineure.\n\n# **Mineure**\n\nL'un de vos os est fracturé mais il est toujours dans le bon alignement, ce qui signifie qu'il va pouvoir guérir sans intervention médicale.\n\nVous ne pouvez pas utiliser cette Localisation tant que la fracture n'est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d'un de vos deux membres car l'autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés (voir **Membres amputés**). Pour les coups à la Tête, vous serez contraint de suivre un régime liquide et subirez une pénalité de -30 à tous vos Tests de Langue. Pour les blessures au Torse, votre force et votre mobilité seront sérieusement diminuées : subissez une perte de -30 à vos caractéristiques de Force et d'Agilité et votre Mouvement est divisé par deux.\n\n**Guérison :** il faudra 30+1d10 jours pour soigner une fracture. À la fin de cette période, un succès obtenu sur un Test de **Résistance Accessible (+20)** indique que l'os s'est remis correctement et que vous ne subirez aucun effet à long terme. Sur un échec, vous subirez une pénalité permanente de -5 à tous vos Tests d'Agilité pour une blessure au Bras, à la Jambe ou au Torse, ou une pénalité permanente de -5 à tous vos Tests de Langue s'il s'agit d'une blessure à la tête mal guérie.\n\nUn Test de **Guérison Accessible (+20)** réussi dans un intervalle d'une semaine suivant la fracture permet d'éviter le Test de Résistance, mais la zone touchée doit rester bandée et maintenue en place pendant tout le temps de la guérison. Si le bandage est défait, il faudra réussir un second Test de **Guérison Accessible (+20)** moins de 24 heures après pour éviter le Test de Résistance.\n\n# **Majeure**\n\nUn de vos os est salement fracturé et adopte un angle très bizarre avec le reste du membre ou a éclaté au point de fracture. Il est fort peu probable qu'il se soigne correctement sans intervention médicale.\n\nVous ne pouvez pas utiliser cette Localisation tant que l'os n'est pas guéri. Utilisez les mêmes règles que pour *Fracture (Mineure)*.\n\n**Guérison :** la guérison est plus longue de 10 jours. Tous les Tests associés sont **Intermédiaires (+0)**. Les pénalités en cas d'échec augmentent à -10.",
     "source": {
@@ -571,6 +628,7 @@
   },
   {
     "id": "resistance-a-l-alcool-dessoulage",
+    "type": "regles",
     "label": "Résistance à l’alcool — Dessoûlage",
     "desc": "Après une heure passée sans boire, effectuez un Test de **Résistance à l'alcool Intermédiaire (+0)**. Les effets de l'ivresse se dissiperont après 10-DR heures, et tous les modificateurs de Caractéristiques disparaîtront après ce délai. Une fois tous les effets dissipés, effectuez un nouveau Test de **Résistance à l'alcool Intermédiaire (+0)**. Vous avez à présent la gueule de bois, qui correspond à l'État *Exténué* et ne peut pas être retiré pendant 5 – DR heures.",
     "source": {
@@ -581,6 +639,7 @@
   },
   {
     "id": "trauma",
+    "type": "regles",
     "label": "Trauma",
     "desc": "La vie de la grande majorité des Reiklanders est désagréable, brutale et courte. Et c'est encore plus vrai pour les aventuriers, dont la vie est plutôt agitée. Chacun retranscrit les traumas différemment, et vous pouvez choisir de partir sur des pistes différentes : cauchemars, substances illicites, flashbacks, *Hostilité* ou *Haine* envers un groupe en particulier, ou une *Phobie*. Un Personnage qui a subi une expérience traumatique peut en manifester les conséquences de plusieurs différentes façons au fil du temps.\n\n**Exemple :** *Le village de Horst a été ravagé par un terrible incendie – il entend d'ailleurs encore certains cris dans ses cauchemars. Si Horst tombe sur un Personnage (ami ou ennemi) qui est Enflammé, il doit effectuer un Test de Calme Intermédiaire (+0). Sur un échec, il gagne un État Sonné, plus un État Sonné par DR négatif. De plus, chaque nuit, Horst effectue un Test de Calme Facile (+40). Sur un échec, il est en proie à de terribles cauchemars et gagne l'État Exténué.*",
     "source": {
@@ -591,6 +650,7 @@
   },
   {
     "id": "temps-de-voyage",
+    "type": "regles",
     "label": "Temps de voyage",
     "desc": "Utilisez le Déplacement pour déterminer la vitesse du voyage en kilomètre par heure. Ainsi, si le Déplacement le plus lent d'un groupe est de 3, il voyagerait approximativement à 3 kilomètres par heure.\n\nEn prenant en compte les temps de repos, les arrêts nécessaires et une topographie standard, un groupe peut voyager l'équivalent de 6 heures par jour sans avoir besoin de Tests de Résistance. S'il voyage plus rapidement ou plus loin, donnez un État *Exténué* à ceux échouant à ce Test, et un État *Exténué* supplémentaire si le Personnage est Encombré (voir page 293).\n\nLa vitesse d'une barge peut augmenter ou diminuer jusqu'à 30 % si elle est en aval ou en amont, si vous jugez que c'est approprié.",
     "source": {
@@ -601,6 +661,7 @@
   },
   {
     "id": "symptomes-des-maladies",
+    "type": "regles",
     "label": "Symptômes des maladies",
     "desc": "Cette section explique la façon dont se manifestent chacun des symptômes des différentes infections. Servez-vous en pour inventer des maladies bien répugnantes.",
     "source": {
@@ -611,6 +672,7 @@
   },
   {
     "id": "mouvement",
+    "type": "regles",
     "label": "Mouvement au cours d'un Combat",
     "desc": "Le Tableau du Mouvement indique la distance, en mètres, que vous pouvez parcourir au cours d'un tour, sans avoir à effectuer un Test d'Athlétisme. Ainsi, vous utiliserez votre Mouvement du Tour.\n\n|           | TABLEAU DES MOUVEMENTS |                 |\n|-----------|------------------------|-----------------|\n| Mouvement | Marche (mètres)        | Course (mètres) |\n| 0         | 0                      | 0               |\n| 1         | 2                      | 4               |\n| 2         | 4                      | 8               |\n| 3         | 6                      | 12              |\n| 4         | 8                      | 16              |\n| 5         | 10                     | 20              |\n| 6         | 12                     | 24              |\n| 7         | 14                     | 28              |\n| 8         | 16                     | 32              |\n| 9         | 18                     | 36              |\n| 10        | 20                     | 40              |",
     "source": {
@@ -621,6 +683,7 @@
   },
   {
     "id": "course",
+    "type": "regles",
     "label": "Course",
     "desc": "À votre tour, vous pouvez utiliser votre Action pour courir. Vous avez besoin d'un Test **d'Athlétisme Accessible (+20)**, et la distance couverte vient en plus de celle parcourue par votre Mouvement de ce Round. Vous pouvez courir sur une distance équivalente à votre Mouvement de Course + DR en mètres (voir Tableau des Mouvements pour les Mouvements en Charge). Ainsi, un Personnage avec Mouvement 4 qui obtient DR -2 pourra courir sur 14 mètres supplémentaires (16-2=14).",
     "source": {
@@ -631,6 +694,7 @@
   },
   {
     "id": "charger",
+    "type": "regles",
     "label": "Charge",
     "desc": "Si vous n'êtes pas encore *Engagé* en combat, vous pouvez utiliser votre Mouvement pour Charger. Si vous Chargez, votre action doit être un Test de Corps à corps pour attaquer un adversaire.\n\nSi votre adversaire se trouve au moins à une distance, en mètres, égale à votre caractéristique de Mouvement de votre Course avant votre Charge, mais toujours dans la portée de cette dernière ((voir Course dans le Tableau des Mouvements pour savoir la distance que vous pouvez parcourir en chargeant), vous obtenez également +1 Avantage en fonçant sur votre adversaire.",
     "source": {
@@ -641,6 +705,7 @@
   },
   {
     "id": "desengagement",
+    "type": "regles",
     "label": "Désengagement",
     "desc": "Si vous êtes *Engagé* en Combat (voir page 159) et que vous ne souhaitez plus échanger de coups avec votre adversaire, vous disposez des deux options suivantes pour quitter le combat en toute sécurité.\n\n**Utiliser l'Avantage :** si vous disposez de plus d'Avantages que votre adversaire, c'est que vous vous trouvez en position de supériorité et que vous avez la possibilité de vous placer hors de portée. Si vous choisissez de ramener votre Avantage à 0, vous pouvez vous éloigner de votre adversaire sans subir de pénalités, peut-être en choisissant de Charger une autre cible ou de courir aussi loin que possible ou encore faire quelques pas en arrière et de tirer un coup de feu au visage de votre adversaire !\n\n**Utiliser l'Esquive :** si votre Avantage est inférieur ou égal à celui de votre adversaire et que vous ne souhaitez pas le dépenser, vous êtes cloué sur place. Si vous voulez vous enfuir, vous devez utiliser votre action pour effectuer un Test opposé d'**Esquive/ Corps à corps**. Sur un succès, vous obtenez +1 Avantage et pouvez utiliser votre Mouvement pour aller où vous souhaitez en suivant les règles normales. Sur un échec, votre adversaire gagne +1 Avantage et votre fuite est impossible, à moins de vous prendre un coup dans le dos.",
     "source": {
@@ -651,6 +716,7 @@
   },
   {
     "id": "fuite",
+    "type": "regles",
     "label": "Fuite",
     "desc": "S'il n'y a pas d'autre solution, vous pouvez faire demi-tour et utiliser votre Mouvement pour fuir. Bien souvent, la Fuite est involontaire, et est provoquée par la *Terreur* (voir page 191) ou la magie.\n\nSi vous fuyez, votre adversaire gagne immédiatement +1 Avantage et une Attaque gratuite. Cette attaque est un Test de Corps à corps non opposé, et le DR est utilisé pour vous infliger des Dégâts, comme d'habitude. Comme vous lui tournez le dos, votre adversaire bénéficie de +20 au toucher. Si vous êtes touché, votre adversaire gagne +1 Avantage, et vous devez effectuer un Test de **Calme Intermédiaire (+0)** : sur un échec, vous obtenez l'État *Brisé*, ainsi que +1 *Brisé* par DR inférieur à 0.\n\nUne fois que ce coup gratuit est résolu, vous pouvez vous déplacer jusqu'à la limite de votre Mouvement de Course (voir le Tableau des Mouvements) dans la direction opposée à celle de votre adversaire, en partant du principe que vous en êtes encore capable.",
     "source": {
@@ -661,6 +727,7 @@
   },
   {
     "id": "chute",
+    "type": "regles",
     "label": "Chute",
     "desc": "Au cours d'une chute, vous subissez 3 Dégâts pour chaque mètre de chute +1d10 Dégâts. Ces Dégâts sont réduits par votre Bonus d'Endurance mais pas par les PA dont vous pouvez disposer.\n\nSi vous chutez à dessein – ou, si vous préférez, si vous sautez vers le bas – vous pouvez tenter un Test d'**Athlétisme Accessible (+20)** afin de réduire les Dégâts reçus. Pour chaque DR, considérez que vous tombez de 1m de moins. Si vous parvenez à réduire votre distance de chute à 0 ou moins, vous ne subissez aucun Dégât de chute.\n\nSi vous subissez plus de Points de Blessure à cause de la chute que votre Bonus d'Endurance, vous obtenez l'État *À Terre*.",
     "source": {
@@ -671,6 +738,7 @@
   },
   {
     "id": "influences-corruptrices",
+    "type": "regles",
     "label": "Influences corruptrices",
     "desc": "Les Points de Corruption sont généralement acquis lorsqu'on se trouve en présence d'une personne, d'un endroit ou d'un objet contaminé par le Chaos, ou dans une situation qui sied particulièrement aux Dieux Sombres.\n\nSi vous tombez sur une Influence corruptrice, tentez un Test de **Résistance Intermédiaire (+0)** ou un Test de **Calme Intermédiaire (+0)**, comme déterminé par le MJ – généralement, les Influences physiques sont repoussées avec Résistance, et la Corruption spirituelle avec Calme.",
     "source": {
@@ -681,6 +749,7 @@
   },
   {
     "id": "dissipation",
+    "type": "regles",
     "label": "Dissipation",
     "desc": "Si un Sort vous cible, ou vise un point que vous pouvez voir à une distance en mètres égale à votre Force Mentale, vous pouvez opposer le Test d'Incantation avec **Langue (Magick)**, car vous chantez un Contre-sort. Effectuez un Test opposé de **Langue (Magick)**. Sur un succès, vous dissipez le Sort ; sur un échec, le Sort utilise le DR du Test opposé pour déterminer si l'incantation a réussi normalement. Vous ne pouvez tenter de dissiper qu'un seul Sort chaque Round.\n\n#### **Dissiper des Sorts permanents**\n\nSi un Sort a un effet durable, vous pouvez tenter de le dissiper pour votre Action. Il faut pour cela effectuer un Test étendu de Langue (Magick). Quand votre DR atteint la NI du Sort, vous le dissipez avec succès.\n\nPlusieurs lanceurs de Sorts tentant de dissiper le même Sort effectuent leur lancer séparément. S'ils incantent en utilisant le même Domaine, ils peuvent décider d'effectuer un Test Soutenu à la place.",
     "source": {
@@ -691,6 +760,7 @@
   },
   {
     "id": "au-contact",
+    "type": "regles",
     "label": "Au contact",
     "desc": "Pour votre Action, vous pouvez effectuer un Test opposé de **Corps à corps** pour tenter d'entrer dans la longueur d'arme de votre adversaire. Le vainqueur choisit si le combat continue normalement ou « au contact ». Pendant un combat au contact, n'importe quelle arme plus longue que Courte est considérée comme une Arme improvisée.",
     "source": {
@@ -701,6 +771,7 @@
   },
   {
     "id": "poursuite",
+    "type": "regles",
     "label": "Poursuite",
     "desc": "**1 : Déterminer la distance –** Le MJ décide de la distance qui sépare les poursuivants des poursuivis et chiffre cet Avantage de départ, qu'il appelle Distance. Typiquement, cela ira de 1 pour ceux qui sont presque à portée, en passant par 4 pour ceux qui ont une avance confortable et peut aller jusque 8 pour ceux qui sont quasiment hors de portée lorsque la poursuite commence.\n\n- **2 : Test** Tout participant à la poursuite effectue un Test pour son Mouvement – en fonction des circonstances, ce sera un Test de Conduite d'Attelages, de Chevaucher ou d'Athlétisme.\n- **3 : Actualiser la Distance** On compare le DR le plus petit obtenu par les poursuivis au plus haut DR obtenu par les poursuivants, et la différence est ajoutée à la Distance si les poursuivis l'ont emporté et retranchée de cette même Distance si ce sont les poursuivants qui l'ont emporté.\n- **4 : Déterminer l'issue** Si la Distance est réduite à 0 ou moins, les poursuivants ont rejoint leur cible ! Les poursuivis ont alors la possibilité, pour ce Round, de sacrifier le plus lent d'entre eux afin de ralentir les poursuivants et de poursuivre leur fuite, ou ils peuvent s'arrêter et les affronter. Si le plus lent des poursuivis est abandonné, les poursuivants décident de qui s'arrête pour l'affronter et qui continue la poursuite. Si le pauvre retardataire n'est pas une cible prioritaire, il se peut qu'il soit purement et simplement ignoré ! Si la Distance atteint 10+, les poursuivants ont perdu leur proie et la poursuite s'achève… pour le moment ! Si la Distance reste comprise entre 1 et 9, la poursuite continue, et on retourne à l'étape 2.",
     "source": {
@@ -711,6 +782,7 @@
   },
   {
     "id": "exposition-hydrique",
+    "type": "regles",
     "label": "Exposition aux maladies transmises par l’eau",
     "desc": "Chaque fois qu'un Personnage risque d'être exposé à une maladie provenant de l'eau d'une rivière, il est possible qu'il doive réaliser un Test de **Résistance Intermédiaire (+0)**, modifié selon les circonstances. Consultez les tableaux suivants : tous les modificateurs peuvent être cumulés.\n\nSi le Test de Résistance est raté, lancez un dé selon le tableau suivant, avec un modificateur de +10 pour chaque DR négatif.",
     "source": {
@@ -721,6 +793,7 @@
   },
   {
     "id": "blessures-critiques",
+    "type": "regles",
     "label": "Tableau des Critiques",
     "desc": "Lorsque vous subissez une **Blessure Critique**, en subissant plus de Points de Blessure que vous n'en avez, lancez 1d100 et référez-vous au tableau approprié pour déterminer ce qui s'est passé. Lorsque vous encaissez un **Coup Critique (voir page 159)**, vous ne déterminez pas la Localisation en inversant votre lancer comme d'habitude. À la place, lancez 1d100 et référez-vous à **Déterminer la Localisation (voir page 159)**, puis lancez de nouveau 1d100 et référez-vous au Tableau des Critiques correspondant pour voir ce qu'il se produit. Vous perdez le nombre de Points de Blessure indiqué, en ignorant votre Bonus d'Endurance et vos PA, bien que celles-ci n'entraînent jamais de **Blessures critiques**. De plus, vous subissez les Effets supplémentaires indiqués. Si votre Personnage subit l'État *Inconscient*, vous restez inconscient jusqu'à la fin de la rencontre, ou jusqu'à recevoir une Aide médicale (voir Guérison à la page 181), sauf indication contraire. Si un résultat indique que vous avez des fractures, des déchirures musculaires ou un membre amputé, référez-vous à *Fractures* à la page 179, *Déchirures musculaires* page 179, ou *Membres amputés* page 180, pour voir ce qui arrive.",
     "source": {
@@ -731,6 +804,7 @@
   },
   {
     "id": "incantation-imparfaite",
+    "type": "regles",
     "label": "Incantations Imparfaites",
     "desc": "Si vous perdez le contrôle de l'énergie magique que vous focalisez, les choses se passent toujours mal. Si vous obtenez une Maladresse à votre Test d'Incantation, vous subissez une Incantation Imparfaite. Lancez 1d100 et consultez le Tableau des Incantations Imparfaites Mineures.",
     "source": {
@@ -741,6 +815,7 @@
   },
   {
     "id": "interruption-de-focalisation",
+    "type": "regles",
     "label": "Interruptions (Focalisation)",
     "desc": "La concentration est vitale pour focaliser. Si vous êtes perturbé par quelque chose – bruits forts, Dégâts subis, lumières aveuglantes ou autres –, vous devrez réussir un Test de **Calme Difficile (-20)** ou subir une Incantation Imparfaite Mineure et perdre tous les DR accumulés jusque-là au Test étendu de Focalisation.",
     "source": {
@@ -751,6 +826,7 @@
   },
   {
     "id": "precieuses-entrailles",
+    "type": "regles",
     "label": "Précieuses entrailles — quelles pièces ?",
     "desc": "Ce n'est pas tout de tuer un monstre, il faut encore savoir identifier les parties qui intéresseront les acheteurs potentiels. Il peut s'agir d'un ou plusieurs organes ou bien de son sang qui auraient, selon la rumeur, des propriétés médicinales. Les Personnages doivent faire un Test de **Savoir** approprié pour déterminer ce qui doit être conservé sur le cadavre qui gît à leurs pieds.\n\nAinsi, un Test de **Savoir (Bêtes ou Remèdes)** permet de reconnaître les parties prisées chez la plupart des créatures. Un Test de **Métier (Empoisonneur)** ou similaire peut être effectué s'il s'agit d'une espèce vénéneuse, venimeuse ou les deux ! **Savoir (Magie)** peut également être utilisé pour les créatures qui possèdent des propriétés « mystiques » susceptibles d'intéresser les sorciers. Si le Test est réussi, le Personnage aura une bonne idée des morceaux à conserver, qu'importe son DR. Pour chaque Degré d'échec, diminuez d'un cran la quantité exploitable qui peut être prélevée sur le paragraphe Quantité exploitable. Par exemple, si un groupe est perplexe quant aux organes prisés sur une bête Énorme et obtient -2 DR sur son Test de Savoir, il ne pourra collecter que 2 points d'Encombrement de parties du monstre.",
     "source": {
@@ -761,6 +837,7 @@
   },
   {
     "id": "tests-opposes",
+    "type": "regles",
     "label": "Tests opposés",
     "desc": "Parfois, vous allez devoir confronter vos capacités à celles d'un adversaire. Les règles qui gèrent ce genre de situations font appel à un Test spectaculaire, appelé le Test opposé. Les Tests opposés occupent une part importante dans les règles de combat de **WFJDR**, détaillées plus loin dans ce chapitre. Mais ils sont également utilisés dans de nombreux autres cas.\n\nUn Test opposé est géré comme un Test spectaculaire, mais, ici, les deux groupes effectuent un Test. C'est le groupe avec le DR le plus élevé qui remporte le Test. Si les deux participants obtiennent le même DR, c'est le groupe avec la Compétence ou la Caractéristique la plus élevée qui l'emporte. Dans le cas improbable où il y ait une égalité, le MJ choisit l'une de ces deux solutions : 1) statu quo, rien ne se passe ; 2) les deux groupes refont le Test, jusqu'à ce qu'un vainqueur soit désigné.",
     "source": {
@@ -771,6 +848,7 @@
   },
   {
     "id": "tests-etendus",
+    "type": "regles",
     "label": "Tests étendus",
     "desc": "Quelquefois au cours de l'aventure, il sera nécessaire d'atteindre un certain DR pour réussir une tâche particulièrement chronophage ou ardue. Pour ce faire, il faut donc effectuer un Test spectaculaire particulier, appelé Test étendu.\n\nLes Tests étendus sont gérés de la même façon que les Tests spectaculaires, mais les DR obtenus à chaque Round sont additionnés jusqu'à atteindre une valeur cible (voir Combats pour plus d'informations sur les *Rounds*). Si le DR total passe en dessous de 0, vous pouvez recommencer depuis le début, au début du Round suivant.",
     "source": {
@@ -781,6 +859,7 @@
   },
   {
     "id": "embuscade-surprise",
+    "type": "regles",
     "label": "Surprise (embuscade)",
     "desc": "S'il y a une chance que ceux qui tendent l'embuscade soient repérés, le MJ demandera que soit effectué un Test opposé de **Discrétion/Perception**, le plus souvent entre le Personnage ayant la Discrétion la plus faible et tous les guetteurs potentiels. Si c'est le groupe en embuscade qui remporte le Test, chaque Personnage vaincu subit alors l'État *Surpris* (voir page 169).\n\nSi personne n'est surpris, le Combat se déroule normalement.\n\nSi un Personnage est surpris, il peut utiliser un Point de Détermination pour se débarrasser de l'État *Surpris* (voir page 169).",
     "source": {
@@ -791,6 +870,7 @@
   },
   {
     "id": "combiner-les-difficultes",
+    "type": "regles",
     "label": "Combiner les Difficultés",
     "desc": "Il y aura des cas où de multiples facteurs vont rendre une action bien plus difficile que la normale. Il est plus difficile de tirer sur un adversaire lorsque vous vous trouvez dans une forêt lugubre et que votre adversaire est loin que de tirer sur ce même adversaire en plein jour et à découvert. Pour combiner les difficultés, suivez les recommandations suivantes :\n\n- Si la situation nécessite l'ajout de deux pénalités ou plus, contentez-vous de faire la somme des différents modificateurs sans dépasser **Très Difficile -30**. Par exemple, le brouillard ajouté au fait de vouloir toucher une Localisation précise donne un Test de **Capacité de Combat Difficile (-20)**. Lorsqu'il est combiné, le Test devient simplement **Très Difficile (-30)** au lieu de recevoir une pénalité de **-40**. De la même façon, si la situation implique l'addition de deux bonus, faites la somme des modificateurs jusqu'à un maximum de **+60** ou **Très Facile** .\n- Si la situation demande à la fois une pénalité et un bonus, faites-en la somme pour obtenir la nouvelle difficulté. Attaquer un adversaire alors qu'on se trouve dans la neige jusqu'à la taille nécessite normalement un Test **Très Difficile (-30)**. Mais attaquer un adversaire qui est *À Terre* ne nécessite qu'un Test **Facile (+20)**. Dans une situation ou les deux paramètres s'applique, le Test sera **Difficile (-10)** parce que **-30** plus **+20** font **-10** .",
     "source": {
@@ -801,6 +881,7 @@
   },
   {
     "id": "statut",
+    "type": "regles",
     "label": "Statut et Charme",
     "desc": "Le Statut possède un impact important sur le Charme dans le sens où ceux qui disposent d'un Statut élevé obtiennent ce qu'ils veulent, alors que ceux qui ont un Statut inférieur éprouvent des difficultés à asseoir leur influence. Dans la plupart des circonstances, ceux de l'Échelon supérieur obtiennent un bonus de +10 à leur Test de Charme lorsque ce dernier a pour cible des personnes appartenant à un Échelon inférieur. De la même façon, les personnes appartenant à un Échelon inférieur subissent une pénalité de -10 lorsqu'ils doivent influencer des personnes d'Échelon supérieur. Le MJ peut décider, plus rarement, d'appliquer ces modificateurs à ceux qui sont de Standing différent au sein d'un même Échelon.\n\nSi la cible d'une tentative de Charme est atypique, tout risque de se dérouler de manière totalement différente. Un individu qui « Brave le Statut » n'applique aucun modificateur, alors que celui qui a des « Opinions extrêmes » inverse les modificateurs (-10 à la place de +10, par exemple).",
     "source": {
@@ -811,6 +892,7 @@
   },
   {
     "id": "meteo-etape",
+    "type": "regles",
     "label": "Météo",
     "desc": "Le mauvais temps est le plus grand ennemi des voyageurs (si l'on omet les véritable antagonistes des voyageurs, en particulier ceux qui sont armés de tromblons, d'arbalètes et dotés d'une moralité douteuse). Le MJ doit effectuer un jet de Météo au début de chaque étape.\n\n| Météo            | Printemps | Été   | Automne | Hiver |\n|------------------|-----------|-------|---------|-------|\n| Temps sec        | 01-10     | 01-40 | 01-30   | -     |\n| Beau temps       | 11-30     | 41-70 | 31-60   | 01-10 |\n| Pluie            | 31-90     | 71-95 | 61-90   | 11-60 |\n| Pluie diluvienne | 91-95     | 96-00 | 91-98   | 61-65 |\n| Neige            | 96-00     | -     | 99-00   | 66-90 |\n| Blizzard         | -         | -     | -       | 91-00 |",
     "source": {
@@ -821,6 +903,7 @@
   },
   {
     "id": "evenements-de-bord",
+    "type": "regles",
     "label": "Événements de bord",
     "desc": "Tous les 1d10 jours, le MJ doit lancer les dés dans le tableau des événements pour déterminer quelles sont les surprises inattendues. Les lancers dans ce tableau sont modifiés par le score actuel d'Humeur de Manann du navire, donc un vaisseau qui a suscité le déplaisir du dieu marin risque beaucoup plus de rencontrer des circonstances difficiles.",
     "source": {
@@ -831,6 +914,7 @@
   },
   {
     "id": "disponibilite-des-biens",
+    "type": "regles",
     "label": "Disponibilité des biens",
     "desc": "Pour savoir si une cargaison doit être transportée, il faut se référer à la colonne Produits de l'Index géographique du Reikland (p. 75). Toute mention autre que Subsistance signifie qu'il existe une cargaison de ce type. La mention Commerce signifie qu'il peut y avoir une variété de biens disponibles. Ces marchandises « volumineuses » sont généralement considérées comme communes (**WFJDR**, Chapitre XI). Pour déterminer si une cargaison est disponible, consultez les colonnes Taille et Richesse pour cet emplacement.\n\nLes notes de Taille et de Richesse sont additionnées, puis multipliées par 10 pour déterminer les chances de trouver une cargaison à échanger. Par exemple, un hameau dont la population ne compte que 72 personnes de Taille (1) et dont l'Indice de Richesse est Moyen (2) aurait un total combiné de 3 × 10 = 30 % de chances d'avoir une cargaison à échanger un jour donné. Lancez 1d100, et si le résultat est inférieur ou égal à ce chiffre, les Personnages localisent un marchand ayant une cargaison à vendre.",
     "source": {

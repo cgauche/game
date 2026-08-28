@@ -22,6 +22,7 @@ export interface EffectTableRow {
  *  `source` = citation RAW du Tableau. */
 export interface EffectTable {
   id: string;
+  type: 'tables';
   label: string;
   die: 'd10' | 'd100';
   rows: EffectTableRow[];

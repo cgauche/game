@@ -284,6 +284,45 @@ describe('la garde elle-même — jouée sur un fichier-jouet (preuve de câblag
     expect(motifs).toContain('cSchema|extend');
   });
 
+  // #1467 L1b V-FLIP-ENTITE-b — la fabrique `document()` passe ses CHAMPS en 3ᵉ argument, sans
+  // fabrique zod autour. Tant que le scan ne visitait que `z.object`/`z.strictObject`/`z.looseObject`,
+  // l'adoption FAISAIT DISPARAÎTRE les trouvailles d'un def : perte de COUVERTURE que le cliquet
+  // décroissant lisait comme un solde. Les deux graphies réelles de `champs` sont couvertes.
+  it('les CHAMPS passés à `document()` sont scannés — littéral INLINE', () => {
+    const jouet = [
+      "import { z } from 'zod';",
+      "import { document } from '../grammaire/document';",
+      "const doc = document('jouet', 'entite', { skillId: z.string(), niveau: z.number() }, { skillId: { label: 'X' }, niveau: { label: 'Y' } }, EXPO);",
+      '',
+    ].join('\n');
+    const motifs = scan('src/data/schemas/defs/jouet.ts', jouet, regles).map((t) => `${t.symbole}|${t.motif}|${t.detail}`);
+    expect(motifs).toEqual(['doc|alias|skillId']);
+  });
+
+  it('les CHAMPS passés à `document()` sont scannés — const NOMMÉE référencée', () => {
+    const jouet = [
+      "import { z } from 'zod';",
+      "import { document } from '../grammaire/document';",
+      'const champs = { skillId: z.string(), niveau: z.number() };',
+      "const doc = document('jouet', 'entite', champs, { skillId: { label: 'X' }, niveau: { label: 'Y' } }, EXPO);",
+      '',
+    ].join('\n');
+    const motifs = scan('src/data/schemas/defs/jouet.ts', jouet, regles).map((t) => `${t.symbole}|${t.motif}|${t.detail}`);
+    expect(motifs).toEqual(['champs|alias|skillId']);
+  });
+
+  it('les autres arguments de `document()` ne sont PAS scannés — seule la 3ᵉ position porte les champs', () => {
+    // `meta` (4ᵉ) porte des libellés, pas des schémas : une clé y nommant une graphie historique
+    // n'est pas une forme re-tapée. Le scan ne doit pas la relever.
+    const jouet = [
+      "import { z } from 'zod';",
+      "import { document } from '../grammaire/document';",
+      "const doc = document('jouet', 'entite', { niveau: z.number() }, { niveau: { label: 'skillId' } }, EXPO);",
+      '',
+    ].join('\n');
+    expect(scan('src/data/schemas/defs/jouet.ts', jouet, regles)).toEqual([]);
+  });
+
   it('un littéral SANS forme de la grammaire ne sort pas (le scan ne rougit pas au hasard)', () => {
     const sain = "import { z } from 'zod';\nexport const dSchema = z.strictObject({ titre: z.string(), poids: z.number() });\n";
     expect(scan('src/data/schemas/defs/sain.ts', sain, regles)).toEqual([]);

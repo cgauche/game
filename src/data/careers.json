@@ -1,6 +1,7 @@
 [
   {
     "id": "agitateur",
+    "type": "careers",
     "label": "Agitateur",
     "labelF": "Agitatrice",
     "class": "citadins",
@@ -25,6 +26,7 @@
   },
   {
     "id": "artisan",
+    "type": "careers",
     "label": "Artisan",
     "labelF": "Artisane",
     "class": "citadins",
@@ -49,6 +51,7 @@
   },
   {
     "id": "bourgeois",
+    "type": "careers",
     "label": "Bourgeois",
     "labelF": "Bourgeoise",
     "class": "citadins",
@@ -72,6 +75,7 @@
   },
   {
     "id": "enqueteur",
+    "type": "careers",
     "label": "Enquêteur",
     "labelF": "Enquêtrice",
     "class": "citadins",
@@ -95,6 +99,7 @@
   },
   {
     "id": "marchand",
+    "type": "careers",
     "label": "Marchand",
     "labelF": "Marchande",
     "class": "citadins",
@@ -119,6 +124,7 @@
   },
   {
     "id": "mendiant",
+    "type": "careers",
     "label": "Mendiant",
     "labelF": "Mendiante",
     "class": "citadins",
@@ -143,6 +149,7 @@
   },
   {
     "id": "milicien",
+    "type": "careers",
     "label": "Milicien",
     "labelF": "Milicienne",
     "class": "citadins",
@@ -166,6 +173,7 @@
   },
   {
     "id": "ratier",
+    "type": "careers",
     "label": "Ratier",
     "labelF": "Ratière",
     "class": "citadins",
@@ -190,6 +198,7 @@
   },
   {
     "id": "artiste",
+    "type": "careers",
     "label": "Artiste",
     "class": "courtisans",
     "rand": {
@@ -213,6 +222,7 @@
   },
   {
     "id": "conseiller",
+    "type": "careers",
     "label": "Conseiller",
     "labelF": "Conseillère",
     "class": "courtisans",
@@ -237,6 +247,7 @@
   },
   {
     "id": "duelliste",
+    "type": "careers",
     "label": "Duelliste",
     "class": "courtisans",
     "rand": {
@@ -259,6 +270,7 @@
   },
   {
     "id": "emissaire",
+    "type": "careers",
     "label": "Émissaire",
     "class": "courtisans",
     "rand": {
@@ -281,6 +293,7 @@
   },
   {
     "id": "espion",
+    "type": "careers",
     "label": "Espion",
     "labelF": "Espionne",
     "class": "courtisans",
@@ -304,6 +317,7 @@
   },
   {
     "id": "intendant",
+    "type": "careers",
     "label": "Intendant",
     "labelF": "Intendante",
     "class": "courtisans",
@@ -327,6 +341,7 @@
   },
   {
     "id": "noble",
+    "type": "careers",
     "label": "Noble",
     "class": "courtisans",
     "grantGroups": [
@@ -353,6 +368,7 @@
   },
   {
     "id": "serviteur",
+    "type": "careers",
     "label": "Serviteur",
     "labelF": "Servante",
     "class": "courtisans",
@@ -377,6 +393,7 @@
   },
   {
     "id": "cavalier",
+    "type": "careers",
     "label": "Cavalier",
     "labelF": "Cavalière",
     "class": "guerriers",
@@ -401,6 +418,7 @@
   },
   {
     "id": "chevalier",
+    "type": "careers",
     "label": "Chevalier",
     "labelF": "Chevalière",
     "class": "guerriers",
@@ -427,6 +445,7 @@
   },
   {
     "id": "garde",
+    "type": "careers",
     "label": "Garde",
     "class": "guerriers",
     "grantGroups": [
@@ -452,6 +471,7 @@
   },
   {
     "id": "gladiateur",
+    "type": "careers",
     "label": "Gladiateur",
     "labelF": "Gladiatrice",
     "class": "guerriers",
@@ -476,6 +496,7 @@
   },
   {
     "id": "mangeur-d-hommes",
+    "type": "careers",
     "label": "Mangeur d'hommes",
     "labelF": "Mangeuse d'hommes",
     "class": "guerriers",
@@ -499,6 +520,7 @@
   },
   {
     "id": "pretre-guerrier",
+    "type": "careers",
     "label": "Prêtre guerrier",
     "labelF": "Prêtresse guerrière",
     "class": "guerriers",
@@ -522,6 +544,7 @@
   },
   {
     "id": "soldat",
+    "type": "careers",
     "label": "Soldat",
     "labelF": "Soldate",
     "class": "guerriers",
@@ -549,6 +572,7 @@
   },
   {
     "id": "chevaucheur-de-blaireau",
+    "type": "careers",
     "label": "Chevaucheur de blaireau",
     "labelF": "Chevaucheuse de blaireau",
     "class": "guerriers",
@@ -572,6 +596,7 @@
   },
   {
     "id": "spadassin",
+    "type": "careers",
     "label": "Spadassin",
     "labelF": "Spadassine",
     "class": "guerriers",
@@ -596,6 +621,7 @@
   },
   {
     "id": "tueur",
+    "type": "careers",
     "label": "Tueur",
     "labelF": "Tueuse",
     "class": "guerriers",
@@ -619,6 +645,7 @@
   },
   {
     "id": "chasseur-de-primes",
+    "type": "careers",
     "label": "Chasseur de primes",
     "labelF": "Chasseuse de primes",
     "class": "itinerants",
@@ -642,6 +669,7 @@
   },
   {
     "id": "rodeur-fantome",
+    "type": "careers",
     "label": "Rôdeur fantôme",
     "labelF": "Rôdeuse fantôme",
     "class": "itinerants",
@@ -665,6 +693,7 @@
   },
   {
     "id": "cocher",
+    "type": "careers",
     "label": "Cocher",
     "labelF": "Cochère",
     "class": "itinerants",
@@ -688,6 +717,7 @@
   },
   {
     "id": "colporteur",
+    "type": "careers",
     "label": "Colporteur",
     "labelF": "Colporteuse",
     "class": "itinerants",
@@ -712,6 +742,7 @@
   },
   {
     "id": "flagellant",
+    "type": "careers",
     "label": "Flagellant",
     "labelF": "Flagellante",
     "class": "itinerants",
@@ -735,6 +766,7 @@
   },
   {
     "id": "frere-loup",
+    "type": "careers",
     "label": "Frère Loup",
     "labelF": "Sœur Louve",
     "class": "itinerants",
@@ -758,6 +790,7 @@
   },
   {
     "id": "messager",
+    "type": "careers",
     "label": "Messager",
     "labelF": "Messagère",
     "class": "itinerants",
@@ -782,6 +815,7 @@
   },
   {
     "id": "patrouilleur-des-karak",
+    "type": "careers",
     "label": "Patrouilleur des karak",
     "labelF": "Patrouilleuse des karak",
     "class": "itinerants",
@@ -805,6 +839,7 @@
   },
   {
     "id": "patrouilleur-routier",
+    "type": "careers",
     "label": "Patrouilleur routier",
     "labelF": "Patrouilleuse routière",
     "class": "itinerants",
@@ -828,6 +863,7 @@
   },
   {
     "id": "gardechamps",
+    "type": "careers",
     "label": "Gardechamps",
     "class": "itinerants",
     "rand": {
@@ -850,6 +886,7 @@
   },
   {
     "id": "repurgateur",
+    "type": "careers",
     "label": "Répurgateur",
     "labelF": "Répurgatrice",
     "class": "itinerants",
@@ -873,6 +910,7 @@
   },
   {
     "id": "saltimbanque",
+    "type": "careers",
     "label": "Saltimbanque",
     "class": "itinerants",
     "rand": {
@@ -896,6 +934,7 @@
   },
   {
     "id": "apothicaire",
+    "type": "careers",
     "label": "Apothicaire",
     "class": "lettres",
     "rand": {
@@ -918,6 +957,7 @@
   },
   {
     "id": "boucher-ogre",
+    "type": "careers",
     "label": "Boucher Ogre",
     "labelF": "Bouchère Ogre",
     "class": "lettres",
@@ -941,6 +981,7 @@
   },
   {
     "id": "erudit",
+    "type": "careers",
     "label": "Érudit",
     "labelF": "Érudite",
     "class": "lettres",
@@ -965,6 +1006,7 @@
   },
   {
     "id": "ingenieur",
+    "type": "careers",
     "label": "Ingénieur",
     "labelF": "Ingénieure",
     "class": "lettres",
@@ -988,6 +1030,7 @@
   },
   {
     "id": "juriste",
+    "type": "careers",
     "label": "Juriste",
     "class": "lettres",
     "grantGroups": [
@@ -1013,6 +1056,7 @@
   },
   {
     "id": "medecin",
+    "type": "careers",
     "label": "Médecin",
     "class": "lettres",
     "rand": {
@@ -1035,6 +1079,7 @@
   },
   {
     "id": "nonne",
+    "type": "careers",
     "label": "Nonne",
     "class": "lettres",
     "rand": {
@@ -1058,6 +1103,7 @@
   },
   {
     "id": "pretre",
+    "type": "careers",
     "label": "Prêtre",
     "labelF": "Prêtresse",
     "class": "lettres",
@@ -1081,6 +1127,7 @@
   },
   {
     "id": "sorcier",
+    "type": "careers",
     "label": "Sorcier",
     "labelF": "Sorcière",
     "class": "lettres",
@@ -1104,6 +1151,7 @@
   },
   {
     "id": "batelier",
+    "type": "careers",
     "label": "Batelier",
     "labelF": "Batelière",
     "class": "riverains",
@@ -1127,6 +1175,7 @@
   },
   {
     "id": "contrebandier",
+    "type": "careers",
     "label": "Contrebandier",
     "labelF": "Contrebandière",
     "class": "riverains",
@@ -1150,6 +1199,7 @@
   },
   {
     "id": "debardeur",
+    "type": "careers",
     "label": "Débardeur",
     "labelF": "Débardeuse",
     "class": "riverains",
@@ -1173,6 +1223,7 @@
   },
   {
     "id": "femme-du-fleuve",
+    "type": "careers",
     "label": "Femme du fleuve",
     "class": "riverains",
     "rand": {
@@ -1195,6 +1246,7 @@
   },
   {
     "id": "marin",
+    "type": "careers",
     "label": "Marin",
     "class": "riverains",
     "rand": {
@@ -1217,6 +1269,7 @@
   },
   {
     "id": "naufrageur",
+    "type": "careers",
     "label": "Naufrageur",
     "labelF": "Naufrageuse",
     "class": "riverains",
@@ -1240,6 +1293,7 @@
   },
   {
     "id": "nautonier",
+    "type": "careers",
     "label": "Nautonier",
     "labelF": "Nautonière",
     "class": "riverains",
@@ -1263,6 +1317,7 @@
   },
   {
     "id": "patrouilleur-fluvial",
+    "type": "careers",
     "label": "Patrouilleur fluvial",
     "labelF": "Patrouilleuse fluviale",
     "class": "riverains",
@@ -1286,6 +1341,7 @@
   },
   {
     "id": "charlatan",
+    "type": "careers",
     "label": "Charlatan",
     "labelF": "Charlatane",
     "class": "roublards",
@@ -1310,6 +1366,7 @@
   },
   {
     "id": "entremetteur",
+    "type": "careers",
     "label": "Entremetteur",
     "labelF": "Entremetteuse",
     "class": "roublards",
@@ -1333,6 +1390,7 @@
   },
   {
     "id": "hors-la-loi",
+    "type": "careers",
     "label": "Hors-la-loi",
     "class": "roublards",
     "rand": {
@@ -1356,6 +1414,7 @@
   },
   {
     "id": "pilleur-de-tombes",
+    "type": "careers",
     "label": "Pilleur de tombes",
     "labelF": "Pilleuse de tombes",
     "class": "roublards",
@@ -1379,6 +1438,7 @@
   },
   {
     "id": "ranconneur",
+    "type": "careers",
     "label": "Rançonneur",
     "labelF": "Rançonneuse",
     "class": "roublards",
@@ -1402,6 +1462,7 @@
   },
   {
     "id": "receleur",
+    "type": "careers",
     "label": "Receleur",
     "labelF": "Receleuse",
     "class": "roublards",
@@ -1425,6 +1486,7 @@
   },
   {
     "id": "sorcier-dissident",
+    "type": "careers",
     "label": "Sorcier dissident",
     "labelF": "Sorcière dissidente",
     "class": "roublards",
@@ -1449,6 +1511,7 @@
   },
   {
     "id": "voleur",
+    "type": "careers",
     "label": "Voleur",
     "labelF": "Voleuse",
     "class": "roublards",
@@ -1473,6 +1536,7 @@
   },
   {
     "id": "bailli",
+    "type": "careers",
     "label": "Bailli",
     "class": "ruraux",
     "grantGroups": [
@@ -1498,6 +1562,7 @@
   },
   {
     "id": "chasseur",
+    "type": "careers",
     "label": "Chasseur",
     "labelF": "Chasseuse",
     "class": "ruraux",
@@ -1522,6 +1587,7 @@
   },
   {
     "id": "eclaireur",
+    "type": "careers",
     "label": "Éclaireur",
     "labelF": "Éclaireuse",
     "class": "ruraux",
@@ -1546,6 +1612,7 @@
   },
   {
     "id": "gardien-de-troupeaux-de-rhinox",
+    "type": "careers",
     "label": "Gardien de troupeaux de rhinox",
     "labelF": "Gardienne de troupeaux de rhinox",
     "class": "ruraux",
@@ -1569,6 +1636,7 @@
   },
   {
     "id": "herboriste",
+    "type": "careers",
     "label": "Herboriste",
     "class": "ruraux",
     "rand": {
@@ -1592,6 +1660,7 @@
   },
   {
     "id": "mineur",
+    "type": "careers",
     "label": "Mineur",
     "labelF": "Mineuse",
     "class": "ruraux",
@@ -1615,6 +1684,7 @@
   },
   {
     "id": "mystique",
+    "type": "careers",
     "label": "Mystique",
     "class": "ruraux",
     "rand": {
@@ -1638,6 +1708,7 @@
   },
   {
     "id": "sorcier-de-village",
+    "type": "careers",
     "label": "Sorcier de village",
     "labelF": "Sorcière de village",
     "class": "ruraux",
@@ -1661,6 +1732,7 @@
   },
   {
     "id": "villageois",
+    "type": "careers",
     "label": "Villageois",
     "labelF": "Villageoise",
     "class": "ruraux",
@@ -1685,6 +1757,7 @@
   },
   {
     "id": "cavalier-leger",
+    "type": "careers",
     "label": "Cavalier Léger",
     "labelF": "Cavalière Légère",
     "class": "guerriers",
@@ -1708,6 +1781,7 @@
   },
   {
     "id": "chevalier-errant",
+    "type": "careers",
     "label": "Chevalier Errant",
     "labelF": "Chevalière Errante",
     "class": "guerriers",
@@ -1731,6 +1805,7 @@
   },
   {
     "id": "chevalier-du-soleil-flamboyant",
+    "type": "careers",
     "label": "Chevalier du Soleil flamboyant",
     "labelF": "Chevalière du Soleil flamboyant",
     "class": "guerriers",
@@ -1754,6 +1829,7 @@
   },
   {
     "id": "chevalier-du-loup-blanc",
+    "type": "careers",
     "label": "Chevalier du Loup Blanc",
     "labelF": "Chevalière du Loup Blanc",
     "class": "guerriers",
@@ -1777,6 +1853,7 @@
   },
   {
     "id": "chevalier-panthere",
+    "type": "careers",
     "label": "Chevalier Panthère",
     "labelF": "Chevalière Panthère",
     "class": "guerriers",
@@ -1800,6 +1877,7 @@
   },
   {
     "id": "pretre-de-myrmidia",
+    "type": "careers",
     "label": "Prêtre de Myrmidia",
     "labelF": "Prêtresse de Myrmidia",
     "class": "guerriers",
@@ -1823,6 +1901,7 @@
   },
   {
     "id": "archer",
+    "type": "careers",
     "label": "Archer",
     "labelF": "Archère",
     "class": "guerriers",
@@ -1846,6 +1925,7 @@
   },
   {
     "id": "hallebardier",
+    "type": "careers",
     "label": "Hallebardier",
     "labelF": "Hallebardière",
     "class": "guerriers",
@@ -1869,6 +1949,7 @@
   },
   {
     "id": "arquebusier",
+    "type": "careers",
     "label": "Arquebusier",
     "labelF": "Arquebusière",
     "class": "guerriers",
@@ -1892,6 +1973,7 @@
   },
   {
     "id": "joueur-d-epee",
+    "type": "careers",
     "label": "Joueur d'épée",
     "labelF": "Joueuse d'épée",
     "class": "guerriers",
@@ -1915,6 +1997,7 @@
   },
   {
     "id": "piquier",
+    "type": "careers",
     "label": "Piquier",
     "labelF": "Piquière",
     "class": "guerriers",
@@ -1938,6 +2021,7 @@
   },
   {
     "id": "specialiste-de-siege",
+    "type": "careers",
     "label": "Spécialiste de Siège",
     "class": "guerriers",
     "rand": {
@@ -1960,6 +2044,7 @@
   },
   {
     "id": "suiveur-de-camp",
+    "type": "careers",
     "label": "Suiveur de Camp",
     "labelF": "Suiveuse de Camp",
     "class": "itinerants",
@@ -1983,6 +2068,7 @@
   },
   {
     "id": "cartographe",
+    "type": "careers",
     "label": "Cartographe",
     "class": "lettres",
     "rand": {
@@ -2005,6 +2091,7 @@
   },
   {
     "id": "artilleur",
+    "type": "careers",
     "label": "Artilleur",
     "labelF": "Artilleuse",
     "class": "lettres",
@@ -2028,6 +2115,7 @@
   },
   {
     "id": "artilleur-de-navire",
+    "type": "careers",
     "label": "Artilleur de navire",
     "labelF": "Artilleuse de navire",
     "class": "cotiers",
@@ -2051,6 +2139,7 @@
   },
   {
     "id": "chansonnier",
+    "type": "careers",
     "label": "Chansonnier",
     "labelF": "Chansonnière",
     "class": "cotiers",
@@ -2074,6 +2163,7 @@
   },
   {
     "id": "marin-cotier",
+    "type": "careers",
     "label": "Marin (Côtier)",
     "class": "cotiers",
     "tenue": "marin",
@@ -2098,6 +2188,7 @@
   },
   {
     "id": "naufrageur-cotier",
+    "type": "careers",
     "label": "Naufrageur (Côtier)",
     "labelF": "Naufrageuse (Côtier)",
     "class": "cotiers",
@@ -2123,6 +2214,7 @@
   },
   {
     "id": "nautonier-cotier",
+    "type": "careers",
     "label": "Nautonier (Côtier)",
     "labelF": "Nautonière (Côtier)",
     "class": "cotiers",
@@ -2148,6 +2240,7 @@
   },
   {
     "id": "officier",
+    "type": "careers",
     "label": "Officier",
     "labelF": "Officière",
     "class": "cotiers",
@@ -2171,6 +2264,7 @@
   },
   {
     "id": "pretre-marin-de-manann",
+    "type": "careers",
     "label": "Prêtre marin de Manann",
     "labelF": "Prêtresse marine de Manann",
     "class": "cotiers",
@@ -2194,6 +2288,7 @@
   },
   {
     "id": "ratisseur-de-plages",
+    "type": "careers",
     "label": "Ratisseur de plages",
     "labelF": "Ratisseuse de plages",
     "class": "cotiers",
@@ -2218,6 +2313,7 @@
   },
   {
     "id": "pretre-de-stromfels",
+    "type": "careers",
     "label": "Prêtre de Stromfels",
     "labelF": "Prêtresse de Stromfels",
     "class": "cotiers",
@@ -2241,6 +2337,7 @@
   },
   {
     "id": "alchimiste-ordinaire",
+    "type": "careers",
     "label": "Alchimiste ordinaire",
     "class": "lettres",
     "tenue": "apothicaire",
@@ -2254,6 +2351,7 @@
   },
   {
     "id": "bedeau",
+    "type": "careers",
     "label": "Bedeau",
     "labelF": "Bedelle",
     "class": "guerriers",
@@ -2268,6 +2366,7 @@
   },
   {
     "id": "devin",
+    "type": "careers",
     "label": "Devin",
     "labelF": "Devineresse",
     "class": "ruraux",
@@ -2282,6 +2381,7 @@
   },
   {
     "id": "hierophante",
+    "type": "careers",
     "label": "Hiérophante",
     "class": "lettres",
     "tenue": "sorcier",
@@ -2295,6 +2395,7 @@
   },
   {
     "id": "alchimiste",
+    "type": "careers",
     "label": "Alchimiste",
     "class": "lettres",
     "tenue": "sorcier",
@@ -2308,6 +2409,7 @@
   },
   {
     "id": "druide",
+    "type": "careers",
     "label": "Druide",
     "labelF": "Druidesse",
     "class": "lettres",
@@ -2322,6 +2424,7 @@
   },
   {
     "id": "astromancien",
+    "type": "careers",
     "label": "Astromancien",
     "class": "lettres",
     "tenue": "sorcier",
@@ -2335,6 +2438,7 @@
   },
   {
     "id": "spirite",
+    "type": "careers",
     "label": "Spirite",
     "class": "lettres",
     "tenue": "sorcier",
@@ -2348,6 +2452,7 @@
   },
   {
     "id": "pyromancien",
+    "type": "careers",
     "label": "Pyromancien",
     "class": "lettres",
     "tenue": "sorcier",
@@ -2361,6 +2466,7 @@
   },
   {
     "id": "chamane",
+    "type": "careers",
     "label": "Chamane",
     "class": "lettres",
     "tenue": "sorcier",
@@ -2374,6 +2480,7 @@
   },
   {
     "id": "magister-vigilant",
+    "type": "careers",
     "label": "Magister Vigilant",
     "class": "lettres",
     "tenue": "sorcier",
@@ -2387,6 +2494,7 @@
   },
   {
     "id": "umbramancien",
+    "type": "careers",
     "label": "Umbramancien",
     "class": "lettres",
     "tenue": "sorcier",

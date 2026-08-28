@@ -1,6 +1,7 @@
 [
   {
     "id": "allure-demoniaque-nurgle",
+    "type": "tables",
     "label": "Allure démoniaque — Nurgle (EDOC)",
     "die": "d10",
     "rows": [
@@ -128,6 +129,7 @@
   },
   {
     "id": "allure-demoniaque-slaanesh",
+    "type": "tables",
     "label": "Allure démoniaque — Slaanesh (EDOC)",
     "die": "d10",
     "rows": [
@@ -254,6 +256,7 @@
   },
   {
     "id": "allure-demoniaque-tzeentch",
+    "type": "tables",
     "label": "Allure démoniaque — Tzeentch (EDOC)",
     "die": "d10",
     "rows": [
@@ -382,6 +385,7 @@
   },
   {
     "id": "allure-demoniaque-indivisible",
+    "type": "tables",
     "label": "Allure démoniaque — Indivisible (EDOC)",
     "die": "d10",
     "rows": [
@@ -509,6 +513,7 @@
   },
   {
     "id": "contremaitre-lieu",
+    "type": "tables",
     "label": "Remaniement du contremaître — Lieu (AA Annexe II)",
     "die": "d100",
     "rows": [
@@ -640,6 +645,7 @@
   },
   {
     "id": "contremaitre-objectif",
+    "type": "tables",
     "label": "Remaniement du contremaître — Objectif (AA Annexe II)",
     "die": "d100",
     "rows": [
@@ -771,6 +777,7 @@
   },
   {
     "id": "contremaitre-personnalite",
+    "type": "tables",
     "label": "Remaniement du contremaître — Personnalité (AA Annexe II)",
     "die": "d100",
     "rows": [
@@ -902,6 +909,7 @@
   },
   {
     "id": "vdm-incantateur-hasardeux-domaine",
+    "type": "tables",
     "label": "Domaine — Incantateur hasardeux (VDM)",
     "die": "d100",
     "source": {
@@ -1100,6 +1108,7 @@
   },
   {
     "id": "vdm-siphonnage-de-sort",
+    "type": "tables",
     "label": "Siphonnage de sort (VDM)",
     "die": "d10",
     "source": {
@@ -1161,6 +1170,7 @@
   },
   {
     "id": "vdm-marques-arcaniques-lumiere",
+    "type": "tables",
     "label": "Marques Arcaniques de Hysh (VDM)",
     "die": "d10",
     "source": {
@@ -1311,6 +1321,7 @@
   },
   {
     "id": "vdm-marques-arcaniques-metal",
+    "type": "tables",
     "label": "Marques Arcaniques de Chamon (VDM)",
     "die": "d10",
     "source": {
@@ -1484,6 +1495,7 @@
   },
   {
     "id": "vdm-marques-arcaniques-vie",
+    "type": "tables",
     "label": "Marques Arcaniques de Ghyran (VDM)",
     "die": "d10",
     "source": {
@@ -1623,6 +1635,7 @@
   },
   {
     "id": "vdm-marques-arcaniques-cieux",
+    "type": "tables",
     "label": "Marques Arcaniques d'Azyr (VDM)",
     "die": "d10",
     "source": {
@@ -1773,6 +1786,7 @@
   },
   {
     "id": "vdm-marques-arcaniques-ombres",
+    "type": "tables",
     "label": "Marques Arcaniques d'Ulgu (VDM)",
     "die": "d10",
     "source": {
@@ -1950,6 +1964,7 @@
   },
   {
     "id": "vdm-marques-arcaniques-mort",
+    "type": "tables",
     "label": "Marques Arcaniques de Shyish (VDM)",
     "die": "d10",
     "source": {
@@ -2091,6 +2106,7 @@
   },
   {
     "id": "vdm-marques-arcaniques-feu",
+    "type": "tables",
     "label": "Marques Arcaniques d'Aqshy (VDM)",
     "die": "d10",
     "source": {
@@ -2221,6 +2237,7 @@
   },
   {
     "id": "vdm-marques-arcaniques-bete",
+    "type": "tables",
     "label": "Marques Arcaniques de Ghur (VDM)",
     "die": "d10",
     "source": {
@@ -2356,6 +2373,7 @@
   },
   {
     "id": "vdm-maladie-coups-de-poing-maudits",
+    "type": "tables",
     "label": "Maladie des coups-de-poing maudits (VDM)",
     "die": "d10",
     "source": {
@@ -2422,6 +2440,7 @@
   },
   {
     "id": "vdm-catastrophes-de-brassage",
+    "type": "tables",
     "label": "Catastrophes de brassage (VDM)",
     "die": "d10",
     "source": {
@@ -2579,6 +2598,7 @@
   },
   {
     "id": "vdm-symboles-augure",
+    "type": "tables",
     "label": "Tableau des Symboles — Augure (VDM)",
     "die": "d10",
     "source": {

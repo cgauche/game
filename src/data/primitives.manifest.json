@@ -1,6 +1,7 @@
 [
   {
     "id": "screenShell",
+    "type": "primitives.manifest",
     "label": "ScreenShell",
     "fichier": "src/ui/ScreenShell.tsx",
     "concept": "coquille d'écran plein-champ (voile + en-tête + corps, a11y dialogue)",
@@ -9,6 +10,7 @@
   },
   {
     "id": "rollShell",
+    "type": "primitives.manifest",
     "label": "RollShell",
     "fichier": "src/ui/RollShell.tsx",
     "concept": "coquille de jet mono/multi (Lancer→Chance→Pacte→Résilience→Appliquer)",
@@ -17,6 +19,7 @@
   },
   {
     "id": "rollRow",
+    "type": "primitives.manifest",
     "label": "RollRow",
     "fichier": "src/ui/RollRow.tsx",
     "concept": "ligne de jet d'un participant (RollShell multi)",
@@ -25,6 +28,7 @@
   },
   {
     "id": "makeRollFlow",
+    "type": "primitives.manifest",
     "label": "makeRollFlow/FLOWS",
     "fichier": "src/state/rollFlowSpecs.ts",
     "concept": "fabrique de flux de jet + registre spec par kind",
@@ -33,6 +37,7 @@
   },
   {
     "id": "rollSeam",
+    "type": "primitives.manifest",
     "label": "openRoll/resolveSurface",
     "fichier": "src/state/rollSeam.ts",
     "concept": "surface DÉRIVÉE des porteurs : tenue × cadence × ordres de traversée → Modale/Visible-MJ/Interne, un seul site",
@@ -41,6 +46,7 @@
   },
   {
     "id": "optionChooser",
+    "type": "primitives.manifest",
     "label": "OptionChooser/ChoiceButtons",
     "fichier": "src/ui/OptionChooser.tsx",
     "concept": "choix d'options de jet (seg/grid/actions)",
@@ -49,6 +55,7 @@
   },
   {
     "id": "breakdown",
+    "type": "primitives.manifest",
     "label": "optionValue/optionPending/testPending",
     "fichier": "src/ui/breakdown.ts",
     "concept": "valeur effective d'une option (base+mods plafonné) + ligne pré-jet",
@@ -57,6 +64,7 @@
   },
   {
     "id": "influenceRow",
+    "type": "primitives.manifest",
     "label": "InfluenceRow",
     "fichier": "src/ui/InfluenceRow.tsx",
     "concept": "rangée d'influence Chance/Pacte/Résilience/Détermination",
@@ -65,6 +73,7 @@
   },
   {
     "id": "vsHeader",
+    "type": "primitives.manifest",
     "label": "VsHeader",
     "fichier": "src/ui/VsHeader.tsx",
     "concept": "en-tête A→B d'une modale de combat/opposition",
@@ -73,6 +82,7 @@
   },
   {
     "id": "portraitTile",
+    "type": "primitives.manifest",
     "label": "PortraitTile/CharFrame",
     "fichier": "src/ui/PortraitTile.tsx",
     "concept": "affichage d'un personnage (HUD/modale/picker)",
@@ -81,6 +91,7 @@
   },
   {
     "id": "searchFilterField",
+    "type": "primitives.manifest",
     "label": "SearchFilterField",
     "fichier": "src/ui/SearchFilterField.tsx",
     "concept": "champ de filtre/recherche de liste (état+pur)",
@@ -89,6 +100,7 @@
   },
   {
     "id": "findTableEntry",
+    "type": "primitives.manifest",
     "label": "findTableEntry",
     "fichier": "src/engine/tables.ts",
     "concept": "lookup d'une table d100 par fourchette [min,max]",
@@ -97,6 +109,7 @@
   },
   {
     "id": "baseTestMods",
+    "type": "primitives.manifest",
     "label": "baseTestMods",
     "fichier": "src/engine/combat.ts",
     "concept": "modificateurs de combat bruts (Avantage×10 + État)",
@@ -105,6 +118,7 @@
   },
   {
     "id": "actorIn",
+    "type": "primitives.manifest",
     "label": "actorIn/inBattleId",
     "fichier": "src/state/combatOrParty.ts",
     "concept": "combattant par id — combat-ou-groupe vs en-combat-seulement",
@@ -113,6 +127,7 @@
   },
   {
     "id": "applyOps",
+    "type": "primitives.manifest",
     "label": "applyOps/GameOp",
     "fichier": "src/engine/ops.ts",
     "concept": "tout effet mécanique (soin/état/dégâts/corruption/octroi)",
@@ -121,6 +136,7 @@
   },
   {
     "id": "gameOpEditor",
+    "type": "primitives.manifest",
     "label": "GameOpEditor",
     "fichier": "src/ui/editor/GameOpEditor.tsx",
     "concept": "édition d'une liste de GameOp[]",
@@ -129,6 +145,7 @@
   },
   {
     "id": "passiveMods",
+    "type": "primitives.manifest",
     "label": "passiveMods",
     "fichier": "src/engine/trauma.ts",
     "concept": "collecteur UNIQUE de modificateur PASSIF continu",
@@ -137,6 +154,7 @@
   },
   {
     "id": "fireTriggers",
+    "type": "primitives.manifest",
     "label": "fireTriggers",
     "fichier": "src/state/triggeredEffects.ts",
     "concept": "dispatcher UNIQUE d'effet déclenché (donnée)",
@@ -145,6 +163,7 @@
   },
   {
     "id": "resolveFreeAttacks",
+    "type": "primitives.manifest",
     "label": "resolveFreeAttacks",
     "fichier": "src/state/combatFlow.ts",
     "concept": "attaque gratuite déclenchée, kind-agnostique",
@@ -153,6 +172,7 @@
   },
   {
     "id": "shipDamage",
+    "type": "primitives.manifest",
     "label": "damageHull/healHull/damageVesselHull/healVesselHull",
     "fichier": "src/state/shipDamage.ts",
     "concept": "dégâts/soin de coque, source unique de state.vessel.wounds",
@@ -161,6 +181,7 @@
   },
   {
     "id": "cascade",
+    "type": "primitives.manifest",
     "label": "cascade/registerCascadeApplier",
     "fichier": "src/state/cascade.ts",
     "concept": "étapes-jets subis influençables + appliers enregistrés par kind",
@@ -169,6 +190,7 @@
   },
   {
     "id": "policy",
+    "type": "primitives.manifest",
     "label": "rule/policy",
     "fichier": "src/engine/policy.ts",
     "concept": "règle optionnelle RAW + house-rule taguée",
@@ -177,6 +199,7 @@
   },
   {
     "id": "netOwnership",
+    "type": "primitives.manifest",
     "label": "netOwnership",
     "fichier": "src/state/netOwnership.ts",
     "concept": "axe contrôleur owns/piloted/aiDriven",
@@ -185,6 +208,7 @@
   },
   {
     "id": "refField",
+    "type": "primitives.manifest",
     "label": "RefField",
     "fichier": "src/ui/compendium/RefField.tsx",
     "concept": "picker de référence multilangue-safe (par id)",
@@ -193,6 +217,7 @@
   },
   {
     "id": "prose",
+    "type": "primitives.manifest",
     "label": "Prose",
     "fichier": "src/ui/Prose.tsx",
     "concept": "rendu de prose Markdown verbatim (HTML brut neutralisé)",
@@ -201,6 +226,7 @@
   },
   {
     "id": "resolveRender",
+    "type": "primitives.manifest",
     "label": "resolveRender/tokenBodyKind",
     "fichier": "src/gameIso/rig/bodyPlan.ts",
     "concept": "résolution rendu + dispatch backend",
@@ -209,6 +235,7 @@
   },
   {
     "id": "masterDetail",
+    "type": "primitives.manifest",
     "label": "MasterDetail",
     "fichier": "src/ui/MasterDetail.tsx",
     "concept": "gabarit maître-détail (liste gauche + détail centre), layout pur sans état",
@@ -217,6 +244,7 @@
   },
   {
     "id": "genRegistry",
+    "type": "primitives.manifest",
     "label": "gen-registry (_registry.generated)",
     "fichier": "scripts/gen-registry.mjs",
     "concept": "registre-par-defs auto-chargé (dépose un fichier → intégré)",

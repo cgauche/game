@@ -1,6 +1,7 @@
 [
   {
     "id": "social",
+    "type": "axes",
     "label": "Social",
     "desc": "Aptitude à convaincre, mener et lire les autres.",
     "core": true,
@@ -16,6 +17,7 @@
   },
   {
     "id": "melee",
+    "type": "axes",
     "label": "Mêlée",
     "desc": "Combat rapproché, toutes armes de corps à corps confondues.",
     "core": true,
@@ -28,6 +30,7 @@
   },
   {
     "id": "tir",
+    "type": "axes",
     "label": "Tir",
     "desc": "Combat à distance, toutes armes de trait confondues.",
     "core": true,
@@ -40,6 +43,7 @@
   },
   {
     "id": "soins",
+    "type": "axes",
     "label": "Soins",
     "desc": "Soigner les blessures et les maux du groupe.",
     "core": true,
@@ -52,6 +56,7 @@
   },
   {
     "id": "savoir",
+    "type": "axes",
     "label": "Savoir",
     "desc": "Érudition et connaissances livresques, toutes spécialisations confondues.",
     "core": true,
@@ -64,6 +69,7 @@
   },
   {
     "id": "discretion",
+    "type": "axes",
     "label": "Discrétion",
     "desc": "Se fondre, se faufiler et forcer un accès sans se faire remarquer.",
     "core": true,
@@ -82,6 +88,7 @@
   },
   {
     "id": "negoce",
+    "type": "axes",
     "label": "Négoce",
     "desc": "Évaluer la valeur des biens et négocier en expert — utile dès qu'un scénario tourne autour du commerce.",
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
@@ -98,6 +105,7 @@
   },
   {
     "id": "ingenierie",
+    "type": "axes",
     "label": "Ingénierie",
     "desc": "Machines de siège, artillerie et constructions — utile dès qu'un scénario tourne autour d'un siège.",
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
@@ -124,6 +132,7 @@
   },
   {
     "id": "navigation",
+    "type": "axes",
     "label": "Navigation",
     "desc": "Mener un vaisseau à bon port — utile dès qu'un scénario tourne autour de la mer ou du fleuve.",
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",

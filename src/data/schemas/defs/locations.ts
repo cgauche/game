@@ -2,21 +2,37 @@
  * Schéma de `locations.json` — Lieux de la carte du monde, miroir strict de `LocationData`
  * (`src/data/index.ts`). `parent` est une réf id (≠ libellé) vers un autre `LocationData.id`,
  * ou `null` si racine.
+ *
+ * `prefix`/`suffix` : AUCUN consommateur mesuré dans `src/**` hors ce def, et `prefix` vaut `null`
+ * sur 100 % des entrées — leur libellé d'atelier reste donc DESCRIPTIF de la forme, pas de l'usage
+ * (aucune JSDoc d'origine ne les documentait). Champs candidats à la mort, pas à l'invention d'un
+ * sens : #1540.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'locations.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'locations',
+  famille,
+  {
     parent: z.string().nullable(),
     prefix: z.string().nullable(),
     suffix: z.string().nullable(),
-    desc: z.string().min(1).optional(),
-    source: sourceRefSchema,
-  }),
+  },
+  {
+    parent: { label: 'Lieu parent', hint: 'Lieu englobant dans la hiérarchie de la carte ; absent = racine' },
+    prefix: { label: 'Préfixe du nom', hint: 'Aucun consommateur mesuré, valeur nulle sur toutes les entrées' },
+    suffix: { label: 'Suffixe du nom', hint: 'Aucun consommateur mesuré hors de ce document' },
+  },
+  {
+    codex: { keys: ['locations'] },
+    edit: { dataset: 'locations' },
+  },
+  { exiges: ['source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

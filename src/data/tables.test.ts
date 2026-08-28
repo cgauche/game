@@ -81,11 +81,23 @@ describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite,
    *  de prod `src/**` (hors tests, COMMENTAIRES retirés — sinon un id cité en commentaire « solde »
    *  une orpheline sans câblage réel ; hors `*.generated.ts` — un INDEX généré de la donnée
    *  énumère tous les ids sans en consommer aucun, cf. `schemas/_ids.generated.ts`). */
+  /** DÉCLARATION d'une table dans `tables.json` : `"id"`, la clé d'ENVELOPPE `"type"`, puis `"label"`.
+   *  Retirée du corpus pour qu'une table ne se compte pas elle-même. `type` reste OPTIONNEL dans le
+   *  motif : le fichier a vécu sans lui, et un motif qui l'exigerait mentirait sur l'historique. */
+  const MOTIF_DECLARATION = /"id":\s*"[^"]*"\s*,\s*(?:"type":\s*"[^"]*"\s*,\s*)?(?="label")/g;
+
   function consumerCorpus(): string {
     let corpus = '';
     for (const f of files) {
       const raw = readFileSync(join(DIR, f), 'utf8');
-      corpus += f === 'tables.json' ? raw.replace(/"id":\s*"[^"]*"\s*,\s*(?="label")/g, '') : raw;
+      // La DÉCLARATION d'une table, c'est `"id"` puis la clé d'ENVELOPPE `"type"` (#1467 L1b
+      // V-FLIP-ENTITE-b), puis `"label"`. Sans le maillon `type`, le retrait ne mordait plus : la
+      // déclaration RESTAIT dans le corpus et chaque table s'y comptait comme sa propre
+      // consommatrice. Le danger mesuré n'était PAS un vert global — l'assertion `neuves` devenait
+      // faussement verte, mais `soldees` sortait ROUGE et invitait à retirer de
+      // `tableConsumerStock.mjs` la ligne de `vdm-siphonnage-de-sort`, seule orpheline du stock :
+      // un solde à tort d'une dette qui n'a jamais bougé. Le motif est verrouillé ci-dessous.
+      corpus += f === 'tables.json' ? raw.replace(MOTIF_DECLARATION, '') : raw;
     }
     const stripComments = (src: string): string =>
       src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -105,6 +117,28 @@ describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite,
    *  `'<id>'`) — jamais une sous-chaîne nue (prose, id plus long, mention non citée). */
   const isConsumed = (corpus: string, id: string): boolean =>
     corpus.includes(`"${id}"`) || corpus.includes(`'${id}'`);
+
+  // #1467 L1b V-FLIP-ENTITE-b — le MOTIF de retrait est ce qui tient tout le cliquet : s'il rate
+  // une déclaration, la table qui la porte devient sa propre consommatrice et sort du décompte des
+  // orphelines EN SILENCE. Il se vérifie donc sur la donnée RÉELLE, pas seulement par son effet.
+  it('le motif de DÉCLARATION retire exactement une déclaration par table — jamais une de moins', () => {
+    const raw = readFileSync(join(DIR, 'tables.json'), 'utf8');
+    const trouves = raw.match(MOTIF_DECLARATION) ?? [];
+    expect(trouves.length, 'une déclaration par table : le motif ne doit en rater AUCUNE').toBe(effectTables.length);
+    // Et il ne laisse aucun `"id"` de PREMIER NIVEAU derrière lui : ce qui reste appartient aux rangées.
+    for (const t of effectTables) {
+      expect(raw.replace(MOTIF_DECLARATION, ''), `déclaration de « ${t.id} » non retirée`).not.toContain(`"${t.id}",`);
+    }
+  });
+
+  it('le stock d’orphelines est INCLUS dans les orphelines mesurées — un solde à tort est impossible', () => {
+    const corpus = consumerCorpus();
+    const orphans = effectTables.map((t) => t.id).filter((id) => !isConsumed(corpus, id));
+    const absentes = [...TABLE_ORPHAN_RATCHET].filter((id) => !orphans.includes(id));
+    expect(absentes, `id(s) du stock qui ne sont PLUS mesurés orphelins — vérifier le MOTIF avant de solder :\n${absentes.join('\n')}`).toEqual(
+      [],
+    );
+  });
 
   it('chaque table est portée par une donnée ou le code de prod — les orphelines vivent dans le stock, qui ne gonfle jamais', () => {
     const corpus = consumerCorpus();

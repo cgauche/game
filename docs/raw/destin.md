@@ -139,7 +139,7 @@ La restauration se fait jusqu'à la valeur courante de Destin (pas la valeur de 
 **Sources RAW** : `LDB 17 l.41`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `carryOverState`, `fortune-mid-session`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `determination`, `restoreFortuneSchema`, `recover-empetre`, +12 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +8 fichiers
+- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `carryOverState`, `fortune-mid-session`, `RollFlowLens`, `je-ne-faillirai-pas`, `je-te-renie`, `determination`, `restoreFortuneSchema`, `recover-empetre`, +12 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +8 fichiers
 
 ### Option : Longues Séances de Jeu
 
@@ -151,7 +151,7 @@ Règle optionnelle du MJ : restauration intermédiaire au cours d'une longue ses
 **Sources RAW** : `LDB 17 l.46-47`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `EnemyAction`, `fortune-mid-session`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `determination`, `restoreFortuneSchema`, `recover-empetre`, +9 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +7 fichiers
+- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `EnemyAction`, `fortune-mid-session`, `RollFlowLens`, `je-ne-faillirai-pas`, `je-te-renie`, `determination`, `restoreFortuneSchema`, `recover-empetre`, +9 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +7 fichiers
 
 ### Destin
 
@@ -163,7 +163,7 @@ Les Points de Destin se renouvellent très rarement — uniquement sur décision
 **Sources RAW** : `LDB 17 l.43`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `fortune-mid-session`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `determination`, `restoreFortuneSchema`, `recover-empetre`, `recover-en-flammes`, +11 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +7 fichiers
+- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `fortune-mid-session`, `RollFlowLens`, `je-ne-faillirai-pas`, `je-te-renie`, `determination`, `restoreFortuneSchema`, `recover-empetre`, `recover-en-flammes`, +11 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +7 fichiers
 
 ---
 

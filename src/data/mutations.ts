@@ -20,12 +20,13 @@ import { stripBookMarker } from './bookMarker';
 import type { PlayerText } from '../i18n/playerText';
 
 /** Une MUTATION (entité, `mutations.json`) : identité + effets, INDÉPENDANTE de toute table de tirage. */
-export type MutationData = Omit<Mutation, 'roll'>;
+export type MutationData = Omit<Mutation, 'roll'> & { type: 'mutations' };
 
 /** Une TABLE de Corruption (`mutationTables.json`) : plages d100 → référence de mutation par id.
  *  `id` STABLE (langue-indépendant — 'physique'/'mentale'/'khorne'…) ; `label` = affichage. */
 export interface MutationTable {
   id: string;
+  type: 'mutationTables';
   label: string;
   ranges: { min: number; max: number; mutation: string }[];
 }

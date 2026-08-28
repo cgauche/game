@@ -6,18 +6,32 @@
  * STABLE de la bande (fourchette d'Augmentations déjà achetées), ajoutée pour l'exposition Codex (#422).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'advancementCosts.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'advancementCosts',
+  famille,
+  {
     max: z.number().nullable(),
     char: z.number(),
     skill: z.number(),
-    source: sourceRefSchema.optional(),
-  }),
+  },
+  {
+    max: {
+      label: 'Borne haute de la bande',
+      hint: 'Nombre d’Augmentations déjà achetées à ne pas dépasser ; null sur la dernière bande (« et au-delà »)',
+    },
+    char: { label: 'Coût (Caractéristique)', hint: 'Coût en PX de la prochaine Augmentation de Caractéristique' },
+    skill: { label: 'Coût (Compétence)', hint: 'Coût en PX de la prochaine Augmentation de Compétence' },
+  },
+  {
+    codex: { keys: ['advancementCosts'] },
+    edit: { dataset: 'advancementCosts' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

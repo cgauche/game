@@ -4,18 +4,30 @@
  * JOKER `matchesAll`/`exceptGroups` sur 2 entrées (`tout`, `vivant`).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 
 export const file = 'groups.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'groups',
+  famille,
+  {
     /** Groupe-CIBLE JOKER : il vise n'importe quel combattant (`groupMatch`), hormis les porteurs
      *  d'un `exceptGroups`. Absent = appartenance STRICTE par id. */
     matchesAll: z.literal(true).optional(),
     /** Ids de `groups.json` RETRANCHÉS du joker — un combattant qui en porte un n'est pas visé. */
     exceptGroups: z.array(z.string()).optional(),
-  }),
+  },
+  {
+    matchesAll: { label: 'Groupe joker', hint: 'Vise tout combattant, hormis les porteurs d’un Groupe exclu' },
+    exceptGroups: { label: 'Groupes exclus', hint: 'Groupes qui retranchent leur porteur du joker' },
+  },
+  {
+    codex: { keys: ['groups'] },
+    edit: { dataset: 'groups' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

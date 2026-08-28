@@ -1,37 +1,49 @@
 /**
- * Schéma de `careers.json` — dérivé du contenu RÉEL (96 entrées, script d'inventaire) et de
- * `CareerData` (`src/data/index.ts`). `rand` = Tableau des Classes et Carrières aléatoires
+ * Schéma de `careers.json` — dérivé du contenu RÉEL (108 entrées) et de `CareerData`
+ * (`src/data/index.ts`). `rand` = Tableau des Classes et Carrières aléatoires
  * (LDB 05 l.197+) : borne haute d100 par colonne d'espèce, `null` = carrière indisponible pour
- * cette espèce (l.360). Deux jeux de clés distincts observés (96 entrées → 2 key-sets, cohérent
+ * cette espèce (l.360). Deux jeux de clés distincts observés (2 key-sets, cohérent
  * avec les colonnes d'espèce qui varient selon que la carrière est ouverte aux races additionnelles).
+ *
+ * `id` = slug du libellé, cible de `Combatant.career`, `CareerLevelData.career` et des pré-tirés.
+ * `labelF` (clé d'ENVELOPPE) est la forme féminine d'AFFICHAGE — le LDB n'imprime QUE le masculin
+ * (fiches ch. 07-08), donc féminisation standard FR MAISON ; omise = forme épicène.
  */
 import { z } from 'zod';
-import { sourceRefSchema, refCareerIdSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { refCareerIdSchema } from '../grammaire/valeurs';
 
 export const file = 'careers.json';
 export const famille = 'entite';
 
-/** Entrée de `careers.json`. */
-const careerEntrySchema = z.strictObject({
-  /** id STABLE (slug du libellé) — cible de `Combatant.career`, `CareerLevelData.career`, pregens. */
-  id: z.string(),
-  label: z.string(),
-  /** Forme féminine d'AFFICHAGE — le LDB n'imprime QUE le masculin (fiches ch. 07-08), donc
-   *  féminisation standard FR MAISON ; omis = forme épicène (identique au masculin). */
-  labelF: z.string().optional(),
-  /** `id` de la Classe (`ClassData.id`). */
-  class: z.string(),
-  /** Ids de `groups.json` accordés au titulaire de cette carrière (`groupsFor`), en plus de ceux de
-   *  sa Classe. Absent = la carrière n'ouvre aucun Groupe d'appartenance. */
-  grantGroups: z.array(z.string()).optional(),
-  /** id d'une tenue spécifique (`TENUE_BY_ID`) réutilisée par cette carrière quand son rendu
-   *  reprend la tenue d'une autre carrière (variants MDG « (Côtier) », MDG 09 l.255/343/458). */
-  tenue: z.string().optional(),
-  /** Clé = `refCareerIdSchema` (id stable, #313) → borne haute d100 ; clé ABSENTE = carrière
-   *  indisponible pour cette espèce (partiel : toutes les carrières ne portent pas les 11 colonnes). */
-  rand: z.partialRecord(refCareerIdSchema, z.number().nullable()),
-  desc: z.string(),
-  source: sourceRefSchema,
-});
+const doc = document(
+  'careers',
+  famille,
+  {
+    /** `id` de la Classe (`ClassData.id`). */
+    class: z.string(),
+    /** Ids de `groups.json` accordés au titulaire de cette carrière (`groupsFor`), en plus de ceux de
+     *  sa Classe. Absent = la carrière n'ouvre aucun Groupe d'appartenance. */
+    grantGroups: z.array(z.string()).optional(),
+    /** id d'une tenue spécifique (`TENUE_BY_ID`) réutilisée par cette carrière quand son rendu
+     *  reprend la tenue d'une autre carrière (variants MDG « (Côtier) », MDG 09 l.255/343/458). */
+    tenue: z.string().optional(),
+    /** Clé = `refCareerIdSchema` (id stable, #313) → borne haute d100 ; clé ABSENTE = carrière
+     *  indisponible pour cette espèce (partiel : toutes les carrières ne portent pas les 11 colonnes). */
+    rand: z.partialRecord(refCareerIdSchema, z.number().nullable()),
+  },
+  {
+    class: { label: 'Classe' },
+    grantGroups: { label: 'Groupes accordés' },
+    tenue: { label: 'Tenue réutilisée', hint: 'Identifiant d’une tenue spécifique reprise par cette carrière' },
+    rand: { label: 'Seuil aléatoire (d100)', hint: 'Borne haute par colonne d’espèce du Tableau des Classes et Carrières' },
+  },
+  {
+    codex: { keys: ['careers'] },
+    edit: { dataset: 'careers' },
+  },
+  { exiges: ['desc', 'source'] },
+);
 
-export const schema = z.array(careerEntrySchema);
+export const schema = doc.schema;
+export const meta = doc.meta;

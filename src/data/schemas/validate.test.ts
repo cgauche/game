@@ -13,7 +13,15 @@ import { projetSchema } from './defs-scenes/projet';
 import areneProjet from '../../scenes/arene/arene-projet.json';
 
 const VALID_CHAR = [
-  { id: 'capacite-de-combat', abr: 'CC', label: 'Capacité de Combat', nature: 'roll', desc: 'x', source: { book: 'livre-de-base', page: 33 } },
+  {
+    id: 'capacite-de-combat',
+    type: 'characteristics',
+    abr: 'CC',
+    label: 'Capacité de Combat',
+    nature: 'roll',
+    desc: 'x',
+    source: { book: 'livre-de-base', page: 33 },
+  },
 ];
 
 describe('validateDataset — point de validation partagé (#176)', () => {

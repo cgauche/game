@@ -212,7 +212,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Talent Haine (Groupe)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.37-39, l.41) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `terreur`, `fearSourceFor`, `psychImmuneToFrom`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, +38 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +22 fichiers
+- `LDB 21` (l.37-39, l.41) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `terreur`, `fearSourceFor`, `psychImmuneToFrom`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `calme-d-approche`, +38 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +22 fichiers
 
 ---
 
@@ -232,7 +232,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.43-50` — définition, succès/échec, comportement obligatoire, conditions de fin
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.43-50) → `hasMeaningfulOption`, `nightmare`, `terreur`, `fearSourceFor`, `psychImmuneToFrom`, `calme-d-approche`, `availableFreeAttackOps`, `Condition`, `endEncounterPsych`, `resolvePsychRow`, +26 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +15 fichiers
+- `LDB 21` (l.43-50) → `hasMeaningfulOption`, `nightmare`, `terreur`, `fearSourceFor`, `psychImmuneToFrom`, `availableFreeAttackOps`, `calme-d-approche`, `Condition`, `endEncounterPsych`, `resolvePsychRow`, +26 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +15 fichiers
 
 ---
 
@@ -254,7 +254,7 @@ Reflète une très forte relation émotionnelle (romantique, familiale, amitié 
 - `LDB 21 l.73-77` — définition et effets
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.73-77) → `encounterPsych`, `nightmare`, `fearSourceFor`, `terreur`, `calme-d-approche`, `refreshDefendedPsych`, `amour`, `targetCausesEntries`, `targetCausedSourcesFor`, `targetCausedTrigger`, +9 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/encounterPsych.ts`, +4 fichiers
+- `LDB 21` (l.73-77) → `encounterPsych`, `nightmare`, `fearSourceFor`, `terreur`, `refreshDefendedPsych`, `calme-d-approche`, `amour`, `targetCausesEntries`, `targetCausedSourcesFor`, `targetCausedTrigger`, +9 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/encounterPsych.ts`, +4 fichiers
 
 ---
 
@@ -270,7 +270,7 @@ Sentiments positifs envers un groupe d'individus.
 - `LDB 21 l.79-83` — définition et effets
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.79-83) → `encounterPsych`, `nightmare`, `fearSourceFor`, `terreur`, `calme-d-approche`, `refreshDefendedPsych`, `amour`, `targetCausesEntries`, `targetCausedSourcesFor`, `targetCausedTrigger`, +9 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/encounterPsych.ts`, +4 fichiers
+- `LDB 21` (l.79-83) → `encounterPsych`, `nightmare`, `fearSourceFor`, `terreur`, `refreshDefendedPsych`, `calme-d-approche`, `amour`, `targetCausesEntries`, `targetCausedSourcesFor`, `targetCausedTrigger`, +9 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/encounterPsych.ts`, +4 fichiers
 
 ---
 
@@ -284,7 +284,7 @@ Peur spécifique envers un Type de créature, un objet ou une situation.
 - `LDB 21 l.85-89` — définition ; traitement comme Peur 1
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.85-89) → `encounterPsych`, `nightmare`, `combat-psych`, `fearSourceFor`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `calme-d-approche`, `refreshDefendedPsych`, `amour`, +20 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +12 fichiers
+- `LDB 21` (l.85-89) → `encounterPsych`, `nightmare`, `combat-psych`, `fearSourceFor`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `refreshDefendedPsych`, `calme-d-approche`, `amour`, +20 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +12 fichiers
 
 ---
 
@@ -539,7 +539,7 @@ Exemples de groupes : hommes-bêtes, peaux-vertes, monstres, hors-la-loi, sigmar
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.548, l.1051) → `fearImmuneVs`, `fearSourceFor`, `CombatFeature`, `resolvePsychAI`, `sansPeurVs`, `resolvePeurTest`, `resolveTerreurTest`, `CascadeStepMeta`, `frappe-assommante`, `frappe-blessante`, +22 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/psychology.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, +1 fichiers
-- `LDB 21` (l.37-39) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `terreur`, `fearSourceFor`, `psychImmuneToFrom`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, +38 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +22 fichiers
+- `LDB 21` (l.37-39) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `terreur`, `fearSourceFor`, `psychImmuneToFrom`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `calme-d-approche`, +38 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +22 fichiers
 
 ---
 

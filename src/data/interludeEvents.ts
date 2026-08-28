@@ -34,6 +34,7 @@ export interface InterludeEventFx {
 
 export interface InterludeEvent {
   id: string;
+  type: 'interludeEvents';
   min: number;
   max: number;
   label: string;

@@ -18,6 +18,20 @@ import ts from 'typescript';
 /** Fabriques d'objet zod dont l'argument littéral porte une forme DÉCLARÉE. */
 const FABRIQUES_OBJET = new Set(['object', 'strictObject', 'looseObject']);
 
+/**
+ * FABRIQUE DE DOCUMENT (#1467) — `document(type, famille, champs, meta, exposition, options?)`.
+ * Son 3ᵉ argument est un littéral de CHAMPS (clé → schéma zod) : c'est le MÊME plan de forme que
+ * l'argument de `z.strictObject`, à ceci près qu'aucune fabrique zod ne l'entoure. Sans cette porte,
+ * l'adoption de la fabrique par un def FAISAIT DISPARAÎTRE ses trouvailles du scan — une perte de
+ * COUVERTURE que le cliquet « le stock ne peut que décroître » lisait comme un solde (#1467
+ * V-FLIP-ENTITE-b : `advancementCosts.skill` et `interludeEvents.min/max` étaient toujours déclarés,
+ * donnée inchangée). La forme est DOMINANTE (43 defs adoptés) : elle s'éteint, elle ne se déclare pas
+ * en angle mort.
+ */
+const FABRIQUE_DOCUMENT = 'document';
+/** Index de l'argument `champs` dans la signature de `document()`. */
+const ARG_CHAMPS = 2;
+
 /** Modules dont un schéma importé est « de la grammaire » (récepteur interdit d'un `.extend`). */
 const MODULES_GRAMMAIRE = /(^|\/)(grammaire|defs-scenes)(\/|$)/;
 
@@ -132,23 +146,55 @@ export function scan(rel, contenu, regles) {
     trouvailles.push({ ligne: ligneDe(sf, n), symbole, champ, motif, detail });
   };
 
+  /**
+   * Scanne UN littéral de forme (argument d'une fabrique zod, ou `champs` de `document()`).
+   * @param {ts.Node} site nœud à qui les trouvailles sont imputées
+   * @param {ts.ObjectLiteralExpression} lit
+   */
+  const scanneLitteral = (site, lit) => {
+    const { cles, spread, discriminee } = clesDuLitteral(lit);
+    const jeu = new Set(cles);
+    // ÉGALITÉ de jeux de clés, jamais inclusion : un document qui PORTE `id` et `type` n'est pas
+    // une réf re-tapée — seule la forme reproduite À L'IDENTIQUE est une seconde graphie. La
+    // recopie PARTIELLE ou CHARGÉE est mesurée côté donnée (`STRUCTURES_REDECLARATIONS`, `+…`).
+    // Une VARIANTE discriminée (`type: z.literal('clearObjective')`) est hors volet : son `type`
+    // nomme la variante, il ne désigne pas le type d'une entité.
+    const memes = spread || discriminee ? [] : signatures.filter((s) => s.cles.size === jeu.size && [...s.cles].every((c) => jeu.has(c)));
+    for (const s of memes) noter(site, 'redeclaration', `${s.nom} {${[...s.cles].sort().join(',')}}`);
+    const graphies = cles.filter((c) => alias.has(c)).sort();
+    if (graphies.length) noter(site, 'alias', graphies.join(','));
+  };
+
+  /** Consts d'objet du fichier — pour résoudre `document(…, champs, …)` passé par RÉFÉRENCE.
+   *  @type {Map<string, ts.ObjectLiteralExpression>} */
+  const constsObjet = new Map();
+  const releveConsts = (n) => {
+    if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.initializer && ts.isObjectLiteralExpression(n.initializer)) {
+      constsObjet.set(n.name.text, n.initializer);
+    }
+    ts.forEachChild(n, releveConsts);
+  };
+  releveConsts(sf);
+
   /** @param {ts.Node} n */
   const walk = (n) => {
+    // FABRIQUE DE DOCUMENT : `document('x', famille, champs, …)`. Deux formes admises pour `champs`,
+    // toutes deux mesurées sur les defs réels — littéral INLINE (`careers.ts`) et const NOMMÉE
+    // référencée (`axes.ts`, `characteristics.ts`, qui exposent leur vue TS depuis `champs`).
+    if (!regles.sansRedeclaration && ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === FABRIQUE_DOCUMENT) {
+      const argChamps = n.arguments[ARG_CHAMPS];
+      const lit = argChamps && ts.isObjectLiteralExpression(argChamps)
+        ? argChamps
+        : argChamps && ts.isIdentifier(argChamps)
+          ? constsObjet.get(argChamps.text)
+          : undefined;
+      if (lit) scanneLitteral(lit, lit);
+    }
     if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
       const nom = n.expression.name.text;
       const arg0 = n.arguments[0];
       if (!regles.sansRedeclaration && FABRIQUES_OBJET.has(nom) && arg0 && ts.isObjectLiteralExpression(arg0)) {
-        const { cles, spread, discriminee } = clesDuLitteral(arg0);
-        const jeu = new Set(cles);
-        // ÉGALITÉ de jeux de clés, jamais inclusion : un document qui PORTE `id` et `type` n'est pas
-        // une réf re-tapée — seule la forme reproduite À L'IDENTIQUE est une seconde graphie. La
-        // recopie PARTIELLE ou CHARGÉE est mesurée côté donnée (`STRUCTURES_REDECLARATIONS`, `+…`).
-        // Une VARIANTE discriminée (`type: z.literal('clearObjective')`) est hors volet : son `type`
-        // nomme la variante, il ne désigne pas le type d'une entité.
-        const memes = spread || discriminee ? [] : signatures.filter((s) => s.cles.size === jeu.size && [...s.cles].every((c) => jeu.has(c)));
-        for (const s of memes) noter(n, 'redeclaration', `${s.nom} {${[...s.cles].sort().join(',')}}`);
-        const graphies = cles.filter((c) => alias.has(c)).sort();
-        if (graphies.length) noter(n, 'alias', graphies.join(','));
+        scanneLitteral(n, arg0);
       }
       if (nom === 'extend') {
         const racine = racineDe(n.expression.expression);

@@ -10,18 +10,16 @@
  * Le texte reste éditable au Codex (catégorie « Enjeux — cascade de voyage »).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'voyage-stakes.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    /** Identité STABLE (exposition/édition Codex) — distincte de `kind`. */
-    id: z.string(),
-    /** Libellé FR d'affichage. */
-    label: z.string(),
-    /** `kind` de l'étape de cascade servie (clé de consommation, `voyageStake`). */
+const doc = document(
+  'voyage-stakes',
+  famille,
+  {
+    /** `kind` de l'étape de cascade servie (clé de consommation, `voyageStake`) — distinct de l'`id`. */
     kind: z.string(),
     /** Gabarit du descripteur mécanique — trous `{nom}` remplis par le flux (valeurs calculées). */
     template: z.string(),
@@ -32,6 +30,31 @@ export const schema = z.array(
      *  `flow-stakes`/`combat-stakes` : le renvoi vise l'entité qui PORTE déjà la règle (la Compétence
      *  jetée, l'État subi), `regles.json` n'étant que le foyer des règles de cadre. */
     ruleCategory: z.string().optional(),
-    source: sourceRefSchema,
-  }),
+  },
+  {
+    kind: { label: 'Type d’étape', hint: 'Étape de la cascade de voyage servie' },
+    template: {
+      label: 'Gabarit du texte',
+      // Les ACCOLADES restent hors du répertoire des libellés (garde `libelles-guard`) : ce sont des
+      // signes de code, et les admettre laisserait passer une interpolation à l’écran. Le trou
+      // nommé se DIT donc en français plutôt qu’il ne se montre.
+      hint: 'Descripteur mécanique dont les trous nommés sont remplis par les valeurs calculées au moment de l’étape',
+    },
+    rule: {
+      label: 'Règle associée',
+      hint: 'Entité qui porte la règle derrière l’étape (Compétence/État/Talent, ou fiche de règles-cadre)',
+    },
+    ruleCategory: {
+      label: 'Catégorie de la règle',
+      hint: 'Catégorie Codex de l’entité qui porte la règle (regles par défaut, skills, etats…)',
+    },
+  },
+  {
+    codex: { keys: ['voyageStakes'] },
+    edit: { none: 'exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier' },
+  },
+  { exiges: ['source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

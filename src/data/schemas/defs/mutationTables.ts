@@ -4,16 +4,15 @@
  * Inventaire réel (17 tables) : `id`/`label`/`ranges[{min,max,mutation}]` seulement.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'mutationTables.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    source: sourceRefSchema.optional(),
+const doc = document(
+  'mutationTables',
+  famille,
+  {
     ranges: z.array(
       z.strictObject({
         min: z.number(),
@@ -22,5 +21,15 @@ export const schema = z.array(
         mutation: z.string(),
       }),
     ),
-  }),
+  },
+  {
+    ranges: { label: 'Plages de tirage', hint: 'Bandes d100 associant chacune une plage à une Mutation par identifiant' },
+  },
+  {
+    codex: { keys: ['mutationTables'] },
+    edit: { dataset: 'mutationTables' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

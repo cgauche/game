@@ -1,6 +1,7 @@
 [
   {
     "id": "a-enroulement",
+    "type": "qualities",
     "label": "À Enroulement",
     "polarite": "atout",
     "subType": "arme",
@@ -19,6 +20,7 @@
   },
   {
     "id": "a-poudre-noire",
+    "type": "qualities",
     "label": "À Poudre noire",
     "polarite": "atout",
     "subType": "arme",
@@ -33,6 +35,7 @@
   },
   {
     "id": "a-repetition",
+    "type": "qualities",
     "label": "À Répétition",
     "polarite": "atout",
     "subType": "arme",
@@ -47,6 +50,7 @@
   },
   {
     "id": "assommante",
+    "type": "qualities",
     "label": "Assommante",
     "polarite": "atout",
     "subType": "arme",
@@ -97,6 +101,7 @@
   },
   {
     "id": "defensive",
+    "type": "qualities",
     "label": "Défensive",
     "polarite": "atout",
     "subType": "arme",
@@ -115,6 +120,7 @@
   },
   {
     "id": "devastatrice",
+    "type": "qualities",
     "label": "Dévastatrice",
     "polarite": "atout",
     "subType": "arme",
@@ -132,6 +138,7 @@
   },
   {
     "id": "siege",
+    "type": "qualities",
     "label": "Siège",
     "polarite": "atout",
     "subType": "arme",
@@ -146,6 +153,7 @@
   },
   {
     "id": "belier",
+    "type": "qualities",
     "label": "Bélier",
     "polarite": "atout",
     "subType": "arme",
@@ -160,6 +168,7 @@
   },
   {
     "id": "empaleuse",
+    "type": "qualities",
     "label": "Empaleuse",
     "polarite": "atout",
     "subType": "arme",
@@ -201,6 +210,7 @@
   },
   {
     "id": "a-explosion",
+    "type": "qualities",
     "label": "À Explosion",
     "polarite": "atout",
     "subType": "arme",
@@ -216,6 +226,7 @@
   },
   {
     "id": "immobilisante",
+    "type": "qualities",
     "label": "Immobilisante",
     "polarite": "atout",
     "subType": "arme",
@@ -256,6 +267,7 @@
   },
   {
     "id": "immobilisante-fixe",
+    "type": "qualities",
     "label": "Immobilisante",
     "polarite": "atout",
     "subType": "arme",
@@ -301,6 +313,7 @@
   },
   {
     "id": "filet",
+    "type": "qualities",
     "label": "Filet",
     "polarite": "atout",
     "subType": "arme",
@@ -340,6 +353,7 @@
   },
   {
     "id": "filet-barbele",
+    "type": "qualities",
     "label": "Filet barbelé",
     "polarite": "atout",
     "subType": "arme",
@@ -380,6 +394,7 @@
   },
   {
     "id": "deroutante",
+    "type": "qualities",
     "label": "Déroutante",
     "polarite": "atout",
     "subType": "arme",
@@ -416,6 +431,7 @@
   },
   {
     "id": "incassable",
+    "type": "qualities",
     "label": "Incassable",
     "polarite": "atout",
     "subType": "arme",
@@ -430,6 +446,7 @@
   },
   {
     "id": "percutante",
+    "type": "qualities",
     "label": "Percutante",
     "polarite": "atout",
     "subType": "arme",
@@ -450,6 +467,7 @@
   },
   {
     "id": "perforante",
+    "type": "qualities",
     "label": "Perforante",
     "polarite": "atout",
     "subType": "arme",
@@ -471,6 +489,7 @@
   },
   {
     "id": "perturbante",
+    "type": "qualities",
     "label": "Perturbante",
     "polarite": "atout",
     "subType": "arme",
@@ -485,6 +504,7 @@
   },
   {
     "id": "piege-lame",
+    "type": "qualities",
     "label": "Piège-lame",
     "polarite": "atout",
     "subType": "arme",
@@ -499,6 +519,7 @@
   },
   {
     "id": "pistolet",
+    "type": "qualities",
     "label": "Pistolet",
     "polarite": "atout",
     "subType": "arme",
@@ -513,6 +534,7 @@
   },
   {
     "id": "pointue",
+    "type": "qualities",
     "label": "Pointue",
     "polarite": "atout",
     "subType": "arme",
@@ -531,6 +553,7 @@
   },
   {
     "id": "precise",
+    "type": "qualities",
     "label": "Précise",
     "polarite": "atout",
     "subType": "arme",
@@ -549,6 +572,7 @@
   },
   {
     "id": "protectrice",
+    "type": "qualities",
     "label": "Protectrice",
     "polarite": "atout",
     "subType": "arme",
@@ -563,6 +587,7 @@
   },
   {
     "id": "rapide",
+    "type": "qualities",
     "label": "Rapide",
     "polarite": "atout",
     "subType": "arme",
@@ -577,6 +602,7 @@
   },
   {
     "id": "destabilisante",
+    "type": "qualities",
     "label": "Déstabilisante",
     "polarite": "atout",
     "subType": "arme",
@@ -635,6 +661,7 @@
   },
   {
     "id": "taillade",
+    "type": "qualities",
     "label": "Taillade",
     "polarite": "atout",
     "subType": "arme",
@@ -665,6 +692,7 @@
   },
   {
     "id": "tir-de-zone",
+    "type": "qualities",
     "label": "Tir de zone",
     "polarite": "atout",
     "subType": "arme",
@@ -685,6 +713,7 @@
   },
   {
     "id": "salve",
+    "type": "qualities",
     "label": "Salve",
     "polarite": "atout",
     "subType": "arme",
@@ -699,6 +728,7 @@
   },
   {
     "id": "taille",
+    "type": "qualities",
     "label": "Taille",
     "polarite": "atout",
     "subType": "arme",
@@ -713,6 +743,7 @@
   },
   {
     "id": "desequilibree",
+    "type": "qualities",
     "label": "Déséquilibrée",
     "polarite": "defaut",
     "subType": "arme",
@@ -731,6 +762,7 @@
   },
   {
     "id": "arme-d-equipe",
+    "type": "qualities",
     "label": "Arme d'équipe",
     "polarite": "defaut",
     "subType": "arme",
@@ -745,6 +777,7 @@
   },
   {
     "id": "dangereuse",
+    "type": "qualities",
     "label": "Dangereuse",
     "polarite": "defaut",
     "subType": "arme",
@@ -759,6 +792,7 @@
   },
   {
     "id": "epuisante",
+    "type": "qualities",
     "label": "Épuisante",
     "polarite": "defaut",
     "subType": "arme",
@@ -776,6 +810,7 @@
   },
   {
     "id": "imprecise",
+    "type": "qualities",
     "label": "Imprécise",
     "polarite": "defaut",
     "subType": "arme",
@@ -799,6 +834,7 @@
   },
   {
     "id": "inoffensive",
+    "type": "qualities",
     "label": "Inoffensive",
     "polarite": "defaut",
     "subType": "arme",
@@ -816,6 +852,7 @@
   },
   {
     "id": "lente",
+    "type": "qualities",
     "label": "Lente",
     "polarite": "defaut",
     "subType": "arme",
@@ -840,6 +877,7 @@
   },
   {
     "id": "recharge",
+    "type": "qualities",
     "label": "Recharge",
     "polarite": "defaut",
     "subType": "arme",
@@ -851,6 +889,7 @@
   },
   {
     "id": "flexible",
+    "type": "qualities",
     "label": "Flexible",
     "polarite": "atout",
     "subType": "armure",
@@ -865,6 +904,7 @@
   },
   {
     "id": "impenetrable",
+    "type": "qualities",
     "label": "Impénétrable",
     "polarite": "atout",
     "subType": "armure",
@@ -879,6 +919,7 @@
   },
   {
     "id": "partielle",
+    "type": "qualities",
     "label": "Partielle",
     "polarite": "defaut",
     "subType": "armure",
@@ -893,6 +934,7 @@
   },
   {
     "id": "points-faibles",
+    "type": "qualities",
     "label": "Points faibles",
     "polarite": "defaut",
     "subType": "armure",
@@ -907,6 +949,7 @@
   },
   {
     "id": "en-discretion",
+    "type": "qualities",
     "label": "% en discretion",
     "polarite": "defaut",
     "subType": "armure",
@@ -918,6 +961,7 @@
   },
   {
     "id": "en-perception",
+    "type": "qualities",
     "label": "% en perception",
     "polarite": "defaut",
     "subType": "armure",
@@ -929,6 +973,7 @@
   },
   {
     "id": "leger",
+    "type": "qualities",
     "label": "Léger",
     "polarite": "atout",
     "subType": "objet",
@@ -943,6 +988,7 @@
   },
   {
     "id": "pratique",
+    "type": "qualities",
     "label": "Pratique",
     "polarite": "atout",
     "subType": "objet",
@@ -961,6 +1007,7 @@
   },
   {
     "id": "raffine",
+    "type": "qualities",
     "label": "Raffiné",
     "polarite": "atout",
     "subType": "objet",
@@ -972,6 +1019,7 @@
   },
   {
     "id": "solide",
+    "type": "qualities",
     "label": "Solide",
     "polarite": "atout",
     "subType": "objet",
@@ -986,6 +1034,7 @@
   },
   {
     "id": "bacle",
+    "type": "qualities",
     "label": "Bâclé",
     "polarite": "defaut",
     "subType": "objet",
@@ -997,6 +1046,7 @@
   },
   {
     "id": "laid",
+    "type": "qualities",
     "label": "Laid",
     "polarite": "defaut",
     "subType": "objet",
@@ -1015,6 +1065,7 @@
   },
   {
     "id": "peu-fiable",
+    "type": "qualities",
     "label": "Peu Fiable",
     "polarite": "defaut",
     "subType": "objet",
@@ -1033,6 +1084,7 @@
   },
   {
     "id": "volumineux",
+    "type": "qualities",
     "label": "Volumineux",
     "polarite": "defaut",
     "subType": "objet",
@@ -1047,6 +1099,7 @@
   },
   {
     "id": "magique",
+    "type": "qualities",
     "label": "Magique",
     "polarite": "atout",
     "subType": "arme",
@@ -1061,6 +1114,7 @@
   },
   {
     "id": "de-plaies-atroces",
+    "type": "qualities",
     "label": "De plaies atroces",
     "polarite": "atout",
     "subType": "arme",
@@ -1081,6 +1135,7 @@
   },
   {
     "id": "infecte",
+    "type": "qualities",
     "label": "Infecté",
     "polarite": "defaut",
     "subType": "arme",
@@ -1119,6 +1174,7 @@
   },
   {
     "id": "brise-coque",
+    "type": "qualities",
     "label": "Brise-coque",
     "polarite": "atout",
     "subType": "arme",
@@ -1130,6 +1186,7 @@
   },
   {
     "id": "equipe",
+    "type": "qualities",
     "label": "Équipe",
     "polarite": "defaut",
     "subType": "arme",
@@ -1141,6 +1198,7 @@
   },
   {
     "id": "poudre-impregnee-d-aqshy",
+    "type": "qualities",
     "label": "Poudre imprégnée d'Aqshy",
     "polarite": "defaut",
     "subType": "arme",
@@ -1158,6 +1216,7 @@
   },
   {
     "id": "maudit",
+    "type": "qualities",
     "label": "Maudit",
     "polarite": "atout",
     "subType": "objet",

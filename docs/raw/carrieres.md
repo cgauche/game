@@ -542,7 +542,7 @@ Le **Chansonnier** est inextricablement lié au culte de **Manann** ; d'autres d
 **Sources RAW** : `MDG 09 l.206-248`
 **Voir aussi** : [Nouveaux Talents de la Classe Côtier (MDG)](#nouveaux-talents-de-la-classe-côtier-mdg)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 9` (l.206-248) → `naviguons-tous-ensemble`, `CAREER_TENUE_BY_ID`, `jacques-bret-a-rencontre-notre-acier`, `careerEntrySchema`, `de-toutes-les-terreurs-sur-les-mers`, `camarades-d-equipage-rassemblez-vous`, `tous-a-la-vigie`, `les-dames-de-l-anguille`, `suivez-le-capitaine`, `skillDRBonus`, +23 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/data/index.ts`, `src/data/schemas/defs/careers.ts`, `src/data/sea-shanties.json`, `src/engine/combat.ts`, +7 fichiers
+- `MDG 9` (l.206-248) → `naviguons-tous-ensemble`, `CAREER_TENUE_BY_ID`, `jacques-bret-a-rencontre-notre-acier`, `doc`, `de-toutes-les-terreurs-sur-les-mers`, `camarades-d-equipage-rassemblez-vous`, `tous-a-la-vigie`, `les-dames-de-l-anguille`, `suivez-le-capitaine`, `skillDRBonus`, +23 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/data/index.ts`, `src/data/schemas/defs/careers.ts`, `src/data/sea-shanties.json`, `src/engine/combat.ts`, +7 fichiers
 
 ---
 

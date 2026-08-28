@@ -1,6 +1,7 @@
 [
   {
     "id": "armes-d-hast",
+    "type": "weaponGroups",
     "label": "Armes d'hast",
     "kind": "weapon",
     "combat": "melee",
@@ -12,6 +13,7 @@
   },
   {
     "id": "bagarre",
+    "type": "weaponGroups",
     "label": "Bagarre",
     "kind": "weapon",
     "combat": "melee",
@@ -23,6 +25,7 @@
   },
   {
     "id": "base",
+    "type": "weaponGroups",
     "label": "Base",
     "kind": "weapon",
     "combat": "melee",
@@ -34,6 +37,7 @@
   },
   {
     "id": "cavalerie",
+    "type": "weaponGroups",
     "label": "Cavalerie",
     "kind": "weapon",
     "combat": "melee",
@@ -45,6 +49,7 @@
   },
   {
     "id": "deux-mains",
+    "type": "weaponGroups",
     "label": "Deux-mains",
     "kind": "weapon",
     "combat": "melee",
@@ -56,6 +61,7 @@
   },
   {
     "id": "escrime",
+    "type": "weaponGroups",
     "label": "Escrime",
     "kind": "weapon",
     "combat": "melee",
@@ -75,6 +81,7 @@
   },
   {
     "id": "fleau",
+    "type": "weaponGroups",
     "label": "Fléau",
     "kind": "weapon",
     "combat": "melee",
@@ -94,6 +101,7 @@
   },
   {
     "id": "parade",
+    "type": "weaponGroups",
     "label": "Parade",
     "kind": "weapon",
     "combat": "melee",
@@ -110,6 +118,7 @@
   },
   {
     "id": "arbalete",
+    "type": "weaponGroups",
     "label": "Arbalète",
     "kind": "weapon",
     "combat": "ranged",
@@ -121,6 +130,7 @@
   },
   {
     "id": "arc",
+    "type": "weaponGroups",
     "label": "Arc",
     "kind": "weapon",
     "combat": "ranged",
@@ -132,6 +142,7 @@
   },
   {
     "id": "entraves",
+    "type": "weaponGroups",
     "label": "Entraves",
     "kind": "weapon",
     "combat": "ranged",
@@ -143,6 +154,7 @@
   },
   {
     "id": "explosifs",
+    "type": "weaponGroups",
     "label": "Explosifs",
     "kind": "weapon",
     "combat": "ranged",
@@ -154,6 +166,7 @@
   },
   {
     "id": "fronde",
+    "type": "weaponGroups",
     "label": "Fronde",
     "kind": "weapon",
     "combat": "ranged",
@@ -165,6 +178,7 @@
   },
   {
     "id": "lancer",
+    "type": "weaponGroups",
     "label": "Lancer",
     "kind": "weapon",
     "combat": "ranged",
@@ -176,6 +190,7 @@
   },
   {
     "id": "ingenierie",
+    "type": "weaponGroups",
     "label": "Ingénierie",
     "kind": "weapon",
     "combat": "ranged",
@@ -187,6 +202,7 @@
   },
   {
     "id": "poudre-noire",
+    "type": "weaponGroups",
     "label": "Poudre noire",
     "kind": "weapon",
     "combat": "ranged",
@@ -198,6 +214,7 @@
   },
   {
     "id": "catapulte",
+    "type": "weaponGroups",
     "label": "Catapulte",
     "kind": "weapon",
     "combat": "ranged",
@@ -209,6 +226,7 @@
   },
   {
     "id": "poudre-noire-et-ingenierie",
+    "type": "weaponGroups",
     "label": "Poudre noire et ingénierie",
     "kind": "ammo",
     "source": {
@@ -219,6 +237,7 @@
   },
   {
     "id": "cuir-souple",
+    "type": "weaponGroups",
     "label": "Cuir souple",
     "kind": "armour",
     "material": "leather",
@@ -229,6 +248,7 @@
   },
   {
     "id": "cuir-bouilli",
+    "type": "weaponGroups",
     "label": "Cuir bouilli",
     "kind": "armour",
     "material": "leather",
@@ -239,6 +259,7 @@
   },
   {
     "id": "mailles",
+    "type": "weaponGroups",
     "label": "Mailles",
     "kind": "armour",
     "material": "metal",
@@ -249,6 +270,7 @@
   },
   {
     "id": "plate",
+    "type": "weaponGroups",
     "label": "Plate",
     "kind": "armour",
     "material": "metal",
@@ -259,6 +281,7 @@
   },
   {
     "id": "armure-du-chaos",
+    "type": "weaponGroups",
     "label": "Armure du Chaos",
     "kind": "armour",
     "material": "chaos",
@@ -270,6 +293,7 @@
   },
   {
     "id": "sacs-et-contenants",
+    "type": "weaponGroups",
     "label": "Sacs et Contenants",
     "kind": "inventory",
     "source": {
@@ -280,6 +304,7 @@
   },
   {
     "id": "vetements-et-accessoires",
+    "type": "weaponGroups",
     "label": "Vêtements et Accessoires",
     "kind": "inventory",
     "source": {
@@ -290,6 +315,7 @@
   },
   {
     "id": "nourriture-boisson-et-hebergement",
+    "type": "weaponGroups",
     "label": "Nourriture, Boisson et Hébergement",
     "kind": "inventory",
     "source": {
@@ -300,6 +326,7 @@
   },
   {
     "id": "outils-et-necessaires",
+    "type": "weaponGroups",
     "label": "Outils et nécessaires",
     "kind": "inventory",
     "source": {
@@ -310,6 +337,7 @@
   },
   {
     "id": "livres-et-documents",
+    "type": "weaponGroups",
     "label": "Livres et documents",
     "kind": "inventory",
     "source": {
@@ -320,6 +348,7 @@
   },
   {
     "id": "outils-professionnels-et-ateliers",
+    "type": "weaponGroups",
     "label": "Outils professionnels et ateliers",
     "kind": "inventory",
     "source": {
@@ -330,6 +359,7 @@
   },
   {
     "id": "animaux-et-vehicules",
+    "type": "weaponGroups",
     "label": "Animaux et véhicules",
     "kind": "inventory",
     "source": {
@@ -340,6 +370,7 @@
   },
   {
     "id": "drogues-et-poisons",
+    "type": "weaponGroups",
     "label": "Drogues et poisons",
     "kind": "inventory",
     "source": {
@@ -350,6 +381,7 @@
   },
   {
     "id": "herbes-et-potions",
+    "type": "weaponGroups",
     "label": "Herbes et potions",
     "kind": "inventory",
     "source": {
@@ -360,6 +392,7 @@
   },
   {
     "id": "protheses",
+    "type": "weaponGroups",
     "label": "Prothèses",
     "kind": "inventory",
     "source": {
@@ -370,6 +403,7 @@
   },
   {
     "id": "possessions-diverses",
+    "type": "weaponGroups",
     "label": "Possessions diverses",
     "kind": "inventory",
     "source": {
@@ -380,6 +414,7 @@
   },
   {
     "id": "armes-de-siege",
+    "type": "weaponGroups",
     "label": "Armes de siège",
     "kind": "weapon",
     "source": {
@@ -390,6 +425,7 @@
   },
   {
     "id": "munitions",
+    "type": "weaponGroups",
     "label": "Munitions",
     "kind": "weapon",
     "source": {
@@ -400,6 +436,7 @@
   },
   {
     "id": "munition-de-siege",
+    "type": "weaponGroups",
     "label": "Munitions de siège",
     "kind": "weapon",
     "source": {
@@ -410,6 +447,7 @@
   },
   {
     "id": "machine-de-guerre",
+    "type": "weaponGroups",
     "label": "Machine de guerre",
     "kind": "weapon",
     "combat": "ranged",

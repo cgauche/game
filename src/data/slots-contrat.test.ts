@@ -150,7 +150,12 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
     // Cliquet abaissé 326 → 325 avec le lot #1467 L1b V-P5 : `skills.type` n'est plus MESURÉ comme un
     // site de référence — la normalisation `avancée` → `avancee` (migration 6b) fait passer ses valeurs
     // distinctes de 1/1 résolvante à 1/2, sous la majorité stricte qu'exige `siteDeReference`.
-    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(325);
+    // Cliquet REMONTÉ 325 → 326 avec le lot #1467 L1b V-FLIP-ENTITE-b : c'est le DÉTECTEUR qui voit
+    // plus loin, pas la donnée qui a bougé — `qualities.passive` porte la MÊME op qu'avant
+    // (`{op:'testMod', amount:-10, char:'sociabilite'}`, 1 occurrence). Tant que le def déclarait ses
+    // champs dans un `z.strictObject` nommé, l'AST couvrait le champ ; sous `document()` les champs
+    // vivent dans un littéral `champs` et le scan le voit. Motif inscrit à sa ligne de stock.
+    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(326);
   });
 
   it('chaque ligne du stock porte sa DATE et son LOT de mort', () => {

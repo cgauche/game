@@ -443,12 +443,16 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
   }
 
   it('compte les clés d’enveloppe REQUISES que l’adoption relâcherait sans `exiges`', () => {
-    // #1467 L1b V-FLIP-ENTITE-a (2026-08-28) : 22 defs `entite` ont adopté `document()` — ils rendent
-    // un nœud SCELLÉ, donc ils quittent la population MESURÉE pour la population SCELLÉE (75 → 53,
-    // 2 → 24). Ce que la mesure perd, `options.exiges` le PORTE désormais au def : desc −5 (astrology,
-    // classes, crew-roles, peripeties, sea-shanties), source −3 (astrology, classes, sea-shanties),
-    // icon −1 (calendarPhases). L'ADOPTION est la cause du recalage, pas une dérive du détecteur.
-    expect(mesure).toEqual({ desc: 19, source: 24, icon: 2, scelles: 24, mesures: 53 });
+    // #1467 L1b V-FLIP-ENTITE, vagues 11a puis 11b (2026-08-28) : 42 defs `entite` ont adopté
+    // `document()` — ils rendent un nœud SCELLÉ, donc ils quittent la population MESURÉE pour la
+    // population SCELLÉE (75 → 33, 2 → 44). Ce que la mesure perd, `options.exiges` le PORTE
+    // désormais au def, et le verrou d'exigence ci-dessous le prouve entrée par entrée.
+    //   11a : desc −5 (astrology, classes, crew-roles, peripeties, sea-shanties),
+    //         source −3 (astrology, classes, sea-shanties), icon −1 (calendarPhases).
+    //   11b : desc −6 (careers, characteristics, interludeEvents, mutations, qualities, regles),
+    //         source −7 (careers, characteristics, locations, qualities, regles, stars, voyage-stakes).
+    // L'ADOPTION est la cause du recalage, pas une dérive du détecteur.
+    expect(mesure).toEqual({ desc: 13, source: 17, icon: 2, scelles: 44, mesures: 33 });
   });
 
 });
@@ -530,8 +534,9 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     return { paires, temoins };
   };
 
-  /** Ce que la vague 11a a DÉCLARÉ en `options.exiges`, mesuré au schéma. Gelé, NOMINATIF. */
+  /** Ce que les vagues 11a et 11b ont DÉCLARÉ en `options.exiges`, mesuré au schéma. Gelé, NOMINATIF. */
   const EXIGENCES_GELEES = [
+    // vague 11a
     'astrology.json · desc',
     'astrology.json · source',
     'calendarPhases.json · icon',
@@ -541,6 +546,21 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     'peripeties.json · desc',
     'sea-shanties.json · desc',
     'sea-shanties.json · source',
+    // vague 11b — `axes` est le premier document à EXIGER `maison` (mécanique maison, aucun folio).
+    'axes.json · maison',
+    'careers.json · desc',
+    'careers.json · source',
+    'characteristics.json · desc',
+    'characteristics.json · source',
+    'interludeEvents.json · desc',
+    'locations.json · source',
+    'mutations.json · desc',
+    'qualities.json · desc',
+    'qualities.json · source',
+    'regles.json · desc',
+    'regles.json · source',
+    'stars.json · source',
+    'voyage-stakes.json · source',
   ];
 
   it('la 1ʳᵉ entrée réelle de chaque def adopté est ACCEPTÉE — témoin positif de chaque paire', () => {

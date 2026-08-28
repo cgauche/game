@@ -4,9 +4,12 @@
  * `src/data/index.ts`) ; `effects`/`passive` = MÊME vocabulaire `TriggeredEffect`/`GameOp` que
  * les Traits et les sorts, PROMU dans `grammaire/mecanique.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`
  * — partagés avec `maneuvers.ts`).
+ *
+ * `alsoIn` (clé d'ENVELOPPE) porte les emplacements SECONDAIRES (#563) — ex. `tir-de-zone` AA folio 89
+ * ET MDG folio 102 (réimprime AA verbatim).
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'qualities.json';
@@ -44,10 +47,10 @@ const qualityCapabilities = z.strictObject({
   beats: z.array(z.string()).optional(),
 });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'qualities',
+  famille,
+  {
     /** POLARITÉ de la Qualité — Atout (bénéfique) / Défaut (handicap). Trois PAIRES de rubriques selon
      *  le sous-type : objet `LDB 60 l.9`/`l.40`, arme `LDB 62 l.217`/`l.309`, armure `LDB 63 l.68`/`l.80`.
      *  Observée sur 59/59 entrées : 40 `atout`, 19 `defaut`. Lue par `isAtoutQuality` — cible des champs
@@ -57,15 +60,29 @@ export const schema = z.array(
     /** `subType` observé : 'arme' | 'armure' | 'objet' (59/59) ; `QualityData.subType` autorise aussi
      *  `null` (TS `string | null`), non vu dans les 59 entrées actuelles mais le type source fait foi. */
     subType: z.enum(['arme', 'armure', 'objet']).nullable(),
-    desc: z.string(),
-    source: sourceRefSchema,
-    /** Emplacements SECONDAIRES (#563) — ex. `tir-de-zone` AA folio 89 ET MDG folio 102 (réimprime
-     *  AA verbatim). NON migré ici (Lot 0 primitive only). */
-    alsoIn: z.array(secondarySourceRefSchema).optional(),
     effects: z.array(triggeredEffectSchema).optional(),
     passive: z.array(gameOpSchema).optional(),
     capabilities: qualityCapabilities.optional(),
     /** Cette qualité est INDICÉE (LDB 60 p.286) — MÊME forme que `TraitData.indice`/`traits.ts`. */
     indice: z.strictObject({ label: z.string() }).optional(),
-  }),
+  },
+  {
+    polarite: { label: 'Polarité', hint: 'Atout ou Défaut' },
+    subType: { label: 'Sous-type', hint: 'Arme, armure ou objet' },
+    effects: { label: 'Effets déclenchés' },
+    passive: { label: 'Effets passifs' },
+    capabilities: { label: 'Capacités mécaniques (liste fermée)' },
+    indice: {
+      label: 'Qualité indicée',
+      hint: 'Descripteur : la Qualité est notée (valeur sur l’instance), avec son libellé affiché',
+    },
+  },
+  {
+    codex: { keys: ['qualities'] },
+    edit: { dataset: 'qualities' },
+  },
+  { exiges: ['desc', 'source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

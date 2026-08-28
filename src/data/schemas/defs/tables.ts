@@ -4,18 +4,17 @@
  * mais la rangée porte des `GameOp` (forme LOOSE `gameOpSchema`) au lieu d'un id de mutation.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'tables.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'tables',
+  famille,
+  {
     die: z.enum(['d10', 'd100']),
-    source: sourceRefSchema.optional(),
     rows: z.array(
       z.strictObject({
         min: z.number(),
@@ -24,5 +23,16 @@ export const schema = z.array(
         ops: z.array(gameOpSchema),
       }),
     ),
-  }),
+  },
+  {
+    die: { label: 'Type de dé' },
+    rows: { label: 'Rangées de la table', hint: 'Tirées par l’op rollTable variante tableId' },
+  },
+  {
+    codex: { keys: ['effectTables'] },
+    edit: { none: 'exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

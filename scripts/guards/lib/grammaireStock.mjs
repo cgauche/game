@@ -50,7 +50,10 @@ export const GRAMMAIRE_STOCK = {
   // ── Graphies historiques de COMPÉTENCE (`skill`, `skillId`) ──────────────────────────────────
   'src/data/schemas/defs/aa-criticals.ts:aaEntrySchema.resist|alias|skill': e('Test de résistance d’une blessure critique authoré par LIBELLÉ de Compétence sous `skill`.', L2),
   'src/data/schemas/defs/activities.ts:skillRefSchema|alias|skillId': e('Réf de Compétence d’une Activité en `{skillId, spec}` — la graphie que `specRef(\'skill\')` remplace.', L2),
-  'src/data/schemas/defs/advancementCosts.ts:schema|alias|skill': e('Table des coûts d’avancement keyée par colonne `skill` (Compétence vs Caractéristique).', L2),
+  // #1467 L1b V-FLIP-ENTITE-b : la ligne REVIT sous le binding `doc` — l'adoption de `document()`
+  // l'avait fait sortir du scan (l'argument `champs` n'était pas visité), pas de la déclaration.
+  // Le champ `skill` est toujours là, la donnée n'a pas bougé.
+  'src/data/schemas/defs/advancementCosts.ts:doc|alias|skill': e('Table des coûts d’avancement keyée par colonne `skill` (Compétence vs Caractéristique).', L2),
   'src/data/schemas/defs/axes.ts:skillRefSchema|alias|skillId': e('Réf de Compétence d’un axe de profil en `{skillId, spec}` (`STRUCTURES_REDECLARATIONS` axes.ts, même lot).', L2),
   'src/data/schemas/defs/creatures.ts:swapGrantSchema|alias|skillId': e('Échange de dotation de bestiaire désignant sa Compétence par `skillId`.', L2),
   'src/data/schemas/defs/crew-roles.ts:doc.skills|alias|skillId': e('Compétences d’un rôle d’équipage en `{skillId, spec}` (`STRUCTURES_REDECLARATIONS` crew-roles.ts, même lot).', L2),

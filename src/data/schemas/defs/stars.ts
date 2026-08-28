@@ -2,20 +2,20 @@
  * Schéma de `stars.json` — Étoiles (ADE II 3), dérivé du contenu RÉEL (23 étoiles) et de
  * `StarData` (`src/data/index.ts`). Les champs `string | null` de l'interface (signe/classique/
  * ascendant/dates/dieux/apparence) sont TOUS des `string` dans la donnée actuelle — nullable
- * conservé pour rester fidèle au contrat consommateur (le type autorise `null`). `desc` sort de ce
- * lot : la prose s'aligne sur l'enveloppe (`grammaire/document.ts`), absente plutôt que nulle.
+ * conservé pour rester fidèle au contrat consommateur (le type autorise `null`). `desc` et `source`
+ * sont des clés d'ENVELOPPE, `source` EXIGÉE (`options.exiges`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'stars.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'stars',
+  famille,
+  {
     rand: z.number(),
     signe: z.string().nullable(),
     classique: z.string().nullable(),
@@ -30,7 +30,27 @@ export const schema = z.array(
     /** Étoile du Sorcier (ADE II 3 l.63) : fourchette 1d10 interne `[min, max]` — tuple STRICT (2 éléments,
      *  observé `[1,3]` sur les variantes `rand:100`). */
     sub: z.tuple([z.number(), z.number()]).optional(),
-    desc: z.string().min(1).optional(),
-    source: sourceRefSchema,
-  }),
+  },
+  {
+    rand: { label: 'Seuil aléatoire (d100)' },
+    signe: { label: 'Signe' },
+    classique: { label: 'Nom classique' },
+    ascendant: { label: 'Ascendant' },
+    dates: { label: 'Dates' },
+    dieux: { label: 'Dieux associés' },
+    apparence: { label: 'Apparence' },
+    ops: {
+      label: 'Effets accordés',
+      hint: 'Ajustement de Caractéristique / Talent octroyé, appliqué une fois à la création',
+    },
+    sub: { label: 'Sous-tirage', hint: 'Fourchette 1d10 interne (Étoile du Sorcier)' },
+  },
+  {
+    codex: { keys: ['stars'] },
+    edit: { dataset: 'stars' },
+  },
+  { exiges: ['source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

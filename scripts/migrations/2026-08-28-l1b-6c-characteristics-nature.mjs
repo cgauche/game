@@ -45,13 +45,22 @@ let migres = 0;
 let dejaMigres = 0;
 const promus = [];
 
+/**
+ * `type` D'ENVELOPPE (#1467 L1b V-FLIP-ENTITE-b) : depuis l'adoption de `document()`, chaque entrée
+ * porte `type: "characteristics"` — le NOM DU DOCUMENT, pas l'ancienne nature. Sans cette
+ * distinction, la migration lisait l'enveloppe comme un `type` ressuscité et exigeait un arbitrage
+ * sur les 19 entrées. L'ancien `type` était une clé de `NORMALISE`, jamais le nom du dataset.
+ */
+const TYPE_ENVELOPPE = 'characteristics';
+const typeAncien = (e) => (e?.type !== undefined && e.type !== TYPE_ENVELOPPE ? e.type : undefined);
+
 const sortie = Array.isArray(data)
   ? data.map((e, i) => {
-      const aType = e?.type !== undefined;
+      const aType = typeAncien(e) !== undefined;
       const aNature = e?.nature !== undefined;
       if (aType && aNature) { echecs.push(`entrée #${i} (${e.id}) : porte À LA FOIS \`type\` et \`nature\` — arbitrage requis`); return e; }
       if (!aType && !aNature) { echecs.push(`entrée #${i} (${e?.id}) : ni \`type\` ni \`nature\` — nature PERDUE`); return e; }
-      const brute = aNature ? e.nature : e.type;
+      const brute = aNature ? e.nature : typeAncien(e);
       const norm = NORMALISE[brute];
       if (norm === undefined) { echecs.push(`entrée #${i} (${e.id}) : nature ${JSON.stringify(brute)} hors {roll, wounds, extra, mv, points, '', compteur}`); return e; }
       if (aNature) {
@@ -76,9 +85,9 @@ if (out !== brut) fs.writeFileSync(CIBLE, out, 'utf8');
 
 // PREUVE post-écriture : plus aucun `type`, plus aucune nature vide, partition conservée entrée par entrée.
 const apres = JSON.parse(out);
-const residus = apres.filter((e) => e.type !== undefined).length;
+const residus = apres.filter((e) => typeAncien(e) !== undefined).length;
 const vides = apres.filter((e) => e.nature === '').length;
-const avant = data.map((e) => NORMALISE[e.type ?? e.nature]).join(',');
+const avant = data.map((e) => NORMALISE[typeAncien(e) ?? e.nature]).join(',');
 const rendu = apres.map((e) => e.nature).join(',');
 if (residus || vides || avant !== rendu || apres.length !== ATTENDU) {
   console.error(`VÉRIFICATION POST-ÉCRITURE ROUGE : ${residus} \`type\` résiduel(s), ${vides} nature(s) vide(s), ${apres.length} entrée(s), partition ${avant === rendu ? 'conservée' : 'ALTÉRÉE'}`);

@@ -1,6 +1,7 @@
 [
   {
     "id": "wymund-l-anachorete",
+    "type": "stars",
     "label": "Wymund l'Anachorète",
     "rand": 5,
     "signe": "Signe de l'Endurance",
@@ -34,6 +35,7 @@
   },
   {
     "id": "la-grande-croix",
+    "type": "stars",
     "label": "La Grande Croix",
     "rand": 10,
     "signe": "Signe de la Clairvoyance",
@@ -67,6 +69,7 @@
   },
   {
     "id": "le-trait-du-peintre",
+    "type": "stars",
     "label": "Le Trait du Peintre",
     "rand": 15,
     "signe": "Signe de la Précision",
@@ -100,6 +103,7 @@
   },
   {
     "id": "gnuthus-le-buffle",
+    "type": "stars",
     "label": "Gnuthus le Buffle",
     "rand": 20,
     "signe": "Signe du Dévouement et de la Loyauté",
@@ -133,6 +137,7 @@
   },
   {
     "id": "dragomas-le-dragon",
+    "type": "stars",
     "label": "Dragomas le Dragon",
     "rand": 25,
     "signe": "Signe de la Bravoure",
@@ -166,6 +171,7 @@
   },
   {
     "id": "le-crepuscule",
+    "type": "stars",
     "label": "Le Crépuscule",
     "rand": 30,
     "signe": "Signe de l'Illusion et du Mystère",
@@ -199,6 +205,7 @@
   },
   {
     "id": "le-fourreau-de-grungni",
+    "type": "stars",
     "label": "Le Fourreau de Grungni",
     "rand": 35,
     "signe": "Signe des Ambitions Martiales",
@@ -232,6 +239,7 @@
   },
   {
     "id": "mammit-le-sage",
+    "type": "stars",
     "label": "Mammit le Sage",
     "rand": 40,
     "signe": "Signe de la Sagesse",
@@ -265,6 +273,7 @@
   },
   {
     "id": "mummit-le-fou",
+    "type": "stars",
     "label": "Mummit le Fou",
     "rand": 45,
     "signe": "Signe de l'Incertitude",
@@ -292,6 +301,7 @@
   },
   {
     "id": "les-deux-boeufs",
+    "type": "stars",
     "label": "Les Deux Bœufs",
     "rand": 50,
     "signe": "Signe de la Fertilité et du Bel Ouvrage",
@@ -320,6 +330,7 @@
   },
   {
     "id": "le-danseur",
+    "type": "stars",
     "label": "Le Danseur",
     "rand": 55,
     "signe": "Signe de l'Amour et de l'Attirance",
@@ -347,6 +358,7 @@
   },
   {
     "id": "le-tambour",
+    "type": "stars",
     "label": "Le Tambour",
     "rand": 60,
     "signe": "Signe de l'Hédonisme et de l'Excès",
@@ -374,6 +386,7 @@
   },
   {
     "id": "le-flutiste",
+    "type": "stars",
     "label": "Le Flûtiste",
     "rand": 65,
     "signe": "Signe du Roublard",
@@ -407,6 +420,7 @@
   },
   {
     "id": "vobist-le-pale",
+    "type": "stars",
     "label": "Vobist le Pâle",
     "rand": 70,
     "signe": "Signe des Ténèbres et de l'Incertitude",
@@ -434,6 +448,7 @@
   },
   {
     "id": "la-charrette-brisee",
+    "type": "stars",
     "label": "La Charrette Brisée",
     "rand": 75,
     "signe": "Signe de l'Orgueil",
@@ -462,6 +477,7 @@
   },
   {
     "id": "la-chevre-sauvage",
+    "type": "stars",
     "label": "La Chèvre Sauvage",
     "rand": 80,
     "signe": "Signe des Passions refoulées",
@@ -489,6 +505,7 @@
   },
   {
     "id": "le-chaudron-de-rhya",
+    "type": "stars",
     "label": "Le Chaudron de Rhya",
     "rand": 85,
     "signe": "Signe de la Miséricorde, de la Mort et de la Création",
@@ -516,6 +533,7 @@
   },
   {
     "id": "cackelfax-le-coq",
+    "type": "stars",
     "label": "Cackelfax le Coq",
     "rand": 90,
     "signe": "Signe de la Richesse et du Négoce",
@@ -543,6 +561,7 @@
   },
   {
     "id": "la-scie-a-os",
+    "type": "stars",
     "label": "La Scie à Os",
     "rand": 95,
     "signe": "Signe de la Compétence et de l'Apprentissage",
@@ -576,6 +595,7 @@
   },
   {
     "id": "l-etoile-du-sorcier-sixieme-sens",
+    "type": "stars",
     "label": "L'Étoile du Sorcier (Sixième sens)",
     "rand": 100,
     "signe": "Signe de la Magie",
@@ -602,6 +622,7 @@
   },
   {
     "id": "l-etoile-du-sorcier-seconde-vue",
+    "type": "stars",
     "label": "L'Étoile du Sorcier (Seconde vue)",
     "rand": 100,
     "signe": "Signe de la Magie",
@@ -633,6 +654,7 @@
   },
   {
     "id": "l-etoile-du-sorcier-magie-mineure",
+    "type": "stars",
     "label": "L'Étoile du Sorcier (Magie mineure)",
     "rand": 100,
     "signe": "Signe de la Magie",
@@ -664,6 +686,7 @@
   },
   {
     "id": "l-etoile-du-sorcier-sorcier",
+    "type": "stars",
     "label": "L'Étoile du Sorcier (Sorcier !)",
     "rand": 100,
     "signe": "Signe de la Magie",

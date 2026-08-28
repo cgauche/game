@@ -1,106 +1,132 @@
 [
   {
     "id": "humain",
+    "type": "groups",
     "label": "Humain"
   },
   {
     "id": "nain",
+    "type": "groups",
     "label": "Nain"
   },
   {
     "id": "elfe",
+    "type": "groups",
     "label": "Elfe"
   },
   {
     "id": "halfling",
+    "type": "groups",
     "label": "Halfling"
   },
   {
     "id": "gnome",
+    "type": "groups",
     "label": "Gnome"
   },
   {
     "id": "ogre",
+    "type": "groups",
     "label": "Ogre"
   },
   {
     "id": "mort-vivant",
+    "type": "groups",
     "label": "Mort-vivant"
   },
   {
     "id": "demon",
+    "type": "groups",
     "label": "Démon"
   },
   {
     "id": "peau-verte",
+    "type": "groups",
     "label": "Peau-Verte"
   },
   {
     "id": "homme-bete",
+    "type": "groups",
     "label": "Homme-bête"
   },
   {
     "id": "bete",
+    "type": "groups",
     "label": "Bête"
   },
   {
     "id": "skaven",
+    "type": "groups",
     "label": "Skaven"
   },
   {
     "id": "cultiste",
+    "type": "groups",
     "label": "Cultiste"
   },
   {
     "id": "criminel",
+    "type": "groups",
     "label": "Criminel"
   },
   {
     "id": "soldat",
+    "type": "groups",
     "label": "Soldat"
   },
   {
     "id": "garde",
+    "type": "groups",
     "label": "Garde"
   },
   {
     "id": "chevalier",
+    "type": "groups",
     "label": "Chevalier"
   },
   {
     "id": "sigmarite",
+    "type": "groups",
     "label": "Sigmarite"
   },
   {
     "id": "ulricain",
+    "type": "groups",
     "label": "Ulricain"
   },
   {
     "id": "tileen",
+    "type": "groups",
     "label": "Tiléen"
   },
   {
     "id": "elfe-noir",
+    "type": "groups",
     "label": "Elfe noir"
   },
   {
     "id": "teutogen",
+    "type": "groups",
     "label": "Teutogen"
   },
   {
     "id": "bailli",
+    "type": "groups",
     "label": "Bailli"
   },
   {
     "id": "juriste",
+    "type": "groups",
     "label": "Juriste"
   },
   {
     "id": "noble",
+    "type": "groups",
     "label": "Noble"
   },
   {
     "id": "vivant",
+    "type": "groups",
     "label": "Vivant",
     "matchesAll": true,
     "exceptGroups": [
@@ -110,51 +136,63 @@
   },
   {
     "id": "tout",
+    "type": "groups",
     "label": "Tout",
     "matchesAll": true
   },
   {
     "id": "religion",
+    "type": "groups",
     "label": "Religion"
   },
   {
     "id": "predateur",
+    "type": "groups",
     "label": "Prédateur"
   },
   {
     "id": "serpent",
+    "type": "groups",
     "label": "Serpent"
   },
   {
     "id": "belette",
+    "type": "groups",
     "label": "Belette"
   },
   {
     "id": "pieuvre-des-tourbieres",
+    "type": "groups",
     "label": "Pieuvre des tourbières"
   },
   {
     "id": "demonologue",
+    "type": "groups",
     "label": "Démonologue"
   },
   {
     "id": "khorne",
+    "type": "groups",
     "label": "Suivants de Khorne"
   },
   {
     "id": "slaanesh",
+    "type": "groups",
     "label": "Suivants de Slaanesh"
   },
   {
     "id": "nurgle",
+    "type": "groups",
     "label": "Suivants de Nurgle"
   },
   {
     "id": "tzeentch",
+    "type": "groups",
     "label": "Disciples de Tzeentch"
   },
   {
     "id": "etranger",
+    "type": "groups",
     "label": "Étrangers"
   }
 ]

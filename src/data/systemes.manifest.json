@@ -1,6 +1,7 @@
 [
   {
     "id": "combat",
+    "type": "systemes.manifest",
     "label": "Combat (arène tactique)",
     "modules": [
       "src/state/combatFlow.ts",
@@ -15,6 +16,7 @@
   },
   {
     "id": "magie",
+    "type": "systemes.manifest",
     "label": "Magie (incantation, sorts, mésaventures)",
     "modules": [
       "src/engine/magic.ts",
@@ -30,6 +32,7 @@
   },
   {
     "id": "corruption",
+    "type": "systemes.manifest",
     "label": "Corruption & mutation",
     "modules": [
       "src/engine/corruption.ts",
@@ -42,6 +45,7 @@
   },
   {
     "id": "psychologie",
+    "type": "systemes.manifest",
     "label": "Psychologie (P1-P4)",
     "modules": [
       "src/engine/psychology.ts",
@@ -53,6 +57,7 @@
   },
   {
     "id": "voyage-terre",
+    "type": "systemes.manifest",
     "label": "Voyage terrestre",
     "modules": [
       "src/state/travelFlow.ts",
@@ -69,6 +74,7 @@
   },
   {
     "id": "voyage-fluvial",
+    "type": "systemes.manifest",
     "label": "Voyage fluvial",
     "modules": [
       "src/state/riverVoyageFlow.ts",
@@ -80,6 +86,7 @@
   },
   {
     "id": "voyage-maritime",
+    "type": "systemes.manifest",
     "label": "Voyage maritime",
     "modules": [
       "src/state/seaVoyageFlow.ts",
@@ -96,6 +103,7 @@
   },
   {
     "id": "combat-naval",
+    "type": "systemes.manifest",
     "label": "Combat naval tactique",
     "modules": [
       "src/engine/shipBuild.ts",
@@ -118,6 +126,7 @@
   },
   {
     "id": "bataille-masse",
+    "type": "systemes.manifest",
     "label": "Bataille de masse / siège",
     "modules": [
       "src/engine/massBattle.ts",
@@ -131,6 +140,7 @@
   },
   {
     "id": "interlude",
+    "type": "systemes.manifest",
     "label": "Interlude / entre-deux",
     "modules": [
       "src/state/interludeFlow.ts",
@@ -143,6 +153,7 @@
   },
   {
     "id": "commerce",
+    "type": "systemes.manifest",
     "label": "Marchand / négoce / cargaison",
     "modules": [
       "src/state/merchantFlow.ts",
@@ -161,6 +172,7 @@
   },
   {
     "id": "equipage",
+    "type": "systemes.manifest",
     "label": "Équipage / paie / postes",
     "modules": [
       "src/state/shipCrew.ts",
@@ -176,6 +188,7 @@
   },
   {
     "id": "repos-survie",
+    "type": "systemes.manifest",
     "label": "Repos / survie",
     "modules": [
       "src/state/restFlow.ts",
@@ -192,6 +205,7 @@
   },
   {
     "id": "coop",
+    "type": "systemes.manifest",
     "label": "Coop en ligne (relay)",
     "modules": [
       "src/state/netFlow.ts",
@@ -208,6 +222,7 @@
   },
   {
     "id": "editeur",
+    "type": "systemes.manifest",
     "label": "Éditeur de scène / campagne",
     "modules": [
       "src/state/sceneEdit.ts",
@@ -221,6 +236,7 @@
   },
   {
     "id": "codex",
+    "type": "systemes.manifest",
     "label": "Codex / Compendium",
     "modules": [
       "src/ui/compendium/CompendiumScreen.tsx"

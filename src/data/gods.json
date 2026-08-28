@@ -1,6 +1,7 @@
 [
   {
     "id": "asuryan",
+    "type": "gods",
     "label": "Asuryan",
     "title": "Créateur et roi de tous les dieux",
     "blessings": [],
@@ -13,6 +14,7 @@
   },
   {
     "id": "atharti",
+    "type": "gods",
     "label": "Atharti",
     "title": "La Dame du Désir",
     "blessings": [],
@@ -25,6 +27,7 @@
   },
   {
     "id": "bogenauer",
+    "type": "gods",
     "label": "Bögenauer",
     "title": "Dieu de la rivière Bögen",
     "blessings": [],
@@ -37,6 +40,7 @@
   },
   {
     "id": "borchbach",
+    "type": "gods",
     "label": "Borchbach",
     "title": "Dieu de la rhétorique",
     "blessings": [],
@@ -49,6 +53,7 @@
   },
   {
     "id": "clio",
+    "type": "gods",
     "label": "Clio",
     "title": "Déesse de l'Histoire",
     "blessings": [],
@@ -61,6 +66,7 @@
   },
   {
     "id": "deesse-araignee",
+    "type": "gods",
     "label": "Déesse-Araignée",
     "blessings": [
       {
@@ -100,6 +106,7 @@
   },
   {
     "id": "dyrath",
+    "type": "gods",
     "label": "Dyrath",
     "title": "Déesse des femmes",
     "blessings": [],
@@ -112,6 +119,7 @@
   },
   {
     "id": "esmeralda",
+    "type": "gods",
     "label": "Esméralda",
     "title": "La maintes-fois Grand-Mère",
     "blessings": [],
@@ -124,6 +132,7 @@
   },
   {
     "id": "evawn",
+    "type": "gods",
     "label": "Evawn",
     "title": "Déesse des voyages",
     "blessings": [
@@ -165,6 +174,7 @@
   },
   {
     "id": "grand-pere-reik",
+    "type": "gods",
     "label": "Grand-père Reik",
     "title": "Dieu du fleuve Reik",
     "blessings": [],
@@ -177,6 +187,7 @@
   },
   {
     "id": "grimnir",
+    "type": "gods",
     "label": "Grimnir",
     "title": "Dieu ancêtre des guerriers et du courage",
     "blessings": [],
@@ -189,6 +200,7 @@
   },
   {
     "id": "grungni",
+    "type": "gods",
     "label": "Grungni",
     "title": "Dieu ancêtre de la mine, du métal et de la pierre",
     "blessings": [],
@@ -201,6 +213,7 @@
   },
   {
     "id": "handrich",
+    "type": "gods",
     "label": "Handrich",
     "title": "Dieu du Commerce",
     "blessings": [],
@@ -213,6 +226,7 @@
   },
   {
     "id": "hoeth",
+    "type": "gods",
     "label": "Hoeth",
     "title": "Le Seigneur de la Sagesse",
     "blessings": [],
@@ -225,6 +239,7 @@
   },
   {
     "id": "hyacinthe",
+    "type": "gods",
     "label": "Hyacinthe",
     "title": "Déesse de la naissance et de la fertilité",
     "blessings": [],
@@ -237,6 +252,7 @@
   },
   {
     "id": "isha",
+    "type": "gods",
     "label": "Isha",
     "title": "La Mère",
     "blessings": [],
@@ -249,6 +265,7 @@
   },
   {
     "id": "josias",
+    "type": "gods",
     "label": "Josias",
     "title": "Le Croyant",
     "blessings": [],
@@ -261,6 +278,7 @@
   },
   {
     "id": "katya",
+    "type": "gods",
     "label": "Katya",
     "title": "Déesse de la beauté désarmante",
     "blessings": [],
@@ -273,6 +291,7 @@
   },
   {
     "id": "khaine",
+    "type": "gods",
     "label": "Khaine",
     "title": "Dieu du Meurtre",
     "blessings": [],
@@ -285,6 +304,7 @@
   },
   {
     "id": "khorne",
+    "type": "gods",
     "label": "Khorne",
     "title": "Dieu de la Rage",
     "blessings": [],
@@ -297,6 +317,7 @@
   },
   {
     "id": "kurnous",
+    "type": "gods",
     "label": "Kurnous",
     "title": "Le Roi de la Chasse sauvage",
     "blessings": [],
@@ -309,6 +330,7 @@
   },
   {
     "id": "mabyn",
+    "type": "gods",
     "label": "Mabyn",
     "title": "Déesse gnome des ombres",
     "blessings": [
@@ -350,6 +372,7 @@
   },
   {
     "id": "manann",
+    "type": "gods",
     "label": "Manann",
     "title": "Dieu de la mer",
     "blessings": [
@@ -424,6 +447,7 @@
   },
   {
     "id": "mathlann",
+    "type": "gods",
     "label": "Mathlann",
     "title": "Le Seigneur des Profondeurs",
     "blessings": [],
@@ -436,6 +460,7 @@
   },
   {
     "id": "morai-heg",
+    "type": "gods",
     "label": "Morai-Heg",
     "title": "Déesse du destin et de la mort",
     "blessings": [],
@@ -448,6 +473,7 @@
   },
   {
     "id": "morr",
+    "type": "gods",
     "label": "Morr",
     "title": "Dieu de la mort",
     "blessings": [
@@ -498,6 +524,7 @@
   },
   {
     "id": "myrmidia",
+    "type": "gods",
     "label": "Myrmidia",
     "title": "Déesse de la stratégie",
     "blessings": [
@@ -575,6 +602,7 @@
   },
   {
     "id": "nurgle",
+    "type": "gods",
     "label": "Nurgle",
     "title": "Dieu du Désespoir",
     "blessings": [],
@@ -592,6 +620,7 @@
   },
   {
     "id": "quinsberry",
+    "type": "gods",
     "label": "Quinsberry",
     "title": "Divinité de la connaissance et de la tradition ancestrale",
     "blessings": [],
@@ -604,6 +633,7 @@
   },
   {
     "id": "ranald",
+    "type": "gods",
     "label": "Ranald",
     "title": "Dieu de la ruse",
     "blessings": [
@@ -654,6 +684,7 @@
   },
   {
     "id": "rhya",
+    "type": "gods",
     "label": "Rhya",
     "title": "Déesse de la festilité",
     "blessings": [
@@ -704,6 +735,7 @@
   },
   {
     "id": "ringil",
+    "type": "gods",
     "label": "Ringil",
     "title": "Dieu du divertissement",
     "blessings": [
@@ -745,6 +777,7 @@
   },
   {
     "id": "shallya",
+    "type": "gods",
     "label": "Shallya",
     "title": "Déesse de la miséricorde",
     "blessings": [
@@ -795,6 +828,7 @@
   },
   {
     "id": "sigmar",
+    "type": "gods",
     "label": "Sigmar",
     "grantGroups": [
       "sigmarite"
@@ -848,6 +882,7 @@
   },
   {
     "id": "slaanesh",
+    "type": "gods",
     "label": "Slaanesh",
     "title": "Dieu de l'Excès",
     "blessings": [],
@@ -865,6 +900,7 @@
   },
   {
     "id": "stromfels",
+    "type": "gods",
     "label": "Stromfels",
     "title": "Dieu Requin",
     "blessings": [
@@ -922,6 +958,7 @@
   },
   {
     "id": "taal",
+    "type": "gods",
     "label": "Taal",
     "title": "Dieu de la nature",
     "blessings": [
@@ -972,6 +1009,7 @@
   },
   {
     "id": "tzeentch",
+    "type": "gods",
     "label": "Tzeentch",
     "title": "Dieu de l'Ambition",
     "blessings": [],
@@ -1031,6 +1069,7 @@
   },
   {
     "id": "ulric",
+    "type": "gods",
     "label": "Ulric",
     "grantGroups": [
       "ulricain"
@@ -1084,6 +1123,7 @@
   },
   {
     "id": "valaya",
+    "type": "gods",
     "label": "Valaya",
     "title": "Déesse ancêtre du brassage, de la terre et de la guérison",
     "blessings": [],
@@ -1096,6 +1136,7 @@
   },
   {
     "id": "verena",
+    "type": "gods",
     "label": "Verena",
     "title": "Déesse de la sagesse",
     "blessings": [

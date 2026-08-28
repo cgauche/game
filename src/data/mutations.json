@@ -1,6 +1,7 @@
 [
   {
     "id": "pattes-d-animaux",
+    "type": "mutations",
     "label": "Pattes d’animaux",
     "desc": "+1 Mouvement",
     "kind": "physique",
@@ -22,6 +23,7 @@
   },
   {
     "id": "corpulent",
+    "type": "mutations",
     "label": "Corpulent",
     "desc": "-1 Mouvement, +5 Force, +5 Endurance",
     "kind": "physique",
@@ -53,6 +55,7 @@
   },
   {
     "id": "doigts-distendus",
+    "type": "mutations",
     "label": "Doigts distendus",
     "desc": "+10 Dextérité",
     "kind": "physique",
@@ -75,6 +78,7 @@
   },
   {
     "id": "emacie",
+    "type": "mutations",
     "label": "Émacié",
     "desc": "-10 Force, +5 Agilité",
     "kind": "physique",
@@ -102,6 +106,7 @@
   },
   {
     "id": "oeil-enorme",
+    "type": "mutations",
     "label": "Œil énorme",
     "desc": "+10 aux Tests de Perception impliquant la vue",
     "kind": "physique",
@@ -118,6 +123,7 @@
   },
   {
     "id": "articulation-supplementaire-aux-jambes",
+    "type": "mutations",
     "label": "Articulation supplémentaire aux jambes",
     "desc": "+5 Agilité",
     "kind": "physique",
@@ -140,6 +146,7 @@
   },
   {
     "id": "bouche-supplementaire",
+    "type": "mutations",
     "label": "Bouche supplémentaire",
     "desc": "Effectuer un lancer sur le Tableau des Localisations afin de déterminer où cette bouche apparaît.",
     "kind": "physique",
@@ -156,6 +163,7 @@
   },
   {
     "id": "tentacule-epais",
+    "type": "mutations",
     "label": "Tentacule épais",
     "desc": "Vous gagnez le Trait de Créature Tentacule. Voir page 343",
     "kind": "physique",
@@ -178,6 +186,7 @@
   },
   {
     "id": "peau-brillante",
+    "type": "mutations",
     "label": "Peau brillante",
     "desc": "Produit une lumière équivalente à celle d’une bougie.",
     "kind": "physique",
@@ -197,6 +206,7 @@
   },
   {
     "id": "beaute-surnaturelle",
+    "type": "mutations",
     "label": "Beauté surnaturelle",
     "desc": "+10 Sociabilité. Vous ne gardez jamais de cicatrice.",
     "kind": "physique",
@@ -220,6 +230,7 @@
   },
   {
     "id": "visage-inverse",
+    "type": "mutations",
     "label": "Visage inversé",
     "desc": "-20 aux Tests de Sociabilité",
     "kind": "physique",
@@ -242,6 +253,7 @@
   },
   {
     "id": "peau-d-acier",
+    "type": "mutations",
     "label": "Peau d’acier",
     "desc": "+2 PA à toutes les Localisations, -10 Agilité",
     "kind": "physique",
@@ -268,6 +280,7 @@
   },
   {
     "id": "langue-pendante",
+    "type": "mutations",
     "label": "Langue pendante",
     "desc": "-10 à tous les Tests de Langue lorsque vous parlez. Effectuez deux lancers sur le Tableau des Localisations pour déterminer où ces plumes",
     "kind": "physique",
@@ -290,6 +303,7 @@
   },
   {
     "id": "plumes-eparses",
+    "type": "mutations",
     "label": "Plumes éparses",
     "desc": "apparaissent.",
     "kind": "physique",
@@ -306,6 +320,7 @@
   },
   {
     "id": "court-sur-pattes",
+    "type": "mutations",
     "label": "Court sur pattes",
     "desc": "-1 Mouvement",
     "kind": "physique",
@@ -327,6 +342,7 @@
   },
   {
     "id": "ecailles-epineuses",
+    "type": "mutations",
     "label": "Écailles épineuses",
     "desc": "+1 PA à toutes les Localisations",
     "kind": "physique",
@@ -352,6 +368,7 @@
   },
   {
     "id": "cornes-asymetriques",
+    "type": "mutations",
     "label": "Cornes asymétriques",
     "desc": "+1 PA à la Tête. Compte comme une Arme de Créature dont le nombre de Dégâts est égal à votre Bonus de Force (voir page 338)",
     "kind": "physique",
@@ -383,6 +400,7 @@
   },
   {
     "id": "suintement-de-pus",
+    "type": "mutations",
     "label": "Suintement de pus",
     "desc": "Effectuez un lancer sur le Tableau des Localisations pour déterminer l’origine du suintement",
     "kind": "physique",
@@ -399,6 +417,7 @@
   },
   {
     "id": "groin-poilu",
+    "type": "mutations",
     "label": "Groin poilu",
     "desc": "+10 Pistage",
     "kind": "physique",
@@ -421,6 +440,7 @@
   },
   {
     "id": "choix-du-mj",
+    "type": "mutations",
     "label": "Choix du MJ",
     "desc": "Le MJ choisit une mutation ou un Trait de Créature. Voir page 340.",
     "kind": "physique",
@@ -432,6 +452,7 @@
   },
   {
     "id": "atroces-desirs",
+    "type": "mutations",
     "label": "Atroces désirs",
     "desc": "-5 Sociabilité, -5 Force Mentale",
     "kind": "mentale",
@@ -454,6 +475,7 @@
   },
   {
     "id": "bete-interieure",
+    "type": "mutations",
     "label": "Bête intérieure",
     "desc": "+10 Force Mentale, -5 Sociabilité, –5 Intelligence",
     "kind": "mentale",
@@ -481,6 +503,7 @@
   },
   {
     "id": "reves-chaotiques",
+    "type": "mutations",
     "label": "Rêves chaotiques",
     "desc": "Gagnez l’État Exténué pendant les deux premières heures de chaque journée.",
     "kind": "mentale",
@@ -492,6 +515,7 @@
   },
   {
     "id": "formication",
+    "type": "mutations",
     "label": "Formication",
     "desc": "-5 Initiative, -5 Dextérité",
     "kind": "mentale",
@@ -514,6 +538,7 @@
   },
   {
     "id": "imprevisible-fantaisiste",
+    "type": "mutations",
     "label": "Imprévisible fantaisiste",
     "desc": "-5 Intelligence, -5 Force Mentale",
     "kind": "mentale",
@@ -536,6 +561,7 @@
   },
   {
     "id": "terrible-inquietude",
+    "type": "mutations",
     "label": "Terrible inquiétude",
     "desc": "-10 Force Mentale",
     "kind": "mentale",
@@ -553,6 +579,7 @@
   },
   {
     "id": "pulsions-de-haine",
+    "type": "mutations",
     "label": "Pulsions de haine",
     "desc": "Sujet à l’Hostilité (voir Psychologie ) envers tous ceux qui ne sont pas de votre race.",
     "kind": "mentale",
@@ -564,6 +591,7 @@
   },
   {
     "id": "coeur-desseche",
+    "type": "mutations",
     "label": "Cœur desséché",
     "desc": "+10 Force Mentale, -10 Sociabilité",
     "kind": "mentale",
@@ -586,6 +614,7 @@
   },
   {
     "id": "pensees-envieuses",
+    "type": "mutations",
     "label": "Pensées envieuses",
     "desc": "-10 Sociabilité",
     "kind": "mentale",
@@ -603,6 +632,7 @@
   },
   {
     "id": "esprit-solitaire",
+    "type": "mutations",
     "label": "Esprit solitaire",
     "desc": "-10 aux Tests lorsque vous êtes seul",
     "kind": "mentale",
@@ -614,6 +644,7 @@
   },
   {
     "id": "blocage-mental",
+    "type": "mutations",
     "label": "Blocage mental",
     "desc": "-10 Intelligence",
     "kind": "mentale",
@@ -631,6 +662,7 @@
   },
   {
     "id": "urgence-profanatoire",
+    "type": "mutations",
     "label": "Urgence profanatoire",
     "desc": "-10 Force Mentale, +10 Agilité",
     "kind": "mentale",
@@ -653,6 +685,7 @@
   },
   {
     "id": "morale-douteuse",
+    "type": "mutations",
     "label": "Morale douteuse",
     "desc": "Gagnez 1 État Brisé si vous échouez à un Test dérivé de la Force Mentale.",
     "kind": "mentale",
@@ -664,6 +697,7 @@
   },
   {
     "id": "esprit-suspicieux",
+    "type": "mutations",
     "label": "Esprit suspicieux",
     "desc": "-5 Initiative, -5 Intelligence",
     "kind": "mentale",
@@ -686,6 +720,7 @@
   },
   {
     "id": "accro-a-l-adrenaline",
+    "type": "mutations",
     "label": "Accro à l’adrénaline",
     "desc": "+10 Force Mentale, -10 Initiative",
     "kind": "mentale",
@@ -708,6 +743,7 @@
   },
   {
     "id": "visions-torturees",
+    "type": "mutations",
     "label": "Visions torturées",
     "desc": "-10 Initiative",
     "kind": "mentale",
@@ -725,6 +761,7 @@
   },
   {
     "id": "totalement-desequilibre",
+    "type": "mutations",
     "label": "Totalement déséquilibré",
     "desc": "-20 Sociabilité, +10 Force Mentale -10 à tous les Tests qui ne sont pas destinés à blesser autrui. +10 à tous les Tests destinés à",
     "kind": "mentale",
@@ -747,6 +784,7 @@
   },
   {
     "id": "infinie-malveillance",
+    "type": "mutations",
     "label": "Infinie malveillance",
     "desc": "blesser autrui.",
     "kind": "mentale",
@@ -758,6 +796,7 @@
   },
   {
     "id": "colere-impie",
+    "type": "mutations",
     "label": "Colère impie",
     "desc": "Sujet à Frénésie (voir Psychologie), +10 à la Capacité de Combat",
     "kind": "mentale",
@@ -780,6 +819,7 @@
   },
   {
     "id": "affreusement-nerveux",
+    "type": "mutations",
     "label": "Affreusement nerveux",
     "desc": "+5 Agilité, -5 Sociabilité",
     "kind": "mentale",
@@ -802,6 +842,7 @@
   },
   {
     "id": "chair-necrosee",
+    "type": "mutations",
     "label": "Chair nécrosée",
     "desc": "Gagnez le Trait Peur 3, et -20 Sociabilité.",
     "kind": "physique",
@@ -829,6 +870,7 @@
   },
   {
     "id": "cretin",
+    "type": "mutations",
     "label": "Crétin",
     "desc": "Perdez 40 Intelligence, jusqu’à un minimum de 10. Gagnez le Trait de créature Stupide.",
     "kind": "physique",
@@ -855,6 +897,7 @@
   },
   {
     "id": "pattes-chevre",
+    "type": "mutations",
     "label": "Pattes (Chèvre)",
     "desc": "Vos jambes ressemblent maintenant aux pattes postérieures d’une chèvre, avec le genou articulé vers l’arrière. Bien que vous puissiez le cacher avec des vêtements suffisamment amples, votre démarche n’est visiblement pas naturelle. Gagnez +1 Mouvement.",
     "kind": "physique",
@@ -876,6 +919,7 @@
   },
   {
     "id": "tete-bestiale-chien",
+    "type": "mutations",
     "label": "Tête bestiale (Chien)",
     "desc": "Perdez 20 Sociabilité et 10 Intelligence. Obtenez le Talent Sens aiguisé (Odorat) et le Trait Morsure +5.",
     "kind": "physique",
@@ -913,6 +957,7 @@
   },
   {
     "id": "tete-pointue",
+    "type": "mutations",
     "label": "Tête pointue",
     "desc": "Perdez 5 Intelligence et 10 Sociabilité. Gagnez +1 Point d’Armure à la localisation : Tête. Les couvre-chefs ne conviennent que s’ils sont spécialement conçus pour vous, bien que vous portiez avec aisance les chapeaux en forme de cône.",
     "kind": "physique",
@@ -945,6 +990,7 @@
   },
   {
     "id": "fuite-aethyrique",
+    "type": "mutations",
     "label": "Fuite aethyrique",
     "desc": "Gagne le Talent Sorcier ! ; -5 en Sociabilité, -5 en Intelligence",
     "kind": "mentale",
@@ -972,6 +1018,7 @@
   },
   {
     "id": "esprit-animal",
+    "type": "mutations",
     "label": "Esprit animal",
     "desc": "Gagne le Trait de créature Bestial pendant 1d10 heures après un échec à un Test lié à la Force Mentale",
     "kind": "mentale",
@@ -983,6 +1030,7 @@
   },
   {
     "id": "modele-de-corruption",
+    "type": "mutations",
     "label": "Modèle de corruption",
     "desc": "Si soumis à Psychologie (voir Livre de Règles, page 190), gagne le Trait de créature Corruption (Mineure) ; -10 Sociabilité",
     "kind": "mentale",
@@ -1001,6 +1049,7 @@
   },
   {
     "id": "douleur-transcendee",
+    "type": "mutations",
     "label": "Douleur transcendée",
     "desc": "Gagne le Trait de créature Insensible à la douleur ; -20 Initiative, -20 Intelligence",
     "kind": "mentale",
@@ -1028,6 +1077,7 @@
   },
   {
     "id": "ame-blasphematoire",
+    "type": "mutations",
     "label": "Âme blasphématoire",
     "desc": "Gagne le Trait de créature Haine (Religion) ; +10 Force Mentale",
     "kind": "mentale",
@@ -1051,6 +1101,7 @@
   },
   {
     "id": "esprit-aneanti",
+    "type": "mutations",
     "label": "Esprit anéanti",
     "desc": "Gagne le Trait de créature Immunité Psychologique durant 1d10 Rounds lorsque vous prenez un État Brisé, ensuite subissez 1d10 États Brisé",
     "kind": "mentale",
@@ -1062,6 +1113,7 @@
   },
   {
     "id": "haine-sporadique",
+    "type": "mutations",
     "label": "Haine sporadique",
     "desc": "Gagne le Trait de créature Haine (Cible). Lancez les dés sur le Tableau des Obsessions au début de chaque jour pour déterminer la Cible",
     "kind": "mentale",
@@ -1080,6 +1132,7 @@
   },
   {
     "id": "corruption-sublime",
+    "type": "mutations",
     "label": "Corruption sublime",
     "desc": "Gagne l’État Exténué chaque semaine durant laquelle aucun Point de Corruption n’est gagné, ou que vous n’avez pas provoqué le gain d’un Point de Corruption chez un autre Personnage ; perte de tous les États Exténué si l’une ou l’autre situation se produit",
     "kind": "mentale",
@@ -1091,6 +1144,7 @@
   },
   {
     "id": "desespoir-obsedant",
+    "type": "mutations",
     "label": "Désespoir obsédant",
     "desc": "Gagne le symptôme Malaise durant 1d10 heures en cas d’échec à un Test lié à la Force Mentale",
     "kind": "mentale",
@@ -1102,6 +1156,7 @@
   },
   {
     "id": "masochisme-pressant",
+    "type": "mutations",
     "label": "Masochisme pressant",
     "desc": "Gagne le Trait de créature Belliqueux : impossibilité de Fuir volontairement (voir page 165 du Livre de Règles)",
     "kind": "mentale",
@@ -1119,6 +1174,7 @@
   },
   {
     "id": "repugnance-persistante",
+    "type": "mutations",
     "label": "Répugnance persistante",
     "desc": "Gagne le Symptôme Nausée durant 1d10 heures après avoir été confronté à de la saleté",
     "kind": "mentale",
@@ -1130,6 +1186,7 @@
   },
   {
     "id": "errance-mentale",
+    "type": "mutations",
     "label": "Errance mentale",
     "desc": "-10 Intelligence, +10 Force Mentale. Gagne le Trait de créature Stupide si seul",
     "kind": "mentale",
@@ -1153,6 +1210,7 @@
   },
   {
     "id": "paranoia-galopante",
+    "type": "mutations",
     "label": "Paranoïa galopante",
     "desc": "Gagne le Trait de créature Nerveux, +10 Initiative",
     "kind": "mentale",
@@ -1175,6 +1233,7 @@
   },
   {
     "id": "panique-extreme",
+    "type": "mutations",
     "label": "Panique extrême",
     "desc": "-10 Force Mentale, +10 Agilité",
     "kind": "mentale",
@@ -1198,6 +1257,7 @@
   },
   {
     "id": "faim-intense",
+    "type": "mutations",
     "label": "Faim intense",
     "desc": "Gagne le Trait de créature Affamé",
     "kind": "mentale",
@@ -1215,6 +1275,7 @@
   },
   {
     "id": "maladie-de-l-ame",
+    "type": "mutations",
     "label": "Maladie de l’âme",
     "desc": "Gagne le Symptôme Convulsions durant 1d10 heures en cas d’échec à un Test lié à la Force Mentale",
     "kind": "mentale",
@@ -1226,6 +1287,7 @@
   },
   {
     "id": "terribles-phobies",
+    "type": "mutations",
     "label": "Terribles phobies",
     "desc": "Gagne le Trait de créature Effrayé (Cible), déterminer la Cible avec un jet sur le Tableau des Obsessions",
     "kind": "mentale",
@@ -1244,6 +1306,7 @@
   },
   {
     "id": "sang-acide",
+    "type": "mutations",
     "label": "Sang acide",
     "desc": "Gagne le Trait de créature Sang corrosif",
     "kind": "physique",
@@ -1261,6 +1324,7 @@
   },
   {
     "id": "bec",
+    "type": "mutations",
     "label": "Bec",
     "desc": "Gagne le Trait de créature Morsure +3",
     "kind": "physique",
@@ -1284,6 +1348,7 @@
   },
   {
     "id": "tete-bestiale",
+    "type": "mutations",
     "label": "Tête bestiale",
     "desc": "Voir page 69",
     "kind": "physique",
@@ -1301,6 +1366,7 @@
   },
   {
     "id": "extremites-armees",
+    "type": "mutations",
     "label": "Extrémités armées",
     "desc": "Réduit la Dextérité à 0 de façon permanente.\nVous ne pouvez pas être désarmé",
     "kind": "physique",
@@ -1317,6 +1383,7 @@
   },
   {
     "id": "grandes-oreilles",
+    "type": "mutations",
     "label": "Grandes oreilles",
     "desc": "Gagne le Talent Sens aiguisé (Ouïe)",
     "kind": "physique",
@@ -1340,6 +1407,7 @@
   },
   {
     "id": "pattes-d-oiseau",
+    "type": "mutations",
     "label": "Pattes d’oiseau",
     "desc": "Gagne le Trait de créature Arboricole",
     "kind": "physique",
@@ -1362,6 +1430,7 @@
   },
   {
     "id": "visage-sans-traits",
+    "type": "mutations",
     "label": "Visage sans traits",
     "desc": "Gagne le Trait de créature Peur 2",
     "kind": "physique",
@@ -1385,6 +1454,7 @@
   },
   {
     "id": "souffle-du-feu",
+    "type": "mutations",
     "label": "Souffle du feu",
     "desc": "Gagne le Trait de créature Souffle 5 (Feu)",
     "kind": "physique",
@@ -1404,6 +1474,7 @@
   },
   {
     "id": "exophtalmie",
+    "type": "mutations",
     "label": "Exophtalmie",
     "desc": "+10 Initiative",
     "kind": "physique",
@@ -1427,6 +1498,7 @@
   },
   {
     "id": "peau-ardente",
+    "type": "mutations",
     "label": "Peau ardente",
     "desc": "Les créatures ou les objets qui vous touchent\nphysiquement doivent réussir un Test\nd'Athlétisme ou gagner un État En flammes",
     "kind": "physique",
@@ -1443,6 +1515,7 @@
   },
   {
     "id": "carapace",
+    "type": "mutations",
     "label": "Carapace",
     "desc": "+1 Point d'Armure sur deux Localisations\nau hasard",
     "kind": "physique",
@@ -1459,6 +1532,7 @@
   },
   {
     "id": "griffes",
+    "type": "mutations",
     "label": "Griffes",
     "desc": "Les mains comptent comme une Arme aux\nDégâts équivalents à votre Bonus de Force",
     "kind": "physique",
@@ -1485,6 +1559,7 @@
   },
   {
     "id": "nuage-de-mouches",
+    "type": "mutations",
     "label": "Nuage de mouches",
     "desc": "Gagne le Trait de créature Perturbant",
     "kind": "physique",
@@ -1507,6 +1582,7 @@
   },
   {
     "id": "crete-sur-la-tete",
+    "type": "mutations",
     "label": "Crête sur la tête",
     "desc": "Gagne le Talent Attirant avec les mutants\net les hommes-bêtes",
     "kind": "physique",
@@ -1530,6 +1606,7 @@
   },
   {
     "id": "cri-assourdissant",
+    "type": "mutations",
     "label": "Cri assourdissant",
     "desc": "Gagne le Trait de créature Perturbant",
     "kind": "physique",
@@ -1547,6 +1624,7 @@
   },
   {
     "id": "bras-elastiques",
+    "type": "mutations",
     "label": "Bras élastiques",
     "desc": "Vous pouvez considérer toute arme de\ncorps à corps comme ayant une Allonge de\ndeux pas supérieure",
     "kind": "physique",
@@ -1563,6 +1641,7 @@
   },
   {
     "id": "mauvais-oeil",
+    "type": "mutations",
     "label": "Mauvais œil",
     "desc": "Vous pouvez lancer le Sort Mauvais œil\n(page 255 du Livre de Règles) en dépensant\nun Point de Chance, sans faire de test ;\nvous subissez immédiatement les effets\nd'une Incantation imparfaite mineure (page\n234 du Livre de Règles)",
     "kind": "physique",
@@ -1579,6 +1658,7 @@
   },
   {
     "id": "oeil-pedoncule",
+    "type": "mutations",
     "label": "Œil pédonculé",
     "desc": "Voit par dessus ou autour des obstacles",
     "kind": "physique",
@@ -1595,6 +1675,7 @@
   },
   {
     "id": "odeur-pestilentielle",
+    "type": "mutations",
     "label": "Odeur pestilentielle",
     "desc": "Gagne le Trait de créature Perturbant",
     "kind": "physique",
@@ -1612,6 +1693,7 @@
   },
   {
     "id": "fourrure",
+    "type": "mutations",
     "label": "Fourrure",
     "desc": "Vous ne souffrez plus des effets de\nl'Exposition aux climats froids, mais les\neffets de l'Exposition aux climats chauds\nsont doublés (WFJDR, page 181)",
     "kind": "physique",
@@ -1628,6 +1710,7 @@
   },
   {
     "id": "branchies",
+    "type": "mutations",
     "label": "Branchies",
     "desc": "Vous pouvez respirer sous l'eau",
     "kind": "physique",
@@ -1644,6 +1727,7 @@
   },
   {
     "id": "sans-tete",
+    "type": "mutations",
     "label": "Sans tête",
     "desc": "Gagne le Trait de créature Peur 2, les coups portés à la tête sont considérés comme ratés",
     "kind": "physique",
@@ -1667,6 +1751,7 @@
   },
   {
     "id": "sauteur",
+    "type": "mutations",
     "label": "Sauteur",
     "desc": "Votre Mouvement est réduit de 2, et ne peut être augmenté ; gagne le Trait de créature Bond",
     "kind": "physique",
@@ -1693,6 +1778,7 @@
   },
   {
     "id": "longs-bras",
+    "type": "mutations",
     "label": "Longs bras",
     "desc": "Si vous et votre opposant avez des armes de même Allonge, votre arme est considérée comme plus longue (Livre de Règles p 297)",
     "kind": "physique",
@@ -1709,6 +1795,7 @@
   },
   {
     "id": "longues-jambes",
+    "type": "mutations",
     "label": "Longues jambes",
     "desc": "+2 Mouvement",
     "kind": "physique",
@@ -1730,6 +1817,7 @@
   },
   {
     "id": "long-cou",
+    "type": "mutations",
     "label": "Long cou",
     "desc": "La moitié des coups au corps sont des coups à la tête",
     "kind": "physique",
@@ -1746,6 +1834,7 @@
   },
   {
     "id": "bras-multiples",
+    "type": "mutations",
     "label": "Bras multiples",
     "desc": "Gagne une Attaque gratuite",
     "kind": "physique",
@@ -1762,6 +1851,7 @@
   },
   {
     "id": "jambes-multiples",
+    "type": "mutations",
     "label": "Jambes multiples",
     "desc": "+1 Mouvement",
     "kind": "physique",
@@ -1783,6 +1873,7 @@
   },
   {
     "id": "oeil-unique",
+    "type": "mutations",
     "label": "Œil unique",
     "desc": "-20 CT",
     "kind": "physique",
@@ -1805,6 +1896,7 @@
   },
   {
     "id": "visage-difforme",
+    "type": "mutations",
     "label": "Visage difforme",
     "desc": "Gagne le Trait de créature Peur 1 ; les Personnages, qui tentent de déterminer si vous mentez, subissent une pénalité de -20 à leur Intuition.",
     "kind": "physique",
@@ -1828,6 +1920,7 @@
   },
   {
     "id": "couleurs-changeantes",
+    "type": "mutations",
     "label": "Couleurs changeantes",
     "desc": "Gagne le Trait de créature Perturbant",
     "kind": "physique",
@@ -1849,6 +1942,7 @@
   },
   {
     "id": "tete-de-mort",
+    "type": "mutations",
     "label": "Tête de mort",
     "desc": "Gagne le Trait de créature Peur 2",
     "kind": "physique",
@@ -1871,6 +1965,7 @@
   },
   {
     "id": "peau-herissee-de-pointes",
+    "type": "mutations",
     "label": "Peau hérissée de pointes",
     "desc": "Ne peut pas porter d'armure, +1 Point d'Armure sur toutes les Localisations gagne une attaque gratuite (Trait de créature Arme +4) en faisant une Charge.",
     "kind": "physique",
@@ -1893,6 +1988,7 @@
   },
   {
     "id": "mains-et-pieds-a-ventouses",
+    "type": "mutations",
     "label": "Mains et pieds à ventouses",
     "desc": "Gagne le Trait de créature Grimpant",
     "kind": "physique",
@@ -1914,6 +2010,7 @@
   },
   {
     "id": "queue",
+    "type": "mutations",
     "label": "Queue",
     "desc": "Gagne le Trait de créature Attaque caudale +3\n-10 Dex ; -10 Soc ; +1 Point d'Armure à toutes les Localisations",
     "kind": "physique",
@@ -1936,6 +2033,7 @@
   },
   {
     "id": "peau-transparente",
+    "type": "mutations",
     "label": "Peau transparente",
     "desc": "Gagne le Trait de créature Peur 2",
     "kind": "physique",
@@ -1958,6 +2056,7 @@
   },
   {
     "id": "bicephale",
+    "type": "mutations",
     "label": "Bicéphale",
     "desc": "Gagne le Talent Ambidextre",
     "kind": "physique",
@@ -1979,6 +2078,7 @@
   },
   {
     "id": "peau-etrange",
+    "type": "mutations",
     "label": "Peau étrange",
     "desc": "Couleur, ou texture, inhabituelle : orange, rayée, tachetée, à pustules, etc",
     "kind": "physique",
@@ -1995,6 +2095,7 @@
   },
   {
     "id": "malefrenesie",
+    "type": "mutations",
     "label": "Malefrénésie",
     "desc": "Gagne le Trait de créature Frénésie, quand vous êtes en Frénésie, gagnez temporairement une autre mutation aléatoire",
     "kind": "physique",
@@ -2013,6 +2114,7 @@
   },
   {
     "id": "pieds-palmes",
+    "type": "mutations",
     "label": "Pieds palmés",
     "desc": "Gagne le Trait de créature Amphibie",
     "kind": "physique",
@@ -2034,6 +2136,7 @@
   },
   {
     "id": "ailes",
+    "type": "mutations",
     "label": "Ailes",
     "desc": "Gagne le Trait de créature Vol 60",
     "kind": "physique",
@@ -2056,6 +2159,7 @@
   },
   {
     "id": "tete-bestiale-ours",
+    "type": "mutations",
     "label": "Tête bestiale (Ours)",
     "desc": "1 Point d'Armure à la tête ; gagne le Trait de créature Morsure +9",
     "kind": "physique",
@@ -2083,6 +2187,7 @@
   },
   {
     "id": "tete-bestiale-sanglier",
+    "type": "mutations",
     "label": "Tête bestiale (Sanglier)",
     "desc": "+1 Point d'Armure à la tête ; gagne le Trait de créature Cornes (Défenses)",
     "kind": "physique",
@@ -2110,6 +2215,7 @@
   },
   {
     "id": "tete-bestiale-taureau",
+    "type": "mutations",
     "label": "Tête bestiale (Taureau)",
     "desc": "+1 Point d'Armure à la tête ; gagne le Trait de créature Cornes",
     "kind": "physique",
@@ -2136,6 +2242,7 @@
   },
   {
     "id": "tete-bestiale-aigle",
+    "type": "mutations",
     "label": "Tête bestiale (Aigle)",
     "desc": "Gagne le Trait de créature Morsure +4",
     "kind": "physique",
@@ -2158,6 +2265,7 @@
   },
   {
     "id": "tete-bestiale-rat",
+    "type": "mutations",
     "label": "Tête bestiale (Rat)",
     "desc": "Gagne le Trait de créature Morsure +3 et Infecté",
     "kind": "physique",
@@ -2184,6 +2292,7 @@
   },
   {
     "id": "tete-bestiale-araignee-geante",
+    "type": "mutations",
     "label": "Tête bestiale (Araignée géante)",
     "desc": "Gagne le Trait de créature Morsure +3 et Venin (Intermédiaire)",
     "kind": "physique",
@@ -2211,6 +2320,7 @@
   },
   {
     "id": "tete-bestiale-chevre",
+    "type": "mutations",
     "label": "Tête bestiale (Chèvre)",
     "desc": "Gagne le Trait de créature Cornes",
     "kind": "physique",
@@ -2232,6 +2342,7 @@
   },
   {
     "id": "tete-bestiale-loup",
+    "type": "mutations",
     "label": "Tête bestiale (Loup)",
     "desc": "+1 Point d'Armure à la tête ; gagne le Trait de créature Morsure +6 ; gagne le Talent Sens aiguisé (Odorat)",
     "kind": "physique",
@@ -2264,6 +2375,7 @@
   },
   {
     "id": "tete-bestiale-serpent",
+    "type": "mutations",
     "label": "Tête bestiale (Serpent)",
     "desc": "+1 Point d'Armure à la tête ; gagne les Traits de créature Morsure +3 et Venin (Accessible)",
     "kind": "physique",
@@ -2296,6 +2408,7 @@
   },
   {
     "id": "ecailles-epineuses-edoc",
+    "type": "mutations",
     "label": "Écailles épineuses",
     "desc": "-10 Dex ; -10 Soc ; +1 Point d'Armure à toutes les Localisations",
     "kind": "physique",
@@ -2331,6 +2444,7 @@
   },
   {
     "id": "trois-yeux",
+    "type": "mutations",
     "label": "Trois yeux",
     "desc": "Gagne le Talent Sens aiguisé (Vue)",
     "kind": "physique",
@@ -2353,6 +2467,7 @@
   },
   {
     "id": "buveur-de-saumure",
+    "type": "mutations",
     "label": "Buveur de saumure",
     "desc": "Quelqu'un qui possède cette mutation peut boire l'eau salée sans que cela soit nocif pour lui. En plus de son avantage sur le plan de la survie en mer, cela permet au mutant de cracher un torrent de vomi corrosif, piquant et salé. C'est une attaque de Vomissement, mais au lieu de subir des Dégâts, la cible doit réussir un Test de **Résistance Complexe (–10)** sous peine de subir un État *Aveuglé*, et toute pièce d'armure en métal qu'elle porte voit ses Points d'Armure réduits de moitié (arrondi au supérieur), car le métal se met tout de suite à rouiller. La peau du mutant est constamment recouverte d'une croûte salée et humide et il doit boire une pinte d'eau de mer salée (et pas seulement d'eau douce à laquelle du sel a été ajouté) par jour, sous peine de subir un État *Exténué*.",
     "kind": "physique",
@@ -2368,6 +2483,7 @@
   },
   {
     "id": "bosse-d-os",
+    "type": "mutations",
     "label": "La bosse d'os",
     "desc": "des os à la fois souples et durs comme le fer se sont propagés depuis la bosse du Vieux Dos-de-pus sur tout son corps. Ceci l'a rendu plus lent, mais aussi incroyablement coriace.",
     "kind": "physique",

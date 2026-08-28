@@ -202,6 +202,7 @@ export const NIGHT_STAKES = nightStakesJson as NightStakeEntry[];
  *  (verbatim figé) : cf. `schemas/defs/voyage-stakes.ts`. */
 export interface VoyageStakeEntry {
   id: string;
+  type: 'voyage-stakes';
   label: string;
   kind: string;
   template: string;
@@ -816,6 +817,7 @@ export interface ClassData {
 export interface CareerData {
   /** id STABLE (slug du libellé) — cible de `Combatant.career`, `CareerLevelData.career`, pregens. */
   id: string;
+  type: 'careers';
   label: string;
   /** Forme féminine d'AFFICHAGE (le LDB n'imprime que le masculin — féminisation standard MAISON) ;
    *  absent = forme épicène (identique au masculin). Lu par `careerLabelFor` (bord UI). */
@@ -1275,6 +1277,7 @@ export interface TrappingData {
  *  `Trapping/Weapon/ItemInstance.subType` (réf, ≠ libellé) ; `kind` = métadonnée d'affichage. */
 export interface WeaponGroupData {
   id: string;
+  type: 'weaponGroups';
   label: string;
   kind: 'weapon' | 'ammo' | 'armour' | 'inventory';
   /** Matériau d'une armure (groupes `kind:'armour'`) — source TYPÉE des exemptions de Magie des Arcanes
@@ -1295,6 +1298,7 @@ export interface WeaponGroupData {
  *  référencé par les cibles de Traits psy et les filtres `onlyGroups`/`exceptGroups`/zones. */
 export interface GroupData {
   id: string;
+  type: 'groups';
   label: string;
   /** Groupe-CIBLE JOKER : il vise n'importe quel combattant (`groupMatch`, `engine/groups`), hormis
    *  les porteurs d'un `exceptGroups`. Absent = appartenance STRICTE par id. */
@@ -1837,6 +1841,7 @@ export interface QualityCapabilities {
 export interface QualityData {
   /** id STABLE (slug du libellé) — cible des `Ref` de qualité, robuste au renommage. */
   id: string;
+  type: 'qualities';
   label: string;
   /** POLARITÉ : Atout (bénéfique) / Défaut (handicap) — `id` de `qualityTypes.json`. Trois PAIRES de
    *  rubriques : objet `LDB 60 l.9`/`l.40`, arme `LDB 62 l.217`/`l.309`, armure `LDB 63 l.68`/`l.80`. */
@@ -2113,6 +2118,7 @@ export interface StarData {
   /** id STABLE (slug du libellé) — `Combatant.star` le stocke, le runtime résout par `findStarById`
    *  (≠ libellé — multilangue-safe). */
   id: string;
+  type: 'stars';
   label: string;
   rand: number;
   signe: string | null;
@@ -2146,6 +2152,7 @@ export interface CelestialHouseData {
 export interface LocationData {
   /** id STABLE (slug du libellé) — cible de `parent` (réf id, ≠ libellé) et des réfs inverses. */
   id: string;
+  type: 'locations';
   label: string;
   /** `id` du lieu parent (`LocationData.id`), ou null si racine — réf d'entité, ≠ libellé. */
   parent: string | null;
@@ -2157,6 +2164,7 @@ export interface LocationData {
 /** Ouvrage WFRP4 référencé (bibliographie). `desc` = présentation en texte/Markdown (règle 5). */
 export interface BookData {
   id: string;
+  type: 'books';
   label: string;
   abbr: string;
   dir?: string | null;
@@ -2228,6 +2236,7 @@ export const etats = etatsJson as EtatData[];
  *  tooltip `CodexRef` (catégorie `regles`). */
 export interface RegleData {
   id: string;
+  type: 'regles';
   label: string;
   desc: string;
   source: SourceRef;
@@ -2635,7 +2644,7 @@ export const CORE_AXIS_IDS: string[] = allAxes.filter((a) => a.core).map((a) => 
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 /** Calendrier impérial — tables de CONTENU éditables au Codex (cf. `engine/clock.ts` pour la mécanique). */
-export const calendarMonths = calendarMonthsJson as { id: string; label: string; days: number }[];
+export const calendarMonths = calendarMonthsJson as { id: string; type: 'calendarMonths'; label: string; days: number }[];
 export const calendarIntercalary = calendarIntercalaryJson as { id: string; type: 'calendarIntercalary'; label: string; afterMonth: number }[];
 export const calendarWeekdays = calendarWeekdaysJson as { id: string; type: 'calendarWeekdays'; label: string }[];
 export const calendarPhases = calendarPhasesJson as { id: string; type: 'calendarPhases'; start: number; label: string; icon: string }[];
@@ -2691,6 +2700,7 @@ export function bookAbr(id: string | null | undefined): string {
  *  les `cults/defs/*.ts` (codegen retiré). */
 export interface GodData {
   id: string;
+  type: 'gods';
   label: string;
   /** Ids de `groups.json` accordés au fidèle de ce culte — poussés par un Talent qui porte
    *  `grantSpecGroups` et dont le `spec` nomme ce dieu (`groupsFor`). Absent = aucun Groupe. */

@@ -5,24 +5,39 @@
  * l'entité éditable — porté seulement par l'INSTANCE tirée à l'exécution (hors dataset).
  */
 import { z } from 'zod';
-import { sourceRefSchema, entityAppearanceSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { entityAppearanceSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'mutations.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    desc: z.string(),
+const doc = document(
+  'mutations',
+  famille,
+  {
     kind: z.enum(['physique', 'mentale']),
     passive: z.array(gameOpSchema).optional(),
     note: z.string().optional(),
-    source: sourceRefSchema.optional(),
     nonVisual: z.boolean().optional(),
     /** id d'une autre entrée `mutations.json` (Tête bestiale EDOC → sous-table alignée, `rollMutation`). */
     subTable: z.string().optional(),
     appearance: entityAppearanceSchema.optional(),
-  }),
+  },
+  {
+    kind: { label: 'Type de Mutation', hint: 'Physique ou mentale' },
+    passive: { label: 'Effets passifs' },
+    note: { label: 'Note', hint: 'Note mécanique de l’entrée — ex. bonus de Perception' },
+    nonVisual: { label: 'Non visible', hint: 'La mutation n’affecte pas l’apparence' },
+    subTable: { label: 'Sous-table de tirage', hint: 'Entrée dont la sous-table est tirée en cascade' },
+    appearance: { label: 'Apparence' },
+  },
+  {
+    codex: { keys: ['mutations'] },
+    edit: { dataset: 'mutations' },
+  },
+  { exiges: ['desc'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

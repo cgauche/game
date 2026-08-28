@@ -1,6 +1,7 @@
 [
   {
     "id": "adv-0-5",
+    "type": "advancementCosts",
     "label": "0–5",
     "max": 5,
     "char": 25,
@@ -13,6 +14,7 @@
   },
   {
     "id": "adv-6-10",
+    "type": "advancementCosts",
     "label": "6–10",
     "max": 10,
     "char": 30,
@@ -25,6 +27,7 @@
   },
   {
     "id": "adv-11-15",
+    "type": "advancementCosts",
     "label": "11–15",
     "max": 15,
     "char": 40,
@@ -37,6 +40,7 @@
   },
   {
     "id": "adv-16-20",
+    "type": "advancementCosts",
     "label": "16–20",
     "max": 20,
     "char": 50,
@@ -49,6 +53,7 @@
   },
   {
     "id": "adv-21-25",
+    "type": "advancementCosts",
     "label": "21–25",
     "max": 25,
     "char": 70,
@@ -61,6 +66,7 @@
   },
   {
     "id": "adv-26-30",
+    "type": "advancementCosts",
     "label": "26–30",
     "max": 30,
     "char": 90,
@@ -73,6 +79,7 @@
   },
   {
     "id": "adv-31-35",
+    "type": "advancementCosts",
     "label": "31–35",
     "max": 35,
     "char": 120,
@@ -85,6 +92,7 @@
   },
   {
     "id": "adv-36-40",
+    "type": "advancementCosts",
     "label": "36–40",
     "max": 40,
     "char": 150,
@@ -97,6 +105,7 @@
   },
   {
     "id": "adv-41-45",
+    "type": "advancementCosts",
     "label": "41–45",
     "max": 45,
     "char": 190,
@@ -109,6 +118,7 @@
   },
   {
     "id": "adv-46-50",
+    "type": "advancementCosts",
     "label": "46–50",
     "max": 50,
     "char": 230,
@@ -121,6 +131,7 @@
   },
   {
     "id": "adv-51-55",
+    "type": "advancementCosts",
     "label": "51–55",
     "max": 55,
     "char": 280,
@@ -133,6 +144,7 @@
   },
   {
     "id": "adv-56-60",
+    "type": "advancementCosts",
     "label": "56–60",
     "max": 60,
     "char": 330,
@@ -145,6 +157,7 @@
   },
   {
     "id": "adv-61-65",
+    "type": "advancementCosts",
     "label": "61–65",
     "max": 65,
     "char": 390,
@@ -157,6 +170,7 @@
   },
   {
     "id": "adv-66-70",
+    "type": "advancementCosts",
     "label": "66–70",
     "max": 70,
     "char": 450,
@@ -169,6 +183,7 @@
   },
   {
     "id": "adv-71-plus",
+    "type": "advancementCosts",
     "label": "71+",
     "max": null,
     "char": 520,

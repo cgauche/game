@@ -1080,10 +1080,38 @@ const champDuLitteral = (lit: ts.Node): string => {
   return '';
 };
 
-/** Tous les littéraux d'objet argument d'un `z.object|strictObject|looseObject` sous `node`. */
+/**
+ * Tous les littéraux d'objet argument d'un `z.object|strictObject|looseObject` sous `node`, PLUS
+ * l'argument `champs` (3ᵉ) de la fabrique `document()` (#1467) — même plan de forme, sans fabrique
+ * zod autour. Sans cette porte, l'adoption de la fabrique par un def FAISAIT DISPARAÎTRE ses
+ * redéclarations du relevé : une perte de COUVERTURE que le cliquet décroissant lisait comme un
+ * solde (`interludeEvents` min/max, toujours déclarés, donnée inchangée).
+ * Les deux graphies de `champs` sont admises : littéral INLINE et const NOMMÉE référencée.
+ */
 function litterauxZod(node: ts.Node, sf: ts.SourceFile) {
   const out: Array<{ ligne: number; champ: string; cles: string[] }> = [];
+  const constsObjet = new Map<string, ts.ObjectLiteralExpression>();
+  const releve = (n: ts.Node) => {
+    if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.initializer && ts.isObjectLiteralExpression(n.initializer)) {
+      constsObjet.set(n.name.text, n.initializer);
+    }
+    ts.forEachChild(n, releve);
+  };
+  releve(node);
+  const pousse = (lit: ts.ObjectLiteralExpression, champ: string) => {
+    out.push({
+      ligne: sf.getLineAndCharacterOfPosition(lit.getStart(sf)).line + 1,
+      champ,
+      cles: lit.properties.flatMap((p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? [p.name.text] : [])),
+    });
+  };
   const visite = (n: ts.Node) => {
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'document') {
+      const arg = n.arguments[2];
+      const lit =
+        arg && ts.isObjectLiteralExpression(arg) ? arg : arg && ts.isIdentifier(arg) ? constsObjet.get(arg.text) : undefined;
+      if (lit) pousse(lit, champDuLitteral(n));
+    }
     if (
       ts.isCallExpression(n) &&
       ts.isPropertyAccessExpression(n.expression) &&

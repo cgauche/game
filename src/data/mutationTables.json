@@ -1,6 +1,7 @@
 [
   {
     "id": "physique",
+    "type": "mutationTables",
     "label": "physique",
     "ranges": [
       {
@@ -112,6 +113,7 @@
   },
   {
     "id": "mentale",
+    "type": "mutationTables",
     "label": "mentale",
     "ranges": [
       {
@@ -223,6 +225,7 @@
   },
   {
     "id": "edoc-mental-toute",
+    "type": "mutationTables",
     "label": "Mentale — Toute Puissance (EDOC)",
     "ranges": [
       {
@@ -404,6 +407,7 @@
   },
   {
     "id": "edoc-mental-khorne",
+    "type": "mutationTables",
     "label": "Mentale — Khorne (EDOC)",
     "ranges": [
       {
@@ -550,6 +554,7 @@
   },
   {
     "id": "edoc-mental-nurgle",
+    "type": "mutationTables",
     "label": "Mentale — Nurgle (EDOC)",
     "ranges": [
       {
@@ -701,6 +706,7 @@
   },
   {
     "id": "edoc-mental-slaanesh",
+    "type": "mutationTables",
     "label": "Mentale — Slaanesh (EDOC)",
     "ranges": [
       {
@@ -862,6 +868,7 @@
   },
   {
     "id": "edoc-mental-tzeentch",
+    "type": "mutationTables",
     "label": "Mentale — Tzeentch (EDOC)",
     "ranges": [
       {
@@ -1013,6 +1020,7 @@
   },
   {
     "id": "edoc-phys-toute",
+    "type": "mutationTables",
     "label": "Physique — Toute Puissance (EDOC)",
     "ranges": [
       {
@@ -1334,6 +1342,7 @@
   },
   {
     "id": "edoc-phys-khorne",
+    "type": "mutationTables",
     "label": "Physique — Khorne (EDOC)",
     "ranges": [
       {
@@ -1585,6 +1594,7 @@
   },
   {
     "id": "edoc-phys-nurgle",
+    "type": "mutationTables",
     "label": "Physique — Nurgle (EDOC)",
     "ranges": [
       {
@@ -1816,6 +1826,7 @@
   },
   {
     "id": "edoc-phys-slaanesh",
+    "type": "mutationTables",
     "label": "Physique — Slaanesh (EDOC)",
     "ranges": [
       {
@@ -2067,6 +2078,7 @@
   },
   {
     "id": "edoc-phys-tzeentch",
+    "type": "mutationTables",
     "label": "Physique — Tzeentch (EDOC)",
     "ranges": [
       {
@@ -2343,6 +2355,7 @@
   },
   {
     "id": "edoc-tete-bestiale-toute",
+    "type": "mutationTables",
     "label": "Tête Bestiale — Toute Puissance (EDOC)",
     "ranges": [
       {
@@ -2404,6 +2417,7 @@
   },
   {
     "id": "edoc-tete-bestiale-khorne",
+    "type": "mutationTables",
     "label": "Tête Bestiale — Khorne (EDOC)",
     "ranges": [
       {
@@ -2455,6 +2469,7 @@
   },
   {
     "id": "edoc-tete-bestiale-nurgle",
+    "type": "mutationTables",
     "label": "Tête Bestiale — Nurgle (EDOC)",
     "ranges": [
       {
@@ -2506,6 +2521,7 @@
   },
   {
     "id": "edoc-tete-bestiale-slaanesh",
+    "type": "mutationTables",
     "label": "Tête Bestiale — Slaanesh (EDOC)",
     "ranges": [
       {
@@ -2557,6 +2573,7 @@
   },
   {
     "id": "edoc-tete-bestiale-tzeentch",
+    "type": "mutationTables",
     "label": "Tête Bestiale — Tzeentch (EDOC)",
     "ranges": [
       {

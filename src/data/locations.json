@@ -1,6 +1,7 @@
 [
   {
     "id": "reikland",
+    "type": "locations",
     "label": "Reikland",
     "parent": null,
     "prefix": null,
@@ -13,6 +14,7 @@
   },
   {
     "id": "les-montagnes-les-collines-et-le-vorbergland",
+    "type": "locations",
     "label": "Les montagnes, les collines et le Vorbergland",
     "parent": null,
     "prefix": null,
@@ -25,6 +27,7 @@
   },
   {
     "id": "montagnes-grises",
+    "type": "locations",
     "label": "Montagnes Grises",
     "parent": "les-montagnes-les-collines-et-le-vorbergland",
     "prefix": null,
@@ -37,6 +40,7 @@
   },
   {
     "id": "hagercrybs",
+    "type": "locations",
     "label": "Hägercrybs",
     "parent": "les-montagnes-les-collines-et-le-vorbergland",
     "prefix": null,
@@ -49,6 +53,7 @@
   },
   {
     "id": "collines-de-skaag",
+    "type": "locations",
     "label": "collines de Skaag",
     "parent": "les-montagnes-les-collines-et-le-vorbergland",
     "prefix": null,
@@ -61,6 +66,7 @@
   },
   {
     "id": "vorbergland",
+    "type": "locations",
     "label": "Vorbergland",
     "parent": "les-montagnes-les-collines-et-le-vorbergland",
     "prefix": null,
@@ -73,6 +79,7 @@
   },
   {
     "id": "drachenberg",
+    "type": "locations",
     "label": "Drachenberg",
     "parent": "les-montagnes-les-collines-et-le-vorbergland",
     "prefix": null,
@@ -85,6 +92,7 @@
   },
   {
     "id": "les-sinistres-et-sombres-forets",
+    "type": "locations",
     "label": "Les sinistres et sombres forêts",
     "parent": null,
     "prefix": null,
@@ -97,6 +105,7 @@
   },
   {
     "id": "foret-de-reikewald",
+    "type": "locations",
     "label": "forêt de Reikewald",
     "parent": "les-sinistres-et-sombres-forets",
     "prefix": null,
@@ -109,6 +118,7 @@
   },
   {
     "id": "bois-de-pins-sanglants",
+    "type": "locations",
     "label": "bois de pins sanglants",
     "parent": "les-sinistres-et-sombres-forets",
     "prefix": null,
@@ -121,6 +131,7 @@
   },
   {
     "id": "grissenwald",
+    "type": "locations",
     "label": "Grissenwald",
     "parent": "les-sinistres-et-sombres-forets",
     "prefix": null,
@@ -133,6 +144,7 @@
   },
   {
     "id": "les-rivieres-canaux-et-lacs",
+    "type": "locations",
     "label": "Les rivières, canaux et lacs",
     "parent": null,
     "prefix": null,
@@ -145,6 +157,7 @@
   },
   {
     "id": "reik",
+    "type": "locations",
     "label": "Reik",
     "parent": "les-rivieres-canaux-et-lacs",
     "prefix": null,
@@ -157,6 +170,7 @@
   },
   {
     "id": "bogen",
+    "type": "locations",
     "label": "Bögen",
     "parent": "les-rivieres-canaux-et-lacs",
     "prefix": null,
@@ -169,6 +183,7 @@
   },
   {
     "id": "canal-grunberg",
+    "type": "locations",
     "label": "canal Grünberg",
     "parent": "les-rivieres-canaux-et-lacs",
     "prefix": null,
@@ -181,6 +196,7 @@
   },
   {
     "id": "teufel",
+    "type": "locations",
     "label": "Teufel",
     "parent": "les-rivieres-canaux-et-lacs",
     "prefix": null,
@@ -193,6 +209,7 @@
   },
   {
     "id": "canaux-du-vorbergland",
+    "type": "locations",
     "label": "canaux du Vorbergland",
     "parent": "les-rivieres-canaux-et-lacs",
     "prefix": null,
@@ -205,6 +222,7 @@
   },
   {
     "id": "canal-de-wessbruck",
+    "type": "locations",
     "label": "canal de Wessbruck",
     "parent": "les-rivieres-canaux-et-lacs",
     "prefix": null,
@@ -217,6 +235,7 @@
   },
   {
     "id": "les-marais-maudits-et-fetides",
+    "type": "locations",
     "label": "Les marais maudits et fétides",
     "parent": null,
     "prefix": null,
@@ -229,6 +248,7 @@
   },
   {
     "id": "marais-grootscher",
+    "type": "locations",
     "label": "marais Grootscher",
     "parent": "les-marais-maudits-et-fetides",
     "prefix": null,
@@ -241,6 +261,7 @@
   },
   {
     "id": "plaines-d-altdorf",
+    "type": "locations",
     "label": "plaines d'Altdorf",
     "parent": "les-marais-maudits-et-fetides",
     "prefix": null,
@@ -253,6 +274,7 @@
   },
   {
     "id": "marais-reiker",
+    "type": "locations",
     "label": "marais Reiker",
     "parent": "les-marais-maudits-et-fetides",
     "prefix": null,
@@ -265,6 +287,7 @@
   },
   {
     "id": "tourbieres-d-uhland",
+    "type": "locations",
     "label": "tourbières d'Uhland",
     "parent": "les-marais-maudits-et-fetides",
     "prefix": null,
@@ -277,6 +300,7 @@
   },
   {
     "id": "altdorf-et-les-villes-libres",
+    "type": "locations",
     "label": "Altdorf et les villes libres",
     "parent": null,
     "prefix": null,
@@ -289,6 +313,7 @@
   },
   {
     "id": "altdorf",
+    "type": "locations",
     "label": "Altdorf",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -301,6 +326,7 @@
   },
   {
     "id": "auerswald",
+    "type": "locations",
     "label": "Auerswald",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -313,6 +339,7 @@
   },
   {
     "id": "bogenhafen",
+    "type": "locations",
     "label": "Bögenhafen",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -325,6 +352,7 @@
   },
   {
     "id": "diesdorf",
+    "type": "locations",
     "label": "Diesdorf",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -337,6 +365,7 @@
   },
   {
     "id": "dunkerlberg",
+    "type": "locations",
     "label": "Dunkerlberg",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -349,6 +378,7 @@
   },
   {
     "id": "eilhart",
+    "type": "locations",
     "label": "Eilhart",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -361,6 +391,7 @@
   },
   {
     "id": "grunburg",
+    "type": "locations",
     "label": "Grünburg",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -373,6 +404,7 @@
   },
   {
     "id": "holthusen",
+    "type": "locations",
     "label": "Holthusen",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -385,6 +417,7 @@
   },
   {
     "id": "kemperbad",
+    "type": "locations",
     "label": "Kemperbad",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -397,6 +430,7 @@
   },
   {
     "id": "schadelheim",
+    "type": "locations",
     "label": "Schädelheim",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -409,6 +443,7 @@
   },
   {
     "id": "schilderheim",
+    "type": "locations",
     "label": "Schilderheim",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -421,6 +456,7 @@
   },
   {
     "id": "stimmigen",
+    "type": "locations",
     "label": "Stimmigen",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -433,6 +469,7 @@
   },
   {
     "id": "ubersreik",
+    "type": "locations",
     "label": "Ubersreik",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -445,6 +482,7 @@
   },
   {
     "id": "weissbruck",
+    "type": "locations",
     "label": "Weissbruck",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -457,6 +495,7 @@
   },
   {
     "id": "wheburg",
+    "type": "locations",
     "label": "Wheburg",
     "parent": "altdorf-et-les-villes-libres",
     "prefix": null,
@@ -469,6 +508,7 @@
   },
   {
     "id": "les-bastions-et-forteresses",
+    "type": "locations",
     "label": "Les bastions et forteresses",
     "parent": null,
     "prefix": null,
@@ -481,6 +521,7 @@
   },
   {
     "id": "tour-noire",
+    "type": "locations",
     "label": "Tour noire",
     "parent": "les-bastions-et-forteresses",
     "prefix": null,
@@ -493,6 +534,7 @@
   },
   {
     "id": "manoir-steirlich",
+    "type": "locations",
     "label": "Manoir Steirlich",
     "parent": "les-bastions-et-forteresses",
     "prefix": null,
@@ -505,6 +547,7 @@
   },
   {
     "id": "helmgart",
+    "type": "locations",
     "label": "Helmgart",
     "parent": "les-bastions-et-forteresses",
     "prefix": null,
@@ -517,6 +560,7 @@
   },
   {
     "id": "le-rocher",
+    "type": "locations",
     "label": "Le Rocher",
     "parent": "les-bastions-et-forteresses",
     "prefix": null,
@@ -529,6 +573,7 @@
   },
   {
     "id": "les-villages-hameaux-et-sites-sacres",
+    "type": "locations",
     "label": "Les villages,  hameaux et sites sacrés",
     "parent": null,
     "prefix": null,
@@ -541,6 +586,7 @@
   },
   {
     "id": "monastere-de-la-parole-sacree",
+    "type": "locations",
     "label": "Monastère de la Parole Sacrée",
     "parent": "les-villages-hameaux-et-sites-sacres",
     "prefix": null,
@@ -553,6 +599,7 @@
   },
   {
     "id": "rottfurt",
+    "type": "locations",
     "label": "Rottfurt",
     "parent": "les-villages-hameaux-et-sites-sacres",
     "prefix": null,
@@ -565,6 +612,7 @@
   },
   {
     "id": "worlin",
+    "type": "locations",
     "label": "Wörlin",
     "parent": "les-villages-hameaux-et-sites-sacres",
     "prefix": null,
@@ -577,6 +625,7 @@
   },
   {
     "id": "zahnstadt",
+    "type": "locations",
     "label": "Zahnstadt",
     "parent": "les-villages-hameaux-et-sites-sacres",
     "prefix": null,
@@ -589,6 +638,7 @@
   },
   {
     "id": "sites-anciens-et-ruines-terrifiantes",
+    "type": "locations",
     "label": "Sites anciens et ruines terrifiantes",
     "parent": null,
     "prefix": null,
@@ -601,6 +651,7 @@
   },
   {
     "id": "cercle-de-pierres-noires",
+    "type": "locations",
     "label": "Cercle de Pierres noires",
     "parent": "sites-anciens-et-ruines-terrifiantes",
     "prefix": null,
@@ -613,6 +664,7 @@
   },
   {
     "id": "chateau-drachenfels",
+    "type": "locations",
     "label": "Château Drachenfels",
     "parent": "sites-anciens-et-ruines-terrifiantes",
     "prefix": null,
@@ -625,6 +677,7 @@
   },
   {
     "id": "helspire",
+    "type": "locations",
     "label": "Helspire",
     "parent": "sites-anciens-et-ruines-terrifiantes",
     "prefix": null,
@@ -637,6 +690,7 @@
   },
   {
     "id": "lorlay",
+    "type": "locations",
     "label": "Lorlay",
     "parent": "sites-anciens-et-ruines-terrifiantes",
     "prefix": null,
@@ -649,6 +703,7 @@
   },
   {
     "id": "pierres-chantantes",
+    "type": "locations",
     "label": "Pierres chantantes",
     "parent": "sites-anciens-et-ruines-terrifiantes",
     "prefix": null,

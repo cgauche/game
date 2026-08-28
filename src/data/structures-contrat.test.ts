@@ -301,7 +301,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // apportées par les 4 projets de scène qui entrent au déclaré).
       ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 24],
       ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 6],
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 102],
+      // Cliquet REMONTÉ 102 → 108 (#1467 L1b V-FLIP-ENTITE-b) : c'est la COUVERTURE du relevé qui a
+      // changé, pas la donnée ni les defs. `litterauxZod` (structures-scan.mts) visite désormais
+      // l'argument `champs` de `document()` — forme DOMINANTE (43 defs adoptés) qu'il ne voyait pas :
+      // 8 déclarations SURFACÉES (7 `entries` de defs config/table + `interludeEvents` min/max, qui
+      // était stockée AVANT l'adoption et revit à l'identique). Sans l'extension, l'adoption faisait
+      // DISPARAÎTRE des lignes et ce cliquet lisait la perte comme un solde.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 108],
       ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 165],
       ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 93],
       ['STRUCTURES_OPS', STRUCTURES_OPS.length, 403],
@@ -357,7 +363,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     ).toEqual([]);
     // Cliquet PAR LOT : réaffecter une ligne d’un lot à un autre fait DÉBORDER le lot d’arrivée.
     const plafonds: Record<string, number> = {
-      'L1a #1466': 16,
+      // 16 → 23 : les 7 `entries` surfacées par l'extension du scan à `document(…, champs, …)`
+      // portent ce lot. Couverture élargie, déclarations inchangées (#1467 L1b V-FLIP-ENTITE-b).
+      'L1a #1466': 23,
       'L1b #1467': 205,
       'L1c #1468': 403,
       'L1d #1469': 66,

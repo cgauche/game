@@ -50,25 +50,28 @@ function rangees(): Rangee[] {
 }
 
 /**
- * RÉPERTOIRE FERMÉ, réduit à ce qui est MESURÉ sur la population réelle (386 rangées au 2026-08-28).
+ * RÉPERTOIRE FERMÉ, réduit à ce qui est MESURÉ sur la population réelle (512 rangées au 2026-08-28,
+ * vagues 11a + 11b).
  *
  * Les LETTRES sont déclarées par LANGUE : tout l'alphabet français accentué, ligatures `œ`/`æ`
  * comprises — un répertoire de langue ne se rétrécit pas à l'échantillon (`î` n'apparaît nulle part
  * aujourd'hui, il reste français). Les SIGNES, eux, sont déclarés par USAGE : chacun de ceux qui
  * suivent est compté au moins une fois dans la population —
- * `,`×106 `(`/`)`×57 `’`×54 `/`×46 `'`×42 `:`×17 `—`×16 `-`×13 `` ` ``×10 `.`×8 `=`×7 `+`×6 `;`×5
- * `%`×5 `«`/`»`×4 `#`×2 `→`×2 `×`×2 `≤`×2 `−`×2 `÷`×1, plus l'espace U+0020 et les exposants
- * ordinaux `ᵉ`×1 / `ʳ`×1.
+ * `,`×125 `’`×83 `(`/`)`×80 `/`×57 `'`×42 `—`×20 `-`×20 `:`×19 `` ` ``×14 `.`×10 `=`×8 `;`×7
+ * `«`/`»`×6 `+`×6 `%`×5 `…`×4 `#`×2 `→`×2 `×`×2 `≤`×2 `−`×2 `÷`×1 `!`×1, plus l'espace U+0020 et
+ * les exposants ordinaux `ᵉ`×1 / `ʳ`×1.
  *
  * HORS répertoire, et pourquoi : `⇒ ≥ ≠ ±` comptent ZÉRO occurrence, et les signes de CODE
- * (`_ [ ] { } | @ $ ~ ^ * & < > " “ ” ‘ … – ° ² ³ ! ?`) n'en comptent aucune non plus — les admettre
+ * (`_ [ ] { } | @ $ ~ ^ * & < > " “ ” ‘ – ° ² ³ ?`) n'en comptent aucune non plus — les admettre
  * ouvrirait la porte à « Couleur ${face} » ou « payload|null » sous une garde censée FERMER le
- * répertoire. Un signe légitime qui apparaîtra plus tard fera ROUGE, et s'inscrira ici avec son compte.
+ * répertoire. Le ban des ACCOLADES a mordu dans le lot 11b : le hint de `voyage-stakes.template`
+ * montrait son trou nommé entre accolades, il le DIT désormais en français (`defs/voyage-stakes.ts`).
+ * Un signe légitime qui apparaîtra plus tard fera ROUGE, et s'inscrira ici avec son compte.
  *
  * Tout le reste est un caractère ÉTRANGER — un mojibake (`Ã©`) est refusé par sa lettre `Ã`, une
  * lettre grecque ou cyrillique de même.
  */
-const REPERTOIRE = /^[A-Za-zÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸÆŒàâäçéèêëîïôöùûüÿæœ0-9ᵉʳ ,()’\/':—`.=+;%«»#→×≤−÷-]*$/u;
+const REPERTOIRE = /^[A-Za-zÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸÆŒàâäçéèêëîïôöùûüÿæœ0-9ᵉʳ ,()’\/':—`.=+;%«»#→×≤−÷…!-]*$/u;
 
 /**
  * ANTI-JARGON : lexèmes de MOTEUR, en liste FERMÉE. Comparés sur le mot ENTIER (frontières de mot),
