@@ -33,21 +33,18 @@ export function Dice({ roll }: { roll: number }) {
       return;
     }
     let tick = 0;
-    let arrete = false;
     setRolling(true);
-    // Minuterie prise sur le GLOBAL, jamais sur `window`. Un tick qui survit à la disparition du
-    // document (teardown jsdom) ne doit RIEN poser : le `setState` de React y lit `window.event`
-    // (getCurrentEventPriority) et jetterait hors de toute pile rattrapable. Sans document, il n'y
-    // a plus rien à animer : la minuterie s'éteint d'elle-même.
+    // Un tick peut survivre à la disparition du document (teardown jsdom, composant encore monté).
+    // Tout `setState` fait lire `window.event` à React (getCurrentEventPriority) : sans `window`,
+    // le throw naît hors de toute pile rattrapable. D'où la garde, et son `clearInterval` NU —
+    // passer par `window` dans cette branche re-jetterait.
     const id = setInterval(() => {
-      if (arrete || typeof window === 'undefined') {
-        arrete = true;
+      if (typeof window === 'undefined') {
         clearInterval(id);
         return;
       }
       tick += 1;
       if (tick >= TICKS) {
-        arrete = true;
         clearInterval(id);
         setShown(roll);
         setRolling(false);
@@ -56,7 +53,6 @@ export function Dice({ roll }: { roll: number }) {
       }
     }, TICK_MS);
     return () => {
-      arrete = true;
       clearInterval(id);
       setShown(roll);
       setRolling(false);
