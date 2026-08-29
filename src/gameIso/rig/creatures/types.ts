@@ -25,7 +25,7 @@ import type { TheropodProps } from '../theropode/composeTheropod';
 export type CreatureBodyPlan =
   | 'biped' | 'quadruped' | 'winged'
   | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' | 'crustace' | 'fish' | 'theropode' // nouveaux squelettes
-  | 'engin'; // corps STATIQUE (engin de siège) — pas une créature, mais routé par le même registre (pas de props)
+  | 'engin' | 'navire' | 'terrestre'; // corps STATIQUES (engin de siège, navire, véhicule terrestre) — pas des créatures, mais routés par le même registre (pas de props)
 
 /** Surcharges d'apparence propres à CETTE créature (par-dessus les défauts de sa Race).
  *  Réservé aux espèces NON-canoniques qui se replient sur une race partagée via baseSpeciesOf

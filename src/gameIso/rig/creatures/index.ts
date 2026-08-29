@@ -62,6 +62,15 @@ export const quadSpeciesNames = (): string[] => QUAD.map((c) => defId(c));
 export const wingedSpeciesNames = (): string[] => WING.map((c) => defId(c));
 export const bipedSpeciesNames = (): string[] => BIPED.map((c) => defId(c));
 
+/** Ids d'espèce des gabarits SANS table de props (art statique par vue) : engin de siège, navire,
+ *  véhicule terrestre — MÊME dérivation du registre que quad/ailé/bipède. */
+const ENGIN = CREATURES.filter((c) => c.plan === 'engin');
+const NAVIRE = CREATURES.filter((c) => c.plan === 'navire');
+const TERRESTRE = CREATURES.filter((c) => c.plan === 'terrestre');
+export const enginSpeciesNames = (): string[] => ENGIN.map((c) => defId(c));
+export const navireSpeciesNames = (): string[] => NAVIRE.map((c) => defId(c));
+export const terrestreSpeciesNames = (): string[] => TERRESTRE.map((c) => defId(c));
+
 // --- Nouveaux squelettes (serpentin/arachnide/aviaire/céphalopode) : tables de props par id d'espèce,
 //     dérivées des defs comme quad/winged. Chaque plan lit son propre champ de props.
 export const SERPENT_SPECIES: Record<string, SerpentProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'serpentine').map((c) => [defId(c), c.serpent!]));

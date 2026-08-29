@@ -18,6 +18,7 @@ import type { Palette, StoredPalette } from '../palette';
 import { groundedBody } from '../staticBody';
 import { pickView, orientedArtOr, type ViewArt } from '../viewArt';
 import { SHIP_ARTS } from './_registry.generated';
+import { navireSpeciesNames } from '../creatures';
 import type { ShipArtDef } from './artkit';
 
 // Registre des arts de coque PAR ID de véhicule (`ship/defs/`, auto-chargé). Un id sans def tombe sur le
@@ -52,7 +53,7 @@ function resolveShip(species: string, view: View, pose: BonePose = {}, colors?: 
 export const shipPlan: BodyPlan = {
   id: 'navire',
   resolve: (sp, view, pose, opts) => resolveShip(sp, view, pose, opts?.colors),
-  speciesNames: () => [],
+  speciesNames: navireSpeciesNames, // dérivé du registre (defs `plan: 'navire'`) — 0 def à ce jour (#1570), une def entrante est prise sans geste
   restPose: () => SHIP_REST,
   idlePose: shipRoll,
   walkPose: shipRoll,

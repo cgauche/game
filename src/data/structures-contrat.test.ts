@@ -445,50 +445,36 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     for (const l of toutes) parLot.set(l.lot, (parLot.get(l.lot) ?? 0) + 1);
     expect(
       [...parLot.keys()].filter((l) => !(LOTS_CONNUS as readonly string[]).includes(l)).sort(),
-      'lot(s) inconnu(s) : un dénominateur ne se range que dans l’un des 7 lots d’extinction (`LOTS_CONNUS`).',
+      `lot(s) inconnu(s) : un dénominateur ne se range que dans l’un des ${LOTS_CONNUS.length} lots d’extinction (\`LOTS_CONNUS\`).`,
     ).toEqual([]);
-    // Cliquet PAR LOT : réaffecter une ligne d’un lot à un autre fait DÉBORDER le lot d’arrivée.
+    // Cliquet PAR LOT BIDIRECTIONNEL (patron `assertRatchet`, `src/ui/ui-ratchets.test.ts`) : un plafond PAR
+    // lot connu, réel > plafond = dérive, réel < plafond = plafond PÉRIMÉ à abaisser au réel mesuré.
     const plafonds: Record<string, number> = {
-      // 16 → 23 : les 7 `entries` surfacées par l'extension du scan à `document(…, champs, …)`
-      // portent ce lot. Couverture élargie, déclarations inchangées (#1467 L1b V-FLIP-ENTITE-b).
       'L1a #1466': 23,
-      'L1b #1467': 205,
+      'L1b #1467': 0,
       'L1c #1468': 403,
-      'L1d #1469': 66,
-      // +3 : #1467 L1b V-P4 — `names.json` et `raceAppearance.json` entrent à l'index des ids (28 ids
-      // neufs) ; 3 lignes déjà au stock (`spells.json › range`, `spells.json › target`,
-      // `speciesRace.json › rules`) deviennent RÉSOLVABLES et passent de L3 à L2. Aucune ligne neuve :
-      // le total ne bouge pas, L3 perd les 3 que L2 gagne : 138 → 141.
+      'L1d #1469': 62,
       'L2 #1463': 141,
-      // +2 : les deux formes `effect {trappingId,type}` de #1466 T3-b (cf. motif au cliquet ci-dessus).
-      // +1 : la forme `qualities` ids-nus de #1466 T3-b (cf. motif au cliquet ci-dessus).
-      // +1 : `actions.json › hote` id-nu (vague console #1411/#1426 distante, cf. motif ci-dessus).
-      // −8 : #1466 L1a volet A — les 8 formes `ambiance`/`weather`/`threat` des 4 projets de scène,
-      // éteintes par la fermeture de leurs discriminants (le déclaré couvre `src/scenes`) : 396 → 388.
-      // 388 → 389 : COUVERTURE, pas dérive (#1467 L1b V-FLIP-ENTITE-b). La descente du sceau `pipe`
-      // (`zod-introspect.mts`) et le scan du littéral `champs` de `document()` rendent visibles 6
-      // formes `char+…` (`etats.value`, `symptoms.ops/passive/severePassive/visiblePassive`,
-      // `traits.passive`) ; en regard, les 2 orphelines `etats.json › value` (lot L1b) QUITTENT leur
-      // stock, désormais vues comme des références. Net compté ici : +1. Aucune valeur de donnée n'a
-      // bougé — le détecteur voit ce que l'adoption lui avait masqué.
-      // 389 → 390 : MÊME cause, vague suivante (#1467 L1b V-FLIP-ENTITE-c). `trappings` adopte à son
-      // tour, et sa forme `ops › char+…` (24 occurrences) devient visible — corroborée au chiffre près
-      // par `slotsStock.mjs`, où le MÊME lot relève `trappings.json › ops` de 34 à 58 (+24). La donnée
-      // est prouvée intacte entrée par entrée par la migration 12b (deep-equal hors la clé `type`).
-      'L3 #1463': 390,
-      'L4 #1463': 224,
+      'L2 #1548': 4,
+      'L3 #1463': 389,
+      'L4 #1463': 220,
+      '#1553': 92,
     };
     expect(
-      [...parLot].filter(([lot, n]) => n > plafonds[lot]).map(([lot, n]) => `${lot} ${n} > ${plafonds[lot]}`),
+      Object.keys(plafonds).sort(),
+      'les plafonds par lot et `LOTS_CONNUS` sont le MÊME ensemble : un lot sans plafond n’est cliqueté par rien.',
+    ).toEqual([...LOTS_CONNUS].sort());
+    const reel = (lot: string) => parLot.get(lot) ?? 0;
+    expect(
+      Object.keys(plafonds).filter((lot) => reel(lot) > plafonds[lot]).map((lot) => `${lot} ${reel(lot)} > ${plafonds[lot]}`),
       'lot(s) qui ont GONFLÉ — une ligne ne change pas de lot sans revue, et un lot ne grossit pas sans dérive.',
     ).toEqual([]);
-    // 1444 → 1446 : les deux mêmes lignes #1466 T3-b (cf. motif au cliquet des huit stocks).
-    // 1446 → 1447 : la ligne `arene-projet.json › qualities` ids-nus (même motif, migration LIBELLÉ→id).
-    // 1447 → 1448 : la ligne `actions.json › hote` id-nu (vague console distante, même motif).
-    // 1448 → 1440 : les 8 formes de scène éteintes par la fermeture des discriminants (#1466 L1a
-    // volet A). `STRUCTURES_DEFAUT` n'entre pas dans ce total : il ne porte pas de LOT d'extinction
-    // (une clé déclarée jamais écrite se solde au SCHÉMA ou à la DONNÉE, pas dans un lot de migration).
-    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(1440);
+    expect(
+      Object.keys(plafonds).filter((lot) => reel(lot) < plafonds[lot]).map((lot) => `${lot} : plafond PÉRIMÉ ${plafonds[lot]}, abaisser à ${reel(lot)}`),
+      'plafond(s) PÉRIMÉ(S) — le terrain gagné se VERROUILLE : abaisser le plafond au réel mesuré.',
+    ).toEqual([]);
+    const total = Object.values(plafonds).reduce((a, b) => a + b, 0);
+    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(total);
   });
 
   it('les ANGLES MORTS ont UNE source : le lexique, recopié nulle part (test, stock, doc)', () => {

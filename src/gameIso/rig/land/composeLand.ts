@@ -20,6 +20,7 @@ import { groundedBody } from '../staticBody';
 import { pickView, orientedArtOr, type ViewArt } from '../viewArt';
 import { LAND_DEFAULT } from './artkit';
 import { LAND_ARTS } from './_registry.generated';
+import { terrestreSpeciesNames } from '../creatures';
 
 /** Index des arts par id de véhicule (registre `land/defs/`, auto-chargé). Un id sans art propre tombe
  *  sur le REPLI VISIBLE (#223) — MÊME mécanique que `ENGIN_ARTS`/`SHIP_ARTS`. */
@@ -45,7 +46,7 @@ function resolveLand(species: string, view: View, pose: BonePose = {}, colors?: 
 export const landPlan: BodyPlan = {
   id: 'terrestre',
   resolve: (sp, view, pose, opts) => resolveLand(sp, view, pose, opts?.colors),
-  speciesNames: () => [],
+  speciesNames: terrestreSpeciesNames, // dérivé du registre (defs `plan: 'terrestre'`) — 0 def à ce jour (#1570), une def entrante est prise sans geste
   // Ancré au sol (bas de la boîte) → le portrait cadre ce bas, comme l'engin (sinon disque vide).
   portraitBox: '25 80 70 70',
   restPose: () => ({}),

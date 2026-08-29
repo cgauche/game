@@ -16,7 +16,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { PLAN_LIST } from './plans/_registry.generated';
-import { creatureSpeciesOptions, bipedSpeciesNames } from './creatures';
+import { creatureSpeciesOptions, bipedSpeciesNames, CREATURES, defId } from './creatures';
 import { SWARM_FORMS } from './swarm/forms';
 import { rigSpeciesVocab, asRigSpeciesId } from './appearance';
 import { resolveRender } from './bodyPlan';
@@ -42,6 +42,27 @@ describe('espace d’espèces DÉCLARÉ par les gabarits ⊆ vocabulaire dériv�
       for (const n of p.speciesNames())
         if (!VOCAB.has(n)) bad.push(`plan « ${p.id} » : « ${n} » hors vocabulaire (species.json ∪ defs rig ∪ raceAppearance ∪ formes de nuée ∪ véhicules ∪ siegeRig)`);
     expect(bad, bad.join('\n')).toEqual([]);
+  });
+
+  // Complément BIDIRECTIONNEL du `⊆` ci-dessus : un plan qui déclare ∅ passait VACUEMENT (#1537 case 3).
+  // L'égalité avec les defs de CE plan mord dans les deux sens : dérivation débranchée OU id sans def.
+  it('∀ plan dérivé du registre : speciesNames() ≡ EXACTEMENT les ids des defs de CE plan', () => {
+    // Le plan swarm ne tire PAS du registre de créatures : ses ids sont les formes de nuée (SWARM_FORMS),
+    // figées par l'`it` de MORSURE ci-dessous.
+    const SANS_REGISTRE = new Set(['swarm']);
+    const bad: string[] = [];
+    for (const p of PLAN_LIST) {
+      if (SANS_REGISTRE.has(p.id)) continue;
+      const declare = p.speciesNames();
+      const registre = CREATURES.filter((c) => c.plan === p.id).map((c) => defId(c));
+      for (const id of registre)
+        if (!declare.includes(id)) bad.push(`plan « ${p.id} » : def « ${id} » du registre ABSENTE de speciesNames() (dérivation débranchée)`);
+      for (const id of declare)
+        if (!registre.includes(id)) bad.push(`plan « ${p.id} » : « ${id} » déclaré sans def à ce plan au registre`);
+    }
+    expect(bad, bad.join('\n')).toEqual([]);
+    // Témoin de NON-VACUITÉ : au moins un plan d'art statique (engin) a des defs à couvrir.
+    expect(CREATURES.filter((c) => c.plan === 'engin').length, 'plus aucune def d’engin : le témoin de non-vacuité est à re-choisir').toBeGreaterThan(0);
   });
 
   it('MORSURE — vocabulaire privé des formes de nuée : le plan swarm sort EXACTEMENT ses ids', () => {

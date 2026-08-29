@@ -18,6 +18,7 @@ import { groundedBody } from '../staticBody';
 import { pickView, orientedArtOr, type ViewArt } from '../viewArt';
 import { ENGIN_DEFAULT } from './artkit';
 import { ENGIN_ARTS } from './_registry.generated';
+import { enginSpeciesNames } from '../creatures';
 
 /** Index des arts par id d'espèce (registre `engin/defs/`, 13 defs). Les 13 `siegeRig` de `trappings.json`
  *  ont TOUS leur art dédié ICI **et** leur `CreatureDef` de plan `engin` dans `creatures/defs/` (#1536) —
@@ -44,7 +45,7 @@ function resolveEngin(species: string, view: View, pose: BonePose = {}, colors?:
 export const enginPlan: BodyPlan = {
   id: 'engin',
   resolve: (sp, view, pose, opts) => resolveEngin(sp, view, pose, opts?.colors),
-  speciesNames: () => [], // les espèces d'engin sont listées par le registre de créatures (creatureSpeciesOptions)
+  speciesNames: enginSpeciesNames, // dérivé du registre de créatures (defs `plan: 'engin'`), comme quad/ailé/bipède
   // L'engin est ANCRÉ AU SOL (bas de la boîte) → le portrait cadre ce bas (x centré, y 80→150), sinon le
   // cadre haut-avant générique ne montrerait que du vide (disque noir).
   portraitBox: '25 80 70 70',
