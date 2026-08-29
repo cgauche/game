@@ -334,7 +334,7 @@
     "id": "verole-urticante",
     "type": "maladies",
     "label": "Vérole Urticante",
-    "desc": "Tous les ans, la plupart des villes et des cités de l’Empire subissent une épidémie de Vérole urticante. La maladie, qui fait apparaître des boursouflures qui démangent sur la quasi-totalité du corps, reste relativement bénigne et ne provoque que très rarement des complications, et n’est donc un réel souci que pour certains patients qui vont s’inquiéter et les nobliaux oisifs. La maladie est tellement répandue qu’on trouve dans la plupart des temples de Shallya des ampoules remplies de pâte blanche qui permettent de soulager les démangeaisons des malades. Antoine Droste - antoine.droste@gmail.com WARHAMMER FANTASY",
+    "desc": "Tous les ans, la plupart des villes et des cités de l’Empire subissent une épidémie de Vérole urticante. La maladie, qui fait apparaître des boursouflures qui démangent sur la quasi-totalité du corps, reste relativement bénigne et ne provoque que très rarement des complications, et n’est donc un réel souci que pour certains patients qui vont s’inquiéter et les nobliaux oisifs. La maladie est tellement répandue qu’on trouve dans la plupart des temples de Shallya des ampoules remplies de pâte blanche qui permettent de soulager les démangeaisons des malades.",
     "contractDifficulty": "accessible",
     "contaminatesWaterBarrel": true,
     "incubation": {
@@ -363,7 +363,7 @@
     "immuneAfterCure": true,
     "source": {
       "book": "livre-de-base",
-      "page": 186,
+      "page": 187,
       "note": "Maladies communes, LDB 20 — section continue p.186-188, pas de folio Marker par entrée dans l'extraction."
     }
   },

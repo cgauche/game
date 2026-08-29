@@ -3,19 +3,27 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { CODEX, depuisEnveloppe } from './registry';
+import { books } from '../../data';
 
 /**
  * Gel de FORME du Codex + cliquet de PROVENANCE (#1467 L1b V-CODEX).
  *
- * Le registre projette 125 catégories ; l'adoption du défaut d'enveloppe (`depuisEnveloppe`) ne doit
- * RIEN changer à l'écran. Trois mesures, aucune n'étant un dump des 4385 items :
+ * Le registre projette 125 catégories. À V-CODEX, l'adoption du défaut d'enveloppe (`depuisEnveloppe`)
+ * ne changeait RIEN à l'écran ; à T3 (#1472) elle SURFACE ce que la donnée portait déjà, chaque delta
+ * étant déclaré au compte dans `T3_DELTAS`. Cinq mesures, aucune n'étant un dump des 4385 items :
  *
  *  1. CLÉS — le gel STRICT : pour chaque catégorie, le hash de `<id>|<clés triées>` ITEM PAR ITEM.
  *     Aucune valeur n'est filtrée : une clé posée à `undefined`/`null` compte comme présente. C'est
  *     la seule mesure qui voit un item perdre ou gagner une clé.
  *  2. FORME — l'UNION des clés par catégorie, à but de DIAGNOSTIC lisible. Elle ne voit PAS un item
  *     isolé qui gagne une clé que ses voisins portent déjà : c'est (1) qui l'attrape.
- *  3. PROVENANCE — pour chaque entrée de `src/data/*.json` portant `source` ou `desc`, l'item Codex
+ *  3. T3_DELTAS — le COMBIEN : par catégorie, le nombre d'items exposant `desc`/`source`, plus la
+ *     TAILLE de la table. (1) et (2) voient les clés, pas la population qui les porte.
+ *  4. CANAL UNIQUE — la provenance passe par `source`, jamais par un fait de `meta` intitulé
+ *     « Source » : le canal en double se lit à l'écran, aucune mesure de forme ne l'attrape.
+ *     Son second volet gèle la VALEUR : tout `source.book` projeté est une ABRÉVIATION du
+ *     catalogue `books`, jamais l'id brut qu'un site oubliant `src()` laisserait passer.
+ *  5. PROVENANCE — pour chaque entrée de `src/data/*.json` portant `source` ou `desc`, l'item Codex
  *     de MÊME id doit les porter aussi. Le mapping dataset→catégorie est DÉDUIT (inclusion des ids),
  *     jamais une table à maintenir ; son ANGLE MORT (les tableaux qu'aucune catégorie ne couvre
  *     ENTIÈREMENT) est lui-même gelé, cf. `PARTIELS`/`ORPHELINS`.
@@ -29,7 +37,7 @@ const DATA_DIR = fileURLToPath(new URL('../../data/', import.meta.url));
 
 /** sha256 (16 hex) de `<id>|<clés triées>` par item, jointes par \n — gel STRICT clé par clé. */
 const CLES: Record<string, string> = {
-  "arcanePhenomena": 'a9ce5b04e91095da',
+  "arcanePhenomena": '68318e5ed9e81981',
   "advancementCosts": '3fca5e9752e2dfab',
   "disponibilite": '5bf0efe0e06d3102',
   "sizes": '0a5b3b9c8f918a21',
@@ -55,64 +63,64 @@ const CLES: Record<string, string> = {
   "axes": 'f86bc9340cdd5451',
   "trappings": '4fe70c5fb37f43e5',
   "siegeEngines": 'a7d8202fa83a7827',
-  "weaponGroups": 'a7c319ff266db56c',
+  "weaponGroups": 'cf4eb9c47b2e73f0',
   "qualities": '61b2f19869aadceb',
   "etats": 'eb017cace5b342cc',
-  "maladies": '4327765703d72cdc',
+  "maladies": '5bc38167f3da697b',
   "symptoms": '2b4e9356d95c9ecd',
   "mutations": 'a507855641eff14a',
-  "mutationTables": 'd15351c3df15abd1',
+  "mutationTables": '0d6e17a2d2e12dca',
   "effectTables": '9ae6a346268fcff3',
   "maneuvers": '30d7e463b2575792',
   "psychologie": '2287ac1af26a59cb',
   "domains": '4e7ed40a32f916d6',
   "spells": '81267fd5d0e86a78',
-  "gods": 'ea520eccdbf9cd5f',
+  "gods": 'd49beaef5ebba230',
   "ventsTourbillonnants": '9a979156867c5f47',
   "creatures": '63119d8e52a4e5de',
   "traits": '3e33886305b13fdc',
   "locations": '53ca311b61c2a3f1',
   "books": 'be0011b301362125',
-  "careerLevels": '4b3a9274c6cc385b',
-  "eyes": '1b568aea9d6b3303',
-  "hairs": 'd42c44f9511c8539',
-  "calendarMonths": '94c52503e859af19',
-  "calendarIntercalary": '1bb3c689c2f546df',
-  "calendarWeekdays": '2ee12ca1b0a15650',
+  "careerLevels": '6f86fed09e1f4a98',
+  "eyes": 'd51e8a821203257f',
+  "hairs": 'f2f80b790111b030',
+  "calendarMonths": 'c4cec6a132a2bdb7',
+  "calendarIntercalary": '804a8d45d962e7d1',
+  "calendarWeekdays": '3eecf2c30bb67099',
   "calendarPhases": '283caef56b8e1f4f',
-  "weather": '5fcb080329574387',
+  "weather": '72364e50cea97c29',
   "weatherConditions": '71dd66544ecbcbe1',
   "raceAppearance": '90eb8b747119d31f',
   "pregens": 'e33b6fca9b473190',
-  "oups": '1f78c6f4d47ab181',
-  "interludeEvents": 'a12c10833eb0fe02',
-  "peripeties": '5779340742cfe8be',
+  "oups": 'ad42edcb2ed4c50f',
+  "interludeEvents": '8c753b6a35cf9665',
+  "peripeties": 'baa2fbf2541f7bd8',
   "activities": '84e0d0a9f7ae31a5',
-  "massBattlePowerEstimate": '05642f30b0f5da6b',
-  "massBattleMightModifiers": '765738f4cc566e89',
-  "massBattleWarMachines": '31200178c2df5093',
-  "massBattleStructures": '91c097996fda97ca',
-  "massBattleHazards": 'b2e5ec3bde8aa256',
+  "massBattlePowerEstimate": '82674e9e4786f386',
+  "massBattleMightModifiers": '8b5e85f5fa1f537a',
+  "massBattleWarMachines": 'b77e9b7bc67a8d5b',
+  "massBattleStructures": 'c285c8dec9f7b877',
+  "massBattleHazards": 'e58c05b6a89d14d1',
   "details": '1d94d0c95e00ff48',
   "names": '8ab7649e0daf9e50',
-  "structures": 'c94cf687573cb06d',
+  "structures": 'c527dfa510a76d42',
   "vehicles": 'dcc320ad1f8760a1',
   "celestialHouses": '0507cb49e07e8336',
   "groups": '72ed4fd1de352fae',
   "psychologies": 'a85f35c0a34172ef',
   "seaShanties": '2bf96225710afb8c',
-  "crewRoles": '6f11f0ef0cc2ef8b',
-  "crewTestTypes": '5e7398e513c81e5c',
+  "crewRoles": 'b15bfe7c81f93951',
+  "crewTestTypes": '9ecd7be284174851',
   "navalTraits": 'aad18a5e9ac71d9b',
-  "traumas": 'b3dade314ac669df',
-  "criticalsTete": '86be88523cd5f8a4',
-  "criticalsBras": 'bc398f7c81265cdf',
-  "criticalsCorps": '9bc9d56433a21bac',
-  "criticalsJambe": '2ad610ca9963d74d',
-  "aaCriticalsTete": '11034e490ae406f9',
-  "aaCriticalsBras": '5872ebe159f016b7',
-  "aaCriticalsCorps": '7bc1d9ca4059fcd3',
-  "aaCriticalsJambe": '9e70d8c421a47bda',
+  "traumas": '1b9923aa47dbaa69',
+  "criticalsTete": '2f3e4405abc1be31',
+  "criticalsBras": '2888f3a0f39b49c1',
+  "criticalsCorps": 'cf02a7f4d323f141',
+  "criticalsJambe": '1098de960887cee0',
+  "aaCriticalsTete": '18319705d4737a23',
+  "aaCriticalsBras": '59d82c2f7781002b',
+  "aaCriticalsCorps": '2ac41e2426b49db6',
+  "aaCriticalsJambe": 'd3a85697179f2d46',
   "incidentsMonture": '245d13bec4d29c6b',
   "problemesVehicule": 'be08717e5cb4e005',
   "rencontresPositives": '005516ea5d3b70fd',
@@ -128,9 +136,9 @@ const CLES: Record<string, string> = {
   "riverCriticalsGouvernail": 'f6fb5f2042e0aa4d',
   "riverCriticalsCoque": 'df77f1ed19fe476c',
   "riverCriticalsSuperstructure": '764a4347e01ffe06',
-  "seaManannFactors": 'be87a8fce12d62aa',
-  "seaBoardEvents": '97b25dc48859e8db',
-  "seaPortEvents": 'b5e945f967845b57',
+  "seaManannFactors": '15fa1d9ae623dc94',
+  "seaBoardEvents": 'afb87b2336226c2d',
+  "seaPortEvents": '09ed8dec3c9e98e0',
   "waterExposure": 'e4ceeca1e943d0cd',
   "navalPorts": '73b923d02e3c9d73',
   "navalProgression": '2291cebbdc91ae10',
@@ -143,16 +151,16 @@ const CLES: Record<string, string> = {
   "montures": '753bb5df6cb62fd3',
   "tavernGames": '8abef4f4ee68acfc',
   "obsessions": '335a5d95e4a39469',
-  "reglesOptionnelles": '4d155947d39d1654',
+  "reglesOptionnelles": '569e04107faad559',
   "surincantation": '561218369ab9cdfd',
   "structureCriticals": '84e0df29c1ae4e21',
   "artilleryMisfire": 'aa3ad3238b5356f8',
-  "landCargo": '6d7821cf42e5eaf5',
-  "seaCargo": '8cfba773c19f3147',
-  "riverPerils": 'cf9331a2a02a1742',
-  "crewMoraleFactors": '9d0a69495919ea9c',
-  "crewMoraleBands": '94afdaf30f522e1b',
-  "steamBreakdowns": 'e394290422469f33',
+  "landCargo": '283fcb2118d143fa',
+  "seaCargo": '7bb115dc3fd7550a',
+  "riverPerils": 'cb3eb25215968d32',
+  "crewMoraleFactors": '91a12d65f9274e14',
+  "crewMoraleBands": '817ce48b209e1729',
+  "steamBreakdowns": '0241598713ede3cd',
   "regles": '5d8038eb4d292abc',
 };
 
@@ -185,13 +193,13 @@ const FORME: Record<string, string> = {
   "axes": 'desc id label meta sections',
   "trappings": 'desc id label meta sections source sub',
   "siegeEngines": 'appearance desc id label meta previewRef sections source sub',
-  "weaponGroups": 'id label sections sub',
+  "weaponGroups": 'id label sections source sub',
   "qualities": 'desc id label sections source sub',
   "etats": 'desc id label sections source',
-  "maladies": 'id label meta sections sub',
+  "maladies": 'desc id label meta sections source sub',
   "symptoms": 'desc id label sections source',
   "mutations": 'appearance desc group id label sections source sub',
-  "mutationTables": 'id label sections sub',
+  "mutationTables": 'id label sections source sub',
   "effectTables": 'id label sections source sub',
   "maneuvers": 'desc id label meta sections source sub',
   "psychologie": 'appearance desc group id label meta sections source sub',
@@ -203,46 +211,46 @@ const FORME: Record<string, string> = {
   "traits": 'appearance desc id label meta sections source sub',
   "locations": 'desc group id label sections source sub',
   "books": 'desc group id label sections sub',
-  "careerLevels": 'group id label sections sub',
-  "eyes": 'id label sections sub',
-  "hairs": 'id label sections sub',
-  "calendarMonths": 'id label sub',
-  "calendarIntercalary": 'id label sub',
-  "calendarWeekdays": 'id label',
+  "careerLevels": 'group id label sections source sub',
+  "eyes": 'id label sections source sub',
+  "hairs": 'id label sections source sub',
+  "calendarMonths": 'id label source sub',
+  "calendarIntercalary": 'id label source sub',
+  "calendarWeekdays": 'id label source',
   "calendarPhases": 'id label sub',
-  "weather": 'id label sub',
+  "weather": 'id label source sub',
   "weatherConditions": 'desc id label meta source',
   "raceAppearance": 'appearance id label meta sub',
   "pregens": 'id label meta sections sub',
-  "oups": 'id label meta sub',
-  "interludeEvents": 'desc id label sub',
-  "peripeties": 'desc id label sub',
+  "oups": 'id label meta source sub',
+  "interludeEvents": 'desc id label source sub',
+  "peripeties": 'desc id label source sub',
   "activities": 'desc id label meta sections source sub',
-  "massBattlePowerEstimate": 'desc id label meta',
-  "massBattleMightModifiers": 'desc id label meta',
-  "massBattleWarMachines": 'id label meta',
-  "massBattleStructures": 'id label meta',
-  "massBattleHazards": 'desc id label sub',
+  "massBattlePowerEstimate": 'desc id label meta source',
+  "massBattleMightModifiers": 'desc id label meta source',
+  "massBattleWarMachines": 'id label meta source',
+  "massBattleStructures": 'id label meta source',
+  "massBattleHazards": 'desc id label source sub',
   "details": 'id label sections',
   "names": 'id label sections sub',
-  "structures": 'desc id label meta sections sub',
+  "structures": 'desc id label meta sections source sub',
   "vehicles": 'desc id label meta source',
   "celestialHouses": 'desc id label source sub',
   "groups": 'id label',
   "psychologies": 'desc id label sections source',
   "seaShanties": 'desc id label meta sections source',
-  "crewRoles": 'desc id label sections',
-  "crewTestTypes": 'id label meta sections',
+  "crewRoles": 'desc id label sections source',
+  "crewTestTypes": 'id label meta sections source',
   "navalTraits": 'desc id label sections source sub',
-  "traumas": 'desc id label sections sub',
-  "criticalsTete": 'desc id label meta sections sub',
-  "criticalsBras": 'desc id label meta sections sub',
-  "criticalsCorps": 'desc id label meta sections sub',
-  "criticalsJambe": 'desc id label meta sections sub',
-  "aaCriticalsTete": 'desc id label meta sections sub',
-  "aaCriticalsBras": 'desc id label meta sections sub',
-  "aaCriticalsCorps": 'desc id label meta sections sub',
-  "aaCriticalsJambe": 'desc id label meta sections sub',
+  "traumas": 'desc id label sections source sub',
+  "criticalsTete": 'desc id label meta sections source sub',
+  "criticalsBras": 'desc id label meta sections source sub',
+  "criticalsCorps": 'desc id label meta sections source sub',
+  "criticalsJambe": 'desc id label meta sections source sub',
+  "aaCriticalsTete": 'desc id label meta sections source sub',
+  "aaCriticalsBras": 'desc id label meta sections source sub',
+  "aaCriticalsCorps": 'desc id label meta sections source sub',
+  "aaCriticalsJambe": 'desc id label meta sections source sub',
   "incidentsMonture": 'desc id label meta sections sub',
   "problemesVehicule": 'desc id label meta sections sub',
   "rencontresPositives": 'desc id label meta sections sub',
@@ -258,9 +266,9 @@ const FORME: Record<string, string> = {
   "riverCriticalsGouvernail": 'desc id label meta sections sub',
   "riverCriticalsCoque": 'desc id label meta sections sub',
   "riverCriticalsSuperstructure": 'desc id label meta sections sub',
-  "seaManannFactors": 'id label meta',
-  "seaBoardEvents": 'desc id label sub',
-  "seaPortEvents": 'desc id label sub',
+  "seaManannFactors": 'id label meta source',
+  "seaBoardEvents": 'desc id label source sub',
+  "seaPortEvents": 'desc id label source sub',
   "waterExposure": 'desc id label meta sections source',
   "navalPorts": 'desc group id label meta sections source',
   "navalProgression": 'desc id label source sub',
@@ -273,62 +281,73 @@ const FORME: Record<string, string> = {
   "montures": 'id label meta sections',
   "tavernGames": 'desc id label meta source',
   "obsessions": 'id label sub',
-  "reglesOptionnelles": 'desc id label meta sub',
+  "reglesOptionnelles": 'desc id label meta source sub',
   "surincantation": 'id label meta source sub',
   "structureCriticals": 'desc id label meta sub',
   "artilleryMisfire": 'desc id label meta sub',
-  "landCargo": 'id label meta',
-  "seaCargo": 'id label',
-  "riverPerils": 'id label sub',
-  "crewMoraleFactors": 'desc id label',
-  "crewMoraleBands": 'id label meta sub',
-  "steamBreakdowns": 'desc id label meta sub',
+  "landCargo": 'id label meta source',
+  "seaCargo": 'id label source',
+  "riverPerils": 'id label source sub',
+  "crewMoraleFactors": 'desc id label source',
+  "crewMoraleBands": 'desc id label meta source sub',
+  "steamBreakdowns": 'desc id label meta source sub',
   "regles": 'desc id label source',
 };
 
-/** Catégories dont ≥1 item DÉFAUSSE une `source`/`desc` que la donnée porte, avec leur compte.
- *  Les adopter changerait le rendu de ces fiches — hors périmètre du lot V-CODEX (#1467). */
-const MUETS: Record<string, number> = {
-  "aaCriticalsTete": 20,
-  "aaCriticalsBras": 20,
-  "aaCriticalsCorps": 20,
-  "aaCriticalsJambe": 20,
-  "arcanePhenomena": 8,
-  "calendarIntercalary": 6,
-  "calendarMonths": 12,
-  "calendarWeekdays": 8,
-  "careerLevels": 432,
-  "crewMoraleFactors": 28,
-  "crewMoraleBands": 4,
-  "crewRoles": 2,
-  "crewTestTypes": 10,
-  "criticalsTete": 20,
-  "criticalsBras": 20,
-  "criticalsCorps": 20,
-  "criticalsJambe": 20,
-  "eyes": 10,
-  "hairs": 10,
-  "interludeEvents": 31,
-  "maladies": 16,
-  "massBattlePowerEstimate": 5,
-  "massBattleMightModifiers": 9,
-  "massBattleWarMachines": 10,
-  "massBattleStructures": 5,
-  "structures": 24,
-  "massBattleHazards": 10,
-  "mutationTables": 17,
-  "oups": 8,
-  "peripeties": 10,
-  "reglesOptionnelles": 54,
-  "riverPerils": 4,
-  "seaManannFactors": 26,
-  "seaBoardEvents": 40,
-  "seaPortEvents": 18,
-  "steamBreakdowns": 6,
-  "traumas": 29,
-  "weaponGroups": 38,
-  "weather": 4,
+/** #1472 T3 — LISTE NOMINATIVE DES DELTAS, gelée au compte. Chaque catégorie ci-dessous a adopté
+ *  `depuisEnveloppe` : la valeur = le nombre d'items qui PORTENT le champ à l'écran aujourd'hui,
+ *  le commentaire = le delta APPORTÉ par T3 (`+n` gagné, `-champ +n` : n items dont la clé posée à
+ *  `undefined` devient ABSENTE — invisible au rendu). Une catégorie qui adopte le défaut SANS
+ *  entrer ici fait rougir `CLES` ; un compte qui bouge fait rougir ce test-ci, nominativement. */
+const T3_DELTAS: Record<string, Record<string, number>> = {
+  "arcanePhenomena": { desc: 33, source: 41 }, // 41 items — T3 : source +8
+  "weaponGroups": { source: 38 }, // 38 items — T3 : source +38
+  "maladies": { desc: 16, source: 16 }, // 16 items — T3 : desc +16, source +16
+  "mutationTables": { source: 17 }, // 17 items — T3 : source +17
+  "gods": { desc: 40, source: 41 }, // 41 items — T3 : -desc +1
+  "careerLevels": { source: 432 }, // 432 items — T3 : source +432
+  "eyes": { source: 10 }, // 10 items — T3 : source +10
+  "hairs": { source: 10 }, // 10 items — T3 : source +10
+  "calendarMonths": { source: 12 }, // 12 items — T3 : source +12
+  "calendarIntercalary": { source: 6 }, // 6 items — T3 : source +6
+  "calendarWeekdays": { source: 8 }, // 8 items — T3 : source +8
+  "weather": { source: 4 }, // 4 items — T3 : source +4
+  "oups": { source: 8 }, // 8 items — T3 : source +8
+  "interludeEvents": { desc: 31, source: 31 }, // 31 items — T3 : source +31
+  "peripeties": { desc: 10, source: 10 }, // 10 items — T3 : source +10
+  "massBattlePowerEstimate": { desc: 5, source: 5 }, // 5 items — T3 : source +5
+  "massBattleMightModifiers": { desc: 9, source: 9 }, // 9 items — T3 : source +9
+  "massBattleWarMachines": { source: 10 }, // 10 items — T3 : source +10
+  "massBattleStructures": { source: 5 }, // 5 items — T3 : source +5
+  "massBattleHazards": { desc: 10, source: 10 }, // 10 items — T3 : source +10
+  "structures": { desc: 19, source: 24 }, // 24 items — T3 : -desc +5, source +24
+  "crewRoles": { desc: 9, source: 2 }, // 9 items — T3 : source +2
+  "crewTestTypes": { source: 10 }, // 10 items — T3 : source +10
+  "traumas": { desc: 29, source: 29 }, // 29 items — T3 : source +29
+  "criticalsTete": { desc: 20, source: 20 }, // 20 items — T3 : source +20
+  "criticalsBras": { desc: 20, source: 20 }, // 20 items — T3 : source +20
+  "criticalsCorps": { desc: 20, source: 20 }, // 20 items — T3 : source +20
+  "criticalsJambe": { desc: 20, source: 20 }, // 20 items — T3 : source +20
+  "aaCriticalsTete": { desc: 20, source: 20 }, // 20 items — T3 : source +20
+  "aaCriticalsBras": { desc: 20, source: 20 }, // 20 items — T3 : source +20
+  "aaCriticalsCorps": { desc: 20, source: 20 }, // 20 items — T3 : source +20
+  "aaCriticalsJambe": { desc: 20, source: 20 }, // 20 items — T3 : source +20
+  "seaManannFactors": { source: 26 }, // 26 items — T3 : source +26
+  "seaBoardEvents": { desc: 40, source: 40 }, // 40 items — T3 : source +40
+  "seaPortEvents": { desc: 18, source: 18 }, // 18 items — T3 : source +18
+  "reglesOptionnelles": { desc: 81, source: 54 }, // 81 items — T3 : source +54
+  "landCargo": { source: 7 }, // 7 items — T3 : source +7
+  "seaCargo": { source: 11 }, // 11 items — T3 : source +11
+  "riverPerils": { source: 4 }, // 4 items — T3 : source +4
+  "crewMoraleFactors": { desc: 28, source: 28 }, // 28 items — T3 : source +28
+  "crewMoraleBands": { desc: 4, source: 4 }, // 4 items — T3 : desc +4, source +4
+  "steamBreakdowns": { desc: 6, source: 6 }, // 6 items — T3 : source +6
 };
+/** Cliquet POSITIF DÉCROISSANT : catégories dont ≥1 item DÉFAUSSE une `source`/`desc` que la donnée
+ *  porte. VIDÉ par #1472 T3 (39 catégories → 0) : sur les 115 tableaux appariés, plus AUCUN item ne
+ *  tait ce que sa donnée porte. Le gel à vide est l'assertion : une projection qui redroppe un champ
+ *  repeuple cette table et rougit, nominativement. Ne JAMAIS y réinscrire une catégorie. */
+const MUETS: Record<string, number> = {};
 
 /** ANGLE MORT du mapping déduit : tableaux qu'une catégorie couvre PARTIELLEMENT (ids en commun,
  *  mais pas tous) — ils sortent du cliquet de provenance. Gelé : un dataset qui cesse d'être
@@ -406,6 +425,38 @@ describe('Codex — défaut d’enveloppe (#1467 L1b)', () => {
     const mesure: Record<string, string> = {};
     for (const c of CODEX) mesure[c.key] = formeDe(c.items);
     expect(mesure).toEqual(FORME);
+  });
+
+  it('#1472 T3 : chaque catégorie qui expose desc/source le fait pour le NOMBRE d’items déclaré', () => {
+    const mesure: Record<string, Record<string, number>> = {};
+    for (const c of CODEX) {
+      const n: Record<string, number> = {};
+      for (const k of ['desc', 'source'] as const) {
+        const compte = c.items.filter((i) => k in i).length;
+        if (compte) n[k] = compte;
+      }
+      if (T3_DELTAS[c.key]) mesure[c.key] = n;
+    }
+    expect(mesure).toEqual(T3_DELTAS);
+    // La TAILLE est gelée à part : une catégorie retirée de la table sortirait sinon du filtre en silence.
+    expect(Object.keys(T3_DELTAS)).toHaveLength(42);
+  });
+
+  it('la PROVENANCE a UN seul canal : `source`, jamais un fait de méta intitulé « Source »', () => {
+    const doublons = CODEX.flatMap((c) =>
+      c.items.flatMap((i) => (i.meta ?? []).filter((f) => /^Source/i.test(f.label)).map((f) => `${c.key}/${i.id}: ${f.label}`)),
+    );
+    expect(doublons).toEqual([]);
+  });
+
+  it('la VALEUR de `source.book` est une ABRÉVIATION du catalogue, jamais l’id brut du livre', () => {
+    const abreviations = new Set(books.map((b) => b.abbr));
+    const bruts = CODEX.flatMap((c) =>
+      c.items
+        .filter((i) => i.source && !abreviations.has(i.source.book))
+        .map((i) => `${c.key}/${i.id}: book=${i.source!.book}`),
+    );
+    expect(bruts).toEqual([]);
   });
 
   it('PROVENANCE : un item dont la donnée porte source/desc les porte au Codex — et l’angle mort du mapping est gelé', () => {

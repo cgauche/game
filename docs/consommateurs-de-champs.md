@@ -75,7 +75,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `round` | 2 | `src/engine/castingNumber.ts:110` |
 | `delta` | 2 | `src/engine/castingNumber.ts:111` |
 | `min` | 2 | `src/engine/castingNumber.ts:112` |
-| `scope` | 1 | `src/ui/compendium/registry.ts:1038` |
+| `scope` | 1 | `src/ui/compendium/registry.ts:1035` |
 | `maison` | **0 — JAMAIS LU** | — |
 | `source` | **0 — JAMAIS LU** | — |
 | `desc` | **0 — JAMAIS LU** | — |
@@ -162,14 +162,14 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:693` |
-| `max` | 1 | `src/ui/compendium/registry.ts:693` |
+| `min` | 1 | `src/ui/compendium/registry.ts:691` |
+| `max` | 1 | `src/ui/compendium/registry.ts:691` |
 | `id` | 1 | `src/engine/mountTravel.ts:214` |
 | `label` | 1 | `src/engine/mountTravel.ts:198` |
 | `desc` | **0 — JAMAIS LU** | — |
 | `stageOutcome` | **0 — JAMAIS LU** | — |
-| `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:694` |
-| `occupantOps` | 1 | `src/ui/compendium/registry.ts:695` |
+| `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:692` |
+| `occupantOps` | 1 | `src/ui/compendium/registry.ts:693` |
 | `mount` | 1 | `src/engine/mountTravel.ts:199` |
 
 ### `ShipCrewTest` (src/data/shipCriticals.ts)
@@ -185,15 +185,15 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:705` |
-| `max` | 1 | `src/ui/compendium/registry.ts:705` |
+| `min` | 1 | `src/ui/compendium/registry.ts:703` |
+| `max` | 1 | `src/ui/compendium/registry.ts:703` |
 | `id` | **0 — JAMAIS LU** | — |
 | `label` | **0 — JAMAIS LU** | — |
-| `ops` | 1 | `src/ui/compendium/registry.ts:712` |
-| `shrapnel` | 1 | `src/ui/compendium/registry.ts:708` |
-| `hullCrits` | 1 | `src/ui/compendium/registry.ts:709` |
-| `crewTest` | 1 | `src/ui/compendium/registry.ts:703` |
-| `note` | 1 | `src/ui/compendium/registry.ts:706` |
+| `ops` | 1 | `src/ui/compendium/registry.ts:710` |
+| `shrapnel` | 1 | `src/ui/compendium/registry.ts:706` |
+| `hullCrits` | 1 | `src/ui/compendium/registry.ts:707` |
+| `crewTest` | 1 | `src/ui/compendium/registry.ts:701` |
+| `note` | 1 | `src/ui/compendium/registry.ts:704` |
 
 ### `PropData` (src/data/props.types.ts)
 

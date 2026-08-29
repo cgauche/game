@@ -664,10 +664,8 @@ const traumaLabelOf = (id: string): string => { try { return traumaFicheById(id)
  *  d100 → nom, effet immédiat (`ops`, même vocabulaire GameOp que passifs/sorts) + Traumatismes engendrés
  *  en cross-réf (résolus par id → libellé, comme les Tables de Corruption pour les mutations). */
 function critEntryItem(e: CritTableEntry): CodexItem {
-  return {
-    id: e.id, label: e.label,
+  return depuisEnveloppe(e, {
     sub: `d100 ${e.min}–${e.max}`,
-    desc: e.desc,
     meta: facts(
       typeof e.blessures === 'number' ? fact('Blessures', e.blessures) : null,
       e.trivial ? fact('Type', 'Triviale (« T »)') : null,
@@ -682,7 +680,7 @@ function critEntryItem(e: CritTableEntry): CodexItem {
           }
         : null,
     ),
-  };
+  });
 }
 
 /** Item Codex d'une entrée de table de voyage d100 (`TravelTableEntry` — Incidents de monte EDOC 7,
@@ -728,7 +726,7 @@ function shipCritEntryItem(e: ShipCritEntry): CodexItem {
 /** Item Codex d'un Événement de bord/de port (`SeaEventDef` — MDG 15, #157 suite) : plage de jet
  *  (d100 modifié par l'Humeur de Manann, ou 2d10) → texte verbatim. */
 function seaEventItem(e: SeaEventDef): CodexItem {
-  return { id: e.id, label: e.label, sub: `${e.min}–${e.max}`, desc: e.desc };
+  return depuisEnveloppe(e, { sub: `${e.min}–${e.max}` });
 }
 
 /** Item Codex d'un Facteur d'Humeur de Manann (`ManannFactor` — MDG 15, #157 suite) : effet signé
@@ -736,10 +734,9 @@ function seaEventItem(e: SeaEventDef): CodexItem {
 function manannFactorItem(f: ManannFactor): CodexItem {
   const eff = f.effect;
   const magnitude = eff.d10 > 0 ? diceLabel({ n: eff.d10, sides: 10, plus: eff.flat || undefined }) : String(eff.flat);
-  return {
-    id: f.id, label: f.label,
+  return depuisEnveloppe(f, {
     meta: facts(fact('Effet sur l’Humeur de Manann', `${eff.sign > 0 ? '+' : '−'}${magnitude}`)),
-  };
+  });
 }
 
 /** Libellé d'une TABLE de modificateur d'Exposition hydrique (MSRC 16 p.91, #157 suite). */
@@ -1093,8 +1090,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           ),
           sections: l.testMods?.length ? sections({ title: 'Modificateurs de Test', layout: 'list', rows: l.testMods.map(testModRow) }) : undefined,
         })),
-        ...d.windSaturationEffects.map((w) => ({
-          id: w.id, label: `${w.wind} — ${refLabel('domains', { id: w.domainId })}`, group: 'Effets de Saturation par Vent',
+        ...d.windSaturationEffects.map((w) => depuisEnveloppe({ ...w, label: `${w.wind} — ${refLabel('domains', { id: w.domainId })}` }, {
+          group: 'Effets de Saturation par Vent',
           sub: w.environments.join(', '),
           sections: sections(
             { title: 'Effets de Saturation', layout: 'list', rows: w.effects.map((e) => ({ t: 'kv', k: SATURATION_TIER_LABEL[e.tier], v: e.label } as CodexRow)) },
@@ -1487,7 +1484,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'weaponGroups', label: 'Groupes d’objet', group: 'Équipement',
-    build: () => weaponGroups.map((g) => ({ id: g.id, label: g.label, sub: WEAPON_GROUP_KIND_LABEL[g.kind], sections: sections(...reverseSections('weaponGroups', g.id)) })),
+    build: () => weaponGroups.map((g) => depuisEnveloppe(g, { sub: WEAPON_GROUP_KIND_LABEL[g.kind], sections: sections(...reverseSections('weaponGroups', g.id)) })),
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
@@ -1504,9 +1501,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'maladies', label: 'Maladies', group: 'Effets',
-    build: () => maladies.map((m) => ({
-      id: m.id,
-      label: m.label,
+    build: () => maladies.map((m) => depuisEnveloppe(m, {
       sub: m.symptoms.map((s) => symptomLabel(s.symptomId)).join(', '),
       meta: facts(
         fact('Contraction', DIFFICULTY_LABELS[m.contractDifficulty]),
@@ -1560,8 +1555,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'mutationTables', label: 'Tables de Corruption', group: 'Effets',
-    build: () => mutationTables.map((t) => ({
-      id: t.id, label: t.label, sub: `${t.ranges.length} plages d100`,
+    build: () => mutationTables.map((t) => depuisEnveloppe(t, {
+      sub: `${t.ranges.length} plages d100`,
       // Tirage d100 → Mutation : chaque plage est un lien cross-réf vers la fiche de mutation.
       sections: sections({
         title: 'Tirage (d100 → Mutation)', layout: 'list',
@@ -1642,8 +1637,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'gods', label: 'Dieux', group: 'Magie',
-    build: () => gods.map((c) => ({
-      id: c.id, label: c.label, sub: c.title, desc: c.desc, source: c.source ?? null,
+    build: () => gods.map((c) => depuisEnveloppe(c, {
+      sub: c.title,
       sections: sections(
         chips('Bénédictions', 'spells', c.blessings.map((b) => refLabel('spells', b))),
         chips('Miracles', 'spells', c.miracles.map((m) => refLabel('spells', m))),
@@ -1730,8 +1725,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // Le `label` reste composé par `entryKey` (même composition côté éditeur `CodexEdit`) : un même
     // libellé de niveau sert plusieurs carrières, il n'identifie rien à lui seul. L'`id`, lui, est
     // celui de la DONNÉE (#1467 L1b V-P1) — le registre ne recompose plus d'identité.
-    build: () => careerLevels.map((lv) => ({
-      id: lv.id,
+    build: () => careerLevels.map((lv) => depuisEnveloppe(lv, {
       label: entryKey(lv as unknown as Record<string, unknown>),
       sub: lv.status, group: findCareerById(lv.career)?.label ?? lv.career,
       sections: sections(
@@ -1744,27 +1738,25 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'eyes', label: 'Couleur des yeux', group: 'Tables', cluster: 'Création de personnage',
-    build: () => eyes.map((e) => ({ id: e.id, label: e.label, sub: `2d10 ≤ ${e.rand}`, sections: sections(colorTableSection(e)) })),
+    build: () => eyes.map((e) => depuisEnveloppe(e, { sub: `2d10 ≤ ${e.rand}`, sections: sections(colorTableSection(e)) })),
   },
   {
     key: 'hairs', label: 'Couleur des cheveux', group: 'Tables', cluster: 'Création de personnage',
-    build: () => hairs.map((h) => ({ id: h.id, label: h.label, sub: `2d10 ≤ ${h.rand}`, sections: sections(colorTableSection(h)) })),
+    build: () => hairs.map((h) => depuisEnveloppe(h, { sub: `2d10 ≤ ${h.rand}`, sections: sections(colorTableSection(h)) })),
   },
   {
     key: 'calendarMonths', label: 'Calendrier — Mois', group: 'Tables', cluster: 'Calendrier',
-    build: () => calendarMonths.map((m) => ({ id: m.id, label: m.label, sub: `${m.days} jours` })),
+    build: () => calendarMonths.map((m) => depuisEnveloppe(m, { sub: `${m.days} jours` })),
   },
   {
     key: 'calendarIntercalary', label: 'Calendrier — Jours intercalaires', group: 'Tables', cluster: 'Calendrier',
-    build: () => calendarIntercalary.map((i) => ({
-      id: i.id,
-      label: i.label,
+    build: () => calendarIntercalary.map((i) => depuisEnveloppe(i, {
       sub: i.afterMonth < 0 ? 'avant le 1ᵉʳ mois' : `après ${calendarMonths[i.afterMonth]?.label ?? `mois ${i.afterMonth}`}`,
     })),
   },
   {
     key: 'calendarWeekdays', label: 'Calendrier — Jours de la semaine', group: 'Tables', cluster: 'Calendrier',
-    build: () => calendarWeekdays.map((w) => ({ id: w.id, label: w.label })),
+    build: () => calendarWeekdays.map((w) => depuisEnveloppe(w)),
   },
   {
     key: 'calendarPhases', label: 'Calendrier — Phases du jour', group: 'Tables', cluster: 'Calendrier',
@@ -1776,7 +1768,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'weather', label: 'Météo de voyage', group: 'Tables', cluster: 'Voyage terrestre',
-    build: () => weather.map((s) => ({ id: s.id, label: s.label, sub: `${s.ranges.length} plages d100 (EDOC 8)` })),
+    build: () => weather.map((s) => depuisEnveloppe(s, { sub: `${s.ranges.length} plages d100 (EDOC 8)` })),
   },
   {
     key: 'weatherConditions', label: 'Conditions météo', group: 'Tables', cluster: 'Voyage terrestre',
@@ -1815,20 +1807,19 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // on enrichit par la plage d100 et le TYPE d'effet (kind) en méta.
     build: () => oups.map((o) => {
       const range = 'min' in o ? `d100 ${o.min}–${o.max}` : 'Hors table (arme à Poudre noire, jet pair)';
-      return {
-        id: o.id,
-        label: o.label, sub: range,
+      return depuisEnveloppe(o, {
+        sub: range,
         meta: facts(fact('d100', range), fact('Type', OUPS_KIND_LABEL[o.kind] ?? o.kind)),
-      };
+      });
     }),
   },
   {
     key: 'interludeEvents', label: 'Entre deux aventures', group: 'Tables',
-    build: () => interludeEvents.map((e) => ({ id: e.id, label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.desc })),
+    build: () => interludeEvents.map((e) => depuisEnveloppe(e, { sub: `d100 ${e.min}–${e.max}` })),
   },
   {
     key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables', cluster: 'Voyage terrestre',
-    build: () => peripeties.map((p) => ({ id: p.id, label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.desc })),
+    build: () => peripeties.map((p) => depuisEnveloppe(p, { sub: `1d10 = ${p.roll} · ${p.kind}` })),
   },
   {
     key: 'activities', label: 'Activités', group: 'Tables',
@@ -1861,24 +1852,21 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   // par id resterait à faire côté donnée (hors périmètre #148, ne pas inventer un rapprochement flou). ──
   {
     key: 'massBattlePowerEstimate', label: 'Bataille de masse — Estimation de Puissance', group: 'Tables', cluster: 'Bataille de masse',
-    build: () => POWER_ESTIMATE.map((p) => ({
-      id: p.id, label: p.label,
+    build: () => POWER_ESTIMATE.map((p) => depuisEnveloppe(p, {
       meta: facts(fact('Puissance alliée', p.ally), fact('Puissance ennemie', p.enemy)),
       desc: p.example,
     })),
   },
   {
     key: 'massBattleMightModifiers', label: 'Bataille de masse — Modificateurs de Puissance', group: 'Tables', cluster: 'Bataille de masse',
-    build: () => MIGHT_MODIFIERS.map((m) => ({
-      id: m.id, label: m.label,
+    build: () => MIGHT_MODIFIERS.map((m) => depuisEnveloppe(m, {
       meta: facts(fact('Modificateur', m.mod > 0 ? `+${m.mod}` : String(m.mod))),
       desc: m.example,
     })),
   },
   {
     key: 'massBattleWarMachines', label: 'Bataille de masse — Machines de guerre', group: 'Tables', cluster: 'Bataille de masse',
-    build: () => WAR_MACHINES.map((w) => ({
-      id: w.id, label: w.label,
+    build: () => WAR_MACHINES.map((w) => depuisEnveloppe(w, {
       meta: facts(
         fact('Prix', w.price), fact('Équipe', w.crew), fact('Disponibilité', w.availability),
         fact('Portée', w.range), fact('Dégâts', w.damage), fact('Atouts', w.traits),
@@ -1887,14 +1875,13 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'massBattleStructures', label: 'Bataille de masse — Structures', group: 'Tables', cluster: 'Bataille de masse',
-    build: () => MASS_BATTLE_STRUCTURES.map((s) => ({
-      id: s.id, label: s.label,
+    build: () => MASS_BATTLE_STRUCTURES.map((s) => depuisEnveloppe(s, {
       meta: facts(fact('BE', s.be), fact('Blessures', s.wounds), fact('Atouts', s.traits)),
     })),
   },
   {
     key: 'massBattleHazards', label: 'Bataille de masse — Aléas de bataille', group: 'Tables', cluster: 'Bataille de masse',
-    build: () => BATTLE_HAZARDS.map((h) => ({ id: h.id, label: h.label, sub: `1d10 = ${h.min}`, desc: h.desc })),
+    build: () => BATTLE_HAZARDS.map((h) => depuisEnveloppe(h, { sub: `1d10 = ${h.min}` })),
   },
   // ── Datasets-OBJETS uniques (E3b) : config de création (objet) + banque de noms (Record par race) ──
   {
@@ -1928,11 +1915,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   // ── #157 : catalogues de CONTENU app-owned (façade ou module dédié) exposés au Codex. ──
   {
     key: 'structures', label: 'Structures (siège)', group: 'Monde',
-    build: () => structures.map((s) => ({
-      id: s.id, label: s.label, sub: s.kind === 'porte' ? 'Porte' : 'Mur', desc: s.desc ?? undefined,
+    build: () => structures.map((s) => depuisEnveloppe(s, {
+      sub: s.kind === 'porte' ? 'Porte' : 'Mur',
       meta: facts(
         fact('BE', s.char.BE), fact('Blessures', s.char.B), fact('Fortifiée', s.fortified ? 'oui' : null),
-        fact('Source', s.source ? `${bookAbr(s.source.book)} p.${s.source.page}` : null),
       ),
       sections: sections(chips('Atouts', 'traits', traitLabels(s.traits as unknown as import('../../engine/statEntry').TraitList))),
     })),
@@ -1970,15 +1956,13 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'crewRoles', label: 'Rôles d’équipage', group: 'Monde',
-    build: () => crewRoles.map((r) => ({
-      id: r.id, label: r.label, desc: r.desc,
+    build: () => crewRoles.map((r) => depuisEnveloppe(r, {
       sections: sections(chips('Compétences', 'skills', r.skills.map((sk) => refLabel('skills', { id: sk.skillId, spec: sk.spec })))),
     })),
   },
   {
     key: 'crewTestTypes', label: 'Tests d’équipage (types)', group: 'Monde',
-    build: () => crewTestTypes.map((t) => ({
-      id: t.id, label: t.label,
+    build: () => crewTestTypes.map((t) => depuisEnveloppe(t, {
       meta: facts(fact('Rôle essentiel', crewRoles.find((r) => r.id === t.essential)?.label ?? t.essential)),
       sections: sections(chips('Rôles contributeurs', 'crewRoles', t.roles.map((id) => crewRoles.find((r) => r.id === id)?.label ?? id))),
     })),
@@ -1992,10 +1976,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'traumas', label: 'Traumatismes (séquelles)', group: 'Effets',
-    build: () => datasetArray('traumas').map((f) => ({
-      id: f.id, label: f.label,
+    build: () => datasetArray('traumas').map((f) => depuisEnveloppe(f, {
       sub: f.kind ? `${f.kind === 'dechirure' ? 'Déchirure' : 'Fracture'}${f.severity ? ` (${f.severity})` : ''}` : undefined,
-      desc: f.desc,
       sections: sections(passiveSection(f.ops, 'Effet permanent')),
     })),
   },
@@ -2367,8 +2349,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // exposé/éditable ici comme tout catalogue. Le panneau in-game reste la porte de la VALEUR jouée
     // (surcharge runtime persistée) ; cette fiche montre le catalogue lui-même.
     key: 'reglesOptionnelles', label: 'Règles optionnelles', group: 'Tables',
-    build: () => datasetArray('reglesOptionnelles').map((r) => ({
-      id: r.id, label: r.label, sub: r.group, desc: r.hint,
+    build: () => datasetArray('reglesOptionnelles').map((r) => depuisEnveloppe(r, {
+      sub: r.group, desc: r.hint,
       meta: facts(
         fact('Réf', r.ref),
         fact('Contrôle', RULE_KIND_LABEL[r.kind] ?? r.kind),
@@ -2422,26 +2404,26 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   // prix ni disponibilité, donc aucune fiche à ouvrir. Le filtre est ICI, pas dans la donnée.
   {
     key: 'landCargo', label: 'Cargaison terrestre', group: 'Monde',
-    build: () => datasetArray('landCargo').filter(isEchangeable).map((c) => ({
-      id: c.id, label: c.label, meta: facts(fact('Vin', (c as LandCargoDef).wine ? 'oui' : null)),
+    build: () => datasetArray('landCargo').filter(isEchangeable).map((c) => depuisEnveloppe(c, {
+      meta: facts(fact('Vin', (c as LandCargoDef).wine ? 'oui' : null)),
     })),
   },
   {
     key: 'seaCargo', label: 'Cargaison maritime', group: 'Monde',
-    build: () => datasetArray('seaCargo').filter(isEchangeable).map((c) => ({ id: c.id, label: c.label })),
+    build: () => datasetArray('seaCargo').filter(isEchangeable).map((c) => depuisEnveloppe(c)),
   },
   {
     key: 'riverPerils', label: 'Périls fluviaux', group: 'Monde',
-    build: () => RIVER_PERILS.map((p) => ({ id: p.id, label: p.label, sub: p.kind })),
+    build: () => RIVER_PERILS.map((p) => depuisEnveloppe(p, { sub: p.kind })),
   },
   {
     key: 'crewMoraleFactors', label: 'Moral d’équipage — Facteurs', group: 'Tables', cluster: 'Équipage & navire',
-    build: () => MORALE_FACTORS.map((f) => ({ id: f.id, label: f.label, desc: f.effect })),
+    build: () => MORALE_FACTORS.map((f) => depuisEnveloppe(f, { desc: f.effect })),
   },
   {
     key: 'crewMoraleBands', label: 'Moral d’équipage — Effets', group: 'Tables', cluster: 'Équipage & navire',
-    build: () => MORALE_BANDS.map((b) => ({
-      id: b.id, label: b.id, sub: `d100 ${b.min}–${b.max}`,
+    build: () => MORALE_BANDS.map((b) => depuisEnveloppe({ ...b, label: b.id }, {
+      sub: `d100 ${b.min}–${b.max}`,
       meta: facts(
         fact('DR Commandement (capitaine)', b.captainCmdDR), fact('DR Tests équipage', b.crewTestDR),
         fact('Désertion (seuil d100)', b.desertionRoll ?? null),
@@ -2450,8 +2432,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'steamBreakdowns', label: 'Pannes de navire à vapeur', group: 'Tables', cluster: 'Équipage & navire',
-    build: () => STEAM_BREAKDOWNS.map((e) => ({
-      id: e.id, label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.desc,
+    build: () => STEAM_BREAKDOWNS.map((e) => depuisEnveloppe(e, {
+      sub: `d100 ${e.min}–${e.max}`,
       meta: facts(fact('Moteur détruit', e.engineDestroyed ? 'oui' : null)),
     })),
   },
