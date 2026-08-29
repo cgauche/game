@@ -30,3 +30,6 @@ coût était déjà payé. Les recettes SÉQUENTIELLES aux codeurs, jamais paral
 4. Idéal : recetter APRÈS le commit du lot ([[feedback-migration-donnees-ui-exige-recette-au-commit]]
    reste compatible : la recette conditionne le commit → geler l'arbre pendant la recette, committer
    juste après).
+
+## Récidive 2026-08-29 (orchestrateur) — MA faute de dispatch
+J'ai lancé recetteur ET codeur (index.ts/registry.ts) EN PARALLÈLE sur le même arbre : 4 reloads HMR silencieux, un combat perdu, ~25 appels gâchés — en écrivant « arbre au repos » dans le brief de recette. Règle opérationnelle : une recette est un CRÉNEAU EXCLUSIF — aucun codeur dispatché tant qu'elle court, et le recetteur vérifie git diff --stat -- src/ VIDE avant de commencer (STOP sinon).

@@ -13,3 +13,6 @@ Vécu 2026-08-20 (lot 1a #1401, agent codeur) : `ctx_patch op=replace_unique` a 
 **Why:** un patch « réussi » non appliqué transforme une preuve par mutation en faux vert silencieux ; une lecture tronquée fait raisonner sur un fichier fantôme.
 
 **How to apply:** toute édition par `ctx_patch` dont dépend une PREUVE (mutation rouge/verte, retrait de mutation, gate) se RELIT au fichier par `Get-Content` (PowerShell) après coup ; lecture verbatim critique = `Get-Content`, jamais `ctx_read`. Consigne à recopier dans les briefs d'agents codeurs. Voir aussi [[env-lecture-png-agents-et-dedup-leanctx-menteur]] et [[env-blocked-leanctx-execute-quand-meme]].
+
+## Extension 2026-08-28 (ENTITE-c #1467) — le TRIAGE ampute AUSSI les relevés de mesure
+`ctx_shell`, `ctx_read(mode=raw|full, aggressiveness=0, fresh)` ET le pont Bash/cat interceptés rendent des relevés AMPUTÉS EN SILENCE (« N lines filtered by triage (level 2) » — jusqu'à 23/25 lignes supprimées, dont la ligne cherchée). Un rendu partiel y est INDISCERNABLE d'un rendu complet = faux-vert de mesure. **Seul canal fiable : script `.mjs` DANS le dépôt, exécuté par le tool Bash natif, imprimant sur stdout.** `node -e`, `Remove-Item`, pipelines contenant `(git …)` : bloqués en dur. À inscrire au brief de TOUT codeur qui mesure (le codeur ENTITE-c a perdu ~8 appels).

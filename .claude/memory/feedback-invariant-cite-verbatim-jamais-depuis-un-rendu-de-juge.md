@@ -5,8 +5,16 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 2a421ddf-a409-4ee5-990e-1d565fe6bd4f
-  modified: 2026-08-23T12:16:40.728Z
+  modified: 2026-08-24T14:45:48.707Z
 ---
+
+LOI GÉNÉRALE (2026-08-24, après récidive — user : « tu me revalide du code qui ne remplis pas nos
+objectifs » puis « La mémoire devient une véritable poubelle. Le soucis ne se citue pas la ») :
+l'autorité descend d'UNE chaîne — doctrine utilisateur > RAW > mesure. TOUT dérivé (rendu de juge,
+ticket que j'écris, `why` de whitelist, JSDoc, mon propre design) ne VALIDE rien : il se re-mesure
+contre la chaîne avant d'entrer dans un brief, une réponse ou un tableau d'état — l'écart contre
+l'OBJECTIF en tête, jamais la cohérence interne du code comme réponse. Le verrou de cette classe est
+STRUCTUREL (portes de refus, lentilles imposées), pas une fiche de plus.
 
 Vécu 2026-08-23, reprise #1426 volet maritime. Le juge DoD rend « invariant (2) violé : la fenêtre
 existe option OFF ; l'arbitrage utilisateur dit OFF = silence ». Je dispatche un seam

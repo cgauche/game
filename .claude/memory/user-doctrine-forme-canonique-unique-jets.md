@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: user
   originSessionId: c8f120aa-33d4-4eb8-8332-4e74068f3313
-  modified: 2026-08-24T08:20:18.939Z
+  modified: 2026-08-24T14:37:16.358Z
 ---
 
 Directive utilisateur (2026-08-20, verbatim, au fil du lot #1426) : « On migre tout vers une forme
@@ -27,6 +27,25 @@ TOUT tirage (acteur, monde, rejeu post-commit, tirage narratif) passe par LE can
 call-site). Un `d100(rng)` inline « légitime parce que jamais montré » reste un point de divergence
 future : le jour où le fonctionnement/le journal/l'affichage des jets change, c'est un site de plus
 à retoucher.
+
+Précision (2026-08-24, verbatim, lot #1501) : « Je n'aime pas t'entendre dire "Dont openRoll coté
+monde", comme si ca voulait dire qu'il y avait plusieurs facon de gérer ça ... ce n'est pas a toi de
+décider comment les jets interragissent avec l'utilisateur » — l'interaction d'un jet avec
+l'utilisateur N'EST PAS un choix (ni de site, ni d'orchestrateur, ni de design au cas par cas) :
+l'OBJET détermine sa porte (un Test → `openRoll` ; un tirage non-Test — chance d'occurrence,
+contenu — → `deMonde`), le SOCLE détermine seul la surface. Présenter deux portes comme des
+« options » = une erreur de CLASSIFICATION d'objet déguisée en décision ; garde de forme consignée
+sur #918 (deMonde alimentant une évaluation de Test = échec nominatif).
+
+Précision (2026-08-24, verbatim, sur `deMonde`) : « L'application donne la possibilité de controler
+tout dont l'environnement non ? » — OUI, en STRATES (précision user même jour : « En mode solo tu ne
+controle l'environnement que si tu active l'option, comme les jets fixés ») : par défaut on VOIT les
+dés du monde (rangée + Lancer) ; on ne les CONTRÔLE (valeur posée) qu'avec l'option Dés fixés
+(arbitrage 2026-08-23 : « option = POSE seulement, d'office = cadence auto seule ») ; le silence
+n'existe que par cadence/ordres. Conséquence : la catégorie « tirage sans fenêtre de pose » (`deMonde`)
+n'est PAS une case durable — c'est le TROU RÉSIDUEL de ce contrôle (8 sites mesurés → #1508, cible
+zéro : sous le siège qui tient le monde, tout d100 d'environnement devient posable, la politique à
+UN endroit). Sur table, un MJ lance chacun de ces dés — l'outil ne confisque rien.
 
 **How to apply** :
 - Les classements « HORS périmètre de surface » ne sont PAS des exemptions de canal : ils vont au

@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 20c644ef-b525-47b0-9cac-419c04628ba7
-  modified: 2026-07-22T07:12:03.921Z
+  modified: 2026-08-28T07:44:29.941Z
 ---
 
 Sur le dépôt `Foundry/Game` (branche de travail `main`, trunk-based — c'est le `<branche>`
@@ -64,6 +64,19 @@ retrouve embarqué dans mon commit (vu 2× cette session : un commit a balayé
 - **Déployer build le COMMIT de `main`, jamais le working tree** : le déploiement est un workflow GitHub Actions (`.github/workflows/deploy.yml`) qui checkout+build sur un runner propre → le WIP non commité d'une session parallèle ne peut plus partir en prod. Corollaire : ce qui n'est pas commité ET poussé n'est pas publié.
 - **Confirmer les tests AU VERT avant de déclencher le workflow** : RTK compresse la sortie de `npm test` et MASQUE la ligne pass/fail → toujours `npm test 2>&1 | grep -E "Tests "` pour voir `N passed`. Le workflow de déploiement ne lance que `npm run build` (pas les tests) → un test rouge NE bloque PAS la publication. Vu : déploiement avec 1 test rouge (assertion périmée, runtime OK, mais mauvaise hygiène).
 - `tsc --noEmit` peut renvoyer un cache incrémental périmé (`.tsbuildinfo`) → une erreur peut n'apparaître qu'au 2e passage ; revérifier avant de conclure « clean ».
+
+**5e RÉCIDIVE, forme NEUVE — 2026-08-28 (97163789f, flip-table #1467) : le `git add -A -- . ':!exclusions'`
+est le MÊME piège que le commit nu, en pire.** Les exclusions énumèrent le WIP étranger CONNU au temps T
+(.claude, docs/plans, journal-build…) — tout ce qui naît APRÈS l'inventaire est ratissé. Vu : le fix
+#1521 (src/ui/Dice.tsx) que la session paire game-62 avait EN VOL est entré dans mon commit — octet pour
+octet — pendant que mon message de commit affirmait « en cours de correction par la session paire ».
+⚠ Régime NOUVEAU depuis que le pair est un ORCHESTRATEUR (et non l'utilisateur) : l'asymétrie du point (a)
+ne tient PLUS — balayer le WIP d'un pair-orchestrateur fait entrer son code au tronc AVANT sa passe de
+juge et ses gates (contournement de SA chaîne qualité, pas seulement une question d'attribution).
+Règle : **avec une session-pair active, stage POSITIF uniquement** — `git add -- <liste explicite des
+fichiers du lot>` (la liste vient du rendu du codeur), jamais `add -A` même à exclusions ; puis
+`git commit -F <msg> -- <mêmes chemins>` si l'index est douteux. Et les périmètres s'échangent par
+message AVANT chaque lot (le pair annonce ses fichiers, moi les miens).
 
 **Ne pas sur-investir la chirurgie git** (« Vous passez plus de temps à créer vos commits parfaits qu'à
 développer ») : les scripts d'isolation de hunks faits-main (node + `git apply --cached` + strict gate,

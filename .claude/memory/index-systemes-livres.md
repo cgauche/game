@@ -25,3 +25,15 @@ metadata:
 
 ## Rig — détail
 [SP1 bipèdes](game-rig-gabarits-races-sp1.md) / [paper-doll](game-rig-2d-paper-doll.md) / [Dir8](game-orientation-monde-facing.md) / [monture](game-monture-composite-profondeur.md) / [nuées](game-swarm-data-driven-grounding.md) / [3 vues](game-rig-static-3-views-direction.md) / [name-matcher mort](game-namematch-deleted.md) / [tenues defs UNIQUE](game-tenues-defs-source-unique.md) / [sweep data-driven](game-rig-datadriven-sweep.md) / [apparence mutation](game-mutation-appearance-data-driven.md) / [appendages](game-appendages-registry-unified.md) / [QC anti-blob](game-qc-reconnaissabilite.md).
+
+## Migrations id/label (LIVRÉES)
+[GROUPES+SPECS](game-groups-specs-i18n-complete.md) / [label→id](game-label-id-migration-complete.md) / [FK-par-libellé](game-test-spine-fk-by-label-migration.md) / [mutations+créatures](game-mutation-creature-id-migration.md) / [livres](game-book-relation-id-migration.md) / [On ne MANIPULE que des IDs](game-ids-internes-libelles-display-multilangue.md).
+
+## Armes (registre LIVRÉ)
+[registre defs/](game-weapon-registry.md) / [buildWeapon](game-weapon-model-buildWeapon.md) / [handlingClass](game-weapon-handling-axis.md) / [art par id](game-weapon-art-id-routing.md) / [qualités FAMILLE](game-qualites-famille-arme.md) (⚠ `noFamilyQualities`).
+
+## Sources / pipeline livres (LIVRÉ)
+[Réfs RAW = préfixe de FICHIER](game-refs-raw-convention-prefixe-fichier.md) · [Atlas RAW](game-atlas-raw-doc.md) · [ajouter un livre](game-mdg-new-book-pipeline.md) · [ré-ancrage post-Marker](game-atlas-reanchor-epreuve.md) · [PDF faillibles](game-sources-pdf-errors-verify-case-by-case.md) · [EDO/EDOC](game-edo-edoc-sourcing-fix.md) · [frenchy.bzh](game-frenchy-bzh-creatures.md) + [pont VO](game-frenchy-vo-bridge.md) · [VDM = 16e livre](game-vents-de-magie-integration.md) · [diag Marker](env-marker-extraction-kills-et-timeout-outil.md) · [collision gate raw](game-pre-commit-raw-gate-collision-arbre-partage.md).
+
+## Collisions de livres (doctrine + cas jugés)
+[UNE entité, N livres](game-doctrine-une-entite-n-livres-n-variantes.md) · [collision = bug d'AXE](game-collision-livres-identique-vs-divergent.md) · [EDOC↔LDB Belliqueux](game-collision-edoc-ldb-belliqueux-tranchee.md) · [collisions différé](game-collisions-variantes-livres-deferred.md) · [flag `named`](game-named-flag-effective-psychtraits.md) · [audit 2026-06](project-audit-conformite-2026-06.md) · [monnaie LDB 57](game-notation-monetaire-canon-ldb57.md).

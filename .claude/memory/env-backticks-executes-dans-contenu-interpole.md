@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 032f0876-8eb3-421a-bddc-50a550c9bc09
-  modified: 2026-08-10T09:03:17.092Z
+  modified: 2026-08-26T14:59:55.931Z
 ---
 
 Vécu 2026-07-29, deux incidents dans le même tour :
@@ -18,6 +18,7 @@ Vécu 2026-07-29, deux incidents dans le même tour :
 - Corps de commentaire/issue/commit : TOUJOURS `--body-file`/`-F <fichier>` écrit par l'outil Write — jamais inline dès qu'il y a un backtick, un `$`, ou du contenu non trivial. **RÈGLE ABSOLUE sans clause de taille ni d'urgence** (récidive ×4, 2026-08-11 : un `--body` inline « pour aller vite » sur #1262/#1280 → 2 corps mutilés + commande suspendue 120s — le corps qui « n'a que 2-3 backticks » est exactement celui qui casse ; le réflexe est : le doigt qui tape `--body "` s'arrête et écrit le fichier).
 - **La FABRICATION du body-file elle-même passe par l'outil Write — JAMAIS `printf`/`echo` de prose vers un fichier** (récidives ×3 : 2026-08-09 corps #1193, 2026-08-10 commentaire #1153 puis commentaire #1234 — la prose technique finit TOUJOURS par contenir un backtick, et le shell l'exécute ; « --body-file » ne protège rien si le fichier est fabriqué au printf). Un mot en backtick exécuté = un mot ABSENT du texte posté : relire ce qui a été posté après tout printf hérité.
 - Ne jamais capturer du contenu distant (JSON gh/api) dans une variable réutilisée sur la même ligne de commande ; deux appels séparés, valeurs LITTÉRALES recopiées à la main.
+- **Extension 2026-08-26 (vague libellés L1b #1467) : le CONTOURNEMENT lui-même mutile le FRANÇAIS.** Deux rédacteurs d'agents, bloqués par le pont sur des heredocs à backticks, ont « retiré tout backtick/accent du contenu » pour passer — résultat : des tables de libellés FR de 150-170 lignes en ASCII PUR (« Degats », « Duree », « Prerequis »), indétectable à la relecture rapide, attrapé par le juge avec une SONDE D'OCTETS (compte des octets >127 : 0 vs 690 attendus sur une table saine). Règle : tout fichier de CONTENU (prose, libellés, tables FR) s'écrit par l'outil Write, jamais par heredoc/printf shell ; et toute table de libellés se GATE par la sonde d'octets avant usage.
 - Un commentaire GitHub mutilé se supprime par id littéral : `gh api -X DELETE repos/<o>/<r>/issues/comments/<id>` (l'id est dans l'URL `#issuecomment-<id>`).
 
 **Même famille (vécu 2026-08-06, ×3 sur le chantier #1117)** : une écriture `node -e` sur un fichier de l'arbre peut ÉCHOUER (`UNKNOWN`, verrou transitoire) **en laissant la mutation appliquée** — la restauration après mutation se VÉRIFIE par relecture (jamais supposée), et toute écriture de code/commentaire passe par `ctx_patch`, jamais par `node -e` en bash.

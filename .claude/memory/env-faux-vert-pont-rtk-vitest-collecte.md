@@ -52,3 +52,6 @@ un rouge — et un lot se ferait committer sur cette foi.
    (cf. [[feedback-attribution-rouge-suite-sonde-arbre-committe]] et
    [[feedback-recette-navigateur-arbre-gele]]) — un gate vert mesuré pendant qu'un autre agent écrit
    ne prouve rien, dans les deux sens.
+
+## Extension 2026-08-28 (juge V-UNION #1467) — le pont ment AUSSI sur tsc et grep -c
+Le pont Bash/RTK a rendu « TypeScript: No errors found » avec EXIT=1 sur un tsc qui émettait 2 erreurs (visibles en ctx_shell raw=true : [exit:2]). Et `git status --porcelain | grep -c` a rendu « 5 » sur un arbre où ctx_glob mesure 0 fichier. TOUT verdict tsc/comptage lu à travers le pont est NUL — code de sortie SANS pipe (redirection fichier + $?) ou spawnSync obligatoires.

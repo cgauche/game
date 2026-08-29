@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: c0ee09a3-d089-4078-86dc-9f7a9ef84a94
-  modified: 2026-08-24T11:52:00.879Z
+  modified: 2026-08-24T18:59:53.247Z
 ---
 
 Sur ce repo, une **autre session tourne en parallèle sur la même branche** (`main`, trunk-based)
@@ -42,3 +42,14 @@ dépendant transitivement d'une 3e session. Remèdes, par ordre :
    trivialement ; un doc GÉNÉRÉ se remet au HEAD sans perte, `docs:build` le recale).
 3. Le seul recouvrement légitime à négocier est un fichier PARTAGÉ réellement co-modifié — un
    doc-comment ou un dérivé ne se négocie pas, il se libère.
+
+**Deux pièges de worktree vécus le même soir (2026-08-24, vague #1501)** :
+- La PILE DE STASH est PARTAGÉE entre tous les worktrees du dépôt : un `git stash` sur arbre PROPRE
+  n'empile rien, et le `git stash pop` qui suit ressort le stash d'UNE AUTRE SESSION (vécu : un
+  stash de juillet appliqué en conflit UU sur 53 fichiers). Un contrôle « HEAD pur » se fait par
+  `git switch --detach <commit>` puis retour de branche — JAMAIS stash/pop en worktree.
+- Un worktree (même avec `npm ci` propre) peut produire un ROUGE DE MASSE environnemental absent de
+  l'arbre principal aux mêmes commits (vécu : 127 fichiers / 303 « reading 'setState' » — ordre
+  d'init des modules dépendant du répertoire ; #1512). Les gates de vague en worktree se font en
+  DIFFÉRENTIEL (HEAD-pur vs lot, même environnement, checkout détaché) ; la suite COMPLÈTE et la
+  recette se rejouent sur l'ARBRE PRINCIPAL après le ff, AVANT la fermeture du ticket.

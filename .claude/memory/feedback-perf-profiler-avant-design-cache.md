@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: ba0a846d-5585-40fc-9d7f-ac595de92162
-  modified: 2026-08-22T23:52:56.347Z
+  modified: 2026-08-23T08:57:39.891Z
 ---
 
 Un chantier perf commence par un PROFIL PAR ÉTAPE (sonde chronométrée : énumération / lecture /
@@ -19,6 +19,13 @@ aurait été FAUX (fixtures TDD qui usurpent de vrais chemins, TS/TSX forcés di
 fichiers, SourceFiles mutés par `ts.createProgram`). À l'inverse, le vrai gisement (`quad-couture`
 151 s → 12,7 s) était un CONSTRUCTEUR (`new Resvg(..., loadSystemFonts: true)` = 122 ms par
 instanciation, 97 % du coût) — invisible sans sonde ctor/render séparée.
+
+Même jour, même classe, seconde fois : simulation LPT de l'ordonnancement (« 124 → 49 s de mur ») →
+séquenceur par durées committées livré, mesuré A/B alterné = **−5 %** (workers CPU-bound en
+contention, deux vagues node→jsdom séquentielles avec 15 s de trou mort, setup de 8,2 s payé PAR
+worker — rien de cela n'est dans un modèle de durées). Retiré avant commit : sa garde rougissait
+l'arbre partagé dès qu'un voisin supprimait un test. Un modèle d'ordonnancement se mesure en A/B
+alterné (la machine dérive de +15 % sur 4 runs) avant d'être promis.
 
 **How to apply :** (1) mesurer la suite en JSON (`vitest run --reporter=json`), trier par fichier ;
 (2) sur chaque fichier lourd, sonde par étape AVANT de nommer la cause ; (3) toute hypothèse de
