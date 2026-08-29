@@ -18,7 +18,7 @@ amas brun) ET l'amas FLOTTAIT au-dessus de la tuile → lecture « vol de mouche
 Corrigé : amas TERRESTRE descendu au sol (SPOTS y bas, rangée avant au niveau des pieds ~y150
 local) + **ombre portée** ; `SPOTS_AERIAL` (dispersé, sans ombre) pour les nuées VOLANTES
 (Noctecorbes — flotter EST correct pour un vol d'oiseaux). `bodyPlan` : nuée non typée → `''`
-→ `DEFAULT_FORM` (PAS `speciesNames()[0]` ; `speciesNames()` alimente le picker éditeur).
+→ `DEFAULT_FORM` (PAS `speciesNames()[0]` ; correction 2026-08-29, juge #1524 : `speciesNames()` n'alimente AUCUN picker — ses 2 appelants de production sont `src/gameIso/usePlanAnim.ts:113` et `scripts/qc/render-creature.mts:37`).
 
 **Leçon QC transverse** : QC les tokens à l'ÉCHELLE RÉELLE DU JEU (~80-110px, viewBox token
 `0 0 120 150`, pieds au sol ~y145), **pas seulement en zoom** — un rendu correct à 600px peut

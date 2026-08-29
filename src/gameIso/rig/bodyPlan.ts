@@ -157,7 +157,8 @@ export function resolveRender(species: string | undefined, traits: import('../..
   }
   const rec = findCreatureById(idOrName);
   // Nuée NON typée (aucune espèce de forme) → forme GÉNÉRIQUE (DEFAULT_FORM de composeSwarm via ''),
-  // jamais la 1re forme du registre (speciesNames() alimente le picker d'éditeur, pas ce défaut).
+  // jamais la 1re forme du registre (speciesNames() n'a que deux appelants de PRODUCTION — l'anim de
+  // plan `src/gameIso/usePlanAnim.ts:113` et le script QC `scripts/qc/render-creature.mts:37` —, pas ce défaut).
   const swarmSp = '';
   if (isSwarm(traits)) {
     // Même résolution que la branche bipède : espèce explicite → espèce du RECORD → défaut Nuée.

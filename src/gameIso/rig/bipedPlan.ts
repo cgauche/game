@@ -9,12 +9,13 @@ import type { View } from './facing';
 import type { Appearance, RigSpeciesId } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { resolveRig, type ResolvedBone } from './composeRig';
+import { bipedSpeciesNames } from './creatures';
 
-const DEFAULT_APPEARANCE: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 1 };
+const DEFAULT_BIPED: Omit<Appearance, 'species'> = { sex: 'M', build: 0.5, seed: 1 };
 const EMPTY_EQUIP: EquipCtx = { weapons: [], armour: [] };
 
 function resolveBiped(species: string, view: View, pose: BonePose, opts?: ResolveOpts): ResolvedBone[] {
-  const appearance: Appearance = opts?.appearance ?? { ...DEFAULT_APPEARANCE, species: species as RigSpeciesId, colors: opts?.colors };
+  const appearance: Appearance = opts?.appearance ?? { ...DEFAULT_BIPED, species: species as RigSpeciesId, colors: opts?.colors };
   const equip: EquipCtx = opts?.equip ?? EMPTY_EQUIP;
   return resolveRig(appearance, equip, pose, opts?.tenue, view);
 }
@@ -29,7 +30,7 @@ const sw = (ph: number) => Math.sin(ph * Math.PI * 2);
 export const bipedPlan: BodyPlan = {
   id: 'biped',
   resolve: resolveBiped,
-  speciesNames: () => ['Humain', 'Nain', 'Halfling', 'Haut-Elfe', 'Elfe sylvain', 'Gnome', 'Ogre'],
+  speciesNames: bipedSpeciesNames,
   restPose: () => ({}),
   walkPose: (phase) => ({ cuisseG: sw(phase) * 14, cuisseD: sw(phase + 0.5) * 14, tibiaG: Math.max(0, sw(phase)) * 12, tibiaD: Math.max(0, sw(phase + 0.5)) * 12 }),
   attackPose: (phase) => ({ epauleD: -40 * Math.sin(Math.min(1, Math.max(0, phase)) * Math.PI), avantBrasD: -20 * Math.sin(Math.min(1, Math.max(0, phase)) * Math.PI) }),

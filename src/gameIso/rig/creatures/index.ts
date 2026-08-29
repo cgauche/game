@@ -57,9 +57,10 @@ export function speciesScale(id: string): number {
 export const QUAD_SPECIES: Record<string, QuadProps> = Object.fromEntries(QUAD.map((c) => [defId(c), c.quad!]));
 export const WINGED_SPECIES: Record<string, QuadProps> = Object.fromEntries(WING.map((c) => [defId(c), c.quad!]));
 
-/** Ids d'espèce (clés de table) des gabarits quad/ailé. */
+/** Ids d'espèce (clés de table) des gabarits quad/ailé/bipède. */
 export const quadSpeciesNames = (): string[] => QUAD.map((c) => defId(c));
 export const wingedSpeciesNames = (): string[] => WING.map((c) => defId(c));
+export const bipedSpeciesNames = (): string[] => BIPED.map((c) => defId(c));
 
 // --- Nouveaux squelettes (serpentin/arachnide/aviaire/céphalopode) : tables de props par id d'espèce,
 //     dérivées des defs comme quad/winged. Chaque plan lit son propre champ de props.
