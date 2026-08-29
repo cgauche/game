@@ -24,17 +24,19 @@ argument de la fabrique `document()` (`src/data/schemas/grammaire/document.ts`, 
   exemption MOTIVÉE (`'vocabulaire-app-interne'` ou `'dette'`). La fabrique refuse un `codex` sans
   clés ni exemption motivée.
 - `edit` — ce que l'ÉDITEUR édite : `{ dataset }` (le dataset-liste dont ce document est une entrée),
-  `{ object: 'single' | 'record' }` (objet de configuration), ou `{ none: raison }`. La fabrique
-  refuse les trois absents.
+  `{ object: 'single' | 'record' }` (objet de configuration), `{ niche: { categories } }` (les clés
+  Codex du document routées comme datasets, chacune éditant UN champ tableau — le fichier parent est
+  réécrit au save), ou `{ none: raison }`. La fabrique refuse les quatre absents.
 
-La DÉRIVATION des catégories du Codex à partir de ces déclarations reste à faire (lot L1b, #1467).
-D'ici là, la source lue à l'EXÉCUTION reste `CODEX_SPECS` (`src/ui/compendium/registry.ts:1062`, dont
-`CODEX` est la projection, `:2477`) : l'`exposition` déclarée au def ne pilote encore aucun écran.
-`FILE_TO_CATEGORY_KEYS` / `CODEX_EXPOSURE_EXEMPT` ne sont PAS cette source — ce sont deux tables
-LOCALES à la garde `src/ui/compendium/codex-exposure-guard.test.ts`, qu'elle confronte au registre
-pour tenir l'invariant (tout dataset exposé OU exempté, tables disjointes, aucune entrée fantôme,
-aucun mapping périmé). Un document neuf se pose donc en TROIS endroits du MÊME commit : son
-`exposition` au def, sa catégorie dans `CODEX_SPECS`, sa ligne dans la table de la garde.
+Les ROUTES D'ÉDITION du Codex sont DÉRIVÉES de ces déclarations (#1472) :
+`src/data/schemas/exposition-derivee.ts` construit `CATEGORY_DATASET_DERIVE` (catégorie → dataset-liste)
+et `OBJECT_CATEGORY_DERIVE` (catégorie → dataset-objet) depuis `SCHEMA_DEFS`, et `CodexEdit.tsx` les
+consomme telles quelles — plus aucune table à la main. La source lue à l'EXÉCUTION pour l'INDEX du
+Codex (le contenu de chaque catégorie) reste `CODEX_SPECS` (`src/ui/compendium/registry.ts`, dont
+`CODEX` est la projection). Les deux sont tenus égaux par `src/data/schemas/exposition-contrats.test.ts`
+(ancre filesystem, égalité bidirectionnelle registre ≡ clés déclarées, exempt ∧ exposé = rouge,
+cliquet des exemptions de dette, routes ⊆ bindings d'`overrides.ts`). Un document neuf se pose donc en
+DEUX endroits du MÊME commit : son `exposition` au def, sa catégorie dans `CODEX_SPECS`.
 
 ## `relations.ts` — ce qu'elle expose
 

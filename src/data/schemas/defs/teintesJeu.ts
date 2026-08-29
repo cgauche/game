@@ -144,7 +144,7 @@ const doc = document(
       exempt: {
         kind: 'vocabulaire-app-interne',
         raison:
-          "teintes de jeu du terrain (surbrillances tactiques + identité d'unité, hex) servies aux peintres par `gameIso/highlightTints.ts` et `gameIso/teamColors.ts` — vocabulaire app-interne de rendu, pas une fiche de contenu (même raison qu'à `codex-exposure-guard.test.ts`)",
+          "teintes de jeu du terrain (surbrillances tactiques + identité d'unité, hex) servies aux peintres par `gameIso/highlightTints.ts` et `gameIso/teamColors.ts` — vocabulaire app-interne de rendu, pas une fiche de contenu",
       },
     },
     edit: { none: "palette de rendu éditée au fichier (aucun écran d'atelier ne l'expose)" },

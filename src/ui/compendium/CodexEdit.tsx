@@ -7,6 +7,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { datasetArray, setDataset, datasetObject, setObjectDataset, datasetFile, datasetSerializeRoot, datasetObjectFile, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
+import { CATEGORY_DATASET_DERIVE, OBJECT_CATEGORY_DERIVE } from '../../data/schemas/exposition-derivee';
 import type { ShipCrewTest } from '../../data/shipCriticals';
 import { serializeDataset } from '../../data/serialize';
 import { validateDataset, metaPourFichier } from '../../data/schemas/validate';
@@ -60,96 +61,12 @@ const VARIANT_FIELDS_BY_CATEGORY: Record<string, readonly string[]> = {
   spells: SPELL_VARIANT_FIELDS,
 };
 
-/** Catégorie Codex → dataset éditable (source app-owned `src/data/*.json`). */
-const CATEGORY_DATASET: Record<string, DatasetKey> = {
-  races: 'species', careers: 'careers', characteristics: 'characteristics', classes: 'classes',
-  stars: 'stars', skills: 'skills', talents: 'talents', trappings: 'trappings', weaponGroups: 'weaponGroups', qualities: 'qualities',
-  etats: 'etats', maladies: 'maladies', spells: 'spells', maneuvers: 'maneuvers', creatures: 'creatures', traits: 'traits', locations: 'locations', books: 'books',
-  mutations: 'mutations', mutationTables: 'mutationTables', gods: 'gods', domains: 'domains',
-  // #409 : catalogue des axes de forces/faiblesses (mécanique MAISON) — clé catégorie = clé dataset.
-  axes: 'axes',
-  // V9 #1318 : registre des RÈGLES OPTIONNELLES et Tableau de Surincantation (VDM 02), migrés du
-  // CODE en donnée — clé catégorie = clé dataset.
-  reglesOptionnelles: 'reglesOptionnelles', surincantation: 'surincantation',
-  // E3a : tables & gabarits éditables (catégorie Codex = clé identique au dataset).
-  careerLevels: 'careerLevels', eyes: 'eyes', hairs: 'hairs', raceAppearance: 'raceAppearance',
-  pregens: 'pregens', oups: 'oups', interludeEvents: 'interludeEvents', peripeties: 'peripeties',
-  // Calendrier impérial — tables de contenu éditables (cf. engine/clock.ts pour la mécanique).
-  calendarMonths: 'calendarMonths', calendarIntercalary: 'calendarIntercalary',
-  calendarWeekdays: 'calendarWeekdays', calendarPhases: 'calendarPhases', weather: 'weather',
-  symptoms: 'symptoms',
-  // Combat de masse (ADE II 8, #148) — 5 tableaux NICHÉS dans UN fichier (`mass-battle.json`) :
-  // `datasetFile`/`datasetSerializeRoot` (overrides.ts) réécrivent le fichier PARENT entier au save,
-  // pas juste le tableau touché (sinon les 4 autres sections seraient perdues).
-  massBattleWarMachines: 'massBattleWarMachines', massBattleStructures: 'massBattleStructures',
-  massBattleHazards: 'massBattleHazards', massBattleMightModifiers: 'massBattleMightModifiers',
-  massBattlePowerEstimate: 'massBattlePowerEstimate',
-  // #168 : catalogue UNIQUE des Activités (interlude/voyage/mer/bataille de masse) — fichier
-  // `activities.json` (défaut), racine sérialisée = le tableau ; schéma `activities` déjà registré (#176).
-  activities: 'activities',
-  // #157 : catalogues de CONTENU app-owned exposés au Codex — clé catégorie = clé dataset.
-  structures: 'structures', vehicles: 'vehicles', celestialHouses: 'celestialHouses', groups: 'groups',
-  psychologies: 'psychologies', seaShanties: 'seaShanties', crewRoles: 'crewRoles', crewTestTypes: 'crewTestTypes',
-  navalTraits: 'navalTraits', montures: 'montures', incidentsMonture: 'incidentsMonture', problemesVehicule: 'problemesVehicule',
-  tavernGames: 'tavernGames', obsessions: 'obsessions', structureCriticals: 'structureCriticals', traumas: 'traumas',
-  landCargo: 'landCargo', seaCargo: 'seaCargo', riverPerils: 'riverPerils',
-  crewMoraleFactors: 'crewMoraleFactors', crewMoraleBands: 'crewMoraleBands', steamBreakdowns: 'steamBreakdowns',
-  criticalsTete: 'criticalsTete', criticalsBras: 'criticalsBras', criticalsCorps: 'criticalsCorps', criticalsJambe: 'criticalsJambe',
-  aaCriticalsTete: 'aaCriticalsTete', aaCriticalsBras: 'aaCriticalsBras', aaCriticalsCorps: 'aaCriticalsCorps', aaCriticalsJambe: 'aaCriticalsJambe',
-  // #157 (suite) : Critiques de coque (MDG 13 navire / MSRC 7 fluvial), Rencontres de voyage
-  // (EDOC 8) et Longs voyages en mer (MDG 15) — mêmes patrons (nichés) que ci-dessus.
-  shipCriticalsCargaison: 'shipCriticalsCargaison', shipCriticalsGreement: 'shipCriticalsGreement',
-  shipCriticalsCoque: 'shipCriticalsCoque', shipCriticalsAvirons: 'shipCriticalsAvirons', shipCriticalsEquipements: 'shipCriticalsEquipements',
-  riverCriticalsGreement: 'riverCriticalsGreement', riverCriticalsAvirons: 'riverCriticalsAvirons',
-  riverCriticalsGouvernail: 'riverCriticalsGouvernail', riverCriticalsCoque: 'riverCriticalsCoque', riverCriticalsSuperstructure: 'riverCriticalsSuperstructure',
-  rencontresPositives: 'rencontresPositives', rencontresFortuites: 'rencontresFortuites', rencontresDangereuses: 'rencontresDangereuses',
-  seaManannFactors: 'seaManannFactors', seaBoardEvents: 'seaBoardEvents', seaPortEvents: 'seaPortEvents',
-  // LOT 1 #422 : Ports (MDG 15), Progression de navire (MDG 13) et 3 sous-tableaux de
-  // Construction navale (MDG 12) — mêmes garanties (édition tableau, `datasetFile`/`datasetSerializeRoot`
-  // réécrivent le PARENT entier au save pour les 4 dernières, NICHÉES).
-  navalPorts: 'navalPorts', navalProgression: 'navalProgression',
-  shipHullSizes: 'shipHullSizes', shipSpeedTraits: 'shipSpeedTraits', shipConstructionTraits: 'shipConstructionTraits',
-  // LOT 1 #422 (suite) : famille RÈGLES LDB — Coût des Augmentations (07), Accidents de Conduite
-  // d'attelage / Ivresse (09, nichés dans `{table,source}`), Surchargé par palier (61).
-  advancementCosts: 'advancementCosts', drivingMishap: 'drivingMishap', drunkenness: 'drunkenness',
-  encumbranceTiers: 'encumbranceTiers',
-  // LOT 3 #422 (FINAL) : Incantations Imparfaites/Colère des dieux (3 tables NICHÉES dans `miscast.json`)
-  // + enjeux de la cascade de repos (`nightStakes`, tableau racine kebab-case divergent).
-  miscastMinor: 'miscastMinor', miscastMajor: 'miscastMajor', miscastWrath: 'miscastWrath',
-  nightStakes: 'nightStakes',
-  // #1467 L1b V-FLIP-TABLE : deux tableaux exposés au Codex depuis longtemps, jamais éditables —
-  // même couture nichée que leurs 13 frères de la vague, plus aucun régime à part.
-  artilleryMisfire: 'artilleryMisfire', ventsTourbillonnants: 'ventsTourbillonnants',
-  // #1467 L1b V-FLIP-RECORD : les 7 banques de noms sont des DOCUMENTS d'une liste — édition par la
-  // voie ordinaire, comme toute autre entité.
-  names: 'names',
-};
-/** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
- *  unique (`details`) ou une fiche de règle unique. Le `mode` dit comment l'éditeur projette l'objet :
- *  `single` = édite l'objet entier. */
-const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' }> = {
-  details: { ds: 'details', mode: 'single' },
-  // Exposition à l'eau (MSRC 16, #157 suite) : UNE seule fiche de règle (fichier `water-exposure.json`,
-  // clé JS `waterExposure` — `datasetObjectFile` gère la divergence de nom).
-  waterExposure: { ds: 'waterExposure', mode: 'single' },
-  // LOT 1 #422 : 3 fiches de règle UNIQUES navales (MDG 13) — même patron que `waterExposure`.
-  seaNavigation: { ds: 'seaNavigation', mode: 'single' },
-  seaPerils: { ds: 'seaPerils', mode: 'single' },
-  seaWeather: { ds: 'seaWeather', mode: 'single' },
-  // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
-  disponibilite: { ds: 'disponibilite', mode: 'single' },
-  // LOT 2 #422 : Navigation fluviale (MSRC 7) — fiche de règle UNIQUE, même patron.
-  riverNavigation: { ds: 'riverNavigation', mode: 'single' },
-  // LOT 3 #422 (FINAL) : Empoignade (LDB 14) — fiche de règle UNIQUE, même patron.
-  grapple: { ds: 'grapple', mode: 'single' },
-  // Tailles (LDB 14 / MDG 12 / empreinte de grille maison) — fiche de règle UNIQUE : 3 barres par
-  // catégorie de Taille (`Record<SizeCategory, number>` → grille `recordNumber` générique).
-  sizes: { ds: 'sizes', mode: 'single' },
-  // #851 : Magie environnementale (VDM 14) — fiche de règle UNIQUE, même patron ; ses 4 tableaux
-  // top-level (`saturationLevels`/`windSaturationEffects`/`phenomena`/`tables`) au GenericArrayField commun.
-  arcanePhenomena: { ds: 'arcanePhenomena', mode: 'single' },
-};
-export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' } | undefined => OBJECT_CATEGORY[categoryKey];
+/** Catégorie Codex → dataset-LISTE éditable, et catégorie Codex → dataset-OBJET : DÉRIVÉS des
+ *  déclarations `exposition` des defs de schéma (`src/data/schemas/exposition-derivee.ts`, #1472).
+ *  Le cast aux clés d'`overrides` est tenu par `exposition-contrats.test.ts` (routes ⊆ bindings). */
+const CATEGORY_DATASET = CATEGORY_DATASET_DERIVE as Record<string, DatasetKey>;
+const OBJECT_CATEGORY = OBJECT_CATEGORY_DERIVE as Record<string, { ds: ObjectDatasetKey; mode: 'single' | 'record' }>;
+export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
 /** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
 export const editableDataset = (categoryKey: string): DatasetKey | undefined => CATEGORY_DATASET[categoryKey];
 export const isEditableCategory = (categoryKey: string): boolean => !!CATEGORY_DATASET[categoryKey] || !!OBJECT_CATEGORY[categoryKey];

@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
  * `const x = y.characteristics; x[k]` contourne aussi bien mutations/traumas/talents actifs). Scan
  * structurel de `src/ui/**` et `src/state/**`, hors `*.test.ts(x)`/`.d.ts`.
  *
- * `CHAR_ACCESS_EXEMPT` (patron des tables disjointes de `codex-exposure-guard.test.ts`) porte les
+ * `CHAR_ACCESS_EXEMPT` (patron des exemptions nominatives au SITE) porte les
  * seuls sites légitimes restants : un champ `characteristics: CharKey[]` d'un NIVEAU de carrière
  * (`CareerLevel`, rien à voir avec `Combatant.characteristics`), ou une garde d'EXISTENCE d'une carac
  * de créature (la VALEUR affichée passe déjà par `effectiveChar`) — jamais une dispense de la valeur
@@ -36,8 +36,7 @@ function scanFiles(): string[] {
 
 const CHAR_ACCESS_RX = /\.characteristics\b/;
 
-/** Sites légitimes restants (entrée par entrée, patron `codex-exposure-guard.test.ts`
- *  `FILE_TO_CATEGORY_KEYS`/`CODEX_EXPOSURE_EXEMPT`) — `match` = sous-chaîne exacte de la ligne,
+/** Sites légitimes restants (entrée par entrée, exemption nominative AU SITE) — `match` = sous-chaîne exacte de la ligne,
  *  `count` = nombre de LIGNES de `file` qui la portent (fail-closed si divergent). */
 const CHAR_ACCESS_EXEMPT: { file: string; match: string; count: number; reason: string }[] = [
   {

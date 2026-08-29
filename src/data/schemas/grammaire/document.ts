@@ -71,7 +71,7 @@ export type EnveloppeDocument = Omit<z.infer<z.ZodObject<ReturnType<typeof envel
 /**
  * Ce que le CODEX expose de ce document : les clés de catégorie sous lesquelles le joueur le trouve
  * (`src/ui/compendium/registry.ts`), ou une EXEMPTION motivée. Déclarée au handle ; la DÉRIVATION des
- * tables du Codex à partir de ces déclarations est le lot L1b (#1467).
+ * tables du Codex à partir de ces déclarations vit dans `src/data/schemas/exposition-derivee.ts` (#1472).
  */
 export type ExpositionCodex =
   | { readonly keys: readonly string[] }
@@ -258,8 +258,11 @@ function enveloppe(type: string, idDocument?: z.ZodType<string>, exiges: readonl
 
 function verifieExposition(type: string, exposition: Exposition): void {
   const c = exposition.codex as { keys?: readonly string[]; exempt?: { raison?: string } };
-  if (!(Array.isArray(c.keys) && c.keys.length) && !c.exempt?.raison) {
-    throw new Error(`document('${type}') : \`codex\` exige des \`keys\` non vides ou un \`exempt\` motivé.`);
+  // Une exemption se MOTIVE : un mot ne dit rien — seuil de motif hérité du garde d'exposition (#1472).
+  if (!(Array.isArray(c.keys) && c.keys.length) && (c.exempt?.raison ?? '').trim().length < 10) {
+    throw new Error(
+      `document('${type}') : \`codex\` exige des \`keys\` non vides ou un \`exempt\` motivé (raison ≥ 10 caractères).`,
+    );
   }
   const e = exposition.edit as { dataset?: string; object?: string; niche?: { categories?: readonly string[] }; none?: string };
   if (e.niche) {

@@ -53,9 +53,10 @@ const doc = document(
   {
     codex: {
       exempt: {
-        kind: 'vocabulaire-app-interne',
+        kind: 'dette',
         raison:
-          'catalogue d’app des archétypes de marchand — aucune catégorie du Codex ne l’expose ; il se lit à l’étal, jamais en fiche',
+          'exposition Codex des archétypes de marchand DUE, non faite — lot UI séparé : le document ne se lit aujourd’hui qu’à l’étal',
+        ticket: '#747',
       },
     },
     edit: { none: 'aucune catégorie du Codex ne l’édite — le stock se règle en Scène, l’archétype reste app-owned' },

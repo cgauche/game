@@ -22,7 +22,7 @@ const doc = document(
       exempt: {
         kind: 'vocabulaire-app-interne',
         raison:
-          "palette de couleurs de rendu (hex), pas une fiche de contenu (même raison qu'à `codex-exposure-guard.test.ts`)",
+          "palette de couleurs de rendu (hex), pas une fiche de contenu (vocabulaire app-interne de rendu)",
       },
     },
     edit: { none: "palette d'art éditée au fichier (aucun écran d'atelier ne l'expose)" },

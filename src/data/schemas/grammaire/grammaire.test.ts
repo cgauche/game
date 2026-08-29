@@ -156,6 +156,28 @@ describe('document() — enveloppe posée par la fabrique', () => {
     expect(exempte.exposition.edit).toEqual({ none: 'dérivé' });
   });
 
+  it('REFUSE une exemption à raison SQUELETTIQUE — un mot n’est pas un motif (≥ 10 caractères)', () => {
+    expect(() =>
+      document(
+        'jouet',
+        'config',
+        { max: z.number() },
+        { max: { label: 'Max' } },
+        { codex: { exempt: { kind: 'vocabulaire-app-interne', raison: 'interne' } }, edit: { none: 'dérivé' } },
+      ),
+    ).toThrow(/`exempt` motivé \(raison ≥ 10 caractères\)/);
+    // Le blanc ne compte pas : la raison se mesure ébrechée.
+    expect(() =>
+      document(
+        'jouet',
+        'config',
+        { max: z.number() },
+        { max: { label: 'Max' } },
+        { codex: { exempt: { kind: 'vocabulaire-app-interne', raison: '   interne   ' } }, edit: { none: 'dérivé' } },
+      ),
+    ).toThrow(/`exempt` motivé \(raison ≥ 10 caractères\)/);
+  });
+
   it('CROISE `edit.niche.categories` avec `codex.keys` : une catégorie hors Codex est REFUSÉE, en la nommant', () => {
     expect(() =>
       document(
