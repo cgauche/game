@@ -41,8 +41,11 @@
 .de-cell { display: flex; flex-direction: column; gap: 1px; }
 .de-cell span { font-size: 0.72rem; color: var(--muted); }
 
+/* Rangée dense de refs : ses saisies RÉTRÉCISSENT (min-width: 0) au lieu d'élargir la page, et le
+   select garde sa largeur intrinsèque pour rester lisible (clé jusqu'à `elfe-sylvain`). */
 .de-reflrow { display: flex; gap: 0.4rem; align-items: center; }
-.de-reflrow input { flex: 1; }
+.de-reflrow input,
+.de-reflrow select { flex: 0 1 auto; min-width: min(9.5rem, 45%); }
 
 /* Grille de drapeaux booléens (talents.combat) — cases denses, libellé = clé du type. */
 .de-flags { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }

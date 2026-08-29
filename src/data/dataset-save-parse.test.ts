@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DATASET_KEYS, datasetEditable, datasetFile, datasetSerializeRoot } from './overrides';
+import { DATASET_KEYS, datasetEditable, datasetFile, datasetSerializeRoot, resetData } from './overrides';
 import { validateDataset } from './schemas/validate';
 import { serializeDataset } from './serialize';
 
@@ -76,6 +76,11 @@ describe('sauvegarde éditeur — chaque clé de dataset résout un fichier REGI
     // save qui produit un diff de reformatage, ou une racine brancherait sur le MAUVAIS document.
     // Complémentaire de `serialize.test.ts` (round-trip disque→disque) : ici la racine est celle que
     // la MÉMOIRE porte après chargement, et le fichier est celui que la DÉRIVATION désigne.
+    // Graphe de modules PARTAGÉ (`isolate: false`) : un test antérieur du worker peut avoir muté un
+    // dataset en mémoire. La sonde se remet donc au SEED avant de mesurer — l'invariant porte sur le
+    // pipeline (fichier dérivé × racine sérialisée = disque), pas sur l'ordre des tests. `resetData`
+    // est lui-même gardé par `overrides.test.ts` (restauration byte-parfaite).
+    resetData();
     const DIR = fileURLToPath(new URL('.', import.meta.url));
     const divergents: string[] = [];
     for (const k of scannees()) {

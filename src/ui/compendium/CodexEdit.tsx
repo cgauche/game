@@ -20,6 +20,8 @@ import { WEATHER_LABEL } from '../../engine/travelStages';
 import { RefField, refFieldCfg } from './RefField';
 import { Icon } from '../Icon';
 import { NumberField } from '../NumberField';
+import { GatedAction } from '../GatedAction';
+import { raceKeySchema } from '../../data/schemas/grammaire/valeurs';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
 import { GameOpEditor, FormulaField, opsMissingRefs } from '../editor/GameOpEditor';
@@ -1590,6 +1592,8 @@ interface DetailText { all: string; bySpecies: Record<string, string>; }
  *  (un nouveau texte ajouté à la donnée apparaît tout seul). */
 type DetailsTexts = Record<string, DetailText>;
 
+const RACE_KEYS = raceKeySchema.options;
+
 const DETAIL_TEXT_LABEL: Record<string, string> = {
   nom: 'Noms', age: 'Âge', taille: 'Taille', ambitionShort: 'Ambition (court terme)', ambitionLong: 'Ambition (long terme)',
 };
@@ -1597,7 +1601,7 @@ const DETAIL_TEXT_LABEL: Record<string, string> = {
 /** Éditeur du bloc `details.texts` (objet `details.json`) — pour chaque entrée d'aide : un texte GLOBAL
  *  (`all`) + des surcharges PAR ESPÈCE (`bySpecies`, clé = id `RaceKey`). HTML léger autorisé (rendu via
  *  LoreText au Codex). Réutilise le motif `de-reflrow` (rangée + ✕ + « + »). Sort `texts` du repli JSON. */
-function DetailsTextsField({ value, onChange }: { value: DetailsTexts | undefined; onChange: (v: DetailsTexts) => void }) {
+export function DetailsTextsField({ value, onChange }: { value: DetailsTexts | undefined; onChange: (v: DetailsTexts) => void }) {
   const texts = value ?? {};
   const EMPTY_TEXT: DetailText = { all: '', bySpecies: {} };
   const setText = (key: string, patch: Partial<DetailText>) => onChange({ ...texts, [key]: { ...EMPTY_TEXT, ...texts[key], ...patch } });
@@ -1607,6 +1611,7 @@ function DetailsTextsField({ value, onChange }: { value: DetailsTexts | undefine
     const v = by[oldSp]; delete by[oldSp]; if (newSp) by[newSp] = v ?? '';
     setText(key, { bySpecies: by });
   };
+  const clesLibres = (key: string, sauf?: string) => RACE_KEYS.filter((k) => k === sauf || !(k in (texts[key]?.bySpecies ?? {})));
   const removeSpecies = (key: string, sp: string) => {
     const by = { ...texts[key]?.bySpecies }; delete by[sp];
     setText(key, { bySpecies: by });
@@ -1617,18 +1622,28 @@ function DetailsTextsField({ value, onChange }: { value: DetailsTexts | undefine
       {Object.keys(texts).map((key) => {
         const t = texts[key];
         return (
-          <div className="ed-subfield" key={key}>
+          <div className="ed-field" key={key}>
             <b>{DETAIL_TEXT_LABEL[key] ?? key}</b>
             <label className="ed-subfield">global<textarea rows={3} value={t.all} onChange={(e) => setText(key, { all: e.target.value })} /></label>
             <span className="de-hint">par espèce</span>
-            {Object.keys(t.bySpecies ?? {}).map((sp) => (
-              <div className="de-reflrow" key={sp}>
-                <input style={{ width: 120 }} value={sp} onChange={(e) => renameSpecies(key, sp, e.target.value)} />
-                <textarea rows={2} value={t.bySpecies[sp]} onChange={(e) => setSpecies(key, sp, e.target.value)} />
-                <button className="btn small danger" title="Retirer l'espèce" onClick={() => removeSpecies(key, sp)}>✕</button>
-              </div>
-            ))}
-            <button className="btn small" onClick={() => setSpecies(key, '', '')}>+ Espèce</button>
+            <div className="panel-grid">
+              {Object.keys(t.bySpecies ?? {}).map((sp) => (
+                <div className="ed-field" key={sp}>
+                  <div className="de-reflrow">
+                    <select aria-label={`Espèce de la surcharge — ${DETAIL_TEXT_LABEL[key] ?? key}`} value={sp} onChange={(e) => renameSpecies(key, sp, e.target.value)}>
+                      {clesLibres(key, sp).map((k) => <option key={k} value={k}>{k}</option>)}
+                    </select>
+                    <div className="de-spacer" />
+                    <button className="btn small danger" title="Retirer l'espèce" onClick={() => removeSpecies(key, sp)}>✕</button>
+                  </div>
+                  <textarea rows={2} value={t.bySpecies[sp]} onChange={(e) => setSpecies(key, sp, e.target.value)} />
+                </div>
+              ))}
+            </div>
+            <GatedAction id={`details-add-species-${key}`} label="+ Espèce" primary={false} btnClassName="small"
+              enabled={clesLibres(key).length > 0}
+              reason="Les 7 espèces ont déjà leur surcharge."
+              onClick={() => { const libre = clesLibres(key)[0]; if (libre) setSpecies(key, libre, ''); }} />
           </div>
         );
       })}
