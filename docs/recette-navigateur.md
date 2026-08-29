@@ -1025,3 +1025,13 @@ Variante mesurée (2026-08-05) : un **focus posé par un `useEffect` post-rendu*
 un vol de focus. Lire via `browser_snapshot` (qui laisse s'écouler un tour d'event loop), ou
 attendre avant de lire. Ne JAMAIS « réparer » en mutant le DOM (`tabindex` à la main) : recharger
 et rejouer la séquence canonique.
+
+## Piège du texte concaténé au badge (listes du Codex)
+
+Mesuré 2026-08-29 (recette T3 #1472). Dans les listes du Compendium/Codex, le compteur
+(`<span className="count">`, ex. `src/ui/compendium/CompendiumScreen.tsx`) et l'abréviation de
+livre sont des enfants du MÊME élément cliquable que le libellé : le CSS les pose à droite, mais
+le `textContent` les colle sans séparateur — `PorteADE II`, `Alchimiste4`, `Armes d'hastLDB`. Ce
+n'est pas un bug de rendu (le badge reste dans le nœud accessible), mais tout script de clic qui
+matche le texte EXACT échoue en silence (« aucun élément ne matche », sans dire pourquoi). Sur ces
+listes, matcher en sous-chaîne / `exact:false` (ou viser l'id), jamais le texte exact.
