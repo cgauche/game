@@ -79,11 +79,18 @@ export type ExpositionCodex =
 
 /**
  * Ce que l'ÉDITEUR édite : le dataset-liste dont ce document est une entrée, l'OBJET de configuration
- * qu'il forme à lui seul (`single`) ou dont il est une valeur (`record`), ou rien (raison exigée).
+ * qu'il forme à lui seul (`single`) ou dont il est une valeur (`record`), les TABLEAUX NICHÉS qu'il
+ * porte (`niche`), ou rien (`none`, raison exigée — vraie lecture seule, aucune route d'édition).
+ *
+ * `niche.categories` nomme les clés de catégorie Codex de CE document qui sont routées comme datasets
+ * (`CodexEdit.CATEGORY_DATASET`) : chacune édite UN champ tableau du document, jamais le document
+ * entier ; le fichier PARENT est réécrit au save. Une clé Codex du document absente de cette liste
+ * n'a aucune route d'édition.
  */
 export type ExpositionEdit =
   | { readonly dataset: string }
   | { readonly object: 'single' | 'record' }
+  | { readonly niche: { readonly categories: readonly string[] } }
   | { readonly none: string };
 
 /** EXPOSITION d'un document : où il se lit (Codex) et où il s'édite. */
@@ -254,9 +261,27 @@ function verifieExposition(type: string, exposition: Exposition): void {
   if (!(Array.isArray(c.keys) && c.keys.length) && !c.exempt?.raison) {
     throw new Error(`document('${type}') : \`codex\` exige des \`keys\` non vides ou un \`exempt\` motivé.`);
   }
-  const e = exposition.edit as { dataset?: string; object?: string; none?: string };
+  const e = exposition.edit as { dataset?: string; object?: string; niche?: { categories?: readonly string[] }; none?: string };
+  if (e.niche) {
+    const cats = e.niche.categories;
+    if (!(Array.isArray(cats) && cats.length && cats.every((d) => typeof d === 'string' && d.length))) {
+      throw new Error(`document('${type}') : \`edit.niche.categories\` exige au moins une clé de catégorie routée (chaînes non vides).`);
+    }
+    if (!(Array.isArray(c.keys) && c.keys.length)) {
+      throw new Error(
+        `document('${type}') : \`edit.niche\` route des catégories alors que \`codex\` est EXEMPT — aucune clé Codex à router.`,
+      );
+    }
+    const horsCodex = cats.filter((k) => !c.keys!.includes(k));
+    if (horsCodex.length) {
+      throw new Error(
+        `document('${type}') : \`edit.niche.categories\` nomme des clés absentes de \`codex.keys\` : ${horsCodex.join(', ')}.`,
+      );
+    }
+    return;
+  }
   if (!e.dataset && !e.object && !e.none) {
-    throw new Error(`document('${type}') : \`edit\` exige \`dataset\`, \`object\` ou \`none\` (raison).`);
+    throw new Error(`document('${type}') : \`edit\` exige \`dataset\`, \`object\`, \`niche\` ou \`none\` (raison).`);
   }
 }
 

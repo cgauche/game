@@ -31,11 +31,11 @@ const doc = document(
   },
   {
     codex: { keys: ['riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure'] },
-    edit: {
-      none: 'édité par TABLEAUX NICHÉS : les 5 catégories Codex `riverCriticals*` éditent chacune une sous-table de `tables`, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
-    },
+    edit: { niche: { categories: ['riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

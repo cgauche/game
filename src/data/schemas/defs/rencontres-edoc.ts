@@ -30,11 +30,11 @@ const doc = document(
   },
   {
     codex: { keys: ['rencontresPositives', 'rencontresFortuites', 'rencontresDangereuses'] },
-    edit: {
-      none: 'édité par TABLEAUX NICHÉS : les 3 catégories Codex `rencontresPositives`/`rencontresFortuites`/`rencontresDangereuses` éditent chacune une sous-table de `tables`, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
-    },
+    edit: { niche: { categories: ['rencontresPositives', 'rencontresFortuites', 'rencontresDangereuses'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

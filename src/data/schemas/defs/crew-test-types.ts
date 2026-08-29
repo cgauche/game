@@ -40,9 +40,11 @@ const doc = document(
   },
   {
     codex: { keys: ['crewTestTypes'] },
-    edit: { none: 'édité par TABLEAU NICHÉ : la catégorie Codex `crewTestTypes` édite le champ `types`, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+    edit: { niche: { categories: ['crewTestTypes'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

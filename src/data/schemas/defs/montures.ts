@@ -37,11 +37,11 @@ const doc = document(
   },
   {
     codex: { keys: ['montures'] },
-    edit: {
-      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `montures` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
-    },
+    edit: { niche: { categories: ['montures'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

@@ -56,6 +56,7 @@ const doc = document(
 export const schema = doc.schema;
 export const meta = doc.meta;
 
+export const exposition = doc.exposition;
 /** VUE TS du dataset — le nœud rendu par la fabrique est SCELLÉ (`z.infer` y vaut `unknown`), la vue
  *  se recompose donc depuis l'enveloppe et les champs déclarés, sans rouvrir aucun nœud. */
 export type AxesData = (EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>)[];

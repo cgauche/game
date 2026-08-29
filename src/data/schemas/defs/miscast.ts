@@ -129,12 +129,12 @@ const doc = document(
   },
   {
     codex: { keys: ['miscastMinor', 'miscastMajor', 'miscastWrath'] },
-    edit: {
-      none: 'édité par TABLEAU NICHÉ : les catégories Codex `miscastMinor`/`miscastMajor`/`miscastWrath` éditent chacune le champ `entries` d’UN des 5 documents du fichier, jamais le fichier entier (CodexEdit.CATEGORY_DATASET)',
-    },
+    edit: { niche: { categories: ['miscastMinor', 'miscastMajor', 'miscastWrath'] } },
   },
   { ligneTable: jsonRowSchema },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

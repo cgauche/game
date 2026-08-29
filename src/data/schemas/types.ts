@@ -2,7 +2,7 @@
  *  `SCHEMA_DEFS` (`src/data`, catalogues de jeu) et `SCHEMA_DEFS_SCENES` (`src/scenes`, projets de
  *  campagne), émis par `scripts/gen-registry.mjs` et réunis par `DEFS_DE_DOCUMENT` (`validate.ts`). */
 import type { z } from 'zod';
-import type { FamilleDocument } from './grammaire/document';
+import type { Exposition, FamilleDocument } from './grammaire/document';
 import type { MetaChamp } from './grammaire/meta';
 
 /** Racine d'un document authoré — les DEUX sont peuplées (#1466) : `src/data` (catalogues de jeu,
@@ -33,4 +33,10 @@ export interface SchemaDef {
    * laisse l'atelier sur la clé technique. Adoption par def : lot L1b #1467.
    */
   meta?: Readonly<Record<string, MetaChamp>>;
+  /**
+   * EXPOSITION du document — DÉRIVÉE du handle `document()` (`doc.exposition`), jamais redéclarée :
+   * où il se lit (`codex`) et où il s'édite (`edit`). Portée par les defs de `src/data` ; les
+   * documents de `src/scenes` n'exposent rien au Codex (#1472).
+   */
+  exposition?: Exposition;
 }

@@ -34,12 +34,11 @@ const doc = document(
   },
   {
     codex: { keys: ['navalProgression'] },
-    edit: {
-      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `navalProgression` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
-    },
+    edit: { niche: { categories: ['navalProgression'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+export const exposition = doc.exposition;
 export type NavalProgressionData = EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>;

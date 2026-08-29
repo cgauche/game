@@ -39,16 +39,12 @@ const doc = document(
     },
   },
   {
-    codex: {
-      exempt: {
-        kind: 'vocabulaire-app-interne',
-        raison:
-          'trois barèmes par Taille (`rangedMod`/`shipboardEnc`/`footprintSide`) — vocabulaire structurel, pas une fiche narrative.',
-      },
-    },
+    codex: { keys: ['sizes'] },
     edit: { object: 'single' },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

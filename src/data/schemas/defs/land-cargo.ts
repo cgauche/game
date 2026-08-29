@@ -99,9 +99,11 @@ const doc = document(
   },
   {
     codex: { keys: ['landCargo'] },
-    edit: { none: 'édité par TABLEAU NICHÉ : la catégorie Codex `landCargo` édite le champ `cargoes`, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+    edit: { niche: { categories: ['landCargo'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

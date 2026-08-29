@@ -196,6 +196,7 @@ const doc = document(
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+export const exposition = doc.exposition;
 /** Clés top-level relevées AVANT le sceau — le nœud rendu n'a plus de `.shape`
  *  (`variants-integrity.test.ts`). */
 export const cles = doc.cles;

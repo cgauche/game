@@ -71,10 +71,11 @@ const doc = document(
   },
   {
     codex: { keys: ['shipHullSizes', 'shipSpeedTraits', 'shipConstructionTraits'] },
-    edit: { none: 'édité par TABLEAU NICHÉ : les 3 catégories Codex `ship*` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+    edit: { niche: { categories: ['shipHullSizes', 'shipSpeedTraits', 'shipConstructionTraits'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+export const exposition = doc.exposition;
 export type ShipConstructionData = EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>;

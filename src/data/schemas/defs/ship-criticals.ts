@@ -32,11 +32,11 @@ const doc = document(
   },
   {
     codex: { keys: ['shipCriticalsCargaison', 'shipCriticalsGreement', 'shipCriticalsCoque', 'shipCriticalsAvirons', 'shipCriticalsEquipements'] },
-    edit: {
-      none: 'édité par TABLEAUX NICHÉS : les 5 catégories Codex `shipCriticals*` éditent chacune une sous-table de `tables`, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
-    },
+    edit: { niche: { categories: ['shipCriticalsCargaison', 'shipCriticalsGreement', 'shipCriticalsCoque', 'shipCriticalsAvirons', 'shipCriticalsEquipements'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

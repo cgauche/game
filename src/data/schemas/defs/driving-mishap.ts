@@ -31,11 +31,11 @@ const doc = document(
   },
   {
     codex: { keys: ['drivingMishap'] },
-    edit: {
-      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `drivingMishap` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
-    },
+    edit: { niche: { categories: ['drivingMishap'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

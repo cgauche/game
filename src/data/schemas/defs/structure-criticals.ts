@@ -34,11 +34,11 @@ const doc = document(
   },
   {
     codex: { keys: ['structureCriticals'] },
-    edit: {
-      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `structureCriticals` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
-    },
+    edit: { niche: { categories: ['structureCriticals'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

@@ -51,9 +51,11 @@ const doc = document(
   { perils: { label: 'Dangers fluviaux', hint: 'Catalogue des dangers (Débris/Barrage/Rochers/Eaux peu profondes)' } },
   {
     codex: { keys: ['riverPerils'] },
-    edit: { none: 'édité par TABLEAU NICHÉ : la catégorie Codex `riverPerils` édite le champ `perils`, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+    edit: { niche: { categories: ['riverPerils'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

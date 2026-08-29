@@ -170,7 +170,7 @@ const doc = document(
     standard: { label: 'Trait standard' },
   },
   {
-    codex: { keys: ['traits'] },
+    codex: { keys: ['traits', 'psychologie'] },
     edit: { dataset: 'traits' },
   },
   { exiges: ['desc', 'source'], variantes: VARIANT_RESOLVED_FIELDS },
@@ -178,6 +178,7 @@ const doc = document(
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+export const exposition = doc.exposition;
 /** Clés top-level de l'entrée (enveloppe + champs), relevées AVANT le sceau — le nœud rendu par la
  *  fabrique n'a plus de `.shape`. Consommée par `src/data/variants-integrity.test.ts`. */
 export const cles = doc.cles;

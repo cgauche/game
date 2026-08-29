@@ -6,7 +6,7 @@
  * ils prouvent du même coup que le registre généré `_ids.generated.ts` et la donnée s'accordent.
  */
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { z } from 'zod';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
@@ -132,9 +132,20 @@ describe('document() — enveloppe posée par la fabrique', () => {
       document('jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, { codex: {}, edit: { object: 'single' } }),
     ).toThrow(/`codex` exige/);
     expect(() =>
-      // @ts-expect-error — `edit` vide : ni `dataset`, ni `object`, ni `none`.
+      // @ts-expect-error — `edit` vide : ni `dataset`, ni `object`, ni `niche`, ni `none`.
       document('jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, { codex: { keys: ['x'] }, edit: {} }),
     ).toThrow(/`edit` exige/);
+    expect(() =>
+      document('jouet', 'config', { max: z.number() }, { max: { label: 'Max' } }, { codex: { keys: ['x'] }, edit: { niche: { categories: [] } } }),
+    ).toThrow(/`edit.niche.categories` exige/);
+    const nichee = document(
+      'jouet',
+      'config',
+      { max: z.number() },
+      { max: { label: 'Max' } },
+      { codex: { keys: ['x', 'y'] }, edit: { niche: { categories: ['x'] } } },
+    );
+    expect(nichee.exposition.edit).toEqual({ niche: { categories: ['x'] } });
     const exempte = document(
       'jouet',
       'config',
@@ -143,6 +154,33 @@ describe('document() — enveloppe posée par la fabrique', () => {
       { codex: { exempt: { kind: 'vocabulaire-app-interne', raison: 'vocabulaire du moteur, jamais lu par le joueur' } }, edit: { none: 'dérivé' } },
     );
     expect(exempte.exposition.edit).toEqual({ none: 'dérivé' });
+  });
+
+  it('CROISE `edit.niche.categories` avec `codex.keys` : une catégorie hors Codex est REFUSÉE, en la nommant', () => {
+    expect(() =>
+      document(
+        'jouet',
+        'config',
+        { max: z.number() },
+        { max: { label: 'Max' } },
+        { codex: { keys: ['x'] }, edit: { niche: { categories: ['x', 'z'] } } },
+      ),
+    ).toThrow(/`edit.niche.categories` nomme des clés absentes de `codex.keys` : z/);
+  });
+
+  it('REFUSE `edit.niche` sur un document Codex EXEMPT — aucune clé à router', () => {
+    expect(() =>
+      document(
+        'jouet',
+        'config',
+        { max: z.number() },
+        { max: { label: 'Max' } },
+        {
+          codex: { exempt: { kind: 'vocabulaire-app-interne', raison: 'vocabulaire du moteur, jamais lu par le joueur' } },
+          edit: { niche: { categories: ['x'] } },
+        },
+      ),
+    ).toThrow(/`edit.niche` route des catégories alors que `codex` est EXEMPT/);
   });
 
   it('n’expose AUCUN nœud extensible en aval : `.extend` et `.shape` absents AU RUNTIME', () => {
@@ -396,6 +434,44 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     expect(() =>
       document('talent', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, { valeurRecord: z.string() }),
     ).toThrow(/`valeurRecord` n'a de sens que pour la famille « record » \(ici « entite »\)/);
+  });
+});
+
+describe('defs/ — forme de FICHIER et EXPOSITION déclarée (#1472 sous-lot A)', () => {
+  it('tout fichier de `defs/` se termine par une newline', () => {
+    const dossier = new URL('../defs/', import.meta.url);
+    const fautifs = readdirSync(dossier)
+      .filter((f) => f.endsWith('.ts'))
+      .filter((f) => !readFileSync(new URL(f, dossier), 'utf8').endsWith('\n'));
+    expect(fautifs).toEqual([]);
+  });
+
+  it('chaque def du registre porte une `exposition` conforme (codex, edit, croisement niche×codex)', () => {
+    const fautifs: string[] = [];
+    for (const def of SCHEMA_DEFS) {
+      const exposition = (def as { file: string; exposition?: Exposition }).exposition;
+      if (!exposition) {
+        fautifs.push(`${def.file} : aucune \`exposition\``);
+        continue;
+      }
+      const c = exposition.codex as { keys?: readonly string[]; exempt?: { raison?: string } };
+      const e = exposition.edit as { dataset?: string; object?: string; niche?: { categories?: readonly string[] }; none?: string };
+      const keys = Array.isArray(c.keys) && c.keys.length ? c.keys : undefined;
+      if (!keys && !c.exempt?.raison) fautifs.push(`${def.file} : \`codex\` sans \`keys\` ni \`exempt\` motivé`);
+      if (!e.dataset && !e.object && !e.none && !e.niche) fautifs.push(`${def.file} : \`edit\` sans route déclarée`);
+      if (e.niche) {
+        const cats = e.niche.categories;
+        if (!(Array.isArray(cats) && cats.length && cats.every((k) => typeof k === 'string' && k.length))) {
+          fautifs.push(`${def.file} : \`edit.niche.categories\` vide ou mal formée`);
+        } else if (!keys) {
+          fautifs.push(`${def.file} : \`edit.niche\` sur un Codex EXEMPT`);
+        } else {
+          const hors = cats.filter((k) => !keys.includes(k));
+          if (hors.length) fautifs.push(`${def.file} : \`edit.niche.categories\` hors \`codex.keys\` : ${hors.join(', ')}`);
+        }
+      }
+    }
+    expect(fautifs).toEqual([]);
   });
 });
 

@@ -348,7 +348,7 @@ export const REGISTRIES = [
     arrayName: 'SCHEMA_DEFS',
     type: 'SchemaDef',
     typeFrom: './types',
-    fields: ['file', 'schema', 'famille'],
+    fields: ['file', 'schema', 'famille', 'exposition'],
     optionalFields: ['meta'],
     constFields: { root: "'src/data'" },
   },

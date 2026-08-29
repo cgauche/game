@@ -78,9 +78,11 @@ const doc = document(
   },
   {
     codex: { keys: ['weather', 'weatherConditions'] },
-    edit: { none: 'édité par TABLEAU NICHÉ : les catégories Codex `weather`/`weatherConditions` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+    edit: { niche: { categories: ['weather'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

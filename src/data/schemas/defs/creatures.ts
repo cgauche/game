@@ -130,6 +130,7 @@ const doc = document(
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+export const exposition = doc.exposition;
 /** Clés top-level relevées AVANT le sceau — le nœud rendu n'a plus de `.shape`. */
 export const cles = doc.cles;
 /** L'entrée en PATCH, pour l'embarquement d'un profil ad hoc (`defs-scenes/narratif.ts`). */

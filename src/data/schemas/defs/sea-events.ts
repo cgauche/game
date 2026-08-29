@@ -78,9 +78,11 @@ const doc = document(
   },
   {
     codex: { keys: ['seaManannFactors', 'seaBoardEvents', 'seaPortEvents'] },
-    edit: { none: 'édité par TABLEAU NICHÉ : les 3 catégories Codex `sea*Events`/`seaManannFactors` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+    edit: { niche: { categories: ['seaManannFactors', 'seaBoardEvents', 'seaPortEvents'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

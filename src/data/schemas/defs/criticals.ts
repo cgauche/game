@@ -115,9 +115,11 @@ const doc = document(
   },
   {
     codex: { keys: ['criticalsTete', 'criticalsBras', 'criticalsCorps', 'criticalsJambe'] },
-    edit: { none: 'édité par TABLEAU NICHÉ : les 4 catégories Codex `criticals*` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+    edit: { niche: { categories: ['criticalsTete', 'criticalsBras', 'criticalsCorps', 'criticalsJambe'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;

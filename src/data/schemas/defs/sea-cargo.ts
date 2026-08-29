@@ -101,9 +101,11 @@ const doc = document(
   },
   {
     codex: { keys: ['seaCargo'] },
-    edit: { none: 'édité par TABLEAU NICHÉ : la catégorie Codex `seaCargo` édite le champ `cargoes`, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+    edit: { niche: { categories: ['seaCargo'] } },
   },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
+
+export const exposition = doc.exposition;
