@@ -33,8 +33,9 @@ describe('art de l’engin `belier` (ADE II 8 l.258 : tronc suspendu à un porti
   });
 
   it('id d’engin INCONNU → REPLI VISIBLE (#223) ; `canon-petit` est un ART RÉEL, plus un fallback', () => {
-    // Tous les `siegeRig` de trappings.json ont leur def : le repli d'un id inconnu est la silhouette
-    // d'erreur partagée, pas un affût silencieux. `canon-petit` est un art dédié à part entière.
+    // Couverture des `siegeRig` de trappings.json : assertée par `siege-rig-resolution.test.ts` (art +
+    // `CreatureDef`). Ici on ne fige que le repli : id inconnu → silhouette d'erreur partagée, jamais
+    // un affût silencieux — `canon-petit` étant un art dédié à part entière.
     expect(enginArtOf('espece-inconnue-xyz')).toBe(MISSING_ART);
     expect(enginArtOf('canon-petit')).toBe(canonPetit);
     expect(enginArtOf('espece-inconnue-xyz')).not.toBe(canonPetit);

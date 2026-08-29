@@ -2965,6 +2965,18 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.25,
     "species": "basilic",
   },
+  "batterie-tonnerre-de-feu": {
+    "def": "Batterie tonnerre de feu",
+    "plan": "engin",
+    "scale": 1,
+    "species": "batterie-tonnerre-de-feu",
+  },
+  "belier": {
+    "def": "Bélier",
+    "plan": "engin",
+    "scale": 1,
+    "species": "belier",
+  },
   "bete-des-marais": {
     "def": "Bête des marais",
     "plan": "amorphous",
@@ -2995,6 +3007,24 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.05,
     "species": "brochet-du-stir",
   },
+  "canon-a-flammes": {
+    "def": "Canon à flammes nain",
+    "plan": "engin",
+    "scale": 1,
+    "species": "canon-a-flammes",
+  },
+  "canon-a-repetition": {
+    "def": "Canon à répétition",
+    "plan": "engin",
+    "scale": 1,
+    "species": "canon-a-repetition",
+  },
+  "canon-lourd": {
+    "def": "Canon lourd",
+    "plan": "engin",
+    "scale": 1,
+    "species": "canon-lourd",
+  },
   "canon-petit": {
     "def": "Canon de siège",
     "plan": "engin",
@@ -3006,6 +3036,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "theropode",
     "scale": 1.35,
     "species": "carnosaure",
+  },
+  "catapulte": {
+    "def": "Catapulte",
+    "plan": "engin",
+    "scale": 1,
+    "species": "catapulte",
   },
   "chamane-brey": {
     "def": "Chamane-Brey",
@@ -3313,6 +3349,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.6,
     "species": "macareux-a-bec-tranchant",
   },
+  "mangonneau": {
+    "def": "Mangonneau",
+    "plan": "engin",
+    "scale": 1,
+    "species": "mangonneau",
+  },
   "manticore": {
     "def": "Manticore",
     "plan": "winged",
@@ -3325,6 +3367,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "minotaure",
   },
+  "mortier": {
+    "def": "Mortier",
+    "plan": "engin",
+    "scale": 1,
+    "species": "mortier",
+  },
   "nain": {
     "def": "Nain",
     "plan": "biped",
@@ -3336,6 +3384,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "ogre",
+  },
+  "onagre": {
+    "def": "Onagre",
+    "plan": "engin",
+    "scale": 1,
+    "species": "onagre",
   },
   "orc": {
     "def": "Orc",
@@ -3360,6 +3414,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "winged",
     "scale": 0.95,
     "species": "pegase",
+  },
+  "pierrier": {
+    "def": "Pierrier",
+    "plan": "engin",
+    "scale": 1,
+    "species": "pierrier",
   },
   "pieuvre": {
     "def": "Pieuvre",
@@ -3492,6 +3552,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "quadruped",
     "scale": 1.3,
     "species": "stegadon",
+  },
+  "trebuchet": {
+    "def": "Trébuchet",
+    "plan": "engin",
+    "scale": 1,
+    "species": "trebuchet",
   },
   "tregara": {
     "def": "Trégara",

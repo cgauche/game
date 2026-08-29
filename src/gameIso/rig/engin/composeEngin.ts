@@ -20,8 +20,9 @@ import { ENGIN_DEFAULT } from './artkit';
 import { ENGIN_ARTS } from './_registry.generated';
 
 /** Index des arts par id d'espèce (registre `engin/defs/`, 13 defs). Les 13 `siegeRig` de `trappings.json`
- *  ont TOUS leur def dédiée — `canon-petit` est un ART RÉEL (canon de rempart, pointé par la donnée), plus
- *  un repli. Un id FUTUR sans art tombe sur le REPLI VISIBLE partagé (#223) — MÊME mécanique que
+ *  ont TOUS leur art dédié ICI **et** leur `CreatureDef` de plan `engin` dans `creatures/defs/` (#1536) —
+ *  sans quoi `bodyPlan` rendrait l'affût en humanoïde. `canon-petit` est un ART RÉEL (canon de rempart,
+ *  pointé par la donnée), plus un repli. Un id FUTUR sans art tombe sur le REPLI VISIBLE partagé (#223) — MÊME mécanique que
  *  `SHIP_ARTS`/`LAND_ARTS`. */
 const ART_BY_ID = new Map(ENGIN_ARTS.map((a) => [a.id, a]));
 

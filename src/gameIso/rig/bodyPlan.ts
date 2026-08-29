@@ -180,6 +180,7 @@ export function resolveRender(species: string | undefined, traits: import('../..
     if (siegeRig) {
       const d = defById(siegeRig);
       if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species: siegeRig, scale: speciesScale(siegeRig) };
+      if (import.meta.env?.DEV) diagOnce(`bodyPlan:siegeRig:${siegeRig}`, () => console.error(`[bodyPlan] affût « ${siegeRig} » : aucune def de rendu (plan non bipède) — l'engin serait dessiné en humanoïde ; def à ajouter dans creatures/defs.`));
       return { kind: 'rig', plan: 'biped', species: siegeRig, scale: speciesScale(siegeRig) };
     }
   }
