@@ -49,7 +49,7 @@ const SERVANT_SLOTS = crewFormationSlots({ pos: RAM_POS, footprint: 2 }, { crewI
 
 const scene = buildScene({
   id: 'belier-porte',
-  nom: 'Bélier — porte',
+  label: 'Bélier — porte',
   desc: "Un petit fort de siège : une porte de ville barre le passage, gardée par un gobelin.",
   size: [10, 15],
   terrain: 'pave',

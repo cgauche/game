@@ -95,7 +95,7 @@ function quay(e: ReikEntry, start: boolean): Scene {
   const size: [number, number] = [12, 7];
   return buildScene({
     id: `quai-${e.id}`,
-    nom: `${e.label} — les quais`,
+    label: `${e.label} — les quais`,
     desc: 'Arène de test.',
     size,
     terrain: 'planches',
@@ -158,7 +158,7 @@ routes.push(grunburgAltdorf);
 
 const carte: WorldMap = {
   id: 'reik-commerce-carte',
-  nom: 'Le Reik marchand (Index géographique, MSRC 13)',
+  label: 'Le Reik marchand (Index géographique, MSRC 13)',
   params: { perilDie: 0 },
   places,
   routes,

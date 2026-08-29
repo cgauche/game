@@ -17,7 +17,7 @@ import type { TestScenario } from './_shared';
  */
 const auberge = buildScene({
   id: 'test-dialogue-multi-auberge',
-  nom: 'Auberge — la tablée',
+  label: 'Auberge — la tablée',
   desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',

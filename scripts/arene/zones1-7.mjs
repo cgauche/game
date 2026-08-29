@@ -9,7 +9,7 @@ export function makeZone1() {
   return scene({
     id: 'arene-zone1',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — La Cour',
+    label: 'Arène — La Cour',
     desc: 'La cour d’échauffement de l’arène : du sable, des caisses, de la vermine.',
     startMessage:
       'L’ARÈNE — La Cour. Pour s’échauffer : de la vermine. Utilisez le couvert (tonneaux, caisses, murets) — et fouillez le râtelier avant d’avancer.',
@@ -77,7 +77,7 @@ export function makeZone2() {
   return scene({
     id: 'arene-zone2',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — Les Ruines',
+    label: 'Arène — Les Ruines',
     desc: 'Un pan de forteresse effondrée annexé par l’arène — et squatté par des peaux-vertes.',
     startMessage:
       'LES RUINES. Des gobelins nichent dans les chambres effondrées. On murmure qu’une salle au nord-est garde encore son trésor… et son gardien.',
@@ -179,7 +179,7 @@ export function makeZone3() {
   return scene({
     id: 'arene-zone3',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — Les Égouts',
+    label: 'Arène — Les Égouts',
     desc: 'Le collecteur sous l’arène : un canal d’eau croupie, deux passerelles, de la vermine.',
     startMessage:
       'LES ÉGOUTS. Un canal d’eau croupie coupe le collecteur — deux passerelles de planches le franchissent. Retenez votre souffle : les miasmes rendent MALADE.',
@@ -263,7 +263,7 @@ export function makeZone4() {
   return scene({
     id: 'arene-zone4',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — Le Charnier',
+    label: 'Arène — Le Charnier',
     desc: 'La fosse commune de l’arène, murée en cryptes — les pensionnaires se relèvent.',
     startMessage:
       'LE CHARNIER. Les vaincus de l’arène finissent ici… et n’y restent pas. Les morts SURGISSENT — attendez-vous à être surpris.',
@@ -371,7 +371,7 @@ export function makeZone5() {
   return scene({
     id: 'arene-zone5',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — Les Lices',
+    label: 'Arène — Les Lices',
     desc: 'Le champ de joute de l’arène, sous la pluie — duels montés et lances de cavalerie.',
     weather: 'pluie',
     startMessage:
@@ -445,7 +445,7 @@ export function makeZone6() {
   return scene({
     id: 'arene-zone6',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — Le Marais',
+    label: 'Arène — Le Marais',
     desc: 'La fondrière au pied des murs — hommes-bêtes et loups y chassent dans la brume.',
     weather: 'brouillard',
     startMessage:
@@ -539,7 +539,7 @@ export function makeZone7() {
   return scene({
     id: 'arene-zone7',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — Le Nid',
+    label: 'Arène — Le Nid',
     desc: 'Une grotte tendue de toiles sous l’arène — et le perchoir d’une vouivre.',
     startMessage:
       'LE NID. Toiles, cocons… et un sifflement de VOUIVRE au fond. Les cocons cachent des trésors — et des morsures. Prudence en fouillant.',

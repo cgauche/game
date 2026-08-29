@@ -64,7 +64,7 @@ const gunner = (
 
 export const spec: MapSpec = {
   id: 'siege-enceinte',
-  nom: 'Siège — défendre la muraille',
+  label: 'Siège — défendre la muraille',
   desc:
     "Un siège à grande échelle : au nord, le camp assaillant et sa batterie (canon + catapulte) qui pilonne la " +
     "porte de très loin ; des fantassins franchissent la rivière par le pont et s'amassent à la porte ; au sud, " +

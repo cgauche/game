@@ -61,7 +61,7 @@ function groupe(): Combatant[] {
 // ── Scènes : village de départ (auberge), hameau, bourg, cité d'arrivée (interlude), embuscade ──
 const village = buildScene({
   id: 'test-voyage-village',
-  nom: 'Village de Weiler',
+  label: 'Village de Weiler',
   desc: 'Arène de test.',
   size: [14, 9],
   terrain: 'herbe',
@@ -99,7 +99,7 @@ const village = buildScene({
 
 const hameau = buildScene({
   id: 'test-voyage-hameau',
-  nom: 'Hameau de Federholz',
+  label: 'Hameau de Federholz',
   desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',
@@ -110,7 +110,7 @@ const hameau = buildScene({
 
 const bourg = buildScene({
   id: 'test-voyage-bourg',
-  nom: 'Bourg de Steinbruck',
+  label: 'Bourg de Steinbruck',
   desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',
@@ -121,7 +121,7 @@ const bourg = buildScene({
 // Cité d'arrivée + INTERLUDE (Entre deux aventures) : marcher sur le cercle ouvre les Activités.
 const cite = buildScene({
   id: 'test-voyage-cite',
-  nom: 'Altdorf, la capitale',
+  label: 'Altdorf, la capitale',
   desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',
@@ -146,7 +146,7 @@ const cite = buildScene({
 
 const embuscade = buildScene({
   id: 'test-voyage-embuscade',
-  nom: 'Sous-bois — embuscade',
+  label: 'Sous-bois — embuscade',
   desc: 'Arène de test.',
   size: [14, 9],
   terrain: 'herbe',
@@ -165,7 +165,7 @@ const embuscade = buildScene({
 // ── Carte du monde : Weiler ↔ Federholz (piste dangereuse), Weiler ↔ Steinbruck (diligence), longue route ──
 const carte: WorldMap = {
   id: 'test-voyage-carte',
-  nom: 'Marches de Weiler (test)',
+  label: 'Marches de Weiler (test)',
   places: [
     { id: 'p-village', label: 'Weiler', pos: { x: 24, y: 62 }, scene: 'test-voyage-village', icon: 'scenario/village' },
     { id: 'p-hameau', label: 'Federholz', pos: { x: 72, y: 30 }, scene: 'test-voyage-hameau', icon: 'scenario/hamlet' },

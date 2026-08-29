@@ -458,7 +458,7 @@ describe('validateScene — POI de plan (#345 phase 5)', () => {
   // `services` : le lieu doit RÉSOUDRE (`placeServices`) la cible d'un POI de service (#360 — un POI
   // peut aussi cibler le port/marché AUTOMATIQUES du lieu, `'port'`/`'marche'`, pas que le catalogue).
   const place = (poi: MapPlace['poi'], services?: MapPlace['services']): MapPlace => ({ id: 'lieu', label: 'Lieu', pos: { x: 0, y: 0 }, scene: 'A', poi, services });
-  const wm = (poi: MapPlace['poi'], services?: MapPlace['services']): WorldMap => ({ id: 'w', nom: 'Carte', places: [place(poi, services)], routes: [] });
+  const wm = (poi: MapPlace['poi'], services?: MapPlace['services']): WorldMap => ({ id: 'w', label: 'Carte', places: [place(poi, services)], routes: [] });
 
   it('POI bien formé ciblant une scène du projet → aucune erreur', () => {
     const w = validateScene([base()], wm([{ id: 'poi-1', label: 'Entrée', pos: { x: 10, y: 10 }, sceneId: 'A' }]));
@@ -475,7 +475,7 @@ describe('validateScene — POI de plan (#345 phase 5)', () => {
 
   it('POI ciblant le PORT automatique du lieu (`serviceKind: "port"`, sans catalogue) → aucune erreur', () => {
     const w = validateScene([base()], {
-      id: 'w', nom: 'Carte',
+      id: 'w', label: 'Carte',
       places: [{
         id: 'lieu', label: 'Lieu', pos: { x: 0, y: 0 }, scene: 'A',
         port: { ref: undefined, taille: 1, richesse: 1, production: [] } as unknown as MapPlace['port'],

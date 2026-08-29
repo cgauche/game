@@ -353,7 +353,16 @@ export type RoleEnveloppe = {
  */
 export const ROLES_ENVELOPPE: Record<string, RoleEnveloppe> = {
   identité: { cible: 'id', divergentes: ['key', 'nom'], typeAttendu: 'string', requise: true },
-  libellé: { cible: 'label', divergentes: ['nom', 'title'], typeAttendu: 'string', requiseSurFamilles: ['entité', 'table'] },
+  libellé: { cible: 'label', divergentes: ['nom'], typeAttendu: 'string', requiseSurFamilles: ['entité', 'table'] },
+  // `title` est un SECOND champ d'affichage, qui COEXISTE avec le libellé (#1467 L1b V-P7) — d'où son
+  // rôle propre. Mesuré : `creatures.json` (490 entrées) et `gods.json` (40) portent `label` ET
+  // `title`, et les deux sont RENDUS — `title` est le sous-titre de la fiche du Codex (`registry.ts`,
+  // specs `gods` et `creatures` : `sub: c.title`), `label` en est le nom. Les confondre en un seul rôle
+  // détruirait un des deux affichages à la migration.
+  // Pas de `typeAttendu` : `title` admet `null` — 437 des 490 entrées de `creatures.json` le portent
+  // ainsi (`z.string().nullable()`), l'absence de sous-titre étant un ÉTAT MODÉLISÉ du dataset. Le
+  // devenir de ces 437 nuls et des 53 valeurs réelles se tranche en #1541, pas dans le détecteur.
+  'sous-titre': { cible: 'title', divergentes: [] },
   // `effect`, `rules` et `hint` ont été RETIRÉS des divergentes (#1467 L1b V-P2) : le détecteur
   // classait par NOM de clé, pas par TYPE, et ces trois-là ne portent pas de prose.
   //   `crew-morale.json › factors[].effect` = expression de dés lue par `rollExpr`

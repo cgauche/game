@@ -35,7 +35,7 @@ function setSkill(c: Combatant, skillId: string, advances: number): void {
   else c.skills.push({ skillId, advances } as SkillInstance);
 }
 
-const scene = { id: 'scene-P', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never;
+const scene = { id: 'scene-P', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never;
 
 function setup(port: PortProfile, party: Combatant[], enc = 40): void {
   seedBattleRng(1);

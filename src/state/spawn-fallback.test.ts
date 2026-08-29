@@ -40,14 +40,14 @@ describe('#223 — repli bruyant de réf. irrésoluble (réf. FOURNIE-mais-fauss
 describe('#223/#258 — arme d’authoring (trappingId) au spawn de combat', () => {
   it('trappingId inconnu → console.error, et AUCUNE arme fabriquée depuis l’id (rien d’inventé)', () => {
     const err = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const c = spawnEnemy(undefined, { label: 'PNJ', char: { B: 10 } }, 'w1', POS, { weapon: 'hache-inconnue' });
+    const c = spawnEnemy(undefined, { type: 'statblock', label: 'PNJ', char: { B: 10 } }, 'w1', POS, { weapon: 'hache-inconnue' });
     expect(err).toHaveBeenCalledWith(expect.stringContaining('« hache-inconnue »'));
     expect(c.weapons.some((w) => w.label === 'hache-inconnue')).toBe(false);
   });
 
   it('trappingId de catalogue → aucune plainte, arme COMPLÈTE (Dégâts + Groupe du catalogue)', () => {
     const err = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const c = spawnEnemy(undefined, { label: 'PNJ', char: { B: 10 } }, 'w2', POS, { weapon: 'dague' });
+    const c = spawnEnemy(undefined, { type: 'statblock', label: 'PNJ', char: { B: 10 } }, 'w2', POS, { weapon: 'dague' });
     expect(err).not.toHaveBeenCalled();
     const dague = c.weapons.find((w) => w.trappingId === 'dague');
     expect(dague?.damage).toEqual({ plusBF: true, flat: 2 });
@@ -56,7 +56,7 @@ describe('#223/#258 — arme d’authoring (trappingId) au spawn de combat', () 
 
   it('#258 régression Olg (loup-et-saumure) — « hache-d-armes » résout SANS plainte au spawn de combat (même voie que le rendu enemyRigProfile)', () => {
     const err = vi.spyOn(console, 'error').mockImplementation(() => {});
-    spawnEnemy(undefined, { label: 'Olg Blóðsalt', char: { B: 12 } }, 'olg', POS, { weapon: 'hache-d-armes' });
+    spawnEnemy(undefined, { type: 'statblock', label: 'Olg Blóðsalt', char: { B: 12 } }, 'olg', POS, { weapon: 'hache-d-armes' });
     expect(err).not.toHaveBeenCalled();
   });
 
@@ -94,7 +94,7 @@ describe('#223 — garde-robe inconnue = repli citadins BRUYANT', () => {
 });
 
 describe('#223 — variété seedée des humains génériques', () => {
-  const mkGeneric = (id: string): Combatant => spawnEnemy(undefined, { label: 'Passant', char: { B: 10 } }, id, POS);
+  const mkGeneric = (id: string): Combatant => spawnEnemy(undefined, { type: 'statblock', label: 'Passant', char: { B: 10 } }, id, POS);
   const look = (id: string): string => {
     const p = enemyRigProfile(mkGeneric(id))!;
     return JSON.stringify({ colors: p.appearance.colors, cheveux: p.appearance.parts?.cheveux });
@@ -116,7 +116,7 @@ describe('#223 — variété seedée des humains génériques', () => {
   });
 
   it('un override d’auteur (colors) N’est PAS écrasé par la variété seedée', () => {
-    const c = spawnEnemy(undefined, { label: 'Passant', char: { B: 10 } }, 'authored', POS, {
+    const c = spawnEnemy(undefined, { type: 'statblock', label: 'Passant', char: { B: 10 } }, 'authored', POS, {
       appearance: { colors: { peau: '#123456' } },
     });
     expect(enemyRigProfile(c)!.appearance.colors?.peau).toBe('#123456');

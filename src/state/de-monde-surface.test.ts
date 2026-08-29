@@ -221,11 +221,11 @@ function skill(c: Combatant, skillId: string, advances: number): void {
 const CARRIER_ID = 'convoi-1';
 const profile = (extra: Partial<LandMarketProfile> = {}): LandMarketProfile => ({ taille: 4, richesse: 4, produits: ['commerce', 'vin'], ...extra });
 const lot: CargoLot = { cargoId: 'vin', enc: 40, basePriceGold: 10 };
-const marche = (id: string, nom: string) => buildScene({ id, nom, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const marche = (id: string, label: string) => buildScene({ id, label, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 function carte(): WorldMap {
   return {
-    id: 'm', nom: 'Le Reik',
+    id: 'm', label: 'Le Reik',
     places: [{ id: 'B', label: 'Altdorf', pos: { x: 0, y: 0 }, scene: 'marche-b', market: profile() }],
     routes: [],
   };
@@ -711,7 +711,7 @@ describe('#1426 — la fenêtre de LOT d’un étal (halle terrestre)', () => {
  * plantée dessus, `cascadeNext` en no-op.
  */
 const carteMonde: WorldMap = {
-  id: 'cm', nom: 'Reikland',
+  id: 'cm', label: 'Reikland',
   places: [
     { id: 'pa', label: 'A', pos: { x: 20, y: 50 }, scene: 'monde-a' },
     { id: 'pb', label: 'B', pos: { x: 70, y: 40 }, scene: 'monde-b' },
@@ -719,14 +719,14 @@ const carteMonde: WorldMap = {
   routes: [{ id: 'rt', a: 'pa', b: 'pb', km: 400, modes: ['pied'], perilDie: 0 }],
 };
 const carteMer: WorldMap = {
-  id: 'cmer', nom: 'Mer des Griffes',
+  id: 'cmer', label: 'Mer des Griffes',
   places: [
     { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'monde-a' },
     { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'monde-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
   ],
   routes: [{ id: 'rmer', a: 'A', b: 'B', km: 550, modes: ['mer'], sea: true, seaHeading: 'est' }],
 };
-const scenePlate = (id: string): Scene => { const s = emptyScene(6, 6); s.id = id; s.nom = id; return s; };
+const scenePlate = (id: string): Scene => { const s = emptyScene(6, 6); s.id = id; s.label = id; return s; };
 
 /** Siège local qui POSSÈDE le monde (solo : siège 0). L'OPTION de pose n'est PAS touchée ici : elle se
  *  pose AVANT l'ouverture de la journée — c'est à l'ouverture que le socle tranche. */

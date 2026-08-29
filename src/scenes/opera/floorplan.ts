@@ -71,7 +71,7 @@ export function parterreSeatCells(): { x: number; y: number }[] {
 export function buildOperaFloorplan(): Scene {
   return buildScene({
     id: 'opera-staatsoper',
-    nom: 'Théâtre Staatsoper',
+    label: 'Théâtre Staatsoper',
     desc:
       'Opéra d’Altdorf — rez-de-chaussée (parterre en éventail, scène surélevée +1 m, fosse d’orchestre −1 m, salles latérales en colonnes subdivisées, foyer à rampes d’angle) et premier étage (loges en anneau autour du puits central ovale, à 4 m, galerie, loge royale dans l’axe de la scène). GÉNÉRÉ depuis une carte ASCII éditable (floorplan.ascii.ts) ; l’étage se rejoint par deux RAMPES (cases de hauteur croissante, plus aucun escalier).',
     ambiance: 'interieur',

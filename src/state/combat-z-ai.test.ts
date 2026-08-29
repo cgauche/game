@@ -9,7 +9,7 @@ import type { Combatant } from '../engine/types';
  * mouliner dans le vide. Coplanaire (même hauteur) → il frappe normalement.
  */
 const scene = () =>
-  ({ id: 's', nom: '', dimensions: { w: 30, h: 21 }, layers: [{ z: 0, tiles: Array(630).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
+  ({ id: 's', label: '', dimensions: { w: 30, h: 21 }, layers: [{ z: 0, tiles: Array(630).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 
 const C = (kind: 'hero' | 'enemy', id: string, pos: { x: number; y: number; h?: number }): Combatant =>
   ({

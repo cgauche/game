@@ -80,7 +80,7 @@ export function loadProjectMaps(path: string): MapEntry[] {
   const file = basename(path);
   return doc.scenes.map((scene) => ({
     key: `${path}#${scene.id}`,
-    label: `${scene.nom || scene.id} — ${file}`,
+    label: `${scene.label || scene.id} — ${file}`,
     build: () => scene,
   }));
 }

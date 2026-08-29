@@ -40,7 +40,7 @@ const RUBRIQUES_PLAIN_PIED = rubriques((scope) => scope !== 'floorPair');
 function makeScene(w: number, h: number, z0: string[], z1: string[], walls: WallSeg[], zones: SceneEffectZone[]): Scene {
   return {
     id: 'fixture',
-    nom: 'Fixture de test',
+    label: 'Fixture de test',
     dimensions: { w, h },
     layers: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }],
     walls,

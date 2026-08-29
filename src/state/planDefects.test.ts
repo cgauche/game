@@ -11,7 +11,7 @@ import { validateScene } from './validateScene';
 function makeScene(w: number, h: number, layers: { z: number; tiles: string[]; height?: number[] }[], zones: SceneEffectZone[], walls: WallSeg[] = []): Scene {
   return {
     id: 'fixture',
-    nom: 'Fixture de plan',
+    label: 'Fixture de plan',
     dimensions: { w, h },
     layers,
     walls,

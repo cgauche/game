@@ -43,7 +43,7 @@ function tuneSkill(c: Combatant, skillId: string, want: number): void {
   setSkill(c, skillId, want - testValue(c, skillId));
 }
 
-const scene = { id: 'scene-P', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never;
+const scene = { id: 'scene-P', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never;
 const PORT: PortProfile = { taille: 4, richesse: 4, production: [] } as PortProfile;
 
 /** Port + navire + offre, avec un parti donné (bourse créditée pour l'achat). */

@@ -14,7 +14,7 @@ const W = 18, H = 12;
 
 const scene = buildScene({
   id: 'clairiere-ulric',
-  nom: "Clairière des Enfants d'Ulric",
+  label: "Clairière des Enfants d'Ulric",
   desc: 'Une clairière cernée de bois où rôdent des lycanthropes.',
   size: [W, H],
   terrain: 'herbe',

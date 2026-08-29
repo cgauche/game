@@ -108,7 +108,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
     dialogues: scenes.flatMap((s) => s.dialogues),
     // Selects guidés (M9) : transitions de péripétie vers les scènes du projet (le marchand,
     // lié à la scène COURANTE au moment du voyage, reste un id libre ici).
-    scenes: scenes.map((sc) => ({ id: sc.id, nom: sc.nom, entries: Object.keys(sc.entryPoints ?? {}) })),
+    scenes: scenes.map((sc) => ({ id: sc.id, nom: sc.label, entries: Object.keys(sc.entryPoints ?? {}) })),
   };
 
   const toggleMode = (r: MapRoute, mode: TravelMode) => {
@@ -118,7 +118,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
 
   return (
     <ScreenShell
-      title={<><Icon id="nav/campaign" size="sm" /> {named ? <>Carte du monde — {m.nom}</> : m.nom}</>}
+      title={<><Icon id="nav/campaign" size="sm" /> {named ? <>Carte du monde — {m.label}</> : m.label}</>}
       onClose={() => { setMap(m); onClose(); }}
       className="wme-shell"
       actions={
@@ -217,7 +217,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
             <>
               <div className="mini-title">Carte</div>
               <label className="ed-field">Nom
-                <input value={m.nom} onChange={(e) => { setNamed(true); upd({ nom: e.target.value }); }} />
+                <input value={m.label} onChange={(e) => { setNamed(true); upd({ label: e.target.value }); }} />
               </label>
               <label className="ed-field">Image de fond — vraie carte (URL, chemin d'asset public, ou data URI)
                 <input

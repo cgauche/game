@@ -28,18 +28,18 @@ describe('bodyShapeOf — forme du corps dérivée du gabarit (LDB p.312)', () =
 // renommer le libellé changeait silencieusement la table si le nom coïncidait avec un id de créature.
 describe('statblockToCombatant — bodyShape dérivée de l’espèce AUTHORÉE (#142 LOT 5), jamais du label', () => {
   it('espèce authorée non-humanoïde → table de localisation de CETTE espèce', () => {
-    const sb = { label: 'Bête sauvage', char: { B: 10 } };
+    const sb = { type: 'statblock' as const, label: 'Bête sauvage', char: { B: 10 } };
     expect(statblockToCombatant(sb, 'x', { x: 0, y: 0 }, { species: 'loup' }).bodyShape).toBe('quadrupede');
     expect(statblockToCombatant(sb, 'y', { x: 0, y: 0 }, { species: 'araignee' }).bodyShape).toBe('araignee');
   });
 
   it('renommer le label ne change RIEN à la forme du corps (le label est de l’affichage)', () => {
-    const shapeArachnee = (label: string) => statblockToCombatant({ label, char: { B: 10 } }, 'z', { x: 0, y: 0 }, { species: 'araignee' }).bodyShape;
+    const shapeArachnee = (label: string) => statblockToCombatant({ type: 'statblock', label, char: { B: 10 } }, 'z', { x: 0, y: 0 }, { species: 'araignee' }).bodyShape;
     expect(shapeArachnee('serpent')).toBe('araignee'); // label coïncidant avec un id de créature ≠ id
     expect(shapeArachnee('Grosse Araignée')).toBe('araignee');
   });
 
   it('sans espèce authorée → repli humanoïde (comportement historique, aucune invention)', () => {
-    expect(statblockToCombatant({ label: 'Cultiste', char: { B: 10 } }, 'w', { x: 0, y: 0 }).bodyShape).toBe('humanoide');
+    expect(statblockToCombatant({ type: 'statblock', label: 'Cultiste', char: { B: 10 } }, 'w', { x: 0, y: 0 }).bodyShape).toBe('humanoide');
   });
 });

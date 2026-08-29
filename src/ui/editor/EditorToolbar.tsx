@@ -145,7 +145,7 @@ export function EditorToolbar({
         <select value={activeId} onChange={(e) => onSwitchScene(e.target.value)} aria-label="Scène active">
           {scenes.map((s) => (
             <option key={s.id} value={s.id}>
-              {s.nom || s.id}
+              {s.label || s.id}
             </option>
           ))}
         </select>

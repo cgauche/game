@@ -65,7 +65,7 @@ function crew(): Combatant[] {
 // ── Deux ports : Salzenmund (départ) et Marienburg (arrivée, phare + grand port de commerce) ──
 const departPort = buildScene({
   id: 'test-mer-depart',
-  nom: 'Salzenmund — les quais',
+  label: 'Salzenmund — les quais',
   desc: 'Arène de test.',
   size: [14, 9],
   terrain: 'planches',
@@ -82,7 +82,7 @@ const departPort = buildScene({
 
 const arrivePort = buildScene({
   id: 'test-mer-arrivee',
-  nom: 'Marienburg — le Grand Port',
+  label: 'Marienburg — le Grand Port',
   desc: 'Arène de test.',
   size: [14, 9],
   terrain: 'planches',
@@ -96,7 +96,7 @@ const arrivePort = buildScene({
 // ── Carte du monde : une seule route, MARITIME (milles), avec phare à l'arrivée ──
 const carte: WorldMap = {
   id: 'test-mer-carte',
-  nom: 'Mer des Griffes (test)',
+  label: 'Mer des Griffes (test)',
   places: [
     {
       id: 'p-salzenmund', label: 'Salzenmund', pos: { x: 20, y: 30 }, scene: 'test-mer-depart', icon: 'scenario/port',

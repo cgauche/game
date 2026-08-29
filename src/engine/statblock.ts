@@ -9,6 +9,9 @@ import type { SizeCategory } from './size';
 import { makeRNG, hashSeed } from './dice';
 
 export interface CustomStatblock {
+  /** Type de document EMBARQUÉ (#1467 L1b) : le profil s'annonce dans la donnée, jamais hydraté en
+   *  mémoire — un statbloc extrait d'un projet reste identifiable hors de son porteur. */
+  type: 'statblock';
   label: string;
   char: Partial<Record<CharKey | 'M' | 'B', number>>;
   weaponDamage?: string; // ex. "+BF+4"

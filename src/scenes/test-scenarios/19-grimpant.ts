@@ -16,7 +16,7 @@ import type { TestScenario } from './_shared';
  */
 const scene = buildScene({
   id: 'grimpant',
-  nom: 'Grimpant — l’araignée escalade',
+  label: 'Grimpant — l’araignée escalade',
   desc:
     "Un plateau rocheux (4 m) domine une clairière ; une seule paroi praticable (arête sud du plateau) " +
     "y donne accès. Une araignée géante rôde en contrebas.",

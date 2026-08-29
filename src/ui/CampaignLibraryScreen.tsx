@@ -38,7 +38,7 @@ export function buildImportedProject(text: string, fallbackLabel: string): Saved
   // reconstruit ci-dessous — sans quoi une campagne importée perdrait ses axes actifs (#409).
   const { scenes, worldMap, activeAxes, narratif, ...identite } = parseProject(data);
   if (!scenes.length) throw new PlayerFacingImportError('Projet invalide : aucune scène.');
-  const label = identite.label ?? scenes[0].nom ?? fallbackLabel;
+  const label = identite.label ?? scenes[0].label ?? fallbackLabel;
   const id = identite.id ?? `import-${fileSlug(label)}-${Date.now()}`;
   return {
     id,

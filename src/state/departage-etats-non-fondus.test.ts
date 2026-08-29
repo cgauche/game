@@ -45,7 +45,7 @@ function marchandeurEmpoisonne(c: Combatant): Combatant {
   return c;
 }
 
-const scene = { id: 'scene-P', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never;
+const scene = { id: 'scene-P', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never;
 const PORT: PortProfile = { taille: 4, richesse: 4, production: [] } as PortProfile;
 const LOT_ENC = 40;
 

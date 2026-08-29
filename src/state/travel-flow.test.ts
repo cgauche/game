@@ -36,14 +36,14 @@ const hero = (p: Partial<Combatant> = {}): Combatant => ({
   items: [], movement: 4, ...p,
 } as Combatant);
 function sceneA(): Scene {
-  const s = emptyScene(10, 10); s.id = 'lieu-a-scene'; s.nom = 'A';
-  const enc = buildEncounter({ id: 'enc-test', enemies: [{ statblock: { label: 'Brigand', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+  const s = emptyScene(10, 10); s.id = 'lieu-a-scene'; s.label = 'A';
+  const enc = buildEncounter({ id: 'enc-test', enemies: [{ statblock: { type: 'statblock', label: 'Brigand', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
   s.entities.push(...enc.entities); s.encounters = [enc.encounter];
   return s;
 }
-function sceneB(): Scene { const s = emptyScene(10, 10); s.id = 'lieu-b-scene'; s.nom = 'B'; return s; }
+function sceneB(): Scene { const s = emptyScene(10, 10); s.id = 'lieu-b-scene'; s.label = 'B'; return s; }
 function map(rp: Partial<WorldMap['routes'][0]> = {}): WorldMap {
-  return { id: 'c', nom: 'c', places: [
+  return { id: 'c', label: 'c', places: [
     { id: 'pa', label: 'A', pos: { x: 20, y: 50 }, scene: 'lieu-a-scene' },
     { id: 'pb', label: 'B', pos: { x: 70, y: 40 }, scene: 'lieu-b-scene' },
   ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km: 12, modes: ['pied'], perilDie: 0, ...rp }] };
@@ -300,7 +300,7 @@ describe('#270 — allure forcée (attelage) : gate contrôleur', () => {
   afterEach(() => resetRule('travel-allures'));
 
   function forcedRoute(km: number): WorldMap {
-    return { id: 'c', nom: 'c', places: [
+    return { id: 'c', label: 'c', places: [
       { id: 'pa', label: 'A', pos: { x: 0, y: 0 }, scene: 'lieu-a-scene' },
       { id: 'pb', label: 'B', pos: { x: 70, y: 0 }, scene: 'lieu-b-scene' },
     ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km, modes: ['diligence', 'pied'], perilDie: 0 }] };
@@ -492,7 +492,7 @@ describe('#1153 — allure forcée : km suivant et reprise de contrôle, une seu
     seedBattleRng(1);
     const { lead, aide } = attelage();
     useGame.setState({ party: [lead, aide], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
-    get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', { id: 'c', nom: 'c', places: [
+    get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', { id: 'c', label: 'c', places: [
       { id: 'pa', label: 'A', pos: { x: 0, y: 0 }, scene: 'lieu-a-scene' },
       { id: 'pb', label: 'B', pos: { x: 70, y: 0 }, scene: 'lieu-b-scene' },
     ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km: 20, modes: ['diligence', 'pied'], perilDie: 0 }] } as WorldMap);

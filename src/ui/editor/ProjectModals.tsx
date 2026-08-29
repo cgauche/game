@@ -120,7 +120,7 @@ export function SaveProjectModal({
           <select value={start} onChange={(e) => setStart(e.target.value)}>
             {scenes.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.nom ?? s.id}
+                {s.label ?? s.id}
               </option>
             ))}
           </select>

@@ -30,6 +30,14 @@ export const traitInstanceSchema = z.strictObject({
  */
 export const refSchema = z.strictObject({ id: z.string(), spec: z.string().optional() });
 
+/** `TalentRef` (`src/data/index.ts:2921`) — `Ref` + niveau facultatif (« Maîtrise du combat 2 »).
+ *  Porte UNIQUE de la forme `{id, spec?, times?}` : `creatures` et les profils embarqués de scène en
+ *  dépendent (la graphie ALIAS `{talentId, spec}` d'`axes.ts` est une dette stockée, pas une variante).
+ *  Les trois clés sont ÉCRITES, jamais `...refSchema.shape` : le mesureur de redéclarations lit les
+ *  littéraux par AST et ne résout pas un spread — la forme épandue lui présenterait la signature
+ *  `times` seule, qu'il attribuerait à ce schéma sur tout littéral à clé `times` unique. */
+export const talentRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), times: z.number().optional() });
+
 /** `QualityRef` (`src/data/index.ts`) — `Ref` + Indice éventuel (« Solide 3 » → `value`). Dupliqué à
  *  l'identique dans `defs/trappings.ts` (catalogue `trappings.json` lui-même) — cette vue COMMUNE sert
  *  au joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1).

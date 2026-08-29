@@ -37,7 +37,7 @@ function hero(p: Partial<Combatant>): Combatant {
   } as Combatant;
 }
 
-const scene = { id: 'sc', nom: 'Rade', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] };
+const scene = { id: 'sc', label: 'Rade', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] };
 
 function fresh(party: Combatant[]) {
   seedBattleRng(1);

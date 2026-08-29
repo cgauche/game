@@ -51,7 +51,7 @@ const cloneLayers = (s: Scene): Scene['layers'] => s.layers.map((l) => ({ ...l, 
  *  rien). Le type impose l'exhaustivité — un champ neuf de `Scene` casse la compilation ici. */
 const MUTATIONS: Record<keyof Scene, (s: Scene) => Scene> = {
   id: (s) => ({ ...s, id: `${s.id}-bis` }),
-  nom: (s) => ({ ...s, nom: 'Autre nom' }),
+  label: (s) => ({ ...s, label: 'Autre nom' }),
   desc: (s) => ({ ...s, desc: 'Autre description' }),
   dimensions: (s) => ({ ...s, dimensions: { ...s.dimensions } }),
   metresPerTile: (s) => ({ ...s, metresPerTile: sceneMetresPerTile(s) + 1 }),

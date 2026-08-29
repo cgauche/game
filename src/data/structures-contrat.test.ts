@@ -347,7 +347,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // sont des littéraux d'enum du schéma, elles n'ouvrent plus de référence). Le cliquet SUIT la
       // baisse : 679 → 671, sinon la marge regagnée servirait à absorber une dérive future.
       ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 15],
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 671],
+      // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
+      // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
+      // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non
+      // résolue. Il réapparaît à `STRUCTURES_ORPHELINES` ci-dessous : même objet, autre stock.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 670],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -376,8 +380,16 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquet DESCENDU 77 → 73 (#1467 L1b V-formeProjet) : les 4 lignes « identité | `id` | clé
       // absente » des projets sont SOLDéES — l'enveloppe aplatie pose `id`/`label` à la RACINE des 4
       // documents. Le cliquet SUIT la baisse.
-      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 73],
-      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 91],
+      // Cliquet DESCENDU 73 → 58 (#1467 L1b V-P7) : les 14 lignes « `nom` | clé divergente » des 4
+      // projets sont SOLDÉES (le libellé de scène et de carte prend sa graphie `label`, `schema` 5 → 6),
+      // et la 15ᵉ part avec la ligne FORMES ci-dessus. Le cliquet SUIT la baisse.
+      // … et 58 → 56 : `title` reçoit son RÔLE PROPRE au lexique (« sous-titre », forme cible), donc
+      // `creatures.json` (490) et `gods.json` (40) ne sont plus comptés en graphie divergente du libellé.
+      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 56],
+      // Cliquet REMONTÉ 91 → 92 (#1467 L1b V-P7) : AUCUNE dérive neuve — c'est le statbloc à `size`
+      // d'`arene-projet.json` qui ARRIVE de `STRUCTURES_FORMES` (sa signature gagne `type`, elle ne se
+      // confond plus avec les deux autres). La somme des deux stocks est CONSTANTE : 671 + 91 = 670 + 92.
+      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 92],
       ['STRUCTURES_OPS', STRUCTURES_OPS.length, 403],
     ] as const;
     const gonfles = mesure.filter(([, n, plafond]) => n > plafond).map(([nom, n, plafond]) => `${nom} ${n} > ${plafond}`);
@@ -647,10 +659,13 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
 
   it('un document EMBARQUÉ n’est sommé de rien : seules ses clés DIVERGENTES comptent', () => {
     const embarque = mesurerEnveloppe([
-      { document: 'flow.json', chemin: 'steps[].effect', portee: 'embarqué', famille: 'entité', nbEntrees: 5, cles: [cle('text', 'string', 5), cle('title', 'string', 5), cle('type', 'string', 5)] },
+      { document: 'flow.json', chemin: 'steps[].effect', portee: 'embarqué', famille: 'entité', nbEntrees: 5, cles: [cle('text', 'string', 5), cle('nom', 'string', 5), cle('title', 'string', 5), cle('type', 'string', 5)] },
     ]);
+    // `title` est la forme CIBLE de son rôle (sous-titre) : il ne compte pas — seules `text` et `nom`,
+    // graphies divergentes de la prose et du libellé, sont relevées.
     expect(embarque.map((e) => `${e.role} | ${e.cle} | ${e.motif}`).sort()).toEqual([
-      'libellé | title | clé divergente',
+      'identité | nom | clé divergente',
+      'libellé | nom | clé divergente',
       'prose | text | clé divergente',
     ]);
   });

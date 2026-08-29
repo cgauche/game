@@ -255,11 +255,11 @@ export function CampaignView() {
             combat, sur le rail d'outils en combat. Sauvegarder : exploration seulement (refusée en
             combat) et jamais l'invité (la save vit chez l'hôte). */}
         <div className="hud-topbar">
-        <GameMenu sceneName={scene?.nom} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} />
+        <GameMenu sceneName={scene?.label} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} />
         {/* Lieu courant : premier étage de la pile — le nom de la scène se lit sur le HUD, sans ouvrir
             le menu. Sans nom authoré, aucune plaque (rien à annoncer). */}
-        {mode === 'exploration' && scene?.nom && (
-          <strong data-hud="place" title={scene.nom}>{scene.nom}</strong>
+        {mode === 'exploration' && scene?.label && (
+          <strong data-hud="place" title={scene.label}>{scene.label}</strong>
         )}
         {/* Objectif courant (#238) — dernier étage de la pile de contexte : il occupe sa propre ligne
             sous le lieu (CSS `.hud-topbar > .objective-banner`). Masqué en combat (l'écran tactique

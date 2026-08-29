@@ -136,10 +136,10 @@ function validateFlowRefs(node) {
  *  réfs par ids stables des rencontres et des flows sont validées SUR LE SPEC avant compilation.
  *  `hidden` (défaut false = VISIBLE, RAW : le groupe voit
  *  ses adversaires) pose `combat.hiddenUntilCombat` sur les entités enrôlées. */
-export function scene({ id, nom, desc, ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, metresPerTile, rest, entities = [], architecture = [], walls = [], terrainRects = [], effectZones = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
+export function scene({ id, label, desc, ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, metresPerTile, rest, entities = [], architecture = [], walls = [], terrainRects = [], effectZones = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
   const spec = {
     id,
-    nom,
+    label,
     ambiance,
     size: [rows[0].length, rows.length],
     terrain: base,
@@ -275,11 +275,13 @@ export function fouille(effectsOrFlow, consume = false) {
 
 /** Statblocks d'AUTEUR (sourcés à leur création). */
 export const NUEE_DE_RATS = {
+  type: 'statblock',
   label: 'Nuée de rats',
   char: { M: 4, 'capacite-de-combat': 30, force: 25, endurance: 30, agilite: 40, B: 5 },
   traits: [{ id: 'nuee' }, { id: 'taille', arg: 'petite' }],
 };
 export const DRAGON_DES_TENEBRES = {
+  type: 'statblock',
   label: 'Dragon des ténèbres',
   char: {
     M: 6,

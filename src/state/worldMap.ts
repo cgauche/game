@@ -154,7 +154,7 @@ export interface WorldMapParams {
 
 export interface WorldMap {
   id: string;
-  nom: string;
+  label: string;
   params?: WorldMapParams;
   /** Image de fond (URL, chemin d'asset public, ou data URI) : une VRAIE carte derrière les lieux.
    *  Présente ⇒ les lieux sont rendus à leurs `pos` EXACTS (pas de déchevauchement — la carte a sa
@@ -166,7 +166,7 @@ export interface WorldMap {
 }
 
 export function emptyWorldMap(): WorldMap {
-  return { id: `carte-${Date.now()}`, nom: 'Carte du monde', places: [], routes: [] };
+  return { id: `carte-${Date.now()}`, label: 'Carte du monde', places: [], routes: [] };
 }
 
 /**
@@ -417,10 +417,11 @@ export function declutterPositions(
 }
 
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
-// Format courant : `{ schema: 5, <identité>?, scenes, worldMap?, narratif }` (paquet de campagne
+// Format courant : `{ schema: 6, <identité>?, scenes, worldMap?, narratif }` (paquet de campagne
 // auto-suffisant, #765 ; enveloppe PLATE depuis #1467 L1b). Chaîné par la primitive générique
 // `migrateDoc` (même mécanique que les saves, `saves.ts`) — `schema` joue le rôle de `version` ; la
-// migration 2→3 injecte un `narratif` vide, la 4→5 aplatit la poche `meta`.
+// migration 2→3 injecte un `narratif` vide, la 4→5 aplatit la poche `meta`, la 5→6 donne au libellé
+// de scène et de carte sa graphie `label` et fait s'annoncer les statblocs embarqués.
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
 import { validateDocument } from '../data/schemas/validate';
@@ -439,7 +440,7 @@ export interface ProjectIdentite {
 }
 
 export interface ProjectDoc extends ProjectIdentite {
-  schema: 5;
+  schema: 6;
   scenes: Scene[];
   worldMap?: WorldMap;
   /** Axes de forces/faiblesses ACTIFS de la campagne (#409, ids de `src/data/axes.json`) — un
@@ -458,12 +459,22 @@ export function resolveActiveAxes(doc: { activeAxes?: string[] }): string[] {
   return doc.activeAxes && doc.activeAxes.length > 0 ? doc.activeAxes : CORE_AXIS_IDS;
 }
 
-export const CURRENT_PROJECT_SCHEMA = 5;
+export const CURRENT_PROJECT_SCHEMA = 6;
 
 /** Renomme UNE clé d'un objet EN PLACE (position préservée), sans la créer si elle est absente. */
 function renommeCle(o: Record<string, unknown>, de: string, vers: string): Record<string, unknown> {
   if (!(de in o)) return o;
   return Object.fromEntries(Object.entries(o).map(([k, v]) => [k === de ? vers : k, v]));
+}
+
+/** Pose `type: 'statblock'` (1ʳᵉ clé) sur le profil embarqué d'une entité de scène, s'il en porte un
+ *  et qu'il ne l'annonce pas encore. Une entité SANS `statblock` traverse intacte. */
+function typeDeStatbloc(e: unknown): unknown {
+  if (!e || typeof e !== 'object') return e;
+  const ent = e as Record<string, unknown>;
+  const sb = ent.statblock;
+  if (!sb || typeof sb !== 'object' || 'type' in (sb as object)) return ent;
+  return { ...ent, statblock: { type: 'statblock', ...(sb as Record<string, unknown>) } };
 }
 
 /** Un effet narratif porte sa prose sous `text` en schema 3 (`journal`, `document`, `setObjective`). */
@@ -557,6 +568,33 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
       ...(versionContenu !== undefined ? { versionContenu } : {}),
       version: 5,
       schema: 5,
+    };
+  },
+  /**
+   * `5` donne au LIBELLÉ sa graphie canonique (#1467 L1b V-P7) : la clé `nom` d'une scène et de la
+   * carte du monde devient `label`, à sa POSITION exacte. Les deux portaient un libellé d'affichage
+   * pur — l'identité est `id`, présente sur les deux depuis toujours. Le même passage pose le `type`
+   * des statblocs EMBARQUÉS (`scenes[].entities[].statblock`) : un document embarqué s'annonce dans
+   * la donnée, et le schéma l'EXIGE désormais (`defs-scenes/communs.ts`) — sans ce passage, tout
+   * projet antérieur (bibliothèque utilisateur, `.json` portable) mourrait au parse.
+   */
+  5: (doc) => {
+    const scenes = Array.isArray(doc.scenes)
+      ? doc.scenes.map((s) => {
+        const sc = renommeCle(s as Record<string, unknown>, 'nom', 'label');
+        if (!Array.isArray(sc.entities)) return sc;
+        return { ...sc, entities: sc.entities.map(typeDeStatbloc) };
+      })
+      : doc.scenes;
+    const worldMap = doc.worldMap && typeof doc.worldMap === 'object'
+      ? renommeCle(doc.worldMap as Record<string, unknown>, 'nom', 'label')
+      : doc.worldMap;
+    return {
+      ...doc,
+      ...(doc.scenes !== undefined ? { scenes } : {}),
+      ...(doc.worldMap !== undefined ? { worldMap } : {}),
+      version: 6,
+      schema: 6,
     };
   },
 };

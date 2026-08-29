@@ -10,7 +10,7 @@ import { chebyshev } from '../engine/grid';
  * ne suffit pas à entrer au contact ; Course (Test d'Athlétisme, pas d'attaque) au-delà.
  */
 const scene = () =>
-  ({ id: 's', nom: '', dimensions: { w: 30, h: 21 }, layers: [{ z: 0, tiles: Array(630).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
+  ({ id: 's', label: '', dimensions: { w: 30, h: 21 }, layers: [{ z: 0, tiles: Array(630).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 
 const C = (kind: 'hero' | 'enemy', id: string, x: number, over: Partial<Combatant> = {}): Combatant =>
   ({

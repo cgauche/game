@@ -164,7 +164,7 @@ const dialogues: Dialogue[] = [
 
 const scene = buildScene({
   id: 'edo-presets-test',
-  nom: 'Presets PNJ — pilotes EDO',
+  label: 'Presets PNJ — pilotes EDO',
   desc:
     'Une clairière sur la route de Kemperbad. Phillipe Descartes (preset EDO) hèle le groupe et le ' +
     'renseigne sur Knud Cratinx (preset EDO), le chef mutant posté plus loin — le dialogue peut enchaîner ' +

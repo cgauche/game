@@ -7,7 +7,7 @@ import type { Combatant } from '../engine/types';
 import type { SizeCategory } from '../engine/size';
 
 const flatScene = (w: number, h: number): Scene =>
-  ({ id: 's', nom: 's', dimensions: { w, h }, ambiance: 'exterieur', layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} }) as unknown as Scene;
+  ({ id: 's', label: 's', dimensions: { w, h }, ambiance: 'exterieur', layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} }) as unknown as Scene;
 
 // occupied() = tuiles bloquant le déplacement d'un mover : empreinte (LDB 15 l.12) de chaque autre
 // combattant, SAUF ceux de Taille strictement inférieure (« dégagés du chemin », LDB 85 l.373-374).

@@ -14,7 +14,7 @@ import type { Combatant, CharKey } from '../../engine/types';
  */
 const scene = buildScene({
   id: 'test-magie',
-  nom: 'Magie en combat',
+  label: 'Magie en combat',
   desc: 'Arène de test.',
   size: [30, 22],
   heroStart: [3, 11],

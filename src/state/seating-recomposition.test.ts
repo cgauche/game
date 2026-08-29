@@ -114,8 +114,8 @@ describe('recomposition du groupe — l’emplacement dont le corps change se l�
     // seul `set` ne peut donc pas transmettre une chaise en silence.
     attable([1], [hero('h1'), hero('h2')]);
     const sc = useGame.getState().scene!;
-    useGame.setState((s) => ({ party: [s.party[1], s.party[0]], scene: { ...sc, nom: 'Taverne patchée' } }));
-    expect(useGame.getState().scene!.nom).toBe('Taverne patchée');
+    useGame.setState((s) => ({ party: [s.party[1], s.party[0]], scene: { ...sc, label: 'Taverne patchée' } }));
+    expect(useGame.getState().scene!.label).toBe('Taverne patchée');
     expect(poseDe(1)).toBeNull();
     expect(placesDeGroupe()).toEqual([]);
   });

@@ -28,7 +28,7 @@ describe('possessionCapacity — source par nature (§4.2/§5)', () => {
   });
 
   it('bête custom (statbloc sans profil de monture) : dégradation propre (undefined)', () => {
-    const p = bete({ ref: { custom: { label: 'Bête inconnue', char: {} } } });
+    const p = bete({ ref: { custom: { type: 'statblock', label: 'Bête inconnue', char: {} } } });
     expect(possessionCapacity(p)).toBeUndefined();
   });
 
@@ -93,7 +93,7 @@ describe('possessionLabel — label d’instance sinon libellé du catalogue (do
   });
 
   it('bête custom sans label d’instance : libellé du statbloc', () => {
-    const p = bete({ ref: { custom: { label: 'Palefroi de Berthold', char: {} } } });
+    const p = bete({ ref: { custom: { type: 'statblock', label: 'Palefroi de Berthold', char: {} } } });
     expect(possessionLabel(p)).toBe('Palefroi de Berthold');
   });
 

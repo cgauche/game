@@ -12,7 +12,7 @@ import { emptyNarratif, type NarratifBlock } from './campaignNarratif';
 // ids RÉELS de la règle globale (`src/data`) — base de preset valide + cible de collision.
 const GLOBAL_CREATURE = 'humain';
 
-const scene = { id: 's1', nom: 'Le quai', dimensions: { w: 3, h: 3 } };
+const scene = { id: 's1', label: 'Le quai', dimensions: { w: 3, h: 3 } };
 
 function doc(narratif: NarratifBlock, meta?: unknown) {
   return { schema: 3, scenes: [scene], narratif, ...(meta !== undefined ? { meta } : {}) };

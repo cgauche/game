@@ -8,7 +8,7 @@ export function makeForet() {
   resetIds();
   return scene({
     id: 'arene-exp-foret',
-    nom: 'La Vieille Futaie',
+    label: 'La Vieille Futaie',
     desc: 'La grande forêt à l’est du Bourg — hommes-bêtes en lisière, brigands au cœur.',
     startMessage:
       'LA VIEILLE FUTAIE. La harde chasse en lisière — et au cœur du bois, la bande de BELLA LA NOIRE compte son butin. Les herbes du sous-bois valent leur pesant d’or.',
@@ -137,7 +137,7 @@ export function makeMarais() {
   resetIds();
   return scene({
     id: 'arene-exp-marais',
-    nom: 'La Tourbière Noire',
+    label: 'La Tourbière Noire',
     desc: 'Une tourbière d’eau noire au sud de la Futaie — les pontons sont le seul chemin sûr. Enfin, « sûr »…',
     weather: 'brouillard',
     startMessage:
@@ -289,7 +289,7 @@ export function makeVillage() {
   resetIds();
   return scene({
     id: 'arene-exp-village',
-    nom: 'Felsbach — village pesteux',
+    label: 'Felsbach — village pesteux',
     desc: 'Un village qui ne répond plus : portes ouvertes, marmites froides… et des pas traînants.',
     startMessage:
       'FELSBACH. Plus une lumière, des portes battantes — et des silhouettes qui TRAÎNENT entre les maisons. Ne buvez pas l’eau du puits. Cherchez le journal du prévôt.',
@@ -407,7 +407,7 @@ export function makeEmbuscade() {
   resetIds();
   return scene({
     id: 'arene-route-embuscade',
-    nom: 'Le Gué du Carrosse',
+    label: 'Le Gué du Carrosse',
     desc: 'Un gué encaissé sur la route de l’est — l’endroit rêvé pour détrousser les voyageurs.',
     startMessage:
       'EMBUSCADE AU GUÉ ! Des silhouettes jaillissent des fourrés — défendez-vous, puis reprenez la route.',

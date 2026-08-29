@@ -79,7 +79,7 @@ describe('Zone 11 — barre haute d’exploration DÉGRAISSÉE', () => {
     expect(topbar!.querySelector('.worldmap-btn'), 'aucun ouvreur d’écran ne flotte plus dans la barre haute').toBeNull();
     // Ce qui RESTE : le menu et le nom du lieu (l'objectif est nul sans pile d'objectifs).
     expect(topbar!.querySelector('.game-menu')).not.toBeNull();
-    expect(topbar!.querySelector('[data-hud="place"]')!.textContent).toBe(testScene.nom);
+    expect(topbar!.querySelector('[data-hud="place"]')!.textContent).toBe(testScene.label);
   });
 });
 
@@ -126,7 +126,7 @@ describe('Zone 11 — les 7 ouvreurs vivent SUR le pont, avec leurs conditions',
     act(() => {
       useGame.setState({
         worldMap: {
-          id: 'carte', nom: 'Carte', routes: [],
+          id: 'carte', label: 'Carte', routes: [],
           places: [{ id: 'lieu', label: 'Terrain de test', pos: { x: 50, y: 50 }, scene: testScene.id }],
         } satisfies WorldMap,
       });

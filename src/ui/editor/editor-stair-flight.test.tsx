@@ -22,7 +22,7 @@ beforeAll(() => {
 /** Foyer coté 1 m (F) → 3 cases de volée (E) → galerie cotée 4 m (G) sur la couche 1. */
 const BASE = {
   id: 's',
-  nom: 'S',
+  label: 'S',
   size: [4, 3] as [number, number],
   terrain: 'mur' as const,
   levels: { z0: ['....', 'FEEE', '....'].join('\n'), z1: ['...G', '....', '....'].join('\n') },

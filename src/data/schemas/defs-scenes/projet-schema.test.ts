@@ -15,14 +15,14 @@ type Jouet = Record<string, unknown>;
 
 const sceneMinimale = (over: Jouet = {}): Jouet => ({
   id: 'scene-1',
-  nom: 'Une salle',
+  label: 'Une salle',
   desc: 'Scène minimale de fixture.',
   dimensions: { w: 4, h: 4 },
   ...over,
 });
 
 const projet = (over: Jouet = {}): Jouet => ({
-  schema: 5,
+  schema: 6,
   narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
   scenes: [sceneMinimale()],
   ...over,
@@ -49,7 +49,7 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
   it('un `port` SPARSE `{ ref }` (avant `resolvePortRef`) est VALIDE ; sans `ref`, le profil est exigé EN ENTIER', () => {
     const carte = (port: Jouet) => ({
       id: 'carte',
-      nom: 'Le monde',
+      label: 'Le monde',
       places: [{ id: 'lieu-1', label: 'Port', pos: { x: 1, y: 2 }, scene: 'scene-1', port }],
       routes: [],
     });
@@ -67,6 +67,37 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
   it('une clé inconnue sur une scène est REFUSÉE (schéma STRICT)', () => {
     expect(fautes(projet({ scenes: [sceneMinimale({ inventedField: 'poison' })] }))).toEqual([
       'scenes.0 :: Unrecognized key: "inventedField"',
+    ]);
+  });
+
+  /**
+   * Le STATBLOC EMBARQUÉ est déclaré CHAMP PAR CHAMP, calé sur `CustomStatblock` : aucun champ n'y est
+   * plus large que l'interface TS. `char` est le seul qui pourrait l'être en silence — écrit en
+   * `z.record(z.string(), …)` il avalerait n'importe quelle clé, et une coquille d'authoring
+   * (`endurence`, `ZZZZ`) vivrait dans la donnée sans jamais rien modifier au jeu.
+   */
+  const statblocMinimal = (over: Jouet = {}): Jouet => ({ type: 'statblock', label: 'Rat géant', char: { B: 5 }, ...over });
+  const avecStatbloc = (sb: Jouet): Jouet =>
+    projet({ scenes: [sceneMinimale({ entities: [{ id: 'e1', kind: 'personnage', pos: { x: 1, y: 1 }, statblock: sb }] })] });
+
+  it('le statbloc embarqué : `char` n’accepte QUE les 10 Caractéristiques ∪ M ∪ B', () => {
+    // Témoin POSITIF : les clés du canon passent, et `char` reste PARTIEL (aucune n'est exigée).
+    expect(projetSchema.safeParse(avecStatbloc(statblocMinimal({ char: { 'capacite-de-combat': 30, M: 4, B: 5 } }))).success).toBe(true);
+    expect(projetSchema.safeParse(avecStatbloc(statblocMinimal({ char: {} }))).success).toBe(true);
+    // Une clé HORS canon est nommée, jamais avalée.
+    expect(fautes(avecStatbloc(statblocMinimal({ char: { ZZZZ: 7 } })))).toEqual([
+      'scenes.0.entities.0.statblock.char :: Unrecognized key: "ZZZZ"',
+    ]);
+    // La coquille d'authoring la plus plausible — une Caractéristique mal orthographiée — mord aussi.
+    expect(fautes(avecStatbloc(statblocMinimal({ char: { endurence: 35 } })))).toEqual([
+      'scenes.0.entities.0.statblock.char :: Unrecognized key: "endurence"',
+    ]);
+  });
+
+  it('le statbloc embarqué DOIT s’annoncer : `type: \'statblock\'` (#1467 L1b)', () => {
+    const { type: _sans, ...muet } = statblocMinimal();
+    expect(fautes(avecStatbloc(muet))).toEqual([
+      'scenes.0.entities.0.statblock.type :: Invalid input: expected "statblock"',
     ]);
   });
 });

@@ -533,8 +533,8 @@ describe('Editor v2 — sauvegarde locale de secours (#834 audit)', () => {
   });
 
   it('Échap sur la modale de reprise ne détruit PAS la sauvegarde locale, et la proposition peut revenir (pt. A)', async () => {
-    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-escape-test', nom: 'chargée' };
-    await autosaveSave({ sceneId: 'scene-escape-test', scene: { ...emptyScene(4, 4), id: 'scene-escape-test', nom: 'récupérée' }, savedAt: 999 });
+    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-escape-test', label: 'chargée' };
+    await autosaveSave({ sceneId: 'scene-escape-test', scene: { ...emptyScene(4, 4), id: 'scene-escape-test', label: 'récupérée' }, savedAt: 999 });
 
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -567,8 +567,8 @@ describe('Editor v2 — sauvegarde locale de secours (#834 audit)', () => {
   });
 
   it('#834 audit-2 DÉFAUT 5 — une restauration reste ANNULABLE (Ctrl+Z), jamais l’action par défaut visuelle', async () => {
-    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-restore-undo', nom: 'avant-restore' };
-    await autosaveSave({ sceneId: 'scene-restore-undo', scene: { ...emptyScene(4, 4), id: 'scene-restore-undo', nom: 'apres-restore' }, savedAt: 999 });
+    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-restore-undo', label: 'avant-restore' };
+    await autosaveSave({ sceneId: 'scene-restore-undo', scene: { ...emptyScene(4, 4), id: 'scene-restore-undo', label: 'apres-restore' }, savedAt: 999 });
 
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -610,7 +610,7 @@ describe('Editor v2 — sauvegarde locale de secours (#834 audit)', () => {
     };
     __setIdbBackendForTest(okIdb);
 
-    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-purge-a', nom: 'A' };
+    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-purge-a', label: 'A' };
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root: Root = createRoot(container);
@@ -663,10 +663,10 @@ describe('Editor v2 — sauvegarde locale de secours (#834 audit)', () => {
   });
 
   it('le message de reprise n’affirme PLUS une fraîcheur relative jamais vérifiée (pt. B)', async () => {
-    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-msg-test', nom: 'chargée' };
+    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-msg-test', label: 'chargée' };
     // Enregistrement PLUS ANCIEN que « maintenant » : la mécanique ne compare aucune date au chargement
     // — le message ne doit donc rien affirmer sur une fraîcheur relative qu'elle n'a pas vérifiée.
-    await autosaveSave({ sceneId: 'scene-msg-test', scene: { ...emptyScene(4, 4), id: 'scene-msg-test', nom: 'ancienne' }, savedAt: 1 });
+    await autosaveSave({ sceneId: 'scene-msg-test', scene: { ...emptyScene(4, 4), id: 'scene-msg-test', label: 'ancienne' }, savedAt: 1 });
 
     const container = document.createElement('div');
     document.body.appendChild(container);

@@ -10,15 +10,10 @@
  * est ROUGE et se NOMME.
  */
 export const TROUS_DE_VALIDATION: Readonly<Record<string, { raison: string; lot: string }>> = {
-  'communs.ts:customStatblockSchema': {
-    raison:
-      'CustomStatblock (engine/statblock.ts:11) = un PROFIL entier authoré à la main (char partiels, TraitInstance[], SkillRef[], TalentRef[], sorts, groupes) — sa forme est celle de l’entité créature, pas une feuille de scène : l’écrire ici la dupliquerait avant que le schéma d’entité existe.',
-    lot: 'L2 #1463 — concept « statblocs/créatures » (les gardes FK nominatives tombent concept par concept en L2/L3, clause B du ticket) ; le schéma de scène le composera au lieu de le redéclarer.',
-  },
   'scene.ts:optionalEntrySchema': {
     raison:
       'OptionalEntry (engine/statEntry.ts:137) = TraitInstance | OptionalNote — même famille que les traits d’un statbloc (TraitInstance y est déjà la brique), et sa discrimination se fait par PRÉSENCE de `note` (isOptionalNote), pas par un discriminant.',
-    lot: 'L2 #1463 — concept « statblocs/créatures », même lot que `customStatblockSchema` : TraitInstance écrit une fois pour les deux, sinon deux graphies de la même brique.',
+    lot: 'L2 #1463 — concept « statblocs/créatures ». La brique `TraitInstance` est écrite UNE fois, à la grammaire (`grammaire/reference.ts:traitInstanceSchema`) : ce trou se ferme en la composant avec `OptionalWildcard`/`OptionalSwap` (union à discriminant `note`, dont `SwapGrant`), pas en la recopiant.',
   },
   'scene.ts:authoredShipPosteSchema': {
     raison:

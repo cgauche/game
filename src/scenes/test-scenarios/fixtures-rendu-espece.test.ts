@@ -67,7 +67,7 @@ describe('scénarios de test — aucun personnage sans espèce résolue (#936)',
   });
 
   it('le mannequin d’entraînement rend le MÊME profil qu’avant l’espèce posée (seule la chaîne species change)', () => {
-    const sb = { label: "Mannequin d'entraînement", char: { M: 0, endurance: 35, B: 40 } };
+    const sb = { type: 'statblock' as const, label: "Mannequin d'entraînement", char: { M: 0, endurance: 35, B: 40 } };
     const avant = enemyRigProfile(spawnEnemy(undefined, sb, 'm', { x: 0, y: 0 }));
     const apres = enemyRigProfile(spawnEnemy(undefined, sb, 'm', { x: 0, y: 0 }, { appearance: { species: 'humains-reiklander' } }));
     expect(apres?.appearance.species).toBe('humains-reiklander');

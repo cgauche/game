@@ -11,7 +11,7 @@ import { validateScene } from './validateScene';
  * marqueur bouge dans la grille, et n'est donc jamais une clé d'assise. La règle est donc : `propId`
  * comme `entityId` occupant figurent LITTÉRALEMENT dans `spec.entities`.
  */
-const BASE: MapSpec = { id: 'taverne', nom: 'Taverne', size: [8, 8], terrain: 'plancher' };
+const BASE: MapSpec = { id: 'taverne', label: 'Taverne', size: [8, 8], terrain: 'plancher' };
 
 /** Table ronde en (2,2) cap `N` → abords : nord (2,1), est (3,2), sud (2,3), ouest (1,2). */
 const TABLE = { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' } as const;

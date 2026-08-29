@@ -46,7 +46,7 @@ function makeNavalParty(): Combatant[] {
 //    flammes) et son ÉQUIPAGE exposé (pirates, `crewIds`) encaisse les Éclats / un Critique « Équipage ».
 const scene = buildScene({
   id: 'test-bataille-navale',
-  nom: 'Bataille navale',
+  label: 'Bataille navale',
   size: [18, 12],
   terrain: 'planches',
   heroStart: [2, 6],

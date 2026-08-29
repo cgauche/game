@@ -8,22 +8,22 @@ import type { Weapon } from '../engine/types';
 const sword: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
 
 describe('Localisation visée vs créature ≥ 2 catégories plus grande (LDB 76 l.39)', () => {
-  const atk = statblockToCombatant({ label: 'A', char: {} }, 'a', { x: 0, y: 0 }); // Moyenne
+  const atk = statblockToCombatant({ type: 'statblock', label: 'A', char: {} }, 'a', { x: 0, y: 0 }); // Moyenne
 
   it('cible de Taille normale : viser une zone coûte −20 (Difficile, LDB 14 l.73)', () => {
-    const t = statblockToCombatant({ label: 'T', char: {}, traits: [{ id: 'taille', arg: 'Moyenne' }] }, 't', { x: 1, y: 0 });
+    const t = statblockToCombatant({ type: 'statblock', label: 'T', char: {}, traits: [{ id: 'taille', arg: 'Moyenne' }] }, 't', { x: 1, y: 0 });
     const m = attackModifiers(atk, t, sword, { kind: 'melee', location: 'tete' });
     expect(m.some((x) => x.label === 'Localisation visée' && x.value === -20)).toBe(true);
   });
 
   it('cible ≥ 2 catégories plus grande : choix de zone GRATUIT (aucune pénalité)', () => {
-    const t = statblockToCombatant({ label: 'Géant', char: {}, traits: [{ id: 'taille', arg: 'Énorme' }] }, 't', { x: 1, y: 0 }); // Énorme vs Moyenne = +2
+    const t = statblockToCombatant({ type: 'statblock', label: 'Géant', char: {}, traits: [{ id: 'taille', arg: 'Énorme' }] }, 't', { x: 1, y: 0 }); // Énorme vs Moyenne = +2
     const m = attackModifiers(atk, t, sword, { kind: 'melee', location: 'tete' });
     expect(m.some((x) => x.label === 'Localisation visée')).toBe(false);
   });
 
   it('cible +1 catégorie seulement : viser coûte encore −20', () => {
-    const t = statblockToCombatant({ label: 'Ogre', char: {}, traits: [{ id: 'taille', arg: 'Grande' }] }, 't', { x: 1, y: 0 }); // Grande vs Moyenne = +1
+    const t = statblockToCombatant({ type: 'statblock', label: 'Ogre', char: {}, traits: [{ id: 'taille', arg: 'Grande' }] }, 't', { x: 1, y: 0 }); // Grande vs Moyenne = +1
     const m = attackModifiers(atk, t, sword, { kind: 'melee', location: 'tete' });
     expect(m.some((x) => x.label === 'Localisation visée' && x.value === -20)).toBe(true);
   });

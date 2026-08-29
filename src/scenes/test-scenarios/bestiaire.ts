@@ -31,7 +31,7 @@ function mutate(c: Combatant, rolls: number[]): Combatant {
 
 const scene = buildScene({
   id: 'test-bestiaire',
-  nom: 'Bestiaire, traits & états',
+  label: 'Bestiaire, traits & états',
   desc: 'Arène de test.',
   size: [26, 20],
   heroStart: [3, 10],
@@ -59,7 +59,7 @@ const scene = buildScene({
         // Statblocs d'auteur (LDB 76/78/85).
         { ref: 'pieuvre-des-tourbieres', pos: { x: 18, y: 18 } }, // « 8 Tentacules +9 » gratuites, Empêtré
         {
-          statblock: {
+          statblock: { type: 'statblock',
             label: 'Sorcier mutant',
             char: { M: 4, 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 40, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 45, sociabilite: 30 },
             traits: [{ id: 'arme', value: 4, arg: 'dague' }, { id: 'lanceur-de-sorts', arg: 'sorcellerie' }, { id: 'corruption', arg: 'Mineure' }],

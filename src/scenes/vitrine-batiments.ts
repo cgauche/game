@@ -91,7 +91,7 @@ const ruineFlags = Object.fromEntries([
 export const vitrineSpec: MapSpec = {
   size: [30, 24],
   id: 'vitrine-batiments',
-  nom: 'Vitrine — bâtiments (ornements par type)',
+  label: 'Vitrine — bâtiments (ornements par type)',
   ambiance: 'exterieur',
   terrain: 'herbe',
   heroStart: { x: 24, y: 22 },

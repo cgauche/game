@@ -7,12 +7,10 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { availabilitySchema, formulaSchema } from '../grammaire/valeurs';
+import { availabilitySchema, formulaSchema, sizeCategorySchema } from '../grammaire/valeurs';
 import { gameOpSchema, flowSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';
 
-/** `SizeCategory` (`src/engine/size.ts`) — réf par id, jamais un enum parallèle. */
-const sizeCategorySchema = z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
 
 export const file = 'trappings.json';
 export const famille = 'entite';

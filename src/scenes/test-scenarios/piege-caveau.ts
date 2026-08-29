@@ -41,7 +41,7 @@ const HERSE_WHEN: Condition = {
 
 const scene = buildScene({
   id: 'test-piege-caveau',
-  nom: 'Le Caveau piégé',
+  label: 'Le Caveau piégé',
   desc: 'Arène de test.',
   size: [14, 10],
   terrain: 'pierre',

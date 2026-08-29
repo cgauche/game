@@ -11,7 +11,7 @@ import type { TestScenario } from './_shared';
  */
 const village = buildScene({
   id: 'test-effets-scriptes-village',
-  nom: 'Ebendorf — place du village',
+  label: 'Ebendorf — place du village',
   desc: 'Arène de test.',
   size: [12, 9],
   terrain: 'herbe',

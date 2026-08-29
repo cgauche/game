@@ -461,7 +461,7 @@ export function makeHub() {
   return scene({
     id: 'arene-hub',
     rest: { auberge: true }, // la taverne du Bourg (tout-en-scène) offre le couchage
-    nom: 'Le Bourg de l’Arène',
+    label: 'Le Bourg de l’Arène',
     desc: 'Le bourg fortifié qui vit de son arène : taverne, chapelle, forge, échoppe — quatre bâtiments GRANDS ouverts sur une place, et treize portes vers le sable.',
     ambiance: 'exterieur',
     music: { ambient: 'musique-ville' },

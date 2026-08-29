@@ -78,7 +78,7 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs-scenes/effets.ts:medicalAidSchema|alias|skill': e('Effet `medicalAid` (Soins) désignant sa Compétence par `skill`.', L2),
   'src/data/schemas/defs-scenes/effets.ts:corruptionExposureSchema|alias|skill': e('Effet `corruptionExposure` désignant la Compétence du jet de résistance par `skill`.', L2),
   'src/data/schemas/defs-scenes/effets.ts:startPursuitSchema|alias|skill': e('Effet `startPursuit` désignant la Compétence de course par `skill`.', L2),
-  'src/data/schemas/defs-scenes/scene.ts:skillRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('Réf de Compétence de scène re-tapée `{id, spec, value}` — la signature de `qualityRefSchema`, pour un tout autre concept.', L2),
+  'src/data/schemas/defs-scenes/communs.ts:skillRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('Réf de Compétence de scène re-tapée `{id, spec, value}` — la signature de `qualityRefSchema`, pour un tout autre concept. UNE seule définition pour la racine `src/scenes` (`scene.ts` la réexporte).', L2),
 
   // ── Graphies historiques de RÉFÉRENCE à une autre entité (`ref`, `talentId`, `trappingId`) ────
   'src/data/schemas/defs/axes.ts:talentRefSchema|alias|talentId': e('Réf de Talent d’un axe de profil en `{talentId, spec}`.', L3),

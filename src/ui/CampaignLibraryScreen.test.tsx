@@ -75,7 +75,7 @@ describe('buildImportedProject — import portable (#766)', () => {
   it('utilise le nom de fichier en repli quand aucune méta/scène nommée', () => {
     // Un doc sans meta : le label retombe sur le nom de la 1re scène, sinon le fallback fourni.
     const entry = buildImportedProject(builtinDocJson(0), 'depuis-fichier');
-    expect(entry.label).toBe(allBuiltinCampaigns[0].scenes[0].nom ?? 'depuis-fichier');
+    expect(entry.label).toBe(allBuiltinCampaigns[0].scenes[0].label ?? 'depuis-fichier');
   });
 
   it('lève un message clair (pas de crash) sur JSON illisible', () => {

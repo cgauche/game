@@ -38,11 +38,11 @@ describe('editorAutosave — filet local de crash de l’éditeur', () => {
   it('aller-retour : sauvegarde puis relecture de la MÊME scène (round-trip)', async () => {
     const backend = fakeBackend();
     __setAutosaveBackendForTest(backend);
-    const scene = { ...emptyScene(), id: 'scene-a', nom: 'Auberge' };
+    const scene = { ...emptyScene(), id: 'scene-a', label: 'Auberge' };
     await autosaveSave({ sceneId: scene.id, scene, savedAt: 123 });
     const rec = await autosaveLoad('scene-a');
     expect(rec).not.toBeNull();
-    expect(rec!.scene.nom).toBe('Auberge');
+    expect(rec!.scene.label).toBe('Auberge');
     expect(rec!.savedAt).toBe(123);
     __setAutosaveBackendForTest(null);
   });
@@ -51,11 +51,11 @@ describe('editorAutosave — filet local de crash de l’éditeur', () => {
     const backend = fakeBackend();
     __setAutosaveBackendForTest(backend);
     const scene = { ...emptyScene(), id: 'scene-a' };
-    await autosaveSave({ sceneId: scene.id, scene: { ...scene, nom: 'v1' }, savedAt: 1 });
-    await autosaveSave({ sceneId: scene.id, scene: { ...scene, nom: 'v2' }, savedAt: 2 });
+    await autosaveSave({ sceneId: scene.id, scene: { ...scene, label: 'v1' }, savedAt: 1 });
+    await autosaveSave({ sceneId: scene.id, scene: { ...scene, label: 'v2' }, savedAt: 2 });
     expect(backend.store.size).toBe(1);
     const rec = await autosaveLoad('scene-a');
-    expect(rec!.scene.nom).toBe('v2');
+    expect(rec!.scene.label).toBe('v2');
     __setAutosaveBackendForTest(null);
   });
 
@@ -72,10 +72,10 @@ describe('editorAutosave — filet local de crash de l’éditeur', () => {
   it('scènes distinctes = entrées distinctes (keyé par sceneId, jamais un slot unique)', async () => {
     const backend = fakeBackend();
     __setAutosaveBackendForTest(backend);
-    await autosaveSave({ sceneId: 'scene-a', scene: { ...emptyScene(), id: 'scene-a', nom: 'A' }, savedAt: 1 });
-    await autosaveSave({ sceneId: 'scene-b', scene: { ...emptyScene(), id: 'scene-b', nom: 'B' }, savedAt: 1 });
-    expect((await autosaveLoad('scene-a'))!.scene.nom).toBe('A');
-    expect((await autosaveLoad('scene-b'))!.scene.nom).toBe('B');
+    await autosaveSave({ sceneId: 'scene-a', scene: { ...emptyScene(), id: 'scene-a', label: 'A' }, savedAt: 1 });
+    await autosaveSave({ sceneId: 'scene-b', scene: { ...emptyScene(), id: 'scene-b', label: 'B' }, savedAt: 1 });
+    expect((await autosaveLoad('scene-a'))!.scene.label).toBe('A');
+    expect((await autosaveLoad('scene-b'))!.scene.label).toBe('B');
     __setAutosaveBackendForTest(null);
   });
 

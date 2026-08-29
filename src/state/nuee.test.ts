@@ -9,7 +9,7 @@ const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, fla
 
 describe('Nuée — Trait Essaim (LDB 85 l.199-200)', () => {
   it('build au spawn : ×5 PB, +10 CC, immunité Psychologie, flag swarm', () => {
-    const c = statblockToCombatant({ label: 'Nuée de rats', char: { 'capacite-de-combat': 35, force: 30, endurance: 30, B: 5 }, traits: [{ id: 'nuee' }, { id: 'taille', arg: 'Petite' }] }, 'x', { x: 0, y: 0 });
+    const c = statblockToCombatant({ type: 'statblock', label: 'Nuée de rats', char: { 'capacite-de-combat': 35, force: 30, endurance: 30, B: 5 }, traits: [{ id: 'nuee' }, { id: 'taille', arg: 'Petite' }] }, 'x', { x: 0, y: 0 });
     expect(c.swarm).toBe(true);
     expect(c.psychImmune).toBe(true);
     expect(c.wounds.max).toBe(25); // 5 × 5 (PB d'une créature type)
@@ -17,15 +17,15 @@ describe('Nuée — Trait Essaim (LDB 85 l.199-200)', () => {
   });
 
   it('sans le trait : ni swarm ni ×5', () => {
-    const c = statblockToCombatant({ label: 'Rat', char: { 'capacite-de-combat': 35, B: 5 }, traits: [{ id: 'taille', arg: 'Petite' }] }, 'x', { x: 0, y: 0 });
+    const c = statblockToCombatant({ type: 'statblock', label: 'Rat', char: { 'capacite-de-combat': 35, B: 5 }, traits: [{ id: 'taille', arg: 'Petite' }] }, 'x', { x: 0, y: 0 });
     expect(c.swarm).toBeUndefined();
     expect(c.wounds.max).toBe(5);
     expect(c.characteristics['capacite-de-combat']).toBe(35);
   });
 
   it('+40 au tir CONTRE une nuée, et la Taille de la cible est ignorée', () => {
-    const swarm = statblockToCombatant({ label: 'Nuée', char: { B: 5 }, traits: [{ id: 'nuee' }, { id: 'taille', arg: 'Petite' }] }, 's', { x: 0, y: 0 });
-    const shooter = statblockToCombatant({ label: 'Tireur', char: {} }, 't', { x: 5, y: 0 });
+    const swarm = statblockToCombatant({ type: 'statblock', label: 'Nuée', char: { B: 5 }, traits: [{ id: 'nuee' }, { id: 'taille', arg: 'Petite' }] }, 's', { x: 0, y: 0 });
+    const shooter = statblockToCombatant({ type: 'statblock', label: 'Tireur', char: {} }, 't', { x: 5, y: 0 });
     const mods = attackModifiers(shooter, swarm, bow, { kind: 'ranged' });
     expect(mods.some((m) => m.label === 'Nuée (tir)' && m.value === 40)).toBe(true);
     expect(mods.some((m) => m.label.startsWith('Taille (cible)'))).toBe(false); // Taille ignorée (l.200)

@@ -15,7 +15,7 @@ import type { Possession } from '../engine/possession';
 const get = useGame.getState.bind(useGame);
 
 // Place dont la scène EST la scène courante → tous les porteurs du groupe y sont co-localisés.
-const map: WorldMap = { id: 'm', nom: 'x', places: [{ id: 'P', label: 'Halte', pos: { x: 0, y: 0 }, scene: 'halte' }], routes: [] };
+const map: WorldMap = { id: 'm', label: 'x', places: [{ id: 'P', label: 'Halte', pos: { x: 0, y: 0 }, scene: 'halte' }], routes: [] };
 
 function setup(muleCargo: CargoLot[], cartCargo: CargoLot[]) {
   const party = makePregens().slice(0, 1);
@@ -26,7 +26,7 @@ function setup(muleCargo: CargoLot[], cartCargo: CargoLot[]) {
   ];
   useGame.setState({
     party, vessel: null, worldMap: map, possessions,
-    scene: { id: 'halte', nom: 'Halte', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { id: 'halte', label: 'Halte', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null, journal: [],
   } as never);
 }

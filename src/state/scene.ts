@@ -324,7 +324,7 @@ export function isDescriptiveZone(ez: SceneEffectZone): boolean {
  *  consommateur les lit sans garde). */
 export interface Scene {
   id: string;
-  nom: string;
+  label: string;
   desc?: string;
   dimensions: { w: number; h: number };
   /** Échelle métrique d'une CASE (m/case) — défaut 2 (person-scale). Une Scène MER (combat naval, MDG 13)
@@ -641,7 +641,7 @@ export function parapetTilesAbove(scene: Scene, seg: { x: number; y: number; sid
 export function emptyScene(w = 20, h = 15): Scene {
   return {
     id: `scene-${Date.now()}`,
-    nom: 'Nouvelle scène',
+    label: 'Nouvelle scène',
     dimensions: { w, h },
     ambiance: 'exterieur',
     metresPerTile: 2,

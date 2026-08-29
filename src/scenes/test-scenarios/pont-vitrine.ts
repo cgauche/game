@@ -74,7 +74,7 @@ const decor: SceneEntity[] = [
 
 const scene = buildScene({
   id: 'pont-vitrine',
-  nom: 'Pont — vitrine du relief',
+  label: 'Pont — vitrine du relief',
   size: [16, 16],
   desc:
     "Vitrine du relief métrique : un chemin de pierre traverse une clairière en passant SOUS un pont de bois " +

@@ -13,14 +13,14 @@ beforeAll(() => {
 
 describe('StatblockEditor — exposition Psychologie (P4)', () => {
   it('affiche le champ Groupes (extras) avec la valeur courante', () => {
-    const stat: CustomStatblock = { label: 'X', char: { M: 4 }, groups: ['Sigmarite', 'Cultiste'] };
+    const stat: CustomStatblock = { type: 'statblock', label: 'X', char: { M: 4 }, groups: ['Sigmarite', 'Cultiste'] };
     const html = renderToStaticMarkup(<StatblockEditor stat={stat} onChange={() => {}} />);
     expect(html).toContain('Groupes');
     expect(html).toContain('Sigmarite, Cultiste');
   });
 
   it('documente la syntaxe des Traits psy (Peur/Terreur/Animosité)', () => {
-    const stat: CustomStatblock = { label: 'X', char: { M: 4 } };
+    const stat: CustomStatblock = { type: 'statblock', label: 'X', char: { M: 4 } };
     const html = renderToStaticMarkup(<StatblockEditor stat={stat} onChange={() => {}} />);
     expect(html).toMatch(/Peur/);
     expect(html).toMatch(/Animosit/);
@@ -29,7 +29,7 @@ describe('StatblockEditor — exposition Psychologie (P4)', () => {
 
 describe('StatblockEditor — cloner une créature de base ne décide JAMAIS par comparaison de texte (#142)', () => {
   it('un profil réellement nommé « Profil personnalisé » n’est PAS écrasé par le clone', () => {
-    const stat: CustomStatblock = { label: 'Profil personnalisé', char: { M: 4 } };
+    const stat: CustomStatblock = { type: 'statblock', label: 'Profil personnalisé', char: { M: 4 } };
     let latest: CustomStatblock = stat;
     const container = document.createElement('div');
     document.body.appendChild(container);

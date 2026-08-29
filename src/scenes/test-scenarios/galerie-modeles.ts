@@ -57,7 +57,7 @@ for (const c of creatures) {
 // Démo Monstrueuse (4×4) : aucune créature LDB/ADE n'est Monstrueuse par DÉFAUT (c'est une option
 // facultative de plusieurs créatures) — on force la Taille via le statbloc ; le modèle reste le Géant.
 place(
-  { id: 'cr-monstre', kind: 'personnage', ref: 'geant', statblock: { label: 'Démo — Monstrueuse 4×4', char: { B: 80 }, size: 'monstrueuse' }, label: 'Démo — Monstrueuse (4×4)' },
+  { id: 'cr-monstre', kind: 'personnage', ref: 'geant', statblock: { type: 'statblock', label: 'Démo — Monstrueuse 4×4', char: { B: 80 }, size: 'monstrueuse' }, label: 'Démo — Monstrueuse (4×4)' },
   4,
 );
 newSection();
@@ -91,7 +91,7 @@ for (const m of MUTANTS) {
 const W = Math.max(maxX, X0 + MAXW) + 5;
 const H = cy + rowH + 4;
 
-const scene = arena({ id: 'test-galerie', nom: 'Galerie — tous les modèles', w: W, h: H, heroStart: { x: 0, y: 0 } });
+const scene = arena({ id: 'test-galerie', label: 'Galerie — tous les modèles', w: W, h: H, heroStart: { x: 0, y: 0 } });
 scene.startMessage =
   `Galerie : ${creatures.length} créatures (à l'échelle de leur Taille) · ${careers.length} carrières · ${weapons.length} armes · ${MUTANTS.length} mutants · 1 démo Monstrueuse 4×4. ` +
   'Tourne (Q/E) et zoome (molette) pour inspecter. Aucun combat.';

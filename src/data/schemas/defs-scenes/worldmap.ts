@@ -174,7 +174,7 @@ export const worldMapParamsSchema = z.strictObject({
 /** `WorldMap` — graphe de LIEUX et de ROUTES au niveau PROJET. */
 export const worldMapSchema = z.strictObject({
   id: z.string(),
-  nom: z.string(),
+  label: z.string(),
   params: worldMapParamsSchema.optional(),
   /** Image de fond : présente ⇒ les lieux sont rendus à leurs `pos` EXACTS (aucun déchevauchement). */
   background: z.string().optional(),

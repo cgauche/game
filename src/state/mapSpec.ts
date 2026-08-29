@@ -179,7 +179,7 @@ export interface CellRecipe {
 export interface MapSpec {
   size: [number, number];
   id: string;
-  nom: string;
+  label: string;
   desc?: string;
   ambiance?: Scene['ambiance'];
   weather?: Scene['weather'];
@@ -626,7 +626,7 @@ export function buildScene(spec: MapSpec): Scene {
   // 1. base + scalaires
   let s = emptyScene(w, h);
   s.id = spec.id;
-  s.nom = spec.nom;
+  s.label = spec.label;
   if (spec.desc !== undefined) s.desc = spec.desc;
   if (spec.ambiance !== undefined) s.ambiance = spec.ambiance;
   if (spec.weather !== undefined) s.weather = spec.weather;

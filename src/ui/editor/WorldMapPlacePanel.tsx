@@ -62,7 +62,7 @@ export function WorldMapPlacePanel({ place, scenes, updPlace }: {
             label="Scène liée"
             options={scenes}
             getId={(s) => s.id}
-            getLabel={(s) => `${s.nom} (${s.id})`}
+            getLabel={(s) => `${s.label} (${s.id})`}
             value={place.scene}
             onChange={(v) => updPlace(place.id, { scene: v })}
           />
@@ -296,7 +296,7 @@ export function WorldMapPlacePanel({ place, scenes, updPlace }: {
                         label="Scène"
                         options={scenes}
                         getId={(s) => s.id}
-                        getLabel={(s) => `${s.nom} (${s.id})`}
+                        getLabel={(s) => `${s.label} (${s.id})`}
                         value={poi.sceneId}
                         onChange={(v) => updPoi(poi.id, { sceneId: v })}
                       />

@@ -31,7 +31,7 @@ function fresh() {
   seedBattleRng(1);
   useGame.setState({
     party: makePregens().slice(0, 3),
-    scene: { id: 'port', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { id: 'port', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null,
     pendingCascade: null,
     // Humeur de Manann −1 : place le tirage 2d10=2 sur l'événement n°1 (Embrigadement).

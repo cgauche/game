@@ -11,7 +11,7 @@ import type { TestScenario } from './_shared';
  */
 const auberge = buildScene({
   id: 'test-echeance-auberge',
-  nom: 'Auberge du Cor Fêlé',
+  label: 'Auberge du Cor Fêlé',
   desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',

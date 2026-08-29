@@ -84,7 +84,7 @@ export function effectCtxOf(
 ): Pick<Ctx, 'merchants' | 'scenes' | 'places' | 'personas'> {
   return {
     merchants: scene.entities.filter((e) => e.merchant).map((e) => ({ id: e.id, label: e.label })),
-    scenes: [scene, ...otherScenes].map((sc) => ({ id: sc.id, nom: sc.nom, entries: Object.keys(sc.entryPoints ?? {}) })),
+    scenes: [scene, ...otherScenes].map((sc) => ({ id: sc.id, nom: sc.label, entries: Object.keys(sc.entryPoints ?? {}) })),
     places: worldMap?.places.map((p) => ({ id: p.id, label: p.label })),
     // Effet `castSpell` (#98) : lanceur/cible = un « personnage » de la scène (Combatant.id ==
     // SceneEntity.id EN COMBAT — cf. combatSlice) ou un héros du groupe (id libre hors combat).

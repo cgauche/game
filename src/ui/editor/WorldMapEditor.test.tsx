@@ -35,8 +35,8 @@ let root: Root;
 let lastMap: WorldMap | null;
 
 function scenes(): Scene[] {
-  const s1 = { ...emptyScene(), id: 's1', nom: 'Scène Un', encounters: [{ id: 'enc1' }] };
-  const s2 = { ...emptyScene(), id: 's2', nom: 'Scène Deux' };
+  const s1 = { ...emptyScene(), id: 's1', label: 'Scène Un', encounters: [{ id: 'enc1' }] };
+  const s2 = { ...emptyScene(), id: 's2', label: 'Scène Deux' };
   return [s1, s2];
 }
 
@@ -313,7 +313,7 @@ describe('WorldMapEditor — paramètres de carte (aucune sélection, #419)', ()
   it('édite le nom de la carte et les paramètres de voyage (heures/jour, marche forcée, seuil de péripétie)', () => {
     mount();
     setValue(input('Nom'), 'Ma Campagne');
-    expect(lastMap!.nom).toBe('Ma Campagne');
+    expect(lastMap!.label).toBe('Ma Campagne');
 
     setValue(input('Heures de voyage/jour sans Test'), '8');
     expect(lastMap!.params?.hoursPerDay).toBe(8);

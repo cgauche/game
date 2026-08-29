@@ -69,7 +69,7 @@ export interface TestScenario {
  *  au-dessus de `buildScene` (headless-editor) : mêmes défauts (16×10, 'herbe', départ à gauche-milieu). */
 export function arena(opts: {
   id: string;
-  nom: string;
+  label: string;
   w?: number;
   h?: number;
   terrain?: Terrain;
@@ -80,7 +80,7 @@ export function arena(opts: {
   const hs = opts.heroStart ?? { x: 2, y: Math.floor(h / 2) };
   return buildScene({
     id: opts.id,
-    nom: opts.nom,
+    label: opts.label,
     desc: 'Arène de test.',
     size: [w, h],
     terrain: opts.terrain ?? 'herbe',

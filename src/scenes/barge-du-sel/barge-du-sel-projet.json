@@ -1,5 +1,5 @@
 {
- "schema": 5,
+ "schema": 6,
  "id": "barge-du-sel",
  "label": "La Barge du Sel",
  "icon": "scenario/naval",
@@ -13,7 +13,7 @@
  "scenes": [
   {
    "id": "barge-du-sel-quai",
-   "nom": "Le quai de la Barge du Sel",
+   "label": "Le quai de la Barge du Sel",
    "dimensions": {
     "w": 12,
     "h": 8
@@ -212,7 +212,7 @@
   },
   {
    "id": "barge-du-sel-embuscade",
-   "nom": "Voile noire à mi-route — une cogue pirate attaque",
+   "label": "Voile noire à mi-route — une cogue pirate attaque",
    "dimensions": {
     "w": 24,
     "h": 14
@@ -745,6 +745,7 @@
      },
      "label": "Timonier de la Louve grise",
      "statblock": {
+      "type": "statblock",
       "label": "Timonier de la Louve grise",
       "char": {
        "M": 4,
@@ -780,6 +781,7 @@
      },
      "label": "Canonnier de la Louve grise",
      "statblock": {
+      "type": "statblock",
       "label": "Canonnier de la Louve grise",
       "char": {
        "M": 4,
@@ -958,6 +960,7 @@
      },
      "label": "Barreur de la cogue",
      "statblock": {
+      "type": "statblock",
       "label": "Barreur de la cogue",
       "char": {
        "M": 4,
@@ -993,6 +996,7 @@
      },
      "label": "Canonnier de la cogue",
      "statblock": {
+      "type": "statblock",
       "label": "Canonnier de la cogue",
       "char": {
        "M": 4,
@@ -1113,7 +1117,7 @@
   },
   {
    "id": "barge-du-sel-ilot",
-   "nom": "L’îlot du sel",
+   "label": "L’îlot du sel",
    "dimensions": {
     "w": 12,
     "h": 6
@@ -1248,7 +1252,7 @@
  ],
  "worldMap": {
   "id": "carte-barge-du-sel",
-  "nom": "La Barge du Sel",
+  "label": "La Barge du Sel",
   "places": [
    {
     "id": "quai-du-sel",

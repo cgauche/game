@@ -64,7 +64,7 @@ afterEach(() => {
 // ── MER ──────────────────────────────────────────────────────────────────────────────────────────
 
 const seaMap: WorldMap = {
-  id: 'm', nom: 'Mer des Griffes',
+  id: 'm', label: 'Mer des Griffes',
   places: [
     { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
     { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b' },
@@ -76,7 +76,7 @@ function fraisMer(): void {
   seedBattleRng(1);
   useGame.setState({
     party: makePregens().slice(0, 3),
-    scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null, worldMap: seaMap, travelPlan: null, travelRecap: null,
     pendingCrewTest: null, pendingRest: null, pendingCascade: null, suspendedCascades: [],
     gameTime: 8 * 60, lastUpkeepDay: 0,
@@ -128,7 +128,7 @@ function fraisPort(): void {
   seedBattleRng(1);
   useGame.setState({
     party: makePregens().slice(0, 3),
-    scene: { id: 'port', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { id: 'port', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null, pendingCascade: null, suspendedCascades: [],
     vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, manann: { score: -1, applied: [] } },
     journal: [],
@@ -168,11 +168,11 @@ describe('#1262 V2 — la décision d’Embrigadement est au siège du MENEUR', 
 
 // ── FLEUVE ───────────────────────────────────────────────────────────────────────────────────────
 
-const quai = (id: string, nom: string) => buildScene({ id, nom, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const quai = (id: string, label: string) => buildScene({ id, label, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 function riverMap(extra: Partial<MapRoute> = {}): WorldMap {
   return {
-    id: 'm', nom: 'Le Reik',
+    id: 'm', label: 'Le Reik',
     places: [
       { id: 'A', label: 'Grünburg', pos: { x: 0, y: 0 }, scene: 'quai-a' },
       { id: 'B', label: 'Altdorf', pos: { x: 90, y: 0 }, scene: 'quai-b' },
@@ -246,10 +246,10 @@ describe('#1262 V2 — l’allure FORCÉE ouvre sa cascade pour le conducteur d�
     skill(aide, 'conduite-d-attelage', 5);
     useGame.setState({ party: [lead, aide], travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] } as never);
     get().loadProject(
-      [buildScene({ id: 'lieu-a', nom: 'A', desc: '.', size: [8, 6], terrain: 'herbe', heroStart: [2, 3] }),
-        buildScene({ id: 'lieu-b', nom: 'B', desc: '.', size: [8, 6], terrain: 'herbe', heroStart: [2, 3] })],
+      [buildScene({ id: 'lieu-a', label: 'A', desc: '.', size: [8, 6], terrain: 'herbe', heroStart: [2, 3] }),
+        buildScene({ id: 'lieu-b', label: 'B', desc: '.', size: [8, 6], terrain: 'herbe', heroStart: [2, 3] })],
       'lieu-a',
-      { id: 'c', nom: 'c', places: [
+      { id: 'c', label: 'c', places: [
         { id: 'pa', label: 'A', pos: { x: 0, y: 0 }, scene: 'lieu-a' },
         { id: 'pb', label: 'B', pos: { x: 70, y: 0 }, scene: 'lieu-b' },
       ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km: 20, modes: ['diligence', 'pied'], perilDie: 0 }] } as WorldMap,

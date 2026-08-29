@@ -220,7 +220,7 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('statbloc personnalisé : skills/talents portés par CustomStatblock (mêmes règles)', () => {
     const c = statblockToCombatant(
-      { label: 'Sorcier custom', char: { intelligence: 48, 'force-mentale': 53 }, skills: [{ id: 'langue', spec: 'magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
+      { type: 'statblock', label: 'Sorcier custom', char: { intelligence: 48, 'force-mentale': 53 }, skills: [{ id: 'langue', spec: 'magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
       'e1', at,
     );
     expect(c.skills.find((s) => s.skillId === 'langue')!.advances).toBe(15);

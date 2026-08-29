@@ -7,7 +7,7 @@
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useGame } from './store';
-import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, parseSave, takeObsoleteNotice, SAVE_VERSION, type SaveGame } from './saves';
+import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, parseSave, snapshotSave, takeObsoleteNotice, SAVE_VERSION, type SaveGame } from './saves';
 import { rule, setRule, loadRuleOverrides } from '../engine/policy';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -44,7 +44,7 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     expect(useGame.getState().saveGame(1)).toBe(true);
     const s = readSlot(1)!;
     expect(s.version).toBe(SAVE_VERSION);
-    expect(s.sceneLabel).toBe(testScene.nom); // le NOM de la scène, pas son id
+    expect(s.sceneLabel).toBe(testScene.label); // le NOM de la scène, pas son id
     expect(s.sceneLabel.length).toBeGreaterThan(0);
     expect((s.data.flags as Record<string, unknown>)['drapeau-test']).toBe(true);
     const metas = listSaves();
@@ -119,9 +119,25 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: SAVE_VERSION - 1 })).toBeNull();
     expect(parseSave({ ...cur, version: 1 })).toBeNull();
   });
-  it('la forme persistée COURANTE porte l’assise des places (`Scene.seatAssignments`) : 28, et 27 se jette', () => {
-    expect(SAVE_VERSION).toBe(28);
-    expect(parseSave({ ...cur, version: 27 })).toBeNull();
+  it('la forme persistée COURANTE nomme la scène et la carte par `label` (#1467 L1b V-P7) : 29, et 28 se jette', () => {
+    expect(SAVE_VERSION).toBe(29);
+    expect(parseSave({ ...cur, version: 28 })).toBeNull();
+  });
+
+  /**
+   * TÉMOIN d'une couture que le TYPECHECK NE VOIT PAS : `snapshotSave` reçoit un `Record` opaque, donc
+   * l'accès au libellé de scène passe par un cast — un champ renommé y dégraderait la vignette vers
+   * l'id EN SILENCE, sans une seule erreur de compilation. Ce test mesure le RÉSULTAT (un libellé, pas
+   * l'id) : il rougit dès que la couture se débranche.
+   */
+  it('la vignette porte le LIBELLÉ de la scène (jamais son id), et la scène voyage ENTIÈRE dans `data`', () => {
+    const initial = useGame.getState() as unknown as Record<string, unknown>;
+    const scene = { id: 'scene-id-a-ne-pas-afficher', label: 'La Salle du Trône', dimensions: { w: 2, h: 2 } };
+    const save = snapshotSave({ ...initial, scene }, initial, '2026-08-29T00:00:00.000Z');
+    expect(save.sceneLabel).toBe('La Salle du Trône');
+    expect((save.data.scene as { label?: string })?.label).toBe('La Salle du Trône');
+    // Sans scène, la vignette le DIT — elle ne rend pas une chaîne vide.
+    expect(snapshotSave({ ...initial, scene: null }, initial, '2026').sceneLabel).toBe('Sans scène');
   });
   it('objet malformé / version absente → null', () => {
     expect(parseSave(null)).toBeNull();

@@ -26,7 +26,7 @@ import { rigSpeciesId } from '../../data';
  *  Son `appearance.species` (posé sur chaque exemplaire de la rencontre) est une donnée D'ATTENTE : le
  *  rendu d'un combattant n'offre aujourd'hui que rig/plan, aucun gabarit d'objet inanimé — arbitrage
  *  du vrai gabarit de mannequin : #1075. */
-const MANNEQUIN: CustomStatblock = {
+const MANNEQUIN: CustomStatblock = { type: 'statblock',
   label: "Mannequin d'entraînement",
   char: { M: 0, 'capacite-de-combat': 5, 'capacite-de-tir': 0, force: 20, endurance: 35, initiative: 5, agilite: 5, dexterite: 5, intelligence: 5, 'force-mentale': 5, sociabilite: 5, B: 40 },
   traits: [],
@@ -84,7 +84,7 @@ const W = 24, H = 14;
  */
 const scene = buildScene({
   id: 'terrain-entrainement',
-  nom: "Terrain d'entraînement",
+  label: "Terrain d'entraînement",
   desc: 'Arène de test.',
   size: [W, H],
   terrain: 'sol',

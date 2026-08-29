@@ -10,7 +10,7 @@ import type { TestScenario } from './_shared';
  * flanc gauche, chemin de ronde à 4 m, parapet, toits, relief, brouillard) sans que le mode combat gêne la
  * lecture. La rencontre reste DÉCLARÉE dans la scène mais n'est jamais démarrée (aucun trigger, pas d'autoCombat).
  */
-const scene = buildScene({ ...spec, id: 'siege-explore', nom: 'Siège — exploration (sans combat)' });
+const scene = buildScene({ ...spec, id: 'siege-explore', label: 'Siège — exploration (sans combat)' });
 
 export const scenario: TestScenario = {
   id: 'siege-explore',

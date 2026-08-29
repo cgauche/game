@@ -2169,7 +2169,7 @@ function buildBoardingScene(playerHullRef: string, playerHullName: string, b: Se
   ];
   return buildScene({
     id: BOARDING_SCENE_ID,
-    nom: `Abordage — ${b.label}`,
+    label: `Abordage — ${b.label}`,
     size: [18, 12],
     terrain: 'planches',
     ambiance: 'exterieur',

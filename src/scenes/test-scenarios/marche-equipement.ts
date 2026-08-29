@@ -69,7 +69,7 @@ function maitreArmes(): Combatant {
 
 const scene = buildScene({
   id: 'test-marchand',
-  nom: 'Marché & équipement',
+  label: 'Marché & équipement',
   desc: 'Arène de test.',
   size: [16, 9],
   terrain: 'herbe',

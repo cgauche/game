@@ -15,7 +15,7 @@ import type { TestScenario } from './_shared';
  */
 const reserve = buildScene({
   id: 'test-revisit-reserve',
-  nom: 'La Réserve',
+  label: 'La Réserve',
   desc: 'Arène de test.',
   size: [6, 3],
   terrain: 'pierre',
@@ -46,7 +46,7 @@ const reserve = buildScene({
 
 const couloir = buildScene({
   id: 'test-revisit-couloir',
-  nom: 'Le Couloir',
+  label: 'Le Couloir',
   desc: 'Arène de test.',
   size: [4, 3],
   terrain: 'pierre',

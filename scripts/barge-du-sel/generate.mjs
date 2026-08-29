@@ -70,6 +70,7 @@ function marine(id, x, y, label, skills) {
   return { id, kind: 'personnage', pos: { x, y }, label,
     // Clés = `CharKey` (slugs pleins, #311/`src/engine/types.ts`) ∪ `M`/`B` (`CustomStatblock.char`).
     statblock: {
+      type: 'statblock',
       label,
       char: {
         M: 4,
@@ -99,7 +100,7 @@ const scenes = [];
 resetIds();
 scenes.push(scene({
   id: 'barge-du-sel-quai',
-  nom: 'Le quai de la Barge du Sel',
+  label: 'Le quai de la Barge du Sel',
   desc:
     "Un petit quai de chargement. La Louve grise attend, amarrée, la cale pleine de sel à livrer à l'îlot voisin.",
   base: 'sable',
@@ -143,7 +144,7 @@ scenes.push(scene({
 resetIds();
 scenes.push(scene({
   id: 'barge-du-sel-embuscade',
-  nom: 'Voile noire à mi-route — une cogue pirate attaque',
+  label: 'Voile noire à mi-route — une cogue pirate attaque',
   desc: "Une cogue pirate coupe la route de la Louve grise en pleine mer.",
   weather: 'brouillard',
   base: 'eau',
@@ -213,7 +214,7 @@ scenes.push(scene({
 resetIds();
 scenes.push(scene({
   id: 'barge-du-sel-ilot',
-  nom: 'L’îlot du sel',
+  label: 'L’îlot du sel',
   desc: "Un petit îlot rocheux où la cargaison de sel doit être débarquée.",
   base: 'sable',
   legend: { '~': 'eau', '=': 'planches' },
@@ -240,7 +241,7 @@ scenes.push(scene({
 // ── Carte du monde ──────────────────────────────────────────────────────────────────────────
 const worldMap = {
   id: 'carte-barge-du-sel',
-  nom: 'La Barge du Sel',
+  label: 'La Barge du Sel',
   places: [
     { id: 'quai-du-sel', label: 'Le quai de départ', pos: { x: 20, y: 60 }, scene: 'barge-du-sel-quai', icon: 'scenario/port' },
     { id: 'ilot-du-sel', label: 'L’îlot du sel', pos: { x: 60, y: 40 }, scene: 'barge-du-sel-ilot', icon: 'scenario/port' },

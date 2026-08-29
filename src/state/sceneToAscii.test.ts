@@ -14,7 +14,7 @@ const diligenceScene = () => diligenceCampaign.scenes[0];
 function reimport(id: string, size: [number, number], exp: ReturnType<typeof sceneToAscii>): MapSpec {
   return {
     id,
-    nom: id,
+    label: id,
     size,
     walled: exp.walled,
     legend: exp.legend,
@@ -101,7 +101,7 @@ describe('sceneToAscii — round-trip doré (buildScene → export → réimport
   it('un plan simple (1 étage, portes/fenêtres/matériau/diagonale/rampe/zones) : géométrie identique', () => {
     const spec: MapSpec = {
       id: 'simple',
-      nom: 'Simple',
+      label: 'Simple',
       size: [6, 5],
       terrain: 'herbe',
       legend: { P: 'plancher' },

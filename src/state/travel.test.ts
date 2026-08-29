@@ -31,11 +31,11 @@ const hero = (p: Partial<Combatant> = {}): Combatant =>
 function sceneA(): Scene {
   const s = emptyScene(10, 10);
   s.id = 'lieu-a-scene';
-  s.nom = 'Village A';
+  s.label = 'Village A';
   // Rencontre pour la péripétie d'auteur « brigands » (statblock → pas de dépendance bestiaire).
   const enc = buildEncounter({
     id: 'enc-test',
-    enemies: [{ statblock: { label: 'Brigand', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }],
+    enemies: [{ statblock: { type: 'statblock', label: 'Brigand', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }],
   });
   s.entities.push(...enc.entities);
   s.encounters = [enc.encounter];
@@ -44,13 +44,13 @@ function sceneA(): Scene {
 function sceneB(): Scene {
   const s = emptyScene(10, 10);
   s.id = 'lieu-b-scene';
-  s.nom = 'Bourg B';
+  s.label = 'Bourg B';
   return s;
 }
 
 function map(routePatch: Partial<WorldMap['routes'][0]> = {}): WorldMap {
   return {
-    id: 'carte-test', nom: 'Carte de test',
+    id: 'carte-test', label: 'Carte de test',
     places: [
       { id: 'pa', label: 'Village A', pos: { x: 20, y: 50 }, scene: 'lieu-a-scene' },
       { id: 'pb', label: 'Bourg B', pos: { x: 70, y: 40 }, scene: 'lieu-b-scene' },

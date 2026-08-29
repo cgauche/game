@@ -5,7 +5,8 @@
  * `scene ⇄ effets` n'ait pas lieu — la scène porte des Flows, les effets portent des cases).
  */
 import { z } from 'zod';
-import type { CustomStatblock } from '../../../engine/statblock';
+import { talentRefSchema, traitInstanceSchema } from '../grammaire/reference';
+import { charStatKeySchema, sizeCategorySchema } from '../grammaire/valeurs';
 
 /** `Pt` (`state/path.ts`) — case, `z` = couche d'empilement (absent = base). */
 export const ptSchema = z.strictObject({ x: z.number(), y: z.number(), z: z.number().optional() });
@@ -16,5 +17,39 @@ export const moneySchema = z.strictObject({ gold: z.number().optional(), silver:
  *  DÉRIVENT, l'éditeur en dérive ses options (`wallSideSchema.options`). Garde : `unions-canon.test.ts`. */
 export const wallSideSchema = z.enum(['N', 'E', '\\', '/']);
 export type WallSide = z.infer<typeof wallSideSchema>;
-/** `CustomStatblock` (`engine/statblock.ts`) — profil PNJ/bête custom d'éditeur. */
-export const customStatblockSchema = z.custom<CustomStatblock>();
+/** `SkillRef` (`src/data/index.ts`) — réf de Compétence à valeur de Test FINALE. */
+export const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), value: z.number() });
+
+/** `CustomStatblock.char` — `Partial<Record<CharKey | 'M' | 'B', number>>` : toutes les clés sont
+ *  FERMÉES et chacune est facultative (un profil n'imprime que ce que le livre imprime). Écrit en objet
+ *  à champs optionnels, jamais en `z.record` : `z.record(z.enum, …)` est EXHAUSTIF en zod 4 (il
+ *  EXIGERAIT les 12 clés), et un `z.record(z.string(), …)` accepterait n'importe quelle clé. */
+export const charStatsSchema = z.strictObject(
+  Object.fromEntries(charStatKeySchema.options.map((k) => [k, z.number().optional()])) as Record<
+    (typeof charStatKeySchema.options)[number],
+    z.ZodOptional<z.ZodNumber>
+  >,
+);
+
+/**
+ * `CustomStatblock` (`engine/statblock.ts`) — profil PNJ/bête custom d'éditeur, DOCUMENT EMBARQUÉ du
+ * document de scène : il porte son `type` comme tout document (#1467 L1b), et ses 14 champs sont
+ * déclarés UN À UN, calés sur l'interface TS (aucun champ n'y est plus large qu'elle — `char` compris,
+ * dont les clés sont FERMÉES sur `charStatKeySchema`).
+ */
+export const customStatblockSchema = z.strictObject({
+  type: z.literal('statblock'),
+  label: z.string(),
+  char: charStatsSchema,
+  weaponDamage: z.string().optional(),
+  armour: z.number().optional(),
+  traits: z.array(traitInstanceSchema).optional(),
+  size: sizeCategorySchema.optional(),
+  groups: z.array(z.string()).optional(),
+  spells: z.array(z.string()).optional(),
+  skills: z.array(skillRefSchema).optional(),
+  talents: z.array(talentRefSchema).optional(),
+  randomChars: z.boolean().optional(),
+  inert: z.boolean().optional(),
+  followsCharacterRules: z.boolean().optional(),
+});

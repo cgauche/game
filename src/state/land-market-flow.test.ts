@@ -64,7 +64,7 @@ const profile = (extra: Partial<LandMarketProfile> = {}): LandMarketProfile => (
 
 function tradeMap(): WorldMap {
   return {
-    id: 'm', nom: 'Le Reik',
+    id: 'm', label: 'Le Reik',
     places: [
       { id: 'A', label: 'Grünburg', pos: { x: 0, y: 0 }, scene: 'marche-a', market: profile() },
       { id: 'B', label: 'Altdorf', pos: { x: 90, y: 0 }, scene: 'marche-b', market: profile() },
@@ -73,7 +73,7 @@ function tradeMap(): WorldMap {
   };
 }
 
-const marche = (id: string, nom: string) => buildScene({ id, nom, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const marche = (id: string, label: string) => buildScene({ id, label, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 function launchAtA(): void {
   seedBattleRng(7);

@@ -18,7 +18,7 @@ import { perimeterEdges } from './sceneEdit.testkit';
 
 describe('buildScene — cas trivial + scalaires', () => {
   const s = buildScene({
-    id: 't', nom: 'T', size: [4, 3], terrain: 'pave', heroStart: [1, 1],
+    id: 't', label: 'T', size: [4, 3], terrain: 'pave', heroStart: [1, 1],
     ambiance: 'interieur', metresPerTile: 10, flags: { ouvert: true },
   });
   it('pose dimensions, une couche pleine, le départ héros et les scalaires', () => {
@@ -35,7 +35,7 @@ describe('buildScene — cas trivial + scalaires', () => {
 
 describe('buildScene — multi-niveaux + relief métrique', () => {
   const s = buildScene({
-    id: 'r', nom: 'R', size: [3, 3],
+    id: 'r', label: 'R', size: [3, 3],
     levels: { z0: '...\n...\n...', z1: 'WWW\nWWW\nWWW' },
     legend: { W: 'pierre' },
     relief: [
@@ -60,7 +60,7 @@ describe('buildScene — multi-niveaux + relief métrique', () => {
 describe('buildScene — peintures rectangulaires de terrain', () => {
   it('peint chaque rectangle sur sa couche sans modifier les autres cases', () => {
     const s = buildScene({
-      id: 'rects', nom: 'Rects', size: [4, 3], terrain: 'herbe',
+      id: 'rects', label: 'Rects', size: [4, 3], terrain: 'herbe',
       levels: { z0: '....\n....\n....', z1: '....\n....\n....' },
       terrainRects: [
         { rect: [1, 0, 2, 2], terrain: 'plancher' },
@@ -84,7 +84,7 @@ describe('buildScene — grille `walled` (box-drawing : tuiles + murs d’arête
   // Grille 2×2 en box-drawing (2W+1 × 2H+1 = 5×5) : cases 'P' cloisonnées, arête E de (0,0) = PORTE `:`.
   // Convention `parseWalledAscii` : les `-` sont aux colonnes IMPAIRES (au-dessus des cases), les `|`/`:` aux paires.
   const s = buildScene({
-    id: 'wl', nom: 'WL', size: [2, 2],
+    id: 'wl', label: 'WL', size: [2, 2],
     walled: {
       z0: [
         ' - - ',
@@ -113,7 +113,7 @@ describe('buildScene — grille `walled` (box-drawing : tuiles + murs d’arête
 describe('buildScene — `walled` : arête FENÊTRE `o` (#779)', () => {
   // Cases 'P' cloisonnées, arête E de (0,0) = fenêtre `o` (verticale), arête N de (0,1) = fenêtre `o` (horizontale).
   const s = buildScene({
-    id: 'wlwin', nom: 'WLWIN', size: [2, 2],
+    id: 'wlwin', label: 'WLWIN', size: [2, 2],
     walled: {
       z0: [
         ' - - ',
@@ -139,7 +139,7 @@ describe('buildScene — `walled` : arête FENÊTRE `o` (#779)', () => {
 
 describe('buildScene — `walled` multi-étages + relief (l’étage porté à 4 m)', () => {
   const s = buildScene({
-    id: 'wl2', nom: 'WL2', size: [2, 1],
+    id: 'wl2', label: 'WL2', size: [2, 1],
     walled: { z0: [' - - ', '|P|P|', ' - - '].join('\n'), z1: [' - - ', '|M|M|', ' - - '].join('\n') },
     legend: { P: 'planches', M: 'marbre' },
     relief: [{ rect: [0, 0, 1, 0], height: 4, z: 1 }],
@@ -156,7 +156,7 @@ describe('buildScene — `walled` multi-étages + relief (l’étage porté à 4
 
 describe('buildScene — murs d’arête explicites', () => {
   const s = buildScene({
-    id: 'w', nom: 'W', size: [3, 3], terrain: 'pave',
+    id: 'w', label: 'W', size: [3, 3], terrain: 'pave',
     walls: [
       { x: 1, y: 1, side: 'N' },
       { x: 1, y: 1, side: 'E', door: true },
@@ -182,7 +182,7 @@ describe('buildScene — murs d’arête explicites', () => {
 describe('buildScene — diagonales (side \\\\/\\/) : attributs riches (#554)', () => {
   it('`window` (décoratif pur) est PROPAGÉ sur une diagonale (patchWall après toggleDiagonalWall), pan adossé au coin NO fermé', () => {
     const s = buildScene({
-      id: 'diag', nom: 'Diag', size: [3, 3], terrain: 'pave',
+      id: 'diag', label: 'Diag', size: [3, 3], terrain: 'pave',
       walls: [
         { x: 1, y: 1, side: 'N' },
         { x: 1, y: 1, side: 'O' },
@@ -196,7 +196,7 @@ describe('buildScene — diagonales (side \\\\/\\/) : attributs riches (#554)', 
   it('`climb` sur une diagonale REFUSE explicitement (arête oblique purement visuelle, jamais résolue par `edgeOf`)', () => {
     expect(() =>
       buildScene({
-        id: 'diag2', nom: 'Diag2', size: [3, 3], terrain: 'pave',
+        id: 'diag2', label: 'Diag2', size: [3, 3], terrain: 'pave',
         walls: [{ x: 1, y: 1, side: '\\', climb: { kind: 'ladder' } }],
       }),
     ).toThrow(/WallSpec diagonal \(1,1\) ne peut pas porter climb\/structure/);
@@ -205,7 +205,7 @@ describe('buildScene — diagonales (side \\\\/\\/) : attributs riches (#554)', 
   it('`structure` sur une diagonale REFUSE explicitement (jamais bloquante : `wallBetween`/`vision` ignorent \\\\/\\/)', () => {
     expect(() =>
       buildScene({
-        id: 'diag3', nom: 'Diag3', size: [3, 3], terrain: 'pave',
+        id: 'diag3', label: 'Diag3', size: [3, 3], terrain: 'pave',
         walls: [{ x: 1, y: 1, side: '/', structure: 'porte-de-ville' }],
       }),
     ).toThrow(/WallSpec diagonal \(1,1\) ne peut pas porter climb\/structure\/door/);
@@ -214,7 +214,7 @@ describe('buildScene — diagonales (side \\\\/\\/) : attributs riches (#554)', 
   it('`door` sur une diagonale REFUSE explicitement (une porte qui ne barre jamais le passage = donnée mensongère)', () => {
     expect(() =>
       buildScene({
-        id: 'diag4', nom: 'Diag4', size: [3, 3], terrain: 'pave',
+        id: 'diag4', label: 'Diag4', size: [3, 3], terrain: 'pave',
         walls: [{ x: 1, y: 1, side: '\\', door: true }],
       }),
     ).toThrow(/WallSpec diagonal \(1,1\) ne peut pas porter climb\/structure\/door/);
@@ -224,7 +224,7 @@ describe('buildScene — diagonales (side \\\\/\\/) : attributs riches (#554)', 
 describe('buildScene — pan diagonal doit adosser un coin orthogonal fermé (#781)', () => {
   it('pan `\\` adossé aux deux murs pleins du coin NO (arêtes N+O murées) : ne throw pas, la diagonale est posée', () => {
     const s = buildScene({
-      id: 'diag5', nom: 'Diag5', size: [3, 3], terrain: 'pave',
+      id: 'diag5', label: 'Diag5', size: [3, 3], terrain: 'pave',
       walls: [
         { x: 1, y: 1, side: 'N' },
         { x: 1, y: 1, side: 'O' },
@@ -237,7 +237,7 @@ describe('buildScene — pan diagonal doit adosser un coin orthogonal fermé (#7
   it('pan `\\` FLOTTANT (aucun mur orthogonal autour) : throw', () => {
     expect(() =>
       buildScene({
-        id: 'diag6', nom: 'Diag6', size: [3, 3], terrain: 'pave',
+        id: 'diag6', label: 'Diag6', size: [3, 3], terrain: 'pave',
         walls: [{ x: 1, y: 1, side: '\\' }],
       }),
     ).toThrow(/pan diagonal \(1,1\) sans coin orthogonal muré/);
@@ -245,7 +245,7 @@ describe('buildScene — pan diagonal doit adosser un coin orthogonal fermé (#7
 
   it('pan `/` adossé aux deux murs pleins du coin SO (arêtes S+O murées) : ne throw pas', () => {
     const s = buildScene({
-      id: 'diag7', nom: 'Diag7', size: [3, 3], terrain: 'pave',
+      id: 'diag7', label: 'Diag7', size: [3, 3], terrain: 'pave',
       walls: [
         { x: 1, y: 1, side: 'S' },
         { x: 1, y: 1, side: 'O' },
@@ -258,7 +258,7 @@ describe('buildScene — pan diagonal doit adosser un coin orthogonal fermé (#7
   it('pan `/` FLOTTANT (aucun mur orthogonal autour) : throw', () => {
     expect(() =>
       buildScene({
-        id: 'diag8', nom: 'Diag8', size: [3, 3], terrain: 'pave',
+        id: 'diag8', label: 'Diag8', size: [3, 3], terrain: 'pave',
         walls: [{ x: 1, y: 1, side: '/' }],
       }),
     ).toThrow(/pan diagonal \(1,1\) sans coin orthogonal muré/);
@@ -270,7 +270,7 @@ describe('buildScene — `cells` (recette par LETTRE de case : enceinte pleine +
   //   .....  (row 0 = champ)   ##D##  (row 2 = bande, gate col 2)   .....  (row 4 = cour)
   //   .....  (row 1 = champ)   ##D##  (row 3 = bande)               H....  (row 5 = cour + départ)
   const s = buildScene({
-    id: 'c', nom: 'C', size: [5, 6],
+    id: 'c', label: 'C', size: [5, 6],
     levels: { z0: ['.....', '.....', '##D##', '##D##', '.....', 'H....'].join('\n') },
     cells: {
       '#': { terrain: 'pierre', wall: { structure: 'mur-en-pierre', facing: 'N' } },
@@ -341,7 +341,7 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
   // Base `mur` partout ailleurs (impassable) : seul le foyer offre un appui bas, seule la galerie un appui
   // haut — élimine toute ambiguïté d'orientation dans le test.
   const base = {
-    id: 's', nom: 'S', size: [4, 3] as [number, number], terrain: 'mur' as const,
+    id: 's', label: 'S', size: [4, 3] as [number, number], terrain: 'mur' as const,
     levels: { z0: ['....', 'FEEE', '....'].join('\n'), z1: ['...G', '....', '....'].join('\n') },
     legend: { F: 'pave' as const, G: 'pierre' as const },
     elevate: { F: 1, G: 4 },
@@ -375,7 +375,7 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
 
   it('run RAMIFIÉ (T, degré 3) → rejeté', () => {
     expect(() => buildScene({
-      id: 't', nom: 'T', size: [4, 4],
+      id: 't', label: 'T', size: [4, 4],
       levels: { z0: ['....', '.EEE', '..E.', '....'].join('\n') },
       cells: { E: { stair: { to: 'z1' } } },
     })).toThrow(/non-linéaire\/ramifiée/);
@@ -383,7 +383,7 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
 
   it('run trop COURT pour son Δh (2 cases, Δ=3 m, minimum 3) → rejeté', () => {
     expect(() => buildScene({
-      id: 'c2', nom: 'C2', size: [4, 3], terrain: 'mur',
+      id: 'c2', label: 'C2', size: [4, 3], terrain: 'mur',
       levels: { z0: ['....', 'FEE.', '....'].join('\n'), z1: ['...G', '....', '....'].join('\n') },
       legend: { F: 'pave', G: 'pierre' },
       elevate: { F: 1, G: 4 },
@@ -402,7 +402,7 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
 
   it('étage `to` inexistant → rejeté', () => {
     expect(() => buildScene({
-      id: 'z5', nom: 'Z5', size: [2, 2],
+      id: 'z5', label: 'Z5', size: [2, 2],
       levels: { z0: 'E.\n..' },
       cells: { E: { stair: { to: 'z5' } } },
     })).toThrow(/étage to=z5 inexistant/);
@@ -410,7 +410,7 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
 
   it('les DEUX extrémités atteignent `to` → orientation ambiguë, rejetée', () => {
     expect(() => buildScene({
-      id: 'amb', nom: 'AMB', size: [4, 3], terrain: 'mur',
+      id: 'amb', label: 'AMB', size: [4, 3], terrain: 'mur',
       levels: { z0: ['....', '.EE.', '....'].join('\n'), z1: ['G..G', '....', '....'].join('\n') },
       legend: { G: 'pierre' },
       elevate: { G: 4 },
@@ -420,7 +420,7 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
 
   it('extrémité basse SANS surface d’appui (aucun voisin marchable) → rejetée', () => {
     expect(() => buildScene({
-      id: 'noappui', nom: 'NA', size: [4, 3], terrain: 'mur',
+      id: 'noappui', label: 'NA', size: [4, 3], terrain: 'mur',
       levels: { z0: ['....', 'EEE.', '....'].join('\n'), z1: ['...G', '....', '....'].join('\n') },
       legend: { G: 'pierre' },
       elevate: { G: 4 },
@@ -431,7 +431,7 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
   // Volée d'UNE case (L=1) : la case est À LA FOIS l'extrémité haute (touche `to`) et basse (appui z).
   // Base `mur` partout ailleurs (impassable) : seul F offre un appui bas, seul G un plancher `to`.
   const one = {
-    id: 'l1', nom: 'L1', size: [4, 3] as [number, number], terrain: 'mur' as const,
+    id: 'l1', label: 'L1', size: [4, 3] as [number, number], terrain: 'mur' as const,
     levels: { z0: ['....', 'FE..', '....'].join('\n'), z1: ['.G..', '....', '....'].join('\n') },
     legend: { F: 'pave' as const, G: 'pierre' as const },
   };
@@ -452,7 +452,7 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
 
   it('L=1 ne touche pas le plancher de `to` (case isolée) → rejetée', () => {
     expect(() => buildScene({
-      id: 'l1iso', nom: 'L1ISO', size: [4, 3], terrain: 'mur',
+      id: 'l1iso', label: 'L1ISO', size: [4, 3], terrain: 'mur',
       levels: { z0: ['....', 'FE..', '....'].join('\n'), z1: ['....', '....', '....'].join('\n') },
       legend: { F: 'pave' },
       elevate: { F: 1 },
@@ -464,7 +464,7 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
 
 describe('buildScene — bind (marqueurs → poses)', () => {
   const s = buildScene({
-    id: 'm', nom: 'M', size: [6, 2],
+    id: 'm', label: 'M', size: [6, 2],
     levels: { z0: '@.k.A.\n......' },
     bind: {
       '@': 'heroStart',
@@ -487,7 +487,7 @@ describe('buildScene — bind (marqueurs → poses)', () => {
 
 describe('buildScene — encounters (terse → entités + members)', () => {
   const s = buildScene({
-    id: 'e', nom: 'E', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
+    id: 'e', label: 'E', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
     encounters: [{ id: 'enc', enemies: [{ ref: 'gobelin', pos: { x: 8, y: 3 } }] }],
   });
   it('expanse les ennemis en entités + rencontre (VISIBLES par défaut, RAW)', () => {
@@ -503,7 +503,7 @@ describe('buildScene — encounters (terse → entités + members)', () => {
 
 describe('buildScene — encounters `hidden` (embuscade : entités invisibles jusqu’au combat)', () => {
   const s = buildScene({
-    id: 'h', nom: 'H', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
+    id: 'h', label: 'H', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
     encounters: [{ id: 'amb', hidden: true, surprise: 'party', enemies: [{ ref: 'gobelin', pos: { x: 8, y: 3 } }] }],
   });
   it('propage `hidden` sur les entités enrôlées (combat.hiddenUntilCombat)', () => {
@@ -514,7 +514,7 @@ describe('buildScene — encounters `hidden` (embuscade : entités invisibles ju
 
 describe('buildScene — encounters : marqueurs d’Avantage initial (Manœuvrabilité/Menace/Terrain, AA 11 l.53-65)', () => {
   const s = buildScene({
-    id: 'adv', nom: 'ADV', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
+    id: 'adv', label: 'ADV', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
     encounters: [{
       id: 'enc-menace',
       maneuverability: 'party',
@@ -543,7 +543,7 @@ describe('buildScene — encounters : marqueurs d’Avantage initial (Manœuvrab
 
 describe('buildScene — encounters : victoryCondition (#197) forwardée par le compilateur MapSpec', () => {
   const s = buildScene({
-    id: 'vc', nom: 'VC', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
+    id: 'vc', label: 'VC', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
     encounters: [{
       id: 'enc-vc',
       victoryCondition: { type: 'destroyStructure', edge: { x: 5, y: 4, side: 'N' } },
@@ -557,7 +557,7 @@ describe('buildScene — encounters : victoryCondition (#197) forwardée par le 
 
 describe('buildScene — markerFill + emplacement hérite du z du marqueur', () => {
   const s = buildScene({
-    id: 'mz', nom: 'MZ', size: [4, 2],
+    id: 'mz', label: 'MZ', size: [4, 2],
     levels: { z0: '....\n....', z1: 'B...\n....' }, // B (pièce) sur le chemin de ronde z1
     legend: { W: 'pierre' },
     markerFill: { B: 'W' }, // sous B : laisser 'W' (pierre marchable) au lieu d'un trou 'vide'
@@ -575,7 +575,7 @@ describe('buildScene — markerFill + emplacement hérite du z du marqueur', () 
 
 describe('buildScene — bind enrôle les entités posées dans une rencontre', () => {
   const s = buildScene({
-    id: 'bm', nom: 'BM', size: [6, 2],
+    id: 'bm', label: 'BM', size: [6, 2],
     levels: { z0: 'k.A...\n......' },
     bind: {
       k: { emplacement: 'canon-petit', crew: 'crew-0', member: { enc: 'def', side: 'ally' } },
@@ -600,7 +600,7 @@ describe('buildScene — bind enrôle les entités posées dans une rencontre', 
 
 describe('buildScene — encounters à membres PRÉ-DÉCLARÉS (roster mixte)', () => {
   const s = buildScene({
-    id: 'e2', nom: 'E2', size: [10, 6], terrain: 'herbe',
+    id: 'e2', label: 'E2', size: [10, 6], terrain: 'herbe',
     entities: [{ id: 'pnj-1', kind: 'personnage', pos: { x: 5, y: 3 }, ref: 'garde-du-village', label: 'Garde' }],
     encounters: [
       // terse (entité fraîche cachée) + membre référençant une entité DÉJÀ posée (visible, dialogue…)
@@ -621,7 +621,7 @@ describe('buildScene — encounters à membres PRÉ-DÉCLARÉS (roster mixte)', 
 
 describe('buildScene — `zoneMap`/`zoneLegend` (#782 : zones descriptives de pièce, par étage)', () => {
   const s = buildScene({
-    id: 'zm', nom: 'ZM', size: [4, 3], terrain: 'pave',
+    id: 'zm', label: 'ZM', size: [4, 3], terrain: 'pave',
     levels: { z0: '....\n....\n....', z1: '....\n....\n....' },
     zoneMap: {
       z0: 'AA..\nAA..\n....',
@@ -647,7 +647,7 @@ describe('buildScene — `zoneMap`/`zoneLegend` (#782 : zones descriptives de pi
 
   it('conserve le masque exact d’une zone non rectangulaire sans absorber les trous ni une autre zone dans sa bounding-box', () => {
     const masked = buildScene({
-      id: 'zmmask', nom: 'ZMMASK', size: [4, 3], terrain: 'pave',
+      id: 'zmmask', label: 'ZMMASK', size: [4, 3], terrain: 'pave',
       zoneMap: { z0: 'A.A.\n.B..\nA...' },
       zoneLegend: {
         A: { label: 'Coursive', presentation: 'interior' },
@@ -670,7 +670,7 @@ describe('buildScene — `zoneMap`/`zoneLegend` (#782 : zones descriptives de pi
 
   it('deux pièces au même (x,y) sur des étages différents restent deux zones distinctes (raison du champ z)', () => {
     const s2 = buildScene({
-      id: 'zm2', nom: 'ZM2', size: [2, 2], terrain: 'pave',
+      id: 'zm2', label: 'ZM2', size: [2, 2], terrain: 'pave',
       levels: { z0: '..\n..', z1: '..\n..' },
       zoneMap: { z0: 'CC\nCC', z1: 'CC\nCC' },
       zoneLegend: { C: { label: 'Salle' } },
@@ -684,7 +684,7 @@ describe('buildScene — `zoneMap`/`zoneLegend` (#782 : zones descriptives de pi
   it('char de `zoneMap` hors `zoneLegend` → fail-fast', () => {
     expect(() =>
       buildScene({
-        id: 'zmbad', nom: 'ZMBAD', size: [2, 2], terrain: 'pave',
+        id: 'zmbad', label: 'ZMBAD', size: [2, 2], terrain: 'pave',
         zoneMap: { z0: 'X.\n..' },
         zoneLegend: {},
       }),
@@ -695,7 +695,7 @@ describe('buildScene — `zoneMap`/`zoneLegend` (#782 : zones descriptives de pi
 describe('buildScene — architecture authorée', () => {
   it('compile une architecture par ids stables et copie profondément ses parties', () => {
     const spec = {
-      id: 'architecture', nom: 'Architecture', size: [8, 8] as [number, number],
+      id: 'architecture', label: 'Architecture', size: [8, 8] as [number, number],
       architecture: [{
         id: 'corps', style: 'maison',
         storeys: [{ id: 'corps-z0', z: 0, parts: [{ id: 'nef', foot: { x: 1, y: 1, w: 4, h: 3 } }], roomZoneIds: ['salle'] }],
@@ -723,7 +723,7 @@ describe('buildScene — architecture authorée', () => {
 
   it('refuse un id de zone descriptive dupliqué', () => {
     expect(() => buildScene({
-      id: 'zones-dupliquees', nom: 'Zones dupliquées', size: [2, 2],
+      id: 'zones-dupliquees', label: 'Zones dupliquées', size: [2, 2],
       levels: { z0: '..\n..', z1: '..\n..' },
       zoneMap: { z0: 'A.\n..', z1: 'B.\n..' },
       zoneLegend: { A: { id: 'salle', label: 'Salle' }, B: { id: 'salle', label: 'Chambre' } },
@@ -770,7 +770,7 @@ describe('buildScene — validation FAIL-FAST des masses de bâtiment (#823)', (
     profile: 'gable' as const, ridge: 'x' as const, pitchDeg: 40, material: 'tuile',
   };
   const specWith = (masses: BuildingMass[], patchSpec: Partial<Parameters<typeof buildScene>[0]> = {}) => ({
-    id: 't', nom: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
+    id: 't', label: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
     levels: { z0: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n'), z1: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n') },
     zoneMap: { z0: salleZoneMap },
     zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
@@ -870,7 +870,7 @@ describe('buildScene — dérivation par défaut des masses de bâtiment (#829)'
     '............',
   ].join('\n');
   const baseSpec = (patch: Partial<Parameters<typeof buildScene>[0]> = {}) => ({
-    id: 't', nom: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
+    id: 't', label: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
     levels: { z0: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n') },
     zoneMap: { z0: salleZoneMap },
     zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
@@ -989,7 +989,7 @@ describe('buildScene — dérivation par défaut des masses de bâtiment (#829)'
 describe('buildScene — la nappe passe AU-DESSUS de la trémie d’une volée (#1181)', () => {
   const VOLEE = ['3,3', '3,4', '3,5', '3,6'];
   const spec = {
-    id: 't', nom: 'T', size: [8, 8] as [number, number], terrain: 'herbe' as const,
+    id: 't', label: 'T', size: [8, 8] as [number, number], terrain: 'herbe' as const,
     levels: {
       z0: ['........', '.PPPPPP.', '.PPPPPP.', '.PPEPPP.', '.PPEPPP.', '.PPEPPP.', '.PPEPPP.', '........'].join('\n'),
       z1: ['........', '.QQQQQQ.', '.QQQQQQ.', '........', '........', '........', '........', '........'].join('\n'),
@@ -1039,7 +1039,7 @@ describe('buildScene — la nappe passe AU-DESSUS de la trémie d’une volée (
 describe('buildScene — règle 1 : seule une OUVERTURE adoptable dispense du plancher au sommet (#1181)', () => {
   /** Corps 1..6 × 1..4, étage complet SAUF la case `trou` (`ligne` = la rangée trouée du z1). */
   const specTrou = (z1: string[], levels: number) => ({
-    id: 't', nom: 'T', size: [8, 8] as [number, number], terrain: 'herbe' as const,
+    id: 't', label: 'T', size: [8, 8] as [number, number], terrain: 'herbe' as const,
     levels: {
       z0: ['........', '.PPPPPP.', '.PPPPPP.', '.PPPPPP.', '.PPPPPP.', '........', '........', '........'].join('\n'),
       z1: z1.join('\n'),
@@ -1089,7 +1089,7 @@ describe('buildScene — la couverture des masses se juge sur l\'EMPRISE du corp
   });
 
   const specOf = (bodies: ReturnType<typeof body>[], foots: Foot[]) => ({
-    id: 't', nom: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
+    id: 't', label: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
     levels: { z0: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n') },
     architecture: bodies,
     walls: perimeterEdges(foots),
@@ -1173,7 +1173,7 @@ describe('buildScene — la couverture des masses se juge sur l\'EMPRISE du corp
 
   it('corps SANS storeys (emprise vide — bâtiment en cours de saisie à l\'éditeur) : dérivation non bornée, tolérée telle quelle', () => {
     const scene = buildScene({
-      id: 't', nom: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
+      id: 't', label: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
       levels: { z0: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n') },
       walls: perimeterEdges([A]),
       architecture: [{ id: 'corps-sans-volume', style: 'maison', storeys: [], facades: [], masses: [] }],
@@ -1193,7 +1193,7 @@ describe('buildScene — couverture PAR ÉTAGE et COMPLÉTUDE de scène (#1158)'
     id, z, footprint: [foot], levels: 1, profile: 'gable' as const, ridge: 'x' as const, pitchDeg: 42, material: 'tuile',
   });
   const socle = {
-    id: 't', nom: 'T', size: [N, N] as [number, number], terrain: 'herbe',
+    id: 't', label: 'T', size: [N, N] as [number, number], terrain: 'herbe',
     terrainRects: [{ rect: [salle.x, salle.y, salle.w, salle.h] as [number, number, number, number], terrain: 'plancher' as const }],
     walls: perimeterEdges([salle]),
     zoneMap: { z0: grid((x, y) => (dedans(salle, x, y) ? 'S' : '.')) },

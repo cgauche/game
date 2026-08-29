@@ -24,7 +24,7 @@ const townPlace = (): MapPlace => place({
   services: [{ kind: 'auberge', rest: { auberge: true, camp: true } }],
 });
 
-const worldMap = (places: MapPlace[]): WorldMap => ({ id: 'w', nom: 'Reikland', places, routes: [] });
+const worldMap = (places: MapPlace[]): WorldMap => ({ id: 'w', label: 'Reikland', places, routes: [] });
 
 describe('cityHubServices — composition des services d’un lieu (#343)', () => {
   it('liste port, marché puis auberge, chacun porteur de sa donnée référencée', () => {

@@ -12,7 +12,7 @@ import type { TestScenario } from './_shared';
  */
 const scene = buildScene({
   id: 'test-conditions-etendues',
-  nom: 'Conditions étendues — démo',
+  label: 'Conditions étendues — démo',
   desc: 'Arène de test.',
   size: [10, 8],
   terrain: 'herbe',

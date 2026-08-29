@@ -13,7 +13,7 @@
 import { z } from 'zod';
 import { difficultySchema, entityAppearanceSchema } from '../grammaire/valeurs';
 import { conditionSchema, flowTestSchema, gameOpSchema } from '../grammaire/mecanique';
-import { customStatblockSchema, moneySchema, ptSchema, wallSideSchema } from './communs';
+import { customStatblockSchema, moneySchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
 import { sceneFlowSchema } from './effets';
 import type { AuthoredShipPoste } from '../../../engine/types';
 import type { OptionalEntry } from '../../../engine/statEntry';
@@ -36,8 +36,7 @@ export const seatOccupantSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('party'), rang: z.number() }),
   z.strictObject({ kind: z.literal('entity'), entityId: z.string() }),
 ]);
-/** `SkillRef` (`src/data/index.ts`) — réf de Compétence à valeur. */
-export const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), value: z.number() });
+export { skillRefSchema } from './communs';
 
 // ── Entité de scène ─────────────────────────────────────────────────────────────────────────────
 
@@ -487,7 +486,7 @@ export const sceneStationAnchorSchema = z.strictObject({
  */
 export const sceneSchema = z.strictObject({
   id: z.string(),
-  nom: z.string(),
+  label: z.string(),
   /** Prose de la Scène — `.min(1).optional()`, comme l'enveloppe de document
    *  (`grammaire/document.ts`) : une prose ABSENTE est une CLÉ ABSENTE, jamais une chaîne vide (le
    *  troisième état, vu « présent » par les uns et « absent » par les autres). */

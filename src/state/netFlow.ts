@@ -84,7 +84,10 @@ export const BUILD_ID = 'w4-dev'; // V1 : même build requis de part et d'autre 
 /** Snapshot d'état pour le réseau — mêmes clés que la sauvegarde, SANS les scènes du projet de
  *  campagne (313 Ko pour l'Arène : elles voyagent UNE fois au join via le message `campaign`,
  *  spec v2 §5). Un stub nom-seul reste : les invités affichent la campagne choisie (cartouche
- *  de l'écran d'équipe) sans jamais la charger eux-mêmes (« Commencer » est hôte-seul). */
+ *  de l'écran d'équipe) sans jamais la charger eux-mêmes (« Commencer » est hôte-seul).
+ *  La FORME de ce `data` est celle de la sauvegarde : `PROTOCOL_VERSION` (`net/protocol.ts`) versionne
+ *  les messages, pas leur charge — c'est `SAVE_VERSION` qui date cette forme, et `BUILD_ID` ci-dessus
+ *  qui refuse deux clients de builds différents au `hello`. */
 export function netSnapshot(get: Get): Record<string, unknown> {
   const { data } = snapshotSave(
     get() as unknown as Record<string, unknown>,

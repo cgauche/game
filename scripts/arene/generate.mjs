@@ -46,7 +46,7 @@ const scenes = [
  *  (km, modes, prix, péripéties d'auteur, embuscade « Attaqués ! »). */
 const worldMap = {
   id: 'arene-carte',
-  nom: 'Les Terres de l’Arène',
+  label: 'Les Terres de l’Arène',
   places: [
     { id: 'bourg', label: 'Le Bourg de l’Arène', pos: { x: 22, y: 55 }, scene: 'arene-hub', entry: 'route', icon: 'scenario/village' },
     { id: 'foret', label: 'La Vieille Futaie', pos: { x: 55, y: 30 }, scene: 'arene-exp-foret', icon: 'scenario/hamlet' },

@@ -8,7 +8,7 @@ import { findCreature, findCreatureById } from '../data';
 describe('spawn — propriétés psychologiques', () => {
   it('statbloc « Terreur 2 » → causesTerreur ; « Immunité Psychologique » → psychImmune', () => {
     const c = statblockToCombatant(
-      { label: 'X', char: { force: 30, endurance: 30, 'force-mentale': 30 }, traits: [{ id: 'terreur', value: 2 }, { id: 'immunite-psychologique' }] },
+      { type: 'statblock', label: 'X', char: { force: 30, endurance: 30, 'force-mentale': 30 }, traits: [{ id: 'terreur', value: 2 }, { id: 'immunite-psychologique' }] },
       'x',
       { x: 0, y: 0 },
     );
@@ -16,8 +16,8 @@ describe('spawn — propriétés psychologiques', () => {
     expect(c.psychImmune).toBe(true);
   });
   it('statbloc « Peur 4 » → causesPeur ; sans trait psy → champs absents', () => {
-    expect(statblockToCombatant({ label: 'Y', char: { 'force-mentale': 30 }, traits: [{ id: 'peur', value: 4 }] }, 'y', { x: 0, y: 0 }).causesPeur).toBe(4);
-    const plain = statblockToCombatant({ label: 'Z', char: { 'force-mentale': 30 } }, 'z', { x: 0, y: 0 });
+    expect(statblockToCombatant({ type: 'statblock', label: 'Y', char: { 'force-mentale': 30 }, traits: [{ id: 'peur', value: 4 }] }, 'y', { x: 0, y: 0 }).causesPeur).toBe(4);
+    const plain = statblockToCombatant({ type: 'statblock', label: 'Z', char: { 'force-mentale': 30 } }, 'z', { x: 0, y: 0 });
     expect(plain.causesPeur).toBeUndefined();
     expect(plain.causesTerreur).toBeUndefined();
   });
@@ -31,11 +31,11 @@ describe('spawn — Groupes & traits psy ciblés (P3)', () => {
     expect(c.groups).toContain('peau-verte');
   });
   it('statblockToCombatant : extras manuels conservés dans groups', () => {
-    const c = statblockToCombatant({ label: 'Fanatique', char: { B: 10 }, groups: ['sigmarite', 'cultiste'] }, 'e2', { x: 0, y: 0 });
+    const c = statblockToCombatant({ type: 'statblock', label: 'Fanatique', char: { B: 10 }, groups: ['sigmarite', 'cultiste'] }, 'e2', { x: 0, y: 0 });
     expect(c.groups).toEqual(expect.arrayContaining(['sigmarite', 'cultiste']));
   });
   it('statblockToCombatant : trait « Animosité (elfe) » → psychTraits (Cible = id de Groupe)', () => {
-    const c = statblockToCombatant({ label: 'Nain', char: { B: 10 }, traits: [{ id: 'animosite', arg: 'elfe' }] }, 'e3', { x: 0, y: 0 });
+    const c = statblockToCombatant({ type: 'statblock', label: 'Nain', char: { B: 10 }, traits: [{ id: 'animosite', arg: 'elfe' }] }, 'e3', { x: 0, y: 0 });
     expect(c.psychTraits).toEqual([{ type: 'animosite', cible: 'elfe' }]);
   });
   it('createHero : groups = racial(espèce) + carrière (ids)', () => {

@@ -280,7 +280,7 @@ describe('__wfrp.fastForward — avance-rapide des tours IA (garde anti-boucle, 
 
 describe('__wfrp.advanceSeaDay / skipToArrival / dealShipDamage / clickRoute — outillage recette navale (#297)', () => {
   const seaMap: WorldMap = {
-    id: 'm', nom: 'Mer des Griffes',
+    id: 'm', label: 'Mer des Griffes',
     places: [
       { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
       { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
@@ -291,7 +291,7 @@ describe('__wfrp.advanceSeaDay / skipToArrival / dealShipDamage / clickRoute —
     seedBattleRng(1); // déterminisme (suite isolate:false)
     useGame.setState({
       party: makePregens().slice(0, 3),
-      scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+      scene: { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
       battle: null,
       worldMap: seaMap,
       travelPlan: null,

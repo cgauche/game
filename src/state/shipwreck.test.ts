@@ -27,7 +27,7 @@ const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
 const seaMap: WorldMap = {
-  id: 'm', nom: 'Mer des Griffes',
+  id: 'm', label: 'Mer des Griffes',
   places: [
     { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
     { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
@@ -68,7 +68,7 @@ function swimSuccess(step: CascadeStep): CascadeStep {
  *  `sceneRegistry` par `freshState` — sans elle `transitionTo` est un no-op et la clôture ne joue
  *  qu'un chemin dégradé absent de la partie réelle. */
 function portAScene() {
-  return { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] };
+  return { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] };
 }
 
 function freshState() {

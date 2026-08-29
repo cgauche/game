@@ -28,7 +28,7 @@ function canon(side: 'tribord' | 'babord' | 'proue' | 'poupe'): ShipPoste {
 function marine(id: string, label: string, x: number, y: number, skills: SkillRef[]): SceneEntity {
   return {
     id, kind: 'personnage', pos: { x, y }, label, appearance: { species: 'humains-reiklander' },
-    statblock: { label, char: { M: 4, 'capacite-de-combat': 35, 'capacite-de-tir': 40, force: 35, endurance: 38, agilite: 35, dexterite: 35, intelligence: 30, 'force-mentale': 35, sociabilite: 30, B: 13 }, skills },
+    statblock: { type: 'statblock' as const, label, char: { M: 4, 'capacite-de-combat': 35, 'capacite-de-tir': 40, force: 35, endurance: 38, agilite: 35, dexterite: 35, intelligence: 30, 'force-mentale': 35, sociabilite: 30, B: 13 }, skills },
   } as SceneEntity;
 }
 const HELM: SkillRef[] = [{ id: 'voile', value: 55 }, { id: 'ramer', value: 45 }];
@@ -36,7 +36,7 @@ const GUN: SkillRef[] = [{ id: 'projectiles', spec: 'poudre-noire', value: 55 }]
 
 const scene = buildScene({
   id: 'test-duel-naval',
-  nom: 'Duel naval',
+  label: 'Duel naval',
   desc: 'Duel de deux coques en mer ouverte (échelle MER 10 m/case).',
   size: [24, 14],
   terrain: 'eau',

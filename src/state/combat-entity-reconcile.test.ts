@@ -151,7 +151,7 @@ describe('checkBattleOver — un engin INERTE ne compte ni pour la victoire ni p
 describe('removeEntities — retrait par lot (brique partagée)', () => {
   it('retire les ids donnés en un seul passage, ignore les inconnus, conserve le reste', () => {
     const scene: Scene = {
-      id: 's', nom: '', dimensions: { w: 4, h: 4 },
+      id: 's', label: '', dimensions: { w: 4, h: 4 },
       layers: [{ z: 0, tiles: new Array(16).fill('herbe') }],
       entities: (['a', 'b', 'c'] as const).map((id): SceneEntity => ({ id, kind: 'personnage', pos: { x: 0, y: 0 } })),
       dialogues: [], triggers: [], encounters: [], flags: {},
@@ -166,7 +166,7 @@ describe('removeEntities — retrait par lot (brique partagée)', () => {
   it('une suppression NETTOIE l’assise dans la MÊME écriture de scène (meuble ou corps)', () => {
     const assis = { kind: 'entity' as const, entityId: 'pnj-1' };
     const fixture = (): Scene => ({
-      id: 's', nom: '', dimensions: { w: 6, h: 6 },
+      id: 's', label: '', dimensions: { w: 6, h: 6 },
       layers: [{ z: 0, tiles: new Array(36).fill('herbe') }],
       entities: [
         { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },

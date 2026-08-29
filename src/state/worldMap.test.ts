@@ -9,8 +9,8 @@ import { lieuxServices } from '../data';
 import { validateScene } from './validateScene';
 import type { Scene } from './scene';
 
-const scene = (id: string) => ({ id, nom: id, dimensions: { w: 3, h: 3 } } as Scene);
-const wm = { id: 'm', nom: 'Carte', places: [], routes: [] };
+const scene = (id: string) => ({ id, label: id, dimensions: { w: 3, h: 3 } } as Scene);
+const wm = { id: 'm', label: 'Carte', places: [], routes: [] };
 
 describe('parseProject — validation du format projet v2', () => {
   it('document valide { schema: 2, scenes } → scènes restituées', () => {
@@ -51,7 +51,7 @@ describe('parseProject — validation du format projet v2', () => {
   it('scène ANCIENNE (schema 2 mais sans les collections requises du Scene actuel) → normalisée, ne crashe pas validateScene', () => {
     // Reproduit le crash « Ouvrir → L'Embuscade » (TypeError sur s.encounters.map, validateScene.ts:59) :
     // un projet localStorage sauvegardé avant que `Scene` ne gagne `encounters`/`dialogues`/… ne les porte pas.
-    const old = { id: 'old', nom: 'Vieille scène', dimensions: { w: 3, h: 3 } } as Scene; // aucune collection
+    const old = { id: 'old', label: 'Vieille scène', dimensions: { w: 3, h: 3 } } as Scene; // aucune collection
     const { scenes } = parseProject({ schema: 2, scenes: [old] });
     expect(scenes[0].encounters).toEqual([]);
     expect(scenes[0].dialogues).toEqual([]);
@@ -69,14 +69,14 @@ describe('parseProject — validation du format projet v2', () => {
       taille: 4, richesse: 5, production: ['commerce', 'produits-de-luxe'],
       surplus: { 'produits-de-luxe': 1 }, demande: { cereales: 2 }, cosmopolite: true, lighthouse: true,
     };
-    const mapWithPort = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Marienburg', pos: { x: 50, y: 50 }, scene: 's1', port }], routes: [] };
+    const mapWithPort = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Marienburg', pos: { x: 50, y: 50 }, scene: 's1', port }], routes: [] };
     const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithPort as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     expect(round.worldMap!.places[0].port).toEqual(port);
   });
 
   it('#217 : MapPlace.port.ref seul → résolu aux valeurs du catalogue naval-ports.json au chargement', () => {
-    const mapWithRef = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Salzenmund', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'salzenmund' } }], routes: [] };
+    const mapWithRef = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Salzenmund', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'salzenmund' } }], routes: [] };
     const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithRef as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     const port = round.worldMap!.places[0].port!;
@@ -86,7 +86,7 @@ describe('parseProject — validation du format projet v2', () => {
   });
 
   it('#217 : MapPlace.port.ref + surcharge locale → la surcharge gagne sur le catalogue', () => {
-    const mapWithOverride = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Salzenmund', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'salzenmund', taille: 1 } }], routes: [] };
+    const mapWithOverride = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Salzenmund', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'salzenmund', taille: 1 } }], routes: [] };
     const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithOverride as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     const port = round.worldMap!.places[0].port!;
@@ -96,14 +96,14 @@ describe('parseProject — validation du format projet v2', () => {
 
   it('#217 : MapPlace.port SANS ref → comportement inchangé (aucune résolution)', () => {
     const port = { taille: 2, richesse: 2, production: ['sel'] };
-    const mapNoRef = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Port maison', pos: { x: 50, y: 50 }, scene: 's1', port }], routes: [] };
+    const mapNoRef = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Port maison', pos: { x: 50, y: 50 }, scene: 's1', port }], routes: [] };
     const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapNoRef as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     expect(round.worldMap!.places[0].port).toEqual(port);
   });
 
   it('#217 : MapPlace.port.ref inconnue → erreur EXPLICITE (fail-fast, jamais un port silencieusement vide)', () => {
-    const mapBadRef = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Nulle-part', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'port-qui-n-existe-pas' } }], routes: [] };
+    const mapBadRef = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Nulle-part', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'port-qui-n-existe-pas' } }], routes: [] };
     const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapBadRef as never };
     expect(() => parseProject(JSON.parse(JSON.stringify(doc)))).toThrow(/réf de port inconnue/);
   });
@@ -125,7 +125,7 @@ describe('parseProject — validation du format projet v2', () => {
     // Édité par la section « Carte » de WorldMapEditor : image de fond (URL / data URI) préservée telle
     // quelle. Sa présence désactive le déchevauchement (les lieux restent à leurs pos EXACTES).
     const bg = 'data:image/svg+xml;utf8,%3Csvg%2F%3E';
-    const mapWithBg = { id: 'm', nom: 'Reikland', background: bg, places: [{ id: 'l1', label: 'Altdorf', pos: { x: 60, y: 30 }, scene: 's1' }], routes: [] };
+    const mapWithBg = { id: 'm', label: 'Reikland', background: bg, places: [{ id: 'l1', label: 'Altdorf', pos: { x: 60, y: 30 }, scene: 's1' }], routes: [] };
     const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithBg as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     expect(round.worldMap!.background).toBe(bg);

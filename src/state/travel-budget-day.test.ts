@@ -28,10 +28,10 @@ const hero = (p: Partial<Combatant> = {}): Combatant => ({
   items: [], movement: 4, ...p,
 } as Combatant);
 
-function sceneA(): Scene { const s = emptyScene(10, 10); s.id = 'lieu-a-scene'; s.nom = 'A'; return s; }
-function sceneB(): Scene { const s = emptyScene(10, 10); s.id = 'lieu-b-scene'; s.nom = 'B'; return s; }
+function sceneA(): Scene { const s = emptyScene(10, 10); s.id = 'lieu-a-scene'; s.label = 'A'; return s; }
+function sceneB(): Scene { const s = emptyScene(10, 10); s.id = 'lieu-b-scene'; s.label = 'B'; return s; }
 function map(km = 16): WorldMap {
-  return { id: 'c', nom: 'c', places: [
+  return { id: 'c', label: 'c', places: [
     { id: 'pa', label: 'A', pos: { x: 20, y: 50 }, scene: 'lieu-a-scene' },
     { id: 'pb', label: 'B', pos: { x: 70, y: 40 }, scene: 'lieu-b-scene' },
   ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km, modes: ['pied'], perilDie: 0 }] };

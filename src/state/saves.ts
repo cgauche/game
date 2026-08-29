@@ -23,8 +23,9 @@
  *    un message au joueur (témoin `takeObsoleteNotice`, rendu par `ui/SaveLoadModal`).
  */
 import type { RuleValue } from '../engine/policy';
+import type { Scene } from './scene';
 
-export const SAVE_VERSION = 28;
+export const SAVE_VERSION = 29;
 
 export interface SaveMeta {
   version: number;
@@ -80,14 +81,17 @@ export function snapshotSave(
     if (typeof v === 'function') continue;
     data[k] = v === undefined ? null : v;
   }
-  const scene = state.scene as { nom?: string; id?: string } | null;
+  // Le document de scène est TYPÉ ici (jamais une forme structurelle ad hoc) : le `state` d'entrée est
+  // un `Record` opaque, et un cast maison sur les noms de champs rendrait un renommage de `Scene`
+  // INVISIBLE au typecheck — `sceneLabel` retomberait en silence sur l'id. Garde : `saves-flow.test.ts`.
+  const scene = state.scene as Pick<Scene, 'label' | 'id'> | null;
   const copie = JSON.parse(JSON.stringify(data)) as Record<string, unknown>; // deep copy JSON-sûre
   purgeFoldMemo(copie.pendingCascade);
   purgeFoldMemo(copie.suspendedCascades);
   return {
     version: SAVE_VERSION,
     savedAt,
-    sceneLabel: scene?.nom ?? scene?.id ?? 'Sans scène',
+    sceneLabel: scene?.label ?? scene?.id ?? 'Sans scène',
     gameTime: typeof state.gameTime === 'number' ? state.gameTime : 0,
     data: copie,
     rules: { ...rules },

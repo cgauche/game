@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
 import { availabilitySchema, harvestRaritySchema, entityAppearanceSchema } from '../grammaire/valeurs';
-import { refSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
+import { refSchema, talentRefSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
 
 export const file = 'creatures.json';
 export const famille = 'entite';
@@ -38,8 +38,6 @@ const optionalEntrySchema = z.union([traitInstanceSchema, optionalWildcardSchema
 /** `SkillRef` (`src/data/index.ts`) — `Ref` + valeur de Test imprimée. */
 const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), value: z.number() });
 
-/** `TalentRef` (`src/data/index.ts`) — `Ref` + niveau facultatif. */
-const talentRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), times: z.number().optional() });
 
 /** `HarvestDanger` (`src/data/index.ts`). */
 const harvestDangerSchema = z.enum(['Inoffensive', 'Inquiétante', 'Menaçante', 'Mortelle']);

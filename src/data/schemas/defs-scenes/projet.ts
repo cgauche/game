@@ -1,6 +1,6 @@
 /**
  * Schéma zod d'un PROJET DE SCÈNE (`ProjectDoc`, `src/state/worldMap.ts`) — le paquet de campagne
- * auto-suffisant `{ schema: 5, <identité>?, narratif, scenes, worldMap?, activeAxes? }`.
+ * auto-suffisant `{ schema: 6, <identité>?, narratif, scenes, worldMap?, activeAxes? }`.
  *
  * C'est la porte UNIQUE du seam `parseProject` : la FORME (ci-dessous) et les QUATRE sémantiques
  * qui vivaient en validateurs manuscrits du même seam — FK `activeAxes` vers `axes.json`, invariants
@@ -43,7 +43,7 @@ const idsDAxes = (): readonly string[] => IDS_PAR_DATASET['axes.json'] ?? [];
 
 /** FORME du document de projet — enveloppe PLATE. */
 const formeProjet = z.strictObject({
-  schema: z.literal(5),
+  schema: z.literal(6),
   /** Identité de campagne (#766) — facultative au format, requise pour l'export portable. */
   id: z.string().min(1, 'id doit être une chaîne non vide.').optional(),
   label: z.string().min(1, 'label doit être une chaîne non vide.').optional(),

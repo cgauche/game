@@ -82,6 +82,7 @@ function marinDuGrimm(id, x, y, label, skills) {
   return {
     id, kind: 'personnage', pos: { x, y }, label,
     statblock: {
+      type: 'statblock',
       label,
       // Clés = `CharKey` (slugs pleins, #311/`src/engine/types.ts`) ∪ `M`/`B` (`CustomStatblock.char`).
       char: {
@@ -120,7 +121,7 @@ resetIds();
 scenes.push(scene({
   id: 'ls-quai-salzenmund',
   rest: { auberge: true }, // couchage effectif du quai — `placeServices` le lit via `sceneAubergeOffer` (`worldMap.ts`)
-  nom: 'Salzenmund — le quai de la Seconde Flotte',
+  label: 'Salzenmund — le quai de la Seconde Flotte',
   desc:
     "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, " +
     "à côté du Grimm amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; " +
@@ -364,7 +365,7 @@ scenes.push(scene({
 resetIds();
 scenes.push(scene({
   id: 'ls-abordage-cogue',
-  nom: 'La Dent de Manann — voile noire sous le vent (J4)',
+  label: 'La Dent de Manann — voile noire sous le vent (J4)',
   desc:
     "La cogue pirate intercepte le Grimm en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille " +
     "de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
@@ -440,7 +441,7 @@ resetIds();
 scenes.push(scene({
   id: 'ls-quai-erengrad',
   rest: { auberge: true }, // couchage effectif du quai — `placeServices` le lit via `sceneAubergeOffer` (`worldMap.ts`)
-  nom: 'Erengrad — le port kislevite',
+  label: 'Erengrad — le port kislevite',
   desc:
     "Erengrad (Taille 4, Richesse 4, surplus Laine +1 — MDG 15 l.439-506). Négoce, rumeurs, et une nuit où " +
     "le chat du bord tombe malade.",
@@ -540,7 +541,7 @@ scenes.push(scene({
 resetIds();
 scenes.push(scene({
   id: 'ls-abordage-olg',
-  nom: 'Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)',
+  label: 'Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)',
   desc:
     "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Grimm chargé de laine. Poursuite, feu de chasse, " +
     "collision, abordage — le morceau de bravoure de la traversée.",
@@ -615,7 +616,7 @@ scenes.push(scene({
 resetIds();
 scenes.push(scene({
   id: 'ls-epilogue-salzenmund',
-  nom: 'Salzenmund — le retour (J13)',
+  label: 'Salzenmund — le retour (J13)',
   desc: "Les parts, le chantier, le conseil final. Köhler regarde la prise avec des yeux gourmands.",
   base: 'sable',
   legend: { '~': 'eau', '=': 'planches' },
@@ -664,7 +665,7 @@ scenes.push(scene({
 // ── Carte du monde ──────────────────────────────────────────────────────────────────────────
 const worldMap = {
   id: 'carte-loup-et-saumure',
-  nom: 'La Mer des Griffes — Salzenmund ⇄ Erengrad',
+  label: 'La Mer des Griffes — Salzenmund ⇄ Erengrad',
   places: [
     {
       id: 'salzenmund', label: 'Salzenmund', pos: { x: 25, y: 60 }, scene: 'ls-quai-salzenmund', icon: 'scenario/port',

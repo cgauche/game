@@ -30,7 +30,7 @@ function porteurDOutre() {
 }
 
 const HERO_START = { x: 2, y: 4 };
-const scene = arena({ id: 'test-aspersion', nom: 'Aspersion — créature marine hors de l’eau', heroStart: HERO_START });
+const scene = arena({ id: 'test-aspersion', label: 'Aspersion — créature marine hors de l’eau', heroStart: HERO_START });
 scene.startMessage =
   "Une anguille mâcheprise s'est échouée sur la berge, loin de l'eau, ALLIÉE égarée du groupe : hors " +
   "de son terrain, elle suffoque (Trait Créature marine, MDG 16 l.19). Le Soldat porte une outre à " +

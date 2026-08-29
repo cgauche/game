@@ -78,7 +78,7 @@ describe('#181/#182 — parité apparence combat ↔ hors-combat d’un allié P
   it('#774 : entité à statbloc SANS record, armurePortee en OVERRIDE d’authoring — MÊME armure en combat et en explo', () => {
     const NO_REF_ID = 'soudard-sans-record';
     const noRefCombat = () =>
-      spawnEnemy(undefined, { label: 'Soudard sans record', char: { B: 10 }, armour: 5 }, NO_REF_ID, { x: 0, y: 0 }, {
+      spawnEnemy(undefined, { type: 'statblock', label: 'Soudard sans record', char: { B: 10 }, armour: 5 }, NO_REF_ID, { x: 0, y: 0 }, {
         appearance: { armurePortee: true },
       });
     const noRefEntity = () =>

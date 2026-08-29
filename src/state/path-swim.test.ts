@@ -12,7 +12,7 @@ import type { Combatant } from '../engine/types';
  * Sans le trait, l'eau reste un mur — et `swim` ne débloque QUE l'eau, pas les autres non-marchables.
  */
 const river = (): Scene => ({
-  id: 's', nom: 'Gué', dimensions: { w: 3, h: 1 },
+  id: 's', label: 'Gué', dimensions: { w: 3, h: 1 },
   layers: [{ z: 0, tiles: ['sol', 'eau', 'sol'] }],
   entities: [], dialogues: [], triggers: [],
 } as unknown as Scene);

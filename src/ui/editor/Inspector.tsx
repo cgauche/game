@@ -1809,7 +1809,7 @@ function SceneProps({
   return (
     <>
       <div className="insp-head">
-        <span className="insp-title"><Icon id="file/document" size="sm" /> {scene.nom || scene.id}</span>
+        <span className="insp-title"><Icon id="file/document" size="sm" /> {scene.label || scene.id}</span>
       </div>
       <Fold title="Identité" open>
         <label className="ed-field">
@@ -1818,7 +1818,7 @@ function SceneProps({
         </label>
         <label className="ed-field">
           Nom
-          <input value={scene.nom} onChange={(e) => setScene({ ...scene, nom: e.target.value })} />
+          <input value={scene.label} onChange={(e) => setScene({ ...scene, label: e.target.value })} />
         </label>
         <label className="ed-field">
           Description (notes d'auteur)

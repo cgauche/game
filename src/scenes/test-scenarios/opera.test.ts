@@ -22,7 +22,7 @@ describe('Scénario « Opéra — Théâtre » : Scene produite par buildScene(M
 
   it('a l’id/nom/dimensions/ambiance attendus (scalaires du spec)', () => {
     expect(scene.id).toBe('test-opera-theatre');
-    expect(scene.nom).toBe('Opéra — Le théâtre');
+    expect(scene.label).toBe('Opéra — Le théâtre');
     expect(scene.dimensions).toEqual({ w: 21, h: 17 });
     expect(scene.ambiance).toBe('interieur');
   });

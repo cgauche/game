@@ -10,7 +10,7 @@ function scene(w: number, h: number, walls: string[] = []): Scene {
     tiles[y * w + x] = 'mur';
   }
   return {
-    id: 's', nom: 's', dimensions: { w, h }, ambiance: 'exterieur',
+    id: 's', label: 's', dimensions: { w, h }, ambiance: 'exterieur',
     layers: [{ z: 0, tiles }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
   } as unknown as Scene;
 }

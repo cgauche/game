@@ -177,7 +177,7 @@ describe('enemyRigProfile', () => {
     // n'attachait donc AUCUN override → `enemyRigProfile` ne lisait que `cd?.armurePortee` (toujours
     // undefined, pas de record) → armure invisible en combat alors que visible en explo (`entityRigProfile`,
     // qui lit déjà `opts.armurePortee`). Symétrique désormais : `ov?.armurePortee ?? cd?.armurePortee`.
-    const c = spawnEnemy(undefined, { label: 'Soudard sans record', char: { B: 10 }, armour: 5 }, 'sans-record-1', { x: 0, y: 0 }, {
+    const c = spawnEnemy(undefined, { type: 'statblock', label: 'Soudard sans record', char: { B: 10 }, armour: 5 }, 'sans-record-1', { x: 0, y: 0 }, {
       appearance: { armurePortee: true },
     });
     expect(enemyRigProfile(c)!.equip.armour.length).toBeGreaterThan(0);

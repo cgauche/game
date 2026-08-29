@@ -396,7 +396,7 @@ export function Editor({
   function addScene() {
     const s = emptyScene();
     s.id = `scene-${Date.now().toString(36)}`;
-    s.nom = 'Nouvelle scène';
+    s.label = 'Nouvelle scène';
     setOtherScenes([...otherScenes, scene]);
     setSel(null);
     resetScene(s);
@@ -404,7 +404,7 @@ export function Editor({
   function duplicateScene() {
     const dup = clone(scene);
     dup.id = nextEntityId(scene.id, [scene.id, ...otherScenes.map((s) => s.id)]);
-    dup.nom = `${scene.nom || scene.id} (copie)`;
+    dup.label = `${scene.label || scene.id} (copie)`;
     setOtherScenes([...otherScenes, scene]);
     setSel(null);
     resetScene(dup);
@@ -557,7 +557,7 @@ export function Editor({
     file.text().then((txt) => {
       try {
         const data = JSON.parse(txt);
-        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(data); // paquet ({ schema: 5, <identité>?, scenes, worldMap?, activeAxes?, narratif })
+        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(data); // paquet ({ schema: 6, <identité>?, scenes, worldMap?, activeAxes?, narratif })
         if (!scenes.length) return;
         setOtherScenes(scenes.slice(1).map(clone));
         setWorldMap(wm ?? null);
@@ -645,7 +645,7 @@ export function Editor({
       startSceneId,
       savedAt: Date.now(),
       published: pub,
-      project: { schema: CURRENT_PROJECT_SCHEMA, ...(identite ?? {}), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
+      project: { schema: CURRENT_PROJECT_SCHEMA, ...(identite ?? { type: 'statblock',}), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
     });
     if (!res.ok) {
       setSaveError(res.message);
@@ -976,7 +976,7 @@ export function Editor({
           onClose={hideAutosaveRecovery}
         >
           <p className="hint">
-            Une sauvegarde automatique de « {autosaveRecovery.scene.nom || autosaveRecovery.scene.id} » diffère de
+            Une sauvegarde automatique de « {autosaveRecovery.scene.label || autosaveRecovery.scene.id} » diffère de
             la version actuellement chargée. Elle date du {new Date(autosaveRecovery.savedAt).toLocaleString('fr-FR')}.
             La restaurer, ou l'ignorer et repartir de la version chargée ?
           </p>

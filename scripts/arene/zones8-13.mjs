@@ -8,7 +8,7 @@ export function makeZone8() {
   return scene({
     id: 'arene-zone8',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — La Fosse',
+    label: 'Arène — La Fosse',
     desc: 'La grande fosse aux bêtes : des gouffres la découpent en passes étroites.',
     startMessage:
       'LA FOSSE. Des gouffres coupent l’arène en passes étroites — et un GLADIATEUR enchaîné combat à vos côtés : la harde a capturé le mauvais homme.',
@@ -88,7 +88,7 @@ export function makeZone9() {
   return scene({
     id: 'arene-zone9',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — La Caverne du Troll',
+    label: 'Arène — La Caverne du Troll',
     desc: 'Le garde-manger du troll de l’arène — une crevasse, des os, et un invité de marque.',
     startMessage:
       'LA CAVERNE DU TROLL. Ça pue le rance et la chair faisandée. Au fond, une alcôve murée abrite le magot — et son NOUVEAU propriétaire.',
@@ -214,7 +214,7 @@ export function makeZone10() {
   return scene({
     id: 'arene-zone10',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — Le Nid de Vermine',
+    label: 'Arène — Le Nid de Vermine',
     desc: 'Un quartier muré du vieux Bourg, rendu aux skavens — terriers, rouages et cages.',
     startMessage:
       'LE NID DE VERMINE. Les hommes-rats ont percé leurs terriers sous le vieux quartier. Une voix appelle depuis une CAGE — et mille yeux rouges vous regardent.',
@@ -317,7 +317,7 @@ export function makeZone11() {
   return scene({
     id: 'arene-zone11',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — Le Cercle Maudit',
+    label: 'Arène — Le Cercle Maudit',
     desc: 'L’ancien sanctuaire du culte sous l’arène — l’idole noire y saigne encore.',
     startMessage:
       'LE CERCLE MAUDIT. Le culte psalmodie autour de l’idole noire — leur CHAMANE tisse déjà ses sorts et l’air vous corrompt la moelle. Frappez vite.',
@@ -415,7 +415,7 @@ export function makeZone12() {
   return scene({
     id: 'arene-zone12',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — Le Sépulcre',
+    label: 'Arène — Le Sépulcre',
     desc: 'Le tombeau d’un seigneur oublié, sous l’arène — il reçoit, à la nuit tombée.',
     startMessage:
       'LE SÉPULCRE. La porte se referme : il fera NUIT, quoi qu’en dise le soleil. Le seigneur des lieux apprécie les visites — ses gens hurlent déjà.',
@@ -511,7 +511,7 @@ export function makeZone13() {
   return scene({
     id: 'arene-zone13',
     rest: {}, // on ne bivouaque pas dans l'arène
-    nom: 'Arène — L’Antre du Dragon',
+    label: 'Arène — L’Antre du Dragon',
     desc: 'Le secret du Maître : sous la treizième porte dort un dragon des ténèbres, sur son or.',
     startMessage:
       'L’ANTRE DU DRAGON. La chaleur racle la gorge, l’or scintille entre les coulées de lave. Le dragon DORT. On peut chiper une poignée d’or sans le réveiller… en théorie.',

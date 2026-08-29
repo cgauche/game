@@ -262,6 +262,18 @@ export const charKeySchema = z.enum([
   'intelligence', 'force-mentale', 'sociabilite',
 ]);
 
+/**
+ * Clés d'un PROFIL chiffré : les 10 Caractéristiques ∪ `M` (Déplacement) ∪ `B` (Blessures) — la
+ * graphie de `CustomStatblock.char` (`src/engine/statblock.ts`) et des profils de créature. `M` et `B`
+ * ne sont pas des Caractéristiques à jet : ils n'entrent donc pas dans `charKeySchema`, dont ils
+ * fausseraient toutes les autres portes (Conditions, `Formula.bonusOf`, `FlowTest`…).
+ */
+export const charStatKeySchema = z.enum([...charKeySchema.options, 'M', 'B']);
+
+/** `SizeCategory` (`src/engine/size.ts:14`) — CANON de la Taille (LDB 85), porte UNIQUE des defs qui
+ *  nomment une catégorie (`trappings.sizeFor`, `CustomStatblock.size`). */
+export const sizeCategorySchema = z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
+
 /** `DiceSpec` (`src/engine/dice.ts`) — jet `{n, sides, plus?}`, partagé par `CountSpec.roll` et `Formula.dice`. */
 export const diceSpecSchema = z.strictObject({ n: z.number(), sides: z.number(), plus: z.number().optional() });
 

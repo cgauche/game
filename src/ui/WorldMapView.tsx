@@ -375,12 +375,12 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   );
 
   return (
-    <ScreenShell title={<><Icon id="nav/campaign" size="sm" /> {map.nom}</>} onClose={close} meta={{ time: gameTime, money }}>
+    <ScreenShell title={<><Icon id="nav/campaign" size="sm" /> {map.label}</>} onClose={close} meta={{ time: gameTime, money }}>
       <div className="layout-sidebar worldmap-layout">
       <div className="worldmap-canvas">
         <MapCanvas
           className="wm-map"
-          ariaLabel={map.nom}
+          ariaLabel={map.label}
           computeFit={computeFit}
           background={map.background}
           chrome={chrome}

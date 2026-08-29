@@ -5,7 +5,7 @@ import type { Combatant } from '../engine/types';
 
 /** Scène minimale 3×1 : eau | sol | eau. */
 const scene = {
-  id: 's', nom: 'Mer', dimensions: { w: 3, h: 1 },
+  id: 's', label: 'Mer', dimensions: { w: 3, h: 1 },
   layers: [{ z: 0, tiles: ['eau', 'sol', 'eau'] }],
   entities: [], dialogues: [], triggers: [],
 } as unknown as Scene;

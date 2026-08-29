@@ -36,7 +36,7 @@ const EXTRA: { key: 'M'; label: string; def: number }[] = [{ key: 'M', label: 'M
 
 /** Statbloc minimal par défaut (humain de base). Blessures NON fixées → dérivées par la formule de
  *  Taille au spawn (LDB 85 ; `B` rempli = surcharge). */
-export const emptyStatblock = (label = 'Profil personnalisé'): CustomStatblock => ({ label, char: { M: 4 } });
+export const emptyStatblock = (label = 'Profil personnalisé'): CustomStatblock => ({ type: 'statblock', label, char: { M: 4 } });
 
 /** Clone une créature du bestiaire en statbloc éditable (base à personnaliser) — par id. */
 function cloneFromCreature(creatureId: string): CustomStatblock | null {
@@ -44,7 +44,7 @@ function cloneFromCreature(creatureId: string): CustomStatblock | null {
   if (!c) return null;
   const char: CustomStatblock['char'] = {};
   for (const [k, v] of Object.entries(c.char)) if (typeof v === 'number') (char as Record<string, number>)[k] = v;
-  return {
+  return { type: 'statblock',
     label: c.label,
     char,
     traits: c.traits, // statbloc éditeur = TraitInstance[] structurés (affichés/édités via formatTrait/parseTraitInstance)

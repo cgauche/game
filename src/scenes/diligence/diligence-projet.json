@@ -1,5 +1,5 @@
 {
- "schema": 5,
+ "schema": 6,
  "id": "la-diligence",
  "label": "La Diligence",
  "icon": "scenario/village",
@@ -13,7 +13,7 @@
  "scenes": [
   {
    "id": "la-diligence",
-   "nom": "La Diligence",
+   "label": "La Diligence",
    "dimensions": {
     "w": 32,
     "h": 38

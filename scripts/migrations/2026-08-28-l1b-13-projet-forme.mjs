@@ -16,8 +16,11 @@
  * ENTRÉES : les 4 `src/scenes/<campagne>/<campagne>-projet.json`.
  *
  * ORDRE : ce script se rejoue APRÈS `…-3i-…` (ordre lexical), qui porte le bump 3 → 4.
- * IDEMPOTENT : un document déjà en `schema: 5` est reconnu migré ; rejouée, la migration n'écrit rien.
- * FAIL-FAST : `schema` absent, non numérique, ou d'une valeur autre que 4 ou 5 → sortie 1 ; un
+ * IDEMPOTENT : un document en `schema` ≥ 5 est reconnu migré ; rejouée, la migration n'écrit rien. La
+ * borne est OUVERTE VERS LE HAUT parce que les vagues suivantes bumpent le même document (la 15b le
+ * porte à 6) : c'est la DERNIÈRE migration de la chaîne, en aval dans l'ordre lexical, qui NOMME un
+ * `schema` inconnu — elle seule sait ce qui existe après elle.
+ * FAIL-FAST : `schema` absent, non numérique, ou d'une valeur autre que 4 ou ≥ 5 → sortie 1 ; un
  * document en `schema: 4` qui porterait DÉJÀ un `versionContenu` ou un `id` racine → sortie 1 (forme
  * hybride, la migration refuse de deviner).
  * FORMATAGE PRÉSERVÉ : sérialiseur des scènes `JSON.stringify(doc, null, 1) + '\n'`, vérifié AVANT
@@ -52,8 +55,8 @@ for (const d of fs.readdirSync(RACINE, { withFileTypes: true })) {
   const brut = fs.readFileSync(abs, 'utf8');
   const doc = JSON.parse(brut);
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema === 5) { ecritures.push({ rel, abs, brut, out: brut, deja: true }); continue; }
-  if (doc.schema !== 4) { echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (4 ou 5 attendus)`); continue; }
+  if (typeof doc.schema === 'number' && doc.schema >= 5) { ecritures.push({ rel, abs, brut, out: brut, deja: true }); continue; }
+  if (doc.schema !== 4) { echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (4 ou ≥ 5 attendus)`); continue; }
   if ('versionContenu' in doc || 'id' in doc) {
     echecs.push(`${rel} : \`schema: 4\` mais l'identité est DÉJÀ à plat (\`id\`/\`versionContenu\` racine) — forme hybride`);
     continue;
@@ -77,11 +80,11 @@ for (const e of ecritures) {
   const apres = JSON.parse(e.out);
   if (e.deja) {
     // Rejeu sur l'état final : rien n'a été écrit. La PREUVE est que la forme est bien celle d'arrivée.
-    if (apres.schema !== 5 || 'meta' in apres) {
+    if (!(apres.schema >= 5) || 'meta' in apres) {
       console.error(`VÉRIFICATION ROUGE — ${e.rel} : reconnu « déjà migré » mais schema=${apres.schema}${'meta' in apres ? ', poche `meta` encore présente' : ''}`);
       process.exit(1);
     }
-    console.log(`${e.rel} — schema 5 (déjà migré, no-op)`);
+    console.log(`${e.rel} — schema ${apres.schema} (déjà migré, no-op)`);
     continue;
   }
   // PREUVE post-écriture : deep-equal de la charge utile MOINS les renommages DÉCLARÉS — le document

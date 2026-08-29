@@ -37,7 +37,7 @@ const narratif: NarratifBlock = {
 
 const scene = buildScene({
   id: 'test-enquete-carnet-comptoir',
-  nom: 'Comptoir marchand — enquête',
+  label: 'Comptoir marchand — enquête',
   desc: 'Arène de test.',
   size: [10, 8],
   terrain: 'herbe',

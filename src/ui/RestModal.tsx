@@ -68,8 +68,8 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   if (!p) return null;
 
-  // Titre FRANC (arbitrage user 2026-07-11) : la nature de la halte + le lieu (`scene.nom`) quand il existe.
-  const lieu = scene?.nom ? <> — {scene.nom}</> : null;
+  // Titre FRANC (arbitrage user 2026-07-11) : la nature de la halte + le lieu (`scene.label`) quand il existe.
+  const lieu = scene?.label ? <> — {scene.label}</> : null;
   const title = p.places.auberge ? <><Icon id="rest/bed" size="sm" /> Nuit à l’auberge{lieu}</> : p.places.maison ? <><Icon id="time/night" size="sm" /> Nuit chez soi{lieu}</> : p.places.bord ? <><Icon id="travel/sail-ship" size="sm" /> Nuit à bord{lieu}</> : <><Icon id="rest/camp" size="sm" /> À la belle étoile{lieu}</>;
 
   // ── Phase RÉGLAGES ──

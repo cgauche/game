@@ -32,7 +32,7 @@ function hero(advances: number): Combatant {
 
 function tavernMap(): WorldMap {
   return {
-    id: 'm', nom: 'Le Reik',
+    id: 'm', label: 'Le Reik',
     places: [
       { id: 'A', label: 'Auberge du Cerf', pos: { x: 0, y: 0 }, scene: 'auberge-a' },
       { id: 'B', label: 'Altdorf', pos: { x: 90, y: 0 }, scene: 'altdorf-b', market: { taille: 4, richesse: 4, produits: ['commerce'] } },
@@ -41,7 +41,7 @@ function tavernMap(): WorldMap {
   };
 }
 
-const scene = () => buildScene({ id: 'auberge-a', nom: 'Auberge du Cerf', desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const scene = () => buildScene({ id: 'auberge-a', label: 'Auberge du Cerf', desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 function launch(advances: number, seed: number): void {
   seedBattleRng(seed);

@@ -122,7 +122,7 @@ export function WorldMapRoutePanel({ route, map, scenes, updRoute, effCtx, toggl
             label="Scène d'embuscade (vide = narratif seul)"
             options={scenes}
             getId={(s) => s.id}
-            getLabel={(s) => `${s.nom} (${s.id})`}
+            getLabel={(s) => `${s.label} (${s.id})`}
             value={route.ambush?.scene ?? ''}
             nullableLabel="— aucune —"
             onChange={(v) => updRoute(route.id, {

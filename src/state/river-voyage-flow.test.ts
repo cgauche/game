@@ -56,7 +56,7 @@ const route = (km: number, extra: Partial<MapRoute> = {}): MapRoute => ({
 
 function riverMap(km: number, extra: Partial<MapRoute> = {}): WorldMap {
   return {
-    id: 'm', nom: 'Le Reik',
+    id: 'm', label: 'Le Reik',
     places: [
       { id: 'A', label: 'Grünburg', pos: { x: 0, y: 0 }, scene: 'quai-a' },
       { id: 'B', label: 'Altdorf', pos: { x: 90, y: 0 }, scene: 'quai-b' },
@@ -65,7 +65,7 @@ function riverMap(km: number, extra: Partial<MapRoute> = {}): WorldMap {
   };
 }
 
-const quai = (id: string, nom: string) => buildScene({ id, nom, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const quai = (id: string, label: string) => buildScene({ id, label, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 /** Charge le projet (2 quais + carte) et l'équipage, au quai de Grünburg. */
 function launch(withSavoir = false, km = 45, extra: Partial<MapRoute> = {}): void {

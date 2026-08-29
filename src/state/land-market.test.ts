@@ -45,7 +45,7 @@ function drainCascade(): void {
 }
 
 const landMap: WorldMap = {
-  id: 'm', nom: 'Reikland',
+  id: 'm', label: 'Reikland',
   places: [
     { id: 'A', label: 'Grünburg', pos: { x: 0, y: 0 }, scene: 'ville-a', market: { taille: 4, richesse: 4, produits: ['vivres', 'vin', 'metal', 'commerce'] } },
   ],
@@ -57,7 +57,7 @@ function freshState(withCarrier = true) {
   const possessions: Possession[] = withCarrier ? [dili(party[0].id)] : [];
   useGame.setState({
     party, possessions,
-    scene: { id: 'ville-a', nom: 'Ville', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { id: 'ville-a', label: 'Ville', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null,
     worldMap: landMap,
     travelPlan: null,

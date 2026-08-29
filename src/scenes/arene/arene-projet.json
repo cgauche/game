@@ -1,5 +1,5 @@
 {
- "schema": 5,
+ "schema": 6,
  "id": "arene",
  "label": "L’Arène",
  "icon": "scenario/village",
@@ -13,7 +13,7 @@
  "scenes": [
   {
    "id": "arene-zone1",
-   "nom": "Arène — La Cour",
+   "label": "Arène — La Cour",
    "dimensions": {
     "w": 24,
     "h": 16
@@ -699,7 +699,7 @@
   },
   {
    "id": "arene-hub",
-   "nom": "Le Bourg de l’Arène",
+   "label": "Le Bourg de l’Arène",
    "dimensions": {
     "w": 50,
     "h": 40
@@ -6252,7 +6252,7 @@
   },
   {
    "id": "arene-zone2",
-   "nom": "Arène — Les Ruines",
+   "label": "Arène — Les Ruines",
    "dimensions": {
     "w": 28,
     "h": 20
@@ -7244,7 +7244,7 @@
   },
   {
    "id": "arene-zone3",
-   "nom": "Arène — Les Égouts",
+   "label": "Arène — Les Égouts",
    "dimensions": {
     "w": 30,
     "h": 18
@@ -7948,6 +7948,7 @@
       "y": 6
      },
      "statblock": {
+      "type": "statblock",
       "label": "Nuée de rats",
       "char": {
        "M": 4,
@@ -7976,6 +7977,7 @@
       "y": 5
      },
      "statblock": {
+      "type": "statblock",
       "label": "Nuée de rats",
       "char": {
        "M": 4,
@@ -8165,7 +8167,7 @@
   },
   {
    "id": "arene-zone4",
-   "nom": "Arène — Le Charnier",
+   "label": "Arène — Le Charnier",
    "dimensions": {
     "w": 28,
     "h": 20
@@ -9175,7 +9177,7 @@
   },
   {
    "id": "arene-zone5",
-   "nom": "Arène — Les Lices",
+   "label": "Arène — Les Lices",
    "dimensions": {
     "w": 34,
     "h": 16
@@ -10034,7 +10036,7 @@
   },
   {
    "id": "arene-zone6",
-   "nom": "Arène — Le Marais",
+   "label": "Arène — Le Marais",
    "dimensions": {
     "w": 32,
     "h": 25
@@ -11240,7 +11242,7 @@
   },
   {
    "id": "arene-zone7",
-   "nom": "Arène — Le Nid",
+   "label": "Arène — Le Nid",
    "dimensions": {
     "w": 30,
     "h": 22
@@ -12352,7 +12354,7 @@
   },
   {
    "id": "arene-zone8",
-   "nom": "Arène — La Fosse",
+   "label": "Arène — La Fosse",
    "dimensions": {
     "w": 30,
     "h": 20
@@ -13286,7 +13288,7 @@
   },
   {
    "id": "arene-zone9",
-   "nom": "Arène — La Caverne du Troll",
+   "label": "Arène — La Caverne du Troll",
    "dimensions": {
     "w": 32,
     "h": 22
@@ -14383,7 +14385,7 @@
   },
   {
    "id": "arene-zone10",
-   "nom": "Arène — Le Nid de Vermine",
+   "label": "Arène — Le Nid de Vermine",
    "dimensions": {
     "w": 34,
     "h": 24
@@ -15741,7 +15743,7 @@
   },
   {
    "id": "arene-zone11",
-   "nom": "Arène — Le Cercle Maudit",
+   "label": "Arène — Le Cercle Maudit",
    "dimensions": {
     "w": 34,
     "h": 22
@@ -16922,7 +16924,7 @@
   },
   {
    "id": "arene-zone12",
-   "nom": "Arène — Le Sépulcre",
+   "label": "Arène — Le Sépulcre",
    "dimensions": {
     "w": 32,
     "h": 20
@@ -17982,7 +17984,7 @@
   },
   {
    "id": "arene-zone13",
-   "nom": "Arène — L’Antre du Dragon",
+   "label": "Arène — L’Antre du Dragon",
    "dimensions": {
     "w": 40,
     "h": 28
@@ -19361,6 +19363,7 @@
       "y": 9
      },
      "statblock": {
+      "type": "statblock",
       "label": "Dragon des ténèbres",
       "char": {
        "M": 6,
@@ -19564,7 +19567,7 @@
   },
   {
    "id": "arene-exp-foret",
-   "nom": "La Vieille Futaie",
+   "label": "La Vieille Futaie",
    "dimensions": {
     "w": 40,
     "h": 28
@@ -21261,7 +21264,7 @@
   },
   {
    "id": "arene-exp-marais",
-   "nom": "La Tourbière Noire",
+   "label": "La Tourbière Noire",
    "dimensions": {
     "w": 36,
     "h": 26
@@ -22572,7 +22575,7 @@
   },
   {
    "id": "arene-exp-village",
-   "nom": "Felsbach — village pesteux",
+   "label": "Felsbach — village pesteux",
    "dimensions": {
     "w": 34,
     "h": 24
@@ -24452,7 +24455,7 @@
   },
   {
    "id": "arene-route-embuscade",
-   "nom": "Le Gué du Carrosse",
+   "label": "Le Gué du Carrosse",
    "dimensions": {
     "w": 28,
     "h": 14
@@ -25060,7 +25063,7 @@
  ],
  "worldMap": {
   "id": "arene-carte",
-  "nom": "Les Terres de l’Arène",
+  "label": "Les Terres de l’Arène",
   "places": [
    {
     "id": "bourg",

@@ -20,7 +20,7 @@ export interface CampaignChapter {
 
 const projet = parseProject(areneProjet);
 
-const arene: CampaignChapter[] = projet.scenes.map((s) => ({ id: s.id, tome: 0, title: s.nom, scene: s }));
+const arene: CampaignChapter[] = projet.scenes.map((s) => ({ id: s.id, tome: 0, title: s.label, scene: s }));
 
 export const campaign: CampaignChapter[] = [...arene]; // campaign[0] = arene-zone1 (départ de « Nouvelle partie »)
 

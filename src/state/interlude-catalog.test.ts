@@ -21,7 +21,7 @@ import { testScene } from '../scenes/test-fixture';
 import type { WorldMap } from './worldMap';
 
 const ALTDORF_MAP: WorldMap = {
-  id: 'w', nom: 'Monde de test',
+  id: 'w', label: 'Monde de test',
   places: [{ id: 'altdorf', label: 'Altdorf', pos: { x: 50, y: 50 }, scene: testScene.id }],
   routes: [],
 };

@@ -49,7 +49,7 @@ const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
 const seaMap: WorldMap = {
-  id: 'm', nom: 'Mer des Griffes',
+  id: 'm', label: 'Mer des Griffes',
   places: [
     { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
     { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
@@ -61,7 +61,7 @@ function freshState() {
   seedBattleRng(1); // déterminisme (suite isolate:false) : jour 1 navigable → le Test de Progression se joue
   useGame.setState({
     party: makePregens().slice(0, 3),
-    scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null,
     worldMap: seaMap,
     travelPlan: null,
@@ -384,7 +384,7 @@ describe('Infestation de rats géants — Extermination des nuisibles Complexe (
 
 describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG 13 l.337) : la Surdité ne pénalise pas', () => {
   const lighthouseMap: WorldMap = {
-    id: 'm2', nom: 'Mer des Griffes',
+    id: 'm2', label: 'Mer des Griffes',
     places: [
       { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
       { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: [], lighthouse: true } as never },
@@ -399,7 +399,7 @@ describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG 13 l.337
     const timonier = { ...b, skills: [{ skillId: 'voile', characteristic: 'dexterite', advances: 30 }], traumas: [] };
     useGame.setState({
       party: [vigie, timonier],
-      scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+      scene: { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
       battle: null,
       worldMap: lighthouseMap,
       travelPlan: null,
@@ -587,7 +587,7 @@ describe('progression — message « Encalminé »/« Voiles affalées » pilot�
 
 describe('Embuscade maritime AUTHORÉE à ancrage déterministe — #212', () => {
   const abordageMap: WorldMap = {
-    id: 'm', nom: 'Mer des Griffes',
+    id: 'm', label: 'Mer des Griffes',
     places: [
       { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
       { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
@@ -596,11 +596,11 @@ describe('Embuscade maritime AUTHORÉE à ancrage déterministe — #212', () =>
   };
 
   function portScene(id: string, nom: string): Scene {
-    const s = emptyScene(2, 2); s.id = id; s.nom = nom; return s;
+    const s = emptyScene(2, 2); s.id = id; s.label = nom; return s;
   }
   function abordageScene(): Scene {
-    const s = emptyScene(10, 10); s.id = 'ls-abordage'; s.nom = 'Abordage';
-    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { label: 'Écumeur', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+    const s = emptyScene(10, 10); s.id = 'ls-abordage'; s.label = 'Abordage';
+    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { type: 'statblock', label: 'Écumeur', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
     s.entities.push(...enc.entities); s.encounters = [enc.encounter];
     return s;
   }
@@ -710,8 +710,8 @@ describe('Périls d’AUTEUR lus au fil des jours en mer — C.22 (route.perils)
   });
 
   it('un péril d’auteur `startCombat` INTERROMPT la traversée (comme l’embuscade)', () => {
-    const krakenScene = emptyScene(10, 10); krakenScene.id = 'port-a'; krakenScene.nom = 'Mer';
-    const enc = buildEncounter({ id: 'enc-kraken', enemies: [{ statblock: { label: 'Kraken', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+    const krakenScene = emptyScene(10, 10); krakenScene.id = 'port-a'; krakenScene.label = 'Mer';
+    const enc = buildEncounter({ id: 'enc-kraken', enemies: [{ statblock: { type: 'statblock', label: 'Kraken', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
     krakenScene.entities.push(...enc.entities); krakenScene.encounters = [enc.encounter];
     const combatPeril: WorldMap = {
       ...seaMap,
@@ -823,17 +823,17 @@ describe('Traversée RAPIDE — un seul Test de Rude épreuve (MDG 15 l.21-37, C
 
 describe('Traversée rapide × embuscade ANCRÉE (#212) : interruption puis reprise en rapide', () => {
   const abordageMap: WorldMap = {
-    id: 'm', nom: 'Mer des Griffes',
+    id: 'm', label: 'Mer des Griffes',
     places: [
       { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
       { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
     ],
     routes: [{ id: 'r1', a: 'A', b: 'B', km: 550, modes: ['mer'], sea: true, seaHeading: 'est', ambush: { scene: 'ls-abordage', encounter: 'enc-abordage', at: 0.5 } }],
   };
-  function portScene(id: string, nom: string): Scene { const s = emptyScene(2, 2); s.id = id; s.nom = nom; return s; }
+  function portScene(id: string, nom: string): Scene { const s = emptyScene(2, 2); s.id = id; s.label = nom; return s; }
   function abordageScene(): Scene {
-    const s = emptyScene(10, 10); s.id = 'ls-abordage'; s.nom = 'Abordage';
-    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { label: 'Écumeur', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+    const s = emptyScene(10, 10); s.id = 'ls-abordage'; s.label = 'Abordage';
+    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { type: 'statblock', label: 'Écumeur', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
     s.entities.push(...enc.entities); s.encounters = [enc.encounter];
     return s;
   }

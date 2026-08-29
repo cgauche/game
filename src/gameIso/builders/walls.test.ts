@@ -500,7 +500,7 @@ describe('crestEls — crénelure de PÉRIMÈTRE (RENDU PUR, générale, jamais 
   // Zone crénelée 2×2 (cells 2,2/3,2/2,3/3,3) à 4 m sur z1, posée PAR L'ASCII via `elevate` (coordonnée-free).
   const empty = '......';
   const spec2x2 = {
-    id: 't', nom: 't', size: [6, 6] as [number, number],
+    id: 't', label: 't', size: [6, 6] as [number, number],
     legend: { W: 'pierre' as const },
     elevate: { W: { height: 4, parapet: 'mur-en-pierre' } },
     levels: { z0: Array(6).fill(empty).join('\n'), z1: ['......', '......', '..WW..', '..WW..', '......', '......'].join('\n') },

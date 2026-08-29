@@ -244,7 +244,7 @@ describe('InterludeScreen — catalogue d’Activités data-driven (ADE II + ACE
 
   it('à Altdorf (place de la carte liée à la scène courante) : les Activités d’ACE apparaissent', () => {
     const seam = buildSeam();
-    useGame.setState({ worldMap: { id: 'w', nom: 'W', places: [{ id: 'altdorf', label: 'Altdorf', pos: { x: 0, y: 0 }, scene: testScene.id }], routes: [] } });
+    useGame.setState({ worldMap: { id: 'w', label: 'W', places: [{ id: 'altdorf', label: 'Altdorf', pos: { x: 0, y: 0 }, scene: testScene.id }], routes: [] } });
     const catalog = interludeCatalog(useGame.getState());
     const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: 'activities', catalog }} />);
     expect(html).toContain('Convalescence');

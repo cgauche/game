@@ -19,8 +19,8 @@ import { emptyNarratif } from './campaignNarratif';
  * BANDES — une étape `kind:'encounterPsych'` PAR ENTRÉE DE RÈGLE mise en jeu (type psy + source), et
  * une RANGÉE (`participants`) par héros concerné, au lieu d'une étape par héros. On vérifie ce contrat.
  */
-const TERREUR2: CustomStatblock = { label: 'Spectre', char: { force: 30, endurance: 30, 'force-mentale': 30 }, traits: [{ id: 'terreur', value: 2 }] };
-const ELFE: CustomStatblock = { label: 'Elfe', char: { B: 10 }, groups: ['elfe'] };
+const TERREUR2: CustomStatblock = { type: 'statblock', label: 'Spectre', char: { force: 30, endurance: 30, 'force-mentale': 30 }, traits: [{ id: 'terreur', value: 2 }] };
+const ELFE: CustomStatblock = { type: 'statblock', label: 'Elfe', char: { B: 10 }, groups: ['elfe'] };
 
 function ent(over: Partial<SceneEntity> & Pick<SceneEntity, 'id'>): SceneEntity {
   return { kind: 'personnage', pos: { x: 1, y: 1 }, ...over } as SceneEntity;
@@ -28,7 +28,7 @@ function ent(over: Partial<SceneEntity> & Pick<SceneEntity, 'id'>): SceneEntity 
 
 function scene(entities: SceneEntity[]): Scene {
   return {
-    id: 's', nom: 'S', dimensions: { w: 4, h: 4 },
+    id: 's', label: 'S', dimensions: { w: 4, h: 4 },
     layers: [{ z: 0, tiles: Array(16).fill('herbe') }], entities,
     dialogues: [], triggers: [], encounters: [], flags: {},
   };
@@ -220,7 +220,7 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (bandes
 
   it('aucune source sociale (PNJ neutre) → aucune cascade', () => {
     useGame.setState({ party: [animosite('H')] });
-    useGame.getState().startScene(scene([ent({ id: 'paysan', statblock: { label: 'Paysan', char: { B: 10 } } })]));
+    useGame.getState().startScene(scene([ent({ id: 'paysan', statblock: { type: 'statblock', label: 'Paysan', char: { B: 10 } } })]));
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 
@@ -239,7 +239,7 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (bandes
     const h = timoreux('H');
     h.psychTraits = [{ type: 'phobie', cible: 'araignees', indice: 1 }];
     useGame.setState({ party: [h] });
-    useGame.getState().startScene(scene([ent({ id: 'arai', statblock: { label: 'Araignée géante', char: { B: 10 }, groups: ['araignees'] } })]));
+    useGame.getState().startScene(scene([ent({ id: 'arai', statblock: { type: 'statblock', label: 'Araignée géante', char: { B: 10 }, groups: ['araignees'] } })]));
     const c = useGame.getState().pendingCascade;
     expect(c, 'aucune bande : le phobique ne teste plus rien hors combat').toBeTruthy();
     const step = c!.participants[0];

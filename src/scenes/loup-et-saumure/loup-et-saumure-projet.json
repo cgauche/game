@@ -1,5 +1,5 @@
 {
- "schema": 5,
+ "schema": 6,
  "id": "loup-et-saumure",
  "label": "Le Loup et la Saumure",
  "icon": "scenario/naval",
@@ -13,7 +13,7 @@
  "scenes": [
   {
    "id": "ls-quai-salzenmund",
-   "nom": "Salzenmund — le quai de la Seconde Flotte",
+   "label": "Salzenmund — le quai de la Seconde Flotte",
    "dimensions": {
     "w": 16,
     "h": 10
@@ -880,7 +880,7 @@
   },
   {
    "id": "ls-abordage-cogue",
-   "nom": "La Dent de Manann — voile noire sous le vent (J4)",
+   "label": "La Dent de Manann — voile noire sous le vent (J4)",
    "dimensions": {
     "w": 24,
     "h": 14
@@ -1413,6 +1413,7 @@
      },
      "label": "Frère Aldo (équipage exposé)",
      "statblock": {
+      "type": "statblock",
       "label": "Frère Aldo (équipage exposé)",
       "char": {
        "M": 4,
@@ -1448,6 +1449,7 @@
      },
      "label": "Griet (équipage exposé)",
      "statblock": {
+      "type": "statblock",
       "label": "Griet (équipage exposé)",
       "char": {
        "M": 4,
@@ -1620,6 +1622,7 @@
      },
      "label": "Barreur de la Dent de Manann",
      "statblock": {
+      "type": "statblock",
       "label": "Barreur de la Dent de Manann",
       "char": {
        "M": 4,
@@ -1655,6 +1658,7 @@
      },
      "label": "Canonnier de la Dent de Manann",
      "statblock": {
+      "type": "statblock",
       "label": "Canonnier de la Dent de Manann",
       "char": {
        "M": 4,
@@ -1783,7 +1787,7 @@
   },
   {
    "id": "ls-quai-erengrad",
-   "nom": "Erengrad — le port kislevite",
+   "label": "Erengrad — le port kislevite",
    "dimensions": {
     "w": 16,
     "h": 8
@@ -2238,7 +2242,7 @@
   },
   {
    "id": "ls-abordage-olg",
-   "nom": "Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)",
+   "label": "Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)",
    "dimensions": {
     "w": 24,
     "h": 14
@@ -2771,6 +2775,7 @@
      },
      "label": "Frère Aldo (équipage exposé)",
      "statblock": {
+      "type": "statblock",
       "label": "Frère Aldo (équipage exposé)",
       "char": {
        "M": 4,
@@ -2806,6 +2811,7 @@
      },
      "label": "Griet (équipage exposé)",
      "statblock": {
+      "type": "statblock",
       "label": "Griet (équipage exposé)",
       "char": {
        "M": 4,
@@ -2984,6 +2990,7 @@
      },
      "label": "Barreur du Serpent-de-Sel",
      "statblock": {
+      "type": "statblock",
       "label": "Barreur du Serpent-de-Sel",
       "char": {
        "M": 4,
@@ -3019,6 +3026,7 @@
      },
      "label": "Canonnier du Serpent-de-Sel",
      "statblock": {
+      "type": "statblock",
       "label": "Canonnier du Serpent-de-Sel",
       "char": {
        "M": 4,
@@ -3143,7 +3151,7 @@
   },
   {
    "id": "ls-epilogue-salzenmund",
-   "nom": "Salzenmund — le retour (J13)",
+   "label": "Salzenmund — le retour (J13)",
    "dimensions": {
     "w": 14,
     "h": 9
@@ -3401,7 +3409,7 @@
  ],
  "worldMap": {
   "id": "carte-loup-et-saumure",
-  "nom": "La Mer des Griffes — Salzenmund ⇄ Erengrad",
+  "label": "La Mer des Griffes — Salzenmund ⇄ Erengrad",
   "places": [
    {
     "id": "salzenmund",

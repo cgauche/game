@@ -5,9 +5,9 @@ import type { NarratifBlock } from './campaignNarratif';
  *  de projet, jamais un littéral `schema`/champs dupliqués), mais RELÂCHÉE pour le stock legacy : un
  *  projet enregistré avant #765 est un schema 2 sans `narratif`, un projet enregistré avant #1467 est
  *  un schema 3 aux anciens rôles de prose ou un schema 4 à poche `meta`. La montée au format courant
- *  se fait au CHARGEMENT via `parseProject` (chaîne 2→3→4→5), jamais dans ce module. */
+ *  se fait au CHARGEMENT via `parseProject` (chaîne 2→3→4→5→6), jamais dans ce module. */
 export type StoredProject = Omit<ProjectDoc, 'schema' | 'narratif'> & {
-  schema: 2 | 3 | 4 | 5;
+  schema: 2 | 3 | 4 | 5 | 6;
   narratif?: NarratifBlock;
 };
 

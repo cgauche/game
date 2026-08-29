@@ -32,7 +32,7 @@ function fakeStorage(): Storage {
 function scene(id: string): Scene {
   const s = emptyScene(6, 6);
   s.id = id;
-  s.nom = id;
+  s.label = id;
   s.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
   return s;
 }
@@ -46,7 +46,7 @@ const narratif: NarratifBlock = {
 };
 
 const worldMap: WorldMap = {
-  id: 'snap-carte', nom: 'Carte', places: [{ id: 'p', label: 'Bourg', pos: { x: 0, y: 0 }, scene: 'scene-a' }], routes: [],
+  id: 'snap-carte', label: 'Carte', places: [{ id: 'p', label: 'Bourg', pos: { x: 0, y: 0 }, scene: 'scene-a' }], routes: [],
 };
 
 describe('#766 — save de campagne auto-suffisante et rejouable', () => {

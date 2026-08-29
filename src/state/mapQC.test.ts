@@ -17,7 +17,7 @@ describe('mapQC — harnais QC de cartes (#778)', () => {
   it('deux étages reliés par une volée `cells.stair` (#780) : connexité verticale + pièces nommées atteignables', () => {
     // Reprend la géométrie éprouvée de mapSpec.test.ts (#780) : foyer z0 → volée `E` → galerie z1.
     const scene = buildScene({
-      id: 's-2f', nom: 'Deux étages', size: [4, 3], terrain: 'mur',
+      id: 's-2f', label: 'Deux étages', size: [4, 3], terrain: 'mur',
       levels: { z0: ['....', 'FEEE', '....'].join('\n'), z1: ['...G', '....', '....'].join('\n') },
       legend: { F: 'pave', G: 'pierre' },
       elevate: { F: 1, G: 4 },
@@ -42,7 +42,7 @@ describe('mapQC — harnais QC de cartes (#778)', () => {
     // N/E/S/O), pas par du terrain `mur` (coins ÉTANCHES : `neighborsOf` bloque la diagonale via
     // l'arête posée sur la case CIBLE, #789 — aucun contournement par le terrain n'est nécessaire).
     const scene = buildScene({
-      id: 's-mur', nom: 'Cellule scellée', size: [5, 3], terrain: 'herbe',
+      id: 's-mur', label: 'Cellule scellée', size: [5, 3], terrain: 'herbe',
       heroStart: [1, 1],
       walls: [
         { x: 3, y: 1, side: 'N' },
@@ -61,7 +61,7 @@ describe('mapQC — harnais QC de cartes (#778)', () => {
 
   it('zone posée sur du mur (aucune case marchable) → inatteignable', () => {
     const scene = buildScene({
-      id: 's-vide', nom: 'Zone sur du mur', size: [3, 3], terrain: 'mur',
+      id: 's-vide', label: 'Zone sur du mur', size: [3, 3], terrain: 'mur',
       levels: { z0: ['...', '.P.', '...'].join('\n') },
       legend: { P: 'herbe' },
       heroStart: [1, 1],
@@ -110,7 +110,7 @@ describe('reachableCells — mêmes cases que le parcours en largeur (#1416)', (
   const memes = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((k) => b.has(k));
 
   const cellule = buildScene({
-    id: 's-mur', nom: 'Cellule scellée', size: [5, 3], terrain: 'herbe',
+    id: 's-mur', label: 'Cellule scellée', size: [5, 3], terrain: 'herbe',
     heroStart: [1, 1],
     walls: [
       { x: 3, y: 1, side: 'N' },
@@ -122,7 +122,7 @@ describe('reachableCells — mêmes cases que le parcours en largeur (#1416)', (
     zoneLegend: { X: { label: 'Cellule scellée' } },
   });
   const deuxEtages = buildScene({
-    id: 's-2f', nom: 'Deux étages', size: [4, 3], terrain: 'mur',
+    id: 's-2f', label: 'Deux étages', size: [4, 3], terrain: 'mur',
     levels: { z0: ['....', 'FEEE', '....'].join('\n'), z1: ['...G', '....', '....'].join('\n') },
     legend: { F: 'pave', G: 'pierre' },
     elevate: { F: 1, G: 4 },

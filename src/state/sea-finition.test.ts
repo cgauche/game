@@ -27,7 +27,7 @@ const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
 const seaMap: WorldMap = {
-  id: 'm', nom: 'Mer des Griffes',
+  id: 'm', label: 'Mer des Griffes',
   places: [
     { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a', port: { taille: 4, richesse: 4, production: ['bois'], surplus: { 'produits-de-luxe': 1 } } },
     { id: 'B', label: 'Marienburg', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 4, richesse: 5, production: ['commerce'], demande: { bois: 1 }, cosmopolite: true } },
@@ -39,7 +39,7 @@ function freshState() {
   seedBattleRng(7);
   useGame.setState({
     party: makePregens().slice(0, 3),
-    scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null,
     worldMap: seaMap,
     travelPlan: null,
@@ -277,7 +277,7 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
     expect((vessel.cargo ?? []).length).toBe(1);
     expect(partyMoneyTotal(get).gold).toBeLessThanOrEqual(before);
     // Vente dans un autre port : on pose le navire à Marienburg (« commerce ») et on solde le lot.
-    set({ vessel: { ...get().vessel!, lastVoyageMilles: 550 }, port: null, scene: { id: 'port-b', nom: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
+    set({ vessel: { ...get().vessel!, lastVoyageMilles: 550 }, port: null, scene: { id: 'port-b', label: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
     get().openPort();
     const cargoLen = (get().vessel!.cargo ?? []).length;
     get().portSellCargo(0);
@@ -315,7 +315,7 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
   it('portDumpCargo brade à ¼ du prix de base dans un port « commerce »', () => {
     seedBattleRng(2);
     set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 100, basePriceGold: 2 }] } });
-    set({ scene: { id: 'port-b', nom: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
+    set({ scene: { id: 'port-b', label: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
     get().openPort();
     const before = partyMoneyTotal(get).gold;
     get().portDumpCargo(0);

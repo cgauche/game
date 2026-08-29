@@ -442,7 +442,7 @@ export function buildApi() {
       return {
         screen: s.screen,
         sceneId: s.scene?.id,
-        sceneName: s.scene?.nom,
+        sceneName: s.scene?.label,
         partyPos: s.partyPos,
         mode: s.mode,
         inDialogue: !!s.dialogue,

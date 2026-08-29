@@ -22,7 +22,7 @@ const CREW = [`pregen-${PREGEN.soldat}`, `pregen-${PREGEN.chasseur}`] as const;
  */
 const scene = buildScene({
   id: 'test-embuscade-fluviale',
-  nom: 'Embuscade fluviale',
+  label: 'Embuscade fluviale',
   size: [18, 12],
   terrain: 'planches',
   heroStart: [3, 7],

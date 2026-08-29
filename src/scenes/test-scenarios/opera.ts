@@ -6,7 +6,7 @@ import type { TestScenario } from './_shared';
 import { flowFromEffects, testFlow, type Flow } from '../../state/flow';
 
 // Profil des deux étudiants saboteurs : de jeunes civils paniqués, vifs mais fragiles (pas de combattants).
-const ETUDIANT: CustomStatblock = {
+const ETUDIANT: CustomStatblock = { type: 'statblock',
   label: 'Étudiant', char: { M: 4, 'capacite-de-combat': 32, 'capacite-de-tir': 38, force: 30, endurance: 30, initiative: 35, agilite: 38, dexterite: 35, intelligence: 42, 'force-mentale': 28, sociabilite: 35, B: 11 },
   weaponDamage: '+BF+2', armour: 0,
 };
@@ -150,7 +150,7 @@ const ents: SceneEntity[] = [
 
 const spec: MapSpec = {
   id: 'test-opera-theatre',
-  nom: 'Opéra — Le théâtre',
+  label: 'Opéra — Le théâtre',
   desc: 'Le Théâtre Staatsoper d\'après le plan du scénario : coulisses, scène (surélevée), parterre, hall et rampes jumelles ; galerie de loges et loge royale à l\'étage (couche surélevée à 2 m).',
   size: [W, H],
   ambiance: 'interieur',

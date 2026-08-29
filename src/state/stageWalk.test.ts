@@ -211,7 +211,7 @@ describe('FRONTIÈRE DE SCÈNE — une marche tenue ne traverse pas la transitio
   function scenePiegee(id: string, dest: string) {
     const sc = emptyScene(10, 10);
     sc.id = id;
-    sc.nom = id;
+    sc.label = id;
     sc.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 5, y: 5 } });
     sc.triggers.push({ id: 'porte', rect: { x: 4, y: 4, w: 1, h: 1 }, flow: flowFromEffects([{ type: 'transition', scene: dest }]) });
     return sc;
@@ -220,7 +220,7 @@ describe('FRONTIÈRE DE SCÈNE — une marche tenue ne traverse pas la transitio
   function sceneArrivee(id: string) {
     const sc = emptyScene(10, 10);
     sc.id = id;
-    sc.nom = id;
+    sc.label = id;
     sc.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 8, y: 8 } });
     return sc;
   }
