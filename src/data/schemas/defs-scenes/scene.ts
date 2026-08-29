@@ -9,6 +9,15 @@
  * `Effect` et son `Flow` vivent dans `./effets.ts` (les 57 variantes) ; le vocabulaire feuille
  * partagé avec elles vit dans `./communs.ts`. Import de TYPE seul depuis `src/state` — aucun import
  * runtime de la couche state.
+ *
+ * ÉCART MESURÉ (arbre `baeeb124c`, 2026-08-27) : une scène ne porte PAS de champ `type`. Mesure sur
+ * les 2 racines de `src/scenes` : 4 projets, 27 scènes, 0 portant `type` ; aucun consommateur de
+ * `src/**` ne discrimine une scène par ce champ (0 site `scene.type` / `.type === 'scene'`).
+ * L'identité d'une scène est POSITIONNELLE — `projet.scenes[]` (`./projet.ts`, `schema: 6`). Poser
+ * un `type: 'scene'` déclarerait donc une forme neuve : `schema` passerait à 7 ET `SAVE_VERSION`
+ * serait bumpée (`src/state/saves.ts:28`, 29 au jour de la mesure — `snapshotSave` recopie le
+ * `state` ENTIER, `state.scene` compris, dans `data`). Le régime d'enveloppe propre aux
+ * `defs-scenes` est porté par #1552.
  */
 import { z } from 'zod';
 import { difficultySchema, entityAppearanceSchema } from '../grammaire/valeurs';

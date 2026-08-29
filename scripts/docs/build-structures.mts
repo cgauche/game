@@ -434,7 +434,8 @@ out += 'Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé 
 out += 'résout vers RIEN, sans être un document, et qui ne porte pas d’`op` (la strate Ops le porterait).\n';
 out += 'Aucune strate ne le porte : c’est ce que le détecteur ne sait pas nommer, et il se compte au lieu\n';
 out += 'de se taire. Stock `STRUCTURES_ORPHELINES` ; le LOT suit le motif — `L1a #1466` quand le NOM de la\n';
-out += 'clé annonçait une FK (`clé de référence non résolue`), `L1b #1467` pour les autres motifs.\n\n';
+out += 'clé annonçait une FK (`clé de référence non résolue`), `#1553` pour les autres motifs (curation de\n';
+out += 'CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe).\n\n';
 {
   const total = scan.orphelines.reduce((a, o) => a + o.occurrences, 0);
   const parMotif = new Map<string, { lignes: number; occurrences: number }>();
@@ -446,7 +447,7 @@ out += 'clé annonçait une FK (`clé de référence non résolue`), `L1b #1467`
   out += `**${scan.orphelines.length}** signatures orphelines, **${total}** occurrences. Par motif : `;
   out += motifs.map((m) => `\`${m}\` ${parMotif.get(m)?.lignes ?? 0}`).join(' · ');
   out += `. Le lot \`L1a #1466\` porte donc ${parMotif.get('clé de référence non résolue')?.lignes ?? 0} ligne(s) ici, `;
-  out += `\`L1b #1467\` en porte ${scan.orphelines.length - (parMotif.get('clé de référence non résolue')?.lignes ?? 0)}.\n\n`;
+  out += `\`#1553\` en porte ${scan.orphelines.length - (parMotif.get('clé de référence non résolue')?.lignes ?? 0)}.\n\n`;
   out += tableau(
     ['Dataset', 'Champ', 'Signature', 'Motif', 'Occurrences'],
     scan.orphelines.map((o) => [`\`${o.dataset}\``, `\`${o.champ}\``, `\`${o.signature}\``, o.motif, o.occurrences]),

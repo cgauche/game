@@ -63,8 +63,11 @@ export const LOT_CLE_RESERVEE: Readonly<Record<string, string>> = {
   source: 'L1d #1469',
 };
 
-/** Les 7 lots d'extinction du chantier — un `lot` de stock hors de cette liste est une dérive. */
-export const LOTS_CONNUS = ['L1a #1466', 'L1b #1467', 'L1c #1468', 'L1d #1469', 'L2 #1463', 'L3 #1463', 'L4 #1463'] as const;
+/** Les 9 lots d'extinction du chantier — un `lot` de stock hors de cette liste est une dérive.
+ *  `L2 #1548` porte la migration `key` → `characteristic` de `progression-schemas.derived.json` (une
+ *  RÉFÉRENCE, pas une identité) ; `#1553` porte la CURATION des orphelines (contenu qui ne résout
+ *  vers rien), qui n'est pas une forme d'enveloppe. */
+export const LOTS_CONNUS = ['L1a #1466', 'L1b #1467', 'L1c #1468', 'L1d #1469', 'L2 #1463', 'L2 #1548', 'L3 #1463', 'L4 #1463', '#1553'] as const;
 
 /**
  * ANGLES MORTS de la mesure — SOURCE UNIQUE, consommée par la garde

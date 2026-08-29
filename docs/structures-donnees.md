@@ -2222,9 +2222,10 @@ Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réserv�
 résout vers RIEN, sans être un document, et qui ne porte pas d’`op` (la strate Ops le porterait).
 Aucune strate ne le porte : c’est ce que le détecteur ne sait pas nommer, et il se compte au lieu
 de se taire. Stock `STRUCTURES_ORPHELINES` ; le LOT suit le motif — `L1a #1466` quand le NOM de la
-clé annonçait une FK (`clé de référence non résolue`), `L1b #1467` pour les autres motifs.
+clé annonçait une FK (`clé de référence non résolue`), `#1553` pour les autres motifs (curation de
+CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe).
 
-**92** signatures orphelines, **310** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 90 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `L1b #1467` en porte 92.
+**92** signatures orphelines, **310** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 90 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 92.
 
 | Dataset | Champ | Signature | Motif | Occurrences |
 |---|---|---|---|---|

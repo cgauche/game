@@ -95,6 +95,12 @@ const DATE_STOCK = '2026-08-23';
 /** `lot` et `date` ENTRENT dans la clé comparée (#1465 F1) ; le LOT attendu se DÉDUIT du concept. */
 type Trace = { lot?: string; date?: string };
 const trace = (x: Trace, lot: string) => ` | ${x.lot ?? lot} | ${x.date ?? DATE_STOCK}`;
+/** LOT par défaut d'une divergence d'ENVELOPPE observée (le stock, lui, le porte ligne à ligne) :
+ *  une absence sur les ENTRÉES DE RACINE part en `L1d #1469` ; une clé divergente part en `L1b #1467`,
+ *  SAUF le `key` de `progression-schemas.derived.json` — un `charKeySchema`, donc une RÉFÉRENCE à une
+ *  Caractéristique et non une identité : il part en `L2 #1548` (`key` → `characteristic`). */
+const lotEnveloppe = (e: { role: string; document: string }) =>
+  e.role === 'source' ? 'L1d #1469' : e.document === 'progression-schemas.derived.json' ? 'L2 #1548' : 'L1b #1467';
 const cleForme = (
   f: {
     concept: string;
@@ -111,7 +117,7 @@ const cleForme = (
   trace(f, lotDeForme(f.concept, f.signature, f.cibles ?? []));
 const cleOrpheline = (o: { dataset: string; champ: string; signature: string; motif: string; occurrences: number } & Trace) =>
   `${o.dataset} | ${o.champ} | ${o.signature} | ${o.motif} | ${o.occurrences}` +
-  trace(o, o.motif === 'clé de référence non résolue' ? 'L1a #1466' : 'L1b #1467');
+  trace(o, o.motif === 'clé de référence non résolue' ? 'L1a #1466' : '#1553');
 /**
  * CLIQUET des signatures hors strate (#1465) : elles ne sont pas au stock — la table EXHAUSTIVE
  * de `docs/structures-donnees.md` EST la liste de référence, et ce plafond garde son COMPTE.
@@ -242,10 +248,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       entrees: number;
     } & Trace) =>
       `${e.role} | ${e.cle} | ${e.motif}${e.detail ? `:${e.detail}` : ''} | ${e.document} › ${e.chemin} | ${e.entrees}` +
-      trace(e, e.role === 'source' ? 'L1d #1469' : 'L1b #1467');
+      trace(e, lotEnveloppe(e));
     expect(
       lignes(scan.enveloppe.map(cle)),
-      'écart entre les divergences d’ENVELOPPE observées et `STRUCTURES_ENVELOPPE` — le dénominateur du lot L1b (#1467) : absences sur les ENTRÉES DE RACINE, clés divergentes partout, y compris sur les documents EMBARQUÉS.',
+      'écart entre les divergences d’ENVELOPPE observées et `STRUCTURES_ENVELOPPE` — absences sur les ENTRÉES DE RACINE (`L1d #1469`), clés divergentes partout (`L1b #1467`, sauf le `key` de `progression-schemas.derived.json` qui est une RÉFÉRENCE et part en `L2 #1548`), y compris sur les documents EMBARQUÉS.',
     ).toEqual(lignes(STRUCTURES_ENVELOPPE.map(cle)));
   });
 
@@ -504,7 +510,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       `${h.cle} | ${[...h.classes].sort().join('/')} | ${h.occurrences}` + trace(h, LOT_CLE_RESERVEE[h.cle] ?? 'L4 #1463');
     const cleEnveloppe = (e: { role: string; cle: string; motif: string; detail: string; document: string; chemin: string; entrees: number } & Trace) =>
       `${e.role} | ${e.cle} | ${e.motif}${e.detail ? `:${e.detail}` : ''} | ${e.document} › ${e.chemin} | ${e.entrees}` +
-      trace(e, e.role === 'source' ? 'L1d #1469' : 'L1b #1467');
+      trace(e, lotEnveloppe(e));
     const cleRedeclaration = (r: { def: string; champ: string; concept: string; signature: string; statut: string; commun: string; occurrences: number } & Trace) =>
       `${r.def} | ${r.champ} | ${r.concept} | ${r.signature} | ${r.statut} | ${r.commun} | ${r.occurrences}` +
       trace(r, lotDeForme(r.concept, r.signature));
