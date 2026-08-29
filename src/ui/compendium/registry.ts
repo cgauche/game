@@ -1491,11 +1491,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
-    // `QualityData` (`data/index.ts:1849`) ne déclare PAS `source`, que la donnée porte 59/59 : ce cast
-    // est ce qui tient le champ. Il tombe quand la façade se complète — `depuisEnveloppe` prendra sa place.
-    build: () => (qualities as { id: string; label: string; polarite?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[]; capabilities?: Record<string, unknown> }[]).map((q) => depuisEnveloppe(q, {
+    build: () => qualities.map((q) => depuisEnveloppe(q, {
       sub: join(qualityTypeLabel(q.polarite), qualitySubtypeLabel(q.subType)),
-      sections: sections(capabilitySection(q.capabilities, QUALITY_CAP_LABEL), passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
+      sections: sections(capabilitySection(q.capabilities as Record<string, unknown> | undefined, QUALITY_CAP_LABEL), passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
     })),
   },
   {

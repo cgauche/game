@@ -1856,6 +1856,7 @@ export interface QualityData {
   polarite: 'atout' | 'defaut';
   subType: string | null;
   desc: string;
+  source?: SourceRef;
   /** Emplacement SECONDAIRE (#563) — même Qualité réimprimée/à cheval ailleurs (ex. Tir de zone :
    *  AA 89 + MDG 102). Accessors `allLocations`/`sourceBooks` (`src/data/sourceRefs.ts`). */
   alsoIn?: SecondaryRef[];
@@ -2670,7 +2671,7 @@ const weatherData = weatherJson as {
     visibiliteM?: number; rangedMod?: number; rangedUseless?: boolean; powderUseless?: boolean;
     physicalTestMod?: number; movementWalkOnly?: boolean; lightningNervous?: boolean;
     resistanceTest?: { difficulty: string; onFail: 'extenue'; enjeu?: string };
-    source?: { book?: string; page?: number };
+    source?: SourceRef;
   }[];
 };
 /** 1 entrée par saison, `ranges` = plages d100 → météo (lecture par `rollStageWeather`). */
