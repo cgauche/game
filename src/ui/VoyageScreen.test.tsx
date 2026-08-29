@@ -4,6 +4,7 @@ import type { Combatant } from '../engine/types';
 import type { TravelPlan } from '../state/travelFlow';
 import { rollSeaWeather } from '../engine/seaWeather';
 import { voyageMode, voyageTiles, voyageDayCards, dayAgenda } from './VoyageScreen';
+import { moraleBand } from '../engine/crewMorale';
 import { voyageStepPending } from '../state/modalArbiter';
 import type { PendingCascade, CascadeStep } from '../state/pendings';
 import type { PendingRest } from '../state/store';
@@ -63,6 +64,15 @@ describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
     const coque = voyageTiles('mer', seaPlan(), vessel(), [hero('h1')], [], 0).find((t) => t.key === 'coque')!;
     expect(coque.value).toBe('8 / 20');
     expect(coque.gauge).toBeDefined();
+  });
+
+  it('tuile MORAL : le titre affiché est le `label` de la bande (score 120 — MDG 14), jamais une phrase d’effet tronquée', () => {
+    const haut: CampaignVessel = { ...vessel(), morale: { score: 120, lastMoraleWeek: 0, factors: [] } };
+    const moral = voyageTiles('mer', seaPlan(), haut, [hero('h1')], [], 0).find((t) => t.key === 'moral')!;
+    const band = moraleBand(120);
+    expect(moral.value).toBe(`120 — ${band.label}`);
+    expect(moral.value).not.toContain('Tests de Commandement');
+    expect(moral.value).not.toBe(`120 — ${band.desc.split('.')[0]}`);
   });
 
   it('tuiles TERRE : allure et saison (sans navire ni bêtes)', () => {

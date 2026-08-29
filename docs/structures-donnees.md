@@ -50,8 +50,8 @@ troncature se COMPTE ici, elle ne se tait pas.
 ### 1bis. Index des ids (le cœur du détecteur)
 
 Identités indexées : **5761** (entrées de racine + documents embarqués) ; libellés
-normalisés : **4987**. Un id vu dans PLUSIEURS datasets rend la résolution
-AMBIGUË (jamais fausse) : **387** collisions, et **3337** ids
+normalisés : **4991**. Un id vu dans PLUSIEURS datasets rend la résolution
+AMBIGUË (jamais fausse) : **387** collisions, et **3338** ids
 sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
 
 | Id | Datasets |
@@ -768,7 +768,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `barge-du-sel-projet.json` | `worldMap.places` | 2 | `icon`(2) `id`(2) `label`(2) `pos`(2) `scene`(2) |
 | `barge-du-sel-projet.json` | `worldMap.routes` | 1 | `a`(1) `ambush`(1) `b`(1) `id`(1) `km`(1) `modes`(1) `sea`(1) `seaHeading`(1) |
 | `characteristics.json` | `options` | 2 | `desc`(2) `id`(2) `label`(2) `source`(2) |
-| `crew-morale.json` | `bands` | 4 | `captainCmdDR`(4) `crewTestDR`(4) `desc`(4) `desertionRoll`(2) `id`(4) `max`(4) `min`(4) `source`(4) |
+| `crew-morale.json` | `bands` | 4 | `captainCmdDR`(4) `crewTestDR`(4) `desc`(4) `desertionRoll`(2) `id`(4) `label`(4) `max`(4) `min`(4) `source`(4) |
 | `crew-morale.json` | `factors` | 28 | `effect`(28) `id`(28) `label`(28) `recommendedPay`(1) `source`(28) `wageMul`(4) |
 | `crew-test-types.json` | `types` | 10 | `essential`(10) `id`(10) `label`(10) `moraleOnNegativeDR`(1) `roles`(10) `rule`(10) `source`(10) `steering`(1) |
 | `criticals.json` | `bras` | 20 | `amputation`(4) `desc`(20) `escalation`(4) `id`(20) `label`(20) `lethal`(1) `max`(20) `min`(20) `ops`(19) `resist`(5) `source`(20) `traumas`(7) |

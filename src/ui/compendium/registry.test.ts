@@ -11,6 +11,7 @@ import { CodexEntry } from './CodexEntry';
 import { setDataset } from '../../data/overrides';
 import { CHAR_KEYS } from '../../engine/types';
 import { CHAR_ABR } from '../../data';
+import { MORALE_BANDS } from '../../engine/crewMorale';
 
 /** Toutes les lignes 'ref' (cross-réf) d'une fiche, sections + onglets confondus. */
 const refLabelsOf = (item: CodexItem): string[] =>
@@ -229,10 +230,28 @@ describe('Codex registry — #157 (audit d’exposition : datasets de contenu ma
     expect(traumaSec.rows.every((r) => r.t === 'ref' && r.category === 'traumas')).toBe(true);
   });
 
-  it('un dataset SANS `label` (Moral d’équipage — Effets, keyé par `id`) reste identifiable (entryKey = label projeté)', () => {
+  it('Moral d’équipage — Effets : le dataset PORTE ses `label` (titres de bande MDG 14) et le Codex les projette TELS QUELS — jamais l’`id`', () => {
     const items = categoryByKey('crewMoraleBands')!.items;
-    expect(items.length).toBeGreaterThan(0);
-    for (const it of items) expect(it.label).toBeTruthy();
+    expect(items).toHaveLength(MORALE_BANDS.length);
+    for (const b of MORALE_BANDS) {
+      const it = items.find((i) => i.id === b.id)!;
+      expect(it, `bande ${b.id} exposée au Codex`).toBeTruthy();
+      expect(it.label).toBe(b.label);
+      expect(it.label).not.toBe(b.id);
+    }
+  });
+
+  it('les 4 titres de bande de Moral sont gelés nominativement (verbatim MDG 14) — non vides et distincts de l’id', () => {
+    expect(MORALE_BANDS.map((b) => b.label)).toEqual([
+      'Mené de main de maître !',
+      'Un excellent équipage',
+      'Un équipage satisfait',
+      'Des canailles que je ne parviens pas à mater',
+    ]);
+    for (const b of MORALE_BANDS) {
+      expect(b.label.trim()).not.toBe('');
+      expect(b.label).not.toBe(b.id);
+    }
   });
 });
 

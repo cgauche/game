@@ -143,7 +143,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
                 max={100}
                 stacked
                 tone={moraleTone}
-                format={(v) => `${v} — ${moraleBand(v).desc.split('.')[0]}`}
+                format={(v) => `${v} — ${moraleBand(v).label}`}
               />
               <NotchGauge
                 label="Humeur de Manann"
@@ -265,7 +265,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
             <section className="panel port-section">
               <h3>Moral de l’équipage</h3>
               <p className="port-hint">
-                Score courant : <b>{vessel.morale.score}</b> — {moraleBand(vessel.morale.score).desc.split('.')[0]}.
+                Score courant : <b>{vessel.morale.score}</b> — {moraleBand(vessel.morale.score).label}
               </p>
               <p className="port-hint">Facteurs en cours (vers le prochain conseil de bord) :</p>
               {vessel.morale.factors.length ? (

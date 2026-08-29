@@ -184,7 +184,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                 max={100}
                 stacked
                 tone={moraleTone}
-                format={(v) => `${v} — ${moraleBand(v).desc.split('.')[0]}`}
+                format={(v) => `${v} — ${moraleBand(v).label}`}
               />
               <ShipCrewWages vessel={vessel} />
               <p className="port-hint">Salissures : niveau <b>{foulLevel}</b>{vessel.crabs ? ' · crabes boxeurs' : ''}{foulLevel > 0 ? ` — ${foulingEffects(foulLevel).desc}` : ''}</p>

@@ -2422,7 +2422,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'crewMoraleBands', label: 'Moral d’équipage — Effets', group: 'Tables', cluster: 'Équipage & navire',
-    build: () => MORALE_BANDS.map((b) => depuisEnveloppe({ ...b, label: b.id }, {
+    build: () => MORALE_BANDS.map((b) => depuisEnveloppe(b, {
       sub: `d100 ${b.min}–${b.max}`,
       meta: facts(
         fact('DR Commandement (capitaine)', b.captainCmdDR), fact('DR Tests équipage', b.crewTestDR),

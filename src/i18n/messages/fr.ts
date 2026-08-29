@@ -1605,7 +1605,7 @@ export const fr = {
   'crew.taken': "{ship} n'a plus d'équipage en état de le défendre : le navire est pris et sort du combat.",
   'crew.moraleDelta': "Moral de l'équipage : {delta} ({before} → {after}).",
   // La PROSE citée est la `desc` de la bande de Moral (donnée) — seuls les guillemets sont de la locale.
-  'crew.moraleBand': '« {desc}. »',
+  'crew.moraleBand': '« {titre} »',
   'crew.unpaid': "L'équipage n'est pas payé — solde due cumulée ({money}).",
   'crew.paid': "Solde hebdomadaire de l'équipage versée : {money}.",
   'crew.cannotPay': "Bourse insuffisante pour la solde de l'équipage ({money}) — l'équipage n'est pas payé.",

@@ -272,7 +272,7 @@ export function applyShipMoraleDelta(get: Get, set: SetFn, ship: Combatant, delt
   set({ vessel: { ...vessel, morale: { ...vessel.morale, score: after } } });
   const lines = [t('crew.moraleDelta', { delta: `${delta > 0 ? '+' : ''}${delta}`, before, after })];
   const bandAfter = moraleBand(after);
-  if (bandAfter.id !== moraleBand(before).id) lines.push(t('crew.moraleBand', { desc: bandAfter.desc.split('.')[0] }));
+  if (bandAfter.id !== moraleBand(before).id) lines.push(t('crew.moraleBand', { titre: bandAfter.label }));
   return lines;
 }
 
@@ -363,7 +363,7 @@ export function resolveVesselWeek(vessel: CampaignVessel, purse: Money, decision
     morale: { ...vessel.morale, score: r.score, lastMoraleWeek: week },
     ...(wagesOwed ? { wagesOwed } : {}),
   };
-  lines.push(t('crew.moraleRecalc', { score: r.score, band: moraleBand(r.score).desc.split('.')[0] }), ...r.lines);
+  lines.push(t('crew.moraleRecalc', { score: r.score, band: moraleBand(r.score).label }), ...r.lines);
   return { vessel: newVessel, paidLine, costBrass, factorRolls: r.rolls, delta: r.delta, before, after: r.score, lines };
 }
 

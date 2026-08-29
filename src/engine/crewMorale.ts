@@ -47,6 +47,8 @@ export interface MoraleBand {
   min: number;
   max: number;
   id: string;
+  /** Titre de bande verbatim (MDG 14 l.187-202). */
+  label: string;
   /** ±DR aux Tests de Commandement du capitaine. */
   captainCmdDR: number;
   /** ±DR à TOUS les Tests d'équipage. */

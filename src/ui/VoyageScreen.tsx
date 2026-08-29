@@ -203,7 +203,7 @@ export function voyageTiles(
       const capacity = vd?.ship?.capacity ?? 0;
       const cargoEnc = cargoTotalEnc(vessel.cargo ?? []);
       tiles.push({ key: 'coque', icon: 'scenario/port', label: 'Coque', value: `${hullGauge.current} / ${hullGauge.max}`, gauge: { value: hullGauge.current, max: hullGauge.max, tone: hullGauge.tone }, onClick: onDossier, title: 'Dossier du navire' });
-      tiles.push({ key: 'moral', icon: 'nav/seat-owner', label: 'Moral', value: `${vessel.morale.score} — ${moraleBand(vessel.morale.score).desc.split('.')[0]}`, gauge: { value: vessel.morale.score, max: 100, tone: moraleGaugeTone }, onClick: onDossier });
+      tiles.push({ key: 'moral', icon: 'nav/seat-owner', label: 'Moral', value: `${vessel.morale.score} — ${moraleBand(vessel.morale.score).label}`, gauge: { value: vessel.morale.score, max: 100, tone: moraleGaugeTone }, onClick: onDossier });
       if (vessel.provisions != null) tiles.push({ key: 'provisions', icon: 'item/misc', label: 'Provisions', value: `${vessel.provisions} j-homme` });
       tiles.push({ key: 'cale', icon: 'item/misc', label: 'Cale', value: `${cargoEnc} / ${capacity} Enc`, gauge: { value: cargoEnc, max: Math.max(capacity, 1), tone: cargoGaugeTone }, onClick: onDossier });
     }

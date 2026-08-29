@@ -37,7 +37,7 @@ export function CouncilModal() {
         {chosen && <p className="port-hint">Paie de la semaine : <b>{chosen.label}</b>.</p>}
         <MultiRollList entries={p.results ?? []} />
         <p className={`council-result ${moraleTone(after)}`}>
-          Moral : <b>{p.before}</b> → <b>{after}</b> ({delta >= 0 ? '+' : ''}{delta}) — {band.desc.split('.')[0]}.
+          Moral : <b>{p.before}</b> → <b>{after}</b> ({delta >= 0 ? '+' : ''}{delta}) — {band.label}
         </p>
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={() => councilClose()}>Clore le conseil</button>

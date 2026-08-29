@@ -37,9 +37,10 @@ const doc = document(
       min: z.number(),
       max: z.number(),
       id: z.string(),
+      label: z.string(),
       captainCmdDR: z.number(),
       crewTestDR: z.number(),
-      /** Absent si aucune désertion pour cette bande (« Mené de main de maître », « Excellent équipage »). */
+      /** Absent si aucune désertion pour cette bande (« Mené de main de maître ! », « Un excellent équipage »). */
       desertionRoll: z.number().optional(),
       desc: z.string(),
       source: sourceRefSchema,

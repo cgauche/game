@@ -699,7 +699,7 @@ La promiscuité à bord et la mauvaise qualité de la nourriture et de la boisso
 **Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Toux et Éternuements) ; [Litanie de la Pestilence — 9 maladies LDB](#litanie-de-la-pestilence--9-maladies-ldb) (peste noire / flux sanglant / courante galopante / vérole urticante) ; [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (petite bière) ; `docs/raw/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.204-209) → `doc`, `DiseaseDef`, `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `scorbut`, `resolveShoreLeaveDesertion`, +8 — `src/data/crew-morale.json`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/voyage-stakes.json`, `src/engine/disease.ts`, `src/i18n/messages/fr.ts`, +2 fichiers
+- `MDG 14` (l.204-209) → `doc`, `MoraleBand`, `DiseaseDef`, `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `scorbut`, +9 — `src/data/crew-morale.json`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, `src/engine/disease.ts`, +3 fichiers
 
 ---
 
@@ -730,7 +730,7 @@ Maladie spécifique de la navigation. La plupart des gens en souffrent à leur p
 **Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Malaise → Exténué, Nausée → Sonné) ; [Cycle de vie d'une maladie](#cycle-de-vie-dune-maladie) ; `docs/raw/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.211-222) → `doc`, `DiseaseDef`, `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `scorbut`, `resolveShoreLeaveDesertion`, +11 — `src/data/crew-morale.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/voyage-stakes.json`, `src/engine/disease.ts`, +4 fichiers
+- `MDG 14` (l.211-222) → `doc`, `MoraleBand`, `DiseaseDef`, `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `scorbut`, +12 — `src/data/crew-morale.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, +5 fichiers
 
 ---
 
