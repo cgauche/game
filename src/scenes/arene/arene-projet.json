@@ -2,7 +2,7 @@
  "schema": 6,
  "id": "arene",
  "label": "L’Arène",
- "icon": "scenario/village",
+ "icon": "scenario/arena",
  "versionContenu": 1,
  "narratif": {
   "affaires": [],
