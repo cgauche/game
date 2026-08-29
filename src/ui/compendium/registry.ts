@@ -25,6 +25,7 @@ import {
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
 // importés directement d'`engine/massBattle`).
 import type { RaceKey, SourceRef } from '../../data/schemas/grammaire/valeurs';
+import type { EnveloppeDocument } from '../../data/schemas/grammaire/document';
 import { MOUNT_PROFILES } from '../../engine/mountTravel';
 import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS } from '../../engine/travelTables';
 import type { TravelTableEntry } from '../../engine/travelTables';
@@ -70,7 +71,6 @@ import { formatDiseaseTime } from '../../engine/disease';
 import { costPerEnc } from '../../engine/harvest';
 import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
-import type { MutationData } from '../../data/mutations';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
 import { opRows, tableRows } from './opRows';
 import { humanizeCastBonus } from './humanize';
@@ -195,6 +195,27 @@ export interface CodexCategory {
 
 const src = (s: { book?: string; page?: number } | null | undefined): CodexSource | null =>
   s && s.book ? { book: bookAbr(s.book), page: s.page ?? 0 } : null;
+
+/**
+ * DÉFAUT D'ENVELOPPE : l'entrée d'un document (`EnveloppeDocument`) projetée en `CodexItem`.
+ * Prend UNE entrée, jamais un dataset — la spec garde son `.map`/`.filter`/tri.
+ *
+ * `source` passe TOUJOURS par `src()` : `d.source` brut porte l'**id** du livre, et l'imprimer
+ * afficherait `livre-de-base` au lieu de l'abréviation `LDB` (cf. `CodexSource` ci-dessus).
+ * `desc` ET `source` ne sont posées que si la donnée les porte : un champ absent reste ABSENT
+ * (ni `undefined`, ni `null`) — la clé même est l'observable, gelée par `registry-enveloppe.test.ts`.
+ * `extras` est fusionné APRÈS le défaut — un `label`/`desc` fourni par la spec l'emporte.
+ */
+export function depuisEnveloppe<E extends Partial<CodexItem>>(
+  d: Pick<EnveloppeDocument, 'id' | 'label' | 'desc' | 'source'>,
+  extras?: E,
+): CodexItem & E {
+  const base: CodexItem = { id: d.id, label: d.label };
+  const s = src(d.source);
+  if (s) base.source = s;
+  if (d.desc !== undefined) base.desc = d.desc;
+  return { ...base, ...extras } as CodexItem & E;
+}
 
 const fact = (label: string, value: unknown): CodexFact | null =>
   value == null || value === '' || value === '–' ? null : { label, value: String(value) };
@@ -532,8 +553,8 @@ const traitItem = (t0: (typeof traits)[number]): CodexItem => {
   // (`data/schemas/defs/traits.ts`, champ `variants?`) pour que la première n'arrive pas dans un écran muet.
   const t = effectiveEntry(t0);
   const cap = t.capabilities;
-  return {
-    id: t.id, label: t.label, sub: traitArgSkeleton(t), desc: t.desc, source: src(t.source), appearance: t.appearance,
+  return depuisEnveloppe(t, {
+    sub: traitArgSkeleton(t), appearance: t.appearance,
     meta: facts(
       cap?.psychType ? fact('Psychologie', psychologyLabel(cap.psychType)) : null,
       cap?.psychImmune ? fact('Immunité', '(Psychologie)') : null,
@@ -545,7 +566,7 @@ const traitItem = (t0: (typeof traits)[number]): CodexItem => {
       passiveSection(t.passive), effectsSection(t.effects),
       ...reverseSections('traits', t.id), // Créatures ayant ce trait · Mutations le conférant
     ),
-  };
+  });
 };
 
 // ── Fraîcheur du Codex : invalidation, version, projections paresseuses ─────────────────────────
@@ -668,13 +689,11 @@ function critEntryItem(e: CritTableEntry): CodexItem {
  *  Problèmes de véhicule EDOC 7, Rencontres EDOC 8, #157 suite) — MÊME projection pour les 3
  *  familles : plage d100 → texte + Dégâts véhicule éventuels + effet GameOp sur les occupants. */
 function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem {
-  return {
-    id: e.id, label: e.label,
+  return depuisEnveloppe(e, {
     sub: `d100 ${e.min}–${e.max}`,
-    desc: e.desc,
     meta: facts(fact('Dégâts véhicule', e.vehicleWounds ?? null)),
     sections: sections(passiveSection(e.occupantOps, occupantsTitle)),
-  };
+  });
 }
 
 /** Item Codex d'une entrée de Critique de coque (`ShipCritEntry` — MDG 13 navire, MSRC 7 fluvial,
@@ -682,8 +701,7 @@ function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem
  *  vocabulaire que les autres Critiques (`critEntryItem`). */
 function shipCritEntryItem(e: ShipCritEntry): CodexItem {
   const ct = e.crewTest;
-  return {
-    id: e.id, label: e.label,
+  return depuisEnveloppe(e, {
     sub: `d10 ${e.min}–${e.max}`,
     desc: e.note,
     meta: facts(
@@ -704,7 +722,7 @@ function shipCritEntryItem(e: ShipCritEntry): CodexItem {
         : null,
       ct ? passiveSection(ct.onFail, 'Conséquence (échec du Test)') : null,
     ),
-  };
+  });
 }
 
 /** Item Codex d'un Événement de bord/de port (`SeaEventDef` — MDG 15, #157 suite) : plage de jet
@@ -953,15 +971,14 @@ function miscastTestSection(t: NonNullable<MiscastRowEntry['test']>): CodexSecti
 /** Item Codex d'une entrée de table miscast (Incantation Imparfaite / Colère des dieux) — plage d100 →
  *  nom, effet immédiat (`ops`, dialecte) + Test imbriqué éventuel + relance (cascade/multiplication). */
 function miscastRowItem(e: MiscastRowEntry): CodexItem {
-  return {
-    id: e.id, label: e.label, sub: `d100 ${e.min}–${e.max}`,
-    source: src(e.source),
+  return depuisEnveloppe(e, {
+    sub: `d100 ${e.min}–${e.max}`,
     meta: facts(e.reroll ? fact('Relance', e.reroll === 'majeure' ? 'Cascade → Tableau Majeur' : 'Multiplication (2 tirages Mineurs)') : null),
     sections: sections(
       e.ops?.length ? { title: 'Effet immédiat', layout: 'list', rows: e.ops.map(miscastOpRow) } : null,
       e.test ? miscastTestSection(e.test) : null,
     ),
-  };
+  });
 }
 
 /** Libellé FR du `kind` d'un phénomène arcanique (VDM 14) — vocabulaire déjà porté par le RAW
@@ -1068,8 +1085,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         phenomena: ArcanePhenomenon[]; tables: ArcaneTable[];
       };
       return [
-        ...[...d.saturationLevels].sort((a, b) => a.order - b.order).map((l) => ({
-          id: l.id, label: l.label, group: 'Paliers de Saturation', desc: l.desc, source: src(l.source),
+        ...[...d.saturationLevels].sort((a, b) => a.order - b.order).map((l) => depuisEnveloppe(l, {
+          group: 'Paliers de Saturation',
           meta: facts(
             fact('Effets de Saturation', l.effectsMin === l.effectsMax ? String(l.effectsMin) : `${l.effectsMin}–${l.effectsMax}`),
             fact('Peut se corrompre', l.corrupts ? 'oui (Geheimnisnacht/Hexensnacht)' : null),
@@ -1084,9 +1101,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
             w.surnoms.length ? { title: 'Surnoms', layout: 'chips', rows: w.surnoms.map((s) => ({ t: 'text', text: s } as CodexRow)) } : null,
           ),
         })),
-        ...d.phenomena.map((p) => ({
-          id: p.id, label: p.label, group: 'Phénomènes arcaniques', sub: PHENOMENON_KIND_LABEL[p.kind],
-          desc: p.desc, source: src(p.source),
+        ...d.phenomena.map((p) => depuisEnveloppe(p, {
+          group: 'Phénomènes arcaniques', sub: PHENOMENON_KIND_LABEL[p.kind],
           meta: facts(
             phenomenonSaturationFact(p.saturation),
             fact('Influence malfaisante', p.influenceMalveillante ? 'oui (WFJDR 236)' : null),
@@ -1113,8 +1129,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
               : null,
           ),
         })),
-        ...d.tables.map((t) => ({
-          id: t.id, label: t.label, group: 'Tables', sub: `${t.rows.length} rangée(s) · ${t.die}`, desc: t.desc, source: src(t.source),
+        ...d.tables.map((t) => depuisEnveloppe(t, {
+          group: 'Tables', sub: `${t.rows.length} rangée(s) · ${t.die}`,
           sections: sections({ title: `Tirage (${t.die})`, layout: 'list', rows: arcaneTableRows(t) }),
         })),
       ];
@@ -1122,10 +1138,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'advancementCosts', label: 'Coût des Augmentations', group: 'Tables', cluster: 'Création de personnage', sourceRef: 'LDB 07',
-    build: () => datasetArray('advancementCosts').map((b) => ({
-      id: b.id, label: b.label, sub: 'Augmentations déjà achetées',
+    build: () => datasetArray('advancementCosts').map((b) => depuisEnveloppe(b, {
+      sub: 'Augmentations déjà achetées',
       meta: facts(fact('Coût — Caractéristique', b.char), fact('Coût — Compétence', b.skill)),
-      source: src(b.source),
     })),
   },
   {
@@ -1282,33 +1297,25 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'nightStakes', label: 'Enjeux — cascade de repos', group: 'Tables', sourceRef: 'LDB 18/09/20/21',
-    build: () => datasetArray('nightStakes').map((e) => ({
-      id: e.id, label: e.label, desc: e.stake, source: src(e.source),
-    })),
+    build: () => datasetArray('nightStakes').map((e) => depuisEnveloppe(e, { desc: e.stake })),
   },
   {
     // Jumeau du précédent pour les cascades de VOYAGE (#1117) : le contenu est un GABARIT de descripteur
     // mécanique (trous `{nom}` remplis par le flux), là où l'enjeu de nuit est un verbatim figé.
     key: 'voyageStakes', label: 'Enjeux — cascade de voyage', group: 'Tables', sourceRef: 'MSRC 7 · MDG 12',
-    build: () => datasetArray('voyageStakes').map((e) => ({
-      id: e.id, label: e.label, desc: e.template, source: src(e.source),
-    })),
+    build: () => datasetArray('voyageStakes').map((e) => depuisEnveloppe(e, { desc: e.template })),
   },
   {
     // Troisième dataset de la famille (#1117 L1b) : l'enjeu d'un JET DE MODALE MONO, keyé par l'id de
     // jet `{flow, phase}`. Éditable comme ses jumeaux — le contenu est un descripteur mécanique.
     key: 'flowStakes', label: 'Enjeux — modales de jet', group: 'Tables', sourceRef: 'LDB 15/16/19/46/62 · MDG 09/12/14',
-    build: () => datasetArray('flowStakes').map((e) => ({
-      id: e.id, label: e.label, sub: `${e.flow}/${e.phase}`, desc: e.template, source: src(e.source),
-    })),
+    build: () => datasetArray('flowStakes').map((e) => depuisEnveloppe(e, { sub: `${e.flow}/${e.phase}`, desc: e.template })),
   },
   {
     // Quatrième dataset de la famille (#1117 L2) : l'enjeu d'une étape de cascade de COMBAT, keyé par
     // le `kind` de son applier. Éditable comme ses jumeaux — descripteur mécanique lu à l'applier.
     key: 'combatStakes', label: 'Enjeux — cascade de combat', group: 'Tables', sourceRef: 'LDB 16/19/20/47/85 · AA 07',
-    build: () => datasetArray('combatStakes').map((e) => ({
-      id: e.id, label: e.label, sub: e.kind, desc: e.template, source: src(e.source),
-    })),
+    build: () => datasetArray('combatStakes').map((e) => depuisEnveloppe(e, { sub: e.kind, desc: e.template })),
   },
 
   {
@@ -1346,21 +1353,21 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       // Citation/tract levée en tête de fiche (`ParchmentCard`) — c'est le flavor qui « vend » la
       // carrière ; le corps restant garde la desc verbatim moins ce couple (pas de doublon).
       const { epigraph, body } = extractEpigraph(c.desc);
-      return {
-        id: c.id, label: c.label, sub: className, group: className, desc: body, exergue: epigraph, source: src(c.source),
+      return depuisEnveloppe(c, {
+        sub: className, group: className, desc: body, exergue: epigraph,
         // Faits-clés en en-tête (comme les Races portent M/Destin/Résilience) : Classe + fourchette de Statut social.
         meta: facts(fact('Classe', className), fact('Statut', careerStatusRange(levels))),
         tabs: [
           ...(levelSections.length ? [{ title: 'Progression', sections: levelSections }] : []),
           ...reverseSections('careers', c.id).map((s) => ({ title: s.title, sections: [s] })), // Races y accédant
         ],
-      };
+      });
     }),
   },
   {
     key: 'characteristics', label: 'Caractéristiques', group: 'Personnage',
-    build: () => (characteristics as { id: string; label: string; abr?: string; nature?: string; desc?: string; source?: CodexSource; options?: { id: string; label: string; desc: string }[] }[]).map((c) => ({
-      id: c.id, label: c.label, sub: c.abr, desc: c.desc, source: src(c.source),
+    build: () => characteristics.map((c) => depuisEnveloppe(c, {
+      sub: c.abr,
       // Bonus de Caractéristique = chiffre des dizaines (LDB 03) — rappel sur les caracs à jet (d100).
       meta: c.nature === 'roll' ? facts(fact('Bonus', 'chiffre des dizaines')) : undefined,
       sections: sections(
@@ -1380,23 +1387,22 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'classes', label: 'Classes', group: 'Personnage',
-    build: () => classes.map((c) => ({
-      id: c.id, label: c.label, desc: c.desc, source: src(c.source),
+    build: () => classes.map((c) => depuisEnveloppe(c, {
       sections: sections(trappingChips('Possessions de départ', c.trappings), ...reverseSections('classes', c.id)),
     })),
   },
   {
     key: 'stars', label: 'Étoiles', group: 'Personnage',
-    build: () => stars.map((s) => ({
-      id: s.id, label: s.label, sub: s.signe ?? undefined, desc: s.desc ?? undefined, source: src(s.source),
+    build: () => stars.map((s) => depuisEnveloppe(s, {
+      sub: s.signe ?? undefined,
       meta: facts(fact('Dates', s.dates), fact('Dieu', s.dieux), fact('Ascendant', s.ascendant)),
       sections: sections(passiveSection(s.ops, 'Effet du signe')),
     })),
   },
   {
     key: 'skills', label: 'Compétences', group: 'Compétences',
-    build: () => skills.map((s) => ({
-      id: s.id, label: s.label, sub: join(CHAR_LABELS[s.characteristic], SKILL_ACCES_LABEL[s.acces]), desc: s.desc, source: src(s.source),
+    build: () => skills.map((s) => depuisEnveloppe(s, {
+      sub: join(CHAR_LABELS[s.characteristic], SKILL_ACCES_LABEL[s.acces]),
       meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Accès', SKILL_ACCES_LABEL[s.acces]), fact('Spécialisations', specsFact('skills', s))),
       sections: sections(...reverseSections('skills', s.id)),
     })),
@@ -1407,8 +1413,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       // Entrée EFFECTIVE sous les règles optionnelles actives (#563/#564) : desc, source, Test, Max,
       // passifs et effets affichés sont ceux de la variante réglée quand elle est active.
       const e = effectiveEntry(t);
-      return {
-      id: e.id, label: e.label, desc: e.desc, source: src(e.source),
+      return depuisEnveloppe(e, {
       meta: facts(fact('Max', talentMaxLabel(e.max)), fact('Test', e.test?.raw ?? null), fact('Spécialisations', specsFact('talents', e))),
       sections: sections(
         careerGrantSection(e.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
@@ -1416,7 +1421,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         effectsSection(e.effects, 'Effets déclenchés'),
         ...reverseSections('talents', e.id), // Races · Carrières (rang) · Créatures · Talents le conférant
       ),
-      };
+      });
     }),
   },
   {
@@ -1448,15 +1453,15 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       const reachFact = (t.categorie === 'ranged' || t.categorie === 'ammunition')
         ? fact('Portée', rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod))
         : fact('Allonge', t.reach);
-      return {
-        id: t.id, label: t.label, sub: join(trappingTypeLabel(t.categorie), weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
+      return depuisEnveloppe(t, {
+        sub: join(trappingTypeLabel(t.categorie), weaponGroupLabel(t.subType) || undefined),
         meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', damageFact(t)), fact('PA', t.pa), reachFact),
         sections: sections(
           chips('Qualités', 'qualities', resolveQualities({ qualities: t.qualities, subType: t.subType }).map((r) => qualityRefLabel({ id: r.id, value: r.indice }))),
           props.length ? { title: 'Propriétés', layout: 'list', rows: [{ t: 'text', text: props.join(' · ') }] } : null,
           ...reverseSections('trappings', t.id),
         ),
-      };
+      });
     }),
   },
   {
@@ -1465,8 +1470,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // l'éditeur, `SIEGE_ENGINES`). Miroir de « Créatures » pour l'aperçu rig (l'affût est rendu par le
     // MÊME chemin — appearance.species = siegeRig) ET de « Possessions » pour les faits d'arme
     // (Portée/Dégâts) + Atouts (l'Indice « Arme d'équipe N » = équipage requis).
-    build: () => siegeEngines.map((t) => ({
-      id: t.id, label: t.label, sub: join(trappingTypeLabel(t.categorie), weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
+    build: () => siegeEngines.map((t) => depuisEnveloppe(t, {
+      sub: join(trappingTypeLabel(t.categorie), weaponGroupLabel(t.subType) || undefined),
       // Aperçu rig de l'affût, résolu comme une créature (par id + apparence species).
       appearance: { species: t.siegeRig! }, previewRef: t.siegeRig!,
       meta: facts(
@@ -1486,15 +1491,16 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
-    build: () => (qualities as { id: string; label: string; polarite?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[]; capabilities?: Record<string, unknown> }[]).map((q) => ({
-      id: q.id, label: q.label, sub: join(qualityTypeLabel(q.polarite), qualitySubtypeLabel(q.subType)), desc: q.desc, source: src(q.source),
+    // `QualityData` (`data/index.ts:1849`) ne déclare PAS `source`, que la donnée porte 59/59 : ce cast
+    // est ce qui tient le champ. Il tombe quand la façade se complète — `depuisEnveloppe` prendra sa place.
+    build: () => (qualities as { id: string; label: string; polarite?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[]; capabilities?: Record<string, unknown> }[]).map((q) => depuisEnveloppe(q, {
+      sub: join(qualityTypeLabel(q.polarite), qualitySubtypeLabel(q.subType)),
       sections: sections(capabilitySection(q.capabilities, QUALITY_CAP_LABEL), passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
     })),
   },
   {
     key: 'etats', label: 'États', group: 'Effets',
-    build: () => etats.map((e) => ({
-      id: e.id, label: e.label, desc: e.desc, source: src(e.source),
+    build: () => etats.map((e) => depuisEnveloppe(e, {
       sections: sections(...reverseSections('etats', e.id)), // Sorts/Traits/Qualités/Talents/Domaines l'infligeant
     })),
   },
@@ -1521,8 +1527,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'symptoms', label: 'Symptômes', group: 'Effets',
-    build: () => symptoms.map((s) => ({
-      id: s.id, label: s.label, desc: s.desc, source: src(s.source),
+    build: () => symptoms.map((s) => depuisEnveloppe(s, {
       sections: sections(
         passiveSection(s.passive),
         passiveSection(s.severePassive, 'Modificateurs (Modérée / Grave)'),
@@ -1543,14 +1548,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'mutations', label: 'Mutations', group: 'Effets',
-    build: () => (mutations as MutationData[]).map((m) => ({
-      id: m.id,
-      label: m.label,
+    build: () => mutations.map((m) => depuisEnveloppe(m, {
       sub: m.kind === 'physique' ? 'Physique' : 'Mentale',
       group: m.kind === 'physique' ? 'Physiques' : 'Mentales',
-      desc: m.desc,
       appearance: m.appearance,
-      source: src(m.source),
       // PA / arme naturelle / traits conférés sont désormais des GameOps du `passive` (ap /
       // grantNaturalWeapon / grantTrait) → rendus par passiveSection ; plus de facts/chips dédiés.
       sections: sections(
@@ -1561,13 +1562,13 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'mutationTables', label: 'Tables de Corruption', group: 'Effets',
-    build: () => (mutationTables as { id: string; label: string; ranges: { min: number; max: number; mutation: string }[] }[]).map((t) => ({
+    build: () => mutationTables.map((t) => ({
       id: t.id, label: t.label, sub: `${t.ranges.length} plages d100`,
       // Tirage d100 → Mutation : chaque plage est un lien cross-réf vers la fiche de mutation.
       sections: sections({
         title: 'Tirage (d100 → Mutation)', layout: 'list',
         rows: t.ranges.map((r) => {
-          const label = (mutations as MutationData[]).find((mu) => mu.id === r.mutation)?.label ?? r.mutation;
+          const label = mutations.find((mu) => mu.id === r.mutation)?.label ?? r.mutation;
           return { t: 'ref', category: 'mutations', id: r.mutation, label, show: label, badge: `${r.min}–${r.max}` } as CodexRow;
         }),
       }),
@@ -1577,8 +1578,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'effectTables', label: 'Tables d’effets', group: 'Effets',
     // Tables `[min,max] → GameOp[]` référencées par l'op `rollTable` (Allure démoniaque : Tableau des
     // aspects démoniaques par Domaine du Chaos). Chaque rangée = fourchette + ops (chips codex-liées).
-    build: () => effectTables.map((t) => ({
-      id: t.id, label: t.label, sub: `${t.rows.length} rangée(s) · ${t.die}`, source: src(t.source),
+    build: () => effectTables.map((t) => depuisEnveloppe(t, {
+      sub: `${t.rows.length} rangée(s) · ${t.die}`,
       sections: sections({ title: `Tirage (${t.die} → effet)`, layout: 'list', rows: tableRows(t.rows) }),
     })),
   },
@@ -1586,8 +1587,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'maneuvers', label: 'Manœuvres', group: 'Effets',
     // Une manœuvre est la PROJECTION mécanique d'un Trait de créature (#1226) : la prose affichée est le
     // VERBATIM du trait projetant (`traitProjectingManeuver`), jamais un résumé recopié dans la manœuvre.
-    build: () => maneuvers.map((m) => ({
-      id: m.id, label: m.label, sub: ATTACK_LABEL[m.kind], desc: traitProjectingManeuver(m.id)?.desc, source: src(m.source),
+    build: () => maneuvers.map((m) => depuisEnveloppe(m, {
+      sub: ATTACK_LABEL[m.kind], desc: traitProjectingManeuver(m.id)?.desc,
       meta: facts(
         fact('Activation', MANEUVER_ACTIVATION_LABEL[m.activation]),
         fact('Coût Av', m.advantageCost),
@@ -1608,8 +1609,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'domains', label: 'Domaines', group: 'Magie',
-    build: () => domains.map((d) => ({
-      id: d.id, label: d.label, desc: d.desc, source: src(d.source),
+    build: () => domains.map((d) => depuisEnveloppe(d, {
       meta: facts(
         fact('Projectile', d.missile ? `ignore les PA ${d.missile.bypass === 'metal' ? 'métalliques' : 'non magiques'}${d.missile.bonusFromBypass ? ' (+ Dégâts)' : ''}` : null),
         fact('Bonus d’incantation', d.castBonus ? humanizeCastBonus(d.castBonus) : null),
@@ -1622,8 +1622,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'spells', label: 'Sorts', group: 'Magie',
     // Entrée EFFECTIVE sous les règles optionnelles actives (#563/#564) : desc, source, NI, Durée et
     // effet mécanique affichés sont ceux de la variante réglée quand elle est active (VDM).
-    build: () => spells.map((s0) => effectiveEntry(s0)).map((s) => ({
-      id: s.id, label: s.label, sub: join(s.ecole, s.subType), desc: s.desc, source: src(s.source),
+    build: () => spells.map((s0) => effectiveEntry(s0)).map((s) => depuisEnveloppe(s, {
+      sub: join(s.ecole, s.subType),
       meta: facts(
         // Un Rituel dont la rubrique NI imprime une formule sur la cible (`VDM 02 l.379`) n'a pas
         // de nombre : c'est ce texte qui est le NI imprimé.
@@ -1664,8 +1664,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'creatures', label: 'Créatures', group: 'Monde',
-    build: () => creatures.map((c) => ({
-      id: c.id, label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, source: src(c.source),
+    build: () => creatures.map((c) => depuisEnveloppe(c, {
+      sub: c.title ?? undefined, group: c.folder ?? undefined,
       appearance: c.appearance, previewRef: c.id, // aperçu rig résolu par id (Nuées/non-bipèdes lisent leurs traits)
       statblock: creatureStatblock(c),
       meta: facts(
@@ -1705,10 +1705,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // `parent` est un id → résolu en libellé pour l'affichage ; la réf inverse « Sous-lieux » clé par id.
     build: () => locations.map((l) => {
       const parentLabel = findLocationById(l.parent)?.label;
-      return {
-        id: l.id, label: l.label, sub: parentLabel, group: parentLabel, desc: l.desc ?? undefined, source: src(l.source),
+      return depuisEnveloppe(l, {
+        sub: parentLabel, group: parentLabel,
         sections: sections(...reverseSections('locations', l.id)),
-      };
+      });
     }),
   },
   {
@@ -1837,11 +1837,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // Catalogue UNIQUE des Activités (interlude LDB 23 / voyage EDOC 8 / mer MDG 15 / bataille de
     // masse ADE II 8). Un Test « posté » (compétence(s) au choix + Difficulté) dont l'issue s'exprime
     // en `onSuccess` (GameOp) et/ou en bandes `outcomes` (table DR → résultat, verbatim + effets).
-    build: () => ACTIVITIES.map((a) => ({
-      id: a.id, label: a.label,
+    build: () => ACTIVITIES.map((a) => depuisEnveloppe(a, {
       sub: a.contexts.map((c) => ACTIVITY_CONTEXT_LABEL[c] ?? c).join(', '),
-      desc: a.desc,
-      source: src(a.source),
       meta: facts(
         fact('Contextes', a.contexts.map((c) => ACTIVITY_CONTEXT_LABEL[c] ?? c).join(', ')),
         fact('Compétence(s)', a.skills?.length ? a.skills.map((s) => refLabel('skills', { id: s.skillId, spec: s.spec })).join(' / ') : (a.freeSkill ? 'Au choix (libre)' : null)),
@@ -1944,8 +1941,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'vehicles', label: 'Véhicules', group: 'Monde',
-    build: () => vehicles.map((v) => ({
-      id: v.id, label: v.label, desc: v.desc ?? undefined, source: src(v.source),
+    build: () => vehicles.map((v) => depuisEnveloppe(v, {
       meta: facts(
         fact('Prix', priceLabel(v.purchase?.price)), fact('Disponibilité', v.purchase?.availability ?? null),
         fact('Enc', v.enc), fact('Mouvement (voyage)', v.travel?.movement),
@@ -1955,7 +1951,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'celestialHouses', label: 'Demeures astrologiques', group: 'Personnage',
-    build: () => celestialHouses.map((h) => ({ id: h.id, label: h.label, sub: `2d10 ≤ ${h.rand}`, desc: h.desc, source: src(h.source) })),
+    build: () => celestialHouses.map((h) => depuisEnveloppe(h, { sub: `2d10 ≤ ${h.rand}` })),
   },
   {
     key: 'groups', label: 'Groupes (Cible)', group: 'Monde',
@@ -1963,15 +1959,13 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'psychologies', label: 'États psychologiques', group: 'Effets',
-    build: () => psychologies.map((p) => ({
-      id: p.id, label: p.label, desc: p.desc, source: src(p.source),
+    build: () => psychologies.map((p) => depuisEnveloppe(p, {
       sections: sections(passiveSection(p.passive), effectsSection(p.effects), ...reverseSections('psychologies', p.id)),
     })),
   },
   {
     key: 'seaShanties', label: 'Chants de marins', group: 'Monde',
-    build: () => seaShanties.map((s) => ({
-      id: s.id, label: s.label, desc: s.desc, source: src(s.source),
+    build: () => seaShanties.map((s) => depuisEnveloppe(s, {
       meta: facts(fact('Note', s.note ?? null)),
       sections: sections(passiveSection(s.crewOps, 'Effet (équipage)'), passiveSection(s.captainOps, 'Effet (capitaine)')),
     })),
@@ -1993,8 +1987,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'navalTraits', label: 'Traits & améliorations navales', group: 'Équipement',
-    build: () => NAVAL_TRAITS.map((t) => ({
-      id: t.id, label: t.label, sub: t.kind === 'trait' ? 'Trait (construction)' : 'Amélioration', desc: t.desc, source: src(t.source),
+    build: () => NAVAL_TRAITS.map((t) => depuisEnveloppe(t, {
+      sub: t.kind === 'trait' ? 'Trait (construction)' : 'Amélioration',
       sections: sections(passiveSection(t.passive)),
     })),
   },
@@ -2136,8 +2130,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'navalPorts', label: 'Ports (Index de la Mer des Griffes)', group: 'Monde', sourceRef: 'MDG 15',
-    build: () => navalPorts.map((p) => ({
-      id: p.id, label: p.label, group: p.region, desc: p.desc, source: src(p.source),
+    build: () => navalPorts.map((p) => depuisEnveloppe(p, {
+      group: p.region,
       meta: facts(
         fact('Taille', p.taille), fact('Richesse', p.richesse),
         fact('Dirigeant', p.dirigeant ?? null), fact('Cosmopolite', p.cosmopolite ? 'oui' : null),
@@ -2173,8 +2167,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'shipSpeedTraits', label: 'Traits de vitesse (Construction navale)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG 12',
-    build: () => datasetArray('shipSpeedTraits').map((t) => ({
-      id: t.id, label: t.label, source: src(t.source),
+    build: () => datasetArray('shipSpeedTraits').map((t) => depuisEnveloppe(t, {
       meta: facts(
         signedFact('Mouvement', t.mMod), signedFact('Capacité', t.capacityPct, ' %'),
         signedFact('Manœuvrabilité', t.manDR), signedFact('Coût', t.costPct, ' %'),
@@ -2351,8 +2344,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'tavernGames', label: 'Jeux de taverne', group: 'Monde',
-    build: () => TAVERN_GAMES.map((g) => ({
-      id: g.id, label: g.label, desc: g.desc, source: src(g.source),
+    build: () => TAVERN_GAMES.map((g) => depuisEnveloppe(g, {
       meta: facts(
         fact('Compétence', g.skill ? refLabel('skills', { id: g.skill, spec: g.spec }) : 'Pari (aucune Compétence)'),
         fact('Caractéristique', g.characteristic ? CHAR_LABELS[g.characteristic] : null),
@@ -2469,7 +2461,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // Procédures / options de jeu au texte VERBATIM (Sombre Pacte, Empoignade, modes d'attaque…) —
     // cible des tooltips `CodexRef` qui portaient une paraphrase de règle (#392).
     key: 'regles', label: 'Règles de jeu', group: 'Monde',
-    build: () => regles.map((r) => ({ id: r.id, label: r.label, desc: r.desc, source: src(r.source) })),
+    build: () => regles.map((r) => depuisEnveloppe(r)),
   },
 ];
 

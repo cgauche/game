@@ -75,7 +75,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `round` | 2 | `src/engine/castingNumber.ts:110` |
 | `delta` | 2 | `src/engine/castingNumber.ts:111` |
 | `min` | 2 | `src/engine/castingNumber.ts:112` |
-| `scope` | 1 | `src/ui/compendium/registry.ts:1021` |
+| `scope` | 1 | `src/ui/compendium/registry.ts:1038` |
 | `maison` | **0 — JAMAIS LU** | — |
 | `source` | **0 — JAMAIS LU** | — |
 | `desc` | **0 — JAMAIS LU** | — |
@@ -162,14 +162,14 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:673` |
-| `max` | 1 | `src/ui/compendium/registry.ts:673` |
-| `id` | 2 | `src/engine/mountTravel.ts:214` |
-| `label` | 2 | `src/engine/mountTravel.ts:198` |
-| `desc` | 1 | `src/ui/compendium/registry.ts:674` |
+| `min` | 1 | `src/ui/compendium/registry.ts:693` |
+| `max` | 1 | `src/ui/compendium/registry.ts:693` |
+| `id` | 1 | `src/engine/mountTravel.ts:214` |
+| `label` | 1 | `src/engine/mountTravel.ts:198` |
+| `desc` | **0 — JAMAIS LU** | — |
 | `stageOutcome` | **0 — JAMAIS LU** | — |
-| `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:675` |
-| `occupantOps` | 1 | `src/ui/compendium/registry.ts:676` |
+| `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:694` |
+| `occupantOps` | 1 | `src/ui/compendium/registry.ts:695` |
 | `mount` | 1 | `src/engine/mountTravel.ts:199` |
 
 ### `ShipCrewTest` (src/data/shipCriticals.ts)
@@ -185,15 +185,15 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:687` |
-| `max` | 1 | `src/ui/compendium/registry.ts:687` |
-| `id` | 1 | `src/ui/compendium/registry.ts:686` |
-| `label` | 1 | `src/ui/compendium/registry.ts:686` |
-| `ops` | 1 | `src/ui/compendium/registry.ts:694` |
-| `shrapnel` | 1 | `src/ui/compendium/registry.ts:690` |
-| `hullCrits` | 1 | `src/ui/compendium/registry.ts:691` |
-| `crewTest` | 1 | `src/ui/compendium/registry.ts:684` |
-| `note` | 1 | `src/ui/compendium/registry.ts:688` |
+| `min` | 1 | `src/ui/compendium/registry.ts:705` |
+| `max` | 1 | `src/ui/compendium/registry.ts:705` |
+| `id` | **0 — JAMAIS LU** | — |
+| `label` | **0 — JAMAIS LU** | — |
+| `ops` | 1 | `src/ui/compendium/registry.ts:712` |
+| `shrapnel` | 1 | `src/ui/compendium/registry.ts:708` |
+| `hullCrits` | 1 | `src/ui/compendium/registry.ts:709` |
+| `crewTest` | 1 | `src/ui/compendium/registry.ts:703` |
+| `note` | 1 | `src/ui/compendium/registry.ts:706` |
 
 ### `PropData` (src/data/props.types.ts)
 
@@ -284,7 +284,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-23 types, 156 champs mesurés, **37 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+23 types, 156 champs mesurés, **40 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 
