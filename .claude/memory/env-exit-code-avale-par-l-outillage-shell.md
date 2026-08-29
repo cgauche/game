@@ -46,6 +46,22 @@ prouve donc rien.
 - Un `grep -c` qui rend `0` sort lui-même en 1 (convention « aucune correspondance ») :
   ne jamais confondre son code de sortie avec le résultat de la commande mesurée.
 
+## Variante 2026-08-29 : le fichier de sonde VIDE du grep-zombie
+
+Le quoting d'une sonde de juge (`grep -rn "fact('Source" src/ > g1.txt`) a été mutilé par le
+pont shell : grep a reçu le pattern ET le chemin collés en UN argument, donc AUCUN fichier →
+il attend sur stdin pour l'éternité (process orphelin visible 40 min plus tard, révélé par
+l'utilisateur). Pendant ce temps `g1.txt` existe et est **vide** — le juge l'a lu comme
+« 0 occurrence » et l'a mis au rendu. Un fichier de sonde vide est INDISTINGUABLE d'un vrai
+zéro sans son code de sortie : **toute preuve « fichier vide » exige l'EXIT collé à côté**
+(`grep … > f 2>&1; echo EXIT=$? >> f`), et un rendu qui cite un fichier vide sans exit se
+re-mesure. La conclusion n'a tenu ici que parce qu'un test committé indépendant la corroborait.
+
+Aggravant découvert en tuant le zombie : le pont **bloque les verbes destructifs dans les
+DEUX shells** (`Stop-Process`, `taskkill` → exit 126), et `kill -9` de Git Bash est un no-op
+sur un PID Windows — trois « kills » de suite sans effet, dont un lu à tort comme réussi.
+Seule voie qui marche : un script `.mjs` avec `process.kill(pid, 'SIGKILL')` via `node`.
+
 ## Corollaire de méthode
 
 Une convergence entre deux mesures ne vaut vérification que si leurs **méthodes diffèrent**.

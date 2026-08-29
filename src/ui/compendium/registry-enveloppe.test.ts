@@ -444,7 +444,7 @@ describe('Codex — défaut d’enveloppe (#1467 L1b)', () => {
 
   it('la PROVENANCE a UN seul canal : `source`, jamais un fait de méta intitulé « Source »', () => {
     const doublons = CODEX.flatMap((c) =>
-      c.items.flatMap((i) => (i.meta ?? []).filter((f) => /^Source/i.test(f.label)).map((f) => `${c.key}/${i.id}: ${f.label}`)),
+      c.items.flatMap((i) => (i.meta ?? []).filter((f) => /^sources?$/i.test(f.label.trim())).map((f) => `${c.key}/${i.id}: ${f.label}`)),
     );
     expect(doublons).toEqual([]);
   });
