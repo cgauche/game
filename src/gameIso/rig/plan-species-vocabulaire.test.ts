@@ -117,25 +117,13 @@ describe('espace d’espèces ÉMIS au runtime ⊆ vocabulaire dérivé (volet 2
 /**
  * GARDE STRUCTURELLE — l'ASSERTION DE TYPE vers `RigSpeciesId` n'est plus une monnaie libre : le seul site de PRODUCTION
  * autorisé est le producteur validant `asRigSpeciesId` (appearance.ts). Les sites restants sont une
- * BASELINE NOMINATIVE DÉCROISSANTE : chacun est nommé ci-dessous, aucun nouveau n'est admis, et le
+ * BASELINE NOMINATIVE DÉCROISSANTE (src/ ET scripts/) : chacun est nommé ci-dessous, aucun nouveau n'est admis, et le
  * total ne peut que baisser (migrer un site = le retirer de la liste).
  */
 const BASELINE_CASTS: Record<string, number> = {
   // Production — `rigSpeciesId` est l'AUTRE producteur sanctionné (pont rules→rig). Ne peut pas
   // déléguer à `asRigSpeciesId` sans cycle d'import (appearance.ts importe src/data).
   'src/data/index.ts': 1,
-  // Tests & fixtures : forgent une Appearance littérale. Lot suivant (#1537 L2).
-  'src/gameIso/rig/golden/monster-overlay-golden.test.ts': 1,
-  'src/gameIso/rig/parts/tenues/tenue-overlay-plane.test.ts': 1,
-  'src/gameIso/rig/parts/elements.test.ts': 2,
-  'src/gameIso/rig/parts/mutations.test.ts': 1,
-  'src/gameIso/rig/composeRig-coiffe-layering.test.ts': 1,
-  'src/gameIso/rig/composeRig-nape-z.test.ts': 1,
-  'src/gameIso/rig/composeRig.composition.test.ts': 1,
-  'src/gameIso/rig/composeRig.render.test.tsx': 1,
-  'src/gameIso/rig/composeRig.test.ts': 3,
-  'src/ui/AppearancePanel.test.tsx': 1,
-  'src/ui/CharacterPreview.test.tsx': 1,
 };
 const SITE_PRODUCTEUR = 'src/gameIso/rig/appearance.ts';
 /** Motif recherché, ASSEMBLÉ : écrit en clair, ce fichier se détecterait lui-même (prose + messages). */
@@ -143,22 +131,25 @@ const MOTIF = new RegExp(['as', 'RigSpeciesId'].join(' '), 'g');
 
 describe('garde structurelle — assertion vers `RigSpeciesId` = 1 site de production + baseline décroissante', () => {
   const SRC = fileURLToPath(new URL('../..', import.meta.url));
+  const SCRIPTS = fileURLToPath(new URL('../../../scripts/', import.meta.url));
   function walk(dir: string, out: string[]): void {
     for (const e of readdirSync(dir)) {
       const p = join(dir, e);
       if (statSync(p).isDirectory()) walk(p, out);
-      else if (/\.tsx?$/.test(e)) out.push(p);
+      else if (/\.(tsx?|mts)$/.test(e)) out.push(p);
     }
   }
 
-  it('aucune assertion de type vers `RigSpeciesId` neuve dans src/ ; la baseline ne croît pas', () => {
-    const files: string[] = [];
-    walk(SRC, files);
+  it('aucune assertion de type vers `RigSpeciesId` neuve dans src/ NI dans scripts/ ; la baseline ne croît pas', () => {
     const compte: Record<string, number> = {};
-    for (const f of files) {
-      const rel = `src/${f.slice(SRC.length).replace(/\\/g, '/')}`;
-      const n = (readFileSync(f, 'utf8').match(MOTIF) ?? []).length;
-      if (n) compte[rel] = n;
+    for (const [racine, prefixe] of [[SRC, 'src/'], [SCRIPTS, 'scripts/']] as const) {
+      const files: string[] = [];
+      walk(racine, files);
+      for (const f of files) {
+        const rel = `${prefixe}${f.slice(racine.length).replace(/\\/g, '/')}`;
+        const n = (readFileSync(f, 'utf8').match(MOTIF) ?? []).length;
+        if (n) compte[rel] = n;
+      }
     }
     const bad: string[] = [];
     for (const [rel, n] of Object.entries(compte)) {

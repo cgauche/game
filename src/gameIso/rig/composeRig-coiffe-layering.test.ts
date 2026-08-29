@@ -3,12 +3,13 @@ import { resolveRig } from './composeRig';
 import { bonesToSvg } from './renderBones';
 import { SLOT_LAYER } from './bones';
 import { APPEARANCE_ELEMENTS } from './parts/elements';
-import type { Appearance, RigSpeciesId } from './appearance';
+import type { Appearance } from './appearance';
+import { asRigSpeciesId } from './appearance';
 
 const NO_EQUIP = { weapons: [], armour: [] };
 const EAR = 'M-8 7 Q-15 4 -14 -3'; // début du path de l'oreille pointue (élément 'oreilles-pointues')
 const HEAUME = 'Q-10.5 -17.5 0 -18.5'; // début du path du heaume (tenue 'guerrier-du-chaos', slot tete)
-const elfInHelm: Appearance = { species: 'Haut-Elfe' as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 };
+const elfInHelm: Appearance = { species: asRigSpeciesId('haut-elfe'), sex: 'M', build: 0.5, seed: 7 };
 
 describe('composeRig — une coiffe de tenue COUVRE les oreilles pointues (pas l’inverse)', () => {
   it('Haut-Elfe casqué (guerrier-du-chaos, vue front) : le heaume se peint APRÈS (au-dessus de) l’oreille', () => {

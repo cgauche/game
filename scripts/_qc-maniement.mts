@@ -16,7 +16,7 @@ import { addPose, type Pose } from '../src/gameIso/rig/poses';
 import { weaponRest, weaponAttackClip } from '../src/gameIso/rig/anim/weaponClips';
 import { clipDuration, sampleClip } from '../src/gameIso/rig/anim/clips';
 import type { Weapon } from '../src/engine/types';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
 
 // Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
@@ -25,7 +25,7 @@ const MANNEQUIN = 'soldat';
 assertWardrobeId(MANNEQUIN, 'qc-maniement');
 
 mkdirSync('public/qc', { recursive: true });
-const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
+const APP = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 } as const;
 const wp = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 // Un représentant par classe (le libellé résout la classe via la forme).

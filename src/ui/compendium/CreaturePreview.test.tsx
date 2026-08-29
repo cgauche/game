@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { CreaturePreview } from './CreaturePreview';
@@ -21,7 +21,18 @@ describe('CreaturePreview — aperçu rendu de créature (Codex / éditeur)', ()
     expect(withEars).toContain('M-8 7 Q-15 4 -14 -3'); // path d'oreille pointue du catalogue
   });
 
-  it('non-bipède → rendu par son gabarit (pas vide)', () => {
-    expect(render('Loup')).toContain('<svg');
+  it('non-bipède → rendu par SON gabarit (pas le bipède par défaut)', () => {
+    // `label` est l'ID de record (`findCreatureById`) : un LIBELLÉ (« Loup ») ne résout aucun
+    // record — le rendu retombe sur le bipède par défaut et `bodyPlan` le crie. Le témoin qui mord
+    // est le DIAGNOSTIC « aucune espèce résolue » (les deux <svg> d'enveloppe sont invariants).
+    const diag = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const html = render('loup');
+      expect((html.match(/<svg/g) ?? []).length).toBe(2);
+      expect(html).toContain('<path');
+      expect(diag.mock.calls.map((c) => String(c[0])).filter((m) => /aucune espèce résolue/.test(m))).toEqual([]);
+    } finally {
+      diag.mockRestore();
+    }
   });
 });

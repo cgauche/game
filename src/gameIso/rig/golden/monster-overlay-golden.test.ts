@@ -11,7 +11,7 @@ import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
 import type { View } from '../facing';
 import type { MonsterParts } from '../parts/monstrous';
-import type { RigSpeciesId } from '../appearance';
+import { asRigSpeciesId } from '../appearance';
 
 const VIEWS: View[] = ['front', 'back', 'profile'];
 const SEED = 4;
@@ -30,7 +30,7 @@ describe('golden — calques monstrueux cornes/queue multi-vues (front/back/prof
     for (const view of VIEWS)
       it(`${label} / ${view}`, () => {
         const svg = bonesToSvg(resolveRig(
-          { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: SEED, monster },
+          { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: SEED, monster },
           { weapons: [], armour: [] }, {}, undefined, view, [],
         ));
         expect(svg).toMatchSnapshot();

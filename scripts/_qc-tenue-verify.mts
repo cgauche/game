@@ -6,7 +6,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import type { Appearance } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
 
 // IDS de garde-robe (carrière ∪ classe ∪ tenue) — ils nomment aussi le fichier de sortie, à
@@ -15,7 +16,7 @@ import { assertWardrobeId } from './_lib-wardrobe';
 const CAREERS = ['batelier', 'apothicaire', 'serviteur', 'soldat', 'mendiant', 'medecin', 'garde', 'villageois'];
 for (const id of CAREERS)
   assertWardrobeId(id, 'qc-tenue-verify');
-const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 };
+const app: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 };
 mkdirSync('public/qc/tenue-new', { recursive: true });
 for (const career of CAREERS) {
   const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career }));

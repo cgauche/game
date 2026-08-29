@@ -9,7 +9,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
 import type { View } from '../src/gameIso/rig/facing';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
 
 // Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
@@ -29,7 +29,7 @@ WEAPONS.forEach((name, r) => {
   cells.push(`<text x="6" y="${28 + r * CH + CH / 2}" font-size="10" fill="#9fb0c8" font-family="sans-serif">${name}</text>`);
   VIEWS.forEach((vw, c) => {
     const w = wpn(name);
-    const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, equip: { weapons: [w], armour: [] }, career: MANNEQUIN, view: vw.v, pose: weaponRest(w) }));
+    const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 }, equip: { weapons: [w], armour: [] }, career: MANNEQUIN, view: vw.v, pose: weaponRest(w) }));
     const body = vw.m ? `<g transform="translate(120,0) scale(-1,1)">${inner}</g>` : inner;
     const x = 84 + c * CW, y = 28 + r * CH;
     cells.push(`<g transform="translate(${x},${y})"><rect width="${CW - 4}" height="${CH - 14}" fill="#262d3b"/><line x1="0" y1="150" x2="${CW - 4}" y2="150" stroke="#e06a4a" stroke-width="0.6"/>${body}<text x="${(CW - 4) / 2}" y="${CH - 3}" text-anchor="middle" font-size="8" fill="#cdd" font-family="sans-serif">${vw.l}</text></g>`);

@@ -5,7 +5,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import type { Appearance } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Pose } from '../src/gameIso/rig/poses';
 import { assertWardrobeId } from './_lib-wardrobe';
 
@@ -14,7 +15,7 @@ import { assertWardrobeId } from './_lib-wardrobe';
 const MANNEQUIN = 'soldat';
 assertWardrobeId(MANNEQUIN, 'qc-death');
 
-const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 };
+const app: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 };
 // Sprawl DOUX (membres relâchés/écartés) — le basculement fait la mise au sol.
 const CORPSE: Pose = { tete: 18, torse: 6, epauleG: -30, epauleD: 24, avantBrasG: -14, avantBrasD: 10, cuisseG: 14, cuisseD: -10, tibiaG: 18, tibiaD: 6 };
 const sprite = (pose?: Pose) =>

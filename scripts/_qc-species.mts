@@ -7,7 +7,8 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { Weapon } from '../src/engine/types';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
+import { raceAppearance } from '../src/data';
 import { assertWardrobeId } from './_lib-wardrobe';
 
 // Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
@@ -15,7 +16,8 @@ import { assertWardrobeId } from './_lib-wardrobe';
 const MANNEQUIN = 'soldat';
 assertWardrobeId(MANNEQUIN, 'qc-species');
 
-const SPECIES = ['Humain', 'Halfling', 'Nain', 'Gnome', 'Ogre', 'Haut-Elfe', 'Elfe sylvain'];
+// Espèces sondées : le registre `raceAppearance.json` fait foi.
+const SPECIES = raceAppearance.map((r) => ({ id: asRigSpeciesId(r.id), label: r.label }));
 const wep = (name: string): Weapon => ({ label: name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 const cells = SPECIES.map((sp, i) => {
@@ -25,10 +27,10 @@ const cells = SPECIES.map((sp, i) => {
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 158, fill: '#1d2230' }),
       // ligne de sol y=150
       React.createElement('line', { x1: 0, y1: 150, x2: 120, y2: 150, stroke: '#e05a5a', strokeWidth: 1, strokeDasharray: '4 3' }),
-      React.createElement(RigSprite, { appearance: { species: sp as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 }, equip: { weapons: [wep('Épée')], armour: [] }, career: MANNEQUIN }),
+      React.createElement(RigSprite, { appearance: { species: sp.id, sex: 'M', build: 0.5, seed: 7 }, equip: { weapons: [wep('Épée')], armour: [] }, career: MANNEQUIN }),
     ),
   );
-  return `<g transform="translate(${i * 130},0)">${svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}<text x="60" y="156" text-anchor="middle" font-size="9" fill="#9fb3c8">${sp}</text></g>`;
+  return `<g transform="translate(${i * 130},0)">${svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}<text x="60" y="156" text-anchor="middle" font-size="9" fill="#9fb3c8">${sp.label}</text></g>`;
 });
 const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SPECIES.length * 130} 158"><defs>${DEFS}</defs>${cells.join('')}</svg>`;
 const r = new Resvg(full, { background: '#0e141b', fitTo: { mode: 'width', value: SPECIES.length * 260 } });

@@ -12,7 +12,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { WEAPON_FORMS, SHIELD_FORMS } from '../src/gameIso/rig/parts/weaponForms';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
 
 // Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
@@ -21,7 +21,7 @@ const MANNEQUIN = 'soldat';
 assertWardrobeId(MANNEQUIN, 'qc-weapons-held');
 
 mkdirSync('public/qc', { recursive: true });
-const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
+const APP = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 } as const;
 type Cell = { slug: string; label: string; svg: string };
 
 // Applique la PRISE/orientation réelle du jeu (weaponRest) pour un rendu fidèle.

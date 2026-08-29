@@ -16,7 +16,8 @@ import { EYE_OPTIONS } from '../src/gameIso/rig/parts/eyes';
 import { IDS_PHYSIQUES, mutationById } from '../src/data/mutations';
 import type { Mutation } from '../src/engine/corruption';
 import type { Combatant, Trauma } from '../src/engine/types';
-import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import type { Appearance } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
 import type { RigOverlay } from '../src/gameIso/rig/bones';
 import type { View } from '../src/gameIso/rig/facing';
@@ -30,7 +31,7 @@ const TENUE_SOLDAT = 'soldat';
 for (const id of [TENUE_DEFAUT, TENUE_SOLDAT])
   assertWardrobeId(id, 'mutations-gallery');
 
-const APP: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 };
+const APP: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 };
 const NU: EquipCtx = { weapons: [], armour: [] };
 const mut = (id: string): Mutation => mutationById(id)!;
 
@@ -117,7 +118,7 @@ const TRAITS: { label: string; traits: string[] }[] = [
   { label: 'Cornes', traits: ['Cornes +6'] },
   { label: 'Tentacules', traits: ['8 Tentacules +9'] },
 ];
-const traitC = (traits: string[]): Combatant => ({ id: 't', name: 'T', kind: 'hero', species: 'Humain' as RigSpeciesId, traits }) as unknown as Combatant;
+const traitC = (traits: string[]): Combatant => ({ id: 't', name: 'T', kind: 'hero', species: 'humains-reiklander', traits }) as unknown as Combatant;
 section('Traits de créature → visuels (statbloc / sorts) — 3 vues', TRAITS.flatMap(({ label, traits }) =>
   (['front', 'profile', 'back'] as View[]).map((view) =>
     cell(`${label} — ${view}`, APP, combatantOverlays(traitC(traits)), { view, career: TENUE_SOLDAT, bg: '#23202c', tint: '#fc9' }))));

@@ -14,7 +14,7 @@ import trappings from '../src/data/trappings.json';
 import { weaponGroups } from '../src/data';
 import { assertWardrobeId } from './_lib-wardrobe';
 import type { Weapon } from '../src/engine/types';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 
 // Groupes de COMBAT du registre canonique (`weaponGroups.json` — `combat` renseigné) : le
 // générateur lit les IDS, `label` ne sert qu'au titre de rubrique. `trappings.json` porte lui aussi
@@ -40,7 +40,7 @@ function fig(w: Weapon, shield = false) {
     React.createElement('svg', { viewBox: '0 0 120 150', width: 92, height: 115 },
       React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#1d2230' }),
-      React.createElement(RigSprite, { appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, equip, career: MANNEQUIN }),
+      React.createElement(RigSprite, { appearance: { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 }, equip, career: MANNEQUIN }),
     ),
   );
   const fam = shield ? 'bouclier' : weaponFamily(w) || '(mains nues)';

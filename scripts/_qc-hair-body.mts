@@ -4,7 +4,8 @@ import { Resvg } from '@resvg/resvg-js';
 import { DEFS } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
-import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import type { Appearance } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { View } from '../src/gameIso/rig/facing';
 
 const bare = { weapons: [], armour: [] };
@@ -19,7 +20,7 @@ const CW = 150, CH = 230, SC = 1.5, FEET = 196, LBLW = 120;
 const views: View[] = ['front', 'profile', 'back'];
 const cells: string[] = [];
 cases.forEach((c, r) => {
-  const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: c.sex, build: 0.5, seed: 1, parts: { cheveux: c.idx } };
+  const app: Appearance = { species: asRigSpeciesId('humain'), sex: c.sex, build: 0.5, seed: 1, parts: { cheveux: c.idx } };
   cells.push(`<text x="6" y="${24 + r * CH + CH / 2}" font-size="12" fill="#d8a93b" font-family="sans-serif">${c.label}</text>`);
   views.forEach((v, i) => {
     const inner = bonesToSvg(resolveRig(app, bare, {}, 'Mendiant', v));

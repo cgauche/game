@@ -9,7 +9,8 @@
 import { describe, it, expect } from 'vitest';
 import { resolveRig, rigComposition, poseRig } from './composeRig';
 import { bonesToSvg } from './renderBones';
-import type { Appearance, RigSpeciesId } from './appearance';
+import type { Appearance } from './appearance';
+import { asRigSpeciesId } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import type { RigOverlay } from './bones';
 import type { View } from './facing';
@@ -20,7 +21,7 @@ const equipNu: EquipCtx = { weapons: [], armour: [] };
 const equipArme: EquipCtx = { weapons: [sword], armour: [] };
 
 const app = (species: string, sex: 'M' | 'F', seed: number, extra: Partial<Appearance> = {}): Appearance =>
-  ({ species: species as RigSpeciesId, sex, build: 0.5, seed, ...extra });
+  ({ species: asRigSpeciesId(species), sex, build: 0.5, seed, ...extra });
 
 /** Calques d'ÉTAT tels que `combatantOverlays` en produit : blessure superposée, membre remplacé, plan dorsal. */
 const blessure: RigOverlay[] = [{ bone: 'torse', svg: '<path d="M0 0h4v9z" fill="#7d1d1d"/>' }];
@@ -39,17 +40,17 @@ interface Cas { nom: string; appearance: Appearance; equip: EquipCtx; tenue?: st
 
 /** Personnages ET états couverts : espèces, sexes, tenues, 3 directions, miroir, blessure/amputation/dorsal. */
 const CAS: Cas[] = [
-  { nom: 'humain soldat de face', appearance: app('Humain', 'M', 7), equip: equipArme, tenue: 'soldat', view: 'front' },
-  { nom: 'humaine noble de profil', appearance: app('Humain', 'F', 3), equip: equipNu, tenue: 'noble', view: 'profile' },
-  { nom: 'humaine noble de profil, miroir', appearance: app('Humain', 'F', 3), equip: equipArme, tenue: 'noble', view: 'profile', mirror: true },
-  { nom: 'nain de dos', appearance: app('Nain', 'M', 11), equip: equipArme, view: 'back' },
-  { nom: 'elfe, tenue différente', appearance: app('Elfe', 'F', 5), equip: equipNu, tenue: 'mage', view: 'front' },
-  { nom: 'ogre armé', appearance: app('Ogre', 'M', 2), equip: equipArme, view: 'front' },
-  { nom: 'humain BLESSÉ', appearance: app('Humain', 'M', 7), equip: equipArme, tenue: 'soldat', view: 'front', overlays: blessure },
-  { nom: 'humain AMPUTÉ', appearance: app('Humain', 'M', 7), equip: equipArme, tenue: 'soldat', view: 'front', overlays: amputation },
-  { nom: 'humain à calque DORSAL', appearance: app('Humain', 'M', 9), equip: equipNu, view: 'front', overlays: dorsal },
-  { nom: 'humain recoloré', appearance: app('Humain', 'M', 7, { colors: { peau: '#8a6a4a', vet1: '#204a20' } }), equip: equipNu, tenue: 'soldat', view: 'front' },
-  { nom: 'humain au visage retourné', appearance: app('Humain', 'M', 7, { faceFlip: true }), equip: equipNu, view: 'front' },
+  { nom: 'humain soldat de face', appearance: app('humain', 'M', 7), equip: equipArme, tenue: 'soldat', view: 'front' },
+  { nom: 'humaine noble de profil', appearance: app('humain', 'F', 3), equip: equipNu, tenue: 'noble', view: 'profile' },
+  { nom: 'humaine noble de profil, miroir', appearance: app('humain', 'F', 3), equip: equipArme, tenue: 'noble', view: 'profile', mirror: true },
+  { nom: 'nain de dos', appearance: app('nain', 'M', 11), equip: equipArme, view: 'back' },
+  { nom: 'elfe, tenue différente', appearance: app('elfe-sylvain', 'F', 5), equip: equipNu, tenue: 'mage', view: 'front' },
+  { nom: 'ogre armé', appearance: app('ogre', 'M', 2), equip: equipArme, view: 'front' },
+  { nom: 'humain BLESSÉ', appearance: app('humain', 'M', 7), equip: equipArme, tenue: 'soldat', view: 'front', overlays: blessure },
+  { nom: 'humain AMPUTÉ', appearance: app('humain', 'M', 7), equip: equipArme, tenue: 'soldat', view: 'front', overlays: amputation },
+  { nom: 'humain à calque DORSAL', appearance: app('humain', 'M', 9), equip: equipNu, view: 'front', overlays: dorsal },
+  { nom: 'humain recoloré', appearance: app('humain', 'M', 7, { colors: { peau: '#8a6a4a', vet1: '#204a20' } }), equip: equipNu, tenue: 'soldat', view: 'front' },
+  { nom: 'humain au visage retourné', appearance: app('humain', 'M', 7, { faceFlip: true }), equip: equipNu, view: 'front' },
 ];
 
 const rendu = (c: Cas, pose: Pose, appearance: Appearance = c.appearance) =>
@@ -121,13 +122,13 @@ describe('composition ⊥ pose — ce qui doit la RECOMPOSER', () => {
     expect(rigComposition(base.appearance, equipNu, base.tenue, base.view, base.overlays, false)).not.toBe(comp());
   });
   it('changer d’APPARENCE recompose', () => {
-    const mute = app('Humain', 'M', 7, { colors: { peau: '#4a7a3a' } });
+    const mute = app('humain', 'M', 7, { colors: { peau: '#4a7a3a' } });
     expect(rigComposition(mute, base.equip, base.tenue, base.view, base.overlays, false)).not.toBe(comp());
   });
 
   it('une apparence RECOMPOSÉE rend le SVG de son nouvel état, jamais celui de l’ancien', () => {
     const avant = rendu(base, POSES.repos);
-    const apres = rendu({ ...base, appearance: app('Humain', 'M', 7, { colors: { peau: '#4a7a3a' } }) }, POSES.repos);
+    const apres = rendu({ ...base, appearance: app('humain', 'M', 7, { colors: { peau: '#4a7a3a' } }) }, POSES.repos);
     expect(apres).not.toBe(avant);
   });
 });

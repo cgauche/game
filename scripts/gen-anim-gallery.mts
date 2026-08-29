@@ -13,7 +13,8 @@ import { addPose } from '../src/gameIso/rig/poses';
 import { weaponRest, weaponAttackClip, weaponParryClip } from '../src/gameIso/rig/anim/weaponClips';
 import { sampleClip, clipDuration, type Clip } from '../src/gameIso/rig/anim/clips';
 import { animatedRig, sampleTimes } from './_lib-anim-rig';
-import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import type { Appearance } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
 import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
 import { assertWardrobeId } from './_lib-wardrobe';
@@ -23,7 +24,7 @@ import { assertWardrobeId } from './_lib-wardrobe';
 const MANNEQUIN = 'soldat';
 assertWardrobeId(MANNEQUIN, 'anim-gallery');
 
-const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.55, seed: 4 };
+const app: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.55, seed: 4 };
 const N = 16;
 const styles: string[] = [];
 let uidN = 0;

@@ -5,12 +5,13 @@ import { Resvg } from '@resvg/resvg-js';
 import { DEFS } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
-import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import type { Appearance } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { View } from '../src/gameIso/rig/facing';
 import { tenueLabel } from '../src/gameIso/rig/parts/career';
 import { assertWardrobeId } from './_lib-wardrobe';
 
-const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 1 };
+const app: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 1 };
 const equip = { weapons: [], armour: [] };
 // Garde-robes à inspecter, par ID (carrière ∪ classe ∪ tenue) — passées en argv sinon défaut ;
 // le libellé du catalogue sert d'étiquette. Garde fail-fast : un id qui retombe sur « nu »

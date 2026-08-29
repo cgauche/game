@@ -6,7 +6,8 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
-import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import type { Appearance } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
 
 // Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
@@ -28,7 +29,7 @@ const CASES: Case[] = [
   { label: 'Combo complet', monster: { tete: 'lezard', brasG: 'tentacule', brasD: 'griffe', jambes: 'chevre', cornes: true, queue: true } },
 ];
 const cells = CASES.map((cse, i) => {
-  const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.55, seed: 4, monster: cse.monster };
+  const app: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.55, seed: 4, monster: cse.monster };
   const w = cse.weapon ? ({ label: cse.weapon[0], type: cse.weapon[1], damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon) : undefined;
   const svg = renderToStaticMarkup(
     React.createElement(RigSprite, { appearance: app, equip: { weapons: w ? [w] : [], armour: [] }, career: MANNEQUIN, pose: w ? weaponRest(w) : {} }),

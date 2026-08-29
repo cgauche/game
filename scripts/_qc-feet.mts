@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { tenueLabel } from '../src/gameIso/rig/parts/career';
 import { assertWardrobeId } from './_lib-wardrobe';
 
@@ -19,7 +19,7 @@ const cells: string[] = [];
 CASES.forEach((cse, r) => {
   VIEWS.forEach((view, c) => {
     const svg = renderToStaticMarkup(
-      React.createElement(RigSprite, { appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, equip: { weapons: [], armour: [] }, career: cse.career, view }),
+      React.createElement(RigSprite, { appearance: { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 }, equip: { weapons: [], armour: [] }, career: cse.career, view }),
     );
     cells.push(`<g transform="translate(${c * 124},${r * 168})"><rect width="120" height="150" fill="#1d2230"/>${svg}<text x="60" y="164" text-anchor="middle" font-size="10" fill="#cdd">${cse.label} / ${view}</text></g>`);
   });

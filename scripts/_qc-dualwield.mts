@@ -9,7 +9,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
 import type { View } from '../src/gameIso/rig/facing';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
 
 // Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
@@ -40,7 +40,7 @@ CFGS.forEach((cfg, r) => {
   VIEWS.forEach((vw, c) => {
     const inner = renderToStaticMarkup(
       React.createElement(RigSprite, {
-        appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 },
+        appearance: { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 },
         equip: { weapons: cfg.weapons, armour: [], shield: cfg.shield },
         career: MANNEQUIN, view: vw.v, pose: weaponRest(cfg.weapons[0]), mirror: vw.m,
       }),

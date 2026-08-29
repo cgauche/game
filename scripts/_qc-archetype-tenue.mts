@@ -11,17 +11,17 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { Palette } from '../src/gameIso/rig/palette';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
 
-// (libellé affiché, espèce, ID de garde-robe, recolor?) — le libellé n'est QUE de l'affichage.
+// (libellé affiché, ID d'espèce rig, ID de garde-robe, recolor?) — le libellé n'est QUE de l'affichage.
 const ROWS: Array<{ label: string; species: string; career: string; colors?: Palette }> = [
-  { label: 'Mangeur d’hommes', species: 'Ogre', career: 'mangeur-d-hommes' },
-  { label: 'recolor vet2/metal', species: 'Ogre', career: 'mangeur-d-hommes', colors: { metal: '#b8863a', vet2: '#5a1818' } },
-  { label: 'Boucher Ogre', species: 'Ogre', career: 'boucher-ogre' },
-  { label: 'recolor vet1', species: 'Ogre', career: 'boucher-ogre', colors: { vet1: '#6a2a2a' } },
-  { label: 'Gardechamps', species: 'Humain', career: 'gardechamps' },
-  { label: 'Soldat\nnon-régression', species: 'Humain', career: 'soldat' },
+  { label: 'Mangeur d’hommes', species: 'ogre', career: 'mangeur-d-hommes' },
+  { label: 'recolor vet2/metal', species: 'ogre', career: 'mangeur-d-hommes', colors: { metal: '#b8863a', vet2: '#5a1818' } },
+  { label: 'Boucher Ogre', species: 'ogre', career: 'boucher-ogre' },
+  { label: 'recolor vet1', species: 'ogre', career: 'boucher-ogre', colors: { vet1: '#6a2a2a' } },
+  { label: 'Gardechamps', species: 'humain', career: 'gardechamps' },
+  { label: 'Soldat\nnon-régression', species: 'humain', career: 'soldat' },
 ];
 // Garde fail-fast : un id qui retombe sur « nu » viderait la sonde de son objet (#1338).
 for (const r of ROWS)
@@ -30,7 +30,7 @@ for (const r of ROWS)
 mkdirSync('public/qc', { recursive: true });
 const CW = 124, CH = 168;
 const tiles = ROWS.map((r, i) => {
-  const appearance = { species: r.species as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, colors: r.colors } as const;
+  const appearance = { species: asRigSpeciesId(r.species), sex: 'M', build: 0.5, seed: 4, colors: r.colors } as const;
   const body = renderToStaticMarkup(React.createElement(RigSprite, { appearance, equip: { weapons: [], armour: [] }, career: r.career, view: 'front' }));
   const lines = r.label.split('\n');
   const txt = lines.map((l, j) => `<text x="60" y="${150 + 8 + j * 8}" text-anchor="middle" font-size="7" fill="#cdd">${l}</text>`).join('');

@@ -7,7 +7,8 @@ import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { SPECIFIC_TENUES } from '../src/gameIso/rig/parts/tenues';
 import { assertTenueCatalogId } from './_lib-wardrobe';
-import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import type { Appearance } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 
 // Le rig s'habille par ID de garde-robe (`RigSprite.career` = id de carrière/tenue) : la galerie
 // itère les IDS du catalogue et n'affiche le `label` qu'en légende. Le résolveur VALIDE (fail-fast) :
@@ -19,7 +20,7 @@ for (const t of tenues) {
 const SC = 1.85; // sprite natif ~120×150 → ~222×278
 const CW = Math.round(120 * SC + 24);
 const CH = Math.round(150 * SC + 16);
-const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 };
+const app: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 };
 
 const cells = tenues
   .map(({ id, label }) => {

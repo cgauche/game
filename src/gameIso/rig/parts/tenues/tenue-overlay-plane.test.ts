@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { resolveRig } from '../../composeRig';
-import type { Appearance, RigSpeciesId } from '../../appearance';
+import type { Appearance } from '../../appearance';
+import { asRigSpeciesId } from '../../appearance';
 
 // Canal `TenueDef.overlays` (#pelisse-loup-blanc) : une tenue peut déclarer un calque
 // ASYMÉTRIQUE attaché à un os précis, à PLAN dédié (échappe au z inégal des bras
@@ -8,7 +9,7 @@ import type { Appearance, RigSpeciesId } from '../../appearance';
 // son crâne de loup + monticule de pelisse débordent l'épaule DROITE du personnage
 // (bone `epauleD`, plan `avant`, vue `back` — depuis #644 it3 la vue `front` n'a plus
 // d'overlay : crâne et pelisse y vivent dans le slot torse, à x négatif).
-const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 };
+const app: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 7 };
 
 describe('canal TenueDef.overlays — pauldron asymétrique (plane)', () => {
   it('epauleD porte DEUX entrées (bras normal z=8 + calque à plan z=99), jamais mirroité', () => {
@@ -29,6 +30,6 @@ describe('canal TenueDef.overlays — pauldron asymétrique (plane)', () => {
   it('une tenue SANS overlays (défaut des 117 autres) ne produit aucune entrée à plan supplémentaire', () => {
     const bones = resolveRig(app, { weapons: [], armour: [] }, {}, 'citadins', 'front');
     const epauleD = bones.filter((b) => b.id === 'epauleD');
-    expect(epauleD.length).toBe(1); // rétro-compat : comportement inchangé
+    expect(epauleD.length).toBe(1); // une seule epauleD : le bras normal, aucun plan-overlay
   });
 });

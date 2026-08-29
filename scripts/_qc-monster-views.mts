@@ -6,7 +6,7 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { MonsterParts } from '../src/gameIso/rig/parts/monstrous';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
 
 // Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
@@ -25,7 +25,7 @@ const cells: string[] = [];
 HEADS.forEach(([label, monster], r) => {
   VIEWS.forEach((view, c) => {
     const svg = renderToStaticMarkup(
-      React.createElement(RigSprite, { appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, monster }, equip: { weapons: [], armour: [] }, career: MANNEQUIN, view }),
+      React.createElement(RigSprite, { appearance: { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4, monster }, equip: { weapons: [], armour: [] }, career: MANNEQUIN, view }),
     );
     cells.push(`<g transform="translate(${c * 124},${r * 168})"><rect width="120" height="150" fill="#1d2230"/>${svg}<text x="60" y="164" text-anchor="middle" font-size="10" fill="#cdd">${label} / ${view}</text></g>`);
   });

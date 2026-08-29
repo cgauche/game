@@ -5,11 +5,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import type { Appearance } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Palette } from '../src/gameIso/rig/palette';
 import { assertWardrobeId } from './_lib-wardrobe';
 
-const app = (colors?: Palette): Appearance => ({ species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, colors });
+const app = (colors?: Palette): Appearance => ({ species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4, colors });
 // `career` = ID de garde-robe (carrière ∪ classe ∪ tenue) ; `label` n'est que la légende.
 const CASES: { career: string; label: string; colors?: Palette }[] = [
   { career: 'batelier', label: 'Batelier défaut' },

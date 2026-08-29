@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { resolveRig } from './composeRig';
-import type { Appearance, RigSpeciesId } from './appearance';
+import type { Appearance } from './appearance';
+import { asRigSpeciesId } from './appearance';
 
 const NO_EQUIP = { weapons: [], armour: [] };
-const HUMAN: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 3 };
+const HUMAN: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 3 };
 // début du path du crâne arrière plein (`BACK_CRANE`, cf. parts/cosmetic.ts).
 const BACK_CRANE = 'M-9 6.6 Q-9.4 -2 0 -2.6';
 // motif du path du cou (`NECK`, cf. parts/resolve.ts) — ordonnée du bas de crâne, commune aux 3 vues.

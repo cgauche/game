@@ -75,7 +75,8 @@ import type { PartArt } from '../../src/gameIso/rig/parts/types';
 import { DEFS } from '../../src/gameIso/sprites';
 import { TENUE_BY_ID, TENUE_PALETTE_BY_ID, SPECIFIC_TENUES, CLASS_TENUE_BY_ID } from '../../src/gameIso/rig/parts/tenues';
 import { slugId } from '../../src/data/slug';
-import type { Appearance, RigSpeciesId } from '../../src/gameIso/rig/appearance';
+import type { Appearance } from '../../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../../src/gameIso/rig/appearance';
 import type { View } from '../../src/gameIso/rig/facing';
 import { computeVerdict, CONTRAT_ECART_MIN, CONTRAT_CLAIR_MIN, CONTRAT_QUASI_BLANC_BASE_MIN, type Verdict } from '../../src/gameIso/rig/qc-contrat';
 import { QUAD_SPECIES, WINGED_SPECIES } from '../../src/gameIso/rig/creatures';
@@ -84,7 +85,7 @@ import { QUAD_REST } from '../../src/gameIso/rig/quadruped/quadPose';
 import type { QuadBoneId } from '../../src/gameIso/rig/quadruped/quadSkeleton';
 
 // ── Rig de référence (figé) ───────────────────────────────────────────────────────────────
-const REF_APPEARANCE: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.55, seed: 4 };
+const REF_APPEARANCE: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.55, seed: 4 };
 const REF_EQUIP = { weapons: [], armour: [] };
 const VB_W = 120, VB_H = 150;
 const RENDER_W = 480;

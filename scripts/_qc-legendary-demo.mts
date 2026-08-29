@@ -12,7 +12,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import { recomputeLoadout } from '../src/engine/items';
 import type { Combatant, ItemInstance } from '../src/engine/types';
-import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { asRigSpeciesId } from '../src/gameIso/rig/appearance';
 import { assertWardrobeId } from './_lib-wardrobe';
 
 // Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
@@ -20,7 +20,7 @@ import { assertWardrobeId } from './_lib-wardrobe';
 const MANNEQUIN = 'soldat';
 assertWardrobeId(MANNEQUIN, 'qc-legendary-demo');
 
-const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
+const APP = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 4 } as const;
 
 /** Construit un héros tenant une épée bâtarde, avec ou sans skin légendaire, via la VRAIE chaîne. */
 function heroWeapon(skin?: Record<string, string>) {
