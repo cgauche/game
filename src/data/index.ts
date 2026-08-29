@@ -2362,7 +2362,7 @@ export const massBattleStructures = massBattleJson.structures as MassBattleStruc
 export const massBattleHazards = massBattleJson.hazards as HazardRow[];
 /** Objet racine (mêmes références vivantes que les 5 tableaux ci-dessus) — cible de sérialisation PLEINE
  *  au save d'une entrée d'un sous-tableau (l'éditeur ne doit PAS écrire QUE le tableau touché, sous peine
- *  de perdre les 4 autres sections du fichier). Cf. `data/overrides.ts::NESTED_ARRAY_FILE`. */
+ *  de perdre les 4 autres sections du fichier). Cf. `data/overrides.ts::NESTED_ARRAY_ROOT`. */
 export const massBattleData = massBattleJson;
 
 /** Apparence de RENDU du relief (falaises/rampes/tabliers/piliers/POV) — donnée pure. */

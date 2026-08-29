@@ -25,6 +25,7 @@ export interface ExemptionCodex {
 /** Tables dérivées d'un jeu de defs — ce que `deriveExposition` rend, et rien d'autre. */
 export interface TablesExposition {
   readonly categoryDataset: Record<string, string>;
+  readonly datasetFichier: Record<string, string>;
   readonly objectCategory: Record<string, RouteObjet>;
   readonly fichiersDeclares: Set<string>;
   readonly exempts: Record<string, ExemptionCodex>;
@@ -38,6 +39,7 @@ export interface TablesExposition {
  */
 export function deriveExposition(defs: readonly SchemaDef[]): TablesExposition {
   const categoryDataset: Record<string, string> = {};
+  const datasetFichier: Record<string, string> = {};
   const objectCategory: Record<string, RouteObjet> = {};
   const fichiersDeclares = new Set<string>();
   const exempts: Record<string, ExemptionCodex> = {};
@@ -53,6 +55,18 @@ export function deriveExposition(defs: readonly SchemaDef[]): TablesExposition {
       );
     }
     proprietaire.set(cle, fichier);
+  };
+
+  /** Un dataset éditable n'a qu'UN document porteur — son fichier disque en découle (#1530). */
+  const routeFichier = (ds: string, fichier: string): void => {
+    const deja = datasetFichier[ds];
+    if (deja !== undefined) {
+      throw new Error(
+        `exposition-derivee : le dataset '${ds}' est édité par DEUX documents ` +
+          `(\`${deja}\` et \`${fichier}\`) — un dataset, un fichier : trancher au def.`,
+      );
+    }
+    datasetFichier[ds] = fichier;
   };
 
   for (const def of defs) {
@@ -81,6 +95,7 @@ export function deriveExposition(defs: readonly SchemaDef[]): TablesExposition {
       }
       revendique(route, def.file);
       categoryDataset[route] = ds;
+      routeFichier(ds, def.file);
       continue;
     }
 
@@ -101,17 +116,23 @@ export function deriveExposition(defs: readonly SchemaDef[]): TablesExposition {
       for (const cat of expo.edit.niche.categories) {
         revendique(cat, def.file);
         categoryDataset[cat] = cat;
+        routeFichier(cat, def.file);
       }
     }
   }
 
-  return { categoryDataset, objectCategory, fichiersDeclares, exempts };
+  return { categoryDataset, datasetFichier, objectCategory, fichiersDeclares, exempts };
 }
 
 const derive = deriveExposition(SCHEMA_DEFS);
 
 /** Catégorie Codex → dataset-LISTE éditable (`src/data/overrides.ts` `ARRAYS`). */
 export const CATEGORY_DATASET_DERIVE: Readonly<Record<string, string>> = derive.categoryDataset;
+
+/** Dataset-LISTE éditable → FICHIER disque de son document porteur (#1530). Un dataset absent d'ici
+ *  n'a AUCUNE route d'édition déclarée (`edit:{none}`) : il ne se sauvegarde pas, donc il n'a pas de
+ *  fichier de sauvegarde — c'est un refus, jamais un `<clé>.json` deviné. */
+export const DATASET_FICHIER_DERIVE: Readonly<Record<string, string>> = derive.datasetFichier;
 
 /** Catégorie Codex → dataset-OBJET éditable (`src/data/overrides.ts` `OBJECTS`). */
 export const OBJECT_CATEGORY_DERIVE: Readonly<Record<string, RouteObjet>> = derive.objectCategory;

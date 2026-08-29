@@ -512,14 +512,22 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   const canSave = dirty && errors.length === 0;
 
   const save = async () => {
+    // Contrat de donnée (#176) : la source entière doit parser son schéma zod (SCHEMA_DEFS) avant toute
+    // écriture disque. La racine à valider est celle que la mémoire PORTE (mutation en place) : la pose
+    // est donc TRANSACTIONNELLE (#1530) — au refus, l'état d'avant est REPRIS, sinon un save refusé
+    // laissait l'app diverger du disque en silence.
+    const dsKey = obj ? null : editableDataset(categoryKey)!;
+    const avant: unknown = obj ? structuredClone(datasetObject(obj.ds)) : (datasetArray(dsKey!) as unknown[]).slice();
     src.persist(entry); // preview mémoire (live) — mutation en place (tableau ou objet)
-    invalidateCodexLookup(); // l'index de `codexLookup` repart de la donnée persistée
     // Le texte écrit = la SOURCE entière (tableau ou objet-dataset), re-sérialisée byte-fidèle.
-    const root = obj ? datasetObject(obj.ds) : datasetSerializeRoot(editableDataset(categoryKey)!);
-    // Contrat de donnée (#176) : la source entière doit parser son schéma zod (SCHEMA_DEFS) AVANT toute
-    // écriture disque — refus champ-par-champ sinon (rien n'est écrit ; la preview mémoire reste éditable).
+    const root = obj ? datasetObject(obj.ds) : datasetSerializeRoot(dsKey!);
     const schemaErr = validateDataset(src.file, root);
-    if (schemaErr) { setSchemaError(schemaErr); setMsg(''); return; }
+    if (schemaErr) {
+      if (obj) setObjectDataset(obj.ds, avant as never);
+      else setDataset(dsKey!, avant as never);
+      setSchemaError(schemaErr); setMsg(''); return;
+    }
+    invalidateCodexLookup(); // l'index de `codexLookup` repart de la donnée persistée
     setSchemaError(null);
     const text = serializeDataset(root);
     try {

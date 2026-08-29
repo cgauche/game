@@ -207,6 +207,24 @@ describe('deriveExposition — refus fail-fast sur defs synthétiques (#1472)', 
     ).toThrow(/« sorts » est revendiquée par DEUX documents \(`un\.json` et `trois\.json`\)/);
   });
 
+  it('(iii bis) COLLISION de FICHIER : deux documents éditant le MÊME dataset sous des clés Codex DIFFÉRENTES sont NOMMÉS', () => {
+    // Les clés de catégorie diffèrent : `revendique` laisse passer, seule la route de FICHIER mord —
+    // sans elle, `datasetFichier` retiendrait le DERNIER def et le save écrirait le mauvais document.
+    expect(() =>
+      deriveExposition([
+        faux('un.json', { codex: { keys: ['sortsA'] }, edit: { dataset: 'sorts' } }),
+        faux('deux.json', { codex: { keys: ['sortsB'] }, edit: { dataset: 'sorts' } }),
+      ]),
+    ).toThrow(/le dataset 'sorts' est édité par DEUX documents \(`un\.json` et `deux\.json`\)/);
+    // Vaut aussi entre une route de dataset et une route NICHÉE portant le même nom de dataset.
+    expect(() =>
+      deriveExposition([
+        faux('un.json', { codex: { keys: ['sortsA'] }, edit: { dataset: 'sorts' } }),
+        faux('trois.json', { codex: { keys: ['sortsN'] }, edit: { niche: { categories: ['sorts'] } } }),
+      ]),
+    ).toThrow(/le dataset 'sorts' est édité par DEUX documents \(`un\.json` et `trois\.json`\)/);
+  });
+
   it('(iv) def SANS `exposition` : REFUS nominatif (aucun document ne se déclare muet)', () => {
     expect(() => deriveExposition([faux('muet.json')])).toThrow(
       /`muet\.json` ne déclare aucune `exposition`/,

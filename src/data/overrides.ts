@@ -37,6 +37,13 @@ import { CARGO_ENTRIES, type CargoEntry, MANANN_FACTORS, BOARD_EVENTS, PORT_EVEN
 import { RIVER_PERILS } from '../engine/riverNavigation';
 import { MORALE_FACTORS, MORALE_BANDS } from '../engine/crewMorale';
 import { STEAM_BREAKDOWNS } from '../engine/shipBuild';
+import weatherRawJson from './weather.json';
+import crewTestTypesRawJson from './crew-test-types.json';
+import landCargoRawJson from './land-cargo.json';
+import seaCargoRawJson from './sea-cargo.json';
+import riverPerilsRawJson from './river-perils.json';
+import crewMoraleRawJson from './crew-morale.json';
+import { DATASET_FICHIER_DERIVE } from './schemas/exposition-derivee';
 import { CRITICAL_TABLES } from './criticals';
 import { SHIP_CRITICAL_TABLES, RIVER_CRIT_SET } from './shipCriticals';
 import type { GameOp } from '../engine/ops';
@@ -80,7 +87,7 @@ import { OPTIONAL_RULES } from '../engine/policy';
 import surincantationRawJson from './surincantation.json';
 // #1467 L1b V-FLIP-TABLE : les 7 documents dont le tableau ÉDITÉ est NICHÉ sous leur enveloppe — la
 // racine à réécrire au save est le DOCUMENT entier, jamais le tableau nu (5 clefs y étaient sans
-// `NESTED_ARRAY_FILE` et auraient écrasé leur enveloppe ; 2 documents deviennent éditables ici).
+// root déclaré et auraient écrasé leur enveloppe ; 2 documents deviennent éditables ici).
 import monturesRawJson from './montures.json';
 import incidentsMontureRawJson from './incidents-monture.json';
 import problemesVehiculeRawJson from './problemes-vehicule.json';
@@ -195,7 +202,7 @@ const ARRAYS = {
   // LOT 1 #422 : Ports (MDG 15), Progression de navire (MDG 13) et 3 sous-tableaux de
   // Construction navale (MDG 12) — `navalPorts` est DÉJÀ un tableau racine ; les 4 autres sont des
   // sous-tableaux NICHÉS dans un objet-config parent (`navalProgression.entries`, `shipConstruction.*`,
-  // même patron que `seaManannFactors`/`seaBoardEvents`/`seaPortEvents` ci-dessus) — `NESTED_ARRAY_FILE`
+  // même patron que `seaManannFactors`/`seaBoardEvents`/`seaPortEvents` ci-dessus) — `NESTED_ARRAY_ROOT`
   // réécrit le PARENT entier au save.
   navalPorts,
   navalProgression: navalProgression.entries,
@@ -214,8 +221,10 @@ const ARRAYS = {
   miscastMinor: miscastEntries('miscast-mineure'),
   miscastMajor: miscastEntries('miscast-majeure'),
   miscastWrath: miscastEntries('miscast-colere'),
-  // LOT 3 #422 (FINAL) : enjeux VERBATIM de la cascade de nuit — tableau RACINE, nom de fichier
-  // kebab-case divergent (même besoin que `navalPorts`).
+  // LOT 3 #422 (FINAL) : enjeux des cascades — chaque binding écrit EST la racine de son fichier
+  // (tableau RACINE, pas un tableau niché sous une enveloppe). Le fichier disque ne se déduit pas de
+  // la clé JS : il est DÉRIVÉ de l'`exposition.edit` du def (`nightStakes` → `night-stakes.json`) ;
+  // les trois autres sont `edit:{none}` (lecture seule au Codex), donc sans fichier de sauvegarde.
   nightStakes: NIGHT_STAKES,
   voyageStakes: VOYAGE_STAKES,
   flowStakes: FLOW_STAKES,
@@ -278,7 +287,7 @@ export function datasetObject<K extends ObjectDatasetKey>(key: K): (typeof OBJEC
 }
 
 /** Fichier disque d'un dataset-OBJET dont la clé JS diverge du nom de fichier (tout fichier de
- *  `src/data` est kebab-case) — même idée que `NESTED_ARRAY_FILE` côté tableaux, mais pour `OBJECTS`.
+ *  `src/data` est kebab-case) — pendant, pour `OBJECTS`, de la dérivation `DATASET_FICHIER_DERIVE`.
  *  Absente d'ici → `<clé>.json` (défaut historique, zéro changement pour `details`). */
 const OBJECT_FILE: Partial<Record<ObjectDatasetKey, string>> = {
   waterExposure: 'water-exposure.json',
@@ -307,96 +316,109 @@ export function setDataset<K extends DatasetKey>(key: K, next: readonly (typeof 
   arr.splice(0, arr.length, ...(next as readonly unknown[]));
 }
 
-/** Datasets-tableaux NICHÉS dans un fichier-objet PARTAGÉ : `mass-battle.json` porte 5 tableaux frères
- *  dans UN seul fichier (pas un fichier par tableau, contrairement à tous les autres `ARRAYS`). Mêmes
- *  garanties de mutation en place que `ARRAYS` (`setDataset` continue de fonctionner tel quel sur ces
- *  clés), mais le FICHIER à réécrire et le CONTENU à sérialiser au save divergent : il faut réécrire le
- *  PARENT ENTIER (`massBattleData`), sous peine d'écraser les 4 tableaux frères avec un tableau nu.
- *  `datasetFile`/`datasetSerializeRoot` (lues par `CodexEdit.save`) retombent sur le défaut historique
- *  (`<clé>.json` / le tableau lui-même) pour toute clé absente d'ici — zéro changement de comportement
- *  pour les ~40 datasets existants. */
-const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => unknown }>> = {
-  massBattleWarMachines: { file: 'mass-battle.json', root: () => massBattleData },
-  massBattleStructures: { file: 'mass-battle.json', root: () => massBattleData },
-  massBattleHazards: { file: 'mass-battle.json', root: () => massBattleData },
-  massBattleMightModifiers: { file: 'mass-battle.json', root: () => massBattleData },
-  massBattlePowerEstimate: { file: 'mass-battle.json', root: () => massBattleData },
+/** Datasets-tableaux NICHÉS sous une enveloppe ou dans un fichier-objet PARTAGÉ : `mass-battle.json`
+ *  porte 5 tableaux frères dans UN seul fichier. Mêmes garanties de mutation en place que `ARRAYS`
+ *  (`setDataset` fonctionne tel quel sur ces clés), mais le CONTENU à sérialiser au save diverge : il
+ *  faut réécrire le PARENT ENTIER (`massBattleData`), sous peine d'écraser les tableaux frères — ou
+ *  l'enveloppe du document — avec un tableau nu. `datasetSerializeRoot` retombe sur le tableau lui-même
+ *  pour toute clé absente d'ici. Le FICHIER, lui, ne vit plus ici : il est DÉRIVÉ du def porteur
+ *  (`DATASET_FICHIER_DERIVE`, #1530) — une table de fichiers à la main de plus était une 2ᵉ vérité. */
+const NESTED_ARRAY_ROOT: Partial<Record<DatasetKey, { root: () => unknown }>> = {
+  massBattleWarMachines: { root: () => massBattleData },
+  massBattleStructures: { root: () => massBattleData },
+  massBattleHazards: { root: () => massBattleData },
+  massBattleMightModifiers: { root: () => massBattleData },
+  massBattlePowerEstimate: { root: () => massBattleData },
   // Blessures critiques (LDB 18 « Traumatisme ») : 4 tables (Tête/Bras/Corps/Jambe) NICHÉES dans
   // `criticals.json` — même patron que mass-battle (réécrire le PARENT entier au save).
-  criticalsTete: { file: 'criticals.json', root: () => criticalsRawJson },
-  criticalsBras: { file: 'criticals.json', root: () => criticalsRawJson },
-  criticalsCorps: { file: 'criticals.json', root: () => criticalsRawJson },
-  criticalsJambe: { file: 'criticals.json', root: () => criticalsRawJson },
+  criticalsTete: { root: () => criticalsRawJson },
+  criticalsBras: { root: () => criticalsRawJson },
+  criticalsCorps: { root: () => criticalsRawJson },
+  criticalsJambe: { root: () => criticalsRawJson },
   // Blessures critiques AA (« approche alternative ») : mêmes 4 familles, NICHÉES dans `aa-criticals.json`.
-  aaCriticalsTete: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
-  aaCriticalsBras: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
-  aaCriticalsCorps: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
-  aaCriticalsJambe: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
+  aaCriticalsTete: { root: () => aaCriticalsRawJson },
+  aaCriticalsBras: { root: () => aaCriticalsRawJson },
+  aaCriticalsCorps: { root: () => aaCriticalsRawJson },
+  aaCriticalsJambe: { root: () => aaCriticalsRawJson },
   // Critiques de coque (MDG 13, navire) : 5 Localisations NICHÉES dans `ship-criticals.json`.
-  shipCriticalsCargaison: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
-  shipCriticalsGreement: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
-  shipCriticalsCoque: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
-  shipCriticalsAvirons: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
-  shipCriticalsEquipements: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
+  shipCriticalsCargaison: { root: () => shipCriticalsRawJson },
+  shipCriticalsGreement: { root: () => shipCriticalsRawJson },
+  shipCriticalsCoque: { root: () => shipCriticalsRawJson },
+  shipCriticalsAvirons: { root: () => shipCriticalsRawJson },
+  shipCriticalsEquipements: { root: () => shipCriticalsRawJson },
   // Critiques de coque (MSRC 7, fluvial) : 5 Localisations NICHÉES dans `river-criticals.json`.
-  riverCriticalsGreement: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
-  riverCriticalsAvirons: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
-  riverCriticalsGouvernail: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
-  riverCriticalsCoque: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
-  riverCriticalsSuperstructure: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
+  riverCriticalsGreement: { root: () => riverCriticalsRawJson },
+  riverCriticalsAvirons: { root: () => riverCriticalsRawJson },
+  riverCriticalsGouvernail: { root: () => riverCriticalsRawJson },
+  riverCriticalsCoque: { root: () => riverCriticalsRawJson },
+  riverCriticalsSuperstructure: { root: () => riverCriticalsRawJson },
   // Rencontres de voyage (EDOC 8) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
-  rencontresPositives: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
-  rencontresFortuites: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
-  rencontresDangereuses: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
+  rencontresPositives: { root: () => rencontresRawJson },
+  rencontresFortuites: { root: () => rencontresRawJson },
+  rencontresDangereuses: { root: () => rencontresRawJson },
   // Longs voyages en mer (MDG 15) : 3 tableaux frères NICHÉS dans `sea-events.json`.
-  seaManannFactors: { file: 'sea-events.json', root: () => seaEventsRawJson },
-  seaBoardEvents: { file: 'sea-events.json', root: () => seaEventsRawJson },
-  seaPortEvents: { file: 'sea-events.json', root: () => seaEventsRawJson },
-  // LOT 1 #422 : `navalPorts` (tableau racine, nom de fichier kebab-case divergent — même besoin que
-  // `file` ci-dessous sans nichage) ; Progression de navire (1 tableau NICHÉ dans `naval-progression.json`)
-  // et 3 sous-tableaux de Construction navale NICHÉS dans `ship-construction.json` — réécrire le PARENT
-  // entier au save.
-  navalPorts: { file: 'naval-ports.json', root: () => navalPorts },
-  navalProgression: { file: 'naval-progression.json', root: () => navalProgression },
-  shipHullSizes: { file: 'ship-construction.json', root: () => shipConstruction },
-  shipSpeedTraits: { file: 'ship-construction.json', root: () => shipConstruction },
-  shipConstructionTraits: { file: 'ship-construction.json', root: () => shipConstruction },
+  seaManannFactors: { root: () => seaEventsRawJson },
+  seaBoardEvents: { root: () => seaEventsRawJson },
+  seaPortEvents: { root: () => seaEventsRawJson },
+  // LOT 1 #422 : Progression de navire (1 tableau NICHÉ dans `naval-progression.json`) et 3 sous-tableaux
+  // de Construction navale NICHÉS dans `ship-construction.json` — réécrire le PARENT entier au save.
+  navalProgression: { root: () => navalProgression },
+  shipHullSizes: { root: () => shipConstruction },
+  shipSpeedTraits: { root: () => shipConstruction },
+  shipConstructionTraits: { root: () => shipConstruction },
   // LOT 1 #422 : Accidents de Conduite d'attelage / Ivresse — tableau NICHÉ sous `entries` dans
   // `driving-mishap.json`/`drunkenness.json`, réécrire le PARENT entier au save (l'enveloppe doit survivre).
-  drivingMishap: { file: 'driving-mishap.json', root: () => drivingMishapRawJson },
-  drunkenness: { file: 'drunkenness.json', root: () => drunkennessRawJson },
+  drivingMishap: { root: () => drivingMishapRawJson },
+  drunkenness: { root: () => drunkennessRawJson },
   // LOT 3 #422 (FINAL) : miscast — rangées NICHÉES dans l'un des 5 documents de `miscast.json`,
   // réécrire la LISTE entière au save (les 4 documents frères doivent survivre).
-  miscastMinor: { file: 'miscast.json', root: () => miscastRoot },
-  miscastMajor: { file: 'miscast.json', root: () => miscastRoot },
-  miscastWrath: { file: 'miscast.json', root: () => miscastRoot },
-  // LOT 3 #422 (FINAL) : `nightStakes` (tableau racine, nom de fichier kebab-case divergent).
-  nightStakes: { file: 'night-stakes.json', root: () => NIGHT_STAKES },
-  voyageStakes: { file: 'voyage-stakes.json', root: () => VOYAGE_STAKES },
-  flowStakes: { file: 'flow-stakes.json', root: () => FLOW_STAKES },
-  combatStakes: { file: 'combat-stakes.json', root: () => COMBAT_STAKES },
+  miscastMinor: { root: () => miscastRoot },
+  miscastMajor: { root: () => miscastRoot },
+  miscastWrath: { root: () => miscastRoot },
   // V9 #1318 : Tableau de Surincantation NICHÉ sous `entries` — réécrire le PARENT entier au save
   // (l'enveloppe du document doit survivre à l'édition des rangées).
-  surincantation: { file: 'surincantation.json', root: () => surincantationRawJson },
+  surincantation: { root: () => surincantationRawJson },
   // #1467 L1b V-FLIP-TABLE : les 14 documents uniques de la vague portent une ENVELOPPE (id/type/
   // label/source). Sans entrée ici, `datasetSerializeRoot` rendait le TABLEAU NU et le save écrasait
   // l'enveloppe — 5 clés étaient dans ce cas. Les 2 dernières naissent éditables avec leur entrée.
-  montures: { file: 'montures.json', root: () => monturesRawJson },
-  incidentsMonture: { file: 'incidents-monture.json', root: () => incidentsMontureRawJson },
-  problemesVehicule: { file: 'problemes-vehicule.json', root: () => problemesVehiculeRawJson },
-  structureCriticals: { file: 'structure-criticals.json', root: () => structureCriticalsRawJson },
-  obsessions: { file: 'obsessions.json', root: () => obsessionsRawJson },
-  artilleryMisfire: { file: 'artillery-misfire.json', root: () => artilleryMisfireRawJson },
-  ventsTourbillonnants: { file: 'vents-tourbillonnants.json', root: () => ventsTourbillonnantsRawJson },
+  montures: { root: () => monturesRawJson },
+  incidentsMonture: { root: () => incidentsMontureRawJson },
+  problemesVehicule: { root: () => problemesVehiculeRawJson },
+  structureCriticals: { root: () => structureCriticalsRawJson },
+  obsessions: { root: () => obsessionsRawJson },
+  artilleryMisfire: { root: () => artilleryMisfireRawJson },
+  ventsTourbillonnants: { root: () => ventsTourbillonnantsRawJson },
+  // #1530 : 7 clés dont le tableau est NICHÉ sous l'enveloppe de son document — sans root ici, le save
+  // sérialisait le tableau NU par-dessus le document (l'enveloppe et les tableaux frères mouraient).
+  weather: { root: () => weatherRawJson },
+  crewTestTypes: { root: () => crewTestTypesRawJson },
+  landCargo: { root: () => landCargoRawJson },
+  seaCargo: { root: () => seaCargoRawJson },
+  riverPerils: { root: () => riverPerilsRawJson },
+  crewMoraleFactors: { root: () => crewMoraleRawJson },
+  crewMoraleBands: { root: () => crewMoraleRawJson },
 };
 /** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
 export function datasetFile(key: DatasetKey): string {
-  return NESTED_ARRAY_FILE[key]?.file ?? `${key}.json`;
+  const fichier = DATASET_FICHIER_DERIVE[key];
+  if (fichier === undefined) {
+    throw new Error(
+      `datasetFile('${key}') : aucun document de \`SCHEMA_DEFS\` ne déclare l'édition de ce dataset ` +
+        `(\`exposition.edit\` = dataset ou niche) — sans route d'édition déclarée il n'y a pas de fichier ` +
+        `de sauvegarde : déclarer au def, ou ne pas sauvegarder.`,
+    );
+  }
+  return fichier;
+}
+
+/** Ce dataset a-t-il une route d'ÉDITION déclarée ? (sinon `datasetFile` refuse — #1530) */
+export function datasetEditable(key: DatasetKey): boolean {
+  return DATASET_FICHIER_DERIVE[key] !== undefined;
 }
 /** Racine à SÉRIALISER au save (le tableau lui-même par défaut ; l'objet PARENT entier pour un tableau
  *  niché — ses tableaux frères doivent survivre à l'édition d'un seul). */
 export function datasetSerializeRoot(key: DatasetKey): unknown {
-  return NESTED_ARRAY_FILE[key]?.root() ?? datasetArray(key);
+  return NESTED_ARRAY_ROOT[key]?.root() ?? datasetArray(key);
 }
 
 const isPlainObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
