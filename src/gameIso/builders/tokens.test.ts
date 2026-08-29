@@ -3,6 +3,7 @@ import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
 import type { BattleState } from '../../state/store';
 import { Combatant } from '../../engine/types';
 import { buildTokens } from './tokens';
+import { isOverhang, capsSolid } from './floors';
 
 /** Fabrique un combattant MINIMAL (champs consommés par le builder + prédicats de filtre). */
 function cbt(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number; z?: number }, extra: Partial<Combatant> = {}): Combatant {
@@ -169,5 +170,43 @@ describe('buildTokens — combattants', () => {
     ]);
     const els = buildTokens(s, new Set([...allVisible(s), '2,2,1']), b, VIEW);
     expect(els.filter((e) => e.subject.kind === 'combatant').map((e) => e.id)).toEqual(['h1']);
+  });
+
+  /** CHEMIN DE RONDE : sol de z1 posé sur la MASSE PLEINE du rempart (`capsSolid`) — le monde le
+   *  DESSINE depuis la cour (`buildFloors`), donc ses occupants aussi. Le z0 sous la masse n'est pas
+   *  marchable : ce n'est PAS un surplomb (`isOverhang` faux) — c'était le trou #1567 (le plancher
+   *  peint, la garnison coupée : défenseurs ET pièces d'artillerie servies). */
+  const rempart = () => {
+    const s = emptyScene(6, 6);
+    s.layers[0] = { ...s.layers[0], tiles: s.layers[0].tiles.map((t, i) => (i === 2 * 6 + 2 ? 'mur' : t)) };
+    const tiles = new Array(36).fill('vide');
+    tiles[2 * 6 + 2] = 'pierre';
+    const height = new Array(36).fill(0);
+    height[2 * 6 + 2] = 4;
+    s.layers.push({ z: 1, tiles, height });
+    return s;
+  };
+
+  it('sol de z1 coiffant un BLOC PLEIN : c’est un dessus de rempart, pas un surplomb', () => {
+    const s = rempart();
+    expect(isOverhang(s, 2, 2, 1)).toBe(false);
+    expect(capsSolid(s, 2, 2, 1)).toBe(true);
+  });
+
+  it('un défenseur et sa PIÈCE servie sur le chemin de ronde restent rendus depuis la cour (activeZ 0)', () => {
+    const s = rempart();
+    const b = battleOf([
+      cbt('h1', 'hero', { x: 0, y: 0 }),
+      cbt('garde', 'hero', { x: 2, y: 2, z: 1 }),
+      cbt('baliste', 'hero', { x: 2, y: 2, z: 1 }, { bodyShape: 'engin' } as Partial<Combatant>),
+    ]);
+    const els = buildTokens(s, allVisible(s), b, VIEW).filter((e) => e.subject.kind === 'combatant');
+    expect(els.map((e) => e.id)).toEqual(['h1', 'garde', 'baliste']);
+  });
+
+  it('MÊME loi pour un FIGURANT posté sur le chemin de ronde (hors combat)', () => {
+    const s = rempart();
+    s.entities = [{ id: 'fig-rempart', kind: 'personnage', pos: { x: 2, y: 2 }, z: 1 }] as SceneEntity[];
+    expect(buildTokens(s, new Set([...allVisible(s), '2,2,1']), null, VIEW).map((e) => e.key)).toEqual(['fig:fig-rempart']);
   });
 });

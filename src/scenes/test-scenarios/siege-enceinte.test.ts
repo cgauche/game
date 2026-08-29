@@ -13,6 +13,9 @@ import { isStructure } from '../../engine/structures';
 import { woundsFromHit } from '../../engine/woundsCalc';
 import type { SceneEntity } from '../../state/scene';
 import type { Weapon } from '../../engine/types';
+import { buildTokens } from '../../gameIso/builders/tokens';
+import { isOverhang, capsSolid } from '../../gameIso/builders/floors';
+import { computeStateVisibleAndLight } from '../../state/visionState';
 
 /**
  * Siège à grande échelle (siege-enceinte) — vérif LOGIQUE headless de la Scene PRODUITE par le `MapSpec`.
@@ -261,10 +264,17 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     const enc = scenario.scene.encounters.find((e) => e.id === 'assaut')!;
     const members = enc.members!;
     const by = (id: string) => members.find((m) => m.entityId === id);
-    // Servants de REMPART : alliés pilotés par l'IA.
-    for (const id of ['crew-baliste', 'crew-canon']) expect(by(id)).toEqual({ entityId: id, side: 'ally', ai: true });
-    // Servants de la BATTERIE assaillante : ennemis (pas d'IA-flag → agissent comme ennemis normaux).
-    for (const id of ['brg-canon', 'brg-cata']) expect(by(id)).toEqual({ entityId: id, side: 'enemy' });
+    // Servants DÉRIVÉS de la donnée : `crew` du bind → `crewIds` du poste de l'affût (setPosteCrew).
+    const crewOf = (e: SceneEntity) => (e.postes ?? []).flatMap((p) => p.crewIds ?? []);
+    const crewAt = (z: number) => scenario.scene.entities.filter((e) => e.postes?.length && (e.z ?? 0) === z).flatMap(crewOf);
+    // Servants de REMPART (affûts du chemin de ronde, z1) : alliés pilotés par l'IA.
+    const crewRempart = crewAt(1);
+    expect(crewRempart.length).toBeGreaterThan(0);
+    for (const id of crewRempart) expect(by(id)).toEqual({ entityId: id, side: 'ally', ai: true });
+    // Servants de la BATTERIE assaillante (z0) : ennemis (pas d'IA-flag → agissent comme ennemis normaux).
+    const crewBatterie = crewAt(0);
+    expect(crewBatterie.length).toBeGreaterThan(0);
+    for (const id of crewBatterie) expect(by(id)).toEqual({ entityId: id, side: 'enemy' });
     // Emplacements (rempart alliés / batterie ennemis) : INERTES, enrôlés SANS `ai`.
     const empls = scenario.scene.entities.filter((e) => e.postes?.length);
     expect(empls.length).toBe(4);
@@ -277,5 +287,40 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     const gobs = scenario.scene.entities.filter((e) => e.ref === 'gobelin');
     expect(gobs.length).toBe(6);
     for (const g of gobs) expect(by(g.id)).toEqual({ entityId: g.id, side: 'enemy' });
+  });
+
+  /**
+   * CHEMIN DE RENDU du chemin `bind: { emplacement }` — jusqu'à la DÉCISION de dessiner (#1567). Les
+   * gardes du tour de garde parlaient juste (species/bodyShape sains) mais AUCUN jeton ne sortait :
+   * depuis la cour (`activeZ` 0, le tour d'un héros), la garnison du chemin de ronde était coupée par
+   * la loi d'étage — le sol de z1 coiffe la MASSE PLEINE du rempart (`capsSolid`), le monde le peint
+   * d'en bas, mais le builder de jetons ne connaissait que le surplomb sur pilotis (`isOverhang`).
+   * La sonde mesure la MÊME vue que l'écran : brouillard réel + `activeZ` du combattant actif.
+   */
+  it('RENDU : depuis la cour, la garnison du chemin de ronde (défenseurs ET pièces servies) sort en jetons', () => {
+    useGame.setState({ party: scenario.makeParty() });
+    useGame.getState().startScene(scenario.scene);
+    useGame.getState().startCombat('assaut');
+    useGame.getState().confirmRoundStart();
+    const st = useGame.getState();
+    const b = st.battle!;
+    const scene = st.scene!;
+    const vl = computeStateVisibleAndLight({ scene, battle: b, party: st.party, partyPos: st.partyPos, gameTime: st.gameTime, lightLevel: st.lightLevel });
+    const actif = b.combatants.find((c) => c.id === b.order[b.turn])!;
+    const activeZ = actif.pos?.z ?? 0;
+    expect(activeZ).toBe(0); // le combat s'ouvre au sol : c'est de là qu'on regarde le rempart
+    const rendus = new Set(buildTokens(scene, vl.visible, b, { activeZ, viewZ: null, top: false }).map((t) => t.id));
+    // Les 2 PIÈCES du rempart (emplacements posés par `bind: { emplacement }`) et leurs 2 servants.
+    const piecesRempart = b.combatants.filter((c) => c.bodyShape === 'engin' && (c.pos?.z ?? 0) === 1);
+    expect(piecesRempart.length).toBe(2);
+    for (const p of piecesRempart) {
+      expect(capsSolid(scene, p.pos!.x, p.pos!.y, 1)).toBe(true); // dessus de la masse, pas un surplomb
+      expect(isOverhang(scene, p.pos!.x, p.pos!.y, 1)).toBe(false);
+      expect(rendus.has(p.id)).toBe(true);
+    }
+    for (const id of ['crew-baliste', 'crew-canon']) expect(rendus.has(id)).toBe(true);
+    // Contre-épreuve : la batterie ENNEMIE au fond du champ reste coupée par le BROUILLARD (loi
+    // inchangée) — ce test mesure l'étage, pas la vue.
+    for (const c of b.combatants.filter((x) => x.bodyShape === 'engin' && (x.pos?.z ?? 0) === 0)) expect(rendus.has(c.id)).toBe(false);
   });
 });

@@ -15,7 +15,7 @@ import { isRider, isMount, riderOf } from '../../state/mount';
 import { RANG_MENEUR, seatPoseOf, type SeatPose } from '../../state/seating';
 import type { Combatant } from '../../engine/types';
 import { isStructure } from '../../engine/structures';
-import { isOverhang } from './floors';
+import { isOverhang, capsSolid } from './floors';
 import type { TokenEl } from './types';
 
 /**
@@ -56,9 +56,12 @@ export interface TokenView {
  *  masqué par sa propre vue) ; pour un couple, l'un OU l'autre des deux corps suffit. */
 function cutByView(scene: Scene, visible: ReadonlySet<string> | undefined, view: TokenView, pos: { x: number; y: number; z?: number }, héros: boolean): { cut: boolean; overhang: boolean } {
   const cz = pos.z ?? 0;
-  // Jeton de muraille vu d'en bas : un combattant posé sur un SURPLOMB au-dessus de la zone active
-  // reste rendu (défenseurs/pièces ciblables depuis la cour — parité avec le picking cross-couche).
-  const overhang = view.viewZ == null && cz > view.activeZ && isOverhang(scene, pos.x, pos.y, cz);
+  // Jeton de muraille vu d'en bas : un combattant posé au-dessus de la zone active sur un SOL QUE LE
+  // MONDE DESSINE DÉJÀ d'en bas reste rendu (défenseurs/pièces ciblables depuis la cour — parité avec
+  // le picking cross-couche). MÊME vocabulaire que le builder de sols (`buildFloors`, floors.ts) : un
+  // tablier sur pilotis (`isOverhang`) OU le DESSUS d'un bloc plein (`capsSolid` : chemin de ronde posé
+  // sur la masse du rempart). Un plancher peint sans ses occupants était le trou (#1567).
+  const overhang = view.viewZ == null && cz > view.activeZ && (isOverhang(scene, pos.x, pos.y, cz) || capsSolid(scene, pos.x, pos.y, cz));
   if (view.viewZ != null ? cz !== view.viewZ : cz > view.activeZ && !overhang) return { cut: true, overhang };
   // Brouillard : un ennemi/PNJ que personne du groupe ne voit n'est pas dessiné (les alliés, qui
   // SONT les viewers, restent toujours rendus). Clé z-aware = l'étage du combattant.
@@ -75,7 +78,7 @@ function cutByView(scene: Scene, visible: ReadonlySet<string> | undefined, view:
  *  (`sceneBillboards`) et la surcouche SVG leur chrome (`stage/TokenChromeOverlay`) — les filtres
  *  (embuscade, enrôlé, couverture, étage, hors-vue) ne se recopient pas, ils se CONSOMMENT. */
 export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefined, battle: BattleState | null, view: TokenView): TokenEl[] {
-  const { activeZ, viewZ, top } = view;
+  const { top } = view;
   const out: TokenEl[] = [];
   const inBattle = !!battle;
 
@@ -90,9 +93,11 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefin
     if (ent.combat?.hiddenUntilCombat && !view.ambush) continue; // ennemi d'embuscade : invisible avant le combat (sauf à l'authoring)
     if (inBattle && battle!.combatants.some((c) => c.id === ent.id)) continue; // enrôlé : le combattant le rend
     const ez = ent.z ?? 0;
-    if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // isole ; sinon couche active + dessous
+    // MÊME loi de case que les combattants (`cutByView`) : étage isolé/actif + sol vu d'en bas +
+    // brouillard. Un figurant posté sur le chemin de ronde se voit de la cour comme le défenseur qui
+    // l'y remplacera au combat — deux lois divergentes le faisaient disparaître hors combat (#1567).
+    if (cutByView(scene, visible, view, { x: ent.pos.x, y: ent.pos.y, z: ez }, false).cut) continue;
     if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par combattant ne vaut qu'au sol
-    if (visible && !visible.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue; // hors-vue → coupé
     // ASSISE : un PNJ authored attablé (`Scene.seatAssignments`) porte son ancre et son cap depuis la
     // SOURCE UNIQUE `state/seating` — le builder ne recalcule aucune géométrie de meuble.
     const assis = seatPoseOf(scene, { kind: 'entity', entityId: ent.id });
