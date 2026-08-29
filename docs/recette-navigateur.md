@@ -1035,3 +1035,24 @@ le `textContent` les colle sans séparateur — `PorteADE II`, `Alchimiste4`, `A
 n'est pas un bug de rendu (le badge reste dans le nœud accessible), mais tout script de clic qui
 matche le texte EXACT échoue en silence (« aucun élément ne matche », sans dire pourquoi). Sur ces
 listes, matcher en sous-chaîne / `exact:false` (ou viser l'id), jamais le texte exact.
+
+## Piège de la bbox d'un groupe REPLIÉ (clusters du Codex)
+
+Mesuré 2026-08-29 (recette sous-lot C #1472), ~35 appels d'outils perdus. Les clusters de
+catégories du Compendium sont des `<details className="fold">` (`src/ui/compendium/CompendiumScreen.tsx:181`,
+corps `fold-body` l.200 ; CSS `src/ui/styles/components.css:93-130` — la coquille ne pose
+qu'`overflow: hidden`, aucune règle n'y masque le corps). Les chips d'un cluster FERMÉ restent donc
+dans le DOM, et `getBoundingClientRect()` sur l'un d'eux rend des coordonnées NON NULLES — celles de
+sa position théorique si le groupe était ouvert. Ces coordonnées tombent sous le groupe SUIVANT : le
+clic atterrit sur un autre élément, sans erreur ni log. Une bbox non nulle ne prouve JAMAIS qu'un
+élément est atteignable : lire la propriété DOM `details.open` du groupe porteur (l'ouvrir d'abord
+si elle est `false`), et re-mesurer APRÈS ouverture.
+
+## Piège de l'échelle de capture ≠ échelle de clic
+
+Mesuré 2026-08-29 (recette sous-lot C #1472), ~15 appels perdus. Le panneau navigateur peut rendre
+une capture SOUS-ÉCHANTILLONNÉE (mesuré : 800×453) alors que le viewport où atterrissent les clics
+est en 1600×900 : les coordonnées relevées à l'œil sur l'image ne sont pas des coordonnées de clic
+(facteur 2 ici). Avant tout clic aux coordonnées, lire l'échelle réelle (`window.innerWidth`/
+`innerHeight` contre les dimensions de l'image) et convertir — ou mieux, ne pas cliquer aux
+coordonnées : viser le nœud (sélecteur/`ref` de snapshot) et laisser l'outil calculer le point.
