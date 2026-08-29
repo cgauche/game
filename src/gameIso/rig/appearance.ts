@@ -1,16 +1,43 @@
 import type { Slot } from './bones';
 import type { Combatant } from '../../engine/types';
 import { hashSeed } from '../../engine/dice';
-import { rigSpeciesId } from '../../data';
+import { rigSpeciesId, species, raceAppearance, vehicles, trappings } from '../../data';
+import { creatureSpeciesOptions } from './creatures';
+import { SWARM_FORMS } from './swarm/forms';
 import type { MonsterParts } from './parts/monstrous';
 import type { Palette } from './palette';
 
 /** Vocabulaire (marque NOMINALE, #406) : id RIG (slug d'espèce `species.json`, id de créature/race/
  *  véhicule/affût-de-siège) — jamais un `SpeciesData.label` (« Humains (Reiklander) »). UNE seule
  *  monnaie : un littéral `string` (dont un `.label`) n'est plus assignable à `Appearance.species`
- *  (échec STRUCTUREL) — la seule production sanctionnée pour un id RULES est `rigSpeciesId` ; les
- *  autres sites partent déjà d'un id RIG (race/créature/véhicule/affût) et l'assertent `as RigSpeciesId`. */
+ *  (échec STRUCTUREL). Deux producteurs sanctionnés : `rigSpeciesId` (pont rules→rig) et
+ *  `asRigSpeciesId` (validation d'un id déjà RIG). */
 export type RigSpeciesId = string & { readonly __rigSpeciesId: unique symbol };
+
+/** Vocabulaire CANONIQUE des ids d'espèce rig — DÉRIVÉ des 6 registres qui en produisent un, jamais
+ *  authoré : espèces jouables, defs de créature, races d'apparence, formes de nuée (plan swarm),
+ *  véhicules et affûts de siège (`resolveRender` sort `veh.id` / `siegeRig` comme espèce).
+ *  Recalculé à chaque appel (les registres sont relus live pour suivre les éditions du Compendium). */
+export function rigSpeciesVocab(): Set<string> {
+  return new Set<string>([
+    ...species.map((s) => s.id),
+    ...creatureSpeciesOptions().map((o) => o.id),
+    ...raceAppearance.map((r) => r.id),
+    ...Object.keys(SWARM_FORMS),
+    ...vehicles.map((v) => v.id),
+    ...trappings.map((t) => t.siegeRig).filter((r): r is string => typeof r === 'string'),
+  ]);
+}
+
+/** SEUL site sanctionné d'assertion vers `RigSpeciesId` pour un id DÉJÀ rig (scène, def, override
+ *  d'éditeur, résolution de rendu). Producteur VALIDANT : en DEV/test un id hors `rigSpeciesVocab()`
+ *  lève nominativement (la donnée est fausse et se corrige) ; en prod c'est un passe-plat, le rendu
+ *  ne meurt pas sur une entrée aberrante. Un id RULES passe par `rigSpeciesId` (src/data/index.ts). */
+export function asRigSpeciesId(id: string): RigSpeciesId {
+  if (import.meta.env?.DEV && !rigSpeciesVocab().has(id))
+    throw new Error(`[appearance] espèce « ${id} » hors vocabulaire rig (species.json ∪ defs rig ∪ raceAppearance ∪ formes de nuée ∪ véhicules ∪ siegeRig) — donnée à corriger.`);
+  return id as RigSpeciesId;
+}
 
 /** Descripteur d'apparence COSMÉTIQUE (type pur ; l'engine ne le lit jamais). */
 export interface Appearance {

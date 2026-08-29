@@ -14,8 +14,8 @@ import { findCreatureById } from '../../data';
 import type { View } from '../../gameIso/rig/facing';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 
-// `name` = id de créature (Codex/bestiaire) OU libellé d'espèce/race (la résolution lit l'espèce
-// explicite de l'apparence ; les Nuées tirent leur trait du record par id).
+// `name` = id de créature (Codex/bestiaire) ; `a.species` = id du vocabulaire rig (validé par
+// asRigSpeciesId en aval). Les Nuées tirent leur trait du record par id.
 function rigSvg(name: string, a: EntityAppearance | undefined, view: View): string {
   const seed = a?.seed ?? hashSeed(name);
   const r = resolveRender(a?.species, findCreatureById(name)?.traits, name);

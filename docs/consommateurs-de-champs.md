@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3279` |
-| `spec` | 1 | `src/data/index.ts:3280` |
+| `id` | 4 | `src/data/index.ts:3281` |
+| `spec` | 1 | `src/data/index.ts:3282` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3291` |
+| `id` | 1 | `src/data/index.ts:3293` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3291` |
+| `value` | 2 | `src/data/index.ts:3293` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,44 +91,44 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3337` |
+| `id` | 4 | `src/data/index.ts:3339` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3338` |
-| `qualities` | 2 | `src/data/index.ts:3341` |
-| `qualityChoice` | 2 | `src/data/index.ts:3339` |
-| `text` | 1 | `src/data/index.ts:3332` |
-| `vehicleId` | 2 | `src/data/index.ts:3334` |
+| `count` | 3 | `src/data/index.ts:3340` |
+| `qualities` | 2 | `src/data/index.ts:3343` |
+| `qualityChoice` | 2 | `src/data/index.ts:3341` |
+| `text` | 1 | `src/data/index.ts:3334` |
+| `vehicleId` | 2 | `src/data/index.ts:3336` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3336` |
-| `choice` | 3 | `src/data/index.ts:3329` |
-| `wildcard` | 1 | `src/data/index.ts:3330` |
+| `creatureId` | 2 | `src/data/index.ts:3338` |
+| `choice` | 3 | `src/data/index.ts:3331` |
+| `wildcard` | 1 | `src/data/index.ts:3332` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:3311` |
-| `wildcard` | 5 | `src/data/index.ts:3313` |
-| `specOptions` | 3 | `src/data/index.ts:3312` |
-| `choice` | 4 | `src/data/index.ts:3315` |
-| `random` | 2 | `src/data/index.ts:3316` |
+| `ref` | 4 | `src/data/index.ts:3313` |
+| `wildcard` | 5 | `src/data/index.ts:3315` |
+| `specOptions` | 3 | `src/data/index.ts:3314` |
+| `choice` | 4 | `src/data/index.ts:3317` |
+| `random` | 2 | `src/data/index.ts:3318` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `seed` | 2 | `src/gameIso/rig/enemyProfile.ts:126` |
-| `monster` | 4 | `src/gameIso/rig/enemyProfile.ts:127` |
+| `seed` | 2 | `src/gameIso/rig/enemyProfile.ts:127` |
+| `monster` | 4 | `src/gameIso/rig/enemyProfile.ts:128` |
 | `colors` | 5 | `src/gameIso/rig/bodyPlan.ts:122` |
-| `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:130` |
-| `sex` | 3 | `src/gameIso/rig/enemyProfile.ts:124` |
-| `build` | 3 | `src/gameIso/rig/enemyProfile.ts:125` |
+| `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:131` |
+| `sex` | 3 | `src/gameIso/rig/enemyProfile.ts:125` |
+| `build` | 3 | `src/gameIso/rig/enemyProfile.ts:126` |
 | `species` | 5 | `src/gameIso/AnimatedPlanToken.tsx:14` |
-| `tenue` | 3 | `src/gameIso/rig/enemyProfile.ts:107` |
+| `tenue` | 3 | `src/gameIso/rig/enemyProfile.ts:108` |
 | `harnais` | 1 | `src/gameIso/rig/bodyPlan.ts:124` |
 | `armurePortee` | **0 — JAMAIS LU** | — |
 | `eyes` | 5 | `src/gameIso/rig/bodyPlan.ts:123` |
-| `features` | 3 | `src/gameIso/rig/enemyProfile.ts:128` |
+| `features` | 3 | `src/gameIso/rig/enemyProfile.ts:129` |
 
 ### `FlowTest` (src/engine/flowCore.ts)
 

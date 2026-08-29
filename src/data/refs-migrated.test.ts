@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
-  traits, stars, talents, maneuvers, skills, domains, crewRoles, groups,
+  traits, stars, talents, maneuvers, skills, domains, crewRoles, groups, raceAppearance,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
   findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById, findLightToneById,
@@ -28,6 +28,8 @@ import areneProject from '../scenes/arene/arene-projet.json';
 import loupProject from '../scenes/loup-et-saumure/loup-et-saumure-projet.json';
 import { SCENARIOS } from '../scenes/test-scenarios/_registry.generated';
 import { creatureSpeciesOptions } from '../gameIso/rig/creatures';
+import { SWARM_FORMS } from '../gameIso/rig/swarm/forms';
+import { rigSpeciesVocab } from '../gameIso/rig/appearance';
 import { wardrobeKeyResolves } from '../gameIso/rig/parts/career';
 import { CHAR_KEYS } from '../engine/types';
 import { fileURLToPath } from 'node:url';
@@ -696,11 +698,18 @@ describe('careerLevels.trappings — cliquet anti-régression {text} (#622)', ()
 
 // ── GARDE DE CLASSE — `appearance.species` = id STABLE, jamais un LIBELLÉ. Le champ route (1) le PLAN de
 // rig par lookup EXACT `defById` dans DEF_BY_ID et (2) la RACE par `baseSpeciesOf` : un libellé n'y résout
-// dans aucun registre exact et vit d'un défaut silencieux. Vocabulaire CANONIQUE = ids de species.json
-// (espèces jouables) ∪ ids de def rig (creatureSpeciesOptions). `species` absent = OK (défaut Humain
-// documenté). Cf. [[game-ids-internes-libelles-display-multilangue]].
-describe('appearance.species — id stable (species.json ∪ defs rig), jamais un libellé', () => {
-  const VALID_SPECIES = new Set<string>([...species.map((s) => s.id), ...creatureSpeciesOptions().map((o) => o.id)]);
+// dans aucun registre exact et vit d'un défaut silencieux. Vocabulaire CANONIQUE des DONNÉES = ids de
+// species.json (espèces jouables) ∪ ids de def rig (creatureSpeciesOptions) ∪ ids de raceAppearance.json
+// (races d'apparence, sortie de `raceById`/`DEFAULT_RACE_ID`) ∪ formes de nuée (clés de SWARM_FORMS, lues
+// par composeSwarm). `species` absent = OK (défaut Humain documenté).
+// Cf. [[game-ids-internes-libelles-display-multilangue]].
+describe('appearance.species — id stable (species.json ∪ defs rig ∪ raceAppearance ∪ formes de nuée), jamais un libellé', () => {
+  const VALID_SPECIES = new Set<string>([
+    ...species.map((s) => s.id),
+    ...creatureSpeciesOptions().map((o) => o.id),
+    ...raceAppearance.map((r) => r.id),
+    ...Object.keys(SWARM_FORMS),
+  ]);
   function collect(node: unknown, where: string, out: string[]): void {
     if (Array.isArray(node)) { node.forEach((x, i) => collect(x, `${where}[${i}]`, out)); return; }
     if (!isObj(node)) return;
@@ -717,6 +726,12 @@ describe('appearance.species — id stable (species.json ∪ defs rig), jamais u
     expect(bad, bad.join('\n')).toEqual([]);
   });
 
+  it('creatures.json : tout appearance.species des records de créature résout dans le vocabulaire', () => {
+    const bad: string[] = [];
+    for (const c of creatures) collect(c, `creatures.json(${c.id})`, bad);
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
   it('scénarios de test (scene + extraScenes + party) : tout appearance.species résout dans le vocabulaire', () => {
     const bad: string[] = [];
     for (const s of SCENARIOS) {
@@ -725,6 +740,53 @@ describe('appearance.species — id stable (species.json ∪ defs rig), jamais u
       collect(s.makeParty(), `${s.id}.party`, bad);
     }
     expect(bad, bad.join('\n')).toEqual([]);
+  });
+});
+
+// ── GÉNÉRALISATION DE LA GARDE PRÉCÉDENTE À TOUTE LA DONNÉE AUTHORÉE (#1537) : les 4 sources
+// importées ci-dessus ne couvrent qu'une part des JSON du dépôt. Ce balayage lit les DEUX racines de
+// données (`src/data`, `src/scenes`) sur DISQUE et vérifie tout `appearance.species` /
+// `appearanceOverride.species` de chaîne contre `rigSpeciesVocab()` (vocabulaire du producteur
+// validant `asRigSpeciesId`, cf. src/gameIso/rig/appearance.ts).
+describe('appearance(.Override).species — TOUTE la donnée authorée des deux racines ⊆ rigSpeciesVocab()', () => {
+  const RACINES = ['data', 'scenes'].map((d) => fileURLToPath(new URL(`../${d}`, import.meta.url)));
+  function jsonFiles(dir: string, out: string[]): void {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = `${dir}/${e.name}`;
+      if (e.isDirectory()) jsonFiles(p, out);
+      else if (e.name.endsWith('.json')) out.push(p);
+    }
+  }
+
+  it('tout species authoré dans src/data + src/scenes est un id du vocabulaire rig', () => {
+    const VOCAB = rigSpeciesVocab();
+    const files: string[] = [];
+    for (const r of RACINES) jsonFiles(r, files);
+    const bad: string[] = [];
+    let sites = 0;
+    const scan = (node: unknown, fichier: string, chemin: string): void => {
+      if (Array.isArray(node)) { node.forEach((x, i) => scan(x, fichier, `${chemin}[${i}]`)); return; }
+      if (!isObj(node)) return;
+      for (const cle of ['appearance', 'appearanceOverride'] as const) {
+        const app = node[cle];
+        if (isObj(app) && typeof app.species === 'string') {
+          sites++;
+          if (!VOCAB.has(app.species))
+            bad.push(`${fichier} : ${chemin}.${cle}.species = ${JSON.stringify(app.species)} hors vocabulaire rig`);
+        }
+      }
+      for (const [k, v] of Object.entries(node)) scan(v, fichier, `${chemin}.${k}`);
+    };
+    for (const f of files) {
+      const norm = f.replace(/\\/g, '/');
+      const rel = norm.slice(norm.lastIndexOf('/src/') + 1);
+      let doc: unknown;
+      try { doc = JSON.parse(readFileSync(f, 'utf8')); } catch { continue; }
+      scan(doc, rel, '$');
+    }
+    expect(bad, bad.join('\n')).toEqual([]);
+    expect(files.length, 'aucun JSON balayé — le walker est cassé').toBeGreaterThan(100);
+    expect(sites, 'la population de sites species s’est effondrée — le walker ne mesure plus rien').toBeGreaterThan(400);
   });
 });
 

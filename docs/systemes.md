@@ -79,7 +79,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `netOwnership` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `RefField` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U | U |
 | `Prose` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
-| `resolveRender/tokenBodyKind` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
+| `resolveRender/tokenBodyKind` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `MasterDetail` |  |  |  |  | U |  | U |  |  | U |  |  |  |  | U | U |
 | `gen-registry (_registry.generated)` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 

@@ -9,14 +9,14 @@ const render = (label: string, appearance?: EntityAppearance) =>
 
 describe('CreaturePreview — aperçu rendu de créature (Codex / éditeur)', () => {
   it('bipède → SVG non vide, face + profil', () => {
-    const html = render('Mutant', { species: 'Humain' });
+    const html = render('Mutant', { species: 'humain' });
     expect((html.match(/<svg/g) ?? []).length).toBe(2);
     expect(html).toContain('<path');
   });
 
   it("reflète l'apparence éditée EN DIRECT (un trait ajouté change le rendu)", () => {
-    const without = render('Mutant', { species: 'Humain' });
-    const withEars = render('Mutant', { species: 'Humain', features: ['oreilles-pointues'] });
+    const without = render('Mutant', { species: 'humain' });
+    const withEars = render('Mutant', { species: 'humain', features: ['oreilles-pointues'] });
     expect(withEars).not.toBe(without);
     expect(withEars).toContain('M-8 7 Q-15 4 -14 -3'); // path d'oreille pointue du catalogue
   });

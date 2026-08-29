@@ -131,7 +131,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 898507323,
     "sex": "F",
-    "species": "Gobelin",
+    "species": "gobelin",
   },
   "tenue": "mendiant",
 }
@@ -148,7 +148,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 881729704,
     "sex": "M",
-    "species": "Orc",
+    "species": "orc",
   },
   "tenue": "mendiant",
 }
@@ -158,18 +158,11 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
 {
   "appearance": {
     "build": 0.57,
-    "colors": {
-      "cheveux": "#2b241f",
-      "peau": "#6f4a2f",
-    },
-    "parts": {
-      "cheveux": 30699856,
-    },
     "seed": 982395418,
     "sex": "M",
-    "species": "Guerrier des clans",
+    "species": "skaven",
   },
-  "tenue": "bourgeois",
+  "tenue": "skaven",
 }
 `;
 
@@ -272,7 +265,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 42,
     "sex": "F",
-    "species": "Gobelin",
+    "species": "gobelin",
   },
   "tenue": "mendiant",
 }
@@ -289,7 +282,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 42,
     "sex": "F",
-    "species": "Orc",
+    "species": "orc",
   },
   "tenue": "mendiant",
 }
@@ -301,9 +294,9 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "build": 0.41,
     "seed": 42,
     "sex": "F",
-    "species": "Guerrier des clans",
+    "species": "skaven",
   },
-  "tenue": "bourgeois",
+  "tenue": "skaven",
 }
 `;
 

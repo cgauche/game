@@ -14,11 +14,13 @@ import { describe, it, expect } from 'vitest';
 import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
 import { entityRigProfile } from '../enemyProfile';
+import { findCreatureById } from '../../../data';
 import { weaponFromId } from '../../../engine/creatureEquip';
 import { resolveSpecies } from '../bodyPlan';
 import { slugId } from '../../../data/slug';
 import type { View } from '../facing';
-import type { Appearance, RigSpeciesId } from '../appearance';
+import type { Appearance } from '../appearance';
+import { asRigSpeciesId } from '../appearance';
 import type { EquipCtx } from '../parts/equipment';
 
 // Espèces bipèdes couvertes (LIBELLÉS canoniques) + rôles génériques. Comme un outil, on part d'un
@@ -27,7 +29,13 @@ import type { EquipCtx } from '../parts/equipment';
 const NAMES = ['Humain', 'Nain', 'Halfling', 'Haut-Elfe', 'Elfe sylvain', 'Gnome', 'Ogre',
   'Skaven', 'Orc', 'Gobelin', 'Snotling', 'Homme-bête', 'Minotaure', 'Squelette', 'Zombie',
   'Goule', 'Troll', 'Vampire', 'Démon', 'Liche', 'Démonette', 'Fimir', 'Géant',
-  'Guerrier du Chaos', 'Cultiste', 'Mutant'];
+  'Guerrier du Chaos'];
+// Entrées de BESTIAIRE (IDS de record `creatures.json`) — ce ne sont pas des espèces : leur espèce ET
+// leur garde-robe viennent du RECORD (cultiste → {species humain, tenue cultiste, armurePortee} ;
+// mutant → {species humain, tenue mendiant}). Elles se rendent par la voie record d'`entityRigProfile`
+// (`findCreatureById` → `resolveRender(undefined, rec.traits, id)`, = `resolveById`), sans espèce en
+// opts : un slug de LIBELLÉ ne résout aucun record.
+const RECORDS = ['cultiste', 'mutant'];
 const VIEWS: View[] = ['front', 'profile', 'back'];
 
 describe('golden master — rendu bipède (anti-régression migration gabarit/race)', () => {
@@ -35,6 +43,23 @@ describe('golden master — rendu bipède (anti-régression migration gabarit/ra
     for (const view of VIEWS) {
       it(`${name} / ${view} stable`, () => {
         const prof = entityRigProfile(name, 7, { species: resolveSpecies(slugId(name)).species });
+        const svg = prof ? bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view, [])) : '∅';
+        expect(svg).toMatchSnapshot();
+      });
+    }
+  it('RECORDS sont des IDS de record, jamais des libellés', () => {
+    for (const id of RECORDS) expect(findCreatureById(id), `« ${id} » ne résout aucun record`).toBeTruthy();
+  });
+  // `armurePortee` du record est INERTE dans ce golden : `entityRigProfile(id, 7)` est appelé sans
+  // combattant enrôlé → traits [] → PA 0 → aucune pièce d'armure synthétisée. Les snapshots de RECORDS
+  // figent la TENUE, jamais une armure.
+  it('voie record sans enrôlement : aucune armure synthétisée (les snapshots figent la tenue)', () => {
+    for (const id of RECORDS) expect(entityRigProfile(id, 7)!.equip.armour.length, id).toBe(0);
+  });
+  for (const id of RECORDS)
+    for (const view of VIEWS) {
+      it(`${id} / ${view} stable`, () => {
+        const prof = entityRigProfile(id, 7);
         const svg = prof ? bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view, [])) : '∅';
         expect(svg).toMatchSnapshot();
       });
@@ -47,7 +72,7 @@ describe('golden master — rendu bipède (anti-régression migration gabarit/ra
 
 describe('golden master — héros équipés (anti-régression chemins arme/armure/couleur)', () => {
   // (a) Porteur d'arme de mêlée : chemin os `arme` + twist de pose profil mêlée
-  const appSoldat: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 3 };
+  const appSoldat: Appearance = { species: asRigSpeciesId('humain'), sex: 'M', build: 0.5, seed: 3 };
   const equipSoldat: EquipCtx = {
     weapons: [weaponFromId('arme-simple')!],
     armour: [],
@@ -60,7 +85,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
   }
 
   // (b) Bouclier + armure corporelle : chemin os `bouclier` + parts armure
-  const appGuardien: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'F', build: 0.6, seed: 11 };
+  const appGuardien: Appearance = { species: asRigSpeciesId('humain'), sex: 'F', build: 0.6, seed: 11 };
   const equipGuardien: EquipCtx = {
     weapons: [weaponFromId('grande-hache')!],
     armour: [
@@ -78,7 +103,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
 
   // (c) Surcharge de couleur (appearance.colors) : chemin tokenMap couleur personnalisée
   const appMercenaire: Appearance = {
-    species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.45, seed: 17,
+    species: asRigSpeciesId('humain'), sex: 'M', build: 0.45, seed: 17,
     colors: { vet1: '#3a5a7a' },
   };
   const equipMercenaire: EquipCtx = {

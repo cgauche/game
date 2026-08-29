@@ -188,7 +188,7 @@ export function resolveRender(species: string | undefined, traits: import('../..
   // Record sans espèce mais trait Nuée (les records Nuée, si le caller n'a pas passé les traits).
   if (isSwarm(rec?.traits)) return { kind: 'plan', plan: 'swarm', species: swarmSp, scale: speciesScale(swarmSp) };
   // Rien de résolu : ni espèce explicite, ni record, ni affût, ni véhicule = donnée MANQUANTE, bruyante
-  // en dev (même patron que la propulsion inconnue l.124) — le rendu retombe sur la race par DÉFAUT
+  // en dev (même patron que la branche « propulsion inconnue » de cette même fonction) — le rendu retombe sur la race par DÉFAUT
   // DÉCLARÉE en donnée (`speciesRace.json`), visiblement fausse, jamais une espèce inventée en code.
   const sujet = idOrName ?? diagSubject(); // sans réf, le sujet est celui posé par l'appelant (scène/entité)
   if (import.meta.env?.DEV) diagOnce(`bodyPlan:espece:${sujet}`, () => console.error(`[bodyPlan] « ${sujet || '(sans réf)'} » : aucune espèce résolue (ni Espèce explicite, ni record de créature) — donnée à corriger.`));

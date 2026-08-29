@@ -50,7 +50,7 @@ const meneur = (): Combatant =>
   ({
     id: 'h', label: 'Meneur', kind: 'hero', pos: { x: 3, y: 2 }, size: 'moyenne', wounds: { current: 12, max: 12 },
     weapons: [], characteristics: {}, advantage: 0, conditions: [], armour: {}, skills: [], talents: [], movement: 4,
-    career: 'soldat', species: 'Humain',
+    career: 'soldat', species: 'humain',
   }) as unknown as Combatant;
 
 /**
@@ -252,7 +252,7 @@ describe('buildTokens → rendu : la chaîne complète', () => {
  * seams que le rendu emploie : `entityRigProfileFor` + `rigComposition`) confronté à la hauteur
  * d'assise du catalogue, et se vérifie sur le FRAGMENT RENDU, os par os.
  */
-const ESPÈCES = ['humain', 'nain', 'halfling', 'elfe'];
+const ESPÈCES = ['humain', 'nain', 'halfling', 'elfe-sylvain'];
 const VUES: View[] = ['front', 'back', 'profile'];
 
 /** Repères de jambe du corps DEBOUT + hauteur d'assise, dans le repère de sa boîte. */

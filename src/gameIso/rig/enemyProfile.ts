@@ -6,7 +6,8 @@
  * Décisions : voir docs/superpowers/specs/2026-06-05-F1-ennemis-rig-design.md
  */
 import type { Combatant, ItemInstance, ArmourPoints, HitLocation } from '../../engine/types';
-import type { Appearance, RigSpeciesId } from './appearance';
+import type { Appearance } from './appearance';
+import { asRigSpeciesId } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { equipFromCombatant } from './parts/equipment';
 import { emptyArmour } from '../../engine/items';
@@ -70,7 +71,7 @@ export function riggedAppearance(_name: string, seed: number, opts: RiggedOpts =
   const eyes = opts.eyes && (eyeArt(opts.eyes.G) || eyeArt(opts.eyes.D))
     ? { ...(eyeArt(opts.eyes.G) ? { G: eyeArt(opts.eyes.G) } : {}), ...(eyeArt(opts.eyes.D) ? { D: eyeArt(opts.eyes.D) } : {}) }
     : undefined;
-  return { species: opts.species as RigSpeciesId | undefined, sex: opts.sex, build: opts.build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, hairstyle: opts.hairstyle, gabarit: opts.gabarit, eyes };
+  return { species: opts.species === undefined ? undefined : asRigSpeciesId(opts.species), sex: opts.sex, build: opts.build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, hairstyle: opts.hairstyle, gabarit: opts.gabarit, eyes };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier) — UNIQUEMENT si
@@ -120,7 +121,7 @@ function rigAppearance(seed: number, base: ReturnType<typeof bipedBase>, cd: Ent
   const { species, d, race, perso } = base;
   const o = override ?? {};
   return {
-    species: o.species ?? (species as RigSpeciesId),
+    species: o.species ?? asRigSpeciesId(species),
     sex: o.sex ?? cd?.sex ?? perso?.sex ?? race.sex ?? (seed % 7 < 2 ? 'F' : 'M'),
     build: o.build ?? cd?.build ?? buildFromSeed(seed),
     seed: o.seed ?? cd?.seed ?? seed,
@@ -225,7 +226,7 @@ export function entityRigProfile(
   // Override d'AUTHORING → `Partial<Appearance>` (yeux clés→art) passé au CONSTRUCTEUR UNIQUE `rigAppearance`.
   // Une entité d'ambiance « mutée » déclare ses parts/overlays dans son apparence (monster), pas via le nom.
   const override: Partial<Appearance> = {
-    species: opts?.species as RigSpeciesId | undefined, sex: opts?.sex, build: opts?.build, monster: opts?.monster,
+    species: opts?.species === undefined ? undefined : asRigSpeciesId(opts.species), sex: opts?.sex, build: opts?.build, monster: opts?.monster,
     features: opts?.features, colors: opts?.colors, parts: opts?.parts, hairstyle: opts?.hairstyle, eyes: eyesArtFromKeys(opts?.eyes),
   };
   // Variété seedée des humains GÉNÉRIQUES (#223, miroir exact d'`enemyRigProfile`) : opt-in de scène,

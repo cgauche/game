@@ -6,7 +6,7 @@ import { resolveRender } from './rig/bodyPlan';
 import type { Combatant } from '../engine/types';
 import type { SceneEntity } from '../state/scene';
 
-const hero = { id: 'h1', kind: 'hero', name: 'Soldat', career: 'Soldat', appearance: { species: 'Humain', sex: 'M', build: 0.5, seed: 3 } } as unknown as Combatant;
+const hero = { id: 'h1', kind: 'hero', name: 'Soldat', career: 'Soldat', appearance: { species: 'humain', sex: 'M', build: 0.5, seed: 3 } } as unknown as Combatant;
 
 describe('tokenBodyKind — view top', () => {
   it('héros bipède : flat=true + portraitBox + corps en vue de face (tête)', () => {
@@ -60,6 +60,6 @@ describe('tokenBodyKind — threading resolveRender → token (P5/5c)', () => {
   });
 
   it('bipède (Humain, espèce explicite) : backend rig', () => {
-    expect(tokenBodyKind({ kind: 'combatant', combatant: mk({ name: 'Humain', species: 'Humain' }) }).bodyKind).toBe('rig');
+    expect(tokenBodyKind({ kind: 'combatant', combatant: mk({ name: 'Humain', species: 'humain' }) }).bodyKind).toBe('rig');
   });
 });

@@ -2798,9 +2798,11 @@ export function speciesSize(sp: SpeciesData): import('../engine/size').SizeCateg
   return sizeFromTalents(ids, (id) => findTalentById(id)?.size);
 }
 /** id d'espèce RIG (slug, clé `appearance.species`) dérivé d'un id d'espèce RULES (ou chaîne libre) :
- *  slug du LIBELLÉ d'espèce. Pont UNIQUE rules→rig (pregens/draft/creator/defaultAppearance). Défaut Humain.
- *  Invariant : `slugId(label) === id` pour TOUTE entrée de species.json → la sortie est un id species.json
- *  (vocabulaire canonique d'`appearance.species`, gardé par `refs-migrated.test.ts`). */
+ *  slug du LIBELLÉ d'espèce. Pont UNIQUE rules→rig (pregens/draft/creator/defaultAppearance).
+ *  Sortie = l'id species.json de l'entrée trouvée (invariant `slugId(label) === id`, 27/27, gardé par
+ *  `refs-migrated.test.ts`). DEUX branches sortent de ce vocabulaire : sans entrée, le `rulesId` est
+ *  slugué tel quel (identité sur un id inconnu) ; sans argument, la sortie est `humain` — un id de
+ *  `raceAppearance.json`, PAS de species.json. */
 export function rigSpeciesId(rulesId: string | undefined): RigSpeciesId {
   return slugId(findSpeciesById(rulesId)?.label ?? rulesId ?? 'Humain') as RigSpeciesId;
 }

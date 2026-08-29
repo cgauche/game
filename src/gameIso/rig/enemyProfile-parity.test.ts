@@ -23,9 +23,9 @@ function mk(id: string, name: string, over: Partial<Combatant> = {}): Combatant 
 // n'y a pas de champ `gabarit` (celui-ci vient du perso/def de l'espèce, pas d'un override d'instance).
 const ENEMY_CASES: [string, Combatant][] = [
   ['humain-nu', mk('en1', 'Soldat')],
-  ['species-orc', mk('en2', 'x', { species: 'Orc' })],
-  ['species-gobelin', mk('en3', 'x', { species: 'Gobelin' })],
-  ['species-skaven', mk('en4', 'x', { species: 'Guerrier des clans' })],
+  ['species-orc', mk('en2', 'x', { species: 'orc' })],
+  ['species-gobelin', mk('en3', 'x', { species: 'gobelin' })],
+  ['species-skaven', mk('en4', 'x', { species: 'skaven' })],
   ['override-sex-build', mk('en5', 'Soldat', { appearanceOverride: { sex: 'F', build: 0.7 } as never })],
   ['override-monster', mk('en6', 'Soldat', { appearanceOverride: { monster: { tete: 'lezard' } } as never })],
   ['override-colors-parts', mk('en7', 'Soldat', { appearanceOverride: { colors: { peau: '#112233' }, parts: { hair: 3 } } as never })],
@@ -35,9 +35,9 @@ const ENEMY_CASES: [string, Combatant][] = [
 
 const ENTITY_CASES: [string, string, number, Record<string, unknown> | undefined][] = [
   ['humain-nu', 'Soldat', 42, undefined],
-  ['species-orc', 'x', 42, { species: 'Orc' }],
-  ['species-gobelin', 'x', 42, { species: 'Gobelin' }],
-  ['species-skaven', 'x', 42, { species: 'Guerrier des clans' }],
+  ['species-orc', 'x', 42, { species: 'orc' }],
+  ['species-gobelin', 'x', 42, { species: 'gobelin' }],
+  ['species-skaven', 'x', 42, { species: 'skaven' }],
   ['override-sex-build', 'Soldat', 42, { sex: 'F', build: 0.7 }],
   ['override-monster', 'Soldat', 42, { monster: { tete: 'lezard' } }],
   ['override-colors-parts', 'Soldat', 42, { colors: { peau: '#112233' }, parts: { hair: 3 } }],
