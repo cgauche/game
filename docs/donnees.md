@@ -27,147 +27,154 @@ contre le contenu réel des `.json` (une description qui ment sur ce que porte u
 pas la génération) ; seule la complétude de la CARTE (quel fichier existe, où il est rangé) est
 garantie, pas la justesse de sa glose.
 
+La colonne **Exposition** de §A est DÉRIVÉE des `exposition` déclarées par les defs
+(`document(type, famille, champs, meta, exposition)` → `src/data/schemas/exposition-derivee.ts`,
+dumpée par `scripts/docs/lib/dump-exposition.mts`) : clés de catégorie Codex exposées, route
+d'édition (`dataset` / `objet single|record` / `niché` / aucune), ou EXEMPTION motivée
+(`26` fichier(s) exempt(s) sur `121`). Aucune de ces valeurs n'est écrite ici :
+un def qui change d'exposition change cette colonne au prochain `npm run docs:donnees`.
+
 ## §A — Carte : où va chaque donnée
 
 **Règle d'or** : Une table que le livre range sous « **Machines de guerre / véhicules / navires** » n'est JAMAIS un *trapping* (équipement porté). Elle va dans le fichier de son sous-système (`mass-battle.json`, `vehicles.json`, `naval-traits.json`…). Corollaire : un même nom peut désigner plusieurs concepts distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 
 ### Personnage — fiche & progression
-| Fichier | Contient |
-|---|---|
-| `characteristics.json` | Caractéristiques (CC, CT, F… + méta) (19 entrée(s)) |
-| `skills.json` | Compétences (+ `specs` de spécialisation) (48 entrée(s)) |
-| `talents.json` | Talents (187 entrée(s)) |
-| `traits.json` | Traits (créature ET joueur ; `capabilities`/`passive`/`effects`) (131 entrée(s)) |
-| `careers.json` | Carrières (108 entrée(s)) |
-| `careerLevels.json` | Les 4 niveaux de chaque carrière (compétences/talents/possessions gagnés) (432 entrée(s)) |
-| `progression-schemas.derived.json` | GÉNÉRÉ (`python scripts/data/gen-progression-schemas.py`) — le schéma de progression (marque → Caractéristique, par niveau) LU dans les PDF de `Source/` : vérité dérivée contre laquelle `scripts/guards/lib/progressionSchemas.mjs` confronte le `characteristics` de `careerLevels.json`. Ne pas éditer à la main. (objet à sous-catalogues) |
-| `classes.json` | Classes (regroupements de carrières) (9 entrée(s)) |
-| `species.json` | Espèces jouables + variantes régionales (27 entrée(s)) |
-| `speciesRace.json` | Mapping espèce → race de rig (`default` + `rules`) (objet à sous-catalogues) |
-| `groups.json` | Groupes de races/familles (clé des `specs` de compétence/talent) (38 entrée(s)) |
-| `advancementCosts.json` | Coût d'XP par palier (caractéristique/compétence) (15 entrée(s)) |
-| `pregens.json` | Personnages prétirés (8 entrée(s)) |
-| `names.json` | Générateur de noms par espèce (7 entrée(s)) |
-| `details.json` | Détails physiques aléatoires (âge, taille, textes) (objet à sous-catalogues) |
-| `eyes.json` · `hairs.json` | Couleurs d'yeux / de cheveux (tirage) (10 entrée(s) · 10 entrée(s)) |
-| `axes.json` | Axes de forces/faiblesses (#409, mécanique MAISON) — socle de base + exemples de scénario, `derivation` en ids de `skills.json`/`talents.json` ; moteur `src/engine/axes.ts` (9 entrée(s)) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `characteristics.json` | Caractéristiques (CC, CT, F… + méta) (19 entrée(s)) | `characteristics` — dataset `characteristics` |
+| `skills.json` | Compétences (+ `specs` de spécialisation) (48 entrée(s)) | `skills` — dataset `skills` |
+| `talents.json` | Talents (187 entrée(s)) | `talents` — dataset `talents` |
+| `traits.json` | Traits (créature ET joueur ; `capabilities`/`passive`/`effects`) (131 entrée(s)) | `traits` · `psychologie` — dataset `traits` |
+| `careers.json` | Carrières (108 entrée(s)) | `careers` — dataset `careers` |
+| `careerLevels.json` | Les 4 niveaux de chaque carrière (compétences/talents/possessions gagnés) (432 entrée(s)) | `careerLevels` — dataset `careerLevels` |
+| `progression-schemas.derived.json` | GÉNÉRÉ (`python scripts/data/gen-progression-schemas.py`) — le schéma de progression (marque → Caractéristique, par niveau) LU dans les PDF de `Source/` : vérité dérivée contre laquelle `scripts/guards/lib/progressionSchemas.mjs` confronte le `characteristics` de `careerLevels.json`. Ne pas éditer à la main. (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (artefact GÉNÉRÉ : il se réécrit par `scripts/data/gen-progression-schemas.py`, jamais à l’atelier) |
+| `classes.json` | Classes (regroupements de carrières) (9 entrée(s)) | `classes` — dataset `classes` |
+| `species.json` | Espèces jouables + variantes régionales (27 entrée(s)) | `races` — dataset `species` |
+| `speciesRace.json` | Mapping espèce → race de rig (`default` + `rules`) (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `groups.json` | Groupes de races/familles (clé des `specs` de compétence/talent) (38 entrée(s)) | `groups` — dataset `groups` |
+| `advancementCosts.json` | Coût d'XP par palier (caractéristique/compétence) (15 entrée(s)) | `advancementCosts` — dataset `advancementCosts` |
+| `pregens.json` | Personnages prétirés (8 entrée(s)) | `pregens` — dataset `pregens` |
+| `names.json` | Générateur de noms par espèce (7 entrée(s)) | `names` — dataset `names` |
+| `details.json` | Détails physiques aléatoires (âge, taille, textes) (objet à sous-catalogues) | `details` — objet single |
+| `eyes.json` · `hairs.json` | Couleurs d'yeux / de cheveux (tirage) (10 entrée(s) · 10 entrée(s)) | `eyes` — dataset `eyes` ; `hairs` — dataset `hairs` |
+| `axes.json` | Axes de forces/faiblesses (#409, mécanique MAISON) — socle de base + exemples de scénario, `derivation` en ids de `skills.json`/`talents.json` ; moteur `src/engine/axes.ts` (9 entrée(s)) | `axes` — dataset `axes` |
 
 ### Magie & religion
-| Fichier | Contient |
-|---|---|
-| `spells.json` | Sorts, bénédictions, miracles (`effects`) (576 entrée(s)) |
-| `domains.json` | Domaines de magie (Vents) (20 entrée(s)) |
-| `gods.json` | Dieux (bénédictions/miracles rattachés) (41 entrée(s)) |
-| `miscast.json` | Tables d'Incident magique — 5 documents : Imparfaites Mineures/Majeures (LDB), leurs révisions VDM, Colère des dieux (5 entrée(s)) |
-| `breath-types.json` | Types de Souffle (feu, froid, corrosif…) (6 entrée(s)) |
-| `vents-tourbillonnants.json` | Table d10 de force des Vents (option `vents-tourbillonnants`, LDB 46 l.179-190) (objet à sous-catalogues) |
-| `arcane-phenomena.json` | Magie ENVIRONNEMENTALE (VDM 14, folios 189-199) : paliers de Saturation, Effets de Saturation par Vent, phénomènes arcaniques (lignes de force, pierres gardiennes, Grand Vortex, nexus, appuis arcaniques, Tempête de Magie, Corruption), tables de Corruption chaotique/nécromantique et de Flux magique — option `magic-vdm-environnementale` (objet à sous-catalogues) |
-| `surincantation.json` | TABLEAU DE SURINCANTATION (VDM 02 l.207-215, folio 23) : palier de DR dépensés sur une colonne → Cible additionnelle, Dégât en plus, Portée/ZdE/Durée multipliées — lu par `src/engine/overcast.ts` sous l'option `magic-vdm-incantation` (objet à sous-catalogues) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `spells.json` | Sorts, bénédictions, miracles (`effects`) (576 entrée(s)) | `spells` — dataset `spells` |
+| `domains.json` | Domaines de magie (Vents) (20 entrée(s)) | `domains` — dataset `domains` |
+| `gods.json` | Dieux (bénédictions/miracles rattachés) (41 entrée(s)) | `gods` — dataset `gods` |
+| `miscast.json` | Tables d'Incident magique — 5 documents : Imparfaites Mineures/Majeures (LDB), leurs révisions VDM, Colère des dieux (5 entrée(s)) | `miscastMinor` · `miscastMajor` · `miscastWrath` — niché (`miscastMinor` · `miscastMajor` · `miscastWrath`) |
+| `breath-types.json` | Types de Souffle (feu, froid, corrosif…) (6 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `vents-tourbillonnants.json` | Table d10 de force des Vents (option `vents-tourbillonnants`, LDB 46 l.179-190) (objet à sous-catalogues) | `ventsTourbillonnants` — niché (`ventsTourbillonnants`) |
+| `arcane-phenomena.json` | Magie ENVIRONNEMENTALE (VDM 14, folios 189-199) : paliers de Saturation, Effets de Saturation par Vent, phénomènes arcaniques (lignes de force, pierres gardiennes, Grand Vortex, nexus, appuis arcaniques, Tempête de Magie, Corruption), tables de Corruption chaotique/nécromantique et de Flux magique — option `magic-vdm-environnementale` (objet à sous-catalogues) | `arcanePhenomena` — objet single |
+| `surincantation.json` | TABLEAU DE SURINCANTATION (VDM 02 l.207-215, folio 23) : palier de DR dépensés sur une colonne → Cible additionnelle, Dégât en plus, Portée/ZdE/Durée multipliées — lu par `src/engine/overcast.ts` sous l'option `magic-vdm-incantation` (objet à sous-catalogues) | `surincantation` — niché (`surincantation`) |
 
 ### Combat & résolution
-| Fichier | Contient |
-|---|---|
-| `actions.json` | Registre des ACTIONS de combat (id stable → libellé, icône, coût, règle Codex, surface, gate/candidates/run) (55 entrée(s)) |
-| `qualities.json` | Atouts/défauts d'arme & armure (`belier`, `siege`… = la QUALITÉ, pas l'arme) (59 entrée(s)) |
-| `qualityTypes.json` · `qualitySubtypes.json` | atout/defaut · arme/armure/objet (2 entrée(s) · 3 entrée(s)) |
-| `weaponGroups.json` | Groupes d'armes (Base, Escrime, Parade…) (38 entrée(s)) |
-| `maneuvers.json` | Manœuvres (attaques spéciales : morsure, souffle…) (20 entrée(s)) |
-| `criticals.json` · `aa-criticals.json` | Blessures critiques par localisation (base · variante *Aux Armes*) (objet à sous-catalogues · objet à sous-catalogues) |
-| `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) (objet à sous-catalogues) |
-| `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (20 entrée(s)) |
-| `grapple.json` | Lutte / empoignade (objet à sous-catalogues) |
-| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (84 entrée(s)) |
-| `reglesOptionnelles.json` | Registre des RÈGLES OPTIONNELLES (« règles maison ») : id STABLE (clé de surcharge, de persistance et de `variants[].when.rule`), libellé/aide/groupe d'affichage, forme du contrôle auto-rendu (`flag`/`param`/`mode`), défaut et bornes, action de jeu attachée — lu par `src/engine/policy.ts` (`rule(id)`), rendu par le panneau in-game (81 entrée(s)) |
-| `damage-types.json` | Types de dégâts (poison, feu, électrique) (4 entrée(s)) |
-| `sizes.json` · `encumbranceTiers.json` | Barèmes par Taille (modif. au tir · Enc à bord · côté d'empreinte) · paliers d'Encombrement (objet à sous-catalogues · 4 entrée(s)) |
-| `etats.json` | États / Conditions (À terre, Aveuglé…) (21 entrée(s)) |
-| `psychology.json` | États psychologiques (Peur, Terreur, Frénésie…) (9 entrée(s)) |
-| `structures.json` · `structure-criticals.json` | Structures/portes (cibles de siège) · leurs critiques (24 entrée(s) · objet à sous-catalogues) |
-| `artillery-misfire.json` | Incidents de Tir d'Artillerie par Salve (AA 10 l.270-277) — arme d'équipe à Atout Salve qui subit un Incident de tir (objet à sous-catalogues) |
-| `mass-battle.json` | **ATTENTION — Objet à sous-catalogues** (`powerEstimate`, `mightModifiers`, **`warMachines`** ← le Bélier de siège ICI, `structures`, `hazards`) : bataille de masse (objet à sous-catalogues) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `actions.json` | Registre des ACTIONS de combat (id stable → libellé, icône, coût, règle Codex, surface, gate/candidates/run) (55 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (registre de routage édité au fichier — absent de `CodexEdit.CATEGORY_DATASET`) |
+| `qualities.json` | Atouts/défauts d'arme & armure (`belier`, `siege`… = la QUALITÉ, pas l'arme) (59 entrée(s)) | `qualities` — dataset `qualities` |
+| `qualityTypes.json` · `qualitySubtypes.json` | atout/defaut · arme/armure/objet (2 entrée(s) · 3 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `weaponGroups.json` | Groupes d'armes (Base, Escrime, Parade…) (38 entrée(s)) | `weaponGroups` — dataset `weaponGroups` |
+| `maneuvers.json` | Manœuvres (attaques spéciales : morsure, souffle…) (20 entrée(s)) | `maneuvers` — dataset `maneuvers` |
+| `criticals.json` · `aa-criticals.json` | Blessures critiques par localisation (base · variante *Aux Armes*) (objet à sous-catalogues · objet à sous-catalogues) | `criticalsTete` · `criticalsBras` · `criticalsCorps` · `criticalsJambe` — niché (`criticalsTete` · `criticalsBras` · `criticalsCorps` · `criticalsJambe`) ; `aaCriticalsTete` · `aaCriticalsBras` · `aaCriticalsCorps` · `aaCriticalsJambe` — niché (`aaCriticalsTete` · `aaCriticalsBras` · `aaCriticalsCorps` · `aaCriticalsJambe`) |
+| `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (20 entrée(s)) | `effectTables` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
+| `grapple.json` | Lutte / empoignade (objet à sous-catalogues) | `grapple` — objet single |
+| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (84 entrée(s)) | `regles` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
+| `reglesOptionnelles.json` | Registre des RÈGLES OPTIONNELLES (« règles maison ») : id STABLE (clé de surcharge, de persistance et de `variants[].when.rule`), libellé/aide/groupe d'affichage, forme du contrôle auto-rendu (`flag`/`param`/`mode`), défaut et bornes, action de jeu attachée — lu par `src/engine/policy.ts` (`rule(id)`), rendu par le panneau in-game (81 entrée(s)) | `reglesOptionnelles` — dataset `reglesOptionnelles` |
+| `damage-types.json` | Types de dégâts (poison, feu, électrique) (4 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `sizes.json` · `encumbranceTiers.json` | Barèmes par Taille (modif. au tir · Enc à bord · côté d'empreinte) · paliers d'Encombrement (objet à sous-catalogues · 4 entrée(s)) | `sizes` — objet single ; `encumbranceTiers` — dataset `encumbranceTiers` |
+| `etats.json` | États / Conditions (À terre, Aveuglé…) (21 entrée(s)) | `etats` — dataset `etats` |
+| `psychology.json` | États psychologiques (Peur, Terreur, Frénésie…) (9 entrée(s)) | `psychologies` — dataset `psychologies` |
+| `structures.json` · `structure-criticals.json` | Structures/portes (cibles de siège) · leurs critiques (24 entrée(s) · objet à sous-catalogues) | `structures` — dataset `structures` ; `structureCriticals` — niché (`structureCriticals`) |
+| `artillery-misfire.json` | Incidents de Tir d'Artillerie par Salve (AA 10 l.270-277) — arme d'équipe à Atout Salve qui subit un Incident de tir (objet à sous-catalogues) | `artilleryMisfire` — niché (`artilleryMisfire`) |
+| `mass-battle.json` | **ATTENTION — Objet à sous-catalogues** (`powerEstimate`, `mightModifiers`, **`warMachines`** ← le Bélier de siège ICI, `structures`, `hazards`) : bataille de masse (objet à sous-catalogues) | `massBattlePowerEstimate` · `massBattleMightModifiers` · `massBattleWarMachines` · `massBattleStructures` · `massBattleHazards` — niché (`massBattlePowerEstimate` · `massBattleMightModifiers` · `massBattleWarMachines` · `massBattleStructures` · `massBattleHazards`) |
 
 ### Santé — blessures, maladies, corruption
-| Fichier | Contient |
-|---|---|
-| `traumas.json` | Traumatismes / séquelles (`ops`) (29 entrée(s)) |
-| `maladies.json` · `symptoms.json` | Maladies · leurs symptômes (16 entrée(s) · 18 entrée(s)) |
-| `mutations.json` · `mutationTables.json` | Mutations du Chaos · tables d100 de mutation (116 entrée(s) · 17 entrée(s)) |
-| `water-exposure.json` | Exposition à l'eau (noyade, maladies) (objet à sous-catalogues) |
-| `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) (objet à sous-catalogues · objet à sous-catalogues) |
-| `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) (15 entrée(s)) |
-| `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (43 entrée(s)) |
-| `flow-stakes.json` | Enjeu d'un JET DE MODALE MONO (#1117), keyé par l'id de jet `{flow, phase}` — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `flowStakeRef`/`resolveStake` (`src/data/index.ts`) (34 entrée(s)) |
-| `combat-stakes.json` | Enjeu d'une étape de cascade de COMBAT (#1117), keyé par le `kind` de son applier — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `combatStakeRef`/`resolveStake` (`src/data/index.ts`) (35 entrée(s)) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `traumas.json` | Traumatismes / séquelles (`ops`) (29 entrée(s)) | `traumas` — dataset `traumas` |
+| `maladies.json` · `symptoms.json` | Maladies · leurs symptômes (16 entrée(s) · 18 entrée(s)) | `maladies` — dataset `maladies` ; `symptoms` — dataset `symptoms` |
+| `mutations.json` · `mutationTables.json` | Mutations du Chaos · tables d100 de mutation (116 entrée(s) · 17 entrée(s)) | `mutations` — dataset `mutations` ; `mutationTables` — dataset `mutationTables` |
+| `water-exposure.json` | Exposition à l'eau (noyade, maladies) (objet à sous-catalogues) | `waterExposure` — objet single |
+| `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) (objet à sous-catalogues · objet à sous-catalogues) | `obsessions` — niché (`obsessions`) ; `drunkenness` — niché (`drunkenness`) |
+| `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) (15 entrée(s)) | `nightStakes` — dataset `nightStakes` |
+| `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (43 entrée(s)) | `voyageStakes` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
+| `flow-stakes.json` | Enjeu d'un JET DE MODALE MONO (#1117), keyé par l'id de jet `{flow, phase}` — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `flowStakeRef`/`resolveStake` (`src/data/index.ts`) (34 entrée(s)) | `flowStakes` — aucune (exposé en LECTURE seule au Codex (catégorie `flowStakes`) — absent de `CodexEdit.CATEGORY_DATASET`) |
+| `combat-stakes.json` | Enjeu d'une étape de cascade de COMBAT (#1117), keyé par le `kind` de son applier — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `combatStakeRef`/`resolveStake` (`src/data/index.ts`) (35 entrée(s)) | `combatStakes` — aucune (exposé en LECTURE seule au Codex (catégorie `combatStakes`) — absent de `CodexEdit.CATEGORY_DATASET`) |
 
 ### Objets & équipement
-| Fichier | Contient |
-|---|---|
-| `trappings.json` | **Équipement PORTÉ** : armes, armures, objets tenus/portés. **ATTENTION — PAS** les machines de guerre. (440 entrée(s)) |
-| `disponibilite.json` | Tables numériques de « Faire son marché » (LDB 59) : `dispoPct` (% de Disponibilité par taille de colonie) + `barterRatios` (RATIOS DE TROC) — consommées par `src/engine/disponibilite.ts` (`DISPO_PCT`/`BARTER_RATIOS`) (objet à sous-catalogues) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `trappings.json` | **Équipement PORTÉ** : armes, armures, objets tenus/portés. **ATTENTION — PAS** les machines de guerre. (440 entrée(s)) | `trappings` · `siegeEngines` — dataset `trappings` |
+| `disponibilite.json` | Tables numériques de « Faire son marché » (LDB 59) : `dispoPct` (% de Disponibilité par taille de colonie) + `barterRatios` (RATIOS DE TROC) — consommées par `src/engine/disponibilite.ts` (`DISPO_PCT`/`BARTER_RATIOS`) (objet à sous-catalogues) | `disponibilite` — objet single |
 
 ### Bestiaire
-| Fichier | Contient |
-|---|---|
-| `creatures.json` | Bestiaire / PNJ (statblocs : `char`, `traits`, `skills`, `spells`, `trappings`…) (490 entrée(s)) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `creatures.json` | Bestiaire / PNJ (statblocs : `char`, `traits`, `skills`, `spells`, `trappings`…) (490 entrée(s)) | `creatures` — dataset `creatures` |
 
 ### Monde, voyage terrestre & temps
-| Fichier | Contient |
-|---|---|
-| `locations.json` | Lieux / régions (hiérarchie `parent`) (55 entrée(s)) |
-| `weather.json` | Saisons / météo terrestre (objet à sous-catalogues) |
-| `calendarMonths.json` · `calendarWeekdays.json` · `calendarIntercalary.json` · `calendarPhases.json` | Calendrier impérial (12 entrée(s) · 8 entrée(s) · 6 entrée(s) · 7 entrée(s)) |
-| `stars.json` · `astrology.json` | Signes astraux · Demeures astrologiques (23 entrée(s) · 5 entrée(s)) |
-| `montures.json` · `incidents-monture.json` | Montures · incidents de monture (objet à sous-catalogues · objet à sous-catalogues) |
-| `vehicles.json` | Véhicules (diligence, barge, **navires** — porte des réfs de `naval-traits` par id) (31 entrée(s)) |
-| `problemes-vehicule.json` · `driving-mishap.json` | Pannes de véhicule · maladresse de conduite (objet à sous-catalogues · objet à sous-catalogues) |
-| `land-cargo.json` | Cargaison terrestre (commerce) (objet à sous-catalogues) |
-| `tavernGames.json` | Jeux de taverne (13 entrée(s)) |
-| `merchants.json` | Archétypes de marchand (#2) — catalogue par familles `category.types`/`subTypes`, Disponibilité/Statut/`unitKinds` (bêtes/véhicules vendus, dérivés de `creatures`/`vehicles` à facette `purchase`) ; aucun archétype en dur dans le code, `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre (6 entrée(s)) |
-| `merchantFamilies.json` | Familles de PRÉSENTATION du stock marchand (onglets `ui/MerchantPanel.tsx`) — ordre d'affichage, règle de classement `match` (unit/shield/categorie/fallback) et `columns` de stats à afficher, résolues contre le registre fixe `MERCHANT_COL_RENDERERS` (7 entrée(s)) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `locations.json` | Lieux / régions (hiérarchie `parent`) (55 entrée(s)) | `locations` — dataset `locations` |
+| `weather.json` | Saisons / météo terrestre (objet à sous-catalogues) | `weather` · `weatherConditions` — niché (`weather`) |
+| `calendarMonths.json` · `calendarWeekdays.json` · `calendarIntercalary.json` · `calendarPhases.json` | Calendrier impérial (12 entrée(s) · 8 entrée(s) · 6 entrée(s) · 7 entrée(s)) | `calendarMonths` — dataset `calendarMonths` ; `calendarWeekdays` — dataset `calendarWeekdays` ; `calendarIntercalary` — dataset `calendarIntercalary` ; `calendarPhases` — dataset `calendarPhases` |
+| `stars.json` · `astrology.json` | Signes astraux · Demeures astrologiques (23 entrée(s) · 5 entrée(s)) | `stars` — dataset `stars` ; `celestialHouses` — dataset `celestialHouses` |
+| `montures.json` · `incidents-monture.json` | Montures · incidents de monture (objet à sous-catalogues · objet à sous-catalogues) | `montures` — niché (`montures`) ; `incidentsMonture` — niché (`incidentsMonture`) |
+| `vehicles.json` | Véhicules (diligence, barge, **navires** — porte des réfs de `naval-traits` par id) (31 entrée(s)) | `vehicles` — dataset `vehicles` |
+| `problemes-vehicule.json` · `driving-mishap.json` | Pannes de véhicule · maladresse de conduite (objet à sous-catalogues · objet à sous-catalogues) | `problemesVehicule` — niché (`problemesVehicule`) ; `drivingMishap` — niché (`drivingMishap`) |
+| `land-cargo.json` | Cargaison terrestre (commerce) (objet à sous-catalogues) | `landCargo` — niché (`landCargo`) |
+| `tavernGames.json` | Jeux de taverne (13 entrée(s)) | `tavernGames` — dataset `tavernGames` |
+| `merchants.json` | Archétypes de marchand (#2) — catalogue par familles `category.types`/`subTypes`, Disponibilité/Statut/`unitKinds` (bêtes/véhicules vendus, dérivés de `creatures`/`vehicles` à facette `purchase`) ; aucun archétype en dur dans le code, `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre (6 entrée(s)) | exempt (dette, #747) — aucune (aucune catégorie du Codex ne l’édite — le stock se règle en Scène, l’archétype reste app-owned) |
+| `merchantFamilies.json` | Familles de PRÉSENTATION du stock marchand (onglets `ui/MerchantPanel.tsx`) — ordre d'affichage, règle de classement `match` (unit/shield/categorie/fallback) et `columns` de stats à afficher, résolues contre le registre fixe `MERCHANT_COL_RENDERERS` (7 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 
 ### Naval & fluvial (*Mer des Griffes* · *Mort sur le Reik*)
-| Fichier | Contient |
-|---|---|
-| `naval-traits.json` | **ATTENTION — Tableau mixte** (`kind`: trait/amelioration) des Traits & Améliorations de navire — le **Bélier de proue** (`ram`) ICI (26 entrée(s)) |
-| `naval-ports.json` | Index des ports de la Mer des Griffes (MDG 15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde (39 entrée(s)) |
-| `lieux-services.json` | Vocabulaire des SERVICES de lieu EXTENSIBLES (#343 — auberge/temple/forgeron/guilde…) au-delà du port/marché, consommé PAR RÉFÉRENCE (`MapPlace.services[].kind`) et résolu par `placeServices` — id/label/icône de routage du hub de lieu, app-owned (7 entrée(s)) |
-| `naval-progression.json` | Progression navale (modes/vitesse) (objet à sous-catalogues) |
-| `ship-construction.json` · `ship-criticals.json` | Construction de navire · critiques de navire (objet à sous-catalogues · objet à sous-catalogues) |
-| `crew-roles.json` · `crew-morale.json` · `crew-test-types.json` | Rôles d'équipage · moral · types de Test d'équipage (9 entrée(s) · objet à sous-catalogues · objet à sous-catalogues) |
-| `sea-navigation.json` · `sea-perils.json` · `sea-events.json` · `sea-weather.json` · `sea-cargo.json` | Navigation · périls · événements · météo · cargaison maritimes (objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues) |
-| `sea-shanties.json` | Chants de marins (`crewOps`) (7 entrée(s)) |
-| `steam-breakdown.json` | Pannes de navire à vapeur (6 entrée(s)) |
-| `river-navigation.json` · `river-perils.json` · `river-criticals.json` | Navigation · périls · critiques fluviaux (objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `naval-traits.json` | **ATTENTION — Tableau mixte** (`kind`: trait/amelioration) des Traits & Améliorations de navire — le **Bélier de proue** (`ram`) ICI (26 entrée(s)) | `navalTraits` — dataset `navalTraits` |
+| `naval-ports.json` | Index des ports de la Mer des Griffes (MDG 15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde (39 entrée(s)) | `navalPorts` — dataset `navalPorts` |
+| `lieux-services.json` | Vocabulaire des SERVICES de lieu EXTENSIBLES (#343 — auberge/temple/forgeron/guilde…) au-delà du port/marché, consommé PAR RÉFÉRENCE (`MapPlace.services[].kind`) et résolu par `placeServices` — id/label/icône de routage du hub de lieu, app-owned (7 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `naval-progression.json` | Progression navale (modes/vitesse) (objet à sous-catalogues) | `navalProgression` — niché (`navalProgression`) |
+| `ship-construction.json` · `ship-criticals.json` | Construction de navire · critiques de navire (objet à sous-catalogues · objet à sous-catalogues) | `shipHullSizes` · `shipSpeedTraits` · `shipConstructionTraits` — niché (`shipHullSizes` · `shipSpeedTraits` · `shipConstructionTraits`) ; `shipCriticalsCargaison` · `shipCriticalsGreement` · `shipCriticalsCoque` · `shipCriticalsAvirons` · `shipCriticalsEquipements` — niché (`shipCriticalsCargaison` · `shipCriticalsGreement` · `shipCriticalsCoque` · `shipCriticalsAvirons` · `shipCriticalsEquipements`) |
+| `crew-roles.json` · `crew-morale.json` · `crew-test-types.json` | Rôles d'équipage · moral · types de Test d'équipage (9 entrée(s) · objet à sous-catalogues · objet à sous-catalogues) | `crewRoles` — dataset `crewRoles` ; `crewMoraleFactors` · `crewMoraleBands` — niché (`crewMoraleFactors` · `crewMoraleBands`) ; `crewTestTypes` — niché (`crewTestTypes`) |
+| `sea-navigation.json` · `sea-perils.json` · `sea-events.json` · `sea-weather.json` · `sea-cargo.json` | Navigation · périls · événements · météo · cargaison maritimes (objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues) | `seaNavigation` — objet single ; `seaPerils` — objet single ; `seaManannFactors` · `seaBoardEvents` · `seaPortEvents` — niché (`seaManannFactors` · `seaBoardEvents` · `seaPortEvents`) ; `seaWeather` — objet single ; `seaCargo` — niché (`seaCargo`) |
+| `sea-shanties.json` | Chants de marins (`crewOps`) (7 entrée(s)) | `seaShanties` — dataset `seaShanties` |
+| `steam-breakdown.json` | Pannes de navire à vapeur (6 entrée(s)) | `steamBreakdowns` — dataset `steamBreakdowns` |
+| `river-navigation.json` · `river-perils.json` · `river-criticals.json` | Navigation · périls · critiques fluviaux (objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues) | `riverNavigation` — objet single ; `riverPerils` — niché (`riverPerils`) ; `riverCriticalsGreement` · `riverCriticalsAvirons` · `riverCriticalsGouvernail` · `riverCriticalsCoque` · `riverCriticalsSuperstructure` — niché (`riverCriticalsGreement` · `riverCriticalsAvirons` · `riverCriticalsGouvernail` · `riverCriticalsCoque` · `riverCriticalsSuperstructure`) |
 
 ### Contenu de campagne / interlude / rencontres
-| Fichier | Contient |
-|---|---|
-| `activities.json` | Activités d'interlude / entre-aventures (62 entrée(s)) |
-| `interludeEvents.json` | Événements d'interlude (fourchettes d100) (31 entrée(s)) |
-| `rencontres-edoc.json` | Rencontres EDOC (tables) (objet à sous-catalogues) |
-| `peripeties.json` · `oups.json` | Péripéties de voyage · « Oups ! » (fourchettes) (10 entrée(s) · 8 entrée(s)) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `activities.json` | Activités d'interlude / entre-aventures (62 entrée(s)) | `activities` — dataset `activities` |
+| `interludeEvents.json` | Événements d'interlude (fourchettes d100) (31 entrée(s)) | `interludeEvents` — dataset `interludeEvents` |
+| `rencontres-edoc.json` | Rencontres EDOC (tables) (objet à sous-catalogues) | `rencontresPositives` · `rencontresFortuites` · `rencontresDangereuses` — niché (`rencontresPositives` · `rencontresFortuites` · `rencontresDangereuses`) |
+| `peripeties.json` · `oups.json` | Péripéties de voyage · « Oups ! » (fourchettes) (10 entrée(s) · 8 entrée(s)) | `peripeties` — dataset `peripeties` ; `oups` — dataset `oups` |
 
 Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/state/campaignNarratif.ts`, #765) est EMBARQUÉ dans le JSON du projet, jamais dans `src/data` global : ses `narratif.objets` réutilisent le schéma `TrappingData` global (`src/data/index.ts`), et ses `presetsPnj.base` RÉFÉRENCENT une créature globale par id (`findCreatureById`) — jamais une copie.
 
 ### Rendu / apparence / décor (NON-règles)
-| Fichier | Contient |
-|---|---|
-| `raceAppearance.json` | Apparence par race (gabarit, palette, tenue) — rig (21 entrée(s)) |
-| `structureAppearance.json` | Apparence de structure (murs, portes) (18 entrée(s)) |
-| `props.json` · `propMaterials.json` | Props de décor et leurs matériaux (78 entrée(s) · 4 entrée(s)) |
-| `decorPalette.json` | Palette de couleurs de décor (objet à sous-catalogues) |
-| `teintesJeu.json` | TEINTES DE JEU du terrain — surbrillances tactiques (portées, zones, bandes de tir, anneaux de cible, halos, télégraphes) et identité d'unité (anneaux réservés, équipes, une couleur par héros), `id → #rrggbb` groupé par préfixe ; servi aux peintres par `src/gameIso/highlightTints.ts` et `src/gameIso/teamColors.ts` (objet à sous-catalogues) |
-| `reliefMaterials.json` · `roofMaterials.json` | Matériaux de relief · de toit (6 entrée(s) · 4 entrée(s)) |
-| `ambiance.json` · `lightLevels.json` · `lightTones.json` | Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière · TONS de lumière (#1245 : apparence d'une source ponctuelle — couleur, part d'intensité, vacillement ; référencés par `tone`, défaut `flamme`) (objet à sous-catalogues · 5 entrée(s) · 4 entrée(s)) |
-| `renduMonte.json` | Réglage MAISON du rendu du couple MONTÉ (#1128) — `harnaisParDefaut` : id du set d'équipement (registre `src/gameIso/rig/quadruped/harnais/`) apposé à une monture PORTÉE dont le record ne déclare pas de `appearance.harnais` (LDB 08 l.557), lu par `DEFAUT_HARNAIS_MONTE` (objet à sous-catalogues) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `raceAppearance.json` | Apparence par race (gabarit, palette, tenue) — rig (21 entrée(s)) | `raceAppearance` — dataset `raceAppearance` |
+| `structureAppearance.json` | Apparence de structure (murs, portes) (18 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (presets de rendu édités au fichier — absent de `CodexEdit.CATEGORY_DATASET`) |
+| `props.json` · `propMaterials.json` | Props de décor et leurs matériaux (78 entrée(s) · 4 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (édité à la PALETTE de décor de l’éditeur de carte, jamais par une catégorie du Codex) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `decorPalette.json` | Palette de couleurs de décor (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (palette d'art éditée au fichier (aucun écran d'atelier ne l'expose)) |
+| `teintesJeu.json` | TEINTES DE JEU du terrain — surbrillances tactiques (portées, zones, bandes de tir, anneaux de cible, halos, télégraphes) et identité d'unité (anneaux réservés, équipes, une couleur par héros), `id → #rrggbb` groupé par préfixe ; servi aux peintres par `src/gameIso/highlightTints.ts` et `src/gameIso/teamColors.ts` (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (palette de rendu éditée au fichier (aucun écran d'atelier ne l'expose)) |
+| `reliefMaterials.json` · `roofMaterials.json` | Matériaux de relief · de toit (6 entrée(s) · 4 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (catalogue de rendu édité au fichier — absent de `CodexEdit.CATEGORY_DATASET`) |
+| `ambiance.json` · `lightLevels.json` · `lightTones.json` | Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière · TONS de lumière (#1245 : apparence d'une source ponctuelle — couleur, part d'intensité, vacillement ; référencés par `tone`, défaut `flamme`) (objet à sous-catalogues · 5 entrée(s) · 4 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `renduMonte.json` | Réglage MAISON du rendu du couple MONTÉ (#1128) — `harnaisParDefaut` : id du set d'équipement (registre `src/gameIso/rig/quadruped/harnais/`) apposé à une monture PORTÉE dont le record ne déclare pas de `appearance.harnais` (LDB 08 l.557), lu par `DEFAUT_HARNAIS_MONTE` (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 
 ### Méta
-| Fichier | Contient |
-|---|---|
-| `books.json` | **Registre des livres sources** — le champ `abr` est l'abréviation CANONIQUE (voir §B) (29 entrée(s)) |
-| `primitives.manifest.json` · `systemes.manifest.json` | Manifestes TOOLING (#298, vocabulaire app-interne, pas RAW) — sources de `docs/systemes.md` (`npm run docs:systemes`, `scripts/docs/build-systemes.mjs`) (28 entrée(s) · 16 entrée(s)) |
-| `raw.manifest.json` | Manifeste éditorial du champ Implémente de l'Atlas RAW (généré par `scripts/raw/build-implemente.mjs`, #487) : par topic, ticket de dette ou raison de blocage — la SEULE surface écrite à la main du champ (8 entrée(s)) |
-| `donnees.manifest.json` | Manifeste éditorial de cet atlas (#903, rangement par rubrique, description, règle d'or, pièges d'homonymes) — source de `docs/donnees.md` (`npm run docs:donnees`, `scripts/docs/build-donnees.mjs`) (objet à sous-catalogues) |
+| Fichier | Contient | Exposition (Codex — édition) |
+|---|---|---|
+| `books.json` | **Registre des livres sources** — le champ `abr` est l'abréviation CANONIQUE (voir §B) (29 entrée(s)) | `books` — dataset `books` |
+| `primitives.manifest.json` · `systemes.manifest.json` | Manifestes TOOLING (#298, vocabulaire app-interne, pas RAW) — sources de `docs/systemes.md` (`npm run docs:systemes`, `scripts/docs/build-systemes.mjs`) (28 entrée(s) · 16 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `raw.manifest.json` | Manifeste éditorial du champ Implémente de l'Atlas RAW (généré par `scripts/raw/build-implemente.mjs`, #487) : par topic, ticket de dette ou raison de blocage — la SEULE surface écrite à la main du champ (8 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `donnees.manifest.json` | Manifeste éditorial de cet atlas (#903, rangement par rubrique, description, règle d'or, pièges d'homonymes) — source de `docs/donnees.md` (`npm run docs:donnees`, `scripts/docs/build-donnees.mjs`) (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 
 ## §B — Conventions de champs (à respecter à l'ajout)
 

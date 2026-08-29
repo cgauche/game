@@ -342,7 +342,13 @@ export function editableEntries(categoryKey: string): Entry[] {
   return datasetArray(editableDataset(categoryKey)!) as Entry[];
 }
 
-export function CodexEdit({ categoryKey, label, id, onClose, isNew }: { categoryKey: string; label: string; id?: string; onClose: () => void; isNew?: boolean }) {
+/** Props de l'atelier : l'ancrage est un VERROU PAR CONSTRUCTION (#1472) — soit l'entrée est NEUVE
+ *  (`isNew`, le save APPEND), soit elle porte l'`id` STABLE du document édité. Aucun appel ne peut
+ *  être « ni l'un ni l'autre » : la branche APPEND silencieuse n'est plus atteignable. */
+type CodexEditProps = { categoryKey: string; label: string; onClose: () => void }
+  & ({ isNew: true; id?: undefined } | { isNew?: false; id: string });
+
+export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditProps) {
   // SOURCE de données UNIFIÉE (tableau d'entités OU dataset-objet) → la même UI de formulaire édite les
   // deux formes : tableau (une entité par item Codex) et objet unique (`details`, fiches de règle).
   // `entries` = échantillons pour `inferFields` ; `initial` = l'objet édité ;
@@ -357,9 +363,9 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: { category
     }
     const dsKey = editableDataset(categoryKey)!;
     const arr = entries;
-    // `isNew` : entrée VIERGE (le save APPEND) ; sinon identité GÉNÉRIQUE via `entryKey` (label/name/key/
-    // id, composite careerLevels) — MÊME clé que le navigateur passe en `label`.
-    const index = isNew ? -1 : arr.findIndex((e) => entryKey(e) === label);
+    // `isNew` : entrée VIERGE (le save APPEND) ; sinon ancrage par ID STABLE (#1472) — `id` est celui
+    // de l'item du navigateur, qui EST l'`id` du document projeté ; `label` reste de l'AFFICHAGE.
+    const index = isNew ? -1 : arr.findIndex((e) => String(e.id ?? '') === id);
     return {
       entries: arr,
       initial: arr[index] ?? {},

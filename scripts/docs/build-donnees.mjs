@@ -7,6 +7,7 @@
 // message actionnable si diff — jamais d'écriture en mode --check. Mécanique d'émission partagée :
 // emitOrCheck (scripts/docs/lib/jsdocUnion.mjs), patron `scripts/docs/build-systemes.mjs`.
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 
 const DATA_DIR = 'src/data'
@@ -57,6 +58,29 @@ for (const cas of MANIFEST.homonymes.cas) {
 
 const schemaCoverage = filesOnDisk.filter(hasSchema).length
 
+// --- EXPOSITION Codex/éditeur (#1472) : DÉRIVÉE des defs, jamais une table écrite ici. Le dumper
+// `scripts/docs/lib/dump-exposition.mts` (tsx) rend `fichier → { codex, edit }` tel que `document()`
+// le déclare ; un def sans `exposition` fait échouer la génération, comme au runtime.
+const EXPOSITION = JSON.parse(
+  execFileSync('npx', ['tsx', 'scripts/docs/lib/dump-exposition.mts'], { encoding: 'utf8', shell: process.platform === 'win32' }),
+)
+
+/** Colonne « Exposition » d'un `xxx.json` : clés Codex exposées, route d'édition, ou exemption. */
+function expositionOf(jsonFile) {
+  const expo = EXPOSITION[jsonFile]
+  if (!expo) return '—'
+  const codex = 'exempt' in expo.codex
+    ? `exempt (${expo.codex.exempt.kind}${expo.codex.exempt.ticket ? `, ${expo.codex.exempt.ticket}` : ''})`
+    : expo.codex.keys.map((k) => `\`${k}\``).join(' · ')
+  const edit = 'dataset' in expo.edit ? `dataset \`${expo.edit.dataset}\``
+    : 'object' in expo.edit ? `objet ${expo.edit.object}`
+    : 'niche' in expo.edit ? `niché (${expo.edit.niche.categories.map((c) => `\`${c}\``).join(' · ')})`
+    : `aucune (${expo.edit.none})`
+  return `${codex} — ${edit}`
+}
+
+const exemptions = Object.entries(EXPOSITION).filter(([, e]) => 'exempt' in e.codex)
+
 // --- rendu docs/donnees.md ---
 let out = `# Atlas des données — \`src/data/*.json\` (base app-owned)\n\n`
 out += `> ⚠️ Fichier GÉNÉRÉ par \`node scripts/docs/build-donnees.mjs\` (\`npm run docs:donnees\`) — NE PAS ÉDITER À LA MAIN.\n`
@@ -85,15 +109,23 @@ out += `contre le contenu réel des \`.json\` (une description qui ment sur ce q
 out += `pas la génération) ; seule la complétude de la CARTE (quel fichier existe, où il est rangé) est\n`
 out += `garantie, pas la justesse de sa glose.\n\n`
 
+out += `La colonne **Exposition** de §A est DÉRIVÉE des \`exposition\` déclarées par les defs\n`
+out += `(\`document(type, famille, champs, meta, exposition)\` → \`src/data/schemas/exposition-derivee.ts\`,\n`
+out += `dumpée par \`scripts/docs/lib/dump-exposition.mts\`) : clés de catégorie Codex exposées, route\n`
+out += `d'édition (\`dataset\` / \`objet single|record\` / \`niché\` / aucune), ou EXEMPTION motivée\n`
+out += `(\`${exemptions.length}\` fichier(s) exempt(s) sur \`${filesOnDisk.length}\`). Aucune de ces valeurs n'est écrite ici :\n`
+out += `un def qui change d'exposition change cette colonne au prochain \`npm run docs:donnees\`.\n\n`
+
 out += `## §A — Carte : où va chaque donnée\n\n`
 out += `**Règle d'or** : ${MANIFEST.reglesOr}\n\n`
 for (const r of MANIFEST.rubriques) {
   out += `### ${r.label}\n`
-  out += `| Fichier | Contient |\n|---|---|\n`
+  out += `| Fichier | Contient | Exposition (Codex — édition) |\n|---|---|---|\n`
   for (const e of r.entrees) {
     const label = e.files.map((f) => `\`${f}\``).join(' · ')
     const shapes = e.files.map(shapeOf).join(' · ')
-    out += `| ${label} | ${e.desc} (${shapes}) |\n`
+    const expo = e.files.map(expositionOf).join(' ; ')
+    out += `| ${label} | ${e.desc} (${shapes}) | ${expo} |\n`
   }
   out += `\n`
   if (r.note) out += `${r.note}\n\n`
