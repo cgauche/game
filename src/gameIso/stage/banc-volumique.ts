@@ -177,13 +177,36 @@ export function quads(): THREE.Mesh[] {
   return out;
 }
 
+/**
+ * PLAFOND d'attente de ces bancs, déclaré UNE fois (#1442) — la borne haute que les attentes au fait
+ * accompli ne doivent jamais atteindre, même sous saturation (mesuré : 6 373 ms sous 32 brûleurs pour
+ * la cuisson la plus lourde), et qui reste sous le budget de test des bancs volumiques (30 s).
+ */
+export const PLAFOND_ATTENTE_MS = 20_000;
+
+/**
+ * ATTENTE À CONDITION — le patron d'attente UNIQUE de ces bancs (#1442) : laisser respirer tant que le
+ * fait mesuré n'est pas là, et SORTIR AU FAIT ACCOMPLI.
+ *
+ * Une fenêtre de mur FIXE pose en prémisse qu'une machine met moins de N ms à monter ce qu'on va
+ * mesurer. Cette prémisse est fausse dès que la machine porte une suite complète et des agents
+ * (mesuré : 618 ms à vide → 4 093 ms sous 16 brûleurs → 6 373 ms sous 32 pour la même cuisson) : le
+ * banc rougirait alors sur la vitesse de la machine, pas sur le code.
+ *
+ * `limiteMs` est un PLAFOND, jamais une assertion : c'est à l'appelant d'affirmer le fait au retour.
+ * `battre` = la pompe d'images du banc, quand il en tient une (même rôle que dans `respirer`).
+ */
+export async function attendreQue(fait: () => boolean, limiteMs = 4000, battre?: () => void): Promise<void> {
+  const fin = Date.now() + limiteMs;
+  while (!fait() && Date.now() < fin) await respirer(20, battre);
+}
+
 /** Attend que la file cadencée du cuiseur ait posé `n` quads — PRÉMISSE de mesure, jamais une
  *  assertion : la suite fait tourner plusieurs bancs sur le même module (`isolate: false`) et la file
  *  d'un écran chargé partage la machine avec eux. Le budget est un PLAFOND : la boucle sort au compte
  *  plein. */
-export async function attendreQuads(n: number, limiteMs = 4000): Promise<void> {
-  const fin = Date.now() + limiteMs;
-  while (quads().length < n && Date.now() < fin) await respirer(20);
+export async function attendreQuads(n: number, limiteMs = 4000, battre?: () => void): Promise<void> {
+  await attendreQue(() => quads().length >= n, limiteMs, battre);
 }
 
 /** Le canevas volumique monté sous `hôte`. */
@@ -203,9 +226,8 @@ export const canevas = (hôte: HTMLElement): HTMLCanvasElement => hôte.querySel
  * Le budget est un PLAFOND, jamais une assertion : le voile a le sien (`AMBIANCE.entreeEnScene.plafondMs`),
  * et c'est à l'appelant d'affirmer qu'il est bien tombé.
  */
-export async function attendreEntréeFinie(hôte: HTMLElement, limiteMs = 4000): Promise<void> {
-  const fin = Date.now() + limiteMs;
-  while (canevas(hôte)?.dataset.voile && Date.now() < fin) await respirer(20);
+export async function attendreEntréeFinie(hôte: HTMLElement, limiteMs = 4000, battre?: () => void): Promise<void> {
+  await attendreQue(() => !canevas(hôte)?.dataset.voile, limiteMs, battre);
 }
 
 /** Le compteur applicatif de rendus du canevas — ce que le renderer a REÇU (un canevas WebGL n'a pas

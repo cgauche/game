@@ -7,7 +7,7 @@ import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
-import { BancRenderer, brancherArdoise, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
+import { BancRenderer, PLAFOND_ATTENTE_MS, attendreQuads, brancherArdoise, quads, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import { RENDER_ORDER } from '../backends/webgl/renderRanks';
 import {
   ALPHA_TEST,
@@ -34,6 +34,11 @@ import type { BattleState } from '../../state/store';
  * la présence du jumeau sous les DEUX regards du cadre (plateau et première personne).
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+/** Budget de test calé AU-DESSUS du plafond d'attente du harnais (`PLAFOND_ATTENTE_MS`) : sous un
+ *  budget plus court, un montage qui ne pose aucun corps meurt sur le chronomètre de Vitest, et le
+ *  banc accuse une lenteur là où sa PRÉMISSE a la réponse. */
+vi.setConfig({ testTimeout: PLAFOND_ATTENTE_MS + 10_000 });
 
 const TAILLE = { w: 800, h: 600 };
 const SCENE: Scene = emptyScene(10, 10);
@@ -72,12 +77,12 @@ const anim: StageWalkAnim = {
   cam: () => ({ x: 0, y: 0 }),
 };
 
-/** La file CADENCÉE du cuiseur servie en battant la boucle d'image de CE banc : depuis #1372, les
- *  textures du MONTAGE y passent comme les autres, et aucun quad n'entre en scène dans le rendu qui
- *  l'a demandé. */
-const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.());
-
-/** Monte l'écran volumique sous le cadre donné et laisse la rasterisation se résoudre. */
+/** Monte l'écran volumique sous le cadre donné et attend que les CORPS soient en scène — prémisse de
+ *  tout ce que ce banc mesure, jamais une assertion (l'appelant affirme lui-même ce qu'il en attend).
+ *
+ *  Le compte porte sur les CORPS, pas sur les jumeaux : `quads()` écarte la géométrie EMPRUNTÉE, dont
+ *  la silhouette. Le banc attend donc que les quads soient montés, puis affirme que chacun porte son
+ *  jumeau — un câblage de silhouette débranché fait toujours rougir l'assertion, jamais l'attente. */
 async function monter(frame: StageFrame): Promise<void> {
   viderCaptures();
   hôte = document.createElement('div');
@@ -101,7 +106,9 @@ async function monter(frame: StageFrame): Promise<void> {
       />,
     );
   });
-  await respirer(120);
+  await attendreQuads(ACTEURS.length, PLAFOND_ATTENTE_MS, () => battre?.());
+  expect(quads(), `PRÉMISSE : les ${ACTEURS.length} corps doivent être en scène — sans eux, rien de ce que ce banc affirme ensuite n'est mesuré`)
+    .toHaveLength(ACTEURS.length);
 }
 
 /** Le quad d'un combattant et son jumeau de silhouette, tels que la scène rendue les porte. */
@@ -110,7 +117,7 @@ function jeton(cid: string): { corps: THREE.Mesh; jumeau: THREE.Mesh } {
   if (!scene) throw new Error('aucune frame dessinée');
   let jumeau: THREE.Mesh | null = null;
   scene.traverse((o) => { if (o.name === `silhouette:${cid}`) jumeau = o as THREE.Mesh; });
-  if (!jumeau) throw new Error(`silhouette de ${cid} absente de la scène rendue`);
+  if (!jumeau) throw new Error(`le corps de ${cid} est en scène sans son jumeau : le câblage de silhouette est débranché`);
   return { corps: (jumeau as THREE.Mesh).parent as THREE.Mesh, jumeau };
 }
 

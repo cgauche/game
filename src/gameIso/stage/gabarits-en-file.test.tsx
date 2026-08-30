@@ -33,7 +33,7 @@ import { clearPeriodTextures, getPeriodTexture } from '../backends/webgl/periodT
 import { bakeQueueLength, PRIORITE_VUE_COURANTE, queueBakeTask, setBudgetTrancheMs } from '../backends/webgl/atlasBake';
 import { AMBIANCE } from '../catalog/ambiance';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
-import { BancRenderer, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures, type Rasterisation } from './banc-volumique';
+import { BancRenderer, PLAFOND_ATTENTE_MS, attendreEntréeFinie, attendreQue, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures, type Rasterisation } from './banc-volumique';
 import type { ActorPose, KeepEl, SceneBillboardEls, TintAt } from '../backends/webgl/sceneMeshes';
 import type { PropEl } from '../builders/types';
 
@@ -76,6 +76,29 @@ const cadre = (pos: { x: number; y: number } = GROUPE): StageFrame =>
   ({ mode: 'pov', partyPos: pos, facing: 'N', indoor: false, cid: null });
 
 const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.());
+
+/**
+ * PLAFOND de ce banc, déclaré UNE fois (#1442) — jamais une assertion, jamais un budget par test.
+ *
+ * Ce banc fait tourner la file CADENCÉE du cuiseur sur les 86 gabarits de la vitrine : sa durée suit
+ * la machine, pas le code. Mesuré dos à dos sur les mêmes deux fichiers : « cache FROID » 618 ms à
+ * vide, 4 093 ms sous 16 brûleurs, 6 373 ms sous 32 — le budget par défaut de Vitest (5 s) est franchi
+ * par la SATURATION seule. Les attentes, elles, sortent toutes au fait accompli (`attendreQue`).
+ */
+vi.setConfig({ testTimeout: 30_000 });
+
+/**
+ * Plafond de sécurité du voile poussé HORS D'ATTEINTE : voir le banc du voile ci-dessous. La valeur
+ * doit dépasser le plafond des attentes (`PLAFOND_ATTENTE_MS`), et sort donc du domaine que le schéma
+ * d'ambiance défend au parse (`entreeEnScene.plafondMs` ≤ 10 000 ms, `src/data/schemas/defs/ambiance.ts`) :
+ * c'est un levier poussé en mémoire sur le singleton le temps d'un banc, jamais une valeur authorable.
+ */
+const PLAFOND_HORS_ATTEINTE = 120_000;
+
+/** Ce qu'on laisse passer d'images APRÈS le fait attendu avant de figer ce qu'on juge : une sortie au
+ *  fait accompli sort au PLUS TÔT, et un fait fautif tardif se produirait après elle. */
+const IMAGES_APRES_LE_FAIT = 3;
+const plafondNominal = AMBIANCE.entreeEnScene.plafondMs;
 
 function écran(strict: boolean, pos = GROUPE, els: SceneBillboardEls = SANS_BILLBOARD): JSX.Element {
   const stage = (
@@ -135,6 +158,10 @@ beforeEach(() => {
   simulerRasterisation('auto');
 });
 afterEach(() => {
+  // La donnée d'ambiance est un SINGLETON de module que la suite partage (`isolate: false`) : un banc
+  // qui la pousse la rend, sinon le fichier voisin monte son écran sous un voile immortel. La rendre
+  // EN TÊTE, avant le démontage qui peut lever : une restauration en queue de hook est conditionnelle.
+  AMBIANCE.entreeEnScene.plafondMs = plafondNominal;
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   battre = null;
@@ -204,7 +231,12 @@ describe('#1399 — le VOILE d’entrée en scène attend les gabarits du monde'
   it('levé au montage sans un seul billboard, il tombe quand les gabarits sont posés', async () => {
     const { images } = froidsSauf(FROIDS);
     expect(images, 'PRÉMISSE : la vitrine doit porter de vraies images de gabarit').toBeGreaterThan(FROIDS);
-    const départ = Date.now();
+    // Le voile a DEUX causes de tombée (`GameStage3D.tsx` : `jugerEntrée`, ou son plafond de sécurité
+    // armé au montage, un vrai timer de 2 s qu'une machine saturée fait gagner la course). Le plafond
+    // est poussé hors d'atteinte pour que la tombée n'ait qu'UNE cause possible : ses gabarits — sinon
+    // le seul témoin du banc serait le chronomètre, donc la vitesse de la machine. Hors d'atteinte, un
+    // câblage de relève débranché laisse le voile levé.
+    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE;
     monterSync();
 
     // Le voile est LEVÉ alors que la population des billboards a déjà déclaré son jeu VIDE : ce qui le
@@ -212,14 +244,11 @@ describe('#1399 — le VOILE d’entrée en scène attend les gabarits du monde'
     expect(canevas().dataset.voile, 'le voile ne couvre pas les gabarits du monde').toBe('1');
     expect(avecMap(matériauxDuMonde()), 'un gabarit froid posé au montage = cuisson synchrone').toBe(images - FROIDS);
 
-    for (let i = 0; i < 200 && canevas().dataset.voile; i++) await respirer(20);
-    const écoulé = Date.now() - départ;
+    await attendreEntréeFinie(hôte!, PLAFOND_ATTENTE_MS, () => battre?.());
 
-    expect(canevas().dataset.voile, 'le voile n’est jamais tombé').toBeUndefined();
-    expect(écoulé, `${écoulé} ms — le voile a attendu son PLAFOND, pas ses gabarits`)
-      .toBeLessThan(AMBIANCE.entreeEnScene.plafondMs);
+    expect(canevas().dataset.voile, 'le voile n’est jamais tombé sur ses gabarits — et son plafond ne pouvait pas le faire tomber').toBeUndefined();
     expect(avecMap(matériauxDuMonde()), 'les gabarits ne sont pas relevés sur les matériaux montés').toBe(images);
-  }, 30000);
+  });
 
   it('gabarits tous CHAUDS : le voile tient quand même sur le billboard proche', async () => {
     // COURSE DES POPULATIONS : l'effet du monde est monté AVANT celui des billboards, et il n'a ici
@@ -227,6 +256,10 @@ describe('#1399 — le VOILE d’entrée en scène attend les gabarits du monde'
     // il dit que la population des billboards reste NON DÉCLARÉE à ce moment.
     const { images } = froidsSauf(0);
     const ras: Rasterisation = simulerRasterisation('retenue');
+    // Même raison qu'au banc précédent : hors d'atteinte, le plafond de sécurité ne peut pas faire
+    // tomber le voile pendant les respirations, et sa tombée n'a qu'UNE cause possible — la texture
+    // servie au décor proche.
+    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE;
     monterSync(false, GROUPE, { tokens: [], props: [décor('près', GROUPE.x + 1)] });
 
     expect(avecMap(matériauxDuMonde()), 'PRÉMISSE : tous les gabarits doivent être posés dès le montage').toBe(images);
@@ -239,7 +272,7 @@ describe('#1399 — le VOILE d’entrée en scène attend les gabarits du monde'
       await respirer(40);
     }
     expect(canevas().dataset.voile, 'le voile n’est jamais tombé sur la texture servie').toBeUndefined();
-  }, 30000);
+  });
 });
 
 describe('#1399 — la RELÈVE repeint au point de vue COURANT', () => {
@@ -247,23 +280,40 @@ describe('#1399 — la RELÈVE repeint au point de vue COURANT', () => {
     const A = { x: 4, y: 4 };
     const B = { x: 14, y: 14 };
     monterSync(false, A);
-    await respirer(40);
+    // PRÉMISSE : une image a été peinte au point de vue A — sortie au fait accompli, jamais au bout
+    // d'une fenêtre (`caméras` est l'accumulateur du renderer de banc).
+    await attendreQue(() => caméras.length > 0, PLAFOND_ATTENTE_MS, () => battre?.());
+    expect(caméras.length, 'aucune image peinte au montage : le banc ne dirait rien').toBeGreaterThan(0);
 
     const avant = vueX(caméras[caméras.length - 1]);
     // MÊME géométrie, MÊME scène : l'effet du monde ne se remonte pas, seul le point de vue bouge.
     await act(async () => { root!.render(écran(false, B)); });
     const marque = caméras.length;
     const posésAvant = avecMap(matériauxDuMonde());
-    await respirer(400);
+    // Ce que le banc a besoin de voir arriver : des images APRÈS le déplacement, et des gabarits
+    // relevés pendant qu'elles se peignent. C'est un ÉTAT, pas une durée — 400 ms de mur ne le
+    // portent que sur une machine au repos.
+    await attendreQue(
+      () => caméras.length > marque && avecMap(matériauxDuMonde()) > posésAvant,
+      PLAFOND_ATTENTE_MS,
+      () => battre?.(),
+    );
+    // La sortie est au PLUS TÔT : une repeinte au point de vue PÉRIMÉ arriverait APRÈS elle et
+    // resterait hors du jugement. On bat encore quelques images — un fait, jamais une durée — avant
+    // de figer ce qu'on juge.
+    const fenêtre = caméras.length + IMAGES_APRES_LE_FAIT;
+    await attendreQue(() => caméras.length >= fenêtre, PLAFOND_ATTENTE_MS, () => battre?.());
+    expect(caméras.length, `PRÉMISSE : la pompe d'images du banc doit battre après le fait — ${caméras.length} image(s) pour ${fenêtre} attendues`)
+      .toBeGreaterThanOrEqual(fenêtre);
 
     const après = caméras.slice(marque).map(vueX);
-    // PRÉMISSES — des images ont bien été peintes dans la fenêtre, et des gabarits y sont arrivés.
+    // PRÉMISSES — des images ont bien été peintes après le déplacement, et des gabarits y sont arrivés.
     expect(après.length, 'aucune image peinte après le déplacement : le banc ne dirait rien').toBeGreaterThan(0);
-    expect(avecMap(matériauxDuMonde()), 'aucun gabarit relevé dans la fenêtre : le banc ne dirait rien')
+    expect(avecMap(matériauxDuMonde()), 'aucun gabarit relevé pendant qu’elles se peignaient : le banc ne dirait rien')
       .toBeGreaterThan(posésAvant);
     expect(new Set(après).size, `points de vue peints : ${[...new Set(après)].join(', ')}`).toBe(1);
     expect(après[0], 'le point de vue n’a pas bougé : le banc ne dirait rien').not.toBe(avant);
-  }, 30000);
+  });
 });
 
 /** Une demande de cuisson pour un gabarit de face de la VITRINE qui cuit vraiment (masque non neutre)
@@ -321,7 +371,15 @@ describe('#1399 — StrictMode : ce que coûte le rendu JETÉ', () => {
   it('la cuisson du monde est payée DEUX fois (dev), et la géométrie jetée n’atteint aucune image', async () => {
     const cuisson = vi.spyOn(sceneMeshes, 'bakeWorldGeometry');
     monterSync(true);
-    await respirer(60);
+    // Les DEUX cuissons du double rendu de montage et au moins une image dessinée : le fait attendu,
+    // jamais une fenêtre de 60 ms.
+    await attendreQue(() => cuisson.mock.calls.length >= 2 && scènes.length > 0, PLAFOND_ATTENTE_MS, () => battre?.());
+    // Sortie au PLUS TÔT, encore : une TROISIÈME cuisson tardive tomberait après elle. On bat quelques
+    // images de plus — un fait, jamais une durée — avant d'affirmer le compte.
+    const fenêtre = scènes.length + IMAGES_APRES_LE_FAIT;
+    await attendreQue(() => scènes.length >= fenêtre, PLAFOND_ATTENTE_MS, () => battre?.());
+    expect(scènes.length, `PRÉMISSE : la pompe d'images du banc doit battre après le fait — ${scènes.length} image(s) pour ${fenêtre} attendues`)
+      .toBeGreaterThanOrEqual(fenêtre);
 
     // FAIT ÉTABLI : `memoByRefDeps` est keyé sur un jeton d'INSTANCE (`useRef({}).current`), et le
     // double rendu de montage de StrictMode en fabrique DEUX — deux slots WeakMap indépendants, donc
@@ -337,5 +395,5 @@ describe('#1399 — StrictMode : ce que coûte le rendu JETÉ', () => {
     for (const scène of scènes) scène.traverse((o) => { if ((o as THREE.Mesh).geometry === jetée) montée = true; });
     expect(montée, 'la géométrie jetée est montée : c’est une fuite GPU, elle doit être libérée').toBe(false);
     expect(scènes.length, 'PRÉMISSE : des images ont bien été dessinées').toBeGreaterThan(0);
-  }, 30000);
+  });
 });
