@@ -1,3 +1,5 @@
+⚠️ INSTRUMENT de l'épique gelée #834 — compteur de reprise (460 entités)
+
 # Inventaire de complétude — Les Vents de Magie (VDM)
 
 > **Artefact DATÉ 2026-07-22** — sortie de l'audit adversarial par TYPE d'entité (workflow `vdm-completude-entites`, 15 agents, un par chapitre). Recense TOUT ce que VDM ajoute/modifie/republie. Sert de base de réconciliation pour la curation `src/data` (#729-#735). À SUPPRIMER une fois la curation soldée (git porte l'historique).
