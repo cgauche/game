@@ -11,7 +11,8 @@ import { applyOps, resolveFormula, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget, poseCorruptionPending, testDeCorruption } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
-import { effectiveChar } from '../engine/characteristics';
+import { bonus, effectiveChar } from '../engine/characteristics';
+import { sceneNpc } from './sceneNpc';
 import { buildActorView } from './combat/flowEval';
 import { partyBest, partyAssisted, soutienDetail, isSocialTest, socialPsychMod, socialPsychLabel, socialPsychLines, testValue, actorHasSkill } from '../engine/skills';
 import { statusCharmMod, statusCharmLabel, actorStatus, capriciousDR } from '../engine/social';
@@ -23,13 +24,13 @@ import { traumaOnImpossibleAmbition } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel, withGiveQualities, autoStowNewItem } from '../engine/items';
 import { trappingById, indiceById } from './campaignData';
 import { revealClue, discreditClue } from './clues';
-import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel, nightStakeRef, combatStakeRef, flowStakeRef, type SkillRef } from '../data';
+import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel, nightStakeRef, combatStakeRef, flowStakeRef } from '../data';
 import { MORALE_BASE } from '../engine/crewMorale';
 import { clampSaboteurDR } from './shipCrew';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
 import { applySummon } from './summonFlow';
 import { contractDisease, applyContraction, DISEASE_DEFS } from '../engine/disease';
-import { type HealMode } from '../engine/healing';
+import { hasHealSkill, HEAL_SKILL, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { seaWeatherTestMod, openPortAt, vesselManann, setVesselHull } from './seaVoyageFlow';
 import { applyManannFactor, addManann, findManannFactor } from '../engine/seaVoyage';
@@ -641,6 +642,12 @@ export interface EffectRefCtx {
   sceneIds: ReadonlySet<string>;
   dialogueIds: ReadonlySet<string>;
   encounterIds: ReadonlySet<string>;
+  /** Entités `personnage` de la scène — les PNJ qu'un effet peut désigner (soigneur…). */
+  entityIds: ReadonlySet<string>;
+  /** LA FICHE derrière une entité `personnage`, par la MÊME projection que le runtime (`sceneNpc`) —
+   *  un handler peut ainsi exiger une COMPÉTENCE du PNJ désigné, pas seulement son existence. Fourni
+   *  comme `within` : une fonction du contexte, jamais un canal parallèle vers la scène. */
+  npcSheet(id: string): Combatant | undefined;
   within(x: number, y: number): boolean;
 }
 export interface EffectRefIssue {
@@ -1498,11 +1505,18 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   },
   startPursuit: {
     group: 'Combat & social', label: 'Poursuite terrestre (LDB 15)', icon: 'travel/foot',
-    make: () => ({ type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: { id: 'athletisme' }, foes: [{ label: 'Poursuivant', movement: 4, skill: 40 }], encounter: '' }),
+    make: () => ({ type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: { id: 'athletisme' }, foes: [{ ref: { creatureId: '' } }], encounter: '' }),
     apply: (e, env) => { startGroundPursuit(env.get, env.set, { partyRole: e.partyRole, distance: e.distance, escapeAt: e.escapeAt, skill: e.skill.id, foes: e.foes, encounter: e.encounter || undefined, policy: e.policy }); },
     refs: (e, ctx) => {
       const issues: EffectRefIssue[] = [];
       if (!e.foes?.length) issues.push({ level: 'error', message: 'Poursuite : aucun adversaire' });
+      // Chaque adversaire est une RÉFÉRENCE : c'est sur la fiche que se lisent son Mouvement et sa
+      // valeur de Test — une référence cassée n'a aucune stat à offrir.
+      for (const f of e.foes ?? []) {
+        if ('creatureId' in f.ref && !findCreatureById(f.ref.creatureId)) {
+          issues.push({ level: 'error', message: `Poursuite → créature inexistante « ${f.ref.creatureId || '(aucune)'} »` });
+        }
+      }
       if (e.encounter && !ctx.encounterIds.has(e.encounter)) issues.push({ level: 'error', message: `Poursuite → rencontre inexistante « ${e.encounter} »` });
       return issues;
     },
@@ -1549,8 +1563,16 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   medicalAid: {
     group: 'Combat & social', label: 'Acte de soin payant (PNJ médecin/guérisseur)', icon: 'medical/aid',
     // tarif par défaut : « aide médicale 4-6 pistoles » (LDB 75) → 5 pa
-    make: () => ({ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: { id: 'guerison', value: 50 }, intBonus: 4 }),
+    make: () => ({ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], entityId: '' }),
     apply: (e, env) => { openMedicalAidEffect(env.get, env.set, e); }, // soins payants d'un PNJ : ouvre son infirmerie (actes tarifés)
+    // Le soigneur PORTE ses stats : sans entité résolvable, l'infirmerie n'a ni nom ni fiche à lire —
+    // et sans la Compétence Guérison sur cette fiche, l'acte n'a aucune valeur à jouer (LDB 09 l.30).
+    refs: (e, ctx) => {
+      if (!ctx.entityIds.has(e.entityId)) return [{ level: 'error', message: `Soins payants → PNJ soigneur inexistant « ${e.entityId || '(aucun)'} »` }];
+      const npc = ctx.npcSheet(e.entityId);
+      if (!npc) return [{ level: 'error', message: `Soins payants → le PNJ « ${e.entityId} » n'a aucune fiche (ni réf de bestiaire, ni profil, ni preset)` }];
+      return hasHealSkill(npc) ? [] : [{ level: 'error', message: `Soins payants → le PNJ « ${e.entityId} » ne possède pas la Compétence Guérison` }];
+    },
   },
   castSpell: {
     group: 'Combat & social', label: 'Incanter un sort/prière (scripté, #98)', icon: 'magic/power',
@@ -1665,16 +1687,21 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[], sl?: numbe
  * choisit les patients ; le PNJ effectue les jets (la Chance interroge `actorIn(healerId)` →
  * introuvable pour un PNJ → boutons inertes).
  */
-function openMedicalAidEffect(get: Get, set: SetFn, e: { acts?: { act: HealMode; cost?: { gold?: number; silver?: number; brass?: number } }[]; skill: SkillRef; intBonus: number; entityId?: string }): void {
+function openMedicalAidEffect(get: Get, set: SetFn, e: { acts?: { act: HealMode; cost?: { gold?: number; silver?: number; brass?: number } }[]; entityId: string }): void {
   const acts = e.acts ?? [];
   if (!acts.length) return;
-  const npc = e.entityId ? get().scene?.entities.find((x) => x.id === e.entityId) : undefined;
+  // LE soigneur est une entité de la scène, et sa FICHE est la source unique de ce qu'il vaut : sa
+  // valeur de Guérison et son Bonus d'Intelligence s'y LISENT. Sans fiche, ou sans la Compétence
+  // Avancée Guérison sur cette fiche (LDB 09 l.30), aucune infirmerie ne s'ouvre — et le refus se DIT.
+  const npc = sceneNpc(get().scene, e.entityId);
+  if (!npc) { get().log(t('eff.medicNoNpc', { id: e.entityId || '(aucun)' })); return; }
+  if (!hasHealSkill(npc)) { get().log(t('eff.medicNoHealSkill', { name: npc.label })); return; }
   openMedic(get, set, {
     npc: {
-      id: npc?.id ?? e.entityId ?? 'pnj-soigneur',
-      label: npc?.label ?? 'Soigneur',
-      skill: e.skill,
-      intBonus: e.intBonus,
+      id: e.entityId,
+      label: npc.label,
+      skill: { id: HEAL_SKILL, value: testValue(npc, HEAL_SKILL) },
+      intBonus: bonus(effectiveChar(npc, 'intelligence')),
       acts,
     },
   });

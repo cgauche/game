@@ -25,11 +25,13 @@
 import type { RuleValue } from '../engine/policy';
 import type { Scene } from './scene';
 
-// 31 → 32 (L2 #1548, commit 3d) : l'effet `medicalAid` écrit la Compétence du PNJ soigneur en
-// référence portant sa valeur (`skill: { id, spec?, value }`), là où elle était un NOMBRE nu. Deux
-// formes PERSISTÉES changent avec elle : le document de scène (`scene`, dialogues porteurs de l'effet)
-// et l'infirmerie ouverte (`medic.npc.skill`). Politique 2 ci-dessus.
-export const SAVE_VERSION = 32;
+// 32 → 33 (L2 #1548, geste modèle) : une personne se RÉFÉRENCE. Le document de scène (`scene`) perd
+// les deux pseudo-PNJ écrits en clair — l'effet `medicalAid` ne porte plus que son `entityId` (la
+// Guérison et le Bonus d'Int se lisent sur la fiche du PNJ), et les adversaires de `startPursuit`
+// sont des références de vivant (`{ ref }`) là où vivaient `label`+`movement`+`skill`. Une save de 32
+// rouvrirait une infirmerie sans soigneur et une poursuite sans coureurs : elle se jette
+// (politique 2 ci-dessus).
+export const SAVE_VERSION = 33;
 
 export interface SaveMeta {
   version: number;

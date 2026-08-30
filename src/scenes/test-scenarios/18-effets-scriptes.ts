@@ -23,7 +23,7 @@ const village = buildScene({
   entities: [
     // Effet `medicalAid` (LDB 75) : PNJ soigneur payant, distinct de l'Action Guérison générique.
     {
-      id: 'medecin', kind: 'personnage', ref: 'villageois', label: 'Médecin Holst',
+      id: 'medecin', kind: 'personnage', ref: 'medecin', label: 'Médecin Holst',
       pos: { x: 8, y: 2 }, dialogueId: 'dlg-medecin',
     },
     // Effet `petitePriere` (LDB 25 l.22-24, option `prayer-petites`) : site sacré pour un non-Béni.
@@ -61,7 +61,7 @@ const village = buildScene({
               label: 'Ouvrir son infirmaire (soins payants).',
               flow: flowFromEffects([
                 {
-                  type: 'medicalAid', entityId: 'medecin', skill: { id: 'guerison', value: 45 }, intBonus: 3,
+                  type: 'medicalAid', entityId: 'medecin',
                   acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }],
                 },
                 { type: 'endDialogue' },

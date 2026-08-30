@@ -502,8 +502,13 @@ export function countRegistryIdBranch(rel, contenu) {
  * figurer n'est pas une faute, mais le COMPTE ne doit jamais monter, et chaque lot d'assainissement
  * doit le faire descendre. Un site qui quitte le garde principal SANS descendre ici est une évasion.
  *
- * SA COUVERTURE, ET RIEN DE PLUS — le SEUL critère est le NOM du champ (`ID_NAME_RX`) sur un nœud
- * d'égalité. Angles morts MESURÉS (compte principal/brut), assertés en test :
+ * SA COUVERTURE : le critère est le NOM du champ (`ID_NAME_RX`) sur un nœud d'égalité, dont l'AUTRE
+ * côté désigne une entrée — littéral, OU constante de MODULE du même fichier initialisée par un
+ * littéral (`const HEAL_SKILL = 'guerison'` → `s.skillId === HEAL_SKILL` pèse comme
+ * `=== 'guerison'`). Sans cette résolution, factoriser le littéral en constante ÉTEIGNAIT la mesure
+ * sans rien assainir : la comparaison est la même, seul son nom a changé. La résolution s'arrête au
+ * FICHIER (aucune constante importée n'est suivie — le scan est per-fichier).
+ * Angles morts MESURÉS (compte principal/brut), assertés en test :
  *  - alias RENOMMÉ (`const cle = t.id; cle === 'x'`), en prédicat ou non — 0/0 : le nom porteur a
  *    changé, plus aucun des deux détecteurs ne le voit. C'est l'évasion la plus complète ;
  *  - destructuration RENOMMÉE (`function f({ id: cle })`) — 0/0, même cause (la destructuration
@@ -525,6 +530,24 @@ export function scanRawIdEqualities(relPath, contenu) {
   const lines = contenu.split('\n');
   const findings = [];
 
+  /** Constantes de MODULE initialisées par un littéral chaîne : `const HEAL_SKILL = 'guerison'`. */
+  const constLits = new Map();
+  for (const st of sf.statements) {
+    if (!ts.isVariableStatement(st) || !(st.declarationList.flags & ts.NodeFlags.Const)) continue;
+    for (const d of st.declarationList.declarations) {
+      if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+      const init = unwrap(d.initializer);
+      if (ts.isStringLiteral(init) || ts.isNoSubstitutionTemplateLiteral(init)) constLits.set(d.name.text, init.text);
+    }
+  }
+
+  /** DÉSIGNE une entrée : littéral d'entrée, ou identifiant lié à une constante de module qui en est un. */
+  const designeUneEntree = (node) => {
+    const n = unwrap(node);
+    if (isEntryLiteral(n)) return true;
+    return ts.isIdentifier(n) && constLits.has(n.text) && !OP_VOCABULARY.has(constLits.get(n.text));
+  };
+
   /** Accès `<quoi que ce soit>.id` ou identifiant nu `id`, par le SEUL nom du champ. */
   const isIdName = (node) => {
     const n = unwrap(node);
@@ -537,7 +560,7 @@ export function scanRawIdEqualities(relPath, contenu) {
     if (ts.isBinaryExpression(node) && EQUALITY_OPS.has(node.operatorToken.kind)) {
       const l = unwrap(node.left);
       const r = unwrap(node.right);
-      if ((isIdName(l) && isEntryLiteral(r)) || (isIdName(r) && isEntryLiteral(l))) {
+      if ((isIdName(l) && designeUneEntree(r)) || (isIdName(r) && designeUneEntree(l))) {
         const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
         findings.push({ line, detail: (lines[line - 1] || '').trim() });
       }

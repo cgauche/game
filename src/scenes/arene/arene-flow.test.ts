@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { useGame } from '../../state/store';
 import { applyEffects, runFlow } from '../../state/combatFlow';
+import { EFFECT_HANDLERS } from '../../state/combatEffects';
+import { sceneNpc } from '../../state/sceneNpc';
 import { wallBetween, type ArchitectureRect, type Scene, type WallSeg } from '../../state/scene';
 import { evalCondition, flowEffects, type Condition } from '../../state/flow';
 import { parseProject } from '../../state/worldMap';
@@ -166,15 +168,18 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
     party[1].wounds = { ...party[1].wounds, current: party[1].wounds.current - 6 };
     useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null });
     creditBourse(useGame.getState, useGame.setState, party[1].id, { gold: 1, silver: 10, brass: 0 }); // le patient (party[1]) paie son acte (soloPayer)
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: { id: 'guerison', value: 55 }, intBonus: 4, entityId: 'medecin' }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], entityId: 'medecin' }]);
     const m = useGame.getState().medic!;
     expect(m.npc!.id).toBe('medecin'); // l'id de l'entité PNJ
     expect(m.npc!.label).toBe('Médecin'); // le label de l'entité (renommable)
     expect(useGame.getState().party.some((h) => h.id === m.npc!.id)).toBe(false);
     expect(m.patientId).toBe(party[1].id); // défaut = un patient soignable
-    useGame.getState().medicAct('wounds'); // débit 5 pa + jet du PNJ (skill 55)
+    useGame.getState().medicAct('wounds'); // débit 5 pa + jet du PNJ
     const ph = useGame.getState().pendingHeal!;
-    expect(ph.skillValue).toBe(55);
+    // La valeur JOUÉE vient de la FICHE référencée par l'entité (`creatures.json` « medecin » :
+    // Guérison 50, Int 40 → Bonus 4) — l'effet n'en porte aucune.
+    expect(ph.skillValue).toBe(50);
+    expect(m.npc!.intBonus).toBe(4);
     expect(bourseOf(useGame.getState().party.find((h) => h.id === ph.targetId)!).silver).toBe(5); // 10 − 5 pistoles débitées à la bourse du patient
     useGame.getState().healRoll();
     useGame.getState().healConfirm();
@@ -183,12 +188,49 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
     useGame.getState().closeMedic();
   });
 
+  it('PORTE : un soigneur sans fiche de Guérison n’ouvre AUCUNE infirmerie — rien à lire, rien à inventer (L2 #1548)', () => {
+    const party = makeShowcaseParty();
+    party[1].wounds = { ...party[1].wounds, current: party[1].wounds.current - 6 };
+    useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null });
+    // `fidele` est un figurant de la chapelle : aucune réf de bestiaire, donc aucune Guérison.
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], entityId: 'fidele' }]);
+    expect(useGame.getState().medic).toBeNull();
+    // Entité inexistante : même refus, et la validation d'atelier le NOMME.
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], entityId: 'chirurgien-fantome' }]);
+    expect(useGame.getState().medic).toBeNull();
+    // La validation d'ATELIER voit ce que voit le runtime : elle résout la FICHE (même `sceneNpc`).
+    const ctx = { sceneIds: new Set<string>(), dialogueIds: new Set<string>(), encounterIds: new Set<string>(), entityIds: new Set(hub.entities.map((e) => e.id)), npcSheet: (id: string) => sceneNpc(hub, id), within: () => true };
+    expect(EFFECT_HANDLERS.medicalAid.refs!({ type: 'medicalAid', acts: [{ act: 'wounds' }], entityId: 'medecin' }, ctx)).toEqual([]);
+    const issues = EFFECT_HANDLERS.medicalAid.refs!({ type: 'medicalAid', acts: [{ act: 'wounds' }], entityId: 'chirurgien-fantome' }, ctx);
+    expect(issues.map((i) => i.level)).toEqual(['error']);
+    expect(issues[0].message).toContain('chirurgien-fantome');
+    // Entité EXISTANTE mais sans Guérison : l'atelier la nomme, elle aussi — la porte n'est plus aveugle.
+    const sansSoin = EFFECT_HANDLERS.medicalAid.refs!({ type: 'medicalAid', acts: [{ act: 'wounds' }], entityId: 'fidele' }, ctx);
+    expect(sansSoin.map((i) => i.level)).toEqual(['error']);
+    expect(sansSoin[0].message).toContain('fidele');
+    expect(sansSoin[0].message).toContain('Guérison');
+  });
+
+  it('le NOM affiché est celui de l’ENTITÉ, jamais celui de la fiche spawnée (L2 #1548)', () => {
+    const party = makeShowcaseParty();
+    party[1].wounds = { ...party[1].wounds, current: party[1].wounds.current - 6 };
+    useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null });
+    // `frere` réfère la fiche « pretre-de-sigmar » (label « Prêtre de Sigmar ») mais l'auteur l'a
+    // nommé « Frère Anselm » : la fiche donne les VALEURS, l'entité donne le NOM.
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], entityId: 'frere' }]);
+    const m = useGame.getState().medic!;
+    expect(m.npc!.id).toBe('frere');
+    expect(m.npc!.label).toBe('Frère Anselm');
+    expect(m.npc!.skill.value).toBe(60); // Guérison de la fiche « pretre-de-sigmar »
+    useGame.getState().closeMedic();
+  });
+
   it('le JOUEUR choisit le patient dans l’infirmerie (medicSelectPatient)', () => {
     const party = makeShowcaseParty();
     party[0].wounds = { ...party[0].wounds, current: party[0].wounds.current - 3 };
     party[2].wounds = { ...party[2].wounds, current: party[2].wounds.current - 8 };
     useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], skill: { id: 'guerison', value: 55 }, intBonus: 4, entityId: 'medecin' }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], entityId: 'medecin' }]);
     useGame.getState().medicSelectPatient(party[2].id);
     expect(useGame.getState().medic!.patientId).toBe(party[2].id);
     useGame.getState().closeMedic();
@@ -196,7 +238,7 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
 
   it('un acte sans patient pertinent est simplement refusé (pas de jet)', () => {
     useGame.setState({ party: makeShowcaseParty(), scene: hub, battle: null, pendingHeal: null, medic: null }); // groupe au max de PB
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], skill: { id: 'guerison', value: 55 }, intBonus: 4 }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], entityId: 'medecin' }]);
     useGame.getState().medicAct('wounds');
     expect(useGame.getState().pendingHeal).toBeNull();
     useGame.getState().closeMedic();

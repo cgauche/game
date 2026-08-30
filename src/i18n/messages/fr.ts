@@ -1320,6 +1320,8 @@ export const fr = {
   'eff.vesselHull': 'coque {cur}/{max}',
   'eff.castCasterMissing': 'Effet Incanter : lanceur « {id} » introuvable (en combat, ou héros du groupe hors combat).',
   'eff.castSpellMissing': 'Effet Incanter : sort « {id} » introuvable.',
+  'eff.medicNoNpc': 'Soins impossibles : aucun PNJ « {id} » dans cette scène.',
+  'eff.medicNoHealSkill': 'Soins impossibles : {name} ne possède pas la Compétence Guérison.',
 
   // ── #1318 V8c₂ — STORE (`state/store.ts`, `store.*`) : les lignes de journal émises par le store
   // lui-même (navire de combat, sauvegarde, transition, fouille, dialogue, Test étendu, porte). ──

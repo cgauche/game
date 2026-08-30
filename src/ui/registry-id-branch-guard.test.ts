@@ -148,6 +148,12 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * `tmode.id === 'heal'` : `highlightLayer.tsx` sort de la liste), puis 108 après le lot #1479 (la
  * conséquence d'une collision en mer lit la DONNÉE qui ouvre l'issue — `entangleChancePct`, symétrique
  * de `strandChancePct` — au lieu de l'id du péril : `seaVoyageFlow.ts` passe de 4 à 3).
+ *
+ * MONTÉE DE COUVERTURE (L2 #1548), la seule qui fasse MONTER ce plafond sans qu'un site soit né : la
+ * mesure brute résout désormais les CONSTANTES DE MODULE (`const X = 'lit'` → `=== X`). Quatre sites
+ * PRÉEXISTANTS redeviennent visibles — `healing.ts` (1, dont le littéral venait d'être factorisé en
+ * `HEAL_SKILL` : la comparaison n'avait pas bougé), `commandTeam.ts` (1) et `CarnetScreen.tsx` (2),
+ * jusque-là comptés 0 par le seul effet de leur écriture. Aucun d'eux n'est un branchement nouveau.
  */
 const RAW_KNOWN: Record<string, number> = {
   'scripts/gen-bestiary-gallery.mts': 1,
@@ -163,6 +169,10 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/drunkenness.ts': 1,
   'src/engine/engagement.ts': 2,
   'src/engine/equipCompare.ts': 2,
+  // SAIN : lookup par id stable de la Compétence de soin, patron des jumeaux `careerSlots` ('focalisation')
+  // et `critical` ('resistance') ci-dessus. Le littéral est factorisé en `HEAL_SKILL` (source unique des
+  // sites qui la testent) : la comparaison reste la MÊME et reste COMPTÉE — le scanner brut résout désormais
+  // les constantes de module (L2 #1548), une factorisation n'assainit rien.
   'src/engine/healing.ts': 1,
   'src/engine/magic.ts': 3,
   'src/engine/menace.ts': 1,
@@ -194,6 +204,9 @@ const RAW_KNOWN: Record<string, number> = {
   'src/state/combatGeometry.ts': 1,
   'src/state/combatManeuvers.ts': 4,
   'src/state/combatSlice.ts': 2,
+  // RÉVÉLÉ (jamais neuf) par la résolution des constantes de module, L2 #1548 : `q.id === ARME_D_EQUIPE`
+  // est un lookup par id stable d'une Qualité au registre — même patron que `healing`/`careerSlots`.
+  'src/state/commandTeam.ts': 1,
   'src/state/devtools.ts': 1,
   'src/state/interludeFlow.ts': 4,
   'src/state/mount.ts': 1,
@@ -209,6 +222,10 @@ const RAW_KNOWN: Record<string, number> = {
   //  protocole de modales, jamais un id d'entité — c'est la décision « qui nomme le siège attendu »,
   //  et elle est UNE (`ActiveModal.tsx` la lit sans la refaire, il ne compte donc aucun site).
   'src/ui/ownership.ts': 1,
+  // RÉVÉLÉ (jamais neuf) par la résolution des constantes de module, L2 #1548 : `PINNED_SEL`
+  // (`'__pinned__'`) est une SENTINELLE de sélection d'écran (la rangée « Épinglés », qui n'est pas une
+  // affaire), jamais l'identité d'une entrée de registre — famille du `''` d'`OP_VOCABULARY`.
+  'src/ui/CarnetScreen.tsx': 2,
   'src/ui/HealModal.tsx': 2,
   'src/ui/InterludeScreen.tsx': 2,
   'src/ui/MedicModal.tsx': 2,
@@ -572,6 +589,20 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
     expect(scanRawIdEqualities('fixture.ts', uneLigne)).toHaveLength(2);
   });
 
+  it('MORSURE BRUTE : une CONSTANTE DE MODULE ne cache pas la comparaison (l’évasion par factorisation, L2 #1548)', () => {
+    // Factoriser `e.id === 'commerce'` en `const CLE = 'commerce'` ne change RIEN à la comparaison :
+    // la mesure brute résout la constante du MÊME fichier et compte le site comme avant.
+    const parConstante = "const CLE = 'commerce';\nfunction f(e: E) { return e.id === CLE; }";
+    expect(scanRawIdEqualities('fixture.ts', parConstante)).toHaveLength(1);
+    expect(scanRawIdEqualities('fixture.ts', parConstante)[0].line).toBe(2);
+    // La résolution s'arrête au FICHIER : une constante IMPORTÉE reste hors de portée (scan per-fichier).
+    expect(scanRawIdEqualities('fixture.ts', "import { CLE } from './cles';\nfunction f(e: E) { return e.id === CLE; }")).toEqual([]);
+    // Un mot du VOCABULAIRE tenu par une constante ne désigne pas plus d'entrée que son littéral.
+    expect(scanRawIdEqualities('fixture.ts', "const SOI = 'self';\nfunction f(o: Op) { return o.ref === SOI; }")).toEqual([]);
+    // Une constante qui n'est PAS un littéral chaîne ne désigne rien non plus.
+    expect(scanRawIdEqualities('fixture.ts', 'const CLE = compute();\nfunction f(e: E) { return e.id === CLE; }')).toEqual([]);
+  });
+
   it('ANGLES MORTS ASSERTÉS : ce que les deux gardes ne voient PAS, écrit noir sur blanc', () => {
     // Un détecteur ne mesure que SA COUVERTURE. Les formes ci-dessous rendent 0/0 ou 1/0 : c'est un
     // ANGLE MORT CONNU, pas une couverture. Elles sont assertées TELLES QUELLES pour qu'aucune
@@ -588,6 +619,11 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
     // (3) DESTRUCTURATION RENOMMÉE — 0/0 ; la destructuration DIRECTE garde le nom et mord (1/1).
     expect(mesure("function f({ id: cle }: E) { return cle === 'commerce'; }")).toEqual([0, 0]);
     expect(mesure("function f({ id }: E) { return id !== 'commerce'; }")).toEqual([1, 1]);
+    // (3bis) CONSTANTE DE MODULE : le garde principal reste aveugle, la mesure BRUTE la RÉSOUT
+    //     (L2 #1548) — l'angle mort a RÉTRÉCI : factoriser un littéral en constante n'éteint plus rien.
+    expect(mesure("const CLE = 'commerce';\nfunction f(e: E) { return e.id === CLE; }")).toEqual([0, 1]);
+    //     La constante IMPORTÉE, elle, reste un angle mort des DEUX (le scan est per-fichier).
+    expect(mesure("import { CLE } from './cles';\nfunction f(e: E) { return e.id === CLE; }")).toEqual([0, 0]);
     // (4) `switch` et appartenance : vus par le garde principal, HORS de la mesure brute (égalités seules).
     expect(mesure("function f(e: E) { switch (e.id) { case 'commerce': return 1; } }")).toEqual([1, 0]);
     expect(mesure("const L = ['commerce', 'subsistance'];\nfunction f(e: E) { return L.includes(e.id); }")).toEqual([1, 0]);

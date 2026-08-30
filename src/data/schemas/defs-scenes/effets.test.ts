@@ -13,7 +13,7 @@
  *     `npm run typecheck` — jamais par `vitest --typecheck`, FAUX VERT mesuré sur `expectTypeOf`.
  *  4. LA LIAISON AU MOTEUR. Comparer un infer à `Extract<Effect, …>` ne prouve RIEN pour les champs
  *     descendus au moteur : `Effect` est fait de ces mêmes infers, la comparaison est tautologique.
- *     Ce qui se vérifie, c'est l'identité avec le type MOTEUR nommé (`PursuitFoe`, `MassBattleSpec`,
+ *     Ce qui se vérifie, c'est l'identité avec le type nommé côté code (`PursuitFoeRef`, `MassBattleSpec`,
  *     `FavorLevel`, `CrewHire`) — identité BIDIRECTIONNELLE, donc une dérive d'un côté comme de
  *     l'autre rend `true` inassignable (TS2322).
  */
@@ -28,7 +28,7 @@ import {
 } from './effets';
 import type { Effect, DelayedEffect, PetitePriere } from '../../../state/scene';
 import type { Flow } from '../../../engine/flowCore';
-import type { PursuitFoe } from '../../../engine/pursuit';
+import type { PursuitFoeRef } from '../../../state/pursuitFlow';
 import type { MassBattleSpec } from '../../../engine/massBattle';
 import type { FavorLevel } from '../../../engine/favor';
 import type { CrewHire } from '../../../engine/crewMorale';
@@ -177,13 +177,13 @@ describe('`Effect` EST composé des infers (aucun n’est retombé à `any`)', (
 /** `true` seulement si `A` et `B` s'incluent MUTUELLEMENT ; sinon `false`, et `= true` ne compile plus. */
 type Eq<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 
-const liaisonFoes: Eq<z.infer<typeof pursuitFoeSchema>, PursuitFoe> = true;
+const liaisonFoes: Eq<z.infer<typeof pursuitFoeSchema>, PursuitFoeRef> = true;
 const liaisonSpec: Eq<z.infer<typeof massBattleSpecSchema>, MassBattleSpec> = true;
 const liaisonFavor: Eq<z.infer<typeof favorLevelSchema>, FavorLevel> = true;
 const liaisonCrew: Eq<z.infer<typeof crewHireSchema>, CrewHire> = true;
 
 describe('les schémas DESCENDUS au moteur SONT le type moteur nommé (identité bidirectionnelle)', () => {
-  it('`pursuitFoeSchema` ↔ `PursuitFoe`, `massBattleSpecSchema` ↔ `MassBattleSpec`, `favorLevelSchema` ↔ `FavorLevel`, `crewHireSchema` ↔ `CrewHire`', () => {
+  it('`pursuitFoeSchema` ↔ `PursuitFoeRef`, `massBattleSpecSchema` ↔ `MassBattleSpec`, `favorLevelSchema` ↔ `FavorLevel`, `crewHireSchema` ↔ `CrewHire`', () => {
     expect([liaisonFoes, liaisonSpec, liaisonFavor, liaisonCrew]).toEqual([true, true, true, true]);
   });
 });

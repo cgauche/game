@@ -25,7 +25,7 @@ import { extendedTestStep } from '../engine/tests';
 import { partyAssisted, type SupportDetail } from '../engine/skills';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { addCondition, loseWounds, releaseConditionLocks } from '../engine/conditions';
-import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, healDifficulty, type HealMode } from '../engine/healing';
+import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, healDifficulty, HEAL_SKILL, type HealMode } from '../engine/healing';
 import { removeSurgicalTrauma, surgeryTraumas, recoverableTraumas, recoverDisabledLimb } from '../engine/trauma';
 import { toMoney, canAfford } from '../engine/money';
 import { t } from '../i18n';
@@ -83,7 +83,7 @@ import type { Get, Set } from './flowTypes';
  *  d'usage est un simple Test étendu de Guérison, sans Chirurgie, LDB 18 l.120/179). */
 export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Combatant; value: number; support: SupportDetail } | null {
   const pool = act === 'surgery' ? party.filter((c) => hasHealSkill(c) && hasSurgerySkill(c)) : party.filter(hasHealSkill);
-  return partyAssisted(pool, 'guerison'); // Soutien (LDB 12) : assistants de chirurgie/soin
+  return partyAssisted(pool, HEAL_SKILL); // Soutien (LDB 12) : assistants de chirurgie/soin
 }
 
 /** Cible d'un jet de l'infirmerie — SOURCE UNIQUE des deux surfaces (acte simple `pendingHeal`, passe
@@ -93,7 +93,7 @@ export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Comba
 function healLineTarget(healer: { actor?: Combatant; skill: number; support?: SupportDetail }, difficulty: Difficulty): number {
   return rollLine({
     actor: healer.actor,
-    ...(healer.actor ? { test: { skill: 'guerison' } } : {}),
+    ...(healer.actor ? { test: { skill: HEAL_SKILL } } : {}),
     valeur: healer.skill, soutien: healer.support, difficulty,
   }).target;
 }

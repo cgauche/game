@@ -119,13 +119,13 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: SAVE_VERSION - 1 })).toBeNull();
     expect(parseSave({ ...cur, version: 1 })).toBeNull();
   });
-  it('la forme persistée COURANTE écrit la Compétence du PNJ soigneur en réf `{id, spec?, value}` (L2 #1548) : 32, et 31 se jette', () => {
-    // 32 = commit 3d : l'effet `medicalAid` du document de scène (`scene`) et l'infirmerie ouverte
-    // (`medic.npc.skill`) portent une RÉFÉRENCE là où vivait un NOMBRE. Une save de 31 lirait
-    // `npc.skill.value` sur un nombre — cible de jet `undefined` EN SILENCE : elle se jette
+  it('la forme persistée COURANTE RÉFÉRENCE les personnes (L2 #1548) : 33, et 32 se jette', () => {
+    // 33 = geste modèle : le document de scène (`scene`) ne porte plus AUCUNE stat de pseudo-PNJ —
+    // `medicalAid` désigne son soigneur par `entityId` seul, et les adversaires de `startPursuit` sont
+    // des références de vivant. Une save de 32 rouvrirait une infirmerie sans fiche : elle se jette
     // (politique 2, `saves.ts`).
-    expect(SAVE_VERSION).toBe(32);
-    expect(parseSave({ ...cur, version: 31 })).toBeNull();
+    expect(SAVE_VERSION).toBe(33);
+    expect(parseSave({ ...cur, version: 32 })).toBeNull();
   });
 
   /**

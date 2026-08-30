@@ -20,7 +20,8 @@ import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { findTavernGameById } from '../engine/tavernGame';
-import { playTavernGame, tavernGameValue, tavernNpc, tavernNpcOffers } from './tavernFlow';
+import { playTavernGame, tavernGameValue, tavernNpcOffers } from './tavernFlow';
+import { sceneNpc } from './sceneNpc';
 import { activeSequence } from './sequenceCore';
 import { applyEffects } from './combatEffects';
 import { setRule, resetRule } from '../engine/policy';
@@ -60,8 +61,8 @@ describe('#1279 S4-b — l’adversaire de taverne à FICHE', () => {
   it('sa valeur de jeu est DÉRIVÉE de sa fiche : deux PNJ aux avances de Pari différentes ne jouent pas la même', () => {
     poseScene([pnjDeScene('pnj-fort', 'Plantule', 70), pnjDeScene('pnj-faible', 'Un quidam', 30)]);
     const jeu = findTavernGameById('dominos')!;
-    const fort = tavernNpc(get().scene, 'pnj-fort')!;
-    const faible = tavernNpc(get().scene, 'pnj-faible')!;
+    const fort = sceneNpc(get().scene, 'pnj-fort')!;
+    const faible = sceneNpc(get().scene, 'pnj-faible')!;
 
     expect(tavernGameValue(fort, jeu)).toBe(tavernGameValue(faible, jeu) + 40);
     // …et surtout : ce ne sont PAS des valeurs de table, ce sont des lectures de fiche.
@@ -78,7 +79,7 @@ describe('#1279 S4-b — l’adversaire de taverne à FICHE', () => {
     const seq = activeSequence<{ opponentValue: number; opponentName: string; opponentId?: string }>(get)!;
     expect(seq.payload.opponentId).toBe('pnj-plantule');
     expect(seq.payload.opponentName).toBe('Plantule');
-    expect(seq.payload.opponentValue).toBe(tavernGameValue(tavernNpc(get().scene, 'pnj-plantule')!, jeu));
+    expect(seq.payload.opponentValue).toBe(tavernGameValue(sceneNpc(get().scene, 'pnj-plantule')!, jeu));
     expect(seq.payload.opponentValue).toBe(55);
   });
 
@@ -131,7 +132,7 @@ describe('#1279 S4-b — le PNJ authoré par PRESET (forme réelle de la campagn
       battle: null, sequence: null, pendingCascade: null,
     });
 
-    const phillipe = tavernNpc(get().scene, 'npc-phillipe');
+    const phillipe = sceneNpc(get().scene, 'npc-phillipe');
     expect(phillipe, 'le preset doit se résoudre en fiche').toBeTruthy();
     expect(phillipe!.label).toBe('Phillipe Descartes');
     // `EDO 23` lui donne Pari 50 : c'est SA valeur qui doit sortir du collecteur canonique, pas un
@@ -149,6 +150,40 @@ describe('#1279 S4-b — le PNJ authoré par PRESET (forme réelle de la campagn
 
     const offres = tavernNpcOffers(get().scene);
     expect(offres).toEqual([{ id: 'npc-phillipe', label: 'Phillipe Descartes', gameId: 'dominos', stakeBrass: 24 }]);
+  });
+});
+
+/**
+ * LE NOM VIENT DE L'ENTITÉ (L2 #1548) — un PNJ de taverne renommé par l'auteur joue et s'affiche sous
+ * SON nom, jamais sous le libellé d'espèce de la fiche qu'il référence. Même invariant que l'infirmerie
+ * (`arene-flow.test.ts` « Frère Anselm ») : la fiche donne les VALEURS, l'entité donne le NOM — et il
+ * est résolu par la projection UNIQUE `sceneNpc`, pas recomposé au site.
+ */
+describe('L2 #1548 — le PNJ de taverne RENOMMÉ garde son nom', () => {
+  beforeEach(() => { useGame.setState(useGame.getInitialState(), true); });
+
+  /** Entité renommée : le statbloc porte le libellé d'ESPÈCE, l'entité le nom de l'AUTEUR. */
+  function pnjRenomme(id: string, nom: string, espece: string, offre?: { gameId: string; stakeBrass?: number }) {
+    const e = pnjDeScene(id, espece, 45, offre);
+    return { ...e, label: nom };
+  }
+
+  it('l’offre de la salle porte le nom de l’ENTITÉ, pas le libellé de sa fiche', () => {
+    poseScene([pnjRenomme('pnj-gerta', 'Gerta la Rusée', 'Batelière', { gameId: 'dominos', stakeBrass: 12 })]);
+
+    expect(sceneNpc(get().scene, 'pnj-gerta')!.label).toBe('Gerta la Rusée');
+    expect(tavernNpcOffers(get().scene)[0]).toMatchObject({ id: 'pnj-gerta', label: 'Gerta la Rusée' });
+  });
+
+  it('la manche ouverte contre lui le NOMME de son nom d’auteur, et joue les valeurs de sa fiche', () => {
+    poseScene([pnjRenomme('pnj-gerta', 'Gerta la Rusée', 'Batelière')]);
+    const challenger = get().party[0]!;
+
+    playTavernGame(get, set, { gameId: 'dominos', challengerId: challenger.id, opponent: { kind: 'npc', id: 'pnj-gerta' } });
+
+    const seq = activeSequence<{ opponentName: string; opponentValue: number }>(get)!;
+    expect(seq.payload.opponentName).toBe('Gerta la Rusée');
+    expect(seq.payload.opponentValue).toBe(45); // Pari de la FICHE
   });
 });
 

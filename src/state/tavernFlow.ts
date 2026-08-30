@@ -61,8 +61,7 @@ import {
 } from './sequenceCore';
 import type { RNG } from '../engine/dice';
 import { actorIn } from './combatants';
-import { spawnEnemy } from './spawn';
-import { resolvePresetCreature } from './campaignData';
+import { sceneNpc } from './sceneNpc';
 import type { Scene } from './scene';
 import { jetSurfaced } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
@@ -119,49 +118,24 @@ export function tavernGameValue(hero: Combatant, game: TavernGame): number {
   return testValue(hero, 'pari'); // aucune Compétence indiquée → Pari (l.11)
 }
 
-/**
- * LE PNJ DE SCÈNE derrière un id, dérivé en Combatant — MÊME chemin de résolution que le spawn de
- * rencontre (`combatSlice.ts:2623`) : un PNJ nommé de campagne porte son profil par `presetId`
- * (`resolvePresetCreature` → CreatureData mergée + apparence embarquée), et n'a NI `ref` NI
- * `statblock`. L'ignorer faisait tomber `spawnEnemy` en branche « ref absente » — fiche vide, nom
- * générique : l'adversaire à fiche redevenait l'adversaire nu qu'on venait de supprimer.
- *
- * DETTE DITE (#1279 S4-c, décision d'architecture commissionnée à part) : cette dérivation est
- * ÉPHÉMÈRE. Il n'existe aucun registre de Combatants persistants hors combat (`actorIn` =
- * `battle.combatants ?? party`, `state/combatants.ts`), donc ce que la partie ÉCRIRAIT sur cette
- * fiche — un État d'attrition (`SequenceRoundOps.attrition`, appliqué par `sequenceRoundOps` sur des
- * porteurs résolus par `actorIn`), un mouvement de bourse (`creditBourse`/`debitBourse` écrivent
- * dans `party`) — ne s'y déposerait pas. Le lot S4-b est donc en LECTURE SEULE : le PNJ joue de sa
- * fiche, il n'en subit rien. Aucune simulation ne comble ce trou.
- */
-export function tavernNpc(scene: Scene | null | undefined, id: string): Combatant | undefined {
-  const ent = scene?.entities.find((e) => e.id === id && e.kind === 'personnage');
-  if (!ent) return undefined;
-  const preset = ent.presetId ? resolvePresetCreature(ent.presetId) : undefined;
-  return spawnEnemy(ent.ref, ent.statblock, ent.id, ent.pos, {
-    presetCreature: preset?.creature,
-    appearance: preset?.apparence ?? ent.appearance,
-  });
-}
-
 /** L'ACTEUR d'un id de partie, quel que soit son banc : héros (combat ou groupe) ou PNJ de la scène.
  *  SOURCE UNIQUE — sans elle, un site lirait `party` seul et le PNJ à fiche redeviendrait anonyme. */
 function tavernActor(get: Get, id: string | undefined): Combatant | undefined {
   if (!id) return undefined;
-  return actorIn(get(), id) ?? tavernNpc(get().scene, id);
+  return actorIn(get(), id) ?? sceneNpc(get().scene, id);
 }
 
 /**
  * LES PNJ DE LA SCÈNE QUI PROPOSENT UNE PARTIE (`SceneEntity.tavernGame`) — ce que la CARTE décide,
  * lu par la modale pour offrir le troisième mode d'adversaire. Rend l'entité ET sa fiche dérivée :
- * le libellé affiché est celui de la FICHE (un nom), jamais un id brut.
+ * le libellé affiché est celui que rend la projection (`sceneNpc`), jamais un id brut.
  */
 export function tavernNpcOffers(scene: Scene | null | undefined): { id: string; label: string; gameId: string; stakeBrass?: number }[] {
   return (scene?.entities ?? [])
     .filter((e) => e.kind === 'personnage' && e.tavernGame)
     .map((e) => ({
       id: e.id,
-      label: tavernNpc(scene, e.id)?.label ?? e.label ?? e.id,
+      label: sceneNpc(scene, e.id)?.label ?? e.id,
       gameId: e.tavernGame!.gameId,
       ...(e.tavernGame!.stakeBrass != null ? { stakeBrass: e.tavernGame!.stakeBrass } : {}),
     }));
@@ -351,7 +325,7 @@ export function playTavernGame(
   // Les deux formes INCARNÉES (compagnon, PNJ de scène) se résolvent par la MÊME couture — c'est
   // elle qui fait qu'un adversaire à fiche joue de SA fiche, jamais d'une valeur recopiée.
   const opponentActor = opp.kind === 'hero' ? party.find((h) => h.id === opp.id)
-    : opp.kind === 'npc' ? tavernNpc(get().scene, opp.id)
+    : opp.kind === 'npc' ? sceneNpc(get().scene, opp.id)
       : undefined;
   if (opp.kind !== 'abstract' && !opponentActor) return;
 

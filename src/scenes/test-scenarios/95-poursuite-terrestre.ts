@@ -32,9 +32,9 @@ const scene = buildScene({
           distance: 4,
           skill: { id: 'athletisme' },
           foes: [
-            { label: 'Brigand', movement: 4, skill: 40 },
-            { label: 'Brigand', movement: 4, skill: 40 },
-            { label: 'Brigand', movement: 4, skill: 45 },
+            { ref: { creatureId: 'brigand' } },
+            { ref: { creatureId: 'brigand' } },
+            { ref: { creatureId: 'brigand' } },
           ],
           encounter: 'enc-rattrapage',
         },

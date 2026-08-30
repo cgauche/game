@@ -8,6 +8,8 @@ import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
+import { EFFECT_HANDLERS } from './combatEffects';
+import { findCreatureById } from '../data';
 import {
   startGroundPursuit, pursuitAbandon, pursuitBands, pursuitOf, PURSUIT_POLICY_DEFAUT,
   type PursuitPayload,
@@ -64,11 +66,56 @@ function pursuitSeq(p: Partial<PursuitPayload> & { foes: PursuitFoe[] }): Sequen
 describe('Poursuite terrestre (#95)', () => {
   beforeEach(() => useGame.setState({ battle: null, party: [], journal: [], pendingCascade: null, sequence: null }));
 
+  it('un adversaire est une RÉFÉRENCE : son Mouvement et sa valeur de Test se LISENT sur la fiche du bestiaire (L2 #1548)', () => {
+    heroes();
+    startGroundPursuit(useGame.getState, useGame.setState, {
+      partyRole: 'fleeing', distance: 4, skill: 'athletisme',
+      foes: [{ ref: { creatureId: 'brigand' } }, { ref: { creatureId: 'chien-de-chasse' } }],
+    });
+    const p = pursuitOf(useGame.getState())!;
+    // Rien n'est authoré sur l'Effet : chaque coureur EST sa fiche — nom, `char.M` et Athlétisme, et
+    // deux fiches différentes donnent deux coureurs différents (`creatures.json` : Brigand M 4 /
+    // Athlétisme 40 ; Chien de chasse M 5 / Athlétisme 45).
+    expect(p.foes).toEqual([
+      { id: 'foe-1', label: 'Brigand', movement: 4, skill: 40 },
+      { id: 'foe-2', label: 'Chien de Chasse', movement: 5, skill: 45 },
+    ]);
+    for (const [id, m, v] of [['brigand', 4, 40], ['chien-de-chasse', 5, 45]] as const) {
+      const fiche = findCreatureById(id)!; // la SOURCE, au bestiaire
+      expect([fiche.char.M, fiche.skills.find((s) => s.id === 'athletisme')?.value]).toEqual([m, v]);
+    }
+  });
+
+  it('la Compétence de la course décide ce qui est LU sur la fiche — à cheval, c’est Chevaucher (LDB 15 l.92)', () => {
+    heroes();
+    startGroundPursuit(useGame.getState, useGame.setState, {
+      partyRole: 'pursuing', distance: 4, skill: 'chevaucher', foes: [{ ref: { creatureId: 'capitaine-du-guet' } }],
+    });
+    const fiche = findCreatureById('capitaine-du-guet')!;
+    const chevaucher = fiche.skills.find((s) => s.id === 'chevaucher')!.value;
+    const athletisme = fiche.skills.find((s) => s.id === 'athletisme')!.value;
+    expect(chevaucher).not.toBe(athletisme); // deux Compétences distinctes sur la MÊME fiche
+    expect(pursuitOf(useGame.getState())!.foes[0].skill).toBe(chevaucher);
+  });
+
+  it('PORTE : une référence de créature cassée est REFUSÉE à la validation (aucune stat à lire)', () => {
+    const ctx = { sceneIds: new Set<string>(), dialogueIds: new Set<string>(), encounterIds: new Set<string>(), entityIds: new Set<string>(), npcSheet: () => undefined, within: () => true };
+    const eff = (creatureId: string) => ({
+      type: 'startPursuit' as const, partyRole: 'fleeing' as const, distance: 4, skill: { id: 'athletisme' },
+      foes: [{ ref: { creatureId } }],
+    });
+    expect(EFFECT_HANDLERS.startPursuit.refs!(eff('brigand'), ctx)).toEqual([]);
+    const issues = EFFECT_HANDLERS.startPursuit.refs!(eff('fantome-inexistant'), ctx);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].level).toBe('error');
+    expect(issues[0].message).toContain('fantome-inexistant');
+  });
+
   it('l’Effet startPursuit ouvre la manche en UNE bande — un rang par coureur, jamais une étape par héros (#1246)', () => {
     const [a, b] = heroes();
     applyEffects(useGame.getState, useGame.setState, [{
       type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: { id: 'athletisme' },
-      foes: [{ label: 'Bandit', movement: 4, skill: 40 }],
+      foes: [{ ref: { creatureId: 'brigand' } }],
     }]);
     const p = pursuitOf(useGame.getState());
     expect(p?.partyRole).toBe('fleeing');
@@ -88,7 +135,7 @@ describe('Poursuite terrestre (#95)', () => {
     // Un État Sonné (LDB 16) : son malus DOIT apparaître en ligne nommée, pas fondu dans `base`.
     useGame.setState({ party: [{ ...a, conditions: [{ id: 'sonne', value: 2 }] }] });
     startGroundPursuit(useGame.getState, useGame.setState, {
-      partyRole: 'fleeing', distance: 4, skill: 'athletisme', foes: [{ label: 'Bandit', movement: 4, skill: 40 }],
+      partyRole: 'fleeing', distance: 4, skill: 'athletisme', foes: [{ ref: { creatureId: 'brigand' } }],
     });
     const row = useGame.getState().pendingCascade!.participants[0].participants![0];
     expect(row.base).toBe(skillBaseValue(a, 'athletisme')); // NIVEAU NU
@@ -102,7 +149,7 @@ describe('Poursuite terrestre (#95)', () => {
     useGame.setState({ party: [a, { ...b, aiControlled: true }] });
     useGame.getState().seedRng(21);
     startGroundPursuit(useGame.getState, useGame.setState, {
-      partyRole: 'fleeing', distance: 4, skill: 'athletisme', foes: [{ label: 'Bandit', movement: 4, skill: 40 }],
+      partyRole: 'fleeing', distance: 4, skill: 'athletisme', foes: [{ ref: { creatureId: 'brigand' } }],
     });
     const rows = useGame.getState().pendingCascade!.participants[0].participants!;
     expect(rows.find((r) => r.id === a.id)).toMatchObject({ interactive: true, result: null });
@@ -118,7 +165,7 @@ describe('Poursuite terrestre (#95)', () => {
     try {
       useGame.getState().seedRng(7);
       startGroundPursuit(useGame.getState, useGame.setState, {
-        partyRole: 'fleeing', distance: 4, skill: 'athletisme', foes: [{ label: 'Bandit', movement: 4, skill: 40 }],
+        partyRole: 'fleeing', distance: 4, skill: 'athletisme', foes: [{ ref: { creatureId: 'brigand' } }],
       });
       const band = useGame.getState().pendingCascade!.participants[0];
       // Le jet du héros de l'invité est SURFACÉ (`jetSurfaced`, seat-agnostique) : l'hôte ne le roule pas
@@ -188,7 +235,7 @@ describe('Poursuite terrestre (#95)', () => {
     heroes();
     startGroundPursuit(useGame.getState, useGame.setState, {
       partyRole: 'fleeing', distance: 5, escapeAt: 8, skill: 'athletisme',
-      foes: [{ label: 'Bandit', movement: 4, skill: 40 }],
+      foes: [{ ref: { creatureId: 'brigand' } }],
     });
     // Pilote la boucle : rouler CHAQUE RANGÉE de la bande puis avancer, manche après manche.
     const manches: number[] = [];

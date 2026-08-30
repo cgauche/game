@@ -445,7 +445,7 @@ sont les datasets qui couvrent ≥ 50 % de ses valeurs résolvantes. Une valeur 
 vers un dataset HORS de ces cibles est AMBIGUË : elle compte encore comme référence, mais le
 dataset atteint n’est pas celui que le site vise — c’est là qu’une collision d’ids peut mentir.
 
-**451** valeurs ambiguës, **2826** occurrences. Les 40 plus fréquentes :
+**453** valeurs ambiguës, **2828** occurrences. Les 40 plus fréquentes :
 
 | Dataset | Champ | Clé | Valeur | Résout vers | Cibles majoritaires du site | Occurrences |
 |---|---|---|---|---|---|---|
@@ -746,7 +746,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `arene-projet.json` | `scenes.dialogues.nodes` | 16 | `choices`(16) `desc`(16) `id`(16) |
 | `arene-projet.json` | `scenes.effectZones` | 9 | `area`(9) `id`(9) `label`(9) `presentation`(9) `z`(9) |
 | `arene-projet.json` | `scenes.encounters` | 20 | `id`(20) `members`(20) `onVictory`(20) `surprise`(6) |
-| `arene-projet.json` | `scenes.entities` | 442 | `anim`(10) `appearance`(20) `combat`(41) `dialogueId`(9) `facing`(16) `id`(442) `interact`(29) `kind`(442) `label`(85) `merchant`(4) `pos`(442) `ref`(404) `statblock`(3) `weapon`(6) |
+| `arene-projet.json` | `scenes.entities` | 442 | `anim`(10) `appearance`(20) `combat`(41) `dialogueId`(9) `facing`(16) `id`(442) `interact`(29) `kind`(442) `label`(85) `merchant`(4) `pos`(442) `ref`(406) `statblock`(3) `weapon`(6) |
 | `arene-projet.json` | `scenes.triggers` | 27 | `flow`(27) `id`(27) `once`(25) `rect`(27) |
 | `arene-projet.json` | `worldMap` | 1 | `id`(1) `label`(1) `places`(1) `routes`(1) |
 | `arene-projet.json` | `worldMap.places` | 4 | `entry`(1) `icon`(4) `id`(4) `label`(4) `pos`(4) `scene`(4) |
@@ -1008,7 +1008,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `count,id,type` | cible | 0 |
 | reference | `of,pick` | cible | 0 |
 | reference | `pick,table` | cible | 0 |
-| reference | `id,value` | historique | 5655 |
+| reference | `id,value` | historique | 5653 |
 | reference | `id,spec,value` | historique | 1434 |
 | reference | `arg,id` | historique | 545 |
 | reference | `arg,id,value` | historique | 125 |
@@ -1030,7 +1030,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `choice` | historique | 58 |
 | reference | `random` | historique | 19 |
 | reference | `text` | declaree | 561 |
-| reference | `id-nu` | historique | 2097 |
+| reference | `id-nu` | historique | 2099 |
 | refs | `ids-nus` | cible | 618 |
 | monnaie | `brass,gold,silver` | cible | 0 |
 | monnaie | `bronze,gold,silver` | historique | 451 |
@@ -1057,12 +1057,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **819** (cible 255 · declaree 6 · historique 145 · divergente 413). Objets JSON parcourus : **52394**, dont **36117** portent une forme
+Lignes concept × dataset × champ × forme : **818** (cible 255 · declaree 6 · historique 144 · divergente 413). Objets JSON parcourus : **52392**, dont **36115** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-467 ligne(s), 28856 occurrence(s).
+466 ligne(s), 28856 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1100,8 +1100,8 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `dialogueId` | `id-nu` | historique | `arene-projet.json` | 9 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `effect` | `dialogue,speakerId,type` | divergente | `arene-projet.json` | 1 | — | `arene-projet.json` |  |
 | config | `effect` | `encounter,type` | divergente | `arene-projet.json` | 20 | — | `arene-projet.json` |  |
-| config | `effect` | `entityId,skill,type+…` | divergente | `arene-projet.json` | 2 | — | `arene-projet.json` `careers.json` `creatures.json` `merchants.json` |  |
 | config | `effect` | `entityId,type` | divergente | `arene-projet.json` | 4 | — | `arene-projet.json` `careers.json` `creatures.json` `lieux-services.json` `merchants.json` `skills.json` … |  |
+| config | `effect` | `entityId,type+…` | divergente | `arene-projet.json` | 2 | — | `arene-projet.json` `careers.json` `creatures.json` `merchants.json` |  |
 | config | `effect` | `lodging,type` | divergente | `arene-projet.json` | 1 | — | `lieux-services.json` |  |
 | config | `effect` | `phase,type` | divergente | `arene-projet.json` | 2 | — | `arene-projet.json` `calendarPhases.json` `lightLevels.json` |  |
 | config | `effect` | `scene,type` | divergente | `arene-projet.json` | 13 | — | `arene-projet.json` |  |
@@ -1118,10 +1118,9 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `optionals` | `arg,id` | historique | `arene-projet.json` | 1 | — | `skills.json` `talents.json` `traits.json` | paramètre d’entité non déclaré (#1463 S2 A11) |
 | config | `optionals` | `id` | cible | `arene-projet.json` | 7 | — | `obsessions.json` `psychology.json` `talents.json` `traits.json` |  |
 | config | `optionals` | `id,value` | historique | `arene-projet.json` | 5 | — | `qualitySubtypes.json` `traits.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
-| config | `ref` | `id-nu` | historique | `arene-projet.json` | 291 | — | `creatures.json` `groups.json` `montures.json` `names.json` `props.json` `raceAppearance.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `ref` | `id-nu` | historique | `arene-projet.json` | 293 | — | `arene-projet.json` `careers.json` `creatures.json` `groups.json` `merchants.json` `montures.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `scene` | `id-nu` | historique | `arene-projet.json` | 4 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `skill` | `id` | cible | `arene-projet.json` | 10 | — | `aa-criticals.json` `activities.json` `axes.json` `creatures.json` `drunkenness.json` `river-navigation.json` … |  |
-| config | `skill` | `id,value` | historique | `arene-projet.json` | 2 | — | `skills.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
 | config | `start` | `id-nu` | historique | `arene-projet.json` | 9 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `style` | `id-nu` | historique | `arene-projet.json` | 2 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `traits` | `arg,id` | historique | `arene-projet.json` | 3 | — | `qualities.json` `ship-construction.json` `traits.json` | paramètre d’entité non déclaré (#1463 S2 A11) |
@@ -1543,7 +1542,7 @@ ou hors strate, §3.14).
 
 | Graphie | Clé dans la donnée (brut) | Signature nue | Sous une enveloppe | Nue + sous | Chemins composés |
 |---|---|---|---|---|---|
-| `ref` | 4711 | 4084 | 84 | 4168 | `choice>ref` 11 (`careerLevels.json` › `choice`) · `choice>ref` 73 (`species.json` › `choice`) |
+| `ref` | 4713 | 4084 | 84 | 4168 | `choice>ref` 11 (`careerLevels.json` › `choice`) · `choice>ref` 73 (`species.json` › `choice`) |
 | `wildcard` | 283 | 266 | 2 | 268 | `choice>wildcard` 2 (`species.json` › `choice`) |
 | `random` | 21 | 19 | 2 | 21 | `choice>random` 2 (`species.json` › `choice`) |
 
@@ -2327,7 +2326,7 @@ CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe)
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12431** objets sur **52394** ne sont portés par AUCUNE
+Au-delà des orphelines, **12431** objets sur **52392** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -4285,10 +4284,10 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `arene-projet.json` | `modes` | 1 |
 | `arene-projet.json` | `optionals` | 13 |
 | `arene-projet.json` | `qualities` | 2 |
-| `arene-projet.json` | `ref` | 291 |
+| `arene-projet.json` | `ref` | 293 |
 | `arene-projet.json` | `roomZoneIds` | 12 |
 | `arene-projet.json` | `scene` | 4 |
-| `arene-projet.json` | `skill` | 12 |
+| `arene-projet.json` | `skill` | 10 |
 | `arene-projet.json` | `spells` | 2 |
 | `arene-projet.json` | `start` | 9 |
 | `arene-projet.json` | `style` | 2 |

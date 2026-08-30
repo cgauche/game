@@ -2897,6 +2897,7 @@
      },
      "label": "Médecin",
      "facing": "S",
+     "ref": "medecin",
      "dialogueId": "dlg-medecin",
      "merchant": {
       "archetype": "medecin"
@@ -3143,6 +3144,7 @@
      },
      "label": "Frère Anselm",
      "facing": "S",
+     "ref": "pretre-de-sigmar",
      "dialogueId": "dlg-frere",
      "appearance": {
       "species": "humains-reiklander",
@@ -4194,11 +4196,6 @@
                }
               }
              ],
-             "skill": {
-              "id": "guerison",
-              "value": 55
-             },
-             "intBonus": 4,
              "entityId": "medecin"
             }
            }
@@ -4545,11 +4542,6 @@
                }
               }
              ],
-             "skill": {
-              "id": "guerison",
-              "value": 55
-             },
-             "intBonus": 4,
              "entityId": "frere"
             }
            }

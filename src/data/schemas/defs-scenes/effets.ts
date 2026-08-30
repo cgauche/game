@@ -16,7 +16,7 @@ import { z } from 'zod';
 import { charKeySchema, difficultySchema, hitLocationSchema, refTestDeCorruption } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, flowTestSchema, gameOpSchema, stakeRefSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
-import { customStatblockSchema, moneySchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
+import { customStatblockSchema, moneySchema, ptSchema, wallSideSchema } from './communs';
 import type { Effect } from '../../../state/scene';
 import type { Flow } from '../../../engine/flowCore';
 
@@ -40,12 +40,14 @@ export const waterExposureModeSchema = z.enum(['ingestion', 'immersion']);
 export const favorLevelSchema = z.enum(['mineure', 'majeure', 'importante']);
 /** `CrewHire` (`engine/crewMorale.ts`) — un rôle d'équipage salarié et son effectif. */
 export const crewHireSchema = z.strictObject({ roleId: z.string(), count: z.number() });
-/** `PursuitFoe` (`engine/pursuit.ts`) — adversaire de poursuite : Mouvement + valeur de Test. */
+/** `PursuitFoeRef` (`state/pursuitFlow.ts`) — adversaire de poursuite : une RÉFÉRENCE de vivant
+ *  (`livingRefSchema` — bestiaire ou statbloc d'éditeur), jamais des stats recopiées. Son Mouvement et
+ *  sa valeur de Test de Mouvement se LISENT sur la fiche référencée, résolus au démarrage
+ *  (`state/pursuitFlow`). `id` est posé à l'ouverture quand l'auteur n'en écrit pas — il sert aux
+ *  décisions de camp (`LDB 15 l.94`, `PursuitPolicy.prioritaires`). */
 export const pursuitFoeSchema = z.strictObject({
   id: z.string().optional(),
-  label: z.string(),
-  movement: z.number(),
-  skill: z.number(),
+  ref: livingRefSchema,
 });
 /** `PursuitPolicy` (`engine/pursuit.ts`) — décisions de camp PNJ que le `RAW l.94` laisse aux camps. */
 export const pursuitPolicySchema = z.strictObject({
@@ -263,20 +265,16 @@ export const openPortSchema = z.strictObject({ type: z.literal('openPort'), plac
 /** Soins PAYANTS d'un PNJ (médecin/guérisseur/temple — `LDB 75` « Docteur en médecine », l'aide
  *  médicale se paie À L'ACTE, 4-6 pistoles) : ouvre l'INFIRMERIE du PNJ (modale persistante,
  *  state/medicFlow) avec ses actes et leurs tarifs — `acts` liste {act, cost?} ; le débit a lieu
- *  au lancement de chaque acte (remboursé si annulé avant le jet). `skill`/`intBonus` = compétence
- *  de Guérison du PNJ (sa fiche, éditable — le moteur applique le RAW Guérison/Chirurgie existant) :
- *  la Compétence est une RÉFÉRENCE portant sa valeur de Test imprimée (`skillRefSchema`, la forme de
- *  Compétence de statbloc de la racine scènes) — le PNJ soigneur n'a pas de fiche de héros.
- *  `entityId` = le PNJ soigneur (son `label` donne le NOM affiché) → aucun nom codé en dur. Le
- *  joueur choisit les patients dans la modale. */
+ *  au lancement de chaque acte (remboursé si annulé avant le jet). `entityId` = LE soigneur : une
+ *  entité `personnage` de la scène, PORTEUSE UNIQUE de son nom ET de ses stats (sa réf de bestiaire ou
+ *  son statbloc) — sa Guérison et son Bonus d'Intelligence se LISENT sur cette fiche (`state/medicFlow`
+ *  applique le RAW Guérison/Chirurgie existant). Le joueur choisit les patients dans la modale. */
 export const medicalAidSchema = z.strictObject({
   type: z.literal('medicalAid'),
   acts: z
     .array(z.strictObject({ act: z.enum(['wounds', 'bleed', 'trauma', 'surgery']), cost: moneySchema.optional() }))
     .optional(),
-  skill: skillRefSchema,
-  intBonus: z.number(),
-  entityId: z.string().optional(),
+  entityId: z.string(),
 });
 
 /** Début de session (`LDB 17 l.41`) : chaque héros regagne tous ses Points de Chance,

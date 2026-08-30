@@ -411,7 +411,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // références ; devenue la référence de statbloc `{id, value}` de la racine scènes, elle entre au
       // dénominateur à la MÊME graphie historique que ses 4 562 sœurs (`creatures.json › skills`). Le
       // dénominateur GLOBAL, lui, DÉCROÎT : 557+106 = 663 → 558+104 = 662.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 558],
+      // Cliquet DESCENDU 558 → 557 (L2 #1548, geste modèle) : les DEUX pseudo-PNJ de l'effet
+      // `medicalAid` meurent de la donnée — la valeur de Guérison recopiée (`skill {id,value}`, 2
+      // occurrences) s'éteint AVEC sa signature d'effet (`effect entityId,skill,type+…` → `entityId,type+…`),
+      // et les 2 soigneurs de l'arène RÉFÉRENCENT désormais leur fiche de bestiaire (`ref id-nu` :
+      // 291 → 293, la graphie déjà canonique du pion de scène). Une ligne de moins au stock.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 557],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -544,9 +549,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
       // … puis 48 → 18 (commit 3c) : cette référence PLATE MEURT à SON TOUR — 30 lignes s'éteignent avec
       // l'emboîtement `skill: { id, spec? }` (cf. le cliquet `STRUCTURES_FORMES` ci-dessus).
-      'L2 #1463': 18,
+      // … puis 18 → 16 (geste modèle) : les 2 lignes du pseudo-PNJ soigneur quittent le lot — la
+      // valeur de Guérison recopiée MEURT (`skill {id,value}`), et la signature de l'effet qui la
+      // portait n'annonce plus qu'une entité (elle passe donc en `L3`, +1 ci-dessous : même mécanique
+      // de transfert entre lots du MÊME stock, somme des deux en BAISSE 415 → 414).
+      'L2 #1463': 16,
       'L2 #1548': 0,
-      'L3 #1463': 397,
+      'L3 #1463': 398,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       'L4 #1463': 219,

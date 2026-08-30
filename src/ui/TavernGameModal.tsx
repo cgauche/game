@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useGame } from '../state/store';
 import { TAVERN_GAMES, findTavernGameById, tavernFastRegime, TAVERN_TEST_DIFFICULTY } from '../engine/tavernGame';
 import { CHAR_LABELS, DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
-import { tavernGameValue, tavernPartieEnCours, tavernNpcOffers, tavernNpc, type TavernOpponent } from '../state/tavernFlow';
+import { tavernGameValue, tavernPartieEnCours, tavernNpcOffers, type TavernOpponent } from '../state/tavernFlow';
+import { sceneNpc } from '../state/sceneNpc';
 import { bourseOf } from '../state/bourseFlow';
 import { refLabel } from '../data/index';
 import { PA_PER_SC, toBrass, fromBrass } from '../engine/money';
@@ -55,7 +56,7 @@ export function TavernGameModal() {
   const scene = useGame((s) => s.scene);
   const npcs = tavernNpcOffers(scene);
   const npc = npcs.find((n) => n.id === oppNpcId) ?? npcs[0];
-  const npcActor = npc ? tavernNpc(scene, npc.id) : undefined;
+  const npcActor = npc ? sceneNpc(scene, npc.id) : undefined;
   // CE QUE L'AUTEUR PRESCRIT (`NADJ 04 l.72` : un jeu ET une mise de départ) : la modale s'y POSE
   // quand on choisit ce PNJ — le joueur reste libre d'en dévier, l'auteur ne fait qu'ouvrir la table.
   useEffect(() => {

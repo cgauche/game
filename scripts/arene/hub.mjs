@@ -145,7 +145,7 @@ const dlgMedecin = {
               { act: 'trauma', cost: { silver: 5 } },
               { act: 'surgery', cost: { silver: 6 } },
             ],
-            skill: { id: 'guerison', value: 55 }, intBonus: 4, entityId: 'medecin',
+            entityId: 'medecin',
           }]),
         },
         { label: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
@@ -249,7 +249,7 @@ const dlgFrere = {
         {
           label: 'Recevoir des soins (actes payants).',
           icon: 'medical/aid',
-          flow: flowOf([{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }], skill: { id: 'guerison', value: 55 }, intBonus: 4, entityId: 'frere' }]),
+          flow: flowOf([{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }], entityId: 'frere' }]),
         },
         {
           label: 'Recevoir la bénédiction du départ (retrouver la Chance).',
@@ -503,6 +503,8 @@ export function makeHub() {
       // Médecin : sous sa tente d'infirmerie, au nord de la place (extérieur) — soins & prothèses.
       NPC('medecin', 26, 15, 'Médecin', {
         facing: 'S',
+        // Sa FICHE (bestiaire) porte sa Guérison et son Int : l'effet `medicalAid` ne recopie rien.
+        ref: 'medecin',
         dialogueId: 'dlg-medecin',
         merchant: { archetype: 'medecin' },
         appearance: { species: 'humains-reiklander', tenue: 'apothicaire', sex: 'M', build: 0.46 },
@@ -541,6 +543,7 @@ export function makeHub() {
       // ── Intérieur : CHAPELLE de Sigmar (empreinte x34..46 y3..13, nef de marbre) ──────────────
       NPC('frere', 40, 5, 'Frère Anselm', {
         facing: 'S',
+        ref: 'pretre-de-sigmar',
         dialogueId: 'dlg-frere',
         appearance: { species: 'humains-reiklander', tenue: 'pretre', sex: 'M', build: 0.5 },
       }),

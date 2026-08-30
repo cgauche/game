@@ -8,6 +8,7 @@ import { stakeSpeaks } from '../data';
 // canonique préserve l'ordre d'évaluation (un import direct de `combatEffects` ici casse la
 // liaison vive `fireScheduledEffects` que le store lit du baril sous le bundler).
 import { EFFECT_HANDLERS, type EffectHandler, type EffectRefCtx } from './combatFlow';
+import { sceneNpc } from './sceneNpc';
 import { placeServices, type WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
 import roofMaterials from '../data/roofMaterials.json';
@@ -92,7 +93,12 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     ) => out.push({ level, sceneId: s.id, scope, refId, message, architectureRef });
     // Contexte de réfs PARTAGÉ pour cette scène : les `refs?` des handlers (state/combatEffects) le lisent
     // pour valider leurs réfs cassées (dialogue/rencontre/scène) et valeurs invalides (souffle de zone).
-    const refCtx: EffectRefCtx = { sceneIds, dialogueIds: dlgIds, encounterIds: encIds, within };
+    const refCtx: EffectRefCtx = {
+      sceneIds, dialogueIds: dlgIds, encounterIds: encIds,
+      entityIds: new Set(s.entities.filter((e) => e.kind === 'personnage').map((e) => e.id)),
+      npcSheet: (id) => sceneNpc(s, id),
+      within,
+    };
     const checkEffect = (eff: Effect, refId: string, scope: Warning['scope']) => {
       const refs = (EFFECT_HANDLERS[eff.type] as EffectHandler).refs;
       if (refs) for (const issue of refs(eff, refCtx)) add(issue.level, scope, refId, issue.message);

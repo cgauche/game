@@ -783,15 +783,14 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               </select>
             </label>
             <div className="eff-list-head">Adversaires
-              <button type="button" className="btn small" onClick={() => upd({ foes: [...(e.foes ?? []), { label: 'Adversaire', movement: 4, skill: 40 }] })}>+ adversaire</button>
+              <button type="button" className="btn small" onClick={() => upd({ foes: [...(e.foes ?? []), { ref: { creatureId: '' } }] })}>+ adversaire</button>
             </div>
-            {(e.foes ?? []).map((f: { label: string; movement: number; skill: number }, i: number) => {
+            <span className="branch-label">Chaque adversaire est une créature du bestiaire : son Mouvement et sa valeur de Test se lisent sur SA fiche.</span>
+            {(e.foes ?? []).map((f: { id?: string; ref: { creatureId?: string } }, i: number) => {
               const patchFoe = (patch: Partial<typeof f>) => upd({ foes: (e.foes ?? []).map((x: typeof f, k: number) => (k === i ? { ...x, ...patch } : x)) });
               return (
                 <div key={i} className="eff-row">
-                  <input value={f.label} placeholder="Nom" onChange={(ev) => patchFoe({ label: ev.target.value })} />
-                  <NumberField variant="nu" label="Mouvement" title="Mouvement" value={f.movement} onChange={(movement) => patchFoe({ movement })} />
-                  <NumberField variant="nu" label="Test de Mouvement" title="Test de Mouvement" value={f.skill} onChange={(skill) => patchFoe({ skill })} />
+                  <RefField cfg={{ ds: 'creatures', single: true }} fieldKey="Créature" value={f.ref?.creatureId ?? ''} onChange={(v) => patchFoe({ ref: { creatureId: (v as string) ?? '' } })} />
                   <button type="button" className="btn small" onClick={() => upd({ foes: (e.foes ?? []).filter((_: typeof f, k: number) => k !== i) })}>×</button>
                 </div>
               );
@@ -902,18 +901,21 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                   </div>
                 );
               })}
-              <div className="tf-row">
-                <RefField
-                  cfg={{ ds: 'skills', single: true, spec: true }}
-                  fieldKey="Compétence"
-                  value={e.skill ?? { id: 'guerison' }}
-                  onChange={(v) => upd({ skill: { ...(v as { id: string; spec?: string }), value: e.skill?.value ?? 50 } })}
-                />
-                <label className="dr">Valeur (PNJ)<NumberField variant="nu" label="Valeur de Test du PNJ" value={e.skill?.value ?? 50} onChange={(value) => upd({ skill: { ...(e.skill ?? { id: 'guerison' }), value } })} /></label>
-                <label className="dr">Bonus Int<NumberField variant="nu" label="Bonus d’Intelligence du PNJ" value={e.intBonus ?? 4} onChange={(intBonus) => upd({ intBonus })} /></label>
-              </div>
-              <input placeholder="id du PNJ soigneur (son label = nom affiché ; vide = « Soigneur »)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value || undefined })} />
-              <span className="branch-label">Le PNJ soigne dans son infirmerie : chaque acte coché est proposé à son tarif, débité au lancement de l’acte.</span>
+              {ctx.personas ? (
+                ctx.personas.length ? (
+                  <select value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })}>
+                    <option value="">— PNJ soigneur de la scène —</option>
+                    {ctx.personas.map((p) => (
+                      <option key={p.id} value={p.id}>{p.label ? `${p.label} (${p.id})` : p.id}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="branch-label">Aucun personnage dans la scène — posez d’abord le PNJ soigneur (Inspecteur).</span>
+                )
+              ) : (
+                <input placeholder="id du PNJ soigneur (personnage de la scène)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })} />
+              )}
+              <span className="branch-label">Le PNJ soigne dans son infirmerie : chaque acte coché est proposé à son tarif, débité au lancement de l’acte. Sa Guérison et son Bonus d’Intelligence se lisent sur SA fiche (réf de bestiaire ou statbloc de l’entité).</span>
             </div>
           );
         })()}
