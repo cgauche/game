@@ -96,11 +96,8 @@ const DATE_STOCK = '2026-08-23';
 type Trace = { lot?: string; date?: string };
 const trace = (x: Trace, lot: string) => ` | ${x.lot ?? lot} | ${x.date ?? DATE_STOCK}`;
 /** LOT par défaut d'une divergence d'ENVELOPPE observée (le stock, lui, le porte ligne à ligne) :
- *  une absence sur les ENTRÉES DE RACINE part en `L1d #1469` ; une clé divergente part en `L1b #1467`,
- *  SAUF le `key` de `progression-schemas.derived.json` — un `charKeySchema`, donc une RÉFÉRENCE à une
- *  Caractéristique et non une identité : il part en `L2 #1548` (`key` → `characteristic`). */
-const lotEnveloppe = (e: { role: string; document: string }) =>
-  e.role === 'source' ? 'L1d #1469' : e.document === 'progression-schemas.derived.json' ? 'L2 #1548' : 'L1b #1467';
+ *  une absence sur les ENTRÉES DE RACINE part en `L1d #1469`, une clé divergente en `L1b #1467`. */
+const lotEnveloppe = (e: { role: string }) => (e.role === 'source' ? 'L1d #1469' : 'L1b #1467');
 const cleForme = (
   f: {
     concept: string;
@@ -251,7 +248,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       trace(e, lotEnveloppe(e));
     expect(
       lignes(scan.enveloppe.map(cle)),
-      'écart entre les divergences d’ENVELOPPE observées et `STRUCTURES_ENVELOPPE` — absences sur les ENTRÉES DE RACINE (`L1d #1469`), clés divergentes partout (`L1b #1467`, sauf le `key` de `progression-schemas.derived.json` qui est une RÉFÉRENCE et part en `L2 #1548`), y compris sur les documents EMBARQUÉS.',
+      'écart entre les divergences d’ENVELOPPE observées et `STRUCTURES_ENVELOPPE` — absences sur les ENTRÉES DE RACINE (`L1d #1469`), clés divergentes partout (`L1b #1467`), y compris sur les documents EMBARQUÉS.',
     ).toEqual(lignes(STRUCTURES_ENVELOPPE.map(cle)));
   });
 
@@ -391,7 +388,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // et la 15ᵉ part avec la ligne FORMES ci-dessus. Le cliquet SUIT la baisse.
       // … et 58 → 56 : `title` reçoit son RÔLE PROPRE au lexique (« sous-titre », forme cible), donc
       // `creatures.json` (490) et `gods.json` (40) ne sont plus comptés en graphie divergente du libellé.
-      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 56],
+      // … et 56 → 52 (L2 #1548) : les 4 lignes `progression-schemas.derived.json` sont SOLDÉES — la
+      // marque de niveau nomme sa Caractéristique `characteristic`, graphie de RÉFÉRENCE.
+      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 52],
       // Cliquet REMONTÉ 91 → 92 (#1467 L1b V-P7) : AUCUNE dérive neuve — c'est le statbloc à `size`
       // d'`arene-projet.json` qui ARRIVE de `STRUCTURES_FORMES` (sa signature gagne `type`, elle ne se
       // confond plus avec les deux autres). La somme des deux stocks est CONSTANTE : 671 + 91 = 670 + 92.
@@ -455,7 +454,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L1c #1468': 403,
       'L1d #1469': 62,
       'L2 #1463': 141,
-      'L2 #1548': 4,
+      'L2 #1548': 0,
       'L3 #1463': 389,
       'L4 #1463': 220,
       '#1553': 92,

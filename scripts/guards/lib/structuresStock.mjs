@@ -967,16 +967,6 @@ export const STRUCTURES_REDECLARATIONS = [
  *  les clés DIVERGENTES. `chemin` = `(entrées)` pour les entrées du document, le chemin du document
  *  embarqué sinon. Rôles, cibles et graphies divergentes sont au lexique (`ROLES_ENVELOPPE`). */
 export const STRUCTURES_ENVELOPPE = [
-  // Les 4 lignes `progression-schemas.derived.json` sont au lot `L2 #1548`, pas au régime d'identité
-  // de `L1b #1467` : leur `key` est un `charKeySchema` (`src/data/schemas/defs/progression-schemas-
-  // derived.ts:12`), c'est-à-dire une RÉFÉRENCE à une Caractéristique, pas l'identité de la marque.
-  // Mesure sur l'artefact : 666 marques pour 10 `key` distinctes — un `key` → `id` y poserait 656
-  // doublons. Le geste de L2 est `key` → `characteristic`, et il part du générateur
-  // (`python scripts/data/gen-progression-schemas.py`), l'artefact étant écrit, jamais authoré.
-  { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.1", entrees: 333, lot: "L2 #1548", date: "2026-08-23" },
-  { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.2", entrees: 111, lot: "L2 #1548", date: "2026-08-23" },
-  { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.3", entrees: 111, lot: "L2 #1548", date: "2026-08-23" },
-  { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.4", entrees: 111, lot: "L2 #1548", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "aa-criticals.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "ambiance.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "arcane-phenomena.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },

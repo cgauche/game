@@ -301,14 +301,14 @@ def read_book(book_id, pdf_path, pages, errors):
                 if c is None:
                     errors.append(f"{book_id} page PDF {pdfpage} folio {folio} « {title} » : marque de niveau 1 hors colonne (x={g.x0:.1f})")
                     continue
-                lv[1].append({"col": c, "key": CHAR_KEY[c], "x": round((g.x0 + g.x1) / 2, 1), "mark": "glyphe"})
+                lv[1].append({"col": c, "characteristic": CHAR_KEY[c], "x": round((g.x0 + g.x1) / 2, 1), "mark": "glyphe"})
             for r in rs:
                 k = mark_level(r.non_stroking_color)
                 c = col_of((r.x0 + r.x1) / 2)
                 if c is None:
                     errors.append(f"{book_id} page PDF {pdfpage} folio {folio} « {title} » : aplat hors colonne (x={r.x0:.1f}, teinte {teinte(r.non_stroking_color)})")
                     continue
-                lv[k].append({"col": c, "key": CHAR_KEY[c], "x": round((r.x0 + r.x1) / 2, 1), "teinte": teinte(r.non_stroking_color)})
+                lv[k].append({"col": c, "characteristic": CHAR_KEY[c], "x": round((r.x0 + r.x1) / 2, 1), "teinte": teinte(r.non_stroking_color)})
             for n in lv:
                 lv[n] = sorted({m["col"]: m for m in lv[n]}.values(), key=lambda m: COLS.index(m["col"]))
             schemas.append(

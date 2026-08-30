@@ -1,6 +1,6 @@
 export interface ProgressionMark {
   col: string;
-  key: string;
+  characteristic: string;
   x: number;
   /** Couleur RVB mesurée de l'aplat (niveaux 2/3/4) ; absente au niveau 1, marqué par un glyphe. */
   teinte?: [number, number, number];

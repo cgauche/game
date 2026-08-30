@@ -127,13 +127,13 @@ export function auditProgressionSchemas(sources = {}) {
           folio: s.folio,
           motif: 'niveau-absent-de-la-donnee',
           json: null,
-          pdf: (s.lv[n] ?? []).map((m) => m.key),
+          pdf: (s.lv[n] ?? []).map((m) => m.characteristic),
           marques: s.lv[n] ?? [],
         })
         continue
       }
       const json = [...(lvl.characteristics ?? [])].sort()
-      const pdf = (s.lv[n] ?? []).map((m) => m.key).sort()
+      const pdf = (s.lv[n] ?? []).map((m) => m.characteristic).sort()
       if (json.join('|') !== pdf.join('|')) {
         violations.push({
           career: career.id,

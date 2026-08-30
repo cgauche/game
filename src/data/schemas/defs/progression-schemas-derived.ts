@@ -9,7 +9,7 @@
  * `Source/` ; `--check` le compare à l'OCTET sans rien écrire. NE PAS ÉDITER À LA MAIN.
  * LECTURE : une entrée de `schemas` = une bande de schéma de progression lue dans le PDF — `folio` est
  * le folio IMPRIMÉ relevé SUR la page, `career` le titre de Carrière imprimé au-dessus de la bande,
- * `lv[n]` les Caractéristiques marquées au niveau n (`col` = colonne imprimée, `key` = CharKey,
+ * `lv[n]` les Caractéristiques marquées au niveau n (`col` = colonne imprimée, `characteristic` = CharKey,
  * `teinte` = couleur RVB mesurée de l'aplat, absente au niveau 1 qui est un glyphe de police).
  */
 import { z } from 'zod';
@@ -24,7 +24,7 @@ export const famille = 'config';
  *  niveau 1 est un glyphe de police (`crossbatstfb`), sans aplat donc sans teinte. */
 const markSchema = z.strictObject({
   col: z.enum(['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc']),
-  key: charKeySchema,
+  characteristic: charKeySchema,
   x: z.number(),
   teinte: z.tuple([z.number(), z.number(), z.number()]).optional(),
   mark: z.literal('glyphe').optional(),
