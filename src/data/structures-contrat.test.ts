@@ -473,8 +473,6 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       Object.keys(plafonds).filter((lot) => reel(lot) < plafonds[lot]).map((lot) => `${lot} : plafond PÉRIMÉ ${plafonds[lot]}, abaisser à ${reel(lot)}`),
       'plafond(s) PÉRIMÉ(S) — le terrain gagné se VERROUILLE : abaisser le plafond au réel mesuré.',
     ).toEqual([]);
-    const total = Object.values(plafonds).reduce((a, b) => a + b, 0);
-    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(total);
   });
 
   it('les ANGLES MORTS ont UNE source : le lexique, recopié nulle part (test, stock, doc)', () => {

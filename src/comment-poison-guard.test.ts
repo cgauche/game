@@ -339,6 +339,24 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
     expect(untaggedExcuseMatch('// à corriger séparément [entériné 2026-08-24]')).toBeNull();
   });
 
+  it('dette EN ATTENTE et alibi de PÉRIMÈTRE daté = excuses (deux formes mesurées MUETTES le 2026-08-29)', () => {
+    // Verbatims du site réel `src/engine/travelStages.ts` (reformulé dans le même geste) : sans renvoi
+    // explicite, le premier échappait au motif de report, le second n'était couvert par aucune famille.
+    expect(untaggedExcuseMatch(' * ... relève de la MÊME classe que ce lot et reste à migrer :')).not.toBeNull();
+    expect(untaggedExcuseMatch(" * il était hors périmètre le jour du murage (`src/ui/**` n'était pas ouvert).")).not.toBeNull();
+    expect(untaggedExcuseMatch('// ces deux lignes restent à traiter')).not.toBeNull();
+    expect(untaggedExcuseMatch('// hors périmètre le jour de la revue')).not.toBeNull();
+    // Le report ASSUMÉ par l'utilisateur reste admis ici aussi.
+    expect(untaggedExcuseMatch('// reste à migrer [entériné 2026-08-29]')).toBeNull();
+    // Contrôles négatifs : un PÉRIMÈTRE décrit au présent, et un « reste » sans verbe de réparation.
+    expect(untaggedExcuseMatch('// ce champ est hors périmètre de la garde (mesure de #1486).')).toBeNull();
+    expect(untaggedExcuseMatch('// le compte reste à 0 tant que le motif tient.')).toBeNull();
+    // ANGLE MORT ASSUMÉ du motif (consigné à `ALIBI_PERIMETRE`, `commentPoison.mjs`) : la même forme
+    // au PASSÉ portant un complément de SOURCE est une prose DESCRIPTIVE, pas une dette laissée — elle
+    // MORD quand même. 0 occurrence dans le corpus le 2026-08-30 : motif tenu STRICT tant que c'est 0.
+    expect(untaggedExcuseMatch("// ce champ était hors périmètre de l'extraction FR.")).not.toBeNull();
+  });
+
   it('faux positif écarté : une phrase de DONNÉE qui dit « séparément »/« ailleurs » décrit le découpage RÉEL', () => {
     expect(untaggedExcuseMatch('// les entrées de racine et les documents embarqués se comptent SÉPARÉMENT.')).toBeNull();
     expect(untaggedExcuseMatch('// la QUANTITÉ perdue est portée par la ligne de Critique, pas ici.')).toBeNull();

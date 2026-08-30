@@ -343,11 +343,30 @@ const GAME_STATE_PARTICIPLE =
 // réparation> <renvoi> » (une localisation par zone, comptée chacune de son côté) porterait la même
 // forme et matcherait — 0 occurrence dans le corpus scanné ; motif tenu STRICT tant que le compte
 // reste à 0.
-const REPORT_AILLEURS =
-  'à (corriger|traiter|régler|migrer|nettoyer|purger|réparer|reprendre|refaire|supprimer|instruire) (séparément|ailleurs|plus tard|à part|au propre)';
+const VERBES_REPARATION =
+  '(corriger|traiter|régler|migrer|nettoyer|purger|réparer|reprendre|refaire|supprimer|instruire)';
+const REPORT_AILLEURS = 'à ' + VERBES_REPARATION + ' (séparément|ailleurs|plus tard|à part|au propre)';
+// Deux formes mesurées MUETTES le 2026-08-29 (sonde de revue de palier), toutes deux relevées sur un
+// site réel de `src/engine/travelStages.ts` : (i) la dette laissée EN ATTENTE, sans renvoi explicite —
+// un verbe d'état suivi de l'infinitif de réparation ; (ii) l'alibi de PÉRIMÈTRE daté, qui justifie
+// l'omission par l'état du chantier au moment du geste. Les deux sont des excuses au sens de 6b : une
+// dette signalée sans validation utilisateur traçable.
+// ANGLE MORT MESURÉ (2026-08-30), même clause que `REPORT_AILLEURS` ci-dessus : une prose
+// DESCRIPTIVE au passé bâtie sur le verbe d'état + le premier motif ci-dessous, suivi d'un
+// complément de SOURCE et non d'un renvoi de chantier (un CONSTAT sur ce que l'extraction FR n'a pas
+// couvert, pas une dette laissée), porte la même forme et MORDRAIT — 0 occurrence dans le corpus
+// scanné le 2026-08-30 ; motif tenu STRICT tant que le compte reste à 0. Comme pour les familles
+// ci-dessus, l'exemple LITTÉRAL n'est pas écrit ici (il mordrait sur ce commentaire même) : il est
+// planté en chaîne dans `src/comment-poison-guard.test.ts` (#828).
+const RESTE_A_REPARER = '(reste|restent|restait|restaient) à ' + VERBES_REPARATION;
+const ALIBI_PERIMETRE = '(était|étaient) hors périmètre|hors périmètre le jour d';
 export const EXCUSE_RX = new RegExp(
   "(assume|épargn[ée]\\w*(?!\\w)(?!\\s+(par|pour)\\s)|pour l'instant|" +
     REPORT_AILLEURS +
+    '|' +
+    RESTE_A_REPARER +
+    '|' +
+    ALIBI_PERIMETRE +
     '|pas encore (?!' +
     GAME_STATE_PARTICIPLE +
     ')|(?<!\\b(accordée?s?|prime|insensible)\\s)temporairement(?!\\s+(insensible|accordé|accordée|accordées|prime)))',

@@ -38,7 +38,8 @@
  *    nom de PARAMÈTRE) : le cliquet 1 compte des APPELS `rawText(`, donc un paramètre homonyme APPELÉ y
  *    rougirait à tort — angle mort inverse, dit ici et sans site actuel ;
  *  - `src/ui/CityHubScreen.tsx` (`SCENE_WEATHER_LABEL`) — 2ᵉ carte météo FR hors catalogue, autre axe
- *    (`Scene['weather']`), même classe que ce lot ; consignée à sa carte sœur (`engine/travelStages.ts`) ;
+ *    (`Scene['weather']`), même classe que ce lot ; migration possédée par #1580 — sa carte sœur
+ *    (`engine/travelStages.ts`) ne consigne plus la dette, elle y renvoie ;
  *  - le GEL DE LOCALE au chargement des cartes dérivées du catalogue — `setLocale` les laisserait en FR
  *    en silence ; consigné sur `setLocale` lui-même (`i18n/index.ts`).
  */

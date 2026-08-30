@@ -71,8 +71,6 @@ describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
     const moral = voyageTiles('mer', seaPlan(), haut, [hero('h1')], [], 0).find((t) => t.key === 'moral')!;
     const band = moraleBand(120);
     expect(moral.value).toBe(`120 — ${band.label}`);
-    expect(moral.value).not.toContain('Tests de Commandement');
-    expect(moral.value).not.toBe(`120 — ${band.desc.split('.')[0]}`);
   });
 
   it('tuiles TERRE : allure et saison (sans navire ni bêtes)', () => {

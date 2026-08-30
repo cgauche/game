@@ -437,8 +437,8 @@ function staleFlowVariants(data: unknown): { id: string; tokens: string[] }[] {
 /** Datasets dont la liste blanche admet le Flow mécanique — DÉRIVÉ des defs, jamais une liste. */
 const FLOW_FILES = [...RESOLVED_BY_FILE].filter(([, f]) => f.includes(MECHANICAL_FLOW_FIELD)).map(([file]) => file);
 
-/** Reste à traiter (#880) : divergences par OMISSION que le critère voit, hors périmètre du lot des
- *  4 contradictions franches. La liste ne remonte JAMAIS — une entrée soldée la fait rougir. */
+/** Stock nominatif DÉCROISSANT de #880 : divergences par OMISSION que le critère voit, hors du lot
+ *  des 4 contradictions franches. La liste ne remonte JAMAIS — une entrée soldée la fait rougir. */
 const A_TRAITER_880 = [
   { id: 'bouclier-ceruleen', tokens: ["bonus:Endurance"] },
   { id: 'l-egide-d-aqshy', tokens: ['trait:Souffle'] },

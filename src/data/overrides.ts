@@ -388,7 +388,7 @@ const NESTED_ARRAY_ROOT: Partial<Record<DatasetKey, { root: () => unknown }>> = 
   obsessions: { root: () => obsessionsRawJson },
   artilleryMisfire: { root: () => artilleryMisfireRawJson },
   ventsTourbillonnants: { root: () => ventsTourbillonnantsRawJson },
-  // #1530 : 7 clés dont le tableau est NICHÉ sous l'enveloppe de son document — sans root ici, le save
+  // #1530 : clés dont le tableau est NICHÉ sous l'enveloppe de son document — sans root ici, le save
   // sérialisait le tableau NU par-dessus le document (l'enveloppe et les tableaux frères mouraient).
   weather: { root: () => weatherRawJson },
   weatherConditions: { root: () => weatherRawJson },
