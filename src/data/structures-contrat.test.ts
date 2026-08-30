@@ -88,12 +88,21 @@ const { redeclarations } = scannerRedeclarations(ROOT);
 const lignes = (xs: string[]): string[] => [...xs].sort();
 
 /**
- * DATE unique du stock : elle entre dans la clé comparée. Re-dater une ligne pour la faire passer
- * n'est donc plus possible — la ligne se compare, date comprise, à la mesure du jour du lot.
+ * DATE par DÉFAUT d'une ligne de stock : elle entre dans la clé comparée. Sur les stocks dont la
+ * ligne OBSERVÉE ne reprend PAS le pilotage — tous sauf `STRUCTURES_FORMES` —, re-dater une ligne
+ * pour la faire passer est impossible : elle se compare, date comprise, à la mesure du jour du lot.
+ * Sur `STRUCTURES_FORMES`, `lot`/`motif`/`date` sont du PILOTAGE que `cleFormeObservee` reprend du
+ * stock par le SITE : la sonde ne les mesure pas, ils se DÉCIDENT en revue (angle mort déclaré,
+ * `ANGLES_MORTS` de `scripts/docs/lib/structures-lexique.mts`).
  */
 const DATE_STOCK = '2026-08-23';
-/** `lot` et `date` ENTRENT dans la clé comparée (#1465 F1) ; le LOT attendu se DÉDUIT du concept. */
-type Trace = { lot?: string; date?: string };
+/**
+ * `lot`, `motif` et `date` ENTRENT dans la clé comparée (#1465 F1) ; le LOT attendu se DÉDUIT du
+ * concept quand la ligne n'en déclare pas. Ces trois champs sont du PILOTAGE : ils se DÉCIDENT en
+ * revue, la sonde ne les mesure pas — c'est pourquoi la forme observée les reprend du stock
+ * (`pilotageDeForme` ci-dessous).
+ */
+type Trace = { lot?: string; date?: string; motif?: string };
 const trace = (x: Trace, lot: string) => ` | ${x.lot ?? lot} | ${x.date ?? DATE_STOCK}`;
 /** LOT par défaut d'une divergence d'ENVELOPPE observée (le stock, lui, le porte ligne à ligne) :
  *  une absence sur les ENTRÉES DE RACINE part en `L1d #1469`, une clé divergente en `L1b #1467`. */
@@ -111,7 +120,21 @@ const cleForme = (
   } & Trace,
 ) =>
   `${f.concept} | ${f.dataset} | ${f.champ} | ${f.signature} | ${f.statut} | ${f.strate} | ${f.occurrences}` +
-  trace(f, lotDeForme(f.concept, f.signature, f.cibles ?? []));
+  trace(f, lotDeForme(f.concept, f.signature, f.cibles ?? [])) +
+  (f.motif ? ` | ${f.motif}` : '');
+/** SITE d'une forme : ce qui l'identifie indépendamment de sa mesure et de son pilotage. */
+const siteDeForme = (f: { concept: string; dataset: string; champ: string; signature: string }) =>
+  `${f.concept} | ${f.dataset} | ${f.champ} | ${f.signature}`;
+/** Le stock des formes, typé pour la lecture de son PILOTAGE (`lot`, `motif`, `date`). */
+const FORMES: readonly (Parameters<typeof cleForme>[0])[] = STRUCTURES_FORMES;
+/**
+ * LOTISSEMENT déclaré d'un site, repris par la forme OBSERVÉE. Le lot déduit de `lotDeForme` lit la
+ * colonne `cibles`, qui liste TOUS les datasets atteignables (angle mort des COLLISIONS d'ids) : une
+ * ligne dont le concept réel n'est pas celui-là se re-lotit en revue et porte son `motif`. Un site
+ * que le stock ne connaît pas garde son lot déduit — une dérive neuve entre avec son heuristique.
+ */
+const pilotageDeForme = new Map(FORMES.map((f) => [siteDeForme(f), { lot: f.lot, motif: f.motif, date: f.date }]));
+const cleFormeObservee = (f: Parameters<typeof cleForme>[0]) => cleForme({ ...f, ...pilotageDeForme.get(siteDeForme(f)) });
 const cleOrpheline = (o: { dataset: string; champ: string; signature: string; motif: string; occurrences: number } & Trace) =>
   `${o.dataset} | ${o.champ} | ${o.signature} | ${o.motif} | ${o.occurrences}` +
   trace(o, o.motif === 'clé de référence non résolue' ? 'L1a #1466' : '#1553');
@@ -187,7 +210,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
   it('formes à éteindre : observé == stock (présence, statut, strate ET occurrences)', () => {
     const observees = scan.formes
       .filter((f) => f.statut === 'historique' || f.statut === 'divergente')
-      .map(cleForme);
+      .map(cleFormeObservee);
     expect(
       lignes(observees),
       'écart entre les formes OBSERVÉES et `STRUCTURES_FORMES` — une ligne en trop côté observé est une dérive neuve (elle se migre), une ligne en trop côté stock est périmée (elle se retire). Le `statut` et la `strate` entrent dans la clé : un statut menteur rougit.',
@@ -349,12 +372,19 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // scène retire 8 lignes de formes (`ambiance`/`weather`/`threat` des 4 projets : leurs valeurs
       // sont des littéraux d'enum du schéma, elles n'ouvrent plus de référence). Le cliquet SUIT la
       // baisse : 679 → 671, sinon la marge regagnée servirait à absorber une dérive future.
-      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 15],
+      // Cliquet REMONTÉ 15 → 16 (L2 #1548, commit 0) : `refs / ids-nus` reçoit le statut `cible`. DESIGN
+      // v2 S2 (#1463, commentaire du 2026-08-23) : « `refs(type)` = liste d'ids nus brandée (75 champs
+      // `string[]`) » — la liste d'ids nus EST la forme visée, ce qui reste à faire est le TYPAGE du
+      // champ. Une cible neuve se décide en revue : celle-ci porte sa citation et sa date.
+      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 16],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
       // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non
       // résolue. Il réapparaît à `STRUCTURES_ORPHELINES` ci-dessous : même objet, autre stock.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 670],
+      // Cliquet DESCENDU 670 → 594 (L2 #1548, commit 0) : les 76 lignes `refs / ids-nus` quittent le
+      // dénominateur avec la cible ci-dessus — aucune donnée ne bouge, c'est le LEXIQUE qui reconnaît
+      // la forme déjà posée. Le cliquet SUIT la baisse.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 594],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -448,14 +478,24 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     ).toEqual([]);
     // Cliquet PAR LOT BIDIRECTIONNEL (patron `assertRatchet`, `src/ui/ui-ratchets.test.ts`) : un plafond PAR
     // lot connu, réel > plafond = dérive, réel < plafond = plafond PÉRIMÉ à abaisser au réel mesuré.
+    // L2 #1548 commit 0 — c'est le LOTISSEMENT qui bouge, pas le terrain (aucun `src/data/**.json`,
+    // aucun `src/scenes/**` touché) :
+    //   • `L2 #1463` 141 → 57 : 23 lignes `ids-nus` sortent du dénominateur (cible neuve) et 62 lignes
+    //     se re-lotissent en L3 — leur concept réel n'est pas la Compétence (règle, carrière, espèce,
+    //     tenue, trait, talent, domaine, sous-type d'objet, pion de scène…) : `lotDeForme` les lisait
+    //     L2 par COLLISION d'ids (angle mort déclaré). Chacune porte son `motif`.
+    //   • `L3 #1463` 389 → 397 : +62 reçues, −53 `ids-nus` sorties, −1 partie en L2
+    //     (`tavernGames.json › spec`, SPÉCIALISATION de Compétence — DESIGN v2 : « L2 … + `spec`
+    //     pool/ouverte », et le `skill` frère du même document est déjà L2). Ce lot GROSSIT sans
+    //     dérive : les lignes viennent d'un autre lot du même stock, la somme des deux baisse de 76.
     const plafonds: Record<string, number> = {
       'L1a #1466': 23,
       'L1b #1467': 0,
       'L1c #1468': 403,
       'L1d #1469': 62,
-      'L2 #1463': 141,
+      'L2 #1463': 57,
       'L2 #1548': 0,
-      'L3 #1463': 389,
+      'L3 #1463': 397,
       'L4 #1463': 220,
       '#1553': 92,
     };
@@ -471,6 +511,27 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     expect(
       Object.keys(plafonds).filter((lot) => reel(lot) < plafonds[lot]).map((lot) => `${lot} : plafond PÉRIMÉ ${plafonds[lot]}, abaisser à ${reel(lot)}`),
       'plafond(s) PÉRIMÉ(S) — le terrain gagné se VERROUILLE : abaisser le plafond au réel mesuré.',
+    ).toEqual([]);
+  });
+
+  /**
+   * Le lot d'une ligne se DÉDUIT du concept (`lotDeForme`), et cette déduction lit la colonne
+   * `cibles` — qui liste TOUS les datasets atteignables, COLLISIONS d'ids comprises (angle mort
+   * déclaré). Une ligne dont le concept réel n'est pas celui que la déduction lui prête se re-lotit
+   * en revue ; ce test rend cette divergence NOMMÉE et BIDIRECTIONNELLE : pas de re-lotissement
+   * muet, pas de `motif` sur une ligne que rien ne fait diverger.
+   */
+  it('un LOT qui DIVERGE de la déduction porte son MOTIF — et un MOTIF suppose une divergence', () => {
+    const deduit = new Map(scan.formes.map((f) => [siteDeForme(f), lotDeForme(f.concept, f.signature, f.cibles ?? [])]));
+    const diverge = (f: { concept: string; dataset: string; champ: string; signature: string } & Trace) =>
+      deduit.has(siteDeForme(f)) && f.lot !== deduit.get(siteDeForme(f));
+    expect(
+      FORMES.filter((f) => diverge(f) && !f.motif?.trim()).map(cleForme),
+      'ligne(s) re-loties SANS motif — un lot qui contredit la déduction NOMME le concept réel de la ligne, sinon le lotissement du chantier n’est plus relisible.',
+    ).toEqual([]);
+    expect(
+      FORMES.filter((f) => f.motif?.trim() && !diverge(f)).map(cleForme),
+      'ligne(s) portant un `motif` que rien ne fait diverger — un motif justifie une décision de revue, il ne décore pas une ligne que la déduction range déjà là.',
     ).toEqual([]);
   });
 
@@ -499,7 +560,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       trace(r, lotDeForme(r.concept, r.signature));
     const stocks: Array<[string, readonly Record<string, unknown>[], (x: never) => string, string[]]> = [
       ['STRUCTURES_CIBLES', STRUCTURES_CIBLES, ((c: { concept: string; signature: string; date: string }) => `${c.concept} | ${c.signature} | ${c.date}`) as never, ['concept', 'signature', 'date']],
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES, cleForme as never, ['concept', 'dataset', 'champ', 'signature', 'statut', 'strate', 'occurrences', 'lot', 'date']],
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES, cleForme as never, ['concept', 'dataset', 'champ', 'signature', 'statut', 'strate', 'occurrences', 'lot', 'motif', 'date']],
       ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT, ((d: { dataset: string; cle: string; date: string }) => `${d.dataset} | ${d.cle} | ${d.date}`) as never, ['dataset', 'cle', 'date']],
       ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES, cleHomonyme as never, ['cle', 'classes', 'occurrences', 'lot', 'date']],
       ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS, cleRedeclaration as never, ['def', 'champ', 'concept', 'signature', 'statut', 'commun', 'occurrences', 'lot', 'date']],

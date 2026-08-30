@@ -64,9 +64,9 @@ export const LOT_CLE_RESERVEE: Readonly<Record<string, string>> = {
 };
 
 /** Les 9 lots d'extinction du chantier — un `lot` de stock hors de cette liste est une dérive.
- *  `L2 #1548` porte la migration `key` → `characteristic` de `progression-schemas.derived.json` (une
- *  RÉFÉRENCE, pas une identité) ; `#1553` porte la CURATION des orphelines (contenu qui ne résout
- *  vers rien), qui n'est pas une forme d'enveloppe. */
+ *  `L2 #1548` porte les graphies de RÉFÉRENCE du lot L2 (« une graphie par concept référencé ») ;
+ *  `#1553` porte la CURATION des orphelines (contenu qui ne résout vers rien), qui n'est pas une
+ *  forme d'enveloppe. */
 export const LOTS_CONNUS = ['L1a #1466', 'L1b #1467', 'L1c #1468', 'L1d #1469', 'L2 #1463', 'L2 #1548', 'L3 #1463', 'L4 #1463', '#1553'] as const;
 
 /**
@@ -79,6 +79,7 @@ export const ANGLES_MORTS: readonly string[] = [
   'La référence est ANCRÉE SUR L’INDEX DES IDS, scopé par DATASET : une occurrence de référence est une paire (objet, clé) dont la valeur RÉSOUT vers un document indexé d’une CIBLE MAJORITAIRE de son site. Le CHAMP PORTEUR (`skills`, `ops`, `members`…) est MESURÉ, jamais déclaré.',
   'La RÉSOLUTION est PAR SITE `(dataset, champ, clé)` : cible(s) MAJORITAIRE(S) = les datasets qui couvrent ≥ 50 % des valeurs résolvantes du site. Une valeur qui ne résout QUE vers une cible non majoritaire est comptée AMBIGUË (§1bis, imprimée avec son site et son dataset parasite) et n’ouvre PAS de référence.',
   'Les COLLISIONS d’ids restent un angle mort du PILOTAGE, pas de la résolution : la colonne « cibles » d’une forme liste tous les datasets atteignables par les valeurs de la ligne.',
+  'LOT, MOTIF et DATE d’une forme sont du PILOTAGE : la sonde ne les mesure pas — la forme OBSERVÉE les reprend du stock par son SITE (concept, dataset, champ, signature), si bien que la véracité d’un `motif` est une décision de REVUE qu’aucune garde ne contrôle.',
   'La RÉSOLVABILITÉ d’un `{text}` se mesure sur le LIBELLÉ NORMALISÉ (casse, accents, ponctuation, espaces) d’une entité d’un dataset de la CIBLE MAJORITAIRE de son site — de n’importe quel dataset quand le site n’a pas de cible ; elle ne vérifie AUCUN type d’entité attendu, et un `label` qui est aussi un id peut la faire mordre sur un homonyme : la forme `text (résolvable)` est un candidat à migrer en `{id}`, pas un verdict.',
   'Le partage d’un SITE tranche entre référence cassée et document embarqué, mais les TELLS de document passent avant le ratio (`label` + `source`, ou `label` + ≥ 2 clés de charge utile) et l’égalité tranche pour le DOCUMENT ; un site à UNE seule valeur est un document, sauf si la clé est `…Id`/`…Ids`/`…Ref`.',
   'L’ORDRE DES PASSES est un angle mort déclaré : l’index est complété par les documents EMBARQUÉS (passe 3) AVANT que la résolution ne soit mesurée (passe 4) — un site comme `arene-projet.json › members {entityId}` ne résout que grâce à cet ordre.',
@@ -213,7 +214,11 @@ export const CONCEPTS: readonly Concept[] = [
     strate: 'Référence',
     listeIdsNus: true,
     signatures: [
-      { sig: 'ids-nus', statut: 'historique', note: 'tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2)' },
+      {
+        sig: 'ids-nus',
+        statut: 'cible',
+        note: 'tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée.',
+      },
     ],
   },
   {
