@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 79086e8f-2b86-464f-8a9e-6f2bc67f4515
+  modified: 2026-08-30T18:35:15.987Z
 ---
 
 Les livres `Source/` (PDF → Marker/OCR) **ne sont pas exempts d'erreurs**. Un écart entre
@@ -24,7 +25,7 @@ viole l'esprit de la règle 1 (fidélité au RAW *correct*, pas à l'artefact OC
 par cas** — présenter la preuve (citation source + valeur JSON), se demander « est-ce un bug JSON ou une
 correction volontaire d'une erreur source ? », et **demander/flaguer** quand c'est ambigu plutôt que
 d'éditer. Complément inverse de [[credo-exemples-calibrants]] (vérifier les dires user contre la
-source) : ici c'est la **source** qu'on met en doute. Voir l'audit daté `docs/plans/audit-donnees-2026-06-23.md`.
+source) : ici c'est la **source** qu'on met en doute. L'audit daté du 2026-06-23 qui illustrait ces cas est supprimé de l'arbre (purge #1592 du 2026-08-30, classe ARCHIVE éradiquée) — git porte l'historique (`git log --diff-filter=D -- docs/plans/audit-donnees-2026-06-23.md`).
 
 **VO comme arbitre (2026-06-23, user) :** la donnée du jeu reste **FR** (cf. [[game-francais-jamais-anglais]]),
 mais **quand on a un DOUTE sur la VF** (valeur suspecte, ordre de table, traduction louche, OCR cassé),
