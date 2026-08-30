@@ -78,7 +78,7 @@ const doc = document(
   },
   {
     codex: { keys: ['weather', 'weatherConditions'] },
-    edit: { niche: { categories: ['weather'] } },
+    edit: { niche: { categories: ['weather', 'weatherConditions'] } },
   },
 );
 

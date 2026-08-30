@@ -13,7 +13,7 @@ import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, lightTones, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
   pregens, oups, interludeEvents, peripeties, details, names, allAxes,
-  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
+  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS,
   WATER_EXPOSURE, navalPorts,
@@ -163,7 +163,7 @@ const ARRAYS = {
   pregens, oups, interludeEvents, peripeties, names,
   // Axes de forces/faiblesses (#409) — mécanique MAISON, éditable au Codex comme tout catalogue.
   axes: allAxes,
-  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
+  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate,
   // #168 : catalogue UNIQUE des Activités (interlude/voyage/mer/bataille de masse) exposé au Codex —
   // MÊME référence d'array que le moteur (`engine/activities.ts::ACTIVITIES`, singleton JSON) → l'édition
@@ -391,6 +391,7 @@ const NESTED_ARRAY_ROOT: Partial<Record<DatasetKey, { root: () => unknown }>> = 
   // #1530 : 7 clés dont le tableau est NICHÉ sous l'enveloppe de son document — sans root ici, le save
   // sérialisait le tableau NU par-dessus le document (l'enveloppe et les tableaux frères mouraient).
   weather: { root: () => weatherRawJson },
+  weatherConditions: { root: () => weatherRawJson },
   crewTestTypes: { root: () => crewTestTypesRawJson },
   landCargo: { root: () => landCargoRawJson },
   seaCargo: { root: () => seaCargoRawJson },
