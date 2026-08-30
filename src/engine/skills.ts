@@ -3,7 +3,7 @@
  * (hors combat) : Caractéristique + Augmentations de la compétence.
  */
 import { Combatant, CharKey, Difficulty } from './types';
-import { findSkillById, psychologies } from '../data';
+import { byId, psychologies } from '../data';
 import { itemCapability } from './capabilities';
 import { groupMatch } from './groups';
 import { effectiveChar, bonus } from './characteristics';
@@ -29,7 +29,7 @@ import { maxBy } from './pick';
  *  sont portées par la DONNÉE — `SkillInstance.characteristic` — lue par effectiveSkillCharKey en amont,
  *  pas ici : aucun sniff d'espèce dans le moteur.) */
 function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
-  const alt = findSkillById(skillId)?.altChar;
+  const alt = byId('skill', skillId)?.altChar;
   if (!alt || (alt.from && ck !== alt.from)) return ck;
   const pick = alt.chars[String(rule(alt.gatedByRule))];
   if (!pick) return ck;
@@ -40,7 +40,7 @@ function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
 /** Caractéristique (CharKey STABLE) d'une compétence par son `id`. `SkillData.characteristic` EST
  *  une CharKey ('Dex'…), multilangue-safe — jamais une conversion par libellé. */
 export function skillCharKeyById(skillId: string): CharKey | undefined {
-  return findSkillById(skillId)?.characteristic;
+  return byId('skill', skillId)?.characteristic;
 }
 
 /** Caractéristique EFFECTIVE d'un Test de compétence — POINT UNIQUE (consommé par `testValue` ET
@@ -131,7 +131,7 @@ export function testValueParts(c: Combatant, skill?: string, characteristic?: Ch
  *  objet non détruit portant la capability requise, `withoutMod` s'applique. Possession NON gatée sur
  *  le port (`itemCapability`) : avoir les outils dans le sac suffit — on les sort pour s'en servir. */
 export function skillToolMod(c: Combatant, skill?: string): number {
-  const tool = skill ? findSkillById(skill)?.tool : undefined;
+  const tool = skill ? byId('skill', skill)?.tool : undefined;
   if (!tool) return 0;
   const has = (c.items ?? []).some((it) => !it.destroyed && itemCapability(it, tool.capability));
   return has ? 0 : tool.withoutMod;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findSkillById, specPoolOf, specCatalogOf, specResolves, specLabel } from '../data';
+import { byId, specPoolOf, specCatalogOf, specResolves, specLabel } from '../data';
 import { wildcardSpecs } from './careerSlots';
 import { createHero } from './character';
 import { testValue } from './skills';
@@ -23,7 +23,7 @@ const hero = (skills: { skillId: string; advances: number; spec?: string }[]): C
   }) as unknown as Combatant;
 
 describe('#1342 L3 — spécialisation hors pool : valide partout, jamais proposée', () => {
-  const savoir = findSkillById(HORS_POOL.skillId)!;
+  const savoir = byId('skill', HORS_POOL.skillId)!;
 
   it('la donnée porte le marqueur et sa source', () => {
     const entry = savoir.specs!.find((e) => e.id === HORS_POOL.specId)!;

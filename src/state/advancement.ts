@@ -32,7 +32,7 @@ import {
 } from '../engine/careerSlots';
 import { careerSkillAdditions, careerTalentAdditions, baseWithTalents } from '../engine/talentEffects';
 import { rule } from '../engine/policy';
-import { levelsForCareer, findSkillById, findCareerById, refLabel, specLabel, displayLabelForSex } from '../data';
+import { levelsForCareer, byId, findCareerById, refLabel, specLabel, displayLabelForSex } from '../data';
 
 export interface CharAdvanceRow {
   key: CharKey;
@@ -144,7 +144,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   // distincte (LDB 09 l.42). In-carrière = slot explicite / désigné / joker libre, OU
   // compétence ajoutée par un talent (« à n'importe quelle Carrière », LDB 10).
   const skills: SkillAdvanceRow[] = hero.skills.map((s) => {
-    const sName = findSkillById(s.skillId)?.label ?? s.skillId; // AFFICHAGE seulement
+    const sName = byId('skill', s.skillId)?.label ?? s.skillId; // AFFICHAGE seulement
     const status = inCareerStatus(sSlots, designations, s.skillId, s.spec);
     const addedExact = additions.some((a) => a.id === s.skillId && (!a.spec || /au choix/i.test(a.spec) || (a.spec ?? '') === (s.spec ?? '')));
     const inCareer = status != null || addedExact;
@@ -168,7 +168,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     if (!o.optionId) continue; // tirage aléatoire sans identité réelle : jamais acquérable ainsi
     if (knows(o.optionId, o.spec)) continue;
     if (skills.some((r) => !r.known && r.skillId === o.optionId && (r.spec ?? '') === (o.spec ?? ''))) continue;
-    const characteristic = findSkillById(o.optionId)?.characteristic ?? 'intelligence';
+    const characteristic = byId('skill', o.optionId)?.characteristic ?? 'intelligence';
     skills.push({ skillId: o.optionId, label: o.label, spec: o.spec, characteristic, advances: 0, known: false, inCareer: true, nextCost: advanceCost(0, 'skill', true) });
   }
   // Emplacements de Compétence « (Au choix) » non désignés → choix de spec (désigner/apprendre).
@@ -186,7 +186,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
         display: specLabel('skills', o.optionId!, spec),
         ownedAdvances: hero.skills.find((s) => s.skillId === o.optionId && (s.spec ?? '') === spec)?.advances ?? 0,
       }));
-    const characteristic = findSkillById(o.optionId)?.characteristic ?? 'intelligence';
+    const characteristic = byId('skill', o.optionId)?.characteristic ?? 'intelligence';
     skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.label, groupId: o.optionId, characteristic, options, nextCost: advanceCost(0, 'skill', true) });
   }
 

@@ -47,7 +47,7 @@ import { applyOps } from '../engine/ops';
 import { groupAdvantage, mirrorPools } from '../engine/advantagePool';
 import { campGain, campSpend, startAdvantagePools } from './combat/advantagePool';
 import { skillAdvantageCap } from '../engine/skillCombatApps';
-import { findSkillById } from '../data/index';
+import { byId } from '../data/index';
 import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, castBlockedBy, spellTargetCount, overcastSL, castAfterCrit, defaultCritChoice, castInfo, castInfoIsPrayer, focusCriticalDR, dispelOwnSpellDR, consumeMalepierre, malepierreItemOf } from '../engine/magic';
 import { domainSeaFocusCritMiscastMajeure } from '../engine/domainAttributes';
@@ -3736,7 +3736,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const cap = skillAdvantageCap(active, skillId);
       if (cap <= 0 || (active.advantage ?? 0) >= cap) return; // pas d'application « Avantage », ou déjà au plafond de la méthode
-      const sd = findSkillById(skillId);
+      const sd = byId('skill', skillId);
       const skillLabel = sd?.label ?? skillId;
       // Le plafond est une DONNÉE PAR COMPÉTENCE (`SkillData.combatAdvantage.cap`, appliquée par
       // `skillAdvantageCap`) : Intuition relève de l'Initiative mais plafonne au Bonus d'Intelligence

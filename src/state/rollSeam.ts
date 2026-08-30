@@ -56,7 +56,7 @@ import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
 import { tenuParUnHumain, porteurParId, seatOwns, conduitParLeSiegeDuMonde, WORLD_STEP_OWNER } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
-import { findSkillById, conditionLabel, dataLabel, type StakeRef } from '../data';
+import { byId, conditionLabel, dataLabel, type StakeRef } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
 import { rollTest, clampTarget } from '../engine/tests';
 import { defaultRNG, type RNG } from '../engine/dice';
@@ -85,7 +85,7 @@ export interface RollRequest {
   actionLabel: string;
   /** Le TEST déclaré — SEULE source des ids compétence/carac (réf structurée, passe telle quelle à
    *  `testValue`). AUCUN champ de texte ici : le libellé de compétence affiché est TOUJOURS DÉRIVÉ de
-   *  `skill`/`char` par `testSkillLabel` (catalogue `findSkillById`/`CHAR_LABELS`) — insurchargeable,
+   *  `skill`/`char` par `testSkillLabel` (catalogue `byId('skill', …)`/`CHAR_LABELS`) — insurchargeable,
    *  un call-site ne peut plus injecter de texte en position de compétence. */
   /** `noSupport` : Test de résistance (maladie/poison/peur/danger…) — coupe le Soutien du côté
    *  `partyBest` (LDB 12 l.197), pour éviter qu'un futur appelant câble un Soutien interdit. */
@@ -125,12 +125,12 @@ export function effectiveTarget(actor: Combatant | undefined, test: RollRequest[
 }
 
 /** Libellé de COMPÉTENCE/carac d'un Test DÉCLARÉ — DÉRIVÉ des ids `skill`/`char` (catalogue
- *  `findSkillById`/`CHAR_LABELS`) uniquement, jamais d'un texte libre : `RollRequest['test']` ne porte
+ *  `byId('skill', …)`/`CHAR_LABELS`) uniquement, jamais d'un texte libre : `RollRequest['test']` ne porte
  *  aucun champ texte (fix de classe #352), donc AUCUN call-site ne peut se substituer à cette
  *  dérivation. `undefined` si le Test ne porte ni compétence ni caractéristique (ex. Désertion —
  *  cible posée par `meta.baseValue`). */
 export function testSkillLabel(test: RollRequest['test']): string | undefined {
-  return test.skill ? (findSkillById(test.skill)?.label ?? test.skill) : test.char ? CHAR_LABELS[test.char] : undefined;
+  return test.skill ? (byId('skill', test.skill)?.label ?? test.skill) : test.char ? CHAR_LABELS[test.char] : undefined;
 }
 
 /**

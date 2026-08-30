@@ -193,9 +193,3 @@ export function pick<T extends TypeEntite>(type: T): z.ZodType<unknown> {
   return noeud;
 }
 
-/**
- * Signature de la PORTE moteur de résolution d'une référence : le type et l'id doivent s'accorder
- * (`byId('talent', unIdDeCompetence)` ne compile pas, `NoInfer` empêchant le type de s'élargir).
- * L'implémentation vit dans le moteur au lot L2 — la grammaire en déclare le contrat, pas un stub.
- */
-export type SignatureById = <T extends TypeEntite>(type: T, id: Id<NoInfer<T>>) => unknown;

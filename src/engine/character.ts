@@ -31,7 +31,7 @@ import {
   findClassById,
   firstLevel,
   levelsForCareer,
-  findSkillById,
+  byId,
   findTalentById,
   skillIdByLabel,
   talentIdByLabel,
@@ -53,7 +53,7 @@ import { sizeFromTalents } from './size';
 /** Caractéristique d'une Compétence (skills.json) par `id` STABLE — LDB 09 : valeur de Test =
  *  Caractéristique + avances. (≠ re-lookup par libellé — multilangue-safe.) */
 export function skillCharacteristicById(id: string): CharKey {
-  const data = findSkillById(id);
+  const data = byId('skill', id);
   return data?.characteristic ?? 'dexterite'; // CharKey stable portée par la donnée (repli prudent)
 }
 
@@ -68,7 +68,7 @@ export function skillCharacteristicById(id: string): CharKey {
  *  porte de VALIDITÉ (`specResolves` — y compris une entrée hors pool, `SpecEntry.pool: false`) ; une
  *  spec libre (domaine ouvert, hors catalogue) ne matche rien → renvoyée verbatim (inchangé). */
 function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: string): string {
-  const def = category === 'skills' ? findSkillById(defId) : findTalentById(defId);
+  const def = category === 'skills' ? byId('skill', defId) : findTalentById(defId);
   if (!def) return raw;
   if (specResolves(def, raw)) return raw;
   for (const id of specCatalogOf(def)) {

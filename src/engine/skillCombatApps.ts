@@ -13,11 +13,11 @@
  *     (attaque) ; Dressage « au lieu de Corps à corps » après avoir instillé la peur à l'animal. Gate
  *     `fear` : l'ADVERSAIRE est sous une Peur SOURCÉE par ce personnage (`sourceId` = son id, non surmontée).
  *
- * PUR : lit la donnée (`findSkillById`) + `effectiveChar` ; ne mute rien. La couche combat/UI consomme
+ * PUR : lit la donnée (`byId('skill', …)`) + `effectiveChar` ; ne mute rien. La couche combat/UI consomme
  * ces primitives (surface d'attaque/défense) — cette FEUILLE ne connaît ni le store ni le rendu.
  */
 import type { Combatant } from './types';
-import { findSkillById } from '../data';
+import { byId } from '../data';
 import { effectiveChar, bonus } from './characteristics';
 import { skillBaseValue } from './skills';
 
@@ -26,7 +26,7 @@ import { skillBaseValue } from './skills';
  *  cible une spécialisation précise (sinon la première instance de l'id, comme `skillBaseValue`) —
  *  exportée : réutilisée par `engine/axes.ts` (#409, gate « axe expert » avant `skillBaseValue`). */
 export function possesses(c: Combatant, skillId: string, spec?: string): boolean {
-  const sd = findSkillById(skillId);
+  const sd = byId('skill', skillId);
   if (!sd) return false;
   const inst = c.skills?.find((s) => s.skillId === skillId && (spec == null || s.spec === spec));
   return sd.acces === 'base' || (inst?.advances ?? 0) > 0;
@@ -44,7 +44,7 @@ function skillValue(c: Combatant, skillId: string, spec?: string): number {
 /** Plafond d'Avantage cumulable via cette Compétence en combat (LDB 09 l.305-308) = Bonus de la
  *  Caractéristique `cap` déclarée. 0 si la Compétence n'a pas d'application « Avantage » ou n'est pas possédée. */
 export function skillAdvantageCap(c: Combatant, skillId: string): number {
-  const sd = findSkillById(skillId);
+  const sd = byId('skill', skillId);
   if (!sd?.combatAdvantage || !possesses(c, skillId)) return 0;
   return Math.max(0, bonus(effectiveChar(c, sd.combatAdvantage.cap)));
 }
@@ -72,7 +72,7 @@ export function fearsBy(foe: Combatant, self: Combatant): boolean {
 export function combatSubstitute(self: Combatant, foe: Combatant, role: 'defense' | 'attack'): { skillId: string; value: number } | null {
   let best: { skillId: string; value: number } | null = null;
   for (const inst of self.skills ?? []) {
-    const sub = findSkillById(inst.skillId)?.combatSubstitute;
+    const sub = byId('skill', inst.skillId)?.combatSubstitute;
     if (!sub || (sub.role !== 'both' && sub.role !== role)) continue;
     if (!possesses(self, inst.skillId)) continue;
     if (sub.gate === 'fear' && !fearsBy(foe, self)) continue;

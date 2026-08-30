@@ -4,7 +4,7 @@ import { FLOWS, opposedForcingCancelled, OPPOSED_FORCING_CANCELLED_NOTE } from '
 import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL, type DefenseMode } from '../../engine/combat';
 import { shieldReactionCost } from '../../engine/combatFeatures/dispatch';
 import { combatSubstitute } from '../../engine/skillCombatApps';
-import { findSkillById } from '../../data/index';
+import { byId } from '../../data/index';
 import { composeRollLabel } from '../../state/rollSeam';
 import { isUnarmed } from '../../engine/items';
 import { RollShell, type RollAction } from '../RollShell';
@@ -55,7 +55,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   // (Intimidation/Dressage `combatSubstitute`) est utilisable en défense — l'attaquant a PEUR du
   // défenseur (gate `fear`). Data-driven : l'option existe parce que la donnée+le gate le disent.
   const sub = pd.weapon.type === 'melee' ? combatSubstitute(defender, attacker, 'defense') : null;
-  const socialLabel = sub ? findSkillById(sub.skillId)?.label ?? 'Intimidation' : undefined;
+  const socialLabel = sub ? byId('skill', sub.skillId)?.label ?? 'Intimidation' : undefined;
   // Base de la défense sociale (mode 'social') = valeur de Test de la Compétence substituée.
   const socialBase = pd.mode === 'social' ? sub?.value : undefined;
   // MA ligne pré-remplie : valeur + mods de la défense CHOISIE (recalculés à chaque changement). La météo

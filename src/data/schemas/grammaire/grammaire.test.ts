@@ -12,7 +12,8 @@ import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
 import tablesJson from '../../tables.json';
 import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, type Exposition } from './document';
-import { ref, refs, specRef, pick, typedRef, idDe, cibleDe, estSpecialisable, TYPES, type Id, type SignatureById } from './ref';
+import { ref, refs, specRef, pick, typedRef, idDe, cibleDe, estSpecialisable, TYPES, type Id } from './ref';
+import { byId, type SkillData, type TypeResolu } from '../../index';
 import { slotsDe } from './slots';
 import { SANS_LIVRE } from './sans-livre';
 import { SCHEMA_DEFS } from '../_registry.generated';
@@ -1021,13 +1022,17 @@ describe('specRef() — spécialisation ouverte vs pool fermé', () => {
   });
 });
 
-describe('byId — le type et l’id doivent s’accorder', () => {
-  it('refuse à la COMPILATION un id d’un autre type', () => {
-    const byId: SignatureById = (type, id) => `${type}:${String(id)}`;
-    const idCompetence = idDe('skill').parse(UNE_COMPETENCE.id);
-    expect(byId('skill', idCompetence)).toBe(`skill:${UNE_COMPETENCE.id}`);
-    // @ts-expect-error — un `Id<'skill'>` n'est pas un `Id<'talent'>` (`NoInfer` fige le type).
-    byId('talent', idCompetence);
+describe('byId — la PORTE de résolution d’une entité par son id STABLE', () => {
+  it('rend l’entrée RÉELLE du dataset, et `undefined` sur un id absent', () => {
+    expect(byId('skill', UNE_COMPETENCE.id)?.id).toBe(UNE_COMPETENCE.id);
+    expect(byId('skill', `${UNE_COMPETENCE.id}-fantome`)).toBeUndefined();
+  });
+
+  it('le type d’entité paramètre le TYPE RENDU, et un type hors registre ne compile pas', () => {
+    expectTypeOf(byId('skill', UNE_COMPETENCE.id)).toEqualTypeOf<SkillData | undefined>();
+    // Le registre de la porte est CLOS au type près : un type de `TYPES` y entre avec le lot qui
+    // migre son concept, et rien d'autre n'est appelable (« talent » ne compile pas aujourd'hui).
+    expectTypeOf<TypeResolu>().toEqualTypeOf<'skill'>();
   });
 
   it("la porte zod FRAPPE la marque de type — `Id<'skill'>` en sortie, jamais un `string` nu", () => {

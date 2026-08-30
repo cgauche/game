@@ -6,7 +6,7 @@ import { effectiveChar } from '../engine/characteristics';
 import { effectiveTalents } from '../engine/talentEffects';
 import { itemLabel } from '../engine/items';
 import { castInfoIsPrayer } from '../engine/magic';
-import { CORE_AXIS_IDS, findSpellById, findSkillById, skillInstanceLabel } from '../data';
+import { CORE_AXIS_IDS, findSpellById, byId, skillInstanceLabel } from '../data';
 import { Coins } from './Coins';
 import { Icon } from './Icon';
 import { CharacterPreview } from './CharacterPreview';
@@ -164,7 +164,7 @@ export function HeroSheet({
               return (
                 <div className="skill-line" key={i} title={`${s.characteristic} ${effectiveChar(hero, s.characteristic)} + ${s.advances}`}>
                   <span className="sk-name">
-                    <CodexRef category="skills" id={s.skillId} label={findSkillById(s.skillId)?.label ?? s.skillId}>
+                    <CodexRef category="skills" id={s.skillId} label={byId('skill', s.skillId)?.label ?? s.skillId}>
                       {skillInstanceLabel(s)}
                     </CodexRef>
                   </span>

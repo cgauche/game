@@ -6,7 +6,7 @@ import { wastesAction, endTurnArmed } from '../state/endTurnGuard';
 import { advantageCapFor } from '../engine/advantage';
 import { attackWeapon } from '../engine/combat';
 import { availableAttacks, selfManeuversOf, selfManeuverApplicable, previewResourceDelta, STANCE_BLOCK } from '../state/combatFlow';
-import { findSpellById, findSkillById, findActionById, ACTIONS, type ActionDef } from '../data/index';
+import { findSpellById, byId, findActionById, ACTIONS, type ActionDef } from '../data/index';
 import { type CodexTarget } from '../engine/ruleRefs';
 import { actionGate, runAction, currentInterludeAction, ACTION_CANDIDATES, type ActionCtx, type ActionRunCtx } from '../state/actionRegistry';
 import { offresDuRegistre } from '../state/registreOffres';
@@ -922,8 +922,8 @@ export function CombatConsole() {
     ...advSkills.map((s) =>
       cellFor('gain-advantage', 'avantage', {
         key: `advantage-${s.skillId}`,
-        icon: icon(charIcon(findSkillById(s.skillId)?.characteristic)),
-        label: findSkillById(s.skillId)?.label ?? s.skillId,
+        icon: icon(charIcon(byId('skill', s.skillId)?.characteristic)),
+        label: byId('skill', s.skillId)?.label ?? s.skillId,
         rule: { category: 'skills', id: s.skillId },
         off: busy,
         args: { skillId: s.skillId },

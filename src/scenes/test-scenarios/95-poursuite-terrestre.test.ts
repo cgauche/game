@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { flowEffects } from '../../state/flow';
-import { findSkillById, findCreatureById } from '../../data';
+import { byId, findCreatureById } from '../../data';
 import { scenario } from './95-poursuite-terrestre';
 
 describe('Scénario 95 — Poursuite terrestre', () => {
@@ -29,7 +29,7 @@ describe('Scénario 95 — Poursuite terrestre', () => {
     const trigger = scenario.scene.triggers.find((t) => t.id === 'depart-poursuite')!;
     const startPursuit = flowEffects(trigger.flow).find((e) => e.type === 'startPursuit');
     if (startPursuit?.type !== 'startPursuit') throw new Error('type narrowing');
-    expect(findSkillById(startPursuit.skill)).toBeTruthy();
+    expect(byId('skill', startPursuit.skill)).toBeTruthy();
     expect(findCreatureById('brigand')).toBeTruthy();
   });
 

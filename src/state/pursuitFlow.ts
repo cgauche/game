@@ -30,7 +30,7 @@ import { rollTest } from '../engine/tests';
 import { effectiveMovement } from '../engine/encumbrance';
 import { pursuitTargetMovementBonus } from '../engine/combatFeatures/dispatch';
 import type { Combatant, Difficulty } from '../engine/types';
-import { findSkillById, combatStakeRef } from '../data/index';
+import { byId, combatStakeRef } from '../data/index';
 import { battleRng } from './battleRng';
 import { registerCascadeApplier, rollBatchParticipant } from './cascade';
 import { actorIn } from './combatants';
@@ -247,7 +247,7 @@ export function startGroundPursuit(get: Get, set: Set, spec: PursuitSpec): void 
  *  DÉCISION (l.94) est une étape de choix portée par un héros du camp qui décide. */
 function pursuitRoundFactory(get: Get, seq: PursuitSequence): SequenceRound<PursuitPayload> | undefined {
   const p = seq.payload;
-  const label = findSkillById(p.skill)?.label ?? p.skill;
+  const label = byId('skill', p.skill)?.label ?? p.skill;
   if (p.phase === 'course') {
     // Le rang de MANCHE DE COURSE avance ici et repart avec la charge utile (le socle l'applique) : les
     // fenêtres de décision de l.94 n'en consomment aucun.
@@ -342,7 +342,7 @@ function campsOf(get: Get, p: PursuitPayload, done: PendingCascade, rng: RNG, lo
   const partyRolls = done.participants
     .filter((s) => s.kind === PURSUIT_MOVE_KIND)
     .flatMap((s) => (s.participants ?? []).map((r) => ({ actorId: r.id, sl: r.result?.sl ?? 0 })));
-  const skillLabel = findSkillById(p.skill)?.label ?? p.skill;
+  const skillLabel = byId('skill', p.skill)?.label ?? p.skill;
   const heros = runners(get, p.retires).map((h) => ({ id: h.id, label: h.label, m: pursuedMovement(h, p.partyRole) }));
   // Plus lent de la course = min des Mouvements de TOUS les participants (héros + adversaires).
   const slowest = Math.min(...heros.map((h) => h.m), ...p.foes.map((f) => f.movement));

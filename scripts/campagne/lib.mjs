@@ -14,7 +14,7 @@
 import { buildScene } from '../../src/state/mapSpec.ts';
 import { CURRENT_PROJECT_SCHEMA } from '../../src/state/worldMap.ts';
 import { emptyNarratif } from '../../src/state/campaignNarratif.ts';
-import { findCreatureById, findSkillById, findSpellById, findTraitById, findTrappingById, findVehicleById, species as SPECIES_CATALOG } from '../../src/data/index.ts';
+import { findCreatureById, byId, findSpellById, findTraitById, findTrappingById, findVehicleById, species as SPECIES_CATALOG } from '../../src/data/index.ts';
 import { creatureSpeciesOptions } from '../../src/gameIso/rig/creatures/index.ts';
 import { wardrobeKeyResolves } from '../../src/gameIso/rig/parts/career.ts';
 
@@ -33,7 +33,7 @@ function creatureId(ref) {
 }
 /** Compétence : skillId STABLE. Valide → passe ; inconnu → throw. */
 function skillId(id) {
-  if (findSkillById(id)) return id;
+  if (byId('skill', id)) return id;
   throw new Error(`campagne : compétence introuvable « ${id} » — attendu un id de skills.json (Compendium → Compétences).`);
 }
 /** Sort : id STABLE. Valide → passe ; inconnu → throw. */

@@ -39,7 +39,7 @@ import { castingKindOf } from '../engine/combatFeatures/dispatch';
 import { canAfford, toMoney, Money, formatMoney } from '../engine/money';
 import { isArcaneSpell } from '../engine/magic';
 import { spellCost } from '../engine/grimoire';
-import { levelsForCareer, findSkillById, findCareerById, findSpellById, findTrappingById, findTalentById, refLabel, dataLabel } from '../data/index';
+import { levelsForCareer, byId, findCareerById, findSpellById, findTrappingById, findTalentById, refLabel, dataLabel } from '../data/index';
 import { t } from '../i18n';
 import { seatSlotsRemaining } from './netOwnership';
 import { PARTY_MAX } from './combatants';
@@ -396,7 +396,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillId: str
       if (h.id !== heroId) return h;
       const clone: Combatant = structuredClone(h);
       const ctx = careerCtx(clone);
-      const skillLabel = findSkillById(skillId)?.label ?? skillId; // AFFICHAGE (messages) + conversion pour le moteur
+      const skillLabel = byId('skill', skillId)?.label ?? skillId; // AFFICHAGE (messages) + conversion pour le moteur
       const known = clone.skills.some((sk) => sk.skillId === skillId && (sk.spec ?? '') === (spec ?? ''));
       const status = inCareerStatus(ctx.sSlots, ctx.designations, skillId, spec);
       const additions = careerSkillAdditions(clone);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { allAxes, findSkillById, findTalentById, specResolves } from './index';
+import { allAxes, byId, findTalentById, specResolves } from './index';
 
 /**
  * Garde d'INTÉGRITÉ de `axes.json` (#409) — patron `book-source-integrity.test.ts` : chaque
@@ -13,7 +13,7 @@ describe('#409 — intégrité de axes.json', () => {
     describe(`axe « ${axis.id} »`, () => {
       for (const ref of axis.skills ?? []) {
         it(`compétence ${ref.skillId}${ref.spec ? ` (${ref.spec})` : ''} existe`, () => {
-          const skill = findSkillById(ref.skillId);
+          const skill = byId('skill', ref.skillId);
           expect(skill, `skillId « ${ref.skillId} » introuvable dans skills.json`).toBeDefined();
           if (ref.spec && skill) {
             expect(specResolves(skill, ref.spec), `spec « ${ref.spec} » ne résout pas pour « ${ref.skillId} »`).toBe(true);
@@ -49,7 +49,7 @@ describe('#409 — intégrité de axes.json', () => {
     for (const axis of allAxes) {
       if (axis.core) continue;
       for (const ref of axis.skills ?? []) {
-        const skill = findSkillById(ref.skillId);
+        const skill = byId('skill', ref.skillId);
         if (skill && skill.acces !== 'avancee') offenders.push(`${axis.id} ← ${ref.skillId} (accès « ${skill.acces} »)`);
       }
     }

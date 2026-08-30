@@ -15,7 +15,7 @@ import { partyMoneyTotal, bourseOf, creditBourse } from './bourseFlow';
 import { itemFromTrappingById } from '../engine/items';
 import { bankWithdraw } from './interludeFlow';
 import { traumaById } from '../engine/trauma';
-import { findSkillById, maladies } from '../data';
+import { byId, maladies } from '../data';
 import type { Combatant } from '../engine/types';
 import { buildEncounter } from './encounterAuthoring';
 import { emptyScene, type Scene } from './scene';
@@ -2218,7 +2218,7 @@ describe('#1341 (site maritime) — `engineerOf` demande la spec Métier par ID,
   }
 
   it('la spec « ingenieur » EXISTE dans skills.json (id, pas libellé)', () => {
-    expect((findSkillById('metier')?.specs ?? []).some((s) => s.id === 'ingenieur')).toBe(true);
+    expect((byId('skill', 'metier')?.specs ?? []).some((s) => s.id === 'ingenieur')).toBe(true);
   });
 
   it('testValue trouve la spécialisation par son ID — le LIBELLÉ perd les avances (contre-preuve)', () => {

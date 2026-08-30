@@ -62,7 +62,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { resolveFrenzyEntry, calmeValue, spendResolveForPsychImmunity } from '../engine/psychology';
 import { t } from '../i18n';
 import { describeTest, describeBargain, describeReload, describeStateRecovery, describeFrenzy } from './flowOutcomes';
-import { findSpellById, findSkillById } from '../data/index';
+import { findSpellById, byId } from '../data/index';
 
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
  *  choisi) : Test opposé si un défenseur a joué, attaque passive sinon — partagé attaque/force.
@@ -164,7 +164,7 @@ function forcedOpposedAtk(p: PendingDefense, def: TestResult): TestResult {
  *  (`substituteSkillId`, `skillBaseValue`) ; libellé = son nom d'affichage. */
 function defenseSubOf(defender: Combatant, p: PendingDefense): DefenseSub | undefined {
   if (p.mode !== 'social' || !p.substituteSkillId) return undefined;
-  return { base: skillBaseValue(defender, p.substituteSkillId), label: findSkillById(p.substituteSkillId)?.label ?? DEFENSE_LABEL_FALLBACK };
+  return { base: skillBaseValue(defender, p.substituteSkillId), label: byId('skill', p.substituteSkillId)?.label ?? DEFENSE_LABEL_FALLBACK };
 }
 const DEFENSE_LABEL_FALLBACK = 'Intimidation';
 

@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { sourceRefSchema, entityAppearanceSchema } from '../grammaire/valeurs';
 import { idDe } from '../grammaire/ref';
 import { entreePartielle as creatureEntreePartielle, type CreatureProfilPartiel } from '../defs/creatures';
-import { findCreatureById, findTrappingById, findSkillById, findTalentById, specResolves } from '../../index';
+import { findCreatureById, findTrappingById, byId, findTalentById, specResolves } from '../../index';
 import type { TrappingData } from '../../index';
 
 /** Un stade RÉVÉLABLE d'un indice : la prose (verbatim source, règle 5) dévoilée à ce palier. */
@@ -122,7 +122,7 @@ function raffineNarratif(nb: z.infer<typeof formeNarratif>, ctx: z.RefinementCtx
         }
       });
     };
-    specValide('skills', { indefini: 'une Compétence', defini: 'la Compétence' }, findSkillById, p.profil?.skills ?? []);
+    specValide('skills', { indefini: 'une Compétence', defini: 'la Compétence' }, (id) => byId('skill', id), p.profil?.skills ?? []);
     specValide('talents', { indefini: 'un Talent', defini: 'le Talent' }, findTalentById, p.profil?.talents ?? []);
     presetIds.add(p.id);
   });

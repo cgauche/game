@@ -18,7 +18,7 @@ import { AVAILABILITIES } from './types';
 import { craftTarget, apprenticeshipTutorCost, entrainementTutorCost, entrainementTutorRange, entrainementOptions, bankWithdrawOutcome, statusIncome, ACTIVITIES, activitiesFor, activityById, resolveTravelActivity,
   resolveStageActivities, aggregateActivityOutcomes, STAGE_OUTCOME_AGG, type TravelActivityResult,
   defaultTravelRole, stageAssignmentFromRoles, matchOutcomes, activityAvailableAt } from './activities';
-import { findSkillById } from '../data';
+import { byId } from '../data';
 import { testValue } from './skills';
 
 function seq(values: number[]): RNG {
@@ -213,7 +213,7 @@ describe('catalogue d’Activités data-driven (activities.json)', () => {
 
   it('toute compétence référencée (skillId) résout dans le catalogue de Compétences', () => {
     for (const a of ACTIVITIES) {
-      for (const s of a.skills ?? []) expect(findSkillById(s.skillId), `${a.id} → ${s.skillId}`).toBeTruthy();
+      for (const s of a.skills ?? []) expect(byId('skill', s.skillId), `${a.id} → ${s.skillId}`).toBeTruthy();
     }
   });
 

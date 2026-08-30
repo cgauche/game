@@ -7,6 +7,7 @@ import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { PlayerText } from '../i18n/playerText';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
 import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/grammaire/valeurs';
+import type { TypeEntite } from './schemas/grammaire/ref';
 import type { MerchantArchetypeDef } from '../state/merchants/types';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
@@ -448,7 +449,7 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   activities: (id) => ACTIVITY_STAKES.some((a) => a.id === id),
   // La COMPÉTENCE testée est le foyer quand le jet n'existe que par elle (cumuler l'Avantage :
   // Intuition/Savoir/Survie/Prière portent chacune SA phrase de combat, LDB 09).
-  skills: (id) => !!findSkillById(id),
+  skills: (id) => !!byId('skill', id),
 };
 
 /** Rangées BRUTES des tables tirées par une étape, réduites à leur id — le résolveur d'enjeu n'a
@@ -907,7 +908,7 @@ export type SpecsSource =
   | 'weaponsRanged';
 export interface SkillData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
-   *  renommage du `label`. Source unique pour `findSkillById`. */
+   *  renommage du `label`. Source unique pour la porte `byId('skill', …)`. */
   id: string;
   type: 'skills';
   label: string;
@@ -2879,10 +2880,23 @@ export function findSkill(label: string): SkillData | undefined {
 export function skillIdByLabel(label: string): string {
   return findSkill(label)?.id ?? slugId(label);
 }
-const SKILL_BY_ID = new Map(skills.map((s) => [s.id, s]));
-/** Résout une Compétence par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */
-export function findSkillById(id: string): SkillData | undefined {
-  return SKILL_BY_ID.get(id);
+/** REGISTRE de la porte `byId` : type d'entité de la grammaire → index de son dataset par `id`
+ *  STABLE. Un type y entre AVEC le lot qui migre son concept (patron `TYPES`,
+ *  `schemas/grammaire/ref.ts`) — ce qui n'y est pas déclaré ne se résout pas par la porte. */
+const PAR_ID = {
+  skill: new Map<string, SkillData>(skills.map((s) => [s.id, s])),
+} satisfies Partial<Record<TypeEntite, ReadonlyMap<string, unknown>>>;
+/** Types d'entité que la porte résout — sous-ensemble DÉCLARÉ de `TypeEntite`. */
+export type TypeResolu = keyof typeof PAR_ID;
+type EntiteDe<T extends TypeResolu> = (typeof PAR_ID)[T] extends Map<string, infer E> ? E : never;
+/**
+ * PORTE UNIQUE de résolution d'une entité par son `id` STABLE (#1463 L2) : le type d'entité
+ * paramètre le lookup ET le type rendu ; `undefined` si l'id est absent de son dataset.
+ * L'`id` est un `string` NU — la marque `Id<'skill'>` se frappe à la porte zod, côté DONNÉE
+ * (`idDe`, `schemas/grammaire/ref.ts`) ; le moteur, lui, porte des ids nus (`SkillInstance.skillId`).
+ */
+export function byId<T extends TypeResolu>(type: T, id: string): EntiteDe<T> | undefined {
+  return PAR_ID[type].get(id) as EntiteDe<T> | undefined;
 }
 /** Noyau de RÉFÉRENCE structurée par `id` STABLE — partagé par toutes les refs de la donnée
  *  (compétences, talents, sorts, qualités, possessions, bénédictions…). `id` = slug du libellé
@@ -3164,7 +3178,7 @@ export type AdvancementRef =
 /** Résout une entrée de dataset par (catégorie, `id`) — rendu/lookup des refs structurées. */
 export function findById(category: string, id: string): { label: string } | undefined {
   switch (category) {
-    case 'skills': return findSkillById(id);
+    case 'skills': return byId('skill', id);
     case 'talents': return findTalentById(id);
     case 'trappings': return findTrappingById(id);
     case 'weaponGroups': return findWeaponGroupById(id);
@@ -3244,7 +3258,7 @@ export function specResolves(def: { specsSource?: SpecsSource; specs?: SpecEntry
  *  sinon cherche l'id dans `def.specs` (`SpecEntry[]`, résolu en label FR) ; sinon verbatim (texte
  *  libre / id inconnu — jamais d'erreur d'affichage). SOURCE UNIQUE de résolution de spéc. */
 export function specLabel(category: string, refId: string, specId: string): string {
-  const def = category === 'skills' ? findSkillById(refId) : category === 'talents' ? findTalentById(refId) : undefined;
+  const def = category === 'skills' ? byId('skill', refId) : category === 'talents' ? findTalentById(refId) : undefined;
   if (def?.specsSource) return SPEC_SOURCES[def.specsSource].label(specId);
   const entry = def?.specs?.find((s) => specEntryId(s) === specId);
   return entry ? specEntryLabel(entry) : specId;

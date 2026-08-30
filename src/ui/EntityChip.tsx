@@ -9,7 +9,7 @@ import { Fragment, type ReactNode } from 'react';
 import { CodexRef } from './compendium/CodexRef';
 import { splitTopLevelOu } from '../engine/careerSlots';
 import { statName } from '../engine/statEntry';
-import { findSkillById, findTalentById, findTraitById, skillInstanceLabel, talentConcrete, qualityRefLabel } from '../data';
+import { byId, findTalentById, findTraitById, skillInstanceLabel, talentConcrete, qualityRefLabel } from '../data';
 import { formatTrait } from '../engine/traits/dispatch';
 import type { SkillInstance, TalentInstance, QualityInstance } from '../engine/types';
 import type { TraitInstance } from '../engine/statEntry';
@@ -77,7 +77,7 @@ export function SkillChip({ skill }: { skill: SkillInstance }) {
     <EntityRef
       category="skills"
       id={skill.skillId}
-      label={findSkillById(skill.skillId)?.label ?? skill.skillId}
+      label={byId('skill', skill.skillId)?.label ?? skill.skillId}
       show={skillInstanceLabel(skill)}
       badge={`+${skill.advances}`}
     />

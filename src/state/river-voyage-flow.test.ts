@@ -5,7 +5,7 @@ import { buildRiverPlan, buildRiverDayCascade, runRiverDays, hasBatelier, applyE
 import { buildApi } from './devtools';
 import { cascadeAppliers } from './cascade';
 import { inexplique, soutienDe, avanceEtapeCascade } from './cascadeTestKit';
-import { findSkillById, resolveStake, voyageStakeRef, VOYAGE_STAKES, regles, skills, etats } from '../data';
+import { byId, resolveStake, voyageStakeRef, VOYAGE_STAKES, regles, skills, etats } from '../data';
 import { creditBourse } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import { createHero, skillCharacteristicById } from '../engine/character';
@@ -484,13 +484,13 @@ describe('péril fluvial — la ligne du Test d’évitement nomme la Compétenc
     const check = built.steps.find((s) => s.kind === 'riverPerilCheck')!;
     expect(check, 'le pas de vérification du péril existe').toBeTruthy();
     // Barge gréée → compétence `voile` ; le libellé vient du CATALOGUE, jamais d'un littéral.
-    expect(check.meta?.navLabel).toBe(findSkillById('voile')!.label);
+    expect(check.meta?.navLabel).toBe(byId('skill', 'voile')!.label);
 
     seedBattleRng(2);
     const out = cascadeAppliers['riverPerilCheck'].apply(get, set, check, undefined, { steps: [check], index: 0 });
     const nav = out?.insert?.find((s) => s.kind === 'riverPerilNav');
     expect(nav, 'le Test d’évitement est inséré (barreur présent, péril à 100 %)').toBeTruthy();
-    expect(nav!.rollLabel).toBe(findSkillById('voile')!.label);
+    expect(nav!.rollLabel).toBe(byId('skill', 'voile')!.label);
     expect(nav!.rollLabel).not.toBe(''); // la ligne ne peut plus s'afficher sans nom de Compétence
   });
 
@@ -507,7 +507,7 @@ describe('péril fluvial — la ligne du Test d’évitement nomme la Compétenc
     const out = cascadeAppliers['riverPerilCheck'].apply(get, set, legacy, undefined, { steps: [legacy], index: 0 });
     const nav = out?.insert?.find((s) => s.kind === 'riverPerilNav');
     expect(nav, 'le Test d’évitement s’insère aussi sur le chemin legacy').toBeTruthy();
-    expect(nav!.rollLabel).toBe(findSkillById('voile')!.label); // dérivé du bateau EN COURS
+    expect(nav!.rollLabel).toBe(byId('skill', 'voile')!.label); // dérivé du bateau EN COURS
     expect(nav!.rollLabel).not.toBe('');
   });
 });
@@ -932,7 +932,7 @@ describe('#1341 — la spec d’un Test se demande par ID (la donnée en stocke 
   });
 
   it('la spec demandée par le flux fluvial EXISTE dans `skills.json` (id, pas libellé)', () => {
-    const specs = findSkillById('metier')?.specs ?? [];
+    const specs = byId('skill', 'metier')?.specs ?? [];
     for (const id of ['construction-de-bateaux', 'charpentier']) {
       expect(specs.some((s) => s.id === id), `spec « ${id} » absente de skills.json`).toBe(true);
     }

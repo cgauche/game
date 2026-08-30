@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
   traits, stars, talents, maneuvers, skills, domains, crewRoles, groups, raceAppearance,
-  findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
+  byId, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
   findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById, findLightToneById,
   mutationTables,
@@ -176,7 +176,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     const bad: string[] = [];
     const ck = (cat: 'skills' | 'talents', a: unknown, where: string): void => {
       if (!isObj(a)) return;
-      const find = cat === 'skills' ? findSkillById : findTalentById;
+      const find = (id: string) => (cat === 'skills' ? byId('skill', id) : findTalentById(id));
       if ('ref' in a) { const r = a.ref as { id: string }; if (!find(r.id)) bad.push(`${where} {ref} ${cat} → ${JSON.stringify(r.id)}`); }
       if ('wildcard' in a) { const w = a.wildcard as { id: string }; if (!find(w.id)) bad.push(`${where} {wildcard} ${cat} → ${JSON.stringify(w.id)}`); }
       if ('choice' in a) (a.choice as unknown[]).forEach((o, i) => ck(cat, o, `${where}.choice[${i}]`));
@@ -198,7 +198,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     const bad: string[] = [];
     const ck = (cat: 'skills' | 'talents', a: unknown, where: string): void => {
       if (!isObj(a)) return;
-      const find = cat === 'skills' ? findSkillById : findTalentById;
+      const find = (id: string) => (cat === 'skills' ? byId('skill', id) : findTalentById(id));
       if ('wildcard' in a) { const w = a.wildcard as { id: string }; if (!find(w.id)) bad.push(`${where} → ${JSON.stringify(w.id)}`); }
     };
     ck('skills', { wildcard: { id: 'langue' } }, 'fixture-vraie');
@@ -260,7 +260,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   it('ops grantCareerSkill/grantCareerTalent (talent → carrière) = réf par id qui résout (jamais un libellé)', () => {
     for (const t of talents) {
       for (const op of t.passive ?? []) {
-        if (op.op === 'grantCareerSkill') expect(findSkillById(op.skillId), `${t.label}.grantCareerSkill`).toBeTruthy();
+        if (op.op === 'grantCareerSkill') expect(byId('skill', op.skillId), `${t.label}.grantCareerSkill`).toBeTruthy();
         if (op.op === 'grantCareerTalent') expect(findTalentById(op.talentId), `${t.label}.grantCareerTalent`).toBeTruthy();
       }
     }
@@ -283,7 +283,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       }
       for (const s of ids) {
         expect(typeof s, JSON.stringify(o)).toBe('string');
-        expect(findSkillById(s as string), `${JSON.stringify(o)} → ${String(s)}`).toBeTruthy();
+        expect(byId('skill', s as string), `${JSON.stringify(o)} → ${String(s)}`).toBeTruthy();
       }
     });
   });
@@ -292,13 +292,13 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     walk(areneProject, (o) => {
       if (o.kind === 'test' && isObj(o.test)) {
         const s = (o.test as Record<string, unknown>).skill;
-        if (s != null) expect(findSkillById(s as string), `FlowTest → ${String(s)}`).toBeTruthy();
+        if (s != null) expect(byId('skill', s as string), `FlowTest → ${String(s)}`).toBeTruthy();
         const hs = (o.test as Record<string, unknown>).easierIf;
         if (isObj(hs) && isObj((hs as Record<string, unknown>).hasSkill)) {
-          expect(findSkillById(((hs as Record<string, unknown>).hasSkill as { id: string }).id)).toBeTruthy();
+          expect(byId('skill', ((hs as Record<string, unknown>).hasSkill as { id: string }).id)).toBeTruthy();
         }
       }
-      if (o.type === 'extendedTest' && o.skill != null) expect(findSkillById(o.skill as string), `extendedTest → ${String(o.skill)}`).toBeTruthy();
+      if (o.type === 'extendedTest' && o.skill != null) expect(byId('skill', o.skill as string), `extendedTest → ${String(o.skill)}`).toBeTruthy();
       if (o.type === 'corruptionExposure' && o.skill != null) expect(['resistance', 'calme'], String(o.skill)).toContain(o.skill);
     });
   });
@@ -342,7 +342,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
         ['talents', 'chanson-de-marin', 'seaShanties', (id) => !!findSeaShantyById(id)],
       ];
       for (const [cat, id, source, ok] of cases) {
-        const def = cat === 'skills' ? findSkillById(id) : findTalentById(id);
+        const def = cat === 'skills' ? byId('skill', id) : findTalentById(id);
         expect(def, id).toBeTruthy();
         expect(def!.specsSource, id).toBe(source);
         // Le pool DÉRIVE du registre (SPEC_SOURCES) : plus aucune liste `specs[]` maintenue à la main.
@@ -355,7 +355,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
 
     it('domaines FERMÉS inline (ex. langue/chevaucher/discretion/art/musicien/voile, talents resistance/sens-aiguise) : specs[] = {id,label}, specsOpen absent', () => {
       for (const id of ['langue', 'chevaucher', 'discretion', 'art', 'musicien', 'voile']) {
-        const s = findSkillById(id)!;
+        const s = byId('skill', id)!;
         expect(s.specsOpen, id).toBeFalsy();
         expect((s.specs?.length ?? 0) > 0, id).toBe(true);
         for (const entry of s.specs ?? []) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
@@ -369,7 +369,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
 
     it('domaines OUVERTS (ex. savoir/metier/divertissement/signes-secrets) : specsOpen:true, specs[] = {id,label}[]', () => {
       for (const id of ['savoir', 'metier', 'divertissement', 'dressage', 'representation', 'signes-secrets']) {
-        const s = findSkillById(id)!;
+        const s = byId('skill', id)!;
         expect(s.specsOpen, id).toBe(true);
         expect((s.specs?.length ?? 0) > 0, id).toBe(true);
         for (const entry of s.specs ?? []) expect(isObj(entry) && typeof entry.id === 'string' && typeof entry.label === 'string', `${id} → ${JSON.stringify(entry)}`).toBe(true);
@@ -504,7 +504,7 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
   const { extraits: EXTRAITS, dirManquant } = extractedBooks(books, ROOT);
 
   const resolves = (skillId: string, spec: string): boolean => {
-    const def = findSkillById(skillId);
+    const def = byId('skill', skillId);
     return !!def && specResolves(def, spec); // porte UNIQUE de validité (#1342 L3) : pool ou hors pool
   };
 
@@ -518,7 +518,7 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
       const book = entry.source?.book ?? '(sans source)';
       const owner = entry.id ?? entry.label ?? '?';
       walkSkillRefs(entry, (node) => {
-        const def = findSkillById(node.id);
+        const def = byId('skill', node.id);
         const groupee = !!def?.specsSource || (Array.isArray(def?.specs) && def.specs.length > 0);
         if (node.spec == null) { if (groupee) nues.push({ where: `${file}(${owner})`, book, skillId: node.id }); return; }
         if (isSentinel(node.spec)) return;
@@ -996,7 +996,7 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     psychology: (id) => !!findPsychologyById(id),
     traits: (id) => !!findTraitById(id),
     talents: (id) => !!findTalentById(id),
-    skills: (id) => !!findSkillById(id),
+    skills: (id) => !!byId('skill', id),
     maladies: (id) => !!findDiseaseById(id),
     symptoms: (id) => !!findSymptomById(id),
     trappings: (id) => !!findTrappingById(id),

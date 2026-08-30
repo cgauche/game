@@ -30,7 +30,7 @@ import { isPsychImmune, psychImmuneToFrom } from './psychology';
 import { qualitySum, attackModQualityIds, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon, resolveQualities } from './qualities/dispatch';
 import { RULE_REF } from './ruleRefs';
 import { spellEffectOps } from './flowCore';
-import { findPsychologyById, findSkillById } from '../data';
+import { findPsychologyById, byId } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust } from './combatFeatures/dispatch';
 import { isEngagedWith, meleeReachRank } from './engagement';
 import { hullHitAdjust } from './shipMelee';
@@ -840,7 +840,7 @@ export function crowdMod(group: number): ModLine | null {
  *  « Compétence de Corps à corps » = compétence dont l'entrée déclare puiser ses spé dans les Groupes
  *  d'armes de mêlée (`specsSource`) — la garantie même que `spec` est comparable à un id de Groupe. */
 function hasMeleeSpec(c: Combatant, spec: string): boolean {
-  return (c.skills ?? []).some((s) => findSkillById(s.skillId)?.specsSource === 'weaponGroupsMelee' && (s.spec ?? '') === spec);
+  return (c.skills ?? []).some((s) => byId('skill', s.skillId)?.specsSource === 'weaponGroupsMelee' && (s.spec ?? '') === spec);
 }
 
 /** Pénalité à la PARADE avec l'arme `weapon` (LDB 62 l.151) : 0 en main principale ; 0 si arme à 1 main +

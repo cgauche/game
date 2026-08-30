@@ -5,7 +5,7 @@
 import { Combatant, Characteristics, CHAR_KEYS, BodyShape, SkillInstance, TalentInstance, type AuthoredShipPoste, type NavalTraitRef } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry, type OptionalSwap } from '../engine/statEntry';
-import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, CreatureData, type SkillRef, type TalentRef } from '../data';
+import { findCreatureById, byId, findTalentById, findSpellById, findVehicleById, findTrappingById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus } from '../engine/navalTraits';
@@ -135,7 +135,7 @@ function skillInstance(skillId: string, spec: string | undefined, value: number,
 export function skillsFromBook(list: SkillRef[] | undefined, printedChars: Characteristics): SkillInstance[] {
   const out: SkillInstance[] = [];
   for (const ref of list ?? []) {
-    const sk = findSkillById(ref.id);
+    const sk = byId('skill', ref.id);
     if (sk) out.push(skillInstance(sk.id, ref.spec, ref.value, printedChars));
   }
   return out;
