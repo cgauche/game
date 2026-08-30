@@ -10,7 +10,8 @@ import {
   collectLabelEntityResolvers, labelEntityResolverNames, scanLabelResolverCalls,
 } from '../../scripts/guards/lib/labelLogic.mjs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
-import { LABEL_RESOLVER_CALL_STOCK, labelResolverCallStockDrift } from '../../scripts/guards/lib/labelResolverCallStock.mjs';
+import { LABEL_RESOLVER_CALL_STOCK } from '../../scripts/guards/lib/labelResolverCallStock.mjs';
+import { champsAveugles, ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
 
 /**
  * Garde-fou « logique par LABEL interdite » (#142, doctrine CLAUDE.md bloc agents) : toute LOGIQUE est
@@ -446,16 +447,37 @@ describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)
   // Plafond du cliquet — DANS LE TEST, jamais dans `labelResolverCallStock.mjs` (même raison que
   // `FOLIO_RATCHET_MAX`, `book-source-integrity.test.ts` : sans lui, « le stock ne peut que
   // décroître » n'est qu'un commentaire, et le chemin le plus court pour « solder » une régression
-  // resterait d'ajouter une ligne au stock, CI verte). `creatureEquip.ts` (1) soldé 2026-07-27 —
-  // plafond descendu d'autant (12 → 11).
-  const LABEL_RESOLVER_CALL_MAX = 11;
+  // resterait d'ajouter une ligne au stock, CI verte). `creatureEquip.ts` (1) soldé 2026-07-27 : le
+  // stock est VIDE, le plafond descend à ZÉRO — un cliquet TENU, sans cran d'accueil au-dessus.
+  const LABEL_RESOLVER_CALL_MAX = 0;
+
+  /** Clé de la dette : le fichier ET son COMPTE d'appels — un appel de plus est une entrée neuve,
+   *  pas une ligne qui bouge (même mesure que `CLE_DETTE`, `src/data/slots-contrat.test.ts`). */
+  const CLE_APPELS = (e: { rel: string; n: number }) => `${e.rel} | ${e.n}`;
+  const stockEntries = Object.entries(LABEL_RESOLVER_CALL_STOCK).map(([rel, n]) => ({ rel, n }));
 
   it('CLIQUET : aucun appel NEUF à un résolveur par libellé, aucune dette soldée non retirée du stock', () => {
-    const drift = labelResolverCallStockDrift(resolverCallCounts());
+    const ecarts = ecartsDeStock({
+      observe: [...resolverCallCounts()].filter(([, n]) => n > 0).map(([rel, n]) => ({ rel, n })),
+      stock: stockEntries,
+      cle: CLE_APPELS,
+      remede: {
+        neuve: (_cle, e) =>
+          `${e.rel} : ${e.n} appel(s) à un résolveur d'entité par LIBELLÉ — résoudre par l'id STABLE déjà tenu par ` +
+          "l'appelant (findXById), le résolveur par label est réservé à l'authoring.",
+        perimee: (cle) =>
+          `${cle} : ce compte n'est plus mesuré — la ligne se retire (dette SOLDÉE) ou se met à jour (le compte a bougé) ` +
+          'dans le MÊME geste, au stock LABEL_RESOLVER_CALL_STOCK.',
+      },
+    });
+    const drift = [...ecarts.neuves, ...ecarts.perimees];
+    expect(drift, drift.join('\n')).toEqual([]);
+  });
+
+  it('MUTATION par champ : le COMPTE d’appels entre dans la clé comparée', () => {
     expect(
-      drift,
-      "Appel à un résolveur d'entité par LIBELLÉ hors stock — depuis src/engine/src/state, résoudre par\n" +
-        "l'id STABLE déjà tenu par l'appelant, le résolveur par label est réservé à l'authoring :\n" + drift.join('\n'),
+      champsAveugles(stockEntries, CLE_APPELS, ['n']),
+      'le compte est HORS de la clé comparée : un fichier stocké passant de 1 à 3 appels laisserait la garde verte.',
     ).toEqual([]);
   });
 

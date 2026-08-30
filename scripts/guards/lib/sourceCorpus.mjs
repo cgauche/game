@@ -1,6 +1,7 @@
 // Corpus SOURCE d'un jeu de dossiers : la marche de dossiers + la lecture, en UN seul endroit —
 // le walk `readdirSync` + `readFileSync` des gardes qui balaient l'arbre réel de `src/**`.
-// Consommateurs : `cascade-step-stake-guard`, `label-logic-guard`, `roll-seam-exclusivity-guard`.
+// Consommateurs : TOUTE garde qui balaie l'arbre réel de `src/**` — aucun compte n'est écrit ici, il
+// périmerait au premier import suivant ; la liste se CALCULE (`grep -rl sourceCorpus.mjs src scripts`).
 //
 // FRONTIÈRE : cette lib LIT, elle ne mémorise pas. Aucun cache de module, aucun AST — un appel = une
 // lecture disque. La mémoïsation appartient à l'APPELANT, seul à connaître la durée de vie utile de

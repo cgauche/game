@@ -902,7 +902,8 @@ export function scanLabelResolverCalls(relPath, contenu, resolverNames) {
   return findings;
 }
 
-// Stock cliqueté (`LABEL_RESOLVER_CALL_STOCK`) + fonction d'écart : `labelResolverCallStock.mjs`
+// Stock cliqueté (`LABEL_RESOLVER_CALL_STOCK`) : `labelResolverCallStock.mjs` — l'écart au stock se
+// calcule par la primitive partagée `ecartsDeStock` (`stock.mjs`), chez la garde appelante
 // (patron whitelist-en-lib SÉPARÉE du dépôt — `entityOrphanStock.mjs`/`folioRatchetStock.mjs`/
 // `manualDocsStock.mjs`), pour que le CONSTAT (ce module) reste distinct du STOCK (données figées
 // à la pose de la règle) — même séparation que `folioIntegrity.mjs` / `folioRatchetStock.mjs`.

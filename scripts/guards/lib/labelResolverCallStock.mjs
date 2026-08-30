@@ -28,24 +28,9 @@
 // `labelLogic.mjs`) : un appel PAR MÉTHODE (`obj.findCreature(...)`) — seul l'appel BARE (identifiant
 // nu) est scanné ; un résolveur importé sous un ALIAS (`import { findCreature as fc }`) — le scan lit
 // le nom appelé tel quel, pas la provenance de l'import.
+// ÉTAT : le stock est VIDE, et ce zéro est un CLIQUET TENU (même forme que le solde de
+// `folioTitleRatchetStock.mjs:18-19`) — le plafond du test est à ZÉRO, donc le premier appel neuf
+// depuis `src/engine`/`src/state` rougit, sans marge d'accueil. L'écart se calcule chez le
+// consommateur par la primitive partagée `ecartsDeStock` (`stock.mjs`), jamais par un calcul local.
 /** @type {Readonly<Record<string, number>>} */
 export const LABEL_RESOLVER_CALL_STOCK = {};
-
-/** Écarts au stock — cliquet STRICT dans les deux sens (même mécanique que `labelLiteralStockDrift`,
- *  `labelLogic.mjs`) : un compte SUPÉRIEUR (appel neuf) échoue, un compte INFÉRIEUR (dette soldée non
- *  retirée) échoue aussi.
- *  @param {Map<string, number>|Record<string, number>} measured @returns {string[]} */
-export function labelResolverCallStockDrift(measured) {
-  const entries = measured instanceof Map ? [...measured] : Object.entries(measured);
-  const out = [];
-  for (const [rel, n] of entries) {
-    const stock = LABEL_RESOLVER_CALL_STOCK[rel] ?? 0;
-    if (n > stock) {
-      out.push(`${rel} : ${n} appel(s) à un résolveur d'entité par LIBELLÉ, stock = ${stock} — résoudre par ` +
-        "l'id STABLE déjà tenu par l'appelant (findXById), le résolveur par label est réservé à l'authoring.");
-    } else if (n < stock) {
-      out.push(`${rel} : ${n} appel(s), stock = ${stock} — dette SOLDÉE, mettre LABEL_RESOLVER_CALL_STOCK à jour dans le même geste.`);
-    }
-  }
-  return out;
-}
