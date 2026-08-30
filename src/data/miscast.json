@@ -234,7 +234,9 @@
           }
         ],
         "test": {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "difficulty": "intermediaire",
           "onFail": [
             {
@@ -258,7 +260,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "langue",
+            "skill": {
+              "id": "langue"
+            },
             "mod": -10,
             "rounds": {
               "dice": {
@@ -280,7 +284,9 @@
         "max": 80,
         "label": "L'horreur !",
         "test": {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "difficulty": "difficile",
           "onFail": [
             {
@@ -367,7 +373,9 @@
         "max": 5,
         "label": "Voix fantomatiques",
         "test": {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "difficulty": "accessible",
           "onFail": [
             {
@@ -419,7 +427,9 @@
           }
         ],
         "test": {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "accessible",
           "onFail": [
             {
@@ -490,7 +500,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "langue",
+            "skill": {
+              "id": "langue"
+            },
             "blocked": true,
             "rounds": {
               "dice": {
@@ -565,7 +577,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "focalisation",
+            "skill": {
+              "id": "focalisation"
+            },
             "mod": -20,
             "hours": {
               "dice": {
@@ -694,7 +708,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "langue",
+            "skill": {
+              "id": "langue"
+            },
             "blocked": true,
             "minutes": {
               "dice": {
@@ -854,7 +870,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "langue",
+            "skill": {
+              "id": "langue"
+            },
             "mod": -10,
             "rounds": {
               "dice": {
@@ -901,7 +919,9 @@
           }
         ],
         "test": {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "difficulty": "intermediaire",
           "onFail": [
             {
@@ -980,7 +1000,9 @@
         "max": 75,
         "label": "L'horreur !",
         "test": {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "difficulty": "difficile",
           "onFail": [
             {
@@ -1085,7 +1107,9 @@
         "max": 5,
         "label": "Voix fantomatiques",
         "test": {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "difficulty": "accessible",
           "onFail": [
             {
@@ -1119,7 +1143,9 @@
           }
         ],
         "test": {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "accessible",
           "onFail": [
             {
@@ -1183,7 +1209,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "langue",
+            "skill": {
+              "id": "langue"
+            },
             "blocked": true,
             "rounds": {
               "dice": {
@@ -1258,7 +1286,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "focalisation",
+            "skill": {
+              "id": "focalisation"
+            },
             "mod": -20,
             "hours": {
               "dice": {
@@ -1398,7 +1428,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "langue",
+            "skill": {
+              "id": "langue"
+            },
             "blocked": true,
             "minutes": {
               "dice": {
@@ -1444,7 +1476,9 @@
         "max": 5,
         "label": "Visions sacrées",
         "test": {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "accessible",
           "onFail": [
             {
@@ -1468,7 +1502,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "priere",
+            "skill": {
+              "id": "priere"
+            },
             "maxZeroDR": true,
             "days": 7
           }
@@ -1487,7 +1523,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "priere",
+            "skill": {
+              "id": "priere"
+            },
             "mod": -10,
             "rounds": {
               "dice": {
@@ -1530,7 +1568,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "priere",
+            "skill": {
+              "id": "priere"
+            },
             "blocked": true,
             "rounds": {
               "dice": {
@@ -1565,7 +1605,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "priere",
+            "skill": {
+              "id": "priere"
+            },
             "blocked": true,
             "rounds": {
               "dice": {
@@ -1598,7 +1640,9 @@
           }
         ],
         "test": {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "accessible",
           "onFail": [
             {
@@ -1633,7 +1677,9 @@
         "ops": [
           {
             "op": "castPenalty",
-            "skill": "priere",
+            "skill": {
+              "id": "priere"
+            },
             "blocked": true,
             "rounds": {
               "dice": {
@@ -1670,7 +1716,9 @@
           }
         ],
         "test": {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "intermediaire",
           "onFail": [
             {
@@ -1758,7 +1806,9 @@
           }
         ],
         "test": {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "complexe",
           "onFail": [
             {
@@ -1805,7 +1855,9 @@
           }
         ],
         "test": {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "difficile",
           "onFail": [
             {

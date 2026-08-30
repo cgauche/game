@@ -14,6 +14,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'miscast.json';
 export const famille = 'table';
@@ -77,7 +78,7 @@ const jsonOpSchema = z.strictObject({
    *  Bonus d'Endurance et les PA » (Choc aethyrique, LDB 46). */
   ignoreTB: z.boolean().optional(),
   ignoreAP: z.boolean().optional(),
-  skill: z.string().optional(),
+  skill: refOuSpec('skill').optional(),
   mod: z.number().optional(),
   blocked: z.boolean().optional(),
   maxZeroDR: z.boolean().optional(),
@@ -90,7 +91,7 @@ const jsonOpSchema = z.strictObject({
 
 /** `JsonNestedTest` (`engine/miscast.ts`). */
 const jsonNestedTestSchema = z.strictObject({
-  skill: z.string().optional(),
+  skill: refOuSpec('skill').optional(),
   characteristic: z.string().optional(),
   difficulty: difficultySchemaLocal,
   onFail: z.array(jsonOpSchema),

@@ -71,7 +71,7 @@ function renderTest(opts: { sansLigneMontee?: boolean } = {}): HTMLDivElement {
     party: [h1, h2], travelPlan: seaPlan(),
     net: { ...useGame.getState().net, mode: 'local', mySeat: 0, gmSeat: 0, ownership: {} },
   });
-  runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'athletisme', difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+  runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
   if (opts.sansLigneMontee) {
     // MUTATION : le pending ARRIVE sans sa ligne montée (producteur qui ne la pose pas). L'écran doit
     // rester MUET sur les modificateurs — jamais les reconstruire depuis la valeur.

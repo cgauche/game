@@ -678,7 +678,7 @@ describe('flowEffectCount — l’atelier annonce les effets de TOUTE profondeur
   it('compte les effets des branches d’un « test » (réussite ET échec)', () => {
     const flow: Flow = {
       kind: 'test',
-      test: { skill: 'escalade' },
+      test: { skill: { id: 'escalade' } },
       success: { kind: 'do', effect: journal('gravi') },
       fail: { kind: 'seq', steps: [{ kind: 'do', effect: journal('chute') }, { kind: 'do', effect: journal('bruit') }] },
     };

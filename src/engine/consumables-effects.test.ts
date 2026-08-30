@@ -88,7 +88,7 @@ describe('lotus-noir (LDB 71 l.31) — enduit arme, pas ingéré', () => {
   });
   it("onHit = Test de Résistance Complexe (-10) : « Combattu avec un Test de Résistance Complexe (-10) »", () => {
     const then = onHitVeninThen('lotus-noir');
-    expect(then.test.skill).toBe('resistance');
+    expect(then.test.skill).toEqual({ id: 'resistance' });
     expect(then.test.difficulty).toBe('complexe');
     expect(then.test.unlessImmune).toBe('poison');
   });
@@ -161,7 +161,7 @@ describe('fleur-de-lune (LDB 71 l.26-29)', () => {
     expect(test.test.difficulty).toBe('tresDifficile');
     expect(consumableOps(test.fail)).toEqual([{ op: 'condition', id: 'inconscient', durationHours: { dice: { n: 1, sides: 10, plus: 5 } } }]);
     expect(consumableOps(test.success)).toEqual([
-      { op: 'skillMod', skill: 'calme', mod: 20 },
+      { op: 'skillMod', skill: { id: 'calme' }, mod: 20 },
       { op: 'condition', id: 'extenue', value: 1 },
     ]);
   });
@@ -210,7 +210,7 @@ describe('belladone (LDB 72 l.18)', () => {
   it('Test de Résistance (défaut Intermédiaire) ; raté → sommeil différé 150 min, Inconscient 1d10+4 h (États d\'horloge)', () => {
     const f = itemFromTrappingById('belladone')!.consumable! as Extract<Flow, { kind: 'test' }>;
     expect(f.kind).toBe('test');
-    expect(f.test.skill).toBe('resistance');
+    expect(f.test.skill).toEqual({ id: 'resistance' });
     const delayed = consumableOps(f.fail).find((o) => o.op === 'delayed') as Extract<import('./ops').GameOp, { op: 'delayed' }>;
     expect(delayed.afterMinutes).toBe(150); // « au bout de 2-3 heures » → milieu de fourchette (arbitrage)
     expect(delayed.ops).toEqual([{ op: 'condition', id: 'inconscient', durationHours: { dice: { n: 1, sides: 10, plus: 4 } } }]);
@@ -249,7 +249,7 @@ describe('gesundheit (MSRC 04 l.184-186) — Test de Résistance Accessible (+20
   it('Test de Résistance Accessible (+20) — pas d\'effet inconditionnel (défaut #46 corrigé)', () => {
     const f = itemFromTrappingById('gesundheit')!.consumable! as Extract<Flow, { kind: 'test' }>;
     expect(f.kind).toBe('test');
-    expect(f.test.skill).toBe('resistance');
+    expect(f.test.skill).toEqual({ id: 'resistance' });
     expect(f.test.difficulty).toBe('accessible');
   });
   it('succès → reduceDiseaseDays SCOPÉ blessure-purulente, échelle daysPerSL 1/DR — jamais fixe', () => {
@@ -270,7 +270,7 @@ describe('racine-des-tombes (MSRC p.14 / MSRC 04 l.221-229) — enduit anti-mort
   });
   it("onHit = Test de Résistance Complexe (-10) gaté Mort-vivant", () => {
     const then = onHitVeninThen('racine-des-tombes');
-    expect(then.test.skill).toBe('resistance');
+    expect(then.test.skill).toEqual({ id: 'resistance' });
     expect(then.test.difficulty).toBe('complexe');
     expect(then.test.onlyGroups).toContain('mort-vivant');
   });

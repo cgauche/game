@@ -119,9 +119,12 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: SAVE_VERSION - 1 })).toBeNull();
     expect(parseSave({ ...cur, version: 1 })).toBeNull();
   });
-  it('la forme persistée COURANTE écrit la réf de Compétence d’un poste en `{id, spec?}` (L2 #1548) : 30, et 29 se jette', () => {
-    expect(SAVE_VERSION).toBe(30);
-    expect(parseSave({ ...cur, version: 29 })).toBeNull();
+  it('la forme persistée COURANTE écrit la réf de Compétence d’un `GameOp` en `{id, spec?}` (L2 #1548) : 31, et 30 se jette', () => {
+    // 31 = commit 3c : `party[].traumas[].ops` (op `skillMod`) et tout `FlowTest` de cascade suspendue
+    // portent désormais `skill: { id, spec? }`. Une save de 30 lirait `o.skill.id` sur une CHAÎNE et
+    // perdrait la pénalité EN SILENCE : elle se jette (politique 2, `saves.ts`).
+    expect(SAVE_VERSION).toBe(31);
+    expect(parseSave({ ...cur, version: 30 })).toBeNull();
   });
 
   /**

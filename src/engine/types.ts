@@ -628,10 +628,14 @@ export type ConditionEmit = (e: ConditionChange) => void;
 /** Pénalité/blocage d'incantation temporisé (contrecoups des tables d'Imparfaites /
  *  Colère des dieux — LDB 46 l.61-136, LDB 40 l.55-89). Une seule des deux durées :
  *  `roundsLeft` (échelle tactique) ou `untilTime` (minutes d'horloge `gameTime`). */
+/** SENTINELLE de portée d'une `CastPenalty` RUNTIME : toute magie (Prière + Langue + Focalisation).
+ *  C'est la projection de l'op `castPenalty` SANS référence de Compétence (`src/engine/ops.ts`). */
+export const ALL_MAGIC = 'all';
+
 export interface CastPenalty {
   label: string;
-  /** Compétence visée (id stable skills.json) ; 'all' = toute magie (priere + langue + focalisation). */
-  skill: 'priere' | 'langue' | 'focalisation' | 'all';
+  /** Compétence visée (id stable skills.json), ou `ALL_MAGIC`. */
+  skill: string;
   /** Modificateur (négatif) à la valeur de Test (« Langue maladroite −10 »). */
   mod?: number;
   /** Tests interdits (« Vous abusez de ma patience », « Propos ésotériques »…). */

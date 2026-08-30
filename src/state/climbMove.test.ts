@@ -35,7 +35,7 @@ describe('planClimb', () => {
     if (plan?.kind !== 'test') throw new Error('attendu test');
     expect(plan.flow.kind).toBe('test');
     if (plan.flow.kind !== 'test') throw new Error('attendu nœud test');
-    expect(plan.flow.test.skill).toBe('Escalade');
+    expect(plan.flow.test.skill).toEqual({ id: 'escalade' });
     expect(plan.flow.test.difficulty).toBe('intermediaire');
     const fail = plan.flow.fail;
     // La branche d'échec déclenche un `fall` de 4 m repositionnant au pied.

@@ -38,8 +38,8 @@ describe('#1318 V8c₅ — un `passiveKind` ACCENTUÉ arrivé par le roster ne c
   });
 
   it('un `charMod` de kind `intrinsèque` (ancien id) reste ADDITIF — pas de dérive silencieuse', () => {
-    const ancien = heroWithTraumas([{ label: 'Trait de corps', ops: [{ op: 'skillMod', skill: 'charme', mod: 10 }], passiveKind: 'intrinsèque' }]);
-    const courant = heroWithTraumas([{ label: 'Trait de corps', ops: [{ op: 'skillMod', skill: 'charme', mod: 10 }], passiveKind: 'intrinseque' }]);
+    const ancien = heroWithTraumas([{ label: 'Trait de corps', ops: [{ op: 'skillMod', skill: { id: 'charme' }, mod: 10 }], passiveKind: 'intrinsèque' }]);
+    const courant = heroWithTraumas([{ label: 'Trait de corps', ops: [{ op: 'skillMod', skill: { id: 'charme' }, mod: 10 }], passiveKind: 'intrinseque' }]);
     // `passiveSkillSum` ne somme QUE les kinds additifs : l'ancien id doit compter comme le nouveau.
     expect(passiveSkillSum(ancien, 'charme')).toBe(passiveSkillSum(courant, 'charme'));
     expect(passiveSkillSum(ancien, 'charme')).toBe(10);

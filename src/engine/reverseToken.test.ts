@@ -17,14 +17,14 @@ describe('consumeReverseToken (LDB 23 l.209/218)', () => {
 
   it('cas nominal : jeton scopé à une Compétence — consommé UNE fois, puis épuisé', () => {
     const c = mk();
-    applyOps(c, [{ op: 'grantReverseToken', skill: 'corps-a-corps' }], { label: 'Entraînement au Combat' });
+    applyOps(c, [{ op: 'grantReverseToken', skill: { id: 'corps-a-corps' }}], { label: 'Entraînement au Combat' });
     expect(consumeReverseToken(c, { skill: 'corps-a-corps' })).toBe(true);
     expect(consumeReverseToken(c, { skill: 'corps-a-corps' })).toBe(false); // épuisé
   });
 
   it("scope : ne couvre pas une AUTRE Compétence que celle du jeton", () => {
     const c = mk();
-    applyOps(c, [{ op: 'grantReverseToken', skill: 'corps-a-corps' }], { label: 'Entraînement au Combat' });
+    applyOps(c, [{ op: 'grantReverseToken', skill: { id: 'corps-a-corps' }}], { label: 'Entraînement au Combat' });
     expect(consumeReverseToken(c, { skill: 'projectiles' })).toBe(false);
     expect(consumeReverseToken(c, { skill: 'corps-a-corps' })).toBe(true); // toujours là
   });
@@ -37,7 +37,7 @@ describe('consumeReverseToken (LDB 23 l.209/218)', () => {
 
   it("expiration adventure : posé avec `duration:{scale:'adventure'}` (purgé à l'interlude suivant)", () => {
     const c = mk();
-    applyOps(c, [{ op: 'grantReverseToken', skill: 'corps-a-corps' }], { label: 'Entraînement au Combat' });
+    applyOps(c, [{ op: 'grantReverseToken', skill: { id: 'corps-a-corps' }}], { label: 'Entraînement au Combat' });
     expect(c.activeEffects?.[0].duration).toEqual({ scale: 'adventure' });
   });
 });

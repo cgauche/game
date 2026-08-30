@@ -31,7 +31,7 @@ describe('planJump', () => {
     expect(plan.kind).toBe('test');
     const node = (plan.kind === 'test' ? plan.flow : null) as Extract<Flow, { kind: 'test' }>;
     expect(node.kind).toBe('test');
-    expect(node.test.skill).toBe('Athlétisme');
+    expect(node.test.skill).toEqual({ id: 'athletisme' });
     expect(node.test.difficulty).toBe('intermediaire'); // sans élan
     const fall = flowEffects(node.fail)[0] as Extract<Effect, { type: 'fall' }>;
     expect(fall.type).toBe('fall');

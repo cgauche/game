@@ -129,7 +129,7 @@ const ents: SceneEntity[] = [
       consume: false,
       flow: testFlow(
         {
-          skill: 'Perception', difficulty: 'complexe',
+          skill: { id: 'perception' }, difficulty: 'complexe',
           easierIf: { hasSkill: { id: 'projectiles', spec: 'poudre-noire' }, steps: 1 },
           label: 'Examiner la plante en pot',
           stake: { authored: 'Trouver le détonateur sous le feuillage : sinon la charge de l’antichambre reste amorcée, et la loge royale saute à l’heure dite.' },
@@ -252,7 +252,7 @@ const spec: MapSpec = {
               { kind: 'do', effect: { type: 'journal', desc: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' } },
               testFlow(
                 {
-                  skill: 'Perception', difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha',
+                  skill: { id: 'perception' }, difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha',
                   stake: { authored: 'Repérer la silhouette glissée sous le fauteuil du professeur Pakker : sinon les clés de l’École impériale d’artillerie partent avec elle.' },
                 },
                 flowFromEffects([

@@ -74,7 +74,7 @@ describe('Ivresse — Résistance à l’alcool (LDB 09 l.471-487)', () => {
     applyAlcoholTest(c, false, 2, d10fixed(1));
     const r = applyAlcoholTest(c, false, 2, d10fixed(1)); // BE 2 atteint → Ivre, d10=1 → Bravoure
     expect(r.becameDrunk?.id).toBe('bravoure-marienburgher');
-    expect(r.drunkOps).toEqual([{ op: 'skillMod', skill: 'calme', mod: 20 }]);
+    expect(r.drunkOps).toEqual([{ op: 'skillMod', skill: { id: 'calme' }, mod: 20 }]);
     applyDrunkOps(c, r.drunkOps);
     expect(c.activeEffects?.some((e) => e.skillMods?.calme === 20 && e.effectId === 'ivresse')).toBe(true);
   });

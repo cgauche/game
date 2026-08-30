@@ -36,7 +36,7 @@ describe('certainFlowOps — l’encadré Réussite/Échec se CALCULE des ops (#
   });
 
   it('FAIL-CLOSED : un `test` imbriqué (second jet) et un `choice` ne se résument pas non plus', () => {
-    expect(certainFlowOps(testFlow({ skill: 'resistance', difficulty: 'intermediaire' }, EMPTY_FLOW, doOps(OPS)))).toBeUndefined();
+    expect(certainFlowOps(testFlow({ skill: { id: 'resistance' }, difficulty: 'intermediaire' }, EMPTY_FLOW, doOps(OPS)))).toBeUndefined();
     expect(certainFlowOps({ kind: 'choice', prompt: 'Tenter ?', yes: doOps(OPS) })).toBeUndefined();
   });
 

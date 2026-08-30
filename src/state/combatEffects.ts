@@ -9,7 +9,7 @@ import { d10, d100, defaultRNG, roll as rollDice, type RNG } from '../engine/dic
 import { petitePriereAnswered } from '../engine/prayer';
 import { applyOps, resolveFormula, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
-import { gainCorruption, corruptionTarget, poseCorruptionPending } from './corruptionFlow';
+import { gainCorruption, corruptionTarget, poseCorruptionPending, testDeCorruption } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
 import { buildActorView } from './combat/flowEval';
@@ -235,7 +235,7 @@ export function harvestVictoryCreature(get: Get, set: SetFn, creatureId: string)
   const titre = stepDetail(t('eff.harvest'), dataLabel(name));
   if (pv) set({ pendingVictory: { ...pv, harvested: [...(pv.harvested ?? []), creatureId] } }); // grise le bouton
   runFlow(get, set, testFlow(
-    { skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: titre, stake: combatStakeRef('harvestCreature', { values: { encPlein: full.enc, encEchec: lo.enc } }) },
+    { skill: { id: 'savoir', spec: 'betes-sauvages' }, difficulty: 'intermediaire', label: titre, stake: combatStakeRef('harvestCreature', { values: { encPlein: full.enc, encEchec: lo.enc } }) },
     flowFromEffects([{ type: 'giveTrapping', custom: part(full.enc), price: full.total }]),
     flowFromEffects([{ type: 'giveTrapping', custom: part(lo.enc), price: lo.total }]),
   ), titre);
@@ -337,7 +337,7 @@ export function openSkillTest(
 ): boolean {
   // Modulateurs sociaux PAR ACTEUR (un Test social vs un interlocuteur) : malus psy Animosité/Préjugé
   // (LDB 21) + mod de Statut Échelon/Standing (LDB 08). Le Statut compare l'acteur à la cible `vsStatus`.
-  const isSocial = isSocialTest(spec.skill, spec.characteristic);
+  const isSocial = isSocialTest(spec.skill?.id, spec.characteristic);
   const tgtStatus = isSocial && spec.vsStatus ? parseStatus(spec.vsStatus) : undefined;
   const psychMod = spec.vsGroups?.length && isSocial ? (c: Combatant) => socialPsychMod(c, spec.vsGroups!) : undefined;
   // 1d10 « réaction au Statut » (option, LDB 08 l.40/59) tiré UNE fois par Test (RNG seedé) — appliqué à
@@ -385,7 +385,7 @@ export function openSkillTest(
   const restrictId = opts?.actorId;
   const best = restrictId
     ? (() => { const a = get().party.find((c) => c.id === restrictId && !c.dead); return a ? { actor: a } : null; })()
-    : partyBest(get().party, spec.skill, spec.characteristic, socialMod, spec.spec);
+    : partyBest(get().party, spec.skill?.id, spec.characteristic, socialMod, spec.skill?.spec);
   if (!best) return false;
   const baseDifficulty = spec.difficulty ?? 'intermediaire';
   const eased = !!spec.easierIf && get().party.some((c) => !c.dead && (
@@ -403,7 +403,7 @@ export function openSkillTest(
   // Météo maritime ACTIVE (Précipitations, MDG 13 l.187-201) — POINT UNIQUE d'injection des mods
   // d'environnement dans un Test : même malus pour tout le monde (indépendant du candidat), au même
   // titre que le mod social ou le Soutien. `undefined` hors voyage en mer / Test de Caractéristique.
-  const env = seaWeatherTestMod(get().travelPlan?.sea, spec.skill, spec.spec);
+  const env = seaWeatherTestMod(get().travelPlan?.sea, spec.skill?.id, spec.skill?.spec);
   // Canal `surLaCible` du monteur : le malus pèse sur la CIBLE, pas sur la valeur (le pending le porte
   // toujours à part, `envMod`/`envLabel`). Même mod pour tous les candidats — monté une fois. La ligne
   // porte sa fiche : la table de météo maritime (MDG 13) d'où sort la Précipitation.
@@ -426,13 +426,13 @@ export function openSkillTest(
     // Bonus de Carac). Calculé par candidat car le sélecteur laisse le joueur choisir qui lance. `noSupport`
     // (l.197 : maladie/poison/peur/danger) coupe le Soutien à la source ; adjacence (l.196), gate GÉOMÉTRIQUE
     // via `combatDistance`, active quand `actor.pos` est posé (combat en cours).
-    const soutD = spec.noSupport ? null : soutienDetail(living, actor, spec.skill, spec.characteristic, spec.spec,
+    const soutD = spec.noSupport ? null : soutienDetail(living, actor, spec.skill?.id, spec.characteristic, spec.skill?.spec,
       battle && actor.pos ? (c) => !!c.pos && combatDistance(actor, c) <= 1 : undefined);
     const sout = soutD?.bonus ?? 0;
     // `spec.sense` (vue/ouïe, LDB 18) restreint le malus de Surdité au seul Test de Perception auditif — le
     // Soutien (`sout`, plafonné au Bonus de Carac du meneur) et le mod social ne dépendent pas du sens.
     const social = socialMod ? socialMod(actor) : 0;
-    const value = testValue(actor, spec.skill, spec.characteristic, spec.spec, spec.sense) + social + sout;
+    const value = testValue(actor, spec.skill?.id, spec.characteristic, spec.skill?.spec, spec.sense) + social + sout;
     // Objet catalogué → match par `trappingId` STABLE (id, jamais le libellé).
     const tool = spec.tool ? actor.items?.find((i) => i.trappingId === spec.tool && !i.destroyed) : undefined;
     // Ligne montée par le MONTEUR CANONIQUE (`rollSeam.rollStep`) : la valeur FONDUE se déclare avec ses
@@ -441,7 +441,7 @@ export function openSkillTest(
     // Compétence nu ; la cible et l'écrêtage en dérivent par la MÊME primitive que `rollTest`.
     const line = rollStep({
       actor,
-      test: { skill: spec.skill, char: spec.characteristic, spec: spec.spec, sense: spec.sense },
+      test: { skill: spec.skill?.id, char: spec.characteristic, spec: spec.skill?.spec, sense: spec.sense },
       difficulty,
       valeur: value,
       ...(soutD ? { soutien: soutD } : {}),
@@ -465,12 +465,12 @@ export function openSkillTest(
   const def = candidates.find((c) => c.id === best.actor.id) ?? candidates[0];
   if (!def) return false;
   // Compétence/Caractéristique RÉELLE (cadre de jet) ≠ intitulé de situation (titre). Char → libellé long.
-  const skill = spec.skill ? refLabel('skills', { id: spec.skill, spec: spec.spec }) : (spec.characteristic ? CHAR_LABELS[spec.characteristic] : undefined);
+  const skill = spec.skill ? refLabel('skills', spec.skill) : (spec.characteristic ? CHAR_LABELS[spec.characteristic] : undefined);
   const label = spec.label || skill || 'Test';
   set({
     pendingTest: {
       actorId: def.id, actorName: def.label, label, skill, skillValue: def.value, difficulty,
-      skillId: spec.skill, spec: spec.spec, char: spec.characteristic, // réf structurée pour talentTestSLBonus (LDB 10)
+      skillId: spec.skill?.id, spec: spec.skill?.spec, char: spec.characteristic, // réf structurée pour talentTestSLBonus (LDB 10)
       requireSL: spec.requireSL ?? 0, target: def.target, clamped: def.clamped, base: def.base, mods: def.mods, psychMod: def.psychMod, psychDetail: def.psychDetail,
       itemUid: def.itemUid, isDouble: false, roll: null, success: false, sl: 0,
       support: def.support, easedBy,
@@ -1248,7 +1248,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   },
   corruptionExposure: {
     group: 'Afflictions', label: 'Influence corruptrice (Test, LDB 19)', icon: 'nav/mutation',
-    make: () => ({ type: 'corruptionExposure', level: 'mineure', skill: 'resistance', heroId: '' }),
+    make: () => ({ type: 'corruptionExposure', level: 'mineure', skill: { id: 'resistance' }, heroId: '' }),
     apply: (e, env) => {
       // Influence corruptrice (LDB 19 l.23-75) : ouvre le Test différé par modale
       // (Lancer → Chance → Appliquer) ; le gain dépendra du niveau et du DR.
@@ -1258,7 +1258,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // Test d'Exposition = « résister à la Corruption » → Résistance (Menace : Corruption) offerte (LDB 10).
       // La pose passe par LA PORTE du slot (#1282) : une fenêtre de Corruption déjà ouverte n'est pas
       // écrasée — l'Exposition prend rang (`corruptionQueue`).
-      if (hero) poseCorruptionPending(env.get, env.set, { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null, align: e.align, menace: 'corruption' });
+      if (hero) poseCorruptionPending(env.get, env.set, { heroId: hero.id, level: e.level, skill: testDeCorruption(e.skill), skillLocked: e.skill != null, align: e.align, menace: 'corruption' });
     },
   },
   giveSin: {
@@ -1498,8 +1498,8 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   },
   startPursuit: {
     group: 'Combat & social', label: 'Poursuite terrestre (LDB 15)', icon: 'travel/foot',
-    make: () => ({ type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: 'athletisme', foes: [{ label: 'Poursuivant', movement: 4, skill: 40 }], encounter: '' }),
-    apply: (e, env) => { startGroundPursuit(env.get, env.set, { partyRole: e.partyRole, distance: e.distance, escapeAt: e.escapeAt, skill: e.skill, foes: e.foes, encounter: e.encounter || undefined, policy: e.policy }); },
+    make: () => ({ type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: { id: 'athletisme' }, foes: [{ label: 'Poursuivant', movement: 4, skill: 40 }], encounter: '' }),
+    apply: (e, env) => { startGroundPursuit(env.get, env.set, { partyRole: e.partyRole, distance: e.distance, escapeAt: e.escapeAt, skill: e.skill.id, foes: e.foes, encounter: e.encounter || undefined, policy: e.policy }); },
     refs: (e, ctx) => {
       const issues: EffectRefIssue[] = [];
       if (!e.foes?.length) issues.push({ level: 'error', message: 'Poursuite : aucun adversaire' });
@@ -1593,25 +1593,25 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   // ── Tests ──────────────────────────────────────────────────────────────
   extendedTest: {
     group: 'Tests', label: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)', icon: 'ui/key',
-    make: () => ({ type: 'extendedTest', skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '', stake: flowStakeRef('extendedTest', 'roll') }),
+    make: () => ({ type: 'extendedTest', skill: { id: 'crochetage' }, difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '', stake: flowStakeRef('extendedTest', 'roll') }),
     apply: (e, env) => {
       // Test ÉTENDU (LDB 12 l.187-200) : le meilleur du groupe enchaîne les Rounds, SOUTENU par les autres
       // membres capables (+10 chacun, plafond Bonus de Carac — `partyAssisted`). Adjacence (l.196) : même
       // pool `battle.combatants` (héros positionnés) que `openSkillTest` quand un combat est en cours.
       const battle = env.get().battle;
       const pool = battle?.combatants.filter((c) => c.kind === 'hero') ?? env.get().party;
-      const leader = partyBest(pool, e.skill, e.characteristic, undefined, e.spec)?.actor;
+      const leader = partyBest(pool, e.skill?.id, e.characteristic, undefined, e.skill?.spec)?.actor;
       const eligible = battle && leader?.pos ? (c: Combatant) => !!c.pos && combatDistance(leader, c) <= 1 : undefined;
-      const best = leader ? partyAssisted(pool, e.skill, e.characteristic, undefined, e.spec, eligible) : null;
+      const best = leader ? partyAssisted(pool, e.skill?.id, e.characteristic, undefined, e.skill?.spec, eligible) : null;
       if (!best) return;
       const difficulty = e.difficulty ?? 'intermediaire';
       // Cible montée par le MONTEUR CANONIQUE : la valeur SOUTENUE de `partyAssisted` se déclare avec
       // son Soutien, l'écrêtage est celui de `rollTest` (`clampTarget`), plus une borne recopiée ici.
       const { target } = rollStep({
-        actor: best.actor, test: { skill: e.skill, char: e.characteristic, spec: e.spec },
+        actor: best.actor, test: { skill: e.skill?.id, char: e.characteristic, spec: e.skill?.spec },
         difficulty, valeur: best.value, soutien: best.support,
       });
-      env.get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag, stake: e.stake ?? flowStakeRef('extendedTest', 'roll'), ...(best.support.count > 0 ? { support: best.support } : {}) });
+      env.get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', e.skill) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag, stake: e.stake ?? flowStakeRef('extendedTest', 'roll'), ...(best.support.count > 0 ? { support: best.support } : {}) });
       return 'suspend';
     },
   },

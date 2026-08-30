@@ -512,8 +512,8 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 - `LDB 40 l.101-101` — Colère des dieux 131-135 : Hémorragique quotidien jusqu'à Pénitence
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `wrath-table`, `liveTableDecl`, `peche`, `CastPenalty`, `prayer-conviction`, `miscast-colere`, `sonne`, `colere-pensez-a-vos-actes`, `CascadeActorCounter`, +28 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/reglesOptionnelles.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, +4 fichiers
-- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `miscast-mineure`, `mineure-signe-de-sorciere`, `followsCharacterRules`, `mineure-lait-caille`, `overcastAxes`, `mineure-mildiou`, `MiscastResult`, `assourdi`, `combat-spell-plus`, `mineure-lueur-occulte`, +95 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +18 fichiers
+- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `wrath-table`, `liveTableDecl`, `peche`, `ALL_MAGIC`, `prayer-conviction`, `miscast-colere`, `CascadeActorCounter`, `colere-visions-sacrees`, `colere-pensez-a-vos-actes`, +32 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/reglesOptionnelles.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, +4 fichiers
+- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `miscast-mineure`, `mineure-signe-de-sorciere`, `followsCharacterRules`, `mineure-lait-caille`, `overcastAxes`, `mineure-mildiou`, `MiscastResult`, `mineure-cerumen`, `combat-spell-plus`, `mineure-lueur-occulte`, +100 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +18 fichiers
 
 ---
 
@@ -548,7 +548,7 @@ Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **ret
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), section Blessures Critiques
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.68, l.70, l.74-75, l.120, l.150, l.151, l.152) → `critEscalationSchema`, `hemorragique`, `HealMode`, `actBlockReason`, `availableHealModes`, `MedicState`, `bestHealerFor`, `aveugle`, `CritEscalation`, `assourdi`, +44 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, +12 fichiers
+- `LDB 18` (l.68, l.70, l.74-75, l.120, l.150, l.151, l.152) → `critEscalationSchema`, `blessure-spectaculaire`, `HealMode`, `actBlockReason`, `availableHealModes`, `MedicState`, `coupure-mineure`, `bestHealerFor`, `coup-a-l-il`, `CritEscalation`, +98 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, +12 fichiers
 
 ---
 
@@ -595,7 +595,7 @@ Ces tableaux utilisent tous les États standards (Hémorragique, Sonné, Aveugl�
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 7` (l.27-29, l.82-182) → `StructureCritEntry`, `hemorragique`, `critEscalationSchema`, `sonne`, `aveugle`, `amputationSchema`, `CritEscalation`, `assourdi`, `attackHandGate`, `resolveAACritical`, +41 — `src/data/aa-criticals.json`, `src/data/criticals.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/structureCriticals.ts`, +12 fichiers
+- `AA 7` (l.27-29, l.82-182) → `StructureCritEntry`, `aa-tete-01`, `critEscalationSchema`, `aa-tete-04`, `aa-tete-07`, `amputationSchema`, `CritEscalation`, `aa-tete-10`, `aa-tete-16`, `attackHandGate`, +94 — `src/data/aa-criticals.json`, `src/data/criticals.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/structureCriticals.ts`, +12 fichiers
 
 ---
 
@@ -619,10 +619,10 @@ Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours
 - `ADE II 4 l.222, l.230, l.367` — objets magiques : sources d'État En flammes / Surpris / Aveuglé
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.233-235) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `sonne`, `au-contact-roll`, `defensive`, `au-contact-choice`, `arbalete`, `devastatrice`, `arc`, +38 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +8 fichiers
+- `LDB 62` (l.233-235) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `assommante`, `au-contact-roll`, `defensive`, `au-contact-choice`, `arbalete`, `devastatrice`, `arc`, +38 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +8 fichiers
 - `ADE II 4` (l.222) → `deroutante` — `src/data/qualities.json`
-- `ZI 2` (l.165, l.178) → `filet`, `filet-barbele`, `cornes`, `arme`, `projectiles`, `discretion` — `src/data/creatures.json`, `src/data/qualities.json`
-- `ZI 13` (l.25) → `taille` — `src/data/creatures.json`
+- `ZI 2` (l.165, l.178) → `filet`, `filet-barbele`, `brise-krag`, `nuee-de-squigs-des-cavernes`, `gobelin-de-la-nuit`, `dragon-de-la-foret` — `src/data/creatures.json`, `src/data/qualities.json`
+- `ZI 13` (l.25) → `wyrm-des-mers` — `src/data/creatures.json`
 - `ZI 14` (l.1008) → `fouissement` — `src/data/traits.json`
 
 ---

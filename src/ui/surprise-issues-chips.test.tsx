@@ -165,7 +165,7 @@ describe('#1117 — la Surprise DIT ses issues en chips d’ops, avant comme apr
         // Surprise dit ce qu'il met en jeu (`ambushSurprise`). SEULE divergence, celle que ce test
         // mesure : la Difficulté DIFFICILE (le site réel oppose à l'Intermédiaire, où un défaut
         // d'affichage de la Difficulté passerait inaperçu).
-        { skill: 'perception', difficulty: 'difficile', label: 'Guet', stake: combatStakeRef('ambushSurprise'),
+        { skill: { id: 'perception' }, difficulty: 'difficile', label: 'Guet', stake: combatStakeRef('ambushSurprise'),
           opposed: { attacker: 'agilite', attackerSkill: 'discretion', attackerLabel: 'Discrétion' } },
         EMPTY_FLOW, EMPTY_FLOW,
       ),

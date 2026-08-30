@@ -22,6 +22,11 @@ import { JsonField } from './JsonField';
 import { Icon } from '../Icon';
 import { NumberField } from '../NumberField';
 import type { IconIdInput } from '../icons';
+import { TESTS_DE_CORRUPTION, type TestDeCorruption } from '../../data/schemas/grammaire/valeurs';
+
+/** Aide à la SAISIE de l'atelier : nature d'Influence que chaque Compétence repousse (`LDB 19 l.29`).
+ *  Le `Record` est TOTAL sur l'alphabet — un id de plus impose son libellé ici. */
+const NATURE_INFLUENCE: Record<TestDeCorruption, string> = { resistance: 'Influence physique', calme: 'Corruption spirituelle' };
 
 const SIZES = Object.keys(SIZE_LABEL) as SizeCategory[];
 
@@ -329,7 +334,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'corruption': return { op: 'corruption', amount: 1 };
     case 'sinMod': return { op: 'sinMod', amount: 1 };
     case 'corruptionExposure': return { op: 'corruptionExposure', level: 'mineure' };
-    case 'castPenalty': return { op: 'castPenalty', skill: 'all', mod: -10 };
+    case 'castPenalty': return { op: 'castPenalty', mod: -10 };
     case 'statusMod': return { op: 'statusMod', amount: 1 };
     case 'grantReverseToken': return { op: 'grantReverseToken' };
     case 'castWard': return { op: 'castWard', radius: 5 };
@@ -376,7 +381,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'endTransform': return { op: 'endTransform', tag: 'forme' };
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
     case 'light': return { op: 'light', radiusTiles: 5 };
-    case 'skillMod': return { op: 'skillMod', skill: '', mod: -10 };
+    case 'skillMod': return { op: 'skillMod', skill: { id: '' }, mod: -10 };
     case 'skillDRBonus': return { op: 'skillDRBonus', bonus: 1 };
     case 'charDRBonus': return { op: 'charDRBonus', char: 'sociabilite', bonus: 1 };
     case 'crewTestMod': return { op: 'crewTestMod', mod: 10 };
@@ -442,9 +447,11 @@ export const OP_REF_FIELDS: Partial<Record<GameOp['op'], readonly OpRefField[]>>
   grantTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
   grantCareerTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
   grantCareerSkill: [{ field: 'skill.id', ds: 'skills', label: 'Compétence', required: true }],
-  skillMod: [{ field: 'skill', ds: 'skills', label: 'Compétence', required: true }],
-  skillDRBonus: [{ field: 'skill', ds: 'skills', label: 'Compétence', required: false }],
-  grantReverseToken: [{ field: 'skill', ds: 'skills', label: 'Compétence', required: false }],
+  skillMod: [{ field: 'skill.id', ds: 'skills', label: 'Compétence', required: true }],
+  skillDRBonus: [{ field: 'skill.id', ds: 'skills', label: 'Compétence', required: false }],
+  grantReverseToken: [{ field: 'skill.id', ds: 'skills', label: 'Compétence', required: false }],
+  castPenalty: [{ field: 'skill.id', ds: 'skills', label: 'Compétence de magie', required: false }],
+  corruptionExposure: [{ field: 'skill.id', ds: 'skills', label: 'Compétence du Test', required: false }],
   suppressSymptom: [{ field: 'symptomId', ds: 'symptoms', label: 'Symptôme', required: true }],
   rollMutation: [{ field: 'table', ds: 'mutationTables', label: 'Table de Corruption', required: true }],
   summon: [{ field: 'ref', ds: 'creatures', label: 'Créature', required: true }],
@@ -492,8 +499,8 @@ export function opSummary(o: GameOp): string {
     case 'sbBonus': return `+${o.amount} BF aux Dégâts`;
     case 'incomingSpellDRMod': return `${typeof o.amount === 'number' && o.amount >= 0 ? '+' : ''}${formulaSummary(o.amount)} DR de Sort / point`;
     case 'charMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
-    case 'skillMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
-    case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${o.skill ? refLabel('skills', { id: o.skill }) : (findCrewTestTypeById(o.testType ?? '')?.label ?? o.testType)}${o.spec ? ` (${o.spec})` : ''}`;
+    case 'skillMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', o.skill)}`;
+    case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${o.skill ? refLabel('skills', o.skill) : (findCrewTestTypeById(o.testType ?? '')?.label ?? o.testType)}`;
     case 'charDRBonus': return `+${formulaSummary(o.bonus)} DR ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'crewTestMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
     case 'moveMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
@@ -507,10 +514,10 @@ export function opSummary(o: GameOp): string {
     case 'gainResource': return `${o.amount >= 0 ? '+' : '−'}${Math.abs(o.amount)} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${CHAOS_ALIGN_LABELS[o.align as ChaosAlign]})` : ''}`;
     case 'sinMod': return `${o.amount >= 0 ? '+' : ''}${o.amount}`;
-    case 'corruptionExposure': return o.easeSteps != null ? `abri : −${o.easeSteps} cran(s) d’Influence` : `${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', { id: o.skill })})` : ''}`;
-    case 'castPenalty': return `${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
+    case 'corruptionExposure': return o.easeSteps != null ? `abri : −${o.easeSteps} cran(s) d’Influence` : `${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', o.skill)})` : ''}`;
+    case 'castPenalty': return `${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill ? refLabel('skills', o.skill) : 'toute magie'}`}`;
     case 'statusMod': return `Standing ${formulaSummary(o.amount)} (prochaine aventure)`;
-    case 'grantReverseToken': return `inverser ${o.skill ? refLabel('skills', { id: o.skill }) : 'un Test (cible)'}`;
+    case 'grantReverseToken': return `inverser ${o.skill ? refLabel('skills', o.skill) : 'un Test (cible)'}`;
     case 'castWard': return `−20 Langue, rayon ${formulaSummary(o.radius)} m`;
     case 'arrowWard': return `rayon ${formulaSummary(o.radius)} m`;
     case 'domeWard': return `rayon ${formulaSummary(o.radius)} m`;
@@ -651,10 +658,14 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                     <option key={k} value={k}>Exposition {EXPOSURE_LABELS[k]}</option>
                   ))}
                 </select>
-                <select value={o.skill ?? ''} onChange={(e) => upd({ skill: (e.target.value || undefined) as 'resistance' | 'calme' | undefined })}>
+                {/* Options BORNÉES à `TESTS_DE_CORRUPTION` (même alphabet que la porte de document) ;
+                    la valeur posée est la RÉFÉRENCE `{ id }`, jamais un id nu. */}
+                <select value={(o.skill as { id?: string } | undefined)?.id ?? ''}
+                  onChange={(e) => upd({ skill: e.target.value ? { id: e.target.value } : undefined })}>
                   <option value="">Compétence : au choix du joueur</option>
-                  <option value="resistance">{refLabel('skills', { id: 'resistance' })} (Influence physique)</option>
-                  <option value="calme">{refLabel('skills', { id: 'calme' })} (Influence spirituelle)</option>
+                  {TESTS_DE_CORRUPTION.map((id) => (
+                    <option key={id} value={id}>{refLabel('skills', { id })} ({NATURE_INFLUENCE[id]})</option>
+                  ))}
                 </select>
               </>
             )}

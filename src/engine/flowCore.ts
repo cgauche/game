@@ -27,6 +27,7 @@ import type { CharKey, Difficulty, EffectSource, HitLocation } from './types';
 import { relationBetween, type Camp, type Relation } from './relations';
 import { groupMatch } from './groups';
 import type { GameOp, PairedSense } from './ops';
+import type { SkillRef } from './skills';
 // Type SEUL (effacé à la compilation — aucun cycle runtime) : `StakeRef` est la forme canonique de la
 // zone d'enjeu, et la redéclarer ici serait la 2ᵉ source du même vocabulaire que #1117 combat.
 import type { StakeRef } from '../data';
@@ -388,10 +389,10 @@ export interface FlowTest {
    *  et `validateScene` le refuse muet). Pur-donnée dans les deux cas : la valeur voyage en save et
    *  en JSON de campagne. */
   stake?: StakeRef;
-  skill?: string;
-  /** Spécialisation ciblée (Métier (Serrurier), Savoir (Magie)…) — précise QUELLE instance de `skill`
-   *  est testée quand le héros en possède plusieurs ; sinon la première suffit. */
-  spec?: string;
+  /** Compétence testée (XOR `characteristic`) — référence EMBOÏTÉE `{ id, spec? }`. La `spec` cible
+   *  QUELLE instance est testée quand le héros en possède plusieurs (Métier (Serrurier), Savoir (Magie)…) ;
+   *  sinon la première suffit. */
+  skill?: SkillRef;
   /** Sens SOLLICITÉ par ce Test de Perception (LDB 18) — authoré sur le nœud de test d'une scène/dialogue :
    *  `'vue'` (repérer un mouvement, lire, guetter l'horizon) ou `'ouie'` (écouter à une porte, entendre une
    *  approche). Restreint le malus de Surdité (`skillMod{sense:'ouie'}`) au seul Test auditif, symétrique à

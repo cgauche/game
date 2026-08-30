@@ -5,6 +5,9 @@ import { installCost } from './shipBuild';
 import navalTraitsData from '../data/naval-traits.json';
 import { findVehicleById, findNavalTrait, findCrewTestTypeById } from '../data';
 
+/** Forme LUE du catalogue naval par ce fichier : la référence de Compétence d'une op y est EMBOÎTÉE. */
+type NavalEntree = { id: string; passive?: { op: string; skill?: { id: string }; bonus?: number }[] };
+
 /**
  * EFFETS des Traits & Améliorations de navire (MDG 12) — DATA-DRIVEN : les valeurs vivent dans le catalogue
  * `naval-traits.json` (éditable au Codex), `navalTraits.ts` ne fait que les LIRE et les exposer là où une brique
@@ -38,8 +41,8 @@ describe('navalPassiveOps — effets en GameOp (langue unique), répétés ×Ind
   it('aplatit le `passive` du catalogue : Lissage → moveMod ; Peu maniable → 2× skillDRBonus (Ramer/Voile)', () => {
     expect(navalPassiveOps([{ id: 'lissage' }])).toEqual([{ op: 'moveMod', mod: 1 }]);
     expect(navalPassiveOps([{ id: 'peu-maniable' }])).toEqual([
-      { op: 'skillDRBonus', skill: 'ramer', bonus: -1 },
-      { op: 'skillDRBonus', skill: 'voile', bonus: -1 },
+      { op: 'skillDRBonus', skill: { id: 'ramer' }, bonus: -1 },
+      { op: 'skillDRBonus', skill: { id: 'voile' }, bonus: -1 },
     ]);
     // ranked → le bloc `passive` est répété par `value` (« Peu maniable 3 » = 3× les deux ops).
     expect(navalPassiveOps([{ id: 'peu-maniable', value: 3 }])).toHaveLength(6);
@@ -69,13 +72,13 @@ describe('navalSkillTestDR — Peu maniable → DR de Voile/Ramer, op skillDRBon
 
 describe('navalSkillTestDR — non-régression sur le catalogue entier (#221, 20 entrées)', () => {
   it.each(
-    (navalTraitsData as { id: string; passive?: { op: string; skill?: string; bonus?: number }[] }[])
+    (navalTraitsData as NavalEntree[])
       .filter((e) => e.passive?.some((op) => op.op === 'skillDRBonus' && op.skill))
       .map((e) => e.id),
   )('%s : DR par compétence inchangé, indépendant de `testType`', (id) => {
-    const entry = (navalTraitsData as { id: string; passive?: { op: string; skill?: string; bonus?: number }[] }[]).find((e) => e.id === id)!;
+    const entry = (navalTraitsData as NavalEntree[]).find((e) => e.id === id)!;
     for (const op of entry.passive!.filter((o) => o.op === 'skillDRBonus' && o.skill)) {
-      expect(navalSkillTestDR([{ id }], op.skill!)).toBe(op.bonus);
+      expect(navalSkillTestDR([{ id }], op.skill!.id)).toBe(op.bonus);
     }
   });
   it('une op `testType` SANS `skill` (Proue-idole de Stromfels) ne matche JAMAIS `navalSkillTestDR`', () => {

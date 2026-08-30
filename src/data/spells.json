@@ -4397,7 +4397,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -4586,7 +4588,6 @@
               },
               {
                 "op": "castPenalty",
-                "skill": "all",
                 "mod": 10,
                 "rounds": {
                   "bonusOf": "force-mentale"
@@ -5774,7 +5775,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -5850,7 +5853,9 @@
             {
               "kind": "test",
               "test": {
-                "skill": "resistance",
+                "skill": {
+                  "id": "resistance"
+                },
                 "difficulty": "tresDifficile"
               },
               "success": {
@@ -7460,7 +7465,6 @@
               },
               {
                 "op": "castPenalty",
-                "skill": "all",
                 "blocked": true,
                 "rounds": {
                   "bonusOf": "force-mentale"
@@ -9057,7 +9061,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -9486,7 +9492,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -9659,7 +9667,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -10105,7 +10115,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -10286,7 +10298,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -13974,7 +13988,9 @@
                     "flow": {
                       "kind": "test",
                       "test": {
-                        "skill": "resistance",
+                        "skill": {
+                          "id": "resistance"
+                        },
                         "difficulty": "intermediaire",
                         "exceptGroups": [
                           "mort-vivant",
@@ -14161,7 +14177,9 @@
                     "flow": {
                       "kind": "test",
                       "test": {
-                        "skill": "resistance",
+                        "skill": {
+                          "id": "resistance"
+                        },
                         "difficulty": "accessible",
                         "onlyGroups": [
                           "criminel"
@@ -15618,7 +15636,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -19494,7 +19514,9 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "orientation",
+                "skill": {
+                  "id": "orientation"
+                },
                 "bonus": 2
               }
             ]
@@ -19635,7 +19657,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "esquive",
+            "skill": {
+              "id": "esquive"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -19724,7 +19748,9 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "recherche",
+                "skill": {
+                  "id": "recherche"
+                },
                 "bonus": 1
               },
               {
@@ -19928,7 +19954,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "esquive",
+            "skill": {
+              "id": "esquive"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -20231,12 +20259,16 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "charme",
+                "skill": {
+                  "id": "charme"
+                },
                 "bonus": 2
               },
               {
                 "op": "skillDRBonus",
-                "skill": "intimidation",
+                "skill": {
+                  "id": "intimidation"
+                },
                 "bonus": 2
               },
               {
@@ -20423,7 +20455,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "esquive",
+            "skill": {
+              "id": "esquive"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -20608,7 +20642,9 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "perception",
+                "skill": {
+                  "id": "perception"
+                },
                 "bonus": -2
               },
               {
@@ -21032,7 +21068,9 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "savoir",
+                "skill": {
+                  "id": "savoir"
+                },
                 "bonus": 2
               },
               {
@@ -21485,13 +21523,17 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "focalisation",
+                "skill": {
+                  "id": "focalisation"
+                },
                 "bonus": -1
               },
               {
                 "op": "skillDRBonus",
-                "skill": "langue",
-                "spec": "magick",
+                "skill": {
+                  "id": "langue",
+                  "spec": "magick"
+                },
                 "bonus": -1
               },
               {
@@ -22496,7 +22538,9 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "orientation",
+                "skill": {
+                  "id": "orientation"
+                },
                 "bonus": 2
               },
               {
@@ -22793,7 +22837,9 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "perception",
+                "skill": {
+                  "id": "perception"
+                },
                 "bonus": 2
               },
               {
@@ -23026,7 +23072,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile",
             "label": "Mistral de la stratosphère"
           },
@@ -23514,7 +23562,9 @@
           "yes": {
             "kind": "test",
             "test": {
-              "skill": "esquive",
+              "skill": {
+                "id": "esquive"
+              },
               "difficulty": "facile"
             },
             "success": {
@@ -23847,12 +23897,16 @@
               "ops": [
                 {
                   "op": "skillDRBonus",
-                  "skill": "calme",
+                  "skill": {
+                    "id": "calme"
+                  },
                   "bonus": 2
                 },
                 {
                   "op": "skillDRBonus",
-                  "skill": "commandement",
+                  "skill": {
+                    "id": "commandement"
+                  },
                   "bonus": 2
                 }
               ]
@@ -23874,12 +23928,16 @@
               "ops": [
                 {
                   "op": "skillDRBonus",
-                  "skill": "calme",
+                  "skill": {
+                    "id": "calme"
+                  },
                   "bonus": -2
                 },
                 {
                   "op": "skillDRBonus",
-                  "skill": "commandement",
+                  "skill": {
+                    "id": "commandement"
+                  },
                   "bonus": -2
                 }
               ]
@@ -24485,7 +24543,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "esquive",
+            "skill": {
+              "id": "esquive"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -24830,7 +24890,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -24856,7 +24918,9 @@
               {
                 "kind": "test",
                 "test": {
-                  "skill": "calme",
+                  "skill": {
+                    "id": "calme"
+                  },
                   "difficulty": "facile"
                 },
                 "success": {
@@ -24985,7 +25049,9 @@
               {
                 "kind": "test",
                 "test": {
-                  "skill": "calme",
+                  "skill": {
+                    "id": "calme"
+                  },
                   "difficulty": "intermediaire"
                 },
                 "success": {
@@ -25207,7 +25273,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -25564,7 +25632,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "intermediaire",
             "gate": {
               "kind": "all",
@@ -25815,7 +25885,9 @@
               {
                 "kind": "test",
                 "test": {
-                  "skill": "calme",
+                  "skill": {
+                    "id": "calme"
+                  },
                   "difficulty": "accessible",
                   "exceptGroups": [
                     "demon",
@@ -26171,7 +26243,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "athletisme",
+            "skill": {
+              "id": "athletisme"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -26578,7 +26652,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -26715,14 +26791,18 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "metier",
-                "spec": "forgeron",
+                "skill": {
+                  "id": "metier",
+                  "spec": "forgeron"
+                },
                 "bonus": 1
               },
               {
                 "op": "skillDRBonus",
-                "skill": "metier",
-                "spec": "armurier",
+                "skill": {
+                  "id": "metier",
+                  "spec": "armurier"
+                },
                 "bonus": 1
               },
               {
@@ -26884,7 +26964,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "complexe"
           },
           "success": {
@@ -27102,7 +27184,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "esquive",
+            "skill": {
+              "id": "esquive"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -27363,7 +27447,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "intermediaire",
             "label": "Capuche vengeresse"
           },
@@ -27428,7 +27514,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "esquive",
+            "skill": {
+              "id": "esquive"
+            },
             "difficulty": "accessible",
             "label": "Éveil du bois"
           },
@@ -27886,7 +27974,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "difficile",
             "label": "Transe ambrée"
           },
@@ -28722,7 +28812,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "accessible"
           },
           "success": {
@@ -28926,7 +29018,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "facile"
           },
           "success": {
@@ -29028,7 +29122,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "accessible"
           },
           "success": {
@@ -29113,7 +29209,9 @@
             "ops": [
               {
                 "op": "skillDRBonus",
-                "skill": "orientation",
+                "skill": {
+                  "id": "orientation"
+                },
                 "bonus": -3
               },
               {

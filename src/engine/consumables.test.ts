@@ -21,7 +21,7 @@ const item = (over: Partial<ItemInstance> = {}): ItemInstance =>
 describe('consommables — effet en FLOW (#50 : migration GameOp[] → Flow)', () => {
   it('isConsumable = Flow présent et non vide (un seq sans étape = rien à boire)', () => {
     expect(isConsumable(item({ consumable: doFlow([{ op: 'heal', amount: 1 }]) }))).toBe(true);
-    expect(isConsumable(item({ consumable: { kind: 'test', test: { skill: 'resistance' }, success: { kind: 'seq', steps: [] }, fail: doFlow([]) } }))).toBe(true);
+    expect(isConsumable(item({ consumable: { kind: 'test', test: { skill: { id: 'resistance' }}, success: { kind: 'seq', steps: [] }, fail: doFlow([]) } }))).toBe(true);
     expect(isConsumable(item())).toBe(false);
     expect(isConsumable(item({ consumable: { kind: 'seq', steps: [] } }))).toBe(false);
   });
@@ -48,7 +48,7 @@ describe('consommables — effet en FLOW (#50 : migration GameOp[] → Flow)', (
   it('bakeConsumableFlow : chaque feuille (branches de test comprises) est ciblée sur le buveur et porte untilTime/label', () => {
     const flow: Flow = {
       kind: 'test',
-      test: { skill: 'resistance' },
+      test: { skill: { id: 'resistance' } },
       success: doFlow([{ op: 'heal', amount: 1 }]),
       fail: { kind: 'if', cond: { kind: 'always' }, then: doFlow([{ op: 'condition', id: 'sonne' }]) },
     };
@@ -84,14 +84,14 @@ describe('consommables — catalogue migré (LDB 71/72/67 + MSRC, donnée réell
   it('necessaire-antipoison : « Un Test de Guérison réussi … retire tous les États Empoisonné » (LDB 67 l.13)', () => {
     const f = findTrappingById('necessaire-antipoison')!.consumable! as Extract<Flow, { kind: 'test' }>;
     expect(f.kind).toBe('test');
-    expect(f.test.skill).toBe('guerison');
+    expect(f.test.skill).toEqual({ id: 'guerison' });
     expect(consumableOps(f.success)).toEqual([{ op: 'removeCondition', id: 'empoisonne', all: true }]);
     expect(consumableOps(f.fail)).toEqual([]);
   });
   it('brise-coeur : « Combattu avec un Test de Résistance Complexe (-10) » → échec : 4 Empoisonné (LDB 71 l.22, patron Lotus)', () => {
     const f = findTrappingById('brise-coeur')!.consumable! as Extract<Flow, { kind: 'test' }>;
     expect(f.kind).toBe('test');
-    expect(f.test.skill).toBe('resistance');
+    expect(f.test.skill).toEqual({ id: 'resistance' });
     expect(f.test.difficulty).toBe('complexe');
     expect(f.test.unlessImmune).toBe('poison');
     expect(consumableOps(f.fail)).toEqual([{ op: 'condition', id: 'empoisonne', value: 4 }]);
@@ -148,12 +148,12 @@ describe('consommables — catalogue migré (LDB 71/72/67 + MSRC, donnée réell
   });
   it('malepierre-brute : « Être en contact avec un Démon, une malepierre ou un artefact profané » (LDB 19 l.51) → corruptionExposure moderee/Résistance', () => {
     expect(consumableOps(findTrappingById('malepierre-brute')!.consumable)).toEqual([
-      { op: 'corruptionExposure', level: 'moderee', skill: 'resistance' },
+      { op: 'corruptionExposure', level: 'moderee', skill: { id: 'resistance' } },
     ]);
   });
   it('malepierre-raffinee : « Utiliser une malepierre raffinée » (LDB 19 l.63) → corruptionExposure majeure/Résistance', () => {
     expect(consumableOps(findTrappingById('malepierre-raffinee')!.consumable)).toEqual([
-      { op: 'corruptionExposure', level: 'majeure', skill: 'resistance' },
+      { op: 'corruptionExposure', level: 'majeure', skill: { id: 'resistance' } },
     ]);
   });
 });

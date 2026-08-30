@@ -682,7 +682,9 @@
          "flow": {
           "kind": "test",
           "test": {
-           "skill": "intuition",
+           "skill": {
+            "id": "intuition"
+           },
            "difficulty": "difficile",
            "label": "Intuition — quelque chose cloche chez Kramer",
            "stake": {
@@ -2071,7 +2073,9 @@
          "flow": {
           "kind": "test",
           "test": {
-           "skill": "intuition",
+           "skill": {
+            "id": "intuition"
+           },
            "difficulty": "difficile",
            "label": "Intuition — la nuit du chat",
            "stake": {
@@ -2163,8 +2167,10 @@
             "kind": "do",
             "effect": {
              "type": "extendedTest",
-             "skill": "metier",
-             "spec": "Charpentier",
+             "skill": {
+              "id": "metier",
+              "spec": "charpentier"
+             },
              "difficulty": "intermediaire",
              "label": "Réparation temporaire du Grimm",
              "targetDR": 5,

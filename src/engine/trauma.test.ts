@@ -59,7 +59,7 @@ describe('traumaFromKind (LDB 18-Traumatisme)', () => {
 describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB 73)', () => {
   const legSequela: Trauma = {
     label: 'Membre inférieur amputé (jambeD)', location: 'jambeD',
-    ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: 'esquive', mod: -20 }],
+    ops: [{ op: 'moveScale', num: 1, den: 2 }, { op: 'skillMod', skill: { id: 'esquive' }, mod: -20 }],
     prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }, { trappingId: 'fausse-jambe', cancels: 'movement' }],
   };
   // Une prothèse doit être PORTÉE (équipée) pour lever le malus (LDB 73), pas seulement possédée. Matchée
@@ -183,7 +183,7 @@ describe('consolidateAmputations — escalade `ajoute` des organes pairés (LDB 
     const c = fullCombatant({ traumas: [eye(), eye()] });
     consolidateAmputations(c);
     const cec = (c.traumas ?? []).find((t) => t.traumaId === 'cecite')!;
-    expect(cec.ops).toContainEqual({ op: 'skillMod', skill: 'esquive', mod: -30 });
+    expect(cec.ops).toContainEqual({ op: 'skillMod', skill: { id: 'esquive' }, mod: -30 });
     expect(cec.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-combat', mod: -30 });
     expect(cec.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-tir', mod: -30 });
     const yeux = (c.traumas ?? []).find((t) => t.traumaId === 'oeil-perdu')!;
@@ -195,7 +195,7 @@ describe('consolidateAmputations — escalade `ajoute` des organes pairés (LDB 
   it('deux oreilles : Surdité (−20 Perception, restreint aux Tests basés sur l’ouïe)', () => {
     const c = fullCombatant({ traumas: [ear(), ear()] });
     consolidateAmputations(c);
-    expect((c.traumas ?? []).find((t) => t.traumaId === 'surdite')!.ops).toContainEqual({ op: 'skillMod', skill: 'perception', mod: -20, sense: 'ouie' });
+    expect((c.traumas ?? []).find((t) => t.traumaId === 'surdite')!.ops).toContainEqual({ op: 'skillMod', skill: { id: 'perception' }, mod: -20, sense: 'ouie' });
   });
 });
 

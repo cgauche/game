@@ -307,7 +307,7 @@ scenes.push(scene({
             {
               label: 'L’observer discrètement (Intuition)',
               flow: testNode(
-                { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — quelque chose cloche chez Kramer', stake: { authored: 'Percer le masque de Dame Kramer : vous la soupçonnez pour la suite du voyage ; raté, elle passe pour une négociante ordinaire.' } },
+                { skill: { id: 'intuition' }, difficulty: 'difficile', label: 'Intuition — quelque chose cloche chez Kramer', stake: { authored: 'Percer le masque de Dame Kramer : vous la soupçonnez pour la suite du voyage ; raté, elle passe pour une négociante ordinaire.' } },
                 // Révélation VISIBLE au moment (modale document) + flag + archive au journal.
                 [
                   { type: 'setFlag', flag: 'ls_kramer_soupconnee' },
@@ -499,7 +499,7 @@ scenes.push(scene({
           {
             label: 'L’interroger sur sa nuit (Intuition)',
             flow: testNode(
-              { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — la nuit du chat', stake: { authored: 'La coincer sur son alibi : démasquée, le sabotage du Grimm cesse ; raté, elle garde les mains libres et le navire continue de souffrir.' } },
+              { skill: { id: 'intuition' }, difficulty: 'difficile', label: 'Intuition — la nuit du chat', stake: { authored: 'La coincer sur son alibi : démasquée, le sabotage du Grimm cesse ; raté, elle garde les mains libres et le navire continue de souffrir.' } },
               // Démasquage : dénouement VISIBLE (document) + le sabotage CESSE (adjustVessel { saboteurDR: 0 }
               // — patch INCRÉMENTAL, la coque/l'Humeur/le Moral accumulés depuis le départ sont préservés, #233).
               [
@@ -524,7 +524,7 @@ scenes.push(scene({
         choices: [
           {
             label: 'Superviser la réparation (Test étendu de Métier (Charpentier), 5 DR)',
-            flow: flowOf([{ type: 'extendedTest', skill: 'metier', spec: 'Charpentier', difficulty: 'intermediaire', label: 'Réparation temporaire du Grimm', targetDR: 5, flag: 'ls_coque_reparee' }]),
+            flow: flowOf([{ type: 'extendedTest', skill: { id: 'metier', spec: 'charpentier' }, difficulty: 'intermediaire', label: 'Réparation temporaire du Grimm', targetDR: 5, flag: 'ls_coque_reparee' }]),
             next: 'rp1',
           },
           { label: 'Plus tard', flow: flowOf([{ type: 'endDialogue' }]) },

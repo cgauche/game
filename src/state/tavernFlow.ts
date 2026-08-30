@@ -114,7 +114,7 @@ export interface TavernGamesState {
  * Pari (« Si aucune Compétence n'est indiquée […] faites plutôt un Test opposé de Pari »).
  */
 export function tavernGameValue(hero: Combatant, game: TavernGame): number {
-  if (game.skill) return testValue(hero, game.skill, game.characteristic, game.spec);
+  if (game.skill) return testValue(hero, game.skill.id, game.characteristic, game.skill.spec);
   if (game.characteristic) return effectiveChar(hero, game.characteristic);
   return testValue(hero, 'pari'); // aucune Compétence indiquée → Pari (l.11)
 }
@@ -169,8 +169,17 @@ export function tavernNpcOffers(scene: Scene | null | undefined): { id: string; 
 
 /** Déclaration du Test (skill/char/spec) d'un jeu — MÊME repli que `tavernGameValue` (Pari si rien
  *  d'indiqué), réutilisée par les mints (`req.test`, qui calculent eux-mêmes la valeur par acteur). */
+/** Déclaration de Test RUNTIME (`skill`/`spec` à plat, forme des monteurs de ligne) → `TavernOption`
+ *  (référence de Compétence EMBOÎTÉE, forme de la DONNÉE). PURE. */
+function enOption(t: { skill?: string; spec?: string; char?: CharKey }): TavernOption {
+  return {
+    ...(t.skill ? { skill: { id: t.skill, ...(t.spec ? { spec: t.spec } : {}) } } : {}),
+    ...(t.char ? { char: t.char } : {}),
+  };
+}
+
 function tavernTestSpec(game: TavernGame): { skill?: string; char?: CharKey; spec?: string } {
-  if (game.skill) return { skill: game.skill, spec: game.spec };
+  if (game.skill) return { skill: game.skill.id, spec: game.skill.spec };
   if (game.characteristic) return { char: game.characteristic };
   return { skill: 'pari' };
 }
@@ -436,7 +445,7 @@ function tavernRow(get: Get, h: Combatant, game: TavernGame, choix?: number): Ba
   // L'OPTION retenue porte le Test ET sa Difficulté (Alvatafl l.25, Cerevis l.97 : « Pari Accessible
   // (+20) ») ; sans option déclarée, le repli est celui du jeu rapide (Intermédiaire, l.11).
   const opt = optionOf(game, choix);
-  const test = { ...(opt.skill ? { skill: opt.skill } : {}), ...(opt.spec ? { spec: opt.spec } : {}), ...(opt.char ? { char: opt.char } : {}) };
+  const test = { ...(opt.skill ? { skill: opt.skill.id } : {}), ...(opt.skill?.spec ? { spec: opt.skill.spec } : {}), ...(opt.char ? { char: opt.char } : {}) };
   const difficulty = difficulteOf(opt);
   const second = combinedSecondRead(game, h, difficulty, 0);
   const row: BatchParticipant = {
@@ -465,7 +474,7 @@ function tavernRow(get: Get, h: Combatant, game: TavernGame, choix?: number): Ba
  * la modale) — c'est la seule grandeur maison, et elle est éditable, jamais figée au code. */
 
 /** UNE OPTION de Test d'une manche (celle que l'entrée déclare, ou le repli du jeu). */
-type TavernOption = { skill?: string; spec?: string; char?: CharKey; difficulty?: Difficulty; combatTest?: boolean };
+type TavernOption = { skill?: import('../engine/skills').SkillRef; char?: CharKey; difficulty?: Difficulty; combatTest?: boolean };
 
 /** La Difficulté d'une option : la sienne, ou celle du jeu rapide (« Test opposé de Compétence
  *  Intermédiaire (+0) », l.11) quand l'option n'en nomme pas — un camp qui se contente d'ESQUIVER ne
@@ -500,7 +509,7 @@ function figurantRow(id: string, label: string, valeur: number, opt: TavernOptio
   const difficulty = difficulteOf(opt);
   const row: BatchParticipant = {
     id, label, difficulty, result: null, interactive: false,
-    ...(opt.skill ? { skillId: opt.skill } : {}),
+    ...(opt.skill ? { skillId: opt.skill.id } : {}),
     ...rollStep({ valeur, valeurEtrangere: true, difficulty, ...(surLaCible.length ? { surLaCible } : {}) }),
   };
   return { ...row, result: rollBatchParticipant(row, battleRng()) };
@@ -510,7 +519,7 @@ function figurantRow(id: string, label: string, valeur: number, opt: TavernOptio
  *  l'entrée déclare — c'est ce que jouent les porteurs qu'aucun siège ne tient, et les figurants. */
 function optionOf(game: TavernGame, choix: number | undefined): TavernOption {
   const options = game.options ?? [];
-  return options[choix ?? 0] ?? { ...tavernTestSpec(game), difficulty: TAVERN_TEST_DIFFICULTY };
+  return options[choix ?? 0] ?? { ...enOption(tavernTestSpec(game)), difficulty: TAVERN_TEST_DIFFICULTY };
 }
 
 /**
@@ -533,7 +542,7 @@ function tavernOptionRound(get: Get, seq: SequenceState<TavernPayload>, game: Ta
     actorId: h.id,
     options: (game.options ?? []).map((o, i) => ({
       key: String(i),
-      label: o.skill ? refLabel('skills', { id: o.skill, ...(o.spec ? { spec: o.spec } : {}) }) : dataLabel(CHAR_LABELS[o.char ?? 'intelligence']),
+      label: o.skill ? refLabel('skills', o.skill) : dataLabel(CHAR_LABELS[o.char ?? 'intelligence']),
       detail: DIFFICULTY_LABELS[o.difficulty],
     })),
     defaultChoice: '0',
@@ -559,13 +568,13 @@ function equipiers(get: Get): Combatant[] {
  *  son Avantage propre entre dans la cible quand ce Test est un Test de Combat. */
 function equipierRow(get: Get, h: Combatant, game: TavernGame, choix: number | undefined): BatchParticipant {
   const opt = optionOf(game, choix);
-  const test = { ...(opt.skill ? { skill: opt.skill } : {}), ...(opt.spec ? { spec: opt.spec } : {}), ...(opt.char ? { char: opt.char } : {}) };
+  const test = { ...(opt.skill ? { skill: opt.skill.id } : {}), ...(opt.skill?.spec ? { spec: opt.skill.spec } : {}), ...(opt.char ? { char: opt.char } : {}) };
   const surLaCible = avantageSurLaCible(opt, h);
   const difficulty = difficulteOf(opt);
   const row: BatchParticipant = {
     id: h.id,
     label: testSkillLabel(test) ?? game.label,
-    ...(opt.skill ? { skillId: opt.skill } : {}),
+    ...(opt.skill ? { skillId: opt.skill.id } : {}),
     difficulty,
     result: null,
     interactive: true,
@@ -702,7 +711,7 @@ function torchonRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Se
   const rang = rng.int(1, game.dancers);
   const camp = lanceur.camp === 'player' ? p.opponentName : t('tavern.campMien');
   const valeur = lanceur.camp === 'player' ? p.opponentValue : (p.allyValue ?? p.opponentValue);
-  rows.push(figurantRow(`danseur-${seq.round}`, t('tavern.danseur', { rang, camp }), valeur, { skill: 'esquive' }, 0));
+  rows.push(figurantRow(`danseur-${seq.round}`, t('tavern.danseur', { rang, camp }), valeur, { skill: { id: 'esquive' } }, 0));
   const band = bandStep({
     id: `${TAVERN_ROUND_KIND}-${seq.round}`,
     kind: TAVERN_ROUND_KIND,
@@ -773,7 +782,7 @@ function torchonRate(get: Get, set: Set, rows: readonly BatchParticipant[]): str
       difficulty: regles.difficulty, result: null, interactive: false,
       ...rollStep({ actor: heros, test: regles.test, difficulty: regles.difficulty }),
     }
-    : figurantRow(id, lanceur.label, lanceur.value ?? p.opponentValue, { ...regles.test, difficulty: regles.difficulty }, 0);
+    : figurantRow(id, lanceur.label, lanceur.value ?? p.opponentValue, { ...enOption(regles.test), difficulty: regles.difficulty }, 0);
   const jete = pinte.result ?? rollBatchParticipant(pinte, battleRng());
   return torchonBoit(get, set, lanceur.id, lanceur.camp, lanceur.label, jete.success);
 }
@@ -832,7 +841,7 @@ function tavernTeamRound(get: Get, seq: SequenceState<TavernPayload>): SequenceR
     actorId: h.id,
     options: (game.options ?? []).map((o, i) => ({
       key: String(i),
-      label: refLabel('skills', { id: o.skill ?? '', ...(o.spec ? { spec: o.spec } : {}) }),
+      label: refLabel('skills', o.skill ?? { id: '' }),
       detail: DIFFICULTY_LABELS[o.difficulty],
     })),
     defaultChoice: '0',
@@ -903,7 +912,7 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
 
   const optMien = optionOf(game, p.choices?.[challenger.id]);
   const difficulty = difficulteOf(optMien);
-  const test = { ...(optMien.skill ? { skill: optMien.skill } : {}), ...(optMien.spec ? { spec: optMien.spec } : {}), ...(optMien.char ? { char: optMien.char } : {}) };
+  const test = { ...(optMien.skill ? { skill: optMien.skill.id } : {}), ...(optMien.skill?.spec ? { spec: optMien.skill.spec } : {}), ...(optMien.char ? { char: optMien.char } : {}) };
   // L'adversaire de la SALLE joue à la MÊME Difficulté que le challenger — un Test opposé se joue au
   // même palier des deux côtés (l.11), et ce palier est celui de l'option retenue.
   const rolled = rollTavernTest(p.opponentValue, rng, difficulty);
@@ -1979,7 +1988,7 @@ function volleyRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
       difficulty, result: null, interactive: true,
       ...rollStep({ actor: heros, test, difficulty }),
     }
-    : figurantRow(lanceur.id, lanceur.label, lanceur.value ?? p.opponentValue, { ...test, difficulty }, 0);
+    : figurantRow(lanceur.id, lanceur.label, lanceur.value ?? p.opponentValue, { ...enOption(test), difficulty }, 0);
   const rows: BatchParticipant[] = [
     surface ? rowJet : { ...rowJet, interactive: false, result: rowJet.result ?? rollBatchParticipant(rowJet, rng) },
   ];

@@ -65,8 +65,8 @@ const DIFFS: Difficulty[] = ['intermediaire', 'difficile'];
  *  et c'est d'elle que son enjeu se DÉRIVE (#1262 V2 L6d). Les deux descripteurs ci-dessous passent
  *  donc par la MÊME porte que la production (`withDerivedStake`). */
 const PORTEUR = { kind: 'condition', id: 'empoisonne' } as const;
-const FT: FlowTest = withDerivedStake({ skill: 'resistance', label: 'Résister' }, PORTEUR);
-const FT_OPP: FlowTest = withDerivedStake({ skill: 'resistance', label: 'Résister', opposed: { attacker: 'force' } }, PORTEUR);
+const FT: FlowTest = withDerivedStake({ skill: { id: 'resistance' }, label: 'Résister' }, PORTEUR);
+const FT_OPP: FlowTest = withDerivedStake({ skill: { id: 'resistance' }, label: 'Résister', opposed: { attacker: 'force' } }, PORTEUR);
 const BRANCHES = { onSuccess: EMPTY_FLOW, onFail: EMPTY_FLOW };
 
 beforeEach(() => { seedBattleRng(1); });
@@ -77,9 +77,9 @@ describe('G1 — non-dérive de cible : chaque producteur rend la cible des jume
       for (const d of DIFFS) {
         const c = actor({ id: `mono-${p.nom}-${d}`, conditions: p.conditions as never });
         const st = simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, d)!;
-        const attendu = rawCombatTestBase(c, FT.skill) + DIFFICULTY_MODIFIERS[d] + combatTestPenalty(c);
+        const attendu = rawCombatTestBase(c, FT.skill?.id) + DIFFICULTY_MODIFIERS[d] + combatTestPenalty(c);
         expect(st.target, `${p.nom}/${d}`).toBe(clampTarget(attendu).target);
-        expect(st.base, `${p.nom}/${d} : la base est la NUE`).toBe(skillBaseValue(c, FT.skill));
+        expect(st.base, `${p.nom}/${d} : la base est la NUE`).toBe(skillBaseValue(c, FT.skill?.id));
         expect(st.difficulty, `${p.nom}/${d} : la Difficulté voyage en donnée de ligne`).toBe(d);
         expect(inexplique(st), `${p.nom}/${d} : écart base→cible non nommé`).toBe(0);
       }
@@ -92,9 +92,9 @@ describe('G1 — non-dérive de cible : chaque producteur rend la cible des jume
         const c = actor({ id: `batch-${p.nom}-${d}`, conditions: p.conditions as never });
         const st = simpleBatchTestStep([c], FT, BRANCHES, EMPTY_FLOW, d, 'bande')!;
         const row = st.participants![0];
-        const attendu = rawCombatTestBase(c, FT.skill) + DIFFICULTY_MODIFIERS[d] + combatTestPenalty(c);
+        const attendu = rawCombatTestBase(c, FT.skill?.id) + DIFFICULTY_MODIFIERS[d] + combatTestPenalty(c);
         expect(row.target, `${p.nom}/${d}`).toBe(clampTarget(attendu).target);
-        expect(row.base, `${p.nom}/${d} : la base est la NUE`).toBe(skillBaseValue(c, FT.skill));
+        expect(row.base, `${p.nom}/${d} : la base est la NUE`).toBe(skillBaseValue(c, FT.skill?.id));
         expect(inexplique(row), `${p.nom}/${d} : écart base→cible non nommé`).toBe(0);
         expect(row.target, 'la bande et le mono tiennent la MÊME règle')
           .toBe(simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, d)!.target);
@@ -110,8 +110,8 @@ describe('G1 — non-dérive de cible : chaque producteur rend la cible des jume
         const aT = rollFrozenOpposedAttacker(att, FT_OPP.opposed!, d);
         const st = frozenOpposedBatchStep([def], FT_OPP, BRANCHES, EMPTY_FLOW, d, att, aT)!;
         const row = st.participants![0];
-        expect(row.target, `${p.nom}/${d}`).toBe(clampTarget(testValue(def, FT_OPP.skill) + DIFFICULTY_MODIFIERS[d]).target);
-        expect(row.base, `${p.nom}/${d} : la base est la NUE`).toBe(skillBaseValue(def, FT_OPP.skill));
+        expect(row.target, `${p.nom}/${d}`).toBe(clampTarget(testValue(def, FT_OPP.skill?.id) + DIFFICULTY_MODIFIERS[d]).target);
+        expect(row.base, `${p.nom}/${d} : la base est la NUE`).toBe(skillBaseValue(def, FT_OPP.skill?.id));
         expect(inexplique(row), `${p.nom}/${d} : écart base→cible non nommé`).toBe(0);
       }
     }
@@ -198,7 +198,7 @@ describe('SONDE PROMUE — la matrice complète des postures × crans de Difficu
     for (const p of POSTURES) {
       for (const d of TOUS_CRANS) {
         const c = actor({ id: 'x', conditions: p.conditions as never });
-        const ancienne = rawCombatTestBase(c, FT.skill) + DIFFICULTY_MODIFIERS[d] + combatTestPenalty(c);
+        const ancienne = rawCombatTestBase(c, FT.skill?.id) + DIFFICULTY_MODIFIERS[d] + combatTestPenalty(c);
         const borne = clampTarget(ancienne);
         const st = simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, d)!;
         const bande = simpleBatchTestStep([c], FT, BRANCHES, EMPTY_FLOW, d, 'b')!.participants![0];
@@ -208,7 +208,7 @@ describe('SONDE PROMUE — la matrice complète des postures × crans de Difficu
         expect(bande.target, `${cle} : bande ≠ mono`).toBe(st.target);
         expect(inexplique(st), `${cle} : mono inexpliqué`).toBe(0);
         expect(inexplique(bande), `${cle} : bande inexpliquée`).toBe(0);
-        expect(st.base, `${cle} : base ≠ nue`).toBe(skillBaseValue(c, FT.skill));
+        expect(st.base, `${cle} : base ≠ nue`).toBe(skillBaseValue(c, FT.skill?.id));
         expect(st.difficulty, `${cle} : Difficulté non posée`).toBe(d);
         if (borne.clamped) {
           horsBornes += 1;
@@ -225,9 +225,9 @@ describe('SONDE PROMUE — la matrice complète des postures × crans de Difficu
         seedBattleRng(7);
         const aT = rollFrozenOpposedAttacker(att, FT_OPP.opposed!, d);
         const row = frozenOpposedBatchStep([def], FT_OPP, BRANCHES, EMPTY_FLOW, d, att, aT)!.participants![0];
-        expect(row.target, `${cle} : opposé`).toBe(clampTarget(testValue(def, FT_OPP.skill) + DIFFICULTY_MODIFIERS[d]).target);
+        expect(row.target, `${cle} : opposé`).toBe(clampTarget(testValue(def, FT_OPP.skill?.id) + DIFFICULTY_MODIFIERS[d]).target);
         expect(inexplique(row), `${cle} : opposé inexpliqué`).toBe(0);
-        expect(row.base, `${cle} : opposé base ≠ nue`).toBe(skillBaseValue(def, FT_OPP.skill));
+        expect(row.base, `${cle} : opposé base ≠ nue`).toBe(skillBaseValue(def, FT_OPP.skill?.id));
       }
     }
     expect(horsBornes, 'sonde inerte : aucune combinaison hors bornes — le second régime n’est pas exercé').toBeGreaterThan(0);

@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
+import { refOuSpec } from '../grammaire/ref';
 import { critEscalationSchema, amputationSchema } from './criticals';
 
 export const file = 'aa-criticals.json';
@@ -39,8 +40,8 @@ const aaEntrySchema = z.strictObject({
     .strictObject({
       difficulty: difficultySchema,
       onFail: z.array(gameOpSchema),
-      /** id STABLE `skills.json` — Test conditionnel HORS-Résistance (ex. Athlétisme, l.2609). */
-      skill: z.string().optional(),
+      /** Réf `skills.json` — Test conditionnel HORS-Résistance (ex. Athlétisme, l.2609). */
+      skill: refOuSpec('skill').optional(),
     })
     .optional(),
   traumas: z.array(z.string()).optional(),

@@ -163,7 +163,7 @@ describe('bande d’un Test tagué MENACE — la construction n’est plus refus
   it('`frozenOpposedBatchStep` bâtit l’étape et propage le tag sur CHAQUE rangée', () => {
     const attaquant = bandHero('e1'); const d1 = bandHero('h1'); const d2 = bandHero('h2');
     const ft: FlowTest = {
-      skill: 'resistance', menace: 'maladie',
+      skill: { id: 'resistance' }, menace: 'maladie',
       opposed: { attacker: 'endurance', attackerSkill: 'resistance' },
     };
     const step = frozenOpposedBatchStep(

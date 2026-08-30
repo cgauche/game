@@ -37,14 +37,14 @@ describe('Météo maritime — Précipitations injectées au Test réel (#183, M
 
   it('Athlétisme, hors voyage en mer : pas de malus', () => {
     useGame.setState({ party: [sailor()] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'athletisme', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.target).toBe(40); // Ag 40, aucun mod
     expect(useGame.getState().pendingTest!.envMod).toBeUndefined();
   });
 
   it('Athlétisme sous Précipitations Abondantes (−20) : le breakdown porte le malus', () => {
     useGame.setState({ party: [sailor()], travelPlan: seaPlan('abondantes') });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'athletisme', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.skillValue).toBe(40); // base INCHANGÉE (le mod reste une ligne à part, pas fondu)
     expect(pt.target).toBe(20); // 40 − 20
@@ -54,19 +54,19 @@ describe('Météo maritime — Précipitations injectées au Test réel (#183, M
 
   it('Escalade sous Précipitations Légères (−10)', () => {
     useGame.setState({ party: [sailor()], travelPlan: seaPlan('legeres') });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'escalade', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'escalade' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.target).toBe(30); // Ag 40 − 10
   });
 
   it('Projectiles (Poudre noire) sous Précipitations Très abondantes (−30) : la spécialisation gate le mod', () => {
     useGame.setState({ party: [sailor()], travelPlan: seaPlan('tres-abondantes') });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'projectiles', spec: 'poudre-noire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'projectiles', spec: 'poudre-noire' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.target).toBe(10); // Dex 40 − 30
   });
 
   it('Projectiles (Arc) sous la MÊME météo (Abondantes) : AUCUN malus (spécialisation non ciblée par la Précipitation)', () => {
     useGame.setState({ party: [sailor()], travelPlan: seaPlan('abondantes') });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'projectiles', spec: 'arc', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'projectiles', spec: 'arc' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.target).toBe(40); // Dex 40, inchangé (le −10 « tous les autres Tests » n'existe qu'en Très abondantes)
     expect(pt.envMod).toBeUndefined();

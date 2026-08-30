@@ -471,10 +471,10 @@ describe("op:'corruptionExposure' — Exposition différée (LDB 19 l.23-75)", (
   it('avec ctx.onCorruptionExposure : le hook reçoit niveau + compétence (Test par modale côté state)', () => {
     const c = hero();
     const seen: unknown[] = [];
-    const lines = applyOps(c, [{ op: 'corruptionExposure', level: 'mineure', skill: 'resistance' }], {
+    const lines = applyOps(c, [{ op: 'corruptionExposure', level: 'mineure', skill: { id: 'resistance' } }], {
       onCorruptionExposure: (level, skill) => { seen.push([level, skill]); return ['ouvert']; },
     });
-    expect(seen).toEqual([['mineure', 'resistance']]);
+    expect(seen).toEqual([['mineure', { id: 'resistance' }]]);
     expect(lines).toEqual(['ouvert']);
     expect(c.corruption ?? 0).toBe(0); // rien de tiré en silence : le Test vit dans la modale
   });

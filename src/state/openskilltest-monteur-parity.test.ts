@@ -69,7 +69,7 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
   it('(a) acteur SAIN, Difficulté Intermédiaire : ancien calcul === rollStep', () => {
     const h = hero('h1', { skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 5 }] } as Partial<Combatant>);
     useGame.setState({ party: [h] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'athletisme', difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.skillValue).toBe(45); // Ag 40 + 5 avances, rien d'autre
     const vieux = cibleHistorique(pt.skillValue, 'intermediaire');
@@ -93,7 +93,7 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
     // Le fixture EXERCE bien les trois postes (sinon la parité ne mesurerait rien).
     expect(testStatePenalty(h1, 'charme')).toBeLessThan(0);
     runFlow(useGame.getState, useGame.setState, testFlow(
-      { skill: 'charme', difficulty: 'difficile', vsGroups: ['elfe'], requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW,
+      { skill: { id: 'charme' }, difficulty: 'difficile', vsGroups: ['elfe'], requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW,
     ));
     const pt = useGame.getState().pendingTest!;
     expect(pt.actorId).toBe('h1');
@@ -122,7 +122,7 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
     useGame.setState({ party: [h1] });
     runFlow(useGame.getState, useGame.setState, testFlow(
       {
-        skill: 'marchandage', difficulty: 'difficile', vsGroups: ['nain'], requireSL: 0,
+        skill: { id: 'marchandage' }, difficulty: 'difficile', vsGroups: ['nain'], requireSL: 0,
         easierIf: { hasSkill: { id: 'commerage' }, steps: 1 },
       }, EMPTY_FLOW, EMPTY_FLOW,
     ));
@@ -144,7 +144,7 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
   it('(d) météo maritime (`envMod`) : le mod reste SUR LA CIBLE, hors de la valeur', () => {
     const h = hero('h1', { skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 0 }] } as Partial<Combatant>);
     useGame.setState({ party: [h], travelPlan: seaPlan('abondantes') });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'athletisme', difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.envMod).toBe(-20);
     expect(pt.skillValue).toBe(40); // la météo n'entre PAS dans la valeur
@@ -163,7 +163,7 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
       skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 15 }],
     } as unknown as Partial<Combatant>);
     useGame.setState({ party: [h] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'athletisme', difficulty: 'tresFacile', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, difficulty: 'tresFacile', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     const vieux = cibleHistorique(pt.skillValue, 'tresFacile');
     expect(vieux.clamped).toBeLessThan(0); // le fixture DÉPASSE bien le plafond
@@ -205,7 +205,7 @@ describe('la LIGNE MONTÉE voyage jusqu’au pending (#1153 L2’ R4)', () => {
     const h = noble('h1');
     useGame.setState({ party: [h] });
     runFlow(useGame.getState, useGame.setState, testFlow(
-      { skill: 'charme', difficulty: 'intermediaire', vsStatus: 'Bronze 1', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW,
+      { skill: { id: 'charme' }, difficulty: 'intermediaire', vsStatus: 'Bronze 1', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW,
     ));
     const pt = useGame.getState().pendingTest!;
     const statut = pt.mods!.find((m) => m.label.startsWith('Statut'))!;
@@ -226,7 +226,7 @@ describe('la LIGNE MONTÉE voyage jusqu’au pending (#1153 L2’ R4)', () => {
         seedBattleRng(seed);
         useGame.setState({ pendingTest: null, pendingCascade: null });
         runFlow(useGame.getState, useGame.setState, testFlow(
-          { skill: 'charme', difficulty: 'intermediaire', vsStatus: 'Bronze 1', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW,
+          { skill: { id: 'charme' }, difficulty: 'intermediaire', vsStatus: 'Bronze 1', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW,
         ));
         const cur = useGame.getState().pendingTest!;
         if ((cur.psychMod ?? 0) < 0) pt = cur; // inversion tirée (le mod d'un Or vers un Bronze est +10)
@@ -252,7 +252,7 @@ describe('la LIGNE MONTÉE voyage jusqu’au pending (#1153 L2’ R4)', () => {
       skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 2 }],
     } as unknown as Partial<Combatant>);
     useGame.setState({ party: [h1, h2] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'athletisme', difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.candidates).toHaveLength(2);
     const c1 = pt.candidates!.find((c) => c.id === 'h1')!;

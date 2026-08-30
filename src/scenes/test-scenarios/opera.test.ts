@@ -165,7 +165,7 @@ describe('Opéra — Théâtre : intrigue n°1 (la bombe de la loge royale)', ()
 
   it('le spot-check Glimbrin (intrigue n°2) a ses deux issues (clés sauves / volées)', () => {
     const spot = spotNode();
-    expect(spot.test.skill).toBe('Perception');
+    expect(spot.test.skill).toEqual({ id: 'perception' });
     lonePartyAt(35);
     applyEffects(useGame.getState, useGame.setState, flowEffects(spot.fail));
     expect(useGame.getState().flags.clesVolees).toBe(true);

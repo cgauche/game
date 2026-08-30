@@ -28,7 +28,7 @@ describe('Effet corruptionExposure → modale → resolveCorruption', () => {
   it('ouvre pendingCorruption sur le héros visé ; le gain suit corruptionGain (niveau + DR)', () => {
     const { a, party } = party2();
     useGame.setState({ party });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'mineure', skill: 'resistance', heroId: a.id }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'mineure', skill: { id: 'resistance' }, heroId: a.id }]);
     const pc = useGame.getState().pendingCorruption;
     expect(pc).toBeTruthy();
     expect(pc!.heroId).toBe(a.id);
@@ -46,7 +46,7 @@ describe('Effet corruptionExposure → modale → resolveCorruption', () => {
   it('compétence DÉTERMINÉE par la source (skill) → verrouillée, corruptionSetSkill sans effet', () => {
     const { a, party } = party2();
     useGame.setState({ party });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'mineure', skill: 'calme', heroId: a.id }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'mineure', skill: { id: 'calme' }, heroId: a.id }]);
     expect(useGame.getState().pendingCorruption!.skill).toBe('calme');
     expect(useGame.getState().pendingCorruption!.skillLocked).toBe(true);
     useGame.getState().corruptionSetSkill('resistance'); // verrouillé → ignoré
@@ -91,7 +91,7 @@ describe('Effet corruptionExposure → modale → resolveCorruption', () => {
     const seuil = useGame.getState().pendingCorruption!;
     expect(seuil.kind, 'la fenêtre en place est le Test de seuil de a').toBe('seuil');
 
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'majeure', skill: 'resistance', heroId: b.id }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'majeure', skill: { id: 'resistance' }, heroId: b.id }]);
 
     expect(useGame.getState().pendingCorruption, 'le seuil n’a pas été écrasé').toEqual(seuil);
     expect(useGame.getState().corruptionQueue.map((q) => q.heroId), 'l’Exposition prend RANG').toEqual([b.id]);
@@ -107,7 +107,7 @@ describe('Effet corruptionExposure → modale → resolveCorruption', () => {
   it('exposition repoussée (DR suffisant) → aucun Point', () => {
     const { a, party } = party2();
     useGame.setState({ party });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'moderee', skill: 'calme', heroId: a.id }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'moderee', skill: { id: 'calme' }, heroId: a.id }]);
     useGame.getState().corruptionRoll();
     useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 5, target: 45, sl: 4, success: true } });
     useGame.getState().resolveCorruption();

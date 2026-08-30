@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { difficultySchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'tavernGames.json';
 export const famille = 'entite';
@@ -33,8 +34,7 @@ const doc = document(
   'tavernGames',
   famille,
   {
-    skill: z.string().nullable(),
-    spec: z.string().optional(),
+    skill: refOuSpec('skill').nullable(),
     characteristic: charKeySchema.optional(),
     /** RÉGIME RAPIDE (règle optionnelle `tavern-games-rapides`) — le Test qu'il joue pour CETTE
      *  entrée, quand la table veut autre chose que la lettre. DÉFAUT (absent) = `NADJ 16 l.11` mot à
@@ -44,8 +44,7 @@ const doc = document(
      *  une lecture d'ESPRIT — elle s'écrit ICI, en donnée éditable et taguée maison, jamais en
      *  arbitrage de code qui dévierait du verbatim. */
     fastSkill: z.strictObject({
-      skill: z.string().optional(),
-      spec: z.string().optional(),
+      skill: refOuSpec('skill').optional(),
       char: charKeySchema.optional(),
       /** Tag MAISON obligatoire : cet override n'est pas dans la source. */
       maison: z.string(),
@@ -76,8 +75,7 @@ const doc = document(
     /** Options de Test d'une manche (Middenball l.121 : Bagarre (+20) OU Athlétisme (+0)) — le choix
      *  va au joueur ; la 1ʳᵉ option est celle que suivent les porteurs sans siège et les figurants. */
     options: z.array(z.strictObject({
-      skill: z.string().optional(),
-      spec: z.string().optional(),
+      skill: refOuSpec('skill').optional(),
       char: charKeySchema.optional(),
       difficulty: difficultySchema,
       /** Test de COMBAT : l'Avantage s'y applique (« +10 à un Test de Combat ou de Psychologie
@@ -125,8 +123,7 @@ const doc = document(
      *  lectures. `tours` est un ARBITRAGE MAISON ÉDITABLE (le RAW ne dit pas quand la partie s'arrête). */
     combined: z.strictObject({
       second: z.strictObject({
-        skill: z.string().optional(),
-        spec: z.string().optional(),
+        skill: refOuSpec('skill').optional(),
         char: charKeySchema.optional(),
       }),
       failEvery: z.number().optional(),
@@ -143,8 +140,7 @@ const doc = document(
      *  `SequenceParams.throwerPenalty` (`src/state/sequenceCore.ts`). */
     throwerPenalty: z.strictObject({
       test: z.strictObject({
-        skill: z.string().optional(),
-        spec: z.string().optional(),
+        skill: refOuSpec('skill').optional(),
         char: charKeySchema.optional(),
       }),
       difficulty: difficultySchema,
@@ -195,9 +191,8 @@ const doc = document(
   {
     skill: {
       label: 'Compétence testée',
-      hint: 'Compétence testée, prise au catalogue ; absente, le jeu joue sa Caractéristique, et à défaut Pari (NADJ 16 l.11)',
+      hint: 'Compétence testée (+ spécialisation si le jeu en exige une), prise au catalogue ; absente, le jeu joue sa Caractéristique, et à défaut Pari (NADJ 16 l.11)',
     },
-    spec: { label: 'Spécialisation testée', hint: 'Spécialisation de la Compétence testée, si le jeu en exige une' },
     characteristic: {
       label: 'Caractéristique testée',
       hint: 'Caractéristique du Test : celle qui porte la Compétence quand les deux sont déclarées (Alvatafl : Savoir sur Int), ou la Caractéristique jouée seule (Bras de fer : Force)',

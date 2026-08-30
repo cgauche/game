@@ -53,7 +53,7 @@ interface AAEntry {
   /** Test conditionnel de la ligne (« sous peine de… »). `skill` (optionnel, id STABLE `skills.json`) =
    *  compétence testée QUAND CE N'EST PAS de la Résistance (ex. Athlétisme, l.2609) — `testValue` gère
    *  déjà les compétences de base non entraînées. Absent (défaut historique) = Test de Résistance. */
-  resist?: { difficulty: import('./types').Difficulty; onFail: GameOp[]; skill?: string };
+  resist?: { difficulty: import('./types').Difficulty; onFail: GameOp[]; skill?: import('./skills').SkillRef };
   traumas?: string[];
   /** Amputation (AA « voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — même forme
    *  que `data/criticals.ts` (LDB) : `difficulty` = Test de Résistance (échec → À Terre, +Sonné si
@@ -111,7 +111,7 @@ export function resolveAACritical(
   if (entry.resist) {
     // `skill` (l.2609 : Test d'Athlétisme, pas de Résistance) — `testValue` couvre déjà les compétences
     // de base non entraînées (Athlétisme = « base », LDB) ; absent = Test de Résistance (comportement historique).
-    const testVal = entry.resist.skill ? testValue(target, entry.resist.skill) : resistVal;
+    const testVal = entry.resist.skill ? testValue(target, entry.resist.skill.id, undefined, entry.resist.skill.spec) : resistVal;
     const res = rollTest(testVal, entry.resist.difficulty, rng);
     if (!res.success) ops.push(...entry.resist.onFail);
   }

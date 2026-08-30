@@ -23,7 +23,7 @@ describe('Capricieux — delta de DR sur le Test de Sociabilité résolu (MSRC 1
     h.skills = []; // pas d'avances → testValue = Sociabilité brute
     useGame.setState({ party: [h], pendingTest: null, battle: null });
     runFlow(useGame.getState, useGame.setState, testFlow(
-      { skill: 'charme', difficulty: 'intermediaire', ...(vsCapricieux ? { vsCapricieux: true } : {}) },
+      { skill: { id: 'charme' }, difficulty: 'intermediaire', ...(vsCapricieux ? { vsCapricieux: true } : {}) },
       EMPTY_FLOW, EMPTY_FLOW,
     ));
     return useGame.getState().pendingTest!;

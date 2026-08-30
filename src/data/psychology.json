@@ -93,7 +93,9 @@
     },
     "resolution": "extended",
     "test": {
-      "skill": "calme",
+      "skill": {
+        "id": "calme"
+      },
       "difficulty": "intermediaire"
     },
     "stake": "Test étendu : les DR se cumulent d’un Test à l’autre vers l’Indice {indice}. Tant qu’il n’est pas atteint, vous restez sujet à la Peur — −1 DR à vos attaques contre sa source.",
@@ -117,7 +119,9 @@
     },
     "becomes": "peur",
     "test": {
-      "skill": "calme",
+      "skill": {
+        "id": "calme"
+      },
       "difficulty": "intermediaire"
     },
     "stake": "Échec : État Brisé — {indice} rang(s), +1 par DR d’échec. Dans les deux cas la créature cause ensuite la Peur, d’Indice {indice} : la réussite n’exempte que de la Terreur.",
@@ -142,7 +146,9 @@
     },
     "resolution": "binary",
     "test": {
-      "skill": "calme",
+      "skill": {
+        "id": "calme"
+      },
       "difficulty": "intermediaire"
     },
     "stake": "Échec : l’Animosité devient ACTIVE envers sa Cible — +1 DR à vos attaques contre elle, et elle cesse dès qu’une Peur ou une Terreur vous saisit.",
@@ -168,7 +174,9 @@
     },
     "resolution": "binary",
     "test": {
-      "skill": "calme",
+      "skill": {
+        "id": "calme"
+      },
       "difficulty": "intermediaire"
     },
     "stake": "Échec : la Haine devient ACTIVE envers sa Cible — +1 DR à vos attaques contre elle ; tant qu’elle dure, vous ignorez la Peur qu’un membre de cette Cible provoque.",
@@ -189,7 +197,9 @@
     "containedSocialMod": -10,
     "resolution": "binary",
     "test": {
-      "skill": "calme",
+      "skill": {
+        "id": "calme"
+      },
       "difficulty": "intermediaire"
     },
     "stake": "Échec : le Préjugé devient ACTIF envers sa Cible ; il cesse dès qu’une Peur ou une Terreur vous saisit.",
@@ -216,7 +226,9 @@
     "triggerOn": "threatened",
     "resolution": "binary",
     "test": {
-      "skill": "calme",
+      "skill": {
+        "id": "calme"
+      },
       "difficulty": "intermediaire"
     },
     "stake": "Échec : l’Amour devient ACTIF — +1 DR quand vous défendez l’être aimé, et vous ignorez la Peur tant que vous le défendez, à ses côtés.",
@@ -240,7 +252,9 @@
     "triggerOn": "threatened",
     "resolution": "binary",
     "test": {
-      "skill": "calme",
+      "skill": {
+        "id": "calme"
+      },
       "difficulty": "intermediaire"
     },
     "stake": "Échec : la Camaraderie devient ACTIVE — +1 DR quand vous défendez vos compagnons.",

@@ -2526,9 +2526,9 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       for (const h of get().party) {
         if (h.dead) continue;
         applyOps(h, [
-          { op: 'skillDRBonus', skill: 'focalisation', bonus: 2 },
-          { op: 'skillDRBonus', skill: 'guerison', bonus: 2 },
-          { op: 'skillDRBonus', skill: 'resistance', bonus: 2 },
+          { op: 'skillDRBonus', skill: { id: 'focalisation' }, bonus: 2 },
+          { op: 'skillDRBonus', skill: { id: 'guerison' }, bonus: 2 },
+          { op: 'skillDRBonus', skill: { id: 'resistance' }, bonus: 2 },
         ], { label: event.label, rng, defaultUntilTime: until });
       }
       set({ party: [...get().party] });

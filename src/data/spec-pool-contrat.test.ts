@@ -53,9 +53,7 @@ const REFS_EN_LIBELLE = [
   'species|maitre-artisan|Fermiers',
   'species|savoir-vivre|Guilde',
   'species|savoir-vivre|Soldat',
-  'talents(passive/grantCareerSkill)|charme|Mendicité',
   'talents(passive/grantCareerSkill)|savoir|Apothicaire',
-  'tavernGames|savoir|Art de la Guerre',
 ];
 
 const DEF_BY_ID = new Map(DEFS.map((d) => [d.id, d]));

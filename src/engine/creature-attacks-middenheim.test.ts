@@ -31,7 +31,7 @@ describe('#60 attaques spéciales du bestiaire de Middenheim', () => {
     expect(atk!.avantage).toBe(1);
     const ops = JSON.stringify(atk!.def.effects);
     expect(ops).toContain('"id":"assourdi"');
-    expect(ops).toContain('"skill":"calme"');
+    expect(ops).toContain('"skill":{"id":"calme"}');
     expect(ops).toContain('"id":"brise"');
   });
 });

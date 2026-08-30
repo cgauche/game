@@ -29,7 +29,7 @@ describe('Scénario 95 — Poursuite terrestre', () => {
     const trigger = scenario.scene.triggers.find((t) => t.id === 'depart-poursuite')!;
     const startPursuit = flowEffects(trigger.flow).find((e) => e.type === 'startPursuit');
     if (startPursuit?.type !== 'startPursuit') throw new Error('type narrowing');
-    expect(byId('skill', startPursuit.skill)).toBeTruthy();
+    expect(byId('skill', startPursuit.skill.id)).toBeTruthy();
     expect(findCreatureById('brigand')).toBeTruthy();
   });
 

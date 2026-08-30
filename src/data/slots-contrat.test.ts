@@ -169,7 +169,15 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
     // déplacement. Aucune référence n'a été écrite : la projection `champDuPath` retient le DERNIER
     // segment (`id`), donc l'adoption de `refOuSpec('skill')` reste invisible à cette mesure
     // (`ANGLES_MORTS_SLOTS`) — c'est le CHAMP PORTEUR qui a bougé, pas la dette.
-    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(331);
+    // Cliquet REMONTÉ 331 → 340 (L2 #1548, commit 3c) — MÊME mécanique qu'au commit 3b, à l'échelle des
+    // 334 références emboîtées : la référence de Compétence sort de son porteur et devient son PROPRE
+    // champ (`skill`), ce qui SCINDE des lignes au lieu d'écrire de la donnée neuve — 7 lignes de
+    // conteneur meurent (`etats.recover/test`, `qualities.test`, `talents.reverseFailed`,
+    // `tavernGames.spec/test`, `trappings.test`) et 16 lignes `<dataset>.skill` naissent du MÊME
+    // déplacement. Aucune référence n'a été écrite : `champDuPath` retient le DERNIER segment (`id`),
+    // donc l'adoption de `refOuSpec('skill')` reste invisible à cette mesure (`ANGLES_MORTS_SLOTS`,
+    // dériveur à descendre d'un niveau consigné pour #1473) — c'est le CHAMP PORTEUR qui a bougé.
+    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(340);
   });
 
   it('chaque ligne du stock porte sa DATE et son LOT de mort', () => {

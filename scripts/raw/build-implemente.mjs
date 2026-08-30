@@ -104,34 +104,62 @@ const JSON_BOOK_RE = /"book"\s*:\s*"([^"]+)"/
 const JSON_PAGE_RE = /"page"\s*:\s*(-?\d+)/
 
 /** Extrait de `content` (.json) les citations FOLIO : chaque `source:{book,page}` est rattachée à
- *  l'`id` le plus proche AU-DESSUS (le « symbole »), sa citation = {book:abbr, ch, lo, hi} de la plage
- *  folio (via `resolve(slug, page)`). `stats` (par abbr : resolved/notFound/ambiguous ; globaux :
- *  noAtlas/noPage) est mut é en place. `slug` inconnu de `knownIds` = fail-fast. */
+ *  l'entité PORTEUSE — l'`id` de l'objet ENGLOBANT le plus proche par profondeur d'accolades, jamais
+ *  un `id` de référence emboîtée (`skill:{id}`, `talent:{id}`…) dont la portée est déjà refermée.
+ *  Sa citation = {book:abbr, ch, lo, hi} de la plage folio (via `resolve(slug, page)`). `stats` (par
+ *  abbr : resolved/notFound/ambiguous ; globaux : noAtlas/noPage) est mut é en place. `slug` inconnu
+ *  de `knownIds` = fail-fast. */
 export function folioCitationsFromJson(rel, content, { abbrOf, knownIds, stats }) {
   const out = []
   const lines = content.split('\n')
-  let lastId = null
+  const idAt = []            // idAt[d] = id de l'objet ouvert à la profondeur d (portées refermées purgées)
+  const ID_G = new RegExp(JSON_ID_RE.source, 'g')
+  const BOOK_G = new RegExp(JSON_BOOK_RE.source, 'g')
+  let depth = 0, inString = false, escaped = false
   for (let i = 0; i < lines.length; i++) {
-    const im = JSON_ID_RE.exec(lines[i])
-    if (im) lastId = im[1]
-    const bm = JSON_BOOK_RE.exec(lines[i])
-    if (!bm) continue
-    let page = null
-    const pm = JSON_PAGE_RE.exec(lines[i])
-    if (pm) page = Number(pm[1])
-    else for (let j = i + 1; j < Math.min(lines.length, i + 3); j++) { const p = JSON_PAGE_RE.exec(lines[j]); if (p) { page = Number(p[1]); break } }
-    const slug = bm[1]
-    if (!knownIds.has(slug)) throw new Error(`${rel}:${i + 1} source.book inconnu de books.json : "${slug}"`)
-    if (page == null) { stats.noPage++; continue }
-    const abbr = abbrOf.get(slug)
-    if (!abbr) { stats.noAtlas++; continue }
-    const s = stats.byBook.get(abbr) || { resolved: 0, notFound: 0, ambiguous: 0 }
-    stats.byBook.set(abbr, s)
-    const r = folioRange(abbr, page)
-    if (r === 'ambiguous') { s.ambiguous++; continue }
-    if (r == null) { s.notFound++; continue }
-    s.resolved++
-    out.push({ book: abbr, ch: r.ch, lo: r.lo, hi: r.hi, file: rel, row: i + 1, isTs: false, sym: lastId || null, folio: true })
+    const line = lines[i]
+    const events = []
+    let m
+    ID_G.lastIndex = 0
+    while ((m = ID_G.exec(line))) events.push({ at: m.index, kind: 'id', v: m[1] })
+    BOOK_G.lastIndex = 0
+    const bm = BOOK_G.exec(line)
+    if (bm) events.push({ at: bm.index, kind: 'book', v: bm[1] })
+    events.sort((a, b) => a.at - b.at)
+    let e = 0
+    for (let c = 0; c <= line.length; c++) {
+      while (e < events.length && events[e].at === c) {
+        const ev = events[e++]
+        if (ev.kind === 'id') { idAt.length = depth; idAt[depth] = ev.v; continue }
+        const slug = ev.v
+        if (!knownIds.has(slug)) throw new Error(`${rel}:${i + 1} source.book inconnu de books.json : "${slug}"`)
+        let page = null
+        const pm = JSON_PAGE_RE.exec(line)
+        if (pm) page = Number(pm[1])
+        else for (let j = i + 1; j < Math.min(lines.length, i + 3); j++) { const p = JSON_PAGE_RE.exec(lines[j]); if (p) { page = Number(p[1]); break } }
+        if (page == null) { stats.noPage++; continue }
+        const abbr = abbrOf.get(slug)
+        if (!abbr) { stats.noAtlas++; continue }
+        const s = stats.byBook.get(abbr) || { resolved: 0, notFound: 0, ambiguous: 0 }
+        stats.byBook.set(abbr, s)
+        const r = folioRange(abbr, page)
+        if (r === 'ambiguous') { s.ambiguous++; continue }
+        if (r == null) { s.notFound++; continue }
+        s.resolved++
+        let porteur = null
+        for (let d = Math.min(depth, idAt.length - 1); d >= 0; d--) if (idAt[d] != null) { porteur = idAt[d]; break }
+        out.push({ book: abbr, ch: r.ch, lo: r.lo, hi: r.hi, file: rel, row: i + 1, isTs: false, sym: porteur, folio: true })
+      }
+      if (c === line.length) break
+      const ch = line[c]
+      if (inString) {
+        if (escaped) escaped = false
+        else if (ch === '\\') escaped = true
+        else if (ch === '"') inString = false
+      } else if (ch === '"') inString = true
+      else if (ch === '{' || ch === '[') depth++
+      else if (ch === '}' || ch === ']') { depth--; if (idAt.length > depth + 1) idAt.length = depth + 1 }
+    }
   }
   return out
 }

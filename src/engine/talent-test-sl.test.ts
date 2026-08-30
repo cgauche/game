@@ -57,7 +57,7 @@ describe('Intégrité des talent.test.matches (garde de curation)', () => {
     for (const t of talents) {
       for (const m of t.test?.matches ?? []) {
         if ((m.skill != null) === (m.char != null)) bad.push(`${t.id}: match doit avoir skill XOR char`);
-        if (m.skill != null && !skillIds.has(m.skill)) bad.push(`${t.id}: skill '${m.skill}' inconnu`);
+        if (m.skill != null && !skillIds.has(m.skill.id)) bad.push(`${t.id}: skill '${m.skill.id}' inconnu`);
         if (m.char != null && !CHARS.has(m.char)) bad.push(`${t.id}: char '${m.char}' inconnu`);
       }
     }

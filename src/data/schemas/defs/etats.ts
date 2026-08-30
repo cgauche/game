@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { charKeySchema, difficultySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'etats.json';
 export const famille = 'entite';
@@ -22,7 +23,7 @@ const gatingSchema = z.strictObject({
 
 /** `EtatData.recover` (`src/data/index.ts`). */
 const recoverSchema = z.strictObject({
-  skill: z.string().optional(),
+  skill: refOuSpec('skill').optional(),
   characteristic: charKeySchema.optional(),
   opposedBy: z.literal('source').optional(),
   difficulty: difficultySchema.optional(),

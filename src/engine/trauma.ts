@@ -221,7 +221,7 @@ export function traumaById(id: string, opts?: { be?: number; d10?: number }, loc
 /** Une déchirure musculaire MAJEURE de jambe guérit en DEUX temps (LDB 18 l.231) : après la 1ʳᵉ moitié
  *  (recoveryTotal/2), la pénalité de mobilité passe de −20 à −10 ; la 2ᵉ moitié achève la guérison. */
 function downgradeTornMuscle(t: Trauma, leftDays: number, shape?: BodyShape): string | null {
-  const esq = opsOfType(t.ops ?? [], 'skillMod').find((o) => o.skill === 'esquive');
+  const esq = opsOfType(t.ops ?? [], 'skillMod').find((o) => o.skill.id === 'esquive');
   if (t.kind !== 'dechirure' || t.severity !== 'majeur' || esq?.mod !== -20 || t.recoveryTotal == null) return null;
   if (leftDays > t.recoveryTotal / 2) return null; // pas encore à la mi-durée
   esq.mod = -10; // rémission partielle (LDB 18 l.231)
@@ -235,7 +235,7 @@ function downgradeTornMuscle(t: Trauma, leftDays: number, shape?: BodyShape): st
  */
 function fractureSequela(t: Trauma, shape?: BodyShape): Trauma | null {
   const pen = t.severity === 'majeur' ? -10 : -5;
-  if (t.location === 'tete') return { label: tr('tra.fractureSequelaLabel', { loc: locationLabel(t.location ?? 'corps', shape) }), location: t.location, ops: [{ op: 'skillMod', skill: 'langue', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-tete').desc };
+  if (t.location === 'tete') return { label: tr('tra.fractureSequelaLabel', { loc: locationLabel(t.location ?? 'corps', shape) }), location: t.location, ops: [{ op: 'skillMod', skill: { id: 'langue' }, mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-tete').desc };
   return { label: tr('tra.fractureSequelaLabel', { loc: locationLabel(t.location ?? 'corps', shape) }), location: t.location, ops: [{ op: 'charMod', char: 'agilite', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-membre').desc };
 }
 
@@ -412,7 +412,7 @@ function sequelleEffet(f: TraumaFiche): string {
   const autres: string[] = [];
   for (const o of f.ops ?? []) {
     if (o.op === 'charMod') parMod.set(o.mod, [...(parMod.get(o.mod) ?? []), CHAR_LABELS[o.char]]);
-    else if (o.op === 'skillMod') parMod.set(o.mod, [...(parMod.get(o.mod) ?? []), refLabel('skills', { id: o.skill })]);
+    else if (o.op === 'skillMod') parMod.set(o.mod, [...(parMod.get(o.mod) ?? []), refLabel('skills', o.skill)]);
     else if (o.op === 'moveScale') autres.push(tr('tra.effetMouvement'));
     else if (o.op === 'maxWeaponHands') autres.push(tr('tra.effetUneMain'));
     else if (o.op === 'senseLoss') autres.push(tr(o.sense === 'vue' ? 'tra.effetVue' : 'tra.effetOuie'));
@@ -983,7 +983,7 @@ export function passiveMods(c: Combatant): PassiveMod[] {
     // `src`/`label` = L'EFFET émetteur : un `skillMod` de SORT doit s'annoncer au nom de son sort, pas
     // au repli de famille de son seau (`kind:'magique'` tombe côté pool non-cumul, donc « Séquelle » —
     // un sort temporaire s'y annonçait comme une mutilation permanente).
-    if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: { op: 'skillMod', skill, mod }, kind: 'magique', src: effectRef(e), label: e.label });
+    if (e.skillMods) for (const [skill, mod] of Object.entries(e.skillMods)) out.push({ op: { op: 'skillMod', skill: { id: skill }, mod }, kind: 'magique', src: effectRef(e), label: e.label });
     if (e.moveScale) out.push({ op: { op: 'moveScale', num: e.moveScale.num, den: e.moveScale.den }, kind: 'magique' });
     if (e.moveMod) out.push({ op: { op: 'moveMod', mod: e.moveMod }, kind: 'magique' });
     if (e.maxWeaponHands != null) out.push({ op: { op: 'maxWeaponHands', hands: e.maxWeaponHands }, kind: 'magique' });
@@ -1032,7 +1032,7 @@ export function passiveMoveMod(c: Combatant): number {
  *  (`traumaSkillPenalty`). */
 export function passiveSkillParts(c: Combatant, skill?: string): PassiveMod[] {
   if (!skill) return [];
-  return pmodsFull(c, 'skillMod', true).filter((m) => (m.op as Extract<GameOp, { op: 'skillMod' }>).skill === skill);
+  return pmodsFull(c, 'skillMod', true).filter((m) => (m.op as Extract<GameOp, { op: 'skillMod' }>).skill.id === skill);
 }
 
 /** Σ de `passiveSkillParts` — SOURCE UNIQUE (l'affichage et le jet lisent les mêmes composantes). */
@@ -1126,7 +1126,7 @@ export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
  *  state/partyFlow.ts) : entraînée, `prosthesisCancels` l'élève à `'all'` et lève aussi l'Esquive. */
 export function traumaDodgePenalty(c: Combatant): number {
   const pens = pmods(c, 'skillMod', false)
-    .filter((o) => o.skill.toLowerCase() === 'esquive' && o.mod < 0)
+    .filter((o) => o.skill.id === 'esquive' && o.mod < 0)
     .map((o) => o.mod);
   return pens.length ? Math.min(...pens) : 0;
 }
@@ -1150,7 +1150,7 @@ export function traumaSkillPenaltyParts(c: Combatant, skill?: string, testSense?
   // Esquive est porté par traumaDodgePenalty (defenseValue) → EXCLU ici pour préserver la séparation historique.
   const cand = pmodsFull(c, 'skillMod', false).filter((m) => {
     const o = m.op as Extract<GameOp, { op: 'skillMod' }>;
-    return o.skill !== 'esquive' && o.skill === skill && o.mod < 0 && senseMatches(o.sense, testSense);
+    return o.skill.id !== 'esquive' && o.skill.id === skill && o.mod < 0 && senseMatches(o.sense, testSense);
   });
   // Non-cumul (l.20) : la PIRE seule — comparaison STRICTE, un ex æquo ne détrône pas le tenant
   // (même arbitrage déterministe que `poolWinner`, conditions.ts).

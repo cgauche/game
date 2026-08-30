@@ -78,7 +78,7 @@ const scene = buildScene({
       once: true,
       flow: testFlow(
         {
-          skill: 'Athlétisme', difficulty: 'intermediaire', label: 'Esquiver les piques de la dalle',
+          skill: { id: 'athletisme' }, difficulty: 'intermediaire', label: 'Esquiver les piques de la dalle',
           stake: { authored: 'Se figer à temps sur la dalle : sinon les piques frappent le groupe, l’alarme retentit et la herse du trésor se verrouille.' },
         },
         flowFromEffects([{ type: 'journal', desc: 'Un déclic — vous vous figez juste à temps, les piques claquent dans le vide.' }]),

@@ -68,7 +68,9 @@
           "then": {
             "kind": "test",
             "test": {
-              "skill": "resistance",
+              "skill": {
+                "id": "resistance"
+              },
               "opposed": {
                 "attacker": "force"
               }
@@ -622,7 +624,9 @@
             "kind": "test",
             "test": {
               "characteristic": "force",
-              "skill": "athletisme",
+              "skill": {
+                "id": "athletisme"
+              },
               "opposed": {
                 "attacker": "force",
                 "attackerSkill": "athletisme",

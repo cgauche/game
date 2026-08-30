@@ -173,7 +173,11 @@ const RAW_KNOWN: Record<string, number> = {
   // (`crewTest.char === 'initiative'`), plus un id de registre de Compétence.
   'src/engine/riverNavigation.ts': 2,
   'src/engine/seaNavigation.ts': 1,
-  'src/engine/trauma.ts': 4, // pénalité de combat PAR MAIN (doigts/main) + crochet entraîné : axe NON couvert par `cumul`
+  // 4 → 7 (L2 #1548, commit 3c) : AUCUNE comparaison neuve — les trois `o.skill === 'esquive'` de
+  // `downgradeTornMuscle`/`traumaDodgePenalty`/`traumaSkillPenalty` lisent la MÊME chose qu'avant, mais
+  // la référence de Compétence étant EMBOÎTÉE leur accès passe par `.id`, que ce cliquet BRUT compte.
+  // L'Esquive y est NOMMÉE par le RAW (LDB 18 : la mobilité d'un membre pèse sur l'Esquive).
+  'src/engine/trauma.ts': 7, // pénalité de combat PAR MAIN (doigts/main) + crochet entraîné + Esquive nommée au RAW : axes NON couverts par `cumul`
   'src/engine/weaponDamage.ts': 1,
   'src/engine/windsOfMagic.ts': 1,
   'src/gameIso/rig/mountedRig.ts': 1,

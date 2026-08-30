@@ -31,7 +31,7 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
     const help1 = skilled('h2', undefined);
     const help2 = skilled('h3', undefined);
     useGame.setState({ party: [leader, help1, help2] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.skillValue).toBe(55); // 35 + 2×10 (Soutien FONDU, inchangé)
     // …et DÉTAILLÉ pour l'affichage, NOMS COMPRIS (`ids` : la provenance de la chip « +20 Soutien »).
@@ -43,7 +43,7 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
   it('Test NON soutenu : aucun détail inventé (pas de ligne « Soutien +0 »)', () => {
     const leader = skilled('h1', undefined, 'perception', 5);
     useGame.setState({ party: [leader] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.support).toBeUndefined();
   });
 
@@ -52,7 +52,7 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
     const crocheteur = skilled('h2', undefined, 'crochetage', 3);
     useGame.setState({ party: [leader, crocheteur] });
     runFlow(useGame.getState, useGame.setState, testFlow(
-      { skill: 'perception', requireSL: 0, difficulty: 'intermediaire', easierIf: { hasSkill: { id: 'crochetage' }, steps: 1 } },
+      { skill: { id: 'perception' }, requireSL: 0, difficulty: 'intermediaire', easierIf: { hasSkill: { id: 'crochetage' }, steps: 1 } },
       EMPTY_FLOW, EMPTY_FLOW,
     ));
     const pt = useGame.getState().pendingTest!;
@@ -64,7 +64,7 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
     const leader = skilled('h1', undefined, 'perception', 5);
     useGame.setState({ party: [leader] });
     runFlow(useGame.getState, useGame.setState, testFlow(
-      { skill: 'perception', requireSL: 0, difficulty: 'intermediaire', easierIf: { hasSkill: { id: 'crochetage' }, steps: 1 } },
+      { skill: { id: 'perception' }, requireSL: 0, difficulty: 'intermediaire', easierIf: { hasSkill: { id: 'crochetage' }, steps: 1 } },
       EMPTY_FLOW, EMPTY_FLOW,
     ));
     expect(useGame.getState().pendingTest!.easedBy).toBeUndefined();
@@ -74,7 +74,7 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
     // Cible calculée 135 (Ag 30 + 105 Augmentations) → bornée à 99 : l'écrêtage réel est −36.
     const colosse = skilled('h1', undefined, 'perception', 105);
     useGame.setState({ party: [colosse] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.target).toBe(99);
     expect(pt.clamped).toBe(-36); // 99 − 135
@@ -82,7 +82,7 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
     // Cible qui VAUT 99 sans aucun bornage : rien à nommer.
     const juste = skilled('h2', undefined, 'perception', 69);
     useGame.setState({ party: [juste], pendingTest: null });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.target).toBe(99);
     expect(useGame.getState().pendingTest!.clamped).toBeUndefined();
   });
@@ -123,7 +123,7 @@ describe('LDB 12 l.197 — un Test SUBI ne se soutient pas (défaut de la VOIE, 
 
   /** Effet DÉCLENCHÉ hors combat (Venin/Crampes/zone franchie) : `routeTriggeredTest` ouvre la modale
    *  du sujet — les camarades ne peuvent pas résister à sa place. */
-  const subi = (test: Parameters<typeof routeTriggeredTest>[4] extends never ? never : { skill?: string; characteristic?: string; noSupport?: boolean }) =>
+  const subi = (test: Parameters<typeof routeTriggeredTest>[4] extends never ? never : { skill?: { id: string }; characteristic?: string; noSupport?: boolean }) =>
     ({ kind: 'test' as const, test: test as never, success: EMPTY_FLOW, fail: EMPTY_FLOW });
 
   it('Test de Résistance déclenché : AUCUN Soutien, même avec 2 camarades capables et adjacents', () => {
@@ -131,7 +131,7 @@ describe('LDB 12 l.197 — un Test SUBI ne se soutient pas (défaut de la VOIE, 
     const a = skilled('h2', undefined, 'resistance', 2);
     const b = skilled('h3', undefined, 'resistance', 2);
     useGame.setState({ party: [victime, a, b] });
-    routeTriggeredTest(useGame.getState, useGame.setState, victime, victime, subi({ skill: 'resistance' }));
+    routeTriggeredTest(useGame.getState, useGame.setState, victime, victime, subi({ skill: { id: 'resistance' } }));
     const pt = useGame.getState().pendingTest!;
     expect(pt.support).toBeUndefined();
     expect(pt.skillValue).toBe(35); // base seule (Ag 30 + 5), pas 55
@@ -141,14 +141,14 @@ describe('LDB 12 l.197 — un Test SUBI ne se soutient pas (défaut de la VOIE, 
     const soigne = skilled('h1', undefined, 'guerison', 5);
     const aide = skilled('h2', undefined, 'guerison', 2);
     useGame.setState({ party: [soigne, aide] });
-    routeTriggeredTest(useGame.getState, useGame.setState, soigne, soigne, subi({ skill: 'guerison', noSupport: false }));
+    routeTriggeredTest(useGame.getState, useGame.setState, soigne, soigne, subi({ skill: { id: 'guerison' }, noSupport: false }));
     expect(useGame.getState().pendingTest!.support).toEqual({ count: 1, bonus: 10, ids: ['h2'] });
   });
 
   it('DONNÉE — « Nécessaire antipoison » (Test de Guérison) est authoré SOUTENABLE (LDB 12 l.197)', () => {
     const kit = findTrappingById('necessaire-antipoison')!;
-    const node = kit.consumable as { kind: string; test: { skill: string; noSupport?: boolean } };
-    expect(node.test.skill).toBe('guerison');
+    const node = kit.consumable as { kind: string; test: { skill: { id: string }; noSupport?: boolean } };
+    expect(node.test.skill.id).toBe('guerison');
     expect(node.test.noSupport).toBe(false); // soigner n'est pas résister (l.197 ne le couvre pas)
   });
 });

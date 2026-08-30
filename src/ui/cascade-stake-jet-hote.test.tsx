@@ -66,7 +66,7 @@ function ouvrir(stake?: StakeRef): HTMLDivElement {
   });
   runFlow(
     useGame.getState, useGame.setState,
-    testFlow({ skill: 'athletisme', difficulty: 'intermediaire', requireSL: 0, label: 'Esquiver les piques de la dalle', ...(stake ? { stake } : {}) }, EMPTY_FLOW, EMPTY_FLOW),
+    testFlow({ skill: { id: 'athletisme' }, difficulty: 'intermediaire', requireSL: 0, label: 'Esquiver les piques de la dalle', ...(stake ? { stake } : {}) }, EMPTY_FLOW, EMPTY_FLOW),
   );
   host = document.createElement('div');
   document.body.appendChild(host);

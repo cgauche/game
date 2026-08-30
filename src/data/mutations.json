@@ -287,7 +287,9 @@
     "passive": [
       {
         "op": "skillMod",
-        "skill": "langue",
+        "skill": {
+          "id": "langue"
+        },
         "mod": -10
       }
     ],
@@ -424,7 +426,9 @@
     "passive": [
       {
         "op": "skillMod",
-        "skill": "pistage",
+        "skill": {
+          "id": "pistage"
+        },
         "mod": 10
       }
     ],

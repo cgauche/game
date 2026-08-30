@@ -82,7 +82,7 @@ export function navalMoveMult(traits: NavalTraitRef[] | undefined): { num: numbe
  *  `skill` (une op `testType`-only, #221, n'a pas de `skill` → exclue naturellement). PUR. */
 export function navalSkillTestDR(traits: NavalTraitRef[] | undefined, skillId: string): number {
   return navalPassiveOps(traits).reduce(
-    (n, op) => (op.op === 'skillDRBonus' && op.skill === skillId && typeof op.bonus === 'number' ? n + op.bonus : n),
+    (n, op) => (op.op === 'skillDRBonus' && op.skill?.id === skillId && typeof op.bonus === 'number' ? n + op.bonus : n),
     0,
   );
 }

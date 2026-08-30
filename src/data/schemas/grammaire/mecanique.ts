@@ -10,7 +10,7 @@ import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/
 import type { StakeRef } from '../../index';
 import type { GameOp } from '../../../engine/ops';
 import type { Condition, EffectOp, Flow } from '../../../engine/flowCore';
-import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema } from './valeurs';
+import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema, refTestDeCorruption } from './valeurs';
 import { marque } from './slots';
 import { refOuSpec } from './ref';
 
@@ -32,7 +32,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
   corruptionExposure: z.strictObject({
     op: z.literal('corruptionExposure'),
     level: z.enum(['mineure', 'moderee', 'majeure']).optional(),
-    skill: z.enum(['resistance', 'calme']).optional(),
+    skill: refTestDeCorruption.optional(),
     easeSteps: z.number().optional(),
   }),
   heal: z.strictObject({ op: z.literal('heal'), amount: formulaSchema, perSL: perSLSchema.optional() }),
@@ -214,8 +214,7 @@ export const stakeRefSchema: z.ZodType<StakeRef> = z.union([
 export const flowTestSchema = z.strictObject({
   /** ENJEU du Test (#1117) — cf. `stakeRefSchema`. */
   stake: stakeRefSchema.optional(),
-  skill: z.string().optional(),
-  spec: z.string().optional(),
+  skill: refOuSpec('skill').optional(),
   sense: z.enum(['vue', 'ouie']).optional(),
   characteristic: charKeySchema.optional(),
   difficulty: difficultySchema.optional(),

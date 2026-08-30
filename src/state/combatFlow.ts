@@ -525,13 +525,13 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
   const surprise: Flow = { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: COND.surpris, value: 1 }] } };
   const onLose: Flow = {
     kind: 'if', cond: { kind: 'has', who: 'target', what: 'talent', value: 'vigilance' },
-    then: testFlow({ skill: 'perception', difficulty: 'intermediaire', label: 'Vigilance', stake: combatStakeRef('ambushVigilance') }, EMPTY_FLOW, surprise),
+    then: testFlow({ skill: { id: 'perception' }, difficulty: 'intermediaire', label: 'Vigilance', stake: combatStakeRef('ambushVigilance') }, EMPTY_FLOW, surprise),
     else: surprise,
   };
   // Embusqueur (Discrétion, FIGÉE comme attaquant opposé) vs guetteurs (Perception, les défenseurs qui jettent).
   const difficulty: Difficulty = 'intermediaire';
   const test: FlowTest = {
-    skill: 'perception', difficulty, label: 'Surprise', stake: combatStakeRef('ambushSurprise'),
+    skill: { id: 'perception' }, difficulty, label: 'Surprise', stake: combatStakeRef('ambushSurprise'),
     opposed: { attacker: 'agilite', attackerSkill: 'discretion', attackerBonusSL: sneakDR },
   };
   const branches = { onSuccess: EMPTY_FLOW, onFail: onLose }; // le guetteur résiste → pas de Surprise
@@ -2649,7 +2649,7 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
   // Branche d'échec : marqueur `interruptFocus` sur la cible (le focaliseur) → hook injecté. Succès = rien
   // (concentration maintenue, DR conservés). Le nœud `test` est résolu cadence-aware par `runCombatFlow`.
   const flow = testFlow(
-    { skill: 'calme', difficulty: 'difficile', label: 'Focalisation interrompue', stake: combatStakeRef('focusInterrupt') },
+    { skill: { id: 'calme' }, difficulty: 'difficile', label: 'Focalisation interrompue', stake: combatStakeRef('focusInterrupt') },
     EMPTY_FLOW,
     { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'interruptFocus' }] } },
   );
@@ -4512,7 +4512,7 @@ export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, target
     .map((t) => ({ id: t.id, interactive: jetSurfaced(get(), t), result: null }));
   if (!participants.length) return false;
   // `menace: 'magie'` : le Test opposé « résiste au Sort » → Résistance (Menace : Magie) offerte (LDB 10).
-  set({ pendingCastOpposition: { participants, kind: opposed.kind, skill: opposed.skill, char: opposed.char, menace: 'magie' } });
+  set({ pendingCastOpposition: { participants, kind: opposed.kind, skill: opposed.skill?.id, char: opposed.char, menace: 'magie' } });
   // Une rangée d'opposition INTERACTIVE tenue par un autre acteur joué que le lanceur → l'étape `cast`
   // devient de GROUPE (calque `disengage`/`forceDoor`) : sans cela l'owner de l'étape reste le lanceur,
   // la cible ne voit JAMAIS la fenêtre où se tient son Test et le sort s'appliquerait sans opposition.
@@ -6733,7 +6733,7 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
   // un gabarit de `kind` : c'est la MÊME Peur que celle des Tests de Round. Son Indice fait donc partie
   // de la CLÉ de bande (deux Indices = deux règles en jeu, donc deux fenêtres).
   const testFor = (indice: number): FlowTest => ({
-    skill: 'calme', difficulty: 'intermediaire', label: 'Approche menaçante',
+    skill: { id: 'calme' }, difficulty: 'intermediaire', label: 'Approche menaçante',
     stake: combatStakeRef('combatPsych', { entryId: 'peur', values: { indice } }),
   });
   const branches = {
@@ -6886,7 +6886,7 @@ function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) =
   // Paramètres du Test EN DONNÉES (psychology.json `test`) : compétence (défaut Calme) + difficulté
   // (défaut Intermédiaire). Plus de Calme/Intermédiaire codé en dur.
   const td = findPsychologyById(t.kind)?.test;
-  const skill = td?.skill ?? 'calme';
+  const skill = td?.skill ?? { id: 'calme' };
   // Sans Peur (Ennemi) (LDB 10 l.1051) : face à une NOUVELLE Peur/Terreur de l'ennemi spécifié, « un
   // seul Test de Calme Accessible (+20) » pour l'ignorer. Pas sur les re-tests d'une Peur déjà subie
   // (entrée psychState existante → Test étendu normal +0) ni sur les Traits ciblés.
@@ -6895,7 +6895,7 @@ function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) =
   const sansPeur = !!sourceFoe && isNewSource && sansPeurVs(c, sourceFoe);
   // Sans Peur force Accessible (+20) ; sinon la difficulté déclarée (défaut Intermédiaire +0).
   const difficulty: Difficulty = sansPeur ? 'accessible' : (td?.difficulty ?? 'intermediaire');
-  const skillLabel = refLabel('skills', { id: skill });
+  const skillLabel = refLabel('skills', skill);
   // Peur de combat = Test ÉTENDU (LDB 21 l.25) : le cumul `prevDR`→`indice` voyage SUR LA RANGÉE
   // (`extendedDrTarget`/`extendedDrDone` de `BatchParticipant`) — SOURCE UNIQUE de la présentation
   // « barre de DR cumulé » avec la cartographie de voyage (`travelPostes.ts`) : `CascadeModal` ne
@@ -6908,11 +6908,11 @@ function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) =
       // Le Test allégé se lit SUR LA RANGÉE qui en profite (sa Difficulté, son libellé de ligne) : deux
       // héros face à la MÊME source ne partagent pas forcément le Talent.
       label: sansPeur ? `${skillLabel} · Sans Peur` : skillLabel,
-      skillId: skill, difficulty,
+      skillId: skill.id, difficulty,
       // Ligne montée par le monteur CANONIQUE (#1153), canal `combat` NON-attaque : base NUE, pénalité
       // d'États NOMMÉE (LDB 16 : « -10 à tous vos Tests » par palier) et comptée UNE fois dans la cible.
       // La calculer à la main ici l'oubliait : un héros Brisé ×2 testait sa Peur à pleine valeur.
-      ...rollStep({ actor: c, test: { skill }, combat: { kind: 'test' }, difficulty }),
+      ...rollStep({ actor: c, test: { skill: skill.id, spec: skill.spec }, combat: { kind: 'test' }, difficulty }),
       ...(extended ? { extendedDrTarget: t.indice, extendedDrDone: t.prevDR } : {}),
       meta: { prevDR: t.prevDR, ...(sansPeur ? { sansPeur: true } : {}) },
     },

@@ -111,7 +111,7 @@ describe('effets de mutation lus à la volée', () => {
   });
   it('mods de Tests : compétence nommée + Tests d\'une caractéristique (testValue)', () => {
     const c = hero({ skills: [{ skillId: 'pistage', advances: 5 } as never, { skillId: 'charme', advances: 0 } as never] });
-    attachMutation(c, { id: 'groin-poilu', label: 'Groin poilu', desc: '', kind: 'physique', roll: 93, passive: [{ op: 'skillMod', skill: 'pistage', mod: 10 }] });
+    attachMutation(c, { id: 'groin-poilu', label: 'Groin poilu', desc: '', kind: 'physique', roll: 93, passive: [{ op: 'skillMod', skill: { id: 'pistage' }, mod: 10 }] });
     attachMutation(c, { id: 'visage-inverse', label: 'Visage inversé', desc: '', kind: 'physique', roll: 53, passive: [{ op: 'testMod', amount: -20, char: 'sociabilite' }] });
     expect(passiveSkillSum(c, 'pistage')).toBe(10); // compétence nommée → collecteur passif (Σ, intrinsèque)
     expect(passiveTestMod(c, 'sociabilite')).toBe(-20); // Tests char-qualifiés (Visage inversé) → collecteur passif

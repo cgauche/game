@@ -1116,7 +1116,7 @@ Vous pouvez voir parfaitement dans les ténèbres naturelles. En présumant que 
 **Voir aussi :** `vision.md` — brouillard de guerre, zones éclairées, états lumineux par case ; `equipement.md` § Éclairage — rayons de Bougie (10 m) et Lanterne (20 m), étendus de +20 m / niveau par ce Talent.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 11` (l.176) → `ambush-vigilance`, `TraitCapabilities`, `trappeur`, `vigneron`, `tres-fort`, `tres-resistant`, `tricheur`, `tueur`, `veloce`, `vigilance`, +5 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/talents.json`, `src/state/vision.ts`
+- `LDB 11` (l.176) → `ambush-vigilance`, `TraitCapabilities`, `trappeur`, `travailleur-qualifie`, `tres-fort`, `tres-resistant`, `tricheur`, `tueur`, `veloce`, `vigilance`, +5 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/talents.json`, `src/state/vision.ts`
 - `EDOC 13` (l.254-256) → `chaosDomainOf`, `allure-demoniaque-nurgle`, `allure-demoniaque-slaanesh`, `allure-demoniaque-tzeentch`, `allure-demoniaque-indivisible`, `GameOp`, `OpsCtx`, `empreint-de-la-magie`, `allure-demoniaque`, `aspect-sublime` — `src/data/spells.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/ops.ts`
 - `NADJ 15` (l.47) → `empreint-d-ulgu` — `src/data/talents.json`
 

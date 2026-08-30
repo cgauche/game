@@ -67,7 +67,7 @@ describe('Poursuite terrestre (#95)', () => {
   it('l’Effet startPursuit ouvre la manche en UNE bande — un rang par coureur, jamais une étape par héros (#1246)', () => {
     const [a, b] = heroes();
     applyEffects(useGame.getState, useGame.setState, [{
-      type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: 'athletisme',
+      type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: { id: 'athletisme' },
       foes: [{ label: 'Bandit', movement: 4, skill: 40 }],
     }]);
     const p = pursuitOf(useGame.getState());

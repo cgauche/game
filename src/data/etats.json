@@ -201,7 +201,9 @@
         "flow": {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "label": "Récupération du Brisé",
             "gate": {
               "kind": "all",
@@ -381,7 +383,9 @@
         "flow": {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire",
             "label": "Résistance à l’Empoisonné"
           },
@@ -491,7 +495,9 @@
       }
     ],
     "recover": {
-      "skill": "athletisme"
+      "skill": {
+        "id": "athletisme"
+      }
     },
     "icon": "condition/ablaze",
     "severity": 58,
@@ -602,7 +608,9 @@
         "flow": {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire",
             "label": "Résistance au Sonné"
           },

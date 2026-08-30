@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { difficultySchema, stakeFormSchema } from '../grammaire/valeurs';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'psychology.json';
 export const famille = 'entite';
@@ -50,7 +51,7 @@ const doc = document(
       })
       .optional(),
     becomes: z.string().optional(),
-    test: z.strictObject({ skill: z.string().optional(), difficulty: difficultySchema.optional() }).optional(),
+    test: z.strictObject({ skill: refOuSpec('skill').optional(), difficulty: difficultySchema.optional() }).optional(),
   },
   {
     passive: { label: 'Effets passifs' },

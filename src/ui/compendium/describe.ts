@@ -49,7 +49,7 @@ function flowSummary(f: Flow): string {
     case 'seq': return f.steps.map(flowSummary).filter(Boolean).join(' ; ');
     case 'if': return `si ${humanizeCondition(f.cond)} → ${flowSummary(f.then)}${f.else ? ` (sinon ${flowSummary(f.else)})` : ''}`;
     case 'test': {
-      const who = f.test.skill ? refLabel('skills', { id: f.test.skill, spec: f.test.spec }) : (f.test.characteristic ?? '');
+      const who = f.test.skill ? refLabel('skills', f.test.skill) : (f.test.characteristic ?? '');
       const opp = f.test.opposed ? ` opposé (${f.test.opposed.attackerLabel ?? f.test.opposed.attacker})` : '';
       return `jet${opp} ${who} → réussite : ${flowSummary(f.success)} / échec : ${flowSummary(f.fail)}`;
     }

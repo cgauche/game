@@ -61,8 +61,10 @@
     "id": "alvatafl",
     "type": "tavernGames",
     "label": "L'Alvatafl",
-    "skill": "savoir",
-    "spec": "Art de la Guerre",
+    "skill": {
+      "id": "savoir",
+      "spec": "guerre"
+    },
     "characteristic": "intelligence",
     "mode": "opposed",
     "options": [
@@ -71,8 +73,10 @@
         "difficulty": "intermediaire"
       },
       {
-        "skill": "savoir",
-        "spec": "Art de la Guerre",
+        "skill": {
+          "id": "savoir",
+          "spec": "guerre"
+        },
         "difficulty": "intermediaire"
       }
     ],
@@ -137,7 +141,9 @@
     "id": "bete-tailleurs",
     "type": "tavernGames",
     "label": "La Bête parmi les Tailleurs",
-    "skill": "projectiles",
+    "skill": {
+      "id": "projectiles"
+    },
     "characteristic": "capacite-de-tir",
     "mode": "opposed",
     "drBonus": "capacite-de-tir",
@@ -205,8 +211,10 @@
     "id": "boules",
     "type": "tavernGames",
     "label": "Les boules",
-    "skill": "projectiles",
-    "spec": "lancer",
+    "skill": {
+      "id": "projectiles",
+      "spec": "lancer"
+    },
     "mode": "opposed",
     "drCap": 6,
     "tieBreak": "nul",
@@ -227,12 +235,16 @@
     "id": "cerevis",
     "type": "tavernGames",
     "label": "Le Cerevis",
-    "skill": "pari",
+    "skill": {
+      "id": "pari"
+    },
     "characteristic": "initiative",
     "mode": "opposed",
     "options": [
       {
-        "skill": "pari",
+        "skill": {
+          "id": "pari"
+        },
         "difficulty": "accessible"
       }
     ],
@@ -262,8 +274,10 @@
     "id": "flechettes",
     "type": "tavernGames",
     "label": "Les fléchettes",
-    "skill": "projectiles",
-    "spec": "lancer",
+    "skill": {
+      "id": "projectiles",
+      "spec": "lancer"
+    },
     "mode": "opposed",
     "roundShape": "volley",
     "volley": {
@@ -291,7 +305,9 @@
     "id": "dominos",
     "type": "tavernGames",
     "label": "Les dominos",
-    "skill": "pari",
+    "skill": {
+      "id": "pari"
+    },
     "mode": "opposed",
     "tieBreak": "units-lowest",
     "desc": "pour jouer, chaque joueur effectue un Test opposé de **Pari Accessible (+20)**. En cas d'égalité, les joueurs comparent le résultat de leur dé d'unités pour ce Test. Celui qui a le nombre le plus bas gagne.",
@@ -304,8 +320,10 @@
     "id": "torchon",
     "type": "tavernGames",
     "label": "Le torchon trempé",
-    "skill": "projectiles",
-    "spec": "lancer",
+    "skill": {
+      "id": "projectiles",
+      "spec": "lancer"
+    },
     "mode": "opposed",
     "team": {
       "size": 12
@@ -334,7 +352,9 @@
     "campScore": "sum",
     "throwerPenalty": {
       "test": {
-        "skill": "resistance-a-l-alcool"
+        "skill": {
+          "id": "resistance-a-l-alcool"
+        }
       },
       "difficulty": "intermediaire",
       "label": "Descendre une pinte",
@@ -363,21 +383,27 @@
     "id": "middenball",
     "type": "tavernGames",
     "label": "Middenball",
-    "skill": "corps-a-corps",
-    "spec": "bagarre",
+    "skill": {
+      "id": "corps-a-corps",
+      "spec": "bagarre"
+    },
     "mode": "opposed",
     "team": {
       "size": 11
     },
     "options": [
       {
-        "skill": "corps-a-corps",
-        "spec": "bagarre",
+        "skill": {
+          "id": "corps-a-corps",
+          "spec": "bagarre"
+        },
         "difficulty": "accessible",
         "combatTest": true
       },
       {
-        "skill": "athletisme",
+        "skill": {
+          "id": "athletisme"
+        },
         "difficulty": "intermediaire"
       }
     ],
@@ -406,8 +432,10 @@
     "id": "arene",
     "type": "tavernGames",
     "label": "L'Arène",
-    "skill": "projectiles",
-    "spec": "lancer",
+    "skill": {
+      "id": "projectiles",
+      "spec": "lancer"
+    },
     "mode": "opposed",
     "roundShape": "volley",
     "volley": {

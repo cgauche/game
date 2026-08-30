@@ -120,7 +120,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 7` (l.75-84) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `adv-26-30`, +26 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +4 fichiers
-- `LDB 9` (l.44) → `CibleDeType`, `specEntrySchema`, `redaction`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, `noeudASpecialisation`, `buildAdvancementView`, `specRef`, +11 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +10 fichiers
+- `LDB 9` (l.44) → `CibleDeType`, `specEntrySchema`, `art`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, `RefASpecialisation`, `buildAdvancementView`, `noeudASpecialisation`, +12 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +10 fichiers
 
 ---
 

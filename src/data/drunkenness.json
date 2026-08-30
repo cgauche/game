@@ -13,7 +13,9 @@
       "ops": [
         {
           "op": "skillMod",
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "mod": 20
         }
       ]

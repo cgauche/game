@@ -41,6 +41,19 @@ import { extractedBooks, frenchSourceDirs, isSentinel, sourceDirOf, walkSkillRef
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
 
+/** Les DEUX racines authiorées, pour les filets qui doivent être EXHAUSTIFS par construction plutôt
+ *  que par liste de datasets (une liste se périme en silence).
+ *
+ *  PÉRIMÈTRE — ce sont les documents **JSON** des deux racines, et EUX SEULS. Les scènes écrites en
+ *  TypeScript (`src/scenes/test-scenarios/*.ts` — `opera.ts`, `piege-caveau.ts`…) n'y entrent pas :
+ *  leurs références ne sont couvertes que par `tsc`, via le TYPAGE des slots (`FlowTest.skill`,
+ *  payloads d'op). Une graphie plate y serait rouge au typecheck, jamais ici. */
+const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
+const DOCUMENTS_AUTHORES = [
+  ...collectJsonFiles(fileURLToPath(new URL('.', import.meta.url)), REPO_ROOT),
+  ...collectJsonFiles(fileURLToPath(new URL('../scenes', import.meta.url)), REPO_ROOT),
+].map((s) => s.data);
+
 describe('refs migrées — refs structurées par id, zéro libellé résiduel', () => {
   it('trappings.qualities = QualityRef[] {id} qui résout (id stable)', () => {
     for (const t of trappings) for (const q of t.qualities) {
@@ -258,14 +271,75 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   });
 
   // FILET SUR LE WALK, jamais sur `talents.passive` seul : `gameOpRefFk.mjs` est AVEUGLE aux réfs
-  // OBJET (angle mort déclaré :23-33), donc ce test EST la couverture de `grantCareerSkill.skill.id`.
-  // Un `grantCareerSkill` posé demain dans `traits.json`/`creatures.json`/un Flow de sort tombe ici.
-  it('ops grantCareerSkill/grantCareerTalent (→ carrière) = réf par id qui résout (jamais un libellé)', () => {
-    walk([...opDatasets, ...talents], (o) => {
-      if (o.op === 'grantCareerSkill') {
-        expect(isObj(o.skill), `grantCareerSkill sans réf emboîtée { skill: { id } } : ${JSON.stringify(o)}`).toBe(true);
-        expect(byId('skill', (o.skill as { id: string }).id), JSON.stringify(o)).toBeTruthy();
+  // OBJET (angle mort déclaré :23-33), donc ce test EST la couverture des `skill.id` d'op. Une op de
+  // cette liste posée demain dans `traits.json`/`creatures.json`/un Flow de sort tombe ici.
+  // LISTE DÉRIVÉE de l'union `GameOp` : toute op dont le payload porte un slot `skill`.
+  const OPS_A_REF_DE_COMPETENCE = ['grantCareerSkill', 'skillMod', 'skillDRBonus', 'grantReverseToken', 'castPenalty', 'corruptionExposure'];
+  // Les ops dont la référence est OBLIGATOIRE (les autres admettent l'absence : `skillDRBonus` ancré
+  // sur un `testType` naval, `castPenalty` sur TOUTE magie, `grantReverseToken` sur tout Test).
+  const REF_DE_COMPETENCE_REQUISE = new Set(['grantCareerSkill', 'skillMod']);
+
+  /** VERDICT PUR du filet, sur un corpus quelconque : la liste des graphies fautives rencontrées.
+   *  L'extraire permet de MESURER que le filet mord (contrôle positif ci-dessous) au lieu de le
+   *  croire sur un vert. */
+  const echecsDeRefDeCompetence = (corpus: unknown): string[] => {
+    const echecs: string[] = [];
+    walk(corpus, (o) => {
+      if (typeof o.op !== 'string' || !OPS_A_REF_DE_COMPETENCE.includes(o.op)) return;
+      if (o.skill == null) {
+        if (REF_DE_COMPETENCE_REQUISE.has(o.op)) echecs.push(`${o.op} sans référence de Compétence : ${JSON.stringify(o)}`);
+        return;
       }
+      if (!isObj(o.skill)) { echecs.push(`${o.op} sans réf emboîtée { skill: { id } } : ${JSON.stringify(o)}`); return; }
+      if (o.spec !== undefined) echecs.push(`${o.op} : « spec » FRÈRE de « skill » — la spécialisation vit DANS la référence : ${JSON.stringify(o)}`);
+      if (!byId('skill', (o.skill as { id: string }).id)) echecs.push(`${o.op} : id de Compétence qui ne résout pas : ${JSON.stringify(o)}`);
+    });
+    return echecs;
+  };
+
+  it('ops à référence de Compétence (grantCareerSkill, skillMod, skillDRBonus, grantReverseToken, castPenalty, corruptionExposure) = `skill: { id, spec? }` qui résout', () => {
+    // PÉRIMÈTRE EXHAUSTIF PAR CONSTRUCTION (`DOCUMENTS_AUTHORES`), jamais une liste de datasets : ces
+    // ops vivent aussi bien dans `traumas`/`trappings`/`tables`/`miscast`/`activities`/`drunkenness`/
+    // `mutations`/`naval-traits`/`sea-shanties` que dans les entités, et une liste se périme en
+    // silence — MESURÉ : la graphie plate remise dans `traumas.json` passait sous un walk listé.
+    expect(echecsDeRefDeCompetence(DOCUMENTS_AUTHORES)).toEqual([]);
+  });
+
+  it('CONTRÔLE POSITIF — le filet MORD sur les deux graphies mortes (mutation EN MÉMOIRE, jamais au disque)', () => {
+    const corpus = DOCUMENTS_AUTHORES;
+    // Le corpus AU REPOS est propre : sans ça, les deux mesures ci-dessous ne prouveraient rien.
+    expect(echecsDeRefDeCompetence(corpus)).toEqual([]);
+
+    // (a) réf remise À PLAT (`skill: "corps-a-corps"`) — la régression mesurée sur `traumas.json`.
+    const aPlat = JSON.parse(JSON.stringify(corpus)) as unknown;
+    let mutesAPlat = 0;
+    walk(aPlat, (o) => {
+      if (typeof o.op !== 'string' || !OPS_A_REF_DE_COMPETENCE.includes(o.op) || !isObj(o.skill)) return;
+      const r = o.skill as { id: string; spec?: string };
+      if (r.spec != null) o.spec = r.spec;
+      o.skill = r.id;
+      mutesAPlat++;
+    });
+    expect(mutesAPlat, 'aucune réf à muter — le contrôle ne mesurerait rien').toBeGreaterThan(0);
+    expect(echecsDeRefDeCompetence(aPlat).length).toBe(mutesAPlat);
+    expect(echecsDeRefDeCompetence(aPlat)[0]).toContain('sans réf emboîtée');
+
+    // (b) `spec` remise en FRÈRE de `skill` — une seule occurrence suffit à faire rougir.
+    const specFrere = JSON.parse(JSON.stringify(corpus)) as unknown;
+    let pose = false;
+    walk(specFrere, (o) => {
+      if (pose || typeof o.op !== 'string' || !OPS_A_REF_DE_COMPETENCE.includes(o.op) || !isObj(o.skill)) return;
+      o.spec = 'bagarre';
+      pose = true;
+    });
+    expect(pose).toBe(true);
+    const echecs = echecsDeRefDeCompetence(specFrere);
+    expect(echecs).toHaveLength(1);
+    expect(echecs[0]).toContain('« spec » FRÈRE');
+  });
+
+  it('ops grantCareerTalent (→ carrière) = réf par id qui résout (jamais un libellé)', () => {
+    walk([...opDatasets, ...talents], (o) => {
       if (o.op === 'grantCareerTalent') expect(findTalentById(o.talentId as string), JSON.stringify(o)).toBeTruthy();
     });
   });
@@ -278,12 +352,21 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   it('FlowTest.skill / FlowTest.opposed.attackerSkill / ops test·skillMod·skillDRBonus → skillId qui résout (jamais un libellé)', () => {
     const skillCarrying = [...spells, ...traits, ...maneuvers, ...qualities, ...creatures, ...stars];
     walk(skillCarrying, (o) => {
+      // RÉFÉRENCES emboîtées `{ id, spec? }` (le slot `skill` d'un conteneur de Test ou d'une op)…
+      const refs: unknown[] = [];
+      if ((o.op === 'test' || o.op === 'skillMod' || o.op === 'skillDRBonus') && o.skill != null) refs.push(o.skill);
+      // …et l'id NU que reste `opposed.attackerSkill` (slot d'id, pas de référence — lot L3).
       const ids: unknown[] = [];
-      if ((o.op === 'test' || o.op === 'skillMod' || o.op === 'skillDRBonus') && o.skill != null) ids.push(o.skill);
       if (o.kind === 'test' && isObj(o.test)) {
         const t = o.test as Record<string, unknown>;
-        if (t.skill != null) ids.push(t.skill);
+        if (t.skill != null) refs.push(t.skill);
+        expect(t.spec, `FlowTest : « spec » FRÈRE de « skill » — la spécialisation vit DANS la référence : ${JSON.stringify(o)}`).toBeUndefined();
         if (isObj(t.opposed) && (t.opposed as Record<string, unknown>).attackerSkill != null) ids.push((t.opposed as Record<string, unknown>).attackerSkill);
+      }
+      for (const r of refs) {
+        expect(isObj(r), `réf de Compétence à PLAT : ${JSON.stringify(o)}`).toBe(true);
+        const id = (r as { id: string }).id;
+        expect(byId('skill', id), `${JSON.stringify(o)} → ${String(id)}`).toBeTruthy();
       }
       for (const s of ids) {
         expect(typeof s, JSON.stringify(o)).toBe('string');
@@ -296,14 +379,14 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     walk(areneProject, (o) => {
       if (o.kind === 'test' && isObj(o.test)) {
         const s = (o.test as Record<string, unknown>).skill;
-        if (s != null) expect(byId('skill', s as string), `FlowTest → ${String(s)}`).toBeTruthy();
+        if (s != null) expect(byId('skill', (s as { id: string }).id), `FlowTest → ${JSON.stringify(s)}`).toBeTruthy();
         const hs = (o.test as Record<string, unknown>).easierIf;
         if (isObj(hs) && isObj((hs as Record<string, unknown>).hasSkill)) {
           expect(byId('skill', ((hs as Record<string, unknown>).hasSkill as { id: string }).id)).toBeTruthy();
         }
       }
-      if (o.type === 'extendedTest' && o.skill != null) expect(byId('skill', o.skill as string), `extendedTest → ${String(o.skill)}`).toBeTruthy();
-      if (o.type === 'corruptionExposure' && o.skill != null) expect(['resistance', 'calme'], String(o.skill)).toContain(o.skill);
+      if (o.type === 'extendedTest' && o.skill != null) expect(byId('skill', (o.skill as { id: string }).id), `extendedTest → ${JSON.stringify(o.skill)}`).toBeTruthy();
+      if (o.type === 'corruptionExposure' && o.skill != null) expect(['resistance', 'calme'], JSON.stringify(o.skill)).toContain((o.skill as { id: string }).id);
     });
   });
 
@@ -987,7 +1070,6 @@ describe('grantGroups / exceptGroups — ids de groups.json qui résolvent (#131
 // chaque champ est déclarée dans `scripts/guards/lib/gameOpRefFk.mjs` — dont l'en-tête écrit ce que
 // la garde ne voit pas. Les registres sont câblés ICI, où ils sont typés.
 describe('GameOp — toute référence de la donnée committée résout dans son registre (#847)', () => {
-  const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
   const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
   const SCENES_DIR = fileURLToPath(new URL('../scenes', import.meta.url));
 

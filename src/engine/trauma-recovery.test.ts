@@ -45,7 +45,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   it('déchirure MAJEURE de jambe : rémission partielle (−20 → −10) à la mi-durée (l.326)', () => {
     const t = tk('dechirure', 'majeur', 'jambeD', { be: 20 }); // total 2×(30−20)=20, mi = 10
     const c = C({ traumas: [t] });
-    const esquiveMod = (tr: typeof t) => tr.ops?.flatMap((o) => (o.op === 'skillMod' && o.skill === 'esquive' ? [o.mod] : []))[0];
+    const esquiveMod = (tr: typeof t) => tr.ops?.flatMap((o) => (o.op === 'skillMod' && o.skill.id === 'esquive' ? [o.mod] : []))[0];
     expect(esquiveMod(c.traumas![0])).toBe(-20);
     tickTraumaRecovery(c, 9); // reste 11 > 10 → toujours −20
     expect(esquiveMod(c.traumas![0])).toBe(-20);
@@ -119,7 +119,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     const fail: RNG = { int: () => 95 };
     tickTraumaRecovery(c, 50, fail, 0); // fin de convalescence, Test raté
     const seq = c.traumas![0];
-    expect(seq.ops).toContainEqual({ op: 'skillMod', skill: 'langue', mod: -10 }); // majeure
+    expect(seq.ops).toContainEqual({ op: 'skillMod', skill: { id: 'langue' }, mod: -10 }); // majeure
     expect(traumaSkillPenalty(c, 'langue')).toBe(-10); // séquelle de Langue (par id stable)
     expect(traumaSkillPenalty(c, 'charme')).toBe(0);
     // testValue intègre la séquelle : Int 30 + 20 avances − 10 = 40.

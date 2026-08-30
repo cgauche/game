@@ -35,7 +35,7 @@ const scene = buildScene({
       once: true,
       flow: flowFromEffects([
         { type: 'journal', desc: 'Une veine de malepierre suinte entre les dalles — l’air poisse (Influence corruptrice modérée).' },
-        { type: 'corruptionExposure', level: 'moderee', skill: 'resistance' },
+        { type: 'corruptionExposure', level: 'moderee', skill: { id: 'resistance' } },
       ]),
     },
     {

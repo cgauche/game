@@ -233,8 +233,10 @@
             "spec": "lumiere"
           },
           "test": {
-            "skill": "langue",
-            "spec": "magick",
+            "skill": {
+              "id": "langue",
+              "spec": "magick"
+            },
             "difficulty": "facile"
           },
           "sustained": true,
@@ -262,8 +264,10 @@
             "spec": "lumiere"
           },
           "test": {
-            "skill": "langue",
-            "spec": "magick",
+            "skill": {
+              "id": "langue",
+              "spec": "magick"
+            },
             "difficulty": "facile"
           },
           "sustained": true,

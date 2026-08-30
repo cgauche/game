@@ -45,7 +45,7 @@ describe('l’enjeu d’un `FlowTest` DESCEND jusqu’à l’étape qui lance, v
 
   it('`openSkillTest` transporte `spec.stake` jusqu’à l’étape de la cascade', () => {
     const stake = combatStakeRef('climbTest', { values: { metres: 4 } });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'escalade', stake, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'escalade' }, stake, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const step = firstStep();
     expect(step.stake, 'étape muette : le joueur ne saurait pas ce que ce jet met en jeu').toEqual(stake);
     expect(resolveStake(step.stake!).text).toContain('4 m de chute');
@@ -53,7 +53,7 @@ describe('l’enjeu d’un `FlowTest` DESCEND jusqu’à l’étape qui lance, v
   });
 
   it('sans enjeu déclaré NI porteur, l’étape reste sans `stake` (le transport n’en invente pas)', () => {
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'escalade', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'escalade' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(firstStep().stake).toBeUndefined();
   });
 
@@ -67,7 +67,7 @@ describe('l’enjeu d’un `FlowTest` DESCEND jusqu’à l’étape qui lance, v
    */
   it('étage 2 : un jet MUET exigé par une entité DÉRIVE son enjeu du porteur, jusqu’à l’étape', () => {
     routeTriggeredTest(useGame.getState, useGame.setState, useGame.getState().party[0], useGame.getState().party[0],
-      testFlow({ skill: 'escalade', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW), { source: { kind: 'spell', id: 'chute' } });
+      testFlow({ skill: { id: 'escalade' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW), { source: { kind: 'spell', id: 'chute' } });
     const stake = firstStep().stake;
     expect(stake, 'jet muet : le porteur n’a pas été lu').toBeTruthy();
     const resolu = resolveStake(stake!);
@@ -78,7 +78,7 @@ describe('l’enjeu d’un `FlowTest` DESCEND jusqu’à l’étape qui lance, v
   it('étage 1 : l’enjeu DÉCLARÉ prime — la dérivation ne recouvre jamais l’auteur', () => {
     const stake = combatStakeRef('climbTest', { values: { metres: 4 } });
     routeTriggeredTest(useGame.getState, useGame.setState, useGame.getState().party[0], useGame.getState().party[0],
-      testFlow({ skill: 'escalade', stake, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW), { source: { kind: 'spell', id: 'chute' } });
+      testFlow({ skill: { id: 'escalade' }, stake, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW), { source: { kind: 'spell', id: 'chute' } });
     expect(firstStep().stake).toEqual(stake);
   });
 
@@ -90,7 +90,7 @@ describe('l’enjeu d’un `FlowTest` DESCEND jusqu’à l’étape qui lance, v
    */
   it('un enjeu AUTHORÉ par le document descend jusqu’à l’étape et se résout tel qu’écrit', () => {
     const stake = { authored: 'Franchir la corniche sans tomber : sinon la chute, et l’alerte donnée.' };
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'escalade', stake, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'escalade' }, stake, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const step = firstStep();
     expect(step.stake).toEqual(stake);
     expect(resolveStake(step.stake!).text).toBe(stake.authored);

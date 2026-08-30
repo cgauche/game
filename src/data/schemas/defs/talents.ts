@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { charKeySchema, combatFeatureSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { gameOpSchema, conditionSchema, triggeredEffectSchema } from '../grammaire/mecanique';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'talents.json';
 export const famille = 'entite';
@@ -29,14 +30,28 @@ const specsSourceSchema = z.enum([
 const specEntrySchema = z.strictObject({ id: z.string(), label: z.string() });
 
 // ── TestMatch / TalentTest (src/data/index.ts) ──────────────────────────────────────────────────
+/** Un `TestMatch` désigne la spec visée d'UNE façon : `skill.spec` FIXE, `specFromInstance` (la spec
+ *  élue du talent) ou `exceptSpec` (toutes SAUF). Les combiner ne se résout pas — `matchApplies`
+ *  (`src/engine/magic.ts`) laisse `specFromInstance` ÉCRASER `skill.spec`, et rend `exceptSpec`
+ *  inerte dès que la spec est épinglée : la donnée mentirait sur ce qu'elle déclare. */
 const testMatchSchema = z.strictObject({
-  skill: z.string().optional(),
+  skill: refOuSpec('skill').optional(),
   char: charKeySchema.optional(),
-  spec: z.string().optional(),
   specFromInstance: z.boolean().optional(),
   exceptSpec: z.string().optional(),
   when: conditionSchema.optional(),
   manual: z.boolean().optional(),
+}).superRefine((v, ctx) => {
+  const spec = (v.skill as { spec?: string } | undefined)?.spec;
+  if (spec == null) return;
+  for (const [cle, pose] of [['specFromInstance', v.specFromInstance === true], ['exceptSpec', v.exceptSpec != null]] as const) {
+    if (!pose) continue;
+    ctx.addIssue({
+      code: 'custom',
+      path: [cle],
+      message: `TestMatch « ${String((v.skill as { id?: string }).id)} (${spec}) » : « ${cle} » et « skill.spec » désignent tous deux la spécialisation — un seul régime à la fois (matchApplies, src/engine/magic.ts).`,
+    });
+  }
 });
 
 const talentTestSchema = z.strictObject({

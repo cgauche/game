@@ -25,7 +25,10 @@
 import type { RuleValue } from '../engine/policy';
 import type { Scene } from './scene';
 
-export const SAVE_VERSION = 30;
+// 30 → 31 (L2 #1548, commit 3c) : la référence de Compétence d'un `GameOp` s'écrit `skill: { id, spec? }`.
+// Deux formes PERSISTÉES changent avec elle : les `Trauma.ops` d'un héros (`party[].traumas[].ops`,
+// op `skillMod`) et tout `FlowTest` embarqué dans une cascade suspendue. Politique 2 ci-dessus.
+export const SAVE_VERSION = 31;
 
 export interface SaveMeta {
   version: number;

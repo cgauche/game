@@ -2326,7 +2326,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'tavernGames', label: 'Jeux de taverne', group: 'Monde',
     build: () => TAVERN_GAMES.map((g) => depuisEnveloppe(g, {
       meta: facts(
-        fact('Compétence', g.skill ? refLabel('skills', { id: g.skill, spec: g.spec }) : 'Pari (aucune Compétence)'),
+        fact('Compétence', g.skill ? refLabel('skills', g.skill) : 'Pari (aucune Compétence)'),
         fact('Caractéristique', g.characteristic ? CHAR_LABELS[g.characteristic] : null),
         fact('Mode', g.pot ? `Mise et pot (${g.pot.dice.count}d${g.pot.dice.faces})`
           : g.volley ? `Volée de ${g.volley.throws} lancers`

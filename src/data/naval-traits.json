@@ -8,12 +8,16 @@
     "passive": [
       {
         "op": "skillDRBonus",
-        "skill": "ramer",
+        "skill": {
+          "id": "ramer"
+        },
         "bonus": -1
       },
       {
         "op": "skillDRBonus",
-        "skill": "voile",
+        "skill": {
+          "id": "voile"
+        },
         "bonus": -1
       }
     ],
@@ -444,7 +448,9 @@
     "passive": [
       {
         "op": "skillDRBonus",
-        "skill": "perception",
+        "skill": {
+          "id": "perception"
+        },
         "bonus": 1
       }
     ],

@@ -231,7 +231,7 @@ export function humanizeOp(o: GameOp): string {
     case 'gainAdvantage': return `voit son Avantage porté à au moins ${humanizeFormula(o.amount)}`;
     case 'castPenalty': return o.blocked ? "ne peut plus lancer de magie" : o.maxZeroDR ? 'ne peut plus obtenir de DR en Prière' : `subit ${o.mod ?? 0} aux Tests de magie`;
     case 'statusMod': return `${typeof o.amount === 'number' && o.amount < 0 ? 'perd' : 'gagne'} ${humanizeFormula(o.amount)} Standing pour la prochaine aventure`;
-    case 'grantReverseToken': return `peut inverser ${o.skill ? refLabel('skills', { id: o.skill }) : 'un Test concernant sa cible'} une fois pendant sa prochaine aventure`;
+    case 'grantReverseToken': return `peut inverser ${o.skill ? refLabel('skills', o.skill) : 'un Test concernant sa cible'} une fois pendant sa prochaine aventure`;
     case 'grantTrait': return `gagne le Trait ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${humanizeFormula(o.indice)}` : ''}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}`;
     case 'grantPsychTrait': return `gagne l'état psychologique ${psychologyLabel(o.psychType)}${o.cible ? ` (${o.cible})` : ''}`;
     case 'removePsychTrait': return `perd ${o.psychType ? `l'état psychologique ${psychologyLabel(o.psychType)}` : 'un état psychologique au choix'}`;
@@ -285,8 +285,8 @@ export function humanizeOp(o: GameOp): string {
     case 'transform': return `se transforme (${creatureLabel(o.morphRef ?? o.tag)})`;
     case 'endTransform': return `retrouve sa forme initiale`;
     case 'lifeSteal': return `draine ${o.num}/${o.den} des Dégâts infligés en PB`;
-    case 'skillMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} en ${refLabel('skills', { id: o.skill })}`;
-    case 'skillDRBonus': return `gagne +${humanizeFormula(o.bonus)} DR ${o.skill ? refLabel('skills', { id: o.skill }) : 'aux Tests concernés'}`;
+    case 'skillMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} en ${refLabel('skills', o.skill)}`;
+    case 'skillDRBonus': return `gagne +${humanizeFormula(o.bonus)} DR ${o.skill ? refLabel('skills', o.skill) : 'aux Tests concernés'}`;
     case 'charDRBonus': return `gagne +${humanizeFormula(o.bonus)} DR aux Tests de ${CHAR_LABELS[o.char]}`;
     case 'crewTestMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} aux Tests d'équipage`;
     case 'incomingAttackMod': return `impose ${o.amount >= 0 ? '+' : ''}${o.amount} aux attaques qui le visent`;
@@ -349,7 +349,7 @@ export function humanizeFlow(f: Flow): string {
       return f.else ? `${base} ; sinon ${humanizeFlow(f.else)}` : base;
     }
     case 'test': {
-      const who = f.test.skill ? refLabel('skills', { id: f.test.skill, spec: f.test.spec }) : (f.test.characteristic ? CHAR_LABELS[f.test.characteristic] : 'un Test');
+      const who = f.test.skill ? refLabel('skills', f.test.skill) : (f.test.characteristic ? CHAR_LABELS[f.test.characteristic] : 'un Test');
       const opp = f.test.opposed ? ' opposé' : '';
       return `Jet${opp} de ${who} : en cas de réussite, ${humanizeFlow(f.success)} ; en cas d'échec, ${humanizeFlow(f.fail)}`;
     }

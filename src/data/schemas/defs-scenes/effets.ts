@@ -13,8 +13,9 @@
  * partagés, aucune structure n'est recopiée.
  */
 import { z } from 'zod';
-import { charKeySchema, difficultySchema, hitLocationSchema } from '../grammaire/valeurs';
+import { charKeySchema, difficultySchema, hitLocationSchema, refTestDeCorruption } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, flowTestSchema, gameOpSchema, stakeRefSchema } from '../grammaire/mecanique';
+import { refOuSpec } from '../grammaire/ref';
 import { customStatblockSchema, moneySchema, ptSchema, wallSideSchema } from './communs';
 import type { Effect } from '../../../state/scene';
 import type { Flow } from '../../../engine/flowCore';
@@ -200,10 +201,9 @@ export const discreditClueSchema = z.strictObject({ type: z.literal('discreditCl
  *  (crocheter une serrure, forcer un mécanisme…). `flag` posé à la réussite (gate la suite). */
 export const extendedTestSchema = z.strictObject({
   type: z.literal('extendedTest'),
-  skill: z.string().optional(),
-  /** Spécialisation ciblée (Métier (Serrurier), Savoir (Magie)…) — précise QUELLE instance du
-   *  `skill` est testée quand le héros en possède plusieurs ; sinon la première suffit. */
-  spec: z.string().optional(),
+  /** Compétence testée — référence `{ id, spec? }` ; la `spec` précise QUELLE instance est testée
+   *  quand le héros en possède plusieurs (Métier (Serrurier), Savoir (Magie)…). */
+  skill: refOuSpec('skill').optional(),
   characteristic: charKeySchema.optional(),
   difficulty: difficultySchema.optional(),
   label: z.string(),
@@ -445,7 +445,7 @@ export const giveSinSchema = z.strictObject({
 export const corruptionExposureSchema = z.strictObject({
   type: z.literal('corruptionExposure'),
   level: z.enum(['mineure', 'moderee', 'majeure']),
-  skill: z.enum(['resistance', 'calme']).optional(),
+  skill: refTestDeCorruption.optional(),
   align: chaosAlignSchema.optional(),
   heroId: z.string().optional(),
 });
@@ -530,7 +530,7 @@ export const startPursuitSchema = z.strictObject({
   partyRole: z.enum(['fleeing', 'pursuing']).optional(),
   distance: z.number(),
   escapeAt: z.number().optional(),
-  skill: z.string(),
+  skill: refOuSpec('skill'),
   foes: z.array(pursuitFoeSchema),
   encounter: z.string().optional(),
   policy: pursuitPolicySchema.optional(),

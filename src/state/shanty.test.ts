@@ -35,7 +35,7 @@ describe('Vocabulaire des chansons (ops génériques → ActiveEffect)', () => {
   it('skillDRBonus appliqué (« Jacques Bret », l.228) → lu par le lecteur skillDRBonus (effets actifs)', () => {
     const c = mk('m2');
     expect(skillDRBonus(c, 'corps-a-corps')).toBe(0);
-    applyOps(c, [{ op: 'skillDRBonus', skill: 'corps-a-corps', bonus: 1 }], { label: 'Chanson', rng: makeRNG(1), defaultUntilTime: 100 });
+    applyOps(c, [{ op: 'skillDRBonus', skill: { id: 'corps-a-corps' }, bonus: 1 }], { label: 'Chanson', rng: makeRNG(1), defaultUntilTime: 100 });
     expect(skillDRBonus(c, 'corps-a-corps')).toBe(1);
     expect(skillDRBonus(c, 'calme')).toBe(0); // pas de fuite vers une autre Compétence
   });

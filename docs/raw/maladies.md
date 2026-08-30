@@ -504,7 +504,7 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.4-160) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `mapRouteSchema`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `applyOnFailInline`, +23 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
+- `MSRC 16` (l.4-160) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `mapRouteSchema`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `applyOnFailInline`, +22 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
 - sans code : `MSRC 16` (l.35-47)
 
 ---
@@ -524,7 +524,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.109-111`) : Aucun remède à base d'herbes n'est plus efficace qu'un autre. Seul vrai traitement : s'hydrater (compenser la perte de liquides) et attendre.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.104-118) → `water-exposure`, `applyOnFailInline`, `inconscient`, `colique`, `tickDisease`, `vers-de-carie`, `vers-du-reik`, `sonne`, `GameOp`, `exposition-hydrique`, +2 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, +1 fichiers
+- `MSRC 16` (l.104-118) → `water-exposure`, `applyOnFailInline`, `crampes-abdominales`, `colique`, `tickDisease`, `vers-de-carie`, `vers-du-reik`, `GameOp`, `exposition-hydrique`, `SymptomCapabilities`, +1 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, +1 fichiers
 
 ---
 
@@ -549,7 +549,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** : aucun traitement connu. Toute tentative d'extraction chirurgicale fait plus de mal que de bien.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.121-144) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `inconscient`, `combatTestPenaltyParts`, `testStatePenaltyParts`, +11 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
+- `MSRC 16` (l.121-144) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `crampes-abdominales`, `combatTestPenaltyParts`, `testStatePenaltyParts`, +10 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
 
 ---
 
@@ -568,7 +568,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.160`) : infusion d'écorce de saule → bonus de +10 à tous les Tests résultant de la colique pendant 1d10 heures. Pas d'autre traitement.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.149-160) → `doc`, `Disease`, `resolveInlineFlowTest`, `inconscient`, `combatTestPenaltyParts`, `testStatePenaltyParts`, `firingOwnTestFailed`, `tickDisease`, `colique`, `EffectTrigger`, +8 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
+- `MSRC 16` (l.149-160) → `doc`, `Disease`, `resolveInlineFlowTest`, `crampes-abdominales`, `combatTestPenaltyParts`, `testStatePenaltyParts`, `firingOwnTestFailed`, `tickDisease`, `colique`, `EffectTrigger`, +7 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
 
 ---
 
@@ -755,7 +755,7 @@ Maladie de **privation prolongée** qui frappe ceux qui restent longtemps en mer
 **Voir aussi** : [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (soupe de chou fermenté ; biscuits de mer ≠ nourriture correcte) ; [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Blessé, Intoxication Alimentaire, Malaise, Nausée) ; `docs/raw/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.224-234) → `ramer`, `shipboardSouls`, `SeaVoyageState`, `dailyWaterLitres`, `guerison`, `mene-de-main-de-maitre`, `consumeCrewProvisions`, `excellent-equipage`, `equipage-satisfait`, `ProvisioningManifest`, +12 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, +6 fichiers
+- `MDG 14` (l.224-234) → `mousse`, `shipboardSouls`, `SeaVoyageState`, `dailyWaterLitres`, `chirurgien`, `mene-de-main-de-maitre`, `consumeCrewProvisions`, `excellent-equipage`, `equipage-satisfait`, `ProvisioningManifest`, +12 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, +6 fichiers
 
 ---
 
@@ -790,6 +790,6 @@ Planifier l'approvisionnement est vital pour un long voyage : l'équipage fourni
 **Voir aussi** : [Scorbut (maladie de privation MDG)](#scorbut-maladie-de-privation-mdg) (soupe de chou fermenté ; biscuits ≠ nourriture correcte) ; [Maladies à bord — contagion et tonneaux contaminés (MDG)](#maladies-a-bord--contagion-et-tonneaux-contamines-mdg) (tonneau d'eau / petite bière) ; `docs/raw/voyage.md` (le cas échéant). Hors domaine : modificateurs de Moral liés à la nourriture (biscuits seuls / ration insuffisante) — `MDG 14 l.166`, `MDG 14 l.171`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.166, l.171, l.236-271) → `ship-criticals`, `paie-genereuse`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `nourriture-au-dessus-des-rations`, `sealskinDR`, `bon-presage`, `paie-reguliere`, +53 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, +14 fichiers
+- `MDG 14` (l.166, l.171, l.236-271) → `ship-criticals`, `paie-genereuse`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `nourriture-au-dessus-des-rations`, `sealskinDR`, `bon-presage`, `paie-reguliere`, +54 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, +14 fichiers
 - `MDG 15` (l.169-170) → `triton`, `maelstrom`, `puissant-monstre-marin`, `ouragan`, `puissant-vortex`, `nemesis`, `langskip-skaeling`, `bateau-endommage`, `culte-de-la-personnalite`, `infestation-de-rats-geants`, +9 — `src/data/sea-events.json`, `src/scenes/loup-et-saumure/loup-et-saumure-projet.json`
 

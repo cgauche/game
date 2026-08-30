@@ -989,7 +989,7 @@ export function Inspector({
                     <input
                       type="checkbox"
                       checked={!!efz.crossTest}
-                      onChange={(e) => setEfz({ ...efz, crossTest: e.target.checked ? { skill: '', difficulty: 'intermediaire', requireSL: 0 } : undefined })}
+                      onChange={(e) => setEfz({ ...efz, crossTest: e.target.checked ? { skill: { id: '' }, difficulty: 'intermediaire', requireSL: 0 } : undefined })}
                     />
                     <Icon id="nav/dice" size="sm" /> Test requis pour franchir (piège/hasard GATÉ)
                   </label>

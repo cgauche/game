@@ -108,7 +108,7 @@ function withTalentPerime(): Combatant {
 /** SÉQUELLE de traumatisme à `skillMod` (LDB 18) : le Combattant porte l'objet `Trauma`, donc son
  *  `label` — les séquelles ne sont pas une catégorie du Codex, d'où l'absence de lien. */
 function withSequelle(): Combatant {
-  return hero({ traumas: [{ label: 'Fracture à la mâchoire', ops: [{ op: 'skillMod', skill: 'marchandage', mod: -10 }] }] as unknown as Combatant['traumas'] });
+  return hero({ traumas: [{ label: 'Fracture à la mâchoire', ops: [{ op: 'skillMod', skill: { id: 'marchandage' }, mod: -10 }] }] as unknown as Combatant['traumas'] });
 }
 
 /** Premier TALENT du catalogue portant un passif — pris à la donnée, jamais forgé. AUCUN talent ne porte
@@ -286,7 +286,7 @@ describe('#1153 — `testValueParts` décompose EXHAUSTIVEMENT `testValue` (socl
    */
   it('D1 — un même octroyeur porte le MÊME nom sur les canaux charMod ET skillMod', () => {
     const c = hero({
-      traumas: [{ label: 'Fracture', ops: [{ op: 'charMod', char: 'capacite-de-combat', mod: -30 }, { op: 'skillMod', skill: 'marchandage', mod: -30 }] }] as unknown as Combatant['traumas'],
+      traumas: [{ label: 'Fracture', ops: [{ op: 'charMod', char: 'capacite-de-combat', mod: -30 }, { op: 'skillMod', skill: { id: 'marchandage' }, mod: -30 }] }] as unknown as Combatant['traumas'],
     });
     const canalCharMod = volatileCharLines(c, 'capacite-de-combat').map((l) => l.label);
     const canalSkillMod = testValueParts(c, 'marchandage').map((p) => p.label);

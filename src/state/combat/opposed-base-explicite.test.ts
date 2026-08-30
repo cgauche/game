@@ -30,7 +30,7 @@ import type { Combatant, Weapon } from '../../engine/types';
 
 const assommante = (): Weapon => ({ label: 'Marteau de guerre', type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'assommante' }] } as Weapon);
 
-const FT_OPP: FlowTest = { skill: 'resistance', label: 'Résister', opposed: { attacker: 'force' } };
+const FT_OPP: FlowTest = { skill: { id: 'resistance' }, label: 'Résister', opposed: { attacker: 'force' } };
 const BRANCHES = { onSuccess: EMPTY_FLOW, onFail: EMPTY_FLOW };
 
 function combatant(p: Partial<Combatant> & { id: string }): Combatant {
@@ -196,7 +196,7 @@ describe('G4 — producteurs de Tests SIMPLES : leur base est la NUE, aucun dép
   it('mono et bande simples posent `skillBaseValue`, jamais une valeur fondue', () => {
     const c = combatant({ id: 'simple', conditions: [{ id: 'sonne', value: 1 }] as never });
     // L'enjeu vient du PORTEUR, comme en production (#1262 V2 L6d) : `MonoSpec.stake` est requis.
-    const ft: FlowTest = withDerivedStake({ skill: 'resistance', label: 'Résister' }, { kind: 'condition', id: 'empoisonne' });
+    const ft: FlowTest = withDerivedStake({ skill: { id: 'resistance' }, label: 'Résister' }, { kind: 'condition', id: 'empoisonne' });
     const nue = skillBaseValue(c, 'resistance');
     expect(nue, 'sonde inerte : sans État, nue et valeur testée se confondraient').not.toBe(testValue(c, 'resistance'));
     expect(simpleTriggeredTestStep(c, ft, BRANCHES, EMPTY_FLOW, 'intermediaire')!.base).toBe(nue);

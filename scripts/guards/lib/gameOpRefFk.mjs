@@ -97,17 +97,15 @@ export const GAMEOP_FIELD_TARGETS = {
   'grantTrait.traitId': { registry: 'traits' },
   'grantTalent.talentId': { registry: 'talents' },
   'grantCareerTalent.talentId': { registry: 'talents' },
-  'grantReverseToken.skill': { registry: 'skills' },
-  'skillMod.skill': { registry: 'skills' },
-  'skillDRBonus.skill': { registry: 'skills' },
+  // `skill` d'op = RÉFÉRENCE EMBOÎTÉE `{ id, spec? }` — hors de portée de ce filet (aveugle aux réfs
+  // OBJET, angle mort déclaré :23-33). Couverture : `refs-migrated.test.ts` § ops à réf de Compétence.
   'testMod.exceptSkills': { registry: 'skills' },
   'skillDRBonus.testType': { registry: 'crewTestTypes' },
   // Spécialisations : résolution assurée par la GARDE EXHAUSTIVE Phase 3 de
   // `src/data/refs-migrated.test.ts`, qui connaît le domaine porteur (fermé/ouvert/`specsSource`).
   'grantTalent.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
   'grantCareerTalent.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
-  'grantReverseToken.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
-  'skillDRBonus.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
+
   // ── Maladies / symptômes ──
   'exposeDisease.disease': { registry: 'maladies' },
   'contractDisease.disease': { registry: 'maladies' },

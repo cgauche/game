@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { traumaDodgePenalty, cannotWieldTwoHanded, amputationCombatPenalty } from '../engine/trauma';
 import type { Combatant, ItemInstance } from '../engine/types';
 
-const legSequela = { label: 'Membre inférieur amputé (jambeD)', location: 'jambeD' as const, ops: [{ op: 'moveScale' as const, num: 1, den: 2 }, { op: 'skillMod' as const, skill: 'esquive', mod: -20 }], prosthesis: [{ trappingId: 'fausse-jambe', cancels: 'movement' as const }] };
+const legSequela = { label: 'Membre inférieur amputé (jambeD)', location: 'jambeD' as const, ops: [{ op: 'moveScale' as const, num: 1, den: 2 }, { op: 'skillMod' as const, skill: { id: 'esquive' }, mod: -20 }], prosthesis: [{ trappingId: 'fausse-jambe', cancels: 'movement' as const }] };
 const fausseJambe = (over: Partial<ItemInstance> = {}): ItemInstance => ({ uid: 'fj', trappingId: 'fausse-jambe', label: 'Fausse jambe', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 2, equipped: true, ...over } as ItemInstance);
 
 const hero = (p: Partial<Combatant>): Combatant =>

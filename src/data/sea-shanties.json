@@ -27,7 +27,9 @@
     "crewOps": [
       {
         "op": "skillDRBonus",
-        "skill": "corps-a-corps",
+        "skill": {
+          "id": "corps-a-corps"
+        },
         "bonus": 1
       }
     ]
@@ -44,7 +46,9 @@
     "crewOps": [
       {
         "op": "skillDRBonus",
-        "skill": "calme",
+        "skill": {
+          "id": "calme"
+        },
         "bonus": 1
       }
     ]
@@ -79,7 +83,9 @@
     "crewOps": [
       {
         "op": "skillMod",
-        "skill": "perception",
+        "skill": {
+          "id": "perception"
+        },
         "mod": 10
       }
     ],

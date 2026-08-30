@@ -53,7 +53,7 @@ describe('objets maudits — aucun Bienfait mécanique sans son Méfait', () => 
   it('Bottes du remords soudain : le seul passif est un MALUS de Discrétion (VDM 12 l.810)', () => {
     const ops = byId('bottes-du-remords-soudain').passive ?? [];
     expect(ops).toHaveLength(1);
-    expect(ops[0].skill).toBe('discretion');
+    expect(ops[0].skill).toEqual({ id: 'discretion' });
     expect(ops[0].mod).toBeLessThan(0);
   });
 

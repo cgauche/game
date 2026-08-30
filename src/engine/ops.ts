@@ -20,6 +20,8 @@ import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, trait
 import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
 import { findTableEntry } from './tables';
+import { ALL_MAGIC } from './types';
+import type { SkillRef } from './skills';
 import { bypassedAP } from './armourBypass';
 import { grantTrait, grantPsychTrait, dropExpiredGrantedTraits } from './grantedTraits';
 import { rollObsession } from '../data/obsessions';
@@ -186,11 +188,11 @@ export function formulaExpectation(f: Formula, ref: Combatant): number {
 export function skillDRBonus(c: Combatant, skillId: string, spec?: string): number {
   // Une op SANS `spec` s'applique à toute spécialisation (Furtif → Discrétion) ; une op AVEC `spec` ne
   // s'applique qu'à cette spécialisation (Aura de Dhar → Langue (Magick) seulement, pas Langue (Bretonnien)).
-  const matches = (op: { skill?: string; spec?: string }) => op.skill === skillId && (op.spec == null || op.spec === spec);
+  const matches = (s?: { id: string; spec?: string }) => s?.id === skillId && (s.spec == null || s.spec === spec);
   let n = 0;
   for (const t of c.traits ?? []) {
     for (const op of traitById.get(t.id)?.passive ?? []) {
-      if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);
+      if (op.op === 'skillDRBonus' && matches(op.skill)) n += resolveFormula(op.bonus, c);
     }
   }
   // Séquelles (`c.traumas`) : leurs ops passives, `kind` = `passiveKind` de la fiche, sinon DÉRIVÉ par
@@ -198,20 +200,20 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
   // donc annulable par Détermination/Insensible/prothèse. Les cicatrices sociales (LDB 18 l.61 et l.72)
   // portent `passiveKind: "intrinseque"` : liste d'annulateurs VIDE, leur DR survit à la Détermination.
   // Une séquelle à `skillDRBonus` SANS `passiveKind` tomberait, elle, en `douleur` (annulée par Insensible).
-  for (const m of traumaPassiveMods(c)) if (m.op.op === 'skillDRBonus' && matches(m.op)) n += resolveFormula(m.op.bonus, c);
+  for (const m of traumaPassiveMods(c)) if (m.op.op === 'skillDRBonus' && matches(m.op.skill)) n += resolveFormula(m.op.bonus, c);
   // Auras (Aura de Dhar : +1 DR Focalisation/Langue (Magick) aux sorciers et démons du dieu à portée,
   // camp indifférent) — `aura.passive` projeté dans `auraMods` par le hook `recompute-auras`. Sommé
   // (le DR cumule), comme les passifs de trait.
-  for (const m of c.auraMods ?? []) if (m.op.op === 'skillDRBonus' && matches(m.op)) n += resolveFormula(m.op.bonus, c);
+  for (const m of c.auraMods ?? []) if (m.op.op === 'skillDRBonus' && matches(m.op.skill)) n += resolveFormula(m.op.bonus, c);
   // Effets ACTIFS temporisés (op `skillDRBonus` exécutée — chanson de marin « Jacques Bret », MDG 09 l.228).
-  for (const e of c.activeEffects ?? []) for (const b of e.drBonus ?? []) if (b.skill != null && matches({ skill: b.skill, spec: b.spec })) n += b.bonus;
+  for (const e of c.activeEffects ?? []) for (const b of e.drBonus ?? []) if (b.skill != null && matches({ id: b.skill, spec: b.spec })) n += b.bonus;
   // Objets POSSÉDÉS : leur `passive` skillDRBonus (Boussole : « Les Tests d'Orientation bénéficient de
   // +1 DR avec l'aide d'une boussole », MDG 14 l.275) — NON gaté sur le port, comme `lockpicks`/`isRations`
   // (l'outil se sort pour servir) ; les passifs de VALEUR d'objet (skillMod des Bésicles) restent, eux,
   // gatés porté/tenu via `passiveMods`.
   for (const it of c.items ?? []) {
     if (!it.trappingId) continue;
-    for (const op of findTrappingById(it.trappingId)?.passive ?? []) if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);
+    for (const op of findTrappingById(it.trappingId)?.passive ?? []) if (op.op === 'skillDRBonus' && matches(op.skill)) n += resolveFormula(op.bonus, c);
   }
   return n;
 }
@@ -455,7 +457,7 @@ export type GameOp =
    *  Majeure en devient une Mineure par exemple) ») ; `level` est alors inutile. Sinon l'op POSE
    *  l'exposition, de niveau `level` atténué par la protection que la cible porte déjà (`easeExposure`).
    *  Un niveau atténué sous la Mineure ne pose AUCUNE exposition. */
-  | { op: 'corruptionExposure'; level?: ExposureLevel; skill?: 'resistance' | 'calme'; easeSteps?: number }
+  | { op: 'corruptionExposure'; level?: ExposureLevel; skill?: SkillRef; easeSteps?: number }
   /** Points de Chance OU de Destin accordés (`resource`, LDB 47 — « Les Signes d'Amul », « Que la
    *  chance persiste », « Maître du Destin », « Troisième Signe d'Amul ») : incrément immédiat (peut
    *  dépasser le maximum — c'est un grant de Sort) ; `temporary` pose un effet actif qui RETIRE les
@@ -473,8 +475,9 @@ export type GameOp =
   | { op: 'gainAdvantage'; amount: Formula; feedOpposingPool?: boolean }
   /** Pénalité/blocage d'incantation temporisé (contrecoups, LDB 46/40) : −N à une
    *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
-   *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge. */
-  | { op: 'castPenalty'; skill: 'priere' | 'langue' | 'focalisation' | 'all'; mod?: number; blocked?: boolean; maxZeroDR?: boolean; rounds?: Formula; minutes?: Formula; hours?: Formula; days?: Formula }
+   *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge.
+   *  `skill` absent = TOUTE magie (même idiome d'absence que `grantReverseToken` ci-dessus). */
+  | { op: 'castPenalty'; skill?: SkillRef; mod?: number; blocked?: boolean; maxZeroDR?: boolean; rounds?: Formula; minutes?: Formula; hours?: Formula; days?: Formula }
   /** Modificateur TEMPORAIRE de Standing (LDB 23 l.228-234 « Réputation » : +1 sur succès, +2 sur Succès
    *  Stupéfiant, −1 sur Échec Stupéfiant) — durée `{scale:'adventure'}` (« pour la prochaine aventure »),
    *  composé par `heroStatus` (interludeFlow.ts), purgé à l'interlude SUIVANT (`purgeAdventureEffects`). */
@@ -482,7 +485,7 @@ export type GameOp =
   /** Jeton d'INVERSION de Test CONSOMMABLE « pour la prochaine aventure » (LDB 23 l.209/218) — durée
    *  `{scale:'adventure'}`, consommé par `consumeReverseToken` (rollFlowSpecs). `skill` absent = tout
    *  Test (« concernant votre cible », l.218). */
-  | { op: 'grantReverseToken'; skill?: string; spec?: string }
+  | { op: 'grantReverseToken'; skill?: SkillRef }
   /** Trait de créature TEMPORISÉ (Jalon 2.6 — « vous gagnez le Trait X tant que le Sort est
    *  actif ») : posé dans `c.traits` (vu par TOUS les consommateurs — dispatch, psy, IA,
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
@@ -825,18 +828,18 @@ export type GameOp =
    *  de Perception basés sur l'ouïe » — PAS toute Perception) : gaté par le `sense` du CONTEXTE de Test
    *  (`testValue`), pas une liste de compétences codée en dur. Absent = inconditionnel (Cécité : compétences
    *  nommément listées CC/CT/Esquive/Chevaucher, `sense` inutile car déjà scopé par `skill`). */
-  | { op: 'skillMod'; skill: string; mod: number; sense?: PairedSense }
+  | { op: 'skillMod'; skill: SkillRef; mod: number; sense?: PairedSense }
   /** +N DR à un Test de Compétence nommé (Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85 p.339 ;
    *  chanson « Jacques Bret » : +1 DR sur tout Test de Corps à corps réussi, MDG 09 l.228).
    *  Lu par `skillDRBonus` — PASSIF depuis les `TraitData.passive` du porteur (par id), ET, quand
    *  l'op est EXÉCUTÉE par un sort/une chanson (`applyOps`), depuis un `ActiveEffect.drBonus` temporisé.
-   *  DISTINCT de `skillMod` (qui modifie la VALEUR du Test, pas le DR obtenu). `spec` OPTIONNEL :
-   *  restreint à une spécialisation (Aura de Dhar → Langue (Magick) seulement) ; absent = toute spéc.
+   *  DISTINCT de `skillMod` (qui modifie la VALEUR du Test, pas le DR obtenu). La `spec` de la référence
+   *  restreint à une spécialisation (Aura de Dhar → Langue (Magick) seulement) ; absente = toute spéc.
    *  `testType` OPTIONNEL (#221, traits navals `naval-traits.json` uniquement) : cible un TYPE de Test
    *  d'équipage (`crew-test-types.json`) plutôt qu'une compétence — `skill` devient alors optionnel (une
    *  Poursuite se court à la Voile OU aux avirons, le bonus est agnostique de la compétence) ; lu par
    *  `navalTestTypeDR`, JAMAIS par `skillDRBonus` (personnage) ni `navalSkillTestDR` (coque). */
-  | { op: 'skillDRBonus'; skill?: string; bonus: Formula; spec?: string; testType?: string }
+  | { op: 'skillDRBonus'; skill?: SkillRef; bonus: Formula; testType?: string }
   /** +N DR aux Tests d'une CARACTÉRISTIQUE (chanson « Camarades d'équipage » : +1 DR sur tout Test de
    *  Sociabilité, MDG 09 l.236) — variante par carac de `skillDRBonus`. Exécutée → `ActiveEffect.drBonus`
    *  temporisé ; lisible aussi en PASSIF (trait/aura). Consommée par `charDRBonusOf` sur un Test RÉUSSI. */
@@ -1073,7 +1076,7 @@ export interface OpsCtx {
   conjureForm?: ConjureForm;
   /** Branché par le store : EXPOSITION corruptrice (op `corruptionExposure`) → Test différé par modale
    *  (pendingCorruption). Sans hook (moteur pur/tests), l'op est journalisée inerte. */
-  onCorruptionExposure?: (level: ExposureLevel, skill?: 'resistance' | 'calme') => string[];
+  onCorruptionExposure?: (level: ExposureLevel, skill?: SkillRef) => string[];
   /** Branché par la couche state : NOTIFICATION des mouvements d'État posés par ces ops (`condition` /
    *  `removeCondition`) — l'id part À CÔTÉ de la ligne, appariée 1:1 avec elle (#1330). Le moteur NOTIFIE :
    *  aucun texte n'en dépend, et sans hook les lignes rendues sont STRICTEMENT identiques. */
@@ -1529,7 +1532,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'castPenalty': {
         const cp: NonNullable<Combatant['castPenalties']>[number] = {
           label: ctx.label ?? 'Contrecoup',
-          skill: o.skill,
+          skill: o.skill?.id ?? ALL_MAGIC,
           ...(o.mod != null ? { mod: o.mod } : {}),
           ...(o.blocked ? { blocked: true } : {}),
           ...(o.maxZeroDR ? { maxZeroDR: true } : {}),
@@ -1571,8 +1574,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'grantReverseToken': {
         target.activeEffects = target.activeEffects ?? [];
-        target.activeEffects.push({ label: ctx.label ?? t('op.srcFallback'), bonus: 0, duration: { scale: 'adventure' }, reverseToken: { skill: o.skill, spec: o.spec } });
-        lines.push(t('op.grantReverseToken', { name: target.label, skill: o.skill ? refLabel('skills', { id: o.skill }) : t('op.reverseAnyTest') }));
+        target.activeEffects.push({ label: ctx.label ?? t('op.srcFallback'), bonus: 0, duration: { scale: 'adventure' }, reverseToken: { skill: o.skill?.id, spec: o.skill?.spec } });
+        lines.push(t('op.grantReverseToken', { name: target.label, skill: o.skill ? refLabel('skills', o.skill) : t('op.reverseAnyTest') }));
         break;
       }
       case 'grantTrait': {
@@ -2166,9 +2169,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
           duration: durationFromCtx(ctx),
-          skillMods: { [o.skill]: o.mod },
+          skillMods: { [o.skill.id]: o.mod },
         });
-        lines.push(t('op.skillMod', { name: target.label, mod: `${o.mod >= 0 ? '+' : ''}${o.mod}`, skill: o.skill, src: ctx.label ?? 'sort' }));
+        lines.push(t('op.skillMod', { name: target.label, mod: `${o.mod >= 0 ? '+' : ''}${o.mod}`, skill: o.skill.id, src: ctx.label ?? 'sort' }));
         break;
       }
       // +DR temporisé à une Compétence / une Caractéristique (chansons de marin, MDG 09 l.228/236) :
@@ -2177,9 +2180,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0, duration: durationFromCtx(ctx),
-          drBonus: [{ skill: o.skill, ...(o.spec != null ? { spec: o.spec } : {}), bonus: resolveFormula(o.bonus, ref, rng) }],
+          drBonus: [{ skill: o.skill?.id, ...(o.skill?.spec != null ? { spec: o.skill.spec } : {}), bonus: resolveFormula(o.bonus, ref, rng) }],
         });
-        lines.push(t('op.drBonus', { name: target.label, what: o.skill ?? o.testType ?? '', src: ctx.label ?? 'sort' }));
+        lines.push(t('op.drBonus', { name: target.label, what: o.skill?.id ?? o.testType ?? '', src: ctx.label ?? 'sort' }));
         break;
       }
       case 'charDRBonus': {

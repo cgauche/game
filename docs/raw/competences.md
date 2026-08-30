@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `CibleDeType`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `specEntrySchema`, `doc`, +51 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
+- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `CibleDeType`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `specEntrySchema`, `doc`, +52 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
 
 ---
 
@@ -98,7 +98,7 @@ la description, ou en crée une avec l'accord du MJ.
 **Sources RAW :** LDB 09 l.34-46
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `CibleDeType`, `specEntrySchema`, `doc`, `redaction`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, +17 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `CibleDeType`, `specEntrySchema`, `doc`, `art`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, +18 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
 
 ---
 
@@ -183,7 +183,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `GearAssignList`, `rollDrivingMishap` ⚠sans-appelant, `altCharKey`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `actBlockReason`, `essieu-casse`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +89 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, +33 fichiers
+- `LDB 9` (l.65-574) → `GearAssignList`, `rollDrivingMishap` ⚠sans-appelant, `altCharKey`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `actBlockReason`, `accidents-conduite-attelage`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +90 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, +33 fichiers
 
 ---
 
@@ -514,7 +514,7 @@ comme non Groupée pour les non-formés.
 **Sources RAW :** LDB 09 l.246-252 ; ADE II 4 l.162, l.180, l.182 (Focalisation sur artefacts magiques).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-72, l.75-76, l.80-83, l.86-109, l.111-118, l.121-134, l.137-154, l.157-160, l.163-176, l.179-190, l.193-198, l.201-211, l.214-219, l.222-225, l.228-233, l.236-239, l.242-243, l.246-252, l.275-285) → `GearAssignList`, `rollDrivingMishap` ⚠sans-appelant, `altCharKey`, `drivingAccidentDamage` ⚠sans-appelant, `actBlockReason`, `essieu-casse`, `carryOverState`, `useDefenseJetProps`, `redaction`, `healDifficulty`, +38 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/driving-mishap.ts`, +16 fichiers
+- `LDB 9` (l.65-72, l.75-76, l.80-83, l.86-109, l.111-118, l.121-134, l.137-154, l.157-160, l.163-176, l.179-190, l.193-198, l.201-211, l.214-219, l.222-225, l.228-233, l.236-239, l.242-243, l.246-252, l.275-285) → `GearAssignList`, `rollDrivingMishap` ⚠sans-appelant, `altCharKey`, `drivingAccidentDamage` ⚠sans-appelant, `actBlockReason`, `accidents-conduite-attelage`, `carryOverState`, `useDefenseJetProps`, `art`, `healDifficulty`, +39 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/driving-mishap.ts`, +16 fichiers
 - sans code : `ADE II 4` (l.162)
 
 ---
@@ -625,7 +625,7 @@ Activité Artisanat entre aventures utilise Métier (voir [Activités](activites
 **Sources RAW :** LDB 09 l.349-364
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.305-308, l.311-346, l.348, l.349-364) → `altCharKey`, `skillAdvantageCap`, `test-metier-int`, `ACTION_GATES`, `PendingTest`, `openSkillTest`, `skill-advantage`, `intimidation`, `intuition`, `noir-parler`, +9 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/skills.json`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, +7 fichiers
+- `LDB 9` (l.305-308, l.311-346, l.348, l.349-364) → `altCharKey`, `skillAdvantageCap`, `test-metier-int`, `ACTION_GATES`, `PendingTest`, `openSkillTest`, `skill-advantage`, `intimidation`, `intuition`, `langue`, +9 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/skills.json`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, +7 fichiers
 - `ADE II 2` (l.728) → `altCharKey`, `castingCharKey`, `possession-pas-a-sa-taille`, `gueule`, `DomainData`, `ogre`, `bouf-crane`, `broyeur-d-os`, `festin-des-damnes` — `src/data/domains.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/spells.json`, `src/data/traits.json`, `src/engine/magic.ts`, +1 fichiers
 
 ---

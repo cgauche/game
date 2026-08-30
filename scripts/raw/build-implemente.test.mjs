@@ -377,7 +377,7 @@ test('folioCitationsFromJson : slug hors Atlas / folio introuvable → 0 match (
   assert.equal(s2.byBook.get('AA').notFound, 1)
 })
 
-test('folioCitationsFromJson : id le plus proche AU-DESSUS (nested) devient le symbole', () => {
+test('folioCitationsFromJson : le symbole est l\'entité PORTEUSE, jamais un id de ref emboîtée', () => {
   // Résolution réelle : AA folio 109 existe (Source/WH - V4 - Aux Armes/09 - LE COMBAT MONTÉ.md → ch 9).
   const content = [
     '[',
@@ -391,7 +391,63 @@ test('folioCitationsFromJson : id le plus proche AU-DESSUS (nested) devient le s
   assert.equal(out[0].book, 'AA')
   assert.equal(out[0].ch, 9)
   assert.equal(out[0].isTs, false)
-  assert.equal(out[0].sym, 'niveau-2') // id le plus proche au-dessus de "source", pas "entree"
+  assert.equal(out[0].sym, 'entree') // le porteur de la réf, pas l'id emboîté et refermé
+})
+
+test('folioCitationsFromJson : graphie emboîtée multi-lignes (skill:{id}) → le PORTEUR garde la réf', () => {
+  const content = [
+    '[',
+    '  {',
+    '    "id": "acrobaties-equestres",',
+    '    "test": {',
+    '      "matches": [',
+    '        { "skill": { "id": "esquive" } },',
+    '        {',
+    '          "skill": {',
+    '            "id": "chevaucher",',
+    '            "spec": "cheval"',
+    '          }',
+    '        }',
+    '      ]',
+    '    },',
+    '    "source": {',
+    '      "book": "aux-armes",',
+    '      "page": 109',
+    '    }',
+    '  }',
+    ']',
+  ].join('\n')
+  const out = folioCitationsFromJson('src/data/talents.json', content, { ...AA_MAP, stats: freshStats() })
+  assert.equal(out.length, 1)
+  assert.equal(out[0].sym, 'acrobaties-equestres')
+})
+
+test('folioCitationsFromJson : une réf PORTÉE PAR un objet emboîté reste à cet objet', () => {
+  const content = [
+    '[',
+    '  { "id": "parent",',
+    '    "membres": [',
+    '      { "id": "enfant", "source": { "book": "aux-armes", "page": 109 } }',
+    '    ] }',
+    ']',
+  ].join('\n')
+  const out = folioCitationsFromJson('src/data/x.json', content, { ...AA_MAP, stats: freshStats() })
+  assert.equal(out.length, 1)
+  assert.equal(out[0].sym, 'enfant')
+})
+
+test('folioCitationsFromJson : accolades DANS une prose ne déplacent pas la profondeur', () => {
+  const content = [
+    '[',
+    '  { "id": "porteur",',
+    '    "desc": "un texte avec { et [ non appariés \\" et une échappée",',
+    '    "reference": { "skill": { "id": "emboite" } },',
+    '    "source": { "book": "aux-armes", "page": 109 } }',
+    ']',
+  ].join('\n')
+  const out = folioCitationsFromJson('src/data/x.json', content, { ...AA_MAP, stats: freshStats() })
+  assert.equal(out.length, 1)
+  assert.equal(out[0].sym, 'porteur')
 })
 
 test('computeFolioWinners : deux topics sur la même plage → meilleur recouvrement seul ; égalité → les deux', () => {

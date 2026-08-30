@@ -45,8 +45,8 @@ describe('Concocter — variante « Règles d’incantation révisées » (VDM 1
     const eff = effectiveEntry(concocter());
     expect(eff.test?.raw).toBe('Métier (Apothicaire) ou Métier (Alchimiste)');
     expect(eff.test?.matches).toEqual([
-      { skill: 'metier', spec: 'apothicaire' },
-      { skill: 'metier', spec: 'alchimiste' },
+      { skill: { id: 'metier', spec: 'apothicaire' } },
+      { skill: { id: 'metier', spec: 'alchimiste' } },
     ]);
     expect(eff.source).toEqual({ book: 'vents-de-la-magie', page: 161 });
     expect(eff.desc).toContain('Brasser une potion');
@@ -83,15 +83,15 @@ describe('Empreint de (Vent) — 8 Talents, un par Vent (VDM 13 l.461-486)', () 
    * le contraste de la MÊME page 186 : *Assistant magique* (VDM 13 l.487-489) n'imprime AUCUNE ligne
    * « Tests » (assertion en fin de fichier), quand *Empreint de (Vent)* en imprime une.
    */
-  const WINDS: { id: string; raw: string; matches: { skill: string; spec?: string }[] }[] = [
+  const WINDS: { id: string; raw: string; matches: { skill: { id: string; spec?: string } }[] }[] = [
     { id: 'empreint-d-aqshy', raw: 'Voir ci-dessous.', matches: [] },
-    { id: 'empreint-d-azyr', raw: 'Voir ci-dessous.', matches: [{ skill: 'perception' }] },
-    { id: 'empreint-de-chamon', raw: 'Voir ci-dessous.', matches: [{ skill: 'evaluation' }] },
-    { id: 'empreint-de-ghur', raw: 'Voir ci-dessous.', matches: [{ skill: 'emprise-sur-les-animaux' }, { skill: 'savoir', spec: 'betes-sauvages' }] },
-    { id: 'empreint-de-ghyran', raw: 'Voir ci-dessous.', matches: [{ skill: 'savoir', spec: 'herbes' }, { skill: 'savoir', spec: 'plantes' }, { skill: 'soin-aux-animaux' }, { skill: 'savoir', spec: 'animaux' }] },
-    { id: 'empreint-de-hysh', raw: 'Voir ci-dessous.', matches: [{ skill: 'recherche' }] },
-    { id: 'empreint-de-shyish', raw: 'Voir ci-dessous.', matches: [{ skill: 'intimidation' }] },
-    { id: 'empreint-d-ulgu', raw: 'Tout Test faisant appel à Discrétion', matches: [{ skill: 'discretion' }] },
+    { id: 'empreint-d-azyr', raw: 'Voir ci-dessous.', matches: [{ skill: { id: 'perception' } }] },
+    { id: 'empreint-de-chamon', raw: 'Voir ci-dessous.', matches: [{ skill: { id: 'evaluation' } }] },
+    { id: 'empreint-de-ghur', raw: 'Voir ci-dessous.', matches: [{ skill: { id: 'emprise-sur-les-animaux' } }, { skill: { id: 'savoir', spec: 'betes-sauvages' } }] },
+    { id: 'empreint-de-ghyran', raw: 'Voir ci-dessous.', matches: [{ skill: { id: 'savoir', spec: 'herbes' } }, { skill: { id: 'savoir', spec: 'plantes' } }, { skill: { id: 'soin-aux-animaux' } }, { skill: { id: 'savoir', spec: 'animaux' } }] },
+    { id: 'empreint-de-hysh', raw: 'Voir ci-dessous.', matches: [{ skill: { id: 'recherche' } }] },
+    { id: 'empreint-de-shyish', raw: 'Voir ci-dessous.', matches: [{ skill: { id: 'intimidation' } }] },
+    { id: 'empreint-d-ulgu', raw: 'Tout Test faisant appel à Discrétion', matches: [{ skill: { id: 'discretion' } }] },
   ];
 
   it('les 8 existent, Maxi 1, et les 7 neufs sont ancrés au folio 186 des Vents de Magie', () => {
@@ -124,7 +124,7 @@ describe('Empreint de (Vent) — 8 Talents, un par Vent (VDM 13 l.461-486)', () 
   it('MORSURE — chaque Compétence désignée par la ligne « Tests » reçoit le +DR de Talent (LDB 10 l.19)', () => {
     for (const { id, matches } of WINDS) {
       const c = withTalents([{ talentId: id, times: 1 }]);
-      for (const m of matches) expect(talentTestSLBonus(c, m), `${id}/${m.skill}(${m.spec ?? ''})`).toBe(1);
+      for (const m of matches) expect(talentTestSLBonus(c, { skill: m.skill.id, spec: m.skill.spec }), `${id}/${m.skill.id}(${m.skill.spec ?? ''})`).toBe(1);
       expect(talentTestSLBonus(c, { skill: 'natation' }), id).toBe(0);
       // Une spec NON nommée par le livre ne reçoit rien (Ghur : Savoir (Bête), jamais tout Savoir).
       expect(talentTestSLBonus(c, { skill: 'savoir', spec: 'anatomie' }), id).toBe(0);

@@ -26,19 +26,19 @@ describe('Surdité — restriction fire par le sens authoré du Test de scène (
 
   it('Test de Perception AUDITIF (sense:ouie) → −20 appliqué', () => {
     useGame.setState({ party: [deafHero()] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', sense: 'ouie', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, sense: 'ouie', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.skillValue).toBe(20); // I 40 − 20 (Surdité)
   });
 
   it('Test de Perception VISUEL (sense:vue) → PAS de pénalité (le sourd voit)', () => {
     useGame.setState({ party: [deafHero()] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', sense: 'vue', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, sense: 'vue', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.skillValue).toBe(40); // I 40, malus auditif inapplicable
   });
 
   it('Test de Perception GÉNÉRIQUE (sans sens authoré) → −20 par défaut (conservateur : indices sonores ratés)', () => {
     useGame.setState({ party: [deafHero()] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.skillValue).toBe(20); // I 40 − 20 (défaut applique)
   });
 });

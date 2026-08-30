@@ -191,7 +191,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
       : `Déplacer ${e.id || '?'} → (${e.to?.x ?? '?'},${e.to?.y ?? '?'})`;
     case 'playSfx': return `Son : ${e.id || '?'}`;
     case 'giveSin': return `${e.amount ?? 1} point(s) de Péché`;
-    case 'corruptionExposure': return `Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
+    case 'corruptionExposure': return `Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ? refLabel('skills', e.skill) : 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
     case 'waterExposure': return `Eau souillée (${e.mode === 'immersion' ? 'immersion' : 'ingestion'}${e.source ? ` · ${e.source}` : ''}) → ${e.target === 'party' ? 'groupe' : (e.heroId || '1ᵉʳ héros')}`;
     case 'learnSpell': return `Apprendre : ${e.spell ? refLabel('spells', { id: e.spell }) : '?'}`;
     case 'castSpell': return `Incanter ${e.spellId ? refLabel('spells', { id: e.spellId }) : '?'} — ${e.casterId || '?'}${e.targetId ? ` → ${e.targetId}` : ''}${e.mode === 'forceSuccess' ? ' (garanti)' : ''}`;
@@ -237,7 +237,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'openPort': return `Port : ${e.placeId || '?'}`;
     case 'openTavernGames': return `Jeux de taverne`;
     case 'medicalAid': return `Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
-    case 'extendedTest': return `Test Étendu ${e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
+    case 'extendedTest': return `Test Étendu ${e.skill ? refLabel('skills', e.skill) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
     case 'forceDoor': return `Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
     case 'setTime': return `Heure → ${DAY_PHASES.find((p) => p.id === e.phase)?.label ?? e.phase}`;
     case 'delayedEffect': {
@@ -490,7 +490,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             </select>
             {/* Compétence déterminée en amont (verrouillée en jeu) ou « au choix » (nature indéterminée,
                 LDB 19 l.29 → le joueur tranche dans la modale, comme la Défense). */}
-            <select value={e.skill ?? ''} onChange={(ev) => upd({ skill: (ev.target.value || undefined) as 'resistance' | 'calme' | undefined })}>
+            <select value={e.skill?.id ?? ''} onChange={(ev) => upd({ skill: ev.target.value ? { id: ev.target.value } : undefined })}>
               <option value="">Au choix du joueur (nature indéterminée)</option>
               <option value="resistance">Résistance (Influence physique)</option>
               <option value="calme">Calme (Corruption spirituelle)</option>
@@ -915,7 +915,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
           <>
             <input placeholder="Libellé (ex. Crocheter la serrure)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value })} />
             <div className="tf-row">
-              <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="Compétence" value={e.skill ? { id: e.skill, spec: e.spec } : undefined} onChange={(v) => { const r = v as { id: string; spec?: string } | null; upd({ skill: r?.id || undefined, spec: r?.spec || undefined }); }} nullable />
+              <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="Compétence" value={e.skill} onChange={(v) => upd({ skill: (v as { id: string; spec?: string } | null) ?? undefined })} nullable />
               <label className="dr">Carac.
                 <select value={e.characteristic ?? ''} onChange={(ev) => upd({ characteristic: (ev.target.value || undefined) as CharKey | undefined })}>
                   <option value="">— (de la compétence) —</option>

@@ -970,17 +970,16 @@ export interface SkillData {
   tool?: { capability: keyof ItemCapabilities; withoutMod: number };
 }
 /** UN « matcher » de Test (recodage de la ligne « Tests : » du livre, cf. `TalentTest`) : à quel(s)
- *  Test(s) le talent se rapporte. `skill` (id de Compétence, XOR `char`) OU `char` (Caractéristique nue).
- *  `spec` = spécialisation FIXE ; `specFromInstance` = « (Au choix) » → matche la spec CHOISIE de
- *  l'instance (`t.spec`). `when` = contexte MÉCANISABLE (Condition combat — auto si vraie) ; `manual` =
+ *  Test(s) le talent se rapporte. `skill` (référence de Compétence `{id, spec?}`, XOR `char`) OU `char`
+ *  (Caractéristique nue). La `spec` de la référence est la spécialisation FIXE ; `specFromInstance` =
+ *  « (Au choix) » → matche la spec CHOISIE de l'instance (`t.spec`). `when` = contexte MÉCANISABLE (Condition combat — auto si vraie) ; `manual` =
  *  contexte NARRATIF inmécanisable (« quand vous soulevez ») → advisory, JAMAIS auto-appliqué. */
 export interface TestMatch {
-  skill?: string;
+  skill?: Ref;
   char?: import('../engine/types').CharKey;
-  spec?: string;
   specFromInstance?: boolean;
   /** EXCLUT une spécialisation (matche toute spec SAUF celle-ci) — Linguistique « Langue (toutes) » qui
-   *  « ne fonctionne pas avec Langue (Magick) » : `{ skill:'langue', exceptSpec:'magick' }` (id, Phase 3). */
+   *  « ne fonctionne pas avec Langue (Magick) » : `{ skill:{id:'langue'}, exceptSpec:'magick' }`. */
   exceptSpec?: string;
   when?: import('../state/flow').Condition;
   manual?: boolean;
@@ -1420,7 +1419,7 @@ export interface EtatData extends StatusData {
    *  l'action `recover` (IA inline ET flux joueur — SOURCE UNIQUE `resolveRecoverTest`) au lieu des branches
    *  par-nom. `opposedBy:'source'` → opposé contre la Force d'entrave : `escapeStrength` FIGÉE en priorité
    *  (vaut même source absente), sinon Force de la source VIVANTE. Retire 1 + DR pions sur succès. */
-  recover?: { skill?: string; characteristic?: import('../engine/types').CharKey; opposedBy?: 'source'; difficulty?: import('../engine/types').Difficulty };
+  recover?: { skill?: Ref; characteristic?: import('../engine/types').CharKey; opposedBy?: 'source'; difficulty?: import('../engine/types').Difficulty };
   /** Cet État VERROUILLE l'Action : le Mouvement + l'Action doivent servir à fuir/se cacher (Brisé, LDB 16
    *  l.52). Drapeau DÉCLARATIF lu en DONNÉES par `isActionLocked`/`restrictingConditions` (engine/conditions),
    *  partagé par le gate de hotbar (`battleSelectAction`) ET l'IA (dépense PROACTIVE de Détermination pour se
@@ -1512,7 +1511,7 @@ export interface PsychologyData extends StatusData {
    *  NUE est lue par `skillBaseValue`) + `difficulty` (défaut Intermédiaire +0). Lu par `psychStepFor`/
    *  l'encounter, plus de Calme/Intermédiaire codé : un nouvel État/Psy déclare ICI son Test (ex. testé en
    *  Résistance, ou à une difficulté propre). « Sans Peur (Ennemi) » force Accessible à part (par-combattant). */
-  test?: { skill?: string; difficulty?: import('../engine/types').Difficulty };
+  test?: { skill?: Ref; difficulty?: import('../engine/types').Difficulty };
 }
 /** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, par colonne `RaceKey` (#313). */
 export interface DetailColorData {
@@ -2107,8 +2106,8 @@ export interface SpellData {
     kind: 'resist' | 'contact';
     /** Caractéristique opposée (`resist` uniquement). */
     char?: import('../engine/types').CharKey;
-    /** Compétence opposée en libellé (`resist` uniquement, rare — FM, Intelligence, Calme…). */
-    skill?: string;
+    /** Compétence opposée (`resist` uniquement, rare) — référence `{ id, spec? }`. */
+    skill?: Ref;
   };
   /**
    * EFFETS du sort — `Flow` ÉDITABLE (système logique unique : `do`/`if`/`test`), source des effets

@@ -88,12 +88,11 @@ export function TavernGameModal() {
   const opt = !rapide ? game?.options?.[0] : undefined;
   const testAffiche = {
     skill: opt?.skill ?? game?.skill ?? undefined,
-    spec: opt?.spec ?? (opt?.skill ? undefined : game?.spec),
     char: opt?.char ?? (opt?.skill ? undefined : game?.characteristic),
   };
   const difficulteAffichee: Difficulty = rapide ? TAVERN_TEST_DIFFICULTY : (opt?.difficulty ?? TAVERN_TEST_DIFFICULTY);
   const nomDuTest = testAffiche.skill
-    ? refLabel('skills', { id: testAffiche.skill, ...(testAffiche.spec ? { spec: testAffiche.spec } : {}) })
+    ? refLabel('skills', testAffiche.skill)
     : testAffiche.char
       ? CHAR_LABELS[testAffiche.char]
       : refLabel('skills', { id: 'pari' });

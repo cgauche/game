@@ -78,13 +78,13 @@ export function opRow(o: GameOp, ctx?: OpRowCtx): CodexRow {
       return { t: 'ref', category: 'skills', id: o.skill.id, label: statName(l), show: l };
     }
     case 'skillMod': {
-      const l = refLabel('skills', { id: o.skill });
-      return { t: 'ref', category: 'skills', id: o.skill, label: statName(l), show: l, badge: `${o.mod >= 0 ? '+' : ''}${o.mod}` };
+      const l = refLabel('skills', o.skill);
+      return { t: 'ref', category: 'skills', id: o.skill.id, label: statName(l), show: l, badge: `${o.mod >= 0 ? '+' : ''}${o.mod}` };
     }
     case 'skillDRBonus': {
       if (!o.skill) return textRow(o); // ancré sur un `testType` naval (hors catégorie Codex) → repli
-      const l = refLabel('skills', { id: o.skill, spec: o.spec });
-      return { t: 'ref', category: 'skills', id: o.skill, label: statName(l), show: l, badge: `+${humanizeFormula(o.bonus)} DR` };
+      const l = refLabel('skills', o.skill);
+      return { t: 'ref', category: 'skills', id: o.skill.id, label: statName(l), show: l, badge: `+${humanizeFormula(o.bonus)} DR` };
     }
     case 'grantTrait': {
       const label = traitLabelById(o.traitId);

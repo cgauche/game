@@ -101,7 +101,7 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
     expect(test.kind).toBe('test');
     if (test.kind !== 'test') throw new Error('yes doit être un test');
     expect(test.test.characteristic).toBe('force');
-    expect(test.test.skill).toBe('athletisme'); // id stable (≠ libellé — multilangue-safe)
+    expect(test.test.skill).toEqual({ id: 'athletisme' }); // id stable (≠ libellé — multilangue-safe)
     expect(test.test.opposed?.attacker).toBe('force');
     expect(test.test.opposed?.attackerSkill).toBe('athletisme');
     // Défenseur PERD l'opposition (branche `fail`) → l'attaquant l'emporte → cible À Terre.

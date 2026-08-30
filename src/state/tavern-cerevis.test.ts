@@ -86,7 +86,7 @@ afterEach(() => {
 
 describe('Le Cerevis — la donnée porte la règle, et dit ce qui est maison', () => {
   it('Test combiné Initiative + Pari Accessible (+20), 3 échecs, 2 chouettes effacées, marque au perdant', () => {
-    expect(CEREVIS.options?.[0], '« Pari Accessible (+20) »').toEqual({ skill: 'pari', difficulty: 'accessible' });
+    expect(CEREVIS.options?.[0], '« Pari Accessible (+20) »').toEqual({ skill: { id: 'pari' }, difficulty: 'accessible' });
     expect(CEREVIS.combined?.second, '« un Test combiné d’Initiative et de… »').toEqual({ char: 'initiative' });
     expect(CEREVIS.combined?.failEvery, '« Pour chaque 3 Tests d’Initiative auxquels vous échouez »').toBe(3);
     expect(CEREVIS.combined?.eraseEvery, '« pour chaque 2 chouettes que vous effacez »').toBe(2);

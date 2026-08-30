@@ -90,9 +90,17 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       [...retrouvées].map((n) => marqueDe(n)!.site).sort(),
       'marque(s) de référence perdue(s) ou apparue(s) — une feuille marquée puis clonée hors fabrique (`.refine` EXTERNE) disparaît de la marche SANS erreur : c’est le zéro silencieux que ce stock nominatif détecte.',
     // 11 sites de référence de Compétence ADOPTÉS au lot L2 #1548 (commit 3b) : `refOuSpec('skill')`
-    // pose UNE marque par site (activities, axes, crew-roles, creatures, sea-cargo, sea-perils ×2,
-    // steam-breakdown, water-exposure, `mount.riderTest`, `shipCrewTest`).
-    ).toEqual(['actorRefSchema', "idDe('creature')", ...Array.from({ length: 11 }, () => "idDe('skill')"), "idDe('trapping')"]);
+    // pose UNE marque par INSTANCE de fabrique (activities, axes, crew-roles, creatures, sea-cargo,
+    // sea-perils ×2, steam-breakdown, water-exposure, `mount.riderTest`, `shipCrewTest`) — puis
+    // 11 → 30 au commit 3c, où la référence emboîtée gagne 19 instances : la grammaire (`flowTest`),
+    // les conteneurs de Test (`aa-criticals.resist`, `etats.recover`, `psychology.test`,
+    // `spells.opposed`, `miscast` ×2), le matcher `talents.testMatch`, les 4 instances de l'union
+    // `talents.reverseFailed` (2 branches × base et `variants`, que `variantOf` clone), les 5 slots de
+    // `tavernGames` et les 2 effets de scène `extendedTest`/`startPursuit`. Les DEUX portes
+    // `corruptionExposure` (op `GameOp`, effet de scène) n'en posent AUCUNE : `refTestDeCorruption`
+    // est un ENUM d'alphabet (`TESTS_DE_CORRUPTION`) et non une réf de catalogue — borne plus étroite,
+    // donc hors du compteur de FK. Le stock des sites ADOPTÉS ne peut que CROÎTRE.
+    ).toEqual(['actorRefSchema', "idDe('creature')", ...Array.from({ length: 30 }, () => "idDe('skill')"), "idDe('trapping')"]);
   });
 
   it('la coupe de PROFONDEUR_MAX est BRUYANTE : un schéma trop profond LÈVE en nommant son path', () => {

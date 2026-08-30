@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3295` |
-| `spec` | 1 | `src/data/index.ts:3296` |
+| `id` | 4 | `src/data/index.ts:3294` |
+| `spec` | 1 | `src/data/index.ts:3295` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3307` |
+| `id` | 1 | `src/data/index.ts:3306` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3307` |
+| `value` | 2 | `src/data/index.ts:3306` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3353` |
+| `id` | 4 | `src/data/index.ts:3352` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3354` |
-| `qualities` | 2 | `src/data/index.ts:3357` |
-| `qualityChoice` | 2 | `src/data/index.ts:3355` |
-| `text` | 1 | `src/data/index.ts:3348` |
-| `vehicleId` | 2 | `src/data/index.ts:3350` |
+| `count` | 3 | `src/data/index.ts:3353` |
+| `qualities` | 2 | `src/data/index.ts:3356` |
+| `qualityChoice` | 2 | `src/data/index.ts:3354` |
+| `text` | 1 | `src/data/index.ts:3347` |
+| `vehicleId` | 2 | `src/data/index.ts:3349` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3352` |
-| `choice` | 3 | `src/data/index.ts:3345` |
-| `wildcard` | 1 | `src/data/index.ts:3346` |
+| `creatureId` | 2 | `src/data/index.ts:3351` |
+| `choice` | 3 | `src/data/index.ts:3344` |
+| `wildcard` | 1 | `src/data/index.ts:3345` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:3327` |
-| `wildcard` | 5 | `src/data/index.ts:3329` |
-| `specOptions` | 3 | `src/data/index.ts:3328` |
-| `choice` | 4 | `src/data/index.ts:3331` |
-| `random` | 2 | `src/data/index.ts:3332` |
+| `ref` | 4 | `src/data/index.ts:3326` |
+| `wildcard` | 5 | `src/data/index.ts:3328` |
+| `specOptions` | 3 | `src/data/index.ts:3327` |
+| `choice` | 4 | `src/data/index.ts:3330` |
+| `random` | 2 | `src/data/index.ts:3331` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -136,10 +136,9 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 |---|---|---|
 | `stake` | 5 | `src/state/combat/triggeredTest.ts:206` |
 | `skill` | 14 | `src/state/combat/triggeredTest.ts:193` |
-| `spec` | 13 | `src/state/combat/triggeredTest.ts:193` |
 | `sense` | 2 | `src/state/combatEffects.ts:435` |
 | `characteristic` | 11 | `src/state/combat/triggeredTest.ts:193` |
-| `difficulty` | 2 | `src/engine/flowCore.ts:370` |
+| `difficulty` | 2 | `src/engine/flowCore.ts:371` |
 | `requireSL` | 1 | `src/state/combatEffects.ts:474` |
 | `label` | 6 | `src/state/combat/triggeredTest.ts:224` |
 | `tool` | 1 | `src/state/combatEffects.ts:437` |
@@ -152,10 +151,10 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:151` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:152` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
-| `gate` | 1 | `src/engine/flowCore.ts:375` |
+| `gate` | 1 | `src/engine/flowCore.ts:376` |
 | `noSupport` | 1 | `src/state/combatEffects.ts:429` |
 | `menace` | 5 | `src/state/combat/triggeredTest.ts:234` |
-| `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
+| `difficultyBy` | 1 | `src/engine/flowCore.ts:370` |
 | `opposed` | 2 | `src/state/combat/triggeredTest.ts:293` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
@@ -285,7 +284,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-23 types, 157 champs mesurés, **40 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+23 types, 156 champs mesurés, **40 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 

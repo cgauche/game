@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { charKeySchema, formulaSchema } from '../grammaire/valeurs';
 import { flowSchema, conditionSchema } from '../grammaire/mecanique';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'spells.json';
 export const famille = 'entite';
@@ -130,7 +131,7 @@ const champs = {
   opposed: z.strictObject({
     kind: z.enum(['resist', 'contact']),
     char: charKeySchema.optional(),
-    skill: z.string().optional(),
+    skill: refOuSpec('skill').optional(),
   }).optional(),
   effects: flowSchema.optional(),
 };

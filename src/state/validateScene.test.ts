@@ -303,7 +303,7 @@ describe('validateScene', () => {
     s.triggers.push({
       id: 't-2',
       rect: { x: 0, y: 0, w: 1, h: 1 },
-      flow: testFlow({ skill: 'perception' }, flowFromEffects([{ type: 'startDialogue', dialogue: 'absent' }]), EMPTY_FLOW),
+      flow: testFlow({ skill: { id: 'perception' }}, flowFromEffects([{ type: 'startDialogue', dialogue: 'absent' }]), EMPTY_FLOW),
     });
     expect(msgs(validateScene([s])).some((m) => /dialogue inexistant/.test(m))).toBe(true);
   });
@@ -319,7 +319,7 @@ describe('validateScene', () => {
     s.triggers.push({
       id: 't-muet',
       rect: { x: 0, y: 0, w: 1, h: 1 },
-      flow: testFlow({ skill: 'perception', label: 'Guetter la ruelle' }, EMPTY_FLOW, EMPTY_FLOW),
+      flow: testFlow({ skill: { id: 'perception' }, label: 'Guetter la ruelle' }, EMPTY_FLOW, EMPTY_FLOW),
     });
     const muet = validateScene([s]);
     expect(muet.some((w) => w.level === 'error' && w.refId === 't-muet' && /sans enjeu/.test(w.message))).toBe(true);
@@ -329,7 +329,7 @@ describe('validateScene', () => {
       id: 't-dote',
       rect: { x: 0, y: 0, w: 1, h: 1 },
       flow: testFlow(
-        { skill: 'perception', label: 'Guetter la ruelle', stake: { authored: 'Repérer le guet avant qu’il ne vous repère : sinon l’alarme est donnée.' } },
+        { skill: { id: 'perception' }, label: 'Guetter la ruelle', stake: { authored: 'Repérer le guet avant qu’il ne vous repère : sinon l’alarme est donnée.' } },
         EMPTY_FLOW, EMPTY_FLOW,
       ),
     });
@@ -340,7 +340,7 @@ describe('validateScene', () => {
     const s = base();
     s.entities.push({
       id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 },
-      interact: { flow: testFlow({ skill: 'crochetage', label: 'Crocheter' }, EMPTY_FLOW, EMPTY_FLOW) },
+      interact: { flow: testFlow({ skill: { id: 'crochetage' }, label: 'Crocheter' }, EMPTY_FLOW, EMPTY_FLOW) },
     });
     expect(validateScene([s]).some((w) => w.level === 'error' && w.refId === 'coffre' && /sans enjeu/.test(w.message))).toBe(true);
   });
@@ -356,7 +356,7 @@ describe('validateScene', () => {
     s.triggers.push({
       id: 't-blanc',
       rect: { x: 0, y: 0, w: 1, h: 1 },
-      flow: testFlow({ skill: 'perception', label: 'Guetter', stake: { authored: '   ' } }, EMPTY_FLOW, EMPTY_FLOW),
+      flow: testFlow({ skill: { id: 'perception' }, label: 'Guetter', stake: { authored: '   ' } }, EMPTY_FLOW, EMPTY_FLOW),
     });
     const w = validateScene([s]).filter((x) => x.level === 'error' && /sans enjeu/.test(x.message));
     expect(w).toHaveLength(1);
@@ -370,7 +370,7 @@ describe('validateScene', () => {
    * trigger, est refusé.
    */
   it('un jet muet dans un Flow PORTÉ par un effet est refusé comme sur un trigger', () => {
-    const muet = testFlow({ skill: 'priere', label: 'Exaucée ?' }, EMPTY_FLOW, EMPTY_FLOW);
+    const muet = testFlow({ skill: { id: 'priere' }, label: 'Exaucée ?' }, EMPTY_FLOW, EMPTY_FLOW);
     const s = base();
     s.triggers.push({
       id: 't-priere',
@@ -392,7 +392,7 @@ describe('validateScene', () => {
     s.triggers.push({
       id: 't-differe',
       rect: { x: 0, y: 0, w: 1, h: 1 },
-      flow: flowFromEffects([{ type: 'delayedEffect', afterMinutes: 10, flow: testFlow({ skill: 'perception', label: 'Plus tard' }, EMPTY_FLOW, EMPTY_FLOW) }]),
+      flow: flowFromEffects([{ type: 'delayedEffect', afterMinutes: 10, flow: testFlow({ skill: { id: 'perception' }, label: 'Plus tard' }, EMPTY_FLOW, EMPTY_FLOW) }]),
     });
     expect(validateScene([s]).some((w) => w.level === 'error' && /sans enjeu/.test(w.message))).toBe(true);
   });

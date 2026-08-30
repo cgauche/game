@@ -51,7 +51,7 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
   it('testValue transmet `sense` à traumaSkillPenalty — Surdité restreinte aux Tests auditifs (LDB 18)', () => {
     const deaf = (): Combatant => ({
       ...mk({ initiative: 40 }),
-      traumas: [{ label: 'Surdité', traumaId: 'surdite', location: 'tete', ops: [{ op: 'skillMod', skill: 'perception', mod: -20, sense: 'ouie' }] }],
+      traumas: [{ label: 'Surdité', traumaId: 'surdite', location: 'tete', ops: [{ op: 'skillMod', skill: { id: 'perception' }, mod: -20, sense: 'ouie' }] }],
     } as Combatant);
     expect(testValue(deaf(), 'perception')).toBe(20); // sens inconnu : pénalité appliquée par défaut
     expect(testValue(deaf(), 'perception', undefined, undefined, 'ouie')).toBe(20); // Test auditif : pénalisé

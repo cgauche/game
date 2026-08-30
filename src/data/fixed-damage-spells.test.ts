@@ -37,7 +37,7 @@ describe('sorts à dégâts FIXES (frenchy) — VERBATIM desc + BE selon LDB 13 
     expect(woundsOf('crepitement-funeste')).toMatchObject({ op: 'wounds', amount: 6, ignoreAP: false, ignoreTB: false });
     // Le rider est MÉCANIQUE et référencé par id STABLE (≠ libellé maison « Étourdi »).
     const json = JSON.stringify(sp.effects);
-    expect(json).toContain('"skill":"resistance"');
+    expect(json).toContain('"skill":{"id":"resistance"}');
     expect(json).toContain('"id":"sonne"');
   });
 });

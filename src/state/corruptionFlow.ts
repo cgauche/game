@@ -53,6 +53,18 @@ import { followsCharacterRules } from '../engine/relations';
 import { resultLine, freeCons, tableStep, type BuiltCascadeStep } from './rollSeam';
 import { t } from '../i18n';
 import { stepDetail } from './rollSeam';
+import { TESTS_DE_CORRUPTION, type TestDeCorruption } from '../data/schemas/grammaire/valeurs';
+
+/** SEULE couture entre la référence portée par l'op/l'effet et le slot `pendingCorruption`. PURE.
+ *  Absente = indéterminée, le joueur tranche dans la modale (défaut affiché : Résistance,
+ *  `LDB 19 l.23-75`). PRÉSENTE, elle est déjà bornée à `TESTS_DE_CORRUPTION` par les deux portes de
+ *  document (`refTestDeCorruption`) : la fonction est TOTALE, elle ne rabote rien. */
+export function testDeCorruption(skill?: { id: string }): TestDeCorruption {
+  if (skill == null) return TESTS_DE_CORRUPTION[0];
+  const trouve = TESTS_DE_CORRUPTION.find((x) => x === skill.id);
+  if (!trouve) throw new Error(`testDeCorruption : « ${skill.id} » hors de TESTS_DE_CORRUPTION (LDB 19 l.23-75) — la porte de document aurait dû le refuser.`);
+  return trouve;
+}
 
 /**
  * LA PORTE du slot `pendingCorruption` (#1282) — SOURCE UNIQUE de sa pose, quel que soit le

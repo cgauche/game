@@ -163,7 +163,7 @@ describe('Fuite ! — l’entrée EFFECTIVE porte le `test` de la variante (#564
     expect(eff().source.book).toBe('livre-de-base');
     setRule('combat-aa-avantage-groupe', true);
     expect(eff().test?.raw).toBe("Athlétisme quand vous Fuyez ou quand vous êtes la Cible d'une Poursuite");
-    expect(eff().test?.matches).toEqual([{ skill: 'athletisme', manual: true }]);
+    expect(eff().test?.matches).toEqual([{ skill: { id: 'athletisme' }, manual: true }]);
     expect(eff().source).toEqual({ book: 'aux-armes', page: 141 });
     expect(eff().combat).toEqual({ fleeBonus: true, pursuitTargetBonus: true });
   });
@@ -267,8 +267,8 @@ describe('provenance 5 — le Maxi EFFECTIF suit la variante (talentMaxById, AA 
 
 describe('provenance 6 — la ligne « Tests » republiée est CONSOMMÉE par le +DR de Talent (talentTestSLBonus)', () => {
   /** Sondes de Test dérivées des `matches` d'un mode : une par match auto-applicable. */
-  const probes = (matches: { skill?: string; spec?: string; char?: CharKey; manual?: boolean }[] | undefined) =>
-    (matches ?? []).filter((m) => !m.manual).map((m) => ({ skill: m.skill, spec: m.spec, char: m.char }));
+  const probes = (matches: { skill?: { id: string; spec?: string }; char?: CharKey; manual?: boolean }[] | undefined) =>
+    (matches ?? []).filter((m) => !m.manual).map((m) => ({ skill: m.skill?.id, spec: m.skill?.spec, char: m.char }));
 
   const carriers = carriersDeclaring('test');
 

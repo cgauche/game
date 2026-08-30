@@ -848,7 +848,9 @@
             {
               "kind": "test",
               "test": {
-                "skill": "resistance",
+                "skill": {
+                  "id": "resistance"
+                },
                 "difficulty": "accessible"
               },
               "success": {
@@ -927,7 +929,9 @@
             {
               "kind": "test",
               "test": {
-                "skill": "calme",
+                "skill": {
+                  "id": "calme"
+                },
                 "difficulty": "complexe"
               },
               "success": {

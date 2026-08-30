@@ -1227,7 +1227,9 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "bonus": 2
           }
         ]
@@ -1351,7 +1353,9 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "emprise-sur-les-animaux",
+            "skill": {
+              "id": "emprise-sur-les-animaux"
+            },
             "bonus": -2
           }
         ]
@@ -1367,7 +1371,9 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "discretion",
+            "skill": {
+              "id": "discretion"
+            },
             "bonus": -1
           }
         ]
@@ -1399,12 +1405,16 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "ragot",
+            "skill": {
+              "id": "ragot"
+            },
             "bonus": -1
           },
           {
             "op": "skillDRBonus",
-            "skill": "divertissement",
+            "skill": {
+              "id": "divertissement"
+            },
             "bonus": -1
           }
         ]
@@ -1596,7 +1606,9 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "survie-en-exterieur",
+            "skill": {
+              "id": "survie-en-exterieur"
+            },
             "bonus": 1
           }
         ]
@@ -1805,12 +1817,16 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "charme",
+            "skill": {
+              "id": "charme"
+            },
             "bonus": -1
           },
           {
             "op": "skillDRBonus",
-            "skill": "ragot",
+            "skill": {
+              "id": "ragot"
+            },
             "bonus": -1
           }
         ]
@@ -1848,22 +1864,30 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "soin-aux-animaux",
+            "skill": {
+              "id": "soin-aux-animaux"
+            },
             "bonus": -1
           },
           {
             "op": "skillDRBonus",
-            "skill": "dressage",
+            "skill": {
+              "id": "dressage"
+            },
             "bonus": -1
           },
           {
             "op": "skillDRBonus",
-            "skill": "emprise-sur-les-animaux",
+            "skill": {
+              "id": "emprise-sur-les-animaux"
+            },
             "bonus": -1
           },
           {
             "op": "skillDRBonus",
-            "skill": "chevaucher",
+            "skill": {
+              "id": "chevaucher"
+            },
             "bonus": -1
           }
         ]
@@ -2037,8 +2061,10 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "langue",
-            "spec": "magick",
+            "skill": {
+              "id": "langue",
+              "spec": "magick"
+            },
             "bonus": -1
           }
         ]
@@ -2191,7 +2217,9 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "discretion",
+            "skill": {
+              "id": "discretion"
+            },
             "bonus": -1
           }
         ]
@@ -2338,7 +2366,9 @@
           },
           {
             "op": "skillDRBonus",
-            "skill": "survie-en-exterieur",
+            "skill": {
+              "id": "survie-en-exterieur"
+            },
             "bonus": 1
           }
         ]

@@ -30,7 +30,7 @@ const scene = buildScene({
           type: 'startPursuit',
           partyRole: 'fleeing',
           distance: 4,
-          skill: 'athletisme',
+          skill: { id: 'athletisme' },
           foes: [
             { label: 'Brigand', movement: 4, skill: 40 },
             { label: 'Brigand', movement: 4, skill: 40 },

@@ -329,7 +329,7 @@ describe('Rubrique de VENT du Domaine (VDM 04 l.48-56, folio 55) — windModifie
       expect(m.cancelledBy).toMatchObject({
         circumstance: 'assistance-chantee',
         requiresSkill: { id: 'focalisation', spec: 'lumiere' },
-        test: { skill: 'langue', spec: 'magick', difficulty: 'facile' },
+        test: { skill: { id: 'langue', spec: 'magick' }, difficulty: 'facile' },
         sustained: true,
       });
       expect(m.source).toEqual({ book: 'vents-de-la-magie', page: 55 });

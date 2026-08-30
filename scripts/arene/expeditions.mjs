@@ -197,7 +197,7 @@ export function makeMarais() {
       P(20, 18, 'cadavre', {
         label: 'Voyageur repêché',
         ...fouille(testNode(
-          { skill: 'resistance', difficulty: 'facile', label: 'Fouiller le noyé sans frémir', stake: { authored: 'Faire les poches du noyé sans y laisser sa santé : 22 pistoles, sinon une Infection Mineure.' } },
+          { skill: { id: 'resistance' }, difficulty: 'facile', label: 'Fouiller le noyé sans frémir', stake: { authored: 'Faire les poches du noyé sans y laisser sa santé : 22 pistoles, sinon une Infection Mineure.' } },
           [
             { type: 'giveMoney', silver: 22 },
             { type: 'journal', desc: 'Le noyé voyageait riche : 22 pa, que la tourbe lui pardonne.' },
@@ -370,7 +370,7 @@ export function makeVillage() {
         rect: { x: 6, y: 8, w: 3, h: 3 },
         once: true,
         flow: testNode(
-          { skill: 'resistance', difficulty: 'intermediaire', label: 'Les remontées du puits maudit', stake: { authored: 'Encaisser les miasmes du puits : sinon la Courante Galopante se déclare.' } },
+          { skill: { id: 'resistance' }, difficulty: 'intermediaire', label: 'Les remontées du puits maudit', stake: { authored: 'Encaisser les miasmes du puits : sinon la Courante Galopante se déclare.' } },
           [{ type: 'journal', desc: 'L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village.' }],
           [
             { type: 'inflictDisease', disease: 'Courante Galopante' },

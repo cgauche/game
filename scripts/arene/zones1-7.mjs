@@ -229,7 +229,7 @@ export function makeZone3() {
         rect: { x: 1, y: 7, w: 28, h: 1 },
         once: true,
         flow: testNode(
-          { skill: 'resistance', difficulty: 'facile', label: 'Miasmes des égouts', stake: { authored: 'Tenir le coup dans l’air des égouts : sinon la Fièvre du Rongeur vous prend.' } },
+          { skill: { id: 'resistance' }, difficulty: 'facile', label: 'Miasmes des égouts', stake: { authored: 'Tenir le coup dans l’air des égouts : sinon la Fièvre du Rongeur vous prend.' } },
           [{ type: 'journal', desc: 'L’air est irrespirable, mais vous gardez vos tripes — et votre santé.' }],
           [
             { type: 'inflictDisease', disease: 'Fièvre du Rongeur' },
@@ -309,7 +309,7 @@ export function makeZone4() {
       P(9, 15, 'cadavre', {
         label: 'Fossoyeur mort',
         ...fouille(testNode(
-          { skill: 'resistance', difficulty: 'intermediaire', label: 'Fouiller les morts du charnier', stake: { authored: 'Fouiller sans se blesser : 18 pistoles dans la bourse du fossoyeur, sinon une Blessure Purulente.' } },
+          { skill: { id: 'resistance' }, difficulty: 'intermediaire', label: 'Fouiller les morts du charnier', stake: { authored: 'Fouiller sans se blesser : 18 pistoles dans la bourse du fossoyeur, sinon une Blessure Purulente.' } },
           [
             { type: 'giveMoney', silver: 18 },
             { type: 'journal', desc: 'Le fossoyeur serrait encore sa bourse : 18 pa, et rien d’attrapé.' },
@@ -577,7 +577,7 @@ export function makeZone7() {
       P(6, 5, 'cocon', {
         label: 'Cocon frémissant',
         ...fouille(testNode(
-          { skill: 'athletisme', difficulty: 'intermediaire', label: 'Éventrer le cocon sans s’y prendre', stake: { authored: 'Ouvrir la soie sans se faire mordre : une potion de guérison intacte, sinon une Infection Mineure.' } },
+          { skill: { id: 'athletisme' }, difficulty: 'intermediaire', label: 'Éventrer le cocon sans s’y prendre', stake: { authored: 'Ouvrir la soie sans se faire mordre : une potion de guérison intacte, sinon une Infection Mineure.' } },
           [
             { type: 'giveTrapping', trappingId: 'potion-de-guerison' },
             { type: 'journal', desc: 'Dans la soie : la besace d’une victime, potion intacte.' },

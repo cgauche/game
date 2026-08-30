@@ -31,5 +31,5 @@ export function planJump(scene: Scene, takeoff: Pt, landing: Pt, movement: numbe
   // Test d'Athlétisme « Saut » : la réussite ne fait rien (on a déjà franchi, optimiste) ; l'échec
   // déclenche `fall` dans le gouffre.
   const stake = combatStakeRef('jumpTest', { values: { metres } });
-  return { kind: 'test', flow: testFlow({ skill: 'Athlétisme', difficulty, label: 'Saut', stake }, EMPTY_FLOW, flowFromEffects([fall])) };
+  return { kind: 'test', flow: testFlow({ skill: { id: 'athletisme' }, difficulty, label: 'Saut', stake }, EMPTY_FLOW, flowFromEffects([fall])) };
 }

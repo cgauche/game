@@ -3596,7 +3596,9 @@
     "consumable": {
       "kind": "test",
       "test": {
-        "skill": "resistance-a-l-alcool",
+        "skill": {
+          "id": "resistance-a-l-alcool"
+        },
         "label": "Bière — Résistance à l'alcool"
       },
       "success": {
@@ -3855,7 +3857,9 @@
     "consumable": {
       "kind": "test",
       "test": {
-        "skill": "resistance-a-l-alcool",
+        "skill": {
+          "id": "resistance-a-l-alcool"
+        },
         "label": "Vin & spiritueux — Résistance à l'alcool",
         "difficulty": "difficile"
       },
@@ -3988,12 +3992,16 @@
     "passive": [
       {
         "op": "skillMod",
-        "skill": "langue",
+        "skill": {
+          "id": "langue"
+        },
         "mod": 20
       },
       {
         "op": "skillMod",
-        "skill": "perception",
+        "skill": {
+          "id": "perception"
+        },
         "mod": 20
       }
     ],
@@ -4406,7 +4414,9 @@
     "consumable": {
       "kind": "test",
       "test": {
-        "skill": "guerison",
+        "skill": {
+          "id": "guerison"
+        },
         "label": "Nécessaire antipoison",
         "noSupport": false
       },
@@ -5920,7 +5930,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire",
             "exceptGroups": [
               "peau-verte"
@@ -5982,7 +5994,9 @@
       "kind": "test",
       "test": {
         "characteristic": "endurance",
-        "skill": "resistance",
+        "skill": {
+          "id": "resistance"
+        },
         "difficulty": "complexe",
         "unlessImmune": "poison",
         "menace": "poison",
@@ -6157,7 +6171,9 @@
             "ops": [
               {
                 "op": "skillMod",
-                "skill": "calme",
+                "skill": {
+                  "id": "calme"
+                },
                 "mod": 20
               },
               {
@@ -6261,7 +6277,9 @@
                     "kind": "test",
                     "test": {
                       "characteristic": "endurance",
-                      "skill": "resistance",
+                      "skill": {
+                        "id": "resistance"
+                      },
                       "difficulty": "complexe",
                       "unlessImmune": "poison",
                       "menace": "poison"
@@ -6322,7 +6340,9 @@
           {
             "op": "corruptionExposure",
             "level": "moderee",
-            "skill": "resistance"
+            "skill": {
+              "id": "resistance"
+            }
           }
         ]
       }
@@ -6357,7 +6377,9 @@
           {
             "op": "corruptionExposure",
             "level": "majeure",
-            "skill": "resistance"
+            "skill": {
+              "id": "resistance"
+            }
           }
         ]
       }
@@ -6468,7 +6490,9 @@
           },
           {
             "op": "skillMod",
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "mod": 20
           },
           {
@@ -6518,7 +6542,9 @@
     "consumable": {
       "kind": "test",
       "test": {
-        "skill": "resistance",
+        "skill": {
+          "id": "resistance"
+        },
         "label": "Belladone"
       },
       "success": {
@@ -6863,7 +6889,9 @@
     "consumable": {
       "kind": "test",
       "test": {
-        "skill": "resistance",
+        "skill": {
+          "id": "resistance"
+        },
         "difficulty": "accessible",
         "label": "Gesundheit"
       },
@@ -6952,7 +6980,9 @@
                     "kind": "test",
                     "test": {
                       "characteristic": "endurance",
-                      "skill": "resistance",
+                      "skill": {
+                        "id": "resistance"
+                      },
                       "difficulty": "complexe",
                       "onlyGroups": [
                         "mort-vivant"
@@ -11999,7 +12029,9 @@
     "passive": [
       {
         "op": "skillDRBonus",
-        "skill": "orientation",
+        "skill": {
+          "id": "orientation"
+        },
         "bonus": 1
       }
     ],
@@ -12030,7 +12062,9 @@
     "passive": [
       {
         "op": "skillDRBonus",
-        "skill": "orientation",
+        "skill": {
+          "id": "orientation"
+        },
         "bonus": 2
       }
     ],
@@ -12679,7 +12713,9 @@
     "passive": [
       {
         "op": "skillDRBonus",
-        "skill": "focalisation",
+        "skill": {
+          "id": "focalisation"
+        },
         "bonus": 1
       }
     ],
@@ -12706,7 +12742,9 @@
     "passive": [
       {
         "op": "skillDRBonus",
-        "skill": "focalisation",
+        "skill": {
+          "id": "focalisation"
+        },
         "bonus": 2
       }
     ],
@@ -12733,7 +12771,9 @@
     "passive": [
       {
         "op": "skillDRBonus",
-        "skill": "focalisation",
+        "skill": {
+          "id": "focalisation"
+        },
         "bonus": 3
       }
     ],
@@ -13102,7 +13142,9 @@
         {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "accessible",
             "label": "Panacea Universalis"
           },
@@ -13212,7 +13254,9 @@
         "ops": [
           {
             "op": "skillDRBonus",
-            "skill": "focalisation",
+            "skill": {
+              "id": "focalisation"
+            },
             "bonus": 2
           }
         ]
@@ -13628,7 +13672,9 @@
     "passive": [
       {
         "op": "skillMod",
-        "skill": "projectiles",
+        "skill": {
+          "id": "projectiles"
+        },
         "mod": 20
       }
     ],
@@ -13684,7 +13730,9 @@
     "passive": [
       {
         "op": "skillMod",
-        "skill": "discretion",
+        "skill": {
+          "id": "discretion"
+        },
         "mod": -100
       }
     ],
@@ -13742,7 +13790,9 @@
     "passive": [
       {
         "op": "skillMod",
-        "skill": "corps-a-corps",
+        "skill": {
+          "id": "corps-a-corps"
+        },
         "mod": 20
       }
     ],
@@ -13805,7 +13855,9 @@
     "passive": [
       {
         "op": "skillMod",
-        "skill": "corps-a-corps",
+        "skill": {
+          "id": "corps-a-corps"
+        },
         "mod": 30
       }
     ],
@@ -13881,7 +13933,9 @@
           "then": {
             "kind": "test",
             "test": {
-              "skill": "resistance",
+              "skill": {
+                "id": "resistance"
+              },
               "difficulty": "complexe",
               "label": "Déchireur de sociabilité"
             },
@@ -13918,7 +13972,9 @@
           "then": {
             "kind": "test",
             "test": {
-              "skill": "resistance",
+              "skill": {
+                "id": "resistance"
+              },
               "difficulty": "complexe",
               "label": "Déchireur de sociabilité"
             },
@@ -14094,7 +14150,9 @@
     "passive": [
       {
         "op": "skillMod",
-        "skill": "projectiles",
+        "skill": {
+          "id": "projectiles"
+        },
         "mod": 20
       }
     ],

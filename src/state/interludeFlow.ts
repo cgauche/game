@@ -39,7 +39,7 @@ import { isFumble } from '../engine/oups';
 import { combatValue } from '../engine/combat';
 import { spellCost, ritualReduction } from '../engine/grimoire';
 import { focusSkillFor, castingValue, consumeMalepierre } from '../engine/magic';
-import { gainCorruption, poseCorruptionPending } from './corruptionFlow';
+import { gainCorruption, poseCorruptionPending, testDeCorruption } from './corruptionFlow';
 import { fireOwnTestFailed } from './triggeredEffects';
 import { applyMiscast } from './combatFlow';
 import { buySpell as partyBuySpell } from './partyFlow';
@@ -980,7 +980,7 @@ function runActivityResolver(get: Get, set: Set, resolver: ActivityResolver, pa:
       if (!pa.chosenSkill) return { lines: [] };
       const skillLabel = refLabel('skills', { id: pa.chosenSkill, spec: pa.chosenSkillSpec });
       if (!pa.success) return { lines: [msg('if.combatTrainingKo', { name: h.label, skill: skillLabel })] };
-      return { lines: applyOps(h, [{ op: 'grantReverseToken', skill: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) }], { rng: battleRng(), label: pa.label, source: activitySource(pa) }) };
+      return { lines: applyOps(h, [{ op: 'grantReverseToken', skill: { id: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) } }], { rng: battleRng(), label: pa.label, source: activitySource(pa) }) };
     }
     case 'punchausen': {
       // Fabuleuse Vente du comte de Punchausen (AA 12 l.45-49) : « vous recevez 2d10 pistoles et […]
@@ -990,7 +990,7 @@ function runActivityResolver(get: Get, set: Set, resolver: ActivityResolver, pa:
       const pistoles = rollDice(2, 10, battleRng());
       const gain = fromBrass(pistoles * PA_PER_SC);
       // Jeton posé AVANT le crédit : `creditBourse` clone le groupe et capte la mutation de `h`.
-      const tokenLines = applyOps(h, [{ op: 'grantReverseToken', skill: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) }], { rng: battleRng(), label: pa.label, source: activitySource(pa) });
+      const tokenLines = applyOps(h, [{ op: 'grantReverseToken', skill: { id: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) } }], { rng: battleRng(), label: pa.label, source: activitySource(pa) });
       creditBourse(get, set, h.id, gain); // revenu PERSO (vente du récit DE ce héros), pas partagé par tête
       return { lines: [msg('if.punchausenOk', { name: h.label, money: formatMoney(gain) }), ...tokenLines] };
     }
@@ -1235,9 +1235,9 @@ export function confirmActivity(get: Get, set: Set): void {
         lines.push(...applyOps(h, immediate, {
           rng: battleRng(), label: def.label, now: get().gameTime, source: { kind: 'activity', id: def.id }, sl: pa.sl,
           onCorruption: (n: number, align?: ChaosAlign) => gainCorruption(get, set, h, n, align),
-          onCorruptionExposure: (level: ExposureLevel, skill?: 'resistance' | 'calme') => {
+          onCorruptionExposure: (level: ExposureLevel, skill?: import('../engine/skills').SkillRef) => {
             // LA PORTE du slot (#1282) : un Test de Corruption déjà affiché ne se fait plus écraser — celui-ci prend rang.
-            poseCorruptionPending(get, set, { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'corruption' });
+            poseCorruptionPending(get, set, { heroId: h.id, level, skill: testDeCorruption(skill), skillLocked: skill != null, menace: 'corruption' });
             return [msg('if.corruptionTest', { name: h.label, level })];
           },
         }));

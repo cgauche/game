@@ -28,6 +28,10 @@ import type { OptionalRule, RuleValue } from '../../engine/policy';
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 
+/** 1°ʳᵉ référence d'un slot qui accepte UNE réf ou une LISTE de réfs (`reverseFailed.skill` : Pilote
+ *  → Ramer OU Voile) — le contrôle MONO de cet atelier n'édite que celle-là. PURE. */
+const premiereRef = (r: Ref | Ref[]): Ref => (Array.isArray(r) ? (r[0] ?? { id: '' }) : r);
+
 /* ─────────────────────────────────────────────────────────────────────────────
  * 1) maladies.symptoms — DiseaseSymptom[] = { symptomId, severity?, difficulty? }
  *    Le symptomId RÉFÉRENCE un symptôme de `symptoms.json` (catalogue éditable au Codex).
@@ -116,10 +120,10 @@ export function TalentTestField({ value, onChange }: { value: TalentTest | undef
       {matches.map((m, i) => (
         <div key={i}>
           <div className="de-reflrow">
-            <select value={m.char != null ? '@char' : (m.skill ?? '')} onChange={(e) => {
+            <select value={m.char != null ? '@char' : (m.skill?.id ?? '')} onChange={(e) => {
               const v = e.target.value;
-              if (v === '@char') setM(i, { skill: undefined, spec: undefined, specFromInstance: undefined, exceptSpec: undefined, char: CHAR_KEYS[0] });
-              else setM(i, { char: undefined, skill: v });
+              if (v === '@char') setM(i, { skill: undefined, specFromInstance: undefined, exceptSpec: undefined, char: CHAR_KEYS[0] });
+              else setM(i, { char: undefined, skill: { id: v, ...(m.skill?.spec ? { spec: m.skill.spec } : {}) } });
             }}>
               <option value="">— compétence —</option>
               {skillsList.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
@@ -131,14 +135,14 @@ export function TalentTestField({ value, onChange }: { value: TalentTest | undef
               </select>
             )}
             {m.skill != null && !m.specFromInstance && (
-              <input value={m.spec ?? ''} placeholder="spec" title="spécialisation FIXE (Langue (Magick)…)" onChange={(e) => setM(i, { spec: e.target.value || undefined })} />
+              <input value={m.skill.spec ?? ''} placeholder="spec" title="spécialisation FIXE (Langue (Magick)…)" onChange={(e) => setM(i, { skill: { id: m.skill!.id, ...(e.target.value ? { spec: e.target.value } : {}) } })} />
             )}
             {m.skill != null && (
               <input value={m.exceptSpec ?? ''} placeholder="sauf spec" title="EXCLUT une spécialisation (Linguistique : toute Langue sauf Magick)" onChange={(e) => setM(i, { exceptSpec: e.target.value || undefined })} />
             )}
             {m.skill != null && (
               <label title="« (Au choix) » : matche la spécialisation CHOISIE du talent (Métier (Au choix)…)">
-                <input type="checkbox" checked={!!m.specFromInstance} onChange={(e) => setM(i, { specFromInstance: e.target.checked || undefined, spec: undefined })} /> au choix
+                <input type="checkbox" checked={!!m.specFromInstance} onChange={(e) => setM(i, { specFromInstance: e.target.checked || undefined, skill: { id: m.skill!.id } })} /> au choix
               </label>
             )}
             <label title="contexte NARRATIF inmécanisable → advisory, JAMAIS appliqué automatiquement">
@@ -157,7 +161,7 @@ export function TalentTestField({ value, onChange }: { value: TalentTest | undef
           )}
         </div>
       ))}
-      <button className="btn small" onClick={() => emit(raw, [...matches, { skill: '' }])}>+ Test lié</button>
+      <button className="btn small" onClick={() => emit(raw, [...matches, { skill: { id: '' } }])}>+ Test lié</button>
     </div>
   );
 }
@@ -234,16 +238,16 @@ export function CombatField(
         )}
       </div>
       <div className="tf-row">
-        <label className="dr"><input type="checkbox" checked={!!c.reverseFailed} onChange={(e) => emit({ ...c, reverseFailed: e.target.checked ? { skill: '' } : undefined })} /> Inverse un Test raté (Sociable…)</label>
+        <label className="dr"><input type="checkbox" checked={!!c.reverseFailed} onChange={(e) => emit({ ...c, reverseFailed: e.target.checked ? { skill: { id: '' } } : undefined })} /> Inverse un Test raté (Sociable…)</label>
         {c.reverseFailed && (
           <>
             {/* `reverseFailed.skill` accepte un tableau (Pilote → Ramer OU Voile) ; ce sélecteur MONO édite
                 la 1ʳᵉ Compétence du tableau. */}
-            <select value={Array.isArray(c.reverseFailed.skill) ? c.reverseFailed.skill[0] : c.reverseFailed.skill} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, skill: e.target.value } })}>
-              {!c.reverseFailed.skill && <option value="">— (choisir une compétence) —</option>}
+            <select value={premiereRef(c.reverseFailed.skill).id} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, skill: { id: e.target.value, ...(premiereRef(c.reverseFailed!.skill).spec ? { spec: premiereRef(c.reverseFailed!.skill).spec! } : {}) } } })}>
+              {!premiereRef(c.reverseFailed.skill).id && <option value="">— (choisir une compétence) —</option>}
               {datasetArray('skills').map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
-            <input className="dr" placeholder="spec" value={c.reverseFailed.spec ?? ''} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, spec: e.target.value || undefined } })} />
+            <input className="dr" placeholder="spec" value={premiereRef(c.reverseFailed.skill).spec ?? ''} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, skill: { id: premiereRef(c.reverseFailed!.skill).id, ...(e.target.value ? { spec: e.target.value } : {}) } } })} />
             <label className="dr">cap DR<NumberField variant="nu" label="Inverse un Test raté — cap DR" value={c.reverseFailed.capDR ?? 0} onChange={(n) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, capDR: n || undefined } })} /></label>
           </>
         )}

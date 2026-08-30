@@ -119,19 +119,19 @@ describe('#1262 V2 L6d — TOUT `FlowTest` de la donnée dit ce qui se joue', ()
    *  producteur (dataset) ou l'auteur (document) a dit lui-même. */
   it('un enjeu DÉCLARÉ sur le nœud prime sur celui du porteur', () => {
     const declare = combatStakeRef('fatigue');
-    const ft = withDerivedStake({ skill: 'resistance', label: 'Résister', stake: declare }, { kind: 'condition', id: 'empoisonne' });
+    const ft = withDerivedStake({ skill: { id: 'resistance' }, label: 'Résister', stake: declare }, { kind: 'condition', id: 'empoisonne' });
     expect(ft.stake, 'la dérivation a recouvert un enjeu déclaré').toBe(declare);
 
     const authore = { authored: 'Tenir la corniche, ou tomber.' };
-    const ftA = withDerivedStake({ skill: 'escalade', stake: authore }, { kind: 'spell', id: 'chute' });
+    const ftA = withDerivedStake({ skill: { id: 'escalade' }, stake: authore }, { kind: 'spell', id: 'chute' });
     expect(ftA.stake).toBe(authore);
   });
 
   /** FAIL-CLOSED de la dérivation : sans porteur, ou avec un porteur qui ne nomme aucune fiche, on
    *  se TAIT (jamais une phrase qui nommerait un id brut ou renverrait vers un foyer mort). */
   it('sans porteur résoluble, la dérivation se tait (elle n’invente rien)', () => {
-    expect(withDerivedStake({ skill: 'resistance' }, undefined).stake).toBeUndefined();
-    expect(withDerivedStake({ skill: 'resistance' }, { kind: 'spell', id: 'sort-qui-n-existe-pas' }).stake).toBeUndefined();
+    expect(withDerivedStake({ skill: { id: 'resistance' }}, undefined).stake).toBeUndefined();
+    expect(withDerivedStake({ skill: { id: 'resistance' }}, { kind: 'spell', id: 'sort-qui-n-existe-pas' }).stake).toBeUndefined();
   });
 });
 
@@ -170,7 +170,7 @@ describe('#1262 V2 L6d — l’enjeu nomme l’entité qui EXIGE le jet, jamais 
     const src = effectSourcesOf(c, c.weapons[0]).find((s) => s.key.startsWith('weapon:'))!;
     const eff = src.effects[0];
     expect(eff.source, 'la provenance du sort est perdue en route').toEqual({ kind: 'spell', id: 'morsure-de-l-hiver' });
-    const stake = withDerivedStake({ skill: 'resistance' }, eff.source).stake!;
+    const stake = withDerivedStake({ skill: { id: 'resistance' }}, eff.source).stake!;
     const texte = resolveStake(stake).text!;
     expect(texte).toContain(findById('spells', 'morsure-de-l-hiver')!.label);
     expect(texte, 'l’enjeu nomme l’ARME : il ment sur ce qui se joue').not.toContain('Épée');
@@ -181,7 +181,7 @@ describe('#1262 V2 L6d — l’enjeu nomme l’entité qui EXIGE le jet, jamais 
     const c = porteur();
     applyOps(c, [{ op: 'augmentWeapon', onHitEffects: [testOnHit] }], { label: 'Lotus noir', source: { kind: 'trapping', id: 'lotus-noir' }, defaultDurationRounds: 4 });
     const eff = effectSourcesOf(c, c.weapons[0]).find((s) => s.key.startsWith('weapon:'))!.effects[0];
-    const texte = resolveStake(withDerivedStake({ skill: 'resistance' }, eff.source).stake!).text!;
+    const texte = resolveStake(withDerivedStake({ skill: { id: 'resistance' }}, eff.source).stake!).text!;
     expect(texte).toContain(findById('trappings', 'lotus-noir')!.label);
     expect(texte).not.toContain('Épée');
   });
@@ -191,7 +191,7 @@ describe('#1262 V2 L6d — l’enjeu nomme l’entité qui EXIGE le jet, jamais 
     const w = { label: 'Déchireur de sociabilité', trappingId: 'dechireur-de-sociabilite', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], onHitEffects: [testOnHit] } as unknown as Combatant['weapons'][number];
     const eff = effectSourcesOf(c, w).find((s) => s.key.startsWith('weapon:'))!.effects[0];
     expect(eff.source).toEqual({ kind: 'trapping', id: 'dechireur-de-sociabilite' });
-    expect(resolveStake(withDerivedStake({ skill: 'resistance' }, eff.source).stake!).text)
+    expect(resolveStake(withDerivedStake({ skill: { id: 'resistance' }}, eff.source).stake!).text)
       .toContain(findById('trappings', 'dechireur-de-sociabilite')!.label);
   });
 
@@ -203,6 +203,6 @@ describe('#1262 V2 L6d — l’enjeu nomme l’entité qui EXIGE le jet, jamais 
     const eff = effectSourcesOf(c, c.weapons[0]).find((s) => s.key.startsWith('weapon:'))!.effects[0];
     // Le dispatcher tague au porteur ce qui n'a pas de source : ici l'arme est SANS id de catalogue
     // (arme forgée pour la sonde) → aucune fiche à nommer, la dérivation rend `undefined`.
-    expect(withDerivedStake({ skill: 'resistance' }, eff.source).stake).toBeUndefined();
+    expect(withDerivedStake({ skill: { id: 'resistance' }}, eff.source).stake).toBeUndefined();
   });
 });

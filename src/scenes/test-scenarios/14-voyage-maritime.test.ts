@@ -112,7 +112,7 @@ describe('Scénario Voyage maritime — beat de Magie des mers (lancer en mer)',
     const ops = spellEffectOps(sp.effects);
     const dr = ops.find((o) => o.op === 'skillDRBonus') as { op: string; skill: string; bonus: number } | undefined;
     expect(dr).toBeTruthy();
-    expect(dr!.skill).toBe('orientation');
+    expect(dr!.skill).toEqual({ id: 'orientation' });
     expect(dr!.bonus).toBe(2);
   });
 });

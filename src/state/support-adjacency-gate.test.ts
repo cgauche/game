@@ -27,7 +27,7 @@ describe('Soutien à un Test — Augmentation + adjacence + exclusion (#467/#105
     const near = skilled('h2', { x: 6, y: 5 }); // adjacent (Chebyshev 1), 1 Augmentation
     const far = skilled('h3', { x: 20, y: 20 }); // hors de portée
     useGame.setState({ battle: battleOf([leader, near, far]), party: [leader, near, far] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.skillValue).toBe(55); // 45 + 1×10 (near seul)
   });
 
@@ -36,7 +36,7 @@ describe('Soutien à un Test — Augmentation + adjacence + exclusion (#467/#105
     const near1 = skilled('h2', { x: 6, y: 5 });
     const near2 = skilled('h3', { x: 4, y: 5 });
     useGame.setState({ battle: battleOf([leader, near1, near2]), party: [leader, near1, near2] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.skillValue).toBe(65); // 45 + 2×10
   });
 
@@ -44,7 +44,7 @@ describe('Soutien à un Test — Augmentation + adjacence + exclusion (#467/#105
     const leader = skilled('h1', { x: 5, y: 5 }, 40, 5); // base 45
     const near = skilled('h2', { x: 6, y: 5 }, 30, 0); // adjacent, 0 Augmentation
     useGame.setState({ battle: battleOf([leader, near]), party: [leader, near] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.skillValue).toBe(45); // base seule
   });
 
@@ -52,12 +52,12 @@ describe('Soutien à un Test — Augmentation + adjacence + exclusion (#467/#105
     const leader = skilled('h1', undefined, 40, 5); // base 45
     const avance = skilled('h2', undefined, 30, 1);
     useGame.setState({ battle: null, party: [leader, avance] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.skillValue).toBe(55); // 45 + 10
 
     const novice = skilled('h3', undefined, 30, 0);
     useGame.setState({ battle: null, pendingTest: null, party: [leader, novice] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.skillValue).toBe(45);
   });
 
@@ -65,7 +65,7 @@ describe('Soutien à un Test — Augmentation + adjacence + exclusion (#467/#105
     const leader = skilled('h1', { x: 5, y: 5 }, 40, 5); // base 45
     const near = skilled('h2', { x: 6, y: 5 });
     useGame.setState({ battle: battleOf([leader, near]), party: [leader, near] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0, noSupport: true }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'perception' }, requireSL: 0, noSupport: true }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.skillValue).toBe(45); // base seule, Soutien coupé à la source
   });
 });

@@ -158,7 +158,7 @@ const BASELINE: string[] = [
   "state/restFlow.ts | onFail | { rng: battleRng(), sl: row.result!.sl }", // ops d'échec d'une RANGÉE de bande de repos (#1117 L3 : le jet a quitté l'étape pour la rangée — ROTATION du MÊME callsite, la dette ne bouge pas)
   'state/seaVoyageFlow.ts | p.scaldOps | { rng: battleRng(), now: get().gameTime }', // brûlure de vapeur (scaldOps) d'une pièce de machine
   "state/seaVoyageFlow.ts | [{ op: 'grantTalent', talentId: 'chanceux' }] | { label: event.label, rng, defaultUntilTime: until }", // Talent Chanceux octroyé par un événement de bord
-  "state/seaVoyageFlow.ts | [ { op: 'skillDRBonus', skill: 'focalisation', bonus: 2 }, { op: 'skillDRBonus', skill: 'guerison', bonus: 2 }, { op: 'skillDRBonus', skill: 'resistance', bonus: 2 }, ] | { label: event.label, rng, defaultUntilTime: until }", // bonus de DR octroyés par un événement de bord
+  "state/seaVoyageFlow.ts | [ { op: 'skillDRBonus', skill: { id: 'focalisation' }, bonus: 2 }, { op: 'skillDRBonus', skill: { id: 'guerison' }, bonus: 2 }, { op: 'skillDRBonus', skill: { id: 'resistance' }, bonus: 2 }, ] | { label: event.label, rng, defaultUntilTime: until }", // bonus de DR octroyés par un événement de bord
   'state/travelFlow.ts | r.entry.occupantOps | { rng: battleRng() }', // ops subies par l'occupant d'une rencontre de voyage
   'state/travelPostes.ts | [op] | ', // Exténué du Test de résistance de traversée (État : ancré par son condId)
   // #1279 S1 — EFFETS PAR MANCHE d'une séquence : les ops viennent de la DONNÉE de l'entrée qui joue

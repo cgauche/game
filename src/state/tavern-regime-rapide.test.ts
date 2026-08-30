@@ -111,14 +111,14 @@ describe('Régime RAPIDE — la règle optionnelle, DISTINCTE de l’ouverture d
   it('active : le TEST joué suit la LETTRE — la Compétence indiquée, Pari si aucune (l.11)', () => {
     setRule(TAVERN_FAST_RULE, true);
     // « Si aucune Compétence n'est indiquée (comme pour Al-zahr), faites plutôt un Test opposé de Pari ».
-    expect(findTavernGameById('al-zahr')!.skill).toBe('pari');
+    expect(findTavernGameById('al-zahr')!.skill).toEqual({ id: 'pari' });
     // Le Bras de fer n'indique AUCUNE Compétence (l.34 nomme la Force, une Caractéristique) → Pari,
     // et sa Caractéristique ne franchit pas la projection : l'esprit de la règle n'est pas le défaut.
     const brasDeFer = findTavernGameById('bras-de-fer')!;
-    expect([brasDeFer.skill, brasDeFer.characteristic]).toEqual(['pari', undefined]);
+    expect([brasDeFer.skill, brasDeFer.characteristic]).toEqual([{ id: 'pari' }, undefined]);
     // La Compétence indiquée, elle, est jouée telle quelle — spécialisation comprise.
-    expect([findTavernGameById('cerevis')!.skill, findTavernGameById('flechettes')!.skill]).toEqual(['pari', 'projectiles']);
-    expect(findTavernGameById('flechettes')!.spec).toBe('lancer');
+    expect([findTavernGameById('cerevis')!.skill, findTavernGameById('flechettes')!.skill])
+      .toEqual([{ id: 'pari' }, { id: 'projectiles', spec: 'lancer' }]);
     // L'override MAISON vit en DONNÉE (`fastSkill`), éditable : posé, c'est lui qui joue.
     const maison = fastTavernGame({ ...findTavernGameById('bras-de-fer')!, fastSkill: { char: 'force', maison: 'lecture d’esprit de l.11' } });
     expect([maison.skill, maison.characteristic]).toEqual([null, 'force']);

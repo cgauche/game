@@ -108,7 +108,7 @@ describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 1
   it('jambe : pied (membre-inferieur-ampute) → Mouvement ÷2 + −20 Esquive ; orteil → −1 Ag/CC', () => {
     const [pied] = permanentAmputations(['membre-inferieur-ampute'], 'jambeG');
     expect(pied.ops?.some((o) => o.op === 'moveScale')).toBe(true);
-    expect(pied.ops).toContainEqual({ op: 'skillMod', skill: 'esquive', mod: -20 });
+    expect(pied.ops).toContainEqual({ op: 'skillMod', skill: { id: 'esquive' }, mod: -20 });
     const [orteil] = permanentAmputations(['orteil-ampute'], 'jambeD');
     expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -1 });
     expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-combat', mod: -1 });
@@ -136,7 +136,7 @@ describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 1
     // Le 1d10 est résolu par `resolveAmputation` depuis `amputation.unites` de la ligne : ici, 4 unités
     // arrivent à `permanentAmputations`, et seule la séquelle CUMULATIVE (dents) les reçoit.
     const s = permanentAmputations(['langue-amputee', 'dents-perdues'], 'tete', 4);
-    expect(s.find((x) => x.label === 'Langue amputée')!.ops).toContainEqual({ op: 'skillMod', skill: 'langue', mod: -100 });
+    expect(s.find((x) => x.label === 'Langue amputée')!.ops).toContainEqual({ op: 'skillMod', skill: { id: 'langue' }, mod: -100 });
     expect(s.find((x) => x.label === 'Langue amputée')!.count).toBeUndefined(); // séquelle non cumulative : aucun comptage
     const dents = s.find((x) => x.traumaId === 'dents-perdues')!;
     expect(dents.count).toBe(4);
@@ -205,7 +205,7 @@ describe('#195 — variantes d’amputation de la table JAMBE (LDB 18)', () => {
     const disable = r.traumas.find((t) => t.traumaId === 'membre-inferieur-ampute')!;
     expect(disable).toBeTruthy();
     expect(disable.ops?.some((o) => o.op === 'moveScale')).toBe(true);
-    expect(disable.ops).toContainEqual({ op: 'skillMod', skill: 'esquive', mod: -20 });
+    expect(disable.ops).toContainEqual({ op: 'skillMod', skill: { id: 'esquive' }, mod: -20 });
     expect(disable.needsSurgery).toBeFalsy(); // pas une amputation chirurgicale : membre inutilisable
     expect(r.traumas.some((t) => t.needsSurgery && t.label === 'Amputation')).toBe(false);
     expect(r.traumas.some((t) => t.label.startsWith('Déchirure'))).toBe(true); // + Déchirure musculaire (Majeur)

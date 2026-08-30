@@ -72,12 +72,12 @@ interface PsychDue { hero: Combatant; decl: PsychBandDecl; icon: string; label: 
  *  (`psychStepFor`). */
 function psychRow(hero: Combatant, kind: PsychType): BatchParticipant {
   const td = findPsychologyById(kind)?.test;
-  const skill = td?.skill ?? 'calme';
+  const skill = td?.skill ?? { id: 'calme' };
   const difficulty = td?.difficulty ?? 'intermediaire';
-  const base = skillBaseValue(hero, skill);
+  const base = skillBaseValue(hero, skill.id, skill.spec);
   return {
     id: hero.id, interactive: true, result: null,
-    label: refLabel('skills', { id: skill }), skillId: skill,
+    label: refLabel('skills', skill), skillId: skill.id,
     base, difficulty, target: base + DIFFICULTY_MODIFIERS[difficulty],
   };
 }

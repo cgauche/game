@@ -10,6 +10,7 @@
  */
 import { Flow, FlowTest, EMPTY_FLOW } from '../../state/flow';
 import type { Effect } from '../../state/scene';
+import type { SkillRef } from '../../engine/skills';
 import { Icon } from '../Icon';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
@@ -39,7 +40,7 @@ function nodeSummary(node: Flow, ctx: Ctx): string | JSX.Element {
   switch (node.kind) {
     case 'do': return <><Icon id={EFFECT_ICON[node.effect.type]} size="sm" /> {effectSummary(node.effect, ctx)}</>;
     case 'if': return <><Icon id="ui/branch" size="sm" /> Si {condSummary(node.cond)}{node.else != null ? ' · sinon…' : ''}</>;
-    case 'test': return <><Icon id="nav/dice" size="sm" /> Test {node.test.skill ? refLabel('skills', { id: node.test.skill, spec: node.test.spec }) : (node.test.characteristic || '?')} → ✓ / ✗</>;
+    case 'test': return <><Icon id="nav/dice" size="sm" /> Test {node.test.skill ? refLabel('skills', node.test.skill) : (node.test.characteristic || '?')} → ✓ / ✗</>;
     case 'choice': return <><Icon id="ui/balance" size="sm" /> Choix{node.cost ? ` (${node.cost.advantage} Av)` : ''} « {node.prompt} » → ✓ / ✗</>;
     case 'seq': return `▸ ${node.steps.length} bloc(s)`;
   }
@@ -55,7 +56,7 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
   return (
     <>
       <div className="tf-row">
-        <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="Compétence" value={test.skill ? { id: test.skill, spec: test.spec } : undefined} onChange={(v) => { const r = v as { id: string; spec?: string } | null; upd({ skill: r?.id || undefined, spec: r?.spec || undefined }); }} nullable />
+        <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="Compétence" value={test.skill} onChange={(v) => upd({ skill: (v as SkillRef | null) ?? undefined })} nullable />
         <select value={test.difficulty ?? 'intermediaire'} onChange={(e) => upd({ difficulty: e.target.value as Difficulty })}>
           {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((d) => (
             <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>
@@ -83,7 +84,7 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
           />
         )}
       </div>
-      {isSocialTest(test.skill, test.characteristic) && (
+      {isSocialTest(test.skill?.id, test.characteristic) && (
         <div className="tf-row">
           <input
             placeholder="Interlocuteur — groupes (Sociabilité : Animosité/Préjugé −20/−10, ex. « Elfe, Mort-vivant »)"
@@ -150,7 +151,7 @@ function FlowAddMenu({ onAdd }: { onAdd: (node: Flow) => void }) {
             {
               key: 'test',
               label: <><Icon id="nav/dice" size="sm" /> Test de compétence</>,
-              onPick: () => onAdd({ kind: 'test', test: { skill: '', difficulty: 'intermediaire', requireSL: 0 }, success: EMPTY_FLOW, fail: EMPTY_FLOW }),
+              onPick: () => onAdd({ kind: 'test', test: { skill: { id: '' }, difficulty: 'intermediaire', requireSL: 0 }, success: EMPTY_FLOW, fail: EMPTY_FLOW }),
             },
           ],
         },

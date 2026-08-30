@@ -13,7 +13,9 @@
       },
       {
         "op": "skillMod",
-        "skill": "esquive",
+        "skill": {
+          "id": "esquive"
+        },
         "mod": -10
       }
     ],
@@ -38,7 +40,9 @@
       },
       {
         "op": "skillMod",
-        "skill": "esquive",
+        "skill": {
+          "id": "esquive"
+        },
         "mod": -20
       }
     ],
@@ -149,7 +153,9 @@
       },
       {
         "op": "skillMod",
-        "skill": "esquive",
+        "skill": {
+          "id": "esquive"
+        },
         "mod": -20
       }
     ],
@@ -174,7 +180,9 @@
       },
       {
         "op": "skillMod",
-        "skill": "esquive",
+        "skill": {
+          "id": "esquive"
+        },
         "mod": -20
       }
     ],
@@ -314,7 +322,9 @@
       },
       {
         "op": "skillMod",
-        "skill": "esquive",
+        "skill": {
+          "id": "esquive"
+        },
         "mod": -20
       }
     ],
@@ -409,7 +419,9 @@
     "ops": [
       {
         "op": "skillMod",
-        "skill": "langue",
+        "skill": {
+          "id": "langue"
+        },
         "mod": -100
       }
     ],
@@ -598,12 +610,16 @@
       },
       {
         "op": "skillMod",
-        "skill": "esquive",
+        "skill": {
+          "id": "esquive"
+        },
         "mod": -30
       },
       {
         "op": "skillMod",
-        "skill": "chevaucher",
+        "skill": {
+          "id": "chevaucher"
+        },
         "mod": -30
       }
     ],
@@ -622,7 +638,9 @@
     "ops": [
       {
         "op": "skillMod",
-        "skill": "perception",
+        "skill": {
+          "id": "perception"
+        },
         "mod": -20,
         "sense": "ouie"
       }
@@ -642,7 +660,9 @@
     "ops": [
       {
         "op": "skillMod",
-        "skill": "perception",
+        "skill": {
+          "id": "perception"
+        },
         "mod": -20,
         "sense": "ouie"
       }
@@ -663,7 +683,9 @@
     "ops": [
       {
         "op": "skillDRBonus",
-        "skill": "intimidation",
+        "skill": {
+          "id": "intimidation"
+        },
         "bonus": 1
       }
     ],
@@ -685,12 +707,16 @@
     "ops": [
       {
         "op": "skillDRBonus",
-        "skill": "intimidation",
+        "skill": {
+          "id": "intimidation"
+        },
         "bonus": 1
       },
       {
         "op": "skillDRBonus",
-        "skill": "charme",
+        "skill": {
+          "id": "charme"
+        },
         "bonus": -1
       }
     ],

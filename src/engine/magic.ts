@@ -39,7 +39,7 @@ import { effectiveCastingNumber } from './castingNumber';
 import type { CastingNumberMod, CastingNumberSubject } from './castingNumber';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
-import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty, DIFFICULTY_MODIFIERS, type ItemInstance } from './types';
+import { ALL_MAGIC, Combatant, HitLocation, Difficulty, CharKey, CastPenalty, DIFFICULTY_MODIFIERS, type ItemInstance } from './types';
 import { traitById, talentIdByLabel, findTalentById, findDomainById, findGodById, findTrappingById, type TestMatch } from '../data';
 import { effectiveTalents, talentPassiveMods } from './talentEffects';
 import { effectiveEntry } from './variants';
@@ -115,7 +115,7 @@ export function isArcaneSpell(spell: SpellLike): boolean {
 
 /** La pénalité `p` vise-t-elle la compétence de magie `skill` (id stable) ? */
 function penaltyMatches(p: { skill: string }, skill: 'priere' | 'langue' | 'focalisation'): boolean {
-  return p.skill === 'all' || p.skill === skill;
+  return p.skill === ALL_MAGIC || p.skill === skill;
 }
 
 /** `castPenalty` PASSIF (interdiction PERMANENTE, MDG 07 l.250 : « ne peut jamais utiliser les
@@ -134,7 +134,7 @@ function passiveCastPenalties(c: Combatant): CastPenalty[] {
   for (const { label, ops } of sources) {
     for (const op of ops) {
       if (op.op !== 'castPenalty') continue;
-      out.push({ label, skill: op.skill, ...(op.mod != null ? { mod: op.mod } : {}), ...(op.blocked ? { blocked: true } : {}), ...(op.maxZeroDR ? { maxZeroDR: true } : {}) });
+      out.push({ label, skill: op.skill?.id ?? ALL_MAGIC, ...(op.mod != null ? { mod: op.mod } : {}), ...(op.blocked ? { blocked: true } : {}), ...(op.maxZeroDR ? { maxZeroDR: true } : {}) });
     }
   }
   return out;
@@ -337,8 +337,8 @@ function matchApplies(
 ): boolean {
   if (m.manual) return false;
   if (m.skill != null) {
-    if (m.skill !== q.skill) return false;
-    const wantSpec = m.specFromInstance ? inst.spec : m.spec;
+    if (m.skill.id !== q.skill) return false;
+    const wantSpec = m.specFromInstance ? inst.spec : m.skill.spec;
     if (wantSpec != null && wantSpec !== q.spec) return false;
     if (m.exceptSpec != null && m.exceptSpec === q.spec) return false; // Linguistique : toute Langue SAUF Magick
   } else if (m.char != null) {

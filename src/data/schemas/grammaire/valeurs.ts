@@ -1,11 +1,12 @@
 /**
  * VALEURS de la grammaire de document (#1466 L1a) — les types de VALEUR partagés par tout document
  * de l'application : source, dés, formule, difficulté, caractéristique, localisation, apparence,
- * variante réglée, recette de détail. Aucune dépendance à la RÉFÉRENCE ni à la MÉCANIQUE : ce
- * fichier est la feuille du graphe de la grammaire.
+ * variante réglée, recette de détail. Aucune dépendance à la MÉCANIQUE : sous la grammaire, ce
+ * fichier ne compose que la RÉFÉRENCE (`refOuSpec`).
  */
 import { z } from 'zod';
 import { AVAILABILITIES, STAKE_FORMS } from '../../../engine/types';
+import { refOuSpec } from './ref';
 
 /**
  * Disponibilité (`Availability`, `src/engine/types.ts`) — le schéma DÉRIVE du tuple canon au lieu de
@@ -127,7 +128,7 @@ export const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
     focusNoMiscastOnDouble: z.boolean().optional(),
     castNoMiscastOnDouble: z.boolean().optional(),
     causesFear: z.boolean().optional(),
-    reverseFailed: z.strictObject({ skill: z.union([z.string(), z.array(z.string())]), spec: z.string().optional(), capDR: z.number().optional() }).optional(),
+    reverseFailed: z.strictObject({ skill: z.union([refOuSpec('skill'), z.array(refOuSpec('skill'))]), capDR: z.number().optional() }).optional(),
     bargainBonus: z.boolean().optional(),
     encumbranceBonus: z.boolean().optional(),
     corruptionThreshold: z.boolean().optional(),
@@ -412,3 +413,22 @@ export const formulaSchema: z.ZodType<unknown> = z.lazy(() =>
     z.strictObject({ times: z.strictObject({ of: formulaSchema, factor: formulaSchema }) }),
   ]),
 );
+
+/** Compétences du Test d'Exposition à une Influence corruptrice — alphabet FERMÉ (`LDB 19 l.23-75`).
+ *  SOURCE UNIQUE : les deux portes `corruptionExposure.skill` (op `GameOp`, effet de scène), le
+ *  sélecteur de l'atelier (`ui/editor/GameOpEditor.tsx`) et la couture du slot
+ *  (`state/corruptionFlow.ts`) en dérivent — jamais une deuxième liste. */
+export const TESTS_DE_CORRUPTION = ['resistance', 'calme'] as const;
+export type TestDeCorruption = (typeof TESTS_DE_CORRUPTION)[number];
+
+/** Référence de Compétence BORNÉE à `TESTS_DE_CORRUPTION` : porte UNIQUE des deux slots
+ *  `corruptionExposure.skill`. Sans elle, toute Compétence passe la porte et le runtime la rabote
+ *  en silence — la donnée mentirait sur le Test réellement joué. Forme ENUM (patron `charKeySchema`) :
+ *  l'alphabet TYPE l'id, il ne le branche pas ; les deux Compétences n'étant pas spécialisables,
+ *  aucun régime `spec`/`choix` n'a de sens ici — d'où la réf nue plutôt que `refOuSpec('skill')`. */
+export const refTestDeCorruption = z.strictObject({
+  id: z.enum(TESTS_DE_CORRUPTION, {
+    error: (iss) =>
+      `corruptionExposure.skill : « ${String(iss.input)} » hors des deux Compétences admises — Résistance (« resistance ») ou Calme (« calme ») (LDB 19 l.23-75).`,
+  }),
+});

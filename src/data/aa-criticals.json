@@ -1560,7 +1560,9 @@
       "trivial": true,
       "resist": {
         "difficulty": "intermediaire",
-        "skill": "athletisme",
+        "skill": {
+          "id": "athletisme"
+        },
         "onFail": [
           {
             "op": "condition",

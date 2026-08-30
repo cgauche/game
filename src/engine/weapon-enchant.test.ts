@@ -100,7 +100,7 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     // victime n'est pas du Groupe) est couverte par `venin-test.test.ts` (même `resolveFlowTest`).
     const justiceTest: Flow = {
       kind: 'test',
-      test: { skill: 'resistance', difficulty: 'accessible', onlyGroups: ['Criminel'] },
+      test: { skill: { id: 'resistance' }, difficulty: 'accessible', onlyGroups: ['Criminel'] },
       success: { kind: 'seq', steps: [] },
       fail: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'inconscient' }] } },
     };
@@ -112,7 +112,7 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     const node = c.weapons[0].onHitEffects![0].flow;
     expect(node.kind).toBe('test');
     if (node.kind === 'test') {
-      expect(node.test.skill).toBe('resistance');
+      expect(node.test.skill).toEqual({ id: 'resistance' });
       expect(node.test.onlyGroups).toEqual(['Criminel']); // gate porté par le FlowTest
     }
     endOfRound(c); endOfRound(c); endOfRound(c); endOfRound(c);

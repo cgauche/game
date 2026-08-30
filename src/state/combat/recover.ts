@@ -49,9 +49,9 @@ export function resolveRecoverTest(
 ): RecoverResolution | null {
   const rec = findConditionById(state)?.recover;
   if (!rec) return null;
-  const skillValue = testValue(actor, rec.skill, rec.characteristic);
-  const skillBase = skillBaseValue(actor, rec.skill, undefined, rec.characteristic);
-  const skillLabel = rec.skill ? refLabel('skills', { id: rec.skill }) : (rec.characteristic ? CHAR_LABELS[rec.characteristic] : 'Test');
+  const skillValue = testValue(actor, rec.skill?.id, rec.characteristic, rec.skill?.spec);
+  const skillBase = skillBaseValue(actor, rec.skill?.id, rec.skill?.spec, rec.characteristic);
+  const skillLabel = rec.skill ? refLabel('skills', rec.skill) : (rec.characteristic ? CHAR_LABELS[rec.characteristic] : 'Test');
   let opposed = false, opponentValue: number | undefined, opponentBase: number | undefined;
   let opponentName: string | undefined, requireSl: number | undefined;
   let entangleOnFail: boolean | undefined, struggleDamage: number | undefined;

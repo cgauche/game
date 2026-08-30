@@ -129,13 +129,19 @@ export function typedRef(types: readonly TypeEntite[] = Object.keys(TYPES) as Ty
  * spécialisable (`estSpecialisable`, `LDB 09 l.36-40`) ; `spec`/`choix` sont ensuite validés contre le
  * catalogue de l'entrée quand le type ferme ses spécialisations.
  */
+/** FORME de sortie d'un nœud de référence à spécialisation — DÉCLARÉE (et non inferée) : les `extra`
+ *  du porteur n'y figurent pas, un site qui les lit redéclare son type (patron `AxesData`,
+ *  `schemas/defs/axes.ts`). Sans cette déclaration, tout schéma RÉCURSIF annoté qui compose une réf
+ *  (`flowSchema: ZodType<Flow<EffectOp>>`) perdrait sa forme et cesserait de typer son arbre. */
+export interface RefASpecialisation { id: string; spec?: string; choix?: true | string[] }
+
 /** Nœud `{ id, spec?, choix?, …extra }` + validation de la spécialisation. `exigeUnRegime` : `true`
  *  = `spec` XOR `choix` obligatoire (`specRef`), `false` = les deux peuvent manquer (`refOuSpec`). */
 function noeudASpecialisation<T extends TypeEntite>(
   type: T,
   extra: Record<string, z.ZodTypeAny> | undefined,
   exigeUnRegime: boolean,
-): z.ZodType<unknown> {
+): z.ZodType<RefASpecialisation> {
   const dataset = cibleDe(type);
   const ouvert = TYPES[type].specsOpen;
   return z
@@ -208,7 +214,7 @@ export function specRef<T extends TypeEntite, E extends Record<string, z.ZodType
 export function refOuSpec<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
   type: T,
   extra?: E,
-): z.ZodType<unknown> {
+): z.ZodType<RefASpecialisation> {
   return noeudASpecialisation(type, extra, false);
 }
 

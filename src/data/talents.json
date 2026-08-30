@@ -23,12 +23,16 @@
       "raw": "Tests d'Esquive à cheval, Chevaucher (Cheval)",
       "matches": [
         {
-          "skill": "esquive",
+          "skill": {
+            "id": "esquive"
+          },
           "manual": true
         },
         {
-          "skill": "chevaucher",
-          "spec": "cheval"
+          "skill": {
+            "id": "chevaucher",
+            "spec": "cheval"
+          }
         }
       ]
     },
@@ -72,7 +76,9 @@
       "raw": "Emprise sur les animaux",
       "matches": [
         {
-          "skill": "emprise-sur-les-animaux"
+          "skill": {
+            "id": "emprise-sur-les-animaux"
+          }
         }
       ]
     },
@@ -169,7 +175,9 @@
       "raw": "Art (Au choix)",
       "matches": [
         {
-          "skill": "art",
+          "skill": {
+            "id": "art"
+          },
           "specFromInstance": true
         }
       ]
@@ -243,7 +251,9 @@
       "raw": "Corps à corps quand vous effectuez des attaques supplémentaires",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -304,7 +314,9 @@
       "raw": "Test de Charme pour influencer ceux qui vous trouvent attirant.",
       "matches": [
         {
-          "skill": "charme",
+          "skill": {
+            "id": "charme"
+          },
           "manual": true
         }
       ]
@@ -328,7 +340,9 @@
       "raw": "Charme pour Baratiner",
       "matches": [
         {
-          "skill": "charme",
+          "skill": {
+            "id": "charme"
+          },
           "manual": true
         }
       ]
@@ -355,7 +369,9 @@
       "raw": "Corps à corps pour effectuer une manœuvre de Battement",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -424,7 +440,9 @@
       "raw": "Tests d'Athlétisme pour traverser le Terrain",
       "matches": [
         {
-          "skill": "athletisme",
+          "skill": {
+            "id": "athletisme"
+          },
           "manual": true
         }
       ]
@@ -474,7 +492,9 @@
       "raw": "Athlétisme (Saut)",
       "matches": [
         {
-          "skill": "athletisme",
+          "skill": {
+            "id": "athletisme"
+          },
           "manual": true
         }
       ]
@@ -498,7 +518,9 @@
       "raw": "Tests de Métier pour réparer des objets cassés",
       "matches": [
         {
-          "skill": "metier",
+          "skill": {
+            "id": "metier"
+          },
           "manual": true
         }
       ]
@@ -522,7 +544,9 @@
       "raw": "Tests de Résistance pour résister à la faim",
       "matches": [
         {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "manual": true
         }
       ]
@@ -560,8 +584,10 @@
       "raw": "Chevaucher (Cheval) pendant les combats",
       "matches": [
         {
-          "skill": "chevaucher",
-          "spec": "cheval",
+          "skill": {
+            "id": "chevaucher",
+            "spec": "cheval"
+          },
           "when": {
             "kind": "engaged"
           }
@@ -584,7 +610,9 @@
           "raw": "Chevaucher pendant les combats",
           "matches": [
             {
-              "skill": "chevaucher",
+              "skill": {
+                "id": "chevaucher"
+              },
               "when": {
                 "kind": "engaged"
               }
@@ -636,7 +664,9 @@
       "raw": "Corps à corps sur un Round lorsque vous effectuez une Charge berserk",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -672,8 +702,10 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": "discretion",
-        "spec": "urbaine"
+        "skill": {
+          "id": "discretion",
+          "spec": "urbaine"
+        }
       }
     }
   },
@@ -688,7 +720,9 @@
       "raw": "Tests de Guérison en dehors des Rounds de combat ; quand vous avez le temps de le faire correctement.",
       "matches": [
         {
-          "skill": "guerison",
+          "skill": {
+            "id": "guerison"
+          },
           "manual": true
         }
       ]
@@ -715,7 +749,9 @@
       "raw": "Tests de Conduite d'attelage ou de Chevaucher quand vous Fuyez ou lors d'une Course.",
       "matches": [
         {
-          "skill": "conduite-d-attelage",
+          "skill": {
+            "id": "conduite-d-attelage"
+          },
           "manual": true
         }
       ]
@@ -739,7 +775,9 @@
       "raw": "Tests de Calme pour retirer les États Brisé",
       "matches": [
         {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "manual": true
         }
       ]
@@ -766,8 +804,10 @@
       "raw": "Corps à corps (Bagarre)",
       "matches": [
         {
-          "skill": "corps-a-corps",
-          "spec": "bagarre"
+          "skill": {
+            "id": "corps-a-corps",
+            "spec": "bagarre"
+          }
         }
       ]
     },
@@ -812,7 +852,9 @@
       "raw": "Corps à corps quand vous combattez au contact ou que vous allez au contact",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -836,7 +878,9 @@
       "raw": "Esquive dans des environnements clos",
       "matches": [
         {
-          "skill": "esquive",
+          "skill": {
+            "id": "esquive"
+          },
           "manual": true
         }
       ]
@@ -860,8 +904,10 @@
       "raw": "Savoir (Apothicaire)",
       "matches": [
         {
-          "skill": "savoir",
-          "spec": "Apothicaire"
+          "skill": {
+            "id": "savoir",
+            "spec": "Apothicaire"
+          }
         }
       ]
     },
@@ -886,12 +932,16 @@
           "raw": "Métier (Apothicaire) ou Métier (Alchimiste)",
           "matches": [
             {
-              "skill": "metier",
-              "spec": "apothicaire"
+              "skill": {
+                "id": "metier",
+                "spec": "apothicaire"
+              }
             },
             {
-              "skill": "metier",
-              "spec": "alchimiste"
+              "skill": {
+                "id": "metier",
+                "spec": "alchimiste"
+              }
             }
           ]
         }
@@ -909,7 +959,9 @@
       "raw": "Représentation et Agilité quand vous vous aidez de Contorsionniste",
       "matches": [
         {
-          "skill": "representation",
+          "skill": {
+            "id": "representation"
+          },
           "manual": true
         },
         {
@@ -937,7 +989,9 @@
       "raw": "Tests de Corps à corps quand vous êtes en Frénésie",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -957,7 +1011,9 @@
         "flow": {
           "kind": "test",
           "test": {
-            "skill": "calme",
+            "skill": {
+              "id": "calme"
+            },
             "difficulty": "intermediaire",
             "label": "Contrôle de la Frénésie",
             "gate": {
@@ -1025,7 +1081,9 @@
       "raw": "Projectiles pour les tirs avec une arme dotée du Défaut Arme d'équipe",
       "matches": [
         {
-          "skill": "projectiles",
+          "skill": {
+            "id": "projectiles"
+          },
           "manual": true
         }
       ]
@@ -1076,7 +1134,9 @@
       "raw": "Corps à corps quand vous vous trouvez à côté d'un allié avec Coude-à-coude",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -1149,7 +1209,9 @@
       "raw": "Tests de Corps à corps concernant ce Talent",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -1187,7 +1249,9 @@
       "raw": "Tests d'Intuition pour détecter des artefacts magiques",
       "matches": [
         {
-          "skill": "intuition",
+          "skill": {
+            "id": "intuition"
+          },
           "manual": true
         }
       ]
@@ -1230,8 +1294,10 @@
       "raw": "Langue (Magick) quand vous faites une Incantation",
       "matches": [
         {
-          "skill": "langue",
-          "spec": "magick"
+          "skill": {
+            "id": "langue",
+            "spec": "magick"
+          }
         }
       ]
     },
@@ -1279,7 +1345,9 @@
       "raw": "Athlétisme pour Distraire",
       "matches": [
         {
-          "skill": "athletisme",
+          "skill": {
+            "id": "athletisme"
+          },
           "manual": true
         }
       ]
@@ -1366,10 +1434,14 @@
       "raw": "Évaluation, Pari",
       "matches": [
         {
-          "skill": "evaluation"
+          "skill": {
+            "id": "evaluation"
+          }
         },
         {
-          "skill": "pari"
+          "skill": {
+            "id": "pari"
+          }
         }
       ]
     },
@@ -1417,7 +1489,9 @@
       "raw": "Corps à corps quand vous forcez ou brisez des objets inanimés",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -1495,7 +1569,9 @@
       "raw": "Voir ci-dessous.",
       "matches": [
         {
-          "skill": "perception"
+          "skill": {
+            "id": "perception"
+          }
         }
       ]
     },
@@ -1517,7 +1593,9 @@
       "raw": "Tout Test faisant appel à Discrétion",
       "matches": [
         {
-          "skill": "discretion"
+          "skill": {
+            "id": "discretion"
+          }
         }
       ]
     },
@@ -1546,7 +1624,9 @@
       "raw": "Voir ci-dessous.",
       "matches": [
         {
-          "skill": "evaluation"
+          "skill": {
+            "id": "evaluation"
+          }
         }
       ]
     },
@@ -1568,11 +1648,15 @@
       "raw": "Voir ci-dessous.",
       "matches": [
         {
-          "skill": "emprise-sur-les-animaux"
+          "skill": {
+            "id": "emprise-sur-les-animaux"
+          }
         },
         {
-          "skill": "savoir",
-          "spec": "betes-sauvages"
+          "skill": {
+            "id": "savoir",
+            "spec": "betes-sauvages"
+          }
         }
       ]
     },
@@ -1594,19 +1678,27 @@
       "raw": "Voir ci-dessous.",
       "matches": [
         {
-          "skill": "savoir",
-          "spec": "herbes"
+          "skill": {
+            "id": "savoir",
+            "spec": "herbes"
+          }
         },
         {
-          "skill": "savoir",
-          "spec": "plantes"
+          "skill": {
+            "id": "savoir",
+            "spec": "plantes"
+          }
         },
         {
-          "skill": "soin-aux-animaux"
+          "skill": {
+            "id": "soin-aux-animaux"
+          }
         },
         {
-          "skill": "savoir",
-          "spec": "animaux"
+          "skill": {
+            "id": "savoir",
+            "spec": "animaux"
+          }
         }
       ]
     },
@@ -1628,7 +1720,9 @@
       "raw": "Voir ci-dessous.",
       "matches": [
         {
-          "skill": "recherche"
+          "skill": {
+            "id": "recherche"
+          }
         }
       ]
     },
@@ -1650,7 +1744,9 @@
       "raw": "Voir ci-dessous.",
       "matches": [
         {
-          "skill": "intimidation"
+          "skill": {
+            "id": "intimidation"
+          }
         }
       ]
     },
@@ -1690,7 +1786,9 @@
       "raw": "Tests de Charme quand vous argumentez ou débattez",
       "matches": [
         {
-          "skill": "charme",
+          "skill": {
+            "id": "charme"
+          },
           "manual": true
         }
       ]
@@ -1738,7 +1836,9 @@
       "raw": "Commandement pendant la guerre",
       "matches": [
         {
-          "skill": "commandement",
+          "skill": {
+            "id": "commandement"
+          },
           "manual": true
         }
       ]
@@ -1762,8 +1862,10 @@
       "raw": "Charme (Mendicité)",
       "matches": [
         {
-          "skill": "charme",
-          "spec": "Mendicité"
+          "skill": {
+            "id": "charme"
+          },
+          "manual": true
         }
       ]
     },
@@ -1786,8 +1888,10 @@
       "raw": "Corps à corps (Escrime) pour les Feintes",
       "matches": [
         {
-          "skill": "corps-a-corps",
-          "spec": "escrime",
+          "skill": {
+            "id": "corps-a-corps",
+            "spec": "escrime"
+          },
           "manual": true
         }
       ]
@@ -1811,7 +1915,9 @@
       "raw": "Charme quand vous parlez pour défendre votre cause",
       "matches": [
         {
-          "skill": "charme",
+          "skill": {
+            "id": "charme"
+          },
           "manual": true
         }
       ]
@@ -1879,7 +1985,9 @@
       "raw": "Tests de Corps à corps lorsque vous effectuez une Frappe assommante",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -2038,7 +2146,9 @@
       "raw": "Athlétisme quand vous Fuyez",
       "matches": [
         {
-          "skill": "athletisme",
+          "skill": {
+            "id": "athletisme"
+          },
           "manual": true
         }
       ]
@@ -2062,7 +2172,9 @@
           "raw": "Athlétisme quand vous Fuyez ou quand vous êtes la Cible d'une Poursuite",
           "matches": [
             {
-              "skill": "athletisme",
+              "skill": {
+                "id": "athletisme"
+              },
               "manual": true
             }
           ]
@@ -2090,7 +2202,9 @@
       "raw": "Charme (Foule)",
       "matches": [
         {
-          "skill": "charme",
+          "skill": {
+            "id": "charme"
+          },
           "manual": true
         }
       ]
@@ -2114,7 +2228,9 @@
       "raw": "Escalade",
       "matches": [
         {
-          "skill": "escalade"
+          "skill": {
+            "id": "escalade"
+          }
         }
       ]
     },
@@ -2158,7 +2274,9 @@
       "raw": "N'importe quel Test de Savoir concernant les questions fluviales",
       "matches": [
         {
-          "skill": "savoir",
+          "skill": {
+            "id": "savoir"
+          },
           "manual": true
         }
       ]
@@ -2268,7 +2386,9 @@
       "raw": "Focalisation (Au choix)",
       "matches": [
         {
-          "skill": "focalisation"
+          "skill": {
+            "id": "focalisation"
+          }
         }
       ]
     },
@@ -2294,8 +2414,10 @@
       "raw": "Tests de Divertissement (Interprétation) pour appuyer vos identités secrètes",
       "matches": [
         {
-          "skill": "divertissement",
-          "spec": "interpretation",
+          "skill": {
+            "id": "divertissement",
+            "spec": "interpretation"
+          },
           "manual": true
         }
       ]
@@ -2319,8 +2441,10 @@
       "raw": "Tests de Divertissement (Interprétation) où les accents sont importants",
       "matches": [
         {
-          "skill": "divertissement",
-          "spec": "interpretation",
+          "skill": {
+            "id": "divertissement",
+            "spec": "interpretation"
+          },
           "manual": true
         }
       ]
@@ -2403,7 +2527,9 @@
       "raw": "Tests de Calme pour résister à la panique de la Poudre noire",
       "matches": [
         {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "manual": true
         }
       ]
@@ -2427,10 +2553,14 @@
       "raw": "Ramer et Natation",
       "matches": [
         {
-          "skill": "ramer"
+          "skill": {
+            "id": "ramer"
+          }
         },
         {
-          "skill": "natation"
+          "skill": {
+            "id": "natation"
+          }
         }
       ]
     },
@@ -2453,7 +2583,9 @@
       "raw": "Discrétion quand vous êtes à la vue de tous",
       "matches": [
         {
-          "skill": "discretion",
+          "skill": {
+            "id": "discretion"
+          },
           "manual": true
         }
       ]
@@ -2527,7 +2659,9 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": "recherche"
+        "skill": {
+          "id": "recherche"
+        }
       }
     }
   },
@@ -2542,7 +2676,9 @@
       "raw": "Langue (toutes)",
       "matches": [
         {
-          "skill": "langue",
+          "skill": {
+            "id": "langue"
+          },
           "exceptSpec": "magick"
         }
       ]
@@ -2580,7 +2716,9 @@
       "raw": "Tests de Perception pour tout ce qui concerne ce Talent",
       "matches": [
         {
-          "skill": "perception",
+          "skill": {
+            "id": "perception"
+          },
           "manual": true
         }
       ]
@@ -2604,7 +2742,9 @@
       "raw": "Voile (tout vaisseau capable de naviguer en mer)",
       "matches": [
         {
-          "skill": "voile",
+          "skill": {
+            "id": "voile"
+          },
           "manual": true
         }
       ]
@@ -2628,7 +2768,9 @@
       "raw": "Tests de Résistance pour résister à l'État Sonné",
       "matches": [
         {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "manual": true
         }
       ]
@@ -2648,7 +2790,9 @@
         "flow": {
           "kind": "test",
           "test": {
-            "skill": "resistance",
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -2769,11 +2913,15 @@
       "raw": "Escamotage, Corps à corps (Bagarre) pour toucher un adversaire",
       "matches": [
         {
-          "skill": "escamotage"
+          "skill": {
+            "id": "escamotage"
+          }
         },
         {
-          "skill": "corps-a-corps",
-          "spec": "bagarre",
+          "skill": {
+            "id": "corps-a-corps",
+            "spec": "bagarre"
+          },
           "manual": true
         }
       ]
@@ -2797,7 +2945,9 @@
       "raw": "Métier (Au choix)",
       "matches": [
         {
-          "skill": "metier",
+          "skill": {
+            "id": "metier"
+          },
           "specFromInstance": true
         }
       ]
@@ -3012,8 +3162,10 @@
       "raw": "Divertissement (Interprétation) lorsque vous êtes quelqu'un d'autre",
       "matches": [
         {
-          "skill": "divertissement",
-          "spec": "interpretation",
+          "skill": {
+            "id": "divertissement",
+            "spec": "interpretation"
+          },
           "manual": true
         }
       ]
@@ -3037,11 +3189,15 @@
       "raw": "Pari et Escamotage quand vous jouez à un jeu de dés",
       "matches": [
         {
-          "skill": "pari",
+          "skill": {
+            "id": "pari"
+          },
           "manual": true
         },
         {
-          "skill": "escamotage",
+          "skill": {
+            "id": "escamotage"
+          },
           "manual": true
         }
       ]
@@ -3084,11 +3240,15 @@
       "raw": "Corps à corps ou Projectiles si vous attaquez avec deux armes",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         },
         {
-          "skill": "projectiles",
+          "skill": {
+            "id": "projectiles"
+          },
           "manual": true
         }
       ]
@@ -3117,7 +3277,9 @@
       "raw": "Tests de Voile pour les navires fluviaux.",
       "matches": [
         {
-          "skill": "voile",
+          "skill": {
+            "id": "voile"
+          },
           "manual": true
         }
       ]
@@ -3141,7 +3303,9 @@
       "raw": "Intimidation",
       "matches": [
         {
-          "skill": "intimidation"
+          "skill": {
+            "id": "intimidation"
+          }
         }
       ]
     },
@@ -3164,7 +3328,9 @@
       "raw": "Charme quand vous mentez",
       "matches": [
         {
-          "skill": "charme",
+          "skill": {
+            "id": "charme"
+          },
           "manual": true
         }
       ]
@@ -3188,7 +3354,9 @@
       "raw": "Natation",
       "matches": [
         {
-          "skill": "natation"
+          "skill": {
+            "id": "natation"
+          }
         }
       ]
     },
@@ -3225,7 +3393,9 @@
       "raw": "Marchandage",
       "matches": [
         {
-          "skill": "marchandage"
+          "skill": {
+            "id": "marchandage"
+          }
         }
       ]
     },
@@ -3277,7 +3447,9 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": "resistance-a-l-alcool"
+        "skill": {
+          "id": "resistance-a-l-alcool"
+        }
       }
     }
   },
@@ -3292,7 +3464,9 @@
       "raw": "Tests de Discrétion en environnement Rural",
       "matches": [
         {
-          "skill": "discretion",
+          "skill": {
+            "id": "discretion"
+          },
           "manual": true
         }
       ]
@@ -3316,7 +3490,9 @@
       "raw": "Évaluation pour établir la valeur de pièces",
       "matches": [
         {
-          "skill": "evaluation",
+          "skill": {
+            "id": "evaluation"
+          },
           "manual": true
         }
       ]
@@ -3398,11 +3574,15 @@
       "raw": "Divertissement (Chant), Langue (Langues tonales, telles que l'elthárin, le cathayan, le Magick)",
       "matches": [
         {
-          "skill": "divertissement",
-          "spec": "chant"
+          "skill": {
+            "id": "divertissement",
+            "spec": "chant"
+          }
         },
         {
-          "skill": "langue",
+          "skill": {
+            "id": "langue"
+          },
           "manual": true
         }
       ]
@@ -3444,7 +3624,9 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": "guerison",
+        "skill": {
+          "id": "guerison"
+        },
         "capDR": 1
       }
     }
@@ -3460,7 +3642,9 @@
       "raw": "Tests d'Esquive pour activer ce Talent",
       "matches": [
         {
-          "skill": "esquive",
+          "skill": {
+            "id": "esquive"
+          },
           "manual": true
         }
       ]
@@ -3503,7 +3687,9 @@
       "raw": "Tests d'Intuition pour détecter les Sorciers",
       "matches": [
         {
-          "skill": "intuition",
+          "skill": {
+            "id": "intuition"
+          },
           "manual": true
         }
       ]
@@ -3527,7 +3713,9 @@
       "raw": "Tests de Résistance pour supporter les difficultés",
       "matches": [
         {
-          "skill": "resistance",
+          "skill": {
+            "id": "resistance"
+          },
           "manual": true
         }
       ]
@@ -3596,8 +3784,10 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": "metier",
-        "spec": "apothicaire"
+        "skill": {
+          "id": "metier",
+          "spec": "apothicaire"
+        }
       }
     }
   },
@@ -3631,11 +3821,15 @@
       "raw": "Tests de Ramer ou de Voile pendant que vous naviguez sur des eaux peu sûres",
       "matches": [
         {
-          "skill": "ramer",
+          "skill": {
+            "id": "ramer"
+          },
           "manual": true
         },
         {
-          "skill": "voile",
+          "skill": {
+            "id": "voile"
+          },
           "manual": true
         }
       ]
@@ -3650,8 +3844,12 @@
     "combat": {
       "reverseFailed": {
         "skill": [
-          "ramer",
-          "voile"
+          {
+            "id": "ramer"
+          },
+          {
+            "id": "voile"
+          }
         ],
         "capDR": 1
       }
@@ -3708,7 +3906,9 @@
       "raw": "Commandement",
       "matches": [
         {
-          "skill": "commandement"
+          "skill": {
+            "id": "commandement"
+          }
         }
       ]
     },
@@ -3747,7 +3947,9 @@
       "raw": "Tests de Discrétion dans les souterrains",
       "matches": [
         {
-          "skill": "discretion",
+          "skill": {
+            "id": "discretion"
+          },
           "manual": true
         }
       ]
@@ -3827,7 +4029,9 @@
       "raw": "Corps à corps quand vous vous défendez",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -3940,7 +4144,9 @@
       "raw": "Corps à corps quand vous vous défendez",
       "matches": [
         {
-          "skill": "corps-a-corps",
+          "skill": {
+            "id": "corps-a-corps"
+          },
           "manual": true
         }
       ]
@@ -3987,7 +4193,9 @@
       "raw": "Calme pour vous opposer à l'Intimidation, la Peur et la Terreur de votre Ennemi",
       "matches": [
         {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "manual": true
         }
       ]
@@ -4110,7 +4318,9 @@
       "raw": "Savoir (Savoir choisi)",
       "matches": [
         {
-          "skill": "savoir",
+          "skill": {
+            "id": "savoir"
+          },
           "specFromInstance": true
         }
       ]
@@ -4348,11 +4558,15 @@
       "raw": "Charme et Ragot (Groupe Social)",
       "matches": [
         {
-          "skill": "charme",
+          "skill": {
+            "id": "charme"
+          },
           "manual": true
         },
         {
-          "skill": "ragot",
+          "skill": {
+            "id": "ragot"
+          },
           "manual": true
         }
       ]
@@ -4433,7 +4647,9 @@
       "raw": "Tests de Commandement pendant la guerre",
       "matches": [
         {
-          "skill": "commandement",
+          "skill": {
+            "id": "commandement"
+          },
           "manual": true
         }
       ]
@@ -4457,7 +4673,9 @@
       "raw": "Perception (Sens)",
       "matches": [
         {
-          "skill": "perception",
+          "skill": {
+            "id": "perception"
+          },
           "manual": true
         }
       ]
@@ -4502,7 +4720,9 @@
       "raw": "Orientation",
       "matches": [
         {
-          "skill": "orientation"
+          "skill": {
+            "id": "orientation"
+          }
         }
       ]
     },
@@ -4525,7 +4745,9 @@
       "raw": "Test d'Intuition impliquant votre Sixième sens",
       "matches": [
         {
-          "skill": "intuition",
+          "skill": {
+            "id": "intuition"
+          },
           "manual": true
         }
       ]
@@ -4558,7 +4780,9 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": "ragot"
+        "skill": {
+          "id": "ragot"
+        }
       }
     }
   },
@@ -4598,7 +4822,9 @@
       "raw": "Athlétisme quand vous tombez",
       "matches": [
         {
-          "skill": "athletisme",
+          "skill": {
+            "id": "athletisme"
+          },
           "manual": true
         }
       ]
@@ -4622,7 +4848,9 @@
       "raw": "Tests d'Athlétisme pour Courir",
       "matches": [
         {
-          "skill": "athletisme",
+          "skill": {
+            "id": "athletisme"
+          },
           "manual": true
         }
       ]
@@ -4658,7 +4886,9 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": "recherche"
+        "skill": {
+          "id": "recherche"
+        }
       }
     }
   },
@@ -4673,7 +4903,9 @@
       "raw": "Subornation",
       "matches": [
         {
-          "skill": "subornation"
+          "skill": {
+            "id": "subornation"
+          }
         }
       ]
     },
@@ -4790,7 +5022,9 @@
       "raw": "Projectiles quand vous effectuez un Tir rapide",
       "matches": [
         {
-          "skill": "projectiles",
+          "skill": {
+            "id": "projectiles"
+          },
           "manual": true
         }
       ]
@@ -4852,11 +5086,15 @@
       "raw": "Tests de Perception pour repérer des pièges, Piégeage",
       "matches": [
         {
-          "skill": "perception",
+          "skill": {
+            "id": "perception"
+          },
           "manual": true
         },
         {
-          "skill": "piegeage"
+          "skill": {
+            "id": "piegeage"
+          }
         }
       ]
     },
@@ -4879,7 +5117,9 @@
       "raw": "Tous les Tests étendus appropriés de Métier.",
       "matches": [
         {
-          "skill": "metier",
+          "skill": {
+            "id": "metier"
+          },
           "manual": true
         }
       ]
@@ -5127,7 +5367,9 @@
       "raw": "Pari et Escamotage quand vous jouez à un jeu de cartes",
       "matches": [
         {
-          "skill": "pari",
+          "skill": {
+            "id": "pari"
+          },
           "manual": true
         }
       ]
@@ -5188,7 +5430,9 @@
       "raw": "Perception pendant les combats au Corps à corps",
       "matches": [
         {
-          "skill": "perception",
+          "skill": {
+            "id": "perception"
+          },
           "when": {
             "kind": "engaged"
           }
@@ -5217,7 +5461,9 @@
       "raw": "Tests de Perception dans des conditions de faible luminosité",
       "matches": [
         {
-          "skill": "perception",
+          "skill": {
+            "id": "perception"
+          },
           "manual": true
         }
       ]
@@ -5241,7 +5487,9 @@
       "raw": "Test d'Intuition quand vous vous trouvez sur un sol sacré",
       "matches": [
         {
-          "skill": "intuition",
+          "skill": {
+            "id": "intuition"
+          },
           "manual": true
         }
       ]
@@ -5286,7 +5534,9 @@
       "raw": "Tests de Calme pour s'opposer à Intimidation",
       "matches": [
         {
-          "skill": "calme",
+          "skill": {
+            "id": "calme"
+          },
           "manual": true
         }
       ]
@@ -5410,8 +5660,10 @@
       "raw": "Divertissement (Chant)",
       "matches": [
         {
-          "skill": "divertissement",
-          "spec": "chant"
+          "skill": {
+            "id": "divertissement",
+            "spec": "chant"
+          }
         }
       ]
     },
@@ -5437,7 +5689,9 @@
       "raw": "Commandement",
       "matches": [
         {
-          "skill": "commandement",
+          "skill": {
+            "id": "commandement"
+          },
           "when": {
             "kind": "crewTest"
           }

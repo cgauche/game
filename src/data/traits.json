@@ -88,7 +88,9 @@
       },
       {
         "op": "skillDRBonus",
-        "skill": "natation",
+        "skill": {
+          "id": "natation"
+        },
         "bonus": {
           "bonusOf": "agilite"
         }
@@ -754,7 +756,9 @@
     "passive": [
       {
         "op": "skillDRBonus",
-        "skill": "discretion",
+        "skill": {
+          "id": "discretion"
+        },
         "bonus": {
           "bonusOf": "agilite"
         }
@@ -1380,7 +1384,9 @@
     "passive": [
       {
         "op": "skillDRBonus",
-        "skill": "pistage",
+        "skill": {
+          "id": "pistage"
+        },
         "bonus": {
           "bonusOf": "initiative"
         }
@@ -1917,7 +1923,9 @@
             "kind": "test",
             "test": {
               "characteristic": "endurance",
-              "skill": "resistance",
+              "skill": {
+                "id": "resistance"
+              },
               "difficulty": "intermediaire",
               "argDifficulty": true,
               "unlessImmune": "poison",
@@ -2312,13 +2320,17 @@
       "passive": [
         {
           "op": "skillDRBonus",
-          "skill": "focalisation",
+          "skill": {
+            "id": "focalisation"
+          },
           "bonus": 1
         },
         {
           "op": "skillDRBonus",
-          "skill": "langue",
-          "spec": "magick",
+          "skill": {
+            "id": "langue",
+            "spec": "magick"
+          },
           "bonus": 1
         }
       ]
@@ -2342,13 +2354,17 @@
       "passive": [
         {
           "op": "skillDRBonus",
-          "skill": "focalisation",
+          "skill": {
+            "id": "focalisation"
+          },
           "bonus": 1
         },
         {
           "op": "skillDRBonus",
-          "skill": "langue",
-          "spec": "magick",
+          "skill": {
+            "id": "langue",
+            "spec": "magick"
+          },
           "bonus": 1
         }
       ]
@@ -2661,12 +2677,16 @@
       },
       {
         "op": "castPenalty",
-        "skill": "langue",
+        "skill": {
+          "id": "langue"
+        },
         "blocked": true
       },
       {
         "op": "castPenalty",
-        "skill": "focalisation",
+        "skill": {
+          "id": "focalisation"
+        },
         "blocked": true
       },
       {
@@ -2996,17 +3016,23 @@
     "passive": [
       {
         "op": "skillMod",
-        "skill": "divertissement",
+        "skill": {
+          "id": "divertissement"
+        },
         "mod": 10
       },
       {
         "op": "skillMod",
-        "skill": "musicien",
+        "skill": {
+          "id": "musicien"
+        },
         "mod": 10
       },
       {
         "op": "skillMod",
-        "skill": "representation",
+        "skill": {
+          "id": "representation"
+        },
         "mod": 10
       }
     ]
@@ -3090,28 +3116,38 @@
       },
       {
         "op": "skillDRBonus",
-        "skill": "pistage",
+        "skill": {
+          "id": "pistage"
+        },
         "bonus": 2
       },
       {
         "op": "skillDRBonus",
-        "skill": "orientation",
+        "skill": {
+          "id": "orientation"
+        },
         "bonus": 2
       },
       {
         "op": "skillDRBonus",
-        "skill": "perception",
+        "skill": {
+          "id": "perception"
+        },
         "bonus": 2
       },
       {
         "op": "skillDRBonus",
-        "skill": "langue",
-        "spec": "magick",
+        "skill": {
+          "id": "langue",
+          "spec": "magick"
+        },
         "bonus": 1
       },
       {
         "op": "skillDRBonus",
-        "skill": "focalisation",
+        "skill": {
+          "id": "focalisation"
+        },
         "bonus": 1
       }
     ]
