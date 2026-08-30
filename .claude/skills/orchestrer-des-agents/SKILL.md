@@ -97,6 +97,13 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    ticketée, morts adjacents purgés ». Et tout juge de cumul porte la lentille jumelle. Vécu
    fondateur : `worldTris.ts` né avec `uprightWidthM` ET `montantWidthM` pour le MÊME concept —
    passé sous QUATRE juges qui regardaient l'architecture, pas la langue.
+   **Clause RUNNER (audit 2026-08-30) : tout brief de codeur ou de juge porte** — « toute commande
+   de runner (vitest, tsc, script de garde) écrit sa sortie COMPLÈTE dans un fichier du scratchpad,
+   puis LIT le fichier ; jamais un filtre inline (`| grep`, `| Select-String`, `| tail`) comme SEULE
+   lecture — une sortie amputée se paie en REJEU du run entier. Et ne pas relancer un typecheck
+   complet après chaque micro-édition : grouper les édits, vérifier ensuite. » Mesuré : 33 % du temps
+   runner = relances de la MÊME commande, majoritairement pour RELIRE une sortie sur-filtrée (un tsc
+   de 51 s rejoué jusqu'à 19 fois par un seul agent).
 3. **Dispatch** — l'effort de chaque étage est MAÎTRISÉ, jamais subi. Trois canaux : Workflow
    `agent()` (opts `model` + `effort` par appel — le seul contrôle par appel) ; tool Agent
    (`model` seul — l'effort vient de la définition du type dans `.claude/agents/*.md`, sinon
@@ -114,7 +121,9 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
 5. **Attente** — un agent background n'est PAS fini avant sa `<task-notification>` : ne pas lire,
    tester ni diagnostiquer son WIP (erreurs fantômes garanties).
 6. **Vérification (par MOI, jamais sur la foi du rapport)** — typecheck en sortie COMPLÈTE
-   (`npm run typecheck 2>&1 | grep -cE "error TS"` + filtre sur mes fichiers, jamais `tail`) ;
+   (`npm run typecheck` REDIRIGÉ dans un fichier du scratchpad, puis compté et filtré sur mes
+   fichiers DEPUIS le fichier — jamais `tail`, jamais un filtre inline comme seule lecture, la
+   relecture ne doit pas coûter un second run, audit 2026-08-30) ;
    suite COMPLÈTE avant commit (les échecs s'attribuent, un arbre churné n'excuse rien) ; revue
    du diff ; règle/valeur → Atlas `docs/raw/` puis `Source/` ; UI → skill `recette-navigateur`.
    ⚠ Les portes machine sont un PLANCHER, jamais un signal de correction : sur une session
@@ -172,6 +181,45 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    comportemental). Ces règles se durcissent SOUS pression de temps (« maximum de tickets »),
    elles ne s'y suspendent pas — vécu 2026-07-11 : 5 fermetures rouvertes, juges lancés
    seulement à la demande de l'utilisateur.
+   ⚠ **Régime de fermeture : c'est le TRAVAIL qui se ferme, pas le ticket (audit 2026-08-30).**
+   *Fan-out plafonné* — une fermeture qui émettrait PLUS D'UN ticket de reste n'est PAS fermable :
+   soit le lot GROSSIT pour absorber le reste, soit le ticket RESTE OUVERT avec la formule
+   historique des soldes #829/#900, réhabilitée — « le ticket reste ouvert sur ce reste ». Le sas
+   « réserve / routé / hors périmètre / disposition » est EXCEPTIONNEL, jamais routinier (mesuré :
+   36 % des fermetures d'août émettaient des restes, résorbés à 19-24 % ; « réserve » = 17 créés,
+   0 fermé). *Reste rattaché* — tout reste qui naît est rattaché à une VAGUE NOMMÉE (la prochaine du
+   même domaine) : un reste flottant refuse la fermeture qui l'émet. *« LIVRÉ » se mérite* — on ne
+   dit LIVRÉ que restes soldés, ou explicitement GELÉS par un arbitrage utilisateur DATÉ ; jamais
+   LIVRÉ avec des restes dormants. *Zéro net* — une vague ferme AU MOINS autant de tickets qu'elle
+   en ouvre.
+
+## Régime de vague et d'épique (audit 2026-08-30)
+
+**Un lot fait 10-12 tickets d'un MÊME domaine.** La cérémonie de vague coûte ~5-6 h FIXES
+(grounding, juges, gates, solde, réfutation), amorties ×3 par le batching mesuré des vagues ②③ :
+un lot de trois paie le même péage pour trois fois moins de travail.
+**Ré-instruction AVANT dispatch de tout ticket de plus de 30 jours** : un `lecteur` re-mesure ses
+prémisses au dépôt avant qu'un codeur ne soit dispatché (mesuré : 0 % de fermeture au-delà de 30 j
+sans ce pas ; ~7 tickets récents fermés par le SEUL constat d'une prémisse morte).
+**Validation utilisateur = ASYNCHRONE, jamais un gel de vague** : un lot en attente de goût se PARQUE
+(worktree conservé, maquette/capture prête, question consignée) et la vague CONTINUE sur les lots
+suivants — une vague ne gèle jamais entière.
+**Mix par fenêtre de présence** : en ABSENCE de l'utilisateur, dispatcher ce qui n'appelle aucune
+validation de goût (données, gardes, routes d'édition, ré-instruction de vieux tickets) ; écrans et
+arbitrages se gardent pour la fenêtre de PRÉSENCE.
+**Checkpoint avant épuisement de quota** : commit du carnet + état de vague posé (todo de vague à
+jour, tickets commentés), pour que la relance tienne en une phrase.
+
+**Épique : pas de salve d'ouverture.** À l'ouverture, une épique crée SON PREMIER LOT et l'index de
+ses phases EN PROSE ; les enfants suivants naissent quand leur vague se dispatche (contre-modèle
+mesuré : #665, 34 enfants en 26 s, une seule phase exécutée ensuite).
+**Le corps d'une épique ne porte PAS de checklist** — 41 cases sur 12 épiques, 0 cochée : elle meurt
+toujours. L'ÉTAT vit dans le commentaire de pilotage RÉÉCRIT à chaque session (les 2 seules épiques
+survivantes au-delà d'une semaine sont celles qui l'ont) ; la STRUCTURE vit dans les liens de tickets.
+**Une vague d'épique fait DÉCROÎTRE le compteur qu'elle vise** (généralisation de « Σ gelée =
+exigence de baisse chiffrée au lot suivant ») : pas de vague qui laisse son chiffre étale.
+**Épique sans commit ni commentaire depuis 14 jours et sans label `gelée` = anomalie** à SIGNALER à
+l'utilisateur, pas à laisser dormir.
 
 ## Calibrage — routage et cérémonie
 
@@ -198,7 +246,9 @@ boucle et poser les questions GROUPÉES, pas les parquer dans une spec.
 |---|---|
 | « C'est petit/couplé, je le fais moi-même » | 2026-06-29 : « le pire orchestrator que je connaisse ». Même une ligne → agent. |
 | « L'agent rapporte tout vert » | Vécu : guillemets courbes qui cassaient tsc. Relancer les gates soi-même. |
-| « `tail` suffit pour le typecheck » | TS2322 livrée en affirmant « clean » (`82c3f416`). Sortie complète, comptée. |
+| « `tail` suffit pour le typecheck » | TS2322 livrée en affirmant « clean » (`82c3f416`). Sortie complète, comptée — et ÉCRITE EN FICHIER puis lue : un filtre inline se paie en rejeu du run entier (audit 2026-08-30 : 33 % du temps runner en relances, un tsc de 51 s rejoué 19 fois). |
+| « Le reste est petit, je le sors en ticket et je ferme » | Audit 2026-08-30 : 36 % des fermetures d'août émettaient des restes, « réserve » = 17 créés / 0 fermé. Au-delà d'UN reste, le lot grossit ou le ticket reste ouvert. |
+| « J'ouvre tous les enfants de l'épique, ça pose la structure » | #665 : 34 enfants en 26 s, une seule phase exécutée. La structure se pose en PROSE ; les enfants naissent à leur vague. |
 | « Arbre churné, la suite complète n'est pas attribuable » | Régression `92c70234` attrapée par la SEULE suite complète. |
 | « L'effort par défaut fera l'affaire » | Héritage session = xhigh sous ultracode, hors de prix sur un fan-out. |
 | « Ticket fermé = fini » | Combat de masse #69 livré à ~50 % avec tests verts. Auditer RAW + éditabilité. |
@@ -235,4 +285,13 @@ boucle et poser les questions GROUPÉES, pas les parquer dans une spec.
   chantier qui s'en réclame, c'est une auto-autorisation (vécu 2026-07-26 : la justification
   citée avait été écrite la veille par le même chantier pour le relèvement précédent).
 - Une garde neuve dont je ne sais pas énoncer l'angle mort.
+- Une fermeture qui émet plus d'UN ticket de reste, ou un reste rattaché à aucune vague nommée —
+  et tout « LIVRÉ » annoncé avec des restes dormants (audit 2026-08-30).
+- Une vague qui ouvre plus de tickets qu'elle n'en ferme (audit 2026-08-30).
+- Une épique ouverte en salve d'enfants, ou dont l'état vit dans une checklist de son corps plutôt
+  que dans le commentaire de pilotage — ou muette depuis 14 j sans label `gelée` (audit 2026-08-30).
+- Un ticket de plus de 30 jours dispatché sans ré-instruction de ses prémisses (audit 2026-08-30).
+- Une vague entière gelée sur une validation de goût, au lieu du lot PARQUÉ (audit 2026-08-30).
+- Un runner dont la sortie n'existe que dans un filtre inline — la prochaine lecture rejouera la
+  commande (audit 2026-08-30).
 - Une leçon de méthode que je « retiens » au lieu de l'écrire ici — la session suivante repart à zéro.
