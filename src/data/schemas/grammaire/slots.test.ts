@@ -20,7 +20,7 @@ describe('slotsDe — un slot par référence RÉELLE, à son path exact', () =>
     expect(paths(z.strictObject({ t: ref('talent').optional() }))).toEqual(['t.id']);
     expect(paths(z.union([ref('skill'), ref('talent')]))).toEqual(['|0.id', '|1.id']);
     expect(paths(z.record(z.string(), ref('trapping')))).toEqual(['{}.id']);
-    expect(paths(pick('talent'))).toEqual(['|0.of[].id', '|1.table.id']);
+    expect(paths(pick('talent'))).toEqual(['|0.of[]|0.id', '|0.of[]|1.id', '|1.table.id']);
     expect(paths(z.tuple([ref('spell')]))).toEqual(['[0].id']);
   });
 
@@ -31,7 +31,7 @@ describe('slotsDe — un slot par référence RÉELLE, à son path exact', () =>
       ['beaucoup[]', 'liste'],
     ]);
     // `pick` n'est pas une cardinalité : le path le dit (`of[]` = liste, `table` = un).
-    expect(slotsDe('src/data', 'jouet.json', pick('talent')).map((s) => s.cardinalite)).toEqual(['liste', 'un']);
+    expect(slotsDe('src/data', 'jouet.json', pick('talent')).map((s) => s.cardinalite)).toEqual(['liste', 'liste', 'un']);
   });
 
   it('une INSTANCE PARTAGÉE par 3 champs vaut 3 slots (pile d’ancêtres, jamais un `vus` global)', () => {

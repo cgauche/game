@@ -174,15 +174,23 @@ export function specRef<T extends TypeEntite, E extends Record<string, z.ZodType
 }
 
 /**
- * Choix « n parmi » : `{ pick, of: [refs] }` (liste énumérée) ou `{ pick, table }` (tirage sur une
+ * Choix « n parmi » : `{ pick, of: [...] }` (liste énumérée) ou `{ pick, table }` (tirage sur une
  * table d100). Remplace les graphies `choice[]` et `random` des lots L2/L3.
+ *
+ * Une entrée de `of` est l'UNION des trois façons de désigner une option : référence nue `ref(type)`,
+ * référence à spécialisation `specRef(type)` (`{id, spec}` XOR `{id, choix}`, validée contre le pool
+ * de l'entrée À TRAVERS l'`of`), ou un `pick` IMBRIQUÉ (un « n parmi » dont une option est elle-même
+ * un choix, y compris un tirage sur table). La récursion se referme sur le nœud LUI-MÊME (`noeud`),
+ * que la marche des slots retrouve dans sa pile d'ancêtres et coupe là (`slots.ts`).
  */
 export function pick<T extends TypeEntite>(type: T): z.ZodType<unknown> {
   const n = z.number().int().positive();
-  return z.union([
-    z.strictObject({ pick: n, of: z.array(ref(type)).min(1) }),
+  const option: z.ZodType<unknown> = z.lazy(() => z.union([ref(type), specRef(type), noeud]));
+  const noeud: z.ZodType<unknown> = z.union([
+    z.strictObject({ pick: n, of: z.array(option).min(1) }),
     z.strictObject({ pick: n, table: ref('table') }),
   ]);
+  return noeud;
 }
 
 /**

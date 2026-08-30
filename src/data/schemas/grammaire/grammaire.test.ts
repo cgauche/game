@@ -10,6 +10,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { z } from 'zod';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
+import tablesJson from '../../tables.json';
 import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, type Exposition } from './document';
 import { ref, refs, specRef, pick, typedRef, idDe, cibleDe, estSpecialisable, TYPES, type Id, type SignatureById } from './ref';
 import { slotsDe } from './slots';
@@ -20,6 +21,7 @@ type EntreeASpecs = { id: string; specs?: { id: string }[]; specsSource?: string
 const UNE_COMPETENCE = skillsJson[0] as { id: string };
 const UNE_COMPETENCE_GROUPEE = (skillsJson as EntreeASpecs[]).find((s) => s.specs?.length)!;
 const UN_TALENT_A_SPECS = (talentsJson as EntreeASpecs[]).find((t) => t.specs?.length)!;
+const UNE_TABLE = tablesJson[0] as { id: string };
 const declareDesSpecs = (e: EntreeASpecs) => !!(e.specs?.length || e.specsSource);
 
 const SOURCE_REELLE = { book: 'livre-de-base', page: 118 };
@@ -912,7 +914,47 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
   it('`pick()` accepte « n parmi » et le tirage sur table, jamais les deux', () => {
     const p = pick('skill');
     expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE.id }] }).success).toBe(true);
-    expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE.id }], table: { id: 'x' } }).success).toBe(false);
+    expect(p.safeParse({ pick: 1, table: { id: UNE_TABLE.id } }).success).toBe(true);
+    expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE.id }], table: { id: UNE_TABLE.id } }).success).toBe(false);
+    expect(p.safeParse({ pick: 1 }).success).toBe(false);
+    expect(p.safeParse({ pick: 1, of: [] }).success).toBe(false);
+  });
+
+  it('une entrée de `of` est une réf NUE, une réf à SPÉCIALISATION, ou un `pick` IMBRIQUÉ', () => {
+    const p = pick('skill');
+    expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE.id }, { id: UNE_COMPETENCE_GROUPEE.id }] }).success).toBe(true);
+    expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE_GROUPEE.id, spec: 'forgeron' }] }).success).toBe(true);
+    expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE_GROUPEE.id, choix: true }] }).success).toBe(true);
+    expect(p.safeParse({ pick: 2, of: [{ id: UNE_COMPETENCE.id }, { id: UNE_COMPETENCE_GROUPEE.id, choix: ['a', 'b'] }] }).success).toBe(true);
+    expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE.id }, { pick: 1, table: { id: UNE_TABLE.id } }] }).success).toBe(true);
+    expect(
+      p.safeParse({
+        pick: 1,
+        of: [{ pick: 1, of: [{ id: UNE_COMPETENCE_GROUPEE.id, spec: 'orfevre' }, { pick: 1, of: [{ id: UNE_COMPETENCE.id }] }] }],
+      }).success,
+    ).toBe(true);
+  });
+
+  it('`of` REFUSE une graphie inconnue et fait TRAVERSER la validation de spécialisation', () => {
+    const p = pick('skill');
+    expect(p.safeParse({ pick: 1, of: [{ ref: { id: UNE_COMPETENCE.id } }] }).success).toBe(false);
+    expect(p.safeParse({ pick: 1, of: [{ wildcard: { id: UNE_COMPETENCE.id } }] }).success).toBe(false);
+    expect(p.safeParse({ pick: 1, of: [{ id: 'competence-qui-n-existe-pas' }] }).success).toBe(false);
+    expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE_GROUPEE.id, spec: 'a', choix: true }] }).success).toBe(false);
+
+    const pt = pick('talent');
+    const specReelle = UN_TALENT_A_SPECS.specs![0].id;
+    expect(pt.safeParse({ pick: 1, of: [{ id: UN_TALENT_A_SPECS.id, spec: specReelle }] }).success).toBe(true);
+    const res = pt.safeParse({ pick: 1, of: [{ id: UN_TALENT_A_SPECS.id, spec: 'spec-hors-pool' }] });
+    expect(res.success).toBe(false);
+    expect(JSON.stringify(res.error?.issues)).toMatch(/spec-hors-pool.*talents\.json/);
+    expect(pt.safeParse({ pick: 1, of: [{ pick: 1, of: [{ id: UN_TALENT_A_SPECS.id, spec: 'spec-hors-pool' }] }] }).success).toBe(false);
+  });
+
+  it('la MARCHE d’un `pick` récursif se coupe sur le nœud lui-même et rend ses slots', () => {
+    const slots = slotsDe('src/data', 'jouet.json', pick('skill'));
+    expect(slots.map((s) => s.path)).toEqual(['|0.of[]|0.id', '|0.of[]|1.id', '|1.table.id']);
+    expect(new Set(slots.map((s) => s.type))).toEqual(new Set(['skill', 'table']));
   });
 
   it('la MARCHE retrouve la référence à son path exact (source de l’intégrité référentielle générique)', () => {
