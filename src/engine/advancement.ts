@@ -28,7 +28,7 @@ export function inCareerChar(careerChars: CharKey[], char: CharKey): boolean {
  * `max: null` = bande FINALE « et au-delà » (capte tout excès — JSON n'a pas d'Infinity).
  * La donnée vit dans `src/data/advancementCosts.json` — ne pas éditer ici.
  */
-export interface AdvanceCostBand { max: number | null; char: number; skill: number }
+export interface AdvanceCostBand { max: number | null; coutCarac: number; coutCompetence: number }
 
 const ADVANCE_COST_TABLE: AdvanceCostBand[] = advancementCostsJson as AdvanceCostBand[];
 
@@ -38,7 +38,7 @@ const ADVANCE_COST_TABLE: AdvanceCostBand[] = advancementCostsJson as AdvanceCos
  *  Compétence ajoutée est déjà incluse dans la Carrière — appliqué in-carrière seulement. */
 export function advanceCost(advancesAlready: number, kind: 'characteristic' | 'skill', inCareer = true, discount = 0): number {
   const band = ADVANCE_COST_TABLE.find((b) => b.max === null || advancesAlready <= b.max)!;
-  const base = kind === 'characteristic' ? band.char : band.skill;
+  const base = kind === 'characteristic' ? band.coutCarac : band.coutCompetence;
   return inCareer ? Math.max(1, base - discount) : base * 2;
 }
 

@@ -702,10 +702,12 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": {
-          "id": "discretion",
-          "spec": "urbaine"
-        }
+        "skills": [
+          {
+            "id": "discretion",
+            "spec": "urbaine"
+          }
+        ]
       }
     }
   },
@@ -2659,9 +2661,11 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": {
-          "id": "recherche"
-        }
+        "skills": [
+          {
+            "id": "recherche"
+          }
+        ]
       }
     }
   },
@@ -3447,9 +3451,11 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": {
-          "id": "resistance-a-l-alcool"
-        }
+        "skills": [
+          {
+            "id": "resistance-a-l-alcool"
+          }
+        ]
       }
     }
   },
@@ -3624,9 +3630,11 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": {
-          "id": "guerison"
-        },
+        "skills": [
+          {
+            "id": "guerison"
+          }
+        ],
         "capDR": 1
       }
     }
@@ -3784,10 +3792,12 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": {
-          "id": "metier",
-          "spec": "apothicaire"
-        }
+        "skills": [
+          {
+            "id": "metier",
+            "spec": "apothicaire"
+          }
+        ]
       }
     }
   },
@@ -3843,7 +3853,7 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": [
+        "skills": [
           {
             "id": "ramer"
           },
@@ -4780,9 +4790,11 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": {
-          "id": "ragot"
-        }
+        "skills": [
+          {
+            "id": "ragot"
+          }
+        ]
       }
     }
   },
@@ -4886,9 +4898,11 @@
     },
     "combat": {
       "reverseFailed": {
-        "skill": {
-          "id": "recherche"
-        }
+        "skills": [
+          {
+            "id": "recherche"
+          }
+        ]
       }
     }
   },

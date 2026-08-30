@@ -505,7 +505,7 @@ nombre d’entrées qui la portent.
 | `src/data/aa-criticals.json` | object | pipe à la racine | config | 1 | `bras`:array(1) `corps`:array(1) `id`:string(1) `jambe`:array(1) `label`:string(1) `tete`:array(1) `type`:string(1) |
 | `src/data/actions.json` | array | liste | entité | 55 | `armed`:string(5) `candidates`:string(20) `cost`:string(55) `exitSafe`:boolean(6) `gate`:array/string(55) `hote`:string(1) `icon`:string(55) `id`:string(55) `intent`:string(4) `keys`:array(41) `label`:string(55) `maison`:string(30) `mode`:string(12) `panneau`:boolean(2) `role`:string(6) `rule`:string(32) `ruleCategory`:string(32) `run`:string(52) `source`:object(12) `stance`:string(2) `surface`:string(55) `type`:string(55) |
 | `src/data/activities.json` | array | liste | entité | 62 | `assisted`:boolean(1) `blocked`:object(7) `classGate`:object(12) `combined`:boolean(2) `contexts`:array(62) `desc`:string(61) `difficulty`:string(51) `difficultyFrom`:object(1) `encounter`:string(3) `extended`:object(1) `failExtenue`:boolean(7) `freeSkill`:boolean(1) `generalDownOn`:string(2) `grantsFlag`:string(2) `hold`:object(1) `icon`:string(62) `id`:string(62) `label`:string(62) `maison`:string(8) `minInvest`:object(1) `onSuccess`:array(1) `outcomes`:array(35) `requires`:array(2) `resolver`:string(21) `rounds`:number(7) `rule`:string(1) `ruleCategory`:string(1) `sceneKind`:string(13) `skills`:array(48) `source`:object(62) `stageOutcome`:string(7) `stake`:string(46) `stakeForm`:string(46) `testModFrom`:string(1) `threat`:object(1) `type`:string(62) `unavailableIfExtenue`:boolean(1) `weatherMod`:object(2) `where`:array(5) |
-| `src/data/advancementCosts.json` | array | liste | entité | 15 | `char`:number(15) `id`:string(15) `label`:string(15) `max`:null/number(15) `skill`:number(15) `source`:object(15) `type`:string(15) |
+| `src/data/advancementCosts.json` | array | liste | entité | 15 | `coutCarac`:number(15) `coutCompetence`:number(15) `id`:string(15) `label`:string(15) `max`:null/number(15) `source`:object(15) `type`:string(15) |
 | `src/data/ambiance.json` | object | pipe à la racine | config | 1 | `ambientFloor`:number(1) `entreeEnScene`:object(1) `faceShade`:object(1) `fogTint`:object(1) `id`:string(1) `iso`:object(1) `label`:string(1) `pov`:object(1) `type`:string(1) |
 | `src/data/arcane-phenomena.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `phenomena`:array(1) `saturationLevels`:array(1) `tables`:array(1) `type`:string(1) `windSaturationEffects`:array(1) |
 | `src/data/artillery-misfire.json` | object | pipe à la racine | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
@@ -612,7 +612,7 @@ nombre d’entrées qui la portent.
 | `src/data/systemes.manifest.json` | array | liste | entité | 16 | `etat`:string(16) `id`:string(16) `label`:string(16) `modules`:array(16) `notes`:string(16) `ticket`:null/string(16) `type`:string(16) |
 | `src/data/tables.json` | array | liste | entité | 20 | `die`:string(20) `id`:string(20) `label`:string(20) `rows`:array(20) `source`:object(20) `type`:string(20) |
 | `src/data/talents.json` | array | liste | entité | 187 | `alsoIn`:array(1) `codexOnly`:boolean(6) `combat`:object(54) `desc`:string(186) `effects`:array(4) `grantsArcaneDomain`:boolean(1) `grantSpecGroups`:boolean(1) `id`:string(187) `label`:string(187) `maison`:string(9) `max`:null/number/object(187) `passive`:array(21) `rand`:null/number(187) `size`:string(2) `source`:object(187) `specs`:array(182) `specsOpen`:boolean(8) `specsSource`:string(5) `test`:null/object(187) `type`:string(187) `variants`:array(12) |
-| `src/data/tavernGames.json` | array | liste | entité | 13 | `campScore`:string(3) `characteristic`:string(6) `combined`:object(1) `dancers`:number(1) `desc`:string(13) `drBonus`:string(4) `drCap`:number(1) `id`:string(13) `label`:string(13) `mode`:string(12) `options`:array(5) `phases`:object(2) `pot`:object(1) `roundOps`:object(2) `roundShape`:string(7) `scoreThreshold`:number(1) `scoreUnit`:string(5) `sides`:array(1) `skill`:null/object(13) `source`:object(13) `table`:array(1) `target`:number(3) `team`:object(2) `throwerPenalty`:object(1) `tieBreak`:string(2) `type`:string(13) `volley`:object(4) |
+| `src/data/tavernGames.json` | array | liste | entité | 13 | `campScore`:string(3) `characteristic`:string(6) `combined`:object(1) `dancers`:number(1) `desc`:string(13) `drBonus`:string(4) `drCap`:number(1) `id`:string(13) `label`:string(13) `mode`:string(12) `options`:array(5) `phases`:object(2) `pot`:object(1) `roundOps`:object(2) `roundShape`:string(7) `scoreThreshold`:number(1) `scoreUnit`:string(5) `sides`:array(1) `skill`:object(9) `source`:object(13) `table`:array(1) `target`:number(3) `team`:object(2) `throwerPenalty`:object(1) `tieBreak`:string(2) `type`:string(13) `volley`:object(4) |
 | `src/data/teintesJeu.json` | object | record | record | 0 | — |
 | `src/data/traits.json` | array | liste | entité | 131 | `alsoIn`:array(4) `aura`:object(3) `capabilities`:object(51) `desc`:string(131) `effects`:array(24) `grantsManeuvers`:array(14) `id`:string(131) `indice`:object(22) `label`:string(131) `maison`:string(3) `nonTransferable`:boolean(1) `passive`:array(25) `range`:boolean(2) `source`:object(131) `specsMulti`:boolean(9) `specsOpen`:boolean(7) `specsSource`:string(18) `standard`:boolean(15) `suppressesCapabilities`:array(1) `type`:string(131) |
 | `src/data/trappings.json` | array | liste | entité | 440 | `alsoIn`:array(8) `ammoRangeMod`:object(13) `availability`:null/string(440) `bladed`:boolean(26) `capabilities`:object(20) `categorie`:string(440) `consumable`:object(40) `consumableDuration`:object(19) `container`:object(10) `damage`:null/object(380) `defaultAmmo`:string(9) `derivedWeapon`:object(1) `desc`:string(278) `enc`:null/number/string(423) `formChoices`:array(1) `hands`:number(44) `id`:string(440) `improvised`:boolean(1) `indirect`:boolean(8) `label`:string(440) `loc`:null/string(380) `maison`:string(2) `minRangeBand`:string(9) `niConsumedPerDR`:number(2) `niPerGram`:number(2) `onHitEffects`:array(6) `organicProjectile`:boolean(14) `pa`:null/number(380) `packSize`:number(15) `passive`:array(15) `price`:null/object/string(440) `prosthesisTraining`:array(2) `qualities`:array(440) `range`:null/number/object(68) `reach`:null/string(380) `service`:boolean(3) `shape`:string(109) `siegeFootprint`:number(1) `siegeRig`:string(22) `sizeFor`:string(9) `soloSimple`:boolean(1) `source`:object(440) `subType`:string(440) `type`:string(440) `unarmed`:boolean(1) `weaponGroup`:string(22) |
@@ -1008,7 +1008,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `count,id,type` | cible | 0 |
 | reference | `of,pick` | cible | 0 |
 | reference | `pick,table` | cible | 0 |
-| reference | `id,value` | historique | 5653 |
+| reference | `id,value` | historique | 5655 |
 | reference | `id,spec,value` | historique | 1434 |
 | reference | `arg,id` | historique | 545 |
 | reference | `arg,id,value` | historique | 125 |
@@ -1057,12 +1057,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **816** (cible 253 · declaree 6 · historique 144 · divergente 413). Objets JSON parcourus : **52392**, dont **36115** portent une forme
+Lignes concept × dataset × champ × forme : **819** (cible 255 · declaree 6 · historique 145 · divergente 413). Objets JSON parcourus : **52394**, dont **36117** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-464 ligne(s), 28854 occurrence(s).
+467 ligne(s), 28856 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1121,6 +1121,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `ref` | `id-nu` | historique | `arene-projet.json` | 291 | — | `creatures.json` `groups.json` `montures.json` `names.json` `props.json` `raceAppearance.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `scene` | `id-nu` | historique | `arene-projet.json` | 4 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `skill` | `id` | cible | `arene-projet.json` | 10 | — | `aa-criticals.json` `activities.json` `axes.json` `creatures.json` `drunkenness.json` `river-navigation.json` … |  |
+| config | `skill` | `id,value` | historique | `arene-projet.json` | 2 | — | `skills.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
 | config | `start` | `id-nu` | historique | `arene-projet.json` | 9 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `style` | `id-nu` | historique | `arene-projet.json` | 2 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `traits` | `arg,id` | historique | `arene-projet.json` | 3 | — | `qualities.json` `ship-construction.json` `traits.json` | paramètre d’entité non déclaré (#1463 S2 A11) |
@@ -1458,8 +1459,10 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `ops` | `id+…` | divergente | `talents.json` | 1 | — | `etats.json` |  |
 | entité | `ops` | `type+…` | divergente | `talents.json` | 1 | — | `psychology.json` `talents.json` `traits.json` |  |
 | entité | `passive` | `talentId+…` | divergente | `talents.json` | 1 | — | `psychology.json` `talents.json` `traits.json` |  |
-| entité | `skill` | `id` | cible | `talents.json` | 107 | — | `aa-criticals.json` `activities.json` `axes.json` `creatures.json` `crew-test-types.json` `drunkenness.json` … |  |
-| entité | `skill` | `id,spec` | cible | `talents.json` | 25 | — | `axes.json` `careers.json` `creatures.json` `skills.json` `talents.json` `weaponGroups.json` |  |
+| entité | `skill` | `id` | cible | `talents.json` | 100 | — | `aa-criticals.json` `activities.json` `axes.json` `creatures.json` `crew-test-types.json` `drunkenness.json` … |  |
+| entité | `skill` | `id,spec` | cible | `talents.json` | 23 | — | `axes.json` `careers.json` `creatures.json` `skills.json` `talents.json` `weaponGroups.json` |  |
+| entité | `skills` | `id` | cible | `talents.json` | 7 | — | `skills.json` |  |
+| entité | `skills` | `id,spec` | cible | `talents.json` | 2 | — | `axes.json` `careers.json` `creatures.json` `skills.json` `talents.json` |  |
 | entité | `when` | `rule` | divergente | `talents.json` | 12 | — | `reglesOptionnelles.json` |  |
 | entité | `attrition` | `id,value+…` | divergente | `tavernGames.json` | 1 | — | `etats.json` |  |
 | entité | `combined` | `stopCondition+…` | divergente | `tavernGames.json` | 1 | — | `etats.json` `water-exposure.json` |  |
@@ -1976,8 +1979,7 @@ ne FORCE aucun concept — seul `price` nomme le concept `prix`, parce que `Pric
 
 | Clé | Classes | Occurrences | Détail par classe |
 |---|---|---|---|
-| `skill` | array \\| null \\| number \\| object | 368 | **array** talents.json:1 — **null** tavernGames.json:4 — **number** advancementCosts.json:15 arene-projet.json:2 — **object** talents.json:130 spells.json:50 trappings.json:29 miscast.json:26 traits.json:18 tables.json:15 tavernGames.json:14 traumas.json:13 … |
-| `char` | number \\| object \\| string | 876 | **number** advancementCosts.json:15 — **object** creatures.json:490 vehicles.json:29 structures.json:24 loup-et-saumure-projet.json:8 barge-du-sel-projet.json:4 arene-projet.json:3 — **string** mutations.json:56 spells.json:42 stars.json:42 symptoms.json:34 trappings.json:24 traits.json:20 talents.json:17 tables.json:15 … |
+| `char` | object \\| string | 861 | **object** creatures.json:490 vehicles.json:29 structures.json:24 loup-et-saumure-projet.json:8 barge-du-sel-projet.json:4 arene-projet.json:3 — **string** mutations.json:56 spells.json:42 stars.json:42 symptoms.json:34 trappings.json:24 traits.json:20 talents.json:17 tables.json:15 … |
 | `price` | null \\| number \\| object \\| string | 515 | **null** trappings.json:45 — **number** land-cargo.json:6 — **object** trappings.json:392 vehicles.json:31 sea-cargo.json:11 creatures.json:10 land-cargo.json:7 — **string** mass-battle.json:10 trappings.json:3 |
 | `cost` | number \\| object \\| string | 93 | **number** trappings.json:6 talents.json:1 — **object** naval-traits.json:20 arene-projet.json:8 qualities.json:1 talents.json:1 — **string** actions.json:55 naval-traits.json:1 |
 | `count` | number \\| object | 92 | **number** spells.json:16 loup-et-saumure-projet.json:6 creatures.json:5 tavernGames.json:3 traits.json:2 sea-shanties.json:1 trappings.json:1 vehicles.json:1 … — **object** careerLevels.json:50 classes.json:3 creatures.json:1 spells.json:1 traits.json:1 |
@@ -2216,7 +2218,7 @@ de se taire. Stock `STRUCTURES_ORPHELINES` ; le LOT suit le motif — `L1a #1466
 clé annonçait une FK (`clé de référence non résolue`), `#1553` pour les autres motifs (curation de
 CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe).
 
-**106** signatures orphelines, **442** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 104 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 106.
+**104** signatures orphelines, **434** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 102 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 104.
 
 | Dataset | Champ | Signature | Motif | Occurrences |
 |---|---|---|---|---|
@@ -2235,7 +2237,6 @@ CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe)
 | `arcane-phenomena.json` | `testMods` | `desc,dr,source,tests` | clé réservée | 8 |
 | `loup-et-saumure-projet.json` | `statblock` | `char,label,skills,type` | clé réservée | 8 |
 | `talents.json` | `matches` | `char,manual` | clé réservée | 7 |
-| `talents.json` | `reverseFailed` | `skill` | clé réservée | 6 |
 | `arene-projet.json` | `acts` | `act,cost` | clé réservée | 5 |
 | `sea-navigation.json` | `levels` | `desc,level,mMod,manDR,navDR,repairPctOfBase,source` | clé réservée | 5 |
 | `spells.json` | `variants` | `desc,effects,source,when` | clé réservée | 5 |
@@ -2260,7 +2261,6 @@ CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe)
 | `disponibilite.json` | `dispoPct` | `availability,pct,source` | clé réservée | 2 |
 | `domains.json` | `windModifiers` | `cancelledBy,desc,dr,source,tests` | clé réservée | 2 |
 | `domains.json` | `cancelledBy` | `circumstance,desc,requiresSkill,source,sustained,test` | clé réservée | 2 |
-| `talents.json` | `reverseFailed` | `capDR,skill` | clé réservée | 2 |
 | `talents.json` | `variants` | `combat,desc,max,source,when` | clé réservée | 2 |
 | `talents.json` | `variants` | `combat,desc,source,test,when` | clé réservée | 2 |
 | `talents.json` | `variants` | `desc,source,when` | clé réservée | 2 |
@@ -2327,14 +2327,14 @@ CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe)
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12423** objets sur **52392** ne sont portés par AUCUNE
+Au-delà des orphelines, **12431** objets sur **52394** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1135** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1137** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2565,6 +2565,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `spells.json` | `onHitEffects` | `flow,on,trigger` | 6 |
 | `spells.json` | `no` | `effect,kind` | 6 |
 | `structureAppearance.json` | `courses` | `blockWM,edgeWobble,hM,joint,jointW,paletteVar,stagger` | 6 |
+| `talents.json` | `reverseFailed` | `skills` | 6 |
 | `traits.json` | `of` | `kind,op,subject,value` | 6 |
 | `trappings.json` | `ammoRangeMod` | `add` | 6 |
 | `aa-criticals.json` | `escalation` | `bleedOnReinjury` | 5 |
@@ -2876,6 +2877,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `talents.json` | `effects` | `flow,on,trigger` | 2 |
 | `talents.json` | `combat` | `chargeDamageBonus` | 2 |
 | `talents.json` | `flow` | `fail,kind,success,test` | 2 |
+| `talents.json` | `reverseFailed` | `capDR,skills` | 2 |
 | `tavernGames.json` | `winner` | `amount,op` | 2 |
 | `tavernGames.json` | `ops` | `op` | 2 |
 | `tavernGames.json` | `team` | `size` | 2 |
@@ -3605,14 +3607,14 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `symptoms.ts` | 39 | `onTick` | test | divergente | `difficulty+…` | — |
 | `tables.ts` | 19 | `rows` | plage | divergente | `max,min+…` | — |
 | `talents.ts` | 81 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
-| `tavernGames.ts` | 36 | — | sequence | divergente | `combined,drCap,phases,pot,sides,table,target,throwerPenalty,volley+…` | — |
-| `tavernGames.ts` | 77 | `options` | test | divergente | `char,difficulty,skill+…` | — |
-| `tavernGames.ts` | 94 | `table` | plage | divergente | `max,min+…` | — |
-| `tavernGames.ts` | 104 | `rows` | test | divergente | `difficulty+…` | — |
-| `tavernGames.ts` | 115 | `libre` | plage | cible | `max,min` | — |
-| `tavernGames.ts` | 141 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
-| `tavernGames.ts` | 177 | `targetRange` | plage | cible | `max,min` | — |
-| `tavernGames.ts` | 181 | `rows` | plage | divergente | `max,min+…` | — |
+| `tavernGames.ts` | 35 | — | sequence | divergente | `combined,drCap,phases,pot,sides,table,target,throwerPenalty,volley+…` | — |
+| `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
+| `tavernGames.ts` | 93 | `table` | plage | divergente | `max,min+…` | — |
+| `tavernGames.ts` | 103 | `rows` | test | divergente | `difficulty+…` | — |
+| `tavernGames.ts` | 114 | `libre` | plage | cible | `max,min` | — |
+| `tavernGames.ts` | 140 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
+| `tavernGames.ts` | 176 | `targetRange` | plage | cible | `max,min` | — |
+| `tavernGames.ts` | 180 | `rows` | plage | divergente | `max,min+…` | — |
 | `trappings.ts` | 20 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `trappings.ts` | 27 | — | reference | historique | `id,spec,value` | — |
 | `trappings.ts` | 76 | `qualities` | reference | historique | `id,value` | — |
@@ -4084,7 +4086,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **1306** — espèce `id` **136**, espèce `acteur` **1170**.
+Slots déclarés : **1304** — espèce `id` **134**, espèce `acteur` **1170**.
 
 ### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
 
@@ -4139,11 +4141,9 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `symptoms.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `talents.json` | `[].test.matches[].skill.id` | `id` | `skill` | liste | 112 | 112 / 112 |
 | `talents.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
-| `talents.json` | `[].combat.reverseFailed.skill\|0.id` | `id` | `skill` | liste | 7 | 7 / 7 |
-| `talents.json` | `[].combat.reverseFailed.skill\|1[].id` | `id` | `skill` | liste | 2 | 2 / 2 |
+| `talents.json` | `[].combat.reverseFailed.skills[].id` | `id` | `skill` | liste | 9 | 9 / 9 |
 | `talents.json` | `[].variants[].test.matches[].skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
-| `talents.json` | `[].variants[].combat.reverseFailed.skill\|0.id` | `id` | `skill` | liste | 0 | 0 / 0 |
-| `talents.json` | `[].variants[].combat.reverseFailed.skill\|1[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `talents.json` | `[].variants[].combat.reverseFailed.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `tavernGames.json` | `[].skill.id` | `id` | `skill` | liste | 9 | 9 / 9 |
 | `tavernGames.json` | `[].fastSkill.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `tavernGames.json` | `[].options[].skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
@@ -4240,7 +4240,7 @@ La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de référence
 (`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept
 par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 
-**340** couples (dataset, champ) sans slot déclaré.
+**341** couples (dataset, champ) sans slot déclaré.
 
 | Dataset | Champ | Occurrences observées |
 |---|---|---|
@@ -4288,7 +4288,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `arene-projet.json` | `ref` | 291 |
 | `arene-projet.json` | `roomZoneIds` | 12 |
 | `arene-projet.json` | `scene` | 4 |
-| `arene-projet.json` | `skill` | 10 |
+| `arene-projet.json` | `skill` | 12 |
 | `arene-projet.json` | `spells` | 2 |
 | `arene-projet.json` | `start` | 9 |
 | `arene-projet.json` | `style` | 2 |
@@ -4535,7 +4535,8 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `talents.json` | `matches` | 1 |
 | `talents.json` | `ops` | 3 |
 | `talents.json` | `passive` | 1 |
-| `talents.json` | `skill` | 132 |
+| `talents.json` | `skill` | 123 |
+| `talents.json` | `skills` | 9 |
 | `talents.json` | `when` | 12 |
 | `tavernGames.json` | `attrition` | 1 |
 | `tavernGames.json` | `combined` | 1 |
@@ -4588,7 +4589,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
 Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **1170** slots sur 1306.
+pèse **1170** slots sur 1304.
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).

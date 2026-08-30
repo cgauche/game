@@ -145,7 +145,7 @@ const dlgMedecin = {
               { act: 'trauma', cost: { silver: 5 } },
               { act: 'surgery', cost: { silver: 6 } },
             ],
-            skill: 55, intBonus: 4, entityId: 'medecin',
+            skill: { id: 'guerison', value: 55 }, intBonus: 4, entityId: 'medecin',
           }]),
         },
         { label: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
@@ -249,7 +249,7 @@ const dlgFrere = {
         {
           label: 'Recevoir des soins (actes payants).',
           icon: 'medical/aid',
-          flow: flowOf([{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }], skill: 55, intBonus: 4, entityId: 'frere' }]),
+          flow: flowOf([{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }], skill: { id: 'guerison', value: 55 }, intBonus: 4, entityId: 'frere' }]),
         },
         {
           label: 'Recevoir la bénédiction du départ (retrouver la Chance).',

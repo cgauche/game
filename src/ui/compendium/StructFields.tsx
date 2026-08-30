@@ -28,9 +28,9 @@ import type { OptionalRule, RuleValue } from '../../engine/policy';
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 
-/** 1°ʳᵉ référence d'un slot qui accepte UNE réf ou une LISTE de réfs (`reverseFailed.skill` : Pilote
- *  → Ramer OU Voile) — le contrôle MONO de cet atelier n'édite que celle-là. PURE. */
-const premiereRef = (r: Ref | Ref[]): Ref => (Array.isArray(r) ? (r[0] ?? { id: '' }) : r);
+/** 1°ʳᵉ référence d'un slot qui porte une LISTE de réfs (`reverseFailed.skills` : Pilote → Ramer OU
+ *  Voile) — le contrôle MONO de cet atelier n'édite que celle-là, les suivantes sont conservées. PURE. */
+const premiereRef = (r: readonly Ref[]): Ref => r[0] ?? { id: '' };
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * 1) maladies.symptoms — DiseaseSymptom[] = { symptomId, severity?, difficulty? }
@@ -238,19 +238,24 @@ export function CombatField(
         )}
       </div>
       <div className="tf-row">
-        <label className="dr"><input type="checkbox" checked={!!c.reverseFailed} onChange={(e) => emit({ ...c, reverseFailed: e.target.checked ? { skill: { id: '' } } : undefined })} /> Inverse un Test raté (Sociable…)</label>
-        {c.reverseFailed && (
-          <>
-            {/* `reverseFailed.skill` accepte un tableau (Pilote → Ramer OU Voile) ; ce sélecteur MONO édite
-                la 1ʳᵉ Compétence du tableau. */}
-            <select value={premiereRef(c.reverseFailed.skill).id} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, skill: { id: e.target.value, ...(premiereRef(c.reverseFailed!.skill).spec ? { spec: premiereRef(c.reverseFailed!.skill).spec! } : {}) } } })}>
-              {!premiereRef(c.reverseFailed.skill).id && <option value="">— (choisir une compétence) —</option>}
-              {datasetArray('skills').map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </select>
-            <input className="dr" placeholder="spec" value={premiereRef(c.reverseFailed.skill).spec ?? ''} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, skill: { id: premiereRef(c.reverseFailed!.skill).id, ...(e.target.value ? { spec: e.target.value } : {}) } } })} />
-            <label className="dr">cap DR<NumberField variant="nu" label="Inverse un Test raté — cap DR" value={c.reverseFailed.capDR ?? 0} onChange={(n) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, capDR: n || undefined } })} /></label>
-          </>
-        )}
+        <label className="dr"><input type="checkbox" checked={!!c.reverseFailed} onChange={(e) => emit({ ...c, reverseFailed: e.target.checked ? { skills: [{ id: '' }] } : undefined })} /> Inverse un Test raté (Sociable…)</label>
+        {c.reverseFailed && (() => {
+          const rf = c.reverseFailed;
+          const tete = premiereRef(rf.skills);
+          const poseTete = (r: Ref) => emit({ ...c, reverseFailed: { ...rf, skills: [r, ...rf.skills.slice(1)] } });
+          return (
+            <>
+              {/* `reverseFailed.skills` est une LISTE (Pilote → Ramer OU Voile) ; ce sélecteur MONO édite
+                  la 1ʳᵉ Compétence, les suivantes sont conservées telles quelles. */}
+              <select value={tete.id} onChange={(e) => poseTete({ id: e.target.value, ...(tete.spec ? { spec: tete.spec } : {}) })}>
+                {!tete.id && <option value="">— (choisir une compétence) —</option>}
+                {datasetArray('skills').map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+              </select>
+              <input className="dr" placeholder="spec" value={tete.spec ?? ''} onChange={(e) => poseTete({ id: tete.id, ...(e.target.value ? { spec: e.target.value } : {}) })} />
+              <label className="dr">cap DR<NumberField variant="nu" label="Inverse un Test raté — cap DR" value={rf.capDR ?? 0} onChange={(n) => emit({ ...c, reverseFailed: { ...rf, capDR: n || undefined } })} /></label>
+            </>
+          );
+        })()}
       </div>
     </div>
   );

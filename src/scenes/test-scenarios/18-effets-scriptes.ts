@@ -61,7 +61,7 @@ const village = buildScene({
               label: 'Ouvrir son infirmaire (soins payants).',
               flow: flowFromEffects([
                 {
-                  type: 'medicalAid', entityId: 'medecin', skill: 45, intBonus: 3,
+                  type: 'medicalAid', entityId: 'medecin', skill: { id: 'guerison', value: 45 }, intBonus: 3,
                   acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }],
                 },
                 { type: 'endDialogue' },

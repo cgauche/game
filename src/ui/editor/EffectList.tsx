@@ -903,7 +903,13 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                 );
               })}
               <div className="tf-row">
-                <label className="dr">Guérison (PNJ)<NumberField variant="nu" label="Guérison du PNJ" value={e.skill ?? 50} onChange={(skill) => upd({ skill })} /></label>
+                <RefField
+                  cfg={{ ds: 'skills', single: true, spec: true }}
+                  fieldKey="Compétence"
+                  value={e.skill ?? { id: 'guerison' }}
+                  onChange={(v) => upd({ skill: { ...(v as { id: string; spec?: string }), value: e.skill?.value ?? 50 } })}
+                />
+                <label className="dr">Valeur (PNJ)<NumberField variant="nu" label="Valeur de Test du PNJ" value={e.skill?.value ?? 50} onChange={(value) => upd({ skill: { ...(e.skill ?? { id: 'guerison' }), value } })} /></label>
                 <label className="dr">Bonus Int<NumberField variant="nu" label="Bonus d’Intelligence du PNJ" value={e.intBonus ?? 4} onChange={(intBonus) => upd({ intBonus })} /></label>
               </div>
               <input placeholder="id du PNJ soigneur (son label = nom affiché ; vide = « Soigneur »)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value || undefined })} />

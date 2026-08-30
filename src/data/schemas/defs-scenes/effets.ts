@@ -16,7 +16,7 @@ import { z } from 'zod';
 import { charKeySchema, difficultySchema, hitLocationSchema, refTestDeCorruption } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, flowTestSchema, gameOpSchema, stakeRefSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
-import { customStatblockSchema, moneySchema, ptSchema, wallSideSchema } from './communs';
+import { customStatblockSchema, moneySchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
 import type { Effect } from '../../../state/scene';
 import type { Flow } from '../../../engine/flowCore';
 
@@ -264,7 +264,9 @@ export const openPortSchema = z.strictObject({ type: z.literal('openPort'), plac
  *  médicale se paie À L'ACTE, 4-6 pistoles) : ouvre l'INFIRMERIE du PNJ (modale persistante,
  *  state/medicFlow) avec ses actes et leurs tarifs — `acts` liste {act, cost?} ; le débit a lieu
  *  au lancement de chaque acte (remboursé si annulé avant le jet). `skill`/`intBonus` = compétence
- *  de Guérison du PNJ (sa fiche, éditable — le moteur applique le RAW Guérison/Chirurgie existant).
+ *  de Guérison du PNJ (sa fiche, éditable — le moteur applique le RAW Guérison/Chirurgie existant) :
+ *  la Compétence est une RÉFÉRENCE portant sa valeur de Test imprimée (`skillRefSchema`, la forme de
+ *  Compétence de statbloc de la racine scènes) — le PNJ soigneur n'a pas de fiche de héros.
  *  `entityId` = le PNJ soigneur (son `label` donne le NOM affiché) → aucun nom codé en dur. Le
  *  joueur choisit les patients dans la modale. */
 export const medicalAidSchema = z.strictObject({
@@ -272,7 +274,7 @@ export const medicalAidSchema = z.strictObject({
   acts: z
     .array(z.strictObject({ act: z.enum(['wounds', 'bleed', 'trauma', 'surgery']), cost: moneySchema.optional() }))
     .optional(),
-  skill: z.number(),
+  skill: skillRefSchema,
   intBonus: z.number(),
   entityId: z.string().optional(),
 });

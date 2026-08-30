@@ -121,7 +121,7 @@ describe('Régime RAPIDE — la règle optionnelle, DISTINCTE de l’ouverture d
       .toEqual([{ id: 'pari' }, { id: 'projectiles', spec: 'lancer' }]);
     // L'override MAISON vit en DONNÉE (`fastSkill`), éditable : posé, c'est lui qui joue.
     const maison = fastTavernGame({ ...findTavernGameById('bras-de-fer')!, fastSkill: { char: 'force', maison: 'lecture d’esprit de l.11' } });
-    expect([maison.skill, maison.characteristic]).toEqual([null, 'force']);
+    expect([maison.skill, maison.characteristic]).toEqual([undefined, 'force']);
   });
 
   it('éteinte, le jeu complet reste intact (les deux régimes coexistent)', () => {

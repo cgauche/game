@@ -24,8 +24,8 @@ const FABRIQUES_OBJET = new Set(['object', 'strictObject', 'looseObject']);
  * l'argument de `z.strictObject`, à ceci près qu'aucune fabrique zod ne l'entoure. Sans cette porte,
  * l'adoption de la fabrique par un def FAISAIT DISPARAÎTRE ses trouvailles du scan — une perte de
  * COUVERTURE que le cliquet « le stock ne peut que décroître » lisait comme un solde (#1467
- * V-FLIP-ENTITE-b : `advancementCosts.skill` et `interludeEvents.min/max` étaient toujours déclarés,
- * donnée inchangée). La forme est DOMINANTE (43 defs adoptés) : elle s'éteint, elle ne se déclare pas
+ * V-FLIP-ENTITE-b : `interludeEvents.min/max` était toujours déclaré, donnée inchangée). La forme
+ * est DOMINANTE (43 defs adoptés) : elle s'éteint, elle ne se déclare pas
  * en angle mort.
  */
 const FABRIQUE_DOCUMENT = 'document';

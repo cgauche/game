@@ -119,12 +119,13 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: SAVE_VERSION - 1 })).toBeNull();
     expect(parseSave({ ...cur, version: 1 })).toBeNull();
   });
-  it('la forme persistée COURANTE écrit la réf de Compétence d’un `GameOp` en `{id, spec?}` (L2 #1548) : 31, et 30 se jette', () => {
-    // 31 = commit 3c : `party[].traumas[].ops` (op `skillMod`) et tout `FlowTest` de cascade suspendue
-    // portent désormais `skill: { id, spec? }`. Une save de 30 lirait `o.skill.id` sur une CHAÎNE et
-    // perdrait la pénalité EN SILENCE : elle se jette (politique 2, `saves.ts`).
-    expect(SAVE_VERSION).toBe(31);
-    expect(parseSave({ ...cur, version: 30 })).toBeNull();
+  it('la forme persistée COURANTE écrit la Compétence du PNJ soigneur en réf `{id, spec?, value}` (L2 #1548) : 32, et 31 se jette', () => {
+    // 32 = commit 3d : l'effet `medicalAid` du document de scène (`scene`) et l'infirmerie ouverte
+    // (`medic.npc.skill`) portent une RÉFÉRENCE là où vivait un NOMBRE. Une save de 31 lirait
+    // `npc.skill.value` sur un nombre — cible de jet `undefined` EN SILENCE : elle se jette
+    // (politique 2, `saves.ts`).
+    expect(SAVE_VERSION).toBe(32);
+    expect(parseSave({ ...cur, version: 31 })).toBeNull();
   });
 
   /**

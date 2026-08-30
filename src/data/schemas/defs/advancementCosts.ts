@@ -4,6 +4,8 @@
  * nombre d'Augmentations DÉJÀ achetées, `max` borne haute INCLUSIVE ; la DERNIÈRE bande porte `max: null`
  * (« et au-delà », JSON n'a pas d'Infinity — cf. commentaire du consommateur). `id`/`label` = identité
  * STABLE de la bande (fourchette d'Augmentations déjà achetées), ajoutée pour l'exposition Codex (#422).
+ * Les deux colonnes portent le nom de ce qu'elles sont — des COÛTS EN PX (#1548 L2, DESIGN v2 §S2 :
+ * les noms de concept `skill`/`char` sont réservés à leur type).
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
@@ -16,16 +18,16 @@ const doc = document(
   famille,
   {
     max: z.number().nullable(),
-    char: z.number(),
-    skill: z.number(),
+    coutCarac: z.number(),
+    coutCompetence: z.number(),
   },
   {
     max: {
       label: 'Borne haute de la bande',
       hint: 'Nombre d’Augmentations déjà achetées à ne pas dépasser ; null sur la dernière bande (« et au-delà »)',
     },
-    char: { label: 'Coût (Caractéristique)', hint: 'Coût en PX de la prochaine Augmentation de Caractéristique' },
-    skill: { label: 'Coût (Compétence)', hint: 'Coût en PX de la prochaine Augmentation de Compétence' },
+    coutCarac: { label: 'Coût (Caractéristique)', hint: 'Coût en PX de la prochaine Augmentation de Caractéristique' },
+    coutCompetence: { label: 'Coût (Compétence)', hint: 'Coût en PX de la prochaine Augmentation de Compétence' },
   },
   {
     codex: { keys: ['advancementCosts'] },

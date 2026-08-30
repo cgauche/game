@@ -177,7 +177,12 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
     // déplacement. Aucune référence n'a été écrite : `champDuPath` retient le DERNIER segment (`id`),
     // donc l'adoption de `refOuSpec('skill')` reste invisible à cette mesure (`ANGLES_MORTS_SLOTS`,
     // dériveur à descendre d'un niveau consigné pour #1473) — c'est le CHAMP PORTEUR qui a bougé.
-    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(340);
+    // Cliquet REMONTÉ 340 → 341 (L2 #1548, commit 3d) — MÊME angle mort `champDuPath` : `talents ›
+    // reverseFailed` nomme sa LISTE `skills`, donc ses 9 références quittent la ligne `talents.skill`
+    // (132→123) pour une ligne `talents.skills` (9) — une ligne de plus, PAS une référence de plus. Les
+    // 2 références neuves d'`arene-projet.skill` (10→12) sont la valeur de Test du PNJ soigneur, qui
+    // ÉTAIT un nombre nu : elle devient une référence, donc une dette d'adoption VISIBLE.
+    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(341);
   });
 
   it('chaque ligne du stock porte sa DATE et son LOT de mort', () => {

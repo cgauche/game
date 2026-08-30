@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
-import { flowStakeRef, hasFlowStake } from '../data';
+import { flowStakeRef, hasFlowStake, skillRefLabel } from '../data';
 import { stakeRuleOf } from './StakeNote';
 import { CodexRef } from './compendium/CodexRef';
 import { Modal } from './Modal';
@@ -253,7 +253,7 @@ export function MedicModal() {
                   className="btn medic-act"
                   disabled={!!reason || (!npc && !healer)}
                   onClick={() => act(a)}
-                  title={reason ?? (npc ? `${npc.label} (Guérison ${npc.skill})` : healer ? `Soigné par ${healer.label}` : 'Aucun soigneur (Compétence Guérison) dans le groupe')}
+                  title={reason ?? (npc ? `${npc.label} (${skillRefLabel(npc.skill)})` : healer ? `Soigné par ${healer.label}` : 'Aucun soigneur (Compétence Guérison) dans le groupe')}
                 >
                   {meta.icon} {meta.label}
                   {(a === 'bleed' || a === 'ammo') && stacks > 0 ? ` ×${stacks}` : ''}

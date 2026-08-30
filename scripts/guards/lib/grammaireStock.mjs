@@ -52,7 +52,6 @@ export const GRAMMAIRE_STOCK = {
   // #1467 L1b V-FLIP-ENTITE-b : la ligne REVIT sous le binding `doc` — l'adoption de `document()`
   // l'avait fait sortir du scan (l'argument `champs` n'était pas visité), pas de la déclaration.
   // Le champ `skill` est toujours là, la donnée n'a pas bougé.
-  'src/data/schemas/defs/advancementCosts.ts:doc|alias|skill': e('Table des coûts d’avancement keyée par colonne `skill` (Compétence vs Caractéristique).', L2),
   'src/data/schemas/defs/etats.ts:recoverSchema|alias|skill': e('Test de récupération d’un État désignant sa Compétence par `skill`.', L2),
   'src/data/schemas/defs/miscast.ts:jsonOpSchema|alias|skill': e('Op de maléfice portant un test par `skill` (le champ moteur `TestSpec.skill`, non migré).', L2),
   'src/data/schemas/defs/miscast.ts:jsonNestedTestSchema|alias|skill': e('Test IMBRIQUÉ d’un maléfice, même graphie `skill` que l’op porteuse.', L2),
@@ -71,7 +70,7 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs/water-exposure.ts:doc.test|alias|skill': e('Test d’exposition à l’eau : réf de Compétence EMBOÎTÉE (`skill: {id, spec?}`) ; le conteneur reste au lot L4.', L2),
   'src/data/schemas/defs-scenes/effets.ts:pursuitFoeSchema|alias|skill': e('Poursuivant d’une Poursuite désignant sa Compétence de course par `skill`.', L2),
   'src/data/schemas/defs-scenes/effets.ts:extendedTestSchema|alias|skill': e('Effet `extendedTest` (test étendu de scène) désignant sa Compétence par `skill`.', L2),
-  'src/data/schemas/defs-scenes/effets.ts:medicalAidSchema|alias|skill': e('Effet `medicalAid` (Soins) désignant sa Compétence par `skill`.', L2),
+  'src/data/schemas/defs-scenes/effets.ts:medicalAidSchema|alias|skill': e('Effet `medicalAid` (Soins) : la Compétence du PNJ soigneur est une RÉFÉRENCE de statbloc (`skillRefSchema`, `{id, spec?, value}`) — le conteneur, lui, reste au lot L4.', L2),
   'src/data/schemas/defs-scenes/effets.ts:corruptionExposureSchema|alias|skill': e('Effet `corruptionExposure` désignant la Compétence du jet de résistance par `skill`.', L2),
   'src/data/schemas/defs-scenes/effets.ts:startPursuitSchema|alias|skill': e('Effet `startPursuit` désignant la Compétence de course par `skill`.', L2),
   'src/data/schemas/defs-scenes/communs.ts:skillRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('Réf de Compétence de scène re-tapée `{id, spec, value}` — la signature de `qualityRefSchema`, pour un tout autre concept. UNE seule définition pour la racine `src/scenes` (`scene.ts` la réexporte).', L2),

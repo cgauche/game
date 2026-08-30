@@ -4194,7 +4194,10 @@
                }
               }
              ],
-             "skill": 55,
+             "skill": {
+              "id": "guerison",
+              "value": 55
+             },
              "intBonus": 4,
              "entityId": "medecin"
             }
@@ -4542,7 +4545,10 @@
                }
               }
              ],
-             "skill": 55,
+             "skill": {
+              "id": "guerison",
+              "value": 55
+             },
              "intBonus": 4,
              "entityId": "frere"
             }

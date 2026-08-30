@@ -128,7 +128,7 @@ export const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
     focusNoMiscastOnDouble: z.boolean().optional(),
     castNoMiscastOnDouble: z.boolean().optional(),
     causesFear: z.boolean().optional(),
-    reverseFailed: z.strictObject({ skill: z.union([refOuSpec('skill'), z.array(refOuSpec('skill'))]), capDR: z.number().optional() }).optional(),
+    reverseFailed: z.strictObject({ skills: z.array(refOuSpec('skill')).min(1), capDR: z.number().optional() }).optional(),
     bargainBonus: z.boolean().optional(),
     encumbranceBonus: z.boolean().optional(),
     corruptionThreshold: z.boolean().optional(),

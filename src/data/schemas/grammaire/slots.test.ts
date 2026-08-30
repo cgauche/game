@@ -100,7 +100,11 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     // `corruptionExposure` (op `GameOp`, effet de scène) n'en posent AUCUNE : `refTestDeCorruption`
     // est un ENUM d'alphabet (`TESTS_DE_CORRUPTION`) et non une réf de catalogue — borne plus étroite,
     // donc hors du compteur de FK. Le stock des sites ADOPTÉS ne peut que CROÎTRE.
-    ).toEqual(['actorRefSchema', "idDe('creature')", ...Array.from({ length: 30 }, () => "idDe('skill')"), "idDe('trapping')"]);
+    // … puis 30 → 28 au commit 3d, où l'UNION de `talents.reverseFailed` MEURT : le champ porte
+    // TOUJOURS une liste (`skills`), donc 1 fabrique par instance au lieu de 2 — 2 marques de moins
+    // pour un MÊME nombre de références validées (les 2 instances restantes, base et `variants`,
+    // couvrent les 9 références des 8 Talents). Une BRANCHE de moins n'est pas un site de moins.
+    ).toEqual(['actorRefSchema', "idDe('creature')", ...Array.from({ length: 28 }, () => "idDe('skill')"), "idDe('trapping')"]);
   });
 
   it('la coupe de PROFONDEUR_MAX est BRUYANTE : un schéma trop profond LÈVE en nommant son path', () => {

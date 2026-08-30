@@ -86,7 +86,7 @@ describe('Jeux de taverne — moteur générique (NADJ 16)', () => {
     }
   });
 
-  it('Al-Zahr n’indique aucune Compétence → repli Pari (skill null, l.11)', () => {
-    expect(findTavernGameById('al-zahr')!.skill).toBeNull();
+  it('Al-Zahr n’indique aucune Compétence → repli Pari (`skill` ABSENT, l.11)', () => {
+    expect(findTavernGameById('al-zahr')!.skill).toBeUndefined();
   });
 });

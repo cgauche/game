@@ -87,7 +87,7 @@ export function TavernGameModal() {
   const rapide = tavernFastRegime();
   const opt = !rapide ? game?.options?.[0] : undefined;
   const testAffiche = {
-    skill: opt?.skill ?? game?.skill ?? undefined,
+    skill: opt?.skill ?? game?.skill,
     char: opt?.char ?? (opt?.skill ? undefined : game?.characteristic),
   };
   const difficulteAffichee: Difficulty = rapide ? TAVERN_TEST_DIFFICULTY : (opt?.difficulty ?? TAVERN_TEST_DIFFICULTY);

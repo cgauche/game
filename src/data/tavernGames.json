@@ -3,7 +3,6 @@
     "id": "al-zahr",
     "type": "tavernGames",
     "label": "L'Al-zahr",
-    "skill": null,
     "roundShape": "pot",
     "pot": {
       "dice": {
@@ -108,7 +107,6 @@
     "id": "bras-de-fer",
     "type": "tavernGames",
     "label": "Le bras de fer",
-    "skill": null,
     "characteristic": "force",
     "mode": "extended",
     "target": 10,
@@ -493,7 +491,6 @@
     "id": "moulins",
     "type": "tavernGames",
     "label": "Les moulins",
-    "skill": null,
     "characteristic": "intelligence",
     "mode": "extended",
     "target": 9,
@@ -514,7 +511,6 @@
     "id": "pierres",
     "type": "tavernGames",
     "label": "Les pierres",
-    "skill": null,
     "characteristic": "intelligence",
     "mode": "extended",
     "target": 10,

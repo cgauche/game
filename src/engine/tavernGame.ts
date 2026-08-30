@@ -31,8 +31,8 @@ export interface TavernGame {
   /** Règle du jeu recopiée VERBATIM (section « Jeu : » du livre). */
   desc: string;
   /** Référence de la Compétence du jeu (`{ id, spec? }`, skills.json) — l'appelant calcule la valeur.
-   *  `null` = aucune Compétence indiquée → Pari (variante rapide, l.11). */
-  skill: SkillRef | null;
+   *  ABSENTE = aucune Compétence indiquée → Pari (variante rapide, l.11). */
+  skill?: SkillRef;
   /** Caractéristique du jeu quand il ne repose pas (ou pas seulement) sur une Compétence (Bras de fer = F,
    *  Bête = CT, Alvatafl/Cerevis = Int/I). Sert à l'appelant pour calculer la valeur. */
   characteristic?: CharKey;
@@ -158,7 +158,7 @@ export function fastTavernGame(g: TavernGame): TavernGame {
     id: g.id,
     label: g.label,
     desc: g.desc,
-    skill: test.skill ?? null,
+    ...(test.skill ? { skill: test.skill } : {}),
     ...(test.char ? { characteristic: test.char } : {}),
     mode: 'opposed',
     source: g.source,

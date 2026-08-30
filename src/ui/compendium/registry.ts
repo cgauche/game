@@ -1137,7 +1137,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'advancementCosts', label: 'Coût des Augmentations', group: 'Tables', cluster: 'Création de personnage', sourceRef: 'LDB 07',
     build: () => datasetArray('advancementCosts').map((b) => depuisEnveloppe(b, {
       sub: 'Augmentations déjà achetées',
-      meta: facts(fact('Coût — Caractéristique', b.char), fact('Coût — Compétence', b.skill)),
+      meta: facts(fact('Coût — Caractéristique', b.coutCarac), fact('Coût — Compétence', b.coutCompetence)),
     })),
   },
   {

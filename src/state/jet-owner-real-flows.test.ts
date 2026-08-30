@@ -109,7 +109,7 @@ describe('#1015 — sonde 2 : `heal` par un SOIGNEUR PNJ (hors `actorIn`)', () =
     hero.id = 'b';
     hero.wounds = { ...hero.wounds, current: hero.wounds.max - 5 };
     useGame.setState({ battle: null, mode: 'exploration', scene: testScene, party: [hero], net: NET_COOP });
-    openMedic(g, useGame.setState, { patientId: 'b', npc: { id: 'medecin-de-scene', label: 'Barbier-chirurgien', skill: 45, intBonus: 3, acts: [{ act: 'wounds' }] } });
+    openMedic(g, useGame.setState, { patientId: 'b', npc: { id: 'medecin-de-scene', label: 'Barbier-chirurgien', skill: { id: 'guerison', value: 45 }, intBonus: 3, acts: [{ act: 'wounds' }] } });
     medicAct(g, useGame.setState, 'wounds');
     expect(g().pendingHeal?.healerId, 'précondition : le soigneur est le PNJ de scène').toBe('medecin-de-scene');
     for (const i of HEAL_VERBS) expect(seats(i), `${i} : un PNJ n’a ni Chance ni Résilience à dépenser`).toEqual([false, false, false]);

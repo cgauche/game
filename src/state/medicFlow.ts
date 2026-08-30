@@ -19,7 +19,7 @@ import { type Combatant, type Difficulty } from '../engine/types';
 import { rollLine } from './rollSeam';
 import { battleRng } from './battleRng';
 import { d10 } from '../engine/dice';
-import { flowStakeRef, type StakeRef } from '../data';
+import { flowStakeRef, type StakeRef, type SkillRef } from '../data';
 import { applyOps } from '../engine/ops';
 import { extendedTestStep } from '../engine/tests';
 import { partyAssisted, type SupportDetail } from '../engine/skills';
@@ -35,11 +35,12 @@ import { finishPlayerAction, openContractionCascade } from './combatFlow';
 
 export interface MedicCost { gold?: number; silver?: number; brass?: number }
 
-/** PNJ soigneur payant (effet `medicalAid`) : sa compétence + son tarif PAR ACTE. */
+/** PNJ soigneur payant (effet `medicalAid`) : sa compétence + son tarif PAR ACTE. La Compétence est
+ *  une RÉFÉRENCE portant sa valeur de Test imprimée (`SkillRef`) — le PNJ n'a pas de fiche. */
 export interface MedicNpc {
   id: string;
   label: string;
-  skill: number;
+  skill: SkillRef;
   intBonus: number;
   acts: { act: HealMode; cost?: MedicCost }[];
 }
@@ -145,7 +146,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
       payFromGroup(get, set, cost, { purpose: 'soins' });
       paidCost = offer.cost;
     }
-    healer = { id: m.npc.id, label: m.npc.label, skill: m.npc.skill, intBonus: m.npc.intBonus };
+    healer = { id: m.npc.id, label: m.npc.label, skill: m.npc.skill.value, intBonus: m.npc.intBonus };
   } else {
     const best = bestHealerFor(get().party, act);
     if (!best) return;

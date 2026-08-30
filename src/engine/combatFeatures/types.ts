@@ -142,10 +142,10 @@ export interface CombatFeature {
   // (Le +DR de Talent — Menaçant → Intimidation — est désormais la règle UNIVERSELLE `talentTestSLBonus`
   //  pilotée par `TalentData.test.matches`, jamais par un descripteur `testDR` par-libellé.)
   /** Inverse un Test RATÉ de la Compétence référencée s'il devient réussi (Sociable → Ragot, Studieux →
-   *  Recherche…). Réf STRUCTURÉE `{ id, spec? }` (jamais un match par libellé) ; `capDR` plafonne le DR
-   *  (Pansement +1). `skill` accepte un TABLEAU de références pour un Talent couvrant plusieurs
-   *  Compétences en « ou » (Pilote → Ramer OU Voile, LDB 10 l.964). */
-  reverseFailed?: { skill: SkillRef | SkillRef[]; capDR?: number };
+   *  Recherche…). Réfs STRUCTURÉES `{ id, spec? }` (jamais un match par libellé) ; `capDR` plafonne le DR
+   *  (Pansement +1). TOUJOURS une LISTE : un Talent peut couvrir plusieurs Compétences en « ou »
+   *  (Pilote → Ramer OU Voile, LDB 10 l.964). */
+  reverseFailed?: { skills: SkillRef[]; capDR?: number };
   // ── Économie / social ──────────────────────────────────────────────────────
   /** Négociateur (LDB 59 l.43) : un Marchandage GAGNÉ réduit le prix de 20 % (au lieu de 10 %) même
    *  sans Succès Stupéfiant (DR net ≥ 6). Lu par merchantFlow lors de la conclusion du Marchandage. */

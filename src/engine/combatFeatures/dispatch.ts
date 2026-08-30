@@ -349,8 +349,7 @@ export function talentReverseFailed(c: Combatant, q: { skill?: string; spec?: st
   for (const { def } of featuresOf(c)) {
     const rf = def.reverseFailed;
     if (!rf) continue;
-    const skills = Array.isArray(rf.skill) ? rf.skill : [rf.skill];
-    if (skills.some((s) => s.id === q.skill && (s.spec == null || s.spec === q.spec))) return { capDR: rf.capDR };
+    if (rf.skills.some((s) => s.id === q.skill && (s.spec == null || s.spec === q.spec))) return { capDR: rf.capDR };
   }
   return null;
 }

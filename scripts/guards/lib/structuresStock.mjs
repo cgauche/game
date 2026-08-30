@@ -213,6 +213,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "arene-projet.json", champ: "optionals", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 291, lot: "L3 #1463", date: "2026-08-30", motif: "référence de PION de scène" },
   { concept: "reference", dataset: "arene-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "arene-projet.json", champ: "skill", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 2, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "start", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 9, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "style", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "traits", signature: "arg,id", statut: "historique", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
@@ -697,8 +698,7 @@ export const STRUCTURES_DEFAUT = [
 ];
 
 export const STRUCTURES_HOMONYMES = [
-  { cle: "skill", classes: ["array","null","number","object"], occurrences: 368, lot: "L2 #1463", date: "2026-08-23" },
-  { cle: "char", classes: ["number","object","string"], occurrences: 876, lot: "L4 #1463", date: "2026-08-23" },
+  { cle: "char", classes: ["object","string"], occurrences: 861, lot: "L4 #1463", date: "2026-08-23" },
   { cle: "price", classes: ["null","number","object","string"], occurrences: 515, lot: "L4 #1463", date: "2026-08-23" },
   { cle: "cost", classes: ["number","object","string"], occurrences: 93, lot: "L4 #1463", date: "2026-08-23" },
   { cle: "count", classes: ["number","object"], occurrences: 92, lot: "L4 #1463", date: "2026-08-23" },
@@ -988,10 +988,8 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "vehicles.json", champ: "purchase", signature: "price", motif: "clé réservée", occurrences: 17, lot: "#1553", date: "2026-08-23" },
   { dataset: "talents.json", champ: "matches", signature: "manual,skill", motif: "clé réservée", occurrences: 74, lot: "#1553", date: "2026-08-23" },
   { dataset: "talents.json", champ: "matches", signature: "skill", motif: "clé réservée", occurrences: 34, lot: "#1553", date: "2026-08-23" },
-  { dataset: "talents.json", champ: "reverseFailed", signature: "skill", motif: "clé réservée", occurrences: 6, lot: "#1553", date: "2026-08-23" },
   { dataset: "talents.json", champ: "matches", signature: "skill,when", motif: "clé réservée", occurrences: 4, lot: "#1553", date: "2026-08-23" },
   { dataset: "talents.json", champ: "matches", signature: "skill,specFromInstance", motif: "clé réservée", occurrences: 3, lot: "#1553", date: "2026-08-23" },
-  { dataset: "talents.json", champ: "reverseFailed", signature: "capDR,skill", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "trappings.json", champ: "test", signature: "label,skill", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "arene-projet.json", champ: "effect", signature: "level,skill,type", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "etats.json", champ: "test", signature: "difficultyBy,gate,label,skill", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },

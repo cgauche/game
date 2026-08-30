@@ -160,7 +160,12 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
 // signatures nommées par la garde (`bonus,op,skill`, `mod,op,skill`, `blocked,op,skill`…) sont les
 // PAYLOADS D'OP qui, ayant perdu leur `spec` frère ou leur `skill` chaîne, rejoignent la table hors
 // strate. Le dénominateur À ÉTEINDRE, lui, décroît de 16 lignes dans le même geste (cf. cliquets).
-const PLAFOND_HORS_STRATE = 1135;
+// L2 #1548, commit 3d (1135→1137) : AUCUNE structure neuve — `talents.json › reverseFailed` porte
+// désormais une LISTE nommée `skills` là où `skill` désignait tantôt une réf, tantôt une liste. La
+// clé cessant d'être un nom de concept RÉSERVÉ, ses deux signatures (`skills`, `capDR,skills`)
+// quittent le dénominateur à éteindre (`STRUCTURES_ORPHELINES` 106→104) et rejoignent la table hors
+// strate. MÊMES objets, nouveau classement.
+const PLAFOND_HORS_STRATE = 1137;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -401,7 +406,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `corruptionExposure`, conteneurs de Test, `talents.matches`/`reverseFailed`, `tavernGames`) et
       // qu'1 ligne neuve apparaît (`domains.json › test` : la même entrée, sa signature perdant le `spec`
       // frère — `difficulty,skill+…` → `difficulty,skill`). Le cliquet SUIT.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 557],
+      // Cliquet REMONTÉ 557 → 558 (L2 #1548, commit 3d) : AUCUNE dérive neuve — la valeur de Test du
+      // PNJ soigneur (`medicalAid`) ÉTAIT un NOMBRE nu, INVISIBLE à ce scan qui ne mesure que des
+      // références ; devenue la référence de statbloc `{id, value}` de la racine scènes, elle entre au
+      // dénominateur à la MÊME graphie historique que ses 4 562 sœurs (`creatures.json › skills`). Le
+      // dénominateur GLOBAL, lui, DÉCROÎT : 557+106 = 663 → 558+104 = 662.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 558],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -416,7 +426,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 27],
       // Cliquet DESCENDU 6 → 5 : le stock est à 5 depuis un lot antérieur et la marge n'avait pas été
       // reprise. Aucune raison de garder un cran libre : il servirait à absorber un homonyme neuf.
-      ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 5],
+      // … et 5 → 4 (L2 #1548, commit 3d) : l'homonyme `skill` MEURT — la clé n'a plus qu'UNE classe
+      // (object) dans les deux racines (coûts en PX renommés, valeur de Test emboîtée, `null` devenu
+      // absence, liste renommée `skills`).
+      ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 4],
       // Cliquet REMONTÉ 102 → 108 (#1467 L1b V-FLIP-ENTITE-b) : c'est la COUVERTURE du relevé qui a
       // changé, pas la donnée ni les defs. `litterauxZod` (structures-scan.mts) visite désormais
       // l'argument `champs` de `document()` — forme DOMINANTE (43 defs adoptés) qu'il ne voyait pas :
@@ -450,7 +463,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // elle se compte sur LUI (forme CIBLE `{id}`, hors dénominateur) et le conteneur, qui annonce
       // encore une clé réservée sans résoudre lui-même, tombe ici. MÊME objet, autre stock — le
       // dénominateur GLOBAL décroît de 16 lignes (587+92 = 679 → 557+106 = 663).
-      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 106],
+      // Cliquet DESCENDU 106 → 104 (L2 #1548, commit 3d) : les 2 conteneurs `talents.json ›
+      // reverseFailed` sortent — leur clé n'est plus le nom de concept RÉSERVÉ `skill` mais `skills`,
+      // la LISTE que le champ porte toujours. Le cliquet SUIT la baisse.
+      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 104],
       // Cliquet DESCENDU 403 → 400 (L2 #1548, commit 3c) : 5 signatures d'op portant le `spec` FRÈRE
       // s'éteignent (`bonus,op,skill,spec` de spells/tables, `blocked,op,rounds,skill`/`mod,op,rounds,skill`
       // de spells dont le `skill: "all"` disparaît au profit de l'ABSENCE) et 2 se fondent dans des
@@ -536,7 +552,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L4 #1463': 219,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
-      '#1553': 106,
+      // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`
+      // n'est plus un nom de concept réservé.
+      '#1553': 104,
     };
     expect(
       Object.keys(plafonds).sort(),

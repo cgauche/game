@@ -166,7 +166,7 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
     party[1].wounds = { ...party[1].wounds, current: party[1].wounds.current - 6 };
     useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null });
     creditBourse(useGame.getState, useGame.setState, party[1].id, { gold: 1, silver: 10, brass: 0 }); // le patient (party[1]) paie son acte (soloPayer)
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 55, intBonus: 4, entityId: 'medecin' }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: { id: 'guerison', value: 55 }, intBonus: 4, entityId: 'medecin' }]);
     const m = useGame.getState().medic!;
     expect(m.npc!.id).toBe('medecin'); // l'id de l'entité PNJ
     expect(m.npc!.label).toBe('Médecin'); // le label de l'entité (renommable)
@@ -188,7 +188,7 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
     party[0].wounds = { ...party[0].wounds, current: party[0].wounds.current - 3 };
     party[2].wounds = { ...party[2].wounds, current: party[2].wounds.current - 8 };
     useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], skill: 55, intBonus: 4, entityId: 'medecin' }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], skill: { id: 'guerison', value: 55 }, intBonus: 4, entityId: 'medecin' }]);
     useGame.getState().medicSelectPatient(party[2].id);
     expect(useGame.getState().medic!.patientId).toBe(party[2].id);
     useGame.getState().closeMedic();
@@ -196,7 +196,7 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
 
   it('un acte sans patient pertinent est simplement refusé (pas de jet)', () => {
     useGame.setState({ party: makeShowcaseParty(), scene: hub, battle: null, pendingHeal: null, medic: null }); // groupe au max de PB
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], skill: 55, intBonus: 4 }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds' }], skill: { id: 'guerison', value: 55 }, intBonus: 4 }]);
     useGame.getState().medicAct('wounds');
     expect(useGame.getState().pendingHeal).toBeNull();
     useGame.getState().closeMedic();
