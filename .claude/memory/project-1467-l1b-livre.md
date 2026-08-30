@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 581b89eb-a389-4f97-87c2-713104a0fbca
-  modified: 2026-08-29T06:37:31.363Z
+  modified: 2026-08-30T06:36:40.274Z
 ---
 
 **#1467 (L1b) FERMÉ** le 2026-08-29 (723ac39c6) : 121/121 defs par `document()`, enveloppe verrouillée par construction, scènes en `label` (schema 6, SAVE_VERSION 29), statblocks structurels, Codex à défaut d'enveloppe, stock ENVELOPPE 112→56 dont 0 L1b. Pilotage humain : commentaire sur l'epic #1463 ([[feedback-pilotage-epic-commentaire-github]]).
@@ -16,7 +16,7 @@ metadata:
 
 **Lot rig : VAGUE ② CLOSE le 2026-08-29** (#1536/#1567/#1524/#1537 fermés, 7f5dade82, revue de palier PARTIEL). Leçons durables : l'audit d'ouverture a réfuté « lot déjà livré » (prescription jamais dispatchée) ET « art = sessions dédiées » (l'art existait, il manquait 11 stubs) — TOUJOURS auditer les prémisses héritées ; la recette a exhumé #1567 dont l'hypothèse (chemin emplacement) a été RÉFUTÉE par reproduction (cause = loi d'étage capsSolid) ; le vocabulaire RigSpeciesId a désormais SA loi (producteur validant `asRigSpeciesId`, 2 sites de cast, gardes d'entrée 512 sites) ; la revue de palier a débusqué la porte de service du cliquet par lot (96 lignes reversées vers les lots non plafonnés — plafonds ≡ LOTS_CONNUS + bidirectionnel désormais). Restes routés : #1566/#1569-#1573, #1570 (repli humain familiers/véhicules), #1535 ×3.
 
-**Lot CodexEdit (#1530 + #1526 + #1525)** — Enregistrer TOUJOURS en échec ×20 datasets (cause racine dans le ticket), groupes repliables morts au clic, clé d'espèce saisie libre. Doctrine : éditabilité non négociable ; l'ancrage par label de #1539 est du ressort de L2, pas de ce lot.
+**Lot CodexEdit : VAGUE ③ CLOSE le 2026-08-30** (#1530/#1354/#1525/#1560/#1565/#1578 fermés par 0b3ca3477 ; #1526 fermé à part sur requalification honnête). Leçons durables : la revue de palier a mesuré une éditabilité MENTEUSE installée le jour même (#1560 route la météo mais 9 sites lisent `WEATHER_LABEL` dupliqué — deux commits consécutifs, deux doctrines opposées → **#1580 patron #1565, À TRAITER AVANT L2 #1548**, proposé au pilotage, en attente de validation user) ; le cliquet par lot est GELÉ (Σ 1334 sur 3 vagues) → L2 #1548/#1553 exigent une BAISSE chiffrée au ticket ; part joueur 1,8 % (recul) → la vague suivante ouvre sur du visible-écran. Restes routés : #1580-#1584 (labels météo, cargo inéditables, DETAIL_TEXT_LABEL, .de-reflrow ×12, curation avaleurs), #1562 (raison des clés secondaires), #1574/#1575/#1577 (élargis par commentaires datés du 2026-08-30).
 
 **L2 #1548 (le gros)** — le corps du ticket porte les mesures : 5 formes de ref Compétence (citées au corps de #1463), `key→characteristic` de progression-schemas (générateur PYTHON d'abord — `gen-progression-schemas.py`, la régénération-preuve est hors gates : prouver par deep-equal de l'artefact), specEntrySchema talents. Absorbe #1528 (ids config non FK-ables), #1532 (3 familles déclarées≠mesurées), #1539. Patron : design jugé AVANT code, migrations rejouables, un schéma partagé dans la grammaire (`valeurs/reference.ts` — `talentRefSchema`/`sizeCategorySchema` y sont déjà remontés à V-P7).
 
