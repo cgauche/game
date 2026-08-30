@@ -1056,3 +1056,50 @@ est en 1600×900 : les coordonnées relevées à l'œil sur l'image ne sont pas 
 (facteur 2 ici). Avant tout clic aux coordonnées, lire l'échelle réelle (`window.innerWidth`/
 `innerHeight` contre les dimensions de l'image) et convertir — ou mieux, ne pas cliquer aux
 coordonnées : viser le nœud (sélecteur/`ref` de snapshot) et laisser l'outil calculer le point.
+
+## Piège du buffer console PARTAGÉ PAR ORIGINE (panneau navigateur)
+
+Mesuré 2026-08-30 (recette #1580). Le buffer de messages du panneau navigateur est partagé PAR
+ORIGINE entre les onglets, et l'action de purge ne le vide PAS : une lecture nue rend donc aussi les
+erreurs d'un onglet FRÈRE ouvert sur le même hôte, y compris périmées. Vécu : 9 erreurs de rechargement
+à chaud imputées à tort à la page sous recette — même jeton `?t=` que l'onglet voisin, aucune façon de
+les distinguer à l'œil. Une console « rouge » ne prouve donc rien par elle-même, et une console
+« verte » lue après un geste ne prouve pas que le geste n'a rien cassé.
+
+RÈGLE : attribuer une erreur par DIFFÉRENCE de SET — relever le buffer, recharger À FROID, relever de
+nouveau, et ne retenir que ce qui apparaît. Jamais un verdict sur le buffer nu. Fermer les onglets
+frères de la même origine avant la recette reste le moyen le plus court d'éviter la question.
+
+## Piège du gros plan et du cadre de coordonnées (panneau navigateur ≠ Playwright MCP)
+
+Mesuré 2026-08-30 (recette #1580). Deux constats sur le panneau navigateur, à ne pas confondre avec
+l'outillage Playwright MCP du reste de ce document :
+
+- **Pas de gros plan par `zoom`** : `computer{action:"zoom"}` assorti d'une `region` est inopérant et
+  répond « region crop not yet supported ». Aucun recadrage n'est disponible par cette voie — pour
+  inspecter un détail fin, agrandir la cible dans la PAGE (zoom applicatif, viewport réduit via le
+  redimensionnement) plutôt que d'espérer un crop côté outil.
+- **Le cadre des coordonnées de clic est LA CAPTURE, mise à l'échelle — pas le viewport DOM.** Le
+  contrat de l'outil est explicite : une coordonnée s'exprime dans le repère de la DERNIÈRE capture,
+  et le facteur d'échelle est rapporté avec elle. Un point relevé sur le DOM (`getBoundingClientRect`,
+  `innerWidth`) doit donc être converti VERS ce repère, sinon le clic atterrit ailleurs — en silence,
+  comme tous les clics manqués de ce document.
+
+⚠️ La section précédente (« échelle de capture ≠ échelle de clic », mesurée sous **Playwright MCP**)
+énonce la convention INVERSE : là-bas les clics atterrissent dans le viewport et c'est l'image qui est
+sous-échantillonnée. Les deux sont vraies, chacune pour SON outil : avant de convertir, savoir lequel
+on pilote. Appliquer la conversion de l'un à l'autre double l'erreur au lieu de la corriger.
+
+## Chemins canoniques du Codex (niches ouvertes récemment)
+
+Une recette ne doit pas redécouvrir l'arborescence du Compendium à l'aveugle : les niches nichées sous
+un cluster de `Tables` ne sont PAS sous `Monde`, et le chemin ne se devine pas depuis le nom du
+fichier de données. Chemins vérifiés au registre (`src/ui/compendium/registry.ts`) :
+
+| Donnée | Chemin dans le Compendium |
+|---|---|
+| `weather` (table de tirage d100 par saison) | Tables › Voyage terrestre › **Météo de voyage** |
+| `weatherConditions` (effets par météo) | Tables › Voyage terrestre › **Conditions météo** |
+
+Les deux niches éditent le MÊME fichier (`src/data/weather.json`) sous deux catégories Codex : une
+recette qui vérifie l'édition d'une météo doit dire LAQUELLE des deux elle a ouverte.

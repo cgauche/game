@@ -29,10 +29,13 @@ import { availabilitySchema, harvestRaritySchema, stakeFormSchema } from './gram
 import { dispoPctAvailabilitySchema } from './defs/disponibilite';
 import type { HarvestRarity } from '../index';
 import { wallSideSchema } from './defs-scenes/communs';
+import { weatherIdSchema } from './defs/weather';
 import type { WallSide } from '../../state/scene';
 import type { WallEdgeSide } from '../../engine/types';
 
-/** Les deux canons verrouillés, sous la forme attendue par le scan. */
+/** Les deux canons verrouillés AU SEUIL GÉNÉRIQUE (≥2 membres), sous la forme attendue par le scan.
+ *  L'alphabet météo n'en est PAS : il se verrouille sur l'union COMPLÈTE, plus bas — voir le pourquoi,
+ *  mesuré, au JSDoc de son `it`. */
 const CANONS = [
   { nom: 'AVAILABILITIES', membres: AVAILABILITIES },
   { nom: 'STAKE_FORMS', membres: STAKE_FORMS },
@@ -117,6 +120,45 @@ describe('unions partagées moteur ⇄ schémas de donnée (#1440)', () => {
       .filter(({ rel }) => !rel.startsWith('src/data/schemas/defs-scenes/communs.ts:') && !EXEMPTIONS.includes(rel))
       .map(({ rel, detail }) => `${rel} — ${detail}`);
     expect(complets, 'dériver du canon : `z.infer<typeof wallSideSchema>` / `wallSideSchema.options`').toEqual([]);
+  });
+
+  /**
+   * ALPHABET MÉTÉO DE VOYAGE — le canon est le SCHÉMA (`weatherIdSchema`, `defs/weather.ts`) : le moteur
+   * en dérive `type Weather` (`engine/travelStages.ts`), l'éditeur ses `<option>`
+   * (`CodexEdit.WeatherRangesField`) et les domaines de test leur énumération (`engine/rule-refs.test.ts`).
+   *
+   * SEUIL COMPLET, et il est MESURÉ (2026-08-30, scan sur tout `src/`) : au seuil GÉNÉRIQUE de
+   * `scanUnionRecopies` (≥2 membres) ce canon rapporte 14 sites dont AUCUN ne re-déclare l'alphabet.
+   * La raison est structurelle — il existe TROIS vocabulaires météo distincts dans l'arbre, et les deux
+   * autres chevauchent celui-ci par exactement deux noms (`pluie`, `neige`) :
+   *  - la météo de SCÈNE `'clair'|'pluie'|'brouillard'|'neige'|'tempete'` (`state/scene.ts:345`,
+   *    `defs-scenes/scene.ts:510`, ses lecteurs `engine/exposure.ts:42`, `defs/ambiance.ts`,
+   *    `gameIso/catalog/ambiance.ts`, `gameIso/stage/weather-portes.test.tsx`) — AUTRE axe, migration
+   *    possédée par #1585 ; une garde de CE canon qui la rougirait accuserait un innocent ;
+   *  - les particules de RENDU `'pluie'|'averse'|'neige'` (`gameIso/catalog/ambiance.ts:57`).
+   * Restent, sur le vrai axe : le FOYER (le `z.enum` lui-même, sorti par fichier comme `communs.ts`
+   * l'est pour l'arête) et les deux narrowings RAW de `stageExposureDifficulty` (EDOC 8 l.90, modéré
+   * pluie/neige vs extrême diluvienne/blizzard) — un `case` sur une valeur DÉJÀ typée `Weather` n'est
+   * pas une recopie de type, le compilateur le borne (même verdict que `builders/walls.ts:66` ci-dessus).
+   * Au filtre COMPLET, `pluie`+`neige` ne suffisent plus : seule une vraie recopie des 6 rougit — la
+   * classe que ce lot vient d'éteindre (`rule-refs.test.ts` énumérait les 6 en dur).
+   */
+  it('l’alphabet météo de VOYAGE : les 6 ids ne sont re-tapés NULLE PART hors du canon', () => {
+    const canon = [{ nom: 'WEATHER_IDS', membres: weatherIdSchema.options }];
+    const complets = corpus()
+      .flatMap((f) => scanUnionRecopies(f, canon).map((x) => ({ rel: `${f.rel}:${x.line}`, detail: x.detail })))
+      // L'union COMPLÈTE : les 6 membres du canon nommés ensemble par le rapport du scan.
+      .filter(({ detail }) => weatherIdSchema.options.every((m) => detail.includes(`'${m}'`)))
+      // Le FOYER (le `z.enum` du canon) sort par FICHIER — c'est la maison de l'union.
+      .filter(({ rel }) => !rel.startsWith('src/data/schemas/defs/weather.ts:'))
+      .map(({ rel, detail }) => `${rel} — ${detail}`);
+    expect(complets, 'dériver du canon : `weatherIdSchema.options` / `type Weather` (`engine/travelStages.ts`) — #1580').toEqual([]);
+    // DENTS : un vert ne prouve rien si le filtre ne peut PAS mordre. La recopie que ce lot vient
+    // d'éteindre, rejouée en fixture, doit être vue ; le chevauchement à 2 noms de l'axe SCÈNE, non.
+    const vu = (text: string) =>
+      scanUnionRecopies(fixture(text), canon).filter((x) => weatherIdSchema.options.every((m) => x.detail.includes(`'${m}'`)));
+    expect(vu(`const meteos: Weather[] = ['sec', 'beau', 'pluie', 'pluie-diluvienne', 'neige', 'blizzard'];`)).toHaveLength(1);
+    expect(vu(`weather?: 'clair' | 'pluie' | 'brouillard' | 'neige' | 'tempete';`), 'axe SCÈNE (#1585) : 2 noms partagés ne font pas une recopie').toEqual([]);
   });
 
   it('`TestedAvailability` et sa sélection zod nomment le MÊME couple (le sous-ensemble n’a qu’un site)', () => {

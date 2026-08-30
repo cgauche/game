@@ -18,8 +18,7 @@ import type { CharKey, Difficulty } from './types';
 import { rule } from './policy';
 import type { CodexTarget } from './ruleRefs';
 import { weather, weatherConditions, weatherPhysicalTestChars } from '../data';
-import { t } from '../i18n';
-import type { PlayerText } from '../i18n/playerText';
+import { weatherIdSchema } from '../data/schemas/defs/weather';
 
 /** Les quatre saisons du tableau de Météo (EDOC 8 l.52). */
 export type Season = 'printemps' | 'ete' | 'automne' | 'hiver';
@@ -44,25 +43,18 @@ export function seasonOfMonth(monthIndex: number | null): Season {
   return 'hiver';                           // Ulriczeit(10), Vorhexen(11), Nachhexen(0)
 }
 
-/** Conditions météo (EDOC 8 l.50-59), de la plus clémente à la pire — l'ordre fixe le « degré
- *  de temps éloigné de Beau temps » de l'activité Plein Air (l.141). */
-export type Weather = 'sec' | 'beau' | 'pluie' | 'pluie-diluvienne' | 'neige' | 'blizzard';
-
 /**
- * Libellés FR de la météo d'ÉTAPE, dérivés du catalogue i18n (source unique des textes — cf.
- * `docs/i18n-seam.md`, Phase B ; migrés de littéraux en dur par #1318 V8a₁).
+ * Conditions météo (EDOC 8 l.50-59), de la plus clémente à la pire — l'ordre fixe le « degré de temps
+ * éloigné de Beau temps » de l'activité Plein Air (l.141).
+ *
+ * DÉRIVÉ du schéma (`weatherIdSchema`, `data/schemas/defs/weather.ts`) : la DÉCLARATION est l'unique
+ * vérité de l'alphabet — une union littérale recopiée ici aurait divergé en silence du z.enum qui
+ * valide le fichier.
  *
  * SECONDE CARTE MÉTÉO — `src/ui/CityHubScreen.tsx` (`SCENE_WEATHER_LABEL`) porte un AUTRE axe
- * (`Scene['weather']`, la météo d'une scène jouée) ; migration possédée par #1580.
+ * (`Scene['weather']`, la météo d'une scène jouée) ; migration possédée par #1585.
  */
-export const WEATHER_LABEL: Record<Weather, PlayerText> = {
-  sec: t('weather.sec'),
-  beau: t('weather.beau'),
-  pluie: t('weather.pluie'),
-  'pluie-diluvienne': t('weather.pluie-diluvienne'),
-  neige: t('weather.neige'),
-  blizzard: t('weather.blizzard'),
-};
+export type Weather = (typeof weatherIdSchema.options)[number];
 
 /** Fiche Codex de la condition météo (catalogue `weatherConditions`, `weather.json`) — SOURCE UNIQUE
  *  de la `ref` des lignes de jet que la météo du jour modifie (tir, Tests physiques, Activités). */
@@ -202,12 +194,22 @@ export interface WeatherCondition {
   resistanceTest?: { difficulty: Difficulty; onFail: 'extenue'; enjeu?: string };
 }
 
-const WEATHER_CONDITION: Record<Weather, WeatherCondition> =
-  Object.fromEntries(weatherConditions.map((c) => [c.id, c])) as Record<Weather, WeatherCondition>;
-
-/** Effets de la météo `w` (lecture LIVE de la donnée éditable au Codex). */
+/**
+ * PORTE UNIQUE de la condition météo `w` — libellé ET effets, en lecture LIVE de la donnée éditable au
+ * Codex (`weather.json` conditions). Aucune carte FR ne double ce dataset : `weatherCondition(w).label`
+ * EST le libellé de la météo, partout.
+ *
+ * FAIL-FAST NOMINATIF (patron `data/overrides.ts::miscastEntries`) : un id sans fiche est
+ * structurellement inatteignable — le `superRefine` de complétude du schéma refuse la suppression aux
+ * trois portes (CI, boot dev, save Codex). Ce throw n'est que la ceinture : mieux vaut nommer l'id
+ * absent qu'afficher une météo muette.
+ */
 export function weatherCondition(w: Weather): WeatherCondition {
-  return (weatherConditions.find((c) => c.id === w) as WeatherCondition | undefined) ?? WEATHER_CONDITION[w] ?? { id: w, label: WEATHER_LABEL[w] };
+  const found = weatherConditions.find((c) => c.id === w) as WeatherCondition | undefined;
+  if (!found) {
+    throw new Error(`weatherCondition : météo « ${w} » absente de weather.json (ids : ${weatherConditions.map((c) => c.id).join(', ')}).`);
+  }
+  return found;
 }
 
 /** Pénalité aux armes à distance en combat sous la météo `w` (0 si aucune). */

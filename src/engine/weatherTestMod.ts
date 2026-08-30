@@ -11,7 +11,8 @@
  */
 import type { CharKey } from './types';
 import type { ModLine } from './combat';
-import { WEATHER_LABEL, weatherPhysicalTestMod, weatherRef, type Weather } from './travelStages';
+import { weatherCondition, weatherPhysicalTestMod, weatherRef, type Weather } from './travelStages';
+import { t } from '../i18n';
 
 /** Ligne(s) « Météo : … » d'un Test dont la caractéristique est `ck`, sous la météo `weather` — vide si pas
  *  de météo, pas de carac (mode social), ou carac non physique / météo sans pénalité (pluie simple). Un
@@ -19,5 +20,5 @@ import { WEATHER_LABEL, weatherPhysicalTestMod, weatherRef, type Weather } from 
 export function weatherTestMods(weather: Weather | undefined, ck: CharKey | null): ModLine[] {
   if (!weather || !ck) return [];
   const v = weatherPhysicalTestMod(weather, ck);
-  return v ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: v, famille: 'circonstance', ref: weatherRef(weather) }] : [];
+  return v ? [{ label: t('tp.modWeather', { weather: weatherCondition(weather).label }), value: v, famille: 'circonstance', ref: weatherRef(weather) }] : [];
 }

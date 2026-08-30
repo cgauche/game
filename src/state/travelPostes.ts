@@ -35,7 +35,7 @@ import { t, type MsgKey } from '../i18n';
 import { rule } from '../engine/policy';
 import {
   stageCount, forageYield, stageExposureDifficulty, weatherResistanceTest,
-  isColdSeason, WEATHER_LABEL, type Weather, type Season,
+  isColdSeason, weatherCondition, type Weather, type Season,
 } from '../engine/travelStages';
 import { weatherTestMods } from '../engine/weatherTestMod'; // CANAL UNIQUE « Tests physiques » (#341) — jamais weatherPhysicalTestMod en direct
 import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded, exposureFirstFailChars } from '../engine/exposure';
@@ -95,7 +95,7 @@ function weatherModOf(def: ActivityDef, weather: Weather): number {
  *  par `RollLine`. `undefined` si aucun mod (rien à détailler). */
 function stageActivityMods(weather: Weather, wMod: number, pMod: number): ModLine[] | undefined {
   const mods: ModLine[] = [
-    ...(wMod !== 0 ? [{ label: t('tp.modWeather', { weather: WEATHER_LABEL[weather] }), value: wMod, famille: 'circonstance' as const, ref: weatherRef(weather) }] : []),
+    ...(wMod !== 0 ? [{ label: t('tp.modWeather', { weather: weatherCondition(weather).label }), value: wMod, famille: 'circonstance' as const, ref: weatherRef(weather) }] : []),
     ...(pMod !== 0 ? [{ label: t('tp.modPhysical'), value: pMod, famille: 'circonstance' as const, ref: weatherRef(weather) }] : []),
   ];
   return mods.length ? mods : undefined;
@@ -192,7 +192,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
   // Bilan de l'ÉTAPE : aucun personnage n'en est le concerné (c'est la journée du groupe qui se solde) —
   // étape de MONDE, routée au siège MJ (`worldOwner`), jamais une fenêtre sans propriétaire déclaré.
   steps.push(displayStep({ id: 'stage-agg', kind: 'stageAggregate', icon: 'ui/tally', label: t('step.stageAgg'), worldOwner: true,
-    meta: { weatherLabel: WEATHER_LABEL[weather], stages } }));
+    meta: { weatherLabel: dataLabel(weatherCondition(weather).label), stages } }));
   return steps;
 }
 
@@ -278,7 +278,7 @@ export function buildWeatherResistanceSteps(get: Get, weather: Weather): BuiltCa
   const stake = rt.enjeu ? weatherStakeRef(weather) : undefined; // ENJEU = la RÉFÉRENCE de la condition (#1117), résolue au rendu
   const out: BuiltCascadeStep[] = [];
   pousseSi(out, bandStep({ id: 'weather-resistance', kind: 'weatherResistance', icon: 'rest/cold',
-    label: stepDetail(t('step.traversee'), WEATHER_LABEL[weather]), ...(stake ? { stake } : {}) }, parts));
+    label: stepDetail(t('step.traversee'), dataLabel(weatherCondition(weather).label)), ...(stake ? { stake } : {}) }, parts));
   return out;
 }
 
@@ -395,7 +395,7 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
       // MÊME Test d'Exposition que la nuit de repos : EDOC 08 l.90 renvoie à LDB p181, donc MÊME entrée.
       stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars('froid') }),
       ligne: { test: { skill: 'resistance', char: 'endurance' } },
-      meta: { weatherLabel: WEATHER_LABEL[stage.weather], warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) },
+      meta: { weatherLabel: dataLabel(weatherCondition(stage.weather).label), warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) },
     });
     pousseSi(out, st);
   }

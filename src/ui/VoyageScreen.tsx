@@ -15,7 +15,7 @@ import { riverForceLabel, riverDirLabel } from '../engine/riverNavigation';
 import { cargoTotalEnc } from '../engine/seaVoyage';
 import { partyItemsCargoEnc, partyLandCapacity } from '../state/carriers';
 import { moraleBand } from '../engine/crewMorale';
-import { seasonOfMonth, WEATHER_LABEL, type Season } from '../engine/travelStages';
+import { seasonOfMonth, weatherCondition, type Season } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
 import { findVehicleById } from '../data';
 import { ScreenShell } from './ScreenShell';
@@ -233,7 +233,7 @@ export function voyageTiles(
   });
   // Météo du jour EN COURS (règle `travel-etapes`, EDOC 8) — absente si la règle est éteinte ou
   // qu'aucun jour n'est encore engagé.
-  if (dayWeather) tiles.push({ key: 'meteo', icon: 'rest/rain', label: 'Météo', value: WEATHER_LABEL[dayWeather.id] });
+  if (dayWeather) tiles.push({ key: 'meteo', icon: 'rest/rain', label: 'Météo', value: weatherCondition(dayWeather.id).label });
   const mounts = partyMounts(party, possessions);
   if (mounts.length) {
     const hurt = mounts.filter((m) => m.possession.mountInjury).length;

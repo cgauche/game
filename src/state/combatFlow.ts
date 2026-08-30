@@ -204,7 +204,7 @@ import { fearSourceFor, refreshAllDefendedPsych, sansPeurVs, failConditionAmount
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import {
-  WEATHER_LABEL, weatherRangedMod, weatherRangedUseless, weatherPowderUseless,
+  weatherCondition, weatherRangedMod, weatherRangedUseless, weatherPowderUseless,
   weatherLightningNervous, weatherRef,
   type Weather,
 } from '../engine/travelStages';
@@ -696,7 +696,7 @@ export function attackEnv(
       if (weatherRangedUseless(dayW)) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc };
       if (weatherPowderUseless(dayW) && isBlackPowderWeapon(weapon)) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc };
       const rm = weatherRangedMod(dayW);
-      if (rm) env.push({ label: `Météo : ${WEATHER_LABEL[dayW]}`, value: rm, famille: 'circonstance', ref: weatherRef(dayW) });
+      if (rm) env.push({ label: tr('tp.modWeather', { weather: weatherCondition(dayW).label }), value: rm, famille: 'circonstance', ref: weatherRef(dayW) });
     }
     // Commandant d'équipe (AA 13 l.29-35) : un chef de pièce dirigé tire au score de Projectiles de son
     // commandant — re-validé ICI (vivant + à portée de voix) → un delta sur la base du chef (aperçu ET résolution).

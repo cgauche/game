@@ -1,13 +1,20 @@
 /**
  * Schéma de `weather.json` — Météo de voyage TERRESTRE (EDOC 8), consommée par
- * `src/data/index.ts` et typée par `engine/travelStages.ts` (`Weather`, `WEATHER_LABEL`,
- * `WEATHER_TABLE`, `WeatherCondition`). Deux volets :
+ * `src/data/index.ts` et typée par `engine/travelStages.ts` (`Weather`, `WEATHER_TABLE`,
+ * `WeatherCondition`). Deux volets :
  *  - `seasons` : table de tirage d100 par saison (`ranges.max` = borne haute incluse → `weather`,
  *    lookup via `rollStageWeather`) ;
  *  - `conditions` : EFFETS par météo, MÊME vocabulaire de donnée que `sea-weather.json`
  *    (`visibiliteM`/`rangedMod` étendus des besoins terrestres : `physicalTestMod`, `powderUseless`,
  *    `rangedUseless`, `movementWalkOnly`, `resistanceTest`, `lightningNervous`).
- * `weather` enum = EXACTEMENT `engine/travelStages.ts` (`type Weather`).
+ *
+ * ALPHABET : `weatherIdSchema` est la SEULE déclaration des ids de condition — `engine/travelStages.ts`
+ * en DÉRIVE `type Weather` (`(typeof weatherIdSchema.options)[number]`) et l'éditeur en dérive sa liste
+ * d'options (`CodexEdit.WeatherRangesField`). Le LIBELLÉ, lui, ne vit qu'en donnée (`conditions[].label`,
+ * lu par l'unique porte `weatherCondition`) : aucune carte FR ne double le dataset.
+ * COMPLÉTUDE : le `superRefine` ci-dessous exige les 6 options dans `conditions[].id` — sans lui, le
+ * z.enum refusait un id INCONNU mais laissait passer une SUPPRESSION, et `weatherCondition` n'aurait
+ * plus eu de libellé à rendre.
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
@@ -16,7 +23,9 @@ import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 export const file = 'weather.json';
 export const famille = 'config';
 
-const weatherIdSchema = z.enum(['sec', 'beau', 'pluie', 'pluie-diluvienne', 'neige', 'blizzard']);
+/** ALPHABET FERMÉ des conditions météo terrestres (EDOC 8 l.50-59), de la plus clémente à la pire —
+ *  l'ordre fixe le « degré de temps éloigné de Beau temps » de l'activité Plein Air (l.141). */
+export const weatherIdSchema = z.enum(['sec', 'beau', 'pluie', 'pluie-diluvienne', 'neige', 'blizzard']);
 
 const doc = document(
   'weather',
@@ -41,7 +50,10 @@ const doc = document(
   conditions: z.array(
     z.strictObject({
       id: weatherIdSchema,
-      label: z.string(),
+      /** Le NOM de la météo à l'écran, et le seul (`weatherCondition(w).label`). `.min(1)` STRUCTUREL,
+       *  patron de l'enveloppe (`grammaire/document.ts`) : tant que le nom venait du catalogue i18n, le
+       *  non-vide était acquis par construction — la donnée reprend la garantie avec la charge. */
+      label: z.string().min(1),
       /** Description VERBATIM (Markdown) de la source — rendue par `<Prose>` (règle 5). */
       desc: z.string().optional(),
       /** Visibilité en mètres (0 ≈ nulle) — plafonne la portée du tir en combat. */
@@ -79,6 +91,35 @@ const doc = document(
   {
     codex: { keys: ['weather', 'weatherConditions'] },
     edit: { niche: { categories: ['weather', 'weatherConditions'] } },
+  },
+  {
+    // BIJECTION alphabet ⇄ conditions — le z.enum ne ferme qu'UN des trois côtés (l'id INCONNU) :
+    //  - COMPLÉTUDE : une condition SUPPRIMÉE au Codex éteindrait le libellé et les effets d'une météo
+    //    que la table saisonnière tire encore (`weatherCondition`, engine, ne lit que ce tableau) ;
+    //  - UNICITÉ : un id EN DOUBLE rend la seconde fiche inerte — le `find` de la porte prend la
+    //    première, donc éditer la seconde au Codex ne changerait RIEN à l'écran, sans un mot.
+    // Refus NOMINATIF dans les deux cas, aux trois portes (CI `schema-contract`, boot `dev-validate`,
+    // save transactionnel du Codex).
+    affinerEntree: (entree) =>
+      entree.superRefine((v, ctx) => {
+        const ids = ((v as { conditions?: { id?: string }[] }).conditions ?? []).map((c) => c.id);
+        const manquants = weatherIdSchema.options.filter((id) => !ids.includes(id));
+        if (manquants.length) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['conditions'],
+            message: `weather.json : condition(s) manquante(s) — ${manquants.join(', ')}. Chaque météo de l'alphabet (${weatherIdSchema.options.join(', ')}) porte sa fiche : le libellé et les effets ne vivent QUE là.`,
+          });
+        }
+        const doubles = [...new Set(ids.filter((id, i) => id !== undefined && ids.indexOf(id) !== i))];
+        if (doubles.length) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['conditions'],
+            message: `weather.json : id(s) en DOUBLE — ${doubles.join(', ')}. Une météo porte UNE fiche : la seconde serait inerte (la porte \`weatherCondition\` retient la première).`,
+          });
+        }
+      }),
   },
 );
 

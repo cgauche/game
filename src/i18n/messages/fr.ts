@@ -1144,14 +1144,6 @@ export const fr = {
   'tavern.cerevisNote': 'le moins de chouettes l’emporte',
   'tavern.cerevisFinal': '{mien} chouette(s) contre {sien} en {tours} tour(s).',
 
-  // ── Météo d'Étape (EDOC 8 l.50-59) ──
-  'weather.sec': 'Temps sec',
-  'weather.beau': 'Beau temps',
-  'weather.pluie': 'Pluie',
-  'weather.pluie-diluvienne': 'Pluie diluvienne',
-  'weather.neige': 'Neige',
-  'weather.blizzard': 'Blizzard',
-
   // ── #1318 V8a₁ — LIBELLÉS D'ÉTAPE de cascade (`step.*`). Namespace DISTINCT de `out.*` (narration
   // d'ISSUE, l.462) et de `cf.*`/`cs.*` (narration de combatFlow/combatSlice) : une étape se NOMME
   // avant tout jet, alors que ces deux-là racontent ce qui vient d'arriver. Patrons byte-identiques

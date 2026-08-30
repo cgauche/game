@@ -53,7 +53,7 @@ import { d10, d100 } from '../engine/dice';
 import { rule } from '../engine/policy';
 import { toDate, isTravelDaylight, DAWN_MINUTE, minutesUntilNext } from '../engine/clock';
 import { dayIndex } from './upkeep';
-import { seasonOfMonth, weatherFromRoll, WEATHER_LABEL, type Season, type Weather } from '../engine/travelStages';
+import { seasonOfMonth, weatherFromRoll, weatherCondition, type Season, type Weather } from '../engine/travelStages';
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { buildStageSteps, buildWeatherResistanceSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier, registerTableStep } from './cascade';
@@ -620,7 +620,7 @@ for (const saison of weather) {
     label: t('step.stageWeather'),
     die: 100,
     rows,
-    lines: (die) => [t('out.stageWeather', { weather: WEATHER_LABEL[weatherFromRoll(die, saison.id as Season)] })],
+    lines: (die) => [t('out.stageWeather', { weather: weatherCondition(weatherFromRoll(die, saison.id as Season)).label })],
   });
 }
 
@@ -635,7 +635,7 @@ registerCascadeApplier(STAGE_WEATHER_KIND, (get, set, step) => {
   const recapDay = jours.length ? jours[jours.length - 1] : undefined;
   if (recapDay) {
     recapDay.weather = { id: w, roll: tiree.roll };
-    recapDay.lines.push({ text: t('out.stageWeather', { weather: WEATHER_LABEL[w] }) });
+    recapDay.lines.push({ text: t('out.stageWeather', { weather: weatherCondition(w).label }) });
   }
   // Les étapes qui DÉPENDENT du temps qu'il fait : elles n'existaient pas avant que le dé tombe.
   // La ligne de météo vient de la TABLE (source unique de son libellé) et rejoint le journal comme

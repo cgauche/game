@@ -77,10 +77,19 @@ const DATA = seaWeatherJson as unknown as {
 /** Ordre croissant des forces de vent (pour le cran ±1 de la mise à jour, l.272). */
 export const WIND_FORCES: SeaWindForceId[] = DATA.vents.map((v) => v.id as SeaWindForceId);
 
-export const precipitationDef = (id: SeaPrecipitationId): PrecipitationDef => DATA.precipitations.find((p) => p.id === id)!;
-export const temperatureDef = (id: SeaTemperatureId): TemperatureDef => DATA.temperatures.find((t) => t.id === id)!;
-export const visibilityDef = (id: SeaVisibilityId): VisibilityDef => DATA.visibilites.find((v) => v.id === id)!;
-export const windForceLabel = (id: SeaWindForceId): string => DATA.vents.find((v) => v.id === id)?.label ?? id;
+/** Lookup STRICT d'une fiche de `sea-weather.json` — FAIL-FAST NOMINATIF (patron
+ *  `data/overrides.ts::miscastEntries`, frère terrestre `travelStages.ts::weatherCondition`) : un `!`
+ *  rendait `undefined` puis plantait plus loin, sans dire QUEL id manquait ni dans quel volet. */
+function ficheMer<T extends { id: string }>(volet: string, liste: readonly T[], id: string): T {
+  const trouve = liste.find((e) => e.id === id);
+  if (!trouve) throw new Error(`sea-weather.json : « ${id} » absent de ${volet} (ids : ${liste.map((e) => e.id).join(', ')}).`);
+  return trouve;
+}
+
+export const precipitationDef = (id: SeaPrecipitationId): PrecipitationDef => ficheMer('precipitations', DATA.precipitations, id);
+export const temperatureDef = (id: SeaTemperatureId): TemperatureDef => ficheMer('temperatures', DATA.temperatures, id);
+export const visibilityDef = (id: SeaVisibilityId): VisibilityDef => ficheMer('visibilites', DATA.visibilites, id);
+export const windForceLabel = (id: SeaWindForceId): string => ficheMer('vents', DATA.vents, id).label;
 /** Libellé d'une direction de vent/cap (rose des vents, l.250) — AFFICHAGE : la logique reste keyée
  *  par l'id `WindDirection`. Patron `windForceLabel`. */
 const WIND_DIRECTION_LABEL: Record<WindDirection, string> = { nord: 'Nord', sud: 'Sud', est: 'Est', ouest: 'Ouest' };

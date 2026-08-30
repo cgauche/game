@@ -28,7 +28,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { RULE_REF, type RuleId } from './ruleRefs';
-import { weatherRef, type Weather } from './travelStages';
+import { weatherRef } from './travelStages';
+import { weatherIdSchema } from '../data/schemas/defs/weather';
 import { windsModLine, windsModFromRoll } from './windsOfMagic';
 import { codexLookupById } from '../ui/compendium/registry';
 import regles from '../data/regles.json';
@@ -47,8 +48,9 @@ describe('RULE_REF — la référence pointe une fiche Codex réelle', () => {
    * sur son DOMAINE COMPLET.
    */
   it('les refs PRODUITES résolvent au Codex — météo : les 6 conditions, force des Vents : les 10 faces du d10', () => {
-    const meteos: Weather[] = ['sec', 'beau', 'pluie', 'pluie-diluvienne', 'neige', 'blizzard'];
-    for (const w of meteos) {
+    // DOMAINE COMPLET dérivé de la DÉCLARATION (`weatherIdSchema`, `defs/weather.ts`) : une 7ᵉ météo
+    // ajoutée au schéma entre ici toute seule — une liste recopiée aurait laissé le trou en silence.
+    for (const w of weatherIdSchema.options) {
       const ref = weatherRef(w);
       expect(codexLookupById(ref.category, ref.id), `weatherRef('${w}') → ${ref.category}/${ref.id} introuvable au Codex`).toBeTruthy();
     }

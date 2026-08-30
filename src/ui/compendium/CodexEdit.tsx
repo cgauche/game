@@ -16,7 +16,8 @@ import { inferFields, type FieldDesc } from './editFields';
 import { entryKey, invalidateCodexLookup, ACTIVITY_CONTEXT_LABEL, OUTCOME_ON_LABEL, BATTLE_COND_LABEL, BATTLE_TARGET_LABEL, BATTLE_SCALE_LABEL, BATTLE_SIDE_LABEL } from './registry';
 import { ACTIVITY_RESOLVERS, RESOLVER_OWNER, resolversOwnedBy } from '../../engine/activities';
 import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond, ActivityResolver, ResolverOwner } from '../../engine/activities';
-import { WEATHER_LABEL } from '../../engine/travelStages';
+import { weatherCondition } from '../../engine/travelStages';
+import { weatherIdSchema } from '../../data/schemas/defs/weather';
 import { RefField, refFieldCfg } from './RefField';
 import { Icon } from '../Icon';
 import { NumberField } from '../NumberField';
@@ -1550,7 +1551,10 @@ function WeatherRangesField({ value, onChange }: { value: { max: number; weather
           <div className="tf-row">
             <label className="dr">d100 ≤&nbsp;<NumberField variant="nu" label="Plage d100 — borne haute" min={1} max={100} value={r.max} onChange={(max) => set(i, { max })} /></label>
             <select value={r.weather} onChange={(e) => set(i, { weather: e.target.value })}>
-              {(Object.keys(WEATHER_LABEL) as (keyof typeof WEATHER_LABEL)[]).map((w) => <option key={w} value={w}>{WEATHER_LABEL[w]}</option>)}
+              {/* ÉNUMÉRATION depuis la DÉCLARATION (patron `RACE_KEYS`) — jamais depuis `weatherConditions`,
+                  qui est la donnée en cours d'édition : une fiche supprimée dans l'onglet voisin ne doit pas
+                  amputer l'alphabet des plages. Le LIBELLÉ, lui, vient de la donnée (porte unique). */}
+              {weatherIdSchema.options.map((w) => <option key={w} value={w}>{weatherCondition(w).label}</option>)}
             </select>
             <button className="btn small danger" title="Supprimer la plage" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
           </div>

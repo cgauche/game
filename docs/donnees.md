@@ -121,7 +121,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 | Fichier | Contient | Exposition (Codex — édition) |
 |---|---|---|
 | `locations.json` | Lieux / régions (hiérarchie `parent`) (55 entrée(s)) | `locations` — dataset `locations` |
-| `weather.json` | Saisons / météo terrestre (objet à sous-catalogues) | `weather` · `weatherConditions` — niché (`weather`) |
+| `weather.json` | Saisons / météo terrestre (objet à sous-catalogues) | `weather` · `weatherConditions` — niché (`weather` · `weatherConditions`) |
 | `calendarMonths.json` · `calendarWeekdays.json` · `calendarIntercalary.json` · `calendarPhases.json` | Calendrier impérial (12 entrée(s) · 8 entrée(s) · 6 entrée(s) · 7 entrée(s)) | `calendarMonths` — dataset `calendarMonths` ; `calendarWeekdays` — dataset `calendarWeekdays` ; `calendarIntercalary` — dataset `calendarIntercalary` ; `calendarPhases` — dataset `calendarPhases` |
 | `stars.json` · `astrology.json` | Signes astraux · Demeures astrologiques (23 entrée(s) · 5 entrée(s)) | `stars` — dataset `stars` ; `celestialHouses` — dataset `celestialHouses` |
 | `montures.json` · `incidents-monture.json` | Montures · incidents de monture (objet à sous-catalogues · objet à sous-catalogues) | `montures` — niché (`montures`) ; `incidentsMonture` — niché (`incidentsMonture`) |

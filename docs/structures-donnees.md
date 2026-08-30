@@ -3596,7 +3596,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `water-exposure.ts` | 18 | — | plage | divergente | `max,min+…` | — |
 | `water-exposure.ts` | 27 | `test` | test | historique | `difficulty,skillId` | — |
 | `water-exposure.ts` | 43 | `diseases` | plage | divergente | `max,min+…` | — |
-| `weather.ts` | 64 | `resistanceTest` | test | divergente | `difficulty+…` | — |
+| `weather.ts` | 76 | `resistanceTest` | test | divergente | `difficulty+…` | — |
 
 ## 5. Ops en donnée (strate Ops)
 
