@@ -24,11 +24,28 @@ import * as svgTexture from '../backends/webgl/svgTexture';
 import { bakeQueueLength } from '../backends/webgl/atlasBake';
 import { AMBIANCE } from '../catalog/ambiance';
 import { GameStage3D, centreDuGroupe, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
-import { BancRenderer, brancherArdoise, quads, respirer as respirerBanc, simulerRasterisation, viderCaptures, type Rasterisation } from './banc-volumique';
+import {
+  BancRenderer,
+  PLAFOND_ATTENTE_MS,
+  PLAFOND_HORS_ATTEINTE_MS,
+  attendreQuads,
+  attendreQue,
+  brancherArdoise,
+  quads,
+  respirer as respirerBanc,
+  simulerRasterisation,
+  viderCaptures,
+  type Rasterisation,
+} from './banc-volumique';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+/** Budget de test calé AU-DESSUS du plafond d'attente du harnais (`PLAFOND_ATTENTE_MS`) : sous un
+ *  budget plus court, une attente qui va au bout de son plafond meurt sur le chronomètre de Vitest, et
+ *  le banc accuse une lenteur là où sa PRÉMISSE a la réponse. */
+vi.setConfig({ testTimeout: PLAFOND_ATTENTE_MS + 10_000 });
 
 const TAILLE = { w: 800, h: 600 };
 /** Carte LARGE : le rayon d'entrée se compte en mètres, il faut de la place pour poser un décor
@@ -109,6 +126,13 @@ function écran(
 /** La file du cuiseur servie (une rasterisation par tranche) en battant la boucle d'image de CE banc. */
 const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.());
 
+/** Le même patron d'attente que le harnais, la pompe d'images de CE banc branchée dessus (#1442) :
+ *  toute attente de ce fichier SORT AU FAIT ACCOMPLI, jamais au bout d'une fenêtre de mur. */
+const attendre = (fait: () => boolean): Promise<void> => attendreQue(fait, PLAFOND_ATTENTE_MS, () => battre?.());
+
+/** Le plafond de sécurité du voile, tel qu'il est AUTHORÉ — relu à chaque fois qu'un banc le pousse. */
+const plafondNominal = AMBIANCE.entreeEnScene.plafondMs;
+
 function monterSync(
   els: SceneBillboardEls,
   onEntree?: (v: boolean) => void,
@@ -123,6 +147,29 @@ function monterSync(
 }
 
 const canevas = (): HTMLCanvasElement => hôte!.querySelector('canvas')!;
+
+/**
+ * Sert les images RETENUES une par une jusqu'à la tombée du voile, et rend le nombre de quads montés
+ * à cet instant (−1 si le voile n'est jamais tombé).
+ *
+ * Chaque image servie s'attend à SON FAIT — son quad en scène — jamais au bout d'une fenêtre de mur :
+ * sur une machine chargée, une fenêtre trop courte ferait servir l'image suivante avant que la
+ * précédente ne soit posée, et le compte de la chute serait celui du banc, pas celui du voile.
+ */
+async function servirJusquAuVoileTombé(tours: number): Promise<number> {
+  for (let i = 0; i < tours && canevas().dataset.voile; i++) {
+    // Une image doit être EN VOL pour être servie : la file cadencée du cuiseur les pousse à leur tour.
+    await attendre(() => ras.enAttente.length > 0);
+    expect(ras.enAttente.length, `PRÉMISSE : aucune rasterisation en vol au tour ${i + 1} — il n’y a rien à servir`).toBeGreaterThan(0);
+    const montés = quads().length;
+    const paquet = ras.enAttente.splice(0, 1);
+    await act(async () => { for (const f of paquet) f(); });
+    await attendre(() => quads().length > montés);
+    expect(quads().length, `l’image servie au tour ${i + 1} n’a monté aucun quad : le compte de la chute ne dirait rien`)
+      .toBeGreaterThan(montés);
+  }
+  return canevas().dataset.voile ? -1 : quads().length;
+}
 
 /** Distance MONDE (m) d'un quad posé au groupe — la grandeur que le tri de proximité ordonne. */
 const distanceAuGroupe = (m: THREE.Mesh): number =>
@@ -139,6 +186,10 @@ beforeEach(() => {
   ras = simulerRasterisation('auto');
 });
 afterEach(() => {
+  // La donnée d'ambiance est un SINGLETON de module que la suite partage (`isolate: false`) : un banc
+  // qui la pousse la rend, sinon le fichier voisin monte son écran sous un voile immortel. La rendre
+  // EN TÊTE, avant le démontage qui peut lever : une restauration en queue de hook est conditionnelle.
+  AMBIANCE.entreeEnScene.plafondMs = plafondNominal;
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   battre = null;
@@ -163,7 +214,8 @@ describe('Montage d’une scène — aucune rasterisation en rafale', () => {
     expect(statique, 'une rafale de rasterisations au montage : c’est le gel de chargement mesuré').not.toHaveBeenCalled();
     expect(bakeQueueLength(), 'les rasterisations du montage doivent être EN FILE, pas exécutées').toBeGreaterThanOrEqual(DENSE.props.length);
     // PRÉMISSE — la sonde MORD : ces mêmes textures rasterisent bien PAR ELLE, une fois la file servie.
-    await respirer(200);
+    // Le premier appel est un FAIT : on l'attend, on ne parie pas sur 200 ms de mur.
+    await attendre(() => statique.mock.calls.length > 0);
     expect(statique.mock.calls.length, 'espion branché à côté : « zéro appel » ne dirait rien').toBeGreaterThan(0);
   });
 
@@ -173,7 +225,8 @@ describe('Montage d’une scène — aucune rasterisation en rafale', () => {
     // telle que le montage vient de la charger — pas ce qu'il en reste une fois le cuiseur passé.
     act(() => battre!());
     expect(Number(canevas().dataset.file), 'le témoin de file ne voit pas les cuissons du montage').toBeGreaterThan(0);
-    for (let i = 0; i < 60 && bakeQueueLength() > 0; i++) await respirer(40);
+    await attendre(() => bakeQueueLength() === 0);
+    expect(bakeQueueLength(), 'PRÉMISSE : la file du cuiseur doit être servie avant de lire son témoin au repos').toBe(0);
     if (battre) act(() => battre!());
     expect(canevas().dataset.file, 'le cuiseur devrait être au repos, la file servie').toBe('0');
   });
@@ -188,7 +241,7 @@ describe('Montage d’une scène — l’ORDRE est celui de la PROXIMITÉ', () =
 
   it('trois décors à distances distinctes : servis du plus proche au plus lointain', async () => {
     monterSync(ÉTAGÉS);
-    for (let i = 0; i < 60 && quads().length < ÉTAGÉS.props.length; i++) await respirer(40);
+    await attendreQuads(ÉTAGÉS.props.length, PLAFOND_ATTENTE_MS, () => battre?.());
 
     const distances = quads().map(distanceAuGroupe);
     expect(distances.length, 'les trois décors doivent être montés').toBe(ÉTAGÉS.props.length);
@@ -215,6 +268,11 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
     // IMAGES RETENUES : le banc choisit l'instant où chaque texture s'achève, donc l'instant où le
     // voile peut tomber.
     ras = simulerRasterisation('retenue');
+    // Le voile a DEUX causes de tombée : ses sujets proches, ou son plafond de sécurité — un vrai timer
+    // qu'une machine saturée fait gagner la course. Le plafond est poussé hors d'atteinte : la tombée
+    // n'a plus qu'UNE cause possible, et le compte de quads relevé à la chute est bien celui du décor
+    // qui l'a fait tomber.
+    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE_MS;
     const états: boolean[] = [];
     monterSync(PROCHE_ET_LOIN, (v) => états.push(v));
 
@@ -223,15 +281,9 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
 
     // Les textures s'achèvent UNE PAR UNE, dans l'ordre où la file les sert (donc par proximité) :
     // le voile doit tomber à la PREMIÈRE, celle du décor proche.
-    let montésÀLaChute = -1;
-    for (let i = 0; i < 40 && canevas().dataset.voile; i++) {
-      const paquet = ras.enAttente.splice(0, 1);
-      await act(async () => { for (const f of paquet) f(); });
-      await respirer(40);
-      if (!canevas().dataset.voile) montésÀLaChute = quads().length;
-    }
+    const montésÀLaChute = await servirJusquAuVoileTombé(PROCHE_ET_LOIN.props.length);
 
-    expect(canevas().dataset.voile, 'le voile n’est jamais tombé').toBeUndefined();
+    expect(canevas().dataset.voile, 'le voile n’est jamais tombé sur son décor proche — et son plafond ne pouvait pas le faire tomber').toBeUndefined();
     expect(états[états.length - 1], 'l’hôte n’a pas appris la tombée du voile').toBe(false);
     expect(montésÀLaChute, 'le voile a attendu le LOINTAIN : la carte s’ouvre trop tard')
       .toBeLessThan(PROCHE_ET_LOIN.props.length);
@@ -239,20 +291,48 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
     expect(montésÀLaChute, 'aucun quad monté à la chute : le voile serait tombé sans rien attendre').toBeGreaterThan(0);
   });
 
-  it('PLAFOND : une texture qui n’arrive JAMAIS ne tient pas l’écran voilé', async () => {
-    // Aucune image ne se chargera : sans plafond, le voile resterait levé pour la session.
+  it('une texture qui n’arrive JAMAIS TIENT le voile tant que le plafond n’est pas atteint', async () => {
+    // Aucune image ne se chargera. Le plafond est poussé hors d'atteinte : plus RIEN ne peut faire
+    // tomber le voile, donc s'il tombe c'est qu'un sujet non servi a été compté comme entré en scène.
+    // Aucune prémisse de vitesse ici : une machine lente ne fait que respirer plus longtemps sous un
+    // plafond de 120 s.
     ras = simulerRasterisation('retenue');
-    const plafond = AMBIANCE.entreeEnScene.plafondMs;
+    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE_MS;
     monterSync({ tokens: [], props: [décor('près', GROUPE.x + 1)] });
 
-    await respirer(Math.round(plafond / 2));
+    await attendre(() => ras.enAttente.length > 0);
     expect(ras.enAttente.length, 'PRÉMISSE : une rasterisation doit être en vol, image jamais servie').toBeGreaterThan(0);
-    expect(canevas().dataset.voile, 'le voile devrait tenir tant que le plafond n’est pas atteint').toBe('1');
+    // Fenêtre d'OBSERVATION d'une absence, pas une prémisse : une machine lente ne fait qu'observer
+    // plus longtemps un voile que rien ne peut faire tomber (plafond hors d'atteinte, image jamais
+    // servie). Aucune durée n'est ici attendue de qui que ce soit.
+    await respirer(200);
+    expect(quads(), 'PRÉMISSE : aucune image servie, donc aucun quad ne doit être en scène').toHaveLength(0);
+    expect(canevas().dataset.voile, 'le voile est tombé sans qu’un seul sujet soit entré en scène').toBe('1');
+  });
 
-    await respirer(plafond / 2 + 400);
+  it('PLAFOND : une texture qui n’arrive JAMAIS ne tient pas l’écran voilé pour autant', async () => {
+    // Le plafond garde ici sa valeur AUTHORÉE : c'est lui qu'on mesure. Sa tombée n'a qu'une cause
+    // possible — aucune image n'est servie de tout le banc (rasterisation retenue, zéro quad en scène
+    // au retour), donc aucun sujet ne peut déclarer son entrée. On ATTEND la tombée, on ne la date pas.
+    ras = simulerRasterisation('retenue');
+    const départ = Date.now();
+    monterSync({ tokens: [], props: [décor('près', GROUPE.x + 1)] });
+
+    await attendre(() => !canevas().dataset.voile);
+    const tenu = Date.now() - départ;
 
     expect(canevas().dataset.voile, 'le voile n’est pas tombé au plafond : l’écran reste voilé').toBeUndefined();
-  }, 15000);
+    expect(ras.enAttente.length, 'PRÉMISSE : une rasterisation doit être restée en vol, image jamais servie').toBeGreaterThan(0);
+    expect(quads(), 'un sujet est entré en scène : la tombée ne serait plus celle du plafond').toHaveLength(0);
+    // LE PLAFOND AUTHORÉ EST BIEN CELUI QUI TIENT : sans cette borne, un voile qui tomberait à
+    // `plafondMs / 10` passerait ce banc comme il passerait celui d'à côté (où le plafond est poussé
+    // hors d'atteinte) — plus rien ne lierait la TENUE à la donnée. La borne est BASSE, et c'est un
+    // fait de calendrier du plafond lui-même : une machine lente ne fait qu'allonger `tenu`, jamais
+    // le raccourcir. Aucune prémisse de vitesse, donc, dans un `≥`.
+    expect(tenu, `le voile n’a tenu que ${tenu} ms pour un plafond authoré de ${plafondNominal} ms`)
+      .toBeGreaterThanOrEqual(plafondNominal * 0.5);
+  });
+
   it('SVG en ÉCHEC dans le rayon : sa clé est SERVIE, le voile n’attend pas le plafond', async () => {
     // Un sujet dont la rasterisation ÉCHOUE n'entrera jamais en scène : s'il retenait le voile, le
     // seul chemin de sortie serait le plafond — deux secondes d'écran noir pour un décor cassé.
@@ -262,16 +342,16 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
       onerror: (() => void) | null = null;
       set src(_v: string) { queueMicrotask(() => this.onerror?.()); }
     });
-    const départ = Date.now();
+    // Le plafond est poussé HORS D'ATTEINTE : il ne peut plus faire tomber le voile, donc la tombée n'a
+    // qu'UNE cause possible — la clé du sujet en échec, SERVIE. La cause s'établit ainsi, jamais en
+    // datant la chute : un chronomètre mural ne mesure que la vitesse de la machine.
+    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE_MS;
     monterSync({ tokens: [], props: [décor('près', GROUPE.x + 1)] });
     expect(canevas().dataset.voile, 'PRÉMISSE : le voile doit être levé au montage').toBe('1');
 
-    for (let i = 0; i < 40 && canevas().dataset.voile; i++) await respirer(20);
-    const écoulé = Date.now() - départ;
+    await attendre(() => !canevas().dataset.voile);
 
-    expect(canevas().dataset.voile, 'le voile est resté sur une rasterisation qui a échoué').toBeUndefined();
-    expect(écoulé, `${écoulé} ms — le voile a attendu le plafond au lieu de la clé servie`)
-      .toBeLessThan(AMBIANCE.entreeEnScene.plafondMs);
+    expect(canevas().dataset.voile, 'le voile est resté sur une rasterisation qui a échoué — et son plafond ne pouvait pas le faire tomber').toBeUndefined();
     expect(quads(), 'PRÉMISSE : le sujet en échec ne doit monter AUCUN quad').toHaveLength(0);
     expect(warn, 'PRÉMISSE : le sujet sauté se signale').toHaveBeenCalled();
   });
@@ -288,8 +368,9 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
 
     expect(canevas().dataset.voile, 'aucun sujet proche : rien ne tient le voile').toBeUndefined();
     expect(états[états.length - 1], 'l’hôte doit apprendre tout de suite qu’il n’y a rien à voiler').toBe(false);
-    // PRÉMISSE — les lointains sont bien là, et bien EN VOL : le voile est tombé DEVANT eux.
-    await respirer(60);
+    // PRÉMISSE — les lointains sont bien là, et bien EN VOL : le voile est tombé DEVANT eux. Leur
+    // mise en vol est un FAIT que la file cadencée produit à son rythme, pas au bout de 60 ms.
+    await attendre(() => ras.enAttente.length > 0);
     expect(ras.enAttente.length, 'aucune rasterisation en vol : la scène serait vide').toBeGreaterThan(0);
     expect(quads(), 'aucun quad ne doit être monté à cet instant').toHaveLength(0);
   });
@@ -323,6 +404,9 @@ describe('Vue de plateau — le centre de proximité vient des HÉROS', () => {
 
   it('MONTAGE de plateau : le voile est armé, et il tombe sur le décor PROCHE des héros', async () => {
     ras = simulerRasterisation('retenue');
+    // Même raison qu'au banc du regard à hauteur d'œil : hors d'atteinte, le plafond ne peut pas gagner
+    // la course, et la chute n'a qu'UNE cause — le décor proche des héros.
+    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE_MS;
     const états: boolean[] = [];
     const PROCHE_ET_LOIN: SceneBillboardEls = {
       tokens: [],
@@ -338,13 +422,7 @@ describe('Vue de plateau — le centre de proximité vient des HÉROS', () => {
     expect(canevas().dataset.voile, 'le voile doit être levé au montage de plateau').toBe('1');
     expect(états[états.length - 1]).toBe(true);
 
-    let montésÀLaChute = -1;
-    for (let i = 0; i < 40 && canevas().dataset.voile; i++) {
-      const paquet = ras.enAttente.splice(0, 1);
-      await act(async () => { for (const f of paquet) f(); });
-      await respirer(40);
-      if (!canevas().dataset.voile) montésÀLaChute = quads().length;
-    }
+    const montésÀLaChute = await servirJusquAuVoileTombé(PROCHE_ET_LOIN.props.length);
 
     expect(canevas().dataset.voile, 'le voile n’est jamais tombé sur la vue de plateau').toBeUndefined();
     expect(états[états.length - 1]).toBe(false);

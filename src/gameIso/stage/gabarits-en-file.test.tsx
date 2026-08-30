@@ -33,7 +33,7 @@ import { clearPeriodTextures, getPeriodTexture } from '../backends/webgl/periodT
 import { bakeQueueLength, PRIORITE_VUE_COURANTE, queueBakeTask, setBudgetTrancheMs } from '../backends/webgl/atlasBake';
 import { AMBIANCE } from '../catalog/ambiance';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
-import { BancRenderer, PLAFOND_ATTENTE_MS, attendreEntréeFinie, attendreQue, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures, type Rasterisation } from './banc-volumique';
+import { BancRenderer, PLAFOND_ATTENTE_MS, PLAFOND_HORS_ATTEINTE_MS, attendreEntréeFinie, attendreQue, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures, type Rasterisation } from './banc-volumique';
 import type { ActorPose, KeepEl, SceneBillboardEls, TintAt } from '../backends/webgl/sceneMeshes';
 import type { PropEl } from '../builders/types';
 
@@ -85,15 +85,7 @@ const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.(
  * vide, 4 093 ms sous 16 brûleurs, 6 373 ms sous 32 — le budget par défaut de Vitest (5 s) est franchi
  * par la SATURATION seule. Les attentes, elles, sortent toutes au fait accompli (`attendreQue`).
  */
-vi.setConfig({ testTimeout: 30_000 });
-
-/**
- * Plafond de sécurité du voile poussé HORS D'ATTEINTE : voir le banc du voile ci-dessous. La valeur
- * doit dépasser le plafond des attentes (`PLAFOND_ATTENTE_MS`), et sort donc du domaine que le schéma
- * d'ambiance défend au parse (`entreeEnScene.plafondMs` ≤ 10 000 ms, `src/data/schemas/defs/ambiance.ts`) :
- * c'est un levier poussé en mémoire sur le singleton le temps d'un banc, jamais une valeur authorable.
- */
-const PLAFOND_HORS_ATTEINTE = 120_000;
+vi.setConfig({ testTimeout: PLAFOND_ATTENTE_MS + 10_000 });
 
 /** Ce qu'on laisse passer d'images APRÈS le fait attendu avant de figer ce qu'on juge : une sortie au
  *  fait accompli sort au PLUS TÔT, et un fait fautif tardif se produirait après elle. */
@@ -236,7 +228,7 @@ describe('#1399 — le VOILE d’entrée en scène attend les gabarits du monde'
     // est poussé hors d'atteinte pour que la tombée n'ait qu'UNE cause possible : ses gabarits — sinon
     // le seul témoin du banc serait le chronomètre, donc la vitesse de la machine. Hors d'atteinte, un
     // câblage de relève débranché laisse le voile levé.
-    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE;
+    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE_MS;
     monterSync();
 
     // Le voile est LEVÉ alors que la population des billboards a déjà déclaré son jeu VIDE : ce qui le
@@ -259,7 +251,7 @@ describe('#1399 — le VOILE d’entrée en scène attend les gabarits du monde'
     // Même raison qu'au banc précédent : hors d'atteinte, le plafond de sécurité ne peut pas faire
     // tomber le voile pendant les respirations, et sa tombée n'a qu'UNE cause possible — la texture
     // servie au décor proche.
-    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE;
+    AMBIANCE.entreeEnScene.plafondMs = PLAFOND_HORS_ATTEINTE_MS;
     monterSync(false, GROUPE, { tokens: [], props: [décor('près', GROUPE.x + 1)] });
 
     expect(avecMap(matériauxDuMonde()), 'PRÉMISSE : tous les gabarits doivent être posés dès le montage').toBe(images);

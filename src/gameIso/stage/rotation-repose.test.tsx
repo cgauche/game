@@ -29,13 +29,19 @@ import * as svgTexture from '../backends/webgl/svgTexture';
 import * as atlasBake from '../backends/webgl/atlasBake';
 import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, setBudgetTrancheMs, atlasBytesEstimés, bakeQueueLength, resetBakeQueue } from '../backends/webgl/atlasBake';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
-import { BancRenderer, brancherArdoise, quads, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
+import { BancRenderer, PLAFOND_ATTENTE_MS, attendreQue, brancherArdoise, quads, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import { bbCameraDe, povArtRot } from './regard';
 import { poigneesEnAttente } from './texturesStatiques';
 import { atlasPxHeight } from './boardPose';
 import { pxPerM } from '../backends/webgl/worldTris';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+/** Budget de test calé AU-DESSUS du plafond d'attente du harnais (`PLAFOND_ATTENTE_MS`) : ce banc sert
+ *  une file CADENCÉE à une tâche par tranche, et sa durée suit la machine. Sous un budget plus court,
+ *  une attente qui va au bout de son plafond meurt sur le chronomètre de Vitest, et le banc accuse une
+ *  lenteur là où sa PRÉMISSE a la réponse. */
+vi.setConfig({ testTimeout: PLAFOND_ATTENTE_MS + 10_000 });
 
 const TAILLE = { w: 800, h: 600 };
 const SCENE: Scene = emptyScene(12, 12);
@@ -114,9 +120,6 @@ function vue(
   return écran(cadre(yawDeg), els, acteurs, animUtilisée, keepEl);
 }
 
-/** La file du cuiseur servie (une rasterisation par tranche) en battant la boucle d'image de CE banc. */
-const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.());
-
 async function monter(
   els: SceneBillboardEls = ELS,
   acteurs: ActorPose[] = ACTEURS,
@@ -127,7 +130,6 @@ async function monter(
   document.body.appendChild(hôte);
   root = createRoot(hôte);
   await act(async () => { root!.render(vue(0, els, acteurs, animUtilisée)); });
-  await respirer(40);
   await attendreMontage(els.props.length + els.tokens.length + acteurs.length);
 }
 
@@ -142,28 +144,72 @@ async function monterPov(
   document.body.appendChild(hôte);
   root = createRoot(hôte);
   await act(async () => { root!.render(écran(cadrePov(cap), els, acteurs)); });
-  await respirer(40);
   await attendreMontage(els.props.length + els.tokens.length + acteurs.length);
 }
 
-/** Changement de CAP servi comme le jeu le sert : un rendu, puis la file qui respire. */
+/** Changement de CAP servi comme le jeu le sert : un rendu, puis la file servie jusqu'à ce que plus
+ *  rien n'attende — c'est dans ce service que la repose se joue, et une fenêtre de mur ne le porte que
+ *  sur une machine au repos. */
 async function allerAuCap(
   cap: Dir8,
   els: SceneBillboardEls = ELS,
   acteurs: ActorPose[] = ACTEURS,
-  ms = 60,
 ): Promise<void> {
   await act(async () => { root!.render(écran(cadrePov(cap), els, acteurs)); });
-  await respirer(ms);
+  await attendreFileVidée();
 }
 
+/** La file du cuiseur servie (une rasterisation par tranche) en battant la boucle d'image de CE banc. */
+const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.());
+
+/** Le même patron d'attente que le harnais, la pompe d'images de CE banc branchée dessus (#1442) :
+ *  toute attente de ce fichier SORT AU FAIT ACCOMPLI, jamais au bout d'une fenêtre de mur — la file
+ *  cadencée sert UNE tâche par tranche d'inactivité, et son débit suit la machine. */
+const attendre = (fait: () => boolean): Promise<void> => attendreQue(fait, PLAFOND_ATTENTE_MS, () => battre?.());
+
 /** Attend l'ENTRÉE EN SCÈNE de tous les sujets : depuis #1372 les textures du montage passent par la
- *  file cadencée, donc les quads naissent une tranche d'inactivité après l'autre. Budget BORNÉ. */
+ *  file cadencée, donc les quads naissent une tranche d'inactivité après l'autre. PRÉMISSE de tout ce
+ *  que ce banc mesure ensuite — affirmée ici, au retour. */
 async function attendreMontage(attendus: number): Promise<void> {
-  for (let i = 0; i < 80 && quads().length < attendus; i++) await respirer(20);
+  await attendre(() => quads().length >= attendus);
+  expect(quads().length, `PRÉMISSE : les ${attendus} sujets doivent être en scène — sans eux, rien de ce que ce banc affirme ensuite n'est mesuré`)
+    .toBeGreaterThanOrEqual(attendus);
 }
 
 const mapDe = (m: THREE.Mesh) => (m.material as THREE.MeshBasicMaterial).map;
+
+/** L'art PORTÉ par les quads en scène, dans l'ordre — la grandeur que toute relève de ce banc compare. */
+const artDes = (): (THREE.Texture | null)[] => quads().map(mapDe);
+
+/** Combien de quads ont changé d'art depuis `artAvant`. */
+const relevés = (artAvant: (THREE.Texture | null)[]): number =>
+  quads().filter((m, k) => mapDe(m) !== artAvant[k]).length;
+
+/** Attend la relève de TOUS les quads depuis `artAvant`, et rend le compte relevé — SOURCE UNIQUE de
+ *  l'attente de relève de ce banc (#1442). Le fait attendu est la relève elle-même ; c'est à
+ *  l'appelant d'affirmer ce qu'il en attend. */
+async function attendreRelève(artAvant: (THREE.Texture | null)[]): Promise<number> {
+  await attendre(() => relevés(artAvant) >= artAvant.length);
+  return relevés(artAvant);
+}
+
+/** Attend que la file cadencée du cuiseur soit VIDE — le fait de QUIESCENCE de ce banc : tout ce qu'un
+ *  franchissement a mis en file a été servi, donc tout ce qui devait se reposer s'est reposé. */
+async function attendreFileVidée(): Promise<void> {
+  await attendre(() => bakeQueueLength() === 0);
+  expect(bakeQueueLength(), 'PRÉMISSE : la file du cuiseur doit être servie — ce qu’elle porte encore n’est pas mesuré').toBe(0);
+}
+
+/** Images battues APRÈS LE FAIT avant de figer une assertion NÉGATIVE (#1442, patron
+ *  `gabarits-en-file`) : une sortie d'attente est au PLUS TÔT, et une libération qui arriverait dans
+ *  l'image suivante resterait hors du jugement. Chaque image est un FAIT affirmé, jamais une durée. */
+const IMAGES_APRES_LE_FAIT = 3;
+async function battreAprèsLeFait(): Promise<void> {
+  const fenêtre = scènes.length + IMAGES_APRES_LE_FAIT;
+  await attendre(() => scènes.length >= fenêtre);
+  expect(scènes.length, `PRÉMISSE : la pompe d'images du banc doit battre après le fait — ${scènes.length} image(s) pour ${fenêtre} attendues`)
+    .toBeGreaterThanOrEqual(fenêtre);
+}
 
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
@@ -197,7 +243,11 @@ describe('Cran franchi — les quads SURVIVENT', () => {
 
     // FRANCHISSEMENT : le lacet passe le quart (`artRot` : 100° ⇒ cran 1).
     await act(async () => { root!.render(vue(100)); });
-    await respirer(60);
+    // La repose se joue au rendu ET à l'arrivée des textures du cran neuf : on attend que la file les
+    // ait TOUTES servies — un franchissement mesuré à file encore chargée laisserait la libération
+    // hors du jugement.
+    await attendreFileVidée();
+    await battreAprèsLeFait();
 
     expect(disposeMat, 'le groupe entier se libère au quart de tour : c’est LE gel signalé').not.toHaveBeenCalled();
     expect(disposeGeo, 'une géométrie de quad refaite au quart de tour, c’est une repose ratée').not.toHaveBeenCalled();
@@ -213,7 +263,8 @@ describe('Cran franchi — les quads SURVIVENT', () => {
     const disposeMat = vi.spyOn(THREE.Material.prototype, 'dispose');
     for (const yaw of [100, 190, 280, 370]) {
       await act(async () => { root!.render(vue(yaw)); });
-      await respirer(40);
+      await attendreFileVidée();
+      await battreAprèsLeFait();
     }
     expect(disposeMat).not.toHaveBeenCalled();
     expect(quads().filter((m) => avant.includes(m)).length).toBe(avant.length);
@@ -246,30 +297,27 @@ describe('Cran franchi — aucune rasterisation en rafale', () => {
     // …et l'art du cran PRÉCÉDENT reste à l'écran tant que la relève n'est pas venue : rien ne clignote.
     expect(quads().map(mapDe).every((t, i) => t === artAvant[i]), 'le quad a perdu son art avant la relève').toBe(true);
     // PRÉMISSE — la sonde MORD : ces mêmes textures rasterisent bien PAR ELLE, une fois la file servie.
-    await respirer(120);
+    // Le premier appel est un FAIT : on l'attend, on ne parie pas sur 120 ms de mur.
+    await attendre(() => statique.mock.calls.length > 0);
     expect(statique.mock.calls.length, 'espion branché à côté : « zéro appel » ne dirait rien').toBeGreaterThan(0);
   });
 
   it('la file SERT ensuite : les textures du cran neuf arrivent, et l’art change', async () => {
     await monter();
-    const artAvant = quads().map(mapDe);
+    const artAvant = artDes();
     svgTexture.clearBillboardTextures();
     resetBakeQueue();
     await act(async () => { root!.render(vue(100)); });
-    // Budget BORNÉ : la file sert une rasterisation par tranche — on la laisse tourner jusqu'à la
-    // première relève, jamais au-delà de ce budget.
-    let changés = 0;
-    for (let i = 0; i < 20 && changés === 0; i++) {
-      await respirer(20);
-      changés = quads().filter((m, k) => mapDe(m) !== artAvant[k]).length;
-    }
-    expect(changés, 'aucune relève : le décor resterait peint au cran précédent').toBeGreaterThan(0);
+    // La file sert une rasterisation par tranche : on attend la PREMIÈRE relève, le fait que ce banc
+    // affirme — jamais une fenêtre de mur, dont la longueur ne dirait que la vitesse de la machine.
+    await attendre(() => relevés(artAvant) > 0);
+    expect(relevés(artAvant), 'aucune relève : le décor resterait peint au cran précédent').toBeGreaterThan(0);
   });
 });
 
 /**
- * L'ORDRE DE SERVICE de la file, sur une carte à la densité d'une vraie scène (20 décors, donc 60
- * textures de pré-chauffe en attente au moment du franchissement).
+ * L'ORDRE DE SERVICE de la file, sur une carte à la densité d'une vraie scène (20 décors, et les
+ * textures des trois autres crans en attente au moment du franchissement — 38 clés mesurées).
  *
  * Ce que ce contrat tient : la relève de ce que la caméra REGARDE passe DEVANT le réchauffage déjà
  * posé. La panne en face est silencieuse et coûteuse — la mémoïsation rend la promesse déjà en file
@@ -282,50 +330,96 @@ describe('Cran franchi — la relève passe devant la pré-chauffe', () => {
     props: Array.from({ length: 20 }, (_, i) => décor(`d${i}`, 2 + (i % 10))),
   };
 
-  it('20 décors : les rasterisations servies jusqu’à la relève COMPLÈTE restent au minimum utile', async () => {
-    const statique = vi.spyOn(svgTexture, 'svgToTexture');
-    await monter(DENSE, SANS_ACTEUR);
-    // Le montage servi, la pré-chauffe des trois autres crans est EN FILE — c'est elle que la relève
-    // doit doubler.
-    await respirer(80);
+  it('20 décors : pas une tâche de pré-chauffe servie AVANT la fin de la relève', async () => {
+    // ORDRE DE SERVICE, jamais un TOTAL SERVI : la clé s'inscrit à la RÉSOLUTION de sa promesse,
+    // c'est-à-dire quand le cuiseur a servi sa tâche. Un total servi, lui, est PROPORTIONNEL à la
+    // durée d'observation — la pré-chauffe étant servie tranche après tranche tant qu'on regarde, il
+    // mesurerait la fenêtre d'attente, donc la vitesse de la machine.
+    const ordre: string[] = [];
+    // La marque se pose sur la PROMESSE, jamais sur la clé : une clé redemandée rend la promesse
+    // mémoïsée, et une seule inscription lui revient.
+    const vues = new WeakSet<Promise<THREE.Texture>>();
+    const originalTexture = svgTexture.getBillboardTexture;
+    vi.spyOn(svgTexture, 'getBillboardTexture').mockImplementation((clé, faire) => {
+      const p = originalTexture(clé, faire);
+      if (!vues.has(p)) { vues.add(p); void p.then(() => ordre.push(clé)); }
+      return p;
+    });
+    // CUISEUR SERVI À LA MAIN : les tranches d'inactivité ne partent plus d'elles-mêmes, ce banc les
+    // sert UNE PAR UNE. Ce que la pré-chauffe a eu le temps de servir avant le franchissement décide
+    // de ce qu'il reste à ordonner — laissé à l'horloge, il dépend de la machine (mesuré ici : les 18
+    // clés du cran d'arrivée déjà servies, et plus rien à mesurer). Chaque tour de ces boucles est un
+    // FAIT servi, jamais une fenêtre de mur.
+    const tranches: Array<() => void> = [];
+    vi.stubGlobal('requestIdleCallback', (cb: () => void) => { tranches.push(cb); });
+    const servirUneTranche = async (): Promise<void> => {
+      const t = tranches.shift();
+      if (t) await act(async () => { t(); });
+      else await act(async () => { await Promise.resolve(); });
+    };
+    const servirJusquA = async (fait: () => boolean): Promise<void> => {
+      for (let i = 0; i < 400 && !fait(); i++) await servirUneTranche();
+    };
+
+    viderCaptures();
+    hôte = document.createElement('div');
+    document.body.appendChild(hôte);
+    root = createRoot(hôte);
+    await act(async () => { root!.render(vue(0, DENSE, SANS_ACTEUR)); });
+    await servirJusquA(() => quads().length >= DENSE.props.length);
     const avantQuads = quads();
     expect(avantQuads.length, 'aucun décor monté : rien à mesurer').toBe(DENSE.props.length);
-    expect(bakeQueueLength(), 'PRÉMISSE : la pré-chauffe doit être en file au franchissement').toBeGreaterThan(0);
     const artAvant = avantQuads.map(mapDe);
-    const avant = statique.mock.calls.length;
+
+    // Les décors sont les seuls sujets dont l'identité de cache porte le cran (`|r<n>`), et le cran
+    // d'arrivée est le 1 (`artRot` : 100° ⇒ cran 1) : tout le reste est de la pré-chauffe.
+    const estRelève = (k: string) => k.startsWith('prop:') && k.includes('|r1|');
+    // PRÉMISSE — LA PANNE EST EN PLACE : les textures du cran d'arrivée sont DÉJÀ EN FILE, au rang du
+    // réchauffage, derrière la pré-chauffe des autres crans. C'est la situation exacte que la relève
+    // de rang doit défaire ; sans elle, ce banc mesurerait une file neuve, qui n'a rien à doubler.
+    // Le compte de CLÉS est inférieur au compte de décors : deux tonneaux au même palier de cuisson
+    // partagent une identité de cache, donc une seule texture (`cleStatique`).
+    const avantFranchissement = poigneesEnAttente();
+    const clésRelève = [...avantFranchissement.keys()].filter(estRelève);
+    expect(clésRelève.length, 'PRÉMISSE : les textures du cran d’arrivée doivent être EN FILE au franchissement')
+      .toBeGreaterThan(0);
+    expect(clésRelève.map((k) => avantFranchissement.get(k)), 'PRÉMISSE : elles doivent y être au rang du RÉCHAUFFAGE — c’est ce rang que la relève doit remonter')
+      .toEqual(clésRelève.map(() => PRIORITE_RECHAUFFAGE));
+    expect([...avantFranchissement.keys()].filter((k) => !estRelève(k)).length, 'PRÉMISSE : la pré-chauffe des autres crans doit être en file — sans elle, rien à doubler')
+      .toBeGreaterThan(0);
+    const départ = ordre.length;
 
     await act(async () => { root!.render(vue(100, DENSE, SANS_ACTEUR)); });
-    let relevés = 0;
-    for (let i = 0; i < 60 && relevés < artAvant.length; i++) {
-      await respirer(20);
-      relevés = quads().filter((m, k) => mapDe(m) !== artAvant[k]).length;
-    }
-    const servies = statique.mock.calls.length - avant;
+    await servirJusquA(() => relevés(artAvant) >= artAvant.length);
+    expect(relevés(artAvant), 'tous les décors doivent finir relevés').toBe(artAvant.length);
 
-    expect(relevés, 'tous les décors doivent finir relevés').toBe(artAvant.length);
-    // MINIMUM UTILE = une texture par décor (moins celles que la pré-chauffe a eu le temps de servir :
-    // 12 mesurées ici pour 20 décors). Le plafond tient donc au minimum utile, jamais à un défilé de
-    // pré-chauffe — sans la relève de rang, la même mesure donnait 48.
-    //
-    // MARGE : la relève et la pré-chauffe partagent UNE file (le montage aussi, #1372), et la boucle
-    // ci-dessus OBSERVE par sondage — entre la dernière relève servie et le sondage qui la constate,
-    // les tranches d'inactivité continuent de tourner et servent des tâches de réchauffage. Ces
-    // quelques rasterisations-là sont LÉGALES : elles ne font patienter aucune relève (rang 0 contre
-    // 100, servi seulement quand plus aucune relève n'attend). La marge les couvre sans rien céder de
-    // ce que ce contrat défend — 26 reste loin des 48 du défilé de pré-chauffe.
-    const MARGE_PRECHAUFFE = 6;
-    expect(servies, `${servies} rasterisations servies pour ${artAvant.length} utiles`)
-      .toBeLessThanOrEqual(artAvant.length + MARGE_PRECHAUFFE);
+    const servi = ordre.slice(départ);
+    const dernièreRelève = servi.map(estRelève).lastIndexOf(true);
+    // PRÉMISSE — les relèves ont bien été SERVIES après le franchissement : sans elles, « rien ne les
+    // a doublées » serait vrai du vide.
+    expect(servi.filter(estRelève).length, 'toutes les textures du cran d’arrivée doivent avoir été servies')
+      .toBe(clésRelève.length);
+    // MESURE BORNÉE AU FAIT : ce que le cuiseur sert APRÈS la dernière relève sort du compte. La
+    // fenêtre d'observation peut donc s'allonger autant que la machine l'exige sans bouger d'un
+    // cran ce que ce banc affirme — sans la relève de rang, les clés de pré-chauffe défilent DEVANT.
+    const devant = servi.slice(0, dernièreRelève).filter((k) => !estRelève(k));
+    expect(devant.length, `${devant.length} tâche(s) de pré-chauffe servies avant la fin de la relève : ${devant.slice(0, 3).join(', ')}…`)
+      .toBe(0);
   });
 });
 
 describe('Cran franchi — l’art est celui du NOUVEAU cran', () => {
   it('DÉCOR : la texture posée est celle demandée pour le cran d’arrivée', async () => {
+    // Les textures demandées, et celles qui ont FINI de cuire — la seconde carte est alimentée à la
+    // résolution, pour que le fait attendu se lise SYNCHRONEMENT (une attente ne peut pas dépendre
+    // d'un `await` caché dans sa propre condition).
     const servies = new Map<string, Promise<THREE.Texture>>();
+    const cuites = new Map<string, THREE.Texture>();
     const original = svgTexture.getBillboardTexture;
     vi.spyOn(svgTexture, 'getBillboardTexture').mockImplementation((clé, faire) => {
       const p = original(clé, faire);
       servies.set(clé, p);
+      void p.then((t) => cuites.set(clé, t));
       return p;
     });
     await monter();
@@ -335,22 +429,17 @@ describe('Cran franchi — l’art est celui du NOUVEAU cran', () => {
 
     // Les décors sont les seuls sujets dont l'identité de cache porte le cran (`|r<n>`).
     const clésCran1 = () => [...servies.keys()].filter((k) => k.startsWith('prop:') && k.includes('|r1|'));
-    const toutesPosées = async (): Promise<boolean> => {
+    const toutesPosées = (): boolean => {
       const clés = clésCran1();
       if (clés.length < ELS.props.length) return false;
-      const textures = await Promise.all(clés.map((k) => servies.get(k)!));
       const posées = new Set(quads().map(mapDe));
-      return textures.every((t) => posées.has(t));
+      return clés.every((k) => cuites.has(k) && posées.has(cuites.get(k)!));
     };
-    // Budget BORNÉ : la file sert une rasterisation par tranche — on l'attend jusqu'à la relève des
-    // trois décors, jamais au-delà.
-    let relevés = false;
-    for (let i = 0; i < 20 && !relevés; i++) {
-      await respirer(20);
-      relevés = await toutesPosées();
-    }
+    // La file sert une rasterisation par tranche : le fait attendu est la POSE des trois textures du
+    // cran 1 sur leurs quads, jamais une fenêtre de mur.
+    await attendre(toutesPosées);
     expect(clésCran1().length, 'aucune texture demandée au cran 1 : le décor est resté au cran 0').toBe(ELS.props.length);
-    expect(relevés, 'une texture du cran 1 cuite mais jamais posée sur son quad').toBe(true);
+    expect(toutesPosées(), 'une texture du cran 1 cuite mais jamais posée sur son quad').toBe(true);
   });
 
   it('CORPS À FLIPBOOK : la planche jouée est celle de la vue du cran d’arrivée', async () => {
@@ -364,9 +453,11 @@ describe('Cran franchi — l’art est celui du NOUVEAU cran', () => {
     vi.spyOn(atlasBake, 'getCachedAtlas').mockImplementation((k: string) => { clés.push(k); return original(k); });
 
     await monter();
-    await respirer(120);
     const vueDe = (rot: Rot) => billboardView({ kind: 'ortho', yawDeg: rot * 90 }, 'S');
     const marque = (rot: Rot) => `|${vueDe(rot).view}|${vueDe(rot).mirror ? 'm' : 'd'}|`;
+    // Le corps joue la planche de SON cran de montage : c'est ce fait qu'on attend avant de repartir,
+    // jamais 120 ms de mur.
+    await attendre(() => (clés[clés.length - 1] ?? '').includes(marque(0)));
     // PRÉMISSE — sans elle, la mesure d'arrivée ne dirait rien : les deux crans doivent DIFFÉRER de vue.
     expect(marque(0), 'crans indiscernables : cette garde ne mordrait pas').not.toBe(marque(1));
     expect(clés.length, 'aucune planche réclamée : le corps ne joue pas').toBeGreaterThan(0);
@@ -374,9 +465,9 @@ describe('Cran franchi — l’art est celui du NOUVEAU cran', () => {
 
     clés.length = 0;
     await act(async () => { root!.render(vue(100)); });
-    // Budget BORNÉ : la planche du cran d'arrivée est réchauffée au montage, mais la file la sert à SON
-    // tour — on bat la boucle d'image jusqu'à ce que le corps la joue, jamais au-delà.
-    for (let i = 0; i < 20 && !(clés[clés.length - 1] ?? '').includes(marque(1)); i++) await respirer(20);
+    // La planche du cran d'arrivée est réchauffée au montage, mais la file la sert à SON tour — on bat
+    // la boucle d'image jusqu'à ce que le corps la JOUE : un fait, jamais une durée.
+    await attendre(() => (clés[clés.length - 1] ?? '').includes(marque(1)));
     expect(clés.length, 'aucune planche réclamée : le corps ne joue plus').toBeGreaterThan(0);
     expect(clés[clés.length - 1], 'le corps joue encore la planche du cran quitté').toContain(marque(1));
   });
@@ -412,7 +503,10 @@ describe('Cran franchi — les ACCENTS DE SOL survivent', () => {
     // FRANCHISSEMENT tel que l'écran le sert : le dégagement est reforgé au cran (`keepEl` dépend des
     // `dims`, qui portent le lacet) — même verdict, référence NEUVE.
     await act(async () => { root!.render(vue(100, ELS, ACTEURS, anim, () => true)); });
-    await respirer(60);
+    // Même fait qu'au banc des quads : la file du cran neuf servie jusqu'au bout — c'est pendant ce
+    // service qu'un semis refait libérerait ses matériaux.
+    await attendreFileVidée();
+    await battreAprèsLeFait();
 
     expect(disposeMat, 'le semis se libère au quart de tour : c’est le relink de shader mesuré').not.toHaveBeenCalled();
     expect(disposeGeo).not.toHaveBeenCalled();
@@ -446,20 +540,18 @@ describe('Cran franchi — N relèves, UNE image', () => {
 
   it('vingt boards relevés au cran d’arrivée ne peignent pas vingt frames', async () => {
     await monter(DENSE, SANS_ACTEUR, animProd);
-    await respirer(120);
+    // Les vingt décors PEINTS — montés ET porteurs de leur art : c'est ce fait qui rend le cran 0
+    // comparable, pas 120 ms de mur.
+    await attendre(() => quads().length >= DENSE.props.length && artDes().every(Boolean));
     expect(quads().length, 'aucun décor monté : rien à mesurer').toBe(DENSE.props.length);
-    const artCran0 = quads().map(mapDe);
+    const artCran0 = artDes();
     expect(artCran0.every(Boolean), 'un décor sans art : le cran 0 n’est pas servi').toBe(true);
 
     // Aller au cran 1 et l'attendre COMPLET : les textures des deux crans sont alors en cache, donc
     // les vingt relèves du RETOUR tombent dans la même image — c'est la rafale qu'on mesure.
     await act(async () => { root!.render(vue(100, DENSE, SANS_ACTEUR, animProd)); });
-    let relevés = 0;
-    for (let i = 0; i < 60 && relevés < DENSE.props.length; i++) {
-      await respirer(20);
-      relevés = quads().filter((m, k) => mapDe(m) !== artCran0[k]).length;
-    }
-    expect(relevés, 'le cran 1 n’est pas servi en entier : le retour ne serait pas en cache').toBe(DENSE.props.length);
+    expect(await attendreRelève(artCran0), 'le cran 1 n’est pas servi en entier : le retour ne serait pas en cache')
+      .toBe(DENSE.props.length);
 
     const avant = scènes.length;
     await act(async () => { root!.render(vue(10, DENSE, SANS_ACTEUR, animProd)); });
@@ -513,16 +605,6 @@ describe('Cap changé (première personne) — les quads SURVIVENT', () => {
 });
 
 describe('Cap changé — l’art est celui du NOUVEAU cap', () => {
-  /** Attend la relève de TOUS les quads, dans un budget borné (la file sert une texture par tranche). */
-  async function attendreRelève(artAvant: (THREE.Texture | null)[]): Promise<number> {
-    let relevés = 0;
-    for (let i = 0; i < 30 && relevés < artAvant.length; i++) {
-      await respirer(20);
-      relevés = quads().filter((m, k) => mapDe(m) !== artAvant[k]).length;
-    }
-    return relevés;
-  }
-
   it('N→NE : chaque décor est relevé à l’art de son cap d’arrivée', async () => {
     await monterPov('N', DÉCORS, SANS_ACTEUR);
     const artN = quads().map(mapDe);
@@ -572,21 +654,23 @@ describe('Cap changé — l’art est celui du NOUVEAU cap', () => {
       onerror: (() => void) | null = null;
       set src(_v: string) { enAttente.push(() => this.onload?.()); }
     });
-    /** Sert les images retenues, puis laisse la file et la boucle d'image respirer. */
+    /** Sert les images retenues jusqu'à ce que plus rien n'attende — ni image en vol, ni tâche en
+     *  file. Chaque tour SORT AU FAIT (une image de plus à servir, ou la file vidée), jamais au bout
+     *  d'une fenêtre de 20 ms : servir la suivante trop tôt laisserait la précédente hors de la pose. */
     const servirLesImages = async (): Promise<void> => {
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 8 && (enAttente.length > 0 || bakeQueueLength() > 0); i++) {
         const paquet = enAttente.splice(0);
         await act(async () => { for (const f of paquet) f(); });
-        await respirer(20);
+        await attendre(() => enAttente.length > 0 || bakeQueueLength() === 0);
       }
     };
 
     // SUJETS NEUFS : le groupe se remonte (le seul chemin qui remonte encore), au cap N…
     const NEUFS: SceneBillboardEls = { tokens: [], props: [décor('n1', 5), décor('n2', 6), décor('n3', 7)] };
     await act(async () => { root!.render(écran(cadrePov('N'), NEUFS, SANS_ACTEUR)); });
-    // Les rasterisations du montage passent par la file cadencée (#1372) : on la laisse les poser
-    // avant de mesurer ce que le banc RETIENT.
-    for (let i = 0; i < 40 && enAttente.length === 0; i++) await respirer(20);
+    // Les rasterisations du montage passent par la file cadencée (#1372) : on attend qu'une image soit
+    // EN VOL — le fait mesuré juste après — avant de changer de cap.
+    await attendre(() => enAttente.length > 0);
     // PRÉMISSE — aucun quad neuf ne doit être monté quand le cap change, sinon la REPOSE ordinaire
     // suffirait et le chemin « en vol » ne serait jamais emprunté.
     expect(enAttente.length, 'les textures du montage doivent être RETENUES').toBeGreaterThan(0);
@@ -618,43 +702,31 @@ describe('Cap changé — l’art est celui du NOUVEAU cap', () => {
 describe('Cap voisin — servi par le cache, pas par une rafale', () => {
   it('un demi-tour progressif reste CHAUD : chaque cap franchi réchauffe les siens', async () => {
     const statique = vi.spyOn(svgTexture, 'svgToTexture');
-    /** Laisse la file s'épuiser : le compte de rasterisations ne bouge plus. */
+    /** Laisse la file s'épuiser, et rend le compte de rasterisations servies. Le fait de fin est la
+     *  file VIDE — un compte STABLE d'une fenêtre de mur à l'autre est la même prémisse de vitesse. */
     const drainer = async (): Promise<number> => {
-      let n = -1;
-      for (let i = 0; i < 40 && n !== statique.mock.calls.length; i++) {
-        n = statique.mock.calls.length;
-        await respirer(40);
-      }
+      await attendreFileVidée();
       return statique.mock.calls.length;
-    };
-    /** Attend la relève de TOUS les décors depuis un art donné, dans un budget borné. */
-    const relever = async (artAvant: (THREE.Texture | null)[]): Promise<number> => {
-      let relevés = 0;
-      for (let i = 0; i < 30 && relevés < artAvant.length; i++) {
-        await respirer(20);
-        relevés = quads().filter((m, k) => mapDe(m) !== artAvant[k]).length;
-      }
-      return relevés;
     };
     const parDécor = DÉCORS.props.length;
 
     await monterPov('N', DÉCORS, SANS_ACTEUR);
     // MONTAGE + PRÉ-CHAUFFE : un regard servi (N), deux réchauffés (NE, NO) — trois par décor.
     expect(await drainer(), 'la pré-chauffe des deux caps voisins n’a pas eu lieu au montage').toBe(3 * parDécor);
-    const artN = quads().map(mapDe);
+    const artN = artDes();
     expect(artN.length, 'aucun décor monté : rien à mesurer').toBe(parDécor);
 
     // CAP N→NE : la relève est servie par le cache (le cap NE était réchauffé), et le franchissement
     // réchauffe à son tour les voisins de NE — E est neuf, N vient d'être quitté.
     await act(async () => { root!.render(écran(cadrePov('NE'), DÉCORS, SANS_ACTEUR)); });
-    expect(await relever(artN), 'tous les décors doivent finir relevés au cap NE').toBe(parDécor);
+    expect(await attendreRelève(artN), 'tous les décors doivent finir relevés au cap NE').toBe(parDécor);
     expect(await drainer(), 'le cap E, voisin du cap d’arrivée, n’a pas été réchauffé').toBe(4 * parDécor);
-    const artNE = quads().map(mapDe);
+    const artNE = artDes();
 
     // CAP NE→E : le cap suivant est donc CHAUD lui aussi — sa relève ne rasterise rien, et c'est SE
     // qui part au réchauffage derrière elle.
     await act(async () => { root!.render(écran(cadrePov('E'), DÉCORS, SANS_ACTEUR)); });
-    expect(await relever(artNE), 'tous les décors doivent finir relevés au cap E').toBe(parDécor);
+    expect(await attendreRelève(artNE), 'tous les décors doivent finir relevés au cap E').toBe(parDécor);
     expect(await drainer(), 'le cap SE, voisin du cap E, n’a pas été réchauffé').toBe(5 * parDécor);
   });
 });
@@ -697,16 +769,22 @@ describe('Changement de regard — ce que la caméra attend passe DEVANT', () =>
     await monterPov('N', DÉCORS, SANS_ACTEUR);
     // La file épuisée, plus rien n'attend : toute poignée restante est un fantôme que chaque
     // `rendreAuRechauffage` reparcourt sans plus rien commander.
-    for (let i = 0; i < 40 && poigneesEnAttente().size > 0; i++) await respirer(40);
+    await attendre(() => poigneesEnAttente().size === 0);
     expect(quads().length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
     expect(poigneesEnAttente().size, 'poignées restées après le service complet de la file').toBe(0);
 
     // Trois allers-retours entre caps DÉJÀ CUITS : chaque repose redemande des clés que le cache sert
     // sans rien mettre en file.
     for (const cap of ['NE', 'N', 'NE', 'N'] as Dir8[]) {
+      const avant = artDes();
       await act(async () => { root!.render(écran(cadrePov(cap), DÉCORS, SANS_ACTEUR)); });
-      await respirer(20);
+      // Chaque aller-retour s'attend à SA relève : sous une fenêtre de 20 ms, la repose du cap
+      // précédent est en vol, et la poignée cherchée naît de cette repose — donc après elle.
+      expect(await attendreRelève(avant), `cap ${cap} : tous les décors doivent finir relevés`).toBe(avant.length);
     }
+    // FILE VIDÉE avant de compter : une poignée dont la tâche ATTEND encore est légitime — ce que ce
+    // banc traque, c'est celle qui reste quand plus rien n'attend.
+    await attendreFileVidée();
     expect(poigneesEnAttente().size, 'une demande servie par le cache a posé une poignée fantôme').toBe(0);
   });
 });
@@ -726,7 +804,7 @@ describe('Changement de regard — une texture PÉRIMÉE ne se pose pas', () => 
       return p;
     });
     await monterPov('N', DÉCORS, SANS_ACTEUR);
-    const artN = quads().map(mapDe);
+    const artN = artDes();
     expect(artN.length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
     expect(artN.every(Boolean), 'un décor sans art : le cap N n’est pas servi').toBe(true);
 
@@ -741,18 +819,20 @@ describe('Changement de regard — une texture PÉRIMÉE ne se pose pas', () => 
 
     // N→E : le cap E est FROID (ce n'est pas un voisin de N) — sa relève passe par la file.
     await act(async () => { root!.render(écran(cadrePov('E'), DÉCORS, SANS_ACTEUR)); });
-    for (let i = 0; i < 20 && enAttente.length < DÉCORS.props.length; i++) await respirer(20);
+    await attendre(() => enAttente.length >= DÉCORS.props.length);
     // PRÉMISSE — sans cuisson partie pour E, la garde n'aurait rien à refuser.
     expect(enAttente.length, 'aucune cuisson en vol pour le cap E : rien à périmer').toBeGreaterThanOrEqual(DÉCORS.props.length);
 
     // …retour en N AVANT que ces images n'arrivent : le cap N est en cache, les quads y reviennent.
     await act(async () => { root!.render(écran(cadrePov('N'), DÉCORS, SANS_ACTEUR)); });
-    await respirer(40);
+    // Le retour en N est SERVI PAR LE CACHE : le fait attendu est que les quads y soient revenus —
+    // c'est cet état, et pas 40 ms de mur, qui met la garde de fraîcheur à l'épreuve.
+    await attendre(() => artDes().every((t, k) => t === artN[k]));
     // …et seulement MAINTENANT les textures du cap E finissent de cuire.
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 8 && (enAttente.length > 0 || bakeQueueLength() > 0); i++) {
       const paquet = enAttente.splice(0);
       await act(async () => { for (const f of paquet) f(); });
-      await respirer(20);
+      await attendre(() => enAttente.length > 0 || bakeQueueLength() === 0);
     }
 
     const auCapE = new Set(await Promise.all(
@@ -761,7 +841,7 @@ describe('Changement de regard — une texture PÉRIMÉE ne se pose pas', () => 
     // PRÉMISSE — les textures du cap E ont bien été produites : « aucune n'est posée » ne serait
     // sinon vrai que du vide.
     expect(auCapE.size, 'le cap E n’a rien cuit : la garde ne serait pas mise à l’épreuve').toBe(DÉCORS.props.length);
-    const posées = quads().map(mapDe);
+    const posées = artDes();
     expect(posées, 'les quads doivent être revenus à l’art du cap N').toEqual(artN);
     expect(posées.some((t) => t !== null && auCapE.has(t)), 'une texture du cap quitté s’est posée après coup').toBe(false);
   });
@@ -777,22 +857,12 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
   const cransÉpinglés = (): string[] =>
     [...svgTexture.staticTexturePins()].map((clé) => /\|r(\d)\|/.exec(clé)?.[1] ?? clé);
 
-  /** Attend la relève de tous les quads depuis un art donné, dans un budget borné. */
-  async function attendreRelève(artAvant: (THREE.Texture | null)[]): Promise<number> {
-    let relevés = 0;
-    for (let i = 0; i < 40 && relevés < artAvant.length; i++) {
-      await respirer(20);
-      relevés = quads().filter((m, k) => mapDe(m) !== artAvant[k]).length;
-    }
-    return relevés;
-  }
-
   it('les épingles suivent la POSE : le cran monté, puis le cran d’arrivée', async () => {
     await monter(DÉCORS, SANS_ACTEUR);
     expect(quads().length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
     expect(cransÉpinglés(), 'les textures posées au montage doivent être épinglées au cran 0')
       .toEqual(Array(DÉCORS.props.length).fill('0'));
-    const artCran0 = quads().map(mapDe);
+    const artCran0 = artDes();
 
     await act(async () => { root!.render(vue(100, DÉCORS, SANS_ACTEUR)); });
     expect(await attendreRelève(artCran0), 'tous les décors doivent finir relevés').toBe(artCran0.length);
@@ -811,7 +881,9 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
     // textures d'un écran qui n'existe plus (le vidage de scène, lui, masquerait la fuite).
     const VIDE: SceneBillboardEls = { tokens: [], props: [] };
     await act(async () => { root!.render(vue(0, VIDE, SANS_ACTEUR)); });
-    await respirer(40);
+    // Le démontage des quads est le FAIT qui doit tomber les épingles : on l'attend, on ne le suppose
+    // pas acquis au bout de 40 ms.
+    await attendre(() => quads().length === 0);
 
     expect(quads().length, 'PRÉMISSE : les quads doivent être démontés').toBe(0);
     expect(svgTexture.staticTexturePins().size, 'épingles survivantes après démontage des quads').toBe(0);
@@ -841,7 +913,7 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
 
   it('budget SERRÉ : un tour complet ne libère JAMAIS une texture posée sur un quad', async () => {
     await monter(DÉCORS, SANS_ACTEUR);
-    const posées0 = quads().map(mapDe);
+    const posées0 = artDes();
     expect(posées0.length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
     // POIDS UNITAIRE mesuré sur une entrée RÉSOLUE (le canevas d'une texture POSÉE) — jamais sur la
     // moyenne du stock, que les entrées en vol tirent vers le bas.
@@ -853,10 +925,10 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
     const libérées = espionnerLibérations();
 
     for (const yaw of [100, 190, 280, 370]) {
-      const avant = quads().map(mapDe);
+      const avant = artDes();
       await act(async () => { root!.render(vue(yaw, DÉCORS, SANS_ACTEUR)); });
       expect(await attendreRelève(avant), `cran ${yaw}° : tous les décors doivent finir relevés`).toBe(avant.length);
-      const posées = quads().map(mapDe);
+      const posées = artDes();
       expect(posées.every(Boolean), 'un quad sans art : la relève n’a pas eu lieu').toBe(true);
       expect(posées.filter((t) => t && libérées.has(t)).length, `cran ${yaw}° : une texture POSÉE a été libérée`).toBe(0);
     }
@@ -864,12 +936,9 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
     // quittés, dépinglées à mesure que les quads se reposent).
     expect(libérées.size, 'aucune libération : le budget n’aurait rien borné').toBeGreaterThan(0);
     // FILE ÉPUISÉE avant de peser : une entrée EN VOL n'est jamais évincée (elle n'a rien à libérer),
-    // donc le stock ne retombe sous sa borne qu'une fois toutes les cuissons servies.
-    let bytes = -1;
-    for (let i = 0; i < 40 && bytes !== svgTexture.staticTextureStats().bytes; i++) {
-      bytes = svgTexture.staticTextureStats().bytes;
-      await respirer(40);
-    }
+    // donc le stock ne retombe sous sa borne qu'une fois toutes les cuissons servies. Le fait de fin
+    // est la file VIDE — un poids STABLE d'une fenêtre à l'autre est la même prémisse de vitesse.
+    await attendreFileVidée();
     // BORNE RÉELLE : le budget, PLUS ce que les épingles retiennent — une épinglée n'est jamais
     // évincée, donc le stock peut légitimement dépasser d'autant (invariant du cache borné).
     const marge = svgTexture.staticTexturePins().size * unitaire;
@@ -878,17 +947,19 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
 
   /**
    * PLANCHE IMPOSSIBLE (#1374) : à très petit `mpt`, le palier de cuisson atteint son plafond et la
-   * CELLULE le dépasse (gouttière comprise) — `bakeAtlas` refuse alors de cuire, et l'écran saute le
-   * sujet avec son warn. L'ESTIMATION de poids, elle, court SYNCHRONEMENT au site d'appel : si elle
-   * levait, l'erreur ne serait plus celle d'une promesse traitée mais une EXCEPTION NON GÉRÉE
-   * (mesurée : `atlasLayout: cellule 1642×2052 au-delà du plafond de texture 2048`).
+   * CELLULE le dépasse (gouttière comprise) — `bakeAtlas` REJETTE alors sa promesse, et la demande
+   * différée l'avale SANS BRUIT (`GameStage3D.tsx:1209`, `.catch(() => undefined)`) : le corps garde
+   * la planche qu'il joue, et rien n'est écrit en console. L'ESTIMATION de poids, elle, court
+   * SYNCHRONEMENT au site d'appel : si elle levait, l'erreur ne serait plus celle d'une promesse
+   * traitée mais une EXCEPTION NON GÉRÉE (mesurée : `atlasLayout: cellule 1642×2052 au-delà du
+   * plafond de texture 2048`).
    */
   it('PALIER au plafond : la planche refusée ne fait AUCUNE exception non gérée', async () => {
     const nonGérées: unknown[] = [];
     const surErreur = (e: unknown): void => { nonGérées.push(e); };
     process.on('uncaughtException', surErreur);
     process.on('unhandledRejection', surErreur);
-    // Les warns de sujet sauté sont attendus ici : c'est le chemin de refus, pas la panne.
+    // console.warn muselé par précaution seulement : le chemin de refus mesuré ici est SILENCIEUX.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     try {
       viderCaptures();
@@ -904,6 +975,11 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
           />,
         );
       });
+      // FAIT qui ferme la mesure : la file du cuiseur VIDÉE — tout ce que ce montage a mis en cuisson
+      // a couru, donc tout ce qui pouvait lever a levé. Une fenêtre de mur ne dirait, elle, que la
+      // vitesse de la machine. Les quelques tranches qui suivent ne sont pas une prémisse de vitesse :
+      // un rejet non géré ne remonte au process qu'au tour de boucle d'après.
+      await attendreFileVidée();
       await respirer(60);
     } finally {
       process.off('uncaughtException', surErreur);
@@ -928,9 +1004,9 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
     // Ce qui se fait ÉVINCER sous ce budget, c'est la pré-chauffe (non épinglée) — et elle passe par
     // la MÊME file cadencée que le montage (#1372), une tâche par tranche : on la laisse être servie
     // avant de mesurer, sinon la pression n'a encore rien eu à mordre. Budget BORNÉ.
-    for (let i = 0; i < 40 && libérées.size === 0; i++) await respirer(20);
+    await attendre(() => libérées.size > 0);
 
-    const posées = quads().map(mapDe);
+    const posées = artDes();
     expect(posées.length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
     expect(posées.every(Boolean), 'un quad monté sans art').toBe(true);
     expect(posées.filter((t) => t && libérées.has(t)).length, 'des quads montés portent une texture MORTE').toBe(0);

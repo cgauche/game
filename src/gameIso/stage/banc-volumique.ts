@@ -185,6 +185,21 @@ export function quads(): THREE.Mesh[] {
 export const PLAFOND_ATTENTE_MS = 20_000;
 
 /**
+ * Plafond de sécurité du voile d'entrée poussé HORS D'ATTEINTE (#1442), déclaré UNE fois pour tous les
+ * bancs qui établissent la cause d'une tombée de voile : armé à cette valeur sur le singleton
+ * d'ambiance le temps d'un banc, le plafond ne peut plus gagner la course, et la tombée n'a plus
+ * qu'UNE cause possible — celle que le banc mesure.
+ *
+ * La valeur doit dépasser le plafond des attentes (`PLAFOND_ATTENTE_MS`), et sort donc du domaine que
+ * le schéma d'ambiance défend au parse (`entreeEnScene.plafondMs` ≤ 10 000 ms,
+ * `src/data/schemas/defs/ambiance.ts`) : c'est un levier poussé en mémoire, jamais une valeur
+ * authorable. Tout banc qui le pousse le REND en première instruction de son `afterEach` — le
+ * singleton est partagé par la suite (`isolate: false`), et un fichier voisin monterait sinon son
+ * écran sous un voile immortel.
+ */
+export const PLAFOND_HORS_ATTEINTE_MS = 120_000;
+
+/**
  * ATTENTE À CONDITION — le patron d'attente UNIQUE de ces bancs (#1442) : laisser respirer tant que le
  * fait mesuré n'est pas là, et SORTIR AU FAIT ACCOMPLI.
  *

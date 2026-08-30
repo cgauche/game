@@ -28,20 +28,29 @@ import * as sceneMeshes from '../backends/webgl/sceneMeshes';
 import * as texturesStatiques from './texturesStatiques';
 import { CampaignView } from '../../ui/CampaignView';
 import { setStageRendererFactory } from './GameStage3D';
+import { bakeQueueLength } from '../backends/webgl/atlasBake';
+import { battreStageFrames } from './stageFrames';
 import {
   BancRenderer,
+  PLAFOND_ATTENTE_MS,
   attendreEntréeFinie,
   attendreQuads,
+  attendreQue,
   brancherArdoise,
   canevas as canevasDe,
   quads,
-  respirer,
   simulerRasterisation,
   scènes,
   viderCaptures,
 } from './banc-volumique';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+/** Budget de test calé AU-DESSUS du plafond d'attente du harnais (`PLAFOND_ATTENTE_MS`) : ce banc
+ *  monte l'ÉCRAN entier et attend la file cadencée du cuiseur. Sous un budget plus court, une attente
+ *  qui va au bout de son plafond meurt sur le chronomètre de Vitest, et le banc accuse une lenteur là
+ *  où sa PRÉMISSE a la réponse. */
+vi.setConfig({ testTimeout: PLAFOND_ATTENTE_MS + 10_000 });
 
 const TAILLE = { w: 800, h: 600 };
 
@@ -141,7 +150,9 @@ async function monterHub(quadsAttendus = 40): Promise<void> {
   document.body.appendChild(hôte);
   root = createRoot(hôte);
   await act(async () => { root!.render(<CampaignView />); });
-  await attendreQuads(quadsAttendus);
+  await attendreQuads(quadsAttendus, PLAFOND_ATTENTE_MS);
+  expect(quads().length, `PRÉMISSE : le hub doit avoir monté ${quadsAttendus} boards — sans eux, rien de ce que ce banc compare n’est mesuré`)
+    .toBeGreaterThanOrEqual(quadsAttendus);
 }
 
 /** Monte l'écran de campagne et attend son décor. Rien n'est mesuré tant que le décor n'est pas au
@@ -165,17 +176,39 @@ async function monterCampagne(): Promise<void> {
   await act(async () => { root!.render(<CampaignView />); });
   // 12 décors + le jeton du groupe : attendre le compte PLEIN, sinon un quad en retard passerait pour
   // un quad remonté.
-  await attendreQuads(13);
+  await attendreQuads(13, PLAFOND_ATTENTE_MS);
+  expect(quads().length, 'PRÉMISSE : les 12 décors et le jeton du groupe doivent être montés — un quad en retard se lirait comme un quad remonté')
+    .toBeGreaterThanOrEqual(13);
 }
 
-/** Budget de ce banc : il monte l'ÉCRAN entier et attend la file cadencée du cuiseur — le défaut de
- *  5 s coupait la mesure au milieu du montage sous charge. */
-const BUDGET_MS = 30_000;
-
-/** La bascule de regard, telle que le jeu l'émet (touche F → `keybindings` → `togglePov`). */
+/**
+ * La bascule de regard, telle que le jeu l'émet (touche F → `keybindings` → `togglePov`), et l'IMAGE
+ * qu'elle fait peindre.
+ *
+ * Ce que le banc a besoin de voir arriver, c'est une image peinte APRÈS la bascule — c'est dans ce
+ * rendu-là qu'un remontage libèrerait ses matériaux, recuirait le monde ou perdrait ses quads. C'est
+ * un FAIT (`scènes`, l'accumulateur du renderer de banc), jamais une fenêtre de mur : 60 ms ne le
+ * portent que sur une machine au repos.
+ */
 async function basculer(): Promise<void> {
+  const marque = scènes.length;
   await act(async () => { useGame.getState().togglePov(); });
-  await respirer(60);
+  await attendreQue(() => scènes.length > marque, PLAFOND_ATTENTE_MS);
+  expect(scènes.length, 'PRÉMISSE : aucune image peinte après la bascule — le banc comparerait deux fois le même rendu')
+    .toBeGreaterThan(marque);
+  await battreAprèsLeFait();
+}
+
+/** Images battues APRÈS LE FAIT, avant de figer une assertion NÉGATIVE (#1442, patron
+ *  `gabarits-en-file`) : la sortie d'attente est au PLUS TÔT — un remontage, une purge ou un recuit
+ *  qui arriverait dans l'image suivante resterait hors du jugement. Le battement est celui du jeu
+ *  (`battreStageFrames`, le rythme unique du stage), et chaque image est un FAIT affirmé. */
+const IMAGES_APRES_LE_FAIT = 3;
+async function battreAprèsLeFait(): Promise<void> {
+  const fenêtre = scènes.length + IMAGES_APRES_LE_FAIT;
+  await attendreQue(() => scènes.length >= fenêtre, PLAFOND_ATTENTE_MS, () => battreStageFrames());
+  expect(scènes.length, `PRÉMISSE : la pompe d'images du banc doit battre après le fait — ${scènes.length} image(s) pour ${fenêtre} attendues`)
+    .toBeGreaterThanOrEqual(fenêtre);
 }
 
 describe('Bascule de regard — le monde ne se démonte pas (#1385)', () => {
@@ -202,7 +235,7 @@ describe('Bascule de regard — le monde ne se démonte pas (#1385)', () => {
     expect(quadsAvant.length - survivants,
       'la bascule ne retire QUE le billboard du meneur : tout le reste est apparié par identité')
       .toBeLessThanOrEqual(1);
-  }, BUDGET_MS);
+  });
 
   it('le retour au plateau ne démonte pas davantage le monde', async () => {
     await monterCampagne();
@@ -222,7 +255,7 @@ describe('Bascule de regard — le monde ne se démonte pas (#1385)', () => {
     expect(purge, 'l’aller-retour purge les caches statiques').not.toHaveBeenCalled();
     const survivants = quads().filter((m) => quadsPov.includes(m)).length;
     expect(quadsPov.length - survivants, 'le retour au plateau perd des quads du décor').toBeLessThanOrEqual(1);
-  }, BUDGET_MS);
+  });
 });
 
 describe('Bascule de regard — la molette survit à l’aller-retour (#1385)', () => {
@@ -240,7 +273,7 @@ describe('Bascule de regard — la molette survit à l’aller-retour (#1385)', 
 
     expect(useGame.getState().zoom,
       'la molette est morte : son écoute était liée au SVG du premier montage').not.toBe(zoomAvant);
-  }, BUDGET_MS);
+  });
 });
 
 // ————————————————————————————————————————————————
@@ -262,20 +295,19 @@ describe('Bascule de regard — la CUISSON du monde ne se rejoue jamais (#1385)'
     // compte les bascules. `attendreQuads` ne l'assure pas (elle attend des billboards, le voile
     // attend en plus tous les gabarits de face, servis au rang le plus bas) — mesuré à 348 tâches
     // encore en file au retour, voile levé, et tombé 240 ms plus tard.
-    await attendreEntréeFinie(hôte!);
+    await attendreEntréeFinie(hôte!, PLAFOND_ATTENTE_MS);
     const quadsAvant = quads();
     expect(quadsAvant.length, 'aucun board monté : rien à mesurer').toBeGreaterThan(0);
-    // PRÉMISSE DE MESURE : le MONTAGE a fini de cuire. Le budget de `attendreQuads` est un PLAFOND
-    // (banc partagé, `isolate: false`) : sous charge, une cuisson de BOOT tombait dans la fenêtre de
-    // mesure et se lisait comme un recuit de bascule (flake mesuré 1/7 à cache froid). On attend donc
-    // que la trace de cuisson soit STABLE d'une tranche à l'autre — le budget reste un plafond, mais
-    // la mesure ne commence plus au milieu d'un montage.
-    let précédente = cuissons();
-    for (let i = 0; i < 25; i++) {
-      await respirer(60);
-      if (cuissons() === précédente) break;
-      précédente = cuissons();
-    }
+    // PRÉMISSE DE MESURE : le MONTAGE a fini de cuire. Sous charge, une cuisson de BOOT tombait dans la
+    // fenêtre de mesure et se lisait comme un recuit de bascule (flake mesuré 1/7 à cache froid). Le
+    // fait qui la ferme n'est pas une trace STABLE d'une tranche à l'autre — une stabilité sur
+    // fenêtre de mur est la même prémisse de vitesse — c'est la file du cuiseur VIDE : plus rien
+    // n'attend, donc plus une cuisson de boot ne peut tomber dans la mesure.
+    // L'attente MORD : la file porte encore 72 / 10 / 10 tâches à l'entrée sur trois rejeux — elle
+    // n'est jamais vide d'emblée, donc ce qu'elle ferme est bien une cuisson de boot qui court.
+    await attendreQue(() => bakeQueueLength() === 0, PLAFOND_ATTENTE_MS);
+    expect(bakeQueueLength(), 'PRÉMISSE : la file du cuiseur du MONTAGE doit être vide avant de compter les cuissons de bascule')
+      .toBe(0);
     expect(canevas().dataset.voile, 'PRÉMISSE : le voile du montage n’est pas tombé, il n’y a pas de réarmement à mesurer')
       .toBeUndefined();
     const bakeAvant = cuissons();
@@ -284,16 +316,22 @@ describe('Bascule de regard — la CUISSON du monde ne se rejoue jamais (#1385)'
     for (let b = 0; b < 4; b++) {
       await basculer();
       // Un PAS entre deux bascules, comme au jeu : la vision change, le dégagement aussi — et la
-      // cuisson, elle, ne dépend que de la scène (`worldBakeDeps`), donc de rien de tout cela.
+      // cuisson, elle, ne dépend que de la scène (`worldBakeDeps`), donc de rien de tout cela. Le pas
+      // se juge sur l'IMAGE qu'il fait peindre, jamais sur 60 ms de mur : c'est dans ce rendu qu'une
+      // dep reforgée recuirait le monde.
+      const marque = scènes.length;
       await act(async () => { useGame.getState().stepPartyDir(b % 2 ? 'down' : 'up'); });
-      await respirer(60);
+      await attendreQue(() => scènes.length > marque, PLAFOND_ATTENTE_MS);
+      expect(scènes.length, 'PRÉMISSE : aucune image peinte après le pas — un recuit de pas resterait hors de la mesure')
+        .toBeGreaterThan(marque);
+      await battreAprèsLeFait();
     }
 
     expect(cuisson, 'le monde est RECUIT en route : une dep de `worldBakeDeps` a changé d’identité')
       .not.toHaveBeenCalled();
     expect(cuissons(), 'la trace de cuisson du canevas a bougé').toBe(bakeAvant);
     expect(canevas().dataset.voile, 'l’entrée en scène s’est réarmée : l’écran a été remonté').toBeUndefined();
-  }, BUDGET_MS);
+  });
 });
 
 describe('Bascule de regard — le décor de la scène réelle survit (#1385)', () => {
@@ -310,7 +348,7 @@ describe('Bascule de regard — le décor de la scène réelle survit (#1385)', 
         .toBeLessThanOrEqual(1);
       avant = après;
     }
-  }, BUDGET_MS);
+  });
 
   it('bascule pendant que la file du cuiseur SERT ENCORE : aucun quad perdu', async () => {
     // Montage à file NON VIDE : on ne laisse pas le cuiseur finir. C'est le cas où le décor a été vu
@@ -326,7 +364,7 @@ describe('Bascule de regard — le décor de la scène réelle survit (#1385)', 
     const survivants = quads().filter((m) => avant.includes(m)).length;
     expect(avant.length - survivants,
       'une bascule pendant le service de la file perd le décor déjà posé').toBeLessThanOrEqual(1);
-  }, BUDGET_MS);
+  });
 });
 
 // ————————————————————————————————————————————————
@@ -371,7 +409,7 @@ describe('Bascule de regard — en POV, le meneur n’est PAS un sujet du monde 
     expect(canevas().dataset.vue, 'le canevas n’est pas revenu au plateau').toBe('plateau');
     expect(sujets.mock.calls.length ? idsDe() : idsPov,
       'le jeton de groupe n’est pas revenu sur le plateau').toContain(meneurId);
-  }, BUDGET_MS);
+  });
 });
 
 // ————————————————————————————————————————————————
@@ -394,7 +432,7 @@ describe('Bascule de regard — accents de sol et pools SURVIVENT (#1385)', () =
     await basculer();
     expect(remontes(avant, lotsAccents()),
       'le semis d’accents est refait au RETOUR au plateau').toEqual([]);
-  }, BUDGET_MS);
+  });
 
   it('aller-retour : les pools à capacité gardent leur identité ET leur capacité', async () => {
     await monterHub();
@@ -410,5 +448,5 @@ describe('Bascule de regard — accents de sol et pools SURVIVENT (#1385)', () =
     await basculer();
     expect(remontes(avant, pools()),
       'un pool est remonté au RETOUR au plateau').toEqual([]);
-  }, BUDGET_MS);
+  });
 });
