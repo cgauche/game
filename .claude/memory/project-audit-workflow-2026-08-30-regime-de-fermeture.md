@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 8eebe977-36b3-422e-811b-8dd35ceb3adc
-  modified: 2026-08-30T09:39:02.304Z
+  modified: 2026-08-30T17:30:01.821Z
 ---
 
 Audit demandé par l'utilisateur (« le stock ne fait qu'augmenter », « dans une épique on finit par diverger et faire des travaux incomplets »). Plan approuvé le 2026-08-30. **Chiffres de référence** (base de comparaison des prochains audits) :
@@ -20,4 +20,4 @@ Audit demandé par l'utilisateur (« le stock ne fait qu'augmenter », « dans u
 
 **Régime adopté** (détail : skill `orchestrer-des-agents`, sections « audit 2026-08-30 ») : fan-out ≤1 + reste rattaché à une vague nommée + LIVRÉ=soldé + zéro net par vague · épique sans salve/sans checklist, pilotage au commentaire, compteur décroissant · lots 10-12, 2 fronts, validations asynchrones, mix par fenêtre de présence, checkpoint quota · ré-instruction avant dispatch des tickets >30 j · sortie runner → fichier.
 
-**Exécution** : #1591 (boucle interne typecheck:fast/allowlist), #1592 (purge docs/plans + garde), #1593 (FILE D'ARBITRAGES : 12 épiques à statuer, .wt-1501, restes dormants #1434/#1476/#1477/#1454/#1455). Canari trié (4 doublons fermés, #1493 seul ouvert). Cibles : delta net ≤0 sous 4 semaines, ≥50 % des fermetures dépilant du stock >28 j, résorption des restes ≥60 % sous 2 semaines.
+**Exécution** : #1591 (boucle interne typecheck:fast/allowlist), #1592 (purge docs/plans + garde). #1593 DÉPILÉ le 2026-08-30 même — 11 arbitrages utilisateur rendus (via AskUserQuestion, consignés verbatim+date sur chaque ticket) : #665 EDO reprise (ré-instruction d'abord), #834 et #1361 gelés (label `gelée` créé), #211 reprise 1 système/vague en présence, #1348/#1350 retour maquette, #903 vague en absence, #1122 capturé par #1388 et FERMÉ, #942 re-cadrage DoD par lecteur, .wt-1501 reprise-fusion (ancré #1501), 5 restes dormants en tête de vague domaine, purge des worktrees agent-* au rituel d'ouverture. Canari trié (4 doublons fermés, #1493 seul ouvert). Cibles : delta net ≤0 sous 4 semaines, ≥50 % des fermetures dépilant du stock >28 j, résorption des restes ≥60 % sous 2 semaines.
