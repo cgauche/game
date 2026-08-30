@@ -11,12 +11,18 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
 
 ## Cycle
 
-0bis. **Toute vague tient sa TODO DE VAGUE dans le scratchpad** (fichier `TODO-vague-<ticket>.md`,
-   mis à jour à CHAQUE transition — dispatch, retour d'agent, écart signalé) : les tickets sont le
-   backlog DURABLE (jamais de plan daté dans le dépôt), la todo de vague est la strate en dessous —
-   les pas transitoires (relire le diff, relancer les gates, recette) ET le parking des écarts en
-   attente de ticket. Vécu 2026-08-24 : plan tenu « de tête », deux restes de recetteurs (#1426) ont
-   fui deux jours, retrouvés seulement parce que l'utilisateur a DEMANDÉ la liste (→ #1500).
+0bis. **Toute vague tient sa TODO DE VAGUE dans le TASK-TRACKER du harnais** (`TaskCreate` /
+   `TaskUpdate` / `TaskList`) dès qu'il est disponible : chaque dispatch d'agent CRÉE sa tâche
+   (`in_progress`), chaque retour la SOLDE, chaque suite découverte devient une tâche avec ses
+   dépendances (`blockedBy`) — et **la prochaine action se LIT dans la liste**, jamais dans ma
+   mémoire ; une annonce en prose n'est pas une ligne de suivi. Repli quand le harnais n'expose pas
+   de task tools : le scratchpad (fichier `TODO-vague-<ticket>.md`), mis à jour à CHAQUE transition.
+   Les tickets sont le backlog DURABLE (jamais de plan daté dans le dépôt), la todo de vague est la
+   strate en dessous — les pas transitoires (relire le diff, relancer les gates, recette) ET le
+   parking des écarts en attente de ticket. Vécu 2026-08-24 : plan tenu « de tête », deux restes de
+   recetteurs (#1426) ont fui deux jours, retrouvés seulement parce que l'utilisateur a DEMANDÉ la
+   liste (→ #1500). Audit 2026-08-31 : file de vague tenue dans mes messages de chat → 3 dérives
+   « annoncé mais pas fait » le même soir, invisibles pour l'utilisateur.
 0. **Vague qui reprend des tickets « déjà livrés » → AUDIT DE DoD D'ABORD**, jamais à la fin.
    Un agent `juge` relit le DoD MOT À MOT et confronte chaque point au dépôt (preuve exigée par
    point). Vécu 2026-07-26 : 3 tickets crus livrés, **0 fermable** — et l'audit a révélé une
@@ -194,6 +200,16 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    en ouvre.
 
 ## Régime de vague et d'épique (audit 2026-08-30)
+
+**Un orchestrateur qui a des tickets ne s'arrête pas.** Doctrine utilisateur du 2026-08-31, rendue
+après DEUX arrêts fautifs le même soir, bilan prononcé alors que des lots ancrés restaient
+dispatchables : « Un orchestrator n'arrete jamais tant qu'il a des tickets a traiter ». Un « bilan »
+n'est pas une fin de service : c'est un point d'étape ENTRE deux dispatchs. Conséquence
+opérationnelle — à CHAQUE instant où tous les agents sont rendus, l'action suivante est de
+dispatcher le prochain lot ancré dont aucun blocage réel ne tient (une fenêtre d'absence est une
+fenêtre de travail : données, gardes, lecture), ou de NOMMER le blocage réel : quota, validation
+utilisateur requise, charge machine. Voir le red flag « item de PLAN APPROUVÉ laissé ni exécuté, ni
+dispatché, ni ancré avec un BLOCAGE NOMMÉ ».
 
 **Un lot fait 10-12 tickets d'un MÊME domaine.** La cérémonie de vague coûte ~5-6 h FIXES
 (grounding, juges, gates, solde, réfutation), amorties ×3 par le batching mesuré des vagues ②③ :
