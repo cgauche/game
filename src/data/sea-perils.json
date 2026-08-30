@@ -46,7 +46,7 @@
         }
       ],
       "freeTest": {
-        "skillId": "force",
+        "char": "force",
         "difficulty": "accessible",
         "totalDR": 10
       },
@@ -212,7 +212,9 @@
     }
   ],
   "tourbillonSwim": {
-    "skillId": "natation",
+    "skill": {
+      "id": "natation"
+    },
     "difficulty": "complexe",
     "source": {
       "book": "mer-des-griffes",

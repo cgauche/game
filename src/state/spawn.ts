@@ -220,7 +220,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   // PLUS BAS, sur le profil FINAL (après Taille facultative éventuelle) : la valeur de Test IMPRIMÉE par
   // la variante doit tenir compte du ∓5 Ag qu'elle-même inflige (LDB 85 l.276-277), sinon la variante se
   // désaccorderait de son propre changement de Taille.
-  const swapSkillRefs = swapGrants.flatMap((g) => ('skillId' in g ? [{ id: g.skillId, spec: g.spec, value: g.value }] : []));
+  const swapSkillRefs = swapGrants.flatMap((g) => ('id' in g ? [{ id: g.id, spec: g.spec, value: g.value }] : []));
   const talents = talentsFromBook(creature.talents);
   // Tirage FIGÉ d'une Possession (`charsRolled`, LDB 77 l.108 — seedé sur l'uid, jamais relancé) PRIME
   // sur le tirage à la volée `randomChars` (deux projections successives avec le MÊME `charsRolled` →

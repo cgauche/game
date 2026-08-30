@@ -149,7 +149,7 @@ export function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: Ac
     return undefined;
   }
   const difficulty = def.difficulty ?? 'intermediaire';
-  const test: RollRequest['test'] = { skill: spec.used?.skillId, spec: spec.used?.spec };
+  const test: RollRequest['test'] = { skill: spec.used?.id, spec: spec.used?.spec };
   return monoStep({
     id: `sea-activity-generic-${hero.id}`, kind: 'sea-activity-generic', actor: hero,
     label: composeRollLabel(hero, def.label, test), difficulty, rollLabel: def.label,
@@ -212,9 +212,9 @@ function openNextOpportunityTrade(get: Get, set: Set): void {
     return;
   }
   payFromGroup(get, set, fromBrass(invest * PA_PER_CO), { purpose: 'commerce d’opportunité' });
-  const test: RollRequest['test'] = { skill: OPPORTUNITE.test.skillId };
+  const test: RollRequest['test'] = { skill: OPPORTUNITE.test.skill.id, spec: OPPORTUNITE.test.skill.spec };
   get().startExtendedTest({
-    actorId: hero.id, label: dataLabel(activityById(pick.activityId)?.label ?? pick.activityId), skillLabel: refLabel('skills', { id: OPPORTUNITE.test.skillId }),
+    actorId: hero.id, label: dataLabel(activityById(pick.activityId)?.label ?? pick.activityId), skillLabel: refLabel('skills', OPPORTUNITE.test.skill),
     target: effectiveTarget(hero, test, OPPORTUNITE.test.difficulty), targetDR: OPPORTUNITE.test.totalDR,
     maxAttempts: OPPORTUNITE.test.maxAttempts,
     outcome: { kind: 'sea-activity-opportunity', meta: { heroId: hero.id, investBrass: invest * PA_PER_CO } },

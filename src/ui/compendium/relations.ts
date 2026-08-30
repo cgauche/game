@@ -144,7 +144,7 @@ const graph = versionCached<ReverseGraph>(() => {
   for (const t of talents) {
     const by: Referrer = { category: 'talents', id: t.id, label: t.label };
     for (const op of t.passive ?? []) {
-      if (op.op === 'grantCareerSkill') addReverse('skills', op.skillId, by, 'Talents le conférant');
+      if (op.op === 'grantCareerSkill') addReverse('skills', op.skill.id, by, 'Talents le conférant');
       else if (op.op === 'grantCareerTalent') addReverse('talents', op.talentId, by, 'Talents le conférant');
       else if (op.op === 'charMod') addReverse('characteristics', op.char, by, 'Talents (bonus de départ)');
     }

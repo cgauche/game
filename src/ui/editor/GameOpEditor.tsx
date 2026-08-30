@@ -343,7 +343,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'grantPsychTrait': return { op: 'grantPsychTrait', psychType: '' };
     case 'removePsychTrait': return { op: 'removePsychTrait' };
     case 'grantTalent': return { op: 'grantTalent', talentId: '' };
-    case 'grantCareerSkill': return { op: 'grantCareerSkill', skillId: '' };
+    case 'grantCareerSkill': return { op: 'grantCareerSkill', skill: { id: '' } };
     case 'grantCareerTalent': return { op: 'grantCareerTalent', talentId: '' };
     case 'augmentWeapon': return { op: 'augmentWeapon' };
     case 'cureDisease': return { op: 'cureDisease', count: 1 };
@@ -412,6 +412,22 @@ export function newOp(op: GameOp['op'] | string): GameOp {
  *  `material`, `resource`, `level`…) n'en est pas une : TS y impose déjà l'un de ses N membres. */
 export interface OpRefField { field: string; ds: DatasetKey; label: string; required: boolean }
 
+/** Valeur d'un champ-réf d'op — `field` est un CHEMIN (`skill.id` pour une référence EMBOÎTÉE,
+ *  `traitId` pour une référence à plat). PURE. */
+export function opRefValue(op: unknown, field: string): unknown {
+  return field.split('.').reduce<unknown>((n, k) => (n && typeof n === 'object' ? (n as Record<string, unknown>)[k] : undefined), op);
+}
+
+/** Même chemin, en ÉCRITURE : rend une COPIE de `op` dont `field` porte `valeur`. PURE. */
+export function opWithRefValue<T>(op: T, field: string, valeur: unknown): T {
+  const [tete, ...reste] = field.split('.');
+  const source = op as Record<string, unknown>;
+  const sousArbre = reste.length
+    ? opWithRefValue((source[tete] ?? {}) as Record<string, unknown>, reste.join('.'), valeur)
+    : valeur;
+  return { ...source, [tete]: sousArbre } as T;
+}
+
 /** SOURCE UNIQUE des réfs de registre du vocabulaire `GameOp`, lue par les contrôles d'édition
  *  (sentinelle vide), par la raison visible portée par la rangée, et par le gate pré-persist du
  *  Codex (`validateEntry`). Un nouveau champ-réf s'ajoute ICI, jamais dans une nième liste. */
@@ -425,7 +441,7 @@ export const OP_REF_FIELDS: Partial<Record<GameOp['op'], readonly OpRefField[]>>
   grantTrait: [{ field: 'traitId', ds: 'traits', label: 'Trait', required: true }],
   grantTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
   grantCareerTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
-  grantCareerSkill: [{ field: 'skillId', ds: 'skills', label: 'Compétence', required: true }],
+  grantCareerSkill: [{ field: 'skill.id', ds: 'skills', label: 'Compétence', required: true }],
   skillMod: [{ field: 'skill', ds: 'skills', label: 'Compétence', required: true }],
   skillDRBonus: [{ field: 'skill', ds: 'skills', label: 'Compétence', required: false }],
   grantReverseToken: [{ field: 'skill', ds: 'skills', label: 'Compétence', required: false }],
@@ -441,9 +457,8 @@ export const OP_REF_FIELDS: Partial<Record<GameOp['op'], readonly OpRefField[]>>
 
 /** Réfs REQUISES non élues d'UNE op (champ absent ou vide) — sans récursion. PURE. */
 export function opMissingRefs(op: GameOp): string[] {
-  const rec = op as unknown as Record<string, unknown>;
   return (OP_REF_FIELDS[op.op] ?? [])
-    .filter((f) => f.required && (rec[f.field] == null || rec[f.field] === ''))
+    .filter((f) => f.required && (opRefValue(op, f.field) == null || opRefValue(op, f.field) === ''))
     .map((f) => `${OP_LABEL[op.op]} : ${f.label} à choisir`);
 }
 
@@ -505,7 +520,7 @@ export function opSummary(o: GameOp): string {
     case 'grantTrait': return `${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
     case 'grantPsychTrait': return `${o.psychType}${o.cible ? ` (${o.cible})` : ''}`;
     case 'grantTalent': return `${talentConcrete(o)}`;
-    case 'grantCareerSkill': return `${refLabel('skills', { id: o.skillId, spec: o.spec })}`;
+    case 'grantCareerSkill': return `${refLabel('skills', o.skill)}`;
     case 'grantCareerTalent': return `${refLabel('talents', { id: o.talentId, spec: o.spec })}`;
     case 'augmentWeapon': return `${[
       ...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })),

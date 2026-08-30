@@ -51,7 +51,7 @@ describe('op removeShipPoste — Canon perdu (MDG 13 l.765)', () => {
 
 /** Test « Canon détaché » authoré en DONNÉE : compétence + difficulté + conséquence d'échec en `GameOp`. */
 const detachTest: ShipCrewTest = {
-  skillId: 'athletisme', difficulty: 'intermediaire',
+  skill: { id: 'athletisme' }, difficulty: 'intermediaire',
   onFail: [{ op: 'wounds', amount: 12, ignoreTB: false, ignoreAP: false }],
 };
 

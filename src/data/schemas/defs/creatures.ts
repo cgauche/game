@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
 import { availabilitySchema, harvestRaritySchema, entityAppearanceSchema } from '../grammaire/valeurs';
 import { refSchema, talentRefSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'creatures.json';
 export const famille = 'entite';
@@ -22,7 +23,7 @@ const optionalWildcardSchema = z.strictObject({
 });
 const swapGrantSchema = z.union([
   z.strictObject({ char: z.string(), value: z.number() }),
-  z.strictObject({ skillId: z.string(), spec: z.string().optional(), value: z.number() }),
+  refOuSpec('skill', { value: z.number() }),
 ]);
 const optionalSwapSchema = z.strictObject({
   note: z.literal('swap'),

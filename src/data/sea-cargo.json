@@ -482,7 +482,9 @@
   "opportunite": {
     "investMaxEnc": true,
     "test": {
-      "skillId": "marchandage",
+      "skill": {
+        "id": "marchandage"
+      },
       "difficulty": "complexe",
       "totalDR": 10,
       "maxAttempts": 3

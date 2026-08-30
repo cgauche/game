@@ -485,9 +485,9 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
     const picked = bestForCombined([chosen], def.skills[0], def.skills[1], def.char);
     if (!picked) return;
     openBattlePending(get, set, {
-      actor: picked.actor, battle: 'prep', def, skillValue: picked.value1, skillId: def.skills[0].skillId, spec: def.skills[0].spec, char: def.char,
+      actor: picked.actor, battle: 'prep', def, skillValue: picked.value1, skillId: def.skills[0].id, spec: def.skills[0].spec, char: def.char,
       difficulty, mod, modLabel,
-      combined: { skillId: def.skills[1].skillId, spec: def.skills[1].spec, value: picked.value2 },
+      combined: { skillId: def.skills[1].id, spec: def.skills[1].spec, value: picked.value2 },
     });
     return;
   }

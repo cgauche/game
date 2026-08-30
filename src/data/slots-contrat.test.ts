@@ -160,7 +160,16 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
     // `symptoms.severePassive`/`symptoms.visiblePassive`/`etats.value` NAISSENT au relevé (les comptes
     // de `symptoms.ops/passive` et `traits.passive` montent au même titre). Aucune référence neuve
     // n'a été écrite en donnée : la dette était là, elle est désormais VUE.
-    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(329);
+    // Cliquet REMONTÉ 329 → 331 (L2 #1548, commit 3b) — comptabilité EXACTE : le STOCK mesuré monte de
+    // TROIS (328 → 331), pas de deux ; l'ancien plafond de 329 avait UN cran libre au-dessus du stock.
+    // Cause du +3 : la référence de Compétence sort du porteur
+    // et devient son PROPRE champ (`skill`), ce qui SCINDE des lignes existantes au lieu d'en ajouter
+    // de la donnée neuve — `creatures.grant` 6→5 + `creatures.spec` 1, `talents.passive` 6→1 +
+    // `talents.skill` 1→6, et `incidents-monture.skill` / `steam-breakdown.skill` naissent du même
+    // déplacement. Aucune référence n'a été écrite : la projection `champDuPath` retient le DERNIER
+    // segment (`id`), donc l'adoption de `refOuSpec('skill')` reste invisible à cette mesure
+    // (`ANGLES_MORTS_SLOTS`) — c'est le CHAMP PORTEUR qui a bougé, pas la dette.
+    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(331);
   });
 
   it('chaque ligne du stock porte sa DATE et son LOT de mort', () => {

@@ -26,7 +26,7 @@ describe('Catalogue des rôles d’équipage + types de Test (MDG 14) — donné
       expect(r.skills.length).toBeGreaterThanOrEqual(1);
     }
     // Mousse = Voile OU Ramer (le RAW donne deux compétences pour ce rôle).
-    expect(findCrewRoleById('mousse')!.skills.map((s) => s.skillId)).toEqual(['voile', 'ramer']);
+    expect(findCrewRoleById('mousse')!.skills.map((s) => s.id)).toEqual(['voile', 'ramer']);
   });
 
   it('chaque type de Test référence des rôles existants, dont son rôle ESSENTIEL', () => {

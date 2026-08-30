@@ -9,6 +9,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { datasetArray, setDataset, datasetObject, setObjectDataset, datasetFile, datasetSerializeRoot, datasetObjectFile, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
 import { CATEGORY_DATASET_DERIVE, OBJECT_CATEGORY_DERIVE } from '../../data/schemas/exposition-derivee';
 import type { ShipCrewTest } from '../../data/shipCriticals';
+import type { SkillRef } from '../../engine/skills';
+import type { SteamBreakdownEntry } from '../../engine/shipBuild';
 import { serializeDataset } from '../../data/serialize';
 import { validateDataset, metaPourFichier } from '../../data/schemas/validate';
 import * as fs from '../../data/fsPersist';
@@ -267,11 +269,11 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
   if (['traits', 'qualities', 'mutations', 'talents', 'etats', 'trappings', 'psychologies', 'navalTraits'].includes(categoryKey)) add('passive');
   if (categoryKey === 'structures' || categoryKey === 'races') add('traits'); // {id,value?}[] → réutilise TraitListField (comme creatures) — Trait racial d'espèce (encombrance/consommation), #572
-  if (categoryKey === 'crewRoles') add('skills'); // {skillId,spec?}[] → éditeur dédié (SkillSpecListField)
-  if (categoryKey === 'axes') add('skills', 'talents'); // #409 : {skillId,spec?}[]/{talentId,spec?}[] → SkillSpecListField/TalentSpecListField
+  if (categoryKey === 'crewRoles') add('skills'); // {id,spec?}[] → éditeur dédié (SkillSpecListField)
+  if (categoryKey === 'axes') add('skills', 'talents'); // #409 : {id,spec?}[]/{talentId,spec?}[] → SkillSpecListField/TalentSpecListField
   if (categoryKey === 'traumas') add('prosthesis'); // {trappingId,cancels}[] → éditeur dédié (ProsthesisField)
   if (CRITICAL_CATEGORIES.includes(categoryKey)) add('traumas'); // string[] d'ids → éditeur dédié (TraumaListField, #173)
-  if (categoryKey === 'steamBreakdowns') add('restart'); // {skillId,spec?,difficulty,extendedDR?}[] → éditeur dédié
+  if (categoryKey === 'steamBreakdowns') add('restart'); // {skill:{id,spec?},difficulty,extendedDR?}[] → éditeur dédié
   add(...opsFieldsOf(categoryKey)); // ops/occupantOps/crewOps/captainOps → GameOpEditor (#157)
   if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick', 'visiblePassive', 'visibleLocations'); // GameOp[] + test de cycle + gate visibilité → éditeurs dédiés (capabilities = sous-form générique)
   if (categoryKey === 'stars') add('sub');
@@ -304,7 +306,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'tavernGames') add('options', 'table', 'sides');
   if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
   if (categoryKey === 'details') add('texts');
-  if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skillId?,difficulty?,crewTarget?,onFail}
+  if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skill?,difficulty?,crewTarget?,onFail}
   if (categoryKey === 'waterExposure') add('test', 'modifiers', 'diseases'); // #157 suite (MSRC 16)
   // LOT 1 #422 : seules les tables NICHÉES en TABLEAU top-level d'une fiche-objet navale retombent en
   // json (repli générique) — chaque sous-objet HÉTÉROGÈNE (vitesseMax/salissures/orientation/phares/
@@ -410,9 +412,9 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   // Structure de siège (`structures`, #157) : `traits` = {id,value?}[] → réutilise TraitListField (comme
   // les Traits/Traits optionnels d'une créature).
   const isStructure = categoryKey === 'structures';
-  // Rôle d'équipage (`crewRoles`, #157) : `skills` = {skillId,spec?}[] → éditeur dédié.
+  // Rôle d'équipage (`crewRoles`, #157) : `skills` = {id,spec?}[] → éditeur dédié.
   const hasCrewSkills = categoryKey === 'crewRoles';
-  // Axe de forces (`axes`, #409) : `skills`/`talents` = {skillId|talentId,spec?}[] → éditeurs dédiés
+  // Axe de forces (`axes`, #409) : `skills`/`talents` = {id,spec?}[]/{talentId,spec?}[] → éditeurs dédiés
   // (SkillSpecListField, réutilisé tel quel côté Compétences ; TalentSpecListField, même patron côté Talents).
   const hasAxes = categoryKey === 'axes';
   // Traumatisme (`traumas`, #157) : `prosthesis` (prothèses annulatrices, LDB 73) = {trappingId,cancels}[].
@@ -420,7 +422,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   // Critique localisé (LDB 6/AA, #173) : `traumas` = string[] d'ids de fiche (`traumas.json`) →
   // éditeur dédié (TraumaListField, sélecteurs id→label) au lieu du datalist générique par-label.
   const hasTraumaList = CRITICAL_CATEGORIES.includes(categoryKey);
-  // Panne de Vapeur (`steamBreakdowns`, #157) : `restart` (Test de redémarrage) = {skillId,spec?,difficulty,extendedDR?}[].
+  // Panne de Vapeur (`steamBreakdowns`, #157) : `restart` (Test de redémarrage) = {skill:{id,spec?},difficulty,extendedDR?}[].
   const hasRestartTest = categoryKey === 'steamBreakdowns';
   // Champs `GameOp[]` autres que `passive` (ops/occupantOps/crewOps/captainOps, #157) — même GameOpEditor.
   const opsFields = opsFieldsOf(categoryKey);
@@ -471,7 +473,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   // Espèce : Trait racial (`traits`, #572) → réutilise TraitListField (comme creatures/structures) —
   // Ogre `{id:'ogre'}` (encombrance/consommation ×2 ; la Taille est portée par le talent Massif/Petit).
   const isRace = categoryKey === 'races';
-  // Critique de coque (10 catégories navire/fluvial, #157 suite) : `crewTest` (skillId?/difficulty?/
+  // Critique de coque (10 catégories navire/fluvial, #157 suite) : `crewTest` (skill?/difficulty?/
   // crewTarget?/onFail) → éditeur dédié (ShipCrewTestField) ; `ops` reste sur le lot GameOpEditor commun.
   const isShipCrit = SHIP_CRIT_CATEGORIES.includes(categoryKey);
   // Exposition à l'eau (`waterExposure`, #157 suite, MSRC 16) : `test` (Compétence+Difficulté),
@@ -669,15 +671,15 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {isTrait && <TraitSchemaField entry={entry} edit={edit} />}
         {isStructure && <TraitListField label="Atouts" hint="(Résistant/Impénétrable — ADE II 8)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />}
         {isRace && <TraitListField label="Trait racial" hint="(#572 — Ogre : encombrance/consommation ×2 ; Taille = talent Massif/Petit)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />}
-        {hasCrewSkills && <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
-        {hasAxes && <SkillSpecListField hint="compétences contribuant à l'axe (facultatif)" value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
+        {hasCrewSkills && <SkillSpecListField value={entry.skills as SkillRef[] | undefined} onChange={(v) => edit('skills', v)} />}
+        {hasAxes && <SkillSpecListField hint="compétences contribuant à l'axe (facultatif)" value={entry.skills as SkillRef[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAxes && <TalentSpecListField value={entry.talents as { talentId: string; spec?: string }[] | undefined} onChange={(v) => edit('talents', v)} />}
         {hasConsumable && <GenericArrayField label="prosthesisTraining (paliers d’entraînement — PX, libellé joueur, tranche rachetée, aspect levé)" value={entry.prosthesisTraining as Record<string, unknown>[] | undefined} onChange={(v) => edit('prosthesisTraining', v.length ? v : undefined)} />}
         {hasProsthesis && <ProsthesisField value={entry.prosthesis as { trappingId: string; cancels: 'all' | 'movement' }[] | undefined} onChange={(v) => edit('prosthesis', v.length ? v : undefined)} />}
         {hasTraumaList && <TraumaListField value={entry.traumas as string[] | undefined} onChange={(v) => edit('traumas', v.length ? v : undefined)} />}
-        {hasRestartTest && <RestartTestField value={entry.restart as { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[] | undefined} onChange={(v) => edit('restart', v.length ? v : undefined)} />}
+        {hasRestartTest && <RestartTestField value={entry.restart as RestartTest[] | undefined} onChange={(v) => edit('restart', v.length ? v : undefined)} />}
         {isShipCrit && <ShipCrewTestField value={entry.crewTest as ShipCrewTest | undefined} onChange={(v) => edit('crewTest', v)} />}
-        {isWaterExposure && <WaterTestField value={entry.test as { skillId: string; difficulty: Difficulty } | undefined} onChange={(v) => edit('test', v)} />}
+        {isWaterExposure && <WaterTestField value={entry.test as WaterTest | undefined} onChange={(v) => edit('test', v)} />}
         {isWaterExposure && <WaterModifiersField value={entry.modifiers as WaterExposureModifier[] | undefined} onChange={(v) => edit('modifiers', v)} />}
         {isWaterExposure && <WaterDiseasesField value={entry.diseases as WaterExposureData['diseases'] | undefined} onChange={(v) => edit('diseases', v)} />}
         {isSeaNavigation && <GenericArrayField label="forcerLeRythme (bonus M → difficulté Voile/Rames)" value={entry.forcerLeRythme as Record<string, unknown>[] | undefined} onChange={(v) => edit('forcerLeRythme', v)} />}
@@ -987,9 +989,9 @@ function TraitSchemaField({ entry, edit }: { entry: Entry; edit: (key: string, v
 }
 
 /** Compétences d'un Rôle d'équipage (`crewRoles.skills`, MDG 14, #157) OU d'un axe de forces
- *  (`axes.skills`, #409) : `{skillId,spec?}[]` — plusieurs Compétences candidates possibles (`hint`
+ *  (`axes.skills`, #409) : `{id,spec?}[]` — plusieurs Compétences candidates possibles (`hint`
  *  précise la sémantique par appelant : « la meilleure retenue » pour un rôle, dérivation pour un axe). */
-function SkillSpecListField({ value, onChange, hint = 'compétences du rôle (au moins une ; « au choix » si plusieurs — la meilleure est retenue)' }: { value: { skillId: string; spec?: string }[] | undefined; onChange: (v: { skillId: string; spec?: string }[]) => void; hint?: string }) {
+function SkillSpecListField({ value, onChange, hint = 'compétences du rôle (au moins une ; « au choix » si plusieurs — la meilleure est retenue)' }: { value: SkillRef[] | undefined; onChange: (v: SkillRef[]) => void; hint?: string }) {
   const list = value ?? [];
   const skillOpts = datasetArray('skills') as { id: string; label: string }[];
   const set = (next: typeof list) => onChange(next);
@@ -998,15 +1000,15 @@ function SkillSpecListField({ value, onChange, hint = 'compétences du rôle (au
       <span>{hint}</span>
       {list.map((s, i) => (
         <div className="tf-row" key={i}>
-          <select value={s.skillId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, skillId: e.target.value } : x)))}>
-            {!s.skillId && <option value="">— (choisir une compétence) —</option>}
+          <select value={s.id} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, id: e.target.value } : x)))}>
+            {!s.id && <option value="">— (choisir une compétence) —</option>}
             {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
           <input placeholder="spécialisation (facultatif)" value={s.spec ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, spec: e.target.value || undefined } : x)))} />
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => set([...list, { skillId: '' }])}>+ Compétence</button>
+      <button className="btn small" onClick={() => set([...list, { id: '' }])}>+ Compétence</button>
     </div>
   );
 }
@@ -1186,22 +1188,32 @@ function VariantsField({ value, resolved, entryFields, allFeatures, onChange }: 
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 
+type RestartTest = NonNullable<SteamBreakdownEntry['restart']>[number];
+type WaterTest = WaterExposureData['test'];
+
 /** Test de REDÉMARRAGE d'un moteur à vapeur (`steamBreakdowns.restart`, MDG 12, #157) :
- *  `{skillId,spec?,difficulty,extendedDR?}[]` — Compétence + Difficulté (+ DR cumulés si Test étendu). */
-function RestartTestField({ value, onChange }: { value: { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[] | undefined; onChange: (v: { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[]) => void }) {
+ *  `{skill:{id,spec?},difficulty,extendedDR?}[]` — Compétence + Difficulté (+ DR cumulés si Test étendu). */
+function RestartTestField({ value, onChange }: { value: RestartTest[] | undefined; onChange: (v: RestartTest[]) => void }) {
   const list = value ?? [];
   const skillOpts = datasetArray('skills') as { id: string; label: string }[];
   const set = (next: typeof list) => onChange(next);
   return (
     <div className="ed-field">
-      <span>Test de redémarrage du moteur — Compétence + Difficulté (DR cumulés si Test étendu)</span>
+      <span>Test de redémarrage du moteur — Compétence OU Caractéristique + Difficulté (DR cumulés si Test étendu)</span>
       {list.map((r, i) => (
         <div className="tf-row" key={i}>
-          <select value={r.skillId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, skillId: e.target.value } : x)))}>
-            {!r.skillId && <option value="">— (choisir une compétence) —</option>}
+          <select value={r.skill?.id ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, skill: e.target.value ? { ...x.skill, id: e.target.value } : undefined } : x)))}>
+            <option value="">— (Caractéristique) —</option>
             {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
-          <input placeholder="spécialisation (facultatif)" value={r.spec ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, spec: e.target.value || undefined } : x)))} />
+          {r.skill
+            ? <input placeholder="spécialisation (facultatif)" value={r.skill.spec ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, skill: { id: x.skill!.id, spec: e.target.value || undefined } } : x)))} />
+            : (
+              <select value={r.char ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, char: (e.target.value || undefined) as CharKey | undefined } : x)))}>
+                <option value="">— (choisir une Caractéristique) —</option>
+                {CHAR_KEYS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}
+              </select>
+            )}
           <select value={r.difficulty} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, difficulty: e.target.value as Difficulty } : x)))}>
             {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
           </select>
@@ -1209,7 +1221,7 @@ function RestartTestField({ value, onChange }: { value: { skillId: string; spec?
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => set([...list, { skillId: '', difficulty: DIFFICULTIES[0] }])}>+ Test</button>
+      <button className="btn small" onClick={() => set([...list, { skill: { id: '' }, difficulty: DIFFICULTIES[0] }])}>+ Test</button>
     </div>
   );
 }
@@ -1222,16 +1234,22 @@ function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefine
   const v = value;
   return (
     <div className="ed-field">
-      <span>Test d’équipage (échec) — Compétence (vide = dégâts automatiques) + cible + conséquence</span>
+      <span>Test d’équipage (échec) — Compétence OU Caractéristique (aucune = dégâts automatiques) + cible + conséquence</span>
       <div className="tf-row">
         <label className="dr"><input type="checkbox" checked={!!v} onChange={(e) => onChange(e.target.checked ? { crewTarget: 'poste', onFail: [] } : undefined)} /> Test requis</label>
         {v && (
           <>
-            <select value={v.skillId ?? ''} onChange={(e) => onChange({ ...v, skillId: e.target.value || undefined })}>
-              <option value="">— (aucune, dégâts automatiques) —</option>
+            <select value={v.skill?.id ?? ''} onChange={(e) => onChange({ ...v, skill: e.target.value ? { id: e.target.value } : undefined })}>
+              <option value="">— (Caractéristique, ou aucune) —</option>
               {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
             </select>
-            {v.skillId && (
+            {!v.skill && (
+              <select value={v.char ?? ''} onChange={(e) => onChange({ ...v, char: (e.target.value || undefined) as CharKey | undefined })}>
+                <option value="">— (aucune, dégâts automatiques) —</option>
+                {CHAR_KEYS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}
+              </select>
+            )}
+            {(v.skill || v.char) && (
               <select value={v.difficulty ?? DIFFICULTIES[0]} onChange={(e) => onChange({ ...v, difficulty: e.target.value as Difficulty })}>
                 {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
               </select>
@@ -1245,7 +1263,7 @@ function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefine
       </div>
       {v && (
         <div className="ed-subfield">
-          <span>conséquence (GameOp[]) — en cas d’échec (ou dégâts directs si aucune Compétence)</span>
+          <span>conséquence (GameOp[]) — en cas d’échec (ou dégâts directs si aucun sujet de Test)</span>
           <GameOpEditor ops={v.onFail ?? []} onChange={(ops) => onChange({ ...v, onFail: ops })} />
         </div>
       )}
@@ -1254,17 +1272,17 @@ function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefine
 }
 
 /** Test de Résistance d'Exposition hydrique (`waterExposure.test`, MSRC 16 p.91, #157 suite) :
- *  Compétence + Difficulté — sorti du repli générique (le repli traiterait ce couple {skillId,difficulty}
+ *  Compétence + Difficulté — sorti du repli générique (le repli traiterait ce couple {skill,difficulty}
  *  en `recordText` renommable, ce qui autoriserait de corrompre les clés d'un objet à forme FIXE). */
-function WaterTestField({ value, onChange }: { value: { skillId: string; difficulty: Difficulty } | undefined; onChange: (v: { skillId: string; difficulty: Difficulty }) => void }) {
+function WaterTestField({ value, onChange }: { value: WaterTest | undefined; onChange: (v: WaterTest) => void }) {
   const skillOpts = datasetArray('skills') as { id: string; label: string }[];
-  const v = value ?? { skillId: '', difficulty: DIFFICULTIES[0] };
+  const v = value ?? { skill: { id: '' }, difficulty: DIFFICULTIES[0] };
   return (
     <div className="ed-field">
       <span>Test de Résistance (MSRC 16 p.91) — Compétence + Difficulté</span>
       <div className="tf-row">
-        <select value={v.skillId} onChange={(e) => onChange({ ...v, skillId: e.target.value })}>
-          {!v.skillId && <option value="">— (choisir une compétence) —</option>}
+        <select value={v.skill.id} onChange={(e) => onChange({ ...v, skill: { ...v.skill, id: e.target.value } })}>
+          {!v.skill.id && <option value="">— (choisir une compétence) —</option>}
           {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
         <select value={v.difficulty} onChange={(e) => onChange({ ...v, difficulty: e.target.value as Difficulty })}>
@@ -1357,7 +1375,7 @@ const BATTLE_SIDE_KEYS = Object.keys(BATTLE_SIDE_LABEL) as BattleSide[];
 
 /** Test « posté » d'une Activité (`TestSpec` — LDB 12) : contextes de proposition + compétence(s) « au
  *  choix » (la meilleure de l'acteur est retenue) + caractéristique de repli + Difficulté. Réutilise
- *  `SkillSpecListField` (mêmes `{skillId,spec?}[]` que les Rôles d'équipage). Vide = Activité SANS Test. */
+ *  `SkillSpecListField` (mêmes `{id,spec?}[]` que les Rôles d'équipage). Vide = Activité SANS Test. */
 function ActivityTestField({ entry, edit }: { entry: Entry; edit: (key: string, v: unknown) => void }) {
   const contexts = (entry.contexts as ActivityContext[] | undefined) ?? [];
   const toggle = (c: ActivityContext) => edit('contexts', contexts.includes(c) ? contexts.filter((x) => x !== c) : [...contexts, c]);
@@ -1370,7 +1388,7 @@ function ActivityTestField({ entry, edit }: { entry: Entry; edit: (key: string, 
         ))}
       </div>
       <span>Test « posté » — compétence(s) « au choix » + caractéristique de repli + Difficulté (laisser vide = Activité SANS Test)</span>
-      <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v.length ? v : undefined)} />
+      <SkillSpecListField value={entry.skills as SkillRef[] | undefined} onChange={(v) => edit('skills', v.length ? v : undefined)} />
       <div className="tf-row">
         <label className="dr">Caractéristique (repli)
           <select value={(entry.char as string) ?? ''} onChange={(e) => edit('char', e.target.value || undefined)}>

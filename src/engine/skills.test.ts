@@ -117,10 +117,10 @@ describe('resolveSkillBest — Test du meilleur parmi N compétences (primitive 
       { skillId: 'art', spec: 'Dessin', advances: 10 },
     ]);
     const r = resolveSkillBest(hero, [
-      { skillId: 'metier', spec: 'Cartographe' },
-      { skillId: 'art', spec: 'Dessin' },
+      { id: 'metier', spec: 'Cartographe' },
+      { id: 'art', spec: 'Dessin' },
     ], 'intermediaire', makeRNG(5));
-    expect(r.used).toEqual({ skillId: 'metier', spec: 'Cartographe' }); // 30+60 > 30+10
+    expect(r.used).toEqual({ id: 'metier', spec: 'Cartographe' }); // 30+60 > 30+10
     expect(r.value).toBe(testValue(hero, 'metier', undefined, 'Cartographe'));
     expect(r.target).toBe(r.value); // Difficulté Intermédiaire (+0), pas de mod
     expect(r.success).toBe(r.roll <= r.target);
@@ -128,10 +128,10 @@ describe('resolveSkillBest — Test du meilleur parmi N compétences (primitive 
 
   it('le modificateur décale la cible ; option unique = cette compétence', () => {
     const hero = mk({ initiative: 40 }, [{ skillId: 'perception', advances: 20 }]);
-    const a = resolveSkillBest(hero, [{ skillId: 'perception' }], 'intermediaire', makeRNG(7), 0);
-    const b = resolveSkillBest(hero, [{ skillId: 'perception' }], 'intermediaire', makeRNG(7), -30);
+    const a = resolveSkillBest(hero, [{ id: 'perception' }], 'intermediaire', makeRNG(7), 0);
+    const b = resolveSkillBest(hero, [{ id: 'perception' }], 'intermediaire', makeRNG(7), -30);
     expect(a.target - b.target).toBe(30);
-    expect(a.used).toEqual({ skillId: 'perception' });
+    expect(a.used).toEqual({ id: 'perception' });
   });
 });
 
@@ -139,7 +139,7 @@ describe('bestForSkills — meilleur PJ pour des compétences AU CHOIX', () => {
   it('prend l’ACTEUR et l’option qui maximisent la valeur (spec-aware)', () => {
     const a = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 50 }]), id: 'a' }; // discr 80, perc 30
     const b = { ...mk({ initiative: 45 }, [{ skillId: 'perception', advances: 20 }]), id: 'b' }; // perc 65, discr 30
-    const r = bestForSkills([a, b], [{ skillId: 'discretion' }, { skillId: 'perception' }], undefined)!;
+    const r = bestForSkills([a, b], [{ id: 'discretion' }, { id: 'perception' }], undefined)!;
     expect(r.actor.id).toBe('a'); // 80 (Discrétion) est la plus haute de toutes les combinaisons acteur×option
     expect(r.skillId).toBe('discretion');
     expect(r.value).toBe(80);
@@ -153,15 +153,15 @@ describe('bestForSkills — meilleur PJ pour des compétences AU CHOIX', () => {
     expect(r.spec).toBeUndefined();
   });
   it('groupe vide → null', () => {
-    expect(bestForSkills([], [{ skillId: 'perception' }], undefined)).toBeNull();
+    expect(bestForSkills([], [{ id: 'perception' }], undefined)).toBeNull();
   });
 });
 
 describe('bestAssistedOption — Scène à compétences AU CHOIX résolue en Soutien (ADE II 8)', () => {
   it('un seul PJ (pas de soutien) → valeur == bestForSkills (aucun +10)', () => {
     const a = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 50 }]), id: 'a' }; // discr 80
-    const solo = bestAssistedOption([a], [{ skillId: 'discretion' }, { skillId: 'perception' }], undefined)!;
-    const ref = bestForSkills([a], [{ skillId: 'discretion' }, { skillId: 'perception' }], undefined)!;
+    const solo = bestAssistedOption([a], [{ id: 'discretion' }, { id: 'perception' }], undefined)!;
+    const ref = bestForSkills([a], [{ id: 'discretion' }, { id: 'perception' }], undefined)!;
     expect(solo.value).toBe(ref.value);        // 80, aucun soutien
     expect(solo.skillId).toBe('discretion');
     expect(solo.support).toEqual({ count: 0, bonus: 0, ids: [] });
@@ -171,7 +171,7 @@ describe('bestAssistedOption — Scène à compétences AU CHOIX résolue en Sou
     const lead = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 30 }]), id: 'L' }; // 60, BDex 3
     const h1 = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 5 }]), id: 'h1' };
     const h2 = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 1 }]), id: 'h2' };
-    const r = bestAssistedOption([lead, h1, h2], [{ skillId: 'discretion' }], undefined)!;
+    const r = bestAssistedOption([lead, h1, h2], [{ id: 'discretion' }], undefined)!;
     expect(r.actor.id).toBe('L');
     expect(r.support).toEqual({ count: 2, bonus: 20, ids: ['h1', 'h2'] });
     expect(r.value).toBe(80); // 60 + 20
@@ -179,12 +179,12 @@ describe('bestAssistedOption — Scène à compétences AU CHOIX résolue en Sou
   it('un PJ à 0 Augmentation dans l’option retenue ne soutient pas (LDB 12 l.195)', () => {
     const lead = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 30 }]), id: 'L' }; // 60
     const novice = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 0 }]), id: 'n' };
-    const r = bestAssistedOption([lead, novice], [{ skillId: 'discretion' }], undefined)!;
+    const r = bestAssistedOption([lead, novice], [{ id: 'discretion' }], undefined)!;
     expect(r.support).toEqual({ count: 0, bonus: 0, ids: [] });
     expect(r.value).toBe(60);
   });
   it('équipage vide → null', () => {
-    expect(bestAssistedOption([], [{ skillId: 'perception' }], undefined)).toBeNull();
+    expect(bestAssistedOption([], [{ id: 'perception' }], undefined)).toBeNull();
   });
 });
 
@@ -194,12 +194,12 @@ describe('bestForCombined — Test COMBINÉ : facteur limitant le plus élevé',
     const a = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 40 }, { skillId: 'perception', advances: 10 }]), id: 'a' };
     const b = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 20 }, { skillId: 'perception', advances: 20 }]), id: 'b' };
     const c = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 60 }, { skillId: 'perception', advances: 0 }]), id: 'c' };
-    const r = bestForCombined([a, b, c], { skillId: 'discretion' }, { skillId: 'perception' }, undefined)!;
+    const r = bestForCombined([a, b, c], { id: 'discretion' }, { id: 'perception' }, undefined)!;
     expect(r.actor.id).toBe('b');
     expect(r.value1).toBe(50);
     expect(r.value2).toBe(50);
   });
   it('groupe vide → null', () => {
-    expect(bestForCombined([], { skillId: 'discretion' }, { skillId: 'perception' }, undefined)).toBeNull();
+    expect(bestForCombined([], { id: 'discretion' }, { id: 'perception' }, undefined)).toBeNull();
   });
 });

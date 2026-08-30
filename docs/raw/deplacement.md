@@ -877,7 +877,7 @@ La vigie a **trois chances** de repérer une trajectoire de collision ; ensuite 
 **Voir aussi :** [Vents (MDG)](#vents-mdg) (Encalminé/courant), [Périls en mer (MDG)](#périls-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.501-564) → `sea-perils`, `iceberg`, `SeaHazardDef`, `debris-marins`, `rocher`, `pickSeaHazard`, `bas-fonds`, `faible`, `strandingOccurs`, `resolveVolley`, +28 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/data/voyage-stakes.json`, `src/engine/seaPerils.ts`, +4 fichiers
+- `MDG 13` (l.501-564) → `sea-perils`, `iceberg`, `SeaHazardDef`, `debris-marins`, `rocher`, `pickSeaHazard`, `bas-fonds`, `faible`, `strandingOccurs`, `resolveVolley`, +29 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/data/voyage-stakes.json`, `src/engine/seaPerils.ts`, +4 fichiers
 
 ---
 
@@ -947,7 +947,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Provisions et équipement de navigation (MDG)](#provisions-et-équipement-de-navigation-mdg), [`provisions.md`](provisions.md) (Faim/rations), [`maladies.md`](maladies.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.204-283) → `doc`, `MoraleBand`, `sealskinDR`, `mousse`, `DiseaseDef`, `shipboardSouls`, `SeaVoyageState`, `exposureNight`, `genuineExposureFail`, `dailyWaterLitres`, +31 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/crew-roles.ts`, +16 fichiers
+- `MDG 14` (l.204-283) → `doc`, `MoraleBand`, `sealskinDR`, `ramer`, `DiseaseDef`, `shipboardSouls`, `SeaVoyageState`, `exposureNight`, `genuineExposureFail`, `dailyWaterLitres`, +31 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/crew-roles.ts`, +16 fichiers
 
 ---
 
@@ -962,7 +962,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Orientation et phares (MDG)](#orientation-et-phares-mdg), [Maladies et provisions en mer (MDG)](#maladies-et-provisions-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.273-302) → `doc`, `sealskinDR`, `mousse`, `exposureNight`, `genuineExposureFail`, `skillDRBonus`, `chirurgien`, `weeklyCrewWageBrass`, `buildExposureBand`, `crewTalentDR`, +14 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +7 fichiers
+- `MDG 14` (l.273-302) → `doc`, `sealskinDR`, `ramer`, `exposureNight`, `genuineExposureFail`, `skillDRBonus`, `guerison`, `weeklyCrewWageBrass`, `buildExposureBand`, `crewTalentDR`, +14 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +7 fichiers
 
 ---
 
@@ -1017,7 +1017,7 @@ Pour chaque **semaine (8 jours)** en mer, chaque Personnage peut faire une Activ
 **Voir aussi :** [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Commerce maritime (MDG)](#commerce-maritime-mdg), [`deplacement.md`](deplacement.md#activités-de-voyage-1-par-étape) (Activités de Voyage EDOC).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.266-306) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `doc`, `SEA_WEEK_DAYS`, `commerce`, `minimum-vital`, `port-buy-bargain`, `sea-embrigadement-ragot`, `surcharge-3`, +30 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, +10 fichiers
+- `MDG 15` (l.266-306) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `doc`, `SEA_WEEK_DAYS`, `commerce`, `minimum-vital`, `port-buy-bargain`, `sea-embrigadement-ragot`, `sea-embrigadement-discretion`, +30 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, +10 fichiers
 
 ---
 
@@ -1030,7 +1030,7 @@ Activité de réparation/usure, de préférence au port. En mer : **–20** supp
 **Voir aussi :** [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `commerce`, `minimum-vital`, `port-buy-bargain`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade`, +1 — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `commerce`, `minimum-vital`, `port-buy-bargain`, `marchandage`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade`, +1 — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +4 fichiers
 
 ---
 

@@ -13,7 +13,7 @@
     },
     "skills": [
       {
-        "skillId": "survie-en-exterieur"
+        "id": "survie-en-exterieur"
       }
     ],
     "difficulty": "intermediaire",
@@ -45,7 +45,7 @@
     },
     "skills": [
       {
-        "skillId": "survie-en-exterieur"
+        "id": "survie-en-exterieur"
       }
     ],
     "difficulty": "intermediaire",
@@ -73,7 +73,7 @@
     },
     "skills": [
       {
-        "skillId": "ragot"
+        "id": "ragot"
       }
     ],
     "difficulty": "intermediaire",
@@ -97,7 +97,7 @@
     },
     "skills": [
       {
-        "skillId": "perception"
+        "id": "perception"
       }
     ],
     "difficulty": "intermediaire",
@@ -121,11 +121,11 @@
     },
     "skills": [
       {
-        "skillId": "metier",
+        "id": "metier",
         "spec": "cartographe"
       },
       {
-        "skillId": "art",
+        "id": "art",
         "spec": "Dessin"
       }
     ],
@@ -188,10 +188,10 @@
     },
     "skills": [
       {
-        "skillId": "survie-en-exterieur"
+        "id": "survie-en-exterieur"
       },
       {
-        "skillId": "guerison"
+        "id": "guerison"
       }
     ],
     "difficulty": "intermediaire",
@@ -284,7 +284,7 @@
     },
     "skills": [
       {
-        "skillId": "savoir",
+        "id": "savoir",
         "spec": "magie"
       }
     ],
@@ -308,7 +308,7 @@
     },
     "skills": [
       {
-        "skillId": "calme"
+        "id": "calme"
       }
     ],
     "difficulty": "tresDifficile",
@@ -335,7 +335,7 @@
     },
     "skills": [
       {
-        "skillId": "priere"
+        "id": "priere"
       }
     ],
     "difficulty": "accessible",
@@ -399,10 +399,10 @@
     },
     "skills": [
       {
-        "skillId": "corps-a-corps"
+        "id": "corps-a-corps"
       },
       {
-        "skillId": "projectiles"
+        "id": "projectiles"
       }
     ],
     "difficulty": "complexe",
@@ -439,7 +439,7 @@
     },
     "skills": [
       {
-        "skillId": "recherche"
+        "id": "recherche"
       }
     ],
     "difficulty": "complexe",
@@ -495,7 +495,7 @@
     },
     "skills": [
       {
-        "skillId": "evaluation"
+        "id": "evaluation"
       }
     ],
     "difficulty": "intermediaire",
@@ -565,7 +565,7 @@
     },
     "skills": [
       {
-        "skillId": "recherche"
+        "id": "recherche"
       }
     ],
     "difficulty": "intermediaire",
@@ -598,7 +598,7 @@
     },
     "skills": [
       {
-        "skillId": "marchandage"
+        "id": "marchandage"
       }
     ],
     "difficulty": "complexe",
@@ -621,7 +621,7 @@
     },
     "skills": [
       {
-        "skillId": "metier",
+        "id": "metier",
         "spec": "cartographe"
       }
     ],
@@ -645,7 +645,7 @@
     },
     "skills": [
       {
-        "skillId": "commandement"
+        "id": "commandement"
       }
     ],
     "difficulty": "difficile",
@@ -668,7 +668,7 @@
     },
     "skills": [
       {
-        "skillId": "commandement"
+        "id": "commandement"
       }
     ],
     "difficulty": "intermediaire",
@@ -706,7 +706,7 @@
     },
     "skills": [
       {
-        "skillId": "savoir",
+        "id": "savoir",
         "spec": "guerre"
       }
     ],
@@ -756,10 +756,10 @@
     },
     "skills": [
       {
-        "skillId": "discretion"
+        "id": "discretion"
       },
       {
-        "skillId": "perception"
+        "id": "perception"
       }
     ],
     "difficulty": "intermediaire",
@@ -797,13 +797,13 @@
     },
     "skills": [
       {
-        "skillId": "commandement"
+        "id": "commandement"
       },
       {
-        "skillId": "charme"
+        "id": "charme"
       },
       {
-        "skillId": "intimidation"
+        "id": "intimidation"
       }
     ],
     "difficulty": "intermediaire",
@@ -863,10 +863,10 @@
     },
     "skills": [
       {
-        "skillId": "chevaucher"
+        "id": "chevaucher"
       },
       {
-        "skillId": "perception"
+        "id": "perception"
       }
     ],
     "difficulty": "intermediaire",
@@ -902,10 +902,10 @@
     },
     "skills": [
       {
-        "skillId": "discretion"
+        "id": "discretion"
       },
       {
-        "skillId": "divertissement"
+        "id": "divertissement"
       }
     ],
     "difficulty": "intermediaire",
@@ -957,13 +957,13 @@
     "sceneKind": "test",
     "skills": [
       {
-        "skillId": "commandement"
+        "id": "commandement"
       },
       {
-        "skillId": "intimidation"
+        "id": "intimidation"
       },
       {
-        "skillId": "charme"
+        "id": "charme"
       }
     ],
     "difficulty": "intermediaire",
@@ -1064,10 +1064,10 @@
     "rounds": 5,
     "skills": [
       {
-        "skillId": "corps-a-corps"
+        "id": "corps-a-corps"
       },
       {
-        "skillId": "athletisme"
+        "id": "athletisme"
       }
     ],
     "difficulty": "intermediaire",
@@ -1109,10 +1109,10 @@
     "rounds": 3,
     "skills": [
       {
-        "skillId": "corps-a-corps"
+        "id": "corps-a-corps"
       },
       {
-        "skillId": "athletisme"
+        "id": "athletisme"
       }
     ],
     "difficulty": "intermediaire",
@@ -1193,10 +1193,10 @@
     "sceneKind": "test",
     "skills": [
       {
-        "skillId": "corps-a-corps"
+        "id": "corps-a-corps"
       },
       {
-        "skillId": "projectiles"
+        "id": "projectiles"
       }
     ],
     "difficulty": "intermediaire",
@@ -1274,7 +1274,7 @@
     "sceneKind": "test",
     "skills": [
       {
-        "skillId": "chevaucher"
+        "id": "chevaucher"
       }
     ],
     "difficulty": "intermediaire",
@@ -1441,7 +1441,7 @@
     "sceneKind": "rally",
     "skills": [
       {
-        "skillId": "resistance"
+        "id": "resistance"
       }
     ],
     "difficulty": "intermediaire",
@@ -1463,7 +1463,7 @@
     },
     "skills": [
       {
-        "skillId": "dressage"
+        "id": "dressage"
       }
     ],
     "difficulty": "accessible",
@@ -1491,7 +1491,7 @@
     },
     "skills": [
       {
-        "skillId": "ragot"
+        "id": "ragot"
       }
     ],
     "difficulty": "intermediaire",
@@ -1531,10 +1531,10 @@
     },
     "skills": [
       {
-        "skillId": "corps-a-corps"
+        "id": "corps-a-corps"
       },
       {
-        "skillId": "projectiles"
+        "id": "projectiles"
       }
     ],
     "difficulty": "intermediaire",
@@ -1564,7 +1564,7 @@
     },
     "skills": [
       {
-        "skillId": "perception"
+        "id": "perception"
       }
     ],
     "difficulty": "intermediaire",
@@ -1603,7 +1603,7 @@
     },
     "skills": [
       {
-        "skillId": "savoir"
+        "id": "savoir"
       }
     ],
     "difficulty": "accessible",
@@ -1670,7 +1670,7 @@
     },
     "skills": [
       {
-        "skillId": "ragot"
+        "id": "ragot"
       }
     ],
     "difficulty": "accessible",
@@ -1700,7 +1700,7 @@
     },
     "skills": [
       {
-        "skillId": "charme"
+        "id": "charme"
       }
     ],
     "difficulty": "intermediaire",
@@ -1731,7 +1731,7 @@
     },
     "skills": [
       {
-        "skillId": "projectiles",
+        "id": "projectiles",
         "spec": "arc"
       }
     ],
@@ -1767,7 +1767,7 @@
     },
     "skills": [
       {
-        "skillId": "corps-a-corps"
+        "id": "corps-a-corps"
       }
     ],
     "difficulty": "complexe",
@@ -1802,7 +1802,7 @@
     },
     "skills": [
       {
-        "skillId": "commandement"
+        "id": "commandement"
       }
     ],
     "difficulty": "complexe",
@@ -1837,11 +1837,11 @@
     },
     "skills": [
       {
-        "skillId": "charme",
+        "id": "charme",
         "difficulty": "complexe"
       },
       {
-        "skillId": "divertissement",
+        "id": "divertissement",
         "spec": "narration",
         "difficulty": "intermediaire"
       }
@@ -1872,7 +1872,7 @@
     },
     "skills": [
       {
-        "skillId": "ragot"
+        "id": "ragot"
       }
     ],
     "difficulty": "intermediaire",
@@ -1922,7 +1922,7 @@
     },
     "skills": [
       {
-        "skillId": "recherche"
+        "id": "recherche"
       }
     ],
     "difficulty": "difficile",
@@ -1952,10 +1952,10 @@
     },
     "skills": [
       {
-        "skillId": "metier"
+        "id": "metier"
       },
       {
-        "skillId": "focalisation"
+        "id": "focalisation"
       }
     ],
     "difficulty": "intermediaire",
@@ -1993,7 +1993,7 @@
     },
     "skills": [
       {
-        "skillId": "savoir",
+        "id": "savoir",
         "spec": "herbes"
       }
     ],
@@ -2019,7 +2019,7 @@
     },
     "skills": [
       {
-        "skillId": "metier",
+        "id": "metier",
         "spec": "alchimiste"
       }
     ],
@@ -2058,7 +2058,7 @@
     },
     "skills": [
       {
-        "skillId": "metier",
+        "id": "metier",
         "spec": "alchimiste"
       }
     ],
@@ -2099,7 +2099,7 @@
     },
     "skills": [
       {
-        "skillId": "augure"
+        "id": "augure"
       }
     ],
     "difficulty": "intermediaire",
@@ -2228,7 +2228,7 @@
     },
     "skills": [
       {
-        "skillId": "savoir",
+        "id": "savoir",
         "spec": "magie"
       }
     ],

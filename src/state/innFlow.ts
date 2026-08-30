@@ -1,7 +1,7 @@
 /**
  * RUMEURS D'AUBERGE (#352) — action de collecte HORS voyage, au hub de ville (`CityHubScreen`, panneau
  * « auberge »). PAS un jet neuf : c'est l'Activité de voyage CANONIQUE `recueillir-informations`
- * (`src/data/activities.json`, skillId `ragot`, EDOC 8 l.151-153, `stageOutcome: gatherInfo`)
+ * (`src/data/activities.json`, Compétence `ragot`, EDOC 8 l.151-153, `stageOutcome: gatherInfo`)
  * étendue au contexte `auberge` (`ActivityContext`, `engine/activities.ts`) et jouée ICI comme un Test
  * INDÉPENDANT (hors cascade de jour) via le seam UNIQUE `openRoll` (`rollSeam.ts`) — même patron que le
  * Ragot commercial / l'Évaluation du Vin de `landMarketFlow.ts` (#274).
@@ -35,7 +35,7 @@ export function innGatherInfoMinutes(): number {
  *  attendu si aucun héros n'a la Compétence (`openRoll` : garde `partyBest` sans candidat, D3). */
 export function gatherInnInfo(get: Get, set: Set): void {
   const def = activityById(ACTIVITY_ID);
-  const skillId = def?.skills?.[0]?.skillId;
+  const skillId = def?.skills?.[0]?.id;
   if (!def || !skillId) return;
   openPartyTest(get, set, {
     skill: skillId, assisted: false,

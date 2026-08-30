@@ -2,15 +2,18 @@ import shipCriticalsJson from './ship-criticals.json';
 import riverCriticalsJson from './river-criticals.json';
 import type { ShipLocation } from '../engine/combat';
 import type { GameOp } from '../engine/ops';
-import type { Difficulty } from '../engine/types';
+import type { CharKey, Difficulty } from '../engine/types';
+import type { SkillRef } from '../engine/skills';
 
 /** Test encouru par l'ÉQUIPAGE sur un Critique de coque — compétence + difficulté en DONNÉE, conséquence
- *  d'échec en `GameOp` (langue unique). `skillId`/`difficulty` ABSENTS = dégâts AUTOMATIQUES (pas de Test —
+ *  d'échec en `GameOp` (langue unique). Sujet du Test : `skill` (Compétence) OU `char` (Caractéristique).
+ *  Sujet ou `difficulty` ABSENTS = dégâts AUTOMATIQUES (pas de Test —
  *  MSRC « les échardes infligent +5 Dégâts aux rameurs »). `crewTarget` : `poste` (équipage d'un poste tiré
  *  au sort — MDG « Canon détaché », défaut) ou `deck` (toute personne exposée sur le pont — MSRC
  *  gréement/superstructure « Toute personne présente sur le pont… »). Pas de valeur/règle codée en dur. */
 export interface ShipCrewTest {
-  skillId?: string;
+  skill?: SkillRef;
+  char?: CharKey;
   difficulty?: Difficulty;
   crewTarget?: 'poste' | 'deck';
   /** Appliqué à CHAQUE servant qui RATE le Test (ou à tous si aucun Test — ex. `[{op:'wounds', amount:12}]`). */

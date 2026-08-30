@@ -36,7 +36,7 @@ export const BENCHED = 'repos';
 /** Un marin est-il FORMÉ pour un rôle (possède une de ses compétences) ? PUR. */
 function trainedForRole(c: Combatant, roleId: string): boolean {
   const role = findCrewRoleById(roleId);
-  return !!role && role.skills.some((s) => (c.skills ?? []).some((k) => k.skillId === s.skillId && (s.spec == null || k.spec === s.spec)));
+  return !!role && role.skills.some((s) => (c.skills ?? []).some((k) => k.skillId === s.id && (s.spec == null || k.spec === s.spec)));
 }
 
 /**

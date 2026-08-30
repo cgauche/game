@@ -32,7 +32,8 @@ import steamBreakdownJson from '../data/steam-breakdown.json';
 import { findTableEntry } from './tables';
 import { roll as rollDice, type RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
-import type { Difficulty } from './types';
+import type { CharKey, Difficulty } from './types';
+import type { SkillRef } from './skills';
 import type { ShipSize, NavalInstall, InstallBand } from '../data';
 
 export type PropulsionKind = 'voile' | 'avirons';
@@ -240,7 +241,7 @@ export interface SteamBreakdownEntry {
   engineDestroyed?: boolean;
   hullCritical?: boolean;
   compartmentDamage?: number;
-  restart?: { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[];
+  restart?: { skill?: SkillRef; char?: CharKey; difficulty: Difficulty; extendedDR?: number }[];
 }
 
 export const STEAM_BREAKDOWNS = steamBreakdownJson as SteamBreakdownEntry[];

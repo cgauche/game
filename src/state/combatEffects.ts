@@ -1306,11 +1306,11 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         // fiche qui les octroie (MSRC 16).
         const step = monoStep({
           id: `waterExposure-${h.id}`, kind: 'waterExposure', actor: h, icon: 'travel/wave',
-          rollLabel: refLabel('skills', { id: WATER_EXPOSURE.test.skillId }),
+          rollLabel: refLabel('skills', WATER_EXPOSURE.test.skill),
           label: t('eff.waterExposure', { mode: e.mode === 'immersion' ? 'immersion' : 'ingestion', detail: detail ? ` (${detail})` : '' }),
           difficulty: WATER_EXPOSURE.test.difficulty,
           ligne: {
-            test: { skill: WATER_EXPOSURE.test.skillId },
+            test: { skill: WATER_EXPOSURE.test.skill.id, spec: WATER_EXPOSURE.test.skill.spec },
             surLaCible: parts.map((m): ModLine => ({
               label: m.label, value: m.mod, famille: 'jet', ref: RULE_REF['exposition-hydrique'],
             })),

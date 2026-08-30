@@ -39,7 +39,7 @@ describe('poste — adaptateurs de projection (donnée-vue commune)', () => {
   it('crewRoleAsPoste : le Mousse (2 compétences) conserve les deux', () => {
     const r = findCrewRoleById('mousse')!;
     const p = crewRoleAsPoste(r);
-    expect(p.skills.map((s) => s.skillId)).toEqual(['voile', 'ramer']);
+    expect(p.skills.map((s) => s.id)).toEqual(['voile', 'ramer']);
   });
 
   it('tous les rôles d’équipage se projettent sans exception (id/label stables)', () => {

@@ -119,9 +119,9 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: SAVE_VERSION - 1 })).toBeNull();
     expect(parseSave({ ...cur, version: 1 })).toBeNull();
   });
-  it('la forme persistée COURANTE nomme la scène et la carte par `label` (#1467 L1b V-P7) : 29, et 28 se jette', () => {
-    expect(SAVE_VERSION).toBe(29);
-    expect(parseSave({ ...cur, version: 28 })).toBeNull();
+  it('la forme persistée COURANTE écrit la réf de Compétence d’un poste en `{id, spec?}` (L2 #1548) : 30, et 29 se jette', () => {
+    expect(SAVE_VERSION).toBe(30);
+    expect(parseSave({ ...cur, version: 29 })).toBeNull();
   });
 
   /**

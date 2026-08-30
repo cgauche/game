@@ -211,9 +211,9 @@ describe('catalogue d’Activités data-driven (activities.json)', () => {
     );
   });
 
-  it('toute compétence référencée (skillId) résout dans le catalogue de Compétences', () => {
+  it('toute compétence référencée (`skills[].id`) résout dans le catalogue de Compétences', () => {
     for (const a of ACTIVITIES) {
-      for (const s of a.skills ?? []) expect(byId('skill', s.skillId), `${a.id} → ${s.skillId}`).toBeTruthy();
+      for (const s of a.skills ?? []) expect(byId('skill', s.id), `${a.id} → ${s.id}`).toBeTruthy();
     }
   });
 
@@ -230,8 +230,8 @@ describe('catalogue d’Activités data-driven (activities.json)', () => {
     const carto = activityById('etablir-cartes')!;
     expect(carto.extended?.drPerStage).toBe(2);
     expect(carto.skills).toEqual([
-      { skillId: 'metier', spec: 'cartographe' },
-      { skillId: 'art', spec: 'Dessin' },
+      { id: 'metier', spec: 'cartographe' },
+      { id: 'art', spec: 'Dessin' },
     ]);
   });
 });
@@ -359,7 +359,7 @@ describe('Convalescence — Activité d’interlude (ADE II Annexe I « Les chos
     const conv = activityById('convalescence');
     expect(conv).toBeTruthy();
     expect(conv!.contexts).toContain('interlude');
-    expect(conv!.skills).toEqual([{ skillId: 'calme' }]);
+    expect(conv!.skills).toEqual([{ id: 'calme' }]);
     expect(conv!.difficulty).toBe('tresDifficile'); // « Calme Très Difficile (–30) »
     expect(conv!.onSuccess).toEqual([{ op: 'removePsychTrait' }]); // « éliminer un Trait Psychologique de votre choix »
     expect(conv!.source.book).toBe('archives-de-l-empire-2');

@@ -4,25 +4,24 @@
  * (aucune page RAW — clé d'ENVELOPPE `maison`, EXIGÉE ici par `options.exiges`, jamais
  * `sourceRefSchema` qui réclamerait un folio inexistant) :
  * chaque axe liste ses SOURCES en ids STABLES de `skills.json`/`talents.json` (`skills`/`talents`,
- * TOP-LEVEL — patron `crewRoles.skills`, `{skillId,spec?}[]`, éditeur `SkillSpecListField` au Codex),
+ * TOP-LEVEL — patron `crewRoles.skills`, `{id,spec?}[]`, éditeur `SkillSpecListField` au Codex),
  * résolues par `axisScore` (`src/engine/axes.ts`). `core` marque le socle de base (actif par défaut
  * sur une campagne sans `activeAxes` déclaré — cf. `WorldMap`/`ProjectDoc`).
  *
- * Doctrine : la Caractéristique d'un axe entre UNIQUEMENT via une Compétence (`skillId`), jamais un
+ * Doctrine : la Caractéristique d'un axe entre UNIQUEMENT via une Compétence, jamais un
  * canal caractéristique nu — un axe sans Compétence Avancée formée reste à 0, comme au jeu (LDB 09
  * l.30, Compétence Avancée sans Augmentation = Test impossible, cf. `docs/raw/competences.md`).
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
+import { refOuSpec } from '../grammaire/ref';
+import type { SkillRef } from '../../../engine/skills';
 
 export const file = 'axes.json';
 export const famille = 'entite';
 
-const skillRefSchema = z.strictObject({
-  skillId: z.string(),
-  /** Spécialisation de la Compétence (ex. `metier`→`ingenieur`) — absente = TOUTE spec compte. */
-  spec: z.string().optional(),
-});
+/** Spécialisation absente = TOUTE spec de la Compétence compte (ex. `metier` sans `spec`). */
+const skillRefSchema = refOuSpec('skill');
 
 const talentRefSchema = z.strictObject({
   talentId: z.string(),
@@ -59,4 +58,4 @@ export const meta = doc.meta;
 export const exposition = doc.exposition;
 /** VUE TS du dataset — le nœud rendu par la fabrique est SCELLÉ (`z.infer` y vaut `unknown`), la vue
  *  se recompose donc depuis l'enveloppe et les champs déclarés, sans rouvrir aucun nœud. */
-export type AxesData = (EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>)[];
+export type AxesData = (EnveloppeDocument & Omit<z.infer<z.ZodObject<typeof champs>>, 'skills'> & { skills?: SkillRef[] })[];

@@ -92,7 +92,7 @@ import { partyMoneyTotal, payFromGroup } from './bourseFlow';
 import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
 import { contractDisease, applyContraction, contractionDue, DISEASE_DEFS } from '../engine/disease';
-import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
+import { CHAR_LABELS, DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
@@ -491,7 +491,7 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
       id: a.crew.id,
       label: role?.label ?? a.roleId, // PROVENANCE affichée (rôle tenu) — jamais le libellé de LIGNE
       roleId: a.roleId,
-      ...(rv?.used ? { skillId: rv.used.skillId, ...(rv.used.spec ? { spec: rv.used.spec } : {}) } : {}),
+      ...(rv?.used ? { skillId: rv.used.id, ...(rv.used.spec ? { spec: rv.used.spec } : {}) } : {}),
       interactive: true,
       essential: a.roleId === essentialRoleId,
       difficulty: 'intermediaire' as const,
@@ -501,7 +501,7 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
       // effet émetteur. Sans rôle résolu, la valeur vient d'une autre formule : elle se DÉCLARE comme telle.
       ...rollStep(rv?.used
         ? {
-          actor: a.crew, test: { skill: rv.used.skillId, spec: rv.used.spec, sense: opts.sense },
+          actor: a.crew, test: { skill: rv.used.id, spec: rv.used.spec, sense: opts.sense },
           valeur: rv.value, difficulty: 'intermediaire',
           ...(crewTestModParts(a.crew).length ? { dansLaValeur: crewTestModParts(a.crew) } : {}),
         }
@@ -2017,8 +2017,8 @@ function rollDiceExpr(expr: string, rng: RNG): number {
 function runRestart(get: Get, set: Set, eng: Combatant, restart: NonNullable<SteamBreakdownEntry['restart']>, rng: RNG): number {
   let lastDR = 0;
   for (const step of restart) {
-    const value = testValue(eng, step.skillId, undefined, step.spec);
-    const label = step.spec ? `${step.skillId} (${step.spec})` : step.skillId;
+    const value = testValue(eng, step.skill?.id, step.char, step.skill?.spec);
+    const label = step.skill ? refLabel('skills', step.skill) : step.char ? CHAR_LABELS[step.char] : '';
     if (step.extendedDR != null) {
       let total = 0;
       for (let i = 0; total < step.extendedDR && i < 20; i++) total += Math.max(0, rollTest(value, step.difficulty, rng).sl);

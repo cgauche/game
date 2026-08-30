@@ -74,8 +74,8 @@ export function opRow(o: GameOp, ctx?: OpRowCtx): CodexRow {
       return { t: 'ref', category: 'talents', id: o.talentId, label: statName(l), show: l };
     }
     case 'grantCareerSkill': {
-      const l = refLabel('skills', { id: o.skillId, spec: o.spec });
-      return { t: 'ref', category: 'skills', id: o.skillId, label: statName(l), show: l };
+      const l = refLabel('skills', o.skill);
+      return { t: 'ref', category: 'skills', id: o.skill.id, label: statName(l), show: l };
     }
     case 'skillMod': {
       const l = refLabel('skills', { id: o.skill });

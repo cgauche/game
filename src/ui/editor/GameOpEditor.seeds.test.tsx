@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { GameOpEditor, OP_LABEL, OP_REF_FIELDS } from './GameOpEditor';
+import { GameOpEditor, OP_LABEL, OP_REF_FIELDS, opRefValue } from './GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 
 beforeAll(() => {
@@ -69,7 +69,7 @@ describe('GameOpEditor — création au CLIC : aucune valeur pré-semée, raison
       await h.click(label);
       const fresh = h.opsOf()[0] as unknown as Record<string, unknown>;
       for (const f of fields ?? []) {
-        expect([undefined, ''], `${k}.${f.field} pré-semé au clic`).toContain(fresh[f.field]);
+        expect([undefined, ''], `${k}.${f.field} pré-semé au clic`).toContain(opRefValue(fresh, f.field));
       }
       await h.teardown();
     }

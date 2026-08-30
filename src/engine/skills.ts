@@ -234,7 +234,7 @@ export function isSocialTest(skill?: string, characteristic?: CharKey): boolean 
 /** Référence de compétence (id stable + spécialisation éventuelle). Type NEUTRE partagé par tout
  *  « poste » où une tâche accepte plusieurs compétences : catalogue d'Activités de voyage, Tests
  *  d'équipage naval (Voile/Ramer, Navigation/Orientation…). */
-export interface SkillRef { skillId: string; spec?: string }
+export interface SkillRef { id: string; spec?: string }
 
 /** Descripteur NEUTRE d'un Test « posté » (Activité de voyage/interlude, Scène ou Activité de bataille) :
  *  compétence(s) AU CHOIX, caractéristique de repli, Difficulté, et Test COMBINÉ éventuel. Champs plats,
@@ -266,7 +266,7 @@ export function resolveSkillBest(
   let bestVal = -Infinity;
   let used: SkillRef | undefined;
   for (const ref of options) {
-    const v = testValue(actor, ref.skillId, undefined, ref.spec);
+    const v = testValue(actor, ref.id, undefined, ref.spec);
     if (v > bestVal) { bestVal = v; used = ref; }
   }
   const value = Number.isFinite(bestVal) ? bestVal : 0;
@@ -290,7 +290,7 @@ export function partyBest(
 }
 
 /** Meilleur PJ pour une liste de compétences AU CHOIX (celle qui donne la plus haute valeur décide).
- *  `skills` vide/absent ⇒ une unique option de PURE Caractéristique (`skillId`/`spec` indéfinis).
+ *  `skills` vide/absent ⇒ une unique option de PURE Caractéristique (`id`/`spec` indéfinis).
  *  `sense` (optionnel) : transmis tel quel à `partyBest`/`testValue`. */
 export function bestForSkills(
   party: Combatant[],
@@ -298,14 +298,14 @@ export function bestForSkills(
   char: CharKey | undefined,
   sense?: PairedSense,
 ): { actor: Combatant; value: number; skillId?: string; spec?: string } | null {
-  const choices: SkillRef[] = skills?.length ? skills : [{ skillId: undefined as unknown as string, spec: undefined }];
+  const choices: SkillRef[] = skills?.length ? skills : [{ id: undefined as unknown as string, spec: undefined }];
   // Le meilleur ACTEUR par option, puis argmax sur les options (first-max via `maxBy`). Une option
   // ne concourt que si le groupe fournit un porteur (`partyBest` null ⇒ groupe vide ⇒ résultat null).
   const perChoice = choices
-    .map((sk) => ({ sk, best: partyBest(party, sk.skillId, char, undefined, sk.spec, sense) }))
+    .map((sk) => ({ sk, best: partyBest(party, sk.id, char, undefined, sk.spec, sense) }))
     .filter((x): x is { sk: SkillRef; best: { actor: Combatant; value: number } } => x.best !== null);
   const r = maxBy(perChoice, (x) => x.best.value);
-  return r ? { actor: r.item.best.actor, value: r.item.best.value, skillId: r.item.sk.skillId, spec: r.item.sk.spec } : null;
+  return r ? { actor: r.item.best.actor, value: r.item.best.value, skillId: r.item.sk.id, spec: r.item.sk.spec } : null;
 }
 
 /** Meilleur PJ pour un Test COMBINÉ de deux compétences (LDB 12 l.202-206) : celui dont le PLUS FAIBLE des
@@ -316,9 +316,9 @@ export function bestForCombined(
   sk2: SkillRef,
   char: CharKey | undefined,
 ): { actor: Combatant; value1: number; value2: number } | null {
-  const r = maxBy(party, (c) => Math.min(testValue(c, sk1.skillId, char, sk1.spec), testValue(c, sk2.skillId, char, sk2.spec)));
+  const r = maxBy(party, (c) => Math.min(testValue(c, sk1.id, char, sk1.spec), testValue(c, sk2.id, char, sk2.spec)));
   if (!r) return null;
-  return { actor: r.item, value1: testValue(r.item, sk1.skillId, char, sk1.spec), value2: testValue(r.item, sk2.skillId, char, sk2.spec) };
+  return { actor: r.item, value1: testValue(r.item, sk1.id, char, sk1.spec), value2: testValue(r.item, sk2.id, char, sk2.spec) };
 }
 
 /** Meilleure OPTION pour un acteur parmi un catalogue d'options portant des `skills` : score d'une option =
@@ -486,12 +486,12 @@ export function bestAssistedOption(
 ): { actor: Combatant; value: number; skillId?: string; spec?: string; support: SupportDetail } | null {
   // Options = les compétences AU CHOIX de la Scène, ou une unique option de PURE Caractéristique (repli
   // char-only, calqué sur `bestForSkills`). Chaque option est résolue en Soutien sur TOUT l'équipage `crew`.
-  const options: SkillRef[] = skills?.length ? skills : [{ skillId: undefined as unknown as string, spec: undefined }];
+  const options: SkillRef[] = skills?.length ? skills : [{ id: undefined as unknown as string, spec: undefined }];
   const perOption = options
-    .map((opt) => ({ opt, res: partyAssisted(crew, opt.skillId, char, undefined, opt.spec) }))
+    .map((opt) => ({ opt, res: partyAssisted(crew, opt.id, char, undefined, opt.spec) }))
     .filter((x): x is { opt: SkillRef; res: NonNullable<ReturnType<typeof partyAssisted>> } => x.res !== null);
   const r = maxBy(perOption, (x) => x.res.value);
   return r
-    ? { actor: r.item.res.actor, value: r.item.res.value, skillId: r.item.opt.skillId, spec: r.item.opt.spec, support: r.item.res.support }
+    ? { actor: r.item.res.actor, value: r.item.res.value, skillId: r.item.opt.id, spec: r.item.opt.spec, support: r.item.res.support }
     : null;
 }

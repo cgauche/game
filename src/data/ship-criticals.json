@@ -302,7 +302,9 @@
         "label": "Canon détaché",
         "note": "Les cordages fixant l'un des canons se rompent et il roule dans tous les sens sur le pont. L'équipage du canon doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir un coup infligeant 12 Dégâts. Réparation : Test étendu de Force Accessible (+20) pour un total de 5 DR afin de remettre le canon à sa place.",
         "crewTest": {
-          "skillId": "athletisme",
+          "skill": {
+            "id": "athletisme"
+          },
           "difficulty": "intermediaire",
           "onFail": [
             {

@@ -22,6 +22,7 @@ import { findTableEntry } from './tables';
 import { d10, roll as rollDice, type RNG, defaultRNG } from './dice';
 import { rollTest, type TestResult } from './tests';
 import type { Difficulty } from './types';
+import type { SkillRef } from './skills';
 import type { Season } from './travelStages';
 // Tronc commun cargaison (partagé avec le commerce terrestre MSRC, `landCargo.ts`) — modèle de lot,
 // tirage saisonnier, prix de base. Re-exporté pour les importeurs historiques de ce module.
@@ -80,7 +81,7 @@ const CARGO = seaCargoJson as unknown as {
   };
   opportunite: {
     investMaxEnc: boolean;
-    test: { skillId: string; difficulty: Difficulty; totalDR: number; maxAttempts: number };
+    test: { skill: SkillRef; difficulty: Difficulty; totalDR: number; maxAttempts: number };
     outcomes: { on: 'success' | 'failure'; minMissing?: number; minExtraDR?: number; pct: number }[];
   };
 };

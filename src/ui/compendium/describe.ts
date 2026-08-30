@@ -33,7 +33,7 @@ export function passiveSection(ops: GameOp[] | undefined, title = 'Modificateurs
  *  via `statName`). Source unique de la projection des octrois de carrière (talents Maître artisan, Flagellant…). */
 export function careerGrantSection(ops: GameOp[] | undefined, title = 'Ajouté à vos carrières'): CodexSection | null {
   const rows: CodexRow[] = (ops ?? []).flatMap((o): CodexRow[] => {
-    if (o.op === 'grantCareerSkill') { const l = refLabel('skills', { id: o.skillId, spec: o.spec }); return [{ t: 'ref', category: 'skills', id: o.skillId, label: statName(l), show: l }]; }
+    if (o.op === 'grantCareerSkill') { const l = refLabel('skills', o.skill); return [{ t: 'ref', category: 'skills', id: o.skill.id, label: statName(l), show: l }]; }
     if (o.op === 'grantCareerTalent') { const l = refLabel('talents', { id: o.talentId, spec: o.spec }); return [{ t: 'ref', category: 'talents', id: o.talentId, label: statName(l), show: l }]; }
     return [];
   });

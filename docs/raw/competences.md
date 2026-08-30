@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `CibleDeType`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `specEntrySchema`, `doc`, +50 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
+- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `CibleDeType`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `specEntrySchema`, `doc`, +51 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
 
 ---
 
@@ -98,7 +98,7 @@ la description, ou en crée une avec l'accord du MJ.
 **Sources RAW :** LDB 09 l.34-46
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `CibleDeType`, `specEntrySchema`, `doc`, `redaction`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, +16 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `CibleDeType`, `specEntrySchema`, `doc`, `redaction`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, +17 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
 
 ---
 

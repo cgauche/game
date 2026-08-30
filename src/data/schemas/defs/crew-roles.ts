@@ -1,7 +1,7 @@
 /**
  * Schéma de `crew-roles.json` — rôles d'équipage naval (MDG 14 « Tests d'équipage »). Consommé par
  * `src/data/index.ts` (`CrewRoleData`) et `src/engine/crewMorale.ts`/`src/state/shipCrew.ts` (le
- * rôle mappe une ou plusieurs Compétences par `skillId` + `spec` optionnel, ex. Artilleur = Projectiles
+ * rôle mappe une ou plusieurs Compétences par référence `{ id, spec? }`, ex. Artilleur = Projectiles
  * (Poudre noire), Chansonnier = Divertissement (Chant)).
  *
  * PROVENANCE : `source`/`maison` (clés d'ENVELOPPE) sont le reflet TOP-LEVEL de `wage.source`/
@@ -11,6 +11,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'crew-roles.json';
 export const famille = 'entite';
@@ -21,7 +22,7 @@ const doc = document(
   'crew-roles',
   famille,
   {
-    skills: z.array(z.strictObject({ skillId: z.string(), spec: z.string().optional() })),
+    skills: z.array(refOuSpec('skill')),
     // Barème de solde (MDG 14 l.293-302 « Exemples de mercenaires ») : coûts quotidien ET hebdomadaire
     // verbatim (colonnes non-multiples l'une de l'autre). `source` = correspondance RAW explicite ;
     // `maison` = correspondance rôle→type de mercenaire arbitrée. #216

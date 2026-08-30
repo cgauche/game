@@ -236,7 +236,7 @@ export function humanizeOp(o: GameOp): string {
     case 'grantPsychTrait': return `gagne l'état psychologique ${psychologyLabel(o.psychType)}${o.cible ? ` (${o.cible})` : ''}`;
     case 'removePsychTrait': return `perd ${o.psychType ? `l'état psychologique ${psychologyLabel(o.psychType)}` : 'un état psychologique au choix'}`;
     case 'grantTalent': return `gagne le Talent ${talentConcrete(o)}`;
-    case 'grantCareerSkill': return `ajoute ${refLabel('skills', { id: o.skillId, spec: o.spec })} à ses carrières`;
+    case 'grantCareerSkill': return `ajoute ${refLabel('skills', o.skill)} à ses carrières`;
     case 'grantCareerTalent': return `ajoute le Talent ${refLabel('talents', { id: o.talentId, spec: o.spec })} à ses carrières`;
     case 'augmentWeapon': return `voit son arme enchantée${o.addQualities?.length ? ` (${o.addQualities.map((id) => qualityRefLabel({ id })).join(', ')})` : ''}${o.damageBonus != null ? ` +${humanizeFormula(o.damageBonus)} Dégâts` : ''}`;
     case 'cureDisease': return `guérit ${o.count ?? 1} maladie(s)`;

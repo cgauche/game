@@ -25,7 +25,7 @@
 import type { RuleValue } from '../engine/policy';
 import type { Scene } from './scene';
 
-export const SAVE_VERSION = 29;
+export const SAVE_VERSION = 30;
 
 export interface SaveMeta {
   version: number;

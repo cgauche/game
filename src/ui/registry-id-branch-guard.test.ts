@@ -169,7 +169,9 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/provisions.ts': 1,
   'src/engine/psychology.ts': 3,
   'src/engine/rest.ts': 1,
-  'src/engine/riverNavigation.ts': 3,
+  // 3 → 2 (L2 #1548, commit 3b) : le Test d'équipage d'un Critique fluvial désigne une CARACTÉRISTIQUE
+  // (`crewTest.char === 'initiative'`), plus un id de registre de Compétence.
+  'src/engine/riverNavigation.ts': 2,
   'src/engine/seaNavigation.ts': 1,
   'src/engine/trauma.ts': 4, // pénalité de combat PAR MAIN (doigts/main) + crochet entraîné : axe NON couvert par `cumul`
   'src/engine/weaponDamage.ts': 1,

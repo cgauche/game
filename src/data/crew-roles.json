@@ -5,7 +5,7 @@
     "label": "Capitaine",
     "skills": [
       {
-        "skillId": "commandement"
+        "id": "commandement"
       }
     ],
     "desc": "Le Capitaine évalue la situation, obtient des informations auprès de certains membres de l'équipage, décide des actions à entreprendre et transmet ses ordres à l'équipage.",
@@ -30,7 +30,7 @@
     "label": "Timonier",
     "skills": [
       {
-        "skillId": "voile"
+        "id": "voile"
       }
     ],
     "desc": "Le Timonier met à profit toute son expérience et sa connaissance des éléments pour piloter le navire.",
@@ -55,7 +55,7 @@
     "label": "Vigie",
     "skills": [
       {
-        "skillId": "perception"
+        "id": "perception"
       }
     ],
     "desc": "Le rôle de la Vigie peut être crucial quand le danger est proche. Elle peut parcourir le pont ou rester à la proue, ou, sur les grands navires, grimper jusqu'à la position précaire du nid-de-pie.",
@@ -80,10 +80,10 @@
     "label": "Mousse",
     "skills": [
       {
-        "skillId": "voile"
+        "id": "voile"
       },
       {
-        "skillId": "ramer"
+        "id": "ramer"
       }
     ],
     "desc": "Les Mousses accomplissent tous les travaux manuels à bord. Malgré leur rang très bas dans la hiérarchie, leur travail demande beaucoup de compétences et est vital pour que le vaisseau soit bien géré.",
@@ -114,7 +114,7 @@
     "label": "Navigateur",
     "skills": [
       {
-        "skillId": "orientation"
+        "id": "orientation"
       }
     ],
     "desc": "Tous les Tests d'équipage impliquant de trouver un itinéraire nécessitent un Navigateur.",
@@ -139,7 +139,7 @@
     "label": "Artilleur",
     "skills": [
       {
-        "skillId": "projectiles",
+        "id": "projectiles",
         "spec": "poudre-noire"
       }
     ],
@@ -165,7 +165,7 @@
     "label": "Cuisinier",
     "skills": [
       {
-        "skillId": "metier",
+        "id": "metier",
         "spec": "cuisinier"
       }
     ],
@@ -191,7 +191,7 @@
     "label": "Chirurgien",
     "skills": [
       {
-        "skillId": "guerison"
+        "id": "guerison"
       }
     ],
     "desc": "Le Chirurgien est essentiel pour la santé de l'équipage après les combats ou quand la maladie fait rage à bord.",
@@ -222,7 +222,7 @@
     "label": "Chansonnier",
     "skills": [
       {
-        "skillId": "divertissement",
+        "id": "divertissement",
         "spec": "chant"
       }
     ],

@@ -8,10 +8,10 @@
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
-        "skillId": "charme"
+        "id": "charme"
       },
       {
-        "skillId": "commandement"
+        "id": "commandement"
       }
     ]
   },
@@ -24,7 +24,7 @@
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
-        "skillId": "corps-a-corps"
+        "id": "corps-a-corps"
       }
     ]
   },
@@ -37,7 +37,7 @@
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
-        "skillId": "projectiles"
+        "id": "projectiles"
       }
     ]
   },
@@ -50,7 +50,7 @@
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
-        "skillId": "guerison"
+        "id": "guerison"
       }
     ]
   },
@@ -63,7 +63,7 @@
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
-        "skillId": "savoir"
+        "id": "savoir"
       }
     ]
   },
@@ -76,13 +76,13 @@
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
-        "skillId": "discretion"
+        "id": "discretion"
       },
       {
-        "skillId": "escamotage"
+        "id": "escamotage"
       },
       {
-        "skillId": "crochetage"
+        "id": "crochetage"
       }
     ]
   },
@@ -94,7 +94,7 @@
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
-        "skillId": "evaluation"
+        "id": "evaluation"
       }
     ],
     "talents": [
@@ -111,15 +111,15 @@
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
-        "skillId": "savoir",
+        "id": "savoir",
         "spec": "ingenierie"
       },
       {
-        "skillId": "savoir",
+        "id": "savoir",
         "spec": "artillerie"
       },
       {
-        "skillId": "metier",
+        "id": "metier",
         "spec": "ingenieur"
       }
     ],
@@ -138,10 +138,10 @@
     "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
-        "skillId": "voile"
+        "id": "voile"
       },
       {
-        "skillId": "savoir",
+        "id": "savoir",
         "spec": "cotes-et-marees"
       }
     ],

@@ -80,7 +80,7 @@ export interface StageContext {
 /** Reconstruit une réf de compétence libre depuis le meta sérialisé d'une étape. */
 function freeSkillFromMeta(meta?: CascadeStepMeta): SkillRef | undefined {
   const id = meta?.freeSkillId;
-  return typeof id === 'string' ? { skillId: id, spec: typeof meta?.freeSkillSpec === 'string' ? meta.freeSkillSpec : undefined } : undefined;
+  return typeof id === 'string' ? { id, spec: typeof meta?.freeSkillSpec === 'string' ? meta.freeSkillSpec : undefined } : undefined;
 }
 
 /** Modificateur météo au Test d'une Activité — DONNÉE (`ActivityDef.weatherMod`, plus d'`id` en dur) :
@@ -154,7 +154,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
     if (spec.target == null) {
       // Activité SANS Test (Récupérer) : pas de rangée de jet — un pas d'affichage dont l'applier applique l'issue.
       const meta: CascadeStepMeta = { activityId: def.id };
-      if (posting.freeSkill?.skillId) { meta.freeSkillId = posting.freeSkill.skillId; if (posting.freeSkill.spec) meta.freeSkillSpec = posting.freeSkill.spec; }
+      if (posting.freeSkill?.id) { meta.freeSkillId = posting.freeSkill.id; if (posting.freeSkill.spec) meta.freeSkillSpec = posting.freeSkill.spec; }
       steps.push(displayStep({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass', label: dataLabel(def.label), meta }));
     } else {
       // label = Compétence RÉELLEMENT utilisée, résolue AVEC sa spec (« Métier (Cartographe) ») via
@@ -166,18 +166,18 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
       // héros (`effectiveSkillCharKey`) — le −10 s'ajoute au mod météo (recalcul de la cible, dont les
       // bornes viennent de `getTestPolicy` via `clampTarget`, jamais d'un plafond écrit ici).
       const wMod = weatherModOf(def, weather);
-      const char = spec.used ? effectiveSkillCharKey(hero, spec.used.skillId, { spec: spec.used.spec }) : undefined;
+      const char = spec.used ? effectiveSkillCharKey(hero, spec.used.id, { spec: spec.used.spec }) : undefined;
       const pMod = weatherTestMods(weather, char ?? null).reduce((s, l) => s + l.value, 0); // CANAL UNIQUE (#341)
       const mods = stageActivityMods(weather, wMod, pMod);
       const difficulty = def.difficulty ?? 'intermediaire';
       batchParts.push({
         id: hero.id,
-        label: spec.used ? refLabel('skills', { id: spec.used.skillId, spec: spec.used.spec }) : def.label,
+        label: spec.used ? refLabel('skills', { id: spec.used.id, spec: spec.used.spec }) : def.label,
         interactive: true,
         difficulty,
         // Les mods de MÉTÉO (`wMod`/`pMod`) s'ajoutent à la CIBLE, ils ne sont pas dans la valeur.
         ...rollStep(spec.used
-          ? { actor: hero, test: { skill: spec.used.skillId, spec: spec.used.spec }, valeur: spec.value, difficulty, surLaCible: mods }
+          ? { actor: hero, test: { skill: spec.used.id, spec: spec.used.spec }, valeur: spec.value, difficulty, surLaCible: mods }
           : { valeur: spec.value, valeurEtrangere: true, difficulty, surLaCible: mods }),
         result: null,
         ...(spec.drTarget != null ? { extendedDrDone: Math.min(plan.extendedProgress ?? 0, spec.drTarget), extendedDrTarget: spec.drTarget } : {}),

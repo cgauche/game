@@ -162,8 +162,8 @@ export function careerSkillAdditions(hero: Combatant): SkillTalentRef[] {
     for (const op of findTalentById(t.talentId)?.passive ?? []) {
       if (op.op !== 'grantCareerSkill') continue;
       // Spec « Au choix » de l'op reportée sur la spec concrète choisie du talent (Maître artisan (Forgeron)).
-      if (t.spec && op.spec && /au choix/i.test(op.spec)) out.push({ id: op.skillId, spec: t.spec });
-      else out.push({ id: op.skillId, spec: op.spec });
+      if (t.spec && op.skill.spec && /au choix/i.test(op.skill.spec)) out.push({ id: op.skill.id, spec: t.spec });
+      else out.push({ id: op.skill.id, spec: op.skill.spec });
     }
   }
   return out;

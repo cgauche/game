@@ -4,7 +4,7 @@ import type { GameOp } from '../../engine/ops';
 // `Record` complet forcé par TS) sont importés depuis l'ATELIER — LÉGITIME ici : les fichiers `*.test.*`
 // sont hors du scan de `editor-quarantine-guard.test.ts` (la quarantaine porte sur le code applicatif,
 // pas les tests qui vérifient le renderer joueur contre le vocabulaire d'atelier).
-import { newOp, OP_LABEL, OP_REF_FIELDS } from '../editor/GameOpEditor';
+import { newOp, OP_LABEL, OP_REF_FIELDS, opRefValue, opWithRefValue } from '../editor/GameOpEditor';
 import { datasetArray } from '../../data/overrides';
 import { opRow, opRows, tableRows } from './opRows';
 import { codexLookupById } from './registry';
@@ -27,9 +27,10 @@ const EXPECTED_ANCHOR: Partial<Record<GameOp['op'], string>> = {
  *  compléter. `narrative` : même idée sur son texte (le défaut d'atelier est vide par nature). */
 function sample(kind: GameOp['op']): GameOp {
   if (kind === 'narrative') return { op: 'narrative', text: 'Un effet non modélisé, RAW verbatim.' };
-  const o = { ...newOp(kind) } as Record<string, unknown>;
+  let o = { ...newOp(kind) } as Record<string, unknown>;
   for (const f of OP_REF_FIELDS[kind] ?? []) {
-    if (o[f.field] == null || o[f.field] === '') o[f.field] = (datasetArray(f.ds) as { id?: string }[])[0]?.id;
+    const v = opRefValue(o, f.field);
+    if (v == null || v === '') o = opWithRefValue(o, f.field, (datasetArray(f.ds) as { id?: string }[])[0]?.id);
   }
   return o as unknown as GameOp;
 }
@@ -97,7 +98,7 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
     { kind: 'wounds', category: 'characteristics', build: () => ({ op: 'wounds', amount: 1 }) },
     { kind: 'grantTalent', category: 'talents', build: () => ({ op: 'grantTalent', talentId: talents[0].id }) },
     { kind: 'grantCareerTalent', category: 'talents', build: () => ({ op: 'grantCareerTalent', talentId: talents[0].id }) },
-    { kind: 'grantCareerSkill', category: 'skills', build: () => ({ op: 'grantCareerSkill', skillId: skills[0].id }) },
+    { kind: 'grantCareerSkill', category: 'skills', build: () => ({ op: 'grantCareerSkill', skill: { id: skills[0].id } }) },
     { kind: 'skillMod', category: 'skills', build: () => ({ op: 'skillMod', skill: skills[0].id, mod: -10 }) },
     { kind: 'skillDRBonus', category: 'skills', build: () => ({ op: 'skillDRBonus', skill: skills[0].id, bonus: 1 }) },
     { kind: 'grantTrait', category: 'traits', build: () => ({ op: 'grantTrait', traitId: traits[0].id }) },

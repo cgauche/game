@@ -44,7 +44,7 @@
  * Social/Savoir/Négoce (avances réelles) dépassent 0.49 et restent.
  */
 import type { Combatant } from './types';
-import { skillBaseValue } from './skills';
+import { skillBaseValue, type SkillRef } from './skills';
 import { possesses } from './skillCombatApps';
 import type { AxisData } from '../data';
 
@@ -58,9 +58,9 @@ const TALENT_BONUS_WEIGHT = 0.3;
  *  `partyCoverage` uniquement — `axisScore` brut reste non durci, cf. tête de fichier). */
 export const AXIS_QUALIFY_MIN = 0.45;
 
-function skillContribution(hero: Combatant, ref: { skillId: string; spec?: string }): number {
-  if (!possesses(hero, ref.skillId, ref.spec)) return 0;
-  const value = skillBaseValue(hero, ref.skillId, ref.spec);
+function skillContribution(hero: Combatant, ref: SkillRef): number {
+  if (!possesses(hero, ref.id, ref.spec)) return 0;
+  const value = skillBaseValue(hero, ref.id, ref.spec);
   return Math.max(0, Math.min(1, (value - SKILL_VALUE_MIN) / SKILL_VALUE_SPAN));
 }
 

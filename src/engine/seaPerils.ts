@@ -19,7 +19,8 @@
  */
 import seaPerilsJson from '../data/sea-perils.json';
 import { type RNG, defaultRNG } from './dice';
-import type { Difficulty } from './types';
+import type { CharKey, Difficulty } from './types';
+import type { SkillRef } from './skills';
 import type { ShipSize } from '../data';
 
 const SIZE_ORDER: ShipSize[] = ['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse'];
@@ -32,7 +33,7 @@ export interface SeaHazardDef {
   strandChancePct?: number;
   entangleChancePct?: number;
   entanglePenalties?: { minSize?: ShipSize; maxSize?: ShipSize; manDR: number; mMod: number }[];
-  freeTest?: { skillId: string; difficulty: Difficulty; totalDR: number };
+  freeTest?: { skill?: SkillRef; char?: CharKey; difficulty: Difficulty; totalDR: number };
   desc: string;
   /** Poids du TIRAGE parmi les périls d'une collision (#444) — MAISON : le RAW (MDG 13 l.475-499) ne donne
    *  aucune fréquence relative entre Icebergs/Débris marins/Rocher/Bas-fonds. Éditable ; absent = 1
@@ -58,7 +59,7 @@ const DATA = seaPerilsJson as unknown as {
   hazards: SeaHazardDef[];
   detroits: StraitDef[];
   tourbillons: WhirlpoolDef[];
-  tourbillonSwim: { skillId: string; difficulty: Difficulty };
+  tourbillonSwim: { skill: SkillRef; difficulty: Difficulty };
   gestionDesPerils: { distanceM: number; spot: Difficulty; avoid: Difficulty }[];
 };
 

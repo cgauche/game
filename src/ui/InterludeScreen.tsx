@@ -1078,9 +1078,9 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
   } else if (def.skills?.length) {
     const best = bestActivitySkill(hero, def);
     const chips = def.skills.map((s, i) => (
-      <Fragment key={`${s.skillId}-${s.spec ?? ''}`}>
+      <Fragment key={`${s.id}-${s.spec ?? ''}`}>
         {i > 0 && ' ou '}
-        <SkillChip skillId={s.skillId} show={s.spec ? `${refLabel('skills', { id: s.skillId })} (${s.spec})` : undefined} />
+        <SkillChip skillId={s.id} show={s.spec ? `${refLabel('skills', { id: s.id })} (${s.spec})` : undefined} />
       </Fragment>
     ));
     if (best) {
@@ -1146,12 +1146,12 @@ function BattlePrepPane({ hero, def, disabled, entry }: {
   let prejet: PendingRoll | undefined;
   if (def.skills?.length) {
     const best = def.skills
-      .map((ref) => ({ ref, v: testValue(hero, ref.skillId, undefined, ref.spec) }))
+      .map((ref) => ({ ref, v: testValue(hero, ref.id, undefined, ref.spec) }))
       .sort((a, b) => b.v - a.v)[0];
     const chips = def.skills.map((s, i) => (
-      <Fragment key={`${s.skillId}-${s.spec ?? ''}`}>
+      <Fragment key={`${s.id}-${s.spec ?? ''}`}>
         {i > 0 && (def.combined ? ' + ' : ' ou ')}
-        <SkillChip skillId={s.skillId} show={s.spec ? `${refLabel('skills', { id: s.skillId })} (${s.spec})` : undefined} />
+        <SkillChip skillId={s.id} show={s.spec ? `${refLabel('skills', { id: s.id })} (${s.spec})` : undefined} />
       </Fragment>
     ));
     prejet = withStake(testPending(<>{chips}</>, best.v, undefined, diff), def.id);

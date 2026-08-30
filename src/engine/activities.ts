@@ -542,7 +542,7 @@ export function travelActivitySpec(
   let bestVal = -Infinity;
   let used: SkillRef | undefined;
   for (const ref of skillRefs) {
-    const v = testValue(actor, ref.skillId, undefined, ref.spec);
+    const v = testValue(actor, ref.id, undefined, ref.spec);
     if (v > bestVal) { bestVal = v; used = ref; }
   }
   const value = Number.isFinite(bestVal) ? bestVal : 0;

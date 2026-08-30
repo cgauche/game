@@ -12,11 +12,11 @@ describe('#409 — intégrité de axes.json', () => {
   for (const axis of allAxes) {
     describe(`axe « ${axis.id} »`, () => {
       for (const ref of axis.skills ?? []) {
-        it(`compétence ${ref.skillId}${ref.spec ? ` (${ref.spec})` : ''} existe`, () => {
-          const skill = byId('skill', ref.skillId);
-          expect(skill, `skillId « ${ref.skillId} » introuvable dans skills.json`).toBeDefined();
+        it(`compétence ${ref.id}${ref.spec ? ` (${ref.spec})` : ''} existe`, () => {
+          const skill = byId('skill', ref.id);
+          expect(skill, `id « ${ref.id} » introuvable dans skills.json`).toBeDefined();
           if (ref.spec && skill) {
-            expect(specResolves(skill, ref.spec), `spec « ${ref.spec} » ne résout pas pour « ${ref.skillId} »`).toBe(true);
+            expect(specResolves(skill, ref.spec), `spec « ${ref.spec} » ne résout pas pour « ${ref.id} »`).toBe(true);
           }
         });
       }
@@ -49,8 +49,8 @@ describe('#409 — intégrité de axes.json', () => {
     for (const axis of allAxes) {
       if (axis.core) continue;
       for (const ref of axis.skills ?? []) {
-        const skill = byId('skill', ref.skillId);
-        if (skill && skill.acces !== 'avancee') offenders.push(`${axis.id} ← ${ref.skillId} (accès « ${skill.acces} »)`);
+        const skill = byId('skill', ref.id);
+        if (skill && skill.acces !== 'avancee') offenders.push(`${axis.id} ← ${ref.id} (accès « ${skill.acces} »)`);
       }
     }
     expect(offenders, `Axe(s) expert dérivant d'une Compétence de Base (RAW l.25 : testable sans formation) :\n${offenders.join('\n')}`).toEqual([]);

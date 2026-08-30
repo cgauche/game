@@ -350,7 +350,7 @@ describe('Infirmerie / Activité — cibles montées par `rollLine` (#1153 L3)',
       id: 'act', skills: [{ skillId: 'ragot', advances: 20, characteristic: 'sociabilite' }] as never,
       conditions: [{ id: 'empoisonne', value: 1 }] as never,
     });
-    const pick = bestActivitySkill(h, { skills: [{ skillId: 'ragot' }] as never, difficulty: 'complexe' })!;
+    const pick = bestActivitySkill(h, { skills: [{ id: 'ragot' }] as never, difficulty: 'complexe' })!;
     expect(pick.value).toBe(testValue(h, 'ragot', undefined, undefined));
     expect(pick.target).toBe(clampTarget(pick.value + DIFFICULTY_MODIFIERS.complexe).target);
   });

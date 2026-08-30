@@ -176,7 +176,8 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `skillId` | 4 | `src/engine/shipCritical.ts:164` |
+| `skill` | 5 | `src/engine/shipCritical.ts:164` |
+| `char` | 4 | `src/engine/shipCritical.ts:164` |
 | `difficulty` | 3 | `src/engine/shipCritical.ts:164` |
 | `crewTarget` | 2 | `src/engine/shipCritical.ts:161` |
 | `onFail` | 2 | `src/engine/shipCritical.ts:168` |
@@ -284,7 +285,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-23 types, 156 champs mesurés, **40 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+23 types, 157 champs mesurés, **40 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 

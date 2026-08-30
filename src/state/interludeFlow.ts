@@ -521,8 +521,8 @@ export function bestActivitySkill(
   return options
     .map((ref) => {
       const difficulty = ref.difficulty ?? def.difficulty ?? 'intermediaire';
-      const value = testValue(h, ref.skillId, undefined, ref.spec);
-      return { ref, value, difficulty, target: rollLine({ actor: h, test: { skill: ref.skillId, spec: ref.spec }, difficulty }).target };
+      const value = testValue(h, ref.id, undefined, ref.spec);
+      return { ref, value, difficulty, target: rollLine({ actor: h, test: { skill: ref.id, spec: ref.spec }, difficulty }).target };
     })
     .sort((a, b) => b.target - a.target)[0];
 }
@@ -675,8 +675,8 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     const best = bestActivitySkill(h, def);
     if (!best) return;
     skillValue = best.value;
-    skillLabel = refLabel('skills', { id: best.ref.skillId });
-    extra.chosenSkill = best.ref.skillId;
+    skillLabel = refLabel('skills', { id: best.ref.id });
+    extra.chosenSkill = best.ref.id;
     extra.chosenSkillSpec = best.ref.spec;
   } else if (def.resolver === 'punchausen') {
     // Fabuleuse Vente du comte de Punchausen (AA 12 l.45-49) : « Test de Charme Complexe (−10) OU
@@ -685,9 +685,9 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     const best = bestActivitySkill(h, def);
     if (!best) return;
     skillValue = best.value;
-    skillLabel = refLabel('skills', { id: best.ref.skillId, spec: best.ref.spec });
+    skillLabel = refLabel('skills', { id: best.ref.id, spec: best.ref.spec });
     extra.difficulty = best.difficulty;
-    extra.chosenSkill = best.ref.skillId;
+    extra.chosenSkill = best.ref.id;
     extra.chosenSkillSpec = best.ref.spec;
   } else if (def.resolver === 'knowledgeResearch') {
     // Recherche de savoir (LDB 23 l.220-226) : Savoir Accessible (+20) dans la bonne spécialisation ;
@@ -724,7 +724,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     const best = bestActivitySkill(h, def);
     if (!best) return;
     skillValue = best.value;
-    skillLabel = refLabel('skills', { id: best.ref.skillId });
+    skillLabel = refLabel('skills', { id: best.ref.id });
   }
   if (def.resolver === 'memorizeDiscount') {
     // Achat IMMÉDIAT obligatoire (ACE 12 l.55) : le sort est choisi AVANT le jet — la remise

@@ -713,7 +713,7 @@ function shipCritEntryItem(e: ShipCritEntry): CodexItem {
             title: 'Test d’équipage',
             layout: 'list',
             rows: [
-              { t: 'kv', k: 'Jet', v: ct.skillId ? `${refLabel('skills', { id: ct.skillId })}${ct.difficulty ? ` ${DIFFICULTY_LABELS[ct.difficulty]}` : ''}` : 'Automatique (aucun Test)' } as CodexRow,
+              { t: 'kv', k: 'Jet', v: ct.skill ? `${refLabel('skills', ct.skill)}${ct.difficulty ? ` ${DIFFICULTY_LABELS[ct.difficulty]}` : ''}` : 'Automatique (aucun Test)' } as CodexRow,
               { t: 'kv', k: 'Cible', v: ct.crewTarget === 'deck' ? 'Toute personne sur le pont' : 'Équipage du poste tiré au sort' } as CodexRow,
             ],
           }
@@ -1427,7 +1427,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       id: a.id, label: a.label, desc: a.desc,
       meta: facts(fact('Portée', a.core ? 'Socle de base' : 'Axe de scénario')),
       sections: sections(
-        a.skills?.length ? { title: 'Compétences', layout: 'chips', rows: a.skills.map((r) => idRefRow('skills', r.skillId, r.spec)) } : null,
+        a.skills?.length ? { title: 'Compétences', layout: 'chips', rows: a.skills.map((r) => idRefRow('skills', r.id, r.spec)) } : null,
         a.talents?.length ? { title: 'Talents', layout: 'chips', rows: a.talents.map((r) => idRefRow('talents', r.talentId, r.spec)) } : null,
       ),
     })),
@@ -1830,14 +1830,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       sub: a.contexts.map((c) => ACTIVITY_CONTEXT_LABEL[c] ?? c).join(', '),
       meta: facts(
         fact('Contextes', a.contexts.map((c) => ACTIVITY_CONTEXT_LABEL[c] ?? c).join(', ')),
-        fact('Compétence(s)', a.skills?.length ? a.skills.map((s) => refLabel('skills', { id: s.skillId, spec: s.spec })).join(' / ') : (a.freeSkill ? 'Au choix (libre)' : null)),
+        fact('Compétence(s)', a.skills?.length ? a.skills.map((s) => refLabel('skills', { id: s.id, spec: s.spec })).join(' / ') : (a.freeSkill ? 'Au choix (libre)' : null)),
         fact('Caractéristique', a.char ? CHAR_LABELS[a.char] : null),
         fact('Difficulté', a.difficulty ? DIFFICULTY_LABELS[a.difficulty] : null),
         fact('Test étendu', a.extended ? `${a.extended.drPerStage} DR / Étape` : null),
         fact('Résolveur', a.resolver ?? null),
       ),
       sections: sections(
-        chips('Compétences (au choix)', 'skills', (a.skills ?? []).map((s) => refLabel('skills', { id: s.skillId, spec: s.spec }))),
+        chips('Compétences (au choix)', 'skills', (a.skills ?? []).map((s) => refLabel('skills', { id: s.id, spec: s.spec }))),
         passiveSection(a.onSuccess, 'Effet de réussite'),
         outcomeBandsSection(a.outcomes),
       ),
@@ -1957,7 +1957,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'crewRoles', label: 'Rôles d’équipage', group: 'Monde',
     build: () => crewRoles.map((r) => depuisEnveloppe(r, {
-      sections: sections(chips('Compétences', 'skills', r.skills.map((sk) => refLabel('skills', { id: sk.skillId, spec: sk.spec })))),
+      sections: sections(chips('Compétences', 'skills', r.skills.map((sk) => refLabel('skills', { id: sk.id, spec: sk.spec })))),
     })),
   },
   {
@@ -2092,7 +2092,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       return [{
         id: 'waterExposure', label: w.label, desc: w.desc, source: src(w.source),
         meta: facts(
-          fact('Test', `${refLabel('skills', { id: w.test.skillId })} ${DIFFICULTY_LABELS[w.test.difficulty]}`),
+          fact('Test', `${refLabel('skills', w.test.skill)} ${DIFFICULTY_LABELS[w.test.difficulty]}`),
           fact('Malus par DR négatif (jet de maladie)', `+${w.rollModPerNegativeSL}`),
         ),
         sections: sections(

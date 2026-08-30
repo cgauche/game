@@ -8,7 +8,7 @@
  * registre et la `.meta()` au `.extend`, la composition se fait donc ICI via `extra`.
  *
  * Ce lot POSE la fabrique ; l'adoption par les defs et la migration des graphies historiques
- * (`{ref:{id}}`, `{wildcard}`, `{skillId, spec}`…) sont les lots L2/L3 (#1463).
+ * (`{ref:{id}}`, `{wildcard}`, `{talentId, spec}`…) sont les lots L2/L3 (#1463).
  */
 import { z } from 'zod';
 import { IDS_PAR_DATASET, SPECS_PAR_DATASET } from '../_ids.generated';
@@ -129,9 +129,12 @@ export function typedRef(types: readonly TypeEntite[] = Object.keys(TYPES) as Ty
  * spécialisable (`estSpecialisable`, `LDB 09 l.36-40`) ; `spec`/`choix` sont ensuite validés contre le
  * catalogue de l'entrée quand le type ferme ses spécialisations.
  */
-export function specRef<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
+/** Nœud `{ id, spec?, choix?, …extra }` + validation de la spécialisation. `exigeUnRegime` : `true`
+ *  = `spec` XOR `choix` obligatoire (`specRef`), `false` = les deux peuvent manquer (`refOuSpec`). */
+function noeudASpecialisation<T extends TypeEntite>(
   type: T,
-  extra?: E,
+  extra: Record<string, z.ZodTypeAny> | undefined,
+  exigeUnRegime: boolean,
 ): z.ZodType<unknown> {
   const dataset = cibleDe(type);
   const ouvert = TYPES[type].specsOpen;
@@ -143,6 +146,16 @@ export function specRef<T extends TypeEntite, E extends Record<string, z.ZodType
       ...((extra ?? {}) as Record<string, z.ZodTypeAny>),
     })
     .superRefine((v, ctx) => {
+      const aSpec = v.spec != null;
+      const aChoix = v.choix != null;
+      if (!aSpec && !aChoix) {
+        if (!exigeUnRegime) return;
+        ctx.addIssue({
+          code: 'custom',
+          message: `ref('${type}') à spécialisation : « spec » OU « choix », exactement un des deux (id « ${String(v.id)} »).`,
+        });
+        return;
+      }
       if (!estSpecialisable(type, String(v.id))) {
         ctx.addIssue({
           code: 'custom',
@@ -150,9 +163,7 @@ export function specRef<T extends TypeEntite, E extends Record<string, z.ZodType
         });
         return;
       }
-      const aSpec = v.spec != null;
-      const aChoix = v.choix != null;
-      if (aSpec === aChoix) {
+      if (aSpec && aChoix) {
         ctx.addIssue({
           code: 'custom',
           message: `ref('${type}') à spécialisation : « spec » OU « choix », exactement un des deux (id « ${String(v.id)} »).`,
@@ -171,6 +182,34 @@ export function specRef<T extends TypeEntite, E extends Record<string, z.ZodType
         });
       }
     });
+}
+
+/**
+ * Référence À SPÉCIALISATION : `{ id, spec }` XOR `{ id, choix: true | [ids] }` — exactement UN des
+ * deux régimes (une réf sans spécialisation est un `ref(type)` nu, ou un `refOuSpec(type)` quand le
+ * site accepte les deux). L'entrée VISÉE doit d'abord être spécialisable (`estSpecialisable`,
+ * `LDB 09 l.36-40`) ; `spec`/`choix` sont ensuite validés contre le catalogue de l'entrée quand le
+ * type ferme ses spécialisations.
+ */
+export function specRef<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
+  type: T,
+  extra?: E,
+): z.ZodType<unknown> {
+  return noeudASpecialisation(type, extra, true);
+}
+
+/**
+ * Référence dont la spécialisation est FACULTATIVE : `{ id }` (aucune spécialisation visée) OU
+ * `{ id, spec }` / `{ id, choix }`. MÊME nœud que `specRef`, seul le régime obligatoire tombe — donc
+ * UNE seule marque de slot par site (jamais une union, qui en poserait deux) : c'est la forme à
+ * écrire dès qu'une donnée désigne une entrée « toute spécialisation comprise » aussi bien qu'une
+ * spécialisation précise.
+ */
+export function refOuSpec<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
+  type: T,
+  extra?: E,
+): z.ZodType<unknown> {
+  return noeudASpecialisation(type, extra, false);
 }
 
 /**

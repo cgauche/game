@@ -169,7 +169,7 @@ export interface WaterExposureData {
   id: string;
   label: string;
   desc: string;
-  test: { skillId: string; difficulty: import('../engine/types').Difficulty };
+  test: { skill: EngineSkillRef; difficulty: import('../engine/types').Difficulty };
   rollModPerNegativeSL: number;
   modifiers: WaterExposureModifier[];
   diseases: { min: number; max: number; disease: string; rerollUnlessWounded?: boolean }[];
@@ -2561,7 +2561,7 @@ export interface CrewRoleData {
   id: string;
   type: 'crew-roles';
   label: string;
-  skills: { skillId: string; spec?: string }[];
+  skills: EngineSkillRef[];
   desc: string;
   wage?: CrewWage;
 }

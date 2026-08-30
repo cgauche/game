@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { skills, talents, careerLevels, species, stars, specPoolOf, specResolves, specEntryId } from './index';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { skills, talents, careerLevels, species, stars, specCatalogOf, specLabel, specPoolOf, specResolves, specEntryId } from './index';
 import tablesJson from './tables.json';
 import activitiesJson from './activities.json';
 import tavernGamesJson from './tavernGames.json';
@@ -58,8 +61,9 @@ const REFS_EN_LIBELLE = [
 const DEF_BY_ID = new Map(DEFS.map((d) => [d.id, d]));
 
 /** Toutes les refs `(defId, spec)` d'une porte joueur. La clé de def se lit d'ABORD sur les champs
- *  QUALIFIÉS (`skillId`/`talentId`/`skill`) : un nœud porteur d'un `id` À LUI (jeu de taverne,
- *  Activité) attribuerait sinon sa `spec` à son propre id. */
+ *  QUALIFIÉS (`skillId`/`talentId`/`skill`), PUIS sur l'`id` du nœud lui-même : depuis la référence
+ *  emboîtée du lot 3b (L2 #1548), une réf de Compétence s'écrit `skill: { id, spec }` — la spéc est
+ *  posée À CÔTÉ de l'id du nœud, donc ce repli est le chemin NORMAL de cette composition plate. */
 function refsDePorte(): { where: string; defId: string; spec: string }[] {
   const out: { where: string; defId: string; spec: string }[] = [];
   const walk = (node: unknown, where: string): void => {
@@ -118,5 +122,108 @@ describe('#1342 L3 — contrat `pool` des spécialisations', () => {
     }
     expect(fuites, `spec(s) proposées mais non valides :\n${fuites.join('\n')}`).toEqual([]);
     expect(vides, `domaine(s) groupés à pool VIDE — Augmentation inallouable :\n${vides.join('\n')}`).toEqual([]);
+  });
+});
+
+/**
+ * EXTENSION 2026-08-30 (L2 #1548, commit 3b) — MÊME contrat, périmètre ÉLARGI et axe RESSERRÉ.
+ *
+ * PÉRIMÈTRE MESURÉ : TOUS les `src/data/**.json` (walk récursif du dossier, 121 fichiers au relevé),
+ * pas seulement les 8 `PORTES_JOUEUR` ci-dessus. L'AXE, lui, est plus étroit que celui des portes :
+ * on n'exige pas ici que la spéc résolve (188 valeurs distinctes sont du TEXTE LIBRE authoré, légitime
+ * sur les domaines ouverts : Langue, Métier, Savoir…), on exige qu'elle ne soit JAMAIS le LIBELLÉ FR
+ * d'une entrée du catalogue de sa propre def.
+ *
+ * MESURE QUI L'EXIGE : `testValue` apparie la spéc possédée par ÉGALITÉ STRICTE
+ * (`s.spec === spec`, `src/engine/skills.ts:76`) et les Compétences possédées portent l'ID. Une spéc
+ * écrite « Ingénieur » au lieu de `ingenieur` n'apparie donc AUCUNE instance : le Test retombe sur la
+ * Caractéristique de repli et les avances sont PERDUES (héros Métier (Ingénieur) +40, Int 30 : 30
+ * mesuré au lieu de 70). Stock avant correctif : 4 (`steam-breakdown.json`, chemin réel
+ * `seaVoyageFlow.ts:2020`), ramenés à l'id par `scripts/migrations/2026-08-30-spec-en-id-de-catalogue.mjs`.
+ *
+ * ANGLES MORTS ÉNONCÉS :
+ *  - la clé de def n'est lue que sur `skillId` / `skill` de chaîne / `id` du nœud porteur : une réf
+ *    de Compétence désignée par un champ d'un AUTRE nom échappe à la mesure ;
+ *  - seules les défs de COMPÉTENCE sont confrontées (le sondage du 2026-08-30 sur les TALENTS relève
+ *    5 spécs en libellé sur `sens-aiguise` — 4 dans `mutations.json`, 1 dans `spells.json` — dont la
+ *    résolution passe par `PairedSense` et non par `testValue`) : axe distinct, non tranché ici ;
+ *  - un libellé AMBIGU (deux entrées du même catalogue au même libellé normalisé) n'est pas départagé.
+ */
+const DOSSIER_DATA = fileURLToPath(new URL('.', import.meta.url));
+
+/** Normalisation de COMPARAISON seulement (NFD + casse) : jamais une conversion de donnée. */
+const normLabel = (s: string): string => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+/**
+ * DETTE NOMINATIVE DATÉE — spécs de Compétence encore écrites en LIBELLÉ FR de leur propre catalogue.
+ * Liste FERMÉE et DÉCROISSANTE : une clé de plus = rouge (régression), une clé périmée = rouge aussi.
+ * VIDE depuis 2026-08-30 (L2 #1548, commit 3b) : les 4 `metier|Ingénieur` de `steam-breakdown.json`
+ * ont été migrées. La `spec` sentinelle « Au choix » (68 occurrences, `creatures.json`/`stars.json`/
+ * `talents.json`) n'entre PAS dans cette mesure : ce n'est pas un libellé de catalogue mais un CHOIX
+ * à faire, exclu NOMMÉMENT ci-dessous ; sa migration en `choix: true` est le commit 4 du lot.
+ */
+const SPECS_EN_LIBELLE: { cle: string; date: string; lot: string }[] = [];
+
+/** Sentinelle d'authoring : « au choix » / « Environnement au choix » — un choix, pas une spéc. */
+const EST_SENTINELLE_CHOIX = (spec: string): boolean => /au choix/i.test(spec);
+
+function fichiersDeDonnees(dir: string): string[] {
+  const out: string[] = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const abs = join(dir, e.name);
+    if (e.isDirectory()) out.push(...fichiersDeDonnees(abs));
+    else if (e.name.endsWith('.json')) out.push(abs);
+  }
+  return out;
+}
+
+describe('L2 #1548 — aucune `spec` de Compétence écrite en LIBELLÉ (tout `src/data`)', () => {
+  /** Par id de Compétence : « cet id résout-il ? » et l'index LIBELLÉ normalisé → id attendu. */
+  const CATALOGUE = new Map(skills.map((s) => [
+    s.id,
+    { def: s, parLabel: new Map(specCatalogOf(s).map((id) => [normLabel(specLabel('skills', s.id, id)), id])) },
+  ]));
+
+  const fichiers = fichiersDeDonnees(DOSSIER_DATA);
+
+  it('le walk couvre bien TOUS les datasets JSON (périmètre non vide, non réduit à un fichier)', () => {
+    expect(fichiers.length).toBeGreaterThan(100);
+  });
+
+  it('toute `spec` adjacente à un id de Compétence est un ID du catalogue ou du TEXTE LIBRE — jamais un libellé', () => {
+    const regressions: string[] = [];
+    const vues = new Set<string>();
+    const walk = (node: unknown, ou: string): void => {
+      if (Array.isArray(node)) { node.forEach((x) => walk(x, ou)); return; }
+      if (!node || typeof node !== 'object') return;
+      const n = node as Record<string, unknown>;
+      const defId = (typeof n.skillId === 'string' && n.skillId)
+        || (typeof n.skill === 'string' && n.skill)
+        || (typeof n.id === 'string' && n.id) || null;
+      const spec = n.spec;
+      if (defId && typeof spec === 'string' && CATALOGUE.has(defId) && !EST_SENTINELLE_CHOIX(spec)) {
+        const cat = CATALOGUE.get(defId)!;
+        const attendu = cat.parLabel.get(normLabel(spec));
+        if (attendu && !specResolves(cat.def, spec)) {
+          const cle = `${ou}|${defId}|${spec}`;
+          if (SPECS_EN_LIBELLE.some((d) => d.cle === cle)) vues.add(cle);
+          else regressions.push(`${cle} — LIBELLÉ FR du catalogue (id attendu « ${attendu} ») : \`testValue\` n'appariera aucune spéc possédée`);
+        }
+      }
+      for (const v of Object.values(n)) walk(v, ou);
+    };
+    for (const abs of fichiers) {
+      const ou = abs.slice(DOSSIER_DATA.length).replace(/\\/g, '/');
+      let data: unknown;
+      try { data = JSON.parse(readFileSync(abs, 'utf8')); } catch { continue; }
+      walk(data, ou);
+    }
+    expect(regressions, regressions.join('\n')).toEqual([]);
+    const perimees = SPECS_EN_LIBELLE.filter((d) => !vues.has(d.cle)).map((d) => d.cle);
+    expect(perimees, `clé(s) de dette PÉRIMÉE(s) — migrée(s), retirer la ligne :\n${perimees.join('\n')}`).toEqual([]);
+  });
+
+  it('chaque ligne de dette porte sa DATE et son LOT', () => {
+    expect(SPECS_EN_LIBELLE.filter((d) => !/^\d{4}-\d{2}-\d{2}$/.test(d.date) || !d.lot?.trim()).map((d) => d.cle)).toEqual([]);
   });
 });

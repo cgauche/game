@@ -12,6 +12,7 @@ import type { GameOp } from '../../../engine/ops';
 import type { Condition, EffectOp, Flow } from '../../../engine/flowCore';
 import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema } from './valeurs';
 import { marque } from './slots';
+import { refOuSpec } from './ref';
 
 /** `PerSL` (`src/engine/ops.ts:146`) — échelle « par +N DR » d'un payload d'op. */
 export const perSLSchema = z.strictObject({ every: z.number(), amount: z.number(), onFailure: z.boolean().optional() });
@@ -349,8 +350,8 @@ export const travelTableEntrySchema = z.strictObject({
   mount: z.strictObject({
     /** Test du CAVALIER, sous peine de chute de `fallM` mètres (l.166/l.171). */
     riderTest: z.strictObject({
-      skillId: z.string(),
-      char: z.string().optional(),
+      skill: refOuSpec('skill'),
+      char: charKeySchema.optional(),
       difficulty: difficultySchema,
       fallM: z.number(),
     }).optional(),
@@ -375,7 +376,8 @@ export const travelTableEntrySchema = z.strictObject({
 
 /** `ShipCrewTest` (`src/data/shipCriticals.ts`) — Test d'équipage déclenché par un Critique de coque. */
 export const shipCrewTestSchema = z.strictObject({
-  skillId: z.string().optional(),
+  skill: refOuSpec('skill').optional(),
+  char: charKeySchema.optional(),
   difficulty: difficultySchema.optional(),
   crewTarget: z.enum(['poste', 'deck']).optional(),
   onFail: z.array(gameOpSchema),

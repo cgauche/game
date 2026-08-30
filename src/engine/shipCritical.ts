@@ -152,8 +152,8 @@ function posteCrew(hull: Combatant, crew: Combatant[], rng: RNG): Combatant[] {
  *  - `crewTarget` : `poste` (équipage d'un poste tiré au sort — MDG « Canon détaché » ch.13 l.763-764, défaut)
  *    ou `deck` (toute personne EXPOSÉE sur le pont — MSRC gréement/superstructure « Toute personne présente sur
  *    le pont doit faire un Test… ») ;
- *  - `skillId`/`difficulty` PRÉSENTS → chaque cible encourt le Test ; un échec applique `crewTest.onFail` (GameOp) ;
- *  - `skillId`/`difficulty` ABSENTS → `onFail` s'applique AUTOMATIQUEMENT (MSRC « les échardes infligent +5 Dégâts
+ *  - `skill` (ou `char`) + `difficulty` PRÉSENTS → chaque cible encourt le Test ; un échec applique `crewTest.onFail` (GameOp) ;
+ *  - aucun sujet de Test ou pas de `difficulty` → `onFail` s'applique AUTOMATIQUEMENT (MSRC « les échardes infligent +5 Dégâts
  *    aux rameurs », sans Test).
  * PUR (mute les marins touchés via `applyOps`, RNG injecté).
  */
@@ -161,8 +161,8 @@ export function applyCrewHit(hull: Combatant, crew: Combatant[], crewTest: ShipC
   const victims = crewTest.crewTarget === 'deck' ? exposedCrew(crew) : posteCrew(hull, crew, rng);
   const hits: { crewId: string }[] = [];
   for (const sailor of victims) {
-    const fails = crewTest.skillId && crewTest.difficulty
-      ? !rollTest(testValue(sailor, crewTest.skillId), crewTest.difficulty, rng).success
+    const fails = (crewTest.skill || crewTest.char) && crewTest.difficulty
+      ? !rollTest(testValue(sailor, crewTest.skill?.id, crewTest.char, crewTest.skill?.spec), crewTest.difficulty, rng).success
       : true; // pas de Test → dégâts automatiques (MSRC rames)
     if (fails) {
       applyOps(sailor, crewTest.onFail, { rng });

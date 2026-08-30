@@ -384,7 +384,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquet DESCENDU 670 → 594 (L2 #1548, commit 0) : les 76 lignes `refs / ids-nus` quittent le
       // dénominateur avec la cible ci-dessus — aucune donnée ne bouge, c'est le LEXIQUE qui reconnaît
       // la forme déjà posée. Le cliquet SUIT la baisse.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 594],
+      // Cliquet DESCENDU 594 → 587 (L2 #1548, commit 3b) : la graphie `skillId` MEURT de la donnée —
+      // 8 lignes de référence de Compétence s'éteignent (activities ×2, axes ×2, crew-roles ×2,
+      // talents, creatures.grant : 92 occurrences migrées vers la forme canonique `{id, spec?}`),
+      // 1 ligne neuve apparaît (`creatures.json › spec` mesuré en id nu). Les conteneurs de TEST
+      // gardent leur ligne (lot L4) : seule la référence DEDANS s'est emboîtée. Le cliquet SUIT.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 587],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -406,7 +411,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // 8 déclarations SURFACÉES (7 `entries` de defs config/table + `interludeEvents` min/max, qui
       // était stockée AVANT l'adoption et revit à l'identique). Sans l'extension, l'adoption faisait
       // DISPARAÎTRE des lignes et ce cliquet lisait la perte comme un solde.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 108],
+      // Cliquet DESCENDU 108 → 105 (L2 #1548, commit 3b) : `activities.ts`, `axes.ts` et
+      // `crew-roles.ts` ne redéclarent plus leur propre objet de référence de Compétence — ils
+      // composent la grammaire (`refOuSpec('skill')`, `grammaire/ref.ts`). Le cliquet SUIT.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 105],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -493,10 +501,14 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L1b #1467': 0,
       'L1c #1468': 403,
       'L1d #1469': 62,
-      'L2 #1463': 57,
+      // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
+      // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
+      'L2 #1463': 48,
       'L2 #1548': 0,
       'L3 #1463': 397,
-      'L4 #1463': 220,
+      // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
+      // une seule dès que la référence sort de leur signature.
+      'L4 #1463': 219,
       '#1553': 92,
     };
     expect(

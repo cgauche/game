@@ -8,6 +8,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'sea-cargo.json';
 export const famille = 'config';
@@ -73,7 +74,7 @@ const doc = document(
   opportunite: z.strictObject({
     investMaxEnc: z.boolean(),
     test: z.strictObject({
-      skillId: z.string(),
+      skill: refOuSpec('skill'),
       difficulty: difficultySchema,
       totalDR: z.number(),
       maxAttempts: z.number(),

@@ -664,7 +664,7 @@ Le détail : chaque Personnage dispose d'**une Activité par semaine de 8 jours*
 **Voir aussi** : [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Apprentissage particulier, Artisanat, Entraînement, Invention !), [Activités de Classe (LDB 23)](#activités-de-classe-ldb-23) (Recherche de savoir, Semer la dissension, Entraînement au combat), [Activités de Guerrier — AA Annexe II](#activités-de-guerrier--aa-annexe-ii), [Commerce d'opportunité (en mer)](#commerce-dopportunité-en-mer), [Cartographie (Activité en mer)](#cartographie-activité-en-mer), [Entraînement d'équipage](#entraînement-déquipage), [Entretien du navire](#entretien-du-navire).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.17, l.266-272) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `WorldMapView`, `SeaVoyageState`, `SEA_WEEK_DAYS`, `startTravel`, `sea-embrigadement-ragot`, `surcharge-3`, `sea-embrigadement-discretion`, `cruiseM`, +25 — `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/voyage-stakes.json`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, +4 fichiers
+- `MDG 15` (l.17, l.266-272) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `WorldMapView`, `SeaVoyageState`, `SEA_WEEK_DAYS`, `startTravel`, `sea-embrigadement-ragot`, `sea-embrigadement-discretion`, `marchandage`, `cruiseM`, +25 — `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/voyage-stakes.json`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, +4 fichiers
 
 ---
 
@@ -688,7 +688,7 @@ Activité de spéculation rapide lors d'une escale appropriée. Le Personnage **
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `doc`, `SEA_WEEK_DAYS`, `sea-embrigadement-ragot`, `surcharge-3`, `sea-embrigadement-discretion`, `sellRefusal`, `buildPostProgressionSteps`, +26 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/voyage-stakes.json`, `src/engine/activities.ts`, +8 fichiers
+- `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `doc`, `SEA_WEEK_DAYS`, `sea-embrigadement-ragot`, `sea-embrigadement-discretion`, `marchandage`, `sellRefusal`, `buildPostProgressionSteps`, +26 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/voyage-stakes.json`, `src/engine/activities.ts`, +8 fichiers
 
 ---
 
@@ -707,7 +707,7 @@ Dessiner une carte revendable et utile à l'orientation. **Test de Métier (Cart
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Opérations Bancaires](#opérations-bancaires) (Planque, découverte sur 10 ou moins), [Activités de Voyage — EDOC 5](#activités-de-voyage--edoc-ch5) (Établir des Cartes — équivalent terrestre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.288-292) → `SeaActivitiesModal`, `BankDeposit`, `doc`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `PendingExtendedTest`, `bankWithdrawInner`, `GameState`, +3 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +6 fichiers
+- `MDG 15` (l.288-292) → `SeaActivitiesModal`, `BankDeposit`, `doc`, `marchandage`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `PendingExtendedTest`, `bankWithdrawInner`, `GameState`, +3 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +6 fichiers
 
 ---
 
@@ -726,7 +726,7 @@ Former l'équipage (PNJ) dans une **Compétence utile à la gestion du bateau**.
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `doc`, `commerce`, `minimum-vital`, `port-buy-bargain`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, +6 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, +8 fichiers
+- `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `doc`, `commerce`, `minimum-vital`, `port-buy-bargain`, `marchandage`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, +6 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, +8 fichiers
 
 ---
 
@@ -751,7 +751,7 @@ Réparer l'usure du vaisseau (planches pourries, voiles, coque incrustée). **De
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Artisanat](#artisanat) (Métier, Test étendu).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `commerce`, `minimum-vital`, `port-buy-bargain`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade`, +1 — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `commerce`, `minimum-vital`, `port-buy-bargain`, `marchandage`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade`, +1 — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +4 fichiers
 
 ---
 

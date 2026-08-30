@@ -29,7 +29,7 @@
           }
         ],
         "crewTest": {
-          "skillId": "initiative",
+          "char": "initiative",
           "difficulty": "intermediaire",
           "crewTarget": "deck",
           "onFail": [
@@ -116,7 +116,7 @@
         "id": "superstructure-fluvial",
         "label": "Superstructure",
         "crewTest": {
-          "skillId": "initiative",
+          "char": "initiative",
           "difficulty": "intermediaire",
           "crewTarget": "deck",
           "onFail": [

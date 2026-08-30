@@ -18,7 +18,7 @@ import crewMoraleJson from '../data/crew-morale.json';
 import { findTableEntry } from './tables';
 import { rollExpr, type RNG, defaultRNG } from './dice';
 import { rollTest, easeDifficulty } from './tests';
-import { bestForSkills, bestSkilledOption, actorHasSkill } from './skills';
+import { bestForSkills, bestSkilledOption, actorHasSkill, type SkillRef } from './skills';
 import { talentTestSLBonus } from './magic';
 import { skillDRBonus } from './ops';
 import { rule } from './policy';
@@ -324,9 +324,9 @@ export function crewTestModOf(c: Combatant): number {
  *  (optionnel) : sens NARRATIVEMENT sollicité par CE Test précis (ex. Vigie qui « voit la lumière d'un
  *  phare », MDG 13 l.337 — visuel, transmis par l'appelant) ; restreint les `skillMod` sense-scopés
  *  (Surdité, LDB 18) via `testValue`. Absent = comportement historique. PUR. */
-export function crewRoleValue(crew: Combatant, role: CrewRoleData, sense?: PairedSense): { value: number; used?: { skillId: string; spec?: string } } {
+export function crewRoleValue(crew: Combatant, role: CrewRoleData, sense?: PairedSense): { value: number; used?: SkillRef } {
   const b = bestForSkills([crew], role.skills ?? [], undefined, sense);
-  return { value: (b?.value ?? 0) + crewTestModOf(crew), used: b?.skillId ? { skillId: b.skillId, spec: b.spec } : undefined };
+  return { value: (b?.value ?? 0) + crewTestModOf(crew), used: b?.skillId ? { id: b.skillId, spec: b.spec } : undefined };
 }
 
 /** +DR de TALENT d'un membre sur SON jet de rôle RÉUSSI, en contexte TEST D'ÉQUIPAGE — règle UNIVERSELLE
@@ -338,8 +338,8 @@ export function crewRoleValue(crew: Combatant, role: CrewRoleData, sense?: Paire
 export function crewTalentDR(crew: Combatant, role: CrewRoleData): number {
   const used = crewRoleValue(crew, role).used;
   if (!used) return 0;
-  return talentTestSLBonus(crew, { skill: used.skillId, spec: used.spec }, (cond) => cond.kind === 'crewTest')
-    + skillDRBonus(crew, used.skillId, used.spec);
+  return talentTestSLBonus(crew, { skill: used.id, spec: used.spec }, (cond) => cond.kind === 'crewTest')
+    + skillDRBonus(crew, used.id, used.spec);
 }
 
 /** Rôle d'équipage INFÉRÉ d'un membre (MDG 14) — sur la COMPÉTENCE, comme le RAW :
@@ -351,12 +351,12 @@ export function crewTalentDR(crew: Combatant, role: CrewRoleData): number {
 export function defaultCrewRole(crew: Combatant): string | null {
   // Chaque rôle réduit à ses compétences POSSÉDÉES ; on écarte les rôles sans aucune compétence connue.
   const eligible = crewRoles
-    .map((role) => ({ id: role.id, skills: role.skills.filter((s) => actorHasSkill(crew, s.skillId, s.spec)) }))
+    .map((role) => ({ id: role.id, skills: role.skills.filter((s) => actorHasSkill(crew, s.id, s.spec)) }))
     .filter((r) => r.skills.length > 0);
   const best = bestSkilledOption(crew, eligible);
   if (best) return best.option.id;
   const mousse = findCrewRoleById('mousse');
-  if (mousse && mousse.skills.some((s) => actorHasSkill(crew, s.skillId, s.spec))) return 'mousse';
+  if (mousse && mousse.skills.some((s) => actorHasSkill(crew, s.id, s.spec))) return 'mousse';
   return null;
 }
 

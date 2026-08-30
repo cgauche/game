@@ -6,6 +6,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { difficultySchema } from '../grammaire/valeurs';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'water-exposure.json';
 export const famille = 'config';
@@ -25,7 +26,7 @@ const doc = document(
   famille,
   {
   test: z.strictObject({
-    skillId: z.string(),
+    skill: refOuSpec('skill'),
     difficulty: difficultySchema,
   }),
   rollModPerNegativeSL: z.number(),

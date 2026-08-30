@@ -4,7 +4,9 @@
   "label": "Maladies transmises par l'eau",
   "desc": "Les voies navigables de l'Empire s'étendent des ruisseaux de montagne étincelants aux marais et marécages fétides. Les rivières qui traversent les villes peuvent être de véritables égouts à ciel ouvert, remplis d'effluents humains, de déchets en décomposition, de chats morts et de bien d'autres choses. Chaque fois qu'une personne boit de l'eau de rivière sans la faire bouillir au préalable, elle risque de contracter une maladie ou d'ingérer un parasite.\n\nBien entendu, boire cette eau n'est pas toujours une action volontaire : un Personnage qui échoue à un Test de Natation avale accidentellement de l'eau en cas d'échec à un Test de **Force Mentale Intermédiaire (+0)**.\n\nÀ la discrétion du MJ, les Personnages ayant des blessures ouvertes peuvent également risquer d'être exposés s'ils tombent ou sautent dans une rivière.\n\nChaque fois qu'un Personnage risque d'être exposé à une maladie provenant de l'eau d'une rivière, il est possible qu'il doive réaliser un Test de **Résistance Intermédiaire (+0)**, modifié selon les circonstances. Consultez les tableaux suivants : tous les modificateurs peuvent être cumulés.\n\nSi le Test de Résistance est raté, lancez un dé selon le tableau suivant, avec un modificateur de +10 pour chaque DR négatif.",
   "test": {
-    "skillId": "resistance",
+    "skill": {
+      "id": "resistance"
+    },
     "difficulty": "intermediaire"
   },
   "rollModPerNegativeSL": 10,

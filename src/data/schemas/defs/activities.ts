@@ -9,17 +9,14 @@ import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { difficultySchema, stakeFormSchema } from '../grammaire/valeurs';
 import { gameOpSchema, stageOutcomeSchema } from '../grammaire/mecanique';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'activities.json';
 export const famille = 'entite';
 
 // `difficulty?` = Difficulté PROPRE à cette voie quand le RAW en attache une différente par
 // Compétence (Punchausen, AA 12 l.45-49) — absente, la voie retombe sur `difficulty` de l'Activité.
-const skillRefSchema = z.strictObject({
-  skillId: z.string(),
-  spec: z.string().optional(),
-  difficulty: difficultySchema.optional(),
-});
+const skillRefSchema = refOuSpec('skill', { difficulty: difficultySchema.optional() });
 
 const activityContextSchema = z.enum(['interlude', 'voyage', 'mer', 'bataille', 'bataille-round', 'auberge']);
 

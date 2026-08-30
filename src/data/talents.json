@@ -225,8 +225,10 @@
     "passive": [
       {
         "op": "grantCareerSkill",
-        "skillId": "art",
-        "spec": "Au choix"
+        "skill": {
+          "id": "art",
+          "spec": "Au choix"
+        }
       }
     ]
   },
@@ -2991,8 +2993,10 @@
     "passive": [
       {
         "op": "grantCareerSkill",
-        "skillId": "metier",
-        "spec": "Au choix"
+        "skill": {
+          "id": "metier",
+          "spec": "Au choix"
+        }
       }
     ],
     "specsOpen": true
@@ -3413,8 +3417,10 @@
     "passive": [
       {
         "op": "grantCareerSkill",
-        "skillId": "divertissement",
-        "spec": "chant"
+        "skill": {
+          "id": "divertissement",
+          "spec": "chant"
+        }
       }
     ]
   },
@@ -4574,8 +4580,10 @@
     "passive": [
       {
         "op": "grantCareerSkill",
-        "skillId": "langue",
-        "spec": "magick"
+        "skill": {
+          "id": "langue",
+          "spec": "magick"
+        }
       }
     ]
   },
@@ -5312,8 +5320,10 @@
     "passive": [
       {
         "op": "grantCareerSkill",
-        "skillId": "savoir",
-        "spec": "region"
+        "skill": {
+          "id": "savoir",
+          "spec": "region"
+        }
       }
     ]
   },

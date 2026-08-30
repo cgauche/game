@@ -41,9 +41,9 @@ export function ActivityModal() {
   // résolveur (`chosenSkill`), sinon l'unique Compétence déclarée par l'Activité (`activities.json`).
   const actDef = pa.activityId ? activityById(pa.activityId) : undefined;
   const onlySkill = actDef?.skills?.length === 1 ? actDef.skills[0] : undefined;
-  const tested = pa.chosenSkill ? { skillId: pa.chosenSkill, spec: pa.chosenSkillSpec } : onlySkill;
+  const tested = pa.chosenSkill ? { id: pa.chosenSkill, spec: pa.chosenSkillSpec } : onlySkill;
   const { base, mods: supMods } = testValueSplit(actor, pa.skillValue, {
-    support: pa.support, skill: tested?.skillId, characteristic: tested ? undefined : actDef?.char, spec: tested?.spec,
+    support: pa.support, skill: tested?.id, characteristic: tested ? undefined : actDef?.char, spec: tested?.spec,
   });
   const extraMods: ModLine[] = [...supMods, ...activityModLines(pa.mod, pa.modLabel)];
   // Cible affichée : celle du jet (pré-cuite dès l'ouverture en bataille, sinon dérivée base+Difficulté).

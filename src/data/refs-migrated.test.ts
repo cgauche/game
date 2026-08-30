@@ -257,13 +257,17 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     });
   });
 
-  it('ops grantCareerSkill/grantCareerTalent (talent → carrière) = réf par id qui résout (jamais un libellé)', () => {
-    for (const t of talents) {
-      for (const op of t.passive ?? []) {
-        if (op.op === 'grantCareerSkill') expect(byId('skill', op.skillId), `${t.label}.grantCareerSkill`).toBeTruthy();
-        if (op.op === 'grantCareerTalent') expect(findTalentById(op.talentId), `${t.label}.grantCareerTalent`).toBeTruthy();
+  // FILET SUR LE WALK, jamais sur `talents.passive` seul : `gameOpRefFk.mjs` est AVEUGLE aux réfs
+  // OBJET (angle mort déclaré :23-33), donc ce test EST la couverture de `grantCareerSkill.skill.id`.
+  // Un `grantCareerSkill` posé demain dans `traits.json`/`creatures.json`/un Flow de sort tombe ici.
+  it('ops grantCareerSkill/grantCareerTalent (→ carrière) = réf par id qui résout (jamais un libellé)', () => {
+    walk([...opDatasets, ...talents], (o) => {
+      if (o.op === 'grantCareerSkill') {
+        expect(isObj(o.skill), `grantCareerSkill sans réf emboîtée { skill: { id } } : ${JSON.stringify(o)}`).toBe(true);
+        expect(byId('skill', (o.skill as { id: string }).id), JSON.stringify(o)).toBeTruthy();
       }
-    }
+      if (o.op === 'grantCareerTalent') expect(findTalentById(o.talentId as string), JSON.stringify(o)).toBeTruthy();
+    });
   });
 
   // ── Spine des Tests : aucune compétence résolue par LIBELLÉ (multilangue) ──

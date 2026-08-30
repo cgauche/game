@@ -5,7 +5,8 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { charKeySchema, difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'sea-perils.json';
 export const famille = 'config';
@@ -31,7 +32,7 @@ const seaHazardDef = z.strictObject({
       }),
     )
     .optional(),
-  freeTest: z.strictObject({ skillId: z.string(), difficulty: difficultySchema, totalDR: z.number() }).optional(),
+  freeTest: z.strictObject({ skill: refOuSpec('skill').optional(), char: charKeySchema.optional(), difficulty: difficultySchema, totalDR: z.number() }).optional(),
   desc: z.string(),
   source: sourceRefSchema,
   /** Poids du tirage de collision (#444) — MAISON, cf. `hazardsWeightNote` ci-dessous. */
@@ -67,7 +68,7 @@ const champs = {
   hazards: z.array(seaHazardDef),
   detroits: z.array(straitDef),
   tourbillons: z.array(whirlpoolDef),
-  tourbillonSwim: z.strictObject({ skillId: z.string(), difficulty: difficultySchema, source: sourceRefSchema }),
+  tourbillonSwim: z.strictObject({ skill: refOuSpec('skill'), difficulty: difficultySchema, source: sourceRefSchema }),
   gestionDesPerils: z.array(
     z.strictObject({ distanceM: z.number(), spot: difficultySchema, avoid: difficultySchema, source: sourceRefSchema }),
   ),

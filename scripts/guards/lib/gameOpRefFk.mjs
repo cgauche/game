@@ -97,7 +97,6 @@ export const GAMEOP_FIELD_TARGETS = {
   'grantTrait.traitId': { registry: 'traits' },
   'grantTalent.talentId': { registry: 'talents' },
   'grantCareerTalent.talentId': { registry: 'talents' },
-  'grantCareerSkill.skillId': { registry: 'skills' },
   'grantReverseToken.skill': { registry: 'skills' },
   'skillMod.skill': { registry: 'skills' },
   'skillDRBonus.skill': { registry: 'skills' },
@@ -106,7 +105,6 @@ export const GAMEOP_FIELD_TARGETS = {
   // Spécialisations : résolution assurée par la GARDE EXHAUSTIVE Phase 3 de
   // `src/data/refs-migrated.test.ts`, qui connaît le domaine porteur (fermé/ouvert/`specsSource`).
   'grantTalent.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
-  'grantCareerSkill.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
   'grantCareerTalent.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
   'grantReverseToken.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
   'skillDRBonus.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },

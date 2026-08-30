@@ -89,7 +89,10 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     expect(
       [...retrouvées].map((n) => marqueDe(n)!.site).sort(),
       'marque(s) de référence perdue(s) ou apparue(s) — une feuille marquée puis clonée hors fabrique (`.refine` EXTERNE) disparaît de la marche SANS erreur : c’est le zéro silencieux que ce stock nominatif détecte.',
-    ).toEqual(['actorRefSchema', "idDe('creature')", "idDe('trapping')"]);
+    // 11 sites de référence de Compétence ADOPTÉS au lot L2 #1548 (commit 3b) : `refOuSpec('skill')`
+    // pose UNE marque par site (activities, axes, crew-roles, creatures, sea-cargo, sea-perils ×2,
+    // steam-breakdown, water-exposure, `mount.riderTest`, `shipCrewTest`).
+    ).toEqual(['actorRefSchema', "idDe('creature')", ...Array.from({ length: 11 }, () => "idDe('skill')"), "idDe('trapping')"]);
   });
 
   it('la coupe de PROFONDEUR_MAX est BRUYANTE : un schéma trop profond LÈVE en nommant son path', () => {

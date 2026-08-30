@@ -54858,7 +54858,7 @@
             "value": 20
           },
           {
-            "skillId": "discretion",
+            "id": "discretion",
             "spec": "rurale",
             "value": 65
           }

@@ -3,8 +3,9 @@
  * (`src/engine/shipBuild.ts`), consommée par `steamBreakdownFor` (le dé vient du canal).
  */
 import { z } from 'zod';
-import { difficultySchema } from '../grammaire/valeurs';
+import { charKeySchema, difficultySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'steam-breakdown.json';
 export const famille = 'entite';
@@ -26,8 +27,8 @@ const doc = document(
     restart: z
       .array(
         z.strictObject({
-          skillId: z.string(),
-          spec: z.string().optional(),
+          skill: refOuSpec('skill').optional(),
+          char: charKeySchema.optional(),
           difficulty: difficultySchema,
           extendedDR: z.number().optional(),
         }),
