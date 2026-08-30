@@ -187,12 +187,48 @@ if (staged.some((f) => f.replace(/\\/g, '/') === 'package-lock.json')) {
   }
 }
 
-const docsStaged = staged.some((f) => /^docs\/(?:raw\/)?[^/]+\.md$/.test(f.replace(/\\/g, '/')));
+const docsStaged = staged.some((f) => /^docs\/(?:raw\/|plans\/)?[^/]+\.(?:md|html)$/.test(f.replace(/\\/g, '/')));
 if (docsStaged) {
   try {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-doc-refs.mjs')], { cwd: ROOT, stdio: 'inherit' });
   } catch {
     offenders.push('docs:check en échec (référence vivante qui ment — corriger le doc ou le code, jamais commiter le mensonge)');
+  }
+}
+
+// La garde des plans datés scanne TOUT fichier suivi (sens « référent → plan », par chemin ET par nom
+// nu) : l'armer sur le seul stage d'un doc laissait passer le cas le plus courant — un commentaire de
+// `.ts`/`.css` qui cite un plan. Elle coûte 4,8 s (mesuré), donc elle ne tourne pas à chaque commit :
+// COMPROMIS retenu = déclencheur sur le DIFF STAGÉ, pas sur la liste des fichiers.
+//   (a) un doc stagé, comme avant ;
+//   (b) une ligne AJOUTÉE qui cite `docs/plans/` — le cas « je crée la référence », quel que soit le
+//       fichier porteur ;
+//   (c) une ligne AJOUTÉE qui NOMME un plan déjà supprimé (registre lu par `--registre`, 0,45 s) —
+//       consulté uniquement si le diff ajoute un nom de fichier plausible, sinon on ne paie rien.
+// Reste hors pre-commit (assumé, couvert par `npm run docs:check` et le canari) : une violation
+// PRÉEXISTANTE d'un fichier que ce commit ne touche pas.
+const ajoutees = (() => {
+  try {
+    return execFileSync('git', ['diff', '--cached', '-U0'], { cwd: ROOT, encoding: 'utf8' })
+      .split('\n').filter((l) => l.startsWith('+') && !l.startsWith('+++'));
+  } catch { return []; }
+})();
+const citePlan = ajoutees.some((l) => l.includes('docs/plans/'));
+const nommeUnFichier = ajoutees.some((l) => /[\w-]{3,}\.(?:md|html|png|json)\b/.test(l));
+const citeUnMort = () => {
+  if (!nommeUnFichier) return false;
+  let registre;
+  try {
+    registre = execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-plans-anchors.mjs'), '--registre'], { cwd: ROOT, encoding: 'utf8' })
+      .split('\n').map((s) => s.trim()).filter(Boolean);
+  } catch { return false; }
+  return ajoutees.some((l) => registre.some((mort) => l.includes(mort)));
+};
+if (docsStaged || citePlan || citeUnMort()) {
+  try {
+    execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-plans-anchors.mjs')], { cwd: ROOT, stdio: 'inherit' });
+  } catch {
+    offenders.push("docs:check-plans en échec (plan daté sans ancre `Ticket:`/`Instrument:`, ou citation d'un plan supprimé — chemin ou nom nu)");
   }
 }
 

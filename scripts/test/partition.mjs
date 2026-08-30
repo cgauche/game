@@ -33,6 +33,14 @@ export function repartitionWorkers(n) {
   return { split: true, node, jsdom: Math.max(1, n - 1 - node) }
 }
 
+/** Cœurs pris en compte pour décider du partage. La mesure système est la règle ; `WFRP_TEST_COEURS`
+ *  la FORCE — seule façon de jouer le chemin PARTAGÉ (ou le chemin mono) sur une machine quelconque,
+ *  et de le tenir sous test (`run-capture.test.mjs`) plutôt que à la merci du matériel du runner. */
+export function coeurs(env, mesure) {
+  const force = Number(env.WFRP_TEST_COEURS)
+  return Number.isInteger(force) && force > 0 ? force : mesure()
+}
+
 /** Filtrage positionnel de Vitest — reproduction de `filterFiles`
  *  (node_modules/vitest/dist/chunks/cli-api.DqsSTaIi.js:10044) : chemins relatifs à la racine,
  *  comparaison insensible à la casse, filtres passés en `/` sous Windows. */
@@ -127,4 +135,58 @@ export function codeAgrege(codes) {
  *  recopié tel quel dans la config générée sans risquer d'être perdu des deux côtés. */
 export function cheminsGlobSuspects(chemins) {
   return chemins.filter((c) => /[*?[\]{}()!]/.test(c))
+}
+
+/** Bornes de charge du lancement mono-processus. Le lancement partagé a les siennes
+ *  (`argumentsEnfant`). */
+export const BORNES_WORKERS = ['--minWorkers=1', '--maxWorkers=4']
+
+/** Bornes à injecter devant l'argv de l'appelant : rien si l'appelant borne DÉJÀ lui-même — un
+ *  `--minWorkers` en double fait sortir cac en 148 ms (« Expected a single value », mesuré
+ *  2026-08-30). Les deux graphies acceptées par cac (`--minWorkers`, `--min-workers`) comptent. */
+export function bornesWorkers(argv) {
+  const nom = (a) => a.split('=')[0].toLowerCase().replace(/-/g, '')
+  const borne = argv.some((a) => a.startsWith('-') && ['minworkers', 'maxworkers'].includes(nom(a)))
+  return borne ? [] : [...BORNES_WORKERS]
+}
+
+/** Environnement des processus Vitest : sortie SANS séquence ANSI. `FORCE_COLOR` est SUPPRIMÉ, pas
+ *  mis à `'0'` — tinyrainbow teste la PRÉSENCE de la variable (44 séquences ANSI subsistaient avec
+ *  `FORCE_COLOR=0`, mesuré 2026-08-30), et Node avertit deux fois par processus quand `NO_COLOR` et
+ *  `FORCE_COLOR` cohabitent. */
+export function envEnfant(env) {
+  const sortie = { ...env }
+  for (const cle of Object.keys(sortie)) if (/^force_color$/i.test(cle)) delete sortie[cle]
+  sortie.NO_COLOR = '1'
+  return sortie
+}
+
+/** Ligne de bilan du reporter Vitest (`Test Files  1 passed (1)`, `Tests  7 passed (7)`). */
+export function porteBilan(ligne) {
+  return /^\s*(?:Test Files|Tests)\s+\S/.test(ligne)
+}
+
+/** En-tête de la capture, écrit AVANT le lancement : le fichier n'est jamais vide, même si le run
+ *  est tué (timeout, coupure). */
+export function enteteCapture({ commande, pid, cwd, date }) {
+  return [
+    `# commande : ${commande}`,
+    `# date : ${date.toISOString()}`,
+    `# pid : ${pid}`,
+    `# cwd : ${cwd}`,
+    '',
+    '',
+  ].join('\n')
+}
+
+/** Résumé final. Un échec SANS bilan Vitest (aucune ligne `Test Files`/`Tests`) rend la cause
+ *  BRUTE plutôt qu'un résumé vide ; le chemin de la capture est la dernière ligne. */
+export function resumeLancement({ statut, bilan, queue, capture }) {
+  const lignes = []
+  if (statut !== 0 && !bilan) {
+    lignes.push(`[test] ÉCHEC (code ${statut}) sans bilan Vitest — cause brute :`)
+    for (const ligne of queue) lignes.push(ligne)
+  }
+  lignes.push(`capture : ${capture}`)
+  return lignes.join('\n') + '\n'
 }

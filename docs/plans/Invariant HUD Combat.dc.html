@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<!-- Ticket: #1348 -->
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0a0806;color:#e4dabf;font-family:'Segoe UI',system-ui,sans-serif}
+a{color:#d8b954}a:hover{color:#ffd75e}
+</style>
+</helmet>
+
+<div style="max-width:1060px;margin:0 auto;padding:44px 40px 80px">
+
+<div style="border-bottom:1px solid #5a4327;padding-bottom:18px">
+<div style="font:11px ui-monospace,monospace;letter-spacing:2px;color:#7c6e52">ALTITUDE DE DESIGN — AVANT TOUT INCRÉMENT</div>
+<h1 style="margin:8px 0 0;font:600 38px 'Grenze Gotisch',serif;color:#e8c467;line-height:1.1">L'invariant du HUD de combat</h1>
+<div style="margin-top:10px;font:14.5px/1.6 system-ui;color:#c9bb9a;max-width:800px">Qui possède quoi. Une page, à attaquer avant qu'une seule zone soit redessinée. Le socle résout, les feuilles adressent — critère d'acceptation : <b style="color:#e4dabf">l'élément N+1 coûte une ligne</b>.</div>
+</div>
+
+<div style="margin-top:22px;padding:14px 16px;background:rgba(124,29,18,.14);border-left:3px solid #a13224;font:13.5px/1.6 system-ui;color:#e0c8be">
+Ce document remplace la démarche précédente. La spec en dix zones a été écrite feuille par feuille et corrigée quatre fois sur la même classe de défaut — une donnée affichée à deux endroits sous deux vocabulaires. Le credo prescrit de remonter d'un niveau. C'est ce niveau.
+</div>
+
+<div style="margin-top:30px;font:600 24px 'Grenze Gotisch',serif;color:#e8c467">Loi 1 — Une donnée, un propriétaire</div>
+<div style="margin-top:6px;font:13.5px/1.6 system-ui;color:#a3936f;max-width:820px">Toute donnée du combat a un <b style="color:#c9bb9a">propriétaire de définition</b> — unique — qui fixe son unité, ses seuils, ses teintes et son vocabulaire. Elle a aussi des <b style="color:#c9bb9a">porteurs</b> autorisés, qui peuvent l'afficher ailleurs. Un porteur ne réinvente ni le seuil ni la teinte : il les prend au propriétaire. Ce qui est interdit, c'est un porteur qui décide par lui-même.</div>
+<div style="margin-top:10px;padding:11px 14px;background:#151109;border-left:3px solid #a8811f;font:13.5px/1.6 system-ui;color:#c9bb9a;max-width:820px"><b style="color:#e8c467">Pourquoi deux notions et pas une.</b> Les Blessures se lisent sur la carte du dock, dans l'arche, en barre flottante au-dessus du token, et dans le cartouche de cible. Les deux dernières ne peuvent pas monter la tuile-portrait — l'une est un décor à l'échelle du monde, l'autre une infobulle. Exiger « une seule surface » rendait la loi fausse dès le premier écran.</div>
+<div style="margin-top:10px;padding:11px 14px;background:#151109;border-left:3px solid #a8811f;font:13.5px/1.6 system-ui;color:#c9bb9a;max-width:820px"><b style="color:#e8c467">Les primitives nommées ci-dessous sont des propriétaires, pas des dessins figés.</b> Cette refonte est faite pour les changer : une primitive peut être redessinée, ses props étendues, ses tokens refaits, sa géométrie revue — le gain est justement que le changement tombe partout à la fois. La colonne dit <i>où vit la donnée</i>, pas <i>à quoi elle ressemble aujourd'hui</i>. Ce qui reste interdit : la contourner en fabriquant une seconde surface qui fait le même travail.</div>
+
+<div style="margin-top:14px;display:flex;flex-direction:column;gap:1px;background:#2c2419;border:1px solid #443626">
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:8px 12px;background:#181410;font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52">Donnée</div>
+<div style="padding:8px 12px;background:#181410;font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52">Propriétaire</div>
+<div style="padding:8px 12px;background:#181410;font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52">Primitive canonique — et ce qui est interdit ailleurs</div>
+</div>
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:9px 12px;background:#100d0a;font:13.5px system-ui;color:#e4dabf">Ordre du tour, préemption</div>
+<div style="padding:9px 12px;background:#100d0a;font:13px system-ui;color:#c9ac72">La frise</div>
+<div style="padding:9px 12px;background:#100d0a;font:12.5px/1.5 ui-monospace,monospace;color:#a3936f"><span style="color:#c9bb9a">InitiativeStrip</span> · le score ne s'affiche que pendant la pause de Round, comme aujourd'hui</div>
+</div>
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:9px 12px;background:#100d0a;font:13.5px system-ui;color:#e4dabf">Identité, Blessures, États</div>
+<div style="padding:9px 12px;background:#100d0a;font:13px system-ui;color:#c9ac72">La tuile-portrait</div>
+<div style="padding:9px 12px;background:#100d0a;font:12.5px/1.5 ui-monospace,monospace;color:#a3936f"><span style="color:#c9bb9a">PortraitTile</span> + <span style="color:#c9bb9a">StateChips reserve</span> · frise, dock et arche montent <b style="color:#e4dabf">la même</b> primitive à trois échelles — aucune n'en réinvente une</div>
+</div>
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:9px 12px;background:#100d0a;font:13.5px system-ui;color:#e4dabf">Action, Mouvement, Avantage</div>
+<div style="padding:9px 12px;background:#100d0a;font:13px system-ui;color:#c9ac72">L'arche de l'actif</div>
+<div style="padding:9px 12px;background:#100d0a;font:12.5px/1.5 ui-monospace,monospace;color:#a3936f"><span style="color:#c9bb9a">ActiveFrame</span> — jauge crantée <b style="color:#e4dabf">et</b> libellé texte : le double codage est porté par la primitive, pas ajouté par-dessus. Aucune troisième écriture</div>
+</div>
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:9px 12px;background:#100d0a;font:13.5px system-ui;color:#e4dabf">Ce que l'ÉQUIPEMENT permet</div>
+<div style="padding:9px 12px;background:#100d0a;font:13px system-ui;color:#c9ac72">Barre, travée gauche</div>
+<div style="padding:9px 12px;background:#100d0a;font:12.5px/1.5 ui-monospace,monospace;color:#a3936f">Alimentée par <span style="color:#c9bb9a">availableAttacks</span> / <span style="color:#c9bb9a">loadoutLabel</span> · contenu volatil par nature</div>
+</div>
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:9px 12px;background:#100d0a;font:13.5px system-ui;color:#e4dabf">Ce que le PERSONNAGE sait</div>
+<div style="padding:9px 12px;background:#100d0a;font:13px system-ui;color:#c9ac72">Barre, travée droite</div>
+<div style="padding:9px 12px;background:#100d0a;font:12.5px/1.5 ui-monospace,monospace;color:#a3936f">Règle de priorité ci-dessous — le test « change-t-elle avec l'arme ? » ne suffit pas</div>
+</div>
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:9px 12px;background:#100d0a;font:13.5px system-ui;color:#e4dabf">Ce que le geste coûte et risque</div>
+<div style="padding:9px 12px;background:#100d0a;font:13px system-ui;color:#c9ac72">Le champ</div>
+<div style="padding:9px 12px;background:#100d0a;font:12.5px/1.5 ui-monospace,monospace;color:#a3936f">Curseur = la dépense ; cartouche de cible = contre quoi on jette. Jamais le solde de ressources — il est dans l'arche</div>
+</div>
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:9px 12px;background:#100d0a;font:13.5px system-ui;color:#e4dabf">Le choix pendant un jet</div>
+<div style="padding:9px 12px;background:#100d0a;font:13px system-ui;color:#c9ac72">La fenêtre de jet</div>
+<div style="padding:9px 12px;background:#100d0a;font:12.5px/1.5 ui-monospace,monospace;color:#a3936f"><span style="color:#c9bb9a">RollShell</span>, contrat de zones existant · Parade, Esquive, Chance, Résilience n'ont <b style="color:#e4dabf">aucune</b> surface dans le HUD</div>
+</div>
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:9px 12px;background:#100d0a;font:13.5px system-ui;color:#e4dabf">La conséquence d'un jet</div>
+<div style="padding:9px 12px;background:#100d0a;font:13px system-ui;color:#c9ac72">Le corps touché</div>
+<div style="padding:9px 12px;background:#100d0a;font:12.5px/1.5 ui-monospace,monospace;color:#a3936f">Plaquette flottante sur le token · en langage joueur, jamais d'abréviation de règle</div>
+</div>
+<div style="display:grid;grid-template-columns:230px 190px 1fr;gap:1px;background:#2c2419">
+<div style="padding:9px 12px;background:#100d0a;font:13.5px system-ui;color:#e4dabf">L'impossibilité d'agir</div>
+<div style="padding:9px 12px;background:#100d0a;font:13px system-ui;color:#c9ac72">L'action elle-même</div>
+<div style="padding:9px 12px;background:#100d0a;font:12.5px/1.5 ui-monospace,monospace;color:#a3936f"><span style="color:#c9bb9a">GatedAction</span> — la raison est écrite sous le bouton, partout, sans exception</div>
+</div>
+</div>
+
+<div style="margin-top:14px;padding:14px 16px;background:#151109;border:1px solid #6f5828">
+<div style="font:600 16px 'Grenze Gotisch',serif;color:#e8c467">Règle de priorité — équipement ou personnage</div>
+<div style="margin-top:7px;font:13.5px/1.6 system-ui;color:#c9bb9a"><b style="color:#e4dabf">La provenance suit ce qui disparaît quand on rengaine.</b> Une action qui survit les mains nues appartient au personnage, même si l'arme sert à la résoudre. Une action qui cesse d'exister sans l'arme appartient à l'équipement. Le coût, la cible et les conditions d'emploi ne décident de rien.</div>
+<div style="margin-top:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;font:12.5px/1.5 system-ui;color:#a3936f">
+<div style="padding:10px 12px;background:rgba(0,0,0,.3)"><b style="color:#c9ac72">Battement → Personnage.</b> Le RAW ne le conditionne pas à votre arme mais à celle d'en face : « nul si adversaire désarmé ou Taille &gt; vous » (<span style="font-family:ui-monospace,monospace">docs/raw/combat.md</span> l.5235, <span style="font-family:ui-monospace,monospace">AA 13 l.11-17</span>). Il ne disparaît pas quand on rengaine.</div>
+<div style="padding:10px 12px;background:rgba(0,0,0,.3)"><b style="color:#c9ac72">Charger → Personnage.</b> On charge les mains vides ; l'arme ne fait que résoudre l'attaque au bout de la course. Le mouvement est le geste, pas l'arme.</div>
+<div style="padding:10px 12px;background:rgba(0,0,0,.3)"><b style="color:#c9ac72">Se dégager → Personnage.</b> Survit les mains nues. Son coût varie — Esquive ou sacrifice d'Avantage — mais un coût variable n'est pas une provenance.</div>
+</div>
+<div style="margin-top:9px;font:12.5px/1.55 system-ui;color:#8a7a58">Corollaire : la travée Équipement se vide rarement et se remplit peu. C'est normal — elle ne tient que les manœuvres qu'une arme donne, et les mains nues en sont une.</div>
+</div>
+
+<div style="margin-top:30px;font:600 24px 'Grenze Gotisch',serif;color:#e8c467">Loi 2 — L'empreinte ne bouge jamais ; le catalogue se pagine par onglets</div>
+<div style="margin-top:8px;font:14px/1.65 system-ui;color:#c9bb9a;max-width:840px">La barre garde le même nombre d'emplacements, à la même place, du premier round au dernier. Quand le catalogue déborde, ce n'est pas la barre qui grandit — c'est le catalogue qui change de page. La page se choisit par un <b style="color:#e4dabf">onglet nommé et tapable</b>, jamais par un modificateur.</div>
+<div style="margin-top:14px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+<div style="padding:12px 14px;background:#12100c;border:1px solid #3a2c18"><div style="font:11px ui-monospace,monospace;color:#8a744a;letter-spacing:1px">ONGLET 1 · touches 1 – 9</div><div style="margin-top:4px;font:600 14px 'Grenze Gotisch',serif;color:#e8c467">Équipement</div><div style="margin-top:4px;font:12.5px/1.5 system-ui;color:#a3936f">Ce que l'arme au poing permet, et l'accès rapide. Se recompose au changement d'ensemble d'armes, jamais d'un tour à l'autre.</div></div>
+<div style="padding:12px 14px;background:#12100c;border:1px solid #3a2c18"><div style="font:11px ui-monospace,monospace;color:#8a744a;letter-spacing:1px">ONGLET 2 · touches 1 – 9</div><div style="margin-top:4px;font:600 14px 'Grenze Gotisch',serif;color:#e8c467">Personnage</div><div style="margin-top:4px;font:12.5px/1.5 system-ui;color:#a3936f">Ce qu'il sait faire les mains vides. Le contenu le plus stable de l'écran : il ne change qu'à la progression.</div></div>
+<div style="padding:12px 14px;background:#12100c;border:1px solid #3a2c18"><div style="font:11px ui-monospace,monospace;color:#8a744a;letter-spacing:1px">ONGLET 3 · touches 1 – 9</div><div style="margin-top:4px;font:600 14px 'Grenze Gotisch',serif;color:#e8c467">Contexte</div><div style="margin-top:4px;font:12.5px/1.5 system-ui;color:#a3936f">Ce qu'une situation ouvre en bloc et referme en bloc : servir une pièce, tenir la barre, combattre monté. Éteint quand rien ne l'alimente.</div></div>
+</div>
+<div style="margin-top:12px;padding:13px 15px;background:#151109;border:1px solid #6f5828">
+<div style="font:600 15px 'Grenze Gotisch',serif;color:#e8c467">Trois façons d'atteindre le même contrôle</div>
+<div style="margin-top:7px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;font:12.5px/1.5 system-ui;color:#c9ac72">
+<div><b style="color:#e8c467">Le doigt</b> — on tape l'onglet. C'est la seule façon en paysage mobile, donc c'est elle qui commande le dessin : l'onglet est <b style="color:#e4dabf">nommé</b>, pas une pastille muette.</div>
+<div><b style="color:#e8c467">La souris</b> — clic sur l'onglet, ou molette au survol de la barre pour défiler. Geste rapide, jamais le seul.</div>
+<div><b style="color:#e8c467">Le clavier</b> — une touche libre fait défiler les onglets ; <span style="font-family:ui-monospace,monospace">Maj + 1–9</span> atteint directement la page voisine. <b style="color:#e4dabf">Jamais Ctrl, jamais Alt</b> : le navigateur et le système les revendiquent.</div>
+</div>
+</div>
+<div style="margin-top:10px;padding:12px 14px;background:#1a0f0c;border:1px solid #7a2a2a;font:13.5px/1.6 system-ui;color:#d8c0b8"><b style="color:#e07a63">Prérequis technique, mesuré.</b> <span style="font-family:ui-monospace,monospace;color:#e8c467">src/ui/useGameKeyboard.ts</span> sélectionne le raccourci sur <span style="font-family:ui-monospace,monospace">e.code</span> seul : <span style="font-family:ui-monospace,monospace">Maj+1</span> et <span style="font-family:ui-monospace,monospace">1</span> y sont aujourd'hui <b style="color:#ffb3a0">le même événement</b>. La table d'intentions doit apprendre les modificateurs avant que la loi ne s'appuie dessus. Tant que ce n'est pas fait, l'onglet tapable est le <i>seul</i> chemin — et c'est acceptable, puisque c'est le chemin de référence.</div>
+<div style="margin-top:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<div style="padding:13px 15px;background:#141810;border:1px solid #3a4a30"><div style="font:600 14px 'Grenze Gotisch',serif;color:#9fce8e">Ce que la loi impose</div><div style="margin-top:5px;font:13px/1.55 system-ui;color:#b8c9a8">Empreinte constante : même compte d'emplacements, même position, quel que soit le personnage et quel que soit le tour. Un emplacement sans action reste <b style="color:#d8e8c8">dessiné et inerte</b> — le vide se voit. Une page qui n'a rien à offrir se signale <b style="color:#d8e8c8">éteinte</b>, jamais absente : on doit pouvoir apprendre que Ctrl existe même quand il est vide.</div></div>
+<div style="padding:13px 15px;background:#141810;border:1px solid #3a4a30"><div style="font:600 14px 'Grenze Gotisch',serif;color:#9fce8e">Ce que la loi rend possible</div><div style="margin-top:5px;font:13px/1.55 system-ui;color:#b8c9a8">L'élément N+1 coûte une ligne <b style="color:#d8e8c8">sans</b> que la barre bouge : une arme, un talent, un poste de navire, un engin de siège s'ajoutent dans leur page. Le catalogue reste non borné, la géométrie reste apprise par cœur. Et l'onglet nomme ce qu'il contient — on n'a jamais à expliquer au joueur ce qu'il y a derrière.</div></div>
+</div>
+<div style="margin-top:12px;padding:13px 15px;background:#151109;border:1px solid #6f5828">
+<div style="font:600 15px 'Grenze Gotisch',serif;color:#e8c467">Les emplacements épinglés par le joueur sont des raccourcis, jamais un déménagement</div>
+<div style="margin-top:6px;font:13.5px/1.6 system-ui;color:#c9bb9a">Chaque onglet réserve des emplacements que le joueur remplit lui-même — c'est là qu'il pose les trois sorts qu'il relance sans arrêt, une manœuvre, une potion. Épingler ne retire rien d'où ça vit : le sort reste dans son catalogue, la manœuvre sur sa travée. L'emplacement en tient un <b style="color:#e4dabf">renvoi</b>. Sans cette règle, la barre devient personnelle au point que plus rien n'est là où on l'a appris, et la loi 1 tombe.</div>
+<div style="margin-top:8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;font:12.5px/1.5 system-ui;color:#a3936f">
+<div><b style="color:#c9ac72">Une part garantie, non modifiable.</b> Ce que le jeu offre à tout le monde, à la même place. C'est ce qui rend un tutoriel, une aide et une habitude possibles.</div>
+<div><b style="color:#c9ac72">Emplacement libre dessiné.</b> Une case vide garde sa touche et invite à l'assignation — comme les quatre accès rapides.</div>
+<div><b style="color:#c9ac72">Le catalogue survit.</b> Épingler soulage la répétition ; il ne remplace pas le menu, qui reste le seul endroit exhaustif.</div>
+</div>
+<div style="margin-top:8px;font:12.5px/1.6 system-ui;color:#8a7a58">Ce que ça règle : trois sorts joués en boucle prennent trois emplacements fixes pour toute la campagne, et le menu de sorts ne s'ouvre plus qu'en cas de besoin réel. Les épinglages persistent par personnage.</div>
+</div>
+<div style="margin-top:10px;padding:11px 14px;background:rgba(124,29,18,.14);border-left:3px solid #a13224;font:13px/1.6 system-ui;color:#e0c8be"><b style="color:#ffb3a0">Écart mesuré avec le code.</b> <span style="font-family:ui-monospace,monospace;color:#e8c467">ActionBar.tsx</span> empile ses emplacements sous condition et mappe <span style="font-family:ui-monospace,monospace">1-9</span> sur le n-ième d'une liste variable. Cette loi <b style="color:#e4dabf">demande une reprise</b> du pont clavier : la touche doit désigner un emplacement de page, pas un rang dans une liste. C'est le seul point de l'invariant qui exige du code avant du dessin.</div>
+
+<div style="margin-top:30px;font:600 24px 'Grenze Gotisch',serif;color:#e8c467">Loi 3 — Le vocabulaire est celui de la charte</div>
+<div style="margin-top:8px;font:14px/1.65 system-ui;color:#c9bb9a;max-width:840px">Aucun mot de design nouveau tant qu'une primitive existante n'a pas été cherchée et écartée par écrit. La contrainte porte sur la <b style="color:#e4dabf">primitive, pas sur son allure</b> : le style de l'existant se modifie — on fait évoluer la primitive et ses tokens, pour tous ses porteurs à la fois. Ce qui reste interdit, c'est le parallèle : une seconde surface qui fait le même travail sous un autre nom.</div>
+<div style="margin-top:12px;padding:13px 15px;background:#1a1208;border:1px solid #6f4a12;max-width:840px">
+<div style="font:600 15px 'Grenze Gotisch',serif;color:#e0a53a">Clause de coût — modifier une primitive n'est pas gratuit</div>
+<div style="margin-top:7px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;font:12.5px/1.55 system-ui;color:#c9ab8e">
+<div><b style="color:#f0d3a8">N porteurs, N recettes.</b> Le credo exige de dérouler un scénario réel dans le navigateur pour toute UI touchée. Une passe sur une primitive à quatre porteurs, ce sont quatre recettes — à annoncer avant, pas à découvrir après.</div>
+<div><b style="color:#f0d3a8">Un token nouveau amende tout.</b> Une couleur vit dans <span style="font-family:ui-monospace,monospace">:root</span>. Créer une teinte pour le HUD la rend disponible — et opposable — à des écrans que ce chantier ne regarde pas. On l'assume ou on compose avec la palette existante.</div>
+<div><b style="color:#f0d3a8">Les cliquets sont décroissants.</b> Le stock de classes par module est gelé et doit baisser. Une refonte qui ajoute doit retirer davantage, ou justifier chaque delta en clair.</div>
+</div>
+</div>
+<div style="margin-top:12px;font:13.5px/1.6 system-ui;color:#c9bb9a;max-width:840px">Traduction des inventions de la spec précédente :</div>
+<div style="margin-top:12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;font:12.5px/1.5 ui-monospace,monospace">
+<div style="padding:10px 12px;background:#12100c;border:1px solid #3a2c18"><span style="color:#e07a63;text-decoration:line-through">alvéole</span> → <span style="color:#c9bb9a">.chip</span> / primitive de bouton d'action</div>
+<div style="padding:10px 12px;background:#12100c;border:1px solid #3a2c18"><span style="color:#e07a63;text-decoration:line-through">socle chiffré</span> → <span style="color:#c9bb9a">.stat-chip</span> (label + valeur)</div>
+<div style="padding:10px 12px;background:#12100c;border:1px solid #3a2c18"><span style="color:#e07a63;text-decoration:line-through">gouttière</span> → jauge crantée du module <span style="color:#c9bb9a">gauges</span></div>
+<div style="padding:10px 12px;background:#12100c;border:1px solid #3a2c18"><span style="color:#e07a63;text-decoration:line-through">rack d'États</span> → <span style="color:#c9bb9a">StateChips reserve</span></div>
+<div style="padding:10px 12px;background:#12100c;border:1px solid #3a2c18"><span style="color:#e07a63;text-decoration:line-through">plaque, cartouche</span> → <span style="color:#c9bb9a">.panel</span> et ses variantes</div>
+<div style="padding:10px 12px;background:#12100c;border:1px solid #3a2c18"><span style="color:#e07a63;text-decoration:line-through">acier / laiton</span> → deux tokens à créer, ou rien</div>
+<div style="padding:10px 12px;background:#12100c;border:1px solid #3a2c18"><span style="color:#e07a63;text-decoration:line-through">glyphes ▤ ▣ ◫</span> → <span style="color:#c9bb9a">&lt;Icon&gt;</span>, procédure d'ajout d'icône</div>
+<div style="padding:10px 12px;background:#12100c;border:1px solid #3a2c18"><span style="color:#e07a63;text-decoration:line-through">hex en dur</span> → tokens <span style="color:#c9bb9a">:root</span> uniquement</div>
+<div style="padding:10px 12px;background:#12100c;border:1px solid #3a2c18"><span style="color:#e07a63;text-decoration:line-through">« +2 DR »</span> → langage joueur, en toutes lettres</div>
+</div>
+
+<div style="margin-top:30px;font:600 24px 'Grenze Gotisch',serif;color:#e8c467">Loi 4 — Toute phase déclare sa décision, sa surface, et n'en crée aucune</div>
+<div style="margin-top:8px;font:14px/1.65 system-ui;color:#c9bb9a;max-width:840px">Chacun de ces moments a été traité une fois, au coup par coup, pour combler un manque. Ce ne sont pas des cas particuliers, <b style="color:#e4dabf">c'est une famille</b> — et elle se gouverne par trois clauses, chacune violable, donc vérifiable.</div>
+<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+<div style="display:grid;grid-template-columns:30px 1fr;gap:12px;padding:11px 13px;background:#12100c;border:1px solid #4a3a24"><span style="font:700 13px ui-monospace,monospace;color:#c9a24a">a</span><span style="font:13.5px/1.55 system-ui;color:#c9bb9a">Une phase <b style="color:#e4dabf">déclare en une ligne</b> la décision qu'elle porte et la surface qui la reçoit. Si on ne sait pas l'écrire, elle n'est pas conçue.</span></div>
+<div style="display:grid;grid-template-columns:30px 1fr;gap:12px;padding:11px 13px;background:#12100c;border:1px solid #4a3a24"><span style="font:700 13px ui-monospace,monospace;color:#c9a24a">b</span><span style="font:13.5px/1.55 system-ui;color:#c9bb9a">Une phase <b style="color:#e4dabf">sans décision n'a pas d'écran</b> : c'est une transition, et elle se joue toute seule.</span></div>
+<div style="display:grid;grid-template-columns:30px 1fr;gap:12px;padding:11px 13px;background:#12100c;border:1px solid #4a3a24"><span style="font:700 13px ui-monospace,monospace;color:#c9a24a">c</span><span style="font:13.5px/1.55 system-ui;color:#c9bb9a">Une phase <b style="color:#e4dabf">n'introduit aucune surface propre</b> : elle réattribue des rôles entre surfaces existantes. La frise peut devenir instrument, elle ne peut pas être remplacée par un panneau neuf.</span></div>
+</div>
+<div style="margin-top:10px;padding:11px 14px;background:#151109;border-left:3px solid #a8811f;font:13px/1.6 system-ui;color:#c9bb9a;max-width:840px"><b style="color:#e8c467">Articulation avec la loi 1.</b> La clause (c) est ce qui empêche les deux lois de se démentir : la <i>propriété de définition</i> ne change jamais de phase en phase — seuls les <i>rôles</i> changent. Quand la frise devient l'instrument de la pause, elle reste porteuse, pas propriétaire : elle n'invente ni seuil ni teinte.</div>
+<div style="margin-top:12px;padding:12px 14px;background:#151109;border-left:3px solid #a8811f;font:13.5px/1.6 system-ui;color:#c9bb9a;max-width:840px"><b style="color:#e8c467">Ce que la loi ouvre explicitement.</b> La cérémonie de début de combat et la pause de début de Round font partie du chantier, au même titre que le tour adverse. Aujourd'hui elles existent parce qu'il fallait bien que quelque chose existe. La question n'est pas « comment mieux les habiller » mais <b style="color:#e4dabf">ce que le joueur y décide</b> — et si la réponse est « rien », le moment ne mérite pas un écran.</div>
+<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+<div style="display:grid;grid-template-columns:220px 1fr;gap:14px;padding:10px 13px;background:#12100c;border:1px solid #3a2c18"><span style="font:600 13.5px 'Grenze Gotisch',serif;color:#e8c467">Notre tour</span><span style="font:13px/1.5 system-ui;color:#c9bb9a">Les deux travées, la fin de tour. Tout est engageable.</span></div>
+<div style="display:grid;grid-template-columns:220px 1fr;gap:14px;padding:10px 13px;background:#12100c;border:1px solid #3a2c18"><span style="font:600 13.5px 'Grenze Gotisch',serif;color:#e8c467">Ouverture du combat</span><span style="font:13px/1.5 system-ui;color:#c9bb9a">À repenser. Ce qui s'y décide vraiment : qui on est, contre qui, où — et rien d'autre.</span></div>
+<div style="display:grid;grid-template-columns:220px 1fr;gap:14px;padding:10px 13px;background:#12100c;border:1px solid #3a2c18"><span style="font:600 13.5px 'Grenze Gotisch',serif;color:#e8c467">Pause de début de Round</span><span style="font:13px/1.5 system-ui;color:#c9bb9a">À repenser — et la décision qu'elle porte est aujourd'hui <b style="color:#e0a53a">amputée</b> (voir ci-dessous).</span></div>
+<div style="display:grid;grid-template-columns:220px 1fr;gap:14px;padding:10px 13px;background:#12100c;border:1px solid #3a2c18"><span style="font:600 13.5px 'Grenze Gotisch',serif;color:#e8c467">Interlude de ciblage</span><span style="font:13px/1.5 system-ui;color:#c9bb9a">Le champ prend la main, la barre se réduit à sa sortie unique — Terminer, Renoncer, Valider.</span></div>
+<div style="display:grid;grid-template-columns:220px 1fr;gap:14px;padding:10px 13px;background:#12100c;border:1px solid #3a2c18"><span style="font:600 13.5px 'Grenze Gotisch',serif;color:#e8c467">Tour adverse</span><span style="font:13px/1.5 system-ui;color:#c9bb9a">Lecture seule. Rien d'engageable ; la forme le dit avant le texte.</span></div>
+<div style="display:grid;grid-template-columns:220px 1fr;gap:14px;padding:10px 13px;background:#12100c;border:1px solid #3a2c18"><span style="font:600 13.5px 'Grenze Gotisch',serif;color:#e8c467">Tour d'un autre joueur</span><span style="font:13px/1.5 system-ui;color:#c9bb9a">Lecture seule aussi, mais l'attente a un visage : qui joue, quel siège. Mode non traité par la spec précédente.</span></div>
+</div>
+
+<div style="margin-top:14px;padding:14px 16px;background:#1a0f0c;border:1px solid #7a2a2a">
+<div style="font:600 17px 'Grenze Gotisch',serif;color:#e07a63">Dette d'implémentation confirmée — la Chance de début de Round</div>
+<div style="margin-top:8px;font:13.5px/1.6 system-ui;color:#d8c0b8">Le RAW, cité par l'Atlas <span style="font-family:ui-monospace,monospace;color:#e8c467">docs/raw/destin.md</span> l.88, donne trois usages à 1 Point de Chance, dont : <span style="color:#f0d8c8">« Au début du Round, choisissez <b style="color:#ffd75e">le moment où vous allez agir</b>, sans tenir compte de l'Ordre d'Initiative. »</span></div>
+<div style="margin-top:8px;font:13.5px/1.6 system-ui;color:#d8c0b8">Le code n'en offre qu'un cas : <span style="font-family:ui-monospace,monospace;color:#e8c467">InitiativeStrip.tsx</span> — <span style="font-family:ui-monospace,monospace">« Dépense 1 point de Chance pour qu'X agisse <b style="color:#ffb3a0">en premier</b> ce Round »</span>. Choisir <i>son moment</i> inclut aussi <b style="color:#e4dabf">attendre</b> : se glisser après un allié qui ouvre une brèche, ou juste avant le prochain ennemi. Le jeu ne le permet pas.</div>
+<div style="margin-top:8px;font:13.5px/1.6 system-ui;color:#d8c0b8">Au sens du credo, ce n'est pas une règle maison : le livre dit quoi faire et le moteur ne le fait pas — <b style="color:#e4dabf">cas 2, dette d'implémentation</b>. Elle se corrige ou s'ouvre en ticket ; elle ne se conserve pas.</div>
+<div style="margin-top:10px;padding:11px 13px;background:rgba(0,0,0,.3);border-left:2px solid #c9573f;font:13.5px/1.6 system-ui;color:#e4dabf"><b style="color:#ffd75e">Ce que ça donne au dessin.</b> La pause de Round cesse d'être un bouton : elle devient une interaction <b style="color:#e4dabf">sur la frise</b> — je dépense ma Chance, je désigne l'emplacement où je m'insère. La décision et sa surface coïncident enfin, et la frise devient jouable au lieu d'être un affichage.</div>
+</div>
+
+<div style="margin-top:14px;padding:14px 16px;background:#151109;border:1px solid #6f5828">
+<div style="font:600 17px 'Grenze Gotisch',serif;color:#e8c467">La pause de Round n'est pas un temps mort : c'est une phase de jeu</div>
+<div style="margin-top:8px;font:13.5px/1.6 system-ui;color:#c9bb9a">Deux décisions RAW s'y prennent déjà, et une troisième s'y subit. Un bouton unique ne peut pas les porter.</div>
+<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+<div style="display:grid;grid-template-columns:150px 1fr;gap:14px;padding:9px 12px;background:#100d0a;border:1px solid #3a2c18"><span style="font:600 13.5px 'Grenze Gotisch',serif;color:#e8c467">Choisir son moment</span><span style="font:13px/1.5 system-ui;color:#c9bb9a">1 Point de Chance. Sur la frise. <span style="color:#e0a53a">Aujourd'hui amputé à « en premier ».</span></span></div>
+<div style="display:grid;grid-template-columns:150px 1fr;gap:14px;padding:9px 12px;background:#100d0a;border:1px solid #3a2c18"><span style="font:600 13.5px 'Grenze Gotisch',serif;color:#e8c467">Tir rapide</span><span style="font:13px/1.5 system-ui;color:#c9bb9a">Talent, <span style="font-family:ui-monospace,monospace">LDB 11 l.97-103</span>. Interruption à distance hors de l'ordre d'Initiative : on arme depuis la frise, on désigne la cible <b style="color:#e4dabf">sur le champ</b>, le tir se résout par la fenêtre de jet normale et <b style="color:#e4dabf">consomme le tour entier</b> du tireur. Une seule par Round.</span></div>
+<div style="display:grid;grid-template-columns:150px 1fr;gap:14px;padding:9px 12px;background:#100d0a;border:1px solid #4a2418"><span style="font:600 13.5px 'Grenze Gotisch',serif;color:#e07a63">Le tir adverse</span><span style="font:13px/1.5 system-ui;color:#c9bb9a">L'IA préempte aussi. La pause doit donc se <b style="color:#e4dabf">regarder</b> autant qu'elle se joue : une interruption ennemie s'y produit, et il faut la voir arriver et la voir résoudre.</span></div>
+</div>
+<div style="margin-top:10px;padding:11px 13px;background:rgba(0,0,0,.3);border-left:2px solid #b8912f;font:13.5px/1.6 system-ui;color:#e4dabf"><b style="color:#ffd75e">Conséquence sur l'invariant.</b> Pendant cette phase, la frise n'est plus une lecture : elle est <b style="color:#e4dabf">l'instrument</b> — insertion, armement, cibles. Le champ reste le lieu du ciblage, la fenêtre de jet celui de la résolution. Aucune surface nouvelle n'est requise ; ce sont les rôles qui changent le temps d'une phase, exactement comme la loi 4 le prévoit.</div>
+</div>
+
+<div style="margin-top:34px;padding:18px 20px;background:linear-gradient(180deg,#1a1209,#0f0b07);border:1px solid #8a6c2f">
+<div style="font:600 20px 'Grenze Gotisch',serif;color:#e8c467">Ce que je demande avant de redessiner quoi que ce soit</div>
+<div style="margin-top:10px;font:14px/1.65 system-ui;color:#d8c9a8">Les quatre lois ont été soumises à un juge et réécrites avec les clauses qui manquaient : propriétaire de définition contre porteurs, règle de priorité pour la frontière, onglets à la place des modificateurs, clause de coût, phases opposables. Ce qui reste à trancher est court — un seul point engage du code : la table d'intentions doit apprendre les modificateurs avant que <span style="font-family:ui-monospace,monospace">Maj+chiffre</span> soit utilisable, et d'ici là l'onglet tapable porte seul la bascule.</div>
+<div style="margin-top:10px;font:14px/1.65 system-ui;color:#d8c9a8">Une fois les lois tenues, les zones se réécrivent vite : chacune devient une <i>adresse</i> — quelle primitive, quelles props — et non plus un dessin à défendre. Redessiner une primitive fait alors partie du travail, et c'est le chemin le plus court : une passe sur <span style="font-family:ui-monospace,monospace;color:#e8c467">PortraitTile</span> refait la frise, le dock et l'arche du même geste.</div>
+</div>
+
+</div>
+
+</x-dc>
+</body>
+</html>

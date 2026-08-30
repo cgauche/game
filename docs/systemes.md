@@ -35,7 +35,7 @@ sous-dossier, ou situé ailleurs (`src/ui`, `src/gameIso`, `src/data`…), n'y a
 
 - **Combat (arène tactique)** (`combat`) : Barils combatFlow + hooks universels combatHooks.ts (docs/combat-events-coherence.md).
 - **Corruption & mutation** (`corruption`) : docs/systeme-passifs.md.
-- **Voyage terrestre** (`voyage-terre`) : cf. docs/plans/2026-07-11-matrice-primitives-systemes.md §openRoll.
+- **Voyage terrestre** (`voyage-terre`) : fourche forcée d'openRoll à dédupliquer.
 - **Voyage maritime** (`voyage-maritime`) : Chantier naval GELÉ (pause structurelle #276) — reprend après le programme #269-#275.
 - **Combat naval tactique** (`combat-naval`) : MDG 12-14.
 - **Bataille de masse / siège** (`bataille-masse`) : Activités partagées avec interlude (budget max 3 RAW commun).

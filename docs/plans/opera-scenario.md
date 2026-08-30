@@ -1,6 +1,8 @@
 # « Une nuit à l'Opéra » (NADJ) — état d'implémentation
 
-_Mis à jour 2026-07-05 — plan encore ouvert (autonomie PNJ / foule / mise en scène restants) ; déplacé sous `docs/plans/`._
+Ticket: #1314
+
+_Mis à jour 2026-07-05 — plan encore ouvert (autonomie PNJ / foule / mise en scène restants)._
 
 Portage du scénario *Une nuit à l'Opéra* (Nuits Agitées & Dures Journées) en **données éditeur**.
 Source canon : `Source/Warhammer v4 - Nuits agitees & dures journées/08 - Une nuit à l'Opéra.md`.

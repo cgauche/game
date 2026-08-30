@@ -10,8 +10,7 @@
  * embuscade de pirates ancrée à MI-ROUTE (coque type cogue, trait naval « Renforcé » du catalogue,
  * reddition à 40 % de Blessures), et l'îlot d'arrivée. Patron des entités-coque (`hull()`) et des rangées
  * ASCII de mer (`seaRows()`) repris À L'IDENTIQUE de `scripts/loup-et-saumure/generate.mjs` : ces deux
- * fabriques sont LOCALES à chaque générateur naval (`lib.mjs` ne les exporte pas — cf. journal
- * `docs/plans/2026-07-08-211-naval-authoring-journal.md`, friction n°1/n°2), donc dupliquées ici À
+ * fabriques sont LOCALES à chaque générateur naval (`lib.mjs` ne les exporte pas), donc dupliquées ici À
  * L'IDENTIQUE plutôt que réinventées.
  */
 import { writeFileSync } from 'node:fs';

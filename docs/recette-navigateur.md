@@ -47,7 +47,7 @@ natifs Node ≥ 22), le choix le plus robuste des scripts moissonnés au regard 
 Le kit ne DÉMARRE **jamais** le serveur de dev — il s'y **attache** (erreur claire si injoignable).
 
 > **L'étalon se juge à 1600.** La largeur par DÉFAUT du kit est **1600×900** — la largeur à laquelle
-> les maquettes sont DESSINÉES (`docs/plans/2026-07-14-maquettes-createur/*.html` : `.mock{width:1600px}`),
+> les maquettes du créateur sont DESSINÉES (`.mock{width:1600px}`),
 > donc la seule à laquelle une capture se compare à son étalon. Le défaut historique de 1280 a fait
 > juger « étriqués » pendant deux jours des écrans qui rendaient juste à leur largeur de référence
 > (lot « matières & proportions », #393). Une recette **responsive** passe sa largeur explicitement

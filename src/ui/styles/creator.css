@@ -20,7 +20,7 @@
   gap: 6px;
   margin-left: auto;
 }
-/* États du stepper « Atelier du scribe » (#393 tâche 6, étalon `finale-mock2-caracteristiques.png`) :
+/* États du stepper « Atelier du scribe » (#393 tâche 6, étalon = la planche ratifiée du créateur) :
    ACTIVE = pastille bordée or sur fond sombre (même langage que `.tabs .tab-btn.active`,
    components.css) ; VISITÉE = texte simple charte, sans pilule ; FUTURE = idem, plus éteint. */
 .step-chip {
@@ -890,7 +890,7 @@
    classes de domaine (cliquet xii) pour un simple calage de proportions. */
 /* Cadre-parchemin DEUX PANNEAUX (rail liste + détail élu, juge vision #393 polish, écart n°1) :
    bordure/radius/halo + 4 rivets laiton d'angle, valeurs `.c-lectern`/`.c-rivet` de la planche
-   (docs/plans/2026-07-14-maquettes-createur/planche-creator-FINALE.html). Rivets en COUCHES de fond
+   ratifiée. Rivets en COUCHES de fond
    (radial-gradient positionnées aux 4 coins) — seuls 2 pseudo-éléments par élément, il en faut 4. */
 .creator-step > :first-child,
 .detail-frame {
@@ -1064,7 +1064,7 @@
     width: 100%;
   }
 }
-/* Boîte de recherche MODESTE (`.c-search` du kit, planche-creator-FINALE.html) — panneau bordé
+/* Boîte de recherche MODESTE (`.c-search` du kit, planche ratifiée du créateur) — panneau bordé
    discret, PAS le plateau bois/laiton de l'encrier (réservé à l'action). */
 .creator-pick-search .pal-search-row {
   gap: 8px;

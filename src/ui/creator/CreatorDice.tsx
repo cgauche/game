@@ -3,7 +3,7 @@
  * de Zone A), même langage à chaque étape qui offre un tirage (d100 Race/Carrière, 2d10 Caractéristiques,
  * d100 Signe astral). Un seul composant remplace les 4 libellés de tirage divergents.
  *
- * LA CARTE est celle de la planche ratifiée (`.c-dicewell`, `planche-creator-FINALE.html`) : plateau de
+ * LA CARTE est celle de la planche ratifiée (`.c-dicewell`) : plateau de
  * DEUX FACES DE DÉS (`DieFace` — jamais l'icône `nav/dice` étriquée, qui ne montrait aucun dé), libellé
  * d'ACTION à l'impératif en tête, gain de PX en sous-texte ; puis, le sort rendu, la carte RÉSOLUE
  * (`.dicewell.done`, laiton : « Aux dés — d100 » / « le ciel a rendu 15 — Le Trait du Peintre »). C'est

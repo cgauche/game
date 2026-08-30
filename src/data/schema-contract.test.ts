@@ -1,5 +1,5 @@
 /**
- * Contrat de donnée (Lot 1 — docs/plans/2026-07-06-perennite-10-ans-design.md § Lot 1) : garantit que
+ * Contrat de donnée (Lot 1 — chantier pérennité 10 ans) : garantit que
  * `src/data/*.json` reste conforme à son schéma zod (`src/data/schemas/defs/`), migré INCRÉMENT par
  * INCRÉMENT (comme les registres `gen-registry.mjs`). Trois volets, patron `comment-poison-guard.test.ts` :
  *  (a) chaque document REGISTRÉ des DEUX racines (`DEFS_DE_DOCUMENT` = `src/data` + `src/scenes`)

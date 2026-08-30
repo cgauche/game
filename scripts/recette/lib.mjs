@@ -132,7 +132,7 @@ async function removeProfileDir(profile, attempts = 5, delayMs = 200) {
  * Lance Chrome headless et attache une session CDP dédiée (targetId + sessionId propres).
  *
  * Largeur par DÉFAUT = 1600 : c'est la largeur à laquelle les maquettes sont DESSINÉES
- * (`docs/plans/2026-07-14-maquettes-createur/*.html`, `.mock{width:1600px}`) — donc la seule où une
+ * (`.mock{width:1600px}`) — donc la seule où une
  * capture se compare à l'étalon. Le défaut historique de 1280 a fait juger « étriqués » pendant deux
  * jours des écrans qui rendaient juste à leur largeur de référence (lot « matières & proportions »
  * #393). Une recette MOBILE passe sa largeur explicitement (`setMobileViewport`, 360×740).

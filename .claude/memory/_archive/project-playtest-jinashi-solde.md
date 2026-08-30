@@ -8,7 +8,7 @@ metadata:
 ---
 
 Backlog du retour playtest beta `retours_warhammer_tactic_jinashi.odt` (cf.
-`docs/playtest-jinashi-consolidation.md`) **soldé le 2026-06-27**.
+la consolidation du playtest, purgée) **soldé le 2026-06-27**.
 
 **Fait + committé + vérifié (navigateur)** : LOT1 bugs #70-74 · #75 loadout sets · #76 stats-arme ·
 #77 hover-highlight · #78 ouverture combat (splash/init/blink) · #79-T1 popover carac (primitive

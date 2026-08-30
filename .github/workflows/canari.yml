@@ -22,6 +22,7 @@ jobs:
       - run: npm run agents:check
       - run: npm run test:agents
       - run: npm run test:hooks
+      - run: npm run test:docs
       - run: npm run test:recette
       - name: Idempotence des adaptateurs agents
         run: |
@@ -38,6 +39,20 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run docs:check
+      # Le seul volet des plans datés qui exige le réseau : un `Ticket:` dont TOUTES les issues sont
+      # fermées = plan exécuté que la politique `docs/` veut SUPPRIMÉ. `gh issue list --limit N` impose
+      # un plafond numérique à re-relever quand le stock grossit (849 ouvertes pour un `--limit 1000`) :
+      # on passe par la pagination réelle de l'API REST, même forme que scripts/ops/export-issues.mjs.
+      # L'API `issues` renvoie aussi les pull requests — sans importance ici : la garde ne fait que
+      # tester l'APPARTENANCE d'un numéro d'issue à l'ensemble des ouvertes.
+      - name: Plans datés — ancre Ticket encore OUVERTE
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          gh api --paginate --jq '.[] | {number}' 'repos/{owner}/{repo}/issues?state=open&per_page=100' \
+            | jq -s '.' > /tmp/issues-ouvertes.json
+          node scripts/docs/check-plans-anchors.mjs --online /tmp/issues-ouvertes.json
       - name: Fraîcheur des catalogues Atlas RAW
         run: npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'
       - run: npm run raw:coverage

@@ -296,8 +296,8 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/party.css': 66, // #417 passe finale : eyebrow .camp-plate-eyebrow (CAMPAGNE) + override scopé .entity-chip sous .card-roles (chips d'axes small-caps inline, jamais une boîte)
   // +5 : bande d'en-tête figurine+identité+rose du détail candidat (correction de cap 2026-07-14,
   // remplace `.candidate-detail-rose` par `.candidate-detail-head`/`-fig`/`-id`).
-  // +6 : grille de sièges « Les contrats d'engagement » (compagnie-mock0.png, correction de cap
-  // 2026-07-14) — `.party-acts-header`/`-title`/`-subtitle`, `.seat-card-seal`/`-contract`,
+  // +6 : grille de sièges « Les contrats d'engagement » (planche ratifiée d'équipe, correction
+  // de cap 2026-07-14) — `.party-acts-header`/`-title`/`-subtitle`, `.seat-card-seal`/`-contract`,
   // `.seat-contract-badge`/`.seat-empty-title`, `.party-actions-summary`/`-buttons`.
   // +6 : scène centrale du roulis + dé SVG au chiffre gravé sur la face (#396 v2-v4) — `.rm-scene`/
   // `.rm-die-landed`/`.rm-die-svg`/`.rm-die-gem`/`.rm-die-num`/`.rm-die-rolling` (primitive DiceRoll).
@@ -734,7 +734,7 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Mise en scène FINALE du créateur (`PresentationScreen`, migration étape 8 du lot ossature) —
   // l'étape EXEMPTÉE du gabarit 2 zones (user 2026-07-15 : « sauf sur le dernier écran ») porte son
   // style dans SON module, jamais dans creator.css (amendement 2 : décrue nette exigée). Valeurs de
-  // `planche-creator-FINALE.html` § « Écran final » : `.fin-col` (registre), `.fin-stage` (la scène),
+  // la planche ratifiée § « Écran final » : `.fin-col` (registre), `.fin-stage` (la scène),
   // `.c-lamp` (la lampe), `.c-main` (gabarit). Contrepartie ASSUMÉE des -9 de creator.css.
   'styles/creator-presentation.css': 8,
   // Coquille « Atelier du scribe » du créateur (lot « matières & proportions » #393) — `.dirC` de la

@@ -1,6 +1,6 @@
 /* La rose des forces — mini-radar gravé, langage Atelier (arbitrage axes 2026-07-13, #409).
    Tracés/dimensions repris à l'identique du kit ratifié « Atelier du scribe »
-   (docs/plans/2026-07-14-maquettes-createur/design-system-atelier.html § « La rose des forces »).
+   (§ « La rose des forces »).
    Composée par `RoseAxes` (src/ui/RoseAxes.tsx) — jamais de radar recodé ailleurs. */
 .rose {
   display: block;

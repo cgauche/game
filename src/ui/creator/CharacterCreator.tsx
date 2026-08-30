@@ -671,7 +671,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
 // ════ 2) Carrière (LDB 05 l.204-318) — charte « Atelier du scribe » (#393 P2, MÊME ossature
 //      `CreatorStepFrame` que Race) : choix = TOUTES les classes en SECTIONS empilées
 //      (`GroupedPickGrid`, une tuile-figurine compacte par carrière — `FigTile`/`CharacterPreview`,
-//      ~6-7 par rangée, maquette ratifiée `finale-mock1-carriere.png`, corrigé 2026-07-14 : le brief
+//      ~6-7 par rangée, planche ratifiée du créateur (écran Carrière), corrigé 2026-07-14 : le brief
 //      « nominatif sans figurine » venait du croquis initial, la planche RATIFIÉE montre bien de
 //      petites figurines) ⇄ détail = la carrière élue (`DetailFrame` — `MetalStatus`+`CareerPath`,
 //      1ers consommateurs réels, #412). Mécanique INCHANGÉE (`withCareer`/`rollDraftCareer`,
@@ -900,7 +900,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
 //      utilisateur 2026-07-15 : « ni de près, ni de loin, la maquette » sur la composition 3-zones
 //      d'origine) : gabarit DEUX ZONES (panneau + fiche vivante, MÊME composition que Race/Carrière/
 //      Compétences) — plus de rail séparé, TOUT vit dans le panneau central en BANDES (`Band`, étalon
-//      `finale-mock2-caracteristiques.png`) : La méthode (segmenté) → Le tirage (grille + jauge N/10)
+//      la planche ratifiée du créateur) : La méthode (segmenté) → Le tirage (grille + jauge N/10)
 //      → Augmentations gratuites (0ter, la maquette a PERDU ce bloc — transposé ICI, même bandage que
 //      Destin & Résilience, jamais supprimé) → Destin & Résilience. Mécanique INCHANGÉE (draft.ts).
 /** Cadence de la cérémonie séquentielle des dix 2d10 (#393 agentivité) — chaque rangée roule
@@ -2003,8 +2003,8 @@ function trappingMeta(id: string): string {
   return bits.join(' · ');
 }
 
-// ════ 6) Possessions (LDB 05 l.542-583) — charte « Atelier du scribe » (#393 P5, étalon
-//      `finale-mock7-possessions.png`) : gabarit DEUX ZONES (panneau + fiche vivante, MÊME composition
+// ════ 6) Possessions (LDB 05 l.542-583) — charte « Atelier du scribe » (#393 P5, étalon = la
+//      planche ratifiée du créateur) : gabarit DEUX ZONES (panneau + fiche vivante, MÊME composition
 //      que Caractéristiques/Compétences) — le panneau porte le statut en tête, puis les bandes « De
 //      carrière » / « De classe » (chips d'équipement comptées) / « La bourse » (rappel de la formule +
 //      montant, jet figé sans dés à rejouer) / « La classe » (prose RAW verbatim). Mécanique INCHANGÉE
@@ -2149,7 +2149,7 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
 }
 
 /** Rangée du registre d'état civil — libellé au-dessus, contrôle + bouton d'effacement (`ui/undo`,
- *  mineur/réversible) en fin de rangée (étalon `finale-mock8-details.png`). */
+ *  mineur/réversible) en fin de rangée (étalon = la planche ratifiée du créateur, écran Détails). */
 function IdentityRow({ label, control, onClear }: { label: string; control: ReactNode; onClear: () => void }) {
   return (
     <PlaqueRow
@@ -2194,7 +2194,7 @@ function IdentityNumberField({ label, value, onChange, onClear }: {
 }
 
 // ════ 7) Détails (LDB 05 l.584-803) — charte « Atelier du scribe » (#393, lot « ossature enforcée » ;
-//      étalon = les VALEURS de `planche-creator-FINALE.html`, écran 7) : ossature 2 zones (bande
+//      étalon = les VALEURS de la planche ratifiée du créateur, écran 7) : ossature 2 zones (bande
 //      d'ACTION à la topbar `.fam-topbar` — titre + plaque « Tirer le nom » + encrier « Aux dés » —
 //      puis zone de CHOIX ; fiche vivante à droite). L'état civil COMPOSE la rangée-plaque
 //      (`PlaqueGrid`/`PlaqueRow` : `.idf` de la planche = la plaque, colonne de libellé gravée +
@@ -2320,7 +2320,7 @@ function topSkillTests(hero: Combatant, max = 3): { skillId: string; spec?: stri
 }
 
 // ════ 8) Présentation (#393 P5, arbitrage README maquettes — renommage « Récapitulatif » →
-//      « Présentation » : le personnage se PRÉSENTE) — étalon `finale-mock9-presentation.png` : mise
+//      « Présentation » : le personnage se PRÉSENTE) — étalon = la planche ratifiée : mise
 //      en scène finale DÉDIÉE (plus le gabarit 3 zones rail/détail/fiche partagé) — TROIS colonnes :
 //      registre (Profil/dérivées/Identité/Motivation/Évolution) ⇄ grande figurine + nom ⇄ Compétences/
 //      Talents/Possessions/« Les jets qui le définissent ». Aucune mécanique nouvelle — pure mise en

@@ -5,6 +5,10 @@
 // Mesure de référence — 2026-08-23, dos à dos sur arbre identique, 16 cœurs : mono 127,5 s →
 // split 97,8 s (−23 %), mêmes 1 451 fichiers. La parité porte sur les FICHIERS : sous
 // `isolate:false` le groupement change, et un flake d'ordre (`bascule-de-vue`) change de verdict.
+//
+// La sortie des enfants est relayée telle quelle ET tee-ée AU FIL DE L'EAU dans
+// `node_modules/.cache/vitest-run-<pid>.txt` : un run tué (timeout, coupure) laisse quand même son
+// début, et le fichier porte LUI-MÊME son `status:` — seul artefact hors du pont d'outillage.
 import os from 'node:os'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -12,10 +16,16 @@ import { fileURLToPath } from 'node:url'
 import { spawn, spawnSync } from 'node:child_process'
 import {
   argumentsEnfant,
+  bornesWorkers,
+  coeurs,
   codeAgrege,
   codeEnfant,
+  enteteCapture,
+  envEnfant,
   partitionner,
+  porteBilan,
   repartitionWorkers,
+  resumeLancement,
   cotesRequis,
   separerArguments,
   cheminsGlobSuspects,
@@ -28,6 +38,9 @@ const VITEST = path.join(RACINE, 'node_modules/vitest/vitest.mjs')
 // `vite`/`@vitejs/plugin-react` par remontée normale de `node_modules`.
 const ATELIERS = path.join(RACINE, 'node_modules/.vitest-split')
 const ATELIER = path.join(ATELIERS, String(process.pid))
+const CACHE = path.join(RACINE, 'node_modules/.cache')
+// Un fichier PAR PID : deux sessions concurrentes ne s'écrasent pas.
+const CAPTURE = path.join(CACHE, `vitest-run-${process.pid}.txt`)
 
 // Windows refuse d'effacer un fichier encore tenu par un enfant fraîchement tué : l'échec de
 // suppression se signale sur stderr, il ne change pas le verdict de la suite.
@@ -62,17 +75,100 @@ const posix = (p) => p.split(path.sep).join('/')
 
 const ARGV = process.argv.slice(2)
 const { filtres, mono } = separerArguments(ARGV, (t) => fs.existsSync(path.resolve(RACINE, t)))
+const ENV = envEnfant(process.env)
+
+let fdCapture = null
+const ecrireCapture = (texte) => {
+  if (fdCapture === null) return
+  try {
+    fs.writeSync(fdCapture, texte)
+  } catch (e) {
+    fdCapture = null
+    process.stderr.write(`[test] capture interrompue : ${e.message}\n`)
+  }
+}
+// Une capture PAR RUN, nommée par PID : sans borne, `node_modules/.cache` grossit indéfiniment. Les
+// captures de plus de 7 jours partent à l'ouverture du run suivant — une session en cours garde la
+// sienne (fraîche), et un échec d'effacement (fichier tenu sous Windows) ne change aucun verdict.
+const PEREMPTION_CAPTURES_MS = 7 * 24 * 60 * 60 * 1000
+const purgerCapturesPerimees = () => {
+  const limite = Date.now() - PEREMPTION_CAPTURES_MS
+  for (const nom of fs.existsSync(CACHE) ? fs.readdirSync(CACHE) : []) {
+    if (!/^vitest-run-\d+\.txt$/.test(nom)) continue
+    const cible = path.join(CACHE, nom)
+    try {
+      if (fs.statSync(cible).mtimeMs < limite) fs.rmSync(cible, { force: true })
+    } catch { /* capture concurrente ou tenue : le bornage réessaiera au run suivant */ }
+  }
+}
+
+try {
+  fs.mkdirSync(CACHE, { recursive: true })
+  purgerCapturesPerimees()
+  fdCapture = fs.openSync(CAPTURE, 'w')
+  ecrireCapture(
+    enteteCapture({
+      commande: [process.execPath, ...process.argv.slice(1)].join(' '),
+      pid: process.pid,
+      cwd: RACINE,
+      date: new Date(),
+    }),
+  )
+} catch (e) {
+  fdCapture = null
+  process.stderr.write(`[test] capture impossible (${CAPTURE}) : ${e.message}\n`)
+}
+
+// Ce que le lanceur sait du run au moment du résumé : bilan vu, et dernières lignes utiles.
+const vu = { bilan: false, erreur: [], tout: [] }
+const empiler = (file, ligne) => {
+  if (ligne.trim() === '') return
+  file.push(ligne)
+  if (file.length > 20) file.shift()
+}
+const observer = (ligne, erreur) => {
+  if (porteBilan(ligne)) vu.bilan = true
+  empiler(erreur ? vu.erreur : vu.tout, ligne)
+}
+
+/** Relais d'un flux d'enfant : vers la sortie du lanceur ET vers la capture, ligne à ligne. */
+const relayer = (flux, sortie, { prefixe = '', erreur = false } = {}) => {
+  let reste = ''
+  flux.setEncoding('utf8')
+  const poser = (l) => {
+    sortie.write(`${prefixe}${l}\n`)
+    ecrireCapture(`${prefixe}${l}\n`)
+    observer(l, erreur)
+  }
+  flux.on('data', (d) => {
+    const lignes = (reste + d).split('\n')
+    reste = lignes.pop()
+    for (const l of lignes) poser(l)
+  })
+  flux.on('end', () => {
+    if (reste) poser(reste)
+  })
+}
 
 /** Lancement à un seul processus Vitest : machine sous le seuil de partage, drapeau global à un
  *  seul processus, ou filtre qui ne touche qu'un côté. */
 function lancementUnique(args) {
-  const p = spawn(process.execPath, [VITEST, 'run', ...args], { cwd: RACINE, stdio: 'inherit' })
+  const p = spawn(process.execPath, [VITEST, 'run', ...bornesWorkers(args), ...args], {
+    cwd: RACINE,
+    env: ENV,
+    stdio: ['inherit', 'pipe', 'pipe'],
+  })
+  relayer(p.stdout, process.stdout)
+  relayer(p.stderr, process.stderr, { erreur: true })
   const relais = (s) => p.kill(s)
   process.on('SIGINT', relais)
   process.on('SIGTERM', relais)
   return new Promise((res) => {
     p.on('error', (e) => {
-      process.stderr.write(`[test] lancement de Vitest impossible : ${e.message}\n`)
+      const ligne = `[test] lancement de Vitest impossible : ${e.message}`
+      process.stderr.write(`${ligne}\n`)
+      ecrireCapture(`${ligne}\n`)
+      observer(ligne, true)
       res(1)
     })
     p.on('close', (code, signal) => res(codeEnfant(code, signal)))
@@ -80,7 +176,7 @@ function lancementUnique(args) {
 }
 
 async function principal() {
-  const cpus = os.availableParallelism?.() ?? os.cpus().length
+  const cpus = coeurs(process.env, () => os.availableParallelism?.() ?? os.cpus().length)
   const workers = repartitionWorkers(cpus)
   if (mono || !workers.split) return lancementUnique(ARGV)
 
@@ -92,10 +188,14 @@ async function principal() {
   const liste = path.join(ATELIER, 'fichiers.json')
   const inventaire = spawnSync(process.execPath, [VITEST, 'list', '--filesOnly', `--json=${liste}`], {
     cwd: RACINE,
+    env: ENV,
     encoding: 'utf8',
   })
   if (inventaire.status !== 0) {
-    process.stderr.write(inventaire.stdout + inventaire.stderr)
+    const sortie = inventaire.stdout + inventaire.stderr
+    process.stderr.write(sortie)
+    ecrireCapture(sortie)
+    for (const l of sortie.split('\n')) observer(l, true)
     return inventaire.status ?? 1
   }
   const fichiers = JSON.parse(fs.readFileSync(liste, 'utf8')).map((e) => e.file)
@@ -129,25 +229,17 @@ async function principal() {
     )
     const p = spawn(process.execPath, argumentsEnfant(VITEST, config, workers[cote], ARGV), {
       cwd: RACINE,
+      env: ENV,
     })
     enfants.push(p)
-    const prefixer = (flux, sortie) => {
-      let reste = ''
-      flux.setEncoding('utf8')
-      flux.on('data', (d) => {
-        const lignes = (reste + d).split('\n')
-        reste = lignes.pop()
-        for (const l of lignes) sortie.write(`[${cote}] ${l}\n`)
-      })
-      flux.on('end', () => {
-        if (reste) sortie.write(`[${cote}] ${reste}\n`)
-      })
-    }
-    prefixer(p.stdout, process.stdout)
-    prefixer(p.stderr, process.stderr)
+    relayer(p.stdout, process.stdout, { prefixe: `[${cote}] ` })
+    relayer(p.stderr, process.stderr, { prefixe: `[${cote}] `, erreur: true })
     return new Promise((res) => {
       p.on('error', (e) => {
-        process.stderr.write(`[${cote}] lancement de Vitest impossible : ${e.message}\n`)
+        const ligne = `[${cote}] lancement de Vitest impossible : ${e.message}`
+        process.stderr.write(`${ligne}\n`)
+        ecrireCapture(`${ligne}\n`)
+        observer(ligne, true)
         for (const frere of enfants) if (frere !== p) frere.kill()
         res({ cote, code: 1 })
       })
@@ -163,6 +255,7 @@ async function principal() {
   const real = ((Date.now() - debut) / 1000).toFixed(1)
   const synthese = resultats.map((r) => `${r.cote}: exit ${r.code}`).join(' · ')
   process.stdout.write(`${synthese} · real ${real}s\n`)
+  ecrireCapture(`${synthese} · real ${real}s\n`)
   return codeAgrege(resultats.map((r) => r.code))
 }
 
@@ -171,5 +264,21 @@ try {
   code = await principal()
 } finally {
   supprimer(ATELIER)
+}
+process.stdout.write(
+  resumeLancement({
+    statut: code,
+    bilan: vu.bilan,
+    queue: vu.erreur.length ? vu.erreur : vu.tout,
+    capture: CAPTURE,
+  }),
+)
+ecrireCapture(`status: ${code}\n`)
+if (fdCapture !== null) {
+  try {
+    fs.closeSync(fdCapture)
+  } catch {
+    fdCapture = null
+  }
 }
 process.exit(code)

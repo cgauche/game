@@ -39,6 +39,7 @@ export const GENERATORS = [
  *  ici pour que la chaîne npm reste dérivable d'UNE source. */
 export const NON_GENERATOR_CHECKS = [
   'scripts/docs/check-doc-refs.mjs',
+  'scripts/docs/check-plans-anchors.mjs',
   'scripts/raw/check-atlas-counts.mjs',
   'scripts/data/check-progression-schemas.mjs',
 ]

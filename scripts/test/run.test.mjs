@@ -5,14 +5,19 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   argumentsEnfant,
+  bornesWorkers,
   cheminsGlobSuspects,
   codeAgrege,
   codeEnfant,
   cotesRequis,
+  enteteCapture,
   environnementDe,
+  envEnfant,
   filtrerFichiers,
   partitionner,
+  porteBilan,
   repartitionWorkers,
+  resumeLancement,
   separerArguments,
 } from './partition.mjs'
 
@@ -139,6 +144,75 @@ test('argv de l’enfant : les arguments de l’appelant ressortent TELS QUELS, 
     assert.deepEqual(ligne.slice(0, tete.length), tete)
     assert.deepEqual(ligne.slice(tete.length), argv)
   }
+})
+
+test('bornes de charge : injectées par PAIRE, et jamais par-dessus celles de l’appelant', () => {
+  assert.deepEqual(bornesWorkers([]), ['--minWorkers=1', '--maxWorkers=4'])
+  assert.deepEqual(bornesWorkers(['src/engine', '--retry', '2']), [
+    '--minWorkers=1',
+    '--maxWorkers=4',
+  ])
+  // Un `--minWorkers` en double fait sortir cac (« Expected a single value ») : aucune injection.
+  assert.deepEqual(bornesWorkers(['--minWorkers=2']), [])
+  assert.deepEqual(bornesWorkers(['--minWorkers', '2']), [])
+  assert.deepEqual(bornesWorkers(['--maxWorkers=8']), [])
+  assert.deepEqual(bornesWorkers(['--min-workers=2']), [])
+  assert.deepEqual(bornesWorkers(['--max-workers', '8']), [])
+  // Un POSITIONNEL qui contient le mot n’est pas un drapeau.
+  assert.deepEqual(bornesWorkers(['src/minWorkers.test.ts']), ['--minWorkers=1', '--maxWorkers=4'])
+})
+
+test('environnement des enfants : NO_COLOR posé, FORCE_COLOR SUPPRIMÉ (pas mis à zéro)', () => {
+  const env = envEnfant({ PATH: '/bin', FORCE_COLOR: '3' })
+  assert.equal(env.NO_COLOR, '1')
+  assert.equal('FORCE_COLOR' in env, false)
+  assert.equal(env.PATH, '/bin')
+  // Casse Windows : la variable existe parfois en minuscules dans l’objet copié.
+  assert.equal('force_color' in envEnfant({ force_color: '1' }), false)
+})
+
+test('bilan du reporter : repéré sur « Test Files » / « Tests », pas sur une phrase quelconque', () => {
+  assert.ok(porteBilan('  Test Files  3 passed (3)'))
+  assert.ok(porteBilan(' Tests  12 passed (12)'))
+  assert.ok(!porteBilan('No test files found, exiting with code 1'))
+  assert.ok(!porteBilan(''))
+  assert.ok(!porteBilan(' ✓ src/engine/dice.test.ts (7 tests)'))
+})
+
+test('capture : un en-tête est écrit d’emblée (commande, date, pid, cwd)', () => {
+  const entete = enteteCapture({
+    commande: 'node scripts/test/run.mjs src/engine',
+    pid: 4242,
+    cwd: '/depot',
+    date: new Date('2026-08-30T10:11:12.000Z'),
+  })
+  assert.match(entete, /^# commande : node scripts\/test\/run\.mjs src\/engine$/m)
+  assert.match(entete, /^# date : 2026-08-30T10:11:12\.000Z$/m)
+  assert.match(entete, /^# pid : 4242$/m)
+  assert.match(entete, /^# cwd : \/depot$/m)
+  assert.ok(entete.endsWith('\n'))
+})
+
+test('résumé : un échec SANS bilan rend la cause brute et l’exit ; le chemin clôt toujours', () => {
+  const sansBilan = resumeLancement({
+    statut: 1,
+    bilan: false,
+    queue: ['No test files found, exiting with code 1'],
+    capture: '/depot/node_modules/.cache/vitest-run-7.txt',
+  })
+  assert.match(sansBilan, /ÉCHEC \(code 1\) sans bilan Vitest/)
+  assert.match(sansBilan, /No test files found/)
+  assert.equal(
+    sansBilan.trimEnd().split('\n').pop(),
+    'capture : /depot/node_modules/.cache/vitest-run-7.txt',
+  )
+  // Un échec AVEC bilan est déjà raconté par le reporter : pas de redite.
+  const avecBilan = resumeLancement({ statut: 1, bilan: true, queue: ['x'], capture: '/c.txt' })
+  assert.equal(avecBilan, 'capture : /c.txt\n')
+  assert.equal(
+    resumeLancement({ statut: 0, bilan: true, queue: [], capture: '/c.txt' }),
+    'capture : /c.txt\n',
+  )
 })
 
 test('verdicts : signal et code absent valent échec, les deux côtés doivent réussir', () => {

@@ -1,5 +1,7 @@
 # Spec HUD de combat — zones et adresses (sur Invariant V2) — RÉVISION 2 post-juge
 
+Ticket: #1348
+
 > Plan daté, à supprimer une fois exécuté. BASE : `docs/plans/2026-08-16-hud-combat.md`
 > (Invariant V2). Toute contradiction avec les arbitrages §1 se résout POUR le §1.
 > RÉVISION 2 (2026-08-16) : les corrections b1/b3 du juge-de-spec sont INTÉGRÉES ; les
@@ -46,8 +48,8 @@ captures + DOM) : **1280×800 TIENT** (console 185px = 23 % du viewport, zéro d
 géométrie immuable PROUVÉE — 8/12 cases constantes entre la sorcière 211 sorts et un tireur
 nu) ; **360×640 : 69 %** (442px) — le budget ~40 % explose en portrait.
 ✅ MATIÈRE VISUELLE (2026-08-16) : l'ébauche de maquettes est récupérée (artefact
-« Maquettes UI Warhammer Fantasy Web » → `docs/plans/2026-08-16-ebauche-maquettes-hud.artifact.html`,
-auto-contenu, se rend au navigateur ; 11 captures au scratchpad de session). ⚠ STATUT
+« Maquettes UI Warhammer Fantasy Web », auto-contenu, se rend au navigateur ;
+11 captures au scratchpad de session). ⚠ STATUT
 (verbatim user : « cette maquette a été faite avant l'invariant ») : c'est la MATIÈRE de
 départ — plaques acier/laiton, gouttières, conduit, plaquettes, cartouche de cible — PAS la
 cible de conformité. La STRUCTURE vient de cette spec ; toute divergence se résout POUR
@@ -248,9 +250,8 @@ AVANT le goût.
 
 ✅ **PLANCHE USER 2026-08-17 — CIBLE DE CONFORMITÉ** (artefact claude.ai
 `f2baf8fc…`, annoncée « Bon je te prépare du Claude design ») :
-`docs/plans/2026-08-17-maquette-hud-assemblee.artifact.html` (auto-contenu, se rend au
-navigateur, planche UNIQUE fixe 1920×1080) + capture de référence
-`docs/plans/2026-08-17-maquette-hud-assemblee.png`. C'est l'ÉCRAN ASSEMBLÉ complet
+planche auto-contenue (se rend au navigateur, UNIQUE et fixe 1920×1080) + sa capture de
+référence. C'est l'ÉCRAN ASSEMBLÉ complet
 (frise + bandeau + rail + journal + console 6 zones + terrain avec previews).
 ⚠ **CONTENU UI vs ANNOTATIONS** (arbitrage user 2026-08-17, verbatim : « Certains textes
 sont juste des explications de fonctionnement plutôt que des informations à afficher ») :

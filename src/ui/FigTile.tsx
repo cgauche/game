@@ -8,8 +8,7 @@ import type { HitLocation } from '../engine/types';
  *  `or` (chargé), `warn` (à surveiller, séquelle seule), `sang` (critique/entamé), `dim` (vide/inerte). */
 export type ZoneBadgeTone = 'or' | 'warn' | 'sang' | 'dim';
 
-/** Badge ANCRÉ à une Localisation autour de la boîte-figurine (silhouette du chevet, `docs/plans/
- *  2026-07-17-planche-etat-chevet.html`) — la CAPACITÉ de `FigTile` : l'appelant fournit la donnée
+/** Badge ANCRÉ à une Localisation autour de la boîte-figurine (silhouette du chevet) — la CAPACITÉ de `FigTile` : l'appelant fournit la donnée
  *  PAR zone, la primitive pose seule la position anatomique. */
 export interface ZoneBadgeSpec {
   loc: HitLocation;

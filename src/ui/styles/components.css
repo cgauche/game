@@ -368,7 +368,7 @@ button.chip:hover {
    lisible sous la fenêtre. Ici, en couche partagée, il s'appliquait à tout écran portant une modale
    de jet et n'y séparait plus les plans (deux fenêtres empilées se lisaient comme une seule). */
 
-/* Matière « Atelier du scribe » (#414, planche-fiche-perso.html l.105-110, `.sheet-modal`) : halo or
+/* Matière « Atelier du scribe » (#414, planche ratifiée de la fiche, `.sheet-modal`) : halo or
    radial en tête + dégradé bois froid, bandeau or de tête, bordures chaudes, ombre profonde. TOUTE
    modale hérite du bandeau — `.sheet-modal` (sheet.css) ne le redéclare plus (doublon identique). */
 .modal {

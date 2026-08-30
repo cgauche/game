@@ -1,5 +1,7 @@
 # Audit anti-poison — rapport du 2026-07-05 (ARTEFACT DATÉ)
 
+Instrument: .claude/workflows/audit-poison.js
+
 > Workflow 224 agents (44 finders Sonnet-medium + 176 vérificateurs adversariaux Sonnet-medium/Haiku-low),
 > périmètre : 154 fichiers src/engine+src/state (hors 4 fichiers WIP cascade), 24 docs/, CLAUDE.md.
 > Hors périmètre (passes suivantes) : tests, src/ui, src/data, src/scenes, src/gameIso, fichiers chauds.

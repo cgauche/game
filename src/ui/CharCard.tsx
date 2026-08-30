@@ -226,7 +226,7 @@ export function CandidateCard({
  * sous lampe (ambiance `spotlight`) + identité + sceau de cire au coin (`WaxSeal`, motif du kit
  * « Atelier du scribe », #412), MÊME niveau d'information que la carte de candidat (nom + archétype +
  * rôle + accroche), plus les actions de gestion. Composée dans la grille de sièges de l'écran d'équipe
- * (correction de cap 2026-07-14, transposition fidèle de `compagnie-mock0.png`).
+ * (correction de cap 2026-07-14, transposition fidèle de la planche ratifiée d'équipe).
  */
 export function SeatCard({
   hero,

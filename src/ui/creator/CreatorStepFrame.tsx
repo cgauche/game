@@ -1,7 +1,6 @@
 /**
- * Gabarit d'étape UNIQUE du créateur — OSSATURE 2 ZONES (croquis user 2026-07-15
- * `docs/plans/2026-07-14-maquettes-createur/ossature-croquis-user.png`, lot « ossature enforcée »
- * #393). Le rail 3 zones est MORT (planche FINALE : « Rail 286px MORT partout ») — le format
+ * Gabarit d'étape UNIQUE du créateur — OSSATURE 2 ZONES (croquis user 2026-07-15, lot « ossature
+ * enforcée » #393). Le rail 3 zones est MORT (planche FINALE : « Rail 286px MORT partout ») — le format
  * canonique s'encode ICI comme des SLOTS OBLIGATOIRES, plus jamais comme une consigne de brief :
  *
  *   ┌ zone de CHOIX ──────────────────────────┐ ┌ zone DESC ────────────────┐
@@ -56,7 +55,7 @@ export function CreatorStepFrame({ d, step, zones, label }: { d: CreatorDraft; s
   );
 }
 
-/** En-tête d'étape — LA topbar de la planche ratifiée (`planche-creator-FINALE.html` : `.fam-topbar`
+/** En-tête d'étape — LA topbar de la planche ratifiée (`.fam-topbar`
  *  portant `.c-dhead` = titre `--font-display` 26px + sous-titre small-caps EN LIGNE, à sa baseline,
  *  puis les GESTES de l'étape en frères : plaque d'action, encrier). Consacrée en primitive par le lot
  *  « ossature enforcée » #393 (amendement 3, user 2026-07-15 : « c'est sensé etre des primitives ces

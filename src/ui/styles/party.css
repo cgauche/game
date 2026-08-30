@@ -95,8 +95,8 @@
   border-style: dashed;
   background: transparent;
 }
-/* Alvéole de couverture — allumée = axe couvert par un membre, sombre = à pourvoir (langage kit,
-   design-system-atelier.html § « réglette à alvéoles »). */
+/* Alvéole de couverture — allumée = axe couvert par un membre, sombre = à pourvoir (kit ratifié
+   « Atelier du scribe » § « réglette à alvéoles »). */
 .socket {
   flex: none;
   width: 14px;
@@ -159,7 +159,7 @@
   background-size: 6px 6px, 6px 6px, 6px 6px, 6px 6px, 100% 100%, 100% 100%;
   background-repeat: no-repeat;
 }
-/* Bandeau de zone « Les contrats d'engagement » (compagnie-mock0.png, #417 correction de cap
+/* Bandeau de zone « Les contrats d'engagement » (planche ratifiée d'équipe, #417 correction de cap
    2026-07-14, mot « acte » de la maquette remplacé par « contrat » [entériné 2026-07-14]) : titre
    gothique + sous-titre small-caps (compteur de sièges/scellés). */
 .party-acts-header {
@@ -275,7 +275,7 @@
   min-height: 0;
 }
 /* Sceau de cire (le contrat est SCELLÉ) DÉBORDANT au coin haut-droit de la carte — le cachet
-   franchit le bord (.acte .sealwax, planche-compagnie.html). */
+   franchit le bord (.acte .sealwax, planche ratifiée d'équipe). */
 .seat-card-seal {
   position: absolute;
   top: -8px;

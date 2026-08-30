@@ -1,5 +1,5 @@
 /**
- * Effet `givePossession` (#617/#618 Lot 1, `docs/plans/2026-07-19-socle-possessions.md` §4.3) — donne
+ * Effet `givePossession` (#617/#618 Lot 1) — donne
  * une possession (bête/serviteur/véhicule) à un héros via le registre `GameState.possessions` (#615).
  */
 import { describe, it, expect, beforeEach } from 'vitest';

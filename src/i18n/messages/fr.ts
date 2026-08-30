@@ -157,7 +157,7 @@ export const fr = {
   'present.fullSheet': 'Fiche complète →',
   'present.close': 'Fermer',
   // Les contrats d'engagement — grille de sièges (correction de cap 2026-07-14, transposition
-  // de `docs/plans/2026-07-14-maquettes-createur/compagnie-mock0.png` — la maquette porte encore
+  // de la maquette « compagnie » — la maquette porte encore
   // le mot « acte », remplacé par « contrat » [entériné 2026-07-14] : « sans toi je n'aurai pas
   // deviné que c'était des contrats, j'avais l'impression que c'était des actes d'une histoire ou
   // théâtre et j'étais perplexe » — écart maquette/code documenté).

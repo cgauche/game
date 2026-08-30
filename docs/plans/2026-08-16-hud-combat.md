@@ -1,5 +1,7 @@
 # HUD de combat — Invariant V2 (cérémonie du 2026-08-16)
 
+Ticket: #1348
+
 > Plan daté, à supprimer une fois exécuté (politique `docs/` du CLAUDE.md).
 > Chronologie : `Analyse HUD Rogue Trader.dc.html` (référence produit) → `Spec HUD Combat.dc.html`
 > (ÉBAUCHE jetable — « La spec n'est pas au niveau attendu, mais une ébauche ») →

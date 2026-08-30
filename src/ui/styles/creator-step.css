@@ -3,7 +3,7 @@
    DESC (fiche de l'élue ou fiche vivante). Le LAYOUT du gabarit (`.creator-step`, renommage 1:1 de
    l'ex-`.creator-pick-shell`) vit dans creator.css, à côté du cadre-parchemin qu'il partage avec
    `.detail-frame` — ICI ne vivent que les SLOTS de l'ossature et la matière des dés de la planche
-   (`planche-creator-FINALE.html`, l'étalon du lot). ══ */
+   (la planche ratifiée du créateur, l'étalon du lot). ══ */
 
 /* Les slots sont des STAMPS structurels (data-testid, garde `creator-ossature.test.tsx`) —
    `display: contents` : ils n'introduisent AUCUNE boîte, le flux de la colonne de choix reste

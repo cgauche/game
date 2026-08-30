@@ -1,8 +1,8 @@
 /**
  * RoseAxes — la « rose des forces » (mini-radar gravé, langage Atelier). Rend N branches (N = axes
  * ACTIFS de la campagne, `src/data/axes.json`), PARAMÉTRABLE (jamais figé à 6). Tracé/dimensions
- * repris à l'identique du kit ratifié « Atelier du scribe » (arbitrage axes 2026-07-13, #409) —
- * docs/plans/2026-07-14-maquettes-createur/design-system-atelier.html § « La rose des forces ».
+ * repris à l'identique du kit ratifié « Atelier du scribe », § « La rose des forces » (arbitrage
+ * axes 2026-07-13, #409).
  * AUCUN placement en jeu dans ce lot (#417) : ce fichier n'expose que la primitive + son spécimen
  * galerie.
  */

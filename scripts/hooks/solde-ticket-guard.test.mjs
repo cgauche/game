@@ -5,6 +5,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { resolve, join } from 'node:path'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { pathToFileURL } from 'node:url'
 import {
@@ -28,6 +29,7 @@ import {
   extractCommitPathspecs,
   repoRoot,
   readSoldeFile,
+  readStagedSoldeFile,
   readCounterFile,
   readRevuePalierFile,
   readRefFile,
@@ -961,5 +963,61 @@ test('readSoldeFile/readCounterFile/readRevuePalierFile/readRefFile : trouvent l
     process.chdir(cwd)
     rmSync(fakeRepo, { recursive: true, force: true })
     rmSync(elsewhere, { recursive: true, force: true })
+  }
+})
+
+// ── Solde STAGÉ : la preuve citée par le message de commit doit entrer dans git ────────────────────
+// Les messages de commit citent les soldes par chemin (`.claude/soldes/<N>.md`) ; un solde qui ne
+// part pas dans le commit laisse une citation morte. Le garde lit donc l'INDEX, et nomme le cas
+// « écrit mais non stagé » séparément de « jamais écrit ».
+test('evaluate : solde STAGÉ conforme → silence (le commit passe)', () => {
+  const d = evaluate({
+    command: 'git commit -m "corrige #77"',
+    today: TODAY,
+    readSolde: () => solde(),
+    soldeOnDisk: () => solde(),
+  })
+  assert.equal(d, null)
+})
+
+test('evaluate : solde conforme sur le DISQUE mais absent de l\'index → deny actionnable (git add)', () => {
+  const d = evaluate({
+    command: 'git commit -m "corrige #77"',
+    today: TODAY,
+    readSolde: () => null,
+    soldeOnDisk: () => solde(),
+  })
+  assert.ok(d, 'un solde non stagé disparaîtrait après consommation : la citation du commit mourrait')
+  assert.match(d.reason, /#77/)
+  assert.match(d.reason, /NON STAGÉ/)
+  assert.match(d.reason, /git add \.claude\/soldes\/77\.md/)
+})
+
+test('evaluate : ni index ni disque → "fichier absent" (jamais le message de staging)', () => {
+  const d = evaluate({
+    command: 'git commit -m "corrige #77"',
+    today: TODAY,
+    readSolde: () => null,
+    soldeOnDisk: () => null,
+  })
+  assert.ok(d)
+  assert.match(d.reason, /fichier absent/)
+  assert.doesNotMatch(d.reason, /NON STAGÉ/)
+})
+
+test('readStagedSoldeFile : rend le contenu de l\'INDEX, `null` pour un fichier seulement sur disque', () => {
+  const repo = mkdtempSync(join(tmpdir(), 'solde-guard-index-'))
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] })
+    git('init', '-q')
+    mkdirSync(join(repo, '.claude', 'soldes'), { recursive: true })
+    writeFileSync(join(repo, '.claude', 'soldes', '77.md'), 'solde-77-stage', 'utf8')
+    writeFileSync(join(repo, '.claude', 'soldes', '78.md'), 'solde-78-disque', 'utf8')
+    git('add', '--force', '.claude/soldes/77.md')
+
+    assert.equal(readStagedSoldeFile(77, repo), 'solde-77-stage')
+    assert.equal(readStagedSoldeFile(78, repo), null)
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
   }
 })

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<!-- Ticket: #1348 -->
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0a0806;color:#e4dabf;font-family:'Segoe UI','Trebuchet MS',system-ui,sans-serif}
+a{color:#d8b954}a:hover{color:#ffd75e}
+</style>
+</helmet>
+
+<div style="max-width:1200px;margin:0 auto;padding:48px 40px 90px">
+
+<div style="border-bottom:1px solid #5a4327;padding-bottom:22px">
+<div style="font:11px ui-monospace,monospace;letter-spacing:2px;color:#7c6e52">ANALYSE DE RÉFÉRENCE</div>
+<h1 style="margin:8px 0 0;font:600 42px 'Grenze Gotisch',serif;color:#e8c467;letter-spacing:.8px;line-height:1.1">Le HUD de Rogue Trader, zone par zone</h1>
+<div style="margin-top:10px;font-size:15px;line-height:1.6;color:#c9bb9a;max-width:800px">Pour chaque zone : ce qu'on voit exactement en agrandissant la capture, le mécanisme de lecture qui la fait tenir, et ce que ça devient dans un jeu WFRP au contact. Puis l'inverse — les mécaniques de ton moteur sans modèle à copier — et la liste des défauts de notre HUD actuel qu'il ne faut surtout pas reconduire.</div>
+</div>
+
+<div style="margin-top:34px;font:11px system-ui;text-transform:uppercase;letter-spacing:1.4px;color:#a3936f">Carte des zones</div>
+<div style="margin-top:12px;position:relative;width:100%;aspect-ratio:1100/420;background:linear-gradient(180deg,#12100c,#0b0907);border:1px solid #443626">
+<div style="position:absolute;inset:0;background:repeating-linear-gradient(63deg,rgba(150,170,140,.05) 0 1px,transparent 1px 56px),repeating-linear-gradient(-63deg,rgba(150,170,140,.05) 0 1px,transparent 1px 56px)"></div>
+<div style="position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font:10px ui-monospace,monospace;color:#3c4636;letter-spacing:2px">CHAMP DE BATAILLE</div>
+<div style="position:absolute;left:27.27%;top:1.90%;width:45.45%;height:12.38%;border:1px dashed #8a6c2f;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#8a6c2f;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">A</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Portraits du groupe</span></div>
+<div style="position:absolute;left:0.73%;top:16.67%;width:6.73%;height:71.43%;border:1px dashed #d8b954;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#d8b954;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">B</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Frise d’initiative</span></div>
+<div style="position:absolute;left:0.73%;top:71.43%;width:17.27%;height:14.29%;border:1px dashed #6f5828;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#6f5828;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">C</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Cartouche de survol</span></div>
+<div style="position:absolute;left:39.09%;top:77.62%;width:15.45%;height:20.48%;border:1px dashed #d8b954;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#d8b954;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">D</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Acteur actif</span></div>
+<div style="position:absolute;left:22.73%;top:83.81%;width:15.64%;height:14.29%;border:1px dashed #8a6c2f;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#8a6c2f;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">E</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Objets &amp; arme</span></div>
+<div style="position:absolute;left:55.27%;top:83.81%;width:30.00%;height:14.29%;border:1px dashed #8a6c2f;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#8a6c2f;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">F</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Capacités + conduit</span></div>
+<div style="position:absolute;left:86.00%;top:83.81%;width:13.27%;height:14.29%;border:1px dashed #a13224;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#a13224;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">G</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Fin de tour</span></div>
+<div style="position:absolute;left:94.18%;top:16.67%;width:5.09%;height:59.52%;border:1px dashed #6f5828;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#6f5828;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">H</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Outils</span></div>
+<div style="position:absolute;left:22.73%;top:26.19%;width:38.18%;height:40.48%;border:1px dashed #5db87a;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#5db87a;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">I</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Surcouche de champ</span></div>
+<div style="position:absolute;left:63.64%;top:28.57%;width:20.91%;height:26.19%;border:1px dashed #5a4327;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;padding:4px;overflow:hidden"><span style="flex:0 0 auto;width:18px;height:18px;background:#5a4327;color:#100e0b;font:700 10.5px ui-monospace,monospace;display:grid;place-items:center">J</span><span style="font:clamp(9px,1vw,11px)/1.25 system-ui;color:#c9ac72">Ornement &amp; matière</span></div>
+</div>
+
+<div style="margin-top:38px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#3a2c18,#170f09);border:1px solid #8a6c2f;color:#e8c467;font:700 12px ui-monospace,monospace;display:grid;place-items:center">A</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#e8c467">Bandeau du groupe</span></div>
+<img src="scraps/z-a-party.png" alt="Bandeau du groupe" style="display:block;width:460px;border:1px solid #443626">
+<div style="margin-top:10px;display:flex;gap:12px;align-items:flex-start"><img src="scraps/z-a-states.png" alt="Alvéoles d'États réservées" style="display:block;width:230px;border:1px solid #443626"><div style="font:11px/1.6 ui-monospace,monospace;color:#a3936f">la colonne d'alvéoles<br>d'États, à droite du<br>dernier portrait :<br>quatre cases dessinées,<br>une seule remplie</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Six portraits <b style="color:#e4dabf">peints</b>, format vertical, sertis dans un liseré cyan d'un pixel. La barre de vie est <b style="color:#e4dabf">dans</b> le cadre, sous le visage, pleine largeur, sans chiffre. Le fond du bandeau est une vitre : le champ de bataille reste visible au travers. Le personnage élu ne change pas de couleur — il reçoit une <b style="color:#e4dabf">surcouche d'architecture</b> : un cadre de laiton complet avec un cimier ailé accroché sous lui. Aucun nom, aucune touche, aucun chiffre. Et à droite de chaque portrait, une <b style="color:#e4dabf">colonne d'alvéoles d'États</b> — saignement, sonné, bénédictions — <b style="color:#e4dabf">dessinées même vides</b>, en creux à peine visible.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">La sélection s'exprime par ajout, pas par variation. Les six portraits restent strictement comparables — même cadrage, même barre — pendant que l'ornement, lui, ne peut appartenir qu'à un seul. Un liseré coloré aurait fait entrer une septième couleur dans une zone qui n'en veut pas.<br><br>Les alvéoles d'États obéissent au même principe d'<b style="color:#e4dabf">empreinte constante</b> : la place est prise d'avance, donc un État qui apparaît en plein combat ne pousse aucun voisin. Le bandeau ne bouge jamais, ce qui permet de viser un portrait à la souris sans le regarder — et de repérer un nouvel État au <i>changement de remplissage</i>, pas au déplacement. Une zone qui se recompose fait perdre les deux.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">On prend la vitre translucide, la barre dans le cadre, la sélection par surcouche — et surtout les alvéoles réservées, que ta charte impose déjà (<span style="color:#d8b954">StateChips reserve</span>, <span style="color:#d8b954">PortraitTile reserveStates</span>) : la référence confirme la règle, il reste à l'appliquer partout, y compris sur les vignettes de la frise et dans la console. On ne prend pas l'absence de chiffres : « 5/13 Blessures » ne se lit pas sur une barre, et un État WFRP porte son compteur (Étourdi 2) — donc l'alvéole doit être assez large pour une plaque chiffrée, pas juste pour une pastille.</div></div>
+</div>
+</div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #443626;background:linear-gradient(90deg,rgba(216,185,84,.045),transparent 65%)">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#e8c467,#8a6c2f);border:1px solid #ffd75e;color:#1a130d;font:700 12px ui-monospace,monospace;display:grid;place-items:center">B</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#ffd75e">Frise d'initiative</span></div>
+<div style="display:flex;gap:16px;align-items:flex-start">
+<img src="scraps/z-b-strip.png" alt="Frise d'initiative" style="display:block;width:104px;border:1px solid #443626">
+<div style="font:11.5px/1.7 ui-monospace,monospace;color:#7c6e52">
+<div><span style="color:#e0533a">▮</span> réglette rouge = ennemi</div>
+<div><span style="color:#5db87a">▮</span> réglette verte = allié</div>
+<div style="margin-top:8px"><span style="color:#ffd75e">▶</span> flèche or</div>
+<div><span style="color:#d1329a">▶</span> flèche magenta pleine</div>
+<div><span style="color:#e8b7cf">▶</span> flèche pâle</div>
+<div style="margin-top:8px;color:#a3936f">trois intensités d'un même<br>signal, posées en débord</div>
+<div style="margin-top:8px;color:#a3936f">aucun chiffre<br>aucun séparateur de round</div>
+</div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Chaque entrée est une vignette à coins encochés flanquée, <b style="color:#e4dabf">à gauche, d'une réglette verticale pleine hauteur</b> — rouge ennemi, verte allié. Pas de barre horizontale, pas de score, pas de round. Une pointe de flèche se pose <b style="color:#e4dabf">à droite, en débord</b>, en trois intensités décroissantes. Les ennemis identiques ne sont pas regroupés : cinq exemplaires du même bandit occupent cinq vignettes et la colonne déborde du haut de l'écran. Les alliés sont des peintures, les ennemis des rendus de tête — deux registres graphiques pour distinguer les personnes nommées des corps.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Quatre choses dans 70 px de large. La réglette verticale transforme la colonne en code-barres : à deux mètres de l'écran tu lis la proportion rouge/verte du combat sans regarder un seul visage. L'ordre porte l'information, donc zéro chiffre. Le marqueur en <b style="color:#e4dabf">débord</b> ajoute un canal sans toucher à la géométrie de la tuile — c'est ce qui permet trois niveaux d'alerte sans jamais désaligner la colonne. Et une tuile par corps : la longueur de la pile <i>est</i> la difficulté du combat.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">La réglette de camp est meilleure que notre liseré plein/tireté : elle se lit sans distinguer les formes. Le marqueur en débord règle un problème que ta feuille de style contourne aujourd'hui à la main — les portraits sont calés à gauche parce qu'un badge de préemption élargit la cellule et fait zigzaguer la frise ; sorti du flux, le badge ne pousse plus rien. C'est là que doivent vivre <b style="color:#e4dabf">préemption</b>, <b style="color:#e4dabf">première action gratuite</b> et <b style="color:#e4dabf">Rapide/Lent</b>. En revanche le score reste : ton Initiative est jetée, les égalités se départagent, et le joueur veut savoir de combien il a manqué le trait. Question ouverte : empiler les cinq gobelins identiques en une tuile ×5 dépliable — RT s'y refuse parce que chaque corps a sa position ; chez toi c'est un arbitrage à faire.</div></div>
+</div>
+</div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#3a2c18,#170f09);border:1px solid #8a6c2f;color:#e8c467;font:700 12px ui-monospace,monospace;display:grid;place-items:center">C</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#e8c467">Cartouche de survol</span></div>
+<img src="scraps/z-c-zoom.png" alt="Cartouche de survol" style="display:block;width:460px;border:1px solid #443626">
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Ce n'est pas une plaque : c'est un <b style="color:#e4dabf">panneau de verre incliné</b>, teinté vert et strié de lignes de balayage, monté dans une équerre de laiton et surmonté d'un crâne. Le nom s'y étale en grandes capitales claires, très au-dessus de la taille de tout autre texte de l'écran. La vignette réemploie exactement la tuile de la frise, réglette verte comprise — et la valeur « 33/33 » est écrite <b style="color:#e4dabf">sur</b> la vignette, en bas, pas à côté d'elle. Le panneau est éclairé par un projecteur de la scène : il appartient au décor autant qu'à l'interface.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Une seule surface pour « ce que je regarde », toujours au même endroit, donc jamais de fenêtre volante qui masque le sol au moment où on vise. Le prix payé est un aller-retour du regard, assumé parce que l'information est courte — et compensé par la <b style="color:#e4dabf">taille du nom</b> : à cette échelle il se lit en vision périphérique, sans quitter le pion des yeux. La valeur écrite dans la vignette suit la même logique que les alvéoles : la donnée se loge dans un contenant déjà présent au lieu d'en ajouter un.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le survol d'un ennemi doit annoncer <b style="color:#e4dabf">un jet</b> — cible, Difficulté dérivée, modificateurs nommés. Trop riche pour un coin, trop lié au curseur pour se lire à 1 200 px de lui : l'infobulle vient au pion. Mais on garde deux leçons. La même tuile que la frise et le dock, pour que le survol ne soit pas une troisième grammaire. Et le <b style="color:#e4dabf">nom surdimensionné</b> : dans une infobulle de ciblage, le nom de la cible et la valeur à battre doivent être les deux seules choses lisibles sans fixer la fenêtre — le reste est du détail qu'on consulte.</div></div>
+</div>
+</div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #443626;background:linear-gradient(90deg,rgba(216,185,84,.045),transparent 65%)">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#e8c467,#8a6c2f);border:1px solid #ffd75e;color:#1a130d;font:700 12px ui-monospace,monospace;display:grid;place-items:center">D</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#ffd75e">Le combattant actif</span></div>
+<img src="scraps/z-d-zoom.png" alt="Cadre du combattant actif" style="display:block;width:460px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">de gauche à droite : piste verte à segments (2 remplis sur 8), plaque −4, portrait, niche d'États vide, piste jaune (5 crans allumés), plaque 4 — plus deux médaillons ronds éteints en haut</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Portrait rectangulaire dans un cadre à colonnettes. À gauche, une gouttière avec une jauge verte partielle et, en pied, une plaque <b style="color:#e07a63">rouge « −4 »</b>. À droite, une gouttière de crans jaunes empilés et une plaque laiton <b style="color:#ffd75e">« 4 »</b>. Sous le portrait, une plaque verte « 33/33 ». Chaque valeur est dite <b style="color:#e4dabf">deux fois</b> : en jauge et en chiffre. Et partout, <b style="color:#e4dabf">le vide est dessiné</b> : les segments non remplis des deux pistes restent visibles, une niche d'États attend entre le portrait et la piste jaune, deux médaillons ronds sont posés éteints en haut du cadre. Rien n'apparaîtra jamais — les choses s'allument.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">La redondance n'est pas du gaspillage : la jauge se lit du coin de l'œil pendant qu'on vise sur le sol, le chiffre se lit quand on décide. La symétrie gauche/droite loge trois valeurs autour d'un seul objet sans hiérarchie ambiguë, et le cadre le plus ouvragé de l'écran désigne, sans un mot, celui qui doit jouer.<br><br>Surtout : <b style="color:#e4dabf">la géométrie est fixe, seul le remplissage change</b>. Un segment éteint dit le maximum sans l'écrire ; une niche vide réserve la place d'un État à venir ; un médaillon éteint annonce qu'il existe une chose à y allumer. C'est ce qui permet de jouer la console de mémoire — et ce qui fait qu'un nouvel État se remarque par un <i>changement de valeur</i>, pas par un déplacement, alors que c'est justement le moment où l'œil est occupé ailleurs.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Quatre grandeurs au lieu de trois : Action, Mouvement, Avantage plafonné à dix, Blessures. D'où deux gouttières crantées qui flanquent le médaillon, les Blessures en fente chiffrée dessous, et l'Avantage en chapelet de dix rivets — la seule des quatre dont le plafond fait sens à montrer. L'aperçu « avant → après » que tu as déjà dans <span style="color:#d8b954">ActiveFrame</span> est l'équivalent dynamique de la plaque « −4 » : dire le coût avant le clic.<br><br>Et la niche : un rack d'alvéoles d'États collé à la gouttière de Mouvement, quatre cases toujours dessinées. C'est le canal <b style="color:#e4dabf">périphérique</b> — on y repère un changement sans lire. Le libellé nommé que ta charte exige (« Assailli », « Étourdi 2 ») reste dans le bloc de gauche, qui est le canal <b style="color:#e4dabf">focal</b>. Deux canaux pour la même donnée, comme la jauge et le chiffre de RT — ce n'est pas de la duplication, c'est la même règle appliquée aux États.</div></div>
+</div>
+</div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#3a2c18,#170f09);border:1px solid #8a6c2f;color:#e8c467;font:700 12px ui-monospace,monospace;display:grid;place-items:center">E</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#e8c467">Objets, armes, munitions</span></div>
+<img src="scraps/z-e-items.png" alt="Alvéoles d'objets et d'armes" style="display:block;width:460px;border:1px solid #443626">
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Quatre alvéoles F1–F4 dont <b style="color:#e4dabf">deux vides mais dessinées</b>, cadenassées. Deux alvéoles d'arme empilées formant un sélecteur. Deux modes de tir numérotés portant un « ✓1 » de coin, une plaque « 5/5 » avec sa barre, un « 3 » dessous. Chaque case porte sa réglette de coût jaune sur le bord droit.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Rien ne bouge jamais. Une alvéole vide reste à sa place, verrouillée : la position de F3 s'apprend même quand F3 est vide. C'est l'exact inverse d'une barre qui se recompose selon l'inventaire — et c'est ce qui rend le clavier utilisable sans regarder.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le chargeur n'existe pas, sauf poudre noire — le rechargement se compte en Actions. L'équivalent fonctionnel du « 5/5 », c'est-à-dire la ressource qui décide de ta survie au tour adverse, c'est la <b style="color:#e4dabf">Réaction encore disponible</b> : Parade ou Esquive, et laquelle. Avec l'arme au poing, son Allonge, ses Dégâts et le PA de l'armure, ça fait le bloc permanent de gauche.</div></div>
+</div>
+</div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #443626;background:linear-gradient(90deg,rgba(216,185,84,.045),transparent 65%)">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#e8c467,#8a6c2f);border:1px solid #ffd75e;color:#1a130d;font:700 12px ui-monospace,monospace;display:grid;place-items:center">F</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#ffd75e">Grille de capacités</span></div>
+<img src="scraps/z-f-abilities.png" alt="Grille de capacités" style="display:block;width:460px;border:1px solid #443626">
+<img src="scraps/z-f-bar.png" alt="Conduit au-dessus de la grille" style="display:block;width:460px;margin-top:8px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">le conduit : rempli en bleu sur sa partie gauche, colliers de laiton en jalons, coude qui vient se brancher dans le panneau</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Deux rangées de sept. L'art est <b style="color:#e4dabf">plein cadre</b> et saturé : chaque case est une petite peinture à dominante distincte — orange, violet, bleu, jaune — reconnaissable à sa couleur avant sa forme. La touche est imprimée <b style="color:#e4dabf">dans</b> la case, sur un bandeau bas, glyphe de modificateur compris (⇧+1 … Ctrl+2). Le coût est une colonne de crans collée au bord droit, jamais un chiffre. Les emplacements non pourvus laissent la vitre nue : le panneau garde sa longueur. Au-dessus court un <b style="color:#e4dabf">conduit</b> — un tuyau à colliers de laiton, rempli d'une lueur bleu-violet sur sa partie gauche, qui se termine par un coude venant se brancher dans le panneau. Aucun chiffre, aucune graduation écrite.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Trois informations par case — identité, touche, coût — sans une ligne de texte. La couleur fait le travail de la mémoire, la position celui de l'apprentissage, le vide celui de la stabilité. Aucune de ces trois n'est délégable à une infobulle : elles doivent survivre au coup d'œil.<br><br>Le conduit, lui, dit une ressource par sa <b style="color:#e4dabf">plomberie</b>. Ce n'est pas une barre posée à côté : elle est branchée sur le panneau qu'elle alimente, et l'adjacence fait la phrase — <i>ceci alimente cela</i>. Sa teinte n'existe nulle part ailleurs à l'écran, donc elle ne se confond avec aucune autre jauge. Les colliers servent de jalons : on lit « à peu près au tiers » sans graduation. Et elle est volontairement <b style="color:#e4dabf">analogique</b> — c'est une ressource qu'on surveille du coin de l'œil, pas qu'on calcule.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le conduit est le bon domicile de l'<b style="color:#ffd75e">Avantage</b> : c'est une ressource qui se dépense dans la grille, elle doit donc être branchée dessus plutôt que perdue sous le portrait. Dix colliers pour le plafond RAW, remplissage orange, et — parce que ta charte veut la valeur nommée — une petite plaque chiffrée au bout du tuyau. Deux différences avec la référence : l'Avantage appartient au combattant, pas à la troupe, donc le conduit se vide et se recharge <b style="color:#e4dabf">à chaque changement d'acteur</b> ; et il s'effondre sur un échec, ce qui demande un reflux visible — la lueur qui recule d'un collier à l'autre. Si tu introduis un jour une ressource de groupe (Moral, élan de troupe), c'est le même tuyau, une teinte plus haut.<br><br>Tes icônes sont au trait, monochromes : la saturation de RT n'est pas transposable. On remplace ce canal par la <b style="color:#e4dabf">teinte de la case</b> — bleu pour le mouvement, or pour l'Avantage, acier pour la défense, bois pour le reste — et on ajoute le libellé court que ta charte exige. Le vocabulaire d'actions WFRP étant fini et court, douze alvéoles fixes suffisent : une action illégale se grise, elle ne disparaît jamais.</div></div>
+</div>
+</div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#3a1410,#1a0806);border:1px solid #a13224;color:#e07a63;font:700 12px ui-monospace,monospace;display:grid;place-items:center">G</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#e8c467">Le coin de fin de tour</span></div>
+<img src="scraps/z-g-corner.png" alt="Coin de fin de tour" style="display:block;width:400px;border:1px solid #443626">
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Une arche gothique pleine hauteur pour l'inventaire, un médaillon d'engrenage, et la plaque <b style="color:#e4dabf">« Space »</b> sertie tout au fond du coin. La fin de tour n'est pas un bouton dans la barre : c'est une pièce d'architecture au bout de la console, séparée du reste par une marge.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">L'irréversible est physiquement isolé, et il porte sa touche écrite parce que c'est l'action qu'on finit par jouer au clavier.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Même règle, plus un cas WFRP : finir avec son Action intacte gâche le tour. La plaque change alors d'état pour avertir — un garde-fou passif, pas une modale de confirmation. Et la colonne d'outils est le bon domicile de tout ce qu'on a aujourd'hui posé sur la carte.</div></div>
+</div>
+</div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#3a2c18,#170f09);border:1px solid #8a6c2f;color:#e8c467;font:700 12px ui-monospace,monospace;display:grid;place-items:center">H</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#e8c467">La colonne d'outils</span></div>
+<div style="display:flex;gap:14px;align-items:flex-start">
+<img src="scraps/z-h-rail.png" alt="Rail d'outils" style="display:block;width:70px;border:1px solid #443626">
+<img src="scraps/z-h-gear.png" alt="Roue dentée du coin haut-droit" style="display:block;width:230px;border:1px solid #443626">
+</div>
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">le rail à rivets et son câble ; à droite, la roue dentée isolée du coin haut-droit</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Six boutons carrés au bord droit — coffre, sac, journal, objectifs, fiches, jumelles — à <b style="color:#e4dabf">icône pleine</b>, sans libellé ni raccourci, tous de taille identique. Ils ne flottent pas : ils sont vissés sur un rail de métal à rivets, avec un câble qui court derrière et un fleuron en pied. À part, dans le coin haut-droit, une roue dentée orange dans son propre boîtier hexagonal, séparée des six.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">L'uniformité est le message : six boutons rigoureusement identiques ne réclament rien. Aucun n'a de couleur, de badge, de compteur — donc aucun ne peut voler l'attention à la console. Le rail les <b style="color:#e4dabf">relie entre eux</b> : ils se lisent comme un seul objet, une seule case mentale, pas comme six décisions. Et la roue dentée est délibérément hors du rail : appartenant à une autre famille (le système, pas le jeu), elle a son propre coin plutôt qu'une septième place dans la pile.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">C'est le domicile des commandes qu'on a aujourd'hui posées sur la carte — rotation, grille, zoom, inspection — et du tiroir de journal. Trois règles à en tirer : elles se montent sur une pièce commune plutôt que de flotter chacune dans son coin ; elles restent <b style="color:#e4dabf">muettes et identiques</b>, sans halo ni pastille ; et le menu système sort du rail, parce qu'il n'est pas du même monde. Un bouton qui réclamerait un badge ou une couleur n'a rien à faire ici : c'est le signe qu'il appartient au champ de décision, ou à rien.</div></div>
+</div>
+</div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #443626">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#1c2513,#0d1408);border:1px solid #3a6b3a;color:#6fce8e;font:700 12px ui-monospace,monospace;display:grid;place-items:center">I</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#e8c467">La surcouche de champ</span></div>
+<img src="scraps/z-i-zoom.png" alt="Surcouche de champ" style="display:block;width:460px;border:1px solid #443626">
+<div style="margin-top:10px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;font:11.5px/1.5 system-ui;color:#a3936f">
+<span style="color:#6fce8e">━━</span><span>éventail de lignes depuis l'acteur vers chaque cible</span>
+<span style="color:#6fce8e">▭</span><span>liseré continu autour de la zone de déplacement</span>
+<span style="color:#e0533a">┅┅</span><span>rectangle tireté cerclant un <b style="color:#c9bb9a">groupe</b> d'ennemis</span>
+<span style="color:#6fce8e">▬</span><span>barre flottante fine au-dessus de chaque corps</span>
+<span style="color:#c9ac72">ⓘ</span><span>pastille sur un objet interactif</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Cinq signaux distincts, tous peints au sol ou au-dessus des corps. La zone de déplacement est un aplat translucide <b style="color:#e4dabf">fermé par un liseré net</b> — c'est le liseré qui porte l'information, l'aplat ne fait que teinter. Un éventail de lignes part de l'acteur vers chaque cible atteignable, donc la portée ne se demande pas, elle se compte. Les contours rouges tiretés n'entourent pas un ennemi mais un <b style="color:#e4dabf">groupe</b> : c'est une zone de danger, pas un marqueur d'unité. Les barres flottantes sont fines et sans cadre, à peine plus qu'un trait. Et la pastille ⓘ signale un objet manipulable au milieu des combattants. Une bonne moitié du HUD est <b style="color:#e4dabf">dans</b> la scène.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">C'est la vraie leçon de la référence : la décision se prend sur le sol, donc l'information va au sol. Le châssis ne garde que ce qui n'a aucune place dans le monde — l'identité, l'économie du tour, le catalogue d'actions. Tout le reste est peint.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">RT est un jeu de tir : l'éventail de lignes y répond à « qui puis-je atteindre ? ». Au contact, cette question est triviale et une autre la remplace : « qui me tient ? ». Signal par signal :</div>
+<div style="display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:6px 12px;font-size:12.5px;line-height:1.5;align-items:baseline">
+<span style="color:#6fce8e;white-space:nowrap">éventail de tir</span><span style="color:#a3936f">→</span><span style="color:#c9bb9a"><b style="color:#e4dabf">liens d'engagement</b> : un trait court et épais entre deux pions pris ensemble, qui persiste tant que le contact tient</span>
+<span style="color:#6fce8e;white-space:nowrap">liseré de zone</span><span style="color:#a3936f">→</span><span style="color:#c9bb9a">identique, plus une <b style="color:#e4dabf">seconde limite</b> : la case d'où l'on peut encore frapper, distincte de celle où l'on peut aller — c'est l'Allonge</span>
+<span style="color:#e0533a;white-space:nowrap">rectangle de groupe</span><span style="color:#a3936f">→</span><span style="color:#c9bb9a"><b style="color:#e4dabf">surnombre</b> : le cercle se resserre autour d'une cible assaillie par plusieurs, et compte les assaillants</span>
+<span style="color:#6fce8e;white-space:nowrap">barre flottante</span><span style="color:#a3936f">→</span><span style="color:#c9bb9a">identique, mais elle doit loger les <b style="color:#e4dabf">États chiffrés</b> — donc une réglette et une alvéole, comme partout ailleurs</span>
+<span style="color:#c9ac72;white-space:nowrap">pastille ⓘ</span><span style="color:#a3936f">→</span><span style="color:#c9bb9a">identique</span>
+<span style="color:#ffd75e;white-space:nowrap">(sans équivalent)</span><span style="color:#a3936f">→</span><span style="color:#c9bb9a"><b style="color:#e4dabf">l'attaque gratuite encourue</b> en quittant un contact : le seul signal qui doit apparaître <i>pendant</i> le survol d'une destination, pas au repos</span>
+</div></div>
+</div>
+</div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:30px;border-bottom:1px solid #443626">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#3a2c18,#170f09);border:1px solid #5a4327;color:#c9ac72;font:700 12px ui-monospace,monospace;display:grid;place-items:center">J</span><span style="font:600 19px 'Grenze Gotisch',serif;color:#e8c467">Ornement et matière</span></div>
+<img src="scraps/z-j-orn.png" alt="Fronton central et angle de console" style="display:block;width:460px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">à gauche le fronton qui coiffe l’acteur ; à droite l’angle où la console se termine</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Aucun bord droit nulle part. Chaque bandeau se termine par une pièce ouvragée — pilier, coude de tuyau, arche, fronton — et se raccorde à la coque par des colliers, des rivets, des câbles. Les surfaces sont matiérées : métal brossé, verre teinté, laiton poli sur les arêtes, usure dans les angles. Le fronton doré qui coiffe l’acteur est la pièce la plus travaillée de l’écran ; les angles sont les plus sombres. Et l’or n’apparaît qu’à deux endroits : sur l’acteur, et sur le sélectionné du bandeau.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">L’ornement n’est pas de la décoration ajoutée après coup : il fait trois métiers. Il <b style="color:#e4dabf">borne</b> — une pièce d’extrémité dit où une zone s’arrête, ce qu’un filet de 1 px ne dit jamais aussi vite. Il <b style="color:#e4dabf">hiérarchise</b> — la richesse du cadre classe les zones sans une seule couleur d’accent, et le plus ouvragé désigne l’acteur. Il <b style="color:#e4dabf">rattache</b> — colliers et câbles font du HUD une pièce d’équipement du monde plutôt qu’une couche posée dessus. Le relief, enfin, sépare les plans mieux que n’importe quelle bordure : fond, vitre et plaque se distinguent sans avoir à les colorer.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le registre change entièrement — chêne noirci, fer battu, laiton vieilli, cire à cacheter, parchemin — mais les trois métiers restent, et c’est ce qui fonde la direction des consoles 2a et 2b : coins coupés plutôt qu’arrondis, biseaux et rivets plutôt qu’ombres portées, pièce d’extrémité à chaque bandeau. Une règle s’ajoute, imposée par ta charte : <b style="color:#e4dabf">un seul or à l’écran</b>, réservé au combattant au trait — l’ornement doré perd tout pouvoir de désignation dès qu’il se répand. Tes jetons d’atelier (encres laiton, bois, sceau de cire, fleurons) couvrent déjà toute la gamme.</div></div>
+</div>
+</div>
+
+<div style="margin-top:48px;padding-top:26px;border-top:1px solid #5a4327">
+<div style="font:600 30px 'Grenze Gotisch',serif;color:#e8c467;letter-spacing:.6px">Les états dynamiques</div>
+<div style="margin-top:8px;font-size:14px;line-height:1.6;color:#a3936f;max-width:840px">Six captures de plus, et c’est la moitié la plus intéressante du HUD qui apparaît : rien de tout cela n’existe au repos. C’est aussi là que la référence répond, en creux, à notre problème d’actions hors tour.</div>
+</div>
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#1a2733,#0b1017);border:1px solid #2f6a8a;color:#9fd8ff;font:700 12px ui-monospace,monospace;display:grid;place-items:center">1</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">Le curseur porte le coût</span></div>
+<img src="scraps/d-move.png" alt="Le curseur porte le coût" style="display:block;width:460px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">le pointeur, sa rosace de direction et l’étiquette « 4 PD »</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Collé au pointeur : un glyphe d’action et le coût du geste envisagé — « 4 PD » en déplacement, « 2 PA » pour une capacité de zone, « 1 PA » pour un tir. Le chemin se peint en cases vertes sous le curseur, et des écussons translucides marquent les positions où l’on reste couvert.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le coût est écrit <b style="color:#e4dabf">à l’endroit où l’œil est déjà</b>. Pendant qu’on choisit une case, on ne regarde pas la console — donc la console ne peut pas être le lieu où l’on apprend ce que ça coûte. Le HUD garde le solde, le curseur porte la dépense.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Directement applicable, et ça résout une partie de nos « boutons-vitrine » : moins la console doit être regardée, moins elle doit être bavarde. Chez nous le curseur porterait le coût en Action ou en cases, et — spécificité WFRP — le <b style="color:#e4dabf">palier de Difficulté</b> que le geste envisagé produirait : Accessible, Moyen, Difficile. C’est l’information qui décide, et elle change à chaque case survolée.</div></div>
+</div>
+</div>
+
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#1a2733,#0b1017);border:1px solid #2f6a8a;color:#9fd8ff;font:700 12px ui-monospace,monospace;display:grid;place-items:center">2</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">La prévision du jet, posée sur la cible</span></div>
+<img src="scraps/d-shot.png" alt="La prévision du jet, posée sur la cible" style="display:block;width:460px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">48 % de réussite, 15-22 de dégâts, 23 PV, le nom — tout au-dessus du pion visé</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Au survol d’un ennemi : un grand pourcentage de réussite, la fourchette de dégâts, la barre de PV chiffrée et le nom, groupés <b style="color:#e4dabf">au-dessus du pion</b>. Des traits orange relient les tireurs à leur ligne de mire, et la case visée s’allume en or sous le curseur.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Trois nombres suffisent à décider : mes chances, mes dégâts, ce qu’il lui reste. Ils sont posés sur la cible, donc la décision se prend sans quitter le champ des yeux — et la lecture est <b style="color:#e4dabf">comparative</b> : on promène le curseur d’un ennemi à l’autre et les trois nombres changent au même endroit.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le pourcentage n’existe pas chez nous, et c’est tant mieux : on affiche la <b style="color:#e4dabf">cible du jet</b> (64) et son palier nommé. Mais attention au piège — notre jet est opposé : un chiffre qui ignore la Parade ou l’Esquive encore disponible de la cible <i>ment</i>. La prévision doit donc porter une quatrième donnée que RT n’a pas : <b style="color:#e4dabf">la réaction dont la cible dispose encore</b>.</div></div>
+</div>
+</div>
+
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#1a2733,#0b1017);border:1px solid #2f6a8a;color:#9fd8ff;font:700 12px ui-monospace,monospace;display:grid;place-items:center">3</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">La prévision de zone, une par créature</span></div>
+<img src="scraps/d-aoe.png" alt="La prévision de zone, une par créature" style="display:block;width:460px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">le gabarit peint en or, et un badge « 15-18 » au-dessus de chaque créature prise dedans</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">En visant une capacité de zone : le gabarit se peint en or au sol, et <b style="color:#e4dabf">chaque créature affectée reçoit son propre badge</b> — icône de la capacité + fourchette de dégâts, au-dessus de sa tête. Les créatures hors gabarit gardent leur simple contour rouge.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Une prévision par corps, jamais un total. On compte les badges pour savoir combien de cibles on prend, sans avoir à interpréter la géométrie du gabarit ni à faire confiance à un liseré. La zone dit <i>où</i>, les badges disent <i>sur qui</i>.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">À reprendre tel quel pour les sorts de zone, avec la donnée WFRP à la place des dégâts : le badge porte la <b style="color:#e4dabf">Difficulté du jet de résistance</b> de cette cible-là, qui varie d’une créature à l’autre. Et le même patron sert à un cas très nôtre : le <b style="color:#e4dabf">surnombre</b> — un badge par assaillant autour d’une cible assaillie.</div></div>
+</div>
+</div>
+
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#1a2733,#0b1017);border:1px solid #2f6a8a;color:#9fd8ff;font:700 12px ui-monospace,monospace;display:grid;place-items:center">4</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">L’infobulle de capacité</span></div>
+<img src="scraps/d-tooltip.png" alt="L’infobulle de capacité" style="display:block;width:460px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">parchemin clair, faits en tête, prose ensuite, ressources consommées en pied</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Surface <b style="color:#e4dabf">parchemin clair</b> — contraste inversé par rapport à toute la console. En tête : icône, nom, « Coût — 2 PA ». Puis des faits, un par ligne, chacun avec son icône : la zone d’effet avec un schéma du gabarit, le temps de recharge, et un avertissement — « provoque des attaques d’opportunité de la part des ennemis adjacents ». Puis la prose, avec ses mots-clés colorés (dégâts, test de résistance, étourdies). En pied, les deux ressources consommées, et « Appuyez sur ⧉ pour développer ».</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Trois étages : les <b style="color:#e4dabf">faits</b> qu’on lit toujours, la <b style="color:#e4dabf">prose</b> qu’on lit une fois, le <b style="color:#e4dabf">détail</b> qu’on demande. Le renversement clair/sombre sépare le document de la console — un parchemin ne se confond jamais avec un bouton. Et les mots-clés colorés sont des portes vers les règles, posées dans la phrase plutôt qu’en marge.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">C’est notre contrat de jet en version <i>avant</i> le geste : titre, coût, enjeu, chips de circonstance, renvoi de règle. Les mots-clés colorés sont exactement nos chips d’entité et leurs popovers, et le parchemin existe déjà dans nos jetons. À retenir surtout : l’avertissement d’attaque d’opportunité est <b style="color:#e4dabf">un fait annoncé avant, pas une interruption après</b>.</div></div>
+</div>
+</div>
+
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#1a2733,#0b1017);border:1px solid #2f6a8a;color:#9fd8ff;font:700 12px ui-monospace,monospace;display:grid;place-items:center">5</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">Quand il ne reste rien</span></div>
+<img src="scraps/d-lock.png" alt="Quand il ne reste rien" style="display:block;width:300px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">plaques 0 et −2 en rouge, deux icônes barrées au-dessus du fronton</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Une fois la capacité engagée, les deux plaques du cadre passent au rouge — « 0 » à gauche, « −2 » à droite — et <b style="color:#e4dabf">deux icônes barrées apparaissent au-dessus du fronton</b> : mouvement impossible, action impossible.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">L’impossibilité est dite deux fois, sur la ressource et au sommet du cadre, et c’est un <b style="color:#e4dabf">état permanent</b>, pas un message qui passe. Rien ne se grise à moitié, rien ne demande confirmation : l’écran a changé d’état, et le joueur en tire lui-même la conclusion qu’il n’a plus qu’à finir son tour.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Réponse directe à notre « tour gâché » : plutôt qu’une modale de confirmation, le cadre passe dans un état lisible et la plaque de fin de tour s’allume. Chez nous il faut un troisième cas que RT n’a pas — <b style="color:#e4dabf">Action dépensée mais Réaction encore disponible</b> : le combattant n’a plus rien à faire de son tour, mais il n’est pas sans défense pour autant. Deux icônes, pas une.</div></div>
+</div>
+</div>
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#1a2733,#0b1017);border:1px solid #2f6a8a;color:#9fd8ff;font:700 12px ui-monospace,monospace;display:grid;place-items:center">6</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">Les panneaux naissent de leur déclencheur</span></div>
+<img src="scraps/d-sets.png" alt="Les panneaux naissent de leur déclencheur" style="display:block;width:380px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">le tiroir d’ensembles d’armes, ouvert depuis son alvéole, titré sur le bord qui la touche</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le tiroir d’ensembles d’armes s’ouvre <b style="color:#e4dabf">vers le haut, depuis son alvéole</b>, en parchemin clair, avec son titre « – Ensembles d’armes – » posé sur le bord qui touche le déclencheur. Même grammaire pour les plaques de survol, empilées le long du bord gauche.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Continuité spatiale : le panneau vient de l’endroit qu’on a cliqué, donc on n’a ni à le chercher ni à retrouver son origine pour le fermer. Le titre au bord de contact fait la couture.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Nos choix de règle — arme, localisation, mode de défense — s’ouvrent aujourd’hui au centre de l’écran. Les faire naître de leur alvéole coûte peu et supprime le saut du regard. La contrainte : en paysage mobile, un tiroir qui s’ouvre vers le haut mange la scène — il devra s’ancrer au bord long, pas au-dessus du doigt.</div></div>
+</div>
+</div>
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#1a2733,#0b1017);border:1px solid #2f6a8a;color:#9fd8ff;font:700 12px ui-monospace,monospace;display:grid;place-items:center">7</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">Neuf cartes, et toujours les mêmes alvéoles</span></div>
+<img src="scraps/d-party9.png" alt="Neuf cartes, et toujours les mêmes alvéoles" style="display:block;width:460px;border:1px solid #443626">
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">à neuf combattants : chaque carte porte sa grille d’États à deux colonnes</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le bandeau tient neuf combattants sans changer de gabarit. Chaque carte porte, à droite du visage, une <b style="color:#e4dabf">grille d’icônes d’États à deux colonnes</b> — jusqu’à six cases, certaines chiffrées — et deux cartes affichent un « III » qui les distingue. Le même vocabulaire d’icône se retrouve sur les plaques de survol, à l’identique.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Les alvéoles ne sont pas une file mais une <b style="color:#e4dabf">grille dimensionnée pour le pire cas</b> : six États sur un personnage ne débordent pas, et zéro État ne rétrécit pas la carte. Et l’icône d’État est un vocabulaire unique, valable partout où le personnage apparaît.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Notre groupe monte à cinq, mais les États WFRP se cumulent vite (Étourdi, Saignement, Assailli, Aveuglé, Empoisonné). Il faut donc dimensionner la grille sur le cumul plausible, pas sur le cas courant, et <b style="color:#e4dabf">chiffrer</b> chaque alvéole — une pastille muette ne suffit pas quand l’État a un compteur.</div></div>
+</div>
+</div>
+
+
+<div style="margin-top:26px;padding:16px 18px;background:rgba(0,0,0,.3);border-left:2px solid #b8912f;font-size:13.5px;line-height:1.6;color:#c9bb9a">
+<b style="color:#e8c467">Ce que ça dit de nos actions hors tour.</b> Même en mouvement, la référence ne montre <i>jamais</i> une décision prise hors de son tour : elle n’en a pas. Mais elle traite le seul cas voisin — l’attaque d’opportunité — en la <b style="color:#e4dabf">déclarant à l’avance</b>, dans l’infobulle, comme une conséquence connue du geste. C’est une piste sérieuse pour nous : tout ce qui peut être annoncé avant (la Parade dont dispose la cible, l’attaque gratuite encourue en se dégageant, la préemption d’un ennemi rapide) doit l’être au moment du choix, et le rail d’attente ne devrait recevoir que ce qui exige vraiment un clic du joueur — c’est-à-dire, en pratique, sa propre Réaction. Moins d’interruptions, plus d’avertissements.
+</div>
+
+<div style="margin-top:48px;padding-top:26px;border-top:1px solid #5a4327">
+<div style="font:600 30px 'Grenze Gotisch',serif;color:#e8c467;letter-spacing:.6px">Le tour adverse et la résolution</div>
+<div style="margin-top:8px;font-size:14px;line-height:1.6;color:#a3936f;max-width:840px">Les trois derniers angles morts, comblés. Et une surprise : quand ce n’est plus notre tour, la console ne se contente pas de changer de contenu — elle change de <b style="color:#c9bb9a">nature</b>. C’est la réponse la plus directe à notre problème d’actions hors tour.</div>
+</div>
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#2a1518,#160a0c);border:1px solid #7a2a2a;color:#e07a63;font:700 12px ui-monospace,monospace;display:grid;place-items:center">1</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">La résolution se lit sur les corps</span></div>
+<div style="display:flex;gap:12px;align-items:flex-start"><img src="scraps/e-anim.png" alt="" style="display:block;width:460px;border:1px solid #443626"></div>
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">le nom du sort répété au-dessus de chaque victime, le chiffre de dégâts sur le corps</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Trois créatures prises dans la zone : chacune reçoit <b style="color:#e4dabf">le nom du sort au-dessus de sa tête</b> — répété trois fois — et son chiffre de dégâts en orange sur le corps, tandis que sa barre de vie vire à l’orange. Aucune fenêtre ne s’ouvre. La console basse ne bouge pas.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">La répétition du nom n’est pas une maladresse : c’est ce qui relie trois événements simultanés à une cause unique. Sans elle, trois chiffres apparaîtraient sans qu’on sache s’ils viennent du même geste. Et le résultat est écrit là où le regard est déjà — sur les corps — donc la résolution ne coûte pas un aller-retour vers un journal.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Chez nous une attaque produit plus qu’un chiffre : un verdict, un degré, une localisation. La plaquette flottante doit donc porter <b style="color:#e4dabf">« ✓ +2 DR · Bras gauche · 5 Blessures »</b> et non le seul nombre. Et notre jet étant opposé, elle doit dire ce que la cible a fait — parée, esquivée, encaissée. La fenêtre de jet garde le <i>choix</i> ; le flottant prend la <i>conséquence</i>. Aujourd’hui notre fenêtre fait les deux, ce qui la rend lourde à la lecture.</div></div>
+</div>
+</div>
+
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#2a1518,#160a0c);border:1px solid #7a2a2a;color:#e07a63;font:700 12px ui-monospace,monospace;display:grid;place-items:center">2</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">La console bascule en mode lecture</span></div>
+<div style="display:flex;gap:12px;align-items:flex-start"><img src="scraps/e-foeconsole.png" alt="" style="display:block;width:300px;border:1px solid #443626"><img src="scraps/e-foerail.png" alt="" style="display:block;width:110px;border:1px solid #443626"></div>
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">à gauche le fronton pendant le tour ennemi ; à droite le rail, qui liste alors les ennemis</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Quand l’adversaire joue, la console basse se <b style="color:#e4dabf">transforme</b> : le portrait du fronton laisse place à un médaillon rond contenant l’icône de l’arme ennemie, les PV passent en rouge, la grille carrée de capacités devient une rangée de <b style="color:#e4dabf">médaillons circulaires</b>, et les alvéoles d’objets, les raccourcis et la plaque de fin de tour disparaissent. Le rail de gauche, lui, bascule sur les ennemis et affiche leurs PV.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le changement de <b style="color:#e4dabf">forme</b> porte le changement d’état : rond = on regarde, carré = on peut cliquer. Rien ne se grise, rien ne se désactive — la console cesse d’être une console. C’est plus fort qu’un voile ou qu’un curseur d’attente : la géométrie elle-même dit « ce n’est pas à toi ».</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Voilà qui corrige ma recommandation précédente. Le rail d’attente n’a pas à se poser <i>au-dessus</i> de la console : c’est la <b style="color:#e4dabf">console qui doit basculer</b>, et les décisions dues — Parer ? Esquiver ? — prennent la place libérée par la hotbar, en médaillons, à l’endroit exact où la main est déjà. Une seule surface, deux modes, et la forme dit lequel. La frise annonce, la console répond, la fenêtre de jet ne sert qu’à résoudre.</div></div>
+</div>
+</div>
+
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#2a1518,#160a0c);border:1px solid #7a2a2a;color:#e07a63;font:700 12px ui-monospace,monospace;display:grid;place-items:center">3</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">La menace n’est jamais cachée</span></div>
+<div style="display:flex;gap:12px;align-items:flex-start"><img src="scraps/e-occlusion.png" alt="" style="display:block;width:460px;border:1px solid #443626"></div>
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">les combattants masqués par le décor, peints en silhouettes rouges hachurées avec leur barre</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Les combattants dissimulés derrière un toit ou une passerelle sont peints <b style="color:#e4dabf">par-dessus le décor</b>, en silhouettes rouges hachurées, avec leur barre de vie au-dessus. On les voit à travers la tôle. Le combattant actif, lui, reçoit une silhouette turquoise et un fanion vert.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">L’occlusion est un accident de caméra, pas une règle du jeu : elle n’a pas le droit de coûter de l’information tactique. Le hachuré dit « je te montre où il est, pas ce qu’il fait » — assez pour compter les menaces, pas assez pour tricher.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Notre moteur isométrique a exactement le même problème, et la solution est directement transposable — les hachures se dessinent avec nos jetons de camp. Une nuance WFRP : un combattant réellement <b style="color:#e4dabf">Caché</b> (compétence, pas décor) ne doit surtout pas apparaître ainsi. Deux causes de non-visibilité, deux traitements, à ne pas confondre.</div></div>
+</div>
+</div>
+
+
+<div style="margin-top:26px;display:grid;grid-template-columns:460px minmax(0,1fr);gap:28px;align-items:start;padding-bottom:26px;border-bottom:1px solid #2c2419">
+<div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:26px;height:26px;background:linear-gradient(180deg,#2a1518,#160a0c);border:1px solid #7a2a2a;color:#e07a63;font:700 12px ui-monospace,monospace;display:grid;place-items:center">4</span><span style="font:600 18px 'Grenze Gotisch',serif;color:#e8c467">Un État est une fiche, pas une icône</span></div>
+<div style="display:flex;gap:12px;align-items:flex-start"><img src="scraps/e-statetip.png" alt="" style="display:block;width:298px;min-width:0;border:1px solid #443626"><img src="scraps/e-foeframe.png" alt="" style="display:block;width:150px;min-width:0;border:1px solid #443626"></div>
+<div style="margin-top:8px;font:11px/1.6 ui-monospace,monospace;color:#a3936f">l’infobulle d’un État ; à droite, le cadre d’un combattant qui en porte cinq</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:36px">
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Observé</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">L’infobulle d’un État reprend le parchemin des capacités, avec trois rubriques : <b style="color:#e4dabf">Source</b> (qui l’a infligé), <b style="color:#e4dabf">Durée</b> (Permanent), puis l’effet chiffré — « L’Intelligence et la Force mentale de cette créature sont réduites de −25 » — et, en italique, <b style="color:#e4dabf">où l’on peut s’en débarrasser</b> : sur la passerelle du vaisseau. À droite, le cadre d’un combattant qui porte cinq États : la colonne tient, une alvéole est chiffrée « 3 », et le gabarit du cadre est le même que pour un allié.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Le mécanisme</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Un État répond toujours aux trois mêmes questions : d’où il vient, combien de temps il dure, comment on l’enlève. La troisième n’est pas du texte d’aide — c’est une information de <b style="color:#e4dabf">décision</b> : elle dit s’il faut rentrer au vaisseau ou continuer.</div></div>
+<div><div style="font:10px system-ui;text-transform:uppercase;letter-spacing:1.2px;color:#7c6e52;margin-bottom:5px">Chez nous</div><div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Nos États chiffrés doivent servir les mêmes trois rubriques, avec le compteur dans le titre (Étourdi 2) et le renvoi de règle en porte plutôt qu’en paragraphe. Le « comment l’enlever » existe déjà chez nous — Infirmerie, repos, Test — c’est un renvoi, pas un tutoriel. Et le cadre confirme le dimensionnement : cinq alvéoles tiennent sans déborder, à condition d’être réservées d’avance.</div></div>
+</div>
+</div>
+
+
+<div style="margin-top:44px;padding:26px 28px;background:linear-gradient(180deg,#1c0f0c,#0f0b07);border:1px solid #a13224">
+<div style="font:600 26px 'Grenze Gotisch',serif;color:#e07a63;letter-spacing:.5px">Nos défauts, pour ne pas les reconduire</div>
+<div style="margin-top:6px;font-size:13.5px;line-height:1.6;color:#a3936f;max-width:840px">Le HUD actuel n'est pas une spécification : une partie de ce qu'il montre est là pour exposer une fonctionnalité, pas parce que c'est sa place. Quatre points, avec le test qui permet de trancher.</div>
+
+<div style="margin-top:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;padding:14px 16px;background:rgba(0,0,0,.3);border-left:2px solid #a13224">
+<div><div style="font:600 15px 'Grenze Gotisch',serif;color:#e07a63">Les boutons-vitrine</div><div style="margin-top:4px;font:11px ui-monospace,monospace;color:#7c6e52">posés pour montrer<br>qu'une fonction existe</div></div>
+<div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le test : si on retire ce bouton, la fonction devient-elle <b style="color:#e4dabf">inatteignable</b>, ou simplement moins visible ? Dans le second cas il n'a rien à faire dans le champ de décision. La conséquence pratique : le champ de décision (console basse + pion) n'accueille que ce qui se joue <b style="color:#e4dabf">pendant un tour</b> ; tout le reste descend au bord, dans la colonne d'outils, où l'uniformité fait qu'aucun bouton ne réclame l'attention. Une fonction qui n'a pas de place légitime attend — mieux vaut un accès moins direct qu'une zone qui perd sa question.</div>
+</div>
+
+<div style="display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;padding:14px 16px;background:rgba(0,0,0,.3);border-left:2px solid #b8912f">
+<div><div style="font:600 15px 'Grenze Gotisch',serif;color:#e8c467">Les actions entre les rounds</div><div style="margin-top:4px;font:11px ui-monospace,monospace;color:#7c6e52">faiblesse assumée,<br>compromis à trouver</div></div>
+<div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Le fond du problème : ton système fait agir <b style="color:#e4dabf">hors de son tour</b> — Réactions, préemption, première action gratuite — alors que tout HUD tactique est bâti sur « un acteur, un tour ». RT n'a pas ce problème et ne fournit donc aucun modèle. Trois compromis possibles :
+<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;gap:9px"><span style="flex:0 0 auto;font:700 11px ui-monospace,monospace;color:#8a744a">a</span><span>la fenêtre de jet prend la main et devient le lieu <b style="color:#e4dabf">unique</b> de tout ce qui se joue hors tour ; le HUD ne change pas, mais tout passe par une modale.</span></div>
+<div style="display:flex;gap:9px"><span style="flex:0 0 auto;font:700 11px ui-monospace,monospace;color:#8a744a">b</span><span>un <b style="color:#e4dabf">rail d'attente</b> au-dessus de la console où s'empilent les décisions dues — « Parer ? », « Esquiver ? », « Préempter ? » — chacune avec son sujet et son échéance ; la console reste celle de l'acteur, le rail est celui des interruptions.</span></div>
+<div style="display:flex;gap:9px"><span style="flex:0 0 auto;font:700 11px ui-monospace,monospace;color:#8a744a">c</span><span>le marqueur en débord de la frise (zone B) annonce <b style="color:#e4dabf">à l'avance</b> qui va devoir répondre, avant même que la question soit posée.</span></div>
+</div>
+<div style="margin-top:8px">Les captures du tour adverse tranchent : la référence ne pose aucun rail par-dessus sa console, <b style="color:#e4dabf">elle transforme la console</b> — carré cliquable pendant notre tour, médaillon rond en lecture pendant le tour ennemi (voir « Le tour adverse et la résolution »). D'où la version retenue, un cran plus simple que a/b/c : la frise annonce qui devra répondre, la console bascule et reçoit la décision due à l'endroit où la main est déjà, la fenêtre de jet ne sert qu'à résoudre. Dis-moi si je le dessine.</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;padding:14px 16px;background:rgba(0,0,0,.3);border-left:2px solid #a13224">
+<div><div style="font:600 15px 'Grenze Gotisch',serif;color:#e07a63">Les boutons posés sur la carte</div><div style="margin-top:4px;font:11px ui-monospace,monospace;color:#7c6e52">rotation, grille, zoom,<br>inspection</div></div>
+<div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Ils occupent la surface la plus chère de l'écran — le sol, seul endroit où la décision se prend — pour des commandes qui ne décident de rien. En paysage mobile ils se disputent en plus le coin du dock. Deux sorties : ce qui a un <b style="color:#e4dabf">équivalent geste</b> (molette pour le zoom, glisser pour la rotation, double-clic pour recentrer) quitte l'écran ; ce qui n'en a pas rejoint la colonne d'outils au bord. Le champ ne garde que la surcouche tactique.</div>
+</div>
+
+<div style="display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;padding:14px 16px;background:rgba(0,0,0,.3);border-left:2px solid #a13224">
+<div><div style="font:600 15px 'Grenze Gotisch',serif;color:#e07a63">Le nom de zone et le sur-affichage</div><div style="margin-top:4px;font:11px ui-monospace,monospace;color:#7c6e52">information d'exploration<br>dans un écran de décision</div></div>
+<div style="font-size:13.5px;line-height:1.6;color:#c9bb9a">Un lieu ne change pas pendant un combat : l'afficher en permanence, c'est répondre en boucle à une question que personne ne pose. Même chose pour le compte des camps, la date, l'objectif. Règle simple : <b style="color:#e4dabf">une zone doit répondre à une question qu'on se pose pendant un round</b>. Si tu ne peux pas nommer cette question, la zone sort du combat — au beat d'ouverture, dans le journal, ou dans la carte.</div>
+</div>
+</div>
+</div>
+
+<div style="margin-top:40px;padding:26px 28px;background:linear-gradient(180deg,#1a1209,#0f0b07);border:1px solid #8a6c2f">
+<div style="font:600 26px 'Grenze Gotisch',serif;color:#e8c467;letter-spacing:.5px">L'inverse — ce que ton système exige et que la référence n'a pas</div>
+<div style="margin-top:6px;font-size:13.5px;line-height:1.6;color:#a3936f;max-width:840px">Rogue Trader résout une attaque en un clic : un pourcentage, un tir, un résultat. WFRP fait parler les deux camps et produit un degré, pas un booléen. Six surfaces n'ont donc aucun modèle à copier.</div>
+<div style="margin-top:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+<div style="padding:14px 16px;background:rgba(0,0,0,.28);border-left:2px solid #b8912f"><div style="font:600 15px 'Grenze Gotisch',serif;color:#d8b954">Le jet opposé</div><div style="margin-top:5px;font-size:13px;line-height:1.55;color:#c9bb9a">L'attaquant jette, le défenseur <b style="color:#e4dabf">choisit</b> Parade ou Esquive, puis jette. Deux lignes, une attente du camp adverse, un départage à égalité de degrés. C'est aussi le cœur du problème des actions hors tour.</div></div>
+<div style="padding:14px 16px;background:rgba(0,0,0,.28);border-left:2px solid #b8912f"><div style="font:600 15px 'Grenze Gotisch',serif;color:#d8b954">La Difficulté dérivée</div><div style="margin-top:5px;font-size:13px;line-height:1.55;color:#c9bb9a">En combat elle n'est pas choisie : elle se compose des circonstances. Le palier vit sur la ligne du jet, en texte et en valeur, et devient sa propre porte vers la règle de composition.</div></div>
+<div style="padding:14px 16px;background:rgba(0,0,0,.28);border-left:2px solid #b8912f"><div style="font:600 15px 'Grenze Gotisch',serif;color:#d8b954">Les Degrés de Réussite</div><div style="margin-top:5px;font-size:13px;line-height:1.55;color:#c9bb9a">Pas touché/raté : une amplitude, qui alimente les dégâts et les manœuvres. Dé, cible et DR doivent coexister sur une même ligne lisible.</div></div>
+<div style="padding:14px 16px;background:rgba(0,0,0,.28);border-left:2px solid #b8912f"><div style="font:600 15px 'Grenze Gotisch',serif;color:#d8b954">L'Avantage</div><div style="margin-top:5px;font-size:13px;line-height:1.55;color:#c9bb9a">Une économie qui monte et s'effondre dans le round. Seule ressource dont la <b style="color:#e4dabf">tendance</b> compte autant que la valeur : le chapelet montre le gain avant le clic.</div></div>
+<div style="padding:14px 16px;background:rgba(0,0,0,.28);border-left:2px solid #b8912f"><div style="font:600 15px 'Grenze Gotisch',serif;color:#d8b954">Les États chiffrés</div><div style="margin-top:5px;font-size:13px;line-height:1.55;color:#c9bb9a">Étourdi 2, Saignement 1 : le compteur fait partie de l'État. Une icône muette ne suffit pas, et la cellule doit être réservée pour qu'aucune rangée ne se décale.</div></div>
+<div style="padding:14px 16px;background:rgba(0,0,0,.28);border-left:2px solid #b8912f"><div style="font:600 15px 'Grenze Gotisch',serif;color:#d8b954">Chance, Résilience, Destin</div><div style="margin-top:5px;font-size:13px;line-height:1.55;color:#c9bb9a">Des pools narratifs dépensés <b style="color:#e4dabf">pendant</b> un jet. Ils vivent dans la fenêtre de jet, jamais dans la barre d'action : on ne dépense pas son Destin par réflexe.</div></div>
+</div>
+</div>
+
+<div style="margin-top:32px;padding-top:20px;border-top:1px solid #443626;font-size:12.5px;line-height:1.7;color:#7c6e52">
+Agrandissements tirés de ta capture de référence, à usage d'analyse interne.
+<div style="margin-top:16px;padding:14px 16px;background:rgba(0,0,0,.3);border-left:2px solid #5a4327;color:#a3936f;font-size:13px;line-height:1.6">
+<b style="color:#c9bb9a">L’analyse est close.</b> Repos, survol, visée, dépense, résolution, tour adverse, États : les sept familles d’états sont couvertes par les captures fournies. Seul point resté hors de portée d’images fixes — la <i>durée</i> des choses : vitesse de remplissage du conduit, tempo des chiffres flottants, enchaînement des tours. Ce sont des réglages d’animation, à faire au prototype plutôt qu’à la loupe.
+</div>
+<div style="margin-top:14px">Prochaines zones à dessiner au même niveau d'exigence : le rail d'attente hors tour, la fenêtre de jet opposé, et la surcouche d'engagement au sol.</div>
+</div>
+
+</div>
+
+</x-dc>
+</body>
+</html>

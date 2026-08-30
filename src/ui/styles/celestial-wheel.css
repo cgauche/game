@@ -1,6 +1,5 @@
 /* ══ Roue céleste (`CelestialWheel.tsx`) — L'ASTROLABE DE LAITON de la planche ratifiée
-   (`docs/plans/2026-07-14-maquettes-createur/planche-creator-FINALE.html`, mock « 4 — Signe
-   astral »), stylé UNE fois AUX VALEURS de son `svg`. Module DÉDIÉ, au même titre que
+   (mock « 4 — Signe astral »), stylé UNE fois AUX VALEURS de son `svg`. Module DÉDIÉ, au même titre que
    `plaque-row.css`/`creator-step.css` : un composant à part entière porte sa matière — les classes
    de cadran ne rejoignent JAMAIS creator.css, où elles seraient de la dette par-étape (#393,
    amendement 3 — « c'est sensé etre des primitives ces éléments »).

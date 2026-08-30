@@ -215,8 +215,8 @@ function partyCoverageWithHero(party: Combatant[], axisIds: string[]): { id: str
 }
 
 /** Numéraux romains des 4 sièges (« Contrat I »…« Contrat IV ») — habillage cérémoniel de la
- *  grille (`compagnie-mock0.png`, #417 correction de cap 2026-07-14 ; mot « acte » de la maquette
- *  remplacé par « contrat » [entériné 2026-07-14], moins ambigu). */
+ *  grille (planche ratifiée d'équipe, #417 correction de cap 2026-07-14 ; mot « acte » de la
+ *  maquette remplacé par « contrat » [entériné 2026-07-14], moins ambigu). */
 const ACT_ROMAN = ['I', 'II', 'III', 'IV'];
 /** Nombre en toutes lettres (0-4, le format d'un mot dans le sous-titre « quatre sièges — deux
  *  scellés » — jamais un chiffre nu dans ce libellé cérémoniel). */
@@ -230,7 +230,8 @@ function joinFr(items: string[]): string {
 }
 
 /** Phrase de synthèse du pied d'écran — composée depuis `partyCoverageWithHero` (axes ACTIFS à
- *  pourvoir), textes du patron `compagnie-mock0.png` (#417 correction de cap 2026-07-14). */
+ *  pourvoir), textes du patron de la planche ratifiée d'équipe (#417 correction de cap
+ *  2026-07-14). */
 function partySummaryText(party: Combatant[], axisIds: string[]): string {
   const n = party.length;
   const engaged = n === 0
@@ -251,7 +252,7 @@ function partySummaryText(party: Combatant[], axisIds: string[]): string {
 
 /** Rail du REGISTRE de compagnie : cartouche de campagne + rose de COMPOSITION (médaillon agrégé) +
  *  rangées d'axes (alvéole allumée = couverte + porteur, pointillés = à pourvoir). AIDE, jamais un
- *  blocage — le rail ne gate rien (#417, planche-compagnie.html §A). */
+ *  blocage — le rail ne gate rien (#417, planche ratifiée d'équipe §A). */
 function CompanyRail({ party, axisIds, campaignName, onChangeCampaign }: {
   party: Combatant[];
   axisIds: string[];
@@ -650,7 +651,7 @@ export function CandidatePool({
   const [tab, setTab] = useState<'roster' | 'pregens'>(roster.length ? 'roster' : 'pregens');
   const [importErr, setImportErr] = useState<string | null>(null);
   // Candidat ÉLU (déplié dans l'ACTE DE PRÉSENTATION, `DetailFrame`) — plus de modale (#417,
-  // planche-compagnie.html §B « la présentation intégrée au sélecteur »).
+  // planche ratifiée d'équipe §B « la présentation intégrée au sélecteur »).
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const setScreen = useGame((s) => s.setScreen);

@@ -376,7 +376,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(html).toContain('1d10 : 4-6'); // sa fourchette de sous-table
   });
 
-  it('étape Possessions (#393 P5, étalon finale-mock7-possessions.png) — gabarit DEUX ZONES (panneau + fiche vivante), chips CodexRef + statut + bourse (plus de liste à puces)', () => {
+  it('étape Possessions (#393 P5, étalon = planche ratifiée du créateur, écran Possessions) — gabarit DEUX ZONES (panneau + fiche vivante), chips CodexRef + statut + bourse (plus de liste à puces)', () => {
     const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
     const html = renderToStaticMarkup(<TrappingsScreen d={d} setD={() => {}} />);
     expect(html).toContain('creator-step');
@@ -440,7 +440,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(afterBranch).toMatch(/<button class="btn small btn-primary"[^>]*>Solide/);
   });
 
-  it('étape Détails (#393 P5, étalon finale-mock8-details.png) — gabarit DEUX ZONES, identité + motivation + apparence dans le panneau', () => {
+  it('étape Détails (#393 P5, étalon = planche ratifiée du créateur, écran Détails) — gabarit DEUX ZONES, identité + motivation + apparence dans le panneau', () => {
     const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
     const html = renderToStaticMarkup(<DetailsScreen d={d} setD={() => {}} />);
     expect(html).toContain('creator-step');
@@ -477,7 +477,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(html1).not.toBe(html2);
   });
 
-  it('étape Présentation (#393 P5, étalon finale-mock9-presentation.png, renommage « Récapitulatif » → « Présentation ») — mise en scène finale en 3 colonnes, sans texte nu (chips CodexRef)', () => {
+  it('étape Présentation (#393 P5, étalon = planche ratifiée du créateur, écran Présentation, renommage « Récapitulatif » → « Présentation ») — mise en scène finale en 3 colonnes, sans texte nu (chips CodexRef)', () => {
     const d = ready();
     const html = renderToStaticMarkup(<PresentationScreen d={d} setD={() => {}} />);
     expect(html).toContain('creator-presentation-screen');

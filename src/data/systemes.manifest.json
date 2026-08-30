@@ -70,7 +70,7 @@
     ],
     "etat": "partiel",
     "ticket": "#298 (openRoll TER : fourche forcedPaceDay dupliquée, travelFlow.ts:368-381)",
-    "notes": "cf. docs/plans/2026-07-11-matrice-primitives-systemes.md §openRoll."
+    "notes": "fourche forcée d'openRoll à dédupliquer."
   },
   {
     "id": "voyage-fluvial",

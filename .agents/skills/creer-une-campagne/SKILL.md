@@ -127,8 +127,6 @@ ne pas dupliquer ici).
   `firstBlood`, règles d'or). Référence vivante.
 - `docs/campagne-effects.md` — carte GÉNÉRÉE du vocabulaire des Effects de scène (`setFlag`, `giveTrapping`, `givePossession` #615, `startCombat`, `delayedEffect`…), régénérée par `npm run docs:effects`, gatée `docs:check`.
 - Gardes de la campagne : `src/scenes/arene/lib-validators.test.ts` (validateurs id-only : un id valide passe, tout libellé throw) et `src/scenes/arene/arene-flow.test.ts` (garde de FLUX — la campagne, données pures, tourne sur le moteur existant : Trigger→Effect→transition).
-- `docs/plans/2026-07-08-211-naval-authoring-journal.md` — le walkthrough complet dont ce skill est la
-  distillation (frictions n°0 à n°8, verdicts EXPRIMABLE/CONTOURNÉ/INEXPRIMABLE beat par beat).
 - Issue #218 — chantier « expérience auteur » : lib promue en `scripts/campagne/`, `creatureId()` accepte
   les coques, helper `poste()` de référence — livrés.
 - Issue #219 — ce skill.

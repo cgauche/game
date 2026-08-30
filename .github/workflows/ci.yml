@@ -20,6 +20,7 @@ jobs:
       - run: npm run test:hooks
       - run: npm run test:ops
       - run: npm run test:runner
+      - run: npm run test:docs
       - run: npm run deps:unused
       - run: npm run test:recette
       - name: Idempotence des adaptateurs agents

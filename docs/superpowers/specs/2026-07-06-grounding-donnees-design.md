@@ -9,7 +9,7 @@
 
 ## 1. Problème (prouvé sur le code, pas sur le rapport)
 
-Trois constats vérifiés qui recadrent le rapport `docs/plans/2026-07-06-rapport-skill-ajout-donnee.md` :
+Trois constats vérifiés qui recadrent le rapport « skill d'ajout de donnée » :
 
 1. **Une garde de collision existe déjà et n'aurait PAS attrapé #148.** `src/data/id-collisions.test.ts`
    verrouille `cross === KNOWN_CROSS` ; `belier` y est **déjà** listé (qualité↔sort). Ajouter

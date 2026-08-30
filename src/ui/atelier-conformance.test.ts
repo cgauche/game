@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 /**
  * Garde de MATIÈRE (#414, lot « matière modale + onglets ») — la primitive `.modal` (components.css)
- * porte la peau « Atelier du scribe » (planche-fiche-perso.html l.105-110, `.sheet-modal`) : halo or
+ * porte la peau « Atelier du scribe » (planche ratifiée de la fiche, `.sheet-modal`) : halo or
  * radial en tête + dégradé bois chaud, bandeau or 4px, bordures chaudes, ombre profonde. jsdom ne
  * calcule pas la cascade des fichiers CSS externes (pas de `<link>` chargé) — on parse donc le bloc
  * `.modal` SOURCE, comme `ui-ratchets`/`component-conformance`, plutôt que de monter du DOM.

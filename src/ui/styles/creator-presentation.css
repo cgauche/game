@@ -2,7 +2,7 @@
    CharacterCreator.tsx). Étape EXEMPTÉE de l'ossature 2 zones (user 2026-07-15, verbatim : « c'est
    sensé être le même sauf sur le dernier écran ») : gabarit DÉDIÉ, registre ⇄ scène ⇄ rubriques.
 
-   Valeurs prises à l'ÉTALON `docs/plans/2026-07-14-maquettes-createur/planche-creator-FINALE.html`
+   Valeurs prises à l'ÉTALON de la planche ratifiée
    (§ « Écran final (présentation du héros) », mock9) — `.fin-col` / `.fin-stage` / `.c-lamp` /
    `.c-main`. Module DÉDIÉ (patron rose.css/frames.css/plaque-row.css) : creator.css est sous cliquet
    de décrue (#393 amendement 2), un style d'écran neuf n'y entre plus. */

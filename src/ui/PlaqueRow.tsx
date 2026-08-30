@@ -1,7 +1,7 @@
 /**
  * Rangée-plaque « Atelier du scribe » — LA plaque sombre à rivets d'or de la planche ratifiée
- * (`docs/plans/2026-07-14-maquettes-createur/planche-creator-FINALE.html` : matière `.c-plate`,
- * états de tirage `.ck-cell` de l'étape 3), consacrée en primitive par le lot « ossature enforcée »
+ * (matière `.c-plate`, états de tirage `.ck-cell` de l'étape 3), consacrée en primitive par le lot
+ * « ossature enforcée »
  * #393 (user 2026-07-15, verbatim : « c'est sensé etre des primitives ces éléments »). Stylée UNE
  * fois aux valeurs de la planche (`styles/plaque-row.css`) — un écran COMPOSE cette rangée
  * (caractéristiques de l'étape 3, rangées d'allocation : même meuble), il ne la redessine pas.

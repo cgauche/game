@@ -1,5 +1,7 @@
 # Audit état de l'art — surface joueur complète (2026-08-17)
 
+Ticket: #1361
+
 > Plan daté, à supprimer une fois les verdicts traités. Méthode imposée par l'utilisateur
 > (verbatim : « je suis en train de remettre en cause chaque partie de notre interface en
 > te poussant a regarder vers ce qui se fait ailleurs et surement ce qu'on a oublié de

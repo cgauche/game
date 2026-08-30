@@ -1,5 +1,5 @@
 /**
- * Bande titrée pleine largeur (fond bois/laiton, étalon `finale-mock2-caracteristiques.png`) — pour
+ * Bande titrée pleine largeur (fond bois/laiton, étalon = la planche ratifiée du créateur) — pour
  * les rubriques d'un panneau à plusieurs blocs (« Le tirage », « Augmentations gratuites », « Destin
  * & Résilience ») du créateur, et pour les bandes de section du registre État de la fiche
  * (`EtatPanel.tsx`, #492 Lot 1c). Consacrée en primitive PARTAGÉE hors `creator/` (elle n'a jamais

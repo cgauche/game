@@ -221,6 +221,13 @@ exigence de baisse chiffrée au lot suivant ») : pas de vague qui laisse son ch
 **Épique sans commit ni commentaire depuis 14 jours et sans label `gelée` = anomalie** à SIGNALER à
 l'utilisateur, pas à laisser dormir.
 
+**MÉTRIQUES DE RÉGIME (audit 2026-08-30).** À l'OUVERTURE de session d'orchestration — et au minimum
+une fois par SEMAINE —, mesurer et poser dans le commentaire de pilotage de l'épique active les trois
+compteurs : delta net de tickets de la semaine (créés − fermés, cible ≤ 0) ; part des fermetures qui
+dépilent du stock de plus de 28 jours (cible ≥ 50 %) ; taux de résorption des restes (cible ≥ 60 %
+sous deux semaines). Les chiffres de référence sont gelés dans la fiche mémoire de l'audit. Une
+mesure qui manque DEUX semaines de suite = anomalie à signaler à l'utilisateur.
+
 ## Calibrage — routage et cérémonie
 
 | Étage | Type épinglé (`.claude/agents/`) | Modèle | Effort |
@@ -294,4 +301,7 @@ boucle et poser les questions GROUPÉES, pas les parquer dans une spec.
 - Une vague entière gelée sur une validation de goût, au lieu du lot PARQUÉ (audit 2026-08-30).
 - Un runner dont la sortie n'existe que dans un filtre inline — la prochaine lecture rejouera la
   commande (audit 2026-08-30).
+- Un item de PLAN APPROUVÉ (ou de DoD) laissé ni exécuté, ni dispatché, ni ancré avec un BLOCAGE
+  NOMMÉ — tout « pas aujourd'hui / plus tard » sans raison est de la sérialisation : dérouler le
+  plan item par item à l'approbation ET avant de déclarer fini (relance utilisateur du 2026-08-30).
 - Une leçon de méthode que je « retiens » au lieu de l'écrire ici — la session suivante repart à zéro.

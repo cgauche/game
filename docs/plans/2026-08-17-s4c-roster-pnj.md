@@ -1,5 +1,8 @@
 # S4-c — Persistance des PNJ hors combat + roster d'habitués à fiche (design)
 
+Ticket: #1318
+
+
 > **Plan DATÉ du 2026-08-17** (politique `docs/`) — à SUPPRIMER une fois exécuté ; git porte l'historique.
 > Transféré du chantier #1279 (CLOS, solde `.claude/soldes/1279.md`) comme design commissionné à part.
 > **Révision 3** — amendée après verdict du juge de design (voie A confirmée, 3 bloquants + 12 amendements), puis **arbitrages TRANCHÉS par l'utilisateur le 2026-08-17** (§5, repliés dans §3.2/§3.3/§3.5 et L1-L4).

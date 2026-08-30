@@ -1,7 +1,8 @@
 # Modèle de combat naval tactique (MDG ch.12-14)
 
-> **Plan encore OUVERT (déplacé vers `docs/plans/` le 2026-07-05, noms de fonctions corrigés contre le code réel)** —
-> les jalons ⏳ restent à faire ; suivre le découpage §7 pour l'état courant.
+Ticket: #386
+
+> **Plan encore OUVERT** — les jalons ⏳ restent à faire ; suivre le découpage §7 pour l'état courant.
 
 > Spec d'architecture du combat naval. But : qu'on construise **la bonne chose une fois** — postes/équipage/
 > tir/manœuvre cohérents, zéro système parallèle, zéro contenu en dur. Toute règle est RAW citable

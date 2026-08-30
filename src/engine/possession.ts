@@ -1,5 +1,5 @@
 /**
- * SOCLE POSSESSIONS — moteur PUR (#614, `docs/plans/2026-07-19-socle-possessions.md` §4).
+ * SOCLE POSSESSIONS — moteur PUR (#614).
  *
  * « Un héros, un mercenaire, une mule : le MÊME portage » — une Possession PORTE des `ItemInstance[]`
  * avec exactement les sémantiques du héros (equipped/inside/contenants). Tronc commun minimal + union

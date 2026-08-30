@@ -161,7 +161,7 @@
   --atelier-plate-lo: #1c140c; /* rangée-plaque — surface bas */
   --atelier-brass-meta: #8a744a; /* méta de plaque (base/annotations), `.c-plate .mt` planche FINALE */
   --atelier-brass-roll: #c9a44a; /* bordure d'une rangée qui ROULE, `.ck-cell.rolling` planche FINALE */
-  /* Teintes de MATIÈRE relevées sur `planche-creator-FINALE.html` (lot « matières & proportions »
+  /* Teintes de MATIÈRE relevées sur la planche ratifiée du créateur (lot « matières & proportions »
      #393) : les dégradés y modulent là où nos surfaces s'arrêtaient à un ton de bois générique. */
   --atelier-lectern-hi: #180f09; /* HAUT du pupitre (`.c-lectern`/`.tal-panel` planche) — le bois du
                                     pupitre est PLUS SOMBRE que `--atelier-wood-top` (#241a10) qui le

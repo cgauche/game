@@ -1,7 +1,6 @@
 /* ══════════════════ Cadre-figurine UNIQUE (FigTile, #430/#431) ══════════════════
    SOURCE UNIQUE — et SEULE — définition de la tuile-figurine (races, carrières, candidats du lobby).
-   Valeurs du patron `.fam-tile` de la planche ratifiée (§ « Tuile-FIGURINE de famille »,
-   `docs/plans/2026-07-14-maquettes-createur/planche-creator-FINALE.html`), en tokens.
+   Valeurs du patron `.fam-tile` de la planche ratifiée (§ « Tuile-FIGURINE de famille »), en tokens.
 
    LA TUILE EST UNE COLONNE : boîte-figurine à HAUTEUR FIXE (figurine ancrée au sol sur sa lueur),
    puis nom, puis compte — DESSOUS, jamais un bandeau superposé. La hauteur fixe est ce qui tient la
@@ -126,7 +125,7 @@
 .fig-tile.hero:hover { border-color: var(--atelier-wood-etch); }
 /* Badges de zone ANCRÉS (#492 lot « corps-index », arbitrage 2026-07-17) — la colonne devient l'INDEX
    de la fiche : un badge PAR Localisation, positionné UNE fois ici en attribut `data-loc` (silhouette
-   du chevet, `docs/plans/2026-07-17-planche-etat-chevet.html`) ; le TON en attribut `data-tone`
+   du chevet) ; le TON en attribut `data-tone`
    (jamais une classe par ton, patron déjà tenu par `sheet.css`/`NotchGauge`). */
 .fig-zone-badges {
   position: absolute;

@@ -5,6 +5,8 @@
 // problème qu'il a consiédéré comme hors périmetre et que tu n'as pas mis dans un nouveau ticket ».
 // La FERMETURE d'un ticket au commit devient mécaniquement impossible sans un SOLDE écrit
 // (`.claude/soldes/<N>.md`) : preuve de vérification orchestrateur + disposition de chaque reste.
+// Le solde est exigé dans l'INDEX du commit de fermeture (pas seulement sur le disque) et n'est plus
+// jamais supprimé après coup : les messages de commit le citent par chemin, git est son archive.
 //
 // Extension même jour (verbatim) — « De la même maniere, apres un certain nombre de ticket fermé,
 // il faudrait lancer une review adversarial. Ou a chaque ticket ... c'est peut etre la même régle
@@ -381,13 +383,15 @@ export function validateRevuePalier(content, today) {
 }
 
 /**
- * Décision du hook (PURE, testable). `readSolde(n)` renvoie le contenu de `.claude/soldes/<n>.md`
- * ou `null`/`''` s'il est absent. `counter` = valeur courante de `.claude/soldes/.compteur` (tickets
+ * Décision du hook (PURE, testable). `readSolde(n)` renvoie le contenu STAGÉ (index git du commit
+ * en cours) de `.claude/soldes/<n>.md`, ou `null`/`''` s'il n'y est pas. `soldeOnDisk(n)` renvoie le
+ * contenu du même fichier sur le DISQUE : il ne sert qu'à distinguer « jamais écrit » de « écrit mais
+ * non stagé » dans le message. `counter` = valeur courante de `.claude/soldes/.compteur` (tickets
  * fermés depuis la dernière revue de palier). `readRevuePalier()` renvoie le contenu de
  * `.claude/soldes/revue-palier.md` ou `null`.
  * @returns {{ reason: string } | null} — non-null = `deny`, null = silence.
  */
-export function evaluate({ command, today, readSolde, counter = 0, readRevuePalier = () => null }) {
+export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, counter = 0, readRevuePalier = () => null }) {
   const issues = extractClosedIssues(command)
   if (issues.length === 0) return null
 
@@ -406,7 +410,15 @@ export function evaluate({ command, today, readSolde, counter = 0, readRevuePali
 
   const failures = []
   for (const n of issues) {
-    const { ok, problems } = validateSolde(readSolde(n), today)
+    const staged = readSolde(n)
+    if (!staged && soldeOnDisk(n)) {
+      failures.push({
+        n,
+        problems: [`écrit sur le disque mais NON STAGÉ — \`git add .claude/soldes/${n}.md\` avant de committer`],
+      })
+      continue
+    }
+    const { ok, problems } = validateSolde(staged, today)
     if (!ok) failures.push({ n, problems })
   }
   if (failures.length === 0) return null
@@ -419,7 +431,8 @@ export function evaluate({ command, today, readSolde, counter = 0, readRevuePali
       `une section "## Restes" ("RAS" seul, ou des items "- <reste signalé par l'agent> -> <#N nouveau ticket | ` +
       `corrigé dans ce commit | RAS : justification>"), une section "## Réfutation" (ligne "verdict: ` +
       `CONFIRMÉ|PARTIEL|RÉFUTÉ", ≥${MIN_REFUTATION_LEN} caractères — qui a attaqué quoi sur le diff/DoD), et ` +
-      `la date du jour (demande 2026-07-14).`,
+      `la date du jour (demande 2026-07-14), puis le STAGER (\`git add .claude/soldes/<N>.md\`) : la preuve ` +
+      `citée par le message de commit vit dans git.`,
   }
 }
 
@@ -433,6 +446,17 @@ export function repoRoot(scriptUrl = import.meta.url) {
  *  si absent/illisible. */
 export function readSoldeFile(n, scriptUrl = import.meta.url) {
   try { return readFileSync(join(repoRoot(scriptUrl), '.claude/soldes', `${n}.md`), 'utf8') } catch { return null }
+}
+
+/** Lecture du solde d'un ticket dans l'INDEX GIT de `dir` (répertoire où le `git commit` s'exécute) :
+ *  c'est la version qui partira dans le commit de fermeture, donc la seule qui survivra pour être
+ *  relue plus tard. `null` si le fichier n'est pas stagé. */
+export function readStagedSoldeFile(n, dir = process.cwd()) {
+  try {
+    return execSync(`git show :.claude/soldes/${n}.md`, {
+      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
+    })
+  } catch { return null }
 }
 
 /** Lecture du compteur de palier depuis le disque. `0` si absent/illisible/non numérique. */
@@ -661,9 +685,10 @@ export function readRefFile(n, scriptUrl = import.meta.url) {
 // Le hook tourne dans le cwd du process (le dépôt de la SESSION) ; une commande qui `cd` dans un
 // AUTRE dépôt (worktree) avant `git commit` doit faire lire ses états git (manifest stagé, diff
 // staged) DANS CE RÉPERTOIRE, pas celui de la session — sinon un manifest propre dans le worktree
-// est jugé contre l'arbre principal encore sale (démontré empiriquement, #587). Seules les lectures
-// d'état GIT du commit sont concernées : les soldes (`.claude/soldes/*.md`) restent lus côté SESSION
-// par design (ils y vivent, pas dans le worktree).
+// est jugé contre l'arbre principal encore sale (démontré empiriquement, #587). Le solde est une
+// lecture d'état GIT depuis qu'il doit être STAGÉ : il se lit dans l'index de `targetDir`. Sa lecture
+// DISQUE (côté session, là où les soldes s'écrivent) ne sert plus qu'à nommer le défaut « écrit mais
+// non stagé ».
 const CD_RE = /(?:^|&&|;|\|)\s*cd\s+("[^"]*"|'[^']*'|\S+)/i
 const GIT_DASH_C_RE = /git\s+-C\s+("[^"]*"|'[^']*'|\S+)/i
 
@@ -827,7 +852,8 @@ if (isMain) {
   const decision = evaluate({
     command: text,
     today,
-    readSolde: readSoldeFile,
+    readSolde: (n) => readStagedSoldeFile(n, targetDir),
+    soldeOnDisk: (n) => readSoldeFile(n),
     counter: readCounterFile(),
     readRevuePalier: readRevuePalierFile,
   })
