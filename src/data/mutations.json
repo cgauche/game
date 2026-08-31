@@ -1128,7 +1128,30 @@
         "argFrom": "obsessions"
       }
     ],
-    "note": "Gagne le Trait de créature Haine (Cible). Lancez les dés sur le Tableau des Obsessions au début de chaque jour pour déterminer la Cible",
+    "effects": [
+      {
+        "trigger": "onDayStart",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "removeTrait",
+                "traitId": "haine"
+              },
+              {
+                "op": "grantTrait",
+                "traitId": "haine",
+                "argFrom": "obsessions"
+              }
+            ]
+          }
+        }
+      }
+    ],
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 67
@@ -1649,7 +1672,7 @@
     "label": "Mauvais œil",
     "desc": "Vous pouvez lancer le Sort Mauvais œil\n(page 255 du Livre de Règles) en dépensant\nun Point de Chance, sans faire de test ;\nvous subissez immédiatement les effets\nd'une Incantation imparfaite mineure (page\n234 du Livre de Règles)",
     "kind": "physique",
-    "note": "Effet déclenché/actif : permet de lancer le Sort Mauvais œil (LDB p.255) en dépensant un Point de Chance, sans Test, puis subir une Incantation imparfaite mineure (LDB p.234). Non modélisable en passif. Note 3 : ne peut pas être dissimulée.",
+    "note": "Effet déclenché/actif : permet de lancer le Sort Mauvais œil (LDB p.255) en dépensant un Point de Chance, sans Test, puis subir une Incantation imparfaite mineure (LDB p.234) — dette #459 (action optionnelle payée en Chance). Note 3 : ne peut pas être dissimulée.",
     "appearance": {
       "features": [
         "mauvais-oeil"
@@ -2109,7 +2132,7 @@
         "traitId": "frenesie"
       }
     ],
-    "note": "Quand vous êtes en Frénésie, gagnez temporairement une autre mutation aléatoire (effet déclenché non modélisé).",
+    "note": "Quand vous êtes en Frénésie, gagnez temporairement une autre mutation aléatoire — dette #459 (déclencheur d'entrée en Frénésie + mutation TEMPORISÉE).",
     "nonVisual": true,
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",

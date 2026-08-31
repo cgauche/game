@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { entityAppearanceSchema } from '../grammaire/valeurs';
-import { gameOpSchema } from '../grammaire/mecanique';
+import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'mutations.json';
 export const famille = 'entite';
@@ -18,6 +18,7 @@ const doc = document(
   {
     kind: z.enum(['physique', 'mentale']),
     passive: z.array(gameOpSchema).optional(),
+    effects: z.array(triggeredEffectSchema).optional(),
     note: z.string().optional(),
     nonVisual: z.boolean().optional(),
     /** id d'une autre entrée `mutations.json` (Tête bestiale EDOC → sous-table alignée, `rollMutation`). */
@@ -27,6 +28,7 @@ const doc = document(
   {
     kind: { label: 'Type de Mutation', hint: 'Physique ou mentale' },
     passive: { label: 'Effets passifs' },
+    effects: { label: 'Effets déclenchés' },
     note: { label: 'Note', hint: 'Note mécanique de l’entrée — ex. bonus de Perception' },
     nonVisual: { label: 'Non visible', hint: 'La mutation n’affecte pas l’apparence' },
     subTable: { label: 'Sous-table de tirage', hint: 'Entrée dont la sous-table est tirée en cascade' },

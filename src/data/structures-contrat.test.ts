@@ -173,7 +173,11 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
 // {specOptions,wildcard}` MEURT (le joker à options bornées s'écrit `{id, choix: [ids]}`, forme
 // CIBLE, et ne pose plus d'objet sous `choice`). +2 net, 1137 → 1139. Le dénominateur À ÉTEINDRE,
 // lui, perd 19 lignes dans le même geste (cf. les cliquets par lot ci-dessous).
-const PLAFOND_HORS_STRATE = 1139;
+// #862 (1139→1142) : AUCUNE structure neuve — `mutations.json` porte pour la première fois un
+// `effects` de déclencheur (Haine sporadique, `onDayStart`), et ses TROIS objets d'enveloppe sont les
+// formes CIBLES déjà écrites par `traits.json`/`talents.json` : `effects {flow,on,trigger}`,
+// `flow {effect,kind}`, `effect {on,ops,type}` — mesurées une par une contre la table du doc.
+const PLAFOND_HORS_STRATE = 1142;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -429,7 +433,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // s'éteignent (les 6 enveloppes `ref>…`/`wildcard>…` du lot L2, et les 14 lignes de graphie
       // côté champ porteur `skills`/`talents`), 1 ligne neuve apparaît (`species.json › of {random}` :
       // les 2 tirages qui vivaient en branche de `choice` vivent en branche de `pick`). Le cliquet SUIT.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 538],
+      // Cliquet REMONTÉ 538 → 540 (#862) : deux lignes s'ajoutent au dénominateur, chacune INSTANCE
+      // d'une famille déjà stockée et rangée dans son lot — `mutations.json › ops` reçoit les deux
+      // graphies de référence de Trait que `mutations.json › passive` porte déjà (`traitId+…`,
+      // `argFrom,traitId+…`, L3). C'est la donnée qui ENTRE dans la strate mesurée (le dataset n'avait
+      // aucune op authorée avant le re-ciblage quotidien de Haine sporadique), pas une dérive de forme.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 540],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -489,7 +498,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // s'éteignent (`bonus,op,skill,spec` de spells/tables, `blocked,op,rounds,skill`/`mod,op,rounds,skill`
       // de spells dont le `skill: "all"` disparaît au profit de l'ABSENCE) et 2 se fondent dans des
       // signatures existantes. Le cliquet SUIT la baisse.
-      ['STRUCTURES_OPS', STRUCTURES_OPS.length, 400],
+      // Cliquet REMONTÉ 400 → 402 (#862) : deux signatures d'op neuves, chacune INSTANCE d'une famille
+      // déjà stockée — `removeTrait {op,traitId}` (l'INVERSE de `grantTrait {op,traitId}`) et
+      // `grantTrait {durationHours,op,traitId}` (même patron que `condition {durationHours,id,op,value}`).
+      ['STRUCTURES_OPS', STRUCTURES_OPS.length, 402],
     ] as const;
     const gonfles = mesure.filter(([, n, plafond]) => n > plafond).map(([nom, n, plafond]) => `${nom} ${n} > ${plafond}`);
     expect(
@@ -556,7 +568,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L1a #1466': 23,
       'L1b #1467': 0,
       // L1c #1468 : 403 → 400 (commit 3c) — cf. le cliquet `STRUCTURES_OPS` ci-dessus.
-      'L1c #1468': 400,
+      // … puis 400 → 402 (#862) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
+      'L1c #1468': 402,
       'L1d #1469': 62,
       // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
@@ -577,7 +590,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // qui vivaient en branche de `choice` et vivent maintenant en branche de `pick`. La branche
       // `{random}` NE migre PAS (sa cible `{pick, table}` est le lot L4) : elle reste traçée ici et
       // sur `species.json › talents {random}` (×19).
-      'L3 #1463': 385,
+      // … puis 385 → 387 (#862) : cf. le cliquet `STRUCTURES_FORMES` ci-dessus (les deux graphies de
+      // référence de Trait sous `mutations.json › ops`).
+      'L3 #1463': 387,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       'L4 #1463': 219,
@@ -835,7 +850,9 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
   });
 
   it('§5 : les Conditions retirées du compte d’ops sont celles qui PORTAIENT un `op`', () => {
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2182);
+    // #862 : +3 ops authorées (re-ciblage `[removeTrait, grantTrait]` de Haine sporadique, État Exténué
+    // du réveil du Désespoir).
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2185);
     expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(185);
   });
 });

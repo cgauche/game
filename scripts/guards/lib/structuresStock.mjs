@@ -375,6 +375,10 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "mutations.json", champ: "passive", signature: "psychType+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "mutations.json", champ: "passive", signature: "spec,talentId+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "mutations.json", champ: "passive", signature: "talentId+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
+  // #862 : re-ciblage quotidien de Haine sporadique — les DEUX graphies de référence de Trait que
+  // `passive` porte déjà, vues cette fois sous une op authorée (`[removeTrait, grantTrait]`).
+  { concept: "reference", dataset: "mutations.json", champ: "ops", signature: "argFrom,traitId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-31" },
+  { concept: "reference", dataset: "mutations.json", champ: "ops", signature: "traitId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-31" },
   { concept: "reference", dataset: "mutations.json", champ: "passive", signature: "argFrom,traitId+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "mutations.json", champ: "passive", signature: "traitId+…", statut: "divergente", strate: "Référence", occurrences: 35, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "naval-traits.json", champ: "passive", signature: "testType+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
@@ -504,7 +508,8 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "count,ref+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "disease+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "id,unlessCondition,value+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "traits.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
+  // +1 (#862) : l'État Exténué du réveil du Désespoir (`onWake`, VDM 09 l.280) — même graphie que ses voisines.
+  { concept: "reference", dataset: "traits.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-31" },
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "op+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "tableId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -1075,7 +1080,7 @@ export const STRUCTURES_OPS = [
   { op: "condition", signature: "escapeStrength,id,op,valuePerSL", dataset: "spells.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,unlessCondition", dataset: "spells.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "tables.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "condition", signature: "id,op,value", dataset: "traits.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "condition", signature: "id,op,value", dataset: "traits.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" }, // +1 (#862) : Exténué au réveil (Désespoir)
   { op: "condition", signature: "durationHours,id,op,value", dataset: "aa-criticals.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "durationHours,id,op,value", dataset: "criticals.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "durationRounds,id,onlyIfCondition,op", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
@@ -1179,7 +1184,8 @@ export const STRUCTURES_OPS = [
   { op: "grantTalent", signature: "op,talentId", dataset: "traits.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTalent", signature: "op,talentId", dataset: "trappings.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTrait", signature: "op,traitId", dataset: "mutations.json", occurrences: 19, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "grantTrait", signature: "op,traitId", dataset: "spells.json", occurrences: 17, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "grantTrait", signature: "op,traitId", dataset: "spells.json", occurrences: 16, lot: "L1c #1468", date: "2026-08-23" }, // −1 (#862) : le Désespoir accordé porte désormais sa durée (ligne suivante)
+  { op: "grantTrait", signature: "durationHours,op,traitId", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTrait", signature: "indice,op,traitId", dataset: "mutations.json", occurrences: 16, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTrait", signature: "op,traitId", dataset: "tables.json", occurrences: 16, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTrait", signature: "indice,op,traitId", dataset: "spells.json", occurrences: 14, lot: "L1c #1468", date: "2026-08-23" },
@@ -1190,7 +1196,8 @@ export const STRUCTURES_OPS = [
   { op: "grantTrait", signature: "arg,indice,op,traitId", dataset: "tables.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTrait", signature: "arg,op,traitId", dataset: "spells.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTrait", signature: "op,traitId", dataset: "symptoms.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "grantTrait", signature: "argFrom,op,traitId", dataset: "mutations.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "grantTrait", signature: "argFrom,op,traitId", dataset: "mutations.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" }, // +1 (#862) : re-ciblage `onDayStart`
+  { op: "removeTrait", signature: "op,traitId", dataset: "mutations.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTrait", signature: "indice,indicePerSL,op,traitId", dataset: "spells.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTrait", signature: "indice,op,traitId", dataset: "traits.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantTrait", signature: "op,traitId", dataset: "maneuvers.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },

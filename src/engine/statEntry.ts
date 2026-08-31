@@ -7,7 +7,7 @@
  * cible (« (Cheval) », « (Feu) », « (Tiléens) ») ou de portée (« (50) »). Cette fonction les
  * démêle UNE fois pour TOUT le code (combat ET Codex) — fini les regex recopiées par consommateur.
  */
-import type { CharKey } from './types';
+import type { CharKey, EffectSource } from './types';
 import type { SizeCategory } from './size';
 
 export interface StatEntry {
@@ -90,6 +90,12 @@ export interface TraitInstance {
    *  Trait psy porté PAR CAPACITÉ (`capabilities.grantGroups`) — un Trait dissimulé n'expose plus le
    *  porteur au Groupe qu'il confère. */
   hidden?: boolean;
+  /** PROVENANCE de l'instance ACCORDÉE (op `grantTrait`, passif de mutation) — jamais authorée :
+   *  l'entité qui a posé CETTE instance (`EffectSource`, id STABLE). C'est le registre d'instance que
+   *  l'op `removeTrait` interroge pour ne retirer QUE ce que sa propre source a accordé — un même Trait
+   *  porté nativement ou accordé par un tiers (Haine d'une prière, LDB 226) n'est pas touché.
+   *  Absent = instance NATIVE (statbloc/authoring). */
+  src?: EffectSource;
 }
 
 /**

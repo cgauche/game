@@ -512,10 +512,15 @@ export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
  *  Couvre le « démon banni à sa mort » (Démoniaque, LDB 85 p.339) et tout futur effet « à la mort ».
  *  Cycle de vie du COMBAT (au point de hook correspondant — cf. `combatHooks`) : `onCombatStart` (le
  *  combat débute), `onCombatEnd` (le combat se résout, AVANT l'écran de victoire), `onRoundEnd` (fin de
- *  Round, après l'entretien), `onTurnStart`/`onTurnEnd` (début/fin du tour du porteur). */
+ *  Round, après l'entretien), `onTurnStart`/`onTurnEnd` (début/fin du tour du porteur).
+ *  Cycle de l'HORLOGE de campagne (émis par `state/clockHooks`, au franchissement de jour de
+ *  `runDailyUpkeep`) : `onDayStart` — une fois par JOUR calendaire franchi, rattrapage compris (trois
+ *  jours sautés = trois émissions) ; `onWake` — au RÉVEIL, c'est-à-dire le jour d'une nuit JOUÉE
+ *  (`lastNightDay`) seulement : une avance d'horloge de 24 h sans sommeil ne l'émet pas. */
 export type EffectTrigger =
   | 'onHit' | 'onCrit' | 'onWoundLoss' | 'onSlain' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition'
   | 'onCombatStart' | 'onCombatEnd' | 'onRoundEnd' | 'onTurnStart' | 'onTurnEnd'
+  | 'onDayStart' | 'onWake'
   | 'onAttackResolved' | 'onCastResolved' | 'onMiscast'
   /** Le PORTEUR vient d'ÉCHOUER un Test (n'importe lequel : combat, scène, entretien) — `ctx.margin` = le
    *  DR de l'échec (négatif). Les paliers de gravité s'expriment en DONNÉE via la Condition `slThreshold`

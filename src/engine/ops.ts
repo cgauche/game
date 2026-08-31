@@ -23,7 +23,7 @@ import { findTableEntry } from './tables';
 import { ALL_MAGIC } from './types';
 import type { SkillRef } from './skills';
 import { bypassedAP } from './armourBypass';
-import { grantTrait, grantPsychTrait, dropExpiredGrantedTraits } from './grantedTraits';
+import { grantTrait, grantPsychTrait, removeGrantedTraitsFrom, dropExpiredGrantedTraits } from './grantedTraits';
 import { rollObsession } from '../data/obsessions';
 import { rollMutation } from '../data/mutations';
 import { attachMutation, easeExposure, corruptionEaseSteps } from './corruption';
@@ -492,8 +492,20 @@ export type GameOp =
    *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ».
    *  `argFrom` : la Cible (`arg`) est TIRÉE à l'attache plutôt que littérale — `'obsessions'` =
    *  Tableau des Obsessions (EDOC 12 : mutation « Haine sporadique » → Haine (Cible déterminée
-   *  par les Obsessions)). Résolu par `applyOps` ET `attachMutation` (même tirage, `rollObsession`). */
-  | { op: 'grantTrait'; traitId: string; arg?: string; argFrom?: 'obsessions'; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[]; durationRounds?: Formula }
+   *  par les Obsessions)). Résolu par `applyOps` ET `attachMutation` (même tirage, `rollObsession`).
+   *  `durationHours`/`durationMinutes` : durée d'HORLOGE intrinsèque — MÊME patron que `charMod`/
+   *  `condition` (résolue MAINTENANT depuis `ctx.now`, purgée par `purgeClockEffects` qui retire le
+   *  trait accordé via `dropExpiredGrantedTraits`) : un Trait borné en JOURS le dit ici (Désespoir,
+   *  VDM 09 l.280). Exclusif de `durationRounds` ; absent = durée du contexte (`durationFromCtx`). */
+  | { op: 'grantTrait'; traitId: string; arg?: string; argFrom?: 'obsessions'; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[]; durationRounds?: Formula; durationMinutes?: Formula; durationHours?: Formula }
+  /** RETRAIT d'un Trait de créature porté (`c.traits`) — l'INVERSE de `grantTrait`, même vocabulaire :
+   *  retire ce que LA SOURCE COURANTE (`ctx.source`) a accordé, instances retrouvées par le registre
+   *  `TraitInstance.src`. Une instance NATIVE, ou accordée par un TIERS (Haine d'une prière, LDB 226),
+   *  n'est jamais touchée. Les `ActiveEffect` porteurs (`grantedTrait`) de CES instances tombent avec
+   *  elles (sinon leur expiration retirerait une instance re-accordée depuis). Consommateur authored :
+   *  le RE-CIBLAGE quotidien de Haine sporadique (`[removeTrait, grantTrait]`, EDOC 8 p.67 — une seule
+   *  instance, pas une par jour). */
+  | { op: 'removeTrait'; traitId: string }
   /** Trait PSYCHOLOGIQUE conféré (Colère impie → Frénésie). PASSIF (mutation/trait) : posé dans
    *  `c.psychTraits` à l'attache. `psychType` = `PsychType` (frenesie, peur…). `argFrom` : la Cible
    *  (`cible`) est TIRÉE à l'attache (Tableau des Obsessions, EDOC 12) plutôt que littérale. */
@@ -1582,15 +1594,26 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         if (!groupGate(o.onlyGroups)) break; // « les Mort-vivant/Démoniaque gagnent Instable » (Bannissement)
         const ind = o.indice != null ? resolveFormula(o.indice, ref, rng) + slBonus(ctx.sl, o.indicePerSL) : null;
         const arg = o.arg ?? (o.argFrom === 'obsessions' ? rollObsession(rng) : undefined);
-        const inst: TraitInstance = { id: o.traitId, ...(arg ? { arg } : {}), ...(ind != null ? { value: ind } : {}) };
+        const inst: TraitInstance = { id: o.traitId, ...(arg ? { arg } : {}), ...(ind != null ? { value: ind } : {}), ...(ctx.source ? { src: ctx.source } : {}) };
         grantTrait(target, inst);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: o.durationRounds != null ? { scale: 'rounds', left: Math.max(1, resolveFormula(o.durationRounds, ref, rng)) } : durationFromCtx(ctx),
+          duration: o.durationRounds != null
+            ? { scale: 'rounds', left: Math.max(1, resolveFormula(o.durationRounds, ref, rng)) }
+            : o.durationMinutes != null || o.durationHours != null
+              ? { scale: 'clock', until: (ctx.now ?? 0) + Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60) }
+              : durationFromCtx(ctx),
           grantedTrait: inst,
         });
         lines.push(t('op.grantTrait', { name: target.label, trait: formatTrait(inst), src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'removeTrait': {
+        const gone = removeGrantedTraitsFrom(target, o.traitId, ctx.source);
+        if (!gone.length) break; // rien d'accordé par cette source — rien à dire
+        if (target.activeEffects?.length) target.activeEffects = target.activeEffects.filter((e) => !gone.some((g) => e.grantedTrait === g));
+        lines.push(t('op.removeTrait', { name: target.label, trait: formatTrait(gone[0]) }));
         break;
       }
       case 'augmentWeapon': {

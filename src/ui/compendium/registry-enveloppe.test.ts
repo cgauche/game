@@ -61,12 +61,12 @@ const CLES: Record<string, string> = {
   "skills": '7938829857c61067',
   "talents": '99ee192563fac692',
   "axes": 'f86bc9340cdd5451',
-  "trappings": '4fe70c5fb37f43e5',
+  "trappings": '0419f4973f937162',
   "siegeEngines": 'a7d8202fa83a7827',
   "weaponGroups": 'cf4eb9c47b2e73f0',
   "qualities": '61b2f19869aadceb',
   "etats": 'eb017cace5b342cc',
-  "maladies": '5bc38167f3da697b',
+  "maladies": '25e48bb168ea15e0',
   "symptoms": '2b4e9356d95c9ecd',
   "mutations": 'a507855641eff14a',
   "mutationTables": '0d6e17a2d2e12dca',
@@ -77,8 +77,8 @@ const CLES: Record<string, string> = {
   "spells": '81267fd5d0e86a78',
   "gods": 'd49beaef5ebba230',
   "ventsTourbillonnants": '9a979156867c5f47',
-  "creatures": '63119d8e52a4e5de',
-  "traits": '3e33886305b13fdc',
+  "creatures": '2e054787466117ea',
+  "traits": 'de5aed639fdc746f',
   "locations": '53ca311b61c2a3f1',
   "books": 'be0011b301362125',
   "careerLevels": '6f86fed09e1f4a98',
@@ -302,7 +302,7 @@ const FORME: Record<string, string> = {
 const T3_DELTAS: Record<string, Record<string, number>> = {
   "arcanePhenomena": { desc: 33, source: 41 }, // 41 items — T3 : source +8
   "weaponGroups": { source: 38 }, // 38 items — T3 : source +38
-  "maladies": { desc: 16, source: 16 }, // 16 items — T3 : desc +16, source +16
+  "maladies": { desc: 18, source: 18 }, // 18 items — T3 : desc +16, source +16 ; +2 au trio #674/#672 (Pneumonie, Rhume commun — EDOC 08 folio 33)
   "mutationTables": { source: 17 }, // 17 items — T3 : source +17
   "gods": { desc: 40, source: 41 }, // 41 items — T3 : -desc +1
   "careerLevels": { source: 432 }, // 432 items — T3 : source +432
@@ -383,8 +383,9 @@ const ORPHELINS: string[] = [
   "primitives.manifest.json#0 (28)",
   "propMaterials.json#0 (4)",
   "qualityTypes.json#0 (2)",
-  "raw.manifest.json#0 (8)",
+  "raw.manifest.json#0 (9)",
   "reliefMaterials.json#0 (6)",
+  "reseau-routier.json#0 (15)",
   "river-navigation.json#1 (3)",
   "roofMaterials.json#0 (4)",
   "sea-cargo.json#1 (3)",

@@ -308,6 +308,7 @@ export const fr = {
   'op.statusMod': '{name} : {sign}{n} Standing pour la prochaine aventure.',
   'op.grantReverseToken': '{name} peut inverser {skill} une fois pendant sa prochaine aventure.',
   'op.grantTrait': '{name} gagne le Trait {trait} ({src}).',
+  'op.removeTrait': '{name} perd le Trait {trait}.',
   'op.noWeaponToEnchant': '{name} : aucune arme en main à enchanter ({src}).',
   'op.enchantWeapon': '{name} : {item} est enchantée — {parts} ({src}).',
   'op.noDiseaseToCure': "{name} n'a aucune maladie à purger.",

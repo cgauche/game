@@ -121,7 +121,9 @@ describe('effets de mutation lus à la volée', () => {
     const c = hero();
     attachMutation(c, { id: 'tentacule-epais', label: 'Tentacule épais', desc: '', kind: 'physique', roll: 38, passive: [{ op: 'grantTrait', traitId: 'tentacules' }] });
     attachMutation(c, { id: 'colere-impie', label: 'Colère impie', desc: '', kind: 'mentale', roll: 93, passive: [{ op: 'grantPsychTrait', psychType: 'frenesie' }] });
-    expect(c.traits).toContainEqual({ id: 'tentacules' });
+    // L'instance accordée porte SA provenance (`TraitInstance.src`) : c'est ce registre que le
+    // `removeTrait` d'une mutation interroge pour ne retirer que le sien.
+    expect(c.traits).toContainEqual({ id: 'tentacules', src: { kind: 'mutation', id: 'tentacule-epais' } });
     expect(c.psychTraits?.some((t) => t.type === 'frenesie')).toBe(true);
   });
 });

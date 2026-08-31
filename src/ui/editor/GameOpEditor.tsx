@@ -91,6 +91,7 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   chain: 'Attaques en chaîne (rebond)',
 
   grantTrait: 'Accorder un Trait',
+  removeTrait: 'Retirer un Trait',
   grantPsychTrait: 'Accorder un Trait psychologique',
   removePsychTrait: 'Retirer un Trait psychologique',
   grantTalent: 'Accorder un Talent',
@@ -166,7 +167,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   attackWardFM: 'mechanic/ward', grantWeapon: 'mechanic/invoke', grantNaturalWeapon: 'mechanic/invoke',
   grantFreeAttack: 'action/free-attack', interruptFocus: 'mechanic/mind', breakBlade: 'item/weapon',
   push: 'mechanic/chain', teleport: 'mechanic/chain', chain: 'mechanic/chain',
-  grantTrait: 'mechanic/invoke', grantPsychTrait: 'mechanic/mind', removePsychTrait: 'mechanic/mind',
+  grantTrait: 'mechanic/invoke', removeTrait: 'magic/gust', grantPsychTrait: 'mechanic/mind', removePsychTrait: 'mechanic/mind',
   grantTalent: 'mechanic/invoke', grantCareerSkill: 'mechanic/invoke', grantCareerTalent: 'mechanic/invoke',
   augmentWeapon: 'item/weapon', cureDisease: 'medical/infection', reduceDiseaseDays: 'medical/infection',
   preventInfection: 'medical/infection', cureCriticalWound: 'medical/crutch', diseaseTestMod: 'medical/infection',
@@ -191,7 +192,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'skillDRBonus', 'charDRBonus', 'crewTestMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['Ressources', ['gainResource', 'corruption', 'sinMod', 'corruptionExposure']],
   ['Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
-  ['Invocation & armes', ['summon', 'polymorph', 'transform', 'endTransform', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'beginPsych', 'grantTalent', 'augmentWeapon']],
+  ['Invocation & armes', ['summon', 'polymorph', 'transform', 'endTransform', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'removeTrait', 'grantPsychTrait', 'removePsychTrait', 'beginPsych', 'grantTalent', 'augmentWeapon']],
   ['Zones', ['zone']],
   ['Projection & téléportation', ['push', 'teleport', 'chain']],
   ['Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
@@ -345,6 +346,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', label: '', damage: 3 };
     case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', cost: { advantageOrMovement: true } };
     case 'grantTrait': return { op: 'grantTrait', traitId: '' };
+    case 'removeTrait': return { op: 'removeTrait', traitId: '' };
     case 'grantPsychTrait': return { op: 'grantPsychTrait', psychType: '' };
     case 'removePsychTrait': return { op: 'removePsychTrait' };
     case 'grantTalent': return { op: 'grantTalent', talentId: '' };
@@ -444,6 +446,7 @@ export const OP_REF_FIELDS: Partial<Record<GameOp['op'], readonly OpRefField[]>>
   grantPsychTrait: [{ field: 'psychType', ds: 'psychologies', label: 'Trait psychologique', required: true }],
   removePsychTrait: [{ field: 'psychType', ds: 'psychologies', label: 'Trait psychologique', required: false }],
   grantTrait: [{ field: 'traitId', ds: 'traits', label: 'Trait', required: true }],
+  removeTrait: [{ field: 'traitId', ds: 'traits', label: 'Trait', required: true }],
   grantTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
   grantCareerTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
   grantCareerSkill: [{ field: 'skill.id', ds: 'skills', label: 'Compétence', required: true }],
@@ -525,6 +528,7 @@ export function opSummary(o: GameOp): string {
     case 'grantWeapon': return `${o.label} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantNaturalWeapon': return `${o.label} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantTrait': return `${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
+    case 'removeTrait': return `${formatTrait({ id: o.traitId })}`;
     case 'grantPsychTrait': return `${o.psychType}${o.cible ? ` (${o.cible})` : ''}`;
     case 'grantTalent': return `${talentConcrete(o)}`;
     case 'grantCareerSkill': return `${refLabel('skills', o.skill)}`;

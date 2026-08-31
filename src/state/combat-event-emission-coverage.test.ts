@@ -14,18 +14,22 @@ import type { EffectTrigger } from './flow';
  *
  * Un site d'émission = `emitCombatEvent('<trigger>'` (l'unique porte) OU, pour les événements de
  * CYCLE, la boucle `fireTriggers`/`fireTurnEdgeTriggers` interne aux modules BUS-OWNED
- * (roundHooks/turnHooks) — la machinerie du bus, whitelistée par la quarantaine d'import — OU, pour un
+ * (roundHooks/turnHooks/clockHooks) — la machinerie du bus, whitelistée par la quarantaine d'import — OU, pour un
  * trigger CADENCE-AGNOSTIQUE fié aux seams HORS cycle de combat (`onOwnTestFailed` : le porteur échoue un
  * Test — combat OU scène OU entretien, MSRC 16), sa PORTE DÉDIÉE `fireTriggers(…, '<trigger>'` dans le
  * module ÉMETTEUR whitelisté (`triggeredEffects.ts` porte `fireOwnTestFailed`, l'unique point d'émission).
  */
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BUS_OWNED = ['src/state/combat/roundHooks.ts', 'src/state/combat/turnHooks.ts'];
-// Portes DÉDIÉES hors cycle de combat : un émetteur nommé (`fireOwnTestFailed`) fié aux seams de
-// résolution de Test (chemin modal joueur, cascade d'entretien, jets inline) — pas un événement du bus
-// de combat (pas d'`emitCombatEvent`, il tire aussi hors combat), mais un point d'émission RÉEL et unique.
-const DEDICATED_EMITTERS = ['src/state/triggeredEffects.ts'];
+const BUS_OWNED = ['src/state/combat/roundHooks.ts', 'src/state/combat/turnHooks.ts', 'src/state/clockHooks.ts'];
+// Portes DÉDIÉES hors cycle de combat : un émetteur nommé fié à un seam qui n'est pas le bus de combat
+// (pas d'`emitCombatEvent`, ils tirent aussi hors combat), mais un point d'émission RÉEL et unique.
+//  - `fireOwnTestFailed` (triggeredEffects) : seams de résolution de Test (modale joueur, cascade
+//    d'entretien, jets inline) ;
+//  - `fireClockTriggers` (clockHooks, bus-owned) : sa boucle par porteur EST la machinerie du cycle
+//    CALENDAIRE, mais elle reçoit son déclencheur en PARAMÈTRE — le site qui le NOMME est sa cadence
+//    unique `runDailyUpkeep` (upkeep.ts), anti-double-comptage des franchissements de jour.
+const DEDICATED_EMITTERS = ['src/state/triggeredEffects.ts', 'src/state/upkeep.ts'];
 
 const isTest = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
@@ -57,7 +61,7 @@ function emittedTriggers(): Set<string> {
   //     `fireTurnEdgeTriggers(…, '<trigger>'` dans un module whitelisté (bus OU émetteur dédié nommé).
   for (const { rel, src } of files) {
     if (!BUS_OWNED.includes(rel) && !DEDICATED_EMITTERS.includes(rel)) continue;
-    for (const m of src.matchAll(/(?:fireTriggers|fireTurnEdgeTriggers)\([^;)]*?'(\w+)'/g)) emitted.add(m[1]);
+    for (const m of src.matchAll(/(?:fireTriggers|fireTurnEdgeTriggers|fireClockTriggers)\([^;)]*?'(\w+)'/g)) emitted.add(m[1]);
   }
   return emitted;
 }

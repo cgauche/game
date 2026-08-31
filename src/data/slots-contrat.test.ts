@@ -75,6 +75,15 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
  * cran (le plafond porte sur le NOMBRE de lignes) : `arcane-phenomena.json › environments` 3 → 4, la
  * valeur « montagnes » résolvant désormais vers la spécialisation `bon-marcheur/montagnes` ajoutée au
  * catalogue (COLLISION d'ids, angle mort déclaré).
+ * CRAN À LA HAUSSE (338 → 339, #862, 2026-08-31) — le seul de ce stock, et il ne se solde PAS par
+ * une adoption au champ visé : `mutations.json` porte sa première op AUTHORÉE (`[removeTrait,
+ * grantTrait]`, re-ciblage quotidien de Haine sporadique), donc une référence de Trait apparaît au
+ * champ `ops` d'un dataset qui n'en portait aucune. MESURÉ : typer `removeTrait.traitId` avec
+ * `idDe('trait')` (fait, `grammaire/mecanique.ts`) DÉCLARE bien le slot, mais son path projette sur le
+ * champ `traitId` quand le scan mesure l'objet-op au champ `ops` — la ligne ne bouge pas d'un pouce.
+ * C'est l'angle mort DÉCLARÉ ci-dessus (projection sur le dernier segment-clé) : ces lignes `ops`
+ * (aa-criticals 85, activities 16, traits 21…) meurent en L3 #1473, quand la référence de Trait
+ * s'écrit `trait: { id }` comme la Compétence s'écrit `skill: { id, spec? }` depuis L2 #1548 — pas avant.
  * Cause de l'essentiel des crans — jamais de la donnée neuve : le CHAMP PORTEUR bouge (la référence
  * de Compétence sort de son conteneur et devient son propre champ `skill`/`skills`), ce qui SCINDE
  * des lignes existantes, et le détecteur voit plus loin (les champs d'un `document()`). `champDuPath`
@@ -83,7 +92,7 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
  * ligne est née d'une donnée devenue référence : `arene-projet.skill`, valeur de Test du PNJ soigneur,
  * jusque-là un nombre nu.
  */
-const DETTE_ADOPTION_MAX = 338;
+const DETTE_ADOPTION_MAX = 339;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

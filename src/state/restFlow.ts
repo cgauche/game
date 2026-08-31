@@ -155,20 +155,25 @@ export function sleepParty(
   const entries: NightEntry[] = [];
   const journal: string[] = [];
 
-  // La nuit passe — chaque journée de repos se termine à l'AUBE.
+  // Soins prolongés (LDB 09) : présence d'un soignant valide (Guérison) → −1 jour/jour par maladie.
+  const caredFor = get().party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
+  // La nuit passe — chaque journée de repos se termine à l'AUBE, UNE NUIT À LA FOIS : n nuits dormies
+  // sont n RÉVEILS (`lastNightDay` posé à chaque aube atteinte, avant l'entretien de cette journée-là),
+  // donc n émissions d'`onWake`. Un séjour de 7 nuits qui n'aurait sauté qu'à l'aube finale ne
+  // réveillerait le groupe qu'une fois (Désespoir, VDM 09 l.280).
+  // Le bilan de nuit LISTE l'entretien quotidien (rations/faim, maladies, convalescence) — le
+  // journal seul ne suffit pas. Portrait attribué par préfixe « Nom… » quand la ligne le porte.
   const from = get().gameTime;
   const toDawn = minutesUntilNext(from, DAWN_MINUTE);
   const firstNight = toDawn === 0 ? MINUTES_PER_DAY : toDawn;
-  set({ gameTime: from + firstNight + (n - 1) * MINUTES_PER_DAY });
-  bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - from });
-  set({ lastNightDay: dayIndex(get().gameTime) }); // nuit JOUÉE (#340) — désamorce la privation de sommeil
-
-  // Soins prolongés (LDB 09) : présence d'un soignant valide (Guérison) → −1 jour/jour par maladie.
-  const caredFor = get().party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
-  // Le bilan de nuit LISTE l'entretien quotidien (rations/faim, maladies, convalescence) — le
-  // journal seul ne suffit pas. Portrait attribué par préfixe « Nom… » quand la ligne le porte.
-  for (const text of runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily })) {
-    entries.push({ actorId: get().party.find((h) => text.startsWith(h.label))?.id, icon: 'time/calendar', label: 'Entretien quotidien', text, tone: 'info' });
+  for (let night = 0; night < n; night++) {
+    const before = get().gameTime;
+    set({ gameTime: night === 0 ? from + firstNight : before + MINUTES_PER_DAY });
+    bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - before });
+    set({ lastNightDay: dayIndex(get().gameTime) }); // nuit JOUÉE (#340) — désamorce la privation de sommeil
+    for (const text of runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily })) {
+      entries.push({ actorId: get().party.find((h) => text.startsWith(h.label))?.id, icon: 'time/calendar', label: 'Entretien quotidien', text, tone: 'info' });
+    }
   }
 
   // Récupération + cauchemars, héros par héros (jets structurés pour le bilan).

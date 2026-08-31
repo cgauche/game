@@ -26,6 +26,7 @@ import { rollObsession } from '../data/obsessions';
 import { grantTrait, grantPsychTrait, removeGrantedTrait } from './grantedTraits';
 import type { PsychType } from './psychology';
 import type { GameOp } from './ops';
+import type { TriggeredEffect } from './flowCore';
 
 export type ExposureLevel = 'mineure' | 'moderee' | 'majeure';
 
@@ -85,6 +86,10 @@ export interface Mutation {
    *  (arme de créature, lue par recomputeLoadout) ; `grantTrait` / `grantPsychTrait` (traits de créature
    *  et psychologiques conférés, posés par attachMutation). Plus aucun champ ad hoc. */
   passive?: GameOp[];
+  /** Effets DÉCLENCHÉS de la mutation — MÊME vocabulaire que `TraitData.effects`/`SymptomData.effects`,
+   *  dispatchés par l'unique `fireTriggers` (aucun chemin par KIND). Sert les mutations à cadence :
+   *  Haine sporadique re-tire sa Cible à chaque `onDayStart` (EDOC 8 p.67). */
+  effects?: TriggeredEffect[];
   /** Partie non modélisée de l'effet — verbatim, arbitrage MJ (rien d'inventé). */
   note?: string;
   /** Provenance livre/page — LDB 19 IMPLICITE si absent ; EXPLICITE pour les suppléments (EDO Appendice 2…). */
@@ -209,7 +214,9 @@ export function attachMutation(c: Combatant, m: Mutation, rng: RNG = defaultRNG)
       // Cible : littérale (`arg`), ou TIRÉE sur le Tableau des Obsessions (`argFrom:'obsessions'`,
       // « Haine sporadique » → Haine (Cible) déterminée par les Obsessions, EDOC 12).
       const arg = op.arg ?? (op.argFrom === 'obsessions' ? rollObsession(rng) : undefined);
-      grantTrait(c, { id: op.traitId, ...(arg ? { arg } : {}), ...(value != null ? { value } : {}) });
+      // PROVENANCE de l'instance : la mutation elle-même (registre `TraitInstance.src`) — c'est ce que
+      // son propre `removeTrait` de re-ciblage interroge, et rien d'autre.
+      grantTrait(c, { id: op.traitId, ...(arg ? { arg } : {}), ...(value != null ? { value } : {}), src: { kind: 'mutation', id: m.id } });
     } else if (op.op === 'grantPsychTrait') {
       const cible = op.cible ?? (op.argFrom === 'obsessions' ? rollObsession(rng) : undefined);
       grantPsychTrait(c, op.psychType as PsychType, cible);
@@ -235,7 +242,7 @@ export function detachMutation(c: Combatant, m: Mutation): void {
   for (const op of m.passive ?? []) {
     if (op.op === 'grantTrait') {
       const value = typeof op.indice === 'number' ? op.indice : undefined;
-      removeGrantedTrait(c, { id: op.traitId, ...(op.arg ? { arg: op.arg } : {}), ...(value != null ? { value } : {}) });
+      removeGrantedTrait(c, { id: op.traitId, ...(op.arg ? { arg: op.arg } : {}), ...(value != null ? { value } : {}), src: { kind: 'mutation', id: m.id } });
     } else if (op.op === 'grantPsychTrait') {
       const j = (c.psychTraits ?? []).findIndex((x) => x.type === op.psychType && (x.cible ?? '') === (op.cible ?? ''));
       if (j >= 0) c.psychTraits = [...c.psychTraits!.slice(0, j), ...c.psychTraits!.slice(j + 1)];

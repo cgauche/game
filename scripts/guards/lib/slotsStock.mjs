@@ -226,6 +226,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "montures.json", champ: "creatureIds", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "mutations.json", champ: "eyes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "mutations.json", champ: "features", occurrences: 54, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "mutations.json", champ: "ops", occurrences: 2, lot: "L3 #1473", date: "2026-08-31" }, // #862 : 1ʳᵉ op authorée de mutations.json (re-ciblage `onDayStart` de Haine sporadique)
   { dataset: "mutations.json", champ: "passive", occurrences: 106, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "mutations.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "naval-ports.json", champ: "production", occurrences: 38, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -335,7 +336,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "traits.json", champ: "grantsManeuvers", occurrences: 20, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "markMutations", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "of", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "traits.json", champ: "ops", occurrences: 20, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "traits.json", champ: "ops", occurrences: 21, lot: "L2/L3 #1473", date: "2026-08-31" }, // +1 (#862) : État Exténué du réveil du Désespoir (VDM 09 l.280)
   { dataset: "traits.json", champ: "passive", occurrences: 49, lot: "L1b #1467", date: "2026-08-28" }, // +1 : Trait Entêté (charMod FM), EDOC 07 folio 22 (#673)
   { dataset: "traits.json", champ: "subject", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "suppressesCapabilities", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

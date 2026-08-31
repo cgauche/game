@@ -19,6 +19,8 @@ export const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onRoundEnd: 'À la fin du Round',
   onTurnStart: 'Au début de son tour',
   onTurnEnd: 'À la fin de son tour',
+  onDayStart: 'Au début de chaque jour',
+  onWake: 'Au réveil',
   onAttackResolved: 'Après une attaque résolue',
   onCastResolved: 'Après une incantation résolue',
   onMiscast: 'Sur une Imparfaite',

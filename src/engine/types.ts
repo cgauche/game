@@ -97,8 +97,9 @@ export type WallEdgeSide = WallSideCanon;
 
 /** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB 76 p.312).
  *  `vehicule` (véhicule/embarcation à coque — EDOC 7, MoR ch.5, MDG 13) : ses localisations
- *  (coque/gréement/roues/avirons…) sont PILOTÉES PAR DONNÉES (table par véhicule, branchée plus tard),
- *  donc aucune étiquette en dur ici. */
+ *  (coque/gréement/roues/avirons…) sont PILOTÉES PAR DONNÉES (table par véhicule) : aucune étiquette en
+ *  dur ici, et aucun chemin de résolution ne lit encore ces tables (#673 volet localisations, bloqué
+ *  par l'extraction #678). */
 export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation, PlayerText>>> = {
   humanoide: {},
   quadrupede: { brasG: t('hitloc.quadrupede.brasG'), brasD: t('hitloc.quadrupede.brasD'), jambeG: t('hitloc.quadrupede.jambeG'), jambeD: t('hitloc.quadrupede.jambeD') },

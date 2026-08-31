@@ -12,7 +12,7 @@ import type { GameOp } from '../../../engine/ops';
 import type { Condition, EffectOp, Flow } from '../../../engine/flowCore';
 import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema, refTestDeCorruption } from './valeurs';
 import { marque } from './slots';
-import { refOuSpec } from './ref';
+import { idDe, refOuSpec } from './ref';
 
 /** `PerSL` (`src/engine/ops.ts:146`) — échelle « par +N DR » d'un payload d'op. */
 export const perSLSchema = z.strictObject({ every: z.number(), amount: z.number(), onFailure: z.boolean().optional() });
@@ -41,6 +41,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
   loseTurn: z.strictObject({ op: z.literal('loseTurn'), what: z.enum(['action', 'movement']).optional() }),
   noBreath: z.strictObject({ op: z.literal('noBreath') }),
   noHunger: z.strictObject({ op: z.literal('noHunger') }),
+  removeTrait: z.strictObject({ op: z.literal('removeTrait'), traitId: idDe('trait') }),
   suffocate: z.strictObject({ op: z.literal('suffocate') }),
 };
 
@@ -315,6 +316,7 @@ export const triggeredEffectSchema = z.strictObject({
   trigger: z.enum([
     'onHit', 'onCrit', 'onWoundLoss', 'onSlain', 'onRoundStart', 'onStartled', 'onKill', 'onCharged', 'onGainCondition',
     'onCombatStart', 'onCombatEnd', 'onRoundEnd', 'onTurnStart', 'onTurnEnd',
+    'onDayStart', 'onWake',
     'onAttackResolved', 'onCastResolved', 'onMiscast', 'onOwnTestFailed',
   ]),
   on: effectTargetingSchema,

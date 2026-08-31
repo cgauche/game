@@ -24951,7 +24951,8 @@
                         "ops": [
                           {
                             "op": "grantTrait",
-                            "traitId": "desespoir"
+                            "traitId": "desespoir",
+                            "durationHours": 168
                           }
                         ]
                       }

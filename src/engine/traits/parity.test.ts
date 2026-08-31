@@ -74,6 +74,10 @@ const COUVERT_AILLEURS = new Map<string, string>([
   // Reconstitution différée — op `scheduleRespawn` du Flow `onSlain` : programme la ré-invocation à
   // gameTime + d10 j (file scheduledEffects, horloge) ; fireScheduledEffects → applySummon ; précautions = cancelFlag.
   ['Gardien éternel', 'reconstitution d10 j si tué (op scheduleRespawn onSlain → resolveTriggerImpureOps → fireScheduledEffects/applySummon ; précautions = cancelFlag), #19'],
+  // Désespoir (VDM 09 l.280) : mécanique AUTHORÉE en `effects`, comme Venin/Constricteur — le
+  // déclencheur d'HORLOGE `onWake` est dispatché par `fireClockTriggers` (state/clockHooks, bus-owned),
+  // cadencé par `runDailyUpkeep` le jour d'une nuit JOUÉE.
+  ['Désespoir', 'État Exténué au réveil pendant une semaine — `effects` AUTHORÉ (onWake → op condition extenue, fireClockTriggers/clockHooks) ; la borne d’une semaine est la durée d’horloge du Trait accordé (`grantTrait.durationHours` du sort Aperçu de la mort, purgée par purgeClockEffects), cf. `state/clock-triggers.test.ts`'],
   // Dressé (Magie) : trait MARQUEUR sans effet propre — lu par le gate `startleCause` de Nerveux
   // (Condition Flow `has dresse-magie` → exemption de l'effarouchement magique, LDB 85 l.110, données).
   ['Dressé (Magie)', 'marqueur lu par le gate `startleCause` de Nerveux (exemption magie, données)'],
@@ -113,12 +117,11 @@ const JOURNAL_MJ = new Map<string, string>([
   // Le câblage cast↔aura existe (cf. Aura de Dhar, DISPATCH) mais le GATING par Domaine du sort lancé n'est
   // pas exprimable (skillDRBonus n'est pas conditionnel au Domaine) → reste à bâtir.
   ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — gating par Domaine du cast à bâtir'],
-  // Traits VDM sans SEAM de déclenchement — dette OUVERTE #862 (le dispatcher doit observer le tiers
-  // et le réveil) ; la desc verbatim est affichée, rien n'est inventé. `raw.manifest.json` ne peut pas
-  // porter ces deux dettes : son intégrité (`validateManifest`, scripts/raw/build-implemente.mjs:491)
-  // n'accepte qu'un topic de fiche `docs/raw/*.md`, or les deux entités vivent en catalogue.
+  // Trait VDM sans SEAM de déclenchement — dette OUVERTE #862 (le dispatcher doit observer le TIERS) ;
+  // la desc verbatim est affichée, rien n'est inventé. `raw.manifest.json` ne peut pas porter cette
+  // dette : son intégrité (`validateManifest`, scripts/raw/build-implemente.mjs:491) n'accepte qu'un
+  // topic de fiche `docs/raw/*.md`, or l'entité vit en catalogue.
   ['Siphonnage de sort', 'se déclenche quand un ENNEMI résout une incantation : `onCastResolved` est émis sur le LANCEUR (`self: caster`, combatFlow.ts:4274) et `emitCombatEvent` diffuse à `audience ?? [self]` (combatEvents.ts:32), aucun Trigger n\'observe le cast d\'autrui ; la table `vdm-siphonnage-de-sort` (tables.json) existe et reste à câbler — #862'],
-  ['Désespoir', 'Exténué « lorsqu\'elles se réveillent le matin » pendant une semaine — aucun Trigger de réveil/journalier (les 18 Triggers sont de Round/tour/combat, et `fireTriggers` n\'est appelé que par roundHooks/turnHooks/combatEvents) ; `PsychType` (psychology.ts:20) est une union CLOSE sans « désespoir », donc pas de `capabilities.psychType` non plus — #862, #861'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/
@@ -216,6 +219,10 @@ const DISPATCH = new Set<string>([
   // des cibles d'une manœuvre de zone (`combatManeuvers.ts:433`), ciblage du Hurlement fantomatique, et
   // exemption des contractions de maladie. Canal dispatch (marqueur INTERROGÉ, pas narratif).
   'Mort-vivant',
+  // Entêté (EDOC 07 folio 22) : `passive` = `charMod{force-mentale, +20}` — MÊME canal que Coriace/Élite/
+  // Meneur, lu par le collecteur `passiveMods` (`traitPassiveMods`, trauma.ts:17). Le volet ACTIF (Test
+  // opposé de maîtrise du cavalier/conducteur) est porté par #617, arbitrage #630 §1.
+  'Entêté',
 ]);
 
 /** Entrée BRUTE de `traits.json` — lue au fichier (le registre `TRAITS` est dérivé, il ne rend pas

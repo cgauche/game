@@ -27,7 +27,7 @@ import { combatDistance } from './footprint';
 import { chebyshev } from './path';
 import { losClear, tileSeenByFoe } from './lineOfSight';
 import { smokeOf, combatantsWithinRadius } from './combatGeometry';
-import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, findSymptomById, refLabel } from '../data';
+import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, findSymptomById, findMutationById, refLabel } from '../data';
 import { activeSymptoms } from '../engine/disease';
 import { difficultyFromLabel, rollTest } from '../engine/tests';
 import { rawCombatTestBase } from '../engine/skills';
@@ -81,13 +81,15 @@ function withArg(effects: TriggeredEffect[], arg?: string, value?: number): Trig
 
 /**
  * SOURCE UNIQUE d'énumération des sources d'effet DÉCLENCHÉ d'un combattant — TOUS les KINDS en UN endroit :
- * Atouts d'arme (`weapon.onHitEffects`), Traits, Qualités d'arme, Talents, ÉTATS, états PSY. Chaque source
+ * Atouts d'arme (`weapon.onHitEffects`), Traits, Qualités d'arme, Talents, symptômes, MUTATIONS, ÉTATS,
+ * états PSY. Chaque source
  * est taguée `key`/`cap`/`label` (+ `stacks` pour les statuts, pions réduits d'une capacité de la cible).
  * TOUT le reste en DÉRIVE (zéro énumérateur parallèle) : `fireTriggers` (via `effectsOf` non-statut +
  * `fireConditionEffects`/`firePsychEffects`), `resolveFreeAttacks` (via `freeAttackSourcesOf`), et le
  * COLLECTEUR jumeau de fin de Round (`collectRoundEndTestSteps`, combat/triggeredTest — les Tests d'un
  * héros MANUEL deviennent des étapes de cascade au lieu d'être joués inline). AJOUTER UN
- * KIND = ICI seulement. Ordre FIGÉ (enchant → traits → atouts → talents → États → psy) = déroulé RNG déterministe. */
+ * KIND = ICI seulement. Ordre FIGÉ (enchant → traits → atouts → talents → symptômes → mutations →
+ * États → psy) = déroulé RNG déterministe. */
 export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
   const out: TriggerSource[] = [];
   if (weapon?.onHitEffects?.length) { const wid = weaponIdentity(weapon); out.push({ effects: withSource(weapon.onHitEffects, { kind: 'trapping', id: wid }), cap: 1, key: `weapon:${wid}`, label: weapon.label }); }
@@ -99,6 +101,11 @@ export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSourc
   // `stacks`), donc dispatchés par la voie `effectsOf`/`applyTriggeredEffects` (≠ pool à pions des États).
   // Ordre STABLE (accesseur canonique `activeSymptoms`, ordre des maladies) → déroulé RNG déterministe.
   for (const inst of activeSymptoms(actor)) { const d = findSymptomById(inst.symptomId); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'symptom', id: inst.symptomId }), cap: 1, key: `symptom:${inst.symptomId}`, label: d.label ?? inst.symptomId }); }
+  // Mutations de Corruption — leurs `effects` sont lus AU REGISTRE (`findMutationById`), jamais sur
+  // l'instance portée : `c.mutations` est une copie GELÉE au tirage, une mutation maison (hors
+  // `mutations.json`) n'a donc pas d'effets déclenchés. Insérées entre symptômes et États — source
+  // NON-statut (sans `stacks`), comme un Trait du corps. Ordre STABLE (ordre de `c.mutations`).
+  for (const m of actor.mutations ?? []) { const d = findMutationById(m.id); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'mutation', id: m.id }), cap: 1, key: `mutation:${m.id}`, label: d.label ?? m.id }); }
   for (const cond of actor.conditions ?? []) {
     const d = findConditionById(cond.id);
     if (!d?.effects?.length) continue;
@@ -413,8 +420,9 @@ export function applyTriggeredEffects(
  * DISPATCHER UNIQUE des effets déclenchés de `actor` pour un `trigger` — SOURCE UNIQUE, sans code
  * spécifique par KIND d'entité ni par trigger. Réunit TOUTES les sources d'effets portées par le
  * combattant : Traits, Talents, Atouts d'arme (`effectsOf`) ET États (`fireConditionEffects`, qui
- * apporte le `stacks` de chaque État). Maladies/Mutations réagissent par COMPOSITION (elles octroient
- * un Trait/État, déjà couvert ici) — rien de neuf à câbler pour un nouveau type. Ajouter une source =
+ * apporte le `stacks` de chaque État). Maladies et Mutations portent AUSSI leurs propres `effects`
+ * (symptômes actifs ; `mutations.json` résolu au registre) — énumérés par `effectSourcesOf` comme
+ * les autres, sans chemin dédié. Ajouter une source =
  * l'AJOUTER ICI, jamais un nouveau chemin de dispatch. (Effets propres à une MANŒUVRE = scoped à son
  * profil via `maneuverEffectsOf`.)
  */

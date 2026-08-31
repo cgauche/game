@@ -29,6 +29,7 @@ const WHITELIST = new Set<string>([
   'src/state/combatHooks.ts', // définit runCombatHooks
   'src/state/combat/roundHooks.ts', // bus-owned : boucles de cycle onRoundEnd/onRoundStart
   'src/state/combat/turnHooks.ts', // bus-owned : boucles de cycle onTurnStart/onTurnEnd
+  'src/state/clockHooks.ts', // bus-owned : boucle de cycle d'HORLOGE onDayStart/onWake (jumeau hors-combat de roundHooks)
 ]);
 
 const isTest = (rel: string) => /\.test\.[tj]sx?$/.test(rel);

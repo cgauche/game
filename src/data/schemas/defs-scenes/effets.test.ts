@@ -70,7 +70,9 @@ describe('effectSchema — le corpus RÉELLEMENT posé dans les deux racines aut
   const poses = effetsPoses();
 
   it('le scan VOIT le corpus qu’il prétend mesurer (sinon un vert vide passerait)', () => {
-    expect(poses.length).toBe(1056);
+    // +2 (#862) : les effets d'horloge authorés — le re-ciblage `onDayStart` de Haine sporadique
+    // (`mutations.json`) et l'État Exténué du réveil du Désespoir (`traits.json`, VDM 09 l.280).
+    expect(poses.length).toBe(1058);
     const parType = new Set(poses.map((p) => (p.noeud as { type: string }).type));
     expect(parType.size).toBe(30); // 29 variantes authorées + la feuille `ops`
     expect(parType.has('ops')).toBe(true);

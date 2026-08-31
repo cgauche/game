@@ -95,6 +95,7 @@ export const GAMEOP_FIELD_TARGETS = {
   'beginPsych.sourceId': { nonRef: 'id de combattant RUNTIME — la créature SOURCE d\'une Peur/Terreur (`targetedTrigger` le pose depuis `m.id`, src/engine/psychology.ts:331 ; purgé à la mort par `deadId`, l.235), jamais authoré en donnée' },
   // ── Traits / Talents / Compétences ──
   'grantTrait.traitId': { registry: 'traits' },
+  'removeTrait.traitId': { registry: 'traits' },
   'grantTalent.talentId': { registry: 'talents' },
   'grantCareerTalent.talentId': { registry: 'talents' },
   // `skill` d'op = RÉFÉRENCE EMBOÎTÉE `{ id, spec? }` — hors de portée de ce filet (aveugle aux réfs

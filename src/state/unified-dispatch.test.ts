@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fireTriggers, freeAttackSourcesOf } from './triggeredEffects';
+import { fireTriggers, freeAttackSourcesOf, effectSourcesOf } from './triggeredEffects';
 import { flowHasFreeAttack } from './flow';
 import { addCondition, hasCondition, stacks, COND } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
@@ -58,6 +58,28 @@ describe('Dispatcher unique — Traits ET États réagissent au même Trigger, s
     fire(c, noRecover(8)); // d10=8 → En Flammes : max(1, 8 − 4 − 0) = 4 PB ; d100=100 → pas de récupération du Brisé
     expect(hasCondition(c, COND.brise)).toBe(true); // effet de TRAIT (donnée)
     expect(before - c.wounds.current).toBe(4);      // effet d'ÉTAT (donnée) — MÊME appel
+  });
+});
+
+describe('Horloge — un TRAIT et une MUTATION passent par le MÊME dispatcher, sans chemin par kind', () => {
+  // Porteur unique de DEUX kinds : le Trait Désespoir (VDM 09 — Exténué `onWake`) et la Mutation
+  // Haine sporadique (EDOC 8 — re-ciblage `onDayStart`). Aucun des deux n'a de code dédié.
+  const doubleporteur = (): Combatant => mk({ traits: [{ id: 'desespoir' }], mutations: [{ id: 'haine-sporadique' }] } as never);
+
+  it('effectSourcesOf énumère `trait:desespoir` et `mutation:haine-sporadique` côte à côte', () => {
+    const keys = effectSourcesOf(doubleporteur()).map((s) => s.key);
+    expect(keys).toContain('trait:desespoir');
+    expect(keys).toContain('mutation:haine-sporadique');
+  });
+
+  it('le MÊME appel `fireTriggers` sert les deux kinds — `onDayStart` la Mutation, `onWake` le Trait', () => {
+    const c = doubleporteur();
+    fireTriggers((get as (c: Combatant) => unknown)(c) as never, c, 'onDayStart', {});
+    expect((c.traits ?? []).filter((t) => t.id === 'haine')).toHaveLength(1); // effet de MUTATION (donnée)
+    expect(hasCondition(c, COND.extenue)).toBe(false);                       // le Trait ne réagit pas à ce trigger
+
+    fireTriggers((get as (c: Combatant) => unknown)(c) as never, c, 'onWake', {});
+    expect(hasCondition(c, COND.extenue)).toBe(true);                        // effet de TRAIT (donnée), MÊME fonction
   });
 });
 

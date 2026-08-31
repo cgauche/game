@@ -11,7 +11,10 @@
  *     `dailyDiseaseUpkeep` (+ soins d'un soignant au repos via `opts.caredFor`) ;
  *  3. CONVALESCENCE des Blessures critiques (LDB 18 l.222 : « un nombre de jours égal à 30 – votre Bonus d'Endurance »,
  *     calendaire) — `tickTraumaRecovery`.
- * (Corruption : AUCUN déclencheur temporel dans LDB 19 — rien à câbler, vérifié à la source.)
+ *  4. effets déclenchés d'HORLOGE authorés en DONNÉE (`onDayStart`, et `onWake` le jour d'une nuit
+ *     jouée) — `fireClockTriggers` (state/clockHooks), sans code par KIND de porteur.
+ * (Corruption : AUCUN déclencheur temporel dans LDB 19 — rien à câbler, vérifié à la source ; les
+ * mutations à cadence quotidienne des suppléments passent par leurs `effects: onDayStart`.)
  *
  * `purgeClockEffects` (appelé à CHAQUE passage, même sans franchissement de jour) dissipe les effets
  * à durée d'HORLOGE arrivés à échéance : contrecoups d'incantation `castPenalties.untilTime`
@@ -19,7 +22,7 @@
  * purge ne vivait que dans `advanceTime` : un contrecoup expiré restait actif après un voyage/repos
  * (qui posent `gameTime` directement).
  *
- * N'importe QUE du moteur + battleRng (pas de cycle avec les flux).
+ * N'importe QUE du moteur + battleRng + le bus d'horloge `clockHooks` (pas de cycle avec les flux).
  */
 import { battleRng } from './battleRng';
 import { tickCampaignVesselWeek } from './shipCrew';
@@ -45,6 +48,7 @@ import { recomputeLoadout } from '../engine/items';
 import { restoreSuppressedPsych } from '../engine/psychology';
 import { tickTraumaRecovery } from '../engine/trauma';
 import { applyOps } from '../engine/ops';
+import { fireClockTriggers } from './clockHooks';
 import { bus, EVT } from './bus';
 
 import type { Get, Set } from './flowTypes';
@@ -209,6 +213,12 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       // 3. Convalescence des Blessures critiques (LDB 18 — jours calendaires, #T3).
       lines.push(...tickTraumaRecovery(h, 1, battleRng(), restResistVal(h), defer));
     }
+    // 4. Effets déclenchés d'HORLOGE portés par la DONNÉE (Trait, Mutation, État… — `clockHooks`,
+    //    bus-owned). `onDayStart` : une émission par jour franchi (le rattrapage en doit autant que
+    //    de journées). `onWake` : le jour où une nuit a été JOUÉE (`lastNightDay`, posé par restFlow
+    //    AVANT cet entretien) — franchir un jour n'est pas se réveiller.
+    lines.push(...fireClockTriggers(get, 'onDayStart', { rng: battleRng() }));
+    if (d === get().lastNightDay) lines.push(...fireClockTriggers(get, 'onWake', { rng: battleRng() }));
   }
   // Nuit forcée (maison `travel-sleep-forced`, #340) : chaque jour calendaire franchi SANS nuit jouée
   // (aucun repos depuis `lastNightDay`) inflige 1 État Exténué « privation de sommeil » par héros vivant.
