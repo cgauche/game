@@ -2,8 +2,8 @@
  * Migration #1467 L1b V-P5 — `trappings.json` : le discriminant `type` devient `categorie`, et
  * `merchantFamilies.json` `match.trappingType` (qui NOMMAIT ce champ) devient `match.categorie`.
  *
- * MOTIF MESURÉ : sur les 440 possessions du catalogue, le champ range l'entrée dans une CATÉGORIE
- * de catalogue — mesuré melee 65 / ranged 79 / ammunition 22 / armor 17 / trapping 257. Il n'a rien
+ * MOTIF MESURÉ : sur les 441 possessions du catalogue, le champ range l'entrée dans une CATÉGORIE
+ * de catalogue — mesuré melee 65 / ranged 79 / ammunition 22 / armor 17 / trapping 258. Il n'a rien
  * à voir avec le `Weapon.type` du moteur (`src/engine/types.ts`, `'melee' | 'ranged'`, persisté),
  * ni avec `ItemInstance.kind` : le pont entre les deux est `kindOf()` (`src/engine/items.ts`), une
  * TRADUCTION et jamais une recopie. Ces deux-là ne sont pas touchés.
@@ -16,7 +16,7 @@
  * IDEMPOTENT / NO-OP TOLÉRANT À LA FORME : une entrée portant déjà `categorie` (et plus de `type`)
  * est reconnue migrée ; rejouée sur l'état final, la migration n'écrit rien et sort 0.
  * FAIL-FAST : entrée portant les deux noms, entrée sans catégorie, valeur hors vocabulaire,
- * cardinaux ≠ 440 / 7 → rien n'est écrit, sortie 1.
+ * cardinaux ≠ 441 / 7 → rien n'est écrit, sortie 1.
  * FORMATAGE PRÉSERVÉ : chaque fichier est EXACTEMENT `JSON.stringify(doc, null, 2)` (vérifié avant
  * toute écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence).
  */
@@ -27,7 +27,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const TRAPPINGS = path.join(ROOT, 'src/data/trappings.json');
 const FAMILLES = path.join(ROOT, 'src/data/merchantFamilies.json');
-const ATTENDU_TRAPPINGS = 440;
+// 440→441 : Anneau d'Opsianon, EDO 11 (folio 148), #672.
+const ATTENDU_TRAPPINGS = 441;
 const ATTENDU_FAMILLES = 7;
 /** Vocabulaire de catégorie du CATALOGUE — `vehicle` n'a AUCUN porteur mesuré et meurt du schéma. */
 const VALEURS = new Set(['melee', 'ranged', 'ammunition', 'armor', 'trapping']);
@@ -54,7 +55,7 @@ else if (t.data.length !== ATTENDU_TRAPPINGS) echecs.push(`trappings.json : card
  * `type` D'ENVELOPPE (#1467 L1b V-FLIP-ENTITE-c) : depuis l'adoption de `document()`, chaque entrée
  * de `trappings.json` porte `type: "trappings"` — le NOM DU DOCUMENT, pas l'ancienne catégorie. Sans
  * cette distinction, la migration lit l'enveloppe comme un `type` ressuscité et exige un arbitrage
- * sur les 440 entrées. L'ancien `type` était une valeur de `VALEURS` (melee/ranged/ammunition/armor/
+ * sur les 441 entrées. L'ancien `type` était une valeur de `VALEURS` (melee/ranged/ammunition/armor/
  * trapping), jamais le nom du dataset.
  */
 const TYPE_ENVELOPPE = 'trappings';

@@ -5,6 +5,14 @@
 // aucune ligne n'est retouchée en dehors des insertions.
 //
 // Toute `desc` est EXTRAITE du Source (jamais retapée) — EDOC 07.
+//
+// ENTRÉES : `src/data/creatures.json`, `src/data/traits.json` (lus et écrits) et le chapitre
+// `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/07 - …` (lu, source des `desc`, des
+// prix et des folios).
+//
+// IDEMPOTENT : chacun des trois lots reconnaît son propre résultat (facette d'achat du chien,
+// mouton/cochon au bestiaire, Trait Entêté et ses porteurs optionnels) et se saute ; rejoué sur
+// l'état final, le script n'écrit RIEN et sort 0.
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { folioGoverningWhy } from '../guards/lib/folioLineAlign.mjs'
@@ -26,13 +34,21 @@ const folio = (n) => {
 /** Cellules d'une ligne de tableau Markdown. */
 const cellules = (n) => ligne(n).split('|').slice(1, -1).map((c) => c.trim())
 
+const brut = {}
 const lire = (p) => {
   const raw = readFileSync(p, 'utf8')
   const data = JSON.parse(raw)
   if (JSON.stringify(data, null, 2) !== raw) throw new Error(`${p} n'est pas au format round-trip attendu`)
+  brut[p] = raw
   return data
 }
-const ecrire = (p, data) => writeFileSync(p, JSON.stringify(data, null, 2), 'utf8')
+/** N'écrit que si le document a changé. @returns {boolean} vrai si le fichier a été réécrit. */
+const ecrire = (p, data) => {
+  const sortie = JSON.stringify(data, null, 2)
+  if (sortie === brut[p]) return false
+  writeFileSync(p, sortie, 'utf8')
+  return true
+}
 
 // ── Prix : « 2 CO » / « 3 /- » / « 5 sc » (LDB 57 l.7 : sc = sous de cuivre, /- = pistoles
 //    d'argent, CO = couronnes d'or) → { gold, silver, bronze }.
@@ -54,11 +70,12 @@ const indexDe = (arr, id) => arr.findIndex((e) => e.id === id)
 {
   const [, cout, , dispo] = cellules(102)
   const chien = par(creatures, 'chien')
-  if (chien.purchase) throw new Error('chien porte déjà purchase')
-  // Ordre de clés du patron des 9 montures : … spells, [desc], source, purchase, appearance, grantGroups.
-  const { appearance, grantGroups, ...tete } = chien
-  Object.keys(chien).forEach((k) => delete chien[k])
-  Object.assign(chien, tete, { purchase: { price: prix(cout), availability: dispo } }, { appearance, grantGroups })
+  if (!chien.purchase) {
+    // Ordre de clés du patron des 9 montures : … spells, [desc], source, purchase, appearance, grantGroups.
+    const { appearance, grantGroups, ...tete } = chien
+    Object.keys(chien).forEach((k) => delete chien[k])
+    Object.assign(chien, tete, { purchase: { price: prix(cout), availability: dispo } }, { appearance, grantGroups })
+  }
 }
 
 // ── LOT 2 — mouton et cochon (EDOC 07 l.100-101, folio 24) : le livre ne leur imprime AUCUN profil
@@ -96,38 +113,39 @@ const indexDe = (arr, id) => arr.findIndex((e) => e.id === id)
       grantGroups: ['bete'],
     }
   }
-  const apres = indexDe(creatures, 'poulet')
-  if (apres < 0) throw new Error('poulet introuvable')
-  creatures.splice(apres, 0, entree('cochon', 'Cochon', 101))
-  creatures.splice(apres, 0, entree('mouton', 'Mouton', 100))
+  if (!par(creatures, 'mouton') && !par(creatures, 'cochon')) {
+    const apres = indexDe(creatures, 'poulet')
+    if (apres < 0) throw new Error('poulet introuvable')
+    creatures.splice(apres, 0, entree('cochon', 'Cochon', 101))
+    creatures.splice(apres, 0, entree('mouton', 'Mouton', 100))
+  }
 }
 
 // ── LOT 3 — Trait Entêté (EDOC 07 l.31, folio 22), prescription #630 §1 : le passif +20 FM
 //    s'exprime ; le volet « Test opposé de maîtrise » est routé #617, jamais à demi dans le trait.
 {
-  if (par(traits, 'entete')) throw new Error('entete existe déjà')
   const desc = ligne(31)
   if (!desc.startsWith('Les ânes et les mules possèdent souvent le Trait Entêté')) {
     throw new Error(`EDOC 07 l.31 n'est pas le paragraphe Entêté : ${desc.slice(0, 60)}`)
   }
-  const avant = indexDe(traits, 'ethere')
-  if (avant < 0) throw new Error('ethere introuvable')
-  traits.splice(avant, 0, {
-    id: 'entete',
-    type: 'traits',
-    label: 'Entêté',
-    desc,
-    source: { book: 'ennemi-dans-l-ombre-compagnon', page: folio(31) },
-    passive: [{ op: 'charMod', char: 'force-mentale', mod: 20 }],
-  })
+  if (!par(traits, 'entete')) {
+    const avant = indexDe(traits, 'ethere')
+    if (avant < 0) throw new Error('ethere introuvable')
+    traits.splice(avant, 0, {
+      id: 'entete',
+      type: 'traits',
+      label: 'Entêté',
+      desc,
+      source: { book: 'ennemi-dans-l-ombre-compagnon', page: folio(31) },
+      passive: [{ op: 'charMod', char: 'force-mentale', mod: 20 }],
+    })
+  }
   // « possèdent SOUVENT » → optionnel, jamais un trait de base (EDOC 07 l.31).
   for (const id of ['ane', 'mule']) {
     const c = par(creatures, id)
-    if (c.optionals.some((o) => o.id === 'entete')) throw new Error(`${id} porte déjà entete`)
-    c.optionals.push({ id: 'entete' })
+    if (!c.optionals.some((o) => o.id === 'entete')) c.optionals.push({ id: 'entete' })
   }
 }
 
-ecrire(CREATURES, creatures)
-ecrire(TRAITS, traits)
-console.log('creatures.json + traits.json écrits')
+const ecrits = [ecrire(CREATURES, creatures) && CREATURES, ecrire(TRAITS, traits) && TRAITS].filter(Boolean)
+console.log(ecrits.length ? `${ecrits.join(' + ')} écrits` : 'no-op : creatures.json + traits.json portent déjà EDOC ch.4')

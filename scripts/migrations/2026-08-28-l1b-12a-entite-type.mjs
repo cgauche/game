@@ -74,7 +74,8 @@ const CARDINAUX = {
   'domains.json': 20,
   'etats.json': 21,
   'flow-stakes.json': 34,
-  'maladies.json': 16,
+  // 16→18 : Pneumonie + Rhume commun, EDOC 08 (folio 33), #674.
+  'maladies.json': 18,
   'maneuvers.json': 20,
   'merchants.json': 6,
   'naval-ports.json': 39,
@@ -87,11 +88,13 @@ const CARDINAUX = {
   'structures.json': 24,
   'symptoms.json': 18,
   'talents.json': 187,
-  'traits.json': 131,
+  // 131→132 : Trait Entêté, EDOC 07 (folio 22), #673.
+  'traits.json': 132,
   'traumas.json': 29,
   'vehicles.json': 31,
 };
-const TOTAL_ATTENDU = 1290;
+// 1290→1293 : +2 maladies (#674) +1 trait (#673), les seuls bumps ci-dessus.
+const TOTAL_ATTENDU = 1293;
 
 /**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. L'enveloppe veut

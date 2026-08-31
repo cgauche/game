@@ -74,7 +74,8 @@ const TYPES = {
 const CARDINAUX = {
   'actions.json': 55,
   'activities.json': 62,
-  'creatures.json': 490,
+  // 490→492 : Mouton + Cochon, EDOC 07 (folio 24), #673.
+  'creatures.json': 492,
   'night-stakes.json': 15,
   'psychology.json': 9,
   'raceAppearance.json': 21,
@@ -83,9 +84,11 @@ const CARDINAUX = {
   'spells.json': 576,
   'structureAppearance.json': 18,
   'tavernGames.json': 13,
-  'trappings.json': 440,
+  // 440→441 : Anneau d'Opsianon, EDO 11 (folio 148), #672.
+  'trappings.json': 441,
 };
-const TOTAL_ATTENDU = 1730;
+// 1730→1733 : +2 créatures (#673) +1 possession (#672), les seuls bumps ci-dessus.
+const TOTAL_ATTENDU = 1733;
 
 /**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. Mesuré sur

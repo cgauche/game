@@ -82,11 +82,13 @@ const CARDINAUX = {
   'propMaterials.json': 4,
   'qualitySubtypes.json': 3,
   'qualityTypes.json': 2,
-  'raw.manifest.json': 8,
+  // 8→9 : dette « Option Attraper Froid » (`deplacement#option-attraper-froid`), EDOC 09, #674.
+  'raw.manifest.json': 9,
   'reliefMaterials.json': 6,
   'sea-shanties.json': 7,
 };
-const TOTAL_ATTENDU = 141;
+// 141→142 : +1, la seule entrée de manifeste ci-dessus.
+const TOTAL_ATTENDU = 142;
 
 const echecs = [];
 const rapport = [];
