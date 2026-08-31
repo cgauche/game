@@ -51,12 +51,16 @@ import { nudgeStageYaw, resetStageYaw, viewRot } from '../../state/stageYaw';
 import { clearedSpace, massFootprintCells } from '../builders/roofs';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { setStageRendererFactory } from './GameStage3D';
+import { bakeQueueLength } from '../backends/webgl/atlasBake';
+import { battreStageFrames } from './stageFrames';
+import { poigneesEnAttente } from './texturesStatiques';
 import {
   BancRenderer,
+  PLAFOND_ATTENTE_MS,
   attendreQuads,
+  attendreQue,
   brancherArdoise,
   quads,
-  respirer,
   scènes,
   simulerRasterisation,
   viderCaptures,
@@ -71,6 +75,48 @@ let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
 
 brancherArdoise();
+
+// ————————————————————————————————————————————————
+// L'ATTENTE — le FAIT que ce banc attend, jamais une fenêtre de mur (#1442)
+// ————————————————————————————————————————————————
+
+/** Le patron d'attente du harnais (#1442) : toute attente de ce fichier sort AU FAIT ACCOMPLI, jamais
+ *  au bout d'une fenêtre de mur. Le rythme unique du stage (`battreStageFrames`) y bat à chaque tour,
+ *  pour qu'une attente d'IMAGE ne dépende pas de ce que l'hôte décide de repeindre. */
+const attendre = (fait: () => boolean): Promise<void> =>
+  attendreQue(fait, PLAFOND_ATTENTE_MS, () => battreStageFrames());
+
+/**
+ * REPOS de l'écran : plus une rasterisation dans la file cadencée du cuiseur (`bakeQueueLength`) ni une
+ * clé statique qui attend son rang (`poigneesEnAttente`). C'est l'état où tout ce qu'un geste a mis en
+ * file a été servi — donc où tout objet que ce service devait monter ou libérer l'est.
+ */
+const auRepos = (): boolean => bakeQueueLength() === 0 && poigneesEnAttente().size === 0;
+
+/** Images battues APRÈS LE FAIT avant de figer le prédicat (#1442, patron `gabarits-en-file`) : le
+ *  murage est une assertion NÉGATIVE (aucun objet tué, aucun neuf hors des identités qui bougent), et
+ *  une sortie d'attente est au PLUS TÔT — un objet libéré à l'image suivante resterait hors du jugement. */
+const IMAGES_APRES_LE_FAIT = 3;
+
+/**
+ * Attend le REPOS de l'écran TENU sur `IMAGES_APRES_LE_FAIT` images battues — la fenêtre se réarme dès
+ * qu'une rasterisation repart, si bien que le retour affirme deux choses à la fois : la file est vide,
+ * et elle l'est restée le temps que la scène soit repeinte. Le plafond ne fait que borner l'infini.
+ */
+async function attendreRepos(quoi: string): Promise<void> {
+  let fenêtre = scènes.length + IMAGES_APRES_LE_FAIT;
+  await attendre(() => {
+    if (!auRepos()) {
+      fenêtre = scènes.length + IMAGES_APRES_LE_FAIT;
+      return false;
+    }
+    return scènes.length >= fenêtre;
+  });
+  expect(auRepos(), `PRÉMISSE : ${quoi} — la file du cuiseur porte encore ${bakeQueueLength()} tâche(s) et ${poigneesEnAttente().size} poignée(s)`)
+    .toBe(true);
+  expect(scènes.length, `PRÉMISSE : ${quoi} — la pompe d'images doit battre après le fait (${scènes.length} image(s) pour ${fenêtre} attendues)`)
+    .toBeGreaterThanOrEqual(fenêtre);
+}
 
 // ————————————————————————————————————————————————
 // FOYERS — le churn SANS identité qui subsiste : nommé, borné, et daté d'une raison structurelle
@@ -270,12 +316,15 @@ async function monterÉcran(scene: Scene, pos: { x: number; y: number }, quadsAt
   document.body.appendChild(hôte);
   root = createRoot(hôte);
   await act(async () => { root!.render(<CampaignView />); });
-  await attendreQuads(quadsAttendus, 20_000);
+  await attendreQuads(quadsAttendus, PLAFOND_ATTENTE_MS);
   // `attendreQuads` est un PLAFOND : il rend la main au budget épuisé, sans lever. Le PLANCHER est
   // ici, et il est une assertion : une file du cuiseur qui n'a servi que trois quads laisserait le
   // banc mesurer la conservation d'un écran presque vide, et le dire vert.
   expect(quads().length, `${quadsAttendus} quads attendus sur cet écran, ${quads().length} servis`)
     .toBeGreaterThanOrEqual(quadsAttendus);
+  // Le relevé d'AVANT se prend sur un écran au repos : une file du montage qui sert encore monterait
+  // ses quads pendant le geste, et le prédicat les compterait à sa charge.
+  await attendreRepos('le montage doit être servi avant le relevé d’avant');
 }
 
 /** Le hub monté au départ authoré, décor servi. */
@@ -291,11 +340,11 @@ async function monterCombat(): Promise<void> {
   document.body.appendChild(hôte);
   root = createRoot(hôte);
   await act(async () => { root!.render(<CampaignView />); });
-  await attendreQuads(4, 20_000);
+  await attendreQuads(4, PLAFOND_ATTENTE_MS);
   await act(async () => { useGame.getState().startCombat('enc-mutants', undefined, { noSurprise: true }); });
-  await respirer(400);
+  await attendreRepos('l’engagement du combat doit être servi');
   await act(async () => { useGame.getState().confirmRoundStart(); });
-  await respirer(400);
+  await attendreRepos('la levée de la pause de début de round doit être servie');
   // Le PLANCHER de population, au poste de mesure : le groupe et ses adversaires montés (cf.
   // `monterÉcran`, même raison).
   expect(quads().length, `4 quads attendus au round engagé, ${quads().length} servis`).toBeGreaterThanOrEqual(4);
@@ -313,8 +362,6 @@ interface Geste {
   témoin: () => string;
   /** Le geste, par le chemin que le jeu emprunte. */
   agir: () => Promise<void>;
-  /** Le temps laissé à la file du cuiseur et aux effets pour SERVIR le geste. */
-  respirerMs: number;
 }
 
 const meneur = (): string => useGame.getState().party[0]!.id;
@@ -325,32 +372,28 @@ const BATTERIE: readonly Geste[] = [
     monter: monterHub,
     témoin: () => JSON.stringify(useGame.getState().partyPos),
     agir: async () => { await act(async () => { useGame.getState().stepPartyDir('up'); }); },
-    respirerMs: 600,
   },
   {
     nom: 'un quart de tour',
     monter: monterHub,
     témoin: () => String(viewRot(useGame.getState().camRot)),
     agir: async () => { await act(async () => { nudgeStageYaw(90); }); },
-    respirerMs: 900,
   },
   {
     nom: 'un cap en première personne',
     monter: async () => {
       await monterHub();
       await act(async () => { useGame.getState().togglePov(); });
-      await respirer(600);
+      await attendreRepos('la bascule en première personne doit être servie avant le geste');
     },
     témoin: () => String(useGame.getState().facing[meneur()] ?? '—'),
     agir: async () => { await act(async () => { useGame.getState().pivotParty(1); }); },
-    respirerMs: 900,
   },
   {
     nom: 'une heure',
     monter: monterHub,
     témoin: () => String(useGame.getState().gameTime),
     agir: async () => { await act(async () => { useGame.setState({ gameTime: useGame.getState().gameTime + 60 }); }); },
-    respirerMs: 400,
   },
   {
     nom: 'une teinte de vision',
@@ -364,7 +407,6 @@ const BATTERIE: readonly Geste[] = [
       for (let x = 0; x < dims.w; x++) for (let y = 0; y < dims.h; y++) cases.push(`${x},${y},0`);
       await act(async () => { useGame.getState().markExplored(cases); });
     },
-    respirerMs: 900,
   },
   {
     nom: 'un dégagement',
@@ -376,7 +418,6 @@ const BATTERIE: readonly Geste[] = [
       // bâtie : c'est la seule qui fasse basculer le verdict de dégagement à coup sûr sur cette carte.
       await act(async () => { useGame.setState({ partyPos: { ...SOUS_UN_TOIT } }); });
     },
-    respirerMs: 900,
   },
   {
     nom: 'un survol',
@@ -386,14 +427,12 @@ const BATTERIE: readonly Geste[] = [
       const ennemi = useGame.getState().battle!.combatants.find((c) => c.kind === 'enemy')!;
       await act(async () => { useGame.getState().setHoverCombatant(ennemi.id); });
     },
-    respirerMs: 500,
   },
   {
     nom: 'un tour de combat',
     monter: monterCombat,
     témoin: () => String(useGame.getState().battle?.turn ?? '—'),
     agir: async () => { await act(async () => { useGame.getState().battleEndTurn(); }); },
-    respirerMs: 900,
   },
 ];
 
@@ -424,7 +463,12 @@ describe('Murage par identité — un objet ne naît et ne meurt qu’avec son s
     const témoinAvant = geste.témoin();
 
     await geste.agir();
-    await respirer(geste.respirerMs);
+    // Le geste a MORDU sur l'état — son témoin a bougé. Tous ne mordent pas dans l'appel : un quart de
+    // tour pose un lacet CONTINU dont le cran ne bascule qu'au franchissement, plusieurs images plus
+    // tard. C'est ce basculement qu'on attend ; l'affirmer reste à la prémisse ci-dessous.
+    await attendre(() => geste.témoin() !== témoinAvant);
+    // Puis l'écran au REPOS : tout ce que le geste a mis en file est servi, et la scène repeinte.
+    await attendreRepos(`le geste « ${geste.nom} » doit être servi avant le relevé d’après`);
 
     // PRÉMISSE — le geste a bien mordu : un écran inerte conserve tout, et ne prouve rien.
     expect(geste.témoin(), `le geste « ${geste.nom} » n’a rien changé à l’état : il ne mesure rien`)
