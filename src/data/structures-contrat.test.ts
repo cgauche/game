@@ -202,7 +202,14 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // dont le `when` est l'algèbre `Condition` déjà comptée pour le gating de carte, et l'enveloppe
 // `narratif` qui gagne ses deux clés OPTIONNELLES. Solde net +1 (la signature `narratif` précédente,
 // sans cadre, disparaît au profit de celle-ci).
-const PLAFOND_HORS_STRATE = 1147;
+// #684+#717 sur « La Barge du Sel » (1147→1149) : AUCUNE structure neuve — les MÊMES formes, portées
+// par un second paquet. Signatures nommées par la garde : `when {expr,kind}` (l'algèbre `Condition`
+// du moteur, portée par le lieu, la route et la clôture), `ouverture {ambiance,pitch,sousTitre,titre}`
+// (`ouvertureSchema`), `cloture {sousTitre,titre,when}` (`clotureSchema`) et l'enveloppe `narratif`
+// qui gagne ses deux clés optionnelles (`defs-scenes/narratif.ts`, #717) — solde net +2, la signature
+// `narratif` sans cadre de ce paquet disparaissant au profit de celle-ci. Bump RÉVISABLE : la
+// déclaration de ces formes en CIBLE au lexique est proposée à la vague enveloppe.
+const PLAFOND_HORS_STRATE = 1149;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -1030,7 +1037,10 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le
     // MÊME drapeau de révélation d'Altdorf que les deux axes de carte ci-dessus, sur un troisième
     // porteur : le fait de donnée qui dit « le chapitre se ferme ».
-    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(188);
+    // #684+#717 sur « La Barge du Sel » : +3 Conditions sans `op` — les MÊMES trois porteurs, un
+    // chapitre plus loin (le `when` du LIEU de l'îlot et celui de sa ROUTE, sur le drapeau du cap ;
+    // le `when` de la CLÔTURE, sur le drapeau d'accostage).
+    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(191);
   });
 });
 

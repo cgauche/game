@@ -14,20 +14,24 @@ import loupEtSaumureProjet from '../scenes/loup-et-saumure/loup-et-saumure-proje
 
 const ctx = (flags: Record<string, boolean> = {}): ConditionCtx => ({ flags, gameTime: 0 });
 
-const cartesReelles: [string, WorldMap][] = (
-  [
-    ['arene-projet.json', areneProjet],
-    ['barge-du-sel-projet.json', bargeDuSelProjet],
-    ['loup-et-saumure-projet.json', loupEtSaumureProjet],
-  ] as [string, unknown][]
-).map(([nom, doc]) => {
+function carteDe(nom: string, doc: unknown): WorldMap {
   const map = parseProject(doc).worldMap;
-  if (!map) throw new Error(`${nom} : paquet sans worldMap — la mesure de non-régression perd son sujet.`);
-  return [nom, map];
-});
+  if (!map) throw new Error(`${nom} : paquet sans worldMap — la mesure perd son sujet.`);
+  return map;
+}
 
-describe('cartes RÉELLES committées — aucune n’authore de `when` : l’offre est identique avec et sans ctx', () => {
-  it.each(cartesReelles)('%s : lieux et routes inchangés', (_nom, map) => {
+/** Cartes réelles SANS gating : elles mesurent la non-régression (même offre avec et sans ctx). */
+const cartesNonGatees: [string, WorldMap][] = [
+  ['arene-projet.json', carteDe('arene-projet.json', areneProjet)],
+  ['loup-et-saumure-projet.json', carteDe('loup-et-saumure-projet.json', loupEtSaumureProjet)],
+];
+
+/** Carte réelle GATÉE : la campagne de test « La Barge du Sel » porte les deux axes sur ses DEUX lieux. */
+const carteBarge = carteDe('barge-du-sel-projet.json', bargeDuSelProjet);
+const CAP_SEL = 'sel-cap-donne';
+
+describe('cartes RÉELLES sans `when` — l’offre est identique avec et sans ctx', () => {
+  it.each(cartesNonGatees)('%s : lieux et routes inchangés', (_nom, map) => {
     expect(map.places.length).toBeGreaterThan(0);
     expect(map.routes.length).toBeGreaterThan(0);
     expect(map.places.some((p) => p.when)).toBe(false);
@@ -41,6 +45,23 @@ describe('cartes RÉELLES committées — aucune n’authore de `when` : l’off
     // La somme des offres par lieu couvre bien toutes les routes (la mesure porte sur du réel).
     const vues = new Set(map.places.flatMap((p) => routesFrom(map, p.id, ctx()).map((r) => r.id)));
     expect(vues.size).toBe(map.routes.length);
+  });
+});
+
+describe('carte RÉELLE GATÉE — « La Barge du Sel » : le cap donné au quai révèle l’îlot ET sa traversée', () => {
+  it('sans le cap : un seul lieu offert, aucune route ; avec : les deux lieux et la traversée', () => {
+    expect(visiblePlaces(carteBarge, ctx()).map((p) => p.id)).toEqual(['quai-du-sel']);
+    expect(routesFrom(carteBarge, 'quai-du-sel', ctx())).toEqual([]);
+
+    const cap = ctx({ [CAP_SEL]: true });
+    expect(visiblePlaces(carteBarge, cap).map((p) => p.id)).toEqual(['quai-du-sel', 'ilot-du-sel']);
+    expect(routesFrom(carteBarge, 'quai-du-sel', cap).map((r) => r.id)).toEqual(['route-quai-ilot']);
+  });
+
+  it('la traversée fermée reste CONSULTABLE, avec sa raison joueur (`routesEtat` + `refus`)', () => {
+    const etat = routesEtat(carteBarge, 'quai-du-sel', ctx());
+    expect(etat.map((e) => [e.route.id, e.ouverte])).toEqual([['route-quai-ilot', false]]);
+    expect(etat[0].route.refus).toBeTruthy();
   });
 });
 
@@ -146,8 +167,8 @@ describe('`routesEtat` — lecteur de la VUE : TOUTES les routes du lieu, chacun
     ]);
   });
 
-  it('cartes RÉELLES committées : `routesEtat` rend exactement l’offre de `routesFrom`', () => {
-    for (const [, map] of cartesReelles) {
+  it('cartes RÉELLES sans `when` : `routesEtat` rend exactement l’offre de `routesFrom`', () => {
+    for (const [, map] of cartesNonGatees) {
       for (const p of map.places) {
         expect(routesEtat(map, p.id, ctx()).map((e) => e.route)).toEqual(routesFrom(map, p.id, ctx()));
         expect(routesEtat(map, p.id, ctx()).every((e) => e.ouverte)).toBe(true);

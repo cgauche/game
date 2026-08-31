@@ -10,7 +10,21 @@
   "affaires": [],
   "indices": [],
   "presetsPnj": [],
-  "objets": []
+  "objets": [],
+  "ouverture": {
+   "titre": "La Barge du Sel",
+   "sousTitre": "Une traversée courte, une mer mal fréquentée",
+   "pitch": "Trente kilomètres de mer grise séparent le quai de l'îlot du sel. Une traversée d'une journée, que les caboteurs faisaient sans y penser.\n\nDepuis trois lunes, des voiles noires y prélèvent leur part, et plus personne ne trouve d'équipage pour la faire. La Louve grise appareille quand même — la cale pleine, le canon servi.",
+   "ambiance": "veillee"
+  },
+  "cloture": {
+   "when": {
+    "kind": "flag",
+    "expr": "sel-ilot-accoste"
+   },
+   "titre": "La Barge du Sel — la traversée est faite",
+   "sousTitre": "Ce que la Louve grise ramène de la traversée"
+  }
  },
  "scenes": [
   {
@@ -203,6 +217,35 @@
         "effect": {
          "type": "journal",
          "desc": "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord — son canon servi, poudre et boulets en soute."
+        }
+       }
+      ]
+     }
+    },
+    {
+     "id": "barge-du-sel-cap-donne",
+     "rect": {
+      "x": 0,
+      "y": 5,
+      "w": 12,
+      "h": 1
+     },
+     "once": true,
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setFlag",
+         "flag": "sel-cap-donne"
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "desc": "Sur les planches du quai, le maître de quai donne le cap : l'îlot du sel, plein nord."
         }
        }
       ]
@@ -1068,7 +1111,7 @@
         "kind": "do",
         "effect": {
          "type": "setFlag",
-         "flag": "sel_embuscade_vaincue"
+         "flag": "sel-embuscade-vaincue"
         }
        },
        {
@@ -1245,6 +1288,13 @@
          "type": "journal",
          "desc": "La Louve grise accoste à l'îlot, la cale toujours pleine de sel."
         }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setFlag",
+         "flag": "sel-ilot-accoste"
+        }
        }
       ]
      }
@@ -1277,7 +1327,11 @@
      "y": 40
     },
     "scene": "barge-du-sel-ilot",
-    "icon": "scenario/port"
+    "icon": "scenario/port",
+    "when": {
+     "kind": "flag",
+     "expr": "sel-cap-donne"
+    }
    }
   ],
   "routes": [
@@ -1295,7 +1349,12 @@
      "scene": "barge-du-sel-embuscade",
      "encounter": "enc-embuscade-sel",
      "at": 0.5
-    }
+    },
+    "when": {
+     "kind": "flag",
+     "expr": "sel-cap-donne"
+    },
+    "refus": "Aucun cap n'est donné : la Louve grise ne sait pas encore où porter le sel."
    }
   ]
  }

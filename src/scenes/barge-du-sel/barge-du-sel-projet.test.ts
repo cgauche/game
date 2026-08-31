@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { parseProject } from '../../state/worldMap';
+import { parseProject, routesFrom, visiblePlaces } from '../../state/worldMap';
+import type { ConditionCtx } from '../../engine/flowCore';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { sceneMetresPerTile, isMerScene, type Scene, type Effect } from '../../state/scene';
 import { findCreatureById, findVehicleById, findNavalTrait, findCrewRoleById } from '../../data';
@@ -198,5 +199,79 @@ describe('La Barge du Sel — mini-campagne navale (zéro code applicatif)', () 
     // ne le déclare pas (test ci-dessus).
     const sc = makeScene({ id: 'tmp-mer', nom: 'Mer ouverte', base: 'eau', rows: ['====', '===='], metresPerTile: 8 });
     expect(sceneMetresPerTile(sc)).toBe(8);
+  });
+});
+
+/**
+ * CHAÎNE NARRATIVE du chapitre (#684 gating de carte + #717 ouverture/clôture) — la campagne de test
+ * porte les DEUX outils sur de la donnée réelle : le cap donné au quai révèle l'îlot ET sa route,
+ * l'accostage pose le drapeau que lit la clôture.
+ */
+const ctx = (flags: Record<string, boolean> = {}): ConditionCtx => ({ flags, gameTime: 0 });
+const CAP = 'sel-cap-donne';
+const ACCOSTE = 'sel-ilot-accoste';
+
+/** Effets d'un trigger nommé, quelle que soit la scène qui le porte. */
+function triggerEffects(sceneId: string, triggerId: string): Effect[] {
+  const sc = project.find((s) => s.id === sceneId)!;
+  const trig = sc.triggers.find((t) => t.id === triggerId)!;
+  const out: Effect[] = [];
+  walkFlow(trig.flow, out);
+  return out;
+}
+
+describe('chaîne narrative — le cap RÉVÈLE la route, l’accostage FERME le chapitre', () => {
+  it('le lieu et la route de l’îlot portent le MÊME `when`, et la route dit sa raison au joueur', () => {
+    const wm = doc.worldMap!;
+    const ilot = wm.places.find((p) => p.id === 'ilot-du-sel')!;
+    const route = wm.routes.find((r) => r.id === 'route-quai-ilot')!;
+    expect(ilot.when).toEqual({ kind: 'flag', expr: CAP });
+    expect(route.when).toEqual(ilot.when);
+    expect(route.refus?.length ?? 0).toBeGreaterThan(0);
+  });
+
+  it('axe NŒUD : sans le cap, l’îlot n’existe pas sur la carte ; avec, il apparaît', () => {
+    const wm = doc.worldMap!;
+    expect(visiblePlaces(wm, ctx()).map((p) => p.id)).toEqual(['quai-du-sel']);
+    expect(visiblePlaces(wm, ctx({ [CAP]: true })).map((p) => p.id)).toEqual(['quai-du-sel', 'ilot-du-sel']);
+  });
+
+  it('axe ARÊTE : sans le cap, aucune route ne part du quai ; avec, la traversée est offerte', () => {
+    const wm = doc.worldMap!;
+    expect(routesFrom(wm, 'quai-du-sel', ctx())).toEqual([]);
+    expect(routesFrom(wm, 'quai-du-sel', ctx({ [CAP]: true })).map((r) => r.id)).toEqual(['route-quai-ilot']);
+  });
+
+  it('le drapeau du cap se pose sur le CHEMIN d’embarquement : le rect du trigger touche le décor qui ouvre la carte', () => {
+    const effets = triggerEffects('barge-du-sel-quai', 'barge-du-sel-cap-donne');
+    expect(effets.some((e) => e.type === 'setFlag' && e.flag === CAP)).toBe(true);
+
+    const quai = project.find((s) => s.id === 'barge-du-sel-quai')!;
+    const rect = quai.triggers.find((t) => t.id === 'barge-du-sel-cap-donne')!.rect;
+    const embarquement = quai.entities.find((e) => {
+      const eff: Effect[] = [];
+      walkFlow(e.interact?.flow, eff);
+      return eff.some((x) => x.type === 'openWorldMap');
+    })!;
+    // Le décor d'embarquement s'interagit à une adjacence de Chebyshev ≤ 1 (`interactEntity`) : si le
+    // rect ne le TOUCHAIT pas, un joueur pourrait embarquer sans jamais poser le drapeau — la route
+    // resterait fermée pour toujours. Ce contrat mord si le décor est un jour déplacé.
+    const distances: number[] = [];
+    for (let y = rect.y; y < rect.y + rect.h; y++)
+      for (let x = rect.x; x < rect.x + rect.w; x++)
+        distances.push(Math.max(Math.abs(x - embarquement.pos.x), Math.abs(y - embarquement.pos.y)));
+    expect(Math.min(...distances)).toBeLessThanOrEqual(1);
+  });
+
+  it('l’accostage pose le drapeau que la CLÔTURE authorée relit', () => {
+    const effets = triggerEffects('barge-du-sel-ilot', 'barge-du-sel-arrivee');
+    expect(effets.some((e) => e.type === 'setFlag' && e.flag === ACCOSTE)).toBe(true);
+    expect(doc.narratif.cloture!.when).toEqual({ kind: 'flag', expr: ACCOSTE });
+  });
+
+  it('l’OUVERTURE existe et est renseignée — sans elle, la borne du chapitre reste nulle et le récap ne compte AUCUN PX', () => {
+    const o = doc.narratif.ouverture!;
+    expect(o.titre.length).toBeGreaterThan(0);
+    expect(o.pitch.length).toBeGreaterThan(0);
   });
 });

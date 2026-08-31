@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/barge-du-sel/barge-du-sel-projet.json` (`projectDoc()` : projet schema 4
- * `{ schema: 4, meta, narratif, scenes, worldMap }`).
+ * Génère `src/scenes/barge-du-sel/barge-du-sel-projet.json` (`projectDoc()` : paquet de projet
+ * `{ <identité>, schema: CURRENT_PROJECT_SCHEMA, narratif, scenes, worldMap }`).
  * Mini-campagne navale « La Barge du Sel » (issue #218, expérience auteur) — modelée sur
  * `scripts/loup-et-saumure/generate.mjs` : RÉUTILISE `scene()`/`hero()`/`P()`/`flowOf()`/`poste()`/
  * `resetIds()` de `scripts/campagne/lib.mjs` (IMPORT, zéro modification de ce fichier).
@@ -16,8 +16,9 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { scene, hero, P, flowOf, poste, resetIds, projectDoc } from '../campagne/lib.mjs';
+import { scene, hero, P, flowOf, poste, resetIds, projectDoc, flagWhen } from '../campagne/lib.mjs';
 import { itemFromTrappingById } from '../../src/engine/items.ts';
+import { emptyNarratif } from '../../src/state/campaignNarratif.ts';
 
 /** Construction PURE du document de projet : la SOURCE possède 100 % de la donnée de l'artefact
  *  (`src/scenes/barge-du-sel/barge-du-sel-projet.json`), le CLI ci-dessous n'en est que la voie d'écriture.
@@ -91,6 +92,13 @@ function marine(id, x, y, label, skills) {
 /** Objectif courant (#238, doc §10) — id STABLE UNIQUE : re-poser met à jour le texte et le remonte en tête. */
 const OBJ = (desc) => ({ type: 'setObjective', id: 'barge-du-sel-mission', desc });
 
+/** Drapeaux de CHAPITRE (graphie kebab, comme les drapeaux narratifs des autres paquets) : le cap
+ *  donné au quai RÉVÈLE l'îlot et sa route (`MapPlace.when`/`MapRoute.when`), l'accostage à l'îlot
+ *  FERME le chapitre (`narratif.cloture.when`). Le drapeau nomme ce qui EST arrivé — la barge touche
+ *  l'îlot, sa cale est encore pleine : le sel n'est pas livré, et rien dans la donnée ne le dit. */
+const FLAG_CAP = 'sel-cap-donne';
+const FLAG_ACCOSTE = 'sel-ilot-accoste';
+
 const scenes = [];
 
 // ════════════════════════════════════════════════════════════════════════════════════════════
@@ -125,6 +133,17 @@ scenes.push(scene({
         },
         OBJ("Convoyer le sel jusqu'à l'îlot, malgré les pirates qui infestent la route."),
         { type: 'journal', desc: "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord — son canon servi, poudre et boulets en soute." },
+      ]),
+    },
+    {
+      // Le cap se prend SUR LES PLANCHES (rang 5) : le décor « Appareiller » est en (2,6) et
+      // `interactEntity` exige une adjacence de Chebyshev ≤ 1 (`store.ts`), donc le groupe passe
+      // forcément par ce rang pour embarquer — le drapeau est sur le chemin RÉEL, et jamais au
+      // premier pas (le groupe naît en (2,3)).
+      id: 'barge-du-sel-cap-donne', rect: { x: 0, y: 5, w: 12, h: 1 }, once: true,
+      flow: flowOf([
+        { type: 'setFlag', flag: FLAG_CAP },
+        { type: 'journal', desc: "Sur les planches du quai, le maître de quai donne le cap : l'îlot du sel, plein nord." },
       ]),
     },
   ],
@@ -194,7 +213,7 @@ scenes.push(scene({
         { entityId: 'cogue-gun', side: 'enemy' },
       ],
       onVictory: flowOf([
-        { type: 'setFlag', flag: 'sel_embuscade_vaincue' },
+        { type: 'setFlag', flag: 'sel-embuscade-vaincue' },
         { type: 'giveXp', amount: 100 },
         { type: 'giveMoney', gold: 10 },
         OBJ("Rallier l'îlot avec le sel — la cogue pirate écartée."),
@@ -231,6 +250,7 @@ scenes.push(scene({
       flow: flowOf([
         { type: 'clearObjective' },
         { type: 'journal', desc: "La Louve grise accoste à l'îlot, la cale toujours pleine de sel." },
+        { type: 'setFlag', flag: FLAG_ACCOSTE },
       ]),
     },
   ],
@@ -243,12 +263,16 @@ const worldMap = {
   label: 'La Barge du Sel',
   places: [
     { id: 'quai-du-sel', label: 'Le quai de départ', pos: { x: 20, y: 60 }, scene: 'barge-du-sel-quai', icon: 'scenario/port' },
-    { id: 'ilot-du-sel', label: 'L’îlot du sel', pos: { x: 60, y: 40 }, scene: 'barge-du-sel-ilot', icon: 'scenario/port' },
+    // GATING NARRATIF, les DEUX axes : tant que le cap n'est pas donné, l'îlot n'existe pas sur la
+    // carte (nœud) et sa route n'est pas praticable (arête, avec sa raison JOUEUR).
+    { id: 'ilot-du-sel', label: 'L’îlot du sel', pos: { x: 60, y: 40 }, scene: 'barge-du-sel-ilot', icon: 'scenario/port', when: flagWhen(FLAG_CAP) },
   ],
   routes: [
     {
       id: 'route-quai-ilot', a: 'quai-du-sel', b: 'ilot-du-sel', km: 30, modes: ['mer'], sea: true, seaHeading: 'nord',
       ambush: { scene: 'barge-du-sel-embuscade', encounter: 'enc-embuscade-sel', at: 0.5 },
+      when: flagWhen(FLAG_CAP),
+      refus: "Aucun cap n'est donné : la Louve grise ne sait pas encore où porter le sel.",
     },
   ],
 };
@@ -263,10 +287,29 @@ for (const s of scenes) {
 }
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
+// ── Cadre de chapitre (#717) — ouverture cérémonielle et clôture ──────────────────────────
+const narratif = {
+  ...emptyNarratif(),
+  ouverture: {
+    titre: 'La Barge du Sel',
+    sousTitre: 'Une traversée courte, une mer mal fréquentée',
+    // Prose MAISON, comme le scénario qui la porte (`identite.maison`) : aucun livre ne la publie.
+    pitch:
+      "Trente kilomètres de mer grise séparent le quai de l'îlot du sel. Une traversée d'une journée, que les caboteurs faisaient sans y penser.\n\nDepuis trois lunes, des voiles noires y prélèvent leur part, et plus personne ne trouve d'équipage pour la faire. La Louve grise appareille quand même — la cale pleine, le canon servi.",
+    ambiance: 'veillee',
+  },
+  cloture: {
+    when: flagWhen(FLAG_ACCOSTE),
+    titre: 'La Barge du Sel — la traversée est faite',
+    sousTitre: 'Ce que la Louve grise ramène de la traversée',
+  },
+};
+
 return projectDoc({
   identite: { id: 'barge-du-sel', label: 'La Barge du Sel', icon: 'scenario/naval', versionContenu: 1, maison: "scénario naval authoré pour le jeu — aucun livre ne le publie (mesuré : absent de `Source/`) ; il compose des règles de la Mer des Griffes, qui portent leur source à leur foyer" },
   scenes,
   worldMap,
+  narratif,
 });
 }
 

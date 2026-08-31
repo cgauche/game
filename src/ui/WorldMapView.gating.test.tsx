@@ -20,7 +20,7 @@ import { parseProject, type WorldMap } from '../state/worldMap';
 import { VB_W, VB_H } from './worldMapViewport';
 import { buildApi } from '../state/devtools';
 import { emptyScene, type Scene } from '../state/scene';
-import bargeDuSelProjet from '../scenes/barge-du-sel/barge-du-sel-projet.json';
+import loupEtSaumureProjet from '../scenes/loup-et-saumure/loup-et-saumure-projet.json';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -264,8 +264,8 @@ describe('RÉVÉLATION en cours de partie — la vue se re-cadre pour que le lie
 });
 
 describe('non-régression — un paquet RÉEL sans `when` rend à l’identique avec et sans gating', () => {
-  it('barge-du-sel : le rendu est le même que le flag narratif soit posé ou non', async () => {
-    const map = parseProject(bargeDuSelProjet as unknown).worldMap!;
+  it('loup-et-saumure : le rendu est le même que le flag narratif soit posé ou non', async () => {
+    const map = parseProject(loupEtSaumureProjet as unknown).worldMap!;
     const premier = map.places[0];
 
     useGame.setState({ worldMap: map, flags: {} });

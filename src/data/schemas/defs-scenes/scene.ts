@@ -280,8 +280,8 @@ export const dialogueSchema = z.strictObject({
 /** `Trigger` — `rect` (avec son étage `z`, #803) ET `when` en ET, évalués à l'entrée dans la zone. */
 export const triggerSchema = z.strictObject({
   id: z.string(),
-  /** `z` — étage du déclencheur, défaut 0 (rez). Comme `SceneEffectZone.z` (#782) : sans lui, un
-   *  trigger posé au rez se déclenche depuis/vers l'étage au-dessus (`checkTriggers`, #803). */
+  /** Zone du déclencheur — son étage est `rect.z` (défaut 0, rez), comme `SceneEffectZone.z` (#782) :
+   *  sans lui, un trigger posé au rez se déclenche depuis/vers l'étage au-dessus (`checkTriggers`, #803). */
   rect: rectSchema,
   once: z.boolean().optional(),
   /** Condition d'ENTRÉE (algèbre `Condition`, cf. `evalCondition`) — combinée en ET avec le `rect` et

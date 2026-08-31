@@ -40,10 +40,12 @@ describe('grammaire — `flowSchema` (Flow<EffectOp>) ≠ Flow de scène (Flow<E
   const feuilles = feuillesDo();
 
   it('le corpus de mesure est peuplé (les 4 projets portent des Flows authorés)', () => {
-    expect(feuilles.length).toBe(343);
+    // #684+#717 (343→346) : +3 feuilles `do` authorées dans « La Barge du Sel » — le `setFlag` du cap
+    // pris au quai et son `journal`, plus le `setFlag` d'accostage ajouté au trigger d'arrivée.
+    expect(feuilles.length).toBe(346);
   });
 
-  it('POSITIF — les 343 feuilles `do` réelles passent TOUTES `effectSchema` (le vocabulaire de scène)', () => {
+  it('POSITIF — les 346 feuilles `do` réelles passent TOUTES `effectSchema` (le vocabulaire de scène)', () => {
     const refusees = feuilles
       .map((e, i) => ({ i, e, r: effectSchema.safeParse(e) }))
       .filter((x) => !x.r.success)

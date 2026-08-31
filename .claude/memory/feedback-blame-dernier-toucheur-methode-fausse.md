@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 7fa03aff-afd5-481d-b04f-f8c0892b5ff1
-  modified: 2026-08-31T16:58:59.267Z
+  modified: 2026-08-31T21:55:55.620Z
 ---
 
 Deux réfutations le même jour, même classe d'erreur (2026-08-31, mesures du juge de la session voisine) :
@@ -19,3 +19,4 @@ Deux réfutations le même jour, même classe d'erreur (2026-08-31, mesures du j
 2. Avant d'accuser un lot : demander si la GARDE a un masque (baseline, ignoreExportsUsedInFile, tolérance) qui a pu retarder la détection — le déclencheur n'est pas le coupable.
 3. Un blame qui accuse une AUTRE session se vérifie au grep sur les shas AVANT d'être énoncé — et se corrige au record (message de commit suivant) s'il est réfuté ; voir [[feedback-attribution-rouge-suite-sonde-arbre-committe]], [[feedback-verifier-les-claims-architecturaux-des-agents]].
 4. Corollaire STAGING (3e occurrence, 2026-08-31 soir) : un fichier rapporté « déjà dans l'arbre, hors-périmètre, vérifié » par un agent s'attribue par BLAME/mtime AVANT d'entrer dans MON train — « déjà là » ne dit pas À QUI c'est. Mon 4b29cfaaf a embarqué 2 fichiers du lot 0 voisin (#1552) stagés par chemins explicites sur la foi de cette ligne d'inventaire ; record corrigé au train suivant.
+5. Corollaire jumeau EXCLUSION (4e occurrence, nuit du 2026-08-31, payée par les DEUX sessions) : un fichier M se classe par son DIFF, jamais par son NOM ou son allure. Le voisin a exclu 10 fixtures de test de son train « par nom » (demi-train, CI rouge TS2741) pendant que J'attribuais les mêmes M à un 3e chantier sans en ouvrir un seul. Les deux gestes symétriques (inclure à tort / exclure à tort) ont la même parade : `git diff <fichier>` avant de trancher l'appartenance.

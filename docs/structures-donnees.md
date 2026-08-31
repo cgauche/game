@@ -50,7 +50,7 @@ troncature se COMPTE ici, elle ne se tait pas.
 
 ### 1bis. Index des ids (le cœur du détecteur)
 
-Identités indexées : **5791** (entrées de racine + documents embarqués) ; libellés
+Identités indexées : **5792** (entrées de racine + documents embarqués) ; libellés
 normalisés : **5022**. Un id vu dans PLUSIEURS datasets rend la résolution
 AMBIGUË (jamais fausse) : **384** collisions, et **3355** ids
 sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
@@ -709,7 +709,7 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | méta libre | `__livres` | divergente | 0 | — |
 
 Groupes mesurés : **126** jeux d’ENTRÉES DE RACINE et **137** chemins de
-DOCUMENTS EMBARQUÉS (**2127** objets). **47** divergences
+DOCUMENTS EMBARQUÉS (**2128** objets). **47** divergences
 (rôle × clé × document × chemin) au stock `STRUCTURES_ENVELOPPE` (`scripts/guards/lib/structuresStock.mjs`,
 garde `src/data/structures-contrat.test.ts`) — une ligne se solde en migrant l’enveloppe, la ligne part
 dans le MÊME commit :
@@ -763,11 +763,11 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `barge-du-sel-projet.json` | `scenes.encounters.onVictory.steps.effect` | 1 | `desc`(1) `id`(1) `type`(1) |
 | `barge-du-sel-projet.json` | `scenes.entities` | 13 | `crewIds`(2) `facing`(2) `id`(13) `interact`(1) `kind`(13) `label`(10) `pos`(13) `postes`(2) `ref`(5) `statblock`(4) `upgrades`(1) |
 | `barge-du-sel-projet.json` | `scenes.entities.upgrades` | 1 | `id`(1) `value`(1) |
-| `barge-du-sel-projet.json` | `scenes.triggers` | 2 | `flow`(2) `id`(2) `once`(2) `rect`(2) |
+| `barge-du-sel-projet.json` | `scenes.triggers` | 3 | `flow`(3) `id`(3) `once`(3) `rect`(3) |
 | `barge-du-sel-projet.json` | `scenes.triggers.flow.steps.effect` | 1 | `desc`(1) `id`(1) `type`(1) |
 | `barge-du-sel-projet.json` | `worldMap` | 1 | `id`(1) `label`(1) `places`(1) `routes`(1) |
-| `barge-du-sel-projet.json` | `worldMap.places` | 2 | `icon`(2) `id`(2) `label`(2) `pos`(2) `scene`(2) |
-| `barge-du-sel-projet.json` | `worldMap.routes` | 1 | `a`(1) `ambush`(1) `b`(1) `id`(1) `km`(1) `modes`(1) `sea`(1) `seaHeading`(1) |
+| `barge-du-sel-projet.json` | `worldMap.places` | 2 | `icon`(2) `id`(2) `label`(2) `pos`(2) `scene`(2) `when`(1) |
+| `barge-du-sel-projet.json` | `worldMap.routes` | 1 | `a`(1) `ambush`(1) `b`(1) `id`(1) `km`(1) `modes`(1) `refus`(1) `sea`(1) `seaHeading`(1) `when`(1) |
 | `characteristics.json` | `options` | 2 | `desc`(2) `id`(2) `label`(2) `source`(2) |
 | `creatures.json` | `optionals.grant` | 1 | `id`(1) `spec`(1) `value`(1) |
 | `crew-morale.json` | `bands` | 4 | `captainCmdDR`(4) `crewTestDR`(4) `desc`(4) `desertionRoll`(2) `id`(4) `label`(4) `max`(4) `min`(4) `source`(4) |
@@ -1068,7 +1068,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **830** (cible 344 · declaree 6 · historique 122 · divergente 358). Objets JSON parcourus : **48087**, dont **31737** portent une forme
+Lignes concept × dataset × champ × forme : **830** (cible 344 · declaree 6 · historique 122 · divergente 358). Objets JSON parcourus : **48101**, dont **31737** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -2350,14 +2350,14 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12481** objets sur **48087** ne sont portés par AUCUNE
+Au-delà des orphelines, **12494** objets sur **48101** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1146** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1149** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2457,6 +2457,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `spells.json` | `meters` | `charOf` | 16 |
 | `barge-du-sel-projet.json` | `pos` | `x,y` | 15 |
 | `tables.json` | `ops` | `bonus,op,skill` | 15 |
+| `barge-du-sel-projet.json` | `steps` | `effect,kind` | 14 |
 | `naval-traits.json` | `cost` | `bands` | 14 |
 | `naval-traits.json` | `weightEnc` | `bands` | 14 |
 | `spells.json` | `fail` | `kind,steps` | 14 |
@@ -2480,7 +2481,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `traits.json` | `passive` | `bonus,op,skill` | 12 |
 | `traits.json` | `flow` | `effect,kind` | 12 |
 | `arene-projet.json` | `combat` | `optionals` | 11 |
-| `barge-du-sel-projet.json` | `steps` | `effect,kind` | 11 |
 | `loup-et-saumure-projet.json` | `effect` | `type` | 11 |
 | `sea-cargo.json` | `avail` | `automne,ete,hiver,printemps` | 11 |
 | `spells.json` | `durationRounds` | `bonusOf` | 11 |
@@ -2634,6 +2634,8 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `trappings.json` | `passive` | `bonus,op,skill` | 5 |
 | `aa-criticals.json` | `durationRounds` | `dice` | 4 |
 | `activities.json` | `outcomes` | `battle,maxSL,on` | 4 |
+| `barge-du-sel-projet.json` | `flow` | `kind,steps` | 4 |
+| `barge-du-sel-projet.json` | `effect` | `desc,type` | 4 |
 | `barge-du-sel-projet.json` | `char` | `B,M,agilite,capacite-de-combat,capacite-de-tir,dexterite,endurance,force,force-mentale,intelligence,sociabilite` | 4 |
 | `careerLevels.json` | `talents` | `of,pick` | 4 |
 | `disponibilite.json` | `ratios` | `Commune,Exotique,Limitée,Rare` | 4 |
@@ -2683,9 +2685,10 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `arene-projet.json` | `edge` | `side,x,y` | 3 |
 | `arene-projet.json` | `perils` | `chancePct,effects,label` | 3 |
 | `arene-projet.json` | `effects` | `desc,type` | 3 |
+| `barge-du-sel-projet.json` | `when` | `expr,kind` | 3 |
 | `barge-du-sel-projet.json` | `dimensions` | `h,w` | 3 |
-| `barge-du-sel-projet.json` | `flow` | `kind,steps` | 3 |
-| `barge-du-sel-projet.json` | `effect` | `desc,type` | 3 |
+| `barge-du-sel-projet.json` | `rect` | `h,w,x,y` | 3 |
+| `barge-du-sel-projet.json` | `effect` | `flag,type` | 3 |
 | `barge-du-sel-projet.json` | `flags` | `` | 3 |
 | `barge-du-sel-projet.json` | `damage` | `flat,plusBF` | 3 |
 | `criticals.json` | `times` | `factor,of` | 3 |
@@ -2771,7 +2774,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `arene-projet.json` | `char` | `B,M,agilite,capacite-de-combat,endurance,force` | 2 |
 | `arene-projet.json` | `combat` | `hiddenUntilCombat,randomChars` | 2 |
 | `barge-du-sel-projet.json` | `effect` | `type` | 2 |
-| `barge-du-sel-projet.json` | `rect` | `h,w,x,y` | 2 |
 | `barge-du-sel-projet.json` | `ammoRangeMod` | `mult` | 2 |
 | `classes.json` | `count` | `roll` | 2 |
 | `criticals.json` | `escalation` | `onHealGrant` | 2 |
@@ -3000,10 +3002,11 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `arene-projet.json` | `interact` | `consume,flow` | 1 |
 | `arene-projet.json` | `char` | `B,M,agilite,capacite-de-combat,capacite-de-tir,dexterite,endurance,force,force-mentale,initiative,intelligence,sociabilite` | 1 |
 | `arene-projet.json` | `combat` | `hiddenUntilCombat,optionals` | 1 |
-| `barge-du-sel-projet.json` | `narratif` | `affaires,indices,objets,presetsPnj` | 1 |
+| `barge-du-sel-projet.json` | `narratif` | `affaires,cloture,indices,objets,ouverture,presetsPnj` | 1 |
+| `barge-du-sel-projet.json` | `ouverture` | `ambiance,pitch,sousTitre,titre` | 1 |
+| `barge-du-sel-projet.json` | `cloture` | `sousTitre,titre,when` | 1 |
 | `barge-du-sel-projet.json` | `interact` | `flow` | 1 |
 | `barge-du-sel-projet.json` | `onVictory` | `kind,steps` | 1 |
-| `barge-du-sel-projet.json` | `effect` | `flag,type` | 1 |
 | `barge-du-sel-projet.json` | `effect` | `amount,type` | 1 |
 | `barge-du-sel-projet.json` | `entryPoints` | `arrivee` | 1 |
 | `barge-du-sel-projet.json` | `arrivee` | `x,y` | 1 |
@@ -3670,14 +3673,14 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 `gameOpSchema` est un `looseObject` (`src/data/schemas/grammaire/mecanique.ts`) : seul `op` est contraint.
 Mesure : **2187** objets portent un `op` = **2129** ops de jeu + **58**
 Conditions dont l’`op` est un COMPARATEUR (`kind` reconnu par `conditionSchema`, kinds lus par AST).
-**246** Conditions au total, dont **188** sans `op` :
+**249** Conditions au total, dont **191** sans `op` :
 celles-là n’ont jamais été comptées en op — le retrait des Conditions du compte d’ops vaut
-2187 → 2129, jamais 2187 → 1941.
+2187 → 2129, jamais 2187 → 1938.
 Noms d’op distincts : **103**, signatures distinctes : **233**.
 
 | `kind` de Condition | Avec `op` | Sans `op` |
 |---|---|---|
-| `flag` | — | 81 |
+| `flag` | — | 84 |
 | `compare` | 29 | — |
 | `has` | — | 29 |
 | `slThreshold` | 20 | — |
