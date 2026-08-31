@@ -125,14 +125,16 @@ function kindsHorsCarte(cond: unknown, out: Set<string> = new Set()): Set<string
   return out;
 }
 
-/** `Condition` d'un `when` de CARTE — l'algèbre complète, restreinte aux kinds évaluables ici. */
-const conditionCarteSchema = conditionSchema.superRefine((cond, ctx) => {
+/** `Condition` d'un `when` évalué au contexte HORS COMBAT (`condCtx`) — l'algèbre complète,
+ *  restreinte aux kinds évaluables là : le `when` d'un lieu/trajet de carte, et celui de la CLÔTURE
+ *  d'un chapitre (#717), qui passe par le MÊME `condCtx`. */
+export const conditionCondCtxSchema = conditionSchema.superRefine((cond, ctx) => {
   const hors = [...kindsHorsCarte(cond)];
   if (hors.length) {
     ctx.addIssue({
       code: 'custom',
       message:
-        `Condition de carte : « ${hors.join(' », « ')} » n'est pas évaluable au contexte de la carte ` +
+        `Condition : « ${hors.join(' », « ')} » n'est pas évaluable au contexte hors combat ` +
         `(drapeaux, horloge, groupe, bourse — « condCtx », src/state/bourseFlow.ts) : la Condition serait ` +
         `FAUSSE en silence. Kinds admis : ${[...CONDITION_KINDS_CARTE].join(', ')}.`,
     });
@@ -158,7 +160,7 @@ export const mapPlaceSchema = z.strictObject({
   backdrop: z.string().optional(),
   /** EXISTENCE du lieu sur la carte (algèbre `Condition`, cf. `evalCondition`) — axe NŒUD du gating
    *  narratif : la destination n'apparaît qu'une fois révélée. Absente = toujours visible. */
-  when: conditionCarteSchema.optional(),
+  when: conditionCondCtxSchema.optional(),
 });
 
 /** `RoutePeril` — péripétie d'AUTEUR tirée chaque jour de voyage à `chancePct` %. */
@@ -199,7 +201,7 @@ export const mapRouteSchema = z.strictObject({
   riverPerils: z.array(z.strictObject({ perilId: z.string(), chancePct: z.number() })).optional(),
   /** PRATICABILITÉ du trajet (algèbre `Condition`, cf. `evalCondition`) — axe ARÊTE du gating
    *  narratif, indépendant de `mapPlaceSchema.when`. Absente = toujours praticable. */
-  when: conditionCarteSchema.optional(),
+  when: conditionCondCtxSchema.optional(),
   /** Raison JOUEUR de l'indisponibilité, rendue par `GatedAction` en infobulle — EXIGÉE dès que
    *  `when` est posé (superRefine ci-dessous) : un trajet fermé MUET est un cul-de-sac inexplicable. */
   refus: z.string().optional(),

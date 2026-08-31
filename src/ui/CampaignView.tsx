@@ -21,6 +21,8 @@ import { isEngin } from '../engine/structures';
 import { CombatBanner } from './CombatBanner';
 import { ActiveModal } from './ActiveModal'; // arbitre R2 : une seule modale de combat à la fois
 import { VictoryScreen } from './VictoryScreen';
+import { CampaignOpeningScreen } from './CampaignOpeningScreen';
+import { ChapterRecapScreen } from './ChapterRecapScreen';
 import { BargainModal } from './BargainModal';
 import { AppraiseModal } from './AppraiseModal';
 import { LootModal } from './LootModal';
@@ -113,6 +115,10 @@ export function CampaignView() {
   const [historyOpen, setHistoryOpen] = useState(false); // relecture des conversations (#718 dernier lot) — s'ouvre depuis le tiroir-journal
   const dialogueHistory = useGame((s) => s.dialogueHistory);
   const campaignNarratif = useGame((s) => s.campaignNarratif);
+  // Cadre de campagne (#717) : le rideau d'ouverture et le récap de fin de chapitre — montés comme
+  // `pendingVictory`, par-dessus la vue, chacun sur son slot de donnée.
+  const pendingOuverture = useGame((s) => s.pendingOuverture);
+  const pendingChapterRecap = useGame((s) => s.pendingChapterRecap);
   // Hub de ville (#343) : le groupe est À un lieu de la carte → UN écran-lieu remplace les boutons
   // flottants Port/Marché/Dormir. `hubPlace` = le lieu courant (null hors lieu : route, camp sauvage).
   const hubPlace = atLocationPlace({ mode, travelPlan, worldMap, sceneId: scene?.id });
@@ -396,6 +402,10 @@ export function CampaignView() {
       </main>
 
       <VictoryScreen />{/* écran de fin de combat plein écran (se gate sur battle.over==='victory') */}
+      {/* Cadre de campagne (#717) : l'ouverture cérémonielle passe AVANT tout HUD (rideau) ; le récap
+          de fin de chapitre attend qu'elle soit acquittée. */}
+      {pendingOuverture && <CampaignOpeningScreen />}
+      {!pendingOuverture && pendingChapterRecap && <ChapterRecapScreen />}
       {/* Arbitre R2 : UNE seule modale de combat à la fois, par priorité (cf. ActiveModal). */}
       <ActiveModal />
       {/* Modales HORS combat (contexte exclusif) : restent montées indépendamment.

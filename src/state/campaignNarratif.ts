@@ -8,6 +8,7 @@
 import type { TrappingData, CreatureData } from '../data/index';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { SourceRef } from '../data/schemas/grammaire/valeurs';
+import type { Condition } from '../engine/flowCore';
 
 /** Un stade RÉVÉLABLE d'un indice : la prose (verbatim source) qui se dévoile à ce palier d'enquête. */
 export interface IndiceStade {
@@ -52,6 +53,33 @@ export interface PresetPnj {
   source?: SourceRef;
 }
 
+/** AMBIANCE d'un cadre de campagne (#717) — strate de matière lue par les tokens `--amb-*`
+ *  (`styles/base.css`), portée en `data-ambiance` par la coquille d'écran. */
+export type AmbianceCadre = 'veillee' | 'parchemin';
+
+/** Ouverture CÉRÉMONIELLE du chapitre (#717) — titre, pitch VERBATIM (règle 5, rendu par `<Prose>`),
+ *  ambiance. Absente du narratif = la campagne démarre directement sur sa scène d'entrée. */
+export interface OuvertureBlock {
+  surtitre?: string;
+  titre: string;
+  sousTitre?: string;
+  /** Libellé d'AFFICHAGE du chapitre (doctrine du label) : aucune logique ne le lit, seul l'écran le rend. */
+  chapitre?: string;
+  /** Markdown VERBATIM de la source (règle stricte 5) — jamais une paraphrase. */
+  pitch: string;
+  source?: SourceRef;
+  /** Défaut `veillee`. */
+  ambiance?: AmbianceCadre;
+}
+
+/** CLÔTURE du chapitre (#717) — le fait de DONNÉE qui dit « le chapitre se ferme ». `when` réutilise
+ *  l'algèbre `Condition` (même vocabulaire que `MapPlace.when`), évaluée au contexte hors combat. */
+export interface ClotureBlock {
+  when: Condition;
+  titre: string;
+  sousTitre?: string;
+}
+
 /** Le bloc narratif au NIVEAU PROJET (frère de `scenes`/`worldMap`), jamais per-scène. `objets` réutilise
  *  le schéma `TrappingData` global (mêmes champs), sans jamais entrer dans `src/data` global. */
 export interface NarratifBlock {
@@ -59,9 +87,13 @@ export interface NarratifBlock {
   indices: Indice[];
   presetsPnj: PresetPnj[];
   objets: TrappingData[];
+  /** Cadre de campagne (#717) — l'ouverture cérémonielle du chapitre. Absente = démarrage direct. */
+  ouverture?: OuvertureBlock;
+  /** Cadre de campagne (#717) — la clôture du chapitre. Absente = le chapitre ne se ferme jamais. */
+  cloture?: ClotureBlock;
 }
 
-/** Narratif vide — injecté par la migration 2→3 et posé par `newProject`. */
+/** Narratif vide — posé par `newProject` et par la migration 2→3 (`worldMap.ts`, `PROJECT_MIGRATIONS`). */
 export function emptyNarratif(): NarratifBlock {
   return { affaires: [], indices: [], presetsPnj: [], objets: [] };
 }

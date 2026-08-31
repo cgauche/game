@@ -3,6 +3,7 @@ import { useModalA11y } from './Modal';
 import { ScreenMeta } from './ScreenMeta';
 import { SceneBackdrop } from './SceneBackdrop';
 import type { Money } from '../engine/money';
+import type { AmbianceCadre } from '../state/campaignNarratif';
 
 /**
  * ScreenShell — LA coquille UNIQUE des écrans plein-champ (carte du monde, port/escale, marché,
@@ -31,6 +32,10 @@ import type { Money } from '../engine/money';
  * `backdrop` pose la bande d'ambiance (`SceneBackdrop`, lot 1) sous l'en-tête/barre d'outils, au-dessus du
  * corps — absente du prop = pas de bande (zéro régression) ; fournie (même id inconnu) = toujours un rendu
  * (repli élégant géré par `SceneBackdrop`, jamais un trou).
+ *
+ * Ambiance (#717) : `ambiance` pose `data-ambiance` sur le voile — une STRATE DE MATIÈRE (tokens
+ * `--amb-*`, `styles/base.css`), pas une classe d'écran : le parchemin d'une veillée s'assombrit
+ * partout dans le sous-arbre sans qu'aucun écran ne redessine sa peau.
  */
 export function ScreenShell({
   title,
@@ -41,6 +46,7 @@ export function ScreenShell({
   tabs,
   backdrop,
   body = 'full',
+  ambiance,
   className,
   children,
 }: {
@@ -61,6 +67,10 @@ export function ScreenShell({
    *  le corps (`.screen-body`, ~960px) au patron des écrans de panneaux/lecture ; `'centered-wide'` idem
    *  avec un plafond relevé (`.screen-body-wide`, ~1400px≥1440px) pour un écran-grille/catalogue. */
   body?: 'centered' | 'centered-wide' | 'full';
+  /** Strate de MATIÈRE de l'écran (#717) — posée en `data-ambiance` sur le voile : les tokens
+   *  `--amb-*` (`styles/base.css`) s'y rescopent et les matières déjà en place (parchemin, cartes)
+   *  les lisent. Absente = aucune ambiance (comportement inchangé). */
+  ambiance?: AmbianceCadre;
   /** Classes ajoutées au voile plein écran (`port-overlay`, `ship-dossier`…). */
   className?: string;
   children: ReactNode;
@@ -68,7 +78,7 @@ export function ScreenShell({
   const boxRef = useRef<HTMLDivElement>(null);
   useModalA11y(boxRef, onClose, { kind: 'ecran-plein-champ' }); // aucun early-return : monté = affiché
   return (
-    <div ref={boxRef} role="dialog" aria-modal="true" className={`worldmap-overlay${className ? ` ${className}` : ''}`}>
+    <div ref={boxRef} role="dialog" aria-modal="true" data-ambiance={ambiance} className={`worldmap-overlay${className ? ` ${className}` : ''}`}>
       <div className="worldmap-head">
         <h2>{title}</h2>
         <div className="worldmap-head-actions">

@@ -152,8 +152,10 @@ import { chebyshev, Pt } from './path';
 import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
-import type { NarratifBlock } from './campaignNarratif';
+import type { NarratifBlock, OuvertureBlock } from './campaignNarratif';
 import { emptyNarratif } from './campaignNarratif';
+import type { ChapitreDepuis, ChapterRecap } from './chapitreRecap';
+import { snapshotChapitre } from './chapitreRecap';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import type { DeferredUpkeepTest } from './upkeep';
 import * as travelFlow from './travelFlow';
@@ -469,6 +471,32 @@ export interface GameState extends RollFlowActionsMap {
    *  la pile). PERSISTE entre transitions de scène (hors `stateFields`, comme `flags`) — un objectif
    *  traverse les scènes ; vidé en nouvelle partie (`startScene`). #238. */
   objectives: Objective[];
+  /** Objectifs SOLDÉS de la partie (#717) — MÊME objet `Objective`, DÉPLACÉ ici par l'Effet
+   *  `clearObjective` au lieu d'être perdu : c'est la seule archive dont le récap de chapitre
+   *  dérive. CAMPAGNE-scopé comme `objectives` ; vidé en nouvelle partie (`startScene`). */
+  objectifsSoldes: Objective[];
+  /** Borne d'ouverture du chapitre courant (#717) — posée à l'acquittement de l'ouverture
+   *  (`acquitterOuverture`), re-posée à la clôture (`cloreChapitre`) ; null = aucun chapitre borné. */
+  chapitreDepuis: ChapitreDepuis | null;
+  /** La clôture authorée du paquet courant a été CONSOMMÉE (#717) — posé par `cloreChapitre`, lu par
+   *  `armChapterRecapIfDue`. La clôture est une Condition, et une Condition vraie le RESTE (un drapeau
+   *  ne se retire pas) : sans ce fait, le lot d'effets suivant ré-armerait un récap vide, à l'infini.
+   *  Un seul booléen suffit : un paquet porte UNE `narratif.cloture`, et le fait meurt avec la partie
+   *  (`startScene` remet l'état à l'init, `loadProject` y repasse pour tout paquet chargé). */
+  clotureConsommee: boolean;
+  /** Ouverture cérémonielle EN ATTENTE (#717) — posée par `loadProject` APRÈS `startScene` (qui remet
+   *  l'état à l'init), rendue par `CampaignOpeningScreen` AVANT tout HUD. */
+  pendingOuverture: OuvertureBlock | null;
+  /** Récap de fin de chapitre EN ATTENTE (#717) — armé par `armChapterRecapIfDue` quand la CLÔTURE
+   *  authorée devient vraie, rendu par `ChapterRecapScreen`. */
+  pendingChapterRecap: ChapterRecap | null;
+  /** « Prendre la route » : ferme l'ouverture et BORNE le chapitre (instantané PX/vivants/date). */
+  acquitterOuverture: () => void;
+  /** « Terminer la séance » : ferme le récap et re-borne le chapitre suivant. */
+  cloreChapitre: () => void;
+  /** AJOURNE le récap (Échap / « Plus tard ») : le chapitre reste clos en donnée, donc le récap se
+   *  re-pose au prochain lot d'effets — rien n'est perdu, rien n'est forcé. */
+  ajournerChapterRecap: () => void;
   /** État runtime du carnet d'enquête (#670, mécanique MAISON) — keyé par id d'`Indice`
    *  (`campaignData.indiceById`), absent = indice CACHÉ. CAMPAGNE-scopée : survit aux transitions
    *  de scène (une enquête traverse plusieurs scènes), vidée en nouvelle partie (`startScene`). */
@@ -1805,6 +1833,16 @@ export const useGame = create<GameState>((set, get) => ({
   lightLevel: null,
   flags: {},
   objectives: [],
+  objectifsSoldes: [],
+  chapitreDepuis: null,
+  clotureConsommee: false,
+  // Cadre de campagne et COOP (#717) : ces trois gestes vivent chez l'HÔTE (aucun n'est de
+  // `GUEST_INTENTS`, cf. `guest-surface-class.test.ts`). Chez un invité ils sont INERTES — sans cette
+  // garde le clic muterait l'état LOCAL puis mourrait au snapshot suivant de l'hôte, sans message.
+  // L'écran, lui, reste visible : il porte son refus par `GatedAction` (patron `store.ts:1942`).
+  acquitterOuverture: () => set((s) => (s.net.mode === 'guest' ? {} : { pendingOuverture: null, chapitreDepuis: snapshotChapitre(s.party, s.gameTime) })),
+  cloreChapitre: () => set((s) => (s.net.mode === 'guest' ? {} : { pendingChapterRecap: null, objectifsSoldes: [], chapitreDepuis: snapshotChapitre(s.party, s.gameTime), clotureConsommee: true })),
+  ajournerChapterRecap: () => set((s) => (s.net.mode === 'guest' ? {} : { pendingChapterRecap: null })),
   clues: {},
   toggleCluePin: (indiceId) => set((s) => ({ clues: togglePin(s.clues, indiceId) })),
   explored: {},
@@ -2021,6 +2059,9 @@ export const useGame = create<GameState>((set, get) => ({
     // Couche NARRATIVE du paquet posée APRÈS startScene (qui remet l'état à l'init, donc null) — lue
     // par id via `campaignData.ts` ; absente = couche vidée (campagne sans narratif).
     set({ campaignNarratif: narratif ?? null });
+    // Ouverture cérémonielle du chapitre (#717) : MÊME raison d'être posée ICI que le narratif —
+    // `startScene` vient de remettre l'état à l'init. Absente du paquet = démarrage direct.
+    set({ pendingOuverture: narratif?.ouverture ?? null });
     // Document SOURCE de la partie (#766) : snapshot AUTO-SUFFISANT du paquet, embarqué au save par
     // `stateFields` → au chargement, `applyLoadedSave` ré-enregistre ces scènes et re-dérive le narratif.
     // Posé APRÈS startScene (qui vide `campaignDoc` via le reset à l'init) — jamais sur le chemin Arène.

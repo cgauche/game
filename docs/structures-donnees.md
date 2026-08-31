@@ -723,8 +723,8 @@ Documents dont AUCUNE ENTRÉE DE RACINE ne porte `source` : **52** (lot `L1d #14
 Le DoD ajouté de #1465 annonçait « 13 datasets sans `source` » : la mesure en trouve
 **52** — le chiffre de 13 n’a pas de porteur dans l’arbre, il ne se recopie pas.
 
-Documents de racine ne portant AUCUNE clé `source` à quelque profondeur que ce soit : **37**
-(lot `L1d #1469`) — `ambiance.json` `arene-projet.json` `axes.json` `barge-du-sel-projet.json` `books.json` `breath-types.json` `calendarPhases.json` `damage-types.json` `decorPalette.json` `details.json` `diligence-projet.json` `donnees.manifest.json` `groups.json` `lieux-services.json` `lightLevels.json` `lightTones.json` `loup-et-saumure-projet.json` `merchantFamilies.json` `merchants.json` `names.json` `pregens.json` `primitives.manifest.json` `progression-schemas.derived.json` `propMaterials.json` `props.json` `qualitySubtypes.json` `qualityTypes.json` `raceAppearance.json` `raw.manifest.json` `reliefMaterials.json` `renduMonte.json` `roofMaterials.json` `sizes.json` `speciesRace.json` `structureAppearance.json` `systemes.manifest.json` `teintesJeu.json`
+Documents de racine ne portant AUCUNE clé `source` à quelque profondeur que ce soit : **36**
+(lot `L1d #1469`) — `ambiance.json` `arene-projet.json` `axes.json` `barge-du-sel-projet.json` `books.json` `breath-types.json` `calendarPhases.json` `damage-types.json` `decorPalette.json` `details.json` `donnees.manifest.json` `groups.json` `lieux-services.json` `lightLevels.json` `lightTones.json` `loup-et-saumure-projet.json` `merchantFamilies.json` `merchants.json` `names.json` `pregens.json` `primitives.manifest.json` `progression-schemas.derived.json` `propMaterials.json` `props.json` `qualitySubtypes.json` `qualityTypes.json` `raceAppearance.json` `raw.manifest.json` `reliefMaterials.json` `renduMonte.json` `roofMaterials.json` `sizes.json` `speciesRace.json` `structureAppearance.json` `systemes.manifest.json` `teintesJeu.json`
 
 Documents EMBARQUÉS mesurés, par chemin :
 
@@ -1052,7 +1052,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | de | `n,sides` | cible | 109 |
 | de | `n,plus,sides` | cible | 19 |
 | source | `book,page` | cible | 3367 |
-| source | `book,note,page` | cible | 1120 |
+| source | `book,note,page` | cible | 1121 |
 | source | `book,chapter` | historique | 0 |
 | source | `book,chapter,page` | historique | 0 |
 | test | `difficulty,skill` | historique | 45 |
@@ -1069,7 +1069,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **827** (cible 280 · declaree 6 · historique 122 · divergente 419). Objets JSON parcourus : **48082**, dont **31702** portent une forme
+Lignes concept × dataset × champ × forme : **828** (cible 281 · declaree 6 · historique 122 · divergente 419). Objets JSON parcourus : **48086**, dont **31703** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -1696,7 +1696,7 @@ Reconnu par : son noyau `n` `sides`
 
 ### 3.6 référence de source (livre/folio) — `source` (strate Valeur)
 
-113 ligne(s), 4664 occurrence(s).
+114 ligne(s), 4665 occurrence(s).
 Reconnu par : son noyau `book`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1726,6 +1726,7 @@ Reconnu par : son noyau `book`
 | entité | `source` | `book,page` | cible | `crew-roles.json` | 4 | — |  |
 | config | `source` | `book,note,page` | cible | `crew-test-types.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | config | `source` | `book,note,page` | cible | `criticals.json` | 80 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
+| config | `source` | `book,note,page` | cible | `diligence-projet.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | config | `source` | `book,note,page` | cible | `disponibilite.json` | 6 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `alsoIn` | `book,page+…` | divergente | `domains.json` | 6 | — |  |
 | entité | `source` | `book,page` | cible | `domains.json` | 43 | — |  |
@@ -2226,7 +2227,7 @@ de se taire. Stock `STRUCTURES_ORPHELINES` ; le LOT suit le motif — `L1a #1466
 clé annonçait une FK (`clé de référence non résolue`), `#1553` pour les autres motifs (curation de
 CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe).
 
-**104** signatures orphelines, **438** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 102 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 104.
+**105** signatures orphelines, **439** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 103 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 105.
 
 | Dataset | Champ | Signature | Motif | Occurrences |
 |---|---|---|---|---|
@@ -2292,6 +2293,7 @@ CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe)
 | `arene-projet.json` | `effect` | `level,skill,type` | clé réservée | 1 |
 | `classes.json` | `trappings` | `count,text` | clé réservée | 1 |
 | `details.json` | `texts` | `age,ambitionLong,ambitionShort,nom,taille` | identité non résolue | 1 |
+| `diligence-projet.json` | `ouverture` | `ambiance,chapitre,pitch,source,sousTitre,surtitre,titre` | clé réservée | 1 |
 | `etats.json` | `test` | `difficultyBy,gate,label,skill` | clé réservée | 1 |
 | `etats.json` | `of` | `id,kind,who` | identité non résolue | 1 |
 | `etats.json` | `recover` | `skill` | clé réservée | 1 |
@@ -2335,14 +2337,14 @@ CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe)
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12498** objets sur **48082** ne sont portés par AUCUNE
+Au-delà des orphelines, **12500** objets sur **48086** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1146** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1147** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2676,6 +2678,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `barge-du-sel-projet.json` | `damage` | `flat,plusBF` | 3 |
 | `criticals.json` | `times` | `factor,of` | 3 |
 | `criticals.json` | `ops` | `durationRounds,hands,op` | 3 |
+| `diligence-projet.json` | `when` | `expr,kind` | 3 |
 | `domains.json` | `of` | `is,kind,who` | 3 |
 | `etats.json` | `cond` | `kind,op,subject,value` | 3 |
 | `etats.json` | `flow` | `fail,kind,success,test` | 3 |
@@ -2766,7 +2769,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `criticals.json` | `escalation` | `medicalAidGate` | 2 |
 | `criticals.json` | `medicalAidGate` | `disable,label,recoveryPenalty,restoreDR` | 2 |
 | `details.json` | `bySpecies` | `` | 2 |
-| `diligence-projet.json` | `when` | `expr,kind` | 2 |
 | `diligence-projet.json` | `dimensions` | `h,w` | 2 |
 | `diligence-projet.json` | `flags` | `` | 2 |
 | `disponibilite.json` | `pct` | `cite,village,ville` | 2 |
@@ -3029,7 +3031,8 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `details.json` | `bySpecies` | `gnome,ogre` | 1 |
 | `details.json` | `ambitionShort` | `all,bySpecies` | 1 |
 | `details.json` | `ambitionLong` | `all,bySpecies` | 1 |
-| `diligence-projet.json` | `narratif` | `affaires,indices,objets,presetsPnj` | 1 |
+| `diligence-projet.json` | `narratif` | `affaires,cloture,indices,objets,ouverture,presetsPnj` | 1 |
+| `diligence-projet.json` | `cloture` | `sousTitre,titre,when` | 1 |
 | `diligence-projet.json` | `speed` | `diligence` | 1 |
 | `diligence-projet.json` | `rest` | `auberge,camp` | 1 |
 | `domains.json` | `seaModifier` | `focalisationDR` | 1 |
@@ -3652,14 +3655,14 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 `gameOpSchema` est un `looseObject` (`src/data/schemas/grammaire/mecanique.ts`) : seul `op` est contraint.
 Mesure : **2187** objets portent un `op` = **2129** ops de jeu + **58**
 Conditions dont l’`op` est un COMPARATEUR (`kind` reconnu par `conditionSchema`, kinds lus par AST).
-**245** Conditions au total, dont **187** sans `op` :
+**246** Conditions au total, dont **188** sans `op` :
 celles-là n’ont jamais été comptées en op — le retrait des Conditions du compte d’ops vaut
-2187 → 2129, jamais 2187 → 1942.
+2187 → 2129, jamais 2187 → 1941.
 Noms d’op distincts : **103**, signatures distinctes : **233**.
 
 | `kind` de Condition | Avec `op` | Sans `op` |
 |---|---|---|
-| `flag` | — | 80 |
+| `flag` | — | 81 |
 | `compare` | 29 | — |
 | `has` | — | 29 |
 | `slThreshold` | 20 | — |
@@ -4107,7 +4110,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **1690** — espèce `id` **205**, espèce `acteur` **1485**.
+Slots déclarés : **1834** — espèce `id` **205**, espèce `acteur` **1629**.
 
 ### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
 
@@ -4684,7 +4687,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
 Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **1485** slots sur 1690.
+pèse **1629** slots sur 1834.
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).

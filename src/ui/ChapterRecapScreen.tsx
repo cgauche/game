@@ -1,0 +1,78 @@
+import { useState } from 'react';
+import { useGame } from '../state/store';
+import { t } from '../i18n';
+import { ScreenShell } from './ScreenShell';
+import { ParchmentCard } from './ParchmentCard';
+import { Band } from './Band';
+import { RecapLineSections } from './RecapLine';
+import { XpBadge } from './creator/CreatorStepFrame';
+import { SessionEndBody } from './SessionEndModal';
+import { GatedAction } from './GatedAction';
+
+/**
+ * RÉCAP DE FIN DE CHAPITRE (#717) — ce que la route retiendra : la chronique DÉRIVÉE (objectifs
+ * soldés, tombés en chemin), les PX du chapitre, les lieux révélés, puis la clôture de séance.
+ *
+ * UN seul écran, DEUX volets : le volet 1 raconte et montre l'étape suivante en APERÇU inerte, le
+ * volet 2 la rend interactive (`SessionEndBody`, MÊME formulaire que la modale du menu système).
+ * Fermer l'écran (Échap) ne fait qu'AJOURNER : le récap se re-pose au prochain lot d'effets tant que
+ * la clôture n'a pas été CONSOMMÉE par « Terminer la séance » (`clotureConsommee`, `store.ts`).
+ * « Annuler », dans le volet interactif, AJOURNE lui aussi — il ne clôt rien.
+ *
+ * COOP : l'invité LIT la chronique (elle se partage à la table) mais ne tourne pas la page — le geste
+ * qui ouvre le volet interactif est un `GatedAction` portant sa raison, et sa fermeture n'est qu'un
+ * MASQUE local (aucun `set` : `pendingChapterRecap` vient du snapshot de l'hôte).
+ */
+export function ChapterRecapScreen() {
+  const recap = useGame((s) => s.pendingChapterRecap);
+  const cloreChapitre = useGame((s) => s.cloreChapitre);
+  const ajourner = useGame((s) => s.ajournerChapterRecap);
+  const invite = useGame((s) => s.net.mode === 'guest');
+  const [volet, setVolet] = useState<1 | 2>(1);
+  const [masque, setMasque] = useState(false);
+  if (!recap || masque) return null;
+
+  return (
+    <ScreenShell
+      title={<>{recap.titre}{recap.sousTitre ? <small> {recap.sousTitre}</small> : null}</>}
+      onClose={invite ? () => setMasque(true) : ajourner}
+      closeLabel={invite ? t('chap.masquer') : t('chap.ajourner')}
+      body="centered"
+      ambiance="veillee"
+    >
+      <Band title={t('chap.chronique')} right={<XpBadge value={recap.px} />}>
+        <ParchmentCard>
+          {recap.chronique.length > 0
+            ? <RecapLineSections lines={recap.chronique} />
+            : <p className="empty">{t('chap.chroniqueVide')}</p>}
+        </ParchmentCard>
+      </Band>
+      <div className="panel-grid">
+        <Band title={t('chap.lieux')}>
+          {recap.lieux.length > 0
+            ? <div className="row-flex">{recap.lieux.map((l) => <span key={l} className="chip">{l}</span>)}</div>
+            : <p className="empty">{t('chap.lieuxVide')}</p>}
+        </Band>
+        <Band title={t('chap.tombes')}>
+          {recap.tombes.length > 0
+            ? <div className="row-flex">{recap.tombes.map((h) => <span key={h.id} className="chip">{h.label}</span>)}</div>
+            : <p className="empty">{t('chap.tombesVide')}</p>}
+        </Band>
+      </div>
+      <Band title={t('chap.seance')}>
+        {volet === 1 && (
+          <div className="modal-actions">
+            <GatedAction
+              id="chap-poursuivre"
+              label={t('chap.poursuivre')}
+              enabled={!invite}
+              reason={t('chap.refusHote')}
+              onClick={() => setVolet(2)}
+            />
+          </div>
+        )}
+        <SessionEndBody apercu={volet === 1} onDone={cloreChapitre} onCancel={ajourner} />
+      </Band>
+    </ScreenShell>
+  );
+}

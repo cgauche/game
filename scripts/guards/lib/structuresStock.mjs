@@ -921,6 +921,11 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "creatures.json", champ: "purchase", signature: "availability,price", motif: "clé réservée", occurrences: 14, lot: "#1553", date: "2026-08-23" }, // +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
   { dataset: "crew-roles.json", champ: "wage", signature: "daily,source,weekly", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "details.json", champ: "texts", signature: "age,ambitionLong,ambitionShort,nom,taille", motif: "identité non résolue", occurrences: 1, lot: "#1553", date: "2026-08-23" },
+  // L'OUVERTURE cérémonielle du chapitre 1 porte sa `source` (le pitch est un verbatim EDO, règle
+  // stricte 5) — une enveloppe embarquée qui annonce sa référence de livre, même famille que les blocs
+  // sourcés ci-dessus. Née au lot #717 (date ci-dessous) ; le `lot` est celui qui l'ÉTEINDRA — #1553,
+  // la curation des orphelines — comme le veut l'en-tête (« chaque ligne porte le LOT qui l'éteint »).
+  { dataset: "diligence-projet.json", champ: "ouverture", signature: "ambiance,chapitre,pitch,source,sousTitre,surtitre,titre", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-31" },
   { dataset: "disponibilite.json", champ: "barterRatios", signature: "give,ratios,source", motif: "clé réservée", occurrences: 4, lot: "#1553", date: "2026-08-23" },
   { dataset: "disponibilite.json", champ: "dispoPct", signature: "availability,pct,source", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "domains.json", champ: "cancelledBy", signature: "circumstance,desc,requiresSkill,source,sustained,test", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },

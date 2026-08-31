@@ -8,6 +8,7 @@
  */
 import { z } from 'zod';
 import { sourceRefSchema, entityAppearanceSchema } from '../grammaire/valeurs';
+import { conditionCondCtxSchema } from './worldmap';
 import { idDe } from '../grammaire/ref';
 import { entreePartielle as creatureEntreePartielle, type CreatureProfilPartiel } from '../defs/creatures';
 import { findCreatureById, findTrappingById, byId, findTalentById, specResolves } from '../../index';
@@ -51,6 +52,27 @@ export const presetPnjSchema = z.strictObject({
   /** id d'illustration (registre d'art), affichage seul. */
   portrait: z.string().optional(),
   source: sourceRefSchema.optional(),
+});
+
+/** Ouverture CÉRÉMONIELLE du chapitre (#717, `OuvertureBlock`) — le `pitch` est du VERBATIM de
+ *  source (règle stricte 5), rendu par `<Prose>` : titre et pitch non vides sont la seule exigence. */
+export const ouvertureSchema = z.strictObject({
+  surtitre: z.string().optional(),
+  titre: z.string().min(1, 'narratif.ouverture.titre : titre vide.'),
+  sousTitre: z.string().optional(),
+  chapitre: z.string().optional(),
+  pitch: z.string().min(1, 'narratif.ouverture.pitch : pitch vide.'),
+  source: sourceRefSchema.optional(),
+  ambiance: z.enum(['veillee', 'parchemin']).optional(),
+});
+
+/** CLÔTURE du chapitre (#717, `ClotureBlock`) — `when` évalué au contexte HORS COMBAT (`condCtx`),
+ *  d'où le MÊME schéma borné que le `when` d'un lieu de carte (un kind non évaluable serait FAUX
+ *  en silence : le chapitre ne se fermerait jamais, sans qu'aucune donnée ne soit fautive). */
+export const clotureSchema = z.strictObject({
+  when: conditionCondCtxSchema,
+  titre: z.string().min(1, 'narratif.cloture.titre : titre vide.'),
+  sousTitre: z.string().optional(),
 });
 
 /** Un id narratif COLLISIONNE avec la règle globale s'il résout déjà comme créature OU possession. */
@@ -156,6 +178,8 @@ const formeNarratif = z.strictObject({
   indices: z.array(indiceSchema),
   presetsPnj: z.array(presetPnjSchema),
   objets: z.array(z.custom<TrappingData>()),
+  ouverture: ouvertureSchema.optional(),
+  cloture: clotureSchema.optional(),
 });
 
 /** `NarratifBlock` (`state/campaignNarratif.ts:58`) — forme + sémantique. */

@@ -7,7 +7,9 @@ import { MonsterPartsFields } from './MonsterPartsFields';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { creatures, creatureLabel, findCreatureById } from '../../data';
 import { CHAR_KEYS, CHAR_LABELS, type CharKey } from '../../engine/types';
-import type { NarratifBlock, PresetPnj, Affaire, Indice, IndiceStade } from '../../state/campaignNarratif';
+import type { NarratifBlock, PresetPnj, Affaire, Indice, IndiceStade, OuvertureBlock, ClotureBlock, AmbianceCadre } from '../../state/campaignNarratif';
+import { ConditionEditor } from './ConditionEditor';
+import { CONDITION_KINDS_CARTE } from '../../data/schemas/defs-scenes/worldmap';
 import type { CreatureData } from '../../data';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { ListRow } from '../ListRow';
@@ -19,7 +21,7 @@ import { NumberField } from '../NumberField';
  * ÉDITABLES ; l'onglet Objets reste en lecture. Frontière RÉFÉRENCE vs NARRATIF : ces entrées
  * référencent la règle globale PAR ID.
  */
-type NarratifTab = 'affaires' | 'indices' | 'presetsPnj' | 'objets';
+type NarratifTab = 'cadre' | 'affaires' | 'indices' | 'presetsPnj' | 'objets';
 
 /** Liste des créatures globales (base d'un preset), triée par libellé — patron `Inspector.tsx`. */
 const CREATURE_OPTIONS = [...creatures].map((c) => ({ id: c.id, label: c.label })).sort((a, b) => a.label.localeCompare(b.label));
@@ -192,7 +194,11 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
 
   const selectedIndice = narratif.indices.find((i) => i.id === selIndiceId) ?? null;
 
+  const setOuverture = (ouverture: OuvertureBlock | undefined) => onChange?.({ ...narratif, ouverture });
+  const setCloture = (cloture: ClotureBlock | undefined) => onChange?.({ ...narratif, cloture });
+
   const tabs: TabItem<NarratifTab>[] = [
+    { key: 'cadre', label: 'Cadre', count: (narratif.ouverture ? 1 : 0) + (narratif.cloture ? 1 : 0) },
     { key: 'affaires', label: 'Affaires', count: narratif.affaires.length },
     { key: 'indices', label: 'Indices', count: narratif.indices.length },
     { key: 'presetsPnj', label: 'PNJ', count: narratif.presetsPnj.length },
@@ -206,6 +212,14 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
       body="centered"
       tabs={<Tabs tabs={tabs} active={tab} onChange={setTab} label="Rubriques du narratif" />}
     >
+      {tab === 'cadre' && (
+        <CadreForm
+          ouverture={narratif.ouverture}
+          cloture={narratif.cloture}
+          onOuverture={setOuverture}
+          onCloture={setCloture}
+        />
+      )}
       {tab === 'affaires' && (
         <MasterDetail
           listLabel="Affaires"
@@ -314,6 +328,90 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
             ))
       )}
     </ScreenShell>
+  );
+}
+
+/** CADRE du chapitre (#717) : l'ouverture cérémonielle et la clôture. Le `pitch` est un VERBATIM de
+ *  source (règle stricte 5) — il se colle, il ne se rédige pas ici. La Condition de clôture est bornée
+ *  aux kinds évaluables hors combat (`CONDITION_KINDS_CARTE`), comme un `when` de carte. */
+function CadreForm({ ouverture, cloture, onOuverture, onCloture }: {
+  ouverture?: OuvertureBlock;
+  cloture?: ClotureBlock;
+  onOuverture: (o: OuvertureBlock | undefined) => void;
+  onCloture: (c: ClotureBlock | undefined) => void;
+}) {
+  const patchOuv = (patch: Partial<OuvertureBlock>) => onOuverture({ ...(ouverture ?? { titre: '', pitch: '' }), ...patch });
+  // Clôture NEUVE : `{kind:'flag', expr:''}` — le défaut du `ConditionEditor` (`ConditionEditor.tsx`,
+  // branche d'`all`/`any`) et de `FlowEditor`. Une Condition `always` fermerait le chapitre au PREMIER
+  // lot d'effets ; un `expr` vide, lui, ne peut pas être sauvegardé (le schéma le refuse en nommant le
+  // champ), donc l'auteur nomme son drapeau ou retire la clôture.
+  const patchClo = (patch: Partial<ClotureBlock>) => onCloture({ ...(cloture ?? { titre: '', when: { kind: 'flag', expr: '' } }), ...patch });
+  return (
+    <div className="preset-form">
+      <h4 className="mini-title">Ouverture cérémonielle</h4>
+      {!ouverture ? (
+        <button type="button" className="btn small" onClick={() => onOuverture({ titre: '', pitch: '' })}>
+          <Icon id="ui/add" size="sm" /> Ajouter une ouverture
+        </button>
+      ) : (
+        <>
+          <label className="ed-field">
+            Surtitre
+            <input value={ouverture.surtitre ?? ''} onChange={(e) => patchOuv({ surtitre: e.target.value || undefined })} />
+          </label>
+          <label className="ed-field">
+            Titre
+            <input value={ouverture.titre} onChange={(e) => patchOuv({ titre: e.target.value })} />
+          </label>
+          <label className="ed-field">
+            Sous-titre
+            <input value={ouverture.sousTitre ?? ''} onChange={(e) => patchOuv({ sousTitre: e.target.value || undefined })} />
+          </label>
+          <label className="ed-field">
+            Chapitre
+            <input value={ouverture.chapitre ?? ''} onChange={(e) => patchOuv({ chapitre: e.target.value || undefined })} />
+          </label>
+          <label className="ed-field">
+            Pitch (verbatim de la source, Markdown)
+            <textarea value={ouverture.pitch} onChange={(e) => patchOuv({ pitch: e.target.value })} />
+          </label>
+          <label className="ed-field">
+            Ambiance
+            <select value={ouverture.ambiance ?? 'veillee'} onChange={(e) => patchOuv({ ambiance: e.target.value as AmbianceCadre })}>
+              <option value="veillee">Veillée</option>
+              <option value="parchemin">Parchemin</option>
+            </select>
+          </label>
+          <button type="button" className="btn small danger" onClick={() => onOuverture(undefined)}>
+            <Icon id="ui/delete" size="sm" /> Retirer l'ouverture
+          </button>
+        </>
+      )}
+      <h4 className="mini-title">Clôture du chapitre</h4>
+      {!cloture ? (
+        <button type="button" className="btn small" onClick={() => onCloture({ titre: '', when: { kind: 'flag', expr: '' } })}>
+          <Icon id="ui/add" size="sm" /> Ajouter une clôture
+        </button>
+      ) : (
+        <>
+          <label className="ed-field">
+            Titre
+            <input value={cloture.titre} onChange={(e) => patchClo({ titre: e.target.value })} />
+          </label>
+          <label className="ed-field">
+            Sous-titre
+            <input value={cloture.sousTitre ?? ''} onChange={(e) => patchClo({ sousTitre: e.target.value || undefined })} />
+          </label>
+          <div className="ed-field">
+            Condition de clôture
+            <ConditionEditor cond={cloture.when} kinds={CONDITION_KINDS_CARTE} onChange={(when) => patchClo({ when })} />
+          </div>
+          <button type="button" className="btn small danger" onClick={() => onCloture(undefined)}>
+            <Icon id="ui/delete" size="sm" /> Retirer la clôture
+          </button>
+        </>
+      )}
+    </div>
   );
 }
 

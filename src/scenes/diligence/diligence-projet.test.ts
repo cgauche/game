@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { diligenceCampaign } from '../campaign';
 import { doorAt, edgeOf, heightAt, isWalkable, type Scene } from '../../state/scene';
 import { pathTo, walkNeighbors, type Pt } from '../../state/path';
@@ -254,5 +256,44 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
     expect(chemin).not.toBeNull();
     expect(chemin!.length).toBeGreaterThan(1);
     expect(chemin!.some((p) => (p.z ?? 0) === 1)).toBe(true);
+  });
+});
+
+/**
+ * Cadre de campagne (#717) — le pitch de l'ouverture est un COPIÉ/COLLÉ de la source (règle stricte 5) :
+ * on le confronte au fichier `Source/` LU ICI, paragraphe par paragraphe, À L'OCTET. Une reformulation,
+ * une italique ajoutée ou une apostrophe « corrigée » rougissent. Patron `book-source-integrity.test.ts`.
+ */
+const SOURCE_CH1 = fileURLToPath(new URL(
+  "../../../Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/01 - Chapitre 1 - On recherche - aventuriers courageux.md",
+  import.meta.url,
+));
+
+describe('La Diligence — cadre de campagne (#717)', () => {
+  const ouverture = diligenceCampaign.narratif.ouverture!;
+
+  it('le pitch de l’ouverture est contenu À L’OCTET dans le Source (chaque paragraphe)', () => {
+    const source = readFileSync(SOURCE_CH1, 'utf8');
+    const paragraphes = ouverture.pitch.split('\n\n');
+    expect(paragraphes.length).toBe(2);
+    for (const p of paragraphes) {
+      expect(p.length).toBeGreaterThan(80);
+      expect(source.includes(p)).toBe(true);
+    }
+  });
+
+  it('l’ouverture cite sa source (EDO, folio 12) et sa note nomme les lignes recopiées', () => {
+    expect(ouverture.source).toEqual({ book: 'ennemi-dans-l-ombre', page: 12, note: 'EDO 01 l.5 · l.13' });
+    const lignes = readFileSync(SOURCE_CH1, 'utf8').split(/\r?\n/);
+    expect(lignes[4]).toBe(ouverture.pitch.split('\n\n')[0]);
+    expect(lignes[12].endsWith(ouverture.pitch.split('\n\n')[1])).toBe(true);
+  });
+
+  it('la clôture du chapitre est un fait de DONNÉE (drapeau), avec son titre d’écran', () => {
+    expect(diligenceCampaign.narratif.cloture).toEqual({
+      when: { kind: 'flag', expr: 'edo-ch1-altdorf-revelee' },
+      titre: 'Chapitre 1 — la route d’Altdorf',
+      sousTitre: 'Ce que la compagnie emporte vers la capitale',
+    });
   });
 });

@@ -124,6 +124,11 @@
   --atelier-wax-ring: #5e0f08; /* anneau/crâne du sceau */
   --atelier-wax-ring-light: #e08a68; /* liseré clair du sceau */
   --atelier-wax-shadow: #8f1f14; /* orbites/ombre du crâne */
+  /* AMBIANCE d'un cadre de campagne (#717) — strate de MATIÈRE d'un écran, portée en `data-ambiance`
+     par `ScreenShell` : ce sont les tokens qui changent, jamais une classe par écran. Valeurs de la
+     strate « parchemin » (défaut, plein jour) ; la « veillée » les rescope juste en dessous. */
+  --amb-parchment: var(--parchment); /* teinte du parchemin sous l'ambiance courante */
+  --amb-card-glow: 0 6px 18px rgba(0, 0, 0, .35); /* halo d'une carte posée sur la table */
   --atelier-bronze-hi: #e29a6a; /* dégradé statut Bronze — haut */
   --atelier-bronze-mid: #b06a3a; /* dégradé statut Bronze — milieu */
   --atelier-bronze-lo: #7d4a28; /* dégradé statut Bronze — bas */
@@ -241,6 +246,29 @@
   --hud-camp-ally-hi: #7fae62; /* réglette de camp — allié, crête */
   --hud-camp-ally-lo: #2f5220; /* réglette de camp — allié, pied (ennemi = --combat-enemy/--blood) */
   --hud-tool-hi: #3a2c18; /* haut d'une commande vissée sur le rail d'outils */
+}
+
+/* Ambiance « veillée » (#717) : la nuit d'une auberge — le parchemin s'assombrit, la carte prend la
+   lueur d'une bougie. Aucune classe : le voile porte `data-ambiance`, les MATIÈRES déjà en place
+   (texture de parchemin, carte narrative) lisent les tokens rescopés ici. */
+[data-ambiance='veillee'] {
+  --amb-parchment: #b79c66;
+  --amb-card-glow: 0 6px 18px rgba(0, 0, 0, .55), 0 0 70px rgba(255, 180, 90, .13);
+}
+[data-ambiance] .tx-parchment {
+  background-color: var(--amb-parchment);
+}
+[data-ambiance] .parchment-card {
+  box-shadow: var(--amb-card-glow);
+}
+/* APERÇU d'une étape SUIVANTE (#717) : montrée, pas encore offerte — matière atténuée. L'inertie
+   RÉELLE (hors flux de lecture, contrôles désactivés) est portée par le composant, jamais par cette
+   opacité seule. Attribut, aucune classe : tout corps de formulaire peut être mis en aperçu. */
+[data-apercu] {
+  opacity: .4;
+  filter: grayscale(.35);
+  pointer-events: none;
+  user-select: none;
 }
 
 * {

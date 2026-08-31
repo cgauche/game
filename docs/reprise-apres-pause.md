@@ -97,7 +97,7 @@ de ce que `npm install` pose seul.
   `src/data/schemas/validate.ts`, `src/data/schemas/_registry.generated.ts`,
   `src/data/schemas/_ids.generated.ts`, `src/data/schemas/grammaire/` — le vocabulaire partagé —
   `src/data/schemas/defs/` : 127 fichiers, un par catalogue, et
-  `src/data/schemas/defs-scenes/` : 16 fichiers pour les documents de scène).
+  `src/data/schemas/defs-scenes/` : 17 fichiers pour les documents de scène).
 - `scripts/art-ref/` — le PIPELINE d'extraction d'images (`extract.py`, `ldb_extract.py`, `ldb_map.py`, `probe.py`) : le code est
   tracké, ses SORTIES (images) ne le sont pas (§ 3).
 - `docs/decisions/` (`issues.json`, `issues.md`) — les issues GitHub EXPORTÉES par

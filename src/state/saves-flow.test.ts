@@ -122,7 +122,7 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: SAVE_VERSION - 1 })).toBeNull();
     expect(parseSave({ ...cur, version: 1 })).toBeNull();
   });
-  it('la forme persistée COURANTE nomme `id` le champ d’identité d’une `SkillInstance` (L2 #1548) : 36, et 35 se jette', () => {
+  it('la forme persistée nomme `id` le champ d’identité d’une `SkillInstance` (L2 #1548, bump 36) : 35 se jette', () => {
     // MESURE du motif : une instance à la graphie de 35 n'est appariée par AUCUN Test — le moteur
     // apparie sur `id`, donc la valeur retombe sur la Caractéristique nue, Augmentations perdues.
     const nu = { ...createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Sonde', rng: makeRNG(1) }), skills: [] };
@@ -130,8 +130,16 @@ describe('parseSave — la version DOIT être la courante', () => {
     const avecGraphieCourante = { ...nu, skills: [{ id: 'resistance', characteristic: 'endurance', advances: 20 }] } as unknown as typeof nu;
     expect(testValue(avecAncienneGraphie, 'resistance')).toBe(testValue(nu, 'resistance'));
     expect(testValue(avecGraphieCourante, 'resistance')).toBe(testValue(nu, 'resistance') + 20);
-    expect(SAVE_VERSION).toBe(36);
     expect(parseSave({ ...cur, version: 35 })).toBeNull();
+  });
+  it('MESURE du motif de bump 36 → 37 (#717) : le CADRE DE CAMPAGNE entre au snapshot', () => {
+    // Sans la borne ni l'archive, une save rouverte ferait compter les PX du chapitre depuis le néant
+    // et raconterait un chapitre vide : la forme persistée change, la save de 36 se jette.
+    expect(SAVE_VERSION).toBe(37);
+    expect(parseSave({ ...cur, version: 36 })).toBeNull();
+    const initial = useGame.getInitialState() as unknown as Record<string, unknown>;
+    const data = snapshotSave(initial, initial, '2026-08-31T00:00:00.000Z').data;
+    expect(Object.keys(data)).toEqual(expect.arrayContaining(['chapitreDepuis', 'objectifsSoldes', 'pendingOuverture', 'pendingChapterRecap']));
   });
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
     const sv = talents.find((t) => t.id === 'savoir-vivre')!;

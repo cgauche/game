@@ -134,6 +134,7 @@
    pour tout récit ponctuel adossé à un tirage (événement d'interlude, événement de bord en mer,
    révélation d'entrée de scène). Étalon = la chronique des Événements d'interlude (#257). */
 .parchment-card {
+  position: relative; /* ancre du sceau de cire, qui FRANCHIT le bord (cf. `.parchment-card > .wax-seal`) */
   display: flex;
   gap: 14px;
   align-items: flex-start;
@@ -142,6 +143,15 @@
   padding: 14px 16px;
   border: 1px solid color-mix(in srgb, var(--gold) 30%, var(--border));
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+/* Sceau de CIRE (#717) : un cachet se voit ou n'est pas un cachet — il déborde du coin, comme celui
+   de la carte-contrat (`.seat-card-seal`). Le médaillon d100, lui, reste en flux dans la rangée. */
+.parchment-card > .wax-seal {
+  position: absolute;
+  top: -18px;
+  right: -12px;
+  transform: rotate(9deg);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6));
 }
 .parchment-card.bad { border-color: color-mix(in srgb, var(--danger) 45%, var(--border)); }
 .parchment-card.ok { border-color: color-mix(in srgb, var(--ok) 45%, var(--border)); }

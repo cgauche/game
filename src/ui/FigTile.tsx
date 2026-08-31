@@ -50,6 +50,16 @@ export type FigTileSize = 'compact' | 'big' | 'hero';
  * c'est précisément par là que les tuiles divergeaient (la race passait `panel`, la carrière
  * `spotlight` : « la carrière a un fond mais pas la race, c'est pourtant la même primitive ? »).
  */
+/**
+ * FigRow — la RANGÉE de tuiles-figurines (#717) : grille uniforme (colonnes de largeur FIXE, jamais
+ * dimensionnées par le libellé le plus long), 2 colonnes sous 700px. Vit AVEC la primitive (même
+ * module, même feuille `frames.css`) — un écran qui montre une compagnie compose CETTE rangée au
+ * lieu de redessiner une grille ; `GroupedPickGrid` reste la variante de SÉLECTION (listbox).
+ */
+export function FigRow({ label, children }: { label?: string; children: ReactNode }) {
+  return <div className="fig-row" role={label ? 'group' : undefined} aria-label={label}>{children}</div>;
+}
+
 export function FigTile({ preview, label, sub, selected, sealed, fig = 'compact', onClick, tabIndex = -1, className, zoneBadges }: {
   preview: CharacterPreviewProps;
   label?: string;

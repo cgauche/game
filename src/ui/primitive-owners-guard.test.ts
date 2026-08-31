@@ -69,6 +69,7 @@ const OWNERS: Record<string, string[]> = {
 
   // FigTile — cadre-figurine UNIQUE (#430/#431) ; `frames.css` porte déjà « SEULE définition ».
   'fig-tile': ['FigTile.tsx'],
+  'fig-row': ['FigTile.tsx'],
   'fig-tile-fig': ['FigTile.tsx'],
   'fig-tile-name': ['FigTile.tsx'],
   'fig-tile-sub': ['FigTile.tsx'],

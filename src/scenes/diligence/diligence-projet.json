@@ -9,7 +9,28 @@
   "affaires": [],
   "indices": [],
   "presetsPnj": [],
-  "objets": []
+  "objets": [],
+  "ouverture": {
+   "surtitre": "Une campagne pour Warhammer Fantasy Roleplay",
+   "titre": "L’Ennemi Intérieur",
+   "sousTitre": "Tome 1 — L’Ennemi dans l’Ombre",
+   "chapitre": "Chapitre 1 — On recherche : aventuriers courageux",
+   "pitch": "Nos héros forment un groupe hétéroclite que la soif d'aventures a conduit à prendre la direction d'Altdorf, tout comme de nombreux habitants des campagnes et des bourgades de l'Empire. Altdorf, l'immense et trépidante capitale, où les rues sont pavées d'or et où tout est possible.\n\nCertains Personnages se connaissent peut-être déjà ; les autres se rencontreront pour la première fois lorsqu'ils approcheront de l'auberge-relais la plus proche, nommée La Diligence.",
+   "source": {
+    "book": "ennemi-dans-l-ombre",
+    "page": 12,
+    "note": "EDO 01 l.5 · l.13"
+   },
+   "ambiance": "veillee"
+  },
+  "cloture": {
+   "when": {
+    "kind": "flag",
+    "expr": "edo-ch1-altdorf-revelee"
+   },
+   "titre": "Chapitre 1 — la route d’Altdorf",
+   "sousTitre": "Ce que la compagnie emporte vers la capitale"
+  }
  },
  "worldMap": {
   "id": "carte-edo-ch1",

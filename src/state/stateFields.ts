@@ -136,6 +136,11 @@ const STATE_FIELDS = {
   // Jet d'Activité d'interlude/bataille de masse : clos par `activityCancel`/`confirmActivity`, jamais
   // par un changement de scène/combat (l'interlude n'ouvre pas de combat pendant qu'une Activité est en cours).
   pendingActivity: { init: null, resetOn: [] },
+  // Cadre de campagne (#717) : l'ouverture est posée par `loadProject` APRÈS `startScene` et le récap
+  // est armé en plein jeu — tous deux doivent SURVIVRE aux transitions de scène et à l'ouverture d'un
+  // combat (`resetOn: []`, patron `campaignDoc`) ; ils meurent avec la partie (`startScene` → init).
+  pendingOuverture: { init: null, resetOn: [] },
+  pendingChapterRecap: { init: null, resetOn: [] },
   // Porte d'heure de départ (maison, #340) : posée sur la carte du monde, effacée en quittant la scène/carte.
   pendingDeparture: { init: null, resetOn: ['scene'] },
 } satisfies { [K in keyof GameState]?: { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] } }

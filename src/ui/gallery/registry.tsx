@@ -562,9 +562,14 @@ function PanneauParametreDemo() {
 
 function ParchmentCardDemo() {
   return (
-    <ParchmentCard title="Événement" seal={{ label: 'Tirage', roll: 42 }} tone="ok">
-      Récit ponctuel adossé à un tirage d100 — texture parcheminée + sceau de cire.
-    </ParchmentCard>
+    <div className="stack">
+      <ParchmentCard title="Événement" seal={{ label: 'Tirage', roll: 42 }} tone="ok">
+        Récit ponctuel adossé à un tirage d100 — texture parcheminée + médaillon du tirage.
+      </ParchmentCard>
+      <ParchmentCard seal={{ kind: 'cire' }}>
+        Texte d’auteur SCELLÉ (#717) — aucun tirage à montrer : le cachet de cire franchit le bord.
+      </ParchmentCard>
+    </div>
   );
 }
 

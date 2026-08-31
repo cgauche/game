@@ -52,7 +52,12 @@ import type { Scene } from './scene';
 // avec des instances dont l'id est `undefined` : chaque appariement de `src/engine/skills.ts`
 // (`s.id === skill`) échouerait et TOUT Test de Compétence retomberait sur la Caractéristique nue,
 // Augmentations comprises. La save se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 36;
+// 36 → 37 (#717) : le cadre de campagne entre au snapshot — `objectifsSoldes` (archive des objectifs
+// soldés), `chapitreDepuis` (borne d'ouverture), `clotureConsommee` (la clôture déjà jouée),
+// `pendingOuverture`/`pendingChapterRecap`. Une save de 36 rouvrirait sans borne : le récap de fin de
+// chapitre compterait les PX depuis le néant, et une séance déjà close se ré-armerait au premier lot
+// d'effets (la Condition de clôture, elle, est restée vraie).
+export const SAVE_VERSION = 37;
 
 export interface SaveMeta {
   version: number;

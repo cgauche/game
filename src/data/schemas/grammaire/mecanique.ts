@@ -146,7 +146,7 @@ const compareValueSchema = z.union([
 export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
   z.discriminatedUnion('kind', [
     z.strictObject({ kind: z.literal('always') }),
-    z.strictObject({ kind: z.literal('flag'), expr: z.string() }),
+    z.strictObject({ kind: z.literal('flag'), expr: z.string().min(1, 'Condition « flag » : le drapeau (`expr`) est vide — nommez le drapeau posé par l’Effet `setFlag`, ou retirez la Condition.') }),
     z.strictObject({
       kind: z.literal('time'),
       window: z.strictObject({

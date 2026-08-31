@@ -1,5 +1,6 @@
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
+import { armChapterRecapIfDue } from './chapitreRecap';
 import type { LootGear, CascadeTableDone, PendingCascade } from './pendings';
 import { revealToStep } from './revealStep';
 import { Combatant, CHAR_LABELS, type ModLine } from '../engine/types';
@@ -806,7 +807,17 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (e, env) => {
       const before = env.get().objectives;
       const done = e.id ? before.find((o) => o.id === e.id) : undefined;
-      env.set((s: GameState) => ({ objectives: e.id ? s.objectives.filter((o) => o.id !== e.id) : [] }));
+      // Solder un objectif l'ARCHIVE (`objectifsSoldes`, #717) : même objet, keyage par id STABLE
+      // (re-solder le même id ne le compte pas deux fois). Cette archive est la SEULE dont le récap
+      // de fin de chapitre dérive sa chronique — le journal, lui, est une fenêtre glissante de 40.
+      env.set((s: GameState) => {
+        const soldes = e.id ? (done ? [done] : []) : before;
+        const dejaLa = new Set(s.objectifsSoldes.map((o) => o.id));
+        return {
+          objectives: e.id ? s.objectives.filter((o) => o.id !== e.id) : [],
+          objectifsSoldes: [...s.objectifsSoldes, ...soldes.filter((o) => !dejaLa.has(o.id))],
+        };
+      });
       env.log(done ? t('eff.objectiveDone', { text: done.text }) : t('eff.objectiveClearAll'));
     },
   },
@@ -1677,8 +1688,12 @@ export function applyEffects(get: Get, set: SetFn, effects: Effect[], sl?: numbe
   const env = makeEffectEnv(get, set, sl);
   for (const e of effects) {
     const handler = EFFECT_HANDLERS[e.type] as EffectHandler;
-    if (handler.apply(e, env) === 'suspend') return;
+    if (handler.apply(e, env) === 'suspend') break;
   }
+  // Couture UNIQUE du cadre de campagne (#717) : la CLÔTURE authorée est une `Condition` — elle se
+  // relit après CHAQUE lot d'effets, jamais par un branchement dans `setFlag` (un `when` peut porter
+  // sur l'horloge, la bourse, le groupe autant que sur un drapeau).
+  armChapterRecapIfDue(get, set);
 }
 
 /**

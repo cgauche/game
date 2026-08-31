@@ -248,7 +248,8 @@ Un paquet de campagne schema 3 porte un bloc `narratif` (frère de `scenes`/`wor
 projet — jamais per-scène), typé `NarratifBlock` (`src/state/campaignNarratif.ts`) :
 
 ```
-narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; objets: TrappingData[] }
+narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; objets: TrappingData[];
+            ouverture?: OuvertureBlock; cloture?: ClotureBlock }
 ```
 
 - **`affaires`** (`Affaire`) — fils d'enquête ; **`indices`** (`Indice`, `kind: 'indice' | 'rumeur'`)
@@ -279,7 +280,7 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   (`scripts/campagne/lib.mjs`, fabrique UNIQUE du document de projet). Chacun a son def de schéma
   (`src/data/schemas/defs-scenes/`) et parse `projetSchema` en CI.
 - **Éditeur.** Le bouton « Narratif » (`src/ui/editor/EditorToolbar.tsx`) ouvre le viewer
-  `src/ui/editor/NarratifEditor.tsx` (onglets Affaires/Indices/PNJ/Objets).
+  `src/ui/editor/NarratifEditor.tsx` (onglets Cadre/Affaires/Indices/PNJ/Objets).
 - **Instancier un PNJ nommé dans une scène (`presetId`, #671).** Une `SceneEntity` (ou un `AuthoredEnemy`
   terse) porte `presetId` = l'id d'un `narratif.presetsPnj`. Présent, l'entité est INSTANCIÉE
   « base globale + surcharges du preset » (jamais depuis `ref`/`statblock`) : `resolvePresetCreature`
@@ -290,6 +291,30 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   dérive le rig de `preset.base`/`preset.apparence`. Couche non chargée / preset absent → repli silencieux
   sur `ref`/`statblock`. `parseProject` valide fail-fast (clause `presetId` de `projetSchema`) que tout `presetId`
   de scène résout un preset déclaré.
+
+## 10quater. Cadre du chapitre : ouverture cérémonielle et clôture (`narratif.ouverture` / `.cloture`, #717)
+
+Deux clés OPTIONNELLES du bloc narratif encadrent un chapitre. Absentes, la campagne démarre
+directement sur sa scène d'entrée et ne se ferme jamais — aucun paquet existant n'est touché.
+
+- **`ouverture`** (`OuvertureBlock`, `src/state/campaignNarratif.ts`) : `surtitre?`, `titre`,
+  `sousTitre?`, `chapitre?`, `pitch` (Markdown), `source?`, `ambiance?` (`veillee` | `parchemin`,
+  défaut `veillee`). `loadProject` la pose dans `pendingOuverture` **après** `startScene` (qui remet
+  l'état à l'init) ; `CampaignView` monte alors `CampaignOpeningScreen` par-dessus la vue. Le `pitch`
+  est un COPIÉ/COLLÉ verbatim de la source (règle stricte 5), rendu par `<Prose>` : il se vérifie au
+  fichier `Source/` (test `src/scenes/diligence/diligence-projet.test.ts`), jamais à l'œil.
+- **`cloture`** (`ClotureBlock`) : `when` (`Condition`), `titre`, `sousTitre?`. Le `when` est ÉVALUÉ
+  au contexte HORS COMBAT (`condCtx`, `src/state/bourseFlow.ts`) — même sous-ensemble borné qu'un
+  `when` de carte (`CONDITION_KINDS_CARTE`), sinon la Condition serait FAUSSE en silence. Il est relu
+  APRèS CHAQUE lot d'effets appliqué (`applyEffects` → `armChapterRecapIfDue`), jamais par un
+  branchement dans `setFlag` : une clôture peut dépendre de l'horloge, du groupe ou de la bourse.
+- **Le récap est une DIFFÉRENCE.** « Prendre la route » pose la borne `chapitreDepuis` (PX par héros,
+  vivants, date) ; l'Effet `clearObjective` DÉPLACE désormais l'objectif soldé dans `objectifsSoldes`
+  au lieu de le perdre. `ChapterRecapScreen` en dérive PX du chapitre, chronique, tombés en chemin et
+  lieux révélés, puis enchaîne sur la fin de séance (`SessionEndBody`, même formulaire que le menu
+  système). Aucun journal parallèle n'est écrit.
+- **Édition.** Onglet « Cadre » du `NarratifEditor` (champs texte, pitch, ambiance, `ConditionEditor`
+  pour la clôture) — le cadre est de la DONNÉE de campagne, jamais du texte au catalogue i18n.
 
 ## 11. Règles d'or
 

@@ -2371,4 +2371,22 @@ export const fr = {
   'agate.stanceNoRangedWeapon': 'aucune arme à distance',
   'agate.stanceNoMovementToYield': 'aucun Mouvement à céder (déjà immobile)',
   'agate.stanceNoCrowd': 'aucun groupe serré en vue',
+
+  // Cadre de campagne (#717) — CHROME des deux écrans (boutons, bandes, zones vides) SEULEMENT : le
+  // titre, le pitch et le titre de clôture sont de la DONNÉE de campagne, ils n'entrent jamais ici.
+  'ouv.retour': 'Retour au groupe',
+  'ouv.compagnie': 'La compagnie',
+  'ouv.prendreLaRoute': 'Prendre la route',
+  'ouv.refusHote': 'L’hôte tourne la page.',
+  'chap.ajourner': 'Plus tard',
+  'chap.masquer': 'Masquer',
+  'chap.refusHote': 'L’hôte clôt le chapitre.',
+  'chap.chronique': 'Ce que la route retiendra',
+  'chap.chroniqueVide': 'Le chapitre se ferme sans qu’aucun objectif n’ait été soldé.',
+  'chap.lieux': 'Lieux révélés',
+  'chap.lieuxVide': 'Aucun lieu connu au-delà de la route parcourue.',
+  'chap.tombes': 'Tombés en chemin',
+  'chap.tombesVide': 'Aucune perte — la compagnie est entière.',
+  'chap.seance': 'Fin de séance',
+  'chap.poursuivre': 'Poursuivre',
 } as const;

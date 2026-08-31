@@ -709,7 +709,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Lot « corps-index » (#492, arbitrage 2026-07-17) : +2 (9 -> 11) -- `.fig-zone-badges`/
   // `.fig-zone-badge` (badges ANCRÉS par Localisation, position en attribut `data-loc`, ton en
   // `data-tone` — jamais une classe par zone/ton, patron déjà tenu par sheet.css/NotchGauge).
-  'styles/frames.css': 11,
+  // Cadre de campagne (#717) : +1 (11 -> 12) -- `.fig-row`, la RANGÉE de tuiles (grille uniforme,
+  // 2 colonnes ≤700px) posée AVEC la primitive qu'elle aligne, par `FigRow` (FigTile.tsx). Aucun
+  // motif d'écran : l'écran d'ouverture la COMPOSE, il ne redessine pas de grille.
+  'styles/frames.css': 12,
   // Corps de fiche héros (HeroSheet.tsx, #417 suite) — bande d'en-tête + dérivées 2 colonnes,
   // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
   // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).

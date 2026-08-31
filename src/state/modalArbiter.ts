@@ -255,6 +255,11 @@ export const HORS_MODAL = [
   { key: 'cleave', pendingKey: 'pendingCleave', owner: (s) => s.pendingCleave?.attackerId, intents: ['cleaveAttack', 'cleaveEnd'] },
   { key: 'dualStrike', pendingKey: 'pendingDualStrike', owner: (s) => s.pendingDualStrike?.attackerId, intents: ['dualStrikeAttack', 'dualStrikeSkip'] },
   { key: 'logQueue', pendingKey: 'pendingLogQueue', owner: () => undefined }, // File de journal DIFFÉRÉE : système, drainée automatiquement (pas d'acteur)
+  // Cadre de campagne (#717) : rideau d'ouverture et récap de fin de chapitre — des ÉCRANS
+  // (`ScreenShell`), pas des modales de combat, et des gestes d'HÔTE (l'ouverture est un rideau, la
+  // clôture de séance vit déjà chez l'hôte) : aucun ready-check, aucun intent invité.
+  { key: 'ouverture', pendingKey: 'pendingOuverture', owner: () => undefined },
+  { key: 'chapterRecap', pendingKey: 'pendingChapterRecap', owner: () => undefined },
   { key: 'departure', pendingKey: 'pendingDeparture', owner: () => undefined }, // Porte de départ de nuit (carte du monde) : l'hôte décide (#340)
 ] as const satisfies readonly HorsModalDef[];
 

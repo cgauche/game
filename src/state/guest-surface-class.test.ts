@@ -172,6 +172,16 @@ const HORS_SURFACE_UI: Record<string, string> = {
   pursuitAbandon: HOTE('abandon d’une manche de poursuite'),
   endSession: HOTE('fin de séance'),
   closeSessionEnd: HOTE('fin de séance'),
+  // Cadre de campagne (#717) : l'invité VOIT les deux écrans (la cérémonie et la chronique se partagent
+  // à la table) mais leurs GESTES sont à l'hôte, comme la fin de séance qu'ils enchaînent — l'ouverture
+  // n'est pas une décision (rien à trancher), la clôture applique la même séance. Un ready-check de
+  // table serait un autre ticket. Le refus est EFFECTIF, pas seulement classé : les actions sont
+  // inertes chez l'invité (`store.ts`, garde `s.net.mode === 'guest'`, contrat
+  // `chapitre-recap.test.ts` « les trois gestes du cadre sont INERTES ») et les boutons portent leur
+  // raison (`GatedAction`, contrats de `CampaignOpeningScreen.test.tsx`/`ChapterRecapScreen.test.tsx`).
+  acquitterOuverture: HOTE('ouverture cérémonielle du chapitre'),
+  cloreChapitre: HOTE('clôture du chapitre'),
+  ajournerChapterRecap: HOTE('clôture du chapitre'),
   chooseDialogue: HOTE('dialogue (jeton unique, #669)'),
   // ── Interlude : ouverture/clôture et bataille de masse ────────────────────────────────────────
   interludeEnd: HOTE('clôture de l’interlude'),

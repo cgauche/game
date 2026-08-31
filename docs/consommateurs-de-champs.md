@@ -138,23 +138,23 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 |---|---|---|
 | `stake` | 5 | `src/state/combat/triggeredTest.ts:206` |
 | `skill` | 14 | `src/state/combat/triggeredTest.ts:193` |
-| `sense` | 2 | `src/state/combatEffects.ts:436` |
+| `sense` | 2 | `src/state/combatEffects.ts:437` |
 | `characteristic` | 11 | `src/state/combat/triggeredTest.ts:193` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:371` |
-| `requireSL` | 1 | `src/state/combatEffects.ts:475` |
+| `requireSL` | 1 | `src/state/combatEffects.ts:476` |
 | `label` | 6 | `src/state/combat/triggeredTest.ts:224` |
-| `tool` | 1 | `src/state/combatEffects.ts:438` |
-| `vsGroups` | 4 | `src/state/combatEffects.ts:343` |
-| `vsStatus` | 1 | `src/state/combatEffects.ts:342` |
-| `begging` | 3 | `src/state/combatEffects.ts:347` |
-| `vsCapricieux` | 1 | `src/state/combatEffects.ts:351` |
-| `easierIf` | 7 | `src/state/combatEffects.ts:392` |
+| `tool` | 1 | `src/state/combatEffects.ts:439` |
+| `vsGroups` | 4 | `src/state/combatEffects.ts:344` |
+| `vsStatus` | 1 | `src/state/combatEffects.ts:343` |
+| `begging` | 3 | `src/state/combatEffects.ts:348` |
+| `vsCapricieux` | 1 | `src/state/combatEffects.ts:352` |
+| `easierIf` | 7 | `src/state/combatEffects.ts:393` |
 | `argDifficulty` | **0 — JAMAIS LU** | — |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:151` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:152` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
 | `gate` | 1 | `src/engine/flowCore.ts:376` |
-| `noSupport` | 1 | `src/state/combatEffects.ts:430` |
+| `noSupport` | 1 | `src/state/combatEffects.ts:431` |
 | `menace` | 5 | `src/state/combat/triggeredTest.ts:234` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:370` |
 | `opposed` | 2 | `src/state/combat/triggeredTest.ts:293` |

@@ -139,6 +139,17 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
   `${o.dataset} | ${o.champ} | ${o.signature} | ${o.motif} | ${o.occurrences}` +
   trace(o, o.motif === 'clé de référence non résolue' ? 'L1a #1466' : '#1553');
 /**
+ * PILOTAGE (`lot`, `date`) d'une ORPHELINE, repris du stock par SITE — MÊME patron que
+ * `pilotageDeForme` ci-dessous : la sonde ne mesure ni le lot ni la date (angle mort déclaré). Sans
+ * cette reprise, toute ligne était sommée de porter la date GLOBALE du stock, et une entrée née plus
+ * tard ne pouvait être verte qu'en MENTANT sur sa date de naissance. Les deux champs restent gardés :
+ * une ligne du stock que la mesure n'observe plus reste rouge, et le test de MUTATION par champ
+ * (ci-dessous) prouve qu'ils entrent toujours dans la clé comparée.
+ */
+const siteOrpheline = (o: { dataset: string; champ: string; signature: string }) => `${o.dataset} | ${o.champ} | ${o.signature}`;
+const pilotageOrpheline = new Map(STRUCTURES_ORPHELINES.map((o) => [siteOrpheline(o), { lot: o.lot, date: o.date }]));
+const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrpheline({ ...o, ...pilotageOrpheline.get(siteOrpheline(o)) });
+/**
  * CLIQUET des signatures hors strate (#1465) : elles ne sont pas au stock — la table EXHAUSTIVE
  * de `docs/structures-donnees.md` EST la liste de référence, et ce plafond garde son COMPTE.
  */
@@ -186,7 +197,12 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
 // objets aux formes DÉJÀ déclarées par le schéma de carte (`defs-scenes/worldmap.ts`) : le gating de
 // nœud `when {expr,kind}` (l'algèbre `Condition` du moteur) et le Déplacement d'auteur par mode
 // `speed {diligence}` (`MapRoute.speed`). Les deux signatures NOMMÉES par la garde sont ces deux-là.
-const PLAFOND_HORS_STRATE = 1146;
+// #717 (1146→1147) : AUCUNE structure neuve — le CADRE du chapitre pose deux objets aux formes DÉJÀ
+// déclarées par le schéma du narratif (`defs-scenes/narratif.ts`) : `cloture {sousTitre,titre,when}`,
+// dont le `when` est l'algèbre `Condition` déjà comptée pour le gating de carte, et l'enveloppe
+// `narratif` qui gagne ses deux clés OPTIONNELLES. Solde net +1 (la signature `narratif` précédente,
+// sans cadre, disparaît au profit de celle-ci).
+const PLAFOND_HORS_STRATE = 1147;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -251,7 +267,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
 
   it('signatures ORPHELINES (hors strate) : observé == stock', () => {
     expect(
-      lignes(scan.orphelines.map(cleOrpheline)),
+      lignes(scan.orphelines.map(cleOrphelineObservee)),
       'écart entre les signatures ORPHELINES observées et `STRUCTURES_ORPHELINES` — un objet qui annonce une référence et ne résout vers rien se compte, il ne se tait pas.',
     ).toEqual(lignes(STRUCTURES_ORPHELINES.map(cleOrpheline)));
   });
@@ -531,7 +547,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquet DESCENDU 106 → 104 (L2 #1548, commit 3d) : les 2 conteneurs `talents.json ›
       // reverseFailed` sortent — leur clé n'est plus le nom de concept RÉSERVÉ `skill` mais `skills`,
       // la LISTE que le champ porte toujours. Le cliquet SUIT la baisse.
-      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 104],
+      // Cliquet REMONTÉ 104 → 105 (#717) : l'OUVERTURE cérémonielle du chapitre 1 est une enveloppe
+      // EMBARQUÉE qui porte sa `source` (le pitch est un verbatim EDO, règle stricte 5) sans résoudre
+      // elle-même — même famille que les blocs sourcés déjà stockés ici. Une ligne de PLUS à éteindre,
+      // qui tombera avec le volet #1553 (les sources embarquées), pas une dérive de forme.
+      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 105],
       // Cliquet DESCENDU 403 → 400 (L2 #1548, commit 3c) : 5 signatures d'op portant le `spec` FRÈRE
       // s'éteignent (`bonus,op,skill,spec` de spells/tables, `blocked,op,rounds,skill`/`mod,op,rounds,skill`
       // de spells dont le `skill: "all"` disparaît au profit de l'ABSENCE) et 2 se fondent dans des
@@ -654,7 +674,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`
       // n'est plus un nom de concept réservé.
-      '#1553': 104,
+      // … puis 104 → 105 (#717) — l'ouverture du chapitre 1 et sa `source` embarquée (même motif).
+      '#1553': 105,
     };
     expect(
       Object.keys(plafonds).sort(),
@@ -911,7 +932,10 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2187);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
-    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(187);
+    // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le
+    // MÊME drapeau de révélation d'Altdorf que les deux axes de carte ci-dessus, sur un troisième
+    // porteur : le fait de donnée qui dit « le chapitre se ferme ».
+    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(188);
   });
 });
 
