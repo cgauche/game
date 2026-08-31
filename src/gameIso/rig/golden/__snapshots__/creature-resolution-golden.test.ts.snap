@@ -548,6 +548,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "rat-ogre",
   },
+  "Cochon": {
+    "def": "Humain",
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Cockatrice": {
     "def": "Cockatrice",
     "plan": "theropode",
@@ -1821,6 +1827,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "cheval",
   },
   "Moritz Valgeir": {
+    "def": "Humain",
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Mouton": {
     "def": "Humain",
     "plan": "biped",
     "scale": 1,

@@ -141,7 +141,7 @@ function scanNameFieldSites(): string[] {
  */
 const ALLOWLIST: string[] = [
   'src/engine/statEntry.ts:16', // StatEntry — sortie de PARSEUR runtime, jamais persistée
-  'src/engine/statEntry.ts:149', // splitLabel — couple de parsing { name, spec? }, jamais un porteur
+  'src/engine/statEntry.ts:155', // splitLabel — couple de parsing { name, spec? }, jamais un porteur (ligne recalée : TraitInstance.src inséré au-dessus par #862)
 ];
 
 /**
