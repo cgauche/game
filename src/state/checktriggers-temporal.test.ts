@@ -8,7 +8,7 @@ import type { Scene, Trigger } from './scene';
  *  qu'en étant DANS la zone ET DANS la fenêtre horaire. On observe un effet `journal` (évite la
  *  question du flag) et on pilote `gameTime` au cran près. */
 const sceneWith = (trigger: Trigger): Scene => ({
-  id: 't', label: 't', dimensions: { w: 5, h: 5 }, ambiance: 'interieur',
+  type: 'scene', id: 't', label: 't', dimensions: { w: 5, h: 5 }, ambiance: 'interieur',
   layers: [{ z: 0, tiles: new Array(25).fill('sol') }], entities: [], dialogues: [], triggers: [trigger], encounters: [], flags: {},
 });
 

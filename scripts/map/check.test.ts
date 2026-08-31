@@ -39,6 +39,7 @@ const RUBRIQUES_PLAIN_PIED = rubriques((scope) => scope !== 'floorPair');
 
 function makeScene(w: number, h: number, z0: string[], z1: string[], walls: WallSeg[], zones: SceneEffectZone[]): Scene {
   return {
+    type: 'scene',
     id: 'fixture',
     label: 'Fixture de test',
     dimensions: { w, h },
@@ -197,6 +198,9 @@ describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans
     const z1 = Array.from({ length: w * h }, (_, i) => (detache && i % w <= 1 ? 'vide' : 'plancher'));
     const doc = {
       schema: 3,
+      // Identité REQUISE depuis #1552 — au format 3 elle vit dans la poche `meta`, que la
+      // migration 4→5 aplatit ; aucune migration ne l'invente.
+      meta: { id: 'fixture-carte', label: 'Fixture de carte', version: 1 },
       narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
       scenes: [{
         id: 'appentis', nom: 'Appentis sur cour', desc: 'Appentis sur cour — fixture.',
@@ -280,6 +284,9 @@ describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
     const w = 4, h = 3;
     const doc = {
       schema: 3,
+      // Identité REQUISE depuis #1552 — au format 3 elle vit dans la poche `meta`, que la
+      // migration 4→5 aplatit ; aucune migration ne l'invente.
+      meta: { id: 'fixture-carte', label: 'Fixture de carte', version: 1 },
       narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
       scenes: [{
         id: 'quai', nom: 'Quai de plain-pied', desc: 'Quai de plain-pied — fixture.',
@@ -300,6 +307,9 @@ describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
     const w = 4, h = 3;
     const doc = {
       schema: 3,
+      // Identité REQUISE depuis #1552 — au format 3 elle vit dans la poche `meta`, que la
+      // migration 4→5 aplatit ; aucune migration ne l'invente.
+      meta: { id: 'fixture-carte', label: 'Fixture de carte', version: 1 },
       narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
       scenes: [{
         id: 'quai', nom: 'Quai avec étage', desc: 'Quai avec étage — fixture.',

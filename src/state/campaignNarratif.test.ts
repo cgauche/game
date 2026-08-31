@@ -15,7 +15,11 @@ const GLOBAL_CREATURE = 'humain';
 const scene = { id: 's1', label: 'Le quai', dimensions: { w: 3, h: 3 } };
 
 function doc(narratif: NarratifBlock, meta?: unknown) {
-  return { schema: 3, scenes: [scene], narratif, ...(meta !== undefined ? { meta } : {}) };
+  // L'identité vit dans la poche `meta` d'un document schema 3 (aplatie par la migration 4→5) et
+  // elle est REQUISE depuis #1552 : sans elle la porte refuse, et ce n'est plus le narratif qu'on
+  // mesurerait. Un `meta` d'appelant la REMPLACE (les cas d'identité de ce fichier).
+  const identite = { id: 'fixture', label: 'Fixture', version: 1 };
+  return { schema: 3, scenes: [scene], narratif, meta: meta !== undefined ? meta : identite };
 }
 
 const validNarratif = (): NarratifBlock => ({
@@ -42,7 +46,7 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
   });
 
   it('projet schema 2 legacy migre en injectant un narratif vide', () => {
-    const res = parseProject({ schema: 2, scenes: [scene] });
+    const res = parseProject({ schema: 2, meta: { id: 'fixture', label: 'Fixture', version: 1 }, scenes: [scene] });
     expect(res.narratif).toEqual(emptyNarratif());
   });
 
@@ -89,11 +93,11 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
   });
 
   it('(f) LÈVE (message clair NOMMANT le champ, pas TypeError) si un doc schema 3 natif n\'a pas de bloc narratif', () => {
-    expect(() => parseProject({ schema: 3, scenes: [scene] })).toThrow(/narratif: Invalid input: expected object/);
+    expect(() => parseProject({ schema: 3, meta: { id: 'fixture', label: 'Fixture', version: 1 }, scenes: [scene] })).toThrow(/narratif: Invalid input: expected object/);
   });
 
   it('(g) LÈVE si un registre du narratif n\'est pas un tableau', () => {
-    expect(() => parseProject({ schema: 3, scenes: [scene], narratif: { affaires: [], indices: [] } })).toThrow(/narratif\.presetsPnj: Invalid input: expected array/);
+    expect(() => parseProject({ schema: 3, meta: { id: 'fixture', label: 'Fixture', version: 1 }, scenes: [scene], narratif: { affaires: [], indices: [] } })).toThrow(/narratif\.presetsPnj: Invalid input: expected array/);
   });
 
   it('(h) doc schema 3 avec un meta valide parse et restitue l’id, APLATI à la racine', () => {

@@ -106,15 +106,19 @@ describe('resolvePresetCreature + spawn par presetId (chemin d’état réel #67
   });
 });
 
+/** L'ENVELOPPE que la fabrique exige d'un document de projet (#1552) : il s'annonce, se nomme et
+ *  dit sa provenance. Ce fichier mesure la cross-ref `presetId` — pas l'enveloppe. */
+const enveloppe = { type: 'projet' as const, schema: CURRENT_PROJECT_SCHEMA, id: 'fixture', label: 'Fixture', versionContenu: 1, maison: 'fixture de test' };
+
 describe('cross-ref parseProject (#671, validation reportée de #765)', () => {
   it('un presetId d’entité de scène qui ne résout aucun preset → parseProject throw', () => {
     const scene = presetScene('sc-x'); // entité pnj-1.presetId = 'pnj-test'
-    const doc = { schema: CURRENT_PROJECT_SCHEMA, scenes: [scene], narratif: emptyNarratif() }; // AUCUN preset déclaré
+    const doc = { ...enveloppe, scenes: [scene], narratif: emptyNarratif() }; // AUCUN preset déclaré
     expect(() => parseProject(doc)).toThrow(/preset de PNJ inconnu/);
   });
 
   it('presetId déclaré dans le narratif → parseProject passe', () => {
-    const doc = { schema: CURRENT_PROJECT_SCHEMA, scenes: [presetScene('sc-ok')], narratif: narratifFixture() };
+    const doc = { ...enveloppe, scenes: [presetScene('sc-ok')], narratif: narratifFixture() };
     expect(() => parseProject(doc)).not.toThrow();
   });
 });

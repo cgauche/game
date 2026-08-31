@@ -48,8 +48,10 @@ function empreinte(b: BakedWorld) {
 const cloneLayers = (s: Scene): Scene['layers'] => s.layers.map((l) => ({ ...l, tiles: [...l.tiles] }));
 
 /** Une mutation RÉELLE par champ (jamais un clone à valeur égale sur un scalaire : il ne prouverait
- *  rien). Le type impose l'exhaustivité — un champ neuf de `Scene` casse la compilation ici. */
-const MUTATIONS: Record<keyof Scene, (s: Scene) => Scene> = {
+ *  rien). Le type impose l'exhaustivité — un champ neuf de `Scene` casse la compilation ici.
+ *  `type` en est EXCLU, et lui seul : sa valeur est le littéral `'scene'` (#1552), donc aucune
+ *  mutation ne peut le faire varier — l'entrée ne pourrait être qu'un clone à valeur égale. */
+const MUTATIONS: Record<Exclude<keyof Scene, 'type'>, (s: Scene) => Scene> = {
   id: (s) => ({ ...s, id: `${s.id}-bis` }),
   label: (s) => ({ ...s, label: 'Autre nom' }),
   desc: (s) => ({ ...s, desc: 'Autre description' }),
@@ -87,7 +89,7 @@ const DANS_LE_READ_SET = new Set<keyof Scene>(['dimensions', 'metresPerTile', 'l
 const memesDeps = (a: readonly unknown[], b: readonly unknown[]) => a.length === b.length && a.every((d, i) => d === b[i]);
 
 describe('Cuisson du monde — rétention par CONTENU, read-set gardé champ par champ (#1176, P3-3)', () => {
-  for (const champ of Object.keys(MUTATIONS) as (keyof Scene)[]) {
+  for (const champ of Object.keys(MUTATIONS) as (keyof typeof MUTATIONS)[]) {
     const attendu = DANS_LE_READ_SET.has(champ);
     it(`\`${champ}\` : ${attendu ? 'recuit le monde' : 'ne le recuit pas — et ne le PÉRIME pas'}`, () => {
       const muté = MUTATIONS[champ](base);

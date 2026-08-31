@@ -158,8 +158,13 @@ describe('`routesEtat` — lecteur de la VUE : TOUTES les routes du lieu, chacun
 
 describe('AUTHORING verrouillé par CONSTRUCTION — le schéma refuse la carte qui mentirait au joueur', () => {
   const projet = (map: WorldMap) => ({
-    schema: 6,
-    scenes: [{ id: 's-auberge', label: 's-auberge', dimensions: { w: 3, h: 3 } }],
+    type: 'projet',
+    schema: 7,
+    id: 'fixture-gating',
+    label: 'Fixture de gating',
+    versionContenu: 1,
+    maison: 'fixture de test',
+    scenes: [{ type: 'scene', id: 's-auberge', label: 's-auberge', dimensions: { w: 3, h: 3 } }],
     worldMap: map,
     narratif: emptyNarratif(),
   }) as unknown;
@@ -228,8 +233,13 @@ describe('AUTHORING verrouillé par CONSTRUCTION — le schéma refuse la carte 
 describe('`refus` — raison JOUEUR transportée jusqu’au consommateur (rendue par `GatedAction`)', () => {
   it('survit au parse du paquet et est portée par la route offerte', () => {
     const doc = {
-      schema: 6,
-      scenes: [{ id: 's-auberge', label: 's-auberge', dimensions: { w: 3, h: 3 } }],
+      type: 'projet',
+      schema: 7,
+      id: 'fixture-gating',
+      label: 'Fixture de gating',
+      versionContenu: 1,
+      maison: 'fixture de test',
+      scenes: [{ type: 'scene', id: 's-auberge', label: 's-auberge', dimensions: { w: 3, h: 3 } }],
       worldMap: carteGatee,
       narratif: emptyNarratif(),
     };

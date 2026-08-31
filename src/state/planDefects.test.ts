@@ -10,6 +10,7 @@ import { validateScene } from './validateScene';
 
 function makeScene(w: number, h: number, layers: { z: number; tiles: string[]; height?: number[] }[], zones: SceneEffectZone[], walls: WallSeg[] = []): Scene {
   return {
+    type: 'scene',
     id: 'fixture',
     label: 'Fixture de plan',
     dimensions: { w, h },
