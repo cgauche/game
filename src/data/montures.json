@@ -4,14 +4,14 @@
   "label": "Mouvement pour les montures",
   "source": {
     "book": "ennemi-dans-l-ombre-compagnon",
-    "page": 25
+    "page": 24
   },
   "entries": [
     {
       "id": "chien",
       "label": "Chien",
       "creatureIds": [
-        "chien"
+        "chien-de-trait"
       ],
       "m": 4,
       "e": 20,

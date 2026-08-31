@@ -114,18 +114,18 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "combat-stakes.json", champ: "entryCategory", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "combat-stakes.json", champ: "kind", occurrences: 7, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "combat-stakes.json", champ: "rule", occurrences: 23, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "creatures.json", champ: "appearance", occurrences: 455, lot: "L2/L3 #1473", date: "2026-08-27" },
+  { dataset: "creatures.json", champ: "appearance", occurrences: 456, lot: "L2/L3 #1473", date: "2026-08-27" }, // +1 : Chien de trait, EDOC 07 folio 22, #673
   { dataset: "creatures.json", champ: "features", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "grant", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "spec", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-30" },
-  { dataset: "creatures.json", champ: "grantGroups", occurrences: 89, lot: "L2/L3 #1473", date: "2026-08-26" }, // +2 : Mouton + Cochon ("bete"), EDOC 07 folio 24 (#673)
+  { dataset: "creatures.json", champ: "grantGroups", occurrences: 90, lot: "L2/L3 #1473", date: "2026-08-26" }, // +2 : Mouton + Cochon ("bete"), EDOC 07 folio 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
   { dataset: "creatures.json", champ: "monster", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "optionals", occurrences: 649, lot: "L2/L3 #1473", date: "2026-08-26" }, // +2 : Trait Entêté optionnel sur Âne + Mule, EDOC 07 folio 22 (#673)
   { dataset: "creatures.json", champ: "remove", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "skills", occurrences: 5982, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "spells", occurrences: 599, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "talents", occurrences: 1724, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "creatures.json", champ: "traits", occurrences: 3044, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "creatures.json", champ: "traits", occurrences: 3049, lot: "L2/L3 #1473", date: "2026-08-26" }, // +5 : Chien de trait, EDOC 07 folio 22, #673
   { dataset: "creatures.json", champ: "trappings", occurrences: 132, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "crew-roles.json", champ: "skills", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "crew-test-types.json", champ: "essential", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },

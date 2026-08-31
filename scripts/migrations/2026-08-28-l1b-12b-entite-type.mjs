@@ -75,7 +75,8 @@ const CARDINAUX = {
   'actions.json': 55,
   'activities.json': 62,
   // 490→492 : Mouton + Cochon, EDOC 07 (folio 24), #673.
-  'creatures.json': 492,
+  // 492→493 : +1 : Chien de trait, EDOC 07 folio 22, #673.
+  'creatures.json': 493,
   'night-stakes.json': 15,
   'psychology.json': 9,
   'raceAppearance.json': 21,
@@ -88,7 +89,8 @@ const CARDINAUX = {
   'trappings.json': 441,
 };
 // 1730→1733 : +2 créatures (#673) +1 possession (#672), les seuls bumps ci-dessus.
-const TOTAL_ATTENDU = 1733;
+// 1733→1734 : +1 : Chien de trait, EDOC 07 folio 22, #673.
+const TOTAL_ATTENDU = 1734;
 
 /**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. Mesuré sur

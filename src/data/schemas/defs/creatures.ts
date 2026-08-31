@@ -1,5 +1,5 @@
 /**
- * Schéma de `creatures.json` — le BESTIAIRE (492 entrées), miroir de `CreatureData`
+ * Schéma de `creatures.json` — le BESTIAIRE (493 entrées), miroir de `CreatureData`
  * (`src/data/index.ts`). GROS dataset : inventaire de clés fait par script node sur
  * TOUTES les entrées du fichier (histogramme complet, pas d'échantillonnage) — le compte
  * ci-dessus suit le fichier, il ne le fige pas.
@@ -51,7 +51,7 @@ const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronz
 /** Champs PROPRES d'une entrée de `creatures.json` — l'enveloppe est posée par `document()`. */
 const champs = {
   /** SOUS-TITRE de statbloc (« Bandit humain », « Prince démon de Slaanesh »). Mesuré 2026-08-31 :
-     *  492/492 porteuses, dont 439 à `null` et 53 à valeur recopiée du livre. LECTEUR NOMINATIF :
+     *  493/493 porteuses, dont 440 à `null` et 53 à valeur recopiée du livre. LECTEUR NOMINATIF :
      *  `src/ui/compendium/registry.ts` (rubrique `creatures`, `sub: c.title ?? undefined`) — c'est le
      *  sous-titre de la fiche Codex. Le `null` est un ÉTAT VOULU, pas un trou : le co-invariant des
      *  deux sens (posé → rendu à l'identique, nul → aucun sous-titre, jamais un repli) est verrouillé

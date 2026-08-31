@@ -205,11 +205,11 @@ describe('resolveMountedDay — sur-endurance (EDOC 07 l.146)', () => {
   });
 
   it('Exténué > BE : la bête s’effondre (Sonné + À Terre) puis Test de Résistance sans modificateur', () => {
-    // Chien (E 20, BE 2) au galop (endurance 1 h) poussé 6 h : effondrement garanti (Exténué 3 > 2 au
+    // Chien de trait (E 20, BE 2 — EDOC 07 folio 22) au galop (endurance 1 h) poussé 6 h : effondrement garanti (Exténué 3 > 2 au
     // plus tard à la 2e heure supplémentaire), sauf Boiteux/Patte brisée qui stoppe la journée avant.
     let collapsedSeen = false;
     for (let seed = 1; seed <= 12 && !collapsedSeen; seed++) {
-      const o = resolveMountedDay([mountOf('chien')], 6, 'galop', makeRNG(seed))[0];
+      const o = resolveMountedDay([mountOf('chien-de-trait')], 6, 'galop', makeRNG(seed))[0];
       if (o.collapsed) {
         collapsedSeen = true;
         const last = o.tests[o.tests.length - 1];

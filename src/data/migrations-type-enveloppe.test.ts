@@ -217,7 +217,8 @@ describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a boug
     'tavernGames.json': 'tavernGames',
     'trappings.json': 'trappings',
   };
-  const TOTAL_ATTENDU = 1733;
+  // +1 : Chien de trait, EDOC 07 folio 22, #673.
+  const TOTAL_ATTENDU = 1734;
 
   const lu = (f: string) => JSON.parse(readFileSync(join(RACINE, 'src', 'data', f), 'utf8')) as Record<string, unknown>[];
 

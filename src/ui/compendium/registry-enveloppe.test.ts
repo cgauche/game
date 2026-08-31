@@ -77,7 +77,8 @@ const CLES: Record<string, string> = {
   "spells": '81267fd5d0e86a78',
   "gods": 'd49beaef5ebba230',
   "ventsTourbillonnants": '9a979156867c5f47',
-  "creatures": '2e054787466117ea',
+  // +1 : Chien de trait, EDOC 07 folio 22, #673.
+  "creatures": '1dc9a6d997fc8f50',
   "traits": 'de5aed639fdc746f',
   "locations": '53ca311b61c2a3f1',
   "books": 'be0011b301362125',

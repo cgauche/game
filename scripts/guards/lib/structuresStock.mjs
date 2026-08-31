@@ -73,7 +73,7 @@ export const STRUCTURES_CIBLES = [
   // RECLASSEMENT AU SITE (L2 #1548, commit 4bis) — trois graphies passent CIBLE au SEUL site du
   // STATBLOC (`SITE_STATBLOC` du lexique : bestiaire + statblocs embarqués des projets de scène,
   // champ `skills`). Elles restent HISTORIQUES partout ailleurs, et le stock des formes le montre :
-  // `creatures.json › traits {id,value}` (913) et `trappings.json › qualities {id,value}` y sont
+  // `creatures.json › traits {id,value}` (914) et `trappings.json › qualities {id,value}` y sont
   // toujours, lot L3. Ce que le site tranche, c'est que la valeur IMPRIMÉE est un champ de la
   // référence de Compétence (#1463, « Faits tranchés au Source » : « `value` = le seul nom du NOMBRE
   // IMPRIMÉ au statbloc » ; clause de composition : « `value` requis sur un statbloc »). AUCUNE
@@ -109,7 +109,7 @@ export const STRUCTURES_FORMES = [
   { concept: "monnaie", dataset: "arene-projet.json", champ: "effect", signature: "gold+…", statut: "divergente", strate: "Valeur", occurrences: 17, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "monnaie", dataset: "arene-projet.json", champ: "effect", signature: "silver+…", statut: "divergente", strate: "Valeur", occurrences: 16, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "monnaie", dataset: "barge-du-sel-projet.json", champ: "effect", signature: "gold+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "creatures.json", champ: "price", signature: "bronze,gold,silver", statut: "historique", strate: "Valeur", occurrences: 13, lot: "L4 #1463", date: "2026-08-23" }, // +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673)
+  { concept: "monnaie", dataset: "creatures.json", champ: "price", signature: "bronze,gold,silver", statut: "historique", strate: "Valeur", occurrences: 14, lot: "L4 #1463", date: "2026-08-23" }, // +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
   { concept: "monnaie", dataset: "crew-roles.json", champ: "daily", signature: "bronze,gold,silver", statut: "historique", strate: "Valeur", occurrences: 9, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "monnaie", dataset: "crew-roles.json", champ: "weekly", signature: "bronze,gold,silver", statut: "historique", strate: "Valeur", occurrences: 9, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "monnaie", dataset: "loup-et-saumure-projet.json", champ: "effect", signature: "gold+…", statut: "divergente", strate: "Valeur", occurrences: 7, lot: "L4 #1463", date: "2026-08-23" },
@@ -268,7 +268,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "combat-stakes.json", champ: "entryCategory", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-30", motif: "CATÉGORIE d’entrée de codex" },
   { concept: "reference", dataset: "combat-stakes.json", champ: "kind", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 7, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "combat-stakes.json", champ: "rule", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 23, lot: "L3 #1463", date: "2026-08-30", motif: "référence de RÈGLE" },
-  { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species", statut: "divergente", strate: "Référence", occurrences: 226, lot: "L3 #1463", date: "2026-08-30", motif: "apparence : ESPÈCE" },
+  { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species", statut: "divergente", strate: "Référence", occurrences: 227, lot: "L3 #1463", date: "2026-08-30", motif: "apparence : ESPÈCE" }, // +1 : Chien de trait, EDOC 07 folio 22, #673
   { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species,tenue", statut: "divergente", strate: "Référence", occurrences: 107, lot: "L3 #1463", date: "2026-08-30", motif: "apparence : ESPÈCE et TENUE" },
   { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species,tenue+…", statut: "divergente", strate: "Référence", occurrences: 70, lot: "L3 #1463", date: "2026-08-30", motif: "apparence : ESPÈCE et TENUE" },
   { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species+…", statut: "divergente", strate: "Référence", occurrences: 52, lot: "L3 #1463", date: "2026-08-30", motif: "apparence : ESPÈCE" },
@@ -290,7 +290,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "creatures.json", champ: "traits", signature: "arg,id,value+…", statut: "divergente", strate: "Référence", occurrences: 43, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "traits", signature: "arg,id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "traits", signature: "count,id,value", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "creatures.json", champ: "traits", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 913, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "creatures.json", champ: "traits", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 914, lot: "L3 #1463", date: "2026-08-23" }, // +1 : Chien de trait (Arme +5), EDOC 07 folio 22, #673
   { concept: "reference", dataset: "creatures.json", champ: "traits", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "trappings", signature: "count,id", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "trappings", signature: "creatureId", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -694,8 +694,8 @@ export const STRUCTURES_DEFAUT = [
 ];
 
 export const STRUCTURES_HOMONYMES = [
-  { cle: "char", classes: ["object","string"], occurrences: 864, lot: "L4 #1463", date: "2026-08-23" }, // +3 : profils vides Mouton + Cochon (object) + Trait Entêté (string), EDOC 07 folios 22 et 24 (#673)
-  { cle: "price", classes: ["null","number","object","string"], occurrences: 519, lot: "L4 #1463", date: "2026-08-23" }, // +1 : Anneau d'Opsianon, EDO 11 folio 148 (#672) ; +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673)
+  { cle: "char", classes: ["object","string"], occurrences: 865, lot: "L4 #1463", date: "2026-08-23" }, // +3 : profils vides Mouton + Cochon (object) + Trait Entêté (string), EDOC 07 folios 22 et 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
+  { cle: "price", classes: ["null","number","object","string"], occurrences: 520, lot: "L4 #1463", date: "2026-08-23" }, // +1 : Anneau d'Opsianon, EDO 11 folio 148 (#672) ; +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
   { cle: "cost", classes: ["number","object","string"], occurrences: 93, lot: "L4 #1463", date: "2026-08-23" },
   { cle: "count", classes: ["number","object"], occurrences: 92, lot: "L4 #1463", date: "2026-08-23" },
 ];
@@ -916,7 +916,7 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "barge-du-sel-projet.json", champ: "statblock", signature: "char,label,skills,type", motif: "clé réservée", occurrences: 4, lot: "#1553", date: "2026-08-23" },
   { dataset: "careerLevels.json", champ: "trappings", signature: "count,text", motif: "clé réservée", occurrences: 28, lot: "#1553", date: "2026-08-23" },
   { dataset: "classes.json", champ: "trappings", signature: "count,text", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
-  { dataset: "creatures.json", champ: "purchase", signature: "availability,price", motif: "clé réservée", occurrences: 13, lot: "#1553", date: "2026-08-23" }, // +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673)
+  { dataset: "creatures.json", champ: "purchase", signature: "availability,price", motif: "clé réservée", occurrences: 14, lot: "#1553", date: "2026-08-23" }, // +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
   { dataset: "crew-roles.json", champ: "wage", signature: "daily,source,weekly", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "details.json", champ: "texts", signature: "age,ambitionLong,ambitionShort,nom,taille", motif: "identité non résolue", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "disponibilite.json", champ: "barterRatios", signature: "give,ratios,source", motif: "clé réservée", occurrences: 4, lot: "#1553", date: "2026-08-23" },

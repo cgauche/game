@@ -63930,6 +63930,69 @@
     }
   },
   {
+    "id": "chien-de-trait",
+    "type": "creatures",
+    "label": "Chien de trait",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 20,
+      "endurance": 20,
+      "initiative": 35,
+      "agilite": 30,
+      "dexterite": null,
+      "intelligence": 15,
+      "force-mentale": 10,
+      "sociabilite": 25,
+      "B": 7
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 5
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-trait"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Les halflings, et beaucoup d'humains vivant dans des communautés reculées, élèvent de grands chiens pour tirer les charrettes et les chariots à deux roues. Quelques halflings ont essayé de monter des chiens, mais ce n'est pas très bon pour l'animal. Les halflings ont beau être petits, ils sont rarement légers.",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 22
+    },
+    "purchase": {
+      "price": {
+        "gold": 2,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Rare"
+    },
+    "appearance": {
+      "species": "chien"
+    },
+    "grantGroups": [
+      "bete"
+    ]
+  },
+  {
     "id": "cheval-de-trait",
     "type": "creatures",
     "label": "Cheval de trait",

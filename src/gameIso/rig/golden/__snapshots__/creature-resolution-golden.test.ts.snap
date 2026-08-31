@@ -524,6 +524,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.8,
     "species": "chien",
   },
+  "Chien de trait": {
+    "def": "Chien",
+    "plan": "quadruped",
+    "scale": 0.8,
+    "species": "chien",
+  },
   "Chimère": {
     "def": "Chimère",
     "plan": "winged",
