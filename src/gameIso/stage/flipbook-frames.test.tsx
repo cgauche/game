@@ -422,6 +422,12 @@ afterEach(() => {
 
 describe('Boucle volumique — une image joue une frame, elle n’en cuit aucune (#1176 L3)', () => {
   it('quatre images de MARCHE et de GESTE : zéro rasterisation, zéro péremption', async () => {
+    // CACHE FROID CONSTRUIT, jamais supposé (#1619) : la cuisson tourne (la file sert ses tranches,
+    // la pré-cuisson rasterise), mais AUCUNE planche n'est jamais SERVIE au quad. Sans ce gel, la
+    // froideur n'était qu'une course gagnée d'avance sur une machine rapide : sur un runner à 2 cœurs
+    // la cuisson livrait entre la capture et les images, le quad échangeait sa planche, et l'identité
+    // mesurée plus bas tombait (mesuré sur CI, run 33413153943 passes 1 et 3).
+    vi.spyOn(atlasBake, 'getCachedAtlas').mockReturnValue(undefined);
     const raster = vi.spyOn(svgTexture, 'rasterizeSvg');
     await monter();
     const quads = corps();
