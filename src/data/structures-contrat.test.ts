@@ -909,8 +909,9 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // #674 : +2 ops authorées (`aggravateSymptom` + son échelon `grantSymptom`, cycle quotidien de la
     // Pneumonie, EDOC 08 l.104-108).
     expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2187);
-    // #684 L4 : +1 Condition sans `op` — le `when` de révélation d'Altdorf sur la carte du chapitre 1.
-    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(186);
+    // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
+    // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
+    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(187);
   });
 });
 
