@@ -516,7 +516,124 @@
     "type": "props",
     "label": "Étal de marché",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.42
+          },
+          "size": {
+            "x": 0.76,
+            "y": 0.36,
+            "h": 0.84
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.87
+          },
+          "size": {
+            "x": 0.8,
+            "y": 0.4,
+            "h": 0.06
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.38,
+            "y": -0.18,
+            "h": 0.95
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 1.9
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.38,
+            "y": -0.18,
+            "h": 0.95
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 1.9
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.38,
+            "y": 0.18,
+            "h": 0.95
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 1.9
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.38,
+            "y": 0.18,
+            "h": 0.95
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 1.9
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "prism",
+          "center": {
+            "x": 0,
+            "y": -0.05,
+            "h": 2.01
+          },
+          "size": {
+            "x": 0.9,
+            "y": 0.55,
+            "h": 0.22
+          },
+          "slope": "y-",
+          "material": "toile-rouge"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.325,
+            "h": 1.83
+          },
+          "size": {
+            "x": 0.9,
+            "y": 0.02,
+            "h": 0.14
+          },
+          "material": "toile-rouge"
+        }
+      ]
+    }
   },
   {
     "id": "tente",
@@ -1398,5 +1515,441 @@
         }
       }
     ]
+  },
+  {
+    "id": "cheminee",
+    "type": "props",
+    "label": "Cheminée",
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.65
+          },
+          "size": {
+            "x": 0.25,
+            "y": 0.25,
+            "h": 1.3
+          },
+          "material": "pierre-atre"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.36
+          },
+          "size": {
+            "x": 0.31,
+            "y": 0.31,
+            "h": 0.12
+          },
+          "material": "pierre-atre"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.45
+          },
+          "size": {
+            "x": 0.11,
+            "y": 0.11,
+            "h": 0.06
+          },
+          "material": "fer-noirci"
+        }
+      ]
+    }
+  },
+  {
+    "id": "enseigne",
+    "type": "props",
+    "label": "Enseigne",
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.005,
+            "h": 0.5
+          },
+          "size": {
+            "x": 0.05,
+            "y": 0.03,
+            "h": 1
+          },
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.175,
+            "h": 0.86
+          },
+          "size": {
+            "x": 0.025,
+            "y": 0.37,
+            "h": 0.05
+          },
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.335,
+            "h": 0.78
+          },
+          "size": {
+            "x": 0.015,
+            "y": 0.012,
+            "h": 0.12
+          },
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.035,
+            "h": 0.78
+          },
+          "size": {
+            "x": 0.015,
+            "y": 0.012,
+            "h": 0.12
+          },
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.185,
+            "h": 0.465
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.35,
+            "h": 0.55
+          },
+          "material": "bois-chene"
+        }
+      ]
+    }
+  },
+  {
+    "id": "clocheton",
+    "type": "props",
+    "label": "Clocheton",
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.09
+          },
+          "size": {
+            "x": 0.55,
+            "y": 0.55,
+            "h": 0.18
+          },
+          "material": "pierre-atre"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.3
+          },
+          "size": {
+            "x": 0.5,
+            "y": 0.5,
+            "h": 2.24
+          },
+          "material": "pierre-atre"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 2.5
+          },
+          "size": {
+            "x": 0.58,
+            "y": 0.58,
+            "h": 0.16
+          },
+          "material": "pierre-atre"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.25,
+            "h": 1.85
+          },
+          "size": {
+            "x": 0.26,
+            "y": 0.03,
+            "h": 0.6
+          },
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0.25,
+            "h": 1.85
+          },
+          "size": {
+            "x": 0.26,
+            "y": 0.03,
+            "h": 0.6
+          },
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": -0.285,
+            "h": 1.85
+          },
+          "radius": 0.05,
+          "heightM": 0.26,
+          "sides": 8,
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "prism",
+          "center": {
+            "x": 0,
+            "y": -0.125,
+            "h": 3.13
+          },
+          "size": {
+            "x": 0.5,
+            "y": 0.27,
+            "h": 1.1
+          },
+          "slope": "y-",
+          "material": "ardoise"
+        },
+        {
+          "kind": "prism",
+          "center": {
+            "x": 0,
+            "y": 0.125,
+            "h": 3.13
+          },
+          "size": {
+            "x": 0.5,
+            "y": 0.27,
+            "h": 1.1
+          },
+          "slope": "y+",
+          "material": "ardoise"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 3.83
+          },
+          "size": {
+            "x": 0.02,
+            "y": 0.02,
+            "h": 0.3
+          },
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 3.88
+          },
+          "size": {
+            "x": 0.09,
+            "y": 0.02,
+            "h": 0.03
+          },
+          "material": "laiton-dore"
+        }
+      ]
+    }
+  },
+  {
+    "id": "applique-murale",
+    "type": "props",
+    "label": "Applique murale",
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0.465,
+            "h": 1.6
+          },
+          "size": {
+            "x": 0.09,
+            "y": 0.05,
+            "h": 0.34
+          },
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0.44,
+            "h": 1.86
+          },
+          "size": {
+            "x": 0.04,
+            "y": 0.03,
+            "h": 0.16
+          },
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.155,
+            "y": 0.395,
+            "h": 1.72
+          },
+          "size": {
+            "x": 0.2,
+            "y": 0.03,
+            "h": 0.03
+          },
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.155,
+            "y": 0.395,
+            "h": 1.72
+          },
+          "size": {
+            "x": 0.2,
+            "y": 0.03,
+            "h": 0.03
+          },
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0.365,
+            "h": 1.8
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.21,
+            "h": 0.03
+          },
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.25,
+            "y": 0.395,
+            "h": 1.8
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 0.19
+          },
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.25,
+            "y": 0.395,
+            "h": 1.8
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 0.19
+          },
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0.27,
+            "h": 1.86
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 0.19
+          },
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": -0.25,
+            "y": 0.395,
+            "h": 1.92
+          },
+          "radius": 0.05,
+          "heightM": 0.06,
+          "sides": 8,
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0.25,
+            "y": 0.395,
+            "h": 1.92
+          },
+          "radius": 0.05,
+          "heightM": 0.06,
+          "sides": 8,
+          "material": "laiton-dore"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0.27,
+            "h": 1.98
+          },
+          "radius": 0.05,
+          "heightM": 0.06,
+          "sides": 8,
+          "material": "laiton-dore"
+        }
+      ]
+    }
   }
 ]

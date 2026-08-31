@@ -18,8 +18,9 @@
  *    existe pour rendre impossible : la valeur REÇUE que l'échec affiche est la mesure courante, mais
  *    elle ne devient un témoin qu'accompagnée de la raison du déplacement.
  *
- * Les trois scènes couvrent les trois régimes : une carte de ville MEUBLÉE (hub de l'arène), une carte
- * de ROUTE longue (diligence), une SALLE nue (zone 13 de l'arène — plancher de comparaison).
+ * DEUX étalons sont figés au chiffre : une carte de ville MEUBLÉE (hub de l'arène) et une SALLE nue
+ * (zone 13 de l'arène — plancher de comparaison). La carte de ROUTE longue (diligence) est couverte
+ * SANS chiffre : sa carte bouge encore sous le pinceau (`EN_AUTHORING` ci-dessous, arbitrage #1447).
  */
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -49,7 +50,7 @@ function compteursDe(scene: Scene): { sommets: number; triangles: number; spans:
  *  donnée). `spans` = une face du pivot ; `triangles` = ce que le GPU dessine ; `sommets` = l'index
  *  IDENTITÉ (aucun sommet partagé, donc exactement 3 par triangle). */
 const ETALONS: [string, () => Scene, { sommets: number; triangles: number; spans: number }][] = [
-  ['arene-hub', () => sceneDuProjet('arene-hub'), { sommets: 50694, triangles: 16898, spans: 4149 }],
+  ['arene-hub', () => sceneDuProjet('arene-hub'), { sommets: 52440, triangles: 17480, spans: 4446 }],
   ['arene-zone13', () => sceneDuProjet('arene-zone13'), { sommets: 8640, triangles: 2880, spans: 1440 }],
 ];
 

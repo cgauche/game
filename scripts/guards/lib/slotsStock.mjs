@@ -246,7 +246,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "progression-schemas.derived.json", champ: "livres", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "progression-schemas.derived.json", champ: "titresPage", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "props.json", champ: "light", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "props.json", champ: "primitives", occurrences: 52, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "props.json", champ: "primitives", occurrences: 89, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "psychology.json", champ: "becomes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "psychology.json", champ: "failCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "psychology.json", champ: "immuneToFromTarget", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

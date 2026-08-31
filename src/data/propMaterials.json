@@ -30,5 +30,29 @@
     "color": "#8c3416",
     "roughness": 0.7,
     "metalness": 0
+  },
+  {
+    "id": "ardoise",
+    "type": "propMaterials",
+    "label": "Ardoise",
+    "color": "#3d4852",
+    "roughness": 0.72,
+    "metalness": 0
+  },
+  {
+    "id": "toile-rouge",
+    "type": "propMaterials",
+    "label": "Toile rouge",
+    "color": "#a8423a",
+    "roughness": 0.95,
+    "metalness": 0
+  },
+  {
+    "id": "laiton-dore",
+    "type": "propMaterials",
+    "label": "Laiton doré",
+    "color": "#a8801f",
+    "roughness": 0.42,
+    "metalness": 0.6
   }
 ]

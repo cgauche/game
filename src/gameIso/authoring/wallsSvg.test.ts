@@ -178,12 +178,11 @@ describe('wallSvg — apparence de façade authorée', () => {
           { id: 'fenetres', kind: 'window-band', edge: { x: 2, y: 2, side: 'E' }, width: 0.6 },
           { id: 'entree', kind: 'stone-entry', edge: { x: 2, y: 2, side: 'E' }, width: 0.7 },
           { id: 'pignon', kind: 'gable', edge: { x: 2, y: 2, side: 'E' }, width: 0.8 },
-          { id: 'enseigne', kind: 'sign', edge: { x: 2, y: 2, side: 'E' }, width: 0.4 },
         ],
       }],
     }];
     const svg = wallSvg(buildWalls(s)[0], { ...dims, rot });
-    for (const id of ['fenetres', 'entree', 'pignon', 'enseigne'])
+    for (const id of ['fenetres', 'entree', 'pignon'])
       expect(svg).toContain(`data-architecture-feature="corps:rue:${id}"`);
   });
 

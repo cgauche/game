@@ -135,16 +135,16 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const isPhysicalWall = (edge: { x: number; y: number; side: string }) =>
       hub.walls?.some((w) => w.x === edge.x && w.y === edge.y && w.side === edge.side);
     const sign = featureOf('sign');
-    expect(sign.id).toBe('enseigne');
+    expect(sign.id).toBe('enseigne-taverne');
     expect(sign.edge).toEqual({ x: 10, y: 13, side: 'N' });
     expect(isPhysicalWall(sign.edge)).toBe(true);
     expect(hub.walls?.find((w) => w.x === sign.edge.x && w.y === sign.edge.y && w.side === sign.edge.side)?.door).toBe(true);
     const belfry = featureOf('belfry');
-    expect(belfry.id).toBe('clocheton');
+    expect(belfry.id).toBe('clocheton-chapelle');
     expect(belfry.edge).toEqual({ x: 40, y: 14, side: 'N' });
     expect(isPhysicalWall(belfry.edge)).toBe(true);
     const chimney = featureOf('chimney');
-    expect(chimney.id).toBe('cheminee');
+    expect(chimney.id).toBe('cheminee-forge-du-bourg');
     expect(chimney.edge).toEqual({ x: 2, y: 31, side: 'E' });
     expect(isPhysicalWall(chimney.edge)).toBe(true);
     const byOrnamentId = new Map(ornaments.map((entity) => [entity.id, entity] as const));

@@ -7,12 +7,15 @@ import { collectBillboards, wholeSceneBillboardEls } from '../backends/webgl/sce
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
 
 /**
- * LE MOBILIER VOLUMIQUE — six refs de `props.json` dont le corps MONDE est leur
- * recette, et dont le SVG de catalogue n'est plus qu'une vignette de palette. Ce fichier tient les
- * deux moitiés du contrat : l'identité (vignette + recette + places) et l'EXCLUSIVITÉ de la voie
- * monde (une ref volumique n'a plus aucun sujet de billboard).
+ * LE DÉCOR VOLUMIQUE — les refs de `props.json` dont le corps MONDE est leur recette, et dont le SVG
+ * de catalogue n'est plus qu'une vignette de palette. Ce fichier tient les deux moitiés du contrat :
+ * l'identité (vignette + recette + places) et l'EXCLUSIVITÉ de la voie monde (une ref volumique n'a
+ * plus aucun sujet de billboard).
+ *
+ * La liste est DÉRIVÉE du catalogue : une recette de plus entre sous contrat par sa seule déclaration
+ * en donnée — une liste manuscrite laisserait les suivantes hors garde en silence.
  */
-const IDS = ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'table-ronde-4-tabourets', 'table-murale-2-tabourets', 'armoire'] as const;
+const IDS = props.filter((p) => p.volume).map((p) => p.id);
 
 const propEntity = ({ id, ref, pos, facing }: { id: string; ref: string; pos: { x: number; y: number }; facing: 'N' | 'E' | 'S' | 'O' }): SceneEntity =>
   ({ id, kind: 'prop', pos, ref, facing }) as SceneEntity;
@@ -37,7 +40,16 @@ function distanceAuSegment(p: { x: number; y: number }, a: { x: number; y: numbe
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
-describe('mobilier volumique — six refs, leur vignette et leur corps monde', () => {
+describe('décor volumique — chaque recette du catalogue, sa vignette et son corps monde', () => {
+  // PLANCHER de la dérivation : `IDS` vient du catalogue, le comparer à sa propre définition ne
+  // rougirait jamais. Ce qui peut vraiment casser, c'est une jointure VIDE (dataset non chargé,
+  // `volume` renommé) : les `it.each` ci-dessous passeraient alors sans rien mesurer. L'existence de
+  // la def d'ART de chaque id, elle, est gardée par `src/data/props-label-parite.test.ts`
+  // (`labelDArt` est FAIL-FAST sur une def absente, sur TOUTES les entrées de `props.json`).
+  it('la dérivation ne rend pas une liste VIDE (les contrats ci-dessous mesureraient du néant)', () => {
+    expect(IDS.length).toBeGreaterThanOrEqual(11);
+  });
+
   it.each(IDS)('%s possède vignette et volume monde, jamais billboard monde', (id) => {
     expect(propSvg(id).length).toBeGreaterThan(120);
     const prop = findPropById(id)!;

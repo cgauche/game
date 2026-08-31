@@ -362,7 +362,9 @@ const PARTIELS: string[] = [
   "lightTones.json#0 (4)",
   "merchantFamilies.json#0 (7)",
   "merchants.json#0 (6)",
-  "props.json#0 (78)",
+  // +4 décors de bâtiment #1624 (cheminee, enseigne, clocheton, applique-murale) — MÊME angle mort
+  // source/desc que les 78 existants : le catalogue de décor est app-owned, aucune page ne le source.
+  "props.json#0 (82)",
   "qualitySubtypes.json#0 (3)",
   "river-navigation.json#0 (5)",
   "sea-cargo.json#0 (13)",
@@ -382,7 +384,9 @@ const ORPHELINS: string[] = [
   "lieux-services.json#0 (7)",
   "miscast.json#0 (5)",
   "primitives.manifest.json#0 (28)",
-  "propMaterials.json#0 (4)",
+  // +3 matériaux de recette #1624 (ardoise, toile-rouge, laiton-dore) — même angle mort que les 4
+  // existants : matière de rendu app-owned, aucune catégorie du Codex ne l'expose.
+  "propMaterials.json#0 (7)",
   "qualityTypes.json#0 (2)",
   "raw.manifest.json#0 (9)",
   "reliefMaterials.json#0 (6)",

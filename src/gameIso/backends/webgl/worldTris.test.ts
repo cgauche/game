@@ -707,7 +707,7 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
    *  vantail), d'où un `avant` qui n'est plus celui d'avant l'extension. */
   const MESURES: [string, () => Scene, { trisAvant: number; trisApres: number; paires: number }][] = [
     ['siege-enceinte', () => siege, { trisAvant: 6912, trisApres: 7404, paires: 1238 }],
-    ['arene (hub)', () => arene.scene, { trisAvant: 15246, trisApres: 16898, paires: 7070 }],
+    ['arene (hub)', () => arene.scene, { trisAvant: 15242, trisApres: 16888, paires: 7070 }],
     ['vitrine-batiments', buildVitrineScene, { trisAvant: 9666, trisApres: 11146, paires: 5279 }],
   ];
 
