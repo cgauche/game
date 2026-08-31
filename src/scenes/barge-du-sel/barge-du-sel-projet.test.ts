@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { parseProject, routesFrom, visiblePlaces } from '../../state/worldMap';
 import type { ConditionCtx } from '../../engine/flowCore';
+import { chebyshev } from '../../engine/grid';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { sceneMetresPerTile, isMerScene, type Scene, type Effect } from '../../state/scene';
 import { findCreatureById, findVehicleById, findNavalTrait, findCrewRoleById } from '../../data';
@@ -259,7 +260,7 @@ describe('chaîne narrative — le cap RÉVÈLE la route, l’accostage FERME le
     const distances: number[] = [];
     for (let y = rect.y; y < rect.y + rect.h; y++)
       for (let x = rect.x; x < rect.x + rect.w; x++)
-        distances.push(Math.max(Math.abs(x - embarquement.pos.x), Math.abs(y - embarquement.pos.y)));
+        distances.push(chebyshev({ x, y }, embarquement.pos));
     expect(Math.min(...distances)).toBeLessThanOrEqual(1);
   });
 

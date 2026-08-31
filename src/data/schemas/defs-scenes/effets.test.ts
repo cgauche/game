@@ -72,7 +72,9 @@ describe('effectSchema — le corpus RÉELLEMENT posé dans les deux racines aut
   it('le scan VOIT le corpus qu’il prétend mesurer (sinon un vert vide passerait)', () => {
     // +2 (#862) : les effets d'horloge authorés — le re-ciblage `onDayStart` de Haine sporadique
     // (`mutations.json`) et l'État Exténué du réveil du Désespoir (`traits.json`, VDM 09 l.280).
-    expect(poses.length).toBe(1058);
+    // +3 (#684) : les effets du cap et de l'accostage de la Barge du Sel — `setFlag sel-cap-donne`
+    // + `journal` du trigger du quai, et `setFlag sel-ilot-accoste` de l'arrivée sur l'îlot.
+    expect(poses.length).toBe(1061);
     const parType = new Set(poses.map((p) => (p.noeud as { type: string }).type));
     expect(parType.size).toBe(30); // 29 variantes authorées + la feuille `ops`
     expect(parType.has('ops')).toBe(true);
