@@ -28,8 +28,8 @@ rotation ou changement de projection ; la première personne n'hérite d'aucun c
 
 ## 1. Le pivot — `src/gameIso/builders/types.ts`
 
-`SceneEl` (`src/gameIso/builders/types.ts:207`) = `FloorEl` | `WallEl` | `RoofEl` | `PropEl` | `TokenEl` — union
-discriminée par `kind`. `PropEl` (`src/gameIso/builders/types.ts:182`) se subdivise elle-même en
+`SceneEl` (`src/gameIso/builders/types.ts:227`) = `FloorEl` | `WallEl` | `RoofEl` | `PropEl` | `TokenEl` — union
+discriminée par `kind`. `PropEl` (`src/gameIso/builders/types.ts:193`) se subdivise elle-même en
 `BillboardPropEl` | `VolumePropEl`.
 
 ### `GP` — un point en espace MONDE
@@ -92,11 +92,11 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 |---|---|---|---|
 | `buildFloors` | `FloorEl[]` | `src/gameIso/builders/floors.ts:311` | Éléments `floor` de la scène. |
 | `buildHighlights` | `HighlightEl[]` | `src/gameIso/builders/highlights.ts:64` | — |
-| `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:129` | Les faces MONDE d'un décor volumique : recette locale × cap de l'entité × case d'ancrage, posées sur `groundHeightM` (l'altitude métrique de la surface de la case, relief et couche compris). |
-| `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:42` | — |
+| `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:142` | Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`. |
+| `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:125` | Éléments `prop` de la scène. |
 | `buildRoofs` | `RoofEl[]` | `src/gameIso/builders/roofs.ts:1387` | Éléments `roof` de la scène. |
 | `buildTokens` | `TokenEl[]` | `src/gameIso/builders/tokens.ts:80` | Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). |
-| `buildWalls` | `WallEl[]` | `src/gameIso/builders/walls.ts:601` | Éléments `wall` de la scène. |
+| `buildWalls` | `WallEl[]` | `src/gameIso/builders/walls.ts:623` | Éléments `wall` de la scène. |
 
 ## 3. L'arborescence de `src/gameIso/`
 

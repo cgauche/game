@@ -37,6 +37,7 @@ import { getStagePan, subscribeStagePan } from '../../state/stagePan';
 import { walkPoseAt, type WalkPos } from '../fx/walkPose';
 import { buildRoofs, clearedSpace } from '../builders/roofs';
 import { buildProps } from '../builders/props';
+import { nappePorteuse } from '../builders/types';
 import { buildTokens, partyTokenOf } from '../builders/tokens';
 import { RANG_MENEUR, seatPoseOf } from '../../state/seating';
 import { seatedEyeH } from '../pov/camera';
@@ -457,16 +458,20 @@ function CorpsDuMonde() {
     // recevaient ; la masse est désormais CUITE en bloc (`bakeWorldGeometry` prend la scène entière),
     // c'est donc ici qu'elle s'applique. Les NAPPES en sont exemptes, comme elles l'étaient : leur
     // retrait se décide par MASSE (loi de dégagement), jamais par étage rendu.
-    if (planVue && el.kind !== 'roof' && el.cell.z !== activeZ) return false;
-    if (el.kind === 'roof') {
+    // NAPPE PORTEUSE (`nappePorteuse`) : un pan de toit et le décor volumique qui lui est SOLIDAIRE
+    // (faîteau) suivent le même sort, par le même canal — l'ornement se lève avec son toit au lieu de
+    // flotter au-dessus du vide, et l'étage rendu ne les tranche ni l'un ni l'autre.
+    const nappe = nappePorteuse(el);
+    if (planVue && !nappe && el.cell.z !== activeZ) return false;
+    if (nappe) {
       // DÉCOUVERT PERMANENT (#1176, P3-5) : sous un regard qui ne montre pas les toits, aucune nappe
       // ne se dessine — la loi de dégagement (`clearedSpace`) reste entière pour le plateau iso, où
       // elle continue de retirer ce qui abrite le groupe.
       if (!politique.toitsVisibles) return false;
       return cutawayForSection({
-        sectionId: el.sectionId ?? el.key,
+        sectionId: nappe.sectionId,
         roomZoneIds: zonesVives.get(el.key),
-        cells: el.cells.map((c) => spaceCellKey(c.x, c.y, el.cell.z)),
+        cells: nappe.cells.map((c) => spaceCellKey(c.x, c.y, el.cell.z)),
       }, cleared) === 'visible';
     }
     // Sol, mur d'étage, décor : tout ce qui se pose ou se dresse sur un niveau n'obéit qu'au couvercle

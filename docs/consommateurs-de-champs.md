@@ -214,8 +214,8 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `opaque` | **0 — JAMAIS LU** | — |
 | `cover` | **0 — JAMAIS LU** | — |
 | `light` | **0 — JAMAIS LU** | — |
-| `foot` | 1 | `src/data/props.types.ts:85` |
-| `volume` | 1 | `src/gameIso/builders/propVolumes.ts:132` |
+| `foot` | 1 | `src/data/props.types.ts:93` |
+| `volume` | 1 | `src/gameIso/builders/propVolumes.ts:145` |
 | `seatSlots` | **0 — JAMAIS LU** | — |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
@@ -228,14 +228,14 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `kind` | 2 | `src/gameIso/builders/propVolumes.ts:118` |
-| `center` | 3 | `src/gameIso/builders/propVolumes.ts:118` |
-| `size` | 2 | `src/gameIso/builders/propVolumes.ts:118` |
+| `kind` | 2 | `src/gameIso/builders/propVolumes.ts:117` |
+| `center` | 3 | `src/gameIso/builders/propVolumes.ts:117` |
+| `size` | 2 | `src/gameIso/builders/propVolumes.ts:117` |
 | `material` | **0 — JAMAIS LU** | — |
-| `radius` | 1 | `src/gameIso/builders/propVolumes.ts:119` |
-| `heightM` | 1 | `src/gameIso/builders/propVolumes.ts:119` |
-| `sides` | 1 | `src/gameIso/builders/propVolumes.ts:119` |
-| `slope` | 1 | `src/gameIso/builders/propVolumes.ts:120` |
+| `radius` | 1 | `src/gameIso/builders/propVolumes.ts:118` |
+| `heightM` | 1 | `src/gameIso/builders/propVolumes.ts:118` |
+| `sides` | 1 | `src/gameIso/builders/propVolumes.ts:118` |
+| `slope` | 1 | `src/gameIso/builders/propVolumes.ts:119` |
 
 ### `PropSeatSlot` (src/data/props.types.ts)
 
@@ -250,9 +250,9 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `x` | 4 | `src/gameIso/builders/propVolumes.ts:40` |
-| `y` | 4 | `src/gameIso/builders/propVolumes.ts:40` |
-| `h` | 4 | `src/gameIso/builders/propVolumes.ts:40` |
+| `x` | 4 | `src/gameIso/builders/propVolumes.ts:39` |
+| `y` | 4 | `src/gameIso/builders/propVolumes.ts:39` |
+| `h` | 4 | `src/gameIso/builders/propVolumes.ts:39` |
 
 ### `PropSize3` (src/data/props.types.ts)
 

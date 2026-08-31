@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DIR8_ORDER, type Dir8 } from '../../state/dir8';
-import type { SceneEntity } from '../../state/scene';
 import type { PropData } from '../../data/props.types';
 import { polyNormal } from '../backends/webgl/worldTris';
-import { buildPropVolumes } from './propVolumes';
+import { buildPropVolumes, type AncrageVolume } from './propVolumes';
 import type { Face } from './types';
 
 /**
@@ -26,8 +25,9 @@ const PROP_TROIS_PRIMITIVES: PropData = {
   },
 };
 
-function propEntity({ id, pos, facing, z }: { id: string; pos: { x: number; y: number }; facing: Dir8; z?: number }): SceneEntity {
-  return { id, kind: 'prop', pos, ref: PROP_TROIS_PRIMITIVES.id, facing, ...(z !== undefined ? { z } : {}) } as SceneEntity;
+/** L'ANCRAGE d'un meuble posé : son point monde, son cap, l'altitude de son pied, l'entité porteuse. */
+function ancrageDe({ id, ancre, facing, baseHeightM = 0 }: { id?: string; ancre: { x: number; y: number }; facing?: Dir8; baseHeightM?: number }): AncrageVolume {
+  return { ancre, facing: facing ?? 'S', baseHeightM, ...(id ? { entId: id } : {}) };
 }
 
 const r3 = (n: number): number => Math.round(n * 1000) / 1000;
@@ -50,15 +50,15 @@ function aire(face: Face): number {
 
 describe('buildPropVolumes — la recette locale devient de la géométrie monde', () => {
   it.each<Dir8>(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'])('compile les trois primitives au cap %s', (facing) => {
-    const ent = propEntity({ id: `meuble-${facing}`, pos: { x: 4, y: 6 }, facing });
-    const faces = buildPropVolumes(ent, PROP_TROIS_PRIMITIVES, 0);
+    const ancrage = ancrageDe({ id: `meuble-${facing}`, ancre: { x: 4, y: 6 }, facing });
+    const faces = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrage);
     expect(faces.length).toBe(6 + 10 + 5); // boîte, cylindre à 8 pans (+ dessus + dessous), prisme
-    expect(faces.every((f) => f.entId === ent.id && f.material.domain === 'prop')).toBe(true);
+    expect(faces.every((f) => f.entId === ancrage.entId && f.material.domain === 'prop')).toBe(true);
     expect(snapshotFaces(faces)).toMatchSnapshot();
   });
 
   it('aucune face dégénérée, et chaque polygone regarde le DEHORS de sa primitive', () => {
-    const faces = buildPropVolumes(propEntity({ id: 'meuble', pos: { x: 4, y: 6 }, facing: 'S' }), PROP_TROIS_PRIMITIVES, 0);
+    const faces = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ id: 'meuble', ancre: { x: 4, y: 6 }, facing: 'S' }));
     for (const face of faces) expect(aire(face)).toBeGreaterThan(1e-6);
     // Le centre de la BOÎTE, en monde : toute face de la boîte doit lui tourner le dos.
     const boite = faces.filter((f) => f.material.id === 'bois-chene');
@@ -73,7 +73,7 @@ describe('buildPropVolumes — la recette locale devient de la géométrie monde
 
   it('le CAP tourne la géométrie une seule fois, autour de la case d’ancrage', () => {
     const parCap = DIR8_ORDER.map((facing) =>
-      buildPropVolumes(propEntity({ id: 'meuble', pos: { x: 4, y: 6 }, facing }), PROP_TROIS_PRIMITIVES, 0));
+      buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ id: 'meuble', ancre: { x: 4, y: 6 }, facing })));
     // Le cylindre est excentré (x = 0.2) : chaque cap le pose ailleurs — huit positions DISTINCTES.
     const piedsParCap = parCap.map((faces) => {
       const pied = faces.filter((f) => f.material.id === 'fer-noirci').flatMap((f) => f.poly);
@@ -97,8 +97,7 @@ describe('buildPropVolumes — la recette locale devient de la géométrie monde
   it('le cap `N` est l’identité de rotation ; l’absence de cap vaut `S`, soit un DEMI-TOUR', () => {
     /** L'emprise en x/y d'un matériau, RAMENÉE au repère local de la case d'ancrage. */
     const emprise = (facing: Dir8 | undefined, material: string) => {
-      const ent = { id: 'meuble', kind: 'prop', pos: { x: 4, y: 6 }, ref: PROP_TROIS_PRIMITIVES.id, ...(facing ? { facing } : {}) } as SceneEntity;
-      const pts = buildPropVolumes(ent, PROP_TROIS_PRIMITIVES, 0)
+      const pts = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ id: 'meuble', ancre: { x: 4, y: 6 }, ...(facing ? { facing } : {}) }))
         .filter((f) => f.material.id === material)
         .flatMap((f) => f.poly.map((p) => ({ x: p.x - 4, y: p.y - 6 })));
       return {
@@ -117,10 +116,30 @@ describe('buildPropVolumes — la recette locale devient de la géométrie monde
     expect(emprise(undefined, 'pierre-atre')).toEqual({ x: [0.05, 0.35], y: [-0.2, 0] });
   });
 
+  /**
+   * ANCRE FRACTIONNAIRE (#1624) : une feature de façade s'ancre entre deux cases, un ornement de faîte au
+   * milieu d'une empreinte paire. La recette y subit une TRANSLATION RIGIDE et rien d'autre — mêmes
+   * normales face à face, mêmes aires, le seul écart étant le décalage demandé.
+   */
+  it('une ancre FRACTIONNAIRE translate la recette sans la déformer', () => {
+    const surCase = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ ancre: { x: 4, y: 3 }, facing: 'NE' }));
+    const entreCases = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ ancre: { x: 4.5, y: 3.5 }, facing: 'NE' }));
+    expect(entreCases).toHaveLength(surCase.length);
+    for (const [i, face] of entreCases.entries()) {
+      const ref = surCase[i];
+      expect(face.material).toEqual(ref.material);
+      expect(face.poly.map((p) => ({ x: r3(p.x - 0.5), y: r3(p.y - 0.5), h: r3(p.h) })))
+        .toEqual(ref.poly.map((p) => ({ x: r3(p.x), y: r3(p.y), h: r3(p.h) })));
+      const n = (f: Face) => polyNormal(f.poly.map((p) => ({ x: p.x, y: p.h, z: p.y })))!;
+      const [a, b] = [n(face), n(ref)];
+      expect([r3(a.x), r3(a.y), r3(a.z)]).toEqual([r3(b.x), r3(b.y), r3(b.z)]);
+      expect(r3(aire(face))).toBe(r3(aire(ref)));
+    }
+  });
+
   it('la hauteur du sol s’ajoute UNE fois à chaque hauteur locale', () => {
-    const ent = propEntity({ id: 'meuble', pos: { x: 4, y: 6 }, facing: 'S' });
-    const auSol = buildPropVolumes(ent, PROP_TROIS_PRIMITIVES, 0);
-    const enHauteur = buildPropVolumes(ent, PROP_TROIS_PRIMITIVES, 7.25);
+    const auSol = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ id: 'meuble', ancre: { x: 4, y: 6 }, facing: 'S' }));
+    const enHauteur = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ id: 'meuble', ancre: { x: 4, y: 6 }, facing: 'S', baseHeightM: 7.25 }));
     expect(enHauteur.map((f) => f.poly.map((p) => r3(p.h - 7.25)))).toEqual(auSol.map((f) => f.poly.map((p) => r3(p.h))));
     expect(Math.min(...enHauteur.flatMap((f) => f.poly.map((p) => p.h)))).toBeCloseTo(7.25);
   });

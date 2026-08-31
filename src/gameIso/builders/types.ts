@@ -167,15 +167,26 @@ export interface BillboardPropEl extends ElBase {
   /** Id de l'entité source (flags `__fouille_<id>`, clés d'affordance). Absent pour un overlay terrain. */
   entId?: string;
 }
-/** Élément de décor à FACES : un type de décor qui porte une recette volumique (`PropData.volume`) est
+/** Élément de décor à FACES : un décor dont le TYPE porte une recette volumique (`PropData.volume`) est
  *  compilé en géométrie MONDE (`builders/propVolumes.ts`) et cuit dans la masse commune — il n'a donc
- *  ni vignette ni empreinte de billboard à porter. Ses dimensions restent celles de son TYPE. */
+ *  ni vignette ni empreinte de billboard à porter. Ses dimensions restent celles de son TYPE, et sa
+ *  provenance est celle de TOUT décor (`source`, même union que le billboard : une feature de façade ou
+ *  un ornement de bâtiment sort en volume par la MÊME règle qu'un prop de scène). Seul un décor
+ *  d'ENTITÉ porte un `entId` — lui seul est désignable au pointeur. */
 export interface VolumePropEl extends ElBase {
   kind: 'prop';
-  source: 'entity';
+  source: BillboardPropEl['source'];
   ref: string;
-  entId: string;
+  entId?: string;
   facing: Dir8;
+  /** Empreinte (cases) du décor — profondeur de tri, comme pour son billboard. */
+  span?: { w: number; h: number };
+  /** NAPPE PORTEUSE : la masse dont ce décor suit le SORT au dégagement (un ornement de faîte se lève
+   *  AVEC son toit au lieu de flotter). Même identité de section et mêmes cellules que les pans. */
+  nappe?: { sectionId: string; cells: readonly { x: number; y: number }[] };
+  /** Zones de PIÈCE de cette nappe — comme pour un `RoofEl`, PRIVÉE du monde cuit (`elCuit`) et
+   *  redemandée vive par l'hôte (`roomZonesByElKey`). */
+  roomZoneIds?: string[];
   interact: boolean;
   faces: Face[];
 }
@@ -183,6 +194,15 @@ export type PropEl = BillboardPropEl | VolumePropEl;
 
 /** Ce décor est-il rendu en VOLUME (par opposition au billboard) ? Le seul discriminant : ses faces. */
 export const estPropVolumique = (el: PropEl): el is VolumePropEl => 'faces' in el;
+
+/** NAPPE PORTEUSE d'un élément de scène : la masse dont il suit le SORT au dégagement — un pan de toit
+ *  EST sa propre nappe, un décor volumique déclare celle qui le porte. La loi de dégagement de l'hôte
+ *  les lit par ce SEUL canal : ce qui se lève avec un toit se déclare, jamais ne se devine d'un `kind`. */
+export function nappePorteuse(el: SceneEl): { sectionId: string; cells: readonly { x: number; y: number }[] } | null {
+  if (el.kind === 'roof') return { sectionId: el.sectionId ?? el.key, cells: el.cells };
+  if (el.kind === 'prop' && estPropVolumique(el) && el.nappe) return el.nappe;
+  return null;
+}
 /** Le SUJET d'un token — la donnée d'identité que le stage transforme en corps React (tokenBodyKind/
  *  le pion-disque). La position INTERPOLÉE de marche est PAR-FRAME : elle reste au stage ; l'élément ne
  *  porte que la position LOGIQUE (`cell`) et les décisions de scène (filtres, ordre d'anneau héros). */

@@ -213,8 +213,11 @@ src/gameIso/                Rendu du monde. Le moteur est le monde VOLUMIQUE thr
                             dynamicMarks/interactHalos/tokenChrome. Un builder n'importe NI caméra NI
                             Dims — sa sortie survit à toute rotation et sert les deux vues.
                             propVolumes.ts = compilation PURE de la recette volumique d'un décor
-                            (`buildPropVolumes` : primitives locales × cap de l'entité × sol de la case
-                            → `Face[]` monde) ; un décor sans recette reste un billboard
+                            (`buildPropVolumes` : primitives locales × cap × ancre monde, posées sur le
+                            pied de l'ancrage = sol de la case + surélévation déclarée → `Face[]`
+                            monde). Chaque site de `buildProps` (entité, feature de façade, ornement de
+                            bâtiment) DÉCLARE son ancrage et un émetteur unique tranche : recette →
+                            volume, sinon billboard
   backends/webgl/           SEUL backend du monde : cuisson des SceneEl en géométrie three (sceneMeshes,
                             faceBake, periodTexture, atlasBake des billboards) + caméras réelles
                             (cameras.ts, ortho pour les vues de plateau, perspective en POV)

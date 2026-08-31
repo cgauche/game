@@ -1,16 +1,18 @@
 /**
  * BUILDER de PROPS — produit les éléments `prop` du pivot (cf. ./types) : le DÉCOR de scène (entités
- * `kind:'prop'` — tonneaux, cadavres, tentes…) et les OVERLAYS de TERRAIN à décor (tuile `bois → 'arbre'`).
- * Rendus en BILLBOARD du SVG catalogue (`propSvg`) par les DEUX backends (iso/éditeur ET POV), SAUF un
- * type de décor qui porte une recette volumique (`PropData.volume`) : celui-là sort en faces MONDE
- * (`propVolumes.ts`), cuites dans la masse commune, et n'a plus de sujet de billboard —
- * l'overlay de terrain n'est plus qu'un prop dérivé d'une donnée `TerrainDef.overlayProp` (le mur PLEIN,
- * lui, naît de `solidHeightM` via le relief de `buildFloors`, pas d'ici). PUR et projection-agnostique :
- * identité + case + empreinte + vérités de scène, aucune caméra.
+ * `kind:'prop'` — tonneaux, cadavres, tentes…), les OVERLAYS de TERRAIN à décor (tuile `bois → 'arbre'`),
+ * les FEATURES de façade authorées et les ORNEMENTS d'identité d'un bâtiment. Chaque site d'émission
+ * DÉCLARE un ancrage (`AncrageDecor` : point monde, cap, sol, case porteuse) et un SEUL émetteur
+ * (`elDeDecor`) tranche : un type qui porte une recette volumique (`PropData.volume`) sort en faces
+ * MONDE (`propVolumes.ts`), cuites dans la masse commune ; tout autre sort en BILLBOARD du SVG
+ * catalogue (`propSvg`), rendu par les DEUX backends (iso/éditeur ET POV). Un site de plus = un ancrage
+ * de plus, jamais une seconde règle de rendu. Le mur PLEIN, lui, naît de `solidHeightM` via le relief
+ * de `buildFloors`, pas d'ici. PUR et projection-agnostique : identité + case + empreinte + vérités de
+ * scène, aucune caméra.
  * Consommé par l'hôte du monde de campagne (`stage/MondeDeCampagne`, qui le sert à SES DEUX regards)
- * et par l'éditeur — mêmes billboards partout.
+ * et par l'éditeur — mêmes décors partout.
  */
-import { Scene, tileAt, heightAt, type ArchitectureEdgeRef, type ArchitectureRect, type WallSide } from '../../state/scene';
+import { Scene, tileAt, heightAt, type ArchitectureRect } from '../../state/scene';
 import { roofHidden, massFootBBox } from '../../state/buildings';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { decorFootGeometry, propDeclaredFoot } from '../../state/footprint';
@@ -20,25 +22,106 @@ import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../catalog/buildings';
 import { facadeFeatureViz } from '../catalog/facades';
 import { WALL_H_M } from '../iso';
-import { fieldHeightAt, nappeKey, resolveNappes } from './roofs';
+import type { Dir8 } from '../../state/dir8';
+import { edgeKey, fieldHeightAt, nappeKey, resolveNappes, WALL_NB, type RoofShapeSpec } from './roofs';
 import type { FloorView } from './floors';
-import type { PropEl } from './types';
-import { wallEnds } from './walls';
+import type { BillboardPropEl, PropEl } from './types';
+import { CARD_NB, outwardSide, wallEnds, type Card } from './walls';
+
+/** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? RÈGLE UNIQUE, lue
+ *  par l'émetteur ci-dessous comme par ses appelants — aucun site ne la redevine. */
+export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref ?? 'tonneau')?.volume;
+
+/** La scène porte-t-elle AU MOINS un décor volumique désignable ? Ce que le pointeur demande pour
+ *  savoir si une face du monde peut nommer une entité sous le pixel — seul un décor d'ENTITÉ porte un
+ *  `entId`, donc seules les entités comptent ici : une scène dont les seuls volumes sont architecturaux
+ *  (feature de façade, ornement de bâtiment) n'a rien à désigner, aucun rayon à lancer. */
+export const sceneAUnPropVolumique = (scene: Scene): boolean =>
+  scene.entities.some((ent) => ent.kind === 'prop' && refEstVolumique(ent.ref));
+
+/** ANCRAGE d'un décor — ce qu'un site d'émission DÉCLARE, avant que l'émetteur unique ne tranche
+ *  volume ou billboard. `ancre` est le point MONDE (fractionnaire, en cases) où le décor se pose : le
+ *  billboard en dérive son `foot` (décalage à la case porteuse), le volume son origine de recette. */
+interface AncrageDecor {
+  key: string;
+  cell: { x: number; y: number; z: number };
+  ancre: { x: number; y: number };
+  source: BillboardPropEl['source'];
+  ref: string;
+  /** Altitude métrique de la SURFACE de la case porteuse (relief et couche compris). */
+  solM: number;
+  /** Surélévation métrique déclarée au-dessus de cette surface (défaut 0). */
+  liftM?: number;
+  /** Cap du décor. Absent = décor non directionnel ; le volume, lui, retombe sur le cap canonique `S`. */
+  facing?: Dir8;
+  /** Échelle du DESSIN billboard (défaut 1) — un volume tient ses dimensions de sa recette. */
+  echelle?: number;
+  /** Empreinte (cases) : profondeur de tri du dessin comme du volume. */
+  span?: { w: number; h: number };
+  entId?: string;
+  architectureFeatureId?: string;
+  nappe?: { sectionId: string; cells: readonly { x: number; y: number }[] };
+  roomZoneIds?: string[];
+  /** L'ancrage ne sait pas s'orienter (arête diagonale, côté sortant indéterminé) : repli BILLBOARD
+   *  explicite, une géométrie monde mal tournée traverserait le mur qu'elle habille. */
+  sansVolume?: boolean;
+  interact: boolean;
+  states: { visible: boolean };
+}
+
+/** ÉMETTEUR UNIQUE d'un décor : la règle `refEstVolumique` se lit ICI et nulle part ailleurs. Volume =
+ *  la recette compilée sur l'ancre (`buildPropVolumes`) ; billboard = le dessin ancré aux pieds, décalé
+ *  de `ancre − cell`. Les deux portent la MÊME identité, la même empreinte et les mêmes vérités de scène. */
+function elDeDecor(a: AncrageDecor): PropEl {
+  const commun = {
+    kind: 'prop' as const,
+    key: a.key,
+    cell: a.cell,
+    source: a.source,
+    ref: a.ref,
+    interact: a.interact,
+    states: a.states,
+    ...(a.span ? { span: a.span } : {}),
+    ...(a.entId ? { entId: a.entId } : {}),
+  };
+  const prop = !a.sansVolume && refEstVolumique(a.ref) ? findPropById(a.ref) : undefined;
+  if (prop?.volume) {
+    const facing = a.facing ?? 'S';
+    return {
+      ...commun,
+      facing,
+      ...(a.nappe ? { nappe: a.nappe } : {}),
+      ...(a.roomZoneIds?.length ? { roomZoneIds: a.roomZoneIds } : {}),
+      faces: buildPropVolumes(prop, {
+        ancre: a.ancre,
+        facing,
+        baseHeightM: a.solM + (a.liftM ?? 0),
+        ...(a.entId ? { entId: a.entId } : {}),
+      }),
+    };
+  }
+  return {
+    ...commun,
+    ...(a.facing ? { facing: a.facing } : {}),
+    ...(a.architectureFeatureId ? { architectureFeatureId: a.architectureFeatureId } : {}),
+    foot: { offX: a.ancre.x - a.cell.x, offY: a.ancre.y - a.cell.y, scale: a.echelle ?? 1 },
+    ...(a.liftM ? { liftM: a.liftM } : {}),
+  };
+}
+
+/** CAP d'un ornement de FAÎTE, lu sur la nappe RÉSOLUE : l'axe de faîtage authoré fait foi (`ridge`,
+ *  `resolveMassRidge`), jamais la boîte englobante de l'empreinte. Un profil sans faîte franc (croupe,
+ *  toit plat) n'oriente rien : cap canonique `S`. */
+export function capDuFaite(shape: RoofShapeSpec): Dir8 {
+  if (shape.profile === 'hip' || shape.profile === 'flat') return 'S';
+  return shape.ridge === 'x' ? 'E' : 'S';
+}
 
 /** Éléments `prop` de la scène. `view` ABSENT ⇒ toutes les couches (POV/éditeur/QC) ; sinon `viewZ`
  *  isole un étage (debug), sinon z ≤ activeZ (un prop AU-DESSUS de la zone active n'est pas rendu —
  *  l'historique du stage, pas de fantôme pour le décor). `visible` absent ⇒ tout visible ; un prop de
  *  scène en vue est tagué `visible` (dessiné AU-DESSUS du voile), mémorisé → dessous (grisé). Les
  *  overlays de terrain restent TOUJOURS sous le voile (décor « mémorisé », convention des sols). */
-/** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? RÈGLE UNIQUE, lue
- *  par le builder ci-dessous comme par ses appelants — aucun site ne la redevine. */
-export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref ?? 'tonneau')?.volume;
-
-/** La scène porte-t-elle AU MOINS un décor volumique ? Ce que le pointeur demande pour savoir si une
- *  face du monde peut nommer une entité sous le pixel — sinon il n'y a rien à lancer de rayon vers. */
-export const sceneAUnPropVolumique = (scene: Scene): boolean =>
-  scene.entities.some((ent) => ent.kind === 'prop' && refEstVolumique(ent.ref));
-
 export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): PropEl[] {
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
@@ -56,16 +139,16 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       for (let x = 0; x < w; x++) {
         const ref = terrainOverlayProp(tileAt(scene, x, y, lvl.z));
         if (!ref) continue;
-        out.push({
-          kind: 'prop',
+        out.push(elDeDecor({
           key: `ov:${x},${y},${lvl.z}`,
           cell: { x, y, z: lvl.z },
+          ancre: { x, y },
+          solM: heightAt(scene, x, y, lvl.z),
           source: 'terrain',
           ref,
-          foot: { offX: 0, offY: 0, scale: 1 },
           interact: false,
           states: { visible: !visible || visible.has(`${x},${y},${lvl.z}`) },
-        });
+        }));
       }
   }
   // Props de scène (décor) — visibles dans les deux modes (exploration ET combat).
@@ -74,48 +157,35 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     const z = ent.z ?? 0;
     if (hasLayerView && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
     const empreinte = propDeclaredFoot(ent.ref);
-    const ref = ent.ref ?? 'tonneau';
-    const states = { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) };
-    const ancrage = {
-      kind: 'prop' as const,
+    // Le décor s'ancre au CENTRE de son empreinte (`decorFootGeometry` : une case posée y reste sur son
+    // centre) — le dessin comme la recette.
+    const dessin = decorFootGeometry(empreinte);
+    out.push(elDeDecor({
       key: `prop:${ent.id}`,
       cell: { x: ent.pos.x, y: ent.pos.y, z },
+      ancre: { x: ent.pos.x + dessin.offX, y: ent.pos.y + dessin.offY },
+      echelle: dessin.scale,
+      solM: heightAt(scene, ent.pos.x, ent.pos.y, z),
       ...(empreinte ? { span: { w: empreinte.w, h: empreinte.h } } : {}),
-      source: 'entity' as const,
+      source: 'entity',
       entId: ent.id,
-      ref,
-      interact: !!ent.interact,
-      states,
-    };
-    const prop = refEstVolumique(ref) ? findPropById(ref) : undefined;
-    if (prop?.volume) {
-      // VOLUME : la recette du type devient de la géométrie MONDE, cuite dans la masse commune. La
-      // hauteur du sol de la case se résout ICI, une seule fois par entité.
-      const facing = ent.facing ?? 'S';
-      out.push({
-        ...ancrage,
-        facing,
-        faces: buildPropVolumes(ent, prop, heightAt(scene, ent.pos.x, ent.pos.y, z)),
-      });
-      continue;
-    }
-    out.push({
-      ...ancrage,
+      ref: ent.ref ?? 'tonneau',
       ...(ent.facing ? { facing: ent.facing } : {}),
-      foot: decorFootGeometry(empreinte),
-    });
+      interact: !!ent.interact,
+      states: { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) },
+    }));
   }
-  const physicalEdges = new Set((scene.walls ?? []).map((wall) => architectureEdgeKey(wall)));
+  const physicalEdges = new Set((scene.walls ?? []).map((wall) => edgeKey(wall)));
   const emittedFeatures = new Set<string>();
   for (const body of scene.architecture ?? []) {
     for (const section of body.facades) {
       const sectionEdges = new Set(section.edges.map((edge) =>
-        architectureEdgeKey({ ...edge, z: edge.z ?? section.z })));
+        edgeKey({ ...edge, z: edge.z ?? section.z })));
       for (const feature of section.features ?? []) {
         const edge = { ...feature.edge, z: feature.edge.z ?? section.z };
         const z = edge.z;
         if (hasLayerView && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
-        const edgeId = architectureEdgeKey(edge);
+        const edgeId = edgeKey(edge);
         const featureId = `${body.id}:${section.id}:${feature.id}`;
         if (emittedFeatures.has(featureId) || !sectionEdges.has(edgeId) || !physicalEdges.has(edgeId)) continue;
         const viz = facadeFeatureViz(section.appearance, feature.kind);
@@ -123,31 +193,32 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
         emittedFeatures.add(featureId);
         const offset = feature.offset ?? 0.5;
         const [a, b] = wallEnds(edge);
-        const anchor = {
+        const ancre = {
           x: a.x + (b.x - a.x) * offset,
           y: a.y + (b.y - a.y) * offset,
         };
-        const [nx, ny] = WALL_NEIGHBOUR[edge.side];
-        out.push({
-          kind: 'prop',
+        const [nx, ny] = WALL_NB[edge.side];
+        // CÔTÉ SORTANT (`outwardSide`, l'unique lecture du dehors du dépôt) : le cap vers lequel le décor
+        // habille le mur. Indéterminé (arête diagonale ou intérieure) ⇒ repli billboard déclaré.
+        const sortant = outwardSide(scene, edge);
+        out.push(elDeDecor({
           key: `arch:${featureId}`,
           cell: { x: edge.x, y: edge.y, z },
+          ancre,
+          echelle: viz.scale ?? 1,
+          solM: heightAt(scene, edge.x, edge.y, z),
+          ...(viz.liftM != null ? { liftM: viz.liftM } : {}),
           source: 'architecture',
           architectureFeatureId: featureId,
           ref: feature.appearance ?? viz.prop,
-          foot: {
-            offX: anchor.x - edge.x,
-            offY: anchor.y - edge.y,
-            scale: viz.scale ?? 1,
-          },
-          ...(viz.liftM != null ? { liftM: viz.liftM } : {}),
+          ...(sortant ? { facing: sortant } : { sansVolume: true }),
           interact: false,
           states: {
             visible: !visible ||
               visible.has(`${edge.x},${edge.y},${z}`) ||
               visible.has(`${edge.x + nx},${edge.y + ny},${z}`),
           },
-        });
+        }));
       }
     }
   }
@@ -167,7 +238,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       // Masse sans nappe : son ornement est OMIS (le reste des props se construit).
       const nappe = nappes.get(nappeKey(body.id, mass.id));
       if (!nappe) continue;
-      const { cells, field } = nappe;
+      const { cells, field, roomZoneIds } = nappe;
       const eaveM = field.shape.eaveHeightM;
       let apexM = eaveM;
       for (const key of cells) {
@@ -184,7 +255,6 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       let door: DoorAnchor | null = null; // résolu PARESSEUSEMENT (façade/front seulement)
       feats.forEach((feat, i) => {
         const base = {
-          kind: 'prop' as const,
           key: `orn:${body.id}:${mass.id}:${i}`,
           source: 'ornament' as const,
           ref: feat.prop,
@@ -192,59 +262,67 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
           states: { visible: vis },
         };
         if (feat.anchor === 'ridge') {
-          if (roofCut) return; // toit en cutaway → pas de faîteau flottant
+          // REPLI BILLBOARD seulement : ce saut ne gouverne QUE le faîteau dessiné (l'appelant qui
+          // passe une vue — POV, éditeur). Un faîteau VOLUMIQUE, lui, est cuit dans la masse commune
+          // par un appel SANS vue et se retire par la nappe qu'il déclare (`nappePorteuse`, loi de
+          // dégagement de l'hôte, parité testée dans `stage/monde-de-campagne.test.tsx`) : deux
+          // représentations, deux lois.
+          if (roofCut) return;
           // Faîte : PARTAGE la profondeur du toit (empreinte + coin caméra-proche identiques) pour se
-          // dessiner PAR-DESSUS lui, mais billboard CENTRÉ et surélevé sur la pente (posé, pas flottant).
-          out.push({
+          // dessiner PAR-DESSUS lui ; ancré au MILIEU de l'empreinte et surélevé sur la pente (posé, pas
+          // flottant), au cap du faîtage résolu. La NAPPE porteuse est déclarée : l'ornement volumique
+          // se lève et retombe avec elle (`nappePorteuse`, loi de dégagement de l'hôte).
+          out.push(elDeDecor({
             ...base,
             cell: { x: f.x, y: f.y, z },
             span: { w: f.w, h: f.h },
-            foot: { offX: (f.w - 1) / 2, offY: (f.h - 1) / 2, scale: 1 },
+            ancre: { x: f.x + (f.w - 1) / 2, y: f.y + (f.h - 1) / 2 },
+            facing: capDuFaite(field.shape),
+            solM: heightAt(scene, cx, cy, z),
             liftM: eaveM - heightAt(scene, cx, cy, z) + 0.6 * (apexM - eaveM),
-          });
+            nappe: { sectionId: mass.id, cells: cellsOf(cells) },
+            ...(roomZoneIds?.length ? { roomZoneIds } : {}),
+          }));
           return;
         }
         door ??= buildingDoor(scene, f, z);
         // 'facade' comme 'front' : ancré à la case JUSTE À L'EXTÉRIEUR de la porte (le mur PLEIN, +0.45 de
-        // profondeur, masquerait un billboard posé à l'intérieur). L'ENSEIGNE saille encore un peu plus au
-        // large (elle DÉGAGE la face du mur qui, peinte APRÈS, la mordrait) et pend en haut de la façade ;
-        // l'ÉTAL reste plaqué au sol devant la porte. Les deux tournés vers l'EXTÉRIEUR (face à qui approche).
-        const [ox, oy] = OUTWARD[door.facing];
+        // profondeur, masquerait un décor posé à l'intérieur). L'ENSEIGNE s'ancre une demi-case plus au
+        // large — son billboard, dessiné à plat sur la case, mordrait sinon cette profondeur de mur — et
+        // pend en haut de la façade ; l'ÉTAL reste plaqué au sol devant la porte. Les deux tournés vers
+        // l'EXTÉRIEUR (face à qui approche).
+        const [ox, oy] = CARD_NB[door.facing];
         const facade = feat.anchor === 'facade';
-        out.push({
+        out.push(elDeDecor({
           ...base,
           cell: { x: door.frontCell.x, y: door.frontCell.y, z },
+          ancre: {
+            x: door.frontCell.x + (facade ? ox * 0.5 : 0),
+            y: door.frontCell.y + (facade ? oy * 0.5 : 0),
+          },
           facing: door.facing, // Dir8 vers l'EXTÉRIEUR
-          foot: { offX: facade ? ox * 0.5 : 0, offY: facade ? oy * 0.5 : 0, scale: 1 },
+          solM: heightAt(scene, door.frontCell.x, door.frontCell.y, z),
           liftM: facade ? WALL_H_M * 0.55 : 0, // enseigne : haut de la façade ; étal : au sol
-        });
+        }));
       });
     }
   }
   return out;
 }
 
-const WALL_NEIGHBOUR: Record<WallSide, [number, number]> = {
-  N: [0, -1],
-  E: [1, 0],
-  '\\': [0, 0],
-  '/': [0, 0],
-};
-
-function architectureEdgeKey(edge: ArchitectureEdgeRef): string {
-  return `${edge.x},${edge.y},${edge.side},${edge.z ?? 0}`;
-}
-
-/** Normale SORTANTE cardinale → delta (dx,dy) : pousse un ornement de façade vers l'extérieur. */
-type Cardinal = 'N' | 'E' | 'S' | 'O';
-const OUTWARD: Record<Cardinal, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], O: [-1, 0] };
+/** Cellules d'une nappe (clés « x,y ») en points de grille — la forme que porte l'élément. */
+const cellsOf = (cells: ReadonlySet<string>): { x: number; y: number }[] =>
+  [...cells].map((key) => {
+    const [x, y] = key.split(',').map(Number);
+    return { x, y };
+  });
 
 /** Ancrage EXTÉRIEUR de la PORTE d'un bâtiment (résolu depuis `scene.walls`) : case juste À L'EXTÉRIEUR de
- *  la porte + normale cardinale SORTANTE. Robuste à la canonisation N/E des arêtes (une porte 'S'/'O' est
+ *  la porte + cap cardinal SORTANT. Robuste à la canonisation N/E des arêtes (une porte 'S'/'O' est
  *  stockée sur la case voisine). Repli : façade SUD, sous le centre bas de l'empreinte. */
 interface DoorAnchor {
   frontCell: { x: number; y: number };
-  facing: Cardinal;
+  facing: Card;
 }
 function buildingDoor(scene: Scene, f: ArchitectureRect, z: number): DoorAnchor {
   const x0 = f.x, y0 = f.y, x1 = f.x + f.w - 1, y1 = f.y + f.h - 1;

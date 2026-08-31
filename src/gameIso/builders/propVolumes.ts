@@ -1,19 +1,18 @@
 /**
  * COMPILATION VOLUMIQUE d'un décor — la recette locale d'un `PropData` (`volume.primitives`) devient
  * des `Face[]` du pivot, en espace MONDE. PUR au sens le plus strict du builder : ni scène, ni caméra,
- * ni React, ni store, ni `three` ne sont importés ici — l'appelant apporte l'entité, son type de décor
- * et l'altitude métrique du sol de sa case.
+ * ni React, ni store, ni `three` ne sont importés ici — l'appelant apporte le type de décor et son
+ * ANCRAGE (point monde, cap, altitude du pied), d'où qu'il vienne.
  *
- * REPÈRE : la recette est authorée dans le repère LOCAL du type (origine au CENTRE de la case
- * d'ancrage, `x`/`y` en cases, `h` en mètres au-dessus du sol de la case, cf. `data/props.types.ts`).
- * `SceneEntity.facing` (défaut `S`) le fait tourner UNE fois, autour de l'origine locale ; `groundHeightM`
- * s'ajoute UNE fois à chaque hauteur.
+ * REPÈRE : la recette est authorée dans le repère LOCAL du type (origine à l'ancre, `x`/`y` en cases,
+ * `h` en mètres au-dessus du pied, cf. `data/props.types.ts`). Le cap (défaut `S` chez l'appelant) la
+ * fait tourner UNE fois autour de l'origine locale ; `baseHeightM` s'ajoute UNE fois à chaque hauteur.
  *
  * ORIENTATION : chaque polygone sort tourné vers le DEHORS de la primitive qui le porte — la cuisson
  * (`backends/webgl/sceneMeshes`) propage ce sens tel quel pour la carte d'ombre.
  */
 import { rotatePropLocal, type PropData, type PropPoint3, type PropPrimitive } from '../../data/props.types';
-import type { SceneEntity } from '../../state/scene';
+import type { Dir8 } from '../../state/dir8';
 import type { Face, GP } from './types';
 
 /** Sommet LOCAL d'une primitive, avant cap et avant sol. */
@@ -120,23 +119,37 @@ function polygonesLocaux(p: PropPrimitive): Sommet[][] {
   return facesPrisme(p.center, p.size, p.slope);
 }
 
+/** ANCRAGE d'une recette dans le monde : le point (fractionnaire, en cases) où son origine locale se
+ *  pose, le cap qui la tourne, l'altitude métrique de son pied, et l'entité qui la porte quand il y en
+ *  a une — une feature de façade ou un ornement de bâtiment n'en a aucune (`entId` absent : rien à
+ *  désigner au pointeur). */
+export interface AncrageVolume {
+  ancre: { x: number; y: number };
+  facing: Dir8;
+  /** Altitude métrique du PIED de la recette (surface de la case + surélévation déclarée). */
+  baseHeightM: number;
+  entId?: string;
+}
+
 /**
- * Les faces MONDE d'un décor volumique : recette locale × cap de l'entité × case d'ancrage, posées sur
- * `groundHeightM` (l'altitude métrique de la surface de la case, relief et couche compris). Chaque face
- * porte le matériau de sa primitive (`domain: 'prop'`) et l'id de l'ENTITÉ, sur lequel le picking la
- * résout une fois fondue dans la géométrie commune.
+ * Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`.
+ * L'ancre est un point MONDE quelconque — le centre d'une case pour un prop d'entité, un point
+ * fractionnaire d'arête pour une feature de façade, le milieu d'une empreinte pour un ornement de
+ * faîte : la recette y subit la MÊME translation rigide. Chaque face porte le matériau de sa primitive
+ * (`domain: 'prop'`) et, s'il y en a un, l'id de l'ENTITÉ sur lequel le picking la résout une fois
+ * fondue dans la géométrie commune.
  */
-export function buildPropVolumes(ent: SceneEntity, prop: PropData, groundHeightM: number): Face[] {
-  const facing = ent.facing ?? 'S';
+export function buildPropVolumes(prop: PropData, ancrage: AncrageVolume): Face[] {
+  const { ancre, facing, baseHeightM, entId } = ancrage;
   const out: Face[] = [];
   for (const primitive of prop.volume?.primitives ?? []) {
     const material = { domain: 'prop' as const, id: primitive.material };
     for (const poly of polygonesLocaux(primitive)) {
       const monde: GP[] = poly.map((p) => {
         const [rx, ry] = rotatePropLocal(p.x, p.y, facing);
-        return { x: ent.pos.x + rx, y: ent.pos.y + ry, h: groundHeightM + p.h };
+        return { x: ancre.x + rx, y: ancre.y + ry, h: baseHeightM + p.h };
       });
-      out.push({ poly: monde, material, entId: ent.id });
+      out.push({ poly: monde, material, ...(entId ? { entId } : {}) });
     }
   }
   return out;

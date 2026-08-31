@@ -253,19 +253,18 @@ function storeyAbove(scene: Scene, seg: Pick<WallSeg, 'x' | 'y' | 'side'>, z: nu
 
 const xyKey = (x: number, y: number) => `${x},${y}`;
 
-/** ENVELOPPE extérieure d'un bâtiment (#818) : une arête `WallSeg` en est une seulement si la case
- *  D'EN FACE (l'autre côté de l'arête, `NB`) est le DEHORS — jamais « une autre pièce ». Le dehors =
- *  case n'appartenant à AUCUNE case INTÉRIEURE (`interiorCells`, `state/planDefects.ts`, #881 — closes
- *  par les murs ET non déclarées à ciel ouvert, jamais la seule notion `SceneEffectZone.presentation:
- *  'interior'` : une enceinte close n'est pas un bâtiment couvert) ET hors de l'emprise BÂTIE d'une
- *  masse (le VOLUME du corps, PAS sa couverture de toit — #825bis : un avant-toit déborde le mur PAR
- *  CONSTRUCTION, la case qu'il surplombe reste DEHORS ; confondre « sous un toit » et « à l'intérieur »
- *  neutralisait 31 arêtes d'étage sur 58 côté La Diligence, mur en alternance visible/invisible). Une
- *  masse à plusieurs niveaux bâtit TOUS les étages qu'elle porte (`z − levels + 1 … z`), pas seulement
- *  son plancher sommet. Un donjon 100 % intérieur n'a AUCUN dehors → AUCUNE arête n'est enveloppe, le
- *  brouillard y reste inchangé — piège vérifié par un test dédié (walls.test.ts). Mémoïsé PAR SCÈNE
- *  (`memoByRef`, patron canonique unique) : une scène immuable ne recalcule jamais deux fois. */
-const envelopeEdgesOf = memoByRef((scene: Scene): ReadonlySet<string> => {
+/** Le DEHORS d'une case, par étage — SEULE définition du dépôt, lue par l'ENVELOPPE des murs
+ *  (`envelopeEdgesOf`) comme par le CÔTÉ SORTANT d'une arête (`outwardSide`, décors de façade).
+ *  Le dehors = case n'appartenant à AUCUNE case INTÉRIEURE (`interiorCells`, `state/planDefects.ts`,
+ *  #881 — closes par les murs ET non déclarées à ciel ouvert, jamais la seule notion
+ *  `SceneEffectZone.presentation: 'interior'` : une enceinte close n'est pas un bâtiment couvert) ET
+ *  hors de l'emprise BÂTIE d'une masse (le VOLUME du corps, PAS sa couverture de toit — #825bis : un
+ *  avant-toit déborde le mur PAR CONSTRUCTION, la case qu'il surplombe reste DEHORS ; confondre « sous
+ *  un toit » et « à l'intérieur » neutralisait 31 arêtes d'étage sur 58 côté La Diligence, mur en
+ *  alternance visible/invisible). Une masse à plusieurs niveaux bâtit TOUS les étages qu'elle porte
+ *  (`z − levels + 1 … z`), pas seulement son plancher sommet. Mémoïsé PAR SCÈNE (`memoByRef`, patron
+ *  canonique unique) : une scène immuable ne recalcule jamais deux fois. */
+export const dehorsDeScene = memoByRef((scene: Scene) => {
   const builtByZ = new Map<number, Set<string>>();
   const build = (z: number, x: number, y: number) => {
     const set = builtByZ.get(z) ?? (builtByZ.set(z, new Set()).get(z)!);
@@ -279,9 +278,30 @@ const envelopeEdgesOf = memoByRef((scene: Scene): ReadonlySet<string> => {
         for (let z = mass.z - mass.levels + 1; z <= mass.z; z++) build(z, x, y);
       }
     }
-  const isDehors = (x: number, y: number, z: number) =>
+  return (x: number, y: number, z: number): boolean =>
     !interiorCells(scene, z).has(xyKey(x, y)) && !builtByZ.get(z)?.has(xyKey(x, y));
+});
 
+/** CÔTÉ SORTANT d'une arête : le cap cardinal vers lequel elle donne sur le DEHORS (`dehorsDeScene`) —
+ *  ce qu'un décor de façade doit savoir pour se dresser du bon côté du mur. `null` quand aucun des deux
+ *  côtés n'est le dehors (arête intérieure) et pour une arête DIAGONALE, dont `WALL_NB` rend un voisin
+ *  nul : l'appelant tranche son repli. */
+export function outwardSide(scene: Scene, edge: Pick<WallSeg, 'x' | 'y' | 'side'> & { z?: number }): Card | null {
+  const [nx, ny] = NB[edge.side];
+  if (nx === 0 && ny === 0) return null;
+  const z = edge.z ?? 0;
+  const isDehors = dehorsDeScene(scene);
+  if (isDehors(edge.x + nx, edge.y + ny, z)) return edge.side === 'N' ? 'N' : 'E';
+  if (isDehors(edge.x, edge.y, z)) return edge.side === 'N' ? 'S' : 'O';
+  return null;
+}
+
+/** ENVELOPPE extérieure d'un bâtiment (#818) : une arête `WallSeg` en est une seulement si la case
+ *  D'EN FACE (l'autre côté de l'arête, `NB`) est le DEHORS — jamais « une autre pièce ». Un donjon
+ *  100 % intérieur n'a AUCUN dehors → AUCUNE arête n'est enveloppe, le brouillard y reste inchangé —
+ *  piège vérifié par un test dédié (walls.test.ts). Mémoïsée PAR SCÈNE comme le dehors qu'elle lit. */
+const envelopeEdgesOf = memoByRef((scene: Scene): ReadonlySet<string> => {
+  const isDehors = dehorsDeScene(scene);
   const out = new Set<string>();
   for (const w of scene.walls ?? []) {
     const z = w.z ?? 0;
@@ -380,9 +400,11 @@ function tagExistingFacadeFaces(faces: Face[], seg: WallSeg, facade: FacadeEdge,
 }
 
 // ── CRÉNELURE (décoration de RENDU) — dérivation du PÉRIMÈTRE (générale, toute forme, opt-in donnée) ──
-type Card = 'N' | 'E' | 'S' | 'O';
+export type Card = 'N' | 'E' | 'S' | 'O';
 const CARD: Card[] = ['N', 'E', 'S', 'O'];
-const CARD_NB: Record<Card, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], O: [-1, 0] };
+/** Delta (dx,dy) d'un cap cardinal — SOURCE UNIQUE, partagée avec le décor de façade (`builders/props`,
+ *  saillie d'un ornement vers l'extérieur) : la crénelure et lui lisent la même table. */
+export const CARD_NB: Record<Card, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], O: [-1, 0] };
 
 /** Éléments `wall` SYNTHÉTIQUES de CRÉNELURE (RENDU PUR, comme un toit auto-dessiné) : pour chaque arête de
  *  PÉRIMÈTRE d'une tuile crénelée (voisin même-z NON crénelé), la seule CRÊTE crénelée (`crownFaces` :

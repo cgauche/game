@@ -10,7 +10,6 @@ import { buildPropVolumes } from '../../src/gameIso/builders/propVolumes';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { findPropById, findPropMaterialById } from '../../src/data';
 import { DEFS } from '../../src/gameIso/sprites';
-import type { SceneEntity } from '../../src/state/scene';
 import type { Face } from '../../src/gameIso/builders/types';
 
 const IDS = ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'table-ronde-4-tabourets', 'table-murale-2-tabourets', 'armoire'] as const;
@@ -84,8 +83,8 @@ function vueSvg(faces: readonly Face[], rot: number, top: boolean): { svg: strin
   return { svg: corps, peintes: visibles.length };
 }
 
-const entite = (ref: string): SceneEntity =>
-  ({ id: `qc-${ref}`, kind: 'prop', pos: { x: 0, y: 0 }, ref, facing: 'N' }) as SceneEntity;
+/** Ancrage de PLANCHE : la recette au cap d'identité, origine de grille, sol à 0 m — aucune scène. */
+const ancrageDePlanche = { ancre: { x: 0, y: 0 }, facing: 'N' as const, baseHeightM: 0 };
 
 const COLONNES = [
   { titre: 'rot0', rot: 0, top: false },
@@ -99,7 +98,7 @@ const vides: string[] = [];
 const lignes = IDS.map((id) => {
   const prop = findPropById(id);
   if (!prop?.volume) throw new Error(`recette absente : ${id}`);
-  const faces = buildPropVolumes(entite(id), prop, 0);
+  const faces = buildPropVolumes(prop, ancrageDePlanche);
   const cellules = COLONNES.map(({ titre, rot, top }) => {
     const { svg, peintes } = vueSvg(faces, rot, top);
     if (peintes === 0) vides.push(`${id}/${titre}`);

@@ -12,6 +12,10 @@ import type { Combatant } from '../../engine/types';
 import * as propsBuilder from '../builders/props';
 import * as roomPortalsModule from '../../state/roomPortals';
 import * as roofsBuilder from '../builders/roofs';
+import * as donnees from '../../data';
+import type { PropData } from '../../data/props.types';
+import { buildRoofs } from '../builders/roofs';
+import { estPropVolumique } from '../builders/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
 import { capsuleCenter, tileCenter, LEVEL_H, type Dims } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
@@ -351,5 +355,85 @@ describe('MondeDeCampagne — la caméra vise le milieu de la capsule du sujet',
     const sol = tileCenter(partyPos.x, partyPos.y, dims, metricToLift(h));
     expect(sol.cy - vise.y).toBeCloseTo(LEVEL_H / 2, 6); // demi-capsule (pieds→tête = 1 niveau)
     expect(sol.cx - vise.x).toBeCloseTo(0, 6);
+  });
+});
+
+/**
+ * DÉCOR VOLUMIQUE SOLIDAIRE D'UNE NAPPE (#1624) : un ornement de faîte cuit dans la masse commune ne
+ * peut plus être sauté par le builder (la cuisson appelle `buildProps` SANS vue) — c'est la loi de
+ * dégagement, la MÊME que pour les pans, qui doit le retirer quand le toit se lève. Le test interroge
+ * la loi RÉELLEMENT remise au monde cuit (`applyCutawayMask`) avec les éléments RÉELS des builders.
+ * Les recettes d'art arrivent au lot suivant : le catalogue est donc doté ici d'une recette de
+ * clocheton, ce qui suffit à faire sortir le faîteau de la chapelle en faces monde.
+ */
+describe('MondeDeCampagne — le faîteau volumique se lève AVEC son toit (#1624)', () => {
+  let root: Root | null = null;
+  let container: HTMLDivElement | null = null;
+
+  afterEach(() => {
+    if (root) { act(() => root!.unmount()); root = null; }
+    if (container) { container.remove(); container = null; }
+    vi.restoreAllMocks();
+  });
+
+  const CLOCHETON_A_RECETTE = {
+    id: 'clocheton', type: 'props', label: 'Clocheton',
+    volume: { primitives: [{ kind: 'box', center: { x: 0, y: 0, h: 0.5 }, size: { x: 0.4, y: 0.4, h: 1 }, material: 'bois-chene' }] },
+  } as PropData;
+
+  function chapelle() {
+    const scene = emptyScene(10, 10);
+    scene.architecture = [{
+      id: 'corps-chapelle',
+      style: 'chapelle',
+      storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }],
+      facades: [],
+      masses: [{ id: 'nef', z: 0, footprint: [{ x: 2, y: 2, w: 4, h: 4 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 30, material: 'tuile' }],
+    }];
+    return scene;
+  }
+
+  /** Monte l'hôte avec le groupe à `pos` et rend la loi de dégagement effectivement remise au bake. */
+  function loiDeDégagement(scene: ReturnType<typeof chapelle>, pos: { x: number; y: number }): KeepEl {
+    const vrai = donnees.findPropById;
+    vi.spyOn(donnees, 'findPropById').mockImplementation((id: string) => (id === 'clocheton' ? CLOCHETON_A_RECETTE : vrai(id)));
+    const spy = vi.spyOn(sceneMeshes, 'applyCutawayMask');
+    useGame.setState({
+      scene, mode: 'exploration', partyPos: pos, party: [hero('h1', pos)],
+      battle: null, dialogue: null, flags: {}, viewMode: 'iso',
+    });
+    container = document.createElement('div');
+    root = createRoot(container);
+    act(() => root!.render(<MondeDeCampagne />));
+    return spy.mock.calls[spy.mock.calls.length - 1][1];
+  }
+
+  /** Le pan de toit de la nef et le faîteau volumique de la même masse, tels que les builders les rendent. */
+  function élémentsDeLaNef(scene: ReturnType<typeof chapelle>) {
+    const pan = buildRoofs(scene).find((el) => el.sectionId === 'nef')!;
+    const faîteau = propsBuilder.buildProps(scene).filter(estPropVolumique).find((el) => el.source === 'ornament')!;
+    return { pan, faîteau };
+  }
+
+  it('allié SOUS l’empreinte : la nappe est retirée, et le faîteau volumique avec elle', () => {
+    const scene = chapelle();
+    const loi = loiDeDégagement(scene, { x: 3, y: 3 }); // dans l'emprise bâtie
+    const { pan, faîteau } = élémentsDeLaNef(scene);
+    expect(faîteau.faces.length).toBeGreaterThan(0); // il est bien CUIT dans la masse commune
+    // MÊME identité de nappe que les pans (la SECTION), et l'emprise entière de la masse : c'est ce
+    // que la loi commune interroge.
+    expect(faîteau.nappe!.sectionId).toBe(pan.sectionId);
+    expect(new Set(faîteau.nappe!.cells.map((c) => `${c.x},${c.y}`)))
+      .toEqual(new Set(['2,2', '3,2', '4,2', '5,2', '2,3', '3,3', '4,3', '5,3', '2,4', '3,4', '4,4', '5,4', '2,5', '3,5', '4,5', '5,5']));
+    expect(loi(pan), 'le toit se lève').toBe(false);
+    expect(loi(faîteau), 'le faîteau ne reste pas à flotter au-dessus du vide').toBe(false);
+  });
+
+  it('groupe DEHORS, bâtiment en vue : la nappe se dessine, et le faîteau avec elle', () => {
+    const scene = chapelle();
+    const loi = loiDeDégagement(scene, { x: 1, y: 1 }); // au pied du corps, jamais dessous
+    const { pan, faîteau } = élémentsDeLaNef(scene);
+    expect(loi(pan)).toBe(true);
+    expect(loi(faîteau)).toBe(true);
   });
 });

@@ -300,7 +300,12 @@ describe('meuble HAUT — le rayon décide, la case dessinée n’est qu’un re
   /** Sommet MONDE d'un décor posé, dérivé de ses faces réelles (aucune relecture de recette). */
   const sommet = (ent: SceneEntity): number => {
     const prop = findPropById(ent.ref ?? '')!;
-    const faces = buildPropVolumes(ent, prop, heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0));
+    const faces = buildPropVolumes(prop, {
+      ancre: ent.pos,
+      facing: ent.facing ?? 'S',
+      baseHeightM: heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0),
+      entId: ent.id,
+    });
     return Math.max(...faces.flatMap((f) => f.poly.map((p) => p.h)));
   };
 

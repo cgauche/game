@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, type SceneEntity, type WallSeg } from '../../state/scene';
-import { buildProps } from './props';
+import { buildProps, capDuFaite } from './props';
+import { buildPropVolumes } from './propVolumes';
+import { findPropById } from '../../data';
 import { estPropVolumique, type BillboardPropEl } from './types';
 import type { Dir8 } from '../../state/dir8';
 import { fieldHeightAt, nappeKey, resolveNappes, ROOF_SLOPE_M } from './roofs';
@@ -157,7 +159,7 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     expect(o.span).toEqual({ w: 4, h: 5 }); // → propDepth == roofDepth (se peint PAR-DESSUS)
     expect(o.foot).toEqual({ offX: 1.5, offY: 2, scale: 1 }); // recentré sur l'empreinte
     expect(o.liftM!).toBeGreaterThan(2); // posé haut sur la pente (≈ égout + 0.6·flèche), pas au sol
-    expect(o.facing).toBeUndefined();
+    expect(o.facing).toBe('E'); // cap du faîtage résolu (ridge 'x' authoré par la fixture)
     expect(o.interact).toBe(false);
     expect(o.states.visible).toBe(true); // `visible` absent (éditeur/QC) → visible
   });
@@ -195,6 +197,21 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     const [o] = orns(s);
     expect(o.cell).toEqual({ x: 4, y: 4, z: 0 }); // x = 2+floor(4/2)=4, y = case sortante sous le bas (y1+1=4)
     expect(o.facing).toBe('S');
+  });
+
+  /**
+   * CAP DU FAÎTE (#1624) : il se lit sur la nappe RÉSOLUE, où le `ridge` authoré PRIME. Une masse 4×2
+   * authorée `ridge:'y'` réfuterait toute lecture par boîte englobante (son long axe est x, la boîte
+   * dirait 'E') : le cap est 'S'. Un profil sans faîte franc (croupe, toit plat) n'oriente rien.
+   */
+  it('le cap d’un ornement de FAÎTE suit le `ridge` AUTHORÉ, jamais la boîte englobante', () => {
+    const long = withRoof('chapelle', { x: 1, y: 1, w: 4, h: 2 }); // fixture : ridge 'x'
+    expect(orns(long)[0].facing).toBe('E');
+    const travers = withRoof('chapelle', { x: 1, y: 1, w: 4, h: 2 });
+    travers.architecture![0].masses[0].ridge = 'y';
+    expect(orns(travers)[0].facing).toBe('S');
+    expect(capDuFaite({ profile: 'hip', ridge: 'x', pitch: 1, eaveHeightM: 3 })).toBe('S');
+    expect(capDuFaite({ profile: 'flat', ridge: 'x', pitch: 1, eaveHeightM: 3 })).toBe('S');
   });
 
   it('maison/tour (sans features) : AUCUN ornement', () => {
@@ -340,5 +357,48 @@ describe('buildProps — features de façade authorées', () => {
       'corps-auberge:facade-rue:cheminee-est',
       'corps-auberge:facade-cour:cheminee-ouest',
     ]);
+  });
+
+  /**
+   * FEATURE VOLUMIQUE (#1624) : une feature dont l'apparence porte une recette suit la MÊME règle que
+   * tout décor (`refEstVolumique`) — elle sort en faces monde, ancrée au point FRACTIONNAIRE de son
+   * arête, tournée vers le DEHORS (`outwardSide`, l'unique lecture du dehors), posée sur le sol + la
+   * surélévation de sa vignette. Elle reste PICKING-INERTE : aucune face ne nomme d'entité.
+   */
+  it('une feature dont l’apparence porte une recette sort en VOLUME, sur l’arête et vers le DEHORS', () => {
+    const scene = authoredFacade();
+    scene.architecture![0].facades[0].features!.push({
+      id: 'placard-de-facade', kind: 'sign', edge: { x: 3, y: 5, side: 'N' }, offset: 0.25, appearance: 'armoire',
+    });
+    const volumes = buildProps(scene).filter(estPropVolumique);
+    expect(volumes.map((el) => el.key)).toEqual(['arch:corps-auberge:facade-rue:placard-de-facade']);
+    const [el] = volumes;
+    expect(el.source).toBe('architecture');
+    expect(el.entId).toBeUndefined(); // rien à désigner au pointeur
+    expect(el.facing).toBe('N'); // côté sortant de l'arête (2,5)-(3,5) côté N
+    expect(el.faces.every((f) => f.entId === undefined)).toBe(true);
+    // Ancre = l'arête N de la case (3,5) parcourue à 25 % → (2.75, 4.5) ; base = sol + `liftM` de la
+    // vignette d'enseigne (2.2 m, `facades/defs/auberge-relais-imperiale`).
+    expect(el.faces).toEqual(buildPropVolumes(findPropById('armoire')!, {
+      ancre: { x: 2.75, y: 4.5 }, facing: 'N', baseHeightM: 2.2,
+    }));
+  });
+
+  /**
+   * ARÊTE DIAGONALE : elle n'a pas de case « d'en face » (`WALL_NB` rend [0,0]), donc aucun dehors à
+   * lire — une recette y sortirait mal tournée. Repli BILLBOARD explicite. Population authorée mesurée
+   * au 2026-08-31 : 148 features de façade dans `src/scenes`, 78 en N, 70 en E, ZÉRO diagonale.
+   */
+  it('une feature sur arête DIAGONALE reste un billboard, même avec une apparence à recette', () => {
+    const scene = authoredFacade();
+    scene.walls!.push({ x: 7, y: 5, side: '\\' });
+    scene.architecture![0].facades[0].edges.push({ x: 7, y: 5, side: '\\' });
+    scene.architecture![0].facades[0].features!.push({
+      id: 'placard-diagonal', kind: 'sign', edge: { x: 7, y: 5, side: '\\' }, appearance: 'armoire',
+    });
+    const el = buildProps(scene).find((prop) => prop.key.endsWith(':placard-diagonal'))!;
+    expect(estPropVolumique(el)).toBe(false);
+    expect((el as BillboardPropEl).ref).toBe('armoire');
+    expect(el.facing).toBeUndefined(); // aucun cap : l'arête n'a pas de dehors
   });
 });

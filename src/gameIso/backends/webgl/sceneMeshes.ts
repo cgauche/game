@@ -349,10 +349,10 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  * `prop-picking.test.ts`.
  * `scene.effectZones` en est ABSENT sciemment : `buildRoofs` le lit (`massRoomZoneIds`), mais il
  * n'entre dans AUCUNE face, aucun sommet, aucun groupe de surface — seulement dans le champ
- * `roomZoneIds` des éléments de toit ET de façade. Ce champ ne SURVIT PLUS à la cuisson (`elCuit`
- * ci-dessous le retire) : un monde cuit ne peut donc pas rendre une zone de pièce périmée à la loi de
- * dégagement qui l'interroge. L'hôte qui en a besoin la résout sur SA scène vive, par la clé stable
- * de l'élément (`roomZonesByElKey`).
+ * `roomZoneIds`, quel que soit l'élément qui le porte (toit, façade, décor volumique solidaire d'une
+ * nappe). Ce champ ne SURVIT PLUS à la cuisson (`elCuit` ci-dessous le retire) : un monde cuit ne peut
+ * donc pas rendre une zone de pièce périmée à la loi de dégagement qui l'interroge. L'hôte qui en a
+ * besoin la résout sur SA scène vive, par la clé stable de l'élément (`roomZonesByElKey`).
  */
 export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
   return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.metresPerTile, mpt,
@@ -395,16 +395,15 @@ export function sceneHeightDeps(scene: Scene): readonly unknown[] {
 /**
  * Ce que le monde CUIT retient d'un élément : son identité de dégagement, PRIVÉE de tout champ dérivé
  * d'une donnée HORS read-set de la cuisson. Un seul aujourd'hui, et il est piégeux — `roomZoneIds`
- * (nappes de toit `buildRoofs`, façades `buildWalls`) descend de `scene.effectZones` : retenu dans le
- * bake, il aurait rendu une vérité PÉRIMÉE à `applyCutawayMask`, qui interroge `KeepEl` sur l'élément
- * cuit. Le retirer rend la péremption IMPOSSIBLE au lieu de la rendre improbable.
+ * (nappes de toit `buildRoofs`, façades `buildWalls`, décor volumique solidaire d'une nappe
+ * `buildProps`) descend de `scene.effectZones` : retenu dans le bake, il aurait rendu une vérité
+ * PÉRIMÉE à `applyCutawayMask`, qui interroge `KeepEl` sur l'élément cuit. Le retirer rend la
+ * péremption IMPOSSIBLE au lieu de la rendre improbable — pour TOUT élément qui en porte, sans liste.
  */
 function elCuit(el: SceneEl): SceneEl {
-  if ((el.kind === 'roof' || el.kind === 'wall') && el.roomZoneIds !== undefined) {
-    const { roomZoneIds: _zones, ...reste } = el;
-    return reste as SceneEl;
-  }
-  return el;
+  if ((el as { roomZoneIds?: readonly string[] }).roomZoneIds === undefined) return el;
+  const { roomZoneIds: _zones, ...reste } = el as SceneEl & { roomZoneIds?: readonly string[] };
+  return reste as SceneEl;
 }
 
 /**
@@ -418,6 +417,8 @@ const zonesVivesMemo = memoByRef((scene: Scene) => {
   const table = new Map<string, readonly string[]>();
   for (const el of buildRoofs(scene)) if (el.roomZoneIds?.length) table.set(el.key, el.roomZoneIds);
   for (const el of buildWalls(scene)) if (el.roomZoneIds?.length) table.set(el.key, el.roomZoneIds);
+  for (const el of buildProps(scene))
+    if (estPropVolumique(el) && el.roomZoneIds?.length) table.set(el.key, el.roomZoneIds);
   return table;
 });
 

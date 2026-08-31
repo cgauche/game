@@ -3,8 +3,16 @@
  * et places assises. Vivent hors de `src/data/index.ts` pour rester importables par `src/state` comme par
  * `src/gameIso` sans traverser le chargeur app-owned. PUR — aucune donnée, aucune caméra, aucun rendu.
  *
- * Repère LOCAL d'une recette : origine au CENTRE de la case d'ancrage (coin NO de l'empreinte), `x`/`y`
- * en cases, `h` en mètres depuis le sol de la case. L'orientation vient de `SceneEntity.facing`.
+ * Repère LOCAL d'une recette : origine à l'ANCRE du décor, `x`/`y` en cases, `h` en mètres depuis le
+ * pied de l'ancrage. L'ancre est le point MONDE que le builder déclare (`AncrageDecor`,
+ * `gameIso/builders/props.ts`) : le CENTRE de l'empreinte pour un décor d'entité (donc le centre de sa
+ * case quand elle est 1×1, le milieu du bloc au-delà), le point fractionnaire de l'arête pour une
+ * feature de façade, le milieu de l'empreinte pour un ornement de faîte. L'orientation vient du cap
+ * déclaré (`SceneEntity.facing` pour un décor posé).
+ *
+ * ÉCART CONNU sur les places assises : `state/seating.ts` ancre les `seatSlots` sur `SceneEntity.pos`
+ * (le coin NO), pas sur le centre de l'empreinte — les deux coïncident tant qu'un meuble à recette
+ * reste 1×1, ce qui est le cas de tout le catalogue à ce jour (#1624).
  *
  * CAP D'IDENTITÉ = `N` — contrat de DONNÉE, à connaître pour authorer : une recette (et les
  * `seatSlots` qui l'accompagnent) s'écrit FACE AU NORD, front vers `y` négatif, et c'est à ce cap

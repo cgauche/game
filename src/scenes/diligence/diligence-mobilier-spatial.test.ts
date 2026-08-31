@@ -100,12 +100,20 @@ const meubleAt = (x: number, y: number): SceneEntity =>
 
 interface Boite { x0: number; x1: number; y0: number; y1: number; h0: number; h1: number }
 
+/** Ancrage MONDE d'un meuble posé : sa case, son cap, le sol qu'il touche — ce que le builder déclare. */
+const ancrageDe = (ent: SceneEntity) => ({
+  ancre: ent.pos,
+  facing: ent.facing ?? ('S' as const),
+  baseHeightM: heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0),
+  entId: ent.id,
+});
+
 /** AABB monde du meuble, dérivée de ses FACES réelles (`buildPropVolumes`) — pas d'une relecture
  *  parallèle de la recette : ce que le test mesure est ce que le monde cuit. Un décor SANS recette
  *  volumique (billboard) n'a pas de corps monde : `null`. */
 function propBounds(ent: SceneEntity): Boite | null {
   const prop = findPropById(ent.ref ?? '')!;
-  const faces = buildPropVolumes(ent, prop, heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0));
+  const faces = buildPropVolumes(prop, ancrageDe(ent));
   const pts = faces.flatMap((f) => f.poly);
   if (!pts.length) return null;
   return {
@@ -150,7 +158,7 @@ function corpsBounds(ent: SceneEntity): Boite {
  */
 function ferDuComptoir(id: string): { x: number; y: number } {
   const ent = scene.entities.find((e) => e.id === id)!;
-  const faces = buildPropVolumes(ent, findPropById(ent.ref ?? '')!, heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0))
+  const faces = buildPropVolumes(findPropById(ent.ref ?? '')!, ancrageDe(ent))
     .filter((f) => f.material.id === 'fer-noirci');
   const pts = faces.flatMap((f) => f.poly);
   return {
