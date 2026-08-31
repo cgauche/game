@@ -276,7 +276,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     creatureId: creature.id, // identité bestiaire STABLE → le rig la résout par id (plus par `name`)
     kind: 'enemy',
     ...(optTraits.length ? { liveTraits: optTraits } : {}), // charMods/Mouvement des facultatifs appliqués en direct
-    ...(creature.appearance?.species ? { species: creature.appearance.species } : {}), // espèce du record (P2) → le rig la lit ; le reste de l'apparence par défaut est lu par enemyRigProfile via findCreature
+    ...(creature.appearance?.species ? { species: creature.appearance.species } : {}), // espèce du record (P2) → le rig la lit ; le reste de l'apparence par défaut est lu par enemyRigProfile via findCreatureById(creatureId)
     characteristics: chars,
     wounds: { current: wounds, max: wounds, base: wounds },
     advantage: 0,

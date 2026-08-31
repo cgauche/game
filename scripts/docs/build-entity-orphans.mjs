@@ -12,26 +12,50 @@
 //
 // PÉRIMÈTRE MESURÉ — 7 des 10 catalogues `src/data/*.json` adressés par `id` que `id-collisions.test.ts`
 // traite comme une famille homogène (`traits`, `talents`, `qualities`, `maneuvers`, `skills`, `props`,
-// `vehicles`, cf. `entityConsumers.mjs#CATEGORY_FILES`). 3 catalogues MESURÉS puis ÉCARTÉS :
-//   `spells` (576 entrées, 282 « orphelines » brutes = 49 %), `trappings` (440, 215 = 49 %),
-//   `creatures` (490, 362 = 74 %) — un taux 8 à 12× celui des 7 catalogues retenus (0–6 %) qui
-//   signale un ANGLE MORT STRUCTUREL non résolu, pas une vraie dette à ce volume : ces trois
-//   catalogues portent chacun un lookup de repli PAR LABEL (`findSpell(label)`, `findTrappingByLabel`,
-//   `findCreature(label)` — src/data/index.ts) que la détection par ID SEUL, ici, ne voit PAS —
-//   une entité citée uniquement par son libellé (donnée d'auteur, save de partie) compterait à tort
-//   comme orpheline. Réconcilier ces 3 catalogues exige un détecteur id-OU-label dédié ; ce rapport
-//   ne le prétend pas et ne les couvre pas. Les ~99 autres `src/data/*.json` (hors ces 10 catalogues)
-//   sont HORS PÉRIMÈTRE de ce générateur.
+// `vehicles`, cf. `entityConsumers.mjs#CATEGORY_FILES`). 3 catalogues MESURÉS puis ÉCARTÉS
+// (`spells`, `trappings`, `creatures` — `entityConsumers.mjs#EXCLUDED_CATEGORY_FILES` ; leurs
+// comptes sont DÉRIVÉS à chaque génération, JAMAIS écrits en dur dans la sortie). Leur taux
+// d'orphelines brutes (id seul) vaut plusieurs fois celui des 7 catalogues retenus, non parce que
+// ces entités seraient mortes, mais parce que le chemin d'accès y échappe à la détection par id —
+// pour une raison DIFFÉRENTE dans chacun des trois :
+//   `spells` — un Sort ne se cite pas par id en code de prod par construction : il s'obtient par
+//   Domaine / Talent de lanceur / `learnSpell` de scène. L'instrument juste est donc
+//   `src/data/obtainability-guard.test.ts` (OBTENABILITÉ, baseline `spells: 0`), pas la citation.
+//   `trappings` — le stock marchand est bâti par PRÉDICAT sur des catégories déclarées EN DONNÉE
+//   (`state/merchantFlow.ts:194-201` filtre `trappings` par `arch.category` de `merchants.json`),
+//   chaîne hors grammaire MODE 2 (son `.map` rend un objet, pas `t.id`) — #1631.
+//   `creatures` — candidates au périmètre, non tranchées (lot L3 de #1553).
+//   Le canal LABEL (`findSpell`/`findTrappingByLabel`/`findCreature`, src/data/index.ts) n'est PAS
+//   cette raison : mesuré 2026-09, `findTrappingByLabel` et `findCreature` n'ont AUCUN appelant, et
+//   `findSpell` en a trois (`data/pregens.ts:72`, `gameIso/rig/anim/spellClips.ts:57`,
+//   `ui/creator/draft.ts:819`) — un détecteur id-OU-label ne réconcilierait pas ces catalogues.
+//   Les ~99 autres `src/data/*.json` (hors ces 10 catalogues) sont HORS PÉRIMÈTRE de ce générateur.
 //
 // DÉFINITION D'UN CONSOMMATEUR — DEUX modes indépendants, un id compte comme consommé s'il satisfait
 // L'UN OU L'AUTRE (détail complet, grammaire, angles morts : en-tête de `entityConsumers.mjs`) :
 //
 // MODE 1 (id-collisions.test.ts) — l'id de l'entité apparaît comme jeton de chaîne CITÉ complet
-// (`"<id>"`/`'<id>'`) dans un AUTRE `src/data/*.json` ou dans `src/**/*.ts(x)` de PRODUCTION (hors
-// tests, commentaires retirés). ANGLES MORTS DÉCLARÉS (repris/étendus de `tableConsumerStock.mjs`) :
+// (`"<id>"`/`'<id>'`) dans un AUTRE `src/data/*.json`, dans `src/**/*.ts(x)` de PRODUCTION (hors
+// tests, commentaires retirés), ou dans un document de PROJET DE SCÈNE `src/scenes/*/*-projet.json`.
+// L'angle mort « corpus des scènes » est FERMÉ depuis 2026-09 (#1553 L2) : le contenu JOUÉ cite des
+// entités par id (`entities[].ref`, `statblock.traits[].id`, `flow.test.skill.id`,
+// `effect.trappingId`…) et n'était pas scanné — seuls les `.ts(x)` de `src/scenes` l'étaient. Les
+// documents sont découverts par STRUCTURE (jamais une liste de chemins), le match se fait sur les
+// VALEURS de chaîne APRÈS `JSON.parse` (jamais sur les clés du schéma), et les identités PROPRES du
+// document (l'`id` de la racine, d'une scène, d'une entité posée, d'un bloc d'architecture…) sont
+// retirées — symétrique du `{ ...e, id: undefined }` des catalogues, cf. `entityConsumers.mjs`.
+// Mesure du geste : ZÉRO mouvement sur les 7 catalogues retenus (les 15 lignes du stock tiennent),
+// 15 gains sur les 3 écartés (spells 280→278, trappings 215→211, creatures 362→353).
+// ANGLES MORTS DÉCLARÉS (repris/étendus de `tableConsumerStock.mjs`) :
 // (1) un consommateur MORT (code jamais appelé) compte comme réel ; (2) une chaîne de donnée qui vaut
-// EXACTEMENT l'id sans être une op de résolution réelle compte à tort comme consommatrice ; (3) un id
-// construit par SLUG D'UN AUTRE CHAMP au runtime (patron mesuré dans le dépôt : `findTalent(name)?.id
+// EXACTEMENT l'id sans être une op de résolution réelle compte à tort comme consommatrice — mesuré au
+// corpus des scènes (2026-09) : `encounters[].threat.tier: 'dangereuse'` (échelon de menace, homonyme
+// de `qualities:dangereuse`), `appearance.tenue: 'artiste'` (id de TENUE, homonyme de
+// `talents:artiste`), `merchant.archetype: 'medecin'` (archétype marchand, homonyme de
+// `creatures:medecin`) ; aucun de ces trois ne change un verdict (les trois entités ont par ailleurs
+// un consommateur réel), et ils ne se filtrent PAS par allowlist de chemins — une liste à tenir
+// dérive fail-open ;
+// (3) un id construit par SLUG D'UN AUTRE CHAMP au runtime (patron mesuré dans le dépôt : `findTalent(name)?.id
 // ?? slugId(name)` — engine/character.ts, careerSlots.ts, scenes/test-scenarios/*.ts ;
 // `traits/dispatch.ts#mutationsAtSpawn` en a le cas connu pour les mutations) échapperait à la
 // détection si SEUL le libellé apparaissait ailleurs — vérifié à la main pour les 20 entrées du stock
@@ -64,7 +88,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import {
-  CATEGORY_FILES, loadCategoryIds, buildConsumerCorpus, isConsumed,
+  CATEGORY_FILES, EXCLUDED_CATEGORY_FILES, loadCategoryIds, buildConsumerCorpus, isConsumed,
   computeFieldPredicateConsumers, META_CATALOG_ENTRIES,
 } from '../guards/lib/entityConsumers.mjs'
 
@@ -86,19 +110,35 @@ const isEntityConsumed = (cat, id) =>
 let out = `# Orphelines de données — GÉNÉRÉ\n\n`
 out += `> ⚠️ Fichier GÉNÉRÉ par \`node scripts/docs/build-entity-orphans.mjs\` (\`npm run docs:orphelines\`) — NE PAS ÉDITER À LA MAIN.\n`
 out += `> Pour chaque catalogue \`src/data/*.json\` retenu, les entités qu'AUCUN autre \`src/data/*.json\`,\n`
-out += `> AUCUN code de prod TypeScript (\`.ts\`/\`.tsx\`, hors tests) ne cite l'id en toutes lettres NI ne\n`
+out += `> AUCUN code de prod TypeScript (\`.ts\`/\`.tsx\`, hors tests) et AUCUN document de projet de scène\n`
+// Graphie de FAMILLE imposée par `check-doc-refs.mjs` : il n'accepte un glob que dans le DERNIER
+// segment (le dossier parent doit exister), donc `src/scenes/*/*-projet.json` y est un chemin MORT.
+// Convention déjà en usage (`docs/donnees.md`, `docs/structures-donnees.md`) : le dossier RÉEL
+// backtiqué à part, le motif de nom de fichier sans préfixe `src/`.
+out += `> (\`*-projet.json\` de \`src/scenes\` — le contenu JOUÉ) ne cite l'id en toutes lettres NI ne\n`
 out += `> sélectionne par prédicat de champ (\`catalogue.filter(...)\`). Périmètre\n`
 out += `> mesuré, angles morts déclarés, définition d'un consommateur : voir l'en-tête de\n`
 out += `> \`scripts/docs/build-entity-orphans.mjs\`. Cliquet décroissant : \`src/data/entity-orphans.test.ts\`\n`
 out += `> + \`scripts/guards/lib/entityOrphanStock.mjs\`.\n\n`
 out += `## Catalogues ÉCARTÉS (angle mort structurel mesuré, pas couverts)\n\n`
 out += `| Catalogue | Entités | Orphelines BRUTES (id seul) | Taux |\n|---|---|---|---|\n`
-out += `| \`spells\` | 576 | 282 | 49 % |\n`
-out += `| \`trappings\` | 440 | 215 | 49 % |\n`
-out += `| \`creatures\` | 490 | 362 | 74 % |\n\n`
-out += `Ces trois catalogues portent un lookup de repli PAR LABEL (\`findSpell\`/\`findTrappingByLabel\`/\n`
-out += `\`findCreature\`) que la détection id-seule ne voit pas — taux 8 à 12× les catalogues retenus,\n`
-out += `signe d'un détecteur inadapté plutôt que d'une dette réelle à ce volume. Non câblés ici.\n\n`
+// Comptes DÉRIVÉS du même scan MODE 1 (jamais un chiffre en dur : un nombre figé dans une sortie
+// générée dérive en silence), sur un corpus où les écartés sont à leur tour privés de leur PROPRE
+// déclaration d'id. Aucune ligne nominative n'est publiée : ces catalogues restent hors périmètre.
+const excludedIds = loadCategoryIds(DATA_DIR, EXCLUDED_CATEGORY_FILES)
+const excludedCorpus = buildConsumerCorpus(DATA_DIR, SRC_DIR, EXCLUDED_CATEGORY_FILES)
+for (const [cat, allIds] of Object.entries(excludedIds)) {
+  const brutes = allIds.filter((id) => !isConsumed(excludedCorpus, id)).length
+  const pct = allIds.length ? Math.round((brutes / allIds.length) * 100) : 0
+  out += `| \`${cat}\` | ${allIds.length} | ${brutes} | ${pct} % |\n`
+}
+out += `\n`
+out += `Chacun échappe à la détection par id pour une raison PROPRE : un Sort ne se cite pas par id en\n`
+out += `prod (il s'obtient par Domaine / Talent de lanceur / \`learnSpell\` de scène — l'instrument juste\n`
+out += `est \`src/data/obtainability-guard.test.ts\`) ; le stock marchand des \`trappings\` est bâti par\n`
+out += `PRÉDICAT sur des catégories déclarées en donnée (\`state/merchantFlow.ts\`, hors grammaire MODE 2\n`
+out += `— #1631) ; les \`creatures\` sont candidates au périmètre, non tranchées. Détail et mesure du\n`
+out += `canal label (qui n'est PAS la cause) : en-tête de \`scripts/docs/build-entity-orphans.mjs\`.\n\n`
 out += `## Catalogues MESURÉS\n\n`
 out += `| Catalogue | Entités | Orphelines | Taux |\n|---|---|---|---|\n`
 

@@ -11,7 +11,11 @@
 // complet (`"<id>"` ou `'<id>'`) dans (a) un AUTRE `src/data/*.json` (catalogue cible ou non — un
 // maneuver peut citer un autre maneuver, un trapping peut citer une qualité…), (b) le code de prod
 // `src/**/*.ts(x)` hors tests ET hors fichiers GÉNÉRÉS (`isGeneratedFile`, cf. plus bas), COMMENTAIRES
-// retirés. Jamais une sous-chaîne nue (prose, id plus long, mention non citée en commentaire).
+// retirés, (c) les documents de PROJET DE SCÈNE `src/scenes/*/*-projet.json` (`sceneConsumerCorpus`,
+// 2026-09 — le CONTENU JOUÉ cite des entités par id : `entities[].ref`, `statblock.traits[].id`,
+// `flow.test.skill.id`, `effect.trappingId`… ; frontière « déclaré SIEN » vs « référencé » et bruit
+// mesuré : cf. le JSDoc de `stripSceneOwnIdentities`). Jamais une sous-chaîne nue (prose, id plus
+// long, mention non citée en commentaire).
 //
 // MODE 2 — sélection dynamique par PRÉDICAT DE CHAMP (`computeFieldPredicateConsumers`) : un
 // consommateur qui ne cite JAMAIS l'id, mais SÉLECTIONNE le catalogue par ses champs (ex.
@@ -65,10 +69,19 @@ export const CATEGORY_FILES = {
   vehicles: 'vehicles.json',
 };
 
-/** `{ [category]: string[] }` — tous les ids de chaque catalogue retenu. */
-export function loadCategoryIds(dataDir) {
+/** Les 3 catalogues ÉCARTÉS du périmètre (cause d'exclusion : en-tête de
+ *  `build-entity-orphans.mjs`). Déclarés ici pour que le rapport DÉRIVE leurs comptes du même scan
+ *  au lieu de les figer en dur dans sa sortie ; aucune garde ne les mesure. */
+export const EXCLUDED_CATEGORY_FILES = {
+  spells: 'spells.json',
+  trappings: 'trappings.json',
+  creatures: 'creatures.json',
+};
+
+/** `{ [category]: string[] }` — tous les ids de chaque catalogue de `files` (retenus par défaut). */
+export function loadCategoryIds(dataDir, files = CATEGORY_FILES) {
   const out = {};
-  for (const [cat, file] of Object.entries(CATEGORY_FILES)) {
+  for (const [cat, file] of Object.entries(files)) {
     const arr = JSON.parse(readFileSync(join(dataDir, file), 'utf8'));
     out[cat] = arr.map((e) => e.id);
   }
@@ -95,13 +108,78 @@ function isGeneratedFile(path, text) {
   return /GÉNÉRÉ[\s\S]{0,120}?NE PAS ÉDITER/i.test(head);
 }
 
+/** Documents de PROJET de scène (`src/scenes/<projet>/<projet>-projet.json`), découverts par
+ *  STRUCTURE (tout sous-dossier de `src/scenes`, tout fichier `*-projet.json`) — jamais une liste de
+ *  chemins en dur : une liste à tenir manque le prochain projet en silence, fail-OPEN. */
+function sceneProjectFiles(srcDir) {
+  const dir = join(srcDir, 'scenes');
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (!e.isDirectory()) continue;
+    for (const f of readdirSync(join(dir, e.name))) {
+      if (f.endsWith('-projet.json')) out.push(join(dir, e.name, f));
+    }
+  }
+  return out;
+}
+
+/** FRONTIÈRE « déclaré SIEN » vs « référencé » d'un document de scène — symétrique du
+ *  `{ ...e, id: undefined }` des catalogues : un objet que le document CRÉE porte son identité au
+ *  champ `id`, qui n'est pas une citation. Retirés : l'`id` et le `label` de la RACINE (le projet
+ *  se nomme lui-même), l'`id` de chaque `scenes[]`, et l'`id` de chaque élément des tableaux de
+ *  DÉCLARATION d'une scène (`entities`, `architecture`, `dialogues`, `triggers`, `encounters` — les
+ *  cinq TABLEAUX ; `entryPoints` en est absent parce qu'il est un RECORD dont les identités sont les
+ *  CLÉS, que le scan par VALEURS ne collecte jamais). Un de ces cinq champs qui cesserait d'être un
+ *  tableau fait CRASHER la garde (fail-loud) plutôt que passer le retrait en silence (fail-open).
+ *  Tout le RESTE est référence potentielle — au premier chef `entities[].ref`, mais
+ *  aussi `statblock.traits[].id`/`skills[].id`/`ammo[].qualities[].id`, `flow.test.skill.id`,
+ *  `effect.trappingId`/`vehicleId`/`spell`, `weapon`… : ces `id`-là désignent une entrée de
+ *  catalogue, ils ne la déclarent pas. Mesuré (2026-09) : sans ce retrait, `entities[].id` ferait
+ *  consommer `vehicles:cogue`/`vehicles:chaland`/`creatures:medecin` et `architecture[].id`
+ *  `vehicles:diligence` PAR LEUR PROPRE POSE. */
+function stripSceneOwnIdentities(doc) {
+  const clone = structuredClone(doc);
+  delete clone.id;
+  delete clone.label;
+  for (const scene of clone.scenes ?? []) {
+    if (!scene || typeof scene !== 'object') continue;
+    delete scene.id;
+    for (const key of ['entities', 'architecture', 'dialogues', 'triggers', 'encounters']) {
+      for (const decl of scene[key] ?? []) if (decl && typeof decl === 'object') delete decl.id;
+    }
+  }
+  return clone;
+}
+
+function collectStringValues(node, out) {
+  if (typeof node === 'string') { out.add(node); return; }
+  if (Array.isArray(node)) { for (const v of node) collectStringValues(v, out); return; }
+  if (node && typeof node === 'object') for (const v of Object.values(node)) collectStringValues(v, out);
+}
+
+/** Fragment de corpus des documents de scène : les VALEURS de chaîne (jamais les CLÉS — mesuré :
+ *  les clés `cloture`/`source`/`ouverture` du schéma de scène feraient consommer trois entrées de
+ *  catalogue homonymes), parsées puis re-sérialisées une à une en jeton cité, dédupliquées. Le scan
+ *  reste celui de `isConsumed` (valeur entière citée) : pas d'index de tokens par regex de chaînes,
+ *  mesuré FAUX sur ce corpus (les apostrophes de la prose FR désynchronisent le lexeur). */
+export function sceneConsumerCorpus(srcDir) {
+  const values = new Set();
+  for (const f of sceneProjectFiles(srcDir)) {
+    collectStringValues(stripSceneOwnIdentities(JSON.parse(readFileSync(f, 'utf8'))), values);
+  }
+  return [...values].map((v) => JSON.stringify(v)).join('\n');
+}
+
 /** Corpus texte de tous les consommateurs possibles : `src/data/*.json` (catalogues cibles PRIVÉS de
  *  la déclaration `id` de LEURS PROPRES entités, sinon chaque entité « se consomme elle-même » via
- *  sa propre ligne JSON) + `src/**\/*.ts(x)` de PRODUCTION (hors tests, commentaires retirés). */
-export function buildConsumerCorpus(dataDir, srcDir) {
+ *  sa propre ligne JSON) + `src/**\/*.ts(x)` de PRODUCTION (hors tests, commentaires retirés) + les
+ *  documents de PROJET DE SCÈNE (`sceneConsumerCorpus`, cf. sa frontière juste au-dessus).
+ *  `files` = les catalogues ainsi privés de leur propre `id` (les retenus par défaut ; le rapport
+ *  passe `EXCLUDED_CATEGORY_FILES` pour dériver les comptes bruts des écartés). */
+export function buildConsumerCorpus(dataDir, srcDir, files = CATEGORY_FILES) {
   let corpus = '';
   const dataFiles = readdirSync(dataDir).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
-  const targetFiles = new Set(Object.values(CATEGORY_FILES));
+  const targetFiles = new Set(Object.values(files));
   for (const f of dataFiles) {
     const raw = readFileSync(join(dataDir, f), 'utf8');
     if (targetFiles.has(f)) {
@@ -122,6 +200,7 @@ export function buildConsumerCorpus(dataDir, srcDir) {
     }
   };
   walk(srcDir);
+  corpus += `\n${sceneConsumerCorpus(srcDir)}`;
   return corpus;
 }
 

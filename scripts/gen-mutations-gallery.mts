@@ -11,7 +11,7 @@ import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { combatantOverlays, combatantAppearance } from '../src/gameIso/rig/parts/combatantVisuals';
 import { creatureToCombatant } from '../src/state/spawn';
-import { findCreature } from '../src/data';
+import { findCreatureById } from '../src/data';
 import { EYE_OPTIONS } from '../src/gameIso/rig/parts/eyes';
 import { IDS_PHYSIQUES, mutationById } from '../src/data/mutations';
 import type { Mutation } from '../src/engine/corruption';
@@ -79,7 +79,7 @@ section('Sur armure équipée (épée en main)', [
 // 4) Mutants ennemis : visuels DATA-DRIVEN du bestiaire (trait « Mutation (Cornes asymétriques) » =
 // tell garanti + trait « Mutation » = tirage), chemin réel spawn→combatantOverlays. Plus de tirage
 // d'overlays dans le rendu (POC isMutant/randomMutationOverlays retiré).
-const mutantDef = findCreature('Mutant')!;
+const mutantDef = findCreatureById('mutant')!;
 section('Mutants ennemis — mutation DATA-DRIVEN (cornes garanties + tirage par id)', ['a', 'b', 'c', 'd', 'e', 'f'].map((k) => {
   const c = creatureToCombatant(mutantDef, `gal-mut-${k}`, { x: 0, y: 0 });
   return cell(`Mutant ${k}`, combatantAppearance(APP, c), combatantOverlays(c), { bg: '#2a1d22', tint: '#e9b' });

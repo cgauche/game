@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import {
   loadCategoryIds, buildConsumerCorpus, isConsumed, computeFieldPredicateConsumers, META_CATALOG_ENTRIES,
+  sceneConsumerCorpus, EXCLUDED_CATEGORY_FILES,
 } from '../../scripts/guards/lib/entityConsumers.mjs';
 import { ENTITY_ORPHAN_RATCHET } from '../../scripts/guards/lib/entityOrphanStock.mjs';
 
@@ -49,6 +51,32 @@ describe('cliquet — toute entité de catalogue retenu a un CONSOMMATEUR (curé
       ENTITY_ORPHAN_RATCHET.size,
       `ENTITY_ORPHAN_RATCHET a GONFLÉ (${ENTITY_ORPHAN_RATCHET.size} > ${MAX_ENTITY_ORPHANS}) — une orpheline neuve se câble, jamais ne se stocke.`,
     ).toBeLessThanOrEqual(MAX_ENTITY_ORPHANS);
+  });
+});
+
+describe('corpus des SCÈNES — le contenu joué CONSOMME, ce qu\'il pose ne consomme pas', () => {
+  const sceneCorpus = sceneConsumerCorpus(SRC_DIR);
+  // Corpus dans la configuration des catalogues ÉCARTÉS : c'est la seule où un `trapping` est privé de
+  // sa PROPRE déclaration (sinon `trappings.json` se cite lui-même et tout témoin serait vicié).
+  const withScenes = buildConsumerCorpus(DATA_DIR, SRC_DIR, EXCLUDED_CATEGORY_FILES);
+  const withoutScenes = withScenes.replace(sceneCorpus, '');
+
+  it('une entité citée UNIQUEMENT par une scène est CONSOMMÉE — les documents de projet sont dans le corpus', () => {
+    // `bonnet-de-fou` est octroyé par un `effect.trappingId` de `arene-projet.json` et n'apparaît
+    // nulle part ailleurs : c'est l'un des 15 gains mesurés du corpus élargi (#1553 L2).
+    expect(isConsumed(withoutScenes, 'bonnet-de-fou'), 'témoin VICIÉ : cet id est aussi cité hors des scènes — en choisir un autre parmi les gains mesurés').toBe(false);
+    expect(isConsumed(withScenes, 'bonnet-de-fou'), "cité par une scène mais absent du corpus partagé — `buildConsumerCorpus` n'agrège plus `sceneConsumerCorpus`").toBe(true);
+  });
+
+  it("l'id PROPRE d'une entité posée ne consomme RIEN — poser n'est pas citer", () => {
+    // Témoin réel et HOMONYME : `arene-projet.json` pose un PERSONNAGE d'id `chaland` (un badaud,
+    // sans `ref`) ; `chaland` est par ailleurs une entrée de `vehicles.json` (une embarcation).
+    const arene = JSON.parse(readFileSync(`${ROOT}src/scenes/arene/arene-projet.json`, 'utf8'));
+    const pose = arene.scenes.flatMap((s: { entities?: { id: string; ref?: string }[] }) => s.entities ?? [])
+      .find((e: { id: string }) => e.id === 'chaland');
+    expect(pose, 'témoin VIDE : plus aucune entité posée ne porte l\'id `chaland` — rebaser le témoin sur une autre identité propre').toBeTruthy();
+    expect(pose.ref, 'témoin VICIÉ : cette entité porte désormais un `ref`, qui est une vraie citation').toBeUndefined();
+    expect(isConsumed(sceneCorpus, 'chaland')).toBe(false);
   });
 });
 
