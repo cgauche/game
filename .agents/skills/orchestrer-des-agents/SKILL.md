@@ -70,6 +70,18 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    comme pour les Sorts** ». Coller la phrase du livre EXIGE de l'ouvrir : c'est un déclencheur de
    lecture au moment du risque maximal. **Le grounding de SECONDE MAIN est le vrai danger** — un rendu
    d'agent n'est pas une source ; recyclé dans un brief, il gagne l'autorité qu'il n'a jamais eue.
+   ⚠ **Une citation prouve ce qu'elle RÉPOND, jamais ce qu'on lui fait dire — lentille OBLIGATOIRE
+   de tout juge ET de mes briefs.** Vérifier l'existence et le verbatim d'une citation ne suffit pas :
+   une citation VRAIE appliquée hors de sa question passe tous les contrôles de forme. Tout juge qui
+   rencontre une citation en position de JUSTIFICATION (limitation, absence, simplification,
+   abstraction) reconstruit la PAIRE : (a) à quelle question la phrase répond DANS SON CONTEXTE
+   (lire la phrase d'avant et d'après — la variante la plus vicieuse est la citation tronquée à la
+   ponctuation) ; (b) quelle question le code lui fait porter. Différence = ÉTIRÉE. Vécu fondateur
+   2026-08-30/31 (fiche `feedback-citation-prouve-ce-quelle-repond`) : MDG 14 l.39 — une phrase sur
+   QUI LANCE LES DÉS — étirée pour oublier les blessures des marins nommés, passée à travers un juge
+   d'inventaire, attrapée par l'USER ; l'audit dédié a rendu 19 ADÉQUATES / 3 ÉTIRÉES / 1 EXCUSE,
+   les 4 vraies germant de la MÊME citation-mère (#1595). Étalon d'or du dépôt :
+   `src/engine/conditions.ts` (le commentaire qui REFUSE lui-même l'étirement de sa citation).
    ⚠ **La règle est GÉNÉRALE : toute référence s'écrit DÉRÉFÉRENCÉE** — on n'écrit un pointeur
    qu'à côté de son contenu fraîchement récupéré, quel que soit son type. Un `#N` s'écrit avec
    son TITRE recollé depuis `gh issue view <N> --json title` au moment de l'écriture (8 renvois
@@ -133,6 +145,15 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    relecture ne doit pas coûter un second run, audit 2026-08-30) ;
    suite COMPLÈTE avant commit (les échecs s'attribuent, un arbre churné n'excuse rien) ; revue
    du diff ; règle/valeur → Atlas `docs/raw/` puis `Source/` ; UI → skill `recette-navigateur`.
+   **Avant tout PUSH, deux règles de plus (vécu 2026-08-31)** : (a) le verdict d'une suite en
+   fond se LIT puis se DÉCIDE — jamais un `tail … && git push` enchaîné (le tail sort 0 quel que
+   soit le rouge : un push est parti sur 245 rouges de contention) ; (b) rejouer les gates
+   CI-ONLY : `migrations:replay` ne tourne QUE dans la CI et il est EN PLACE (destructif sur un
+   arbre en WIP) — le jouer sur un EXPORT de HEAD (hook pre-push #1613 ; à la main tant qu'il
+   n'existe pas). Trois pushes ont été rouges en CI sans que personne ne le voie. Et deux suites
+   COMPLÈTES simultanées sur la machine (deux sessions) = effondrement de contention garanti
+   (245 rouges jsdom, mount WebGL jamais monté) : les suites lourdes se SÉRIALISENT, ping
+   inter-session avant lancement.
    ⚠ Les portes machine sont un PLANCHER, jamais un signal de correction : sur une session
    mesurée, typecheck + suite complète ont attrapé 0 des 10 trouvailles (règle inversée, chemin
    absent, test menteur — toutes prises par sonde exécutée ou recette). « Portes vertes » ne se
