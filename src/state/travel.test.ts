@@ -610,7 +610,7 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
     setRule('travel-allures', true);
     // Chien M4 : galop 12 km/h, endurance ½ BE = 1 h → une longue journée dépasse LARGEMENT.
     const h = hero();
-    setup(map({ km: 80 }), [h], [mountPossession('m1', h.id, 'chien')]);
+    setup(map({ km: 80 }), [h], [mountPossession('m1', h.id, 'chien-de-trait')]);
     useGame.getState().startTravel('r1', 'monture', { allure: 'galop' });
     const j = useGame.getState().journal;
     expect(j.some((l) => l.includes('Incident de monte') || l.includes('s’effondre') || l.includes("s'effondre"))).toBe(true);
@@ -623,7 +623,7 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
     for (let seed = 1; seed <= 20 && !degraded; seed++) {
       seedBattleRng(seed);
       const h = hero();
-      setup(map({ km: 80 }), [h], [mountPossession('m1', h.id, 'chien')]);
+      setup(map({ km: 80 }), [h], [mountPossession('m1', h.id, 'chien-de-trait')]);
       useGame.getState().startTravel('r1', 'monture', { allure: 'galop' });
       const st = useGame.getState();
       if (st.journal.some((l) => l.includes('la route continue à pied'))) {
@@ -674,7 +674,7 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
     for (let seed = 1; seed <= 60 && !fell; seed++) {
       seedBattleRng(seed);
       const h = hero();
-      setup(map({ km: 80 }), [h], [mountPossession('m1', h.id, 'chien')]);
+      setup(map({ km: 80 }), [h], [mountPossession('m1', h.id, 'chien-de-trait')]);
       const partyRefBefore = useGame.getState().party;
       const woundsBefore = useGame.getState().party[0].wounds.current;
       useGame.getState().startTravel('r1', 'monture', { allure: 'galop' });

@@ -98,7 +98,7 @@ describe('creatures achetables (T0-b, #611)', () => {
   });
 });
 
-/** Deux entrées, un livre chacune (arbitrage utilisateur 2026-08-31, #673) : le chien du bestiaire
+/** Deux entrées, un livre chacune (#673) : le chien du bestiaire
  *  (LDB 78 folio 315) et le chien de trait (EDOC 07 folio 22) sont deux profils distincts, comme
  *  `cheval` (LDB) / `cheval-de-guerre-leger` (EDOC). */
 describe('chien LDB vs chien de trait EDOC (#673)', () => {
