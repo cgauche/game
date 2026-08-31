@@ -41,20 +41,20 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Toucher les triggers / événements de combat | `docs/combat-events-coherence.md` |
 | Ajouter une créature (rig) | `docs/creer-une-creature.md` |
 | Ajouter/curer une donnée dans `src/data/*.json` (hors sort/créature/effet/icône) | `docs/donnees.md` (carte + conventions) + skill `ajouter-une-donnee` |
-| Authoring de map | `docs/map-authoring.md` |
+| Authoring de map | `docs/map-authoring.md` (GÉNÉRÉ, `npm run docs:map-authoring`) |
 | Créer/modifier une campagne (projet multi-scènes + carte du monde) | `docs/campagne-authoring.md` + skill `creer-une-campagne` |
 | Créer ou retoucher un écran UI (CSS, densité, responsive) | `docs/charte-ui.md` + règle stricte 4 |
 | Ajouter un flux de jet différé (une situation = une modale — Piétinement, Course, Focalisation, Soin, Marchandage…) | `docs/ajouter-un-flux-de-jet.md` |
 | Intégrer un nouveau livre source VF au projet (pipeline complet) | `docs/ajouter-un-livre-source.md` |
 | Ajouter ou curer un sort / une Prière / une Bénédiction / un Miracle | `docs/ajouter-un-sort.md` |
-| Ajouter une icône (ou remplacer un emoji par une affordance UI) | `docs/ajouter-une-icone.md` |
+| Ajouter une icône (ou remplacer un emoji par une affordance UI) | `docs/ajouter-une-icone.md` (GÉNÉRÉ, `npm run docs:icones`) |
 | Ajouter une mécanique à une entité (trait, talent, qualité, mutation, maladie, atout…) | `docs/ajouter-une-mecanique.md` |
-| Le Codex doit-il exposer une nouvelle relation inverse / un nouvel index / un auto-liage ? | `docs/codex-relations.md` |
+| Le Codex doit-il exposer une nouvelle relation inverse / un nouvel index / un auto-liage ? | `docs/codex-relations.md` (GÉNÉRÉ, `npm run docs:codex-relations`) |
 | Quel code lit ce champ JSON, avant de le renommer ou de le supprimer ? | `docs/consommateurs-de-champs.md` (GÉNÉRÉ, `npm run docs:field-consumers`) |
 | **« Quelle forme a ce concept dans chaque dataset ? »** — comparer la structure d'une référence / d'une valeur / d'une enveloppe entre documents, AVANT de poser une Nᵉ graphie ou de croire une forme unique | `docs/structures-donnees.md` (GÉNÉRÉ, `npm run docs:structures` — observé × déclaré sur les 2 racines `src/data` + `src/scenes`, lexique fermé `scripts/docs/lib/structures-lexique.mts`, stock décroissant `scripts/guards/lib/structuresStock.mjs`) |
 | Une entrée de `src/data/*.json` est-elle orpheline (jamais référencée) ? | `docs/orphelines-donnees.md` (GÉNÉRÉ, `npm run docs:orphelines`) |
 | Un sprite/rig est-il reconnaissable au premier coup d'œil (QC) ? | `docs/qc-reconnaissabilite-sprites.md` |
-| Reprendre un chantier après une pause (nouvelle machine, clone frais) | `docs/reprise-apres-pause.md` |
+| Reprendre un chantier après une pause (nouvelle machine, clone frais) | `docs/reprise-apres-pause.md` (GÉNÉRÉ, `npm run docs:reprise`) |
 | Quel est l'état RÉEL d'implémentation des sorts/miracles (écart catalogue vs code) ? | `docs/sorts-implementation.md` (GÉNÉRÉ, `npx tsx scripts/gen-sorts-doc.mts`) |
 
 > **Politique `docs/`** : ce dossier ne contient que des **références vivantes**, maintenues au fil

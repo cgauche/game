@@ -1,5 +1,21 @@
 # Reprise après pause
 
+> ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-reprise.mjs` (`npm run docs:reprise`) — NE PAS ÉDITER À LA MAIN.
+
+**Périmètre mesuré / angles morts** — la part FACTUELLE est lue aux fichiers réels : scripts npm et
+leur contenu (`package.json`), clés `git config` posées par `postinstall`, hooks Git présents sous
+`scripts/git-hooks/`, hooks de session déclarés dans `.claude/settings.json`, workflows de
+`.github/workflows/` (nom, déclencheurs, portes `npm` exécutées — lues aux corps `run:`, forme
+inline ET blocs `run: |`, `--prefix` et `audit`/`ci` compris ; une forme d'invocation npm inconnue
+y fait ÉCHOUER le script plutôt que sous-compter), motifs de `.gitignore`, seuil de
+partage de la suite calculé sur `repartitionWorkers` (`scripts/test/partition.mjs`). Un renommage
+casse ce script au lieu de laisser le `.md` mentir. **Angles morts** : ce runbook ne mesure PAS
+l'état de la machine (auth `gh`, PDFs présents, compte Cloudflare) — il dit où ça vit, pas si c'est
+là ; une invocation `npm` posée AILLEURS que dans un corps `run:` (action composite `uses:`, script
+appelé par une étape) reste hors mesure ; les motivations (« pourquoi ce fichier n'est pas versionné »), la cadence d'archivage et les
+conseils de vérification sont de l'ÉDITORIAL fixé dans le script, non re-dérivé à chaque run ; les
+secrets d'Actions ne sont pas lisibles depuis le dépôt (leur nom seul est cité).
+
 Référence vivante : que faire pour repartir de zéro (nouvelle machine, clone frais) après une
 longue pause. Chaque chemin/symbole cité existe dans le repo — vérifié via `npm run docs:check`.
 
@@ -7,52 +23,108 @@ longue pause. Chaque chemin/symbole cité existe dans le repo — vérifié via 
 
 ```bash
 git clone <url> && cd Game
-npm install     # pose core.hooksPath via le script "postinstall" (package.json)
+npm install     # pose 7 réglages git (script "postinstall" de package.json)
 npm test        # suite du moteur — deux processus Vitest (node + jsdom) si ≥ 7 cœurs, sinon un seul
 npm run dev     # http://localhost:5173
 ```
 
-`npm install` déclenche `"postinstall": "git config core.hooksPath scripts/git-hooks"`
-(`package.json`). **Sans ce postinstall, deux mécanismes sont MORTS** : le hook
-`scripts/git-hooks/pre-commit` (gardes anti-poison/anti-dérive avant chaque commit) et
-`scripts/git-hooks/post-commit` (ferme automatiquement les issues GitHub citées dans le
-message de commit via `fixes/closes/corrige/ferme #N`, cf. commentaire de tête du script).
+`npm install` déclenche le script `postinstall`, qui pose : `core.hooksPath`, `merge.docs-generes.driver`, `merge.docs-generes.name`, `merge.docs-catalogue.driver`, `merge.docs-catalogue.name`, `merge.docs-fiche-raw.driver`, `merge.docs-fiche-raw.name`.
 
-`src/data/*.json` est la **SOURCE app-owned** : rien à régénérer après le clone.
+**Sans ce postinstall, 2 familles de mécanismes sont MORTES.**
 
-Le canari hebdomadaire (`.github/workflows/canari.yml`, cron lundi 06:00 UTC) exécute
-exactement ce chemin en CI — `npm ci` puis `npm run gen`, `typecheck`, `lint`, `test`, `build`,
-`docs:check`, `raw:coverage`, `raw:reconcile`, et le typecheck du serveur relay (`server/`).
-S'il casse, il ouvre automatiquement une issue GitHub taguée `canari` (bloc `gh issue create`
-en fin de workflow) — c'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
+1. `core.hooksPath` → `scripts/git-hooks` : les hooks `post-commit`, `post-merge`, `post-rewrite`, `pre-commit` ne tournent plus. Le
+   `pre-commit` porte les gardes anti-poison/anti-dérive de chaque commit ; le `post-commit` ferme
+   automatiquement les issues GitHub citées dans le message (`fixes`/`closes`/`corrige`/`ferme #N`,
+   cf. le commentaire de tête du script).
+2. Les pilotes de fusion des docs dérivés (`docs-generes`, `docs-catalogue`, `docs-fiche-raw`), déclarés par
+   `.gitattributes` et servis par `scripts/git-hooks/merge-docs.mjs` : sans eux, chaque rebase
+   rouvre un conflit sur des fichiers que `npm run docs:build` régénère seul.
+
+Le partage de la suite (`node scripts/test/run.mjs`) est décidé par `repartitionWorkers` : en dessous de
+7 cœurs, un seul processus Vitest ; au-delà, un processus `node` et un processus `jsdom`. La
+variable d'environnement `WFRP_TEST_COEURS` force ce nombre (seule façon de jouer l'autre chemin sur
+une machine quelconque).
+
+`src/data/*.json` (122 fichiers) est la **SOURCE app-owned** : rien à régénérer après le clone.
+
+Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
+`0 6 * * 1`) rejoue exactement ce chemin en CI, sur un runner propre, en
+24 portes :
+
+- `npm ci`
+- `npm run agents:check`
+- `npm run test:agents`
+- `npm run test:hooks`
+- `npm run test:docs`
+- `npm run test:recette`
+- `npm run agents:sync`
+- `npm audit --audit-level=high`
+- `npm run gen`
+- `npm run typecheck`
+- `npm run lint`
+- `npm test`
+- `npm run build`
+- `npm run docs:check`
+- `npm run raw:catalogs`
+- `npm run raw:coverage`
+- `npm run raw:reconcile`
+- `npm run test:raw`
+- `npm run raw:check-refs`
+- `npm run raw:check-code-refs`
+- `npm run raw:reanchor`
+- `npm --prefix server ci`
+- `npm --prefix server audit --audit-level=high`
+- `npm --prefix server run typecheck`
+
+Dont 3 portes sur le sous-projet `server/` (relay coop, `--prefix server`) :
+`npm --prefix server ci`, `npm --prefix server audit --audit-level=high`, `npm --prefix server run typecheck` — son `node_modules` et son typecheck sont indépendants de ceux de la
+racine, un clone frais doit les poser AUSSI.
+
+S'il casse, il ouvre une issue GitHub taguée `canari` — c'est le signal qu'un geste manuel a dévié
+de ce que `npm install` pose seul.
 
 ## 2. Ce que le clone CONTIENT
 
-- `Source/*.md` — texte des livres, **citable** (réfs `LDB <chap> l.<ligne>`).
-- `src/data/` — données app-owned (JSON commité, éditable au Compendium).
-- Les gardes : `scripts/guards/` (`validate-data.mts` + `scripts/guards/lib/` : `commentPoison`,
-  `emojiAffordance`, `hardcode`, `labelLogic`) et les hooks Claude Code de session
-  (`scripts/hooks/*.mjs`, déclarés dans `.claude/settings.json` : garde anti-réinvention Write,
-  grounding donnée, garde `[entériné]`, garde git destructif, garde anti-poison post-écriture).
-- Les schémas de données : `src/data/schemas/` (`types.ts`, `validate.ts`, `_registry.generated.ts`,
-  `_ids.generated.ts`, `grammaire/` — le vocabulaire partagé, `defs/*.ts` — un fichier par catalogue :
-  `traits.ts`, `qualities.ts`, `spells.ts`, `creatures.ts`… — et `defs-scenes/` pour les documents de scène).
-- `scripts/art-ref/` — le PIPELINE d'extraction d'images (`extract.py`, `probe.py`,
-  `ldb_extract.py`, `ldb_map.py`) : le code est tracké, ses SORTIES (images) ne le sont pas
-  (§3).
-- `docs/decisions/` (`issues.json`, `issues.md`) — les issues GitHub EXPORTÉES chaque mardi
-  06:00 UTC par `.github/workflows/export-issues.yml` (`npm run issues:export` →
-  `scripts/ops/export-issues.mjs`, commit auto si diff).
+- `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
+- `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
+- Les gardes de données : `scripts/guards/validate-data.mts` + 64 modules
+  sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
+  `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
+  `scripts/guards/lib/labelLogic.mjs`).
+- Les gardes de SESSION : 12 scripts sous `scripts/hooks/`, déclarés dans
+  `.claude/settings.json` (versionné) — détail au § 5.
+- Les schémas de données : `src/data/schemas/` (`src/data/schemas/types.ts`,
+  `src/data/schemas/validate.ts`, `src/data/schemas/_registry.generated.ts`,
+  `src/data/schemas/_ids.generated.ts`, `src/data/schemas/grammaire/` — le vocabulaire partagé —
+  `src/data/schemas/defs/` : 127 fichiers, un par catalogue, et
+  `src/data/schemas/defs-scenes/` : 16 fichiers pour les documents de scène).
+- `scripts/art-ref/` — le PIPELINE d'extraction d'images (`extract.py`, `ldb_extract.py`, `ldb_map.py`, `probe.py`) : le code est
+  tracké, ses SORTIES (images) ne le sont pas (§ 3).
+- `docs/decisions/` (`issues.json`, `issues.md`) — les issues GitHub EXPORTÉES par
+  `.github/workflows/export-issues.yml` (schedule + workflow_dispatch, cron
+  `0 6 * * 2`) via `node scripts/ops/export-issues.mjs`, commit auto si diff.
 
 ## 3. Ce que le clone NE contient PAS — et où ça vit
 
 | Non-versionné | Pourquoi (`.gitignore`) | Régénération / accès |
 |---|---|---|
-| PDFs de `Source/*.pdf` | droits Cubicle 7, taille (limite GitHub 100 Mo/fichier) | conservés LOCALEMENT ; ré-extraction via `bash scripts/raw/reextract-all.sh` (Marker, staging `Source/_marker/split/`, **ne promeut pas** — revue manuelle avant d'écraser `Source/`) |
-| `/art-ref/` (images extraites des PDF) | droits Cubicle 7, ce sont des sorties | régénérables via `scripts/art-ref/` + les PDFs locaux |
-| Compte Cloudflare du relay coop | secret/infra externe | URL prod dans `src/net/relay.ts` (`RELAY_URL_PROD`) ; redéployable via `npm run relay:deploy` (`npm --prefix server run deploy`) |
-| Publication du jeu en prod | workflow GitHub Actions | cf. `CLAUDE.md` § Déploiement — `.github/workflows/deploy.yml` (déclenchement manuel, build du commit de `main`) ; secret Actions `PROD_DEPLOY_KEY` (deploy key SSH) requis côté dépôt. Aucun clone local du dépôt prod nécessaire |
-| Auth `gh` (CLI GitHub) | credentials locales | nécessaire pour : fermeture auto d'issues (`post-commit`), export hebdo (`export-issues.yml` tourne en CI avec son propre token), et toute commande `gh` manuelle |
+| PDFs de `Source/*.pdf` (`*.pdf`) | droits Cubicle 7, taille (limite GitHub 100 Mo/fichier) | conservés LOCALEMENT ; ré-extraction via `bash scripts/raw/reextract-all.sh` (Marker, staging `Source/_marker/split/`, **ne promeut pas** — revue manuelle avant d'écraser `Source/`) |
+| Staging Marker (`Source/_marker/`) | intermédiaire de pipeline ; seuls les chapitres curés `Source/<Livre>/NN - *.md` sont committés | régénéré par le pipeline `scripts/raw/marker-*` |
+| Images extraites des PDF (`/art-ref/`) | droits Cubicle 7, ce sont des sorties ; le pipeline lui-même reste tracké sous `scripts/art-ref/` | régénérables via `scripts/art-ref/extract.py`, `scripts/art-ref/ldb_extract.py`, `scripts/art-ref/ldb_map.py`, `scripts/art-ref/probe.py` + les PDFs locaux |
+| Sorties de QC (`public/qc/*`) | planches de revue régénérables — pas du source | régénérables par les scripts `scripts/qc/` ; l'exception `!public/qc/baseline-affine/` reste VERSIONNÉE |
+| Réglages Claude Code personnels (`.claude/*`) | environnement local | exceptions VERSIONNÉES : `.claude/settings.json`, `.claude/credo.md`, `.claude/skills/`, `.claude/agents/`, `.claude/workflows/`, `.claude/memory/`, `.claude/soldes/` |
+
+Ne sont pas non plus dans le clone, parce que ce ne sont pas des fichiers :
+
+- **Compte Cloudflare du relay coop** — URL de prod dans `src/net/relay.ts` (`RELAY_URL_PROD`) ;
+  redéployable via `npm run relay:deploy` (`npm --prefix server run deploy`).
+- **Publication du jeu en prod** — workflow `.github/workflows/deploy.yml` (« Déploiement prod »,
+  workflow_dispatch) ; il build le COMMIT de `main` sur un runner propre. Secret
+  Actions `PROD_DEPLOY_KEY` (deploy key SSH) requis côté dépôt ; aucun clone local du dépôt prod
+  nécessaire.
+- **Auth `gh` (CLI GitHub)** — credentials locales, nécessaires à la fermeture auto d'issues
+  (`scripts/git-hooks/post-commit`) et à toute commande `gh` manuelle. L'export hebdomadaire, lui,
+  tourne en CI avec son propre token.
 
 ## 4. Archivage des non-versionnés
 
@@ -68,15 +140,37 @@ les non-versionnés locaux, elle ne touche pas au repo.
 
 ## 5. Portes de qualité — où elles vivent, comment vérifier qu'elles tournent
 
-- **Hook Git local** (pre-commit / post-commit) : posé par `npm install` via `core.hooksPath`.
-  Vérifier : `git config core.hooksPath` doit répondre `scripts/git-hooks`. Si vide → hooks
-  MORTS, refaire `npm install`.
-- **Hooks Claude Code** (gardes anti-dérive à l'écriture) : déclarés dans `.claude/settings.json`
-  (versionné, cf. `.gitignore` : `.claude/*` est ignoré SAUF `settings.json`/`credo.md`/`skills/`
-  /`workflows/`). Vérifier : `cat .claude/settings.json` doit lister les hooks `PreToolUse`
-  (`new-src-file-guard.mjs`, `data-edit-guard.mjs`, `enterine-guard.mjs`,
-  `git-destructive-guard.mjs`), `PostToolUse` (`poison-postcheck.mjs`) et `SessionStart`
-  (injection de `.claude/credo.md`).
-- **CI** : `.github/workflows/ci.yml` (à chaque push), `canari.yml` (hebdo, rejoue l'installation
-  à froid), `export-issues.yml` (hebdo, exporte les issues). Vérifier qu'elles tournent : onglet
-  Actions du repo GitHub, ou `gh run list --workflow=canari.yml`.
+**Hooks Git locaux** (`post-commit`, `post-merge`, `post-rewrite`, `pre-commit`) : posés par `npm install` via `core.hooksPath`.
+Vérifier : `git config core.hooksPath` doit répondre `scripts/git-hooks`. Si vide → hooks MORTS,
+refaire `npm install`.
+
+**Hooks de session Claude Code** (gardes anti-dérive à l'écriture), déclarés dans
+`.claude/settings.json` :
+
+| Événement | Déclencheur (matcher) | Script | Rôle |
+|---|---|---|---|
+| `PreToolUse` | Write \| mcp__lean-ctx__ctx_patch | `scripts/hooks/new-src-file-guard.mjs` | Garde anti-réinvention (nouveau fichier src/) |
+| `PreToolUse` | Write \| Edit | `scripts/hooks/data-edit-guard.mjs` | Grounding donnée (src/data — check-first #148) |
+| `PreToolUse` | Write \| Edit | `scripts/hooks/enterine-guard.mjs` | Tag [entériné] = validation utilisateur |
+| `PreToolUse` | Write \| Edit | `scripts/hooks/exception-add-guard.mjs` | Ajout d'exception de garde = autorisation utilisateur |
+| `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/git-destructive-guard.mjs` | Garde git destructif (arbre partagé) |
+| `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/solde-ticket-guard.mjs` | Fermeture de ticket au commit = solde écrit obligatoire |
+| `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/issue-label-guard.mjs` | Ticket sans label refusé (index du backlog) |
+| `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/runner-fast-reminder.mjs` | Rappel typecheck:fast (tsc nu ~42 s) |
+| `PreToolUse` | Agent | `scripts/hooks/agent-dispatch-design-reminder.mjs` | Rappel altitude de design (dispatch d'agent) |
+| `PostToolUse` | Write \| Edit | `scripts/hooks/poison-postcheck.mjs` | Garde anti-poison au stylo (tombstone/excuse/label) |
+| `PostToolUse` | Agent | `scripts/hooks/agent-return-judge-reminder.mjs` | Rappel juge adversarial (retour d'agent) |
+| `SessionStart` | (tous) | `scripts/hooks/inject-project-credo.mjs` | Injection du credo de travail |
+
+**CI GitHub Actions** :
+
+| Fichier | Nom | Déclencheurs |
+|---|---|---|
+| `.github/workflows/canari.yml` | Canari | schedule, workflow_dispatch (cron `0 6 * * 1`) |
+| `.github/workflows/ci.yml` | CI | push, pull_request |
+| `.github/workflows/deploy.yml` | Déploiement prod | workflow_dispatch |
+| `.github/workflows/deps-report.yml` | Rapport de dépendances | schedule, workflow_dispatch (cron `0 6 1 * *`) |
+| `.github/workflows/export-issues.yml` | Export des issues | schedule, workflow_dispatch (cron `0 6 * * 2`) |
+
+Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
+porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).

@@ -5,7 +5,8 @@
 // non bloquant. Ce canal (affirmations RAW, revendications d'autorité, hardcode réactif) est trié par
 // la baseline nominative `scripts/guards/lib/decisions-baseline.json` : NOUVEAU en tête, sites déjà
 // tranchés en une ligne compacte. `docs:check` tourne si un docs/*.md à plat est stagé (racine ou
-// docs/raw/, les fiches régénérables — #487).
+// docs/raw/, les fiches régénérables — #487) ; sur le même déclencheur, `check-docs-vs-head.mjs`
+// confronte les docs GÉNÉRÉS stagés à l'INDEX (porte de COMMIT, jamais dans `docs:check`).
 // Testabilité : des chemins passés en arguments remplacent la liste stagée (aucun toucher à l'index).
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -193,6 +194,14 @@ if (docsStaged) {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-doc-refs.mjs')], { cwd: ROOT, stdio: 'inherit' });
   } catch {
     offenders.push('docs:check en échec (référence vivante qui ment — corriger le doc ou le code, jamais commiter le mensonge)');
+  }
+  // Un doc GÉNÉRÉ stagé doit décrire l'arbre QUI PART au commit, pas le WIP d'une session voisine :
+  // ses `fichier:ligne` et ses comptes d'inventaire sont confrontés à l'INDEX. Cette garde reste HORS
+  // `docs:check` (qui tourne légitimement sur un arbre en vol) — c'est une porte de COMMIT.
+  try {
+    execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-docs-vs-head.mjs'), ...staged], { cwd: ROOT, stdio: 'inherit' });
+  } catch {
+    offenders.push('docs-vs-commit en échec (doc généré qui décrit un arbre absent du commit — régénérer sur l’arbre stagé, ou stager le code décrit)');
   }
 }
 

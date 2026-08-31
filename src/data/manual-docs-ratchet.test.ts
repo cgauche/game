@@ -20,6 +20,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MANUAL_DOCS_STOCK } from '../../scripts/guards/lib/manualDocsStock.mjs';
+import { ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
 // @ts-expect-error - orchestrateur ESM JS (pas de types)
 import { NON_GENERATOR_CHECKS, checkedScripts } from '../../scripts/docs/build-all.mjs';
 
@@ -47,25 +48,29 @@ function manualDocs(): string[] {
  * hausse de ce chiffre modifie CE fichier de test, jamais `manualDocsStock.mjs` seul. Il ne
  * DESCEND qu'en soldant des docs (génération ou suppression), jamais en ajoutant une entrée.
  */
-const MANUAL_DOCS_MAX = 19;
+const MANUAL_DOCS_MAX = 15;
 
 describe('cliquet des docs manuscrits — docs/*.md à plat doit se GÉNÉRER, pas s’écrire à la main (#903)', () => {
-  const docs = manualDocs();
+  const ecarts = ecartsDeStock({
+    observe: manualDocs(),
+    stock: MANUAL_DOCS_STOCK,
+    cle: (d) => d,
+    remede: {
+      neuve: (d) => `${d} est manuscrit et absent du stock — un doc neuf se GÉNÈRE, il ne s’inscrit pas au stock manuel`,
+      perimee: (d) => `retirer "${d}" du stock — il est désormais GÉNÉRÉ (ou n'existe plus)`,
+    },
+  });
 
   it('aucun doc manuscrit NEUF hors du stock — un doc neuf se GÉNÈRE, il ne s’inscrit pas au stock', () => {
-    const horsStock = docs.filter((d) => !MANUAL_DOCS_STOCK.has(d));
-    expect(
-      horsStock.map((d) => `${d} est manuscrit et absent du stock — un doc neuf se GÉNÈRE, il ne s’inscrit pas au stock manuel`),
-    ).toEqual([]);
+    expect(ecarts.neuves).toEqual([]);
   });
 
   it('le stock cliqueté ne peut que DÉCROÎTRE — aucune entrée désormais GÉNÉRÉE n’y traîne', () => {
-    const perimees = [...MANUAL_DOCS_STOCK].filter((d) => !docs.includes(d));
-    expect(perimees.map((d) => `retirer "${d}" du stock — il est désormais GÉNÉRÉ (ou n'existe plus)`)).toEqual([]);
+    expect(ecarts.perimees).toEqual([]);
   });
 
   it('le stock cliqueté ne GROSSIT pas — sa taille est plafonnée par le test', () => {
-    expect(MANUAL_DOCS_STOCK.size).toBeLessThanOrEqual(MANUAL_DOCS_MAX);
+    expect(ecarts.taille).toBeLessThanOrEqual(MANUAL_DOCS_MAX);
   });
 });
 
