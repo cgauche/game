@@ -65,8 +65,7 @@ Arbitrages utilisateur (2026-08-16, verbatims au plan §3bis) :
   monture, Servir/Pousser sur la pièce — même patron que ramasser) ; la barre garde 2 cases
   (geste d'ARME + geste d'ÉTAT du héros). Maquette = DANS le code en worktree (demande
   user), jamais du HTML jetable.
-- **Ébauche de maquettes récupérée** (artefact claude.ai → `docs/plans/2026-08-16-ebauche-
-  maquettes-hud.artifact.html`, auto-contenu) — ⚠ « cette maquette a été faite avant
+- **Ébauche de maquettes récupérée** (artefact claude.ai auto-contenu, purgé depuis) — ⚠ « cette maquette a été faite avant
   l'invariant » (verbatim) : MATIÈRE visuelle (plaques acier/laiton, gouttières, conduit,
   plaquettes), JAMAIS cible de conformité — la structure vient de la spec, l'invariant
   gagne toute divergence. Leçon : une planche de design se REGARDE rendue (l'artefact/les
@@ -76,8 +75,7 @@ Arbitrages utilisateur (2026-08-16, verbatims au plan §3bis) :
   (flottants enrichis : réaction+localisation+Blessures) → infobulle-contrat (+attaque
   gratuite annoncée ; « Réaction restante » RT abandonnée, sans objet RAW) → curseur
   porteur du coût → prévision de zone par créature. Silhouettes déjà livrées (#1297).
-- **PLANCHE USER 2026-08-17 = cible de conformité BORNÉE** (`docs/plans/2026-08-17-maquette-
-  hud-assemblee.*`, écran assemblé 1920×1080) : elle fait foi sur la COMPOSITION (zones,
+- **PLANCHE USER 2026-08-17 = cible de conformité BORNÉE** (écran assemblé 1920×1080, planche purgée depuis) : elle fait foi sur la COMPOSITION (zones,
   géométrie, hiérarchie) — PAS sur le contenu réglé. Verbatims (2026-08-17) : « Certains
   textes sont juste des explications de fonctionnement plutôt que des informations à
   afficher » et « Les icônes proposées n ont pas valeur de règle, cette spec n a pas toute

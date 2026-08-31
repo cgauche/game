@@ -8,8 +8,8 @@ metadata:
   modified: 2026-07-19T20:48:43.557Z
 ---
 
-**Programme lancé le 2026-07-19** — spec normative : `docs/plans/2026-07-19-socle-possessions.md`
-(committée ; sera supprimée une fois le programme exécuté). Ticket-programme : #268.
+**Programme lancé le 2026-07-19** — la spec normative a été purgée avec les plans exécutés
+(git porte l'historique). Ticket-programme : #268.
 
 **EXÉCUTION DÉMARRÉE le 2026-07-19** — session locale désignée par l'user pour MENER le programme
 de bout en bout (mandat verbatim : « ce travail est capital »). Ordre : T0 assainissement d'abord
