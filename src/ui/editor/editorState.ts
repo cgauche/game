@@ -53,7 +53,6 @@ export {
   entityAt,
   editEntity,
   editEntityCombat,
-  normaliseAssises,
 } from '../../state/sceneEdit';
 export type { Rect, Pt, Edge4, EffectZoneSeed } from '../../state/sceneEdit';
 export { planStairFlight, applyStairFlight, minFlightCells } from '../../state/stairFlight';

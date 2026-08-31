@@ -45,7 +45,6 @@ export const seatOccupantSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('party'), rang: z.number() }),
   z.strictObject({ kind: z.literal('entity'), entityId: z.string() }),
 ]);
-export { skillRefSchema } from './communs';
 
 // ── Entité de scène ─────────────────────────────────────────────────────────────────────────────
 

@@ -79,9 +79,6 @@ export const dismissStackSize = (): number => pile.length;
 /** Libellés de la pile, du bas vers le haut — DIAGNOSTIC (tests, journal) uniquement. */
 export const dismissStackKinds = (): readonly string[] => pile.map((c) => c.kind);
 
-/** La couche du dessus, ou `undefined` — pour qu'une surface sache si elle est encore au sommet. */
-export const dismissTopHandle = (): DismissHandle | undefined => pile[pile.length - 1];
-
 export function subscribeDismissStack(fn: (e: DismissEvent) => void): () => void {
   abonnes.push(fn);
   return () => { abonnes = abonnes.filter((f) => f !== fn); };
