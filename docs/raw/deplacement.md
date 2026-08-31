@@ -285,6 +285,9 @@ Chevaucher jusqu'à réparation. EDOC 07 l.171-174.
 
 | Animal | Coût | Enc portée | Disponibilité |
 |---|:--:|:--:|:--:|
+| Poulet | 5 sc | 0 | Commune |
+| Mouton | 3 /- | 2 | Commune |
+| Cochon | 4 /- | 3 | Commune |
 | Chien | 2 CO | 8 | Rare |
 | Poney | 10 CO | 14 | Commune |
 | Âne ou mule | 5 CO | 14 | Commune |
@@ -496,6 +499,10 @@ Fin de chaque Étape : tout PJ exposé à pluie ou neige sans **manteau ET tente
 (LDB 18 p.181). Pluie diluvienne/blizzard : Test même avec les deux. Manteau *ou* tente manquant →
 Complexe (−10) ; les deux manquants → Difficile (−20). Hiver ou printemps après échec → **Rhume
 commun** (EDOC 08 l.110-122).
+
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `EDOC 8` (l.21-40, l.50-59, l.62, l.88-92, l.110-122) → `plein-air`, `PosteCardinality`, `Season`, `weatherIdSchema`, `activityAsPoste`, `printemps`, `approvisionnement`, `doc`, `Weather`, `ete`, +43 — `src/data/activities.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/weather.ts`, +13 fichiers
+- dette : #674
 
 ### Activités de Voyage (1 par Étape)
 

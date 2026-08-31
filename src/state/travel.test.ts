@@ -437,6 +437,53 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     expect(exposed).toBe(true);
   });
 
+  it('saison froide + Exposition RATÉE : le Rhume commun contracté en route se DÉCLARE à la Phase d’arrivée (EDOC 8 l.92, EDOC 9 l.21)', () => {
+    setRule('travel-etapes', true);
+    setRule('travel-attraper-froid', true);
+    let sick: { id: string; phase: string; minutesLeft: number; durationMinutes: number } | undefined;
+    for (let seed = 1; seed <= 40 && !sick; seed++) {
+      seedBattleRng(seed);
+      setup(map({ km: 12, perilDie: 0 }), [hero({ travelRole: 'recuperer' })]);
+      useGame.setState({ gameTime: CAMPAIGN_START }); // fin Jahrdrung = printemps, saison froide
+      useGame.getState().startTravel('r1', 'pied');
+      drainCascade();
+      sick = (useGame.getState().party[0].diseases ?? []).find((d) => d.id === 'rhume-commun');
+    }
+    expect(sick, 'aucune Exposition ratée en saison froide sur 40 graines').toBeDefined();
+    // Le trajet (12 km à pied) tient dans la journée : le groupe est ARRIVÉ à destination…
+    expect(useGame.getState().scene?.id, 'le voyage doit avoir abouti à la scène de destination').toBe('lieu-b-scene');
+    // …et la Phase d'arrivée a déclaré la maladie contractée en route : phase active, durée authorée
+    // en place du reste d'incubation, ligne au journal.
+    expect(sick!.phase).toBe('active');
+    expect(sick!.minutesLeft).toBe(sick!.durationMinutes);
+    expect(useGame.getState().journal.some((l) => l.includes('les symptômes de « Rhume commun » se déclarent'))).toBe(true);
+  });
+
+  it('ré-exposition d’un héros déjà enrhumé : la durée du Rhume est PROLONGÉE de 1d10 jours (EDOC 8 l.122)', () => {
+    setRule('travel-etapes', true);
+    setRule('travel-attraper-froid', true);
+    const JOUR = 24 * 60;
+    let mesure: { avant: number; apres: number } | undefined;
+    for (let seed = 1; seed <= 40 && !mesure; seed++) {
+      seedBattleRng(seed);
+      // Rhume DÉJÀ actif au départ (5 jours restants) : il ne se re-contracte pas, il s'allonge.
+      const porteur = hero({ travelRole: 'recuperer' });
+      porteur.diseases = [{ id: 'rhume-commun', symptoms: [], phase: 'active', minutesLeft: 5 * JOUR, durationMinutes: 5 * JOUR }];
+      setup(map({ km: 12, perilDie: 0 }), [porteur]);
+      useGame.setState({ gameTime: CAMPAIGN_START });
+      useGame.getState().startTravel('r1', 'pied');
+      drainCascade();
+      const dz = (useGame.getState().party[0].diseases ?? []).find((d) => d.id === 'rhume-commun')!;
+      if (dz.durationMinutes > 5 * JOUR) mesure = { avant: 5 * JOUR, apres: dz.durationMinutes };
+    }
+    expect(mesure, 'aucune Exposition ratée sur 40 graines').toBeDefined();
+    const jours = (mesure!.apres - mesure!.avant) / JOUR;
+    expect(jours).toBeGreaterThanOrEqual(1);
+    expect(jours).toBeLessThanOrEqual(10);
+    expect(Number.isInteger(jours)).toBe(true);
+    expect(useGame.getState().journal.some((l) => l.includes('son rhume traîne'))).toBe(true);
+  });
+
   it('porte « Plein air » : un héros réussit Plein air → le groupe SAUTE le Test d’Exposition (EDOC 8 l.141)', () => {
     setRule('travel-etapes', true);
     setRule('travel-attraper-froid', true);

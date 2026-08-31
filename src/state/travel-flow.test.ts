@@ -528,6 +528,49 @@ describe('#1153 — allure forcée : km suivant et reprise de contrôle, une seu
     expect(inexplique(km2), 'aucune chip « autres » : le −10 compte UNE fois').toBe(0);
   });
 
+  /**
+   * #673 L3 (G1) — l'aggravation de `EDOC 07 l.253` (« Un Échec Impressionnant ou pire sur n'importe
+   * quel Test de Résistance d'un animal impose un État *Exténué* supplémentaire, et un Échec
+   * Stupéfiant coûte à la bête 1d10 Blessures en plus ») doit être atteignable DEPUIS LE CHEMIN RÉEL
+   * du joueur — la cascade `landForcedPace` — et non seulement depuis le résolveur pur. Le dé
+   * des bêtes vit dans `battleRng` : on cherche la graine qui produit le cas, sans stub.
+   */
+  function consequencesSurEchecDuConducteur(seed: number): string[] {
+    seedBattleRng(seed);
+    const st = get().pendingCascade!.participants.find((s) => s.kind === 'landForcedPace')!;
+    // Échec SIMPLE (−1 DR) : pas de Problème de véhicule (l.253 côté conducteur), seules les bêtes jouent.
+    const rate = { ...st, result: { roll: 99, target: st.target!, sl: -1, success: false } } as typeof st;
+    const out = cascadeAppliers.landForcedPace.apply(get, set, rate, get().party[0], { steps: [rate], index: 0 });
+    return (out?.consequences ?? []).map((c) => String((c as { vars?: { text?: string } }).vars?.text ?? ''));
+  }
+
+  it('l.253 — Échec Impressionnant d’une bête : l’État Exténué SUPPLÉMENTAIRE est atteignable depuis la cascade', () => {
+    ouvreJournee();
+    let lignes: string[] = [];
+    for (let seed = 1; seed <= 300 && !lignes.some((l) => l.includes('supplémentaire')); seed++) {
+      lignes = consequencesSurEchecDuConducteur(seed);
+    }
+    expect(lignes.some((l) => l.includes('Exténuée')), 'la bête rate sa Résistance (l.229)').toBe(true);
+    expect(
+      lignes.some((l) => l.includes('Échec Impressionnant ou pire') && l.includes('supplémentaire')),
+      'l.253 : État Exténué supplémentaire, sur le chemin JOUEUR',
+    ).toBe(true);
+  });
+
+  it('l.253 — Échec Stupéfiant d’une bête : les 1d10 Blessures (− Bonus d’Endurance) sont atteignables depuis la cascade', () => {
+    ouvreJournee();
+    let lignes: string[] = [];
+    for (let seed = 1; seed <= 4000 && !lignes.some((l) => l.includes('Blessures de plus')); seed++) {
+      lignes = consequencesSurEchecDuConducteur(seed);
+    }
+    const blessee = lignes.find((l) => l.includes('Blessures de plus'));
+    expect(blessee, 'l.253 : 1d10 Blessures à la bête, sur le chemin JOUEUR').toBeTruthy();
+    // Cheval de trait E45 → BE 4 : 1d10 − 4, plancher 1 → 1..6.
+    const n = Number(/(\d+) Blessures/.exec(blessee!)![1]);
+    expect(n).toBeGreaterThanOrEqual(1);
+    expect(n).toBeLessThanOrEqual(6);
+  });
+
   it('reprise de contrôle : MÊME conducteur soutenu que le km, sur les DEUX surfaces (B4)', () => {
     ouvreJournee();
     const st = get().pendingCascade!.participants.find((s) => s.kind === 'landForcedPace')!;

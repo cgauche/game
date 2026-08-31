@@ -650,5 +650,77 @@
       "book": "middenheim",
       "page": 131
     }
+  },
+  {
+    "id": "pneumonie",
+    "type": "maladies",
+    "label": "Pneumonie",
+    "desc": "Cette accumulation de liquide dans les poumons causée par d'autres maladies, provoque une inflammation, de la fièvre et parfois même la mort. La pneumonie est connue sous le nom familier de « hochet de Morr », à cause du bruit émis lorsque la personne infectée tente de respirer profondément.",
+    "contractDifficulty": "intermediaire",
+    "incubation": {
+      "dice": {
+        "n": 0,
+        "sides": 0
+      },
+      "unit": "hours"
+    },
+    "duration": {
+      "dice": {
+        "n": 3,
+        "sides": 10
+      },
+      "unit": "days"
+    },
+    "symptoms": [
+      {
+        "symptomId": "touxEternuements"
+      },
+      {
+        "symptomId": "fievre"
+      },
+      {
+        "symptomId": "malaise"
+      }
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 33,
+      "note": "EDOC 08 l.94-108"
+    }
+  },
+  {
+    "id": "rhume-commun",
+    "type": "maladies",
+    "label": "Rhume commun",
+    "desc": "Saisonnier, comme l'embrasement coloré des feuilles en automne, le rhume est néanmoins un fléau constant du Vieux Monde. Ce qui commence par une faible toux et quelques éternuements peut se transformer en quelque chose de plus grave en quelques jours, si l'on n'y prend garde. Toutes les personnes âgées de l'Empire possèdent leurs propres remèdes maison et protections contre la maladie, ainsi que des souvenirs d'une aggravation de cette affection ayant poussé des amis et des proches dans l'étreinte de Morr.",
+    "contractDifficulty": "intermediaire",
+    "incubation": {
+      "dice": {
+        "n": 4,
+        "sides": 10,
+        "plus": 20
+      },
+      "unit": "hours"
+    },
+    "duration": {
+      "dice": {
+        "n": 1,
+        "sides": 10
+      },
+      "unit": "days"
+    },
+    "symptoms": [
+      {
+        "symptomId": "touxEternuements"
+      },
+      {
+        "symptomId": "malaise"
+      }
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 33,
+      "note": "EDOC 08 l.110-122"
+    }
   }
 ]

@@ -33,7 +33,7 @@ import { rollTest } from './tests';
 import { maladies, diseaseLabel, findSymptomById, symptomLabel, conditionLabel, type SymptomCapabilities } from '../data';
 import type { GameOp, PassiveMod } from './ops';
 import type { PsychTrait, PsychType } from './psychology';
-import { t } from '../i18n';
+import { t, type MsgKey } from '../i18n';
 import { fateSaveOrDie } from './fortune';
 
 /** Unité d'un temps de maladie (incubation/durée). La base de calcul/stockage reste la MINUTE (`clock.ts`). */
@@ -369,14 +369,46 @@ export function contagiousDiseases(c: Combatant): Disease[] {
   return (c.diseases ?? []).filter((d) => d.phase === 'active' && diseaseHasCapability(d, 'contagious'));
 }
 
-/** Contracte une maladie « instantanée » (depuis un autre symptôme, l.32) si pas déjà présente.
- *  Mute `c.diseases` directement (appelé HORS itération — par les applicateurs de cascade). */
-export function contractDiseaseOnce(c: Combatant, name: string, rng: RNG = defaultRNG): string[] {
+/** Contracte une maladie si pas déjà présente. Mute `c.diseases` directement (appelé HORS itération —
+ *  par les applicateurs de cascade). Deux paramètres, aucun savoir de site :
+ *  - `incubation` : `'instantanee'` (défaut, l.32 — contraction depuis un autre symptôme) ou `'raw'`
+ *    (l'incubation authorée de `maladies.json` est TIRÉE) ;
+ *  - `message` : clé de journal de l'appelant (défaut `dz.develop`), interpolée `{name, disease}`. */
+export function contractDiseaseOnce(
+  c: Combatant,
+  name: string,
+  rng: RNG = defaultRNG,
+  opts?: { incubation?: 'instantanee' | 'raw'; message?: MsgKey },
+): string[] {
   if ((c.diseases ?? []).some((d) => d.id === name)) return [];
-  const dz = contractDisease(name, rng, { incubation: 0 });
+  const dz = contractDisease(name, rng, opts?.incubation === 'raw' ? undefined : { incubation: 0 });
   if (!dz) return [];
   c.diseases = [...(c.diseases ?? []), dz];
-  return [t('dz.develop', { name: c.label, disease: diseaseLabel(name) })];
+  return [t(opts?.message ?? 'dz.develop', { name: c.label, disease: diseaseLabel(name) })];
+}
+
+/** Bascule une maladie de l'INCUBATION à sa phase ACTIVE : la durée authorée prend la place du reste
+ *  d'incubation et la Localisation de lésion (MSRC 16 l.140) est tirée si un symptôme la gate.
+ *  SOURCE UNIQUE de cette bascule — `tickDisease` (incubation épuisée) et la Phase d'arrivée d'un
+ *  voyage (EDOC 09 l.21) passent par ici. No-op sur une maladie déjà active. */
+export function declareDisease(c: Combatant, dz: Disease, rng: RNG = defaultRNG): string[] {
+  if (dz.phase !== 'incubation') return [];
+  dz.phase = 'active';
+  dz.minutesLeft = dz.durationMinutes;
+  if (dz.symptoms.some((s) => findSymptomById(s.symptomId)?.visiblePassive?.length)) dz.blisterLocation = rollBlisterLocation(rng);
+  return [t('dz.symptomsOnset', { name: c.label, disease: diseaseLabel(dz.id) })];
+}
+
+/** Prolonge la DURÉE d'une maladie EN COURS de `days` jours. La durée active porte l'allonge ; si la
+ *  maladie est encore en incubation, seul le capital de durée grossit (le décompte d'incubation, lui,
+ *  reste celui qui a été tiré). Renvoie `false` si la maladie n'est pas portée. */
+export function prolongDisease(c: Combatant, name: string, days: number): boolean {
+  const dz = (c.diseases ?? []).find((d) => d.id === name);
+  if (!dz || days <= 0) return false;
+  const extra = days * MINUTES_PER_DAY;
+  dz.durationMinutes += extra;
+  if (dz.phase === 'active') dz.minutesLeft += extra;
+  return true;
 }
 
 /** Conséquence d'un Test de Gangrène DIFFÉRÉ (l.135+) : échec → +1 échec ; au-delà du BE → Localisation perdue. */
@@ -468,14 +500,7 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
       const rv = resistVal + activeDiseaseTestMod(c, dz.id);
       if (dz.phase === 'incubation') {
         dz.minutesLeft -= stepMin;
-        if (dz.minutesLeft <= 0) {
-          dz.phase = 'active';
-          dz.minutesLeft = dz.durationMinutes;
-          // Localisation de la lésion (cloque du Vers du Reik) tirée à l'entrée en phase active si un
-          // symptôme la gate (`visiblePassive`) — jet de Localisation canonique, MSRC 16 l.140.
-          if (dz.symptoms.some((s) => findSymptomById(s.symptomId)?.visiblePassive?.length)) dz.blisterLocation = rollBlisterLocation(rng);
-          log.push(t('dz.symptomsOnset', { name: c.label, disease: diseaseLabel(dz.id) }));
-        }
+        if (dz.minutesLeft <= 0) log.push(...declareDisease(c, dz, rng));
         survivors.push(dz);
         continue;
       }

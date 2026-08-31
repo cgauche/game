@@ -835,7 +835,7 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
   });
 
   it('§5 : les Conditions retirées du compte d’ops sont celles qui PORTAIENT un `op`', () => {
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2181);
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2182);
     expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(185);
   });
 });

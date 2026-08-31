@@ -37,11 +37,16 @@ import {
   type MountInjury,
 } from '../engine/mountTravel';
 import { possessionLabel } from '../engine/possession';
-import { vehicleCombatant, applyVehicleProblem } from '../engine/vehicle';
+import {
+  vehicleCombatant, applyVehicleProblem, forcedPaceCheck, forcedPaceBeastCheck, forcedPaceModifier,
+  type ForcedPaceAnimal, type ForcedPaceAnimalOutcome,
+} from '../engine/vehicle';
+import { bonus } from '../engine/characteristics';
 import { rollVehicleProblem, mountIncidentEffects } from '../engine/travelTables';
 import { applyOps } from '../engine/ops';
 import { applyFall } from './combatEffects';
 import { applyHealWounds } from '../engine/healing';
+import { declareDisease } from '../engine/disease';
 import { findVehicleById, voyageStakeRef, weather } from '../data';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
@@ -175,6 +180,11 @@ export interface TravelPlan {
    *  cascade `travelDay` : `continueTravelDayAfterCascade` le relit et le finalise (le `recap` local du
    *  `while` de `runTravelDays` ne survit pas à la suspension). Transitoire — effacé à la finalisation. */
   recap?: TravelRecap;
+  /** Maladies PORTÉES AU DÉPART, clés `<idHéros>|<idMaladie>` — posées une seule fois à la première
+   *  journée du trajet (conservées à la reprise d'un voyage interrompu). Le complément de cet ensemble
+   *  à l'arrivée = les maladies contractées sur la route, celles que la Phase d'arrivée déclare
+   *  (EDOC 09 l.21, `declareArrivalDiseases`). */
+  diseasesAtStart?: string[];
   /** CHRONIQUE du voyage (#333) : les journées/Étapes DÉJÀ closes, accumulées à leur halte de nuit
    *  (`openRest` porte le `travelDay` finalisé). Alimente le journal de voyage de l'écran-hub
    *  (`VoyageScreen`) — une carte par jour passé. Vidé avec le plan à l'arrivée. */
@@ -420,6 +430,9 @@ function runTravelDays(get: Get, set: Set): void {
   const base = baseHoursPerDay(worldMap);
   // Récapitulatif du SEGMENT (audit M4) — depuis le départ, ou depuis la reprise.
   const plan0 = get().travelPlan;
+  // Empreinte des maladies DÉJÀ portées au départ — posée une seule fois par trajet (une reprise
+  // après interruption retrouve celle du départ). Lue par la Phase d'arrivée (EDOC 09 l.21).
+  if (plan0 && !plan0.diseasesAtStart) set({ travelPlan: { ...plan0, diseasesAtStart: diseaseKeys(get().party) } });
   const recap: TravelRecap | null = plan0 ? {
     fromLabel: placeById(worldMap, plan0.fromPlaceId)?.label ?? '?',
     toLabel: placeById(worldMap, plan0.toPlaceId)?.label ?? '?',
@@ -457,8 +470,9 @@ function runTravelDays(get: Get, set: Set): void {
     // sans rejouer une journée (ni fatigue ni péripéties — elles ont déjà été tirées ce jour-là).
     if (plan.km - plan.kmDone < 1e-9) {
       const daysTotal = (plan.log?.length ?? 0) + 1; // AVANT le null (#333 vague 2 — durée affichée à l'arrivée)
+      const atStart = plan.diseasesAtStart ?? [];
       set({ travelPlan: null });
-      log(get, set, [t('tf.arrival', { to: to.label }), ...travelArrivalCare(get, set)]);
+      log(get, set, [t('tf.arrival', { to: to.label }), ...travelArrivalCare(get, set), ...declareArrivalDiseases(get, set, atStart)]);
       finishRecap('arrived', undefined, daysTotal);
       get().transitionTo(to.scene, to.entry);
       return;
@@ -786,8 +800,9 @@ export function continueTravelDayAfterCascade(get: Get, set: Set, done?: Pending
     // Durée totale du voyage (#333 vague 2) : jours CLOS + le jour courant (jamais logué, l'arrivée ne
     // halte pas) — CAPTURÉ avant que `travelPlan` (et son `log`) ne soit remis à `null`.
     const daysTotal = (get().travelPlan?.log?.length ?? 0) + 1;
+    const atStart = get().travelPlan?.diseasesAtStart ?? [];
     set({ travelPlan: null });
-    const care = travelArrivalCare(get, set);
+    const care = [...travelArrivalCare(get, set), ...declareArrivalDiseases(get, set, atStart)];
     if (recapDay) recapDay.lines.push(...toRecapLines(care));
     log(get, set, [t('tf.arrival', { to: ctx.toLabel }), ...care]);
     finishRecap('arrived', undefined, daysTotal);
@@ -982,6 +997,27 @@ interface ForcedPaceDayResult {
   vehicleLame: boolean;
 }
 
+/** Les bêtes de l'attelage telles que le résolveur pur les attend : `draft.count` pions du MÊME profil
+ *  (`montures.json`), dont le Bonus d'Endurance dérive de l'Endurance du profil (réducteur des Blessures
+ *  de `EDOC 07 l.253`). SOURCE UNIQUE des deux surfaces de l'allure forcée. */
+function draftAnimals(count: number, endurance: number): ForcedPaceAnimal[] {
+  return Array.from({ length: count }, () => ({ valeurResistance: endurance, be: bonus(endurance) }));
+}
+
+/** Journal des bêtes éprouvées après l'échec du conducteur — SURFACE UNIQUE des deux surfaces (repli
+ *  synchrone et cascade joueur). Les bêtes de l'attelage n'ont AUCUNE rangée dédiée (transport sans
+ *  identité) : le journal PORTE seul leur jet et l'aggravation de `EDOC 07 l.253`. */
+function forcedPaceBeastLines(animaux: ForcedPaceAnimalOutcome[]): string[] {
+  const out: string[] = [];
+  for (const a of animaux) {
+    if (!a.etats.length && !a.blessures) continue;
+    out.push(t('tf.beastExhausted', { roll: a.resistance.roll, target: a.resistance.target }));
+    if (a.etats.length > 1) out.push(t('tf.beastExhaustedPlus'));
+    if (a.blessures) out.push(t('tf.beastHurt', { n: a.blessures }));
+  }
+  return out;
+}
+
 /**
  * Journée d'attelage FORCÉ au pas de course (EDOC 07 l.229) : « Le conducteur doit effectuer un Test de
  * Conduite d'attelage Intermédiaire (+0) tous les kilomètres, avec une pénalité de -10 par kilomètre déjà
@@ -1002,9 +1038,17 @@ function forcedPaceDay(get: Get, set: Set, kmLeft: number): ForcedPaceDayResult 
   const driverLine = supportSplit(driver?.value ?? 0, driver?.support); // base RÉELLE du conducteur + sa ligne de Soutien
   let galloped = 0;
   while (out.hours < plan.hoursPerDay - 1e-9 && out.km < kmLeft - 1e-9) {
-    const gallopMod = -10 * galloped; // -10 par km déjà au pas de course (l.229)
-    const base = Math.max(0, (driver?.value ?? 0) + gallopMod);
-    const roll = rollTest(base, 'intermediaire', battleRng());
+    // SOURCE UNIQUE du kilomètre : `forcedPaceCheck` roule le conducteur (pénalité en MODIFICATEUR de
+    // `rollTest`, dont la politique de clamp est la seule) puis, à son échec, chaque bête avec
+    // l'aggravation de l.253. Ce chemin et la cascade joueur lisent le MÊME résolveur.
+    const res = forcedPaceCheck({
+      valeurConduite: driver?.value ?? 0,
+      kmDejaCourus: galloped,
+      animaux: draftAnimals(veh.draft!.count, draft.e),
+      rng: battleRng(),
+    });
+    const gallopMod = res.modificateur;
+    const roll = res.conduite;
     if (roll.success) {
       out.km += 1;
       galloped += 1;
@@ -1023,12 +1067,7 @@ function forcedPaceDay(get: Get, set: Set, kmLeft: number): ForcedPaceDayResult 
     // Le jet est DÉJÀ affiché par la rangée `day.entries` (MultiRollList) du même recap — pas de
     // re-print du roll/target (#295 Lot 5) ; le verdict reste pour le journal général (surface SANS rangée).
     out.lines.push(t('tf.forcedFail', { name: driver?.actor.label ?? t('tf.driverFallback'), stupefiant: stupefiant ? t('tf.fragStupefiant') : '' }));
-    // « chacun doit réussir un Test de Résistance Intermédiaire (+0) ou acquérir un État Exténué » (l.229)
-    // — les bêtes de l'attelage (transport, sans rangée dédiée) : le journal PORTE seul leur jet.
-    for (let i = 0; i < veh.draft!.count; i++) {
-      const rt = rollTest(draft.e, 'intermediaire', battleRng());
-      if (!rt.success) out.lines.push(t('tf.beastExhausted', { roll: rt.roll, target: rt.target }));
-    }
+    out.lines.push(...forcedPaceBeastLines(res.animaux));
     if (stupefiant) {
       const pb = applyVehicleProblemToTravel(get, set, out);
       out.vehicleOut = pb.vehicleOut;
@@ -1119,7 +1158,7 @@ function forcedPaceDriver(get: Get) {
  *  elle compte UNE fois (chip nommée + cible), jamais deux. `meta` porte l'accumulateur (km/heures déjà
  *  acquis) relu par l'applier pour chaîner le km SUIVANT (`insert`) ou finaliser (`finalizeForcedPace`). */
 function buildForcedPaceStep(driver: { actor: Combatant; value: number; support?: SupportDetail }, kmLeft: number, galloped = 0, km = 0, hours = 0): BuiltCascadeStep | undefined {
-  const penalty = -10 * galloped; // l.229
+  const penalty = forcedPaceModifier(galloped); // l.229, SOURCE UNIQUE avec le résolveur pur
   return monoStep({
     id: `land-forced-${galloped}`, kind: 'landForcedPace', actor: driver.actor, icon: 'travel/cart',
     label: stepDetail(dataLabel(driver.actor.label), t('step.conduiteForcee')), rollLabel: 'Conduite d’attelage',
@@ -1175,10 +1214,10 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   // Le jet du conducteur est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print
   // (#295 Lot 5) ; les bêtes de l'attelage n'ont AUCUNE rangée dédiée — le journal les porte seul.
   const j: string[] = [t('tf.forcedFail', { name, stupefiant: stupefiant ? t('tf.fragStupefiant') : '' })];
-  for (let i = 0; i < veh.draft!.count; i++) {
-    const rt = rollTest(draft.e, 'intermediaire', battleRng());
-    if (!rt.success) j.push(t('tf.beastExhausted', { roll: rt.roll, target: rt.target }));
-  }
+  // MÊME résolveur pur que le repli synchrone (`forcedPaceBeastCheck`) : le Test de Résistance de
+  // l.229 et son aggravation de l.253 n'ont qu'une définition. Le conducteur, lui, a déjà roulé —
+  // c'est l'étape INFLUENÇABLE de la cascade (`step.result`), pas un `rollTest` d'ici.
+  j.push(...forcedPaceBeastLines(draftAnimals(veh.draft!.count, draft.e).map((a) => forcedPaceBeastCheck(a, battleRng()))));
   // Reste de la JOURNÉE (pas de l'ensemble du trajet) à la cadence de base — plafonné par le budget
   // d'heures RESTANT du jour (`plan.hoursPerDay - hours`), EXACTEMENT `forcedPaceDay` (l.795).
   const remaining = Math.max(0, kmLeft - km);
@@ -1242,6 +1281,29 @@ registerCascadeApplier('landForcedPaceControl', (get, set, step, hero) => {
   finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, ...outcome });
   return { consequences: freeCons(j) };
 });
+
+/** Clés `<idHéros>|<idMaladie>` des maladies portées par le groupe — empreinte de départ d'un trajet. */
+const diseaseKeys = (party: Combatant[]): string[] =>
+  party.flatMap((h) => (h.diseases ?? []).map((d) => `${h.id}|${d.id}`));
+
+/**
+ * PHASE D'ARRIVÉE, volet maladies — EDOC 09 l.21. Toute maladie encore en INCUBATION qui n'était pas
+ * portée au départ (`plan.diseasesAtStart`) a été contractée sur la route : elle se déclare ici, par la
+ * bascule unique `declareDisease`. Kind-agnostique — aucune maladie n'est nommée.
+ */
+function declareArrivalDiseases(get: Get, set: Set, atStart: string[]): string[] {
+  const avant = new Set(atStart);
+  const lines: string[] = [];
+  const party = get().party;
+  for (const h of party) {
+    for (const dz of h.diseases ?? []) {
+      if (dz.phase !== 'incubation' || avant.has(`${h.id}|${dz.id}`)) continue;
+      lines.push(...declareDisease(h, dz, battleRng()));
+    }
+  }
+  if (lines.length) set({ party: [...party] });
+  return lines;
+}
 
 /**
  * Soins de l'ARRIVÉE au relais : le maréchal-ferrant remplace le fer (EDOC 07 l.167), la sellerie est

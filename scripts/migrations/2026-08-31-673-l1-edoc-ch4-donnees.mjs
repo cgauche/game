@@ -1,0 +1,133 @@
+// #673 L1 — les données orphelines d'EDOC ch.4 (Montures et véhicules) entrent au bestiaire.
+//
+// Écrit `src/data/creatures.json` et `src/data/traits.json` par ROUND-TRIP JSON (le fichier est
+// exactement `JSON.stringify(…, null, 2)` sans saut final — vérifié avant écriture, refus sinon) :
+// aucune ligne n'est retouchée en dehors des insertions.
+//
+// Toute `desc` est EXTRAITE du Source (jamais retapée) — EDOC 07.
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { folioGoverningWhy } from '../guards/lib/folioLineAlign.mjs'
+
+const CH = "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon"
+const files = readdirSync(CH)
+const chapterLines = (ch) => {
+  const f = files.find((n) => n.startsWith(String(ch).padStart(2, '0') + ' -'))
+  return f ? readFileSync(join(CH, f), 'utf8').split('\n') : null
+}
+const edoc07 = chapterLines(7)
+const ligne = (n) => edoc07[n - 1]
+const folio = (n) => {
+  const { folio: f, reason } = folioGoverningWhy(chapterLines, 7, n)
+  if (reason !== 'ok') throw new Error(`folio non jugeable pour EDOC 07 l.${n} : ${reason}`)
+  return f
+}
+
+/** Cellules d'une ligne de tableau Markdown. */
+const cellules = (n) => ligne(n).split('|').slice(1, -1).map((c) => c.trim())
+
+const lire = (p) => {
+  const raw = readFileSync(p, 'utf8')
+  const data = JSON.parse(raw)
+  if (JSON.stringify(data, null, 2) !== raw) throw new Error(`${p} n'est pas au format round-trip attendu`)
+  return data
+}
+const ecrire = (p, data) => writeFileSync(p, JSON.stringify(data, null, 2), 'utf8')
+
+// ── Prix : « 2 CO » / « 3 /- » / « 5 sc » (LDB 57 l.7 : sc = sous de cuivre, /- = pistoles
+//    d'argent, CO = couronnes d'or) → { gold, silver, bronze }.
+function prix(cellule) {
+  const m = /^(\d+)\s*(CO|\/-|sc)$/.exec(cellule)
+  if (!m) throw new Error(`cellule de coût non reconnue : « ${cellule} »`)
+  const n = Number(m[1])
+  return { gold: m[2] === 'CO' ? n : 0, silver: m[2] === '/-' ? n : 0, bronze: m[2] === 'sc' ? n : 0 }
+}
+
+const CREATURES = 'src/data/creatures.json'
+const TRAITS = 'src/data/traits.json'
+const creatures = lire(CREATURES)
+const traits = lire(TRAITS)
+const par = (arr, id) => arr.find((e) => e.id === id)
+const indexDe = (arr, id) => arr.findIndex((e) => e.id === id)
+
+// ── LOT 1 — facette d'achat du chien (EDOC 07 l.102, folio 24).
+{
+  const [, cout, , dispo] = cellules(102)
+  const chien = par(creatures, 'chien')
+  if (chien.purchase) throw new Error('chien porte déjà purchase')
+  // Ordre de clés du patron des 9 montures : … spells, [desc], source, purchase, appearance, grantGroups.
+  const { appearance, grantGroups, ...tete } = chien
+  Object.keys(chien).forEach((k) => delete chien[k])
+  Object.assign(chien, tete, { purchase: { price: prix(cout), availability: dispo } }, { appearance, grantGroups })
+}
+
+// ── LOT 2 — mouton et cochon (EDOC 07 l.100-101, folio 24) : le livre ne leur imprime AUCUN profil
+//    (aucun livre autorisé n'en donne — mesuré). Deux patrons, chacun pris sur ses porteurs RÉELS :
+//    `char: {}` comme les animaux du bestiaire sans profil imprimé (`poulet`, `singe`, `vers`), et
+//    `traits: []` parce qu'EDOC 07 n'en imprime aucun ; `grantGroups: ['bete']` comme les animaux
+//    ACHETABLES voisins de la même table (`chien` l.102, `blaireau`) — `poulet`/`singe`/`vers`, eux,
+//    n'en portent aucun.
+//
+//    DETTE OUVERTE — colonne « Capacité d'encombrement » d'EDOC 07 l.100-101 (Mouton 2, Cochon 3) :
+//    ces deux cellules ne sont PAS modelées ici. Le seul champ porteur existant est `encPortee`, qui
+//    vit sur les entrées de `src/data/montures.json` (table MOUVEMENT POUR LES MONTURES, EDOC 07
+//    folio 25) ; mouton et cochon n'y figurent pas et ne sont pas des montures. Le champ porteur
+//    d'une capacité de charge pour une bête NON montée reste à trancher (lot L2/L3 de #673) — aucune
+//    modélisation forcée ici, aucune valeur inventée sur un champ détourné.
+{
+  const entree = (id, label, l) => {
+    const [nom, cout, , dispo] = cellules(l)
+    if (nom !== label) throw new Error(`EDOC 07 l.${l} ne porte pas « ${label} » mais « ${nom} »`)
+    return {
+      id,
+      type: 'creatures',
+      label,
+      title: null,
+      folder: 'Animaux et véhicules',
+      char: {},
+      traits: [],
+      optionals: [],
+      skills: [],
+      talents: [],
+      trappings: [],
+      spells: [],
+      source: { book: 'ennemi-dans-l-ombre-compagnon', page: folio(l) },
+      purchase: { price: prix(cout), availability: dispo },
+      grantGroups: ['bete'],
+    }
+  }
+  const apres = indexDe(creatures, 'poulet')
+  if (apres < 0) throw new Error('poulet introuvable')
+  creatures.splice(apres, 0, entree('cochon', 'Cochon', 101))
+  creatures.splice(apres, 0, entree('mouton', 'Mouton', 100))
+}
+
+// ── LOT 3 — Trait Entêté (EDOC 07 l.31, folio 22), prescription #630 §1 : le passif +20 FM
+//    s'exprime ; le volet « Test opposé de maîtrise » est routé #617, jamais à demi dans le trait.
+{
+  if (par(traits, 'entete')) throw new Error('entete existe déjà')
+  const desc = ligne(31)
+  if (!desc.startsWith('Les ânes et les mules possèdent souvent le Trait Entêté')) {
+    throw new Error(`EDOC 07 l.31 n'est pas le paragraphe Entêté : ${desc.slice(0, 60)}`)
+  }
+  const avant = indexDe(traits, 'ethere')
+  if (avant < 0) throw new Error('ethere introuvable')
+  traits.splice(avant, 0, {
+    id: 'entete',
+    type: 'traits',
+    label: 'Entêté',
+    desc,
+    source: { book: 'ennemi-dans-l-ombre-compagnon', page: folio(31) },
+    passive: [{ op: 'charMod', char: 'force-mentale', mod: 20 }],
+  })
+  // « possèdent SOUVENT » → optionnel, jamais un trait de base (EDOC 07 l.31).
+  for (const id of ['ane', 'mule']) {
+    const c = par(creatures, id)
+    if (c.optionals.some((o) => o.id === 'entete')) throw new Error(`${id} porte déjà entete`)
+    c.optionals.push({ id: 'entete' })
+  }
+}
+
+ecrire(CREATURES, creatures)
+ecrire(TRAITS, traits)
+console.log('creatures.json + traits.json écrits')

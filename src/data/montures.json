@@ -23,6 +23,7 @@
       "label": "Poney, âne ou mule",
       "creatureIds": [
         "poney",
+        "ane",
         "mule"
       ],
       "m": 4,

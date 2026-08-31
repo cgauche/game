@@ -192,8 +192,9 @@ describe.each(CAS)('migration $script — retouchée pour le `type` d’ENVELOPP
 });
 
 /**
- * FIDÉLITÉ DE LA VAGUE 12b — la migration `type` n'ajoute QUE `type`, sur les 1730 entrées des 12
- * derniers datasets `entite`, et retire la SEULE `desc: ""` qu'elle DÉCLARE (`species › humains-tileens`).
+ * FIDÉLITÉ DE LA VAGUE 12b — la migration `type` n'ajoute QUE `type`, sur toutes les entrées des 12
+ * derniers datasets `entite` (compte tenu en constante `TOTAL_ATTENDU`, source unique du chiffre), et
+ * retire la SEULE `desc: ""` qu'elle DÉCLARE (`species › humains-tileens`).
  *
  * La migration porte déjà cette preuve en post-écriture, mais elle ne la porte QUE le jour où elle
  * écrit : rejouée sur l'état final, elle sort en no-op sans rien comparer. Ce test-ci la tient au
@@ -216,11 +217,11 @@ describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a boug
     'tavernGames.json': 'tavernGames',
     'trappings.json': 'trappings',
   };
-  const TOTAL_ATTENDU = 1730;
+  const TOTAL_ATTENDU = 1733;
 
   const lu = (f: string) => JSON.parse(readFileSync(join(RACINE, 'src', 'data', f), 'utf8')) as Record<string, unknown>[];
 
-  it('les 12 datasets totalisent 1730 entrées, `type` en 2ᵉ position et ACCORDÉ à son document', () => {
+  it(`les 12 datasets totalisent ${TOTAL_ATTENDU} entrées, \`type\` en 2ᵉ position et ACCORDÉ à son document`, () => {
     const fautes: string[] = [];
     let total = 0;
     for (const [f, type] of Object.entries(TYPES_12B)) {

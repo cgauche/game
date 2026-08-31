@@ -1,7 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { makeRNG } from './dice';
+import { makeRNG, type RNG } from './dice';
 import { findVehicleById } from '../data';
-import { vehicleCombatant, applyVehicleProblem } from './vehicle';
+import {
+  vehicleCombatant,
+  applyVehicleProblem,
+  repairVehicleAttempt,
+  forcedPaceCheck,
+  forcedPaceBeastCheck,
+  forcedPaceModifier,
+  FORCED_PACE_PENALTY_PER_KM,
+} from './vehicle';
+
+/** RNG SCRIPTÉ : rend les jets dans l'ordre exact de consommation (aucun clamp — un jet de trop ou de
+ *  moins rend `undefined` et fait échouer le test, ce qui EST le contrat mesuré). */
+const script = (...vals: number[]): RNG => {
+  let i = 0;
+  return { int: () => vals[i++] };
+};
 
 describe('véhicule-à-coque (Combatant à PV)', () => {
   it('bâtit une coque depuis la facette hull (Diligence E45/B50)', () => {
@@ -44,5 +59,104 @@ describe('véhicule-à-coque (Combatant à PV)', () => {
     expect(c.wounds.current).toBeLessThan(10);
     expect(c.wounds.current).toBeGreaterThanOrEqual(0);
     expect(r.lines.length).toBeGreaterThan(0);
+  });
+});
+
+describe('réparation terrestre d’un véhicule (EDOC 07 l.349-353)', () => {
+  it('matériaux/outils/installations réunis + Test réussi → (1d10 + DR) points rendus en 1 heure', () => {
+    // Métier 50, jet 31 → réussite à +2 DR ; puis 1d10 = 6 → 8 points.
+    const r = repairVehicleAttempt({ valeurMetier: 50, degatsSubis: 20, materiaux: true, outils: true, installations: true, rng: script(31, 6) });
+    expect(r.possible).toBe(true);
+    expect(r.test?.sl).toBe(2);
+    expect(r.restaure).toBe(8);
+    expect(r.heures).toBe(1);
+    expect(r.degatsRestants).toBe(12);
+  });
+
+  it('la restauration est bornée par les Dégâts réellement subis', () => {
+    const r = repairVehicleAttempt({ valeurMetier: 50, degatsSubis: 3, materiaux: true, outils: true, installations: true, rng: script(31, 6) });
+    expect(r.restaure).toBe(3);
+    expect(r.degatsRestants).toBe(0);
+  });
+
+  it('Test raté : l’heure est consommée (MAISON — l.353 attache l’heure à « chaque réparation »), aucun point rendu', () => {
+    const r = repairVehicleAttempt({ valeurMetier: 50, degatsSubis: 20, materiaux: true, outils: true, installations: true, rng: script(71) });
+    expect(r.test?.success).toBe(false);
+    expect(r.restaure).toBe(0);
+    expect(r.heures).toBe(1);
+    expect(r.degatsRestants).toBe(20);
+  });
+
+  it('une seule des trois conditions matérielles manquante → aucun jet, aucune heure', () => {
+    for (const manque of ['materiaux', 'outils', 'installations'] as const) {
+      const p = { valeurMetier: 50, degatsSubis: 20, materiaux: true, outils: true, installations: true, rng: script() };
+      const r = repairVehicleAttempt({ ...p, [manque]: false });
+      expect(r.possible, manque).toBe(false);
+      expect(r.test, manque).toBeUndefined();
+      expect(r.heures, manque).toBe(0);
+      expect(r.degatsRestants, manque).toBe(20);
+    }
+  });
+});
+
+describe('course forcée d’un attelage (EDOC 07 l.229, l.253)', () => {
+  it('pénalité cumulative de −10 par kilomètre DÉJÀ couru ; réussite → aucune bête éprouvée', () => {
+    expect(FORCED_PACE_PENALTY_PER_KM).toBe(-10);
+    const r = forcedPaceCheck({ valeurConduite: 45, kmDejaCourus: 2, animaux: [{ valeurResistance: 40 }], rng: script(20) });
+    expect(r.modificateur).toBe(-20);
+    expect(r.conduite.target).toBe(25);
+    expect(r.retourAuPas).toBe(false);
+    expect(r.animaux).toEqual([]);
+  });
+
+  it('échec du conducteur : retour au pas + un Test de Résistance PAR animal', () => {
+    // Conduite 45 (jet 60 → échec), puis Résistance 40 : jet 20 (réussi) et jet 45 (raté).
+    const r = forcedPaceCheck({
+      valeurConduite: 45,
+      animaux: [{ valeurResistance: 40 }, { valeurResistance: 40 }],
+      rng: script(60, 20, 45),
+    });
+    expect(r.modificateur).toBe(0);
+    expect(r.retourAuPas).toBe(true);
+    expect(r.animaux).toHaveLength(2);
+    expect(r.animaux[0].etats).toEqual([]);
+    expect(r.animaux[1].etats).toEqual(['extenue']);
+    expect(r.animaux[1].blessures).toBe(0);
+  });
+
+  it('Échec Impressionnant au Test de Résistance → un État Exténué SUPPLÉMENTAIRE', () => {
+    // Résistance 40, jet 85 → −4 DR.
+    const r = forcedPaceCheck({ valeurConduite: 45, animaux: [{ valeurResistance: 40 }], rng: script(60, 85) });
+    expect(r.animaux[0].resistance.sl).toBe(-4);
+    expect(r.animaux[0].etats).toEqual(['extenue', 'extenue']);
+    expect(r.animaux[0].blessures).toBe(0);
+  });
+
+  it('le modificateur de l.229 est une SOURCE UNIQUE (le 1ᵉʳ km rend 0, jamais −0)', () => {
+    expect(forcedPaceModifier(0)).toBe(0);
+    expect(Object.is(forcedPaceModifier(0), -0)).toBe(false);
+    expect(forcedPaceModifier(3)).toBe(3 * FORCED_PACE_PENALTY_PER_KM);
+    // Le composeur ne recalcule rien : il délègue au même résolveur.
+    expect(forcedPaceCheck({ valeurConduite: 45, kmDejaCourus: 3, animaux: [], rng: script(20) }).modificateur)
+      .toBe(forcedPaceModifier(3));
+  });
+
+  it('le jet de bête est EXTRACTIBLE (forcedPaceBeastCheck) et rend le MÊME résultat que le composeur', () => {
+    // Résistance 40, jet 85 (−4 DR) : Échec Impressionnant → Exténué + Exténué supplémentaire (l.253).
+    const seul = forcedPaceBeastCheck({ valeurResistance: 40 }, script(85));
+    const parLeComposeur = forcedPaceCheck({ valeurConduite: 45, animaux: [{ valeurResistance: 40 }], rng: script(60, 85) });
+    expect(seul.etats).toEqual(['extenue', 'extenue']);
+    expect(parLeComposeur.animaux[0].etats).toEqual(seul.etats);
+    expect(parLeComposeur.animaux[0].resistance.roll).toBe(seul.resistance.roll);
+  });
+
+  it('Échec Stupéfiant → 1d10 Blessures réduites du Bonus d’Endurance, minimum 1', () => {
+    // Résistance 40, jet 100 → −6 DR ; 1d10 = 8, BE 3 → 5 Blessures.
+    const r = forcedPaceCheck({ valeurConduite: 45, animaux: [{ valeurResistance: 40, be: 3 }], rng: script(60, 100, 8) });
+    expect(r.animaux[0].resistance.sl).toBe(-6);
+    expect(r.animaux[0].blessures).toBe(5);
+    // 1d10 = 2, BE 9 → plancher à 1.
+    const plancher = forcedPaceCheck({ valeurConduite: 45, animaux: [{ valeurResistance: 40, be: 9 }], rng: script(60, 100, 2) });
+    expect(plancher.animaux[0].blessures).toBe(1);
   });
 });

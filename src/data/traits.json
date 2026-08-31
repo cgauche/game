@@ -626,6 +626,23 @@
     "standard": true
   },
   {
+    "id": "entete",
+    "type": "traits",
+    "label": "Entêté",
+    "desc": "Les ânes et les mules possèdent souvent le Trait Entêté, qui augmente leur score de FM de +20 et nécessite un Test opposé de **Chevaucher** ou de **Conduite d'attelage/Force Mentale** chaque fois que le cavalier ou le conducteur doit maîtriser l'animal. Si le Test est un échec, l'animal s'arrête net et refuse d'aller plus loin. Il peut être incité à avancer par un Test de **Chevaucher** réussi auquel s'oppose la **Force Mentale** de la créature, ou un Test opposé d'**Emprise sur les animaux** si quelqu'un le dirige par la bride. Dans les deux cas, il ne peut pas aller plus vite que la moitié de la vitesse de marche.",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 22
+    },
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "force-mentale",
+        "mod": 20
+      }
+    ]
+  },
+  {
     "id": "ethere",
     "type": "traits",
     "label": "Éthéré",

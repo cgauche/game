@@ -449,13 +449,13 @@
     "type": "voyage-stakes",
     "label": "Attelage à l'allure forcée",
     "kind": "landForcedPace",
-    "template": "Échec : les animaux repassent au pas et chacun teste sa Résistance ou gagne un État Exténué ; Échec Stupéfiant (−6 DR) : tirage sur les Problèmes de véhicule.",
+    "template": "Échec : les animaux repassent au pas et chacun teste sa Résistance ou gagne un État Exténué — Échec Impressionnant ou pire de la bête : un État Exténué supplémentaire ; Échec Stupéfiant de la bête : 1d10 Blessures en plus (modifiées par le Bonus d'Endurance, minimum 1). Échec Stupéfiant (−6 DR) du conducteur : tirage sur les Problèmes de véhicule.",
     "rule": "conduite-d-attelage",
     "ruleCategory": "skills",
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27,
-      "note": "EDOC 07 l.229 (Test par kilomètre, −10 par km déjà couru) et l.253 (Échec Stupéfiant)"
+      "note": "EDOC 07 l.229 (Test par kilomètre, −10 par km déjà couru, Résistance des bêtes) et l.253 (Échec Stupéfiant du conducteur ; aggravation des Échecs de Résistance des bêtes)"
     }
   },
   {

@@ -593,7 +593,7 @@ Les Activités de voyage durent toute une Étape de voyage et restent **fatigant
 Note sur les Revenus en voyage : l'Activité *Revenus* (LDB 23) n'est **pas adaptée** pour la plupart des Carrières en voyage — sauf juges/huissiers itinérants, chasseurs, éclaireurs, cochers (EDOC 8 l.167).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `EDOC 8` (l.129-180) → `plein-air`, `PosteCardinality`, `activityAsPoste`, `printemps`, `approvisionnement`, `gatherInnInfo`, `ete`, `recueillir-informations`, `EncounterCategory`, `automne`, +26 — `src/data/activities.json`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/travelEncounter.ts`, +8 fichiers
+- `EDOC 8` (l.129-180) → `plein-air`, `PosteCardinality`, `activityAsPoste`, `printemps`, `approvisionnement`, `gatherInnInfo`, `ete`, `recueillir-informations`, `EncounterCategory`, `automne`, +27 — `src/data/activities.json`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/travelEncounter.ts`, +8 fichiers
 
 ---
 

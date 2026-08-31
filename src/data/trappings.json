@@ -14241,5 +14241,26 @@
       "page": 172
     },
     "shape": "poing"
+  },
+  {
+    "id": "anneau-d-opsianon",
+    "type": "trappings",
+    "label": "Anneau d'Opsianon",
+    "categorie": "trapping",
+    "subType": "vetements-et-accessoires",
+    "enc": 0,
+    "availability": null,
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Gideon porte une bague en or sertie d'une pierre d'obsidienne noire à facettes.\n\nL'anneau aurait été forgé il y a près de trois cents ans, plusieurs décennies avant la fondation des Collèges de Magie. Son créateur, Kurtis Krammovic, souhaitait dissimuler sa nature magique aux personnes qui ne portaient pas les sorciers dans leur cœur en ces temps sombres. La Haute Astromancienne Filonia Perls de l'Ordre bleu l'a acquis en 2498 CI, lors d'une vente aux enchères privée d'artefacts magiques à Marienburg.\n\nTout démon portant l'anneau peut ignorer le Trait de créature Instable et ne peut pas être détecté par le Talent Seconde vue. De plus, comme la magie du démon ne peut pas être détectée par Seconde vue avant d'être lancée, ses sorts ne peuvent pas être dissipés par d'autres Personnages.\n\nLes mortels portant l'anneau gagnent à la place tous les effets du sort Aura ordinaire.\n\nMalheureusement, comme l'anneau est maintenant, et depuis de nombreuses années, imprégné des énergies démoniaques de Gideon, il est dangereux. Pour chaque mois pendant lequel il est porté par un mortel, un Test de **Résistance** à une exposition mineure à la Corruption doit être effectué. Cette souillure ne peut être supprimée que par de rares rituels et sorts de du Domaine de la Lumière.",
+    "price": null,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 148,
+      "note": "EDO 11 l.247-263"
+    }
   }
 ]

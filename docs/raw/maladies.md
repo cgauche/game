@@ -504,7 +504,7 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.4-160) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `mapRouteSchema`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `applyOnFailInline`, +22 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
+- `MSRC 16` (l.4-160) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `mapRouteSchema`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `applyOnFailInline`, `crampes-abdominales`, +23 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
 - sans code : `MSRC 16` (l.35-47)
 
 ---
@@ -524,7 +524,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.109-111`) : Aucun remède à base d'herbes n'est plus efficace qu'un autre. Seul vrai traitement : s'hydrater (compenser la perte de liquides) et attendre.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.104-118) → `water-exposure`, `applyOnFailInline`, `crampes-abdominales`, `colique`, `tickDisease`, `vers-de-carie`, `vers-du-reik`, `GameOp`, `exposition-hydrique`, `SymptomCapabilities`, +1 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, +1 fichiers
+- `MSRC 16` (l.104-118) → `water-exposure`, `applyOnFailInline`, `crampes-abdominales`, `colique`, `vers-de-carie`, `tickDisease`, `vers-du-reik`, `GameOp`, `exposition-hydrique`, `SymptomCapabilities`, +1 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, +1 fichiers
 
 ---
 
@@ -549,7 +549,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** : aucun traitement connu. Toute tentative d'extraction chirurgicale fait plus de mal que de bien.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.121-144) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `crampes-abdominales`, `combatTestPenaltyParts`, `testStatePenaltyParts`, +10 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
+- `MSRC 16` (l.121-144) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `declareDisease`, +11 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
 
 ---
 
@@ -568,7 +568,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.160`) : infusion d'écorce de saule → bonus de +10 à tous les Tests résultant de la colique pendant 1d10 heures. Pas d'autre traitement.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.149-160) → `doc`, `Disease`, `resolveInlineFlowTest`, `crampes-abdominales`, `combatTestPenaltyParts`, `testStatePenaltyParts`, `firingOwnTestFailed`, `tickDisease`, `colique`, `EffectTrigger`, +7 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
+- `MSRC 16` (l.149-160) → `doc`, `Disease`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `declareDisease`, `testStatePenaltyParts`, `firingOwnTestFailed`, `colique`, `tickDisease`, +8 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
 
 ---
 

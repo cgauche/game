@@ -119,9 +119,9 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "creatures.json", champ: "features", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "grant", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "spec", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-30" },
-  { dataset: "creatures.json", champ: "grantGroups", occurrences: 87, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "creatures.json", champ: "grantGroups", occurrences: 89, lot: "L2/L3 #1473", date: "2026-08-26" }, // +2 : Mouton + Cochon ("bete"), EDOC 07 folio 24 (#673)
   { dataset: "creatures.json", champ: "monster", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "creatures.json", champ: "optionals", occurrences: 647, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "creatures.json", champ: "optionals", occurrences: 649, lot: "L2/L3 #1473", date: "2026-08-26" }, // +2 : Trait Entêté optionnel sur Âne + Mule, EDOC 07 folio 22 (#673)
   { dataset: "creatures.json", champ: "remove", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "skills", occurrences: 5982, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "spells", occurrences: 599, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -336,7 +336,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "traits.json", champ: "markMutations", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "of", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "ops", occurrences: 20, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "traits.json", champ: "passive", occurrences: 48, lot: "L1b #1467", date: "2026-08-28" },
+  { dataset: "traits.json", champ: "passive", occurrences: 49, lot: "L1b #1467", date: "2026-08-28" }, // +1 : Trait Entêté (charMod FM), EDOC 07 folio 22 (#673)
   { dataset: "traits.json", champ: "subject", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "suppressesCapabilities", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "value", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -353,7 +353,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "trappings.json", champ: "shape", occurrences: 43, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "siegeRig", occurrences: 18, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "subject", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "trappings.json", champ: "subType", occurrences: 440, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "trappings.json", champ: "subType", occurrences: 441, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "weaponGroup", occurrences: 22, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "skill", occurrences: 29, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traumas.json", champ: "byProsthesis", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },

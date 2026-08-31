@@ -161,6 +161,9 @@ describe('trappings — Disponibilité : les 4 classes, la marque « ND », ou r
         'dague-voleuse-de-chance', 'dechireur-de-sociabilite', 'epee-de-retenue',
         'fibule-d-attraction-non-souhaitee', 'fleau-d-attention-non-sollicitee', 'hache-de-fureur-incessante',
         'pistolet-de-solitude-involontaire', 'poings-d-ignominie',
+        // Anneau d'Opsianon (EDO 11 l.247-263) : objet d'intrigue décrit en prose, hors de toute table
+        // d'équipement — l'Appendice ne lui imprime ni Prix ni Disponibilité.
+        'anneau-d-opsianon',
       ].sort(),
     );
   });

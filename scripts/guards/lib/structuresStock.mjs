@@ -96,7 +96,7 @@ export const STRUCTURES_FORMES = [
   { concept: "monnaie", dataset: "arene-projet.json", champ: "effect", signature: "gold+…", statut: "divergente", strate: "Valeur", occurrences: 17, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "monnaie", dataset: "arene-projet.json", champ: "effect", signature: "silver+…", statut: "divergente", strate: "Valeur", occurrences: 16, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "monnaie", dataset: "barge-du-sel-projet.json", champ: "effect", signature: "gold+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "creatures.json", champ: "price", signature: "bronze,gold,silver", statut: "historique", strate: "Valeur", occurrences: 10, lot: "L4 #1463", date: "2026-08-23" },
+  { concept: "monnaie", dataset: "creatures.json", champ: "price", signature: "bronze,gold,silver", statut: "historique", strate: "Valeur", occurrences: 13, lot: "L4 #1463", date: "2026-08-23" }, // +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673)
   { concept: "monnaie", dataset: "crew-roles.json", champ: "daily", signature: "bronze,gold,silver", statut: "historique", strate: "Valeur", occurrences: 9, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "monnaie", dataset: "crew-roles.json", champ: "weekly", signature: "bronze,gold,silver", statut: "historique", strate: "Valeur", occurrences: 9, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "monnaie", dataset: "loup-et-saumure-projet.json", champ: "effect", signature: "gold+…", statut: "divergente", strate: "Valeur", occurrences: 7, lot: "L4 #1463", date: "2026-08-23" },
@@ -509,7 +509,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "op+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "tableId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "traitId+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "traits.json", champ: "passive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 20, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "traits.json", champ: "passive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 21, lot: "L3 #1463", date: "2026-08-23" }, // +1 : Trait Entêté (char force-mentale), EDOC 07 folio 22 (#673)
   { concept: "reference", dataset: "traits.json", champ: "passive", signature: "attackKind,subType+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "passive", signature: "mode+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "passive", signature: "spec,talentId+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-30", motif: "référence de TALENT" },
@@ -535,7 +535,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "trappings.json", champ: "shape", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 43, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "siegeRig", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 18, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "subject", signature: "condition+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "trappings.json", champ: "subType", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 440, lot: "L3 #1463", date: "2026-08-30", motif: "SOUS-TYPE d’objet" },
+  { concept: "reference", dataset: "trappings.json", champ: "subType", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 441, lot: "L3 #1463", date: "2026-08-30", motif: "SOUS-TYPE d’objet" },
   { concept: "reference", dataset: "trappings.json", champ: "weaponGroup", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 22, lot: "L3 #1463", date: "2026-08-30", motif: "référence de GROUPE d’armes" },
   { concept: "reference", dataset: "traumas.json", champ: "byProsthesis", signature: "art,trappingId", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traumas.json", champ: "byProsthesis", signature: "trappingId+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
@@ -678,8 +678,8 @@ export const STRUCTURES_DEFAUT = [
 ];
 
 export const STRUCTURES_HOMONYMES = [
-  { cle: "char", classes: ["object","string"], occurrences: 861, lot: "L4 #1463", date: "2026-08-23" },
-  { cle: "price", classes: ["null","number","object","string"], occurrences: 516, lot: "L4 #1463", date: "2026-08-23" }, // +1 : Anneau d'Opsianon, EDO 11 folio 148 (#672)
+  { cle: "char", classes: ["object","string"], occurrences: 864, lot: "L4 #1463", date: "2026-08-23" }, // +3 : profils vides Mouton + Cochon (object) + Trait Entêté (string), EDOC 07 folios 22 et 24 (#673)
+  { cle: "price", classes: ["null","number","object","string"], occurrences: 519, lot: "L4 #1463", date: "2026-08-23" }, // +1 : Anneau d'Opsianon, EDO 11 folio 148 (#672) ; +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673)
   { cle: "cost", classes: ["number","object","string"], occurrences: 93, lot: "L4 #1463", date: "2026-08-23" },
   { cle: "count", classes: ["number","object"], occurrences: 92, lot: "L4 #1463", date: "2026-08-23" },
 ];
@@ -848,7 +848,7 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualitySubtypes.json", chemin: "(entrées)", entrees: 3, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualityTypes.json", chemin: "(entrées)", entrees: 2, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 8, lot: "L1d #1469", date: "2026-08-23" },
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 9, lot: "L1d #1469", date: "2026-08-23" }, // +1 : dette « Option Attraper Froid » (mue pneumonie), EDOC 09 (#674)
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "reliefMaterials.json", chemin: "(entrées)", entrees: 6, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "renduMonte.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "river-perils.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
@@ -900,7 +900,7 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "barge-du-sel-projet.json", champ: "statblock", signature: "char,label,skills,type", motif: "clé réservée", occurrences: 4, lot: "#1553", date: "2026-08-23" },
   { dataset: "careerLevels.json", champ: "trappings", signature: "count,text", motif: "clé réservée", occurrences: 28, lot: "#1553", date: "2026-08-23" },
   { dataset: "classes.json", champ: "trappings", signature: "count,text", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
-  { dataset: "creatures.json", champ: "purchase", signature: "availability,price", motif: "clé réservée", occurrences: 10, lot: "#1553", date: "2026-08-23" },
+  { dataset: "creatures.json", champ: "purchase", signature: "availability,price", motif: "clé réservée", occurrences: 13, lot: "#1553", date: "2026-08-23" }, // +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673)
   { dataset: "crew-roles.json", champ: "wage", signature: "daily,source,weekly", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "details.json", champ: "texts", signature: "age,ambitionLong,ambitionShort,nom,taille", motif: "identité non résolue", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "disponibilite.json", champ: "barterRatios", signature: "give,ratios,source", motif: "clé réservée", occurrences: 4, lot: "#1553", date: "2026-08-23" },
@@ -1032,7 +1032,7 @@ export const STRUCTURES_OPS = [
   { op: "charMod", signature: "char,mod,op", dataset: "stars.json", occurrences: 42, lot: "L1c #1468", date: "2026-08-23" },
   { op: "charMod", signature: "char,mod,op", dataset: "spells.json", occurrences: 32, lot: "L1c #1468", date: "2026-08-23" },
   { op: "charMod", signature: "char,mod,op", dataset: "symptoms.json", occurrences: 30, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "charMod", signature: "char,mod,op", dataset: "traits.json", occurrences: 20, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "charMod", signature: "char,mod,op", dataset: "traits.json", occurrences: 21, lot: "L1c #1468", date: "2026-08-23" }, // +1 : Trait Entêté (+20 FM), EDOC 07 folio 22 (#673)
   { op: "charMod", signature: "char,mod,op", dataset: "traumas.json", occurrences: 12, lot: "L1c #1468", date: "2026-08-23" },
   { op: "charMod", signature: "char,mod,op", dataset: "talents.json", occurrences: 10, lot: "L1c #1468", date: "2026-08-23" },
   { op: "charMod", signature: "char,mod,op", dataset: "trappings.json", occurrences: 9, lot: "L1c #1468", date: "2026-08-23" },
