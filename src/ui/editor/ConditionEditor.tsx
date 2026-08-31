@@ -1,7 +1,9 @@
 /**
  * ÉDITEUR DE CONDITION — l'algèbre CLOSE de `Condition` (flag / créneau horaire / ET / OU / NON),
  * récursive. SOURCE UNIQUE de l'édition des conditions : le `when` d'un trigger / d'un choix de
- * dialogue (où « Toujours » = pas de condition → `undefined`) ET le nœud `si` d'un Flow. Remplace les
+ * dialogue / d'un lieu ou d'une route de la carte du monde (où « Toujours » = pas de condition →
+ * `undefined`) ET le nœud `si` d'un Flow. La prop `kinds` BORNE l'offre au contexte d'évaluation du
+ * porteur (ex. `CONDITION_KINDS_CARTE`) ; absente = toute l'algèbre. Remplace les
  * adaptateurs plats `whenFlag/whenWindow/buildWhen` (qui n'exprimaient que « flag ET créneau »).
  */
 import type { Condition, ActorRef, ActorField, CompareOp, CompareSubject } from '../../state/flow';
@@ -179,11 +181,18 @@ function TimeWindowFields({ window: w, onChange }: { window: TemporalCondition; 
   );
 }
 
-export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange: (c: Condition) => void }) {
+export function ConditionEditor({ cond, onChange, kinds }: {
+  cond: Condition;
+  onChange: (c: Condition) => void;
+  /** Sous-ensemble de kinds offert (défaut : tous). Le porteur du `when` le fournit quand son
+   *  contexte d'évaluation n'en couvre qu'une partie — ex. `CONDITION_KINDS_CARTE`. */
+  kinds?: ReadonlySet<Condition['kind']>;
+}) {
+  const options = kinds ? KIND_OPTIONS.filter(([k]) => kinds.has(k)) : KIND_OPTIONS;
   return (
     <div className="cond-node tf-row">
       <select className="cond-kind" value={cond.kind} onChange={(e) => onChange(recast(cond, e.target.value as Condition['kind']))}>
-        {KIND_OPTIONS.map(([k, l]) => (
+        {options.map(([k, l]) => (
           <option key={k} value={k}>{l}</option>
         ))}
       </select>
@@ -413,7 +422,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
         <div className={`cond-children ${cond.kind}`}>
           {cond.of.map((c, i) => (
             <div className="cond-child" key={i}>
-              <ConditionEditor cond={c} onChange={(nc) => onChange({ ...cond, of: cond.of.map((x, j) => (j === i ? nc : x)) })} />
+              <ConditionEditor cond={c} kinds={kinds} onChange={(nc) => onChange({ ...cond, of: cond.of.map((x, j) => (j === i ? nc : x)) })} />
               <button className="btn small danger" title="Retirer cette sous-condition" onClick={() => onChange({ ...cond, of: cond.of.filter((_, j) => j !== i) })}>✕</button>
             </div>
           ))}
@@ -424,7 +433,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
       )}
       {cond.kind === 'not' && (
         <div className="cond-children not">
-          <ConditionEditor cond={cond.of} onChange={(nc) => onChange({ kind: 'not', of: nc })} />
+          <ConditionEditor cond={cond.of} kinds={kinds} onChange={(nc) => onChange({ kind: 'not', of: nc })} />
         </div>
       )}
     </div>
@@ -432,6 +441,10 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
 }
 
 /** Variante pour un `when` OPTIONNEL : « Toujours » ↔ `undefined` (pas de condition). */
-export function WhenEditor({ when, onChange }: { when?: Condition; onChange: (c: Condition | undefined) => void }) {
-  return <ConditionEditor cond={when ?? ALWAYS} onChange={(c) => onChange(c.kind === 'always' ? undefined : c)} />;
+export function WhenEditor({ when, onChange, kinds }: {
+  when?: Condition;
+  onChange: (c: Condition | undefined) => void;
+  kinds?: ReadonlySet<Condition['kind']>;
+}) {
+  return <ConditionEditor cond={when ?? ALWAYS} kinds={kinds} onChange={(c) => onChange(c.kind === 'always' ? undefined : c)} />;
 }

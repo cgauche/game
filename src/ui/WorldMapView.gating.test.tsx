@@ -17,6 +17,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { WorldMapView } from './WorldMapView';
 import { useGame } from '../state/store';
 import { parseProject, type WorldMap } from '../state/worldMap';
+import { VB_W, VB_H } from './worldMapViewport';
 import { buildApi } from '../state/devtools';
 import { emptyScene, type Scene } from '../state/scene';
 import bargeDuSelProjet from '../scenes/barge-du-sel/barge-du-sel-projet.json';
@@ -177,6 +178,88 @@ describe('recette — `__wfrp.routes()` décrit EXACTEMENT les tracés cliquable
       traces[1].parentElement!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(container.querySelector(`#wm-route-fermee-${annonce[1].id}-reason`)).toBeTruthy();
+  });
+});
+
+/** Carte du CH.1 réel en réduction : un SEUL voisin, non révélé, posé LOIN du lieu courant. */
+const carteMuette: WorldMap = {
+  id: 'ch1',
+  label: 'Chapitre 1',
+  places: [
+    { id: 'auberge', label: 'La Diligence', pos: { x: 10, y: 30 }, scene: 's-auberge' },
+    {
+      id: 'altdorf',
+      label: 'Altdorf',
+      pos: { x: 90, y: 60 },
+      scene: 's-altdorf',
+      when: { kind: 'flag', expr: 'edo-ch1-altdorf-revelee' },
+    },
+  ],
+  routes: [{ id: 'route-la-diligence-altdorf', a: 'auberge', b: 'altdorf', km: 180, modes: ['pied'] }],
+};
+
+/** Vue courante (zoom/pan) lue sur le groupe de cadrage. */
+function vue(): { panX: number; panY: number; z: number } {
+  const m = /translate\(([-\d.]+) ([-\d.]+)\) scale\(([-\d.]+)\)/.exec(cadrage());
+  if (!m) throw new Error(`cadrage illisible : ${JSON.stringify(cadrage())}`);
+  return { panX: Number(m[1]), panY: Number(m[2]), z: Number(m[3]) };
+}
+
+/** Position ÉCRAN (unités du viewBox rendu) d'un médaillon : le cadre visible est [0,VB_W]×[0,VB_H]. */
+function marqueurEcran(label: string): { x: number; y: number } {
+  const g = container.querySelector(`g[aria-label="${label}"]`);
+  if (!g) throw new Error(`médaillon « ${label} » absent du DOM`);
+  const m = /translate\(([-\d.]+) ([-\d.]+)\)/.exec(g.getAttribute('transform') ?? '');
+  if (!m) throw new Error(`médaillon « ${label} » sans transform`);
+  const v = vue();
+  return { x: v.panX + Number(m[1]) * v.z, y: v.panY + Number(m[2]) * v.z };
+}
+
+describe('AIDE de la colonne — elle se dit sur les routes DESSINÉES, jamais sur les routes brutes', () => {
+  it('destination non révélée : aucun tracé cliquable, et le message DIT l’absence', async () => {
+    useGame.setState({ worldMap: carteMuette, flags: {} });
+    await monter({ hereSceneId: 's-auberge' });
+    expect(container.querySelectorAll('path[pointer-events="stroke"]')).toHaveLength(0);
+    expect(container.textContent).toContain('Aucune route ne part de ce lieu.');
+    expect(container.textContent).not.toContain('Cliquez une destination CERCLÉE');
+  });
+
+  it('destination révélée : le médaillon existe, et le message redevient l’invitation au clic', async () => {
+    useGame.setState({ worldMap: carteMuette, flags: { 'edo-ch1-altdorf-revelee': true } });
+    await monter({ hereSceneId: 's-auberge' });
+    expect(container.querySelectorAll('path[pointer-events="stroke"]')).toHaveLength(1);
+    expect(container.textContent).toContain('Cliquez une destination CERCLÉE');
+    expect(container.textContent).not.toContain('Aucune route ne part de ce lieu.');
+  });
+});
+
+describe('RÉVÉLATION en cours de partie — la vue se re-cadre pour que le lieu neuf naisse DANS le cadre', () => {
+  it('le médaillon révélé est à l’ÉCRAN sans toucher « Recentrer » (recette #684)', async () => {
+    useGame.setState({ worldMap: carteMuette, flags: {} });
+    await monter({ hereSceneId: 's-auberge' });
+    const avant = vue();
+
+    await act(async () => {
+      useGame.setState({ flags: { 'edo-ch1-altdorf-revelee': true } });
+    });
+
+    // Le lieu neuf est cliquable LÀ OÙ LE JOUEUR REGARDE, pas hors du parchemin (mesure de recette :
+    // sans recadrage, le médaillon naissait au-delà du bord droit, présent au DOM et inatteignable).
+    const p = marqueurEcran('Altdorf');
+    expect([p.x >= 0 && p.x <= VB_W, p.y >= 0 && p.y <= VB_H], `médaillon à ${JSON.stringify(p)} hors du cadre 0..${VB_W} × 0..${VB_H}`)
+      .toEqual([true, true]);
+    // Et la caméra a bien BOUGÉ pour cela (le cadrage d'un lieu isolé ne cadre pas deux lieux écartés).
+    expect(vue()).not.toEqual(avant);
+  });
+
+  it('sans révélation, la caméra ne bouge pas d’elle-même (aucun recadrage à chaque rendu)', async () => {
+    useGame.setState({ worldMap: carteMuette, flags: {} });
+    await monter({ hereSceneId: 's-auberge' });
+    const avant = vue();
+    await act(async () => {
+      useGame.setState({ flags: { 'un-flag-sans-effet-sur-la-carte': true } });
+    });
+    expect(vue()).toEqual(avant);
   });
 });
 

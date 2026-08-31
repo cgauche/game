@@ -307,7 +307,10 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "criticals.json", champ: "perRound", signature: "versTraumaId", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "criticals.json", champ: "recoveryPenalty", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "criticals.json", champ: "subject", signature: "condition+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "diligence-projet.json", champ: "a", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-31" },
+  { concept: "reference", dataset: "diligence-projet.json", champ: "b", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-31" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 20, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "diligence-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-31" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "walls", signature: "appearance,structure+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "walls", signature: "structure+…", statut: "divergente", strate: "Référence", occurrences: 662, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "domains.json", champ: "amount", signature: "bonusOf", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
@@ -679,7 +682,6 @@ export const STRUCTURES_DEFAUT = [
   { dataset: "arene-projet.json", cle: "activeAxes", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", cle: "activeAxes", date: "2026-08-26" },
   { dataset: "diligence-projet.json", cle: "activeAxes", date: "2026-08-26" },
-  { dataset: "diligence-projet.json", cle: "worldMap", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", cle: "activeAxes", date: "2026-08-26" },
   // `auteur` : champ d'identité de campagne (#766), optionnel, qu'AUCUN des 4 projets committés ne
   // porte (ils sont tous de première main). Ces 4 lignes ne sont pas une dette NEUVE : le champ

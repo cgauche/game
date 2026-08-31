@@ -13,6 +13,8 @@ import { type WorldMap, type MapRoute, placeById } from '../../state/worldMap';
 import { type TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
 import { EffectList, type Ctx } from './EffectList';
 import { RefSelect } from './worldMapPickers';
+import { WhenEditor } from './ConditionEditor';
+import { CONDITION_KINDS_CARTE } from '../../data/schemas/defs-scenes/worldmap';
 
 export function WorldMapRoutePanel({ route, map, scenes, updRoute, effCtx, toggleMode }: {
   route: MapRoute;
@@ -52,6 +54,30 @@ export function WorldMapRoutePanel({ route, map, scenes, updRoute, effCtx, toggl
               <option value={route.b}>Depuis {placeById(map, route.b)?.label ?? route.b}</option>
             </select>
           </label>
+          <div className="mini-title" title="Le trajet n'est proposé que si la condition est vraie ; sinon il reste à l'écran, refusé, avec sa raison.">Praticable si</div>
+          {/* Retirer la condition retire la raison AVEC elle : `refus` n'a pas d'objet sans `when`. */}
+          <WhenEditor
+            when={route.when}
+            kinds={CONDITION_KINDS_CARTE}
+            onChange={(when) => updRoute(route.id, when ? { when } : { when: undefined, refus: undefined })}
+          />
+          {route.when && (
+            <>
+              <label className="ed-field">Raison du refus (montrée au joueur quand la condition est fausse)
+                <input
+                  value={route.refus ?? ''}
+                  placeholder="ex. Le pont est coupé par la crue."
+                  onChange={(e) => updRoute(route.id, { refus: e.target.value || undefined })}
+                />
+              </label>
+              {!route.refus?.trim() && (
+                <p className="chip tone-danger" role="alert">
+                  Raison du refus exigée dès qu’une condition est posée : sans elle le projet est refusé au chargement
+                  (<code>mapRouteSchema</code>).
+                </p>
+              )}
+            </>
+          )}
           <div className="mini-title">Modes de voyage</div>
           {(['pied', ...TRAVEL_VEHICLES.map((v) => v.id)] as TravelMode[]).map((mode) => (
             <label key={mode} className="ed-check">

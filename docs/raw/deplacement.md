@@ -781,7 +781,7 @@ Force du vent tirée au début, mise à jour à l'aube/midi/crépuscule/minuit (
 **Voir aussi :** [Météo de la Mer des Griffes (MDG)](#météo-de-la-mer-des-griffes-mdg), [Détroits et tourbillons (MDG)](#détroits-et-tourbillons-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.246-304) → `sea-weather`, `windDirectionSchema`, `WorldMapRoutePanel`, `carte`, `MapRoute`, `OrientationOutcome`, `aucune`, `orientationOutcome`, `legeres`, `sea-navigation`, +27 — `src/data/flow-stakes.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, +7 fichiers
+- `MDG 13` (l.246-304) → `sea-weather`, `windDirectionSchema`, `carte`, `WorldMapRoutePanel`, `MapRoute`, `OrientationOutcome`, `aucune`, `orientationOutcome`, `legeres`, `sea-navigation`, +27 — `src/data/flow-stakes.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, +7 fichiers
 
 ---
 
@@ -825,7 +825,7 @@ Adaptation des règles de Poursuite terrestres à plus grande échelle. Sauf int
 **Voir aussi :** [`deplacement.md`](deplacement.md#poursuites) (Poursuite terrestre LdB 15), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.354-420) → `portProfileSchema`, `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `sea-navigation`, `lighthouseOrientationDR`, `WorldMapPlacePanel`, `pursuitLowMPenalty`, `pursuitDistanceGain`, +12 — `src/data/flow-stakes.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, +10 fichiers
+- `MDG 13` (l.354-420) → `portProfileSchema`, `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `sea-navigation`, `lighthouseOrientationDR`, `pursuitLowMPenalty`, `WorldMapPlacePanel`, `pursuitDistanceGain`, +12 — `src/data/flow-stakes.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, +10 fichiers
 
 ---
 

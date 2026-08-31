@@ -182,7 +182,11 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
 // prolongée de 1d10 jours ») devient une propriété de `maladies.json`, et son temps s'écrit à la
 // graphie DÉJÀ posée par `incubation`/`duration` : `reExposition {prolonge}` + `prolonge {dice,unit}`
 // (le `DiseaseTime` du fichier). Les deux signatures NOMMÉES par la garde sont ces deux enveloppes.
-const PLAFOND_HORS_STRATE = 1144;
+// #684 L4 (1144ⅆ1146) : AUCUNE structure neuve — le premier tronçon de carte du chapitre 1 pose deux
+// objets aux formes DÉJÀ déclarées par le schéma de carte (`defs-scenes/worldmap.ts`) : le gating de
+// nœud `when {expr,kind}` (l'algèbre `Condition` du moteur) et le Déplacement d'auteur par mode
+// `speed {diligence}` (`MapRoute.speed`). Les deux signatures NOMMÉES par la garde sont ces deux-là.
+const PLAFOND_HORS_STRATE = 1146;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -458,7 +462,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `otherwise`, tous deux `disease,symptomId+…`). Chacune est l'INSTANCE d'une famille déjà
       // stockée et rangée dans son lot (L3 pour les 3 références, L4 pour le Test) : donnée neuve, pas
       // forme neuve.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 538],
+      // Cliquet REMONTÉ 538 → 541 (#684 L4, 2026-08-31) : le premier tronçon de carte du chapitre 1
+      // fait ENTRER `diligence-projet.json` dans la strate des références de CARTE — `a`, `b`, `scene`
+      // en `id-nu`, les trois lignes que les trois autres projets portent déjà pour leur worldMap,
+      // rangées dans le MÊME lot L3. Donnée neuve à la forme déjà stockée, pas forme neuve : leur
+      // extinction est celle de la fabrique de référence du schéma de carte (L2/L3 #1473), pour les
+      // quatre projets à la fois.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 541],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -470,7 +480,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // optionnelle, portée par 0 des 4 projets committés) vivait sous la poche `meta`, où il lui
       // échappait. L'aplatissement de l'enveloppe le SURFACE sur les 4 documents. La donnée est
       // INCHANGÉE : aucun projet n'en portait avant, aucun n'en porte après.
-      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 27],
+      // Cliquet DESCENDU 27 → 26 (#684 L4, 2026-08-31) : `diligence-projet.json › worldMap` cesse
+      // d'être un déclaré-jamais-observé — le document PORTE sa carte. Le cliquet suit la baisse.
+      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 26],
       // Cliquet DESCENDU 6 → 5 : le stock est à 5 depuis un lot antérieur et la marge n'avait pas été
       // reprise. Aucune raison de garder un cran libre : il servirait à absorber un homonyme neuf.
       // … et 5 → 4 (L2 #1548, commit 3d) : l'homonyme `skill` MEURT — la clé n'a plus qu'UNE classe
@@ -630,7 +642,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 386 → 389 (#674) : les 3 références de la Pneumonie/du Rhume commun — `mutation`
       // (maladie visée), `onFail` et `otherwise` (maladie + symptôme de chaque op). Cf. le cliquet
       // `STRUCTURES_FORMES` ci-dessus.
-      'L3 #1463': 389,
+      // … puis 389 → 392 (#684 L4) : `a`, `b`, `scene` du premier tronçon de carte du chapitre 1 —
+      // les trois références de CARTE que les trois autres projets portent déjà, même lot.
+      'L3 #1463': 392,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
@@ -895,7 +909,8 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // #674 : +2 ops authorées (`aggravateSymptom` + son échelon `grantSymptom`, cycle quotidien de la
     // Pneumonie, EDOC 08 l.104-108).
     expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2187);
-    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(185);
+    // #684 L4 : +1 Condition sans `op` — le `when` de révélation d'Altdorf sur la carte du chapitre 1.
+    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(186);
   });
 });
 

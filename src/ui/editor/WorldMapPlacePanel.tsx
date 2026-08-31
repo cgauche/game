@@ -18,6 +18,8 @@ import { LAND_CARGO_ENTRIES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '
 import { CARGOES, CARGO_ENTRIES, isEchangeable, type CargoEntry, type PortProfile } from '../../engine/seaVoyage';
 import { navalPorts, findNavalPortById, lieuxServices } from '../../data';
 import { IconField, BackdropField, RefSelect } from './worldMapPickers';
+import { WhenEditor } from './ConditionEditor';
+import { CONDITION_KINDS_CARTE } from '../../data/schemas/defs-scenes/worldmap';
 
 /** Libellés des Tailles de communauté (MSRC 13 l.44-50, indices 1-4). */
 const TAILLE_LABELS = ['Hameau', 'Village', 'Ville', 'Grande ville'];
@@ -70,6 +72,9 @@ export function WorldMapPlacePanel({ place, scenes, updPlace }: {
           <label className="ed-field">Point d'entrée (optionnel)
             <input value={place.entry ?? ''} onChange={(e) => updPlace(place.id, { entry: e.target.value || undefined })} />
           </label>
+
+          <div className="mini-title" title="Le lieu n'existe sur la carte qu'une fois la condition vraie : ni médaillon, ni route, ni voyage vers lui. « Toujours » = lieu toujours visible.">Visible si</div>
+          <WhenEditor when={place.when} kinds={CONDITION_KINDS_CARTE} onChange={(when) => updPlace(place.id, { when })} />
 
           {/* ── Services du lieu (auberge/temple/forgeron/guilde…, catalogue lieux-services.json #343) ── */}
           <div className="mini-title">Services du lieu</div>

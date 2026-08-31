@@ -122,6 +122,13 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   /** Routes PRATICABLES : la logique de voyage (sélection, départ, cadrage cliquable) n'en connaît pas d'autres. */
   const routes = useMemo(() => etats.filter((e) => e.ouverte).map((e) => e.route), [etats]);
   const routesFermees = useMemo(() => etats.filter((e) => !e.ouverte).map((e) => e.route), [etats]);
+  /** Routes DESSINÉES depuis ici : praticables ET menant à un lieu EXISTANT — ce que le joueur peut
+   *  réellement cliquer. Un tronçon vers un lieu non révélé n'est ni tracé ni médaillé : l'aide de la
+   *  colonne se dit sur CETTE liste, jamais sur les routes brutes (elle promettrait un cercle absent). */
+  const routesDessinees = useMemo(
+    () => (here ? routes.filter((r) => placeVisible.has(otherEnd(r, here.id))) : []),
+    [routes, placeVisible, here],
+  );
 
   // Anti-chevauchement : positions de RENDU décluttérées (les `pos` d'authoring restent intacts).
   // Le repère de rendu est celui du viewBox (y aplati par 0.64) → l'écartement travaille dessus.
@@ -423,6 +430,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           paths={mapPaths}
           markers={mapMarkers}
           overlay={mapOverlay}
+          refitAt={places.length}
         />
       </div>
 
@@ -637,7 +645,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             {farPlace && here
               ? `Aucune route directe vers ${farPlace.label} depuis ${here.label} — voyagez d'étape en étape (lieux cerclés).`
               : here
-                ? routes.length
+                ? routesDessinees.length
                   ? 'Cliquez une destination CERCLÉE (ou sa route) pour préparer le voyage.'
                   : 'Aucune route ne part de ce lieu.'
                 : 'Ce lieu ne figure pas sur la carte — rejoignez un lieu connu pour voyager.'}

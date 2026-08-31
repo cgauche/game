@@ -9,6 +9,7 @@
 import { z } from 'zod';
 import { effectSchema } from './effets';
 import { conditionSchema } from '../grammaire/mecanique';
+import type { Condition } from '../../../engine/flowCore';
 
 /** `TravelMode` (`engine/travel.ts`) — `'pied'`/`'monture'` ou id de `vehicles.json`. */
 export const travelModeSchema = z.string();
@@ -104,8 +105,10 @@ export const placePoiSchema = z
  * (`src/engine/flowCore.ts`) les rend alors FAUX : un lieu disparaîtrait de la carte, ou un trajet
  * se fermerait, EN SILENCE et sans qu'aucune donnée ne soit fautive. Le sous-ensemble se vérifie
  * kind par kind dans `evalCondition` ; tout kind non listé est REFUSÉ à l'authoring (fail-fast).
+ * Exporté : les panneaux de carte du studio en DÉRIVENT l'offre de leur `ConditionEditor`
+ * (prop `kinds`), au lieu d'une seconde liste recopiée dans l'UI.
  */
-const CONDITION_KINDS_CARTE = new Set([
+export const CONDITION_KINDS_CARTE: ReadonlySet<Condition['kind']> = new Set<Condition['kind']>([
   'always', 'flag', 'time', 'hasItem', 'money', 'partyDead',
   'skill', 'career', 'species', 'status',
   'all', 'any', 'not',
@@ -115,7 +118,8 @@ const CONDITION_KINDS_CARTE = new Set([
 function kindsHorsCarte(cond: unknown, out: Set<string> = new Set()): Set<string> {
   if (!cond || typeof cond !== 'object') return out;
   const c = cond as { kind?: unknown; of?: unknown };
-  if (typeof c.kind === 'string' && !CONDITION_KINDS_CARTE.has(c.kind)) out.add(c.kind);
+  // La Condition arrive ICI encore NON VALIDÉE (`unknown`) : son `kind` est une chaîne quelconque.
+  if (typeof c.kind === 'string' && !(CONDITION_KINDS_CARTE as ReadonlySet<string>).has(c.kind)) out.add(c.kind);
   if (Array.isArray(c.of)) for (const sub of c.of) kindsHorsCarte(sub, out);
   else if (c.of) kindsHorsCarte(c.of, out);
   return out;

@@ -66,14 +66,26 @@ export interface MapCanvasProps {
   /** Clic sur le FOND (hors tracé/marqueur) en coordonnées logiques du viewBox — placement d'auteur
    *  (éditeur, #345 : positionner un POI). Absent = fond non cliquable (comportement historique). */
   onBackgroundClick?: (p: { x: number; y: number }) => void;
+  /** Jeton de RECADRAGE : dès qu'il AUGMENTE (l'appelant vient d'ouvrir du contenu — un lieu révélé),
+   *  la vue rejoue `computeFit`, exactement comme le bouton « Recentrer ». Jamais à chaque rendu : sans
+   *  ça, le contenu neuf peut naître HORS du cadre courant, présent au DOM et incliquable. */
+  refitAt?: number;
 }
 
-export function MapCanvas({ computeFit, background, chrome, paths = [], markers = [], overlay, className, ariaLabel, onBackgroundClick }: MapCanvasProps) {
+export function MapCanvas({ computeFit, background, chrome, paths = [], markers = [], overlay, className, ariaLabel, onBackgroundClick, refitAt }: MapCanvasProps) {
   const [view, setView] = useState<Viewport>(computeFit);
   // computeFit change à chaque rendu (capture la sélection/les routes courantes) : on lit la DERNIÈRE
   // version au clic « recentrer », sans re-cadrer à chaque rendu.
   const fitRef = useRef(computeFit);
   fitRef.current = computeFit;
+
+  // Recadrage sur CROISSANCE du jeton (`refitAt`) : même cible que « Recentrer », jouée toute seule.
+  const refitRef = useRef(refitAt ?? 0);
+  useEffect(() => {
+    const avant = refitRef.current;
+    refitRef.current = refitAt ?? 0;
+    if ((refitAt ?? 0) > avant) setView(fitRef.current());
+  }, [refitAt]);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const ptrs = useRef(new Map<number, { x: number; y: number }>());

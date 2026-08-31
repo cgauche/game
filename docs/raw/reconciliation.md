@@ -64,7 +64,7 @@ _Aucune._
 - `src/state/seaActivities.ts:239` (l.71) — // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
 
 ### NADJ 4 — 7 réf(s) code, 0 dans l'Atlas
-- `src/data/schemas/defs-scenes/scene.ts:104` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
+- `src/data/schemas/defs-scenes/scene.ts:103` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
 - `src/state/scene.ts:124` (l.72) — *  Le patron est AUTHORÉ dans la source, pas inventé : `NADJ 04 l.72` — « Elle jouera une partie de
 - `src/state/tavern-npc-a-fiche.test.ts:6` (l.72) — *  · `NADJ 04 l.72` — « Elle jouera une partie de L'Impératrice écarlate avec quiconque lui propose,
 - `src/state/tavern-npc-a-fiche.test.ts:97` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
@@ -99,9 +99,9 @@ _Aucune._
 - … +1 autres
 
 ### MSRC 12 — 6/12 ligne(s) code hors couverture
-- l.85 — `src/data/index.ts:2437` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.85 — `src/data/index.ts:2447` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.107 — `src/engine/naval-traits.test.ts:300` — it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
-- l.111 — `src/data/index.ts:2437` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.111 — `src/data/index.ts:2447` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.117 — `src/engine/naval-traits.test.ts:303` — it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
 - l.137 — `src/data/schemas/defs/sea-weather.ts:108` — /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
 - l.140 — `src/engine/naval-traits.test.ts:190` — it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.140) ; converti −1 DR d’équipage', () => {

@@ -71,8 +71,9 @@ const loupEtSaumure = parseProject(loupEtSaumureProjet);
 const bargeDuSel = parseProject(bargeDuSelProjet);
 const diligence = parseProject(diligenceProjet);
 
-/** « La Diligence » — relais routier à deux niveaux, paquet éditeur d'une seule scène. Exposée à part
- *  (comme `areneCampaign`) pour que sa Scène se réutilise sans re-parser le paquet. */
+/** « La Diligence » — chapitre 1 de L'Ennemi Intérieur : paquet éditeur portant SES scènes
+ *  (`diligence.scenes`, la première étant l'entrée) et la carte du monde du chapitre. Exposée à part
+ *  (comme `areneCampaign`) pour que ses Scènes se réutilisent sans re-parser le paquet. */
 export const diligenceCampaign: BuiltinCampaign = {
   ...identiteDe(diligence, 'diligence-projet.json'),
   scenes: diligence.scenes,

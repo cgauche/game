@@ -105,7 +105,13 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // `grammaire/mecanique.ts`) ne déplace PAS ces lignes — même angle mort que `removeTrait.traitId`
 // ci-dessus : le scan mesure l'objet-op au champ porteur (`onFail`), le slot se projette sur
 // `disease`/`symptomId`. Ces lignes meurent avec le dernier segment-clé en L3 #1473, pas avant.
-const DETTE_ADOPTION_MAX = 340;
+// Cliquet REMONTÉ 340 → 344 (#684 L4, 2026-08-31) : le premier tronçon de carte du chapitre 1 fait
+// entrer `diligence-projet.json` dans les champs porteurs de la CARTE — `a`, `b`, `scene` (lieux et
+// route) et `modes` — plus un cran d'occurrences sur `tiles` (la scène d'arrivée). Ce sont les MÊMES
+// couples que les trois autres projets portent déjà pour leur worldMap : l'adoption de la fabrique
+// de référence se fait au schéma de carte (`defs-scenes/worldmap.ts`), en L2/L3 #1473, pour les
+// quatre projets à la fois.
+const DETTE_ADOPTION_MAX = 344;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

@@ -645,7 +645,7 @@ export function Editor({
       startSceneId,
       savedAt: Date.now(),
       published: pub,
-      project: { schema: CURRENT_PROJECT_SCHEMA, ...(identite ?? { type: 'statblock',}), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
+      project: { schema: CURRENT_PROJECT_SCHEMA, ...(identite ?? {}), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
     });
     if (!res.ok) {
       setSaveError(res.message);

@@ -175,8 +175,9 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
       wall && (structureAppearance(wall.structure).wallHeightM ?? WALL_H_M) === WALL_H_M)).toBe(true);
   });
 
-  it('une seule scène, 32×38, deux niveaux', () => {
-    expect(diligenceCampaign.scenes).toHaveLength(1);
+  it('le relais est la scène d’ENTRÉE, 32×38, deux niveaux ; la carte du chapitre 1 y ajoute l’arrivée', () => {
+    expect(diligenceCampaign.startSceneId).toBe('la-diligence');
+    expect(diligenceCampaign.scenes.map((s) => s.id)).toEqual(['la-diligence', 'altdorf-porte-sud']);
     expect(scene.id).toBe('la-diligence');
     expect(scene.dimensions).toEqual({ w: 32, h: 38 });
     expect([...new Set(scene.layers.map((l) => l.z))].sort()).toEqual([0, 1]);
