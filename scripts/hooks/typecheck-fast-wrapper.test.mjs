@@ -3,7 +3,7 @@
 // extrait) et ne jamais annoncer « 0 erreur(s) » quand le processus sort en échec.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, rmSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
@@ -31,13 +31,34 @@ function lance(base) {
   })
 }
 
-test('500 erreurs TS : toutes listées, entête exact, code de sortie propagé', () => {
-  const base = fauxDepot(
-    'for (let i = 1; i <= 500; i++) {\n' +
-      "  process.stdout.write(`src/f${i}.ts(1,1): error TS2322: erreur numero ${i}\\n`)\n" +
-      '}\n' +
-      'process.exit(2)\n',
-  )
+// Faux tsc FIDÈLE au flux réel : les 500 erreurs sortent en 5 paquets espacés (le dernier après
+// ~60 ms), donc un parent qui ne lirait qu'un chunk ou lirait sa capture avant l'exit sous-compte.
+// Et il reproduit la sémantique POSIX mesurée sur le runner ubuntu (CI run 33395726501, où seules
+// 172 des 500 lignes atteignaient le wrapper) : vers un TUBE les écritures sont asynchrones et le
+// `process.exit()` en abandonne la queue ; vers un FICHIER régulier elles sont synchrones et rien
+// n'est perdu. `fstatSync(1).isFile()` distingue les deux sur Windows comme sur POSIX.
+const FAUX_TSC_500 = [
+  "const { fstatSync } = require('fs')",
+  'const TOTAL = 500',
+  'const RETENUES_SUR_TUBE = 172',
+  'let versFichier = false',
+  'try { versFichier = fstatSync(1).isFile() } catch {}',
+  'const limite = versFichier ? TOTAL : RETENUES_SUR_TUBE',
+  'let i = 1',
+  'function paquet() {',
+  '  const fin = Math.min(i + 99, limite)',
+  '  for (; i <= fin; i++) {',
+  '    process.stdout.write(`src/f${i}.ts(1,1): error TS2322: erreur numero ${i}\\n`)',
+  '  }',
+  '  if (i <= limite) setTimeout(paquet, 15)',
+  '  else process.exit(2)',
+  '}',
+  'paquet()',
+  '',
+].join('\n')
+
+test('500 erreurs TS émises en paquets : toutes listées, entête exact, code de sortie propagé', () => {
+  const base = fauxDepot(FAUX_TSC_500)
   try {
     const run = lance(base)
     assert.equal(run.status, 2, `code de sortie non propagé : ${run.status}`)
@@ -45,6 +66,10 @@ test('500 erreurs TS : toutes listées, entête exact, code de sortie propagé',
     const listees = run.stdout.split(/\r?\n/).filter((l) => /error TS\d+/.test(l))
     assert.equal(listees.length, 500, `${listees.length} lignes listées au lieu de 500`)
     assert.match(run.stdout, /src\/f500\.ts\(1,1\): error TS2322: erreur numero 500/)
+    // La capture sur disque porte le MÊME compte que le résumé : elle est la sortie complète.
+    const capture = readFileSync(join(base, 'node_modules', '.cache', 'typecheck-last.txt'), 'utf8')
+    const capturees = capture.split(/\r?\n/).filter((l) => /error TS\d+/.test(l))
+    assert.equal(capturees.length, 500, `capture amputée : ${capturees.length} lignes sur 500`)
   } finally {
     rmSync(base, { recursive: true, force: true })
   }

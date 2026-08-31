@@ -3,7 +3,7 @@
 // part en fichier ; le résumé imprimé liste TOUTES les erreurs, jamais un extrait.
 // La porte de vérité reste `npm run typecheck` (full, `--incremental false`).
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { closeSync, mkdirSync, openSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -27,11 +27,21 @@ const args = [
 // sessions, le supprimer serait une course.
 if (full) args.push('--incremental', 'false')
 
-const run = spawnSync(process.execPath, args, { cwd: REPO, encoding: 'utf8' })
-const sortie = `${run.stdout ?? ''}${run.stderr ?? ''}`
-
 mkdirSync(CACHE, { recursive: true })
-writeFileSync(SORTIE, sortie, 'utf8')
+
+// tsc écrit DIRECTEMENT dans le fichier de capture (`stdio` sur un descripteur de FICHIER), jamais
+// dans un tube : les écritures d'un processus Node vers un fichier régulier sont synchrones sur
+// Windows comme sur POSIX, alors que vers un tube elles sont asynchrones sur POSIX — le
+// `process.exit()` de tsc en abandonne la queue et le résumé sous-compterait les erreurs.
+// Le fichier n'est lu qu'APRÈS la fin du processus : spawnSync ne rend la main qu'à l'exit.
+const fd = openSync(SORTIE, 'w')
+let run
+try {
+  run = spawnSync(process.execPath, args, { cwd: REPO, stdio: ['ignore', fd, fd] })
+} finally {
+  closeSync(fd)
+}
+const sortie = readFileSync(SORTIE, 'utf8')
 
 const lignes = sortie.split(/\r?\n/)
 const erreurs = lignes.filter((ligne) => /error TS\d+/.test(ligne))
@@ -39,21 +49,22 @@ const statut = run.status ?? 1
 
 // Un échec SANS erreur TS (tsc introuvable, plantage du processus) ne se résume jamais en
 // « 0 erreur(s) » : la cause brute est imprimée telle quelle.
+const rendu = []
 if (run.error) {
-  process.stdout.write(`typecheck:fast — ÉCHEC de lancement : ${run.error.message}\n`)
+  rendu.push(`typecheck:fast — ÉCHEC de lancement : ${run.error.message}`)
 } else if (statut !== 0 && erreurs.length === 0) {
-  const queue = lignes.filter((ligne) => ligne.trim() !== '').slice(-20)
-  process.stdout.write(`typecheck:fast — ÉCHEC (code ${statut}) sans erreur TS reconnue\n`)
-  for (const ligne of queue) process.stdout.write(`${ligne}\n`)
+  rendu.push(`typecheck:fast — ÉCHEC (code ${statut}) sans erreur TS reconnue`)
+  rendu.push(...lignes.filter((ligne) => ligne.trim() !== '').slice(-20))
 } else {
-  process.stdout.write(`typecheck:fast — ${erreurs.length} erreur(s)\n`)
-  for (const ligne of erreurs) process.stdout.write(`${ligne}\n`)
+  rendu.push(`typecheck:fast — ${erreurs.length} erreur(s)`)
+  rendu.push(...erreurs)
 }
-process.stdout.write(`sortie complète : ${SORTIE}\n`)
-process.stdout.write(
-  full
-    ? 'mode full (--incremental false)\n'
-    : 'mode incrémental — au doute : npm run typecheck (full)\n',
+rendu.push(`sortie complète : ${SORTIE}`)
+rendu.push(
+  full ? 'mode full (--incremental false)' : 'mode incrémental — au doute : npm run typecheck (full)',
 )
 
-process.exit(statut)
+// Même contrainte pour NOTRE propre sortie, qui part dans un tube (npm, CI) : `process.exit()`
+// l'amputerait sur POSIX. Le code de sortie se pose, la fin naturelle du processus vide le flux.
+process.stdout.write(`${rendu.join('\n')}\n`)
+process.exitCode = statut
