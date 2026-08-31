@@ -115,7 +115,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 ### Bestiaire
 | Fichier | Contient | Exposition (Codex — édition) |
 |---|---|---|
-| `creatures.json` | Bestiaire / PNJ (statblocs : `char`, `traits`, `skills`, `spells`, `trappings`…) (492 entrée(s)) | `creatures` — dataset `creatures` |
+| `creatures.json` | Bestiaire / PNJ (statblocs : `char`, `traits`, `skills`, `spells`, `trappings`…) (493 entrée(s)) | `creatures` — dataset `creatures` |
 
 ### Monde, voyage terrestre & temps
 | Fichier | Contient | Exposition (Codex — édition) |
