@@ -24,6 +24,7 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { neufsDe } from '../../scripts/migrations/replay.mjs';
 import { scan } from '../../scripts/guards/lib/grammaireGuard.mjs';
 import { GRAMMAIRE_STOCK } from '../../scripts/guards/lib/grammaireStock.mjs';
+import { ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
 import { defDe, enfantsDe, PROFONDEUR_MAX } from './schemas/grammaire/slots';
 import * as valeurs from './schemas/grammaire/valeurs';
 import * as reference from './schemas/grammaire/reference';
@@ -243,20 +244,29 @@ describe('`qualityRefSchema` — composé sur la SHAPE de `refSchema`, jamais pa
 
 describe('formes re-tapées et portes étendues — stock nominatif daté, DÉCROISSANT', () => {
   const sites = trouvailles();
+  const ecarts = ecartsDeStock({
+    observe: sites,
+    stock: Object.keys(GRAMMAIRE_STOCK).map((cle) => ({ cle })),
+    cle: (s) => s.cle,
+    remede: { neuve: (cle, s) => `${cle} (ligne ${s.ligne})` },
+  });
 
   it('le scan VOIT des sites (un scan aveugle rendrait le cliquet vacueux)', () => {
     expect(sites.length).toBeGreaterThan(0);
   });
 
   it('AUCUN site hors stock — une graphie neuve est ROUGE et NOMMÉE', () => {
-    const horsStock = sites.filter((s) => !(s.cle in GRAMMAIRE_STOCK)).map((s) => `${s.cle} (ligne ${s.ligne})`);
-    expect(horsStock, `Site(s) de grammaire non déclaré(s) dans GRAMMAIRE_STOCK :\n${horsStock.join('\n')}`).toEqual([]);
+    expect(
+      ecarts.neuves,
+      `Site(s) de grammaire non déclaré(s) dans GRAMMAIRE_STOCK :\n${ecarts.neuves.join('\n')}`,
+    ).toEqual([]);
   });
 
   it('AUCUNE entrée sans site — le stock ne peut que DÉCROÎTRE', () => {
-    const vus = new Set(sites.map((s) => s.cle));
-    const orphelines = Object.keys(GRAMMAIRE_STOCK).filter((k) => !vus.has(k));
-    expect(orphelines, `Entrée(s) de GRAMMAIRE_STOCK sans site correspondant :\n${orphelines.join('\n')}`).toEqual([]);
+    expect(
+      ecarts.perimees,
+      `Entrée(s) de GRAMMAIRE_STOCK sans site correspondant :\n${ecarts.perimees.join('\n')}`,
+    ).toEqual([]);
   });
 
   it('chaque entrée porte son LOT de mort et sa DATE (une liste sans échéance est un régime)', () => {
