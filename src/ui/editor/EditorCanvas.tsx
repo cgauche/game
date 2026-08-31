@@ -281,7 +281,6 @@ export function EditorCanvas({
   // ZONES : chemins bâtis 1× par (emprise, caméra) — le tableau `effectZones` est remplacé à chaque
   // coup de pinceau, donc la dépendance suffit à rendre le retour IMMÉDIAT sans recalculer les 739
   // cases de zone de La Diligence au moindre mouvement de pointeur.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const zoneDraws = useMemo(() => buildZoneDraws(scene.effectZones, dims), [scene.effectZones, scene.dimensions, rot, viewMode]);
 
   // MATÉRIAUX v2 : palier de LOD dérivé du zoom de l'éditeur (WYSIWYG avec le jeu) — les memos
@@ -290,7 +289,6 @@ export function EditorCanvas({
   const mpt = sceneMetresPerTile(scene);
   const detailOpts = useMemo(() => ({ zoom: LOD_ZOOM[lod], mpt }), [lod, mpt]);
   // `dims` dérive de (scene.dimensions, rot, viewMode) — deps couvertes.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const patternDefs = useMemo(() => (lod >= 1 ? detailPatternDefs(dims, mpt) : ''), [scene, lod, rot, viewMode, mpt]);
 
   const dragStartRef = useRef<Pt | null>(null);
@@ -659,7 +657,6 @@ export function EditorCanvas({
   // il n'en reste rien nulle part — la case garde son sens sur les deux voies.
   const keepEl = useMemo<KeepEl>(
     () => (el) => (el.kind === 'roof' ? false : !zHiddenMonde(el.cell.z)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentLayer, modeMonde],
   );
   // TEINTE (canal VISIBILITÉ) : le gabarit des couches du dessous, porté par le seul canal continu que
@@ -678,7 +675,6 @@ export function EditorCanvas({
   // au SVG) et décor par le MÊME `buildProps` que le jeu.
   const propEls3d = useMemo(
     () => buildProps(sceneMonde, undefined, { activeZ: currentLayer }).filter((el) => !zHiddenMonde(el.cell.z)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [sceneMonde, currentLayer, modeMonde],
   );
   // MÊME cadrage de couche que les décors ci-dessus (`viewZ` en mode isolé, puis le prédicat unique) :
@@ -693,7 +689,6 @@ export function EditorCanvas({
       top: viewMode === 'top',
       ambush: true,
     }).filter((el) => !zHiddenMonde(el.cell.z)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [sceneMonde, currentLayer, viewMode, modeMonde],
   );
   // Pas de `chromeAt` ici : l'ALLURE d'un board se lit par `cid`, et un `cid` n'est posé QUE sur les
@@ -724,7 +719,6 @@ export function EditorCanvas({
   // GRILLE D'AUTHORING : bâtie 1× par (carte, caméra, couche) — `w+h+2` segments, jamais un par case.
   const grilleAuteur = useMemo(
     () => gridLines(dims, currentLayer),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [scene.dimensions, rot, viewMode, currentLayer],
   );
   // SOURCES LUMINEUSES POSÉES de la scène — la MÊME liste que le champ mécanique de vision consomme
@@ -732,7 +726,6 @@ export function EditorCanvas({
   // (cf. le site de rendu) : en plein jour, aucune flaque ne les trahirait.
   const lampesAuthorees = useMemo(
     () => mapLights(scene).filter((l) => !zHidden(l.z ?? 0)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [scene, currentLayer, lowerLayerMode],
   );
   // APERÇU DU TRAIT (WYSIWYG) : le trait libre n'avait AUCUN aperçu — il se voyait par la scène SVG
@@ -746,7 +739,6 @@ export function EditorCanvas({
         .filter((el) => el.cell.z === currentLayer && vues.has(`${el.cell.x},${el.cell.y}`))
         .map((el) => ({ key: el.key, html: floorSvg(el, dims, detailOpts) }));
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [tool.mode, traitCases, scene, currentLayer, rot, viewMode, detailOpts],
   );
 

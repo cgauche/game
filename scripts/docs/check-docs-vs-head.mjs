@@ -49,7 +49,7 @@ const auCommit = (() => {
   const cache = new Map()
   return (p) => {
     if (!cache.has(p)) {
-      let texte = null
+      let texte
       try {
         texte = git(['show', `:${p}`])
       } catch {

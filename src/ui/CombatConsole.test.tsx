@@ -1920,7 +1920,6 @@ describe('CombatConsole — budget de hauteur du pont (arbitrage user 2026-08-17
       .replace(/(-?[\d.]+)px/g, '$1');
     if (/[a-zA-Z_$]/.test(e.replace(/CLAMP|Math\.min|Math\.max/g, ''))) throw new Error(`unité/fonction non gérée : ${expr} → ${e}`);
     const CLAMP = (lo: number, v: number, hi: number) => Math.min(Math.max(v, lo), hi);
-    // eslint-disable-next-line no-new-func
     return Function('CLAMP', 'Math', `"use strict"; return (${e});`)(CLAMP, Math) as number;
   }
 

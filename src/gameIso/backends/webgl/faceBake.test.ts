@@ -29,7 +29,7 @@ const RECETTE_PIERRE = PIERRE.detail as DetailRecipe;
 const W_M = 4;
 const H_M = 2.5;
 /** La SEULE part de mur que le colombage habille (cf. `TIMBERED_PARTS`) — toute cuisson en porte une. */
-const FACE: 'face' = 'face';
+const FACE = 'face' as const;
 
 /** Facteur multiplicatif RVB rendu par un pixel du masque (la valeur 255 vaut `gain`). */
 const facteurs = (b: { data: Uint8Array; w: number; gain: number }, x: number, y: number): [number, number, number] => {

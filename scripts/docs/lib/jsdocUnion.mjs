@@ -206,6 +206,7 @@ function noyauZod(node) {
   return node
 }
 
+// eslint-disable-next-line no-irregular-whitespace
 /** Le membre est-il OPTIONNEL ? (`…​.optional()` quelque part dans la chaîne d'appels). */
 function estOptionnel(node) {
   let n = node

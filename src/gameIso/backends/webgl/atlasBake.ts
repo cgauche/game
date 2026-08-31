@@ -249,7 +249,7 @@ export function atlasLayoutPour(box: SvgBox, n: number, pxHeight: number): Atlas
  * exception non gérée.
  */
 export function atlasBytesEstimés(box: SvgBox, n: number, pxHeight: number): number {
-  let bytes = 0;
+  let bytes: number;
   try {
     bytes = atlasBytes(atlasLayoutPour(box, n, pxHeight));
   } catch {

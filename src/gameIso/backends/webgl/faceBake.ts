@@ -83,9 +83,9 @@ export function bakeResolution(
   basePxPerM: number = FACE_PX_PER_M,
 ): { w: number; h: number; pxPerM: number } {
   const beamM = recipe?.timber?.wM ?? 0;
-  let w = 0;
-  let h = 0;
-  let px = 0;
+  let w: number;
+  let h: number;
+  let px: number;
   for (let barreau = 0; ; barreau++) {
     const cap = barreau === 0 ? BASE_MAX_PX : MAX_PX;
     const res = basePxPerM * 2 ** Math.max(0, barreau - 1);

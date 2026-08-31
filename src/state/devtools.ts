@@ -402,7 +402,7 @@ function rememberScenario(entry: LastScenario): void {
 }
 
 function recallScenario(): LastScenario | null {
-  let raw: string | null = null;
+  let raw: string | null;
   try {
     raw = scenarioMemory()?.getItem(LAST_SCENARIO_KEY) ?? null;
   } catch {

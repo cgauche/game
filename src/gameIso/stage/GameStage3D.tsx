@@ -699,7 +699,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // authorée, jamais en intérieur). Elle a DEUX expressions selon le regard, jamais les deux à la
   // fois : des NAPPES dans le volume sur la vue de plateau, le resserrement de la brume de distance
   // en première personne.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const brume = useMemo(() => sceneBrume(scene), [scene.weather, scene.ambiance]);
   // La brume ne MODULE le POV que DEHORS : entré dans un bâtiment (verdict par FRAME, `povIndoor`), on
   // bascule sur la courbe intérieure et la tempête cesse de déteindre dans la taverne.
@@ -852,7 +851,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       if (plafondEntréeRef.current !== null) clearTimeout(plafondEntréeRef.current);
       plafondEntréeRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.id]);
 
   // L'hôte apprend l'état du voile par ce seul canal (il en est le seul rendu, `VolumetricWorld`).
@@ -897,7 +895,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     if (!applyCutawayMask(baked, keepEl).bouge) return;
     ombresARefaire.current = true;
     dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baked, keepEl]);
   // ── TEINTE : elle vit plus bas, avec la lumière — son read-set contient le fondu du soleil (#1300).
   // Les touffes d'une nappe dégagée partent avec elle — MÊME loi, appliquée par la REPOSE du semis
@@ -943,7 +940,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     if (!ancres && !caps.length) return;
     ombresARefaire.current = true;
     dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acteurs, actors, scene, mpt]);
   // ── MARQUES DE CASES (P3-0c) : les éléments du builder, rangés par SLOT de montage. La CAPACITÉ des
   // pools ne suit que les paliers (`slotCapacity`) — un anneau de cible qui apparaît ne redimensionne
@@ -980,7 +976,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // toutes.
   const lumière = useMemo(
     () => stageLightScalars({ scene, gameTime, lightLevel, ombreSoleil: politique.ombreSoleil }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel, politique.ombreSoleil],
   );
   const { course, lit, fade } = lumière;
@@ -1002,7 +997,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     const neuf = champTeinte.current !== tintAt;
     champTeinte.current = tintAt;
     if (bougé || neuf) dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baked, tintAt, fade]);
   // FOND du canevas sous cette météo — un NOMBRE, donc une dépendance d'effet stable (deux frames de
   // même météo ne réappliquent rien).
@@ -1046,7 +1040,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // (`viewPolicy.precipitations`) : au-dessus, une particule vue dans son axe de chute est un point.
   const precip = useMemo(
     () => (politique.precipitations ? scenePrecip(scene) : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [scene.weather, scene.ambiance, politique.precipitations],
   );
   // Le semis SURVIT aux mutations de scène : il est retenu sur ce qui le DÉTERMINE (scène, type de
@@ -1062,7 +1055,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // Retenu sur le read-set de la CUISSON (`worldBakeDeps`) : le couvert se déduit des masses bâties,
   // donc d'un sous-ensemble de ce que lit `worldFaces` — 6,9 ms sur 60×60 à 81 masses, qu'une
   // référence de scène par tick repayait pour un couvert identique.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const abris = useMemo(() => shelterField(scene), bakeDeps);
   const sousCouvert = useMemo<ShelteredAt>(
     () => (xM, zM, yM) => isSheltered(abris, xM / mpt, zM / mpt, yM),
@@ -1155,8 +1147,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     if (g) glissePrecRef.current.set(id, g);
     else glissePrecRef.current.delete(id);
 
-    let def: ClipDef | null = null;
-    let elapsed = 0;
+    let def: ClipDef | null;
+    let elapsed: number;
     let loop = true;
     // EFFONDREMENT : il se compte depuis l'ENTRÉE AU SOL de l'acteur (`chutesRef`), pas depuis le
     // montage de son board — celui-ci se reconstruit à chaque pas commité. Geste joué une fois : la
@@ -1422,7 +1414,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       precipMesh.current = null;
       viderGroupe(groupe);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [champ]);
 
   // ── GROUPE DÉCALQUE (#1176, P3-3, vague B) : la plaque de l'auteur, en QUAD MONDE — elle TOURNE donc
@@ -1448,7 +1439,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       decalque && frame.mode !== 'pov' ? { plaque: decalque, dims: frame.dims, mpt } : null,
     );
     if (écrit) dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decalque, mpt, frame.mode === 'pov' ? null : dimsKey(frame.dims)]);
 
   // ── GROUPE BRUME (#1247) : les nappes de la météo, montées au seul changement de PLAN — c'est-à-dire
@@ -1467,7 +1457,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       setNappesMontées(0);
       viderGroupe(groupe);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planNappes, nappesAuMonde]);
 
   // MOTIFS CONTINUS (#1378) — une averse qui tombe, une flamme qui vacille, un halo qui pulse vivent
@@ -1624,7 +1613,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // qu'elles ne peuvent pas voir — mêmes objets, contenu neuf (texels du ciel, paramètres de la
     // brume, `#define` des matériaux du monde).
     if (cielRéécrit || brumeRéécrite || gammaRetiré || fond !== fondAvant || scène3d.fog !== brumeAvant) dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [povIndoor, mpt, brumePov, lumière.meteo, lumière.ambianceLum]);
 
   // ── FOND DU CANEVAS (#1247) : effet À PART de la création du renderer, qui n'a AUCUNE dépendance —
@@ -1634,7 +1622,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   useEffect(() => {
     rendererRef.current?.setClearColor(fondCanevas, 1);
     dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fondCanevas]);
 
   // ── GROUPE MONDE : la géométrie fusionnée, un matériau par groupe de surface.
@@ -1707,7 +1694,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // ni le dégagement (il vit dans l'index), ni l'heure (le régime lambertien ne bascule plus) n'en
     // refont un seul. Remettre `tintAt` ici reconstruisait les 76 matériaux de l'arène à chaque pas
     // (mesuré #1176).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geometry]);
 
   // ── MODE CALAGE (ÉDITEUR) : le décor VOLUMIQUE en aplat cyan + arêtes, le temps de comparer la
@@ -1739,7 +1725,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       aplat.dispose();
       dessiner();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geometry, calage, keepEl]);
 
   // ── GROUPE ACCENTS — SEMIS : les instances de touffes/mouchetis, un `InstancedMesh` par lot
@@ -1762,7 +1747,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       lotsAccents.current = [];
       viderGroupe(groupe);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accents]);
 
   // ── GROUPE ACCENTS — REPOSE : dégagement par COMPACTION des instances retenues, teinte par
@@ -1774,7 +1758,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     if (!dégagement && !teinte) return;
     ombresARefaire.current = true;
     dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accents, keepEl, tintAt]);
 
   // ── POOLS DE MARQUES (P3-0c) : la CAPACITÉ, et rien d'autre. Un pool ne naît, ne grandit ou ne meurt
@@ -1804,7 +1787,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // Un pool RETIRÉ ne repassera pas par l'écriture qui suit : sa disparition est peinte ici, sans
     // quoi ses marques resteraient à l'écran jusqu'à la prochaine image.
     if (bougé) dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clésCapacités]);
 
   // ── ÉCRITURE des marques : matrices et teintes réécrites EN PLACE dans des pools déjà montés. Aucun
@@ -1819,7 +1801,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     }
     if (!bougé) return;
     dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marquesGroupées, mpt]);
 
   // Le groupe des marques ne se vide qu'à la MORT de l'écran (un `viderGroupe` par changement de
@@ -1857,7 +1838,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       viderGroupe(groupe); // le jumeau y est marqué `emprunte` : sa géométrie est celle de l'original
       for (const slot of DYN_MARK_SLOTS) delete pools[slot];
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── POOLS DE HALOS (P3-0g) : même politique que les pools dynamiques ci-dessus — montés UNE fois, à
@@ -1882,7 +1862,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
         delete pools[slot];
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /** ÉPINGLE, pour un sujet, la texture statique qu'il PORTE et celle qu'il ATTEND (#1374). Le stock
@@ -2266,7 +2245,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // rien à libérer ici (la passe suivante fait la différence). Il ne fait qu'annuler les textures en
     // vol — une texture servie après coup monterait un quad que la différence n'a pas voulu.
     return () => { annule = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subjects, mpt, lit]);
 
   // ── VIDAGE FINAL : l'écran s'en va. C'est le SEUL endroit qui libère le groupe entier — la passe de
@@ -2301,7 +2279,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // son regard suivant déjà cuit, et le regard quitté — rabaissé juste au-dessus — redevient un
     // voisin réchauffé.
     réchaufferVoisins(regard, boardsRef.current.map((b) => ({ sub: b.sub, heightM: b.quad.heightM })));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camRot, povFacing]);
 
   // L'EXPOSITION des billboards appartient à la passe de POSE (`poseBoards`) : elle dépend de l'endroit
@@ -2331,7 +2308,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     pose.reposer({ scene, gameTime, lightLevel, shadowBox, ombreSoleil: politique.ombreSoleil });
     ombresARefaire.current = true;
     dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     // Dépendances = le read-set des scalaires ci-dessus (`stageLightScalars`), CHAMP PAR CHAMP et
     // jamais la référence de scène (un hôte qui la reforge par tick redemanderait la carte d'ombre
     // sans qu'aucune entrée de lumière ait bougé) ; plus le verdict de STYLE du regard, seule entrée
@@ -2362,7 +2338,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     slotsPrécédents.current = flaquesÉcrites;
     applyPointLights(pool.current, flaquesÉcrites);
     dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flaquesÉcrites]);
 
   // ABONNEMENT AU BATTEMENT (`stage/stageFrames`) : l'écran tient SON dessin du battement unique, quel
@@ -2388,7 +2363,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // ce tableau inopérant.
   useEffect(() => {
     dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [frame, mpt, scene, geometry, brumePov, gammaBrume, lumière.surfaceLuminance, flaquesÉcrites, chromeAt, dynMarks, halos, solM, pionsEnDisques, champ, sousCouvert, ecrete, percage]);
 
   // Le canevas OCCUPE la boîte du stage : c'est la MÊME boîte que le SVG, donc la même classe

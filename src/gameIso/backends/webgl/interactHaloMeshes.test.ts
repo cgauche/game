@@ -93,7 +93,7 @@ describe('ÉTINCELLE — PIN de l’identité du glyphe, en valeurs ABSOLUES', (
     expect(bord).toHaveLength(8);
     expect(bord[0].x, 'la première pointe est sur l’axe +X, au rayon 0,5').toBe(0.5);
     expect(bord[0].z).toBe(0);
-    expect(rayon(bord[1]), 'le premier creux').toBeCloseTo(0.20034692133618847, PREC);
+    expect(rayon(bord[1]), 'le premier creux').toBeCloseTo(0.20034692133618848, PREC);
     expect(rayon(bord[2]), 'la pointe suivante').toBeCloseTo(0.5, PREC);
   });
 });

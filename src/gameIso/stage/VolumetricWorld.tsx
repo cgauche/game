@@ -126,7 +126,6 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   // Le GLISSEMENT de marche n'y entre PAS (#1176, P2-4) : la boucle de rendu le lit elle-même et décale
   // des quads déjà montés, là où la clé fractionnaire les remontait tous soixante fois par seconde.
   const posesKey = poses.map(actorPoseKey).join('|');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const actors = useMemo(() => poses, [posesKey]);
   // Les éléments du DÉCOR passent tels quels : leur rétention par CONTENU vit au socle
   // (`GameStage3D`, `memesBillboardEls`) — l'éditeur monte cet écran sans passer par ici.
@@ -162,7 +161,6 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
       const allures = new Map((chromes ?? []).map((m) => [m.id, { ghost: m.ghost, dim: m.dim, highlight: m.highlight }]));
       return (cid) => allures.get(cid) ?? null;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [cléAllures],
   );
   // CADRE servi à l'écran — RÉFÉRENCE STABLE tant que le cadrage ne bouge pas (#1371), même raison.
@@ -181,7 +179,6 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
       : { mode: 'pov', partyPos: frame.partyPos, facing: frame.facing, indoor: frame.indoor, cid: frame.cid, ...(frame.eyeH !== undefined ? { eyeH: frame.eyeH } : {}) }),
     // Le CRAN de vue (`dims`) entre par sa référence : l'hôte le retient déjà sur sa géométrie
     // (`MondeDeCampagne.dimsVue`), et le sérialiser ici en ferait une seconde vérité à tenir d'accord.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [cléCadre, frame.mode === 'plateau' ? frame.dims : null],
   );
   return (

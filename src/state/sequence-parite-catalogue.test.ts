@@ -216,6 +216,8 @@ const COMBAT: Site[] = [
 
 const HEROS3 = 'Sigrid', OBJET = 'Épée runique', ARGENT = '12 CO', ACTIVITE = 'Artisanat';
 
+/* eslint-disable no-constant-condition -- les fixtures REPRODUISENT le call-site à valeur figée :
+   `${3} semaine${3 > 1 ? 's' : ''}` est la forme de l'expression mesurée, pas une condition de code. */
 const V8C1: Site[] = [
   {
     site: 'interludeFlow.ts:195 — bandeau d’ouverture (pluriel porté par la variable)',
@@ -843,6 +845,8 @@ const V8C5: Site[] = [
     apres: t('slot.prevDomain', { domain: 'Feu', advances: 12, known: 3 }),
   },
 ];
+
+/* eslint-enable no-constant-condition */
 
 const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1, ...V8C2, ...V8C3, ...V8C4, ...V8C5];
 

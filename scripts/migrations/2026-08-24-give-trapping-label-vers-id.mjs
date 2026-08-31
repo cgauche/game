@@ -201,7 +201,7 @@ function migrateJsonQualites(full) {
 
 // AUTHORING .mjs : `qualities: [ '<libellé>', … ]` dans un littéral `{ type: 'giveTrapping', … }`
 // (l'intervalle ne traverse ni accolade ni crochet : il reste DANS le nœud).
-const ANCRE_QUAL_MJS = /(\{\s*type:\s*'giveTrapping',[^}\[\]]*qualities:\s*\[)([^\]]*)\]/g;
+const ANCRE_QUAL_MJS = /(\{\s*type:\s*'giveTrapping',[^}[\]]*qualities:\s*\[)([^\]]*)\]/g;
 
 function migrateMjsQualites(full) {
   const brut = fs.readFileSync(full, 'utf8');

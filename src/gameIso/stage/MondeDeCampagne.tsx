@@ -312,7 +312,6 @@ function CorpsDuMonde() {
       // L'ŒIL suit le CORPS : attablé, on regarde depuis sa place, pas depuis la case d'abord.
       ? { mode: 'pov', partyPos: posDeRendu, facing: capPov ?? 'S', indoor, cid: partyLeader?.id ?? null, ...(partySeat && scene ? { eyeH: seatedEyeH(scene, partySeat, partyPos.z ?? 0) } : {}) }
       : { mode: 'plateau', dims: dimsVue, camAt: camAtStable, yawAt: yawAtStable, zoom: zoomVue }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [pov, posDeRendu.x, posDeRendu.y, posDeRendu.z, capPov, indoor, partyLeader?.id, partySeat?.anchor.h, dimsVue, zoomVue, camAtStable, yawAtStable],
   );
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
@@ -333,7 +332,6 @@ function CorpsDuMonde() {
   const visualAlliesKey = tilesKey(visualTilesAt(wnow));
   const visualAllies = useMemo(
     () => visualTilesAt(wnow).map(({ x, y, z }) => ({ x, y, z })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [visualAlliesKey],
   );
   const visualPartyPos = visualAllies[0] ?? partyPos;
@@ -429,7 +427,6 @@ function CorpsDuMonde() {
         z: t.z,
       }))
       : []),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [scene, visualAlliesKey, dims],
   );
   // À hauteur d'œil, RIEN n'est dégagé (`keepEl` y rend tout) : la résolution du dégagement — la
@@ -445,7 +442,6 @@ function CorpsDuMonde() {
     () => (scene && !pov
       ? { cle: clePercage({ tuiles: visualTilesAt(wnow), rot: dims.rot ?? 0, view: dims.view ?? 'iso', activeZ }), lids, heros: alliesCoiffables }
       : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [scene, visualAlliesKey, dims, activeZ, lids, alliesCoiffables, pov],
   );
   // Les MÊMES vérités, dans la forme que consomme la voie VOLUMIQUE (#1176) : le dégagement en canal

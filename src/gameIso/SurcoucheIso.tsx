@@ -132,7 +132,6 @@ export function SurcoucheIso({
     : `party@${partyPos.x},${partyPos.y},${partyPos.z ?? 0}`;
   const doorCtrls = useMemo<Pt[]>(
     () => (battle ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? [activeC.pos] : []) : [partyPos]),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [doorCtrlKey],
   );
   const portals = useMemo(
@@ -154,7 +153,6 @@ export function SurcoucheIso({
    *  stage tient le store, l'overlay restant pur. Memoïsée sur `battle.preview` : jamais par frame. */
   const previewDifficulty = useMemo(
     () => previewDifficultyOf(useGame.getState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [battle?.preview, activeC],
   );
   const camTransition = 'opacity 0.13s ease-out';

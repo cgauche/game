@@ -59,7 +59,7 @@ process.stdin.on('data', (morceau) => {
   brut += morceau
 })
 process.stdin.on('end', () => {
-  let commande = ''
+  let commande
   try {
     commande = String(JSON.parse(brut || '{}').tool_input?.command ?? '')
   } catch {

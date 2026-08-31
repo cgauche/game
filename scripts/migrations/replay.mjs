@@ -68,6 +68,7 @@ const ATTENDU_ROUGE = {
     'ENSEMBLE avec #1456, étendu le 2026-08-26 pour les porter nominativement.',
 };
 
+// eslint-disable-next-line no-irregular-whitespace
 /** Bloc de commentaire d'en-tête d'un script (jusqu'au premier `*​/`). */
 const enTete = (texte) => texte.slice(0, Math.max(0, texte.indexOf('*/')));
 

@@ -97,6 +97,9 @@ export class CacheBorne<T, P = undefined> {
       demande?.servir?.(servie.poignée);
       return servie.promise;
     }
+    // Lue par les fermetures de `promise` AVANT son affectation : la déclaration ne peut pas porter
+    // l'initialiseur.
+    // eslint-disable-next-line prefer-const
     let entrée: Entrée<T, P>;
     const poignée = demande?.poignée as P;
     const promise = faire(poignée).then(

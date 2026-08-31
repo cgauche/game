@@ -102,7 +102,7 @@ export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pend
               </text>
             )}
             {l3 && (
-              <text x={x0} y={(y += 14)} fontSize={10.5}>
+              <text x={x0} y={y + 14} fontSize={10.5}>
                 <tspan fill="var(--tooltip-muted)">Dégâts</tspan>
                 <tspan fill="var(--tooltip-fg)" fontWeight={700}>{`  +${tip.dmg}`}</tspan>
               </text>
