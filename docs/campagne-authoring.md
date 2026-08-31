@@ -66,6 +66,21 @@ persistance — chaque combat spawn une coque fraîche.
   « mer » ; à l'auteur de régler le vrai cap. Rappel RAW : la dominante de la Mer des Griffes souffle
   DE l'OUEST (MDG ch.13 l.253) — poser `'ouest'` en cap plein donne un vent de face ~60 % des jours
   (pit #408, traversées interminables).
+- `when` (`Condition`) — PRATICABILITÉ du trajet, axe ARÊTE du gating narratif (anti-backtracking) :
+  absent = toujours praticable ; faux = le trajet reste À L'ÉCRAN (le lieu déjà visité ne disparaît pas)
+  mais le départ est REFUSÉ — `startTravel` (`src/state/travelFlow.ts`) le revérifie au départ, au même
+  niveau que `from` : la vue n'est pas le verrou.
+- `refus` — raison JOUEUR de l'indisponibilité, rendue en infobulle par `GatedAction`. **EXIGÉE dès que
+  `when` est posé** (`mapRouteSchema`, `src/data/schemas/defs-scenes/worldmap.ts`) : un trajet fermé MUET
+  est un cul-de-sac inexplicable.
+- `when` d'un LIEU (`MapPlace`, `worldMap.places`) — EXISTENCE du lieu, axe NŒUD (anti-spoiler) : absent =
+  toujours visible ; faux = le lieu n'entre NI dans le rendu, NI dans le cadrage de la carte, NI dans le
+  balayage du rivage d'un naufrage. Les deux axes sont INDÉPENDANTS : un tronçon se ferme sans effacer
+  le lieu, un lieu se cache sans fermer les routes de ses voisins.
+- Les deux `when` s'écrivent dans l'algèbre `Condition` (§ 9 : `setFlag` pose le drapeau, `evalCondition`
+  — `src/engine/flowCore.ts` — l'évalue). Le contexte de la carte ne porte que drapeaux, horloge, groupe
+  et bourse : les kinds qui lisent une cible, un lanceur ou un état de combat sont REFUSÉS à l'authoring
+  (ils seraient FAUX en silence, et le lieu disparaîtrait sans qu'aucune donnée ne soit fautive).
 
 ## 4. Catalogues navals (data-driven, éditables)
 
@@ -255,8 +270,9 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   optionnelle au format (la migration 2→3 n'en injecte pas).
 - **Migration.** Un projet schema 2 legacy (localStorage éditeur d'avant #765) monte au format courant
   au chargement (`PROJECT_MIGRATIONS[2]` injecte un narratif vide ; `[4]` aplatit la poche `meta` et
-  renomme sa `version` en `versionContenu`). Les **quatre projets committés sont
-  en schema 5** : « L'Arène » (`src/scenes/arene/arene-projet.json`), « La Barge du Sel »
+  renomme sa `version` en `versionContenu` ; `[5]` donne au libellé de scène et de carte sa graphie
+  `label` et fait s'annoncer les statblocs embarqués). Les **quatre projets committés sont
+  en schema 6** : « L'Arène » (`src/scenes/arene/arene-projet.json`), « La Barge du Sel »
   (`src/scenes/barge-du-sel/barge-du-sel-projet.json`), « La Diligence »
   (`src/scenes/diligence/diligence-projet.json`, sans `worldMap`) et « Le Loup et la Saumure »
   (`src/scenes/loup-et-saumure/loup-et-saumure-projet.json`) — produits par `projectDoc`

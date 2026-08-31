@@ -8,6 +8,7 @@
  */
 import { z } from 'zod';
 import { effectSchema } from './effets';
+import { conditionSchema } from '../grammaire/mecanique';
 
 /** `TravelMode` (`engine/travel.ts`) — `'pied'`/`'monture'` ou id de `vehicles.json`. */
 export const travelModeSchema = z.string();
@@ -96,6 +97,44 @@ export const placePoiSchema = z
     }
   });
 
+/**
+ * Kinds de `Condition` réellement ÉVALUABLES avec le contexte de la CARTE (`condCtx`,
+ * `src/state/bourseFlow.ts` : `flags`, `gameTime`, `party`, `money`). Les autres kinds lisent
+ * `target`/`caster`/`sl`/`location`/état de combat — absents ici, et `evalCondition`
+ * (`src/engine/flowCore.ts`) les rend alors FAUX : un lieu disparaîtrait de la carte, ou un trajet
+ * se fermerait, EN SILENCE et sans qu'aucune donnée ne soit fautive. Le sous-ensemble se vérifie
+ * kind par kind dans `evalCondition` ; tout kind non listé est REFUSÉ à l'authoring (fail-fast).
+ */
+const CONDITION_KINDS_CARTE = new Set([
+  'always', 'flag', 'time', 'hasItem', 'money', 'partyDead',
+  'skill', 'career', 'species', 'status',
+  'all', 'any', 'not',
+]);
+
+/** Kinds hors portée rencontrés dans une `Condition` authored (récursif : `all`/`any`/`not`). */
+function kindsHorsCarte(cond: unknown, out: Set<string> = new Set()): Set<string> {
+  if (!cond || typeof cond !== 'object') return out;
+  const c = cond as { kind?: unknown; of?: unknown };
+  if (typeof c.kind === 'string' && !CONDITION_KINDS_CARTE.has(c.kind)) out.add(c.kind);
+  if (Array.isArray(c.of)) for (const sub of c.of) kindsHorsCarte(sub, out);
+  else if (c.of) kindsHorsCarte(c.of, out);
+  return out;
+}
+
+/** `Condition` d'un `when` de CARTE — l'algèbre complète, restreinte aux kinds évaluables ici. */
+const conditionCarteSchema = conditionSchema.superRefine((cond, ctx) => {
+  const hors = [...kindsHorsCarte(cond)];
+  if (hors.length) {
+    ctx.addIssue({
+      code: 'custom',
+      message:
+        `Condition de carte : « ${hors.join(' », « ')} » n'est pas évaluable au contexte de la carte ` +
+        `(drapeaux, horloge, groupe, bourse — « condCtx », src/state/bourseFlow.ts) : la Condition serait ` +
+        `FAUSSE en silence. Kinds admis : ${[...CONDITION_KINDS_CARTE].join(', ')}.`,
+    });
+  }
+});
+
 /** `MapPlace` — lieu posé sur la carte ; être dans `scene` = être à ce lieu. */
 export const mapPlaceSchema = z.strictObject({
   id: z.string(),
@@ -113,6 +152,9 @@ export const mapPlaceSchema = z.strictObject({
   poi: z.array(placePoiSchema).optional(),
   /** Bande d'ambiance du hub (id du registre `src/ui/backdrops`). */
   backdrop: z.string().optional(),
+  /** EXISTENCE du lieu sur la carte (algèbre `Condition`, cf. `evalCondition`) — axe NŒUD du gating
+   *  narratif : la destination n'apparaît qu'une fois révélée. Absente = toujours visible. */
+  when: conditionCarteSchema.optional(),
 });
 
 /** `RoutePeril` — péripétie d'AUTEUR tirée chaque jour de voyage à `chancePct` %. */
@@ -151,6 +193,12 @@ export const mapRouteSchema = z.strictObject({
   river: z.boolean().optional(),
   /** Périls de rivière tirés chaque jour (`MSRC 7 l.119-166`, `river-perils.json`). */
   riverPerils: z.array(z.strictObject({ perilId: z.string(), chancePct: z.number() })).optional(),
+  /** PRATICABILITÉ du trajet (algèbre `Condition`, cf. `evalCondition`) — axe ARÊTE du gating
+   *  narratif, indépendant de `mapPlaceSchema.when`. Absente = toujours praticable. */
+  when: conditionCarteSchema.optional(),
+  /** Raison JOUEUR de l'indisponibilité, rendue par `GatedAction` en infobulle — EXIGÉE dès que
+   *  `when` est posé (superRefine ci-dessous) : un trajet fermé MUET est un cul-de-sac inexplicable. */
+  refus: z.string().optional(),
   /** Exposition HYDRIQUE de la descente (`MSRC 16 l.5-13`) — déclenche l'Effet `waterExposure`. */
   riverExposure: z
     .strictObject({
@@ -159,7 +207,15 @@ export const mapRouteSchema = z.strictObject({
       chancePct: z.number(),
     })
     .optional(),
-});
+})
+  .superRefine((route, ctx) => {
+    if (route.when !== undefined && route.refus === undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Route « ${route.id} » : « when » posé sans « refus » — un trajet fermable doit dire au JOUEUR pourquoi il l'est (infobulle « GatedAction »).`,
+      });
+    }
+  });
 
 /** `WorldMapParams` — réglages RAW de voyage au niveau CARTE, tous paramétrables. */
 export const worldMapParamsSchema = z.strictObject({

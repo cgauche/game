@@ -1,6 +1,6 @@
 /** Index de la campagne. La campagne de LANCEMENT est l'Arène (projet de DONNÉES éditeur — cf.
  *  src/scenes/arene/arene-projet.json, créable/éditable dans l'éditeur, paquet de campagne
- *  `{schema:5, <identité>, scenes, worldMap, narratif}`) : `campaign[0]` est sa scène d'entrée, toutes ses scènes
+ *  `{schema:6, <identité>, scenes, worldMap, narratif}`) : `campaign[0]` est sa scène d'entrée, toutes ses scènes
  *  (bourg + zones + expéditions) sont enregistrées → les transitions résolvent, et sa carte du
  *  monde alimente le voyage (#T2). */
 import { Scene } from '../state/scene';

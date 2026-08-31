@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
-import { placeOfScene, placeById, routesFrom, otherEnd, declutterPositions, MapRoute, MapPlace } from '../state/worldMap';
+import { placeOfScene, placeById, routesEtat, visiblePlaces, otherEnd, declutterPositions, MapRoute, MapPlace } from '../state/worldMap';
 import { baseHoursPerDay, maxHoursPerDay } from '../state/travelFlow';
 import {
   TravelMode, TRAVEL_MODE_LABEL, vehicleTravel, travelModeIcon, travelSpeed, travelPlanCalc, transportCost,
@@ -13,8 +13,9 @@ import { rationCount, provisioningManifest } from '../engine/provisions';
 import { cargoOverload, cargoTotalEnc } from '../engine/seaVoyage';
 import { findVehicleById } from '../data';
 import { formatMoney, canAfford } from '../engine/money';
-import { partyMoneyTotal } from '../state/bourseFlow';
+import { partyMoneyTotal, condCtx } from '../state/bourseFlow';
 import { Coins } from './Coins';
+import { GatedAction } from './GatedAction';
 import { rule } from '../engine/policy';
 import { forcePaceDifficulty } from '../engine/seaNavigation';
 import { shipHasNavalTrait } from '../engine/navalTraits';
@@ -54,6 +55,11 @@ function routeCurve(ax: number, ay: number, bx: number, by: number, id: string) 
 /** Écart mini visé entre deux médaillons (unités viewBox) — un médaillon fait r≈2.9 + cartouche,
  *  ~8 les sépare confortablement sans les coller. */
 const DECLUTTER_MIN = 8;
+
+/** Raison de repli d'un trajet fermé quand l'auteur n'en a pas écrit (`MapRoute.refus`) — un paquet
+ *  NEUF ne peut plus en arriver là (`mapRouteSchema` exige `refus` dès que `when` est posé) ; le repli
+ *  ne sert que les paquets antérieurs. Catalogue des textes joueur : `src/i18n/messages/fr.ts`. */
+const ROUTE_FERMEE_REFUS = 'Ce trajet n’est plus praticable.';
 
 /**
  * Carte du monde (#T2 Voyage) — overlay plein écran en exploration : carte au PARCHEMIN dessinée
@@ -103,7 +109,19 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const here = placeOfScene(map, hereSceneId ?? scene?.id);
-  const routes = useMemo(() => (map && here ? routesFrom(map, here.id) : []), [map, here]);
+  // Gating narratif (#684) : le `ConditionCtx` se fabrique CHEZ L'APPELANT (patron `condCtx`,
+  // `bourseFlow.ts`) — `worldMap.ts` reste un lecteur pur, sans accès au store.
+  const flags = useGame((s) => s.flags);
+  const ctxCond = useMemo(() => condCtx(useGame.getState), [flags, gameTime, party]);
+  /** Lieux EXISTANTS : un lieu non révélé n'entre NI dans le rendu, NI dans le cadrage (le zoom le
+   *  trahirait autrement en cadrant un vide). Source unique de la liste de lieux de cet écran. */
+  const places = useMemo(() => (map ? visiblePlaces(map, ctxCond) : []), [map, ctxCond]);
+  const placeVisible = useMemo(() => new Map(places.map((p) => [p.id, p])), [places]);
+  /** Routes du lieu courant AVEC leur état — la vue rend aussi les trajets fermés (affordance refusée). */
+  const etats = useMemo(() => (map && here ? routesEtat(map, here.id, ctxCond) : []), [map, here, ctxCond]);
+  /** Routes PRATICABLES : la logique de voyage (sélection, départ, cadrage cliquable) n'en connaît pas d'autres. */
+  const routes = useMemo(() => etats.filter((e) => e.ouverte).map((e) => e.route), [etats]);
+  const routesFermees = useMemo(() => etats.filter((e) => !e.ouverte).map((e) => e.route), [etats]);
 
   // Anti-chevauchement : positions de RENDU décluttérées (les `pos` d'authoring restent intacts).
   // Le repère de rendu est celui du viewBox (y aplati par 0.64) → l'écartement travaille dessus.
@@ -111,9 +129,9 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
     // Vraie carte de fond ⇒ les lieux restent à leurs `pos` EXACTS (l'auteur les a posés sur la carte) :
     // pas de déchevauchement, qui les décalerait de leur vraie position géographique.
     if (!map || map.background) return new Map<string, { x: number; y: number }>();
-    const pts = map.places.map((p) => ({ id: p.id, x: p.pos.x, y: p.pos.y * 0.64 }));
+    const pts = places.map((p) => ({ id: p.id, x: p.pos.x, y: p.pos.y * 0.64 }));
     return declutterPositions(pts, DECLUTTER_MIN, 80, { w: VB_W, h: VB_H });
-  }, [map]);
+  }, [map, places]);
   /** Position de rendu décluttérée d'un lieu (repli sur `pos` brut si absent). */
   const posOf = (p: MapPlace) => layout.get(p.id) ?? { x: p.pos.x, y: p.pos.y * 0.64 };
 
@@ -126,8 +144,9 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const fitPoints = (): { x: number; y: number }[] => {
     if (!map || !here) return [];
     const pts: { x: number; y: number }[] = [hereRender];
-    for (const r of routes) {
-      const other = placeById(map, otherEnd(r, here.id));
+    for (const { route: r } of etats) {
+      // Lieu non révélé ⇒ hors cadrage : le zoom ne doit pas trahir ce que la carte ne montre pas.
+      const other = placeVisible.get(otherEnd(r, here.id));
       if (!other) continue;
       const po = posOf(other);
       const c = routeCurve(hereRender.x, hereRender.y, po.x, po.y, r.id);
@@ -140,8 +159,11 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
 
   if (!map) return null;
   const selRoute: MapRoute | null = routes.find((r) => r.id === selId) ?? null;
-  const dest: MapPlace | undefined = selRoute && here ? placeById(map, otherEnd(selRoute, here.id)) : undefined;
-  const farPlace: MapPlace | undefined = farId ? placeById(map, farId) : undefined;
+  /** Trajet FERMÉ sélectionné : il se consulte (itinéraire, distance) mais son départ est REFUSÉ. */
+  const selFerme: MapRoute | null = routesFermees.find((r) => r.id === selId) ?? null;
+  const dest: MapPlace | undefined = selRoute && here ? placeVisible.get(otherEnd(selRoute, here.id)) : undefined;
+  const destFermee: MapPlace | undefined = selFerme && here ? placeVisible.get(otherEnd(selFerme, here.id)) : undefined;
+  const farPlace: MapPlace | undefined = farId ? placeVisible.get(farId) : undefined;
 
   const selectRoute = (r: MapRoute) => {
     setSelId(r.id);
@@ -262,18 +284,23 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
 
   // Routes (chemins courbes) — CLIQUABLES depuis le lieu courant (large zone invisible via MapCanvas).
   const mapPaths: MapPath[] = map.routes.flatMap((r) => {
-    const a = placeById(map, r.a);
-    const b = placeById(map, r.b);
+    // Extrémités prises dans les lieux EXISTANTS : un tronçon vers un lieu non révélé le trahirait.
+    const a = placeVisible.get(r.a);
+    const b = placeVisible.get(r.b);
     if (!a || !b) return [];
     const pa = posOf(a), pb = posOf(b);
     const c = routeCurve(pa.x, pa.y, pb.x, pb.y, r.id);
     const sel = r.id === selId;
-    const fromHere = !!here && (r.a === here.id || r.b === here.id) && (r.from == null || r.from === here.id);
+    const etat = etats.find((e) => e.route.id === r.id);
+    const fromHere = !!etat && etat.ouverte;
+    // Trajet fermé partant d'ici : VISIBLE et cliquable (il se consulte), mais le départ est refusé.
+    const fermee = !!etat && !etat.ouverte;
     const water = r.modes.includes('barge') && !r.modes.includes('pied');
     return [{
       id: r.id,
       d: c.d,
-      onClick: fromHere ? () => selectRoute(r) : undefined,
+      onClick: fromHere || fermee ? () => selectRoute(r) : undefined,
+      cursor: fermee ? 'help' : undefined,
       children: (view: Viewport) => (
         <>
           <path
@@ -283,7 +310,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             strokeWidth={sel ? 1.4 : 0.9}
             strokeLinecap="round"
             strokeDasharray={water ? '0.6 2.4' : '2.4 1.7'}
-            opacity={sel || fromHere ? 1 : 0.7}
+            opacity={fermee ? 0.45 : sel || fromHere ? 1 : 0.7}
             pointerEvents="none"
             vectorEffect="non-scaling-stroke"
           />
@@ -310,10 +337,12 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
 
   // Lieux (médaillons). Affordance : destination RELIÉE = anneau accent pointillé + curseur ; lieu hors
   // d'atteinte = estompé, le clic EXPLIQUE (panneau bas). Taille écran constante (MapCanvas `scale(1/z)`).
-  const mapMarkers: MapMarker[] = map.places.map((p) => {
+  const mapMarkers: MapMarker[] = places.map((p) => {
     const isHere = here?.id === p.id;
     const isDest = dest?.id === p.id;
     const route = here ? routes.find((r) => otherEnd(r, here.id) === p.id) : undefined;
+    // Destination que SEUL un trajet fermé dessert : le lieu reste à l'écran, son clic dit pourquoi.
+    const routeFermee = here && !route ? routesFermees.find((r) => otherEnd(r, here.id) === p.id) : undefined;
     const clickable = !!route;
     const pr = posOf(p);
     return {
@@ -321,7 +350,11 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
       x: pr.x,
       y: pr.y,
       selected: isHere || isDest,
-      onClick: clickable ? () => selectRoute(route!) : !isHere ? () => { setSelId(null); setFarId(p.id); } : undefined,
+      onClick: clickable
+        ? () => selectRoute(route!)
+        : routeFermee
+          ? () => selectRoute(routeFermee)
+          : !isHere ? () => { setSelId(null); setFarId(p.id); } : undefined,
       label: p.label,
       onHover: (h: boolean) => setHoveredId((cur) => (h ? p.id : cur === p.id ? null : cur)),
       cursor: clickable ? 'pointer' : !isHere ? 'help' : undefined,
@@ -354,9 +387,12 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   // les autres révèlent leur nom au SURVOL. `pointer-events:none` : ne vole pas le survol du médaillon.
   const mapOverlay = (view: Viewport) => (
     <>
-      {map.places.map((p) => {
+      {places.map((p) => {
         const isHere = here?.id === p.id;
-        const clickable = here ? routes.some((r) => otherEnd(r, here.id) === p.id) : false;
+        // Un trajet FERMÉ nomme quand même sa destination : le joueur doit savoir OÙ il ne peut plus aller.
+        const clickable = here
+          ? etats.some((e) => otherEnd(e.route, here.id) === p.id)
+          : false;
         const hovered = hoveredId === p.id;
         if (!isHere && !clickable && !hovered) return null;
         const w = Math.max(8, p.label.length * 1.15 + 3);
@@ -574,7 +610,28 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
         </div>
       )}
 
-      {!travelPlan?.interrupted && !selRoute && (
+      {/* Trajet FERMÉ (gating narratif #684) : l'itinéraire reste lisible, le départ porte son REFUS —
+          `GatedAction` pose la raison au survol/focus/tap et en copie hors écran (`aria-describedby`). */}
+      {!travelPlan?.interrupted && selFerme && destFermee && here && (
+        <div className="worldmap-panel">
+          <div className="wm-trip">
+            <span className="wm-trip-route"><b>{here.label}</b> <span className="wm-arrow">→</span> <b>{destFermee.label}</b> · {routeDistanceLabel(selFerme.km, selFerme.sea)}</span>
+          </div>
+          <div className="modal-actions">
+            <button type="button" className="btn" onClick={() => setSelId(null)}>Annuler</button>
+            <GatedAction
+              id={`wm-route-fermee-${selFerme.id}`}
+              label={<><Icon id="scenario/travel" size="sm" /> Partir</>}
+              ariaLabel={`Partir vers ${destFermee.label}`}
+              enabled={false}
+              reason={selFerme.refus ?? ROUTE_FERMEE_REFUS}
+              onClick={() => {}}
+            />
+          </div>
+        </div>
+      )}
+
+      {!travelPlan?.interrupted && !selRoute && !selFerme && (
         <div className="worldmap-panel muted-panel">
           <p>
             {farPlace && here

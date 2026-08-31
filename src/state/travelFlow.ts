@@ -53,7 +53,8 @@ import { rollTest, testDetail } from '../engine/tests';
 import { partyAssisted, supportSplit, testValue, type SupportDetail } from '../engine/skills';
 import { addCondition, removeCondition, stacks } from '../engine/conditions';
 import { formatMoney } from '../engine/money';
-import { payFromGroup } from './bourseFlow';
+import { condCtx, payFromGroup } from './bourseFlow';
+import { evalCondition } from '../engine/flowCore';
 import { d10, d100 } from '../engine/dice';
 import { rule } from '../engine/policy';
 import { toDate, isTravelDaylight, DAWN_MINUTE, minutesUntilNext } from '../engine/clock';
@@ -301,6 +302,13 @@ export function startTravel(
   const route = worldMap.routes.find((r) => r.id === routeId);
   if (!from || !route || (route.a !== from.id && route.b !== from.id)) return;
   if (route.from != null && route.from !== from.id) return; // route à sens unique : pas dans ce sens
+  // Trajet FERMé par le récit (`MapRoute.when`, #684) : le verrou est ICI, au même niveau que le sens
+  // unique — la vue rend le trajet en affordance refusée, mais tout autre appelant (devtools, coop,
+  // reprise de sauvegarde) bute sur la même porte. La raison d'auteur part au journal.
+  if (route.when != null && !evalCondition(route.when, condCtx(get))) {
+    log(get, set, route.refus ? [route.refus] : []);
+    return;
+  }
   // « En selle » suit les mêmes chemins qu'à pied (mode IMPLICITE des routes `pied`) — règle
   // `travel-allures` (EDOC 7) et chaque héros vivant en selle (EDOC 07 l.140).
   if (mode === 'monture' && (!rule('travel-allures') || !partyFullyMounted(party, get().possessions))) return;

@@ -18,7 +18,7 @@ export function setPickProbe(p: PickProbe | null): void {
 import { portRepairVessel, portCareenVessel, portInstallUpgrade, damageVesselHull, setVesselHull } from './seaVoyageFlow';
 import { seaBoardEventById } from '../engine/seaVoyage';
 import { beginShipwreck } from './shipwreck';
-import { placeOfScene, placeById, type MapRoute } from './worldMap';
+import { placeOfScene, placeById, routesEtat, visiblePlaces, type MapRoute, type WorldMap } from './worldMap';
 import { buildRiverDayCascade } from './riverVoyageFlow';
 import { findVehicleById } from '../data';
 import { startCascade } from './cascade';
@@ -57,7 +57,7 @@ import { willAutoResolve } from './combatAuto';
 import { aiDriven } from './combatGate';
 import type { Combatant } from '../engine/types';
 import { makeRNG } from '../engine/dice';
-import { partyMoneyTotal, creditBourse, distributeCredit } from './bourseFlow';
+import { partyMoneyTotal, creditBourse, distributeCredit, condCtx } from './bourseFlow';
 import { t } from '../i18n';
 import { diamondCorners, type Dims } from '../geometry/iso';
 import { chebyshev } from '../engine/grid';
@@ -68,6 +68,23 @@ import { chebyshev } from '../engine/grid';
  *  n'est appelé qu'une fois, `main.tsx`). */
 let lastRollTrace: { actorId: string; success: boolean; sl: number; roll: number | null; target: number } | null = null;
 bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastRollTrace; });
+
+/** Routes qui portent un tracé de HIT au DOM de la carte du monde, dans le MÊME ORDRE et sous les
+ *  MÊMES prédicats que le rendu (`WorldMapView.tsx` — extrémités dans `visiblePlaces`, route offerte
+ *  par `routesEtat` depuis le lieu courant, ouverte OU fermée-consultable). SOURCE UNIQUE du mapping
+ *  DOM ↔ id, partagée par `routes()` et `clickRoute()` : sans elle, une route partant vers un lieu
+ *  caché décale l'index et `clickRoute` clique une AUTRE route que celle nommée (#684). */
+function routesRendues(map: WorldMap, sceneId: string | undefined): { route: MapRoute; ouverte: boolean }[] {
+  const here = placeOfScene(map, sceneId);
+  if (!here) return [];
+  const ctx = condCtx(useGame.getState);
+  const visibles = new Set(visiblePlaces(map, ctx).map((p) => p.id));
+  const etats = routesEtat(map, here.id, ctx);
+  return map.routes.flatMap((r) => {
+    const e = etats.find((x) => x.route.id === r.id);
+    return e && visibles.has(r.a) && visibles.has(r.b) ? [e] : [];
+  });
+}
 
 /**
  * Outils de recette navigateur (DEV uniquement) — exposés sur `window.__wfrp`.
@@ -480,20 +497,20 @@ export function buildApi() {
         access: e.dialogueId ? 'talk' : e.merchant ? 'merchant' : e.interact ? 'interact' : '—',
       })),
 
-    /** CARTOGRAPHIE (symétrique d'`entities()`) : les routes CLIQUABLES (`clickRoute`, MÊME filtre
-     *  `fromHere`) depuis le lieu courant de la carte du monde — cible une route pour
-     *  `__wfrp.clickRoute(id)` quand plusieurs chips de distance sont ambigus. */
+    /** CARTOGRAPHIE (symétrique d'`entities()`) : les routes CLIQUABLES (`clickRoute`, MÊME source
+     *  `routesRendues`) depuis le lieu courant de la carte du monde — cible une route pour
+     *  `__wfrp.clickRoute(id)` quand plusieurs chips de distance sont ambigus. `etat` dit si le
+     *  départ est offert (`ouverte`) ou si la route ne se CONSULTE que (`fermee-consultable`). */
     routes: () => {
       const s = g();
       const map = s.worldMap;
       if (!map || !s.scene) return '✗ aucune carte du monde ouverte (voir __wfrp.screen(\'worldmap\'))';
-      const here = placeOfScene(map, s.scene.id);
-      const fromHere = (r: MapRoute) => !!here && (r.a === here.id || r.b === here.id) && (r.from == null || r.from === here.id);
-      return map.routes.filter(fromHere).map((r) => ({
+      return routesRendues(map, s.scene.id).map(({ route: r, ouverte }) => ({
         id: r.id,
         from: placeById(map, r.a)?.label ?? r.a,
         to: placeById(map, r.b)?.label ?? r.b,
         distanceLabel: routeDistanceLabel(r.km, r.sea),
+        etat: ouverte ? 'ouverte' : 'fermee-consultable',
       }));
     },
 
@@ -1612,12 +1629,12 @@ export function buildApi() {
       const route = map.routes.find((r) => r.id === routeId);
       if (!route) return `✗ route « ${routeId} » introuvable — ids : ${map.routes.map((r) => r.id).join(', ')}`;
       const here = placeOfScene(map, s.scene.id);
-      const fromHere = (r: MapRoute) => !!here && (r.a === here.id || r.b === here.id) && (r.from == null || r.from === here.id);
-      if (!fromHere(route)) return `✗ route « ${routeId} » non cliquable depuis ici (${here?.label ?? '?'})`;
-      // Seules les routes cliquables (`fromHere`) rendent le tracé de hit-test invisible
-      // (`stroke-opacity="0"`, `WorldMapView.tsx`) — DANS le MÊME ordre que `map.routes` filtré.
-      const clickable = map.routes.filter(fromHere);
-      const idx = clickable.findIndex((r) => r.id === routeId);
+      // Seules les routes RENDUES portent un tracé de hit-test (`WorldMapView.tsx`) — MÊMES prédicats,
+      // MÊME ordre : extrémités révélées + offerte depuis ici. Une route qui part vers un lieu caché
+      // n'a pas de tracé : la compter décalerait l'index et cliquerait une AUTRE route (#684).
+      const clickable = routesRendues(map, s.scene.id);
+      const idx = clickable.findIndex((e) => e.route.id === routeId);
+      if (idx < 0) return `✗ route « ${routeId} » non cliquable depuis ici (${here?.label ?? '?'})`;
       // La bande CLIQUABLE d'une route est le `path` de HIT de `MapCanvas` (`stroke="transparent"`,
       // `pointer-events: stroke`) — sélecteur RE-MESURÉ au rendu réel en recette #1117 : l'ancien
       // `path[stroke-opacity="0"]` ne correspondait à rien et rendait le helper muet.

@@ -19,7 +19,8 @@
  */
 import { battleRng } from './battleRng';
 import { checkPartyWiped } from './partyWipe';
-import { placeById, placeOfScene, type WorldMap, type MapPlace } from './worldMap';
+import { placeById, placeOfScene, visiblePlaces, type WorldMap, type MapPlace } from './worldMap';
+import { condCtx } from './bourseFlow';
 import { testValue } from '../engine/skills';
 import { isOutOfAction } from '../engine/conditions';
 import { rule } from '../engine/policy';
@@ -42,11 +43,13 @@ import { stepDetail } from './rollSeam';
 const swimTestLabel = (diff: Difficulty): PlayerText =>
   t('step.sujetPrecision', { sujet: refLabel('skills', { id: 'natation' }), precision: DIFFICULTY_LABELS[diff] });
 
-/** Lieu le plus proche d'un point de la carte (distance euclidienne sur `pos`). */
-function nearestPlaceTo(map: WorldMap, pos: { x: number; y: number }): MapPlace | undefined {
+/** Lieu le plus proche d'un point de la carte (distance euclidienne sur `pos`) — pris dans la liste
+ *  fournie par l'appelant, jamais dans `map.places` brut (un naufrage n'échoue pas le groupe sur un
+ *  lieu que le récit n'a pas révélé, #684). */
+function nearestPlaceTo(places: MapPlace[], pos: { x: number; y: number }): MapPlace | undefined {
   let best: MapPlace | undefined;
   let bestD = Infinity;
-  for (const p of map.places) {
+  for (const p of places) {
     const d = (p.pos.x - pos.x) ** 2 + (p.pos.y - pos.y) ** 2;
     if (d < bestD) { bestD = d; best = p; }
   }
@@ -65,7 +68,7 @@ function shorePlace(get: Get): MapPlace | undefined {
     if (from && to) {
       const frac = plan.km > 0 ? Math.max(0, Math.min(1, plan.kmDone / plan.km)) : 0;
       const est = { x: from.pos.x + (to.pos.x - from.pos.x) * frac, y: from.pos.y + (to.pos.y - from.pos.y) * frac };
-      return nearestPlaceTo(map, est);
+      return nearestPlaceTo(visiblePlaces(map, condCtx(get)), est);
     }
   }
   return placeOfScene(map, get().scene?.id);

@@ -16,6 +16,7 @@ import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
 import type { LandMarketProfile } from '../engine/landCargo';
 import type { RestPlaces } from './restFlow';
+import { evalCondition, type Condition, type ConditionCtx } from '../engine/flowCore';
 import { findNavalPortById, findLieuServiceById, CORE_AXIS_IDS } from '../data';
 
 /** Lieu posé sur la carte. Être dans `scene` = être à ce lieu ; y arriver → transition vers elle. */
@@ -56,6 +57,10 @@ export interface MapPlace {
   /** Bande d'ambiance du hub de ce lieu (id du registre `src/ui/backdrops`) — surcharge le défaut
    *  éventuel porté par le service (`lieux-services.json`, ex. auberge). Éditable dans `WorldMapEditor`. */
   backdrop?: string;
+  /** Le lieu EXISTE-t-il sur la carte (algèbre `Condition`, cf. `evalCondition`) — axe NŒUD du gating
+   *  narratif : une destination n'apparaît qu'une fois RÉVÉLÉE par le récit (`setFlag`). Absente =
+   *  toujours visible. Lue par `visiblePlaces` (le rendu et le cadrage consomment la liste FILTRÉE). */
+  when?: Condition;
 }
 
 /** Un POI de PLAN (#345 phase 5) : cible EXCLUSIVE `sceneId` (transition vers une scène du projet,
@@ -141,6 +146,13 @@ export interface MapRoute {
    *  portion de fleuve : `grande-ville-marais`, `aval-grande-ville-8km`…), `mode` = `ingestion` (boire l'eau
    *  du fleuve non bouillie, l.5) / `immersion` (chute\nage, blessures ouvertes, l.7-9). Data-driven, éditable. */
   riverExposure?: { source?: string; mode: import('../data').WaterExposureMode; chancePct: number };
+  /** Le trajet est-il PRATICABLE (algèbre `Condition`, cf. `evalCondition`) — axe ARÊTE du gating
+   *  narratif, indépendant de `MapPlace.when` : un tronçon se ferme sans que le lieu déjà visité
+   *  cesse d'exister sur la carte. Absente = toujours praticable. Lue par `routesFrom`. */
+  when?: Condition;
+  /** Raison JOUEUR de l'indisponibilité du trajet, portée par `GatedAction` (infobulle `refus` —
+   *  arbitrage 2026-08-24, jamais inline par défaut). Sans objet en l'absence de `when`. */
+  refus?: string;
 }
 
 export interface WorldMapParams {
@@ -339,10 +351,43 @@ export function placeServices(place: MapPlace, scene?: Scene): ResolvedPlaceServ
   return out;
 }
 
-/** Routes EMPRUNTABLES depuis un lieu : reliées à `placeId`, et — si à sens unique (`from`) — initiables
- *  depuis lui. Une route `from` reliant les deux mêmes ports que sa jumelle n'est offerte QUE dans son sens. */
-export function routesFrom(map: WorldMap, placeId: string): MapRoute[] {
-  return map.routes.filter((r) => (r.a === placeId || r.b === placeId) && (r.from == null || r.from === placeId));
+/** Routes EMPRUNTABLES depuis un lieu : reliées à `placeId`, — si à sens unique (`from`) — initiables
+ *  depuis lui, et PRATICABLES (`MapRoute.when`). Une route `from` reliant les deux mêmes ports que sa
+ *  jumelle n'est offerte QUE dans son sens. `ctx` (fabriqué chez l'appelant — `condCtx`, `bourseFlow.ts`)
+ *  absent : aucune évaluation, toutes les routes reliées sont rendues.
+ *
+ *  Lecteur du VOYAGE : le moteur ne propose jamais un trajet fermé, et n'en démarre jamais un —
+ *  `startTravel` (`travelFlow.ts`) réévalue `when` au départ, au même niveau que le sens unique `from`.
+ *  La VUE lit `routesEtat`, qui rend aussi les trajets fermés — le joueur doit VOIR qu'il ne peut plus
+ *  y aller (et pourquoi). */
+export function routesFrom(map: WorldMap, placeId: string, ctx?: ConditionCtx): MapRoute[] {
+  return map.routes.filter(
+    (r) =>
+      (r.a === placeId || r.b === placeId) &&
+      (r.from == null || r.from === placeId) &&
+      (r.when == null || ctx == null || evalCondition(r.when, ctx)),
+  );
+}
+
+/** ÉTAT des routes d'un lieu pour la VUE : les MÊMES routes reliées/initiables que `routesFrom`, mais
+ *  TOUTES rendues, chacune avec son verdict de praticabilité (`ouverte`). Un trajet fermé reste à
+ *  l'écran en affordance refusée (`MapRoute.refus`, `GatedAction`) ; c'est le seul lecteur qui expose
+ *  les routes fermées — le VOYAGE consomme `routesFrom`. `ctx` absent : tout est ouvert. */
+export function routesEtat(
+  map: WorldMap,
+  placeId: string,
+  ctx?: ConditionCtx,
+): { route: MapRoute; ouverte: boolean }[] {
+  return map.routes
+    .filter((r) => (r.a === placeId || r.b === placeId) && (r.from == null || r.from === placeId))
+    .map((r) => ({ route: r, ouverte: r.when == null || ctx == null || evalCondition(r.when, ctx) }));
+}
+
+/** Lieux EXISTANTS de la carte (`MapPlace.when`) — frère NŒUD de `routesFrom` : source unique de la
+ *  liste de lieux offerte au joueur (rendu, cadrage, déchevauchement). `ctx` absent : aucune
+ *  évaluation, tous les lieux sont rendus. */
+export function visiblePlaces(map: WorldMap, ctx?: ConditionCtx): MapPlace[] {
+  return map.places.filter((p) => p.when == null || ctx == null || evalCondition(p.when, ctx));
 }
 
 /** L'autre extrémité d'une route. */
