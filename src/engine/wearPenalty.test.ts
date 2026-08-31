@@ -55,7 +55,7 @@ describe('testValue + port d’armure', () => {
       id, name: id, kind: 'hero',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: ag, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4,
-      skills: [{ skillId: 'discretion', characteristic: 'agilite', advances: 0 }], talents: [],
+      skills: [{ id: 'discretion', characteristic: 'agilite', advances: 0 }], talents: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items,
     } as unknown as Combatant;
   }
@@ -95,7 +95,7 @@ describe('testValue + Laid (Sociabilité)', () => {
   it('-10 sur une compétence Soc-based (Charme), rien sur une compétence non-Soc (Discrétion)', () => {
     const c = {
       characteristics: { sociabilite: 40, agilite: 40, force: 30, endurance: 30 }, // F/E requis : sinon maxEncumbrance = NaN → faux palier d'Encombrement
-      skills: [{ skillId: 'charme', characteristic: 'sociabilite', advances: 0 }, { skillId: 'discretion', characteristic: 'agilite', advances: 0 }],
+      skills: [{ id: 'charme', characteristic: 'sociabilite', advances: 0 }, { id: 'discretion', characteristic: 'agilite', advances: 0 }],
       items: [{ uid: 'a', name: 'X', kind: 'armor', qualities: q_(['Laid']), enc: 1, equipped: true }],
     } as unknown as Combatant;
     expect(testValue(c, 'charme')).toBe(30); // Soc 40 − 10

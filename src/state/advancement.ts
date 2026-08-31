@@ -144,13 +144,13 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   // distincte (LDB 09 l.42). In-carrière = slot explicite / désigné / joker libre, OU
   // compétence ajoutée par un talent (« à n'importe quelle Carrière », LDB 10).
   const skills: SkillAdvanceRow[] = hero.skills.map((s) => {
-    const sName = byId('skill', s.skillId)?.label ?? s.skillId; // AFFICHAGE seulement
-    const status = inCareerStatus(sSlots, designations, s.skillId, s.spec);
-    const addedExact = additions.some((a) => a.id === s.skillId && (!a.spec || a.choix != null || (a.spec ?? '') === (s.spec ?? '')));
+    const sName = byId('skill', s.id)?.label ?? s.id; // AFFICHAGE seulement
+    const status = inCareerStatus(sSlots, designations, s.id, s.spec);
+    const addedExact = additions.some((a) => a.id === s.id && (!a.spec || a.choix != null || (a.spec ?? '') === (s.spec ?? '')));
     const inCareer = status != null || addedExact;
-    const discount = additionDiscount(additions, sSlots, designations, s.skillId, s.spec);
+    const discount = additionDiscount(additions, sSlots, designations, s.id, s.spec);
     return {
-      skillId: s.skillId,
+      skillId: s.id,
       label: sName,
       spec: s.spec,
       characteristic: s.characteristic,
@@ -161,7 +161,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     };
   });
   // Entrées EXPLICITES de carrière pas encore connues → acquérables à advances 0.
-  const knows = (skillId: string, spec?: string) => hero.skills.some((s) => s.skillId === skillId && (s.spec ?? '') === (spec ?? ''));
+  const knows = (skillId: string, spec?: string) => hero.skills.some((s) => s.id === skillId && (s.spec ?? '') === (spec ?? ''));
   for (const slot of sSlots) {
     if (slot.needsChoice) continue;
     const o = slot.options[0];
@@ -184,7 +184,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
       .map((spec) => ({
         spec,
         display: specLabel('skills', o.optionId!, spec),
-        ownedAdvances: hero.skills.find((s) => s.skillId === o.optionId && (s.spec ?? '') === spec)?.advances ?? 0,
+        ownedAdvances: hero.skills.find((s) => s.id === o.optionId && (s.spec ?? '') === spec)?.advances ?? 0,
       }));
     const characteristic = byId('skill', o.optionId)?.characteristic ?? 'intelligence';
     skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.label, groupId: o.optionId, characteristic, options, nextCost: advanceCost(0, 'skill', true) });

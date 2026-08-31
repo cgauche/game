@@ -67,7 +67,7 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
   });
 
   it('(a) acteur SAIN, Difficulté Intermédiaire : ancien calcul === rollStep', () => {
-    const h = hero('h1', { skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 5 }] } as Partial<Combatant>);
+    const h = hero('h1', { skills: [{ id: 'athletisme', characteristic: 'agilite', advances: 5 }] } as Partial<Combatant>);
     useGame.setState({ party: [h] });
     runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
@@ -81,13 +81,13 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
   it('(b) acteur à ÉTATS + Soutien + malus social FONDUS : le split du monteur reconstruit la valeur', () => {
     const h1 = hero('h1', {
       characteristics: { ...CHARS, sociabilite: 60 },
-      skills: [{ skillId: 'charme', characteristic: 'sociabilite', advances: 10 }],
+      skills: [{ id: 'charme', characteristic: 'sociabilite', advances: 10 }],
       conditions: [{ id: 'extenue', value: 2 }],
       psychTraits: [{ type: 'animosite', cible: 'elfe' }],
     } as unknown as Partial<Combatant>);
     const h2 = hero('h2', {
       characteristics: { ...CHARS, sociabilite: 20 },
-      skills: [{ skillId: 'charme', characteristic: 'sociabilite', advances: 1 }],
+      skills: [{ id: 'charme', characteristic: 'sociabilite', advances: 1 }],
     } as unknown as Partial<Combatant>);
     useGame.setState({ party: [h1, h2] });
     // Le fixture EXERCE bien les trois postes (sinon la parité ne mesurerait rien).
@@ -114,8 +114,8 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
     const h1 = hero('h1', {
       characteristics: { ...CHARS, sociabilite: 50 },
       skills: [
-        { skillId: 'marchandage', characteristic: 'sociabilite', advances: 8 },
-        { skillId: 'commerage', characteristic: 'sociabilite', advances: 2 },
+        { id: 'marchandage', characteristic: 'sociabilite', advances: 8 },
+        { id: 'commerage', characteristic: 'sociabilite', advances: 2 },
       ],
       psychTraits: [{ type: 'prejuge', cible: 'nain' }],
     } as unknown as Partial<Combatant>);
@@ -142,7 +142,7 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
   });
 
   it('(d) météo maritime (`envMod`) : le mod reste SUR LA CIBLE, hors de la valeur', () => {
-    const h = hero('h1', { skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 0 }] } as Partial<Combatant>);
+    const h = hero('h1', { skills: [{ id: 'athletisme', characteristic: 'agilite', advances: 0 }] } as Partial<Combatant>);
     useGame.setState({ party: [h], travelPlan: seaPlan('abondantes') });
     runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
@@ -160,7 +160,7 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
   it('(e) ÉCRÊTAGE : la cible franchit le plafond — le `clamped` voyage à l’identique', () => {
     const h = hero('h1', {
       characteristics: { ...CHARS, agilite: 80 },
-      skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 15 }],
+      skills: [{ id: 'athletisme', characteristic: 'agilite', advances: 15 }],
     } as unknown as Partial<Combatant>);
     useGame.setState({ party: [h] });
     runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, difficulty: 'tresFacile', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
@@ -173,7 +173,7 @@ describe('openSkillTest × monteur canonique — la cible est BIT-IDENTIQUE (#11
   });
 
   it('la garde d’exactitude du monteur est ACTIVE ici : une part annoncée mais NON fondue est refusée', () => {
-    const h = hero('h1', { skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 5 }] } as Partial<Combatant>);
+    const h = hero('h1', { skills: [{ id: 'athletisme', characteristic: 'agilite', advances: 5 }] } as Partial<Combatant>);
     // Sans ce cas, les parités ci-dessus prouveraient la cible mais pas la RECONSTRUCTION : un `exact`
     // faux passerait inaperçu si la garde ne mordait pas dans cet environnement.
     expect(() => rollStep({
@@ -196,7 +196,7 @@ describe('la LIGNE MONTÉE voyage jusqu’au pending (#1153 L2’ R4)', () => {
 
   const noble = (id: string, over: Partial<Combatant> = {}): Combatant => hero(id, {
     characteristics: { ...CHARS, sociabilite: 45 },
-    skills: [{ skillId: 'charme', characteristic: 'sociabilite', advances: 5 }],
+    skills: [{ id: 'charme', characteristic: 'sociabilite', advances: 5 }],
     career: 'noble', careerLevel: 1,
     ...over,
   } as unknown as Partial<Combatant>);
@@ -244,12 +244,12 @@ describe('la LIGNE MONTÉE voyage jusqu’au pending (#1153 L2’ R4)', () => {
   it('MULTI-candidats : chaque candidat porte SA ligne, et `testSetActor` la fait suivre', () => {
     const h1 = hero('h1', {
       characteristics: { ...CHARS, agilite: 55 },
-      skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 5 }],
+      skills: [{ id: 'athletisme', characteristic: 'agilite', advances: 5 }],
       conditions: [{ id: 'extenue', value: 1 }],
     } as unknown as Partial<Combatant>);
     const h2 = hero('h2', {
       characteristics: { ...CHARS, agilite: 40 },
-      skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 2 }],
+      skills: [{ id: 'athletisme', characteristic: 'agilite', advances: 2 }],
     } as unknown as Partial<Combatant>);
     useGame.setState({ party: [h1, h2] });
     runFlow(useGame.getState, useGame.setState, testFlow({ skill: { id: 'athletisme' }, difficulty: 'intermediaire', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));

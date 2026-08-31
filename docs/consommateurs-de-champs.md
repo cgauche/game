@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3337` |
-| `spec` | 1 | `src/data/index.ts:3338` |
+| `id` | 4 | `src/data/index.ts:3347` |
+| `spec` | 1 | `src/data/index.ts:3348` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3349` |
+| `id` | 1 | `src/data/index.ts:3359` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3349` |
+| `value` | 2 | `src/data/index.ts:3359` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,29 +91,29 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3400` |
+| `id` | 4 | `src/data/index.ts:3418` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3401` |
-| `qualities` | 2 | `src/data/index.ts:3404` |
-| `qualityChoice` | 2 | `src/data/index.ts:3402` |
-| `text` | 1 | `src/data/index.ts:3395` |
-| `vehicleId` | 2 | `src/data/index.ts:3397` |
+| `count` | 3 | `src/data/index.ts:3419` |
+| `qualities` | 2 | `src/data/index.ts:3422` |
+| `qualityChoice` | 2 | `src/data/index.ts:3420` |
+| `text` | 1 | `src/data/index.ts:3413` |
+| `vehicleId` | 2 | `src/data/index.ts:3415` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3399` |
-| `choice` | 3 | `src/data/index.ts:3392` |
-| `wildcard` | 1 | `src/data/index.ts:3393` |
+| `creatureId` | 2 | `src/data/index.ts:3417` |
+| `choice` | 3 | `src/data/index.ts:3410` |
+| `wildcard` | 1 | `src/data/index.ts:3411` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 7 | `src/data/index.ts:3371` |
+| `id` | 6 | `src/data/index.ts:3393` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
-| `choix` | 6 | `src/data/index.ts:3370` |
-| `pick` | 1 | `src/data/index.ts:3378` |
-| `of` | 4 | `src/data/index.ts:3377` |
+| `choix` | 4 | `src/data/index.ts:3393` |
+| `pick` | 1 | `src/data/index.ts:3396` |
+| `of` | 4 | `src/data/index.ts:3395` |
 | `table` | **0 — JAMAIS LU** | — |
-| `random` | 2 | `src/data/index.ts:3380` |
+| `random` | 2 | `src/data/index.ts:3398` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 

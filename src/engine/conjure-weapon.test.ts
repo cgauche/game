@@ -40,7 +40,7 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
   });
 
   it('formes proposées : toutes les armes réelles des Spé connues, « Arme simple » incluse (≠ junk)', () => {
-    const c = mage({ skills: [{ skillId: 'corps-a-corps', spec: 'base', advances: 10 }] as Combatant['skills'] });
+    const c = mage({ skills: [{ id: 'corps-a-corps', spec: 'base', advances: 10 }] as Combatant['skills'] });
     const ids = conjureFormOptions(c).map((f) => f.weapon); // f.weapon = id de trapping
     expect(ids).toContain('arme-simple'); // arme de base commune (épée/hache/masse/lance courte)
     expect(ids.every((l) => !/bouclier|improvis|mains-nues/i.test(l))).toBe(true); // junk exclu
@@ -48,7 +48,7 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
   });
 
   it('forme LIBRE : clone le profil d’une arme RÉELLE de la Spé de Corps à corps choisie', () => {
-    const c = mage({ skills: [{ skillId: 'corps-a-corps', spec: 'escrime', advances: 10 }] as Combatant['skills'] });
+    const c = mage({ skills: [{ id: 'corps-a-corps', spec: 'escrime', advances: 10 }] as Combatant['skills'] });
     const opt = conjureFormOptions(c)[0]; // arme réelle d'Escrime issue de la base (Rapière…)
     applyOps(c, [{ op: 'grantWeapon', label: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' }, qualities: ['magique'], chooseForm: true }],
       { label: 'Arme aethyrique', defaultDurationRounds: 4, conjureForm: opt });

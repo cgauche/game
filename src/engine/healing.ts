@@ -23,7 +23,7 @@ export const HEAL_SKILL = 'guerison';
 /** Le combattant possède-t-il la Compétence (Avancée) Guérison ? Sans Augmentation, « aucune idée
  *  de comment soigner » (LDB 09 l.31, l.33). */
 export function hasHealSkill(c: Combatant): boolean {
-  return (c.skills ?? []).some((s) => s.skillId === HEAL_SKILL);
+  return (c.skills ?? []).some((s) => s.id === HEAL_SKILL);
 }
 
 /** Le personnage possède-t-il le Talent Chirurgie (LDB 10) ? Prérequis pour opérer une blessure

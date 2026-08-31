@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ShipStateBlock, ShipCrewByRole, PosteDetail, ShipInspectBody } from './ShipSheet';
 import type { Combatant, SkillInstance } from '../engine/types';
 
-const mk = (id: string, dex: number, skills: { skillId: string; advances: number; spec?: string }[] = [], shipRole?: string): Combatant =>
+const mk = (id: string, dex: number, skills: { id: string; advances: number; spec?: string }[] = [], shipRole?: string): Combatant =>
   ({
     id, label: id, kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: dex, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
@@ -17,7 +17,7 @@ const poste = (label: string, uid: string, side: string, crewIds: string[]): Pos
 
 describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
   it('ShipStateBlock : coque, cap, Moral, effectif', () => {
-    const crew = [mk('Anna', 60, [{ skillId: 'voile', advances: 30 }], 'timonier')];
+    const crew = [mk('Anna', 60, [{ id: 'voile', advances: 30 }], 'timonier')];
     const ship = { id: 'ship', label: 'La Cogue', wounds: { current: 40, max: 50 }, conditions: [] } as unknown as Combatant;
     const html = renderToStaticMarkup(<ShipStateBlock ship={ship} cap="N" morale={75} crew={crew} />);
     expect(html).toContain('40/50'); // coque
@@ -26,7 +26,7 @@ describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
   });
 
   it('ShipCrewByRole : rôles de manœuvre + essentiel marqué + assignation', () => {
-    const crew = [mk('Anna', 60, [{ skillId: 'voile', advances: 30 }], 'timonier')];
+    const crew = [mk('Anna', 60, [{ id: 'voile', advances: 30 }], 'timonier')];
     const html = renderToStaticMarkup(<ShipCrewByRole crew={crew} onSet={() => {}} />);
     // Les 5 rôles de 'manoeuvre' (crew-test-types.json).
     expect(html).toContain('Timonier');
@@ -39,7 +39,7 @@ describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
   });
 
   it('PosteDetail : le poste sélectionné affiche son bord + son nom + son servant', () => {
-    const soldat = mk('Soldat', 50, [{ skillId: 'projectiles', advances: 20, spec: 'poudre-noire' }]);
+    const soldat = mk('Soldat', 50, [{ id: 'projectiles', advances: 20, spec: 'poudre-noire' }]);
     const ship = { id: 'ship', label: 'La Cogue', conditions: [] } as unknown as Combatant;
     const html = renderToStaticMarkup(<PosteDetail hull={ship} poste={poste('Pierrier', 'p1', 'tribord', ['Soldat'])} combatants={[ship, soldat]} />);
     expect(html).toContain('Tribord');

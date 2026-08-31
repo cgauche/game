@@ -12,6 +12,7 @@ import { rule, setRule, loadRuleOverrides } from '../engine/policy';
 import { talents, careerLevels, specResolves } from '../data/index';
 import { talentSlots, slotCovers } from '../engine/careerSlots';
 import { createHero } from '../engine/character';
+import { testValue } from '../engine/skills';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 
@@ -121,15 +122,17 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: SAVE_VERSION - 1 })).toBeNull();
     expect(parseSave({ ...cur, version: 1 })).toBeNull();
   });
-  it('la forme persistée COURANTE parle le VOCABULAIRE DE SPÉC en id (L2 #1548) : 34, et 33 se jette', () => {
-    // 34 = l'avancement porte l'id de catalogue là où il portait le libellé imprimé (« Érudit » →
-    // `erudits`). `slotCovers` apparie par égalité stricte : un héros de 33 conserverait un Talent qui
-    // ne couvre plus son emplacement (avance perdue en silence). Sonde ci-dessous — le TALENT PERSISTÉ
-    // est la donnée dont la forme a changé, pas le fichier de save.
-    expect(SAVE_VERSION).toBe(34);
-    expect(parseSave({ ...cur, version: 33 })).toBeNull();
+  it('la forme persistée COURANTE nomme `id` le champ d’identité d’une `SkillInstance` (L2 #1548) : 36, et 35 se jette', () => {
+    // MESURE du motif : une instance à la graphie de 35 n'est appariée par AUCUN Test — le moteur
+    // apparie sur `id`, donc la valeur retombe sur la Caractéristique nue, Augmentations perdues.
+    const nu = { ...createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Sonde', rng: makeRNG(1) }), skills: [] };
+    const avecAncienneGraphie = { ...nu, skills: [{ skillId: 'resistance', characteristic: 'endurance', advances: 20 }] } as unknown as typeof nu;
+    const avecGraphieCourante = { ...nu, skills: [{ id: 'resistance', characteristic: 'endurance', advances: 20 }] } as unknown as typeof nu;
+    expect(testValue(avecAncienneGraphie, 'resistance')).toBe(testValue(nu, 'resistance'));
+    expect(testValue(avecGraphieCourante, 'resistance')).toBe(testValue(nu, 'resistance') + 20);
+    expect(SAVE_VERSION).toBe(36);
+    expect(parseSave({ ...cur, version: 35 })).toBeNull();
   });
-
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
     const sv = talents.find((t) => t.id === 'savoir-vivre')!;
     expect(specResolves(sv, 'Érudit'), 'valeur PERSISTÉE par un héros de 33').toBe(false);

@@ -15,10 +15,10 @@ import type { Combatant } from '../engine/types';
 
 function wizardWithSecondeVue(): Combatant {
   const w = pregen(PREGEN.sorcier);
-  w.skills = (w.skills as Combatant['skills']).filter((s) => s.skillId !== 'langue');
-  w.skills.push({ skillId: 'langue', spec: 'magick', advances: 30 } as never);
-  w.skills.push({ skillId: 'focalisation', spec: 'cieux', advances: 30 } as never); // domaine du sort de test (arc-de-t-essla)
-  w.skills.push({ skillId: 'perception', advances: 60 } as never); // très haut : Facile (+40) quasi certaine
+  w.skills = (w.skills as Combatant['skills']).filter((s) => s.id !== 'langue');
+  w.skills.push({ id: 'langue', spec: 'magick', advances: 30 } as never);
+  w.skills.push({ id: 'focalisation', spec: 'cieux', advances: 30 } as never); // domaine du sort de test (arc-de-t-essla)
+  w.skills.push({ id: 'perception', advances: 60 } as never); // très haut : Facile (+40) quasi certaine
   w.characteristics = { ...w.characteristics, intelligence: 80, 'force-mentale': 80 };
   w.talents = [...w.talents, { talentId: 'seconde-vue', times: 1 }];
   return w;
@@ -34,9 +34,9 @@ function setupCombat(): void {
  *  le plafond et fausserait la comparaison (`clamp`, `engine/tests.ts`). */
 function moderateCaster(): Combatant {
   const w = wizardWithSecondeVue();
-  w.skills = (w.skills as Combatant['skills']).filter((s) => s.skillId !== 'langue' && s.skillId !== 'focalisation');
-  w.skills.push({ skillId: 'langue', spec: 'magick', advances: 5 } as never);
-  w.skills.push({ skillId: 'focalisation', spec: 'cieux', advances: 5 } as never);
+  w.skills = (w.skills as Combatant['skills']).filter((s) => s.id !== 'langue' && s.id !== 'focalisation');
+  w.skills.push({ id: 'langue', spec: 'magick', advances: 5 } as never);
+  w.skills.push({ id: 'focalisation', spec: 'cieux', advances: 5 } as never);
   w.characteristics = { ...w.characteristics, intelligence: 45, 'force-mentale': 45 };
   return w;
 }

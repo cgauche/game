@@ -9,9 +9,9 @@ import type { Combatant, CharKey } from '../../engine/types';
  *  fixture de vérif : un pré-tiré peut avoir la Compétence à 0 avance (donc non tentable). */
 function ensureSkill(h: Combatant, name: string, characteristic: CharKey, spec?: string) {
   const skillId = findSkill(name)?.id ?? slugId(name);
-  const sk = h.skills.find((s) => s.skillId === skillId && (spec == null || s.spec === spec));
+  const sk = h.skills.find((s) => s.id === skillId && (spec == null || s.spec === spec));
   if (sk) sk.advances = Math.max(sk.advances, 5);
-  else h.skills.push({ skillId, spec, characteristic, advances: 5 });
+  else h.skills.push({ id: skillId, spec, characteristic, advances: 5 });
 }
 
 const scene = buildScene({

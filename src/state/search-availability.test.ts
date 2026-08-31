@@ -16,7 +16,7 @@ import type { Combatant } from '../engine/types';
 const gossiper = (soc: number): Combatant =>
   ({
     id: 'h', name: 'Colporteur', career: '', careerLevel: 1, items: [],
-    skills: [{ skillId: 'ragot', advances: 20 }], talents: [],
+    skills: [{ id: 'ragot', advances: 20 }], talents: [],
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: soc },
     wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {},
   } as unknown as Combatant);

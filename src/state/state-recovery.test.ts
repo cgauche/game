@@ -10,7 +10,7 @@ function hero(p: Partial<Combatant>): Combatant {
     characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 40, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-    skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 20 }], talents: [], fortune: 0, resilience: 0,
+    skills: [{ id: 'athletisme', characteristic: 'agilite', advances: 20 }], talents: [], fortune: 0, resilience: 0,
     pos: { x: 1, y: 1 }, ...p,
   } as Combatant;
 }

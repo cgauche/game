@@ -17,7 +17,7 @@ import type { CastResult } from '../engine/magic';
 
 function wiz() {
   const w = pregen(PREGEN.sorcier);
-  const sk = w.skills.find((s) => s.skillId === 'langue');
+  const sk = w.skills.find((s) => s.id === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 10);
   return w;
 }
@@ -121,7 +121,7 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
     const w = wiz();
     w.talents = w.talents.filter((t) => t.talentId !== 'harmonisation-aethyrique'); // le pré-tiré l'a déjà
     w.spells = ['armure-aethyrique', ...(w.spells ?? [])];
-    w.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
+    w.skills.push({ id: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
     useGame.setState({ party: [w] as Combatant[] });
     useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'armure-aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'Focalisation critique !' } } });
     useGame.getState().focusConfirm();
@@ -139,7 +139,7 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
     const w = wiz();
     w.talents = w.talents.filter((t) => t.talentId !== 'harmonisation-aethyrique');
     w.spells = ['manifestation-de-demon-mineur', ...(w.spells ?? [])];
-    w.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
+    w.skills.push({ id: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
     w.characteristics['force-mentale'] = 35; // BFM 3
     w.focus = { spell: 'manifestation-de-demon-mineur', dr: 1 };
     useGame.setState({ party: [w] as Combatant[] });
@@ -155,7 +155,7 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
   it('Harmonisation aethyrique : pas de contrecoup sur la Focalisation Critique', () => {
     const w = wiz();
     w.spells = ['armure-aethyrique'];
-    w.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
+    w.skills.push({ id: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
     w.talents.push({ talentId: 'harmonisation-aethyrique', times: 1 });
     useGame.setState({ party: [w] as Combatant[] });
     useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'armure-aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
@@ -173,7 +173,7 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
     const w = wiz();
     w.talents = w.talents.filter((tal) => tal.talentId !== 'harmonisation-aethyrique');
     w.spells = ['cauteriser'];
-    w.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
+    w.skills.push({ id: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
     useGame.setState({ party: [w] as Combatant[] });
     seedBattleRng(143);
     useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'cauteriser', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
@@ -243,7 +243,7 @@ describe('Interruption de Focalisation (l.142-144) — cadence-aware', () => {
   it('héros MANUEL : Calme RÉUSSI → concentration maintenue, DR conservés, aucune Imparfaite', () => {
     const w = wiz();
     w.characteristics['force-mentale'] = 100;
-    w.skills.push({ skillId: 'calme', characteristic: 'force-mentale', advances: 20 } as never);
+    w.skills.push({ id: 'calme', characteristic: 'force-mentale', advances: 20 } as never);
     w.focus = { spell: 'armure-aethyrique', dr: 3 };
     inCombat(w);
     checkFocusInterruption(useGame.getState, useGame.setState, w);

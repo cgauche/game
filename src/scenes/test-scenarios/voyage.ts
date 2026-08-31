@@ -16,9 +16,9 @@ import type { TestScenario } from './_shared';
  * activable au panneau Règles maison) et l'Entre-deux-aventures (interlude d'Activités à l'arrivée).
  */
 const skill = (c: Combatant, skillId: string, advances: number, spec?: string, characteristic: SkillInstance['characteristic'] = 'intelligence') => {
-  const ex = c.skills.find((s) => s.skillId === skillId && s.spec === spec);
+  const ex = c.skills.find((s) => s.id === skillId && s.spec === spec);
   if (ex) ex.advances = Math.max(ex.advances, advances);
-  else c.skills.push({ skillId, spec, characteristic, advances } as SkillInstance);
+  else c.skills.push({ id: skillId, spec, characteristic, advances } as SkillInstance);
 };
 
 /** Quatre héros, chacun à son POSTE de voyage (Étapes EDOC) ; Greta cumule le « mauvais état » qui fait

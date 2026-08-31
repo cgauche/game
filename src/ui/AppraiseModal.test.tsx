@@ -27,7 +27,7 @@ function hero(): Combatant {
   return {
     id: 'h', label: 'H', kind: 'hero', speciesId: 'humains-reiklander',
     characteristics: { intelligence: 40, sociabilite: 40, agilite: 40 } as Combatant['characteristics'],
-    skills: [{ skillId: 'evaluation', advances: 15 }] as SkillInstance[],
+    skills: [{ id: 'evaluation', advances: 15 }] as SkillInstance[],
     talents: [], items: [], conditions: [], advantage: 0, weapons: [],
   } as unknown as Combatant;
 }

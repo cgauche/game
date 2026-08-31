@@ -329,7 +329,7 @@ describe('DISPEL_MODE — le clic-token élit le PORTEUR, il n’attaque jamais'
 
   it('deux Sorts sur le porteur → le clic ÉLIT le porteur (aucune attaque, aucun jet ouvert)', () => {
     const { hero, e1 } = combat({ action: 'dispel' });
-    hero.skills.push({ skillId: 'langue', spec: 'magick', advances: 0 } as never);
+    hero.skills.push({ id: 'langue', spec: 'magick', advances: 0 } as never);
     porteur(e1, 2);
     useGame.getState().battleClickEntity('e1');
     expect(useGame.getState().dispelCarrierId, 'le porteur est élu — le SORT reste à choisir').toBe('e1');
@@ -339,7 +339,7 @@ describe('DISPEL_MODE — le clic-token élit le PORTEUR, il n’attaque jamais'
 
   it('UN seul Sort → commit DIRECT (un panneau à un choix serait du bruit)', () => {
     const { hero, e1 } = combat({ action: 'dispel' });
-    hero.skills.push({ skillId: 'langue', spec: 'magick', advances: 0 } as never);
+    hero.skills.push({ id: 'langue', spec: 'magick', advances: 0 } as never);
     porteur(e1, 1);
     useGame.getState().battleClickEntity('e1');
     expect(useGame.getState().dispelCarrierId, 'aucun paramètre à demander').toBeNull();
@@ -348,7 +348,7 @@ describe('DISPEL_MODE — le clic-token élit le PORTEUR, il n’attaque jamais'
 
   it('cible SANS Sort dissipable : rien au survol, et le clic d’une SURFACE dit son refus', () => {
     const { hero, e1, e2 } = combat({ action: 'dispel' });
-    hero.skills.push({ skillId: 'langue', spec: 'magick', advances: 0 } as never);
+    hero.skills.push({ id: 'langue', spec: 'magick', advances: 0 } as never);
     porteur(e1, 2);
     const mode = currentTargetingMode(useGame.getState);
     expect(mode.affordance!(useGame.getState, hero, e2), 'invalide = le survol n’affiche rien').toMatchObject({ kind: 'invalid', reason: 'sans-sort-dissipable' });
@@ -364,7 +364,7 @@ describe('DISPEL_MODE — le clic-token élit le PORTEUR, il n’attaque jamais'
 
   it('le refus ne CONSOMME rien : ni Action, ni Mouvement, ni Avantage, ni jet ouvert', () => {
     const { hero, e1, e2 } = combat({ action: 'dispel' });
-    hero.skills.push({ skillId: 'langue', spec: 'magick', advances: 0 } as never);
+    hero.skills.push({ id: 'langue', spec: 'magick', advances: 0 } as never);
     porteur(e1, 2);
     const avant = { ...useGame.getState().battle! } as unknown as Record<string, unknown>;
     const avAvantage = hero.advantage;

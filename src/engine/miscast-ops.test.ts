@@ -20,8 +20,8 @@ function hero(p: Partial<Combatant> = {}): Combatant {
     wounds: { current: 10, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
-      { skillId: 'priere', advances: 10 }, { skillId: 'langue', spec: 'magick', advances: 10 },
-      { skillId: 'focalisation', advances: 10 },
+      { id: 'priere', advances: 10 }, { id: 'langue', spec: 'magick', advances: 10 },
+      { id: 'focalisation', advances: 10 },
     ] as never,
     talents: [],
     ...p,

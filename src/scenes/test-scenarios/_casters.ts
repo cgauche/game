@@ -19,9 +19,9 @@ export const clone = (c: Combatant): Combatant => JSON.parse(JSON.stringify(c)) 
 /** Monte (ou ajoute) une Compétence à un niveau d'avances donné. */
 export function boostSkill(c: Combatant, name: string, spec: string | undefined, characteristic: CharKey, advances: number): void {
   const skillId = findSkill(name)?.id ?? slugId(name);
-  const s = c.skills.find((x) => x.skillId === skillId && (spec == null || x.spec === spec));
+  const s = c.skills.find((x) => x.id === skillId && (spec == null || x.spec === spec));
   if (s) s.advances = Math.max(s.advances, advances);
-  else c.skills.push({ skillId, spec, characteristic, advances } as SkillInstance);
+  else c.skills.push({ id: skillId, spec, characteristic, advances } as SkillInstance);
 }
 
 export const setChars = (c: Combatant, over: Partial<Record<CharKey, number>>): void => {

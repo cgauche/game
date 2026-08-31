@@ -284,7 +284,7 @@ export function focusWindLabel(spell: SpellLike): string | undefined {
 export function focusSkillFor(c: Combatant, spell: SpellLike) {
   const spec = focusSpecOf(spell);
   return c.skills.find(
-    (s) => s.skillId === 'focalisation' && s.advances >= 1 && (s.spec == null || spec == null || s.spec === spec),
+    (s) => s.id === 'focalisation' && s.advances >= 1 && (s.spec == null || spec == null || s.spec === spec),
   );
 }
 
@@ -303,7 +303,7 @@ export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string
   if (traitCapability(c.traits, 'spellcaster')) return true;
   // `skillName` EST déjà l'id stable de la Compétence (skills.json) — lookup direct.
   return c.skills.some(
-    (s) => s.skillId === skillName && (spec == null || s.spec === spec) && s.advances >= 1,
+    (s) => s.id === skillName && (spec == null || s.spec === spec) && s.advances >= 1,
   );
 }
 

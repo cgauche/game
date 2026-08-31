@@ -18,8 +18,8 @@ function groupe(): Combatant[] {
   const sigmund = pregen(PREGEN.soldat); // Destin/Résilience intacts (sauvetage in extremis)
   const grunni = pregen(PREGEN.tueur);
   const anselm = pregen(PREGEN.pretre);
-  if (!anselm.skills.some((s) => s.skillId === 'guerison')) {
-    anselm.skills.push({ skillId: 'guerison', characteristic: 'intelligence', advances: 25 }); // sinon pas d'Action Soigner
+  if (!anselm.skills.some((s) => s.id === 'guerison')) {
+    anselm.skills.push({ id: 'guerison', characteristic: 'intelligence', advances: 25 }); // sinon pas d'Action Soigner
   }
   const klein = pregen(PREGEN.voleur); // Halfling fragile
   klein.fate = 0;

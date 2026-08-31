@@ -757,7 +757,7 @@ export function entrainementOptions(hero: Combatant): EntrainementOption[] {
       if (inCareerStatus(sSlots, designations, s.id, spec) != null) continue; // de carrière → Avancement normal
       const addedExact = additions.some((a) => a.id === s.id && (!a.spec || a.choix != null || (a.spec ?? '') === (spec ?? '')));
       if (addedExact) continue; // ajoutée « à n'importe quelle Carrière » par un talent (LDB 10) → in-carrière
-      const known = hero.skills.find((k) => k.skillId === s.id && (k.spec ?? '') === (spec ?? ''));
+      const known = hero.skills.find((k) => k.id === s.id && (k.spec ?? '') === (spec ?? ''));
       const advances = known?.advances ?? 0;
       const advanced = s.acces === 'avancee';
       const range = entrainementTutorRange(advanced);
@@ -792,7 +792,7 @@ export function bankPayout(kind: 'invest' | 'stash', amountBrass: number, rate: 
 /** Compétence Métier (≥ 1 avance) du héros — porte d'entrée RAW de l'Artisanat (ch.23 l.66 :
  *  « si vous possédez les Compétences Métier appropriées »). */
 export function metierOf(c: Combatant): SkillInstance | undefined {
-  return c.skills.find((s) => s.skillId === 'metier' && (s.advances ?? 0) > 0);
+  return c.skills.find((s) => s.id === 'metier' && (s.advances ?? 0) > 0);
 }
 
 /** Prix listé en sous de cuivre (`priceToMoney` = SOURCE UNIQUE de la conversion, marques comprises). */

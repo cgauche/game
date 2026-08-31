@@ -87,7 +87,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
       id: 'helm', label: 'Timonier', kind: 'hero',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
-      skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 40 }], talents: [], weapons: [],
+      skills: [{ id: 'voile', characteristic: 'agilite', advances: 40 }], talents: [], weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 },
     }) as unknown as Combatant;
   const ship = (): Combatant =>
@@ -181,7 +181,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     down.wounds = { current: 0, max: 10 };                              // … mais à terre (0 PB) → inapte
     const ok = { ...helmsman(), id: 'helm', label: 'Timonier' } as Combatant;
     ok.characteristics = { ...ok.characteristics, agilite: 30 };
-    ok.skills = [{ skillId: 'voile', characteristic: 'agilite', advances: 10 } as never]; // conscient mais moins bon
+    ok.skills = [{ id: 'voile', characteristic: 'agilite', advances: 10 } as never]; // conscient mais moins bon
     const s = { ...ship(), crewIds: ['ace', 'helm'] } as Combatant;
     useGame.setState({ battle: { combatants: [s, down, ok], order: ['ship'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
     const r = maneuverShip(() => useGame.getState(), 'ship', 2)!;
@@ -205,7 +205,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
   it('échec → PAS de virage mais le navire avance QUAND MÊME le long du cap (RAW : déplacement inconditionnel)', () => {
     // Barreur faible (Voile ~18) sur la cogue (Man −1, Peu maniable −1) → DR final toujours < 0 (sl max 1 − 2 ≤ −1).
     const weak = helmsman();
-    weak.skills = [{ skillId: 'voile', characteristic: 'agilite', advances: 0 } as never];
+    weak.skills = [{ id: 'voile', characteristic: 'agilite', advances: 0 } as never];
     weak.characteristics = { ...weak.characteristics, agilite: 18 };
     const cogue = { ...ship(), creatureId: 'cogue' } as Combatant;
     seedBattleRng(3);
@@ -255,7 +255,7 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
     ({ id: 'helm', label: 'Timonier', kind: 'hero',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
-      skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 40 }], talents: [], weapons: [],
+      skills: [{ id: 'voile', characteristic: 'agilite', advances: 40 }], talents: [], weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
   const ship2 = (): Combatant =>
     ({ id: 'ship', label: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
@@ -342,7 +342,7 @@ describe('flux shipManeuver (store) — bouton HUD → modale → confirm (MDG 1
     ({ id: 'helm', label: 'Timonier', kind: 'hero',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], fortune: 2, resilience: 1,
-      skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 40 }], talents: [], weapons: [],
+      skills: [{ id: 'voile', characteristic: 'agilite', advances: 40 }], talents: [], weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
   const ship = (): Combatant =>
     ({ id: 'ship', label: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;

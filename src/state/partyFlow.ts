@@ -397,7 +397,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillId: str
       const clone: Combatant = structuredClone(h);
       const ctx = careerCtx(clone);
       const skillLabel = byId('skill', skillId)?.label ?? skillId; // AFFICHAGE (messages) + conversion pour le moteur
-      const known = clone.skills.some((sk) => sk.skillId === skillId && (sk.spec ?? '') === (spec ?? ''));
+      const known = clone.skills.some((sk) => sk.id === skillId && (sk.spec ?? '') === (spec ?? ''));
       const status = inCareerStatus(ctx.sSlots, ctx.designations, skillId, spec);
       const additions = careerSkillAdditions(clone);
       const added = additions.some((a) => a.id === skillId && (!a.spec || a.choix != null || (a.spec ?? '') === (spec ?? '')));
@@ -413,7 +413,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillId: str
         }
         // Acquérir la Compétence de carrière à advances 0, puis l'augmenter (l'Augmentation est payée).
         const characteristic = skillCharacteristicById(skillId); // par id (≠ 2e lookup par libellé)
-        clone.skills.push({ skillId, spec, characteristic, advances: 0 });
+        clone.skills.push({ id: skillId, spec, characteristic, advances: 0 });
       }
       const discount = added && status != null ? 5 : 0;
       const r = engineBuySkillAdvance(clone, skillId, spec, inC, discount);

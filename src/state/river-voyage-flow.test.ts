@@ -32,9 +32,9 @@ const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
 function skill(c: Combatant, skillId: string, advances: number, spec?: string): void {
-  const ex = c.skills.find((s) => s.skillId === skillId && (s.spec ?? null) === (spec ?? null));
+  const ex = c.skills.find((s) => s.id === skillId && (s.spec ?? null) === (spec ?? null));
   if (ex) ex.advances = Math.max(ex.advances, advances);
-  else c.skills.push({ skillId, spec, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
+  else c.skills.push({ id: skillId, spec, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
 }
 
 /** Un équipage de barge : Gunnar le batelier (Ramer/Voile), plus deux passagers sans compétence de marin. */
@@ -101,7 +101,7 @@ describe('buildRiverPlan — la descente exige un batelier et une embarcation', 
   });
 
   it('sans batelier (aucune avance Voile/Ramer) → null → repli transport payant', () => {
-    const noSailors = crew().map((h) => ({ ...h, skills: h.skills.filter((s) => s.skillId !== 'ramer' && s.skillId !== 'voile') }));
+    const noSailors = crew().map((h) => ({ ...h, skills: h.skills.filter((s) => s.id !== 'ramer' && s.id !== 'voile') }));
     expect(hasBatelier(noSailors)).toBe(false);
     set({ party: noSailors });
     expect(buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])).toBeNull();

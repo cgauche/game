@@ -111,9 +111,9 @@ describe('(B) Service — `serveAtPoste` rend chef tout combattant (mannedPoste,
     seedBattleRng(1);
     const poste = mkPoste('baliste', ['s1']);
     const gunner = mkActor('gunner', 'hero', { x: 5, y: 5 }, 80);
-    gunner.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
+    gunner.skills = [{ id: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
     const s1 = mkCrewman('s1');
-    s1.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée
+    s1.skills = [{ id: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée
     const cible = mkEnemyTarget('cible', 8, 5, 30, 60);
     const all = [mkEmplacement(poste), gunner, s1, cible];
     serveAtPoste(gunner, poste, all);
@@ -246,7 +246,7 @@ describe('(E) Affordance IA — un combattant IA adjacent PEUT servir', () => {
 //     peuvent aider à la déplacer ou compenser les pertes » (support = `crewIds[1..]`, compte dans l'Indice).
 // ───────────────────────────────────────────────────────────────────────────────────────────────
 describe('(F) Équipe — REJOINDRE une pièce servie en renfort (chef = seul tireur ; support = effectif d’Indice)', () => {
-  const arb = () => [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
+  const arb = () => [{ id: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
 
   it('(a) un 2e adjacent REJOINT en SUPPORT : appendu APRÈS le chef, mannedPoste posé, mais SANS arme de tir', () => {
     const poste = mkPoste('baliste');
@@ -373,7 +373,7 @@ describe('(G) Token — `serveTargetPoste` + clic-pièce rejoignent l’équipe 
 // ───────────────────────────────────────────────────────────────────────────────────────────────
 describe('(H) Qualification — seul l’équipage avec la Projectiles du Groupe de la pièce compte (AA 10 l.228-247)', () => {
   // `label` = libellé lisible (Arbalète/Arc) → résolu en id de Groupe stable (Phase 3 : la spec EST un id).
-  const proj = (label: string) => [{ skillId: 'projectiles', spec: weaponGroupIdByLabel(label), characteristic: 'capacite-de-tir', advances: 10 }] as never;
+  const proj = (label: string) => [{ id: 'projectiles', spec: weaponGroupIdByLabel(label), characteristic: 'capacite-de-tir', advances: 10 }] as never;
 
   it('chef QUALIFIÉ (Arbalète) compte (=1) ; +1 renfort qualifié → effectif 2 (=Indice, plus de sous-effectif)', () => {
     const poste = mkPoste('baliste'); // baliste = Groupe Arbalète, Arme d'équipe 2

@@ -102,7 +102,7 @@ describe('resolveSpeciesTalents — fixes / choix / aléatoires', () => {
 describe('createHero — applique compétences et talents raciaux', () => {
   it('le héros reçoit ses compétences d’espèce (advances ≥ valeur raciale) et ses talents', () => {
     const hero = createHero({ speciesId: REIK, careerId: 'soldat', label: 'Test', rng: makeRNG(3) });
-    const calme = hero.skills.find((s) => s.skillId === 'calme');
+    const calme = hero.skills.find((s) => s.id === 'calme');
     expect(calme).toBeTruthy();
     expect(calme!.advances).toBeGreaterThanOrEqual(5); // +5 d'espèce (additif si aussi en carrière)
     expect(hero.talents.map((t) => talentConcrete(t))).toContain('Destinée');

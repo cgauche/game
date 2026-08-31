@@ -32,9 +32,9 @@ const NUE = 45; // Niveau de Compétence en Marchandage (LDB 09 l.17)
 const ETAT = -10; // pénalité d'Empoisonné aux Tests (LDB 16, `etats.json` passive testMod)
 
 function setSkill(c: Combatant, skillId: string, advances: number): void {
-  const ex = c.skills.find((s) => s.skillId === skillId);
+  const ex = c.skills.find((s) => s.id === skillId);
   if (ex) ex.advances = advances;
-  else c.skills.push({ skillId, advances } as SkillInstance);
+  else c.skills.push({ id: skillId, advances } as SkillInstance);
 }
 
 /** Cale le Niveau de Compétence NU de `c` à EXACTEMENT `want`, puis l'Empoisonne. */

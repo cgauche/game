@@ -8,7 +8,7 @@ import type { Combatant } from '../engine/types';
 describe('Dissipation permanente — hors combat (couture D, #461)', () => {
   beforeEach(() => { vi.clearAllTimers(); useGame.setState({ battle: null, pendingDispel: null }); });
 
-  const langue = { skillId: 'langue', spec: 'magick', characteristic: 'intelligence' as const, advances: 20 };
+  const langue = { id: 'langue', spec: 'magick', characteristic: 'intelligence' as const, advances: 20 };
   const mk = (id: string, spells: string[], extra: Partial<Combatant> = {}): Combatant => ({
     id, name: id, kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 30, sociabilite: 30 },

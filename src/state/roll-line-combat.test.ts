@@ -76,7 +76,7 @@ describe('Rechargement (combatSlice) — canal COMBAT du monteur', () => {
   it('base = valeur de combat NUE, l’effet char-qualifié est une chip NOMMÉE, cible INCHANGÉE', () => {
     const tireur = hero({
       id: 'tir', label: 'Tireur', conditions: ETAT, activeEffects: effetCT,
-      skills: [{ skillId: 'projectiles', advances: 20, characteristic: 'capacite-de-tir' }] as never,
+      skills: [{ id: 'projectiles', advances: 20, characteristic: 'capacite-de-tir' }] as never,
       weapons: [arbalete],
     });
     setBattle([tireur], 'tir');
@@ -117,7 +117,7 @@ describe('Guérison en combat (combatSlice) — canal HORS COMBAT (`testValue`),
   it('cible = testValue + Difficulté, et le changement de mode la re-monte à l’identique', () => {
     const doc = hero({
       id: 'doc', label: 'Doc', conditions: ETAT,
-      skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] as never,
+      skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] as never,
     });
     const blesse = hero({ id: 'bl', label: 'Blessé', wounds: { current: 3, max: 12 }, conditions: [{ id: 'hemorragique', value: 2 }] as never, pos: { x: 2, y: 1 } });
     setBattle([doc, blesse], 'doc');
@@ -144,7 +144,7 @@ describe('Fin de rencontre (combatFlow) — Contraction et Corruption', () => {
   it('Contraction hors combat (`openContractionCascade`) : base NUE, cible = Résistance + Difficulté', () => {
     const patient = hero({
       id: 'pa', label: 'Patient', conditions: ETAT,
-      skills: [{ skillId: 'resistance', advances: 10, characteristic: 'endurance' }] as never,
+      skills: [{ id: 'resistance', advances: 10, characteristic: 'endurance' }] as never,
     });
     useGame.setState({ party: [patient], battle: null, pendingCascade: null } as never);
     const resVal = effectiveChar(patient, 'endurance') + 10; // `combatEndResistVal` : E effective + avances
@@ -161,7 +161,7 @@ describe('Fin de rencontre (combatFlow) — Contraction et Corruption', () => {
   it('Cascade de fin de combat : Contraction ET Corruption portent la pénalité de COMBAT en chips NOMMÉES', () => {
     const survivant = hero({
       id: 'sv', label: 'Survivant', conditions: ETAT, tookCriticalThisFight: true,
-      skills: [{ skillId: 'resistance', advances: 10, characteristic: 'endurance' }] as never,
+      skills: [{ id: 'resistance', advances: 10, characteristic: 'endurance' }] as never,
     } as never);
     const bete = hero({ id: 'be', label: 'Bête', kind: 'enemy', dead: true, traits: [{ id: 'corruption', arg: 'Mineure' }] } as never);
     setBattle([survivant, bete], 'sv');
@@ -224,7 +224,7 @@ describe('Résilience d’un contributeur d’équipage (shipManeuver) — cible
   it('cible = valeur du rôle + Difficulté (cumul : 2 crans plus dur), écrêtée comme `rollTest`', () => {
     const marin = hero({
       id: 'ma', label: 'Marin', conditions: ETAT,
-      skills: [{ skillId: 'voile', advances: 15, characteristic: 'agilite' }] as never,
+      skills: [{ id: 'voile', advances: 15, characteristic: 'agilite' }] as never,
     });
     const role = findCrewRoleById('timonier')!;
     const v = crewRoleValue(marin, role).value;
@@ -243,7 +243,7 @@ describe('Résilience d’un contributeur d’équipage (shipManeuver) — cible
     const barreur = hero({
       id: 'ba', label: 'Barreur', conditions: ETAT,
       characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 40, force: 35, endurance: 40, initiative: 30, agilite: 105, dexterite: 32, intelligence: 40, 'force-mentale': 35, sociabilite: 30 },
-      skills: [{ skillId: 'voile', advances: 15, characteristic: 'agilite' }] as never,
+      skills: [{ id: 'voile', advances: 15, characteristic: 'agilite' }] as never,
     });
     const role = findCrewRoleById('timonier')!;
     expect(crewRoleValue(barreur, role).value, 'la fixture doit VRAIMENT franchir le plafond').toBe(110);
@@ -261,7 +261,7 @@ describe('ORACLE du canal combat — balayage EXHAUSTIF (#1153 L1b, sonde promue
   it('les parts d’ÉTAT sont EN TÊTE de `testValueParts` (le découpage positionnel en dépend)', () => {
     const charge = hero({
       id: 'ch', label: 'Chargé', conditions: [{ id: 'empoisonne', value: 2 }] as never,
-      skills: [{ skillId: 'natation', advances: 20, characteristic: 'force' }] as never,
+      skills: [{ id: 'natation', advances: 20, characteristic: 'force' }] as never,
       activeEffects: [{ id: 'malchance', label: 'Malédiction de malchance', testMod: -10 },
         // Part NON-État (mod de Test char-qualifié) : sans elle, l'ordre ne serait pas OBSERVABLE.
         { id: 'vigueur', label: 'Vigueur', testModChar: 'force', testMod: 10 }] as never,
@@ -296,9 +296,9 @@ describe('ORACLE du canal combat — balayage EXHAUSTIF (#1153 L1b, sonde promue
     ];
     const PROFILS = [
       [],
-      [{ skillId: 'projectiles', advances: 20, characteristic: 'capacite-de-tir' },
-        { skillId: 'corps-a-corps', advances: 15, characteristic: 'capacite-de-combat' },
-        { skillId: 'resistance', advances: 10, characteristic: 'endurance' }],
+      [{ id: 'projectiles', advances: 20, characteristic: 'capacite-de-tir' },
+        { id: 'corps-a-corps', advances: 15, characteristic: 'capacite-de-combat' },
+        { id: 'resistance', advances: 10, characteristic: 'endurance' }],
     ];
 
     const ko: string[] = [];
@@ -345,7 +345,7 @@ describe('ORACLE du canal combat — balayage EXHAUSTIF (#1153 L1b, sonde promue
     // refuserait un site pourtant juste.
     const sourd = hero({
       id: 'so', label: 'Sourd', conditions: ETAT,
-      skills: [{ skillId: 'perception', advances: 20, characteristic: 'initiative' }] as never,
+      skills: [{ id: 'perception', advances: 20, characteristic: 'initiative' }] as never,
     });
     const ligne = rollLine({ actor: sourd, test: { skill: 'perception', sense: 'ouie' }, difficulty: 'intermediaire', combat: { kind: 'test' } });
     expect(ligne.base).toBe(skillBaseValue(sourd, 'perception'));
@@ -357,7 +357,7 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
   it('l’oracle du monteur REFUSE le canal hors combat sur une valeur de COMBAT', () => {
     const tireur = hero({
       id: 'tir', label: 'Tireur', conditions: ETAT, activeEffects: effetCT,
-      skills: [{ skillId: 'projectiles', advances: 20, characteristic: 'capacite-de-tir' }] as never,
+      skills: [{ id: 'projectiles', advances: 20, characteristic: 'capacite-de-tir' }] as never,
       weapons: [arbalete],
     });
     const valeur = combatValue(tireur, 'ranged', tireur.weapons[0]);

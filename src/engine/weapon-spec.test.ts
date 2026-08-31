@@ -25,7 +25,7 @@ const wpn = (groupLabel: string, type: Weapon['type'] = 'melee'): Weapon =>
 describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () => {
   // `spec` = id de Groupe d'arme STABLE (Phase 3 : plus de libellé FR — cf. `SkillData.specsSource`).
   const sk = (spec: string, advances: number) =>
-    ({ skillId: 'corps-a-corps', spec, characteristic: 'capacite-de-combat', advances } as Combatant['skills'][number]);
+    ({ id: 'corps-a-corps', spec, characteristic: 'capacite-de-combat', advances } as Combatant['skills'][number]);
 
   it('les Augmentations comptent quand la Spé correspond au Groupe de l’arme', () => {
     const c = hero({ skills: [sk('base', 20)] });
@@ -66,7 +66,7 @@ describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () =
 
 describe('combatValue — Spécialisation de Projectiles (LDB 62 l.180/184)', () => {
   const sk = (spec: string, advances: number) =>
-    ({ skillId: 'projectiles', spec, characteristic: 'capacite-de-tir', advances } as Combatant['skills'][number]);
+    ({ id: 'projectiles', spec, characteristic: 'capacite-de-tir', advances } as Combatant['skills'][number]);
 
   it('les Augmentations comptent pour le bon Groupe à distance', () => {
     const c = hero({ skills: [sk('arc', 18)] });
@@ -90,7 +90,7 @@ describe('combatValue — Spécialisation de Projectiles (LDB 62 l.180/184)', ()
 
 describe('combatValue/weaponGroupSkillMode — exceptions Groupes d’Armes à distance (LDB 62 l.184-192)', () => {
   const sk = (spec: string, advances: number) =>
-    ({ skillId: 'projectiles', spec, characteristic: 'capacite-de-tir', advances } as Combatant['skills'][number]);
+    ({ id: 'projectiles', spec, characteristic: 'capacite-de-tir', advances } as Combatant['skills'][number]);
 
   it('Arbalète/Lancer tirés avec N’IMPORTE QUELLE Spé de Tir → bonus intégral, mode dégradé (l.184)', () => {
     const c = hero({ skills: [sk('arc', 18)] });
@@ -137,7 +137,7 @@ describe('combatValue/weaponGroupSkillMode — exceptions Groupes d’Armes à d
 
 describe('combatValue — résolution ALTERNATIVE déclarée par l\'arme (bélier → Force, ADE II 8 l.233)', () => {
   it('weapon.resolveChar court-circuite CC (mêlée) et ignore toute Spé de Corps à corps', () => {
-    const c = hero({ skills: [{ skillId: 'corps-a-corps', spec: 'base', characteristic: 'capacite-de-combat', advances: 30 }], characteristics: { ...hero().characteristics, 'capacite-de-combat': 40, force: 55 } });
+    const c = hero({ skills: [{ id: 'corps-a-corps', spec: 'base', characteristic: 'capacite-de-combat', advances: 30 }], characteristics: { ...hero().characteristics, 'capacite-de-combat': 40, force: 55 } });
     const belier: Weapon = { label: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [], resolveChar: 'force' };
     expect(combatValue(c, 'melee', belier)).toBe(55); // Force brute (55), PAS CC+Spé (40+30=70)
   });
@@ -151,7 +151,7 @@ describe('combatValue — résolution ALTERNATIVE déclarée par l\'arme (bélie
 
 describe('Arme inhabituelle — maîtrise requise (ACE 12 l.17 « Entraînement avec une arme inhabituelle »)', () => {
   const sk = (spec: string, advances: number) =>
-    ({ skillId: 'corps-a-corps', spec, characteristic: 'capacite-de-combat', advances } as Combatant['skills'][number]);
+    ({ id: 'corps-a-corps', spec, characteristic: 'capacite-de-combat', advances } as Combatant['skills'][number]);
   const item: ItemInstance = {
     uid: 'u1', trappingId: 'couteau-de-harald', label: 'Couteau de Harald', kind: 'melee',
     qualities: [], enc: 0, equipped: true, requiresMastery: true,
@@ -210,7 +210,7 @@ describe('defenseValue — Esquive scopée par movementOnly (#193)', () => {
   it('Esquive (Test de déplacement) subit le malus', () => {
     const c = hero({
       activeEffects: [{ label: 'Genou démis (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'agilite', testModMovementOnly: true }],
-      skills: [{ skillId: 'esquive', characteristic: 'agilite', advances: 0 }],
+      skills: [{ id: 'esquive', characteristic: 'agilite', advances: 0 }],
     });
     expect(defenseValue(c, 'esquive')).toBe(30); // Ag 40 − 10
   });

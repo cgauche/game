@@ -54,7 +54,7 @@ export function effectiveSkillCharKey(
 ): CharKey {
   const { explicit, spec, fallback = 'dexterite' } = opts;
   if (explicit) return explicit;
-  const sk = skillId ? c.skills.find((s) => s.skillId === skillId && (spec == null || s.spec === spec)) : undefined;
+  const sk = skillId ? c.skills.find((s) => s.id === skillId && (spec == null || s.spec === spec)) : undefined;
   let ck: CharKey = sk?.characteristic ?? (skillId ? skillCharKeyById(skillId) : undefined) ?? fallback;
   if (skillId) ck = altCharKey(c, skillId, ck);
   return ck;
@@ -73,7 +73,7 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   // `skill` = skillId STABLE (multilingue : jamais un libellé). La compétence possédée est trouvée par id ;
   // `spec` cible une spécialisation précise (Savoir (Magie), Métier (Forgeron)…) quand le héros en possède
   // plusieurs avec des avances différentes — sinon (spec absent) la première instance de l'id suffit.
-  const sk = skill ? c.skills.find((s) => s.skillId === skill && (spec == null || s.spec === spec)) : undefined;
+  const sk = skill ? c.skills.find((s) => s.id === skill && (spec == null || s.spec === spec)) : undefined;
   // Caractéristique : POINT UNIQUE partagé avec castingValue (carac d'instance data-driven + carac alternative).
   const ck = effectiveSkillCharKey(c, skill, { explicit: characteristic, spec });
   const base = effectiveChar(c, ck);
@@ -150,7 +150,7 @@ export function skillToolMod(c: Combatant, skill?: string): number {
 export function skillBaseValue(c: Combatant, skill?: string, spec?: string, explicitChar?: CharKey): number {
   if (!skill && !explicitChar) return 0;
   const ck = effectiveSkillCharKey(c, skill, { spec, explicit: explicitChar });
-  const adv = skill ? c.skills.find((s) => s.skillId === skill && (spec == null || s.spec === spec))?.advances ?? 0 : 0;
+  const adv = skill ? c.skills.find((s) => s.id === skill && (spec == null || s.spec === spec))?.advances ?? 0 : 0;
   return effectiveChar(c, ck) + adv;
 }
 
@@ -166,13 +166,13 @@ export function rawCombatTestBase(c: Combatant, skill?: string, characteristic?:
 /** Le personnage possède-t-il la compétence `skillId` (et, si `spec` fourni, cette spécialisation —
  *  ex. Projectiles (Poudre noire)) ? Par id STABLE. Sert aux modulateurs (ex. `easierIf`). */
 export function actorHasSkill(c: Combatant, skillId: string, spec?: string): boolean {
-  return c.skills.some((s) => s.skillId === skillId && (spec == null || s.spec === spec));
+  return c.skills.some((s) => s.id === skillId && (spec == null || s.spec === spec));
 }
 
 /** Le personnage a-t-il AU MOINS UNE Augmentation dans `skillId` (spécialisation ciblée si `spec`) ?
  *  Prédicat d'éligibilité au SOUTIEN — LDB 12 l.195. Plus strict que `actorHasSkill` (simple présence). */
 function hasSkillAdvance(c: Combatant, skillId: string, spec?: string): boolean {
-  return c.skills.some((s) => s.skillId === skillId && (spec == null || s.spec === spec) && (s.advances ?? 0) >= 1);
+  return c.skills.some((s) => s.id === skillId && (spec == null || s.spec === spec) && (s.advances ?? 0) >= 1);
 }
 
 /** Le malus social « contenu » de `type` s'applique-t-il envers `targetGroups` ? (LDB 21) Vrai si le

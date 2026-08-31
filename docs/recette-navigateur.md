@@ -468,6 +468,11 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   2026-08-29, arbre 5e129a110) : replier/déplier un groupe invalide les refs de ses FRÈRES, pas
   seulement celles de son propre contenu — le re-rendu ne se limite pas au groupe manipulé. Même
   parade : retrouver par `textContent` après chaque pli/dépli.
+  **Vaut aussi pour tout écran qui se RE-REND à chaque geste — créateur de personnage, atelier du
+  Codex** : chaque tirage, choix ou saisie remonte l'état et rebat les refs de la page entière, pas
+  seulement celles du contrôle touché. RÈGLE : viser par SÉLECTEUR STABLE — rôle + nom accessible, ou
+  rôle + rang (`nth`) quand le nom n'est pas unique — jamais une ref de snapshot conservée d'un geste
+  au suivant.
 
 - **`browser_snapshot` sur le Compendium : JAMAIS un snapshot RACINE** (mesuré recette 2026-08-28, arbre
   ff8322e18) : la liste à plat produit 104 000 caractères d'un coup — le budget de la recette part dans
@@ -641,6 +646,9 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   « outside allowed roots ») ; une capture SANS chemin explicite atterrit donc à la RACINE du repo.
   NE PAS présumer : vérifier où atterrit la 1ʳᵉ capture, et si c'est hors `.playwright-mcp/`, la
   DÉPLACER hors du repo IMMÉDIATEMENT — l'arbre git est PARTAGÉ (d'autres sessions y écrivent).
+  CONTOURNEMENT EN DEUX TEMPS, seul chemin qui tienne : capturer avec un chemin EXPLICITE sous
+  `.playwright-mcp/` (gitignoré, donc jamais commité par erreur), PUIS copier le PNG vers un dossier
+  hors dépôt (`%TEMP%`) pour l'archiver — viser `%TEMP%` dès la prise échoue (racine non autorisée).
 - **« Browser already in use » / « Target page… has been closed » PERSISTANT (2026-07-16)** : si
   l'erreur revient après 2 tentatives, ce n'est PAS une contention active mais un lock Chrome MORT
   (reliquat d'une session Playwright jamais fermée proprement, pipe `--remote-debugging-pipe`

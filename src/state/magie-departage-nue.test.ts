@@ -23,7 +23,7 @@ const mk = (id: string, kind: Combatant['kind'] = 'hero', over: Partial<Combatan
   wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], traumas: [],
   resilience: 3, fortune: 2, weapons: [], items: [],
   armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-  skills: [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }],
+  skills: [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }],
   talents: [], movement: 4, bodyShape: 'humanoide', pos: { x: 0, y: 0 },
   ...over,
 } as unknown as Combatant);
@@ -68,7 +68,7 @@ describe('LDB 12 l.160 — dé POSÉ sur un Test opposé d’incantation (#1150)
   });
 
   it('Contre-sort : le chanteur le plus compétent dissipe, à DR égal', () => {
-    useGame.setState({ party: [mk('A', 'hero', { skills: [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 45 }] })] } as never);
+    useGame.setState({ party: [mk('A', 'hero', { skills: [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 45 }] })] } as never);
     const b = useGame.getState().battle!;
     useGame.setState({ battle: { ...b, combatants: [useGame.getState().party[0], b.combatants[1]] } } as never);
     useGame.setState({ pendingCounterspell: { participants: [

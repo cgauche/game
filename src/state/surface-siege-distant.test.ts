@@ -68,7 +68,7 @@ describe('Le héros d’un siège DISTANT garde ses fenêtres chez l’hôte (#1
     E[0].pos = { x: 5, y: 5 };
     H[0].pos = { x: 5, y: 8 };
     H[0].characteristics.agilite = 1;
-    H[0].skills = H[0].skills.filter((s) => s.skillId !== 'esquive');
+    H[0].skills = H[0].skills.filter((s) => s.id !== 'esquive');
     H[0].conditions = [];
     set({ battle: { ...g().battle!, acted: true } });
 

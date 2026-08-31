@@ -39,7 +39,7 @@ function actor(p: Partial<Combatant> & { id: string }): Combatant {
     label: p.id, kind: 'hero', characteristics: { ...CHARS },
     wounds: { current: 10, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-    skills: [{ skillId: 'resistance', advances: 8, characteristic: 'endurance' }],
+    skills: [{ id: 'resistance', advances: 8, characteristic: 'endurance' }],
     talents: [], fortune: 0, resilience: 0, pos: { x: 1, y: 1 }, ...p,
   } as unknown as Combatant;
 }
@@ -167,7 +167,7 @@ describe('G7 — écrêtage : la cible STOCKÉE devient la cible JOUÉE, et l’
     const colosse = actor({
       id: 'colosse',
       characteristics: { ...CHARS, endurance: 120 } as never,
-      skills: [{ skillId: 'resistance', advances: 30, characteristic: 'endurance' }] as never,
+      skills: [{ id: 'resistance', advances: 30, characteristic: 'endurance' }] as never,
     });
     const st = simpleTriggeredTestStep(colosse, FT, BRANCHES, EMPTY_FLOW, 'facile')!;
     const brut = rawCombatTestBase(colosse, 'resistance') + DIFFICULTY_MODIFIERS.facile + combatTestPenalty(colosse);

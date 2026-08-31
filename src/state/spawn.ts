@@ -127,7 +127,7 @@ function spawnMutations(traits: TraitList | undefined, id: string) {
  *  IMPRIMÉE. Carac résolue par id (`skillCharacteristicById`, ≠ re-lookup par libellé — multilangue-safe). */
 function skillInstance(skillId: string, spec: string | undefined, value: number, printedChars: Characteristics): SkillInstance {
   const ch = skillCharacteristicById(skillId);
-  return { skillId, spec, characteristic: ch, advances: Math.max(0, value - printedChars[ch]) };
+  return { id: skillId, spec, characteristic: ch, advances: Math.max(0, value - printedChars[ch]) };
 }
 
 /**

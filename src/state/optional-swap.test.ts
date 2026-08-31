@@ -69,14 +69,14 @@ describe('optionals composés — application au spawn (moteur)', () => {
     expect(v.characteristics.sociabilite).toBe(20); // Soc « – » (0) + 20
     expect(v.size).toBe('grande'); // Taille (Énorme) → Grande
     expect(v.wounds.max).toBe(42); // B imprimé (84) remplacé par la variante
-    expect(v.skills.some((s) => s.skillId === 'discretion' && s.spec === 'rurale')).toBe(true);
+    expect(v.skills.some((s) => s.id === 'discretion' && s.spec === 'rurale')).toBe(true);
     expect(testValue(v, 'discretion', undefined, 'rurale')).toBe(65); // valeur de Test IMPRIMÉE (verbatim)
     // Sans la variante : Bestial reste, Taille (Énorme), B=84 (livre), pas de Discrétion.
     const plain = creatureToCombatant(c, 'v0', at);
     expect(hasTraitKey(plain.traits, 'bestial')).toBe(true);
     expect(plain.size).toBe('enorme');
     expect(plain.wounds.max).toBe(84);
-    expect(plain.skills.some((s) => s.skillId === 'discretion')).toBe(false);
+    expect(plain.skills.some((s) => s.id === 'discretion')).toBe(false);
   });
 
   it('Mutant : le joker « tous les traits » n’a AUCUN effet mécanique au spawn (indication picker)', () => {

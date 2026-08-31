@@ -87,7 +87,7 @@ export function conjureFormOptions(caster: Pick<Combatant, 'skills'>): ConjureFo
   // la déclaration `specsSource` de son entrée de `skills.json` — et c'est exactement la garantie dont la
   // suite a besoin (`s.spec` EST alors un id de Groupe, comparable à `it.subType`).
   for (const s of caster.skills ?? []) {
-    if (byId('skill', s.skillId)?.specsSource === 'weaponGroupsMelee' && s.spec) {
+    if (byId('skill', s.id)?.specsSource === 'weaponGroupsMelee' && s.spec) {
       groupAdv.set(s.spec, Math.max(groupAdv.get(s.spec) ?? 0, s.advances ?? 0));
     }
   }

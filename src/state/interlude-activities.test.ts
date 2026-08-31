@@ -78,7 +78,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     // être achetées avant le début de l'Activité » ; l.78 : « Test étendu de Métier » ; l.102 : « Chaque
     // Activité […] vous permet d'effectuer un lancer pour votre Test étendu ».
     const h = hero();
-    h.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'dexterite', advances: 10 });
+    h.skills.push({ id: 'metier', spec: 'Forgeron', characteristic: 'dexterite', advances: 10 });
     const itl0 = useGame.getState().interlude!;
     itl0.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl0 } });
@@ -105,7 +105,7 @@ describe('Activités d’interlude (LDB 23)', () => {
 
   it('Rituel : `openRitualFocus` engage puis `resolveFocus` cumule le DR jusqu’au NI réduit de moitié, puis clôt (VDM 02 l.777) — Activité `blocked` au catalogue (#879), mécanisme exercé DIRECTEMENT (openRitualFocus + activityRoll/activityConfirm, hors de la porte fermée au joueur)', () => {
     const h = hero();
-    h.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 10 });
+    h.skills.push({ id: 'focalisation', characteristic: 'force-mentale', advances: 10 });
     h.spells = ['graver-une-pierre-d-ogham']; // NI 50, aucun Domaine requis (`domains: []`)
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
@@ -182,7 +182,7 @@ describe('Activités d’interlude (LDB 23)', () => {
 
   it('Rituel : Activité `blocked` au catalogue (#879) — fermée au joueur, `interludeActivity` refuse silencieusement', () => {
     const h = hero();
-    h.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 10 });
+    h.skills.push({ id: 'focalisation', characteristic: 'force-mentale', advances: 10 });
     h.spells = ['graver-une-pierre-d-ogham'];
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
@@ -303,7 +303,7 @@ describe('Activités d’interlude (LDB 23)', () => {
   // ── Identifier un artefact magique (ADE II 4 l.46-59) ─────────────────────────────────────
   function armArtefact(withSavoir = true) {
     const h = hero();
-    if (withSavoir) h.skills.push({ skillId: 'savoir', spec: 'magie', characteristic: 'intelligence', advances: 10 });
+    if (withSavoir) h.skills.push({ id: 'savoir', spec: 'magie', characteristic: 'intelligence', advances: 10 });
     h.items = [...(h.items ?? []), { uid: 'art1', name: 'Épée ancienne', kind: 'melee', qualities: [{ id: 'de-plaies-atroces' }], enc: 1, equipped: false, identified: false } as never];
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };

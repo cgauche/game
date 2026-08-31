@@ -252,7 +252,7 @@ describe('Domaines magiques multiples (Talent Magie des Arcanes — VDM 02 l.190
       species: 'hauts-elfes',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 42, sociabilite: 30 },
       talents: [domainTalent('feu')],
-      skills: [{ skillId: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 5 }],
+      skills: [{ id: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 5 }],
     });
     const gate = arcaneDomainGate(h, 'metal');
     expect(gate.ok).toBe(false);
@@ -264,7 +264,7 @@ describe('Domaines magiques multiples (Talent Magie des Arcanes — VDM 02 l.190
       species: 'hauts-elfes',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 42, sociabilite: 30 },
       talents: [domainTalent('feu')],
-      skills: [{ skillId: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 20 }],
+      skills: [{ id: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 20 }],
       spells: FEU_SPELLS,
     });
     expect(arcaneDomainGate(h, 'metal').ok).toBe(true);

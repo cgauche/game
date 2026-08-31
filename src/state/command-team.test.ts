@@ -27,7 +27,7 @@ const mkCommander = (id: string, pos: { x: number; y: number }, over: Partial<Re
   ({
     id, name: id, kind: 'hero', characteristics: CHARS(over),
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], weapons: [],
-    skills: [{ skillId: 'commandement', characteristic: 'sociabilite', advances: 30 }],
+    skills: [{ id: 'commandement', characteristic: 'sociabilite', advances: 30 }],
     talents: withTalent ? [{ talentId: 'commandant-d-equipe', times: 1 }] : [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos, loaded: true,
   }) as unknown as Combatant;

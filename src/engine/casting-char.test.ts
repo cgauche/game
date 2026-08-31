@@ -13,7 +13,7 @@ function mk(opts: Partial<Combatant> = {}): Combatant {
   } as Combatant;
 }
 
-const langue = (characteristic: CharKey) => ({ skillId: 'langue', spec: 'magick', characteristic, advances: 0 });
+const langue = (characteristic: CharKey) => ({ id: 'langue', spec: 'magick', characteristic, advances: 0 });
 
 describe('caractéristique d’incantation — DATA-DRIVEN (point unique, zéro valeur en dur)', () => {
   it('défaut : Langue (Magick) sur la carac de la compétence (Intelligence)', () => {

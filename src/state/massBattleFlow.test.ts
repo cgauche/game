@@ -634,9 +634,9 @@ describe('Affectation explicite d\'un PJ à une action (poste ≠ auto « meille
 describe('Activité SOUTENABLE — Planification (l.81 : « peut aider au Test »)', () => {
   function partyWithWarLore(): Combatant[] {
     return pregenParty(PREGEN.soldat, PREGEN.chasseur).map((h) =>
-      h.skills.some((s) => s.skillId === 'savoir' && s.spec === 'guerre')
+      h.skills.some((s) => s.id === 'savoir' && s.spec === 'guerre')
         ? h
-        : { ...h, skills: [...h.skills, { skillId: 'savoir', spec: 'guerre', characteristic: 'intelligence' as const, advances: 5 }] });
+        : { ...h, skills: [...h.skills, { id: 'savoir', spec: 'guerre', characteristic: 'intelligence' as const, advances: 5 }] });
   }
 
   it('deux PJ postés → SOUTIEN (heroIds=2, support.count ≥ 1)', () => {

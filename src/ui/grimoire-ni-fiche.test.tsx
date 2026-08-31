@@ -42,8 +42,8 @@ const sorcier = (): Combatant =>
     weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
-      { skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 30 },
-      { skillId: 'focalisation', spec: 'mort', characteristic: 'force-mentale', advances: 30 },
+      { id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 30 },
+      { id: 'focalisation', spec: 'mort', characteristic: 'force-mentale', advances: 30 },
     ],
     talents: [{ talentId: 'magie-des-arcanes', spec: 'mort', times: 1 }],
     spells: [],

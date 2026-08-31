@@ -22,7 +22,7 @@ function heroWithTraumas(traumas: unknown[]): Combatant {
   return {
     id: 'h', label: 'Sigrid', kind: 'hero', speciesId: 'humains-reiklander',
     characteristics: { sociabilite: 40, agilite: 40, dexterite: 40, intelligence: 40 } as Combatant['characteristics'],
-    skills: [{ skillId: 'charme', advances: 0 }] as SkillInstance[],
+    skills: [{ id: 'charme', advances: 0 }] as SkillInstance[],
     talents: [], items: [], conditions: [], advantage: 0,
     traumas: traumas as Trauma[],
   } as unknown as Combatant;

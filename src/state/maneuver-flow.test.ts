@@ -115,7 +115,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     H.characteristics['capacite-de-tir'] = 95;
     H.advantage = 6;
     E.characteristics.initiative = 1;
-    E.skills = E.skills.filter((s) => s.skillId !== 'initiative');
+    E.skills = E.skills.filter((s) => s.id !== 'initiative');
     activate('regard-petrifiant', E.id);
     expect(useGame.getState().pendingManeuver!.avantageSpent).toBe(1); // défaut variable = 1
     useGame.getState().maneuverSetAvantage(6); // dépense tout → +6 DR

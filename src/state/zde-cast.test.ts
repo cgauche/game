@@ -14,7 +14,7 @@ import type { Combatant } from '../engine/types';
 
 function wiz() {
   const w = pregen(PREGEN.sorcier);
-  const sk = w.skills.find((s) => s.skillId === 'langue');
+  const sk = w.skills.find((s) => s.id === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 10);
   w.spells = ['explosion', ...(w.spells ?? [])]; // Explosion : Projectile magique ZdE (LDB 47 l.453)
   return w;

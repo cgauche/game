@@ -76,8 +76,8 @@ export function SkillChip({ skill }: { skill: SkillInstance }) {
   return (
     <EntityRef
       category="skills"
-      id={skill.skillId}
-      label={byId('skill', skill.skillId)?.label ?? skill.skillId}
+      id={skill.id}
+      label={byId('skill', skill.id)?.label ?? skill.id}
       show={skillInstanceLabel(skill)}
       badge={`+${skill.advances}`}
     />

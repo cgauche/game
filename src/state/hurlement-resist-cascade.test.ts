@@ -37,7 +37,7 @@ describe('Hurlement fantomatique — Test de Résistance influençable (héros m
     for (const h of b.combatants.filter((c) => c.kind === 'hero')) {
       h.wounds = { current: 40, max: 40, base: 40 } as Combatant['wounds'];
       h.characteristics.endurance = 1; // Résistance minime → échec quasi certain → Brisé attendu sur validation
-      h.skills = h.skills.filter((s) => s.skillId !== 'resistance');
+      h.skills = h.skills.filter((s) => s.id !== 'resistance');
       h.conditions = [];
     }
     b.combatants.find((c) => c.label === 'H1')!.pos = { x: 6, y: 5 };

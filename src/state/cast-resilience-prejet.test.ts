@@ -15,9 +15,9 @@ const SPELL = 'armure-aethyrique';
 function sorcier(): Combatant {
   const w = pregen(PREGEN.sorcier);
   w.characteristics = { ...w.characteristics, intelligence: 55 };
-  const sk = w.skills.find((s) => s.skillId === 'langue');
+  const sk = w.skills.find((s) => s.id === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 10);
-  else w.skills.push({ skillId: 'langue', spec: 'magick', advances: 10 } as never);
+  else w.skills.push({ id: 'langue', spec: 'magick', advances: 10 } as never);
   w.resilience = 2;
   return w;
 }

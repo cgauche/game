@@ -1133,7 +1133,7 @@ describe('CombatConsole — travée gauche : sets, gestes déduits, accès rapid
   it('(c) ACCÈS RAPIDE : consommables GROUPÉS ×N + Soigner, cases restantes dessinées VIDES', () => {
     const h = deuxSets();
     h.wounds = { current: 5, max: 12 }; // blessé → cible soignable (moteur `healableTargets`)
-    h.skills = [...(h.skills ?? []), { skillId: 'guerison', advances: 10 } as never];
+    h.skills = [...(h.skills ?? []), { id: 'guerison', advances: 10 } as never];
     h.items = [...h.items!, objet('potion-de-guerison', 'i-po1'), objet('potion-de-guerison', 'i-po2')];
     monter(h);
     expect(casesRapide().length).toBe(4);
@@ -1164,7 +1164,7 @@ describe('CombatConsole — travée gauche : sets, gestes déduits, accès rapid
     const avecPotions = (uids: string[]) => {
       const h = deuxSets();
       h.wounds = { current: 5, max: 12 };
-      h.skills = [...(h.skills ?? []), { skillId: 'guerison', advances: 10 } as never];
+      h.skills = [...(h.skills ?? []), { id: 'guerison', advances: 10 } as never];
       h.items = [...h.items!, ...uids.map((u) => objet('potion-de-guerison', u))];
       // Le joueur a posé SA potion au 3ᵉ rang de l'accès rapide.
       h.barre = { accesRapide: { 2: { actionId: 'use-item', cle: 'q-objet-potion-de-guerison' } } };
@@ -1479,7 +1479,7 @@ describe('CombatConsole — droit de la travée et du coin (juge vision 2026-08-
     const sorcier = () => {
       const h = hero('h1', 'Magister');
       h.conditions = [];
-      h.skills = [{ skillId: 'focalisation', characteristic: 'force-mentale', advances: 10 }] as never;
+      h.skills = [{ id: 'focalisation', characteristic: 'force-mentale', advances: 10 }] as never;
       h.spells = ['carreau', 'bouclier-magique'];
       return h;
     };
@@ -2381,7 +2381,7 @@ describe('CombatConsole — Dissiper : alvéole → porteur → panneau-paramèt
   /** Un mage capable de dissiper (Langue (Magick)) — le gate de la case le lit sur ses Compétences. */
   function mage() {
     const h = hero('h1', 'Elsa');
-    h.skills.push({ skillId: 'langue', spec: 'magick', advances: 2 } as never);
+    h.skills.push({ id: 'langue', spec: 'magick', advances: 2 } as never);
     return h;
   }
 
@@ -2739,7 +2739,7 @@ describe('CombatConsole — Avantage au plafond : la case reste, FERMÉE, avec s
     h.advantage = 0;
     // Intuition (LDB 09 l.305-308) : Compétence de BASE dont la donnée porte `combatAdvantage` —
     // plafond = Bonus d'Intelligence. C'est la méthode que la case offre.
-    h.skills = [{ skillId: 'intuition', advances: 0 }] as never;
+    h.skills = [{ id: 'intuition', advances: 0 }] as never;
     monter(h);
     const offertes = casesAdv();
     expect(offertes.length, 'aucune case d’Avantage : la sonde ne mesurerait rien').toBeGreaterThan(0);
@@ -2777,7 +2777,7 @@ describe('CombatConsole — l’allumage d’une case armée vient du REGISTRE',
    *  au moins une cible soignable (`healableTargets` — lui-même en fait partie). */
   function soigneur() {
     const h = hero('h1', 'Gunnar');
-    h.skills.push({ skillId: 'guerison', advances: 10 } as never);
+    h.skills.push({ id: 'guerison', advances: 10 } as never);
     h.wounds = { ...h.wounds, current: h.wounds.max - 4 };
     return h;
   }
@@ -3122,7 +3122,7 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
    *  Focalisation n'est possible (`LDB 09 l.30`) : `focalisation: false` fait le lanceur qui ne l'a pas. */
   function mage(spells: string[], opts: { focalisation?: boolean } = {}) {
     const h = hero('h1', 'Magister');
-    h.skills = opts.focalisation === false ? [] : [{ skillId: 'focalisation', characteristic: 'force-mentale', advances: 10 }];
+    h.skills = opts.focalisation === false ? [] : [{ id: 'focalisation', characteristic: 'force-mentale', advances: 10 }];
     h.talents = [];
     h.spells = spells;
     return h;

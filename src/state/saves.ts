@@ -42,12 +42,17 @@ import type { Scene } from './scene';
 // sentinelle `spec: "au choix"` du bestiaire descendait TELLE QUELLE dans l'instance persistée (une
 // spéc qu'aucun catalogue ne résout) ; elle est désormais DÉSIGNÉE au spawn (`skillsFromBook`, seedée
 // sur l'uid) et l'instance porte une spéc CONCRÈTE. PORTÉE EXACTE DE LA PERTE, mesurée à
-// `src/engine/skills.ts` (`s.skillId === skill && (spec == null || s.spec === spec)`) : un appelant
+// `src/engine/skills.ts` (`s.id === skill && (spec == null || s.spec === spec)`) : un appelant
 // SANS spec appariait l'instance et lisait sa valeur — c'est le Test SPÉCIALISÉ qui n'appariait rien
 // et retombait sur la Caractéristique nue. Les scènes vivantes d'une save de 34 rouvriraient avec des
 // pions dont les 53 lignes sentinelles échouent à tout Test spécialisé : la save se jette
 // (politique 2 ci-dessus).
-export const SAVE_VERSION = 35;
+// 35 → 36 (L2 #1548, commit 5) : la `SkillInstance` PERSISTÉE change de forme — son champ d'identité
+// `skillId` devient `id`, le terme unique de la grammaire des références. Une save de 35 rouvrirait
+// avec des instances dont l'id est `undefined` : chaque appariement de `src/engine/skills.ts`
+// (`s.id === skill`) échouerait et TOUT Test de Compétence retomberait sur la Caractéristique nue,
+// Augmentations comprises. La save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 36;
 
 export interface SaveMeta {
   version: number;

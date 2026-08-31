@@ -45,7 +45,7 @@ describe('#1262 V2 L5 — les Activités en mer passent par la PORTE', () => {
 
   it('Cartographie — l’étape MINTÉE est équivalente CHAMP À CHAMP à son ancien littéral, et le porteur est le cartographe', () => {
     const [cartographe, autre] = get().party;
-    (cartographe as Combatant).skills = [{ skillId: 'metier', spec: 'cartographe', advances: 20 } as never];
+    (cartographe as Combatant).skills = [{ id: 'metier', spec: 'cartographe', advances: 20 } as never];
     (cartographe as Combatant).characteristics = { ...cartographe.characteristics, dexterite: 40 };
     set({ party: [...get().party], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } } as never);
 
@@ -97,7 +97,7 @@ describe('#1262 V2 L5 — les Activités en mer passent par la PORTE', () => {
   function deuxCartographes(): [Combatant, Combatant] {
     const [a, b] = get().party;
     for (const h of [a, b]) {
-      (h as Combatant).skills = [{ skillId: 'metier', spec: 'cartographe', advances: 20 } as never];
+      (h as Combatant).skills = [{ id: 'metier', spec: 'cartographe', advances: 20 } as never];
       (h as Combatant).characteristics = { ...h.characteristics, dexterite: 40 };
     }
     return [a, b];
@@ -175,7 +175,7 @@ describe('#1262 V2 L5 — les Activités en mer passent par la PORTE', () => {
    */
   it('« Tests >100 % » — le mint suit la policy, le clamp EN DUR de `travelActivitySpec` ne bouge pas', () => {
     const hero = get().party[0];
-    (hero as Combatant).skills = [{ skillId: 'metier', spec: 'cartographe', advances: 200 } as never];
+    (hero as Combatant).skills = [{ id: 'metier', spec: 'cartographe', advances: 200 } as never];
     (hero as Combatant).characteristics = { ...hero.characteristics, dexterite: 80 };
     set({ party: [...get().party] } as never);
     const cible = get().party[0];

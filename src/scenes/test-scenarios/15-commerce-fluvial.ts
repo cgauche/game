@@ -28,9 +28,9 @@ import { rigSpeciesId } from '../../data';
 /** Ajoute/renforce une Compétence sur un héros, à la Caractéristique CANONIQUE de la Compétence (donnée). */
 function skill(c: Combatant, skillId: string, advances: number, spec?: string): void {
   const characteristic = skillCharacteristicById(skillId);
-  const ex = c.skills.find((s) => s.skillId === skillId && s.spec === spec);
+  const ex = c.skills.find((s) => s.id === skillId && s.spec === spec);
   if (ex) ex.advances = Math.max(ex.advances, advances);
-  else c.skills.push({ skillId, spec, characteristic, advances } as SkillInstance);
+  else c.skills.push({ id: skillId, spec, characteristic, advances } as SkillInstance);
 }
 
 /** Quatre marchands ambulants. Berta tient le commerce : Marchandage (négocier l'achat/la vente),

@@ -2554,7 +2554,7 @@ export function combatantSections(c: Combatant): CodexSection[] {
     { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] }, // Taille : pas une caractéristique → pas de lien Codex
   ];
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>
-    refRow('skills', `${skillInstanceLabel(s)} ${skillBaseValue(c, s.skillId, s.spec)}`),
+    refRow('skills', `${skillInstanceLabel(s)} ${skillBaseValue(c, s.id, s.spec)}`),
   );
   // Comme les compétences/talents/sorts : chaque arme est une ENTITÉ (CodexRef vers sa fiche Codex
   // « trappings » — popover au survol + clic — repli gracieux en texte pour une arme naturelle hors

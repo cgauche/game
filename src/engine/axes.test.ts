@@ -32,8 +32,8 @@ describe('#409 — engine/axes : axisScore/axesProfile/partyCoverage/dominantAxe
 
   it('axisScore VERROU NOMINATIF — réfutation utilisateur 2026-07-14 : Wilhelmina Faust (sorcière, PREGEN.sorcier) sans Guérison/Métier(Ingénieur) formés score EXACTEMENT 0 en Soins ET en Ingénierie (jamais « taggée » par la seule Caractéristique)', () => {
     const wilhelmina = pregen(PREGEN.sorcier);
-    expect(wilhelmina.skills.some((s) => s.skillId === 'guerison' && s.advances > 0)).toBe(false);
-    expect(wilhelmina.skills.some((s) => (s.skillId === 'metier' || (s.skillId === 'savoir' && (s.spec === 'ingenierie' || s.spec === 'artillerie'))) && s.advances > 0)).toBe(false);
+    expect(wilhelmina.skills.some((s) => s.id === 'guerison' && s.advances > 0)).toBe(false);
+    expect(wilhelmina.skills.some((s) => (s.id === 'metier' || (s.id === 'savoir' && (s.spec === 'ingenierie' || s.spec === 'artillerie'))) && s.advances > 0)).toBe(false);
     expect(axisScore(wilhelmina, SOINS)).toBe(0);
     expect(axisScore(wilhelmina, INGENIERIE)).toBe(0);
   });

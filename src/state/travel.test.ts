@@ -405,7 +405,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
 
   it('ON : un héros au poste Approvisionnement fourrage (Test de Survie en extérieur, EDOC 8 l.145)', () => {
     setRule('travel-etapes', true);
-    const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 20 } as any] });
+    const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ id: 'survie-en-exterieur', advances: 20 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     useGame.getState().startTravel('r1', 'pied');
     drainCascade(); // cascade travelDay (poste Approvisionnement) → drainer
@@ -491,7 +491,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     let suppressed = false;
     for (let seed = 1; seed <= 20 && !suppressed; seed++) {
       seedBattleRng(seed);
-      const h = hero({ travelRole: 'plein-air', skills: [{ skillId: 'survie-en-exterieur', advances: 60 } as any] });
+      const h = hero({ travelRole: 'plein-air', skills: [{ id: 'survie-en-exterieur', advances: 60 } as any] });
       setup(map({ km: 12, perilDie: 0 }), [h]);
       useGame.setState({ gameTime: CAMPAIGN_START });
       useGame.getState().startTravel('r1', 'pied');
@@ -508,7 +508,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
 
   it('poste Établir des cartes : Test ÉTENDU de cartographie cumulé via extendedTestStep (EDOC 8 l.161)', () => {
     setRule('travel-etapes', true);
-    const h = hero({ travelRole: 'etablir-cartes', skills: [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as any] });
+    const h = hero({ travelRole: 'etablir-cartes', skills: [{ id: 'metier', spec: 'Cartographe', advances: 80 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     useGame.getState().startTravel('r1', 'pied');
     drainCascade(); // cascade travelDay (poste Établir des cartes, Test étendu) → drainer
@@ -543,7 +543,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     let met = false;
     for (let seed = 1; seed <= 20 && !met; seed++) {
       seedBattleRng(seed);
-      const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 0 } as any] });
+      const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ id: 'survie-en-exterieur', advances: 0 } as any] });
       setup(map({ km: 12, perilDie: 0 }), [h]);
       useGame.getState().startTravel('r1', 'pied');
       drainCascade(); // cascade travelDay (échec de poste → Rencontre à l'agrégation) → drainer

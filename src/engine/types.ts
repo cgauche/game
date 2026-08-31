@@ -279,7 +279,7 @@ export interface StructureData {
 
 export interface SkillInstance {
   /** id STABLE de la Compétence (langue-indépendant) ; l'affichage résout en libellé via `skillInstanceLabel`. */
-  skillId: string;
+  id: string;
   spec?: string;
   characteristic: CharKey;
   advances: number;

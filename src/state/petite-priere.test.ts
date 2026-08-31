@@ -17,8 +17,8 @@ const reward = flowFromEffects([{ type: 'giveXp', amount: 50 }]);
 /** Un héros NON-Béni auquel on garantit d'être « entendu » (Prière avancée → seuil très haut). */
 function laypersonSurePray(): Combatant {
   const p = makePregens().find((h) => !hasTalent(h as Combatant, 'Béni'))! as Combatant;
-  const sk = p.skills.find((s) => s.skillId === 'priere');
-  if (sk) sk.advances = 200; else p.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 200 } as never);
+  const sk = p.skills.find((s) => s.id === 'priere');
+  if (sk) sk.advances = 200; else p.skills.push({ id: 'priere', characteristic: 'sociabilite', advances: 200 } as never);
   p.xp = 0;
   return p;
 }

@@ -140,7 +140,7 @@ describe('#166/#167 — câblage DONNÉE→plaie (stampCriticalEscalation) + ent
   it('resolveAACritical(« Pied écrasé ») stampe l’escalade sur la plaie (overkill place le jet en 106-115)', () => {
     // roll = d100 + 10×overkill ; d100=100, overkill=1 → 110 (aa-jambe-106). Puis Test de Résistance
     // d’amputation (d100 haut = échec sans conséquence de flag), puis d10=5 pour amputateAfterDays.
-    const c = C({ skills: [{ skillId: 'resistance', characteristic: 'endurance', advances: 0 }] });
+    const c = C({ skills: [{ id: 'resistance', characteristic: 'endurance', advances: 0 }] });
     const res = resolveAACritical(c, 'jambeD', seq([100, 1, 5]), 1);
     const p = res.traumas.find((t) => t.label === 'Amputation');
     expect(p?.amputateAfterDays).toBe(5);
@@ -259,7 +259,7 @@ describe('#190 — réouverture (bleedOnReinjury) : chaque Dégât à la Localis
   });
 
   it('rollCritical(« Blessure béante » bras 46-50) stampe la plaie `bleedOnReinjury` à la localisation du coup', () => {
-    const c = C({ skills: [{ skillId: 'resistance', characteristic: 'endurance', advances: 0 }] });
+    const c = C({ skills: [{ id: 'resistance', characteristic: 'endurance', advances: 0 }] });
     const res = rollCritical(c, 'brasG', seq([48]), 0); // 48 ∈ 46-50 (Blessure béante)
     const p = res.traumas.find((t) => t.bleedOnReinjury != null);
     expect(p).toMatchObject({ location: 'brasG', bleedOnReinjury: 1, needsSurgery: true });

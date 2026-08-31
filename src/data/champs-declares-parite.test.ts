@@ -52,8 +52,8 @@ describe('#1318 E4/C4-δ2 — parité « le moteur ne nomme plus d’id, l’ent
   });
 
   it('COMPÉTENCES — `specsSource: weaponGroupsMelee` : exactement Corps à corps (conjuredWeapons, combat.parryPenalty)', () => {
-    // La lecture qui a remplacé `s.skillId === 'corps-a-corps'` : une compétence dont les SPÉ sont les
-    // Groupes d'armes de mêlée — la garantie même dont les deux sites ont besoin (`spec` = id de Groupe).
+    // Une compétence dont les SPÉ sont les Groupes d'armes de mêlée — la garantie même dont les deux
+    // sites ont besoin (`spec` = id de Groupe).
     expect(skills.filter((s) => s.specsSource === 'weaponGroupsMelee').map((s) => s.id)).toEqual(['corps-a-corps']);
   });
 

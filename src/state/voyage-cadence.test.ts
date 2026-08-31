@@ -174,9 +174,9 @@ describe('interruptions (mer) — la route commandée NE muselle PAS les crises'
 // ── FLUVIAL (#91) : la journée de descente de ROUTINE s’auto-résout SANS modale par jet ───────────────
 
 function riverSkill(c: Combatant, skillId: string, advances: number, spec?: string): void {
-  const ex = c.skills.find((s) => s.skillId === skillId && (s.spec ?? null) === (spec ?? null));
+  const ex = c.skills.find((s) => s.id === skillId && (s.spec ?? null) === (spec ?? null));
   if (ex) ex.advances = Math.max(ex.advances, advances);
-  else c.skills.push({ skillId, spec, advances } as SkillInstance);
+  else c.skills.push({ id: skillId, spec, advances } as SkillInstance);
 }
 
 function riverCrew(): Combatant[] {

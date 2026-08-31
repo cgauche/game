@@ -41,7 +41,7 @@ describe('Contre-sort à plusieurs candidats — N tenteurs (flux multi)', () =>
     for (const e of [E, E2]) {
       if (!e) continue;
       e.characteristics.intelligence = 48; e.characteristics['force-mentale'] = 53;
-      e.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }];
+      e.skills = [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }];
       e.spells = ['carreau'];
     }
     heroes.forEach((h, i) => { h.pos = { x: 10, y: 10 + i }; h.wounds = { ...h.wounds, max: 99, current: 99 }; });

@@ -69,10 +69,10 @@ describe('mage Bête — Focalisation ET Talent lanceur matchent un Sort Bête (
   });
 
   it('la Focalisation (Ghur) [id bete] est trouvée pour un Sort Bête', () => {
-    const c = mage({ skills: [{ skillId: 'focalisation', spec: 'bete', characteristic: 'force-mentale', advances: 5 }] as never });
+    const c = mage({ skills: [{ id: 'focalisation', spec: 'bete', characteristic: 'force-mentale', advances: 5 }] as never });
     expect(focusSkillFor(c, beteSpell)).toBeTruthy();
     // Une Focalisation d'un AUTRE Vent (Aqshy → feu) ne matche pas un Sort Bête.
-    const feuMage = mage({ skills: [{ skillId: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 5 }] as never });
+    const feuMage = mage({ skills: [{ id: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 5 }] as never });
     expect(focusSkillFor(feuMage, beteSpell)).toBeFalsy();
   });
 

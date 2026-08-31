@@ -133,7 +133,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     const { H, E } = setupBattle();
     E.traits = [{ id: 'frenesie' }];
     E.characteristics['force-mentale'] = 99; E.characteristics.intelligence = 60; // FM → entrerait sinon en Frénésie ; Int → incantation fiable
-    E.skills = [{ skillId: 'langue', spec: 'magick', advances: 40, characteristic: 'intelligence' } as never];
+    E.skills = [{ id: 'langue', spec: 'magick', advances: 40, characteristic: 'intelligence' } as never];
     E.spells = ['flechette']; // Projectile magique (NI 0 → fiable), offensif
     E.weapons = []; // DÉSARMÉ → aucune mêlée concurrente ; le sort est la seule action
     E.pos = { x: 10, y: 7 }; H.pos = { x: 10, y: 10 }; // héros en LdV, à 3 cases (en portée du sort, hors mêlée)

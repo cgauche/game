@@ -57,7 +57,7 @@ describe('BargainModal (#2c)', () => {
     const negociateur: Combatant = {
       id: 'h', label: 'Maître d’armes', kind: 'hero', speciesId: 'humains-reiklander',
       characteristics: { sociabilite: 40 } as Combatant['characteristics'],
-      skills: [{ skillId: 'marchandage', advances: 15 }], talents: [], items: [],
+      skills: [{ id: 'marchandage', advances: 15 }], talents: [], items: [],
       conditions: [{ id: 'empoisonne', value: 1 }], advantage: 0,
       // Cas KO de la recette : DEUX postes distincts (État + mutation char-qualifiée) doivent se lire
       // chacun sur SA chip — c'est la mutation qui produisait le « −20 autres ».

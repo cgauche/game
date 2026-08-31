@@ -38,7 +38,7 @@ export function permanentAmputations(sequels: string[], location: HitLocation, u
 
 /** Valeur de Résistance d'un Coup Critique (LDB 18) : Endurance effective + Avances de Résistance. SOURCE UNIQUE. */
 export function critResistValue(c: Combatant): number {
-  return effectiveChar(c, 'endurance') + (c.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+  return effectiveChar(c, 'endurance') + (c.skills.find((s) => s.id === 'resistance')?.advances ?? 0);
 }
 
 /**

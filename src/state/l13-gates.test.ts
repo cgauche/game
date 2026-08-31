@@ -152,7 +152,7 @@ describe('L13 — gates & redirections', () => {
     const E2 = foes[1]; // voisin — receveur du rebond
     if (!E2) return; // garde : la rencontre doit fournir ≥ 2 ennemis
     hero.characteristics['force-mentale'] = 40; // BFM 4 → 4 rebonds max, saut 4 m
-    hero.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 10 });
+    hero.skills.push({ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 10 });
     E1.wounds = { current: 1, max: 8 } as Combatant['wounds'];
     E2.pos = { x: 12, y: 10 }; // à 1 case d'E1 (11,10)
     const e2Before = E2.wounds.current;

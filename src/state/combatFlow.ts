@@ -5782,7 +5782,7 @@ interface CombatEndDiseaseTest { entry: ContractionEntry; disease: string; diffi
 /** Valeur de Résistance d'un héros pour les Tests de Contraction (E + avances de Résistance) — figée à la
  *  décision pour rester stable entre la pose de l'étape et sa résolution. */
 function combatEndResistVal(c: Combatant): number {
-  return effectiveChar(c, 'endurance') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+  return effectiveChar(c, 'endurance') + (c.skills?.find((s) => s.id === 'resistance')?.advances ?? 0);
 }
 
 /**

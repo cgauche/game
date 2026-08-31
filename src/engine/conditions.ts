@@ -663,7 +663,7 @@ export function tickDurations(c: Combatant, emit?: ConditionEmit): string[] {
  * un État **Exténué**. Pur ; mute `c`, renvoie le journal.
  */
 export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base: number; result: TestResult }[]): string[] {
-  const calme = effectiveChar(c, 'force-mentale') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
+  const calme = effectiveChar(c, 'force-mentale') + (c.skills?.find((s) => s.id === 'calme')?.advances ?? 0);
   const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
   out?.push({ base: calme, result: res });
   if (res.success) return [t('cond.nightmareNone', { name: c.label })];

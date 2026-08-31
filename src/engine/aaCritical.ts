@@ -103,7 +103,7 @@ export function resolveAACritical(
   const be = bonus(effectiveChar(target, 'endurance'));
   const roll = Math.max(1, d100(rng) + aaCriticalOffset(overkill));
   const entry = findTableEntry(aaTableFor(location), roll); // repli Bras AA (LDB 76 l.21) si loc sans table dédiée
-  const resistVal = effectiveChar(target, 'endurance') + (target.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+  const resistVal = effectiveChar(target, 'endurance') + (target.skills.find((s) => s.id === 'resistance')?.advances ?? 0);
   const ops: GameOp[] = [];
   // Blessures supplémentaires (colonne Blessures, l.2482) : PB perdus, sans re-déclencher de Critique.
   if (typeof entry.blessures === 'number' && entry.blessures > 0) ops.push({ op: 'wounds', amount: entry.blessures });

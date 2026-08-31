@@ -28,7 +28,7 @@ import { skillBaseValue } from './skills';
 export function possesses(c: Combatant, skillId: string, spec?: string): boolean {
   const sd = byId('skill', skillId);
   if (!sd) return false;
-  const inst = c.skills?.find((s) => s.skillId === skillId && (spec == null || s.spec === spec));
+  const inst = c.skills?.find((s) => s.id === skillId && (spec == null || s.spec === spec));
   return sd.acces === 'base' || (inst?.advances ?? 0) > 0;
 }
 
@@ -53,8 +53,8 @@ export function skillAdvantageCap(c: Combatant, skillId: string): number {
 export function combatAdvantageSkills(c: Combatant): { skillId: string; cap: number }[] {
   const out: { skillId: string; cap: number }[] = [];
   for (const s of c.skills ?? []) {
-    const cap = skillAdvantageCap(c, s.skillId);
-    if (cap > 0) out.push({ skillId: s.skillId, cap });
+    const cap = skillAdvantageCap(c, s.id);
+    if (cap > 0) out.push({ skillId: s.id, cap });
   }
   return out;
 }
@@ -72,12 +72,12 @@ export function fearsBy(foe: Combatant, self: Combatant): boolean {
 export function combatSubstitute(self: Combatant, foe: Combatant, role: 'defense' | 'attack'): { skillId: string; value: number } | null {
   let best: { skillId: string; value: number } | null = null;
   for (const inst of self.skills ?? []) {
-    const sub = byId('skill', inst.skillId)?.combatSubstitute;
+    const sub = byId('skill', inst.id)?.combatSubstitute;
     if (!sub || (sub.role !== 'both' && sub.role !== role)) continue;
-    if (!possesses(self, inst.skillId)) continue;
+    if (!possesses(self, inst.id)) continue;
     if (sub.gate === 'fear' && !fearsBy(foe, self)) continue;
-    const value = skillValue(self, inst.skillId, inst.spec);
-    if (!best || value > best.value) best = { skillId: inst.skillId, value };
+    const value = skillValue(self, inst.id, inst.spec);
+    if (!best || value > best.value) best = { skillId: inst.id, value };
   }
   return best;
 }

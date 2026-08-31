@@ -32,9 +32,9 @@ const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
 function setSkill(c: Combatant, skillId: string, advances: number): void {
-  const ex = c.skills.find((s) => s.skillId === skillId);
+  const ex = c.skills.find((s) => s.id === skillId);
   if (ex) ex.advances = advances;
-  else c.skills.push({ skillId, advances } as SkillInstance);
+  else c.skills.push({ id: skillId, advances } as SkillInstance);
 }
 
 /** Cale la Compétence de `c` à EXACTEMENT `want` (les avances absorbent la Caractéristique du pregen). */

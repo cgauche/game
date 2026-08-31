@@ -31,7 +31,7 @@ const hero = (xp: number): Combatant =>
     conditions: [],
     weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-    skills: [{ skillId: 'discretion', characteristic: 'agilite', advances: 0 }],
+    skills: [{ id: 'discretion', characteristic: 'agilite', advances: 0 }],
     talents: [],
     movement: 4,
     xp,
@@ -113,15 +113,15 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
     const h = hero(1000);
     const r = buySkillAdvance(h, 'discretion', undefined); // 0 avance → 10 PX
     expect(r).toEqual({ ok: true, cost: 10 });
-    expect(h.skills.find((s) => s.skillId === 'discretion')!.advances).toBe(1);
+    expect(h.skills.find((s) => s.id === 'discretion')!.advances).toBe(1);
     expect(h.xp).toBe(990);
     expect(buySkillAdvance(h, 'inconnue', undefined).ok).toBe(false); // compétence non connue
     // Une AUTRE spec du même groupe est une Compétence distincte (LDB 09 l.42).
-    h.skills.push({ skillId: 'discretion', spec: 'urbaine', characteristic: 'agilite', advances: 0 });
+    h.skills.push({ id: 'discretion', spec: 'urbaine', characteristic: 'agilite', advances: 0 });
     expect(buySkillAdvance(h, 'discretion', 'rurale').ok).toBe(false); // (Rurale) non connue
     expect(buySkillAdvance(h, 'discretion', 'urbaine')).toEqual({ ok: true, cost: 10 });
     expect(h.skills.find((s) => s.spec === 'urbaine')!.advances).toBe(1);
-    expect(h.skills.find((s) => !s.spec && s.skillId === 'discretion')!.advances).toBe(1); // inchangée
+    expect(h.skills.find((s) => !s.spec && s.id === 'discretion')!.advances).toBe(1); // inchangée
   });
   it('buySkillAdvance : remise −5 PX (talent Maître artisan…, LDB 10) in-carrière seulement', () => {
     const h = hero(1000);
@@ -184,7 +184,7 @@ describe('Compléter / Changer de Carrière (LDB 07 l.111-140, LDB 07 l.144)', (
       ...hero(xp),
       career: 'Test',
       charAdvances: { 'capacite-de-combat': 5, force: 5, endurance: 5 },
-      skills: ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'].map((skillId) => ({ skillId, characteristic: 'agilite', advances: 5 })),
+      skills: ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'].map((id) => ({ id, characteristic: 'agilite', advances: 5 })),
       talents: [{ talentId: 't1', times: 1 }],
       careerLevel: 1,
     }) as unknown as Combatant;

@@ -326,7 +326,7 @@ function fxChips(st: InterludeHeroState, hero: Combatant): { icon: IconId; label
   const chips: { icon: IconId; label: string }[] = [];
   if (fx?.moneyPct) chips.push({ icon: 'resource/gold-purse', label: `${fx.moneyPct} % sur la bourse du groupe (pire tirage appliqué une fois)` });
   if (fx?.loseActivity) chips.push({ icon: 'nav/activity', label: '−1 Activité' });
-  if (fx?.fortuneMaxDelta) chips.push({ icon: 'resource/fortune', label: `+${fx.fortuneMaxDelta} Point de Chance` });
+  if (fx?.fortuneMaxDelta) chips.push({ icon: 'resource/fortune', label: `+${fx.fortuneMaxDelta} Point${fx.fortuneMaxDelta > 1 ? 's' : ''} de Chance` });
   if (fx?.revenuePct) chips.push({ icon: 'resource/gold-purse', label: `Revenus ${fx.revenuePct > 0 ? '+' : ''}${fx.revenuePct} %${fx.revenueClasses ? ` (${fx.revenueClasses.join(', ')})` : ''}` });
   if (fx?.revenueBlockedClasses) chips.push({ icon: 'resource/gold-purse', label: fx.revenueBlockedClasses.includes('*') || fx.revenueBlockedClasses.includes(heroClass(hero)) ? 'Revenus impossibles cette période' : `Revenus bloqués pour : ${fx.revenueBlockedClasses.join(', ')}` });
   if (fx?.bankPct) chips.push({ icon: 'resource/gold-purse', label: `${fx.bankPct} % sur l'argent placé en banque` });
@@ -608,10 +608,10 @@ function CraftProgressPane({ hero, craft, disabled, desc }: {
   hero: Combatant; craft: NonNullable<Combatant['craft']>; disabled: boolean; desc?: string;
 }) {
   const activity = useGame((s) => s.interludeActivity);
-  const metier = hero.skills.find((k) => k.skillId === 'metier');
+  const metier = hero.skills.find((k) => k.id === 'metier');
   const label = findTrappingById(craft.trappingId)?.label ?? craft.trappingId;
   const chip = metier
-    ? <SkillChip skillId={metier.skillId} show={skillInstanceLabel(metier)} />
+    ? <SkillChip skillId={metier.id} show={skillInstanceLabel(metier)} />
     : <b>Métier</b>;
   return (
     <ActivityPane
@@ -690,7 +690,7 @@ function CraftPane({ hero, disabled, money, desc }: { hero: Combatant; disabled:
       ? <>Matériaux trop chers (<CoinsB brass={sel.materialsBrass} />) pour votre bourse.</>
       : null;
   const chip = metier
-    ? <SkillChip skillId={metier.skillId} show={skillInstanceLabel(metier)} />
+    ? <SkillChip skillId={metier.id} show={skillInstanceLabel(metier)} />
     : <b>Métier</b>;
   return (
     <ActivityPane
@@ -991,7 +991,7 @@ function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boo
   const activity = useGame((s) => s.interludeActivity);
   const items = (hero.items ?? []).filter((i) => i.identified === false);
   const [uid, setUid] = useState(items[0]?.uid ?? '');
-  const savoir = hero.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'magie' && k.advances >= 1);
+  const savoir = hero.skills.find((k) => k.id === 'savoir' && (k.spec ?? '') === 'magie' && k.advances >= 1);
   const blocked = !items.length
     ? `Aucun objet non identifié dans le sac de ${hero.label}.`
     : !savoir
@@ -1004,7 +1004,7 @@ function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boo
       desc={desc}
       blocked={blocked}
       prejet={savoir
-        ? withStake(testPending(<SkillChip skillId={savoir.skillId} show={skillInstanceLabel(savoir)} />, testValue(hero, savoir.skillId, undefined, savoir.spec), undefined, 'intermediaire'), 'identify')
+        ? withStake(testPending(<SkillChip skillId={savoir.id} show={skillInstanceLabel(savoir)} />, testValue(hero, savoir.id, undefined, savoir.spec), undefined, 'intermediaire'), 'identify')
         : undefined}
       note={<>Une semaine d'étude · un grand succès révèle les Particularités ; une lourde méprise ancre de <b>fausses</b> certitudes.</>}
       actions={

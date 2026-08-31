@@ -32,7 +32,7 @@ function setup() {
     h.characteristics.intelligence = 40;
     h.characteristics['force-mentale'] = 60;
     h.advantage = 0;
-    h.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances }];
+    h.skills = [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances }];
     h.talents = [{ talentId: 'magie-des-arcanes', spec: domain, times: 1 }];
     return h;
   };
@@ -49,7 +49,7 @@ function setup() {
   E.characteristics.intelligence = 48;
   E.characteristics['force-mentale'] = 53;
   E.advantage = 0;
-  E.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }];
+  E.skills = [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }];
   E.talents = [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }];
   E.spells = ['carreau'];
   heroes.forEach((h, i) => { h.pos = { x: 10, y: 10 + i }; h.dispelledThisRound = undefined; });
@@ -83,7 +83,7 @@ function openWindow(ids: string[]) {
 function affaiblir(id: string) {
   const c = useGame.getState().battle!.combatants.find((x) => x.id === id)!;
   c.characteristics.intelligence = 10;
-  c.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 1 }];
+  c.skills = [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 1 }];
 }
 
 const live = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!;

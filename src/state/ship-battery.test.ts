@@ -10,7 +10,7 @@ import { makeRNG } from '../engine/dice';
 import { rangeBandName } from '../engine/combat';
 
 /** Combattant d'équipage minimal (carac d'instance = Dex → valeur prévisible). Calqué sur crew-roles.test.ts. */
-const mk = (chars: Partial<Record<string, number>>, skills: { skillId: string; advances: number; spec?: string }[] = []): Combatant =>
+const mk = (chars: Partial<Record<string, number>>, skills: { id: string; advances: number; spec?: string }[] = []): Combatant =>
   ({
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30, ...chars },
     skills: skills.map((s) => ({ ...s, characteristic: 'dexterite' }) as SkillInstance),
@@ -23,7 +23,7 @@ const hull = (postes: ShipPoste[]): Combatant =>
   ({ id: 'hull', name: 'Galère', pos: { x: 5, y: 5 }, postes, conditions: [], weapons: [] }) as unknown as Combatant;
 const target = (x: number, y: number): Combatant =>
   ({ id: 'cible', name: 'Cible', pos: { x, y }, conditions: [], weapons: [] }) as unknown as Combatant;
-const artilleur = () => mk({ dexterite: 80 }, [{ skillId: 'projectiles', advances: 0, spec: 'poudre-noire' }]); // valeur 80
+const artilleur = () => mk({ dexterite: 80 }, [{ id: 'projectiles', advances: 0, spec: 'poudre-noire' }]); // valeur 80
 
 /**
  * Tir de batterie (MDG 14 l.126-130) : « le total de DR s'applique à toutes les armes à feu tournées vers
@@ -64,7 +64,7 @@ const gunnerPJ = (): Combatant =>
   ({ id: 'gunner', name: 'Artilleur', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 40, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], fortune: 2, resilience: 1,
-    skills: [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'capacite-de-tir', advances: 30 }], talents: [], weapons: [],
+    skills: [{ id: 'projectiles', spec: 'poudre-noire', characteristic: 'capacite-de-tir', advances: 30 }], talents: [], weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
 const battPoste = (): ShipPoste =>
   ({ side: 'tribord', item: { uid: 'canon', name: 'Canon moyen', kind: 'ranged', damage: { flat: 14, plusBF: false }, range: 75, qualities: [{ id: 'recharge', value: 6 }] }, crewIds: ['gunner'] }) as unknown as ShipPoste;
@@ -222,7 +222,7 @@ describe('bordée à munition à AIRE — balaie l’équipage exposé du navire
 describe('rollCrewRole — cumul de rôles (Manque de bras, MDG 14 l.53)', () => {
   const cap = (): Combatant =>
     ({ id: 'cap', name: 'Cap', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
-      skills: [{ skillId: 'commandement', characteristic: 'sociabilite', advances: 30 }], conditions: [], talents: [] }) as unknown as Combatant;
+      skills: [{ id: 'commandement', characteristic: 'sociabilite', advances: 30 }], conditions: [], talents: [] }) as unknown as Combatant;
 
   it('cumul → +2 crans de Difficulté : cible PLUS DURE (−20) qu\'un jet normal, même dé', () => {
     const normal = rollCrewRole(cap(), 'capitaine', makeRNG(5))!;

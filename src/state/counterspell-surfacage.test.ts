@@ -36,7 +36,7 @@ function setup() {
   enemies.slice(1).forEach((e) => (e.dead = true));
   const E = enemies[0];
   E.characteristics.intelligence = 48; E.characteristics['force-mentale'] = 53;
-  E.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }];
+  E.skills = [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }];
   E.spells = ['carreau'];
   H.pos = { x: 10, y: 10 };
   E.pos = { x: 12, y: 10 };

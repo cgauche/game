@@ -68,7 +68,7 @@ describe('Gate de Classe (LDB 23 l.197 / AA 12 l.5) — appliqué au chemin rée
     // Force l'égalité de valeur BRUTE (« pour un héros sans avance », les deux retombent sur la même
     // Caractéristique Sociabilité) — sans quoi une sélection par VALEUR (le bug corrigé) choisirait
     // encore Divertissement par coïncidence sur ce tirage de héros.
-    h = { ...h, skills: h.skills.filter((k) => k.skillId !== 'charme' && k.skillId !== 'divertissement') };
+    h = { ...h, skills: h.skills.filter((k) => k.id !== 'charme' && k.id !== 'divertissement') };
     useGame.setState({ party: [h] });
     expect(testValue(h, 'charme')).toBe(testValue(h, 'divertissement', undefined, 'narration'));
     useGame.getState().interludeActivity(heroId, 'punchausen');

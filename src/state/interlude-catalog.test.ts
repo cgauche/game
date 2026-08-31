@@ -235,7 +235,7 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
   it('les DEUX voies d’identification coexistent : ADE II (Savoir Magie) ET ACE (Recherche, à Altdorf)', () => {
     armArtefact();
     const h = hero();
-    h.skills.push({ skillId: 'savoir', spec: 'magie', characteristic: 'intelligence', advances: 10 } as never);
+    h.skills.push({ id: 'savoir', spec: 'magie', characteristic: 'intelligence', advances: 10 } as never);
     useGame.getState().interludeActivity(h.id, 'identify', { itemUid: 'art1' }); // voie ADE II (Savoir Magie)
     expect(useGame.getState().pendingActivity?.activityId).toBe('identify');
     useGame.getState().activityCancel();

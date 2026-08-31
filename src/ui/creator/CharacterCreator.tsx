@@ -2314,7 +2314,7 @@ function Rubrique({ title, children }: { title: ReactNode; children: ReactNode }
 function topSkillTests(hero: Combatant, max = 3): { skillId: string; spec?: string; label: string; value: number }[] {
   return [...hero.skills]
     .filter((s) => s.advances > 0)
-    .map((s) => ({ skillId: s.skillId, spec: s.spec, label: skillInstanceLabel(s), value: skillBaseValue(hero, s.skillId, s.spec) }))
+    .map((s) => ({ skillId: s.id, spec: s.spec, label: skillInstanceLabel(s), value: skillBaseValue(hero, s.id, s.spec) }))
     .sort((a, b) => b.value - a.value)
     .slice(0, max);
 }
@@ -2409,7 +2409,7 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
       <div className="presentation-col presentation-right">
         <Rubrique title="Compétences formées">
           <div className="skill-tags">
-            {hero.skills.filter((s) => s.advances > 0).map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />)}
+            {hero.skills.filter((s) => s.advances > 0).map((s) => <SkillChip key={`${s.id}|${s.spec ?? ''}`} skill={s} />)}
           </div>
         </Rubrique>
         <Rubrique title="Talents">

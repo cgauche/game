@@ -24,9 +24,9 @@ function caster(x: number, y: number, z: number, id = 'caster'): Combatant {
   const h = pregen(PREGEN.sorcier);
   h.id = id; h.label = id; h.pos = { x, y, z };
   h.wounds = { ...h.wounds, max: 99, current: 99 };
-  const sk = h.skills.find((s) => s.skillId === 'langue');
+  const sk = h.skills.find((s) => s.id === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 40);
-  else h.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 40 } as never);
+  else h.skills.push({ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 40 } as never);
   h.spells = ['explosion', 'sang-de-la-terre', ...(h.spells ?? [])];
   return h;
 }

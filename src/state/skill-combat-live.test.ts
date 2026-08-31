@@ -48,7 +48,7 @@ describe('Substitution sociale en défense LIVE (LDB 09 l.287)', () => {
 
   it('l’option sociale se RÉSOUT : base + libellé = la Compétence substituée', () => {
     const { H, E } = combat();
-    H.skills.push({ skillId: 'intimidation', advances: 6 } as never);
+    H.skills.push({ id: 'intimidation', advances: 6 } as never);
     E.psychState = [{ type: 'peur', sourceId: H.id, indice: 2, calmeDR: 0 } as never]; // l'attaquant a peur de H
     seedBattleRng(1);
     setDefense(H, E);
@@ -62,7 +62,7 @@ describe('Substitution sociale en défense LIVE (LDB 09 l.287)', () => {
 
   it('la substitution NE casse PAS la Parade (Corps à corps intact)', () => {
     const { H, E } = combat();
-    H.skills.push({ skillId: 'intimidation', advances: 6 } as never);
+    H.skills.push({ id: 'intimidation', advances: 6 } as never);
     E.psychState = [{ type: 'peur', sourceId: H.id, indice: 2, calmeDR: 0 } as never];
     seedBattleRng(1);
     setDefense(H, E);

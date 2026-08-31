@@ -109,8 +109,8 @@ describe('Distraire (LDB 10 l.364 / AA 13 l.51)', () => {
   });
 
   it('les valeurs de Test lisent Ag/Athlétisme (attaquant) et FM/Calme (défenseur)', () => {
-    const a = mk('h', 'hero', { skills: [{ skillId: 'athletisme', advances: 10 }] as never });
-    const e = mk('e', 'enemy', { skills: [{ skillId: 'calme', advances: 5 }] as never });
+    const a = mk('h', 'hero', { skills: [{ id: 'athletisme', advances: 10 }] as never });
+    const e = mk('e', 'enemy', { skills: [{ id: 'calme', advances: 5 }] as never });
     expect(distraireAttackValue(a)).toBe(CHARS.agilite + 10);
     expect(distraireDefenseValue(e)).toBe(CHARS['force-mentale'] + 5);
   });

@@ -92,9 +92,9 @@ describe('(B) Tir — le chef sert la pièce et touche la cible (resolveAttack, 
     seedBattleRng(1);
     const poste = mkPoste('baliste', ['gunner', 's1']);
     const gunner = mkGunner('gunner', 'hero', { x: 5, y: 5 }, 80);
-    gunner.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
+    gunner.skills = [{ id: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
     const s1 = mkCrewman('s1');
-    s1.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée (2/2)
+    s1.skills = [{ id: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée (2/2)
     const cible = mkEnemy('cible', 8, 5, 30, 60);
     const all = [mkEmplacement(poste), gunner, s1, cible];
     applyShipPostes(all);
@@ -112,7 +112,7 @@ describe('(B) Tir — le chef sert la pièce et touche la cible (resolveAttack, 
 describe('(C) Sous-effectif — la pénalité d’Arme d’équipe s’applique au sol (crewedFireWeapon)', () => {
   // Équipage CONFORME au RAW (AA 10 l.230) : les servants comptés possèdent la Projectiles du Groupe (baliste =
   // Arbalète) — la seule variable testée ici est leur PRÉSENCE physique (vivant/à terre), pas la compétence.
-  const arb = () => [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
+  const arb = () => [{ id: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
 
   it('baliste (Indice 2) servie en sous-effectif → recharge ×2 + Arme d’équipe retirée (firedWeapon ⊃ crewedFireWeapon)', () => {
     const poste = mkPoste('baliste', ['chef', 's1']); // baliste : arme-d-equipe Indice 2, Recharge 3, Dégâts 12
@@ -155,7 +155,7 @@ describe('(D) Recharge — Test étendu rechargeant l’emplacement au sol (batt
     const item = itemFromTrappingById('baliste')!; // Recharge 3, Indice 2
     const poste: ShipPoste = { item, crewIds: ['chef', 's1'], loaded: false, reloadProgress: 2 };
     const chef = mkGunner('chef', 'hero', { x: 5, y: 5 }, 80);
-    chef.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 20 }] as never;
+    chef.skills = [{ id: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 20 }] as never;
     const s1 = mkCrewman('s1');
     const emplacement = mkEmplacement(poste);
     useGame.setState({

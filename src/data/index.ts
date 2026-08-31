@@ -2935,7 +2935,7 @@ type EntiteDe<T extends TypeResolu> = (typeof PAR_ID)[T] extends Map<string, inf
  * PORTE UNIQUE de résolution d'une entité par son `id` STABLE (#1463 L2) : le type d'entité
  * paramètre le lookup ET le type rendu ; `undefined` si l'id est absent de son dataset.
  * L'`id` est un `string` NU — la marque `Id<'skill'>` se frappe à la porte zod, côté DONNÉE
- * (`idDe`, `schemas/grammaire/ref.ts`) ; le moteur, lui, porte des ids nus (`SkillInstance.skillId`).
+ * (`idDe`, `schemas/grammaire/ref.ts`) ; le moteur, lui, porte des ids nus (`SkillInstance.id`).
  */
 export function byId<T extends TypeResolu>(type: T, id: string): EntiteDe<T> | undefined {
   return PAR_ID[type].get(id) as EntiteDe<T> | undefined;
@@ -3364,8 +3364,8 @@ export function qualityRefLabel(q: QualityRef): string {
 }
 /** Libellé d'affichage / CLÉ d'une `SkillInstance` (id+spec → « Langue (Magick) »). Repli sur l'id.
  *  Passe par `refConcrete` : ce texte indexe aussi (avancements, fiche). */
-export function skillInstanceLabel(s: { skillId: string; spec?: string }): string {
-  return refConcrete('skills', { id: s.skillId, spec: s.spec });
+export function skillInstanceLabel(s: { id: string; spec?: string }): string {
+  return refConcrete('skills', { id: s.id, spec: s.spec });
 }
 /** Libellé CONCRET d'une `TalentInstance` (id+spec → « Magie des Arcanes (Bête) ») — clé du registre
  *  combatFeatures + affichage. Repli sur l'id. CLÉ d'abord, donc `refConcrete`. */
@@ -3387,7 +3387,7 @@ export function choixLabel(category: string, id: string, choix: true | string[])
     : t('ref.auChoix', { base });
 }
 /** Libellé d'affichage/clé concrète d'un `AdvancementRef` : « Savoir (Au choix) », « A ou B »,
- *  « 3 Talent aléatoire », « Magie des Arcanes (Bête) ». SOURCE UNIQUE (Codex + résolution création).
+ *  « 3 Talents aléatoires », « Magie des Arcanes (Bête) ». SOURCE UNIQUE (Codex + résolution création).
  *  Passe par `refConcrete` : ce texte INDEXE `opts.skillAdvances` (`engine/character.ts`). */
 export function advancementLabel(category: string, a: AdvancementRef): string {
   if ('id' in a) return a.choix == null ? refConcrete(category, a) : choixLabel(category, a.id, a.choix);
@@ -3395,7 +3395,7 @@ export function advancementLabel(category: string, a: AdvancementRef): string {
     const options = a.of.map((x) => advancementLabel(category, x));
     return a.pick > 1 ? `${a.pick} parmi : ${options.join(', ')}` : options.join(' ou ');
   }
-  return a.random === 1 ? 'Talent aléatoire' : `${a.random} Talent aléatoire`;
+  return a.random === 1 ? 'Talent aléatoire' : `${a.random} Talents aléatoires`;
 }
 /** id de base d'un `AdvancementRef` SIMPLE (référence, avec ou sans régime de spécialisation) — pour
  *  matcher par id une compétence/un talent POSSÉDÉ (ex. compétence de revenus). undefined pour un

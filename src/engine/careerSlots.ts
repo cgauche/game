@@ -390,7 +390,7 @@ export function arcaneDomainGate(hero: Combatant, domainId: string): { ok: boole
   if (held.normal.length >= cap) return { ok: false, reason: t('slot.domainCap', { cap }) };
   if (held.normal.length > 0) {
     const prev = held.normal[held.normal.length - 1];
-    const advances = hero.skills.find((s) => s.skillId === 'focalisation' && (s.spec ?? '') === prev)?.advances ?? 0;
+    const advances = hero.skills.find((s) => s.id === 'focalisation' && (s.spec ?? '') === prev)?.advances ?? 0;
     const known = domainSpellsKnown(hero, prev);
     if (advances < 20 || known < 8) {
       const prevLabel = findDomainById(prev)?.label ?? prev;

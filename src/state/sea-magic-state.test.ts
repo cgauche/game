@@ -13,9 +13,9 @@ import type { Combatant } from '../engine/types';
 
 function wizard(domainId: string): Combatant {
   const w = pregen(PREGEN.sorcier);
-  w.skills = (w.skills as Combatant['skills']).filter((s) => s.skillId !== 'langue' && s.skillId !== 'focalisation');
-  w.skills.push({ skillId: 'langue', spec: 'magick', advances: 30 } as never);
-  w.skills.push({ skillId: 'focalisation', spec: domainId, advances: 30 } as never);
+  w.skills = (w.skills as Combatant['skills']).filter((s) => s.id !== 'langue' && s.id !== 'focalisation');
+  w.skills.push({ id: 'langue', spec: 'magick', advances: 30 } as never);
+  w.skills.push({ id: 'focalisation', spec: domainId, advances: 30 } as never);
   w.characteristics = { ...w.characteristics, intelligence: 80, 'force-mentale': 80 };
   w.talents = w.talents.filter((t) => t.talentId !== 'harmonisation-aethyrique');
   return w;

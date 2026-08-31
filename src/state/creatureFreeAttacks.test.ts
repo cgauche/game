@@ -107,7 +107,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }]; E.advantage = 2; E.characteristics['capacite-de-tir'] = 85;
-    H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive');
+    H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.id !== 'esquive');
     H.armour = { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 }; // PA ignorés par le Feu
     const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
@@ -121,7 +121,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.traits = [{ id: 'vomissement', value: 0 }]; E.advantage = 3; E.characteristics['capacite-de-tir'] = 85; E.characteristics.endurance = 40; // BE 4 → BE+4 Dégâts
-    H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive');
+    H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.id !== 'esquive');
     // Corrosion = op `damageArmour {material:'cuir'}` (GameOp authoré) : endommage une pièce de CUIR portée
     // (RAW « toute matière » non modélisée → cuir seul). On en équipe une pour l'observer : la pièce
     // PORTÉE encaisse, jamais un décrément direct du champ plat `armour.corps`.
@@ -160,7 +160,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.traits = [{ id: 'regard-petrifiant' }]; E.advantage = 6; E.characteristics['capacite-de-tir'] = 90; // +6 DR d'Avantage + CT élevée
-    H.characteristics.initiative = 1; H.skills = H.skills.filter((s) => s.skillId !== 'initiative');
+    H.characteristics.initiative = 1; H.skills = H.skills.filter((s) => s.id !== 'initiative');
     const acted = applyGaze(useGame.getState, useGame.setState, E);
     expect(acted).toBe(true);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
@@ -229,7 +229,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     const { H, E } = setup();
     E.traits = [{ id: 'morsure', value: 14 }, { id: 'venin', arg: 'Intermédiaire' }]; E.advantage = 1;
     H.characteristics.endurance = 1; // Endurance minime → Résistance ratée quasi à coup sûr
-    H.skills = H.skills.filter((s) => s.skillId !== 'resistance');
+    H.skills = H.skills.filter((s) => s.id !== 'resistance');
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.conditions.some((c) => c.id === 'empoisonne')).toBe(true);
@@ -254,7 +254,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     E.traits = [{ id: 'langue-prehensile', value: 9 }]; E.advantage = 2; E.characteristics['capacite-de-tir'] = 95; // 1 Av, touche
     E.pos = { x: 10, y: 10 }; E.size = 'grande';
     H.pos = { x: 14, y: 10 }; H.size = 'moyenne';
-    H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive'); // ne peut esquiver
+    H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.id !== 'esquive'); // ne peut esquiver
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const st = useGame.getState();
     const hLive = st.battle!.combatants.find((c) => c.id === H.id)!;

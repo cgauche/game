@@ -40,7 +40,7 @@ function setup(spells: string[], n = 1, magick = true) {
   const cibles = enemies.slice(0, n);
   cibles.forEach((E, i) => {
     E.characteristics.intelligence = 48; E.characteristics['force-mentale'] = 53;
-    if (magick) { E.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }]; E.spells = ['carreau']; }
+    if (magick) { E.skills = [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }]; E.spells = ['carreau']; }
     E.pos = { x: 12 + i, y: 10 };
     E.dispelledThisRound = undefined;
   });

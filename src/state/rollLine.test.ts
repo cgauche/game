@@ -22,7 +22,7 @@ const hero = (over: Partial<Combatant> = {}, adv = 10, skillId = 'ramer'): Comba
     agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30,
   },
   wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4,
-  skills: [{ skillId, characteristic: 'force', advances: adv }], talents: [],
+  skills: [{ id: skillId, characteristic: 'force', advances: adv }], talents: [],
   armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
   ...over,
 } as unknown as Combatant);

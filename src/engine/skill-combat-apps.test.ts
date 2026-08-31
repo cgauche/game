@@ -23,21 +23,21 @@ describe('Applications de combat — cumuler l’Avantage (LDB 09 l.305-308)', (
   it('Prière (avancée) : plafond = Bonus de Sociabilité, mais SEULEMENT si possédée', () => {
     const sansPriere = mk();
     expect(skillAdvantageCap(sansPriere, 'priere')).toBe(0); // avancée non prise → 0
-    const avecPriere = mk({ skills: [{ skillId: 'priere', advances: 5 } as never] });
+    const avecPriere = mk({ skills: [{ id: 'priere', advances: 5 } as never] });
     expect(skillAdvantageCap(avecPriere, 'priere')).toBe(3); // Bonus Soc 38 → 3
   });
   it('une Compétence sans application « Avantage » → 0', () => {
     expect(skillAdvantageCap(mk(), 'corps-a-corps')).toBe(0);
   });
   it('combatAdvantageSkills liste les Compétences possédées éligibles', () => {
-    const c = mk({ skills: [{ skillId: 'intuition', advances: 0 } as never, { skillId: 'savoir', advances: 2 } as never] });
+    const c = mk({ skills: [{ id: 'intuition', advances: 0 } as never, { id: 'savoir', advances: 2 } as never] });
     const ids = combatAdvantageSkills(c).map((s) => s.skillId).sort();
     expect(ids).toEqual(['intuition', 'savoir']);
   });
 });
 
 describe('Applications de combat — substitution sociale (LDB 09 l.207/287)', () => {
-  const defender = () => mk({ id: 'def', skills: [{ skillId: 'intimidation', advances: 4 } as never] });
+  const defender = () => mk({ id: 'def', skills: [{ id: 'intimidation', advances: 4 } as never] });
   const attacker = (fearsDef: boolean) => mk({
     id: 'atk',
     psychState: fearsDef ? [{ type: 'peur', sourceId: 'def', indice: 2, calmeDR: 0 } as never] : [],
@@ -71,7 +71,7 @@ describe('Applications de combat — substitution sociale (LDB 09 l.207/287)', (
 
 describe('Mode de défense « social » branché dans le moteur (LDB 09 l.287)', () => {
   const fist: Weapon = { name: 'Mains nues', type: 'melee', damage: 0, group: 'brawling', qualities: [] } as unknown as Weapon;
-  const defender = () => mk({ id: 'def', weapons: [fist], skills: [{ skillId: 'intimidation', advances: 4 } as never], dualStrikeDefensePenalty: true });
+  const defender = () => mk({ id: 'def', weapons: [fist], skills: [{ id: 'intimidation', advances: 4 } as never], dualStrikeDefensePenalty: true });
   const attacker = () => mk({ id: 'atk', weapons: [fist], psychState: [{ type: 'peur', sourceId: 'def', indice: 2, calmeDR: 0 } as never] });
 
   it('defenseValue(social) renvoie la base sociale fournie, pas Corps à corps ni Agilité', () => {

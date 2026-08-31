@@ -19,8 +19,8 @@ function wiz(p: Partial<Combatant> = {}): Combatant {
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
-      { skillId: 'langue', spec: 'magick', advances: 10 },
-      { skillId: 'focalisation', spec: 'feu', advances: 10 },
+      { id: 'langue', spec: 'magick', advances: 10 },
+      { id: 'focalisation', spec: 'feu', advances: 10 },
     ] as never,
     talents: [],
     ...p,
@@ -42,7 +42,7 @@ describe('Focalisation — spécialisation par Vent (LDB 46)', () => {
   });
   it('un sort d\'Arcane commun accepte n\'importe quel Vent ; une compétence sans spec accepte tout', () => {
     expect(focusSkillFor(wiz(), SORT_COMMUN)).toBeTruthy();
-    const legacy = wiz({ skills: [{ skillId: 'focalisation', advances: 8 }] as never });
+    const legacy = wiz({ skills: [{ id: 'focalisation', advances: 8 }] as never });
     expect(focusSkillFor(legacy, SORT_FEU)).toBeTruthy();
   });
 });

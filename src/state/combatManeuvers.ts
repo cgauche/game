@@ -646,10 +646,10 @@ export function resolveDistraire(attacker: Combatant, foe: Combatant, atk: TestR
  *  Calme sur FORCE MENTALE pour le défenseur — Caractéristique effective + Augmentations, sans aucun
  *  modificateur. SOURCE des jets de `resolveDistraire`, et grandeurs de son départage. Pur. */
 export function distraireAttackValue(c: Combatant): number {
-  return effectiveChar(c, 'agilite') + (c.skills.find((s) => s.skillId === 'athletisme')?.advances ?? 0);
+  return effectiveChar(c, 'agilite') + (c.skills.find((s) => s.id === 'athletisme')?.advances ?? 0);
 }
 export function distraireDefenseValue(c: Combatant): number {
-  return effectiveChar(c, 'force-mentale') + (c.skills.find((s) => s.skillId === 'calme')?.advances ?? 0);
+  return effectiveChar(c, 'force-mentale') + (c.skills.find((s) => s.id === 'calme')?.advances ?? 0);
 }
 
 /** Adversaires ÉLIGIBLES au Battement de `attacker` (LDB 10 l.103) — SOURCE UNIQUE : gate de la hotbar,

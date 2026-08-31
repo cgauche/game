@@ -397,7 +397,7 @@ export function heroClass(h: Combatant): string {
 export function incomeSkillOf(h: Combatant): string {
   const lvl1 = levelsForCareer(h.career ?? '')[0];
   const ids = (lvl1?.skills ?? []).map(advancementBaseId).filter((x): x is string => !!x); // AdvancementRef → skillId
-  const owned = ids.find((id) => h.skills.some((k) => k.skillId === id));
+  const owned = ids.find((id) => h.skills.some((k) => k.id === id));
   return owned ?? ids[0] ?? 'athletisme';
 }
 
@@ -606,7 +606,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     // été engagé (`craftStart` : matériaux ¼ prix + `h.craft`). La Difficulté et la cible de DR
     // viennent de l'ouvrage en cours.
     if (!h.craft) return;
-    const metier = h.skills.find((k) => k.skillId === 'metier');
+    const metier = h.skills.find((k) => k.id === 'metier');
     skillValue = testValue(h, 'metier', undefined, metier?.spec);
     skillLabel = metier ? skillInstanceLabel(metier) : refLabel('skills', { id: 'metier' });
     extra.difficulty = h.craft.difficulty;
@@ -660,12 +660,12 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     // d'artefact) → Test de Savoir (Magie) Intermédiaire (+0). Savoir est AVANCÉE : il faut l'avoir.
     const item = (h.items ?? []).find((i) => i.uid === opts.itemUid);
     if (!item || item.identified !== false) return; // rien à identifier
-    const savoir = h.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'magie' && k.advances >= 1);
+    const savoir = h.skills.find((k) => k.id === 'savoir' && (k.spec ?? '') === 'magie' && k.advances >= 1);
     if (!savoir) {
       get().log(msg('if.noSavoirMagie', { name: h.label }));
       return;
     }
-    skillValue = testValue(h, savoir.skillId, undefined, savoir.spec);
+    skillValue = testValue(h, savoir.id, undefined, savoir.spec);
     skillLabel = skillInstanceLabel(savoir);
     extra.label = stepDetail(dataLabel(def.label), dataLabel(item.label));
   } else if (def.resolver === 'combatTraining') {
@@ -693,7 +693,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     // Recherche de savoir (LDB 23 l.220-226) : Savoir Accessible (+20) dans la bonne spécialisation ;
     // « sans la bonne spécialisation […] et que vous êtes instruit » (approximé : possède au moins
     // une avance de Savoir, quelle que soit la spécialisation) → Intelligence Complexe (−10).
-    const savoirs = h.skills.filter((k) => k.skillId === 'savoir' && (k.advances ?? 0) > 0);
+    const savoirs = h.skills.filter((k) => k.id === 'savoir' && (k.advances ?? 0) > 0);
     if (savoirs.length) {
       const best = savoirs.map((k) => ({ k, v: testValue(h, 'savoir', undefined, k.spec) })).sort((a, b) => b.v - a.v)[0];
       skillValue = best.v;
@@ -1146,8 +1146,8 @@ export function entrainementStart(get: Get, set: Set, heroId: string, kind: 'ski
   const r = kind === 'characteristic'
     ? engineBuyCharAdvance(h, id as CharKey, false)
     : (() => {
-        if (!h.skills.some((k) => k.skillId === id && (k.spec ?? '') === (spec ?? ''))) {
-          h.skills.push({ skillId: id, spec, characteristic: skillCharacteristicById(id), advances: 0 });
+        if (!h.skills.some((k) => k.id === id && (k.spec ?? '') === (spec ?? ''))) {
+          h.skills.push({ id: id, spec, characteristic: skillCharacteristicById(id), advances: 0 });
         }
         return engineBuySkillAdvance(h, id, spec, false);
       })();

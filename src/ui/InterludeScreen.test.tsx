@@ -32,7 +32,7 @@ function buildSeam(weeks = 3): InterludeSeam {
   const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Vétéran', rng: makeRNG(1601) });
   a.xp = 300;
   const b = createHero({ speciesId: 'nains', careerId: 'artisan', label: 'Forgeron', rng: makeRNG(1602) });
-  if (!b.skills.some((s) => s.skillId === 'metier')) b.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'dexterite', advances: 10 });
+  if (!b.skills.some((s) => s.id === 'metier')) b.skills.push({ id: 'metier', spec: 'Forgeron', characteristic: 'dexterite', advances: 10 });
   useGame.setState({ party: [a, b], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [] });
   useGame.getState().startScene(testScene);
   vi.clearAllTimers();
@@ -343,7 +343,7 @@ describe('InterludeScreen — Punchausen (AA 12 l.45-49) : le volet et le flux J
     // Force l'égalité de valeur BRUTE (« pour un héros sans avance », Charme et Divertissement
     // retombent tous deux sur la Caractéristique Sociabilité) — sans quoi une sélection par VALEUR
     // (le bug corrigé) choisirait encore Divertissement par coïncidence sur ce tirage de héros.
-    const hero = { ...seam.party[0], skills: seam.party[0].skills.filter((k) => k.skillId !== 'charme' && k.skillId !== 'divertissement') };
+    const hero = { ...seam.party[0], skills: seam.party[0].skills.filter((k) => k.id !== 'charme' && k.id !== 'divertissement') };
     const party = [hero, seam.party[1]];
     useGame.setState({ party });
     const catalog = interludeCatalog(useGame.getState());

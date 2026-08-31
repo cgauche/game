@@ -213,9 +213,9 @@ describe('#1426 socle — la surface se juge sur l’ID du porteur (combat comme
 // ── PARITÉ TERRE/MER du commerce : `landSellCargo` migré vers `openWorldTest` ────────────────────
 
 function skill(c: Combatant, skillId: string, advances: number): void {
-  const ex = c.skills.find((s) => s.skillId === skillId && s.spec == null);
+  const ex = c.skills.find((s) => s.id === skillId && s.spec == null);
   if (ex) ex.advances = Math.max(ex.advances, advances);
-  else c.skills.push({ skillId, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
+  else c.skills.push({ id: skillId, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
 }
 
 const CARRIER_ID = 'convoi-1';

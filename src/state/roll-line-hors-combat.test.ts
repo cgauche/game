@@ -51,7 +51,7 @@ describe('Naufrage — Natation montée par `rollStep` (#1153 L3)', () => {
   it('héros EMPOISONNÉ : base = Niveau NU, l’État est une chip NOMMÉE, cible = valeur jetée + Difficulté', () => {
     const nageur = hero({
       id: 'nag', label: 'Nageur',
-      skills: [{ skillId: 'natation', advances: 25, characteristic: 'force' }] as never,
+      skills: [{ id: 'natation', advances: 25, characteristic: 'force' }] as never,
       conditions: [{ id: 'empoisonne', value: 1 }] as never,
     });
     fresh([nageur]);
@@ -147,8 +147,8 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
     const eprouve = hero({
       id: 'epr', label: 'Éprouvé',
       conditions: [{ id: 'empoisonne', value: 1 }] as never,
-      skills: [{ skillId: 'resistance', advances: 15, characteristic: 'endurance' },
-        { skillId: 'resistance-a-l-alcool', advances: 10, characteristic: 'endurance' }] as never,
+      skills: [{ id: 'resistance', advances: 15, characteristic: 'endurance' },
+        { id: 'resistance-a-l-alcool', advances: 10, characteristic: 'endurance' }] as never,
       hunger: { days: 1, tests: 2, failures: 0 },
       thirst: { days: 0, tests: 1, failures: 0 },
       drunk: { failedTests: 2, drunk: true },
@@ -179,7 +179,7 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
   it('Dessoûlage : le libellé de compétence est celui du RAW (« Résistance à l’alcool », LDB 09 l.485)', () => {
     const ivre = hero({
       id: 'ivr', label: 'Ivre', drunk: { failedTests: 2, drunk: true },
-      skills: [{ skillId: 'resistance-a-l-alcool', advances: 10, characteristic: 'endurance' }] as never,
+      skills: [{ id: 'resistance-a-l-alcool', advances: 10, characteristic: 'endurance' }] as never,
       conditions: [{ id: 'empoisonne', value: 1 }] as never,
     } as never);
     fresh([ivre]);
@@ -210,7 +210,7 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
 
   const campeur = (p: Partial<Combatant>) => hero({
     conditions: [{ id: 'empoisonne', value: 1 }] as never,
-    skills: [{ skillId: 'resistance', advances: 15, characteristic: 'endurance' }] as never,
+    skills: [{ id: 'resistance', advances: 15, characteristic: 'endurance' }] as never,
     ...p,
   } as never);
 
@@ -247,12 +247,12 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
   it('Abri de fortune : le Soutien FONDU (LDB 12) ressort en ligne nommée, la cible ne bouge pas', () => {
     const meneur = campeur({
       id: 'men', label: 'Meneur',
-      skills: [{ skillId: 'survie-en-exterieur', advances: 30, characteristic: 'agilite' },
-        { skillId: 'resistance', advances: 15, characteristic: 'endurance' }] as never,
+      skills: [{ id: 'survie-en-exterieur', advances: 30, characteristic: 'agilite' },
+        { id: 'resistance', advances: 15, characteristic: 'endurance' }] as never,
     });
     const aide = campeur({
       id: 'aid', label: 'Aide', conditions: [] as never,
-      skills: [{ skillId: 'survie-en-exterieur', advances: 5, characteristic: 'agilite' }] as never,
+      skills: [{ id: 'survie-en-exterieur', advances: 5, characteristic: 'agilite' }] as never,
     });
     fresh([meneur, aide]);
     set({ scene: { ...scene, weather: 'neige' } } as never);
@@ -291,8 +291,8 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
   it('Gueule de bois : l’étape INSÉRÉE par le dessoûlage porte le Test du RAW (LDB 09 l.485)', () => {
     const ivre = campeur({
       id: 'ivr', label: 'Ivre', drunk: { failedTests: 2, drunk: true },
-      skills: [{ skillId: 'resistance-a-l-alcool', advances: 10, characteristic: 'endurance' },
-        { skillId: 'resistance', advances: 15, characteristic: 'endurance' }] as never,
+      skills: [{ id: 'resistance-a-l-alcool', advances: 10, characteristic: 'endurance' },
+        { id: 'resistance', advances: 15, characteristic: 'endurance' }] as never,
     });
     fresh([ivre]);
     set({ lastUpkeepDay: -1 } as never);
@@ -314,7 +314,7 @@ describe('Infirmerie / Activité — cibles montées par `rollLine` (#1153 L3)',
   it('Soin : cible = valeur de Guérison JETÉE + Difficulté (soigneur EMPOISONNÉ)', () => {
     const doc = hero({
       id: 'doc', label: 'Doc',
-      skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] as never,
+      skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] as never,
       conditions: [{ id: 'empoisonne', value: 1 }] as never,
     });
     const blesse = hero({ id: 'al', label: 'Blessé', wounds: { current: 4, max: 12 } });
@@ -328,7 +328,7 @@ describe('Infirmerie / Activité — cibles montées par `rollLine` (#1153 L3)',
   });
 
   it('Passe de Rééducation : la cible AFFICHÉE porte l’Accessible +20 que `rollTest` jettera (LDB 18 l.120/179)', () => {
-    const doc = hero({ id: 'doc', label: 'Doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] as never });
+    const doc = hero({ id: 'doc', label: 'Doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] as never });
     const patient = hero({
       id: 'p', label: 'Patient', wounds: { current: 40, max: 40 },
       traumas: [{ label: 'Épaule luxée (bras perdu)', location: 'brasD', restoreDR: 6, ops: [{ op: 'maxWeaponHands', hands: 1 }] }],
@@ -347,7 +347,7 @@ describe('Infirmerie / Activité — cibles montées par `rollLine` (#1153 L3)',
 
   it('Activité d’interlude : `bestActivitySkill` classe sur la cible ÉCRÊTÉE que le jet subira', () => {
     const h = hero({
-      id: 'act', skills: [{ skillId: 'ragot', advances: 20, characteristic: 'sociabilite' }] as never,
+      id: 'act', skills: [{ id: 'ragot', advances: 20, characteristic: 'sociabilite' }] as never,
       conditions: [{ id: 'empoisonne', value: 1 }] as never,
     });
     const pick = bestActivitySkill(h, { skills: [{ id: 'ragot' }] as never, difficulty: 'complexe' })!;

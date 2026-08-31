@@ -20,8 +20,8 @@ const hero = (over: Partial<Combatant> = {}): Combatant =>
     weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
-      { skillId: 'charme', characteristic: 'sociabilite', advances: 0 }, // in-carrière
-      { skillId: 'esquive', characteristic: 'agilite', advances: 0 }, // hors-carrière
+      { id: 'charme', characteristic: 'sociabilite', advances: 0 }, // in-carrière
+      { id: 'esquive', characteristic: 'agilite', advances: 0 }, // hors-carrière
     ],
     talents: [],
     movement: 4,
@@ -143,7 +143,7 @@ describe('buildAdvancementView — match d\'entité possédée par id+spec (Issu
   });
 
   it('Compétence à spec wildcard possédée : ownedAdvances lu par id+spec (Savoir (Empire))', () => {
-    const v = buildAdvancementView(hero({ career: 'erudit', careerLevel: 1, skills: [{ skillId: 'savoir', spec: 'empire', characteristic: 'intelligence', advances: 3 }] }));
+    const v = buildAdvancementView(hero({ career: 'erudit', careerLevel: 1, skills: [{ id: 'savoir', spec: 'empire', characteristic: 'intelligence', advances: 3 }] }));
     const open = v.skillSlotsOpen.find((s) => s.group === 'Savoir');
     expect(open).toBeTruthy();
     const empire = open!.options.find((o) => o.spec === 'empire');
@@ -155,7 +155,7 @@ describe('buildAdvancementView — match d\'entité possédée par id+spec (Issu
 describe('remise « 5 PX de moins par Augmentation » sur une Compétence ajoutée par un Talent (LDB 10)', () => {
   it('Maître artisan (joker `choix`) : Métier (Imprimerie), de carrière → 10 − 5 = 5 PX', () => {
     const v = buildAdvancementView(hero({
-      skills: [{ skillId: 'metier', spec: 'imprimerie', characteristic: 'dexterite', advances: 0 }],
+      skills: [{ id: 'metier', spec: 'imprimerie', characteristic: 'dexterite', advances: 0 }],
       talents: [{ talentId: 'maitre-artisan', times: 1 }],
     }));
     const metier = v.skills.find((s) => s.skillId === 'metier' && s.spec === 'imprimerie')!;
@@ -165,7 +165,7 @@ describe('remise « 5 PX de moins par Augmentation » sur une Compétence ajout�
 
   it('Voyageur aguerri (spec EXACTE `region`) : aucune remise sur Savoir (Politique)', () => {
     const v = buildAdvancementView(hero({
-      skills: [{ skillId: 'savoir', spec: 'politique', characteristic: 'intelligence', advances: 0 }],
+      skills: [{ id: 'savoir', spec: 'politique', characteristic: 'intelligence', advances: 0 }],
       talents: [{ talentId: 'voyageur-aguerri', times: 1 }],
     }));
     const savoir = v.skills.find((s) => s.skillId === 'savoir' && s.spec === 'politique')!;

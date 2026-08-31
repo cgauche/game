@@ -33,8 +33,8 @@ describe('Scénario « Effets scriptés » : moteurs orphelins câblés à un d�
   it('petitePriere : l’autel exauce un non-Béni (option `prayer-petites`, seuil relevé par la Compétence Prière)', () => {
     const p = useGame.getState().party.find((h) => !hasTalent(h, 'Béni'))!;
     expect(p).toBeTruthy(); // au moins un non-Béni chez les pré-tirés
-    const sk = p.skills.find((s) => s.skillId === 'priere');
-    if (sk) sk.advances = 200; else p.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 200 } as SkillInstance);
+    const sk = p.skills.find((s) => s.id === 'priere');
+    if (sk) sk.advances = 200; else p.skills.push({ id: 'priere', characteristic: 'sociabilite', advances: 200 } as SkillInstance);
     p.xp = 0;
     useGame.setState({ party: [...useGame.getState().party] });
     const autel = scene.entities.find((e) => e.id === 'autel')!;

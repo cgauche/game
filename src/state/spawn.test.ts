@@ -190,10 +190,10 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('compétences au format livre → avances dérivées (Test FINAL = Caractéristique + avances, LDB 09)', () => {
     const c = creatureToCombatant(eusapia, 'e1', at);
-    const langue = c.skills.find((s) => s.skillId === 'langue' && s.spec === 'magick')!;
+    const langue = c.skills.find((s) => s.id === 'langue' && s.spec === 'magick')!;
     expect(langue.advances).toBe(63 - 48); // « Langue (Magick) 63 », Int 48
     expect(c.characteristics.intelligence + langue.advances).toBe(63);
-    const foc = c.skills.find((s) => s.skillId === 'focalisation' && s.spec === 'bete')!; // id domaine, AFFICHE « Ghur »
+    const foc = c.skills.find((s) => s.id === 'focalisation' && s.spec === 'bete')!; // id domaine, AFFICHE « Ghur »
     expect(c.characteristics['force-mentale'] + foc.advances).toBe(68); // « Focalisation (Ghur) 68 », FM 53
   });
 
@@ -223,14 +223,14 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
       { type: 'statblock', label: 'Sorcier custom', char: { intelligence: 48, 'force-mentale': 53 }, skills: [{ id: 'langue', spec: 'magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
       'e1', at,
     );
-    expect(c.skills.find((s) => s.skillId === 'langue')!.advances).toBe(15);
+    expect(c.skills.find((s) => s.id === 'langue')!.advances).toBe(15);
     expect(c.talents[0]).toEqual({ talentId: 'menacant', times: 1 });
   });
 
   it('skillsFromBook : ref structurée (id + value) → SkillInstance ; id inconnu du catalogue → ignoré', () => {
     const chars = { 'capacite-de-combat': 45 } as any;
     const [cc] = skillsFromBook([{ id: 'corps-a-corps', spec: 'bagarre', value: 50 }], chars, 'spec:t');
-    expect(cc).toMatchObject({ skillId: 'corps-a-corps', characteristic: 'capacite-de-combat', advances: 5 });
+    expect(cc).toMatchObject({ id: 'corps-a-corps', characteristic: 'capacite-de-combat', advances: 5 });
     expect(skillsFromBook([{ id: 'competence-inexistante', value: 50 }], chars, 'spec:t')).toEqual([]); // rien d'inventé
   });
 

@@ -177,8 +177,8 @@ describe('Magie des mers (MDG 02 l.178-186) — 4 Domaines, seaModifier (DomainD
   const caster = (domainSpec: string): Combatant => mk({
     id: 'w', kind: 'hero',
     skills: [
-      { skillId: 'focalisation', spec: domainSpec, advances: 10 },
-      { skillId: 'langue', spec: 'magick', advances: 10 },
+      { id: 'focalisation', spec: domainSpec, advances: 10 },
+      { id: 'langue', spec: 'magick', advances: 10 },
     ] as Combatant['skills'],
   });
 
@@ -263,8 +263,8 @@ describe('Rubrique de VENT du Domaine (VDM 04 l.48-56, folio 55) — windModifie
   const wizard = (domainSpec: string): Combatant => mk({
     id: 'w', kind: 'hero',
     skills: [
-      { skillId: 'focalisation', spec: domainSpec, advances: 10 },
-      { skillId: 'langue', spec: 'magick', advances: 10 },
+      { id: 'focalisation', spec: domainSpec, advances: 10 },
+      { id: 'langue', spec: 'magick', advances: 10 },
     ] as Combatant['skills'],
   });
 

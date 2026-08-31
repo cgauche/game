@@ -25,7 +25,7 @@ import type { Combatant, ShipPoste, SkillInstance, Weapon } from '../engine/type
 
 const CHARS = (CT = 30) => ({ 'capacite-de-combat': 30, 'capacite-de-tir': CT, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 });
 // `label` = libellé lisible (Arbalète/Arc/Ingénierie…) → résolu en id de Groupe stable (Phase 3 : la spec EST un id).
-const proj = (label: string, advances = 0): SkillInstance => ({ skillId: 'projectiles', spec: weaponGroupIdByLabel(label), characteristic: 'capacite-de-tir', advances });
+const proj = (label: string, advances = 0): SkillInstance => ({ id: 'projectiles', spec: weaponGroupIdByLabel(label), characteristic: 'capacite-de-tir', advances });
 
 const mkGunner = (id: string, pos: { x: number; y: number }, skills: SkillInstance[] = [], CT = 30): Combatant =>
   ({ id, name: id, kind: 'hero', characteristics: CHARS(CT), wounds: { current: 12, max: 12 }, advantage: 0,

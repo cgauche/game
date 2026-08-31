@@ -49,7 +49,7 @@ describe('Défense de manœuvre de zone — cascade influençable (héros) vs si
       h.wounds = { current: 40, max: 40, base: 40 } as Combatant['wounds'];
       h.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
       h.characteristics.agilite = 1; h.characteristics.force = 30; // BF 3 → blast 2 cases ; Ag 1 → Esquive quasi nulle → l'attaquant l'emporte
-      h.skills = h.skills.filter((s) => s.skillId !== 'esquive');
+      h.skills = h.skills.filter((s) => s.id !== 'esquive');
       h.conditions = []; // PAS Surpris → PEUT se défendre → étape de cascade influençable
     }
     h1.pos = { x: 5, y: 8 };

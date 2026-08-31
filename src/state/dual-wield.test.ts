@@ -79,7 +79,7 @@ describe('resolveDualSecond : 2ᵉ attaque du Maniement de deux armes (LDB 10 l.
     f2.conditions = [{ id: 'surpris' } as any]; // ne se défend pas → résolution déterministe
     h.skills = [];
     const rSans = resolveDualSecond(useGame.getState, h, f2, off, 32); // jet forcé = reverseRoll(32) = 23 (3 unités) → touche
-    h.skills = [{ skillId: 'corps-a-corps', spec: 'fleau', advances: 0 } as any];
+    h.skills = [{ id: 'corps-a-corps', spec: 'fleau', advances: 0 } as any];
     const rAvec = resolveDualSecond(useGame.getState, h, f2, off, 32);
     expect([rSans.hit, rAvec.hit]).toEqual([true, true]);
     expect(rAvec.damage! - rSans.damage!).toBe(3); // Percutante (3 unités) conservée AVEC la Spé, retirée SANS

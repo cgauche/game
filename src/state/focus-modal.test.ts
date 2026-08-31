@@ -20,7 +20,7 @@ describe('Focalisation en modale (store)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'Mage', rng: makeRNG(3) });
     hero.characteristics['force-mentale'] = 80;
     hero.spells = ['arme-aethyrique'];
-    if (!hero.skills.some((s) => s.skillId === 'focalisation')) hero.skills.push({ skillId: 'focalisation', advances: 20, characteristic: 'force-mentale' } as never);
+    if (!hero.skills.some((s) => s.id === 'focalisation')) hero.skills.push({ id: 'focalisation', advances: 20, characteristic: 'force-mentale' } as never);
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
@@ -60,8 +60,8 @@ describe('Focalisation en modale (store)', () => {
     enemy.spells = ['carreau'];
     enemy.characteristics['force-mentale'] = 80;
     enemy.skills = [...(enemy.skills ?? []),
-      { skillId: 'focalisation', advances: 30, characteristic: 'force-mentale' } as never,
-      { skillId: 'langue', spec: 'magick', advances: 30, characteristic: 'intelligence' } as never];
+      { id: 'focalisation', advances: 30, characteristic: 'force-mentale' } as never,
+      { id: 'langue', spec: 'magick', advances: 30, characteristic: 'intelligence' } as never];
     // Donne le TOUR à l'ennemi (acted:false → il peut agir).
     const turn = st.battle!.order.indexOf(enemy.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, acted: false, combatants: [...st.battle!.combatants] } });

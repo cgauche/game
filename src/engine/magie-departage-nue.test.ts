@@ -25,7 +25,7 @@ const ARCANE: SpellLike = { label: 'Sort d’essai', ecole: 'Magie des Arcanes',
 
 function mage(intelligence: number, advances: number, over: Partial<Combatant> = {}, id = 'c'): Combatant {
   const base: Characteristics = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
-  const skills: SkillInstance[] = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances }];
+  const skills: SkillInstance[] = [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances }];
   return {
     id, label: `Mage ${id}`, kind: 'hero',
     characteristics: { ...base, intelligence },

@@ -238,7 +238,7 @@ function behavioralFloor(): void {
     E.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }];
     E.advantage = 2; E.characteristics['capacite-de-tir'] = 85; E.characteristics.endurance = 40; E.pos = { x: 5, y: 5 };
     H.pos = { x: 5, y: 8 };
-    H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive'); H.conditions = [];
+    H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.id !== 'esquive'); H.conditions = [];
     set({ battle: { ...get().battle!, acted: true } });
     aiCreatureFreeAttacks(get, set, E);
     expect(get().pendingCascade?.participants.some((s) => s.kind === 'maneuverDefense' && s.actorId === H.id), 'défense de manœuvre doit REMONTER').toBeTruthy();

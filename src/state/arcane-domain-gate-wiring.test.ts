@@ -21,7 +21,7 @@ function elfProphete(over: Partial<Combatant> = {}): Combatant {
     careerLevel: 4,
     characteristics: { ...w.characteristics, 'force-mentale': 42 }, // Bonus 4 → plafond largement au-dessus de 2
     talents: [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }],
-    skills: [{ skillId: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 5 }],
+    skills: [{ id: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 5 }],
     spells: [],
     xp: 500,
     ...over,
@@ -46,7 +46,7 @@ describe('buyTalent — arcaneDomainGate câblé (VDM 02 l.190-192)', () => {
 
   it('ACCEPTE le 2e Domaine une fois le verrou franchi (20 Améliorations Focalisation + 8 Sorts)', () => {
     const h = elfProphete({
-      skills: [{ skillId: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 20 }],
+      skills: [{ id: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 20 }],
       spells: FEU_SPELLS,
     });
     useGame.setState({ party: [h] });

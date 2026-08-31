@@ -1330,8 +1330,8 @@ describe('Avancement par PX (store) — câblage moteur', () => {
       weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [
-        { skillId: 'charme', characteristic: 'sociabilite', advances: 0 }, // in-carrière
-        { skillId: 'esquive', characteristic: 'agilite', advances: 0 }, // hors-carrière
+        { id: 'charme', characteristic: 'sociabilite', advances: 0 }, // in-carrière
+        { id: 'esquive', characteristic: 'agilite', advances: 0 }, // hors-carrière
       ],
       talents: [],
       movement: 4,
@@ -1380,14 +1380,14 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   it('buySkillAdvance : Compétence connue in-carrière (Charme) +1, coût 10', () => {
     set1(mkHero({ xp: 1000 }));
     useGame.getState().buySkillAdvance('h', 'charme');
-    expect(h0().skills.find((s) => s.skillId === 'charme')!.advances).toBe(1);
+    expect(h0().skills.find((s) => s.id === 'charme')!.advances).toBe(1);
     expect(h0().xp).toBe(990);
   });
 
   it('buySkillAdvance : acquiert une Compétence de carrière non connue (Ragot) à advances 1', () => {
     set1(mkHero({ xp: 1000 }));
     useGame.getState().buySkillAdvance('h', 'ragot');
-    const ragot = h0().skills.find((s) => s.skillId === 'ragot');
+    const ragot = h0().skills.find((s) => s.id === 'ragot');
     expect(ragot).toBeTruthy();
     expect(ragot!.advances).toBe(1);
     expect(h0().xp).toBe(990);
@@ -1396,7 +1396,7 @@ describe('Avancement par PX (store) — câblage moteur', () => {
   it('buySkillAdvance : refuse une Compétence hors-carrière non connue', () => {
     set1(mkHero({ xp: 1000 }));
     useGame.getState().buySkillAdvance('h', 'natation'); // ni connue, ni in-carrière
-    expect(h0().skills.find((s) => s.skillId === 'natation')).toBeUndefined();
+    expect(h0().skills.find((s) => s.id === 'natation')).toBeUndefined();
     expect(h0().xp).toBe(1000);
   });
 

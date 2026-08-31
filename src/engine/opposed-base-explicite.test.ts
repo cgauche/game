@@ -42,8 +42,8 @@ function hero(opts: { conditions?: { id: string; value: number }[]; skills?: Com
   } as unknown as Combatant;
 }
 
-const SKILLS_CC = [{ skillId: 'corps-a-corps', spec: 'epee', advances: 10 }] as unknown as Combatant['skills'];
-const SKILLS_DODGE = [{ skillId: 'esquive', advances: 15 }] as unknown as Combatant['skills'];
+const SKILLS_CC = [{ id: 'corps-a-corps', spec: 'epee', advances: 10 }] as unknown as Combatant['skills'];
+const SKILLS_DODGE = [{ id: 'esquive', advances: 15 }] as unknown as Combatant['skills'];
 
 /** Jet FORGÉ (aucun dé) : seul le triplet lu par le départage compte. */
 const tr = (target: number, sl: number, base?: number): TestResult =>

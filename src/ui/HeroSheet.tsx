@@ -89,7 +89,7 @@ export function HeroSheet({
   // TOUTES les Compétences avancées (correctif utilisateur 2026-07-15 : « faut virer Compétence clé
   // et mettre toutes les compétences ayant des points dedans ») — aucun écrémage top-N ici, le plafond
   // ne survit que sur les CARTES compactes (tuile candidat/carte de contrat, `CharCard.tsx`).
-  const skills = [...hero.skills].filter((s) => s.advances > 0).sort((a, b) => b.advances - a.advances || a.skillId.localeCompare(b.skillId));
+  const skills = [...hero.skills].filter((s) => s.advances > 0).sort((a, b) => b.advances - a.advances || a.id.localeCompare(b.id));
   const talents = effectiveTalents(hero);
   const possessions = (hero.items ?? []).slice(0, 12);
   const spellRefs = (hero.spells ?? []).map((id) => ({ id, data: findSpellById(id) }));
@@ -164,7 +164,7 @@ export function HeroSheet({
               return (
                 <div className="skill-line" key={i} title={`${s.characteristic} ${effectiveChar(hero, s.characteristic)} + ${s.advances}`}>
                   <span className="sk-name">
-                    <CodexRef category="skills" id={s.skillId} label={byId('skill', s.skillId)?.label ?? s.skillId}>
+                    <CodexRef category="skills" id={s.id} label={byId('skill', s.id)?.label ?? s.id}>
                       {skillInstanceLabel(s)}
                     </CodexRef>
                   </span>
@@ -179,7 +179,7 @@ export function HeroSheet({
         <section className="hero-present-sec">
           <h4>{t('present.skills')}</h4>
           <div className="skill-tags">
-            {pending?.skills ?? (skills.length ? skills.map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />) : <span className="hint">—</span>)}
+            {pending?.skills ?? (skills.length ? skills.map((s) => <SkillChip key={`${s.id}|${s.spec ?? ''}`} skill={s} />) : <span className="hint">—</span>)}
           </div>
         </section>
       ))}

@@ -19,9 +19,9 @@ const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
 function skill(c: Combatant, skillId: string, advances: number): void {
-  const ex = c.skills.find((s) => s.skillId === skillId);
+  const ex = c.skills.find((s) => s.id === skillId);
   if (ex) ex.advances = Math.max(ex.advances, advances);
-  else c.skills.push({ skillId, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
+  else c.skills.push({ id: skillId, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
 }
 
 function hero(advances: number): Combatant {

@@ -34,8 +34,8 @@ function hero(opts: {
   } as unknown as Combatant;
 }
 
-const SKILLS_CC = [{ skillId: 'corps-a-corps', spec: 'epee', advances: 10 }] as unknown as Combatant['skills'];
-const SKILLS_DODGE = [{ skillId: 'esquive', advances: 15 }] as unknown as Combatant['skills'];
+const SKILLS_CC = [{ id: 'corps-a-corps', spec: 'epee', advances: 10 }] as unknown as Combatant['skills'];
+const SKILLS_DODGE = [{ id: 'esquive', advances: 15 }] as unknown as Combatant['skills'];
 const fx = (effects: { testModChar: string; testMod: number; testModMovementOnly?: boolean }[]) => effects as unknown as Combatant['activeEffects'];
 
 describe('combatBaseValue — Niveau de Compétence NU (LDB 09 l.17)', () => {
@@ -56,7 +56,7 @@ describe('combatBaseValue — Niveau de Compétence NU (LDB 09 l.17)', () => {
   });
 
   it('sans la Spé du Groupe (LDB 09 l.44) : Caractéristique nue', () => {
-    const c = hero({ skills: [{ skillId: 'corps-a-corps', spec: 'baton', advances: 20 }] as unknown as Combatant['skills'] });
+    const c = hero({ skills: [{ id: 'corps-a-corps', spec: 'baton', advances: 20 }] as unknown as Combatant['skills'] });
     expect(combatBaseValue(c, 'melee', epee)).toBe(40);
   });
 

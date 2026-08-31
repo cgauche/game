@@ -32,7 +32,7 @@ describe('Incantation — le contexte est le MÊME au premier jet et à la relan
     const b = useGame.getState().battle!;
     const M = b.combatants.find((c) => c.label === 'M')!;
     M.spells = [SPELL];
-    M.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 10 });
+    M.skills.push({ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 10 });
     M.characteristics.intelligence = 40;
     M.advantage = 0;
     M.fortune = 3; // de quoi relancer

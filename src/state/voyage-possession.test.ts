@@ -52,9 +52,9 @@ function deuxSieges(...idsInvite: string[]): void {
 }
 
 function skill(c: Combatant, skillId: string, advances: number, spec?: string): void {
-  const ex = c.skills.find((s) => s.skillId === skillId && (s.spec ?? null) === (spec ?? null));
+  const ex = c.skills.find((s) => s.id === skillId && (s.spec ?? null) === (spec ?? null));
   if (ex) ex.advances = Math.max(ex.advances, advances);
-  else c.skills.push({ skillId, spec, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
+  else c.skills.push({ id: skillId, spec, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
 }
 
 afterEach(() => {

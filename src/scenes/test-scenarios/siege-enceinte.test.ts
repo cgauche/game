@@ -244,19 +244,19 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     const b = useGame.getState().battle!;
     // Servant de baliste (rempart) : Groupe Arbalète → qualifié → effectif ≥ 1.
     const crewBal = b.combatants.find((c) => c.id === 'crew-baliste')!;
-    expect(crewBal.skills.some((s) => s.skillId === 'projectiles' && s.spec === 'arbalete')).toBe(true);
+    expect(crewBal.skills.some((s) => s.id === 'projectiles' && s.spec === 'arbalete')).toBe(true);
     expect(servingCrewPresent(crewBal, b.combatants)).toBeGreaterThanOrEqual(1);
     // Servant de canon (rempart) : Groupe Poudre noire.
     const crewCan = b.combatants.find((c) => c.id === 'crew-canon')!;
-    expect(crewCan.skills.some((s) => s.skillId === 'projectiles' && s.spec === 'poudre-noire')).toBe(true);
+    expect(crewCan.skills.some((s) => s.id === 'projectiles' && s.spec === 'poudre-noire')).toBe(true);
     expect(servingCrewPresent(crewCan, b.combatants)).toBeGreaterThanOrEqual(1);
     // Canonnier de siège assaillant (brg-canon) : Groupe Poudre noire → la batterie tire qualifiée.
     const canonnier = b.combatants.find((c) => c.id === 'brg-canon')!;
-    expect(canonnier.skills.some((s) => s.skillId === 'projectiles' && s.spec === 'poudre-noire')).toBe(true);
+    expect(canonnier.skills.some((s) => s.id === 'projectiles' && s.spec === 'poudre-noire')).toBe(true);
     expect(servingCrewPresent(canonnier, b.combatants)).toBeGreaterThanOrEqual(1);
     // Servant de catapulte assaillant (brg-cata) : Groupe Catapulte.
     const cataCrew = b.combatants.find((c) => c.id === 'brg-cata')!;
-    expect(cataCrew.skills.some((s) => s.skillId === 'projectiles' && s.spec === 'catapulte')).toBe(true);
+    expect(cataCrew.skills.some((s) => s.id === 'projectiles' && s.spec === 'catapulte')).toBe(true);
     expect(servingCrewPresent(cataCrew, b.combatants)).toBeGreaterThanOrEqual(1);
   });
 

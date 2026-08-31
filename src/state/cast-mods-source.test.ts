@@ -47,7 +47,7 @@ const mk = (id: string, kind: Combatant['kind'] = 'hero'): Combatant => ({
   resilience: 3, fortune: 2, weapons: [],
   items: [{ id: 'a1', kind: 'armor', label: 'Plastron', equipped: true, pa: PA, locations: ['corps'] }],
   armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-  skills: [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 1 }],
+  skills: [{ id: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 1 }],
   talents: [{ talentId: 'diction-instinctive', times: TALENT }],
   movement: 4, bodyShape: 'humanoide', pos: { x: 0, y: 0 },
 } as unknown as Combatant);
@@ -250,7 +250,7 @@ const FOCUS_TARGET = 41;
 const focalisateur = (pa: number) => ({
   ...(mk('A') as unknown as Record<string, unknown>),
   items: pa ? [{ id: 'a1', kind: 'armor', label: 'Plastron', equipped: true, pa, locations: ['corps'] }] : [],
-  skills: [{ skillId: 'focalisation', spec: 'bete', characteristic: 'force-mentale', advances: 1 }],
+  skills: [{ id: 'focalisation', spec: 'bete', characteristic: 'force-mentale', advances: 1 }],
   talents: [{ talentId: 'harmonisation-aethyrique', times: 1 }],
 } as unknown as Combatant);
 

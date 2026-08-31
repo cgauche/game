@@ -17,7 +17,7 @@ import { scanRegistryIdBranch, scanRawIdEqualities, isRegistryIdBranchExcluded, 
  * Mécanique (AST TypeScript, structurelle) : `scripts/guards/lib/registryIdBranch.mjs`. Elle vise
  * quatre formes — égalité, `switch`, appartenance à une liste fermée, table littérale à clé ouverte —
  * TOUJOURS conditionnées à une liaison GÉNÉRIQUE (entrée reçue en paramètre, itérée, ou prop de
- * composant). Un lookup par id stable (`skills.find((s) => s.skillId === 'resistance')`) et la
+ * composant). Un lookup par id stable (`skills.find((s) => s.id === 'resistance')`) et la
  * lecture d'un champ déclaré (`def.kind === 'flag'`) restent hors de portée : ce sont les formes
  * saines.
  *
@@ -161,11 +161,11 @@ const RAW_KNOWN: Record<string, number> = {
   'scripts/qc/opera-furniture-check.mts': 1,
   'src/engine/aaCritical.ts': 1,
   'src/engine/activities.ts': 1,
-  'src/engine/careerSlots.ts': 1, // reste `s.skillId === 'focalisation'` (lookup par id stable)
+  'src/engine/careerSlots.ts': 1, // reste `s.id === 'focalisation'` (lookup par id stable)
   'src/engine/conditions.ts': 1,
   'src/engine/corruption.ts': 2,
   'src/engine/crewedWeapon.ts': 1,
-  'src/engine/critical.ts': 1, // reste `s.skillId === 'resistance'` (lookup par id stable)
+  'src/engine/critical.ts': 1, // reste `s.id === 'resistance'` (lookup par id stable)
   'src/engine/drunkenness.ts': 1,
   'src/engine/engagement.ts': 2,
   'src/engine/equipCompare.ts': 2,
@@ -375,7 +375,7 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
       // (2) comparer à une VARIABLE : une sélection, pas un branchement en dur.
       'const active = tabs.find((t) => t.id === tabKey);',
       // (3) lookup PAR ID STABLE dans un prédicat de sélection.
-      "const sk = c.skills.find((s) => s.skillId === 'resistance');",
+      "const sk = c.skills.find((s) => s.id === 'resistance');",
       "const has = c.talents.some((t) => t.talentId === 'frenesie');",
       // (4) sentinelle de vide.
       "function pick(id: string) { return id === '' ? null : byId.get(id); }",
@@ -565,7 +565,7 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
     // module) : le compte brut, lui, les voit — c'est ce qui rend l'évasion visible.
     const evasions = [
       "const has = c.talents.some((t) => t.talentId === 'frenesie');",
-      "const sk = c.skills.find((s) => s.skillId === 'resistance');",
+      "const sk = c.skills.find((s) => s.id === 'resistance');",
       "const isFortune = FORTUNE.id === 'fortune-mid-session';",
       "const noyau = REGISTRE[0];\nconst estCadence = noyau.id === 'combat-cadence';",
     ].join('\n');

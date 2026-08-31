@@ -221,7 +221,7 @@ export interface ConditionCtx {
   gameTime: number;
   party?: { dead?: boolean; items?: { label: string; trappingId?: string }[];
     /** Compétences possédées (#711 `skill`) — instances brutes, comme `Combatant.skills`. */
-    skills?: { skillId: string; spec?: string; advances?: number }[];
+    skills?: { id: string; spec?: string; advances?: number }[];
     /** Carrière/espèce/niveau de carrière courants (#711 `career`/`species`/`status`) — bruts,
      *  comme `Combatant.career`/`species`/`careerLevel`. */
     career?: string; species?: string; careerLevel?: number }[];
@@ -347,7 +347,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     case 'casterChaosDomain': return ctx.caster?.chaosDomain === cond.is;
     case 'skill':
       return matchParty(ctx, cond.who ?? 'any', (m) => (m.skills ?? []).some((s) =>
-        s.skillId === cond.id && (cond.spec ? s.spec === cond.spec : true) && (s.advances ?? 0) >= (cond.advances ?? 0)));
+        s.id === cond.id && (cond.spec ? s.spec === cond.spec : true) && (s.advances ?? 0) >= (cond.advances ?? 0)));
     case 'career': return matchParty(ctx, cond.who ?? 'any', (m) => m.career === cond.id);
     case 'species': return matchParty(ctx, cond.who ?? 'any', (m) => m.species === cond.id);
     case 'status': return matchParty(ctx, cond.who ?? 'any', (m) => statusMeets(statusOf(m.career, m.careerLevel), cond.atLeast));

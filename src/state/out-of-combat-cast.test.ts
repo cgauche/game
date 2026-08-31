@@ -13,9 +13,9 @@ import type { Combatant } from '../engine/types';
 function casterParty() {
   const [priest, ally] = pregenParty(PREGEN.pretre, PREGEN.soldat);
   // Garantit que le Prêtre peut tenter la Prière (Compétence avancée ≥ 1 avance, LDB 09).
-  const priere = priest.skills.find((s) => s.skillId === 'priere');
+  const priere = priest.skills.find((s) => s.id === 'priere');
   if (priere) priere.advances = Math.max(priere.advances, 5);
-  else priest.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 });
+  else priest.skills.push({ id: 'priere', characteristic: 'sociabilite', advances: 5 });
   return { priest, ally, party: [priest, ally] as Combatant[] };
 }
 
@@ -75,9 +75,9 @@ describe('Incantation hors combat (couture D)', () => {
   it('Focalisation hors combat (sort d\'Arcane) : oocFocusSpell ouvre la modale ; focusConfirm accumule caster.focus, journalisé, sans combat', () => {
     const wiz = pregen(PREGEN.sorcier);
     wiz.spells = ['arme-aethyrique', ...(wiz.spells ?? [])];
-    const foc = wiz.skills.find((s) => s.skillId === 'focalisation');
+    const foc = wiz.skills.find((s) => s.id === 'focalisation');
     if (foc) foc.advances = Math.max(foc.advances, 5);
-    else wiz.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 5 });
+    else wiz.skills.push({ id: 'focalisation', characteristic: 'force-mentale', advances: 5 });
     useGame.setState({ party: [wiz], battle: null, pendingFocus: null });
     useGame.getState().seedRng(3);
 

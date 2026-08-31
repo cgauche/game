@@ -33,7 +33,7 @@
 | 13 | Combat | ✅ | 133 (combat.md ×122) |
 | 14 | OPTION : FRAPPE MORTELLE | ✅ | 141 (combat.md ×136) |
 | 15 | Déplacement | ✅ | 70 (combat.md ×62) |
-| 16 | États | ✅ | 54 (etats.md ×30) |
+| 16 | États | ✅ | 55 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 54 (destin.md ×31) |
 | 18 | Traumatisme | ✅ | 103 (traumatisme.md ×68) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |
@@ -1011,7 +1011,7 @@
 | 05 | CHAPITRE 2 - L’Empire | ➖ hors-règle | |
 | 06 | Chapitre 3 - Les routes et grandes routes | ✅ | 13 (reconciliation.md ×12) |
 | 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
-| 08 | CHAPITRE 5 - Voyager | ✅ | 11 (deplacement.md ×7) |
+| 08 | CHAPITRE 5 - Voyager | ✅ | 17 (deplacement.md ×7) |
 | 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ✅ | 4 (reconciliation.md ×4) |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |

@@ -161,7 +161,7 @@ function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): SpecAcceptan
  */
 function matchGroupSpec(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'): { advances: number; mode: 'full' | 'degraded'; spec?: string } | null {
   const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
-  const matching = c.skills.filter((s) => s.skillId === skillId);
+  const matching = c.skills.filter((s) => s.id === skillId);
   if (!matching.length) return null;
   const wanted = acceptableSpecs(weapon, kind);
   for (const w of wanted) {
@@ -196,7 +196,7 @@ function combatSkillPick(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon
   const charKey = combatCharKey(kind, weapon);
   if (weapon && weaponUnmastered(c, weapon)) return { charKey, advances: 0 }; // arme inhabituelle non maîtrisée : carac brute (ACE 12 l.17-21)
   const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
-  const matching = c.skills.filter((s) => s.skillId === skillId);
+  const matching = c.skills.filter((s) => s.id === skillId);
   if (matching.length === 0) return { charKey, advances: 0 };
   if (!weapon || !weapon.subType) return { charKey, skillId, advances: Math.max(0, ...matching.map((s) => s.advances)) };
   const m = matchGroupSpec(c, weapon, kind);
@@ -840,7 +840,7 @@ export function crowdMod(group: number): ModLine | null {
  *  « Compétence de Corps à corps » = compétence dont l'entrée déclare puiser ses spé dans les Groupes
  *  d'armes de mêlée (`specsSource`) — la garantie même que `spec` est comparable à un id de Groupe. */
 function hasMeleeSpec(c: Combatant, spec: string): boolean {
-  return (c.skills ?? []).some((s) => byId('skill', s.skillId)?.specsSource === 'weaponGroupsMelee' && (s.spec ?? '') === spec);
+  return (c.skills ?? []).some((s) => byId('skill', s.id)?.specsSource === 'weaponGroupsMelee' && (s.spec ?? '') === spec);
 }
 
 /** Pénalité à la PARADE avec l'arme `weapon` (LDB 62 l.151) : 0 en main principale ; 0 si arme à 1 main +

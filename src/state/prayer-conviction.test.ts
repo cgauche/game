@@ -10,9 +10,9 @@ import type { Combatant } from '../engine/types';
 
 function priest(): Combatant {
   const p = pregen(PREGEN.pretre);
-  const sk = p.skills.find((s) => s.skillId === 'priere');
+  const sk = p.skills.find((s) => s.id === 'priere');
   if (sk) sk.advances = Math.max(sk.advances, 5);
-  else p.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 } as never);
+  else p.skills.push({ id: 'priere', characteristic: 'sociabilite', advances: 5 } as never);
   return p as Combatant;
 }
 

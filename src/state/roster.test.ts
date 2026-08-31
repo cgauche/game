@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { rosterLoad, rosterAdd, rosterRemove, rosterUpdate, rosterExport, rosterImport, RosterEntry } from './roster';
 import { Combatant } from '../engine/types';
+import { skillBaseValue } from '../engine/skills';
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
 function fakeStorage(): Storage {
@@ -171,5 +172,72 @@ describe('roster — export / import (portabilité, versionné via migrateDoc)',
     expect(rosterImport('{}').error).toBeTruthy();
     expect(rosterImport(JSON.stringify({ kind: 'wfrp4-hero', v: 1, hero: {} })).error).toBeTruthy();
     expect(rosterImport(JSON.stringify({ kind: 'wfrp4-hero', v: 1, hero: { id: 42 } })).error).toBeTruthy();
+  });
+});
+
+/** Le lot L2 #1548 renomme `SkillInstance.skillId` → `id` (`engine/types.ts`). Le roster persiste des
+ *  `SkillInstance` par DEUX canaux — l'export versionné (`EXPORT_VERSION`) et la liste localStorage nue.
+ *  `skillBaseValue` (`engine/skills.ts:153`) ne lit QUE `s.id` : sans remap aux deux canaux, un héros
+ *  d'avant le lot repart avec ses Compétences muettes (Caractéristique nue, Augmentations perdues) sans
+ *  qu'aucun type ne bronche. Le roster ne se PURGE pas pour autant (l'arbitrage 2026-08-17 est borné aux
+ *  saves — `migrateDoc.ts` interdit nommément la purge du roster par imitation) : il MIGRE, comme #311
+ *  et #604 avant lui. Témoin : Résistance (Endurance), Endurance 35 + 20 Augmentations = 55. */
+describe('roster — remap `skillId`→`id` des Compétences persistées (#1548 L2, les DEUX canaux)', () => {
+  const ancienHero = (id: string) => ({
+    id,
+    label: 'Vétéran d’avant le lot',
+    kind: 'hero',
+    characteristics: { endurance: 35 },
+    skills: [{ skillId: 'resistance', characteristic: 'endurance', advances: 20 }],
+    talents: [],
+  });
+
+  beforeEach(() => {
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+  });
+  afterEach(() => {
+    delete (globalThis as { localStorage?: Storage }).localStorage;
+  });
+
+  it('(a) un export à l’ANCIENNE graphie CHARGE avec ses Augmentations vivantes — jamais des Compétences muettes', () => {
+    const str = JSON.stringify({ kind: 'wfrp4-hero', v: 3, hero: ancienHero('h-export'), wealth: { gold: 0, silver: 0, brass: 0 } });
+    const res = rosterImport(str);
+    expect(res.error).toBeUndefined();
+    const skills = res.entry!.hero.skills as unknown as Record<string, unknown>[];
+    expect(skills[0].id).toBe('resistance');
+    expect('skillId' in skills[0]).toBe(false); // la graphie morte ne survit pas au remap
+    expect(skillBaseValue(res.entry!.hero, 'resistance')).toBe(55); // 35 + 20, jamais 35 muet
+  });
+
+  it('(b) une entrée localStorage d’AVANT le lot est remappée à la lecture, les entrées saines intactes', () => {
+    const saine = {
+      id: 'h-saine',
+      label: 'Déjà migré',
+      kind: 'hero',
+      characteristics: { endurance: 30 },
+      skills: [{ id: 'resistance', characteristic: 'endurance', advances: 5 }],
+      talents: [],
+    };
+    localStorage.setItem(
+      'wfrp4.roster.v1',
+      JSON.stringify([
+        { hero: ancienHero('h-prelot'), wealth: { gold: 0, silver: 0, brass: 0 } },
+        { hero: saine, wealth: { gold: 1, silver: 0, brass: 0 } },
+      ]),
+    );
+    const list = rosterLoad();
+    expect(list.map((e) => e.hero.id)).toEqual(['h-prelot', 'h-saine']); // aucune purge : les deux survivent
+    expect(skillBaseValue(list[0].hero, 'resistance')).toBe(55); // remappée
+    expect(skillBaseValue(list[1].hero, 'resistance')).toBe(35); // 30 + 5, intacte (le remap est un no-op)
+    expect(list[1].wealth).toEqual({ gold: 1, silver: 0, brass: 0 });
+  });
+
+  it('le remap est IDEMPOTENT : une 2ᵉ lecture ne change plus rien (et `id` prime si les deux graphies traînent)', () => {
+    const deuxGraphies = { ...ancienHero('h-deux'), id: 'h-deux', skills: [{ id: 'resistance', skillId: 'perime', characteristic: 'endurance', advances: 20 }] };
+    localStorage.setItem('wfrp4.roster.v1', JSON.stringify([{ hero: deuxGraphies, wealth: { gold: 0, silver: 0, brass: 0 } }]));
+    const un = rosterLoad();
+    expect((un[0].hero.skills as unknown as Record<string, unknown>[])[0]).toEqual({ id: 'resistance', characteristic: 'endurance', advances: 20 });
+    rosterAdd(un[0]); // ré-écrit puis relit : 2e passage
+    expect(rosterLoad()[0].hero.skills).toEqual(un[0].hero.skills);
   });
 });

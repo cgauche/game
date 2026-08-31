@@ -952,7 +952,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       }
       // Seuil : « exaucé sur 01 » ; LDB 25 l.22-24 — silence, valeur maison (règle
       // `prayer-petites-bonus-per-advance`) pour le « le MJ peut augmenter ce pourcentage ».
-      const priereAdv = target.skills.find((sk) => sk.skillId === 'priere')?.advances ?? 0;
+      const priereAdv = target.skills.find((sk) => sk.id === 'priere')?.advances ?? 0;
       const threshold = 1 + Math.max(0, priereAdv) * Number(rule('prayer-petites-bonus-per-advance'));
       const roll = d100(battleRng());
       if (petitePriereAnswered(roll, threshold)) {
@@ -1285,7 +1285,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           return clone;
         },
         (party) => {
-          const i = party.findIndex((h) => h.skills.some((sk) => sk.skillId === 'priere' && sk.advances >= 1));
+          const i = party.findIndex((h) => h.skills.some((sk) => sk.id === 'priere' && sk.advances >= 1));
           return i >= 0 ? i : 0;
         },
       );

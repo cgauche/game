@@ -182,7 +182,7 @@ describe('Embrigadement — base NUE + Soutien NOMMÉ, cible invariante (#1153 L
     // DEUX soutiens (+20) : le Soutien ne compense pas exactement l'État (−10), donc une base FONDUE
     // ne peut pas se faire passer pour la nue par coïncidence arithmétique.
     for (const [h, adv] of [[lead, 30], [aide, 5], [autre, 2]] as const) {
-      if (adv > 0) h.skills.push({ skillId: 'ragot', characteristic: skillCharacteristicById('ragot'), advances: adv } as never);
+      if (adv > 0) h.skills.push({ id: 'ragot', characteristic: skillCharacteristicById('ragot'), advances: adv } as never);
     }
     lead.conditions = [{ id: 'empoisonne', value: 1 }] as never; // l'État MORD le jet, pas le Niveau de Compétence
     set({ party: [lead, aide, autre] });

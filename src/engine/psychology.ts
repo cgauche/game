@@ -389,7 +389,7 @@ export function resolveFrenzyEntry(fm: number, rng: RNG = defaultRNG): { success
 
 /** Valeur de Calme : Force Mentale effective + avances de la compétence Calme (« Sang-froid »). */
 export function calmeValue(c: Combatant): number {
-  const adv = c.skills.find((s) => s.skillId === 'calme')?.advances ?? 0;
+  const adv = c.skills.find((s) => s.id === 'calme')?.advances ?? 0;
   return effectiveChar(c, 'force-mentale') + adv;
 }
 

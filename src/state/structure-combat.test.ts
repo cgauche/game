@@ -222,7 +222,7 @@ describe('Structures de siège — CHEMIN DE CLIC joueur (overlay d’arête →
 describe('weaponContextOf — exceptions hors-spécialisation dégradées (LDB 62 l.184/188, #472)', () => {
   const attacker = (spec: string) => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
-    hero.skills = [{ skillId: 'projectiles', spec, characteristic: 'capacite-de-tir', advances: 5 }];
+    hero.skills = [{ id: 'projectiles', spec, characteristic: 'capacite-de-tir', advances: 5 }];
     return hero;
   };
 

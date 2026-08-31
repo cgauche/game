@@ -4,6 +4,7 @@ import type { CreatorDraft } from '../ui/creator/draft';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapNameToLabelDeep } from './instanceIdMigration';
+import { remapSkillIdDeep } from './skillIdMigration';
 import { t } from '../i18n';
 
 /** Roster persistant (localStorage) des personnages créés via le créateur.
@@ -18,10 +19,12 @@ import { t } from '../i18n';
  *  `SAVE_VERSION`). Or les clés du brouillon sont des LIBELLÉS d'avancement (`advancementLabel`) :
  *  `speciesTalentChoices`, `specChoices`, `speciesPlus5`/`speciesPlus3`. MESURE L2 #1548 : 8 libellés
  *  d'avancement changent avec le passage des spécs à l'id de catalogue (« Savoir-vivre (Érudit) » →
- *  « Savoir-vivre (Érudits) »…), dont les 4 entrées « A ou B » d'espèce qui KEYENT
- *  `speciesTalentChoices` (halflings Cendreplaine/Piedfoin/Havrebas/Fraisedébois). Un brouillon écrit
- *  avant ce lot rouvre donc le créateur avec ces choix non appariés — l'étape se re-choisit, le héros
- *  déjà construit (`hero`) est intact. */
+ *  « Savoir-vivre (Érudits) »…), dont les 5 entrées « A ou B » d'espèce à `Savoir-vivre` spécifié qui
+ *  KEYENT `speciesTalentChoices` (halflings Cendreplaine/Piedfoin/Havrebas/Fraisedébois/Pavéderonces —
+ *  jeu figé par `ui/creator/draft.test.ts`). Un brouillon écrit avant ce lot rouvre donc le créateur
+ *  avec ces choix non appariés — l'étape se re-choisit. Le héros déjà construit (`hero`), lui, EST
+ *  intact : ses `SkillInstance` sont remappées à la lecture (`skillIdMigration.ts`, les deux canaux),
+ *  jamais laissées à leur graphie morte ni purgées. */
 export interface RosterEntry {
   hero: Combatant;
   wealth: Money;
@@ -47,10 +50,11 @@ export function rosterLoad(): RosterEntry[] {
     const arr: unknown = JSON.parse(raw);
     if (!Array.isArray(arr)) return [];
     // Le roster localStorage n'est PAS un doc versionné (liste nue, sans `version`) — le renommage
-    // CharKey→slugs (#311) — et le renommage `name`→`label` des porteurs de libellé (#604) —
-    // s'appliquent donc en repli IDEMPOTENT à chaque lecture (aucun ancien token restant après un 1er
-    // passage → no-op), plutôt que via `migrateDoc` (réservé au format `EXPORT_VERSION`).
-    return (remapNameToLabelDeep(remapCharKeysDeep(arr)) as unknown[]).filter(
+    // CharKey→slugs (#311), celui de `name`→`label` des porteurs de libellé (#604) et celui de
+    // `skillId`→`id` des `SkillInstance` (#1548 L2) s'appliquent donc en repli IDEMPOTENT à chaque
+    // lecture (aucun ancien token restant après un 1er passage → no-op), plutôt que via `migrateDoc`
+    // (réservé au format `EXPORT_VERSION`).
+    return (remapSkillIdDeep(remapNameToLabelDeep(remapCharKeysDeep(arr))) as unknown[]).filter(
       (e): e is RosterEntry =>
         !!e && typeof e === 'object' && typeof (e as RosterEntry).hero?.id === 'string',
     );
@@ -83,7 +87,7 @@ export function rosterUpdate(hero: Combatant): void {
 }
 
 const EXPORT_KIND = 'wfrp4-hero';
-export const EXPORT_VERSION = 3;
+export const EXPORT_VERSION = 4;
 
 /** Migrations SÉQUENTIELLES de l'export roster. À CHAQUE bump d'`EXPORT_VERSION`, ajouter ici
  *  l'entrée `vN → vN+1` — sinon les exports antérieurs sont refusés (jamais acceptés en silence
@@ -94,6 +98,9 @@ export const ROSTER_MIGRATIONS: MigrationMap = {
   // v2 → v3 (#604) : renommage `name` → `label` du héros exporté (nom du personnage, de ses objets et
   // de ses armes) — primitive `instanceIdMigration.ts`.
   2: (doc) => ({ ...doc, version: 3, hero: remapNameToLabelDeep(doc.hero) }),
+  // v3 → v4 (#1548 L2) : renommage `skillId` → `id` des `SkillInstance` du héros exporté —
+  // primitive `skillIdMigration.ts`. Sans elle, les avancements de Compétence sont perdus en silence.
+  3: (doc) => ({ ...doc, version: 4, hero: remapSkillIdDeep(doc.hero) }),
 };
 
 /** Sérialise un héros (avec sa Richesse) en chaîne portable — sauvegarde, transfert d'appareil,

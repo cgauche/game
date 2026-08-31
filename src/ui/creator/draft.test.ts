@@ -476,3 +476,57 @@ describe('signe astral (ADE II 3) — étape, tirage, PX et effet', () => {
     expect(b.star).toBe('wymund-l-anachorete');
   });
 });
+
+/** Les entrées « A ou B » de Talents d'espèce ne sont pas que de l'affichage : leur LIBELLÉ, rendu par
+ *  `advancementLabel`, EST la clé de `CreatorDraft.speciesTalentChoices` (`draft.ts:457-460`, `:484`,
+ *  `:496`) — donc une clé d'AUTHORING persistée dans le roster (`RosterEntry.draft`, liste
+ *  localStorage non versionnée). Une dérive de libellé (spéc au singulier/pluriel, ordre d'un `pick`,
+ *  renommage de catalogue) déprend silencieusement les choix déjà écrits : l'étape se re-choisit sans
+ *  qu'aucun type ne bronche. Ce tableau FIGE les 26 espèces porteuses, mesurées à la donnée. */
+const CLES_CHOIX_TALENTS_ESPECE: Record<string, string[]> = {
+  'humains-reiklander': ['Perspicace ou Affable'],
+  'humains-middenheim': ['Savoir-vivre (Au choix) ou Infatigable'],
+  'humains-middenland': ['Menaçant ou Guerrier né', 'Destinée ou Talent aléatoire'],
+  'humains-nordland': ['Pêcheur ou Nomade', 'Cœur vaillant ou Très résistant', 'Destinée ou Talent aléatoire'],
+  'humains-tileens': ['Ergoteur ou Pêcheur', 'Imperturbable ou Affable'],
+  'humains-bjornling-norse': ['Guerrier né ou Pied marin', 'Pêcheur ou Seigneur de guerre'],
+  'humains-sarl-norse': ['Cavalier émérite ou Pied marin', 'Claquer le fouet ou Loup de mer'],
+  'humains-skaeling-norse': ['Charge berserk ou Fuite !', 'Déterminé ou Insignifiant'],
+  'halflings-cendreplaine': ['Savoir-vivre (Soldats) ou Sens aiguisé (Vue)'],
+  'halflings-basseronce': ['Sociable ou Voyageur aguerri'],
+  'halflings-tuilecaramel': ['Maître artisan (Fermiers) ou Costaud'],
+  'halflings-piedfoin': ['Négociateur ou Savoir-vivre (Guildes)'],
+  'halflings-piedpaille': ['Maître artisan (Au choix) ou Doigts de fée'],
+  'halflings-piedfoin-piedpaille': ['Ergoteur ou Numismate'],
+  'halflings-pochegaree': ['Brouet ou Dur à cuire'],
+  'halflings-havrebas': ['Criminel ou Savoir-vivre (Criminels ou Guildes)'],
+  'halflings-rumster': ['Maître artisan (Cuisinier) ou Négociateur'],
+  'halflings-bordecharde': ['Insignifiant ou Savoir-vivre (Serviteurs)'],
+  'halflings-pavederonces': ['Lire/Écrire ou Savoir-vivre (Érudits ou Nobles)'],
+  'halflings-fraisedebois': ['Lire/Écrire ou Savoir-vivre (Citadins ou Guildes)'],
+  nains: ['Déterminé ou Obstiné', 'Lire/Écrire ou Impitoyable'],
+  'nains-norse': ['Impitoyable ou Lire/Écrire', 'Noctambule ou Obstiné'],
+  gnomes: ["Insignifiant ou Empreint d'Ulgu", 'Chanceux ou Imitation', 'Pêcheur ou Lire/Écrire', 'Seconde vue ou Sixième sens'],
+  ogres: ['Très résistant ou Très fort'],
+  'hauts-elfes': ['Imperturbable ou Perspicace', 'Seconde vue ou Sixième sens'],
+  'elfes-sylvains': ['Dur à cuire ou Seconde vue', 'Lire/Écrire ou Très résistant'],
+};
+
+describe('clés d’AUTHORING des choix de Talents d’espèce (libellés persistés du brouillon)', () => {
+  it('aucune clé ne dérive : les libellés « A ou B » rendus par la donnée sont ceux du tableau figé', () => {
+    const observe: Record<string, string[]> = {};
+    for (const sp of allSpecies) {
+      const cles = sp.talents
+        .map((a) => advancementLabel('talents', a).trim())
+        .filter((e) => splitTopLevelOu(e).length > 1);
+      if (cles.length) observe[sp.id] = cles;
+    }
+    expect(observe).toEqual(CLES_CHOIX_TALENTS_ESPECE);
+  });
+
+  it('la dérivation mesurée est bien CELLE que le créateur keye (`speciesTalentChoiceEntries`)', () => {
+    for (const id of Object.keys(CLES_CHOIX_TALENTS_ESPECE)) {
+      expect(speciesTalentChoiceEntries(withSpecies(newDraft(7), id))).toEqual(CLES_CHOIX_TALENTS_ESPECE[id]);
+    }
+  });
+});

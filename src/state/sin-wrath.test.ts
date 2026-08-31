@@ -15,9 +15,9 @@ import type { CastResult } from '../engine/magic';
 
 function priestParty(sin: number) {
   const [priest, ally] = pregenParty(PREGEN.pretre, PREGEN.soldat);
-  const priere = priest.skills.find((s) => s.skillId === 'priere');
+  const priere = priest.skills.find((s) => s.id === 'priere');
   if (priere) priere.advances = Math.max(priere.advances, 5);
-  else priest.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 });
+  else priest.skills.push({ id: 'priere', characteristic: 'sociabilite', advances: 5 });
   priest.sinPoints = sin;
   return { priest, ally, party: [priest, ally] as Combatant[] };
 }

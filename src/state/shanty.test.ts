@@ -25,7 +25,7 @@ const mk = (id: string, over: Partial<Combatant> = {}): Combatant =>
 
 describe('Vocabulaire des chansons (ops génériques → ActiveEffect)', () => {
   it('crewTestMod +10 (« Naviguons tous ensemble », MDG 09 l.224) → crewRoleValue du marin +10', () => {
-    const c = mk('m1', { skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 20 } as SkillInstance] });
+    const c = mk('m1', { skills: [{ id: 'voile', characteristic: 'agilite', advances: 20 } as SkillInstance] });
     const base = crewRoleValue(c, findCrewRoleById('timonier')!).value;
     applyOps(c, [{ op: 'crewTestMod', mod: 10 }], { label: 'Chanson', rng: makeRNG(1), defaultUntilTime: 100 });
     expect(crewTestModOf(c)).toBe(10);
@@ -61,10 +61,10 @@ describe('Vocabulaire des chansons (ops génériques → ActiveEffect)', () => {
 // ── Flux d'activation (Talent, MDG 09 l.32-40) ──
 const singer = (): Combatant => mk('barde', {
   characteristics: { ...chars, sociabilite: 50 },
-  skills: [{ skillId: 'divertissement', spec: 'chant', characteristic: 'sociabilite', advances: 20 } as SkillInstance],
+  skills: [{ id: 'divertissement', spec: 'chant', characteristic: 'sociabilite', advances: 20 } as SkillInstance],
   talents: [{ talentId: 'chanson-de-marin', spec: 'jacques-bret-a-rencontre-notre-acier', times: 1 }],
 });
-const marin = (): Combatant => mk('marin', { skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 10 } as SkillInstance] });
+const marin = (): Combatant => mk('marin', { skills: [{ id: 'voile', characteristic: 'agilite', advances: 10 } as SkillInstance] });
 const ship = (over: Partial<Combatant> = {}): Combatant =>
   mk('ship', { kind: 'npc', bodyShape: 'vehicule', creatureId: 'coracle', crewIds: ['barde', 'marin'], ...over });
 
@@ -151,7 +151,7 @@ describe('Flux « Chanson de marin » (Talent, MDG 09 l.32-40)', () => {
 describe('« Suivez le capitaine » : captainOps sur le SEUL titulaire du rôle Capitaine (MDG 09 l.246-248)', () => {
   it('applyShantyToCrew pose le +20 Soc sur le capitaine, pas sur les autres', () => {
     seedBattleRng(3);
-    const capitaine = mk('cap', { skills: [{ skillId: 'commandement', characteristic: 'sociabilite', advances: 20 } as SkillInstance] });
+    const capitaine = mk('cap', { skills: [{ id: 'commandement', characteristic: 'sociabilite', advances: 20 } as SkillInstance] });
     const mousse = marin();
     const hull = mk('ship', { kind: 'npc', bodyShape: 'vehicule', creatureId: 'coracle', crewIds: ['cap', 'marin'] });
     useGame.setState({
@@ -168,7 +168,7 @@ describe('« Suivez le capitaine » : captainOps sur le SEUL titulaire du rôle 
 describe('Commandant émérite (MDG 09 l.50-54) — +niveau DR aux Tests d’équipage', () => {
   const cap = (times: number): Combatant => mk('cap', {
     characteristics: { ...chars, sociabilite: 60 },
-    skills: [{ skillId: 'commandement', characteristic: 'sociabilite', advances: 20 } as SkillInstance],
+    skills: [{ id: 'commandement', characteristic: 'sociabilite', advances: 20 } as SkillInstance],
     talents: [{ talentId: 'commandant-emerite', times }],
   });
 

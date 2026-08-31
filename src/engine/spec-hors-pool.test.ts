@@ -16,7 +16,7 @@ import type { Combatant, SkillInstance } from './types';
  */
 const HORS_POOL = { skillId: 'savoir', specId: 'local', label: 'Local' };
 
-const hero = (skills: { skillId: string; advances: number; spec?: string }[]): Combatant =>
+const hero = (skills: { id: string; advances: number; spec?: string }[]): Combatant =>
   ({
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 30, sociabilite: 30 },
     skills: skills.map((s) => ({ ...s, characteristic: 'intelligence' }) as SkillInstance),
@@ -44,7 +44,7 @@ describe('#1342 L3 — spécialisation hors pool : valide partout, jamais propos
   });
 
   it('`testValue` calcule la spécialisation hors pool comme n\'importe quelle autre', () => {
-    const c = hero([{ skillId: HORS_POOL.skillId, spec: HORS_POOL.specId, advances: 12 }]);
+    const c = hero([{ id: HORS_POOL.skillId, spec: HORS_POOL.specId, advances: 12 }]);
     expect(testValue(c, HORS_POOL.skillId, undefined, HORS_POOL.specId)).toBe(52);
   });
 
@@ -53,7 +53,7 @@ describe('#1342 L3 — spécialisation hors pool : valide partout, jamais propos
       speciesId: 'humains-reiklander', careerId: 'erudit', label: 'É', rng: makeRNG(7),
       specChoices: { 'Savoir (Au choix)': HORS_POOL.label },
     });
-    const inst = h.skills.filter((s) => s.skillId === HORS_POOL.skillId);
+    const inst = h.skills.filter((s) => s.id === HORS_POOL.skillId);
     expect(inst.map((s) => s.spec)).toContain(HORS_POOL.specId);
     expect(inst.map((s) => s.spec)).not.toContain(HORS_POOL.label);
   });

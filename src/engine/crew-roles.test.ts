@@ -8,7 +8,7 @@ import type { RNG } from './dice';
 
 /** Combattant d'équipage minimal : caractéristiques + compétences possédées (carac d'instance = Dex pour
  *  un score prévisible : valeur = Dex + avances). Calqué sur le `mk` de skills.test.ts. */
-const mk = (chars: Partial<Record<string, number>>, skills: { skillId: string; advances: number; spec?: string }[] = []): Combatant =>
+const mk = (chars: Partial<Record<string, number>>, skills: { id: string; advances: number; spec?: string }[] = []): Combatant =>
   ({
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30, ...chars },
     skills: skills.map((s) => ({ ...s, characteristic: 'dexterite' }) as SkillInstance),
@@ -73,16 +73,16 @@ describe('Barème de solde (MDG 14 l.293-302) — lu depuis la donnée, #216', (
 
 describe('crewRoleValue — lit la VRAIE valeur de Compétence du membre (meilleure pour Mousse)', () => {
   it('Artilleur → Projectiles (Poudre noire) ; Mousse → meilleure de Voile/Ramer', () => {
-    const artilleur = mk({ dexterite: 60 }, [{ skillId: 'projectiles', advances: 20, spec: 'poudre-noire' }]);
+    const artilleur = mk({ dexterite: 60 }, [{ id: 'projectiles', advances: 20, spec: 'poudre-noire' }]);
     expect(crewRoleValue(artilleur, findCrewRoleById('artilleur')!).value).toBe(80);
-    const mousse = mk({ dexterite: 30 }, [{ skillId: 'voile', advances: 25 }]); // Voile 55 > Ramer (repli 30)
+    const mousse = mk({ dexterite: 30 }, [{ id: 'voile', advances: 25 }]); // Voile 55 > Ramer (repli 30)
     expect(crewRoleValue(mousse, findCrewRoleById('mousse')!).value).toBe(55);
   });
 });
 
 describe('crewRoleValue — sens transmis au Test (Surdité, LDB 18 : « Tests de Perception basés sur l’ouïe » seulement)', () => {
   it('sense "vue" (voir la lumière d’un phare, MDG 13 l.337) : la Surdité NE pénalise PAS la Vigie', () => {
-    const deaf = { ...mk({ dexterite: 40 }, [{ skillId: 'perception', advances: 0 }]), traumas: [traumaById('surdite', undefined, 'tete')] } as Combatant;
+    const deaf = { ...mk({ dexterite: 40 }, [{ id: 'perception', advances: 0 }]), traumas: [traumaById('surdite', undefined, 'tete')] } as Combatant;
     const vigie = findCrewRoleById('vigie')!;
     expect(crewRoleValue(deaf, vigie).value).toBe(20); // sans sens précisé : pénalité par défaut (conservateur)
     expect(crewRoleValue(deaf, vigie, 'ouie').value).toBe(20); // sens auditif explicite : pénalisé
@@ -92,8 +92,8 @@ describe('crewRoleValue — sens transmis au Test (Surdité, LDB 18 : « Tests d
 
 describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 14)', () => {
   it('le rôle ESSENTIEL (Artilleur pour Tir de batterie) voit son DR compté DOUBLE', () => {
-    const artilleur = mk({ dexterite: 70 }, [{ skillId: 'projectiles', advances: 10, spec: 'poudre-noire' }]); // 80
-    const mousse = mk({ dexterite: 50 }, [{ skillId: 'voile', advances: 0 }]); // 50
+    const artilleur = mk({ dexterite: 70 }, [{ id: 'projectiles', advances: 10, spec: 'poudre-noire' }]); // 80
+    const mousse = mk({ dexterite: 50 }, [{ id: 'voile', advances: 0 }]); // 50
     const r = resolveCrewTestByRoles(
       [{ crew: artilleur, roleId: 'artilleur' }, { crew: mousse, roleId: 'mousse' }],
       'batterie', 'intermediaire', 80, seq([30, 30]),
@@ -107,7 +107,7 @@ describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 
   });
 
   it('double-rôle (MDG 14 l.53) : le même jet est +2 crans plus DUR → DR plus faible', () => {
-    const x = mk({ dexterite: 50 }, [{ skillId: 'orientation', advances: 0 }]); // Navigateur 50
+    const x = mk({ dexterite: 50 }, [{ id: 'orientation', advances: 0 }]); // Navigateur 50
     const normal = resolveCrewTestByRoles([{ crew: x, roleId: 'navigateur' }], 'manoeuvre', 'intermediaire', 80, seq([30]));
     const doubled = resolveCrewTestByRoles([{ crew: x, roleId: 'navigateur', doubleRole: true }], 'manoeuvre', 'intermediaire', 80, seq([30]));
     expect(doubled.contributions[0].sl).toBeLessThan(normal.contributions[0].sl);
@@ -117,8 +117,8 @@ describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 
   // « 0 ou 1 | Succès Minime ») : le plafond est le HAUT de la bande, 1 DR — un équipage sous-nombré
   // peut encore réussir de justesse (arbitrage utilisateur [entériné 2026-08-03], #1019).
   it('Manque de bras (MDG 14 l.55) : −2 DR ET plafond au Succès Minime — 1 DR au mieux', () => {
-    const cap = mk({ dexterite: 80 }, [{ skillId: 'voile', advances: 0 }]); // Timonier 80
-    const moussse = mk({ dexterite: 80 }, [{ skillId: 'voile', advances: 0 }]); // Mousse 80
+    const cap = mk({ dexterite: 80 }, [{ id: 'voile', advances: 0 }]); // Timonier 80
+    const moussse = mk({ dexterite: 80 }, [{ id: 'voile', advances: 0 }]); // Mousse 80
     const crew = [{ crew: cap, roleId: 'timonier' }, { crew: moussse, roleId: 'mousse' }];
     const full = resolveCrewTestByRoles(crew, 'manoeuvre', 'intermediaire', 80, seq([10, 10]));
     expect(full.total).toBeGreaterThan(1); // équipage complet : bien au-dessus du Succès Minime
@@ -129,7 +129,7 @@ describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 
   });
 
   it('Manque de bras : un total DÉJÀ nul n’est pas remonté par le plafond — 0 reste un échec (MDG 14 l.13)', () => {
-    const faible = mk({ dexterite: 30 }, [{ skillId: 'voile', advances: 0 }]); // Timonier 30
+    const faible = mk({ dexterite: 30 }, [{ id: 'voile', advances: 0 }]); // Timonier 30
     // Jets à 30 (DR 0 pile) : total brut 0 essentiel compris, −2 de Manque de bras → négatif, puis plafond
     // (Math.min(1, …)) qui ne REMONTE jamais un total. Aucun succès n'est fabriqué par le plafond.
     const short = resolveCrewTestByRoles([{ crew: faible, roleId: 'timonier' }], 'manoeuvre', 'intermediaire', 80, seq([30]), { understaffed: true });

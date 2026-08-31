@@ -47,7 +47,7 @@ function unstable(c: Combatant): boolean {
 /** Valeur de Résistance « brute » (E effective + augmentations de Résistance) — formule partagée
  *  repos/entretien (les pénalités d'État ne s'appliquent pas à un Test de récupération passif). */
 export function restResistVal(c: Combatant): number {
-  return effectiveChar(c, 'endurance') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+  return effectiveChar(c, 'endurance') + (c.skills?.find((s) => s.id === 'resistance')?.advances ?? 0);
 }
 
 /**

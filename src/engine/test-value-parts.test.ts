@@ -23,7 +23,7 @@ function hero(over: Partial<Combatant> = {}): Combatant {
   return {
     id: 'h', label: 'Cobaye', kind: 'hero', speciesId: 'humains-reiklander',
     characteristics: { sociabilite: 40, agilite: 40, dexterite: 40, intelligence: 40 } as Combatant['characteristics'],
-    skills: [{ skillId: 'marchandage', advances: 15 }] as SkillInstance[],
+    skills: [{ id: 'marchandage', advances: 15 }] as SkillInstance[],
     talents: [], items: [], conditions: [], advantage: 0,
     ...over,
   } as unknown as Combatant;
@@ -75,7 +75,7 @@ function withLaid(): Combatant {
 function withArmureLourde(): Combatant {
   // Port d'armure (LDB 63) : pseudo-qualité `en-discretion` −10 → pèse sur un Test de Discrétion.
   return hero({
-    skills: [{ skillId: 'discretion', advances: 15 }] as SkillInstance[],
+    skills: [{ id: 'discretion', advances: 15 }] as SkillInstance[],
     items: [{ uid: 'i2', trappingId: 'cotte-de-mailles', kind: 'armor', equipped: true, qualities: [{ id: 'en-discretion', value: -10 }] }] as Combatant['items'],
   });
 }
@@ -83,7 +83,7 @@ function withArmureLourde(): Combatant {
 function withEncombrement(): Combatant {
   // Charge > limite (LDB 61 « Surchargé ») : −10 en Agilité — ne pèse QUE sur un Test d'Agilité.
   return hero({
-    skills: [{ skillId: 'athletisme', advances: 15 }] as SkillInstance[],
+    skills: [{ id: 'athletisme', advances: 15 }] as SkillInstance[],
     characteristics: { sociabilite: 40, agilite: 40, force: 20, endurance: 20 } as Combatant['characteristics'],
     items: Array.from({ length: 12 }, (_, i) => ({ uid: `enc${i}`, label: 'Lest', trappingId: 'sac-a-dos', kind: 'trapping', enc: 1, qualities: [], equipped: false })) as unknown as Combatant['items'],
   });
@@ -91,7 +91,7 @@ function withEncombrement(): Combatant {
 
 /** Trait à passif `skillMod` (`traits.json` `dresse-divertir` : +10 Divertissement). */
 function withTrait(): Combatant {
-  return hero({ skills: [{ skillId: 'divertissement', advances: 15 }] as SkillInstance[], liveTraits: [{ id: 'dresse-divertir' }] as Combatant['liveTraits'] });
+  return hero({ skills: [{ id: 'divertissement', advances: 15 }] as SkillInstance[], liveTraits: [{ id: 'dresse-divertir' }] as Combatant['liveTraits'] });
 }
 
 /**
@@ -123,7 +123,7 @@ const SORT = spells[0];
 
 function withSortSkillMod(): Combatant {
   return hero({
-    skills: [{ skillId: 'marchandage', advances: 15 }] as SkillInstance[],
+    skills: [{ id: 'marchandage', advances: 15 }] as SkillInstance[],
     activeEffects: [{ label: SORT.label, skillMods: { marchandage: -20 }, source: { kind: 'spell', id: SORT.id } }] as unknown as Combatant['activeEffects'],
   });
 }
@@ -131,7 +131,7 @@ function withSortSkillMod(): Combatant {
 /** Pièce d'armure CUSTOM (forgée à la main, SANS `trappingId`) : hors catalogue, donc sans fiche. */
 function withArmureCustom(): Combatant {
   return hero({
-    skills: [{ skillId: 'discretion', advances: 15 }] as SkillInstance[],
+    skills: [{ id: 'discretion', advances: 15 }] as SkillInstance[],
     items: [{ uid: 'i3', label: 'Harnois du forgeron', kind: 'armor', equipped: true, qualities: [{ id: 'en-discretion', value: -10 }] }] as unknown as Combatant['items'],
   });
 }
@@ -181,7 +181,7 @@ const GRILLE: Cas[] = [
   { id: 'effet-char', nom: 'effet actif char-qualifié (−10 Soc)', c: withEffetCharQualifie(), skill: 'marchandage' },
   { id: 'port-armure', nom: 'port d’armure skill-qualifié (−10 Discrétion)', c: withArmureLourde(), skill: 'discretion' },
   { id: 'encombrement', nom: 'Encombrement (Agilité)', c: withEncombrement(), skill: 'athletisme' },
-  { id: 'outil', nom: 'outil manquant (Crochetage sans crochets)', c: hero({ skills: [{ skillId: 'crochetage', advances: 15 }] as SkillInstance[] }), skill: 'crochetage' },
+  { id: 'outil', nom: 'outil manquant (Crochetage sans crochets)', c: hero({ skills: [{ id: 'crochetage', advances: 15 }] as SkillInstance[] }), skill: 'crochetage' },
   // Les canaux que la garde de la passe 3 ne voyait pas (sondes du juge).
   { id: 'trait', nom: 'TRAIT à passif skillMod (Dressé pour divertir)', c: withTrait(), skill: 'divertissement' },
   { id: 'sort-skillmods', nom: 'SORT à `skillMods` (effet actif temporaire)', c: withSortSkillMod(), skill: 'marchandage' },

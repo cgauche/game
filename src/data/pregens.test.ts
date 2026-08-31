@@ -36,8 +36,8 @@ describe('Personnages pré-tirés', () => {
     // LDB 41 l.5 : « un Personnage avec le Talent Béni reçoit les six Bénédictions de son culte ».
     expect(pretre.talents.map((t) => talentConcrete(t))).toContain('Béni (Sigmar)');
     // Et les Compétences d'incantation restent là (gating des Compétences avancées).
-    expect(sorcier.skills.some((s) => s.skillId === 'langue' && s.spec === 'magick' && s.advances >= 1)).toBe(true);
-    expect(pretre.skills.some((s) => s.skillId === 'priere' && s.advances >= 1)).toBe(true);
+    expect(sorcier.skills.some((s) => s.id === 'langue' && s.spec === 'magick' && s.advances >= 1)).toBe(true);
+    expect(pretre.skills.some((s) => s.id === 'priere' && s.advances >= 1)).toBe(true);
   });
 
   /** Conformité RAW (#421) : chaque pré-tiré passe par le MÊME pipeline que le créateur (`buildHero`),
@@ -137,7 +137,7 @@ describe('makeShowcaseParty — couverture des règles', () => {
 
   it('exerce une Spécialisation de Corps à corps NON-Base (prouve le Jalon 2 en jeu)', () => {
     const specs = party.flatMap((h) =>
-      h.skills.filter((s) => s.skillId === 'corps-a-corps').map((s) => (s.spec ?? '').toLowerCase()),
+      h.skills.filter((s) => s.id === 'corps-a-corps').map((s) => (s.spec ?? '').toLowerCase()),
     );
     expect(specs.some((sp) => sp && sp !== 'base')).toBe(true);
   });

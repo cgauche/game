@@ -15,7 +15,7 @@ function hero(p: Partial<Combatant>): Combatant {
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-    skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [], fortune: 0, resilience: 0,
+    skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [], fortune: 0, resilience: 0,
     pos: { x: 1, y: 1 }, ...p,
   } as Combatant;
 }
@@ -206,7 +206,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   it('openMedic + medicAct(wounds) : meilleur soigneur du groupe, applique, la modale RESTE ouverte', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const al = hero({ id: 'al', label: 'Blessé', wounds: { current: 4, max: 12 }, skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'al' });
@@ -224,7 +224,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('medicAct(bleed) hors combat : panse l’Hémorragie via l’infirmerie — Test de Guérison réussi retire l’État (LDB 09 l.261 / LDB 16 l.107-109), sans consommer le soin de Blessures de la rencontre', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const al = hero({ id: 'al', label: 'Saigné', conditions: [{ id: 'hemorragique', value: 2 }], skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'al' });
@@ -241,7 +241,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('medicAct(bleed) hors combat : difficulté recalculée sur la variante AA (Aux Armes 07 l.9, hors combat inclus), Intermédiaire en LDB', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const al = hero({ id: 'al', label: 'Saigné', conditions: [{ id: 'hemorragique', value: 2 }], skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
     try {
@@ -257,7 +257,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('patients/sortie verrouillés pendant un jet posé', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const al = hero({ id: 'al', wounds: { current: 4, max: 12 }, skills: [] });
     const bob = hero({ id: 'bob', wounds: { current: 2, max: 12 }, skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, al, bob], pendingHeal: null, medic: null });
@@ -270,7 +270,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('mode trauma : la Guérison accélère la convalescence d’une déchirure (LDB 18 l.222)', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const patient = hero({ id: 'p', label: 'Patient', skills: [], traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });
@@ -285,7 +285,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('mode trauma : un ÉCHEC consomme aussi le jet — la même déchirure ne se re-traite pas (LDB 18 l.222)', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const patient = hero({ id: 'p', label: 'Patient', skills: [], traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });
@@ -300,7 +300,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('soin de Blessures : un jet RATÉ consomme le soin de la rencontre (LDB 09 l.233 : « un jet »)', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const al = hero({ id: 'al', label: 'Blessé', wounds: { current: 4, max: 12 }, skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'al' });
@@ -316,7 +316,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('Guérison Échec Stupéfiant (DR ≤ −6) : le patient contracte une Infection Mineure (LDB 09-Compétences)', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const patient = hero({ id: 'p', label: 'Patient', skills: [], wounds: { current: 6, max: 12 } });
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });
@@ -330,7 +330,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('Chirurgie ARMÉE : Test ÉTENDU INFLUENÇABLE (LDB 10 l.184 / 12 l.200) — passes (modale) jusqu’à la cible, retire le trauma (1d10 + Hémorragie/passe)', () => {
-    const surgeon = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
+    const surgeon = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
     const patient = hero({ id: 'p', label: 'Patient', skills: [], wounds: { current: 40, max: 40 }, traumas: [tk('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
     useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null, pendingSurgery: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });
@@ -357,7 +357,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('Chirurgie : à la cible atteinte, le Test d’infection du PATIENT est DIFFÉRÉ en étape cascade INFLUENÇABLE (Résistance +20, Menace : Maladie) — plus de jet silencieux, Infection non contractée avant l’influence', () => {
-    const surgeon = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
+    const surgeon = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
     const patient = hero({ id: 'p', label: 'Patient', skills: [], wounds: { current: 40, max: 40 }, traumas: [tk('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
     useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null, pendingSurgery: null, medic: null, pendingCascade: null });
     useGame.getState().openMedic({ patientId: 'p' });
@@ -383,7 +383,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('Chirurgie : le joueur choisit QUELLE Blessure Critique opérer (medicSetWound, avant la 1re passe)', () => {
-    const surgeon = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
+    const surgeon = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
     const patient = hero({
       id: 'p', label: 'Patient', skills: [], wounds: { current: 40, max: 40 },
       traumas: [tk('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 }), tk('fracture', 'majeur', 'brasD', { be: 4, d10: 5 })],
@@ -396,7 +396,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('Récupération d’usage (« Épaule luxée », #166) : acte Guérison ARMÉ = Test ÉTENDU DR 6 (Accessible), retire le membre désactivé + pose −10 / 1d10 j, SANS dégât', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const patient = hero({
       id: 'p', label: 'Patient', skills: [], wounds: { current: 40, max: 40 },
       // Aide Médicale DÉJÀ reçue (awaitingMedicalAid absent) → la récupération est ouvrable (LDB l.120).
@@ -425,7 +425,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('Récupération BLOQUÉE tant que l’Aide Médicale n’a pas été reçue (LDB 18 l.120/179 : « Après application de cette Aide… »)', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const patient = hero({
       id: 'p', label: 'Patient', skills: [], wounds: { current: 40, max: 40 },
       traumas: [{ label: 'Épaule luxée (bras perdu)', location: 'brasD', restoreDR: 6, awaitingMedicalAid: true, ops: [{ op: 'maxWeaponHands', hands: 1 }], recoveryPenalty: [{ op: 'charMod', char: 'capacite-de-combat', mod: -10 }] }],
@@ -437,7 +437,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('medicAct(ammo) hors combat : proposé seulement si munition logée, retire au succès (LDB 62 l.250, #494)', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const al = hero({ id: 'al', label: 'Percé', conditions: [{ id: 'munition-logee', value: 1 }], skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'al' });
@@ -453,7 +453,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   });
 
   it('medicAct(ammo) : indisponible sans munition logée', () => {
-    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const doc = hero({ id: 'doc', skills: [{ id: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const al = hero({ id: 'al', skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
     useGame.getState().openMedic({ patientId: 'al' });

@@ -395,8 +395,8 @@ describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG 13 l.337
   function freshLighthouseState() {
     seedBattleRng(1);
     const [a, b] = makePregens();
-    const vigie = { ...a, skills: [{ skillId: 'perception', characteristic: 'initiative', advances: 0 }], traumas: [traumaById('surdite', undefined, 'tete')] };
-    const timonier = { ...b, skills: [{ skillId: 'voile', characteristic: 'dexterite', advances: 30 }], traumas: [] };
+    const vigie = { ...a, skills: [{ id: 'perception', characteristic: 'initiative', advances: 0 }], traumas: [traumaById('surdite', undefined, 'tete')] };
+    const timonier = { ...b, skills: [{ id: 'voile', characteristic: 'dexterite', advances: 30 }], traumas: [] };
     useGame.setState({
       party: [vigie, timonier],
       scene: { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
@@ -1971,10 +1971,10 @@ describe('Soutien — il entre dans la CIBLE de toute étape soutenue (#1117)', 
       party: get().party.map((h) => ({
         ...h,
         skills: [
-          ...h.skills.filter((sk) => !['voile', 'ramer', 'resistance'].includes(sk.skillId)),
-          { skillId: 'voile', advances: 10 },
-          { skillId: 'ramer', advances: 10 },
-          { skillId: 'resistance', advances: 10 },
+          ...h.skills.filter((sk) => !['voile', 'ramer', 'resistance'].includes(sk.id)),
+          { id: 'voile', advances: 10 },
+          { id: 'ramer', advances: 10 },
+          { id: 'resistance', advances: 10 },
         ],
       })),
     } as never);
@@ -2040,7 +2040,7 @@ describe('Soutien — il entre dans la CIBLE de toute étape soutenue (#1117)', 
     set({
       party: get().party.map((h, i) => (i !== 0 ? h : {
         ...h,
-        skills: [...h.skills.filter((sk) => sk.skillId !== 'voile'), { skillId: 'voile', advances: 80 }],
+        skills: [...h.skills.filter((sk) => sk.id !== 'voile'), { id: 'voile', advances: 80 }],
       })),
     } as never);
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0], { pace: 1 })!;
@@ -2160,7 +2160,7 @@ describe('Test d’équipage — la chanson de marin est NOMMÉE sur la rangée 
     set({
       party: get().party.map((h) => ({
         ...h,
-        skills: [...h.skills.filter((sk) => !['voile', 'ramer'].includes(sk.skillId)), { skillId: 'voile', advances: 12 }, { skillId: 'ramer', advances: 12 }],
+        skills: [...h.skills.filter((sk) => !['voile', 'ramer'].includes(sk.id)), { id: 'voile', advances: 12 }, { id: 'ramer', advances: 12 }],
         activeEffects: [...(h.activeEffects ?? []), { label: 'Naviguons tous ensemble', crewTestMod: 10, duration: { scale: 'permanent' as const } }],
       })),
     } as never);
@@ -2206,7 +2206,7 @@ describe('#1341 (site maritime) — `engineerOf` demande la spec Métier par ID,
   function ingenieur(): Combatant {
     const h = makePregens()[0];
     h.characteristics.intelligence = 30;
-    h.skills = [{ skillId: 'metier', characteristic: 'intelligence', advances: 25, spec: 'ingenieur' }];
+    h.skills = [{ id: 'metier', characteristic: 'intelligence', advances: 25, spec: 'ingenieur' }];
     return h;
   }
   /** Un badaud : même Intelligence, aucune compétence de Métier. */

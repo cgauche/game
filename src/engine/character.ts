@@ -360,9 +360,9 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     if (isUnresolvedChoice(label)) throw new Error(`Compétence non résolue : ${label}`);
     const id = skillIdByLabel(name);
     const spec = rawSpec != null ? resolveSpecId('skills', id, rawSpec) : rawSpec;
-    const existing = skills.find((s) => s.skillId === id && (s.spec ?? '') === (spec ?? ''));
+    const existing = skills.find((s) => s.id === id && (s.spec ?? '') === (spec ?? ''));
     if (existing) existing.advances += adv; // même (id, spec) = même Compétence (LDB 09 l.42)
-    else skills.push({ skillId: id, spec, characteristic: skillCharacteristicById(id), advances: adv });
+    else skills.push({ id: id, spec, characteristic: skillCharacteristicById(id), advances: adv });
   };
   const advancedEntries: { raw: string; label: string }[] = [];
   for (const ref of level?.skills ?? []) {
