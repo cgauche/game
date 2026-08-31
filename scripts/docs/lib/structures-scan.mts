@@ -268,7 +268,7 @@ export type GroupeEnveloppe = {
 export type DivergenceEnveloppe = {
   role: string;
   cle: string;
-  motif: 'clé divergente' | 'type divergent' | 'clé absente';
+  motif: 'clé divergente' | 'type divergent' | 'clé absente' | 'cible partielle';
   detail: string;
   document: string;
   chemin: string;
@@ -975,12 +975,16 @@ export function scannerDonnees(
 
 /**
  * Divergences d'ENVELOPPE, une ligne par (rôle, clé, motif, document, chemin) — le dénominateur du
- * lot L1b (#1467). Trois motifs :
- *   `clé divergente` — le rôle est porté sous un autre nom que sa cible (`key`/`nom` pour l'identité) ;
- *   `type divergent` — la clé cible est là, sa classe de type ne l'est pas (`source` en chaîne) ;
- *   `clé absente`    — une ENTRÉE DE RACINE ne porte nulle part la clé cible d'un rôle requis
- *                      (`id` et `source` partout, `label` sur les familles `entité`/`table`).
- * Un document EMBARQUÉ ne compte que ses clés DIVERGENTES : il n'est jamais sommé de porter un `id`.
+ * lot L1b (#1467). Quatre motifs :
+ *   `clé divergente`  — le rôle est porté sous un autre nom que sa cible (`key`/`nom` pour l'identité) ;
+ *   `type divergent`  — la clé cible est là, sa classe de type ne l'est pas (`source` en chaîne) ;
+ *   `clé absente`     — une ENTRÉE DE RACINE ne porte nulle part la clé cible d'un rôle requis
+ *                       (`id`, `type` et `source` partout, `label` sur les familles `entité`/`table`),
+ *                       ni l'`alternative` déclarée par le rôle (`maison` pour `source`) ;
+ *   `cible partielle` — un rôle `entiere` (le `type` du document) est porté par une PARTIE des
+ *                       entrées du groupe, de racine ou EMBARQUÉ.
+ * Hors rôle `entiere`, un document EMBARQUÉ ne compte que ses clés DIVERGENTES : il n'est jamais
+ * sommé de porter un `id`.
  */
 export function mesurerEnveloppe(groupes: readonly GroupeEnveloppe[]): DivergenceEnveloppe[] {
   const out: DivergenceEnveloppe[] = [];
@@ -997,10 +1001,21 @@ export function mesurerEnveloppe(groupes: readonly GroupeEnveloppe[]): Divergenc
       if (!cible) {
         const requise = def.requise || (def.requiseSurFamilles?.includes(g.famille) ?? false);
         const porteeParCle = role === 'identité' && g.identiteParCle;
-        if (requise && !porteeParCle && g.portee === 'racine' && g.nbEntrees > 0)
+        const satisfaitAutrement = def.alternative !== undefined && parCle.has(def.alternative);
+        if (requise && !porteeParCle && !satisfaitAutrement && g.portee === 'racine' && g.nbEntrees > 0)
           out.push({ role, cle: def.cible, motif: 'clé absente', detail: '', document: g.document, chemin: g.chemin, entrees: g.nbEntrees });
         continue;
       }
+      if (def.entiere && cible.n < g.nbEntrees)
+        out.push({
+          role,
+          cle: def.cible,
+          motif: 'cible partielle',
+          detail: `${cible.n}/${g.nbEntrees}`,
+          document: g.document,
+          chemin: g.chemin,
+          entrees: g.nbEntrees - cible.n,
+        });
       if (!def.typeAttendu) continue;
       for (const { classe, n } of cible.parClasse)
         if (classe !== def.typeAttendu)

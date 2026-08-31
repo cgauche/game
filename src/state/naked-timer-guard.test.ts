@@ -16,21 +16,21 @@ import { scanNakedTimers, SCAN_DIR, ALLOWED } from '../../scripts/guards/lib/nak
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const DIR = join(ROOT, SCAN_DIR);
 
-// Exemptions JUSTIFIÉES par SITE — une entrée = `fichier:ligne` EXACT (ligne rapportée par
-// `scanNakedTimers`, sur contenu POST-retrait des commentaires). Toute dérive de ligne ou
-// assainissement du site fait échouer le CLIQUET ci-dessous (à réviser, pas à re-décaler).
+// Exemptions JUSTIFIÉES par SITE — une entrée = `fichier :: MOTIF`, le motif étant la ligne de code
+// du timer telle qu'écrite (trimée). L'ancre est INSENSIBLE au numéro de ligne : déplacer le site ne
+// périme rien, mais RÉÉCRIRE la ligne (ou la retirer) fait échouer le CLIQUET ci-dessous — à réviser,
+// jamais à re-décaler. Un motif qui deviendrait AMBIGU dans son fichier échoue aussi (2e cliquet).
 const ALLOWED_SITES: Record<string, string> = {
-  'src/state/projectLibrary.ts:89':
+  'src/state/projectLibrary.ts :: const timer = setTimeout(() => {':
     "timeout d'ouverture IndexedDB au BOOT (#776) — ne mute ni `battle` ni un flux de scène (rien " +
     "de tel n'existe encore à cet instant), n'est jamais nettoyé par `clearTrackedTimers` (afterEach " +
     "de test) : nature d'infrastructure, hors du périmètre COMBAT/FLUX de `combatTimers.ts`, pas un " +
-    'contournement de son suivi. Site RELU le 2026-08-31 (#1552) : le timer lui-même est INCHANGÉ — ' +
-    'seule la déclaration `StoredProject` au-dessus a grandi, la nature du site n’a pas bougé.',
-  'src/state/traceLayer.ts:76':
+    'contournement de son suivi.',
+  'src/state/traceLayer.ts :: const timer = setTimeout(() => {':
     "timeout d'ouverture IndexedDB au BOOT du calque de référence (#830) — même nature d'infra que " +
     "l'ouverture de la bibliothèque de projets ci-dessus (aucun `battle`/flux de scène en jeu, jamais nettoyé par " +
     '`clearTrackedTimers`), magasin distinct.',
-  'src/state/editorAutosave.ts:45':
+  'src/state/editorAutosave.ts :: const timer = setTimeout(() => {':
     "timeout d'ouverture IndexedDB au BOOT du filet de crash de l'éditeur — même nature d'infra que " +
     'les deux ouvertures IndexedDB ci-dessus (aucun `battle`/flux de scène en jeu, jamais ' +
     'nettoyé par `clearTrackedTimers`), magasin distinct.',
@@ -49,11 +49,12 @@ function scanFiles(): { abs: string; rel: string }[] {
   return out;
 }
 
-function findingsAcrossFiles(): { rel: string; line: number; call: string }[] {
-  const out: { rel: string; line: number; call: string }[] = [];
+function findingsAcrossFiles(): { site: string; rel: string; line: number; call: string }[] {
+  const out: { site: string; rel: string; line: number; call: string }[] = [];
   for (const { abs, rel } of scanFiles()) {
     if (ALLOWED.includes(rel)) continue;
-    for (const f of scanNakedTimers(readFileSync(abs, 'utf8'))) out.push({ rel, line: f.line, call: f.call });
+    const lignes = readFileSync(abs, 'utf8').split('\n');
+    for (const f of scanNakedTimers(lignes.join('\n'))) out.push({ site: `${rel} :: ${lignes[f.line - 1].trim()}`, rel, line: f.line, call: f.call });
   }
   return out;
 }
@@ -61,7 +62,7 @@ function findingsAcrossFiles(): { rel: string; line: number; call: string }[] {
 describe('garde structurelle — setTimeout/setInterval nu sous src/state (#415)', () => {
   it('aucun fichier hors whitelist/exemptions PAR SITE ne porte de timer nu', () => {
     const offenders = findingsAcrossFiles()
-      .filter((f) => !(`${f.rel}:${f.line}` in ALLOWED_SITES))
+      .filter((f) => !(f.site in ALLOWED_SITES))
       .map((f) => `${f.rel}:${f.line} ${f.call}(...) nu`);
     expect(
       offenders,
@@ -69,10 +70,16 @@ describe('garde structurelle — setTimeout/setInterval nu sous src/state (#415)
     ).toEqual([]);
   });
 
-  it('CLIQUET : toute exemption dont le site a bougé/disparu doit être RETIRÉE ou re-justifiée', () => {
-    const present = new Set(findingsAcrossFiles().map((f) => `${f.rel}:${f.line}`));
+  it('CLIQUET : toute exemption dont le site a été réécrit/supprimé doit être RETIRÉE ou re-justifiée', () => {
+    const present = new Set(findingsAcrossFiles().map((f) => f.site));
     const stale = Object.keys(ALLOWED_SITES).filter((k) => !present.has(k));
-    expect(stale, 'Exemption(s) PÉRIMÉE(s) (site déplacé/assaini) — retirer/re-pointer ces entrées de ALLOWED_SITES :\n' + stale.join('\n')).toEqual([]);
+    expect(stale, 'Exemption(s) PÉRIMÉE(s) (site réécrit/assaini) — retirer/re-justifier ces entrées de ALLOWED_SITES :\n' + stale.join('\n')).toEqual([]);
+  });
+
+  it('CLIQUET : un motif d’exemption reste NON AMBIGU dans son fichier (une entrée = UN site)', () => {
+    const sites = findingsAcrossFiles().map((f) => f.site);
+    const doublons = sites.filter((s, i) => sites.indexOf(s) !== i);
+    expect(doublons, 'Motif(s) présent(s) PLUSIEURS fois dans le même fichier — une exemption les amnistierait tous : distinguer les lignes :\n' + doublons.join('\n')).toEqual([]);
   });
 
   it('FAIL-CLOSED : le scanner détecte un appel nu ou global, ignore commentaires/propriété-tierce/type/clear*', () => {

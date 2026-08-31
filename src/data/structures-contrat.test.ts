@@ -568,7 +568,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `creatures.json` (490) et `gods.json` (40) ne sont plus comptés en graphie divergente du libellé.
       // … et 56 → 52 (L2 #1548) : les 4 lignes `progression-schemas.derived.json` sont SOLDÉES — la
       // marque de niveau nomme sa Caractéristique `characteristic`, graphie de RÉFÉRENCE.
-      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 52],
+      // … et 52 → 47 (#1552 lot 3) : le rôle `source` déclare son ALTERNATIVE `maison`, comme la
+      // grammaire l'exige déjà (`document.ts:402-413` : `source` OU `maison`, jamais ni l'un ni
+      // l'autre). Les 4 documents dont TOUTES les entrées portent `maison` sortent du
+      // dénominateur — les 3 projets authorés (`arene`, `barge-du-sel`, `loup-et-saumure`) et
+      // `axes.json` (9/9 entrées `maison`). AUCUNE donnée n'est touchée : c'est le lexique qui
+      // cessait de mesurer une divergence là où le schéma, lui, est satisfait.
+      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 47],
       // Cliquet REMONTÉ 91 → 92 (#1467 L1b V-P7) : AUCUNE dérive neuve — c'est le statbloc à `size`
       // d'`arene-projet.json` qui ARRIVE de `STRUCTURES_FORMES` (sa signature gagne `type`, elle ne se
       // confond plus avec les deux autres). La somme des deux stocks est CONSTANTE : 671 + 91 = 670 + 92.
@@ -669,10 +675,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L1c #1468': 404,
       // L1d #1469 : 62 → 61 (#1552) — « La Diligence » CITE désormais son folio à la racine
       // (`ennemi-dans-l-ombre` 12, la référence que son bloc narratif portait déjà en profondeur) ;
-      // sa ligne « source | clé absente » est SOLDÉE. Les 3 autres projets restent au stock : ils
-      // portent `maison`, et le rôle `source` de `ROLES_ENVELOPPE` est `requise: true` sans clause
-      // d'alternative — mesuré, une provenance `maison` ne sort PAS un document de ce dénominateur.
-      'L1d #1469': 61,
+      // sa ligne « source | clé absente » est SOLDÉE.
+      // … puis 61 → 57 (#1552 lot 3) : le rôle `source` déclare son alternative `maison` et les 4
+      // documents qui la portent sur TOUTES leurs entrées sortent du dénominateur (cf. le cliquet
+      // `STRUCTURES_ENVELOPPE` ci-dessus).
+      'L1d #1469': 57,
       // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
       // … puis 48 → 18 (commit 3c) : cette référence PLATE MEURT à SON TOUR — 30 lignes s'éteignent avec
@@ -906,7 +913,7 @@ describe('les concepts de VALEUR sont reconnus à leur noyau (contrats positifs)
 describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', () => {
   const cle = (c: string, classe: string, n: number) => ({ cle: c, n, parClasse: [{ classe, n }] });
 
-  it('une ENTRÉE DE RACINE sans `id`/`label`/`source` sort en divergences ; conforme, elle sort vide', () => {
+  it('une ENTRÉE DE RACINE sans `id`/`type`/`label`/`source` sort en divergences ; conforme, elle sort vide', () => {
     const neuf = mesurerEnveloppe([
       { document: 'neuf.json', chemin: '(entrées)', portee: 'racine', famille: 'entité', nbEntrees: 3, cles: [cle('code', 'string', 3), cle('nom', 'string', 3)] },
     ]);
@@ -916,6 +923,7 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
       'libellé | label | clé absente',
       'libellé | nom | clé divergente',
       'source | source | clé absente',
+      'type de document | type | clé absente',
     ]);
     const conforme = mesurerEnveloppe([
       {
@@ -924,10 +932,53 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
         portee: 'racine',
         famille: 'entité',
         nbEntrees: 3,
-        cles: [cle('id', 'string', 3), cle('label', 'string', 3), cle('desc', 'string', 3), cle('source', 'object', 3)],
+        cles: [cle('id', 'string', 3), cle('type', 'string', 3), cle('label', 'string', 3), cle('desc', 'string', 3), cle('source', 'object', 3)],
       },
     ]);
     expect(conforme).toEqual([]);
+  });
+
+  /**
+   * La PROVENANCE est une ALTERNATIVE dans la grammaire — `source` OU `maison`, jamais ni l'un ni
+   * l'autre (`src/data/schemas/grammaire/document.ts:402-413`). Le lexique la mesure comme telle :
+   * un document maison est CONFORME, un document qui ne dit RIEN reste au dénominateur.
+   */
+  it('le rôle `source` est satisfait par son ALTERNATIVE `maison` — mais rien ne remplace les deux', () => {
+    const groupe = (doc: string, provenance: ReturnType<typeof cle>[]) => ({
+      document: doc, chemin: '(entrées)', portee: 'racine' as const, famille: 'entité', nbEntrees: 2,
+      cles: [cle('id', 'string', 2), cle('type', 'string', 2), cle('label', 'string', 2), ...provenance],
+    });
+    const provenance = (doc: string, cles: ReturnType<typeof cle>[]) =>
+      mesurerEnveloppe([groupe(doc, cles)]).map((e) => `${e.role} | ${e.cle} | ${e.motif}`);
+
+    expect(provenance('folio.json', [cle('source', 'object', 2)]), 'la CIBLE satisfait le rôle.').toEqual([]);
+    expect(provenance('maison.json', [cle('maison', 'string', 2)]), 'l’ALTERNATIVE le satisfait aussi.').toEqual([]);
+    expect(provenance('muet.json', []), 'ni folio ni arbitrage : le document reste au dénominateur.').toEqual([
+      'source | source | clé absente',
+    ]);
+  });
+
+  /**
+   * Le rôle `type de document` est `entiere` : c'est ce qui le rend mesurable SOUS l'entrée de
+   * racine. Un document embarqué qui s'annonce (`type: 'scene'`, `type: 'statblock'`) l'annonce sur
+   * TOUTES ses entrées — une seule qui ne le porte pas est nommée, portée embarquée comprise.
+   */
+  it('le `type` d’un document se porte ENTIER : une portée qui l’annonce à moitié est nommée', () => {
+    const scenes = (porteuses: number, n: number) => [
+      { document: 'projet.json', chemin: 'scenes', portee: 'embarqué' as const, famille: 'entité', nbEntrees: n, cles: [cle('id', 'string', n), cle('label', 'string', n), cle('type', 'string', porteuses)] },
+    ];
+    expect(
+      mesurerEnveloppe(scenes(18, 18)).map((e) => `${e.role} | ${e.cle} | ${e.motif}`),
+      'les 18 scènes s’annoncent : rien à mesurer.',
+    ).toEqual([]);
+    expect(
+      mesurerEnveloppe(scenes(17, 18)).map((e) => `${e.role} | ${e.cle} | ${e.motif}:${e.detail} | ${e.entrees}`),
+      'une scène qui ne s’annonce plus est NOMMÉE, avec le compte des portées manquantes.',
+    ).toEqual(['type de document | type | cible partielle:17/18 | 1']);
+    expect(
+      mesurerEnveloppe([{ document: 'flow.json', chemin: 'steps', portee: 'embarqué', famille: 'entité', nbEntrees: 4, cles: [cle('id', 'string', 4)] }]),
+      'un document embarqué qui n’annonce AUCUN type n’est sommé de rien : `entiere` mesure ce qui est là.',
+    ).toEqual([]);
   });
 
   it('un document EMBARQUÉ n’est sommé de rien : seules ses clés DIVERGENTES comptent', () => {

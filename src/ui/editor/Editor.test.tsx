@@ -822,3 +822,46 @@ describe('Editor v2 — le défaut mis en évidence est VIVANT (re-résolution c
     expect(planFocusAt(alertes(planTemoin(4)), null)).toBeNull();
   });
 });
+
+/**
+ * L'app ÉCRIT l'enveloppe comme le dépôt la porte : `id`, `type`, `label` en tête du document
+ * (les 4 `…-projet.json` de `src/scenes`). L'ordre des clés n'est pas cosmétique — c'est la relecture d'un
+ * document authoré à l'éditeur à côté d'un document committé, dans un diff comme à l'œil.
+ */
+describe('Editor v2 — le document ÉCRIT s’ouvre sur son identité (`id`, `type`, `label`)', () => {
+  afterEach(() => {
+    __setIdbBackendForTest(null);
+  });
+
+  it('« Fichier → Enregistrer » couche un projet dont les 3 premières clés sont `id`, `type`, `label`', async () => {
+    const couches: SavedProject[] = [];
+    __setIdbBackendForTest({
+      async getAll() { return [] as SavedProject[]; },
+      async put(p: SavedProject) { couches.push(p); },
+      async delete() { /* non exercé ici */ },
+      async clear() { /* non exercé ici */ },
+    });
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor initialScene={{ ...emptyScene(4, 4), id: 'scene-ordre', label: 'Ordre' }} />);
+    });
+
+    const byText = (label: string) => Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes(label))!;
+    await act(async () => { byText('Fichier').click(); });
+    await act(async () => { byText('Enregistrer…').click(); });
+    const saveBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Enregistrer')!;
+    await act(async () => { saveBtn.click(); });
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    expect(couches.length, 'aucun projet couché — le geste d’enregistrement n’a pas abouti.').toBe(1);
+    const project = couches[0].project as unknown as Record<string, unknown>;
+    expect(Object.keys(project).slice(0, 3)).toEqual(['id', 'type', 'label']);
+    expect(project.type).toBe('projet');
+
+    await act(async () => { root.unmount(); });
+    container.remove();
+  });
+});

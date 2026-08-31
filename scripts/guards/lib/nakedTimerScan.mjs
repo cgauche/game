@@ -31,7 +31,7 @@ export const SCAN_DIR = 'src/state';
 
 /** `combatTimers.ts` seul reste exempté au niveau FICHIER — c'est le wrapper : sa nature est
  *  d'être plein de timers nus qu'il encapsule, ce n'est pas un contournement de son propre suivi.
- *  Toute autre exemption doit être PAR SITE (`fichier:ligne`, cf. `ALLOWED_SITES` dans
+ *  Toute autre exemption doit être PAR SITE (`fichier :: motif`, cf. `ALLOWED_SITES` dans
  *  `naked-timer-guard.test.ts`, #776 LOT 6) — une whitelist de FICHIER ENTIER pour un timer isolé
  *  fait disparaître la couverture de tout le reste de ce fichier (défaut mesuré #776). */
 export const ALLOWED = ['src/state/combatTimers.ts'];

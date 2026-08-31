@@ -558,12 +558,16 @@ export function Editor({
    * franchit plus `parseProject` : l'enveloppe exige `id`/`label` et une provenance.
    */
   function identiteCourante(nom: string, id: string): ProjectIdentite {
-    return identite ?? { type: 'projet', id, label: nom, versionContenu: 1, maison: MAISON_PROJET_AUTHORE };
+    const doc = identite ?? { type: 'projet' as const, id, label: nom, versionContenu: 1, maison: MAISON_PROJET_AUTHORE };
+    // ORDRE D'ÉCRITURE : `id`, `type`, `label` en tête, comme les 4 projets committés — ce que
+    // l'app écrit et ce que le dépôt porte ont la MÊME enveloppe, à l'ordre près des clés.
+    const { id: docId, type, label, ...reste } = doc;
+    return { id: docId, type, label, ...reste };
   }
   function exportJson() {
     // Exporte le PROJET (scènes + carte du monde) ; la première scène est l'entrée, et son id
     // nomme le fichier — c'est donc lui qui identifie un projet encore jamais enregistré.
-    const project = { schema: CURRENT_PROJECT_SCHEMA, ...identiteCourante(projectName, projectId ?? scene.id), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif };
+    const project = { ...identiteCourante(projectName, projectId ?? scene.id), schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif };
     downloadText(`${scene.id}-projet.json`, JSON.stringify(project, null, 2));
   }
   function importJson(file: File) {
@@ -690,7 +694,7 @@ export function Editor({
       startSceneId,
       savedAt: Date.now(),
       published: pub,
-      project: { schema: CURRENT_PROJECT_SCHEMA, ...identiteCourante(name, id), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
+      project: { ...identiteCourante(name, id), schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
     });
     if (!res.ok) {
       setSaveError(res.message);

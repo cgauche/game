@@ -417,6 +417,20 @@ export type RoleEnveloppe = {
   requise?: boolean;
   /** Requise sur les seules familles de document citées (`entité`, `table`). */
   requiseSurFamilles?: readonly string[];
+  /**
+   * Clé qui SATISFAIT le rôle à la place de la cible : le rôle est alors une ALTERNATIVE, et
+   * l'absence de la cible n'est une divergence que si cette clé manque aussi. Cale le lexique sur
+   * la grammaire (`src/data/schemas/grammaire/document.ts:402-413` : `source` OU `maison`).
+   */
+  alternative?: string;
+  /**
+   * La cible se porte sur TOUTES les entrées du groupe, PORTÉE EMBARQUÉE COMPRISE : un groupe qui
+   * ne la porte que sur une partie des siennes est une divergence (motif `cible partielle`, détail
+   * `portées/entrées`). C'est ce qui rend un rôle mesurable HORS des entrées de racine — `requise`
+   * ne regarde que l'absence TOTALE sur une entrée de racine, et un document EMBARQUÉ n'est sommé
+   * de rien.
+   */
+  entiere?: boolean;
 };
 
 /**
@@ -454,7 +468,12 @@ export const ROLES_ENVELOPPE: Record<string, RoleEnveloppe> = {
   // Les `effect` qui ÉTAIENT des issues ou une clé de registre ont, eux, été migrés (`outcome`,
   // `potEffectId`, `ops`) plutôt que retirés de la mesure.
   prose: { cible: 'desc', divergentes: ['text', 'description'] },
-  source: { cible: 'source', divergentes: [], typeAttendu: 'object', requise: true },
+  // Un document S'ANNONCE : `type` est posé par la fabrique sur tout document (`CLES_ENVELOPPE`,
+  // `src/data/schemas/grammaire/document.ts:24`), et les documents EMBARQUÉS qui le portent le
+  // portent sur TOUTES leurs entrées (`scene.ts:14-20` l'exige des 28 scènes, `communs.ts:45-46`
+  // du statbloc) — d'où `entiere`, qui met les portées embarquées au dénominateur.
+  'type de document': { cible: 'type', divergentes: [], typeAttendu: 'string', requise: true, entiere: true },
+  source: { cible: 'source', divergentes: [], typeAttendu: 'object', requise: true, alternative: 'maison' },
   maison: { cible: 'maison', divergentes: [], typeAttendu: 'string' },
   'méta libre': { cible: null, divergentes: ['_source', '_comment', '_doc', '__genere', '__lecture', '__livres'] },
 };

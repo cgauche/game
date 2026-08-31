@@ -770,19 +770,20 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "weather.ts", champ: "resistanceTest", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
 ];
 
-/** Une divergence d'ENVELOPPE de document encore observée (strate Document). Trois motifs :
+/** Une divergence d'ENVELOPPE de document encore observée (strate Document). Quatre motifs :
  *  `clé divergente` (le rôle est porté sous un autre nom que sa cible), `type divergent` (la clé
  *  cible est là, sa classe de type ne l'est pas), `clé absente` (une ENTRÉE DE RACINE ne porte
- *  nulle part la clé cible d'un rôle requis — `id` et `source` partout, `label` sur les familles
- *  `entité`/`table`). Un document EMBARQUÉ n'est jamais sommé de porter un `id` : on n'y compte que
- *  les clés DIVERGENTES. `chemin` = `(entrées)` pour les entrées du document, le chemin du document
- *  embarqué sinon. Rôles, cibles et graphies divergentes sont au lexique (`ROLES_ENVELOPPE`). */
+ *  nulle part la clé cible d'un rôle requis — `id`, `type` et `source` partout, `label` sur les
+ *  familles `entité`/`table` — ni l'alternative que le rôle déclare : `maison` pour `source`),
+ *  `cible partielle` (un rôle `entiere` porté par une PARTIE des entrées du groupe, portée
+ *  EMBARQUÉE comprise). Hors rôle `entiere`, un document EMBARQUÉ n'est jamais sommé de porter un
+ *  `id` : on n'y compte que les clés DIVERGENTES. `chemin` = `(entrées)` pour les entrées du
+ *  document, le chemin du document embarqué sinon. Rôles, cibles, alternatives et graphies
+ *  divergentes sont au lexique (`ROLES_ENVELOPPE`). */
 export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "aa-criticals.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "ambiance.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "arcane-phenomena.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "arene-projet.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "barge-du-sel-projet.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "books.json", chemin: "(entrées)", entrees: 29, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "breath-types.json", chemin: "(entrées)", entrees: 6, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "calendarPhases.json", chemin: "(entrées)", entrees: 7, lot: "L1d #1469", date: "2026-08-23" },
@@ -798,7 +799,6 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "lightLevels.json", chemin: "(entrées)", entrees: 5, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "lightTones.json", chemin: "(entrées)", entrees: 4, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "localisation.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "loup-et-saumure-projet.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "mass-battle.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "merchantFamilies.json", chemin: "(entrées)", entrees: 7, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "merchants.json", chemin: "(entrées)", entrees: 6, lot: "L1d #1469", date: "2026-08-23" },
@@ -831,7 +831,6 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "structureAppearance.json", chemin: "(entrées)", entrees: 18, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "systemes.manifest.json", chemin: "(entrées)", entrees: 16, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "weather.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "axes.json", chemin: "(entrées)", entrees: 9, lot: "L1d #1469", date: "2026-08-23" },
 ];
 
 /** Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réservée, clé d'identité) et qui
