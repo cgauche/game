@@ -42,9 +42,9 @@ describe('relations — graphe inverse id-based', () => {
 
   it('compétence → carrière par rang, détail « N{level} » fusionné', () => {
     // Une compétence d'un niveau de carrière → l'inverse liste la CARRIÈRE avec son rang.
-    const lv = careerLevels.find((l) => l.skills.some((a) => 'ref' in a))!;
+    const lv = careerLevels.find((l) => l.skills.some((a) => 'id' in a))!;
     const career = findCareerById(lv.career)!;
-    const skillId = lv.skills.flatMap((a) => ('ref' in a ? [a.ref.id] : []))[0];
+    const skillId = lv.skills.flatMap((a) => ('id' in a ? [a.id] : []))[0];
     const groups = reverseGroups('skills', skillId);
     const careerRef = groups.find((g) => g.category === 'careers')?.referrers.find((r) => r.label === career.label);
     expect(careerRef).toBeTruthy();

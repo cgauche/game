@@ -1,14 +1,16 @@
 /**
  * Schéma de `species.json` — dérivé du contenu RÉEL (27 entrées, script d'inventaire) et de
- * `SpeciesData` (`src/data/index.ts`). `skills`/`talents` = `AdvancementRef[]`, `baseChar` =
- * `Partial<Record<CharKey, number>>`. Mêmes petites formes partagées (Ref/AdvancementRef/CharKey)
- * que `careerLevels.ts`, PROMUES dans `grammaire/reference.ts` (Ref/AdvancementRef) et `grammaire/valeurs.ts` (CharKey). `mutationBodyMax` est ABSENT sur une partie des
+ * `SpeciesData` (`src/data/index.ts`). `skills`/`talents` = emplacements d'avancement
+ * (`grammaire/avancement.ts`), `baseChar` = `Partial<Record<CharKey, number>>`. Mêmes petites formes
+ * partagées que `careerLevels.ts`, PROMUES dans `grammaire/avancement.ts`, `grammaire/reference.ts`
+ * (Ref/TraitInstance) et `grammaire/valeurs.ts` (CharKey). `mutationBodyMax` est ABSENT sur une partie des
  * entrées (18/27) : optionnel, conforme à l'interface ; `grantGroups` est porté par les 27.
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { charKeySchema, raceKeySchema, refCareerIdSchema } from '../grammaire/valeurs';
-import { advancementRefSchema, traitInstanceSchema } from '../grammaire/reference';
+import { traitInstanceSchema } from '../grammaire/reference';
+import { avancement } from '../grammaire/avancement';
 
 export const file = 'species.json';
 export const famille = 'entite';
@@ -30,9 +32,9 @@ const doc = document(
     fate: z.strictObject({ fate: z.number(), resilience: z.number(), extra: z.number() }),
     baseChar: z.record(charKeySchema, z.number()),
     /** Compétences d'espèce (positionnel +5/+3 — lu via `advancementLabel`). */
-    skills: z.array(advancementRefSchema),
-    /** Talents d'espèce ({ref}, {choice} « A ou B », {wildcard} « Au choix »). */
-    talents: z.array(advancementRefSchema),
+    skills: z.array(avancement('skill')),
+    /** Talents d'espèce : réf, choix « A ou B » (`pick`), « Au choix » (`choix`), tirage (`random`). */
+    talents: z.array(avancement('talent')),
     /** Ids de `groups.json` de l'espèce (Traits psy ciblés, LDB 21) — racial, plus la sous-espèce
      *  quand elle a son propre Groupe (« Humains (Tiléens) » → `humain` + `tileen`). DONNÉE requise
      *  (27/27) : `groupsFor` les lit, il ne dérive plus rien du `label`. */

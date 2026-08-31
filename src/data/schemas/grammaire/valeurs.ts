@@ -73,6 +73,22 @@ export const secondarySourceRefSchema = sourceRefSchema.extend({
  *  entrée multi-emplacement. Accesseurs `allLocations`/`sourceBooks` (`src/data/index.ts`). */
 export type SecondaryRef = z.infer<typeof secondarySourceRefSchema>;
 
+/**
+ * ENTRÉE DE CATALOGUE DE SPÉCIALISATION (`SpecEntry`, `src/data/index.ts`) — ce qu'une def de
+ * Compétence/Talent énumère sous `specs[]` : l'id STABLE manipulé par la logique, son `label` FR
+ * d'affichage, l'attestation de l'entrée quand elle vient d'un autre folio (`source`/`alsoIn`), et
+ * `pool: false` pour une entrée VALIDE mais non PROPOSÉE d'office (`LDB 09 l.40`). SOURCE UNIQUE :
+ * `skills.ts` et `talents.ts` la composent, aucun des deux ne la retape — c'est le catalogue que
+ * `specRef`/`refOuSpec` confrontent (`grammaire/ref.ts`, registre `SPECS_PAR_DATASET`).
+ */
+export const specEntrySchema = z.strictObject({
+  id: z.string(),
+  label: z.string(),
+  source: sourceRefSchema.optional(),
+  alsoIn: z.array(secondarySourceRefSchema).optional(),
+  pool: z.literal(false).optional(),
+});
+
 // ============================================================================
 // COMBAT FEATURE (`src/engine/combatFeatures/types.ts`) — sac de flags CLOS conféré par un Talent/Trait,
 // `aa` récursif (variante « Avantage de groupe », Aux Armes Annexe I). Promu ici (partagé avec

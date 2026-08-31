@@ -129,8 +129,8 @@ const opsFieldsOf = (categoryKey: string): string[] => OPS_FIELDS[categoryKey] ?
 
 type Entry = Record<string, unknown>;
 
-/** ids d'un champ-liste de refs — descend dans les branches `choice` des `AdvancementRef` et les
- *  enveloppes `{ref:{id}}` ; ignore les `{text}` narratifs et jokers. Une CHAÎNE BRUTE (ex.
+/** ids d'un champ-liste de refs — descend dans les branches `of` d'un `{pick}` (`AdvancementRef`) et
+ *  dans le `choice` d'une `TrappingRef` ; ignore les `{text}` narratifs et jokers. Une CHAÎNE BRUTE (ex.
  *  `criticalsTete.traumas: string[]`) est traitée comme un id DIRECT (#173 : ces listes référencent
  *  leur dataset par id, jamais par libellé — cf. `STRING_LIST_LABEL_EXCEPTIONS` pour l'unique
  *  contre-exemple documenté). */
@@ -140,8 +140,9 @@ function refIdsIn(v: unknown): string[] {
   for (const x of v) {
     if (typeof x === 'string') { out.push(x); continue; }
     if (!x || typeof x !== 'object') continue;
-    const o = x as { choice?: unknown; ref?: { id?: unknown }; id?: unknown };
-    if (o.choice) out.push(...refIdsIn(o.choice));
+    const o = x as { choice?: unknown; of?: unknown; ref?: { id?: unknown }; id?: unknown };
+    if (o.of) out.push(...refIdsIn(o.of));
+    else if (o.choice) out.push(...refIdsIn(o.choice));
     else if (o.ref && typeof o.ref.id === 'string') out.push(o.ref.id);
     else if (typeof o.id === 'string') out.push(o.id);
   }

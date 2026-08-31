@@ -13,6 +13,7 @@ import {
   mutationTables,
   specLabel, refLabel, specEntryId, specEntryLabel, specResolves, SPEC_SOURCES, type SpecsSource, books,
 } from './index';
+import { avancement } from './schemas/grammaire/avancement';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
@@ -181,18 +182,18 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     }
   });
 
-  // `AdvancementRef` (`src/data/index.ts`) : `{ref}` ET `{wildcard}` portent chacun un `Ref` dont
-  // l'`id` est lu par le moteur — `advancementBaseId` (index.ts) et `slotOptionsFromRef`
-  // (`src/engine/careerSlots.ts`) résolvent l'id du joker EXACTEMENT comme celui d'une ref simple.
-  // La CATÉGORIE vient de la liste porteuse (`skills` vs `talents`), jamais d'un « skill OU talent ».
-  it('refs d’avancement explicites ({ref} ET joker {wildcard}) pointent un id de Compétence/Talent réel', () => {
+  // `AdvancementRef` (`src/data/index.ts`) : une référence d'avancement porte son `id` À PLAT, que la
+  // spécialisation soit arrêtée (`spec`) ou laissée au choix (`choix`) — `advancementBaseId`
+  // (index.ts) et `slotOptionsFromRef` (`src/engine/careerSlots.ts`) lisent le MÊME id dans les deux
+  // régimes. La CATÉGORIE vient de la liste porteuse (`skills` vs `talents`), jamais d'un
+  // « skill OU talent ».
+  it('refs d’avancement (régime `spec` comme `choix`) pointent un id de Compétence/Talent réel', () => {
     const bad: string[] = [];
     const ck = (cat: 'skills' | 'talents', a: unknown, where: string): void => {
       if (!isObj(a)) return;
       const find = (id: string) => (cat === 'skills' ? byId('skill', id) : findTalentById(id));
-      if ('ref' in a) { const r = a.ref as { id: string }; if (!find(r.id)) bad.push(`${where} {ref} ${cat} → ${JSON.stringify(r.id)}`); }
-      if ('wildcard' in a) { const w = a.wildcard as { id: string }; if (!find(w.id)) bad.push(`${where} {wildcard} ${cat} → ${JSON.stringify(w.id)}`); }
-      if ('choice' in a) (a.choice as unknown[]).forEach((o, i) => ck(cat, o, `${where}.choice[${i}]`));
+      if ('id' in a) { const id = a.id as string; if (!find(id)) bad.push(`${where} ${cat} → ${JSON.stringify(id)}`); }
+      if ('of' in a) (a.of as unknown[]).forEach((o, i) => ck(cat, o, `${where}.of[${i}]`));
     };
     for (const s of species) {
       s.skills.forEach((a, i) => ck('skills', a, `species(${s.id}).skills[${i}]`));
@@ -205,19 +206,128 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     expect(bad, bad.join('\n')).toEqual([]);
   });
 
-  // NON-VACANCE de la garde ci-dessus : un joker fantôme DOIT être vu (l'id d'un `{wildcard}` était le
-  // seul `Ref` d'`AdvancementRef` que rien ne confrontait à un registre).
-  it('un {wildcard} à id fantôme est REFUSÉ (contre-épreuve)', () => {
-    const bad: string[] = [];
-    const ck = (cat: 'skills' | 'talents', a: unknown, where: string): void => {
-      if (!isObj(a)) return;
-      const find = (id: string) => (cat === 'skills' ? byId('skill', id) : findTalentById(id));
-      if ('wildcard' in a) { const w = a.wildcard as { id: string }; if (!find(w.id)) bad.push(`${where} → ${JSON.stringify(w.id)}`); }
+  // NON-VACANCE de la garde ci-dessus, et VERROU PAR CONSTRUCTION : depuis L2 #1548 la fabrique
+  // `avancement(type)` (`schemas/grammaire/avancement.ts`) refine l'id AU PARSE contre le registre
+  // généré — un emplacement à id fantôme ne charge plus, quel que soit son régime.
+  it('un emplacement d’avancement à id fantôme est REFUSÉ par le schéma (contre-épreuve)', () => {
+    const porte = avancement('skill');
+    expect(porte.safeParse({ id: 'langue', choix: true }).success).toBe(true);
+    expect(porte.safeParse({ id: 'langue-fantome', choix: true }).success).toBe(false);
+    expect(porte.safeParse({ pick: 1, of: [{ id: 'langue-fantome' }] }).success).toBe(false);
+  });
+
+  /**
+   * BIJECTIVITÉ de la migration d'avancement (L2 #1548, `scripts/migrations/
+   * 2026-08-31-avancement-vers-grammaire.mjs`). Deux faits distincts, mesurés ici sur la donnée
+   * COMMITTÉE — sans jamais rouvrir l'ancien fichier :
+   *  1. L'ENVELOPPE est en bijection avec la graphie d'origine : `{ref}`/`{wildcard}`/
+   *     `{wildcard,specOptions}`/`{choice}`/`{random}` ⇄ `{id}`/`{id,choix:true}`/`{id,choix:[ids]}`/
+   *     `{pick:1,of}`/`{random}`. Aller-retour = identité sur CHAQUE nœud réel : aucune branche
+   *     fusionnée, aucun champ perdu, aucune forme hors vocabulaire.
+   *  2. Les seules VALEURS qui changent sont les 14 paires NOMMÉES ci-dessous (spéc imprimée au
+   *     livre → id de catalogue) : chacune résout dans le catalogue de sa def, chacune est VIVANTE
+   *     dans la donnée, et aucune des 14 graphies d'origine n'y subsiste.
+   */
+  type Graphie = Record<string, unknown>;
+  /** Graphie CIBLE → graphie d'ORIGINE. */
+  const versOrigine = (n: Graphie): Graphie => {
+    if ('random' in n && Object.keys(n).length === 1) return { random: n.random };
+    if ('pick' in n) return { choice: (n.of as Graphie[]).map(versOrigine) };
+    if ('id' in n) {
+      if (n.choix === undefined) return n.spec === undefined ? { ref: { id: n.id } } : { ref: { id: n.id, spec: n.spec } };
+      return n.choix === true ? { wildcard: { id: n.id } } : { wildcard: { id: n.id }, specOptions: n.choix };
+    }
+    return { HORS_VOCABULAIRE: n };
+  };
+  /** Graphie d'ORIGINE → graphie CIBLE, ENVELOPPE SEULE (la valeur de spéc n'est pas touchée). */
+  const versCible = (n: Graphie): Graphie => {
+    if ('random' in n) return { random: n.random };
+    if ('choice' in n) return { pick: 1, of: (n.choice as Graphie[]).map(versCible) };
+    if ('ref' in n) {
+      const r = n.ref as Graphie;
+      return r.spec === undefined ? { id: r.id } : { id: r.id, spec: r.spec };
+    }
+    if ('wildcard' in n) {
+      const w = n.wildcard as Graphie;
+      const opts = n.specOptions as unknown[] | undefined;
+      return opts?.length ? { id: w.id, choix: opts } : { id: w.id, choix: true };
+    }
+    return { HORS_VOCABULAIRE: n };
+  };
+  /** Tous les nœuds d'avancement de la donnée committée, avec leur provenance. */
+  const noeudsAvancement = (): { ou: string; cat: 'skills' | 'talents'; n: Graphie }[] => {
+    const out: { ou: string; cat: 'skills' | 'talents'; n: Graphie }[] = [];
+    for (const s of species)
+      for (const cat of ['skills', 'talents'] as const)
+        s[cat].forEach((a, i) => out.push({ ou: `species(${s.id}).${cat}[${i}]`, cat, n: a as unknown as Graphie }));
+    for (const l of careerLevels)
+      for (const cat of ['skills', 'talents'] as const)
+        l[cat].forEach((a, i) => out.push({ ou: `careerLevel(${l.id}).${cat}[${i}]`, cat, n: a as unknown as Graphie }));
+    return out;
+  };
+
+  /** Spéc imprimée au livre → id de catalogue : les 14 SEULES valeurs que la migration a changées. */
+  const PAIRES_NOMMEES: { cat: 'skills' | 'talents'; def: string; imprime: string; id: string }[] = [
+    { cat: 'skills', def: 'signes-secrets', imprime: 'guilde-au-choix', id: 'guilde' },
+    { cat: 'talents', def: 'bon-marcheur', imprime: 'Montagnes', id: 'montagnes' },
+    { cat: 'talents', def: 'maitre-artisan', imprime: 'Fermiers', id: 'fermiers' },
+    { cat: 'talents', def: 'sans-peur', imprime: 'Cavalerie', id: 'cavalerie' },
+    { cat: 'talents', def: 'sans-peur', imprime: 'Chaos', id: 'chaos' },
+    { cat: 'talents', def: 'sans-peur', imprime: 'Grandes bêtes', id: 'grandes-betes' },
+    { cat: 'talents', def: 'sans-peur', imprime: 'Tout', id: 'tout' },
+    { cat: 'talents', def: 'savoir-vivre', imprime: 'Citadins', id: 'citadins' },
+    { cat: 'talents', def: 'savoir-vivre', imprime: 'Criminel', id: 'criminels' },
+    { cat: 'talents', def: 'savoir-vivre', imprime: 'Érudit', id: 'erudits' },
+    { cat: 'talents', def: 'savoir-vivre', imprime: 'Guilde', id: 'guildes' },
+    { cat: 'talents', def: 'savoir-vivre', imprime: 'Mercenaires', id: 'mercenaires' },
+    { cat: 'talents', def: 'savoir-vivre', imprime: 'Minus', id: 'minus' },
+    { cat: 'talents', def: 'savoir-vivre', imprime: 'Soldat', id: 'soldats' },
+  ];
+
+  it('la migration d’avancement est structurellement BIJECTIVE : l’ENVELOPPE fait l’aller-retour à l’identique', () => {
+    const casses: string[] = [];
+    const horsVocabulaire: string[] = [];
+    const parcours = (ou: string, n: Graphie): void => {
+      const origine = versOrigine(n);
+      if ('HORS_VOCABULAIRE' in origine) { horsVocabulaire.push(`${ou} → ${JSON.stringify(n)}`); return; }
+      if (JSON.stringify(versCible(origine)) !== JSON.stringify(n))
+        casses.push(`${ou} : ${JSON.stringify(n)} → ${JSON.stringify(origine)} → ${JSON.stringify(versCible(origine))}`);
+      if ('of' in n) (n.of as Graphie[]).forEach((b, i) => parcours(`${ou}.of[${i}]`, b));
     };
-    ck('skills', { wildcard: { id: 'langue' } }, 'fixture-vraie');
-    expect(bad).toEqual([]);
-    ck('skills', { wildcard: { id: 'langue-fantome' } }, 'fixture-fantome');
-    expect(bad).toHaveLength(1);
+    for (const { ou, n } of noeudsAvancement()) parcours(ou, n);
+    expect(horsVocabulaire, horsVocabulaire.join('\n')).toEqual([]);
+    expect(casses, casses.join('\n')).toEqual([]);
+  });
+
+  it('les seules VALEURS changées sont les 14 paires NOMMÉES : chacune résout, est VIVANTE, et sa graphie d’origine a DISPARU', () => {
+    const specsDe = (n: Graphie): string[] => [
+      ...(typeof n.spec === 'string' ? [n.spec] : []),
+      ...(Array.isArray(n.choix) ? (n.choix as string[]) : []),
+    ];
+    const vues = new Map<string, Set<string>>(); // `cat|def` → valeurs de spéc rencontrées
+    const collecte = (cat: 'skills' | 'talents', n: Graphie): void => {
+      if (typeof n.id === 'string') {
+        const cle = `${cat}|${n.id}`;
+        if (!vues.has(cle)) vues.set(cle, new Set());
+        for (const v of specsDe(n)) vues.get(cle)!.add(v);
+      }
+      if ('of' in n) (n.of as Graphie[]).forEach((b) => collecte(cat, b));
+    };
+    for (const { cat, n } of noeudsAvancement()) collecte(cat, n);
+
+    const morts: string[] = [];
+    const absents: string[] = [];
+    const nonResolus: string[] = [];
+    for (const p of PAIRES_NOMMEES) {
+      const def = p.cat === 'skills' ? byId('skill', p.def) : findTalentById(p.def);
+      if (!def || !specResolves(def, p.id)) { nonResolus.push(`${p.cat}:${p.def} → ${p.id}`); continue; }
+      const vu = vues.get(`${p.cat}|${p.def}`) ?? new Set<string>();
+      if (!vu.has(p.id)) absents.push(`${p.cat}:${p.def} → ${p.id} (paire FOSSILE : plus aucune référence)`);
+      if (vu.has(p.imprime)) morts.push(`${p.cat}:${p.def} → ${JSON.stringify(p.imprime)} (graphie d’origine SURVIVANTE)`);
+    }
+    expect(nonResolus, nonResolus.join('\n')).toEqual([]);
+    expect(absents, absents.join('\n')).toEqual([]);
+    expect(morts, morts.join('\n')).toEqual([]);
   });
 
   // `TrappingRef.wildcard` (`src/data/index.ts`) est une AUTRE forme : une chaîne de CATÉGORIE
@@ -607,6 +717,8 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
       walkSkillRefs(entry, (node) => {
         const def = byId('skill', node.id);
         const groupee = !!def?.specsSource || (Array.isArray(def?.specs) && def.specs.length > 0);
+        // Un nœud à `choix` PORTE un régime de spécialisation (borne ou libre) : ce n'est pas une réf NUE.
+        if (node.choix != null) return;
         if (node.spec == null) { if (groupee) nues.push({ where: `${file}(${owner})`, book, skillId: node.id }); return; }
         if (isSentinel(node.spec)) return;
         seen.n++;
@@ -688,9 +800,8 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
     const sp = species.find((s) => s.id === 'humains-tileens');
     expect(sp, 'humains-tileens absente de species.json').toBeTruthy();
     const rendu = sp!.skills.map((a) => {
-      const r = (a as { ref?: { id: string; spec?: string }; wildcard?: { id: string } });
-      const w = r.wildcard ? `${r.wildcard.id}(*)` : `${r.ref!.id}${r.ref!.spec ? `(${r.ref!.spec})` : ''}`;
-      return w;
+      const r = a as { id: string; spec?: string; choix?: true | string[] };
+      return r.choix != null ? `${r.id}(*)` : `${r.id}${r.spec ? `(${r.spec})` : ''}`;
     });
     expect(rendu).toEqual([
       'calme', 'charme', 'corps-a-corps(base)', 'evaluation',

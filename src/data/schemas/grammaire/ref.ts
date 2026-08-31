@@ -227,10 +227,14 @@ export function refOuSpec<T extends TypeEntite, E extends Record<string, z.ZodTy
  * de l'entrée À TRAVERS l'`of`), ou un `pick` IMBRIQUÉ (un « n parmi » dont une option est elle-même
  * un choix, y compris un tirage sur table). La récursion se referme sur le nœud LUI-MÊME (`noeud`),
  * que la marche des slots retrouve dans sa pile d'ancêtres et coupe là (`slots.ts`).
+ *
+ * `optionsDuPorteur` ouvre l'`of` aux formes que le PORTEUR admet en plus des trois ci-dessus —
+ * même composition FERMÉE que l'`extra` de `ref()`/`specRef()` : le porteur déclare ce qu'il
+ * accepte, la fabrique ne connaît aucun cas particulier (cf. `avancement.ts`, `{random}`).
  */
-export function pick<T extends TypeEntite>(type: T): z.ZodType<unknown> {
+export function pick<T extends TypeEntite>(type: T, optionsDuPorteur: readonly z.ZodType<unknown>[] = []): z.ZodType<unknown> {
   const n = z.number().int().positive();
-  const option: z.ZodType<unknown> = z.lazy(() => z.union([ref(type), specRef(type), noeud]));
+  const option: z.ZodType<unknown> = z.lazy(() => z.union([ref(type), specRef(type), noeud, ...optionsDuPorteur]));
   const noeud: z.ZodType<unknown> = z.union([
     z.strictObject({ pick: n, of: z.array(option).min(1) }),
     z.strictObject({ pick: n, table: ref('table') }),

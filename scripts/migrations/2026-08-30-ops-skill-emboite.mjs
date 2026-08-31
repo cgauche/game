@@ -26,6 +26,8 @@
  * anomalie → rien n'est écrit, sortie 1.
  * RENAME PUR : aucune valeur ne change (hors la spéc en libellé, déclarée ci-dessus).
  * PREUVE : les deux artefacts (avant, après) ramenés à la graphie PLATE sont deep-equal.
+ * ENTRÉES : les documents énumérés par la table de CHEMINS ci-dessous (21 documents des deux racines,
+ * chacun avec son chemin de schéma) — aucun autre fichier n'est lu.
  * IDEMPOTENT : rejouée sur l'état final, elle n'écrit rien et sort 0.
  * FORMATAGE PRÉSERVÉ : chaque fichier est EXACTEMENT `JSON.stringify(doc, null, 2)` (les datasets de
  * `src/data`) ou `JSON.stringify(doc)` (les documents de scène, compacts), constaté AVANT toute

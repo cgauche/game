@@ -104,7 +104,20 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     // TOUJOURS une liste (`skills`), donc 1 fabrique par instance au lieu de 2 — 2 marques de moins
     // pour un MÊME nombre de références validées (les 2 instances restantes, base et `variants`,
     // couvrent les 9 références des 8 Talents). Une BRANCHE de moins n'est pas un site de moins.
-    ).toEqual(['actorRefSchema', "idDe('creature')", ...Array.from({ length: 28 }, () => "idDe('skill')"), "idDe('trapping')"]);
+    // … puis 28 → 34 `idDe('skill')` au commit 4, où l'AVANCEMENT adopte la grammaire : les 4 champs `skills`/`talents`
+    // de `careerLevels`/`species` composent `avancement(type)`, et CHAQUE instance pose 4 marques —
+    // `refOuSpec(type)` (1), puis le `pick(type, [tirage])` qui l'accompagne, dont l'option est
+    // l'union `ref(type)` | `specRef(type)` | nœud (2 de plus) et dont la branche `{pick, table}`
+    // désigne une table d100 (1 `idDe('table')`). D'où +6 `skill`, +6 `talent` et +4 `table` pour les
+    // 4 instances. Le stock des sites ADOPTÉS ne peut que CROÎTRE.
+    ).toEqual([
+      'actorRefSchema',
+      "idDe('creature')",
+      ...Array.from({ length: 34 }, () => "idDe('skill')"),
+      ...Array.from({ length: 4 }, () => "idDe('table')"),
+      ...Array.from({ length: 6 }, () => "idDe('talent')"),
+      "idDe('trapping')",
+    ]);
   });
 
   it('la coupe de PROFONDEUR_MAX est BRUYANTE : un schéma trop profond LÈVE en nommant son path', () => {

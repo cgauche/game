@@ -22,6 +22,8 @@
  * un PNJ payant n'a pas de fiche, sa cible EST le seuil fourni) ; l'id porte le LIBELLÉ affiché au
  * joueur (`ui/MedicModal.tsx` → `skillRefLabel(npc.skill)`, jusqu'ici la chaîne « Guérison » en dur).
  * PREUVE : les deux artefacts (avant, après) ramenés à la graphie D'ORIGINE sont deep-equal.
+ * ENTRÉES : les quatre documents énumérés par `GESTES` ci-dessous — `src/data/advancementCosts.json`,
+ * `src/scenes/arene/arene-projet.json`, `src/data/tavernGames.json`, `src/data/talents.json`.
  * IDEMPOTENT : rejouée sur l'état final, elle n'écrit rien et sort 0.
  * FORMATAGE PRÉSERVÉ : chaque fichier est EXACTEMENT une des formes déclarées, constatée AVANT toute
  * écriture et réécrite dans SA forme (LF, aucun `\r`).

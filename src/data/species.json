@@ -29,90 +29,61 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "ref": {
-          "id": "commandement"
-        }
+        "id": "commandement"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "bretonnien"
-        }
+        "id": "langue",
+        "spec": "bretonnien"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "wastelander"
-        }
+        "id": "langue",
+        "spec": "wastelander"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "projectiles",
-          "spec": "arc"
-        }
+        "id": "projectiles",
+        "spec": "arc"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "soin-aux-animaux"
-        }
+        "id": "soin-aux-animaux"
       }
     ],
     "talents": [
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "perspicace"
-            }
+            "id": "perspicace"
           },
           {
-            "ref": {
-              "id": "affable"
-            }
+            "id": "affable"
           }
         ]
       },
       {
-        "ref": {
-          "id": "destinee"
-        }
+        "id": "destinee"
       },
       {
         "random": 3
@@ -159,86 +130,60 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "ref": {
-          "id": "commandement"
-        }
+        "id": "commandement"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "wildcard": {
-          "id": "divertissement"
-        }
+        "id": "divertissement",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "wildcard": {
-          "id": "metier"
-        }
+        "id": "metier",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "projectiles",
-          "spec": "arc"
-        }
+        "id": "projectiles",
+        "spec": "arc"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "middenheim"
-        }
+        "id": "savoir",
+        "spec": "middenheim"
       },
       {
-        "ref": {
-          "id": "subornation"
-        }
+        "id": "subornation"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "destinee"
-        }
+        "id": "destinee"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "wildcard": {
-              "id": "savoir-vivre"
-            }
+            "id": "savoir-vivre",
+            "choix": true
           },
           {
-            "ref": {
-              "id": "infatigable"
-            }
+            "id": "infatigable"
           }
         ]
       },
@@ -287,91 +232,63 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "commandement"
-        }
+        "id": "commandement"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "ref": {
-          "id": "intimidation"
-        }
+        "id": "intimidation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "wastelander"
-        }
+        "id": "langue",
+        "spec": "wastelander"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "projectiles",
-          "spec": "arc"
-        }
+        "id": "projectiles",
+        "spec": "arc"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "middenland"
-        }
+        "id": "savoir",
+        "spec": "middenland"
       },
       {
-        "ref": {
-          "id": "soin-aux-animaux"
-        }
+        "id": "soin-aux-animaux"
       },
       {
-        "ref": {
-          "id": "survie-en-exterieur"
-        }
+        "id": "survie-en-exterieur"
       }
     ],
     "talents": [
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "menacant"
-            }
+            "id": "menacant"
           },
           {
-            "ref": {
-              "id": "guerrier-ne"
-            }
+            "id": "guerrier-ne"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "destinee"
-            }
+            "id": "destinee"
           },
           {
             "random": 1
@@ -423,106 +340,77 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "norse"
-        }
+        "id": "langue",
+        "spec": "norse"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "wastelander"
-        }
+        "id": "langue",
+        "spec": "wastelander"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "wildcard": {
-          "id": "metier"
-        }
+        "id": "metier",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "natation"
-        }
+        "id": "natation"
       },
       {
-        "ref": {
-          "id": "projectiles",
-          "spec": "arc"
-        }
+        "id": "projectiles",
+        "spec": "arc"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "nordland"
-        }
+        "id": "savoir",
+        "spec": "nordland"
       },
       {
-        "wildcard": {
-          "id": "voile"
-        }
+        "id": "voile",
+        "choix": true
       }
     ],
     "talents": [
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "pecheur"
-            }
+            "id": "pecheur"
           },
           {
-            "ref": {
-              "id": "nomade"
-            }
+            "id": "nomade"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "coeur-vaillant"
-            }
+            "id": "coeur-vaillant"
           },
           {
-            "ref": {
-              "id": "tres-resistant"
-            }
+            "id": "tres-resistant"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "destinee"
-            }
+            "id": "destinee"
           },
           {
             "random": 1
@@ -573,98 +461,69 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "arabien"
-        }
+        "id": "langue",
+        "spec": "arabien"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "estalien"
-        }
+        "id": "langue",
+        "spec": "estalien"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "reikspiel"
-        }
+        "id": "langue",
+        "spec": "reikspiel"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "tileen"
-        }
+        "id": "langue",
+        "spec": "tileen"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "projectiles",
-          "spec": "arbalete"
-        }
+        "id": "projectiles",
+        "spec": "arbalete"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "wildcard": {
-          "id": "voile"
-        }
+        "id": "voile",
+        "choix": true
       }
     ],
     "talents": [
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "ergoteur"
-            }
+            "id": "ergoteur"
           },
           {
-            "ref": {
-              "id": "pecheur"
-            }
+            "id": "pecheur"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "imperturbable"
-            }
+            "id": "imperturbable"
           },
           {
-            "ref": {
-              "id": "affable"
-            }
+            "id": "affable"
           }
         ]
       }
@@ -711,110 +570,78 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "reikspiel"
-        }
+        "id": "langue",
+        "spec": "reikspiel"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "wastelander"
-        }
+        "id": "langue",
+        "spec": "wastelander"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "wildcard": {
-          "id": "metier"
-        }
+        "id": "metier",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "natation"
-        }
+        "id": "natation"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "ramer"
-        }
+        "id": "ramer"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "norsca"
-        }
+        "id": "savoir",
+        "spec": "norsca"
       },
       {
-        "wildcard": {
-          "id": "voile"
-        }
+        "id": "voile",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "norse"
-        }
+        "id": "langue",
+        "spec": "norse"
       }
     ],
     "talents": [
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "guerrier-ne"
-            }
+            "id": "guerrier-ne"
           },
           {
-            "ref": {
-              "id": "pied-marin"
-            }
+            "id": "pied-marin"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "pecheur"
-            }
+            "id": "pecheur"
           },
           {
-            "ref": {
-              "id": "seigneur-de-guerre"
-            }
+            "id": "seigneur-de-guerre"
           }
         ]
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "chaos"
-        }
+        "id": "resistance",
+        "spec": "chaos"
       },
       {
         "random": 2
@@ -861,111 +688,79 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "chevaucher",
-          "spec": "cheval"
-        }
+        "id": "chevaucher",
+        "spec": "cheval"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "gospodarin"
-        }
+        "id": "langue",
+        "spec": "gospodarin"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "reikspiel"
-        }
+        "id": "langue",
+        "spec": "reikspiel"
       },
       {
-        "wildcard": {
-          "id": "metier"
-        }
+        "id": "metier",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "natation"
-        }
+        "id": "natation"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "ramer"
-        }
+        "id": "ramer"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "norsca"
-        }
+        "id": "savoir",
+        "spec": "norsca"
       },
       {
-        "ref": {
-          "id": "soin-aux-animaux"
-        }
+        "id": "soin-aux-animaux"
       },
       {
-        "wildcard": {
-          "id": "voile"
-        }
+        "id": "voile",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "norse"
-        }
+        "id": "langue",
+        "spec": "norse"
       }
     ],
     "talents": [
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "cavalier-emerite"
-            }
+            "id": "cavalier-emerite"
           },
           {
-            "ref": {
-              "id": "pied-marin"
-            }
+            "id": "pied-marin"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "claquer-le-fouet"
-            }
+            "id": "claquer-le-fouet"
           },
           {
-            "ref": {
-              "id": "loup-de-mer"
-            }
+            "id": "loup-de-mer"
           }
         ]
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
         "random": 2
@@ -1012,112 +807,79 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "deux-mains"
-        }
+        "id": "corps-a-corps",
+        "spec": "deux-mains"
       },
       {
-        "ref": {
-          "id": "divertissement",
-          "spec": "narration"
-        }
+        "id": "divertissement",
+        "spec": "narration"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "khorne"
-        }
+        "id": "savoir",
+        "spec": "khorne"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "reikspiel"
-        }
+        "id": "langue",
+        "spec": "reikspiel"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "wastelander"
-        }
+        "id": "langue",
+        "spec": "wastelander"
       },
       {
-        "ref": {
-          "id": "natation"
-        }
+        "id": "natation"
       },
       {
-        "ref": {
-          "id": "ramer"
-        }
+        "id": "ramer"
       },
       {
-        "ref": {
-          "id": "resistance"
-        }
+        "id": "resistance"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "wildcard": {
-          "id": "voile"
-        }
+        "id": "voile",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "norse"
-        }
+        "id": "langue",
+        "spec": "norse"
       }
     ],
     "talents": [
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "charge-berserk"
-            }
+            "id": "charge-berserk"
           },
           {
-            "ref": {
-              "id": "fuite"
-            }
+            "id": "fuite"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "determine"
-            }
+            "id": "determine"
           },
           {
-            "ref": {
-              "id": "insignifiant"
-            }
+            "id": "insignifiant"
           }
         ]
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "chaos"
-        }
+        "id": "resistance",
+        "spec": "chaos"
       },
       {
         "random": 2
@@ -1163,91 +925,60 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "esquive"
-        }
+        "id": "esquive"
       },
       {
-        "ref": {
-          "id": "intuition"
-        }
+        "id": "intuition"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "pari"
-        }
+        "id": "pari"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
         "random": 2
@@ -1295,100 +1026,69 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "intuition"
-        }
+        "id": "intuition"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "wildcard": {
-          "id": "projectiles"
-        }
+        "id": "projectiles",
+        "choix": true
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "savoir-vivre",
-              "spec": "Soldat"
-            }
+            "id": "savoir-vivre",
+            "spec": "soldats"
           },
           {
-            "ref": {
-              "id": "sens-aiguise",
-              "spec": "vue"
-            }
+            "id": "sens-aiguise",
+            "spec": "vue"
           }
         ]
       },
@@ -1438,98 +1138,67 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "intuition"
-        }
+        "id": "intuition"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "wildcard": {
-          "id": "projectiles"
-        }
+        "id": "projectiles",
+        "choix": true
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "sociable"
-            }
+            "id": "sociable"
           },
           {
-            "ref": {
-              "id": "voyageur-aguerri"
-            }
+            "id": "voyageur-aguerri"
           }
         ]
       },
@@ -1579,100 +1248,68 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "pari"
-        }
+        "id": "pari"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "herbes"
-        }
+        "id": "savoir",
+        "spec": "herbes"
       },
       {
-        "ref": {
-          "id": "soin-aux-animaux"
-        }
+        "id": "soin-aux-animaux"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "maitre-artisan",
-              "spec": "Fermiers"
-            }
+            "id": "maitre-artisan",
+            "spec": "fermiers"
           },
           {
-            "ref": {
-              "id": "costaud"
-            }
+            "id": "costaud"
           }
         ]
       },
@@ -1722,99 +1359,67 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "pari"
-        }
+        "id": "pari"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "negociateur"
-            }
+            "id": "negociateur"
           },
           {
-            "ref": {
-              "id": "savoir-vivre",
-              "spec": "Guilde"
-            }
+            "id": "savoir-vivre",
+            "spec": "guildes"
           }
         ]
       },
@@ -1864,98 +1469,68 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "wildcard": {
-          "id": "metier"
-        }
+        "id": "metier",
+        "choix": true
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "wildcard": {
-              "id": "maitre-artisan"
-            }
+            "id": "maitre-artisan",
+            "choix": true
           },
           {
-            "ref": {
-              "id": "doigts-de-fee"
-            }
+            "id": "doigts-de-fee"
           }
         ]
       },
@@ -2005,98 +1580,66 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "subornation"
-        }
+        "id": "subornation"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "ergoteur"
-            }
+            "id": "ergoteur"
           },
           {
-            "ref": {
-              "id": "numismate"
-            }
+            "id": "numismate"
           }
         ]
       },
@@ -2146,97 +1689,65 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "intuition"
-        }
+        "id": "intuition"
       },
       {
-        "ref": {
-          "id": "pari"
-        }
+        "id": "pari"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "resistance"
-        }
+        "id": "resistance"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "brouet"
-            }
+            "id": "brouet"
           },
           {
-            "ref": {
-              "id": "dur-a-cuire"
-            }
+            "id": "dur-a-cuire"
           }
         ]
       },
@@ -2286,101 +1797,69 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "intimidation"
-        }
+        "id": "intimidation"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "subornation"
-        }
+        "id": "subornation"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "criminel"
-            }
+            "id": "criminel"
           },
           {
-            "wildcard": {
-              "id": "savoir-vivre"
-            },
-            "specOptions": [
-              "Criminel",
-              "Guilde"
+            "id": "savoir-vivre",
+            "choix": [
+              "criminels",
+              "guildes"
             ]
           }
         ]
@@ -2431,99 +1910,67 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "resistance"
-        }
+        "id": "resistance"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "maitre-artisan",
-              "spec": "cuisinier"
-            }
+            "id": "maitre-artisan",
+            "spec": "cuisinier"
           },
           {
-            "ref": {
-              "id": "negociateur"
-            }
+            "id": "negociateur"
           }
         ]
       },
@@ -2573,99 +2020,67 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "pari"
-        }
+        "id": "pari"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "resistance"
-        }
+        "id": "resistance"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "insignifiant"
-            }
+            "id": "insignifiant"
           },
           {
-            "ref": {
-              "id": "savoir-vivre",
-              "spec": "serviteurs"
-            }
+            "id": "savoir-vivre",
+            "spec": "serviteurs"
           }
         ]
       },
@@ -2715,100 +2130,68 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "commandement"
-        }
+        "id": "commandement"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "heraldique"
-        }
+        "id": "savoir",
+        "spec": "heraldique"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "lire-ecrire"
-            }
+            "id": "lire-ecrire"
           },
           {
-            "wildcard": {
-              "id": "savoir-vivre"
-            },
-            "specOptions": [
+            "id": "savoir-vivre",
+            "choix": [
               "erudits",
               "nobles"
             ]
@@ -2861,101 +2244,70 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "escamotage"
-        }
+        "id": "escamotage"
       },
       {
-        "ref": {
-          "id": "metier",
-          "spec": "cuisinier"
-        }
+        "id": "metier",
+        "spec": "cuisinier"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "reikland"
-        }
+        "id": "savoir",
+        "spec": "reikland"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "halfling"
-        }
+        "id": "langue",
+        "spec": "halfling"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "wildcard": {
-          "id": "savoir"
-        }
+        "id": "savoir",
+        "choix": true
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "gout"
-        }
+        "id": "sens-aiguise",
+        "spec": "gout"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "lire-ecrire"
-            }
+            "id": "lire-ecrire"
           },
           {
-            "wildcard": {
-              "id": "savoir-vivre"
-            },
-            "specOptions": [
-              "Citadins",
-              "Guilde"
+            "id": "savoir-vivre",
+            "choix": [
+              "citadins",
+              "guildes"
             ]
           }
         ]
@@ -3002,115 +2354,80 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "divertissement",
-          "spec": "narration"
-        }
+        "id": "divertissement",
+        "spec": "narration"
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "ref": {
-          "id": "intimidation"
-        }
+        "id": "intimidation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "khazalid"
-        }
+        "id": "langue",
+        "spec": "khazalid"
       },
       {
-        "wildcard": {
-          "id": "metier"
-        }
+        "id": "metier",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "resistance"
-        }
+        "id": "resistance"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "geologie"
-        }
+        "id": "savoir",
+        "spec": "geologie"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "metallurgie"
-        }
+        "id": "savoir",
+        "spec": "metallurgie"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "nains"
-        }
+        "id": "savoir",
+        "spec": "nains"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "costaud"
-        }
+        "id": "costaud"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "determine"
-            }
+            "id": "determine"
           },
           {
-            "ref": {
-              "id": "obstine"
-            }
+            "id": "obstine"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "lire-ecrire"
-            }
+            "id": "lire-ecrire"
           },
           {
-            "ref": {
-              "id": "impitoyable"
-            }
+            "id": "impitoyable"
           }
         ]
       },
       {
-        "ref": {
-          "id": "resistance-a-la-magie"
-        }
+        "id": "resistance-a-la-magie"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       }
     ],
     "source": {
@@ -3155,114 +2472,80 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "divertissement",
-          "spec": "narration"
-        }
+        "id": "divertissement",
+        "spec": "narration"
       },
       {
-        "ref": {
-          "id": "escalade"
-        }
+        "id": "escalade"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "khazalid"
-        }
+        "id": "langue",
+        "spec": "khazalid"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "norse"
-        }
+        "id": "langue",
+        "spec": "norse"
       },
       {
-        "wildcard": {
-          "id": "metier"
-        }
+        "id": "metier",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "resistance"
-        }
+        "id": "resistance"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "nains"
-        }
+        "id": "savoir",
+        "spec": "nains"
       },
       {
-        "wildcard": {
-          "id": "voile"
-        }
+        "id": "voile",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "costaud"
-        }
+        "id": "costaud"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "impitoyable"
-            }
+            "id": "impitoyable"
           },
           {
-            "ref": {
-              "id": "lire-ecrire"
-            }
+            "id": "lire-ecrire"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "noctambule"
-            }
+            "id": "noctambule"
           },
           {
-            "ref": {
-              "id": "obstine"
-            }
+            "id": "obstine"
           }
         ]
       },
       {
-        "ref": {
-          "id": "resistance-a-la-magie"
-        }
+        "id": "resistance-a-la-magie"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       }
     ],
     "source": {
@@ -3307,136 +2590,98 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "charme"
-        }
+        "id": "charme"
       },
       {
-        "wildcard": {
-          "id": "discretion"
-        }
+        "id": "discretion",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "focalisation",
-          "spec": "ombres"
-        }
+        "id": "focalisation",
+        "spec": "ombres"
       },
       {
-        "ref": {
-          "id": "esquive"
-        }
+        "id": "esquive"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "ghassalli"
-        }
+        "id": "langue",
+        "spec": "ghassalli"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "magick"
-        }
+        "id": "langue",
+        "spec": "magick"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "wastelander"
-        }
+        "id": "langue",
+        "spec": "wastelander"
       },
       {
-        "ref": {
-          "id": "marchandage"
-        }
+        "id": "marchandage"
       },
       {
-        "ref": {
-          "id": "ragot"
-        }
+        "id": "ragot"
       },
       {
-        "wildcard": {
-          "id": "representation"
-        }
+        "id": "representation",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "survie-en-exterieur"
-        }
+        "id": "survie-en-exterieur"
       }
     ],
     "talents": [
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "insignifiant"
-            }
+            "id": "insignifiant"
           },
           {
-            "ref": {
-              "id": "empreint-d-ulgu"
-            }
+            "id": "empreint-d-ulgu"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "chanceux"
-            }
+            "id": "chanceux"
           },
           {
-            "ref": {
-              "id": "imitation"
-            }
+            "id": "imitation"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "pecheur"
-            }
+            "id": "pecheur"
           },
           {
-            "ref": {
-              "id": "lire-ecrire"
-            }
+            "id": "lire-ecrire"
           }
         ]
       },
       {
-        "ref": {
-          "id": "petit"
-        }
+        "id": "petit"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "seconde-vue"
-            }
+            "id": "seconde-vue"
           },
           {
-            "ref": {
-              "id": "sixieme-sens"
-            }
+            "id": "sixieme-sens"
           }
         ]
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       }
     ],
     "source": {
@@ -3479,118 +2724,79 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "athletisme"
-        }
+        "id": "athletisme"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "bagarre"
-        }
+        "id": "corps-a-corps",
+        "spec": "bagarre"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "divertissement",
-          "spec": "narration"
-        }
+        "id": "divertissement",
+        "spec": "narration"
       },
       {
-        "ref": {
-          "id": "intimidation"
-        }
+        "id": "intimidation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "grumbarth"
-        }
+        "id": "langue",
+        "spec": "grumbarth"
       },
       {
-        "ref": {
-          "id": "orientation"
-        }
+        "id": "orientation"
       },
       {
-        "ref": {
-          "id": "pistage"
-        }
+        "id": "pistage"
       },
       {
-        "ref": {
-          "id": "resistance"
-        }
+        "id": "resistance"
       },
       {
-        "ref": {
-          "id": "resistance-a-l-alcool"
-        }
+        "id": "resistance-a-l-alcool"
       },
       {
-        "ref": {
-          "id": "savoir",
-          "spec": "ogres"
-        }
+        "id": "savoir",
+        "spec": "ogres"
       },
       {
-        "ref": {
-          "id": "survie-en-exterieur"
-        }
+        "id": "survie-en-exterieur"
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "combat-deloyal"
-        }
+        "id": "combat-deloyal"
       },
       {
-        "ref": {
-          "id": "massif"
-        }
+        "id": "massif"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "corruption"
-        }
+        "id": "resistance",
+        "spec": "corruption"
       },
       {
-        "ref": {
-          "id": "resistance",
-          "spec": "poisons-ingeres"
-        }
+        "id": "resistance",
+        "spec": "poisons-ingeres"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "tres-resistant"
-            }
+            "id": "tres-resistant"
           },
           {
-            "ref": {
-              "id": "tres-fort"
-            }
+            "id": "tres-fort"
           }
         ]
       },
       {
-        "ref": {
-          "id": "vice",
-          "spec": "nourriture"
-        }
+        "id": "vice",
+        "spec": "nourriture"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       }
     ],
     "source": {
@@ -3640,114 +2846,80 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "calme"
-        }
+        "id": "calme"
       },
       {
-        "ref": {
-          "id": "commandement"
-        }
+        "id": "commandement"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "divertissement",
-          "spec": "chant"
-        }
+        "id": "divertissement",
+        "spec": "chant"
       },
       {
-        "ref": {
-          "id": "evaluation"
-        }
+        "id": "evaluation"
       },
       {
-        "wildcard": {
-          "id": "musicien"
-        }
+        "id": "musicien",
+        "choix": true
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "eltharin"
-        }
+        "id": "langue",
+        "spec": "eltharin"
       },
       {
-        "ref": {
-          "id": "natation"
-        }
+        "id": "natation"
       },
       {
-        "ref": {
-          "id": "orientation"
-        }
+        "id": "orientation"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "projectiles",
-          "spec": "arc"
-        }
+        "id": "projectiles",
+        "spec": "arc"
       },
       {
-        "wildcard": {
-          "id": "voile"
-        }
+        "id": "voile",
+        "choix": true
       }
     ],
     "talents": [
       {
-        "ref": {
-          "id": "lire-ecrire"
-        }
+        "id": "lire-ecrire"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "imperturbable"
-            }
+            "id": "imperturbable"
           },
           {
-            "ref": {
-              "id": "perspicace"
-            }
+            "id": "perspicace"
           }
         ]
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "vue"
-        }
+        "id": "sens-aiguise",
+        "spec": "vue"
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "seconde-vue"
-            }
+            "id": "seconde-vue"
           },
           {
-            "ref": {
-              "id": "sixieme-sens"
-            }
+            "id": "sixieme-sens"
           }
         ]
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       }
     ],
     "source": {
@@ -3792,115 +2964,79 @@
     },
     "skills": [
       {
-        "ref": {
-          "id": "athletisme"
-        }
+        "id": "athletisme"
       },
       {
-        "ref": {
-          "id": "corps-a-corps",
-          "spec": "base"
-        }
+        "id": "corps-a-corps",
+        "spec": "base"
       },
       {
-        "ref": {
-          "id": "discretion",
-          "spec": "rurale"
-        }
+        "id": "discretion",
+        "spec": "rurale"
       },
       {
-        "ref": {
-          "id": "divertissement",
-          "spec": "chant"
-        }
+        "id": "divertissement",
+        "spec": "chant"
       },
       {
-        "ref": {
-          "id": "escalade"
-        }
+        "id": "escalade"
       },
       {
-        "ref": {
-          "id": "intimidation"
-        }
+        "id": "intimidation"
       },
       {
-        "ref": {
-          "id": "langue",
-          "spec": "eltharin"
-        }
+        "id": "langue",
+        "spec": "eltharin"
       },
       {
-        "ref": {
-          "id": "perception"
-        }
+        "id": "perception"
       },
       {
-        "ref": {
-          "id": "pistage"
-        }
+        "id": "pistage"
       },
       {
-        "ref": {
-          "id": "projectiles",
-          "spec": "arc"
-        }
+        "id": "projectiles",
+        "spec": "arc"
       },
       {
-        "ref": {
-          "id": "resistance"
-        }
+        "id": "resistance"
       },
       {
-        "ref": {
-          "id": "survie-en-exterieur"
-        }
+        "id": "survie-en-exterieur"
       }
     ],
     "talents": [
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "dur-a-cuire"
-            }
+            "id": "dur-a-cuire"
           },
           {
-            "ref": {
-              "id": "seconde-vue"
-            }
+            "id": "seconde-vue"
           }
         ]
       },
       {
-        "choice": [
+        "pick": 1,
+        "of": [
           {
-            "ref": {
-              "id": "lire-ecrire"
-            }
+            "id": "lire-ecrire"
           },
           {
-            "ref": {
-              "id": "tres-resistant"
-            }
+            "id": "tres-resistant"
           }
         ]
       },
       {
-        "ref": {
-          "id": "nomade"
-        }
+        "id": "nomade"
       },
       {
-        "ref": {
-          "id": "sens-aiguise",
-          "spec": "vue"
-        }
+        "id": "sens-aiguise",
+        "spec": "vue"
       },
       {
-        "ref": {
-          "id": "vision-nocturne"
-        }
+        "id": "vision-nocturne"
       }
     ],
     "source": {

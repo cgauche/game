@@ -263,20 +263,24 @@ export function CombatField(
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * 3) skills/talents d'avancement — AdvancementRef[] (espèce / niveau de carrière)
- *    union { ref } | { wildcard, specOptions? } | { choice[] } | { random }
+ *    union (Ref & { choix? }) | { pick, of[] } | { random }
  * ──────────────────────────────────────────────────────────────────────────── */
 
-type AdvMode = 'ref' | 'wildcard' | 'choice' | 'random';
-const ADV_MODE_LABEL: Record<AdvMode, string> = { ref: 'Réf.', wildcard: 'Joker (Au choix)', choice: 'Choix (A ou B)', random: 'Aléatoire (N)' };
-const advMode = (a: AdvancementRef): AdvMode => ('ref' in a ? 'ref' : 'wildcard' in a ? 'wildcard' : 'choice' in a ? 'choice' : 'random');
+type AdvMode = 'ref' | 'choix' | 'pick' | 'random';
+const ADV_MODE_LABEL: Record<AdvMode, string> = { ref: 'Réf.', choix: 'Joker (Au choix)', pick: 'Choix (A ou B)', random: 'Aléatoire (N)' };
+const advMode = (a: AdvancementRef): AdvMode =>
+  'id' in a ? (a.choix == null ? 'ref' : 'choix') : 'pick' in a ? 'pick' : 'random';
+
+/** Référence PORTÉE par une entrée (celle qui se transpose d'un mode à l'autre). */
+const advRef = (a: AdvancementRef): Ref => ('id' in a ? { id: a.id, ...(a.spec ? { spec: a.spec } : {}) } : { id: '' });
 
 /** Convertit une entrée vers un autre mode en gardant ce qui se transpose (la réf courante). */
 function advTo(a: AdvancementRef, mode: AdvMode): AdvancementRef {
-  const cur: Ref = 'ref' in a ? a.ref : 'wildcard' in a ? a.wildcard : { id: '' };
+  const cur = advRef(a);
   switch (mode) {
-    case 'ref': return { ref: cur };
-    case 'wildcard': return { wildcard: cur };
-    case 'choice': return { choice: 'choice' in a ? a.choice : [{ ref: cur }] };
+    case 'ref': return cur;
+    case 'choix': return { id: cur.id, choix: true };
+    case 'pick': return { pick: 1, of: 'pick' in a ? a.of : [cur] };
     case 'random': return { random: 'random' in a ? a.random : 1 };
   }
 }
@@ -302,19 +306,19 @@ export function AdvancementRefField(
               </select>
               <button className="btn small danger" title="Retirer l'emplacement" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
             </div>
-            {'ref' in a && (
-              <RefField cfg={refCfg} fieldKey="réf" value={a.ref} onChange={(v) => set(i, { ref: (v as Ref) ?? { id: '' } })} />
+            {mode === 'ref' && (
+              <RefField cfg={refCfg} fieldKey="réf" value={advRef(a)} onChange={(v) => set(i, (v as Ref) ?? { id: '' })} />
             )}
-            {'wildcard' in a && (
+            {mode === 'choix' && 'id' in a && (
               <>
-                <RefField cfg={refCfg} fieldKey="joker" value={a.wildcard} onChange={(v) => set(i, { wildcard: (v as Ref) ?? { id: '' }, specOptions: a.specOptions })} />
-                <label className="dr">specs restreintes (CSV — vide = « Au choix »)
-                  <input value={(a.specOptions ?? []).join(', ')} onChange={(e) => { const opts = e.target.value.split(',').map((s) => s.trim()).filter(Boolean); set(i, { wildcard: a.wildcard, specOptions: opts.length ? opts : undefined }); }} />
+                <RefField cfg={{ ds, single: true as const }} fieldKey="joker" value={{ id: a.id }} onChange={(v) => set(i, { id: ((v as Ref) ?? { id: '' }).id, choix: a.choix ?? true })} />
+                <label className="dr">specs restreintes (CSV d'ids — vide = « Au choix »)
+                  <input value={Array.isArray(a.choix) ? a.choix.join(', ') : ''} onChange={(e) => { const opts = e.target.value.split(',').map((s) => s.trim()).filter(Boolean); set(i, { id: a.id, choix: opts.length ? opts : true }); }} />
                 </label>
               </>
             )}
-            {'choice' in a && (
-              <ChoiceList ds={ds} value={a.choice} onChange={(choice) => set(i, { choice })} />
+            {'pick' in a && (
+              <ChoiceList ds={ds} value={a.of} onChange={(of) => set(i, { pick: a.pick, of })} />
             )}
             {'random' in a && (
               <label className="dr">nombre aléatoire<NumberField variant="nu" label="nombre aléatoire" min={1} value={a.random} onChange={(random) => set(i, { random })} /></label>
@@ -322,12 +326,12 @@ export function AdvancementRefField(
           </div>
         );
       })}
-      <button className="btn small" onClick={() => onChange([...list, { ref: { id: '' } }])}>+ Emplacement</button>
+      <button className="btn small" onClick={() => onChange([...list, { id: '' }])}>+ Emplacement</button>
     </div>
   );
 }
 
-/** Branches d'un `{ choice: AdvancementRef[] }` — chaque branche est elle-même un AdvancementRef
+/** Branches d'un `{ pick, of: AdvancementRef[] }` — chaque branche est elle-même un AdvancementRef
  *  (récursif : on réutilise `AdvancementRefField` borné aux modes ref/joker pour rester lisible). */
 function ChoiceList({ ds, value, onChange }: { ds: 'skills' | 'talents'; value: AdvancementRef[]; onChange: (v: AdvancementRef[]) => void }) {
   return (

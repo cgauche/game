@@ -717,10 +717,10 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.137-145, l.183) → `localisation`, `FLOW_VERBS`, `useAttackJetProps`, `FLOWS`, `createCombatSlice`, `previewDefense`, `rangedDefenseModes`, `applyHit`, `applyAttackResult`, `applyCast` — `src/data/localisation.json`, `src/engine/combat.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/flowVerbs.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
 - `LDB 14` (l.3, l.4, l.6-7, l.9) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `isFumble`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique`, `vous-touchez-un-allie-au-hasard-ou-vous-meme-sonne`, `incident-de-tir-l-arme-explose-dans-votre-main-degats-au-bras-principal-arme-detruite`, `combat-frappe-mortelle`, +19 — `src/data/oups.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/oups.ts`, `src/state/combatFlow.ts`, +4 fichiers
-- `LDB 18` (l.17, l.30, l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `isHealable`, `blessure-spectaculaire`, `HealMode`, `outOfCombatUpkeep`, `actBlockReason`, `availableHealModes`, `MedicState`, `coupure-mineure`, +144 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +25 fichiers
+- `LDB 18` (l.17, l.30, l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `blessure-spectaculaire`, `isHealable`, `HealMode`, `outOfCombatUpkeep`, `actBlockReason`, `MedicState`, `availableHealModes`, `coupure-mineure`, +144 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +25 fichiers
 - `LDB 63` (l.29-32) → `cuir-souple`, `cuir-bouilli`, `mailles`, `plate`, `GameOp`, `PendingDeviation`, `ActiveEffect`, `wornArmourPoints`, `deviatableArmourAt`, `damageArmour`, +24 — `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, +3 fichiers
 - `AA 7` (l.25-79, l.82-104) → `StructureCritEntry`, `aa-tete-01`, `aa-tete-04`, `aa-tete-07`, `aa-tete-10`, `aa-tete-16`, `CritEscalation`, `useAttackJetProps`, `aa-tete-21`, `resolveAACritical`, +38 — `src/data/aa-criticals.json`, `src/data/criticals.ts`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/structureCriticals.ts`, +4 fichiers
-- `EDO 11` (l.237-240) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
+- `EDO 11` (l.237-240) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +3 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`, `src/data/trappings.json`
 - sans code : `AU1 4` (l.18), `NADJ 8` (l.263)
 
 ---
@@ -1660,7 +1660,7 @@ Note (LDB 15 l.72) : dans la plupart des cas un simple Test d'**Athlétisme** (o
 **Voir aussi** : Mouvement & Course · Désengagement & Fuite · États (À Terre) · Athlétisme / Escalade (compétences) · Talent Grimpeur
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.53-57, l.72-76, l.80-84) → `FallPlan`, `scene`, `ClimbPlan`, `FallModal`, `planJump`, `fall-choice`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, `fall-roll`, +70 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs-scenes/effets.ts`, +32 fichiers
+- `LDB 15` (l.53-57, l.72-76, l.80-84) → `FallPlan`, `scene`, `ClimbPlan`, `FallModal`, `planJump`, `fall-choice`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, `fall-roll`, +73 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs-scenes/effets.ts`, +32 fichiers
 
 ---
 
@@ -1750,7 +1750,7 @@ Un participant dont la **Caractéristique de Mouvement (M)** est supérieure gag
 **Voir aussi** : Désengagement et fuite (Attaque gratuite, +1 Avantage, Calme / Brisé) ; Mouvement & Course (Tableau des Mouvements, M en mètres) ; Saut et Chute ; Tests opposés & Degrés de Réussite (DR).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.88, l.90, l.92, l.93, l.94, l.96, l.98-102, l.106, l.108) → `FallPlan`, `scene`, `assourdi`, `FallModal`, `fall-choice`, `planJump`, `fall-roll`, `a-terre`, `pursuitPolicySchema`, `PursuitSpec`, +29 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/effets.ts`, +19 fichiers
+- `LDB 15` (l.88, l.90, l.92, l.93, l.94, l.96, l.98-102, l.106, l.108) → `FallPlan`, `scene`, `assourdi`, `FallModal`, `fall-choice`, `planJump`, `fall-roll`, `pursuitFoeSchema`, `a-terre`, `pursuitPolicySchema`, +32 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/effets.ts`, +19 fichiers
 - sans code : `NADJ 6` (l.150)
 
 ---
@@ -3026,7 +3026,7 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 - `LDB 77` (l.7-68) → `humain`, `nain`, `halfling`, `elfe-haut-et-sylvain`, `ogre` — `src/data/creatures.json`
 - `LDB 85` (l.9-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, +171 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +34 fichiers
 - `ZI 14` (l.1013-1035, l.1037-1087) → `ethere`, `fouissement` — `src/data/traits.json`
-- `EDO 11` (l.172-243) → `gonflement`, `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, +3 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/symptoms.json`, `src/data/traits.json`
+- `EDO 11` (l.172-243) → `gonflement`, `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, +4 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/symptoms.json`, `src/data/traits.json`, `src/data/trappings.json`
 - `MSRC 15` (l.119-128, l.133-135, l.138-163) → `useTestJetProps`, `capriciousDR`, `PendingTest`, `PerSL`, `openSkillTest`, `FLOWS`, `aquatique`, `s-accrocher-pour-se-nourrir`, `capricieux`, `engloutir`, +5 — `src/data/creatures.json`, `src/data/traits.json`, `src/engine/ops.ts`, `src/engine/social.ts`, `src/state/combatEffects.ts`, `src/state/pendings.ts`, +2 fichiers
 - sans code : `LDB 76` (l.9), `EDO 1` (l.271-290), `EDO 7` (l.320-348), `EDO 9` (l.513-570)
 
@@ -3351,7 +3351,7 @@ Les Dégâts dus au **Feu** sont notés à part et **jamais** régénérés. —
 - `LDB 85` (l.38-39, l.95-98, l.133-134, l.172-173, l.182-183, l.187, l.195, l.198-199, l.256-257, l.268, l.277-278, l.293-302) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `StatblockEditor`, +134 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/characteristics.ts`, +28 fichiers
 - `ZI 1` (l.79-80) → `bon-baiser-d-la-fosse-noire`, `nuee-d-escampette`, `toile-surprise`, `grand-cerf`, `l-ombre-du-fleuve`, `arachnarok` — `src/data/creatures.json`, `src/data/spells.json`
 - `ZI 14` (l.1024, l.1025-1026, l.1045) → `fouissement` — `src/data/traits.json`
-- `EDO 11` (l.224-226) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
+- `EDO 11` (l.224-226) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +3 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`, `src/data/trappings.json`
 
 ---
 

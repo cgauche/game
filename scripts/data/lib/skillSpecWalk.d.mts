@@ -1,4 +1,4 @@
-export type SkillRefNode = { id: string; spec?: string };
+export type SkillRefNode = { id: string; spec?: string; choix?: true | string[] };
 export type BookLike = { id: string; dir?: string | null; extractionDir?: string | null };
 
 export function norm(s: string): string;

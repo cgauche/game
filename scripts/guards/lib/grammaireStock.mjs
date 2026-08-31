@@ -86,7 +86,7 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs-scenes/worldmap.ts:portProfileSchema|alias|ref': e('Profil de port désignant son entité par une enveloppe `ref`.', L3),
   'src/data/schemas/defs/creatures.ts:skillRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('Réf de bestiaire re-tapée `{id, spec, value}` (`STRUCTURES_REDECLARATIONS` creatures.ts, signature `id,spec,value`).', L3),
   'src/data/schemas/defs/trappings.ts:qualityRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('`qualityRefSchema` re-déclaré localement dans le catalogue des dotations — la vue commune vit dans `grammaire/reference.ts`.', L3),
-  'src/data/schemas/defs/domains.ts:doc.windModifiers.cancelledBy.requiresSkill|redeclaration|advancementRefSchema|refSchema {id,spec}': e('Réf `{id, spec}` re-tapée sous `requiresSkill` (`STRUCTURES_REDECLARATIONS` domains.ts, statut `cible`, commun `refSchema`).', L3),
+  'src/data/schemas/defs/domains.ts:doc.windModifiers.cancelledBy.requiresSkill|redeclaration|refSchema {id,spec}': e('Réf `{id, spec}` re-tapée sous `requiresSkill` (`STRUCTURES_REDECLARATIONS` domains.ts, statut `cible`, commun `refSchema`).', L3),
 
   // ── Formes de VALEUR re-tapées (monnaie, dé, cellule de grille) ───────────────────────────────
   'src/data/schemas/defs/creatures.ts:moneySchema|alias|bronze': e('Monnaie `{gold, silver, bronze}` re-tapée dans le bestiaire (`STRUCTURES_REDECLARATIONS` creatures.ts, concept monnaie).', L4),

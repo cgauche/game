@@ -548,7 +548,7 @@ Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **ret
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), section Blessures Critiques
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.68, l.70, l.74-75, l.120, l.150, l.151, l.152) → `critEscalationSchema`, `blessure-spectaculaire`, `HealMode`, `actBlockReason`, `availableHealModes`, `MedicState`, `coupure-mineure`, `bestHealerFor`, `coup-a-l-il`, `CritEscalation`, +98 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, +12 fichiers
+- `LDB 18` (l.68, l.70, l.74-75, l.120, l.150, l.151, l.152) → `critEscalationSchema`, `blessure-spectaculaire`, `HealMode`, `actBlockReason`, `MedicState`, `availableHealModes`, `coupure-mineure`, `bestHealerFor`, `coup-a-l-il`, `CritEscalation`, +98 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, +12 fichiers
 
 ---
 

@@ -4,6 +4,7 @@
 // raisons d'exclusion : en-tête de `scripts/docs/build-field-consumers.mts`.
 import * as valeurs from '../../../src/data/schemas/grammaire/valeurs'
 import * as reference from '../../../src/data/schemas/grammaire/reference'
+import { avancement } from '../../../src/data/schemas/grammaire/avancement'
 import * as mecanique from '../../../src/data/schemas/grammaire/mecanique'
 import { critEscalationSchema, amputationSchema } from '../../../src/data/schemas/defs/criticals'
 import {
@@ -23,7 +24,7 @@ export const TARGETS = [
   { schema: valeurs.castingNumberModSchema, type: 'CastingNumberMod', home: 'src/engine/castingNumber.ts' },
   { schema: valeurs.countSpecSchema, type: 'CountSpec', home: 'src/data/index.ts' },
   { schema: reference.trappingRefSchema, type: 'TrappingRef', home: 'src/data/index.ts' },
-  { schema: reference.advancementRefSchema, type: 'AdvancementRef', home: 'src/data/index.ts' },
+  { schema: avancement('skill'), type: 'AdvancementRef', home: 'src/data/index.ts' },
   { schema: valeurs.entityAppearanceSchema, type: 'EntityAppearance', home: 'src/engine/authoringAppearance.ts' },
   { schema: mecanique.flowTestSchema, type: 'FlowTest', home: 'src/engine/flowCore.ts' },
   { schema: mecanique.travelTableEntrySchema, type: 'TravelTableEntry', home: 'src/engine/travelTables.ts' },

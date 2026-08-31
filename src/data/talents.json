@@ -472,6 +472,15 @@
       {
         "id": "regions-boisees",
         "label": "Régions boisées"
+      },
+      {
+        "id": "montagnes",
+        "label": "Montagnes",
+        "source": {
+          "book": "archives-de-l-empire-2",
+          "page": 36,
+          "note": "ADE II 02 l.919"
+        }
       }
     ],
     "rand": null,
@@ -3137,6 +3146,15 @@
       {
         "id": "vigneron",
         "label": "Vigneron"
+      },
+      {
+        "id": "fermiers",
+        "label": "Fermiers",
+        "source": {
+          "book": "archives-de-l-empire-1",
+          "page": 32,
+          "note": "ADE I 02 l.267"
+        }
       }
     ],
     "rand": 61,
@@ -4291,6 +4309,42 @@
       {
         "id": "vampires",
         "label": "Vampires"
+      },
+      {
+        "id": "tout",
+        "label": "Tout",
+        "source": {
+          "book": "livre-de-base",
+          "page": 76,
+          "note": "LDB 08 l.1468"
+        }
+      },
+      {
+        "id": "chaos",
+        "label": "Chaos",
+        "source": {
+          "book": "aux-armes",
+          "page": 36,
+          "note": "AA 03 l.420"
+        }
+      },
+      {
+        "id": "cavalerie",
+        "label": "Cavalerie",
+        "source": {
+          "book": "aux-armes",
+          "page": 46,
+          "note": "AA 04 l.204"
+        }
+      },
+      {
+        "id": "grandes-betes",
+        "label": "Grandes bêtes",
+        "source": {
+          "book": "archives-de-l-empire-2",
+          "page": 36,
+          "note": "ADE II 02 l.927"
+        }
       }
     ],
     "rand": null,
@@ -4618,6 +4672,33 @@
       {
         "id": "soldats",
         "label": "Soldats"
+      },
+      {
+        "id": "mercenaires",
+        "label": "Mercenaires",
+        "source": {
+          "book": "aux-armes",
+          "page": 44,
+          "note": "AA 04 l.119"
+        }
+      },
+      {
+        "id": "minus",
+        "label": "Minus",
+        "source": {
+          "book": "archives-de-l-empire-2",
+          "page": 35,
+          "note": "ADE II 02 l.886"
+        }
+      },
+      {
+        "id": "citadins",
+        "label": "Citadins",
+        "source": {
+          "book": "archives-de-l-empire-1",
+          "page": 32,
+          "note": "ADE I 02 l.276"
+        }
       }
     ],
     "rand": null,

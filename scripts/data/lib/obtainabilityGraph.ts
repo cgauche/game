@@ -51,10 +51,9 @@ export function computeObtainability(root: string): ObtainabilityResult {
   let sawRandomEntry = false;
   const walkAdvancement = (entries: AdvancementRef[], srcTag: string) => {
     for (const e of entries) {
-      if ('choice' in e) walkAdvancement(e.choice, srcTag);
+      if ('pick' in e) walkAdvancement(e.of, srcTag);
       else if ('random' in e) sawRandomEntry = true;
-      else if ('ref' in e) addTalentSource(e.ref.id, srcTag);
-      else if ('wildcard' in e) addTalentSource(e.wildcard.id, srcTag);
+      else addTalentSource(e.id, srcTag);
     }
   };
   for (const sp of species) walkAdvancement(sp.talents, `espece:${sp.id}`);
@@ -98,12 +97,11 @@ export function computeObtainability(root: string): ObtainabilityResult {
     let anyUnspecialized = false;
     const scanAdvancement = (entries: AdvancementRef[]) => {
       for (const e of entries) {
-        if ('choice' in e) scanAdvancement(e.choice);
-        else if ('ref' in e && e.ref.id === talentId) { if (e.ref.spec) specs.add(e.ref.spec); else anyUnspecialized = true; }
-        else if ('wildcard' in e && e.wildcard.id === talentId) {
-          if (e.specOptions?.length) for (const s of e.specOptions) specs.add(s);
-          else anyUnspecialized = true;
-        }
+        if ('pick' in e) { scanAdvancement(e.of); continue; }
+        if (!('id' in e) || e.id !== talentId) continue;
+        if (Array.isArray(e.choix)) for (const s of e.choix) specs.add(s);
+        else if (e.choix == null && e.spec) specs.add(e.spec);
+        else anyUnspecialized = true;
       }
     };
     for (const sp of species) scanAdvancement(sp.talents);

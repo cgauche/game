@@ -1,10 +1,10 @@
 /**
  * Schéma de `careerLevels.json` — dérivé du contenu RÉEL (432 entrées, script d'inventaire) et de
- * `CareerLevelData` (`src/data/index.ts`). `skills`/`talents` = `AdvancementRef[]`
- * (`src/data/index.ts` : {ref}/{wildcard}+specOptions/{choice}/{random}), `trappings` =
- * `TrappingRef[]`, `characteristics` = `CharKey[]`. Ces 3 formes (Ref/TrappingRef/AdvancementRef)
- * et l'énum `CharKey` vivent dans la grammaire (`grammaire/reference.ts`, `grammaire/valeurs.ts`),
- * partagées avec `species.ts`/`classes.ts`.
+ * `CareerLevelData` (`src/data/index.ts`). `skills`/`talents` = emplacements d'avancement
+ * (`grammaire/avancement.ts` : référence à spécialisation facultative, `{pick, of}`, `{random}`),
+ * `trappings` = `TrappingRef[]`, `characteristics` = `CharKey[]`. Ces formes et l'énum `CharKey`
+ * vivent dans la grammaire (`grammaire/avancement.ts`, `grammaire/reference.ts`,
+ * `grammaire/valeurs.ts`), partagées avec `species.ts`/`classes.ts`.
  *
  * `id` (composite `<career>-<level>`, 432/432 distincts), `label`, `labelF` (forme féminine MAISON —
  * le LDB n'imprime que le masculin ; omise = forme épicène) et `source` (dérivée de `CareerData.source`,
@@ -13,7 +13,8 @@
  */
 import { z } from 'zod';
 import { charKeySchema } from '../grammaire/valeurs';
-import { advancementRefSchema, trappingRefSchema } from '../grammaire/reference';
+import { trappingRefSchema } from '../grammaire/reference';
+import { avancement } from '../grammaire/avancement';
 import { document } from '../grammaire/document';
 
 export const file = 'careerLevels.json';
@@ -26,8 +27,8 @@ const doc = document(
     /** `id` de la Carrière (`CareerData.id`). */
     career: z.string(),
     level: z.number(),
-    skills: z.array(advancementRefSchema),
-    talents: z.array(advancementRefSchema),
+    skills: z.array(avancement('skill')),
+    talents: z.array(avancement('talent')),
     trappings: z.array(trappingRefSchema),
     characteristics: z.array(charKeySchema),
     /** Échelon de statut (« Bronze/Argent/Or N ») — VERBATIM du livre : chaîne libre, 432/432 entrées

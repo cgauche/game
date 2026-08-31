@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildFieldConsumersMd } from '../../scripts/docs/build-field-consumers.mjs';
-import { TARGETS } from '../../scripts/guards/lib/fieldConsumerTargets.mjs';
+import { TARGETS, fieldsOf } from '../../scripts/guards/lib/fieldConsumerTargets.mjs';
 
 /**
  * Garde du rapport « consommateurs par champ » (#903 — `scripts/docs/build-field-consumers.mts`,
@@ -73,6 +73,28 @@ describe('MORSURE du diagnostic de fraîcheur — chaque écart se dit en clair'
   });
   it('régénéré PRÉFIXE du committé : la première ligne EN TROP, jamais « ligne 0 »', () => {
     expect(ecartDoc('a\nb', A)).toBe('ligne 3 EN TROP au committé : "c"');
+  });
+});
+
+/**
+ * CONTRAT POSITIF sur le PÉRIMÈTRE lui-même. `fieldsOf` rend `[]` — sans lever — pour un nœud qui
+ * n'expose ni `.shape` ni `.options` : un export de schéma renommé/supprimé laisse la cible pointer
+ * `undefined`, le rapport perd le type EN SILENCE et le test de fraîcheur reste VERT (le doc régénéré
+ * et le doc committé s'accordent sur la même table vide). Mesuré le 2026-08-31 sur `AdvancementRef`,
+ * dont la cible visait un `advancementRefSchema` disparu au profit d'`avancement(type)`.
+ */
+describe('périmètre de TARGETS — aucune cible ne rend zéro champ', () => {
+  it('chaque cible expose au moins un champ (une cible muette = un type perdu du rapport)', () => {
+    const cibles = TARGETS as readonly { schema?: unknown; cles?: readonly string[]; type: string }[];
+    const muettes = cibles.filter((t) => fieldsOf(t.schema ?? t.cles).length === 0).map((t) => t.type);
+    expect(
+      muettes,
+      'cible(s) sans champ : le schéma visé a disparu/changé de forme, ou le nœud est scellé (fournir `cles:`)',
+    ).toEqual([]);
+  });
+
+  it('la garde n’est pas vacante — une cible au schéma disparu est DÉTECTÉE (contre-épreuve)', () => {
+    expect(fieldsOf(undefined)).toEqual([]);
   });
 });
 

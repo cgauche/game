@@ -6,7 +6,7 @@
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 0 chapitre(s) couverts avec des lignes non pinées. Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
-**Sens A — code → Atlas (14 autres livres)** : 7 chapitre(s)-livre cités par le code & absents de l'Atlas · 10 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
+**Sens A — code → Atlas (14 autres livres)** : 8 chapitre(s)-livre cités par le code & absents de l'Atlas · 10 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
 **Sens B — Atlas → code (LDB)** : 3 marqueur(s) « (non implémenté) » · 1 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 12 · 11 crédités par une source folio de `src/data`).
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
@@ -21,7 +21,7 @@ _Aucune._
 
 | Livre | Trous durs (chapitres) | Chapitres à lignes non pinées | Réfs sans chapitre |
 |---|---|---|---|
-| ADE I | 0 | 1 | 0 |
+| ADE I | 1 | 1 | 0 |
 | ADE II | 0 | 1 | 0 |
 | EDO | 1 | 2 | 0 |
 | EDOC | 0 | 1 | 0 |
@@ -34,8 +34,12 @@ _Aucune._
 
 ## A1-AUTRES — Chapitres appelés par le CODE (autres livres), ABSENTS de l'Atlas (trous durs)
 
+### ADE I 2 — 2 réf(s) code, 0 dans l'Atlas
+- `src/data/talents.json:3156` (l.267) — "note": "ADE I 02 l.267"
+- `src/data/talents.json:4700` (l.276) — "note": "ADE I 02 l.276"
+
 ### EDO 10 — 1 réf(s) code, 0 dans l'Atlas
-- `src/data/skills.json:1854` (l.736) — "note": "EDO 10 l.736"
+- `src/data/skills.json:1858` (l.736) — "note": "EDO 10 l.736"
 
 ### MCLB 2 — 4 réf(s) code, 0 dans l'Atlas
 - `src/data/skills.json:962` (l.1844) — "note": "MCLB 02 l.1844"
@@ -53,12 +57,12 @@ _Aucune._
 - `src/data/schemas/defs-scenes/scene.ts:104` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
 - `src/state/scene.ts:124` (l.72) — *  Le patron est AUTHORÉ dans la source, pas inventé : `NADJ 04 l.72` — « Elle jouera une partie de
 - `src/state/tavern-npc-a-fiche.test.ts:6` (l.72) — *  · `NADJ 04 l.72` — « Elle jouera une partie de L'Impératrice écarlate avec quiconque lui propose,
-- `src/state/tavern-npc-a-fiche.test.ts:96` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
+- `src/state/tavern-npc-a-fiche.test.ts:97` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
 
 ### NADJ 14 — 5 réf(s) code, 0 dans l'Atlas
 - `src/data/index.ts:804` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
 - `src/data/reglesOptionnelles.json:472` (l.5) — "ref": "NADJ 14 l.5",
-- `src/data/schemas/defs/species.ts:54` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
+- `src/data/schemas/defs/species.ts:56` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
 - `src/engine/creation.test.ts:127` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
 
 ### PDT 8 — 1 réf(s) code, 0 dans l'Atlas

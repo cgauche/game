@@ -9,6 +9,8 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useGame } from './store';
 import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, parseSave, snapshotSave, takeObsoleteNotice, SAVE_VERSION, type SaveGame } from './saves';
 import { rule, setRule, loadRuleOverrides } from '../engine/policy';
+import { talents, careerLevels, specResolves } from '../data/index';
+import { talentSlots, slotCovers } from '../engine/careerSlots';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -119,13 +121,23 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: SAVE_VERSION - 1 })).toBeNull();
     expect(parseSave({ ...cur, version: 1 })).toBeNull();
   });
-  it('la forme persistée COURANTE RÉFÉRENCE les personnes (L2 #1548) : 33, et 32 se jette', () => {
-    // 33 = geste modèle : le document de scène (`scene`) ne porte plus AUCUNE stat de pseudo-PNJ —
-    // `medicalAid` désigne son soigneur par `entityId` seul, et les adversaires de `startPursuit` sont
-    // des références de vivant. Une save de 32 rouvrirait une infirmerie sans fiche : elle se jette
-    // (politique 2, `saves.ts`).
-    expect(SAVE_VERSION).toBe(33);
-    expect(parseSave({ ...cur, version: 32 })).toBeNull();
+  it('la forme persistée COURANTE parle le VOCABULAIRE DE SPÉC en id (L2 #1548) : 34, et 33 se jette', () => {
+    // 34 = l'avancement porte l'id de catalogue là où il portait le libellé imprimé (« Érudit » →
+    // `erudits`). `slotCovers` apparie par égalité stricte : un héros de 33 conserverait un Talent qui
+    // ne couvre plus son emplacement (avance perdue en silence). Sonde ci-dessous — le TALENT PERSISTÉ
+    // est la donnée dont la forme a changé, pas le fichier de save.
+    expect(SAVE_VERSION).toBe(34);
+    expect(parseSave({ ...cur, version: 33 })).toBeNull();
+  });
+
+  it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
+    const sv = talents.find((t) => t.id === 'savoir-vivre')!;
+    expect(specResolves(sv, 'Érudit'), 'valeur PERSISTÉE par un héros de 33').toBe(false);
+    expect(specResolves(sv, 'erudits')).toBe(true);
+    const slots = talentSlots(careerLevels.filter((l) => l.career === 'apothicaire'), 1);
+    const slot = slots.find((s) => s.options.some((o) => o.optionId === 'savoir-vivre'))!;
+    expect(slotCovers(slot, 'savoir-vivre', 'Érudit')).toBe(false);
+    expect(slotCovers(slot, 'savoir-vivre', 'erudits')).toBe(true);
   });
 
   /**

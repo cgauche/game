@@ -16,6 +16,7 @@ import { listerDocuments, scannerDonnees } from '../../scripts/docs/lib/structur
 import { choixDeclares, introspecterDefs } from '../../scripts/docs/lib/zod-introspect.mjs';
 import { ANGLES_MORTS_SLOTS, MANDAT_SLOTS } from '../../scripts/docs/lib/structures-lexique.mjs';
 import { SLOTS_INTERNES, SLOTS_SANS_DECLARATION } from '../../scripts/guards/lib/slotsStock.mjs';
+import { champsAveugles, ecartsDeStock, lignesMalQualifiees } from '../../scripts/guards/lib/stock.mjs';
 
 /**
  * EN-TÊTE STRUCTURÉ de la garde (#1475).
@@ -50,6 +51,39 @@ const SLOTS = slotsDeclares(DEFS);
 const DECLARES = introspecterDefs(DEFS);
 const scan = scannerDonnees(ROOT, new Map(DECLARES.map((d) => [d.file, d.famille])), choixDeclares(DEFS));
 const DOCUMENTS = new Map(listerDocuments(ROOT).map((d) => [d.nom, JSON.parse(readFileSync(join(ROOT, d.chemin), 'utf8')) as unknown]));
+
+/** Clé de la dette d'ADOPTION : le couple (dataset, champ) ET son compte d'occurrences — une
+ *  occurrence de plus est une entrée neuve, pas une ligne qui bouge. */
+const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =>
+  `${c.dataset} | ${c.champ} | ${c.occurrences}`;
+
+/**
+ * Plafond du cliquet — const du TEST, jamais dans `slotsStock.mjs` (même patron que `MANUAL_DOCS_MAX`,
+ * `src/data/manual-docs-ratchet.test.ts`) : sans lui, le chemin le plus court pour « solder » une
+ * dette neuve resterait d'ajouter une ligne au stock, CI verte. Il ne descend qu'en faisant ADOPTER
+ * la fabrique de référence par le schéma du champ (L2/L3, #1473).
+ *
+ * État COURANT : 338, ajusté au fil des lots #1467 L1b puis L2 #1548 (git porte le détail des crans).
+ * Dernier cran (L2 #1548 commit 4, 341 → 338) : le champ d'AVANCEMENT quitte ses graphies
+ * enveloppantes — 7 lignes s'éteignent (`careerLevels` : `ref`, `specOptions`, `wildcard` ;
+ * `species` : `choice`, `ref`, `specOptions`, `wildcard` — la 7ᵉ est `species.choice`, dont
+ * l'enveloppe de choix devient `choix`), 4 naissent (`careerLevels.choix`/`of`,
+ * `species.choix`/`of`) : 7 mortes − 4 nées = les 3 crans. `careerLevels.choice` demeure, son compte
+ * seul bouge (38 → 27). Les références vivent maintenant SOUS le champ métier `skills`/`talents`,
+ * dont la ligne demeure : `champDuPath` ne voit pas l'adoption à travers
+ * l'union de `avancement()`, angle mort déjà déclaré ci-dessus. Une ligne voit son COMPTE bouger sans
+ * cran (le plafond porte sur le NOMBRE de lignes) : `arcane-phenomena.json › environments` 3 → 4, la
+ * valeur « montagnes » résolvant désormais vers la spécialisation `bon-marcheur/montagnes` ajoutée au
+ * catalogue (COLLISION d'ids, angle mort déclaré).
+ * Cause de l'essentiel des crans — jamais de la donnée neuve : le CHAMP PORTEUR bouge (la référence
+ * de Compétence sort de son conteneur et devient son propre champ `skill`/`skills`), ce qui SCINDE
+ * des lignes existantes, et le détecteur voit plus loin (les champs d'un `document()`). `champDuPath`
+ * ne retenant que le DERNIER segment (`ANGLES_MORTS_SLOTS`, dériveur à descendre d'un niveau pour
+ * #1473), l'adoption de `refOuSpec('skill')` reste invisible à cette mesure. Au fil du lot, une seule
+ * ligne est née d'une donnée devenue référence : `arene-projet.skill`, valeur de Test du PNJ soigneur,
+ * jusque-là un nombre nu.
+ */
+const DETTE_ADOPTION_MAX = 338;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {
@@ -140,67 +174,34 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
   });
 
   it('COUVERTURE : les champs porteurs de réfs OBSERVÉES sans slot déclaré == stock, et ne CROISSENT pas', () => {
-    const cle = (c: { dataset: string; champ: string; occurrences: number }) => `${c.dataset} | ${c.champ} | ${c.occurrences}`;
-    const observes = champsSansSlot(scan.formes, SLOTS);
+    const ecarts = ecartsDeStock({ observe: champsSansSlot(scan.formes, SLOTS), stock: SLOTS_SANS_DECLARATION, cle: CLE_DETTE });
     expect(
-      observes.map(cle).sort(),
-      'écart entre la dette d’ADOPTION observée et `SLOTS_SANS_DECLARATION` — un champ en trop côté observé est une référence neuve qui n’a pas adopté la fabrique (elle s’adopte), un champ en trop côté stock est périmé (il se retire dans le commit de l’adoption).',
-    ).toEqual(SLOTS_SANS_DECLARATION.map(cle).sort());
-    // Cliquet : la dette d'adoption ne fait que DÉCROÎTRE (L2/L3, #1473).
-    // Cliquet abaissé 326 → 325 avec le lot #1467 L1b V-P5 : `skills.type` n'est plus MESURÉ comme un
-    // site de référence — la normalisation `avancée` → `avancee` (migration 6b) fait passer ses valeurs
-    // distinctes de 1/1 résolvante à 1/2, sous la majorité stricte qu'exige `siteDeReference`.
-    // Cliquet REMONTÉ 325 → 326 avec le lot #1467 L1b V-FLIP-ENTITE-b : c'est le DÉTECTEUR qui voit
-    // plus loin, pas la donnée qui a bougé — `qualities.passive` porte la MÊME op qu'avant
-    // (`{op:'testMod', amount:-10, char:'sociabilite'}`, 1 occurrence). Tant que le def déclarait ses
-    // champs dans un `z.strictObject` nommé, l'AST couvrait le champ ; sous `document()` les champs
-    // vivent dans un littéral `champs` et le scan le voit. Motif inscrit à sa ligne de stock.
-    // Cliquet REMONTÉ 326 → 329 avec la vague 12 du lot #1467 L1b V-FLIP-ENTITE-b, MÊME cause qu'à la
-    // vague 11b : le DÉTECTEUR voit le littéral `champs` de `document()` sur 21 defs de plus, et
-    // `symptoms.severePassive`/`symptoms.visiblePassive`/`etats.value` NAISSENT au relevé (les comptes
-    // de `symptoms.ops/passive` et `traits.passive` montent au même titre). Aucune référence neuve
-    // n'a été écrite en donnée : la dette était là, elle est désormais VUE.
-    // Cliquet REMONTÉ 329 → 331 (L2 #1548, commit 3b) — comptabilité EXACTE : le STOCK mesuré monte de
-    // TROIS (328 → 331), pas de deux ; l'ancien plafond de 329 avait UN cran libre au-dessus du stock.
-    // Cause du +3 : la référence de Compétence sort du porteur
-    // et devient son PROPRE champ (`skill`), ce qui SCINDE des lignes existantes au lieu d'en ajouter
-    // de la donnée neuve — `creatures.grant` 6→5 + `creatures.spec` 1, `talents.passive` 6→1 +
-    // `talents.skill` 1→6, et `incidents-monture.skill` / `steam-breakdown.skill` naissent du même
-    // déplacement. Aucune référence n'a été écrite : la projection `champDuPath` retient le DERNIER
-    // segment (`id`), donc l'adoption de `refOuSpec('skill')` reste invisible à cette mesure
-    // (`ANGLES_MORTS_SLOTS`) — c'est le CHAMP PORTEUR qui a bougé, pas la dette.
-    // Cliquet REMONTÉ 331 → 340 (L2 #1548, commit 3c) — MÊME mécanique qu'au commit 3b, à l'échelle des
-    // 334 références emboîtées : la référence de Compétence sort de son porteur et devient son PROPRE
-    // champ (`skill`), ce qui SCINDE des lignes au lieu d'écrire de la donnée neuve — 7 lignes de
-    // conteneur meurent (`etats.recover/test`, `qualities.test`, `talents.reverseFailed`,
-    // `tavernGames.spec/test`, `trappings.test`) et 16 lignes `<dataset>.skill` naissent du MÊME
-    // déplacement. Aucune référence n'a été écrite : `champDuPath` retient le DERNIER segment (`id`),
-    // donc l'adoption de `refOuSpec('skill')` reste invisible à cette mesure (`ANGLES_MORTS_SLOTS`,
-    // dériveur à descendre d'un niveau consigné pour #1473) — c'est le CHAMP PORTEUR qui a bougé.
-    // Cliquet REMONTÉ 340 → 341 (L2 #1548, commit 3d) — MÊME angle mort `champDuPath` : `talents ›
-    // reverseFailed` nomme sa LISTE `skills`, donc ses 9 références quittent la ligne `talents.skill`
-    // (132→123) pour une ligne `talents.skills` (9) — une ligne de plus, PAS une référence de plus. Les
-    // 2 références neuves d'`arene-projet.skill` (10→12) sont la valeur de Test du PNJ soigneur, qui
-    // ÉTAIT un nombre nu : elle devient une référence, donc une dette d'adoption VISIBLE.
-    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(341);
+      ecarts.neuves,
+      'champ(s) en trop côté OBSERVÉ : une référence neuve qui n’a pas adopté la fabrique — elle s’adopte, elle ne s’inscrit pas au stock.',
+    ).toEqual([]);
+    expect(
+      ecarts.perimees,
+      'champ(s) en trop côté STOCK : entrée périmée — elle se retire dans le commit de l’adoption.',
+    ).toEqual([]);
+    expect(
+      ecarts.taille,
+      'clé(s) DUPLIQUÉE(S) au stock : la comparaison travaille sur des clés DISTINCTES, un doublon inscrit y passerait invisible.',
+    ).toBe(SLOTS_SANS_DECLARATION.length);
+    expect(ecarts.taille, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(DETTE_ADOPTION_MAX);
   });
 
   it('chaque ligne du stock porte sa DATE et son LOT de mort', () => {
-    expect(SLOTS_SANS_DECLARATION.filter((c) => !/^\d{4}-\d{2}-\d{2}$/.test(c.date)).map((c) => `${c.dataset} | ${c.champ}`)).toEqual([]);
-    expect(SLOTS_SANS_DECLARATION.filter((c) => !c.lot?.trim()).map((c) => `${c.dataset} | ${c.champ}`)).toEqual([]);
+    expect(
+      lignesMalQualifiees(SLOTS_SANS_DECLARATION.map((c) => [`${c.dataset} | ${c.champ}`, c])),
+      'une ligne sans lot de mort ni date est un régime, pas un cliquet.',
+    ).toEqual([]);
   });
 
   it('MUTATION par champ : chaque champ du stock entre dans la clé comparée', () => {
-    const cle = (c: { dataset: string; champ: string; occurrences: number }) => `${c.dataset} | ${c.champ} | ${c.occurrences}`;
-    const base = SLOTS_SANS_DECLARATION.map(cle).sort().join('\n');
-    const aveugles: string[] = [];
-    for (const champ of ['dataset', 'champ', 'occurrences'] as const) {
-      const copie = SLOTS_SANS_DECLARATION.map((c, i) =>
-        i === 0 ? { ...c, [champ]: typeof c[champ] === 'number' ? (c[champ] as number) + 999 : `${c[champ]}~MUTE` } : c,
-      );
-      if (copie.map(cle).sort().join('\n') === base) aveugles.push(`SLOTS_SANS_DECLARATION.${champ}`);
-    }
-    expect(aveugles, 'champ(s) de stock HORS de la clé comparée : les muter laisse la garde verte.').toEqual([]);
+    expect(
+      champsAveugles(SLOTS_SANS_DECLARATION, CLE_DETTE, ['dataset', 'champ', 'occurrences']),
+      'champ(s) de stock HORS de la clé comparée : les muter laisse la garde verte.',
+    ).toEqual([]);
   });
 
   it('le volet est ÉMIS dans `docs/structures-donnees.md` (le doc et la garde lisent la MÊME mesure)', () => {

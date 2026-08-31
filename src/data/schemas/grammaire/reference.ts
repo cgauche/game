@@ -77,16 +77,3 @@ export const trappingRefSchema: z.ZodType<
   z.strictObject({ wildcard: z.string() }),
 ]);
 
-/** `AdvancementRef` (`src/data/index.ts`) — emplacement d'avancement : réf simple, joker « (Au choix) »
- *  (+ `specOptions`), choix « A ou B » (récursif), ou tirage aléatoire. Dupliqué dans `careerLevels`/`species`. */
-export const advancementRefSchema: z.ZodType<
-  | { ref: { id: string; spec?: string } }
-  | { wildcard: { id: string; spec?: string }; specOptions?: string[] }
-  | { choice: unknown[] }
-  | { random: number }
-> = z.union([
-  z.strictObject({ ref: refSchema }),
-  z.strictObject({ wildcard: refSchema, specOptions: z.array(z.string()).optional() }),
-  z.strictObject({ choice: z.array(z.lazy(() => advancementRefSchema)) }),
-  z.strictObject({ random: z.number() }),
-]);

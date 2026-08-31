@@ -12,7 +12,16 @@ import { t } from '../i18n';
  *  on la rejoue quand le personnage est repris dans un nouveau groupe).
  *  `draft` (optionnel) = le brouillon EXACT du créateur (tirages figés + choix
  *  étape par étape) : permet de RÉOUVRIR le personnage dans le créateur sans perte
- *  (un Combatant seul ne retient pas ces choix). Absent → édition reconstruite. */
+ *  (un Combatant seul ne retient pas ces choix). Absent → édition reconstruite.
+ *
+ *  NON VERSIONNÉ (cf. `rosterLoad` ci-dessous : liste nue, sans `version`, là où une partie porte
+ *  `SAVE_VERSION`). Or les clés du brouillon sont des LIBELLÉS d'avancement (`advancementLabel`) :
+ *  `speciesTalentChoices`, `specChoices`, `speciesPlus5`/`speciesPlus3`. MESURE L2 #1548 : 8 libellés
+ *  d'avancement changent avec le passage des spécs à l'id de catalogue (« Savoir-vivre (Érudit) » →
+ *  « Savoir-vivre (Érudits) »…), dont les 4 entrées « A ou B » d'espèce qui KEYENT
+ *  `speciesTalentChoices` (halflings Cendreplaine/Piedfoin/Havrebas/Fraisedébois). Un brouillon écrit
+ *  avant ce lot rouvre donc le créateur avec ces choix non appariés — l'étape se re-choisit, le héros
+ *  déjà construit (`hero`) est intact. */
 export interface RosterEntry {
   hero: Combatant;
   wealth: Money;

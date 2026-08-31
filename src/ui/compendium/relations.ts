@@ -81,11 +81,12 @@ interface ReverseGraph {
   titles: Map<string, string>;
 }
 
-/** ids de base d'une liste d'`AdvancementRef` (ref/wildcard ; choice → chaque branche). */
+/** ids de base d'une liste d'`AdvancementRef` (référence, régime de spécialisation compris ;
+ *  `{pick}` → chaque branche de son `of`). */
 function advancementIds(list: AdvancementRef[] | undefined): string[] {
   const out: string[] = [];
   for (const a of list ?? []) {
-    if ('choice' in a) out.push(...advancementIds(a.choice));
+    if ('pick' in a) out.push(...advancementIds(a.of));
     else { const id = advancementBaseId(a); if (id) out.push(id); }
   }
   return out;

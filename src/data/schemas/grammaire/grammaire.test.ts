@@ -14,6 +14,7 @@ import tablesJson from '../../tables.json';
 import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, type Exposition } from './document';
 import { ref, refs, specRef, pick, typedRef, idDe, cibleDe, estSpecialisable, TYPES, type Id } from './ref';
 import { byId, type SkillData, type TypeResolu } from '../../index';
+import { avancement } from './avancement';
 import { slotsDe } from './slots';
 import { SANS_LIVRE } from './sans-livre';
 import { SCHEMA_DEFS } from '../_registry.generated';
@@ -1043,5 +1044,45 @@ describe('byId — la PORTE de résolution d’une entité par son id STABLE', (
     // @ts-expect-error — la marque de type ferme l'affectation croisée entre deux types d'entité.
     const idTalent: Id<'talent'> = idCompetence;
     expect(idTalent).toBe(UNE_COMPETENCE.id);
+  });
+});
+
+/**
+ * `avancement(type)` (`avancement.ts`) — la PORTE des champs `skills`/`talents` d'un Niveau de
+ * Carrière et d'une espèce, composée de `refOuSpec(type)` | `pick(type, [tirage])` | `tirage`. Ce
+ * qu'elle ferme se mesure sur les DEUX régimes de spécialisation (`spec` arrêtée, `choix` libre ou
+ * borné), sur l'imbrication (`pick`/`of`), sur les trois graphies MORTES de l'avancement d'avant
+ * L2 #1548 (`{ref}`, `{wildcard}`, `{choice}` — la donnée ne peut plus régresser vers elles), et sur
+ * la séparation des TYPES (un id de Talent n'entre pas dans un emplacement de Compétence).
+ */
+describe('avancement() — l’emplacement d’avancement, vocabulaire CLOS', () => {
+  const t = avancement('talent');
+  const s = avancement('skill');
+  const CAS: [string, unknown, ReturnType<typeof avancement>, boolean][] = [
+    ['spéc arrêtée en ID', { id: 'savoir-vivre', spec: 'erudits' }, t, true],
+    ['spéc arrêtée en LIBELLÉ', { id: 'savoir-vivre', spec: 'Érudit' }, t, false],
+    ['spéc inconnue du pool', { id: 'savoir-vivre', spec: 'plombiers' }, t, false],
+    ['choix BORNÉ en ids', { id: 'savoir-vivre', choix: ['criminels', 'guildes'] }, t, true],
+    ['choix BORNÉ en libellés', { id: 'savoir-vivre', choix: ['Criminel', 'Guilde'] }, t, false],
+    ['choix LIBRE', { id: 'savoir-vivre', choix: true }, t, true],
+    ['id fantôme', { id: 'savoir-vivre-fantome' }, t, false],
+    ['`spec` ET `choix` ensemble', { id: 'savoir-vivre', spec: 'erudits', choix: true }, t, false],
+    ['« n parmi », branche de tirage comprise', { pick: 1, of: [{ id: 'savoir-vivre', spec: 'erudits' }, { random: 1 }] }, t, true],
+    ['tirage « n aléatoires »', { random: 2 }, t, true],
+    ['tirage de ZÉRO', { random: 0 }, t, false],
+    ['graphie MORTE `{ref}`', { ref: { id: 'savoir-vivre' } }, t, false],
+    ['graphie MORTE `{wildcard}`', { wildcard: { id: 'savoir-vivre' } }, t, false],
+    ['graphie MORTE `{choice}`', { choice: [{ ref: { id: 'savoir-vivre' } }] }, t, false],
+    ['Compétence : spéc de catalogue', { id: 'signes-secrets', spec: 'guilde' }, s, true],
+    // La spécialisation de COMPÉTENCE est OUVERTE (`LDB 09 l.40`) : une spéc hors catalogue passe au
+    // schéma, y compris l'id `guilde-au-choix` fusionné dans `guilde` au commit 4. C'est la DONNÉE
+    // qui est gardée contre sa survivance (`src/data/refs-migrated.test.ts`, 14 paires nommées), pas
+    // la porte — un pool FERMÉ de Compétence contredirait le RAW.
+    ['Compétence : spéc HORS catalogue (spécialisation ouverte)', { id: 'signes-secrets', spec: 'guilde-au-choix' }, s, true],
+    ['un id de TALENT dans un emplacement de Compétence', { id: 'savoir-vivre' }, s, false],
+  ];
+
+  it.each(CAS)('%s → %s', (_nom, valeur, porte, attendu) => {
+    expect(porte.safeParse(valeur).success).toBe(attendu);
   });
 });

@@ -31,7 +31,14 @@ import type { Scene } from './scene';
 // sont des références de vivant (`{ ref }`) là où vivaient `label`+`movement`+`skill`. Une save de 32
 // rouvrirait une infirmerie sans soigneur et une poursuite sans coureurs : elle se jette
 // (politique 2 ci-dessus).
-export const SAVE_VERSION = 33;
+// 33 → 34 (L2 #1548, commit 4) : le VOCABULAIRE de spécialisation persisté par un héros change. Les
+// emplacements d'avancement (`careerLevels.json`/`species.json`) ne portent plus le LIBELLÉ imprimé
+// mais l'id de catalogue (« Érudit » → `erudits`, « Guilde » → `guildes`… 14 paires), et
+// `slotCovers`/`specResolves` apparient par ÉGALITÉ STRICTE : mesuré, `slotCovers(slot,
+// 'savoir-vivre', 'Érudit')` rend `false` là où `'erudits'` rend `true`. Un héros de 33 garderait un
+// Talent qui ne couvre plus son emplacement — avance silencieusement perdue, retombée sur la
+// Caractéristique nue : la save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 34;
 
 export interface SaveMeta {
   version: number;

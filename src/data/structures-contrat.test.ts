@@ -165,7 +165,15 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
 // clé cessant d'être un nom de concept RÉSERVÉ, ses deux signatures (`skills`, `capDR,skills`)
 // quittent le dénominateur à éteindre (`STRUCTURES_ORPHELINES` 106→104) et rejoignent la table hors
 // strate. MÊMES objets, nouveau classement.
-const PLAFOND_HORS_STRATE = 1137;
+// L2 #1548, commit 4 (1137→1139) : AUCUNE structure neuve — l'avancement quitte ses quatre graphies
+// enveloppantes, et le « A ou B » des listes s'écrit `{pick, of}`, une signature CIBLE du lexique.
+// Les trois signatures NOMMÉES par la garde sont ce re-classement : `careerLevels.json › skills
+// {of,pick}`, `careerLevels.json › talents {of,pick}`, `species.json › talents {of,pick}` — les
+// MÊMES 45 objets qui s'écrivaient `{choice}`. +3 donc, et −1 : `species.json › choice
+// {specOptions,wildcard}` MEURT (le joker à options bornées s'écrit `{id, choix: [ids]}`, forme
+// CIBLE, et ne pose plus d'objet sous `choice`). +2 net, 1137 → 1139. Le dénominateur À ÉTEINDRE,
+// lui, perd 19 lignes dans le même geste (cf. les cliquets par lot ci-dessous).
+const PLAFOND_HORS_STRATE = 1139;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -416,7 +424,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // occurrences) s'éteint AVEC sa signature d'effet (`effect entityId,skill,type+…` → `entityId,type+…`),
       // et les 2 soigneurs de l'arène RÉFÉRENCENT désormais leur fiche de bestiaire (`ref id-nu` :
       // 291 → 293, la graphie déjà canonique du pion de scène). Une ligne de moins au stock.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 557],
+      // Cliquet DESCENDU 557 → 538 (L2 #1548, commit 4) : les QUATRE graphies enveloppantes du champ
+      // d'AVANCEMENT meurent de la donnée (careerLevels + species, 4 462 nœuds) — 20 lignes
+      // s'éteignent (les 6 enveloppes `ref>…`/`wildcard>…` du lot L2, et les 14 lignes de graphie
+      // côté champ porteur `skills`/`talents`), 1 ligne neuve apparaît (`species.json › of {random}` :
+      // les 2 tirages qui vivaient en branche de `choice` vivent en branche de `pick`). Le cliquet SUIT.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 538],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -553,9 +566,18 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // valeur de Guérison recopiée MEURT (`skill {id,value}`), et la signature de l'effet qui la
       // portait n'annonce plus qu'une entité (elle passe donc en `L3`, +1 ci-dessous : même mécanique
       // de transfert entre lots du MÊME stock, somme des deux en BAISSE 415 → 414).
-      'L2 #1463': 16,
+      // … puis 16 → 10 (commit 4) : les 6 dernières lignes du lot sont les enveloppes `{ref:{…}}` et
+      // `{wildcard:{…}}` de l'AVANCEMENT (careerLevels + species) — la référence y est désormais À
+      // PLAT, régime de spécialisation compris (`{id}`, `{id, spec}`, `{id, choix}`).
+      'L2 #1463': 10,
       'L2 #1548': 0,
-      'L3 #1463': 398,
+      // L3 #1463 : 398 → 385 (commit 4) — le MÊME geste éteint les 14 lignes de graphie du champ
+      // d'avancement côté PORTEUR (`skills`/`talents` à signature `ref`/`wildcard`/`choice`, et les
+      // `choice>…` de leurs branches) et en pose UNE : `species.json › of {random}`, les 2 tirages
+      // qui vivaient en branche de `choice` et vivent maintenant en branche de `pick`. La branche
+      // `{random}` NE migre PAS (sa cible `{pick, table}` est le lot L4) : elle reste traçée ici et
+      // sur `species.json › talents {random}` (×19).
+      'L3 #1463': 385,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       'L4 #1463': 219,
@@ -668,7 +690,8 @@ describe('la référence est ANCRÉE sur l’index des ids (contrats positifs)',
 
   it.each([
     ['creatures.json', 'skills', 'id,value', 'skills.json'],
-    ['careerLevels.json', 'ref', 'ref>id,spec', 'skills.json'],
+    ['careerLevels.json', 'skills', 'id,spec', 'skills.json'],
+    ['careerLevels.json', 'skills', 'choix,id', 'skills.json'],
     ['aa-criticals.json', 'ops', 'id,value+…', 'etats.json'],
     ['arene-projet.json', 'members', 'entityId', 'arene-projet.json'],
     ['maladies.json', 'symptoms', 'symptomId', 'symptoms.json'],

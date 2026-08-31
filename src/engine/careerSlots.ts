@@ -155,19 +155,22 @@ export function parseAdvancement(entry: string): AdvancementRef {
     const m = o.match(RAND);
     if (m) return { random: parseInt(m[1] ?? '1', 10) };
     const so = parseOption(o);
-    if (so.wildcard) return so.specOptions ? { wildcard: { id: so.label }, specOptions: so.specOptions } : { wildcard: { id: so.label } };
-    return so.spec ? { ref: { id: so.label, spec: so.spec } } : { ref: { id: so.label } };
+    if (so.wildcard) return { id: so.label, choix: so.specOptions ?? true };
+    return so.spec ? { id: so.label, spec: so.spec } : { id: so.label };
   });
-  return opts.length > 1 ? { choice: opts } : opts[0];
+  return opts.length > 1 ? { pick: 1, of: opts } : opts[0];
 }
 
 /** `AdvancementRef` STRUCTURÉ → `SlotOption[]` — lecture DIRECTE de la donnée (id→libellé via `refLabel`,
  *  jamais de re-parse de prose). `label` reste un LIBELLÉ (consommé par `findSkill`/`concreteLabel`).
  *  Remplace le round-trip `advancementLabel(ref) → parseEntry(prose)`. */
 export function slotOptionsFromRef(category: string, a: AdvancementRef): SlotOption[] {
-  if ('ref' in a) return [{ label: refLabel(category, { id: a.ref.id }), optionId: a.ref.id, ...(a.ref.spec ? { spec: a.ref.spec } : {}), wildcard: false }];
-  if ('wildcard' in a) return [{ label: refLabel(category, { id: a.wildcard.id }), optionId: a.wildcard.id, wildcard: true, ...(a.specOptions ? { specOptions: a.specOptions } : {}) }];
-  if ('choice' in a) return a.choice.flatMap((x) => slotOptionsFromRef(category, x));
+  if ('id' in a) {
+    const label = refLabel(category, { id: a.id });
+    if (a.choix == null) return [{ label, optionId: a.id, ...(a.spec ? { spec: a.spec } : {}), wildcard: false }];
+    return [{ label, optionId: a.id, wildcard: true, ...(Array.isArray(a.choix) ? { specOptions: a.choix } : {}) }];
+  }
+  if ('pick' in a) return a.of.flatMap((x) => slotOptionsFromRef(category, x));
   return [{ label: advancementLabel(category, a), wildcard: false }]; // tirage aléatoire (« N Talent aléatoire »)
 }
 

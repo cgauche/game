@@ -772,7 +772,7 @@ export interface SpeciesData {
   baseChar: Partial<Record<CharKey, number>>;
   /** Compétences d'espèce (`AdvancementRef[]` ; positionnel +5/+3 — lu via `advancementLabel`). */
   skills: AdvancementRef[];
-  /** Talents d'espèce (`AdvancementRef[]` : {ref}, {choice} « A ou B », {random} « N aléatoire », {wildcard}). */
+  /** Talents d'espèce (`AdvancementRef[]` : réf, `{pick}` « A ou B », `{random}` « N aléatoire », `choix`). */
   talents: AdvancementRef[];
   source: SourceRef;
   /** Ids de `groups.json` de l'espèce (Traits psy ciblés, LDB 21) : racial, plus la sous-espèce
@@ -849,7 +849,7 @@ export interface CareerLevelData {
   /** `id` de la Carrière (`CareerData.id`) — réf d'entité, ≠ libellé. */
   career: string;
   level: number;
-  /** Compétences/talents d'emplacement (`AdvancementRef[]` : {ref}/{wildcard}/{choice}) — lus via
+  /** Compétences/talents d'emplacement (`AdvancementRef[]` : réf / `choix` / `{pick}`) — lus via
    *  `advancementLabel` (slotsOfLevel) ou structure. */
   skills: AdvancementRef[];
   talents: AdvancementRef[];
@@ -2790,11 +2790,12 @@ const SPECIES_BY_ID = new Map(species.map((s) => [s.id, s]));
 export function findSpeciesById(id: string | undefined): SpeciesData | undefined {
   return id ? SPECIES_BY_ID.get(id) : undefined;
 }
-/** Taille CONFÉRÉE par les talents d'espèce FIXES (`{ref}`, jamais `{choice}`/`{wildcard}`/`{random}`
- *  résiduels — chip décoratif du créateur avant résolution complète, #572). Même vocabulaire que
- *  `sizeFromTalents` (engine/character.ts) : la plus grande catégorie parmi `TalentData.size`. */
+/** Taille CONFÉRÉE par les talents d'espèce FIXES (une référence ARRÊTÉE, jamais un `{pick}`, un
+ *  `{random}` ni un `choix` résiduels — chip décoratif du créateur avant résolution complète, #572).
+ *  Même vocabulaire que `sizeFromTalents` (engine/character.ts) : la plus grande catégorie parmi
+ *  `TalentData.size`. */
 export function speciesSize(sp: SpeciesData): import('../engine/size').SizeCategory {
-  const ids = sp.talents.filter((t): t is { ref: Ref } => 'ref' in t).map((t) => t.ref.id);
+  const ids = sp.talents.filter((t): t is Ref => 'id' in t && t.choix == null).map((t) => t.id);
   return sizeFromTalents(ids, (id) => findTalentById(id)?.size);
 }
 /** id d'espèce RIG (slug, clé `appearance.species`) dérivé d'un id d'espèce RULES (ou chaîne libre) :
@@ -3165,13 +3166,14 @@ export type TrappingRef =
   | { creatureId: string; count?: CountSpec; label?: string }
   | { choice: TrappingRef[] }
   | { wildcard: string };
-/** EMPLACEMENT d'avancement (espèce/carrière) : un espace de CHOIX, pas une instance résolue —
- *  ref simple, joker « (Au choix) » (+ specs restreintes « Fléau ou À deux mains »), choix « A ou B »,
- *  ou tirage aléatoire (« N Talent aléatoire »). Chaque branche concrète EST un `Ref`. */
+/** EMPLACEMENT d'avancement (espèce/carrière) : un espace de CHOIX, pas une instance résolue — la
+ *  composition de la grammaire (`schemas/grammaire/avancement.ts`). Référence à spécialisation
+ *  FACULTATIVE (`{id}`, `{id, spec}`, `{id, choix: true}` « Au choix », `{id, choix: [ids]}` choix
+ *  borné « Fléau ou À deux mains »), « n parmi » (`{pick, of}` — le « A ou B » des listes), ou
+ *  tirage (`{random: n}`, « N Talent aléatoire »). */
 export type AdvancementRef =
-  | { ref: Ref }
-  | { wildcard: Ref; specOptions?: string[] }
-  | { choice: AdvancementRef[] }
+  | (Ref & { choix?: true | string[] })
+  | { pick: number; of: AdvancementRef[] }
   | { random: number };
 
 /** Résout une entrée de dataset par (catégorie, `id`) — rendu/lookup des refs structurées. */
@@ -3323,19 +3325,24 @@ export function talentConcrete(t: { talentId: string; spec?: string }): string {
  *  « 3 Talent aléatoire », « Magie des Arcanes (Bête) ». SOURCE UNIQUE (Codex + résolution création).
  *  Passe par `refConcrete` : ce texte INDEXE `opts.skillAdvances` (`engine/character.ts`). */
 export function advancementLabel(category: string, a: AdvancementRef): string {
-  if ('ref' in a) return refConcrete(category, a.ref);
-  if ('wildcard' in a) return a.specOptions?.length
-    ? `${refConcrete(category, a.wildcard)} (${a.specOptions.join(' ou ')})`
-    : `${refConcrete(category, a.wildcard)} (Au choix)`;
-  if ('choice' in a) return a.choice.map((x) => advancementLabel(category, x)).join(' ou ');
+  if ('id' in a) {
+    if (a.choix == null) return refConcrete(category, a);
+    const base = refConcrete(category, { id: a.id });
+    return Array.isArray(a.choix)
+      ? `${base} (${a.choix.map((s) => specLabel(category, a.id, s)).join(' ou ')})`
+      : `${base} (Au choix)`;
+  }
+  if ('pick' in a) {
+    const options = a.of.map((x) => advancementLabel(category, x));
+    return a.pick > 1 ? `${a.pick} parmi : ${options.join(', ')}` : options.join(' ou ');
+  }
   return a.random === 1 ? 'Talent aléatoire' : `${a.random} Talent aléatoire`;
 }
-/** id de base d'un `AdvancementRef` simple (ref/wildcard) — pour matcher par id une compétence/un talent
- *  POSSÉDÉ (ex. compétence de revenus). undefined pour choice/random (pas un id unique). */
+/** id de base d'un `AdvancementRef` SIMPLE (référence, avec ou sans régime de spécialisation) — pour
+ *  matcher par id une compétence/un talent POSSÉDÉ (ex. compétence de revenus). undefined pour un
+ *  `{pick}`/`{random}` (pas un id unique). */
 export function advancementBaseId(a: AdvancementRef): string | undefined {
-  if ('ref' in a) return a.ref.id;
-  if ('wildcard' in a) return a.wildcard.id;
-  return undefined;
+  return 'id' in a ? a.id : undefined;
 }
 /** Libellé d'affichage d'une `TrappingRef` : « Marteau », « Pamphlétaire (3) », « Chiffon (1d10) »,
  *  texte narratif hors catalogue, choix « A ou B » (récursif), ou joker « Arme (au choix) ».

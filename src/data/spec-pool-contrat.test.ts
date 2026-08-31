@@ -42,17 +42,6 @@ const PORTES_JOUEUR: [string, unknown][] = [
  */
 const REFS_EN_LIBELLE = [
   'activities|art|Dessin',
-  'careerLevels|bon-marcheur|Montagnes',
-  'careerLevels|sans-peur|Cavalerie',
-  'careerLevels|sans-peur|Chaos',
-  'careerLevels|sans-peur|Grandes bêtes',
-  'careerLevels|sans-peur|Tout',
-  'careerLevels|savoir-vivre|Érudit',
-  'careerLevels|savoir-vivre|Mercenaires',
-  'careerLevels|savoir-vivre|Minus',
-  'species|maitre-artisan|Fermiers',
-  'species|savoir-vivre|Guilde',
-  'species|savoir-vivre|Soldat',
   'talents(passive/grantCareerSkill)|savoir|Apothicaire',
 ];
 
@@ -158,7 +147,8 @@ const normLabel = (s: string): string => s.toLowerCase().normalize('NFD').replac
  * VIDE depuis 2026-08-30 (L2 #1548, commit 3b) : les 4 `metier|Ingénieur` de `steam-breakdown.json`
  * ont été migrées. La `spec` sentinelle « Au choix » (68 occurrences, `creatures.json`/`stars.json`/
  * `talents.json`) n'entre PAS dans cette mesure : ce n'est pas un libellé de catalogue mais un CHOIX
- * à faire, exclu NOMMÉMENT ci-dessous ; sa migration en `choix: true` est le commit 4 du lot.
+ * à faire, exclu NOMMÉMENT ci-dessous ; sa migration en `choix: true` est le commit 4bis du lot —
+ * les sentinelles de Compétences de créatures.
  */
 const SPECS_EN_LIBELLE: { cle: string; date: string; lot: string }[] = [];
 

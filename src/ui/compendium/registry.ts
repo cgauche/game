@@ -437,13 +437,14 @@ function outcomeBandsSection(bands?: OutcomeBand[]): CodexSection | null {
  * (`careersForSpecies`, `details`, `eyes`, `hairs`). Les faits-clés (M/Destin/Résilience) restent en
  * en-tête (méta), pas ici ; le tirage aléatoire (création) est ajouté PAR le créateur.
  */
-/** Une ENTRÉE de compétence/talent de race : « A ou B » (`choice`) → ligne de CHOIX (chaque option
- *  cliquable), sinon un simple lien cross-réf. Lit l'`AdvancementRef` STRUCTURÉ (plus de split de prose). */
+/** Une ENTRÉE de compétence/talent de race : « A ou B » (`{pick, of}`) → ligne de CHOIX (chaque
+ *  option cliquable), sinon un simple lien cross-réf. Lit l'`AdvancementRef` STRUCTURÉ (plus de split
+ *  de prose). */
 const choiceOrRef = (category: string, a: AdvancementRef): CodexRow => {
-  if ('choice' in a) {
+  if ('pick' in a) {
     return {
       t: 'choice', category,
-      options: a.choice.map((x) => {
+      options: a.of.map((x) => {
         const lbl = advancementLabel(category, x);
         const name = statName(lbl);
         return { id: advancementBaseId(x) ?? refId(category, name), label: name, show: lbl };

@@ -22,15 +22,21 @@ export function isSentinel(s) {
 }
 
 /**
- * Visite tout nœud `{ id, spec? }` vivant sous un tableau `skills` de `entry` (y compris à travers
- * les enveloppes `{ ref: … }` d'`AdvancementRef`). `visit(node)` reçoit le nœud MUTABLE.
+ * Le tableau `of` d'un `{ pick, of }` PROLONGE son porteur : ses branches sont des références du
+ * MÊME champ (`skills`). Toute autre clé-tableau ouvre un nouveau porteur, tout autre objet le ferme.
+ */
+const porteurDe = (k, v, arrKey) => (Array.isArray(v) ? (k === 'of' ? arrKey : k) : null);
+
+/**
+ * Visite tout nœud `{ id, spec?, choix? }` vivant sous un tableau `skills` de `entry` (branches d'un
+ * `{ pick, of }` comprises). `visit(node)` reçoit le nœud MUTABLE.
  */
 export function walkSkillRefs(entry, visit) {
   const walk = (node, arrKey) => {
     if (Array.isArray(node)) return node.forEach((x) => walk(x, arrKey));
     if (!node || typeof node !== 'object') return;
     if (arrKey === 'skills' && typeof node.id === 'string') visit(node);
-    for (const [k, v] of Object.entries(node)) walk(v, Array.isArray(v) ? k : (k === 'ref' ? arrKey : null));
+    for (const [k, v] of Object.entries(node)) walk(v, porteurDe(k, v, arrKey));
   };
   walk(entry, null);
 }
@@ -44,7 +50,7 @@ export function skillArraysOf(entry) {
       return node.forEach((x) => walk(x, arrKey));
     }
     if (!node || typeof node !== 'object') return;
-    for (const [k, v] of Object.entries(node)) walk(v, Array.isArray(v) ? k : (k === 'ref' ? arrKey : null));
+    for (const [k, v] of Object.entries(node)) walk(v, porteurDe(k, v, arrKey));
   };
   walk(entry, null);
   return out;

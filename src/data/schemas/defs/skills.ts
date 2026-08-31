@@ -4,7 +4,7 @@
  * `SpecsSource`, `engine/skillCombatApps`).
  */
 import { z } from 'zod';
-import { secondarySourceRefSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { specEntrySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 
 export const file = 'skills.json';
@@ -39,15 +39,6 @@ const specsSourceSchema = z.enum([
   'weaponsMelee',
   'weaponsRanged',
 ]);
-
-/** `SpecEntry` (`src/data/index.ts`) — entrée de spécialisation inline. `source` optionnelle : une
- *  spéc qu'AUCUNE liste « Spécialisations : » n'énumère mais qu'un statbloc IMPRIME cite le passage
- *  qui l'atteste (#1342 L2-a) ; sa `note` est confrontée au folio par `folio-line-align.test.ts`.
- *  `pool: false` (#1342 L3) — l'entrée est VALIDE partout (résolution, `testValue`, bonus de règle,
- *  gardes, écrans de référence) mais hors du POOL proposé d'office par le créateur/l'avancement :
- *  `LDB 09 l.40`. Absente = dans le pool. Deux axes ORTHOGONAUX : `source` dit d'où vient l'entrée,
- *  `pool` ce qu'on propose. */
-const specEntrySchema = z.strictObject({ id: z.string(), label: z.string(), source: sourceRefSchema.optional(), alsoIn: z.array(secondarySourceRefSchema).optional(), pool: z.literal(false).optional() });
 
 const doc = document(
   'skills',

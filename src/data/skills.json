@@ -1752,10 +1752,6 @@
         "label": "Contrebandier"
       },
       {
-        "id": "guilde-au-choix",
-        "label": "Guilde (Au choix)"
-      },
-      {
         "id": "mineur",
         "label": "Mineur"
       },
@@ -1790,7 +1786,15 @@
           "book": "livre-de-base",
           "page": 54,
           "note": "LDB 08 l.250"
-        }
+        },
+        "alsoIn": [
+          {
+            "book": "livre-de-base",
+            "page": 130,
+            "note": "LDB 09 l.504",
+            "quote": "Guildes (au choix)"
+          }
+        ]
       },
       {
         "id": "rodeur",
