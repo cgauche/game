@@ -185,8 +185,16 @@ export type Classement = {
 /** Concepts de VALEUR : tous ceux que l'index des ids ne décide pas (ni référence, ni liste d'ids). */
 const CONCEPTS_VALEUR = CONCEPTS.filter((c) => !c.resolvables && !c.listeIdsNus);
 
-const statutDe = (c: Concept, sig: string): Classement => {
-  const hit = c.signatures.find((s) => s.sig === sig);
+/**
+ * Statut d'une signature AU SITE : une entrée SITE-QUALIFIée du lexique gagne sur l'entrée nue de la
+ * même graphie (`site` absent = repli universel). Sans site fourni par l'appelant, seules les entrées
+ * nues répondent — un littéral de schéma n'a pas de dataset.
+ */
+const statutDe = (c: Concept, sig: string, site?: { dataset: string; champ: string }): Classement => {
+  const candidates = c.signatures.filter((s) => s.sig === sig);
+  const hit =
+    (site && candidates.find((s) => s.site?.datasets.includes(site.dataset) && s.site.champs.includes(site.champ)))
+    ?? candidates.find((s) => !s.site);
   return { concept: c.id, strate: c.strate, statut: hit?.statut ?? 'divergente', note: hit?.note ?? '', signature: sig };
 };
 
@@ -620,10 +628,10 @@ export function scannerDonnees(
    * de graphie (`ref>id`, `wildcard>id`) et HÉRITE du statut de l'enveloppe : `{ref:{id}}` se lit
    * `ref>id / historique`, jamais `id / cible`.
    */
-  const classementDeGraphie = (champ: string, sig: string) =>
+  const classementDeGraphie = (dataset: string, champ: string, sig: string) =>
     (GRAPHIES_ENVELOPPANTES as readonly string[]).includes(champ)
-      ? { ...statutDe(CONCEPT_REFERENCE, champ), signature: `${champ}>${sig}` }
-      : statutDe(CONCEPT_REFERENCE, sig);
+      ? { ...statutDe(CONCEPT_REFERENCE, champ, { dataset, champ }), signature: `${champ}>${sig}` }
+      : statutDe(CONCEPT_REFERENCE, sig, { dataset, champ });
 
   /**
    * Une signature dont le `text` RÉSOUT porte le suffixe ` (résolvable)` : le lexique ne la connaît
@@ -731,7 +739,7 @@ export function scannerDonnees(
       } else if (resolvantes.size && !estDocument) {
         // Un `{text}` qui RÉSOUT est une forme à part entière : `text (résolvable)`, divergente, à
         // migrer en `{id}` (#624). Seul le `{text}` NON résolvable reste la forme `declaree`.
-        const ligne = ligneForme(CONCEPT_REFERENCE, p, champ, resolvableTexte(classementDeGraphie(champ, signatureProjetee(cles, resolvantes)), resolvantes));
+        const ligne = ligneForme(CONCEPT_REFERENCE, p, champ, resolvableTexte(classementDeGraphie(p.nom, champ, signatureProjetee(cles, resolvantes)), resolvantes));
         ligne.occurrences += 1;
         for (const d of cibles) ligne.ciblesSet.add(d);
         if (resolvantes.has('text')) ligne.resolvables += 1;
@@ -739,7 +747,7 @@ export function scannerDonnees(
       } else if (!estDocument && cles.length && cles.every((k) => GRAPHIES_SANS_ID.has(k)) && champsPorteurs.has(champ)) {
         // GRAPHIE de référence sous un champ porteur MESURÉ, qu'elle résolve ou non : l'enveloppe
         // `{ref:{…}}` et la dotation `{text:"…"}` sont des FORMES, pas des objets hors strate.
-        const ligne = ligneForme(CONCEPT_REFERENCE, p, champ, classementDeGraphie(champ, sig));
+        const ligne = ligneForme(CONCEPT_REFERENCE, p, champ, classementDeGraphie(p.nom, champ, sig));
         ligne.occurrences += 1;
         classe = true;
       } else if (resolvantes.size && estDocument) {
@@ -756,6 +764,13 @@ export function scannerDonnees(
       const conceptRefs = CONCEPTS.find((c) => c.listeIdsNus)!;
       for (const [k, v] of Object.entries(o)) {
         if (!Array.isArray(v) || !v.length || !v.every((x) => typeof x === 'string')) continue;
+        // Une clé de la GRAPHIE de référence n'ouvre pas un champ porteur À ELLE SEULE : elle fait
+        // PARTIE du nœud de référence déjà classé ci-dessus. `choix: [ids]` énumère des
+        // SPÉCIALISATIONS, bornées par le catalogue de l'entrée VISÉE (`noeudASpecialisation`,
+        // `grammaire/ref.ts`) — pas une FK vers un dataset (DESIGN v2 S2 : la spéc est « déclarée au
+        // registre du type, JAMAIS une FK »). Sans ce filtre, un id de spéc qui COLLISIONNE avec un
+        // document indexé ouvrirait un couple (dataset, champ) fantôme au registre des slots.
+        if (GRAPHIE_REFERENCE.has(k)) continue;
         if (!(v as string[]).some((x) => index.has(x) && ouvreReference(p.nom, k, x))) continue;
         const ligne = ligneForme(conceptRefs, p, k, statutDe(conceptRefs, 'ids-nus'));
         ligne.occurrences += 1;

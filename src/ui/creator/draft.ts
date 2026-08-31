@@ -44,7 +44,7 @@ import { rule } from '../../engine/policy';
 import { createHero, resolveSpeciesTalents, RANDOM_ENTRY_RE } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
 import { careerSkillAdditions } from '../../engine/talentEffects';
-import { findSpeciesById, rigSpeciesId, findTalent, careers, levelsForCareer, findSpell, advancementLabel, refLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData, trappingRefLabel, type TrappingRef } from '../../data';
+import { findSpeciesById, rigSpeciesId, findTalent, careers, levelsForCareer, findSpell, advancementLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData, trappingRefLabel, type TrappingRef } from '../../data';
 import { slugId } from '../../data/slug';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
@@ -518,11 +518,12 @@ export function probeHero(d: CreatorDraft, withCareerTalent = true, charsAlloc =
 }
 
 /** Entrées de compétences de carrière allouables : les 8 du Niveau + ajouts de talents (LDB 10).
- *  Libellés (clés de `d.skillAdvances`, authoring) — `careerSkillAdditions` renvoie des refs
- *  structurées, résolues ici en libellé via `refLabel` (bord authoring, pas un chemin de résolution). */
+ *  CLÉS de `d.skillAdvances` — la même que celle qu'indexe `engine/character.ts` au build, donc
+ *  `advancementLabel` pour les deux sources (un ajout à emplacement `choix` vaut « Métier (Au choix) »,
+ *  jamais « Métier » : `refLabel` ignore `choix` et perdrait l'allocation). */
 export function careerSkillEntries(d: CreatorDraft): string[] {
   const base = (draftLevel(d)?.skills ?? []).map((a) => advancementLabel('skills', a));
-  return [...base, ...careerSkillAdditions(probeHero(d)).map((a) => refLabel('skills', a))];
+  return [...base, ...careerSkillAdditions(probeHero(d)).map((a) => advancementLabel('skills', a))];
 }
 
 /** « Répartition simple » (étape 5) : « ajouter 5 Augmentations à chaque Compétence de Carrière »

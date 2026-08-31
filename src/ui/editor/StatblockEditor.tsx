@@ -10,9 +10,7 @@
  */
 import { CustomStatblock } from '../../state/scene';
 import { CHAR_KEYS, CHAR_LABELS, CharKey } from '../../engine/types';
-import { creatures, findCreatureById, findSkill, findTalent, skillRefLabel, talentRefLabel, type SkillRef, type TalentRef } from '../../data';
-import { slugId } from '../../data/slug';
-import { parseStatEntry } from '../../engine/statEntry';
+import { creatures, findCreatureById, skillRefLabel, talentRefLabel } from '../../data';
 import { woundsForSize, resizeBySteps, stepSize, SIZE_LABEL, SIZE_ORDER } from '../../engine/size';
 import { bonus } from '../../engine/characteristics';
 import { sizeFromTraits } from '../../state/spawn';
@@ -20,17 +18,7 @@ import { SpellsField } from './OptionalTraitsPicker';
 import { TraitListField } from '../compendium/StructFields';
 import { Icon } from '../Icon';
 import { NumberField } from '../NumberField';
-
-/** Parse une saisie « Compétence (Spéc) Valeur » → `SkillRef` (id stable + spec + valeur de Test). */
-function parseSkillRef(text: string): SkillRef {
-  const p = parseStatEntry(text);
-  return { id: findSkill(p.name)?.id ?? slugId(p.name), spec: p.arg, value: p.indice ?? 0 };
-}
-/** Parse une saisie « Talent (Spéc) » → `TalentRef` (id stable + spec ; niveau par défaut 1 au spawn). */
-function parseTalentRef(text: string): TalentRef {
-  const p = parseStatEntry(text);
-  return { id: findTalent(p.name)?.id ?? slugId(p.name), spec: p.arg };
-}
+import { parseSkillRef, parseTalentRef } from './refFormatLivre';
 
 const EXTRA: { key: 'M'; label: string; def: number }[] = [{ key: 'M', label: 'Mouvement', def: 4 }];
 

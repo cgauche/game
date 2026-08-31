@@ -30,7 +30,7 @@ import {
   talentMaxReached,
   wildcardSpecs,
 } from '../engine/careerSlots';
-import { careerSkillAdditions, careerTalentAdditions, baseWithTalents } from '../engine/talentEffects';
+import { careerSkillAdditions, careerTalentAdditions, baseWithTalents, type SkillTalentRef } from '../engine/talentEffects';
 import { rule } from '../engine/policy';
 import { levelsForCareer, byId, findCareerById, refLabel, specLabel, displayLabelForSex } from '../data';
 
@@ -113,10 +113,10 @@ export interface AdvancementView {
 
 /** Remise « 5 PX de moins par Augmentation » (LDB 10 Maître artisan/Oreille absolue/…) quand la
  *  Compétence ajoutée par un talent est DÉJÀ couverte par la carrière. */
-function additionDiscount(additions: { id: string; spec?: string }[], slots: CareerSlot[], designations: Record<string, string>, skillId: string, spec?: string): number {
+function additionDiscount(additions: SkillTalentRef[], slots: CareerSlot[], designations: Record<string, string>, skillId: string, spec?: string): number {
   const added = additions.some((a) => {
     if (a.id !== skillId) return false;
-    if (a.spec && /au choix/i.test(a.spec)) return true; // joker de groupe (Savoir (Région) reste exact)
+    if (a.choix != null) return true; // joker de groupe (Savoir (Région) reste exact)
     return (a.spec ?? '') === (spec ?? '');
   });
   if (!added) return 0;
@@ -146,7 +146,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   const skills: SkillAdvanceRow[] = hero.skills.map((s) => {
     const sName = byId('skill', s.skillId)?.label ?? s.skillId; // AFFICHAGE seulement
     const status = inCareerStatus(sSlots, designations, s.skillId, s.spec);
-    const addedExact = additions.some((a) => a.id === s.skillId && (!a.spec || /au choix/i.test(a.spec) || (a.spec ?? '') === (s.spec ?? '')));
+    const addedExact = additions.some((a) => a.id === s.skillId && (!a.spec || a.choix != null || (a.spec ?? '') === (s.spec ?? '')));
     const inCareer = status != null || addedExact;
     const discount = additionDiscount(additions, sSlots, designations, s.skillId, s.spec);
     return {

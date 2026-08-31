@@ -1,5 +1,5 @@
 /**
- * Schéma de `creatures.json` — le BESTIAIRE (490 entrées), miroir de `CreatureData`
+ * Schéma de `creatures.json` — le BESTIAIRE (492 entrées), miroir de `CreatureData`
  * (`src/data/index.ts`). GROS dataset : inventaire de clés fait par script node sur
  * TOUTES les entrées du fichier (histogramme complet, pas d'échantillonnage) — le compte
  * ci-dessus suit le fichier, il ne le fige pas.
@@ -36,8 +36,11 @@ const optionalSwapSchema = z.strictObject({
 });
 const optionalEntrySchema = z.union([traitInstanceSchema, optionalWildcardSchema, optionalSwapSchema]);
 
-/** `SkillRef` (`src/data/index.ts`) — `Ref` + valeur de Test imprimée. */
-const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), value: z.number() });
+/** `SkillRef` (`src/data/index.ts`) — la réf de Compétence de la GRAMMAIRE (`refOuSpec`, régimes
+ *  `spec` XOR `choix`) composée avec la charge utile du statbloc : `value`, le nombre IMPRIMÉ
+ *  (#1463, « `value` = le seul nom du NOMBRE IMPRIMÉ au statbloc »). MÊME nœud que `swapGrantSchema`
+ *  ci-dessus — une seule graphie de Compétence dans ce document. */
+const skillRefSchema = refOuSpec('skill', { value: z.number() });
 
 
 /** `HarvestDanger` (`src/data/index.ts`). */
@@ -47,10 +50,13 @@ const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronz
 
 /** Champs PROPRES d'une entrée de `creatures.json` — l'enveloppe est posée par `document()`. */
 const champs = {
-  /** SOUS-TITRE de statbloc (« Bandit humain », « Prince démon de Slaanesh »). Mesuré 2026-08-28 :
-     *  490/490 porteuses, dont 437 à `null` et 53 à valeur recopiée du livre ; AUCUN lecteur —
-     *  `CreatureData.title` (`src/data/index.ts`) interdit même d'en inférer la nommé-ité (`isNamed`
-     *  lit `named`, jamais ceci). Affordance sans consommateur : #1541 la branche ou la déclare morte. */
+  /** SOUS-TITRE de statbloc (« Bandit humain », « Prince démon de Slaanesh »). Mesuré 2026-08-31 :
+     *  492/492 porteuses, dont 439 à `null` et 53 à valeur recopiée du livre. LECTEUR NOMINATIF :
+     *  `src/ui/compendium/registry.ts` (rubrique `creatures`, `sub: c.title ?? undefined`) — c'est le
+     *  sous-titre de la fiche Codex. Le `null` est un ÉTAT VOULU, pas un trou : le co-invariant des
+     *  deux sens (posé → rendu à l'identique, nul → aucun sous-titre, jamais un repli) est verrouillé
+     *  par `src/ui/compendium/registry-sous-titre-null.test.ts`. Ce champ n'infère JAMAIS la
+     *  nommé-ité : `isNamed` lit `named`. */
     title: z.string().nullable(),
     named: z.boolean().optional(),
     folder: z.string().nullable(),

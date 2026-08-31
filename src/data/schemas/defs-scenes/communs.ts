@@ -6,6 +6,8 @@
  */
 import { z } from 'zod';
 import { talentRefSchema, traitInstanceSchema } from '../grammaire/reference';
+import { refOuSpec } from '../grammaire/ref';
+import type { SkillRef } from '../../index';
 import { charStatKeySchema, sizeCategorySchema } from '../grammaire/valeurs';
 
 /** `Pt` (`state/path.ts`) — case, `z` = couche d'empilement (absent = base). */
@@ -17,8 +19,11 @@ export const moneySchema = z.strictObject({ gold: z.number().optional(), silver:
  *  DÉRIVENT, l'éditeur en dérive ses options (`wallSideSchema.options`). Garde : `unions-canon.test.ts`. */
 export const wallSideSchema = z.enum(['N', 'E', '\\', '/']);
 export type WallSide = z.infer<typeof wallSideSchema>;
-/** `SkillRef` (`src/data/index.ts`) — réf de Compétence à valeur de Test FINALE. */
-export const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), value: z.number() });
+/** `SkillRef` (`src/data/index.ts`) — MÊME nœud que le statbloc du bestiaire (`defs/creatures.ts`) :
+ *  la réf de la grammaire (`spec` XOR `choix`) + la valeur de Test IMPRIMÉE. La FORME de sortie est
+ *  ANNOTÉE (patron `AxesData`, `defs/axes.ts`) : `refOuSpec` déclare `RefASpecialisation` et n'y porte
+ *  pas l'`extra` du porteur — sans cette annotation, `value` disparaîtrait du type inferé de la scène. */
+export const skillRefSchema: z.ZodType<SkillRef> = refOuSpec('skill', { value: z.number() }) as z.ZodType<SkillRef>;
 
 /** `CustomStatblock.char` — `Partial<Record<CharKey | 'M' | 'B', number>>` : toutes les clés sont
  *  FERMÉES et chacune est facultative (un profil n'imprime que ce que le livre imprime). Écrit en objet

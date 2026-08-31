@@ -399,7 +399,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // v2 S2 (#1463, commentaire du 2026-08-23) : « `refs(type)` = liste d'ids nus brandée (75 champs
       // `string[]`) » — la liste d'ids nus EST la forme visée, ce qui reste à faire est le TYPAGE du
       // champ. Une cible neuve se décide en revue : celle-ci porte sa citation et sa date.
-      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 16],
+      // 16 → 19 (L2 #1548, commit 4bis) : reclassement au SITE_STATBLOC — id,value / id,spec,value / choix,id,value.
+      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 19],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
       // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non
@@ -438,7 +439,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // graphies de référence de Trait que `mutations.json › passive` porte déjà (`traitId+…`,
       // `argFrom,traitId+…`, L3). C'est la donnée qui ENTRE dans la strate mesurée (le dataset n'avait
       // aucune op authorée avant le re-ciblage quotidien de Haine sporadique), pas une dérive de forme.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 540],
+      // 540 → 534 (L2 #1548, commit 4bis) : 6 lignes skills {id,value}/{id,spec,value} reclassées CIBLE au site
+      // du statbloc (bestiaire ×2, barge ×2, loup ×2) — reclassement, pas migration (comptabilité 2 colonnes).
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 534],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -466,7 +469,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquet DESCENDU 108 → 105 (L2 #1548, commit 3b) : `activities.ts`, `axes.ts` et
       // `crew-roles.ts` ne redéclarent plus leur propre objet de référence de Compétence — ils
       // composent la grammaire (`refOuSpec('skill')`, `grammaire/ref.ts`). Le cliquet SUIT.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 105],
+      // 105 → 104 (L2 #1548, commit 4bis) : defs/creatures.ts › reference id,spec,value meurt — le def compose refOuSpec.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 104],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -582,7 +586,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 16 → 10 (commit 4) : les 6 dernières lignes du lot sont les enveloppes `{ref:{…}}` et
       // `{wildcard:{…}}` de l'AVANCEMENT (careerLevels + species) — la référence y est désormais À
       // PLAT, régime de spécialisation compris (`{id}`, `{id, spec}`, `{id, choix}`).
-      'L2 #1463': 10,
+      // 10 → 4 (L2 #1548, commit 4bis) : les 6 formes skills du reclassement quittent le lot.
+      'L2 #1463': 4,
       'L2 #1548': 0,
       // L3 #1463 : 398 → 385 (commit 4) — le MÊME geste éteint les 14 lignes de graphie du champ
       // d'avancement côté PORTEUR (`skills`/`talents` à signature `ref`/`wildcard`/`choice`, et les
@@ -592,7 +597,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // sur `species.json › talents {random}` (×19).
       // … puis 385 → 387 (#862) : cf. le cliquet `STRUCTURES_FORMES` ci-dessus (les deux graphies de
       // référence de Trait sous `mutations.json › ops`).
-      'L3 #1463': 387,
+      // 387 → 386 (L2 #1548, commit 4bis) : la redéclaration creatures.ts quitte le lot.
+      'L3 #1463': 386,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       'L4 #1463': 219,

@@ -728,30 +728,18 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
     }
   }
 
-  // La ligne du statbloc imprime un CHOIX de spécialisation, pas une spéc : « Artisanat (Armurier
-  // OU Forgeron) » (frenchy.bzh 43 l.95), « Savoir (Rivières_ou_Chemins) » (frenchy.bzh 29 l.83),
-  // « Savoir (Divinité) » (frenchy.bzh 46 l.37, l.99, l.187 — Annexe D 83 l.25 : « Béni (Divinité) |
-  // Béni (Divers) | *Blessed (Various)* »). Le catalogue n'a pas d'emplacement de choix BORNÉ : la
-  // sentinelle « (Au choix) » ne borne rien. Mesure du 2026-08-23, extinction #1456.
-  const CHOIX_IMPRIME = new Set<string>([
-    'creatures|chef-contrebandier|savoir|Rivières ou Chemins',
-    'creatures|roi-du-trafic|savoir|Rivières ou Chemins',
-    'creatures|ungor-adulte|metier|Armurier OU Forgeron',
-    'creatures|sorcier-du-chaos|savoir|Divinité',
-    'creatures|sorcier-du-chaos-terrifiant|savoir|Divinité',
-    'creatures|sorcier-du-chaos-effroyable|savoir|Divinité',
-  ]);
+  // Le stock « la ligne imprime un CHOIX, pas une spéc » (6 clés : « Artisanat (Armurier OU
+  // Forgeron) », « Savoir (Rivières_ou_Chemins) » ×2, « Savoir (Divinité) » ×3) est ÉTEINT au commit
+  // 4bis de L2 #1548 : ces lignes portent désormais `choix: [ids]`, que la marche ci-dessus rend au
+  // régime `choix` (ligne 721) et ne confronte plus au catalogue en tant que spéc.
 
   it('creatures/careerLevels/species : zéro spec hors catalogue sous un livre extrait dans Source/', () => {
     // NON-VACUITÉ : sans lignes scannées ni extraction sur disque, le contrat serait vert à vide.
     expect(seen.n).toBeGreaterThan(500);
     expect(EXTRAITS.size).toBeGreaterThan(10);
     expect(dirManquant, `books.json#dir sans extraction sur disque : ${dirManquant.join(', ')}`).toEqual([]);
-    const vus = hors.filter((h) => EXTRAITS.has(h.book));
-    const bad = vus.filter((h) => !CHOIX_IMPRIME.has(h.key)).map((h) => `${h.where} [${h.book}] : ${h.skillId} → ${JSON.stringify(h.spec)}`);
+    const bad = hors.filter((h) => EXTRAITS.has(h.book)).map((h) => `${h.where} [${h.book}] : ${h.skillId} → ${JSON.stringify(h.spec)}`);
     expect(bad, bad.join('\n')).toEqual([]);
-    const rendus = [...CHOIX_IMPRIME].filter((k) => !vus.some((h) => h.key === k));
-    expect(rendus, `choix désormais tranché — retirer de CHOIX_IMPRIME :\n${rendus.join('\n')}`).toEqual([]);
   });
 
   // Le périmètre se DÉDUIT du dossier déclaré par le livre (`dir` pour l'Atlas RAW, `extractionDir`

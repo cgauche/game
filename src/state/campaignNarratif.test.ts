@@ -119,9 +119,9 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
     expect(parseProject(doc(presetSkill('reikland'))).narratif.presetsPnj.length).toBe(2);
   });
 
-  it('(k) preset PNJ : LÈVE sur une spec qui ne résout pas ; la sentinelle « Au choix » reste admise', () => {
+  it('(k) preset PNJ : LÈVE sur une spec qui ne résout pas ; la sentinelle « Au choix » est REFUSÉE sur une Compétence (un emplacement non désigné s’écrit « choix »)', () => {
     expect(() => parseProject(doc(presetSkill('Rivières')))).toThrow(/spécialisation inconnue « Rivières »/);
-    expect(parseProject(doc(presetSkill('Au choix'))).narratif.presetsPnj.length).toBe(2);
+    expect(() => parseProject(doc(presetSkill('Au choix')))).toThrow(/n'est pas une spécialisation mais un EMPLACEMENT non désigné .* s'écrit « choix »/);
   });
 
   const presetTalent = (spec: string) => {

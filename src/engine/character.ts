@@ -41,7 +41,6 @@ import {
   specCatalogOf,
   specResolves,
   specLabel,
-  refConcrete,
   talents as talentTable,
 } from '../data';
 import { splitTopLevelOu, splitLabel, concreteLabel, refKey, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
@@ -374,7 +373,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     if (adv > 0) advancedEntries.push({ raw, label });
   }
   for (const add of careerSkillAdditions(heroSoFar)) {
-    const raw = refConcrete('skills', add); // ref structurée → CLÉ d'authoring (index de opts.skillAdvances)
+    const raw = advancementLabel('skills', add); // ref structurée (spec OU choix) → CLÉ d'authoring (index de opts.skillAdvances)
     const adv = opts.skillAdvances?.[raw] ?? 0; // les compétences ajoutées ne reçoivent rien par défaut
     addSkill(resolveEntry(raw, opts.specChoices), adv);
   }

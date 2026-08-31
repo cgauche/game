@@ -152,6 +152,28 @@ describe('buildAdvancementView — match d\'entité possédée par id+spec (Issu
   });
 });
 
+describe('remise « 5 PX de moins par Augmentation » sur une Compétence ajoutée par un Talent (LDB 10)', () => {
+  it('Maître artisan (joker `choix`) : Métier (Imprimerie), de carrière → 10 − 5 = 5 PX', () => {
+    const v = buildAdvancementView(hero({
+      skills: [{ skillId: 'metier', spec: 'imprimerie', characteristic: 'dexterite', advances: 0 }],
+      talents: [{ talentId: 'maitre-artisan', times: 1 }],
+    }));
+    const metier = v.skills.find((s) => s.skillId === 'metier' && s.spec === 'imprimerie')!;
+    expect(metier.inCareer).toBe(true);
+    expect(metier.nextCost).toBe(5);
+  });
+
+  it('Voyageur aguerri (spec EXACTE `region`) : aucune remise sur Savoir (Politique)', () => {
+    const v = buildAdvancementView(hero({
+      skills: [{ skillId: 'savoir', spec: 'politique', characteristic: 'intelligence', advances: 0 }],
+      talents: [{ talentId: 'voyageur-aguerri', times: 1 }],
+    }));
+    const savoir = v.skills.find((s) => s.skillId === 'savoir' && s.spec === 'politique')!;
+    expect(savoir.inCareer).toBe(true);
+    expect(savoir.nextCost).toBe(10);
+  });
+});
+
 // #516 : câblage bout-en-bout du Trait « Marque de Khorne » (MDG 07 l.250-252) par le chemin
 // AVANCEMENT réel — `careerTalentAdditions` (Trait) → `buildAdvancementView` (état projeté), pas
 // seulement le canal unitaire (cf. `engine/traits/marque-de-khorne.test.ts`).

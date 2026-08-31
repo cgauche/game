@@ -8919,8 +8919,8 @@
       },
       {
         "id": "savoir",
-        "value": 65,
-        "spec": "au choix"
+        "choix": true,
+        "value": 65
       },
       {
         "id": "signes-secrets",
@@ -9181,8 +9181,8 @@
       },
       {
         "id": "savoir",
-        "value": 65,
-        "spec": "au choix"
+        "choix": true,
+        "value": 65
       },
       {
         "id": "signes-secrets",
@@ -10245,8 +10245,8 @@
       },
       {
         "id": "musicien",
-        "value": 35,
-        "spec": "au choix"
+        "choix": true,
+        "value": 35
       },
       {
         "id": "pari",
@@ -10406,8 +10406,8 @@
       },
       {
         "id": "musicien",
-        "value": 60,
-        "spec": "au choix"
+        "choix": true,
+        "value": 60
       },
       {
         "id": "pari",
@@ -10585,8 +10585,8 @@
       },
       {
         "id": "musicien",
-        "value": 80,
-        "spec": "au choix"
+        "choix": true,
+        "value": 80
       },
       {
         "id": "pari",
@@ -11610,8 +11610,8 @@
       },
       {
         "id": "metier",
-        "value": 55,
-        "spec": "au choix"
+        "choix": true,
+        "value": 55
       },
       {
         "id": "resistance-a-l-alcool",
@@ -11759,8 +11759,8 @@
       },
       {
         "id": "metier",
-        "value": 75,
-        "spec": "au choix"
+        "choix": true,
+        "value": 75
       },
       {
         "id": "resistance-a-l-alcool",
@@ -11938,8 +11938,8 @@
       },
       {
         "id": "langue",
-        "value": 45,
-        "spec": "au choix"
+        "choix": true,
+        "value": 45
       },
       {
         "id": "langue",
@@ -12093,8 +12093,8 @@
       },
       {
         "id": "langue",
-        "value": 65,
-        "spec": "au choix"
+        "choix": true,
+        "value": 65
       },
       {
         "id": "langue",
@@ -12234,8 +12234,8 @@
       },
       {
         "id": "metier",
-        "value": 35,
-        "spec": "au choix"
+        "choix": true,
+        "value": 35
       },
       {
         "id": "resistance-a-l-alcool",
@@ -12261,8 +12261,8 @@
       },
       {
         "id": "langue",
-        "value": 50,
-        "spec": "au choix"
+        "choix": true,
+        "value": 50
       },
       {
         "id": "marchandage",
@@ -12282,8 +12282,8 @@
       },
       {
         "id": "savoir",
-        "value": 50,
-        "spec": "au choix"
+        "choix": true,
+        "value": 50
       },
       {
         "id": "calme",
@@ -12355,8 +12355,8 @@
       },
       {
         "id": "metier",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "resistance-a-l-alcool",
@@ -12391,8 +12391,8 @@
       },
       {
         "id": "langue",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "marchandage",
@@ -12412,8 +12412,8 @@
       },
       {
         "id": "savoir",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "calme",
@@ -12698,8 +12698,8 @@
       },
       {
         "id": "savoir",
-        "value": 55,
-        "spec": "au choix"
+        "choix": true,
+        "value": 55
       },
       {
         "id": "intimidation",
@@ -14303,8 +14303,8 @@
       },
       {
         "id": "langue",
-        "value": 35,
-        "spec": "au choix"
+        "choix": true,
+        "value": 35
       },
       {
         "id": "marchandage",
@@ -14746,8 +14746,8 @@
       },
       {
         "id": "langue",
-        "value": 35,
-        "spec": "au choix"
+        "choix": true,
+        "value": 35
       },
       {
         "id": "corps-a-corps",
@@ -14893,8 +14893,8 @@
       },
       {
         "id": "langue",
-        "value": 50,
-        "spec": "au choix"
+        "choix": true,
+        "value": 50
       },
       {
         "id": "corps-a-corps",
@@ -15293,13 +15293,13 @@
     "skills": [
       {
         "id": "art",
-        "value": 55,
-        "spec": "au choix"
+        "choix": true,
+        "value": 55
       },
       {
         "id": "metier",
-        "value": 55,
-        "spec": "au choix"
+        "choix": true,
+        "value": 55
       },
       {
         "id": "resistance-a-l-alcool",
@@ -15434,13 +15434,13 @@
     "skills": [
       {
         "id": "art",
-        "value": 60,
-        "spec": "au choix"
+        "choix": true,
+        "value": 60
       },
       {
         "id": "metier",
-        "value": 60,
-        "spec": "au choix"
+        "choix": true,
+        "value": 60
       },
       {
         "id": "resistance-a-l-alcool",
@@ -16491,8 +16491,8 @@
     "skills": [
       {
         "id": "metier",
-        "value": 35,
-        "spec": "au choix"
+        "choix": true,
+        "value": 35
       },
       {
         "id": "athletisme",
@@ -16649,8 +16649,8 @@
     "skills": [
       {
         "id": "metier",
-        "value": 55,
-        "spec": "au choix"
+        "choix": true,
+        "value": 55
       },
       {
         "id": "athletisme",
@@ -16825,8 +16825,8 @@
     "skills": [
       {
         "id": "metier",
-        "value": 70,
-        "spec": "au choix"
+        "choix": true,
+        "value": 70
       },
       {
         "id": "athletisme",
@@ -17023,8 +17023,8 @@
       },
       {
         "id": "metier",
-        "value": 55,
-        "spec": "au choix"
+        "choix": true,
+        "value": 55
       },
       {
         "id": "resistance-a-l-alcool",
@@ -17172,8 +17172,8 @@
       },
       {
         "id": "metier",
-        "value": 75,
-        "spec": "au choix"
+        "choix": true,
+        "value": 75
       },
       {
         "id": "resistance-a-l-alcool",
@@ -17355,8 +17355,8 @@
       },
       {
         "id": "langue",
-        "value": 45,
-        "spec": "au choix"
+        "choix": true,
+        "value": 45
       },
       {
         "id": "langue",
@@ -17514,8 +17514,8 @@
       },
       {
         "id": "langue",
-        "value": 65,
-        "spec": "au choix"
+        "choix": true,
+        "value": 65
       },
       {
         "id": "langue",
@@ -21771,8 +21771,8 @@
       },
       {
         "id": "discretion",
-        "value": 40,
-        "spec": "au choix"
+        "choix": true,
+        "value": 40
       },
       {
         "id": "natation",
@@ -21898,8 +21898,8 @@
       },
       {
         "id": "discretion",
-        "value": 50,
-        "spec": "au choix"
+        "choix": true,
+        "value": 50
       },
       {
         "id": "marchandage",
@@ -22047,8 +22047,8 @@
       },
       {
         "id": "discretion",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "evaluation",
@@ -22102,8 +22102,11 @@
       },
       {
         "id": "savoir",
-        "value": 55,
-        "spec": "Rivières ou Chemins"
+        "choix": [
+          "voies-fluviales",
+          "itineraires"
+        ],
+        "value": 55
       },
       {
         "id": "signes-secrets",
@@ -22218,8 +22221,8 @@
       },
       {
         "id": "discretion",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "evaluation",
@@ -22235,8 +22238,8 @@
       },
       {
         "id": "langue",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "marchandage",
@@ -22278,8 +22281,11 @@
       },
       {
         "id": "savoir",
-        "value": 75,
-        "spec": "Rivières ou Chemins"
+        "choix": [
+          "voies-fluviales",
+          "itineraires"
+        ],
+        "value": 75
       },
       {
         "id": "signes-secrets",
@@ -25769,8 +25775,8 @@
       },
       {
         "id": "discretion",
-        "value": 45,
-        "spec": "au choix"
+        "choix": true,
+        "value": 45
       },
       {
         "id": "esquive",
@@ -25893,8 +25899,8 @@
       },
       {
         "id": "discretion",
-        "value": 55,
-        "spec": "au choix"
+        "choix": true,
+        "value": 55
       },
       {
         "id": "escalade",
@@ -26016,8 +26022,8 @@
       },
       {
         "id": "discretion",
-        "value": 75,
-        "spec": "au choix"
+        "choix": true,
+        "value": 75
       },
       {
         "id": "escalade",
@@ -26175,8 +26181,8 @@
       },
       {
         "id": "discretion",
-        "value": 95,
-        "spec": "au choix"
+        "choix": true,
+        "value": 95
       },
       {
         "id": "escalade",
@@ -27105,8 +27111,11 @@
     "skills": [
       {
         "id": "metier",
-        "value": 50,
-        "spec": "Armurier OU Forgeron"
+        "choix": [
+          "armurier",
+          "forgeron"
+        ],
+        "value": 50
       },
       {
         "id": "athletisme",
@@ -30223,8 +30232,12 @@
       },
       {
         "id": "savoir",
-        "value": 55,
-        "spec": "Divinité"
+        "choix": [
+          "tzeentch",
+          "slaanesh",
+          "nurgle"
+        ],
+        "value": 55
       },
       {
         "id": "signes-secrets",
@@ -30419,8 +30432,12 @@
       },
       {
         "id": "savoir",
-        "value": 75,
-        "spec": "Divinité"
+        "choix": [
+          "tzeentch",
+          "slaanesh",
+          "nurgle"
+        ],
+        "value": 75
       },
       {
         "id": "signes-secrets",
@@ -30626,13 +30643,17 @@
       },
       {
         "id": "savoir",
-        "value": 95,
-        "spec": "Divinité"
+        "choix": [
+          "tzeentch",
+          "slaanesh",
+          "nurgle"
+        ],
+        "value": 95
       },
       {
         "id": "savoir",
-        "value": 70,
-        "spec": "au choix"
+        "choix": true,
+        "value": 70
       },
       {
         "id": "signes-secrets",
@@ -35236,8 +35257,8 @@
       },
       {
         "id": "langue",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "marchandage",
@@ -35430,8 +35451,8 @@
       },
       {
         "id": "langue",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "marchandage",
@@ -36843,8 +36864,8 @@
       },
       {
         "id": "langue",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "focalisation",
@@ -36882,8 +36903,8 @@
       },
       {
         "id": "savoir",
-        "value": 80,
-        "spec": "au choix"
+        "choix": true,
+        "value": 80
       },
       {
         "id": "projectiles",
@@ -40066,8 +40087,8 @@
       },
       {
         "id": "langue",
-        "value": 90,
-        "spec": "au choix"
+        "choix": true,
+        "value": 90
       },
       {
         "id": "focalisation",
@@ -40311,8 +40332,8 @@
       },
       {
         "id": "langue",
-        "value": 110,
-        "spec": "au choix"
+        "choix": true,
+        "value": 110
       },
       {
         "id": "focalisation",
@@ -40349,8 +40370,8 @@
       },
       {
         "id": "savoir",
-        "value": 95,
-        "spec": "au choix"
+        "choix": true,
+        "value": 95
       },
       {
         "id": "soin-aux-animaux",
@@ -48176,8 +48197,8 @@
       },
       {
         "id": "langue",
-        "value": 50,
-        "spec": "au choix"
+        "choix": true,
+        "value": 50
       },
       {
         "id": "corps-a-corps",
@@ -48359,8 +48380,8 @@
       },
       {
         "id": "langue",
-        "value": 55,
-        "spec": "au choix"
+        "choix": true,
+        "value": 55
       },
       {
         "id": "corps-a-corps",
@@ -49456,8 +49477,8 @@
       },
       {
         "id": "langue",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "corps-a-corps",
@@ -49502,8 +49523,8 @@
       },
       {
         "id": "savoir",
-        "value": 0,
-        "spec": "au choix"
+        "choix": true,
+        "value": 0
       },
       {
         "id": "guerison",
@@ -53015,8 +53036,8 @@
       },
       {
         "id": "langue",
-        "value": 50,
-        "spec": "au choix"
+        "choix": true,
+        "value": 50
       }
     ],
     "talents": [],
@@ -53200,8 +53221,8 @@
       },
       {
         "id": "savoir",
-        "value": 80,
-        "spec": "Au choix"
+        "choix": true,
+        "value": 80
       }
     ],
     "talents": [],

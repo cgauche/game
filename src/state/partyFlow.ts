@@ -400,7 +400,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillId: str
       const known = clone.skills.some((sk) => sk.skillId === skillId && (sk.spec ?? '') === (spec ?? ''));
       const status = inCareerStatus(ctx.sSlots, ctx.designations, skillId, spec);
       const additions = careerSkillAdditions(clone);
-      const added = additions.some((a) => a.id === skillId && (!a.spec || /au choix/i.test(a.spec) || (a.spec ?? '') === (spec ?? '')));
+      const added = additions.some((a) => a.id === skillId && (!a.spec || a.choix != null || (a.spec ?? '') === (spec ?? '')));
       const inC = status != null || added;
       if (known && mentorBlocks(inC, rule('advancement-mentor') === true, !!get().flags['mentor'])) {
         msg = t('pf.charNeedsMentor', { name: clone.label, what: lbl(skillLabel, spec) });

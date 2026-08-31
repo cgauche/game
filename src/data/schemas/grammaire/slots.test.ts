@@ -113,7 +113,10 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     ).toEqual([
       'actorRefSchema',
       "idDe('creature')",
-      ...Array.from({ length: 34 }, () => "idDe('skill')"),
+      // 34 → 36 idDe('skill') (L2 #1548, commit 4bis) : les DEUX statblocs adoptent la grammaire —
+      // defs/creatures.ts › skills et defs-scenes/communs.ts › skills composent refOuSpec('skill', {value})
+      // là où ils redéclaraient chacun leur {id, spec?, value}. 1 marque par instance de fabrique.
+      ...Array.from({ length: 36 }, () => "idDe('skill')"),
       ...Array.from({ length: 4 }, () => "idDe('table')"),
       ...Array.from({ length: 6 }, () => "idDe('talent')"),
       "idDe('trapping')",

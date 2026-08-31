@@ -103,7 +103,12 @@ function raffineNarratif(nb: z.infer<typeof formeNarratif>, ctx: z.RefinementCtx
       if (!Array.isArray(p.profil.traits)) faute(['presetsPnj', i, 'profil', 'traits'], `le preset PNJ « ${p.id} » a un profil sans base et sans « traits ».`);
     }
     /** Référence PAR ID jusque dans la spécialisation (`specResolves`, #1342 L3). La sentinelle
-     *  « (Au choix) » reste admise : elle désigne un choix, pas une spécialisation. */
+     *  « au choix » reste admise : elle désigne un EMPLACEMENT, pas une spécialisation. Elle ne
+     *  peut plus arriver côté COMPÉTENCE (`skillRefSchema` = `refOuSpec('skill')`, dont
+     *  `ref.ts#SENTINELLE_DE_SPEC` la refuse au parse) ; elle arrive ENCORE côté TALENT, où
+     *  `talentRefSchema` (`grammaire/reference.ts`) n'a pas de régime `choix` — 11 sentinelles
+     *  mesurées dans `creatures.json`, dont ces profils embarqués sont le patch partiel. Concept
+     *  loté L3 (#1463) : ce volet tombe quand le talent gagne son régime `choix`. */
     const specValide = (
       champ: 'skills' | 'talents',
       kind: { indefini: string; defini: string },

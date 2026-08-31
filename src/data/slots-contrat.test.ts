@@ -92,7 +92,9 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
  * ligne est née d'une donnée devenue référence : `arene-projet.skill`, valeur de Test du PNJ soigneur,
  * jusque-là un nombre nu.
  */
-const DETTE_ADOPTION_MAX = 339;
+// 339 → 337 (L2 #1548, commit 4bis) : les 2 statblocs (defs/creatures, defs-scenes/communs) adoptent
+// refOuSpec('skill') — 2 couples porteurs sortent de la dette.
+const DETTE_ADOPTION_MAX = 337;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

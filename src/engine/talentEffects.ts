@@ -148,21 +148,25 @@ export function resolveMax(hero: Combatant): number {
 export interface SkillTalentRef {
   id: string;
   spec?: string;
+  /** Emplacement NON DÉSIGNÉ reporté tel quel quand le talent porteur n'a pas de spec à reporter
+   *  (« Art (Au choix) ») — résolu au point d'usage par `choixLabel` puis le choix joueur. */
+  choix?: true | string[];
 }
 
 /**
  * Compétences ajoutées aux listes de carrière par les talents possédés (« Ajoutez X à n'importe
  * quelle Carrière que vous entamez », LDB 10). La spec choisie à l'acquisition du talent
  * (« Maître artisan (Forgeron) ») se reporte sur la compétence ajoutée (« Métier (Forgeron) ») ;
- * un addSkill « (Au choix) » sans spec sur le talent reste un joker de groupe.
+ * sans spec à reporter, l'emplacement `choix` de l'op reste ouvert (joker de groupe).
  */
 export function careerSkillAdditions(hero: Combatant): SkillTalentRef[] {
   const out: SkillTalentRef[] = [];
   for (const t of hero.talents) {
     for (const op of findTalentById(t.talentId)?.passive ?? []) {
       if (op.op !== 'grantCareerSkill') continue;
-      // Spec « Au choix » de l'op reportée sur la spec concrète choisie du talent (Maître artisan (Forgeron)).
-      if (t.spec && op.skill.spec && /au choix/i.test(op.skill.spec)) out.push({ id: op.skill.id, spec: t.spec });
+      // Emplacement `choix` de l'op DÉSIGNÉ par la spec concrète du talent (Maître artisan (Forgeron)).
+      if (t.spec && op.skill.choix != null) out.push({ id: op.skill.id, spec: t.spec });
+      else if (op.skill.choix != null) out.push({ id: op.skill.id, choix: op.skill.choix });
       else out.push({ id: op.skill.id, spec: op.skill.spec });
     }
   }

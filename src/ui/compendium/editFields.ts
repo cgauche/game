@@ -80,19 +80,31 @@ export function libelleDuChamp(key: string, { meta, niveau = 'document' }: Regim
   return meta?.[key]?.label ?? key;
 }
 
-/** Champs (ordre = 1re apparition), type inféré du 1er échantillon non-null de chaque clé ; libellé
- *  par `libelleDuChamp` (la `meta` du def, quand il en a une, arrive par le registre de schémas). */
+/** Champs (ordre = 1re apparition), type inféré du 1er échantillon non-null de chaque clé — et, pour
+ *  un tableau, de l'UNION de ses éléments sur toutes les entrées ; libellé par `libelleDuChamp`
+ *  (la `meta` du def, quand il en a une, arrive par le registre de schémas). */
 export function inferFields(entries: Record<string, unknown>[], regime: RegimeDeLibelle = {}): FieldDesc[] {
   const keys: string[] = [];
   for (const e of entries) for (const k of Object.keys(e)) if (!keys.includes(k)) keys.push(k);
   return keys.map((key) => {
     let sample: unknown;
     let sawNull = false;
+    // Un TABLEAU se classe sur l'UNION de ses éléments à travers TOUTES les entrées : `every` est VRAI
+    // à vide, donc un premier échantillon `[]` (fréquent en tête de dataset) ne prouve RIEN sur la forme
+    // des éléments — et une liste d'OBJETS ne peut jamais tomber en `stringList`/`numberList` (#1548).
+    // DEUX cliquets : `editfields-union-elements.test.ts` tient l'ALGORITHME (union vs premier
+    // échantillon) sur des entrées forgées ; `editfields-listes-objets.test.ts` scanne la DONNÉE
+    // réelle de toutes les catégories éditables. Mesuré 2026-08-31 : le second reste VERT sous
+    // l'algorithme « premier échantillon » (les champs qui basculeraient sont tous filtrés par
+    // `dedicatedFieldKeys`/`refFieldCfg`) — seul le premier mord.
+    const elements: unknown[] = [];
     for (const e of entries) {
       const v = e[key];
-      if (v == null) sawNull = true;
-      else if (sample === undefined) sample = v;
+      if (v == null) { sawNull = true; continue; }
+      if (Array.isArray(v)) elements.push(...v);
+      if (sample === undefined) sample = v;
     }
-    return { key, label: libelleDuChamp(key, regime), kind: kindOf(key, sample), nullable: sawNull || sample === undefined };
+    const echantillon = Array.isArray(sample) ? elements : sample;
+    return { key, label: libelleDuChamp(key, regime), kind: kindOf(key, echantillon), nullable: sawNull || sample === undefined };
   });
 }

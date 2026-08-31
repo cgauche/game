@@ -38,7 +38,16 @@ import type { Scene } from './scene';
 // 'savoir-vivre', 'Érudit')` rend `false` là où `'erudits'` rend `true`. Un héros de 33 garderait un
 // Talent qui ne couvre plus son emplacement — avance silencieusement perdue, retombée sur la
 // Caractéristique nue : la save se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 34;
+// 34 → 35 (L2 #1548, commit 4bis) : la `SkillInstance` d'une créature SPAWNÉE change de forme. La
+// sentinelle `spec: "au choix"` du bestiaire descendait TELLE QUELLE dans l'instance persistée (une
+// spéc qu'aucun catalogue ne résout) ; elle est désormais DÉSIGNÉE au spawn (`skillsFromBook`, seedée
+// sur l'uid) et l'instance porte une spéc CONCRÈTE. PORTÉE EXACTE DE LA PERTE, mesurée à
+// `src/engine/skills.ts` (`s.skillId === skill && (spec == null || s.spec === spec)`) : un appelant
+// SANS spec appariait l'instance et lisait sa valeur — c'est le Test SPÉCIALISÉ qui n'appariait rien
+// et retombait sur la Caractéristique nue. Les scènes vivantes d'une save de 34 rouvriraient avec des
+// pions dont les 53 lignes sentinelles échouent à tout Test spécialisé : la save se jette
+// (politique 2 ci-dessus).
+export const SAVE_VERSION = 35;
 
 export interface SaveMeta {
   version: number;

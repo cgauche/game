@@ -21,14 +21,37 @@
 export const signature = (cles: readonly string[]): string => [...cles].sort().join(',');
 
 export type StatutSignature = 'cible' | 'historique' | 'declaree';
-export type SignatureLexique = { sig: string; statut: StatutSignature; note?: string };
+
+/**
+ * SITE d'une entrée de lexique — `(datasets × champs)`. Sans site, l'entrée vaut PARTOUT ; avec, elle
+ * ne vaut qu'à ce site et une entrée SANS site sert de repli pour tous les autres. Le statut d'une
+ * même graphie peut donc différer d'un porteur à l'autre — ce qui est le cas dès que la charge utile
+ * appartient au porteur : `{id, value}` est la CIBLE d'une réf de Compétence de statbloc (la valeur
+ * IMPRIMÉE y est un champ de la référence) et reste HISTORIQUE partout ailleurs (un `value` de
+ * `trappings › qualities` est un Indice d'Atout, un `value` de `creatures › traits` un paramètre
+ * d'entité — concepts lotés L3).
+ *
+ * Le DATASET seul ne suffit pas et c'est mesuré : `creatures.json` porte `{id,value}` sur `skills`
+ * (cible) ET sur `traits`/`optionals` (historique). Le champ entre donc dans la clé.
+ */
+export type SiteDeSignature = { readonly datasets: readonly string[]; readonly champs: readonly string[] };
+export type SignatureLexique = { sig: string; statut: StatutSignature; note?: string; site?: SiteDeSignature };
+
+/** Les documents qui portent un STATBLOC à valeurs de Test imprimées : le bestiaire et les statblocs
+ *  EMBARQUÉS des projets de scène (`CustomStatblock`). MÊME schéma des deux côtés
+ *  (`defs/creatures.ts` et `defs-scenes/communs.ts` composent tous deux `refOuSpec('skill', {value})`). */
+export const SITE_STATBLOC: SiteDeSignature = {
+  datasets: ['creatures.json', 'arene-projet.json', 'barge-du-sel-projet.json', 'diligence-projet.json', 'loup-et-saumure-projet.json'],
+  champs: ['skills'],
+};
 
 /**
  * Strate de la grammaire (#1463, design 2026-08-23) à laquelle une forme appartient.
  * QUATRE strates : la strate `Instance` du design v2 (SkillInstance, ItemInstance, snapshot de
  * sauvegarde) est HORS PÉRIMÈTRE PAR CONSTRUCTION — les deux racines mesurées ne portent que des
  * documents AUTHORÉS ; son dénominateur se mesurera sur le runtime et un snapshot de test
- * (#1463, arbitrage de design L0 du 2026-08-23, point 1).
+ * (#1463, commentaire « Arbitrages de design L0 (2026-08-23, orchestrateur — suite à la contre-passe
+ * du commit 3a6017ebb) », point 1).
  */
 export type Strate = 'Référence' | 'Valeur' | 'Ops' | 'Document';
 
@@ -37,8 +60,8 @@ export const CIBLE_COMPETENCE = 'skills.json';
 
 /**
  * LOT d'extinction d'une ligne de stock : il se DÉDUIT du CONCEPT, il ne s'assigne pas à la main.
- * Un concept vit dans UN SEUL lot sur TOUS ses porteurs (#1463, arbitrage de design L0 du
- * 2026-08-23, point 2) : `source` → L1d ; une référence → L2 quand sa cible est la Compétence,
+ * Un concept vit dans UN SEUL lot sur TOUS ses porteurs (#1463, commentaire « Arbitrages de design L0
+ * (2026-08-23, orchestrateur — suite à la contre-passe du commit 3a6017ebb) », point 2) : `source` → L1d ; une référence → L2 quand sa cible est la Compétence,
  * L3 sinon ; toute autre valeur du lexique → L4 ; une structure hors lexique → L1a.
  */
 export const lotDeForme = (concept: string, signature: string, cibles: readonly string[] = []): string =>
@@ -163,7 +186,8 @@ export type Concept = {
  * Graphies ENVELOPPANTES : une clé de graphie sous laquelle pend un OBJET (ou un tableau d'objets)
  * plutôt qu'un id nu. L'intérieur porte le CHEMIN de graphie dans sa signature (`ref>id`,
  * `wildcard>id`, `choice>id`) et HÉRITE du statut de l'enveloppe : `{ref:{id}}` se lit
- * `ref>id / historique`, jamais `id / cible` (#1463, arbitrage de design L0, point 4).
+ * `ref>id / historique`, jamais `id / cible` (#1463, commentaire « Arbitrages de design L0
+ * (2026-08-23, orchestrateur — suite à la contre-passe du commit 3a6017ebb) », point 4).
  */
 export const GRAPHIES_ENVELOPPANTES = ['ref', 'wildcard', 'choice', 'random'] as const;
 
@@ -183,8 +207,21 @@ export const CONCEPTS: readonly Concept[] = [
       { sig: 'count,id,type', statut: 'cible' },
       { sig: 'of,pick', statut: 'cible', note: 'tirage parmi un ensemble borné' },
       { sig: 'pick,table', statut: 'cible', note: 'tirage sur une table nommée' },
-      { sig: 'id,value', statut: 'historique', note: 'charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2)' },
-      { sig: 'id,spec,value', statut: 'historique', note: '#1463 « Cible précisée » l’énumère parmi les 5 graphies historiques, son 1er paragraphe la dit champ optionnel de la MÊME structure — L0 retient l’énumération (une ligne de stock se retire, elle ne se devine pas)' },
+      // Les trois lignes SITE-QUALIFIÉES ci-dessous passent AVANT leurs homonymes sans site : au
+      // statbloc, la valeur IMPRIMÉE est un champ de la référence — `#1463` (« Faits tranchés au
+      // Source ») : « `value` = le seul nom du NOMBRE IMPRIMÉ au statbloc », et sa clause de
+      // composition « `value` requis sur un statbloc ». `advances` est le nom du RANG ACHETÉ en PX
+      // (Augmentation, `LDB 07`, `docs/raw/avancement.md:27`), qui vit sur l'INSTANCE, pas ici.
+      // RÉSERVE OUVERTE, dite et non tranchée (commit de préservation `772a217cc`, verbatim
+      // utilisateur) : « la forme {id, spec|choix, value} n'est PAS le schéma final — #1463 tranche un
+      // noyau générique de référence + compositions fermées ; `value`/`times`/avances = un seul rang
+      // acheté en PX, à nommer au RAW ». Ce qui est CIBLE ici est la COMPOSITION (charge utile portée
+      // par la référence) ; le NOM du champ reste un point ouvert de L5.
+      { sig: 'id,value', statut: 'cible', site: SITE_STATBLOC, note: 'réf de Compétence de STATBLOC + son nombre imprimé (`refOuSpec(\'skill\', {value})`)' },
+      { sig: 'id,spec,value', statut: 'cible', site: SITE_STATBLOC, note: 'idem, spécialisation DÉSIGNÉE' },
+      { sig: 'choix,id,value', statut: 'cible', site: SITE_STATBLOC, note: 'idem, spécialisation À CHOISIR (libre ou bornée) — désignée au spawn' },
+      { sig: 'id,value', statut: 'historique', note: 'charge utile `value` à plat sur une référence dont le porteur n’est PAS un statbloc (Indice d’Atout, paramètre d’entité) — #1463 S2' },
+      { sig: 'id,spec,value', statut: 'historique', note: '#1463 « Cible précisée » l’énumère parmi les 5 graphies historiques, son 1er paragraphe la dit champ optionnel de la MÊME structure — L0 retient l’énumération hors statbloc (une ligne de stock se retire, elle ne se devine pas)' },
       { sig: 'arg,id', statut: 'historique', note: 'paramètre d’entité non déclaré (#1463 S2 A11)' },
       { sig: 'arg,id,value', statut: 'historique' },
       { sig: 'count,id', statut: 'historique' },

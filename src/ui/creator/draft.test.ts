@@ -39,7 +39,8 @@ import {
 import { CHAR_KEYS } from '../../engine/types';
 import { rigSpeciesId, trappingRefLabel, type TrappingRef } from '../../data';
 import { isUnresolvedChoice, concreteLabel, splitLabel, splitTopLevelOu } from '../../engine/careerSlots';
-import { specOptionsFor, pettySpellQuota } from './draft';
+import { specOptionsFor, pettySpellQuota, probeHero } from './draft';
+import { careerSkillAdditions } from '../../engine/talentEffects';
 import { spells, advancementLabel, stars, celestialHouses, species as allSpecies, careersForSpecies } from '../../data';
 
 // Page blanche : `newDraft` ne pré-tire plus race/carrière — les tests posent explicitement les
@@ -283,6 +284,15 @@ describe('buildHero — bout en bout', () => {
     // Force un talent d'espèce résolu addSkill via careerTalent (Maître artisan n'est pas Soldat,
     // on vérifie juste que les 8 entrées du Niveau sont présentes).
     expect(careerSkillEntries(d).length).toBeGreaterThanOrEqual(8);
+  });
+  it.each(['Maître artisan', 'Artiste'])('clé de grille d’un ajout à emplacement `choix` (%s) = celle qu’indexe le moteur', (careerTalent) => {
+    const d = { ...readyDraft(), careerTalent };
+    const adds = careerSkillAdditions(probeHero(d));
+    expect(adds.length).toBeGreaterThan(0);
+    const entries = careerSkillEntries(d);
+    // `engine/character.ts` indexe `opts.skillAdvances` par `advancementLabel` : la grille du
+    // créateur doit produire EXACTEMENT cette clé, sinon l'allocation est perdue au build.
+    for (const a of adds) expect(entries).toContain(advancementLabel('skills', a));
   });
 });
 

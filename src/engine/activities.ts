@@ -755,7 +755,7 @@ export function entrainementOptions(hero: Combatant): EntrainementOption[] {
     const specs = specPoolOf(s); // options OFFERTES au joueur (Entraînement)
     for (const spec of specs.length ? specs : [undefined]) {
       if (inCareerStatus(sSlots, designations, s.id, spec) != null) continue; // de carrière → Avancement normal
-      const addedExact = additions.some((a) => a.id === s.id && (!a.spec || /au choix/i.test(a.spec) || (a.spec ?? '') === (spec ?? '')));
+      const addedExact = additions.some((a) => a.id === s.id && (!a.spec || a.choix != null || (a.spec ?? '') === (spec ?? '')));
       if (addedExact) continue; // ajoutée « à n'importe quelle Carrière » par un talent (LDB 10) → in-carrière
       const known = hero.skills.find((k) => k.skillId === s.id && (k.spec ?? '') === (spec ?? ''));
       const advances = known?.advances ?? 0;

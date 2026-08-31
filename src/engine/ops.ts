@@ -532,9 +532,10 @@ export type GameOp =
    *  par `talentConcrete`. */
   | { op: 'grantTalent'; talentId: string; spec?: string }
   /** Ajoute une Compétence aux listes de TOUTE carrière entamée (Maître artisan/Sorcier!/… LDB 10) —
-   *  référence EMBOÎTÉE (jamais libellé). `skill.spec='Au choix'` = reportée sur la spec choisie du talent.
+   *  référence EMBOÎTÉE (jamais libellé), MÊME forme que `SkillRef` sans sa valeur imprimée :
+   *  `skill.choix` = emplacement NON désigné, reporté sur la spec choisie du talent quand elle existe.
    *  Lu par `careerSkillAdditions` (création/avancement), pas appliqué au combattant. */
-  | { op: 'grantCareerSkill'; skill: { id: string; spec?: string } }
+  | { op: 'grantCareerSkill'; skill: { id: string; spec?: string; choix?: true | string[] } }
   /** Ajoute un Talent aux listes de TOUTE carrière entamée (Flagellant → Frénésie « est ajouté à la
    *  liste des Talents de n'importe laquelle de vos Carrières », LDB 10) — analogue Talent de
    *  `grantCareerSkill`, ref par `talentId` STABLE. Lu par `careerTalentAdditions`, pas appliqué au combattant. */

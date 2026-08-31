@@ -229,9 +229,9 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('skillsFromBook : ref structurée (id + value) → SkillInstance ; id inconnu du catalogue → ignoré', () => {
     const chars = { 'capacite-de-combat': 45 } as any;
-    const [cc] = skillsFromBook([{ id: 'corps-a-corps', spec: 'bagarre', value: 50 }], chars);
+    const [cc] = skillsFromBook([{ id: 'corps-a-corps', spec: 'bagarre', value: 50 }], chars, 'spec:t');
     expect(cc).toMatchObject({ skillId: 'corps-a-corps', characteristic: 'capacite-de-combat', advances: 5 });
-    expect(skillsFromBook([{ id: 'competence-inexistante', value: 50 }], chars)).toEqual([]); // rien d'inventé
+    expect(skillsFromBook([{ id: 'competence-inexistante', value: 50 }], chars, 'spec:t')).toEqual([]); // rien d'inventé
   });
 
   // #614 — un PNJ/bête custom (`LivingRef.custom`) porte la MÊME overlay de spawn qu'une créature du bestiaire.

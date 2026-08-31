@@ -71,7 +71,6 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs-scenes/effets.ts:extendedTestSchema|alias|skill': e('Effet `extendedTest` (test étendu de scène) désignant sa Compétence par `skill`.', L2),
   'src/data/schemas/defs-scenes/effets.ts:corruptionExposureSchema|alias|skill': e('Effet `corruptionExposure` désignant la Compétence du jet de résistance par `skill`.', L2),
   'src/data/schemas/defs-scenes/effets.ts:startPursuitSchema|alias|skill': e('Effet `startPursuit` désignant la Compétence de course par `skill`.', L2),
-  'src/data/schemas/defs-scenes/communs.ts:skillRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('Réf de Compétence de scène re-tapée `{id, spec, value}` — la signature de `qualityRefSchema`, pour un tout autre concept. UNE seule définition pour la racine `src/scenes` (`scene.ts` la réexporte).', L2),
 
   // ── Graphies historiques de RÉFÉRENCE à une autre entité (`ref`, `talentId`, `trappingId`) ────
   'src/data/schemas/defs/axes.ts:talentRefSchema|alias|talentId': e('Réf de Talent d’un axe de profil en `{talentId, spec}`.', L3),
@@ -84,7 +83,6 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs-scenes/effets.ts:givePossessionSchema|alias|ref': e('Effet `givePossession` désignant la possession par une enveloppe `ref`.', L3),
   'src/data/schemas/defs-scenes/scene.ts:sceneEntitySchema|alias|ref': e('Entité de scène désignant son modèle (créature/prop) par une enveloppe `ref`.', L3),
   'src/data/schemas/defs-scenes/worldmap.ts:portProfileSchema|alias|ref': e('Profil de port désignant son entité par une enveloppe `ref`.', L3),
-  'src/data/schemas/defs/creatures.ts:skillRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('Réf de bestiaire re-tapée `{id, spec, value}` (`STRUCTURES_REDECLARATIONS` creatures.ts, signature `id,spec,value`).', L3),
   'src/data/schemas/defs/trappings.ts:qualityRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('`qualityRefSchema` re-déclaré localement dans le catalogue des dotations — la vue commune vit dans `grammaire/reference.ts`.', L3),
   'src/data/schemas/defs/domains.ts:doc.windModifiers.cancelledBy.requiresSkill|redeclaration|refSchema {id,spec}': e('Réf `{id, spec}` re-tapée sous `requiresSkill` (`STRUCTURES_REDECLARATIONS` domains.ts, statut `cible`, commun `refSchema`).', L3),
 

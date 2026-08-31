@@ -52,7 +52,8 @@ import { CHAR_KEYS, CHAR_LABELS, DIFFICULTY_LABELS, HIT_LOCATION_LABELS } from '
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry, WaterExposureData, WaterExposureModifier } from '../../data';
-import { SPEC_SOURCES, type SpecsSource } from '../../data';
+import { SPEC_SOURCES, skillRefLabel, talentRefLabel, type SpecsSource, type SkillRef as SkillRefLivre, type TalentRef } from '../../data';
+import { parseSkillRef, parseTalentRef } from '../editor/refFormatLivre';
 import type { SecondaryRef, Variant } from '../../data/schemas/grammaire/valeurs';
 import { OPTIONAL_RULES, type RuleKind, type RuleValue } from '../../engine/policy';
 import { VARIANT_RESOLVED_FIELDS as TALENT_VARIANT_FIELDS } from '../../data/schemas/defs/talents';
@@ -254,6 +255,40 @@ function ruleValueErrors(entry: Entry): string[] {
   return out;
 }
 
+/**
+ * COUTURE format livre ↔ refs structurées de l'atelier (#1548) : une ref par LIGNE, rendue par le
+ * libellé d'affichage de son concept (`skillRefLabel`/`talentRefLabel`) et relue par le parse inverse
+ * de la porte unique (`refFormatLivre`). Ces deux fonctions PURES sont exactement ce que le champ
+ * appelle — le round-trip se mesure donc sur la vraie couture (`codex-creature-refs-roundtrip.test`).
+ */
+export function refsEnLignes<T>(refs: readonly T[] | undefined, libelle: (r: T) => string): string {
+  return (refs ?? []).map(libelle).join('\n');
+}
+export function lignesEnRefs<T>(texte: string, parse: (ligne: string) => T): T[] {
+  return texte.split('\n').map((s) => s.trim()).filter(Boolean).map(parse);
+}
+
+/** Champ MULTILIGNE de refs au format livre (une par ligne). La saisie vit en BROUILLON local et se
+ *  POSE au blur : la normalisation par la porte ne réécrit jamais la ligne sous les doigts de
+ *  l'auteur. Le blur ne REFUSE rien : toute ligne est coercée en ref par le parse (un nom inconnu
+ *  devient son slug). Le refus est NOMINATIF au Save — `validateEntry` rend « skills : réf « X »
+ *  introuvable (skills) » et l'enregistrement reste bloqué tant qu'une erreur subsiste. */
+function LignesFormatLivreField({ label, hint, value, onCommit }: { label: string; hint: string; value: string; onCommit: (texte: string) => void }) {
+  const [brouillon, setBrouillon] = useState<string | null>(null);
+  return (
+    <label className="ed-field">
+      <span>{label}</span>
+      <span className="de-hint">{hint}</span>
+      <textarea
+        rows={6}
+        value={brouillon ?? value}
+        onChange={(e) => setBrouillon(e.target.value)}
+        onBlur={() => { if (brouillon != null) { onCommit(brouillon); setBrouillon(null); } }}
+      />
+    </label>
+  );
+}
+
 /** Axes du PROFIL de manœuvre rendus par `ManeuverDefField` (selects/checkbox). */
 const MANEUVER_PROFILE_KEYS = ['kind', 'activation', 'advantageCost', 'advantageMode', 'stat', 'defense', 'targeting', 'range', 'blast', 'magic'];
 
@@ -297,7 +332,10 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'reglesOptionnelles') add('default', 'action');
 
   if (categoryKey === 'races' || categoryKey === 'careerLevels') add('skills', 'talents');
-  if (categoryKey === 'classes' || categoryKey === 'careerLevels') add('trappings');
+  if (categoryKey === 'classes' || categoryKey === 'careerLevels' || categoryKey === 'creatures') add('trappings'); // TrappingRef[] — MEME forme, MEME éditeur (#1548)
+  // Créature : `skills`/`talents` sont des REFS structurées (`SkillRef`/`TalentRef`) — éditées au FORMAT
+  // LIVRE (porte partagée avec l'éditeur de statbloc de scène), jamais par le champ-liste générique.
+  if (categoryKey === 'creatures') add('skills', 'talents');
   if (categoryKey === 'careerLevels') add('characteristics');
   if (categoryKey === 'domains') add('castBonus', 'missile', 'casterOps');
   // Rubrique de VENT (`windModifiers`, #729) : tableau top-level d'objets → éditeur GÉNÉRIQUE commun.
@@ -454,8 +492,8 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   const hasSpecs = categoryKey === 'skills' || categoryKey === 'talents';
   // Avancement (espèce / niveau de carrière) : `skills`/`talents` = AdvancementRef[] (réf/joker/choix/aléatoire).
   const hasAdvancement = categoryKey === 'races' || categoryKey === 'careerLevels';
-  // Possessions de DÉPART (classe / niveau de carrière) : `trappings` = TrappingRef[] (id catalogue + quantité, ou texte).
-  const hasTrappings = categoryKey === 'classes' || categoryKey === 'careerLevels';
+  // Possessions (classe / niveau de carrière / créature) : `trappings` = TrappingRef[] (id catalogue + quantité, ou texte).
+  const hasTrappings = categoryKey === 'classes' || categoryKey === 'careerLevels' || categoryKey === 'creatures';
   // Niveau de carrière : `characteristics` = CharKey[] (vocab fermé) → multi-sélection (pas de saisie libre).
   const hasCharKeys = categoryKey === 'careerLevels';
   // Étoile : `sub` = sous-fourchette d100 [min,max] (Étoile du Sorcier) → deux inputs number.
@@ -666,6 +704,18 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
             <TraitListField label="Traits" hint="(LDB 85 — armement « Arme (Épée) +7 », Psychologie « Peur 3 »…)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />
             <OptionalsListField label="Traits optionnels" hint="(LDB 76 — proposés au spawn ; notes composées « swap »/« tous les traits » en lecture seule)" value={entry.optionals as OptionalEntry[] | undefined} onChange={(v) => edit('optionals', v)} />
             <HarvestField value={entry.harvest as { rarity: import('../../data').HarvestRarity; danger: import('../../data').HarvestDanger; uses: string } | undefined} onChange={(v) => edit('harvest', v)} />
+            <LignesFormatLivreField
+              label="Compétences"
+              hint="(une par ligne, format livre « Compétence (Spéc) Valeur » : « Langue (Magick) 63 », « Savoir (Au choix) 65 », « Métier (Armurier ou Forgeron) 50 », « Esquive 48 » — la valeur est le Test FINAL)"
+              value={refsEnLignes(entry.skills as SkillRefLivre[] | undefined, skillRefLabel)}
+              onCommit={(t) => edit('skills', lignesEnRefs(t, parseSkillRef))}
+            />
+            <LignesFormatLivreField
+              label="Talents"
+              hint="(un par ligne, format livre « Talent (Spéc) Niveau » : « Magie des Arcanes (Bête) », « Maîtrise du combat 3 », « Lire/Écrire »)"
+              value={refsEnLignes(entry.talents as TalentRef[] | undefined, talentRefLabel)}
+              onCommit={(t) => edit('talents', lignesEnRefs(t, parseTalentRef))}
+            />
           </>
         )}
         {isDetails && <DetailsTextsField value={entry.texts as DetailsTexts | undefined} onChange={(v) => edit('texts', v)} />}

@@ -235,7 +235,7 @@
         "op": "grantCareerSkill",
         "skill": {
           "id": "art",
-          "spec": "Au choix"
+          "choix": true
         }
       }
     ]
@@ -3167,7 +3167,7 @@
         "op": "grantCareerSkill",
         "skill": {
           "id": "metier",
-          "spec": "Au choix"
+          "choix": true
         }
       }
     ],

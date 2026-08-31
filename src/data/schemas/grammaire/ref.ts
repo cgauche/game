@@ -135,6 +135,14 @@ export function typedRef(types: readonly TypeEntite[] = Object.keys(TYPES) as Ty
  *  (`flowSchema: ZodType<Flow<EffectOp>>`) perdrait sa forme et cesserait de typer son arbre. */
 export interface RefASpecialisation { id: string; spec?: string; choix?: true | string[] }
 
+/**
+ * Le littéral que le livre imprime à la place d'une spécialisation : `LDB 09 l.40`. Ce n'est pas une
+ * spécialisation, c'est un EMPLACEMENT non désigné — la grammaire l'écrit `choix`. Refusé AU SCHÉMA
+ * (et non par un seul contrat de dataset) : le verrou couvre du même geste `src/data` et `src/scenes`,
+ * y compris les types à spécialisations OUVERTES que le pool fermé ne filtre pas.
+ */
+const SENTINELLE_DE_SPEC = /^au[\s-]+choix$/i;
+
 /** Nœud `{ id, spec?, choix?, …extra }` + validation de la spécialisation. `exigeUnRegime` : `true`
  *  = `spec` XOR `choix` obligatoire (`specRef`), `false` = les deux peuvent manquer (`refOuSpec`). */
 function noeudASpecialisation<T extends TypeEntite>(
@@ -176,9 +184,20 @@ function noeudASpecialisation<T extends TypeEntite>(
         });
         return;
       }
+      const candidats = aSpec ? [v.spec as string] : Array.isArray(v.choix) ? (v.choix as string[]) : [];
+      let sentinelle = false;
+      for (const c of candidats) {
+        if (!SENTINELLE_DE_SPEC.test(c)) continue;
+        sentinelle = true;
+        ctx.addIssue({
+          code: 'custom',
+          path: [aSpec ? 'spec' : 'choix'],
+          message: `ref('${type}') : « ${c} » n'est pas une spécialisation mais un EMPLACEMENT non désigné (${dataset}, « ${String(v.id)} ») — s'écrit « choix » (LDB 09 l.40).`,
+        });
+      }
+      if (sentinelle) return;
       if (ouvert) return;
       const pool = catalogueSpecs(type, String(v.id));
-      const candidats = aSpec ? [v.spec as string] : Array.isArray(v.choix) ? (v.choix as string[]) : [];
       for (const c of candidats) {
         if (pool.includes(c)) continue;
         ctx.addIssue({
