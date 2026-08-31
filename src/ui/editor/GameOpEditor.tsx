@@ -104,6 +104,8 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   cureCriticalWound: 'Guérir une Blessure critique',
   diseaseTestMod: 'Modif. aux Tests d’une maladie',
   suppressSymptom: 'Suspendre un symptôme',
+  aggravateSymptom: 'Aggraver un symptôme',
+  grantSymptom: 'Ajouter un symptôme',
   actGate: 'Test par Round pour agir (drogue)',
   delayed: 'Ops différées (échéance d’horloge)',
   suppressPsych: 'Apaiser les Traits psychologiques',
@@ -171,7 +173,8 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   grantTalent: 'mechanic/invoke', grantCareerSkill: 'mechanic/invoke', grantCareerTalent: 'mechanic/invoke',
   augmentWeapon: 'item/weapon', cureDisease: 'medical/infection', reduceDiseaseDays: 'medical/infection',
   preventInfection: 'medical/infection', cureCriticalWound: 'medical/crutch', diseaseTestMod: 'medical/infection',
-  suppressSymptom: 'medical/infection', actGate: 'ui/wait', delayed: 'ui/wait', suppressPsych: 'mechanic/mind',
+  suppressSymptom: 'medical/infection', aggravateSymptom: 'medical/infection', grantSymptom: 'medical/infection',
+  actGate: 'ui/wait', delayed: 'ui/wait', suppressPsych: 'mechanic/mind',
   suffocate: 'mechanic/ward', noBreath: 'mechanic/ward', noHunger: 'mechanic/ward', ignoreAnimosity: 'mechanic/ward', weatherWard: 'mechanic/ward',
   damageArmour: 'item/armour', reduceToZero: 'journal/damage', banish: 'magic/area', martyr: 'action/defend',
   giveTrapping: 'item/misc', perRound: 'ui/wait', summon: 'mechanic/invoke', scheduleRespawn: 'ui/wait',
@@ -195,7 +198,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Invocation & armes', ['summon', 'polymorph', 'transform', 'endTransform', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'removeTrait', 'grantPsychTrait', 'removePsychTrait', 'beginPsych', 'grantTalent', 'augmentWeapon']],
   ['Zones', ['zone']],
   ['Projection & téléportation', ['push', 'teleport', 'chain']],
-  ['Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
+  ['Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom', 'aggravateSymptom', 'grantSymptom']],
   ['Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
   ['Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'handGate', 'senseLoss']],
   ['Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
@@ -357,6 +360,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'reduceDiseaseDays': return { op: 'reduceDiseaseDays', days: 1 };
     case 'diseaseTestMod': return { op: 'diseaseTestMod', amount: 10 };
     case 'suppressSymptom': return { op: 'suppressSymptom', symptomId: '' };
+    case 'aggravateSymptom': return { op: 'aggravateSymptom', disease: '', symptomId: '', severity: 'grave' };
+    case 'grantSymptom': return { op: 'grantSymptom', disease: '', symptomId: '' };
     case 'actGate': return { op: 'actGate', char: 'force-mentale' };
     case 'delayed': return { op: 'delayed', afterHours: 1, ops: [] };
     case 'preventInfection': return { op: 'preventInfection' };
@@ -456,6 +461,8 @@ export const OP_REF_FIELDS: Partial<Record<GameOp['op'], readonly OpRefField[]>>
   castPenalty: [{ field: 'skill.id', ds: 'skills', label: 'Compétence de magie', required: false }],
   corruptionExposure: [{ field: 'skill.id', ds: 'skills', label: 'Compétence du Test', required: false }],
   suppressSymptom: [{ field: 'symptomId', ds: 'symptoms', label: 'Symptôme', required: true }],
+  aggravateSymptom: [{ field: 'disease', ds: 'maladies', label: 'Maladie', required: true }, { field: 'symptomId', ds: 'symptoms', label: 'Symptôme', required: true }],
+  grantSymptom: [{ field: 'disease', ds: 'maladies', label: 'Maladie', required: true }, { field: 'symptomId', ds: 'symptoms', label: 'Symptôme', required: true }],
   rollMutation: [{ field: 'table', ds: 'mutationTables', label: 'Table de Corruption', required: true }],
   summon: [{ field: 'ref', ds: 'creatures', label: 'Créature', required: true }],
   polymorph: [{ field: 'ref', ds: 'creatures', label: 'Créature', required: true }],
@@ -545,6 +552,8 @@ export function opSummary(o: GameOp): string {
     case 'reduceDiseaseDays': return `−${o.dice ? `${o.dice.n}d${o.dice.sides}` : (o.days ?? 1)} jour(s)${o.disease ? ` (${refLabel('maladies', { id: o.disease })})` : ''}`;
     case 'diseaseTestMod': return `${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie${o.diseases?.length ? ` (${o.diseases.map((d) => refLabel('maladies', { id: d })).join(', ')})` : ''}`;
     case 'suppressSymptom': return `${refLabel('symptoms', { id: o.symptomId })} suspendu`;
+    case 'aggravateSymptom': return `${refLabel('symptoms', { id: o.symptomId })} → ${o.severity} (${refLabel('maladies', { id: o.disease })})`;
+    case 'grantSymptom': return `+ ${refLabel('symptoms', { id: o.symptomId })} (${refLabel('maladies', { id: o.disease })})`;
     case 'actGate': return `Test de ${CHAR_LABELS[o.char] ?? o.char} chaque Round pour agir`;
     case 'delayed': return `${o.ops.length} op(s) différée(s)${o.afterDuration ? ' (à la dissipation)' : ''}`;
     case 'preventInfection': return 'pas d’infection';

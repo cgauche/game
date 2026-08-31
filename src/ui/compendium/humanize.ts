@@ -312,6 +312,8 @@ export function humanizeOp(o: GameOp): string {
     case 'actGate': return `doit réussir un Test de ${CHAR_LABELS[o.char]} chaque Round pour agir`;
     case 'diseaseTestMod': return `${o.amount >= 0 ? 'gagne' : 'subit'} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie`;
     case 'suppressSymptom': return `voit le symptôme ${symptomLabel(o.symptomId)} suspendu`;
+    case 'aggravateSymptom': return `voit le symptôme ${symptomLabel(o.symptomId)} s'aggraver`;
+    case 'grantSymptom': return `développe le symptôme ${symptomLabel(o.symptomId)}`;
     case 'delayed': return `déclenche plus tard : ${o.ops.map(humanizeOp).join(' ; ')}`;
     case 'removeShipPoste': return `perd une pièce d'artillerie`;
     case 'teamCommander': return `est dirigé par un commandant d'équipe`;

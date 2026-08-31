@@ -682,6 +682,25 @@
         "symptomId": "malaise"
       }
     ],
+    "dailyTest": {
+      "difficulty": "intermediaire",
+      "symptomId": "fievre",
+      "onFail": [
+        {
+          "op": "aggravateSymptom",
+          "disease": "pneumonie",
+          "symptomId": "fievre",
+          "severity": "grave",
+          "otherwise": [
+            {
+              "op": "grantSymptom",
+              "disease": "pneumonie",
+              "symptomId": "toxine"
+            }
+          ]
+        }
+      ]
+    },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 33,
@@ -717,6 +736,19 @@
         "symptomId": "malaise"
       }
     ],
+    "mutation": {
+      "afterDays": 14,
+      "into": "pneumonie"
+    },
+    "reExposition": {
+      "prolonge": {
+        "dice": {
+          "n": 1,
+          "sides": 10
+        },
+        "unit": "days"
+      }
+    },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 33,

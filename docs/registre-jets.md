@@ -123,7 +123,7 @@ cadence-aware ») — c'est le fail-closed de la donnée.
 ## Rappel — stock du garde d'exclusivité (`rollTest`/`d100`/`TestOutcome.seal` bruts)
 
 Population historique (#918 phase 2), listée ici pour que le registre soit la vue COMPLÈTE ; sa source
-reste `ROLL_SEAM_PHASE2_STOCK`. 35 sites dans 15 fichiers.
+reste `ROLL_SEAM_PHASE2_STOCK`. 32 sites dans 15 fichiers.
 
 | Fichier | Sites |
 |---|---|
@@ -138,7 +138,7 @@ reste `ROLL_SEAM_PHASE2_STOCK`. 35 sites dans 15 fichiers.
 | `src/state/riverVoyageFlow.ts` | 4 |
 | `src/state/seaVoyageFlow.ts` | 4 |
 | `src/state/shipManeuver.ts` | 2 |
-| `src/state/travelFlow.ts` | 6 |
+| `src/state/travelFlow.ts` | 3 |
 | `src/state/travelPostes.ts` | 1 |
 | `src/state/triggeredEffects.ts` | 1 |
 | `src/state/upkeep.ts` | 2 |

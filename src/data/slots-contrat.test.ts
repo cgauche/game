@@ -92,9 +92,20 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
  * ligne est née d'une donnée devenue référence : `arene-projet.skill`, valeur de Test du PNJ soigneur,
  * jusque-là un nombre nu.
  */
-// 339 → 337 (L2 #1548, commit 4bis) : les 2 statblocs (defs/creatures, defs-scenes/communs) adoptent
-// refOuSpec('skill') — 2 couples porteurs sortent de la dette.
-const DETTE_ADOPTION_MAX = 337;
+// Cliquet DESCENDU 339 → 337 (L2 #1548, commit 4bis) : `careerLevels.json | choix` et
+// `species.json | choix` étaient des couples FANTÔMES — `choix` est une CLÉ DE GRAPHIE du nœud de
+// référence, et ses ids sont des SPÉCIALISATIONS bornées par le catalogue de l'entrée visée, jamais
+// une FK vers un dataset (DESIGN v2 S2). Le scan ne les compte plus comme un champ porteur à part
+// entière (`structures-scan.mts`, boucle des listes d'ids nus) ; la même correction empêche le
+// couple `creatures.json | choix` que le commit aurait posé par COLLISION d'ids.
+// Cliquet REMONTÉ 337 → 340 (#674, 2026-08-31) : 3 champs PORTEURS de référence apparaissent dans
+// `maladies.json` avec la Pneumonie et le Rhume commun (EDOC 08 l.94-122) — `mutation` (maladie
+// visée), `onFail` et `otherwise` (les ops du cycle quotidien). MESURÉ : typer les quatre champs de
+// `aggravateSymptom`/`grantSymptom` avec `idDe('maladie')`/`idDe('symptome')` (fait,
+// `grammaire/mecanique.ts`) ne déplace PAS ces lignes — même angle mort que `removeTrait.traitId`
+// ci-dessus : le scan mesure l'objet-op au champ porteur (`onFail`), le slot se projette sur
+// `disease`/`symptomId`. Ces lignes meurent avec le dernier segment-clé en L3 #1473, pas avant.
+const DETTE_ADOPTION_MAX = 340;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

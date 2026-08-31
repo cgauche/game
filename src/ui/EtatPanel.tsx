@@ -34,7 +34,7 @@ import { formatRemaining } from '../engine/disease';
 import { CHAR_LABELS, type ConditionInstance } from '../engine/types';
 import { summarizeEffects } from '../gameIso/effectIcons';
 import { fortuneMax, resolveMax } from '../engine/talentEffects';
-import { diseaseLabel, findPsychologyById, symptomLabel, mutationLabel } from '../data';
+import { diseaseLabel, findPsychologyById, symptomLabel, symptomInstanceLabel, mutationLabel } from '../data';
 import { datasetArray } from '../data/overrides';
 import { isPsychAfflictionActive, ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT } from './sheetAlarms';
 import { useGame } from '../state/store';
@@ -382,7 +382,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               fx={d.symptoms.length > 0 ? (
                 <>
                   {d.symptoms.map((s, si) => (
-                    <EntityRef key={si} category="symptoms" id={s.symptomId} label={symptomLabel(s.symptomId)} show={s.spec ? `${symptomLabel(s.symptomId)} (${s.spec})` : symptomLabel(s.symptomId)} />
+                    <EntityRef key={si} category="symptoms" id={s.symptomId} label={symptomLabel(s.symptomId)} show={symptomInstanceLabel(s)} />
                   ))}
                 </>
               ) : undefined}

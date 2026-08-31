@@ -481,7 +481,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     expect(jours).toBeGreaterThanOrEqual(1);
     expect(jours).toBeLessThanOrEqual(10);
     expect(Number.isInteger(jours)).toBe(true);
-    expect(useGame.getState().journal.some((l) => l.includes('son rhume traîne'))).toBe(true);
+    expect(useGame.getState().journal.some((l) => /de nouveau exposé, « Rhume commun » traîne/.test(l))).toBe(true);
   });
 
   it('porte « Plein air » : un héros réussit Plein air → le groupe SAUTE le Test d’Exposition (EDOC 8 l.141)', () => {

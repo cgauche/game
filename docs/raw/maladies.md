@@ -19,6 +19,7 @@
 - [Créer une maladie (Remuer le Chaudron de Nurgle)](#creer-une-maladie-remuer-le-chaudron-de-nurgle)
 - [Traits de créature liés aux maladies](#traits-de-creature-lies-aux-maladies)
 - [Suppléments — EDO : Fièvre Cérébrale Pourpre + 2 symptômes + Contagieux](#supplements--edo--fievre-cerebrale-pourpre--2-symptomes--contagieux)
+- [Suppléments — EDOC : maladies de l'exposition en voyage (Rhume commun, Pneumonie)](#supplements--edoc--maladies-de-lexposition-en-voyage-rhume-commun-pneumonie)
 - [Maladies et parasites aquatiques — MSRC 14](#maladies-et-parasites-aquatiques--msrc-14)
 - [Remèdes à base de plantes — MSRC 2 (volet maladies)](#remedes-a-base-de-plantes--msrc-2-volet-maladies)
 - [Guérison et soins (renvoi)](#guerison-et-soins-renvoi)
@@ -415,6 +416,61 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 
 ---
 
+## Suppléments — EDOC : maladies de l'exposition en voyage (Rhume commun, Pneumonie)
+
+**Sources RAW** : `EDOC 08 l.88-122` (fichier `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/08 - CHAPITRE 5 - Voyager.md`)
+
+Deux maladies liées à l'option de voyage « Attraper Froid ». Elles forment une CHAÎNE : le rhume mue en
+pneumonie, laquelle porte un Test de cycle QUOTIDIEN qui aggrave puis étend ses symptômes.
+
+**Exposition** (`EDOC 08 l.90-92`) :
+
+> « À la fin de chaque étape, tout Personnage exposé à la pluie ou à la neige sans un bon manteau et une tente, ou un autre abri, doit faire un Test d'**Exposition** (**WFJDR** page 181). Les Personnages exposés à une averse ou à un blizzard doivent faire le Test même s'ils ont à la fois un manteau et une tente, mais l'absence de l'un ou l'autre rend ce Test **Complexe (-10)**, tandis que l'absence des deux le rend **Difficile (-20)**. »
+
+> « En hiver ou au printemps, tout Personnage ayant souffert de cette exposition aux éléments au cours d'une étape de son voyage contracte également un rhume, dont les effets se manifestent lors de la phase d'arrivée (voir page 38). »
+
+---
+
+### Pneumonie (`EDOC 08 l.94-108`)
+
+> « Cette accumulation de liquide dans les poumons causée par d'autres maladies, provoque une inflammation, de la fièvre et parfois même la mort. La pneumonie est connue sous le nom familier de « hochet de Morr », à cause du bruit émis lorsque la personne infectée tente de respirer profondément. »
+
+**Contraction :** Voir rhume commun
+
+**Incubation :** Instantanée **Durée :** 3d10 jours
+
+**Symptômes :** Toux et éternuements, fièvre, malaise.
+
+**Cycle quotidien** (`EDOC 08 l.104-108`) :
+
+> « Un Personnage atteint de pneumonie doit réussir un Test de **Résistance Intermédiaire (+0)** chaque jour où il fait des efforts en voyage, en combat ou toute autre activité physique. En cas d'échec, le symptôme Fièvre devient Grave. Tant que le symptôme Fièvre (Grave) est en vigueur, le même Test doit être réussi chaque jour, sinon la maladie développe également le symptôme Toxine. »
+
+**Écart d'implémentation** (#674) : la condition « chaque jour où il fait des efforts » n'est pas portée
+par le moteur — aucun signal d'effort à l'échelle de la JOURNÉE n'y existe (`Combatant.effortRounds`
+compte des Rounds de combat, `LDB 16 l.97`). Le Test est donc roulé à chaque jour d'entretien.
+
+---
+
+### Rhume commun (`EDOC 08 l.110-122`)
+
+> « Saisonnier, comme l'embrasement coloré des feuilles en automne, le rhume est néanmoins un fléau constant du Vieux Monde. Ce qui commence par une faible toux et quelques éternuements peut se transformer en quelque chose de plus grave en quelques jours, si l'on n'y prend garde. »
+
+**Contraction :** si vous échouez à un Test de **Résistance Intermédiaire (+0)** lorsque vous êtes exposé aux éléments, ou lorsqu'une personne infectée éternue ou tousse dans votre voisinage immédiat.
+
+**Incubation :** 20 + 4d10 heures
+
+**Durée :** 1d10 jours
+
+**Symptômes :** Toux et éternuements, malaise.
+
+**Prolongation et MUE** (`EDOC 08 l.122`) :
+
+> « Les Personnages atteints du rhume qui sont à nouveau exposés à la pluie ou à la neige voient la durée de la maladie prolongée de 1d10 jours. Si un Personnage souffre d'un rhume pendant plus de 14 jours, la maladie se transforme en pneumonie. »
+
+**Voir aussi** : [`deplacement.md` § Option « Attraper Froid »](deplacement.md) — le déclencheur d'exposition par étape de voyage.
+
+---
+
 ## Maladies et parasites aquatiques — MSRC 14
 
 **Sources RAW** : `MSRC 16 l.4-160` (fichier `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/16 - CHAPITRE 14 - Maladies transmises par l'eau.md`)
@@ -504,7 +560,7 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.4-160) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `mapRouteSchema`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `applyOnFailInline`, `crampes-abdominales`, +23 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
+- `MSRC 16` (l.4-160) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `mapRouteSchema`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, `resolveInlineFlowTest`, +23 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
 - sans code : `MSRC 16` (l.35-47)
 
 ---
@@ -524,7 +580,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.109-111`) : Aucun remède à base d'herbes n'est plus efficace qu'un autre. Seul vrai traitement : s'hydrater (compenser la perte de liquides) et attendre.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.104-118) → `water-exposure`, `applyOnFailInline`, `crampes-abdominales`, `colique`, `vers-de-carie`, `tickDisease`, `vers-du-reik`, `GameOp`, `exposition-hydrique`, `SymptomCapabilities`, +1 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, +1 fichiers
+- `MSRC 16` (l.104-118) → `water-exposure`, `crampes-abdominales`, `applyOnFailInline`, `colique`, `vers-de-carie`, `vers-du-reik`, `tickDisease`, `GameOp`, `exposition-hydrique`, `SymptomCapabilities`, +1 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, +1 fichiers
 
 ---
 
@@ -549,7 +605,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** : aucun traitement connu. Toute tentative d'extraction chirurgicale fait plus de mal que de bien.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.121-144) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `declareDisease`, +11 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
+- `MSRC 16` (l.121-144) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `testStatePenaltyParts`, +11 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
 
 ---
 
@@ -568,7 +624,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.160`) : infusion d'écorce de saule → bonus de +10 à tous les Tests résultant de la colique pendant 1d10 heures. Pas d'autre traitement.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.149-160) → `doc`, `Disease`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `declareDisease`, `testStatePenaltyParts`, `firingOwnTestFailed`, `colique`, `tickDisease`, +8 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
+- `MSRC 16` (l.149-160) → `doc`, `Disease`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `testStatePenaltyParts`, `firingOwnTestFailed`, `declareDisease`, `colique`, `EffectTrigger`, +8 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
 
 ---
 

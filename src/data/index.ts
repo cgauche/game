@@ -3424,3 +3424,13 @@ export function trappingRefLabel(ref: TrappingRef): string {
       : '';
   return base + count + quality;
 }
+/** Libellé d'une INSTANCE de symptôme portée par une maladie : le nom du symptôme, suivi de ce qui
+ *  QUALIFIE l'instance — sa sévérité (`LDB 20 l.156-159`, `LDB 20 l.170`) et sa précision imprimée
+ *  (`EDO App.2 l.143`, « Gonflement (Visage et tête) »). SOURCE UNIQUE de cette composition : une
+ *  instance ne se nomme jamais par son seul `symptomLabel`, sinon deux fièvres de sévérités
+ *  différentes s'affichent à l'identique. Vocabulaire d'affichage aligné sur l'atelier du Codex
+ *  (`ui/compendium/StructFields.tsx` — « Modérée »/« Grave »). */
+export const symptomInstanceLabel = (inst: { symptomId: string; severity?: 'moderee' | 'grave'; spec?: string }): string => {
+  const qualifs = [inst.severity === 'grave' ? 'Grave' : inst.severity === 'moderee' ? 'Modérée' : null, inst.spec ?? null].filter(Boolean);
+  return qualifs.length ? `${symptomLabel(inst.symptomId)} (${qualifs.join(', ')})` : symptomLabel(inst.symptomId);
+};

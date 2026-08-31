@@ -417,8 +417,10 @@ registerNightBandApplier('traumaFracture', (_get, _set, _band, row, hero) => {
 });
 
 registerNightBandApplier('diseaseTick', (_get, _set, _band, row, hero) => {
-  // Échec du Test de cycle quotidien (symptôme Blessé/Toxine) → applique la conséquence GameOp `onFail`
-  // du symptôme (ex. Blessé → contractDisease 'blessure-purulente'). Donnée-driven, via applyOps.
+  // Échec d'un Test de cycle quotidien → applique sa conséquence GameOp `onFail`, via applyOps. Couvre
+  // les DEUX porteurs de ce canal : le Test d'un SYMPTÔME (`onTick` — Blessé → contractDisease
+  // 'blessure-purulente', Toxine, Vers) ET le Test porté par la MALADIE (`DiseaseDef.dailyTest` —
+  // pneumonie, EDOC 08 l.104-108). Donnée-driven : aucun id n'est nommé ici.
   if (row.result!.success) return { consequences: [] };
   const onFail = (row.meta?.onFail ?? []) as import('../engine/ops').GameOp[];
   // `sl` (DR négatif de l'échec) → alimente `rollTable{addNegativeSL}` (Vers de carie : « ajoutez le

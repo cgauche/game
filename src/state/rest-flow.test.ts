@@ -13,7 +13,7 @@ import { useGame } from './store';
 import { applyEffects } from './combatFlow';
 import { restPlacesHere, lodgingOptions } from './restFlow';
 import { resolveStake } from '../data';
-import { contractDisease, tickDisease } from '../engine/disease';
+import { contractDisease, tickDisease, DISEASE_DEFS } from '../engine/disease';
 import { effectiveChar } from '../engine/characteristics';
 import { battleRng as battleRngFor } from './battleRng';
 import { seedBattleRng } from './battleRng';
@@ -165,6 +165,33 @@ describe('openRest / choix par héros', () => {
     // 2 Tests RAW (pluie, sans abri) = 2 VAGUES successives, chacune UNE fenêtre à 2 rangées (2 campeurs) :
     // les 4 jets RAW sont tous là, mais en DEUX fenêtres au lieu de quatre.
     expect(seen.filter((s) => s.kind === 'exposure').map((s) => s.rows)).toEqual([2, 2]);
+  });
+
+  it('cascade : valider un TEST QUOTIDIEN de maladie raté applique son `onFail` (applicateur diseaseTick, #674)', () => {
+    // DERNIER maillon de prod : la bande est verrouillée par `cascadeNext`, l'applier `diseaseTick`
+    // lit `row.meta.onFail` et le passe à `applyOps`. Aucun appel direct au moteur ici.
+    const h = useGame.getState().party[0];
+    h.diseases = [contractDisease('pneumonie', battleRngFor())!];
+    useGame.setState((s) => ({ party: [...s.party] }));
+    const onFail = DISEASE_DEFS['pneumonie'].dailyTest!.onFail;
+    const bande = (id: string) => ({
+      title: 'Entretien', purpose: 'travel' as const, cursor: 0, log: [], participants: [
+        { id, kind: 'diseaseTick', label: fixtureText('Fièvre (Pneumonie)'), aggregate: 'none',
+          participants: [{ id: h.id, interactive: true, label: 'Résistance', base: 30, target: 30,
+            meta: { diseaseName: 'pneumonie', symptomId: 'fievre', onFail },
+            result: { roll: 99, target: 30, sl: -6, success: false } }] },
+      ],
+    });
+
+    useGame.setState({ pendingCascade: bande('bande-dz1') as never });
+    useGame.getState().cascadeNext();
+    const fievre = () => useGame.getState().party[0].diseases![0].symptoms.find((s) => s.symptomId === 'fievre');
+    expect(fievre()!.severity, '1er échec : la Fièvre passe Grave').toBe('grave');
+
+    useGame.setState({ pendingCascade: bande('bande-dz2') as never });
+    useGame.getState().cascadeNext();
+    const symptomes = useGame.getState().party[0].diseases![0].symptoms.map((s) => s.symptomId);
+    expect(symptomes, '2ᵉ échec, Fièvre DÉJÀ Grave : l’échelon suivant tombe').toContain('toxine');
   });
 
   it('cascade : valider une MARCHE FORCÉE ratée applique +Exténué (applicateur forcedMarch)', () => {

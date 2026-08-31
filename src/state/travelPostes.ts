@@ -15,7 +15,7 @@
  *    par Étape » (l.131) ; un échec octroie un Exténué (l.133).
  */
 import { battleRng } from './battleRng';
-import { d100, roll } from '../engine/dice';
+import { d100 } from '../engine/dice';
 import {
   travelActivitySpec, applyTravelActivityResult, aggregateActivityOutcomes, activityById,
   type ActivityDef, type TravelActivityResult,
@@ -40,7 +40,7 @@ import {
 import { weatherTestMods } from '../engine/weatherTestMod'; // CANAL UNIQUE « Tests physiques » (#341) — jamais weatherPhysicalTestMod en direct
 import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded, exposureFirstFailChars } from '../engine/exposure';
 import { rationCount } from '../engine/provisions';
-import { contractDiseaseOnce, prolongDisease } from '../engine/disease';
+import { contractDiseaseOnce } from '../engine/disease';
 import { itemFromGive, autoStowNewItem } from '../engine/items';
 import { effectiveSkillCharKey } from '../engine/skills';
 import type { Difficulty, Combatant } from '../engine/types';
@@ -403,18 +403,15 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
   return out;
 }
 
-/** Suite « Rhume commun » d'une Exposition ratée, sur la primitive unique `contractDiseaseOnce` :
- *  - héros SAIN en saison froide → contraction à l'incubation authorée de `maladies.json#rhume-commun`
- *    (EDOC 08 l.92), donc encore en incubation à la fin de l'Étape ;
- *  - héros DÉJÀ enrhumé, quelle que soit la saison → EDOC 08 l.122, 1d10 jours de plus (`prolongDisease`).
+/** Suite « Rhume commun » d'une Exposition ratée, sur la primitive unique `contractDiseaseOnce` : héros
+ *  SAIN → contraction à l'incubation authorée de `maladies.json#rhume-commun` (EDOC 08 l.92), donc encore
+ *  en incubation à la fin de l'Étape ; héros DÉJÀ enrhumé → ré-exposition, prolongation portée par la
+ *  DONNÉE (`reExposition`). Hors saison froide, seule la ré-exposition est ouverte (`contraction: false`).
  *  Mute `hero.diseases`, renvoie son journal. */
 function coldExposureChill(hero: Combatant, coldSeason: boolean): string[] {
-  if ((hero.diseases ?? []).some((d) => d.id === 'rhume-commun')) {
-    const days = roll(1, 10, battleRng());
-    return prolongDisease(hero, 'rhume-commun', days) ? [t('tp.coldChillProlonged', { name: hero.label, days })] : [];
-  }
-  if (!coldSeason) return [];
-  return contractDiseaseOnce(hero, 'rhume-commun', battleRng(), { incubation: 'raw', message: 'tp.coldSeasonChill' });
+  return contractDiseaseOnce(hero, 'rhume-commun', battleRng(), {
+    incubation: 'raw', message: 'tp.coldSeasonChill', contraction: coldSeason,
+  });
 }
 
 /** Un Test d'EXPOSITION de fin d'Étape (l.73) : échec → escalade cumulative de froid (l.415), rhume

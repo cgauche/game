@@ -113,9 +113,17 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     ).toEqual([
       'actorRefSchema',
       "idDe('creature')",
-      // 34 → 36 idDe('skill') (L2 #1548, commit 4bis) : les DEUX statblocs adoptent la grammaire —
-      // defs/creatures.ts › skills et defs-scenes/communs.ts › skills composent refOuSpec('skill', {value})
-      // là où ils redéclaraient chacun leur {id, spec?, value}. 1 marque par instance de fabrique.
+      // +1 site ADOPTÉ (#674, 2026-08-31) : `defs/maladies.ts › mutation.into` désigne la maladie en
+      // laquelle une autre se transforme (Rhume commun → Pneumonie, EDOC 08 l.122) et compose
+      // `idDe('maladie')` dès sa première écriture, sans passer par un `z.string()`.
+      // (Les `idDe('maladie')`/`idDe('symptome')` posés au MÊME lot sur `aggravateSymptom`/
+      // `grantSymptom` n'apparaissent PAS ici : `OP_DEFS` est atteint par le superRefine de
+      // `gameOpSchema`, hors de la marche des defs — angle mort déjà déclaré pour `idDe('trait')`.)
+      "idDe('maladie')",
+      // … puis 34 → 36 `idDe('skill')` au commit 4bis : les DEUX statblocs adoptent la grammaire —
+      // `defs/creatures.ts › skills` et `defs-scenes/communs.ts › skills` composent
+      // `refOuSpec('skill', {value})` là où ils redéclaraient chacun leur `{id, spec?, value}`.
+      // 1 marque par instance de fabrique. Le stock des sites ADOPTÉS ne peut que CROÎTRE.
       ...Array.from({ length: 36 }, () => "idDe('skill')"),
       ...Array.from({ length: 4 }, () => "idDe('table')"),
       ...Array.from({ length: 6 }, () => "idDe('talent')"),

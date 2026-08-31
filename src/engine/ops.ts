@@ -17,7 +17,7 @@ import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
 import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition, releaseConditionLocks } from './conditions';
 import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel, findTrappingById } from '../data';
-import { contractDiseaseOnce } from './disease';
+import { contractDiseaseOnce, aggravateDiseaseSymptom, grantDiseaseSymptom } from './disease';
 import { groupMatch } from './groups';
 import { findTableEntry } from './tables';
 import { ALL_MAGIC } from './types';
@@ -964,6 +964,13 @@ export type GameOp =
    *  symptôme sont ignorés tant que l'effet dure (`ActiveEffect.suppressedSymptom`, lu par
    *  `symptomSuppressed` dans engine/disease), restitués à l'expiration. */
   | { op: 'suppressSymptom'; symptomId: string }
+  /** AGGRAVE un symptôme déjà porté par la maladie `disease` (EDOC 08 l.104 : « le symptôme Fièvre
+   *  devient Grave »). `otherwise` = échelon SUIVANT, appliqué quand il n'y a plus rien à aggraver
+   *  (symptôme déjà à cette sévérité) — EDOC 08 l.106-108. → `aggravateDiseaseSymptom` (engine/disease). */
+  | { op: 'aggravateSymptom'; disease: string; symptomId: string; severity: 'moderee' | 'grave'; otherwise?: GameOp[] }
+  /** AJOUTE un symptôme à une maladie déjà portée (EDOC 08 l.106-108 : « la maladie développe également
+   *  le symptôme Toxine »). No-op si le symptôme y figure déjà. → `grantDiseaseSymptom`. */
+  | { op: 'grantSymptom'; disease: string; symptomId: string; severity?: 'moderee' | 'grave' }
   /** Ops DIFFÉRÉES à échéance d'horloge (op IMPURE — file `scheduledEffects`, résolue couche state comme
    *  `summon`/`zone` ; INERTE dans `applyOps`). Délai : `afterMinutes`/`afterHours`/`afterDays` depuis
    *  maintenant, OU `afterDuration:true` = à l'échéance de la durée du contexte (`ctx.defaultUntilTime` —
@@ -1902,6 +1909,18 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           suppressedSymptom: o.symptomId,
         });
         lines.push(t('op.suppressSymptom', { name: target.label, symptom: refLabel('symptoms', { id: o.symptomId }), src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'aggravateSymptom': {
+        // EDOC 08 l.104-108 : échelon d'aggravation. Le symptôme est DÉJÀ à cette sévérité →
+        // l'échelon `otherwise` ; symptôme ABSENT → rien (l'échelon suivant ne s'ouvre pas).
+        const r = aggravateDiseaseSymptom(target, o.disease, o.symptomId, o.severity);
+        lines.push(...r.log);
+        if (r.etat === 'deja' && o.otherwise?.length) lines.push(...applyOps(target, o.otherwise, ctx));
+        break;
+      }
+      case 'grantSymptom': {
+        lines.push(...grantDiseaseSymptom(target, o.disease, o.symptomId, o.severity));
         break;
       }
       case 'actGate': {

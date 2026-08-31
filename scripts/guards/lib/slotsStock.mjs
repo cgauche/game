@@ -102,7 +102,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "victoryCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "careerLevels.json", champ: "career", occurrences: 432, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "careerLevels.json", champ: "choice", occurrences: 27, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "careerLevels.json", champ: "choix", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "careerLevels.json", champ: "of", occurrences: 11, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "careerLevels.json", champ: "skills", occurrences: 2237, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "careerLevels.json", champ: "talents", occurrences: 1724, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -212,6 +211,9 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "loup-et-saumure-projet.json", champ: "victoryCondition", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "weapon", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "skill", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "maladies.json", champ: "mutation", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // mue Rhume → Pneumonie, EDOC 08 l.122 (#674)
+  { dataset: "maladies.json", champ: "onFail", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // cycle quotidien de la Pneumonie, EDOC 08 l.104-108 (#674)
+  { dataset: "maladies.json", champ: "otherwise", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // échelon Toxine du même cycle, EDOC 08 l.106-108 (#674)
   { dataset: "maladies.json", champ: "symptoms", occurrences: 54, lot: "L2/L3 #1473", date: "2026-08-26" }, // +5 : Pneumonie (3) + Rhume commun (2), EDOC 08 folio 33 (#674)
   { dataset: "maneuvers.json", champ: "escapeStrength", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "maneuvers.json", champ: "ops", occurrences: 22, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -275,7 +277,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "skills.json", champ: "altChar", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "skills.json", champ: "chars", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "skills.json", champ: "max", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "species.json", champ: "choix", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "species.json", champ: "gatedByRule", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "species.json", champ: "grantGroups", occurrences: 27, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "species.json", champ: "preview", occurrences: 27, lot: "L2/L3 #1473", date: "2026-08-26" },

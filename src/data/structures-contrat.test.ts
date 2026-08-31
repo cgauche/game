@@ -177,7 +177,12 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
 // `effects` de déclencheur (Haine sporadique, `onDayStart`), et ses TROIS objets d'enveloppe sont les
 // formes CIBLES déjà écrites par `traits.json`/`talents.json` : `effects {flow,on,trigger}`,
 // `flow {effect,kind}`, `effect {on,ops,type}` — mesurées une par une contre la table du doc.
-const PLAFOND_HORS_STRATE = 1142;
+// #674 (1142→1144) : AUCUNE structure neuve — la RÉ-EXPOSITION (EDOC 08 l.122 : « Les Personnages
+// atteints du rhume qui sont à nouveau exposés à la pluie ou à la neige voient la durée de la maladie
+// prolongée de 1d10 jours ») devient une propriété de `maladies.json`, et son temps s'écrit à la
+// graphie DÉJÀ posée par `incubation`/`duration` : `reExposition {prolonge}` + `prolonge {dice,unit}`
+// (le `DiseaseTime` du fichier). Les deux signatures NOMMÉES par la garde sont ces deux enveloppes.
+const PLAFOND_HORS_STRATE = 1144;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -399,7 +404,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // v2 S2 (#1463, commentaire du 2026-08-23) : « `refs(type)` = liste d'ids nus brandée (75 champs
       // `string[]`) » — la liste d'ids nus EST la forme visée, ce qui reste à faire est le TYPAGE du
       // champ. Une cible neuve se décide en revue : celle-ci porte sa citation et sa date.
-      // 16 → 19 (L2 #1548, commit 4bis) : reclassement au SITE_STATBLOC — id,value / id,spec,value / choix,id,value.
+      // Cliquet REMONTÉ 16 → 19 (L2 #1548, commit 4bis) : trois graphies reçoivent le statut `cible`
+      // AU SITE du statbloc (`id,value`, `id,spec,value`, `choix,id,value`). Une cible neuve se
+      // décide en revue : celles-ci portent leur citation (#1463, « `value` = le seul nom du NOMBRE
+      // IMPRIMÉ au statbloc ») et leur date au stock, et leur réserve ouverte y est dite.
       ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 19],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
@@ -439,9 +447,18 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // graphies de référence de Trait que `mutations.json › passive` porte déjà (`traitId+…`,
       // `argFrom,traitId+…`, L3). C'est la donnée qui ENTRE dans la strate mesurée (le dataset n'avait
       // aucune op authorée avant le re-ciblage quotidien de Haine sporadique), pas une dérive de forme.
-      // 540 → 534 (L2 #1548, commit 4bis) : 6 lignes skills {id,value}/{id,spec,value} reclassées CIBLE au site
-      // du statbloc (bestiaire ×2, barge ×2, loup ×2) — reclassement, pas migration (comptabilité 2 colonnes).
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 534],
+      // Cliquet DESCENDU 540 → 534 (L2 #1548, commit 4bis) : les 6 lignes de référence de Compétence
+      // sous `skills` d'un STATBLOC (bestiaire ×2, `barge-du-sel` ×2, `loup-et-saumure` ×2 — 5 996
+      // occurrences) sortent du dénominateur : ce sont des CIBLES au site (cf. `STRUCTURES_CIBLES`).
+      // RECLASSEMENT, pas migration — aucune de ces 5 996 occurrences n'est réécrite ; ce que le
+      // commit MIGRE, ce sont les 59 sentinelles textuelles qui vivaient DANS ces lignes.
+      // Cliquet REMONTÉ 534 → 538 (#674, 2026-08-31) : la Pneumonie et le Rhume commun (EDOC 08
+      // l.94-122) ENTRENT dans la strate mesurée avec deux champs que `maladies.json` ne portait pas
+      // — `mutation {into+…}`, `dailyTest {difficulty+…}` — et deux conteneurs d'ops (`onFail`,
+      // `otherwise`, tous deux `disease,symptomId+…`). Chacune est l'INSTANCE d'une famille déjà
+      // stockée et rangée dans son lot (L3 pour les 3 références, L4 pour le Test) : donnée neuve, pas
+      // forme neuve.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 538],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -469,8 +486,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquet DESCENDU 108 → 105 (L2 #1548, commit 3b) : `activities.ts`, `axes.ts` et
       // `crew-roles.ts` ne redéclarent plus leur propre objet de référence de Compétence — ils
       // composent la grammaire (`refOuSpec('skill')`, `grammaire/ref.ts`). Le cliquet SUIT.
-      // 105 → 104 (L2 #1548, commit 4bis) : defs/creatures.ts › reference id,spec,value meurt — le def compose refOuSpec.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 104],
+      // Cliquet DESCENDU 105 → 104 (L2 #1548, commit 4bis) : `creatures.ts` ne redéclare plus son
+      // objet de référence de Compétence — il compose `refOuSpec('skill', {value})`, comme le fait
+      // désormais `defs-scenes/communs.ts`. Le cliquet SUIT.
+      // Cliquet REMONTÉ 104 → 105 (#674, 2026-08-31) : `maladies.ts` déclare le Test quotidien de la
+      // Pneumonie (`dailyTest {difficulty+…}`, EDOC 08 l.104) avec son propre objet, comme le font
+      // encore les autres porteurs de Test du même lot L4. La ligne s'éteindra avec eux.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 105],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -505,7 +527,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquet REMONTÉ 400 → 402 (#862) : deux signatures d'op neuves, chacune INSTANCE d'une famille
       // déjà stockée — `removeTrait {op,traitId}` (l'INVERSE de `grantTrait {op,traitId}`) et
       // `grantTrait {durationHours,op,traitId}` (même patron que `condition {durationHours,id,op,value}`).
-      ['STRUCTURES_OPS', STRUCTURES_OPS.length, 402],
+      // Cliquet REMONTÉ 402 → 404 (#674, 2026-08-31) : deux signatures d'op neuves, portées par le
+      // cycle quotidien de la Pneumonie — `aggravateSymptom {disease,op,otherwise,severity,symptomId}`
+      // et `grantSymptom {disease,op,symptomId}` (EDOC 08 l.104-108). Chacune est une op AUTHORÉE de
+      // `maladies.json`, dataset qui n'en portait qu'une (`diseaseTestMod`).
+      ['STRUCTURES_OPS', STRUCTURES_OPS.length, 404],
     ] as const;
     const gonfles = mesure.filter(([, n, plafond]) => n > plafond).map(([nom, n, plafond]) => `${nom} ${n} > ${plafond}`);
     expect(
@@ -573,7 +599,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L1b #1467': 0,
       // L1c #1468 : 403 → 400 (commit 3c) — cf. le cliquet `STRUCTURES_OPS` ci-dessus.
       // … puis 400 → 402 (#862) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
-      'L1c #1468': 402,
+      // … puis 402 → 404 (#674) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
+      'L1c #1468': 404,
       'L1d #1469': 62,
       // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
@@ -586,7 +613,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 16 → 10 (commit 4) : les 6 dernières lignes du lot sont les enveloppes `{ref:{…}}` et
       // `{wildcard:{…}}` de l'AVANCEMENT (careerLevels + species) — la référence y est désormais À
       // PLAT, régime de spécialisation compris (`{id}`, `{id, spec}`, `{id, choix}`).
-      // 10 → 4 (L2 #1548, commit 4bis) : les 6 formes skills du reclassement quittent le lot.
+      // … puis 10 → 4 (commit 4bis) : les 6 lignes `skills {id,value}`/`{id,spec,value}` des statblocs
+      //     passent CIBLE au site et sortent du dénominateur (cf. le cliquet `STRUCTURES_FORMES`).
       'L2 #1463': 4,
       'L2 #1548': 0,
       // L3 #1463 : 398 → 385 (commit 4) — le MÊME geste éteint les 14 lignes de graphie du champ
@@ -597,11 +625,17 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // sur `species.json › talents {random}` (×19).
       // … puis 385 → 387 (#862) : cf. le cliquet `STRUCTURES_FORMES` ci-dessus (les deux graphies de
       // référence de Trait sous `mutations.json › ops`).
-      // 387 → 386 (L2 #1548, commit 4bis) : la redéclaration creatures.ts quitte le lot.
-      'L3 #1463': 386,
+      // … puis 387 → 386 (commit 4bis) : la redéclaration `creatures.ts {id,spec,value}` s'éteint —
+      // le def compose `refOuSpec('skill', {value})`.
+      // … puis 386 → 389 (#674) : les 3 références de la Pneumonie/du Rhume commun — `mutation`
+      // (maladie visée), `onFail` et `otherwise` (maladie + symptôme de chaque op). Cf. le cliquet
+      // `STRUCTURES_FORMES` ci-dessus.
+      'L3 #1463': 389,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
-      'L4 #1463': 219,
+      // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
+      // donnée (`maladies.json › dailyTest`) et sa redéclaration au def (`maladies.ts › dailyTest`).
+      'L4 #1463': 221,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`
@@ -858,7 +892,9 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
   it('§5 : les Conditions retirées du compte d’ops sont celles qui PORTAIENT un `op`', () => {
     // #862 : +3 ops authorées (re-ciblage `[removeTrait, grantTrait]` de Haine sporadique, État Exténué
     // du réveil du Désespoir).
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2185);
+    // #674 : +2 ops authorées (`aggravateSymptom` + son échelon `grantSymptom`, cycle quotidien de la
+    // Pneumonie, EDOC 08 l.104-108).
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2187);
     expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(185);
   });
 });

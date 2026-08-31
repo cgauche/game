@@ -47,6 +47,8 @@ export const TYPES = {
   vehicle: { dataset: 'vehicles.json', specsOpen: false },
   structure: { dataset: 'structures.json', specsOpen: false },
   table: { dataset: 'tables.json', specsOpen: false },
+  maladie: { dataset: 'maladies.json', specsOpen: false },
+  symptome: { dataset: 'symptoms.json', specsOpen: false },
 } as const satisfies Record<string, CibleDeType>;
 
 export type TypeEntite = keyof typeof TYPES;

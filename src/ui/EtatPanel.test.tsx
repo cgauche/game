@@ -188,6 +188,19 @@ describe('EtatPanel', () => {
     expect(html).toMatch(/codex-ref[\s\S]*?Hémorragique/);
   });
 
+  it('Maladies : la SÉVÉRITÉ d’une instance de symptôme est à l’écran — deux fièvres de paliers différents ne s’affichent pas à l’identique (#674)', () => {
+    const grave = mkHero((c) => {
+      c.diseases = [{ id: 'pneumonie', symptoms: [{ symptomId: 'fievre', severity: 'grave' }], phase: 'active', minutesLeft: 100, durationMinutes: 100 } as never];
+    });
+    const base = mkHero((c) => {
+      c.diseases = [{ id: 'pneumonie', symptoms: [{ symptomId: 'fievre' }], phase: 'active', minutesLeft: 100, durationMinutes: 100 } as never];
+    });
+    expect(renderToStaticMarkup(<EtatPanel hero={grave} />)).toContain('Fièvre (Grave)');
+    const htmlBase = renderToStaticMarkup(<EtatPanel hero={base} />);
+    expect(htmlBase).toContain('Fièvre');
+    expect(htmlBase, 'sans sévérité portée, aucun qualificatif fabriqué').not.toContain('Fièvre (');
+  });
+
   it('Mutations : le nom résolu vient du LOOKUP par id (`mutationLabel`), pas du `label` d’instance — même une instance SANS label affiche le vrai nom', () => {
     const hero = mkHero((c) => {
       c.mutations = [{ id: 'pattes-d-animaux', kind: 'physique', roll: 1, passive: [] } as never];

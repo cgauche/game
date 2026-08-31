@@ -361,6 +361,9 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "start", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 8, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "victoryCondition", signature: "targetId,type+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-30", motif: "référence de CIBLE de condition de victoire" },
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "weapon", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "maladies.json", champ: "mutation", signature: "into+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // mue Rhume → Pneumonie, EDOC 08 l.122 (#674)
+  { concept: "reference", dataset: "maladies.json", champ: "onFail", signature: "disease,symptomId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // cycle quotidien de la Pneumonie, EDOC 08 l.104-108 (#674)
+  { concept: "reference", dataset: "maladies.json", champ: "otherwise", signature: "disease,symptomId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // échelon Toxine du même cycle, EDOC 08 l.106-108 (#674)
   { concept: "reference", dataset: "maladies.json", champ: "symptoms", signature: "spec,symptomId", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "maladies.json", champ: "symptoms", signature: "symptomId", statut: "divergente", strate: "Référence", occurrences: 47, lot: "L3 #1463", date: "2026-08-23" }, // +5 : Pneumonie (3) + Rhume commun (2), EDOC 08 folio 33 (#674)
   { concept: "reference", dataset: "maladies.json", champ: "symptoms", signature: "symptomId+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
@@ -591,6 +594,7 @@ export const STRUCTURES_FORMES = [
   { concept: "test", dataset: "land-cargo.json", champ: "gossip", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "loup-et-saumure-projet.json", champ: "effect", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "loup-et-saumure-projet.json", champ: "test", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
+  { concept: "test", dataset: "maladies.json", champ: "dailyTest", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" }, // Test quotidien de la Pneumonie, EDOC 08 l.104 (#674)
   { concept: "test", dataset: "maladies.json", champ: "symptoms", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 8, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "maneuvers.json", champ: "test", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "miscast.json", champ: "test", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
@@ -738,6 +742,7 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "land-cargo.ts", champ: "rumours", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "land-cargo.ts", champ: "wineQuality", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "localisation.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
+  { def: "maladies.ts", champ: "dailyTest", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" }, // EDOC 08 l.104 (#674)
   { def: "maladies.ts", champ: "", concept: "de", signature: "n,plus,sides", statut: "cible", commun: "diceSpecSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "maladies.ts", champ: "", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "mass-battle.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -1144,7 +1149,9 @@ export const STRUCTURES_OPS = [
   { op: "disarm", signature: "op", dataset: "criticals.json", occurrences: 9, lot: "L1c #1468", date: "2026-08-23" },
   { op: "disarm", signature: "op", dataset: "aa-criticals.json", occurrences: 8, lot: "L1c #1468", date: "2026-08-23" },
   { op: "diseaseTestMod", signature: "amount,diseases,op", dataset: "trappings.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "aggravateSymptom", signature: "disease,op,otherwise,severity,symptomId", dataset: "maladies.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" }, // EDOC 08 l.104-108 (#674)
   { op: "diseaseTestMod", signature: "amount,op", dataset: "maladies.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "grantSymptom", signature: "disease,op,symptomId", dataset: "maladies.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" }, // EDOC 08 l.106-108 (#674)
   { op: "domeWard", signature: "op,radius", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "endPsych", signature: "op,type", dataset: "psychology.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "endPsych", signature: "op,type", dataset: "talents.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },

@@ -1275,7 +1275,12 @@ export const fr = {
   'dz.degenerate': '{name} : {disease} dégénère (échec stupéfiant).',
   'dz.infects': "{name} : {disease} s'infecte (échec).",
   'dz.persists': '{name} : {disease} persiste (+{days} jours).',
+  'dz.reExposed': '{name} : de nouveau exposé, « {disease} » traîne {days} jour(s) de plus.',
   'dz.symptomsOnset': '{name} : les symptômes de « {disease} » se déclarent.',
+  'dz.symptomAggravated': '{name} : le symptôme {symptom} de « {disease} » s’aggrave.',
+  'dz.symptomGained': '{name} : « {disease} » développe le symptôme {symptom}.',
+  'dz.mutates': '{name} : « {from} » se transforme en « {to} ».',
+  'dz.mutatesAbsorbed': '{name} : « {from} » cède la place à « {to} », déjà contractée.',
   'dz.gangreneLost': '{name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).',
   'dz.gangreneProgress': '{name} : la Gangrène progresse ({fails} échec(s)).',
   'dz.endStep': 'Fin de « {disease} »',
@@ -1980,7 +1985,6 @@ export const fr = {
   'tp.calmTravel': 'Voyage tranquille : le groupe récupère toutes ses Blessures et tous ses États Exténué.',
   'tp.exposureLine': "{name} — Exposition de fin d'Étape ({weather}) : transi par le froid.",
   'tp.coldSeasonChill': '{name} grelotte et tousse — un rhume couve (saison froide).',
-  'tp.coldChillProlonged': '{name} : de nouveau transi, son rhume traîne {days} jour(s) de plus.',
 
   // ── #1318 V8c₄ — CORRUPTION (`state/corruptionFlow.ts`, `cor.*`, LDB 19 l.70-87 / LDB 17 l.67). La
   // NATURE de la mutation était l'id interpolé (`physique`/`mentale`) : elle passe par ses deux clés.

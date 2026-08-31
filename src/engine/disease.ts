@@ -104,6 +104,19 @@ export interface DiseaseDef {
   /** Un porteur ACTIF qui boit à un tonneau d'eau risque de le rendre contagieux pour quiconque y boit
    *  ensuite (MDG 14 l.209). Drapeau DÉCLARATIF lu par `buildBarrelSteps` (`state/seaVoyageFlow`). */
   contaminatesWaterBarrel?: boolean;
+  /** Test de cycle quotidien porté par la MALADIE elle-même (≠ par un de ses symptômes) — EDOC 08
+   *  l.104-108. `symptomId` NOMME le symptôme que le Test met en jeu (libellé d'étape + réf d'enjeu) ;
+   *  l'échec applique `onFail` (GameOp), par le MÊME canal différé/influençable que les `onTick` de
+   *  symptôme (`diseaseTick`). CADENCE RÉELLE : chaque JOUR D'ENTRETIEN — écart mesuré à la condition
+   *  de déclenchement de `EDOC 08 l.104`, consigné au site de roulage (#674, `tickDisease`). */
+  dailyTest?: { difficulty: Difficulty; symptomId: string; onFail: GameOp[] };
+  /** MUE en une autre maladie au-delà de `afterDays` jours de phase ACTIVE — EDOC 08 l.122.
+   *  `into` = id d'une entrée de `maladies.json`. */
+  mutation?: { afterDays: number; into: string };
+  /** RÉ-EXPOSITION à la cause de contraction alors que la maladie est DÉJÀ portée — EDOC 08 l.122 :
+   *  `prolonge` (même graphie que `incubation`/`duration`) est tiré et allonge la durée en cours.
+   *  Absent = une ré-exposition ne fait rien. */
+  reExposition?: { prolonge: DiseaseTime };
 }
 
 /** Instance de maladie portée par un personnage. */
@@ -170,7 +183,10 @@ export function contractDisease(
   const persist = def.symptoms.find((s) => symptomHasCapability(s.symptomId, 'endTest'))?.difficulty;
   return {
     id,
-    symptoms: def.symptoms,
+    // COPIE par instance : l'aggravation d'un symptôme (`aggravateSymptom`) mute l'INSTANCE, jamais
+    // le catalogue partagé `DISEASE_DEFS` — et deux instances de la même maladie ne partagent aucun
+    // objet de symptôme.
+    symptoms: def.symptoms.map((s) => ({ ...s })),
     phase: incub > 0 ? 'incubation' : 'active',
     minutesLeft: incub > 0 ? incub : dur,
     durationMinutes: dur,
@@ -283,7 +299,12 @@ export function symptomOnTick(inst: DiseaseSymptom): { difficulty?: Difficulty; 
  *  → `applyOps` côté state, vocabulaire complet) ; elles sont IGNORÉES ici (jamais roulées à l'aveugle). */
 function applyOnFailInline(c: Combatant, onFail: GameOp[], contractOnce: (name: string) => boolean, log: string[], emit?: ConditionEmit): void {
   for (const op of onFail) {
-    if (op.op === 'contractDisease') contractOnce(op.disease);
+    if (op.op === 'aggravateSymptom') {
+      const r = aggravateDiseaseSymptom(c, op.disease, op.symptomId, op.severity);
+      log.push(...r.log);
+      if (r.etat === 'deja' && op.otherwise?.length) applyOnFailInline(c, op.otherwise, contractOnce, log, emit);
+    } else if (op.op === 'grantSymptom') log.push(...grantDiseaseSymptom(c, op.disease, op.symptomId, op.severity));
+    else if (op.op === 'contractDisease') contractOnce(op.disease);
     else if (op.op === 'kill') log.push(fateSaveOrDie(c) ? t('op.kill.fateSaved', { name: c.label }) : t('op.kill', { name: c.label }));
     else if (op.op === 'wounds') {
       const n = typeof op.amount === 'number' ? op.amount : 0; // burst = 1 Blessure directe (littéral) ; formules → voie différée
@@ -296,6 +317,43 @@ function applyOnFailInline(c: Combatant, onFail: GameOp[], contractOnce: (name: 
       emit?.({ stateId: op.id, change: 'gain', targetId: c.id });
     }
   }
+}
+
+/** Issue d'une tentative d'aggravation — TROIS états distincts, jamais un booléen :
+ *  `aggrave` (la sévérité vient d'être portée), `deja` (le symptôme EST là, DÉJÀ à cette sévérité),
+ *  `absent` (la maladie ou le symptôme n'est pas porté). `deja` et `absent` ne se confondent pas :
+ *  seul `deja` ouvre l'échelon suivant (EDOC 08 l.106-108). */
+export type IssueAggravation = 'aggrave' | 'deja' | 'absent';
+
+/** Porte la SÉVÉRITÉ `severity` sur l'instance de symptôme `symptomId` de la maladie `diseaseId`
+ *  portée par `c` (EDOC 08 l.104). SOURCE UNIQUE de cette mutation — l'op `aggravateSymptom`
+ *  (`applyOps`) et le chemin inline du cycle passent par ici. */
+export function aggravateDiseaseSymptom(
+  c: Combatant,
+  diseaseId: string,
+  symptomId: string,
+  severity: 'moderee' | 'grave',
+): { etat: IssueAggravation; log: string[] } {
+  const dz = (c.diseases ?? []).find((d) => d.id === diseaseId);
+  const inst = dz?.symptoms.find((s) => s.symptomId === symptomId);
+  if (!dz || !inst) return { etat: 'absent', log: [] };
+  if (inst.severity === severity) return { etat: 'deja', log: [] };
+  dz.symptoms = dz.symptoms.map((s) => (s === inst ? { ...s, severity } : s));
+  return { etat: 'aggrave', log: [t('dz.symptomAggravated', { name: c.label, symptom: symptomLabel(symptomId), disease: diseaseLabel(diseaseId) })] };
+}
+
+/** Ajoute une instance de symptôme à une maladie DÉJÀ portée (EDOC 08 l.106-108). No-op si la
+ *  maladie n'est pas portée ou si le symptôme y figure déjà. SOURCE UNIQUE (op `grantSymptom`). */
+export function grantDiseaseSymptom(
+  c: Combatant,
+  diseaseId: string,
+  symptomId: string,
+  severity?: 'moderee' | 'grave',
+): string[] {
+  const dz = (c.diseases ?? []).find((d) => d.id === diseaseId);
+  if (!dz || dz.symptoms.some((s) => s.symptomId === symptomId)) return [];
+  dz.symptoms = [...dz.symptoms, { symptomId, ...(severity ? { severity } : {}) }];
+  return [t('dz.symptomGained', { name: c.label, symptom: symptomLabel(symptomId), disease: diseaseLabel(diseaseId) })];
 }
 
 /** Un symptôme (par id) porte-t-il la capacité `cap` (lue sur sa donnée) ? */
@@ -369,18 +427,28 @@ export function contagiousDiseases(c: Combatant): Disease[] {
   return (c.diseases ?? []).filter((d) => d.phase === 'active' && diseaseHasCapability(d, 'contagious'));
 }
 
-/** Contracte une maladie si pas déjà présente. Mute `c.diseases` directement (appelé HORS itération —
- *  par les applicateurs de cascade). Deux paramètres, aucun savoir de site :
+/** Exposition d'un personnage à une maladie. Mute `c.diseases` directement (appelé HORS itération —
+ *  par les applicateurs de cascade). SAIN → contraction ; DÉJÀ PORTEUR → ré-exposition, la durée se
+ *  prolonge du temps authoré `reExposition.prolonge` (EDOC 08 l.122) — sans ce champ, rien.
+ *  Trois paramètres, aucun savoir de site :
  *  - `incubation` : `'instantanee'` (défaut, l.32 — contraction depuis un autre symptôme) ou `'raw'`
  *    (l'incubation authorée de `maladies.json` est TIRÉE) ;
- *  - `message` : clé de journal de l'appelant (défaut `dz.develop`), interpolée `{name, disease}`. */
+ *  - `message` : clé de journal de l'appelant (défaut `dz.develop`), interpolée `{name, disease}` ;
+ *  - `contraction` : `false` n'ouvre QUE la ré-exposition (l'appelant sait que la condition de
+ *    contraction neuve n'est pas réunie — saison de l'Exposition de voyage). */
 export function contractDiseaseOnce(
   c: Combatant,
   name: string,
   rng: RNG = defaultRNG,
-  opts?: { incubation?: 'instantanee' | 'raw'; message?: MsgKey },
+  opts?: { incubation?: 'instantanee' | 'raw'; message?: MsgKey; contraction?: boolean },
 ): string[] {
-  if ((c.diseases ?? []).some((d) => d.id === name)) return [];
+  if ((c.diseases ?? []).some((d) => d.id === name)) {
+    const re = DISEASE_DEFS[name]?.reExposition;
+    if (!re) return [];
+    const days = rollDiseaseTime(re.prolonge, rng) / MINUTES_PER_DAY;
+    return prolongDisease(c, name, days) ? [t('dz.reExposed', { name: c.label, disease: diseaseLabel(name), days })] : [];
+  }
+  if (opts?.contraction === false) return [];
   const dz = contractDisease(name, rng, opts?.incubation === 'raw' ? undefined : { incubation: 0 });
   if (!dz) return [];
   c.diseases = [...(c.diseases ?? []), dz];
@@ -541,6 +609,30 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
               log.push(t('dz.gangreneLost', { name: c.label }));
             } else log.push(t('dz.gangreneProgress', { name: c.label, fails: dz.gangreneFails }));
           }
+        }
+        // Test de cycle quotidien porté par la MALADIE (EDOC 08 l.104-108) — même canal différé que les
+        // `onTick` de symptôme (`diseaseTick`), donc influençable ; sinon roulé ici (chemin non-différé).
+        // ÉCART MESURÉ à `EDOC 08 l.104`, #674 (2026-08-31) : la condition de déclenchement citée là-bas
+        // porte sur les journées d'EFFORT, signal que le moteur n'a pas — `effortRounds`
+        // (`engine/types.ts:1507`) compte des ROUNDS de combat, pas des journées d'activité. Faute de ce
+        // signal, le Test tombe à CHAQUE journée d'entretien : régime plus dur que celui de la source.
+        // La suspension du symptôme NOMMÉ gate ce Test comme elle gate les `onTick` (l.565) — arbitrage
+        // d'ingénierie #674, hors source (`LDB 72 l.28` ne porte que sur les effets du symptôme).
+        const daily = DISEASE_DEFS[dz.id]?.dailyTest;
+        if (daily && !symptomSuppressed(c, daily.symptomId)) {
+          if (defer) defer({ kind: 'diseaseTick', label: t('step.sujetPrecision', { sujet: symptomLabel(daily.symptomId), precision: diseaseLabel(dz.id) }), base: rv, difficulty: daily.difficulty, meta: { diseaseName: dz.id, symptomId: daily.symptomId, onFail: daily.onFail } });
+          else if (!rollTest(rv, daily.difficulty, rng).success) applyOnFailInline(c, daily.onFail, contractOnce, log, emit);
+        }
+        // MUE (EDOC 08 l.122) : au-delà de `afterDays` jours de phase active, la maladie CÈDE la place
+        // à `into` — propriété de la DONNÉE, aucun id codé ici.
+        const mut = DISEASE_DEFS[dz.id]?.mutation;
+        if (mut && (dz.activeDaysElapsed ?? 0) > mut.afterDays) {
+          // La maladie muée quitte la liste dans les DEUX cas (pas de `survivors.push`) ; seule change la
+          // ligne de journal : `into` déjà portée → rien n'apparaît, la porteuse cède simplement la place.
+          log.push(contractOnce(mut.into)
+            ? t('dz.mutates', { name: c.label, from: diseaseLabel(dz.id), to: diseaseLabel(mut.into) })
+            : t('dz.mutatesAbsorbed', { name: c.label, from: diseaseLabel(dz.id), to: diseaseLabel(mut.into) }));
+          continue;
         }
       }
       dz.minutesLeft -= stepMin;

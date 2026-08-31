@@ -113,6 +113,10 @@ export const GAMEOP_FIELD_TARGETS = {
   'reduceDiseaseDays.disease': { registry: 'maladies' },
   'diseaseTestMod.diseases': { registry: 'maladies' },
   'suppressSymptom.symptomId': { registry: 'symptoms' },
+  'aggravateSymptom.disease': { registry: 'maladies' },
+  'aggravateSymptom.symptomId': { registry: 'symptoms' },
+  'grantSymptom.disease': { registry: 'maladies' },
+  'grantSymptom.symptomId': { registry: 'symptoms' },
   // ── Possessions / qualités / groupes d'arme ──
   'giveTrapping.trappingId': { registry: 'trappings' },
   'augmentWeapon.addQualities': { registry: 'qualities' },
