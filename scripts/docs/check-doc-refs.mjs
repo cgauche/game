@@ -2,6 +2,7 @@
 // doivent jamais mentir. Deux vérifications déterministes, exit 1 avec la liste fichier:ligne sinon :
 //   1. CHEMINS  — tout `src/…` / `scripts/…` cité existe sur le disque (fichier, dossier ou glob).
 //   2. SYMBOLES — tout appel de fonction backtiqué (`nomCamel(` / `NomPascal(`) se retrouve dans src/.
+//   3. SENS INVERSE — tout chemin `docs/….md` cité par src/ ou scripts/ existe sur le disque.
 // Un métavariable `<…>` qui suit un chemin le tronque au dossier (ex. `src/ui/jetProps/<hook>.tsx`
 // → on valide `src/ui/jetProps/`). Re-run : node scripts/docs/check-doc-refs.mjs (npm run docs:check).
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs'
@@ -203,6 +204,34 @@ if (existsSync(CHARTE_MD)) {
           problems.push({ file: CHARTE_MD, line: startIdx + 1, kind: 'classe canonique components.css absente du catalogue', tok: cls })
       }
     }
+  }
+}
+
+// 5. SENS INVERSE — le code cite la doc. Tout chemin `docs/….md` écrit dans un commentaire ou une
+// chaîne de `src/**` / `scripts/**` doit exister sur le disque : une doc supprimée laisse sinon des
+// renvois pendants qu'AUCUNE garde ne voit (les sens 1-4 ne lisent que `docs/*.md` et CLAUDE.md).
+// Exclusion STRUCTURELLE unique : `docs/plans/…` a sa propre garde dédiée
+// (`scripts/docs/check-plans-anchors.mjs`, sens 2 & 3, avec ses exemptions de fixtures au SITE) —
+// le doubler ici ne ferait que rejouer ses faux positifs.
+const DOC_REF_RE = /\bdocs\/[A-Za-z0-9_./-]*\.md\b/g
+// Exemptions AU SITE (fichier|jeton), jamais au fichier entier : un chemin écrit dans un dépôt
+// JETABLE monté par un test n'a pas vocation à exister dans celui-ci.
+const DOC_REF_SITES_EXEMPTS = new Set([
+  'scripts/docs/check-plans-anchors.test.mjs|docs/note.md', // fixture du dépôt jetable de la garde des plans
+])
+// Ce fichier-ci est hors du sens 5 : il ÉNONCE les jetons exemptés ci-dessus (même patron que
+// `FICHIERS_DE_LA_GARDE` dans check-plans-anchors.mjs), il ne les cite pas comme documentation.
+const DOC_REF_SELF = 'scripts/docs/check-doc-refs.mjs'
+for (const f of [...walk(SRC_DIR, ['.ts', '.tsx', '.js', '.mjs', '.mts', '.json', '.css']),
+                 ...walk('scripts', ['.ts', '.tsx', '.js', '.mjs', '.mts', '.json', '.css'])]) {
+  const rel = f.replace(/\\/g, '/')
+  if (rel === DOC_REF_SELF) continue
+  const text = readFileSync(f, 'utf8')
+  for (const m of text.matchAll(DOC_REF_RE)) {
+    const site = `${rel}|${m[0]}`
+    if (m[0].startsWith('docs/plans/') || DOC_REF_SITES_EXEMPTS.has(site)) continue
+    if (!existsSync(m[0]))
+      problems.push({ file: rel, line: lineAt(text, m.index), kind: 'doc citée mais absente', tok: m[0] })
   }
 }
 

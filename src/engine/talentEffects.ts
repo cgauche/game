@@ -249,7 +249,7 @@ export function effectiveTalents(c: Combatant): TalentInstance[] {
 }
 
 /** Modificateurs PASSIFS continus des talents POSSÉDÉS (`TalentData.passive` : Coup puissant, Dur à cuire…,
- *  ou Frénésie → `grantFreeAttack`) en `GameOp[]`, émis kind `intrinsèque` et RÉPÉTÉS par niveau (`t.times`).
+ *  ou Frénésie → `grantFreeAttack`) en `GameOp[]`, émis kind `intrinseque` et RÉPÉTÉS par niveau (`t.times`).
  *  Lus par le collecteur `passiveMods` (trauma) EXACTEMENT comme `traitPassiveMods` pour les traits — le
  *  talent (instance = id seul) est résolu par `findTalentById`. Disjoint des traits → zéro double-comptage. */
 export function talentPassiveMods(c: Combatant): PassiveMod[] {

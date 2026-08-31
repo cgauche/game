@@ -40,7 +40,7 @@ export function wornArmourPenalty(c: Combatant, skillId: string): number {
   return wearEntries(c).filter((e) => e.skill === skillId).reduce((s, e) => s + e.value, 0);
 }
 
-/** Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinsèque`, Σ) pour le collecteur passif
+/** Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinseque`, Σ) pour le collecteur passif
  *  unifié, chacune ATTRIBUÉE à la pièce qui la porte (`src`) pour que le détail de jet la NOMME. */
 export function qualityWearMods(c: Combatant): PassiveMod[] {
   return wearEntries(c).map((e) => ({ op: { op: 'skillMod' as const, skill: { id: e.skill }, mod: e.value }, kind: 'intrinseque' as const, label: e.label, ...(e.src ? { src: e.src } : {}) }));

@@ -38,18 +38,19 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Question RAW (« que dit la règle ? ») | Atlas `docs/raw/00-index.md`, puis `Source/` pour **citer** |
 | Détail d'un livre source (chapitres LDB, périmètres autorisés, historique d'extraction) | `docs/sources-vf.md` |
 | Valider une feature UI dans le navigateur (`__wfrp`, scénarios de test) | `docs/recette-navigateur.md` + `docs/test-scenarios.md` |
-| Toucher un passif / la corruption | `docs/systeme-passifs.md` |
+| Toucher un passif / la corruption | `docs/systeme-passifs.md` (GÉNÉRÉ, `npm run docs:passifs`) |
 | Toucher les triggers / événements de combat | `docs/combat-events-coherence.md` |
 | Ajouter une créature (rig) | `docs/creer-une-creature.md` |
-| Ajouter/curer une donnée dans `src/data/*.json` (hors sort/créature/effet/icône) | `docs/donnees.md` (carte + conventions) + skill `ajouter-une-donnee` |
+| Ajouter/curer une donnée dans `src/data/*.json` (hors sort/créature/effet/icône) | `docs/donnees.md` (carte + conventions, GÉNÉRÉ) + `docs/ajouter-une-donnee.md` (déroulé, GÉNÉRÉ, `npm run docs:ajouter-donnee`) + skill `ajouter-une-donnee` |
 | Authoring de map | `docs/map-authoring.md` (GÉNÉRÉ, `npm run docs:map-authoring`) |
 | Créer/modifier une campagne (projet multi-scènes + carte du monde) | `docs/campagne-authoring.md` + skill `creer-une-campagne` |
 | Créer ou retoucher un écran UI (CSS, densité, responsive) | `docs/charte-ui.md` + règle stricte 4 |
-| Ajouter un flux de jet différé (une situation = une modale — Piétinement, Course, Focalisation, Soin, Marchandage…) | `docs/ajouter-un-flux-de-jet.md` |
+| Ajouter un flux de jet différé (une situation = une modale — Piétinement, Course, Focalisation, Soin, Marchandage…) | `docs/ajouter-un-flux-de-jet.md` (GÉNÉRÉ, `npm run docs:flux-de-jet`) |
 | Intégrer un nouveau livre source VF au projet (pipeline complet) | `docs/ajouter-un-livre-source.md` |
-| Ajouter ou curer un sort / une Prière / une Bénédiction / un Miracle | `docs/ajouter-un-sort.md` |
+| Ajouter ou curer un sort / une Prière / une Bénédiction / un Miracle / un Rituel | `docs/ajouter-un-sort.md` (GÉNÉRÉ, `npm run docs:sort`) |
 | Ajouter une icône (ou remplacer un emoji par une affordance UI) | `docs/ajouter-une-icone.md` (GÉNÉRÉ, `npm run docs:icones`) |
-| Ajouter une mécanique à une entité (trait, talent, qualité, mutation, maladie, atout…) | `docs/ajouter-une-mecanique.md` |
+| Ajouter une mécanique à une entité (trait, talent, qualité, mutation, maladie, atout…) | `docs/ajouter-une-mecanique.md` (GÉNÉRÉ, `npm run docs:mecanique`) |
+| Toucher le rendu du monde (pivot `SceneEl`, builders, peintres, ambiance, matériaux) | `docs/rendu-pipeline.md` (GÉNÉRÉ, `npm run docs:rendu-pipeline`) |
 | Le Codex doit-il exposer une nouvelle relation inverse / un nouvel index / un auto-liage ? | `docs/codex-relations.md` (GÉNÉRÉ, `npm run docs:codex-relations`) |
 | Quel code lit ce champ JSON, avant de le renommer ou de le supprimer ? | `docs/consommateurs-de-champs.md` (GÉNÉRÉ, `npm run docs:field-consumers`) |
 | **« Quelle forme a ce concept dans chaque dataset ? »** — comparer la structure d'une référence / d'une valeur / d'une enveloppe entre documents, AVANT de poser une Nᵉ graphie ou de croire une forme unique | `docs/structures-donnees.md` (GÉNÉRÉ, `npm run docs:structures` — observé × déclaré sur les 2 racines `src/data` + `src/scenes`, lexique fermé `scripts/docs/lib/structures-lexique.mts`, stock décroissant `scripts/guards/lib/structuresStock.mjs`) |

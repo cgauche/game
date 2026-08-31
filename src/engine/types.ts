@@ -54,7 +54,7 @@ export const CHAR_KEYS: CharKey[] = [
   'sociabilite',
 ];
 
-// Libellés FR dérivés du catalogue i18n (source unique des textes — cf. docs/i18n-seam.md).
+// Libellés FR dérivés du catalogue i18n (source unique des textes — plan évacué → #320).
 export const CHAR_LABELS: Record<CharKey, string> = {
   'capacite-de-combat': t('char.capacite-de-combat'),
   'capacite-de-tir': t('char.capacite-de-tir'),
@@ -1034,7 +1034,7 @@ export interface Trauma {
    *  (`needsSurgery`, nez cassé LDB 18 l.72) ne re-décompte donc AUCUNE Blessure critique. */
   cosmetic?: boolean;
   /** Surcharge du `kind` passif de la séquelle (défaut : dérivé du type d'op par `traumaOpKind`). Une cicatrice
-   *  est un TRAIT DE CORPS permanent (`intrinsèque` : additif, non annulable) et non une douleur — c'est ce qui
+   *  est un TRAIT DE CORPS permanent (`intrinseque` : additif, non annulable) et non une douleur — c'est ce qui
    *  fait sommer son `skillMod` social (+/−) par `passiveSkillSum`, hors du pool non-cumul des pénalités de crit. */
   passiveKind?: import('./ops').PassiveKind;
 }
@@ -1470,7 +1470,7 @@ export interface Combatant {
    *  engine/creatureAttacks). Lus sans aucun parsing (`resolveTraits`/`hasTraitKey`). Conservés au spawn. */
   traits?: import('./statEntry').TraitList;
   /** Traits dont les modificateurs de PROFIL (charMods/Mouvement, LDB 85 : Élite/Coriace/Brutal/Rapide…)
-   *  s'appliquent en DIRECT par le collecteur passif (kind `intrinsèque`) plutôt que d'être cuits dans
+   *  s'appliquent en DIRECT par le collecteur passif (kind `intrinseque`) plutôt que d'être cuits dans
    *  `characteristics`/`movement` : facultatifs d'un profil bestiaire FINAL, traits d'un statbloc d'éditeur,
    *  traits ACCORDÉS en jeu (`grantTrait`). Absent ⇒ aucun (profil déjà final / héros sans trait créature).
    *  `characteristics` reste la BASE pure ; `effectiveChar` ajoute ces traits (cf. `baseWithTraits`). */

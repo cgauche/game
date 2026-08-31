@@ -3329,7 +3329,7 @@ export function specLabel(category: string, refId: string, specId: string): stri
  * MINTEUR (b) de `PlayerText` (#1318 V8a₁) — le PASSAGE des textes AUTHORÉS (le `label` d'une entité
  * de catalogue, le `title` d'une entrée de table, le `prompt` d'un nœud de Flow, l'intitulé d'un péril
  * de scène) vers l'affichage. Ces textes ne sont PAS traduisibles par clé : ils vivent dans la donnée,
- * et une 2ᵉ langue les surcharge par fichier `id → label` (cf. `docs/i18n-seam.md`, Phase E).
+ * et une 2ᵉ langue les surcharge par fichier `id → label` (plan évacué → #320, Phase E).
  *
  * CE QU'IL N'EST PAS : le fossile `rawText` sous un autre nom — d'autant moins négociable que ce fossile
  * est MORT (#1318 E7-FINAL). Il gelait un LITTÉRAL FR écrit au call-site ; ici l'argument est TOUJOURS lu

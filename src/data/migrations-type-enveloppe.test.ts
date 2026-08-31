@@ -87,7 +87,7 @@ const CAS: readonly Cas[] = [
     fichier: 'trappings.json',
     typeEnveloppe: 'trappings',
     cleNeuve: 'categorie',
-    cardinal: 440,
+    cardinal: 441,
     valeurs: ['melee', 'ranged', 'ammunition', 'armor', 'trapping'],
     annexe: {
       fichier: 'merchantFamilies.json',

@@ -1,5 +1,5 @@
 /**
- * Seam i18n (cf. docs/i18n-seam.md) — PUR (aucun React/DOM) → importable par le moteur sans casser sa
+ * Seam i18n (plan évacué → https://github.com/cgauche/game/issues/320) — PUR (aucun React/DOM) → importable par le moteur sans casser sa
  * pureté (peer module, comme src/data). `t(key, params)` résout depuis le catalogue de la locale courante
  * (FR par défaut, figée au lancement en v1) ; `MsgKey` est dérivé du catalogue FR → une clé absente est
  * une ERREUR DE COMPILATION. La 2ᵉ langue = un catalogue frère ajouté à `CATALOGS`.
@@ -41,7 +41,7 @@ export const getLocale = (): Locale => locale;
  * `KEY_SECTION_KEY`/`labelKey`/`NAMED_KEY_KEY` de `state/keybindings.ts`) — la forme à reprendre.
  * Appeler `setLocale` après le chargement les laisse donc en FR, SANS erreur ni avertissement.
  *
- * Ce n'est pas un bug tant que la v1 fige la locale au lancement (`docs/i18n-seam.md`, Non-objectifs :
+ * Ce n'est pas un bug tant que la v1 fige la locale au lancement (plan i18n évacué vers #320, Non-objectifs :
  * « re-rendu live au changement de locale »), mais c'est la CONDITION de cette fonction : la 2ᵉ langue
  * devra transformer ces cartes en accesseurs (`charLabel(k)`) ou re-résoudre au rendu — pas se
  * contenter d'appeler `setLocale`.

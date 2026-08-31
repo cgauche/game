@@ -127,4 +127,4 @@ prédicat unique « neutralisé » lu par l'IA.
   round) avant tout correctif — ne pas deviner la ligne.
 
 ## 5. Liens
-- Voir aussi : `docs/systeme-passifs.md`, `docs/i18n-seam.md`.
+- Voir aussi : `docs/systeme-passifs.md`, `docs/ajouter-une-mecanique.md`.

@@ -1,5 +1,5 @@
 /**
- * Catalogue de messages FR — SOURCE UNIQUE des textes traduisibles (seam i18n, cf. docs/i18n-seam.md).
+ * Catalogue de messages FR — SOURCE UNIQUE des textes traduisibles (seam i18n, plan évacué → #320).
  * Clés stables `domaine.cle` ; patrons à `{param}` interpolés par `t()`. Une 2ᵉ langue = un fichier frère
  * (mêmes clés) ; la logique ne change pas. Phase B : on y MIGRE les maps de labels jusqu'ici en dur.
  */

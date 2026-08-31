@@ -1,228 +1,221 @@
 # Ajouter une mécanique à une entité (trait, talent, qualité, mutation, maladie, atout…)
 
+> ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-mecanique.mjs` (`npm run docs:mecanique`) — NE PAS ÉDITER À LA MAIN.
+
+**Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : le SITE réel du lecteur de
+chaque canal (`src/engine/trauma.ts:919`, `src/state/triggeredEffects.ts:429`, `src/engine/capabilities.ts:45`), les
+20 membres d'`EffectTrigger` et les 6 formes d'`EffectTargeting`
+(`src/engine/flowCore.ts`), les 7 champs de `TriggeredEffect`, les 8 kinds
+de source réunis par `effectSourcesOf`, les 4 interfaces de capacités et leur nombre de
+drapeaux, les documents PORTEURS de chaque canal (def zod + population réelle du `.json`), le site
+de l'annulation `suppressesCapabilities` avec ses porteurs, les trois sites de l'Indice de qualité,
+et le site de `registerCombatHook`.
+**Angles morts** : le catalogue des `GameOp` et des `Condition` n'est pas repris ici — source
+unique `docs/vocabulaire-mecanique.md` ; le détail du canal PASSIF (annulation, combinaison,
+collecteur) vit dans `docs/systeme-passifs.md` ; le scan des defs ne voit qu'un champ déclaré au
+PREMIER niveau du document (un champ niché dans un sous-objet lui échappe) ; le critère de décision,
+la frontière donnée/machinerie et les recettes sont de l'ÉDITORIAL fixé dans le script.
+
 Toute mécanique — trait de créature, talent, atout d'arme/armure, mutation, symptôme de maladie,
-État — s'exprime dans **UN des 3 canaux** ci-dessous, jamais un type ad hoc. Ce guide couvre le
-choix du canal, l'édition au Codex, et le dispatcher unique des effets déclenchés.
+État — s'exprime dans **UN des 3 canaux** ci-dessous, jamais un type ad hoc.
 
-## 0. Les 3 canaux — vue d'ensemble
+## 0. Les 3 canaux
 
-| Canal | Porte | Édité par | Lu par |
-|---|---|---|---|
-| `passive: GameOp[]` | modificateur CONTINU (sans déclencheur) | `<GameOpEditor>` | `passiveMods(c)` (`src/engine/trauma.ts:504`) |
-| `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (onHit/onCrit/onRoundEnd…) | `<TriggeredEffectsField>` | `fireTriggers(get, actor, trigger, ctx)` (`src/state/triggeredEffects.ts:379`) |
-| `capabilities: XCapabilities` | drapeau IRRÉDUCTIBLE, interrogé par le moteur (pas de valeur numérique/formule) | formulaire générique inféré (pas de widget dédié) | `traitCapability`/`hasCapability`/dispatch par domaine |
+| Canal | Ce qu’il porte | Lu par |
+|---|---|---|
+| `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:919`) |
+| `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:429`) |
+| `capabilities` | drapeau IRRÉDUCTIBLE que le moteur INTERROGE (aucune valeur numérique ni formule) | `hasCapability` (`src/engine/capabilities.ts:45`) |
 
 Chaque champ est du **`GameOp[]`** ou du **`TriggeredEffect[]`** — jamais un type propre à
-l'entité. Si un besoin ne rentre dans aucune op existante, on **étend le vocabulaire**
-(`GameOp` dans `src/engine/ops.ts`, `Formula`/`Condition` si besoin), on n'invente jamais un champ
-parallèle ni un chemin de code par nom d'entité.
+l'entité. Si un besoin ne rentre dans aucune op existante, on **étend le vocabulaire**, on n'invente
+jamais un champ parallèle ni un chemin de code par nom d'entité. Le catalogue des ops et des
+Conditions qui EXISTENT est `docs/vocabulaire-mecanique.md` : le lire AVANT de conclure à un manque.
 
-## 1. Choisir le canal — critère de décision
+## 1. Choisir le canal
 
-Le test qui tranche (doctrine `docs/combat-events-coherence.md` §3 et §3bis) :
-
-> « Un designer pourrait-il vouloir une version DIFFÉRENTE de ça, attachée à un monstre/objet/sort/
-> État précis, éditable au Codex ? » — OUI → donnée (`passive`/`effects`/`capabilities`). NON, même
-> règle universelle pour tous → machinerie (hooks `registerCombatHook`, ne nomment AUCUNE entité).
+> « Un designer pourrait-il vouloir une version DIFFÉRENTE de ça, attachée à un monstre / un objet /
+> un sort / un État précis, éditable au Codex ? » — OUI → **donnée** (`passive`/`effects`/
+> `capabilities`). NON, même règle universelle pour tous → **machinerie** (hooks de Round, qui ne
+> nomment AUCUNE entité).
 
 Une fois qu'on sait que c'est de la donnée :
 
-- **A un déclencheur nommé** (« à la touche », « en fin de Round », « quand elle tue ») →
-  **`effects: TriggeredEffect[]`**.
-- **Continu, sans déclencheur** (bonus permanent de Caractéristique, malus de Test, modif de
-  Mouvement, PA) → **`passive: GameOp[]`**.
-- **Un drapeau que le moteur doit pouvoir INTERROGER** (« cette créature est Bestiale »,
-  « cette arme est Rapide », « cet objet est une ration ») **sans valeur numérique/formule** et
-  qui pilote une branche de résolution/IA/build plutôt qu'un chiffre → **`capabilities`**.
+- **un déclencheur nommé** (« à la touche », « en fin de Round », « quand elle tue ») → `effects` ;
+- **continu, sans déclencheur** (bonus de Caractéristique, malus de Test, modif de Mouvement, PA) →
+  `passive` ;
+- **un drapeau que le moteur doit pouvoir INTERROGER**, sans valeur numérique, qui pilote une branche
+  de résolution / d'IA / de build → `capabilities`.
 
-« Difficile à exprimer en `GameOp`/`Condition` » n'autorise **jamais** un repli en machinerie ou
-en champ ad hoc — c'est un signal pour étendre le vocabulaire (`docs/combat-events-coherence.md`
-§3 : « difficile à exprimer n'est JAMAIS une raison de mettre en machinerie »).
+« Difficile à exprimer » n'autorise **jamais** un repli en machinerie ni un champ ad hoc — c'est le
+signal qu'il faut étendre le vocabulaire.
 
-## 2. Canal `passive: GameOp[]` — le continu
+## 2. Canal `passive` — le continu
 
-Le **même vocabulaire d'ops que les sorts** (`src/engine/ops.ts`) sert les passifs — pas de type
-« modificateur de profil » séparé. Ops passives usuelles (`docs/systeme-passifs.md` §1) :
-`charMod{char,mod}`, `skillMod{skill,mod}`, `testMod{amount,char?}`, `moveMod{mod}`,
-`moveScale{num,den}`, `maxWeaponHands{hands}`, `senseLoss{sense}`, `apAll{amount}` (PA
-permanents — armure naturelle d'une mutation).
+Le même vocabulaire d'ops que les sorts. Le collecteur UNIQUE est `passiveMods`
+(`src/engine/trauma.ts:919`) ; **ne jamais lire un champ typé d'origine** dans un consommateur — toujours
+passer par ses helpers d'extraction. Détail complet (profils d'annulation, combinaison, branches du
+collecteur) : `docs/systeme-passifs.md`.
 
-Champ donnée par entité (`src/data/index.ts`) :
+Documents porteurs :
 
-| Entité | Champ | Fichier |
+| Document | Champ(s) | Def | Entrées porteuses |
+|---|---|---|---|
+| `src/data/etats.json` | `passive` | `src/data/schemas/defs/etats.ts` | 9 / 21 |
+| `src/data/maladies.json` | `infectionPassive` | `src/data/schemas/defs/maladies.ts` | 1 / 18 |
+| `src/data/mutations.json` | `passive` | `src/data/schemas/defs/mutations.ts` | 84 / 116 |
+| `src/data/naval-traits.json` | `passive` | `src/data/schemas/defs/naval-traits.ts` | 9 / 26 |
+| `src/data/psychology.json` | `passive` | `src/data/schemas/defs/psychology.ts` | 1 / 9 |
+| `src/data/qualities.json` | `passive` | `src/data/schemas/defs/qualities.ts` | 17 / 59 |
+| `src/data/symptoms.json` | `passive`, `severePassive`, `visiblePassive` | `src/data/schemas/defs/symptoms.ts` | 9 / 18 |
+| `src/data/talents.json` | `passive` | `src/data/schemas/defs/talents.ts` | 21 / 187 |
+| `src/data/traits.json` | `passive` | `src/data/schemas/defs/traits.ts` | 26 / 132 |
+| `src/data/trappings.json` | `passive` | `src/data/schemas/defs/trappings.ts` | 15 / 441 |
+
+## 3. Canal `effects` — le déclenché
+
+Un `TriggeredEffect` (`src/engine/flowCore.ts:549`) est un Flow d'ops appliqué à `on` quand `trigger` se
+produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'entité.
+
+| Champ | Type | Rôle (JSDoc) |
 |---|---|---|
-| Trait | `TraitData.passive: GameOp[]` (l.823) | `src/data/traits.json` |
-| Qualité | `QualityData.passive: GameOp[]` (l.896) | `src/data/qualities.json` |
-| Mutation | `Mutation.passive: GameOp[]` | `src/data/mutations.json` |
-| Talent/État/Symptôme | `passive`/`severePassive: GameOp[]` | `talents.json`/`etats.json`/`symptoms.json` |
+| `trigger` | `EffectTrigger` | — |
+| `on` | `EffectTargeting` | — |
+| `flow` | `Flow<E>` | — |
+| `condition?` | `string` | Filtre du déclencheur `onGainCondition` : ne réagit que si l'État GAGNÉ a cet `id` (Mâchoires d'acier : `condition:'sonne'`). |
+| `attackType?` | `'melee' \| 'ranged'` | Filtre par TYPE d'attaque (`onHit`/`onWoundLoss`) : ne réagit que si la touche/perte provient d'une attaque de ce type (`melee`/`ranged`). |
+| `optional?` | `boolean` | Effet OPT-IN (RAW « Vous pouvez… » — Contrôle de la Frénésie, LDB 10 l.251-255) : le porteur CHOISIT de le déclencher. |
+| `source?` | `EffectSource` | ENTITÉ SOURCE — JAMAIS authorée : posée à l'ÉNUMÉRATION par `effectSourcesOf` (`src/state/triggeredEffects.ts`), qui seule sait de quelle entité l'effet est tiré. |
 
-**Collecteur unique** : `passiveMods(c: Combatant): PassiveMod[]` (`src/engine/trauma.ts:504`)
-concatène toutes les sources (traumatismes, `c.mutations[].passive`, traits de profil via
-`traitPassiveMods(c.liveTraits)` — `src/engine/traits/dispatch.ts:178` —, qualités d'objet
-équipées, maladies/faim, sorts actifs) et emballe chaque op en `PassiveMod{op, kind}`. Le `kind`
-(`PassiveKind`, `src/engine/ops.ts`) porte annulation + combinaison (`intrinsèque` = Σ dans la
-base pour trait/mutation/qualité ; le reste = pool non-cumul « meilleur bonus + pire malus », table
-`PASSIVE_CANCELLERS` dans `trauma.ts:448`). **Ne JAMAIS lire un champ typé d'origine** dans un
-consommateur (`effectiveChar`/`testValue`/`defenseValue`/`effectiveMovement`/`recomputeLoadout`) —
-toujours passer par les helpers d'extraction de `trauma.ts` (`passiveCharSum`, `passiveSkillSum`,
-`passiveTestMod`, `passiveMoveMod`…).
+### Les 20 déclencheurs (`EffectTrigger`, `src/engine/flowCore.ts:520`)
 
-Traits de profil : un trait posé en `Combatant.liveTraits` (facultatif de bestiaire, statbloc
-d'éditeur, `grantTrait` en jeu) applique son `passive` EN DIRECT via le collecteur — un trait
-INHÉRENT du profil imprimé (déjà cuit dans les stats finales) n'y est PAS, pour éviter le
-double-compte.
+`onHit` · `onCrit` · `onWoundLoss` · `onSlain` · `onRoundStart` · `onStartled` · `onKill` · `onCharged` · `onGainCondition` · `onCombatStart` · `onCombatEnd` · `onRoundEnd` · `onTurnStart` · `onTurnEnd` · `onDayStart` · `onWake` · `onAttackResolved` · `onCastResolved` · `onMiscast` · `onOwnTestFailed`
 
-## 3. Canal `effects: TriggeredEffect[]` — le déclenché
 
-`TriggeredEffect` (`src/engine/flowCore.ts:472`) :
+### Les 6 formes de ciblage (`EffectTargeting`, `src/engine/flowCore.ts:546`)
 
-```ts
-interface TriggeredEffect<E = EffectOp> {
-  trigger: EffectTrigger;   // onHit | onCrit | onWoundLoss | onSlain | onRoundStart | onStartled |
-                            // onKill | onCharged | onGainCondition | onCombatStart | onCombatEnd |
-                            // onRoundEnd | onTurnStart | onTurnEnd | onAttackResolved | onCastResolved | onMiscast
-  on: EffectTargeting;      // 'self' | 'victim' | 'engaged' | 'grappled' | {near:…} | {pick:'engaged',…}
-  flow: Flow<E>;            // le MÊME Flow d'ops que les sorts (seq/if/do/test)
-  condition?: string;       // filtre onGainCondition : ne réagit qu'à cet État gagné
-  attackType?: 'melee' | 'ranged';
-  optional?: boolean;       // RAW « Vous pouvez… » : proposé en CHOIX à un héros manuel, jamais exercé par l'IA
-}
-```
+- `'self'`
+- `'victim'`
+- `'engaged'`
+- `'grappled'`
+- `{ near: 'victim' \| 'self'; radiusMeters: number }`
+- `{ pick: 'engaged'; sizeAtMost?: 'self'; max: number }`
 
-(`EffectTrigger` défini `src/engine/flowCore.ts:450`.)
+### Le dispatcher unique — `fireTriggers`
 
-Champ `effects` sur `TraitData`, `QualityData`, `talents.json`, `etats.json`, `weapon.onHitEffects`
-(atout d'arme). Le Flow est le vocabulaire des sorts (`GameOp` via `applyOps`) — jamais un handler
-en dur par nom de trait/talent.
+`fireTriggers` (`src/state/triggeredEffects.ts:429`) est le **SEUL** point d'entrée pour jouer les effets
+déclenchés d'un combattant. Il réunit ses sources via `effectSourcesOf` (`src/state/triggeredEffects.ts:93`), qui
+énumère aujourd'hui **8 kinds** dans un ordre FIGÉ (déroulé RNG déterministe) :
+`trapping` → `trait` → `quality` → `talent` → `symptom` → `mutation` → `condition` → `psychology`.
 
-### Le dispatcher unique : `fireTriggers`
+**Ajouter une source de déclenché = l'ajouter dans `effectSourcesOf`**, jamais un chemin de dispatch
+parallèle. C'est là, et nulle part ailleurs, que se lit la liste des porteurs reconnus.
 
-`fireTriggers(get, actor, trigger, ctx)` (`src/state/triggeredEffects.ts:379`) est le **SEUL**
-point d'entrée pour jouer les effets déclenchés d'un combattant. Il réunit **toutes** les sources
-via `effectSourcesOf(actor, weapon)` (`triggeredEffects.ts:80`, doc de tête l.72-79) : Atouts d'arme
-(`weapon.onHitEffects`), Traits (`actor.traits[].effects`), Qualités d'arme, Talents, États
-(`actor.conditions[]`), états psychologiques (`actor.psychState[]`). Ordre FIGÉ (enchant → traits →
-atouts → talents → États → psy) pour un déroulé RNG déterministe.
+Documents porteurs :
 
-**Ajouter une source de déclenché = l'ajouter dans `effectSourcesOf`, jamais un nouveau chemin de
-dispatch parallèle.** Maladies et mutations n'ont PAS besoin d'une source dédiée : elles réagissent
-« par composition » — elles octroient un Trait ou un État à leur porteur, déjà couvert.
-
-`fireTriggers` combine trois dispatches identiques en cœur (`applyTriggeredEffects`,
-`triggeredEffects.ts:303`) : traits/talents/atouts non-statut (`effectsOf`), États
-(`fireConditionEffects`), psy (`firePsychEffects`) — un même moteur de folding pour les trois, avec
-`stacks` (pions) injecté pour les statuts.
-
-Un Flow d'effet déclenché portant un nœud `test` est routé **cadence-aware** : héros manuel →
-cascade influençable (via `ctx.set` + le routeur `testRouter`) ; ennemi/auto/entretien hors combat
-→ résolu inline. Il n'existe **aucune branche « succès silencieux »** — un Flow `test` sans routeur
-disponible échouerait plutôt que de s'exécuter en douce.
+| Document | Champ(s) | Def | Entrées porteuses |
+|---|---|---|---|
+| `src/data/domains.json` | `effects` | `src/data/schemas/defs/domains.ts` | 5 / 20 |
+| `src/data/etats.json` | `effects` | `src/data/schemas/defs/etats.ts` | 11 / 21 |
+| `src/data/maneuvers.json` | `effects` | `src/data/schemas/defs/maneuvers.ts` | 16 / 20 |
+| `src/data/mutations.json` | `effects` | `src/data/schemas/defs/mutations.ts` | 1 / 116 |
+| `src/data/psychology.json` | `effects` | `src/data/schemas/defs/psychology.ts` | 1 / 9 |
+| `src/data/qualities.json` | `effects` | `src/data/schemas/defs/qualities.ts` | 10 / 59 |
+| `src/data/spells.json` | `effects` | `src/data/schemas/defs/spells.ts` | 576 / 576 |
+| `src/data/symptoms.json` | `effects` | `src/data/schemas/defs/symptoms.ts` | 1 / 18 |
+| `src/data/talents.json` | `effects` | `src/data/schemas/defs/talents.ts` | 4 / 187 |
+| `src/data/traits.json` | `effects` | `src/data/schemas/defs/traits.ts` | 25 / 132 |
+| `src/data/trappings.json` | `onHitEffects` | `src/data/schemas/defs/trappings.ts` | 6 / 441 |
 
 ## 4. Canal `capabilities` — l'irréductible
 
-Réservé aux drapeaux que le moteur **interroge** (résolution de combat, IA, psychologie,
-build/déplacement, artisanat), SANS valeur formule ni déclencheur — un booléen (ou un petit champ
-scalaire comme `encDelta`) qui pilote une branche de code, pas un chiffre qui s'additionne.
+Réservé aux drapeaux que le moteur **interroge** (résolution, IA, psychologie, build, artisanat),
+SANS formule ni déclencheur : un booléen (ou un petit scalaire) qui pilote une branche de code, pas
+un chiffre qui s'additionne.
 
-- **Trait** : `TraitData.capabilities?: TraitCapabilities` (`src/data/index.ts:830`), lu PAR ID par
-  `traitCapability(traits, cap)` (`src/engine/traits/dispatch.ts:203`, ex. `bestial`, `mindless`,
-  `stupid`, `swarm`, `coldBlooded`…). `suppressesCapabilities` permet à un trait d'ANNULER une
-  capacité d'un autre trait porté par le même combattant (Dressé ignore Bestial).
-- **Qualité d'arme/armure/objet** : `QualityData.capabilities?: QualityCapabilities`
-  (`src/data/index.ts:849-882` — `fastStrike`, `slowStrike`, `magazine`, `salvo`, `magic`,
-  `unbreakable`…). Les **Indices** numériques (Salve N, Protectrice N…) restent lus du RUNTIME
-  string via `parseQuality().indice` — la capability n'est qu'un marqueur de PRÉSENCE.
-- **Objet** : `TrappingData.capabilities?: ItemCapabilities` (`src/data/index.ts:471`), lu par
-  `itemCapability(it, cap)` (par-objet, non gaté sur le port — une ration se mange sans être
-  « portée », `src/engine/capabilities.ts:25`).
-- **Symptôme de maladie** : `SymptomData.capabilities?: SymptomCapabilities`
-  (`src/data/index.ts:903-910` — `blocksHealing`, `amputation`, `contagious`…).
+| Interface | Site | Drapeaux déclarés |
+|---|---|---|
+| `TraitCapabilities` | `src/data/index.ts:1615` | 43 |
+| `QualityCapabilities` | `src/data/index.ts:1813` | 26 |
+| `ItemCapabilities` | `src/data/index.ts:1069` | 12 |
+| `SymptomCapabilities` | `src/data/index.ts:1878` | 7 |
 
-**Agrégat cross-source par personnage** : `hasCapability(c, cap)` (`src/engine/capabilities.ts:45`)
-réunit objets portés/tenus, traits, qualités des objets portés/tenus, et maladies actives — un seul
-point d'entrée, chaque canal reste disjoint par nom de cap.
+Lecture — un seul point d'entrée par portée, chaque canal restant disjoint par nom de capacité :
 
-Édition Codex : `capabilities` n'a **pas** de widget dédié — il n'est pas dans
-`dedicatedFieldKeys` (`src/ui/compendium/CodexEdit.tsx:127-151`), donc il retombe dans le
-**formulaire générique inféré** (`inferFields`), qui projette l'objet en sous-champs (checkbox par
-booléen, champ nombre pour `encDelta`).
+| Lecteur | Site | Portée |
+|---|---|---|
+| `traitCapability` | `src/engine/traits/dispatch.ts:230` | par trait |
+| `itemCapability` | `src/engine/capabilities.ts:25` | par objet |
+| `hasCapability` | `src/engine/capabilities.ts:45` | agrégat cross-source, par personnage |
+
+### Une capacité peut être ANNULÉE par un autre trait porté
+
+`suppressesCapabilities` (lu par `traitCapability`, `src/engine/traits/dispatch.ts:234`) : un trait déclare
+les capacités qu'il annule chez **les autres traits du même porteur** — la résolution rend `false`
+même si un second trait la déclare. C'est de la DONNÉE, jamais un chemin de code par nom de trait :
+1 entrée(s) de `src/data/traits.json` l'exercent, dont `dresse-dompte`
+(« Dressé (Dompté) ») qui annule `bestial`.
+
+### Une capacité est un marqueur de PRÉSENCE, jamais un nombre
+
+Le drapeau dit qu'une mécanique s'applique ; sa VALEUR (Salve N, Protectrice N, Solide N…) vit sur
+l'INSTANCE portée par l'objet — `QualityInstance.value` (`src/engine/types.ts:351`), que le
+dispatcher runtime expose sous `indice` (`resolveQualities`, `src/engine/qualities/dispatch.ts:54`).
+La saisie en prose (« Solide 3 ») n'est convertie en instance qu'à l'AUTHORING, par
+`parseQuality` (`src/engine/qualities/normalize.ts:34`) — le runtime ne re-parse jamais un libellé
+(convention `indice:{label}` côté champ d'édition). N'ajoute donc **jamais** un drapeau numéroté
+(`salve3`) : la capacité marque la présence, l'Indice se lit sur l'instance.
+
+Au Codex, `capabilities` n'a **pas** de widget dédié : il retombe dans le formulaire générique
+inféré, qui projette l'objet en sous-champs (une case à cocher par booléen).
+
+Documents porteurs :
+
+| Document | Champ(s) | Def | Entrées porteuses |
+|---|---|---|---|
+| `src/data/qualities.json` | `capabilities` | `src/data/schemas/defs/qualities.ts` | 31 / 59 |
+| `src/data/symptoms.json` | `capabilities` | `src/data/schemas/defs/symptoms.ts` | 7 / 18 |
+| `src/data/traits.json` | `capabilities` | `src/data/schemas/defs/traits.ts` | 51 / 132 |
+| `src/data/trappings.json` | `capabilities` | `src/data/schemas/defs/trappings.ts` | 20 / 441 |
 
 ## 5. Éditer — au Codex, jamais en dur
 
-Tout se fait dans le **Compendium in-app** (écran Codex DEV, `src/ui/compendium/CodexEdit.tsx`) :
+- `passive` → `GameOpEditor`, la primitive de liste d'ops EXISTANTE (celle des sorts) ;
+- `effects` → le champ d'effets déclenchés, qui compose le même éditeur d'ops sous chaque feuille ;
+- `capabilities` → formulaire générique inféré (§4) ;
+- la sauvegarde réécrit le `.json` app-owned ; Vite recharge.
 
-- Champ `passive` (trait/qualité/mutation/talent/État/objet) → **`<GameOpEditor>`**
-  (`src/ui/editor/GameOpEditor.tsx`, importé `CodexEdit.tsx:18`, rendu `CodexEdit.tsx:328`) — le
-  **même composant** que celui utilisé pour les sorts (`EffectList`) et les symptômes
-  (`severePassive`). Ajouter un modificateur de profil = ajouter une op dans la liste, jamais un
-  nouveau widget.
-- Champ `effects` (trait/qualité/talent/État) → **`<TriggeredEffectsField>`**
-  (`CodexEdit.tsx:344`, catégories `traits`/`qualities`/`domains`/`talents`/`etats`).
-- Champ `capabilities` → formulaire générique inféré (§4).
-- Sauvegarde : `src.persist` réécrit le `.json` app-owned entier via File System Access
-  (`fsPersist`) ; Vite recharge.
+**Réutiliser, ne jamais réinventer** : toute liste d'ops passe par la primitive partagée (table des
+primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autre nom.
 
-**Réutiliser, ne jamais réinventer** : pour toute liste d'ops (passif, effet déclenché, table
-d'Imparfaites, mutation, consommable) → `GameOpEditor`/`EffectList`/`FlowEditor`. N'écrire aucun
-widget de liste d'ops à la main, ne pas dupliquer le vocabulaire existant (ex. ne pas recréer un
-`movementHalved` alors que `moveScale` existe déjà).
+## 6. Frontière donnée / machinerie
 
-## 6. Frontière donnée / machinerie (anti-dette)
+- **Donnée** = tout ce qu'un designer voudrait pouvoir varier par entité, éditable au Codex →
+  `passive` / `effects` / `capabilities`.
+- **Machinerie** = les règles UNIVERSELLES de l'arène, qui ne nomment AUCUNE entité (décrément des
+  durées, ré-ordonnancement d'initiative, purge des invocations…) — elles s'enregistrent par
+  `registerCombatHook` (`src/state/combatHooks.ts:57`), la primitive unique des hooks de combat.
+- Un hook qui teste un id d'entité en dur est une **dette démasquée** : il doit migrer vers les
+  `effects`/`passive` de l'entité nommée et disparaître du registre de hooks. La garde qui le fait
+  rougir est listée ci-dessous.
+- La doctrine complète (et ses cas jugés) vit dans `docs/combat-events-coherence.md`.
 
-`docs/combat-events-coherence.md` §3 et §3bis posent la doctrine complète. Résumé opérationnel :
+## 7. Recettes
 
-- **Donnée** = tout ce qu'un designer voudrait pouvoir varier par entité (monstre/objet/sort/État
-  précis), éditable au Codex → `passive`/`effects`/`capabilities`.
-- **Machinerie** (hooks `registerCombatHook`, `src/state/combat/roundHooks.ts`) = règles
-  UNIVERSELLES du monde qui ne nomment AUCUNE entité : décrément des durées, `tick-death`,
-  `clear-psych-of-dead`, `purge-summons`, ré-ordonnancement d'initiative, la règle de surnombre
-  (les EXEMPTIONS de surnombre, elles, sont des traits = donnée).
-- Un hook qui teste `hasCondition('sonne')`/`traitId==='infecte'`/un nom en dur est une **dette
-  démasquée** — il doit migrer vers `effects`/`passive` de l'entité nommée et disparaître du
-  registre de hooks.
-- « Difficile à exprimer proprement » n'est **jamais** un motif pour replier en machinerie : on
-  étend `GameOp`/`Formula`/`Condition` (cf. §0).
-
-## 7. Recettes rapides
-
-- **Ajouter un modificateur de profil à un trait** (ex. +1d10 Mouvement) : Codex → trait → champ
-  `passive` → `+` op `moveMod{mod:10}` (l'unité de `M` est un petit entier hors Bonus).
-- **Ajouter un effet « à la touche » à un Atout d'arme** : Codex → qualité → champ `effects` → `+`
-  entrée `{trigger:'onHit', on:'victim', flow:{…}}`.
-- **Ajouter une capacité irréductible à un trait** (« cette créature est Aveugle-née ») : Codex →
-  trait → sous-champ `capabilities.<clé>` (checkbox) ; consommateur = ajouter la lecture
-  `traitCapability(c.traits, 'maClé')` au site qui en a besoin (psychologie/IA/résolution).
-- **Créer une mutation avec passif + armure naturelle** : Codex → catégorie Mutations →
-  `passive` (ops) + champ `apAll`/`apLocations` (armure naturelle, hors collecteur passif — lu par
-  `mutationArmourBonus`/`recomputeLoadout`).
-
-## Fichiers clés
-
-- `src/engine/ops.ts` — `GameOp`, `Formula`, `PassiveMod`, `PassiveKind`.
-- `src/engine/trauma.ts` — `passiveMods` (collecteur unique) + `PASSIVE_CANCELLERS` + helpers.
-- `src/engine/traits/dispatch.ts` — `traitPassiveMods`, `traitCapability`.
-- `src/engine/capabilities.ts` — `itemCapability`, `hasCapability` (agrégat cross-source).
-- `src/engine/flowCore.ts` — `EffectTrigger`, `TriggeredEffect`, `EffectTargeting`.
-- `src/state/triggeredEffects.ts` — `fireTriggers` (dispatcher unique), `effectSourcesOf`,
-  `applyTriggeredEffects`.
-- `src/data/index.ts` — `TraitData`/`QualityData`/`SymptomData` + leurs `Capabilities`.
-- `src/ui/editor/GameOpEditor.tsx` — éditeur d'ops (réutilisé partout).
-- `src/ui/compendium/CodexEdit.tsx` — édition Codex (`dedicatedFieldKeys`, champs par catégorie).
-- `docs/systeme-passifs.md` — détail complet du canal passif + Corruption/mutations.
-- `docs/combat-events-coherence.md` §3/§3bis — doctrine de frontière donnée/machinerie.
+- **Modificateur de profil sur un trait** : Codex → le trait → `passive` → `+` une op de
+  modificateur. La def TS du registre ne porte que le libellé.
+- **Effet « à la touche » sur un Atout d'arme** : Codex → la qualité → `effects` → une entrée dont
+  le `trigger` est le déclencheur voulu et le `flow` la conséquence.
+- **Capacité irréductible sur un trait** : Codex → le trait → `capabilities` → la case ; puis
+  ajouter la LECTURE (`traitCapability`) au site qui en a besoin.
 
 ## Gardes
 
-- `src/ui/compendium/no-json-fields.test.ts` — tout champ d'un dataset éditable doit avoir un
-  éditeur dédié ou être couvert par le formulaire générique ; empêche un champ mécanique de
-  retomber en JSON brut.
-- `src/data/defs-migrated.test.ts` — les défauts mécaniques vivent dans `traits.json`/
-  `qualities.json` (capabilities/passive/effects), pas dans les `defs/` de registre.
-- `src/data/data-wellformed.test.ts` — valide les `Formula` des `GameOp` (`FORMULA_OBJECT_KEYS`,
-  `isValidFormula`) sur l'ensemble des datasets.
-- `src/engine/trauma.test.ts` — couvre `passiveMods`/`PASSIVE_CANCELLERS` (gating par `kind`,
-  non-cumul, combinaison intrinsèque).
-- `src/state/triggered-effects.test.ts` — couvre `fireTriggers`/`effectSourcesOf` (ordre des
-  sources, filtres `condition`/`attackType`/`optional`, routage cadence-aware des Tests).
-- `src/state/combat-hardcode-guard.test.ts` — garde anti-régression qui fait rougir un hook de
-  `roundHooks.ts` nommant une entité précise (dette de machinerie démasquée).
+| Garde | Ce qu’elle verrouille (son propre `describe`) |
+|---|---|
+| `src/ui/compendium/no-json-fields.test.ts` | Codex — aucun champ éditable n’infère kind:json (E3b) |
+| `src/data/defs-migrated.test.ts` | defs mécaniques migrées en DONNÉE (traits + qualités) |
+| `src/data/data-wellformed.test.ts` | Intégrité des données src/data/*.json |
+| `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
+| `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
+| `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |

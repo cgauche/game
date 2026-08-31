@@ -6,7 +6,7 @@ import { DEFENSE_LABEL, FREE_ATTACK_LABEL } from '../engine/combat';
 import { CIBLE_LABEL } from '../engine/psychology';
 import { psychologyLabel } from '../data';
 
-describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () => {
+describe('i18n — primitive t() + catalogue FR (seam, plan → #320)', () => {
   it('résout une clé en texte FR', () => {
     expect(t('char.capacite-de-combat')).toBe('Capacité de Combat');
     expect(t('difficulty.difficile')).toBe('Difficile (−20)');

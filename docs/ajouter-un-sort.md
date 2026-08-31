@@ -1,172 +1,185 @@
 # Ajouter / curer un sort
 
-Un sort (ou une Prière/Bénédiction/Miracle — même structure `SpellData`) vit **entièrement en
-donnée** dans `src/data/spells.json` (`SpellData`, définie `src/data/index.ts` l.971-1036). Il n'y
-a plus de fichier engine par sort : les métadonnées de résolution ET les effets mécaniques
-sont tous les deux dans `spells.json`, édités dans le Compendium en jeu (Codex → catégorie
-« Sorts »). Ce guide couvre l'ajout d'un sort neuf et la curation d'un sort narratif existant.
+> ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-sort.mjs` (`npm run docs:sort`) — NE PAS ÉDITER À LA MAIN.
 
-## 0. Tableau de bord : `docs/sorts-implementation.md`
+**Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : les 18 champs propres
+d'une entrée et leurs libellés d'édition (AST du def zod `src/data/schemas/defs/spells.ts`), les
+4 formes de portée, 5 de cible et 5 de durée (les
+`z.discriminatedUnion('kind', …)` du même def), les 9 rubriques d'un Rituel, les
+3 issues de `spellSupport` (type de retour de `src/engine/spellspec.ts`), et l'INVENTAIRE
+mesuré sur les 576 entrées de `src/data/spells.json` (curées, familles, population de chaque
+forme). **Angles morts** : l'état d'implémentation SORT PAR SORT n'est pas ici — il vit dans le
+tableau de bord `docs/sorts-implementation.md` (généré à part, avec ses propres angles morts, dont
+le fait que la mesure est STRUCTURELLE et non une preuve d'exécution) ; le vocabulaire des `GameOp`
+utilisables dans `effects` vit dans `docs/vocabulaire-mecanique.md` ; la FIDÉLITÉ d'une `desc` à
+sa source ne se mesure pas — elle se relit au `Source/` ; l'ordre de la curation et les pièges de
+vocabulaire sont de l'ÉDITORIAL fixé dans le script.
 
-`docs/sorts-implementation.md` est un fichier **généré** (`npx tsx scripts/gen-sorts-doc.mts`,
-`scripts/gen-sorts-doc.mts`) — ne jamais l'éditer à la main. Il liste tous les sorts groupés par
-`type`/`subType`, avec pour chacun :
-- son état ✅ mécanique / 🟡 partiel / 📜 narratif (`spellSupport`, cf. §4) ;
-- « Curé » : oui (`s.curated === true`) ou repli (pas de spec officielle — sort homebrew
-  frenchy.bzh, cf. §1) ;
-- le texte « arbitrage MJ » restant à journaliser (les feuilles `op:'narrative'` de son `effects`).
+Un sort — ou une Prière, une Bénédiction, un Miracle, un **Rituel** — vit **entièrement en donnée**
+dans `src/data/spells.json`, sous le document déclaré par `src/data/schemas/defs/spells.ts`. Il n'y a
+aucun fichier de moteur par sort : métadonnées de résolution ET effets mécaniques sont dans la même
+entrée, éditée au Compendium en jeu (Codex → catégorie « Sorts »).
 
-Régénérer après toute curation :
-```
-npx tsx scripts/gen-sorts-doc.mts
-```
-C'est le point d'entrée pour repérer un sort à curer (repli + 📜/🟡) ou vérifier qu'un ajout est
-bien pris en compte.
+## 0. Tableau de bord — `docs/sorts-implementation.md`
 
-## 1. Où vit un sort — `src/data/spells.json`
+Fichier **généré** (`npm run docs:sorts`) : chaque sort avec son état ✅ mécanique / 🟡 partiel /
+📜 narratif, sa colonne « Curé », et le texte « arbitrage MJ » restant à journaliser. C'est le point
+d'entrée pour repérer un sort à curer, ou vérifier qu'un ajout a bien basculé.
 
-Tableau plat de `SpellData` (416 entrées au 2026-07-05, dont 278 `curated: true`). Champs
-d'identité et de flavor :
-- `id` : slug STABLE du libellé (cible des `Ref` — sorts de créature, listes de Bénédictions/
-  Miracles d'un culte, `src/data/index.ts` l.972). Généré par `slugId()` (`src/data/slug.ts`).
-- `label`, `type` (libellé d'affichage : « Béni », « Petits sorts », un Domaine…), `subType`
-  (précision, ou `null`).
-- `domainId` : id STABLE du Domaine de magie (`DomainData.id`) — absent pour un sort sans Domaine
-  (Magie Mineure, Prière). Dérivé du libellé de `subType` **à l'authoring seulement** ; le runtime
-  ne lit que l'id.
-- `family` : `CastingKind` = `'mineure' | 'arcane' | 'invocation' | 'beni' | 'chaos'`
-  (`src/engine/combatFeatures/types.ts` l.5) — discriminant moteur (branche d'incantation,
-  `canCastFromGrimoire`, Chaos…). `type` n'est plus qu'un libellé, ne pas s'y fier pour la logique.
-  Une famille `beni`/`invocation` fait de l'entrée une Prière : Test de Prière, aucun Niveau
-  d'Incantation opposé, non dissipable (`castInfoIsPrayer`/`castInfo`, `LDB 40 l.13`).
-- `cn` : Niveau d'Incantation, `null` pour une Prière.
-- `source: { book, page }`.
-- **`desc`** : la description mécanique — **copié/collé VERBATIM** de la source (Markdown conservé,
-  jamais reformulé/résumé — règle 5 de `CLAUDE.md`). Le champ doit pouvoir être recollé tel quel
-  dans le `.md` de `Source/`. Rendu en jeu par `<Prose>` (`src/ui/Prose.tsx`).
+**État du catalogue au moment de cette génération** : 576 entrées, dont 438 curées
+(`curated: true`), 17 Rituels (`isRitual`), 576 portant un `effects`.
+Répartition par `family` : `arcane` 359 · `invocation` 117 · `mineure` 50 · `chaos` 26 · `beni` 24.
 
-Un sort neuf s'ajoute par une entrée au tableau (Codex → « Sorts » → créer, ou édition JSON
-directe pour un import massif). `id` et `label` sont validés à l'enregistrement
-(`validateEntry`, `src/ui/compendium/CodexEdit.tsx` l.98) : id non vide et unique.
+## 1. La forme d'une entrée
 
-## 2. Portée / Cible / Durée — données STRUCTURÉES
+L'enveloppe commune (`id`, `label`, `desc`, `source`, `variants`…) est posée par la fabrique de
+document — cf. `docs/ajouter-une-donnee.md`. Les champs PROPRES d'un sort, avec le libellé sous
+lequel le Codex les édite :
 
-`range`, `target`, `duration` sont des unions discriminées (plus de prose re-parsée au runtime) :
+| Champ | Libellé au Codex | Rôle |
+|---|---|---|
+| `ecole` | École | ÉCOLE — libellé d'affichage hérité (dépotoir : 18 valeurs, casse double 'Magie mineure' / 'Magie Mineure') ; le discriminant de logique reste `family` + `domainId`. |
+| `subType \| null` | Sous-type | — |
+| `domainId?` | Domaine | Domaine arcanique ou de culte auquel le sort appartient |
+| `isRitual?` | Est un Rituel | `VDM 02 l.363` / `l.377-393` — TAG lu par `castingNumberOf` (`src/engine/magic.ts`) et `effectiveSpellOf` (`src/state/combatFlow.ts`) pour composer un `CastingNumberSubject` dont le `kind` départage les portées `kinds:['sort'\|'rituel']` (`VDM 12 l.646-647`, `VDM 14 l.489`). |
+| `ritual?` | Rubriques de Rituel | Rubriques d'ANATOMIE D'UN RITUEL (`VDM 02 l.377-393`) — présentes sur les seules entrées taguées `isRitual`. |
+| `family` | Famille de sort | Mineure/Arcane/Invocation/Béni/Chaos — discriminant de logique |
+| `cn \| null` | Niveau d’Incantation | — |
+| `range \| null` | Portée | — |
+| `target \| null` | Cible | — |
+| `duration \| null` | Durée | — |
+| `missile?` | Est un projectile magique | — |
+| `damage?` | Dégâts (projectile magique) | Bonus additif de Dégâts du projectile magique |
+| `ignorePA?` | Ignore les PA | Le projectile magique ignore les Points d’armure de la cible |
+| `ignoreBE?` | Ignore le Bonus d’Endurance | Le projectile magique ignore le Bonus d’Endurance de la cible |
+| `curated?` | Entrée officielle curée | Vrai pour une entrée complète de la base officielle ; absent/faux pour un sort homebrew |
+| `breathAttack?` | Sort Souffle | Délégué à l’attaque de zone du Trait Souffle |
+| `opposed?` | Test opposé | Le sort exige un Test de résistance ou de contact de la cible |
+| `effects?` | Effets déclenchés | — |
 
-- **`range`** (`SpellRange`, `src/engine/spellRange.ts` l.15-19) : `{kind:'self'}` (« Vous »),
-  `{kind:'touch'}` (« Contact »/« Toucher »), `{kind:'distance', value: Formula, unit:'m'|'km'}`,
-  ou `{kind:'special', text}` (valeur non chiffrable, homebrew).
-- **`target`** (`SpellTarget`, même fichier l.22-27) : `{kind:'self'}`, `{kind:'count', n: Formula}`,
-  `{kind:'area', span:'radius'|'diameter', meters: Formula, excludesCaster?}` (Zone d'Effet — porte
-  aussi l'ancien `zdeRadiusMeters`, SOURCE UNIQUE désormais), `{kind:'cone', lengthMeters, widthMeters}`,
-  ou `{kind:'special', text}`.
-- **`duration`** (`SpellDuration`, `src/engine/spellDuration.ts` l.13-18) : `{kind:'instant'}`,
-  `{kind:'rounds', value: Formula}` (échelle tactique), `{kind:'clock', value: Formula,
-  unit:'minutes'|'hours'|'days'}`, `{kind:'untilDawn'}`, ou `{kind:'special', text}`.
+**`desc`** est un **copié/collé VERBATIM** de la source (Markdown conservé, jamais reformulé ni
+résumé — règle 5 de `CLAUDE.md`) : le texte affiché doit pouvoir être recollé tel quel dans
+`Source/`. Rendu en jeu par l'unique primitive `<Prose>`.
 
-`value`/`n`/`meters` sont des `Formula` (`src/engine/ops.ts`) : littéral `number`, `{charOf: CharKey}`
-(« (Force Mentale) »), ou `{bonusOf: CharKey}` (« (Bonus de FM) »). `parseFormulaMeasure`/
-`parseSpellRange`/`parseSpellTarget`/`parseSpellDuration` (mêmes fichiers) ne servent qu'à la
-**migration prose → structure** — jamais lus au runtime ni à l'affichage (dérivé par
-`src/engine/spellRangeFormat.ts`). Pour un sort neuf, écrire directement la forme structurée
-(ou passer la prose FR verbatim à `parseSpellRange`/`parseSpellTarget`/`parseSpellDuration` une
-fois en script d'authoring, jamais en dépendance runtime).
+## 2. Portée / Cible / Durée — des unions STRUCTURÉES
 
-Au Codex, ces trois champs n'ont pas d'éditeur dédié : ils sont couverts par le **formulaire
-générique inféré** (`inferFields`, `src/ui/compendium/editFields.ts`) — un objet hétérogène infère
-`kind:'object'` (sous-formulaire récursif par champ), pas un repli JSON brut (garde `no-json-fields.test.ts`
-l.16-35 : aucun champ éditable ne doit retomber en `kind:'json'`).
+Plus aucune prose n'est re-parsée au runtime : les trois champs sont des unions discriminées par
+`kind`. La colonne de droite est la population RÉELLE de chaque forme dans `src/data/spells.json` — une
+forme à 0 est déclarée mais jamais exercée par la donnée.
 
-## 3. Effets mécaniques — `effects: Flow`
+### `range` — d'où le sort part (`src/engine/spellRange.ts`)
 
-`SpellData.effects?: Flow` (`src/state/flow.ts`) est le **Flow ÉDITABLE** (do/si/test) dont les
-feuilles sont des `EffectOp` (`{type:'ops', on:'target'|'caster', ops: GameOp[]}`) — SOURCE UNIQUE
-des effets appliqués à l'incantation (`runCombatFlow`/`runPureFlowLines`, `src/state/combatFlow.ts`).
-Rien d'autre ne porte d'effet mécanique : plus de champs `summon`/`polymorph`/`lifeSteal`/
-`persistentZone` séparés — tout est en `GameOp` dans le Flow (`summon`, `polymorph`, `lifeSteal`,
-`zone`, `push`, `teleport`, `chain`, `wounds`, `condition`, `charMod`… — cf. `src/engine/ops.ts`).
+| Forme (`kind`) | Champs | Entrées de `spells.json` |
+|---|---|---|
+| `self` | — | 114 |
+| `touch` | — | 77 |
+| `distance` | `value`, `unit` | 263 |
+| `special` | `text` | 69 |
 
-Au Codex, ce champ a un éditeur dédié : `SpellEffectsField` réutilise le **`FlowEditor`** de
-l'éditeur de scène (`src/ui/compendium/CodexEdit.tsx` l.458-470) — pose des `do`/`if`/`test`,
-chaque feuille = cible (`on:'target'`/`on:'caster'`) + liste de `GameOp` via `GameOpEditor`
-(`src/ui/editor/GameOpEditor.tsx`, la même primitive que sorts/traits/mutations/talents/consommables
-— **ne jamais réinventer un widget de liste d'ops**, cf. table des primitives `CLAUDE.md`).
+53 entrées portent `range: null` (portée non applicable ou non renseignée).
 
-Cas particuliers à connaître avant de curer :
-- **Projectile magique** : pas un `GameOp` — champs dédiés `missile: true`, `damage` (bonus additif
-  + DR + BFM, LDB 46), `ignorePA`/`ignoreBE`. Lus par `missileDamage`/`isMagicMissile`
-  (`src/engine/magic.ts` l.226-241). Résolu comme une attaque (`evaluateMissile`), pas par le Flow.
-- **Dégâts fixes** (sorts frenchy « N Points de Dégâts », hors échelle Projectile) : op
-  `{op:'wounds', amount, ignoreTB, ignoreAP}` dans `effects` — montant et mitigation d'armure
-  VERBATIM de la description (`src/data/fixed-damage-spells.test.ts`). ⚠ nommage : l'op `wounds`
-  utilise `ignoreTB`/`ignoreAP`, alors que les champs `missile` de `SpellData` utilisent
-  `ignoreBE`/`ignorePA` — deux vocabulaires distincts, ne pas les confondre en migrant un sort.
-- **Souffle** (LDB 47 p.244) : `breathAttack: true` — délégué à l'attaque de zone du Trait Souffle,
-  pas un `GameOp` de `effects`.
-- **Opposition** (`opposed?: { kind:'resist'|'contact', char?, skill? }`) : `resist` = Test opposé
-  par la caractéristique/compétence de la cible (multijet dans la modale d'incantation) ; `contact`
-  = Portée Contact, frappe via Test opposé de Corps à corps (Bagarre).
-- **Invocation** : `summon` (ref = **id slug** du bestiaire, résolu par `findCreatureById` —
-  jamais un libellé, cf. `src/state/spell-impure-ops.test.ts`).
-- Un sort référencé depuis un autre dataset (sort de créature, liste de Bénédictions/Miracles d'un
-  culte) le fait par **id stable** (`Ref`), jamais par libellé — cf. `src/ui/compendium/registry.ts`
-  l.662-707 (`refLabel('spells', …)`).
+### `target` — qui/quoi il affecte (`src/engine/spellRange.ts`)
 
-## 4. Classification mécanique — `spellSupport`
+| Forme (`kind`) | Champs | Entrées de `spells.json` |
+|---|---|---|
+| `self` | — | 105 |
+| `count` | `n` | 179 |
+| `area` | `span`, `meters`, `excludesCaster?`, `affects?`, `maison?` | 99 |
+| `cone` | `lengthMeters`, `widthMeters`, `affects?`, `maison?` | 1 |
+| `special` | `text` | 139 |
 
-`spellSupport(ops, spell, missile)` (`src/engine/spellspec.ts` l.33-48) classe un sort en :
-- **`mecanique`** ✅ : au moins un `GameOp` non-`narrative` dans `effects`, OU Projectile magique
-  (`missile`), OU `target.kind === 'area'`, OU `breathAttack` renseigné.
-- **`partiel`** 🟡 : mécanique ET au moins une feuille `op:'narrative'` (volet « arbitrage MJ »
-  journalisé à côté des effets appliqués).
-- **`narratif`** 📜 : aucun `GameOp` non-`narrative`, ET (le sort porte une op `narrative` OU
-  `!curated && ops.length === 0` — repli non curé).
+### `duration` — combien de temps (`src/engine/spellDuration.ts`)
 
-`ops` = l'union `spellEffectOps(spell.effects)` (target + caster, `src/engine/flowCore.ts` l.537-544)
-— **un effet de lanceur compte autant qu'un effet de cible** (téléportation/poussée/chaîne/
-invocation/zone/vol de vie sur `on:'caster'`).
+| Forme (`kind`) | Champs | Entrées de `spells.json` |
+|---|---|---|
+| `instant` | — | 137 |
+| `rounds` | `value`, `plus?` | 197 |
+| `clock` | `value`, `unit` | 129 |
+| `untilDawn` | — | 4 |
+| `special` | `text`, `plus?` | 56 |
 
-Ce badge alimente `docs/sorts-implementation.md` et l'affichage en jeu (icônes ✅/🟡/📜). Un sort
-homebrew (`source.book: 'frenchy.bzh'`, `curated` absent ou `false`) sans `effects` retombe
-automatiquement en `narratif` (repli) — c'est le signal qu'il reste à curer.
+`value`/`n`/`meters` sont des `Formula` (`src/engine/ops.ts`) : littéral `number`,
+`{charOf}` (« (Force Mentale) ») ou `{bonusOf}` (« (Bonus de FM) »). Les `parseSpellRange`/
+`parseSpellTarget`/`parseSpellDuration` ne servent qu'à la MIGRATION prose → structure
+(authoring), jamais au runtime ni à l'affichage — l'affichage est dérivé par
+`src/engine/spellRangeFormat.ts`. Pour un sort neuf : écrire directement la forme structurée.
 
-## 5. Curer un sort narratif → mécanique
+## 3. Effets mécaniques — `effects`
 
-1. Repérer le sort dans `docs/sorts-implementation.md` (icône 📜 ou 🟡, colonne « Curé » = repli).
-2. Ouvrir le Codex en jeu (menu 🧪/Compendium) → catégorie « Sorts » → l'entrée.
-3. Relire la `desc` VERBATIM (ne pas la réécrire) et identifier l'effet mécanisable : dégâts
-   (`wounds`), État (`condition`), modif de caractéristique (`charMod`), octroi de trait/talent/arme,
-   invocation (`summon`), zone (`zone`), téléportation/poussée/chaîne, drain de vie (`lifeSteal`)…
-   Avant de modéliser un effet en champ ad hoc → l'exprimer en `GameOp[]` (règle générale du projet).
-4. Renseigner/compléter `range`/`target`/`duration` structurés si absents (§2).
-5. Éditer `effects` via le `FlowEditor` (§3) : ajouter les `GameOp` mécaniques ; ce qui reste
-   irréductible (portée narrative pure, effet au jugement du MJ) reste en feuille
-   `{op:'narrative', text}` — jamais inventé, jamais supprimé silencieusement.
-6. Poser `curated: true` une fois la spec jugée complète pour ce sort (marque « spec officielle » —
-   n'affecte QUE les sorts de la base officielle LDB/ADE/EDO/…, jamais un homebrew frenchy.bzh dont
-   la trad reste hors périmètre RAW).
-7. Enregistrer (bouton « Enregistrer » du Codex — écrit `spells.json`).
-8. Régénérer le tableau de bord : `npx tsx scripts/gen-sorts-doc.mts`.
-9. Lancer les gardes (§ suivante).
+`effects` est le **Flow ÉDITABLE** (do / if / test) dont les feuilles sont des `EffectOp`
+(`{ type: 'ops', on, ops: GameOp[] }`) — SOURCE UNIQUE des effets appliqués à l'incantation. Rien
+d'autre ne porte d'effet mécanique : le vocabulaire complet des ops disponibles est catalogué dans
+`docs/vocabulaire-mecanique.md`, à consulter **avant** de conclure qu'une op manque.
+
+Au Codex, ce champ a un éditeur dédié qui réutilise le `FlowEditor` de l'éditeur de scène ; chaque
+feuille pose sa cible et sa liste de `GameOp` via `GameOpEditor` — la même primitive que
+traits/mutations/talents/consommables. **Ne jamais réinventer un widget de liste d'ops** (table des
+primitives partagées, `CLAUDE.md`).
+
+Cas particuliers, mesurés sur la donnée :
+
+- **Projectile magique** — pas un `GameOp` : champs dédiés `missile`, `damage`, `ignorePA`,
+  `ignoreBE`, lus par `missileDamage`/`isMagicMissile` (`src/engine/magic.ts`) et résolus comme
+  une attaque. 40 entrées aujourd'hui.
+- **Souffle** — `breathAttack`, délégué à l'attaque de zone du Trait Souffle, pas un `GameOp`.
+  2 entrées.
+- **Opposition** — `opposed` : `resist` 4.
+- ⚠ **Deux vocabulaires de mitigation à ne pas confondre** : l'op `wounds` porte `ignoreTB`/
+  `ignoreAP`, tandis que les champs de Projectile de l'entrée portent `ignorePA`/`ignoreBE`.
+- Toute référence vers un autre dataset (invocation, sort de créature, liste d'un culte) se fait par
+  **id stable**, jamais par libellé.
+
+## 4. Rituels (`VDM`) — les rubriques en plus
+
+Une entrée taguée `isRitual` imprime, en plus des champs d'un sort, les rubriques d'anatomie d'un
+Rituel (`ritual`) — 17 entrées aujourd'hui :
+
+| Rubrique | Rôle |
+|---|---|
+| `type` | Rubrique **Type** (`l.381`) VERBATIM — l'énoncé imprimé de qui peut y prendre part. |
+| `domains` | Le même **Type** en ids de `domains.json`, part EXÉCUTABLE de la rubrique (`l.381` : « Un lanceur de sorts qui ne pratique pas l'un des Domaines listés ne peut pas y prendre part »), lue par `arcaneDomainsOf`/`eligibleTalent` (`src/engine/grimoire.ts`). |
+| `cnFrom?` | Rubrique **NI** (`l.379`) lorsqu'elle n'imprime PAS un nombre mais une formule sur la CIBLE (« Force Mentale du démon ») : `cn` reste `null`, et la fiche Codex affiche ce texte au lieu d'un NI muet. |
+| `xp` | Rubrique **PX d'apprentissage** (`l.383`). |
+| `reduced?` | DIFFICULTÉ RÉDUITE imprimée entre parenthèses (`VDM 02 l.398` : « **NI :** 50 (25) », `l.400` : « **PX d'apprentissage :** 200 (100) »), dont la rubrique `type` nomme les bénéficiaires. |
+| `components` | Rubrique **Composants** (`l.385`) VERBATIM. |
+| `conditions` | Rubrique **Conditions** (`l.387`) VERBATIM. |
+| `sacrifices` | Rubrique **Sacrifices** (`l.389`) VERBATIM. |
+| `consequences` | Rubrique **Conséquences** (`l.391`) VERBATIM. |
+
+## 5. Classification mécanique — `spellSupport`
+
+`spellSupport(ops, spell, missile)` (`src/engine/spellspec.ts:33`) rend l'une des
+3 issues `mecanique` / `partiel` / `narratif`. Elle alimente le tableau de bord et le
+badge affiché en jeu. `ops` est l'union des feuilles du Flow pour la cible ET pour le lanceur : un
+effet de lanceur (téléportation, poussée, chaîne, invocation, zone, vol de vie) compte autant qu'un
+effet de cible.
+
+## 6. Curer un sort narratif → mécanique
+
+1. Repérer le sort dans `docs/sorts-implementation.md` (📜 ou 🟡, colonne « Curé » = repli).
+2. Ouvrir le Codex en jeu → catégorie « Sorts » → l'entrée.
+3. Relire la `desc` VERBATIM (ne pas la réécrire) et identifier l'effet mécanisable ; l'exprimer en
+   `GameOp` du catalogue existant plutôt qu'en champ ad hoc.
+4. Compléter `range`/`target`/`duration` structurés s'ils sont absents (§2).
+5. Éditer `effects` au `FlowEditor` ; ce qui reste irréductible (arbitrage laissé au MJ par la
+   source) reste une feuille `narrative` — jamais inventé, jamais supprimé en silence.
+6. Poser `curated: true` quand la spec est jugée complète — ce marqueur n'a de sens que pour une
+   entrée de la base officielle.
+7. Enregistrer, puis régénérer le tableau de bord (`npm run docs:sorts`) et lancer les gardes.
 
 ## Gardes
 
-- `npx vitest run src/state/spell-flow-completeness.test.ts` — chaque sort porte un `effects: Flow`
-  valide (feuilles `EffectOp` uniquement) ET `runPureFlowLines` exécute réellement ses ops
-  (Blessures + État) ; vérifie aussi qu'il y a ≥ 220 sorts `curated`.
-- `npx vitest run src/engine/spellspec.test.ts` — classification `spellSupport` (mécanique/partiel/
-  narratif).
-- `npx vitest run src/engine/spellRange.test.ts src/engine/spellDuration.test.ts` — parsing prose →
-  structure (portée/cible/durée), non-régression des formes existantes.
-- `npx vitest run src/data/fixed-damage-spells.test.ts` — sorts à dégâts fixes frenchy (montant +
-  mitigation d'armure verbatim, riders par id).
-- `npx vitest run src/state/spell-impure-ops.test.ts` — effets « lourds » (`summon`/`polymorph`/
-  `zone`/`lifeSteal`) présents dans le Flow et résolus au lancement.
-- `npx vitest run src/ui/compendium/no-json-fields.test.ts` — aucun champ de `spells` (ni d'aucune
-  autre catégorie éditable) ne retombe sur le repli JSON brut au Codex.
-- `npx vitest run src/data/id-collisions.test.ts src/data/refs-migrated.test.ts` — id unique, refs
-  vers un sort résolvables par id stable.
-- `npx tsx scripts/gen-sorts-doc.mts` — régénère `docs/sorts-implementation.md` (pas un test, mais
-  à relancer après toute curation pour vérifier la bascule d'icône).
-- `npx tsc --noEmit` — les unions `SpellRange`/`SpellTarget`/`SpellDuration`/`Formula` sont
-  strictement typées : une valeur mal formée casse la compilation avant le runtime.
+| Garde | Ce qu’elle verrouille (son propre `describe`) |
+|---|---|
+| `src/state/spell-flow-completeness.test.ts` | Complétude : tout sort porte ses effets dans un Flow exécutable (SpellData.effects) |
+| `src/engine/spellspec.test.ts` | specs curées — résolution |
+| `src/engine/spellRange.test.ts` | spellRange — round-trip parse∘format = identité (valeurs parsables) |
+| `src/engine/spellDuration.test.ts` | spellDuration — round-trip parse∘format = identité |
+| `src/data/fixed-damage-spells.test.ts` | sorts à dégâts FIXES (frenchy) — VERBATIM desc + BE selon LDB 13 (id-based) |
+| `src/state/spell-impure-ops.test.ts` | effets « lourds » présents dans le Flow éditable (données app-owned) |
+| `src/data/vdm-spells-variantes.test.ts` | donnée — 18 Sorts révisés par VDM, gatés par la RÈGLE (jamais par le livre) |
+| `src/ui/compendium/no-json-fields.test.ts` | Codex — aucun champ éditable n’infère kind:json (E3b) |
+| `src/data/id-collisions.test.ts` | intégrité des ids de données |
+
+`npm run typecheck` en plus : les unions de portée/cible/durée et `Formula` sont strictement
+typées — une valeur mal formée casse la compilation avant le runtime.

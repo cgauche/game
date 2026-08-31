@@ -54,7 +54,11 @@ const EXEMPTS = [
 const FORMES: readonly { motif: RegExp; quoi: string; cible: string }[] = [
   { motif: /type:\s*'(?:journal|document|setObjective)'[^\n]*?,\s*text:/g, quoi: "effet `journal`/`document`/`setObjective` à `text`", cible: 'desc' },
   { motif: /choices:\s*\[\s*\{\s*text:/g, quoi: '`DialogueChoice.text`', cible: 'label' },
-  { motif: /(?<![A-Za-z0-9_$])description:/g, quoi: '`description` de scène/projet', cible: 'desc' },
+  // La lookbehind écarte deux voisinages qui ne sont JAMAIS une propriété d'objet : le backtick
+  // (mention en prose de JSDoc, `` `description:` ``) et l'ancre `^` d'un littéral d'expression
+  // régulière (`/^description:\s*(.+)$/m`) — c'est sous ces deux formes que les générateurs de docs
+  // lisent le frontmatter YAML d'un `SKILL.md`, sans rapport avec un document de scène.
+  { motif: /(?<![A-Za-z0-9_$`^])description:/g, quoi: '`description` de scène/projet', cible: 'desc' },
   // Propriété RACCOURCIE : ancrée sur le `type:` de l'effet, donc aveugle aux `text` LÉGITIMES
   // (`narrative.text`, `TrappingRef.text`) que le lot #1467 L1b a laissés intacts.
   { motif: /type:\s*'(?:journal|document|setObjective)'[^\n]*?,\s*text\s*[,}\)]/g, quoi: "effet `journal`/`document`/`setObjective` à `text` RACCOURCI", cible: 'desc' },

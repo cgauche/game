@@ -1,139 +1,178 @@
 # Ajouter un flux de jet (« une situation = une modale »)
 
-Tout jet différé (Piétinement, Course, Focalisation, Soin, Test de compétence, Marchandage…) suit
-le MÊME cycle de vie et passe par la MÊME fabrique. **Aucun flux ne recode la mécanique
-(RNG/Chance/Résilience/Résistance) dans son propre closure** — il ne déclare que sa FORME. Ce guide
-couvre : où poser le pending, écrire la spec (`RollFlowSpec`), câbler le store, paramétrer
-`RollShell`, et les gardes qui vérifient tout ça.
+> ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-flux-de-jet.mjs` (`npm run docs:flux-de-jet`) — NE PAS ÉDITER À LA MAIN.
 
-## 0. Le cycle de vie (rappel)
+**Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : les 10 membres de
+`RollVerb` (`src/state/flowVerbs.ts:26`), les 40 entrées de `FLOW_VERBS` avec leur ligne,
+leur type, leurs verbes, leur porteur de jet et leurs actions de résolution, la confrontation au
+registre des modales (`src/state/modalArbiter.ts`, 31 clés déclarées), les 9
+fabriques/lentilles partagées et les 4 atomes obligatoires (lus dans la garde
+anti-dérive, jamais recopiés), et les 5 gardes avec l'intitulé de leur
+`describe(...)`. **Angles morts** : ce doc dit COMMENT poser un flux, pas d'où partent les jets
+existants (`docs/registre-jets.md`) ni comment chaque consommateur remplit la coquille
+(`docs/usages-jets.md`) ; le CONTENU d'un résolveur métier (ce que `xConfirm` applique) n'est
+dérivable d'aucun registre — c'est la règle du jeu ; les interdits et l'ordre des étapes sont de
+l'ÉDITORIAL fixé dans le script.
 
-```
-ouvrir (pending posé) → Lancer (roll) → Chance : relancer (reroll, jet propre raté, 1× max)
-  ou +1 DR (bonusSL, LDB 17 l.24) → Sombre Pacte (darkPact, +1 Corruption, héros only)
-  → Résilience « Je ne faillirai pas ! » (forceSuccess/setForcedRoll, LDB 17 l.68)
-  → Résistance (Menace) (resist, LDB 10 l.1016-1020, sur slot tagué `menace`)
-  → Appliquer (xConfirm) / Annuler (xCancel)
-```
+Tout jet différé suit le MÊME cycle de vie et passe par la MÊME fabrique. **Aucun flux ne recode la
+mécanique (RNG / Chance / Résilience / Résistance) dans son propre closure** — il ne déclare que sa
+FORME.
 
-Source unique : `src/state/rollFlowFactory.ts` (fabrique `makeRollFlow`). Elle centralise TOUTE la
-plomberie (gardes, dépense de points, patch de re-rendu) ; le flux ne fournit que `resolve`/
-`outcome`/`lens`/`caps`/`bonus`. **`Appliquer` (`xConfirm`) reste écrit à la main dans le store** —
-ses effets sont tous différents, c'est la règle métier, pas la plomberie.
+## 0. Le cycle de vie
 
-## 1. Un nouveau jet = 1 spec + 1 xConfirm
+Les verbes du cycle sont l'union `RollVerb` (`src/state/flowVerbs.ts:26`) :
 
-Étapes concrètes (calquer un flux voisin proche : `FLOWS.trample`/`FLOWS.run`/`FLOWS.heal` selon la
-forme du Test — cf. §2) :
+`roll` · `reroll` · `bonusSL` · `darkPact` · `forceSuccess` · `setForcedRoll` · `resist` · `determine` · `cancel` · `reverse`
 
-1. **Type du pending** dans `src/state/pendings.ts` (ou co-localisé si le flux est petit) :
-   `PendingX extends PendingBase` (champs `rerolled?`/`forced?`/`menace?` hérités). Champ de résultat
-   `result: {...} | null` (ou `roll`/`target`/`sl`/`success` À PLAT si le Test est simple — cf.
-   `flatRollLens`). Déclarer `pendingX: PendingX | null` dans `GameState` (store.ts).
-2. **Entrée dans `FLOWS`** (`src/state/rollFlowSpecs.ts`) : `x: makeRollFlow<PendingX>({ key:
-   'pendingX', rolled, actor, resolve, outcome, … })`. Réutiliser les fabriques PARTAGÉES plutôt que
-   ré-écrire (§3) : `simpleTestResolve`/`simpleTestResultResolve` pour un Test simple, `testOutcome`/
-   `rollOutcome`/`cleanRollOutcome` pour l'issue, `flatRollLens`/`resultRollLens` pour la lentille de
-   dérivation, `opposedBinaryFlow` pour un Test opposé binaire calqué (Désengagement/Au Contact/
-   Empoignade/Distraire).
-3. **Entrée dans `FLOW_VERBS`** (même fichier, ~ligne 1441) : `x: { kind: 'mono'|'multi', verbs: […],
-   coop?: true }`. C'est la SOURCE UNIQUE du type ET du runtime — `RollFlowActionsMap` (dérivé) et
-   `GameState extends RollFlowActionsMap` rendent l'ajout/retrait d'un verbe ici **bidirectionnel** :
-   oublier une entrée casse `tsc`. Ajouter aussi `x: FLOWS.x` dans `FLOW_HANDLERS` (juste en dessous,
-   ~ligne 1482) — `satisfies Record<keyof typeof FLOW_VERBS, …>` force l'exhaustivité.
-4. **`xConfirm` / `xCancel` écrits à la main** dans `src/state/combatSlice.ts` (ou `combatManeuvers.ts`
-   / `merchantFlow.ts`/`partyFlow.ts` hors combat selon le domaine) : lit `pendingX.result`, applique
-   les EFFETS métier (via `GameOp`/`applyOps` si l'effet est un octroi/soin/dégât — cf. § « Objets =
-   vocabulaire unifié » de `CLAUDE.md`), nulle `pendingX`, ferme/avance la cascade-hôte si le jet est
-   une étape de `pendingCascade` (`advanceCombatJet`/`advanceCascade` — jamais une 2ᵉ fenêtre séparée,
-   cf. §4). `xCancel` : soit le teardown par défaut de la fabrique (`spec.onCancel` absent → nulle
-   `pendingX` + `pendingCascade`), soit un undo métier explicite (ex. `attack.onCancel` défait la
-   charge misclic AVANT le jet — `rollFlowSpecs.ts` ~l.398).
-5. **Ouvrir le pending** depuis le site d'origine (hotbar/IA/déclencheur) : poser `pendingX` +, si le
-   jet est une étape de combat, `startCascade(get, set, { steps: [{ id, kind: '<x>Jet', jet: 'x',
-   actorId }] })` (calquer `battleTrample`, `combatSlice.ts` ~l.738-751).
-6. **Registre des modales** (`src/state/modalArbiter.ts`, `MODAL_DEFS`) — SEULEMENT si le flux N'EST
-   PAS une étape de la cascade `combat`/`cascade` générique (celles-ci passent déjà par l'entrée
-   `cascade`). Ajouter `{ key: 'x', when: (s) => !!s.pendingX, owner: (s) => s.pendingX?.actorId, auto:
-   {...} }` — `auto` est REQUISE (politique Cadence : `self` pour un jet propre, `choice` pour un vrai
-   choix, `partial` pour une cascade, `hostOnly` hors-combat). Puis enregistrer le composant dans
-   `COMPONENT` (`src/ui/ActiveModal.tsx`).
+> Les verbes du cycle de jet différé (cf. `RollFlowHandlers`).
 
-## 2. La modale = `RollShell` paramétrée (jamais de mécanique recodée)
+Source unique de la plomberie : `makeRollFlow` (`src/state/rollFlowFactory.ts:529`).
+Elle centralise gardes, dépense de points et re-rendu ; le flux ne fournit que sa forme.
+**« Appliquer » (`<flux>Confirm`) reste écrit à la main** — ses effets sont la règle métier, pas de
+la plomberie.
 
-`RollShell` (`src/ui/RollShell.tsx`) est LA coquille unique : overlay → titre → sous-titre →
-instruction → extra → setup (pré-jet) → rangées (`RollRow`) → outcome/summary → postRollExtra →
-forcedExtra → `.modal-actions`. Écrire un hook `use<Jet>JetProps` (`src/ui/jetProps/`,
-calquer `useTestJetProps.tsx`) qui lit le store et rend les PROPS de `RollShell` —
-la modale elle-même (`<Jet>Modal.tsx`, cf. `RunModal.tsx`) ne fait qu'appeler le hook et rendre
-`<RollShell {...props} />` (ou `null`). Une étape de cascade (jet de combat) passe par `CascadeModal`
-qui rend directement le hook, sans démonter la coquille entre le jet et son Coup Critique.
+## 1. Le registre des flux — `FLOW_VERBS`
 
-- **Contrôles en props, métier en slots** : `extra`/`setup`/`postRollExtra`/`forcedExtra` reçoivent du
-  JSX métier (portraits, choix d'arme/localisation, Surincantation…) ; TOUT le reste (Lancer/Chance/
-  Pacte/Résilience/`<Dice>`) est géré par la coquille. Ne jamais réécrire un bouton « Lancer »/
-  « Relancer » à la main dans une modale — passer par `RollRowData.onRoll`/`onReroll`/`onBonusSL`/
-  `onForce`/`onDarkPact`.
-- **`rows: RollRowData[]`** : mono = 1 rangée ; opposé = 2 (1 interactive + 1 témoin `interactive:
-  false`) ; multi = N + `summary` optionnel.
-- **`caps.picker`** (dé forcé PARTAGÉ) : si le flux offre le CHOIX du dé de Résilience (attaque/
-  défense/incantation/piétinement…), `caps.picker(slot, actor)` renvoie `{ roll, target, critable? }`
-  ou `null` — lu par le hook (`FLOWS.x.picker?.(p, actor)`) et posé sur `RollRowData.forcedRoll =
-  { ...picker, onSet: setForcedRoll }`. Rendu par le sélecteur PARTAGÉ `ForcedRollPicker` (UI). Un
-  flux BINAIRE (pas de choix du dé, juste « l'emporter ») n'expose pas `picker`.
+`FLOW_VERBS` (`src/state/flowVerbs.ts`) est la **SOURCE UNIQUE** du câblage : elle porte, par flux, son type et
+le sous-ensemble de verbes exposés. Le type `RollFlowActionsMap` en est DÉRIVÉ et `GameState`
+l'étend — ajouter ou retirer un verbe ici est **bidirectionnel** : l'oublier ailleurs casse `tsc`.
+`FLOW_HANDLERS` (`src/state/rollFlowSpecs.ts`) y associe le handler, avec exhaustivité garantie
+(40 entrées dans `FLOWS`, 40 dans `FLOW_HANDLERS`).
 
-## 3. Le résolveur porte les TROIS cas de résolution forcée
+### Flux MONO (29)
 
-`spec.resolve(s, slot, actor, get, forced?, p?)` est **UN SEUL résolveur** pour tout : `forced`
-absent = jet normal (RNG) ; `forced === {}` = `forceSuccess` (Résilience, dé PAR DÉFAUT — `01` en
-standard, le plus haut valide en Fast DR, via `bestForcedRoll(target)`, JAMAIS `evaluateTest(1, …)`
-en dur) ; `forced === { roll: n }` = `setForcedRoll` (Résilience, dé CHOISI par le joueur — doit
-RESTER une réussite) ; `forced === { sl: n }` = `resist` (Résistance (Menace) — DR IMPOSÉ = Bonus
-d'Endurance, PAS de choix du dé). Un flux qui ne pose pas `caps.forced` n'offre simplement pas la
-Résilience (les branches `forced`/`{}`/`{roll}` sont des no-op). `caps.resist` n'est offert QUE sur
-un slot tagué `menace` (posé par le SITE qui ouvre le pending).
+Un flux mono déclare son **porteur du jet** (`jetOwner`) : l'acteur dont les verbes DÉPENSENT les
+ressources. C'est obligatoire — aucun repli silencieux sur le propriétaire de la fenêtre.
 
-**Réutiliser une lentille (`RollFlowLens`) avant d'écrire les branches à la main** : `flatRollLens`/
-`resultRollLens` (Test simple, jet à plat ou sous `result`) composent `bonusSL`/`forceSuccess`/
-`setForcedRoll`/`resist` DEPUIS `actorTR`/`applyRoll`/`dieTarget` — un flux qui fournit `lens` n'a
-plus besoin d'écrire ses branches `forced`/`bonus` à la main (repli byte-identique sinon).
-`opposedBinaryFlow` fait de même pour un Test opposé binaire calqué (foe FIGÉ).
+| Flux | Déclaré | Porteur du jet | Verbes | Modale (`auto`) |
+|---|---|---|---|---|
+| `attack` | `src/state/flowVerbs.ts:77` | `pendingAttack.attackerId` | `reroll`, `bonusSL`, `darkPact`, `cancel`, `forceSuccess`, `setForcedRoll`, `reverse` | — |
+| `defense` | `src/state/flowVerbs.ts:78` | `pendingDefense.defenderId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll`, `reverse` | — |
+| `cast` | `src/state/flowVerbs.ts:79` | `pendingCast.casterId` | `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | — |
+| `disengage` | `src/state/flowVerbs.ts:80` | `pendingDisengage.moverId` | `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | — |
+| `auContact` | `src/state/flowVerbs.ts:84` | `pendingAuContact.moverId` | `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `choice` |
+| `grapple` | `src/state/flowVerbs.ts:85` | `pendingGrapple.actorId` | `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `choice` |
+| `trample` | `src/state/flowVerbs.ts:86` | `pendingTrample.attackerId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | — |
+| `battement` | `src/state/flowVerbs.ts:87` | `pendingBattement.attackerId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `self` |
+| `distraire` | `src/state/flowVerbs.ts:88` | `pendingDistraire.moverId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `self` |
+| `maneuver` | `src/state/flowVerbs.ts:91` | `pendingManeuver.attackerId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `self` |
+| `run` | `src/state/flowVerbs.ts:92` | `pendingRun.combatantId` | `roll`, `reroll`, `bonusSL`, `forceSuccess`, `setForcedRoll`, `darkPact` | `self` |
+| `fall` | `src/state/flowVerbs.ts:94` | `pendingFall.combatantId` | `roll`, `reroll`, `bonusSL`, `forceSuccess`, `setForcedRoll`, `darkPact` | `choice` |
+| `reload` | `src/state/flowVerbs.ts:95` | `pendingReload.actorId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `self` |
+| `handGate` | `src/state/flowVerbs.ts:96` | `pendingHandGate.attackerId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `self` |
+| `recover` | `src/state/flowVerbs.ts:97` | `pendingStateRecovery.actorId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | — |
+| `focus` | `src/state/flowVerbs.ts:98` | `pendingFocus.casterId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `self` |
+| `dispel` | `src/state/flowVerbs.ts:101` | `pendingDispel.casterId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `self` |
+| `frenzy` | `src/state/flowVerbs.ts:102` | `pendingFrenzy.combatantId` | `roll`, `reroll`, `forceSuccess`, `setForcedRoll`, `darkPact` | `self` |
+| `approach` | `src/state/flowVerbs.ts:103` | `pendingApproach.combatantId` | `roll`, `reroll`, `forceSuccess`, `setForcedRoll`, `darkPact` | `self` |
+| `ward` | `src/state/flowVerbs.ts:104` | `pendingWard.attackerId` | `roll`, `reroll`, `forceSuccess`, `setForcedRoll`, `darkPact` | `self` |
+| `heal` | `src/state/flowVerbs.ts:107` | `pendingHeal.healerId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `self` |
+| `surgery` | `src/state/flowVerbs.ts:108` | `pendingSurgery.healerId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | — |
+| `corruption` | `src/state/flowVerbs.ts:109` | `pendingCorruption.heroId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll`, `resist` | `self` |
+| `test` | `src/state/flowVerbs.ts:113` | `pendingTest.actorId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll`, `determine`, `cancel`, `reverse` | — |
+| `steamSave` | `src/state/flowVerbs.ts:114` | `pendingSteamSave.actorId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `self` |
+| `activity` | `src/state/flowVerbs.ts:115` | `pendingActivity.heroId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | `hostOnly` |
+| `bargain` | `src/state/flowVerbs.ts:119` | `pendingBargain.playerId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | — |
+| `appraise` | `src/state/flowVerbs.ts:120` | `pendingAppraise.actorId` | `roll`, `reroll`, `bonusSL`, `darkPact`, `forceSuccess`, `setForcedRoll` | — |
+| `shanty` | `src/state/flowVerbs.ts:121` | `pendingShanty.singerId` | `roll`, `reroll`, `bonusSL`, `forceSuccess`, `setForcedRoll`, `darkPact` | `choice` |
 
-Atomes OBLIGATOIRES (gardés par `rollflow-no-drift.test.ts`, §5) : `bumpSL(tr)` pour Chance « +1 DR »
-(ne touche jamais `success` — LDB 17 l.24 n'ajoute qu'un Degré ; le succès se juge au lancer, LDB 12 l.11),
-`bestForcedRoll(target)` pour le dé forcé par défaut (policy-aware Fast DR), `forcedTR(roll, target,
-sl)` pour construire un `TestResult` de réussite forcée (jamais un littéral `{ success: true, …,
-isDouble: isDoubleRoll(r) }` recopié), `hydrateTR(detail)` pour ré-hydrater un `TestResult` depuis un
-détail stocké.
+### Flux MULTI (11)
 
-## 4. Interdits
+Un flux multi déclare `pidIsActor` (à qui appartient le 1ᵉʳ argument des délégués), son ouverture
+`coop` éventuelle, et ses actions de `resolution` (les actions manuscrites qui closent la fenêtre —
+elles sont DÉRIVÉES dans la surface invité, jamais recopiées).
 
-- **Aucun `rollTest` inline sur le chemin JOUEUR.** Un Test qui affecte un combattant piloté-humain
-  DOIT ouvrir un `pending*` influençable (Chance/Résilience/Résistance) — jamais résolu en silence
-  dans un résolveur métier. Gardé par `src/state/maneuver-defense-cascade.test.ts` (garde « Surfaçage
-  remonte-à-un-humain », choke-point = prédicat de contrôleur `humanControlled`/`pilotedByHuman`/
-  `aiDriven` — jamais le `kind`) : chaque site de surfaçage connu (upkeep Round, Peur, Corruption,
-  Test déclenché, défense réactive, défense de manœuvre de zone…) est vérifié STATIQUEMENT (référence
-  le bon prédicat) puis BEHAVIORALEMENT (ouvre bien un `pending*`/une étape de cascade).
-- **Aucune 2ᵉ fenêtre de conséquences.** Un jet et sa conséquence immédiate (Coup Critique, Coup
-  Critique d'un Piétinement, Maladresse…) vivent dans LA MÊME modale (fold sur `pendingCascade` /
-  `CascadeModal`, `advanceCombatJet`) — jamais une modale « Résultat » qui s'ouvre APRÈS la modale de
-  jet refermée. Cf. commit `db7ca6c9` (« Piétinement MIGRÉ en étape de cascade — fin de la 2ᵉ fenêtre
-  sur Critique »).
-- **Aucune mécanique d'influence recodée localement** (dé forcé en dur, `+1 DR` qui force
-  `success:true`, littéral `TestResult` recopié) — passer par les atomes du §3, gardé par
-  `rollflow-no-drift.test.ts`.
+| Flux | Déclaré | `pidIsActor` | Coop | Résolution | Modale (`auto`) |
+|---|---|---|---|---|---|
+| `flee` | `src/state/flowVerbs.ts:83` | true | oui | `fleeConfirm` | — |
+| `counterspell` | `src/state/flowVerbs.ts:122` | true | oui | `counterspellConfirm`, `counterspellCancel` | — |
+| `cascade` | `src/state/flowVerbs.ts:128` | false | oui | `cascadeNext`, `cascadeResolveAll`, `cascadeFinish` | `partial` |
+| `opposition` | `src/state/flowVerbs.ts:129` | true | oui | `oppositionConfirm` | — |
+| `extendedTest` | `src/state/flowVerbs.ts:131` | false | oui | `extendedTestNext`, `extendedTestCancel` | — |
+| `etalLot` | `src/state/flowVerbs.ts:135` | false | oui | `etalLotConfirm`, `etalLotCancel` | `self` |
+| `forceDoor` | `src/state/flowVerbs.ts:136` | true | oui | `forceDoorConfirm`, `forceDoorCancel` | — |
+| `shipManeuver` | `src/state/flowVerbs.ts:137` | true | oui | `shipManeuverConfirm`, `shipManeuverCancel` | `choice` |
+| `shipBattery` | `src/state/flowVerbs.ts:138` | true | oui | `shipBatteryConfirm`, `shipBatteryCancel` | `choice` |
+| `crewTest` | `src/state/flowVerbs.ts:139` | true | oui | `crewTestConfirm`, `crewTestCancel` | `choice` |
+| `cascadeBatch` | `src/state/flowVerbs.ts:145` | true | oui | — | — |
 
-## 5. Gardes
+Flux sans entrée propre dans `MODAL_DEFS` : `attack`, `defense`, `cast`, `disengage`, `flee`, `trample`, `recover`, `surgery`, `test`, `bargain`, `appraise`, `counterspell`, `opposition`, `extendedTest`, `forceDoor`, `cascadeBatch` — normal quand le flux est une ÉTAPE d'une cascade (l'entrée de cascade porte déjà la fenêtre), fautif sinon.
 
-| Garde | Fichier | Vérifie |
+## 2. La recette — 1 spec + 1 confirm
+
+1. **Type du pending** : `Pending<X> extends PendingBase` (`src/state/rollFlowFactory.ts` porte
+   `PendingBase` et ses champs hérités). Déclarer le slot dans `GameState`.
+2. **Entrée dans `FLOWS`** (`src/state/rollFlowSpecs.ts`) : `makeRollFlow({ key, rolled, actor, resolve, outcome, … })`.
+   **Réutiliser les fabriques partagées** (§3) plutôt que réécrire les branches à la main.
+3. **Entrée dans `FLOW_VERBS`** (`src/state/flowVerbs.ts`) : type, verbes, et le porteur (`jetOwner`) ou
+   `pidIsActor`/`resolution`. Puis l'entrée jumelle dans `FLOW_HANDLERS` — l'exhaustivité est
+   forcée à la compilation.
+4. **`<flux>Confirm` / `<flux>Cancel` écrits à la main** dans la tranche de store du domaine : lire le
+   résultat, appliquer les effets métier (par `GameOp` si l'effet est un octroi / un soin / des
+   dégâts), nuller le pending, et faire avancer la cascade hôte si le jet en est une étape — jamais
+   une 2ᵉ fenêtre séparée.
+5. **Ouvrir le pending** depuis le site d'origine ; si le jet est une étape de combat, l'ouvrir comme
+   une étape de cascade, pas comme une fenêtre isolée.
+6. **Registre des modales** (`src/state/modalArbiter.ts`) — SEULEMENT si le flux n'est pas une étape d'une cascade
+   déjà déclarée. La politique de Cadence (`auto`) est REQUISE.
+
+## 3. Fabriques et lentilles PARTAGÉES — à réutiliser avant d'écrire une branche
+
+| Primitive | Site | Rôle (JSDoc) |
 |---|---|---|
-| Source unique du câblage | `src/state/rollFlowWiring.test.ts` | `buildRollFlowActions` expose EXACTEMENT les délégués `<prefix><Verbe>` de `FLOW_VERBS` ; les verbes `coop` sont dans `COMBAT_INTENTS` (`net/intents.ts`) et réciproquement ; `resist` n'est JAMAIS un intent coop. |
-| Anti-dérive de la mécanique | `src/state/rollflow-no-drift.test.ts` | Scan statique de `src/state` + `src/engine` : `bestForcedRoll` (jamais `evaluateTest(1, …)` en dur), `bumpSL` (jamais `success:true` forcé), `forcedTR` (jamais le littéral recopié), `hydrateTR` (jamais `isDoubleRoll(` dans `rollFlowSpecs.ts`), présence positive des 4 atomes. |
-| Surfaçage remonte-à-un-humain | `src/state/maneuver-defense-cascade.test.ts` | Un Test d'un combattant piloté-humain (upkeep/psy/corruption/déclenché/défense/défense de zone) OUVRE toujours un `pending*` ; jamais résolu inline ; suit le contrôleur, jamais le `kind`. |
-| Type bidirectionnel | `tsc --noEmit` (via `GameState extends RollFlowActionsMap`) | Ajouter/retirer un flux ou un verbe dans `FLOW_VERBS` sans réimplémenter dans `FLOW_HANDLERS`/le store casse la compilation. |
-| Modales | `src/ui/active-modal.test.ts` | Registre `MODAL_DEFS`/`COMPONENT` cohérent (une modale déclarée a son composant, et réciproquement). |
-| Régression métier | tests dédiés par flux (`trample.test.ts`, `resilience-die-choice.test.ts`, `rollflow-outcome-invariant.test.ts`…) | Comportement RAW du flux (jet, Chance, Résilience, dé choisi, issue canonique). |
+| `makeRollFlow` | `src/state/rollFlowFactory.ts:529` | Fabrique UNIQUE des flux de jet (mono ET multi). |
+| `testOutcome` | `src/state/rollFlowSpecs.ts:296` | Issue d'un Test dont le résultat est déjà un `{ success, sl }` (jet simple ou opposé résolu) : la réussite RÉELLE + son Degré. |
+| `cleanRollOutcome` | `src/state/rollFlowSpecs.ts:306` | Issue d'un Test dont le résultat est un `{ roll, target, sl }` SANS champ `success` (réussite propre = `roll ≤ cible`) : incantation, enfoncement de porte, Test d'équipage — un résultat absent = échec. |
+| `flatRollLens` | `src/state/rollFlowSpecs.ts:343` | Lentille PARTAGÉE des Tests PLATS (le jet vit au niveau du pending : `roll`/`target`/`sl`/`success`) — `actorTR` reconstruit le TestResult, `applyRoll` re-projette roll/sl/success (identiques d'un flux à l'autre) ; seul `dieTarget` (cible du dé forcé ; `null` = déjà réussi → rien à forcer) varie. |
+| `resultRollLens` | `src/state/rollFlowSpecs.ts:353` | Lentille PARTAGÉE des Tests dont le jet vit sous `p.result` (`{ roll, target, sl, success }`) — même `actorTR`/`applyRoll` que `flatRollLens` mais imbriqués sous `result` ; seul `dieTarget` varie (Chanson/Dissipation). |
+| `opposedBinaryFlow` | `src/state/rollFlowSpecs.ts:367` | Fabrique PARTAGÉE des Tests opposés BINAIRES (issue success/tie/fail) où SEUL le jet de l'ACTEUR se (re)joue tandis que le foe reste FIGÉ — le jet de l'acteur est l'« attaquant » du Test opposé (`resolveOpposed`/`disengageOutcome`). |
+| `rollFlowActions` | `src/state/rollFlowSpecs.ts:205` | Délégués MONO d'un flux : les verbes listés, byte-identiques aux anciens `() => FLOWS.x.m(get, set)`. |
+| `rollFlowActionsMulti` | `src/state/rollFlowSpecs.ts:218` | Délégués MULTI d'un flux : `pid` en tête, byte-identiques aux anciens `(pid) => FLOWS.x.m(get, set, pid)`. |
+| `buildRollFlowActions` | `src/state/rollFlowSpecs.ts:2159` | Assemble les ~113 délégués de jet du store (`<prefix><Verbe>`) depuis `FLOW_VERBS` + `FLOW_HANDLERS` — remplace les 40 spreads `rollFlowActions(Multi)` éparpillés dans le store. |
 
-Commande : `npm test` (Vitest) — `npx tsc --noEmit` après tout ajout de flux (le type dérivé casse
-immédiatement si `FLOW_VERBS`/`FLOW_HANDLERS` divergent).
+Le résolveur d'un flux est **UN SEUL** `resolve` pour tous les cas : jet normal (RNG), réussite
+forcée par défaut, dé CHOISI par le joueur, et DR imposé par la Résistance. Un flux qui n'expose pas
+la capacité correspondante n'offre simplement pas l'influence — les branches sont alors inertes.
+
+## 4. La modale = `RollShell` paramétrée
+
+`RollShell` est LA coquille unique : contrôles en PROPS, métier en SLOTS. Écrire un hook
+`use<Jet>JetProps` (`src/ui/jetProps/`) qui lit le store et rend les props ; la modale ne fait que
+l'appeler. Quelles zones chaque consommateur remplit aujourd'hui : `docs/usages-jets.md` (généré).
+**Ne jamais réécrire un bouton « Lancer »/« Relancer » à la main** dans une modale.
+
+## 5. Les atomes OBLIGATOIRES
+
+La garde anti-dérive (`src/state/rollflow-no-drift.test.ts`) exige la présence de ces atomes dans le registre des flux — cette
+liste est LUE dans la garde, jamais recopiée ici :
+
+| Atome | Site | Rôle (JSDoc) |
+|---|---|---|
+| `bumpSL` | `src/engine/tests.ts:317` | Influence « +`by` DR » sur un jet DÉJÀ résolu (Chance, LDB 17 l.24 ; bonus de Piège-lame, LDB 62) : renvoie une copie du `TestResult` avec son Degré de Réussite augmenté, pour le RÉ-opposer ou le réappliquer. |
+| `bestForcedRoll` | `src/engine/tests.ts:157` | Le dé qui MAXIMISE le DR d'une réussite FORCÉE (« Je ne faillirai pas ! », LDB 17 l.68 : on choisit le résultat → LE MEILLEUR), selon le `slMode` — car le meilleur jet DÉPEND de la policy : - **fast** (DR = dizaines du jet, LDB 12 l.102) → le jet valide le PLUS HAUT (`maxForcedRoll` : dizaines max) ; - **standard** (DR = différence de dizaines) → **01** (le plus bas → dizaines de la cible). |
+| `forcedTR` | `src/engine/tests.ts:325` | `TestResult` d'une réussite FORCÉE (Résilience « Je ne faillirai pas ! » LDB 17 l.68 / Résistance Menace LDB 10) au dé `roll`, DR `sl` imposé. |
+| `hydrateTR` | `src/engine/tests.ts:335` | `TestResult` RE-HYDRATÉ depuis un détail de jet stocké (RollBreakdown/attackerDetail/étape de cascade…) : ajoute `isDouble` dérivé du dé. |
+
+## 6. Interdits
+
+- **Aucun `rollTest` inline sur le chemin JOUEUR.** Un Test qui affecte un combattant piloté par un
+  humain DOIT ouvrir un pending influençable — jamais résolu en silence dans un résolveur métier. Le
+  choke-point est le PRÉDICAT DE CONTRÔLEUR, jamais le `kind` de l'entité.
+- **Aucune 2ᵉ fenêtre de conséquences.** Un jet et sa conséquence immédiate (Coup Critique,
+  Maladresse…) vivent dans LA MÊME modale, par la cascade — jamais une fenêtre « Résultat » qui
+  s'ouvre après la fermeture de la modale de jet.
+- **Aucune mécanique d'influence recodée localement** (dé forcé en dur, « +1 DR » qui force le
+  succès, littéral de résultat recopié) : passer par les atomes du §5.
+
+## Gardes
+
+| Garde | Ce qu’elle verrouille (son propre `describe`) |
+|---|---|
+| `src/state/rollFlowWiring.test.ts` | câblage des flux de jet — source unique FLOW_VERBS |
+| `src/state/rollflow-no-drift.test.ts` | Anti-dérive du système de jet — tout passe par la fabrique + les atomes partagés |
+| `src/state/maneuver-defense-cascade.test.ts` | Défense de manœuvre de zone — cascade influençable (héros) vs silence (IA) |
+| `src/state/jet-owner-vs-spec.test.ts` | #1015 — le porteur déclaré (`FLOW_VERBS.jetOwner`) EST l’acteur que le flux débite |
+| `src/ui/active-modal.test.ts` | pickActiveModalKey — priorité des modales de combat |
+
+`npm run typecheck` après tout ajout : le type dérivé de `FLOW_VERBS` casse immédiatement si le
+registre et les handlers divergent.

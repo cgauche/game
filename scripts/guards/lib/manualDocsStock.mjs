@@ -23,19 +23,12 @@
 // donne une permission.
 /** @type {ReadonlySet<string>} */
 export const MANUAL_DOCS_STOCK = new Set([
-  'docs/ajouter-un-flux-de-jet.md', // recette : ajouter un flux de jet (« une situation = une modale »)
   'docs/ajouter-un-livre-source.md', // recette : ajouter un livre source (pipeline complet)
-  'docs/ajouter-un-sort.md', // recette : ajouter / curer un sort
-  'docs/ajouter-une-donnee.md', // recette : ajouter / curer une donnée dans src/data/*.json
-  'docs/ajouter-une-mecanique.md', // recette : ajouter une mécanique à une entité
   'docs/architecture.md', // carte d'architecture — où trouver quoi
   'docs/campagne-authoring.md', // carte des coutures d'auteur de campagne
   'docs/charte-ui.md', // charte UI
   'docs/combat-events-coherence.md', // doctrine des événements de combat
   'docs/creer-une-creature.md', // recette : créer une créature (rig)
-  'docs/i18n-seam.md', // conception de la couture i18n
   'docs/qc-reconnaissabilite-sprites.md', // runbook QC sprites
   'docs/recette-navigateur.md', // recette de validation navigateur (Playwright MCP)
-  'docs/rendu-pipeline.md', // pipeline de rendu iso
-  'docs/systeme-passifs.md', // système de passifs & corruption
 ])

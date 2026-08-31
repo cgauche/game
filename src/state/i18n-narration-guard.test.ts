@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Garde-fou i18n — narration moteur (Phase C, cf. docs/i18n-seam.md).
+ * Garde-fou i18n — narration moteur (Phase C, plan évacué → #320).
  *
  * Règle : toute ligne de JOURNAL de combat/effet doit passer par le catalogue (`t(...)` / `tr(...)`),
  * jamais par un littéral FR brut. Le scan échoue si un SITE D'ÉMISSION de journal contient un littéral

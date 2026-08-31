@@ -1,156 +1,176 @@
 # Pipeline de rendu — « une scène, une apparence, N projections »
 
-Le rendu du monde part d'UN document de scène (`state/scene.ts`) et d'UNE couche d'apparence en
-donnée, et se projette dans plusieurs vues (iso losange, vue de face, vue du dessus, première
-personne) sans dupliquer la logique. Deux étages nets :
+> ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-rendu-pipeline.mjs` (`npm run docs:rendu-pipeline`) — NE PAS ÉDITER À LA MAIN.
+
+**Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : les 5 membres
+de `SceneEl` et les champs de `GP`/`MaterialRef`/`Face`/`ElBase`/`ElStates`
+(`src/gameIso/builders/types.ts`), les 7 builders exportés sous `src/gameIso/builders/` avec leur type
+de sortie, les 9 sous-dossiers de `src/gameIso/` et leur nombre de modules directs, les
+6 clés d'ambiance de `src/data/ambiance.json`, les 7 sections d'une
+`DetailRecipe`, la couverture RÉELLE de la garde anti-couleur (lue dans la garde) et la population
+des 4 catalogues de matériaux. **Angles morts** : ce doc décrit la FORME du
+pipeline, pas le RÉSULTAT — aucune mesure ici ne dit qu'une scène est belle ou juste (c'est le rôle
+de la QC visuelle et des oracles de parité) ; le comptage de modules est NON récursif (un
+sous-dossier n'est pas replié dans le total de son parent) ; le rôle de chaque sous-dossier et la
+section « où ajouter… » sont de l'ÉDITORIAL fixé dans le script — mais leurs CLÉS sont ancrées, un
+dossier neuf ou renommé fait échouer la génération.
+
+Le rendu du monde part d'UN document de scène et d'UNE couche d'apparence EN DONNÉE, et se projette
+dans plusieurs vues sans dupliquer la logique. Deux étages nets :
 
 ```
-Scene ──(builders, PURS, espace MONDE)──▶ SceneEl[] ──┬─(monde volumique, three)──▶ canevas WebGL
-                                                     └─(peintres d’authoring)───▶ SVG
-apparence = DONNÉE (src/data/*.json + defs de terrain) ; LUMIÈRE = shade.ts ; jamais un hex dans un renderer.
+Scene ──(builders, PURS, espace MONDE)──▶ SceneEl[] ──┬─(monde volumique)──▶ canevas WebGL
+                                                     └─(peintres d’authoring)──▶ SVG
 ```
 
-Contrat de perf : un **builder n'importe ni `Dims` ni caméra**. Sa sortie (mémoïsée par l'hôte du
-monde, `stage/MondeDeCampagne`) survit à toute rotation/projection ; la première personne n'hérite
-d'aucun concept d'écran.
+**Contrat de perf** : un builder n'importe ni dimensions d'écran ni caméra. Sa sortie survit à toute
+rotation ou changement de projection ; la première personne n'hérite d'aucun concept d'écran.
 
-## 1. Le pivot — `builders/types.ts`
+## 1. Le pivot — `src/gameIso/builders/types.ts`
 
-Les builders dérivent la scène en **éléments sémantiques en espace monde**. Points en unités de
-**grille** continues (coins de case à ±0.5), hauteur `h` en **mètres** (`GP = {x, y, h}`).
+`SceneEl` (`src/gameIso/builders/types.ts:207`) = `FloorEl` | `WallEl` | `RoofEl` | `PropEl` | `TokenEl` — union
+discriminée par `kind`. `PropEl` (`src/gameIso/builders/types.ts:182`) se subdivise elle-même en
+`BillboardPropEl` | `VolumePropEl`.
 
-- `SceneEl = FloorEl | WallEl | RoofEl | PropEl | TokenEl` — union discriminée par `kind`.
-- `Face { poly: GP[]; material: MaterialRef; side? }` — ni base UV ni « plane » stockés : chaque
-  rendu dérive l'orientation (sol/paroi/pente) de `material.domain`+`part` (et `side`).
-- `MaterialRef { domain: 'terrain'|'relief'|'structure'|'roof'; id; part? }` — **référence** de
-  matériau (jamais une couleur). `part` distingue les faces d'un même matériau (falaise/rampe/pilier…).
-- `ElBase` : `key` stable (identité monde, clé React/DOM), `cell {x,y,z}` (`z` = index de COUCHE,
-  découplé de la hauteur métrique), `span?` (empreinte multi-cases), `states`.
-- `ElStates` = vérités de SCÈNE camera-free (`visible`, `overhang`, `ghost`, `solidOverhang`, `open`,
-  `down`, `roofOccupied`). La vérité de VUE (estompe d'occlusion, reveal, assombrissement de l'étage
-  inférieur) reste une **décoration** du rendu (opacité/filtre), pas du pivot.
+### `GP` — un point en espace MONDE
 
-## 2. Les builders — `builders/*.ts`
-
-| Builder | Sortie | Rôle |
+| Champ | Type | Rôle (JSDoc) |
 |---|---|---|
-| `buildFloors` | `FloorEl[]` | sols + **relief auto-dérivé** (falaises/rampes/tabliers de terrain, wedges) ; faces à matériau `terrain`/`relief` |
-| `buildWalls` | `WallEl[]` | murs d'arête (portes, parapets, herses) ; `side`, `ends`, `appearance` (structure), `door` |
-| `buildRoofs` | `RoofEl[]` | toits en **pans continus** (une face par pan, `plane 'slope'`) + `lines` sémantiques (faîte/arêtier/égout/rang) |
-| `buildProps` | `PropEl[]` | décor **billboard** : props de scène (`source:'entity'`, SVG du catalogue) + overlays de terrain en relief (`source:'terrain'`, mur/bois) |
-| `buildTokens` | `TokenEl[]` | sujets de token (`figurant` / `combatant` / `mounted`) — la position INTERPOLÉE de marche reste au stage |
-| `buildHighlights` | `HighlightEl[]` | cases sémantiques de combat (déplacement/visée/ZdE) — couleurs posées au rendu |
+| `x` | `number` | — |
+| `y` | `number` | — |
+| `h` | `number` | — |
 
-## 3. Les peintres
+### `MaterialRef` — une RÉFÉRENCE de matériau, jamais une couleur
 
-### Le monde — `backends/webgl/*` (three)
-LE moteur du jeu, en toutes vues (iso crantée, lacet continu, plan du dessus, première personne) :
-les éléments du pivot sont CUITS en géométrie (`sceneMeshes`, `faceBake`, `periodTexture`) et rendus
-par une caméra réelle (`cameras.ts`). Hôtes : `stage/GameStage3D` (via `stage/VolumetricWorld`),
-monté par `stage/MondeDeCampagne` (le jeu — UN monde, ses deux regards), `stage/PlanWorldCanvas` (plan
-de station) et `ui/editor/EditorCanvas` (aperçu WYSIWYG). Sans contexte WebGL, l'hôte le DIT
-(`stage/SansWebgl`) — il n'y a plus de second peintre du monde (#1176 P3-4, commit C5a).
+| Champ | Type | Rôle (JSDoc) |
+|---|---|---|
+| `domain` | `'terrain' \| 'relief' \| 'structure' \| 'roof' \| 'prop'` | — |
+| `id` | `string` | — |
+| `part?` | `string` | — |
 
-### L'authoring — `authoring/*` (peintres SVG, iso losange · edge-on · top)
-Pilotés par `Dims` (`view`/`rot`/`edge`). Pont monde→écran UNIQUE : `authoring/project.ts::projGP(gp, dims)`
-= `tileCenter(x, y, dims, metricToLift(h))` — **la rotation caméra et l'élévation-écran vivent ici**,
-jamais dans un builder. Un peintre par classe d'élément : `authoring/floorsSvg`, `authoring/wallsSvg`,
-`authoring/roofsSvg`, chacun résolvant ses couleurs par `part` depuis la def d'apparence + `shade.ts`,
-et exposant sa profondeur de tri (`floorDepth`, `wallDepth`, `roofDepth` — ordre du peintre) ;
-`stage/objs.ts` fusionne et trie.
-**Ils ne peignent AUCUNE image de partie** (#1176 P3-4, C5b) : leurs trois consommateurs sont le PLAN
-de station (murs au trait, `stage/layers` → `gameIso/TopoScene`), l'APERÇU d'authoring
-(`ui/editor/EditorCanvas` : aperçu de trait, toits en plan étiqueté) et les ORACLES DE PARITÉ du monde
-volumique (`backends/webgl/*.test.ts`). La frontière est écrite au JSDoc d'`authoring/project.ts`.
+Domaines fermés : `terrain` · `relief` · `structure` · `roof` · `prop`. Le `part` distingue les faces d'un
+même matériau ; la couleur est résolue au RENDU, depuis la donnée d'apparence et la lumière.
 
-### La première personne — `pov/*`
-`camera.ts` (caméra + brume/fog calculés, partagés avec `backends/webgl/cameras.ts`),
-`billboardCore.ts` (boîte et hauteurs métriques des billboards), `SurcouchePov.tsx` (les
-voiles d'écran de ce regard — le monde, lui, est celui de `stage/MondeDeCampagne`, regardé à hauteur
-d'œil).
+### `Face` — un polygone porteur d'un matériau
 
-## 4. Détail de surface (matériaux v2) — `detail/*`
+| Champ | Type | Rôle (JSDoc) |
+|---|---|---|
+| `poly` | `GP[]` | — |
+| `material` | `MaterialRef` | — |
+| `architectureFeatureId?` | `string` | — |
+| `architectureFeatureKind?` | `FacadeFeature['kind']` | — |
+| `side?` | `CellSide` | Arête de la case qui porte la face (relief/wedge/mur) — les backends en dérivent l'orientation (arête écran en affine, normale en perspective) sans re-scanner la scène. |
+| `entId?` | `string` | Id de l'ENTITÉ de scène dont la face vient (décor volumique, `builders/propVolumes.ts`) — ce que le picking résout une fois la face fondue dans la géométrie commune du monde. |
 
-`DetailRecipe` (donnée PURE portée par les defs d'apparence via `detail`) : `courses` (assises/bardeaux
-+ blocs appareillés), `bands` (plinthe/arase), `timber` (colombage), mouchetis… Dimensions en **mètres**.
+### `ElBase` — l'identité MONDE commune à tous les éléments
 
-`detail/expand.ts::expandRecipe` déplie la recette en **primitives UV** en espace de face `[0,1]²`
-(u gauche→droite, v haut→bas ; épaisseurs restant en mètres). **Déterminisme total au seed** : chaque
-section tire son sous-flux de `seedStream(hash32(identité-monde, section))` — jamais stocké, donc le
-SVG d'authoring et le monde volumique retombent sur le MÊME détail.
+| Champ | Type | Rôle (JSDoc) |
+|---|---|---|
+| `key` | `string` | Clé STABLE d'identité MONDE (`floor:x,y,z`…) — clé React/DOM, survit aux frames et rotations. |
+| `cell` | `{ x: number; y: number; z: number }` | Case d'ancrage. |
+| `span?` | `{ w: number; h: number }` | Empreinte (cases) d'un élément multi-cases (toit, prop 2×2) — profondeur au coin caméra-proche. |
+| `states` | `ElStates` | — |
 
-Chaque backend rasterise à sa résolution : `authoring/detailSvg` pose un `<pattern userSpaceOnUse>` par
-(recette × orientation d'arête × plan) qui ne dessine que les joints (fond transparent, `patternTransform`
-constant → pattern partagé par toute la carte), puis des **accents seedés** (blocs nuancés, mouchetis,
-touffes) fusionnés en un `<path>` par face et par couleur ; le monde volumique cuit la même recette
-par face (`backends/webgl/faceBake.ts`, `periodTexture.ts`). **LOD par zoom** (`lodOf`) : `<0.5` fills plats · `<0.7` motifs
-seuls · `≥0.7` motifs + accents.
+### `ElStates` — les vérités de SCÈNE, camera-free
 
-## 5. Ambiance — `catalog/ambiance.ts` (← `src/data/ambiance.json`)
+| Champ | Type | Rôle (JSDoc) |
+|---|---|---|
+| `visible` | `boolean` | Représente une chose actuellement VISIBLE → dessinée AU-DESSUS du voile de brouillard (fog sandwich). |
+| `overhang?` | `boolean` | SURPLOMB : la case a une surface marchable sur une couche inférieure (tablier de pont / loge). |
+| `ghost?` | `boolean` | Émis AU-DESSUS de l'étage actif → silhouette (l'appelant l'affiche translucide, sauf surplomb PLEIN). |
+| `solidOverhang?` | `boolean` | Surplomb PLEIN : fantôme dont la surface du dessous n'est PAS visible → rien à protéger, dessiné opaque comme la structure perçue (rempart en bord de carte) et au-dessus du voile. |
+| `open?` | `boolean` | Porte ouverte (arête franchissable). |
+| `down?` | `boolean` | Structure abattue (brèche de siège). |
+| `roofOccupied?` | `boolean` | Toit dont l'empreinte est occupée par un allié (cutaway). |
 
-Ciel d'extérieur, brumes (intérieure sombre / extérieure claire), vignette, voile chaud, filtre de
-l'étage inférieur, voile de nuit. Les deux regards de `stage/MondeDeCampagne` et la QC headless
-consomment les MÊMES defs SVG assemblées ici. `DEFS` (`sprites.ts`) = dégradés de terrain (dérivés des `TerrainDef.stops`)
-+ `rigFxGradients` (`rig/fxGradients.ts`, domaine rig/FX), montés une fois au niveau App (`GlobalSvgDefs`).
+La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un étage) reste une
+**décoration** du rendu, jamais du pivot.
 
-## 6. Garde-fou anti-couleur — `renderer-no-hardcoded-color.test.ts`
+## 2. Les builders (7)
 
-Aucun renderer d'environnement ne porte de **littéral** de couleur : toute couleur vient de la DONNÉE
-(`src/data/*.json`, defs de terrain) ou de `shade.ts` (la LUMIÈRE : `shade`/`mix` + voiles `ao`/`spec`/
-`warm`). Couverture = **balayage récursif** de `builders/ backends/ authoring/ detail/ pov/ catalog/ stage/` + les
-renderers racine nommés par fichier (`SurcoucheIso.tsx`, `sprites.ts`) + un bloc dédié aux 97 defs de props (`catalog/decor/defs/`,
-qui consomment la palette `P.<ton>` de `decorPalette.json`). Hors périmètre (couleur légitime) : le rig
-(`rig/**`), les FX de combat (`fx/**`), les jetons (`stage/TokenChromeOverlay` = chrome d'état, qui a
-son propre bloc à allowlist neutre),
-`shade.ts`, et les defs de terrain (`state/terrain/defs/**` = donnée d'identité matériau, comme un JSON).
+| Builder | Sortie | Site | Rôle (JSDoc) |
+|---|---|---|---|
+| `buildFloors` | `FloorEl[]` | `src/gameIso/builders/floors.ts:311` | Éléments `floor` de la scène. |
+| `buildHighlights` | `HighlightEl[]` | `src/gameIso/builders/highlights.ts:64` | — |
+| `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:129` | Les faces MONDE d'un décor volumique : recette locale × cap de l'entité × case d'ancrage, posées sur `groundHeightM` (l'altitude métrique de la surface de la case, relief et couche compris). |
+| `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:42` | — |
+| `buildRoofs` | `RoofEl[]` | `src/gameIso/builders/roofs.ts:1387` | Éléments `roof` de la scène. |
+| `buildTokens` | `TokenEl[]` | `src/gameIso/builders/tokens.ts:80` | Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). |
+| `buildWalls` | `WallEl[]` | `src/gameIso/builders/walls.ts:601` | Éléments `wall` de la scène. |
 
-## 7. QC visuel — `node scripts/qc/capture-jeu.mjs`
+## 3. L'arborescence de `src/gameIso/`
+
+| Dossier | Modules directs | Sous-dossiers | Rôle |
+|---|---|---|---|
+| `src/gameIso/authoring/` | 5 | 0 | peintres SVG (plan de station, aperçu d’éditeur, oracles de parité) — pilotés par `Dims`, seul pont monde→écran |
+| `src/gameIso/backends/` | 0 | 1 | le MONDE, cuit en géométrie et rendu par une caméra réelle (three) — LE moteur du jeu en toutes vues |
+| `src/gameIso/builders/` | 12 | 1 | dérivation PURE de la Scène en éléments sémantiques, en espace MONDE (aucun import de caméra ni d’écran) |
+| `src/gameIso/catalog/` | 5 | 6 | catalogues d’apparence : ambiance, décor, dégradés — la couleur y est une DONNÉE |
+| `src/gameIso/detail/` | 4 | 0 | détail de surface (matériaux v2) : recettes dépliées en primitives UV, déterministes au seed |
+| `src/gameIso/fx/` | 5 | 0 | effets de combat — hors périmètre de la garde anti-couleur (couleur d’intention, pas d’identité de matériau) |
+| `src/gameIso/pov/` | 3 | 0 | première personne : caméra, brume, boîtes de billboard, voiles d’écran |
+| `src/gameIso/rig/` | 20 | 25 | art des sujets (bestiaire, équipement, véhicules) — hors périmètre de la garde anti-couleur |
+| `src/gameIso/stage/` | 49 | 0 | hôtes de montage : le monde et ses surcouches React, le plan de station, le tri des objets |
+
+## 4. Détail de surface — la recette (`src/gameIso/detail/types.ts:19`)
+
+Une `DetailRecipe` est une donnée PURE portée par les defs d'apparence ; ses dimensions sont en
+mètres, et son dépliage en primitives UV est **déterministe au seed** — le SVG d'authoring et le
+monde volumique retombent donc sur le MÊME détail.
+
+| Section | Rôle (JSDoc) |
+|---|---|
+| `courses?` | Rangs horizontaux (assises de pierre, bardeaux, planches). |
+| `bands?` | Bandes horizontales pleines (plinthe, arase, bandeau) : `atV` = CENTRE de la bande ∈ [0,1] (0 = haut de la face, 1 = bas), `hM` = hauteur (m). |
+| `timber?` | Colombage : poteaux verticaux tous les `postEveryM` mètres + écharpes en X ou en V par travée. |
+| `speckle?` | Mouchetis (lichen, salissure, silex) : densité par m², rayon (m) min/max, palette tirée au seed. |
+| `tufts?` | Touffes d'herbe / brins (sol) : densité par m², hauteur de brin (m) min/max, palette tirée au seed. |
+| `tintVar?` | Variance de TEINTE de la surface entière ∈ [0,1] par unité de seed (tuile/face) — tue l'uniformité d'un aplat répété : le backend module le fill de base par `shade(base, 1 ± tintVar)`. |
+| `seedScope` | Portée de l'IDENTITÉ du seed — dit à l'APPELANT quoi hasher (le seed n'est jamais stocké) : 'edge' = par arête de mur (x,y,z,side), 'tile' = par tuile (x,y,z), 'instance' = par instance (bâtiment/structure entière : même détail sur toutes ses faces). |
+
+## 5. Ambiance — `src/data/ambiance.json`
+
+6 clés d'ambiance en donnée : `ambientFloor` · `fogTint` · `faceShade` · `entreeEnScene` · `iso` · `pov`. Les deux
+regards du monde et la QC headless consomment les MÊMES defs, assemblées une fois.
+
+## 6. Garde anti-couleur — `src/gameIso/renderer-no-hardcoded-color.test.ts`
+
+Aucun renderer d'environnement ne porte de **littéral** de couleur : toute couleur vient de la
+DONNÉE ou de la LUMIÈRE. La couverture ci-dessous est lue DANS la garde (aucune liste tenue ici) :
+
+- **balayage récursif** de `src/gameIso/builders/`, `src/gameIso/backends/`, `src/gameIso/authoring/`, `src/gameIso/detail/`, `src/gameIso/pov/`, `src/gameIso/catalog/`, `src/gameIso/stage/` — tout
+  fichier NEUF y est couvert d'office ;
+- **renderers nommés** à la racine : `src/gameIso/SurcoucheIso.tsx`, `src/gameIso/sprites.ts` ;
+- **bloc à part** (chrome d'ÉTAT des jetons, allowlist neutre) :
+  `src/gameIso/stage/TokenChromeOverlay.tsx`, `src/gameIso/tokenBodyKind.tsx` — un fichier passe par un bloc ou par
+  l'autre, jamais par les deux.
+
+Hors balayage (couleur LÉGITIME : art de sujet, effets, ou donnée d'identité) : `src/gameIso/fx/`, `src/gameIso/rig/`.
+
+## 7. QC visuelle — `scripts/qc/capture-jeu.mjs`
 
 Instrument de **non-régression visuelle** : les planches se capturent DANS l'app (le jeu réel, son
-monde volumique et son écran), jamais par un rendu parallèle hors app — un second chemin de rendu
-jugerait autre chose que ce que le joueur voit. Workflow : copier les PNG **avant** un changement
-d'apparence, relancer, comparer (md5 / lecture visuelle) — une migration donnée-neutre doit rester
-byte-identique.
+monde et son écran), jamais par un rendu parallèle hors app — un second chemin de rendu jugerait
+autre chose que ce que le joueur voit. Copier les planches AVANT un changement d'apparence,
+relancer, comparer : une migration donnée-neutre doit rester identique.
 
 ## 8. Où ajouter…
 
-- **un matériau** (structure/relief/toit) : entrée dans `src/data/{structureAppearance,reliefMaterials,
-  roofMaterials}.json` (`id` + couleurs par `part` + `detail` optionnelle) ; les `Wall/Roof/FloorEl` le
-  référencent par id, le rendu résout les couleurs par `part`.
-- **un ton de couleur du décor** : entrée dans `src/data/decorPalette.json` → dispo en `P.<ton>`.
-- **un terrain** : `src/state/terrain/defs/<id>.ts` (`TerrainDef` : `gradient`/`swatch`/`stops`) puis
-  `npm run gen`. Décor de terrain : `overlayProp` (billboard de prop, ex. `bois → 'arbre'`, rendu par les
-  le rendu via `buildProps`) ou `solidHeightM` (bloc plein, ex. `mur`, dérivé du relief par `buildFloors`).
-- **un prop / décor** : `src/gameIso/catalog/decor/defs/<id>.ts` (SVG boîte 120×150, couleurs via
-  `P.<ton>`) puis `npm run gen`. **Symétrique** → un seul dessin `PropViz.render`. **Directionnel**
-  (siège, canapé…) → déclare ses vues `PropViz.views` (`= ViewArt<[params, ctx]>`, `front`/`profile`/`back`) ;
-  la sélection vue + miroir + repli se fait dans la MACHINERIE (`propSvg`, `catalog/decor/index.ts`) via
-  `project(dir, camRot)` puis `pickView`, jamais dans la def (garde `defs-directional-guard.test.ts`).
+| Catalogue | Entrées |
+|---|---|
+| `src/data/structureAppearance.json` | 18 |
+| `src/data/reliefMaterials.json` | 6 |
+| `src/data/roofMaterials.json` | 4 |
+| `src/data/decorPalette.json` | 435 |
 
-### Objets ORIENTÉS — un seul contrat de vues (`rig/viewArt.ts`)
-
-Tout art orienté procédural rendu par le système de plans (coque de NAVIRE `rig/ship/composeShip.ts`,
-ENGIN de siège `rig/engin/artkit.ts`, véhicule TERRESTRE `rig/land/composeLand.ts`) ET les props
-directionnels partagent l'UNIQUE contrat `ViewArt` (`front?`/`profile?`/`back?`, une vue peut manquer).
-La sélection vue+miroir vient du SEUL résolveur `project(dir, camRot)` (`rig/facing.ts`) ; le repli d'une
-vue absente sur la plus proche déclarée est `pickView`/`foldView` ; la COUVERTURE réelle (`declaredViews`)
-pilote la galerie QC `oriented-objects.html`. Le PROFIL est dessiné vers la DROITE, le gauche = miroir de
-la machinerie. Le routage d'un véhicule à coque se fait par **`hull.propulsion`** dans `rig/bodyPlan.ts`
-(`resolveRender`) : `maritime`/`fluvial` → gabarit `navire` avec l'**ID de véhicule** comme espèce ;
-`terrestre` → gabarit `terrestre` — un attelage ne peut PLUS retomber par accident sur la coque de navire.
-Chaque type de navire a son ART DE COQUE dédié (`rig/ship/defs/<id>.ts`, registre `SHIP_ARTS` auto-chargé,
-boîte à outils `rig/ship/artkit.ts` : voiles carrées/latines/jonque, avirons, châteaux, pavois — proue à
-DROITE, quille à y=0) ; un id sans def retombe sur la silhouette procédurale par gréement (`hull.rig`)
-de `composeShip` — couverture déclarée, visible dans la galerie.
-
-Les **BÊTES** (plans non équipables) sont HORS de ce contrat : elles ne se replient pas de vue en
-vue, elles se dessinent ENTIÈRES par vue — une illustration continue en coordonnées monde
-(`src/gameIso/rig/quadruped/atelier/<espèce>-<vue>.dessin.mts`), compilée par os dans le repère
-local de chacun par `scripts/rig/compile-dessin-quad.mts` (`--check` en porte de commit), servie au
-rendu par le canal `QuadProps.viewArt` (aucun `foldView` : une vue non déclarée se compose au
-socle). Arbitrage utilisateur du 2026-08-06 (verbatim consigné au ticket #1082). L'assemblage par pièces reste aux bipèdes
-équipables et aux éléments attachés (`deco`). Direction d'art : épuré, jugé à 40 / 64 / 128 px.
-- **un TYPE d'élément** (au-delà de floor/wall/roof/prop/token) : ajouter le variant à `SceneEl`
-  (`builders/types.ts`, discriminé par `kind`) + un builder + sa cuisson dans le monde volumique
-  (`backends/webgl/sceneMeshes.ts`) ; et, s'il doit se voir à l'authoring, son peintre SVG
-  (`authoring/*`) avec sa profondeur de tri (cf. `floorDepth`/`wallDepth`/…).
+- **un matériau** (structure / relief / toit) : une entrée dans le catalogue correspondant ci-dessus
+  (id + couleurs par `part` + `detail` optionnelle). Les éléments le référencent par id ; le rendu
+  résout les couleurs par `part`.
+- **un ton de décor** : une entrée dans la palette — jamais un hex dans un renderer (§6).
+- **un terrain** : une def sous `src/state/terrain/defs/`, puis `npm run gen`.
+- **un prop / décor** : une def sous `src/gameIso/catalog/decor/defs/`, puis `npm run gen`. Symétrique →
+  un seul dessin ; directionnel → il DÉCLARE ses vues, et la sélection vue + miroir + repli se fait
+  dans la MACHINERIE partagée, jamais dans la def.
+- **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
+  son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
+  SVG avec sa profondeur de tri.
