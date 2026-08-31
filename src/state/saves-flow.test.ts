@@ -135,11 +135,21 @@ describe('parseSave — la version DOIT être la courante', () => {
   it('MESURE du motif de bump 36 → 37 (#717) : le CADRE DE CAMPAGNE entre au snapshot', () => {
     // Sans la borne ni l'archive, une save rouverte ferait compter les PX du chapitre depuis le néant
     // et raconterait un chapitre vide : la forme persistée change, la save de 36 se jette.
-    expect(SAVE_VERSION).toBe(37);
     expect(parseSave({ ...cur, version: 36 })).toBeNull();
     const initial = useGame.getInitialState() as unknown as Record<string, unknown>;
     const data = snapshotSave(initial, initial, '2026-08-31T00:00:00.000Z').data;
     expect(Object.keys(data)).toEqual(expect.arrayContaining(['chapitreDepuis', 'objectifsSoldes', 'pendingOuverture', 'pendingChapterRecap']));
+  });
+  it('MESURE du motif de bump 37 → 38 (#1552) : la SCÈNE persistée s’annonce', () => {
+    // `snapshotSave` recopie l'ÉTAT entier, `state.scene` comprise : la forme persistée change avec
+    // celle du document de scène. Une save de 37 rouvrirait sur une scène muette, que le seam
+    // `parseProject` refuserait au prochain export de son projet.
+    expect(SAVE_VERSION).toBe(38);
+    expect(parseSave({ ...cur, version: 37 })).toBeNull();
+    const initial = useGame.getInitialState() as unknown as Record<string, unknown>;
+    const data = snapshotSave({ ...initial, scene: testScene }, initial, '2026-08-31T00:00:00.000Z').data;
+    expect(testScene.type, 'une scène du dépôt s’annonce').toBe('scene');
+    expect((data.scene as { type?: string }).type, 'la scène persistée doit porter son `type`').toBe('scene');
   });
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
     const sv = talents.find((t) => t.id === 'savoir-vivre')!;

@@ -16,8 +16,13 @@
  * portent la forme d'arrivée, la migration les reconnaît no-op ; `diligence` est AUTHORÉ et c'est ici
  * qu'il migre.
  *
- * IDEMPOTENT : un document déjà en `schema: 6` est reconnu migré ; rejouée, la migration n'écrit rien.
- * FAIL-FAST : `schema` absent, non numérique, ou ∉ {5, 6} ; une scène portant À LA FOIS `nom` et
+ * IDEMPOTENT : un document en `schema` ≥ 6 est reconnu migré ; rejouée, la migration n'écrit rien. La
+ * borne est OUVERTE VERS LE HAUT depuis #1552, qui a porté le même document à 7 : sans cet
+ * élargissement, le rejeu sur l'arbre courant sortirait ROUGE (même retouche que `…-3i-…` en son
+ * temps). Ce qui rattrape le trou ainsi ouvert est la DERNIÈRE migration de la chaîne, seule à
+ * savoir ce qui existe après elle — aujourd'hui `2026-08-31-1552-projet-sannonce.mjs`, dont la borne
+ * haute est CLOSE (7, jamais « ≥ 7 »).
+ * FAIL-FAST : `schema` absent, non numérique, ou < 5 ; une scène portant À LA FOIS `nom` et
  * `label` ; une scène en `schema: 5` SANS `nom` (forme hybride) ; un statbloc portant déjà un `type`
  * qui n'est pas `'statblock'` → rien n'est écrit, sortie 1.
  * FORMATAGE PRÉSERVÉ : sérialiseur des scènes `JSON.stringify(doc, null, 1) + '\n'`, vérifié AVANT
@@ -66,8 +71,8 @@ for (const d of fs.readdirSync(RACINE, { withFileTypes: true })) {
   const brut = fs.readFileSync(abs, 'utf8');
   const doc = JSON.parse(brut);
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema === 6) { ecritures.push({ rel, abs, brut, out: brut, deja: true }); continue; }
-  if (doc.schema !== 5) { echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (5 ou 6 attendus)`); continue; }
+  if (typeof doc.schema === 'number' && doc.schema >= 6) { ecritures.push({ rel, abs, brut, out: brut, deja: true }); continue; }
+  if (doc.schema !== 5) { echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (5 ou ≥ 6 attendus)`); continue; }
 
   for (const s of doc.scenes ?? []) {
     if ('nom' in s && 'label' in s) echecs.push(`${rel} : scène « ${s.id} » porte À LA FOIS \`nom\` et \`label\` — arbitrage requis`);
@@ -96,11 +101,11 @@ for (const e of ecritures) {
   const apres = JSON.parse(e.out);
   if (e.deja) {
     const restes = JSON.stringify(apres).match(/"nom":/g)?.length ?? 0;
-    if (apres.schema !== 6 || restes) {
+    if (!(apres.schema >= 6) || restes) {
       console.error(`VÉRIFICATION ROUGE — ${e.rel} : reconnu « déjà migré » mais schema=${apres.schema}, ${restes} \`nom\` résiduel(s)`);
       process.exit(1);
     }
-    console.log(`${e.rel} — schema 6 (déjà migré, no-op)`);
+    console.log(`${e.rel} — schema ${apres.schema} (déjà migré, no-op)`);
     continue;
   }
   // PREUVE post-écriture : le document d'après, RENOMMÉ EN SENS INVERSE et dépouillé des `type`

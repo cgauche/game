@@ -44,12 +44,13 @@ describe('paquets de campagne bundlés — se relisent tous dans le modèle COUR
     expect('meta' in (doc as Record<string, unknown>)).toBe(false);
   });
 
-  it('CONTRE-PREUVE : un paquet ramené au format PRÉCÉDENT (schema 2, sans identité) échoue la garde ci-dessus', () => {
+  it('CONTRE-PREUVE : un paquet ramené au format PRÉCÉDENT (schema 2, sans identité) est REFUSÉ À LA PORTE', () => {
     const raw = JSON.parse(readFileSync(bundledFiles[0], 'utf8'));
-    const regressed = { schema: 2, scenes: raw.scenes, worldMap: raw.worldMap }; // ⚠ copie EN MÉMOIRE — aucun fichier touché
-    const doc = parseProject(regressed); // migre 2→5 mais SANS identité : la migration n'en invente pas
-    expect(() => {
-      expect(doc.id, 'identité absente — régression schema 2 détectée').toBeTruthy();
-    }).toThrow();
+    // ⚠ copie EN MÉMOIRE — aucun fichier touché. Les scènes sont dépouillées de leur `type` : au
+    // format 2, une scène ne s'annonçait pas (c'est `PROJECT_MIGRATIONS[6]` qui le pose, #1552).
+    const scenes = raw.scenes.map(({ type: _s, ...reste }: Record<string, unknown>) => reste);
+    const regressed = { schema: 2, scenes, worldMap: raw.worldMap };
+    // La migration monte la forme 2→7 mais n'INVENTE aucune identité : la porte refuse, en la nommant.
+    expect(() => parseProject(regressed)).toThrow(/id/);
   });
 });

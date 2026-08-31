@@ -1,9 +1,11 @@
 {
- "schema": 6,
  "id": "arene",
+ "type": "projet",
  "label": "L’Arène",
+ "schema": 7,
  "icon": "scenario/arena",
  "versionContenu": 1,
+ "maison": "bac à sable de combat authoré pour le jeu — aucun livre ne publie cette arène ; les créatures, armes et règles qu'elle compose portent chacune sa propre source",
  "narratif": {
   "affaires": [],
   "indices": [],
@@ -12,6 +14,7 @@
  },
  "scenes": [
   {
+   "type": "scene",
    "id": "arene-zone1",
    "label": "Arène — La Cour",
    "dimensions": {
@@ -698,6 +701,7 @@
    "startMessage": "L’ARÈNE — La Cour. Pour s’échauffer : de la vermine. Utilisez le couvert (tonneaux, caisses, murets) — et fouillez le râtelier avant d’avancer."
   },
   {
+   "type": "scene",
    "id": "arene-hub",
    "label": "Le Bourg de l’Arène",
    "dimensions": {
@@ -6253,6 +6257,7 @@
    ]
   },
   {
+   "type": "scene",
    "id": "arene-zone2",
    "label": "Arène — Les Ruines",
    "dimensions": {
@@ -7245,6 +7250,7 @@
    "startMessage": "LES RUINES. Des gobelins nichent dans les chambres effondrées. On murmure qu’une salle au nord-est garde encore son trésor… et son gardien."
   },
   {
+   "type": "scene",
    "id": "arene-zone3",
    "label": "Arène — Les Égouts",
    "dimensions": {
@@ -8170,6 +8176,7 @@
    "startMessage": "LES ÉGOUTS. Un canal d’eau croupie coupe le collecteur — deux passerelles de planches le franchissent. Retenez votre souffle : les miasmes rendent MALADE."
   },
   {
+   "type": "scene",
    "id": "arene-zone4",
    "label": "Arène — Le Charnier",
    "dimensions": {
@@ -9182,6 +9189,7 @@
    "startMessage": "LE CHARNIER. Les vaincus de l’arène finissent ici… et n’y restent pas. Les morts SURGISSENT — attendez-vous à être surpris."
   },
   {
+   "type": "scene",
    "id": "arene-zone5",
    "label": "Arène — Les Lices",
    "dimensions": {
@@ -10041,6 +10049,7 @@
    "startMessage": "LES LICES, sous la pluie battante. Des cavaliers vous attendent — un destrier SELLÉ broute près de la barrière : enfourchez-le ! (Et fouillez le râtelier de lances.)"
   },
   {
+   "type": "scene",
    "id": "arene-zone6",
    "label": "Arène — Le Marais",
    "dimensions": {
@@ -11247,6 +11256,7 @@
    "startMessage": "LE MARAIS, noyé de brouillard. La harde chasse en silence et l’eau cache pire encore. Restez groupés — l’embuscade est CERTAINE."
   },
   {
+   "type": "scene",
    "id": "arene-zone7",
    "label": "Arène — Le Nid",
    "dimensions": {
@@ -12361,6 +12371,7 @@
    "startMessage": "LE NID. Toiles, cocons… et un sifflement de VOUIVRE au fond. Les cocons cachent des trésors — et des morsures. Prudence en fouillant."
   },
   {
+   "type": "scene",
    "id": "arene-zone8",
    "label": "Arène — La Fosse",
    "dimensions": {
@@ -13295,6 +13306,7 @@
    "startMessage": "LA FOSSE. Des gouffres coupent l’arène en passes étroites — et un GLADIATEUR enchaîné combat à vos côtés : la harde a capturé le mauvais homme."
   },
   {
+   "type": "scene",
    "id": "arene-zone9",
    "label": "Arène — La Caverne du Troll",
    "dimensions": {
@@ -14392,6 +14404,7 @@
    "startMessage": "LA CAVERNE DU TROLL. Ça pue le rance et la chair faisandée. Au fond, une alcôve murée abrite le magot — et son NOUVEAU propriétaire."
   },
   {
+   "type": "scene",
    "id": "arene-zone10",
    "label": "Arène — Le Nid de Vermine",
    "dimensions": {
@@ -15752,6 +15765,7 @@
    "startMessage": "LE NID DE VERMINE. Les hommes-rats ont percé leurs terriers sous le vieux quartier. Une voix appelle depuis une CAGE — et mille yeux rouges vous regardent."
   },
   {
+   "type": "scene",
    "id": "arene-zone11",
    "label": "Arène — Le Cercle Maudit",
    "dimensions": {
@@ -16935,6 +16949,7 @@
    "startMessage": "LE CERCLE MAUDIT. Le culte psalmodie autour de l’idole noire — leur CHAMANE tisse déjà ses sorts et l’air vous corrompt la moelle. Frappez vite."
   },
   {
+   "type": "scene",
    "id": "arene-zone12",
    "label": "Arène — Le Sépulcre",
    "dimensions": {
@@ -17995,6 +18010,7 @@
    "startMessage": "LE SÉPULCRE. La porte se referme : il fera NUIT, quoi qu’en dise le soleil. Le seigneur des lieux apprécie les visites — ses gens hurlent déjà."
   },
   {
+   "type": "scene",
    "id": "arene-zone13",
    "label": "Arène — L’Antre du Dragon",
    "dimensions": {
@@ -19580,6 +19596,7 @@
    "startMessage": "L’ANTRE DU DRAGON. La chaleur racle la gorge, l’or scintille entre les coulées de lave. Le dragon DORT. On peut chiper une poignée d’or sans le réveiller… en théorie."
   },
   {
+   "type": "scene",
    "id": "arene-exp-foret",
    "label": "La Vieille Futaie",
    "dimensions": {
@@ -21277,6 +21294,7 @@
    "startMessage": "LA VIEILLE FUTAIE. La harde chasse en lisière — et au cœur du bois, la bande de BELLA LA NOIRE compte son butin. Les herbes du sous-bois valent leur pesant d’or."
   },
   {
+   "type": "scene",
    "id": "arene-exp-marais",
    "label": "La Tourbière Noire",
    "dimensions": {
@@ -22590,6 +22608,7 @@
    "startMessage": "LA TOURBIÈRE NOIRE. Les pontons de planches serpentent sur l’eau morte. Ce qui traîne les voyageurs sous la surface a été FABRIQUÉ — et il régénère. Apportez du feu."
   },
   {
+   "type": "scene",
    "id": "arene-exp-village",
    "label": "Felsbach — village pesteux",
    "dimensions": {
@@ -24472,6 +24491,7 @@
    ]
   },
   {
+   "type": "scene",
    "id": "arene-route-embuscade",
    "label": "Le Gué du Carrosse",
    "dimensions": {

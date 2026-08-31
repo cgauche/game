@@ -1,9 +1,11 @@
 {
- "schema": 6,
  "id": "loup-et-saumure",
+ "type": "projet",
  "label": "Le Loup et la Saumure",
+ "schema": 7,
  "icon": "scenario/naval",
  "versionContenu": 1,
+ "maison": "scénario naval authoré pour le jeu — aucun livre ne le publie (mesuré : absent de `Source/`) ; il compose des règles de la Mer des Griffes, qui portent leur source à leur foyer",
  "narratif": {
   "affaires": [],
   "indices": [],
@@ -12,6 +14,7 @@
  },
  "scenes": [
   {
+   "type": "scene",
    "id": "ls-quai-salzenmund",
    "label": "Salzenmund — le quai de la Seconde Flotte",
    "dimensions": {
@@ -881,6 +884,7 @@
    }
   },
   {
+   "type": "scene",
    "id": "ls-abordage-cogue",
    "label": "La Dent de Manann — voile noire sous le vent (J4)",
    "dimensions": {
@@ -1788,6 +1792,7 @@
    }
   },
   {
+   "type": "scene",
    "id": "ls-quai-erengrad",
    "label": "Erengrad — le port kislevite",
    "dimensions": {
@@ -2247,6 +2252,7 @@
    }
   },
   {
+   "type": "scene",
    "id": "ls-abordage-olg",
    "label": "Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)",
    "dimensions": {
@@ -3156,6 +3162,7 @@
    }
   },
   {
+   "type": "scene",
    "id": "ls-epilogue-salzenmund",
    "label": "Salzenmund — le retour (J13)",
    "dimensions": {

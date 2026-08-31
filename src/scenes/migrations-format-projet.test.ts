@@ -7,19 +7,23 @@
  * superficiel). L'autre fichier tient la famille `type`→<clé métier> sur `src/data` ; celui-ci tient
  * la famille « bump de FORME » sur `src/scenes/<c>/<c>-projet.json`.
  *
- * TROIS scripts sont tenus ici :
+ * QUATRE scripts sont tenus ici :
  *  - `…-3i-projet-schema-4.mjs`, RETOUCHÉ par la vague 13 (il fail-fastait sur tout `schema` ∉ {3,4} ;
  *    lexicalement il précède la 13, donc sur l'arbre migré en `schema: 5` le rejeu sortait ROUGE) ;
  *  - `…-13-projet-forme.mjs`, NEUF et sans témoin committé ;
  *  - `…-15b-projet-forme-6.mjs`, le bump 5 → 6 : la clé de libellé des scènes et de la carte prend sa
  *    graphie canonique et les statblocs EMBARQUÉS s'annoncent. Sa fixture d'ENTRÉE est GELÉE au
- *    format 5 ici : l'arbre étant désormais en 6, plus aucun document committé ne la porterait.
+ *    format 5 ici : l'arbre étant désormais en 7, plus aucun document committé ne la porterait.
+ *    Elle a été RETOUCHÉE par #1552 (borne haute ouverte à « ≥ 6 »), pour la même raison que la 3i ;
+ *  - `…-1552-projet-sannonce.mjs`, le bump 6 → 7 : le document et ses scènes S'ANNONCENT, et la
+ *    campagne dit sa PROVENANCE. C'est elle, désormais, la DERNIÈRE de la chaîne.
  *
  * RETOUCHER UN SCRIPT DÉJÀ JOUÉ est le geste le plus risqué du lot. Chaque élargissement en
  * « ≥ N = déjà migré » fait AVALER EN SILENCE un `schema` FUTUR inconnu ; ce qui rattrape ce trou est
  * TOUJOURS la DERNIÈRE migration de la chaîne, seule à savoir ce qui existe après elle (aujourd'hui la
- * 15b, qui refuse tout `schema` ∉ {5,6}). Cet invariant se DÉPLACE à chaque bump et n'était gardé par
- * RIEN : il l'est ici (cas `t6`).
+ * 1552, qui refuse tout `schema` ∉ {6,7}). Cet invariant se DÉPLACE à chaque bump et n'était gardé par
+ * RIEN : il l'est ici (cas `t6`), et le déplacement lui-même l'est — le cas mesure la BORNE COURANTE,
+ * pas un numéro gelé.
  */
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
@@ -32,6 +36,9 @@ const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 const SCRIPT_3I = '2026-08-27-l1b-3i-projet-schema-4.mjs';
 const SCRIPT_13 = '2026-08-28-l1b-13-projet-forme.mjs';
 const SCRIPT_15B = '2026-08-29-l1b-15b-projet-forme-6.mjs';
+const SCRIPT_1552 = '2026-08-31-1552-projet-sannonce.mjs';
+/** La DERNIÈRE de la chaîne dans l'ordre lexical — celle qui NOMME un `schema` inconnu. */
+const DERNIERE = SCRIPT_1552;
 
 /** Sérialiseur des documents de SCÈNE (indentation 1) — les deux scripts l'exigent avant de lire. */
 const canonique = (doc: unknown) => `${JSON.stringify(doc, null, 1)}\n`;
@@ -112,17 +119,21 @@ describe(`${SCRIPT_13} — le bump de forme 4 → 5 (aplatissement de la poche \
     expect(apres).toBe(avant);
   });
 
-  it('t6. RATTRAPAGE : un `schema` FUTUR (7), avalé par `3i` ET par la 13, est REFUSÉ par la DERNIÈRE de la chaîne', () => {
-    const futur = { schema: 7, narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] }, scenes: [] };
+  it('t6. RATTRAPAGE : un `schema` FUTUR (8), avalé par TOUTES les amont, est REFUSÉ par la DERNIÈRE de la chaîne', () => {
+    const futur = { schema: 8, narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] }, scenes: [] };
     // Les migrations AMONT ont une borne ouverte vers le haut : chacune a été élargie quand la vague
     // suivante a bumpé le même document. Elles avalent donc l'inconnu — c'est le trou.
-    expect(joue(SCRIPT_3I, futur).code, '3i avale le futur en silence').toBe(0);
-    expect(joue(SCRIPT_13, futur).code, 'la 13 avale le futur en silence').toBe(0);
-    // La 15b, DERNIÈRE dans l'ordre lexical, le NOMME : le rejeu sort rouge, pas muet. C'est l'invariant
-    // de la chaîne — il se DÉPLACE à chaque bump, il ne disparaît jamais.
-    const { code, avant, apres } = joue(SCRIPT_15B, futur);
-    expect(code, 'la dernière migration doit refuser un schema hors {5,6}').toBe(1);
+    for (const amont of [SCRIPT_3I, SCRIPT_13, SCRIPT_15B]) {
+      expect(joue(amont, futur).code, `${amont} avale le futur en silence`).toBe(0);
+    }
+    // La DERNIÈRE dans l'ordre lexical le NOMME : le rejeu sort rouge, pas muet. C'est l'invariant
+    // de la chaîne — il se DÉPLACE à chaque bump (15b hier, 1552 aujourd'hui), il ne disparaît jamais.
+    const { code, avant, apres } = joue(DERNIERE, futur);
+    expect(code, 'la dernière migration doit refuser un schema futur').toBe(1);
     expect(apres).toBe(avant);
+    // ET c'est bien la dernière du TRI : sans cette assertion, « dernière » resterait une intention.
+    const tri = [SCRIPT_3I, SCRIPT_13, SCRIPT_15B, DERNIERE].slice().sort();
+    expect(tri[tri.length - 1]).toBe(DERNIERE);
   });
 });
 
@@ -211,11 +222,15 @@ describe(`${SCRIPT_15B} — le bump 5 → 6 (\`label\` de scène/carte, statbloc
     expect(doc.narratif).toEqual(narratif);
   });
 
-  it('t2. schema 6 (état de l’arbre) : NO-OP, fichier byte-identique', () => {
-    const deja = { schema: 6, id: 'camp', versionContenu: 3, narratif, scenes: [{ id: 's1', label: 'Une salle', dimensions: { w: 1, h: 1 } }] };
-    const { code, avant, apres } = joue(SCRIPT_15B, deja);
-    expect(code).toBe(0);
-    expect(apres).toBe(avant);
+  it('t2. schema 6 ET 7 (état de l’arbre) : NO-OP, fichier byte-identique', () => {
+    // La borne haute a été OUVERTE par #1552, qui a porté le même document à 7 : sans cet
+    // élargissement, le rejeu de la 15b sur l'arbre courant sortirait ROUGE.
+    for (const schema of [6, 7]) {
+      const deja = { schema, id: 'camp', versionContenu: 3, narratif, scenes: [{ id: 's1', label: 'Une salle', dimensions: { w: 1, h: 1 } }] };
+      const { code, avant, apres } = joue(SCRIPT_15B, deja);
+      expect(code, `schema ${schema} doit être reconnu « déjà migré »`).toBe(0);
+      expect(apres, `schema ${schema} doit rester byte-identique`).toBe(avant);
+    }
   });
 
   it('t3. schema 4 (non encore bumpé par la 13) → fail-fast, rien d’écrit', () => {
@@ -273,5 +288,52 @@ describe(`${SCRIPT_15B} — le bump 5 → 6 (\`label\` de scène/carte, statbloc
     expect((apres15b.scenes as Record<string, unknown>[])[0].label).toBe('Une salle');
     // La CONDITION que la prose énonce : le tri des NOMS suit l'ordre des bumps.
     expect([SCRIPT_3I, SCRIPT_13, SCRIPT_15B].slice().sort()).toEqual([SCRIPT_3I, SCRIPT_13, SCRIPT_15B]);
+  });
+});
+
+describe(`${SCRIPT_1552} — le bump 6 → 7 (le document et ses scènes S'ANNONCENT, provenance posée)`, () => {
+  const narratif = { affaires: [], indices: [], presetsPnj: [], objets: [] };
+
+  /** Document au format 6 GELÉ ICI, sous le nom de dossier `camp` — c'est la clé de la table de
+   *  provenance NOMINATIVE du script, et ce nom n'y figure pas : le refus attendu en dépend. */
+  const projet6 = (over: Record<string, unknown> = {}) => ({
+    schema: 6,
+    id: 'camp',
+    label: 'Campagne',
+    icon: 'scenario/village',
+    versionContenu: 3,
+    narratif,
+    scenes: [{ id: 's1', label: 'Une salle', dimensions: { w: 4, h: 4 } }],
+    ...over,
+  });
+
+  it('t1. une campagne ABSENTE de la table de provenance → fail-fast NOMMÉ, rien d’écrit', () => {
+    // La provenance ne se DEVINE pas : elle s'établit à la mesure, campagne par campagne. Une
+    // campagne inconnue du script est un ARBITRAGE REQUIS, jamais un `maison` posé par défaut.
+    const { code, err, avant, apres } = joue(SCRIPT_1552, projet6());
+    expect(code).toBe(1);
+    expect(err).toMatch(/aucune provenance DÉCLARÉE/);
+    expect(apres).toBe(avant);
+  });
+
+  it('t2. schema 7 (état de l’arbre) : NO-OP, fichier byte-identique', () => {
+    const deja = { type: 'projet', schema: 7, id: 'camp', label: 'C', versionContenu: 3, maison: 'fixture', narratif, scenes: [{ type: 'scene', id: 's1', label: 'Une salle', dimensions: { w: 1, h: 1 } }] };
+    const { code, avant, apres } = joue(SCRIPT_1552, deja);
+    expect(code).toBe(0);
+    expect(apres).toBe(avant);
+  });
+
+  it('t3. schema 5 (non encore bumpé par la 15b) → fail-fast, rien d’écrit', () => {
+    const { code, avant, apres } = joue(SCRIPT_1552, projet6({ schema: 5 }));
+    expect(code).toBe(1);
+    expect(apres).toBe(avant);
+  });
+
+  it('t4. forme HYBRIDE (schema 6 portant déjà un `type` ou une provenance) → fail-fast', () => {
+    for (const hybride of [projet6({ type: 'projet' }), projet6({ maison: 'déjà là' }), projet6({ scenes: [{ type: 'scene', id: 's1', label: 'A', dimensions: { w: 1, h: 1 } }] })]) {
+      const { code, avant, apres } = joue(SCRIPT_1552, hybride);
+      expect(code).toBe(1);
+      expect(apres).toBe(avant);
+    }
   });
 });

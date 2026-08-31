@@ -6,7 +6,7 @@ import { ListRow } from './ListRow';
 import { useGame } from '../state/store';
 import { downloadText, fileSlug } from '../state/fileIo';
 import { parseProject, CURRENT_PROJECT_SCHEMA, type ProjectDoc } from '../state/worldMap';
-import { projectsLoad, projectSave, projectRemove, type SavedProject } from '../state/projectLibrary';
+import { projectsLoad, projectSave, projectRemove, nomDeProjet, type SavedProject } from '../state/projectLibrary';
 import { allBuiltinCampaigns, type BuiltinCampaign } from '../scenes/campaign';
 
 /** Une entrée sélectionnable de la bibliothèque : soit une campagne EMBARQUÉE (lecture seule,
@@ -24,9 +24,9 @@ export class PlayerFacingImportError extends Error {}
 /** Un `SavedProject` construit depuis le texte d'un fichier importé. Fonction PURE testable : throw
  *  un `PlayerFacingImportError` (message déjà en langage JOUEUR) sur JSON illisible ou projet sans
  *  scène ; toute autre invalidité passe par la validation `parseProject` (#765, message d'authoring,
- *  jamais affiché tel quel — voir `playerImportError`). L'id repart de l'`id` du document si présent (dédup
- *  portable, #766) sinon un id frais. */
-export function buildImportedProject(text: string, fallbackLabel: string): SavedProject {
+ *  jamais affiché tel quel — voir `playerImportError`). L'id et le libellé de l'entrée sont ceux du
+ *  DOCUMENT (dédup portable, #766) : l'enveloppe les EXIGE (#1552). */
+export function buildImportedProject(text: string): SavedProject {
   let data: unknown;
   try {
     data = JSON.parse(text);
@@ -38,8 +38,9 @@ export function buildImportedProject(text: string, fallbackLabel: string): Saved
   // reconstruit ci-dessous — sans quoi une campagne importée perdrait ses axes actifs (#409).
   const { scenes, worldMap, activeAxes, narratif, ...identite } = parseProject(data);
   if (!scenes.length) throw new PlayerFacingImportError('Projet invalide : aucune scène.');
-  const label = identite.label ?? scenes[0].label ?? fallbackLabel;
-  const id = identite.id ?? `import-${fileSlug(label)}-${Date.now()}`;
+  // Un document qui a passé `parseProject` PORTE son identité (#1552, l'enveloppe l'exige) : c'est
+  // ELLE que l'entrée de bibliothèque reprend, telle quelle.
+  const { label, id } = identite;
   return {
     id,
     label,
@@ -91,11 +92,16 @@ export function importDecision(
 /** Document de projet PORTABLE (schema courant) reconstruit pour l'export d'une entrée. */
 function toProjectDoc(e: Entry): ProjectDoc {
   if (e.kind === 'builtin') {
+    // L'identité de la campagne built-in est RECONDUITE : elle vit sur `BuiltinCampaign`, dérivée du
+    // paquet par `campaign.ts` — un export qui la laisserait tomber rendrait un document anonyme,
+    // que sa propre porte refuserait.
+    const { scenes, startSceneId: _start, worldMap, narratif, ...identite } = e.bc;
     return {
       schema: CURRENT_PROJECT_SCHEMA,
-      scenes: e.bc.scenes,
-      ...(e.bc.worldMap ? { worldMap: e.bc.worldMap } : {}),
-      narratif: e.bc.narratif,
+      ...identite,
+      scenes,
+      ...(worldMap ? { worldMap } : {}),
+      narratif,
     };
   }
   // `activeAxes` NOMMÉ et RECONDUIT (même raison qu'à `buildImportedProject`) : un export de
@@ -112,7 +118,7 @@ function toProjectDoc(e: Entry): ProjectDoc {
 }
 
 function entryLabel(e: Entry): string {
-  return e.kind === 'builtin' ? e.bc.label : e.sp.label;
+  return nomDeProjet(e.kind === 'builtin' ? e.bc.label : e.sp.label);
 }
 function entrySceneCount(e: Entry): number {
   return e.kind === 'builtin' ? e.bc.scenes.length : e.sp.project.scenes.length;
@@ -135,7 +141,7 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
     setError(null);
     file.text().then(async (txt) => {
       try {
-        const entry = buildImportedProject(txt, file.name.replace(/\.json$/i, ''));
+        const entry = buildImportedProject(txt);
         const existing = projectsLoad().find((p) => p.id === entry.id);
         const decision = importDecision(entry, existing);
         if (decision !== 'new') {

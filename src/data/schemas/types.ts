@@ -35,8 +35,9 @@ export interface SchemaDef {
   meta?: Readonly<Record<string, MetaChamp>>;
   /**
    * EXPOSITION du document — DÉRIVÉE du handle `document()` (`doc.exposition`), jamais redéclarée :
-   * où il se lit (`codex`) et où il s'édite (`edit`). Portée par les defs de `src/data` ; les
-   * documents de `src/scenes` n'exposent rien au Codex (#1472).
+   * où il se lit (`codex`) et où il s'édite (`edit`). Portée par les DEUX racines depuis #1552 : un
+   * document de `src/scenes` déclare son exemption Codex et `edit: none` (il s'édite dans l'éditeur de
+   * scènes) ; `deriveExposition` (`exposition-derivee.ts`) ne dérive de routes que depuis `SCHEMA_DEFS`.
    */
   exposition?: Exposition;
 }

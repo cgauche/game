@@ -123,7 +123,7 @@ for (const s of scenes) {
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
 return projectDoc({
-  identite: { id: 'arene', label: 'L’Arène', icon: 'scenario/arena', versionContenu: 1 },
+  identite: { id: 'arene', label: 'L’Arène', icon: 'scenario/arena', versionContenu: 1, maison: "bac à sable de combat authoré pour le jeu — aucun livre ne publie cette arène ; les créatures, armes et règles qu'elle compose portent chacune sa propre source" },
   scenes,
   worldMap,
 });

@@ -4,11 +4,17 @@ import type { NarratifBlock } from './campaignNarratif';
 /** Un projet éditeur SÉRIALISÉ en localStorage. Même forme que `ProjectDoc` (SOURCE UNIQUE du schéma
  *  de projet, jamais un littéral `schema`/champs dupliqués), mais RELÂCHÉE pour le stock legacy : un
  *  projet enregistré avant #765 est un schema 2 sans `narratif`, un projet enregistré avant #1467 est
- *  un schema 3 aux anciens rôles de prose ou un schema 4 à poche `meta`. La montée au format courant
- *  se fait au CHARGEMENT via `parseProject` (chaîne 2→3→4→5→6), jamais dans ce module. */
-export type StoredProject = Omit<ProjectDoc, 'schema' | 'narratif'> & {
-  schema: 2 | 3 | 4 | 5 | 6;
+ *  un schema 3 aux anciens rôles de prose ou un schema 4 à poche `meta`, un projet enregistré avant
+ *  #1552 est un schema ≤ 6 sans `type` ni identité requise. La montée au format courant se fait au
+ *  CHARGEMENT via `parseProject` (chaîne 2→3→4→5→6→7), jamais dans ce module — et c'est là, pas ici,
+ *  que l'absence d'identité se fait REFUSER. */
+export type StoredProject = Omit<ProjectDoc, 'schema' | 'narratif' | 'type' | 'id' | 'label' | 'versionContenu'> & {
+  schema: 2 | 3 | 4 | 5 | 6 | 7;
   narratif?: NarratifBlock;
+  type?: 'projet';
+  id?: string;
+  label?: string;
+  versionContenu?: number;
 };
 
 /** Une entrée de la bibliothèque de projets (localStorage). `published` = jouable depuis le menu. */
@@ -19,6 +25,15 @@ export interface SavedProject {
   savedAt: number;
   published: boolean;
   project: StoredProject;
+}
+
+/** Repli d'AFFICHAGE du nom d'un projet : une entrée dont le nom manque (stock d'avant #1552, entrée
+ *  fabriquée hors éditeur) se rend NOMMÉE « (sans nom) » plutôt qu'en rangée muette — le geste de
+ *  suppression/ouverture reste ainsi désignable. SOURCE UNIQUE des deux écrans qui listent des
+ *  projets (« Ouvrir » de l'éditeur, bibliothèque de campagnes). */
+export const NOM_DE_PROJET_ABSENT = '(sans nom)';
+export function nomDeProjet(label: string | undefined | null): string {
+  return label?.trim() || NOM_DE_PROJET_ABSENT;
 }
 
 const KEY = 'wfrp4.editor-projects.v1';

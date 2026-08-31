@@ -1,5 +1,5 @@
 /**
- * parseProject — validation de FORME du document de projet (`{ schema: 2, scenes, worldMap? }`).
+ * parseProject — validation de FORME du document de projet (courant : `{ type: 'projet', schema: 7,
  * Garde-fou robustesse : un document corrompu / d'un autre schéma doit LEVER proprement (capté en
  * amont : l'éditeur affiche « JSON invalide », pas un crash), jamais être parsé en silence.
  */
@@ -9,18 +9,24 @@ import { lieuxServices } from '../data';
 import { validateScene } from './validateScene';
 import type { Scene } from './scene';
 
-const scene = (id: string) => ({ id, label: id, dimensions: { w: 3, h: 3 } } as Scene);
+const scene = (id: string) => ({ id, label: id, dimensions: { w: 3, h: 3 } } as unknown as Scene);
+
+/** L'identité d'un document ANTÉRIEUR vivait dans la poche `meta`, aplatie par `PROJECT_MIGRATIONS[4]`.
+ *  Elle est REQUISE depuis #1552 (l'enveloppe l'exige) et la migration n'en INVENTE pas : un document
+ *  d'un schéma antérieur la porte, ou il se fait refuser à la porte. Chaque fixture ci-dessous la porte
+ *  donc, et c'est la chaîne 2→7 ENTIÈRE qui est mesurée à chaque cas. */
+const metaLegacy = { id: 'projet-de-test', label: 'Projet de test', version: 1 };
 const wm = { id: 'm', label: 'Carte', places: [], routes: [] };
 
 describe('parseProject — validation du format projet v2', () => {
   it('document valide { schema: 2, scenes } → scènes restituées', () => {
-    const doc = { schema: 2, scenes: [scene('s1'), scene('s2')] };
+    const doc = { schema: 2, meta: metaLegacy, scenes: [scene('s1'), scene('s2')] };
     expect(parseProject(doc).scenes.map((s) => s.id)).toEqual(['s1', 's2']);
   });
 
   it('worldMap optionnel : présent → restitué ; absent → undefined', () => {
-    expect(parseProject({ schema: 2, scenes: [scene('s1')], worldMap: wm }).worldMap).toEqual(wm);
-    expect(parseProject({ schema: 2, scenes: [scene('s1')] }).worldMap).toBeUndefined();
+    expect(parseProject({ schema: 2, meta: metaLegacy, scenes: [scene('s1')], worldMap: wm }).worldMap).toEqual(wm);
+    expect(parseProject({ schema: 2, meta: metaLegacy, scenes: [scene('s1')] }).worldMap).toBeUndefined();
   });
 
   it('schéma 1 (aucune migration 1→2 définie) → refus EXPLICITE, pas un throw sec muet', () => {
@@ -39,7 +45,7 @@ describe('parseProject — validation du format projet v2', () => {
 
   it('scenes manquant ou non-tableau → lève', () => {
     expect(() => parseProject({ schema: 2 })).toThrow(/Projet invalide/);
-    expect(() => parseProject({ schema: 2, scenes: 'nope' })).toThrow(/Projet invalide/);
+    expect(() => parseProject({ schema: 2, meta: metaLegacy, scenes: 'nope' })).toThrow(/Projet invalide/);
   });
 
   it('formats legacy (tableau de scènes nu, scène unique, null) → lèvent', () => {
@@ -52,7 +58,7 @@ describe('parseProject — validation du format projet v2', () => {
     // Reproduit le crash « Ouvrir → L'Embuscade » (TypeError sur s.encounters.map, validateScene.ts:59) :
     // un projet localStorage sauvegardé avant que `Scene` ne gagne `encounters`/`dialogues`/… ne les porte pas.
     const old = { id: 'old', label: 'Vieille scène', dimensions: { w: 3, h: 3 } } as Scene; // aucune collection
-    const { scenes } = parseProject({ schema: 2, scenes: [old] });
+    const { scenes } = parseProject({ schema: 2, meta: metaLegacy, scenes: [old] });
     expect(scenes[0].encounters).toEqual([]);
     expect(scenes[0].dialogues).toEqual([]);
     expect(scenes[0].triggers).toEqual([]);
@@ -70,14 +76,14 @@ describe('parseProject — validation du format projet v2', () => {
       surplus: { 'produits-de-luxe': 1 }, demande: { cereales: 2 }, cosmopolite: true, lighthouse: true,
     };
     const mapWithPort = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Marienburg', pos: { x: 50, y: 50 }, scene: 's1', port }], routes: [] };
-    const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithPort as never };
+    const doc = { schema: 2, meta: metaLegacy, scenes: [scene('s1')], worldMap: mapWithPort as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     expect(round.worldMap!.places[0].port).toEqual(port);
   });
 
   it('#217 : MapPlace.port.ref seul → résolu aux valeurs du catalogue naval-ports.json au chargement', () => {
     const mapWithRef = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Salzenmund', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'salzenmund' } }], routes: [] };
-    const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithRef as never };
+    const doc = { schema: 2, meta: metaLegacy, scenes: [scene('s1')], worldMap: mapWithRef as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     const port = round.worldMap!.places[0].port!;
     expect(port.taille).toBe(4);
@@ -87,7 +93,7 @@ describe('parseProject — validation du format projet v2', () => {
 
   it('#217 : MapPlace.port.ref + surcharge locale → la surcharge gagne sur le catalogue', () => {
     const mapWithOverride = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Salzenmund', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'salzenmund', taille: 1 } }], routes: [] };
-    const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithOverride as never };
+    const doc = { schema: 2, meta: metaLegacy, scenes: [scene('s1')], worldMap: mapWithOverride as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     const port = round.worldMap!.places[0].port!;
     expect(port.taille).toBe(1); // surcharge locale
@@ -97,14 +103,14 @@ describe('parseProject — validation du format projet v2', () => {
   it('#217 : MapPlace.port SANS ref → comportement inchangé (aucune résolution)', () => {
     const port = { taille: 2, richesse: 2, production: ['sel'] };
     const mapNoRef = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Port maison', pos: { x: 50, y: 50 }, scene: 's1', port }], routes: [] };
-    const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapNoRef as never };
+    const doc = { schema: 2, meta: metaLegacy, scenes: [scene('s1')], worldMap: mapNoRef as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     expect(round.worldMap!.places[0].port).toEqual(port);
   });
 
   it('#217 : MapPlace.port.ref inconnue → erreur EXPLICITE (fail-fast, jamais un port silencieusement vide)', () => {
     const mapBadRef = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Nulle-part', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'port-qui-n-existe-pas' } }], routes: [] };
-    const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapBadRef as never };
+    const doc = { schema: 2, meta: metaLegacy, scenes: [scene('s1')], worldMap: mapBadRef as never };
     expect(() => parseProject(JSON.parse(JSON.stringify(doc)))).toThrow(/réf de port inconnue/);
   });
 
@@ -126,7 +132,7 @@ describe('parseProject — validation du format projet v2', () => {
     // quelle. Sa présence désactive le déchevauchement (les lieux restent à leurs pos EXACTES).
     const bg = 'data:image/svg+xml;utf8,%3Csvg%2F%3E';
     const mapWithBg = { id: 'm', label: 'Reikland', background: bg, places: [{ id: 'l1', label: 'Altdorf', pos: { x: 60, y: 30 }, scene: 's1' }], routes: [] };
-    const doc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithBg as never };
+    const doc = { schema: 2, meta: metaLegacy, scenes: [scene('s1')], worldMap: mapWithBg as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     expect(round.worldMap!.background).toBe(bg);
   });
@@ -275,13 +281,13 @@ describe('parseProject — porte de schéma', () => {
   const narratifVide = { affaires: [], indices: [], presetsPnj: [], objets: [] };
 
   it('un document schema 2 (localStorage d\'avant #765) est MIGRÉ puis accepté par la porte', () => {
-    const res = parseProject({ schema: 2, scenes: [scene('s1')] });
+    const res = parseProject({ schema: 2, meta: metaLegacy, scenes: [scene('s1')] });
     expect(res.scenes.map((s) => s.id)).toEqual(['s1']);
     expect(res.narratif).toEqual(narratifVide);
   });
 
   it('la clé de travail `version` de `migrateDoc` est RETIRÉE avant la porte (schéma STRICT)', () => {
-    const res = parseProject({ schema: 3, version: 3, scenes: [scene('s1')], narratif: narratifVide });
+    const res = parseProject({ schema: 3, version: 3, meta: metaLegacy, scenes: [scene('s1')], narratif: narratifVide });
     expect(res.scenes.map((s) => s.id)).toEqual(['s1']);
   });
 
@@ -294,7 +300,7 @@ describe('parseProject — porte de schéma', () => {
   });
 
   it('`encounters[].enemies` (forme legacy) est refusé PAR SON NOM, jamais absorbé en silence', () => {
-    const doc = { schema: 2, scenes: [{ ...scene('s1'), encounters: [{ id: 'e1', enemies: [{ ref: 'gobelin', count: 2 }] }] }] };
+    const doc = { schema: 2, meta: metaLegacy, scenes: [{ ...scene('s1'), encounters: [{ id: 'e1', enemies: [{ ref: 'gobelin', count: 2 }] }] }] };
     expect(() => parseProject(doc)).toThrow(/scenes\.0\.encounters\.0: Unrecognized key: "enemies"/);
   });
 });

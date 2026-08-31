@@ -60,12 +60,15 @@ describe('PROJECT_MIGRATIONS[4] — un projet format 4 se charge à travers la m
     expect('version' in doc).toBe(false);
   });
 
-  it('un document format 4 SANS poche `meta` (identité facultative) traverse aussi', () => {
+  it('un document format 4 SANS poche `meta` est REFUSÉ, et le refus NOMME les champs manquants', () => {
+    // Identité REQUISE (#1552 — invariant et verbatim au contrat du schéma,
+    // `src/data/schemas/defs-scenes/projet-schema.test.ts` cas (d bis)). Une migration n'invente ni id
+    // ni libellé : le document traverse la chaîne tel quel et c'est la PORTE qui le refuse — en
+    // nommant ce qui manque.
     const { meta: _sans, ...sansIdentite } = structuredClone(PROJET_FORMAT_4);
-    const doc = parseProject(sansIdentite) as Record<string, unknown>;
-    expect(doc.id).toBeUndefined();
-    expect('meta' in doc).toBe(false);
-    expect((doc.scenes as unknown[]).length).toBe(1);
+    expect(() => parseProject(sansIdentite)).toThrow(/id/);
+    expect(() => parseProject(sansIdentite)).toThrow(/label/);
+    expect(() => parseProject(sansIdentite)).toThrow(/versionContenu/);
   });
 
   it('P1 — un `version` RACINE est ÉCRASÉ puis PERDU en SILENCE : c’est ce que le renommage évite', () => {

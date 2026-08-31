@@ -678,6 +678,14 @@ const TEST_DECISION_SITES: BaselineEntry[] = [
     date: '2026-08-17',
   },
   {
+    fichier: 'src/data/schemas/defs-scenes/projet-schema.test.ts',
+    motif: 'identité requise d’un projet (#1552)',
+    ancre: 'arbitrage utilisateur 2026-08-31 (AskUser, verbatim choisi)',
+    raison:
+      'verbatim utilisateur du 2026-08-31 (AskUserQuestion, option choisie) cité en toutes lettres dans le MÊME commentaire (« Un projet se NOMME avant d’être enregistré (Recommandé) »), consigné au ticket #1552 : c’est lui qui rend `id`/`label`/`versionContenu` REQUIS. Site UNIQUE de cette citation dans les tests — les autres sites du lot (migration, bibliothèque, éditeur) y RENVOIENT au lieu de la recopier.',
+    date: '2026-08-31',
+  },
+  {
     fichier: 'src/data/manual-docs-ratchet.test.ts',
     motif: 'listes décroissantes = liste d’exception (garde de routage SANS stock)',
     ancre: 'Arbitrage utilisateur (2026-07-27, verbatim)',

@@ -1,9 +1,11 @@
 {
- "schema": 6,
  "id": "barge-du-sel",
+ "type": "projet",
  "label": "La Barge du Sel",
+ "schema": 7,
  "icon": "scenario/naval",
  "versionContenu": 1,
+ "maison": "scénario naval authoré pour le jeu — aucun livre ne le publie (mesuré : absent de `Source/`) ; il compose des règles de la Mer des Griffes, qui portent leur source à leur foyer",
  "narratif": {
   "affaires": [],
   "indices": [],
@@ -12,6 +14,7 @@
  },
  "scenes": [
   {
+   "type": "scene",
    "id": "barge-du-sel-quai",
    "label": "Le quai de la Barge du Sel",
    "dimensions": {
@@ -211,6 +214,7 @@
    "desc": "Un petit quai de chargement. La Louve grise attend, amarrée, la cale pleine de sel à livrer à l'îlot voisin."
   },
   {
+   "type": "scene",
    "id": "barge-du-sel-embuscade",
    "label": "Voile noire à mi-route — une cogue pirate attaque",
    "dimensions": {
@@ -1116,6 +1120,7 @@
    }
   },
   {
+   "type": "scene",
    "id": "barge-du-sel-ilot",
    "label": "L’îlot du sel",
    "dimensions": {

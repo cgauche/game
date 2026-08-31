@@ -462,30 +462,41 @@ export function declutterPositions(
 }
 
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
-// Format courant : `{ schema: 6, <identité>?, scenes, worldMap?, narratif }` (paquet de campagne
-// auto-suffisant, #765 ; enveloppe PLATE depuis #1467 L1b). Chaîné par la primitive générique
-// `migrateDoc` (même mécanique que les saves, `saves.ts`) — `schema` joue le rôle de `version` ; la
-// migration 2→3 injecte un `narratif` vide, la 4→5 aplatit la poche `meta`, la 5→6 donne au libellé
-// de scène et de carte sa graphie `label` et fait s'annoncer les statblocs embarqués.
+// Format courant : `{ type: 'projet', schema: 7, id, label, versionContenu, scenes, worldMap?, narratif }`
+// (paquet de campagne auto-suffisant, #765 ; enveloppe PLATE depuis #1467 L1b, posée par la
+// fabrique `document()` depuis #1552). Chaîné par la primitive générique `migrateDoc` (même mécanique
+// que les saves, `saves.ts`) — `schema` joue le rôle de `version` ; la migration 2→3 injecte un
+// `narratif` vide, la 4→5 aplatit la poche `meta`, la 5→6 donne au libellé de scène et de carte sa
+// graphie `label` et fait s'annoncer les statblocs embarqués, la 6→7 fait s'annoncer le document
+// LUI-MÊME et ses scènes et pose la provenance.
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
 import { validateDocument } from '../data/schemas/validate';
-import { projetSchema } from '../data/schemas/defs-scenes/projet';
+import { projetSchema, SCHEMA_PROJET } from '../data/schemas/defs-scenes/projet';
+import type { SourceRef } from '../data/schemas/grammaire/valeurs';
 
 /** Identité de campagne pour la bibliothèque (#766) — PLATE à la racine du document depuis #1467
- *  L1b. Le trio `id`/`label`/`versionContenu` est tout-ou-rien (`projetSchema`). */
+ *  L1b, posée par l'enveloppe de `document()` depuis #1552. Le trio `id`/`label`/`versionContenu`
+ *  est REQUIS (arbitrage utilisateur 2026-08-31 : « Un projet se NOMME avant d'être enregistré
+ *  (Recommandé) ») ; la PROVENANCE l'est aussi, sous la forme `source` OU `maison`. */
 export interface ProjectIdentite {
-  id?: string;
-  label?: string;
+  /** Type du document — l'enveloppe l'écrit dans le JSON et le schéma le vérifie au parse. */
+  type: 'projet';
+  id: string;
+  label: string;
   icon?: string;
   /** Numéro de CONTENU de l'auteur — la version de FORME du document est `schema`. */
-  versionContenu?: number;
+  versionContenu: number;
   desc?: string;
   auteur?: string;
+  /** Folio du livre dont la campagne est tirée — exclusif de `maison`, jamais des deux absents. */
+  source?: SourceRef;
+  /** Raison, en clair, d'une campagne qu'aucun livre ne publie. */
+  maison?: string;
 }
 
 export interface ProjectDoc extends ProjectIdentite {
-  schema: 6;
+  schema: typeof SCHEMA_PROJET;
   scenes: Scene[];
   worldMap?: WorldMap;
   /** Axes de forces/faiblesses ACTIFS de la campagne (#409, ids de `src/data/axes.json`) — un
@@ -504,7 +515,9 @@ export function resolveActiveAxes(doc: { activeAxes?: string[] }): string[] {
   return doc.activeAxes && doc.activeAxes.length > 0 ? doc.activeAxes : CORE_AXIS_IDS;
 }
 
-export const CURRENT_PROJECT_SCHEMA = 6;
+/** Version de FORME courante — DÉCLARÉE au document (`defs-scenes/projet.ts`), jamais re-tapée ici :
+ *  le littéral `schema` du schéma et cette borne de migration ne peuvent pas diverger. */
+export const CURRENT_PROJECT_SCHEMA = SCHEMA_PROJET;
 
 /** Renomme UNE clé d'un objet EN PLACE (position préservée), sans la créer si elle est absente. */
 function renommeCle(o: Record<string, unknown>, de: string, vers: string): Record<string, unknown> {
@@ -642,7 +655,39 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
       schema: 6,
     };
   },
+  /**
+   * `6` fait S'ANNONCER le document et ses scènes (#1552) : `type: 'projet'` à la racine,
+   * `type: 'scene'` sur chaque scène embarquée — même geste que le `type: 'statblock'` de la 5→6, et
+   * même raison : un document embarqué s'annonce dans la donnée, et le schéma l'EXIGE désormais.
+   * Le même passage pose la PROVENANCE quand le document n'en porte aucune : `maison`, la seule
+   * que la migration puisse DIRE sans inventer (un folio ne se devine pas ; le document en porte
+   * un, ou il dit qu'il n'en a pas). L'IDENTITÉ, elle, ne se fabrique pas : un projet antérieur
+   * sans `id`/`label`/`versionContenu` ressort tel quel de la migration et se fait REFUSER par le
+   * schéma, qui NOMME les champs manquants (arbitrage 2026-08-31 : un projet se nomme).
+   */
+  6: (doc) => {
+    const scenes = Array.isArray(doc.scenes)
+      ? doc.scenes.map((s) => (s && typeof s === 'object' && !('type' in s) ? { type: 'scene', ...(s as object) } : s))
+      : doc.scenes;
+    const provenance = doc.source === undefined && doc.maison === undefined
+      ? { maison: MAISON_PROJET_AUTHORE }
+      : {};
+    return {
+      type: 'projet',
+      ...doc,
+      ...(doc.scenes !== undefined ? { scenes } : {}),
+      ...provenance,
+      version: 7,
+      schema: 7,
+    };
+  },
 };
+
+/** Provenance d'une campagne AUTHORÉE À L'ÉDITEUR : aucun livre ne la publie, et un folio ne se
+ *  devine pas. SOURCE UNIQUE — posée par la migration 6→7 sur un projet qui n'en portait aucune,
+ *  et par l'éditeur sur un projet qu'il nomme pour la première fois (`src/ui/editor/Editor.tsx`). */
+export const MAISON_PROJET_AUTHORE =
+  'campagne authorée à l’éditeur de scènes — aucun livre ne la publie, le document ne cite aucun folio à sa racine';
 
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (jamais un
  *  throw sec sans espoir de migration) si : document mal formé, `schema` absent/non numérique,
@@ -652,6 +697,10 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
  *  refusés : ils n'ont jamais porté de `schema`. Chaque scène ressort passée par `normalizeScene`
  *  (`scene.ts`) : les collections requises qu'un vieux document (même schema 2) ne portait pas encore
  *  sont complétées ici, au SEUL point d'entrée, jamais par un `?? []` dispersé côté consommateur. */
+/** Vue TS du document PROUVÉ par `projetSchema`. La fabrique `document()` scelle ses nœuds — `z.infer`
+ *  y vaut `unknown` (cf. `grammaire/document.ts`) —, la vue se pose donc ici, une fois. */
+type ProjetProuve = { [K in keyof ProjectDoc]: ProjectDoc[K] };
+
 export function parseProject(data: unknown): Omit<ProjectDoc, 'schema'> {
   const obj = data as Record<string, unknown> | null;
   if (!obj || typeof obj !== 'object') {
@@ -679,6 +728,9 @@ export function parseProject(data: unknown): Omit<ProjectDoc, 'schema'> {
   }
   const activeAxes = (migrated.activeAxes as string[] | undefined) ?? undefined;
   const narratif = migrated.narratif as NarratifBlock;
-  const { schema: _schema, scenes: _scenes, worldMap: _wm, activeAxes: _aa, narratif: _na, ...identite } = doc;
-  return { ...(identite as ProjectIdentite), scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap, activeAxes, narratif };
+  // Le schéma VIENT de prouver la forme : le document se relit donc sous sa VUE TS, en une conversion
+  // (`ProjetProuve`, ci-dessus) plutôt que par un aller-retour `unknown`. Les champs d'identité sortent
+  // du RESTE, typés : rien de ce que le document porte en plus ne peut s'y glisser muet.
+  const { schema: _schema, scenes: _scenes, worldMap: _wm, activeAxes: _aa, narratif: _na, ...identite } = doc as ProjetProuve;
+  return { ...identite, scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap, activeAxes, narratif };
 }

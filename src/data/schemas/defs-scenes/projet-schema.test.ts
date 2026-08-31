@@ -3,17 +3,22 @@
  * remplacé les quatre validateurs manuscrits. On y verrouille, sur un projet-JOUET minimal :
  *  - la FORME reçue par le seam, AVANT `normalizeScene`/`resolvePortRef` (collections absentes,
  *    port SPARSE `{ref}`) — VERTE, sinon le schéma refuserait un document que l'app charge ;
- *  - les QUATRE sémantiques, chacune ROUGE avec le CHEMIN et l'id fautif : FK `activeAxes`,
- *    invariants du narratif, FK intra-document `presetId`, invariant d'IDENTITÉ ;
+ *  - les sémantiques, chacune ROUGE avec le CHEMIN et l'id fautif : FK `activeAxes`, invariants du
+ *    narratif, FK intra-document `presetId` ;
+ *  - l'ENVELOPPE que la fabrique `document()` pose depuis #1552 : le `type` du document et celui de
+ *    chaque scène embarquée, l'IDENTITÉ requise (`id`/`label`/`versionContenu`) et la PROVENANCE
+ *    (`source` ∨ `maison`) ;
  *  - le `schema` littéral courant (un document non migré n'entre pas par cette porte).
  */
 import { describe, it, expect } from 'vitest';
-import { projetSchema } from './projet';
+import { projetSchema, projetDoc, SCHEMA_PROJET } from './projet';
 import { narratifSchema } from './narratif';
+import diligenceProjet from '../../../scenes/diligence/diligence-projet.json';
 
 type Jouet = Record<string, unknown>;
 
 const sceneMinimale = (over: Jouet = {}): Jouet => ({
+  type: 'scene',
   id: 'scene-1',
   label: 'Une salle',
   desc: 'Scène minimale de fixture.',
@@ -21,12 +26,25 @@ const sceneMinimale = (over: Jouet = {}): Jouet => ({
   ...over,
 });
 
+/** Projet-JOUET au format COURANT : l'enveloppe exige le `type`, l'identité et la provenance. */
 const projet = (over: Jouet = {}): Jouet => ({
-  schema: 6,
+  type: 'projet',
+  schema: 7,
+  id: 'projet-jouet',
+  label: 'Projet jouet',
+  versionContenu: 1,
+  maison: 'fixture de test — aucun livre ne publie ce projet-jouet',
   narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
   scenes: [sceneMinimale()],
   ...over,
 });
+
+/** Le document PRIVÉ d'une clé — l'exigence de l'enveloppe se MESURE par amputation. */
+const sans = (cle: string, over: Jouet = {}): Jouet => {
+  const doc = projet(over);
+  delete doc[cle];
+  return doc;
+};
 
 /** Chemins + messages des issues, pour asserter que l'erreur NOMME le fautif. */
 const fautes = (valeur: unknown, schema: typeof projetSchema | typeof narratifSchema = projetSchema) => {
@@ -159,31 +177,43 @@ describe('projetSchema — les quatre sémantiques du seam, chacune NOMMÉE', ()
   });
 
   it('(d) identité PLATE : `label` vide → rouge nommant le champ à la RACINE', () => {
-    expect(fautes(projet({ id: 'ma-campagne', label: '', versionContenu: 1 }))).toEqual([
-      'label :: label doit être une chaîne non vide.',
+    // `.min(1)` vient de l'ENVELOPPE (`grammaire/document.ts`) depuis #1552 : le libellé d'un document
+    // n'est jamais la chaîne vide, et c'est vrai des 122 defs, pas du seul projet.
+    expect(fautes(projet({ label: '' }))).toEqual([
+      expect.stringMatching(/^label :: /),
     ]);
   });
 
-  it('(d bis) identité TOUT-OU-RIEN : le trio incomplet est rouge, chaque manquant NOMMÉ', () => {
-    // Ce que la poche `meta` garantissait par construction (strictObject à 3 clés requises) : aplatie,
-    // l'exigence deviendrait trois champs optionnels indépendants (#1467 L1b V-formeProjet).
-    const attendu = (k: string) =>
-      `${k} :: identité de campagne INCOMPLÈTE : « ${k} » est requis dès qu'un autre champ du trio \`id\`/\`label\`/\`versionContenu\` est présent.`;
-    expect(fautes(projet({ id: 'ma-campagne' }))).toEqual([attendu('label'), attendu('versionContenu')]);
-
-    // MATRICE — le déclencheur est N'IMPORTE LEQUEL des 6 champs d'identité, pas seulement le trio.
-    // Étalon : sous la poche `meta` (strictObject à 3 clés requises), `{ icon }` seul était DÉJÀ
-    // rouge. Un refine qui ne regarderait que le trio laisserait passer les accessoires orphelins.
-    expect(projetSchema.safeParse(projet()).success, 'aucune identité = brouillon LÉGITIME').toBe(true);
-    expect(projetSchema.safeParse(projet({ id: 'c', label: 'C', versionContenu: 1 })).success, 'trio complet').toBe(true);
-    for (const accessoire of [{ icon: 'scenario/village' }, { desc: 'Une prose.' }, { auteur: 'Une autrice' }]) {
-      const nom = Object.keys(accessoire)[0];
-      expect(fautes(projet(accessoire)), `« ${nom} » seul doit exiger le trio`).toEqual([
-        attendu('id'), attendu('label'), attendu('versionContenu'),
+  it('(d bis) identité REQUISE : chaque champ du trio AMPUTÉ est rouge, NOMMÉ', () => {
+    // #1552 — arbitrage utilisateur 2026-08-31 (AskUser, verbatim choisi) : « Un projet se NOMME
+    // avant d'être enregistré (Recommandé) ». `id` et `label` viennent de l'enveloppe,
+    // `versionContenu` du document : les trois se mesurent PAR AMPUTATION, jamais par un refine.
+    for (const cle of ['id', 'label', 'versionContenu']) {
+      expect(fautes(sans(cle)), `« ${cle} » amputé doit être rouge et NOMMÉ`).toEqual([
+        expect.stringMatching(new RegExp(`^${cle} :: `)),
       ]);
     }
-    // Un accessoire ACCOMPAGNÉ du trio complet reste vert.
-    expect(projetSchema.safeParse(projet({ id: 'c', label: 'C', versionContenu: 1, icon: 'scenario/village' })).success).toBe(true);
+    // Les ACCESSOIRES, eux, restent facultatifs — sur un document par ailleurs identifié.
+    for (const accessoire of [{ icon: 'scenario/village' }, { desc: 'Une prose.' }, { auteur: 'Une autrice' }]) {
+      const nom = Object.keys(accessoire)[0];
+      expect(projetSchema.safeParse(projet(accessoire)).success, `« ${nom} » est un accessoire, jamais une exigence`).toBe(true);
+    }
+  });
+
+  it('(e) le document DOIT s’annoncer : `type: \'projet\'`, et chaque scène EMBARQUÉE aussi (#1552)', () => {
+    expect(fautes(sans('type'))).toEqual(['type :: Invalid input: expected "projet"']);
+    const { type: _muette, ...sceneMuette } = sceneMinimale();
+    expect(fautes(projet({ scenes: [sceneMuette] }))).toEqual([
+      'scenes.0.type :: Invalid input: expected "scene"',
+    ]);
+  });
+
+  it('(f) PROVENANCE : ni `source` ni `maison` → rouge ; l’une des deux suffit', () => {
+    // Refine de FABRIQUE (`grammaire/document.ts`) : une campagne sans folio n'est pas interdite,
+    // elle doit DIRE pourquoi. Mesuré au dépôt : la Diligence cite EDO, les 3 autres sont maison.
+    expect(fautes(sans('maison'))).toEqual([expect.stringMatching(/^source :: /)]);
+    const avecSource = { ...sans('maison'), source: { book: 'ennemi-dans-l-ombre', page: 12 } };
+    expect(projetSchema.safeParse(avecSource).success).toBe(true);
   });
 
   it('(d ter) la poche `meta` et le `version` RACINE sont REFUSÉS par le SCEAU de l’enveloppe plate', () => {
@@ -194,6 +224,78 @@ describe('projetSchema — les quatre sémantiques du seam, chacune NOMMÉE', ()
     // plutôt que d'être absorbé en silence par le seam.
     expect(fautes(projet({ version: 1 })).join(' ')).toMatch(/version/);
     expect(fautes(projet({ meta: { id: 'c', label: 'C', version: 1 } })).join(' ')).toMatch(/meta/);
+  });
+});
+
+/**
+ * ANCRAGE au document RÉEL (« La Diligence », le seul paquet committé à citer un folio). Le
+ * projet-JOUET ci-dessus prouve la forme ; ici c'est la DONNÉE du dépôt qui traverse la porte, et
+ * chaque refus est APPARIÉ à son acceptation — un rouge ne prouve rien s'il ne se distingue pas d'un
+ * vert. Les FK (`activeAxes` vers `axes.json`, `presetId` intra-document) ne sont mesurables qu'ici :
+ * elles exigent des ids qui EXISTENT.
+ */
+describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du juge #1552)', () => {
+  const reel = () => JSON.parse(JSON.stringify(diligenceProjet)) as Jouet;
+  const ok = (doc: Jouet) => projetSchema.safeParse(doc).success;
+  const sansCle = (cle: string) => { const d = reel(); delete d[cle]; return d; };
+
+  it('le document committé PARSE tel quel — et le handle déclare bien ce qu’il dit déclarer', () => {
+    expect(ok(reel())).toBe(true);
+    expect(projetDoc.type).toBe('projet');
+    expect(projetDoc.famille).toBe('config');
+    expect(SCHEMA_PROJET).toBe(7);
+  });
+
+  it('FK `activeAxes` → axes.json : ids RÉELS acceptés (et la liste vide/absente aussi), inconnu REFUSÉ au CHEMIN', () => {
+    expect(ok({ ...reel(), activeAxes: ['melee', 'tir'] }), 'axes réels refusés').toBe(true);
+    expect(ok({ ...reel(), activeAxes: [] }), 'liste vide = socle de base').toBe(true);
+    expect(ok(sansCle('activeAxes')), 'absente = socle de base').toBe(true);
+    expect(fautes({ ...reel(), activeAxes: ['axe-qui-nexiste-pas'] })).toEqual([
+      'activeAxes.0 :: activeAxes référence un axe inconnu de axes.json : « axe-qui-nexiste-pas ».',
+    ]);
+    // Un id qui n'est pas un AXE (c'est une compétence) est refusé comme un id inventé : la FK vise
+    // `axes.json`, pas « un id connu quelque part ».
+    expect(ok({ ...reel(), activeAxes: ['courage'] })).toBe(false);
+  });
+
+  it('FK intra-document `presetId` → narratif.presetsPnj : preset DÉCLARÉ accepté, fantôme REFUSÉ au CHEMIN', () => {
+    const avecPreset = (presetId: string, declare: boolean): Jouet => {
+      const d = reel();
+      const scenes = d.scenes as Record<string, unknown>[];
+      const entites = (scenes[0].entities as Record<string, unknown>[]);
+      scenes[0] = { ...scenes[0], entities: [{ ...entites[0], presetId }, ...entites.slice(1)] };
+      const narratif = d.narratif as { presetsPnj: unknown[] };
+      if (declare) narratif.presetsPnj = [...narratif.presetsPnj, { id: presetId, profil: { char: { CC: 40 }, traits: [] } }];
+      return { ...d, scenes };
+    };
+    expect(ok(avecPreset('preset-temoin', true)), 'preset DÉCLARÉ refusé').toBe(true);
+    expect(fautes(avecPreset('preset-fantome', false))).toEqual([
+      expect.stringMatching(/^scenes\.0\.entities\.0\.presetId :: .*preset de PNJ inconnu « preset-fantome »/),
+    ]);
+  });
+
+  it('ENVELOPPE sur la donnée réelle : chaque clé d’identité amputée est rouge, NOMMÉE', () => {
+    for (const cle of ['id', 'label', 'versionContenu', 'type']) {
+      expect(fautes(sansCle(cle)), `« ${cle} » amputé`).toEqual([expect.stringMatching(new RegExp(`^${cle} :: `))]);
+    }
+    expect(fautes({ ...reel(), label: '' })).toEqual([expect.stringMatching(/^label :: /)]);
+    expect(fautes({ ...reel(), type: 'scene' })).toEqual(['type :: Invalid input: expected "projet"']);
+  });
+
+  it('PROVENANCE réelle : la Diligence cite son folio ; sans provenance c’est rouge, les DEUX ensemble passent', () => {
+    expect(reel().source, 'la Diligence cite EDO à sa racine').toBeTruthy();
+    expect(fautes(sansCle('source'))).toEqual([expect.stringMatching(/^source :: /)]);
+    // `source` ∨ `maison` : le refine exige AU MOINS une provenance, il n'en interdit pas deux.
+    expect(ok({ ...reel(), maison: 'arbitrage maison, en plus du folio' })).toBe(true);
+  });
+
+  it('SCEAU sur la donnée réelle : `schema` non courant, clé inconnue et scène muette sont refusés', () => {
+    expect(fautes({ ...reel(), schema: 6 })).toEqual(['schema :: Invalid input: expected 7']);
+    // Chemin VIDE : la clé inconnue est rapportée à la RACINE du document.
+    expect(fautes({ ...reel(), champInconnu: 1 })).toEqual([' :: Unrecognized key: "champInconnu"']);
+    const d = reel();
+    const { type: _muette, ...sceneMuette } = (d.scenes as Jouet[])[0];
+    expect(fautes({ ...d, scenes: [sceneMuette] })).toEqual(['scenes.0.type :: Invalid input: expected "scene"']);
   });
 });
 

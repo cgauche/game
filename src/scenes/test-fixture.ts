@@ -21,6 +21,7 @@ const enc = buildEncounter({
 });
 
 export const testScene: Scene = {
+  type: 'scene',
   id: 'test-fixture',
   label: 'Terrain de test',
   desc: 'Scène neutre pour les tests de combat.',

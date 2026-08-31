@@ -24,12 +24,16 @@ beforeEach(async () => {
   await __resetLibraryForTest();
 });
 
-/** Document de projet PORTABLE valide, construit depuis une campagne du jeu (round-trip
- *  `parseProject`). */
+/** Document de projet PORTABLE valide au format ANTÉRIEUR (schema 3), construit depuis une
+ *  campagne du jeu : l'import le fait traverser TOUTE la chaîne de migration (3→7). Son identité
+ *  vit dans la poche `meta` — la forme qu'un document de ce schéma portait — et elle est REQUISE
+ *  depuis #1552 : la migration n'en invente pas, un paquet anonyme se fait refuser à la porte. */
 function builtinDocJson(idx = 0): string {
   const bc = allBuiltinCampaigns[idx];
   return JSON.stringify({
     schema: 3,
+    meta: { id: bc.id, label: bc.label, icon: bc.icon, version: 1 },
+    maison: 'fixture de test — copie d’une campagne du jeu, aucun folio à citer',
     scenes: bc.scenes,
     ...(bc.worldMap ? { worldMap: bc.worldMap } : {}),
     narratif: bc.narratif,
@@ -38,7 +42,7 @@ function builtinDocJson(idx = 0): string {
 
 describe('buildImportedProject — import portable (#766)', () => {
   it('construit un SavedProject publié à partir d’un document de projet valide', () => {
-    const entry = buildImportedProject(builtinDocJson(0), 'depuis-fichier');
+    const entry = buildImportedProject(builtinDocJson(0));
     expect(entry.published).toBe(true);
     expect(entry.project.schema).toBe(CURRENT_PROJECT_SCHEMA);
     expect(entry.project.scenes.length).toBe(allBuiltinCampaigns[0].scenes.length);
@@ -54,40 +58,49 @@ describe('buildImportedProject — import portable (#766)', () => {
     const bc = allBuiltinCampaigns[0];
     const axes = ['negoce', 'navigation'];
     const doc = JSON.stringify({
+      type: 'projet',
       schema: CURRENT_PROJECT_SCHEMA,
       id: 'axes-fixture',
       label: 'Campagne à axes',
       versionContenu: 1,
+      maison: 'fixture de test — aucun folio à citer',
       scenes: bc.scenes,
       ...(bc.worldMap ? { worldMap: bc.worldMap } : {}),
       activeAxes: axes,
       narratif: bc.narratif,
     });
 
-    const entry = buildImportedProject(doc, 'x');
+    const entry = buildImportedProject(doc);
     expect(entry.project.activeAxes, 'axes PERDUS à l’import').toEqual(axes);
 
     // Second tour : ce qui a été stocké se relit encore avec ses axes.
-    const relu = buildImportedProject(JSON.stringify(entry.project), 'x');
+    const relu = buildImportedProject(JSON.stringify(entry.project));
     expect(relu.project.activeAxes, 'axes PERDUS au ré-export').toEqual(axes);
   });
 
-  it('utilise le nom de fichier en repli quand aucune méta/scène nommée', () => {
-    // Un doc sans meta : le label retombe sur le nom de la 1re scène, sinon le fallback fourni.
-    const entry = buildImportedProject(builtinDocJson(0), 'depuis-fichier');
-    expect(entry.label).toBe(allBuiltinCampaigns[0].scenes[0].label ?? 'depuis-fichier');
+  it('l’entrée porte l’identité DU DOCUMENT — et un document ANONYME est REFUSÉ (#1552)', () => {
+    // L'entrée reprend l'identité DU DOCUMENT (#1552 — l'invariant et le verbatim qui le fonde sont
+    // au contrat du schéma, `src/data/schemas/defs-scenes/projet-schema.test.ts` cas (d bis)) ; un
+    // document anonyme est refusé à la porte, l'import ne fabrique aucun nom.
+    const entry = buildImportedProject(builtinDocJson(0));
+    expect(entry.id).toBe(allBuiltinCampaigns[0].id);
+    expect(entry.label).toBe(allBuiltinCampaigns[0].label);
+
+    const anonyme = JSON.parse(builtinDocJson(0));
+    delete anonyme.meta;
+    expect(() => buildImportedProject(JSON.stringify(anonyme))).toThrow(/id/);
   });
 
   it('lève un message clair (pas de crash) sur JSON illisible', () => {
-    expect(() => buildImportedProject('{ pas du json', 'x')).toThrow(/JSON/i);
+    expect(() => buildImportedProject('{ pas du json')).toThrow(/JSON/i);
   });
 
   it('lève sur un projet structurellement invalide (validation parseProject)', () => {
-    expect(() => buildImportedProject(JSON.stringify({ schema: 999 }), 'x')).toThrow();
+    expect(() => buildImportedProject(JSON.stringify({ schema: 999 }))).toThrow();
   });
 
   it('un import enregistré alimente la bibliothèque ET les projets publiés', () => {
-    const entry = buildImportedProject(builtinDocJson(0), 'x');
+    const entry = buildImportedProject(builtinDocJson(0));
     projectSave(entry);
     expect(projectsLoad().some((p) => p.id === entry.id)).toBe(true);
     expect(publishedProjects().some((p) => p.id === entry.id)).toBe(true);
@@ -100,26 +113,26 @@ describe('importDecision — remplacement PROPOSÉ jamais silencieux (#766 lot C
   }
 
   it('aucun existant de même id → \'new\' (import direct)', () => {
-    const entry = buildImportedProject(builtinDocJson(0), 'x');
+    const entry = buildImportedProject(builtinDocJson(0));
     expect(importDecision(entry, undefined)).toBe('new');
   });
 
   it('même id, version importée SUPÉRIEURE → \'replace-newer\'', () => {
-    const base = buildImportedProject(builtinDocJson(0), 'x');
+    const base = buildImportedProject(builtinDocJson(0));
     const existing = withVersion(base, 1);
     const incoming = withVersion(base, 2);
     expect(importDecision(incoming, existing)).toBe('replace-newer');
   });
 
   it('même id, version importée ÉGALE → \'replace-older-or-equal\'', () => {
-    const base = buildImportedProject(builtinDocJson(0), 'x');
+    const base = buildImportedProject(builtinDocJson(0));
     const existing = withVersion(base, 3);
     const incoming = withVersion(base, 3);
     expect(importDecision(incoming, existing)).toBe('replace-older-or-equal');
   });
 
   it('même id, version importée INFÉRIEURE → \'replace-older-or-equal\'', () => {
-    const base = buildImportedProject(builtinDocJson(0), 'x');
+    const base = buildImportedProject(builtinDocJson(0));
     const existing = withVersion(base, 5);
     const incoming = withVersion(base, 1);
     expect(importDecision(incoming, existing)).toBe('replace-older-or-equal');
@@ -147,7 +160,7 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
   }
 
   it('liste les campagnes du jeu et les entrées de la bibliothèque locale', async () => {
-    const entry = buildImportedProject(builtinDocJson(0), 'Ma copie de test');
+    const entry = buildImportedProject(builtinDocJson(0));
     entry.label = 'Ma copie de test';
     entry.id = 'lib-fixture-1';
     projectSave(entry);
@@ -159,8 +172,22 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
     await unmount();
   });
 
+  it('une entrée SANS NOM se rend « (sans nom) », jamais une rangée muette', async () => {
+    // Recette #1552 : une entrée dont le libellé manque (stock d'avant, entrée fabriquée hors
+    // éditeur) s'affichait vide — la rangée n'était plus désignable. Le repli est celui de
+    // `nomDeProjet`, partagé avec la modale « Ouvrir » de l'éditeur.
+    const entry = buildImportedProject(builtinDocJson(0));
+    entry.label = '';
+    entry.id = 'lib-fixture-anonyme';
+    projectSave(entry);
+
+    await mount();
+    expect(container.textContent ?? '').toContain('(sans nom)');
+    await unmount();
+  });
+
   it('« Supprimer » retire l’entrée locale de la bibliothèque (jamais une campagne du jeu)', async () => {
-    const entry = buildImportedProject(builtinDocJson(0), 'À supprimer');
+    const entry = buildImportedProject(builtinDocJson(0));
     entry.label = 'À supprimer';
     entry.id = 'lib-fixture-del';
     projectSave(entry);
@@ -192,7 +219,7 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
       narratif: bc.narratif,
       meta: { id: 'dup-fixture', label: 'Doublon', version },
     });
-    const v1 = buildImportedProject(docFor(1), 'x');
+    const v1 = buildImportedProject(docFor(1));
     projectSave(v1);
     expect(projectsLoad().find((p) => p.id === 'dup-fixture')?.project.versionContenu).toBe(1);
 
@@ -257,7 +284,7 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
   });
 
   it('échec réel de suppression (IndexedDB en échec) : message visible au joueur (#776 pt.6)', async () => {
-    const entry = buildImportedProject(builtinDocJson(0), 'x');
+    const entry = buildImportedProject(builtinDocJson(0));
     entry.id = 'del-fail-fixture';
     entry.label = 'Del fail';
     await projectSave(entry);

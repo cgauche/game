@@ -1,10 +1,33 @@
 import { useState } from 'react';
 import { Modal } from '../Modal';
+import { GatedAction } from '../GatedAction';
 import { Icon } from '../Icon';
 import { Scene } from '../../state/scene';
 import { testScenarios, TestScenario } from '../../scenes/test-scenarios';
-import { projectsLoad, projectRemove, SavedProject } from '../../state/projectLibrary';
+import { projectsLoad, projectRemove, nomDeProjet, SavedProject } from '../../state/projectLibrary';
 import { allBuiltinCampaigns, BuiltinCampaign } from '../../scenes/campaign';
+
+/** Un refus d'ouverture RENDU à l'auteur : `message` en mots d'auteur, `detail` = le rapport brut de
+ *  la porte (`parseProject`), replié sous le message. */
+export type RefusOuverture = { message: string; detail?: string };
+
+/** Champs d'IDENTITÉ du document de projet (`projetSchema`) : un refus qui les nomme est un refus
+ *  d'identité — le projet n'a pas de nom, aucun réglage de contenu ne le sauvera. */
+const CHAMPS_IDENTITE = ['id', 'label', 'versionContenu', 'type'];
+const REFUS_IDENTITE_RX = new RegExp(`^\\s*-\\s*(${CHAMPS_IDENTITE.join('|')}):`, 'm');
+
+/**
+ * Traduit le refus de la porte en refus d'ÉCRAN. Un rapport de validation est un texte technique en
+ * anglais : quand il porte sur l'IDENTITÉ, l'auteur lit d'abord ce qui lui arrive, en français
+ * (règle 4), et le rapport reste consultable dessous. Les autres refus (contenu invalide) gardent
+ * leur détail en message : ils nomment le champ à corriger.
+ */
+export function refusDOuverture(erreur: unknown): RefusOuverture {
+  const brut = erreur instanceof Error ? erreur.message : 'Projet invalide';
+  return REFUS_IDENTITE_RX.test(brut)
+    ? { message: 'Ce projet n’a pas de nom : impossible de l’ouvrir tel quel.', detail: brut }
+    : { message: brut };
+}
 
 /** « Ouvrir » : reprendre un projet enregistré (localStorage), repartir d'une campagne du jeu
  *  (Arène + campagnes built-in — #367 : les fichiers `src/scenes/**‑projet.json` sont commités,
@@ -14,11 +37,15 @@ export function OpenProjectModal({
   onProject,
   onBuiltin,
   onClose,
+  error,
 }: {
   onScenario: (sc: TestScenario) => void;
   onProject: (p: SavedProject) => void;
   onBuiltin: (bc: BuiltinCampaign) => void;
   onClose: () => void;
+  /** Refus de la porte à l'ouverture d'un projet (#1552) — la modale reste ouverte et le DIT :
+   *  `message` est écrit en mots d'auteur (règle 4), `detail` porte le rapport de la porte, replié. */
+  error?: RefusOuverture | null;
 }) {
   const [projects, setProjects] = useState(() => projectsLoad());
   const [delError, setDelError] = useState<string | null>(null);
@@ -32,6 +59,17 @@ export function OpenProjectModal({
 
   return (
     <Modal variant="plain" className="wide" title="Ouvrir" onClose={onClose}>
+      {error && (
+        <div className="chip tone-danger" role="alert">
+          <span>{error.message}</span>
+          {error.detail && (
+            <details>
+              <summary>Détail technique</summary>
+              <span>{error.detail}</span>
+            </details>
+          )}
+        </div>
+      )}
       {delError && <p className="chip tone-danger" role="alert">{delError}</p>}
       {projects.length > 0 && (
         <>
@@ -39,7 +77,7 @@ export function OpenProjectModal({
           <div className="stack">
             {projects.map((p) => (
               <div className="listrow" key={p.id}>
-                <span className="lr-name">{p.label}</span>
+                <span className="lr-name">{nomDeProjet(p.label)}</span>
                 {p.published && <span className="chip">publiée</span>}
                 <button className="btn small btn-primary" onClick={() => onProject(p)}>
                   Ouvrir
@@ -134,9 +172,13 @@ export function SaveProjectModal({
         <button className="btn" onClick={onClose}>
           Annuler
         </button>
-        <button className="btn btn-primary" disabled={!name.trim()} onClick={() => onSave(name.trim(), published, start)}>
-          Enregistrer
-        </button>
+        <GatedAction
+          id="projet-enregistrer"
+          label="Enregistrer"
+          enabled={!!name.trim()}
+          reason="Un projet se nomme avant d’être enregistré : saisissez un nom dans le champ Nom."
+          onClick={() => onSave(name.trim(), published, start)}
+        />
       </div>
     </Modal>
   );

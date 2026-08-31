@@ -1,105 +1,113 @@
 /**
  * Schéma zod d'un PROJET DE SCÈNE (`ProjectDoc`, `src/state/worldMap.ts`) — le paquet de campagne
- * auto-suffisant `{ schema: 6, <identité>?, narratif, scenes, worldMap?, activeAxes? }`.
+ * auto-suffisant `{ type: 'projet', schema: 7, id, label, versionContenu, narratif, scenes,
+ * worldMap?, activeAxes? }`.
  *
- * C'est la porte UNIQUE du seam `parseProject` : la FORME (ci-dessous) et les QUATRE sémantiques
- * qui vivaient en validateurs manuscrits du même seam — FK `activeAxes` vers `axes.json`, invariants
- * du bloc narratif (`narratifSchema`), FK intra-document `entity.presetId` → `narratif.presetsPnj`,
- * et l'invariant d'IDENTITÉ. Les anti-collisions et les résolutions de spécialisation restent des
- * `superRefine` : jamais des `ref()` (une référence intra-document n'entre pas au registre global).
+ * C'est la porte UNIQUE du seam `parseProject`. Le document ADOPTE la fabrique `document()`
+ * (`../grammaire/document.ts`, #1552) en famille `config` — même code que les defs de configuration
+ * sur objet unique (patron `defs/crew-morale.ts`) : l'enveloppe pose `type`, `id`, `label`, `desc`,
+ * `icon` et la provenance (`source` ∨ `maison`), la fabrique scelle, et les sémantiques restantes du
+ * seam passent par `options.affinerEntree` — FK `activeAxes` vers `axes.json` et FK intra-document
+ * `entity.presetId` → `narratif.presetsPnj`. Les invariants du bloc narratif restent portés par
+ * `narratifSchema`. Anti-collisions et résolutions de spécialisation restent des `superRefine` :
+ * jamais des `ref()` (une référence intra-document n'entre pas au registre global).
  *
  * L'ENVELOPPE est PLATE (#1467 L1b) : les champs d'identité vivent à la RACINE, sans poche `meta`.
- * Le document n'appelle PAS la fabrique `document()` (`../grammaire/document.ts`) : celle-ci pose une
- * enveloppe dont `id`, `type` et `label` sont requis (`CLES_ENVELOPPE` `document.ts:24`,
- * `NON_EXIGIBLES` `document.ts:47`), là où l'identité d'un projet est FACULTATIVE (un brouillon
- * d'éditeur n'en porte pas) et où le document ne porte ni `type` ni `source` ; sa version de FORME
- * est le littéral `schema`, qu'aucune des quatre familles ne connaît. Aucun document de
- * `defs-scenes/` n'appelle la fabrique (mesuré).
+ * L'identité n'est plus facultative (arbitrage utilisateur 2026-08-31, AskUser verbatim : « Un projet
+ * se NOMME avant d'être enregistré (Recommandé) ») : `id` et `label` sont posés REQUIS par
+ * l'enveloppe, `versionContenu` l'est ici — le trio d'identité de #766 était déjà tout-ou-rien, il
+ * devient toujours-vrai, et son `superRefine` meurt avec l'optionalité qui le motivait.
+ * La version de FORME du document reste le littéral `schema`, champ de charge utile de ce document.
  */
 import { z } from 'zod';
 import { IDS_PAR_DATASET } from '../_ids.generated';
+import { document } from '../grammaire/document';
 import { sceneSchema } from './scene';
 import { worldMapSchema } from './worldmap';
 import { narratifSchema } from './narratif';
-
-/**
- * Le TRIO d'identité REQUIS dès qu'une campagne s'identifie (#766) — il porte la dédup d'import
- * portable et ne se scinde pas (invariant tout-ou-rien du `superRefine` ci-dessous).
- */
-export const CLES_IDENTITE = ['id', 'label', 'versionContenu'] as const;
-
-/**
- * TOUS les champs d'identité — le trio requis PLUS les accessoires. C'est la PRÉSENCE de n'importe
- * lequel qui déclenche l'exigence du trio : la poche `meta` d'avant #1467 était un `strictObject`,
- * où un `{ icon }` seul était DÉJÀ rouge (ses 3 clés requises manquaient). Ne déclencher que sur le
- * trio laisserait passer `{ icon }`, `{ desc }` ou `{ auteur }` orphelins — une identité muette que
- * l'ancienne forme REFUSAIT.
- */
-const CLES_IDENTITE_TOUTES = [...CLES_IDENTITE, 'icon', 'desc', 'auteur'] as const;
 
 /** Ids d'`axes.json` — cible de `activeAxes`. Le type `axe` n'est pas déclaré au mapping de
  *  `grammaire/ref.ts` (`TYPES`) : la FK se refine ici contre le registre généré. */
 const idsDAxes = (): readonly string[] => IDS_PAR_DATASET['axes.json'] ?? [];
 
-/** FORME du document de projet — enveloppe PLATE. */
-const formeProjet = z.strictObject({
-  schema: z.literal(6),
-  /** Identité de campagne (#766) — facultative au format, requise pour l'export portable. */
-  id: z.string().min(1, 'id doit être une chaîne non vide.').optional(),
-  label: z.string().min(1, 'label doit être une chaîne non vide.').optional(),
-  icon: z.string().optional(),
-  /** Numéro de CONTENU de l'auteur (dédup d'import : même `id`, version supérieure → remplacement
-   *  proposé). La version de FORME du document est `schema`, jamais ce champ. */
-  versionContenu: z.number().optional(),
-  desc: z.string().optional(),
-  auteur: z.string().optional(),
-  scenes: z.array(sceneSchema),
-  worldMap: worldMapSchema.optional(),
-  /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — absent = socle `CORE_AXIS_IDS`. */
-  activeAxes: z.array(z.string()).optional(),
-  narratif: narratifSchema,
-});
+/** Version de FORME du document de projet — reprise par `CURRENT_PROJECT_SCHEMA` (`worldMap.ts`). */
+export const SCHEMA_PROJET = 7;
 
-/** `ProjectDoc` — forme + les quatre sémantiques du seam `parseProject`. */
-export const projetSchema = formeProjet.superRefine((doc, ctx) => {
-  const connus = idsDAxes();
-  (doc.activeAxes ?? []).forEach((id, i) => {
-    if (connus.includes(id)) return;
-    ctx.addIssue({
-      code: 'custom',
-      path: ['activeAxes', i],
-      message: `activeAxes référence un axe inconnu de axes.json : « ${id} ».`,
-    });
-  });
+/** Handle du document de projet : `schema` sert `parseProject`, `meta`/`exposition` le registre. */
+export const projetDoc = document(
+  'projet',
+  'config',
+  {
+    schema: z.literal(SCHEMA_PROJET),
+    /** Numéro de CONTENU de l'auteur (dédup d'import : même `id`, version supérieure → remplacement
+     *  proposé). La version de FORME du document est `schema`, jamais ce champ. */
+    versionContenu: z.number(),
+    auteur: z.string().min(1).optional(),
+    scenes: z.array(sceneSchema),
+    worldMap: worldMapSchema.optional(),
+    /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — absent = socle `CORE_AXIS_IDS`. */
+    activeAxes: z.array(z.string()).optional(),
+    narratif: narratifSchema,
+  },
+  {
+    schema: { label: 'Version de forme du document' },
+    versionContenu: { label: 'Version de contenu', hint: "Numéro de l'auteur, comparé à l'import (dédup de bibliothèque)" },
+    auteur: { label: 'Auteur' },
+    scenes: { label: 'Scènes' },
+    worldMap: { label: 'Carte du monde' },
+    activeAxes: { label: 'Axes actifs' },
+    narratif: { label: 'Bloc narratif' },
+  },
+  {
+    // EXPOSITION DÉCORATIVE à ce jour, et c'est mesuré : `exposition-derivee.ts` dérive ses tables du
+    // SEUL registre `SCHEMA_DEFS` (racine `src/data`) ; aucun consommateur ne lit l'`exposition` des
+    // entrées de `SCHEMA_DEFS_SCENES`. Elle est déclarée quand même : la fabrique l'EXIGE de tout
+    // document, et cette déclaration-ci dit ce qu'un projet est — illisible au Codex, édité par
+    // l'éditeur de scènes. Le jour où la dérivation couvrira les deux racines, elle sera déjà vraie.
+    codex: {
+      exempt: {
+        kind: 'vocabulaire-app-interne',
+        raison:
+          "paquet de campagne (conteneur d'application : scènes, carte du monde, bloc narratif) — le Codex expose des fiches de RÈGLE, pas un document de campagne ; les règles qu'un projet référence y sont déjà exposées par leurs propres documents.",
+      },
+    },
+    edit: {
+      none: "édité par l'ÉDITEUR DE SCÈNES (`src/ui/editor/Editor.tsx`), jamais par un formulaire d'atelier du Codex — aucune catégorie Codex ne l'expose",
+    },
+  },
+  {
+    affinerEntree: (entree) =>
+      entree.superRefine((valeur, ctx) => {
+        const doc = valeur as {
+          activeAxes?: string[];
+          scenes: { id: string; entities?: { id: string; presetId?: string }[] }[];
+          narratif: { presetsPnj: { id: string }[] };
+        };
+        const connus = idsDAxes();
+        (doc.activeAxes ?? []).forEach((id, i) => {
+          if (connus.includes(id)) return;
+          ctx.addIssue({
+            code: 'custom',
+            path: ['activeAxes', i],
+            message: `activeAxes référence un axe inconnu de axes.json : « ${id} ».`,
+          });
+        });
 
-  /**
-   * IDENTITÉ TOUT-OU-RIEN : la poche `meta` d'avant #1467 était un objet dont `id`, `label` et
-   * `version` étaient TOUS requis. Aplatie, cette exigence deviendrait des champs optionnels
-   * indépendants — un projet à demi identifié passerait la porte en silence.
-   */
-  const manquantes = CLES_IDENTITE.filter((k) => doc[k] === undefined);
-  const identifie = CLES_IDENTITE_TOUTES.some((k) => doc[k] !== undefined);
-  if (identifie && manquantes.length > 0) {
-    const trio = CLES_IDENTITE.map((c) => `\`${c}\``).join('/');
-    for (const k of manquantes) {
-      ctx.addIssue({
-        code: 'custom',
-        path: [k],
-        message: `identité de campagne INCOMPLÈTE : « ${k} » est requis dès qu'un autre champ du trio ${trio} est présent.`,
-      });
-    }
-  }
+        /** FK INTRA-document (#671) : tout `presetId` d'entité de scène résout un preset déclaré. */
+        const presets = new Set(doc.narratif.presetsPnj.map((p) => p.id));
+        doc.scenes.forEach((s, is) => {
+          (s.entities ?? []).forEach((e, ie) => {
+            if (e.presetId === undefined || presets.has(e.presetId)) return;
+            ctx.addIssue({
+              code: 'custom',
+              path: ['scenes', is, 'entities', ie, 'presetId'],
+              message: `l'entité « ${e.id} » de la scène « ${s.id} » référence un preset de PNJ inconnu « ${e.presetId} » (narratif.presetsPnj).`,
+            });
+          });
+        });
+      }),
+  },
+);
 
-  /** FK INTRA-document (#671) : tout `presetId` d'entité de scène résout un preset déclaré. */
-  const presets = new Set(doc.narratif.presetsPnj.map((p) => p.id));
-  doc.scenes.forEach((s, is) => {
-    (s.entities ?? []).forEach((e, ie) => {
-      if (e.presetId === undefined || presets.has(e.presetId)) return;
-      ctx.addIssue({
-        code: 'custom',
-        path: ['scenes', is, 'entities', ie, 'presetId'],
-        message: `l'entité « ${e.id} » de la scène « ${s.id} » référence un preset de PNJ inconnu « ${e.presetId} » (narratif.presetsPnj).`,
-      });
-    });
-  });
-});
+/** `ProjectDoc` — le document SCELLÉ, porte unique du seam `parseProject`. */
+export const projetSchema = projetDoc.schema;

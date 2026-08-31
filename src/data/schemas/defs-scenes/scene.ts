@@ -10,14 +10,14 @@
  * partagé avec elles vit dans `./communs.ts`. Import de TYPE seul depuis `src/state` — aucun import
  * runtime de la couche state.
  *
- * ÉCART MESURÉ (arbre `baeeb124c`, 2026-08-27) : une scène ne porte PAS de champ `type`. Mesure sur
- * les 2 racines de `src/scenes` : 4 projets, 27 scènes, 0 portant `type` ; aucun consommateur de
- * `src/**` ne discrimine une scène par ce champ (0 site `scene.type` / `.type === 'scene'`).
- * L'identité d'une scène est POSITIONNELLE — `projet.scenes[]` (`./projet.ts`, `schema: 6`). Poser
- * un `type: 'scene'` déclarerait donc une forme neuve : `schema` passerait à 7 ET `SAVE_VERSION`
- * serait bumpée (`src/state/saves.ts:28`, 29 au jour de la mesure — `snapshotSave` recopie le
- * `state` ENTIER, `state.scene` compris, dans `data`). Le régime d'enveloppe propre aux
- * `defs-scenes` est porté par #1552.
+ * Une scène est un DOCUMENT EMBARQUÉ du document de projet : elle S'ANNONCE dans la donnée
+ * (`type: 'scene'`) et le schéma l'EXIGE (#1552) — même régime que le statbloc embarqué
+ * (`./communs.ts` `customStatblockSchema`, `type: 'statblock'`). Son identité est NOMINALE, jamais
+ * positionnelle : mesuré sur les 2 racines de `src/scenes` (4 projets, 28 scènes), 28/28 portent
+ * `id` ET `label`, et le jeu résout une scène PAR ID — `sceneRegistry` (`src/state/store.ts:182-183`,
+ * `registerScene`), le delta d'instance persisté par `sceneId` (`src/state/sceneInstance.ts:9`),
+ * l'effet `transition: { scene }` et `worldMap.places[].scene`. Le `type` est posé sur la donnée
+ * existante par `PROJECT_MIGRATIONS[6]` (`src/state/worldMap.ts`, `schema` 6 → 7).
  */
 import { z } from 'zod';
 import { difficultySchema, entityAppearanceSchema } from '../grammaire/valeurs';
@@ -493,6 +493,7 @@ export const sceneStationAnchorSchema = z.strictObject({
  * schéma voit le document AVANT `normalizeScene`, qui les comble au SEUL point d'entrée.
  */
 export const sceneSchema = z.strictObject({
+  type: z.literal('scene'),
   id: z.string(),
   label: z.string(),
   /** Prose de la Scène — `.min(1).optional()`, comme l'enveloppe de document

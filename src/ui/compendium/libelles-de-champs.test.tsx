@@ -154,18 +154,26 @@ describe('canal registre → atelier (`metaPourFichier`)', () => {
   // le DERNIER document registré sans méta. Son adoption (#1467 L1b V-UNION) vide cette population, si
   // bien que le témoin négatif n'a plus de porteur. Le contrat qui reste se dit au POSITIF, et il est
   // plus fort : le canal sert TOUT le registre, `undefined` ne signalant plus que le hors-registre.
-  it('plus AUCUN document de `src/data` n’est registré sans méta — et les 4 restants sont NOMMÉS', () => {
-    const sansMeta = DEFS_DE_DOCUMENT.filter((d) => metaPourFichier(d.file) === undefined);
-    const donnees = sansMeta.filter((d) => d.root === 'src/data').map((d) => d.file);
-    expect(donnees, `document(s) de src/data sans méta — le canal atelier y retombe sur la clé technique :\n${donnees.join('\n')}`).toEqual([]);
-    // Les 4 projets de scène sont déclarés par des defs qui n'appellent pas `document()` (leur méta
-    // n'existe donc pas) : population GELÉE, un 5ᵉ porteur ou un de moins rend cette liste rouge.
-    expect(sansMeta.map((d) => d.file).sort()).toEqual([
+  it('plus AUCUN document registré n’est sans méta — les DEUX racines comprises', () => {
+    const sansMeta = DEFS_DE_DOCUMENT.filter((d) => metaPourFichier(d.file) === undefined).map((d) => `${d.root} · ${d.file}`);
+    expect(sansMeta, `document(s) registré(s) sans méta — le canal atelier y retombe sur la clé technique :\n${sansMeta.join('\n')}`).toEqual([]);
+  });
+
+  it('les 4 projets de scène tiennent leur méta du HANDLE partagé (`defs-scenes/projet.ts`)', () => {
+    // Un projet est UN document déclaré une seule fois : les 4 defs de `defs-scenes/` nomment leur
+    // fichier et ré-exportent la méta du même handle. Le canal rend donc la MÊME table pour les 4.
+    const projets = DEFS_DE_DOCUMENT.filter((d) => d.root === 'src/scenes');
+    expect(projets.map((d) => d.file).sort()).toEqual([
       'arene/arene-projet.json',
       'barge-du-sel/barge-du-sel-projet.json',
       'diligence/diligence-projet.json',
       'loup-et-saumure/loup-et-saumure-projet.json',
     ]);
+    for (const d of projets) {
+      expect(metaPourFichier(d.file)?.versionContenu?.label, `${d.file} : méta du handle absente`).toBe('Version de contenu');
+    }
+    const tables = new Set(projets.map((d) => metaPourFichier(d.file)));
+    expect(tables.size, 'les 4 defs doivent partager la MÊME table de méta (un seul handle)').toBe(1);
   });
 
   it('`oups.json` rend bien ses libellés de champs par le canal (témoin nominatif de l’adoption)', () => {
@@ -285,8 +293,8 @@ describe('cliquet — part des champs de premier niveau qui portent un libellé'
 
 /**
  * CONVENTION D'EXPORT du générateur de registre (`scripts/gen-registry.mjs`) : il est TEXTUEL et
- * lit chaque nom PAR REGEX — `fields: ['file', 'schema', 'famille']` (`scripts/gen-registry.mjs:351`,
- * `:366`) plus `optionalFields: ['meta']` (`:352`, `:367`). Conséquences MESURÉES, une par export :
+ * lit chaque nom PAR REGEX — `fields: ['file', 'schema', 'famille', 'exposition']` plus
+ * `optionalFields: ['meta']`, pour les DEUX registres de schémas. Conséquences MESURÉES, une par export :
  *  - `file` non conforme au filtre `scripts/gen-registry.mjs:388` (`^export const file = '`, guillemet
  *    SIMPLE littéral) : le def est ÉCARTÉ du registre, en silence — double quote, `: string` annoté,
  *    littéral gabarit et `= doc.file` compilent tous et sortent pourtant du registre ;
@@ -296,12 +304,26 @@ describe('cliquet — part des champs de premier niveau qui portent un libellé'
  *    crée un vrai nom importé) : ici la garde ne protège pas la compilation mais la CONVENTION du lot
  *    — forme plate unique sur les adoptions, lisible par le codemod. C'est cette garde qui la tient.
  *
- * Population des adoptants = 0 à ce commit (aucun def de `RACINES_DE_DEFS` n'appelle encore
- * `document(`) : le contrat est VIVANT et vide — il mord au premier adoptant, ce que les fixtures de
- * source ci-dessous prouvent forme par forme.
+ * POPULATION : les modules de `RACINES_DE_DEFS` qui déclarent un document ET nomment un fichier (cf.
+ * `NOMME_UN_FICHIER` ci-dessous). Le contrat mord donc sur les defs adoptants ; les fixtures de source
+ * en prouvent chaque bras, forme par forme, y compris les deux formes HORS population.
  */
 const RACINES_DE_DEFS = ['src/data/schemas/defs', 'src/data/schemas/defs-scenes'];
 const APPELLE_DOCUMENT = /\bdocument\s*\(/;
+/**
+ * Ce qui fait d'un module un DEF : nommer un fichier de données. C'est le critère du générateur
+ * lui-même (`scripts/gen-registry.mjs:388`, registre à champ `file`) — un module du dossier qui ne
+ * déclare aucun `export const file` n'entre pas au registre : c'est un module de FORME partagé entre
+ * defs (`defs-scenes/projet.ts` déclare LE document de projet, que les 4 defs de campagne nomment
+ * chacun pour SON fichier). Ici cette forme large (`export const file`, guillemet libre) borne la
+ * POPULATION ; le verdict d'appartenance, lui, reste la regex STRICTE du gen (`FILE_DU_GEN`), si bien
+ * qu'un `file` à double quote/annoté/indirect reste ROUGE au lieu de sortir du périmètre.
+ * La forme large couvre AUSSI la destructuration (`export const { file, … } = doc`) : ce module-là
+ * PRÉTEND nommer un fichier, il reste donc jugé — et rouge, la forme n'étant pas celle du gen.
+ * ANGLE MORT ASSUMÉ, et c'est celui DU GÉNÉRATEUR : un def qui omettrait `file` ENTIÈREMENT est
+ * structurellement indiscernable d'un module de forme — le gen l'écarte en silence, la garde aussi.
+ */
+const NOMME_UN_FICHIER = /^export const (?:file\b|\{[^}]*\bfile\b[^}]*\})/m;
 /** Les quatre exports PLATS lus par le gen, dans l'ordre du message d'échec. */
 const EXPORTS_PLATS = ['file', 'schema', 'famille', 'meta'] as const;
 /** LA regex du générateur pour `file`, recopiée de `scripts/gen-registry.mjs:388` — guillemet SIMPLE
@@ -318,7 +340,7 @@ export function defsSansExportsPlats(sources: { file: string; src: string }[]): 
   // `stripComments` (lib de garde partagée) : une PROSE qui dit « intra-document » n'est pas un appel
   // à la fabrique, et l'import nommé de `document` non plus — seuls les SITES d'appel comptent.
   return sources
-    .filter((s) => APPELLE_DOCUMENT.test(stripComments(s.src)))
+    .filter((s) => APPELLE_DOCUMENT.test(stripComments(s.src)) && NOMME_UN_FICHIER.test(stripComments(s.src)))
     .map((s) => ({ file: s.file, manquants: EXPORTS_PLATS.filter((nom) => !exportPlat(nom).test(s.src)) }))
     .filter((r) => r.manquants.length > 0)
     .map((r) => `${r.file} : manque ${r.manquants.join(', ')}`);
@@ -348,19 +370,20 @@ describe('convention d’export lue par le générateur de registre', () => {
       { file: 'reexport.ts', src: "const doc = document('y', 'entite', {}, {}, {});\nconst meta = doc.meta;\nexport { meta };\nexport const file = 'y.json';\nexport const schema = doc.schema;\nexport const famille = doc.famille;\n" },
       { file: 'sans-schema.ts', src: `const doc = document('a', 'entite', {}, {}, {});\n${PLAT.replace('export const schema = doc.schema;\n', '')}` },
       { file: 'sans-famille.ts', src: `const doc = document('b', 'entite', {}, {}, {});\n${PLAT.replace('export const famille = doc.famille;\n', '')}` },
-      { file: 'sans-file.ts', src: `const doc = document('c', 'entite', {}, {}, {});\n${PLAT.replace("export const file = 'z.json';\n", '')}` },
       { file: 'file-double-quote.ts', src: `const doc = document('d', 'entite', {}, {}, {});\n${PLAT.replace("export const file = 'z.json';", 'export const file = "z.json";')}` },
       { file: 'file-type-annote.ts', src: `const doc = document('e', 'entite', {}, {}, {});\n${PLAT.replace('export const file =', 'export const file: string =')}` },
       { file: 'file-indirect.ts', src: `const doc = document('f', 'entite', {}, {}, {});\n${PLAT.replace("export const file = 'z.json';", 'export const file = doc.file;')}` },
       { file: 'plat.ts', src: `const doc = document('z', 'entite', {}, {}, {});\n${PLAT}` },
       { file: 'sans-fabrique.ts', src: 'export const schema = z.array(z.object({}));\n' },
+      // MODULE DE FORME (forme réelle de `defs-scenes/projet.ts`) : il déclare LE document et n'en
+      // nomme aucun fichier — hors registre par le critère du gen, donc hors population de la garde.
+      { file: 'forme-partagee.ts', src: "export const doc = document('h', 'config', {}, {}, {});\nexport const monSchema = doc.schema;\n" },
     ]);
     expect(muets).toEqual([
       'destructure.ts : manque file, schema, famille, meta',
       'reexport.ts : manque meta',
       'sans-schema.ts : manque schema',
       'sans-famille.ts : manque famille',
-      'sans-file.ts : manque file',
       'file-double-quote.ts : manque file',
       'file-type-annote.ts : manque file',
       'file-indirect.ts : manque file',
@@ -391,5 +414,22 @@ describe('convention d’export lue par le générateur de registre', () => {
 
   it('la marche des defs voit une population réelle (le contrat n’est pas vide par erreur de chemin)', () => {
     expect(sourcesDesDefs().length).toBeGreaterThan(100);
+  });
+
+  it('ANCRAGE au dépôt : le module de FORME est hors population, les 4 defs qui le nomment y sont', () => {
+    const parFichier = new Map(sourcesDesDefs().map((s) => [s.file, s.src]));
+    const forme = parFichier.get('src/data/schemas/defs-scenes/projet.ts')!;
+    expect(APPELLE_DOCUMENT.test(stripComments(forme)), 'projet.ts déclare bien LE document de projet').toBe(true);
+    expect(NOMME_UN_FICHIER.test(stripComments(forme)), 'projet.ts ne nomme AUCUN fichier de données').toBe(false);
+    expect(defsSansExportsPlats([{ file: 'projet.ts', src: forme }])).toEqual([]);
+
+    // Les 4 defs de campagne, eux, NOMMENT leur fichier et n'appellent pas la fabrique : ils
+    // ré-exportent le handle du module de forme. C'est EUX que le générateur collecte — leurs quatre
+    // exports sont vérifiés par la COMPILATION du registre généré, qui les importe par leur nom.
+    for (const nom of ['arene', 'barge-du-sel', 'diligence', 'loup-et-saumure']) {
+      const src = parFichier.get(`src/data/schemas/defs-scenes/${nom}.ts`)!;
+      expect(NOMME_UN_FICHIER.test(stripComments(src)), `${nom}.ts nomme son fichier de campagne`).toBe(true);
+      expect(FILE_DU_GEN.test(src), `${nom}.ts : \`file\` à la forme que le gen collecte`).toBe(true);
+    }
   });
 });

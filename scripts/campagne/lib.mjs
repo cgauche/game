@@ -186,11 +186,14 @@ export function scene({ id, label, desc, ambiance = 'exterieur', weather, music,
 
 /** Fabrique UNIQUE du document de projet (schema courant, #809) — aucun générateur ne réécrit un
  *  littéral `schema:`. Ordre de clés reproduisant EXACTEMENT les paquets committés :
- *  `{ schema, <identité>, narratif, scenes, worldMap }` — l'enveloppe est PLATE (#1467 L1b), les
- *  champs d'identité prenant la place qu'occupait la poche `meta`. `narratif` par défaut = bloc vide
+ *  `{ type, schema, <identité + provenance>, narratif, scenes, worldMap }` — l'enveloppe est PLATE
+ *  (#1467 L1b) et posée par la fabrique `document()` (#1552), les champs d'identité prenant la place
+ *  qu'occupait la poche `meta`. Le `type` est POSÉ ICI : un document s'annonce, et son schéma l'exige —
+ *  aucun générateur ne le retape. L'IDENTITÉ et la PROVENANCE (`source` ∨ `maison`) restent à l'appelant :
+ *  elles nomment SA campagne et ne se devinent pas. `narratif` par défaut = bloc vide
  *  (`emptyNarratif()`, mêmes clés que `NarratifBlock`). */
 export function projectDoc({ identite, scenes, worldMap, narratif = emptyNarratif() }) {
-  return { schema: CURRENT_PROJECT_SCHEMA, ...identite, narratif, scenes, worldMap };
+  return { type: 'projet', schema: CURRENT_PROJECT_SCHEMA, ...identite, narratif, scenes, worldMap };
 }
 
 let propSeq = 0;

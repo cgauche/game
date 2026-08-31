@@ -323,6 +323,9 @@ export function isDescriptiveZone(ez: SceneEffectZone): boolean {
  *  optionnels (un document ancien n'en porte pas), REQUIS ici (après normalisation, tout
  *  consommateur les lit sans garde). */
 export interface Scene {
+  /** Type de document EMBARQUÉ (#1552) : la scène s'annonce dans la donnée, jamais hydratée en
+   *  mémoire — même régime que `CustomStatblock.type` (`engine/statblock.ts`). */
+  type: 'scene';
   id: string;
   label: string;
   desc?: string;
@@ -640,6 +643,7 @@ export function parapetTilesAbove(scene: Scene, seg: { x: number; y: number; sid
  *  Domaine) est une valeur légitime à part entière, pas un défaut caché. */
 export function emptyScene(w = 20, h = 15): Scene {
   return {
+    type: 'scene',
     id: `scene-${Date.now()}`,
     label: 'Nouvelle scène',
     dimensions: { w, h },
@@ -690,6 +694,11 @@ function stripLegacyFoot(e: SceneEntity): SceneEntity {
 export function normalizeScene(s: Scene): Scene {
   return {
     ...s,
+    // La scène S'ANNONCE (#1552) : un enregistrement du filet de crash (`state/editorAutosave.ts`,
+    // magasin SANS axe de version) écrit avant ce lot porte une `Scene` muette, que le
+    // « Restaurer » puis un « Enregistrer » recoucheraient telle quelle dans un projet en `schema`
+    // courant — donc SANS migration au rechargement, et refusée par `parseProject`.
+    type: 'scene',
     layers: s.layers ?? emptyScene(s.dimensions?.w, s.dimensions?.h).layers,
     entities: (s.entities ?? []).map((e) => stripLegacyFoot(
       e.interact ? { ...e, interact: { ...e.interact, flow: sanitizeSceneFlow(e.interact.flow) as Flow } } : e)),

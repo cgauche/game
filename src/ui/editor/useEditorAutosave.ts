@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Scene } from '../../state/scene';
+import { normalizeScene, type Scene } from '../../state/scene';
 import { autosaveLoad, autosaveSave, autosaveDelete, type EditorAutosaveRecord } from '../../state/editorAutosave';
 
 /** Délai de débattue avant écriture (pas à chaque frappe/pas de pinceau — cf. `editorAutosave.ts`). */
@@ -88,9 +88,14 @@ export function useEditorAutosave(scene: Scene, applyRecovered: (s: Scene) => vo
     };
   }, []);
 
+  /** Le magasin du filet de crash n'a PAS d'axe de version : un enregistrement écrit par une version
+   *  antérieure de l'application y dort tel quel, et il rentre en mémoire ICI. Il passe donc par le
+   *  normaliseur du dépôt (`normalizeScene`) comme toute Scène d'un document ancien — sans quoi le
+   *  travail restauré repartirait dans un « Enregistrer » en forme d'hier, que sa propre porte
+   *  (`parseProject`) refuserait à la relecture. */
   function restore(): void {
     if (!recovery) return;
-    applyRecovered(recovery.scene);
+    applyRecovered(normalizeScene(recovery.scene));
     setRecovery(null);
     setHidden(false);
   }

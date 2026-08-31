@@ -57,7 +57,12 @@ import type { Scene } from './scene';
 // `pendingOuverture`/`pendingChapterRecap`. Une save de 36 rouvrirait sans borne : le récap de fin de
 // chapitre compterait les PX depuis le néant, et une séance déjà close se ré-armerait au premier lot
 // d'effets (la Condition de clôture, elle, est restée vraie).
-export const SAVE_VERSION = 37;
+// 37 → 38 (#1552) : le document de SCÈNE change de forme — une scène s'annonce désormais
+// (`type: 'scene'`, exigé par `sceneSchema`). `snapshotSave` recopie le `state` ENTIER dans `data`,
+// `state.scene` comprise : une save de 37 rouvrirait sur une scène vivante sans `type`, que le seam
+// `parseProject` refuserait au prochain export/import de son projet. La save se jette
+// (politique 2 ci-dessus).
+export const SAVE_VERSION = 38;
 
 export interface SaveMeta {
   version: number;

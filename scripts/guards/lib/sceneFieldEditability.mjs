@@ -372,9 +372,17 @@ export function sceneScope(program, root) {
     // FRONTIÈRE (par PROPRIÉTÉ) : un objet dont aucune propriété n'est déclarée par un module du
     // document est du vocabulaire PARTAGÉ (Flow/Condition/GameOp/EntityAppearance/CustomStatblock…),
     // on ne descend pas.
+    // Un champ dont le type est UN SEUL littéral de chaîne (le discriminant d'un document qui
+    // S'ANNONCE : `Scene.type: 'scene'`, #1552) n'a pas de contrôle d'auteur PAR CONSTRUCTION — il n'a
+    // qu'une valeur, il n'y a rien à choisir. Exclusion STRUCTURELLE (la forme du type), jamais par
+    // nom de champ : une union (`'interieur' | 'exterieur'`) reste dans le périmètre, elle SE CHOISIT.
+    const discriminant = (p) => {
+      const t = checker.getTypeAtLocation(p.declarations[0]);
+      return !!(t.flags & ts.TypeFlags.StringLiteral);
+    };
     const dedans = checker
       .getPropertiesOfType(type)
-      .filter((p) => declaredInScene(p.declarations?.[0]) && !fossileGate(p.declarations[0]));
+      .filter((p) => declaredInScene(p.declarations?.[0]) && !fossileGate(p.declarations[0]) && !discriminant(p));
     if (dedans.length === 0) return;
 
     const named = type.aliasSymbol?.name ?? type.symbol?.name;

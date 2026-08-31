@@ -4,7 +4,7 @@
  *  (bourg + zones + expéditions) sont enregistrées → les transitions résolvent, et sa carte du
  *  monde alimente le voyage (#T2). */
 import { Scene } from '../state/scene';
-import { WorldMap, emptyWorldMap, parseProject } from '../state/worldMap';
+import { WorldMap, emptyWorldMap, parseProject, type ProjectIdentite } from '../state/worldMap';
 import type { NarratifBlock } from '../state/campaignNarratif';
 import areneProjet from './arene/arene-projet.json';
 import loupEtSaumureProjet from './loup-et-saumure/loup-et-saumure-projet.json';
@@ -31,9 +31,8 @@ export const campaignWorldMap: WorldMap = projet.worldMap ?? emptyWorldMap();
 /** Une campagne BUILT-IN (embarquée au build, pas dans le localStorage) — même forme que
  *  `GameState['pendingCampaign']` (`state/store.ts`) : le picker de campagne (`CampaignSelect`,
  *  `ui/PartyScreen.tsx`) la charge par `loadProject`, comme un projet publié de l'éditeur. #211. */
-export interface BuiltinCampaign {
-  id: string;
-  label: string;
+export interface BuiltinCampaign extends ProjectIdentite {
+  /** L'icône est REQUISE sur une campagne exposée au picker (l'enveloppe la pose optionnelle). */
   icon: string;
   scenes: Scene[];
   startSceneId: string;
@@ -52,19 +51,28 @@ export interface BuiltinCampaign {
  * un label à apostrophe ASCII, là où son paquet dit `scenario/village` et une apostrophe
  * typographique. C'est l'écran qui lisait la copie, donc la copie qui gagnait.
  */
-function identiteDe(
-  doc: { id?: string; label?: string; icon?: string },
-  fichier: string,
-): { id: string; label: string; icon: string } {
-  const { id, label, icon } = doc;
-  if (!id || !label || !icon) {
+function identiteDe(doc: ProjectIdentite, fichier: string): ProjectIdentite & { icon: string } {
+  // `id` et `label` sont REQUIS par l'enveloppe du document (#1552) : seule l'icône reste à exiger
+  // ici, et elle l'est parce que le PICKER l'affiche. Les champs d'identité sont repris NOMMÉMENT :
+  // un spread reconduirait tout ce que `parseProject` rend en plus (ex. `activeAxes`) dans un objet
+  // qui n'est QUE l'identité du paquet.
+  const { type, id, label, icon, versionContenu, desc, auteur, source, maison } = doc;
+  if (!icon) {
     throw new Error(
-      `${fichier} : paquet de campagne BUILT-IN sans identité complète à la racine ` +
-      `(id=${JSON.stringify(id)}, label=${JSON.stringify(label)}, icon=${JSON.stringify(icon)}) — ` +
-      `une campagne exposée au picker doit être identifiée par SON document.`,
+      fichier + ' : paquet de campagne BUILT-IN sans `icon` à la racine — une campagne exposée au picker s’y montre par son icône.',
     );
   }
-  return { id, label, icon };
+  return {
+    type,
+    id,
+    label,
+    icon,
+    versionContenu,
+    ...(desc !== undefined ? { desc } : {}),
+    ...(auteur !== undefined ? { auteur } : {}),
+    ...(source !== undefined ? { source } : {}),
+    ...(maison !== undefined ? { maison } : {}),
+  };
 }
 
 const loupEtSaumure = parseProject(loupEtSaumureProjet);

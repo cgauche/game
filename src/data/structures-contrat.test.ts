@@ -633,7 +633,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 400 → 402 (#862) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
       // … puis 402 → 404 (#674) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
       'L1c #1468': 404,
-      'L1d #1469': 62,
+      // L1d #1469 : 62 → 61 (#1552) — « La Diligence » CITE désormais son folio à la racine
+      // (`ennemi-dans-l-ombre` 12, la référence que son bloc narratif portait déjà en profondeur) ;
+      // sa ligne « source | clé absente » est SOLDÉE. Les 3 autres projets restent au stock : ils
+      // portent `maison`, et le rôle `source` de `ROLES_ENVELOPPE` est `requise: true` sans clause
+      // d'alternative — mesuré, une provenance `maison` ne sort PAS un document de ce dénominateur.
+      'L1d #1469': 61,
       // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
       // … puis 48 → 18 (commit 3c) : cette référence PLATE MEURT à SON TOUR — 30 lignes s'éteignent avec

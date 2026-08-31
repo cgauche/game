@@ -15,13 +15,13 @@ import { Inspector } from './Inspector';
 import { LogicDock, LogicTab } from './LogicDock';
 import { WorldMapEditor } from './WorldMapEditor';
 import { NarratifEditor } from './NarratifEditor';
-import { OpenProjectModal, SaveProjectModal } from './ProjectModals';
+import { OpenProjectModal, SaveProjectModal, refusDOuverture, type RefusOuverture } from './ProjectModals';
 import { projectSave, SavedProject } from '../../state/projectLibrary';
 import { downloadText } from '../../state/fileIo';
 import { sceneToAscii, type SceneAsciiExport } from '../../state/sceneToAscii';
 import type { TestScenario } from '../../scenes/test-scenarios';
 import type { BuiltinCampaign } from '../../scenes/campaign';
-import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, type ProjectIdentite } from '../../state/worldMap';
+import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, MAISON_PROJET_AUTHORE, type ProjectIdentite } from '../../state/worldMap';
 import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif';
 import { nextEntityId } from '../../state/entityId';
 import {
@@ -136,6 +136,9 @@ export function Editor({
   const [projectName, setProjectName] = useState('La Diligence');
   const [published, setPublished] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  /** Refus de la porte `parseProject` à l'ouverture d'un projet : rendu DANS la modale « Ouvrir »
+   *  (même contrat que `saveError`, #811), jamais jeté à l'auteur par une boîte du navigateur. */
+  const [loadError, setLoadError] = useState<RefusOuverture | null>(null);
 
   // --- Panneau Logique (dock bas) ---
   // Un SEUL état pour le dock : l'onglet déplié, ou `null` = replié. « Ouvert » n'est pas un fait
@@ -548,22 +551,40 @@ export function Editor({
   }
 
   // --- Fichier : import/export/bibliothèque/test ---
+  /**
+   * L'identité du document en cours : celle du paquet chargé, ou celle que NOMME le geste
+   * d'enregistrement — le champ pré-rempli de `SaveProjectModal` (arbitrage utilisateur
+   * 2026-08-31 : « Un projet se NOMME avant d'être enregistré »). Un brouillon jamais nommé ne
+   * franchit plus `parseProject` : l'enveloppe exige `id`/`label` et une provenance.
+   */
+  function identiteCourante(nom: string, id: string): ProjectIdentite {
+    return identite ?? { type: 'projet', id, label: nom, versionContenu: 1, maison: MAISON_PROJET_AUTHORE };
+  }
   function exportJson() {
-    // Exporte le PROJET v2 (scènes + carte du monde) ; la première scène est l'entrée.
-    const project = { schema: CURRENT_PROJECT_SCHEMA, ...(identite ?? {}), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif };
+    // Exporte le PROJET (scènes + carte du monde) ; la première scène est l'entrée, et son id
+    // nomme le fichier — c'est donc lui qui identifie un projet encore jamais enregistré.
+    const project = { schema: CURRENT_PROJECT_SCHEMA, ...identiteCourante(projectName, projectId ?? scene.id), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif };
     downloadText(`${scene.id}-projet.json`, JSON.stringify(project, null, 2));
   }
   function importJson(file: File) {
     file.text().then((txt) => {
       try {
         const data = JSON.parse(txt);
-        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(data); // paquet ({ schema: 6, <identité>?, scenes, worldMap?, activeAxes?, narratif })
+        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(data); // paquet ({ type: 'projet', schema: 7, id, label, versionContenu, scenes, worldMap?, activeAxes?, narratif })
         if (!scenes.length) return;
         setOtherScenes(scenes.slice(1).map(clone));
         setWorldMap(wm ?? null);
         setActiveAxes(aa);
         setNarratif(na);
+        // L'identité du document importé est reconduite JUSQU'À l'entrée de bibliothèque, comme au
+        // chargement d'un projet enregistré (`loadSaved`) : `identite` porte le document, `projectId`
+        // et `projectName` portent l'entrée que « Enregistrer » écrira. Sans cette reconduite, la
+        // modale se pré-remplissait du nom de l'éditeur et l'enregistrement fabriquait une entrée
+        // dont le document gardait l'id et le nom importés — entrée et document divergents, le nom
+        // du document masqué à l'écran.
         setIdentite(ident);
+        setProjectId(ident.id);
+        setProjectName(ident.label);
         setSel(null);
         resetScene(clone(scenes[0]));
       } catch {
@@ -602,13 +623,36 @@ export function Editor({
     setWorldMap(bc.worldMap ? JSON.parse(JSON.stringify(bc.worldMap)) : null);
     setActiveAxes(undefined);
     setNarratif(emptyNarratif());
-    setIdentite({ id: bc.id, label: bc.label, icon: bc.icon, versionContenu: 1 });
+    // L'identité ENTIÈRE du paquet built-in (provenance comprise) : une copie de « La Diligence »
+    // reste tirée du même folio. Seul `projectId` reste `null` — l'enregistrement crée une entrée neuve.
+    const { scenes: _sc, startSceneId: _st, worldMap: _wm, narratif: _na, ...identiteDuPaquet } = bc;
+    setIdentite(identiteDuPaquet);
     setProjectId(null);
     setProjectName(`Copie de ${bc.label}`);
     setPublished(false);
     setSel(null);
     resetScene(clone(start));
     setOpenOpen(false);
+  }
+  /**
+   * Le document d'une entrée de bibliothèque, RENDU À SON IDENTITÉ avant la porte `parseProject`.
+   * Un projet enregistré avant #1552 n'a pas d'identité À LA RACINE du document, mais l'ENTRÉE, elle,
+   * en porte une : `SavedProject.id`/`label` sont la clé et le nom de la bibliothèque. Ils sont donc
+   * RECONDUITS ici, au chemin de chargement — jamais dans le schéma, dont l'exigence reste entière :
+   * ce qui n'a AUCUNE identité reconstructible se fait refuser nommément par la porte.
+   * `versionContenu` démarre à 0 : le document ne dit pas sa version de contenu, et une valeur
+   * SUPÉRIEURE à celle d'un import futur ferait perdre le remplacement (dédup #766). Le `type` et la
+   * PROVENANCE, eux, ne sont pas reposés ici : la migration 6→7 (`PROJECT_MIGRATIONS`) les porte déjà
+   * pour tout document antérieur — mesuré.
+   */
+  function documentDeLEntree(p: SavedProject): unknown {
+    const doc = p.project as Record<string, unknown>;
+    return {
+      ...doc,
+      id: doc.id ?? p.id,
+      label: doc.label ?? p.label,
+      ...(doc.versionContenu === undefined ? { versionContenu: 0 } : {}),
+    };
   }
   function loadSaved(p: SavedProject) {
     let scenes: Scene[];
@@ -617,11 +661,12 @@ export function Editor({
     let na: NarratifBlock;
     let ident: ProjectIdentite;
     try {
-      ({ scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(p.project)); // même validation/migration que l'import JSON
+      ({ scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(documentDeLEntree(p))); // même validation/migration que l'import JSON
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Projet invalide');
+      setLoadError(refusDOuverture(e));
       return;
     }
+    setLoadError(null);
     if (!scenes.length) return;
     setOtherScenes(scenes.slice(1).map(clone));
     setWorldMap(wm ? JSON.parse(JSON.stringify(wm)) : null);
@@ -645,7 +690,7 @@ export function Editor({
       startSceneId,
       savedAt: Date.now(),
       published: pub,
-      project: { schema: CURRENT_PROJECT_SCHEMA, ...(identite ?? {}), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
+      project: { schema: CURRENT_PROJECT_SCHEMA, ...identiteCourante(name, id), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
     });
     if (!res.ok) {
       setSaveError(res.message);
@@ -997,7 +1042,7 @@ export function Editor({
         <NarratifEditor narratif={narratif} onChange={setNarratif} onClose={() => setNarratifOpen(false)} />
       )}
       {openOpen && (
-        <OpenProjectModal onScenario={loadScenario} onProject={loadSaved} onBuiltin={loadBuiltin} onClose={() => setOpenOpen(false)} />
+        <OpenProjectModal onScenario={loadScenario} onProject={loadSaved} onBuiltin={loadBuiltin} error={loadError} onClose={() => { setOpenOpen(false); setLoadError(null); }} />
       )}
       {saveOpen && (
         <SaveProjectModal

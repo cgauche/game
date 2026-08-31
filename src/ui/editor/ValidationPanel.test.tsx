@@ -60,6 +60,7 @@ function planWarning(i: number): Warning {
 function scenePlanFautive(): Scene {
   const w = 4, h = 2;
   return {
+    type: 'scene',
     id: 'sc-fautive',
     label: 'Cour prise pour une salle',
     dimensions: { w, h },

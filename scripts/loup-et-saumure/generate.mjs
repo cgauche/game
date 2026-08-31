@@ -728,7 +728,7 @@ for (const s of scenes) {
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
 return projectDoc({
-  identite: { id: 'loup-et-saumure', label: 'Le Loup et la Saumure', icon: 'scenario/naval', versionContenu: 1 },
+  identite: { id: 'loup-et-saumure', label: 'Le Loup et la Saumure', icon: 'scenario/naval', versionContenu: 1, maison: "scénario naval authoré pour le jeu — aucun livre ne le publie (mesuré : absent de `Source/`) ; il compose des règles de la Mer des Griffes, qui portent leur source à leur foyer" },
   scenes,
   worldMap,
 });
