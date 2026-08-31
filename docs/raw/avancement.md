@@ -98,7 +98,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 **Voir aussi** : [`carrieres.md`](carrieres.md) pour la structure du Schéma de Progression par Carrière.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.41-72) → `adv-0-5`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `adv-16-20`, `adv-21-25`, `buyCharAdvance`, `adv-26-30`, `buySkillAdvance`, +13 — `src/data/advancementCosts.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`
+- `LDB 7` (l.41-72) → `adv-0-5`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `adv-16-20`, `adv-21-25`, `buyCharAdvance`, `doc`, `adv-26-30`, +15 — `src/data/advancementCosts.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`
 
 ---
 
@@ -119,8 +119,8 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 **Voir aussi** : [`competences.md`](competences.md) pour la définition des Compétences et la règle des Spécialisations.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.75-84) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `adv-26-30`, +26 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +4 fichiers
-- `LDB 9` (l.44) → `specIdOf`, `CibleDeType`, `art`, `buySkillAdvance`, `estSpecialisable`, `athletisme`, `specEntrySchema`, `wildcardSpecs`, `RefASpecialisation`, `designateSpec`, +17 — `src/data/index.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +13 fichiers
+- `LDB 7` (l.75-84) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `doc`, +28 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/engine/activities.ts`, +5 fichiers
+- `LDB 9` (l.44) → `specIdOf`, `CibleDeType`, `art`, `estSpecialisable`, `athletisme`, `buySkillAdvance`, `specEntrySchema`, `wildcardSpecs`, `RefASpecialisation`, `designateSpec`, +17 — `src/data/index.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +13 fichiers
 
 ---
 

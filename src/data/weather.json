@@ -8,22 +8,27 @@
       "label": "Printemps",
       "ranges": [
         {
+          "min": 1,
           "max": 10,
           "weather": "sec"
         },
         {
+          "min": 11,
           "max": 30,
           "weather": "beau"
         },
         {
+          "min": 31,
           "max": 90,
           "weather": "pluie"
         },
         {
+          "min": 91,
           "max": 95,
           "weather": "pluie-diluvienne"
         },
         {
+          "min": 96,
           "max": 100,
           "weather": "neige"
         }
@@ -39,18 +44,22 @@
       "label": "Été",
       "ranges": [
         {
+          "min": 1,
           "max": 40,
           "weather": "sec"
         },
         {
+          "min": 41,
           "max": 70,
           "weather": "beau"
         },
         {
+          "min": 71,
           "max": 95,
           "weather": "pluie"
         },
         {
+          "min": 96,
           "max": 100,
           "weather": "pluie-diluvienne"
         }
@@ -66,22 +75,27 @@
       "label": "Automne",
       "ranges": [
         {
+          "min": 1,
           "max": 30,
           "weather": "sec"
         },
         {
+          "min": 31,
           "max": 60,
           "weather": "beau"
         },
         {
+          "min": 61,
           "max": 90,
           "weather": "pluie"
         },
         {
+          "min": 91,
           "max": 98,
           "weather": "pluie-diluvienne"
         },
         {
+          "min": 99,
           "max": 100,
           "weather": "neige"
         }
@@ -97,22 +111,27 @@
       "label": "Hiver",
       "ranges": [
         {
+          "min": 1,
           "max": 10,
           "weather": "beau"
         },
         {
+          "min": 11,
           "max": 60,
           "weather": "pluie"
         },
         {
+          "min": 61,
           "max": 65,
           "weather": "pluie-diluvienne"
         },
         {
+          "min": 66,
           "max": 90,
           "weather": "neige"
         },
         {
+          "min": 91,
           "max": 100,
           "weather": "blizzard"
         }

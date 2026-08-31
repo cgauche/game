@@ -62,7 +62,7 @@ import { dayIndex } from './upkeep';
 import { seasonOfMonth, weatherFromRoll, weatherCondition, type Season, type Weather } from '../engine/travelStages';
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { buildStageSteps, buildWeatherResistanceSteps, type StageContext } from './travelPostes';
-import { startCascade, registerCascadeApplier, registerTableStep } from './cascade';
+import { startCascade, registerCascadeApplier, registerTableStep, type TableStepRow } from './cascade';
 import { freeCons, rollSansPilote, monoStep, displayStep, surfaceOf, tableStep, pousseSi } from './rollSeam';
 import { t } from '../i18n';
 import type { CascadeStep, PendingCascade } from './pendings';
@@ -625,8 +625,12 @@ function currentSeason(get: Get): Season {
  * (règle Étapes éteinte ET pas de péripétie testable) : l'appelant finalise alors directement.
  */
 /**
- * MÉTÉO D'ÉTAPE (#1426) — UNE table par SAISON, DÉRIVÉE de la donnée (`weather.json` : des plages
- * cumulatives `{max, weather}`), jamais réécrite à la main. La saison choisit la TABLE ; elle n'est
+ * MÉTÉO D'ÉTAPE (#1426) — UNE table par SAISON, DÉRIVÉE de la donnée (`weather.json` : des
+ * fourchettes PLATES `{min, max, weather}`, les DEUX bornes authorées), jamais réécrite à la main.
+ * Les deux bornes viennent de la rangée : reconstruire la basse par POSITION donnerait deux vérités
+ * sur un même jet — la rangée APPLIQUÉE (`step.table.result`) et la ligne AFFICHÉE (`weatherFromRoll`,
+ * qui lit les `min` authorés) divergeraient dès qu'une borne est éditée au Codex.
+ * La saison choisit la TABLE ; elle n'est
  * donc JAMAIS un modificateur de dé — conséquence directe : `mod` vaut 0 sur ces tables, et aucune
  * rangée n'est rendue inatteignable par un décalage (`naturalRollForTableRow` rend un naturel pour
  * chacune de ses lignes, cf. `de-monde-surface.test.ts`).
@@ -635,13 +639,16 @@ const STAGE_WEATHER_KIND = 'stageWeather';
 const STAGE_WEATHER_STEP_ID = 'stage-weather';
 const stageWeatherTableId = (season: Season): string => `stage-weather-${season}`;
 
+/** Les rangées de la table d'une saison : la fourchette AUTHORÉE de `weather.json`, l'id stable étant
+ *  la météo. Aucune borne n'est recalculée — c'est ce que `weatherFromRoll` lit pour la ligne montrée. */
+export const stageWeatherRows = (ranges: { min: number; max: number; weather: string }[]): TableStepRow[] =>
+  ranges.map((r) => ({ id: r.weather, min: r.min, max: r.max }));
+
 for (const saison of weather) {
-  let min = 1;
-  const rows = saison.ranges.map((r) => { const row = { id: r.weather, min, max: r.max }; min = r.max + 1; return row; });
   registerTableStep(stageWeatherTableId(saison.id as Season), {
     label: t('step.stageWeather'),
     die: 100,
-    rows,
+    rows: stageWeatherRows(saison.ranges),
     lines: (die) => [t('out.stageWeather', { weather: weatherCondition(weatherFromRoll(die, saison.id as Season)).label })],
   });
 }

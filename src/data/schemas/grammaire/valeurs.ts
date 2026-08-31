@@ -448,3 +448,47 @@ export const refTestDeCorruption = z.strictObject({
       `corruptionExposure.skill : « ${String(iss.input)} » hors des deux Compétences admises — Résistance (« resistance ») ou Calme (« calme ») (LDB 19 l.23-75).`,
   }),
 });
+
+/**
+ * COUVERTURE d'une suite de fourchettes `{min, max}` — invariant PARTAGÉ des tables que
+ * `findTableEntry` (`src/engine/tables.ts`) lit : le domaine est couvert EXACTEMENT une fois, sans
+ * trou ni chevauchement. Rend la liste des écarts (vide = conforme), à verser dans le refus NOMINATIF
+ * de la def appelante.
+ *
+ * Pourquoi un verrou : `findTableEntry` REPLIE sur la dernière entrée quand rien ne couvre le jet —
+ * un trou ouvert au Codex ne lève donc rien, il fait tomber le tirage sur la dernière rangée en
+ * silence. Un chevauchement, lui, rend la seconde rangée inatteignable (le `find` prend la première).
+ *
+ * ORDRE INERTE : les fourchettes sont triées par `min` avant mesure — les deux bornes étant
+ * authorées, réordonner les rangées au Codex ne change RIEN au tirage, et ne doit donc rien refuser.
+ * `jusqua: 'ouverte'` = la dernière fourchette n'a PAS de plafond (`max: null`, cf. la bande
+ * « 71 et + », LDB 07 l.70) ; sinon la borne haute exacte est exigée.
+ */
+export function ecartsDeCouverture<F extends { min?: number; max?: number | null }>(
+  fourchettes: readonly F[],
+  depuis: number,
+  jusqua: number | 'ouverte',
+  nom: (f: F) => string,
+): string[] {
+  if (!fourchettes.length) return ['aucune fourchette'];
+  const ecarts: string[] = [];
+  const triees = [...fourchettes].sort((a, b) => (a.min ?? 0) - (b.min ?? 0));
+  let attendu = depuis;
+  for (const [i, f] of triees.entries()) {
+    if (f.min !== attendu) ecarts.push(`${nom(f)} commence à ${f.min} au lieu de ${attendu}`);
+    if (i === triees.length - 1 && jusqua === 'ouverte') {
+      if (f.max !== null) ecarts.push(`${nom(f)} est la DERNIÈRE et porte un plafond (${f.max}) : sa borne haute reste OUVERTE (\`max: null\`)`);
+      return ecarts;
+    }
+    if (typeof f.max !== 'number') {
+      ecarts.push(`${nom(f)} n'a pas de borne haute`);
+      return ecarts;
+    }
+    if (f.max < (f.min ?? attendu)) ecarts.push(`${nom(f)} finit (${f.max}) avant de commencer (${f.min})`);
+    attendu = f.max + 1;
+  }
+  if (jusqua !== 'ouverte' && attendu !== jusqua + 1) {
+    ecarts.push(`la dernière fourchette s'arrête à ${attendu - 1} au lieu de ${jusqua}`);
+  }
+  return ecarts;
+}

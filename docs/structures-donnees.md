@@ -509,7 +509,7 @@ nombre d’entrées qui la portent.
 | `src/data/aa-criticals.json` | object | pipe à la racine | config | 1 | `bras`:array(1) `corps`:array(1) `id`:string(1) `jambe`:array(1) `label`:string(1) `tete`:array(1) `type`:string(1) |
 | `src/data/actions.json` | array | liste | entité | 55 | `armed`:string(5) `candidates`:string(20) `cost`:string(55) `exitSafe`:boolean(6) `gate`:array/string(55) `hote`:string(1) `icon`:string(55) `id`:string(55) `intent`:string(4) `keys`:array(41) `label`:string(55) `maison`:string(30) `mode`:string(12) `panneau`:boolean(2) `role`:string(6) `rule`:string(32) `ruleCategory`:string(32) `run`:string(52) `source`:object(12) `stance`:string(2) `surface`:string(55) `type`:string(55) |
 | `src/data/activities.json` | array | liste | entité | 62 | `assisted`:boolean(1) `blocked`:object(7) `classGate`:object(12) `combined`:boolean(2) `contexts`:array(62) `desc`:string(61) `difficulty`:string(51) `difficultyFrom`:object(1) `encounter`:string(3) `extended`:object(1) `failExtenue`:boolean(7) `freeSkill`:boolean(1) `generalDownOn`:string(2) `grantsFlag`:string(2) `hold`:object(1) `icon`:string(62) `id`:string(62) `label`:string(62) `maison`:string(8) `minInvest`:object(1) `onSuccess`:array(1) `outcomes`:array(35) `requires`:array(2) `resolver`:string(21) `rounds`:number(7) `rule`:string(1) `ruleCategory`:string(1) `sceneKind`:string(13) `skills`:array(48) `source`:object(62) `stageOutcome`:string(7) `stake`:string(46) `stakeForm`:string(46) `testModFrom`:string(1) `threat`:object(1) `type`:string(62) `unavailableIfExtenue`:boolean(1) `weatherMod`:object(2) `where`:array(5) |
-| `src/data/advancementCosts.json` | array | liste | entité | 15 | `coutCarac`:number(15) `coutCompetence`:number(15) `id`:string(15) `label`:string(15) `max`:null/number(15) `source`:object(15) `type`:string(15) |
+| `src/data/advancementCosts.json` | array | liste | table | 15 | `coutCarac`:number(15) `coutCompetence`:number(15) `id`:string(15) `label`:string(15) `max`:null/number(15) `min`:number(15) `source`:object(15) `type`:string(15) |
 | `src/data/ambiance.json` | object | pipe à la racine | config | 1 | `ambientFloor`:number(1) `entreeEnScene`:object(1) `faceShade`:object(1) `fogTint`:object(1) `id`:string(1) `iso`:object(1) `label`:string(1) `pov`:object(1) `type`:string(1) |
 | `src/data/arcane-phenomena.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `phenomena`:array(1) `saturationLevels`:array(1) `tables`:array(1) `type`:string(1) `windSaturationEffects`:array(1) |
 | `src/data/artillery-misfire.json` | object | pipe à la racine | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
@@ -1055,7 +1055,9 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | test | `char,difficulty` | historique | 3 |
 | test | `characteristic,difficulty` | historique | 6 |
 | test | `difficulty,skillId` | historique | 0 |
+| bornes | `max,min+…` | cible | 23 |
 | plage | `max,min` | cible | 0 |
+| plage | `max,min+…` | cible | 1431 |
 | quantite | `fixed` | cible | 47 |
 | quantite | `roll` | cible | 0 |
 
@@ -1065,7 +1067,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **828** (cible 281 · declaree 6 · historique 122 · divergente 419). Objets JSON parcourus : **48087**, dont **31704** portent une forme
+Lignes concept × dataset × champ × forme : **830** (cible 344 · declaree 6 · historique 122 · divergente 358). Objets JSON parcourus : **48087**, dont **31737** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -1702,7 +1704,7 @@ Reconnu par : son noyau `book`
 | entité | `source` | `book,page` | cible | `actions.json` | 3 | — |  |
 | entité | `source` | `book,note,page` | cible | `activities.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `source` | `book,page` | cible | `activities.json` | 61 | — |  |
-| entité | `source` | `book,note,page` | cible | `advancementCosts.json` | 15 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
+| table | `source` | `book,note,page` | cible | `advancementCosts.json` | 15 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | config | `source` | `book,page` | cible | `arcane-phenomena.json` | 85 | — |  |
 | config | `source` | `book,page` | cible | `artillery-misfire.json` | 1 | — |  |
 | entité | `source` | `book,page` | cible | `astrology.json` | 5 | — |  |
@@ -1885,76 +1887,86 @@ Reconnu par : son noyau `difficulty`
 | config | `test` | `difficulty,skill` | historique | `water-exposure.json` | 1 | — |  |
 | config | `resistanceTest` | `difficulty+…` | divergente | `weather.json` | 2 | — |  |
 
-### 3.8 plage de tirage (min,max) — `plage` (strate Valeur)
+### 3.8 bornes du domaine d’un réglage (min,max) — `bornes` (strate Valeur)
 
-61 ligne(s), 1421 occurrence(s).
+1 ligne(s), 23 occurrence(s).
 Reconnu par : son noyau `min` `max`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
 |---|---|---|---|---|---|---|---|
-| config | `bras` | `max,min+…` | divergente | `aa-criticals.json` | 20 | — |  |
-| config | `corps` | `max,min+…` | divergente | `aa-criticals.json` | 20 | — |  |
-| config | `jambe` | `max,min+…` | divergente | `aa-criticals.json` | 20 | — |  |
-| config | `tete` | `max,min+…` | divergente | `aa-criticals.json` | 20 | — |  |
-| config | `rows` | `max,min+…` | divergente | `arcane-phenomena.json` | 50 | — |  |
-| config | `entries` | `max,min+…` | divergente | `artillery-misfire.json` | 4 | — |  |
-| config | `bands` | `max,min+…` | divergente | `crew-morale.json` | 4 | — |  |
-| config | `bras` | `max,min+…` | divergente | `criticals.json` | 20 | — |  |
-| config | `corps` | `max,min+…` | divergente | `criticals.json` | 20 | — |  |
-| config | `jambe` | `max,min+…` | divergente | `criticals.json` | 20 | — |  |
-| config | `tete` | `max,min+…` | divergente | `criticals.json` | 20 | — |  |
-| config | `entries` | `max,min+…` | divergente | `driving-mishap.json` | 4 | — |  |
-| config | `entries` | `max,min+…` | divergente | `drunkenness.json` | 5 | — |  |
-| config | `entries` | `max,min+…` | divergente | `incidents-monture.json` | 4 | — |  |
-| table | `(racine)` | `max,min+…` | divergente | `interludeEvents.json` | 31 | — |  |
-| config | `rumours` | `max,min+…` | divergente | `land-cargo.json` | 20 | — |  |
-| config | `wineQuality` | `max,min+…` | divergente | `land-cargo.json` | 6 | — |  |
-| config | `araignee` | `max,min+…` | divergente | `localisation.json` | 3 | — |  |
-| config | `entries` | `max,min+…` | divergente | `localisation.json` | 11 | — |  |
-| config | `humanoide` | `max,min+…` | divergente | `localisation.json` | 6 | — |  |
-| config | `serpent` | `max,min+…` | divergente | `localisation.json` | 2 | — |  |
-| config | `hazards` | `max,min+…` | divergente | `mass-battle.json` | 10 | — |  |
-| entité | `entries` | `max,min+…` | divergente | `miscast.json` | 111 | — |  |
-| entité | `ranges` | `max,min+…` | divergente | `mutationTables.json` | 486 | — |  |
-| config | `entries` | `max,min+…` | divergente | `naval-progression.json` | 5 | — |  |
-| config | `entries` | `max,min+…` | divergente | `obsessions.json` | 19 | — |  |
-| table | `(racine)` | `max,min+…` | divergente | `oups.json` | 7 | — |  |
-| config | `entries` | `max,min+…` | divergente | `problemes-vehicule.json` | 4 | — |  |
-| entité | `(racine)` | `max,min+…` | divergente | `reglesOptionnelles.json` | 23 | — |  |
-| config | `dangereuses` | `max,min+…` | divergente | `rencontres-edoc.json` | 9 | — |  |
-| config | `fortuites` | `max,min+…` | divergente | `rencontres-edoc.json` | 10 | — |  |
-| config | `positives` | `max,min+…` | divergente | `rencontres-edoc.json` | 7 | — |  |
-| config | `avirons` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
-| config | `coque` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
-| config | `gouvernail` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
-| config | `greement` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
-| config | `superstructure` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
-| config | `windDirections` | `max,min+…` | divergente | `river-navigation.json` | 3 | — |  |
-| config | `windForces` | `max,min+…` | divergente | `river-navigation.json` | 5 | — |  |
-| config | `boardEvents` | `max,min+…` | divergente | `sea-events.json` | 40 | — |  |
-| config | `paliers` | `max,min+…` | divergente | `sea-events.json` | 5 | — |  |
-| config | `portEvents` | `max,min+…` | divergente | `sea-events.json` | 18 | — |  |
-| config | `changementDeCap` | `max,min+…` | divergente | `sea-navigation.json` | 5 | — |  |
-| config | `drDeltas` | `max,min+…` | divergente | `sea-navigation.json` | 4 | — |  |
-| config | `reperes` | `max,min+…` | divergente | `sea-navigation.json` | 5 | — |  |
-| config | `roseDesVents` | `max,min+…` | divergente | `sea-weather.json` | 5 | — |  |
-| config | `table` | `max,min+…` | divergente | `sea-weather.json` | 10 | — |  |
-| config | `avirons` | `max,min+…` | divergente | `ship-criticals.json` | 5 | — |  |
-| config | `cargaison` | `max,min+…` | divergente | `ship-criticals.json` | 5 | — |  |
-| config | `coque` | `max,min+…` | divergente | `ship-criticals.json` | 10 | — |  |
-| config | `equipements` | `max,min+…` | divergente | `ship-criticals.json` | 5 | — |  |
-| config | `greement` | `max,min+…` | divergente | `ship-criticals.json` | 10 | — |  |
-| entité | `rows` | `max,min+…` | divergente | `spells.json` | 13 | — |  |
-| table | `(racine)` | `max,min+…` | divergente | `steam-breakdown.json` | 6 | — |  |
-| config | `entries` | `max,min+…` | divergente | `structure-criticals.json` | 8 | — |  |
-| entité | `rows` | `max,min+…` | divergente | `symptoms.json` | 8 | — |  |
-| entité | `rows` | `max,min+…` | divergente | `tables.json` | 225 | — |  |
-| entité | `rows` | `max,min+…` | divergente | `tavernGames.json` | 5 | — |  |
-| entité | `table` | `max,min+…` | divergente | `tavernGames.json` | 3 | — |  |
-| config | `entries` | `max,min+…` | divergente | `vents-tourbillonnants.json` | 5 | — |  |
-| config | `diseases` | `max,min+…` | divergente | `water-exposure.json` | 7 | — |  |
+| entité | `(racine)` | `max,min+…` | cible | `reglesOptionnelles.json` | 23 | — | les bornes d’un réglage vivent SUR le réglage : la charge utile (`default`, `step`, `hint`…) est inhérente |
 
-### 3.9 quantité (CountSpec : fixe ou tirée) — `quantite` (strate Valeur)
+### 3.9 plage de tirage (min,max) — `plage` (strate Valeur)
+
+62 ligne(s), 1431 occurrence(s).
+Reconnu par : son noyau `min` `max`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `bras` | `max,min+…` | cible | `aa-criticals.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `corps` | `max,min+…` | cible | `aa-criticals.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `jambe` | `max,min+…` | cible | `aa-criticals.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `tete` | `max,min+…` | cible | `aa-criticals.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| table | `(racine)` | `max,min+…` | cible | `advancementCosts.json` | 14 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `rows` | `max,min+…` | cible | `arcane-phenomena.json` | 50 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `artillery-misfire.json` | 4 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `bands` | `max,min+…` | cible | `crew-morale.json` | 4 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `bras` | `max,min+…` | cible | `criticals.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `corps` | `max,min+…` | cible | `criticals.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `jambe` | `max,min+…` | cible | `criticals.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `tete` | `max,min+…` | cible | `criticals.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `driving-mishap.json` | 4 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `drunkenness.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `incidents-monture.json` | 4 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| table | `(racine)` | `max,min+…` | cible | `interludeEvents.json` | 31 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `rumours` | `max,min+…` | cible | `land-cargo.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `wineQuality` | `max,min+…` | cible | `land-cargo.json` | 6 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `araignee` | `max,min+…` | cible | `localisation.json` | 3 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `localisation.json` | 11 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `humanoide` | `max,min+…` | cible | `localisation.json` | 6 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `serpent` | `max,min+…` | cible | `localisation.json` | 2 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `hazards` | `max,min+…` | cible | `mass-battle.json` | 10 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| entité | `entries` | `max,min+…` | cible | `miscast.json` | 111 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| entité | `ranges` | `max,min+…` | cible | `mutationTables.json` | 486 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `naval-progression.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `obsessions.json` | 19 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| table | `(racine)` | `max,min+…` | cible | `oups.json` | 7 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `problemes-vehicule.json` | 4 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `dangereuses` | `max,min+…` | cible | `rencontres-edoc.json` | 9 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `fortuites` | `max,min+…` | cible | `rencontres-edoc.json` | 10 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `positives` | `max,min+…` | cible | `rencontres-edoc.json` | 7 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `avirons` | `max,min+…` | cible | `river-criticals.json` | 1 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `coque` | `max,min+…` | cible | `river-criticals.json` | 1 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `gouvernail` | `max,min+…` | cible | `river-criticals.json` | 1 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `greement` | `max,min+…` | cible | `river-criticals.json` | 1 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `superstructure` | `max,min+…` | cible | `river-criticals.json` | 1 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `windDirections` | `max,min+…` | cible | `river-navigation.json` | 3 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `windForces` | `max,min+…` | cible | `river-navigation.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `boardEvents` | `max,min+…` | cible | `sea-events.json` | 40 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `paliers` | `max,min+…` | cible | `sea-events.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `portEvents` | `max,min+…` | cible | `sea-events.json` | 18 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `changementDeCap` | `max,min+…` | cible | `sea-navigation.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `drDeltas` | `max,min+…` | cible | `sea-navigation.json` | 4 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `reperes` | `max,min+…` | cible | `sea-navigation.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `roseDesVents` | `max,min+…` | cible | `sea-weather.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `table` | `max,min+…` | cible | `sea-weather.json` | 10 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `avirons` | `max,min+…` | cible | `ship-criticals.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `cargaison` | `max,min+…` | cible | `ship-criticals.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `coque` | `max,min+…` | cible | `ship-criticals.json` | 10 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `equipements` | `max,min+…` | cible | `ship-criticals.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `greement` | `max,min+…` | cible | `ship-criticals.json` | 10 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| entité | `rows` | `max,min+…` | cible | `spells.json` | 13 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| table | `(racine)` | `max,min+…` | cible | `steam-breakdown.json` | 6 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `structure-criticals.json` | 8 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| entité | `rows` | `max,min+…` | cible | `symptoms.json` | 8 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| entité | `rows` | `max,min+…` | cible | `tables.json` | 225 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| entité | `rows` | `max,min+…` | cible | `tavernGames.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| entité | `table` | `max,min+…` | cible | `tavernGames.json` | 3 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `entries` | `max,min+…` | cible | `vents-tourbillonnants.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `diseases` | `max,min+…` | cible | `water-exposure.json` | 7 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `ranges` | `max,min+…` | cible | `weather.json` | 19 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+
+### 3.10 quantité (CountSpec : fixe ou tirée) — `quantite` (strate Valeur)
 
 3 ligne(s), 47 occurrence(s).
 Reconnu par : son noyau `fixed`
@@ -1965,7 +1977,7 @@ Reconnu par : son noyau `fixed`
 | entité | `count` | `fixed` | cible | `classes.json` | 1 | — |  |
 | entité | `count` | `fixed` | cible | `creatures.json` | 1 | — |  |
 
-### 3.10 paramètres de séquence jouée en manches — `sequence` (strate Valeur)
+### 3.11 paramètres de séquence jouée en manches — `sequence` (strate Valeur)
 
 3 ligne(s), 3 occurrence(s).
 Reconnu par : son noyau `target` `drCap` `table` `rounds` `phases` `pot` `volley` `sides` `combined` `throwerPenalty` (≥ 2)
@@ -1976,7 +1988,7 @@ Reconnu par : son noyau `target` `drCap` `table` `rounds` `phases` `pot` `volley
 | entité | `(racine)` | `phases,target+…` | divergente | `tavernGames.json` | 1 | — |  |
 | entité | `(racine)` | `table,throwerPenalty+…` | divergente | `tavernGames.json` | 1 | — |  |
 
-### 3.11 Homonymes nominatifs
+### 3.12 Homonymes nominatifs
 
 Une clé RÉSERVÉE à un concept qui porte ≥ 2 classes de type dans la donnée : le NOM ne dit plus le
 type. Cible #1463 S2 : un nom de concept est réservé à son type. Une clé réservée encore homonyme
@@ -1989,7 +2001,7 @@ ne FORCE aucun concept — seul `price` nomme le concept `prix`, parce que `Pric
 | `cost` | number \\| object \\| string | 93 | **number** trappings.json:6 talents.json:1 — **object** naval-traits.json:20 arene-projet.json:8 qualities.json:1 talents.json:1 — **string** actions.json:55 naval-traits.json:1 |
 | `count` | number \\| object | 92 | **number** spells.json:16 loup-et-saumure-projet.json:6 creatures.json:5 tavernGames.json:3 traits.json:2 sea-shanties.json:1 trappings.json:1 vehicles.json:1 … — **object** careerLevels.json:50 classes.json:3 creatures.json:1 spells.json:1 traits.json:1 |
 
-### 3.12 Paramètres d’entité (`arg`) et régimes de `price`
+### 3.13 Paramètres d’entité (`arg`) et régimes de `price`
 
 Valeurs distinctes d’`arg` sur un objet porteur d’`id` : **187** (715 occurrences) — **185** vues en `src/data`, **2** propres aux scènes (`chaos`, `Ténèbres`). Aucun schéma ne les DÉCLARE aujourd’hui :
 cette table EST le dénominateur A11 de #1466. La « nature » est devinée par MOTIF (id d’entité,
@@ -2198,7 +2210,7 @@ Prix du RAW, pas une bourse unique — un coefficient saisonnier n’est pas une
 | littéral « ND » | 3 |
 | objet {dice} | 1 |
 
-### 3.13 Dotations narratives `{text}`
+### 3.14 Dotations narratives `{text}`
 
 Un `{text}` n’est une occurrence de référence que si son texte normalisé (casse, accents, ponctuation,
 espaces) égale le `label` d’une entité d’un dataset de la CIBLE MAJORITAIRE de son site — de n’importe
@@ -2214,14 +2226,18 @@ sont le narratif irréductible que la forme `text` DÉCLARE (#1463, #624).
 | `count,text` | 33 | 4 |
 | `kind,plus,text` | 4 | — |
 
-### 3.14 Hors strate — signatures ORPHELINES
+### 3.15 Hors strate — signatures ORPHELINES
 
 Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réservée, clé d’identité) et qui ne
 résout vers RIEN, sans être un document, et qui ne porte pas d’`op` (la strate Ops le porterait).
 Aucune strate ne le porte : c’est ce que le détecteur ne sait pas nommer, et il se compte au lieu
 de se taire. Stock `STRUCTURES_ORPHELINES` ; le LOT suit le motif — `L1a #1466` quand le NOM de la
-clé annonçait une FK (`clé de référence non résolue`), `#1553` pour les autres motifs (curation de
-CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe).
+clé annonçait une FK (`clé de référence non résolue`), `#1553` pour les autres motifs.
+
+Ce que le motif `clé réservée` nomme : le DÉCLENCHEUR est le NOM de la clé (`CLES_RESERVEES` du
+lexique), pas une valeur qui pointerait vers rien — le contenu de ces objets est légitime, et la
+clé `source` à elle seule en déclenche la majorité. Ce motif-là se solde au VOCABULAIRE (#1463 S2 :
+un nom de concept est réservé à son type), pas en curant un contenu ni en posant une enveloppe.
 
 **105** signatures orphelines, **439** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 103 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 105.
 
@@ -2333,14 +2349,14 @@ CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe)
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12500** objets sur **48087** ne sont portés par AUCUNE
+Au-delà des orphelines, **12481** objets sur **48087** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1147** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1146** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2427,7 +2443,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `arene-projet.json` | `onVictory` | `kind,steps` | 20 |
 | `loup-et-saumure-projet.json` | `flow` | `kind,steps` | 19 |
 | `raceAppearance.json` | `palette` | `cheveux,cheveuxH,cheveuxO,peau,peauH,peauO` | 19 |
-| `weather.json` | `ranges` | `max,weather` | 19 |
 | `arene-projet.json` | `dimensions` | `h,w` | 18 |
 | `arene-projet.json` | `flags` | `` | 18 |
 | `etats.json` | `effect` | `on,ops,type` | 18 |
@@ -3499,7 +3514,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **495** ; **114** recoupent le lexique
+Littéraux d’objet zod lus : **495** ; **116** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -3519,7 +3534,8 @@ Dont **1** littéral(aux) PARTIEL(s) du noyau — `activities.ts:83` : une mesur
 | de | `n,sides` | 3 | 2 | `maladies.ts` `miscast.ts` |
 | source | `book` | 1 | 1 | `progression-schemas-derived.ts` |
 | test | `difficulty` | 31 | 19 | `aa-criticals.ts` `activities.ts` `arcane-phenomena.ts` `criticals.ts` `etats.ts` `land-cargo.ts` `maladies.ts` `miscast.ts` `psychology.ts` `river-navigation.ts` `sea-cargo.ts` `sea-navigation.ts` `sea-perils.ts` `sea-weather.ts` `steam-breakdown.ts` `symptoms.ts` `tavernGames.ts` `water-exposure.ts` `weather.ts` |
-| plage | `min,max` | 36 | 27 | `aa-criticals.ts` `arcane-phenomena.ts` `artillery-misfire.ts` `crew-morale.ts` `criticals.ts` `driving-mishap.ts` `drunkenness.ts` `interludeEvents.ts` `land-cargo.ts` `localisation.ts` `mass-battle.ts` `miscast.ts` `mutationTables.ts` `naval-progression.ts` `obsessions.ts` `oups.ts` `reglesOptionnelles.ts` `river-navigation.ts` `sea-events.ts` `sea-navigation.ts` `sea-weather.ts` `steam-breakdown.ts` `structure-criticals.ts` `tables.ts` `tavernGames.ts` `vents-tourbillonnants.ts` `water-exposure.ts` |
+| bornes | `min,max` | 38 | 29 | `aa-criticals.ts` `advancementCosts.ts` `arcane-phenomena.ts` `artillery-misfire.ts` `crew-morale.ts` `criticals.ts` `driving-mishap.ts` `drunkenness.ts` `interludeEvents.ts` `land-cargo.ts` `localisation.ts` `mass-battle.ts` `miscast.ts` `mutationTables.ts` `naval-progression.ts` `obsessions.ts` `oups.ts` `reglesOptionnelles.ts` `river-navigation.ts` `sea-events.ts` `sea-navigation.ts` `sea-weather.ts` `steam-breakdown.ts` `structure-criticals.ts` `tables.ts` `tavernGames.ts` `vents-tourbillonnants.ts` `water-exposure.ts` `weather.ts` |
+| plage | `min,max` | 38 | 29 | `aa-criticals.ts` `advancementCosts.ts` `arcane-phenomena.ts` `artillery-misfire.ts` `crew-morale.ts` `criticals.ts` `driving-mishap.ts` `drunkenness.ts` `interludeEvents.ts` `land-cargo.ts` `localisation.ts` `mass-battle.ts` `miscast.ts` `mutationTables.ts` `naval-progression.ts` `obsessions.ts` `oups.ts` `reglesOptionnelles.ts` `river-navigation.ts` `sea-events.ts` `sea-navigation.ts` `sea-weather.ts` `steam-breakdown.ts` `structure-criticals.ts` `tables.ts` `tavernGames.ts` `vents-tourbillonnants.ts` `water-exposure.ts` `weather.ts` |
 | quantite | `fixed` | 0 | 0 | — |
 | sequence | `target,drCap,table,rounds,phases,pot,volley,sides,combined,throwerPenalty` | 2 | 2 | `activities.ts` `tavernGames.ts` |
 
@@ -3531,38 +3547,39 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 
 | Def | Ligne | Champ | Concept | Statut | Empreinte | Schéma commun candidat |
 |---|---|---|---|---|---|---|
-| `aa-criticals.ts` | 30 | — | plage | divergente | `max,min+…` | — |
+| `aa-criticals.ts` | 30 | — | plage | cible | `max,min+…` | — |
 | `aa-criticals.ts` | 40 | `resist` | test | divergente | `difficulty,skill+…` | — |
 | `activities.ts` | 67 | — | test | divergente | `char,difficulty+…` | — |
 | `activities.ts` | 83 | `minInvest` | monnaie | divergente | `gold` | — |
+| `advancementCosts.ts` | 20 | — | plage | cible | `max,min+…` | — |
 | `arcane-phenomena.ts` | 153 | `controlFlux` | test | divergente | `difficulty+…` | — |
-| `arcane-phenomena.ts` | 169 | `rows` | plage | divergente | `max,min+…` | — |
-| `artillery-misfire.ts` | 12 | — | plage | divergente | `max,min+…` | — |
+| `arcane-phenomena.ts` | 169 | `rows` | plage | cible | `max,min+…` | — |
+| `artillery-misfire.ts` | 12 | — | plage | cible | `max,min+…` | — |
 | `creatures.ts` | 49 | — | monnaie | historique | `bronze,gold,silver` | — |
-| `crew-morale.ts` | 36 | `bands` | plage | divergente | `max,min+…` | — |
+| `crew-morale.ts` | 36 | `bands` | plage | cible | `max,min+…` | — |
 | `crew-roles.ts` | 19 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `criticals.ts` | 54 | `resist` | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 66 | — | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 76 | `loss` | test | divergente | `difficulty+…` | — |
-| `criticals.ts` | 79 | — | plage | divergente | `max,min+…` | — |
+| `criticals.ts` | 79 | — | plage | cible | `max,min+…` | — |
 | `criticals.ts` | 86 | `resist` | test | divergente | `difficulty+…` | — |
 | `domains.ts` | 82 | `requiresSkill` | reference | cible | `id,spec` | `refSchema` |
 | `driving-mishap.ts` | 17 | — | — | hors lexique | `entries` | `corps` |
-| `driving-mishap.ts` | 19 | `entries` | plage | divergente | `max,min+…` | — |
+| `driving-mishap.ts` | 19 | `entries` | plage | cible | `max,min+…` | — |
 | `drunkenness.ts` | 18 | — | — | hors lexique | `entries` | `corps` |
-| `drunkenness.ts` | 20 | `entries` | plage | divergente | `max,min+…` | — |
+| `drunkenness.ts` | 20 | `entries` | plage | cible | `max,min+…` | — |
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
-| `interludeEvents.ts` | 29 | — | plage | divergente | `max,min+…` | — |
+| `interludeEvents.ts` | 29 | — | plage | cible | `max,min+…` | — |
 | `land-cargo.ts` | 25 | `price` | prix | declaree | `dice` | `formulaSchema` |
-| `land-cargo.ts` | 52 | `wineQuality` | plage | divergente | `max,min+…` | — |
+| `land-cargo.ts` | 52 | `wineQuality` | plage | cible | `max,min+…` | — |
 | `land-cargo.ts` | 71 | `gossip` | test | divergente | `difficulty+…` | — |
-| `land-cargo.ts` | 73 | `rumours` | plage | divergente | `max,min+…` | — |
-| `localisation.ts` | 29 | — | plage | divergente | `max,min+…` | — |
-| `localisation.ts` | 30 | — | plage | divergente | `max,min+…` | — |
+| `land-cargo.ts` | 73 | `rumours` | plage | cible | `max,min+…` | — |
+| `localisation.ts` | 29 | — | plage | cible | `max,min+…` | — |
+| `localisation.ts` | 30 | — | plage | cible | `max,min+…` | — |
 | `maladies.ts` | 16 | — | de | cible | `n,plus,sides` | `diceSpecSchema` |
 | `maladies.ts` | 27 | — | test | divergente | `difficulty+…` | — |
 | `maladies.ts` | 49 | `dailyTest` | test | divergente | `difficulty+…` | — |
-| `mass-battle.ts` | 52 | — | plage | divergente | `max,min+…` | — |
+| `mass-battle.ts` | 52 | — | plage | cible | `max,min+…` | — |
 | `miscast.ts` | 29 | — | de | divergente | `n,plus,sides+…` | — |
 | `miscast.ts` | 39 | — | — | hors lexique | `dice` | `formulaSchema` |
 | `miscast.ts` | 51 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
@@ -3578,36 +3595,36 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `miscast.ts` | 60 | — | — | hors lexique | `times` | `formulaSchema` |
 | `miscast.ts` | 60 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
 | `miscast.ts` | 93 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
-| `miscast.ts` | 102 | — | plage | divergente | `max,min+…` | — |
+| `miscast.ts` | 102 | — | plage | cible | `max,min+…` | — |
 | `montures.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
-| `mutationTables.ts` | 17 | `ranges` | plage | divergente | `max,min+…` | — |
-| `naval-progression.ts` | 16 | `entries` | plage | divergente | `max,min+…` | — |
+| `mutationTables.ts` | 17 | `ranges` | plage | cible | `max,min+…` | — |
+| `naval-progression.ts` | 16 | `entries` | plage | cible | `max,min+…` | — |
 | `naval-progression.ts` | 14 | — | — | hors lexique | `entries` | `corps` |
 | `obsessions.ts` | 15 | — | — | hors lexique | `entries` | `corps` |
-| `obsessions.ts` | 17 | `entries` | plage | divergente | `max,min+…` | — |
-| `oups.ts` | 39 | — | plage | divergente | `max,min+…` | — |
+| `obsessions.ts` | 17 | `entries` | plage | cible | `max,min+…` | — |
+| `oups.ts` | 39 | — | plage | cible | `max,min+…` | — |
 | `progression-schemas-derived.ts` | 39 | `schemas` | source | divergente | `book+…` | — |
 | `psychology.ts` | 54 | `test` | test | historique | `difficulty,skill` | — |
 | `raceAppearance.ts` | 31 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
 | `raceAppearance.ts` | 33 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
-| `reglesOptionnelles.ts` | 32 | — | plage | divergente | `max,min+…` | — |
-| `river-navigation.ts` | 17 | — | plage | divergente | `max,min+…` | — |
+| `reglesOptionnelles.ts` | 32 | — | bornes | cible | `max,min+…` | — |
+| `river-navigation.ts` | 17 | — | plage | cible | `max,min+…` | — |
 | `river-navigation.ts` | 39 | `rowingAgility` | test | divergente | `difficulty+…` | — |
 | `river-navigation.ts` | 54 | `temporaryRepair` | test | divergente | `difficulty+…` | — |
 | `sea-cargo.ts` | 24 | `price` | prix | declaree | `dice` | `formulaSchema` |
 | `sea-cargo.ts` | 61 | `producesGossip` | test | divergente | `difficulty+…` | — |
 | `sea-cargo.ts` | 62 | `surplusGossip` | test | divergente | `difficulty+…` | — |
 | `sea-cargo.ts` | 76 | `test` | test | divergente | `difficulty,skill+…` | — |
-| `sea-events.ts` | 29 | — | plage | divergente | `max,min+…` | — |
-| `sea-events.ts` | 43 | — | plage | divergente | `max,min+…` | — |
+| `sea-events.ts` | 29 | — | plage | cible | `max,min+…` | — |
+| `sea-events.ts` | 43 | — | plage | cible | `max,min+…` | — |
 | `sea-navigation.ts` | 15 | — | plage | cible | `max,min` | — |
 | `sea-navigation.ts` | 19 | `epuisement` | test | divergente | `difficulty+…` | — |
 | `sea-perils.ts` | 35 | `freeTest` | test | divergente | `char,difficulty,skill+…` | — |
 | `sea-perils.ts` | 60 | `evasion` | test | divergente | `difficulty+…` | — |
 | `sea-perils.ts` | 71 | `tourbillonSwim` | test | divergente | `difficulty,skill+…` | — |
-| `sea-weather.ts` | 40 | `table` | plage | divergente | `max,min+…` | — |
+| `sea-weather.ts` | 40 | `table` | plage | cible | `max,min+…` | — |
 | `sea-weather.ts` | 78 | `temperatures` | test | divergente | `difficulty+…` | — |
-| `sea-weather.ts` | 99 | `roseDesVents` | plage | divergente | `max,min+…` | — |
+| `sea-weather.ts` | 99 | `roseDesVents` | plage | cible | `max,min+…` | — |
 | `sea-weather.ts` | 110 | `affaler` | test | divergente | `difficulty+…` | — |
 | `species.ts` | 47 | `preview` | reference | historique | `career` | — |
 | `spells.ts` | 19 | — | — | hors lexique | `kind` | `conditionSchema` |
@@ -3615,22 +3632,22 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `spells.ts` | 28 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 37 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 40 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `steam-breakdown.ts` | 16 | — | plage | divergente | `max,min+…` | — |
+| `steam-breakdown.ts` | 16 | — | plage | cible | `max,min+…` | — |
 | `steam-breakdown.ts` | 29 | `restart` | test | divergente | `char,difficulty,skill+…` | — |
-| `structure-criticals.ts` | 12 | — | plage | divergente | `max,min+…` | — |
+| `structure-criticals.ts` | 12 | — | plage | cible | `max,min+…` | — |
 | `structures.ts` | 19 | — | reference | historique | `id,value` | — |
 | `surincantation.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
 | `symptoms.ts` | 39 | `onTick` | test | divergente | `difficulty+…` | — |
-| `tables.ts` | 19 | `rows` | plage | divergente | `max,min+…` | — |
+| `tables.ts` | 19 | `rows` | plage | cible | `max,min+…` | — |
 | `talents.ts` | 80 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
 | `tavernGames.ts` | 35 | — | sequence | divergente | `combined,drCap,phases,pot,sides,table,target,throwerPenalty,volley+…` | — |
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
-| `tavernGames.ts` | 93 | `table` | plage | divergente | `max,min+…` | — |
+| `tavernGames.ts` | 93 | `table` | plage | cible | `max,min+…` | — |
 | `tavernGames.ts` | 103 | `rows` | test | divergente | `difficulty+…` | — |
 | `tavernGames.ts` | 114 | `libre` | plage | cible | `max,min` | — |
 | `tavernGames.ts` | 140 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
 | `tavernGames.ts` | 176 | `targetRange` | plage | cible | `max,min` | — |
-| `tavernGames.ts` | 180 | `rows` | plage | divergente | `max,min+…` | — |
+| `tavernGames.ts` | 180 | `rows` | plage | cible | `max,min+…` | — |
 | `trappings.ts` | 20 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `trappings.ts` | 27 | — | reference | historique | `id,spec,value` | — |
 | `trappings.ts` | 76 | `qualities` | reference | historique | `id,value` | — |
@@ -3638,13 +3655,14 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `vehicles.ts` | 17 | — | reference | historique | `id,value` | — |
 | `vehicles.ts` | 67 | `traits` | reference | historique | `arg,id,value` | — |
 | `vents-tourbillonnants.ts` | 14 | — | — | hors lexique | `entries` | `corps` |
-| `vents-tourbillonnants.ts` | 16 | `entries` | plage | divergente | `max,min+…` | — |
+| `vents-tourbillonnants.ts` | 16 | `entries` | plage | cible | `max,min+…` | — |
 | `water-exposure.ts` | 17 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
 | `water-exposure.ts` | 18 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
-| `water-exposure.ts` | 19 | — | plage | divergente | `max,min+…` | — |
+| `water-exposure.ts` | 19 | — | plage | cible | `max,min+…` | — |
 | `water-exposure.ts` | 28 | `test` | test | historique | `difficulty,skill` | — |
-| `water-exposure.ts` | 44 | `diseases` | plage | divergente | `max,min+…` | — |
-| `weather.ts` | 76 | `resistanceTest` | test | divergente | `difficulty+…` | — |
+| `water-exposure.ts` | 44 | `diseases` | plage | cible | `max,min+…` | — |
+| `weather.ts` | 39 | `ranges` | plage | cible | `max,min+…` | — |
+| `weather.ts` | 77 | `resistanceTest` | test | divergente | `difficulty+…` | — |
 
 ## 5. Ops en donnée (strate Ops)
 

@@ -83,16 +83,37 @@ describe('table de Météo VERBATIM (EDOC 8 l.50-59)', () => {
   });
   it('édition LIVE au Codex : éditer la météo (setDataset) change le tirage', () => {
     const orig = weather.map((s) => ({ ...s, ranges: s.ranges.map((r) => ({ ...r })) }));
-    setDataset('weather', weather.map((s) => (s.id === 'printemps' ? { ...s, ranges: [{ max: 100, weather: 'blizzard' }] } : s)));
+    setDataset('weather', weather.map((s) => (s.id === 'printemps' ? { ...s, ranges: [{ min: 1, max: 100, weather: 'blizzard' }] } : s)));
     expect(weatherFromRoll(50, 'printemps')).toBe('blizzard'); // lecture LIVE de la donnée éditée
     setDataset('weather', orig); // restaurer pour l'isolation des autres tests
     expect(weatherFromRoll(50, 'printemps')).not.toBe('blizzard');
   });
-  it('chaque saison couvre 100 (toute valeur d100 retombe sur une plage)', () => {
+  it('l’ORDRE des rangées ne décide plus du tirage : une saison réordonnée au Codex rend la MÊME météo', () => {
+    // Le verrou de la migration #1463 L4 P2. Tant que la table n'avait que sa borne HAUTE, le lookup
+    // était un `for (…) if (roll <= r.max)` : la borne basse était la position, donc réorganiser deux
+    // rangées au Codex changeait la météo tirée SANS UN MOT. Les deux bornes étant en donnée
+    // (EDOC 08 l.52-59) et le lookup étant `findTableEntry` (borné des DEUX côtés), l'ordre est inerte.
+    const seasons: Season[] = ['printemps', 'ete', 'automne', 'hiver'];
+    const orig = weather.map((s) => ({ ...s, ranges: s.ranges.map((r) => ({ ...r })) }));
+    const avant = seasons.map((s) => Array.from({ length: 100 }, (_, i) => weatherFromRoll(i + 1, s)));
+    // Réordonnement réel : les rangées de chaque saison à l'ENVERS.
+    setDataset('weather', orig.map((s) => ({ ...s, ranges: [...s.ranges].reverse() })));
+    const apres = seasons.map((s) => Array.from({ length: 100 }, (_, i) => weatherFromRoll(i + 1, s)));
+    setDataset('weather', orig);
+    expect(apres, 'le tirage dépend encore de l’ORDRE des rangées — la borne basse est reconstruite par position quelque part.').toEqual(avant);
+  });
+  it('chaque saison couvre le d100 EXACTEMENT une fois — aucun trou, aucun chevauchement', () => {
+    // Contrat STRUCTUREL sur les fourchettes, PAS un aller-retour par `weatherFromRoll` : celui-ci
+    // passe par `findTableEntry`, qui REPLIE sur la dernière rangée quand aucune ne couvre le jet —
+    // il rend donc une météo même sur une table trouée, et un `toBeTruthy()` reste vert. Ce qu'on
+    // mesure ici est la partition : chaque jet de 1 à 100 appartient à UNE fourchette et une seule.
     const seasons: Season[] = ['printemps', 'ete', 'automne', 'hiver'];
     for (const s of seasons) {
-      for (let r = 1; r <= 100; r++) expect(weatherFromRoll(r, s)).toBeTruthy();
-      expect(WEATHER_TABLE[s][WEATHER_TABLE[s].length - 1].max).toBe(100);
+      const ranges = WEATHER_TABLE[s];
+      const fautifs = Array.from({ length: 100 }, (_, i) => i + 1)
+        .map((jet) => ({ jet, couvert: ranges.filter((r) => jet >= r.min && jet <= r.max).length }))
+        .filter((c) => c.couvert !== 1);
+      expect(fautifs, `saison ${s} : des jets couverts 0 fois (trou) ou 2 fois (chevauchement)`).toEqual([]);
     }
   });
   it('rollStageWeather : déterministe sous une graine, et cohérent avec weatherFromRoll', () => {

@@ -331,7 +331,16 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       const vu = compte.get(cle(r)) ?? { r, n: 0 };
       compte.set(cle(r), { r, n: vu.n + 1 });
     }
-    const observees = [...compte].map(([k, { r, n }]) => `${k} | ${n}` + trace({}, lotDeForme(r.concept, r.signature)));
+    // PILOTAGE (`lot`, `date`) repris du stock par SITE — MÊME patron que `pilotageDeForme` et
+    // `pilotageOrpheline` : la sonde ne mesure ni le lot ni la date. Sans cette reprise, toute ligne
+    // était sommée de porter la date GLOBALE du stock, et une ligne née plus tard ne pouvait être
+    // verte qu'en MENTANT sur sa date de naissance. Les deux champs restent gardés : une ligne du
+    // stock que l'AST n'observe plus reste rouge, et le test de MUTATION par champ (ci-dessous)
+    // prouve qu'ils entrent toujours dans la clé comparée.
+    const pilotage = new Map(STRUCTURES_REDECLARATIONS.map((r) => [cle(r), { lot: r.lot, date: r.date }]));
+    const observees = [...compte].map(
+      ([k, { r, n }]) => `${k} | ${n}` + trace(pilotage.get(k) ?? {}, lotDeForme(r.concept, r.signature)),
+    );
     const stockees = STRUCTURES_REDECLARATIONS.map((r) => `${cle(r)} | ${r.occurrences}` + trace(r, lotDeForme(r.concept, r.signature)));
     expect(
       lignes(observees),
@@ -428,7 +437,18 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // AU SITE du statbloc (`id,value`, `id,spec,value`, `choix,id,value`). Une cible neuve se
       // décide en revue : celles-ci portent leur citation (#1463, « `value` = le seul nom du NOMBRE
       // IMPRIMÉ au statbloc ») et leur date au stock, et leur réserve ouverte y est dite.
-      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 19],
+      // Cliquet REMONTÉ 19 → 21 (L4 #1463, vague `plage`, 2026-08-31) : deux graphies reçoivent le
+      // statut `cible`, et aucune donnée ne bouge pour ça. (1) `plage | max,min+…` : la cible d'une
+      // rangée de table est TRANCHÉE — fourchette PLATE `{min, max}` + `findTableEntry`
+      // (`src/engine/tables.ts`, primitive de la table CLAUDE.md), et la charge utile d'une rangée
+      // (102 charges distinctes mesurées) est INHÉRENTE : c'est ce que le suffixe `+…` de la
+      // projection nomme, pas une divergence. Mesuré 2026-08-31 : 1441 objets à deux bornes, TOUS
+      // `min,max` — zéro `from/to`, zéro `de/a`, zéro `low/high` — et ZÉRO `{range:{min,max}}`, la
+      // cible emboîtée que le lexique déclarait n'existait NULLE PART (#1463 S1 amendé 2026-08-31,
+      // motif au pilotage). (2) `bornes | max,min+…` : concept NEUF du lexique, les 23 objets de
+      // `reglesOptionnelles.json` étaient comptés `plage divergente` par MISCLASSEMENT — ce sont les
+      // bornes du DOMAINE d'un réglage (co-présence `default`/`step`), aucun d100 ne les traverse.
+      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 21],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
       // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non
@@ -484,7 +504,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // rangées dans le MÊME lot L3. Donnée neuve à la forme déjà stockée, pas forme neuve : leur
       // extinction est celle de la fabrique de référence du schéma de carte (L2/L3 #1473), pour les
       // quatre projets à la fois.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 541],
+      // Cliquet DESCENDU 541 → 480 (L4 #1463, vague `plage`, 2026-08-31) : les 61 lignes `plage`
+      // (1421 occurrences) sortent du dénominateur — la fourchette PLATE `{min, max}` est la CIBLE
+      // (cf. `STRUCTURES_CIBLES` ci-dessus), et ces objets y étaient déjà. AUCUNE de ces 1421
+      // occurrences n'est réécrite : le suffixe `+…` que la projection leur donnait n'était pas une
+      // divergence de graphie, c'était la charge utile INHÉRENTE d'une rangée de table. Le cliquet
+      // SUIT la baisse, sinon la marge regagnée servirait à absorber une dérive future.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 480],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -520,7 +546,15 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquet REMONTÉ 104 → 105 (#674, 2026-08-31) : `maladies.ts` déclare le Test quotidien de la
       // Pneumonie (`dailyTest {difficulty+…}`, EDOC 08 l.104) avec son propre objet, comme le font
       // encore les autres porteurs de Test du même lot L4. La ligne s'éteindra avec eux.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 105],
+      // Cliquet REMONTÉ 105 → 107 (L4 #1463, vague `plage`, 2026-08-31) — deux lignes ENTRENT, et
+      // c'est l'empreinte de la migration P2 sur les defs, pas une dérive de forme : `weather.json`
+      // et `advancementCosts.json` encodaient leurs tables par la BORNE HAUTE SEULE (19 + 15 rangées,
+      // borne basse reconstruite par POSITION, donc ni authorée ni éditable). Leurs deux bornes étant
+      // désormais en donnée (EDOC 08 l.52-59 ; LDB 07 l.56-70), leurs deux schémas déclarent le
+      // littéral `{min, max, …}` — ils rejoignent la famille des 30 defs qui le redéclarent déjà.
+      // RESTE NOMMÉ : le schéma PARTAGÉ (P1, `grammaire/valeurs.ts`) éteint les 32 d'un coup ; ces
+      // deux lignes-là sont à éteindre AVEC elles, pas séparément.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 107],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -674,7 +708,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
       // donnée (`maladies.json › dailyTest`) et sa redéclaration au def (`maladies.ts › dailyTest`).
-      'L4 #1463': 221,
+      // L4 #1463 : 221 → 162 (vague `plage`, 2026-08-31). −61 lignes de FORMES (les rangées de table
+      // à fourchette plate passent CIBLE, cf. le cliquet `STRUCTURES_FORMES` ci-dessus) et +2 lignes
+      // de REDÉCLARATIONS (`weather.ts`, `advancementCosts.ts` — leurs schémas déclarent désormais le
+      // littéral à DEUX bornes, empreinte de la migration P2 ; cf. le cliquet
+      // `STRUCTURES_REDECLARATIONS`). Solde net −59.
+      'L4 #1463': 162,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`

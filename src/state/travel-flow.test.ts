@@ -6,21 +6,24 @@
  * du jour se clôt sur le calcul de la progression puis enchaîne la halte
  * de nuit / l'arrivée. La marche forcée reste une étape de la cascade de NUIT (inchangée).
  */
-import { resolveStake } from '../data';
+import { resolveStake, weather } from '../data';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
+import { makeRNG } from '../engine/dice';
+import { findTableEntry } from '../engine/tables';
+import { stageWeatherRows } from './travelFlow';
 import { emptyScene, Scene } from './scene';
 import { buildEncounter } from './encounterAuthoring';
 import { WorldMap } from './worldMap';
 import { CAMPAIGN_START } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
 import { buildWeatherResistanceSteps, buildStageSteps } from './travelPostes';
-import { seasonOfMonth } from '../engine/travelStages';
+import { seasonOfMonth, weatherFromRoll, type Season } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
 import { creditBourse } from './bourseFlow';
 import { DIFFICULTY_MODIFIERS, type Combatant, type ItemInstance } from '../engine/types';
-import { cascadeAppliers } from './cascade';
+import { cascadeAppliers, rollTableStep } from './cascade';
 import { inexplique, soutienDe, draineCascade, avanceEtapeCascade } from './cascadeTestKit';
 import { skillBaseValue, testValue, soutienDetail, partyAssisted } from '../engine/skills';
 
@@ -98,6 +101,37 @@ function passerLaMeteo(): void {
     const saison = seasonOfMonth(toDate(get().gameTime).month);
     expect(meteo.table!.tableId).toBe(`stage-weather-${saison}`);
     expect(meteo.table!.mod ?? 0).toBe(0);
+  });
+
+  it('la rangée APPLIQUÉE est celle que la ligne AFFICHÉE annonce — 100 jets × 4 saisons (#1463 L4)', () => {
+    // UN jet, DEUX lectures : l'applier `stageWeather` prend l'id de la rangée trouvée dans les `rows`
+    // de la table enregistrée (`step.table.result`), la ligne montrée passe par `weatherFromRoll` (les
+    // bornes authorées de `weather.json`). Tant que la borne basse des `rows` était reconstruite par
+    // POSITION, éditer un `min` au Codex les faisait diverger sans un mot.
+    const rng = makeRNG(1);
+    const saisons: Season[] = ['printemps', 'ete', 'automne', 'hiver'];
+    for (const s of saisons) {
+      for (let jet = 1; jet <= 100; jet++) {
+        const applique = rollTableStep({ tableId: `stage-weather-${s}`, forcedRoll: jet }, rng).id;
+        expect(applique, `saison ${s}, jet ${jet} : la rangée appliquée n’est pas celle qu’annonce la ligne affichée`).toBe(
+          weatherFromRoll(jet, s),
+        );
+      }
+    }
+  });
+
+  it('les bornes des rangées de la table sont AUTHORÉES, jamais reconstruites par position (#1463 L4)', () => {
+    // La donnée réelle est écrite dans l'ordre croissant : une borne basse reconstruite par position y
+    // rendrait les MÊMES chiffres — c'est ce qui la rendait indétectable. On mesure donc la
+    // construction sur une saison RÉORDONNÉE (ce que le Codex permet) : la rangée trouvée doit rester
+    // celle que la fourchette authorée désigne.
+    for (const saison of weather) {
+      const desordre = [...saison.ranges].reverse();
+      const rows = stageWeatherRows(desordre);
+      for (let jet = 1; jet <= 100; jet++) {
+        expect(findTableEntry(rows, jet).id, `saison ${saison.id}, jet ${jet}`).toBe(findTableEntry(desordre, jet).weather);
+      }
+    }
   });
 
   it('les postes AVEC Test = UN pas BATCH (arbitrage user : jets indépendants), une rangée par héros', () => {

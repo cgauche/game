@@ -19,6 +19,7 @@ import { rule } from './policy';
 import type { CodexTarget } from './ruleRefs';
 import { weather, weatherConditions, weatherPhysicalTestChars } from '../data';
 import { weatherIdSchema } from '../data/schemas/defs/weather';
+import { findTableEntry } from './tables';
 
 /** Les quatre saisons du tableau de Météo (EDOC 8 l.52). */
 export type Season = 'printemps' | 'ete' | 'automne' | 'hiver';
@@ -63,12 +64,12 @@ export function weatherRef(w: Weather): CodexTarget {
 }
 
 /** Une plage d100 → météo. */
-interface WeatherRange { max: number; weather: Weather; }
+interface WeatherRange { min: number; max: number; weather: Weather; }
 
 /**
- * TABLE DE MÉTÉO VERBATIM (EDOC 8 l.50-59 — « Le MJ doit effectuer un jet de Météo au début de
- * chaque étape »). Pour chaque saison, la liste ORDONNÉE des plages d100 (`max` = borne haute
- * incluse de la plage ; 00 → 100). Un tiret RAW (« - ») = plage absente cette saison.
+ * TABLE DE MÉTÉO VERBATIM (EDOC 8 l.52-59 — « Le MJ doit effectuer un jet de Météo au début de
+ * chaque étape »). Pour chaque saison, les plages d100 `{min, max}` (bornes INCLUSES ; 00 → 100),
+ * les DEUX telles que la source les imprime. Un tiret RAW (« - ») = plage absente cette saison.
  *
  *  | Météo            | Printemps | Été    | Automne | Hiver  |
  *  | Temps sec        | 01-10     | 01-40  | 01-30   | -      |
@@ -87,8 +88,7 @@ export const WEATHER_TABLE: Record<Season, WeatherRange[]> =
 /** Météo depuis un jet d100 explicite (1-100) et une saison — lecture LIVE de la donnée éditable. */
 export function weatherFromRoll(roll: number, season: Season): Weather {
   const ranges = (weather.find((s) => s.id === season)?.ranges ?? []) as WeatherRange[];
-  for (const r of ranges) if (roll <= r.max) return r.weather;
-  return ranges[ranges.length - 1].weather; // garde-fou : 100 retombe sur la dernière plage
+  return findTableEntry(ranges, roll).weather;
 }
 
 /** Jet de Météo d'une Étape (EDOC 8 l.50) : d100 sur la table de la saison. */

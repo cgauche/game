@@ -2,8 +2,8 @@
  * Schéma de `weather.json` — Météo de voyage TERRESTRE (EDOC 8), consommée par
  * `src/data/index.ts` et typée par `engine/travelStages.ts` (`Weather`, `WEATHER_TABLE`,
  * `WeatherCondition`). Deux volets :
- *  - `seasons` : table de tirage d100 par saison (`ranges.max` = borne haute incluse → `weather`,
- *    lookup via `rollStageWeather`) ;
+ *  - `seasons` : table de tirage d100 par saison (`ranges` = fourchette PLATE `{min, max}` incluse →
+ *    `weather`, lookup via `rollStageWeather` → `findTableEntry`) ;
  *  - `conditions` : EFFETS par météo, MÊME vocabulaire de donnée que `sea-weather.json`
  *    (`visibiliteM`/`rangedMod` étendus des besoins terrestres : `physicalTestMod`, `powderUseless`,
  *    `rangedUseless`, `movementWalkOnly`, `resistanceTest`, `lightningNervous`).
@@ -18,7 +18,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { difficultySchema, ecartsDeCouverture, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'weather.json';
 export const famille = 'config';
@@ -37,6 +37,7 @@ const doc = document(
       label: z.string(),
       ranges: z.array(
         z.strictObject({
+          min: z.number(),
           max: z.number(),
           weather: weatherIdSchema,
         }),
@@ -98,7 +99,10 @@ const doc = document(
     //    que la table saisonnière tire encore (`weatherCondition`, engine, ne lit que ce tableau) ;
     //  - UNICITÉ : un id EN DOUBLE rend la seconde fiche inerte — le `find` de la porte prend la
     //    première, donc éditer la seconde au Codex ne changerait RIEN à l'écran, sans un mot.
-    // Refus NOMINATIF dans les deux cas, aux trois portes (CI `schema-contract`, boot `dev-validate`,
+    // COUVERTURE du d100 par saison (`ecartsDeCouverture`, grammaire) : les deux bornes étant
+    //    éditables au Codex, un trou ou un chevauchement passerait le z.number() — et le tirage
+    //    tomberait sur la dernière rangée par REPLI de `findTableEntry`, sans un mot.
+    // Refus NOMINATIF dans les trois cas, aux trois portes (CI `schema-contract`, boot `dev-validate`,
     // save transactionnel du Codex).
     affinerEntree: (entree) =>
       entree.superRefine((v, ctx) => {
@@ -118,6 +122,18 @@ const doc = document(
             path: ['conditions'],
             message: `weather.json : id(s) en DOUBLE — ${doubles.join(', ')}. Une météo porte UNE fiche : la seconde serait inerte (la porte \`weatherCondition\` retient la première).`,
           });
+        }
+
+        const saisons = (v as { seasons?: { id?: string; ranges?: { min?: number; max?: number; weather?: string }[] }[] }).seasons ?? [];
+        for (const [i, s] of saisons.entries()) {
+          const ecarts = ecartsDeCouverture(s.ranges ?? [], 1, 100, (r) => `« ${r.weather} » (${r.min}-${r.max})`);
+          if (ecarts.length) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['seasons', i, 'ranges'],
+              message: `weather.json › saison « ${s.id} » : le d100 n'est pas couvert EXACTEMENT une fois — ${ecarts.join(' ; ')}. Un trou fait tomber le tirage sur la DERNIÈRE rangée (repli de \`findTableEntry\`), un chevauchement rend la seconde rangée inatteignable : dans les deux cas la météo tirée ment sans un mot.`,
+            });
+          }
         }
       }),
   },

@@ -185,6 +185,14 @@ export type Classement = {
 /** Concepts de VALEUR : tous ceux que l'index des ids ne décide pas (ni référence, ni liste d'ids). */
 const CONCEPTS_VALEUR = CONCEPTS.filter((c) => !c.resolvables && !c.listeIdsNus);
 
+/** Concepts que seul le SITE peut proposer (`exigeCandidatureStructurelle`) — la liste se DÉDUIT du
+ *  lexique, elle ne se nomme pas au call-site : ajouter un concept structurel au lexique suffit. */
+const CONCEPTS_STRUCTURELS = CONCEPTS_VALEUR.filter((c) => c.exigeCandidatureStructurelle && c.noyau?.length);
+
+/** Ids des concepts structurels dont l'objet `o` porte TOUT le noyau en NUMÉRIQUE. */
+const candidatsStructurels = (o: Record<string, unknown>): string[] =>
+  CONCEPTS_STRUCTURELS.filter((c) => c.noyau!.every((k) => typeof o[k] === 'number')).map((c) => c.id);
+
 /**
  * Statut d'une signature AU SITE : une entrée SITE-QUALIFIée du lexique gagne sur l'entrée nue de la
  * même graphie (`site` absent = repli universel). Sans site fourni par l'appelant, seules les entrées
@@ -210,6 +218,9 @@ export function classerValeur(sig: string, cles: readonly string[], contexte: Co
     if (c.exigeCandidatureStructurelle && !contexte.candidats?.includes(c.id)) continue;
     const parChamp = c.champs?.includes(contexte.champ) ?? false;
     const parNoyau = c.noyau ? c.noyau.filter((k) => set.has(k)).length >= (c.noyauMin ?? c.noyau.length) : false;
+    // `coPresence` DÉCLARÉE : le concept n'est retenu que si l'objet porte au moins une de ces clés,
+    // sinon on continue vers le concept suivant (`bornes` avant `plage`, même noyau).
+    if (c.coPresence && !c.coPresence.some((k) => set.has(k))) continue;
     if (parChamp || parNoyau) return statutDe(c, projeteValeur(c.id, cles) || sig);
   }
   return null;
@@ -729,7 +740,7 @@ export function scannerDonnees(
       }
 
       // ---- VALEUR d'abord (noyau propre), RÉFÉRENCE ensuite (index des ids)
-      const candidats = dansTableau && typeof o.min === 'number' && typeof o.max === 'number' ? ['plage'] : undefined;
+      const candidats = dansTableau ? candidatsStructurels(o) : undefined;
       const valeur = classerValeur(sig, cles, { champ, candidats });
       let classe = false;
       if (valeur) {
@@ -1211,7 +1222,7 @@ export type Redeclaration = {
  * clés, il n'a pas de charge utile à replier).
  */
 const classerLitteral = (sig: string, cles: readonly string[], champ: string): Classement | null => {
-  const valeur = classerValeur(sig, cles, { champ, candidats: ['plage'] });
+  const valeur = classerValeur(sig, cles, { champ, candidats: CONCEPTS_STRUCTURELS.map((c) => c.id) });
   if (valeur) return valeur;
   const hit = CONCEPT_REFERENCE.signatures.find((s) => s.sig === sig);
   return hit ? statutDe(CONCEPT_REFERENCE, sig) : null;

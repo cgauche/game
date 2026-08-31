@@ -658,7 +658,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {hasConsumable && <TriggeredEffectsField label="effets à la touche de l’arme (onHit → Flow d’ops, ADE II)" value={entry.onHitEffects as TriggeredEffect[] | undefined} onChange={(v) => edit('onHitEffects', v.length ? v : undefined)} />}
         {isManeuver && <ManeuverDefField entry={entry} edit={edit} />}
         {isMutationTable && <MutationTableField value={entry.ranges as MutationRange[] | undefined} onChange={(v) => edit('ranges', v)} />}
-        {isWeather && <WeatherRangesField value={entry.ranges as { max: number; weather: string }[] | undefined} onChange={(v) => edit('ranges', v)} />}
+        {isWeather && <WeatherRangesField value={entry.ranges as { min: number; max: number; weather: string }[] | undefined} onChange={(v) => edit('ranges', v)} />}
         {hasDerivedWeapon && <WeaponField value={entry.derivedWeapon as Weapon | undefined} onChange={(v) => edit('derivedWeapon', v)} />}
         {hasConsumable && (
           <div className="ed-field">
@@ -1608,17 +1608,19 @@ interface MutationRange { min: number; max: number; mutation: string; }
  *  plusieurs tables (une par dieu du Chaos, Compagnon T1) peuvent pointer la même mutation à des plages
  *  différentes. */
 /** Éditeur des PLAGES de Météo d'une saison (`weather.json`) : chaque rangée = un intervalle d100
- *  (jusqu'à `max` inclus, ordonné, la dernière finit à 100) → une Météo (parmi les types connus). */
-function WeatherRangesField({ value, onChange }: { value: { max: number; weather: string }[] | undefined; onChange: (v: { max: number; weather: string }[]) => void }) {
+ *  `{min, max}` bornes incluses → une Météo (parmi les types connus). La table renvoie la météo dont
+ *  l'intervalle CONTIENT le jet (`findTableEntry`) — les deux bornes s'éditent, comme la source les
+ *  imprime (EDOC 08 l.52-59), et l'ordre des rangées ne décide plus du tirage. */
+function WeatherRangesField({ value, onChange }: { value: { min: number; max: number; weather: string }[] | undefined; onChange: (v: { min: number; max: number; weather: string }[]) => void }) {
   const list = value ?? [];
-  const set = (i: number, patch: Partial<{ max: number; weather: string }>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const set = (i: number, patch: Partial<{ min: number; max: number; weather: string }>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   return (
     <div className="ed-field">
-      <span>plages d100 → météo (jusqu'à `max` inclus, ordonnées ; la dernière doit finir à 100)</span>
+      <span>plages d100 → météo (bornes incluses ; la table renvoie la météo dont l'intervalle contient le jet)</span>
       {list.map((r, i) => (
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
-            <label className="dr">d100 ≤&nbsp;<NumberField variant="nu" label="Plage d100 — borne haute" min={1} max={100} value={r.max} onChange={(max) => set(i, { max })} /></label>
+            <label className="dr">d100&nbsp;<NumberField variant="nu" label="Plage d100 — borne basse" min={1} max={100} value={r.min} onChange={(min) => set(i, { min })} />–<NumberField variant="nu" label="Plage d100 — borne haute" min={1} max={100} value={r.max} onChange={(max) => set(i, { max })} /></label>
             <select value={r.weather} onChange={(e) => set(i, { weather: e.target.value })}>
               {/* ÉNUMÉRATION depuis la DÉCLARATION (patron `RACE_KEYS`) — jamais depuis `weatherConditions`,
                   qui est la donnée en cours d'édition : une fiche supprimée dans l'onglet voisin ne doit pas
@@ -1629,7 +1631,7 @@ function WeatherRangesField({ value, onChange }: { value: { max: number; weather
           </div>
         </div>
       ))}
-      <button className="btn small" onClick={() => onChange([...list, { max: 100, weather: 'beau' }])}>+ Plage d100</button>
+      <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 100, weather: 'beau' }])}>+ Plage d100</button>
     </div>
   );
 }

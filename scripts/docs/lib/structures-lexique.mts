@@ -172,6 +172,13 @@ export type Concept = {
   /** Clés dont la présence (au moins `noyauMin`) classe un objet dans le concept. */
   noyau?: readonly string[];
   noyauMin?: number;
+  /**
+   * Clés dont la CO-PRÉSENCE (au moins une) est EXIGÉE en plus du noyau. Discrimine deux concepts
+   * qui partagent le même noyau : le plus contraint se déclare AVANT, et l'objet qui ne porte
+   * aucune de ces clés retombe sur le suivant. Attribut DÉCLARÉ sur l'entrée du registre (#842),
+   * jamais un test d'identité au call-site.
+   */
+  coPresence?: readonly string[];
   /** Le concept n'est candidat que si le SITE d'appel l'a mesuré (cf. `contexte.candidats`). */
   exigeCandidatureStructurelle?: boolean;
   /**
@@ -315,11 +322,37 @@ export const CONCEPTS: readonly Concept[] = [
     noyau: ['difficulty'],
   },
   {
+    // AVANT `plage`, et l'ordre décide : même noyau `min,max`, mais ce ne sont pas des bornes de
+    // TIRAGE — ce sont les bornes du DOMAINE d'un réglage (`kind: 'param'`, avec sa valeur par
+    // défaut et son pas), lues par l'éditeur de règles optionnelles (`CodexEdit`, `StructFields`
+    // `RuleShape`). Aucun d100 ne les traverse : `findTableEntry` n'a rien à y faire.
+    // Non-recouvrement MESURÉ sur `src/data/*.json` (2026-08-31) : 23 objets portent `min,max` avec
+    // `default`/`step` — tous dans `reglesOptionnelles.json` —, 1413 portent `min,max` sans ; l'
+    // intersection est VIDE. `kind` seul ne discrimine pas (88 objets, `oups.json` et
+    // `sea-events.json` le portent aussi) : la co-présence retenue est `default`/`step`.
+    id: 'bornes',
+    label: 'bornes du domaine d’un réglage (min,max)',
+    strate: 'Valeur',
+    // `max,min` NU n'est pas déclaré : la co-présence EXIGE `default`/`step`, donc un objet `bornes`
+    // porte toujours au moins une clé de plus que son noyau — sa projection est toujours `+…`.
+    signatures: [
+      { sig: 'max,min+…', statut: 'cible', note: 'les bornes d’un réglage vivent SUR le réglage : la charge utile (`default`, `step`, `hint`…) est inhérente' },
+    ],
+    noyau: ['min', 'max'],
+    coPresence: ['default', 'step'],
+    exigeCandidatureStructurelle: true,
+  },
+  {
     id: 'plage',
     label: 'plage de tirage (min,max)',
     strate: 'Valeur',
     signatures: [
-      { sig: 'max,min', statut: 'cible', note: 'cible = portée par `range` d’une entrée de table (#1463 S1)' },
+      { sig: 'max,min', statut: 'cible' },
+      {
+        sig: 'max,min+…',
+        statut: 'cible',
+        note: 'FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage.',
+      },
     ],
     noyau: ['min', 'max'],
     exigeCandidatureStructurelle: true,

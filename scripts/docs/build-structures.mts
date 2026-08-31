@@ -434,8 +434,11 @@ out += 'Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé 
 out += 'résout vers RIEN, sans être un document, et qui ne porte pas d’`op` (la strate Ops le porterait).\n';
 out += 'Aucune strate ne le porte : c’est ce que le détecteur ne sait pas nommer, et il se compte au lieu\n';
 out += 'de se taire. Stock `STRUCTURES_ORPHELINES` ; le LOT suit le motif — `L1a #1466` quand le NOM de la\n';
-out += 'clé annonçait une FK (`clé de référence non résolue`), `#1553` pour les autres motifs (curation de\n';
-out += 'CONTENU : la valeur pointe vers rien — ce n’est pas une forme d’enveloppe).\n\n';
+out += 'clé annonçait une FK (`clé de référence non résolue`), `#1553` pour les autres motifs.\n\n';
+out += 'Ce que le motif `clé réservée` nomme : le DÉCLENCHEUR est le NOM de la clé (`CLES_RESERVEES` du\n';
+out += 'lexique), pas une valeur qui pointerait vers rien — le contenu de ces objets est légitime, et la\n';
+out += 'clé `source` à elle seule en déclenche la majorité. Ce motif-là se solde au VOCABULAIRE (#1463 S2 :\n';
+out += 'un nom de concept est réservé à son type), pas en curant un contenu ni en posant une enveloppe.\n\n';
 {
   const total = scan.orphelines.reduce((a, o) => a + o.occurrences, 0);
   const parMotif = new Map<string, { lignes: number; occurrences: number }>();

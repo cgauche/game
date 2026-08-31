@@ -8,6 +8,7 @@
 import { Combatant, CharKey } from './types';
 import { CareerSlot, parseRefKey } from './careerSlots';
 import advancementCostsJson from '../data/advancementCosts.json';
+import { findTableEntry } from './tables';
 import { t } from '../i18n';
 
 /**
@@ -23,21 +24,27 @@ export function inCareerChar(careerChars: CharKey[], char: CharKey): boolean {
 }
 
 /**
- * Type d'une bande du Tableau de Coût des Augmentations (LDB 07 l.51-70).
- * La bande = nombre d'Augmentations DÉJÀ achetées ; `max` est la borne haute INCLUSIVE de la bande.
- * `max: null` = bande FINALE « et au-delà » (capte tout excès — JSON n'a pas d'Infinity).
+ * Type d'une bande du Tableau de Coût des Augmentations (LDB 07 l.56-70).
+ * La bande = nombre d'Augmentations DÉJÀ achetées, fourchette `{min, max}` aux bornes INCLUSIVES,
+ * les DEUX telles que la source les imprime (« 0 à 5 », « 6 à 10 »…).
+ * `max: null` = bande FINALE « 71 et + » : LDB 07 l.49 ne pose AUCUN plafond, la borne haute reste
+ * donc OUVERTE en donnée (JSON n'a pas d'Infinity) et ne s'ouvre qu'au lookup.
  * La donnée vit dans `src/data/advancementCosts.json` — ne pas éditer ici.
  */
-export interface AdvanceCostBand { max: number | null; coutCarac: number; coutCompetence: number }
+export interface AdvanceCostBand { min: number; max: number | null; coutCarac: number; coutCompetence: number }
 
 const ADVANCE_COST_TABLE: AdvanceCostBand[] = advancementCostsJson as AdvanceCostBand[];
+
+/** La table telle que `findTableEntry` la lit : la borne OUVERTE de la dernière bande devient son
+ *  infini. Aucun plafond n'est écrit en donnée — c'est le lookup qui ouvre, pas la source. */
+const ADVANCE_COST_LOOKUP = ADVANCE_COST_TABLE.map((b) => ({ ...b, max: b.max ?? Number.POSITIVE_INFINITY }));
 
 /** Coût en PX de la PROCHAINE Augmentation (la N+1ᵉ), `advancesAlready` = N déjà achetées.
  *  Hors carrière, le coût est DOUBLÉ (LDB 07 l.91). `discount` : « 5 PX de moins par
  *  Augmentation » des talents Maître artisan / Oreille absolue / etc. (LDB 10) quand la
  *  Compétence ajoutée est déjà incluse dans la Carrière — appliqué in-carrière seulement. */
 export function advanceCost(advancesAlready: number, kind: 'characteristic' | 'skill', inCareer = true, discount = 0): number {
-  const band = ADVANCE_COST_TABLE.find((b) => b.max === null || advancesAlready <= b.max)!;
+  const band = findTableEntry(ADVANCE_COST_LOOKUP, advancesAlready);
   const base = kind === 'characteristic' ? band.coutCarac : band.coutCompetence;
   return inCareer ? Math.max(1, base - discount) : base * 2;
 }
