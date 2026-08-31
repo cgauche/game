@@ -6,7 +6,7 @@
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 0 chapitre(s) couverts avec des lignes non pinées. Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
-**Sens A — code → Atlas (14 autres livres)** : 8 chapitre(s)-livre cités par le code & absents de l'Atlas · 10 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
+**Sens A — code → Atlas (14 autres livres)** : 10 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
 **Sens B — Atlas → code (LDB)** : 3 marqueur(s) « (non implémenté) » · 1 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 12 · 11 crédités par une source folio de `src/data`).
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
@@ -24,7 +24,7 @@ _Aucune._
 | ADE I | 1 | 1 | 0 |
 | ADE II | 0 | 1 | 0 |
 | EDO | 1 | 2 | 0 |
-| EDOC | 0 | 1 | 0 |
+| EDOC | 2 | 2 | 0 |
 | MCLB | 1 | 0 | 0 |
 | MDG | 1 | 1 | 0 |
 | MSRC | 0 | 2 | 0 |
@@ -40,6 +40,16 @@ _Aucune._
 
 ### EDO 10 — 1 réf(s) code, 0 dans l'Atlas
 - `src/data/skills.json:1858` (l.736) — "note": "EDO 10 l.736"
+
+### EDOC 9 — 5 réf(s) code, 0 dans l'Atlas
+- `src/engine/disease.ts:393` (l.21) — *  voyage (EDOC 09 l.21) passent par ici. No-op sur une maladie déjà active. */
+- `src/state/travel.test.ts:440` (l.21) — it('saison froide + Exposition RATÉE : le Rhume commun contracté en route se DÉCLARE à la Phase d’arrivée (EDOC 8 l.92, EDOC 9 l.21)', () => {
+- `src/state/travelFlow.ts:186` (l.21) — *  (EDOC 09 l.21, `declareArrivalDiseases`). */
+- `src/state/travelFlow.ts:434` (l.21) — // après interruption retrouve celle du départ). Lue par la Phase d'arrivée (EDOC 09 l.21).
+
+### EDOC 10 — 2 réf(s) code, 0 dans l'Atlas
+- `src/data/reseau-routier.json:173` (l.30) — "note": "EDOC 10 l.30 — section « Postes de péage » ; tarif l.32."
+- `src/data/reseau-routier.json:192` (l.11) — "note": "EDOC 10 l.11 — section « Patrouilles routières » ; la phrase reprend l.17, l'encadré « LES JUSTICIERS » (l.13-15) la coupant."
 
 ### MCLB 2 — 4 réf(s) code, 0 dans l'Atlas
 - `src/data/skills.json:962` (l.1844) — "note": "MCLB 02 l.1844"
@@ -60,7 +70,7 @@ _Aucune._
 - `src/state/tavern-npc-a-fiche.test.ts:97` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
 
 ### NADJ 14 — 5 réf(s) code, 0 dans l'Atlas
-- `src/data/index.ts:804` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
+- `src/data/index.ts:805` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
 - `src/data/reglesOptionnelles.json:472` (l.5) — "ref": "NADJ 14 l.5",
 - `src/data/schemas/defs/species.ts:56` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
 - `src/engine/creation.test.ts:127` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
@@ -73,10 +83,25 @@ _Aucune._
 
 ## A2-AUTRES — Lignes appelées par le CODE (autres livres) non pinées par l'Atlas
 
+### EDOC 6 — 13/13 ligne(s) code hors couverture
+- l.11 — `src/data/reseau-routier.json:12` — "note": "EDOC 06 l.11 — normes du décret de Wilhelm le Sage (2453)."
+- l.15 — `src/data/reseau-routier.json:26` — "note": "EDOC 06 l.15 — section « Routes principales »."
+- l.19 — `src/data/reseau-routier.json:38` — "note": "EDOC 06 l.19 — section « Routes secondaires »."
+- l.28 — `src/data/reseau-routier.json:79` — "note": "EDOC 06 l.28 — liste des compagnies de diligences de l'Empire."
+- l.29 — `src/data/reseau-routier.json:90` — "note": "EDOC 06 l.29 — liste des compagnies de diligences de l'Empire."
+- l.31 — `src/data/reseau-routier.json:113` — "note": "EDOC 06 l.31 — liste des compagnies de diligences de l'Empire."
+- l.32 — `src/data/reseau-routier.json:124` — "note": "EDOC 06 l.32 — liste des compagnies de diligences de l'Empire."
+- l.33 — `src/data/reseau-routier.json:135` — "note": "EDOC 06 l.33 — liste des compagnies de diligences de l'Empire."
+- l.34 — `src/data/reseau-routier.json:146` — "note": "EDOC 06 l.34 — liste des compagnies de diligences de l'Empire."
+- l.41 — `src/data/reseau-routier.json:157` — "note": "EDOC 06 l.41 — section « Les Diligences des Quatre Saisons » (hors de la liste l.27-34)."
+- l.47 — `src/data/reseau-routier.json:101` — "note": "EDOC 06 l.47 — section « Les Diligences de la Tour du Roc »."
+- l.55 — `src/data/reseau-routier.json:67` — "note": "EDOC 06 l.55 — section « Les Lignes Rochet » ; la surcote de 10 % est l.57."
+- … +1 autres
+
 ### MSRC 12 — 6/12 ligne(s) code hors couverture
-- l.85 — `src/data/index.ts:2435` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.85 — `src/data/index.ts:2436` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.107 — `src/engine/naval-traits.test.ts:300` — it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
-- l.111 — `src/data/index.ts:2435` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.111 — `src/data/index.ts:2436` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.117 — `src/engine/naval-traits.test.ts:303` — it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
 - l.137 — `src/data/schemas/defs/sea-weather.ts:108` — /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
 - l.140 — `src/engine/naval-traits.test.ts:190` — it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.140) ; converti −1 DR d’équipage', () => {
@@ -95,18 +120,18 @@ _Aucune._
 ### VDM 14 — 3/7 ligne(s) code hors couverture
 - l.353 — `src/data/arcanePhenomena.ts:77` — /** Modificateurs de NIVEAU D'INCANTATION apportés par le lieu (`VDM 14 l.353`, l.437, l.489) —
 - l.437 — `src/engine/castingNumber.test.ts:28` — it('Caverne de l’Attache : moitié ARRONDIE À L’INFÉRIEUR, Sorts de la Bête (VDM 14 l.437)', () => {
-- l.489 — `src/data/index.ts:2042` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
+- l.489 — `src/data/index.ts:2043` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
 
 ### EDO 1 — 2/2 ligne(s) code hors couverture
 - l.200 — `src/scenes/test-scenarios/96-presets-edo.ts:146` — // CHEMIN JOUEUR de « il leur propose une partie » (`EDO 01 l.200`) : sans lui, le rôle
 - l.202 — `src/scenes/test-scenarios/96-presets-edo.ts:198` — // comme une perte de temps de jouer pour moins de 2/- » (`EDO 01 l.202`), soit 24 sous.
 
 ### EDOC 13 — 2/7 ligne(s) code hors couverture
-- l.137 — `src/data/index.ts:1054` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
-- l.522 — `src/data/index.ts:1617` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
+- l.137 — `src/data/index.ts:1055` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
+- l.522 — `src/data/index.ts:1618` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
 
 ### ADE I 6 — 1/1 ligne(s) code hors couverture
-- l.185 — `src/data/index.ts:1054` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
+- l.185 — `src/data/index.ts:1055` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
 
 ### EDO 7 — 1/1 ligne(s) code hors couverture
 - l.184 — `src/ui/mono-stake-ratchet.test.ts:67` — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,

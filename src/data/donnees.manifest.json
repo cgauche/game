@@ -438,6 +438,12 @@
         },
         {
           "files": [
+            "reseau-routier.json"
+          ],
+          "desc": "Réseau routier impérial (EDOC 3 & 6) : classes de route du décret de 2453 et leurs largeurs, auberges relais et espacement des étapes, compagnies de diligences nommées, postes de péage (tarif par jambe, espacement) et effectifs de patrouille — données de CALIBRATION d'une `MapRoute` (`inns`/`prices`/`speed`), aucune extension du vocabulaire de route"
+        },
+        {
+          "files": [
             "tavernGames.json"
           ],
           "desc": "Jeux de taverne"

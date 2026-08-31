@@ -112,8 +112,15 @@ const FOLIO_TITLE_RATCHET_MAX = 0;
  * irrésolues (51 `desc-introuvable`, 7 `desc-trop-courte` — les cellules du tableau AA portent des
  * `<br>` que la desc recolle sans les reproduire). Zéro réfutée : le volet « aucune entrée NEUVE
  * réfutée » est resté VERT sur ces 80. Population qui grandit, pas détecteur qui faiblit.
+ *
+ * Relevé 771 → 775 le 2026-08-31 (#677) : `reseau-routier.json` entre à l'audit avec 9 `desc`
+ * citées, dont 4 restent irrésolues — 3 classes de route déclarées au folio 19, qu'`EDOC 06` ne
+ * marque d'AUCUNE ancre `data-folio` (verdict `sans-marqueur` : le span est introuvable, pas la
+ * desc), et `patrouille-routiere` (folio 39) dont la desc recolle les deux moitiés d'une phrase que
+ * l'extraction coupe autour de l'encadré « LES JUSTICIERS » — même classe que les `<br>`
+ * d'`aa-criticals` ci-dessus. Population qui grandit, pas détecteur qui faiblit.
  */
-const UNRESOLVED_MAX = 771;
+const UNRESOLVED_MAX = 775;
 
 describe('intégrité du folio — voie TITRE de section, et skip BRUYANT de ce qui reste (#1200)', () => {
   const { titleViolations, noteAuthored, unresolved, stats, total } = AUDIT;

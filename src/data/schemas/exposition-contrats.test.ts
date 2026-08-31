@@ -38,6 +38,7 @@ const jsonSurDisque = () => readdirSync(DATA_DIR).filter((f) => f.endsWith('.jso
  */
 const DETTES_EXEMPT: Record<string, string> = {
   'merchants.json': '#747 (2026-08-29)',
+  'reseau-routier.json': '#684 (2026-08-31)',
 };
 
 describe('exposition Codex — contrats de la dérivation (#1472)', () => {

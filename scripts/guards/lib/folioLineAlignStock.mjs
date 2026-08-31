@@ -90,4 +90,11 @@ export const FOLIO_LINE_ALIGN_RATCHET = new Set([
 export const FOLIO_LINE_ALIGN_NON_JUGEABLE = new Set([
   'reglesOptionnelles.json#vents-tourbillonnants', // « LDB 46 l.179-190 » — déclaré 238 (dernière ancre du chapitre, le voisin ne la continue pas)
   'reglesOptionnelles.json#corruption-tables-edoc', // « EDOC 12 l.63 » — déclaré 65 (même trou EDOC 12)
+  // #677 — les quatre entrées de `reseau-routier.json` citées APRÈS l'unique ancre d'`EDOC 06`
+  // (`data-folio="20"`, l.37) : le chapitre suivant ne reprend pas la numérotation, la queue est
+  // donc trouée pour tout ce qui suit cette ancre. Le folio 20 est celui de l'ancre elle-même.
+  'reseau-routier.json#auberge-relais', // « EDOC 06 l.65 » — déclaré 20
+  'reseau-routier.json#diligences-quatre-saisons', // « EDOC 06 l.41 » — déclaré 20
+  'reseau-routier.json#diligences-tour-du-roc', // « EDOC 06 l.47 » — déclaré 20
+  'reseau-routier.json#lignes-rochet', // « EDOC 06 l.55 » — déclaré 20
 ])

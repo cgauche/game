@@ -155,6 +155,7 @@ export const FILE_CONCEPTS = new Map([
   ['src/engine/trappingChoices.ts', "Choix d'équipement de départ"],
   ['src/engine/trauma.ts', 'Traumatisme, passifs collectés'],
   ['src/engine/travel.ts', 'Voyage'],
+  ['src/engine/mountedManeuvers.ts', 'Manœuvres montées'],
   ['src/engine/travelEncounter.ts', 'Rencontre de voyage'],
   ['src/engine/travelStages.ts', 'Étapes de voyage'],
   ['src/engine/travelTables.ts', 'Tables de voyage'],

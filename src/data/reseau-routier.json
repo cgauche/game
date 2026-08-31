@@ -1,0 +1,196 @@
+[
+  {
+    "id": "route-imperiale",
+    "type": "reseau-routier",
+    "label": "Route impériale",
+    "kind": "classe",
+    "largeurMinM": 6,
+    "largeurMaxM": 6,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 19,
+      "note": "EDOC 06 l.11 — normes du décret de Wilhelm le Sage (2453)."
+    },
+    "desc": "Selon le décret de Wilhelm, une route impériale doit être large de six mètres (suffisamment pour permettre à deux chariots de passer sans encombre) et être faite de pierre dure, concassée et tassée pour fournir une surface ferme. Elle doit également être incurvée pour permettre à la pluie de s'écouler de chaque côté. Les routes qui longent les grands cours d'eau, comme la route de Talabheim à Altdorf, sont considérées comme des routes impériales, mais comme les cours d'eau supportent l'essentiel du trafic lourd, elles ont tendance à ne pas être entretenues correctement. La qualité attendue sur les plus grandes routes ne perdure souvent que sur quelques kilomètres au-delà des villes, puis elles sont ensuite considérées comme des routes principales."
+  },
+  {
+    "id": "route-principale",
+    "type": "reseau-routier",
+    "label": "Route principale",
+    "kind": "classe",
+    "largeurMinM": 2.5,
+    "largeurMaxM": 3.5,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 19,
+      "note": "EDOC 06 l.15 — section « Routes principales »."
+    },
+    "desc": "Les routes principales sont entretenues par les communautés qu'elles desservent, souvent financées par des péages ou des taxes sur les marchandises à certains endroits. Les routes les plus proches d'une ville ou d'un village sont les mieux entretenues. Elles ont une largeur de 2,5 à 3,5 mètres, avec parfois des endroits plus larges où l'on peut circuler dans les deux sens simultanément. Plus loin de la ville, leur revêtement en pierre ou en gravier devient de la terre et elles deviennent plus étroites, la végétation poussant de chaque côté vers l'intérieur."
+  },
+  {
+    "id": "route-secondaire",
+    "type": "reseau-routier",
+    "label": "Route secondaire",
+    "kind": "classe",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 19,
+      "note": "EDOC 06 l.19 — section « Routes secondaires »."
+    },
+    "desc": "Les routes secondaires ne sont souvent guère plus que des pistes de terre, qui ne sont dénuées de végétation que grâce au passage de roues, de pieds et de sabots. Elles suivent la voie la plus simple, contournant les collines et autres obstacles. Souvent, elles n'étaient guère plus que des sentiers de chasse ou de simples chemins avant de recevoir le clinquant titre de « route »."
+  },
+  {
+    "id": "auberge-relais",
+    "type": "reseau-routier",
+    "label": "Auberge relais",
+    "kind": "relais",
+    "espacementKm": 50,
+    "etapeDiligenceJours": 0.5,
+    "etapeChevalJours": 0.5,
+    "etapePiedJours": 1,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 20,
+      "note": "EDOC 06 l.65 — section « Auberges relais »."
+    },
+    "desc": "Les auberges sont réparties le long de toutes les routes principales, , ainsi que dans les villes du parcours. Elles sont souvent espacées de cinquante kilomètres, ce qui représente environ une demi-journée de voyage en diligence ou à cheval, ou, pour les plus courageux, une journée complète de voyage à pied par temps raisonnable."
+  },
+  {
+    "id": "lignes-rochet",
+    "type": "reseau-routier",
+    "label": "Les Lignes Rochet d'Altdorf",
+    "kind": "compagnie",
+    "prixSurcotePct": 10,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 20,
+      "note": "EDOC 06 l.55 — section « Les Lignes Rochet » ; la surcote de 10 % est l.57."
+    },
+    "desc": "Il s'agit d'une plus petite compagnie, mais comme elle est plus ancienne que les Quatre Saisons certains nobles la préfèrent en raison de son histoire et parce qu'elle est considérée comme une façon plus respectable de voyager.\n\nDe conception identique depuis des décennies, les diligences des Lignes Rochet paraissent démodées et un peu minables par rapport à leurs concurrents modernes. Bien que le succès d'autres compagnies fasse pression sur la vieille garde, ses employés sont fiers de la qualité de leur service ; en effet, les prix sont 10 % plus élevés car la compagnie cherche à se positionner comme un transporteur exclusif et de classe supérieure. Ses diligences fonctionnent sur la base de la réservation : les diligences affrétées par des passagers nobles partent dès que possible, quelle que soit l'heure, tandis que les autres ne se mettent en route que lorsque toutes les places sont achetées.\n\nEn théorie, la ligne assure des services réguliers d'Altdorf vers toutes les grandes villes de l'Empire en plus de ses affrètements privés, mais la concurrence croissante a conduit la compagnie à se reposer sur ses activités privées et ses liens de longue date avec la noblesse. Ses lignes régulières couronnées de succès comprennent un service hebdomadaire vers Helmgart, puis vers Montfort en Bretonnie par le Défilé de la Hache."
+  },
+  {
+    "id": "lignes-cartak",
+    "type": "reseau-routier",
+    "label": "Les Lignes Cartak d'Altdorf",
+    "kind": "compagnie",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 19,
+      "note": "EDOC 06 l.28 — liste des compagnies de diligences de l'Empire."
+    }
+  },
+  {
+    "id": "diligences-fleche-rouge",
+    "type": "reseau-routier",
+    "label": "Les Diligences Flèche rouge d'Averheim",
+    "kind": "compagnie",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 19,
+      "note": "EDOC 06 l.29 — liste des compagnies de diligences de l'Empire."
+    }
+  },
+  {
+    "id": "diligences-tour-du-roc",
+    "type": "reseau-routier",
+    "label": "Les Diligences de la Tour du Roc de Middenheim",
+    "kind": "compagnie",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 20,
+      "note": "EDOC 06 l.47 — section « Les Diligences de la Tour du Roc »."
+    },
+    "desc": "Cette compagnie se bat avec acharnement pour conserver sa part sur les routes à mesure que les Quatre Saisons s'étendent. Elle a conclu des accords avec de nombreuses auberges indépendantes et a bloqué les tentatives des Quatre Saisons pour prendre le contrôle de plusieurs auberges entre Altdorf et Middenheim.\n\nEn plus de concurrencer les Diligences des Quatre Saisons sur la ligne Altdorf-Middenheim, les Diligences de la Tour du Roc assurent des services de Middenheim à Marienburg le long de la route du Grand Nord, sur l'ancienne Voie forestière jusqu'à Salzenmund, au sud jusqu'à Talabheim, et à l'est via Wolfenburg et Hergig jusqu'à Kislev."
+  },
+  {
+    "id": "diligences-loup-coureur",
+    "type": "reseau-routier",
+    "label": "Les Diligences du Loup coureur de Middenheim",
+    "kind": "compagnie",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 19,
+      "note": "EDOC 06 l.31 — liste des compagnies de diligences de l'Empire."
+    }
+  },
+  {
+    "id": "cannon-ball-express",
+    "type": "reseau-routier",
+    "label": "Le Cannon Ball Express de Nuln",
+    "kind": "compagnie",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 19,
+      "note": "EDOC 06 l.32 — liste des compagnies de diligences de l'Empire."
+    }
+  },
+  {
+    "id": "express-imperial",
+    "type": "reseau-routier",
+    "label": "L'Express impérial de Nuln",
+    "kind": "compagnie",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 19,
+      "note": "EDOC 06 l.33 — liste des compagnies de diligences de l'Empire."
+    }
+  },
+  {
+    "id": "diligences-du-tunnel",
+    "type": "reseau-routier",
+    "label": "Les Diligences du Tunnel de Talabheim",
+    "kind": "compagnie",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 19,
+      "note": "EDOC 06 l.34 — liste des compagnies de diligences de l'Empire."
+    }
+  },
+  {
+    "id": "diligences-quatre-saisons",
+    "type": "reseau-routier",
+    "label": "Les Diligences des Quatre Saisons",
+    "kind": "compagnie",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 20,
+      "note": "EDOC 06 l.41 — section « Les Diligences des Quatre Saisons » (hors de la liste l.27-34)."
+    },
+    "desc": "Les Quatre Saisons ont rapidement étendu leurs opérations, desservant désormais toutes les grandes villes de l'Empire. La compagnie est également en train d'établir un réseau d'auberges relais exclusives le long des routes principales. Les Quatre Saisons font encore appel aux auberges relais indépendantes, mais c'est une question de temps avant qu'ils n'en aient plus besoin, menaçant ainsi leur survie."
+  },
+  {
+    "id": "poste-de-peage",
+    "type": "reseau-routier",
+    "label": "Poste de péage",
+    "kind": "peage",
+    "espacementKmMin": 30,
+    "espacementKmMax": 60,
+    "tarifBrassMin": 1,
+    "tarifBrassMax": 4,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 40,
+      "note": "EDOC 10 l.30 — section « Postes de péage » ; tarif l.32."
+    },
+    "desc": "Des postes de péage ponctuent toutes les routes principales. Ils sont souvent entretenus par un seigneur local, ou parfois par une ville ou en fermage par un collecteur d'impôts. On les trouve généralement tous les 30 à 60 kilomètres, et leur emplacement est choisi pour que les voyageurs ne puissent pas les éviter facilement : sur les ponts ou les chaussées, à proximité des gués, au bout d'un défilé étroit et rocheux, etc. Lorsqu'il n'existe pas de barrières naturelles, un mur est généralement construit ou des blocs de pierre sont installés sur le bord de la route pour empêcher le passage des voitures et des chariots qui tentent d'éviter la barrière de péage. Les voies les plus fréquentées sont souvent équipées de tourelles, des structures solides, conçues pour la défense, en plus de la barrière. Un poste de péage comprend généralement un couple de gardiens et éventuellement quelques serviteurs. Dans les zones dangereuses ou sur les grandes routes, un poste de péage peut servir de caserne et de prison pour les patrouilleurs routiers locaux.\n\nLe coût d'un péage est généralement de 1 à 4 sous de cuivre par jambe qui traverse, mais peut être beaucoup plus élevé le long des merveilles d'ingénierie, ponts, écluses et autres, disséminées dans l'Empire. Sur les routes très fréquentées, les péages sont souvent moins élevés, afin d'encourager le trafic routier. Certains des seigneurs les plus sagaces ont même remarqué que des prix plus bas tendent en fait à augmenter le revenu global du péage, car les gens sont attirés par la perspective de voyager sur une route moins chère."
+  },
+  {
+    "id": "patrouille-routiere",
+    "type": "reseau-routier",
+    "label": "Patrouille routière",
+    "kind": "patrouille",
+    "effectifMin": 4,
+    "effectifMax": 6,
+    "effectifRouteReculeeMin": 1,
+    "effectifRouteReculeeMax": 2,
+    "facteurZoneDangereuse": 2,
+    "facteurGrandsTroublesMin": 3,
+    "facteurGrandsTroublesMax": 4,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 39,
+      "note": "EDOC 10 l.11 — section « Patrouilles routières » ; la phrase reprend l.17, l'encadré « LES JUSTICIERS » (l.13-15) la coupant."
+    },
+    "desc": "Un groupe typique de patrouilleurs routiers le long d'une route commerciale communément utilisée se compose de 4 à 6 patrouilleurs routiers, souvent dirigés par un sergent. Dans les zones plus dangereuses, on peut rencontrer une patrouille à l'effectif doublé, parfois sous le commandement d'un capitaine, mais généralement ils restent plutôt à proximité des routes principales, et des villes et villages. De nombreuses routes, en particulier celles menant au cœur des forêts ou loin des principales voies commerciales, n'ont besoin que d'un patrouilleur routier ou deux, rarement à l'œuvre. À l'inverse, en période de grands troubles, ces patrouilles peuvent être renforcées et tripler, voire quadrupler, leurs effectifs, ce qui fait que certaines ressemblent véritablement à des détachements de l'armée domaniale."
+  }
+]

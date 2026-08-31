@@ -591,7 +591,9 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     // REQUIS […] Ils meurent avec le lot qui posera `min(1)` sur ces deux defs, pas ici. » Les deux
     // sont désormais morts (12a puis 12b) : le renvoi de 3h est INTÉGRALEMENT soldé. Les écarts sont
     // ici, pas dans un silence.
-    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 77, mesures: 0 });
+    //   #677 : `reseau-routier` est un def `entite` NEUF, adopté dès sa création et `source` exigée
+    //         — il naît donc dans la population SCELLÉE (77 → 78), sans jamais passer par la mesure.
+    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 78, mesures: 0 });
   });
 
 });
@@ -744,6 +746,10 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     // vague 14 (V-UNION) — `oups` adopte : DERNIER def hors forme, sa disjonction bande/misfire passe
     // d'une union à un refine ⟺. Les 8 entrées portent le folio 160, donc `source` est exigible.
     'oups.json · source',
+    // #677 — `reseau-routier` naît adopté : ses 15 entrées portent toutes leur folio EDOC, `source`
+    // est donc exigible dès la création. `desc` ne l'est pas (les 6 compagnies de la liste l.27-34
+    // n'ont que leur nom au Source — aucune prose à recopier, aucune à inventer).
+    'reseau-routier.json · source',
   ];
 
   it('la 1ʳᵉ entrée réelle de chaque def adopté est ACCEPTÉE — témoin positif de chaque paire', () => {

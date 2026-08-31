@@ -15,12 +15,12 @@
 **Périmètre mesuré et angles morts** — la carte §A vient du manifeste ÉDITORIAL
 `src/data/donnees.manifest.json` (rangement par rubrique, description, homonymes) : rien de tout cela
 ne se devine de l'arbre, un jugement humain reste nécessaire. Ce que ce générateur CALCULE et
-réfute au besoin : (1) bijection stricte manifeste ⇄ `121` fichiers réels de
+réfute au besoin : (1) bijection stricte manifeste ⇄ `122` fichiers réels de
 `src/data/*.json` (un `.json` neuf non cartographié, ou une entrée de manifeste pointant sur un
 fichier disparu, casse la génération) ; (2) nombre d'entrées par fichier (comptage `Array.isArray`,
 `objet à sous-catalogues` sinon — angle mort assumé : cette étiquette ne dit RIEN du contenu réel
 d'un objet à sous-catalogues, juste qu'il n'est pas un tableau plat) ; (3) couverture du contrat de
-schéma zod (`121/121`, cf. §E-bis) ; (4) présence effective sur disque de
+schéma zod (`122/122`, cf. §E-bis) ; (4) présence effective sur disque de
 chaque fichier cité par un cas d'homonyme de §D. Angle mort déclaré : les DESCRIPTIONS de rubrique,
 de fichier et d'homonyme restent du texte manuscrit du manifeste — ce générateur ne les vérifie PAS
 contre le contenu réel des `.json` (une description qui ment sur ce que porte un fichier ne casse
@@ -31,7 +31,7 @@ La colonne **Exposition** de §A est DÉRIVÉE des `exposition` déclarées par 
 (`document(type, famille, champs, meta, exposition)` → `src/data/schemas/exposition-derivee.ts`,
 dumpée par `scripts/docs/lib/dump-exposition.mts`) : clés de catégorie Codex exposées, route
 d'édition (`dataset` / `objet single|record` / `niché` / aucune), ou EXEMPTION motivée
-(`26` fichier(s) exempt(s) sur `121`). Aucune de ces valeurs n'est écrite ici :
+(`27` fichier(s) exempt(s) sur `122`). Aucune de ces valeurs n'est écrite ici :
 un def qui change d'exposition change cette colonne au prochain `npm run docs:donnees`.
 
 ## §A — Carte : où va chaque donnée
@@ -44,7 +44,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 | `characteristics.json` | Caractéristiques (CC, CT, F… + méta) (19 entrée(s)) | `characteristics` — dataset `characteristics` |
 | `skills.json` | Compétences (+ `specs` de spécialisation) (48 entrée(s)) | `skills` — dataset `skills` |
 | `talents.json` | Talents (187 entrée(s)) | `talents` — dataset `talents` |
-| `traits.json` | Traits (créature ET joueur ; `capabilities`/`passive`/`effects`) (131 entrée(s)) | `traits` · `psychologie` — dataset `traits` |
+| `traits.json` | Traits (créature ET joueur ; `capabilities`/`passive`/`effects`) (132 entrée(s)) | `traits` · `psychologie` — dataset `traits` |
 | `careers.json` | Carrières (108 entrée(s)) | `careers` — dataset `careers` |
 | `careerLevels.json` | Les 4 niveaux de chaque carrière (compétences/talents/possessions gagnés) (432 entrée(s)) | `careerLevels` — dataset `careerLevels` |
 | `progression-schemas.derived.json` | GÉNÉRÉ (`python scripts/data/gen-progression-schemas.py`) — le schéma de progression (marque → Caractéristique, par niveau) LU dans les PDF de `Source/` : vérité dérivée contre laquelle `scripts/guards/lib/progressionSchemas.mjs` confronte le `characteristics` de `careerLevels.json`. Ne pas éditer à la main. (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (artefact GÉNÉRÉ : il se réécrit par `scripts/data/gen-progression-schemas.py`, jamais à l’atelier) |
@@ -97,7 +97,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 | Fichier | Contient | Exposition (Codex — édition) |
 |---|---|---|
 | `traumas.json` | Traumatismes / séquelles (`ops`) (29 entrée(s)) | `traumas` — dataset `traumas` |
-| `maladies.json` · `symptoms.json` | Maladies · leurs symptômes (16 entrée(s) · 18 entrée(s)) | `maladies` — dataset `maladies` ; `symptoms` — dataset `symptoms` |
+| `maladies.json` · `symptoms.json` | Maladies · leurs symptômes (18 entrée(s) · 18 entrée(s)) | `maladies` — dataset `maladies` ; `symptoms` — dataset `symptoms` |
 | `mutations.json` · `mutationTables.json` | Mutations du Chaos · tables d100 de mutation (116 entrée(s) · 17 entrée(s)) | `mutations` — dataset `mutations` ; `mutationTables` — dataset `mutationTables` |
 | `water-exposure.json` | Exposition à l'eau (noyade, maladies) (objet à sous-catalogues) | `waterExposure` — objet single |
 | `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) (objet à sous-catalogues · objet à sous-catalogues) | `obsessions` — niché (`obsessions`) ; `drunkenness` — niché (`drunkenness`) |
@@ -109,13 +109,13 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 ### Objets & équipement
 | Fichier | Contient | Exposition (Codex — édition) |
 |---|---|---|
-| `trappings.json` | **Équipement PORTÉ** : armes, armures, objets tenus/portés. **ATTENTION — PAS** les machines de guerre. (440 entrée(s)) | `trappings` · `siegeEngines` — dataset `trappings` |
+| `trappings.json` | **Équipement PORTÉ** : armes, armures, objets tenus/portés. **ATTENTION — PAS** les machines de guerre. (441 entrée(s)) | `trappings` · `siegeEngines` — dataset `trappings` |
 | `disponibilite.json` | Tables numériques de « Faire son marché » (LDB 59) : `dispoPct` (% de Disponibilité par taille de colonie) + `barterRatios` (RATIOS DE TROC) — consommées par `src/engine/disponibilite.ts` (`DISPO_PCT`/`BARTER_RATIOS`) (objet à sous-catalogues) | `disponibilite` — objet single |
 
 ### Bestiaire
 | Fichier | Contient | Exposition (Codex — édition) |
 |---|---|---|
-| `creatures.json` | Bestiaire / PNJ (statblocs : `char`, `traits`, `skills`, `spells`, `trappings`…) (490 entrée(s)) | `creatures` — dataset `creatures` |
+| `creatures.json` | Bestiaire / PNJ (statblocs : `char`, `traits`, `skills`, `spells`, `trappings`…) (492 entrée(s)) | `creatures` — dataset `creatures` |
 
 ### Monde, voyage terrestre & temps
 | Fichier | Contient | Exposition (Codex — édition) |
@@ -128,6 +128,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 | `vehicles.json` | Véhicules (diligence, barge, **navires** — porte des réfs de `naval-traits` par id) (31 entrée(s)) | `vehicles` — dataset `vehicles` |
 | `problemes-vehicule.json` · `driving-mishap.json` | Pannes de véhicule · maladresse de conduite (objet à sous-catalogues · objet à sous-catalogues) | `problemesVehicule` — niché (`problemesVehicule`) ; `drivingMishap` — niché (`drivingMishap`) |
 | `land-cargo.json` | Cargaison terrestre (commerce) (objet à sous-catalogues) | `landCargo` — niché (`landCargo`) |
+| `reseau-routier.json` | Réseau routier impérial (EDOC 3 & 6) : classes de route du décret de 2453 et leurs largeurs, auberges relais et espacement des étapes, compagnies de diligences nommées, postes de péage (tarif par jambe, espacement) et effectifs de patrouille — données de CALIBRATION d'une `MapRoute` (`inns`/`prices`/`speed`), aucune extension du vocabulaire de route (15 entrée(s)) | exempt (dette, #684) — aucune (aucune catégorie du Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `tavernGames.json` | Jeux de taverne (13 entrée(s)) | `tavernGames` — dataset `tavernGames` |
 | `merchants.json` | Archétypes de marchand (#2) — catalogue par familles `category.types`/`subTypes`, Disponibilité/Statut/`unitKinds` (bêtes/véhicules vendus, dérivés de `creatures`/`vehicles` à facette `purchase`) ; aucun archétype en dur dans le code, `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre (6 entrée(s)) | exempt (dette, #747) — aucune (aucune catégorie du Codex ne l’édite — le stock se règle en Scène, l’archétype reste app-owned) |
 | `merchantFamilies.json` | Familles de PRÉSENTATION du stock marchand (onglets `ui/MerchantPanel.tsx`) — ordre d'affichage, règle de classement `match` (unit/shield/categorie/fallback) et `columns` de stats à afficher, résolues contre le registre fixe `MERCHANT_COL_RENDERERS` (7 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
@@ -173,7 +174,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 |---|---|---|
 | `books.json` | **Registre des livres sources** — le champ `abr` est l'abréviation CANONIQUE (voir §B) (29 entrée(s)) | `books` — dataset `books` |
 | `primitives.manifest.json` · `systemes.manifest.json` | Manifestes TOOLING (#298, vocabulaire app-interne, pas RAW) — sources de `docs/systemes.md` (`npm run docs:systemes`, `scripts/docs/build-systemes.mjs`) (28 entrée(s) · 16 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
-| `raw.manifest.json` | Manifeste éditorial du champ Implémente de l'Atlas RAW (généré par `scripts/raw/build-implemente.mjs`, #487) : par topic, ticket de dette ou raison de blocage — la SEULE surface écrite à la main du champ (8 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `raw.manifest.json` | Manifeste éditorial du champ Implémente de l'Atlas RAW (généré par `scripts/raw/build-implemente.mjs`, #487) : par topic, ticket de dette ou raison de blocage — la SEULE surface écrite à la main du champ (9 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `donnees.manifest.json` | Manifeste éditorial de cet atlas (#903, rangement par rubrique, description, règle d'or, pièges d'homonymes) — source de `docs/donnees.md` (`npm run docs:donnees`, `scripts/docs/build-donnees.mjs`) (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 
 ## §B — Conventions de champs (à respecter à l'ajout)
@@ -243,7 +244,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   ```
   (Lot 2, #563 : 15 entrées migrées — republications identiques et scissions prose/ligne-de-stats.)
 - **`variants?: Variant[]`** (#563/#564) — variante RÉGLÉE d'une entrée sous une **règle optionnelle**
-  du registre `OPTIONAL_RULES` (`src/engine/policy.ts:43`, lue par `rule(id)`) : `when.rule` DOIT être
+  du registre `OPTIONAL_RULES` (`src/engine/policy.ts:88`, lue par `rule(id)`) : `when.rule` DOIT être
   un id du registre (jamais un label, gate fantôme sinon — **enforced** par
   `src/data/variants-integrity.test.ts`), `when.equals` défaut `true` ; `desc`/`source` PROPRES
   portent la règle 5 **par variante** (le walk `citedEntriesOf` de `folioIntegrity.mjs` la découvre
@@ -254,10 +255,11 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   effectivement (liste blanche `VARIANT_RESOLVED_FIELDS` de la def, passée à `variantOf` — schéma
   `strictObject`, donc tout autre champ est rejeté au parse ; **enforced** aussi côté donnée par
   `src/data/variants-integrity.test.ts`) : `talents.json` résout `desc`/`source` (Codex
-  `src/ui/compendium/registry.ts:1133`), `test` (`talentTestSLBonus`, `src/engine/magic.ts:314`),
-  `max` (`talentMaxById`, `src/engine/careerSlots.ts:324`) et `combat` (`featuresOf`/`castingKindOf`,
-  `src/engine/combatFeatures/dispatch.ts:59`/`:17`) ; `traits.json` ne résout que `desc`/`source`
-  (`src/ui/compendium/registry.ts:483`). `passive` et `effects` en sont EXCLUS — le moteur les lit sur
+  `src/ui/compendium/registry.ts:1415`), `test` (`talentTestSLBonus`, `src/engine/magic.ts:359`),
+  `max` (`talentMaxById`, `src/engine/careerSlots.ts:324`) et `combat`
+  (`featuresOf`/`castingKindOf`, `src/engine/combatFeatures/dispatch.ts:52`/`:17`) ;
+  `traits.json` ne résout que `desc`/`source`
+  (`src/ui/compendium/registry.ts:567`). `passive` et `effects` en sont EXCLUS — le moteur les lit sur
   l'entrée brute (`src/engine/talentEffects.ts`, `src/engine/traits/dispatch.ts`) ; un champ n'entre
   dans la liste qu'une fois son consommateur routé par `effectiveEntry`. `careers`/`skills`/`spells`
   n'admettent aucune variante (aucun consommateur `effectiveEntry`). Champ posé sur `talents.json` —
@@ -305,7 +307,7 @@ Deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont
 ## §E-bis — Contrat de schéma (`src/data/schemas/`)
 
 Chaque document authoré valide contre un schéma zod **STRICT**, sur les **DEUX racines** de
-documents : `src/data` (catalogues de jeu, **121/121** datasets sous contrat, décompte
+documents : `src/data` (catalogues de jeu, **122/122** datasets sous contrat, décompte
 CALCULÉ des defs présentes dans `src/data/schemas/defs/`) et `src/scenes` (projets de campagne
 `*-projet.json`, defs dans `src/data/schemas/defs-scenes/`).
 

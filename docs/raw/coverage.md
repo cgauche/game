@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 95 traités par une fiche · 📖 78 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 175 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3443 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2390 hors-règle** (chapitre explicitement exclu) · **131 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **287 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅9·📖4·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅1·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 97 traités par une fiche · 📖 78 transcrits par un catalogue seul (jamais traités) · 🟡 0 effleurés · ⬜ 1 trous** sur 176 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3435 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2389 hors-règle** (chapitre explicitement exclu) · **131 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **280 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅9·📖4·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅1·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅6·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -999,7 +999,7 @@
   - 📖 l.107-120 « Litanie de la Pestilence » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.247-266 « ANNEAU D'OPSIANON » — transcrit en catalogue, jamais traité, 0 réf
 
-## EDOC — ✅ 4 · 📖 0 · 🟡 1 · ⬜ 0
+## EDOC — ✅ 6 · 📖 0 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -1009,10 +1009,10 @@
 | 03 | CHAPITRE 1 - « Easter eggs » | ➖ hors-règle | |
 | 04 | ORGANISATIONS ET LIEUX | ➖ hors-règle | |
 | 05 | CHAPITRE 2 - L’Empire | ➖ hors-règle | |
-| 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
+| 06 | Chapitre 3 - Les routes et grandes routes | ✅ | 13 (reconciliation.md ×12) |
 | 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
-| 08 | CHAPITRE 5 - Voyager | ✅ | 10 (deplacement.md ×7) |
-| 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ➖ hors-règle | |
+| 08 | CHAPITRE 5 - Voyager | ✅ | 11 (deplacement.md ×7) |
+| 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ✅ | 4 (reconciliation.md ×4) |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
 | 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ | 3 (corruption.md ×3) |
@@ -1024,13 +1024,6 @@
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
 - **EDOC 06** (Chapitre 3 - Les routes et grandes routes) :
-  - ⬜ l.3-12 « LES ROUTES » — candidat trou de règle, 0 réf
-  - ⬜ l.13-16 « Routes principales » — candidat trou de règle, 0 réf
-  - ⬜ l.17-20 « Routes secondaires » — candidat trou de règle, 0 réf
-  - ⬜ l.21-38 « LES RELAIS DE DILIGENCES » — candidat trou de règle, 0 réf
-  - ⬜ l.39-44 « Les Diligences des Quatre Saisons » — candidat trou de règle, 0 réf
-  - ⬜ l.45-52 « Les Diligences de la Tour du Roc » — candidat trou de règle, 0 réf
-  - ⬜ l.53-62 « Les Lignes Rochet » — candidat trou de règle, 0 réf
   - ⬜ l.63-68 « Auberges relais » — candidat trou de règle, 0 réf
   - ⬜ l.69-74 « ACCROCHE D'AVENTURE UN CARROSSE TROP LOIN » — candidat trou de règle, 0 réf
 - **EDOC 07** (Chapitre 4 - Montures et véhicules) :

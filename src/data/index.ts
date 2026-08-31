@@ -83,6 +83,7 @@ import oupsJson from './oups.json';
 import interludeEventsJson from './interludeEvents.json';
 import tavernGamesJson from './tavernGames.json';
 import peripetiesJson from './peripeties.json';
+import reseauRoutierJson from './reseau-routier.json';
 import massBattleJson from './mass-battle.json';
 import grappleJson from './grapple.json';
 import reglesJson from './regles.json';
@@ -2748,6 +2749,46 @@ export const oups = oupsJson as OupsRow[];
 export const interludeEvents = interludeEventsJson as InterludeEvent[];
 /** Péripéties de voyage (1d10) — app-owned éditable ; consommé par `peripeties.ts` (même référence). */
 export const peripeties = peripetiesJson as Peripetie[];
+
+/** Réseau routier impérial (EDOC 3 « Les routes et grandes routes » et EDOC 6 « Patrouilleurs
+ *  routiers ») — catalogue de CALIBRATION d'une `MapRoute` : classes de route et leurs largeurs,
+ *  espacement des auberges relais, compagnies de diligences nommées, tarif et espacement des postes
+ *  de péage, effectifs de patrouille. Aucun de ces champs n'étend le vocabulaire de `MapRoute` : ils
+ *  se posent sur `inns`/`prices`/`speed`/`km` à l'authoring de carte. */
+export interface ReseauRoutierData {
+  id: string;
+  type: 'reseau-routier';
+  label: string;
+  /** Ce dont l'entrée parle — discriminant FERMÉ. */
+  kind: 'classe' | 'relais' | 'compagnie' | 'peage' | 'patrouille';
+  desc?: string;
+  source?: SourceRef;
+  largeurMinM?: number;
+  largeurMaxM?: number;
+  espacementKm?: number;
+  etapeDiligenceJours?: number;
+  etapeChevalJours?: number;
+  etapePiedJours?: number;
+  espacementKmMin?: number;
+  espacementKmMax?: number;
+  /** Droit de passage en sous de cuivre (`brass`, unité de `vehicles.json`) par jambe qui traverse. */
+  tarifBrassMin?: number;
+  tarifBrassMax?: number;
+  prixSurcotePct?: number;
+  effectifMin?: number;
+  effectifMax?: number;
+  effectifRouteReculeeMin?: number;
+  effectifRouteReculeeMax?: number;
+  facteurZoneDangereuse?: number;
+  facteurGrandsTroublesMin?: number;
+  facteurGrandsTroublesMax?: number;
+}
+export const reseauRoutier = reseauRoutierJson as ReseauRoutierData[];
+const reseauRoutierById = new Map(reseauRoutier.map((r) => [r.id, r]));
+/** Résout une entrée du réseau routier par son `id` STABLE. */
+export function findReseauRoutierById(id: string): ReseauRoutierData | undefined {
+  return reseauRoutierById.get(id);
+}
 
 const ETAT_BY_ID = new Map(etats.map((e) => [e.id, e]));
 /** Résout un État par son `id` STABLE (`ConditionId`). */
