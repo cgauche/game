@@ -698,6 +698,7 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | prose | `desc` | cible | 40 | activities.json(61) astrology.json(5) axes.json(9) books.json(18) careers.json(108) characteristics.json(19) classes.json(9) creatures.json(196) crew-roles.json(9) domains.json(14) etats.json(21) gods.json(40) … |
 | prose | `text` | divergente | 0 | — |
 | prose | `description` | divergente | 0 | — |
+| type de document | `type` | cible (`string`) | 124 | aa-criticals.json(1) actions.json(55) activities.json(62) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) … |
 | source | `source` | cible (`object`) | 73 | actions.json(12) activities.json(62) advancementCosts.json(15) artillery-misfire.json(1) astrology.json(5) calendarIntercalary.json(6) calendarMonths.json(12) calendarWeekdays.json(8) careerLevels.json(432) careers.json(108) characteristics.json(19) classes.json(9) … |
 | maison | `maison` | cible (`string`) | 15 | actions.json(30) activities.json(8) axes.json(9) creatures.json(1) crew-roles.json(7) etats.json(1) naval-traits.json(2) reglesOptionnelles.json(27) talents.json(9) traits.json(3) trappings.json(2) traumas.json(2) … |
 | méta libre | `_source` | divergente | 0 | — |
@@ -708,20 +709,20 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | méta libre | `__livres` | divergente | 0 | — |
 
 Groupes mesurés : **126** jeux d’ENTRÉES DE RACINE et **137** chemins de
-DOCUMENTS EMBARQUÉS (**2127** objets). **51** divergences
+DOCUMENTS EMBARQUÉS (**2127** objets). **47** divergences
 (rôle × clé × document × chemin) au stock `STRUCTURES_ENVELOPPE` (`scripts/guards/lib/structuresStock.mjs`,
 garde `src/data/structures-contrat.test.ts`) — une ligne se solde en migrant l’enveloppe, la ligne part
 dans le MÊME commit :
 
 | Rôle | Motif | Groupes |
 |---|---|---|
-| source | clé absente | 51 |
+| source | clé absente | 47 |
 
-Documents dont AUCUNE ENTRÉE DE RACINE ne porte `source` : **51** (lot `L1d #1469`) —
-`aa-criticals.json`(1) `ambiance.json`(1) `arcane-phenomena.json`(1) `arene-projet.json`(1) `axes.json`(9) `barge-du-sel-projet.json`(1) `books.json`(29) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `criticals.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `loup-et-saumure-projet.json`(1) `mass-battle.json`(1) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(28) `progression-schemas.derived.json`(1) `propMaterials.json`(4) `props.json`(78) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(9) `reliefMaterials.json`(6) `renduMonte.json`(1) `river-perils.json`(1) `roofMaterials.json`(4) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
+Documents dont AUCUNE ENTRÉE DE RACINE ne porte `source` : **47** (lot `L1d #1469`) —
+`aa-criticals.json`(1) `ambiance.json`(1) `arcane-phenomena.json`(1) `books.json`(29) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `criticals.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `mass-battle.json`(1) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(28) `progression-schemas.derived.json`(1) `propMaterials.json`(4) `props.json`(78) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(9) `reliefMaterials.json`(6) `renduMonte.json`(1) `river-perils.json`(1) `roofMaterials.json`(4) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
 
 Le DoD ajouté de #1465 annonçait « 13 datasets sans `source` » : la mesure en trouve
-**51** — le chiffre de 13 n’a pas de porteur dans l’arbre, il ne se recopie pas.
+**47** — le chiffre de 13 n’a pas de porteur dans l’arbre, il ne se recopie pas.
 
 Documents de racine ne portant AUCUNE clé `source` à quelque profondeur que ce soit : **36**
 (lot `L1d #1469`) — `ambiance.json` `arene-projet.json` `axes.json` `barge-du-sel-projet.json` `books.json` `breath-types.json` `calendarPhases.json` `damage-types.json` `decorPalette.json` `details.json` `donnees.manifest.json` `groups.json` `lieux-services.json` `lightLevels.json` `lightTones.json` `loup-et-saumure-projet.json` `merchantFamilies.json` `merchants.json` `names.json` `pregens.json` `primitives.manifest.json` `progression-schemas.derived.json` `propMaterials.json` `props.json` `qualitySubtypes.json` `qualityTypes.json` `raceAppearance.json` `raw.manifest.json` `reliefMaterials.json` `renduMonte.json` `roofMaterials.json` `sizes.json` `speciesRace.json` `structureAppearance.json` `systemes.manifest.json` `teintesJeu.json`
