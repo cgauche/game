@@ -3224,7 +3224,7 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     const fabrique: ActionDef = {
       id: 'test-geste-2e-fabrique', label: 'Geste fabriqué', icon: 'flag/focus',
       surface: 'geste-secondaire', hote: 'cast-spell', gate: 'toujours',
-      run: 'battleFocusSpell', candidates: 'sorts-du-heros', cost: 'gratuit',
+      run: 'battleFocusSpell', candidates: 'sorts-du-heros', coutAction: 'gratuit',
     };
     ACTIONS.push(fabrique);
     try {
@@ -3265,7 +3265,7 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     const fabrique: ActionDef = {
       id: 'test-geste-2e-fabrique', label: 'Geste fabriqué', icon: 'flag/focus',
       surface: 'geste-secondaire', hote: 'cast-spell', gate: 'toujours',
-      run: 'battleFocusSpell', candidates: 'sorts-du-heros', cost: 'gratuit',
+      run: 'battleFocusSpell', candidates: 'sorts-du-heros', coutAction: 'gratuit',
     };
     ACTIONS.push(fabrique);
     vi.useFakeTimers();
@@ -3362,7 +3362,7 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     const fabrique: ActionDef = {
       id: 'test-geste-2e-fabrique', label: 'Geste fabriqué', icon: 'flag/focus',
       surface: 'geste-secondaire', hote: 'cast-spell', gate: 'toujours',
-      run: 'battleFocusSpell', candidates: 'sorts-du-heros', cost: 'gratuit',
+      run: 'battleFocusSpell', candidates: 'sorts-du-heros', coutAction: 'gratuit',
     };
     ACTIONS.push(fabrique);
     vi.useFakeTimers();
@@ -3411,7 +3411,7 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     const fabrique: ActionDef = {
       id: 'test-geste-2e-reload', label: 'Geste de recharge', icon: 'flag/focus',
       surface: 'geste-secondaire', hote: 'reload', gate: 'toujours',
-      run: 'battleReload', candidates: 'armes-a-distance', cost: 'gratuit',
+      run: 'battleReload', candidates: 'armes-a-distance', coutAction: 'gratuit',
     };
     monter(tireur());
     expect(host.querySelector('[data-action="reload"]'), 'témoin : l’alvéole hôte est bien rendue').toBeTruthy();
