@@ -178,6 +178,12 @@ export type Contexte = {
   champ: string;
   /** Concepts dont le SITE d'appel a mesuré la candidature structurelle (cf. `plage`). */
   candidats?: readonly string[];
+  /**
+   * Lève la clause `horsDesignation` du lexique le temps d'un appel : le classement rend alors le
+   * concept qui AURAIT revendiqué l'objet sans elle. Sert à MESURER ce que la clause écarte (§1 du
+   * doc), jamais à classer — le scan ne pose jamais de forme sur ce retour.
+   */
+  malgreDesignation?: boolean;
 };
 
 export type Classement = {
@@ -218,6 +224,11 @@ const statutDe = (c: Concept, sig: string, site?: { dataset: string; champ: stri
   return { concept: c.id, strate: c.strate, statut: hit?.statut ?? 'divergente', note: hit?.note ?? '', signature: sig };
 };
 
+/** L'objet DÉSIGNE une entité : il porte une clé d'IDENTITÉ, ou une clé dont le NOM annonce une
+ *  référence. Source unique de la clause `horsDesignation` et de sa mesure. */
+export const designeUneEntite = (cles: readonly string[]): boolean =>
+  cles.some((k) => (CLES_IDENTITE as readonly string[]).includes(k) || RX_CLE_REFERENCE.test(k));
+
 /**
  * Classement d'un objet dans un concept de VALEUR — par le NOM de la clé qui le porte quand le
  * concept en déclare un (`price` → `prix`), sinon par son NOYAU de clés. Aucun seuil, aucun
@@ -234,6 +245,10 @@ export function classerValeur(sig: string, cles: readonly string[], contexte: Co
     // `coPresence` DÉCLARÉE : le concept n'est retenu que si l'objet porte au moins une de ces clés,
     // sinon on continue vers le concept suivant (`bornes` avant `plage`, même noyau).
     if (c.coPresence && !c.coPresence.some((k) => set.has(k))) continue;
+    // `horsDesignation` DÉCLARÉE : un objet qui DÉSIGNE une entité n'est pas la valeur du concept
+    // (`test` cède ainsi les 66 objets qui portent `difficulty` en champ d'une entité ou d'une
+    // référence, mesuré au lexique). Le concept suivant, puis la résolution vers l'index, en décident.
+    if (c.horsDesignation && !contexte.malgreDesignation && designeUneEntite(cles)) continue;
     if (parChamp || parNoyau) return statutDe(c, projeteValeur(c.id, cles) || sig, site);
   }
   return null;
@@ -667,6 +682,11 @@ export function scannerDonnees(
   let objetsClasses = 0;
   /** Objets qu'AUCUNE strate ne porte : ni document, ni forme mesurée, ni orpheline recensée. */
   let objetsInvisibles = 0;
+  /** Entrées de RACINE qu'aucun concept de valeur du lexique ne reconnaît — imprimé à la synthèse du
+   *  doc (§1) : un document n'entre ni aux orphelines ni au hors-strate, rien d'autre ne les compterait. */
+  let racinesSansValeur = 0;
+  /** Document → entrées de racine qu’un concept de valeur revendiquerait SANS la clause `horsDesignation`. */
+  const racinesDisqualifiees = new Map<string, number>();
   const invisibles = new Map<string, number>();
   /** Clé-graphie enveloppante → occurrences BRUTES de la clé dans la donnée (tout classement confondu). */
   const graphiesBrutes = new Map<string, number>();
@@ -780,6 +800,16 @@ export function scannerDonnees(
       // ---- VALEUR d'abord (noyau propre), RÉFÉRENCE ensuite (index des ids)
       const candidats = dansTableau ? candidatsStructurels(o) : undefined;
       const valeur = classerValeur(sig, cles, { dataset: p.nom, champ, candidats });
+      // Une ENTRÉE DE RACINE qu'aucun concept de valeur ne reconnaît ne peut être ni orpheline ni hors
+      // strate (un document n'est sommé de rien, cf. la garde plus bas) : sans ce compte, elle sortirait
+      // du dénominateur sans un mot le jour où un concept cesse de la revendiquer (#1657).
+      if (estRacine && !valeur) {
+        racinesSansValeur += 1;
+        // Ce qu’AURAIT classé le lexique sans la clause : le compte brut ci-dessus noie 50 entrées
+        // déclassées dans les 98 % de documents normaux — celui-ci les NOMME par document.
+        if (designeUneEntite(cles) && classerValeur(sig, cles, { dataset: p.nom, champ, candidats, malgreDesignation: true }))
+          inc(racinesDisqualifiees, p.nom);
+      }
       let classe = false;
       if (valeur) {
         const c = CONCEPTS.find((x) => x.id === valeur.concept)!;
@@ -998,6 +1028,8 @@ export function scannerDonnees(
       vus: objetsVus,
       classes: objetsClasses,
       invisibles: objetsInvisibles,
+      racinesSansValeur,
+      racinesDisqualifiees: [...racinesDisqualifiees].map(([dataset, entrees]) => ({ dataset, entrees })).sort((a, b) => b.entrees - a.entrees || a.dataset.localeCompare(b.dataset)),
       documentsEmbarques: documentsEmbarques.size,
       entreesDeRacine: prepares.reduce((a, p) => a + p.entrees.length, 0),
     },

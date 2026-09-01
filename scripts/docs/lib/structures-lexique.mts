@@ -120,6 +120,7 @@ export const ANGLES_MORTS: readonly string[] = [
   'Le scan AST est borné aux littéraux `z.object`/`z.strictObject`/`z.looseObject` des `src/data/schemas/defs/*.ts` : il ne voit ni les clés ajoutées par `.extend(...)`, ni un schéma composé par une fabrique, ni les defs hors de ce dossier. Le « schéma commun candidat » est apparié par SIGNATURE EXACTE.',
   'Les portes MOTEUR (`src/engine`, `src/state`) et les JSON hors documents (outillage, `public/qc/*`, baselines de gardes) ne sont pas mesurés : ce contrat parle de la DONNÉE authorée et de ses schémas.',
   'Les CACHES de parse AST (`CACHE_SOURCE`, `CACHE_LITTERAUX`) sont module-level et ne sont jamais invalidés : en mode watch, une édition d’un `defs/*.ts` n’est pas re-mesurée sans redémarrage.',
+  'Le concept `test` CÈDE tout objet qui DÉSIGNE une entité (clause `horsDesignation` : clé de `CLES_IDENTITE`, ou clé en `RX_CLE_REFERENCE`) et passe APRÈS `plage` : 12 objets porteurs de `difficulty` restent classés `test` sans en être un — `tavernGames.json › volley.rows` 7 (rangées sans bornes authorées), `sea-events.json › params` 3 (le sujet du jet y vit sous `testType`) et `etats.json › difficultyBy` 2. Ce qui leur manque n’est pas TOUT discriminant structurel (`difficultyBy` porte `{cond, difficulty}`, et `cond` en est un) : c’est une clé de DÉSIGNATION, la seule que ce concept cède.',
   'Le scan AST des redéclarations ne lit QUE `src/data/schemas/defs/` : les 150 littéraux zod de `src/data/schemas/defs-scenes/` (`effets.ts` 73, `scene.ts` 53, `worldmap.ts` 15, `narratif.ts` 7, `communs.ts` 2) en sont HORS PÉRIMÈTRE — deux d’entre eux seraient classés par le lexique s’ils y entraient (`effets.ts:205` `extendedTestSchema` et `scene.ts:438` `wallClimbSchema`, concept `test` par le noyau `difficulty`).',
   'Le lexique FERMÉ est le PLAFOND de détection des redéclarations : un littéral dont le concept n’est pas au lexique n’est compté que s’il a un schéma commun de MÊME signature exacte — deux defs divergents sur un champ d’un concept absent restent invisibles aux occurrences, et seul le compte GLOBAL des littéraux (`totalLitteraux`, 482 après ce lot, 487 à `9739ee1f4`) bouge.',
 ];
@@ -184,6 +185,13 @@ export type Concept = {
   coPresence?: readonly string[];
   /** Le concept n'est candidat que si le SITE d'appel l'a mesuré (cf. `contexte.candidats`). */
   exigeCandidatureStructurelle?: boolean;
+  /**
+   * Le concept CÈDE tout objet qui DÉSIGNE une entité — clé d'IDENTITÉ (`CLES_IDENTITE`) ou clé
+   * dont le NOM annonce une référence (`RX_CLE_REFERENCE`). Symétrique de `coPresence` : là une clé
+   * est EXIGÉE, ici une clé DISQUALIFIE. Attribut DÉCLARÉ sur l'entrée du registre (#842), jamais un
+   * test d'identité au call-site.
+   */
+  horsDesignation?: boolean;
   /**
    * Graphies ENVELOPPANTES dont CE concept mesure la réconciliation nue/enveloppée dans le doc
    * (#842 : le comportement se déclare sur l'entrée du registre, jamais à un test d'identité au
@@ -339,18 +347,6 @@ export const CONCEPTS: readonly Concept[] = [
     noyau: ['book'],
   },
   {
-    id: 'test',
-    label: 'jet à faire (compétence/caractéristique + difficulté)',
-    strate: 'Valeur',
-    signatures: [
-      { sig: 'difficulty,skill', statut: 'historique' },
-      { sig: 'char,difficulty', statut: 'historique' },
-      { sig: 'characteristic,difficulty', statut: 'historique' },
-      { sig: 'difficulty,skillId', statut: 'historique' },
-    ],
-    noyau: ['difficulty'],
-  },
-  {
     // AVANT `plage`, et l'ordre décide : même noyau `min,max`, mais ce ne sont pas des bornes de
     // TIRAGE — ce sont les bornes du DOMAINE d'un réglage (`kind: 'param'`, avec sa valeur par
     // défaut et son pas), lues par l'éditeur de règles optionnelles (`CodexEdit`, `StructFields`
@@ -396,13 +392,45 @@ export const CONCEPTS: readonly Concept[] = [
     ],
     noyau: ['fixed'],
   },
+  // DERNIER concept de la strate, et le RANG décide (patron `bornes` avant `plage`) : `difficulty`
+  // est une VALEUR de Difficulté (`difficultySchema`, `src/data/schemas/grammaire/valeurs.ts`) qu'un
+  // porteur pose À CÔTÉ d'autre chose aussi souvent qu'un jet la porte. Deux discriminants :
+  //   (1) le RANG, après `plage` : une rangée de table à bornes NUMÉRIQUES reste une rangée, même
+  //       quand elle porte la Difficulté de sa ligne ;
+  //   (2) `horsDesignation` : un objet qui DÉSIGNE une entité (clé de `CLES_IDENTITE`, ou clé en
+  //       `RX_CLE_REFERENCE`) EST cette entité ou sa référence — jamais le jet.
+  // Non-recouvrement MESURÉ sur les 2 racines (2026-09-01, 302 objets porteurs de `difficulty`) :
+  // 15 sont des rangées à bornes numériques (`tavernGames › volley.rows` 7, `sea-navigation › table`
+  // 5 et `› voirLaLumiere` 3), 57 portent une clé d'IDENTITÉ (les 51 entrées de racine
+  // d'`activities.json`, ses 2 réfs de Compétence sous `skills`, les 4 températures de
+  // `sea-weather.json`), 9 une clé de RÉFÉRENCE (`maladies › symptoms` 8, `› dailyTest` 1) ; les
+  // trois intersections sont VIDES, et 221 objets ne portent AUCUNE des trois — ce sont les jets.
+  // COLLATÉRAL nommé : `maladies › dailyTest` (1, EDOC 08 l.104) est un jet qui porte l'id du
+  // symptôme infligé ; la désignation gagne et il est compté RÉFÉRENCE.
+  // ANGLE MORT du discriminant, nommé : 12 des 221 ne sont pas le jet mais son PORTEUR, qui étale la
+  // Difficulté à côté — `tavernGames › volley.rows` 7 (rangées sans bornes authorées : la candidature
+  // `plage` est STRUCTURELLE, angle mort déjà déclaré), `sea-events › params` 3 (le sujet du jet y
+  // vit sous `testType`) et `etats › difficultyBy` 2. Ce qui manque à ces 12 n'est pas TOUT
+  // discriminant structurel — `etats › difficultyBy` porte `{cond, difficulty}`, et `cond` EN EST un
+  // (c'est le sous-schéma `flowTestSchema.difficultyBy`, une table Condition → Difficulté) — c'est une
+  // clé de DÉSIGNATION, la seule que ce concept cède. Ils restent divergents au stock, sous le concept
+  // qui les fera migrer.
+  // Aucun concept ne revendique les 3 jeux à manches de `tavernGames.json` — `boules`
+  // (`drCap`, `volley`), `torchon` (`table`, `throwerPenalty`), `pierres` (`target`, `phases`) : ce sont
+  // trois RÈGLES, pas une forme. Un noyau qui les réunirait (leurs 10 clés, deux suffisant à classer)
+  // ne nommerait aucune structure partagée et n'aurait aucune signature à viser ; ces 3 entrées de
+  // racine sont des DOCUMENTS, que le compte nominatif de la synthèse (§1 du doc) porte.
   {
-    id: 'sequence',
-    label: 'paramètres de séquence jouée en manches',
+    id: 'test',
+    label: 'jet à faire (compétence/caractéristique + difficulté)',
     strate: 'Valeur',
-    signatures: [],
-    noyau: ['target', 'drCap', 'table', 'rounds', 'phases', 'pot', 'volley', 'sides', 'combined', 'throwerPenalty'],
-    noyauMin: 2,
+    signatures: [
+      { sig: 'difficulty,skill', statut: 'historique' },
+      { sig: 'char,difficulty', statut: 'historique' },
+      { sig: 'characteristic,difficulty', statut: 'historique' },
+    ],
+    noyau: ['difficulty'],
+    horsDesignation: true,
   },
   // ---------------------------------------------------------------------------------------------
   // Strate DOCUMENT (#1633) — les ENVELOPPES nommées de la grammaire de campagne. La strate existait

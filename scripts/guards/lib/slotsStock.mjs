@@ -48,7 +48,11 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "activities.json", champ: "chains", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "classes", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "ops", occurrences: 16, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "activities.json", champ: "skills", occurrences: 61, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // `rule` : la RÈGLE que l’Activité applique (`augure` → `tableau-augure`) ; `skills` 61 → 63 — les 2 voies
+  // à Difficulté PROPRE rejoignent leurs 61 sœurs. Les deux étaient classées `test` par le seul `difficulty`
+  // (#1657 geste A) : même donnée, mesurée sous le concept qui la nomme.
+  { dataset: "activities.json", champ: "rule", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-01" },
+  { dataset: "activities.json", champ: "skills", occurrences: 63, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "where", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arcane-phenomena.json", champ: "cancelsTraitId", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arcane-phenomena.json", champ: "domainId", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -228,7 +232,8 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "maladies.json", champ: "mutation", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // mue Rhume → Pneumonie, EDOC 08 l.122 (#674)
   { dataset: "maladies.json", champ: "onFail", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // cycle quotidien de la Pneumonie, EDOC 08 l.104-108 (#674)
   { dataset: "maladies.json", champ: "otherwise", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // échelon Toxine du même cycle, EDOC 08 l.106-108 (#674)
-  { dataset: "maladies.json", champ: "symptoms", occurrences: 54, lot: "L2/L3 #1473", date: "2026-08-26" }, // +5 : Pneumonie (3) + Rhume commun (2), EDOC 08 folio 33 (#674)
+  { dataset: "maladies.json", champ: "dailyTest", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-01" }, // EDOC 08 l.104 (#674) — le Test quotidien DÉSIGNE son symptôme (#1657 geste A)
+  { dataset: "maladies.json", champ: "symptoms", occurrences: 62, lot: "L2/L3 #1473", date: "2026-08-26" }, // +5 : Pneumonie (3) + Rhume commun (2), EDOC 08 folio 33 (#674) ; 54 → 62 : les 8 réfs à Difficulté PROPRE, jusque-là classées `test` (#1657 geste A)
   { dataset: "maneuvers.json", champ: "escapeStrength", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "maneuvers.json", champ: "ops", occurrences: 22, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "maneuvers.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },

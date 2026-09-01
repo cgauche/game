@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -18,6 +18,8 @@ import {
   LOTS_DE_PEUPLEMENT,
   LOT_CLE_RESERVEE,
   lotDeForme,
+  CLES_IDENTITE,
+  RX_CLE_REFERENCE,
   signature,
 } from '../../scripts/docs/lib/structures-lexique.mjs';
 import { choixDeclares, introspecterDefs } from '../../scripts/docs/lib/zod-introspect.mjs';
@@ -651,7 +653,16 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquet DESCENDU 468 → 467 (#1463 L-gram-2, 2026-09-01) : `species.json › preview {career}`
       // est SOLDÉE — les 27 aperçus de vitrine nomment leur carrière par la RÉFÉRENCE `previewCareer
       // {id}`, résolue au parse contre `careers.json` (`ref('career')`). Le cliquet SUIT la baisse.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 467],
+      // Cliquet DESCENDU 467 → 462 (#1657 geste A) : le concept `test` cède les objets qui DÉSIGNENT
+      // (identité ou clé de référence) et passe APRÈS `plage` — 7 lignes s'éteignent (81 occurrences :
+      // `activities › (racine)` 51 et `› skills` 2, `sea-weather › temperatures` 4, `maladies › symptoms` 8
+      // et `› dailyTest` 1, `sea-navigation › table` 5 et `› voirLaLumiere` 3 ; `tavernGames › rows` 14 → 7),
+      // les 3 lignes du concept `sequence` s'éteignent avec lui (son noyau de 10 clés hétérogènes ne
+      // nommait aucune forme partagée : 3 entrées de racine de `tavernGames.json`, 3 jeux), et 5 lignes
+      // entrent — la RÉFÉRENCE que ces objets portaient déjà et que `test` masquait (`activities › skills`
+      // ×2, `› rule` id-nu, `maladies › symptoms {difficulty,symptomId}`, `› dailyTest`). Aucune donnée ne
+      // bouge : −10 +5.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 462],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -756,7 +767,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // posé meurt), `trappings` (racine + `derivedWeapon.qualities`) importe `qualityRefSchema`, et
       // `vehicles.ship.traits` compose `ref('navalTrait', {value})` tandis que le schéma MORT
       // `hull.traits` (0 porteur, 0 lecteur) tombe. 489 références entrent en garde FK.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 59],
+      // Cliquet DESCENDU 59 → 55 (#1657 geste A) : le MÊME discriminant retire 4 littéraux du concept
+      // `test` — `maladies.ts` (le symptôme référencé et son `dailyTest`), `sea-weather.ts › temperatures`
+      // (une entrée de table à `id`) et `tavernGames.ts › (racine)` (le concept `sequence` n'existe plus) ;
+      // le 5ᵉ, `tavernGames.ts › rows`, change de concept et reste au dénominateur (`plage | max,min+…`,
+      // cible — le littéral porte deux bornes numériques et `plage` le classe désormais avant `test`).
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 55],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -912,7 +928,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // PLAT, régime de spécialisation compris (`{id}`, `{id, spec}`, `{id, choix}`).
       // … puis 10 → 4 (commit 4bis) : les 6 lignes `skills {id,value}`/`{id,spec,value}` des statblocs
       //     passent CIBLE au site et sortent du dénominateur (cf. le cliquet `STRUCTURES_FORMES`).
-      'L2 #1463': 4,
+      // L2 #1463 : 4 → 6 (#1657 geste A) — les 2 voies de Compétence d'une Activité qui portent leur
+      // Difficulté PROPRE (`activities.json › skills`) ENTRENT au dénominateur : `test` les revendiquait
+      // par le seul `difficulty`, ce sont des RÉFÉRENCES à charge utile (cible `skills.json`, d'où ce lot).
+      // Aucune donnée ne bouge — c'est le même objet, compté sous le concept qui le nomme.
+      'L2 #1463': 6,
       'L2 #1548': 0,
       // L3 #1463 : 398 → 385 (commit 4) — le MÊME geste éteint les 14 lignes de graphie du champ
       // d'avancement côté PORTEUR (`skills`/`talents` à signature `ref`/`wildcard`/`choice`, et les
@@ -946,7 +966,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // s'éteignent (domains, species, structures, trappings ×2, vehicles ×2) et la forme de donnée
       // `species.json › preview` part avec la migration — le stock des FORMES perd sa ligne, celui des
       // REDÉCLARATIONS ses sept : −8. 489 références entrent en garde FK au passage.
-      'L3 #1463': 383,
+      // … puis 383 → 385 (#1657 geste A) : même mécanique — la 8ᵉ réf de symptôme à Difficulté propre
+      // (`maladies › symptoms {difficulty,symptomId}`, sa Difficulté RÉSOUT donc la projection garde les
+      // deux clés) et la RÈGLE d'une Activité (`activities › rule {id-nu}`, `augure` → `tableau-augure`,
+      // que la classification en `test` empêchait de mesurer). La somme L2+L3+L4 BAISSE : 494 → 485.
+      'L3 #1463': 385,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
@@ -981,7 +1005,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 111 → 107 (#1463 L-gram-1) : les TROIS redéclarations à deux bornes qui pouvaient
       // sortir sortent (cf. le cliquet `STRUCTURES_REDECLARATIONS` ci-dessus), et la quatrième ligne
       // rend son lot à `L1a #1466` (le `{sum}` d'`engineFormulaSchema`, ci-dessus) : −3 −1.
-      'L4 #1463': 107,
+      // … puis 107 → 94 (#1657 geste A) : les 10 lignes de FORMES (`test` ×7, `sequence` ×3) et les
+      // 4 REDÉCLARATIONS ci-dessus sortent, et `maladies › dailyTest` entre ICI plutôt qu'en L3 —
+      // c'est un JET (EDOC 08 l.104) que l'enveloppe `épreuve` de #1657 geste B reprendra, le lot des
+      // références ne l'éteindrait jamais : −14 +1.
+      'L4 #1463': 94,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`
@@ -1033,14 +1061,29 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
   it('les ANGLES MORTS ont UNE source : le lexique, recopié nulle part (test, stock, doc)', () => {
     const stock = readFileSync(join(ROOT, 'scripts/guards/lib/structuresStock.mjs'), 'utf8');
     const doc = readFileSync(join(ROOT, 'docs/structures-donnees.md'), 'utf8');
+    // Les deux copies se LISENT, elles ne se cherchent pas : l'inclusion seule est unidirectionnelle
+    // (lexique ⊆ copie) et laisserait passer une ligne SURNUMÉRAIRE — un angle mort que le lexique ne
+    // porte pas est un angle mort que personne n'a décidé.
+    const listeStock = stock
+      .split('ANGLES MORTS — SOURCE UNIQUE')[1]
+      .split('\n//\n')[0]
+      .split('\n')
+      .filter((l) => l.startsWith('//   - '))
+      .map((l) => l.slice('//   - '.length));
+    const listeDoc = doc
+      .split('## Périmètre mesuré et angles morts')[1]
+      .split('\n## ')[0]
+      .split('\n')
+      .filter((l) => l.startsWith('- '))
+      .map((l) => l.slice(2));
     expect(
-      ANGLES_MORTS.filter((a) => !stock.includes(a)),
-      'l’en-tête de `structuresStock.mjs` ne porte plus les angles morts de `ANGLES_MORTS` — la copie a divergé.',
-    ).toEqual([]);
+      lignes(listeStock),
+      'l’en-tête de `structuresStock.mjs` a divergé de `ANGLES_MORTS` — une ligne en trop y est un angle mort que le lexique ne déclare pas, une ligne en moins une copie amputée.',
+    ).toEqual(lignes([...ANGLES_MORTS]));
     expect(
-      ANGLES_MORTS.filter((a) => !doc.includes(a)),
-      'le § « Périmètre mesuré et angles morts » de `docs/structures-donnees.md` a divergé de `ANGLES_MORTS`.',
-    ).toEqual([]);
+      lignes(listeDoc),
+      'le § « Périmètre mesuré et angles morts » de `docs/structures-donnees.md` a divergé de `ANGLES_MORTS` (le doc est GÉNÉRÉ : le régénérer, ou corriger le lexique).',
+    ).toEqual(lignes([...ANGLES_MORTS]));
   });
 
   it('MUTATION par champ : chaque champ de chaque stock entre dans la clé comparée', () => {
@@ -1176,6 +1219,70 @@ describe('les concepts de VALEUR sont reconnus à leur noyau (contrats positifs)
   it('une clé RÉSERVÉE encore homonyme ne force aucun concept (`count`, `cost`, `skill`)', () => {
     expect(classement({ count: 2, id: 'x' }, 'trappings')).toBeNull();
     expect(classement({ cost: 3, weightEnc: 1 }, 'install')).toBeNull();
+  });
+
+  /**
+   * PRÉMISSE du discriminant `horsDesignation` (`structures-lexique.mts`, concept `test`), prouvée par
+   * une marche BRUTE des deux racines — méthode INDÉPENDANTE du scan : elle ne partage ni son
+   * parcours, ni sa notion de document, ni son classement ordonné, et ne consulte le lexique que pour
+   * les deux prédicats de DÉSIGNATION. Deux sondes du même angle ne se confirment pas.
+   * Aucun cardinal n'est écrit ici : les trois assertions sont DÉRIVÉES de la marche.
+   */
+  it('les porteurs de `difficulty` se PARTITIONNENT en plage / identité / référence / aucune, et « aucune » EST le concept `test`', () => {
+    const ID = new Set(CLES_IDENTITE as readonly string[]);
+    const porteurs: { site: string; famille: string }[] = [];
+    const intersections: Record<string, number> = { 'plage∩identité': 0, 'plage∩référence': 0, 'identité∩référence': 0 };
+    const marche = (v: unknown, dataset: string, champ: string): void => {
+      if (Array.isArray(v)) { for (const e of v) marche(e, dataset, champ); return; }
+      if (!v || typeof v !== 'object') return;
+      const o = v as Record<string, unknown>;
+      const cles = Object.keys(o);
+      if (cles.includes('difficulty')) {
+        const plage = typeof o.min === 'number' && typeof o.max === 'number';
+        const identite = cles.some((k) => ID.has(k));
+        const reference = cles.some((k) => RX_CLE_REFERENCE.test(k));
+        if (plage && identite) intersections['plage∩identité'] += 1;
+        if (plage && reference) intersections['plage∩référence'] += 1;
+        if (identite && reference) intersections['identité∩référence'] += 1;
+        porteurs.push({
+          site: dataset + ' › ' + (champ || '(racine)'),
+          famille: plage ? 'plage' : identite ? 'identité' : reference ? 'référence' : 'aucune',
+        });
+      }
+      for (const [k, e] of Object.entries(o)) marche(e, dataset, k);
+    };
+    const jsons = (d: string): string[] =>
+      readdirSync(d).flatMap((e) => (statSync(join(d, e)).isDirectory() ? jsons(join(d, e)) : e.endsWith('.json') ? [join(d, e)] : []));
+    for (const f of ['src/data', 'src/scenes'].flatMap((r) => jsons(join(ROOT, r)))) {
+      let doc: unknown;
+      try { doc = JSON.parse(readFileSync(f, 'utf8')); } catch { continue; }
+      marche(doc, f.split(/[\\/]/).pop()!, ''); // les deux séparateurs : `join` rend des antislashs sur Windows
+    }
+
+    // (a) les trois familles qui DISQUALIFIENT ne se recouvrent pas — sans quoi l'ordre du classement
+    //     déciderait à la place du discriminant, et le lexique le tairait.
+    expect(
+      Object.entries(intersections).filter(([, n]) => n > 0).map(([k, n]) => k + ' ' + n),
+      'deux familles de disqualification se RECOUVRENT : le non-recouvrement écrit au lexique est faux.',
+    ).toEqual([]);
+
+    // (b) la partition est TOTALE : les quatre familles somment aux porteurs mesurés.
+    const parFamille = new Map<string, number>();
+    for (const p of porteurs) parFamille.set(p.famille, (parFamille.get(p.famille) ?? 0) + 1);
+    expect([...parFamille.values()].reduce((a, b) => a + b, 0), 'la partition PERD des porteurs.').toBe(porteurs.length);
+    expect(porteurs.length, 'aucun porteur de `difficulty` : la sonde ne mesure rien.').toBeGreaterThan(0);
+
+    // (c) le bucket « aucune » EST le concept `test` du scan, site par site et compte par compte.
+    const parSite = (xs: [string, number][]) => lignes(xs.map(([site, n]) => site + ' | ' + n));
+    const brute = new Map<string, number>();
+    for (const p of porteurs) if (p.famille === 'aucune') brute.set(p.site, (brute.get(p.site) ?? 0) + 1);
+    const mesure = new Map<string, number>();
+    for (const f of scan.formes.filter((f) => f.concept === 'test'))
+      mesure.set(f.dataset + ' › ' + f.champ, (mesure.get(f.dataset + ' › ' + f.champ) ?? 0) + f.occurrences);
+    expect(
+      parSite([...brute]),
+      'la marche BRUTE et le SCAN ne voient pas le même concept `test` : la prémisse du discriminant (un jet = un porteur de `difficulty` qui ne désigne rien et n’est pas une rangée à bornes) ne tient plus.',
+    ).toEqual(parSite([...mesure]));
   });
 });
 

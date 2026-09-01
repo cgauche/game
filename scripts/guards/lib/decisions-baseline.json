@@ -7,6 +7,20 @@
       "ancre": "Cumul TRAIT↔TALENT : le plus FORT seul",
       "raison": "option « pas de tag à poser » choisie par l'utilisateur au revirement du 2026-08-03 (#1040)",
       "date": "2026-08-03"
+    },
+    {
+      "fichier": "scripts/docs/lib/structures-lexique.mts",
+      "motif": "titre du commentaire #1463 cité en source",
+      "ancre": "Arbitrages de design L0",
+      "raison": "le fragment n'est pas une revendication d'autorité : c'est le TITRE VERBATIM du commentaire de l'issue #1463 du 2026-08-23 (« ## Arbitrages de design L0 (2026-08-23, orchestrateur — suite à la contre-passe du commit 3a6017ebb) »), cité pour ancrer les 3 sites (lot, strates, graphies enveloppantes) à leur source consultable — vérifié au `gh issue view 1463 --comments`",
+      "date": "2026-09-01"
+    },
+    {
+      "fichier": "scripts/docs/lib/structures-scan.mts",
+      "motif": "titre du commentaire #1463 cité en source",
+      "ancre": "arbitrage de design L0",
+      "raison": "le fragment n'est pas une revendication d'autorité : il CITE EN RÉFÉRENCE le commentaire GitHub de l'issue #1463 du 2026-08-23 (« ## Arbitrages de design L0 (2026-08-23, orchestrateur — suite à la contre-passe du commit 3a6017ebb) », point 4), qui motive la graphie sans id (`GRAPHIES_SANS_ID`) — commentaire vérifié au `gh issue view 1463 --comments`",
+      "date": "2026-09-01"
     }
   ]
 }

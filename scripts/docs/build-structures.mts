@@ -321,6 +321,10 @@ out += 'conservée · **divergente** = graphie inconnue du lexique.\n\n';
   out += ['cible', 'declaree', 'historique', 'divergente'].map((s) => `${s} ${tally[s] ?? 0}`).join(' · ');
   out += `). Objets JSON parcourus : **${scan.objets.vus}**, dont **${scan.objets.classes}** portent une forme\n`;
   out += `mesurée. Champs porteurs de référence MESURÉS : **${scan.champsDeReference.length}**.\n\n`;
+  out += `Entrées de racine sans concept de valeur : **${scan.objets.racinesSansValeur}** sur **${scan.objets.entreesDeRacine}** —\n`;
+  out += `un document n’est ni orphelin ni hors strate : ce compte est le seul porteur de ce qu’aucun concept ne revendique.\n`;
+  out += `Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause \`horsDesignation\` du lexique : `;
+  out += (scan.objets.racinesDisqualifiees.map((d) => `\`${d.dataset}\` ${d.entrees}`).join(' · ') || 'aucune') + `.\n\n`;
 }
 for (const c of CONCEPTS) {
   const lignes = scan.formes.filter((f) => f.concept === c.id);

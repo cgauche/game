@@ -120,7 +120,13 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // Cliquet DESCENDU 345 → 343 (#1463 L-ref-2, dff0e31c5, 2026-09-01) : `spells.json | range` (22) et
 // `spells.json | target` (16) n'ont plus AUCUNE réf observée sans slot — les 54 Portées/Cibles qui
 // nommaient le lanceur portent `{kind:'self'}` ; les deux entrées périmées se retirent, le plafond suit.
-const DETTE_ADOPTION_MAX = 343;
+// Cliquet REMONTÉ 343 → 345 (#1657 geste A, 2026-09-01) : `activities.json | rule` (1) et
+// `maladies.json | dailyTest` (1) ENTRENT au dénominateur. Aucune référence neuve n’est authorée : le
+// concept `test` revendiquait ces objets par le seul `difficulty` et masquait la référence qu’ils
+// portent (`regles.json`, `symptoms.json`) ; les comptes de `activities | skills` (61 → 63) et de
+// `maladies | symptoms` (54 → 62) montent par la même mesure. La dette d’adoption qu’ils nomment
+// existait avant d’être visible — c’est le lot L2/L3 #1473 qui l’éteint, comme leurs sœurs.
+const DETTE_ADOPTION_MAX = 345;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {
