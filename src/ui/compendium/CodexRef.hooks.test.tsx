@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { dismissStackKinds } from '../../state/dismissStack';
+import { resetDismissLayers } from '../useDismissLayer';
 import { CodexRef } from './CodexRef';
 
 const mount = (node: React.ReactElement) => {
@@ -10,6 +12,29 @@ const mount = (node: React.ReactElement) => {
   const root = createRoot(container);
   act(() => { root.render(node); });
   return { container, root };
+};
+
+/**
+ * PILE DE CONGÉDIEMENT NEUVE avant chaque cas (`src/state/dismissStack.ts` + la porte clavier de
+ * `src/ui/useDismissLayer.ts`) : ce sont des singletons de MODULE, que `src/test-setup.ts` ne remet pas
+ * à plat. Sous `test.isolate: false` (vite.config.ts) le worker les partage : sans remise à plat, une
+ * couche laissée par un fichier voisin — ou un refcount de porte décalé — décide si Échap atteint le
+ * popover de ce banc. Même geste que les deux autres bancs de la couture (`ui/echap-pile-lifo.test.tsx:48`,
+ * `ui/echap-couches-fantomes.test.tsx:39`).
+ */
+beforeEach(() => { resetDismissLayers(); });
+
+/**
+ * PRÉMISSE d'un appui d'Échap : la couche du DESSUS est bien celle de ce popover. Le congédiement est
+ * LIFO PUR (`dismissTop`) — sommet étranger = l'appui va à l'autre surface, le popover reste à l'écran,
+ * et le banc rougirait sur « le popover n'est pas null » sans jamais nommer la vraie cause. Mesuré : une
+ * couche étrangère empilée pendant le cas reproduit à l'identique le rouge CI de #1442, et le TEMPS n'y
+ * change rien (la fermeture, elle, est synchrone : zéro tour d'attente nécessaire après l'appui).
+ */
+const sommetEstLePopover = (quoi: string): void => {
+  const couches = dismissStackKinds();
+  expect(couches[couches.length - 1], `PRÉMISSE : ${quoi} — la couche du dessus est ${JSON.stringify(couches)}`)
+    .toBe('popover-codex');
 };
 
 describe('CodexRef — Rules of Hooks (régression crash "Rendered fewer hooks than expected")', () => {
@@ -76,8 +101,10 @@ describe('CodexRef — Échap ferme le popover AFFICHÉ, pas seulement l’épin
     const trigger = container.querySelector('.codex-ref') as HTMLElement;
     act(() => { trigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
     expect(pop(), 'le survol affiche le popover').toBeTruthy();
+    sommetEstLePopover('le popover affiché au survol doit être la couche que l’appui adresse');
     act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); });
     expect(pop(), 'Échap le ferme — il ne peut plus recouvrir le CTA').toBeNull();
+    expect(dismissStackKinds(), 'fermé, il n’est plus une couche').toEqual([]);
   });
 
   it('sans popover affiché, Échap ne fait rien ici (la modale garde sa couche)', () => {
@@ -118,8 +145,10 @@ describe('CodexRef — chemin ÉPINGLÉ et interception de clic (#1117)', () => 
     act(() => { trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })); });
     expect(document.querySelector('.codex-pop'), 'le popover est épinglé').toBeTruthy();
     expect(document.activeElement, 'le focus est ENTRÉ dans le popover (sa porte)').not.toBe(inner);
+    sommetEstLePopover('le popover épinglé doit être la couche que l’appui adresse');
     act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); });
     expect(document.querySelector('.codex-pop'), 'Échap referme l’épinglé').toBeNull();
+    expect(dismissStackKinds(), 'refermé, il n’est plus une couche').toEqual([]);
     expect(document.activeElement, 'le focus REVIENT au contrôle, jamais dans le vide').toBe(inner);
   });
 

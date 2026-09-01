@@ -33,6 +33,15 @@
  *      via `freshState`). Une scène laissée au registre changeait le comportement des fichiers suivants
  *      du worker : `transitionTo` est un NO-OP sur scène inconnue (`state/store.ts`) — la même clôture
  *      de séquence transitionnait ou non selon la partition, d'où des rouges CI verts en local (#1014).
+ *    - la PILE DES COUCHES DISMISSIBLES et sa PORTE clavier (`state/dismissStack` + `ui/useDismissLayer`,
+ *      `resetDismissLayers`) : la pile des surfaces congédiables et le refcount de l'écouteur Échap sont
+ *      des singletons de module. Le congédiement étant LIFO PUR, une couche laissée par un fichier
+ *      voisin décide si Échap atteint la surface qu'un banc mesure ou une autre : le rendez-vous entre
+ *      l'appui et la surface dépendait de l'ordre des fichiers du worker (#1442, rouges CI intermittents
+ *      sur `ui/compendium/CodexRef.hooks.test.tsx`, verts en local). Mesuré : une couche étrangère au
+ *      sommet reproduit le rouge à l'identique, et le TEMPS n'y change rien (la fermeture est synchrone).
+ *      Les bancs de la couture gardent en plus leur propre `resetDismissLayers` en `beforeEach` — ils
+ *      posent leur décor de pile, ils ne dépendent pas de ce filet.
  *    - les REGISTRES D'ART du rig (cf. `rigArtRegistrySignatures` plus bas) : objets de module, donc
  *      partagés par tous les fichiers du worker. Ils ne se restaurent pas ici (un test qui en pose
  *      un doit le remettre lui-même) : on DÉTECTE leur dérive après chaque test et on échoue AU SITE
@@ -70,6 +79,7 @@ import { resetOwnTestFailedGuard } from './state/triggeredEffects';
 import { resetDesFixes } from './engine/fixedDie';
 import { seedBattleRng } from './state/battleRng';
 import { reinitWebglRefusé } from './gameIso/stage/webglSupport';
+import { resetDismissLayers } from './ui/useDismissLayer';
 
 // État initial figé UNE fois (le `stringify` est la moitié coûteuse, et le geler à l'init le rend
 // immunisé à toute mutation du gabarit) ; chaque test n'en `parse` qu'une copie fraîche.
@@ -201,6 +211,11 @@ beforeEach(() => {
   // WebGL : tout montage d'écran de monde SANS renderer de banc le pose — les fichiers suivants du
   // worker monteraient alors le message d'erreur au lieu du monde (`isolate:false`).
   reinitWebglRefusé();
+  // PILE DES COUCHES DISMISSIBLES + PORTE clavier d'Échap (`ui/useDismissLayer`) : singletons de module
+  // eux aussi, et le congédiement est LIFO PUR — une couche laissée par un fichier voisin prend l'appui
+  // à la place de la surface que le banc mesure (portée et mesure : §1 de l'en-tête). Sans DOM la remise
+  // à plat ne touche que la pile : aucun écouteur n'est branché sur un environnement `node`.
+  resetDismissLayers();
   cascadeSnapshot = { ...cascadeAppliers };
 });
 
