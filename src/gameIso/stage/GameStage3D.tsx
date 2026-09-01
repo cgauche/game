@@ -456,6 +456,7 @@ const bakeRetenu = memoByRefDeps<object, BakedWorld>();
 const accentsRetenus = memoByRefDeps<object, SceneGroundAccent[]>();
 const decorRetenu = memoByRefDeps<object, BillboardSubject[]>();
 const acteursRetenus = memoByRefDeps<object, BillboardSubject[]>();
+const abrisRetenus = memoByRefDeps<object, ReturnType<typeof shelterField>>();
 
 /** Les deux populations de textures que le VOILE d'entrée en scène attend : les GABARITS du monde cuit
  *  (colombage, périodes — le sol visuel de la carte, #1399) et les BILLBOARDS du décor. Chacune donne
@@ -1055,7 +1056,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // Retenu sur le read-set de la CUISSON (`worldBakeDeps`) : le couvert se déduit des masses bâties,
   // donc d'un sous-ensemble de ce que lit `worldFaces` — 6,9 ms sur 60×60 à 81 masses, qu'une
   // référence de scène par tick repayait pour un couvert identique.
-  const abris = useMemo(() => shelterField(scene), bakeDeps);
+  // Ce read-set est à longueur VARIABLE (une entrée par décor volumique de la scène) : il se porte au
+  // retenteur du dépôt, jamais à un hook React, dont le jeu de dépendances doit être de longueur
+  // CONSTANTE (`memoByRefDeps` compare longueur PUIS identité, position par position).
+  const abris = abrisRetenus(jeton, bakeDeps, () => shelterField(scene));
   const sousCouvert = useMemo<ShelteredAt>(
     () => (xM, zM, yM) => isSheltered(abris, xM / mpt, zM / mpt, yM),
     [abris, mpt],

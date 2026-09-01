@@ -31,5 +31,13 @@ sans vérifier le CONTENU du schéma à HEAD : grounding de seconde main).
   (deux occurrences le même jour : mon coverage.md avec son sea-weather, son structures-donnees.md
   avec mes +12 notes non committées) — un doc dérivé se committe soit regénéré SUR L'INDEX
   ([[game-train-chirurgical-portes-sur-l-index]]), soit en le DISANT au message de commit.
+- **Angle AVANT-`npm ci` (complément game-66, 2026-09-01)** : tant que le worktree n'a PAS ses
+  `node_modules`, TOUT remonte à l'arbre principal — le cache `.vite` (le vecteur ci-dessus), mais
+  aussi `setupFiles: './src/test-setup.ts'` (résolu sur l'arbre PRINCIPAL → 47 fichiers en échec de
+  CHARGEMENT, 0 test) et les binaires spawnés (`tsx` introuvable). `npm ci` dans le worktree règle
+  cache et spawns, MAIS PAS `setupFiles` : même avec `node_modules` locaux, vitest résout le setup
+  relatif contre l'arbre principal (mesuré 2 fois, purge de caches sans effet). Contournement
+  éprouvé : config de RUN locale avec `root` + `setupFiles` ANCRÉS en absolu
+  (`fileURLToPath(new URL('./src/test-setup.ts', import.meta.url))`) passée en `--config`.
 - Liens : [[game-worktree-node-modules-junction-hazard]], [[env-worktree-node-modules-vide-tsx-spawn]],
   [[env-coordination-arbre-partage-sessions]].
