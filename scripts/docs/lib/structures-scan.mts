@@ -168,6 +168,12 @@ const natureParametre = (v: string): string => {
 };
 
 export type Contexte = {
+  /**
+   * Dataset PORTEUR de l'objet (`''` = aucun — un littéral de schéma n'a pas de dataset). Avec le
+   * `champ`, il forme le SITE que `statutDe` consulte : une signature SITE-QUALIFIÉE du lexique ne
+   * peut répondre à un classement de valeur que si l'appelant dit d'où il parle.
+   */
+  dataset: string;
   /** Nom de la clé sous laquelle l'objet pend (`''` = racine du document). */
   champ: string;
   /** Concepts dont le SITE d'appel a mesuré la candidature structurelle (cf. `plage`). */
@@ -182,12 +188,18 @@ export type Classement = {
   signature: string;
 };
 
-/** Concepts de VALEUR : tous ceux que l'index des ids ne décide pas (ni référence, ni liste d'ids). */
-const CONCEPTS_VALEUR = CONCEPTS.filter((c) => !c.resolvables && !c.listeIdsNus);
+/**
+ * Concepts CLASSABLES par leur forme propre : tous ceux que l'index des ids ne décide pas (ni
+ * référence, ni liste d'ids nus). Le filtre porte sur la RÉSOLUTION, jamais sur la STRATE — un
+ * concept d'ENVELOPPE (strate `Document`) se classe par son noyau exactement comme une valeur, en UNE
+ * entrée de tableau au lexique. À ne pas confondre avec `CLES_DE_VALEUR` (`structures-lexique.mts`),
+ * qui dérive de la STRATE parce qu'elle sert un autre usage (la charge utile de `tellsDeDocument`).
+ */
+const CONCEPTS_CLASSABLES = CONCEPTS.filter((c) => !c.resolvables && !c.listeIdsNus);
 
 /** Concepts que seul le SITE peut proposer (`exigeCandidatureStructurelle`) — la liste se DÉDUIT du
  *  lexique, elle ne se nomme pas au call-site : ajouter un concept structurel au lexique suffit. */
-const CONCEPTS_STRUCTURELS = CONCEPTS_VALEUR.filter((c) => c.exigeCandidatureStructurelle && c.noyau?.length);
+const CONCEPTS_STRUCTURELS = CONCEPTS_CLASSABLES.filter((c) => c.exigeCandidatureStructurelle && c.noyau?.length);
 
 /** Ids des concepts structurels dont l'objet `o` porte TOUT le noyau en NUMÉRIQUE. */
 const candidatsStructurels = (o: Record<string, unknown>): string[] =>
@@ -212,16 +224,17 @@ const statutDe = (c: Concept, sig: string, site?: { dataset: string; champ: stri
  * vocabulaire : un concept de valeur est reconnu à ses clés propres, pas à la fréquence de ses
  * voisins. `null` = ce n'est pas une valeur du lexique.
  */
-export function classerValeur(sig: string, cles: readonly string[], contexte: Contexte = { champ: '' }): Classement | null {
+export function classerValeur(sig: string, cles: readonly string[], contexte: Contexte = { dataset: '', champ: '' }): Classement | null {
   const set = new Set(cles);
-  for (const c of CONCEPTS_VALEUR) {
+  const site = { dataset: contexte.dataset, champ: contexte.champ };
+  for (const c of CONCEPTS_CLASSABLES) {
     if (c.exigeCandidatureStructurelle && !contexte.candidats?.includes(c.id)) continue;
     const parChamp = c.champs?.includes(contexte.champ) ?? false;
     const parNoyau = c.noyau ? c.noyau.filter((k) => set.has(k)).length >= (c.noyauMin ?? c.noyau.length) : false;
     // `coPresence` DÉCLARÉE : le concept n'est retenu que si l'objet porte au moins une de ces clés,
     // sinon on continue vers le concept suivant (`bornes` avant `plage`, même noyau).
     if (c.coPresence && !c.coPresence.some((k) => set.has(k))) continue;
-    if (parChamp || parNoyau) return statutDe(c, projeteValeur(c.id, cles) || sig);
+    if (parChamp || parNoyau) return statutDe(c, projeteValeur(c.id, cles) || sig, site);
   }
   return null;
 }
@@ -766,7 +779,7 @@ export function scannerDonnees(
 
       // ---- VALEUR d'abord (noyau propre), RÉFÉRENCE ensuite (index des ids)
       const candidats = dansTableau ? candidatsStructurels(o) : undefined;
-      const valeur = classerValeur(sig, cles, { champ, candidats });
+      const valeur = classerValeur(sig, cles, { dataset: p.nom, champ, candidats });
       let classe = false;
       if (valeur) {
         const c = CONCEPTS.find((x) => x.id === valeur.concept)!;
@@ -1262,7 +1275,9 @@ export type Redeclaration = {
  * clés, il n'a pas de charge utile à replier).
  */
 const classerLitteral = (sig: string, cles: readonly string[], champ: string): Classement | null => {
-  const valeur = classerValeur(sig, cles, { champ, candidats: CONCEPTS_STRUCTURELS.map((c) => c.id) });
+  // `dataset: ''` : un littéral de schéma n'a pas de dataset porteur — seules les entrées NUES du
+  // lexique lui répondent, comme `statutDe` le documente.
+  const valeur = classerValeur(sig, cles, { dataset: '', champ, candidats: CONCEPTS_STRUCTURELS.map((c) => c.id) });
   if (valeur) return valeur;
   const hit = CONCEPT_REFERENCE.signatures.find((s) => s.sig === sig);
   return hit ? statutDe(CONCEPT_REFERENCE, sig) : null;

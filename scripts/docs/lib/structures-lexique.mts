@@ -383,6 +383,71 @@ export const CONCEPTS: readonly Concept[] = [
     noyau: ['target', 'drCap', 'table', 'rounds', 'phases', 'pot', 'volley', 'sides', 'combined', 'throwerPenalty'],
     noyauMin: 2,
   },
+  // ---------------------------------------------------------------------------------------------
+  // Strate DOCUMENT (#1633) — les ENVELOPPES nommées de la grammaire de campagne. La strate existait
+  // au type sans qu'aucun concept l'emploie : ces quatre entrées la peuplent, et le socle ne bouge
+  // pas d'une ligne pour ça (`CONCEPTS_CLASSABLES` filtre la résolution, pas la strate).
+  //
+  // Un concept d'enveloppe se reconnaît à son NOYAU de clés REQUISES, JAMAIS au NOM du champ qui le
+  // porte. Mesuré : `classerValeur('rule', ['rule'], { champ: 'price' })` rend `prix / divergente`
+  // — un concept champ-keyé revendique TOUTE forme posée sous son nom, quelle qu'en soit la forme.
+  // Un concept `condition` keyé sur `when` volerait donc `talents.json › when {rule}` au concept
+  // `reference` : c'est le débordement global silencieux que le DoD interdit.
+  //
+  // AUCUN de ces quatre ne porte de `site` : le noyau suffit, et son non-débordement est MESURÉ sur
+  // les deux racines (garde `structures-contrat.test.ts`, sonde « noyaux d'enveloppe »). Un scope
+  // posé sans nécessité mentirait au 5ᵉ projet.
+  {
+    id: 'ouverture',
+    label: 'ouverture cérémonielle de chapitre',
+    strate: 'Document',
+    // Porte : `ouvertureSchema` (`src/data/schemas/defs-scenes/narratif.ts`), composée par
+    // `formeNarratif` sous la clé OPTIONNELLE `ouverture`.
+    signatures: [
+      { sig: 'pitch,titre', statut: 'cible' },
+      { sig: 'pitch,titre+…', statut: 'cible', note: '`surtitre`, `sousTitre`, `chapitre`, `ambiance` et `source` sont OPTIONNELS au schéma : ce que la projection replie en `+…` est la part facultative de la porte, pas une divergence' },
+    ],
+    noyau: ['titre', 'pitch'],
+  },
+  {
+    id: 'cloture',
+    label: 'clôture de chapitre',
+    strate: 'Document',
+    // Porte : `clotureSchema` (`src/data/schemas/defs-scenes/narratif.ts`), clé OPTIONNELLE `cloture`.
+    signatures: [
+      { sig: 'titre,when', statut: 'cible' },
+      { sig: 'titre,when+…', statut: 'cible', note: '`sousTitre` est OPTIONNEL au schéma' },
+    ],
+    noyau: ['titre', 'when'],
+  },
+  {
+    id: 'narratif',
+    label: 'bloc narratif d’un projet de campagne',
+    strate: 'Document',
+    // Porte : `formeNarratif` (`src/data/schemas/defs-scenes/narratif.ts`), dont `narratifSchema`
+    // n'est que la variante SÉMANTIQUE (`superRefine`) — la FORME est celle-là.
+    signatures: [
+      { sig: 'affaires,indices,objets,presetsPnj', statut: 'cible' },
+      { sig: 'affaires,indices,objets,presetsPnj+…', statut: 'cible', note: '`ouverture` et `cloture` sont OPTIONNELLES au schéma (#717) : un projet qui pose son cadre de chapitre projette `+…`' },
+    ],
+    noyau: ['affaires', 'indices', 'objets', 'presetsPnj'],
+  },
+  {
+    id: 'condition',
+    label: 'Condition à EXPRESSION (`kind` + `expr`)',
+    strate: 'Document',
+    // Porte : `conditionSchema` (`src/data/schemas/grammaire/mecanique.ts`), union discriminée sur
+    // `kind` ; `expr` n'est requis que par la variante `flag`, seule variante que ce noyau capte.
+    //
+    // RÉSIDU NOMMÉ, et il est plus large que la variante `flag` : toutes les autres variantes de
+    // `Condition` n'ont que le discriminant `kind` en commun (`talents.json › when {kind}` ×4,
+    // `{kind,of}`, `{kind,op,value}`, `{is,kind,who}`, `{kind,op,subject,value}`…) et RESTENT hors
+    // strate. Un noyau réduit à `kind` capterait tout le dépôt : `kind` est POLYSÉMIQUE (Condition,
+    // Flow, événement de mer, pion de scène — angle mort déclaré ci-dessus), et ce qui les
+    // distinguerait est la VALEUR du discriminant, que le lexique ne lit pas.
+    signatures: [{ sig: 'expr,kind', statut: 'cible' }],
+    noyau: ['expr', 'kind'],
+  },
 ];
 
 /** Le concept ANCRÉ sur l'index des ids (attribut déclaré, jamais un test d'identité au call-site). */
@@ -489,9 +554,19 @@ export const ROLES_ENVELOPPE: Record<string, RoleEnveloppe> = {
 /** Toutes les clés recensées d'un rôle, cible comprise (l'ordre du doc : cible d'abord). */
 export const clesDuRole = (role: RoleEnveloppe): string[] => [...(role.cible ? [role.cible] : []), ...role.divergentes];
 
-/** Vocabulaire propre des concepts de VALEUR : toutes les clés que leurs signatures et noyaux nomment. */
+/**
+ * Vocabulaire propre des concepts de la strate VALEUR : toutes les clés que leurs signatures et
+ * noyaux nomment. Le filtre est sur la STRATE, jamais sur `!resolvables && !listeIdsNus` : cette
+ * dérivation-là est celle des concepts CLASSABLES (`CONCEPTS_CLASSABLES`, `structures-scan.mts`), et
+ * les deux ont divergé quand la strate `Document` s'est peuplée (#1633). Ce qui les sépare est
+ * mesuré : `tellsDeDocument` (`structures-scan.mts`) compte les clés de CHARGE UTILE hors de ce
+ * vocabulaire — y verser les noyaux d'ENVELOPPE (`affaires`, `objets`, `titre`, `kind`…) change le
+ * TELL de 44 objets (mesuré 2026-09-01 sur les deux racines : les PIONS de scène
+ * `{id, kind, label, pos, ref}`, dont `kind` cesserait de compter comme charge utile).
+ * Garde : `src/data/structures-contrat.test.ts`, sonde C.
+ */
 export const CLES_DE_VALEUR: ReadonlySet<string> = new Set(
-  CONCEPTS.filter((c) => !c.resolvables && !c.listeIdsNus).flatMap((c) => [
+  CONCEPTS.filter((c) => c.strate === 'Valeur').flatMap((c) => [
     ...c.signatures.flatMap((s) => s.sig.split(',')),
     ...(c.noyau ?? []),
   ]),

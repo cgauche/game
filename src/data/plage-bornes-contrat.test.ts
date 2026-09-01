@@ -177,9 +177,9 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
       v.occurrences += o.occurrences;
     }
     expect(
-      parMotif,
-      'la répartition PAR MOTIF des orphelines a bougé : l’en-tête du stock la CITE ligne à ligne, elle ne peut pas dériver en silence.',
-    ).toEqual({ 'clé réservée': { lignes: 96, occurrences: 408 }, 'identité non résolue': { lignes: 2, occurrences: 2 } });
+      Object.keys(parMotif).sort(),
+      'les motifs des orphelines ne sont plus les deux que l’en-tête du stock décrit.',
+    ).toEqual(['clé réservée', 'identité non résolue']);
     expect(
       parMotif['clé de référence non résolue'],
       'la branche `clé de référence non résolue` (la SEULE que la prose décrivait) s’est peuplée : l’en-tête doit alors la décrire pour de bon.',
@@ -188,17 +188,34 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     // Le déclencheur `source` : ce que le motif `clé réservée` nomme vraiment — un NOM de clé
     // réservé au lexique, sur un objet dont le CONTENU est légitime (une vraie référence de livre).
     const parSource = STRUCTURES_ORPHELINES.filter((o) => o.signature.split(',').includes('source'));
-    expect(
-      { lignes: parSource.length, occurrences: parSource.reduce((s, o) => s + o.occurrences, 0) },
-      'la part de `source` dans les orphelines a bougé : l’en-tête du stock la CITE comme preuve que le contenu de ces objets est légitime.',
-    ).toEqual({ lignes: 65, occurrences: 144 });
 
+    // La répartition est un compte DÉRIVÉ du stock : elle ne se recopie pas en littéral ici (un
+    // littéral recopié dérive du jour où une ligne de stock bouge, et c'est ce qui l'a fait rougir).
+    // Ce qui se vérifie est que l'EN-TÊTE du stock cite les comptes que le stock MESURE — et il se
+    // vérifie en CO-OCCURRENCE : un compte cherché ISOLÉ se retrouve par HASARD ailleurs dans la
+    // prose, et la dérive passe alors en silence. Mesuré sur cet en-tête même (2026-09-01) : `95`
+    // dérivant vers `205` (le dénominateur de `L1b #1467`, cité plus bas) et `2` dérivant vers `1`
+    // (le `1` de `L1a #1466` répond au motif) restaient VERTS. Le fragment exige donc le compte AVEC
+    // ce qu'il compte.
+    const cr = parMotif['clé réservée'];
+    const identite = parMotif['identité non résolue'];
+    const fragments = [
+      `\`clé réservée\` ${cr.lignes} lignes / ${cr.occurrences} occurrences`,
+      `\`identité non résolue\` ${identite.lignes} / ${identite.occurrences}`,
+      `\`source\` à lui seul déclenche ${parSource.length} des ${cr.lignes} lignes (${parSource.reduce((s, o) => s + o.occurrences, 0)} occurrences)`,
+      `Les ${STRUCTURES_ORPHELINES.length} lignes de ce volet`,
+    ];
+    // L'en-tête est un bloc de commentaire : on le remet À PLAT (marqueurs de continuation retirés,
+    // blancs réduits) — sinon un fragment ne franchirait pas un retour à la ligne du JSDoc.
     const blocs = readFileSync(join(process.cwd(), 'scripts/guards/lib/structuresStock.mjs'), 'utf8')
       .split('export const STRUCTURES_ORPHELINES')[0]
       .split('/** Objet qui ANNONCE une référence');
-    const entete = blocs[blocs.length - 1];
-    for (const chiffre of ['96', '408', '2', '65', '144', '98']) {
-      expect(entete, `l’en-tête des orphelines ne cite plus le compte \`${chiffre}\` qu’il affirme.`).toContain(chiffre);
+    const entete = blocs[blocs.length - 1].replace(/^\s*\*\s?/gm, ' ').replace(/\s+/g, ' ');
+    for (const fragment of fragments) {
+      expect(
+        entete,
+        `l’en-tête des orphelines ne dit pas « ${fragment} » : le compte que le stock MESURE et la prose qui le NOMME ont déphasé.`,
+      ).toContain(fragment);
     }
     expect(
       entete,

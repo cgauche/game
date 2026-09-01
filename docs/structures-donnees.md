@@ -1115,6 +1115,13 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | plage | `max,min+…` | cible | 1431 |
 | quantite | `fixed` | cible | 47 |
 | quantite | `roll` | cible | 0 |
+| ouverture | `pitch,titre` | cible | 0 |
+| ouverture | `pitch,titre+…` | cible | 2 |
+| cloture | `titre,when` | cible | 0 |
+| cloture | `titre,when+…` | cible | 2 |
+| narratif | `affaires,indices,objets,presetsPnj` | cible | 2 |
+| narratif | `affaires,indices,objets,presetsPnj+…` | cible | 2 |
+| condition | `expr,kind` | cible | 38 |
 
 ## 3. Concepts transverses (lexique FERMÉ)
 
@@ -1122,7 +1129,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **836** (cible 362 · declaree 6 · historique 118 · divergente 350). Objets JSON parcourus : **48562**, dont **31872** portent une forme
+Lignes concept × dataset × champ × forme : **849** (cible 375 · declaree 6 · historique 118 · divergente 350). Objets JSON parcourus : **48562**, dont **31918** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -2049,7 +2056,52 @@ Reconnu par : son noyau `target` `drCap` `table` `rounds` `phases` `pot` `volley
 | entité | `(racine)` | `phases,target+…` | divergente | `tavernGames.json` | 1 | — |  |
 | entité | `(racine)` | `table,throwerPenalty+…` | divergente | `tavernGames.json` | 1 | — |  |
 
-### 3.12 Homonymes nominatifs
+### 3.12 ouverture cérémonielle de chapitre — `ouverture` (strate Document)
+
+2 ligne(s), 2 occurrence(s).
+Reconnu par : son noyau `titre` `pitch`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `ouverture` | `pitch,titre+…` | cible | `barge-du-sel-projet.json` | 1 | — | `surtitre`, `sousTitre`, `chapitre`, `ambiance` et `source` sont OPTIONNELS au schéma : ce que la projection replie en `+…` est la part facultative de la porte, pas une divergence |
+| config | `ouverture` | `pitch,titre+…` | cible | `diligence-projet.json` | 1 | — | `surtitre`, `sousTitre`, `chapitre`, `ambiance` et `source` sont OPTIONNELS au schéma : ce que la projection replie en `+…` est la part facultative de la porte, pas une divergence |
+
+### 3.13 clôture de chapitre — `cloture` (strate Document)
+
+2 ligne(s), 2 occurrence(s).
+Reconnu par : son noyau `titre` `when`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `cloture` | `titre,when+…` | cible | `barge-du-sel-projet.json` | 1 | — | `sousTitre` est OPTIONNEL au schéma |
+| config | `cloture` | `titre,when+…` | cible | `diligence-projet.json` | 1 | — | `sousTitre` est OPTIONNEL au schéma |
+
+### 3.14 bloc narratif d’un projet de campagne — `narratif` (strate Document)
+
+4 ligne(s), 4 occurrence(s).
+Reconnu par : son noyau `affaires` `indices` `objets` `presetsPnj`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `narratif` | `affaires,indices,objets,presetsPnj` | cible | `arene-projet.json` | 1 | — |  |
+| config | `narratif` | `affaires,indices,objets,presetsPnj+…` | cible | `barge-du-sel-projet.json` | 1 | — | `ouverture` et `cloture` sont OPTIONNELLES au schéma (#717) : un projet qui pose son cadre de chapitre projette `+…` |
+| config | `narratif` | `affaires,indices,objets,presetsPnj+…` | cible | `diligence-projet.json` | 1 | — | `ouverture` et `cloture` sont OPTIONNELLES au schéma (#717) : un projet qui pose son cadre de chapitre projette `+…` |
+| config | `narratif` | `affaires,indices,objets,presetsPnj` | cible | `loup-et-saumure-projet.json` | 1 | — |  |
+
+### 3.15 Condition à EXPRESSION (`kind` + `expr`) — `condition` (strate Document)
+
+5 ligne(s), 38 occurrence(s).
+Reconnu par : son noyau `expr` `kind`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `when` | `expr,kind` | cible | `arene-projet.json` | 25 | — |  |
+| config | `when` | `expr,kind` | cible | `barge-du-sel-projet.json` | 3 | — |  |
+| config | `when` | `expr,kind` | cible | `diligence-projet.json` | 3 | — |  |
+| config | `cond` | `expr,kind` | cible | `loup-et-saumure-projet.json` | 1 | — |  |
+| config | `when` | `expr,kind` | cible | `loup-et-saumure-projet.json` | 6 | — |  |
+
+### 3.16 Homonymes nominatifs
 
 Une clé RÉSERVÉE à un concept qui porte ≥ 2 classes de type dans la donnée : le NOM ne dit plus le
 type. Cible #1463 S2 : un nom de concept est réservé à son type. Une clé réservée encore homonyme
@@ -2061,7 +2113,7 @@ ne FORCE aucun concept — seul `price` nomme le concept `prix`, parce que `Pric
 | `price` | null \\| number \\| object \\| string | 520 | **null** trappings.json:46 — **number** land-cargo.json:6 — **object** trappings.json:392 vehicles.json:31 creatures.json:14 sea-cargo.json:11 mass-battle.json:10 land-cargo.json:7 — **string** trappings.json:3 |
 | `count` | number \\| object | 92 | **number** spells.json:16 loup-et-saumure-projet.json:6 creatures.json:5 tavernGames.json:3 traits.json:2 sea-shanties.json:1 trappings.json:1 vehicles.json:1 … — **object** careerLevels.json:50 classes.json:3 creatures.json:1 spells.json:1 traits.json:1 |
 
-### 3.13 Paramètres d’entité (`arg`) et régimes de `price`
+### 3.17 Paramètres d’entité (`arg`) et régimes de `price`
 
 Valeurs distinctes d’`arg` sur un objet porteur d’`id` : **187** (715 occurrences) — **185** vues en `src/data`, **2** propres aux scènes (`chaos`, `Ténèbres`). Aucun schéma ne les DÉCLARE aujourd’hui :
 cette table EST le dénominateur A11 de #1466. La « nature » est devinée par MOTIF (id d’entité,
@@ -2269,7 +2321,7 @@ Prix du RAW, pas une bourse unique — un coefficient saisonnier n’est pas une
 | littéral « ND » | 3 |
 | objet {dice} | 1 |
 
-### 3.14 Dotations narratives `{text}`
+### 3.18 Dotations narratives `{text}`
 
 Un `{text}` n’est une occurrence de référence que si son texte normalisé (casse, accents, ponctuation,
 espaces) égale le `label` d’une entité d’un dataset de la CIBLE MAJORITAIRE de son site — de n’importe
@@ -2285,7 +2337,7 @@ sont le narratif irréductible que la forme `text` DÉCLARE (#1463, #624).
 | `count,text` | 26 | — |
 | `kind,plus,text` | 4 | — |
 
-### 3.15 Hors strate — signatures ORPHELINES
+### 3.19 Hors strate — signatures ORPHELINES
 
 Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réservée, clé d’identité) et qui ne
 résout vers RIEN, sans être un document, et qui ne porte pas d’`op` (la strate Ops le porterait).
@@ -2298,7 +2350,7 @@ lexique), pas une valeur qui pointerait vers rien — le contenu de ces objets e
 clé `source` à elle seule en déclenche la majorité. Ce motif-là se solde au VOCABULAIRE (#1463 S2 :
 un nom de concept est réservé à son type), pas en curant un contenu ni en posant une enveloppe.
 
-**98** signatures orphelines, **407** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 96 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 98.
+**97** signatures orphelines, **406** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 95 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 97.
 
 | Dataset | Champ | Signature | Motif | Occurrences |
 |---|---|---|---|---|
@@ -2361,7 +2413,6 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `arene-projet.json` | `effect` | `level,skill,type` | clé réservée | 1 |
 | `classes.json` | `trappings` | `count,text` | clé réservée | 1 |
 | `details.json` | `texts` | `age,ambitionLong,ambitionShort,nom,taille` | identité non résolue | 1 |
-| `diligence-projet.json` | `ouverture` | `ambiance,chapitre,pitch,source,sousTitre,surtitre,titre` | clé réservée | 1 |
 | `etats.json` | `test` | `difficultyBy,gate,label,skill` | clé réservée | 1 |
 | `etats.json` | `of` | `id,kind,who` | identité non résolue | 1 |
 | `etats.json` | `recover` | `skill` | clé réservée | 1 |
@@ -2401,14 +2452,14 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12824** objets sur **48562** ne sont portés par AUCUNE
+Au-delà des orphelines, **12779** objets sur **48562** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1157** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1145** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2486,7 +2537,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `props.json` | `foot` | `h,w` | 26 |
 | `sea-events.json` | `effect` | `d10,flat,sign` | 26 |
 | `arene-projet.json` | `choices` | `flow,icon,label,when` | 25 |
-| `arene-projet.json` | `when` | `expr,kind` | 25 |
 | `diligence-projet.json` | `pos` | `x,y` | 24 |
 | `structures.json` | `char` | `B,BE` | 24 |
 | `activities.json` | `battle` | `amount,scale,side,target` | 22 |
@@ -2626,7 +2676,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `donnees.manifest.json` | `entrees` | `desc,file` | 6 |
 | `etats.json` | `steps` | `cond,kind,then` | 6 |
 | `etats.json` | `then` | `effect,kind` | 6 |
-| `loup-et-saumure-projet.json` | `when` | `expr,kind` | 6 |
 | `loup-et-saumure-projet.json` | `effect` | `desc,type` | 6 |
 | `loup-et-saumure-projet.json` | `damage` | `flat,plusBF` | 6 |
 | `maneuvers.json` | `amount` | `indiceOf` | 6 |
@@ -2739,7 +2788,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `arene-projet.json` | `edge` | `side,x,y` | 3 |
 | `arene-projet.json` | `perils` | `chancePct,effects,label` | 3 |
 | `arene-projet.json` | `effects` | `desc,type` | 3 |
-| `barge-du-sel-projet.json` | `when` | `expr,kind` | 3 |
 | `barge-du-sel-projet.json` | `dimensions` | `h,w` | 3 |
 | `barge-du-sel-projet.json` | `rect` | `h,w,x,y` | 3 |
 | `barge-du-sel-projet.json` | `effect` | `flag,type` | 3 |
@@ -2747,7 +2795,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `barge-du-sel-projet.json` | `damage` | `flat,plusBF` | 3 |
 | `criticals.json` | `times` | `factor,of` | 3 |
 | `criticals.json` | `ops` | `durationRounds,hands,op` | 3 |
-| `diligence-projet.json` | `when` | `expr,kind` | 3 |
 | `domains.json` | `of` | `is,kind,who` | 3 |
 | `etats.json` | `cond` | `kind,op,subject,value` | 3 |
 | `etats.json` | `flow` | `fail,kind,success,test` | 3 |
@@ -3048,7 +3095,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `ambiance.json` | `lod` | `blocksT,fadeT,meshFadeT,meshJointWM,meshShade,meshStartT,minJointSpacingPx` | 1 |
 | `arcane-phenomena.json` | `scope` | `nonDominantWinds` | 1 |
 | `arcane-phenomena.json` | `scope` | `chaosMagic` | 1 |
-| `arene-projet.json` | `narratif` | `affaires,indices,objets,presetsPnj` | 1 |
 | `arene-projet.json` | `music` | `ambient` | 1 |
 | `arene-projet.json` | `rest` | `auberge` | 1 |
 | `arene-projet.json` | `entryPoints` | `entree,porte-arene,route` | 1 |
@@ -3058,9 +3104,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `arene-projet.json` | `interact` | `consume,flow` | 1 |
 | `arene-projet.json` | `char` | `B,M,agilite,capacite-de-combat,capacite-de-tir,dexterite,endurance,force,force-mentale,initiative,intelligence,sociabilite` | 1 |
 | `arene-projet.json` | `combat` | `hiddenUntilCombat,optionals` | 1 |
-| `barge-du-sel-projet.json` | `narratif` | `affaires,cloture,indices,objets,ouverture,presetsPnj` | 1 |
-| `barge-du-sel-projet.json` | `ouverture` | `ambiance,pitch,sousTitre,titre` | 1 |
-| `barge-du-sel-projet.json` | `cloture` | `sousTitre,titre,when` | 1 |
 | `barge-du-sel-projet.json` | `interact` | `flow` | 1 |
 | `barge-du-sel-projet.json` | `onVictory` | `kind,steps` | 1 |
 | `barge-du-sel-projet.json` | `effect` | `amount,type` | 1 |
@@ -3103,8 +3146,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `details.json` | `bySpecies` | `gnome,ogre` | 1 |
 | `details.json` | `ambitionShort` | `all,bySpecies` | 1 |
 | `details.json` | `ambitionLong` | `all,bySpecies` | 1 |
-| `diligence-projet.json` | `narratif` | `affaires,cloture,indices,objets,ouverture,presetsPnj` | 1 |
-| `diligence-projet.json` | `cloture` | `sousTitre,titre,when` | 1 |
 | `diligence-projet.json` | `speed` | `diligence` | 1 |
 | `diligence-projet.json` | `rest` | `auberge,camp` | 1 |
 | `domains.json` | `seaModifier` | `focalisationDR` | 1 |
@@ -3150,9 +3191,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `interludeEvents.json` | `fx` | `stashRaided` | 1 |
 | `land-cargo.json` | `merchantSkill` | `d10,plus` | 1 |
 | `localisation.json` | `shapes` | `araignee,humanoide,serpent` | 1 |
-| `loup-et-saumure-projet.json` | `narratif` | `affaires,indices,objets,presetsPnj` | 1 |
 | `loup-et-saumure-projet.json` | `flow` | `cond,else,kind,then` | 1 |
-| `loup-et-saumure-projet.json` | `cond` | `expr,kind` | 1 |
 | `loup-et-saumure-projet.json` | `then` | `kind,steps` | 1 |
 | `loup-et-saumure-projet.json` | `else` | `kind,steps` | 1 |
 | `loup-et-saumure-projet.json` | `choices` | `flow,label,when` | 1 |
@@ -3601,6 +3640,10 @@ Dont **0** littéral(aux) PARTIEL(s) du noyau — — : une mesure qui exigerait
 | plage | `min,max` | 5 | 5 | `advancementCosts.ts` `oups.ts` `reglesOptionnelles.ts` `tavernGames.ts` `water-exposure.ts` |
 | quantite | `fixed` | 0 | 0 | — |
 | sequence | `target,drCap,table,rounds,phases,pot,volley,sides,combined,throwerPenalty` | 2 | 2 | `activities.ts` `tavernGames.ts` |
+| ouverture | `titre,pitch` | 0 | 0 | — |
+| cloture | `titre,when` | 0 | 0 | — |
+| narratif | `affaires,indices,objets,presetsPnj` | 0 | 0 | — |
+| condition | `expr,kind` | 0 | 0 | — |
 
 Le DoD de #1463 annonçait « 5 `{id,spec}` » : la mesure en trouve **2** littéral(aux) —
 `domains.ts` › `requiresSkill` `{id,spec}` (cible) · `trappings.ts` `{id,spec,value}` (historique). Les autres n’ont pas de

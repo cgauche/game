@@ -119,6 +119,23 @@ export const STRUCTURES_CIBLES = [
   { concept: "bornes", signature: "max,min+…", date: "2026-08-31" },
   { concept: "quantite", signature: "fixed", date: "2026-08-23" },
   { concept: "quantite", signature: "roll", date: "2026-08-23" },
+  // STRATE DOCUMENT (#1633, 2026-09-01) — les enveloppes nommées de la grammaire de campagne entrent
+  // ici, PORTE par PORTE. Ce ne sont pas des formes à migrer : chaque signature est la PROJECTION du
+  // noyau REQUIS de sa porte zod, et le suffixe `+…` y nomme les clés OPTIONNELLES que le schéma
+  // déclare (les DEUX projections sont donc cibles, la donnée n'en posant aujourd'hui qu'une par
+  // porte). Elles quittent le dénominateur HORS STRATE (12 lignes, cf. `PLAFOND_HORS_STRATE`), et la
+  // ligne `diligence-projet.json › ouverture` quitte en outre `STRUCTURES_ORPHELINES` : la
+  // projection réunit les deux buckets qu'un optionnel peuplé (`source`) séparait.
+  // Portes : `ouvertureSchema` / `clotureSchema` / `formeNarratif`
+  // (`src/data/schemas/defs-scenes/narratif.ts`) et `conditionSchema`
+  // (`src/data/schemas/grammaire/mecanique.ts`, variante `flag`).
+  { concept: "ouverture", signature: "pitch,titre", date: "2026-09-01" },
+  { concept: "ouverture", signature: "pitch,titre+…", date: "2026-09-01" },
+  { concept: "cloture", signature: "titre,when", date: "2026-09-01" },
+  { concept: "cloture", signature: "titre,when+…", date: "2026-09-01" },
+  { concept: "narratif", signature: "affaires,indices,objets,presetsPnj", date: "2026-09-01" },
+  { concept: "narratif", signature: "affaires,indices,objets,presetsPnj+…", date: "2026-09-01" },
+  { concept: "condition", signature: "expr,kind", date: "2026-09-01" },
 ];
 
 /** Une forme de donnée encore observée, à éteindre : `historique` (graphie reconnue au lexique) ou
@@ -825,14 +842,17 @@ export const STRUCTURES_ENVELOPPE = [
 /** Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réservée, clé d'identité) et qui
  *  ne résout vers RIEN, sans être un document ni une op : HORS STRATE. `L1a #1466` quand le NOM de
  *  la clé annonçait une FK (`clé de référence non résolue`) — branche VIDE à ce jour, 0 ligne —,
- *  `#1553` sinon. CE QUE LE MOTIF DIT, ligne à ligne (mesuré 2026-08-31, #1463 L4 P3) : `clé
- *  réservée` 96 lignes / 408 occurrences, `identité non résolue` 2 / 2. Le motif `clé réservée` ne
- *  décrit PAS une valeur qui pointerait vers rien — le déclencheur est le NOM (`CLES_RESERVEES` du
- *  lexique : skill, char, talent, price, cost, count, source), et le contenu est légitime : `source`
- *  à lui seul déclenche 65 des 96 lignes (144 occurrences), qui portent de vraies références de
- *  livre. Il se solde donc au VOCABULAIRE (#1463 S2 : un nom de concept est réservé à son type),
- *  jamais en curant un contenu. Les 98 lignes de ce volet ne sont pas du ressort de `L1b #1467`,
- *  dont le dénominateur (205) les comptait ; elles portent leur lot ligne à ligne. */
+ *  `#1553` sinon. CE QUE LE MOTIF DIT, ligne à ligne (mesuré 2026-09-01, #1633) : `clé réservée`
+ *  95 lignes / 404 occurrences, `identité non résolue` 2 / 2. Ces comptes sont DÉRIVÉS des lignes
+ *  ci-dessous — la garde `src/data/plage-bornes-contrat.test.ts` (sonde D) les recalcule et exige
+ *  que cet en-tête les CITE, elle ne les compare plus à un littéral recopié. Le motif `clé
+ *  réservée` ne décrit PAS une valeur qui pointerait vers rien — le déclencheur est le NOM
+ *  (`CLES_RESERVEES` du lexique : skill, char, talent, price, cost, count, source), et le contenu
+ *  est légitime : `source` à lui seul déclenche 64 des 95 lignes (143 occurrences), qui portent de
+ *  vraies références de livre. Il se solde donc au VOCABULAIRE (#1463 S2 : un nom de concept est
+ *  réservé à son type), jamais en curant un contenu. Les 97 lignes de ce volet ne sont pas du
+ *  ressort de `L1b #1467`, dont le dénominateur (205) les comptait ; elles portent leur lot ligne
+ *  à ligne. */
 export const STRUCTURES_ORPHELINES = [
   { dataset: "arcane-phenomena.json", champ: "niMods", signature: "delta,desc,scope,source", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "arcane-phenomena.json", champ: "niMods", signature: "desc,divide,round,scope,source", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
@@ -867,11 +887,6 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "creatures.json", champ: "purchase", signature: "availability,price", motif: "clé réservée", occurrences: 14, lot: "#1553", date: "2026-08-23" }, // +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
   { dataset: "crew-roles.json", champ: "wage", signature: "daily,source,weekly", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "details.json", champ: "texts", signature: "age,ambitionLong,ambitionShort,nom,taille", motif: "identité non résolue", occurrences: 1, lot: "#1553", date: "2026-08-23" },
-  // L'OUVERTURE cérémonielle du chapitre 1 porte sa `source` (le pitch est un verbatim EDO, règle
-  // stricte 5) — une enveloppe embarquée qui annonce sa référence de livre, même famille que les blocs
-  // sourcés ci-dessus. Née au lot #717 (date ci-dessous) ; le `lot` est celui qui l'ÉTEINDRA — #1553,
-  // la curation des orphelines — comme le veut l'en-tête (« chaque ligne porte le LOT qui l'éteint »).
-  { dataset: "diligence-projet.json", champ: "ouverture", signature: "ambiance,chapitre,pitch,source,sousTitre,surtitre,titre", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-31" },
   { dataset: "disponibilite.json", champ: "barterRatios", signature: "give,ratios,source", motif: "clé réservée", occurrences: 4, lot: "#1553", date: "2026-08-23" },
   { dataset: "disponibilite.json", champ: "dispoPct", signature: "availability,pct,source", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "domains.json", champ: "cancelledBy", signature: "circumstance,desc,requiresSkill,source,sustained,test", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },

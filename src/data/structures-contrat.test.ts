@@ -12,6 +12,7 @@ import {
 } from '../../scripts/docs/lib/structures-scan.mjs';
 import {
   ANGLES_MORTS,
+  CLES_DE_VALEUR,
   CONCEPTS,
   LOTS_CONNUS,
   LOTS_DE_PEUPLEMENT,
@@ -207,8 +208,9 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // du moteur, portée par le lieu, la route et la clôture), `ouverture {ambiance,pitch,sousTitre,titre}`
 // (`ouvertureSchema`), `cloture {sousTitre,titre,when}` (`clotureSchema`) et l'enveloppe `narratif`
 // qui gagne ses deux clés optionnelles (`defs-scenes/narratif.ts`, #717) — solde net +2, la signature
-// `narratif` sans cadre de ce paquet disparaissant au profit de celle-ci. Bump RÉVISABLE : la
-// déclaration de ces formes en CIBLE au lexique est proposée à la vague enveloppe.
+// `narratif` sans cadre de ce paquet disparaissant au profit de celle-ci. Ces deux bumps (1146→1147
+// et 1147→1149) sont SOLDÉS par #1633 ci-dessous : les formes qu'ils comptaient hors strate sont
+// désormais DÉCLARÉES, porte par porte.
 // #1463 L-monnaie-3 (1149→1152) : AUCUNE structure neuve — l'effet `giveMoney` cesse d'ÉTALER ses
 // dénominations et porte sa charge sous `montant` (`giveMoneySchema`, `defs-scenes/effets.ts`), comme
 // `giveXp.amount`. Les 3 signatures NOMMÉES par la garde sont la MEME enveloppe `{montant, type}`, une
@@ -222,7 +224,15 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // (`cost|bands` → `installation|bands`, `cost|bands,per`, `ops {cost,…}` → `ops {advantageOrMovement,…}`),
 // et DEUX enveloppes à clef unique DISPARAISSENT, aplaties sur leur porteur (`qualities cost {advantage}`,
 // `talents cost {advantageOrMovement}`). Solde net +7 − 2 = +5.
-const PLAFOND_HORS_STRATE = 1157;
+// #1633 (1157→1145) : la strate `Document` du lexique se PEUPLE — quatre concepts d'ENVELOPPE
+// (`ouverture`, `cloture`, `narratif`, `condition`), reconnus à leur NOYAU de clés requises et non au
+// nom du champ porteur, et chacun adossé à sa PORTE zod (cf. `STRUCTURES_CIBLES`). DOUZE lignes
+// quittent le hors-strate, et ce sont EXACTEMENT celles que les bumps #717/#684 ci-dessus
+// annonçaient : `narratif` ×4 (arene, barge, diligence, loup), `ouverture` ×1 (barge), `cloture` ×2
+// (barge, diligence), `{expr,kind}` ×5 (`when` d'arene/barge/diligence/loup + `cond` de loup — une
+// Condition sous `cond` EST une Condition, débordement légitime et nommé). La donnée n'est pas
+// touchée : c'est le lexique qui reconnaît des formes déjà posées, et le cliquet SUIT la baisse.
+const PLAFOND_HORS_STRATE = 1145;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -499,7 +509,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // dénominations OPTIONNELLES et `toMoney` complète à 0 — un coût authoré qui n'écrit que ce
       // qu'il chiffre est à la forme cible. Les variantes `+…` restent HORS cibles : un étalement se
       // migre, il ne se blanchit pas.
-      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 27],
+      // Cliquet REMONTÉ 27 → 34 (#1633, 2026-09-01) : la strate `Document` reçoit ses quatre concepts
+      // d'ENVELOPPE, et chacun déclare la ou les PROJECTIONS de son noyau requis — `ouverture`
+      // (`pitch,titre` ± optionnels), `cloture` (`titre,when` ±), `narratif`
+      // (`affaires,indices,objets,presetsPnj` ±) et `condition` (`expr,kind`). Chaque ligne porte SA
+      // PORTE zod au stock ; aucune donnée n'est réécrite, 12 lignes hors strate s'éteignent.
+      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 34],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
       // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non
@@ -710,7 +725,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // EMBARQUÉE qui porte sa `source` (le pitch est un verbatim EDO, règle stricte 5) sans résoudre
       // elle-même — même famille que les blocs sourcés déjà stockés ici. Une ligne de PLUS à éteindre,
       // qui tombera avec le volet #1553 (les sources embarquées), pas une dérive de forme.
-      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 105],
+      // Cliquet DESCENDU 105 → 97 (#1633) : le plafond était PÉRIMÉ de 7 places (L-monnaie-4 avait fait
+      // sortir 7 lignes sans le resserrer), et `diligence-projet.json › ouverture` sort à son tour —
+      // le concept `ouverture` la CLASSE, et le classement précède la route orpheline. Un optionnel
+      // peuplé (`source`) ne partage donc plus une même porte en deux buckets : la PROJECTION réunit.
+      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 97],
       // Cliquet DESCENDU 403 → 400 (L2 #1548, commit 3c) : 5 signatures d'op portant le `spec` FRÈRE
       // s'éteignent (`bonus,op,skill,spec` de spells/tables, `blocked,op,rounds,skill`/`mod,op,rounds,skill`
       // de spells dont le `skill: "all"` disparaît au profit de l'ABSENCE) et 2 se fondent dans des
@@ -878,7 +897,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 105 → 98 (#1463 L-monnaie-4) — 7 lignes sortent : elles n'étaient ORPHELINES que par le
       // NOM `cost`, rendu à son type (naval `install` ×2, `qualities.flow`, `advantageDefenseReaction`,
       // `prosthesisTraining` ×3 ; 29 occurrences).
-      '#1553': 98,
+      // … puis 98 → 97 (#1633) — `diligence-projet.json › ouverture` sort : le concept `ouverture` de
+      // la strate `Document` la classe à sa forme CIBLE, elle n'annonce plus rien qu'elle ne résolve.
+      '#1553': 97,
     };
     expect(
       Object.keys(plafonds).sort(),
@@ -1030,7 +1051,7 @@ describe('la référence est ANCRÉE sur l’index des ids (contrats positifs)',
 
 describe('les concepts de VALEUR sont reconnus à leur noyau (contrats positifs)', () => {
   const sig = (o: object) => signature(Object.keys(o));
-  const classement = (o: object, champ = '') => classerValeur(sig(o), Object.keys(o), { champ });
+  const classement = (o: object, champ = '', dataset = '') => classerValeur(sig(o), Object.keys(o), { dataset, champ });
 
   it('un montant PARTIEL est une monnaie à la forme cible, comme le montant complet', () => {
     // `moneyPartialSchema` (3 dénominations optionnelles) + `toMoney` : un coût authoré n'écrit que ce
@@ -1054,14 +1075,196 @@ describe('les concepts de VALEUR sont reconnus à leur noyau (contrats positifs)
 
   it('`{min,max}` n’est une plage que comme ÉLÉMENT DE TABLEAU à bornes numériques', () => {
     const cles = ['min', 'max'];
-    expect(classerValeur('max,min', cles, { champ: 'params', candidats: ['plage'] })).toMatchObject({ concept: 'plage', statut: 'cible' });
-    expect(classerValeur('max,min', cles, { champ: 'params' })).toBeNull();
-    expect(classerValeur('manannD10,max,min', ['min', 'max', 'manannD10'], { champ: 'impressed' })).toBeNull();
+    expect(classerValeur('max,min', cles, { dataset: '', champ: 'params', candidats: ['plage'] })).toMatchObject({ concept: 'plage', statut: 'cible' });
+    expect(classerValeur('max,min', cles, { dataset: '', champ: 'params' })).toBeNull();
+    expect(classerValeur('manannD10,max,min', ['min', 'max', 'manannD10'], { dataset: '', champ: 'impressed' })).toBeNull();
   });
 
   it('une clé RÉSERVÉE encore homonyme ne force aucun concept (`count`, `cost`, `skill`)', () => {
     expect(classement({ count: 2, id: 'x' }, 'trappings')).toBeNull();
     expect(classement({ cost: 3, weightEnc: 1 }, 'install')).toBeNull();
+  });
+});
+
+/**
+ * Strate DOCUMENT (#1633) — les concepts d'ENVELOPPE. Le DoD interdit le « débordement global
+ * silencieux » : ces trois sondes le mesurent au lieu de le supposer.
+ */
+describe('les concepts d’ENVELOPPE (strate `Document`) se reconnaissent au NOYAU, jamais au CHAMP', () => {
+  const documents = CONCEPTS.filter((c) => c.strate === 'Document');
+
+  it('A — aucun concept d’enveloppe n’est keyé par CHAMP : un concept champ-keyé est AVEUGLE à la forme', () => {
+    // La preuve tient dans le seul concept champ-keyé du lexique : `prix` revendique TOUTE forme
+    // posée sous `price`, jusqu'à la chaîne d'une règle optionnelle qui n'a rien d'un prix.
+    expect(
+      classerValeur('rule', ['rule'], { dataset: 'talents.json', champ: 'price' }),
+      'un concept keyé par CHAMP classe par le NOM du porteur : il rendrait un verdict sur une forme qu’il n’a jamais vue.',
+    ).toMatchObject({ concept: 'prix', statut: 'divergente' });
+    expect(
+      documents.filter((c) => c.champs?.length).map((c) => c.id),
+      'un concept d’ENVELOPPE keyé par champ volerait toute forme posée sous ce nom (`talents.json › when {rule}`, une RÉFÉRENCE, tomberait sous `condition`) — le noyau de clés REQUISES est la seule reconnaissance admise.',
+    ).toEqual([]);
+    expect(documents.every((c) => (c.noyau?.length ?? 0) > 0), 'un concept d’enveloppe sans noyau ne reconnaît rien.').toBe(true);
+  });
+
+  it('B — les noyaux d’enveloppe ne DÉBORDENT pas : les sites classés sont exactement ceux-ci', () => {
+    const sites = scan.formes
+      .filter((f) => f.strate === 'Document')
+      .map((f) => `${f.concept} | ${f.dataset} › ${f.champ} | ${f.signature}`);
+    expect(
+      lignes(sites),
+      'un noyau d’enveloppe a mordu ailleurs que sur sa porte (ou l’a lâchée) — un concept qui déborde est le débordement global que le DoD interdit, et il se NOMME ici avant de se déclarer.',
+    ).toEqual(
+      lignes([
+        'narratif | arene-projet.json › narratif | affaires,indices,objets,presetsPnj',
+        'narratif | loup-et-saumure-projet.json › narratif | affaires,indices,objets,presetsPnj',
+        'narratif | barge-du-sel-projet.json › narratif | affaires,indices,objets,presetsPnj+…',
+        'narratif | diligence-projet.json › narratif | affaires,indices,objets,presetsPnj+…',
+        'ouverture | barge-du-sel-projet.json › ouverture | pitch,titre+…',
+        'ouverture | diligence-projet.json › ouverture | pitch,titre+…',
+        'cloture | barge-du-sel-projet.json › cloture | titre,when+…',
+        'cloture | diligence-projet.json › cloture | titre,when+…',
+        'condition | arene-projet.json › when | expr,kind',
+        'condition | barge-du-sel-projet.json › when | expr,kind',
+        'condition | diligence-projet.json › when | expr,kind',
+        'condition | loup-et-saumure-projet.json › when | expr,kind',
+        // SEUL débordement, et il est LÉGITIME : une Condition posée sous `cond` reste une Condition
+        // — c'est le noyau qui la reconnaît, pas le nom du champ (cf. sonde A).
+        'condition | loup-et-saumure-projet.json › cond | expr,kind',
+      ]),
+    );
+    expect(
+      scan.formes.filter((f) => f.strate === 'Document' && f.statut !== 'cible').map((f) => `${f.dataset} › ${f.champ} | ${f.signature}`),
+      'une enveloppe classée hors de sa forme CIBLE : sa porte zod déclare ces clés, le lexique doit dire laquelle.',
+    ).toEqual([]);
+  });
+
+  it('C — `CLES_DE_VALEUR` ignore les noyaux d’ENVELOPPE (sinon `tellsDeDocument` perd ses tells)', () => {
+    // `tellsDeDocument` (`structures-scan.mts`) compte les clés de CHARGE UTILE d'un objet, hors
+    // graphie de référence, hors `CLES_DE_VALEUR`, hors enveloppe : ≥ 2 = document embarqué. Verser
+    // les noyaux d'enveloppe dans ce vocabulaire y retire des clés aussi courantes que `kind`.
+    // MESURÉ (sonde jetable, 2026-09-01, sur les 2 racines) : 44 objets changent alors de TELL, tous
+    // de la même forme — les PIONS de scène `{id, kind, label, pos, ref}`, dont `kind` cesse de
+    // compter comme charge utile. Aucun compte mesuré ne bouge aujourd'hui (le tell ne tranche que
+    // face à `siteDeReference`) : cette séparation est un verrou PAR CONSTRUCTION, et c'est
+    // précisément pourquoi elle a besoin de cette sonde-ci — aucune égalité de stock ne la couvre.
+    const noyauxEnveloppe = [...new Set(CONCEPTS.filter((c) => c.strate === 'Document').flatMap((c) => c.noyau ?? []))];
+    expect(noyauxEnveloppe.length, 'la strate `Document` ne déclare plus de noyau : la sonde ne mesure rien.').toBeGreaterThan(0);
+    expect(
+      noyauxEnveloppe.filter((k) => CLES_DE_VALEUR.has(k)),
+      '`CLES_DE_VALEUR` dérive de la STRATE (`Valeur`), jamais du filtre de résolution : une clé d’enveloppe qui y entre est retirée de la charge utile de `tellsDeDocument`.',
+    ).toEqual([]);
+  });
+
+  /**
+   * PILOTE du scan AMPUTÉ, exécuté dans un PROCESSUS SÉPARÉ. `CONCEPTS_CLASSABLES`
+   * (`scripts/docs/lib/structures-scan.mts:198`) est dérivé À L’ÉVALUATION du module : retirer un
+   * concept après coup n’atteint pas le scan déjà chargé, et le mock de module est INTERDIT tant que
+   * la suite partage son graphe (`src/vi-mock-isolate-guard.test.ts`, `isolate: false`). Le
+   * sous-processus est donc la seule amputation qui ne laisse RIEN derrière elle : il meurt avec sa
+   * mutation. La QUERY sur le second import donne au scan une identité de module neuve — il se
+   * ré-évalue et relit `CONCEPTS` amputé.
+   */
+  const PILOTE_DIFF_STRATE = [
+    "import { pathToFileURL } from 'node:url';",
+    "import { join } from 'node:path';",
+    'const R = process.cwd();',
+    "const url = (p) => pathToFileURL(join(R, p)).href;",
+    "const SCAN = url('scripts/docs/lib/structures-scan.mjs');",
+    "const lexique = await import(url('scripts/docs/lib/structures-lexique.mjs'));",
+    "const { defsDeDocument } = await import(url('scripts/docs/lib/slots-registre.mjs'));",
+    "const { choixDeclares, introspecterDefs } = await import(url('scripts/docs/lib/zod-introspect.mjs'));",
+    'const defs = defsDeDocument();',
+    'const familles = new Map(introspecterDefs(defs).map((d) => [d.file, d.famille]));',
+    'const choix = choixDeclares(defs);',
+    'const avec = (await import(SCAN)).scannerDonnees(R, familles, choix);',
+    "const retires = lexique.CONCEPTS.filter((c) => c.strate === 'Document');",
+    'for (const c of retires) lexique.CONCEPTS.splice(lexique.CONCEPTS.indexOf(c), 1);',
+    "const sans = (await import(SCAN + '?sansDocument')).scannerDonnees(R, familles, choix);",
+    "const site = (x) => x.dataset + ' › ' + x.champ;",
+    "const kf = (f) => f.concept + ' | ' + site(f) + ' | ' + f.signature + ' | ' + f.occurrences;",
+    "const ki = (i) => site(i) + ' | ' + i.signature + ' | ' + i.occurrences;",
+    "const ko = (o) => site(o) + ' | ' + o.signature + ' | ' + o.motif + ' | ' + o.occurrences;",
+    'const seuls = (a, b, k) => a.filter((x) => !b.some((y) => k(y) === k(x))).map(k).sort();',
+    "process.stdout.write('<<<DIFF>>>' + JSON.stringify({",
+    '  retires: retires.map((c) => c.id).sort(),',
+    '  comptes: { formes: avec.formes.length, invisibles: avec.invisibles.length, orphelines: avec.orphelines.length },',
+    '  formesGagnees: seuls(avec.formes, sans.formes, kf),',
+    '  formesVolees: seuls(sans.formes, avec.formes, kf),',
+    '  invisiblesEteintes: seuls(sans.invisibles, avec.invisibles, ki),',
+    '  invisiblesNees: seuls(avec.invisibles, sans.invisibles, ki),',
+    '  orphelinesEteintes: seuls(sans.orphelines, avec.orphelines, ko),',
+    '  orphelinesNees: seuls(avec.orphelines, sans.orphelines, ko),',
+    "}));",
+  ].join('\n');
+
+  /**
+   * D — le non-débordement se prouve par DIFF, pas par liste. La sonde B verrouille les sites
+   * classés `Document` ; elle ne dit RIEN de ce que ces noyaux auraient PRIS aux strates
+   * `Valeur`/`Référence` — une forme volée disparaîtrait de son concept d’origine sans qu’aucune
+   * égalité de stock ne bouge (les lignes volées seraient simplement absentes des deux côtés).
+   * Ici on mesure les DEUX scans et on exige : ce que la strate `Document` gagne, elle le prend à ce
+   * qui n’était CLASSÉ PAR PERSONNE (invisibles + orphelines), jamais à un concept existant.
+   * COÛT MESURÉ (2026-09-01, cette machine) : ~3 s — démarrage `tsx` ~1,7 s + DEUX scans à ~0,6 s.
+   */
+  it('D — DIFF avec/sans la strate `Document` : ce qu’elle gagne vient du NON-CLASSÉ, zéro forme VOLÉE', () => {
+    const dossier = mkdtempSync(join(tmpdir(), 'structures-strate-'));
+    try {
+      const pilote = join(dossier, 'diff-strate-document.mjs');
+      writeFileSync(pilote, PILOTE_DIFF_STRATE, 'utf8');
+      const sortie = execFileSync(process.execPath, ['--import', 'tsx', pilote], { cwd: ROOT, encoding: 'utf8' }).split('<<<DIFF>>>');
+      const diff = JSON.parse(sortie[sortie.length - 1]) as {
+        retires: string[];
+        comptes: { formes: number; invisibles: number; orphelines: number };
+        formesGagnees: string[];
+        formesVolees: string[];
+        invisiblesEteintes: string[];
+        invisiblesNees: string[];
+        orphelinesEteintes: string[];
+        orphelinesNees: string[];
+      };
+
+      // Le pilote a bien amputé CE QUE le lexique déclare aujourd'hui, et il a mesuré LE MÊME arbre
+      // que le scan en mémoire — sans ces deux ancrages, le diff comparerait deux inconnues.
+      expect(diff.retires, 'le pilote n’a pas retiré les concepts d’ENVELOPPE que le lexique déclare.').toEqual(
+        lignes(documents.map((c) => c.id)),
+      );
+      expect(
+        diff.comptes,
+        'le scan du sous-processus ne mesure pas le même arbre que celui du fichier : le diff ne prouverait rien.',
+      ).toEqual({ formes: scan.formes.length, invisibles: scan.invisibles.length, orphelines: scan.orphelines.length });
+
+      expect(
+        diff.formesVolees,
+        'une forme classée SANS la strate `Document` disparaît AVEC elle : un noyau d’enveloppe a VOLÉ des objets à un concept de `Valeur`/`Référence` — c’est le débordement global que le DoD interdit.',
+      ).toEqual([]);
+      expect(
+        diff.formesGagnees,
+        'les formes que la strate `Document` ajoute ne sont pas exactement celles que le scan lui compte.',
+      ).toEqual(lignes(scan.formes.filter((f) => f.strate === 'Document').map((f) => `${f.concept} | ${f.dataset} › ${f.champ} | ${f.signature} | ${f.occurrences}`)));
+
+      // La CONTREPARTIE : chaque gain sort du NON-CLASSÉ. 12 lignes d'invisibles s'éteignent (les
+      // objets qu'aucun concept ne reconnaissait) et 1 orpheline (`diligence-projet.json › ouverture`,
+      // dont la clé `source` déclenchait le motif `clé réservée`) — la projection réunit les deux
+      // buckets qu'un optionnel peuplé séparait. Somme = les gains, à l'unité près.
+      expect(diff.invisiblesNees, 'la strate `Document` rend un objet INVISIBLE : elle en perd un au lieu d’en classer.').toEqual([]);
+      expect(diff.orphelinesNees, 'la strate `Document` fabrique une ORPHELINE : elle en perd une au lieu d’en classer.').toEqual([]);
+      expect(
+        diff.orphelinesEteintes,
+        'l’orpheline soldée par la strate `Document` n’est plus celle que le stock nomme (`structuresStock.mjs`, en-tête des concepts d’enveloppe).',
+      ).toEqual(['diligence-projet.json › ouverture | ambiance,chapitre,pitch,source,sousTitre,surtitre,titre | clé réservée | 1']);
+      expect(
+        diff.invisiblesEteintes.length + diff.orphelinesEteintes.length,
+        'le compte ne se referme plus : un gain de la strate `Document` ne vient ni d’un invisible ni d’une orpheline — il vient donc d’ailleurs.',
+      ).toBe(diff.formesGagnees.length);
+      const sitesDocument = new Set(scan.formes.filter((f) => f.strate === 'Document').map((f) => `${f.dataset} › ${f.champ}`));
+      expect(
+        lignes(diff.invisiblesEteintes.filter((l) => !sitesDocument.has(l.split(' | ')[0]))),
+        'un invisible s’est éteint sur un SITE que la strate `Document` ne classe pas : l’extinction déborde des portes.',
+      ).toEqual([]);
+    } finally {
+      rmSync(dossier, { recursive: true, force: true });
+    }
   });
 });
 
