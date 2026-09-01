@@ -166,7 +166,7 @@ describe('WorldMapEditor — panneau Lieu / Commerce (#419)', () => {
     setValue(input('Taille de la communauté'), '3');
     expect(lastMap!.places[0].market!.taille).toBe(3);
 
-    const richesseSel = input('Richesse — Mise à prix') as HTMLSelectElement;
+    const richesseSel = input('Indice de richesse — Mise à prix') as HTMLSelectElement;
     const otherRichesse = [...richesseSel.options].map((o) => o.value).find((v) => v !== richesseSel.value)!;
     setValue(richesseSel, otherRichesse);
     expect(lastMap!.places[0].market!.richesse).toBe(Number(otherRichesse));

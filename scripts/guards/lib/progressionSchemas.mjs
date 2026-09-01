@@ -104,18 +104,18 @@ export function auditProgressionSchemas(sources = {}) {
       }
     }
     if (hits.length === 0) {
-      bandesHorsDonnee.push({ book: s.book, folio: s.folio, pdfpage: s.pdfpage, y: s.y, titres })
+      bandesHorsDonnee.push({ book: s.book, page: s.page, pdfpage: s.pdfpage, y: s.y, titres })
       continue
     }
     if (hits.length > 1) {
-      ambigus.push({ book: s.book, folio: s.folio, pdfpage: s.pdfpage, y: s.y, titres, candidats: hits.map((c) => c.id) })
+      ambigus.push({ book: s.book, page: s.page, pdfpage: s.pdfpage, y: s.y, titres, candidats: hits.map((c) => c.id) })
       continue
     }
     const career = hits[0]
     couvertes.add(career.id)
     parLivre[s.book] = (parLivre[s.book] ?? 0) + 1
-    if (career.source?.page !== s.folio) {
-      folioEcarts.push({ career: career.id, book: s.book, declare: career.source?.page ?? null, imprime: s.folio })
+    if (career.source?.page !== s.page) {
+      folioEcarts.push({ career: career.id, book: s.book, declare: career.source?.page ?? null, imprime: s.page })
     }
     for (const n of ['1', '2', '3', '4']) {
       const lvl = levelOf.get(`${career.id}::${Number(n)}`)
@@ -125,7 +125,7 @@ export function auditProgressionSchemas(sources = {}) {
           book: s.book,
           level: Number(n),
           pdfpage: s.pdfpage,
-          folio: s.folio,
+          page: s.page,
           motif: 'niveau-absent-de-la-donnee',
           json: null,
           pdf: (s.lv[n] ?? []).map((m) => m.characteristic),
@@ -141,7 +141,7 @@ export function auditProgressionSchemas(sources = {}) {
           book: s.book,
           level: Number(n),
           pdfpage: s.pdfpage,
-          folio: s.folio,
+          page: s.page,
           motif: 'affectation-divergente',
           json,
           pdf,
@@ -181,7 +181,7 @@ export function formatViolation(v) {
     .map((m) => `${m.col}${m.teinte ? ` teinte ${m.teinte.join('/')}` : ' glyphe'} @x=${m.x}`)
     .join(', ')
   return (
-    `${v.career} niveau ${v.level} (${v.book} folio ${v.folio}, page PDF ${v.pdfpage}) : ` +
+    `${v.career} niveau ${v.level} (${v.book} folio ${v.page}, page PDF ${v.pdfpage}) : ` +
     `JSON [${(v.json ?? []).join(', ') || '—'}] vs PDF [${v.pdf.join(', ') || '—'}]` +
     (marques ? ` — marques lues : ${marques}` : ' — aucune marque lue')
   )

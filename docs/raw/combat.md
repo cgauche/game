@@ -5530,7 +5530,7 @@ Ces 9 Miracles forment trois familles : **buffs de groupe** (Dévotion de la Vie
 
 **Voir aussi** : LDB 42 — Miracles de Myrmidia (les 6 Miracles de base : Appel à la Fureur, Bouclier de Myrmidia, Inspirant, Lance de Myrmidia, Œil de l'aigle, Soleil flamboyant) ; LDB 21 — Psychologie (Terreur, États Brisé) ; LDB 13 — Combat (Charge, attaque gratuite, Désengagement/Fuite) ; Sans peur (Talent) ; AA — Carrière Prêtre de Myrmidia.
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 6` (l.465-468, l.469-551) → `combat-aa-bleed`, `combat-aa-blessures`, `pretre-de-myrmidia`, `commander-la-legion`, `terrifier-l-ennemi`, `en-bon-ordre`, `connais-ton-ennemi`, `en-terrain-dangereux`, `frappe-rapide`, `devotion-de-la-vierge-guerriere`, +6 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/spells.json`
+- `AA 6` (l.465-468, l.469-551) → `combat-aa-bleed`, `combat-aa-blessures`, `progression-schemas-derived`, `pretre-de-myrmidia`, `commander-la-legion`, `terrifier-l-ennemi`, `en-bon-ordre`, `connais-ton-ennemi`, `en-terrain-dangereux`, `frappe-rapide`, +7 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/data/combat-stakes.json`, `src/data/progression-schemas.derived.json` ⚠hors-app, `src/data/reglesOptionnelles.json`, `src/data/spells.json`
 - dette : #375
 
 ---

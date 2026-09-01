@@ -46,7 +46,7 @@ describe('schémas de progression (PDF -> careerLevels.json)', () => {
     // Une Carrière imprimée mais jamais curée doit se voir : ces 3 bandes sont attendues, et une 4e
     // qui apparaîtrait (nouvelle Carrière d'un livre, ou titre qui cesse d'être rapproché) échoue ici.
     expect(
-      audit.bandesHorsDonnee.map((b) => `${b.book} folio ${b.folio} y=${b.y} ${b.titres[0]}`),
+      audit.bandesHorsDonnee.map((b) => `${b.book} folio ${b.page} y=${b.y} ${b.titres[0]}`),
     ).toEqual([
       'livre-de-base folio 46 y=389.5 CARRIÈRES', // exemple pédagogique du chapitre « Classes et Carrières »
       'vents-de-la-magie folio 188 y=753.1 FAMILIER DE COMBAT', // bande de tête, colonne de droite : aucun titre ne la coiffe

@@ -7,14 +7,15 @@
  *
  * GÉNÉRATION : `python scripts/data/gen-progression-schemas.py` écrit l'artefact depuis les PDF de
  * `Source/` ; `--check` le compare à l'OCTET sans rien écrire. NE PAS ÉDITER À LA MAIN.
- * LECTURE : une entrée de `schemas` = une bande de schéma de progression lue dans le PDF — `folio` est
- * le folio IMPRIMÉ relevé SUR la page, `career` le titre de Carrière imprimé au-dessus de la bande,
+ * LECTURE : une entrée de `schemas` = une bande de schéma de progression lue dans le PDF — la réf de
+ * source `{book, page}` de la grammaire (`grammaire/valeurs.ts`) y est MESURÉE sur la page : `page`
+ * est le folio imprimé relevé en pied de page, `career` le titre de Carrière imprimé au-dessus de la bande,
  * `lv[n]` les Caractéristiques marquées au niveau n (`col` = colonne imprimée, `characteristic` = CharKey,
  * `teinte` = couleur RVB mesurée de l'aplat, absente au niveau 1 qui est un glyphe de police).
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { charKeySchema } from '../grammaire/valeurs';
+import { charKeySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'progression-schemas.derived.json';
 export const famille = 'config';
@@ -37,10 +38,7 @@ const doc = document(
   livres: z.array(z.string()),
   schemas: z.array(
     z.strictObject({
-      /** `id` du livre (`books.json`). */
-      book: z.string(),
-      /** Folio IMPRIMÉ relevé SUR la page — jamais l'index PDF (l'écart n'est pas constant). */
-      folio: z.number(),
+      ...sourceRefSchema.shape,
       /** Titre imprimé le plus proche AU-DESSUS de la bande, tel que la couche texte le recolle ;
        *  `null` si aucun titre de la page ne la coiffe (VDM folio 188, colonne de droite : le bloc
        *  commence à la page précédente) — la garde rapproche alors par `titresPage`. */

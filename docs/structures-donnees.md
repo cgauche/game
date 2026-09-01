@@ -1854,7 +1854,7 @@ Reconnu par : son noyau `book`
 | table | `source` | `book,note,page` | cible | `oups.json` | 8 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `source` | `book,note,page` | cible | `peripeties.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | config | `source` | `book,page` | cible | `problemes-vehicule.json` | 1 | — |  |
-| config | `schemas` | `book+…` | divergente | `progression-schemas.derived.json` | 111 | — |  |
+| config | `schemas` | `book,page+…` | divergente | `progression-schemas.derived.json` | 111 | — |  |
 | entité | `source` | `book,page` | cible | `psychology.json` | 9 | — |  |
 | entité | `alsoIn` | `book,page` | cible | `qualities.json` | 1 | — |  |
 | entité | `alsoIn` | `book,page+…` | divergente | `qualities.json` | 1 | — |  |
@@ -3627,7 +3627,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **469** ; **58** recoupent le lexique
+Littéraux d’objet zod lus : **469** ; **57** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -3646,7 +3646,7 @@ Dont **0** littéral(aux) PARTIEL(s) du noyau — — : une mesure qui exigerait
 | monnaie | `gold,silver` | 0 | 0 | — |
 | de | `n,sides` | 0 | 0 | — |
 | formule | `sum,sinPoints` | 1 | 1 | `miscast.ts` |
-| source | `book` | 1 | 1 | `progression-schemas-derived.ts` |
+| source | `book` | 0 | 0 | — |
 | bornes | `min,max` | 2 | 2 | `oups.ts` `tavernGames.ts` |
 | plage | `min,max` | 2 | 2 | `oups.ts` `tavernGames.ts` |
 | quantite | `fixed` | 0 | 0 | — |
@@ -3691,7 +3691,6 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `naval-progression.ts` | 14 | — | — | hors lexique | `entries` | `corps` |
 | `obsessions.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
 | `oups.ts` | 39 | — | plage | cible | `max,min+…` | — |
-| `progression-schemas-derived.ts` | 39 | `schemas` | source | divergente | `book+…` | — |
 | `psychology.ts` | 54 | `test` | test | historique | `difficulty,skill` | — |
 | `raceAppearance.ts` | 31 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
 | `raceAppearance.ts` | 33 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |

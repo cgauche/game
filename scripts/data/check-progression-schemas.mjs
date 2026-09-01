@@ -39,7 +39,7 @@ for (const [book, ids] of Object.entries(a.nonCouvertes).sort()) {
 // qui épingle NOMMÉMENT les bandes attendues (`src/data/progression-schemas.test.ts`), pas ce CLI.
 for (const b of a.bandesHorsDonnee) {
   console.log(
-    `  BANDE HORS DONNÉE ${b.book} folio ${b.folio} (page PDF ${b.pdfpage}, y=${b.y}) : ` +
+    `  BANDE HORS DONNÉE ${b.book} folio ${b.page} (page PDF ${b.pdfpage}, y=${b.y}) : ` +
       `aucune Carrière de la donnée ne la réclame — titres de la page ${JSON.stringify(b.titres)}`,
   )
 }
@@ -60,7 +60,7 @@ for (const v of a.violations) {
 }
 for (const x of a.ambigus) {
   console.error(
-    `AMBIGU ${x.book} folio ${x.folio} (page PDF ${x.pdfpage}, y=${x.y}) : titres ${JSON.stringify(x.titres)} ` +
+    `AMBIGU ${x.book} folio ${x.page} (page PDF ${x.pdfpage}, y=${x.y}) : titres ${JSON.stringify(x.titres)} ` +
       `rapprochent ${x.candidats.length} Carrières — ${x.candidats.join(', ')}`,
   )
   ko++
