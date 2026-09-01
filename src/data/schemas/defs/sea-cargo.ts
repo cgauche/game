@@ -8,9 +8,10 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import {
+  catalogueSaisonnier,
   difficultySchema,
+  dispoSaisonniereSchema,
   ecartsDeCouverture,
-  parSaison,
   plageOuverteSchema,
   prixSaisonnierSchema,
   prixTireSchema,
@@ -21,13 +22,11 @@ import { refOuSpec } from '../grammaire/ref';
 export const file = 'sea-cargo.json';
 export const famille = 'config';
 
-const seasonRange = z.tuple([z.number(), z.number()]);
-
 /** Une CARGAISON ÉCHANGEABLE : disponibilité saisonnière + prix (tableau des cargaisons, l.406-434). */
 const cargoMarchand = z.strictObject({
   id: z.string(),
   label: z.string(),
-  avail: parSaison(seasonRange),
+  avail: dispoSaisonniereSchema,
   price: z.union([prixSaisonnierSchema, prixTireSchema]),
   source: sourceRefSchema,
 });
@@ -69,11 +68,20 @@ const cargoMarqueur = z.strictObject({
   source: sourceRefSchema,
 });
 
+/**
+ * CATALOGUE DES CARGAISONS (l.406-418) — la COUVERTURE du d100 est un invariant de la COLONNE
+ * saisonnière, pas d'une entrée : sans ce verrou, un trou ouvert au Codex ne lèverait rien au parse, et
+ * le tirage tomberait sur un ARRÊT au jet (`rollSeasonalCargo`, `src/engine/cargo.ts`) — la faute
+ * étant, elle, dans la donnée. La règle est celle des DEUX livres : elle vit dans la grammaire
+ * (`catalogueSaisonnier`), ce def n'en déclare que ses entrées et le site cité par le refus.
+ */
+const cargoesSchema = catalogueSaisonnier(cargoMarchand, cargoMarqueur, { site: 'sea-cargo.json › cargoes' });
+
 const doc = document(
   'sea-cargo',
   famille,
   {
-  cargoes: z.array(z.union([cargoMarchand, cargoMarqueur])),
+  cargoes: cargoesSchema,
   buy: z.strictObject({
     availabilityMultiplier: z.number(),
     merchantSkill: z.strictObject({ d10: z.number(), plus: z.number() }),

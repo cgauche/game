@@ -28,7 +28,7 @@ Ce que la mesure ci-dessous **ne voit pas** — un compte n’a de sens qu’ave
 - Le RÉGIME D’ENTRÉES vient de la famille DÉCLARÉE par le schéma zod (`liste` → les éléments, `record` → les valeurs, `config` → le document EST son entrée) ; un document qu’aucune def ne déclare serait classé par sa racine JSON — depuis #1466 L1a il n’y en a plus aucun, les quatre projets de `src/scenes` sont déclarés `config`. La FAMILLE mesurée (`entité`/`table`/`config`/`record`) se déduit du régime : `record` et `config` RECOPIENT la déclaration (régime `valeurs` / `racine`), seule la partition `entité` ⊕ `table` est observée (part des entrées à bornes numériques). Depuis #1467 L1b V-FLIP-RECORD, le régime `valeurs` descend dans `entries` quand le record porte son enveloppe.
 - Une valeur mesurée hors de sa forme propre est enregistrée sous sa PROJECTION sur le vocabulaire du concept, suffixée `+…` ; de même pour une référence (clés de graphie + clés qui résolvent, charge utile repliée).
 - La candidature `plage` est STRUCTURELLE et non plus positionnelle : tout objet portant `min` ET `max` NUMÉRIQUES est candidat, élément d’un TABLEAU comme porté par un CHAMP (#1659, 2026-09-01 — les 5 `{min,max}` hors tableau des 2 racines entrent dans la mesure : `sea-events › params.impressed`, `› params.wrathful`, `tavernGames › pot.targetRange`, `› volley.libre`, `water-exposure › modifiers[].auto`). Ce qui reste hors candidature est le TYPE : une borne non numérique (`null` d’une bande ouverte comprise) n’ouvre pas la plage. `bornes` reste borné au tableau — aucun `{min,max}` hors tableau ne porte `default`/`step`.
-- Une paire de bornes encodée en TUPLE `[min,max]` n’est mesurée par AUCUN concept : la mesure ne classe que des OBJETS, un tableau de deux nombres reste une valeur nue. 99 tuples à l’arbre sur 18 sites (2 racines, 2026-09-01), dont 83 sont des plages — 72 disponibilités saisonnières (`sea-cargo.json › cargoes[].avail` 44, `land-cargo.json › cargoes[].avail` 28), 7 `ship-construction.json › standard[].lengthM`, 4 `stars.json › [].sub` — et 16 n’en sont pas, exclus nommément : 14 paramètres de recette de rendu (`detail.courses.blockWM` 9, `detail.speckle.rM` 4, `detail.tufts.hM` 1, sous `structureAppearance.json`/`roofMaterials.json`/`reliefMaterials.json`), `qualities.json › [].capabilities.fumbleDigits` (un ENSEMBLE de chiffres) et `structureAppearance.json › [].door.herse.traverseFracs` (des positions fractionnaires). Le stock décroissant de ces 99 vit dans `src/data/plage-bornes-contrat.test.ts` (volet F) ; leur migration est lotée #1659.
+- Une paire de bornes encodée en TUPLE `[min,max]` n’est mesurée par AUCUN concept : la mesure ne classe que des OBJETS, un tableau de deux nombres reste une valeur nue. 27 tuples à l’arbre sur 10 sites (2 racines, 2026-09-01 après #1659 L-1659-2 ; 99 sur 18 à l’ouverture de la vague), dont 11 sont des plages — 7 `ship-construction.json › standard[].lengthM`, 4 `stars.json › [].sub` — et 16 n’en sont pas, exclus nommément : 14 paramètres de recette de rendu (`detail.courses.blockWM` 9, `detail.speckle.rM` 4, `detail.tufts.hM` 1, sous `structureAppearance.json`/`roofMaterials.json`/`reliefMaterials.json`), `qualities.json › [].capabilities.fumbleDigits` (un ENSEMBLE de chiffres) et `structureAppearance.json › [].door.herse.traverseFracs` (des positions fractionnaires). Les 72 disponibilités saisonnières (`sea-cargo.json › cargoes[].avail` 44, `land-cargo.json › cargoes[].avail` 28) sont SORTIES du stock : ce sont des fourchettes `{min,max}`, mesurées par le concept `plage`. Le stock décroissant de ces 27 vit dans `src/data/plage-bornes-contrat.test.ts` (volet F) ; leur migration est lotée #1659 L3.
 - Un concept exprimé en SCALAIRE hors liste (`species: "humain"`) est mesuré sous la forme `id-nu`, sans signature d’objet.
 - `kind` est polysémique et n’est pas dédoublonné (Condition, Flow, événement de mer, pion de scène).
 - Le classement est ORDONNÉ : une VALEUR (reconnue à son noyau) passe avant une RÉFÉRENCE ; un objet qui recoupe deux concepts n’est compté qu’une fois.
@@ -1114,7 +1114,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | source | `book,chapter` | historique | 0 |
 | source | `book,chapter,page` | historique | 0 |
 | bornes | `max,min+…` | cible | 23 |
-| plage | `max,min` | cible | 2 |
+| plage | `max,min` | cible | 74 |
 | plage | `max,min+…` | cible | 1457 |
 | quantite | `fixed` | cible | 47 |
 | quantite | `roll` | cible | 0 |
@@ -1135,7 +1135,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **860** (cible 393 · declaree 6 · historique 118 · divergente 343). Objets JSON parcourus : **48582**, dont **31903** portent une forme
+Lignes concept × dataset × champ × forme : **868** (cible 401 · declaree 6 · historique 118 · divergente 343). Objets JSON parcourus : **48654**, dont **31975** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 Entrées de racine sans concept de valeur : **3978** sur **4059** —
@@ -1923,7 +1923,7 @@ Reconnu par : son noyau `min` `max`
 
 ### 3.9 plage de tirage (min,max) — `plage` (strate Valeur)
 
-71 ligne(s), 1459 occurrence(s).
+79 ligne(s), 1531 occurrence(s).
 Reconnu par : son noyau `min` `max`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1944,7 +1944,11 @@ Reconnu par : son noyau `min` `max`
 | config | `entries` | `max,min+…` | cible | `drunkenness.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `entries` | `max,min+…` | cible | `incidents-monture.json` | 4 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | table | `(racine)` | `max,min+…` | cible | `interludeEvents.json` | 31 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `automne` | `max,min` | cible | `land-cargo.json` | 7 | — |  |
+| config | `ete` | `max,min` | cible | `land-cargo.json` | 7 | — |  |
+| config | `hiver` | `max,min` | cible | `land-cargo.json` | 7 | — |  |
 | config | `offerByRichesse` | `max,min+…` | cible | `land-cargo.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `printemps` | `max,min` | cible | `land-cargo.json` | 7 | — |  |
 | config | `rumours` | `max,min+…` | cible | `land-cargo.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `wineQuality` | `max,min+…` | cible | `land-cargo.json` | 6 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `araignee` | `max,min+…` | cible | `localisation.json` | 3 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
@@ -1968,7 +1972,11 @@ Reconnu par : son noyau `min` `max`
 | config | `superstructure` | `max,min+…` | cible | `river-criticals.json` | 1 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `windDirections` | `max,min+…` | cible | `river-navigation.json` | 3 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `windForces` | `max,min+…` | cible | `river-navigation.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `automne` | `max,min` | cible | `sea-cargo.json` | 11 | — |  |
+| config | `ete` | `max,min` | cible | `sea-cargo.json` | 11 | — |  |
+| config | `hiver` | `max,min` | cible | `sea-cargo.json` | 11 | — |  |
 | config | `offerPrice` | `max,min+…` | cible | `sea-cargo.json` | 3 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `printemps` | `max,min` | cible | `sea-cargo.json` | 11 | — |  |
 | config | `boardEvents` | `max,min+…` | cible | `sea-events.json` | 40 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `impressed` | `max,min+…` | cible | `sea-events.json` | 1 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `paliers` | `max,min+…` | cible | `sea-events.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
@@ -2473,7 +2481,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12762** objets sur **48582** ne sont portés par AUCUNE
+Au-delà des orphelines, **12762** objets sur **48654** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -3673,7 +3681,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `criticals.ts` | 76 | `loss` | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 85 | `resist` | test | divergente | `difficulty+…` | — |
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
-| `land-cargo.ts` | 99 | `gossip` | test | divergente | `difficulty+…` | — |
+| `land-cargo.ts` | 107 | `gossip` | test | divergente | `difficulty+…` | — |
 | `miscast.ts` | 34 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
 | `miscast.ts` | 35 | — | — | hors lexique | `charOf` | `formulaSchema` |
 | `miscast.ts` | 36 | — | — | hors lexique | `dice` | `prixTireSchema` |
@@ -3692,9 +3700,9 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `raceAppearance.ts` | 33 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
 | `river-navigation.ts` | 39 | `rowingAgility` | test | divergente | `difficulty+…` | — |
 | `river-navigation.ts` | 54 | `temporaryRepair` | test | divergente | `difficulty+…` | — |
-| `sea-cargo.ts` | 89 | `producesGossip` | test | divergente | `difficulty+…` | — |
-| `sea-cargo.ts` | 90 | `surplusGossip` | test | divergente | `difficulty+…` | — |
-| `sea-cargo.ts` | 104 | `test` | test | divergente | `difficulty,skill+…` | — |
+| `sea-cargo.ts` | 97 | `producesGossip` | test | divergente | `difficulty+…` | — |
+| `sea-cargo.ts` | 98 | `surplusGossip` | test | divergente | `difficulty+…` | — |
+| `sea-cargo.ts` | 112 | `test` | test | divergente | `difficulty,skill+…` | — |
 | `sea-navigation.ts` | 19 | `epuisement` | test | divergente | `difficulty+…` | — |
 | `sea-perils.ts` | 35 | `freeTest` | test | divergente | `char,difficulty,skill+…` | — |
 | `sea-perils.ts` | 60 | `evasion` | test | divergente | `difficulty+…` | — |

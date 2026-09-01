@@ -8,9 +8,10 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import {
+  catalogueSaisonnier,
   difficultySchema,
+  dispoSaisonniereSchema,
   ecartsDeCouverture,
-  parSaison,
   plageSchema,
   prixSaisonnierSchema,
   prixTireSchema,
@@ -19,8 +20,6 @@ import {
 
 export const file = 'land-cargo.json';
 export const famille = 'config';
-
-const seasonRange = z.tuple([z.number(), z.number()]);
 
 /**
  * BANDES DE LA MISE À PRIX (l.148-156) — la colonne « Richesse de l'emplacement » est un INDICE (l.52-60 :
@@ -49,7 +48,7 @@ const cargoMarchand = z.strictObject({
   label: z.string(),
   /** Vin/Eau-de-vie : prix par `wineQuality`, pas par la colonne saisonnière (l.93-104). */
   wine: z.boolean().optional(),
-  avail: parSaison(seasonRange),
+  avail: dispoSaisonniereSchema,
   price: z.union([prixSaisonnierSchema, prixTireSchema]),
   source: sourceRefSchema,
 });
@@ -71,11 +70,20 @@ const cargoMarqueur = z.strictObject({
   source: sourceRefSchema,
 });
 
+/**
+ * CATALOGUE DES CARGAISONS (l.73-78) — la COUVERTURE du d100 est un invariant de la COLONNE
+ * saisonnière, pas d'une entrée : sans ce verrou, un trou ouvert au Codex ne lèverait rien au parse, et
+ * le tirage tomberait sur un ARRÊT au jet (`rollSeasonalCargo`, `src/engine/cargo.ts`) — la faute
+ * étant, elle, dans la donnée. La règle est celle des DEUX livres : elle vit dans la grammaire
+ * (`catalogueSaisonnier`), ce def n'en déclare que ses entrées et le site cité par le refus.
+ */
+const cargoesSchema = catalogueSaisonnier(cargoMarchand, cargoMarqueur, { site: 'land-cargo.json › cargoes' });
+
 const doc = document(
   'land-cargo',
   famille,
   {
-  cargoes: z.array(z.union([cargoMarchand, cargoMarqueur])),
+  cargoes: cargoesSchema,
   wineQuality: z.array(
     z.strictObject({ ...plageSchema.shape, label: z.string(), price: z.number(), source: sourceRefSchema }),
   ),

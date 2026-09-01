@@ -139,22 +139,18 @@ function mesurer(): Mesure {
 
 /**
  * STOCK DÉCROISSANT des paires de bornes écrites en TUPLE `[min, max]` (volet F, #1659) — la sonde A
- * du design jugé du 2026-09-01, promue en test. 99 occurrences sur 18 sites, deux racines.
+ * du design jugé du 2026-09-01, promue en test. 27 occurrences sur 10 sites, deux racines (99 sur 18 à
+ * l'ouverture de la vague ; L-1659-2 en a soldé 72, cf. ci-dessous).
  * `exclu` = ce site n'est PAS une paire de bornes, et la chaîne dit pourquoi ; les autres sont à
- * migrer vers la forme `{min, max}` que `findTableEntry` lit (#1659 L2 pour les 72 disponibilités
- * saisonnières, L3 pour les 7 longueurs de coque et les 4 sous-tirages astraux).
+ * migrer vers la forme `{min, max}` que `findTableEntry` lit (#1659 L3 pour les 7 longueurs de coque
+ * et les 4 sous-tirages astraux).
+ * SOLDÉ par #1659 L-1659-2 (2026-09-01) : les 72 disponibilités saisonnières — `sea-cargo.json ›
+ * cargoes[].avail.{4 saisons}` (44) et `land-cargo.json` (28) — sont des FOURCHETTES `{min, max}` que
+ * `findTableEntryIndex` lit, et dont les 8 colonnes couvrent le d100 sous refine de def.
  * HORS COMPTE, dit ici pour qu'il ne se croie pas oublié : `defs/progression-schemas-derived.ts:29`
  * `teinte` est un 3-TUPLE (une couleur), pas une paire — et il vit dans un schéma, pas en donnée.
  */
 const TUPLES_STOCK: Record<string, { n: number; exclu?: string }> = {
-  'land-cargo.json::.cargoes[].avail.automne': { n: 7 },
-  'land-cargo.json::.cargoes[].avail.ete': { n: 7 },
-  'land-cargo.json::.cargoes[].avail.hiver': { n: 7 },
-  'land-cargo.json::.cargoes[].avail.printemps': { n: 7 },
-  'sea-cargo.json::.cargoes[].avail.automne': { n: 11 },
-  'sea-cargo.json::.cargoes[].avail.ete': { n: 11 },
-  'sea-cargo.json::.cargoes[].avail.hiver': { n: 11 },
-  'sea-cargo.json::.cargoes[].avail.printemps': { n: 11 },
   'ship-construction.json::.standard[].lengthM': { n: 7 },
   'stars.json::[].sub': { n: 4 },
   'qualities.json::[].capabilities.fumbleDigits': {
@@ -232,7 +228,7 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     ).toEqual(attendu);
 
     const total = Object.values(M.tuples).reduce((s, n) => s + n, 0);
-    expect(total, 'stock des tuples en HAUSSE : la liste ne fait que décroître (#1659).').toBeLessThanOrEqual(99);
+    expect(total, 'stock des tuples en HAUSSE : la liste ne fait que décroître (#1659).').toBeLessThanOrEqual(27);
 
     // Le stock a DEUX populations, et le cardinal de chacune se mesure sur le RÉSULTAT — le mot
     // « exclu » ne solde rien : une exclusion porte SA raison, et le reste est à migrer.
@@ -240,8 +236,8 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     const cibles = Object.entries(TUPLES_STOCK).filter(([, l]) => !l.exclu);
     expect(exclus.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples EXCLUS a bougé sans qu’une raison soit dite.').toBe(16);
     expect(exclus.length).toBe(8);
-    expect(cibles.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples À MIGRER a bougé : #1659 L2/L3 les portent, en donnée.').toBe(83);
-    expect(cibles.length).toBe(10);
+    expect(cibles.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples À MIGRER a bougé : #1659 L3 les porte, en donnée.').toBe(11);
+    expect(cibles.length).toBe(2);
     expect(
       exclus.filter(([, l]) => !l.exclu?.trim()).map(([s]) => s),
       'un site EXCLU sans raison écrite : une exclusion se motive, sinon c’est un angle mort déguisé.',

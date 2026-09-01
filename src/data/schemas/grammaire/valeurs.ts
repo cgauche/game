@@ -614,3 +614,60 @@ export function ecartsDeCouverture<F extends { min?: number; max?: number | null
   }
   return ecarts;
 }
+
+/**
+ * DISPONIBILITÉ SAISONNIÈRE d'une cargaison — quatre colonnes d100, chacune une FOURCHETTE `{min, max}`
+ * (MDG 15 l.406-418, MSRC 13 l.73-78). Nœud NOMMÉ du concept, symétrique de `prixSaisonnierSchema` :
+ * les deux defs de commerce composaient `parSaison(plageSchema)` chacune de leur côté.
+ */
+export const dispoSaisonniereSchema = parSaison(plageSchema);
+
+/** Les quatre colonnes, DÉRIVÉES du nœud : la liste des saisons n'est écrite qu'une fois (`parSaison`). */
+const SAISONS_DE_DISPO = Object.keys(dispoSaisonniereSchema.shape) as (keyof z.infer<typeof dispoSaisonniereSchema>)[];
+
+/** Ce qu'une entrée MARCHANDE doit porter pour que la couverture se mesure : un libellé (le refus est
+ *  NOMINATIF) et les quatre colonnes. */
+type EntreeMarchande = { label: string; avail: z.infer<typeof dispoSaisonniereSchema> };
+/** Un MARQUEUR de colonne Production/Produits : reconnu à son CHAMP d'exclusion, comme le moteur le
+ *  reconnaît (`isEchangeable`, `src/engine/cargo.ts`). */
+type EntreeMarqueur = { echangeable: false };
+
+/**
+ * CATALOGUE DE CARGAISONS TIRÉ AU D100 — fabrique du tableau `cargoes` des deux livres de commerce
+ * (maritime MDG 15 l.406-418, terrestre MSRC 13 l.73-78) : un tableau d'entrées MARCHANDES ou de
+ * MARQUEURS, sous l'invariant que chacune des quatre colonnes saisonnières couvre 1 à 100 d'un seul
+ * tenant. L'invariant porte sur la COLONNE, jamais sur une entrée — d'où sa place au TABLEAU.
+ *
+ * Pourquoi une fabrique et non deux refines jumeaux : les deux livres impriment la MÊME table à quatre
+ * colonnes, et les deux defs en écrivaient le verrou à l'identique. Ce qui reste au site est ce qui
+ * DIFFÈRE : les schémas d'entrée (le Vin terrestre porte `wine`) et le `site` cité par le refus.
+ *
+ * Le filtre des marqueurs est celui du moteur (`isEchangeable`) : le CHAMP d'exclusion, jamais un id.
+ *
+ * @param marchand schéma d'une cargaison échangeable (doit porter `label` et `avail`)
+ * @param marqueur schéma d'un marqueur de colonne Production/Produits (`echangeable: false`)
+ * @param options `site` = le porteur cité en tête du refus (`'sea-cargo.json › cargoes'`)
+ */
+export function catalogueSaisonnier<A extends EntreeMarchande, B extends EntreeMarqueur>(
+  marchand: z.ZodType<A>,
+  marqueur: z.ZodType<B>,
+  options: { site: string },
+): z.ZodType<(A | B)[]> {
+  return z.array(z.union([marchand, marqueur])).superRefine((entrees: (A | B)[], ctx) => {
+    const marchandes = entrees.filter((e): e is A => !('echangeable' in e) || e.echangeable !== false);
+    for (const saison of SAISONS_DE_DISPO) {
+      const ecarts = ecartsDeCouverture(
+        marchandes.map((c) => ({ ...c.avail[saison], label: c.label })),
+        1,
+        100,
+        (f) => `« ${f.label} » (${f.min}–${f.max})`,
+      );
+      if (ecarts.length) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `${options.site} : la colonne de disponibilité ${saison} ne couvre pas le d100 de 1 à 100 d'un seul tenant — ${ecarts.join(' ; ')}.`,
+        });
+      }
+    }
+  });
+}

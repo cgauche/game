@@ -7,6 +7,7 @@
  * briques-ci (modèle de lot, tirage saisonnier, prix de base, Marchandage) NE SONT PAS dupliquées.
  */
 import { d100, rollDice, type DiceSpec, type RNG, defaultRNG } from './dice';
+import { findTableEntryIndex } from './tables';
 import type { Season } from './travelStages';
 
 /** Un type de cargaison (bien volumineux) : plages saisonnières d100 (Tableau des cargaisons) + prix de
@@ -16,7 +17,7 @@ export interface CargoDef {
   label: string;
   /** Absent sur une cargaison marchande — présent et `false` sur un MARQUEUR (`CargoMarkerDef`). */
   echangeable?: true;
-  avail: Record<Season, [number, number]>;
+  avail: Record<Season, { min: number; max: number }>;
   price: Record<Season, number> | { dice: DiceSpec };
 }
 
@@ -72,10 +73,19 @@ export function unresolvedCargoIds(ids: readonly string[] | undefined, resolve: 
 }
 
 /** Cargaison ALÉATOIRE de la saison : d100 dans la colonne saisonnière du tableau fourni (MSRC 13 l.71-78,
- *  MDG 15 l.402-418). PUR. Repli sur la dernière entrée si aucune plage ne matche (tableaux exhaustifs 01-00). */
+ *  MDG 15 l.402-418). PUR. La couverture EXACTE de la colonne (1 à 100, sans trou ni chevauchement) est un
+ *  invariant de la DONNÉE, gardé au parse par le refine de `src/data/schemas/defs/sea-cargo.ts` et
+ *  `src/data/schemas/defs/land-cargo.ts` ; un jet que rien ne couvre est donc une ANOMALIE NOMMÉE, jamais
+ *  le repli muet de `findTableEntry` sur la dernière cargaison du catalogue. */
 export function rollSeasonalCargo(cargoes: CargoDef[], season: Season, rng: RNG = defaultRNG): CargoDef {
   const r = d100(rng);
-  return cargoes.find((c) => r >= c.avail[season][0] && r <= c.avail[season][1]) ?? cargoes[cargoes.length - 1];
+  const i = findTableEntryIndex(cargoes.map((c) => c.avail[season]), r);
+  if (i < 0) {
+    throw new Error(
+      `rollSeasonalCargo : le jet ${r} ne tombe dans aucune plage de disponibilité de la saison « ${season} » sur les ${cargoes.length} cargaison(s) fournies — la colonne ne couvre pas le d100.`,
+    );
+  }
+  return cargoes[i];
 }
 
 /** Prix de BASE d'une cargaison (CO par 10 points d'Encombrement) pour la saison (MSRC 13 l.80-90, MDG 15

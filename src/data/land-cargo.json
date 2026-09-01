@@ -7,22 +7,22 @@
       "id": "vivres",
       "label": "Vivres",
       "avail": {
-        "printemps": [
-          1,
-          9
-        ],
-        "ete": [
-          1,
-          19
-        ],
-        "automne": [
-          1,
-          35
-        ],
-        "hiver": [
-          1,
-          19
-        ]
+        "printemps": {
+          "min": 1,
+          "max": 9
+        },
+        "ete": {
+          "min": 1,
+          "max": 19
+        },
+        "automne": {
+          "min": 1,
+          "max": 35
+        },
+        "hiver": {
+          "min": 1,
+          "max": 19
+        }
       },
       "price": {
         "printemps": 1,
@@ -40,22 +40,22 @@
       "id": "armement",
       "label": "Armement",
       "avail": {
-        "printemps": [
-          10,
-          15
-        ],
-        "ete": [
-          20,
-          23
-        ],
-        "automne": [
-          36,
-          40
-        ],
-        "hiver": [
-          20,
-          23
-        ]
+        "printemps": {
+          "min": 10,
+          "max": 15
+        },
+        "ete": {
+          "min": 20,
+          "max": 23
+        },
+        "automne": {
+          "min": 36,
+          "max": 40
+        },
+        "hiver": {
+          "min": 20,
+          "max": 23
+        }
       },
       "price": {
         "printemps": 12,
@@ -73,22 +73,22 @@
       "id": "produits-de-luxe",
       "label": "Produits de luxe",
       "avail": {
-        "printemps": [
-          16,
-          20
-        ],
-        "ete": [
-          24,
-          29
-        ],
-        "automne": [
-          41,
-          44
-        ],
-        "hiver": [
-          24,
-          29
-        ]
+        "printemps": {
+          "min": 16,
+          "max": 20
+        },
+        "ete": {
+          "min": 24,
+          "max": 29
+        },
+        "automne": {
+          "min": 41,
+          "max": 44
+        },
+        "hiver": {
+          "min": 24,
+          "max": 29
+        }
       },
       "price": {
         "printemps": 50,
@@ -106,22 +106,22 @@
       "id": "metal",
       "label": "Métal",
       "avail": {
-        "printemps": [
-          21,
-          30
-        ],
-        "ete": [
-          30,
-          39
-        ],
-        "automne": [
-          45,
-          60
-        ],
-        "hiver": [
-          30,
-          44
-        ]
+        "printemps": {
+          "min": 21,
+          "max": 30
+        },
+        "ete": {
+          "min": 30,
+          "max": 39
+        },
+        "automne": {
+          "min": 45,
+          "max": 60
+        },
+        "hiver": {
+          "min": 30,
+          "max": 44
+        }
       },
       "price": {
         "printemps": 8,
@@ -139,22 +139,22 @@
       "id": "bois",
       "label": "Bois",
       "avail": {
-        "printemps": [
-          31,
-          55
-        ],
-        "ete": [
-          40,
-          74
-        ],
-        "automne": [
-          61,
-          80
-        ],
-        "hiver": [
-          45,
-          60
-        ]
+        "printemps": {
+          "min": 31,
+          "max": 55
+        },
+        "ete": {
+          "min": 40,
+          "max": 74
+        },
+        "automne": {
+          "min": 61,
+          "max": 80
+        },
+        "hiver": {
+          "min": 45,
+          "max": 60
+        }
       },
       "price": {
         "printemps": 3,
@@ -173,22 +173,22 @@
       "label": "Vin/Eau-de-vie",
       "wine": true,
       "avail": {
-        "printemps": [
-          56,
-          75
-        ],
-        "ete": [
-          75,
-          85
-        ],
-        "automne": [
-          81,
-          95
-        ],
-        "hiver": [
-          61,
-          95
-        ]
+        "printemps": {
+          "min": 56,
+          "max": 75
+        },
+        "ete": {
+          "min": 75,
+          "max": 85
+        },
+        "automne": {
+          "min": 81,
+          "max": 95
+        },
+        "hiver": {
+          "min": 61,
+          "max": 95
+        }
       },
       "price": {
         "printemps": 3,
@@ -206,22 +206,22 @@
       "id": "laine",
       "label": "Laine",
       "avail": {
-        "printemps": [
-          76,
-          100
-        ],
-        "ete": [
-          86,
-          100
-        ],
-        "automne": [
-          96,
-          100
-        ],
-        "hiver": [
-          96,
-          100
-        ]
+        "printemps": {
+          "min": 76,
+          "max": 100
+        },
+        "ete": {
+          "min": 86,
+          "max": 100
+        },
+        "automne": {
+          "min": 96,
+          "max": 100
+        },
+        "hiver": {
+          "min": 96,
+          "max": 100
+        }
       },
       "price": {
         "printemps": 1,
