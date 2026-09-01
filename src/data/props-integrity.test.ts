@@ -99,6 +99,7 @@ describe('propMaterials.json — matériaux du décor', () => {
   it('porte les matériaux du décor, en couleur hexadécimale et sans émission', () => {
     expect(propMaterials.map((m) => m.id)).toEqual([
       'bois-chene', 'pierre-atre', 'fer-noirci', 'braises', 'ardoise', 'toile-rouge', 'laiton-dore',
+      'albatre',
     ]);
     for (const m of propMaterials) {
       expect(m.color, m.id).toMatch(/^#[0-9a-f]{6}$/);

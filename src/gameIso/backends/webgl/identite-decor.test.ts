@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { collectBillboards, wholeSceneBillboardEls } from './sceneMeshes';
 import { propSvg } from '../../catalog/decor';
+import { props } from '../../../data';
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../../state/scene';
 
 /**
@@ -14,6 +15,10 @@ import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '..
  * décor d'entité (même id, modèle changé) ni pour un overlay de terrain (même case, terrain changé).
  */
 
+/** Deux décors encore BILLBOARD, DÉRIVÉS du catalogue : la vague volumique (#1343) convertit les refs
+ *  lot par lot — deux refs écrites en dur feraient rougir cette garde le jour de LEUR recette. */
+const [REF_A, REF_B] = props.filter((p) => !p.volume).map((p) => p.id);
+
 function scèneAvecDecor(ref: string): Scene {
   const s = emptyScene(6, 6);
   const decor: SceneEntity = { id: 'decor-1', kind: 'prop', pos: { x: 2, y: 2 }, ref } as SceneEntity;
@@ -26,17 +31,25 @@ const identités = (scene: Scene) =>
     .map((b) => b.identity);
 
 describe('Identité d’un billboard de DÉCOR — la clé porte le DESSIN (#1176, P3-3)', () => {
+  it('le filet des fixtures billboard tient encore : au moins deux refs SANS recette au catalogue', () => {
+    expect(
+      props.filter((p) => !p.volume).length,
+      'la phase 4 de #1343 (mort du chemin billboard des props) fera tomber ce filet EXPRÈS : ces fixtures '
+      + 'devront alors être reformulées — il n’y aura plus de décor billboard à témoin.',
+    ).toBeGreaterThanOrEqual(2);
+  });
+
   it('changer le MODÈLE d’un décor change son identité — deux dessins ne partagent plus une texture', () => {
-    const tonneau = scèneAvecDecor('tonneau');
-    const banc = scèneAvecDecor('banc');
+    const a = scèneAvecDecor(REF_A);
+    const b = scèneAvecDecor(REF_B);
     // Le dessin diverge RÉELLEMENT (sans quoi la garde ne prouverait rien).
-    expect(propSvg('tonneau', undefined, 0)).not.toEqual(propSvg('banc', undefined, 0));
-    expect(identités(tonneau)).not.toEqual(identités(banc));
+    expect(propSvg(REF_A, undefined, 0)).not.toEqual(propSvg(REF_B, undefined, 0));
+    expect(identités(a)).not.toEqual(identités(b));
   });
 
   it('…et la clé d’élément SEULE ne les distingue pas — c’est bien la signature qui tranche', () => {
-    const a = wholeSceneBillboardEls(scèneAvecDecor('tonneau')).props.map((el) => el.key);
-    const b = wholeSceneBillboardEls(scèneAvecDecor('banc')).props.map((el) => el.key);
+    const a = wholeSceneBillboardEls(scèneAvecDecor(REF_A)).props.map((el) => el.key);
+    const b = wholeSceneBillboardEls(scèneAvecDecor(REF_B)).props.map((el) => el.key);
     expect(a).toEqual(b);
     expect(a).toEqual(['prop:decor-1']);
   });
@@ -64,7 +77,7 @@ describe('Identité d’un billboard de DÉCOR — la clé porte le DESSIN (#117
  */
 describe('Identité d’un prop — l’échelle et le cap en font partie (#1396)', () => {
   const propEl = (patch: { facing?: 'S' | 'E'; scale?: number }) => ({
-    kind: 'prop' as const, source: 'entity' as const, key: 'prop:decor-1', ref: 'tonneau',
+    kind: 'prop' as const, source: 'entity' as const, key: 'prop:decor-1', ref: REF_A,
     cell: { x: 2, y: 2, z: 0 }, foot: { offX: 0, offY: 0, scale: patch.scale ?? 1 },
     interact: false, states: { visible: true },
     ...(patch.facing ? { facing: patch.facing } : {}),

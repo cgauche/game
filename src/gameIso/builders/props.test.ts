@@ -3,7 +3,7 @@ import { emptyScene, type Scene, type SceneEntity, type WallSeg } from '../../st
 import { buildProps, capDuFaite } from './props';
 import { buildWalls } from './walls';
 import { buildPropVolumes } from './propVolumes';
-import { findPropById } from '../../data';
+import { findPropById, props } from '../../data';
 import { estPropVolumique, type BillboardPropEl, type PropEl, type VolumePropEl } from './types';
 import type { Dir8 } from '../../state/dir8';
 import { buildRoofs, fieldHeightAt, nappeKey, resolveNappes, ROOF_SLOPE_M } from './roofs';
@@ -12,6 +12,10 @@ import { buildRoofs, fieldHeightAt, nappeKey, resolveNappes, ROOF_SLOPE_M } from
  *  surélévation, ni feature de façade à juger — il porte des faces. */
 const buildBillboardProps = (...args: Parameters<typeof buildProps>): BillboardPropEl[] =>
   buildProps(...args).filter((el): el is BillboardPropEl => !estPropVolumique(el));
+
+/** Un décor encore BILLBOARD, DÉRIVÉ du catalogue : la vague volumique (#1343) convertit les refs lot
+ *  par lot — une ref écrite en dur ferait rougir ces gardes le jour de SA recette. */
+const REF_BILLBOARD = props.find((p) => !p.volume)!.id;
 
 const volume = (el: PropEl): VolumePropEl => {
   if (!estPropVolumique(el)) throw new Error(`${el.ref} : attendu en volume`);
@@ -64,9 +68,17 @@ describe('buildProps — un décor à recette sort en faces monde', () => {
 
   it('un décor SANS recette reste un billboard (le décor historique ne bouge pas)', () => {
     const scene = emptyScene(8, 8);
-    scene.entities = [{ id: 't1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'tonneau' }] as SceneEntity[];
+    scene.entities = [{ id: 't1', kind: 'prop', pos: { x: 2, y: 3 }, ref: REF_BILLBOARD }] as SceneEntity[];
     expect(buildProps(scene).filter(estPropVolumique)).toEqual([]);
     expect(buildBillboardProps(scene).map((el) => el.entId)).toEqual(['t1']);
+  });
+
+  it('le filet des fixtures billboard tient encore : au moins deux refs SANS recette au catalogue', () => {
+    expect(
+      props.filter((p) => !p.volume).length,
+      'la phase 4 de #1343 (mort du chemin billboard des props) fera tomber ce filet EXPRÈS : ces fixtures '
+      + 'devront alors être reformulées — il n’y aura plus de décor billboard à témoin.',
+    ).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -77,7 +89,7 @@ describe('buildProps — éléments prop du pivot', () => {
     s.layers[0].tiles[1 * 6 + 2] = 'mur'; // (2,1) : BLOC PLEIN — géré par le relief (solidHeightM), PAS un prop
     s.layers[0].tiles[3 * 6 + 4] = 'bois'; // (4,3) : overlay à DÉCOR (overlayProp → 'arbre')
     s.entities = [
-      { id: 'p1', kind: 'prop', pos: { x: 1, y: 1 } }, // ref absente → normalisée 'tonneau'
+      { id: 'p1', kind: 'prop', pos: { x: 1, y: 1 }, ref: REF_BILLBOARD },
       { id: 'p2', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'tente', facing: 'SE', interact: { flow: { kind: 'seq', steps: [] } } }, // tente 2×2 au catalogue
       { id: 'npc', kind: 'personnage', pos: { x: 5, y: 5 } }, // pas un prop → ignoré
     ] as SceneEntity[];
@@ -103,9 +115,15 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(hidden.states.visible).toBe(false); // mémorisé → sous le voile / culé en POV
   });
 
-  it('normalise la ref (défaut tonneau) et porte facing/empreinte/interact', () => {
+  it('normalise la ref ABSENTE en ‘tonneau’ — le défaut du builder, quelle que soit sa voie de rendu', () => {
+    const s = scene();
+    s.entities = [{ id: 'sans-ref', kind: 'prop', pos: { x: 0, y: 0 } }] as SceneEntity[];
+    expect(buildProps(s).filter((e) => e.source === 'entity').map((e) => e.ref)).toEqual(['tonneau']);
+  });
+
+  it('porte ref/facing/empreinte/interact', () => {
     const [p1, p2] = buildBillboardProps(scene()).filter((e) => e.source === 'entity');
-    expect(p1.ref).toBe('tonneau');
+    expect(p1.ref).toBe(REF_BILLBOARD);
     expect(p1.foot).toEqual({ offX: 0, offY: 0, scale: 1 });
     expect(p1.interact).toBe(false);
     expect(p2.ref).toBe('tente');
@@ -283,7 +301,7 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     const s = withRoof('chapelle', { x: 1, y: 1, w: 4, h: 4 });
     const bodies = s.architecture!;
     s.architecture = [];
-    s.entities = [{ id: 'p1', kind: 'prop', pos: { x: 8, y: 8 } }] as SceneEntity[];
+    s.entities = [{ id: 'p1', kind: 'prop', pos: { x: 8, y: 8 }, ref: REF_BILLBOARD }] as SceneEntity[];
     s.layers[0].tiles[7 * 10 + 7] = 'bois'; // (7,7) : overlay à décor
     expect(resolveNappes(s).size).toBe(0);
     s.architecture = bodies;
@@ -534,7 +552,7 @@ describe('buildProps — features de façade authorées', () => {
     const scene = facadeCouverte();
     scene.architecture![0].facades[0].features!.push({
       // Apparence SANS recette : la même feature, servie par l'autre voie de rendu.
-      id: 'souche-dessinee', kind: 'chimney', edge: { x: 4, y: 5, side: 'N' }, offset: 0.25, appearance: 'tonneau',
+      id: 'souche-dessinee', kind: 'chimney', edge: { x: 4, y: 5, side: 'N' }, offset: 0.25, appearance: REF_BILLBOARD,
     });
     const props = buildProps(scene);
     const dessinee = props.find((prop) => prop.key.endsWith(':souche-dessinee'))!;

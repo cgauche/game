@@ -67,6 +67,7 @@ const TYPES = {
  * CARDINAL ATTENDU par fichier, et TOTAL — mesuré sur l'arbre au moment de l'écriture (2026-08-28).
  * Vérifié AVANT toute écriture : une entrée ajoutée ou retirée depuis fait sortir 1 plutôt que
  * migrer un périmètre qui n'est plus celui qu'on a mesuré.
+ * Toute croissance légitime d'un dataset listé recale ce cardinal dans le train de la croissance.
  */
 const CARDINAUX = {
   'careerLevels.json': 432,
@@ -81,7 +82,10 @@ const CARDINAUX = {
   'naval-ports.json': 39,
   'naval-traits.json': 26,
   'pregens.json': 8,
-  'props.json': 78,
+  // 78→83 : recalé #1624/#1644 (+5 props : cheminee, enseigne, clocheton, applique-murale, banc) — le
+  // cardinal est une porte d'IDENTITÉ de dataset, il suit la donnée qu'un train fait croître, dans le
+  // MÊME train.
+  'props.json': 83,
   'reglesOptionnelles.json': 81,
   'skills.json': 48,
   'steam-breakdown.json': 6,
@@ -93,8 +97,8 @@ const CARDINAUX = {
   'traumas.json': 29,
   'vehicles.json': 31,
 };
-// 1290→1293 : +2 maladies (#674) +1 trait (#673), les seuls bumps ci-dessus.
-const TOTAL_ATTENDU = 1293;
+// 1290→1293 : +2 maladies (#674) +1 trait (#673). Puis 1293→1298 : +5 décors de `props.json` (#1624/#1644).
+const TOTAL_ATTENDU = 1298;
 
 /**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. L'enveloppe veut

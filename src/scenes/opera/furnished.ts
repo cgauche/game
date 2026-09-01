@@ -71,9 +71,10 @@ const ents: SceneEntity[] = [
   { id: 'foy-app-g', kind: 'prop', ref: 'applique-murale', pos: { x: 2, y: 48 } },
   { id: 'foy-app-d', kind: 'prop', ref: 'applique-murale', pos: { x: 41, y: 48 } },
 
-  // 6 VESTIAIRE ET VENTE DES BILLETS (coins de la façade) : comptoir de billetterie.
-  { id: 'billet-g', kind: 'prop', ref: 'comptoir', pos: { x: 3, y: 56 } },
-  { id: 'billet-d', kind: 'prop', ref: 'comptoir', pos: { x: 40, y: 56 } },
+  // 6 VESTIAIRE ET VENTE DES BILLETS (coins de la façade) : comptoir de billetterie. Face au NORD :
+  // le public le borde depuis le foyer, le guichetier tient le vestiaire derrière lui (rangée 57).
+  { id: 'billet-g', kind: 'prop', ref: 'comptoir-droit', pos: { x: 3, y: 56 }, facing: 'N' },
+  { id: 'billet-d', kind: 'prop', ref: 'comptoir-droit', pos: { x: 40, y: 56 }, facing: 'N' },
 
   // LUSTRE central : suspendu au-dessus du puits (z=1 → flotte au-dessus du vide).
   { id: 'lustre', kind: 'prop', ref: 'lustre-opera', pos: { x: 21, y: 28 }, z: 1 },
@@ -81,16 +82,19 @@ const ents: SceneEntity[] = [
   // ═══════════════ SALLES LATÉRALES GAUCHE (z=0) — DENSÉMENT meublées, pièce par pièce (plan p.40) ═══════
   // 14 SALLE VERTE / 13 VESTIAIRE (bande haute gy 1-14) : détente des artistes + coiffeuses.
   { id: 'sv-table', kind: 'prop', ref: 'table-2x1', pos: { x: 3, y: 6 } },
-  { id: 'sv-chaise-1', kind: 'prop', ref: 'chaise', pos: { x: 2, y: 8 } },
-  { id: 'sv-chaise-2', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 8 } },
+  // Les deux chaises sont au SUD de la table (3,6) : elles la regardent, cap N.
+  { id: 'sv-chaise-1', kind: 'prop', ref: 'chaise', pos: { x: 2, y: 8 }, facing: 'N' },
+  { id: 'sv-chaise-2', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 8 }, facing: 'N' },
   { id: 'sv-banc-1', kind: 'prop', ref: 'banc', pos: { x: 2, y: 3 } },
   { id: 'sv-banc-2', kind: 'prop', ref: 'banc', pos: { x: 2, y: 11 } },
-  { id: 'sv-etagere', kind: 'prop', ref: 'etagere', pos: { x: 4, y: 2 } },
+  // Étagère en rangée 2 : dos au mur NORD de la pièce, rayons ouverts vers la salle (cap S).
+  { id: 'sv-etagere', kind: 'prop', ref: 'etagere', pos: { x: 4, y: 2 }, facing: 'S' },
   { id: 'sv-canape', kind: 'prop', ref: 'canape', pos: { x: 2, y: 13 }, facing: 'E' },
   { id: 'sv-coif-1', kind: 'prop', ref: 'coiffeuse', pos: { x: 8, y: 2 } },
   { id: 'sv-coif-2', kind: 'prop', ref: 'coiffeuse', pos: { x: 11, y: 2 } },
   { id: 'sv-miroir-1', kind: 'prop', ref: 'miroir', pos: { x: 8, y: 6 } },
-  { id: 'sv-chaise-3', kind: 'prop', ref: 'chaise', pos: { x: 10, y: 6 } },
+  // Chaise du coin maquillage : face au miroir (8,6), deux cases à l'ouest.
+  { id: 'sv-chaise-3', kind: 'prop', ref: 'chaise', pos: { x: 10, y: 6 }, facing: 'O' },
   { id: 'sv-parav', kind: 'prop', ref: 'paravent', pos: { x: 12, y: 9 } },
   { id: 'sv-portant', kind: 'prop', ref: 'portant-costumes', pos: { x: 8, y: 11 } },
   { id: 'sv-mann', kind: 'prop', ref: 'mannequin', pos: { x: 11, y: 12 } },
@@ -100,8 +104,9 @@ const ents: SceneEntity[] = [
   { id: 'v12-coif-2', kind: 'prop', ref: 'coiffeuse', pos: { x: 5, y: 16 } },
   { id: 'v12-coif-3', kind: 'prop', ref: 'coiffeuse', pos: { x: 8, y: 16 } },
   { id: 'v12-miroir', kind: 'prop', ref: 'miroir', pos: { x: 11, y: 16 } },
-  { id: 'v12-chaise-1', kind: 'prop', ref: 'chaise', pos: { x: 3, y: 18 } },
-  { id: 'v12-chaise-2', kind: 'prop', ref: 'chaise', pos: { x: 6, y: 18 } },
+  // Chaises de coiffeuse : au sud de la rangée 16 (coiffeuses 2/5/8), tournées vers elles.
+  { id: 'v12-chaise-1', kind: 'prop', ref: 'chaise', pos: { x: 3, y: 18 }, facing: 'N' },
+  { id: 'v12-chaise-2', kind: 'prop', ref: 'chaise', pos: { x: 6, y: 18 }, facing: 'N' },
   { id: 'v12-banc', kind: 'prop', ref: 'banc', pos: { x: 9, y: 19 } },
   { id: 'v12-portant', kind: 'prop', ref: 'portant-costumes', pos: { x: 2, y: 20 } },
   { id: 'v12-parav', kind: 'prop', ref: 'paravent', pos: { x: 5, y: 21 } },
@@ -120,8 +125,10 @@ const ents: SceneEntity[] = [
 
   // 10 PASSAGE + 15 BUREAU DU RÉGISSEUR (gy 34-43).
   { id: 'reg15-bureau', kind: 'prop', ref: 'bureau-2x1', pos: { x: 2, y: 35 } },
-  { id: 'reg15-chaise', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 35 } },
-  { id: 'reg15-etag', kind: 'prop', ref: 'etagere', pos: { x: 2, y: 37 } },
+  // Chaise à l'est du bureau (2-3, 35) : le régisseur s'y assoit face à son plateau (cap O).
+  { id: 'reg15-chaise', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 35 }, facing: 'O' },
+  // Étagère en colonne 2 : dos au mur OUEST, rayons ouverts vers la pièce (cap E).
+  { id: 'reg15-etag', kind: 'prop', ref: 'etagere', pos: { x: 2, y: 37 }, facing: 'E' },
   { id: 'reg15-coffre', kind: 'prop', ref: 'coffre', pos: { x: 5, y: 38 } },
   { id: 'p10-banc-1', kind: 'prop', ref: 'banc', pos: { x: 2, y: 40 } },
   { id: 'p10-caisse', kind: 'prop', ref: 'caisse', pos: { x: 4, y: 41 } },
@@ -142,9 +149,11 @@ const ents: SceneEntity[] = [
 
   // 22 BUREAU DU CONCIERGE / 23 GESTIONNAIRE (petites pièces NE gx37-42).
   { id: 'b22-bureau', kind: 'prop', ref: 'bureau-2x1', pos: { x: 39, y: 6 } },
-  { id: 'b22-chaise', kind: 'prop', ref: 'chaise', pos: { x: 38, y: 7 } },
+  // Chaise au SO du bureau (39-40, 6) : elle en regarde le coin, cap NE.
+  { id: 'b22-chaise', kind: 'prop', ref: 'chaise', pos: { x: 38, y: 7 }, facing: 'NE' },
   { id: 'b23-bureau', kind: 'prop', ref: 'bureau-2x1', pos: { x: 39, y: 11 } },
-  { id: 'b23-etag', kind: 'prop', ref: 'etagere', pos: { x: 38, y: 13 } },
+  // Étagère en colonne 38 : dos au mur OUEST des petites pièces NE (gx37-42), cap E.
+  { id: 'b23-etag', kind: 'prop', ref: 'etagere', pos: { x: 38, y: 13 }, facing: 'E' },
 
   // 24 RANGEMENTS DES COSTUMES (gy 15-23).
   { id: 'c24-portant-1', kind: 'prop', ref: 'portant-costumes', pos: { x: 31, y: 16 } },
@@ -164,7 +173,8 @@ const ents: SceneEntity[] = [
   { id: 'c25-mann-1', kind: 'prop', ref: 'mannequin', pos: { x: 39, y: 25 } },
   { id: 'c25-portant', kind: 'prop', ref: 'portant-costumes', pos: { x: 31, y: 28 } },
   { id: 'c25-mann-2', kind: 'prop', ref: 'mannequin', pos: { x: 34, y: 28 } },
-  { id: 'c25-etag', kind: 'prop', ref: 'etagere', pos: { x: 37, y: 28 } },
+  // Étagère du fond de l'atelier : dos au mur SUD de la pièce (gy 24-30), face aux tables (cap N).
+  { id: 'c25-etag', kind: 'prop', ref: 'etagere', pos: { x: 37, y: 28 }, facing: 'N' },
   { id: 'c25-tab-2', kind: 'prop', ref: 'tabouret', pos: { x: 40, y: 28 } },
 
   // 26 CHARPENTERIE + 27 RÉSERVE GÉNÉRALE (gy 31-43, côté mur extérieur gx 34-42).
@@ -174,7 +184,8 @@ const ents: SceneEntity[] = [
   { id: 'c26-caisse-1', kind: 'prop', ref: 'caisse', pos: { x: 39, y: 34 } },
   { id: 'r27-tonneaux-1', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 35, y: 35 } },
   { id: 'r27-caisse-2', kind: 'prop', ref: 'caisse', pos: { x: 37, y: 36 } },
-  { id: 'r27-etag', kind: 'prop', ref: 'etagere', pos: { x: 40, y: 36 } },
+  // Étagère de réserve : dos au mur EXTÉRIEUR est (colonne 40 sur gx34-42), cap O.
+  { id: 'r27-etag', kind: 'prop', ref: 'etagere', pos: { x: 40, y: 36 }, facing: 'O' },
   { id: 'r27-tonneaux-2', kind: 'prop', ref: 'tonneaux-pile', pos: { x: 36, y: 38 } },
   { id: 'r27-coffre', kind: 'prop', ref: 'coffre', pos: { x: 39, y: 39 } },
   { id: 'r27-caisse-3', kind: 'prop', ref: 'caisse', pos: { x: 38, y: 41 } },
@@ -203,19 +214,21 @@ const ents: SceneEntity[] = [
   { id: 'noble-d-2', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 28, y: 16 }, facing: 'S', z: 1 },
 
   // ═══════════════ GALERIE / BARS / SALONS de l'étage (z=1, débordent sur le foyer) ═══════════════
-  { id: 'salon-d-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 4, y: 48 }, z: 1 },
+  // Les quatre comptoirs de l'étage font face au SUD : desserte au nord (étagères, tonneaux de la
+  // rangée 46), buveurs au sud, du côté des tables, canapés et fauteuils.
+  { id: 'salon-d-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 4, y: 48 }, facing: 'S', z: 1 },
   { id: 'salon-d-table', kind: 'prop', ref: 'table', pos: { x: 6, y: 50 }, z: 1 },
   { id: 'salon-d-ft', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 5, y: 49 }, z: 1 },
   { id: 'salon-d-plante', kind: 'prop', ref: 'plante-pot', pos: { x: 3, y: 50 }, z: 1 },
-  { id: 'bar-g-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 9, y: 47 }, z: 1 },
-  { id: 'bar-g-etag', kind: 'prop', ref: 'etagere', pos: { x: 5, y: 46 }, z: 1 },
+  { id: 'bar-g-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 9, y: 47 }, facing: 'S', z: 1 },
+  { id: 'bar-g-etag', kind: 'prop', ref: 'etagere', pos: { x: 5, y: 46 }, facing: 'S', z: 1 },
   { id: 'bar-g-tonneau', kind: 'prop', ref: 'tonneau', pos: { x: 11, y: 46 }, z: 1 },
-  { id: 'salon-s-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 39, y: 48 }, z: 1 },
+  { id: 'salon-s-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 39, y: 48 }, facing: 'S', z: 1 },
   { id: 'salon-s-table', kind: 'prop', ref: 'table', pos: { x: 37, y: 50 }, z: 1 },
   { id: 'salon-s-canape', kind: 'prop', ref: 'canape', pos: { x: 38, y: 49 }, facing: 'N', z: 1 },
   { id: 'salon-s-plante', kind: 'prop', ref: 'plante-pot', pos: { x: 40, y: 50 }, z: 1 },
-  { id: 'bar-d-comptoir', kind: 'prop', ref: 'comptoir', pos: { x: 34, y: 47 }, z: 1 },
-  { id: 'bar-d-etag', kind: 'prop', ref: 'etagere', pos: { x: 38, y: 46 }, z: 1 },
+  { id: 'bar-d-comptoir', kind: 'prop', ref: 'comptoir-droit', pos: { x: 34, y: 47 }, facing: 'S', z: 1 },
+  { id: 'bar-d-etag', kind: 'prop', ref: 'etagere', pos: { x: 38, y: 46 }, facing: 'S', z: 1 },
   { id: 'bar-d-tonneau', kind: 'prop', ref: 'tonneau', pos: { x: 32, y: 46 }, z: 1 },
 
   // Deux lustres du foyer (z=1, flottant au-dessus du foyer du rez).

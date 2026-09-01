@@ -36,10 +36,10 @@ mesure du canal label (qui n'est PAS la cause) : en-tête de `scripts/docs/build
 | `qualities` | 59 | 2 | 3 % |
 | `maneuvers` | 20 | 0 | 0 % |
 | `skills` | 48 | 1 | 2 % |
-| `props` | 82 | 0 | 0 % |
+| `props` | 83 | 0 | 0 % |
 | `vehicles` | 31 | 0 | 0 % |
 | `creatures` | 493 | 351 | 71 % |
-| **Total** | **1052** | **366** | — |
+| **Total** | **1053** | **366** | — |
 
 ### `traits`
 

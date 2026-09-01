@@ -61,6 +61,7 @@ const TYPES = {
  * CARDINAL ATTENDU par fichier, et TOTAL — mesuré sur l'arbre au moment de l'écriture (2026-08-28).
  * Vérifié AVANT toute écriture : une entrée ajoutée ou retirée depuis fait sortir 1 plutôt que
  * migrer un périmètre qui n'est plus celui qu'on a mesuré.
+ * Toute croissance légitime d'un dataset listé recale ce cardinal dans le train de la croissance.
  */
 const CARDINAUX = {
   'astrology.json': 5,
@@ -79,7 +80,9 @@ const CARDINAUX = {
   'lightTones.json': 4,
   'merchantFamilies.json': 7,
   'peripeties.json': 10,
-  'propMaterials.json': 4,
+  // 4→8 : recalé #1624/#1644 (+4 matériaux : ardoise, toile-rouge, laiton-dore, albatre) — le cardinal
+  // est une porte d'IDENTITÉ de dataset, il suit la donnée qu'un train fait croître, dans le MÊME train.
+  'propMaterials.json': 8,
   'qualitySubtypes.json': 3,
   'qualityTypes.json': 2,
   // 8→9 : dette « Option Attraper Froid » (`deplacement#option-attraper-froid`), EDOC 09, #674.
@@ -87,8 +90,8 @@ const CARDINAUX = {
   'reliefMaterials.json': 6,
   'sea-shanties.json': 7,
 };
-// 141→142 : +1, la seule entrée de manifeste ci-dessus.
-const TOTAL_ATTENDU = 142;
+// 141→142 : +1, la seule entrée de manifeste ci-dessus. Puis 142→146 : +4 matériaux de décor (#1624/#1644).
+const TOTAL_ATTENDU = 146;
 
 const echecs = [];
 const rapport = [];

@@ -54,5 +54,13 @@
     "color": "#a8801f",
     "roughness": 0.42,
     "metalness": 0.6
+  },
+  {
+    "id": "albatre",
+    "type": "propMaterials",
+    "label": "Albâtre",
+    "color": "#c2b79a",
+    "roughness": 0.58,
+    "metalness": 0
   }
 ]

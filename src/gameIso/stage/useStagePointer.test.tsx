@@ -13,6 +13,7 @@ import { seatPoseOf, seatSlotsOf } from '../../state/seating';
 import { interactionHalos } from '../builders/interactHalos';
 import { exploreMovePlan, exploreSeatPlan } from '../../state/exploreNav';
 import { useGame } from '../../state/store';
+import { props } from '../../data';
 import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
@@ -30,6 +31,10 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 const dims: Dims = { w: 8, h: 8, rot: 0, view: 'iso' };
+
+/** Un décor encore BILLBOARD, DÉRIVÉ du catalogue : la vague volumique (#1343) convertit les refs lot
+ *  par lot — une ref écrite en dur ferait rougir cette garde le jour de SA recette. */
+const REF_BILLBOARD = props.find((p) => !p.volume)!.id;
 
 /** Élément de stage MESURÉ : sa surface vaut exactement le viewBox (VW×VH) posé au coin (0,0) — le
  *  recouvrement `slice` y vaut donc 1, et un pixel client EST un point de viewBox. C'est le contrat
@@ -1164,7 +1169,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
   it('hors combat, le hit-test n’est PAS sollicité sur une scène sans mobilier volumique', () => {
     const picker = vi.fn(() => null);
     setSpritePicker(picker);
-    const sansVolume = sceneMeuble('tonneau'); // décor BILLBOARD : rien que le rayon monde puisse nommer
+    const sansVolume = sceneMeuble(REF_BILLBOARD); // décor BILLBOARD : rien que le rayon monde puisse nommer
     useGame.setState({ scene: sansVolume, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null });
     const p1 = monter(sansVolume);
     const centre = tileCenter(3, 3, dims);
@@ -1178,5 +1183,13 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const p2 = monter(avecVolume);
     p2.handlers.onPointerMove(pointerEvent(centre.cx, centre.cy));
     expect(picker).toHaveBeenCalled();
+  });
+
+  it('le filet des fixtures billboard tient encore : au moins deux refs SANS recette au catalogue', () => {
+    expect(
+      props.filter((p) => !p.volume).length,
+      'la phase 4 de #1343 (mort du chemin billboard des props) fera tomber ce filet EXPRÈS : ces fixtures '
+      + 'devront alors être reformulées — il n’y aura plus de décor billboard à témoin.',
+    ).toBeGreaterThanOrEqual(2);
   });
 });

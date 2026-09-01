@@ -234,32 +234,598 @@
     "type": "props",
     "label": "Tonneau",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "volume": {
+      "primitives": [
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.07
+          },
+          "radius": 0.15,
+          "heightM": 0.14,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.44
+          },
+          "radius": 0.18,
+          "heightM": 0.62,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.79
+          },
+          "radius": 0.15,
+          "heightM": 0.12,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.26
+          },
+          "radius": 0.187,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.62
+          },
+          "radius": 0.187,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.865
+          },
+          "radius": 0.152,
+          "heightM": 0.03,
+          "sides": 16,
+          "material": "bois-chene"
+        }
+      ]
+    }
   },
   {
     "id": "tonneaux-pile",
     "type": "props",
     "label": "Pile de tonneaux",
-    "solid": true
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": -0.185,
+            "y": 0,
+            "h": 0.07
+          },
+          "radius": 0.15,
+          "heightM": 0.14,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": -0.185,
+            "y": 0,
+            "h": 0.44
+          },
+          "radius": 0.18,
+          "heightM": 0.62,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": -0.185,
+            "y": 0,
+            "h": 0.79
+          },
+          "radius": 0.15,
+          "heightM": 0.12,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": -0.185,
+            "y": 0,
+            "h": 0.26
+          },
+          "radius": 0.187,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": -0.185,
+            "y": 0,
+            "h": 0.62
+          },
+          "radius": 0.187,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": -0.185,
+            "y": 0,
+            "h": 0.865
+          },
+          "radius": 0.152,
+          "heightM": 0.03,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0.185,
+            "y": 0,
+            "h": 0.07
+          },
+          "radius": 0.15,
+          "heightM": 0.14,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0.185,
+            "y": 0,
+            "h": 0.44
+          },
+          "radius": 0.18,
+          "heightM": 0.62,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0.185,
+            "y": 0,
+            "h": 0.79
+          },
+          "radius": 0.15,
+          "heightM": 0.12,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0.185,
+            "y": 0,
+            "h": 0.26
+          },
+          "radius": 0.187,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0.185,
+            "y": 0,
+            "h": 0.62
+          },
+          "radius": 0.187,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0.185,
+            "y": 0,
+            "h": 0.865
+          },
+          "radius": 0.152,
+          "heightM": 0.03,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.95
+          },
+          "radius": 0.15,
+          "heightM": 0.14,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.32
+          },
+          "radius": 0.18,
+          "heightM": 0.62,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.67
+          },
+          "radius": 0.15,
+          "heightM": 0.12,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.1400000000000001
+          },
+          "radius": 0.187,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.5
+          },
+          "radius": 0.187,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.745
+          },
+          "radius": 0.152,
+          "heightM": 0.03,
+          "sides": 16,
+          "material": "bois-chene"
+        }
+      ]
+    }
   },
   {
     "id": "caisse",
     "type": "props",
     "label": "Caisse",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.43
+          },
+          "size": {
+            "x": 0.44,
+            "y": 0.44,
+            "h": 0.86
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.1
+          },
+          "size": {
+            "x": 0.47,
+            "y": 0.47,
+            "h": 0.08
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.78
+          },
+          "size": {
+            "x": 0.47,
+            "y": 0.47,
+            "h": 0.08
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.89
+          },
+          "size": {
+            "x": 0.46,
+            "y": 0.46,
+            "h": 0.06
+          },
+          "material": "bois-chene"
+        }
+      ]
+    }
   },
   {
     "id": "coffre",
     "type": "props",
     "label": "Coffre",
-    "solid": true
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.21
+          },
+          "size": {
+            "x": 0.44,
+            "y": 0.3,
+            "h": 0.42
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "prism",
+          "center": {
+            "x": 0,
+            "y": -0.075,
+            "h": 0.55
+          },
+          "size": {
+            "x": 0.44,
+            "y": 0.15,
+            "h": 0.26
+          },
+          "slope": "y-",
+          "material": "bois-chene"
+        },
+        {
+          "kind": "prism",
+          "center": {
+            "x": 0,
+            "y": 0.075,
+            "h": 0.55
+          },
+          "size": {
+            "x": 0.44,
+            "y": 0.15,
+            "h": 0.26
+          },
+          "slope": "y+",
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.15,
+            "y": 0,
+            "h": 0.22
+          },
+          "size": {
+            "x": 0.04,
+            "y": 0.32,
+            "h": 0.44
+          },
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.15,
+            "y": 0,
+            "h": 0.22
+          },
+          "size": {
+            "x": 0.04,
+            "y": 0.32,
+            "h": 0.44
+          },
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.155,
+            "h": 0.34
+          },
+          "size": {
+            "x": 0.08,
+            "y": 0.03,
+            "h": 0.08
+          },
+          "material": "laiton-dore"
+        }
+      ]
+    }
   },
   {
     "id": "urne",
     "type": "props",
     "label": "Urne funéraire",
-    "solid": true
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.05
+          },
+          "size": {
+            "x": 0.24,
+            "y": 0.24,
+            "h": 0.1
+          },
+          "material": "pierre-atre"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.16
+          },
+          "size": {
+            "x": 0.2,
+            "y": 0.2,
+            "h": 0.12
+          },
+          "material": "pierre-atre"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.43
+          },
+          "radius": 0.13,
+          "heightM": 0.42,
+          "sides": 16,
+          "material": "albatre"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.71
+          },
+          "radius": 0.1,
+          "heightM": 0.14,
+          "sides": 16,
+          "material": "albatre"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.83
+          },
+          "radius": 0.065,
+          "heightM": 0.1,
+          "sides": 16,
+          "material": "albatre"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.91
+          },
+          "radius": 0.09,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "albatre"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.975
+          },
+          "radius": 0.035,
+          "heightM": 0.07,
+          "sides": 8,
+          "material": "albatre"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.14,
+            "y": 0,
+            "h": 0.58
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 0.2
+          },
+          "material": "albatre"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.14,
+            "y": 0,
+            "h": 0.58
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 0.2
+          },
+          "material": "albatre"
+        }
+      ]
+    }
   },
   {
     "id": "marmite",
@@ -309,7 +875,95 @@
     "id": "table",
     "type": "props",
     "label": "Table",
-    "solid": true
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.745
+          },
+          "size": {
+            "x": 0.47,
+            "y": 0.42,
+            "h": 0.07
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.675
+          },
+          "size": {
+            "x": 0.4,
+            "y": 0.35,
+            "h": 0.07
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.195,
+            "y": -0.165,
+            "h": 0.32
+          },
+          "size": {
+            "x": 0.05,
+            "y": 0.05,
+            "h": 0.64
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.195,
+            "y": -0.165,
+            "h": 0.32
+          },
+          "size": {
+            "x": 0.05,
+            "y": 0.05,
+            "h": 0.64
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.195,
+            "y": 0.165,
+            "h": 0.32
+          },
+          "size": {
+            "x": 0.05,
+            "y": 0.05,
+            "h": 0.64
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.195,
+            "y": 0.165,
+            "h": 0.32
+          },
+          "size": {
+            "x": 0.05,
+            "y": 0.05,
+            "h": 0.64
+          },
+          "material": "bois-chene"
+        }
+      ]
+    }
   },
   {
     "id": "table-2x1",
@@ -319,19 +973,443 @@
     "foot": {
       "w": 2,
       "h": 1
+    },
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.745
+          },
+          "size": {
+            "x": 1.9,
+            "y": 0.42,
+            "h": 0.07
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.665
+          },
+          "size": {
+            "x": 1.78,
+            "y": 0.34,
+            "h": 0.08
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.86,
+            "y": -0.165,
+            "h": 0.315
+          },
+          "size": {
+            "x": 0.05,
+            "y": 0.05,
+            "h": 0.63
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.86,
+            "y": -0.165,
+            "h": 0.315
+          },
+          "size": {
+            "x": 0.05,
+            "y": 0.05,
+            "h": 0.63
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.86,
+            "y": 0.165,
+            "h": 0.315
+          },
+          "size": {
+            "x": 0.05,
+            "y": 0.05,
+            "h": 0.63
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.86,
+            "y": 0.165,
+            "h": 0.315
+          },
+          "size": {
+            "x": 0.05,
+            "y": 0.05,
+            "h": 0.63
+          },
+          "material": "bois-chene"
+        }
+      ]
     }
   },
   {
     "id": "chaise",
     "type": "props",
     "label": "Chaise",
-    "solid": true
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.15,
+            "y": -0.15,
+            "h": 0.225
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 0.45
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.15,
+            "y": -0.15,
+            "h": 0.225
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 0.45
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.15,
+            "y": 0.15,
+            "h": 0.225
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 0.45
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.15,
+            "y": 0.15,
+            "h": 0.225
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.03,
+            "h": 0.45
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.475
+          },
+          "size": {
+            "x": 0.36,
+            "y": 0.36,
+            "h": 0.05
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.15,
+            "y": 0.155,
+            "h": 0.71
+          },
+          "size": {
+            "x": 0.035,
+            "y": 0.035,
+            "h": 0.42
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.15,
+            "y": 0.155,
+            "h": 0.71
+          },
+          "size": {
+            "x": 0.035,
+            "y": 0.035,
+            "h": 0.42
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0.155,
+            "h": 0.861
+          },
+          "size": {
+            "x": 0.33,
+            "y": 0.03,
+            "h": 0.05
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0.155,
+            "h": 0.58
+          },
+          "size": {
+            "x": 0.33,
+            "y": 0.03,
+            "h": 0.05
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.045,
+            "y": 0.155,
+            "h": 0.718
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.025,
+            "h": 0.236
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.045,
+            "y": 0.155,
+            "h": 0.718
+          },
+          "size": {
+            "x": 0.03,
+            "y": 0.025,
+            "h": 0.236
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.15,
+            "h": 0.15
+          },
+          "size": {
+            "x": 0.33,
+            "y": 0.03,
+            "h": 0.03
+          },
+          "material": "bois-chene"
+        }
+      ]
+    }
+  },
+  {
+    "id": "banc",
+    "type": "props",
+    "label": "Banc",
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.45
+          },
+          "size": {
+            "x": 0.47,
+            "y": 0.17,
+            "h": 0.06
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.19,
+            "y": -0.06,
+            "h": 0.21
+          },
+          "size": {
+            "x": 0.04,
+            "y": 0.04,
+            "h": 0.42
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.19,
+            "y": -0.06,
+            "h": 0.21
+          },
+          "size": {
+            "x": 0.04,
+            "y": 0.04,
+            "h": 0.42
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.19,
+            "y": 0.06,
+            "h": 0.21
+          },
+          "size": {
+            "x": 0.04,
+            "y": 0.04,
+            "h": 0.42
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.19,
+            "y": 0.06,
+            "h": 0.21
+          },
+          "size": {
+            "x": 0.04,
+            "y": 0.04,
+            "h": 0.42
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.12
+          },
+          "size": {
+            "x": 0.4,
+            "y": 0.03,
+            "h": 0.03
+          },
+          "material": "bois-chene"
+        }
+      ]
+    }
   },
   {
     "id": "tabouret",
     "type": "props",
     "label": "Tabouret",
-    "solid": true
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.43
+          },
+          "radius": 0.09,
+          "heightM": 0.06,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.07,
+            "h": 0.2
+          },
+          "size": {
+            "x": 0.035,
+            "y": 0.035,
+            "h": 0.4
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.061,
+            "y": 0.035,
+            "h": 0.2
+          },
+          "size": {
+            "x": 0.035,
+            "y": 0.035,
+            "h": 0.4
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.061,
+            "y": 0.035,
+            "h": 0.2
+          },
+          "size": {
+            "x": 0.035,
+            "y": 0.035,
+            "h": 0.4
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.15
+          },
+          "radius": 0.062,
+          "heightM": 0.025,
+          "sides": 8,
+          "material": "bois-chene"
+        }
+      ]
+    }
   },
   {
     "id": "armoire",
@@ -479,7 +1557,81 @@
     "id": "etagere",
     "type": "props",
     "label": "Étagère",
-    "solid": true
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.205,
+            "y": 0,
+            "h": 0.88
+          },
+          "size": {
+            "x": 0.04,
+            "y": 0.18,
+            "h": 1.76
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.205,
+            "y": 0,
+            "h": 0.88
+          },
+          "size": {
+            "x": 0.04,
+            "y": 0.18,
+            "h": 1.76
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.36
+          },
+          "size": {
+            "x": 0.45,
+            "y": 0.18,
+            "h": 0.05
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.04
+          },
+          "size": {
+            "x": 0.45,
+            "y": 0.18,
+            "h": 0.05
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.715
+          },
+          "size": {
+            "x": 0.45,
+            "y": 0.18,
+            "h": 0.05
+          },
+          "material": "bois-chene"
+        }
+      ]
+    }
   },
   {
     "id": "rack-armes",
