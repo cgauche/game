@@ -9,7 +9,14 @@
  * montant. Un porteur rencontré HORS de ces chemins est une anomalie → rien n'est écrit, sortie 1.
  * ORDRE DES CLÉS : `brass` prend la PLACE de `bronze` dans l'objet (les catalogues sont sérialisés
  * tels quels ; l'ordre alphabétique n'est pas une propriété du format).
- * CARDINAL ASSERTÉ : 455 = trappings 392 + vehicles 31 + creatures 14 + crew-roles 9 + 9.
+ * ENTRÉES : les 4 catalogues qui chiffrent un montant, chacun par son chemin de schéma exact — aucun
+ * autre fichier n'est lu. Cardinal ASSERTÉ chemin par chemin, total 455 :
+ *  - `src/data/trappings.json` `[].price` — 392 (la colonne Prix chiffrée ; `'ND'` et `null` ne sont
+ *    pas des montants et n'entrent pas au compte) ;
+ *  - `src/data/vehicles.json` `[].purchase.price` — 31 (les 31 entrées portent toutes leur achat) ;
+ *  - `src/data/creatures.json` `[].purchase.price` — 14 (les seules créatures ACHETABLES du bestiaire) ;
+ *  - `src/data/crew-roles.json` `[].wage.daily` — 9 et `[].wage.weekly` — 9 (les 9 rôles d'équipage,
+ *    barème quotidien ET hebdomadaire, colonnes non-multiples l'une de l'autre).
  * RENAME PUR : aucune valeur ne change. PREUVE : les deux artefacts (avant, après) ramenés à la
  * graphie `bronze` sont deep-equal.
  * IDEMPOTENT : rejouée sur l'état final, elle n'écrit rien et sort 0.
