@@ -10,26 +10,38 @@
 // sans porte d'accès, une table jamais tirée (#734) sont la MÊME classe de défaut : une entité
 // correcte, sans AUCUN consommateur mesuré.
 //
-// PÉRIMÈTRE MESURÉ — 7 des 10 catalogues `src/data/*.json` adressés par `id` que `id-collisions.test.ts`
+// PÉRIMÈTRE MESURÉ — 8 des 10 catalogues `src/data/*.json` adressés par `id` que `id-collisions.test.ts`
 // traite comme une famille homogène (`traits`, `talents`, `qualities`, `maneuvers`, `skills`, `props`,
-// `vehicles`, cf. `entityConsumers.mjs#CATEGORY_FILES`). 3 catalogues MESURÉS puis ÉCARTÉS
-// (`spells`, `trappings`, `creatures` — `entityConsumers.mjs#EXCLUDED_CATEGORY_FILES` ; leurs
-// comptes sont DÉRIVÉS à chaque génération, JAMAIS écrits en dur dans la sortie). Leur taux
-// d'orphelines brutes (id seul) vaut plusieurs fois celui des 7 catalogues retenus, non parce que
-// ces entités seraient mortes, mais parce que le chemin d'accès y échappe à la détection par id —
-// pour une raison DIFFÉRENTE dans chacun des trois :
+// `vehicles`, `creatures`, cf. `entityConsumers.mjs#CATEGORY_FILES`). 2 catalogues MESURÉS puis
+// ÉCARTÉS (`spells`, `trappings` — `entityConsumers.mjs#EXCLUDED_CATEGORY_FILES` ; leurs comptes
+// sont DÉRIVÉS à chaque génération, JAMAIS écrits en dur dans la sortie). Leur taux d'orphelines
+// brutes (id seul) vaut plusieurs fois celui des catalogues retenus, non parce que ces entités
+// seraient mortes, mais parce que le chemin d'accès y échappe à la détection par id — pour une
+// raison DIFFÉRENTE dans chacun des deux :
 //   `spells` — un Sort ne se cite pas par id en code de prod par construction : il s'obtient par
 //   Domaine / Talent de lanceur / `learnSpell` de scène. L'instrument juste est donc
 //   `src/data/obtainability-guard.test.ts` (OBTENABILITÉ, baseline `spells: 0`), pas la citation.
 //   `trappings` — le stock marchand est bâti par PRÉDICAT sur des catégories déclarées EN DONNÉE
 //   (`state/merchantFlow.ts:194-201` filtre `trappings` par `arch.category` de `merchants.json`),
 //   chaîne hors grammaire MODE 2 (son `.map` rend un objet, pas `t.id`) — #1631.
-//   `creatures` — candidates au périmètre, non tranchées (lot L3 de #1553).
 //   Le canal LABEL (`findSpell`/`findTrappingByLabel`/`findCreature`, src/data/index.ts) n'est PAS
 //   cette raison : mesuré 2026-09, `findTrappingByLabel` et `findCreature` n'ont AUCUN appelant, et
 //   `findSpell` en a trois (`data/pregens.ts:72`, `gameIso/rig/anim/spellClips.ts:57`,
 //   `ui/creator/draft.ts:819`) — un détecteur id-OU-label ne réconcilierait pas ces catalogues.
 //   Les ~99 autres `src/data/*.json` (hors ces 10 catalogues) sont HORS PÉRIMÈTRE de ce générateur.
+//
+// `creatures` EST AU PÉRIMÈTRE depuis #1553 L3 (2026-09), et le passage a tranché ce qui la retenait :
+// son chemin d'accès EST une citation par id (scène, `montures.json`, `groups.json`, `careerLevels.json`
+// …) ou une sélection MODE 2 réelle (`creatures.filter((c) => c.purchase).map((c) => c.id)`,
+// `state/merchantFlow.ts:132`, bétail du Maquignon). Ce qui n'en est PAS un : la palette d'ATELIER de
+// l'éditeur de scène — cf. la SÉMANTIQUE DE « ORPHELINE » en en-tête de `entityConsumers.mjs`, qui
+// écrit cette exclusion pour qu'une extension future de MODE 2 ne la « corrige » pas en consommateur.
+// Mesure d'entrée : 351 orphelines / 493 entités, dont 333 groupées en 4 FAMILLES par livre au stock
+// cliqueté (`entityOrphanStock.mjs#ENTITY_ORPHAN_FAMILIES` — un supplement entier curé sans scène :
+// frenchy-bzh 244, middenheim 37, zoo-imperial 37, mer-des-griffes 15) et 18 en lignes NOMINATIVES.
+// Le rapport ci-dessous, lui, reste NOMINATIF entrée par entrée sur TOUT le périmètre (familles
+// comprises) : c'est lui qui atténue le fail-open du plafond de famille — la SUBSTITUTION d'une
+// orpheline par une autre à compte constant laisse la garde verte mais apparaît AU DIFF de ce doc.
 //
 // DÉFINITION D'UN CONSOMMATEUR — DEUX modes indépendants, un id compte comme consommé s'il satisfait
 // L'UN OU L'AUTRE (détail complet, grammaire, angles morts : en-tête de `entityConsumers.mjs`) :
@@ -137,9 +149,12 @@ out += `Chacun échappe à la détection par id pour une raison PROPRE : un Sort
 out += `prod (il s'obtient par Domaine / Talent de lanceur / \`learnSpell\` de scène — l'instrument juste\n`
 out += `est \`src/data/obtainability-guard.test.ts\`) ; le stock marchand des \`trappings\` est bâti par\n`
 out += `PRÉDICAT sur des catégories déclarées en donnée (\`state/merchantFlow.ts\`, hors grammaire MODE 2\n`
-out += `— #1631) ; les \`creatures\` sont candidates au périmètre, non tranchées. Détail et mesure du\n`
-out += `canal label (qui n'est PAS la cause) : en-tête de \`scripts/docs/build-entity-orphans.mjs\`.\n\n`
+out += `— #1631). \`creatures\` a quitté cette table pour les catalogues MESURÉS (#1553 L3). Détail et\n`
+out += `mesure du canal label (qui n'est PAS la cause) : en-tête de \`scripts/docs/build-entity-orphans.mjs\`.\n\n`
 out += `## Catalogues MESURÉS\n\n`
+out += `> Le stock cliqueté groupe les masses par LIVRE (\`ENTITY_ORPHAN_FAMILIES\`) ; ce rapport, lui,\n`
+out += `> reste NOMINATIF entrée par entrée — une orpheline câblée et une autre créée laissent le plafond\n`
+out += `> de famille inchangé, mais se voient au DIFF des listes ci-dessous.\n\n`
 out += `| Catalogue | Entités | Orphelines | Taux |\n|---|---|---|---|\n`
 
 let totalEntities = 0

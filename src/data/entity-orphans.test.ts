@@ -2,15 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import {
-  loadCategoryIds, buildConsumerCorpus, isConsumed, computeFieldPredicateConsumers, META_CATALOG_ENTRIES,
-  sceneConsumerCorpus, EXCLUDED_CATEGORY_FILES,
+  loadCategoryIds, loadCategoryBooks, buildConsumerCorpus, isConsumed, computeFieldPredicateConsumers,
+  META_CATALOG_ENTRIES, sceneConsumerCorpus, EXCLUDED_CATEGORY_FILES,
 } from '../../scripts/guards/lib/entityConsumers.mjs';
-import { ENTITY_ORPHAN_RATCHET } from '../../scripts/guards/lib/entityOrphanStock.mjs';
+import { ENTITY_ORPHAN_RATCHET, ENTITY_ORPHAN_FAMILIES, type EntityOrphanFamily } from '../../scripts/guards/lib/entityOrphanStock.mjs';
 
 /**
  * Cliquet décroissant des entités de catalogue SANS CONSOMMATEUR (généralise `tables.json`/#734 à
- * `traits`/`talents`/`qualities`/`maneuvers`/`skills`/`props`/`vehicles` — périmètre retenu/écarté,
- * définition d'un consommateur, angles morts déclarés : cf. l'en-tête de
+ * `traits`/`talents`/`qualities`/`maneuvers`/`skills`/`props`/`vehicles`/`creatures` — périmètre
+ * retenu/écarté, définition d'un consommateur, angles morts déclarés : cf. l'en-tête de
  * `scripts/docs/build-entity-orphans.mjs`). Rapport généré : `docs/orphelines-donnees.md`.
  */
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -19,8 +19,17 @@ const SRC_DIR = `${ROOT}src`;
 
 /** Plafond du stock cliqueté (même patron que `MANUAL_DOCS_MAX`, `src/data/manual-docs-ratchet.test.ts`) :
  *  vit ICI, dans le test, jamais dans `entityOrphanStock.mjs` — sans lui, le chemin le plus court
- *  pour « solder » une orpheline neuve resterait d'ajouter une ligne au stock, CI verte. */
-const MAX_ENTITY_ORPHANS = 15;
+ *  pour « solder » une orpheline neuve resterait d'ajouter une ligne au stock, CI verte. Il plafonne
+ *  les LIGNES DE STOCK, nominatives ET familles réunies : sinon la famille deviendrait l'échappatoire
+ *  que la ligne nominative n'est plus.
+ *
+ *  RECOMPTÉ à l'entrée de `creatures` au périmètre (#1553 L3, 2026-09) — jamais un chiffre nu :
+ *    EXISTANT (7 catalogues)          : 15 lignes nominatives
+ *    ENTRÉE AU PÉRIMÈTRE (`creatures`) : 18 lignes nominatives + 4 lignes-familles
+ *                                        (351 orphelines mesurées = 333 en familles + 18 nominatives)
+ *    -------------------------------------------------------------------------------------------
+ *    TOTAL                             : 37 lignes de stock */
+const MAX_ENTITY_ORPHANS = 37;
 
 describe('cliquet — toute entité de catalogue retenu a un CONSOMMATEUR (curée, non atteinte = dette)', () => {
   const corpus = buildConsumerCorpus(DATA_DIR, SRC_DIR);
@@ -29,10 +38,21 @@ describe('cliquet — toute entité de catalogue retenu a un CONSOMMATEUR (curé
   const isEntityConsumed = (cat: string, id: string) =>
     isConsumed(corpus, id) || fieldConsumed.get(cat)?.has(id) || META_CATALOG_ENTRIES.has(`${cat}:${id}`);
 
+  const books = loadCategoryBooks(DATA_DIR);
+  const families = ENTITY_ORPHAN_FAMILIES;
+  /** La famille d'une orpheline = le PRÉDICAT `(catégorie, source.book)` qui la capture (au plus un :
+   *  les lignes-familles sont disjointes par construction, cf. l'assertion d'unicité plus bas). */
+  const familyOf = (cat: string, id: string) =>
+    families.find((f) => f.category === cat && f.book === books[cat]?.get(id));
+
   const orphans: string[] = [];
+  const inFamily = new Map<EntityOrphanFamily, string[]>(families.map((f) => [f, []]));
   for (const [cat, catIds] of Object.entries(ids)) {
     for (const id of catIds) {
-      if (!isEntityConsumed(cat, id)) orphans.push(`${cat}:${id}`);
+      if (isEntityConsumed(cat, id)) continue;
+      const fam = familyOf(cat, id);
+      if (fam) inFamily.get(fam)!.push(`${cat}:${id}`);
+      else orphans.push(`${cat}:${id}`);
     }
   }
 
@@ -46,11 +66,45 @@ describe('cliquet — toute entité de catalogue retenu a un CONSOMMATEUR (curé
     expect(soldees, `entrée(s) du stock désormais consommée(s) — retirer leur ligne de entityOrphanStock.mjs :\n${soldees.join('\n')}`).toEqual([]);
   });
 
-  it('le stock cliqueté ne GROSSIT pas — sa taille est plafonnée par le test', () => {
+  it('le stock cliqueté ne GROSSIT pas — lignes nominatives ET familles réunies', () => {
+    const lignes = ENTITY_ORPHAN_RATCHET.size + families.length;
     expect(
-      ENTITY_ORPHAN_RATCHET.size,
-      `ENTITY_ORPHAN_RATCHET a GONFLÉ (${ENTITY_ORPHAN_RATCHET.size} > ${MAX_ENTITY_ORPHANS}) — une orpheline neuve se câble, jamais ne se stocke.`,
+      lignes,
+      `le stock a GONFLÉ (${ENTITY_ORPHAN_RATCHET.size} nominatives + ${families.length} familles = ${lignes} > ${MAX_ENTITY_ORPHANS}) — une orpheline neuve se câble, jamais ne se stocke (ni en ligne, ni en famille).`,
     ).toBeLessThanOrEqual(MAX_ENTITY_ORPHANS);
+  });
+
+  it('chaque FAMILLE ne peut que DÉCROÎTRE — son compte mesuré tient sous son plafond', () => {
+    const gonflees = families
+      .filter((f) => inFamily.get(f)!.length > f.max)
+      .map((f) => `${f.category} / ${f.book} : ${inFamily.get(f)!.length} orphelines mesurées > plafond ${f.max}`);
+    expect(
+      gonflees,
+      `famille(s) GONFLÉE(s) — une orpheline neuve d'un livre déjà en famille se CÂBLE ; le plafond ne se relève jamais :\n${gonflees.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('un plafond de famille DÉPASSÉ par le bas se RESSERRE — le cliquet suit la mesure', () => {
+    const laches = families
+      .filter((f) => inFamily.get(f)!.length < f.max)
+      .map((f) => `${f.category} / ${f.book} : plafond ${f.max}, ${inFamily.get(f)!.length} mesurées`);
+    expect(
+      laches,
+      `plafond(s) de famille devenu(s) LÂCHE(s) — abaisser à la valeur mesurée dans entityOrphanStock.mjs (sinon la marge accueille la prochaine orpheline en silence) :\n${laches.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('une famille VIDÉE voit sa LIGNE SUPPRIMÉE — jamais un plafond à zéro qui traîne', () => {
+    const vides = families.filter((f) => inFamily.get(f)!.length === 0).map((f) => `${f.category} / ${f.book}`);
+    expect(
+      vides,
+      `famille(s) VIDÉE(s) — retirer leur ligne de ENTITY_ORPHAN_FAMILIES :\n${vides.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('les prédicats de famille sont DISJOINTS — deux lignes ne capturent jamais la même entité', () => {
+    const cles = families.map((f) => `${f.category}/${f.book}`);
+    expect(cles, 'deux lignes-familles portent le MÊME prédicat (catalogue, livre) — en fusionner').toEqual([...new Set(cles)]);
   });
 });
 

@@ -2,8 +2,20 @@
 // `scripts/docs/build-entity-orphans.mjs` (générateur du rapport) ET `src/data/entity-orphans.test.ts`
 // (garde cliquet). Généralise le patron mesuré dans `tableConsumerStock.mjs`/`tables.test.ts` (#734)
 // à tout catalogue `src/data/*.json` adressé par `id` (le même ensemble que `id-collisions.test.ts`
-// nomme « catégories » : `traits`, `talents`, `qualities`, `maneuvers`, `skills`, `props`, `vehicles`
-// — cf. en-tête de `scripts/docs/build-entity-orphans.mjs` pour le périmètre RETENU/ÉCARTÉ).
+// nomme « catégories » : `traits`, `talents`, `qualities`, `maneuvers`, `skills`, `props`, `vehicles`,
+// `creatures` — cf. en-tête de `scripts/docs/build-entity-orphans.mjs` pour le périmètre RETENU/ÉCARTÉ).
+//
+// SÉMANTIQUE DE « ORPHELINE » (écrite ICI parce que c'est elle qui décide ce qui compte comme
+// consommateur, #1553 L3) : une entité est ORPHELINE quand AUCUN CHEMIN DE JEU ne la convoque — ni
+// un document de scène, ni une autre donnée, ni le code de PRODUCTION. Ce qui n'est PAS un chemin de
+// jeu : l'ATELIER d'authoring. La palette de l'éditeur de scène énumère des candidats à POSER À LA
+// MAIN (`ui/editor/Editor.tsx:168`, `creatures.filter((c) => typeof c.char.B === 'number')` — mesuré
+// 487 des 493 entrées de `creatures.json`, 2026-09) : la compter rendrait tout le catalogue
+// « atteignable » et viderait l'instrument (une entité qu'aucune scène ne pose reste une mécanique
+// curée sans jeu). Elle est aujourd'hui rejetée fail-closed par la grammaire MODE 2 (`typeof`, champ
+// à deux niveaux, aucun `.map((c) => c.id)` enchaîné) — ce rejet est un ACCIDENT de grammaire, PAS la
+// raison. Toute extension future de MODE 2 qui la ferait entrer dans la grammaire doit l'EXCLURE
+// explicitement au titre de cette sémantique, jamais la « corriger » en consommateur.
 //
 // DEUX modes de consommation, tous deux mesurés indépendamment puis UNIS par le générateur/la garde :
 //
@@ -52,13 +64,13 @@
 // Amélioration sur `tableConsumerStock.mjs` : au lieu d'une regex fragile sur l'ORDRE des clés
 // (`"id": "…", (?="label")`), la déclaration de l'entité dans SON PROPRE catalogue est retirée par
 // PARSE JSON (suppression de la seule clé top-level `id` avant re-sérialisation) — robuste à
-// n'importe quel ordre/forme de champs, généralisable aux 7 catalogues sans regex par fichier.
+// n'importe quel ordre/forme de champs, généralisable aux 8 catalogues sans regex par fichier.
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** Catalogues `src/data/*.json` adressés par `id`, retenus pour la mesure d'orphelines — MÊME
- *  ensemble que `CATEGORIES` de `src/data/id-collisions.test.ts`, moins `spells`/`trappings`/
- *  `creatures` (écartés, cf. en-tête de `build-entity-orphans.mjs`). */
+ *  ensemble que `CATEGORIES` de `src/data/id-collisions.test.ts`, moins `spells`/`trappings`
+ *  (écartés, cf. en-tête de `build-entity-orphans.mjs`). */
 export const CATEGORY_FILES = {
   traits: 'traits.json',
   talents: 'talents.json',
@@ -67,15 +79,20 @@ export const CATEGORY_FILES = {
   skills: 'skills.json',
   props: 'props.json',
   vehicles: 'vehicles.json',
+  // Au périmètre depuis #1553 L3. Le chemin de JEU d'une créature est la CITATION de son id (un
+  // document de scène — `entities[].ref`, `encounters[]` —, une autre donnée : `montures.json`,
+  // `groups.json`, `careerLevels.json`…) ou la sélection MODE 2 `creatures.filter((c) => c.purchase)
+  // .map((c) => c.id)` (`state/merchantFlow.ts:132`, bétail du Maquignon, 14 entrées). La palette de
+  // l'éditeur n'en est PAS un — cf. SÉMANTIQUE en en-tête.
+  creatures: 'creatures.json',
 };
 
-/** Les 3 catalogues ÉCARTÉS du périmètre (cause d'exclusion : en-tête de
+/** Les 2 catalogues ÉCARTÉS du périmètre (cause d'exclusion : en-tête de
  *  `build-entity-orphans.mjs`). Déclarés ici pour que le rapport DÉRIVE leurs comptes du même scan
  *  au lieu de les figer en dur dans sa sortie ; aucune garde ne les mesure. */
 export const EXCLUDED_CATEGORY_FILES = {
   spells: 'spells.json',
   trappings: 'trappings.json',
-  creatures: 'creatures.json',
 };
 
 /** `{ [category]: string[] }` — tous les ids de chaque catalogue de `files` (retenus par défaut). */
@@ -84,6 +101,19 @@ export function loadCategoryIds(dataDir, files = CATEGORY_FILES) {
   for (const [cat, file] of Object.entries(files)) {
     const arr = JSON.parse(readFileSync(join(dataDir, file), 'utf8'));
     out[cat] = arr.map((e) => e.id);
+  }
+  return out;
+}
+
+/** `{ [category]: Map<id, source.book|null> }` — le LIVRE de chaque entité, seul champ dont les
+ *  contrats de FAMILLE du stock (`entityOrphanStock.mjs#ENTITY_ORPHAN_FAMILIES`) ont besoin pour
+ *  décider à quelle famille une orpheline appartient. Lecture DIRECTE de la donnée : la famille est
+ *  un prédicat sur `(catégorie, source.book)`, jamais une liste d'ids à tenir. */
+export function loadCategoryBooks(dataDir, files = CATEGORY_FILES) {
+  const out = {};
+  for (const [cat, file] of Object.entries(files)) {
+    const arr = JSON.parse(readFileSync(join(dataDir, file), 'utf8'));
+    out[cat] = new Map(arr.map((e) => [e.id, e.source?.book ?? null]));
   }
   return out;
 }
@@ -215,9 +245,10 @@ export const isConsumed = (corpus, id) => corpus.includes(`"${id}"`) || corpus.i
  *  séparées (`src/data/entity-orphans.test.ts` — via `entityOrphanStock.mjs` — ET
  *  `src/data/obtainability-guard.test.ts`) : ni l'une ni l'autre ne re-déclare le fait chez elle.
  *  Clé = `catégorie:id`, même convention que `entityOrphanStock.mjs`. Mesuré exhaustivement sur les
- *  7 catalogues retenus (grep `aleatoire|au-choix|table-des|choix-libre` sur
+ *  7 catalogues d'alors (grep `aleatoire|au-choix|table-des|choix-libre` sur
  *  traits/talents/qualities/maneuvers/skills/props/vehicles, 2026-07) : SEULE `talents:talent-aleatoire`
- *  qualifie.
+ *  qualifie. Re-mesuré sur `creatures` à son entrée au périmètre (#1553 L3, 2026-09) : AUCUNE entrée
+ *  MÉTA — une créature est toujours une entité posée, jamais un jeton de tirage.
  * @type {ReadonlySet<string>} */
 export const META_CATALOG_ENTRIES = new Set(['talents:talent-aleatoire']);
 
@@ -297,7 +328,7 @@ function chainLeadsToId(text, pos) {
 }
 
 /** MODE 2 (cf. en-tête) — scanne `src/**\/*.ts(x)` de PRODUCTION (hors tests) pour les appels
- *  `<catalogueTopLevel>.filter((param) => <prédicat>)` sur l'un des 7 catalogues retenus. Retourne
+ *  `<catalogueTopLevel>.filter((param) => <prédicat>)` sur l'un des 8 catalogues retenus. Retourne
  *  `{ consumed: Map<catégorie, Set<id>>, recognized: [{category, loc, predicate, matched}],
  *  skipped: [{category, loc, raw, reason}] }` — `skipped` liste tout filtre rencontré mais REJETÉ
  *  par la grammaire (fail-closed, JAMAIS traité comme consommateur). */
