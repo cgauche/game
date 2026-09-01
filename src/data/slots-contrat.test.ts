@@ -117,7 +117,10 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // `entityAppearanceSchema` (`src/data/schemas/grammaire/valeurs.ts`), `species` et `tenue` sont des
 // `z.string()` nus, et `TYPES` (`grammaire/ref.ts`) n'a ni type `espece` ni type `tenue`. L'adoption
 // est celle de ce schéma, en L2/L3 #1473, pour les quatre porteurs à la fois.
-const DETTE_ADOPTION_MAX = 345;
+// Cliquet DESCENDU 345 → 343 (#1463 L-ref-2, dff0e31c5, 2026-09-01) : `spells.json | range` (22) et
+// `spells.json | target` (16) n'ont plus AUCUNE réf observée sans slot — les 54 Portées/Cibles qui
+// nommaient le lanceur portent `{kind:'self'}` ; les deux entrées périmées se retirent, le plafond suit.
+const DETTE_ADOPTION_MAX = 343;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {
