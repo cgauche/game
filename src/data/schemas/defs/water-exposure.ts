@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema } from '../grammaire/valeurs';
+import { difficultySchema, plageSchema } from '../grammaire/valeurs';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'water-exposure.json';
@@ -42,8 +42,7 @@ const doc = document(
   ),
   diseases: z.array(
     z.strictObject({
-      min: z.number(),
-      max: z.number(),
+      ...plageSchema.shape,
       disease: z.string(),
       rerollUnlessWounded: z.boolean().optional(),
     }),

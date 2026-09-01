@@ -606,7 +606,18 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // littéral `{min, max, …}` — ils rejoignent la famille des 30 defs qui le redéclarent déjà.
       // RESTE NOMMÉ : le schéma PARTAGÉ (P1, `grammaire/valeurs.ts`) éteint les 32 d'un coup ; ces
       // deux lignes-là sont à éteindre AVEC elles, pas séparément.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 107],
+      // Cliquet DESCENDU 107 → 97 (L4 #1463, vague `plage`, LOT P1-a) : les deux bornes d'une rangée
+      // de table se déclarent UNE fois — `plageSchema` (`grammaire/valeurs.ts`) — et les schémas de
+      // RANGÉE la composent PAR SHAPE (`z.strictObject({ ...plageSchema.shape, … })`, graphie unique
+      // de dérivation tenue par `grammaire-guard.test.ts`). Dix lignes SORTENT : sept par composition
+      // (criticals, aa-criticals, localisation — une ligne à 2 occurrences —, structure-criticals,
+      // water-exposure › diseases, mutationTables › ranges, obsessions › entries), trois par ADOPTION
+      // NUE, les deux bornes y étant toute la charge utile (sea-navigation, tavernGames › libre et
+      // › targetRange). `shipCritEntrySchema` (grammaire) porte river/ship-criticals, déjà hors stock.
+      // Le scanner ne résout PAS un spread : la garde est le test POSITIF de composition
+      // (`grammaire/formes-partagees.test.ts`), qui refuse une rangée sans borne AU SCHÉMA PARTAGÉ et
+      // à chacun des 9 documents adoptants. Le cliquet SUIT la baisse.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 97],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -777,7 +788,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // de REDÉCLARATIONS (`weather.ts`, `advancementCosts.ts` — leurs schémas déclarent désormais le
       // littéral à DEUX bornes, empreinte de la migration P2 ; cf. le cliquet
       // `STRUCTURES_REDECLARATIONS`). Solde net −59.
-      'L4 #1463': 162,
+      // … puis 162 → 152 (vague `plage`, LOT P1-a) : les 10 lignes de REDÉCLARATIONS des rangées de
+      // table « critiques & corps » sortent — leurs schémas composent `plageSchema` par la SHAPE, ou
+      // l'adoptent nu quand les deux bornes sont toute la charge utile.
+      'L4 #1463': 152,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`

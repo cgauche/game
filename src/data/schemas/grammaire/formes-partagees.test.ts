@@ -3,9 +3,20 @@
  * POSSESSIONS #615/#617 §9 (dotation BÊTE, `creatures.json`), en plus des branches existantes.
  */
 import { describe, it, expect } from 'vitest';
+import { z } from 'zod';
 import { trappingRefSchema } from './reference';
 import { flowTestSchema, gameOpSchema } from './mecanique';
-import { TESTS_DE_CORRUPTION } from './valeurs';
+import { TESTS_DE_CORRUPTION, plageSchema } from './valeurs';
+import { validateDataset } from '../validate';
+import criticals from '../../criticals.json';
+import aaCriticals from '../../aa-criticals.json';
+import localisation from '../../localisation.json';
+import structureCriticals from '../../structure-criticals.json';
+import riverCriticals from '../../river-criticals.json';
+import shipCriticals from '../../ship-criticals.json';
+import waterExposure from '../../water-exposure.json';
+import mutationTables from '../../mutationTables.json';
+import obsessions from '../../obsessions.json';
 import { corruptionExposureSchema } from '../defs-scenes/effets';
 import { menaceIds } from '../../../engine/menace';
 import { resolveTrappingChoices } from '../../../engine/trappingChoices';
@@ -47,6 +58,101 @@ describe('trappingRefSchema — branches de TrappingRef', () => {
       { id: 'pistolet' },
     ]);
   });
+});
+
+/**
+ * `plageSchema` (`grammaire/valeurs.ts`, vague `plage` #1463 P1) — les deux bornes d'une rangée de
+ * table de tirage se déclarent UNE fois et se composent par la SHAPE. Le spread est un ANGLE MORT du
+ * scanner de redéclarations (`scripts/docs/lib/structures-scan.mts` lit les littéraux par AST et ne
+ * résout pas un spread, cf. `grammaire/reference.ts:37-38`) : l'extinction d'une ligne de stock ne
+ * prouve donc RIEN sur le parse. Ce gate est POSITIF — il mesure que la garde des bornes tient
+ * encore, au schéma partagé ET à chaque site adoptant, par la porte de validation réelle
+ * (`validateDataset`).
+ */
+describe('plageSchema — fourchette PARTAGÉE des rangées de table', () => {
+  const CHARGE = { min: 1, max: 10 };
+
+  it('accepte les deux bornes, et REFUSE une rangée sans `min` / sans `max` — message NOMMANT la borne', () => {
+    expect(plageSchema.safeParse(CHARGE).success).toBe(true);
+    for (const borne of ['min', 'max'] as const) {
+      const { [borne]: _absente, ...ampute } = CHARGE;
+      const r = plageSchema.safeParse(ampute);
+      expect(r.success, `une rangée sans \`${borne}\` a été ACCEPTÉE`).toBe(false);
+      expect(r.error!.issues.map((i) => i.path.join('.')), `l'issue ne nomme pas \`${borne}\``).toContain(borne);
+    }
+  });
+
+  it('reste STRICT après composition par SHAPE — une clé inconnue est refusée', () => {
+    const etendu = z.strictObject({ ...plageSchema.shape, mutation: plageSchema.shape.min });
+    expect(etendu.safeParse({ ...CHARGE, mutation: 3 }).success).toBe(true);
+    expect(etendu.safeParse({ ...CHARGE, mutation: 3, inconnue: 1 }).success).toBe(false);
+    expect(etendu.safeParse({ ...CHARGE }).success).toBe(false); // la charge utile reste requise
+  });
+
+  /**
+   * Chaque document ADOPTANT est mesuré sur SA donnée réelle : on ampute la première rangée à deux
+   * bornes de son `min`, et la porte doit refuser en nommant le CHEMIN de la borne. Une composition
+   * débranchée (spread perdu, borne rendue optionnelle) laisserait passer.
+   */
+  const SITES: ReadonlyArray<readonly [string, unknown, string[]?]> = [
+    ['criticals.json', criticals],
+    ['aa-criticals.json', aaCriticals],
+    ['localisation.json', localisation],
+    ['structure-criticals.json', structureCriticals],
+    ['river-criticals.json', riverCriticals],
+    ['ship-criticals.json', shipCriticals],
+    // Descente EXPLICITE : `modifiers[].auto` porte aussi deux bornes (`{kind:'woundsLost', op:'between'}`),
+    // mais ce sont des bornes de BLESSURES PERDUES dans une condition — pas une rangée de table de
+    // tirage, donc hors composition. La table lue par `findTableEntry` est `diseases`.
+    ['water-exposure.json', waterExposure, ['diseases']],
+    ['mutationTables.json', mutationTables],
+    ['obsessions.json', obsessions],
+  ];
+
+  /** Chemin de la PREMIÈRE rangée `{min, max}` numériques rencontrée en parcours stable. */
+  const premiereFourchette = (v: unknown, chemin: string[] = []): string[] | null => {
+    if (Array.isArray(v)) {
+      for (const [i, e] of v.entries()) {
+        const t = premiereFourchette(e, [...chemin, String(i)]);
+        if (t) return t;
+      }
+      return null;
+    }
+    if (v && typeof v === 'object') {
+      const o = v as Record<string, unknown>;
+      if (typeof o.min === 'number' && typeof o.max === 'number') return chemin;
+      for (const [k, e] of Object.entries(o)) {
+        const t = premiereFourchette(e, [...chemin, k]);
+        if (t) return t;
+      }
+    }
+    return null;
+  };
+
+  const ampute = (v: unknown, chemin: readonly string[]): unknown => {
+    if (!chemin.length) {
+      const { min: _min, ...reste } = v as Record<string, unknown>;
+      return reste;
+    }
+    const [tete, ...suite] = chemin;
+    if (Array.isArray(v)) return v.map((e, i) => (String(i) === tete ? ampute(e, suite) : e));
+    return { ...(v as Record<string, unknown>), [tete]: ampute((v as Record<string, unknown>)[tete], suite) };
+  };
+
+  const descend = (v: unknown, chemin: readonly string[]) =>
+    chemin.reduce<unknown>((acc, k) => (acc as Record<string, unknown>)[k], v);
+
+  for (const [fichier, data, sous = []] of SITES) {
+    it(`${fichier} : sa donnée réelle passe, la MÊME rangée sans \`min\` est REFUSÉE`, () => {
+      const relatif = premiereFourchette(descend(data, sous));
+      const chemin = relatif && [...sous, ...relatif];
+      expect(chemin, `aucune rangée {min,max} trouvée dans ${fichier}`).not.toBeNull();
+      expect(validateDataset(fichier, data)).toBeNull();
+      const err = validateDataset(fichier, ampute(data, chemin!));
+      expect(err, `${fichier} accepte une rangée sans borne basse`).not.toBeNull();
+      expect(err).toContain([...chemin!, 'min'].join('.'));
+    });
+  }
 });
 
 /**

@@ -10,7 +10,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema } from '../grammaire/valeurs';
+import { difficultySchema, plageSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 
@@ -111,7 +111,7 @@ const doc = document(
       critique: throwEffectSchema.optional(),
       maladresse: throwEffectSchema.optional(),
       depassement: throwEffectSchema.optional(),
-      libre: z.strictObject({ min: z.number(), max: z.number() }).optional(),
+      libre: plageSchema.optional(),
       exact: z.number().optional(),
       manches: z.number().optional(),
       ordre: z.enum(['declare', 'tirage']).optional(),
@@ -173,7 +173,7 @@ const doc = document(
      *  ce qu'elle porte : une CLÉ DE REGISTRE, ni de la prose ni l'issue du tour. */
     pot: z.strictObject({
       dice: z.strictObject({ count: z.number(), faces: z.number() }),
-      targetRange: z.strictObject({ min: z.number(), max: z.number() }).optional(),
+      targetRange: plageSchema.optional(),
       manchesPerPlayer: z.number().optional(),
       /** Unité de borne de la famille : tours qu'une manche peut prendre (anti-boucle, pas une règle). */
       roundsPerManche: z.number().optional(),

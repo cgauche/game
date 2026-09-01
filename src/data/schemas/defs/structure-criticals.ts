@@ -5,13 +5,13 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { plageSchema } from '../grammaire/valeurs';
 
 export const file = 'structure-criticals.json';
 export const famille = 'config';
 
 const structureCritEntrySchema = z.strictObject({
-  min: z.number(),
-  max: z.number(),
+  ...plageSchema.shape,
   id: z.string(),
   label: z.string(),
   /** Blessures supplémentaires de la Structure (0 = Triviale ; null = détruite). */

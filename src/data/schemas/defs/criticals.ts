@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, hitLocationSchema, sourceRefSchema, formulaSchema } from '../grammaire/valeurs';
+import { difficultySchema, hitLocationSchema, plageSchema, sourceRefSchema, formulaSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'criticals.json';
@@ -77,9 +77,8 @@ export const amputationSchema = z.strictObject({
 });
 
 const critEntrySchema = z.strictObject({
+  ...plageSchema.shape,
   id: z.string(),
-  min: z.number(),
-  max: z.number(),
   label: z.string(),
   ops: z.array(gameOpSchema).optional(),
   resist: z

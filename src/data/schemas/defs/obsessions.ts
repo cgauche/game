@@ -5,6 +5,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { plageSchema } from '../grammaire/valeurs';
 
 export const file = 'obsessions.json';
 export const famille = 'config';
@@ -15,9 +16,8 @@ const doc = document(
   {
     entries: z.array(
       z.strictObject({
+        ...plageSchema.shape,
         id: z.string(),
-        min: z.number(),
-        max: z.number(),
         label: z.string(),
       }),
     ),

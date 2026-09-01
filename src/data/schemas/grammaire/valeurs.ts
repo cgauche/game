@@ -450,6 +450,26 @@ export const refTestDeCorruption = z.strictObject({
 });
 
 /**
+ * FOURCHETTE d'une rangée de table de tirage — forme CANONIQUE du concept `plage`
+ * (`scripts/docs/lib/structures-lexique.mts`) : deux bornes INCLUSIVES, PLATES, portées par la rangée
+ * elle-même, jamais emboîtées sous un champ `range`. C'est exactement ce que lit `findTableEntry`
+ * (`src/engine/tables.ts`), primitive unique du lookup par fourchette.
+ *
+ * La charge utile d'une rangée est INHÉRENTE à sa table (mutation tirée, Localisation touchée,
+ * critique, maladie…) : elle s'ajoute par la SHAPE — `z.strictObject({ ...plageSchema.shape, … })`,
+ * graphie UNIQUE de dérivation dans la grammaire (`qualityRefSchema`, `grammaire/reference.ts`), que
+ * le volet `extend` de `src/data/grammaire-guard.test.ts` tient. UNE seule déclaration des deux
+ * bornes pour tout le dépôt. Se compose sur un schéma de RANGÉE, jamais sur un document scellé par
+ * `document()` (handle fermé). Une table dont les DEUX bornes sont toute la charge utile prend
+ * `plageSchema` tel quel.
+ *
+ * Aucune borne de domaine n'est posée ici : les tables du dépôt tirent au d100, au 2d10 (Obsessions)
+ * ou sur une expression de dé authorée (`structure-criticals.die`). La couverture EXACTE du domaine
+ * se vérifie, elle, par `ecartsDeCouverture` ci-dessous.
+ */
+export const plageSchema = z.strictObject({ min: z.number(), max: z.number() });
+
+/**
  * COUVERTURE d'une suite de fourchettes `{min, max}` — invariant PARTAGÉ des tables que
  * `findTableEntry` (`src/engine/tables.ts`) lit : le domaine est couvert EXACTEMENT une fois, sans
  * trou ni chevauchement. Rend la liste des écarts (vide = conforme), à verser dans le refus NOMINATIF

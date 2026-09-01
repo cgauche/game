@@ -17,7 +17,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { difficultySchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 import { critEscalationSchema, amputationSchema } from './criticals';
@@ -28,9 +28,8 @@ export const file = 'aa-criticals.json';
 export const famille = 'config';
 
 const aaEntrySchema = z.strictObject({
+  ...plageSchema.shape,
   id: z.string(),
-  min: z.number(),
-  max: z.number(),
   label: z.string(),
   /** Colonne « Blessures » : Blessures supplémentaires perdues (0 = trivial « T », absent = létal). */
   blessures: z.number().optional(),

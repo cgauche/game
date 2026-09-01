@@ -7,12 +7,12 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { difficultySchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-navigation.json';
 export const famille = 'config';
 
-const tableRange = z.strictObject({ min: z.number(), max: z.number() });
+const tableRange = plageSchema;
 
 const champs = {
   workPeriodHours: z.strictObject({ voile: z.number(), avirons: z.number(), source: sourceRefSchema }),

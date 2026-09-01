@@ -5,6 +5,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { plageSchema } from '../grammaire/valeurs';
 
 export const file = 'mutationTables.json';
 export const famille = 'entite';
@@ -15,8 +16,7 @@ const doc = document(
   {
     ranges: z.array(
       z.strictObject({
-        min: z.number(),
-        max: z.number(),
+        ...plageSchema.shape,
         /** id d'une entrée de `mutations.json` (résolu par `rollMutation`/`BY_ID`). */
         mutation: z.string(),
       }),

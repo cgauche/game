@@ -10,7 +10,7 @@ import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/
 import type { StakeRef } from '../../index';
 import type { GameOp } from '../../../engine/ops';
 import type { Condition, EffectOp, Flow } from '../../../engine/flowCore';
-import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema, refTestDeCorruption } from './valeurs';
+import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption } from './valeurs';
 import { marque } from './slots';
 import { idDe, refOuSpec } from './ref';
 
@@ -400,8 +400,7 @@ export const shipCrewTestSchema = z.strictObject({
 /** `ShipCritEntry` (`src/data/shipCriticals.ts`) — entrée d100 de Critique de coque, partagée par
  *  `ship-criticals` (navale) et `river-criticals` (fluviale). */
 export const shipCritEntrySchema = z.strictObject({
-  min: z.number(),
-  max: z.number(),
+  ...plageSchema.shape,
   id: z.string(),
   label: z.string(),
   ops: z.array(gameOpSchema).optional(),

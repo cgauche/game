@@ -7,7 +7,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'localisation.json';
 // Les 3 familles de table sont des CLÉS FIXES du document, donc des CHAMPS : `config`, jamais un
@@ -26,10 +26,9 @@ const shipLocation = z.enum([
   'superstructure',
 ]);
 
-const bodyLocEntry = z.strictObject({ min: z.number(), max: z.number(), loc: hitLocation });
+const bodyLocEntry = z.strictObject({ ...plageSchema.shape, loc: hitLocation });
 const shipLocEntry = z.strictObject({
-  min: z.number(),
-  max: z.number(),
+  ...plageSchema.shape,
   avirons: shipLocation,
   voile: shipLocation,
   mixte: shipLocation,
