@@ -314,7 +314,7 @@ def read_book(book_id, pdf_path, pages, errors):
             schemas.append(
                 {
                     "book": book_id,
-                    "folio": folio,
+                    "page": folio,
                     "career": title,
                     "titresPage": [t[1] for t in titles],
                     "pdfpage": pdfpage,
@@ -359,10 +359,10 @@ def main():
         print(f"{b['id']} : {len(got)} schémas", file=sys.stderr)
         schemas.extend(got)
 
-    schemas.sort(key=lambda s: (s["book"], s["folio"], -s["y"]))
+    schemas.sort(key=lambda s: (s["book"], s["page"], -s["y"]))
     if args.probe:
         for s in schemas:
-            print(s["book"], s["folio"], s["career"], {k: [m["col"] for m in v] for k, v in s["lv"].items()})
+            print(s["book"], s["page"], s["career"], {k: [m["col"] for m in v] for k, v in s["lv"].items()})
         for e in errors:
             print("ANOMALIE:", e, file=sys.stderr)
         print(f"total {len(schemas)} schémas, {len(errors)} anomalies", file=sys.stderr)

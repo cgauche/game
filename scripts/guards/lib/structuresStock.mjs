@@ -567,7 +567,7 @@ export const STRUCTURES_FORMES = [
   { concept: "source", dataset: "creatures.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L1d #1469", date: "2026-08-23" }, // +2 : alsoIn posés par e89a836d3 (C1 #1457, folios ZI) sans leur ligne de stock — sillage relevé 2026-09-01
   { concept: "source", dataset: "domains.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 6, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "naval-traits.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { concept: "source", dataset: "progression-schemas.derived.json", champ: "schemas", signature: "book+…", statut: "divergente", strate: "Valeur", occurrences: 111, lot: "L1d #1469", date: "2026-08-23" },
+  { concept: "source", dataset: "progression-schemas.derived.json", champ: "schemas", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 111, lot: "L1d #1469", date: "2026-09-01" }, // le folio inventait son nom : la bande dit `page` comme toute réf de source (#1463 L-gram-4)
   { concept: "source", dataset: "qualities.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "skills.json", champ: "alsoIn", signature: "book,note,page+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "species.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" }, // +1 : idem e89a836d3 (species norses)
@@ -735,7 +735,6 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "miscast.ts", champ: "", concept: "test", signature: "characteristic,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "miscast.ts", champ: "times", concept: "", signature: "factor,of", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "oups.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "cible", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "progression-schemas-derived.ts", champ: "schemas", concept: "source", signature: "book+…", statut: "divergente", commun: "", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { def: "psychology.ts", champ: "test", concept: "test", signature: "difficulty,skill", statut: "historique", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "raceAppearance.ts", champ: "eyes", concept: "", signature: "D,G", statut: "hors lexique", commun: "entityAppearanceSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "raceAppearance.ts", champ: "parts", concept: "", signature: "cheveux,visage", statut: "hors lexique", commun: "entityAppearanceSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },

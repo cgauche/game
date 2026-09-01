@@ -76,7 +76,7 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
   calendarPhases:
     'découpage horaire d’app (7 phases Aube→Nuit : minute de départ + icône, moteur de lumière/vision) — le Calendrier Impérial RAW vit dans calendarMonths/calendarWeekdays (EDO Annexe 3, folio 149-150, 12/12 et 8/8 sourcés) ; aucune table de phases n’y est imprimée',
   'progression-schemas.derived':
-    'artefact GÉNÉRÉ par scripts/data/gen-progression-schemas.py — la provenance est PORTÉE PAR CHAQUE BANDE (book, folio imprimé, page PDF, ordonnée), relevée sur la page ; une source racine recopierait à la main ce que le générateur mesure',
+    'artefact GÉNÉRÉ par scripts/data/gen-progression-schemas.py — la provenance est PORTÉE PAR CHAQUE BANDE (book, page = folio imprimé, page PDF, ordonnée), relevée sur la page ; une source racine recopierait à la main ce que le générateur mesure',
 
   // (3) MIXTES — plusieurs provenances PAR CLÉ, aucune racine unique : leurs clés RAW sont citées à
   //     leur foyer (`defs/*.ts`) et la DONNÉE n'en porte aucune, donc rien n'est exigible ici.

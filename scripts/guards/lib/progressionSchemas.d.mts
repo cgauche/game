@@ -12,7 +12,7 @@ export interface ProgressionViolation {
   book: string;
   level: number;
   pdfpage: number;
-  folio: number;
+  page: number;
   motif: 'affectation-divergente' | 'niveau-absent-de-la-donnee';
   /** `characteristics` du niveau dans `careerLevels.json`, trié ; `null` si le niveau manque. */
   json: string[] | null;
@@ -23,7 +23,7 @@ export interface ProgressionViolation {
 
 export interface ProgressionAmbiguity {
   book: string;
-  folio: number;
+  page: number;
   pdfpage: number;
   y: number;
   titres: string[];
@@ -32,7 +32,7 @@ export interface ProgressionAmbiguity {
 
 export interface ProgressionOrphanBand {
   book: string;
-  folio: number;
+  page: number;
   pdfpage: number;
   y: number;
   titres: string[];

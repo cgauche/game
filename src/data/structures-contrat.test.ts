@@ -782,12 +782,17 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // colonne saisonnière passant par la fabrique `parSaison` (que `avail` compose aussi, sinon la
       // signature à quatre saisons du nœud neuf faisait ENTRER deux lignes — contrefactuel CF1/CF2 en
       // fin de fichier) ; `sea-cargo.ts › offerPrice` sort avec elle, en composant `plageOuverteSchema`.
-      // Cliquet DESCENDU 52 → 45 (#1654 geste A, 2026-09-01) : les 7 lignes `signature: entries` du
+      // Cliquet DESCENDU 52 → 51 (#1463 L-gram-4, 2026-09-01) : la dernière ligne du concept `source`
+      // sort — la bande de schéma de progression cessait de nommer `folio` ce que la grammaire appelle
+      // `page` (`sourceRefSchema`, `grammaire/valeurs.ts`), et le def compose désormais sa SHAPE. La
+      // correction est au GÉNÉRATEUR (`scripts/data/gen-progression-schemas.py`), l'artefact étant
+      // dérivé : `--check` le revalide à l'octet.
+      // Cliquet DESCENDU 51 → 44 (#1654 geste A, 2026-09-01) : les 7 lignes `signature: entries` du
       // stock sortent — la charge d'un document est POSÉE par la fabrique (`options.rangee`,
       // `META_CHARGE`), plus aucun def ne la retape. Les 4 sites `die,entries` d'`artillery-misfire`,
       // `incidents-monture`, `problemes-vehicule` et `structure-criticals` meurent du même geste : ils
       // étaient INVISIBLES à ce cliquet (appariement par signature exacte), ils le seraient restés.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 45],
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 44],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -935,7 +940,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 61 → 57 (#1552 lot 3) : le rôle `source` déclare son alternative `maison` et les 4
       // documents qui la portent sur TOUTES leurs entrées sortent du dénominateur (cf. le cliquet
       // `STRUCTURES_ENVELOPPE` ci-dessus).
-      'L1d #1469': 59 /* +2 : alsoIn creatures/species posés par e89a836d3 SANS leur ligne de stock (sillage C1 #1457) — le lot RE-GONFLE à titre de dérive relevée, à SOLDER par la vague L1d (#1469) */,
+      // … puis 59 → 58 (#1463 L-gram-4) : la redéclaration du def `progression-schemas-derived.ts`
+      // sort — il compose `sourceRefSchema.shape` et le générateur émet `page`.
+      'L1d #1469': 58 /* +2 : alsoIn creatures/species posés par e89a836d3 SANS leur ligne de stock (sillage C1 #1457) — le lot RE-GONFLE à titre de dérive relevée, à SOLDER par la vague L1d (#1469) */,
       // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
       // … puis 48 → 18 (commit 3c) : cette référence PLATE MEURT à SON TOUR — 30 lignes s'éteignent avec
