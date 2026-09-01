@@ -525,7 +525,7 @@ export function roofPans(
       }
     }
     for (const loop of loops)
-      faces.push({ poly: loop.map(toGP), material: { domain: 'roof', id: matId, part } });
+      faces.push({ poly: loop.map(toGP), material: { domain: 'roof', id: matId, part }, oriented: false }); // nappe OUVERTE
 
     // RANGS de tuiles : courbes de niveau du plan du pan, `courses` rangs par cran de montée, décalées
     // d'un demi-pas (jamais sur un sommet → intersections franches), clippées au(x) bord(s) du pan.
@@ -609,11 +609,11 @@ export function roofPans(
       const b2: GP = { x: b.x + ux * e, y: b.y + uy * e, h: b.h };
       const aO: GP = { x: a2.x + nx * e, y: a2.y + ny * e, h: a2.h + lift };
       const bO: GP = { x: b2.x + nx * e, y: b2.y + ny * e, h: b2.h + lift };
-      faces.push({ poly: [a2, b2, bO, aO], material: { domain: 'roof', id: matId, part: 'soffite' } });
+      faces.push({ poly: [a2, b2, bO, aO], material: { domain: 'roof', id: matId, part: 'soffite' }, oriented: false });
       if (eave.fasciaDrop > EPS) {
         const aF: GP = { x: aO.x, y: aO.y, h: aO.h - eave.fasciaDrop };
         const bF: GP = { x: bO.x, y: bO.y, h: bO.h - eave.fasciaDrop };
-        faces.push({ poly: [aO, bO, bF, aF], material: { domain: 'roof', id: matId, part: 'fascia' } });
+        faces.push({ poly: [aO, bO, bF, aF], material: { domain: 'roof', id: matId, part: 'fascia' }, oriented: false });
       }
     }
   }
@@ -1368,7 +1368,7 @@ function roofGeometry(scene: Scene): Viewed<RoofEl, ClearedSpace>[] {
             cells: end.inside,
             material: mass.material,
             label: body.label ?? body.style,
-            faces: [{ poly: end.poly, material: { domain: 'structure', id: appearance, part: 'face' }, side: closureSide }],
+            faces: [{ poly: end.poly, material: { domain: 'structure', id: appearance, part: 'face' }, side: closureSide, oriented: false }],
             lines: [],
             states: { visible: true, roofOccupied: false },
           },

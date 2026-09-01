@@ -10,20 +10,21 @@
  * elle passe par `canonEdge`/`setEdgeWall`.
  */
 import type { Scene, WallSeg } from './scene';
-import { canonEdge, setEdgeWall, type Edge4 } from './sceneEdit';
+import { canonEdge, setEdgeWall } from './sceneEdit';
+import type { CellSide } from './scene';
 
 /** Rectangle de cases d'un plan de fixture (mêmes champs qu'un `ArchitectureRect`). */
 export interface PlanRect { x: number; y: number; w: number; h: number }
 
 /** Arêtes BRUTES (côté N/E/S/O vu de la case) du POURTOUR de l'union de `rects` — jamais une arête
  *  interne entre deux rectangles adjacents : le pourtour d'une union en L est celui de la lettre. */
-export function perimeterEdges(rects: readonly PlanRect[]): { x: number; y: number; side: Edge4 }[] {
+export function perimeterEdges(rects: readonly PlanRect[]): { x: number; y: number; side: CellSide }[] {
   const cells = new Set<string>();
   for (const r of rects)
     for (let y = r.y; y < r.y + r.h; y++)
       for (let x = r.x; x < r.x + r.w; x++) cells.add(`${x},${y}`);
   const has = (x: number, y: number) => cells.has(`${x},${y}`);
-  const out: { x: number; y: number; side: Edge4 }[] = [];
+  const out: { x: number; y: number; side: CellSide }[] = [];
   for (const key of cells) {
     const [x, y] = key.split(',').map(Number);
     if (!has(x, y - 1)) out.push({ x, y, side: 'N' });

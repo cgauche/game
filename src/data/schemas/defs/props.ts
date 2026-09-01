@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import { cell2Schema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
+import { PROP_CYLINDER_SIDES } from '../../props.types';
 
 export const file = 'props.json';
 export const famille = 'entite';
@@ -22,7 +23,9 @@ export const propPrimitiveSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('box'), center: propPoint3Schema, size: propSize3Schema, material: z.string().min(1) }),
   z.strictObject({
     kind: z.literal('cylinder'), center: propPoint3Schema, radius: z.number().finite(), heightM: z.number().finite(),
-    sides: z.union([z.literal(8), z.literal(12), z.literal(16)]), material: z.string().min(1),
+    // CÔTÉS ADMIS : la même source que le type et le validateur de catalogue (`PROP_CYLINDER_SIDES`,
+    // `src/data/props.types.ts`) — une union recopiée ici dériverait de l'union TS au premier ajout.
+    sides: z.literal(PROP_CYLINDER_SIDES), material: z.string().min(1),
   }),
   z.strictObject({ kind: z.literal('prism'), center: propPoint3Schema, size: propSize3Schema, slope: z.enum(['x+', 'x-', 'y+', 'y-']), material: z.string().min(1) }),
 ]);

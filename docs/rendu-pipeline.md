@@ -28,8 +28,8 @@ rotation ou changement de projection ; la première personne n'hérite d'aucun c
 
 ## 1. Le pivot — `src/gameIso/builders/types.ts`
 
-`SceneEl` (`src/gameIso/builders/types.ts:233`) = `FloorEl` | `WallEl` | `RoofEl` | `PropEl` | `TokenEl` — union
-discriminée par `kind`. `PropEl` (`src/gameIso/builders/types.ts:199`) se subdivise elle-même en
+`SceneEl` (`src/gameIso/builders/types.ts:240`) = `FloorEl` | `WallEl` | `RoofEl` | `PropEl` | `TokenEl` — union
+discriminée par `kind`. `PropEl` (`src/gameIso/builders/types.ts:206`) se subdivise elle-même en
 `BillboardPropEl` | `VolumePropEl`.
 
 ### `GP` — un point en espace MONDE
@@ -60,7 +60,7 @@ même matériau ; la couleur est résolue au RENDU, depuis la donnée d'apparenc
 | `architectureFeatureId?` | `string` | — |
 | `architectureFeatureKind?` | `FacadeFeature['kind']` | — |
 | `side?` | `CellSide` | Arête de la case qui porte la face (relief/wedge/mur) — les backends en dérivent l'orientation (arête écran en affine, normale en perspective) sans re-scanner la scène. |
-| `oriented?` | `boolean` | Le SENS DE PARCOURS du polygone porte déjà le DEHORS du volume que la face ferme — c'est le producteur qui le déclare (`builders/propVolumes.ts` : chaque primitive sort tournée vers son dehors). |
+| `oriented` | `boolean` | REQUIS — chaque producteur DÉCLARE le régime de sa face, le compilateur refuse l'oubli. |
 | `entId?` | `string` | Id de l'ENTITÉ de scène dont la face vient (décor volumique, `builders/propVolumes.ts`) — ce que le picking résout une fois la face fondue dans la géométrie commune du monde. |
 
 ### `ElBase` — l'identité MONDE commune à tous les éléments
@@ -91,13 +91,13 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 
 | Builder | Sortie | Site | Rôle (JSDoc) |
 |---|---|---|---|
-| `buildFloors` | `FloorEl[]` | `src/gameIso/builders/floors.ts:311` | Éléments `floor` de la scène. |
+| `buildFloors` | `FloorEl[]` | `src/gameIso/builders/floors.ts:315` | Éléments `floor` de la scène. |
 | `buildHighlights` | `HighlightEl[]` | `src/gameIso/builders/highlights.ts:64` | — |
-| `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:159` | Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`. |
+| `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:46` | Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`. |
 | `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:125` | Éléments `prop` de la scène. |
 | `buildRoofs` | `RoofEl[]` | `src/gameIso/builders/roofs.ts:1387` | Éléments `roof` de la scène. |
 | `buildTokens` | `TokenEl[]` | `src/gameIso/builders/tokens.ts:80` | Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). |
-| `buildWalls` | `WallEl[]` | `src/gameIso/builders/walls.ts:630` | Éléments `wall` de la scène. |
+| `buildWalls` | `WallEl[]` | `src/gameIso/builders/walls.ts:631` | Éléments `wall` de la scène. |
 
 ## 3. L'arborescence de `src/gameIso/`
 

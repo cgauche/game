@@ -33,7 +33,10 @@ jobs:
         run: npm audit --audit-level=high
       # src/data/*.json sont la SOURCE app-owned (commitée) — plus de régénération build:data.
       - name: Dérive des registres générés
-        run: npm run gen && git diff --exit-code -- '*_registry.generated.ts'
+        # Glob sur TOUS les fichiers générés, pas les seuls `_registry` : `_ids.generated.ts`,
+        # `_registry-scenes.generated.ts` et `qualityId.generated.ts` en tombaient dehors, si bien
+        # qu'une recette ajoutée sans `npm run gen` périmait le registre en silence (#1680).
+        run: npm run gen && git diff --exit-code -- '*.generated.ts'
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test

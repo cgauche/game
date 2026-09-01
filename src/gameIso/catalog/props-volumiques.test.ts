@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { propSvg } from './decor';
 import { scenarioEntities } from '../../scenes/opera/furnished';
 import { findPropById, props } from '../../data';
-import { propFootOf, type PropPrimitive } from '../../data/props.types';
+import { aretesNonAppariees, propFootOf, REF_DECOR_DEFAUT, type PropPrimitive } from '../../data/props.types';
 import { decorFootGeometry } from '../../state/footprint';
 import { buildProps } from '../builders/props';
 import { buildPropVolumes } from '../builders/propVolumes';
@@ -13,6 +13,9 @@ import { estPropVolumique, type Face } from '../builders/types';
 import { bakeWorldGeometry, collectBillboards, wholeSceneBillboardEls } from '../backends/webgl/sceneMeshes';
 import { facePoly, fanTriangles, polyNormal, type Vec3 } from '../backends/webgl/worldTris';
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
+import { sceneEntitySchema } from '../../data/schemas/defs-scenes/scene';
+import { validateScene } from '../../state/validateScene';
+import { DIR4_ORDER, type Dir4 } from '../../state/dir8';
 
 /**
  * LE DÉCOR VOLUMIQUE — les refs de `props.json` dont le corps MONDE est leur recette, et dont le SVG
@@ -31,7 +34,7 @@ const sceneWith = (...entities: SceneEntity[]): Scene => ({ ...emptyScene(8, 8),
 const METRES_PAR_CASE = 2;
 
 /** Un décor authoré quelque part dans `src/scenes` : sa provenance, son id, sa ref et son cap. */
-interface DecorAuthore { source: string; id: string; ref?: string; facing?: string }
+interface DecorAuthore { source: string; id: string; kind?: string; ref?: string; facing?: string }
 
 /**
  * TOUTES les instances de décor AUTHORÉES : les documents `.json` de `src/scenes` (récursif, toute
@@ -217,24 +220,28 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
   });
 
   /**
-   * CAPS MESURÉS. Une empreinte CARRÉE tourne sans trou : la géométrie doit tenir dans ses bornes aux
-   * QUATRE caps cardinaux. Une empreinte RECTANGULAIRE n'est mesurée qu'aux caps N/S : à E/O la recette
-   * tourne (`rotatePropLocal`) mais l'empreinte NON (`propFootTiles` ignore `facing`) — le corps sort
-   * alors en travers de cases restées traversables. Ce TROU est le socle #1509 (« le corps tourné
-   * décide des cases »), pas ce lot ; le contrat de POPULATION ci-dessous tient la donnée hors de lui
-   * en attendant, et ces deux caps s'ouvriront ensemble le jour du socle.
+   * CAPS MESURÉS : les QUATRE cardinaux, pour TOUTE recette. Les diagonales n'ont pas à être mesurées —
+   * elles sont refusées À LA DONNÉE par le schéma de scène (`src/data/schemas/defs-scenes/scene.ts`,
+   * `superRefine` de `sceneEntitySchema` sur `PROPS_VOLUMIQUES`), et le chargement d'un projet en
+   * meurt (`parseProject`). Ce que la mesure suit, c'est l'empreinte TOURNÉE : à E/O la
+   * recette tourne (`rotatePropLocal`), donc ses bornes échangent leurs axes.
+   * L'empreinte SOLIDE, elle, ne tourne pas (`propFootTiles` ignore `facing`) — un meuble
+   * multi-case au cap E/O poserait son corps en travers de cases restées traversables. Ce TROU est le
+   * socle #1509 (« le corps tourné décide des cases »), pas ce lot ; le contrat de POPULATION ci-dessous
+   * tient la donnée hors de lui en attendant.
    */
-  const capsDe = (id: string): readonly ('N' | 'E' | 'S' | 'O')[] => {
-    const { w, h } = propFootOf(findPropById(id));
-    return w === h ? (['N', 'E', 'S', 'O'] as const) : (['N', 'S'] as const);
+  /** Demi-empreinte au cap : à E/O la recette a tourné d'un quart de tour, ses bornes aussi. */
+  const demiAuCap = (id: string, facing: 'N' | 'E' | 'S' | 'O') => {
+    const demi = demiEmpreinte(id);
+    return facing === 'E' || facing === 'O' ? { x: demi.y, y: demi.x } : demi;
   };
 
   it.each(IDS)('%s, cuit à chacun de ses caps, ne descend jamais sous le sol et reste dans son empreinte élargie', (id) => {
     // L'ANCRE monde du décor est le centre de son empreinte (`decorFootGeometry`), pas le coin NO :
     // pour une empreinte >1×1 elle tombe entre les cases, et c'est d'elle que la recette part.
     const { offX, offY } = decorFootGeometry(propFootOf(findPropById(id)));
-    const demi = demiEmpreinte(id);
-    for (const facing of capsDe(id)) {
+    for (const facing of DIR4_ORDER) {
+      const demi = demiAuCap(id, facing);
       const scene = sceneWith(propEntity({ id: 'e-1', ref: id, pos: { x: 3, y: 4 }, facing }));
       const el = buildProps(scene)[0] as { faces: { poly: { x: number; y: number; h: number }[] }[] };
       for (const face of el.faces)
@@ -259,6 +266,70 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
     expect(instances.length, 'aucune instance authorée trouvée : le scan des scènes ne joint plus rien').toBeGreaterThan(0);
     expect(instances.filter((e) => e.facing === 'E' || e.facing === 'O')
       .map((e) => `${e.source}/${e.id} (${e.ref}, cap ${e.facing})`)).toEqual([]);
+  });
+
+  /**
+   * POPULATION, second volet — le contrat POSITIF du cap CARDINAL (#1680 ligne 3) sur TOUTE la donnée
+   * authorée, y compris la seule scène écrite en TS (l'Opéra). Le schéma refuse déjà la diagonale au
+   * parse d'un projet ; ce contrat couvre ce que le parse ne voit pas : une scène TS n'est pas un
+   * document chargé. Contrairement au contrat ci-dessus, celui-ci NE TOMBE PAS avec #1509 — un décor
+   * volumique ne prendra jamais de cap diagonal.
+   */
+  it('aucune instance authorée d’un décor VOLUMIQUE ne porte un cap DIAGONAL', () => {
+    const volumiques = new Set(IDS);
+    const instances = entitesAuthorees().filter((e) => e.kind === 'prop' && volumiques.has(e.ref ?? REF_DECOR_DEFAUT));
+    expect(instances.length, 'aucune instance de décor volumique authorée : le scan ne joint plus rien').toBeGreaterThan(0);
+    expect(instances.filter((e) => e.facing && !DIR4_ORDER.includes(e.facing as Dir4))
+      .map((e) => `${e.source}/${e.id} (${e.ref ?? REF_DECOR_DEFAUT}, cap ${e.facing})`)).toEqual([]);
+  });
+});
+
+/**
+ * CAP CARDINAL — LA CHAÎNE ENTIÈRE, sur une seule donnée fautive (#1680 ligne 3). Un décor dont le
+ * TYPE porte une recette ne prend qu'un cap cardinal : sa recette tourne (`rotatePropLocal`) là où son
+ * empreinte solide ne tourne pas (#1509). Quatre verrous, du plus AMONT au dernier filet, et ce test
+ * les tient ENSEMBLE — la règle est celle du CATALOGUE (`refEstVolumique`), donc un BILLBOARD au même
+ * cap reste licite à chaque étage :
+ *   1. SCHÉMA (bloquant) : `sceneEntitySchema` refuse au parse, `parseProject` lève ;
+ *   2. VALIDATEUR (signalant) : `validateScene` nomme l'entité à l'éditeur — il n'interdit rien, il
+ *      montre (le panneau d'avertissements d'`Editor.tsx` est son seul consommateur) ;
+ *   3. ÉDITEUR : le sélecteur d'orientation n'offre pas la diagonale (`Inspector.tsx`, testé chez lui) ;
+ *   4. ÉMETTEUR : `buildProps` lève, invariant interne — si une donnée fautive arrivait quand même,
+ *      le monde ne se cuit pas en silence.
+ */
+describe('décor volumique — le cap DIAGONAL est refusé de bout en bout', () => {
+  const entiteBrute = (ref: string, facing: string) =>
+    ({ id: 'e-1', kind: 'prop', pos: { x: 2, y: 2 }, ref, facing });
+
+  it('1. SCHÉMA : le parse refuse un décor volumique en diagonale, et l’accepte au cardinal', () => {
+    expect(sceneEntitySchema.safeParse(entiteBrute('table-ronde-4-tabourets', 'NE')).success).toBe(false);
+    expect(sceneEntitySchema.safeParse(entiteBrute('table-ronde-4-tabourets', 'E')).success).toBe(true);
+    // Le message NOMME la recette et le cap — un refus muet n'apprendrait rien à l'auteur.
+    const echec = sceneEntitySchema.safeParse(entiteBrute('table-ronde-4-tabourets', 'NE'));
+    expect(echec.success ? [] : echec.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`)).toEqual([
+      "facing: décor volumique « table-ronde-4-tabourets » au cap NE — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)",
+    ]);
+    // Un BILLBOARD au même cap passe : la règle vient du catalogue, pas du `kind`.
+    expect(sceneEntitySchema.safeParse(entiteBrute('brasero', 'NE')).success).toBe(true);
+  });
+
+  it('2. VALIDATEUR : `validateScene` signale l’entité, sans rien interdire', () => {
+    const scene = sceneWith(propEntity({ id: 'e-1', ref: 'table-ronde-4-tabourets', pos: { x: 2, y: 2 }, facing: 'N' }));
+    const diagonale = { ...scene, entities: [{ ...scene.entities[0], facing: 'NE' as const }] };
+    expect(validateScene([diagonale]).filter((w) => w.level === 'error').map((w) => w.message)).toEqual([
+      "e-1 : décor volumique « table-ronde-4-tabourets » au cap NE — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)",
+    ]);
+    expect(validateScene([scene])).toEqual([]);
+  });
+
+  it('4. ÉMETTEUR : `buildProps` lève sur un volumique en diagonale, et cuit un billboard au même cap', () => {
+    const scene = sceneWith(propEntity({ id: 'e-1', ref: 'table-ronde-4-tabourets', pos: { x: 2, y: 2 }, facing: 'N' }));
+    const diagonale = { ...scene, entities: [{ ...scene.entities[0], facing: 'NE' as const }] };
+    expect(() => buildProps(diagonale)).toThrow(
+      "décor volumique « table-ronde-4-tabourets » (e-1) : cap NE — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)",
+    );
+    const billboard = sceneWith({ ...propEntity({ id: 'e-2', ref: 'brasero', pos: { x: 2, y: 2 }, facing: 'N' }), facing: 'NE' } as SceneEntity);
+    expect(() => buildProps(billboard)).not.toThrow();
   });
 });
 
@@ -294,6 +365,46 @@ describe('décor volumique — chaque face regarde le DEHORS, de la recette au m
       });
     });
     expect(àRebours, `${id} : faces tournées vers le DEDANS`).toEqual([]);
+  });
+
+  /**
+   * FERMETURE sur les FACES MONDE — indépendant de l'instrument « barycentre » du contrat ci-dessus :
+   * une coquille close porte chaque arête par exactement DEUX faces, parcourues en sens OPPOSÉS. C'est
+   * le même prédicat que le validateur de catalogue applique à la géométrie LOCALE
+   * (`validatePropCatalog` → `aretesNonAppariees`) ; ici il tombe sur ce que le builder a réellement
+   * produit, cap et ancre compris — la transformation rigide doit préserver la fermeture.
+   */
+  it.each(IDS)('%s : chaque primitive sort du builder en COQUILLE CLOSE (arêtes appariées à contre-sens)', (id) => {
+    const prop = findPropById(id)!;
+    const défauts: string[] = [];
+    prop.volume!.primitives.forEach((primitive, ip) => {
+      const faces = buildPropVolumes({ ...prop, volume: { primitives: [primitive] } }, { ancre: { x: 3, y: 4 }, facing: 'E', baseHeightM: 1.5 });
+      for (const { arete, sens, contreSens } of aretesNonAppariees(faces.map((f) => f.poly)))
+        défauts.push(`primitive ${ip} (${primitive.kind}, ${primitive.material}) : arête ${arete} — ${sens} dans le sens, ${contreSens} à contre-sens`);
+    });
+    expect(défauts, `${id} : arêtes non appariées`).toEqual([]);
+  });
+
+  /**
+   * ARÊTE DE COUTEAU du modelé de forme : `shadeFamily` (`backends/webgl/sceneMeshes.ts`) départage une
+   * normale par le plus grand de |nx| et |nz|, et une égalité exacte est indécidable — un fût y prend
+   * des tons de familles voisines sur des faces symétriques. C'est ce qui exclut `sides: 12` du type
+   * (`PropCylinderSides`) ; ce contrat le mesure sur la géométrie, jamais sur la valeur authorée.
+   */
+  it.each(IDS)('%s : aucune face latérale de cylindre ne tombe sur |nx| == |nz|', (id) => {
+    const prop = findPropById(id)!;
+    const surLArete: string[] = [];
+    prop.volume!.primitives.forEach((primitive, ip) => {
+      if (primitive.kind !== 'cylinder') return;
+      const faces = buildPropVolumes({ ...prop, volume: { primitives: [primitive] } }, { ancre: { x: 0, y: 0 }, facing: 'N', baseHeightM: 0 });
+      faces.forEach((face, k) => {
+        const n = polyNormal(facePoly(face, METRES_PAR_CASE))!;
+        if (Math.abs(n.y) > 1e-6) return; // dessus / dessous : pas une face latérale
+        if (Math.abs(Math.abs(n.x) - Math.abs(n.z)) < 1e-6)
+          surLArete.push(`primitive ${ip} (${primitive.sides} côtés) face ${k} : nx=${n.x.toFixed(4)} nz=${n.z.toFixed(4)}`);
+      });
+    });
+    expect(surLArete, `${id} : faces latérales sur l’arête de couteau`).toEqual([]);
   });
 
   it.each(IDS)('%s : la cuisson du monde ne RETOURNE aucune de ses faces', (id) => {

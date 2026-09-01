@@ -6,7 +6,7 @@ import { walkNeighbors, type Pt } from '../../state/path';
 import { sceneZoneTiles } from '../../state/zones';
 import { seatSlotsOf, seatIsOccupiable, type ResolvedSeatSlot } from '../../state/seating';
 import { findPropById } from '../../data';
-import { rotatePropLocal, type PropPrimitive } from '../../data/props.types';
+import { capVolumique, rotatePropLocal, type PropPrimitive } from '../../data/props.types';
 import { buildPropVolumes } from '../../gameIso/builders/propVolumes';
 import { chebyshev } from '../../engine/grid';
 
@@ -103,7 +103,7 @@ interface Boite { x0: number; x1: number; y0: number; y1: number; h0: number; h1
 /** Ancrage MONDE d'un meuble posé : sa case, son cap, le sol qu'il touche — ce que le builder déclare. */
 const ancrageDe = (ent: SceneEntity) => ({
   ancre: ent.pos,
-  facing: ent.facing ?? ('S' as const),
+  facing: capVolumique(ent.facing, ent.id),
   baseHeightM: heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0),
   entId: ent.id,
 });

@@ -5,7 +5,7 @@
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import type { Edge4 } from '../../src/state/sceneEdit';
+import type { CellSide } from '../../src/state/scene';
 
 export interface GridLocation {
   file: string;
@@ -88,7 +88,7 @@ export function wallCellPos(loc: GridLocation, x: number, y: number): SourcePos 
   return { file: loc.file, line: loc.lineOf(row), col: col + 1, char: charAt(loc, row, col) };
 }
 
-const EDGE_RC: Record<Edge4, (x: number, y: number) => [number, number]> = {
+const EDGE_RC: Record<CellSide, (x: number, y: number) => [number, number]> = {
   N: (x, y) => [2 * y, 2 * x + 1],
   S: (x, y) => [2 * (y + 1), 2 * x + 1],
   O: (x, y) => [2 * y + 1, 2 * x],
@@ -96,7 +96,7 @@ const EDGE_RC: Record<Edge4, (x: number, y: number) => [number, number]> = {
 };
 
 /** Position d'une ARÊTE (x,y,side) dans une grille `walled`. */
-export function wallEdgePos(loc: GridLocation, x: number, y: number, side: Edge4): SourcePos {
+export function wallEdgePos(loc: GridLocation, x: number, y: number, side: CellSide): SourcePos {
   const [row, col] = EDGE_RC[side](x, y);
   return { file: loc.file, line: loc.lineOf(row), col: col + 1, char: charAt(loc, row, col) };
 }

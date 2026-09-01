@@ -24,6 +24,7 @@ import { buildRoofs, ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildProps } from '../../builders/props';
 import { buildTokens } from '../../builders/tokens';
 import { teamRingDecor } from '../../builders/dynamicMarks';
+import { REF_DECOR_DEFAUT } from '../../../data/props.types';
 import { estPropVolumique, type CellSide, type Face, type PropEl, type RoofEl, type SceneEl, type TokenEl, type WallEl } from '../../builders/types';
 import { findPropById, findPropMaterialById } from '../../../data';
 import type { PropVertexRange } from './spriteRaycast';
@@ -365,8 +366,8 @@ export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
 function propVolumeSignature(scene: Scene): string {
   const parts: string[] = [];
   for (const ent of scene.entities) {
-    if (ent.kind !== 'prop' || !findPropById(ent.ref ?? 'tonneau')?.volume) continue;
-    parts.push(`${ent.id}|${ent.ref ?? 'tonneau'}|${ent.pos.x},${ent.pos.y}|${ent.z ?? 0}|${ent.facing ?? 'S'}`);
+    if (ent.kind !== 'prop' || !findPropById(ent.ref ?? REF_DECOR_DEFAUT)?.volume) continue;
+    parts.push(`${ent.id}|${ent.ref ?? REF_DECOR_DEFAUT}|${ent.pos.x},${ent.pos.y}|${ent.z ?? 0}|${ent.facing ?? 'S'}`);
   }
   return parts.join(';');
 }
@@ -378,7 +379,7 @@ function propRecipeDeps(scene: Scene): readonly unknown[] {
   const out: unknown[] = [];
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
-    const volume = findPropById(ent.ref ?? 'tonneau')?.volume;
+    const volume = findPropById(ent.ref ?? REF_DECOR_DEFAUT)?.volume;
     if (!volume) continue;
     out.push(volume);
     for (const primitive of volume.primitives) out.push(findPropMaterialById(primitive.material));
@@ -446,15 +447,17 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const spans: FaceSpan[] = [];
   const shades: number[] = [];
   const percables: number[] = [];
-  // ORIENTATION des triangles : le pivot n'a aucune convention de sens de parcours (une face peut être
-  // authorée dans un sens ou dans l'autre). Un rendu en `DoubleSide` s'en moque, mais la CARTE D'OMBRE
-  // non : le décalage de biais suit la normale, et une normale à l'envers pousse le receveur DANS son
-  // ombre (mesuré : scène entière retombée à la seule ambiante). Deux régimes :
-  //  - `g.oriented` (boîtes de mur, copies par joue) : le sens PORTE déjà le dehors du VOLUME — on le
-  //    propage tel quel. L'heuristique « vers l'extérieur de la carte » y retournait la joue intérieure
-  //    de chaque boîte (mesuré #1176 : siège 1216/2480 triangles de mur, arène 2756/5512, soit ~50 %) ;
-  //  - faces sans orientation propre (sols, toits, montants) : vers le HAUT si horizontale, vers
-  //    l'EXTÉRIEUR de la carte si verticale.
+  // ORIENTATION des triangles : un rendu en `DoubleSide` se moque du sens de parcours, mais la CARTE
+  // D'OMBRE non — le décalage de biais suit la normale, et une normale à l'envers pousse le receveur
+  // DANS son ombre (mesuré : scène entière retombée à la seule ambiante). Deux régimes, selon ce que la
+  // face DÉCLARE (`Face.oriented`, requis) :
+  //  - `g.oriented` : le sens PORTE déjà le dehors du VOLUME — on le propage tel quel. Producteurs :
+  //    les coquilles closes du DÉCOR VOLUMIQUE (`builders/propVolumes.ts`, le gros du stock) et les
+  //    boîtes de mur fabriquées ici même (`faceQuadsOriented`, copies par joue). L'heuristique
+  //    ci-dessous y retournait la joue intérieure de chaque boîte (mesuré #1176 : siège 1216/2480
+  //    triangles de mur, arène 2756/5512, soit ~50 %) et 1887/4020 triangles de décor (#1624) ;
+  //  - surfaces OUVERTES (sol, mur nu, toit, montant), qui déclarent `oriented: false` : vers le HAUT
+  //    si horizontale, vers l'EXTÉRIEUR de la carte si verticale.
   const cx = ((scene.dimensions.w - 1) / 2) * mpt;
   const cz = ((scene.dimensions.h - 1) / 2) * mpt;
   // PLAGES DE PICKING : les sommets ORIGINAUX d'un décor volumique, relevés AVANT toute indexation —

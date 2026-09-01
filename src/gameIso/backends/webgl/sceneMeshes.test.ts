@@ -853,7 +853,7 @@ describe('TEINTE de sommet — la variance par case est CUITE dans `color`', () 
 describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde', () => {
   /** Face nue de matériau `mat`, avec la pente de nappe `pitchM` (pans de toit) et son côté d'arête. */
   const wf = (mat: Face['material'], pitchM?: number, side?: WorldFace['side']): WorldFace => {
-    const face = { poly: [], material: mat } as Face;
+    const face: Face = { poly: [], material: mat, oriented: false };
     const cell = { x: 3, y: 4, z: 0 };
     return { face, cell, cellKey: '3,4,0', el: { kind: 'floor', cell, faces: [face] } as unknown as SceneEl, pitchM, side };
   };

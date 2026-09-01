@@ -3,13 +3,24 @@
  * Source de vérité de l'orientation ; projetée au rendu par `project()`
  * (src/gameIso/rig/facing.ts) en tenant compte de la rotation caméra (`camRot`).
  *
- * Distincte de `Facing` (4-dir, src/state/scene.ts), qui sert UNIQUEMENT à orienter la
- * porte/les ouvertures d'un bâtiment — pas l'orientation d'un personnage.
+ * `Dir4` (plus bas) est son sous-ensemble CARDINAL : le seul autre terme de CAP du projet.
  */
 export type Dir8 = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SO' | 'O' | 'NO';
 
 /** Les 8 caps en ordre HORAIRE, 45° par cran — SOURCE UNIQUE (arc de tir, rotation, rendu). */
 export const DIR8_ORDER: Dir8[] = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+
+/** CAP CARDINAL — le sous-ensemble de `Dir8` sans diagonale, et le SEUL terme du projet pour une
+ *  DIRECTION cardinale : cap d'un décor VOLUMIQUE, côté SORTANT d'un mur (`outwardSide`), pas vers une
+ *  case voisine (`CARD_NB`). L'ARÊTE d'une case — QUEL de ses quatre bords porte un mur, une porte, une
+ *  paroi de relief — est l'autre concept, et il a lui aussi UN terme : `CellSide` (`state/scene.ts`).
+ *  Même cardinal, frontière nette : on ne tourne pas vers une arête, on ne pose pas un mur sur un cap.
+ *  Un décor volumique ne prend pas d'autre cap : sa recette tourne (`rotatePropLocal`) là où son
+ *  empreinte solide ne tourne pas (#1509), et une diagonale poserait sa géométrie en travers de cases
+ *  restées traversables. */
+export type Dir4 = Extract<Dir8, 'N' | 'E' | 'S' | 'O'>;
+export const DIR4_ORDER: readonly Dir4[] = ['N', 'E', 'S', 'O'];
+export const estCardinal = (d: Dir8): d is Dir4 => (DIR4_ORDER as readonly Dir8[]).includes(d);
 
 /**
  * Tourne un cap de `steps` crans de 45° (HORAIRE si `steps > 0` = vers tribord/droite ; anti-horaire si

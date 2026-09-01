@@ -253,7 +253,9 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
       'eraseAt — gomme le meuble': (s) => eraseAt(s, { x: 2, y: 2 }),
       'placeEntity — pose un décor neuf sur l’abord de la place': (s) => placeEntity(s, 'prop', 'tonneau', { x: 2, y: 1 }).scene,
       'changePropRef — le nouveau type n’offre plus de place': (s) => changePropRef(s, 'table-1', 'tonneau'),
-      'editEntity — TOURNE le meuble': (s) => editEntity(s, 'table-1', { facing: 'SE' }),
+      // Cap CARDINAL : le seul qu'un décor VOLUMIQUE accepte (#1680 ligne 3). Le cas diagonal est
+      // sous contrat juste après cette table — il n'a rien à faire ici, où la règle est « 0 erreur ».
+      'editEntity — TOURNE le meuble': (s) => editEntity(s, 'table-1', { facing: 'E' }),
       'editEntity — MONTE le meuble d’un étage': (s) => editEntity(s, 'table-1', { z: 1 }),
       'editEntity — renomme le corps': (s) => editEntity(s, 'pnj-1', { label: 'Aubergiste' }),
       'editEntityCombat — cache le corps jusqu’au combat': (s) => editEntityCombat(s, 'pnj-1', { hiddenUntilCombat: true }),
@@ -273,5 +275,25 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
         expect(erreurs(geste(hostile()))).toEqual([]);
       });
     }
+
+    /**
+     * CAP D'UN DÉCOR VOLUMIQUE (#1680 ligne 3) — les deux versants du contrat neuf, sur le MÊME geste.
+     * `editEntity` est une porte de PATCH générique : elle n'a pas de canal de refus et ne juge pas le
+     * contenu. Ce qui refuse la diagonale, c'est (1) le SCHÉMA de scène au chargement
+     * (`schemas/defs-scenes/scene.ts`, `superRefine` sur les ids de props à recette) et (2) l'ÉDITEUR,
+     * dont le sélecteur d'orientation n'offre que les quatre cardinaux sur un ref volumique
+     * (`Inspector.tsx`) ; `validateScene` le NOMME, et `buildPropVolumes` le refuse au type. Ce test
+     * tient la chaîne : cardinal = document propre, diagonal = erreur nommée, jamais un silence.
+     */
+    it('editEntity — cap CARDINAL : document propre ; cap DIAGONAL : erreur NOMMÉE (le seam ne le tait pas)', () => {
+      expect(erreurs(editEntity(hostile(), 'table-1', { facing: 'E' }))).toEqual([]);
+      expect(erreurs(editEntity(hostile(), 'table-1', { facing: 'SE' }))).toEqual([
+        "table-1 : décor volumique « table-ronde-4-tabourets » au cap SE — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)",
+      ]);
+      // Un BILLBOARD au même cap reste licite : la règle est celle du catalogue, pas du `kind`.
+      const avecBillboard = hostile();
+      avecBillboard.entities = [...avecBillboard.entities, { id: 'brasero-1', kind: 'prop', pos: { x: 5, y: 5 }, ref: 'brasero' }];
+      expect(erreurs(editEntity(avecBillboard, 'brasero-1', { facing: 'SE' }))).toEqual([]);
+    });
   });
 });

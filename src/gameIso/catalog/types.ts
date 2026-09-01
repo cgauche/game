@@ -1,7 +1,6 @@
 import type { Dims } from '../../geometry/iso';
-import type { Facing } from '../../state/scene';
 import type { FacadeFeature } from '../../state/scene';
-import type { Dir8 } from '../../state/dir8';
+import type { Dir4, Dir8 } from '../../state/dir8';
 import type { ViewArt } from '../rig/viewArt';
 
 export type ParamField =
@@ -12,7 +11,7 @@ export type ParamField =
 export interface RenderCtx {
   dims: Dims;
   /** Orientation du bâtiment (place la porte visible côté façade) — modèle 4 directions. */
-  facing?: Facing;
+  facing?: Dir4;
   /** Orientation MONDE d'une entité/prop (Dir8, même repère que le rig). La MACHINERIE (`propSvg`) la
    *  projette dans le repère caméra via `project(dir, dims.rot)` pour sélectionner la vue d'un prop
    *  DIRECTIONNEL (`PropViz.views`) → il PIVOTE avec la caméra ; une def ne projette JAMAIS elle-même. */

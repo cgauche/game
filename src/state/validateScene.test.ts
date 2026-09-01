@@ -25,6 +25,27 @@ describe('validateScene', () => {
     expect(w.some((x) => x.scope === 'entity' && x.refId === 'e-0' && /dialogue inexistant/.test(x.message))).toBe(true);
   });
 
+  /**
+   * CAP CARDINAL d'un décor VOLUMIQUE (#1680 ligne 3) : sa recette tourne là où son empreinte solide ne
+   * tourne pas (#1509). L'émetteur (`gameIso/builders/props.ts`) lève sur une diagonale — c'est ici que
+   * l'auteur l'apprend, AVANT le rendu. La règle est celle du CATALOGUE (`refEstVolumique`) : le même
+   * cap sur un décor billboard reste licite.
+   */
+  it('décor VOLUMIQUE au cap diagonal → erreur nominative ; un billboard au même cap passe', () => {
+    const s = base();
+    s.entities.push({ id: 'table', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'table-ronde-4-tabourets', facing: 'NE' });
+    const w = validateScene([s]).filter((x) => x.scope === 'entity' && x.refId === 'table' && x.level === 'error');
+    expect(msgs(w)).toEqual(['table : décor volumique « table-ronde-4-tabourets » au cap NE — un décor volumique ne prend qu\'un cap cardinal (N/E/S/O)']);
+
+    const cardinal = base();
+    cardinal.entities.push({ id: 'table', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'table-ronde-4-tabourets', facing: 'E' });
+    expect(validateScene([cardinal])).toEqual([]);
+
+    const billboard = base();
+    billboard.entities.push({ id: 'brasero-1', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'brasero', facing: 'NE' });
+    expect(validateScene([billboard])).toEqual([]);
+  });
+
   it('entité sur un étage inexistant → avertissement', () => {
     const s = base(); // un seul niveau z=0
     s.entities.push({ id: 'e-z', kind: 'personnage', pos: { x: 1, y: 1 }, z: 2 });

@@ -421,7 +421,7 @@ export function faceQuadsOriented(face: Face, mpt: number, depthM?: number): { q
   // ne les précède.
   if (poly.length === 2)
     return { quads: crossQuadPolys(poly[0], poly[1], depthM ?? SANS_VOLUME), oriented: false };
-  const porté = face.oriented === true;
+  const porté = face.oriented;
   const n = polyNormal(poly);
   if (!n || Math.abs(n.y) > 1e-6) return { quads: [poly], oriented: porté }; // seul un plan VERTICAL a une épaisseur d'arête
   const t = depthM ?? SANS_VOLUME;

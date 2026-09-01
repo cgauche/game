@@ -2,7 +2,8 @@ import { heightAt, type Scene, type Effect } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, carriedFlows, EMPTY_FLOW } from './flow';
-import { stakeSpeaks } from '../data';
+import { refEstVolumique, stakeSpeaks, REF_DECOR_DEFAUT } from '../data';
+import { capDecorAdmis } from '../data/props.types';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
 // ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
 // canonique préserve l'ordre d'évaluation (un import direct de `combatEffects` ici casse la
@@ -130,6 +131,11 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (e.dialogueId && !dlgIds.has(e.dialogueId)) add('error', 'entity', e.id, `${e.label ?? e.id} → dialogue inexistant « ${e.dialogueId} »`);
       if (!within(e.pos.x, e.pos.y)) add('warn', 'entity', e.id, `${e.label ?? e.id} hors carte (${e.pos.x},${e.pos.y})`);
       if (e.z && !layerZs.has(e.z)) add('warn', 'entity', e.id, `${e.label ?? e.id} sur étage ${e.z} inexistant`);
+      // Un décor VOLUMIQUE ne prend qu'un cap CARDINAL : sa recette tourne là où son empreinte solide ne
+      // tourne pas (#1509), une diagonale poserait son corps en travers de cases restées traversables.
+      // L'émetteur unique (`gameIso/builders/props.ts`) le refuse en dur — c'est ici que l'auteur l'apprend.
+      if (e.kind === 'prop' && !capDecorAdmis(refEstVolumique(e.ref), e.facing))
+        add('error', 'entity', e.id, `${e.label ?? e.id} : décor volumique « ${e.ref ?? REF_DECOR_DEFAUT} » au cap ${e.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`);
       if (e.statblock?.char)
         for (const k of Object.keys(e.statblock.char))
           if (!VALID_STATBLOCK_CHAR_KEYS.has(k)) add('error', 'entity', e.id, `${e.label ?? e.id} : statblock.char porte une clé étrangère « ${k} » (format canonique = CharKey slug plein, cf. #311)`);

@@ -163,6 +163,7 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
           poly: [{ ...c, h: topH }, { ...c, h: lowerH }],
           side,
           material: { domain: 'relief', id: 'pilier', part: 'pilier' },
+          oriented: false, // MONTANT : deux points, aucun dehors à porter
         });
       }
     }
@@ -195,6 +196,7 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
       // matériau `pierre` porte sa propre recette d'assises → paroi maçonnée, pas un cube de terre) /
       // terre (talus/fosse de la base).
       material: { domain: 'relief', id: deck || z > 0 || solidBlock ? 'pierre' : 'terre', part: deck ? 'deck' : grade },
+      oriented: false, // paroi OUVERTE : le relief ne ferme aucun volume
     });
   }
 
@@ -211,6 +213,7 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
         { x: x - 0.5, y: y + 0.5, h: self },
       ],
       material: { domain: 'terrain', id: terrain },
+      oriented: false,
     });
 
   // WEDGES de raccord de terrain : trapèze sur l'arête faisant face à chaque voisin de plus haute
@@ -222,6 +225,7 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
       poly: [{ ...A, h: self }, { ...B, h: self }, in40(B), in40(A)],
       side: dir,
       material: { domain: 'terrain', id: nt, part: 'wedge' },
+      oriented: false,
     });
   }
   return faces;

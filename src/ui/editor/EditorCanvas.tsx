@@ -26,7 +26,7 @@ import { effectiveLowerLayerMode, gabaritTint, layerHidden, type LowerLayerMode 
 import { projectedRangeAxes } from './lampMarker';
 import { gridLines } from '../../geometry/grid';
 import {
-  Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, selZ, moveSel, resizeSel, paintTiles, fillTerrainRect,
+  Tool, Layers, Sel, Rect, Pt, CellSide, rectFrom, hitAt, selRect, selZ, moveSel, resizeSel, paintTiles, fillTerrainRect,
   placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, EFFECT_ZONE_SEEDS, addEnemyMember, eraseAt, entityAt, sameSel,
   toggleEdgeWall, toggleDiagonalWall, paintHeight, paintCrenellated, paintEffectZone, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
 } from './editorState';
@@ -338,7 +338,7 @@ export function EditorCanvas({
   }
 
   /** Point écran → case + ARÊTE la plus proche (outil murs) : offset fractionnaire au centre → nearestEdge. */
-  function wallHit(ev: React.PointerEvent): { p: Pt; side: Edge4 } {
+  function wallHit(ev: React.PointerEvent): { p: Pt; side: CellSide } {
     const { x, y } = localXY(ev);
     const f = screenToTileF(x, y, dims, currentLayer);
     const px = Math.round(f.x), py = Math.round(f.y);

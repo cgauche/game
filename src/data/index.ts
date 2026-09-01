@@ -2634,10 +2634,16 @@ export const DEFAULT_LIGHT_TONE_ID = 'flamme';
 /** Contrats NEUTRES du décor (type de prop, recette volumique, matériaux, places assises) — définis
  *  hors du chargeur pour rester importables par `src/state` et `src/gameIso` (cf. `props.types.ts`). */
 export type { PropData, PropMaterialData, PropMaterialId, PropPoint3, PropSize3, PropPrimitive, PropVolumeRecipe, PropSeatSlot } from './props.types';
-export { validatePropCatalog, propFootOf } from './props.types';
+export { validatePropCatalog, propFootOf, REF_DECOR_DEFAUT } from './props.types';
+import { REF_DECOR_DEFAUT } from './props.types';
 export const props = propsJson as PropData[];
 export const PROP_BY_ID = new Map(props.map((p) => [p.id, p]));
 export const findPropById = (id: string): PropData | undefined => PROP_BY_ID.get(id);
+/** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? RÈGLE UNIQUE, propriété
+ *  du CATALOGUE : l'émetteur de décor (`gameIso/builders/props.ts`) comme le validateur de scène
+ *  (`state/validateScene.ts`) la lisent ici — aucun site ne la redevine. `ref` absente = le défaut du
+ *  monde (`REF_DECOR_DEFAUT`), la même normalisation que le rendu. */
+export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref ?? REF_DECOR_DEFAUT)?.volume;
 /** Matériaux de rendu des recettes volumiques de décor. Lookup LIVE (le catalogue se mute en place au
  *  Codex/surcharges de campagne, cf. `findLightToneById`) — quatre entrées, le balayage ne coûte rien. */
 export const propMaterials = propMaterialsJson as PropMaterialData[];

@@ -19,6 +19,7 @@ import { useStagePointer, type StagePointer } from './useStagePointer';
 import { setSpritePicker } from './spritePicker';
 import { buildPropVolumes } from '../builders/propVolumes';
 import { findPropById } from '../../data';
+import { capVolumique } from '../../data/props.types';
 import type { SceneEntity } from '../../state/scene';
 
 /**
@@ -302,7 +303,7 @@ describe('meuble HAUT — le rayon décide, la case dessinée n’est qu’un re
     const prop = findPropById(ent.ref ?? '')!;
     const faces = buildPropVolumes(prop, {
       ancre: ent.pos,
-      facing: ent.facing ?? 'S',
+      facing: capVolumique(ent.facing, ent.id),
       baseHeightM: heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0),
       entId: ent.id,
     });
