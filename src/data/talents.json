@@ -4645,7 +4645,12 @@
       },
       {
         "id": "equipage",
-        "label": "Équipage"
+        "label": "Équipage",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 64,
+          "note": "MDG 09 l.95"
+        }
       },
       {
         "id": "erudits",
@@ -4653,7 +4658,12 @@
       },
       {
         "id": "fideles",
-        "label": "Fidèles"
+        "label": "Fidèles",
+        "source": {
+          "book": "livre-de-base",
+          "page": 73,
+          "note": "LDB 08 l.1295"
+        }
       },
       {
         "id": "guildes",
@@ -4697,6 +4707,36 @@
           "page": 32,
           "note": "ADE I 02 l.276"
         }
+      },
+      {
+        "id": "marins",
+        "label": "Marins",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 151,
+          "note": "MDG 16 l.360"
+        },
+        "pool": false
+      },
+      {
+        "id": "pirates",
+        "label": "Pirates",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 151,
+          "note": "MDG 16 l.360"
+        },
+        "pool": false
+      },
+      {
+        "id": "nains",
+        "label": "Nains",
+        "source": {
+          "book": "zoo-imperial",
+          "page": 35,
+          "note": "ZI 04 l.44"
+        },
+        "pool": false
       }
     ],
     "rand": null,

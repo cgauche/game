@@ -290,6 +290,94 @@ describe('L2 #1548 — `refOuSpec` refuse la sentinelle AU PARSE (`ref.ts#SENTIN
 });
 
 /**
+ * SENS MANQUANT du critère #1342 L3 (#1457 B2) — le premier `it` de ce fichier ne garde qu'un sens
+ * (`pool: false ⇒ source`) : rien n'exigeait qu'une entrée statbloc-only SOIT mise hors pool. Elle
+ * restait donc PROPOSÉE d'office par le créateur/l'avancement (`LDB 09 l.40`, `specPoolOf`), et le
+ * geste de la migration `2026-08-23-specs-statbloc-hors-pool.mjs` n'était rejouable que par sa TABLE
+ * — mesure du 2026-09-01 : `skills.json` porte 32 entrées hors pool, `talents.json` en portait 0.
+ *
+ * CONTRAT POSITIF, sur les DEUX catalogues (Compétences ET Talents) : une entrée de `specs[]` qui
+ *  1. porte une `source` — donc n'appartient PAS au pool imprimé de base (cf. premier `it` : hors
+ *     pool ⇒ attestée ailleurs ; contraposée : une entrée NUE ne peut pas être mise hors pool), et
+ *  2. n'est employée, sur les DEUX racines authorées, que par `src/data/creatures.json`,
+ * porte `pool: false`. Même mesure que la migration statbloc-hors-pool (critères « employée par un
+ * statbloc » / « citée par aucune ligne joueur »), élargie des 3 listes joueur de la migration à
+ * TOUS les datasets — donc plus prudente : un consommateur hors `creatures.json`, quel qu'il soit,
+ * suffit à laisser l'entrée au pool.
+ *
+ * ANGLES MORTS ÉNONCÉS :
+ *  - le critère RAW de la migration (« libellé ÉNUMÉRÉ par la liste imprimée du LDB ») n'est PAS
+ *    remesuré ici : ce fichier ne lit aucun `Source/` (cf. borne en tête). Le filtre `source` le
+ *    couvre en pratique — aucune des entrées attestées ne cite le pool imprimé de base — mais une
+ *    entrée sourcée qu'une liste imprimée énumérerait serait réclamée hors pool à tort ;
+ *  - « statbloc » est lu comme « le fichier `creatures.json` » : un statbloc inline d'un projet de
+ *    `src/scenes` compte comme un consommateur ORDINAIRE, donc laisse l'entrée au pool ;
+ *  - la clé de def se lit sur `skillId`/`talentId`/`skill`/`id` du nœud porteur, comme partout dans
+ *    ce fichier : une réf portée par un champ d'un autre nom échappe à la mesure.
+ */
+describe('#1457 B2 — une spec ATTESTÉE dont le seul consommateur est un statbloc est HORS POOL', () => {
+  const FICHIER_STATBLOCS = 'data/creatures.json';
+
+  /** `defId|specId` → fichiers qui l'emploient (`data/x.json`, `scenes/y.json`). */
+  const consommateurs = new Map<string, Set<string>>();
+  for (const [racine, dir] of RACINES) {
+    for (const abs of fichiersDeDonnees(dir)) {
+      const ou = `${racine}${abs.slice(dir.length).replace(/\\/g, '/')}`;
+      let data: unknown;
+      try { data = JSON.parse(readFileSync(abs, 'utf8')); } catch { continue; }
+      const walk = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(walk); return; }
+        if (!node || typeof node !== 'object') return;
+        const n = node as Record<string, unknown>;
+        const defId = (n.skillId ?? n.talentId ?? n.skill ?? n.id) as string | undefined;
+        if (typeof defId === 'string' && typeof n.spec === 'string' && DEF_BY_ID.has(defId)) {
+          const cle = `${defId}|${n.spec}`;
+          if (!consommateurs.has(cle)) consommateurs.set(cle, new Set());
+          consommateurs.get(cle)!.add(ou);
+        }
+        for (const v of Object.values(n)) walk(v);
+      };
+      walk(data);
+    }
+  }
+
+  const statblocSeul = (defId: string, specId: string): boolean => {
+    const ou = consommateurs.get(`${defId}|${specId}`);
+    return !!ou && ou.size === 1 && ou.has(FICHIER_STATBLOCS);
+  };
+
+  it('la mesure ATTEINT bien les statblocs (sinon le contrat est vide et toujours vert)', () => {
+    const vues = [...consommateurs.values()].filter((ou) => ou.has(FICHIER_STATBLOCS));
+    expect(vues.length).toBeGreaterThan(50);
+  });
+
+  it('les DEUX catalogues sont dans le périmètre (Compétences ET Talents)', () => {
+    const horsPool = DEFS.filter((d) => (d.specs ?? []).some((e) => e.pool === false)).map((d) => d.id);
+    expect(horsPool.some((id) => EST_COMPETENCE.has(id)), 'aucune Compétence hors pool').toBe(true);
+    expect(horsPool.some((id) => !EST_COMPETENCE.has(id)), 'aucun Talent hors pool').toBe(true);
+  });
+
+  it('toute spec ATTESTÉE employée par les SEULS statblocs porte `pool: false`', () => {
+    const manquants: string[] = [];
+    for (const def of DEFS) {
+      for (const e of def.specs ?? []) {
+        if (!e.source || e.pool === false) continue;
+        if (statblocSeul(def.id, specEntryId(e))) {
+          manquants.push(
+            `${def.id}/${specEntryId(e)} (${e.source.book} ${e.source.page ?? '?'}) : ${FICHIER_STATBLOCS} est son SEUL consommateur`,
+          );
+        }
+      }
+    }
+    expect(
+      manquants,
+      'spéc(s) attestées que seul un statbloc emploie et que le pool PROPOSE quand même — poser ' +
+        `\`pool: false\` (par la migration qui les a créées, jamais à la main) :\n${manquants.join('\n')}`,
+    ).toEqual([]);
+  });
+});
+
+/**
  * INVARIANT `estSpecialisable ⟹ specPoolOf ≠ []` — une Compétence dont le catalogue est NON VIDE doit
  * proposer au moins une spéc `pool` : sinon le tirage d'une spéc n'a aucun candidat et le `throw` de
  * `designateSpec` (`src/state/spawn.ts`) devient atteignable en partie.

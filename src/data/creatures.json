@@ -51285,7 +51285,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Nains"
+        "spec": "nains"
       },
       {
         "id": "sens-aiguise",
@@ -57686,11 +57686,11 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Noble"
+        "spec": "nobles"
       },
       {
         "id": "savoir-vivre",
-        "spec": "Soldat"
+        "spec": "soldats"
       },
       {
         "id": "suborneur"
@@ -57808,7 +57808,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Guilde"
+        "spec": "guildes"
       },
       {
         "id": "studieux"
@@ -59696,15 +59696,15 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Serviteur"
+        "spec": "serviteurs"
       },
       {
         "id": "savoir-vivre",
-        "spec": "Guilde"
+        "spec": "guildes"
       },
       {
         "id": "savoir-vivre",
-        "spec": "Noble"
+        "spec": "nobles"
       },
       {
         "id": "sociable"
@@ -62418,7 +62418,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Marins"
+        "spec": "marins"
       },
       {
         "id": "savoir-vivre",
@@ -62426,7 +62426,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Pirates"
+        "spec": "pirates"
       },
       {
         "id": "seigneur-de-guerre"

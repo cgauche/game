@@ -827,10 +827,10 @@ describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock no
   const dette = hors.filter((h) => h.catalogue);
   const textesDInstance = hors.filter((h) => !h.catalogue);
 
-  /** STOCK NOMINATIF DÉCROISSANT — mesure du 2026-09-01 : 82 spécs de Talent à créer au catalogue,
-   *  clé `fichier|porteur|talentId|spec`. Par Talent : savoir-vivre 39, bon-marcheur 22, sans-peur 10,
-   *  savant 5, haine 2, travailleur-qualifie 2, maitre-artisan 2 ; par livre : frenchy-bzh 73,
-   *  middenheim 6, mer-des-griffes 2, zoo-imperial 1. Une clé se RETIRE quand sa spéc résout.
+  /** STOCK NOMINATIF DÉCROISSANT — mesure du 2026-09-01 (après B2) : 73 spécs de Talent à créer au
+   *  catalogue, clé `fichier|porteur|talentId|spec`. Par Talent : savoir-vivre 30, bon-marcheur 22,
+   *  sans-peur 10, savant 5, haine 2, travailleur-qualifie 2, maitre-artisan 2 ; par livre :
+   *  frenchy-bzh 73 — les livres OFFICIELS y sont à ZÉRO. Une clé se RETIRE quand sa spéc résout.
    *
    *  ANGLE MORT ÉNONCÉ (mesure du 2026-09-01, #1646) — le contrat ne walke que les TABLEAUX
    *  `talents[]` de `creatures`/`careerLevels`/`species` (`walkSkillRefs`), seuls fichiers qui en
@@ -842,9 +842,6 @@ describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock no
    *  `savoir-vivre|suivants-de-khorne` ; un de la classe du texte d'instance (Talent SANS catalogue,
    *  #1621) : `mutations.json:1619` `attirant|Mutants et hommes-bêtes`. */
   const SPECS_DE_TALENT_A_CREER = new Set<string>([
-    'creatures|andrea-bruhn|savoir-vivre|Guilde',
-    'creatures|andrea-bruhn|savoir-vivre|Noble',
-    'creatures|andrea-bruhn|savoir-vivre|Serviteur',
     'creatures|araignee-geante-adulte|bon-marcheur|Forêt',
     'creatures|araignee-geante-impitoyable|bon-marcheur|Forêt',
     'creatures|architechnomage|savant|Engingneurie',
@@ -874,14 +871,11 @@ describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock no
     'creatures|haut-druide-de-la-foi-antique|savoir-vivre|Religieux',
     'creatures|haut-juge|savoir-vivre|Lettrés',
     'creatures|haut-pretre-rodeur-de-taal|bon-marcheur|ForêtouPlaine',
-    'creatures|jaego-roth|savoir-vivre|Marins',
-    'creatures|jaego-roth|savoir-vivre|Pirates',
     'creatures|jeune-araignee-geante|bon-marcheur|Forêt',
     'creatures|jeune-loup|bon-marcheur|Forêt',
     'creatures|jeune-sanglier|bon-marcheur|Forêt',
     'creatures|juge|savoir-vivre|Lettrés',
     'creatures|kapo|savoir-vivre|Skavens',
-    'creatures|l-abominable-halagrundsor|savoir-vivre|Nains',
     'creatures|loup-adulte|bon-marcheur|Forêt',
     'creatures|maistre-apothicaire|savoir-vivre|Lettrés',
     'creatures|maistre-herboriste|bon-marcheur|Forêt',
@@ -893,8 +887,6 @@ describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock no
     'creatures|moine-d-ulric|savoir-vivre|Cultes',
     'creatures|moine-de-sigmar|savoir-vivre|Cultes',
     'creatures|moine-de-taal|savoir-vivre|Religieux',
-    'creatures|moritz-valgeir|savoir-vivre|Noble',
-    'creatures|moritz-valgeir|savoir-vivre|Soldat',
     'creatures|officier|savoir-vivre|Militaires',
     'creatures|pretre-d-ulric|haine|Ennemis d’Ulric',
     'creatures|pretre-d-ulric|savoir-vivre|Cultes',
@@ -918,7 +910,6 @@ describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock no
     'creatures|sergent-du-guet|savoir-vivre|Armée',
     'creatures|sergent-patrouilleurs-ruraux|savoir-vivre|Militaires',
     'creatures|sous-officier|savoir-vivre|Militaires',
-    'creatures|stefan-hochen|savoir-vivre|Guilde',
     'creatures|technomage-experimente|travailleur-qualifie|Engingneurie',
     'creatures|traqueur-impitoyable|bon-marcheur|Forêt',
     'creatures|traqueur-impitoyable|sans-peur|Bêtes Sauvages',

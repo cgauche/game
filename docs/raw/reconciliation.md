@@ -35,8 +35,8 @@ _Aucune._
 ## A1-AUTRES — Chapitres appelés par le CODE (autres livres), ABSENTS de l'Atlas (trous durs)
 
 ### ADE I 2 — 2 réf(s) code, 0 dans l'Atlas
-- `src/data/talents.json:3156` (l.267) — "note": "ADE I 02 l.267"
-- `src/data/talents.json:4700` (l.276) — "note": "ADE I 02 l.276"
+- `src/data/talents.json:3154` (l.267) — "note": "ADE I 02 l.267"
+- `src/data/talents.json:4708` (l.276) — "note": "ADE I 02 l.276"
 
 ### EDO 10 — 1 réf(s) code, 0 dans l'Atlas
 - `src/data/skills.json:1878` (l.736) — "note": "EDO 10 l.736"

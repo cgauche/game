@@ -31,3 +31,12 @@ exactement ce que le classement-par-nom exclut.
 - Lien : [[feedback-attribution-rouge-suite-sonde-arbre-committe]] (l'attribution d'un rouge exige
   l'état committé — même racine : l'arbre ment dans les deux sens),
   [[game-stage-chirurgical-hunk-arbre-partage]].
+
+**4e occurrence (2026-09-01, C1 #1457, e89a836d3) — classe VOISINE, pas un oubli de staging :** le lot a
+posé le PREMIER `alsoIn` de `species.json` = une nouvelle SIGNATURE D'ENVELOPPE pour ce dataset ; la
+famille structures (`structures-contrat`, `no-json-fields`, liste de champs `AlsoInField` de CodexEdit)
+exigeait une ligne de stock L1d + `'races'` au picker. Mon juge (lentille RAW/données) et mes gates
+(vitest de DOMAINE) ne couvraient pas cette famille → HEAD rouge pour tous pendant mon redémarrage,
+soldé par la voisine (d53d75b15). **Règle :** un champ NEUF sur un dataset (même une valeur juste) est
+un changement de FORME → jouer la famille structures avant commit, ou la suite COMPLÈTE (c'est
+précisément ce qu'elle attrape et que les sous-ensembles « de domaine » ne voient jamais).
