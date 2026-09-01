@@ -55,7 +55,7 @@ function zonesOf(it: ItemInstance): string[] {
  *  via `qualityRefLabel`). */
 function weaponQualities(it: ItemInstance): string {
   return resolveQualities(it)
-    .map((r) => qualityRefLabel({ id: r.id, value: r.indice }))
+    .map((r) => qualityRefLabel({ id: r.id, spec: r.spec, value: r.indice }))
     .filter(Boolean)
     .join(', ');
 }

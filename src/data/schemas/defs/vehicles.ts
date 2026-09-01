@@ -8,11 +8,16 @@
 import { z } from 'zod';
 import { availabilitySchema, cell2Schema, moneySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
+import { ref } from '../grammaire/ref';
 
 export const file = 'vehicles.json';
 export const famille = 'entite';
 
-const navalTraitRefSchema = z.strictObject({ id: z.string(), value: z.number().optional() });
+/** `NavalTraitRef` (`src/data/index.ts`) — Trait INTÉGRÉ à la construction du type de navire
+ *  (MDG 12), + Indice éventuel. Le foyer des ids est `naval-traits.json`, JAMAIS `traits.json` :
+ *  les 19 références de `ship.traits` y résolvent toutes, aucune n'existe au bestiaire (mesuré
+ *  2026-09-01) — composer `traitInstanceSchema` ouvrirait les Traits de créature aux navires. */
+const navalTraitRefSchema = ref('navalTrait', { value: z.number().optional() });
 
 const deckPosteSlotSchema = z.strictObject({
   pos: cell2Schema,
@@ -62,7 +67,6 @@ const doc = document(
       bodyShape: z.literal('vehicule'),
       propulsion: z.enum(['terrestre', 'fluvial', 'maritime']),
       rig: z.enum(['avirons', 'voile', 'mixte']).optional(),
-      traits: z.array(z.strictObject({ id: z.string(), value: z.number().optional(), arg: z.string().optional() })).optional(),
       /** Table de Localisation des coups (`shipHitLocation`, `src/engine/combat.ts`) — vocabulaire
        *  FERMÉ : une coquille d'authoring résoudrait sinon la coque fluviale sur la table maritime.
        *  Absent/`null` = `navire` (MDG 13) ; `navire-fluvial` = MSRC 7. */

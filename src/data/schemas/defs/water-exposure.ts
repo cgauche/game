@@ -16,7 +16,7 @@ export const famille = 'config';
 const waterExposureAutoSchema = z.union([
   z.strictObject({ kind: z.literal('woundsRemaining'), op: z.literal('<='), value: z.number() }),
   z.strictObject({ kind: z.literal('woundsLost'), op: z.literal('>='), value: z.number() }),
-  z.strictObject({ kind: z.literal('woundsLost'), op: z.literal('between'), min: z.number(), max: z.number() }),
+  z.strictObject({ kind: z.literal('woundsLost'), op: z.literal('between'), ...plageSchema.shape }),
   z.strictObject({ kind: z.literal('perCondition'), condition: z.string() }),
   z.strictObject({ kind: z.literal('hasCondition'), condition: z.string() }),
 ]);

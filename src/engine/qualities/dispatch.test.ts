@@ -3,7 +3,8 @@ import type { Weapon } from '../types';
 import { QUALITIES } from './registry';
 import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable, attackDRAdjust, dangerousNine, reloadDRTarget, magazineSize, resolveQualities, qualityArmourBypasses } from './dispatch';
 import { craftEncDelta } from './craftEconomy';
-import { findQualityById } from '../../data';
+import { findQualityById, findTrappingById, qualityRefLabel, trappings } from '../../data';
+import { itemFromTrappingById } from '../items';
 import { parseQualityInstance } from './normalize';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -201,6 +202,49 @@ describe('parité — toute qualité d’ARME des données est connue (registre 
     const known = new Set(Object.keys(QUALITIES));
     const missing = armures.map((q) => q.label).filter((l) => !known.has(l) && !ARMURE_HORS_REGISTRE.has(l));
     expect(missing).toEqual([]);
+  });
+});
+
+/**
+ * La SPÉCIALISATION authorée d'un Atout traverse jusqu'à l'affichage (#1463 L-gram-2, défaut adjacent).
+ * `Taillade (1A)`/`(2A)` est imprimé ainsi à la colonne Atouts (AA 08 l.136 « Cimeterre … Taillade (1A) »,
+ * l.304 « Pertuisane/Fauchard … Taillade (2A) » ; l'Atout lui-même est « **Taillade (XA) :** », l.87).
+ * Le rendu passe par l'UNIQUE `qualityRefLabel` → `refConcrete` : rien n'est redéfini ici. Aucune
+ * logique ne lit cette spec — l'effet authoré de `taillade` ne joue que l'État automatique.
+ */
+describe('spécialisation d’un Atout — elle SURVIT de la donnée à l’affichage', () => {
+  const flamberge = findTrappingById('zweihander-flamberge')!;
+  /** Toutes les références d'Atout à SPEC du catalogue — mesurées, jamais listées à la main. */
+  const trappingsAvecSpec = () =>
+    trappings.flatMap((t) => (t.qualities ?? []).filter((q) => q.spec != null).map((q) => ({ id: t.id, q })));
+
+  it('la donnée réelle porte la spec, et `resolveQualities` la fait TRAVERSER', () => {
+    expect(flamberge.qualities?.find((q) => q.id === 'taillade')?.spec, 'le porteur de référence a perdu sa spec en donnée').toBe('2A');
+    const resolue = resolveQualities({ qualities: flamberge.qualities!, subType: flamberge.subType })
+      .find((r) => r.id === 'taillade')!;
+    expect(resolue.spec).toBe('2A');
+    expect(qualityRefLabel({ id: resolue.id, spec: resolue.spec, value: resolue.indice })).toBe('Taillade (2A)');
+  });
+
+  it('un Atout SANS spec est rendu inchangé (aucune parenthèse inventée), Indice compris', () => {
+    expect(qualityRefLabel({ id: 'devastatrice' })).toBe('Dévastatrice');
+    expect(qualityRefLabel({ id: 'solide', value: 3 })).toBe('Solide 3');
+  });
+
+  it('la spec survit à la matérialisation en OBJET DE SAC et au round-trip JSON', () => {
+    const item = itemFromTrappingById('zweihander-flamberge')!;
+    const porte = item.qualities.find((q) => q.id === 'taillade')!;
+    expect(porte.spec, 'la spec est perdue à la matérialisation (`qualityInstance`)').toBe('2A');
+    const relu = JSON.parse(JSON.stringify(item)) as typeof item;
+    expect(relu.qualities.find((q) => q.id === 'taillade')?.spec, 'la spec est perdue à la sauvegarde').toBe('2A');
+    expect(qualityRefLabel(relu.qualities.find((q) => q.id === 'taillade')!)).toBe('Taillade (2A)');
+  });
+
+  it('les CINQ références à spec du catalogue rendent leur parenthèse (population mesurée)', () => {
+    const avecSpec = trappingsAvecSpec();
+    expect(avecSpec.length, 'la population des Atouts à spec a disparu : le test ne mesure plus rien.').toBe(5);
+    for (const { id, q } of avecSpec)
+      expect(qualityRefLabel(q), `${id} : la spec ne se rend pas`).toBe(`Taillade (${q.spec})`);
   });
 });
 

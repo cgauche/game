@@ -96,8 +96,8 @@
     "grantGroups": [
       "humain"
     ],
-    "preview": {
-      "career": "repurgateur"
+    "previewCareer": {
+      "id": "repurgateur"
     }
   },
   {
@@ -198,8 +198,8 @@
     "grantGroups": [
       "humain"
     ],
-    "preview": {
-      "career": "repurgateur"
+    "previewCareer": {
+      "id": "repurgateur"
     }
   },
   {
@@ -306,8 +306,8 @@
     "grantGroups": [
       "humain"
     ],
-    "preview": {
-      "career": "repurgateur"
+    "previewCareer": {
+      "id": "repurgateur"
     }
   },
   {
@@ -428,8 +428,8 @@
     "grantGroups": [
       "humain"
     ],
-    "preview": {
-      "career": "repurgateur"
+    "previewCareer": {
+      "id": "repurgateur"
     }
   },
   {
@@ -536,8 +536,8 @@
       "humain",
       "tileen"
     ],
-    "preview": {
-      "career": "repurgateur"
+    "previewCareer": {
+      "id": "repurgateur"
     }
   },
   {
@@ -655,8 +655,8 @@
     "grantGroups": [
       "humain"
     ],
-    "preview": {
-      "career": "marin-cotier"
+    "previewCareer": {
+      "id": "marin-cotier"
     }
   },
   {
@@ -775,8 +775,8 @@
     "grantGroups": [
       "humain"
     ],
-    "preview": {
-      "career": "marin-cotier"
+    "previewCareer": {
+      "id": "marin-cotier"
     }
   },
   {
@@ -895,8 +895,8 @@
     "grantGroups": [
       "humain"
     ],
-    "preview": {
-      "career": "marin-cotier"
+    "previewCareer": {
+      "id": "marin-cotier"
     }
   },
   {
@@ -995,8 +995,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -1107,8 +1107,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -1217,8 +1217,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -1328,8 +1328,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -1438,8 +1438,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -1549,8 +1549,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -1658,8 +1658,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -1766,8 +1766,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -1879,8 +1879,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -1989,8 +1989,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -2099,8 +2099,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -2213,8 +2213,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -2324,8 +2324,8 @@
       "halfling"
     ],
     "mutationBodyMax": 10,
-    "preview": {
-      "career": "colporteur"
+    "previewCareer": {
+      "id": "colporteur"
     }
   },
   {
@@ -2441,8 +2441,8 @@
       "nain"
     ],
     "mutationBodyMax": 5,
-    "preview": {
-      "career": "tueur"
+    "previewCareer": {
+      "id": "tueur"
     }
   },
   {
@@ -2560,8 +2560,8 @@
       "nain"
     ],
     "mutationBodyMax": 5,
-    "preview": {
-      "career": "tueur"
+    "previewCareer": {
+      "id": "tueur"
     }
   },
   {
@@ -2695,8 +2695,8 @@
     "grantGroups": [
       "gnome"
     ],
-    "preview": {
-      "career": "sorcier"
+    "previewCareer": {
+      "id": "sorcier"
     }
   },
   {
@@ -2824,8 +2824,8 @@
         "id": "ogre"
       }
     ],
-    "preview": {
-      "career": "gladiateur"
+    "previewCareer": {
+      "id": "gladiateur"
     }
   },
   {
@@ -2942,8 +2942,8 @@
       "elfe"
     ],
     "mutationBodyMax": 0,
-    "preview": {
-      "career": "noble"
+    "previewCareer": {
+      "id": "noble"
     }
   },
   {
@@ -3059,8 +3059,8 @@
       "elfe"
     ],
     "mutationBodyMax": 0,
-    "preview": {
-      "career": "eclaireur"
+    "previewCareer": {
+      "id": "eclaireur"
     }
   }
 ]

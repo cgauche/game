@@ -9,7 +9,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { ecartsDeCouverture } from '../grammaire/valeurs';
+import { ecartsDeCouverture, plageOuverteSchema } from '../grammaire/valeurs';
 
 export const file = 'advancementCosts.json';
 export const famille = 'entite';
@@ -18,8 +18,7 @@ const doc = document(
   'advancementCosts',
   famille,
   {
-    min: z.number(),
-    max: z.number().nullable(),
+    ...plageOuverteSchema.shape,
     coutCarac: z.number(),
     coutCompetence: z.number(),
   },

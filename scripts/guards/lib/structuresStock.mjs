@@ -422,7 +422,6 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "skills.json", champ: "chars", signature: "FM,Int+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "skills.json", champ: "chars", signature: "true", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "species.json", champ: "gatedByRule", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "species.json", champ: "preview", signature: "career", statut: "historique", strate: "Référence", occurrences: 27, lot: "L3 #1463", date: "2026-08-30", motif: "référence de CARRIÈRE" },
   { concept: "reference", dataset: "species.json", champ: "talents", signature: "random", statut: "historique", strate: "Référence", occurrences: 19, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "species.json", champ: "of", signature: "random", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-31" },
   { concept: "reference", dataset: "speciesRace.json", champ: "default", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -705,11 +704,18 @@ export const STRUCTURES_HOMONYMES = [
  *  signature exacte d'un littéral de la grammaire, `src/data/schemas/grammaire/`). Keyé par `def | champ | concept | signature` :
  *  sans le CHAMP, 13 lignes agrégeaient 2 à 4 champs distincts. Pas de numéro de ligne ici : une
  *  ligne bouge à chaque édition du def et ferait rougir la garde sans qu'aucune structure n'ait
- *  changé — le `fichier:ligne` vit dans `docs/structures-donnees.md` §4, régénéré à chaque build. */
+ *  changé — le `fichier:ligne` vit dans `docs/structures-donnees.md` §4, régénéré à chaque build.
+ *  `oups.ts | plage` NE PEUT PAS sortir par le geste des autres bandes, et sa ligne se tient ICI
+ *  plutôt que dans un rendu (refus MOTIVÉ, patron `price` ci-dessus, #1463 L-gram-1) : le dataset
+ *  porte les 7 bandes d100 du Tableau des Oups ! ET l'Incident de Tir, section DISTINCTE du livre
+ *  (`LDB 14 l.21-30` / `l.32-34`), qui n'a AUCUNE borne. Ses deux bornes sont donc OPTIONNELLES,
+ *  disjointes par un refine ⟺ — composer `plageSchema` (bornes REQUISES) rendrait la donnée
+ *  invalide, et `bornesSchema` dirait un RÉGLAGE là où le lexique a séparé `plage` et `bornes`. La
+ *  ligne sort quand `misfire` sort du dataset : c'est la question #1544 (découpage produit), pas une
+ *  adoption de forme. */
 export const STRUCTURES_REDECLARATIONS = [
   { def: "aa-criticals.ts", champ: "resist", concept: "test", signature: "difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "activities.ts", champ: "", concept: "test", signature: "char,difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "advancementCosts.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "cible", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-31" },
   { def: "arcane-phenomena.ts", champ: "controlFlux", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "criticals.ts", champ: "", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "criticals.ts", champ: "loss", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -726,7 +732,6 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "surincantation.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "vents-tourbillonnants.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "criticals.ts", champ: "resist", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "domains.ts", champ: "requiresSkill", concept: "reference", signature: "id,spec", statut: "cible", commun: "refSchema", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { def: "etats.ts", champ: "", concept: "test", signature: "characteristic,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "land-cargo.ts", champ: "gossip", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "land-cargo.ts", champ: "price", concept: "prix", signature: "dice", statut: "declaree", commun: "formulaSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -739,7 +744,7 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "miscast.ts", champ: "", concept: "", signature: "indiceOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "rolled", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "stacks", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "miscast.ts", champ: "", concept: "formule", signature: "sum", statut: "cible", commun: "formulaSchema", occurrences: 1, lot: "L4 #1463", date: "2026-09-01" },
+  { def: "miscast.ts", champ: "", concept: "formule", signature: "sum", statut: "cible", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-09-01" },
   { def: "miscast.ts", champ: "", concept: "", signature: "times", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "woundsDealt", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "test", signature: "characteristic,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -749,7 +754,6 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "psychology.ts", champ: "test", concept: "test", signature: "difficulty,skill", statut: "historique", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "raceAppearance.ts", champ: "eyes", concept: "", signature: "D,G", statut: "hors lexique", commun: "entityAppearanceSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "raceAppearance.ts", champ: "parts", concept: "", signature: "cheveux,visage", statut: "hors lexique", commun: "entityAppearanceSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "reglesOptionnelles.ts", champ: "", concept: "bornes", signature: "max,min+…", statut: "cible", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "river-navigation.ts", champ: "rowingAgility", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "river-navigation.ts", champ: "temporaryRepair", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "sea-cargo.ts", champ: "price", concept: "prix", signature: "dice", statut: "declaree", commun: "formulaSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -763,22 +767,15 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "sea-perils.ts", champ: "tourbillonSwim", concept: "test", signature: "difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "sea-weather.ts", champ: "affaler", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "sea-weather.ts", champ: "temperatures", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "species.ts", champ: "preview", concept: "reference", signature: "career", statut: "historique", commun: "", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { def: "spells.ts", champ: "", concept: "", signature: "kind", statut: "hors lexique", commun: "conditionSchema", occurrences: 5, lot: "L1a #1466", date: "2026-08-23" },
   { def: "steam-breakdown.ts", champ: "restart", concept: "test", signature: "char,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "structures.ts", champ: "", concept: "reference", signature: "id,value", statut: "historique", commun: "", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { def: "symptoms.ts", champ: "onTick", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "talents.ts", champ: "max", concept: "", signature: "bonusOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "tavernGames.ts", champ: "", concept: "sequence", signature: "combined,drCap,phases,pot,sides,table,target,throwerPenalty,volley+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "tavernGames.ts", champ: "options", concept: "test", signature: "char,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "tavernGames.ts", champ: "rows", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "tavernGames.ts", champ: "throwerPenalty", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "trappings.ts", champ: "", concept: "reference", signature: "id,spec,value", statut: "historique", commun: "", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { def: "trappings.ts", champ: "qualities", concept: "reference", signature: "id,value", statut: "historique", commun: "", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { def: "vehicles.ts", champ: "", concept: "reference", signature: "id,value", statut: "historique", commun: "", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { def: "vehicles.ts", champ: "traits", concept: "reference", signature: "arg,id,value", statut: "historique", commun: "", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { def: "water-exposure.ts", champ: "", concept: "", signature: "kind,op,value", statut: "hors lexique", commun: "conditionSchema", occurrences: 2, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "water-exposure.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "cible", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "water-exposure.ts", champ: "test", concept: "test", signature: "difficulty,skill", statut: "historique", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "weather.ts", champ: "resistanceTest", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
 ];

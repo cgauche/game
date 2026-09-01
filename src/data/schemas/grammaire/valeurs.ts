@@ -491,6 +491,59 @@ export const refTestDeCorruption = z.strictObject({
 export const plageSchema = z.strictObject({ min: z.number(), max: z.number() });
 
 /**
+ * FOURCHETTE À BORNE HAUTE OUVERTE — même concept `plage`, une seule divergence : la DERNIÈRE bande
+ * n'a pas de plafond, et JSON n'a pas d'Infinity (`max: null` ; c'est le lookup qui ouvre, cf.
+ * `src/engine/advancement.ts`). Composée sur la SHAPE de `plageSchema`, graphie UNIQUE de dérivation
+ * dans la grammaire. Mesuré 2026-09-01 sur les deux racines de donnée : UNE seule bande ouverte
+ * (`advancementCosts.json`, « 71 et + », LDB 07 l.49/l.70) contre 1474 fourchettes FERMÉES — sonde
+ * tenue par `src/data/plage-bornes-contrat.test.ts` (volet E). La couverture d'une suite de telles bandes se vérifie
+ * par `ecartsDeCouverture(…, 'ouverte')` ci-dessous.
+ */
+export const plageOuverteSchema = z.strictObject({ ...plageSchema.shape, max: z.number().nullable() });
+
+/**
+ * BORNES DE DOMAINE d'un RÉGLAGE chiffré — concept `bornes` du lexique
+ * (`scripts/docs/lib/structures-lexique.mts`), DISTINCT de `plage` : aucune rangée n'est tirée ici,
+ * rien ne traverse `findTableEntry` ; ce sont les bornes de SAISIE d'un paramètre éditable, qui
+ * vivent avec sa valeur par défaut ou son pas. Les deux bornes sont OPTIONNELLES (un réglage peut
+ * n'en porter aucune), mais jamais SEULES : le domaine d'une saisie a deux côtés — d'où le refine de
+ * co-présence, partagé par `ecartDeCoPresenceDesBornes` avec les sites qui composent la shape
+ * (le spread ne transporte pas un refine). Mesuré 2026-09-01 : 23/23 entrées `kind:'param'` de
+ * `reglesOptionnelles.json` portent les deux.
+ *
+ * CE NŒUD N'EST CONSOMMÉ COMME SCHÉMA PAR AUCUN SITE : il est la DÉCLARATION du concept (sa shape et
+ * son invariant, là où le lexique les nomme), et la composition passe par `...bornesSchema.shape` +
+ * `ecartDeCoPresenceDesBornes` — c'est le PORTEUR réel (`defs/reglesOptionnelles.ts`) que les gates
+ * mesurent, jamais ce nœud seul.
+ */
+export const bornesSchema = z
+  .strictObject({ min: z.number().optional(), max: z.number().optional(), step: z.number().optional() })
+  .superRefine((v, ctx) => {
+    const ecart = ecartDeCoPresenceDesBornes(v);
+    if (ecart) ctx.addIssue({ code: 'custom', path: [ecart.borne], message: ecart.message });
+  });
+
+/**
+ * Co-présence des deux bornes d'un RÉGLAGE : rend l'écart (vide = conforme), à verser dans le refus
+ * NOMINATIF de la def appelante — même patron qu'`ecartsDeCouverture`, et même raison : un site qui
+ * compose `...bornesSchema.shape` perd le refine du nœud, la règle ne doit pas pour autant se
+ * ré-écrire chez lui.
+ */
+export function ecartDeCoPresenceDesBornes(v: {
+  min?: number | null;
+  max?: number | null;
+}): { borne: 'min' | 'max'; message: string } | null {
+  const aMin = v.min != null;
+  const aMax = v.max != null;
+  if (aMin === aMax) return null;
+  const borne = aMin ? 'max' : 'min';
+  return {
+    borne,
+    message: `bornes de réglage : la borne ${borne === 'min' ? 'basse' : 'haute'} manque — le domaine d'une saisie a DEUX côtés, une borne seule laisse l'autre à l'infini sans que rien ne le dise.`,
+  };
+}
+
+/**
  * COUVERTURE d'une suite de fourchettes `{min, max}` — invariant PARTAGÉ des tables que
  * `findTableEntry` (`src/engine/tables.ts`) lit : le domaine est couvert EXACTEMENT une fois, sans
  * trou ni chevauchement. Rend la liste des écarts (vide = conforme), à verser dans le refus NOMINATIF

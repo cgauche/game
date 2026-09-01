@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { charKeySchema, raceKeySchema, refCareerIdSchema } from '../grammaire/valeurs';
 import { traitInstanceSchema } from '../grammaire/reference';
+import { ref } from '../grammaire/ref';
 import { avancement } from '../grammaire/avancement';
 
 export const file = 'species.json';
@@ -44,7 +45,7 @@ const doc = document(
     /** Habillage de l'APERÇU (créateur, carte de race #431) — id de carrière ICONIQUE et COMMUNE à
      *  l'espèce (jamais un choix de RÈGLE, pur flavor de vitrine) : la tuile de famille montre un
      *  personnage vêtu plutôt qu'une tunique nue. Absent = pas de tenue (repli existant). */
-    preview: z.strictObject({ career: z.string().optional() }).optional(),
+    previewCareer: ref('career').optional(),
     /** Trait RACIAL de l'espèce (#572) — MÊME `TraitInstance` que le bestiaire (Ogre `{id:'ogre'}`,
      *  encombrance/consommation ×2 ; la Taille est portée par le TALENT Massif/Petit, pas ici).
      *  Absent (26/27 observées) = aucun trait racial mécanique. */
@@ -72,7 +73,7 @@ const doc = document(
     talents: { label: 'Talents d’espèce' },
     grantGroups: { label: 'Groupes accordés' },
     mutationBodyMax: { label: 'Seuil de mutation physique' },
-    preview: {
+    previewCareer: {
       label: 'Aperçu (carrière type)',
       hint: 'Carrière emblématique servant l’aperçu de vitrine (pur habillage)',
     },

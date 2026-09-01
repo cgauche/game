@@ -160,7 +160,7 @@ même si un second trait la déclare. C'est de la DONNÉE, jamais un chemin de c
 
 Le drapeau dit qu'une mécanique s'applique ; sa VALEUR (Salve N, Protectrice N, Solide N…) vit sur
 l'INSTANCE portée par l'objet — `QualityInstance.value` (`src/engine/types.ts:352`), que le
-dispatcher runtime expose sous `indice` (`resolveQualities`, `src/engine/qualities/dispatch.ts:54`).
+dispatcher runtime expose sous `indice` (`resolveQualities`, `src/engine/qualities/dispatch.ts:57`).
 La saisie en prose (« Solide 3 ») n'est convertie en instance qu'à l'AUTHORING, par
 `parseQuality` (`src/engine/qualities/normalize.ts:34`) — le runtime ne re-parse jamais un libellé
 (convention `indice:{label}` côté champ d'édition). N'ajoute donc **jamais** un drapeau numéroté

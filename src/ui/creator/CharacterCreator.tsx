@@ -573,7 +573,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
               key={f.family}
               preview={{
                 appearance: famAppearance(f),
-                career: rep.preview?.career,
+                career: rep.previewCareer?.id,
                 // Cadrage par DÉFAUT de la primitive (0.88) : le cadrage large (0.75) était une
                 // réponse à la tuile PLEIN CHAMP, où la figurine était la tuile et où le visage
                 // touchait le bord (« ça écrase les visages », #431). La boîte-figurine du patron

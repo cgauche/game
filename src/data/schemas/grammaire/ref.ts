@@ -36,8 +36,9 @@ export interface CibleDeType {
 
 /**
  * Types d'entité déclarés à la grammaire. La liste est celle des concepts que les lots L2/L3 du
- * chantier migrent (Compétence, puis Talent/Trait/Objet/Sort/Créature/Véhicule/Structure) + la
- * TABLE, cible de `pick({ table })`. Un type s'ajoute avec le lot qui le migre, jamais « au cas où ».
+ * chantier migrent (Compétence, puis Talent/Trait/Objet/Sort/Créature/Véhicule/Structure, +
+ * Carrière et Trait NAVAL au L-gram-2 #1463) + la TABLE, cible de `pick({ table })`. Un type
+ * s'ajoute avec le lot qui le migre, jamais « au cas où ».
  */
 export const TYPES = {
   skill: { dataset: 'skills.json', specsOpen: true },
@@ -48,6 +49,8 @@ export const TYPES = {
   creature: { dataset: 'creatures.json', specsOpen: false },
   vehicle: { dataset: 'vehicles.json', specsOpen: false },
   structure: { dataset: 'structures.json', specsOpen: false },
+  career: { dataset: 'careers.json', specsOpen: false },
+  navalTrait: { dataset: 'naval-traits.json', specsOpen: false },
   table: { dataset: 'tables.json', specsOpen: false },
   maladie: { dataset: 'maladies.json', specsOpen: false },
   symptome: { dataset: 'symptoms.json', specsOpen: false },
