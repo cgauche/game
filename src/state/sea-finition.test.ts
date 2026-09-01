@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { emptyScene } from './scene';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { seedBattleRng } from './battleRng';
@@ -39,7 +40,7 @@ function freshState() {
   seedBattleRng(7);
   useGame.setState({
     party: makePregens().slice(0, 3),
-    scene: { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { ...emptyScene(2, 2), id: 'port-a', label: 'Port', layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }] },
     battle: null,
     worldMap: seaMap,
     travelPlan: null,
@@ -277,7 +278,7 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
     expect((vessel.cargo ?? []).length).toBe(1);
     expect(partyMoneyTotal(get).gold).toBeLessThanOrEqual(before);
     // Vente dans un autre port : on pose le navire à Marienburg (« commerce ») et on solde le lot.
-    set({ vessel: { ...get().vessel!, lastVoyageMilles: 550 }, port: null, scene: { id: 'port-b', label: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
+    set({ vessel: { ...get().vessel!, lastVoyageMilles: 550 }, port: null, scene: { ...emptyScene(2, 2), id: 'port-b', label: 'P', layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }] } });
     get().openPort();
     const cargoLen = (get().vessel!.cargo ?? []).length;
     get().portSellCargo(0);
@@ -315,7 +316,7 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
   it('portDumpCargo brade à ¼ du prix de base dans un port « commerce »', () => {
     seedBattleRng(2);
     set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 100, basePriceGold: 2 }] } });
-    set({ scene: { id: 'port-b', label: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
+    set({ scene: { ...emptyScene(2, 2), id: 'port-b', label: 'P', layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }] } });
     get().openPort();
     const before = partyMoneyTotal(get).gold;
     get().portDumpCargo(0);

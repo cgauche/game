@@ -9,6 +9,7 @@ import { useGame } from './store';
 import { initialFields } from './stateFields';
 import { openAttackCascade, doAttack, runPreemptShots } from './combatFlow';
 import { seedBattleRng } from './battleRng';
+import { emptyScene } from './scene';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 
 const CHARS = (dex: number) => ({ 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: dex, intelligence: 30, 'force-mentale': 30, sociabilite: 30 });
@@ -36,7 +37,7 @@ const mkFoe = (id: string, over: Partial<Combatant> = {}): Combatant => ({
 
 function setup(h: Combatant, f: Combatant) {
   useGame.setState({
-    scene: { ambiance: 'exterieur', weather: 'clair', dimensions: { w: 8, h: 4 }, layers: [{ z: 0, tiles: [] }], entities: [] } as never,
+    scene: { ...emptyScene(8, 4), weather: 'clair' },
     gameTime: 0,
     battle: { combatants: [h, f], order: ['h', f.id], turn: 0, round: 1, log: [],
       acted: false, movementUsed: 0, movedPreAction: false, loadoutSwapped: false, reachable: new Map() } as never,
@@ -195,7 +196,7 @@ describe('runPreemptShots — le Tir rapide de l\'IA joue le MÊME Test de Main 
     const near = mkHero({ id: 'near', pos: { x: 4, y: 0 } });
     const far = mkHero({ id: 'far', pos: { x: 0, y: 6 } });
     useGame.setState({
-      scene: { ambiance: 'exterieur', weather: 'clair', dimensions: { w: 10, h: 8 }, layers: [{ z: 0, tiles }], entities: [] } as never,
+      scene: { ...emptyScene(10, 8), weather: 'clair', layers: [{ z: 0, tiles }] },
       gameTime: 0,
       battle: { combatants: [sh, near, far], order: ['f', 'near', 'far'], turn: 0, round: 1, log: [],
         acted: false, movementUsed: 0, movedPreAction: false, loadoutSwapped: false, reachable: new Map() } as never,

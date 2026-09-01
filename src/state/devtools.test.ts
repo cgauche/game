@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { emptyScene } from './scene';
 import { useGame } from './store';
 import { buildApi } from './devtools';
 import { partyMoneyTotal } from './bourseFlow';
@@ -291,7 +292,7 @@ describe('__wfrp.advanceSeaDay / skipToArrival / dealShipDamage / clickRoute —
     seedBattleRng(1); // déterminisme (suite isolate:false)
     useGame.setState({
       party: makePregens().slice(0, 3),
-      scene: { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+      scene: { ...emptyScene(2, 2), id: 'port-a', label: 'Port', layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }] },
       battle: null,
       worldMap: seaMap,
       travelPlan: null,

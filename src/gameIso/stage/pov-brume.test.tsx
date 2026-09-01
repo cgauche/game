@@ -246,7 +246,7 @@ describe('POV volumique — la météo module la brume du milieu (#1247)', () =>
   function monterPov(indoor: boolean, meteo: Scene['weather']): { scene: Scene; mpt: number } {
     const scene = poser('exterieur');
     scene.weather = meteo;
-    useGame.setState({ scene: { ...scene } } as never);
+    useGame.setState({ scene: { ...scene } });
     const s = useGame.getState().scene!;
     const mpt = sceneMetresPerTile(s);
     monter(
@@ -304,7 +304,7 @@ describe('POV volumique — la météo module la brume du milieu (#1247)', () =>
   it('vue de PLATEAU : des nappes en losange, AUCUNE en vue du dessus', () => {
     const scene = poser('exterieur');
     scene.weather = 'brouillard';
-    useGame.setState({ scene: { ...scene } } as never);
+    useGame.setState({ scene: { ...scene } });
     const s = useGame.getState().scene!;
     const compter = () => {
       let n = 0;
