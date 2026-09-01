@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { emptyScene } from './scene';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { resolvePortArrival } from './seaVoyageFlow';
@@ -31,7 +32,7 @@ function fresh() {
   seedBattleRng(1);
   useGame.setState({
     party: makePregens().slice(0, 3),
-    scene: { id: 'port', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { ...emptyScene(2, 2), id: 'port', label: 'Port', layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }] },
     battle: null,
     pendingCascade: null,
     // Humeur de Manann −1 : place le tirage 2d10=2 sur l'événement n°1 (Embrigadement).

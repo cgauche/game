@@ -174,6 +174,7 @@ describe('SequencePanel — une partie de Bras de fer n’est plus aveugle', () 
     const negociant = {
       id: 'negociant', kind: 'personnage' as const, pos: { x: 2, y: 2 }, label: 'Négociant (test)',
       statblock: {
+        type: 'statblock' as const,
         label: 'Négociant (test)',
         char: {
           'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 40, endurance: 30, initiative: 30,
@@ -185,7 +186,7 @@ describe('SequencePanel — une partie de Bras de fer n’est plus aveugle', () 
     };
     useGame.setState({
       party: [a], journal: [],
-      scene: { ...emptyScene(), entities: [negociant] } as never,
+      scene: { ...emptyScene(), entities: [negociant] },
       battle: null, sequence: null, pendingCascade: null,
     });
     get().playTavernGame({ gameId: 'bras-de-fer', challengerId: a.id, opponent: { kind: 'npc', id: 'negociant' } });

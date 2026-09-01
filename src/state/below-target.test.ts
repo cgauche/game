@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { attackEnv } from './combatFlow';
 import { RULE_REF } from '../engine/ruleRefs';
 import type { ModLine } from '../engine/combat';
+import { emptyScene } from './scene';
 import type { Get } from './flowTypes';
 import type { Combatant, Weapon } from '../engine/types';
 
@@ -23,7 +24,7 @@ function envFor(attackerH: number, targetH: number) {
   const target = mk('tgt', 'enemy', targetH);
   target.pos = { x: 6, y: 5, ...(targetH ? { h: targetH } : {}) }; // adjacent, sur sa propre case
   const get = (() => ({
-    scene: { ambiance: 'exterieur', weather: 'clair' },
+    scene: { ...emptyScene(), weather: 'clair' },
     battle: { combatants: [attacker, target] },
     gameTime: 12 * 60,
     facing: {},

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { emptyScene } from './scene';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { seedBattleRng } from './battleRng';
@@ -57,7 +58,7 @@ function freshState(withCarrier = true) {
   const possessions: Possession[] = withCarrier ? [dili(party[0].id)] : [];
   useGame.setState({
     party, possessions,
-    scene: { id: 'ville-a', label: 'Ville', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { ...emptyScene(2, 2), id: 'ville-a', label: 'Ville', layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }] },
     battle: null,
     worldMap: landMap,
     travelPlan: null,

@@ -39,6 +39,7 @@ function pnjDeScene(id: string, label: string, pariFinal: number, offre?: { game
   return {
     id, kind: 'personnage' as const, pos: { x: 2, y: 2 }, label,
     statblock: {
+      type: 'statblock' as const,
       label,
       char: {
         'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30,
@@ -52,7 +53,7 @@ function pnjDeScene(id: string, label: string, pariFinal: number, offre?: { game
 
 function poseScene(entities: ReturnType<typeof pnjDeScene>[]): void {
   const party = makePregens().slice(0, 2) as Combatant[];
-  set({ party, scene: { ...emptyScene(), entities } as never, battle: null, sequence: null, pendingCascade: null });
+  set({ party, scene: { ...emptyScene(), entities }, battle: null, sequence: null, pendingCascade: null });
 }
 
 describe('#1279 S4-b — l’adversaire de taverne à FICHE', () => {
@@ -128,7 +129,7 @@ describe('#1279 S4-b — le PNJ authoré par PRESET (forme réelle de la campagn
     set({
       party: makePregens().slice(0, 2) as Combatant[],
       campaignNarratif: scenarioEdo.narratif,
-      scene: { ...emptyScene(), entities: scenarioEdo.scene.entities } as never,
+      scene: { ...emptyScene(), entities: scenarioEdo.scene.entities },
       battle: null, sequence: null, pendingCascade: null,
     });
 
@@ -144,7 +145,7 @@ describe('#1279 S4-b — le PNJ authoré par PRESET (forme réelle de la campagn
     set({
       party: makePregens().slice(0, 2) as Combatant[],
       campaignNarratif: scenarioEdo.narratif,
-      scene: { ...emptyScene(), entities: scenarioEdo.scene.entities } as never,
+      scene: { ...emptyScene(), entities: scenarioEdo.scene.entities },
       battle: null, sequence: null, pendingCascade: null,
     });
 

@@ -94,7 +94,7 @@ function poserRelief(coteM: (x: number, y: number) => number): { scene: Scene; h
   const { scene, heroId } = poser();
   const { w, h } = scene.dimensions;
   scene.layers[0].height = Array.from({ length: w * h }, (_, i) => coteM(i % w, Math.floor(i / w)));
-  useGame.setState({ scene: { ...scene } } as never);
+  useGame.setState({ scene: { ...scene } });
   return { scene: useGame.getState().scene!, heroId };
 }
 

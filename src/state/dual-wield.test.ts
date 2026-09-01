@@ -4,6 +4,8 @@ import { initialFields } from './stateFields';
 import { resolveDualSecond, applyAttackResult } from './combatFlow';
 import { reverseRoll, rollMeleeDefender, type AttackResult } from '../engine/combat';
 import { makeRNG } from '../engine/dice';
+import { seedBattleRng } from './battleRng';
+import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 
 const W = (uid: string, hand: 'main' | 'off'): Weapon =>
@@ -27,9 +29,10 @@ const mkFoe = (id: string, x: number): Combatant => ({
 } as unknown as Combatant);
 
 function setupBattle(heroOver: Partial<Combatant> = {}) {
+  seedBattleRng(1);
   const h = mkHero(heroOver); const f1 = mkFoe('f1', 1); const f2 = mkFoe('f2', 1);
   useGame.setState({
-    scene: { ambiance: 'exterieur', weather: 'clair' } as any,
+    scene: { ...emptyScene(8, 4), weather: 'clair' },
     gameTime: 0,
     battle: { combatants: [h, f1, f2], order: ['h', 'f1', 'f2'], turn: 0, round: 1, log: [],
       acted: false, movementUsed: 0, movedPreAction: false, loadoutSwapped: false, reachable: new Map() } as any,
@@ -44,7 +47,9 @@ function setupBattle(heroOver: Partial<Combatant> = {}) {
 
 // ISOLATION — `useGame` est un singleton de MODULE partagé entre tests (et entre fichiers d'un même
 // worker Vitest). Sans reset, un `pending*` laissé par un test/fichier précédent fuit selon l'ordre
-// d'exécution (le RNG, lui, est seedé → déterministe : le flake venait de CET état partagé, pas du hasard).
+// d'exécution. Le RNG de combat (`battleRng.ts`) est lui aussi un singleton de module, ensemencé sur
+// `Date.now()` à l'import : `setupBattle` le réensemence donc à chaque montage (patron des autres tests
+// de combat, ex. `advantage-group-wiring.test.ts:21`) — sans quoi l'issue des jets varie d'un run à l'autre.
 // On remet à zéro TOUS les champs transitoires (`initialFields`, copies fraîches) + le combat AVANT
 // chaque test ; ce hook de TÊTE DE FICHIER s'exécute avant les `beforeEach` de describe (setupBattle / timers).
 beforeEach(() => useGame.setState({ ...initialFields(), battle: null, scene: null, gameTime: 0, party: [] }));

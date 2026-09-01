@@ -67,4 +67,6 @@
 - [Écran neuf = MAQUETTE validée avant code](feedback-ecran-neuf-maquette-validee-avant-code.md) — une spec fige le mécanisme, pas le goût ; au rejet, retour maquette.
 - [CARNET DE DÉPILAGE epic #1463 (post-L1b)](project-1467-l1b-livre.md) — à relire avant chaque ticket #1517-#1554 ; séquence → épique #1388.
 - [PILOTAGE d'epic = commentaire GitHub tenu à jour](feedback-pilotage-epic-commentaire-github.md).
+- **[FUSION des .json par `type`](user-direction-fusion-json-par-type.md)** — 2026-09-01 « fusionner des .json et juste rajouter un type pour des systèmes similaires » : cible par défaut = la collection la plus peuplée + discriminant, jamais une Nᵉ option de fabrique par fichier.
+- **[FINALITÉ #1463 = MUTUALISER](feedback-finalite-1463-mutualiser-les-divergences.md)** — 2026-09-01 « mutualiser les systèmes/structures qui ont divergé par manque de rigueur » ; le lexique/stock sont des instruments ; « liberté d'authoring » exige une preuve.
 - [Vagues de stock #1463 : leçons](game-vague-de-stock-lecons-2026-09-01.md) — cardinal sur le RÉSULTAT, noyau de lexique mesuré (vol de formes), le défaut est le LECTEUR, récapitulatif figé = dérivé.

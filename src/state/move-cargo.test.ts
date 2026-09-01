@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { emptyScene } from './scene';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { carrierById, persistCarriersCargo } from './carriers';
@@ -26,7 +27,7 @@ function setup(muleCargo: CargoLot[], cartCargo: CargoLot[]) {
   ];
   useGame.setState({
     party, vessel: null, worldMap: map, possessions,
-    scene: { id: 'halte', label: 'Halte', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { ...emptyScene(2, 2), id: 'halte', label: 'Halte', layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }] },
     battle: null, journal: [],
   } as never);
 }

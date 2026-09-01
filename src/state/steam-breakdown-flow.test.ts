@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { emptyScene } from './scene';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { buildSeaPlan, applySteamBreakdown, resolveSteamSave } from './seaVoyageFlow';
@@ -32,7 +33,7 @@ function steamAtSea(milesToday = 80) {
   seedBattleRng(1);
   useGame.setState({
     party: makePregens().slice(0, 3),
-    scene: { id: 'port-a', label: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: { ...emptyScene(2, 2), id: 'port-a', label: 'Port', layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }] },
     battle: null,
     worldMap: seaMap,
     travelPlan: null,
