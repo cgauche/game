@@ -269,3 +269,24 @@ test('couverture : les 3 dernières ancres de LIVRE (AA 144, ZI 144, MDG 160) so
     assert.ok(![...mesure].some((k) => k.startsWith(`${abbr} `) && k.endsWith(`|${folio}`)), `${abbr} ${folio} : hors mesure, faute de paire d’ancres`)
   }
 })
+
+// ---------- MORSURE sur le CAS D'OR réel : la page 88 du LDB, re-vidée EN MÉMOIRE (#1457, grief G4) ----------
+
+test('détecteur : re-vider le folio 88 du VRAI `08 - Statut.md` le fait ressortir, et le stock le dénonce comme INCONNU', () => {
+  const dir = new Map(BOOKS).get('LDB')
+  const md = readFileSync(join(dir, '08 - Statut.md'), 'utf8')
+  const finAncre88 = md.indexOf('</span>', md.indexOf('data-folio="88"')) + '</span>'.length
+  const debutAncre89 = md.lastIndexOf('<span', md.indexOf('data-folio="89"'))
+  assert.ok(finAncre88 > 0 && debutAncre89 > finAncre88, 'les ancres 88 puis 89 se suivent bien dans le chapitre')
+  const revide = `${md.slice(0, finAncre88)}\n\n${md.slice(debutAncre89)}`
+
+  assert.deepEqual(emptyFolioAnchorsInText(md), [], 'au corpus COMMITTÉ, le chapitre ne porte aucune ancre sans contenu')
+  const vides = emptyFolioAnchorsInText(revide)
+  assert.equal(vides.length, 1)
+  assert.equal(vides[0].folio, 88, 'la page 88 vidée de son contenu utile est celle que le détecteur nomme')
+
+  const mesure = [...scanAllEmptyFolios(), { ref: 'LDB 8', file: '08 - Statut.md', folio: 88, line: vides[0].line }]
+  const r = assertEmptyFoliosAgainstStock(mesure, STOCK)
+  assert.deepEqual(r.inconnues.map(emptyFolioKey), ['LDB 8|08 - Statut.md|88'], 'perte NON triée → nommée par la garde')
+  assert.deepEqual([r.restituees, r.benignesDisparues, r.malClassees].map((a) => a.length), [0, 0, 0], 'aucun autre volet ne bronche : la perte n’entrait que par celui-là')
+})

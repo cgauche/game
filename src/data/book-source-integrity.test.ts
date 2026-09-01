@@ -9,10 +9,12 @@
  * déclaré ; l'encadrement `data-folio` de l'occurrence réfute alors le folio qui ment. Mécanique
  * dans `scripts/guards/lib/folioIntegrity.mjs`, stock gelé dans `folioRatchetStock.mjs`.
  *
- * PÉRIMÈTRE MESURÉ ET ANGLE MORT au 2026-09-01 : `src/data/*.json` porte 4479 entrées à
- * `source:{book,page}` ; 1185 citent aussi une ligne et `folio-line-align.test.ts` n'en juge que 305
- * (880 écartées : 874 hors-forme, 6 queue-trouée), soit 6,8 % des folios vérifiés machine par cette
- * voie. Cette garde-ci scanne 2716 entrées et en laisse 1252 hors de tout verdict d'encadrement
+ * PÉRIMÈTRE MESURÉ ET ANGLE MORT au 2026-09-01 (après B2/B3) : `src/data/*.json` porte 4500 entrées
+ * à `source:{book,page}` ; 1206 citent aussi une ligne et `folio-line-align.test.ts` n'en juge que
+ * 312 (894 écartées : 888 hors-forme, 6 queue-trouée), soit 6,9 % des folios vérifiés machine par
+ * cette voie. Ces deux chiffres ne sont plus qu'écrits ici : `folio-line-align.test.ts` les CLIQUÈTE
+ * (`SCANNED_MIN` croissant, `SANS_CITATION_MAX` décroissant).
+ * Cette garde-ci scanne 2716 entrées et en laisse 1252 hors de tout verdict d'encadrement
  * (878 descs introuvables, 140 trop courtes, 92 en chapitre sans marqueur, 142 en livre hors Atlas) ;
  * `noteAuthored` est empruntée 1 fois (`maladies.json:infection-du-sang` p.186).
  */

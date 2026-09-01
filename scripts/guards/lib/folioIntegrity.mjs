@@ -39,9 +39,10 @@
 //
 // PÉRIMÈTRE ET ANGLE MORT, EN CHIFFRES — mesure du 2026-09-01 (`node scripts/data/audit-folios.mjs`
 // pour cette voie, `folioLineAlign.auditDataDir` pour l'autre) :
-//   • `src/data/*.json` porte 4479 entrées à `source:{book,page}`. 1185 d'entre elles citent AUSSI
-//     une ligne ; `folio-line-align` n'en juge que 305 (880 écartées : 874 hors-forme, 6 queue-trouée),
-//     soit 305/4479 = 6,8 % des folios vérifiés machine par cette voie-là.
+//   • `src/data/*.json` porte 4500 entrées à `source:{book,page}`. 1206 d'entre elles citent AUSSI
+//     une ligne ; `folio-line-align` n'en juge que 312 (894 écartées : 888 hors-forme, 6 queue-trouée),
+//     soit 312/4500 = 6,9 % des folios vérifiés machine par cette voie-là. Chiffres CLIQUETÉS par
+//     `src/data/folio-line-align.test.ts` (`SCANNED_MIN` / `SANS_CITATION_MAX`), plus seulement écrits.
 //   • ce module scanne 2716 entrées et en laisse 1252 hors de tout verdict d'encadrement : 878 descs
 //     introuvables, 140 trop courtes, 92 en chapitre sans marqueur, 142 en livre hors Atlas.
 //   • `noteAuthored` — la sortie par note d'auteur, jamais cliquetée — est empruntée 1 fois

@@ -152,8 +152,9 @@ describe('#1342 L3 — contrat `pool` des spécialisations', () => {
  *  - les défs de COMPÉTENCE et de TALENT sont confrontées (#1646, L-ref-3 du 2026-09-01 : les 5 spécs
  *    en libellé de `sens-aiguise` — 4 dans `mutations.json`, 1 dans `spells.json`, résolues par
  *    `PairedSense` et non par `testValue` — portent leur id) ; le volet SENTINELLE, lui, reste borné
- *    aux Compétences : `talentRefSchema` n'a pas de régime `choix`, et les « Au choix » de
- *    `maitre-artisan` (`creatures.json`, `stars.json`) s'éteignent avec #1457 ;
+ *    aux Compétences : `talentRefSchema` n'a pas de régime `choix`, et les 5 « Au choix » de
+ *    `maitre-artisan` survivent à #1457 (4 dans `creatures.json`, 1 dans `stars.json`) — leur
+ *    extinction demande le régime `choix` des réfs de Talent, reporté à #1621 ;
  *  - une spéc qui n'apparie AUCUNE entrée du catalogue de sa def n'est pas mesurée (texte libre d'un
  *    domaine ouvert, ou catalogue vide — `mutations.json › attirant`, dette nominative #1621) ;
  *  - un libellé AMBIGU (deux entrées du même catalogue au même libellé normalisé) n'est pas départagé.

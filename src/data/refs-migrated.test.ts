@@ -711,9 +711,10 @@ function collecteSpecs(
   arrName: 'skills' | 'talents',
   defOf: (id: string) => SpecDef | undefined,
   corpus?: [string, { id?: string; label?: string; source?: { book?: string } }[]][],
-): { hors: SpecHors[]; nues: { where: string; book: string; refId: string }[]; seen: number } {
+): { hors: SpecHors[]; nues: { where: string; book: string; refId: string }[]; seen: number; sentinelles: string[] } {
   const hors: SpecHors[] = [];
   const nues: { where: string; book: string; refId: string }[] = [];
+  const sentinelles: string[] = [];
   let seen = 0;
   const listes = corpus ?? ([
     ['creatures', creatures], ['careerLevels', careerLevels], ['species', species],
@@ -728,14 +729,14 @@ function collecteSpecs(
         // Un nœud à `choix` PORTE un régime de spécialisation (borne ou libre) : ce n'est pas une réf NUE.
         if (node.choix != null) return;
         if (node.spec == null) { if (catalogue) nues.push({ where: `${file}(${owner})`, book, refId: node.id }); return; }
-        if (isSentinel(node.spec)) return;
+        if (isSentinel(node.spec)) { sentinelles.push(`${file}|${owner}|${node.id}|${node.spec}`); return; }
         seen++;
         if (def && specResolves(def, node.spec)) return;
         hors.push({ where: `${file}(${owner})`, key: `${file}|${owner}|${node.id}|${node.spec}`, book, refId: node.id, spec: node.spec, catalogue });
       }, arrName);
     }
   }
-  return { hors, nues, seen };
+  return { hors, nues, seen, sentinelles };
 }
 
 describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#1342 L2-a)', () => {
@@ -823,7 +824,7 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
 describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock nominatif DÉCROISSANT (#1457 B1)', () => {
   const ROOT = fileURLToPath(new URL('../../', import.meta.url));
   const { extraits: EXTRAITS } = extractedBooks(books, ROOT);
-  const { hors, seen } = collecteSpecs('talents', (id) => findTalentById(id));
+  const { hors, seen, sentinelles } = collecteSpecs('talents', (id) => findTalentById(id));
   const dette = hors.filter((h) => h.catalogue);
   const textesDInstance = hors.filter((h) => !h.catalogue);
 
@@ -883,6 +884,22 @@ describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock no
     expect(textesDInstance.length, `${parTalent} — un texte d'instance de PLUS : le régime du champ se tranche à #1621`).toBeLessThanOrEqual(PLAFOND);
     const melanges = textesDInstance.filter((h) => SPECS_DE_TALENT_A_CREER.has(h.key)).map((h) => h.key);
     expect(melanges, `texte d'instance stocké comme dette de spec :\n${melanges.join('\n')}`).toEqual([]);
+  });
+
+  it('les sentinelles « Au choix » de talents[] sont ÉCARTÉES de la résolution mais COMPTÉES et BORNÉES (#1621)', () => {
+    const PLAFOND = 12;
+    // Même lecture que le PLAFOND des textes d'instance ci-dessus : cliquet UNIDIRECTIONNEL, pas
+    // stock nominatif. La sentinelle est un EMPLACEMENT de spéc, pas une spéc : elle ne peut pas
+    // résoudre au catalogue, donc `collecteSpecs` la saute avant `seen++` — sans ce compte, elle
+    // sortait de la mesure sans laisser de trace. Le régime `choix` des réfs de Talent (qui les
+    // éteindra en portant la borne imprimée) se tranche à #1621 ; d'ici là, une 13e rougit.
+    const parTalent = [...sentinelles.reduce((m, k) => m.set(k.split('|')[2], (m.get(k.split('|')[2]) ?? 0) + 1), new Map<string, number>())]
+      .sort((a, b) => b[1] - a[1]).map(([id, n]) => `${id}:${n}`).join(', ');
+    expect(sentinelles.length).toBeGreaterThan(0);
+    expect(
+      sentinelles.length,
+      `${parTalent} — une sentinelle « Au choix » de PLUS sur un talents[] : poser la spéc imprimée, ou trancher le régime choix (#1621) :\n${sentinelles.join('\n')}`,
+    ).toBeLessThanOrEqual(PLAFOND);
   });
 
   it('CONTRÔLE POSITIF — une spec de Talent inconnue posée sur une créature FIXTURE est ATTRAPÉE (mutation EN MÉMOIRE, jamais au disque)', () => {

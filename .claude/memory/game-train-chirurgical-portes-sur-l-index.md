@@ -40,3 +40,10 @@ exigeait une ligne de stock L1d + `'races'` au picker. Mon juge (lentille RAW/do
 soldé par la voisine (d53d75b15). **Règle :** un champ NEUF sur un dataset (même une valeur juste) est
 un changement de FORME → jouer la famille structures avant commit, ou la suite COMPLÈTE (c'est
 précisément ce qu'elle attrape et que les sous-ensembles « de domaine » ne voient jamais).
+
+**5e occurrence (2026-09-01, B3 #1457, 687863ec6) — même classe FORME/COMPTE :** un dédoublonnage de
+`skills[]` (riverain-respecte 27→26) sans rafraîchir le stock de COMPTE `slotsStock.mjs` (5982→5981) —
+CI rouge attrapée par la voisine, corrigée dans SON train. Mes gates = 5 suites de domaine ciblées, pas
+`slots-contrat`. **La règle n'est pas « jouer la bonne famille » (je ne la devine jamais toute) : c'est
+la SUITE COMPLÈTE avant push d'un train de données, sérialisée s'il le faut** — les sous-ensembles sont
+une porte de codeur, pas une porte de commit.

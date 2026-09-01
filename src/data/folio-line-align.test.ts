@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   auditAlignment,
@@ -42,6 +44,36 @@ const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
 /** Plafond du stock, même lecture que `FOLIO_RATCHET_MAX` : il ne monte jamais. */
 const RATCHET_MAX = 41;
 
+/** Couverture MESURÉE le 2026-09-01 (après #1457 B2/B3) : `src/data/*.json` porte 4500 entrées à
+ *  `source:{book,page}`, dont 1206 citent AUSSI une ligne — 312 jugées ici, 894 écartées (888
+ *  hors-forme, 6 queue-trouée). Ces chiffres ne vivaient qu'en commentaire d'en-tête (ici,
+ *  `book-source-integrity.test.ts`, `folioIntegrity.mjs`) : ils dérivaient sans un mot. Les deux
+ *  bornes ci-dessous les rendent OPPOSABLES, chacune dans son sens. */
+const SCANNED_MIN = 312;
+const SANS_CITATION_MAX = 3294; // 4500 sourcées − 1206 citées
+
+/** Entrées à `source:{book,page}` (SOURCÉES) et celles qui citent AUSSI une ligne (CITÉES), même
+ *  règle de lecture que `citedEntries` : `source.note`, à défaut le champ `ref` frère. */
+function compteSources(dir: string): { sourcees: number; citees: number } {
+  let sourcees = 0;
+  let citees = 0;
+  const walk = (node: unknown): void => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== 'object') return;
+    const rec = node as Record<string, unknown>;
+    const s = rec.source as Record<string, unknown> | undefined;
+    if (s && typeof s === 'object' && !Array.isArray(s) && typeof s.book === 'string' && typeof s.page === 'number') {
+      sourcees++;
+      if (typeof s.note === 'string' || typeof rec.ref === 'string') citees++;
+    }
+    for (const [k, v] of Object.entries(rec)) if (k !== 'source') walk(v);
+  };
+  for (const f of readdirSync(dir).filter((x) => x.endsWith('.json'))) {
+    walk(JSON.parse(readFileSync(join(dir, f), 'utf8')));
+  }
+  return { sourcees, citees };
+}
+
 describe('garde-fou « folio déclaré ↔ ligne citée » (cliquet, #1318 E8)', () => {
   const { scanned, violations, ignored } = auditDataDir(DATA_DIR);
 
@@ -61,6 +93,21 @@ describe('garde-fou « folio déclaré ↔ ligne citée » (cliquet, #1318 E8)',
     const perimees = [...FOLIO_LINE_ALIGN_RATCHET].filter((k) => !encore.has(k));
     expect(perimees, `Entrée(s) alignée(s) — retirer de FOLIO_LINE_ALIGN_RATCHET :\n${perimees.join('\n')}`).toEqual([]);
     expect(FOLIO_LINE_ALIGN_RATCHET.size).toBeLessThanOrEqual(RATCHET_MAX);
+  });
+
+  it('CLIQUET DE COUVERTURE : les entrées JUGÉES ne reculent pas, les entrées SANS citation ne croissent pas (2026-09-01)', () => {
+    const { sourcees, citees } = compteSources(DATA_DIR);
+    expect(citees, 'le compte de citations diverge de celui de `citedEntries` — la mesure ci-dessous ne porte plus sur la même population').toBe(
+      scanned + ignored.length,
+    );
+    expect(
+      scanned,
+      `couverture EN RECUL : ${scanned} entrées jugées pour ${SCANNED_MIN} au relevé — une entrée cesse d'être machine-vérifiée sans le dire`,
+    ).toBeGreaterThanOrEqual(SCANNED_MIN);
+    expect(
+      sourcees - citees,
+      `entrées sourcées SANS citation à la ligne : ${sourcees - citees} pour ${SANS_CITATION_MAX} au relevé (${sourcees} sourcées, ${citees} citées) — une entrée neuve doit citer sa ligne, pas grossir l'angle mort`,
+    ).toBeLessThanOrEqual(SANS_CITATION_MAX);
   });
 
   it('MESURE : 52 des 54 folios de reglesOptionnelles sont MACHINE-vérifiés, les 2 autres sont nommés', () => {
