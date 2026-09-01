@@ -82,7 +82,7 @@ export function rollSeasonalCargo(cargoes: CargoDef[], season: Season, rng: RNG 
   const i = findTableEntryIndex(cargoes.map((c) => c.avail[season]), r);
   if (i < 0) {
     throw new Error(
-      `rollSeasonalCargo : le jet ${r} ne tombe dans aucune plage de disponibilité de la saison « ${season} » sur les ${cargoes.length} cargaison(s) fournies — la colonne ne couvre pas le d100.`,
+      `rollSeasonalCargo : le jet ${r} ne tombe dans aucune plage de disponibilité de la saison « ${season} » sur les ${cargoes.length} cargaison(s) fournies — la colonne ne couvre pas le d100.`,
     );
   }
   return cargoes[i];
