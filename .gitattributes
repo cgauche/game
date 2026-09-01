@@ -51,6 +51,7 @@ docs/ajouter-un-flux-de-jet.md merge=docs-generes linguist-generated=true
 docs/ajouter-une-mecanique.md merge=docs-generes linguist-generated=true
 docs/ajouter-un-sort.md       merge=docs-generes linguist-generated=true
 docs/ajouter-une-donnee.md    merge=docs-generes linguist-generated=true
+docs/regles-optionnelles.md   merge=docs-generes linguist-generated=true
 
 # Fiches de l'Atlas RAW : mixtes. Règle de FAMILLE d'abord, exceptions générées ensuite
 # (dernière règle appliquée gagne).

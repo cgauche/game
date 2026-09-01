@@ -49,6 +49,7 @@
     "docs:mecanique": "node scripts/docs/build-mecanique.mjs",
     "docs:sort": "node scripts/docs/build-sort.mjs",
     "docs:ajouter-donnee": "node scripts/docs/build-ajouter-donnee.mjs",
+    "docs:regles-optionnelles": "node scripts/docs/build-regles-optionnelles.mjs",
     "docs:sorts": "tsx scripts/gen-sorts-doc.mts",
     "docs:field-consumers": "tsx scripts/docs/build-field-consumers.mts",
     "docs:structures": "tsx scripts/docs/build-structures.mts",

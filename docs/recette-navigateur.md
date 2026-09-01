@@ -333,6 +333,16 @@ Les tokens portent `data-cid="<id de l'entité/combattant>"` dans le SVG — COM
 (#226) → survol/clic ciblé par sélecteur DOM (vrais clics
 Playwright, cf. piège ci-dessous), ou lecture de position via `screenPos('id')`.
 
+### Contenu gaté par une règle optionnelle
+
+Avant de rapporter une **ABSENCE** (une race manquante au créateur, une carrière, une table, un
+écran, un événement jamais tiré) : vérifier que le contenu n'est pas simplement gaté par une règle
+optionnelle DÉSACTIVÉE par défaut. Le registre complet — id, groupe, valeur par défaut, et ce que
+chaque règle change — est dans **`docs/regles-optionnelles.md`** (généré). Y trouver l'id, l'activer
+en setup (`rules(id, value)` pour un run, panneau Options pour un état persisté), rejouer le geste,
+et ne conclure à l'absence qu'après. Précédent : #1660, « pas de Gnome au créateur » rapporté à tort
+alors que `creation-gnome-jouable` vaut `false` par défaut.
+
 ### Voyage en mer — accélérer une traversée commandée (recette, #297)
 
 La progression jour par jour d'une traversée EN MER (`runSeaDay`, `state/seaVoyageFlow.ts` — météo,
