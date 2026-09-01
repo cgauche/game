@@ -207,9 +207,16 @@ const CONCEPTS_CLASSABLES = CONCEPTS.filter((c) => !c.resolvables && !c.listeIds
  *  lexique, elle ne se nomme pas au call-site : ajouter un concept structurel au lexique suffit. */
 const CONCEPTS_STRUCTURELS = CONCEPTS_CLASSABLES.filter((c) => c.exigeCandidatureStructurelle && c.noyau?.length);
 
-/** Ids des concepts structurels dont l'objet `o` porte TOUT le noyau en NUMÉRIQUE. */
-const candidatsStructurels = (o: Record<string, unknown>): string[] =>
-  CONCEPTS_STRUCTURELS.filter((c) => c.noyau!.every((k) => typeof o[k] === 'number')).map((c) => c.id);
+/**
+ * Ids des concepts structurels dont l'objet `o` porte TOUT le noyau en NUMÉRIQUE. `dansTableau` dit
+ * la POSITION du porteur : un concept qui déclare `candidatureHorsTableau` est candidat des deux
+ * côtés, les autres restent bornés à l'élément de tableau. La liste vient du LEXIQUE (#842) — aucun
+ * concept n'est nommé ici.
+ */
+const candidatsStructurels = (o: Record<string, unknown>, dansTableau: boolean): string[] =>
+  CONCEPTS_STRUCTURELS.filter(
+    (c) => (dansTableau || c.candidatureHorsTableau) && c.noyau!.every((k) => typeof o[k] === 'number'),
+  ).map((c) => c.id);
 
 /**
  * Statut d'une signature AU SITE : une entrée SITE-QUALIFIée du lexique gagne sur l'entrée nue de la
@@ -798,7 +805,7 @@ export function scannerDonnees(
       }
 
       // ---- VALEUR d'abord (noyau propre), RÉFÉRENCE ensuite (index des ids)
-      const candidats = dansTableau ? candidatsStructurels(o) : undefined;
+      const candidats = candidatsStructurels(o, dansTableau);
       const valeur = classerValeur(sig, cles, { dataset: p.nom, champ, candidats });
       // Une ENTRÉE DE RACINE qu'aucun concept de valeur ne reconnaît ne peut être ni orpheline ni hors
       // strate (un document n'est sommé de rien, cf. la garde plus bas) : sans ce compte, elle sortirait

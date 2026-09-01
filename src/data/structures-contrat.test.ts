@@ -240,7 +240,17 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // `etats › amount | sum`, `miscast › amount|rounds|value | sum` et `miscast › sum | sinPoints` —,
 // tandis qu'une 8ᵉ entre au stock des FORMES comme divergente (`sea-cargo › offerPrice | sum+…`).
 // Les 10 termes de Péché de la Colère des dieux sont à la forme CIBLE : ils ne pèsent nulle part.
-const PLAFOND_HORS_STRATE = 1141;
+// Cliquet DESCENDU 1141 → 1136 (#1659 L-1659-1, 2026-09-01) : la candidature `plage` cesse d'être
+// POSITIONNELLE (`candidatureHorsTableau` au lexique) — un `{min,max}` numérique porté par un CHAMP
+// est la MÊME fourchette que celui d'un élément de tableau. AUCUNE donnée n'est touchée : les CINQ
+// signatures qui quittent le hors-strate sont exactement les cinq `{min,max}` hors tableau des deux
+// racines, et elles rejoignent la strate Valeur à la forme CIBLE — `sea-events.json › impressed` et
+// `› wrathful` (`manannD10,max,min` → `plage max,min+…`), `tavernGames.json › targetRange` et
+// `› libre` (`max,min` → `plage max,min`), `water-exposure.json › auto` (`kind,max,min,op` →
+// `plage max,min+…`). Le stock des FORMES à éteindre ne bouge pas (ces cinq étaient hors strate, pas
+// divergentes) ; les lignes de forme montent de 855 à 860 (cible 388 → 393) et le concept `plage`
+// passe de 66 à 71 lignes / 1454 à 1459 occurrences.
+const PLAFOND_HORS_STRATE = 1136;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 

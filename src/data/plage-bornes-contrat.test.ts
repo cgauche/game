@@ -2,18 +2,31 @@
  * CONTRAT des deux concepts à DEUX BORNES de la donnée (#1463 L4, vague `plage`) — sondes du design
  * jugé du 2026-08-31 promues en tests.
  *
- * Ce fichier tient cinq affirmations POSITIVES, chacune mesurée sur les DEUX racines de donnée
+ * Ce fichier tient six affirmations POSITIVES, chacune mesurée sur les DEUX racines de donnée
  * (`src/data` et `src/scenes`, comme le scan des structures) :
- *  A. une seule graphie nomme une paire de bornes (`min,max`) ; ce qui reste encodé par la BORNE
- *     HAUTE SEULE est INVENTORIÉ, document par document ;
+ *  A. une seule graphie d'OBJET nomme une paire de bornes (`min,max`) ; ce qui reste encodé par la
+ *     BORNE HAUTE SEULE est INVENTORIÉ, document par document ;
  *  B. les bornes d'un RÉGLAGE et les bornes d'un TIRAGE sont disjointes ;
  *  C. la fourchette EMBOÎTÉE (`{range: {min, max}}`) n'existe nulle part ;
  *  D. l'en-tête de `STRUCTURES_ORPHELINES` dit ce que le stock mesure ;
  *  E. une seule bande est OUVERTE (`max: null`) dans toute la donnée, et elle est NOMMÉE — c'est ce
  *     qui justifie un nœud de grammaire à part (`plageOuverteSchema`, #1463 L-gram-1) plutôt qu'une
- *     borne haute rendue `nullable` partout.
+ *     borne haute rendue `nullable` partout ;
+ *  F. la paire de bornes encodée en TUPLE `[min, max]` est INVENTORIÉE, site par site, en stock
+ *     DÉCROISSANT — avec les sites qui n'en sont pas, EXCLUS NOMMÉMENT.
  *
- * Ces cinq-là sont ce qui rend la CIBLE tenable : `findTableEntry`
+ * COUVERTURE RÉELLE, et ses deux bords (#1659, 2026-09-01 — l'en-tête d'avant revendiquait « les deux
+ * concepts à DEUX BORNES de la donnée » alors que 99 paires écrites en TUPLE lui échappaient, sur 18
+ * sites) :
+ *   (1) A/B/C/E ne voient que des OBJETS : une paire de bornes écrite `[81, 130]` n'a ni clé `min` ni
+ *       clé `max` — c'est le volet F, et lui seul, qui la mesure ;
+ *   (2) le volet A « borne haute seule » reste borné à l'ÉLÉMENT DE TABLEAU, là où A/B/C/E et le
+ *       lexique ne le sont plus : hors tableau, `{max}` sans `min` est un CARDINAL, pas une table
+ *       encodée par sa borne haute — mesuré 2026-09-01, les deux seuls sites sont
+ *       `arcane-phenomena.json › stonePropertySlots` (nombre de propriétés d'une pierre) et
+ *       `traits.json › effects[].on` (nombre de cibles d'un déclenchement).
+ *
+ * Ces six-là sont ce qui rend la CIBLE tenable : `findTableEntry`
  * (`src/engine/tables.ts`, primitive de la table CLAUDE.md) exige la forme PLATE `{min, max}`, et
  * borne le tirage des DEUX côtés — donc l'ordre des rangées d'une table éditable au Codex ne décide
  * plus de son résultat.
@@ -46,17 +59,27 @@ type Site = { doc: string; chemin: string; cles: string[] };
 
 const estNombre = (v: unknown): v is number => typeof v === 'number';
 
+/** Paramètre d'une recette de RENDU (`detailRecipeSchema`, `schemas/grammaire/valeurs.ts`) : un
+ *  intervalle géométrique lu POSITIONNELLEMENT (`src/gameIso/detail/courses.ts:44` :
+ *  `c.blockWM[0] + c.blockWM[1]`), pas une bande de table — aucun d100 ne le traverse. */
+const EXCLU_RECETTE =
+  'paramètre d’une recette de RENDU (`detailRecipeSchema`) lu positionnellement par `src/gameIso/detail/courses.ts:44`, pas une bande de table.';
+
 type Mesure = {
   /** Compte par graphie de paire (`'min,max'` → n). */
   paires: Record<string, number>;
   /** Objets `{range: {min, max}}` — la cible EMBOÎTÉE. */
   emboites: string[];
-  /** Élément de TABLEAU portant `min` ET `max` numériques (la candidature structurelle du lexique). */
+  /** Objet portant `min` ET `max` numériques — la candidature structurelle du lexique, qui n'est plus
+   *  POSITIONNELLE depuis #1659 (`candidatureHorsTableau`) : élément de tableau comme porté par un champ. */
   deuxBornes: Site[];
-  /** Élément de TABLEAU portant `max` (nombre ou `null`) SANS `min` : la borne haute SEULE. */
+  /** Élément de TABLEAU portant `max` (nombre ou `null`) SANS `min` : la borne haute SEULE. Borné au
+   *  tableau à dessein (cf. l'en-tête, bord (2) : hors tableau, `{max}` seul est un CARDINAL). */
   borneHauteSeule: Site[];
-  /** Élément de TABLEAU portant `min` numérique et `max: null` : la bande OUVERTE (`plageOuverteSchema`). */
+  /** Objet portant `min` numérique et `max: null` : la bande OUVERTE (`plageOuverteSchema`). */
   bandesOuvertes: Site[];
+  /** TUPLE `[nombre, nombre]`, agrégé par `doc::chemin` (indices de tableau réduits à `[]`). */
+  tuples: Record<string, number>;
   /** Documents portant le champ `rand` (borne haute d100 portée par l'ENTITÉ), et son compte. */
   rand: Record<string, number>;
   /** Documents JSON effectivement lus, PAR RACINE — sans quoi l'élargissement de la marche à une
@@ -65,9 +88,15 @@ type Mesure = {
 };
 
 function mesurer(): Mesure {
-  const m: Mesure = { paires: {}, emboites: [], deuxBornes: [], borneHauteSeule: [], bandesOuvertes: [], rand: {}, documentsParRacine: {} };
+  const m: Mesure = { paires: {}, emboites: [], deuxBornes: [], borneHauteSeule: [], bandesOuvertes: [], tuples: {}, rand: {}, documentsParRacine: {} };
   const walk = (n: unknown, doc: string, chemin: string, dansTableau: boolean): void => {
     if (Array.isArray(n)) {
+      // Volet F : le TUPLE de deux nombres est la paire de bornes qu'aucune clé ne nomme — il se
+      // mesure sur le TABLEAU lui-même, avant la descente, et s'agrège par `doc::chemin`.
+      if (n.length === 2 && n.every(estNombre)) {
+        const site = `${doc}::${chemin}`;
+        m.tuples[site] = (m.tuples[site] ?? 0) + 1;
+      }
       for (const e of n) walk(e, doc, `${chemin}[]`, true);
       return;
     }
@@ -82,8 +111,11 @@ function mesurer(): Mesure {
     if (r && typeof r === 'object' && !Array.isArray(r) && estNombre(r.min) && estNombre(r.max)) {
       m.emboites.push(`${doc}${chemin}`);
     }
-    if (dansTableau && estNombre(o.min) && estNombre(o.max)) m.deuxBornes.push({ doc, chemin, cles });
-    if (dansTableau && estNombre(o.min) && o.max === null) m.bandesOuvertes.push({ doc, chemin, cles });
+    // Ni `deuxBornes` ni `bandesOuvertes` ne regardent la POSITION du porteur : la candidature `plage`
+    // du lexique ne le fait plus non plus (`candidatureHorsTableau`, #1659) — un `{min,max}` porté par
+    // un champ est la même fourchette que celui d'un élément de tableau.
+    if (estNombre(o.min) && estNombre(o.max)) m.deuxBornes.push({ doc, chemin, cles });
+    if (estNombre(o.min) && o.max === null) m.bandesOuvertes.push({ doc, chemin, cles });
     if (dansTableau && 'max' in o && !('min' in o) && (estNombre(o.max) || o.max === null)) {
       m.borneHauteSeule.push({ doc, chemin, cles });
     }
@@ -104,6 +136,42 @@ function mesurer(): Mesure {
   }
   return m;
 }
+
+/**
+ * STOCK DÉCROISSANT des paires de bornes écrites en TUPLE `[min, max]` (volet F, #1659) — la sonde A
+ * du design jugé du 2026-09-01, promue en test. 99 occurrences sur 18 sites, deux racines.
+ * `exclu` = ce site n'est PAS une paire de bornes, et la chaîne dit pourquoi ; les autres sont à
+ * migrer vers la forme `{min, max}` que `findTableEntry` lit (#1659 L2 pour les 72 disponibilités
+ * saisonnières, L3 pour les 7 longueurs de coque et les 4 sous-tirages astraux).
+ * HORS COMPTE, dit ici pour qu'il ne se croie pas oublié : `defs/progression-schemas-derived.ts:29`
+ * `teinte` est un 3-TUPLE (une couleur), pas une paire — et il vit dans un schéma, pas en donnée.
+ */
+const TUPLES_STOCK: Record<string, { n: number; exclu?: string }> = {
+  'land-cargo.json::.cargoes[].avail.automne': { n: 7 },
+  'land-cargo.json::.cargoes[].avail.ete': { n: 7 },
+  'land-cargo.json::.cargoes[].avail.hiver': { n: 7 },
+  'land-cargo.json::.cargoes[].avail.printemps': { n: 7 },
+  'sea-cargo.json::.cargoes[].avail.automne': { n: 11 },
+  'sea-cargo.json::.cargoes[].avail.ete': { n: 11 },
+  'sea-cargo.json::.cargoes[].avail.hiver': { n: 11 },
+  'sea-cargo.json::.cargoes[].avail.printemps': { n: 11 },
+  'ship-construction.json::.standard[].lengthM': { n: 7 },
+  'stars.json::[].sub': { n: 4 },
+  'qualities.json::[].capabilities.fumbleDigits': {
+    n: 1,
+    exclu: 'ENSEMBLE de chiffres de Maladresse (`[8, 9]`), pas une bande : l’UNION est lue chiffre par chiffre (`src/engine/qualities/dispatch.ts:232`), et le schéma la déclare `z.array(z.number())`.',
+  },
+  'structureAppearance.json::[].door.herse.traverseFracs': {
+    n: 1,
+    exclu: 'positions FRACTIONNAIRES des traverses d’une herse (`[0.4, 0.78]`) : deux points, pas deux bornes — `z.array` dans `defs/structureAppearance.ts`.',
+  },
+  'reliefMaterials.json::[].detail.courses.blockWM': { n: 1, exclu: EXCLU_RECETTE },
+  'reliefMaterials.json::[].detail.speckle.rM': { n: 1, exclu: EXCLU_RECETTE },
+  'roofMaterials.json::[].detail.courses.blockWM': { n: 2, exclu: EXCLU_RECETTE },
+  'roofMaterials.json::[].detail.tufts.hM': { n: 1, exclu: EXCLU_RECETTE },
+  'structureAppearance.json::[].detail.courses.blockWM': { n: 6, exclu: EXCLU_RECETTE },
+  'structureAppearance.json::[].detail.speckle.rM': { n: 3, exclu: EXCLU_RECETTE },
+};
 
 const M = mesurer();
 
@@ -153,6 +221,31 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     // Le dénominateur : la population FERMÉE devant laquelle ces bandes sont l'exception (mesuré
     // 2026-09-01 : 741 fourchettes fermées par bande ouverte).
     expect(M.paires['min,max'] / M.bandesOuvertes.length).toBeGreaterThan(500);
+  });
+
+  it('F — les paires de bornes en TUPLE sont un STOCK NOMINATIF DÉCROISSANT, et ce qui n’en est pas est EXCLU NOMMÉMENT', () => {
+    const observe = Object.fromEntries(Object.entries(M.tuples).sort());
+    const attendu = Object.fromEntries(Object.entries(TUPLES_STOCK).map(([site, l]) => [site, l.n]).sort());
+    expect(
+      observe,
+      'le stock des TUPLES a déphasé : un site en trop côté observé est une paire de bornes NEUVE écrite `[min, max]` (elle s’écrit `{min, max}`, la forme que `findTableEntry` lit) ; un site en trop côté stock est MIGRÉ — sa ligne se retire ICI, elle ne se laisse pas traîner.',
+    ).toEqual(attendu);
+
+    const total = Object.values(M.tuples).reduce((s, n) => s + n, 0);
+    expect(total, 'stock des tuples en HAUSSE : la liste ne fait que décroître (#1659).').toBeLessThanOrEqual(99);
+
+    // Le stock a DEUX populations, et le cardinal de chacune se mesure sur le RÉSULTAT — le mot
+    // « exclu » ne solde rien : une exclusion porte SA raison, et le reste est à migrer.
+    const exclus = Object.entries(TUPLES_STOCK).filter(([, l]) => l.exclu);
+    const cibles = Object.entries(TUPLES_STOCK).filter(([, l]) => !l.exclu);
+    expect(exclus.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples EXCLUS a bougé sans qu’une raison soit dite.').toBe(16);
+    expect(exclus.length).toBe(8);
+    expect(cibles.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples À MIGRER a bougé : #1659 L2/L3 les portent, en donnée.').toBe(83);
+    expect(cibles.length).toBe(10);
+    expect(
+      exclus.filter(([, l]) => !l.exclu?.trim()).map(([s]) => s),
+      'un site EXCLU sans raison écrite : une exclusion se motive, sinon c’est un angle mort déguisé.',
+    ).toEqual([]);
   });
 
   it('A — `rand` (borne haute d100 portée par l’ENTITÉ) est un RESTE NOMMÉ, borné à six documents', () => {
