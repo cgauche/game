@@ -1,6 +1,6 @@
 /**
  * Outillage d'AUTHORING de CAMPAGNE — helpers purs pour composer un projet (`ProjectDoc`, format courant
- * `{ schema: 6, <identité>?, narratif, scenes, worldMap }` — `CURRENT_PROJECT_SCHEMA`, `src/state/worldMap.ts` ;
+ * `{ schema: 7, <identité>?, narratif, scenes, worldMap }` — `CURRENT_PROJECT_SCHEMA`, `src/state/worldMap.ts` ;
  * `projectDoc()` ci-dessous en est la SEULE fabrique)
  * partagé par TOUTES les campagnes (Arène, « Le Loup et la Saumure », …). Le JSON commité
  * (`src/scenes/<campagne>/<campagne>-projet.json`) reste la SOURCE CANONIQUE, 100 % éditable dans

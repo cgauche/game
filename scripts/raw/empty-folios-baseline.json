@@ -1,0 +1,319 @@
+{
+  "seuil": 200,
+  "perdues": [
+    {
+      "ref": "AA 0",
+      "file": "00 - Index.md",
+      "folio": -2,
+      "pdfChars": 1706
+    },
+    {
+      "ref": "AA 0",
+      "file": "00 - Index.md",
+      "folio": 0,
+      "pdfChars": 430
+    },
+    {
+      "ref": "AA 3",
+      "file": "03 - LES CHEVALIERS DE L'EMPIRE.md",
+      "folio": 39,
+      "pdfChars": 1498
+    },
+    {
+      "ref": "EDO 0",
+      "file": "00 - Index.md",
+      "folio": 1,
+      "pdfChars": 1105
+    },
+    {
+      "ref": "LDB 8",
+      "file": "08 - Statut.md",
+      "folio": 88,
+      "pdfChars": 2642
+    },
+    {
+      "ref": "MDG 0",
+      "file": "00 - Index.md",
+      "folio": -3,
+      "pdfChars": 1526
+    },
+    {
+      "ref": "MSRC 0",
+      "file": "00 - Index.md",
+      "folio": 1,
+      "pdfChars": 1083
+    },
+    {
+      "ref": "ZI 0",
+      "file": "00 - Index.md",
+      "folio": -1,
+      "pdfChars": 418
+    },
+    {
+      "ref": "ZI 0",
+      "file": "00 - Index.md",
+      "folio": 0,
+      "pdfChars": 1339
+    },
+    {
+      "ref": "ZI 1",
+      "file": "01 - TROIS EXPÉDITIONS.md",
+      "folio": 9,
+      "pdfChars": 809
+    },
+    {
+      "ref": "ZI 1",
+      "file": "01 - TROIS EXPÉDITIONS.md",
+      "folio": 11,
+      "pdfChars": 1276
+    },
+    {
+      "ref": "ZI 10",
+      "file": "10 - Macareux à bec tranchant.md",
+      "folio": 81,
+      "pdfChars": 415
+    },
+    {
+      "ref": "ZI 13",
+      "file": "13 - Sirène.md",
+      "folio": 87,
+      "pdfChars": 1000
+    },
+    {
+      "ref": "ZI 13",
+      "file": "13 - Sirène.md",
+      "folio": 89,
+      "pdfChars": 1184
+    },
+    {
+      "ref": "ZI 13",
+      "file": "13 - Sirène.md",
+      "folio": 97,
+      "pdfChars": 437
+    },
+    {
+      "ref": "ZI 2",
+      "file": "02 - Griffon.md",
+      "folio": 21,
+      "pdfChars": 810
+    },
+    {
+      "ref": "ZI 4",
+      "file": "04 - « L'abominable » Halagrundsor.md",
+      "folio": 40,
+      "pdfChars": 1652
+    },
+    {
+      "ref": "ZI 4",
+      "file": "04 - « L'abominable » Halagrundsor.md",
+      "folio": 42,
+      "pdfChars": 875
+    },
+    {
+      "ref": "ZI 4",
+      "file": "04 - « L'abominable » Halagrundsor.md",
+      "folio": 43,
+      "pdfChars": 835
+    },
+    {
+      "ref": "ZI 5",
+      "file": "05 - Amibe.md",
+      "folio": 53,
+      "pdfChars": 894
+    },
+    {
+      "ref": "ZI 5",
+      "file": "05 - Amibe.md",
+      "folio": 57,
+      "pdfChars": 263
+    },
+    {
+      "ref": "ZI 5",
+      "file": "05 - Amibe.md",
+      "folio": 62,
+      "pdfChars": 2136
+    },
+    {
+      "ref": "ZI 7",
+      "file": "07 - Chimère.md",
+      "folio": 72,
+      "pdfChars": 1800
+    },
+    {
+      "ref": "ZI 7",
+      "file": "07 - Chimère.md",
+      "folio": 73,
+      "pdfChars": 608
+    }
+  ],
+  "benignes": [
+    {
+      "ref": "AA 0",
+      "file": "00 - Index.md",
+      "folio": 1,
+      "pdfChars": 0
+    },
+    {
+      "ref": "AA 1",
+      "file": "01 - CRÉDITS.md",
+      "folio": 4,
+      "pdfChars": 0
+    },
+    {
+      "ref": "EDO 12",
+      "file": "12 - Annexe 3 - Documents et aides de jeux.md",
+      "folio": 156,
+      "pdfChars": 52
+    },
+    {
+      "ref": "EDO 12",
+      "file": "12 - Annexe 3 - Documents et aides de jeux.md",
+      "folio": 161,
+      "pdfChars": 37
+    },
+    {
+      "ref": "EDO 12",
+      "file": "12 - Annexe 3 - Documents et aides de jeux.md",
+      "folio": 162,
+      "pdfChars": 37
+    },
+    {
+      "ref": "EDO 12",
+      "file": "12 - Annexe 3 - Documents et aides de jeux.md",
+      "folio": 163,
+      "pdfChars": 37
+    },
+    {
+      "ref": "EDO 4",
+      "file": "04 - Chapitre 4 - Sur la route de Bögenhafen….md",
+      "folio": 51,
+      "pdfChars": 37
+    },
+    {
+      "ref": "EDO 9",
+      "file": "09 - Chapitre 9 - L’heure fatidique.md",
+      "folio": 115,
+      "pdfChars": 37
+    },
+    {
+      "ref": "MDG 0",
+      "file": "00 - Index.md",
+      "folio": -1,
+      "pdfChars": 0
+    },
+    {
+      "ref": "MDG 0",
+      "file": "00 - Index.md",
+      "folio": 0,
+      "pdfChars": 0
+    },
+    {
+      "ref": "MDG 0",
+      "file": "00 - Index.md",
+      "folio": 1,
+      "pdfChars": 0
+    },
+    {
+      "ref": "MDG 12",
+      "file": "12 - Navires et construction navale.md",
+      "folio": 94,
+      "pdfChars": 0
+    },
+    {
+      "ref": "MDG 12",
+      "file": "12 - Navires et construction navale.md",
+      "folio": 95,
+      "pdfChars": 0
+    },
+    {
+      "ref": "MSR 2",
+      "file": "02 - INTRODUCTION.md",
+      "folio": 8,
+      "pdfChars": 37
+    },
+    {
+      "ref": "MSR 4",
+      "file": "04 - CHAPITRE 2 - D’Altdorf à Kemperbad.md",
+      "folio": 38,
+      "pdfChars": 37
+    },
+    {
+      "ref": "MSR 9",
+      "file": "09 - CHAPITRE 7 - Château von Wittgenstein.md",
+      "folio": 92,
+      "pdfChars": 37
+    },
+    {
+      "ref": "MSR 9",
+      "file": "09 - CHAPITRE 7 - Château von Wittgenstein.md",
+      "folio": 93,
+      "pdfChars": 37
+    },
+    {
+      "ref": "MSRC 19",
+      "file": "19 - CHAPITRE 17 - La vengeance du Roi des tombes.md",
+      "folio": 124,
+      "pdfChars": 0
+    },
+    {
+      "ref": "MSRC 7",
+      "file": "07 - CHAPITRE 5 - Navigation fluviale.md",
+      "folio": 32,
+      "pdfChars": 29
+    },
+    {
+      "ref": "ZI 0",
+      "file": "00 - Index.md",
+      "folio": 1,
+      "pdfChars": 0
+    },
+    {
+      "ref": "ZI 1",
+      "file": "01 - TROIS EXPÉDITIONS.md",
+      "folio": 8,
+      "pdfChars": 0
+    },
+    {
+      "ref": "ZI 13",
+      "file": "13 - Sirène.md",
+      "folio": 96,
+      "pdfChars": 0
+    },
+    {
+      "ref": "ZI 14",
+      "file": "14 - Expéditions prévues.md",
+      "folio": 139,
+      "pdfChars": 0
+    },
+    {
+      "ref": "ZI 14",
+      "file": "14 - Expéditions prévues.md",
+      "folio": 142,
+      "pdfChars": 0
+    },
+    {
+      "ref": "ZI 14",
+      "file": "14 - Expéditions prévues.md",
+      "folio": 143,
+      "pdfChars": 0
+    },
+    {
+      "ref": "ZI 5",
+      "file": "05 - Amibe.md",
+      "folio": 55,
+      "pdfChars": 0
+    },
+    {
+      "ref": "ZI 5",
+      "file": "05 - Amibe.md",
+      "folio": 58,
+      "pdfChars": 114
+    },
+    {
+      "ref": "ZI 7",
+      "file": "07 - Chimère.md",
+      "folio": 71,
+      "pdfChars": 0
+    }
+  ]
+}

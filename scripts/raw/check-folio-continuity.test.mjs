@@ -3,10 +3,15 @@
 // la dernière ancre du fichier ne passe plus entre les mailles (#833). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { folioGapsInText, chapterFolioSpan, scanBookDir, scanAllBooks } from './check-folio-continuity.mjs'
+import {
+  folioGapsInText, chapterFolioSpan, scanBookDir, scanAllBooks,
+  emptyFolioAnchorsInText, scanEmptyFoliosInBook, scanAllEmptyFolios,
+  assertEmptyFoliosAgainstStock, emptyFolioKey, EMPTY_STOCK_PATH, chapterTexts,
+} from './check-folio-continuity.mjs'
+import { BOOKS } from './_lib.mjs'
 
 function span(folio) { return `<span id="page-x-0" data-folio="${folio}"></span>` }
 
@@ -119,4 +124,141 @@ test('scanBookDir : la séquence SEULE est aveugle en fin de fichier — le seco
     assert.deepEqual(folioGapsInText(text), [], 'aucun delta ≠ 1 : le trou est APRÈS la dernière ancre')
     assert.equal(scanBookDir('TEST', dir).length, 1)
   })
+})
+
+// ---------- passe 2 : ancre SANS CONTENU (#1457 lot A1) ----------
+
+test('emptyFolioAnchorsInText : ancres COLLÉES (0 octet) → page sans contenu détectée', () => {
+  const text = `prose ${span(87)}page 87\n${span(88)}${span(89)}page 89\n`
+  assert.deepEqual(emptyFolioAnchorsInText(text).map((e) => e.folio), [88])
+})
+
+test('emptyFolioAnchorsInText : ancres séparées par des BLANCS SEULS → détectée aussi', () => {
+  const text = `${span(10)}\n\n   \n\t\n${span(11)}prose du 11\n`
+  const vides = emptyFolioAnchorsInText(text)
+  assert.equal(vides.length, 1)
+  assert.equal(vides[0].folio, 10)
+})
+
+test('emptyFolioAnchorsInText : le moindre contenu utile entre deux ancres → rien à signaler', () => {
+  assert.deepEqual(emptyFolioAnchorsInText(`${span(10)}\n\n#\n\n${span(11)}`), [])
+  assert.deepEqual(emptyFolioAnchorsInText(`${span(10)} prose ${span(11)} prose ${span(12)}`), [])
+})
+
+test('emptyFolioAnchorsInText : la DERNIÈRE ancre du fichier est hors sujet (page partagée avec le chapitre suivant)', () => {
+  assert.deepEqual(emptyFolioAnchorsInText(`${span(10)}prose\n${span(11)}\n\n`), [])
+})
+
+test('emptyFolioAnchorsInText : la séquence est CONSÉCUTIVE et pourtant la page est perdue — la passe 1 est aveugle', () => {
+  const text = `${span(87)}prose du 87\n${span(88)}${span(89)}prose du 89\n`
+  assert.deepEqual(folioGapsInText(text), [], 'delta 1 partout : aucun saut')
+  assert.deepEqual(emptyFolioAnchorsInText(text).map((e) => e.folio), [88])
+})
+
+test('scanEmptyFoliosInBook : nomme livre, chapitre, fichier, folio et ligne', () => {
+  withTempBookDir({ '08 - Statut.md': `intro\n${span(87)}prose\n${span(88)}${span(89)}suite\n` }, (dir) => {
+    const vides = scanEmptyFoliosInBook('TEST', dir)
+    assert.equal(vides.length, 1)
+    assert.deepEqual(
+      { ref: vides[0].ref, file: vides[0].file, folio: vides[0].folio, line: vides[0].line },
+      { ref: 'TEST 8', file: '08 - Statut.md', folio: 88, line: 3 },
+    )
+  })
+})
+
+const PERDUE = { ref: 'LDB 8', file: '08 - Statut.md', folio: 88, pdfChars: 2642 }
+const BENIGNE = { ref: 'ZI 5', file: '05 - Amibe.md', folio: 58, pdfChars: 12 }
+
+test('assertEmptyFoliosAgainstStock : stock aligné → aucune anomalie', () => {
+  const mesure = [{ ref: 'LDB 8', file: '08 - Statut.md', folio: 88 }, { ref: 'ZI 5', file: '05 - Amibe.md', folio: 58 }]
+  const stock = { seuil: 200, perdues: [PERDUE], benignes: [BENIGNE] }
+  assert.deepEqual(assertEmptyFoliosAgainstStock(mesure, stock), { inconnues: [], restituees: [], benignesDisparues: [], malClassees: [] })
+})
+
+test('assertEmptyFoliosAgainstStock : ancre sans contenu ABSENTE du stock → régression nominative', () => {
+  const inconnue = { ref: 'LDB 8', file: '08 - Statut.md', folio: 88 }
+  const r = assertEmptyFoliosAgainstStock([inconnue], { seuil: 200, perdues: [], benignes: [] })
+  assert.deepEqual(r.inconnues, [inconnue])
+})
+
+test('assertEmptyFoliosAgainstStock : page RESTITUÉE → entrée périmée, le stock doit décroître', () => {
+  const r = assertEmptyFoliosAgainstStock([], { seuil: 200, perdues: [PERDUE], benignes: [] })
+  assert.deepEqual(r.restituees, [PERDUE])
+  assert.deepEqual(r.inconnues, [])
+  assert.deepEqual(r.malClassees, [])
+})
+
+test('assertEmptyFoliosAgainstStock : entrée bénigne sans mesure → périmée elle aussi', () => {
+  const r = assertEmptyFoliosAgainstStock([], { seuil: 200, perdues: [], benignes: [BENIGNE] })
+  assert.deepEqual(r.benignesDisparues, [BENIGNE])
+})
+
+// ---------- le SEUIL est opposé au stock, pas seulement écrit en tête (#1457, grief G1) ----------
+
+test('assertEmptyFoliosAgainstStock : perdue reclassée bénigne → MAL CLASSÉE nominative (le blanchiment ne passe plus)', () => {
+  const mesure = [{ ref: PERDUE.ref, file: PERDUE.file, folio: PERDUE.folio }]
+  const r = assertEmptyFoliosAgainstStock(mesure, { seuil: 200, perdues: [], benignes: [PERDUE] })
+  assert.deepEqual(r.malClassees.map((e) => [emptyFolioKey(e), e.cls, e.pdfChars]), [['LDB 8|08 - Statut.md|88', 'benignes', 2642]])
+  assert.deepEqual([r.inconnues, r.restituees, r.benignesDisparues], [[], [], []], 'les trois autres volets restent muets : seul le classement ment')
+})
+
+test('assertEmptyFoliosAgainstStock : bénigne promue perdue → MAL CLASSÉE elle aussi (la règle est une équivalence)', () => {
+  const mesure = [{ ref: BENIGNE.ref, file: BENIGNE.file, folio: BENIGNE.folio }]
+  const r = assertEmptyFoliosAgainstStock(mesure, { seuil: 200, perdues: [BENIGNE], benignes: [] })
+  assert.deepEqual(r.malClassees.map((e) => [emptyFolioKey(e), e.cls]), [['ZI 5|05 - Amibe.md|58', 'perdues']])
+})
+
+test('stock : le SEUIL committé vaut 200 — un stock régénéré avec `--seuil` complaisant ne blanchit plus en silence', () => {
+  const mesure = [{ ref: PERDUE.ref, file: PERDUE.file, folio: PERDUE.folio }]
+  const complaisant = assertEmptyFoliosAgainstStock(mesure, { seuil: 5000, perdues: [], benignes: [PERDUE] })
+  assert.deepEqual(complaisant.malClassees, [], 'sous seuil 5000, `perdues` vide est COHÉRENT — la garde ne peut rien y voir…')
+  assert.equal(JSON.parse(readFileSync(EMPTY_STOCK_PATH, 'utf8')).seuil, 200, '… c’est donc le seuil COMMITTÉ qui est épinglé ici : le changer exige de changer CE test, au diff, en même temps que le JSON')
+})
+
+test('assertEmptyFoliosAgainstStock : entrée sans `pdfChars`, ou stock sans `seuil` → INAUDITABLE, donc mal classée', () => {
+  const nue = { ref: 'LDB 8', file: '08 - Statut.md', folio: 88 }
+  assert.equal(assertEmptyFoliosAgainstStock([nue], { seuil: 200, perdues: [nue], benignes: [] }).malClassees.length, 1)
+  assert.equal(assertEmptyFoliosAgainstStock([nue], { perdues: [PERDUE], benignes: [] }).malClassees.length, 1)
+})
+
+// ---------- le stock COMMITTÉ, confronté au corpus réel ----------
+
+const STOCK = JSON.parse(readFileSync(EMPTY_STOCK_PATH, 'utf8'))
+
+test('stock : le folio 88 du LDB (carrière de Juriste, page perdue) y est NOMINATIVEMENT', () => {
+  const mesure = scanEmptyFoliosInBook('LDB', new Map(BOOKS).get('LDB'))
+  const cle = 'LDB 8|08 - Statut.md|88'
+  assert.ok(mesure.some((e) => emptyFolioKey(e) === cle), 'le détecteur voit la page 88 sans contenu')
+  assert.ok(STOCK.perdues.some((e) => emptyFolioKey(e) === cle), 'et le stock la porte comme PERDUE')
+})
+
+test('stock : chaque ancre sans contenu du corpus est triée, et aucune entrée périmée', () => {
+  const r = assertEmptyFoliosAgainstStock(scanAllEmptyFolios(), STOCK)
+  assert.deepEqual(r.inconnues.map(emptyFolioKey), [], 'ancre sans contenu non triée (relancer lib/empty-folios-stock.mjs)')
+  assert.deepEqual(r.restituees.map(emptyFolioKey), [], 'page restituée : supprimer l’entrée du stock')
+  assert.deepEqual(r.benignesDisparues.map(emptyFolioKey), [], 'entrée bénigne périmée : la supprimer du stock')
+  assert.deepEqual(r.malClassees.map(emptyFolioKey), [], 'classement démenti par le pdfChars mesuré')
+})
+
+test('stock COMMITTÉ truqué : déplacer une PERDUE vers `benignes` → rouge NOMINATIF (le compte baissait sans un mot)', () => {
+  const truque = { seuil: STOCK.seuil, perdues: STOCK.perdues.slice(1), benignes: [...STOCK.benignes, STOCK.perdues[0]] }
+  const deplacee = STOCK.perdues[0]
+  const r = assertEmptyFoliosAgainstStock(scanAllEmptyFolios(), truque)
+  assert.deepEqual(r.malClassees.map(emptyFolioKey), [emptyFolioKey(deplacee)], 'l’entrée déplacée est nommée')
+  assert.equal(r.malClassees[0].cls, 'benignes')
+  assert.ok(r.malClassees[0].pdfChars > truque.seuil, 'et c’est son pdfChars mesuré qui la dément')
+  assert.deepEqual([r.inconnues, r.restituees, r.benignesDisparues].map((a) => a.length), [0, 0, 0], 'aucun autre volet ne bronchait : c’était le trou')
+})
+
+// ---------- frontière de COUVERTURE : les fins de LIVRE (angle mort déclaré, #1457 grief G2) ----------
+
+test('couverture : les 3 dernières ancres de LIVRE (AA 144, ZI 144, MDG 160) sont hors mesure — aucun chapitre suivant ne les reprend', () => {
+  const mesure = new Set(scanAllEmptyFolios().map(emptyFolioKey))
+  for (const [abbr, folio] of [['AA', 144], ['ZI', 144], ['MDG', 160]]) {
+    const texts = chapterTexts(new Map(BOOKS).get(abbr))
+    const dernier = [...texts.keys()].pop()
+    const ancres = [...texts.get(dernier).matchAll(/data-folio="(-?\d+)"/g)].map((m) => Number(m[1]))
+    assert.equal(ancres.pop(), folio, `${abbr} : folio ${folio} est bien la DERNIÈRE ancre du DERNIER fichier (${dernier})`)
+    assert.ok(![...mesure].some((k) => k.startsWith(`${abbr} `) && k.endsWith(`|${folio}`)), `${abbr} ${folio} : hors mesure, faute de paire d’ancres`)
+  }
 })

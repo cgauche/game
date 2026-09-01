@@ -174,7 +174,7 @@ export function boundsLabel(b) {
 // code de chapitre court, OU en-tête de tableau de caractéristiques (« CC CT F E I Ag Dex Int FM
 // Soc » : quelques abréviations portent 1-2 minuscules isolées, insuffisant pour un mot) — ou ligne
 // vide. Le premier bloc de prose française contient forcément un mot de 3+ minuscules consécutives.
-const HAS_LOWER_RE = /[a-zàâäéèêëïîôöùûüÿœæç]{3,}/
+export const HAS_LOWER_RE = /[a-zàâäéèêëïîôöùûüÿœæç]{3,}/
 
 // Candidats de tête d'une page : la tête de contenu, puis les mêmes fenêtres DÉCALÉES d'une ligne
 // (jusqu'à `SLIDE_MAX`). Motif : la lecture linéaire d'une page à colonnes entrelace parfois un
