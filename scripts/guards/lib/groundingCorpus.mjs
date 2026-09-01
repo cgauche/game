@@ -91,6 +91,33 @@ function sectionSlice(text, heading) {
   return lines.slice(bounds[0], bounds[1]).join('\n');
 }
 
+/**
+ * Bornes d'une SOUS-section (`### …`) : mêmes bornes que `sectionBounds`, mais arrêtées au prochain
+ * titre de N'IMPORTE QUEL niveau. Sans ça, un `### Type` court jusqu'au prochain `## …` et avale les
+ * tables des types SUIVANTS — une ligne `| `champ` | …` d'un autre type y répondrait à sa place
+ * (mesuré : le sabotage du cas `dotation-spec-consommateurs` restait VERT, rattrapé par un `spec`
+ * homonyme d'un type voisin).
+ */
+function sousSectionBounds(lines, heading) {
+  const start = lines.findIndex((l) => l.trim() === heading);
+  if (start === -1) return null;
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (/^#{1,6}\s/.test(lines[i])) {
+      end = i;
+      break;
+    }
+  }
+  return [start, end];
+}
+
+function sousSectionSlice(text, heading) {
+  const lines = text.split('\n');
+  const bounds = sousSectionBounds(lines, heading);
+  if (!bounds) return null;
+  return lines.slice(bounds[0], bounds[1]).join('\n');
+}
+
 function sectionRemoved(text, heading) {
   const lines = text.split('\n');
   const bounds = sectionBounds(lines, heading);
@@ -100,6 +127,7 @@ function sectionRemoved(text, heading) {
 
 const CONCEPT_HEADING = '## Index par concept (français)';
 const TRAPPING_REF_HEADING = '### `TrappingRef` (src/data/index.ts)';
+const CAS_FONDATEUR_HEADING = '## Cas fondateur';
 
 export const GROUNDING_CASES = [
   {
@@ -153,24 +181,35 @@ export const GROUNDING_CASES = [
       "« personne ne lit `spec` sur une référence de dotation » affirmé sur la foi d'une recherche trop " +
       "étroite — sans surface de consommateurs-par-champ, l'affirmation n'était pas vérifiable, juste plausible. " +
       "Résolu par scripts/docs/build-field-consumers.mts (#903) : `trappingRefLabel` NE lit PAS `ref.spec` ; " +
-      "l'unique lecteur mesuré est `resolveOne` (src/engine/trappingChoices.ts:36).",
+      "le lecteur fondateur est `resolveOne` (src/engine/trappingChoices.ts:36). Puis L-ref-1 (75a454653, " +
+      "#1463) lui en a ajouté un SECOND, légitime : `itemFromTrappingRef` (src/engine/items.ts:309) " +
+      "MATÉRIALISE la spec sur l'`ItemInstance` — le rendu, lui, n'en est toujours pas un (`refConcrete`).",
+    // Ce que le cas exige est que le doc NOMME ses sites lecteurs, pas qu'il redise un NOMBRE gelé :
+    // la version « exactement 1 lecteur » a viré au rouge quand le second lecteur est apparu, alors
+    // que le doc répondait toujours — mieux — à la question. Sont exigés les DEUX rôles mesurés
+    // (résolution du choix + matérialisation) et l'absence de lecture au RENDU, qui est la réponse
+    // exacte au « personne ne lit `spec` » fondateur.
     resolves(text) {
-      const section = sectionSlice(text, TRAPPING_REF_HEADING);
+      const section = sousSectionSlice(text, TRAPPING_REF_HEADING);
       if (section == null) return false;
-      const m = section.match(/\|\s*`spec`\s*\|\s*(\d+)\s*\|\s*`([^`]*)`\s*\|/);
-      if (!m || Number(m[1]) !== 1 || !/trappingChoices\.ts/.test(m[2])) return false;
-      return /trappingRefLabel[\s\S]{0,80}ne lit PAS `ref\.spec`/.test(text);
+      const m = section.match(/\|\s*`spec`\s*\|\s*(\d+)\s*\|\s*`(src\/[^`:]*):(\d+)`\s*\|/);
+      if (!m || Number(m[1]) < 1) return false;
+      const fondateur = sectionSlice(text, CAS_FONDATEUR_HEADING);
+      if (fondateur == null) return false;
+      if (!/`src\/engine\/trappingChoices\.ts:\d+`/.test(fondateur)) return false;
+      if (!/`src\/engine\/items\.ts:\d+`/.test(fondateur)) return false;
+      return /trappingRefLabel[\s\S]{0,80}ne lit PAS `ref\.spec`[\s\S]{0,60}`refConcrete`/.test(fondateur);
     },
     // Fait retomber la ligne `spec` de la section `TrappingRef` à « 0 — JAMAIS LU » (comme les 16
     // autres champs sans lecteur du même rapport) — seule occurrence du motif que `resolves` exige
     // dans cette section, la narration « Cas fondateur » restant intacte ne peut pas sauver le cas.
     sabotage(text) {
       const lines = text.split('\n');
-      const bounds = sectionBounds(lines, TRAPPING_REF_HEADING);
+      const bounds = sousSectionBounds(lines, TRAPPING_REF_HEADING);
       if (!bounds) return text;
       const [start, end] = bounds;
       const section = lines.slice(start, end).join('\n')
-        .replace(/\|\s*`spec`\s*\|\s*1\s*\|\s*`[^`]*`\s*\|/, '| `spec` | **0 — JAMAIS LU** | — |');
+        .replace(/\|\s*`spec`\s*\|\s*\d+\s*\|\s*`[^`]*`\s*\|/, '| `spec` | **0 — JAMAIS LU** | — |');
       return [...lines.slice(0, start), ...section.split('\n'), ...lines.slice(end)].join('\n');
     },
   },

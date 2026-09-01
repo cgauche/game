@@ -132,7 +132,7 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
 
   let totalFields = 0
   let totalUnread = 0
-  let trappingRefSpecReaders = 0
+  let trappingRefSpecSites: string[] = []
   const byType = new Map<string, Map<string, Hit[]>>()
 
   // Une cible porte SOIT son nœud zod (`schema`), SOIT ses clés déjà relevées (`cles` d'un handle
@@ -147,12 +147,12 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
     out += `| Champ | Lecteurs | Exemple |\n|---|---|---|\n`
     for (const f of fields) {
       const list = byField.get(f) ?? []
-      if (type === 'TrappingRef' && f === 'spec') trappingRefSpecReaders = list.length
-      if (list.length === 0) {
+      const uniqSites = [...new Set(list.map((h: { file: string; line: number }) => `${h.file}:${h.line}`))]
+      if (type === 'TrappingRef' && f === 'spec') trappingRefSpecSites = uniqSites
+      if (uniqSites.length === 0) {
         totalUnread++
         out += `| \`${f}\` | **0 — JAMAIS LU** | — |\n`
       } else {
-        const uniqSites = [...new Set(list.map((h: { file: string; line: number }) => `${h.file}:${h.line}`))]
         out += `| \`${f}\` | ${uniqSites.length} | \`${uniqSites[0]}\` |\n`
       }
     }
@@ -163,10 +163,25 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
   out += `${TARGETS.length} types, ${totalFields} champs mesurés, **${totalUnread} avec « 0 lecteur » mesuré** `
   out += `(56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de `
   out += `cliquet CI sur ce total).\n\n`
+  // Les lecteurs sont ÉNUMÉRÉS depuis la mesure (jamais un nom en dur) : la phrase reste vraie quand
+  // le nombre de lecteurs change — #1463 L-ref-1 en a ajouté un (matérialisation de la spec sur
+  // l'`ItemInstance`) et la version « l'unique lecteur est `resolveOne` » est devenue fausse en
+  // silence. La clause de RENDU suit la mesure elle-même : un lecteur dans `src/data/index.ts`
+  // signalerait une SECONDE définition du libellé affiché (cf. `src/data/field-consumers.test.ts`).
+  const specDansLeRendu = trappingRefSpecSites.some((s) => s.startsWith('src/data/index.ts'))
+  // DEUX paragraphes, et la coupure est STRUCTURELLE : la porte de commit `check-docs-vs-head.mjs`
+  // exige que chaque `fichier:ligne` cité porte, à ±2 lignes du site AU COMMIT, l'un des identifiants
+  // backtiqués de la MÊME ligne du doc. La ligne des SITES ne backtique donc que `spec` (présent aux
+  // deux sites) ; les identifiants du RENDU (`trappingRefLabel`, `refConcrete`), qui vivent dans
+  // `src/data/index.ts`, restent sur une ligne SANS `fichier:ligne`.
   out += `## Cas fondateur\n\n`
-  out += `\`TrappingRef.spec\` : ${trappingRefSpecReaders} lecteur(s) mesuré(s) — \`trappingRefLabel\` `
-  out += `(\`src/data/index.ts\`, SOURCE UNIQUE du libellé affiché d'une \`TrappingRef\`) ne lit PAS \`ref.spec\` ; `
-  out += `l'unique lecteur est \`resolveOne\` (\`src/engine/trappingChoices.ts\`), qui le RECOPIE sans le consommer.\n`
+  out += `Le champ \`spec\` d'une référence de dotation a ${trappingRefSpecSites.length} lecteur(s) mesuré(s)`
+  out += trappingRefSpecSites.length === 0 ? ` — aucun site.\n\n` : ` — ${trappingRefSpecSites.map((s) => `\`${s}\``).join(', ')}.\n\n`
+  out += `\`trappingRefLabel\` `
+  out += `(\`src/data/index.ts\`, SOURCE UNIQUE du libellé affiché d'une \`TrappingRef\`) `
+  out += specDansLeRendu
+    ? `LIT \`ref.spec\` : une SECONDE définition du rendu « base (spec) », qui appartient à \`refConcrete\`.\n`
+    : `ne lit PAS \`ref.spec\` — le rendu « base (spec) » passe par \`refConcrete\`, partagée par toute \`Ref\`.\n`
 
   return { md: out, byType, totalFields, totalUnread }
 }
