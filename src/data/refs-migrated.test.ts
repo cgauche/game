@@ -11,7 +11,7 @@ import {
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
   findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById, findLightToneById,
   mutationTables,
-  specLabel, refLabel, specEntryId, specEntryLabel, specResolves, SPEC_SOURCES, type SpecsSource, books,
+  specLabel, refLabel, specEntryId, specEntryLabel, specResolves, SPEC_SOURCES, type SpecsSource, type SpecEntry, books,
 } from './index';
 import { avancement } from './schemas/grammaire/avancement';
 import { itemFromTrappingById } from '../engine/items';
@@ -696,37 +696,52 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
 // `source` à l'appui) — jamais du texte libre. Le périmètre et la marche des `skills[]` viennent du
 // module PARTAGÉ avec la migration (`scripts/data/lib/skillSpecWalk.mjs`) : une garde qui remarcherait
 // la donnée à sa façon mesurerait autre chose que le geste qu'elle garde.
-describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#1342 L2-a)', () => {
-  const ROOT = fileURLToPath(new URL('../../', import.meta.url));
-  const { extraits: EXTRAITS, dirManquant } = extractedBooks(books, ROOT);
+type SpecDef = { specsSource?: SpecsSource; specs?: SpecEntry[] };
+/** Une spéc RENCONTRÉE qui ne résout pas, nommée par sa clé stable `fichier|porteur|refId|spec`.
+ *  `catalogue` = la def PORTE un catalogue de spécs (`specs[]` non vide ou `specsSource`). */
+type SpecHors = { where: string; key: string; book: string; refId: string; spec: string; catalogue: boolean };
 
-  const resolves = (skillId: string, spec: string): boolean => {
-    const def = byId('skill', skillId);
-    return !!def && specResolves(def, spec); // porte UNIQUE de validité (#1342 L3) : pool ou hors pool
-  };
-
-  const hors: { where: string; key: string; book: string; skillId: string; spec: string }[] = [];
-  const nues: { where: string; book: string; skillId: string }[] = [];
-  const seen = { n: 0 };
-  for (const [file, list] of [
+/**
+ * MARCHE PARTAGÉE des deux contrats positifs — Compétences (#1342 L2-a) et Talents (#1457 B1) : même
+ * périmètre (`creatures`/`careerLevels`/`species`), MÊME walker (`walkSkillRefs`, paramétré par son
+ * tableau porteur) et MÊME porte de validité (`specResolves`, pool ou hors pool, #1342 L3). Deux
+ * marches séparées mesureraient deux choses. `corpus` n'est fourni que par les contre-épreuves.
+ */
+function collecteSpecs(
+  arrName: 'skills' | 'talents',
+  defOf: (id: string) => SpecDef | undefined,
+  corpus?: [string, { id?: string; label?: string; source?: { book?: string } }[]][],
+): { hors: SpecHors[]; nues: { where: string; book: string; refId: string }[]; seen: number } {
+  const hors: SpecHors[] = [];
+  const nues: { where: string; book: string; refId: string }[] = [];
+  let seen = 0;
+  const listes = corpus ?? ([
     ['creatures', creatures], ['careerLevels', careerLevels], ['species', species],
-  ] as [string, { id?: string; label?: string; source?: { book?: string } }[]][]) {
+  ] as [string, { id?: string; label?: string; source?: { book?: string } }[]][]);
+  for (const [file, list] of listes) {
     for (const entry of list) {
       const book = entry.source?.book ?? '(sans source)';
       const owner = entry.id ?? entry.label ?? '?';
       walkSkillRefs(entry, (node) => {
-        const def = byId('skill', node.id);
-        const groupee = !!def?.specsSource || (Array.isArray(def?.specs) && def.specs.length > 0);
+        const def = defOf(node.id);
+        const catalogue = !!def?.specsSource || (Array.isArray(def?.specs) && def.specs.length > 0);
         // Un nœud à `choix` PORTE un régime de spécialisation (borne ou libre) : ce n'est pas une réf NUE.
         if (node.choix != null) return;
-        if (node.spec == null) { if (groupee) nues.push({ where: `${file}(${owner})`, book, skillId: node.id }); return; }
+        if (node.spec == null) { if (catalogue) nues.push({ where: `${file}(${owner})`, book, refId: node.id }); return; }
         if (isSentinel(node.spec)) return;
-        seen.n++;
-        if (!resolves(node.id, node.spec))
-          hors.push({ where: `${file}(${owner})`, key: `${file}|${owner}|${node.id}|${node.spec}`, book, skillId: node.id, spec: node.spec });
-      });
+        seen++;
+        if (def && specResolves(def, node.spec)) return;
+        hors.push({ where: `${file}(${owner})`, key: `${file}|${owner}|${node.id}|${node.spec}`, book, refId: node.id, spec: node.spec, catalogue });
+      }, arrName);
     }
   }
+  return { hors, nues, seen };
+}
+
+describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#1342 L2-a)', () => {
+  const ROOT = fileURLToPath(new URL('../../', import.meta.url));
+  const { extraits: EXTRAITS, dirManquant } = extractedBooks(books, ROOT);
+  const { hors, nues, seen } = collecteSpecs('skills', (id) => byId('skill', id));
 
   // Le stock « la ligne imprime un CHOIX, pas une spéc » (6 clés : « Artisanat (Armurier OU
   // Forgeron) », « Savoir (Rivières_ou_Chemins) » ×2, « Savoir (Divinité) » ×3) est ÉTEINT au commit
@@ -735,10 +750,10 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
 
   it('creatures/careerLevels/species : zéro spec hors catalogue sous un livre extrait dans Source/', () => {
     // NON-VACUITÉ : sans lignes scannées ni extraction sur disque, le contrat serait vert à vide.
-    expect(seen.n).toBeGreaterThan(500);
+    expect(seen).toBeGreaterThan(500);
     expect(EXTRAITS.size).toBeGreaterThan(10);
     expect(dirManquant, `books.json#dir sans extraction sur disque : ${dirManquant.join(', ')}`).toEqual([]);
-    const bad = hors.filter((h) => EXTRAITS.has(h.book)).map((h) => `${h.where} [${h.book}] : ${h.skillId} → ${JSON.stringify(h.spec)}`);
+    const bad = hors.filter((h) => EXTRAITS.has(h.book)).map((h) => `${h.where} [${h.book}] : ${h.refId} → ${JSON.stringify(h.spec)}`);
     expect(bad, bad.join('\n')).toEqual([]);
   });
 
@@ -796,6 +811,156 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
       'langue(arabien)', 'langue(estalien)', 'langue(reikspiel)', 'langue(tileen)',
       'marchandage', 'projectiles(arbalete)', 'ragot', 'voile(*)',
     ]);
+  });
+});
+
+// ── CONTRAT POSITIF (#1457 B1) — `talents[].spec` d'une entrée SOURCÉE d'un livre EXTRAIT : la spéc
+// RÉSOUT au catalogue du Talent, ou elle est NOMMÉE au stock ci-dessous. Les listes de spécialisation
+// des Talents concernés sont OUVERTES au RAW (`LDB 10 l.117`, `LDB 10 l.1071`) : le geste juste est de
+// CRÉER l'entrée `talents.json#specs[]` avec sa `source` (patron `savoir-vivre›mercenaires`,
+// `AA 04 l.119`), jamais de mapper une valeur imprimée vers un id voisin. Ce lot pose l'INSTRUMENT :
+// les créations d'entrées se font aux lots B2 (livres officiels) et B3 (frenchy-bzh).
+describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock nominatif DÉCROISSANT (#1457 B1)', () => {
+  const ROOT = fileURLToPath(new URL('../../', import.meta.url));
+  const { extraits: EXTRAITS } = extractedBooks(books, ROOT);
+  const { hors, seen } = collecteSpecs('talents', (id) => findTalentById(id));
+  const dette = hors.filter((h) => h.catalogue);
+  const textesDInstance = hors.filter((h) => !h.catalogue);
+
+  /** STOCK NOMINATIF DÉCROISSANT — mesure du 2026-09-01 : 82 spécs de Talent à créer au catalogue,
+   *  clé `fichier|porteur|talentId|spec`. Par Talent : savoir-vivre 39, bon-marcheur 22, sans-peur 10,
+   *  savant 5, haine 2, travailleur-qualifie 2, maitre-artisan 2 ; par livre : frenchy-bzh 73,
+   *  middenheim 6, mer-des-griffes 2, zoo-imperial 1. Une clé se RETIRE quand sa spéc résout.
+   *
+   *  ANGLE MORT ÉNONCÉ (mesure du 2026-09-01, #1646) — le contrat ne walke que les TABLEAUX
+   *  `talents[]` de `creatures`/`careerLevels`/`species` (`walkSkillRefs`), seuls fichiers qui en
+   *  portent (221 / 172 / 40 spécs relevées). Une réf de Talent spécialisée par un AUTRE champ
+   *  échappe à l'instrument : 18 porteurs `{ talentId, spec }` mesurés hors de ces tableaux —
+   *  `spells.json` 6, `mutations.json` 5, `traits.json` 4, `stars.json` 2, `axes.json` 1. Deux sont
+   *  de la MÊME classe que le stock ci-dessus (spéc absente du catalogue de `savoir-vivre`) :
+   *  `traits.json:2051` `savoir-vivre|disciples-de-tzeentch` et `traits.json:2692`
+   *  `savoir-vivre|suivants-de-khorne` ; un de la classe du texte d'instance (Talent SANS catalogue,
+   *  #1621) : `mutations.json:1619` `attirant|Mutants et hommes-bêtes`. */
+  const SPECS_DE_TALENT_A_CREER = new Set<string>([
+    'creatures|andrea-bruhn|savoir-vivre|Guilde',
+    'creatures|andrea-bruhn|savoir-vivre|Noble',
+    'creatures|andrea-bruhn|savoir-vivre|Serviteur',
+    'creatures|araignee-geante-adulte|bon-marcheur|Forêt',
+    'creatures|araignee-geante-impitoyable|bon-marcheur|Forêt',
+    'creatures|architechnomage|savant|Engingneurie',
+    'creatures|architechnomage|savoir-vivre|skavens',
+    'creatures|architechnomage|travailleur-qualifie|Engingneurie',
+    'creatures|batonnier|savoir-vivre|Lettrés',
+    'creatures|capitaine-du-guet|savoir-vivre|Armée',
+    'creatures|capitaine-patrouilleurs-fluviaux|sans-peur|Naufrageurs & Pirates Fluviaux',
+    'creatures|capitaine-patrouilleurs-ruraux|sans-peur|Bandits',
+    'creatures|capitaine-patrouilleurs-ruraux|savoir-vivre|Militaires',
+    'creatures|chasseresse-des-ombres|bon-marcheur|Forêt',
+    'creatures|chef-d-escadron|sans-peur|Nains',
+    'creatures|chef-d-escadron|savoir-vivre|skavens',
+    'creatures|chef-de-clan|savoir-vivre|Skavens',
+    'creatures|chef-de-meute|bon-marcheur|Forêt',
+    'creatures|chef-de-portee|savoir-vivre|Skavens',
+    'creatures|chef-de-section|savoir-vivre|skavens',
+    'creatures|erudit-de-renom|savoir-vivre|Lettrés',
+    'creatures|garde-chiourme|savoir-vivre|Skavens',
+    'creatures|gor-eclaireur|bon-marcheur|Forêt',
+    'creatures|grand-maitre-des-hybridations|maitre-artisan|Ingénierie',
+    'creatures|grand-maitre-des-hybridations|savant|Engingneurie',
+    'creatures|grand-sanglier-ombrageux|bon-marcheur|Forêt',
+    'creatures|grand-sanglier-ombrageux|sans-peur|Bêtes Sauvages',
+    'creatures|grande-pretresse-de-rhya|savoir-vivre|Religieux',
+    'creatures|haut-druide-de-la-foi-antique|bon-marcheur|ForêtouPlaine',
+    'creatures|haut-druide-de-la-foi-antique|savoir-vivre|Religieux',
+    'creatures|haut-juge|savoir-vivre|Lettrés',
+    'creatures|haut-pretre-rodeur-de-taal|bon-marcheur|ForêtouPlaine',
+    'creatures|jaego-roth|savoir-vivre|Marins',
+    'creatures|jaego-roth|savoir-vivre|Pirates',
+    'creatures|jeune-araignee-geante|bon-marcheur|Forêt',
+    'creatures|jeune-loup|bon-marcheur|Forêt',
+    'creatures|jeune-sanglier|bon-marcheur|Forêt',
+    'creatures|juge|savoir-vivre|Lettrés',
+    'creatures|kapo|savoir-vivre|Skavens',
+    'creatures|l-abominable-halagrundsor|savoir-vivre|Nains',
+    'creatures|loup-adulte|bon-marcheur|Forêt',
+    'creatures|maistre-apothicaire|savoir-vivre|Lettrés',
+    'creatures|maistre-herboriste|bon-marcheur|Forêt',
+    'creatures|maitre-des-hybridation|maitre-artisan|Ingénierie',
+    'creatures|maitre-des-taillis|bon-marcheur|PlaineOUForêt',
+    'creatures|maraudeur-du-chaos-chef-de-bande|sans-peur|tous ennemis',
+    'creatures|maraudeur-du-chaos-chef-de-guerre|sans-peur|tous ennemis',
+    'creatures|maraudeur-du-chaos|sans-peur|tous ennemis',
+    'creatures|moine-d-ulric|savoir-vivre|Cultes',
+    'creatures|moine-de-sigmar|savoir-vivre|Cultes',
+    'creatures|moine-de-taal|savoir-vivre|Religieux',
+    'creatures|moritz-valgeir|savoir-vivre|Noble',
+    'creatures|moritz-valgeir|savoir-vivre|Soldat',
+    'creatures|officier|savoir-vivre|Militaires',
+    'creatures|pretre-d-ulric|haine|Ennemis d’Ulric',
+    'creatures|pretre-d-ulric|savoir-vivre|Cultes',
+    'creatures|pretre-de-sigmar|haine|Ennemis de Sigmar',
+    'creatures|pretre-de-sigmar|savoir-vivre|Cultes',
+    'creatures|pretre-rodeur-de-taal|bon-marcheur|ForêtouPlaine',
+    'creatures|pretresse-de-shallya|savoir-vivre|Cultes',
+    'creatures|pretresse-de-verena|savoir-vivre|Cultes',
+    'creatures|rebouteux|bon-marcheur|PlaineOUForêt',
+    'creatures|reine-des-cryptes|savant|Local',
+    'creatures|religieuse-de-rhya|savoir-vivre|Religieux',
+    'creatures|religieuse-de-shallya|savoir-vivre|Cultes',
+    'creatures|religieuse-de-verena|savoir-vivre|Cultes',
+    'creatures|riverain-respecte|bon-marcheur|Marais',
+    'creatures|riverain-respecte|savant|Rivières',
+    'creatures|riverain|bon-marcheur|Marais',
+    'creatures|roi-du-trafic|sans-peur|Patrouilleurs',
+    'creatures|sanglier-adulte|bon-marcheur|Forêt',
+    'creatures|sanglier-feroce|bon-marcheur|Forêt',
+    'creatures|seigneur-brigand|sans-peur|Patrouilleurs',
+    'creatures|sergent-du-guet|savoir-vivre|Armée',
+    'creatures|sergent-patrouilleurs-ruraux|savoir-vivre|Militaires',
+    'creatures|sous-officier|savoir-vivre|Militaires',
+    'creatures|stefan-hochen|savoir-vivre|Guilde',
+    'creatures|technomage-experimente|travailleur-qualifie|Engingneurie',
+    'creatures|traqueur-impitoyable|bon-marcheur|Forêt',
+    'creatures|traqueur-impitoyable|sans-peur|Bêtes Sauvages',
+    'creatures|venerable|savant|Local',
+    'creatures|vhargulf|bon-marcheur|Environnement au choix',
+  ]);
+
+  it('creatures/careerLevels/species : zéro spec de Talent hors catalogue sous un livre extrait, hors stock nominatif', () => {
+    // NON-VACUITÉ : sans lignes scannées ni extraction sur disque, le contrat serait vert à vide.
+    expect(seen).toBeGreaterThan(300);
+    expect(EXTRAITS.size).toBeGreaterThan(10);
+    const bad = dette
+      .filter((h) => EXTRAITS.has(h.book) && !SPECS_DE_TALENT_A_CREER.has(h.key))
+      .map((h) => `${h.where} [${h.book}] : ${h.refId} → ${JSON.stringify(h.spec)} — clé ${h.key}`);
+    expect(bad, `spec de Talent qui ne résout pas et qui n'est pas au stock — créer l'entrée sourcée dans talents.json#specs[] :\n${bad.join('\n')}`).toEqual([]);
+  });
+
+  it('le stock DÉCROÎT : une clé dont la spéc RÉSOUT (ou dont le porteur a disparu) est retirée', () => {
+    const vues = new Set(hors.map((h) => h.key));
+    const perimes = [...SPECS_DE_TALENT_A_CREER].filter((k) => !vues.has(k));
+    expect(perimes, `clé(s) du stock sans instance non résolue — RETIRER du stock :\n${perimes.join('\n')}`).toEqual([]);
+  });
+
+  it('un Talent SANS catalogue de spécs (destinee, frenesie) porte un TEXTE d’instance : compté à part, jamais au stock de dette (#1621)', () => {
+    const PLAFOND = 24;
+    const parTalent = [...textesDInstance.reduce((m, h) => m.set(h.refId, (m.get(h.refId) ?? 0) + 1), new Map<string, number>())]
+      .sort((a, b) => b[1] - a[1]).map(([id, n]) => `${id}:${n}`).join(', ');
+    // Cliquet UNIDIRECTIONNEL : PLAFOND, pas stock nominatif. Une 25e instance rougit (#1621) ; une
+    // chute de 24 vers 1 reste verte — le régime du champ texte d'instance se tranche à #1621.
+    expect(textesDInstance.length).toBeGreaterThan(0);
+    expect(textesDInstance.length, `${parTalent} — un texte d'instance de PLUS : le régime du champ se tranche à #1621`).toBeLessThanOrEqual(PLAFOND);
+    const melanges = textesDInstance.filter((h) => SPECS_DE_TALENT_A_CREER.has(h.key)).map((h) => h.key);
+    expect(melanges, `texte d'instance stocké comme dette de spec :\n${melanges.join('\n')}`).toEqual([]);
+  });
+
+  it('CONTRÔLE POSITIF — une spec de Talent inconnue posée sur une créature FIXTURE est ATTRAPÉE (mutation EN MÉMOIRE, jamais au disque)', () => {
+    const fixture = { id: 'fixture-1457-b1', source: { book: 'frenchy-bzh' }, talents: [{ id: 'savoir-vivre', spec: 'Vagabonds fantômes' }] };
+    const corpus = [['creatures', [fixture]]] as unknown as [string, { id?: string; label?: string; source?: { book?: string } }[]][];
+    const { hors: mordu } = collecteSpecs('talents', (id) => findTalentById(id), corpus);
+    expect(mordu.map((h) => h.key)).toEqual(['creatures|fixture-1457-b1|savoir-vivre|Vagabonds fantômes']);
+    expect(mordu[0].catalogue, 'savoir-vivre PORTE un catalogue de spécs : la fixture mesure bien une DETTE de spec').toBe(true);
+    expect(SPECS_DE_TALENT_A_CREER.has(mordu[0].key)).toBe(false);
   });
 });
 

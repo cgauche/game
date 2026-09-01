@@ -3,7 +3,7 @@ export type BookLike = { id: string; dir?: string | null; extractionDir?: string
 
 export function norm(s: string): string;
 export function isSentinel(s: string): boolean;
-export function walkSkillRefs(entry: unknown, visit: (node: SkillRefNode) => void): void;
+export function walkSkillRefs(entry: unknown, visit: (node: SkillRefNode) => void, arrName?: 'skills' | 'talents'): void;
 export function skillArraysOf(entry: unknown): unknown[][];
 export function sourceDirOf(book: BookLike | null | undefined): string | null;
 export function extractedBooks(books: readonly BookLike[], root: string): { extraits: Set<string>; dirManquant: string[] };

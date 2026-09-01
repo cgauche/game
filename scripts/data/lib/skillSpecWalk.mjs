@@ -1,10 +1,11 @@
 /**
- * Marche PARTAGÉE des `skills[].spec` d'une entrée de catalogue (créature, niveau de Carrière,
- * espèce) et bornage du périmètre « livre EXTRAIT dans `Source/` » (#1342 L2-a).
+ * Marche PARTAGÉE des `skills[].spec` / `talents[].spec` d'une entrée de catalogue (créature, niveau
+ * de Carrière, espèce) et bornage du périmètre « livre EXTRAIT dans `Source/` » (#1342 L2-a).
  *
- * UNE implémentation, deux consommateurs : la migration `scripts/migrations/
- * 2026-08-23-specs-livres-autorises.mjs` et la garde `src/data/refs-migrated.test.ts`. Une marche
- * dupliquée entre le geste et sa garde, c'est une garde qui mesure autre chose que le geste.
+ * UNE implémentation, TROIS consommateurs de la marche : les migrations `scripts/migrations/
+ * 2026-08-23-specs-livres-autorises.mjs` (l.177) et `scripts/migrations/
+ * 2026-08-23-specs-frenchy-vers-catalogue.mjs` (l.237), et la garde `src/data/refs-migrated.test.ts`.
+ * Une marche dupliquée entre le geste et sa garde, c'est une garde qui mesure autre chose que le geste.
  *
  * Module ESM pur (`node` nu, aucun import TS) — typé par `skillSpecWalk.d.mts`.
  */
@@ -28,14 +29,15 @@ export function isSentinel(s) {
 const porteurDe = (k, v, arrKey) => (Array.isArray(v) ? (k === 'of' ? arrKey : k) : null);
 
 /**
- * Visite tout nœud `{ id, spec?, choix? }` vivant sous un tableau `skills` de `entry` (branches d'un
- * `{ pick, of }` comprises). `visit(node)` reçoit le nœud MUTABLE.
+ * Visite tout nœud `{ id, spec?, choix? }` vivant sous un tableau `arrName` de `entry` (branches d'un
+ * `{ pick, of }` comprises). `visit(node)` reçoit le nœud MUTABLE. `arrName` PARAMÈTRE le porteur :
+ * `skills` (défaut) ou `talents` — même marche, même vocabulaire de nœud (#1457 B1).
  */
-export function walkSkillRefs(entry, visit) {
+export function walkSkillRefs(entry, visit, arrName = 'skills') {
   const walk = (node, arrKey) => {
     if (Array.isArray(node)) return node.forEach((x) => walk(x, arrKey));
     if (!node || typeof node !== 'object') return;
-    if (arrKey === 'skills' && typeof node.id === 'string') visit(node);
+    if (arrKey === arrName && typeof node.id === 'string') visit(node);
     for (const [k, v] of Object.entries(node)) walk(v, porteurDe(k, v, arrKey));
   };
   walk(entry, null);
