@@ -23,6 +23,7 @@
 //   - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 //   - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
 //   - La PROJECTION path → champ retient le DERNIER segment-clé : deux paths distincts qui finissent sur la même clé se joignent au même champ observé (couverture sur-estimée à la marge).
+//   - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 //   - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
 /** Slots d'espèce `id` visant une entité INTERNE à une scène (type hors `_ids.generated`) :
@@ -292,7 +293,11 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "skills.json", champ: "max", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "species.json", champ: "gatedByRule", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "species.json", champ: "grantGroups", occurrences: 27, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "species.json", champ: "preview", occurrences: 27, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // Le champ a CHANGÉ DE NOM au L-gram-2 (#1463) et a ADOPTÉ `ref('career')` — la ligne survit
+  // pourtant : le slot déclaré est `[].previewCareer.id`, que la projection rend `id` (angle mort
+  // SOUS-estimation, `ANGLES_MORTS_SLOTS`). Ce n'est pas une dette d'adoption, c'est la mesure qui
+  // ne sait pas la voir.
+  { dataset: "species.json", champ: "previewCareer", occurrences: 27, lot: "L2/L3 #1473", date: "2026-09-01" },
   { dataset: "species.json", champ: "of", occurrences: 80, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "species.json", champ: "skills", occurrences: 315, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "species.json", champ: "talents", occurrences: 96, lot: "L2/L3 #1473", date: "2026-08-26" },

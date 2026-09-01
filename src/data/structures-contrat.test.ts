@@ -385,6 +385,28 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
   });
 
   /**
+   * Le concept `reference` est SOLDÉ au stock des redéclarations (#1463 L-gram-2) : plus AUCUN def
+   * ne re-tape `{id, spec?}`/`{id, value?}` — les six sites qui le faisaient composent les fabriques
+   * de `grammaire/ref.ts` ou importent `qualityRefSchema`. Affirmation POSITIVE et bidirectionnelle :
+   * elle rougit à la première réintroduction d'un littéral de référence dans un def, avant même que
+   * la ligne de stock ne renaisse.
+   */
+  it('le concept `reference` ne pèse plus AUCUNE ligne, ni à l’OBSERVÉ ni au stock (#1463 L-gram-2)', () => {
+    // L'OBSERVÉ d'abord (AST des defs) : c'est lui qui rougit à la réintroduction d'un littéral,
+    // sans attendre qu'une ligne de stock renaisse.
+    expect(
+      redeclarations.filter((r) => r.concept === 'reference').map((r) => `${r.def} | ${r.champ} | ${r.signature}`),
+      'un def re-déclare une RÉFÉRENCE : la désignation d’une entité par son id a UNE fabrique (`ref`/`specRef`/`refOuSpec`, `grammaire/ref.ts`), et la vue commune des Atouts est `qualityRefSchema`.',
+    ).toEqual([]);
+    expect(
+      STRUCTURES_REDECLARATIONS.filter((r) => r.concept === 'reference').map((r) => `${r.def} | ${r.champ} | ${r.signature}`),
+      'une ligne `reference` PÉRIMÉE traîne au stock : le concept est soldé côté defs.',
+    ).toEqual([]);
+    // Sans concept encore peuplé, les deux assertions seraient vacueuses : la mesure porte toujours.
+    expect(redeclarations.length, 'l’AST n’observe plus AUCUNE redéclaration : le volet ne mesure rien.').toBeGreaterThan(0);
+  });
+
+  /**
    * CONTRAT du côté DÉCLARÉ : un document SCELLÉ par la fabrique `document()` — `pipe` à la racine —
    * rend ses clés. La SORTIE d'un tel pipe est un `transform`, qui n'en porte AUCUNE : un relevé qui
    * la prend pour entrée rend 0 clé sur TOUTE la famille config/record, et les deux volets qui
@@ -626,7 +648,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (même doctrine que le cliquet par lot, l.915 : « le terrain gagné se VERROUILLE : abaisser le
       // plafond au réel mesuré » ; #1654 « plafond ≤ réel puis décroissant »). Le concept `de` ne pèse
       // plus AUCUNE ligne ici.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 468],
+      // Cliquet DESCENDU 468 → 467 (#1463 L-gram-2, 2026-09-01) : `species.json › preview {career}`
+      // est SOLDÉE — les 27 aperçus de vitrine nomment leur carrière par la RÉFÉRENCE `previewCareer
+      // {id}`, résolue au parse contre `careers.json` (`ref('career')`). Le cliquet SUIT la baisse.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 467],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -717,7 +742,21 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // cliquet par lot (l.915 : « le terrain gagné se VERROUILLE : abaisser le plafond au réel
       // mesuré ») et #1654 « plafond ≤ réel puis décroissant ». #1463 reste ouvert tant que ce stock
       // n'est pas à ZÉRO : l'inventaire nominatif par concept est au ticket.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 69],
+      // Cliquet DESCENDU 69 → 66 (#1463 L-gram-1, 2026-09-01) : les TROIS dernières lignes de la
+      // famille à deux bornes qui pouvaient sortir sortent — `water-exposure.ts` compose
+      // `plageSchema` par la SHAPE, `advancementCosts.ts` compose `plageOuverteSchema` (la bande
+      // FINALE sans plafond, LDB 07 l.49/l.70) et `reglesOptionnelles.ts` compose `bornesSchema`,
+      // le concept `bornes` recevant enfin son nœud de grammaire (`grammaire/valeurs.ts`). Le scanner
+      // ne résolvant pas un spread, le gate est POSITIF : `grammaire/formes-partagees.test.ts` mesure
+      // les deux nœuds neufs à la porte réelle `validateDataset`. UNE ligne du concept `plage` reste,
+      // refusée AVEC sa mesure — `oups.ts`, dont le refus MOTIVÉ est en tête du stock (#1544).
+      // Cliquet DESCENDU 66 → 59 (#1463 L-gram-2, 2026-09-01) : le concept `reference` ne pèse plus
+      // AUCUNE ligne ici — `domains.requiresSkill` adopte `refOuSpec('skill')`, `species.preview`
+      // devient `previewCareer: ref('career')`, `structures.traits` `ref('trait')` (le `value` jamais
+      // posé meurt), `trappings` (racine + `derivedWeapon.qualities`) importe `qualityRefSchema`, et
+      // `vehicles.ship.traits` compose `ref('navalTrait', {value})` tandis que le schéma MORT
+      // `hull.traits` (0 porteur, 0 lecteur) tombe. 489 références entrent en garde FK.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 59],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -842,7 +881,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // L1a #1466 : 23 → 22 (#1463 L-de-1) — le `{sum}` d'`engineFormulaSchema` (`defs/miscast.ts`)
       // cesse d'être « hors lexique » : le concept `formule` le nomme, à sa forme CIBLE. La ligne ne
       // meurt pas, elle change de lot (L4 #1463 la reçoit ci-dessous).
-      'L1a #1466': 22,
+      // … puis 22 → 23 (#1463 L-gram-1) : la MÊME ligne revient — le `{sum}` d'`engineFormulaSchema`
+      // est la 10ᵉ branche du schéma dont les 9 sœurs sont lotées ICI (`defs/miscast.ts`) ; le concept
+      // `formule` la NOMME, il ne la déplace pas de porteur. Re-lotissement de REVUE (design jugé du
+      // 2026-09-01, §0.b) : elle s'éteindra avec les 9 autres, pas avec la vague `grammaire`.
+      'L1a #1466': 23,
       'L1b #1467': 0,
       // L1c #1468 : 403 → 400 (commit 3c) — cf. le cliquet `STRUCTURES_OPS` ci-dessus.
       // … puis 400 → 402 (#862) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
@@ -899,7 +942,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // ci-dessus.
       // … puis 392 → 391 (L-ref-1bis, 2026-09-01) : `creatures.json › trappings {text (résolvable)}`
       // part avec son unique porteur lié. Cf. le cliquet `STRUCTURES_FORMES` ci-dessus.
-      'L3 #1463': 391,
+      // … puis 391 → 383 (#1463 L-gram-2, 2026-09-01) : les SEPT redéclarations de référence des defs
+      // s'éteignent (domains, species, structures, trappings ×2, vehicles ×2) et la forme de donnée
+      // `species.json › preview` part avec la migration — le stock des FORMES perd sa ligne, celui des
+      // REDÉCLARATIONS ses sept : −8. 489 références entrent en garde FK au passage.
+      'L3 #1463': 383,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
@@ -931,7 +978,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `miscast.ts` ×2, qui composent `diceSpecSchema`) —, et TROIS entrent : le constat
       // `sea-cargo` (donnée + def) que le concept `formule` rend mesurable, et le `{sum}`
       // d'`engineFormulaSchema` reçu de `L1a #1466` (−1 là-bas, somme des deux lots INCHANGÉE dessus).
-      'L4 #1463': 111,
+      // … puis 111 → 107 (#1463 L-gram-1) : les TROIS redéclarations à deux bornes qui pouvaient
+      // sortir sortent (cf. le cliquet `STRUCTURES_REDECLARATIONS` ci-dessus), et la quatrième ligne
+      // rend son lot à `L1a #1466` (le `{sum}` d'`engineFormulaSchema`, ci-dessus) : −3 −1.
+      'L4 #1463': 107,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`

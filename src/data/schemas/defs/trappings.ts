@@ -9,18 +9,16 @@ import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { availabilitySchema, formulaSchema, moneySchema, sizeCategorySchema } from '../grammaire/valeurs';
 import { gameOpSchema, flowSchema, triggeredEffectSchema } from '../grammaire/mecanique';
+/** Les Atouts d'un objet passent par la vue COMMUNE `qualityRefSchema` : `quality` n'est PAS un type
+ *  de `TYPES` (`grammaire/ref.ts`) — aucune fabrique FK ne le vise, et son ouverture est ancrée
+ *  #1615/#1621. La population (438 références, dont 5 à spec `{id:'taillade', spec:'1A'|'2A'}`) est
+ *  mesurée par `grammaire/formes-partagees.test.ts` à défaut d'être refinée au parse. */
+import { qualityRefSchema } from '../grammaire/reference';
 import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';
 
 
 export const file = 'trappings.json';
 export const famille = 'entite';
-
-/** `QualityRef` (`Ref` + Indice éventuel) — shapes réellement observées : `{id}`, `{id,value}`, `{id,spec}`. */
-const qualityRefSchema = z.strictObject({
-  id: z.string(),
-  spec: z.string().optional(),
-  value: z.number().optional(),
-});
 
 /** `WeaponDamageSpec` (`src/engine/types.ts`) : `{literal}` OU `{plusBF,flat,bare?}` (`plusBF`
  *  toujours explicite — cf. `filet`/`lance-harpon`/`piege-a-chaines`, ZI). */
@@ -65,7 +63,7 @@ const weaponSchema = z.strictObject({
   damage: weaponDamageSpecSchema,
   reach: z.union([reachSchema, z.null()]).optional(),
   range: z.union([weaponRangeSpecSchema, z.null()]).optional(),
-  qualities: z.array(z.strictObject({ id: z.string(), value: z.number().optional() })),
+  qualities: z.array(qualityRefSchema),
   subType: z.string().optional(),
   weaponGroup: z.string().optional(),
   soloSimple: z.boolean().optional(),

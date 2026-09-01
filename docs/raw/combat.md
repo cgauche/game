@@ -978,7 +978,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 - `LDB 13` (l.114, l.125, l.133, l.137-145) → `localisation`, `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `useHoverTargeting`, `entityBlockedAt`, `useAttackJetProps`, `DisengageModal`, `ACTION_GATES`, `KEYBINDINGS`, +24 — `src/data/actions.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/actions.ts`, `src/engine/combat.ts`, +16 fichiers
 - `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-131, l.135, l.137-138, l.142-151) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `areGrappling`, `fr`, `setGrapple`, `scatter`, `sceneCombatModifiers`, +109 — `src/data/actions.json`, `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, +41 fichiers
 - `LDB 16` (l.113) → `unstable`, `doc`, `mouvementIntact`, `stopBleedOutcome`, `hitModifiers`, `useAttackJetProps`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, +14 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +10 fichiers
-- `LDB 62` (l.198-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `InitiativeStripProps`, `protectrice`, `canActFirst`, `freeActFirst`, `resolveQualities`, +93 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +29 fichiers
+- `LDB 62` (l.198-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `InitiativeStripProps`, `protectrice`, `canActFirst`, `freeActFirst`, `doc`, +93 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +29 fichiers
 
 ---
 
@@ -2505,7 +2505,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 - `LDB 62` (l.217-307, l.309-335) → `a-enroulement`, `woundsFromHit`, `a-poudre-noire`, `TraceRow`, `CrewedReloadStep`, `isShieldItem`, `combatOrder`, `a-repetition`, `crewedReloadStep`, `InitiativeStripProps`, +138 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +49 fichiers
 - `ADE II 2` (l.608-658) → `attackModifiers`, `massue-ogre`, `poing-de-fer`, `grande-massue-ogre`, `lance-harpon`, `piege-a-chaines`, `grande-lance`, `canon-crache-plomb`, `pistolet-ogre`, `harpon`, +3 — `src/data/trappings.json`, `src/engine/combat.ts`
 - `ADE II 4` (l.212, l.214, l.215, l.216, l.218-253) → `deroutante` — `src/data/qualities.json`
-- `AA 8` (l.67-76, l.77, l.79-95, l.98-108) → `cimeterre`, `dague-ballock`, `destabilisante`, `taillade`, `tir-de-zone`, `desequilibree`, `demi-lance-de-cavalerie`, `sabre`, `epee-de-cour`, `gaffe-2`, +2 — `src/data/qualities.json`, `src/data/trappings.json`
+- `AA 8` (l.67-76, l.77, l.79-95, l.98-108) → `ResolvedQuality`, `QualityInstance`, `cimeterre`, `dague-ballock`, `destabilisante`, `taillade`, `tir-de-zone`, `desequilibree`, `demi-lance-de-cavalerie`, `sabre`, +4 — `src/data/qualities.json`, `src/data/trappings.json`, `src/engine/qualities/dispatch.ts`, `src/engine/types.ts`
 - `ZI 13` (l.759-844) → `dague-funeste`, `armure-de-plates-du-leviathan`, `lame-a-poignee-en-bois-de-cerf`, `trempe-au-sang-de-dragon`, `surin-de-l-aigle`, `seve-de-tregara`, `empennage-de-griffon`, `pointes-barbelees` — `src/data/trappings.json`
 - sans code : `ADE II 4` (l.278, l.280-287), `NADJ 8` (l.170-171)
 
@@ -4205,7 +4205,7 @@ Le **Tableau des Armes de Base** d'*Aux Armes* utilise ces nouveaux Atouts. Extr
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `AA 7` (l.4-10, l.31) → `healDifficulty`, `aaBleedUnconsciousDue`, `aaBleedUnconsciousApply`, `collectHeroRoundEndUpkeep`, `tickDeath`, `createCombatSlice` — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatSlice.ts`
-- `AA 8` (l.67-76, l.79-81, l.83-85, l.87, l.89-95, l.98-108, l.131-147) → `cimeterre`, `dague-ballock`, `massue`, `pique-d-armes`, `destabilisante`, `taillade`, `tir-de-zone`, `desequilibree`, `pavois`, `demi-lance-de-cavalerie`, +5 — `src/data/qualities.json`, `src/data/trappings.json`
+- `AA 8` (l.67-76, l.79-81, l.83-85, l.87, l.89-95, l.98-108, l.131-147) → `ResolvedQuality`, `QualityInstance`, `cimeterre`, `dague-ballock`, `massue`, `pique-d-armes`, `destabilisante`, `taillade`, `tir-de-zone`, `desequilibree`, +7 — `src/data/qualities.json`, `src/data/trappings.json`, `src/engine/qualities/dispatch.ts`, `src/engine/types.ts`
 
 ---
 

@@ -62,9 +62,9 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3370` |
-| `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3370` |
+| `id` | 1 | `src/data/index.ts:3371` |
+| `spec` | 1 | `src/data/index.ts:3372` |
+| `value` | 2 | `src/data/index.ts:3373` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -93,27 +93,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 |---|---|---|
 | `id` | 4 | `src/engine/items.ts:307` |
 | `spec` | 2 | `src/engine/items.ts:309` |
-| `count` | 4 | `src/data/index.ts:3431` |
-| `qualities` | 4 | `src/data/index.ts:3434` |
-| `qualityChoice` | 2 | `src/data/index.ts:3432` |
-| `text` | 1 | `src/data/index.ts:3425` |
-| `vehicleId` | 2 | `src/data/index.ts:3427` |
+| `count` | 4 | `src/data/index.ts:3435` |
+| `qualities` | 4 | `src/data/index.ts:3438` |
+| `qualityChoice` | 2 | `src/data/index.ts:3436` |
+| `text` | 1 | `src/data/index.ts:3429` |
+| `vehicleId` | 2 | `src/data/index.ts:3431` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3429` |
-| `choice` | 3 | `src/data/index.ts:3422` |
-| `wildcard` | 1 | `src/data/index.ts:3423` |
+| `creatureId` | 2 | `src/data/index.ts:3433` |
+| `choice` | 3 | `src/data/index.ts:3426` |
+| `wildcard` | 1 | `src/data/index.ts:3427` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 6 | `src/data/index.ts:3404` |
+| `id` | 6 | `src/data/index.ts:3408` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
-| `choix` | 4 | `src/data/index.ts:3404` |
-| `pick` | 1 | `src/data/index.ts:3407` |
-| `of` | 4 | `src/data/index.ts:3406` |
+| `choix` | 4 | `src/data/index.ts:3408` |
+| `pick` | 1 | `src/data/index.ts:3411` |
+| `of` | 4 | `src/data/index.ts:3410` |
 | `table` | **0 — JAMAIS LU** | — |
-| `random` | 2 | `src/data/index.ts:3409` |
+| `random` | 2 | `src/data/index.ts:3413` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -286,7 +286,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-23 types, 158 champs mesurés, **41 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+23 types, 158 champs mesurés, **40 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 

@@ -789,7 +789,7 @@ export interface SpeciesData {
   /** Habillage de l'APERÇU (créateur, carte de race #431) — id de carrière ICONIQUE et COMMUNE à
    *  l'espèce (flavor de vitrine, pas une règle) : la tuile de famille montre un personnage vêtu
    *  plutôt qu'une tunique nue. Absent = pas de tenue (repli existant). */
-  preview?: { career?: string };
+  previewCareer?: { id: string };
   /** Trait RACIAL de l'espèce (#572) — MÊME forme structurée que les Traits de créature du bestiaire
    *  (`import('../engine/statEntry').TraitInstance`, jamais une glose de règle en `desc`) : Ogre porte
    *  `{id:'ogre'}` (ADE2 « Ogres et Mutations » l.708 « Un Lourd Fardeau », encombrance/consommation
@@ -3367,7 +3367,11 @@ export function refLabel(category: string, ref: Ref): PlayerText {
 /** Copie une `QualityRef` de catalogue en `QualityInstance` RUNTIME FRAÎCHE (`{id, value?}`) — objet neuf
  *  (le runtime mute `qualities` : enchantements, munitions). Plus d'aplatissement en chaîne « id value ». */
 export function qualityInstance(q: QualityRef): import('../engine/types').QualityInstance {
-  return q.value != null ? { id: q.id, value: q.value } : { id: q.id };
+  return {
+    id: q.id,
+    ...(q.spec != null ? { spec: q.spec } : {}),
+    ...(q.value != null ? { value: q.value } : {}),
+  };
 }
 /** Libellé d'affichage d'une `QualityRef` (ou `QualityInstance` runtime) : « Solide 3 », « Tranchante ». */
 export function qualityRefLabel(q: QualityRef): string {

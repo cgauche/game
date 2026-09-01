@@ -2,15 +2,18 @@
  * CONTRAT des deux concepts à DEUX BORNES de la donnée (#1463 L4, vague `plage`) — sondes du design
  * jugé du 2026-08-31 promues en tests.
  *
- * Ce fichier tient quatre affirmations POSITIVES, chacune mesurée sur les DEUX racines de donnée
+ * Ce fichier tient cinq affirmations POSITIVES, chacune mesurée sur les DEUX racines de donnée
  * (`src/data` et `src/scenes`, comme le scan des structures) :
  *  A. une seule graphie nomme une paire de bornes (`min,max`) ; ce qui reste encodé par la BORNE
  *     HAUTE SEULE est INVENTORIÉ, document par document ;
  *  B. les bornes d'un RÉGLAGE et les bornes d'un TIRAGE sont disjointes ;
  *  C. la fourchette EMBOÎTÉE (`{range: {min, max}}`) n'existe nulle part ;
- *  D. l'en-tête de `STRUCTURES_ORPHELINES` dit ce que le stock mesure.
+ *  D. l'en-tête de `STRUCTURES_ORPHELINES` dit ce que le stock mesure ;
+ *  E. une seule bande est OUVERTE (`max: null`) dans toute la donnée, et elle est NOMMÉE — c'est ce
+ *     qui justifie un nœud de grammaire à part (`plageOuverteSchema`, #1463 L-gram-1) plutôt qu'une
+ *     borne haute rendue `nullable` partout.
  *
- * Ces quatre-là sont ce qui rend la CIBLE tenable : `findTableEntry`
+ * Ces cinq-là sont ce qui rend la CIBLE tenable : `findTableEntry`
  * (`src/engine/tables.ts`, primitive de la table CLAUDE.md) exige la forme PLATE `{min, max}`, et
  * borne le tirage des DEUX côtés — donc l'ordre des rangées d'une table éditable au Codex ne décide
  * plus de son résultat.
@@ -52,6 +55,8 @@ type Mesure = {
   deuxBornes: Site[];
   /** Élément de TABLEAU portant `max` (nombre ou `null`) SANS `min` : la borne haute SEULE. */
   borneHauteSeule: Site[];
+  /** Élément de TABLEAU portant `min` numérique et `max: null` : la bande OUVERTE (`plageOuverteSchema`). */
+  bandesOuvertes: Site[];
   /** Documents portant le champ `rand` (borne haute d100 portée par l'ENTITÉ), et son compte. */
   rand: Record<string, number>;
   /** Documents JSON effectivement lus, PAR RACINE — sans quoi l'élargissement de la marche à une
@@ -60,7 +65,7 @@ type Mesure = {
 };
 
 function mesurer(): Mesure {
-  const m: Mesure = { paires: {}, emboites: [], deuxBornes: [], borneHauteSeule: [], rand: {}, documentsParRacine: {} };
+  const m: Mesure = { paires: {}, emboites: [], deuxBornes: [], borneHauteSeule: [], bandesOuvertes: [], rand: {}, documentsParRacine: {} };
   const walk = (n: unknown, doc: string, chemin: string, dansTableau: boolean): void => {
     if (Array.isArray(n)) {
       for (const e of n) walk(e, doc, `${chemin}[]`, true);
@@ -78,6 +83,7 @@ function mesurer(): Mesure {
       m.emboites.push(`${doc}${chemin}`);
     }
     if (dansTableau && estNombre(o.min) && estNombre(o.max)) m.deuxBornes.push({ doc, chemin, cles });
+    if (dansTableau && estNombre(o.min) && o.max === null) m.bandesOuvertes.push({ doc, chemin, cles });
     if (dansTableau && 'max' in o && !('min' in o) && (estNombre(o.max) || o.max === null)) {
       m.borneHauteSeule.push({ doc, chemin, cles });
     }
@@ -129,6 +135,20 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
       [...new Set(M.borneHauteSeule.map((s) => `${s.doc}${s.chemin}`))].sort(),
       'un document encode ENCORE une table par sa seule borne haute — sa borne basse serait reconstruite par POSITION, donc ni authorée ni éditable, et son lookup ordre-dépendant (cf. `weather.json`/`advancementCosts.json`, migrés le 2026-08-31).',
     ).toEqual(['talents.json[]', 'talents.json[].variants[]']);
+  });
+
+  it('E — UNE seule bande est OUVERTE (`max: null`), et elle est NOMMÉE', () => {
+    // La divergence que `plageOuverteSchema` (`grammaire/valeurs.ts`) porte : `LDB 07 l.49` ne pose
+    // aucun plafond au nombre d'Augmentations, la bande « 71 et + » (l.70) n'a donc pas de borne
+    // haute — et JSON n'a pas d'Infinity. Si une SECONDE population s'ouvrait sans revue, le nœud
+    // ouvert cesserait d'être l'exception mesurée qu'il dit être.
+    expect(
+      [...new Set(M.bandesOuvertes.map((s) => `${s.doc}${s.chemin}`))].sort(),
+      'une bande à borne haute OUVERTE (`max: null`) est apparue ailleurs : `plageOuverteSchema` est le nœud d’une EXCEPTION nommée, pas la forme générale d’une fourchette.',
+    ).toEqual(['advancementCosts.json[]']);
+    expect(M.bandesOuvertes.length, 'la bande ouverte a disparu : la sonde ne mesure plus rien.').toBe(1);
+    // Le dénominateur : la population FERMÉE devant laquelle cette bande est une exception.
+    expect(M.paires['min,max']).toBeGreaterThan(M.bandesOuvertes.length * 1000);
   });
 
   it('A — `rand` (borne haute d100 portée par l’ENTITÉ) est un RESTE NOMMÉ, borné à six documents', () => {

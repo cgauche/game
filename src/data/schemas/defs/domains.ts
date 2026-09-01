@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { charKeySchema, sourceRefSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { flowTestSchema, gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'domains.json';
 export const famille = 'entite';
@@ -79,7 +80,7 @@ const doc = document(
        *  possédant `requiresSkill` a réussi `test` et maintient son chant (`sustained`). */
       cancelledBy: z.strictObject({
         circumstance: z.string(),
-        requiresSkill: z.strictObject({ id: z.string(), spec: z.string().optional() }).optional(),
+        requiresSkill: refOuSpec('skill').optional(),
         test: flowTestSchema,
         sustained: z.boolean().optional(),
         source: sourceRefSchema,

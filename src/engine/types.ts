@@ -352,6 +352,11 @@ export type RangeBandId = 'bout-portant' | 'courte' | 'moyenne' | 'longue' | 'ex
 export interface QualityInstance {
   /** id STABLE du registre de qualités (`QualityData.id` / `QualityRef.id`) — jamais un libellé FR. */
   id: string;
+  /** Spécialisation AUTHORÉE de l'Atout, telle que la colonne Atouts l'imprime : `Taillade (1A)`,
+   *  `Taillade (2A)` (AA 08 l.87, l.136, l.304). Aucune LOGIQUE ne la lit aujourd'hui — l'effet
+   *  authoré de `taillade` (`qualities.json`) ne joue que l'État automatique ; elle voyage donc
+   *  jusqu'à l'AFFICHAGE (`qualityRefLabel`), qui ne lui prête aucune sémantique. */
+  spec?: string;
   /** Indice / magnitude éventuelle (Solide 3, Recharge 2, « -10% en Discrétion » → −10). */
   value?: number;
 }

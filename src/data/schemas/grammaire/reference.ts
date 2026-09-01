@@ -38,9 +38,9 @@ export const refSchema = z.strictObject({ id: z.string(), spec: z.string().optio
  *  `times` seule, qu'il attribuerait à ce schéma sur tout littéral à clé `times` unique. */
 export const talentRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), times: z.number().optional() });
 
-/** `QualityRef` (`src/data/index.ts`) — `Ref` + Indice éventuel (« Solide 3 » → `value`). Dupliqué à
- *  l'identique dans `defs/trappings.ts` (catalogue `trappings.json` lui-même) — cette vue COMMUNE sert
- *  au joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1).
+/** `QualityRef` (`src/data/index.ts`) — `Ref` + Indice éventuel (« Solide 3 » → `value`). Vue COMMUNE
+ *  du joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1) ET du catalogue
+ *  `trappings.json` lui-même, qui l'importe (#1463 L-gram-2).
  *  Composée sur la SHAPE de `refSchema`, jamais par `.extend` : la composition par shape est la
  *  GRAPHIE UNIQUE de dérivation dans la grammaire, et le volet `extend` de la garde
  *  (`src/data/grammaire-guard.test.ts`) tient cette uniformité — un `.extend` posé ici serait relevé.

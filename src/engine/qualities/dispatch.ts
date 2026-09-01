@@ -34,6 +34,9 @@ export interface ResolvedQuality {
   data?: QualityData;
   /** Drapeaux/marqueurs de capacité (raccourci `data.capabilities`). */
   caps?: QualityCapabilities;
+  /** Spécialisation AUTHORÉE portée par la référence (`QualityInstance.spec` — `Taillade (1A)`,
+   *  AA 08 l.87) : elle TRAVERSE la résolution pour que l'affichage la rende, aucune logique ne la lit. */
+  spec?: string;
   indice?: number;
 }
 
@@ -60,7 +63,7 @@ export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality
   const out: ResolvedQuality[] = [];
   for (const q of merged) {
     const data = qualityById.get(q.id);
-    out.push({ def: { key: data?.label ?? q.id }, id: q.id, data, caps: data?.capabilities, indice: q.value });
+    out.push({ def: { key: data?.label ?? q.id }, id: q.id, data, caps: data?.capabilities, spec: q.spec, indice: q.value });
   }
   const beaten = new Set(out.flatMap((r) => r.caps?.beats ?? []));
   // Neutralisations d'une ALTÉRATION (op `augmentWeapon`) : par id, et par POLARITÉ lue dans le REGISTRE

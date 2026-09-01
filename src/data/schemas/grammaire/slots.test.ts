@@ -110,23 +110,33 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     // l'union `ref(type)` | `specRef(type)` | nœud (2 de plus) et dont la branche `{pick, table}`
     // désigne une table d100 (1 `idDe('table')`). D'où +6 `skill`, +6 `talent` et +4 `table` pour les
     // 4 instances. Le stock des sites ADOPTÉS ne peut que CROÎTRE.
+    // … puis QUATRE sites ADOPTÉS de plus au L-gram-2 (#1463, 2026-09-01), un par fabrique écrite :
+    // `defs/species.ts › previewCareer` (`ref('career')`, la carrière icône d'une espèce),
+    // `defs/vehicles.ts › ship.traits` (`ref('navalTrait', {value})`, foyer `naval-traits.json`),
+    // `defs/domains.ts › windModifiers[].cancelledBy.requiresSkill` (`refOuSpec('skill')`, 36 → 37) et
+    // `defs/structures.ts › traits` (`ref('trait')`). Le stock des sites ADOPTÉS ne peut que CROÎTRE.
     ).toEqual([
       'actorRefSchema',
+      "idDe('career')",
       "idDe('creature')",
       // +1 site ADOPTÉ (#674, 2026-08-31) : `defs/maladies.ts › mutation.into` désigne la maladie en
       // laquelle une autre se transforme (Rhume commun → Pneumonie, EDOC 08 l.122) et compose
       // `idDe('maladie')` dès sa première écriture, sans passer par un `z.string()`.
       // (Les `idDe('maladie')`/`idDe('symptome')` posés au MÊME lot sur `aggravateSymptom`/
       // `grantSymptom` n'apparaissent PAS ici : `OP_DEFS` est atteint par le superRefine de
-      // `gameOpSchema`, hors de la marche des defs — angle mort déjà déclaré pour `idDe('trait')`.)
+      // `gameOpSchema`, hors de la marche des defs — même angle mort que les `idDe('trait')` d'op.
+      // L'`idDe('trait')` listé plus bas, lui, est un champ de def (`structures.ts › traits`) : il est
+      // sur le chemin de la marche, donc compté.)
       "idDe('maladie')",
+      "idDe('navalTrait')",
       // … puis 34 → 36 `idDe('skill')` au commit 4bis : les DEUX statblocs adoptent la grammaire —
       // `defs/creatures.ts › skills` et `defs-scenes/communs.ts › skills` composent
       // `refOuSpec('skill', {value})` là où ils redéclaraient chacun leur `{id, spec?, value}`.
       // 1 marque par instance de fabrique. Le stock des sites ADOPTÉS ne peut que CROÎTRE.
-      ...Array.from({ length: 36 }, () => "idDe('skill')"),
+      ...Array.from({ length: 37 }, () => "idDe('skill')"),
       ...Array.from({ length: 4 }, () => "idDe('table')"),
       ...Array.from({ length: 6 }, () => "idDe('talent')"),
+      "idDe('trait')",
       "idDe('trapping')",
     ]);
   });

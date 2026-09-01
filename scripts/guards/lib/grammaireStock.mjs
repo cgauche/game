@@ -83,8 +83,6 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs-scenes/effets.ts:givePossessionSchema|alias|ref': e('Effet `givePossession` désignant la possession par une enveloppe `ref`.', L3),
   'src/data/schemas/defs-scenes/scene.ts:sceneEntitySchema|alias|ref': e('Entité de scène désignant son modèle (créature/prop) par une enveloppe `ref`.', L3),
   'src/data/schemas/defs-scenes/worldmap.ts:portProfileSchema|alias|ref': e('Profil de port désignant son entité par une enveloppe `ref`.', L3),
-  'src/data/schemas/defs/trappings.ts:qualityRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('`qualityRefSchema` re-déclaré localement dans le catalogue des dotations — la vue commune vit dans `grammaire/reference.ts`.', L3),
-  'src/data/schemas/defs/domains.ts:doc.windModifiers.cancelledBy.requiresSkill|redeclaration|refSchema {id,spec}': e('Réf `{id, spec}` re-tapée sous `requiresSkill` (`STRUCTURES_REDECLARATIONS` domains.ts, statut `cible`, commun `refSchema`).', L3),
 
   // ── Formes de VALEUR re-tapées (monnaie, dé, cellule de grille) ───────────────────────────────
   'src/data/schemas/defs-scenes/effets.ts:zoneBlastSchema.center|redeclaration|cell2Schema {x,y}': e('Centre d’une zone d’effet re-tapé `{x, y}` — la cellule de grille est `cell2Schema`.', L4),

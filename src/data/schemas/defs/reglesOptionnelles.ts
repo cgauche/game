@@ -20,7 +20,7 @@
  * `src/ui/rule-action-wiring.test.ts`.
  */
 import { z } from 'zod';
-import { ruleValueSchema } from '../grammaire/valeurs';
+import { bornesSchema, ecartDeCoPresenceDesBornes, ruleValueSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 
 export const file = 'reglesOptionnelles.json';
@@ -35,9 +35,7 @@ const doc = document(
     kind: z.enum(['flag', 'param', 'mode']),
     default: ruleValueSchema,
     options: z.array(z.string()).min(2).optional(),
-    min: z.number().optional(),
-    max: z.number().optional(),
-    step: z.number().optional(),
+    ...bornesSchema.shape,
     hint: z.string().optional(),
     action: z
       .strictObject({
@@ -63,6 +61,21 @@ const doc = document(
   {
     codex: { keys: ['reglesOptionnelles'] },
     edit: { dataset: 'reglesOptionnelles' },
+  },
+  {
+    // Le refine du nœud `bornesSchema` ne traverse pas le spread de sa shape : la co-présence des
+    // deux bornes se re-branche ICI, sur la MÊME fonction partagée (`ecartDeCoPresenceDesBornes`,
+    // `grammaire/valeurs.ts`) — la règle n'a qu'un porteur.
+    affinerEntree: (entree) =>
+      entree.superRefine((v, ctx) => {
+        const ecart = ecartDeCoPresenceDesBornes(v as { min?: number; max?: number });
+        if (!ecart) return;
+        ctx.addIssue({
+          code: 'custom',
+          path: [ecart.borne],
+          message: `reglesOptionnelles.json : ${ecart.message}`,
+        });
+      }),
   },
 );
 

@@ -98,7 +98,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 **Voir aussi** : [`carrieres.md`](carrieres.md) pour la structure du Schéma de Progression par Carrière.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.41-72) → `adv-0-5`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `adv-16-20`, `adv-21-25`, `buyCharAdvance`, `doc`, `adv-26-30`, +15 — `src/data/advancementCosts.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`
+- `LDB 7` (l.41-72) → `adv-0-5`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `adv-16-20`, `adv-21-25`, `buyCharAdvance`, `doc`, `adv-26-30`, +16 — `src/data/advancementCosts.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`
 
 ---
 
@@ -120,7 +120,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 7` (l.75-84) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `doc`, +28 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/engine/activities.ts`, +5 fichiers
-- `LDB 9` (l.44) → `specIdOf`, `CibleDeType`, `art`, `athletisme`, `estSpecialisable`, `buySkillAdvance`, `specEntrySchema`, `wildcardSpecs`, `designateSpec`, `buildAdvancementView`, +15 — `src/data/index.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +13 fichiers
+- `LDB 9` (l.44) → `specIdOf`, `CibleDeType`, `art`, `athletisme`, `buySkillAdvance`, `estSpecialisable`, `specEntrySchema`, `wildcardSpecs`, `designateSpec`, `buildAdvancementView`, +15 — `src/data/index.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +13 fichiers
 
 ---
 

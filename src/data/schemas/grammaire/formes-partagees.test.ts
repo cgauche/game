@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
 import { trappingRefSchema } from './reference';
 import { flowTestSchema, gameOpSchema } from './mecanique';
-import { TESTS_DE_CORRUPTION, plageSchema } from './valeurs';
+import { TESTS_DE_CORRUPTION, bornesSchema, ecartDeCoPresenceDesBornes, plageOuverteSchema, plageSchema } from './valeurs';
 import { validateDataset } from '../validate';
 import criticals from '../../criticals.json';
 import aaCriticals from '../../aa-criticals.json';
@@ -35,6 +35,16 @@ import riverNavigation from '../../river-navigation.json';
 import seaEvents from '../../sea-events.json';
 import seaWeather from '../../sea-weather.json';
 import steamBreakdown from '../../steam-breakdown.json';
+import advancementCosts from '../../advancementCosts.json';
+import reglesOptionnelles from '../../reglesOptionnelles.json';
+import species from '../../species.json';
+import vehicles from '../../vehicles.json';
+import trappings from '../../trappings.json';
+import structures from '../../structures.json';
+import careers from '../../careers.json';
+import navalTraits from '../../naval-traits.json';
+import qualities from '../../qualities.json';
+import traits from '../../traits.json';
 import { corruptionExposureSchema } from '../defs-scenes/effets';
 import { menaceIds } from '../../../engine/menace';
 import { resolveTrappingChoices } from '../../../engine/trappingChoices';
@@ -267,4 +277,140 @@ describe('corruptionExposure.skill — borné aux deux Compétences du Test (LDB
       expect(msg).toContain('LDB 19 l.23-75');
     });
   }
+});
+
+/**
+ * `plageOuverteSchema` (`grammaire/valeurs.ts`, #1463 L-gram-1) — la fourchette dont la DERNIÈRE
+ * bande n'a pas de plafond (`max: null` ; LDB 07 l.49, bande « 71 et + » l.70). Même angle mort
+ * qu'au-dessus : le scanner ne résout pas un spread, le gate est donc POSITIF et passe par la porte
+ * réelle (`validateDataset`).
+ */
+describe('plageOuverteSchema — la bande FINALE reste OUVERTE', () => {
+  it('accepte `max: null` et un plafond chiffré, REFUSE `max` absent et une borne non numérique', () => {
+    expect(plageOuverteSchema.safeParse({ min: 71, max: null }).success).toBe(true);
+    expect(plageOuverteSchema.safeParse({ min: 0, max: 5 }).success).toBe(true);
+    for (const cas of [{ min: 71 }, { max: null }, { min: 71, max: '∞' }]) {
+      expect(plageOuverteSchema.safeParse(cas).success, `${JSON.stringify(cas)} a été ACCEPTÉ`).toBe(false);
+    }
+    // Le nœud OUVERT ne se substitue pas au fermé : `plageSchema` refuse toujours la borne ouverte.
+    expect(plageSchema.safeParse({ min: 71, max: null }).success).toBe(false);
+  });
+
+  it('advancementCosts.json : sa donnée réelle passe, la MÊME bande sans `min` est REFUSÉE', () => {
+    const bandes = advancementCosts as ReadonlyArray<Record<string, unknown>>;
+    expect(validateDataset('advancementCosts.json', bandes)).toBeNull();
+    expect(bandes.filter((b) => b.max === null).length, 'plus aucune bande OUVERTE : la sonde ne mesure rien.').toBe(1);
+    const { min: _absente, ...ampute } = bandes[0];
+    const err = validateDataset('advancementCosts.json', [ampute, ...bandes.slice(1)]);
+    expect(err, 'une bande sans borne basse est acceptée').not.toBeNull();
+    expect(err).toContain('0.min');
+  });
+});
+
+/**
+ * `bornesSchema` (`grammaire/valeurs.ts`, #1463 L-gram-1) — bornes de SAISIE d'un réglage, concept
+ * `bornes` du lexique. Le refine de co-présence ne traverse pas le spread de la shape : le site le
+ * re-branche sur la MÊME fonction (`ecartDeCoPresenceDesBornes`), et c'est cette liaison-là que le
+ * volet `reglesOptionnelles.json` mesure à la porte réelle.
+ */
+describe('bornesSchema — les deux bornes d’un réglage vont par paire', () => {
+  it('l’invariant a UN porteur : `ecartDeCoPresenceDesBornes`, que le nœud et le site appellent tous deux', () => {
+    // Le nœud `bornesSchema` n'est consommé comme SCHÉMA par aucun def (le spread ne transporte pas
+    // son refine) : ce qui se vérifie ici est la FONCTION partagée — la seule écriture de la règle,
+    // appelée par le nœud ET par `defs/reglesOptionnelles.ts` (volet suivant, à la porte réelle).
+    expect(ecartDeCoPresenceDesBornes({ min: 1, max: 10 })).toBeNull();
+    expect(ecartDeCoPresenceDesBornes({})).toBeNull();
+    expect(ecartDeCoPresenceDesBornes({ min: 1 })?.borne).toBe('max');
+    expect(ecartDeCoPresenceDesBornes({ max: 10 })?.borne).toBe('min');
+    // … et le nœud de la grammaire la porte bien, lui aussi (sa shape est ce que les sites épandent).
+    expect(Object.keys(bornesSchema.shape).sort()).toEqual(['max', 'min', 'step']);
+    expect(bornesSchema.safeParse({ min: 1, max: 10, step: 1 }).success).toBe(true);
+    const r = bornesSchema.safeParse({ min: 1 });
+    expect(r.success, 'le nœud accepte une borne SEULE').toBe(false);
+    expect(r.error!.issues.map((i) => i.path.join('.'))).toContain('max');
+  });
+
+  it('reglesOptionnelles.json : sa donnée réelle passe, le MÊME réglage privé de `max` est REFUSÉ', () => {
+    const regles = reglesOptionnelles as ReadonlyArray<Record<string, unknown>>;
+    expect(validateDataset('reglesOptionnelles.json', regles)).toBeNull();
+    const bornees = regles.filter((r) => typeof r.min === 'number' && typeof r.max === 'number');
+    expect(bornees.length, 'plus aucun réglage borné : la sonde ne mesure rien.').toBe(23);
+    expect(
+      bornees.filter((r) => r.kind !== 'param').map((r) => r.id),
+      'un réglage borné n’est pas un paramètre chiffré : la co-présence mesurée 23/23 ne porte plus sur la même population.',
+    ).toEqual([]);
+    const i = regles.indexOf(bornees[0]);
+    const { max: _absente, ...ampute } = bornees[0];
+    const err = validateDataset('reglesOptionnelles.json', [...regles.slice(0, i), ampute, ...regles.slice(i + 1)]);
+    expect(err, 'un réglage à borne basse SEULE est accepté').not.toBeNull();
+    expect(err).toContain(`${i}.max`);
+  });
+});
+
+/**
+ * `water-exposure.json › modifiers[].auto` — le prédicat `{kind:'woundsLost', op:'between'}` porte
+ * ses deux bornes par la SHAPE de `plageSchema` (#1463 L-gram-1). Ce ne sont pas les bornes d'une
+ * rangée tirable (la table du document, `diseases`, compose depuis P1-a) : c'est le MÊME nœud de
+ * bornes, sur un autre porteur.
+ */
+describe('water-exposure › auto.between — les deux bornes du prédicat', () => {
+  it('sa donnée réelle passe, le MÊME prédicat sans `max` est REFUSÉ', () => {
+    const doc = waterExposure as { modifiers: ReadonlyArray<Record<string, unknown>> };
+    expect(validateDataset('water-exposure.json', doc)).toBeNull();
+    const i = doc.modifiers.findIndex((m) => (m.auto as { op?: string } | undefined)?.op === 'between');
+    expect(i, 'aucun prédicat `between` : la sonde ne mesure rien.').toBeGreaterThanOrEqual(0);
+    const auto = doc.modifiers[i].auto as Record<string, unknown>;
+    const { max: _absente, ...ampute } = auto;
+    const modifiers = doc.modifiers.map((m, j) => (j === i ? { ...m, auto: ampute } : m));
+    expect(
+      validateDataset('water-exposure.json', { ...doc, modifiers }),
+      'un prédicat `between` sans borne haute est accepté',
+    ).not.toBeNull();
+  });
+});
+
+/**
+ * POPULATIONS DE RÉFÉRENCE entrées en garde au lot L-gram-2 (#1463) — sonde A du design jugé,
+ * promue en contrat. Les quatre populations résolvent à 100 % contre leur catalogue, et chacune est
+ * mesurée AVEC son cardinal : une population qui se viderait rendrait la garde vacueuse, une valeur
+ * qui cesserait de résoudre est une FK morte. `ref(type)` refuse déjà l'id inconnu AU PARSE
+ * (`grammaire/ref.ts`) — sauf pour les Atouts d'objet, qui passent par `qualityRefSchema` (sans FK,
+ * #1615/#1621) : c'est LÀ que cette mesure est la seule garde.
+ */
+describe('références migrées — les 4 populations résolvent contre leur catalogue (#1463 L-gram-2)', () => {
+  const ids = (liste: ReadonlyArray<{ id: string }>) => new Set(liste.map((e) => e.id));
+  const CATALOGUES = {
+    careers: ids(careers as ReadonlyArray<{ id: string }>),
+    navals: ids(navalTraits as ReadonlyArray<{ id: string }>),
+    qualities: ids(qualities as ReadonlyArray<{ id: string }>),
+    traits: ids(traits as ReadonlyArray<{ id: string }>),
+  };
+
+  it('species.json › previewCareer — 27 aperçus, 27 carrières résolues', () => {
+    const vus = (species as ReadonlyArray<{ previewCareer?: { id: string } }>).flatMap((s) => (s.previewCareer ? [s.previewCareer.id] : []));
+    expect(vus.length, 'la population des aperçus de vitrine a disparu.').toBe(27);
+    expect(vus.filter((id) => !CATALOGUES.careers.has(id)), 'carrière d’aperçu hors de careers.json').toEqual([]);
+  });
+
+  it('vehicles.json › ship.traits — 19 Traits navals résolus, et AUCUN au bestiaire', () => {
+    const vus = (vehicles as ReadonlyArray<{ ship?: { traits?: ReadonlyArray<{ id: string }> } }>).flatMap((v) => v.ship?.traits ?? []);
+    expect(vus.length, 'la population des Traits de navire a disparu.').toBe(19);
+    expect(vus.filter((t) => !CATALOGUES.navals.has(t.id)), 'Trait de navire hors de naval-traits.json').toEqual([]);
+    expect(
+      vus.filter((t) => CATALOGUES.traits.has(t.id)),
+      'un Trait de navire existe AUSSI au bestiaire : le foyer des deux catalogues cesse d’être disjoint, et composer `traitInstanceSchema` redeviendrait tentant.',
+    ).toEqual([]);
+  });
+
+  it('trappings.json › qualities — 438 Atouts résolus (la seule garde de cette population)', () => {
+    const vus = (trappings as ReadonlyArray<{ qualities?: ReadonlyArray<{ id: string }> }>).flatMap((t) => t.qualities ?? []);
+    expect(vus.length, 'la population des Atouts d’objet a disparu.').toBe(438);
+    expect(vus.filter((q) => !CATALOGUES.qualities.has(q.id)), 'Atout hors de qualities.json').toEqual([]);
+  });
+
+  it('structures.json › traits — 5 Traits de structure résolus', () => {
+    const vus = (structures as ReadonlyArray<{ traits?: ReadonlyArray<{ id: string }> }>).flatMap((s) => s.traits ?? []);
+    expect(vus.length, 'la population des Traits de structure a disparu.').toBe(5);
+    expect(vus.filter((t) => !CATALOGUES.traits.has(t.id)), 'Trait de structure hors de traits.json').toEqual([]);
+  });
 });

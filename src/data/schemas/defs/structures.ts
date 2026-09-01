@@ -10,16 +10,10 @@
 import { z } from 'zod';
 import { difficultySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
+import { ref } from '../grammaire/ref';
 
 export const file = 'structures.json';
 export const famille = 'entite';
-
-/** Réf de Trait de structure (Résistant / Impénétrable, ADE II 8) — `{id}` seul observé dans les
- *  5 entrées ; `value` resterait possible (parallèle à `QualityRef`) mais aucune preuve dans la donnée. */
-const structureTraitRefSchema = z.strictObject({
-  id: z.string(),
-  value: z.number().optional(),
-});
 
 const doc = document(
   'structures',
@@ -33,7 +27,9 @@ const doc = document(
     /** RENDU (pas règle) : fortification de siège (rempart de pierre) vs cloison ordinaire. */
     fortified: z.boolean().optional(),
     char: z.strictObject({ BE: z.number(), B: z.number() }),
-    traits: z.array(structureTraitRefSchema),
+    /** Traits de la structure (Résistant / Impénétrable, ADE II 8) — référence NUE vers `traits.json`
+     *  (5/5 résolus au 2026-09-01). */
+    traits: z.array(ref('trait')),
     /** Profil AA (AA 10 l.28-52) — absents des 5 entrées ADE II ; N/A pour certaines entrées AA
      *  elles-mêmes (Herse/Solide porte en bois sans Pénalité de Couvert, Structures fixes sans ENC). */
     enc: z.number().optional(),

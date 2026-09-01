@@ -611,7 +611,7 @@ nombre d’entrées qui la portent.
 | `src/data/ship-criticals.json` | object | pipe à la racine | config | 1 | `die`:string(1) `id`:string(1) `label`:string(1) `shrapnelHit`:array(1) `source`:object(1) `tables`:object(1) `type`:string(1) |
 | `src/data/sizes.json` | object | pipe à la racine | config | 1 | `footprintSide`:object(1) `id`:string(1) `label`:string(1) `rangedMod`:object(1) `shipboardEnc`:object(1) `type`:string(1) |
 | `src/data/skills.json` | array | liste | entité | 48 | `acces`:string(48) `altChar`:object(2) `characteristic`:string(48) `combatAdvantage`:object(4) `combatSubstitute`:object(2) `desc`:string(48) `hearing`:boolean(1) `id`:string(48) `label`:string(48) `movement`:boolean(5) `source`:object(48) `specs`:array(43) `specsOpen`:boolean(6) `specsSource`:string(3) `tool`:object(1) `type`:string(48) |
-| `src/data/species.json` | array | liste | entité | 27 | `alsoIn`:array(1) `arcaneDomainsBonusOf`:string(2) `baseChar`:object(27) `desc`:string(26) `family`:string(27) `fate`:object(27) `gatedByRule`:string(1) `grantGroups`:array(27) `id`:string(27) `label`:string(27) `movement`:number(27) `mutationBodyMax`:number(18) `preview`:object(27) `rand`:number(27) `refCareer`:string(27) `refChar`:string(27) `skills`:array(27) `source`:object(27) `talents`:array(27) `traits`:array(1) `type`:string(27) `variant`:string(21) |
+| `src/data/species.json` | array | liste | entité | 27 | `alsoIn`:array(1) `arcaneDomainsBonusOf`:string(2) `baseChar`:object(27) `desc`:string(26) `family`:string(27) `fate`:object(27) `gatedByRule`:string(1) `grantGroups`:array(27) `id`:string(27) `label`:string(27) `movement`:number(27) `mutationBodyMax`:number(18) `previewCareer`:object(27) `rand`:number(27) `refCareer`:string(27) `refChar`:string(27) `skills`:array(27) `source`:object(27) `talents`:array(27) `traits`:array(1) `type`:string(27) `variant`:string(21) |
 | `src/data/speciesRace.json` | object | pipe à la racine | config | 1 | `default`:string(1) `id`:string(1) `label`:string(1) `rules`:array(1) `type`:string(1) |
 | `src/data/spells.json` | array | liste | entité | 576 | `alsoIn`:array(46) `breathAttack`:boolean(2) `cn`:null/number(576) `curated`:boolean(438) `damage`:number(22) `desc`:string(576) `domainId`:string(256) `duration`:null/object(576) `ecole`:string(576) `effects`:object(576) `family`:string(576) `id`:string(576) `ignoreBE`:boolean(2) `ignorePA`:boolean(6) `isRitual`:boolean(17) `label`:string(576) `missile`:boolean(40) `opposed`:object(4) `range`:null/object(576) `ritual`:object(17) `source`:object(576) `subType`:null/string(576) `target`:null/object(576) `type`:string(576) `variants`:array(18) |
 | `src/data/stars.json` | array | liste | entité | 23 | `apparence`:string(23) `ascendant`:string(23) `classique`:string(23) `dates`:string(23) `desc`:string(23) `dieux`:string(23) `id`:string(23) `label`:string(23) `ops`:array(23) `rand`:number(23) `signe`:string(23) `source`:object(23) `sub`:array(4) `type`:string(23) |
@@ -1059,7 +1059,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 
 | Concept | Signature du lexique | Statut | Occurrences |
 |---|---|---|---|
-| reference | `id` | cible | 8903 |
+| reference | `id` | cible | 8930 |
 | reference | `id,spec` | cible | 1332 |
 | reference | `choix,id` | cible | 278 |
 | reference | `id,type` | cible | 0 |
@@ -1087,7 +1087,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `trappingId` | historique | 0 |
 | reference | `creatureId` | historique | 55 |
 | reference | `vehicleId` | historique | 15 |
-| reference | `career` | historique | 27 |
+| reference | `career` | historique | 0 |
 | reference | `choice` | historique | 14 |
 | reference | `random` | historique | 21 |
 | reference | `text` | declaree | 577 |
@@ -1133,7 +1133,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **856** (cible 382 · declaree 6 · historique 118 · divergente 350). Objets JSON parcourus : **48581**, dont **31945** portent une forme
+Lignes concept × dataset × champ × forme : **856** (cible 383 · declaree 6 · historique 117 · divergente 350). Objets JSON parcourus : **48581**, dont **31945** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -1462,7 +1462,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `of` | `id` | cible | `species.json` | 67 | — | `groups.json` `regles.json` `river-navigation.json` `talents.json` |  |
 | entité | `of` | `id,spec` | cible | `species.json` | 6 | — | `crew-roles.json` `skills.json` `talents.json` |  |
 | entité | `of` | `random` | historique | `species.json` | 2 | — | — |  |
-| entité | `preview` | `career` | historique | `species.json` | 27 | — | `careers.json` `creatures.json` `groups.json` `interludeEvents.json` `skills.json` `talents.json` |  |
+| entité | `previewCareer` | `id` | cible | `species.json` | 27 | — | `careers.json` `creatures.json` `groups.json` `interludeEvents.json` `skills.json` `talents.json` |  |
 | entité | `skills` | `choix,id` | cible | `species.json` | 34 | — | `axes.json` `creatures.json` `skills.json` | choix borné / libre (DESIGN v2 S2) |
 | entité | `skills` | `id` | cible | `species.json` | 171 | — | `aa-criticals.json` `activities.json` `crew-test-types.json` `drunkenness.json` `river-navigation.json` `sea-cargo.json` … |  |
 | entité | `skills` | `id,spec` | cible | `species.json` | 110 | — | `axes.json` `books.json` `creatures.json` `crew-roles.json` `domains.json` `gods.json` … |  |
@@ -3631,7 +3631,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **482** ; **75** recoupent le lexique
+Littéraux d’objet zod lus : **475** ; **65** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -3652,8 +3652,8 @@ Dont **0** littéral(aux) PARTIEL(s) du noyau — — : une mesure qui exigerait
 | formule | `sum,sinPoints` | 2 | 2 | `miscast.ts` `sea-cargo.ts` |
 | source | `book` | 1 | 1 | `progression-schemas-derived.ts` |
 | test | `difficulty` | 31 | 19 | `aa-criticals.ts` `activities.ts` `arcane-phenomena.ts` `criticals.ts` `etats.ts` `land-cargo.ts` `maladies.ts` `miscast.ts` `psychology.ts` `river-navigation.ts` `sea-cargo.ts` `sea-navigation.ts` `sea-perils.ts` `sea-weather.ts` `steam-breakdown.ts` `symptoms.ts` `tavernGames.ts` `water-exposure.ts` `weather.ts` |
-| bornes | `min,max` | 5 | 5 | `advancementCosts.ts` `oups.ts` `reglesOptionnelles.ts` `tavernGames.ts` `water-exposure.ts` |
-| plage | `min,max` | 5 | 5 | `advancementCosts.ts` `oups.ts` `reglesOptionnelles.ts` `tavernGames.ts` `water-exposure.ts` |
+| bornes | `min,max` | 2 | 2 | `oups.ts` `tavernGames.ts` |
+| plage | `min,max` | 2 | 2 | `oups.ts` `tavernGames.ts` |
 | quantite | `fixed` | 0 | 0 | — |
 | sequence | `target,drCap,table,rounds,phases,pot,volley,sides,combined,throwerPenalty` | 2 | 2 | `activities.ts` `tavernGames.ts` |
 | ouverture | `titre,pitch` | 0 | 0 | — |
@@ -3661,8 +3661,8 @@ Dont **0** littéral(aux) PARTIEL(s) du noyau — — : une mesure qui exigerait
 | narratif | `affaires,indices,objets,presetsPnj` | 0 | 0 | — |
 | condition | `expr,kind` | 0 | 0 | — |
 
-Le DoD de #1463 annonçait « 5 `{id,spec}` » : la mesure en trouve **2** littéral(aux) —
-`domains.ts` › `requiresSkill` `{id,spec}` (cible) · `trappings.ts` `{id,spec,value}` (historique). Les autres n’ont pas de
+Le DoD de #1463 annonçait « 5 `{id,spec}` » : la mesure en trouve **0** littéral(aux) —
+. Les autres n’ont pas de
 porteur dans l’arbre, le chiffre ne se recopie pas.
 
 ### 4.2 Littéral par littéral
@@ -3671,13 +3671,11 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 |---|---|---|---|---|---|---|
 | `aa-criticals.ts` | 39 | `resist` | test | divergente | `difficulty,skill+…` | — |
 | `activities.ts` | 67 | — | test | divergente | `char,difficulty+…` | — |
-| `advancementCosts.ts` | 20 | — | plage | cible | `max,min+…` | — |
 | `arcane-phenomena.ts` | 153 | `controlFlux` | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 54 | `resist` | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 66 | — | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 76 | `loss` | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 85 | `resist` | test | divergente | `difficulty+…` | — |
-| `domains.ts` | 82 | `requiresSkill` | reference | cible | `id,spec` | `refSchema` |
 | `driving-mishap.ts` | 18 | — | — | hors lexique | `entries` | `corps` |
 | `drunkenness.ts` | 19 | — | — | hors lexique | `entries` | `corps` |
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
@@ -3705,7 +3703,6 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `psychology.ts` | 54 | `test` | test | historique | `difficulty,skill` | — |
 | `raceAppearance.ts` | 31 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
 | `raceAppearance.ts` | 33 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
-| `reglesOptionnelles.ts` | 32 | — | bornes | cible | `max,min+…` | — |
 | `river-navigation.ts` | 39 | `rowingAgility` | test | divergente | `difficulty+…` | — |
 | `river-navigation.ts` | 54 | `temporaryRepair` | test | divergente | `difficulty+…` | — |
 | `sea-cargo.ts` | 24 | `price` | prix | declaree | `dice` | `formulaSchema` |
@@ -3719,14 +3716,12 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `sea-perils.ts` | 71 | `tourbillonSwim` | test | divergente | `difficulty,skill+…` | — |
 | `sea-weather.ts` | 77 | `temperatures` | test | divergente | `difficulty+…` | — |
 | `sea-weather.ts` | 108 | `affaler` | test | divergente | `difficulty+…` | — |
-| `species.ts` | 47 | `preview` | reference | historique | `career` | — |
 | `spells.ts` | 19 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 20 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 28 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 37 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 40 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `steam-breakdown.ts` | 28 | `restart` | test | divergente | `char,difficulty,skill+…` | — |
-| `structures.ts` | 19 | — | reference | historique | `id,value` | — |
 | `surincantation.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
 | `symptoms.ts` | 39 | `onTick` | test | divergente | `difficulty+…` | — |
 | `talents.ts` | 80 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
@@ -3734,14 +3729,9 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
 | `tavernGames.ts` | 103 | `rows` | test | divergente | `difficulty+…` | — |
 | `tavernGames.ts` | 140 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
-| `trappings.ts` | 19 | — | reference | historique | `id,spec,value` | — |
-| `trappings.ts` | 68 | `qualities` | reference | historique | `id,value` | — |
-| `vehicles.ts` | 15 | — | reference | historique | `id,value` | — |
-| `vehicles.ts` | 65 | `traits` | reference | historique | `arg,id,value` | — |
 | `vents-tourbillonnants.ts` | 15 | — | — | hors lexique | `entries` | `corps` |
 | `water-exposure.ts` | 17 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
 | `water-exposure.ts` | 18 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
-| `water-exposure.ts` | 19 | — | plage | cible | `max,min+…` | — |
 | `water-exposure.ts` | 28 | `test` | test | historique | `difficulty,skill` | — |
 | `weather.ts` | 76 | `resistanceTest` | test | divergente | `difficulty+…` | — |
 
@@ -4204,7 +4194,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **1834** — espèce `id` **205**, espèce `acteur` **1629**.
+Slots déclarés : **1838** — espèce `id` **209**, espèce `acteur` **1629**.
 
 ### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
 
@@ -4231,6 +4221,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `creatures.json` | `[].skills[].id` | `id` | `skill` | liste | 5981 | 5981 / 5981 |
 | `crew-roles.json` | `[].skills[].id` | `id` | `skill` | liste | 10 | 10 / 10 |
 | `domains.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `domains.json` | `[].windModifiers[].cancelledBy.requiresSkill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
 | `domains.json` | `[].windModifiers[].cancelledBy.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
 | `etats.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 3 | 3 / 3 |
 | `etats.json` | `[].recover.skill.id` | `id` | `skill` | liste | 1 | 1 / 1 |
@@ -4271,10 +4262,12 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `species.json` | `[].talents[]\|1\|0.of[]\|0.id` | `id` | `talent` | liste | 78 | 78 / 78 |
 | `species.json` | `[].talents[]\|1\|0.of[]\|1.id` | `id` | `talent` | liste | 78 | 78 / 78 |
 | `species.json` | `[].talents[]\|1\|1.table.id` | `id` | `table` | liste | 0 | 0 / 0 |
+| `species.json` | `[].previewCareer.id` | `id` | `career` | liste | 27 | 27 / 27 |
 | `spells.json` | `[].opposed.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `spells.json` | `[].effects\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `spells.json` | `[].variants[].effects\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `steam-breakdown.json` | `[].restart[].skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
+| `structures.json` | `[].traits[].id` | `id` | `trait` | liste | 5 | 5 / 5 |
 | `symptoms.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `talents.json` | `[].test.matches[].skill.id` | `id` | `skill` | liste | 112 | 112 / 112 |
 | `talents.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
@@ -4289,6 +4282,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `traits.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `trappings.json` | `[].onHitEffects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `trappings.json` | `[].consumable\|3.test.skill.id` | `id` | `skill` | liste | 6 | 6 / 6 |
+| `vehicles.json` | `[].ship.traits[].id` | `id` | `navalTrait` | liste | 19 | 19 / 19 |
 | `water-exposure.json` | `test.skill.id` | `id` | `skill` | un | 1 | 1 / 1 |
 | `arene-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].statblock.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4687,7 +4681,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `species.json` | `gatedByRule` | 1 |
 | `species.json` | `grantGroups` | 27 |
 | `species.json` | `of` | 80 |
-| `species.json` | `preview` | 27 |
+| `species.json` | `previewCareer` | 27 |
 | `species.json` | `skills` | 315 |
 | `species.json` | `talents` | 96 |
 | `speciesRace.json` | `all` | 1 |
@@ -4780,10 +4774,11 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
 Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **1629** slots sur 1834.
+pèse **1629** slots sur 1838.
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
 - La PROJECTION path → champ retient le DERNIER segment-clé : deux paths distincts qui finissent sur la même clé se joignent au même champ observé (couverture sur-estimée à la marge).
+- Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
