@@ -166,17 +166,17 @@ test('scanEmptyFoliosInBook : nomme livre, chapitre, fichier, folio et ligne', (
   })
 })
 
-const PERDUE = { ref: 'LDB 8', file: '08 - Statut.md', folio: 88, pdfChars: 2642 }
+const PERDUE = { ref: 'ZI 5', file: '05 - Amibe.md', folio: 62, pdfChars: 2136 }
 const BENIGNE = { ref: 'ZI 5', file: '05 - Amibe.md', folio: 58, pdfChars: 12 }
 
 test('assertEmptyFoliosAgainstStock : stock aligné → aucune anomalie', () => {
-  const mesure = [{ ref: 'LDB 8', file: '08 - Statut.md', folio: 88 }, { ref: 'ZI 5', file: '05 - Amibe.md', folio: 58 }]
+  const mesure = [{ ref: 'ZI 5', file: '05 - Amibe.md', folio: 62 }, { ref: 'ZI 5', file: '05 - Amibe.md', folio: 58 }]
   const stock = { seuil: 200, perdues: [PERDUE], benignes: [BENIGNE] }
   assert.deepEqual(assertEmptyFoliosAgainstStock(mesure, stock), { inconnues: [], restituees: [], benignesDisparues: [], malClassees: [] })
 })
 
 test('assertEmptyFoliosAgainstStock : ancre sans contenu ABSENTE du stock → régression nominative', () => {
-  const inconnue = { ref: 'LDB 8', file: '08 - Statut.md', folio: 88 }
+  const inconnue = { ref: 'ZI 5', file: '05 - Amibe.md', folio: 62 }
   const r = assertEmptyFoliosAgainstStock([inconnue], { seuil: 200, perdues: [], benignes: [] })
   assert.deepEqual(r.inconnues, [inconnue])
 })
@@ -198,7 +198,7 @@ test('assertEmptyFoliosAgainstStock : entrée bénigne sans mesure → périmée
 test('assertEmptyFoliosAgainstStock : perdue reclassée bénigne → MAL CLASSÉE nominative (le blanchiment ne passe plus)', () => {
   const mesure = [{ ref: PERDUE.ref, file: PERDUE.file, folio: PERDUE.folio }]
   const r = assertEmptyFoliosAgainstStock(mesure, { seuil: 200, perdues: [], benignes: [PERDUE] })
-  assert.deepEqual(r.malClassees.map((e) => [emptyFolioKey(e), e.cls, e.pdfChars]), [['LDB 8|08 - Statut.md|88', 'benignes', 2642]])
+  assert.deepEqual(r.malClassees.map((e) => [emptyFolioKey(e), e.cls, e.pdfChars]), [['ZI 5|05 - Amibe.md|62', 'benignes', 2136]])
   assert.deepEqual([r.inconnues, r.restituees, r.benignesDisparues], [[], [], []], 'les trois autres volets restent muets : seul le classement ment')
 })
 
@@ -216,7 +216,7 @@ test('stock : le SEUIL committé vaut 200 — un stock régénéré avec `--seui
 })
 
 test('assertEmptyFoliosAgainstStock : entrée sans `pdfChars`, ou stock sans `seuil` → INAUDITABLE, donc mal classée', () => {
-  const nue = { ref: 'LDB 8', file: '08 - Statut.md', folio: 88 }
+  const nue = { ref: 'ZI 5', file: '05 - Amibe.md', folio: 62 }
   assert.equal(assertEmptyFoliosAgainstStock([nue], { seuil: 200, perdues: [nue], benignes: [] }).malClassees.length, 1)
   assert.equal(assertEmptyFoliosAgainstStock([nue], { perdues: [PERDUE], benignes: [] }).malClassees.length, 1)
 })
@@ -225,11 +225,18 @@ test('assertEmptyFoliosAgainstStock : entrée sans `pdfChars`, ou stock sans `se
 
 const STOCK = JSON.parse(readFileSync(EMPTY_STOCK_PATH, 'utf8'))
 
-test('stock : le folio 88 du LDB (carrière de Juriste, page perdue) y est NOMINATIVEMENT', () => {
-  const mesure = scanEmptyFoliosInBook('LDB', new Map(BOOKS).get('LDB'))
+test('stock : le folio 88 du LDB (carrière de Juriste) est RESTITUÉ — porteur au corpus, absent de la mesure comme du stock', () => {
+  const dir = new Map(BOOKS).get('LDB')
   const cle = 'LDB 8|08 - Statut.md|88'
-  assert.ok(mesure.some((e) => emptyFolioKey(e) === cle), 'le détecteur voit la page 88 sans contenu')
-  assert.ok(STOCK.perdues.some((e) => emptyFolioKey(e) === cle), 'et le stock la porte comme PERDUE')
+  const md = readFileSync(join(dir, '08 - Statut.md'), 'utf8')
+  const page = md.split('data-folio="88"')[1].split('data-folio="89"')[0]
+  assert.match(page, /\*\*JURISTE\*\* Halfling, Haut Elfe, Humain, Nain/, 'titre et espèces de la page')
+  assert.match(page, /Schéma de Progression du Juriste/, 'schéma de progression')
+  for (const niveau of ['Étudiant en Droit – Bronze 4', 'Juriste – Argent 3', 'Maître du Barreau – Or 1', 'Juge – Or 2']) {
+    assert.ok(page.includes(niveau), `niveau « ${niveau} » au corpus`)
+  }
+  assert.ok(!scanEmptyFoliosInBook('LDB', dir).some((e) => emptyFolioKey(e) === cle), 'le détecteur ne voit plus de page 88 sans contenu')
+  assert.ok(!STOCK.perdues.some((e) => emptyFolioKey(e) === cle), 'et le stock ne la porte plus')
 })
 
 test('stock : chaque ancre sans contenu du corpus est triée, et aucune entrée périmée', () => {

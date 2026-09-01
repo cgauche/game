@@ -6,7 +6,7 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanDeadCodeRefs, countsByFile, assertAgainstBaseline, isExcludedSrc, readBaseline, BASELINE_PATH } from './check-code-refs.mjs'
+import { scanDeadCodeRefs, scanEmptyLineCodeRefs, countsByFile, assertAgainstBaseline, isExcludedSrc, readBaseline, BASELINE_PATH, EMPTY_LINE_BASELINE_PATH } from './check-code-refs.mjs'
 
 // LDB 06 (Source/…/06 - Classes.md) fait 6 lignes (split('\n').length) — chapitre réel, court, stable :
 // sert d'ancrage pour planter une réf hors borne sans toucher au vrai src/.
@@ -102,6 +102,43 @@ test('readBaseline : fichier absent → {} (mode zéro-tolérance), fichier pré
     writeFileSync(path, '{"src/a.ts":2}', 'utf8')
     assert.deepEqual(readBaseline(path), { 'src/a.ts': 2 })
   })
+})
+
+// LDB 06 l.1 porte `*Pages PDF 48*`, LDB 06 l.2 est BLANCHE — ancrage réel du contrôle « ligne non vide ».
+test('réf dans les bornes mais sur une ligne VIDE → détectée', () => {
+  withTempSrcDir('x.ts', '// règle LDB 6 l.2 tombe sur du blanc\n', (dir) => {
+    const vides = scanEmptyLineCodeRefs(dir)
+    assert.equal(vides.length, 1)
+    assert.equal(vides[0].lo, 2)
+    assert.equal(vides[0].hi, 2)
+    assert.equal(scanDeadCodeRefs(dir).length, 0, 'la ligne est dans les bornes : le contrôle de bornes doit rester muet')
+  })
+})
+
+test('réf sur une ligne NON vide → silence du contrôle « ligne non vide »', () => {
+  withTempSrcDir('x.ts', '// règle LDB 6 l.1 porte du texte\n', (dir) => {
+    assert.equal(scanEmptyLineCodeRefs(dir).length, 0)
+  })
+})
+
+test('réf HORS BORNE : affaire du contrôle de bornes, jamais comptée deux fois par « ligne vide »', () => {
+  withTempSrcDir('x.ts', '// règle LDB 6 l.999 hors borne\n', (dir) => {
+    assert.equal(scanDeadCodeRefs(dir).length, 1)
+    assert.equal(scanEmptyLineCodeRefs(dir).length, 0)
+  })
+})
+
+test('plage l.X-Y : vide seulement si TOUTE la plage est blanche', () => {
+  withTempSrcDir('a.ts', '// plage LDB 6 l.1-2 dont une ligne porte du texte\n', (dir) => {
+    assert.equal(scanEmptyLineCodeRefs(dir).length, 0)
+  })
+})
+
+test('non-régression : le VRAI src/ du repo est aligné sur la baseline des réfs sur ligne vide (cliquet DÉCROISSANT)', () => {
+  const counts = countsByFile(scanEmptyLineCodeRefs())
+  const { over, stale } = assertAgainstBaseline(counts, readBaseline(EMPTY_LINE_BASELINE_PATH))
+  assert.deepEqual(over, [], `réf(s) de code tombée(s) sur une ligne VIDE en hausse :\n${over.join('\n')}`)
+  assert.deepEqual(stale, [], `baseline(s) périmée(s) à ABAISSER dans empty-line-code-refs-baseline.json :\n${stale.join('\n')}`)
 })
 
 test('non-régression : le VRAI src/ du repo est aligné sur le régime ZÉRO-TOLÉRANCE (#583 : baseline soldée)', () => {

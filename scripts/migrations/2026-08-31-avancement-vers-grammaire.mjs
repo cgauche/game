@@ -46,7 +46,7 @@ const SINGULIERS = {
   'savoir-vivre|soldat': 'soldats',
   // « Savoir-vivre (Guilde) » ADE I 02 l.268, MDG 09 l.494 ⇄ « Guildes » LDB 10 l.1071
   'savoir-vivre|guilde': 'guildes',
-  // « Savoir-vivre (Criminel ou Guilde) » ADE I 02 l.272 ⇄ « Criminels » LDB 08 l.2514, LDB 10 l.1071
+  // « Savoir-vivre (Criminel ou Guilde) » ADE I 02 l.272 ⇄ « Criminels » LDB 08 l.2558, LDB 10 l.1071
   'savoir-vivre|criminel': 'criminels',
 };
 

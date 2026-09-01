@@ -1,0 +1,21 @@
+{
+  "src/data/raw.manifest.json": 1,
+  "src/data/refs-migrated.test.ts": 1,
+  "src/engine/combat.ts": 1,
+  "src/engine/domainAttributes.test.ts": 1,
+  "src/engine/healing.test.ts": 1,
+  "src/engine/healing.ts": 1,
+  "src/engine/magic-sin.test.ts": 1,
+  "src/engine/travel.test.ts": 1,
+  "src/i18n/messages/fr.ts": 1,
+  "src/scenes/diligence/edo-ch1-calibration-voyage.test.ts": 1,
+  "src/state/cascade.ts": 1,
+  "src/state/combat-tables-choix-porte.test.ts": 1,
+  "src/state/combatFlow.ts": 3,
+  "src/state/interlude-catalog.test.ts": 1,
+  "src/state/miscast-step.test.ts": 2,
+  "src/state/pendings.ts": 1,
+  "src/state/sea-voyage-flow.test.ts": 1,
+  "src/state/sequence-parite-catalogue.test.ts": 2,
+  "src/ui/CascadeTableMode.test.tsx": 1
+}

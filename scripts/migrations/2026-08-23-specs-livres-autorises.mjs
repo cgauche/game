@@ -95,7 +95,7 @@ const FUSIONS = [{ skillId: 'signes-secrets', mort: 'ranger', vers: 'rodeur' }];
 
 /** Arbitrages nominatifs, clé `"<skillId> <spec>"`, valeur = id (`null` = la `ref` entière part). */
 const REMAP = new Map([
-  // LDB 09 l.504 ; LDB 08 l.2925/3210/3320 ; ZI 05 l.46
+  // LDB 09 l.504 ; LDB 08 l.2969/3254/3364 ; ZI 05 l.46
   ['signes-secrets Voleurs', 'voleur'],
   // LDB 08 l.250/431/2027/2139 ; AA 02 l.415 — la guilde, pas la sentinelle « (Au choix) »
   ['signes-secrets Guilde', 'guilde'],

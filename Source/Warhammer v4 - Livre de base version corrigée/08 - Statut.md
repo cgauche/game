@@ -2163,6 +2163,8 @@ Savant (Ingénierie)
 Certains Ingénieurs effectuent des recherches dans des Forteresses naines, pour la plupart abandonnées, car elles renferment des secrets de fabrication de l'ancien temps. Ceux qui osent affronter les profondeurs de ces endroits trouvent quelquefois des merveilles datant de plusieurs millénaires, dont la plupart détournées par les gobelins et les skavens dans le but de réaliser leurs infâmes projets. Les gigantesques ponts de pierres qui surplombent ces forteresses sont tout aussi époustouflants, certains s'étirant sur plusieurs kilomètres, véritables merveilles et vestiges d'un temps révolu qui reliaient autrefois les villes, forts et fermes arables des nains.
 
 
+# <span id="page-89-0" data-folio="88"></span>**JURISTE** Halfling, Haut Elfe, Humain, Nain
+
 *Vous louvoyez au milieu d'un système juridique totalement déloyal, défendant vos clients et poursuivant les coupables en justice.*
 
 Les Juristes fournissent des conseils légaux, interprètent les lois et plaident en faveur de leurs clients devant les cours. Ils sont souvent spécialisés dans les lois de la province dans laquelle ils exercent ou encore dans la loi ecclésiastique. La plupart ont étudié dans les universités et sont donc riches et influents, bien que certains individus doués de basse extraction soient parfois leurs apprentis. Les Juristes du culte apprennent auprès de leurs semblables, et ceux instruits par les Cultes de Verena et de Sigmar sont particulièrement appréciés. Certains Juristes sont employés comme médiateurs, réglant des conflits informels hors des cours si onéreuses, l'un des rôles préférés des halflings. D'autres travaillent pour des gangs de criminels, exploitant les failles légales pour libérer leurs clients, toujours coupables. En haut de l'échelle, les Maître du Barreau sont les seuls Juristes à avoir le droit de plaider devant les cours d'appel des cités-États et réclament des commissions exorbitantes pour leurs services.
@@ -2177,6 +2179,48 @@ Les Juristes fournissent des conseils légaux, interprètent les lois et plaiden
 
 Les Juristes excellent à sortir les autres du pétrin lorsque les aventuriers excellent à les y mettre. Ils peuvent se servir de leurs connaissances de certaines lois obscures de la région afin d'éviter des ennuis en suggérant des approches individuelles pour résoudre les problèmes épineux. Après tout, il est plus rentable, et moins dangereux, d'emmener un malfrat devant une cour que de le ligoter au fond d'une cave.
 
+#### **Schéma de Progression du Juriste**
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
+|----|----|---|---|---|----|-----|-----|----|-----|
+|    |    |   |   | h |    | h   | h   |    |     |
+
+# **Évolution de Carrière**
+
+h **Étudiant en Droit – Bronze 4**
+
+**Compétences :** Langue (Classique), Marchandage, Perception, Recherche, Résistance, Résistance à l'alcool, *Savoir (Loi)*, Savoir (Théologie),
+
+**Talents :** Baratiner, Lire/Écrire, Lecture rapide, Savoir-vivre (Érudit)
+
+**Possessions :** livre (Loi), loupe
+
+#### **Juriste – Argent 3**
+
+**Compétences :** Charme, Intuition, Langue (guilde), Ragot, Signes secrets (guilde), Subornation
+
+**Talents :** Affable, Criminel, Ergoteur, Savoir-vivre (guilde)
+
+**Possessions :** robe de juriste, licence de guilde, nécessaire d'écriture
+
+#### **Maître du Barreau – Or 1**
+
+**Compétences :** Art (Écriture), Divertissement (Discours), Intimidation, Savoir (au choix)
+
+**Talents :** Ferveur ardente, Menteur, Perspicace, Studieux
+
+**Possessions :** assistant (Étudiant ou Serviteur), Bureau
+
+#### **Juge – Or 2**
+
+**Compétences :** Calme, Savoir (au choix)
+
+**Talents :** Caïd, Nanti, Présence imposante, Savant (Loi)
+
+**Possessions :** maillet, perruque ostentatoire
+
+
+# <span id="page-90-0" data-folio="89"></span>**MÉDECIN** Halfling, Haut Elfe, Humain, Nain
 
 *La main sûre et le cœur bien accroché, vous pratiquez la médecine, luttant pour sauver des vies.*
 
@@ -2202,7 +2246,7 @@ Il est de notoriété publique que les honoraires de la guilde des Médecins son
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   |   |   |    | h   | h   | h  |     |
 
-<span id="page-89-0" data-folio="88"></span><span id="page-90-0" data-folio="89"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Étudiant en Médecine – Bronze 4**
 
