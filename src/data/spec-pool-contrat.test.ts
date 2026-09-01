@@ -290,6 +290,33 @@ describe('L2 #1548 — `refOuSpec` refuse la sentinelle AU PARSE (`ref.ts#SENTIN
 });
 
 /**
+ * INVARIANT `estSpecialisable ⟹ specPoolOf ≠ []` — une Compétence dont le catalogue est NON VIDE doit
+ * proposer au moins une spéc `pool` : sinon le tirage d'une spéc n'a aucun candidat et le `throw` de
+ * `designateSpec` (`src/state/spawn.ts`) devient atteignable en partie.
+ *
+ * CE QUE CE VOLET AJOUTE au « aucun domaine groupé n'a un pool VIDE » ci-dessus : ce dernier ne
+ * regarde une def QUE si elle porte des `specs[]` INLINE (`if (inline.length)`), ce qui saute par
+ * construction les défs à `specsSource` — mesuré 2026-08-31 : `corps-a-corps`, `focalisation` et
+ * `projectiles` ont 0 spéc inline pour 8/9/10 au registre, donc trois trous. `estSpecialisable` lit
+ * le catalogue RÉSOLU (`SPECS_PAR_DATASET`), les deux régimes compris.
+ */
+describe('L2 #1548 — toute Compétence spécialisable propose au moins une spéc au tirage', () => {
+  it('les défs à `specsSource` sont bien DANS le périmètre (le volet inline les saute)', () => {
+    const parSource = skills.filter((s) => s.specsSource && (s.specs ?? []).length === 0);
+    expect(parSource.length).toBeGreaterThan(0);
+    expect(parSource.every((s) => estSpecialisable('skill', s.id))).toBe(true);
+  });
+
+  it('aucune Compétence spécialisable n’a un pool VIDE', () => {
+    const vides = skills.filter((s) => estSpecialisable('skill', s.id) && specPoolOf(s).length === 0).map((s) => s.id);
+    expect(
+      vides,
+      `Compétence(s) au catalogue NON VIDE mais sans aucune spéc \`pool\` — \`designateSpec\` (src/state/spawn.ts) n'a aucun candidat à tirer et LÈVE :\n${vides.join('\n')}`,
+    ).toEqual([]);
+  });
+});
+
+/**
  * SENS MANQUANT du critère #1342 L3 (#1457 B2) — le premier `it` de ce fichier ne garde qu'un sens
  * (`pool: false ⇒ source`) : rien n'exigeait qu'une entrée statbloc-only SOIT mise hors pool. Elle
  * restait donc PROPOSÉE d'office par le créateur/l'avancement (`LDB 09 l.40`, `specPoolOf`), et le
@@ -373,33 +400,6 @@ describe('#1457 B2 — une spec ATTESTÉE dont le seul consommateur est un statb
       manquants,
       'spéc(s) attestées que seul un statbloc emploie et que le pool PROPOSE quand même — poser ' +
         `\`pool: false\` (par la migration qui les a créées, jamais à la main) :\n${manquants.join('\n')}`,
-    ).toEqual([]);
-  });
-});
-
-/**
- * INVARIANT `estSpecialisable ⟹ specPoolOf ≠ []` — une Compétence dont le catalogue est NON VIDE doit
- * proposer au moins une spéc `pool` : sinon le tirage d'une spéc n'a aucun candidat et le `throw` de
- * `designateSpec` (`src/state/spawn.ts`) devient atteignable en partie.
- *
- * CE QUE CE VOLET AJOUTE au « aucun domaine groupé n'a un pool VIDE » ci-dessus : ce dernier ne
- * regarde une def QUE si elle porte des `specs[]` INLINE (`if (inline.length)`), ce qui saute par
- * construction les défs à `specsSource` — mesuré 2026-08-31 : `corps-a-corps`, `focalisation` et
- * `projectiles` ont 0 spéc inline pour 8/9/10 au registre, donc trois trous. `estSpecialisable` lit
- * le catalogue RÉSOLU (`SPECS_PAR_DATASET`), les deux régimes compris.
- */
-describe('L2 #1548 — toute Compétence spécialisable propose au moins une spéc au tirage', () => {
-  it('les défs à `specsSource` sont bien DANS le périmètre (le volet inline les saute)', () => {
-    const parSource = skills.filter((s) => s.specsSource && (s.specs ?? []).length === 0);
-    expect(parSource.length).toBeGreaterThan(0);
-    expect(parSource.every((s) => estSpecialisable('skill', s.id))).toBe(true);
-  });
-
-  it('aucune Compétence spécialisable n’a un pool VIDE', () => {
-    const vides = skills.filter((s) => estSpecialisable('skill', s.id) && specPoolOf(s).length === 0).map((s) => s.id);
-    expect(
-      vides,
-      `Compétence(s) au catalogue NON VIDE mais sans aucune spéc \`pool\` — \`designateSpec\` (src/state/spawn.ts) n'a aucun candidat à tirer et LÈVE :\n${vides.join('\n')}`,
     ).toEqual([]);
   });
 });
