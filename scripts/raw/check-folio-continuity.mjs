@@ -118,7 +118,7 @@ export function scanAllBooks(books = BOOKS) {
 // repreneur possible — AA folio 144, ZI folio 144, MDG folio 160, mesurés SANS contenu utile au PDF
 // (cf. le test qui les nomme). Toute fin de livre qui deviendrait porteuse échapperait à la garde.
 // `\s` couvre deja insecables et BOM en JS ; la largeur nulle U+200B, non.
-const BLANKS_RE = /[\s​]+/g
+const BLANKS_RE = /[\s\u200B]+/g
 const ANCHOR_SPAN_RE = /<span[^>]*data-folio="(-?\d+)"[^>]*>\s*<\/span>/g
 
 /** `[{ folio, line }]` : folios dont la page n'a AUCUN contenu utile dans le texte (PUR). */
