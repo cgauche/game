@@ -239,7 +239,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const walk = (flow: Flow) => walkFlow(flow, (node) => {
       if (node.kind !== 'do') return;
       const e = node.effect as any;
-      if (e.type === 'giveMoney') totalSb += (e.gold ?? 0) * 240 + (e.silver ?? 0) * 12 + (e.brass ?? 0);
+      if (e.type === 'giveMoney') totalSb += (e.montant.gold ?? 0) * 240 + (e.montant.silver ?? 0) * 12 + (e.montant.brass ?? 0);
       if (e.type === 'delayedEffect') walk(e.flow);
     });
     for (const s of project) {
@@ -251,7 +251,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(totalSb).toBeLessThanOrEqual(100 * 240);
     const z1 = project[0].encounters.find((e) => e.id === 'enc-zone1')!;
     const z1money = flowEffects(z1.onVictory!).find((e) => e.type === 'giveMoney') as any;
-    expect(z1money.gold ?? 0).toBe(0); // l'échauffement paie en PISTOLES
+    expect(z1money.montant.gold ?? 0).toBe(0); // l'échauffement paie en PISTOLES
     // XP : chaque victoire de zone vaut ≥100 PX (progression sentie à CHAQUE combat),
     // et l'échelle complète en cumule ≥2500.
     let ladder = 0;

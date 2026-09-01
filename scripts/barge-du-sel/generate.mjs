@@ -219,7 +219,7 @@ scenes.push(scene({
       onVictory: flowOf([
         { type: 'setFlag', flag: 'sel-embuscade-vaincue' },
         { type: 'giveXp', amount: 100 },
-        { type: 'giveMoney', gold: 10 },
+        { type: 'giveMoney', montant: { gold: 10 } },
         OBJ("Rallier l'îlot avec le sel — la cogue pirate écartée."),
         { type: 'journal', desc: "La cogue pirate amène son pavillon à mi-coque et rompt le combat." },
         // Pas de transition en dur : l'embuscade n'est qu'une INTERRUPTION de la traversée (patron

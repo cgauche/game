@@ -198,7 +198,7 @@ const spec: MapSpec = {
             {
               label: 'S’incliner et accepter.',
               flow: flowFromEffects([
-                { type: 'giveMoney', gold: 5 },
+                { type: 'giveMoney', montant: { gold: 5 } },
                 { type: 'setFlag', flag: 'faveurComtesse' },
                 { type: 'endDialogue' },
               ]),

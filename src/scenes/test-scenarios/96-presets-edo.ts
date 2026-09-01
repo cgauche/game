@@ -213,7 +213,7 @@ const scene = buildScene({
       onVictory: flowFromEffects([
         { type: 'journal', desc: 'Knud Cratinx s’effondre dans un sifflement. La route de Kemperbad est libre.' },
         { type: 'giveXp', amount: 60 },
-        { type: 'giveMoney', silver: 5 },
+        { type: 'giveMoney', montant: { silver: 5 } },
       ]),
     },
   ],

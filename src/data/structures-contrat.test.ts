@@ -209,7 +209,12 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // qui gagne ses deux clés optionnelles (`defs-scenes/narratif.ts`, #717) — solde net +2, la signature
 // `narratif` sans cadre de ce paquet disparaissant au profit de celle-ci. Bump RÉVISABLE : la
 // déclaration de ces formes en CIBLE au lexique est proposée à la vague enveloppe.
-const PLAFOND_HORS_STRATE = 1149;
+// #1463 L-monnaie-3 (1149→1152) : AUCUNE structure neuve — l'effet `giveMoney` cesse d'ÉTALER ses
+// dénominations et porte sa charge sous `montant` (`giveMoneySchema`, `defs-scenes/effets.ts`), comme
+// `giveXp.amount`. Les 3 signatures NOMMÉES par la garde sont la MEME enveloppe `{montant, type}`, une
+// par projet porteur ; ce qu'elles remplacent (`{gold,type}`, `{silver,type}`, `{gold,silver,type}`)
+// était compté DIVERGENT au stock des formes, d'où la hausse ici et la baisse de 8 lignes là-bas.
+const PLAFOND_HORS_STRATE = 1152;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -482,7 +487,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // motif au pilotage). (2) `bornes | max,min+…` : concept NEUF du lexique, les 23 objets de
       // `reglesOptionnelles.json` étaient comptés `plage divergente` par MISCLASSEMENT — ce sont les
       // bornes du DOMAINE d'un réglage (co-présence `default`/`step`), aucun d100 ne les traverse.
-      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 21],
+      // (3) `monnaie` × 6 sous-signatures (#1463 L-monnaie-3) : `moneyPartialSchema` déclare les 3
+      // dénominations OPTIONNELLES et `toMoney` complète à 0 — un coût authoré qui n'écrit que ce
+      // qu'il chiffre est à la forme cible. Les variantes `+…` restent HORS cibles : un étalement se
+      // migre, il ne se blanchit pas.
+      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 27],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
       // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non
@@ -819,7 +828,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // grammaire (`grammaire/valeurs.ts`) au lieu de re-taper `{gold}`.
       // … puis 130 → 121 (L-monnaie-2) : la clé `bronze` meurt (5 lignes de FORMES, 455 montants) et
       // les 4 catalogues composent le `moneySchema` de la grammaire (4 REDÉCLARATIONS).
-      'L4 #1463': 121,
+      // … puis 121 → 113 (L-monnaie-3) : les 8 dernières lignes de FORMES du concept monnaie sortent
+      // (53 occurrences) — 44 `giveMoney` enveloppés dans `montant`, et les 9 montants PARTIELS
+      // (`activities.minInvest`, coûts de choix d'arène) reconnus CIBLES par le lexique. Le concept
+      // monnaie ne pèse plus AUCUNE ligne au stock des formes.
+      'L4 #1463': 113,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`
@@ -979,8 +992,11 @@ describe('les concepts de VALEUR sont reconnus à leur noyau (contrats positifs)
   const sig = (o: object) => signature(Object.keys(o));
   const classement = (o: object, champ = '') => classerValeur(sig(o), Object.keys(o), { champ });
 
-  it('`{gold,silver}` est une monnaie historique, `{brass,gold,silver}` la cible', () => {
-    expect(classement({ gold: 1, silver: 2 })).toMatchObject({ concept: 'monnaie', statut: 'historique' });
+  it('un montant PARTIEL est une monnaie à la forme cible, comme le montant complet', () => {
+    // `moneyPartialSchema` (3 dénominations optionnelles) + `toMoney` : un coût authoré n'écrit que ce
+    // qu'il chiffre — les 6 sous-signatures non vides sont CIBLES (#1463 L-monnaie-3).
+    expect(classement({ gold: 1, silver: 2 })).toMatchObject({ concept: 'monnaie', statut: 'cible' });
+    expect(classement({ silver: 2 })).toMatchObject({ concept: 'monnaie', statut: 'cible' });
     expect(classement({ brass: 1, gold: 1, silver: 2 })).toMatchObject({ concept: 'monnaie', statut: 'cible' });
     expect(classement({ book: 'ldb', page: 12 })).toMatchObject({ concept: 'source', statut: 'cible' });
   });

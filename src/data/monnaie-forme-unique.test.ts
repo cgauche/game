@@ -8,8 +8,9 @@
  *
  * Les deux sondes marchent la DONNÉE des 2 racines authorées (`src/data`, `src/scenes`), jamais le
  * code : ce qu'elles mesurent est la forme réellement écrite par les auteurs.
- *  A. le concept `monnaie` ne s'écrit qu'en dénominations de `Money` — `{gold?, silver?, brass?}` ;
- *     le seul porteur qui les ÉTALE sur un objet-action est l'effet `giveMoney` (solde : L-monnaie-3).
+ *  A. le concept `monnaie` ne s'écrit qu'en dénominations de `Money` — `{gold?, silver?, brass?}` —
+ *     et TOUJOURS dans un objet qui ne porte QU'ELLES : une action nomme sa charge (`giveMoney.montant`,
+ *     `giveXp.amount`, `givePossession.ref`), elle ne l'étale pas parmi ses propres clés.
  *  B. les noms RÉSERVÉS `price`/`cost` : recensement par CLASSE réelle et par SIGNATURE d'objet —
  *     un nom de concept est réservé à son type (#1463 S2 ; solde de `cost` : L-monnaie-4).
  */
@@ -49,7 +50,7 @@ function marcherObjets(noeud: unknown, visiter: (o: Record<string, unknown>) => 
 const DOCS = documents();
 
 describe('monnaie — forme UNIQUE dans la donnée authorée (#1463)', () => {
-  it('A. une dénomination ne s’écrit qu’en `{gold?, silver?, brass?}` — jamais `bronze`, jamais étalée hors de `giveMoney`', () => {
+  it('A. une dénomination ne s’écrit qu’en `{gold?, silver?, brass?}` — jamais `bronze`, jamais étalée sur un objet-action', () => {
     const montants: Compte = {};
     const etales: Compte = {};
     let bronze = 0;
@@ -70,15 +71,15 @@ describe('monnaie — forme UNIQUE dans la donnée authorée (#1463)', () => {
     // les catalogues chiffrent les 3, un coût authoré n'écrit que ce qu'il coûte.
     expect(montants, 'signatures de montant observées').toEqual({
       'brass,gold,silver': 465, // 447 colonnes Prix (trappings 392, vehicles 31, creatures 14, machines de guerre 10) + solde d'équipage 18
-      gold: 2, // mise minimale du Mécénat + 1 coût de choix d'arène
-      silver: 7, // coûts de choix d'arène
+      gold: 27, // mise minimale du Mécénat + 1 coût de choix d'arène + 25 `giveMoney.montant`
+      silver: 23, // 7 coûts de choix d'arène + 16 `giveMoney.montant`
+      'gold,silver': 3, // 3 `giveMoney.montant` à deux dénominations
     });
 
-    // Un objet-ACTION qui étale une dénomination parmi ses propres clés : le vocabulaire n'en a
-    // qu'UN, `giveMoney` — les autres actions portent leur charge sous un nom (`amount`, `ref`…).
-    expect(Object.keys(etales).sort(), 'actions qui étalent une monnaie à plat').toEqual(['giveMoney']);
-    // Cliquet DÉCROISSANT — `giveMoney` prend son enveloppe `montant` au lot L-monnaie-3.
-    expect(etales.giveMoney, 'porteurs plats `giveMoney`').toBeLessThanOrEqual(44);
+    // AUCUN objet-ACTION n'étale de dénomination parmi ses propres clés : toute charge porte un NOM
+    // (`giveMoney.montant`, `giveXp.amount`, `givePossession.ref`), et l'enveloppe se mesure ci-dessus
+    // comme un montant à part entière.
+    expect(etales, 'objets-action qui étalent une monnaie à plat').toEqual({});
   });
 
   it('B. les noms réservés `price` et `cost` : recensement par CLASSE réelle et par signature d’objet', () => {

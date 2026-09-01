@@ -129,7 +129,7 @@ export function makeZone2() {
       P(25, 3, 'coffre', {
         label: 'Coffre de la garnison',
         ...fouille([
-          { type: 'giveMoney', gold: 3 },
+          { type: 'giveMoney', montant: { gold: 3 } },
           { type: 'giveTrapping', trappingId: 'bouclier' },
           { type: 'journal', desc: 'Le coffre de la garnison : 3 co et un bouclier frappé du Comte Palatin.' },
         ]),
@@ -216,7 +216,7 @@ export function makeZone3() {
       P(16, 12, 'cadavre', {
         label: 'Égoutier noyé',
         ...fouille([
-          { type: 'giveMoney', silver: 12 },
+          { type: 'giveMoney', montant: { silver: 12 } },
           { type: 'journal', desc: 'L’égoutier n’avait plus besoin de sa paie : 12 pa.' },
         ]),
       }),
@@ -311,7 +311,7 @@ export function makeZone4() {
         ...fouille(testNode(
           { skill: { id: 'resistance' }, difficulty: 'intermediaire', label: 'Fouiller les morts du charnier', stake: { authored: 'Fouiller sans se blesser : 18 pistoles dans la bourse du fossoyeur, sinon une Blessure Purulente.' } },
           [
-            { type: 'giveMoney', silver: 18 },
+            { type: 'giveMoney', montant: { silver: 18 } },
             { type: 'journal', desc: 'Le fossoyeur serrait encore sa bourse : 18 pa, et rien d’attrapé.' },
           ],
           [
@@ -507,7 +507,7 @@ export function makeZone6() {
       P(26, 18, 'barque', {
         label: 'Barque embourbée',
         ...fouille([
-          { type: 'giveMoney', silver: 10 },
+          { type: 'giveMoney', montant: { silver: 10 } },
           { type: 'journal', desc: 'Sous le banc de nage : une bourse oubliée (10 pa).' },
         ]),
       }),
@@ -591,7 +591,7 @@ export function makeZone7() {
       P(21, 13, 'cocon', {
         label: 'Cocon lourd',
         ...fouille([
-          { type: 'giveMoney', silver: 24 },
+          { type: 'giveMoney', montant: { silver: 24 } },
           { type: 'journal', desc: 'Le cocon rend une bourse poisseuse : 24 pa.' },
         ]),
       }),

@@ -223,13 +223,13 @@ describe('#1318 E1 — les bornes des rangées d’atelier sont TENUES à la sai
     container.remove();
   });
 
-  it('giveMoney : chaque champ écrit SA clé de `Money` (pistole = silver, sou = brass, money.ts l.9)', async () => {
+  it('giveMoney : chaque champ écrit SA clé de `Money` DANS l’enveloppe `montant` (pistole = silver, sou = brass, money.ts l.9)', async () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root: Root = createRoot(container);
     let dernier: Effect[] = [];
     function ListeControlee() {
-      const [effects, setEffects] = useState<Effect[]>([{ type: 'giveMoney', gold: 0, silver: 0, brass: 0 } as unknown as Effect]);
+      const [effects, setEffects] = useState<Effect[]>([{ type: 'giveMoney', montant: { gold: 0, silver: 0, brass: 0 } } as unknown as Effect]);
       return <EffectList effects={effects} ctx={ctx} onChange={(next) => { dernier = next; setEffects(next); }} />;
     }
     await act(async () => { root.render(<ListeControlee />); });
@@ -247,11 +247,11 @@ describe('#1318 E1 — les bornes des rangées d’atelier sont TENUES à la sai
       });
     };
     await saisir(champ('Sous de cuivre'), '7');
-    expect(dernier[0]).toMatchObject({ brass: 7, silver: 0, gold: 0 });
+    expect(dernier[0]).toMatchObject({ montant: { brass: 7, silver: 0, gold: 0 } });
     await saisir(champ('Pistoles d’argent'), '3');
-    expect(dernier[0]).toMatchObject({ silver: 3, brass: 7 });
+    expect(dernier[0]).toMatchObject({ montant: { silver: 3, brass: 7 } });
     await saisir(champ('Couronnes d’or'), '2');
-    expect(dernier[0]).toMatchObject({ gold: 2, silver: 3, brass: 7 });
+    expect(dernier[0]).toMatchObject({ montant: { gold: 2, silver: 3, brass: 7 } });
     // Le libellé VISIBLE suit la même clé (notation LDB 57 : CO / pa / sc).
     const rangee = container.querySelector('.money-fields')!;
     expect([...rangee.querySelectorAll('label')].map((l) => l.textContent?.trim())).toEqual(['CO', 'pa', 'sc']);

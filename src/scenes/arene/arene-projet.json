@@ -659,7 +659,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "silver": 8
+         "montant": {
+          "silver": 8
+         }
         }
        },
        {
@@ -3531,7 +3533,9 @@
              "kind": "do",
              "effect": {
               "type": "giveMoney",
-              "gold": 5
+              "montant": {
+               "gold": 5
+              }
              }
             },
             {
@@ -3976,7 +3980,9 @@
             "kind": "do",
             "effect": {
              "type": "giveMoney",
-             "gold": 3
+             "montant": {
+              "gold": 3
+             }
             }
            },
            {
@@ -4044,7 +4050,9 @@
             "kind": "do",
             "effect": {
              "type": "giveMoney",
-             "gold": 4
+             "montant": {
+              "gold": 4
+             }
             }
            },
            {
@@ -4112,7 +4120,9 @@
             "kind": "do",
             "effect": {
              "type": "giveMoney",
-             "gold": 5
+             "montant": {
+              "gold": 5
+             }
             }
            },
            {
@@ -4637,7 +4647,9 @@
              "kind": "do",
              "effect": {
               "type": "giveMoney",
-              "silver": 30
+              "montant": {
+               "silver": 30
+              }
              }
             },
             {
@@ -6965,7 +6977,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "gold": 3
+          "montant": {
+           "gold": 3
+          }
          }
         },
         {
@@ -7174,7 +7188,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "silver": 12
+         "montant": {
+          "silver": 12
+         }
         }
        },
        {
@@ -7898,7 +7914,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "silver": 12
+          "montant": {
+           "silver": 12
+          }
          }
         },
         {
@@ -8140,7 +8158,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "silver": 16
+         "montant": {
+          "silver": 16
+         }
         }
        },
        {
@@ -8923,7 +8943,9 @@
           "kind": "do",
           "effect": {
            "type": "giveMoney",
-           "silver": 18
+           "montant": {
+            "silver": 18
+           }
           }
          },
          {
@@ -9147,7 +9169,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 1
+         "montant": {
+          "gold": 1
+         }
         }
        },
        {
@@ -10011,8 +10035,10 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 1,
-         "silver": 10
+         "montant": {
+          "gold": 1,
+          "silver": 10
+         }
         }
        },
        {
@@ -11074,7 +11100,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "silver": 10
+          "montant": {
+           "silver": 10
+          }
          }
         },
         {
@@ -11219,7 +11247,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 2
+         "montant": {
+          "gold": 2
+         }
         }
        },
        {
@@ -12064,7 +12094,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "silver": 24
+          "montant": {
+           "silver": 24
+          }
          }
         },
         {
@@ -12334,8 +12366,10 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 2,
-         "silver": 10
+         "montant": {
+          "gold": 2,
+          "silver": 10
+         }
         }
        },
        {
@@ -13119,7 +13153,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "silver": 16
+          "montant": {
+           "silver": 16
+          }
          }
         },
         {
@@ -13270,7 +13306,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 3
+         "montant": {
+          "gold": 3
+         }
         }
        },
        {
@@ -14147,7 +14185,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "silver": 14
+          "montant": {
+           "silver": 14
+          }
          }
         },
         {
@@ -14178,7 +14218,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "gold": 4
+          "montant": {
+           "gold": 4
+          }
          }
         },
         {
@@ -14340,8 +14382,10 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 3,
-         "silver": 10
+         "montant": {
+          "gold": 3,
+          "silver": 10
+         }
         }
        },
        {
@@ -15585,7 +15629,9 @@
              "kind": "do",
              "effect": {
               "type": "giveMoney",
-              "silver": 40
+              "montant": {
+               "silver": 40
+              }
              }
             },
             {
@@ -15729,7 +15775,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 4
+         "montant": {
+          "gold": 4
+         }
         }
        },
        {
@@ -16913,7 +16961,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 5
+         "montant": {
+          "gold": 5
+         }
         }
        },
        {
@@ -17968,7 +18018,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 6
+         "montant": {
+          "gold": 6
+         }
         }
        },
        {
@@ -19318,7 +19370,9 @@
           "kind": "do",
           "effect": {
            "type": "giveMoney",
-           "gold": 8
+           "montant": {
+            "gold": 8
+           }
           }
          },
          {
@@ -19370,7 +19424,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "gold": 6
+          "montant": {
+           "gold": 6
+          }
          }
         },
         {
@@ -19563,7 +19619,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 10
+         "montant": {
+          "gold": 10
+         }
         }
        },
        {
@@ -20967,7 +21025,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "gold": 5
+          "montant": {
+           "gold": 5
+          }
          }
         },
         {
@@ -22397,7 +22457,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "silver": 8
+          "montant": {
+           "silver": 8
+          }
          }
         },
         {
@@ -22440,7 +22502,9 @@
           "kind": "do",
           "effect": {
            "type": "giveMoney",
-           "silver": 22
+           "montant": {
+            "silver": 22
+           }
           }
          },
          {
@@ -22597,7 +22661,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 3
+         "montant": {
+          "gold": 3
+         }
         }
        },
        {
@@ -23578,7 +23644,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "silver": 26
+          "montant": {
+           "silver": 26
+          }
          }
         },
         {
@@ -24981,7 +25049,9 @@
          "kind": "do",
          "effect": {
           "type": "giveMoney",
-          "silver": 9
+          "montant": {
+           "silver": 9
+          }
          }
         },
         {
@@ -25089,7 +25159,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "silver": 15
+         "montant": {
+          "silver": 15
+         }
         }
        },
        {

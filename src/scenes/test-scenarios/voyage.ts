@@ -136,7 +136,7 @@ const cite = buildScene({
       rect: { x: 5, y: 3, w: 3, h: 3 },
       once: true,
       flow: flowFromEffects([
-        { type: 'giveMoney', gold: 30 },
+        { type: 'giveMoney', montant: { gold: 30 } },
         { type: 'journal', desc: 'Au bout de la route, vous touchez votre dû — 30 couronnes pour cet entre-deux. Le reste s’évaporera.' },
         { type: 'interlude', weeks: 3 },
       ]),

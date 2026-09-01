@@ -151,11 +151,12 @@ export const givePossessionSchema = z.strictObject({
   heroId: z.string().optional(),
 });
 
+/** Donne (ou RETIRE, montant négatif) de l'argent au groupe. La charge porte son NOM comme toute
+ *  autre action du vocabulaire (`giveXp.amount`, `givePossession.ref`) : `montant` est une somme
+ *  `Money` PARTIELLE — un coût authoré n'écrit que les dénominations qu'il chiffre. */
 export const giveMoneySchema = z.strictObject({
   type: z.literal('giveMoney'),
-  gold: z.number().optional(),
-  silver: z.number().optional(),
-  brass: z.number().optional(),
+  montant: moneyPartialSchema,
 });
 
 /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). Support

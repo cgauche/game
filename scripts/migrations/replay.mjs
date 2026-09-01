@@ -76,9 +76,10 @@ const enTete = (texte) => texte.slice(0, Math.max(0, texte.indexOf('*/')));
 const declareSesEntrees = (texte) => /ENTR[ÉE]ES?\s*[:(]/i.test(enTete(texte));
 
 /** Périmètre ÉCRIT par les migrations : les deux racines de documents, plus l'AUTHORING qui produit
- *  l'artefact de scène (`scripts/arene`, écrit par la migration `give-trapping` — migrer l'artefact
- *  sans sa source serait une demi-migration). */
-const PERIMETRE = ['src/data', 'src/scenes', 'scripts/arene'];
+ *  les artefacts de scène (`scripts/arene` + les générateurs des deux campagnes navales et leur lib
+ *  partagée, écrits par `give-trapping` et `give-money-enveloppe` — migrer l'artefact sans sa source
+ *  serait une demi-migration : les trois projets sont régénérés À L'OCTET par leur `generate.mjs`). */
+const PERIMETRE = ['src/data', 'src/scenes', 'scripts/arene', 'scripts/barge-du-sel', 'scripts/loup-et-saumure', 'scripts/campagne'];
 
 /**
  * Fichiers NEUFS (non suivis, `??` de `git status --porcelain`) du périmètre, dans `cwd`.

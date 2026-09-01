@@ -28,7 +28,7 @@ const rangedOf = (c: Combatant): Weapon => c.weapons.find((w) => w.type === 'ran
 import { FLOWS } from './rollFlowSpecs';
 import { TIME_COST } from '../engine/timeCost';
 import { toBrass, type Money } from '../engine/money';
-import { partyMoneyTotal, creditBourse } from './bourseFlow';
+import { partyMoneyTotal, creditBourse, ensureBourse, bourseInstanceOf } from './bourseFlow';
 import { talentConcrete } from '../data';
 import { baseWithTalents } from '../engine/talentEffects';
 
@@ -1521,7 +1521,7 @@ describe('Fouille / butin par objet cherchable (store)', () => {
       label: 'Cadavre du cocher',
       interact: {
         flow: flowFromEffects([
-          { type: 'giveMoney', gold: 2 },
+          { type: 'giveMoney', montant: { gold: 2 } },
           { type: 'giveXp', amount: 10 },
         ]),
       },
@@ -1541,6 +1541,22 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     st = useGame.getState();
     expect(partyMoneyTotal(useGame.getState).gold).toBe(2);
     expect(st.party[0].xp).toBe(10);
+  });
+
+  it('PERTE scriptée : l’enveloppe `montant` transporte le NÉGATIF jusqu’à `drainGroup` — glouton PLAFONNÉ, aucun clamp de l’enveloppe', () => {
+    const paye = ensureBourse({ id: 'a', label: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] } as unknown as Combatant);
+    bourseInstanceOf(paye)!.money = { gold: 1, silver: 0, brass: 0 };
+    useGame.setState({ party: [paye] });
+
+    // Sacrifice d'auteur PLUS GRAND que la bourse (patron « Le Loup et la Saumure », gold: -20) :
+    // la perte n'est ni ignorée (tout-ou-rien) ni bornée à zéro par l'enveloppe — elle vide la bourse.
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'giveMoney', montant: { gold: -3 } }]);
+    expect(partyMoneyTotal(useGame.getState)).toEqual({ gold: 0, silver: 0, brass: 0 });
+
+    // Et une perte COUVERTE ne prend que son dû : le signe traverse l'enveloppe à l'unité près.
+    bourseInstanceOf(useGame.getState().party[0])!.money = { gold: 2, silver: 0, brass: 0 };
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'giveMoney', montant: { silver: -5 } }]);
+    expect(partyMoneyTotal(useGame.getState)).toEqual({ gold: 1, silver: 15, brass: 0 });
   });
 
   it('prop consommable (butin) : fenêtre de loot (attribution + restes au 1er héros) + disparition (consume)', () => {
@@ -1622,7 +1638,7 @@ describe('Fouille / butin par objet cherchable (store)', () => {
       pos: { x: 0, y: 0 },
       z: 0,
       label: 'Cadavre au rez',
-      interact: { flow: flowFromEffects([{ type: 'giveMoney', gold: 5 }]) },
+      interact: { flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 5 } }]) },
     });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
@@ -1645,7 +1661,7 @@ describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
     const scene = emptyScene(8, 8);
     scene.id = 'mti-scene';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 5, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', gold: 3 }]) } });
+    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 5, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 3 } }]) } });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 } });
@@ -1713,7 +1729,7 @@ describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation'
       id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre de la garnison',
       interact: { flow: flowFromEffects([
         { type: 'journal', desc: 'Sous une fausse planche, la solde du mois.' },
-        { type: 'giveMoney', silver: 18 },
+        { type: 'giveMoney', montant: { silver: 18 } },
         { type: 'giveTrapping', custom: 'Épée', qualities: ['de-plaies-atroces'], identified: false },
       ]) },
     });
@@ -3005,7 +3021,7 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     const scene = emptyScene(6, 6);
     scene.id = 'fouille-temps';
     scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
-    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', gold: 1 }]) } });
+    scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 1 } }]) } });
     useGame.setState({ party: [{ id: 'a', label: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] } as unknown as Combatant] });
     useGame.getState().startScene(scene);
     useGame.setState({ partyPos: { x: 0, y: 0 }, gameTime: CAMPAIGN_START });

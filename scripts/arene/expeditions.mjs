@@ -79,7 +79,7 @@ export function makeForet() {
       P(34, 8, 'coffre', {
         label: 'Coffre de la bande',
         ...fouille([
-          { type: 'giveMoney', gold: 5 },
+          { type: 'giveMoney', montant: { gold: 5 } },
           { type: 'giveTrapping', trappingId: 'rapiere', qualities: ['raffine'] },
           { type: 'journal', desc: 'Le coffre de Bella : 5 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé.' },
         ]),
@@ -190,7 +190,7 @@ export function makeMarais() {
         label: 'Barque du tourbier',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'corde' },
-          { type: 'giveMoney', silver: 8 },
+          { type: 'giveMoney', montant: { silver: 8 } },
           { type: 'journal', desc: 'La barque du tourbier : une bonne corde et 8 pa dans une boîte à amadou.' },
         ]),
       }),
@@ -199,7 +199,7 @@ export function makeMarais() {
         ...fouille(testNode(
           { skill: { id: 'resistance' }, difficulty: 'facile', label: 'Fouiller le noyé sans frémir', stake: { authored: 'Faire les poches du noyé sans y laisser sa santé : 22 pistoles, sinon une Infection Mineure.' } },
           [
-            { type: 'giveMoney', silver: 22 },
+            { type: 'giveMoney', montant: { silver: 22 } },
             { type: 'journal', desc: 'Le noyé voyageait riche : 22 pa, que la tourbe lui pardonne.' },
           ],
           [
@@ -225,7 +225,7 @@ export function makeMarais() {
         onVictory: flowOf([
           { type: 'setFlag', flag: 'contrat_marais_fait' },
           { type: 'giveXp', amount: 180 },
-          { type: 'giveMoney', gold: 3 },
+          { type: 'giveMoney', montant: { gold: 3 } },
           { type: 'journal', desc: 'La chose FABRIQUÉE a cessé de se recoudre. CONTRAT REMPLI — la tourbière redevient juste sinistre. (Retour par la carte du monde.)' },
         ]),
       },
@@ -347,7 +347,7 @@ export function makeVillage() {
       P(13, 3, 'coffre', {
         label: 'Coffre du foyer',
         ...fouille([
-          { type: 'giveMoney', silver: 26 },
+          { type: 'giveMoney', montant: { silver: 26 } },
           { type: 'journal', desc: 'Les économies d’une famille qui ne reviendra pas : 26 pa. Elles serviront à les venger.' },
         ]),
       }),
@@ -439,7 +439,7 @@ export function makeEmbuscade() {
       P(12, 11, 'cadavre', {
         label: 'Postillon détroussé',
         ...fouille([
-          { type: 'giveMoney', silver: 9 },
+          { type: 'giveMoney', montant: { silver: 9 } },
           { type: 'journal', desc: 'Le postillon de la diligence perdue. Sa sacoche : 9 pa et une lettre illisible.' },
         ]),
       }),
@@ -459,7 +459,7 @@ export function makeEmbuscade() {
         ],
         onVictory: flowOf([
           { type: 'giveXp', amount: 80 },
-          { type: 'giveMoney', silver: 15 },
+          { type: 'giveMoney', montant: { silver: 15 } },
           { type: 'journal', desc: 'Les détrousseurs sont détroussés (15 pa). Reprenez la route par la carte du monde.' },
         ]),
       },

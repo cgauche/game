@@ -29,7 +29,7 @@ import { POWER_ESTIMATE, clampMight, type MassBattleSpec } from '../../engine/ma
 import { PURSUIT_ESCAPE_DISTANCE } from '../../engine/pursuit';
 import { battleSceneById } from '../../state/massBattleFlow';
 import { activitiesFor } from '../../engine/activities';
-import { formatMoney } from '../../engine/money';
+import { formatMoney, toMoney } from '../../engine/money';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
@@ -165,7 +165,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
         : (e.ref?.creatureId ? refLabel('creatures', { id: e.ref.creatureId }) : e.ref?.custom?.label ?? '?');
       return `Possession : ${natureLabel} — ${refLabelStr}${e.heroId ? ` → ${e.heroId}` : ''}`;
     }
-    case 'giveMoney': return `Argent : ${formatMoney({ gold: e.gold ?? 0, silver: e.silver ?? 0, brass: e.brass ?? 0 })}`;
+    case 'giveMoney': return `Argent : ${formatMoney(toMoney(e.montant))}`;
     case 'giveXp': return `${e.amount ?? 0} PX (groupe)`;
     case 'restoreFortune': return `Regagner la Chance`;
     case 'sessionEnd': return `Fin de séance (Ambitions / Motivation)`;
@@ -641,9 +641,9 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         )}
         {effect.type === 'giveMoney' && (
           <div className="money-fields">
-            <label>CO<NumberField variant="nu" label="Couronnes d’or" value={e.gold ?? 0} onChange={(gold) => upd({ gold })} /></label>
-            <label>pa<NumberField variant="nu" label="Pistoles d’argent" value={e.silver ?? 0} onChange={(silver) => upd({ silver })} /></label>
-            <label>sc<NumberField variant="nu" label="Sous de cuivre" value={e.brass ?? 0} onChange={(brass) => upd({ brass })} /></label>
+            <label>CO<NumberField variant="nu" label="Couronnes d’or" value={e.montant.gold ?? 0} onChange={(gold) => upd({ montant: { ...e.montant, gold } })} /></label>
+            <label>pa<NumberField variant="nu" label="Pistoles d’argent" value={e.montant.silver ?? 0} onChange={(silver) => upd({ montant: { ...e.montant, silver } })} /></label>
+            <label>sc<NumberField variant="nu" label="Sous de cuivre" value={e.montant.brass ?? 0} onChange={(brass) => upd({ montant: { ...e.montant, brass } })} /></label>
           </div>
         )}
         {effect.type === 'giveXp' && (

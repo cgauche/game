@@ -88,6 +88,18 @@ export const STRUCTURES_CIBLES = [
   // TYPAGE du champ, pas une réécriture de la donnée : elle sort du dénominateur des formes.
   { concept: "refs", signature: "ids-nus", date: "2026-08-30" },
   { concept: "monnaie", signature: "brass,gold,silver", date: "2026-08-23" },
+  // #1463 L-monnaie-3 (2026-09-01) — les 6 sous-signatures NON VIDES d'un montant PARTIEL sortent du
+  // dénominateur. PREUVE : `moneyPartialSchema` (`src/data/schemas/grammaire/valeurs.ts:300`) déclare
+  // les 3 dénominations OPTIONNELLES, et `toMoney` (`src/engine/money.ts:45`) complète à 0 celles qui
+  // manquent : un coût authoré qui n'écrit que ce qu'il chiffre EST à la forme cible. Les variantes
+  // `+…` n'y sont PAS : un montant qui cohabite avec d'autres clés sur le MÊME objet est un étalement,
+  // et l'étalement se migre (les 44 `giveMoney` du même lot), il ne se blanchit pas.
+  { concept: "monnaie", signature: "brass", date: "2026-09-01" },
+  { concept: "monnaie", signature: "gold", date: "2026-09-01" },
+  { concept: "monnaie", signature: "silver", date: "2026-09-01" },
+  { concept: "monnaie", signature: "brass,gold", date: "2026-09-01" },
+  { concept: "monnaie", signature: "brass,silver", date: "2026-09-01" },
+  { concept: "monnaie", signature: "gold,silver", date: "2026-09-01" },
   { concept: "de", signature: "n,sides", date: "2026-08-23" },
   { concept: "de", signature: "n,plus,sides", date: "2026-08-23" },
   { concept: "source", signature: "book,page", date: "2026-08-23" },
@@ -114,14 +126,6 @@ export const STRUCTURES_CIBLES = [
  *  du document), `strate` = la strate de la grammaire (#1463), `lot` = qui l'éteint. */
 export const STRUCTURES_FORMES = [
   { concept: "de", dataset: "miscast.json", champ: "dice", signature: "n,sides+…", statut: "divergente", strate: "Valeur", occurrences: 6, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "activities.json", champ: "minInvest", signature: "gold", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "arene-projet.json", champ: "cost", signature: "gold", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "arene-projet.json", champ: "cost", signature: "silver", statut: "divergente", strate: "Valeur", occurrences: 7, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "arene-projet.json", champ: "effect", signature: "gold,silver+…", statut: "divergente", strate: "Valeur", occurrences: 3, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "arene-projet.json", champ: "effect", signature: "gold+…", statut: "divergente", strate: "Valeur", occurrences: 17, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "arene-projet.json", champ: "effect", signature: "silver+…", statut: "divergente", strate: "Valeur", occurrences: 16, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "barge-du-sel-projet.json", champ: "effect", signature: "gold+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "monnaie", dataset: "loup-et-saumure-projet.json", champ: "effect", signature: "gold+…", statut: "divergente", strate: "Valeur", occurrences: 7, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "aa-criticals.json", champ: "apresDelai", signature: "versTraumaId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "aa-criticals.json", champ: "onFail", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "aa-criticals.json", champ: "onFail", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 17, lot: "L3 #1463", date: "2026-08-23" },

@@ -115,7 +115,7 @@ describe('interactEntity sur un meuble à places — bascule s’asseoir / se re
  * que le halo annonce n'est inatteignable.
  */
 describe('meuble à places ET fouillable — les deux affordances restent atteignables', () => {
-  const FOUILLE = { flow: flowFromEffects([{ type: 'giveMoney', gold: 2 }]) };
+  const FOUILLE = { flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 2 } }]) };
 
   function posrFouillable(pos: { x: number; y: number }, seatAssignments?: Scene['seatAssignments']) {
     useGame.setState({ party: [hero()], scene: null, mode: 'exploration', journal: [], battle: null, dialogue: null, flags: {} });

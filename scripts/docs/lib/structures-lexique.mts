@@ -271,7 +271,16 @@ export const CONCEPTS: readonly Concept[] = [
     strate: 'Valeur',
     signatures: [
       { sig: 'brass,gold,silver', statut: 'cible' },
-      { sig: 'gold,silver', statut: 'historique' },
+      // Les 6 sous-signatures NON VIDES d'un montant PARTIEL : `moneyPartialSchema`
+      // (`src/data/schemas/grammaire/valeurs.ts:300`) déclare les 3 dénominations OPTIONNELLES, et
+      // `toMoney` (`src/engine/money.ts:45`) complète à 0 celles qui manquent — un coût authoré
+      // n'écrit que ce qu'il chiffre. Ce sont des formes CIBLES, pas des graphies à éteindre.
+      { sig: 'brass', statut: 'cible' },
+      { sig: 'gold', statut: 'cible' },
+      { sig: 'silver', statut: 'cible' },
+      { sig: 'brass,gold', statut: 'cible' },
+      { sig: 'brass,silver', statut: 'cible' },
+      { sig: 'gold,silver', statut: 'cible' },
     ],
     noyau: ['gold', 'silver'],
     noyauMin: 1,

@@ -46,7 +46,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { isWeatherWarded, exposureTarget, exposureCoatMods, type ExposureKind } from '../engine/exposure';
 import { findSpellById } from '../data/index';
-import { toBrass, fromBrass } from '../engine/money';
+import { toBrass, fromBrass, toMoney } from '../engine/money';
 import { distributeCredit, drainGroup, condCtx } from './bourseFlow';
 import { Effect, setDoorOpen } from './scene';
 import { placeCombatant } from './spawn';
@@ -192,7 +192,7 @@ export function applyEffectsLoot(get: Get, set: SetFn, effects: Effect[], title:
   applyEffects(get, set, rest, sl);
   const found = effects
     .filter((e): e is Extract<Effect, { type: 'giveMoney' }> => e.type === 'giveMoney')
-    .reduce((m, e) => m + toBrass({ gold: e.gold ?? 0, silver: e.silver ?? 0, brass: e.brass ?? 0 }), 0);
+    .reduce((m, e) => m + toBrass(toMoney(e.montant)), 0);
   if (!gear.length && found <= 0) return; // dépense (giveMoney négatif) ou simple récit : pas de fenêtre
   const messages = effects.filter((e): e is Extract<Effect, { type: 'journal' }> => e.type === 'journal').map((e) => e.desc);
   set((s: GameState) => {
@@ -898,16 +898,17 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   },
   giveMoney: {
     group: 'Récompenses', label: 'Donner/retirer de l’argent', icon: 'resource/gold-purse',
-    make: () => ({ type: 'giveMoney', gold: 0, silver: 0, brass: 0 }),
+    make: () => ({ type: 'giveMoney', montant: { gold: 0, silver: 0, brass: 0 } }),
     apply: (e, env) => {
       // Argent de GROUPE sans bénéficiaire unique : positif = butin/récompense réparti PAR TÊTE
       // (`distributeCredit`) ; négatif = perte SCRIPTÉE — `drainGroup` (glouton PLAFONNÉ, jamais
       // esquivée par le tout-ou-rien de `payFromGroup` : une perte > total du groupe vide tout à 0).
-      const net = toBrass({ gold: e.gold ?? 0, silver: e.silver ?? 0, brass: e.brass ?? 0 });
+      const m = e.montant;
+      const net = toBrass(toMoney(m));
       if (net > 0) distributeCredit(env.get, env.set, fromBrass(net));
       else if (net < 0) drainGroup(env.get, env.set, fromBrass(-net));
-      const parts = [e.gold && t('eff.coin.gold', { n: e.gold }), e.silver && t('eff.coin.silver', { n: e.silver }), e.brass && t('eff.coin.brass', { n: e.brass })].filter(Boolean); // noms canon FR (couronne/pistole/sou)
-      if (parts.length) env.log(t('eff.purse', { sign: (e.gold ?? 0) < 0 || (e.silver ?? 0) < 0 ? '' : '+', parts: parts.join(' ') }));
+      const parts = [m.gold && t('eff.coin.gold', { n: m.gold }), m.silver && t('eff.coin.silver', { n: m.silver }), m.brass && t('eff.coin.brass', { n: m.brass })].filter(Boolean); // noms canon FR (couronne/pistole/sou)
+      if (parts.length) env.log(t('eff.purse', { sign: (m.gold ?? 0) < 0 || (m.silver ?? 0) < 0 ? '' : '+', parts: parts.join(' ') }));
     },
   },
   giveXp: {

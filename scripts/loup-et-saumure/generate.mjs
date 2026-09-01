@@ -199,7 +199,7 @@ scenes.push(scene({
               label: 'Accepter la commission (40 CO, le Grimm à quai)',
               when: { kind: 'flag', expr: '!ls_commission_acceptee' },
               flow: flowOf([
-                { type: 'giveMoney', gold: 40 },
+                { type: 'giveMoney', montant: { gold: 40 } },
                 // saboteurDR: -2 [maison] — le sabotage discret de l'affréteuse Kramer pèse sur les Tests
                 // d'équipage de COMBAT dès le départ (MDG 14 l.45-47), posé par cette MÊME commission qui
                 // embarque Kramer à bord. Levé au démasquage (nuit du chat) via `adjustVessel { saboteurDR: 0 }`.
@@ -262,17 +262,17 @@ scenes.push(scene({
             },
             {
               label: 'Faire un petit sacrifice (une pièce jetée à la mer)',
-              flow: flowOf([{ type: 'giveMoney', gold: -1 }, { type: 'adjustManann', factorId: 'petit-sacrifice' }]),
+              flow: flowOf([{ type: 'giveMoney', montant: { gold: -1 } }, { type: 'adjustManann', factorId: 'petit-sacrifice' }]),
               next: 'a-petit',
             },
             {
               label: 'Faire un sacrifice moyen (une gemme de votre bourse)',
-              flow: flowOf([{ type: 'giveMoney', gold: -20 }, { type: 'adjustManann', factorId: 'sacrifice-moyen' }]),
+              flow: flowOf([{ type: 'giveMoney', montant: { gold: -20 } }, { type: 'adjustManann', factorId: 'sacrifice-moyen' }]),
               next: 'a-moyen',
             },
             {
               label: 'Faire un grand sacrifice (une vache entière, la moitié des provisions)',
-              flow: flowOf([{ type: 'giveMoney', gold: -50 }, { type: 'adjustManann', factorId: 'grand-sacrifice' }]),
+              flow: flowOf([{ type: 'giveMoney', montant: { gold: -50 } }, { type: 'adjustManann', factorId: 'grand-sacrifice' }]),
               next: 'a-grand',
             },
             { label: 'Lui demander l’origine de son ordre', next: 'a-origine' },
@@ -433,7 +433,7 @@ scenes.push(scene({
       onVictory: flowOf([
         { type: 'setFlag', flag: 'ls_cogue_vaincue' },
         { type: 'giveXp', amount: 150 },
-        { type: 'giveMoney', gold: 15 },
+        { type: 'giveMoney', montant: { gold: 15 } },
         OBJ('Rallier Erengrad avec le fret — la Dent de Manann écartée.'),
         { type: 'journal', desc: 'La Dent de Manann amène son pavillon à mi-coque — la cogue se rend. Des épaves flottent : Séquestre à faire valoir à quai.' },
         // Pas de transition en dur : l'abordage n'est qu'une INTERRUPTION de la traversée. Le combat gagné,
@@ -610,7 +610,7 @@ scenes.push(scene({
       onVictory: flowOf([
         { type: 'setFlag', flag: 'ls_olg_vaincu' },
         { type: 'giveXp', amount: 250 },
-        { type: 'giveMoney', gold: 40 },
+        { type: 'giveMoney', montant: { gold: 40 } },
         { type: 'journal', desc: 'Olg Blóðsalt tombe. Le Serpent-de-Sel amène pavillon — la prise à armer, ~40 survivants à répartir sur deux coques.' },
         // Pas de transition en dur : l'abordage n'INTERROMPT que la traversée. Le voyage REPREND vers SA
         // destination (Salzenmund) et accoste ; l'épilogue se joue à l'ARRIVÉE au quai, gaté par la livraison
@@ -657,7 +657,7 @@ scenes.push(scene({
             label: 'Toucher la solde de la mission (parts + prime)',
             when: { kind: 'flag', expr: '!ls_solde_versee' },
             flow: flowOf([
-              { type: 'giveMoney', gold: 60 },
+              { type: 'giveMoney', montant: { gold: 60 } },
               { type: 'setFlag', flag: 'ls_solde_versee' },
               { type: 'giveXp', amount: 100 },
               { type: 'clearObjective' }, // fin d'acte : la pile d'objectifs de la campagne est vidée

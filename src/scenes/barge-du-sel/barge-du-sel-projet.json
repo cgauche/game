@@ -1141,7 +1141,9 @@
         "kind": "do",
         "effect": {
          "type": "giveMoney",
-         "gold": 10
+         "montant": {
+          "gold": 10
+         }
         }
        },
        {

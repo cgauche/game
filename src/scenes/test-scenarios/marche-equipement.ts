@@ -121,7 +121,7 @@ const scene = buildScene({
   ],
   triggers: [
     // Bourse de départ (la nouvelle partie réinitialise l'argent à 0) — versée en s'avançant vers les échoppes.
-    { id: 'bourse', rect: { x: 3, y: 3, w: 8, h: 4 }, once: true, flow: flowFromEffects([{ type: 'giveMoney', gold: 60 }, { type: 'journal', desc: 'Vous disposez de 60 couronnes.' }]) },
+    { id: 'bourse', rect: { x: 3, y: 3, w: 8, h: 4 }, once: true, flow: flowFromEffects([{ type: 'giveMoney', montant: { gold: 60 } }, { type: 'journal', desc: 'Vous disposez de 60 couronnes.' }]) },
   ],
 });
 

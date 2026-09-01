@@ -263,7 +263,7 @@ export function fightTrigger(encounter, rect, extra = {}) {
  *  zone (progression de carrière sentie à CHAQUE victoire, pas tous les 3 combats). */
 export function zoneVictory(n, { money, xp, journal, extra = [] }) {
   return flowOf([
-    { type: 'giveMoney', ...money },
+    { type: 'giveMoney', montant: { ...money } },
     { type: 'giveXp', amount: xp },
     { type: 'setFlag', flag: `zone${n}_clear` },
     { type: 'journal', desc: journal },

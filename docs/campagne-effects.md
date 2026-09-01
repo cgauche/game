@@ -18,7 +18,7 @@ câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne 
 | `clearObjective` | `id?` | Retire un objectif de la pile : `id` précis, ou TOUS si absent (fin d'acte). |
 | `giveTrapping` | `trappingId?`, `custom?`, `heroId?`, `qualities?`, `identified?`, `skin?`, `magicKnown?`, `detectTried?`, `appraiseTriedDay?`, `price?` | Donne un objet à un héros (défaut : le premier). |
 | `givePossession` | `nature`, `ref`, `heroId?` | Donne une POSSESSION (bête/serviteur/véhicule — le SOCLE POSSESSIONS #615, registre `GameState.possessions`) à un héros propriétaire (défaut : le premier — même patron que `giveTrapping.heroId`, §4.3). |
-| `giveMoney` | `gold?`, `silver?`, `brass?` | — |
+| `giveMoney` | `montant` | Donne (ou RETIRE, montant négatif) de l'argent au groupe. |
 | `giveXp` | `amount` | Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). |
 | `startCombat` | `encounter` | — |
 | `startMassBattle` | `battle` | Combat de masse / Puissance de Bataille (`ADE II 8`) : ouvre l'écran de bataille sur le `MassBattleSpec` AUTHORÉ (armées, Rounds prévus, situations de Scènes par Round, rencontres des Scènes de combat, modificateur permanent). |

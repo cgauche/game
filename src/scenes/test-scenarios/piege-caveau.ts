@@ -65,7 +65,7 @@ const scene = buildScene({
     { id: 'herse-grille', kind: 'prop', ref: 'grille', pos: { x: 10, y: 5 }, label: 'Herse du trésor' },
     { id: 'tresor', kind: 'prop', ref: 'coffre', pos: { x: 12, y: 5 }, label: 'Coffre du trésor',
       interact: { consume: true, flow: flowFromEffects([
-        { type: 'giveMoney', gold: 5 },
+        { type: 'giveMoney', montant: { gold: 5 } },
         { type: 'giveTrapping', trappingId: 'arme-simple', qualities: ['precise'], identified: false },
         { type: 'journal', desc: 'Le coffre regorge d’or et d’une lame finement ouvragée.' },
       ]) } },

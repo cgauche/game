@@ -30,7 +30,7 @@ const reserve = buildScene({
     {
       id: 'reserve-coffre', kind: 'prop', ref: 'coffre', pos: { x: 1, y: 1 }, label: 'Coffre sans gardien',
       interact: { consume: true, flow: flowFromEffects([
-        { type: 'giveMoney', gold: 3 },
+        { type: 'giveMoney', montant: { gold: 3 } },
         { type: 'journal', desc: 'Le coffre ne contenait que quelques pièces — vous les empochez.' },
       ]) },
     },

@@ -51,7 +51,7 @@ export function makeZone8() {
       P(3, 16, 'cage', {
         label: 'Cage brisée',
         ...fouille([
-          { type: 'giveMoney', silver: 16 },
+          { type: 'giveMoney', montant: { silver: 16 } },
           { type: 'journal', desc: 'La cage du gladiateur — sa solde y était cachée : 16 pa, qu’il vous abandonne.' },
         ]),
       }),
@@ -132,14 +132,14 @@ export function makeZone9() {
         label: 'Marmite du troll',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'potion-de-vitalite' },
-          { type: 'giveMoney', silver: 14 },
+          { type: 'giveMoney', montant: { silver: 14 } },
           { type: 'journal', desc: 'Au fond du brouet : une fiole scellée (potion de vitalité !) et 14 pa qui n’ont pas fondu.' },
         ]),
       }),
       P(26, 5, 'coffre', {
         label: 'Magot de la caverne',
         ...fouille([
-          { type: 'giveMoney', gold: 4 },
+          { type: 'giveMoney', montant: { gold: 4 } },
           { type: 'giveTrapping', trappingId: 'grande-hache' },
           { type: 'journal', desc: 'Le magot : 4 co et une grande hache au fil intact. L’Ogre ne comptera plus rien.' },
         ]),
@@ -198,7 +198,7 @@ export function makeZone10() {
               { skill: { id: 'crochetage' }, difficulty: 'accessible', label: 'Crocheter la cage du garde-manger', stake: { authored: 'Ouvrir la cage du colporteur : sa liberté, sa bourse de 40 pistoles et 50 XP ; raté, le crochet ripe et il reste dedans.' } },
               [
                 { type: 'setFlag', flag: 'prisonnier_libre' },
-                { type: 'giveMoney', silver: 40 },
+                { type: 'giveMoney', montant: { silver: 40 } },
                 { type: 'giveXp', amount: 50 },
                 { type: 'journal', desc: 'Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface.' },
                 { type: 'endDialogue' },
@@ -568,7 +568,7 @@ export function makeZone13() {
         ...fouille(testNode(
           { skill: { id: 'discretion' }, difficulty: 'difficile', label: 'Chiper l’or sous l’œil clos du dragon', stake: { authored: 'Prendre l’or sans un tintement : 8 couronnes ; un seul bruit et le dragon se réveille — combat.' } },
           [
-            { type: 'giveMoney', gold: 8 },
+            { type: 'giveMoney', montant: { gold: 8 } },
             { type: 'journal', desc: 'Huit couronnes glissées sans un tintement. Le dragon ronfle toujours.' },
           ],
           [
@@ -580,7 +580,7 @@ export function makeZone13() {
       P(36, 22, 'coffre', {
         label: 'Coffre du trésor',
         ...fouille([
-          { type: 'giveMoney', gold: 6 },
+          { type: 'giveMoney', montant: { gold: 6 } },
           { type: 'giveTrapping', trappingId: 'arc-elfique' },
           { type: 'journal', desc: 'Dans le coffre d’un pillard digéré : 6 co et un arc elfique que le feu n’a jamais mordu.' },
         ]),

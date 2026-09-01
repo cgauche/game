@@ -1087,13 +1087,18 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `id-nu` | historique | 2104 |
 | refs | `ids-nus` | cible | 611 |
 | monnaie | `brass,gold,silver` | cible | 465 |
-| monnaie | `gold,silver` | historique | 0 |
+| monnaie | `brass` | cible | 0 |
+| monnaie | `gold` | cible | 27 |
+| monnaie | `silver` | cible | 23 |
+| monnaie | `brass,gold` | cible | 0 |
+| monnaie | `brass,silver` | cible | 0 |
+| monnaie | `gold,silver` | cible | 3 |
 | prix | `automne,ete,hiver,printemps` | declaree | 17 |
 | prix | `dice` | declaree | 1 |
 | de | `n,sides` | cible | 109 |
 | de | `n,plus,sides` | cible | 19 |
-| source | `book,page` | cible | 3367 |
-| source | `book,note,page` | cible | 1122 |
+| source | `book,page` | cible | 3355 |
+| source | `book,note,page` | cible | 1134 |
 | source | `book,chapter` | historique | 0 |
 | source | `book,chapter,page` | historique | 0 |
 | test | `difficulty,skill` | historique | 45 |
@@ -1112,7 +1117,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **834** (cible 350 · declaree 6 · historique 117 · divergente 361). Objets JSON parcourus : **48126**, dont **31762** portent une forme
+Lignes concept × dataset × champ × forme : **836** (cible 360 · declaree 6 · historique 117 · divergente 353). Objets JSON parcourus : **48170**, dont **31762** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -1688,17 +1693,17 @@ Reconnu par : son noyau `gold` `silver` (≥ 1)
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
 |---|---|---|---|---|---|---|---|
-| entité | `minInvest` | `gold` | divergente | `activities.json` | 1 | — |  |
-| config | `cost` | `gold` | divergente | `arene-projet.json` | 1 | — |  |
-| config | `cost` | `silver` | divergente | `arene-projet.json` | 7 | — |  |
-| config | `effect` | `gold,silver+…` | divergente | `arene-projet.json` | 3 | — |  |
-| config | `effect` | `gold+…` | divergente | `arene-projet.json` | 17 | — |  |
-| config | `effect` | `silver+…` | divergente | `arene-projet.json` | 16 | — |  |
-| config | `effect` | `gold+…` | divergente | `barge-du-sel-projet.json` | 1 | — |  |
+| entité | `minInvest` | `gold` | cible | `activities.json` | 1 | — |  |
+| config | `cost` | `gold` | cible | `arene-projet.json` | 1 | — |  |
+| config | `cost` | `silver` | cible | `arene-projet.json` | 7 | — |  |
+| config | `montant` | `gold` | cible | `arene-projet.json` | 17 | — |  |
+| config | `montant` | `gold,silver` | cible | `arene-projet.json` | 3 | — |  |
+| config | `montant` | `silver` | cible | `arene-projet.json` | 16 | — |  |
+| config | `montant` | `gold` | cible | `barge-du-sel-projet.json` | 1 | — |  |
 | entité | `price` | `brass,gold,silver` | cible | `creatures.json` | 14 | — |  |
 | entité | `daily` | `brass,gold,silver` | cible | `crew-roles.json` | 9 | — |  |
 | entité | `weekly` | `brass,gold,silver` | cible | `crew-roles.json` | 9 | — |  |
-| config | `effect` | `gold+…` | divergente | `loup-et-saumure-projet.json` | 7 | — |  |
+| config | `montant` | `gold` | cible | `loup-et-saumure-projet.json` | 7 | — |  |
 | config | `price` | `brass,gold,silver` | cible | `mass-battle.json` | 10 | — |  |
 | entité | `price` | `brass,gold,silver` | cible | `trappings.json` | 392 | — |  |
 | entité | `price` | `brass,gold,silver` | cible | `vehicles.json` | 31 | — |  |
@@ -1743,7 +1748,7 @@ Reconnu par : son noyau `n` `sides`
 
 ### 3.6 référence de source (livre/folio) — `source` (strate Valeur)
 
-114 ligne(s), 4666 occurrence(s).
+116 ligne(s), 4666 occurrence(s).
 Reconnu par : son noyau `book`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1768,7 +1773,8 @@ Reconnu par : son noyau `book`
 | entité | `source` | `book,page` | cible | `classes.json` | 9 | — |  |
 | entité | `source` | `book,note,page` | cible | `combat-stakes.json` | 35 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `alsoIn` | `book,page` | cible | `creatures.json` | 3 | — |  |
-| entité | `source` | `book,page` | cible | `creatures.json` | 493 | — |  |
+| entité | `source` | `book,note,page` | cible | `creatures.json` | 7 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
+| entité | `source` | `book,page` | cible | `creatures.json` | 486 | — |  |
 | config | `source` | `book,note,page` | cible | `crew-morale.json` | 33 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `source` | `book,page` | cible | `crew-roles.json` | 4 | — |  |
 | config | `source` | `book,note,page` | cible | `crew-test-types.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
@@ -1832,7 +1838,8 @@ Reconnu par : son noyau `book`
 | entité | `alsoIn` | `book,note,page+…` | divergente | `skills.json` | 2 | — |  |
 | entité | `source` | `book,note,page` | cible | `skills.json` | 51 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `source` | `book,page` | cible | `skills.json` | 46 | — |  |
-| entité | `source` | `book,page` | cible | `species.json` | 27 | — |  |
+| entité | `source` | `book,note,page` | cible | `species.json` | 5 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
+| entité | `source` | `book,page` | cible | `species.json` | 22 | — |  |
 | entité | `alsoIn` | `book,page+…` | divergente | `spells.json` | 46 | — |  |
 | entité | `source` | `book,page` | cible | `spells.json` | 594 | — |  |
 | entité | `source` | `book,page` | cible | `stars.json` | 23 | — |  |
@@ -2397,14 +2404,14 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12494** objets sur **48126** ne sont portés par AUCUNE
+Au-delà des orphelines, **12538** objets sur **48170** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1149** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1152** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2460,6 +2467,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `diligence-projet.json` | `area` | `h,kind,w,x,y` | 39 |
 | `spells.json` | `steps` | `fail,kind,success,test` | 39 |
 | `props.json` | `size` | `h,x,y` | 37 |
+| `arene-projet.json` | `effect` | `montant,type` | 36 |
 | `arcane-phenomena.json` | `effects` | `label,tier` | 32 |
 | `spells.json` | `ops` | `char,mod,op` | 32 |
 | `spells.json` | `ops` | `op` | 32 |
@@ -2592,6 +2600,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `domains.json` | `effect` | `on,ops,type` | 7 |
 | `etats.json` | `of` | `kind,op,subject,value` | 7 |
 | `land-cargo.json` | `avail` | `automne,ete,hiver,printemps` | 7 |
+| `loup-et-saumure-projet.json` | `effect` | `montant,type` | 7 |
 | `loup-et-saumure-projet.json` | `choices` | `flow,label` | 7 |
 | `miscast.json` | `amount` | `dice` | 7 |
 | `mutations.json` | `passive` | `mod,op` | 7 |
@@ -3055,6 +3064,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `barge-du-sel-projet.json` | `interact` | `flow` | 1 |
 | `barge-du-sel-projet.json` | `onVictory` | `kind,steps` | 1 |
 | `barge-du-sel-projet.json` | `effect` | `amount,type` | 1 |
+| `barge-du-sel-projet.json` | `effect` | `montant,type` | 1 |
 | `barge-du-sel-projet.json` | `entryPoints` | `arrivee` | 1 |
 | `barge-du-sel-projet.json` | `arrivee` | `x,y` | 1 |
 | `careerLevels.json` | `skills` | `of,pick` | 1 |

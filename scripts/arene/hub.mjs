@@ -31,7 +31,7 @@ const contrat = (key, cond, propose, fait, gold, xp) => [
     when: flagWhen(`contrat_${key}_fait,!contrat_${key}_paye`),
     flow: flowOf([
       { type: 'setFlag', flag: `contrat_${key}_paye` },
-      { type: 'giveMoney', gold },
+      { type: 'giveMoney', montant: { gold } },
       { type: 'giveXp', amount: xp },
       { type: 'journal', desc: 'Le Maître compte les couronnes sans sourciller. « Du travail propre. »' },
     ]),
@@ -56,7 +56,7 @@ const dlgHub = {
             { skill: { id: 'crochetage' }, difficulty: 'intermediaire', label: 'Crocheter le coffre', stake: { authored: 'Forcer la serrure : 5 couronnes dans le coffre, sinon le mécanisme rouillé tient bon.' } },
             [
               { type: 'setFlag', flag: 'coffre_pris' },
-              { type: 'giveMoney', gold: 5 },
+              { type: 'giveMoney', montant: { gold: 5 } },
               { type: 'journal', desc: 'Le coffre cède : 5 couronnes !' },
             ],
             [{ type: 'journal', desc: 'Le mécanisme rouillé résiste — peut-être plus tard.' }],
@@ -275,7 +275,7 @@ const dlgFrere = {
             { skill: { id: 'discretion' }, difficulty: 'difficile', label: 'Piller le tronc sous l’œil de Sigmar', stake: { authored: 'Faire main basse sans être vu : 30 pistoles à la clé ; pris sur le fait, le tronc bascule et vous gagnez 1 Point de Péché.' } },
             [
               { type: 'setFlag', flag: 'tronc_pille' },
-              { type: 'giveMoney', silver: 30 },
+              { type: 'giveMoney', montant: { silver: 30 } },
               { type: 'journal', desc: 'Trente pistoles d’offrandes glissent dans votre poche. Personne n’a rien vu. Sauf, peut-être, Sigmar.' },
             ],
             [
