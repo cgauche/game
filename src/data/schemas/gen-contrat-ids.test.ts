@@ -7,20 +7,20 @@ import { verifieExhaustiviteDesIds, idsDuDataset } from '../../../scripts/gen-re
  * était le `npm run gen` de l'arbre courant, qui ne prouve que le cas VERT du jour.
  *
  * Les fixtures ci-dessous sont les coins du contrat, sur des familles SIMULÉES (aucune lecture de
- * `defs/`, aucun `DEFAUTS_IDS` réel) : un document `table` À IDS passe ; un `table` sans ids ni
+ * `defs/`, aucun `DEFAUTS_IDS` réel) : un document `record` À IDS passe ; un `record` sans ids ni
  * défaut échoue ; une `config` à ids échoue ; un défaut posé sur une `config` échoue ; un défaut
  * sans def de schéma échoue.
  */
 const familles = (m: Record<string, string>) => new Map(Object.entries(m));
 
 describe('contrat famille ⇄ registre d’ids (#1467 L1b)', () => {
-  it('un document `table` dont les ids sont au registre PASSE', () => {
-    expect(() => verifieExhaustiviteDesIds(new Set(['t.json']), familles({ 't.json': 'table' }), {})).not.toThrow();
+  it('un document `record` dont les ids sont au registre PASSE', () => {
+    expect(() => verifieExhaustiviteDesIds(new Set(['t.json']), familles({ 't.json': 'record' }), {})).not.toThrow();
   });
 
-  it('un document `table` SANS ids au registre et SANS défaut nominatif ÉCHOUE', () => {
-    expect(() => verifieExhaustiviteDesIds(new Set(), familles({ 't.json': 'table' }), {})).toThrow(
-      /t\.json \(famille table\) : aucun id au registre et aucune entrée de DEFAUTS_IDS\./,
+  it('un document `record` SANS ids au registre et SANS défaut nominatif ÉCHOUE', () => {
+    expect(() => verifieExhaustiviteDesIds(new Set(), familles({ 't.json': 'record' }), {})).toThrow(
+      /t\.json \(famille record\) : aucun id au registre et aucune entrée de DEFAUTS_IDS\./,
     );
   });
 

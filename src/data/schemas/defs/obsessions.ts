@@ -10,25 +10,23 @@ import { plageSchema } from '../grammaire/valeurs';
 export const file = 'obsessions.json';
 export const famille = 'config';
 
+/** Une rangée du 2d10. */
+const obsessionEntrySchema = z.strictObject({
+  ...plageSchema.shape,
+  id: z.string(),
+  label: z.string(),
+});
+
 const doc = document(
   'obsessions',
   famille,
-  {
-    entries: z.array(
-      z.strictObject({
-        ...plageSchema.shape,
-        id: z.string(),
-        label: z.string(),
-      }),
-    ),
-  },
-  {
-    entries: { label: 'Obsessions', hint: 'Rangées du 2d10, bornes min/max inclusives' },
-  },
+  {},
+  {},
   {
     codex: { keys: ['obsessions'] },
     edit: { niche: { categories: ['obsessions'] } },
   },
+  { rangee: obsessionEntrySchema },
 );
 
 export const schema = doc.schema;

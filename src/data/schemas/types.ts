@@ -22,7 +22,7 @@ export interface SchemaDef {
   /**
    * Famille du document, MESURÉE sur la structure réelle du dataset et déclarée par son def : elle
    * dit si le document porte des ids de premier niveau (`entite`/`record`) ou n'en porte aucun par
-   * construction (`table`/`config`). `scripts/gen-registry.mjs` en fait un contrat FERMÉ contre
+   * construction (`config`). `scripts/gen-registry.mjs` en fait un contrat FERMÉ contre
    * `IDS_PAR_DATASET`. En L1b (#1467) la déclaration migre dans l'appel `document(type, famille, …)`.
    */
   famille: FamilleDocument;

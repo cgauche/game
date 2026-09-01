@@ -3627,7 +3627,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **469** ; **58** recoupent le lexique
+Littéraux d’objet zod lus : **469** ; **51** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -3671,8 +3671,6 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `criticals.ts` | 66 | — | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 76 | `loss` | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 85 | `resist` | test | divergente | `difficulty+…` | — |
-| `driving-mishap.ts` | 18 | — | — | hors lexique | `entries` | `corps` |
-| `drunkenness.ts` | 19 | — | — | hors lexique | `entries` | `corps` |
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
 | `land-cargo.ts` | 99 | `gossip` | test | divergente | `difficulty+…` | — |
 | `miscast.ts` | 34 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
@@ -3687,9 +3685,6 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `miscast.ts` | 43 | — | — | hors lexique | `times` | `formulaSchema` |
 | `miscast.ts` | 43 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
 | `miscast.ts` | 75 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
-| `montures.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
-| `naval-progression.ts` | 14 | — | — | hors lexique | `entries` | `corps` |
-| `obsessions.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
 | `oups.ts` | 39 | — | plage | cible | `max,min+…` | — |
 | `progression-schemas-derived.ts` | 39 | `schemas` | source | divergente | `book+…` | — |
 | `psychology.ts` | 54 | `test` | test | historique | `difficulty,skill` | — |
@@ -3711,13 +3706,11 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `spells.ts` | 37 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 40 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `steam-breakdown.ts` | 28 | `restart` | test | divergente | `char,difficulty,skill+…` | — |
-| `surincantation.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
 | `symptoms.ts` | 39 | `onTick` | test | divergente | `difficulty+…` | — |
 | `talents.ts` | 80 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
 | `tavernGames.ts` | 103 | `rows` | plage | cible | `max,min+…` | — |
 | `tavernGames.ts` | 140 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
-| `vents-tourbillonnants.ts` | 15 | — | — | hors lexique | `entries` | `corps` |
 | `water-exposure.ts` | 17 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
 | `water-exposure.ts` | 18 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
 | `water-exposure.ts` | 28 | `test` | test | historique | `difficulty,skill` | — |

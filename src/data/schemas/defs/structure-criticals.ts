@@ -24,18 +24,13 @@ const structureCritEntrySchema = z.strictObject({
 const doc = document(
   'structure-criticals',
   famille,
-  {
-    die: z.string(),
-    entries: z.array(structureCritEntrySchema),
-  },
-  {
-    die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un critique de Structure' },
-    entries: { label: 'Critiques de Structure', hint: 'Rangées de la table, bornes min/max inclusives sur le dé de tirage' },
-  },
+  {},
+  {},
   {
     codex: { keys: ['structureCriticals'] },
     edit: { niche: { categories: ['structureCriticals'] } },
   },
+  { rangee: structureCritEntrySchema, deDeTirage: true },
 );
 
 export const schema = doc.schema;

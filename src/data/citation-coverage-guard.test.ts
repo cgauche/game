@@ -137,7 +137,7 @@ describe('garde-fou « citation par entrée » — couverture source:{book,page}
   });
 
   it('FORME `array-of-documents` : les RANGÉES d’un dataset-liste de documents porteurs sont comptées, et un manquant est NOMMÉ `<doc>.<rangée>`', () => {
-    // `miscast.json` (famille `table`, #1467 L1b V-FLIP-TABLE) : 5 documents + 111 rangées = 116.
+    // `miscast.json` (famille `entite`, charge `options.rangee`) : 5 documents + 111 rangées = 116.
     // Sans le bras `array-of-documents` d'`auditDataset`, le scan s'arrêtait au premier niveau (5/5)
     // et les 111 rangées — qui portent CHACUNE leur `source` — sortaient de la garde en silence.
     const reel = JSON.parse(readFileSync(join(DATA_DIR, 'miscast.json'), 'utf8')) as {

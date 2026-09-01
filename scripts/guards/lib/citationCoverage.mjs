@@ -47,7 +47,7 @@ function entryLabel(item, key, idx) {
 
 /**
  * Le tableau racine est-il une LISTE DE DOCUMENTS PORTEURS (chacun avec sa charge `entries[]`) ?
- * Forme posée par la famille `table` de la fabrique (`document.ts`, #1467 L1b V-FLIP-TABLE) :
+ * Forme d'un document à `options.rangee` publié en famille `entite` (`document.ts`) :
  * `miscast.json` = 5 documents, 111 rangées. Sans ce bras, le scan ne compterait que les 5 documents
  * de premier niveau et les 111 rangées — qui portent CHACUNE sa `source` — sortiraient de toute
  * garde de couverture, en silence.
@@ -69,7 +69,7 @@ function estListeDeDocumentsPorteurs(data) {
  * Détecte la FORME d'un dataset et compte ses entrées RÉELLES + leur citation.
  * - `array` : le fichier racine EST le tableau d'entrées (`skills.json`, `talents.json`…).
  * - `array-of-documents` : le fichier racine est un tableau de DOCUMENTS PORTEURS, chacun avec sa
- *   charge `entries[]` (famille `table` de la fabrique, `miscast.json`) — on compte les documents ET
+ *   charge `entries[]` (`options.rangee` de la fabrique, `miscast.json`) — on compte les documents ET
  *   leurs rangées, chaque manquant nommé `<id-du-document>.<id-de-la-rangée>`.
  * - `map-of-lists` : objet racine dont une ou plusieurs propriétés DIRECTES sont des tableaux
  *   d'objets ET dont AU MOINS UN item de ces tableaux cite déjà sa source individuellement —

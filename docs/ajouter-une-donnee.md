@@ -5,7 +5,7 @@
 **Périmètre mesuré / angles morts** — sont MESURÉS à chaque génération : les 122 fichiers
 de `src/data/*.json`, les 29 entrées de `src/data/books.json` (dont 18 en VF) et le nom
 RÉEL de leur clé d'abréviation (`abbr`), les 10 clés d'ENVELOPPE et leurs libellés FR
-lus par AST dans `src/data/schemas/grammaire/document.ts`, les 4 familles de document, les 5 skills de domaine (existence
+lus par AST dans `src/data/schemas/grammaire/document.ts`, les 3 familles de document, les 5 skills de domaine (existence
 sur disque + `description` lue au frontmatter de leur `SKILL.md`) et les 6 gardes (chemin
 ancré + intitulé de leur `describe(...)`, lu au fichier). **Angles morts** : ce doc est le DÉROULÉ,
 pas la CARTE — quel concept vit dans quel fichier, les conventions de champ et les pièges d'homonymes
@@ -50,8 +50,8 @@ d'homonymes : `docs/donnees.md`. Le hook `scripts/hooks/data-edit-guard.mjs` rap
 
 Via la carte `docs/donnees.md`. **Règle d'or** : une « machine de guerre / véhicule / navire » n'est
 PAS un `trappings`. En cas d'ambiguïté, lire 2-3 entrées voisines des fichiers candidats — leur forme
-fait foi, et elle est déclarée : chaque document appartient à l'une des 4 familles de
-`src/data/schemas/grammaire/document.ts` (`entite` · `table` · `config` · `record`), qui décide de l'emballage du
+fait foi, et elle est déclarée : chaque document appartient à l'une des 3 familles de
+`src/data/schemas/grammaire/document.ts` (`entite` · `config` · `record`), qui décide de l'emballage du
 FICHIER (liste d'entrées, entrée seule, ou enveloppe + `entries`).
 
 ## 3. Vérifier la source RAW

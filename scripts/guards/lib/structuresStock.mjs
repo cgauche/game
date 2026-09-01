@@ -719,18 +719,6 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "arcane-phenomena.ts", champ: "controlFlux", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "criticals.ts", champ: "", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "criticals.ts", champ: "loss", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  // #1467 L1b V-FLIP-ENTITE-b — 8 lignes SURFACÉES par l'extension du scan à l'argument `champs` de
-  // `document()` (`structures-scan.mts#litterauxZod`) : la donnée et les defs sont INCHANGÉS, c'est la
-  // COUVERTURE du relevé qui rattrape la forme dominante (43 defs adoptés). Sans l'extension,
-  // l'adoption faisait DISPARAÎTRE ces déclarations et le cliquet décroissant lisait la perte comme
-  // un solde. `interludeEvents` était déjà stockée avant 11b — elle REVIT à l'identique.
-  { def: "driving-mishap.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "drunkenness.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "montures.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "naval-progression.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "obsessions.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "surincantation.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "vents-tourbillonnants.ts", champ: "", concept: "", signature: "entries", statut: "hors lexique", commun: "corps", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "criticals.ts", champ: "resist", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { def: "etats.ts", champ: "", concept: "test", signature: "characteristic,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "land-cargo.ts", champ: "gossip", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },

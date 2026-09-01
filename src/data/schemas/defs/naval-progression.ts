@@ -4,40 +4,35 @@
  * `src/engine/shipNavigation.ts` (`ProgressionEntry`, `findTableEntry`).
  */
 import { z } from 'zod';
-import { document, type EnveloppeDocument } from '../grammaire/document';
+import { document, type DocumentARangees } from '../grammaire/document';
 import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'naval-progression.json';
 export const famille = 'config';
 
-/** `mode` observés : les 5 issues RAW de la table de Progression (ch.13 l.68-75). */
-const champs = {
-  entries: z.array(
-    z.strictObject({
-      ...plageSchema.shape,
-      /** id STABLE = `mode` (déjà une clé fermée à 5 valeurs) — identité d'entrée pour le Codex (#422). */
-      id: z.string(),
-      mode: z.enum(['plus2', 'plus1', 'normal', 'minus1', 'half']),
-      desc: z.string(),
-      source: sourceRefSchema,
-    }),
-  ),
-};
+/** Une bande de DR du Test de Navigation. `mode` observés : les 5 issues RAW (ch.13 l.68-75). */
+const progressionEntrySchema = z.strictObject({
+  ...plageSchema.shape,
+  /** id STABLE = `mode` (déjà une clé fermée à 5 valeurs) — identité d'entrée pour le Codex (#422). */
+  id: z.string(),
+  mode: z.enum(['plus2', 'plus1', 'normal', 'minus1', 'half']),
+  desc: z.string(),
+  source: sourceRefSchema,
+});
 
 const doc = document(
   'naval-progression',
   famille,
-  champs,
-  {
-    entries: { label: 'Bandes de progression', hint: 'Bande de DR du Test de Navigation → mode de déplacement du navire' },
-  },
+  {},
+  {},
   {
     codex: { keys: ['navalProgression'] },
     edit: { niche: { categories: ['navalProgression'] } },
   },
+  { rangee: progressionEntrySchema },
 );
 
 export const schema = doc.schema;
 export const meta = doc.meta;
 export const exposition = doc.exposition;
-export type NavalProgressionData = EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>;
+export type NavalProgressionData = DocumentARangees<z.infer<typeof progressionEntrySchema>>;

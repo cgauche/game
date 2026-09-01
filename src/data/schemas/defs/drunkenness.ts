@@ -13,28 +13,26 @@ import { plageSchema } from '../grammaire/valeurs';
 export const file = 'drunkenness.json';
 export const famille = 'config';
 
+/** Un palier du 1d10 : `outcome` = id de l'ISSUE tirée, `ops` = la mécanique exécutable. */
+const drunkEntrySchema = z.strictObject({
+  ...plageSchema.shape,
+  id: z.string(),
+  label: z.string(),
+  outcome: z.enum(['bravoure', 'ami', 'staggering', 'belligerent', 'blackout']),
+  desc: z.string(),
+  ops: z.array(gameOpSchema).optional(),
+});
+
 const doc = document(
   'drunkenness',
   famille,
-  {
-    entries: z.array(
-      z.strictObject({
-        ...plageSchema.shape,
-        id: z.string(),
-        label: z.string(),
-        outcome: z.enum(['bravoure', 'ami', 'staggering', 'belligerent', 'blackout']),
-        desc: z.string(),
-        ops: z.array(gameOpSchema).optional(),
-      }),
-    ),
-  },
-  {
-    entries: { label: 'Paliers d’Ivresse', hint: 'Rangées du 1d10, bornes min/max inclusives ; `ops` = la mécanique exécutable' },
-  },
+  {},
+  {},
   {
     codex: { keys: ['drunkenness'] },
     edit: { niche: { categories: ['drunkenness'] } },
   },
+  { rangee: drunkEntrySchema },
 );
 
 export const schema = doc.schema;

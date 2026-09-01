@@ -782,7 +782,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // colonne saisonnière passant par la fabrique `parSaison` (que `avail` compose aussi, sinon la
       // signature à quatre saisons du nœud neuf faisait ENTRER deux lignes — contrefactuel CF1/CF2 en
       // fin de fichier) ; `sea-cargo.ts › offerPrice` sort avec elle, en composant `plageOuverteSchema`.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 52],
+      // Cliquet DESCENDU 52 → 45 (#1654 geste A, 2026-09-01) : les 7 lignes `signature: entries` du
+      // stock sortent — la charge d'un document est POSÉE par la fabrique (`options.rangee`,
+      // `META_CHARGE`), plus aucun def ne la retape. Les 4 sites `die,entries` d'`artillery-misfire`,
+      // `incidents-monture`, `problemes-vehicule` et `structure-criticals` meurent du même geste : ils
+      // étaient INVISIBLES à ce cliquet (appariement par signature exacte), ils le seraient restés.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 45],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -911,7 +916,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // est la 10ᵉ branche du schéma dont les 9 sœurs sont lotées ICI (`defs/miscast.ts`) ; le concept
       // `formule` la NOMME, il ne la déplace pas de porteur. Re-lotissement de REVUE (design jugé du
       // 2026-09-01, §0.b) : elle s'éteindra avec les 9 autres, pas avec la vague `grammaire`.
-      'L1a #1466': 23,
+      // … puis 23 → 16 (#1654 geste A, 2026-09-01) : les 7 redéclarations `entries` du lot MEURENT par
+      // CONSTRUCTION — `options.rangee` est admissible en TOUTE famille, la fabrique pose
+      // `entries` (et `die` sous `deDeTirage`) avec leur méta FR, et la garde de `document()` refuse
+      // désormais l'une comme l'autre dans les `champs` d'un def à rangées : `driving-mishap`,
+      // `drunkenness`, `montures`, `naval-progression`, `obsessions`, `surincantation`,
+      // `vents-tourbillonnants`.
+      'L1a #1466': 16,
       'L1b #1467': 0,
       // L1c #1468 : 403 → 400 (commit 3c) — cf. le cliquet `STRUCTURES_OPS` ci-dessus.
       // … puis 400 → 402 (#862) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.

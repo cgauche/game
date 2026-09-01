@@ -70,7 +70,7 @@ _Aucune._
 - `src/data/schemas/defs-scenes/scene.ts:103` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
 - `src/state/scene.ts:124` (l.72) — *  Le patron est AUTHORÉ dans la source, pas inventé : `NADJ 04 l.72` — « Elle jouera une partie de
 - `src/state/tavern-npc-a-fiche.test.ts:6` (l.72) — *  · `NADJ 04 l.72` — « Elle jouera une partie de L'Impératrice écarlate avec quiconque lui propose,
-- `src/state/tavern-npc-a-fiche.test.ts:97` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
+- `src/state/tavern-npc-a-fiche.test.ts:98` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
 
 ### NADJ 14 — 5 réf(s) code, 0 dans l'Atlas
 - `src/data/index.ts:807` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */

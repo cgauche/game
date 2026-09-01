@@ -6,7 +6,6 @@
  * porte `stageOutcome`/`vehicleWounds`/`occupantOps` (propres aux deux autres tables) — champs quand
  * même déclarés `.optional()` dans le schéma commun, sans conséquence ici.
  */
-import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { travelTableEntrySchema } from '../grammaire/mecanique';
 
@@ -16,18 +15,13 @@ export const famille = 'config';
 const doc = document(
   'incidents-monture',
   famille,
-  {
-    die: z.string(),
-    entries: z.array(travelTableEntrySchema),
-  },
-  {
-    die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un incident (d100)' },
-    entries: { label: 'Incidents de monte', hint: 'Rangées de la table, bornes min/max inclusives sur le dé de tirage' },
-  },
+  {},
+  {},
   {
     codex: { keys: ['incidentsMonture'] },
     edit: { niche: { categories: ['incidentsMonture'] } },
   },
+  { rangee: travelTableEntrySchema, deDeTirage: true },
 );
 
 export const schema = doc.schema;

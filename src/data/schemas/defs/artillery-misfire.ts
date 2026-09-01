@@ -27,18 +27,13 @@ const artilleryMisfireEntrySchema = z.strictObject({
 const doc = document(
   'artillery-misfire',
   famille,
-  {
-    die: z.string(),
-    entries: z.array(artilleryMisfireEntrySchema),
-  },
-  {
-    die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un incident (ex. « 1d10 »)' },
-    entries: { label: 'Incidents', hint: 'Rangées de la table, bornes min/max inclusives sur le dé de tirage' },
-  },
+  {},
+  {},
   {
     codex: { keys: ['artilleryMisfire'] },
     edit: { niche: { categories: ['artilleryMisfire'] } },
   },
+  { rangee: artilleryMisfireEntrySchema, deDeTirage: true },
 );
 
 export const schema = doc.schema;

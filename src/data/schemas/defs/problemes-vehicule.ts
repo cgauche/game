@@ -4,7 +4,6 @@
  * (`.../travelTables.ts`), PROMU dans `grammaire/mecanique.ts` (`travelTableEntrySchema`/`stageOutcomeSchema`
  * — partagé avec `rencontres-edoc.ts`/`incidents-monture.ts`).
  */
-import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { travelTableEntrySchema } from '../grammaire/mecanique';
 
@@ -14,18 +13,13 @@ export const famille = 'config';
 const doc = document(
   'problemes-vehicule',
   famille,
-  {
-    die: z.string(),
-    entries: z.array(travelTableEntrySchema),
-  },
-  {
-    die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un problème (d100)' },
-    entries: { label: 'Problèmes de véhicule', hint: 'Rangées de la table, bornes min/max inclusives sur le dé de tirage' },
-  },
+  {},
+  {},
   {
     codex: { keys: ['problemesVehicule'] },
     edit: { niche: { categories: ['problemesVehicule'] } },
   },
+  { rangee: travelTableEntrySchema, deDeTirage: true },
 );
 
 export const schema = doc.schema;

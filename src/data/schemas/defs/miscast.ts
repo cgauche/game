@@ -5,7 +5,7 @@
  * runtime, mais `Formula` → `formulaSinSchema` — la formule générale plus le terme de Péché —, +
  * `durationRounds` propre au dialecte).
  *
- * Le fichier porte une LISTE de 5 documents de famille `table` — un par jeu de rangées tirable :
+ * Le fichier porte une LISTE de 5 documents à rangées — un par jeu de rangées tirable :
  * `miscast-mineure`/`miscast-majeure` (LDB 46 folio 234), leurs révisions `-vdm` (VDM 02 folios
  * 24/25, sélectionnées par la règle optionnelle `magic-vdm-incantation`) et `miscast-colere`
  * (LDB 40 folio 218). Chaque document porte SON identité, SA provenance et SES rangées : le
@@ -17,7 +17,7 @@ import { diceSpecSchema, formulaSinSchema, plageSchema, sourceRefSchema } from '
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'miscast.json';
-export const famille = 'table';
+export const famille = 'entite';
 
 const difficultySchemaLocal = z.enum([
   'tresFacile', 'facile', 'accessible', 'intermediaire', 'complexe',
@@ -113,7 +113,7 @@ const doc = document(
     codex: { keys: ['miscastMinor', 'miscastMajor', 'miscastWrath'] },
     edit: { niche: { categories: ['miscastMinor', 'miscastMajor', 'miscastWrath'] } },
   },
-  { ligneTable: jsonRowSchema },
+  { rangee: jsonRowSchema },
 );
 
 export const schema = doc.schema;

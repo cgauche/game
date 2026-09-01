@@ -11,7 +11,7 @@ import { z } from 'zod';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
 import tablesJson from '../../tables.json';
-import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, type Exposition } from './document';
+import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, META_CHARGE, type Exposition } from './document';
 import { ref, refs, specRef, pick, typedRef, idDe, cibleDe, estSpecialisable, TYPES, type Id } from './ref';
 import { byId, type SkillData, type TypeResolu } from '../../index';
 import { avancement } from './avancement';
@@ -265,16 +265,17 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     config: document('config-jouet', 'config', { valeur: z.number() }, { valeur: { label: 'Valeur' } }, EXPOSITION),
     // Réplique d'un def `record` (decorPalette : record de chaînes hex).
     record: document('palette-jouet', 'record', {}, {}, EXPOSITION, { valeurRecord: z.string().regex(/^#[0-9a-f]{6}$/) }),
-    // Réplique d'un def `table` (#1467 L1b V-FLIP-TABLE) : `die?` est un champ du def, `entries` est
-    // POSÉE par la fabrique depuis `options.ligneTable` — comme `entries` l'est en famille `record`.
-    table: document(
-      'table-jouet',
-      'table',
-      { die: z.string().optional() },
-      { die: { label: 'Dé' } },
-      EXPOSITION,
-      { ligneTable: z.strictObject({ min: z.number(), max: z.number(), label: z.string() }) },
-    ),
+    // Réplique d'un def à RANGÉES : `entries` ET `die?` sont POSÉS par la fabrique depuis
+    // `options.rangee` — comme `entries` l'est en famille `record`. La charge est orthogonale à
+    // l'emballage : la même option sert ici une famille `entite` (le fichier porte une LISTE de
+    // documents-tables) et, plus bas, une famille `config` (le fichier EST le document).
+    rangees: document('table-jouet', 'entite', {}, {}, EXPOSITION, {
+      rangee: z.strictObject({ min: z.number(), max: z.number(), label: z.string() }),
+      deDeTirage: true,
+    }),
+    rangeesConfig: document('config-table-jouet', 'config', {}, {}, EXPOSITION, {
+      rangee: z.strictObject({ min: z.number(), max: z.number(), label: z.string() }),
+    }),
   };
   const ENV = (type: string) => ({ id: 'x', type, label: 'X', source: SOURCE_REELLE });
 
@@ -303,35 +304,73 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     expect(schema.safeParse({ ...base, entries: { '': '#8b5a2b' } }).success).toBe(false);
   });
 
-  it('famille `table` : TABLEAU de documents, chacun à `die?` optionnel et `entries` POSÉE par la fabrique', () => {
-    const { schema } = REPLIQUES.table;
-    const t = { ...ENV('table-jouet'), entries: [{ min: 1, max: 10, label: 'Rien' }] };
+  it('document à `rangee` : `entries` POSÉE par la fabrique, et `die` REQUIS dès `deDeTirage`', () => {
+    const { schema } = REPLIQUES.rangees;
+    const t = { ...ENV('table-jouet'), die: '1d100', entries: [{ min: 1, max: 10, label: 'Rien' }] };
     expect(schema.safeParse([t]).success).toBe(true);
-    expect(schema.safeParse([{ ...t, die: '1d100' }]).success).toBe(true);
+    // `deDeTirage` déclaré : le dé est REQUIS, et une chaîne vide ne le satisfait pas.
+    expect(schema.safeParse([{ ...t, die: undefined }]).success).toBe(false);
+    expect(schema.safeParse([{ ...t, die: '' }]).success).toBe(false);
     // Le fichier porte une LISTE de documents : le document nu n'est pas le dataset.
     expect(schema.safeParse(t).success).toBe(false);
     // `entries` est une LISTE ordonnée (là où la famille `record` en fait une map).
     expect(schema.safeParse([{ ...t, entries: {} }]).success).toBe(false);
-    // Chaque rangée est validée par `ligneTable`, et le sceau refuse la clé en trop.
+    // Chaque rangée est validée par `rangee`, et le sceau refuse la clé en trop.
     expect(schema.safeParse([{ ...t, entries: [{ min: 1, max: 10 }] }]).success).toBe(false);
     expect(schema.safeParse([{ ...t, entries: [{ min: 1, max: 10, label: 'Rien', inconnu: 1 }] }]).success).toBe(false);
   });
 
-  it('`ligneTable` : EXIGÉ par la famille `table`, REFUSÉ partout ailleurs, en nommant le document', () => {
-    expect(() => document('table-nue', 'table', {}, {}, EXPOSITION)).toThrow(
-      /document\('table-nue'\) : la famille « table » exige `ligneTable`/,
-    );
-    expect(() => document('config-ligne', 'config', {}, {}, EXPOSITION, { ligneTable: z.number() })).toThrow(
-      /`ligneTable` n'a de sens que pour la famille « table » \(ici « config »\)/,
+  it('`rangee` en famille `config` : le document EST son fichier, et porte sa charge', () => {
+    const { schema } = REPLIQUES.rangeesConfig;
+    const t = { ...ENV('config-table-jouet'), entries: [{ min: 1, max: 10, label: 'Rien' }] };
+    expect(schema.safeParse(t).success).toBe(true);
+    // SANS `deDeTirage`, `die` n'existe pas sur le document : le sceau le refuse comme clé en trop.
+    expect(schema.safeParse({ ...t, die: '1d10' }).success).toBe(false);
+    expect(schema.safeParse([t]).success).toBe(false);
+    expect(schema.safeParse({ ...t, entries: [{ min: 1, max: 10 }] }).success).toBe(false);
+  });
+
+  it('`deDeTirage` SANS `rangee` est REFUSÉ à la déclaration, en nommant le document', () => {
+    expect(() => document('de-sans-rangees', 'config', {}, {}, EXPOSITION, { deDeTirage: true })).toThrow(
+      /document\('de-sans-rangees'\) : `deDeTirage` exige `rangee`/,
     );
   });
 
-  it('un def `table` qui redéclare `entries` dans ses `champs` est REFUSÉ (la fabrique la pose)', () => {
+  it('`rangee` en famille `record` est REFUSÉ : les deux charges sont EXCLUSIVES (jamais un silence)', () => {
+    // Sans ce refus, la branche `record` gagnait et `rangee` était IGNORÉE — un document déclaré à
+    // rangées parsait en map, sans un mot. Le `deDeTirage` du même appel est couvert par le refus
+    // ci-dessus : il exige une `rangee`, que `record` n'admet pas.
     expect(() =>
-      document('table-doublon', 'table', { entries: z.array(z.number()) }, { entries: { label: 'Rangées' } }, EXPOSITION, {
-        ligneTable: z.number(),
+      document('record-a-rangees', 'record', {}, {}, EXPOSITION, { valeurRecord: z.string(), rangee: z.number() }),
+    ).toThrow(/document\('record-a-rangees'\) : `rangee` et la famille « record » sont EXCLUSIVES/);
+    expect(() =>
+      document('record-a-de', 'record', {}, {}, EXPOSITION, { valeurRecord: z.string(), deDeTirage: true }),
+    ).toThrow(/document\('record-a-de'\) : `deDeTirage` exige `rangee`/);
+  });
+
+  it('un def à `rangee` qui redéclare `entries` ou `die` dans ses `champs` est REFUSÉ (la fabrique les pose)', () => {
+    expect(() =>
+      document('table-doublon', 'entite', { entries: z.array(z.number()) }, { entries: { label: 'Rangées' } }, EXPOSITION, {
+        rangee: z.number(),
       }),
-    ).toThrow(/la fabrique pose « entries » pour la famille « table »/);
+    ).toThrow(/document\('table-doublon'\) : la fabrique pose « entries » \(charge du document\)/);
+    expect(() =>
+      document('table-de-doublon', 'config', { die: z.string() }, { die: { label: 'Dé' } }, EXPOSITION, {
+        rangee: z.number(),
+      }),
+    ).toThrow(/document\('table-de-doublon'\) : la fabrique pose « die » \(charge du document\)/);
+    // SANS `rangee`, `die` n'est pas une clé de charge : un def qui n'a pas de rangées peut le déclarer.
+    expect(() => document('sans-rangees', 'config', { die: z.string() }, { die: { label: 'Dé' } }, EXPOSITION)).not.toThrow();
+  });
+
+  it('la MÉTA FR de la charge est celle de la FABRIQUE (`META_CHARGE`), publiée par le handle', () => {
+    expect(REPLIQUES.rangees.meta.entries).toEqual(META_CHARGE.entries);
+    expect(REPLIQUES.rangees.meta.die).toEqual(META_CHARGE.die);
+    expect(REPLIQUES.record.meta.entries).toEqual(META_CHARGE.entries);
+    // Un document SANS charge ne publie aucune méta de charge ; sans `deDeTirage`, aucune méta de dé.
+    expect(REPLIQUES.config.meta.entries).toBeUndefined();
+    expect(REPLIQUES.record.meta.die).toBeUndefined();
+    expect(REPLIQUES.rangeesConfig.meta.die).toBeUndefined();
   });
 
   it('le SCEAU tient sur TOUT nœud rendu (dataset de chaque famille, entrée, entrée partielle)', () => {
@@ -343,7 +382,7 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
       expect(() => (nu as { partial: () => unknown }).partial()).toThrow();
     };
     scelle((REPLIQUES.entite.schema as unknown as { element: unknown }).element);
-    scelle((REPLIQUES.table.schema as unknown as { element: unknown }).element);
+    scelle((REPLIQUES.rangees.schema as unknown as { element: unknown }).element);
     scelle(REPLIQUES.config.schema);
     scelle(REPLIQUES.record.schema);
     scelle(REPLIQUES.entite.entree);
@@ -362,9 +401,9 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     expect(entreePartielle.optional().safeParse(undefined).success).toBe(true);
     expect(entreePartielle.optional().safeParse({ max: 2 }).success).toBe(true);
     expect(cles).toEqual(['id', 'type', 'label', 'labelF', 'desc', 'source', 'alsoIn', 'maison', 'icon', 'max']);
-    // En famille `table` comme en `record`, `entries` EST un champ de l'entrée.
-    expect(REPLIQUES.table.cles).toContain('die');
-    expect(REPLIQUES.table.cles).toContain('entries');
+    // Sur un document à `rangee` comme en famille `record`, la charge EST un champ de l'entrée.
+    expect(REPLIQUES.rangees.cles).toContain('die');
+    expect(REPLIQUES.rangees.cles).toContain('entries');
     // En famille `record`, `entries` EST un champ de l'entrée : `cles` ne ment pas sur la forme.
     expect(REPLIQUES.record.cles).toContain('entries');
   });
@@ -593,7 +632,11 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     // ici, pas dans un silence.
     //   #677 : `reseau-routier` est un def `entite` NEUF, adopté dès sa création et `source` exigée
     //         — il naît donc dans la population SCELLÉE (77 → 78), sans jamais passer par la mesure.
-    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 78, mesures: 0 });
+    //   #1654 : `miscast` déclare la famille `entite` (son fichier porte une LISTE de 5 documents,
+    //         chacun à sa charge `entries` par `options.rangee`) — un def SCELLÉ de plus dans la
+    //         population de ce mesureur, qui GAGNE là une couverture (78 → 79) : la famille qu'il
+    //         portait sortait ce def de tout filtre `entite` de ce fichier.
+    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 79, mesures: 0 });
   });
 
 });

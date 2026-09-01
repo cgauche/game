@@ -9,26 +9,24 @@ import { plageSchema } from '../grammaire/valeurs';
 export const file = 'vents-tourbillonnants.json';
 export const famille = 'config';
 
+/** Une rangée du 1d10 : `mod` = modificateur d'Incantation. */
+const windsEntrySchema = z.strictObject({
+  ...plageSchema.shape,
+  id: z.string(),
+  mod: z.number(),
+  label: z.string(),
+});
+
 const doc = document(
   'vents-tourbillonnants',
   famille,
-  {
-    entries: z.array(
-      z.strictObject({
-        ...plageSchema.shape,
-        id: z.string(),
-        mod: z.number(),
-        label: z.string(),
-      }),
-    ),
-  },
-  {
-    entries: { label: 'Force des Vents', hint: 'Rangées du 1d10, bornes min/max inclusives ; `mod` = modificateur d’Incantation' },
-  },
+  {},
+  {},
   {
     codex: { keys: ['ventsTourbillonnants'] },
     edit: { niche: { categories: ['ventsTourbillonnants'] } },
   },
+  { rangee: windsEntrySchema },
 );
 
 export const schema = doc.schema;

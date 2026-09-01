@@ -254,12 +254,20 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   rend la forme LDB de base. Une variante ne peut republier QUE les champs que son dataset **résout**
   effectivement (liste blanche `VARIANT_RESOLVED_FIELDS` de la def, passée à `variantOf` — schéma
   `strictObject`, donc tout autre champ est rejeté au parse ; **enforced** aussi côté donnée par
-  `src/data/variants-integrity.test.ts`) : `talents.json` résout `desc`/`source` (Codex
-  `src/ui/compendium/registry.ts:1415`), `test` (`talentTestSLBonus`, `src/engine/magic.ts:359`),
-  `max` (`talentMaxById`, `src/engine/careerSlots.ts:324`) et `combat`
-  (`featuresOf`/`castingKindOf`, `src/engine/combatFeatures/dispatch.ts:52`/`:17`) ;
-  `traits.json` ne résout que `desc`/`source`
-  (`src/ui/compendium/registry.ts:567`). `passive` et `effects` en sont EXCLUS — le moteur les lit sur
+  `src/data/variants-integrity.test.ts`) — `talents.json` résout quatre champs, UNE CITATION PAR LIGNE,
+  chacune à côté du SYMBOLE qu'elle porte (lignes MESURÉES à la génération, `citeLigne`) :
+
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1416`
+  - `test` — `talentTestSLBonus`, `src/engine/magic.ts:359`
+  - `max` — `talentMaxById`, `src/engine/careerSlots.ts:326`
+  - `combat` — `featuresOf`, `src/engine/combatFeatures/dispatch.ts:52`
+  - `combat` — `castingKindOf`, `src/engine/combatFeatures/dispatch.ts:18`
+
+  `traits.json` ne résout, lui, que deux champs :
+
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:555`
+
+  `passive` et `effects` en sont EXCLUS — le moteur les lit sur
   l'entrée brute (`src/engine/talentEffects.ts`, `src/engine/traits/dispatch.ts`) ; un champ n'entre
   dans la liste qu'une fois son consommateur routé par `effectiveEntry`. `careers`/`skills`/`spells`
   n'admettent aucune variante (aucun consommateur `effectiveEntry`). Champ posé sur `talents.json` —
@@ -345,12 +353,11 @@ export const meta = doc.meta;
 
 **Signature** : `document(type, famille, champs, meta, exposition, options?)`.
 
-**Les 4 familles** — l'emballage du FICHIER est posé par la fabrique, un def n'écrit plus jamais son
+**Les 3 familles** — l'emballage du FICHIER est posé par la fabrique, un def n'écrit plus jamais son
 `z.array` :
 
-- `entite` — le dataset est un **TABLEAU d'entrées** (le cas courant : catalogues de jeu).
-- `table` — un TABLEAU de **documents-tables**, chacun portant ses rangées sous `entries`
-  (`options.ligneTable`, posée par la fabrique).
+- `entite` — le dataset est un **TABLEAU d'entrées** (le cas courant : catalogues de jeu, et les
+  fichiers qui portent plusieurs documents-tables).
 - `config` — l'**ENTRÉE seule** : le document forme à lui seul le fichier.
 - `record` — **enveloppe + `entries`** (`options.valeurRecord`, clé par `options.cleRecord`) ; en
   famille `record` l'ENTRÉE *est* le document.
@@ -375,8 +382,12 @@ pas exigible (vocabulaires d'app, documents dont la source vit en profondeur) so
 - `variantes` — champs qu'une variante réglée republie (`variantOf`) ; un document sans `variantes`
   n'admet aucun `variants`.
 - `affinerEntree` / `affinerDataset` — raffinements PRÉ-sceau, sur l'entrée ou sur le dataset emballé.
-- `cleRecord` / `valeurRecord` — clé et valeur de `entries` en famille `record` ; `ligneTable` en
-  famille `table`. Chacune est EXIGÉE par sa famille et REFUSÉE hors d'elle, en nommant le document.
+- `cleRecord` / `valeurRecord` — clé et valeur de `entries` en famille `record` (EXIGÉES par elle,
+  REFUSÉES hors d'elle, en nommant le document).
+- `rangee` — schéma d'une RANGÉE : la fabrique pose alors `entries` sur l'entrée, avec sa méta FR
+  (`META_CHARGE`). Admissible dans toute famille — la charge est orthogonale à l'emballage.
+- `deDeTirage` — le document porte un DÉ de tirage : la fabrique pose `die` (requis, méta FR comprise).
+  Exige `rangee` ; un def à rangées ne redéclare NI `entries` NI `die` dans ses `champs`.
 
 **Les 4 exports plats du contrat `gen`** : tout def qui appelle `document(` exporte `file`, `schema`,
 `famille` et `meta` **À PLAT**. Le générateur de registre est TEXTUEL (lecture par regex, jamais un

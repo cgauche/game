@@ -12,27 +12,25 @@ import { plageSchema } from '../grammaire/valeurs';
 export const file = 'driving-mishap.json';
 export const famille = 'config';
 
+/** Une rangée du 1d10 : `outcome` = identifiant de l'ISSUE tirée. */
+const mishapEntrySchema = z.strictObject({
+  ...plageSchema.shape,
+  id: z.string(),
+  label: z.string(),
+  outcome: z.enum(['harness', 'jolt', 'wheel', 'crash']),
+  desc: z.string(),
+});
+
 const doc = document(
   'driving-mishap',
   famille,
-  {
-    entries: z.array(
-      z.strictObject({
-        ...plageSchema.shape,
-        id: z.string(),
-        label: z.string(),
-        outcome: z.enum(['harness', 'jolt', 'wheel', 'crash']),
-        desc: z.string(),
-      }),
-    ),
-  },
-  {
-    entries: { label: 'Accidents', hint: 'Rangées du 1d10, bornes min/max inclusives ; `outcome` = identifiant de l’issue tirée' },
-  },
+  {},
+  {},
   {
     codex: { keys: ['drivingMishap'] },
     edit: { niche: { categories: ['drivingMishap'] } },
   },
+  { rangee: mishapEntrySchema },
 );
 
 export const schema = doc.schema;

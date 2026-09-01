@@ -17,6 +17,21 @@ const MANIFEST = JSON.parse(readFileSync('src/data/donnees.manifest.json', 'utf8
 
 const errors = []
 
+/**
+ * `fichier:ligne` d'une ANCRE de texte, MESURE a la generation : une citation ecrite a la main
+ * dans un generateur perime au premier commit voisin, et la garde `docs-vs-commit` la lit.
+ * L'ancre doit matcher EXACTEMENT une ligne — zero ou plusieurs, c'est une erreur nommee.
+ */
+function citeLigne(chemin, ancre) {
+  const lignes = existsSync(chemin) ? readFileSync(chemin, 'utf8').split(String.fromCharCode(10)) : []
+  const trouvees = lignes.flatMap((l, i) => (l.includes(ancre) ? [i + 1] : []))
+  if (trouvees.length !== 1) {
+    errors.push(`citeLigne : « ${ancre} » a ${trouvees.length} porteur(s) dans ${chemin} — recaler l'ancre (une seule ligne attendue).`)
+    return chemin
+  }
+  return `${chemin}:${trouvees[0]}`
+}
+
 // --- inventaire réel ---
 const filesOnDisk = readdirSync(DATA_DIR).filter((f) => f.endsWith('.json')).sort()
 const defBasenames = new Set(readdirSync(DEFS_DIR).filter((f) => f.endsWith('.ts')).map((f) => f.replace(/\.ts$/, '')))
@@ -210,12 +225,34 @@ out += `  première variante active (\`activeVariant\`) en REPLACE par champ DÉ
 out += `  rend la forme LDB de base. Une variante ne peut republier QUE les champs que son dataset **résout**\n`
 out += `  effectivement (liste blanche \`VARIANT_RESOLVED_FIELDS\` de la def, passée à \`variantOf\` — schéma\n`
 out += `  \`strictObject\`, donc tout autre champ est rejeté au parse ; **enforced** aussi côté donnée par\n`
-out += `  \`src/data/variants-integrity.test.ts\`) : \`talents.json\` résout \`desc\`/\`source\` (Codex\n`
-out += `  \`src/ui/compendium/registry.ts:1415\`), \`test\` (\`talentTestSLBonus\`, \`src/engine/magic.ts:359\`),\n`
-out += `  \`max\` (\`talentMaxById\`, \`src/engine/careerSlots.ts:324\`) et \`combat\`\n`
-out += `  (\`featuresOf\`/\`castingKindOf\`, \`src/engine/combatFeatures/dispatch.ts:52\`/\`:17\`) ;\n`
-out += `  \`traits.json\` ne résout que \`desc\`/\`source\`\n`
-out += `  (\`src/ui/compendium/registry.ts:567\`). \`passive\` et \`effects\` en sont EXCLUS — le moteur les lit sur\n`
+out += `  \`src/data/variants-integrity.test.ts\`) — \`talents.json\` résout quatre champs, UNE CITATION PAR LIGNE,
+`
+out += `  chacune à côté du SYMBOLE qu'elle porte (lignes MESURÉES à la génération, \`citeLigne\`) :
+`
+out += `
+`
+out += `  - \`desc\`/\`source\` — Codex, \`effectiveEntry\`, \`${citeLigne('src/ui/compendium/registry.ts', 'const e = effectiveEntry(t);')}\`
+`
+out += `  - \`test\` — \`talentTestSLBonus\`, \`${citeLigne('src/engine/magic.ts', 'export function talentTestSLBonus(')}\`
+`
+out += `  - \`max\` — \`talentMaxById\`, \`${citeLigne('src/engine/careerSlots.ts', 'export function talentMaxById(')}\`
+`
+out += `  - \`combat\` — \`featuresOf\`, \`${citeLigne('src/engine/combatFeatures/dispatch.ts', 'export function featuresOf(')}\`
+`
+out += `  - \`combat\` — \`castingKindOf\`, \`${citeLigne('src/engine/combatFeatures/dispatch.ts', 'export function castingKindOf(')}\`
+`
+out += `
+`
+out += `  \`traits.json\` ne résout, lui, que deux champs :
+`
+out += `
+`
+out += `  - \`desc\`/\`source\` — Codex, \`effectiveEntry\`, \`${citeLigne('src/ui/compendium/registry.ts', 'const t = effectiveEntry(t0);')}\`
+`
+out += `
+`
+out += `  \`passive\` et \`effects\` en sont EXCLUS — le moteur les lit sur
+`
 out += `  l'entrée brute (\`src/engine/talentEffects.ts\`, \`src/engine/traits/dispatch.ts\`) ; un champ n'entre\n`
 out += `  dans la liste qu'une fois son consommateur routé par \`effectiveEntry\`. \`careers\`/\`skills\`/\`spells\`\n`
 out += `  n'admettent aucune variante (aucun consommateur \`effectiveEntry\`). Champ posé sur \`talents.json\` —\n`
@@ -296,12 +333,11 @@ out += [
   "",
   "**Signature** : `document(type, famille, champs, meta, exposition, options?)`.",
   "",
-  "**Les 4 familles** — l'emballage du FICHIER est posé par la fabrique, un def n'écrit plus jamais son",
+  "**Les 3 familles** — l'emballage du FICHIER est posé par la fabrique, un def n'écrit plus jamais son",
   "`z.array` :",
   "",
-  "- `entite` — le dataset est un **TABLEAU d'entrées** (le cas courant : catalogues de jeu).",
-  "- `table` — un TABLEAU de **documents-tables**, chacun portant ses rangées sous `entries`",
-  "  (`options.ligneTable`, posée par la fabrique).",
+  "- `entite` — le dataset est un **TABLEAU d'entrées** (le cas courant : catalogues de jeu, et les",
+  "  fichiers qui portent plusieurs documents-tables).",
   "- `config` — l'**ENTRÉE seule** : le document forme à lui seul le fichier.",
   "- `record` — **enveloppe + `entries`** (`options.valeurRecord`, clé par `options.cleRecord`) ; en",
   "  famille `record` l'ENTRÉE *est* le document.",
@@ -326,8 +362,12 @@ out += [
   "- `variantes` — champs qu'une variante réglée republie (`variantOf`) ; un document sans `variantes`",
   "  n'admet aucun `variants`.",
   "- `affinerEntree` / `affinerDataset` — raffinements PRÉ-sceau, sur l'entrée ou sur le dataset emballé.",
-  "- `cleRecord` / `valeurRecord` — clé et valeur de `entries` en famille `record` ; `ligneTable` en",
-  "  famille `table`. Chacune est EXIGÉE par sa famille et REFUSÉE hors d'elle, en nommant le document.",
+  "- `cleRecord` / `valeurRecord` — clé et valeur de `entries` en famille `record` (EXIGÉES par elle,",
+  "  REFUSÉES hors d'elle, en nommant le document).",
+  "- `rangee` — schéma d'une RANGÉE : la fabrique pose alors `entries` sur l'entrée, avec sa méta FR",
+  "  (`META_CHARGE`). Admissible dans toute famille — la charge est orthogonale à l'emballage.",
+  "- `deDeTirage` — le document porte un DÉ de tirage : la fabrique pose `die` (requis, méta FR comprise).",
+  "  Exige `rangee` ; un def à rangées ne redéclare NI `entries` NI `die` dans ses `champs`.",
   "",
   "**Les 4 exports plats du contrat `gen`** : tout def qui appelle `document(` exporte `file`, `schema`,",
   "`famille` et `meta` **À PLAT**. Le générateur de registre est TEXTUEL (lecture par regex, jamais un",
