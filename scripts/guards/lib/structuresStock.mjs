@@ -524,11 +524,13 @@ export const STRUCTURES_FORMES = [
   { concept: "sequence", dataset: "tavernGames.json", champ: "(racine)", signature: "drCap,volley+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "sequence", dataset: "tavernGames.json", champ: "(racine)", signature: "phases,target+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "sequence", dataset: "tavernGames.json", champ: "(racine)", signature: "table,throwerPenalty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
+  { concept: "source", dataset: "creatures.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L1d #1469", date: "2026-08-23" }, // +2 : alsoIn posés par e89a836d3 (C1 #1457, folios ZI) sans leur ligne de stock — sillage relevé 2026-09-01
   { concept: "source", dataset: "domains.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 6, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "naval-traits.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "progression-schemas.derived.json", champ: "schemas", signature: "book+…", statut: "divergente", strate: "Valeur", occurrences: 111, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "qualities.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "skills.json", champ: "alsoIn", signature: "book,note,page+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L1d #1469", date: "2026-08-23" },
+  { concept: "source", dataset: "species.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" }, // +1 : idem e89a836d3 (species norses)
   { concept: "source", dataset: "spells.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 46, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "talents.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "traits.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },

@@ -779,7 +779,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 61 → 57 (#1552 lot 3) : le rôle `source` déclare son alternative `maison` et les 4
       // documents qui la portent sur TOUTES leurs entrées sortent du dénominateur (cf. le cliquet
       // `STRUCTURES_ENVELOPPE` ci-dessus).
-      'L1d #1469': 57,
+      'L1d #1469': 59 /* +2 : alsoIn creatures/species posés par e89a836d3 SANS leur ligne de stock (sillage C1 #1457) — le lot RE-GONFLE à titre de dérive relevée, à SOLDER par la vague L1d (#1469) */,
       // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
       // … puis 48 → 18 (commit 3c) : cette référence PLATE MEURT à SON TOUR — 30 lignes s'éteignent avec
