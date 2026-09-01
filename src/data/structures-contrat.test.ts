@@ -232,7 +232,13 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // (barge, diligence), `{expr,kind}` ×5 (`when` d'arene/barge/diligence/loup + `cond` de loup — une
 // Condition sous `cond` EST une Condition, débordement légitime et nommé). La donnée n'est pas
 // touchée : c'est le lexique qui reconnaît des formes déjà posées, et le cliquet SUIT la baisse.
-const PLAFOND_HORS_STRATE = 1145;
+// Cliquet DESCENDU 1145 → 1141 (#1463 L-de-1, 2026-09-01) : le lexique NOMME la composition d'une
+// `Formula` (concept `formule`, signatures `sum` et `sinPoints`), et 7 signatures quittent le hors
+// strate pour la strate Valeur — `aa-criticals`/`criticals › durationRounds | sum`,
+// `etats › amount | sum`, `miscast › amount|rounds|value | sum` et `miscast › sum | sinPoints` —,
+// tandis qu'une 8ᵉ entre au stock des FORMES comme divergente (`sea-cargo › offerPrice | sum+…`).
+// Les 10 termes de Péché de la Colère des dieux sont à la forme CIBLE : ils ne pèsent nulle part.
+const PLAFOND_HORS_STRATE = 1141;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -514,7 +520,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (`pitch,titre` ± optionnels), `cloture` (`titre,when` ±), `narratif`
       // (`affaires,indices,objets,presetsPnj` ±) et `condition` (`expr,kind`). Chaque ligne porte SA
       // PORTE zod au stock ; aucune donnée n'est réécrite, 12 lignes hors strate s'éteignent.
-      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 34],
+      // (5) `formule | sum` et `formule | sinPoints` (#1463 L-de-1) : concept NEUF du lexique — la
+      // COMPOSITION d'une `Formula` (`formulaSchema`, `grammaire/valeurs.ts`) et le terme de Péché qui
+      // s'y ajoute (`sinPointsSchema`, LDB 40). Deux cibles de plus, mesurées : elles ne blanchissent
+      // AUCUN étalement (`sea-cargo › offerPrice {sum+…}` reste divergent au stock), et le noyau du
+      // concept est borné aux deux clés qui ne nomment QU'une formule — `dice`/`times` en sont exclus,
+      // ils nomment aussi un `DiseaseTime` et le COMPTE d'une réf de Talent (motif mesuré au lexique).
+      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 36],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
       // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non
@@ -606,7 +618,15 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // MDG `16 - Bestiaire.md` l.407) est lié à `{id:'cache-oeil'}`, la forme CIBLE que la même liste
       // portait déjà (`{id:'crochet'}`). Plus AUCUNE ligne `text (résolvable)` au stock. Le cliquet
       // SUIT la baisse : un cran libre absorberait en silence la réapparition de la forme.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 479],
+      // Cliquet DESCENDU 479 → 468 (#1463 L-de-1, 2026-09-01), en DEUX temps. (a) Le lot : la ligne
+      // `miscast.json › dice {n,sides+…}` est SOLDÉE — les 6 dés qui portaient un `sinPlus` en 4ᵉ clé
+      // écrivent la somme générale `{sum:[{dice},{sinPoints:true}]}` — et une ligne ENTRE, le constat
+      // `sea-cargo.json › offerPrice {sum+…}` que le concept `formule` rend enfin mesurable : −1 +1 = 0.
+      // (b) Le MOU : le plafond portait 11 crans libres sur une liste de 468 — il est posé AU RÉEL
+      // (même doctrine que le cliquet par lot, l.915 : « le terrain gagné se VERROUILLE : abaisser le
+      // plafond au réel mesuré » ; #1654 « plafond ≤ réel puis décroissant »). Le concept `de` ne pèse
+      // plus AUCUNE ligne ici.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 468],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -688,7 +708,16 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // dernière bande ouverte) et `water-exposure.ts` (les deux bornes y sont celles d'un PRÉDICAT
       // `auto.{kind:'woundsLost', op:'between'}` sur des Blessures perdues — aucune rangée tirable,
       // aucun `findTableEntry` ; la table du document, `diseases`, compose depuis P1-a).
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 76],
+      // Cliquet DESCENDU 76 → 69 (#1463 L-de-1, 2026-09-01), en DEUX temps. (a) Le lot : les TROIS dés
+      // re-tapés dans les defs sortent — `maladies.ts` et `miscast.ts › engineFormulaSchema.dice`
+      // composent le `diceSpecSchema` de la grammaire, et le `jsonDiceSchema` du dialecte
+      // (`{n,sides,plus,sinPlus}`) MEURT ; une ligne ENTRE, `sea-cargo.ts › offerPrice {sum+…}`, que le
+      // concept `formule` rend mesurable : −3 +1 = −2. Le concept `de` disparaît de la table.
+      // (b) Le MOU : 5 crans libres restants sur une liste de 69, posés AU RÉEL — même doctrine que le
+      // cliquet par lot (l.915 : « le terrain gagné se VERROUILLE : abaisser le plafond au réel
+      // mesuré ») et #1654 « plafond ≤ réel puis décroissant ». #1463 reste ouvert tant que ce stock
+      // n'est pas à ZÉRO : l'inventaire nominatif par concept est au ticket.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 69],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -741,7 +770,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // cycle quotidien de la Pneumonie — `aggravateSymptom {disease,op,otherwise,severity,symptomId}`
       // et `grantSymptom {disease,op,symptomId}` (EDOC 08 l.104-108). Chacune est une op AUTHORÉE de
       // `maladies.json`, dataset qui n'en portait qu'une (`diseaseTestMod`).
-      ['STRUCTURES_OPS', STRUCTURES_OPS.length, 404],
+      // Cliquet DESCENDU 404 → 403 (#1463 L-de-1, 2026-09-01) : la graphie `condition {id, op,
+      // sinPlus1Value}` MEURT — le drapeau qui encodait « 1 + (Points de Péché) » sur l'op lui-même
+      // (LDB 40 l.71/72/77) devient la `value` que l'op déclarait déjà, à la forme générale
+      // `{sum:[1, {sinPoints:true}]}` : ses 3 occurrences rejoignent `condition {id, op, value}`
+      // (37 → 40). Le cliquet SUIT la baisse.
+      ['STRUCTURES_OPS', STRUCTURES_OPS.length, 403],
     ] as const;
     const gonfles = mesure.filter(([, n, plafond]) => n > plafond).map(([nom, n, plafond]) => `${nom} ${n} > ${plafond}`);
     expect(
@@ -805,12 +839,16 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     //     pool/ouverte », et le `skill` frère du même document est déjà L2). Ce lot GROSSIT sans
     //     dérive : les lignes viennent d'un autre lot du même stock, la somme des deux baisse de 76.
     const plafonds: Record<string, number> = {
-      'L1a #1466': 23,
+      // L1a #1466 : 23 → 22 (#1463 L-de-1) — le `{sum}` d'`engineFormulaSchema` (`defs/miscast.ts`)
+      // cesse d'être « hors lexique » : le concept `formule` le nomme, à sa forme CIBLE. La ligne ne
+      // meurt pas, elle change de lot (L4 #1463 la reçoit ci-dessous).
+      'L1a #1466': 22,
       'L1b #1467': 0,
       // L1c #1468 : 403 → 400 (commit 3c) — cf. le cliquet `STRUCTURES_OPS` ci-dessus.
       // … puis 400 → 402 (#862) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
       // … puis 402 → 404 (#674) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
-      'L1c #1468': 404,
+      // … puis 404 → 403 (#1463 L-de-1) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
+      'L1c #1468': 403,
       // L1d #1469 : 62 → 61 (#1552) — « La Diligence » CITE désormais son folio à la racine
       // (`ennemi-dans-l-ombre` 12, la référence que son bloc narratif portait déjà en profondeur) ;
       // sa ligne « source | clé absente » est SOLDÉE.
@@ -888,7 +926,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // monnaie ne pèse plus AUCUNE ligne au stock des formes.
       // … puis 113 → 112 (L-monnaie-4) : l'HOMONYME `cost` sort — le nom ne porte plus que la monnaie
       // (8 tarifs d'arène), les 85 porteurs d'un autre type ayant reçu le nom de ce qu'ils chiffrent.
-      'L4 #1463': 112,
+      // … puis 112 → 111 (#1463 L-de-1) : QUATRE lignes du concept `de` sortent — la forme divergente
+      // `miscast.json › dice {n,sides+…}` et les TROIS dés re-tapés dans les defs (`maladies.ts`,
+      // `miscast.ts` ×2, qui composent `diceSpecSchema`) —, et TROIS entrent : le constat
+      // `sea-cargo` (donnée + def) que le concept `formule` rend mesurable, et le `{sum}`
+      // d'`engineFormulaSchema` reçu de `L1a #1466` (−1 là-bas, somme des deux lots INCHANGÉE dessus).
+      'L4 #1463': 111,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`
@@ -1521,6 +1564,80 @@ describe('régime `valeurs` : le scan descend dans `entries` d’un record ENVEL
       ).toEqual([]);
     } finally {
       rmSync(copie, { recursive: true, force: true });
+    }
+  });
+});
+
+/**
+ * CONTRÔLE POSITIF du scan AST des redéclarations (#1654) — le détecteur MORD.
+ *
+ * Le stock `STRUCTURES_REDECLARATIONS` est un dénominateur DÉCROISSANT : à zéro, plus rien ne
+ * distinguerait « aucune redéclaration » de « le scanner ne voit plus rien ». Cette sonde INJECTE une
+ * redéclaration dans une COPIE de `src/data/schemas/` et exige que le compte passe N → N+1 avec une
+ * ligne NOMINATIVE.
+ *
+ * SOUS-PROCESSUS (même patron que la sonde D de la strate `Document` ci-dessus) : les caches de parse
+ * du scanner (`CACHE_SOURCE`, `CACHE_LITTERAUX`, `scripts/docs/lib/structures-scan.mts`) sont
+ * module-level et ne sont JAMAIS invalidés (angle mort déclaré au lexique) — une mutation mesurée
+ * dans le processus de la suite serait avalée dès qu'un chemin ou une racine a déjà été lu.
+ */
+describe('scannerRedeclarations — contrôle POSITIF du détecteur (#1654)', () => {
+  /** Le littéral INJECTÉ : une re-déclaration des deux bornes, que `plageSchema` possède déjà. */
+  const SONDE_DEF = [
+    "import { z } from 'zod';",
+    'export const sondeMutationSchema = z.strictObject({ min: z.number(), max: z.number() });',
+  ].join('\n');
+
+  const PILOTE = [
+    "import { pathToFileURL } from 'node:url';",
+    "import { join } from 'node:path';",
+    'const [avantRoot, apresRoot] = process.argv.slice(2);',
+    "const SCAN = pathToFileURL(join(process.cwd(), 'scripts/docs/lib/structures-scan.mjs')).href;",
+    'const { scannerRedeclarations } = await import(SCAN);',
+    'const avant = scannerRedeclarations(avantRoot);',
+    'const apres = scannerRedeclarations(apresRoot);',
+    "const cle = (r) => r.def + ' | ' + (r.champ || '(racine)') + ' | ' + r.signature + ' | ' + r.concept + ' | ' + r.statut + ' | ' + r.commun;",
+    'const clesAvant = avant.redeclarations.map(cle);',
+    'const clesApres = apres.redeclarations.map(cle);',
+    "process.stdout.write('<<<DIFF>>>' + JSON.stringify({",
+    '  avant: avant.redeclarations.length,',
+    '  apres: apres.redeclarations.length,',
+    '  litterauxAvant: avant.totalLitteraux,',
+    '  litterauxApres: apres.totalLitteraux,',
+    '  nees: clesApres.filter((k) => !clesAvant.includes(k)).sort(),',
+    '  perdues: clesAvant.filter((k) => !clesApres.includes(k)).sort(),',
+    '}));',
+  ].join('\n');
+
+  it('une redéclaration INJECTÉE dans une copie des defs est VUE — N → N+1, ligne nominative', () => {
+    const dossier = mkdtempSync(join(tmpdir(), 'structures-redecl-'));
+    try {
+      for (const quoi of ['avant', 'apres']) {
+        cpSync(join(ROOT, 'src/data/schemas/defs'), join(dossier, quoi, 'src/data/schemas/defs'), { recursive: true });
+        cpSync(join(ROOT, 'src/data/schemas/grammaire'), join(dossier, quoi, 'src/data/schemas/grammaire'), { recursive: true });
+      }
+      writeFileSync(join(dossier, 'apres/src/data/schemas/defs/sonde-mutation.ts'), SONDE_DEF, 'utf8');
+      const pilote = join(dossier, 'pilote.mjs');
+      writeFileSync(pilote, PILOTE, 'utf8');
+      const sortie = execFileSync(
+        process.execPath,
+        ['--import', 'tsx', pilote, join(dossier, 'avant'), join(dossier, 'apres')],
+        { cwd: ROOT, encoding: 'utf8' },
+      ).split('<<<DIFF>>>');
+      const diff = JSON.parse(sortie[sortie.length - 1]) as {
+        avant: number; apres: number; litterauxAvant: number; litterauxApres: number; nees: string[]; perdues: string[];
+      };
+
+      // La copie mesure le MÊME arbre que le scan du fichier : sans cet ancrage, le +1 ne prouverait rien.
+      expect(diff.avant, 'la copie NON MUTÉE ne mesure pas le même arbre que `scannerRedeclarations(ROOT)`.').toBe(redeclarations.length);
+      expect(diff.litterauxApres - diff.litterauxAvant, 'le littéral injecté n’a pas été LU par le scan.').toBe(1);
+      expect(diff.apres - diff.avant, 'la redéclaration injectée n’est pas COMPTÉE : le détecteur ne mord plus.').toBe(1);
+      expect(diff.nees, 'la ligne née n’est pas celle de la sonde, nominative.').toEqual([
+        'sonde-mutation.ts | (racine) | max,min | plage | cible | plageSchema',
+      ]);
+      expect(diff.perdues, 'la copie a PERDU des redéclarations : la mutation n’est pas isolée.').toEqual([]);
+    } finally {
+      rmSync(dossier, { recursive: true, force: true });
     }
   });
 });

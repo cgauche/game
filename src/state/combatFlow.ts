@@ -4094,15 +4094,15 @@ function finishMiscast(get: Get, set: SetFn, caster: Combatant, ctx: PendingMisc
   const { severity } = ctx;
   const lines = [m.log];
   // « Après le lancer et avoir appliqué le résultat, réduisez vos Points de Péché
-  // de 1, jusqu'à un minimum de 0 » (LDB 40 l.53). Le total DÉCROÎT depuis sa valeur VIVANTE : un
+  // de 1, jusqu'à un minimum de 0 » (LDB 40 l.46). Le total DÉCROÎT depuis sa valeur VIVANTE : un
   // Péché gagné pendant la fenêtre de pose serait effacé par une réécriture depuis un instantané.
   if (severity === 'colere' && (caster.sinPoints ?? 0) > 0) {
     caster.sinPoints = Math.max(0, (caster.sinPoints ?? 0) - 1);
     lines.push(tr('cf.sinExpiated', { name: caster.label, n: caster.sinPoints }));
   }
-  // Ops IMMÉDIATS de la table (États, Blessures ignorant BE+PA, Corruption, pénalités/blocages
-  // d'incantation temporisés, réduction à 0) — applicateur unique, AVANT le Test imbriqué (RAW :
-  // « 1d10 Blessures […]. Résistance ou Sonné » — les Dégâts/sin tombent d'abord, puis le Test).
+  // Ops IMMÉDIATS de la rangée (États, Blessures et leur mitigation DÉCLARÉE, Corruption,
+  // pénalités/blocages d'incantation, réduction à 0) — applicateur unique, AVANT le Test imbriqué
+  // que la même rangée porte (LDB 46 l.55-75, LDB 40 l.56-89).
   const opsCtx: OpsCtx = {
     rng: battleRng(),
     label: m.label,

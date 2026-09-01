@@ -102,9 +102,8 @@ const OPEN_ISSUES = onlineArg === -1 ? null
  *  rougir tous les README du dépôt) : mesuré 1 faux positif de cette classe. */
 const BASENAMES_GENERIQUES = new Set(['README.md', 'readme.md', 'index.md', 'notes.md', 'plan.md'])
 /** CORPUS HISTORIQUES — un corps DATÉ a le droit de nommer ce qui vivait à sa date (même doctrine
- *  que `docs/decisions/` au SENS 2) : soldes de tickets, et le rapport d'audit du 2026-07-05, dont
- *  CHAQUE constat est adressé par le document audité (`### <doc>:<ligne>`). */
-const CORPUS_HISTORIQUES = ['docs/decisions/', '.claude/soldes/', 'docs/plans/2026-07-05-audit-poison.md']
+ *  que `docs/decisions/` au SENS 2) : soldes de tickets. */
+const CORPUS_HISTORIQUES = ['docs/decisions/', '.claude/soldes/']
 
 /** Basenames des plans SUPPRIMÉS, lus dans l'historique du dossier des plans. Un nom repris par un
  *  fichier SUIVI en sort (il redevient citable), d'où un registre décroissant sans entretien. */

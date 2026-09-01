@@ -75,7 +75,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `round` | 2 | `src/engine/castingNumber.ts:110` |
 | `delta` | 2 | `src/engine/castingNumber.ts:111` |
 | `min` | 2 | `src/engine/castingNumber.ts:112` |
-| `scope` | 1 | `src/ui/compendium/registry.ts:1036` |
+| `scope` | 1 | `src/ui/compendium/registry.ts:1039` |
 | `maison` | **0 — JAMAIS LU** | — |
 | `source` | **0 — JAMAIS LU** | — |
 | `desc` | **0 — JAMAIS LU** | — |

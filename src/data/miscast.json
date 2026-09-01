@@ -1528,11 +1528,17 @@
             },
             "mod": -10,
             "rounds": {
-              "dice": {
-                "n": 1,
-                "sides": 10,
-                "sinPlus": true
-              }
+              "sum": [
+                {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                },
+                {
+                  "sinPoints": true
+                }
+              ]
             }
           }
         ],
@@ -1610,11 +1616,17 @@
             },
             "blocked": true,
             "rounds": {
-              "dice": {
-                "n": 1,
-                "sides": 10,
-                "sinPlus": true
-              }
+              "sum": [
+                {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                },
+                {
+                  "sinPoints": true
+                }
+              ]
             }
           }
         ],
@@ -1633,7 +1645,12 @@
           {
             "op": "wounds",
             "amount": {
-              "sinPlus1": true
+              "sum": [
+                1,
+                {
+                  "sinPoints": true
+                }
+              ]
             },
             "ignoreTB": true,
             "ignoreAP": true
@@ -1682,11 +1699,17 @@
             },
             "blocked": true,
             "rounds": {
-              "dice": {
-                "n": 2,
-                "sides": 10,
-                "sinPlus": true
-              }
+              "sum": [
+                {
+                  "dice": {
+                    "n": 2,
+                    "sides": 10
+                  }
+                },
+                {
+                  "sinPoints": true
+                }
+              ]
             }
           }
         ],
@@ -1705,11 +1728,17 @@
           {
             "op": "wounds",
             "amount": {
-              "dice": {
-                "n": 1,
-                "sides": 10,
-                "sinPlus": true
-              }
+              "sum": [
+                {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                },
+                {
+                  "sinPoints": true
+                }
+              ]
             },
             "ignoreTB": false,
             "ignoreAP": false
@@ -1754,7 +1783,14 @@
           {
             "op": "condition",
             "id": "hemorragique",
-            "sinPlus1Value": true
+            "value": {
+              "sum": [
+                1,
+                {
+                  "sinPoints": true
+                }
+              ]
+            }
           }
         ],
         "source": {
@@ -1777,7 +1813,14 @@
           {
             "op": "condition",
             "id": "aveugle",
-            "sinPlus1Value": true
+            "value": {
+              "sum": [
+                1,
+                {
+                  "sinPoints": true
+                }
+              ]
+            }
           }
         ],
         "source": {
@@ -1795,11 +1838,17 @@
           {
             "op": "wounds",
             "amount": {
-              "dice": {
-                "n": 1,
-                "sides": 10,
-                "sinPlus": true
-              }
+              "sum": [
+                {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                },
+                {
+                  "sinPoints": true
+                }
+              ]
             },
             "ignoreTB": true,
             "ignoreAP": true
@@ -1844,11 +1893,17 @@
           {
             "op": "wounds",
             "amount": {
-              "dice": {
-                "n": 2,
-                "sides": 10,
-                "sinPlus": true
-              }
+              "sum": [
+                {
+                  "dice": {
+                    "n": 2,
+                    "sides": 10
+                  }
+                },
+                {
+                  "sinPoints": true
+                }
+              ]
             },
             "ignoreTB": true,
             "ignoreAP": true
@@ -1903,7 +1958,14 @@
           {
             "op": "condition",
             "id": "brise",
-            "sinPlus1Value": true
+            "value": {
+              "sum": [
+                1,
+                {
+                  "sinPoints": true
+                }
+              ]
+            }
           }
         ],
         "source": {

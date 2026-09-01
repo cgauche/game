@@ -120,6 +120,8 @@ export const ANGLES_MORTS: readonly string[] = [
   'Le scan AST est borné aux littéraux `z.object`/`z.strictObject`/`z.looseObject` des `src/data/schemas/defs/*.ts` : il ne voit ni les clés ajoutées par `.extend(...)`, ni un schéma composé par une fabrique, ni les defs hors de ce dossier. Le « schéma commun candidat » est apparié par SIGNATURE EXACTE.',
   'Les portes MOTEUR (`src/engine`, `src/state`) et les JSON hors documents (outillage, `public/qc/*`, baselines de gardes) ne sont pas mesurés : ce contrat parle de la DONNÉE authorée et de ses schémas.',
   'Les CACHES de parse AST (`CACHE_SOURCE`, `CACHE_LITTERAUX`) sont module-level et ne sont jamais invalidés : en mode watch, une édition d’un `defs/*.ts` n’est pas re-mesurée sans redémarrage.',
+  'Le scan AST des redéclarations ne lit QUE `src/data/schemas/defs/` : les 150 littéraux zod de `src/data/schemas/defs-scenes/` (`effets.ts` 73, `scene.ts` 53, `worldmap.ts` 15, `narratif.ts` 7, `communs.ts` 2) en sont HORS PÉRIMÈTRE — deux d’entre eux seraient classés par le lexique s’ils y entraient (`effets.ts:205` `extendedTestSchema` et `scene.ts:438` `wallClimbSchema`, concept `test` par le noyau `difficulty`).',
+  'Le lexique FERMÉ est le PLAFOND de détection des redéclarations : un littéral dont le concept n’est pas au lexique n’est compté que s’il a un schéma commun de MÊME signature exacte — deux defs divergents sur un champ d’un concept absent restent invisibles aux occurrences, et seul le compte GLOBAL des littéraux (`totalLitteraux`, 482 après ce lot, 487 à `9739ee1f4`) bouge.',
 ];
 
 /**
@@ -304,6 +306,24 @@ export const CONCEPTS: readonly Concept[] = [
       { sig: 'n,plus,sides', statut: 'cible' },
     ],
     noyau: ['n', 'sides'],
+  },
+  // Le noyau est BORNÉ à `sum`/`sinPoints` — les deux clés qui, MESURÉES sur les 2 racines, ne
+  // nomment QUE la composition d'une `Formula`. `dice` et `times` en sont EXCLUS : `dice` est aussi
+  // la clé d'un `DiseaseTime` (`{dice, unit}`, 37 occurrences de `maladies.json`), d'un pot de jeu de
+  // taverne et d'un `overcastPerSpell` ; `times` est le COMPTE d'une réf de Talent de créature
+  // (48 occurrences). Les inclure ferait changer de propriétaire 7 formes étrangères (mesuré) — un
+  // concept se reconnaît à ce qui le nomme SEUL. Les objets `{dice}`/`{times}` d'une formule restent
+  // donc hors strate, comme avant ce lot.
+  {
+    id: 'formule',
+    label: 'formule de quantité (Formula, engine/ops.ts)',
+    strate: 'Valeur',
+    signatures: [
+      { sig: 'sum', statut: 'cible' },
+      { sig: 'sinPoints', statut: 'cible', note: 'terme « (Points de Péché) » — LDB 40 l.58/62/63/65/68/71/72/73/75/77' },
+    ],
+    noyau: ['sum', 'sinPoints'],
+    noyauMin: 1,
   },
   {
     id: 'source',

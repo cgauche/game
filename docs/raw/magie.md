@@ -201,7 +201,7 @@ Un **double raté** au Test d'incantation entraîne une **Incantation Imparfaite
 > **Verbatim** (l.143-145) : « Si vous perdez le contrôle de l'énergie magique que vous focalisez, les choses se passent toujours mal. Si vous obtenez une Maladresse à votre Test d'Incantation, vous subissez une Incantation Imparfaite. Lancez 1d100 et consultez le Tableau des Incantations Imparfaites Mineures. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.84-86) → `combat-spell-plus`, `lecture-au-grimoire`, `canCastFromGrimoire`, `miscast-table`, `miscast-row-test`, `malevolentInfluenceSeverity`, `ALL_MAGIC`, `magic-composant`, `incantation-imparfaite`, `useSpellComponent`, +2 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, +2 fichiers
+- `LDB 46` (l.84-86) → `combat-spell-plus`, `lecture-au-grimoire`, `canCastFromGrimoire`, `miscast-table`, `miscast-row-test`, `malevolentInfluenceSeverity`, `ALL_MAGIC`, `magic-composant`, `incantation-imparfaite`, `useSpellComponent`, +3 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, +2 fichiers
 
 ---
 
@@ -281,7 +281,7 @@ Incanter à proximité d'une **source de Corruption** (voir LDB 19) rend le cont
 | 96–00 | Chaos en cascade | Effectuer un nouveau lancer sur le Tableau des Incantations Imparfaites **Majeures**. |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.33-53) → `miscast-mineure`, `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `MiscastResult`, `mineure-cerumen`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `mineure-rupture`, `mineure-secousse-spirituelle`, +58 — `src/data/miscast.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +4 fichiers
+- `LDB 46` (l.33-53) → `miscast-mineure`, `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `MiscastResult`, `mineure-cerumen`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `mineure-rupture`, `mineure-secousse-spirituelle`, +59 — `src/data/miscast.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +4 fichiers
 
 ---
 
@@ -313,7 +313,7 @@ Incanter à proximité d'une **source de Corruption** (voir LDB 19) rend le cont
 | 96–00 | Contre-réaction aethyrique | Quiconque dans un rayon en mètres = BFM (allié ou ennemi) subit 1d10 Blessures ignorant BE et PA + État **À Terre**. Si aucune cible à portée : la tête du lanceur **explose**, mort instantanée. |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.55-80) → `miscast-mineure`, `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `MiscastResult`, `mineure-cerumen`, `combat-spell-plus`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `mineure-rupture`, +49 — `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/magic.ts`, +4 fichiers
+- `LDB 46` (l.55-80) → `miscast-mineure`, `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `MiscastResult`, `mineure-cerumen`, `combat-spell-plus`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `mineure-rupture`, +50 — `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/magic.ts`, +4 fichiers
 
 > **Note :** La table de la **Colère des dieux** (prières, LDB 40 l.52-101) est implémentée dans `WRATH` (`src/engine/miscast.ts` l.164-206) mais appartient au domaine **Religion** → voir `religion.md` (à construire).
 

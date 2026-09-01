@@ -87,15 +87,13 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs/domains.ts:doc.windModifiers.cancelledBy.requiresSkill|redeclaration|refSchema {id,spec}': e('Réf `{id, spec}` re-tapée sous `requiresSkill` (`STRUCTURES_REDECLARATIONS` domains.ts, statut `cible`, commun `refSchema`).', L3),
 
   // ── Formes de VALEUR re-tapées (monnaie, dé, cellule de grille) ───────────────────────────────
-  'src/data/schemas/defs/maladies.ts:diceSpecSchema|redeclaration|countSpecSchema|diceSpecSchema|formulaSchema|trappingRefSchema {n,plus,sides}': e('`diceSpecSchema` re-déclaré localement (`STRUCTURES_REDECLARATIONS` maladies.ts, statut `cible`, commun `diceSpecSchema`).', L4),
-  'src/data/schemas/defs/miscast.ts:engineFormulaSchema.dice|redeclaration|countSpecSchema|diceSpecSchema|formulaSchema|trappingRefSchema {n,plus,sides}': e('Dé d’une Formula de maléfice re-tapé (`STRUCTURES_REDECLARATIONS` miscast.ts champ `dice`, commun `diceSpecSchema`).', L4),
   'src/data/schemas/defs-scenes/effets.ts:zoneBlastSchema.center|redeclaration|cell2Schema {x,y}': e('Centre d’une zone d’effet re-tapé `{x, y}` — la cellule de grille est `cell2Schema`.', L4),
   'src/data/schemas/defs-scenes/scene.ts:sceneEntitySchema.pos|redeclaration|cell2Schema {x,y}': e('Position d’une entité de scène re-tapée `{x, y}`.', L4),
   'src/data/schemas/defs-scenes/worldmap.ts:placePoiSchema.pos|redeclaration|cell2Schema {x,y}': e('Position d’un point d’intérêt : point CONTINU PLAN-LOCAL 0-100 (worldmap.ts:84), forme propre au worldMap — PAS une cell2 (la cellule de grille est un indice DISCRET). À REQUALIFIER au lot L4 valeurs : « composer `cell2Schema` » y serait sémantiquement FAUX, il faut une forme de point normalisé à la grammaire.', L4),
   'src/data/schemas/defs-scenes/worldmap.ts:mapPlaceSchema.pos|redeclaration|cell2Schema {x,y}': e('Position d’un lieu de la carte du monde : point en % du CANEVAS, forme propre au worldMap — PAS une cell2. MÊME requalification que `placePoiSchema.pos` au lot L4 valeurs.', L4),
 
   // ── Formes POSSÉDÉES par la grammaire, re-tapées ou étendues ─────────────────────────────────
-  'src/data/schemas/defs/miscast.ts:engineFormulaSchema.times|redeclaration|formulaSchema {factor,of}': e('Produit `{of, factor}` d’une Formula re-tapé (`STRUCTURES_REDECLARATIONS` miscast.ts champ `times`, commun `formulaSchema`).', L1a),
+  'src/data/schemas/defs/miscast.ts:engineFormulaSchema.times|redeclaration|formulaSchema|formulaSinSchema {factor,of}': e('Produit `{of, factor}` d’une Formula re-tapé (`STRUCTURES_REDECLARATIONS` miscast.ts champ `times`, commun `formulaSchema`).', L1a),
   'src/data/schemas/defs/raceAppearance.ts:doc.parts|redeclaration|entityAppearanceSchema {cheveux,visage}': e('`parts` d’apparence re-tapé (`STRUCTURES_REDECLARATIONS` raceAppearance.ts, commun `entityAppearanceSchema`).', L1a),
   'src/data/schemas/defs/raceAppearance.ts:doc.eyes|redeclaration|entityAppearanceSchema {D,G}': e('`eyes` d’apparence re-tapé (`STRUCTURES_REDECLARATIONS` raceAppearance.ts, commun `entityAppearanceSchema`).', L1a),
   'src/data/schemas/grammaire/reference.ts:trappingRefSchema|extend|refSchema.extend(…)': e('Branche `{id, spec, count, qualities, qualityChoice}` de `TrappingRef` construite en ÉTENDANT `refSchema` — meurt avec l’adoption de `ref(\'trapping\')` par les dotations.', L3),

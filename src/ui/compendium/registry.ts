@@ -66,7 +66,7 @@ import { SIZE_LABEL, SIZE_ORDER, effectiveSize, woundsForSize, type SizeCategory
 import { bonus, effectiveChar } from '../../engine/characteristics';
 import { skillBaseValue } from '../../engine/skills';
 import { sizeFromTraits } from '../../state/spawn';
-import { formatDice } from '../../engine/dice';
+import { formatDice, type DiceSpec } from '../../engine/dice';
 import { formatDiseaseTime } from '../../engine/disease';
 import { costPerEnc } from '../../engine/harvest';
 import { formatMoney, priceToMoney, type Money } from '../../engine/money';
@@ -903,17 +903,15 @@ function barterRatiosSection(rows: (typeof disponibilite)['barterRatios']): Code
 //    `GameOp`, cf. `MiscastRowEntry`/`engine/miscast.ts::JsonRow` — renderer DÉDIÉ ci-dessous, jamais
 //    `passiveSection`), enjeux de la cascade de nuit (`night-stakes.json`, catégorie-tableau simple). ──
 
-/** Libellé lisible d'un montant du DIALECTE miscast (nombre / dé, éventuellement sin-paramétré / 1+Péché
- *  — `JsonFormula`, `engine/miscast.ts`). Le sin-paramétrage n'est résolu qu'à l'exécution (Points de
+/** Libellé lisible d'un montant du DIALECTE miscast (nombre / dé / terme de Péché / somme —
+ *  `JsonFormula`, `engine/miscast.ts`). Le terme de Péché n'est résolu qu'à l'exécution (Points de
  *  Péché du lanceur) : ici, affichage d'AUTEUR (« 1d10 + Points de Péché »), jamais une valeur bakée. */
 function miscastAmountLabel(a: unknown): string {
   if (typeof a === 'number') return String(a);
   if (a && typeof a === 'object') {
-    if ('sinPlus1' in a) return '1 + Points de Péché';
-    if ('dice' in a) {
-      const d = (a as { dice: { n: number; sides: number; sinPlus?: boolean } }).dice;
-      return `${d.n}d${d.sides}${d.sinPlus ? ' + Points de Péché' : ''}`;
-    }
+    if ('sinPoints' in a) return 'Points de Péché';
+    if ('sum' in a) return (a as { sum: unknown[] }).sum.map(miscastAmountLabel).join(' + ');
+    if ('dice' in a) return formatDice((a as { dice: DiceSpec }).dice);
   }
   return String(a);
 }
@@ -926,26 +924,31 @@ function miscastOpRow(o: Record<string, unknown>): CodexRow {
     case 'condition': {
       const id = String(o.id ?? '');
       const label = conditionLabel(id);
-      const value = o.sinPlus1Value ? '1 + Points de Péché' : o.value != null ? miscastAmountLabel(o.value) : null;
+      const value = o.value != null ? miscastAmountLabel(o.value) : null;
       const dur = o.durationRounds != null ? `${miscastAmountLabel(o.durationRounds)} Round(s)` : undefined;
       const show = value && value !== '1' ? `${value} × ${label}` : label;
       return { t: 'ref', category: 'etats', id, label, show, badge: dur };
     }
-    case 'wounds':
-      return { t: 'kv', k: 'Blessures', v: `${miscastAmountLabel(o.amount)} (ignorant les PA)` };
+    case 'wounds': {
+      // Mitigation DITE par la donnée (`ignoreTB`/`ignoreAP`), aux trois régimes du RAW — LDB 46
+      // l.63 et l.69, LDB 40 l.68.
+      const ignore = [o.ignoreTB ? 'le Bonus d’Endurance' : null, o.ignoreAP ? 'les PA' : null].filter(Boolean);
+      return { t: 'kv', k: 'Blessures', v: `${miscastAmountLabel(o.amount)}${ignore.length ? ` (ignorant ${ignore.join(' et ')})` : ''}` };
+    }
     case 'corruption':
       return { t: 'kv', k: 'Corruption', v: `+${o.amount as number} point(s)` };
     case 'reduceToZero':
       return { t: 'text', text: 'Points de Blessure réduits à 0' };
     case 'castPenalty': {
-      const skillId = o.skill ? String(o.skill) : undefined;
+      const skill = o.skill as { id: string } | undefined;
+      const skillId = skill?.id;
       const dur = o.rounds != null ? `${miscastAmountLabel(o.rounds)} Round(s)`
         : o.hours != null ? `${miscastAmountLabel(o.hours)} heure(s)`
         : o.minutes != null ? `${miscastAmountLabel(o.minutes)} minute(s)`
         : o.days != null ? `${o.days as number} jour(s)` : undefined;
       const eff = o.blocked ? 'Bloqué' : o.maxZeroDR ? 'DR plafonné à 0' : `${(o.mod as number | undefined) ?? 0}`;
       return skillId
-        ? { t: 'ref', category: 'skills', id: skillId, label: refLabel('skills', { id: skillId }), show: `${eff}${dur ? ` (${dur})` : ''}` }
+        ? { t: 'ref', category: 'skills', id: skillId, label: refLabel('skills', skill!), show: `${eff}${dur ? ` (${dur})` : ''}` }
         : { t: 'kv', k: 'Magie', v: `${eff}${dur ? ` (${dur})` : ''}` };
     }
     default:
@@ -956,7 +959,7 @@ function miscastOpRow(o: Record<string, unknown>): CodexRow {
 /** Section « Test imbriqué » d'une entrée miscast (« Résistance Accessible ou Sonné »), palier
  *  `onFailHard` inclus (« si vous échouez avec DR ≤ N → EN PLUS »). */
 function miscastTestSection(t: NonNullable<MiscastRowEntry['test']>): CodexSection {
-  const who = t.skill ? refLabel('skills', { id: t.skill }) : t.characteristic ? CHAR_LABELS[t.characteristic as keyof typeof CHAR_LABELS] : 'Test';
+  const who = t.skill ? refLabel('skills', t.skill) : t.characteristic ? CHAR_LABELS[t.characteristic as keyof typeof CHAR_LABELS] : 'Test';
   const rows: CodexRow[] = [
     { t: 'kv', k: 'Test', v: `${who} ${DIFFICULTY_LABELS[t.difficulty as keyof typeof DIFFICULTY_LABELS]}` },
     { t: 'sub', label: 'Échec' },

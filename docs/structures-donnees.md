@@ -35,6 +35,8 @@ Ce que la mesure ci-dessous **ne voit pas** — un compte n’a de sens qu’ave
 - Le scan AST est borné aux littéraux `z.object`/`z.strictObject`/`z.looseObject` des `src/data/schemas/defs/*.ts` : il ne voit ni les clés ajoutées par `.extend(...)`, ni un schéma composé par une fabrique, ni les defs hors de ce dossier. Le « schéma commun candidat » est apparié par SIGNATURE EXACTE.
 - Les portes MOTEUR (`src/engine`, `src/state`) et les JSON hors documents (outillage, `public/qc/*`, baselines de gardes) ne sont pas mesurés : ce contrat parle de la DONNÉE authorée et de ses schémas.
 - Les CACHES de parse AST (`CACHE_SOURCE`, `CACHE_LITTERAUX`) sont module-level et ne sont jamais invalidés : en mode watch, une édition d’un `defs/*.ts` n’est pas re-mesurée sans redémarrage.
+- Le scan AST des redéclarations ne lit QUE `src/data/schemas/defs/` : les 150 littéraux zod de `src/data/schemas/defs-scenes/` (`effets.ts` 73, `scene.ts` 53, `worldmap.ts` 15, `narratif.ts` 7, `communs.ts` 2) en sont HORS PÉRIMÈTRE — deux d’entre eux seraient classés par le lexique s’ils y entraient (`effets.ts:205` `extendedTestSchema` et `scene.ts:438` `wallClimbSchema`, concept `test` par le noyau `difficulty`).
+- Le lexique FERMÉ est le PLAFOND de détection des redéclarations : un littéral dont le concept n’est pas au lexique n’est compté que s’il a un schéma commun de MÊME signature exacte — deux defs divergents sur un champ d’un concept absent restent invisibles aux occurrences, et seul le compte GLOBAL des littéraux (`totalLitteraux`, 482 après ce lot, 487 à `9739ee1f4`) bouge.
 
 ## 1. Racines
 
@@ -1100,8 +1102,10 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | monnaie | `gold,silver` | cible | 3 |
 | prix | `automne,ete,hiver,printemps` | declaree | 17 |
 | prix | `dice` | declaree | 1 |
-| de | `n,sides` | cible | 109 |
+| de | `n,sides` | cible | 115 |
 | de | `n,plus,sides` | cible | 19 |
+| formule | `sum` | cible | 13 |
+| formule | `sinPoints` | cible | 10 |
 | source | `book,page` | cible | 3355 |
 | source | `book,note,page` | cible | 1155 |
 | source | `book,chapter` | historique | 0 |
@@ -1129,7 +1133,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **849** (cible 375 · declaree 6 · historique 118 · divergente 350). Objets JSON parcourus : **48562**, dont **31918** portent une forme
+Lignes concept × dataset × champ × forme : **856** (cible 382 · declaree 6 · historique 118 · divergente 350). Objets JSON parcourus : **48581**, dont **31945** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -1392,8 +1396,8 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `match` | `categorie` | divergente | `merchantFamilies.json` | 3 | — | `axes.json` `merchantFamilies.json` |  |
 | entité | `onFail` | `id,value+…` | divergente | `miscast.json` | 11 | — | `etats.json` |  |
 | entité | `onFail` | `op+…` | divergente | `miscast.json` | 4 | — | `characteristics.json` `systemes.manifest.json` `talents.json` `traits.json` |  |
-| entité | `ops` | `id,value+…` | divergente | `miscast.json` | 28 | — | `etats.json` `water-exposure.json` |  |
-| entité | `ops` | `id+…` | divergente | `miscast.json` | 6 | — | `etats.json` `water-exposure.json` |  |
+| entité | `ops` | `id,value+…` | divergente | `miscast.json` | 31 | — | `etats.json` `water-exposure.json` |  |
+| entité | `ops` | `id+…` | divergente | `miscast.json` | 3 | — | `etats.json` `water-exposure.json` |  |
 | entité | `ops` | `op+…` | divergente | `miscast.json` | 4 | — | `characteristics.json` `systemes.manifest.json` `talents.json` `traits.json` |  |
 | entité | `skill` | `id` | cible | `miscast.json` | 26 | — | `activities.json` `drunkenness.json` `river-navigation.json` `skills.json` `talents.json` `water-exposure.json` |  |
 | entité | `eyes` | `G` | divergente | `mutations.json` | 1 | — | `ship-construction.json` |  |
@@ -1731,7 +1735,7 @@ Reconnu par : la clé porteuse `price`
 
 ### 3.5 lancer de dés — `de` (strate Valeur)
 
-19 ligne(s), 134 occurrence(s).
+18 ligne(s), 134 occurrence(s).
 Reconnu par : son noyau `n` `sides`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1745,8 +1749,7 @@ Reconnu par : son noyau `n` `sides`
 | entité | `dice` | `n,plus,sides` | cible | `maladies.json` | 12 | — |  |
 | entité | `dice` | `n,sides` | cible | `maladies.json` | 25 | — |  |
 | entité | `dice` | `n,sides` | cible | `maneuvers.json` | 2 | — |  |
-| entité | `dice` | `n,sides` | cible | `miscast.json` | 18 | — |  |
-| entité | `dice` | `n,sides+…` | divergente | `miscast.json` | 6 | — |  |
+| entité | `dice` | `n,sides` | cible | `miscast.json` | 24 | — |  |
 | entité | `dice` | `n,plus,sides` | cible | `spells.json` | 1 | — |  |
 | entité | `dice` | `n,sides` | cible | `spells.json` | 10 | — |  |
 | entité | `dice` | `n,sides` | cible | `symptoms.json` | 4 | — |  |
@@ -1756,7 +1759,23 @@ Reconnu par : son noyau `n` `sides`
 | entité | `dice` | `n,plus,sides` | cible | `trappings.json` | 3 | — |  |
 | entité | `dice` | `n,sides` | cible | `trappings.json` | 15 | — |  |
 
-### 3.6 référence de source (livre/folio) — `source` (strate Valeur)
+### 3.6 formule de quantité (Formula, engine/ops.ts) — `formule` (strate Valeur)
+
+8 ligne(s), 27 occurrence(s).
+Reconnu par : son noyau `sum` `sinPoints` (≥ 1)
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `durationRounds` | `sum` | cible | `aa-criticals.json` | 1 | — |  |
+| config | `durationRounds` | `sum` | cible | `criticals.json` | 1 | — |  |
+| entité | `amount` | `sum` | cible | `etats.json` | 1 | — |  |
+| entité | `amount` | `sum` | cible | `miscast.json` | 4 | — |  |
+| entité | `rounds` | `sum` | cible | `miscast.json` | 3 | — |  |
+| entité | `sum` | `sinPoints` | cible | `miscast.json` | 10 | — | terme « (Points de Péché) » — LDB 40 l.58/62/63/65/68/71/72/73/75/77 |
+| entité | `value` | `sum` | cible | `miscast.json` | 3 | — |  |
+| config | `offerPrice` | `sum+…` | divergente | `sea-cargo.json` | 4 | — |  |
+
+### 3.7 référence de source (livre/folio) — `source` (strate Valeur)
 
 118 ligne(s), 4690 occurrence(s).
 Reconnu par : son noyau `book`
@@ -1882,7 +1901,7 @@ Reconnu par : son noyau `book`
 | config | `physicalTestCharsSource` | `book,note,page` | cible | `weather.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | config | `source` | `book,note,page` | cible | `weather.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 
-### 3.7 jet à faire (compétence/caractéristique + difficulté) — `test` (strate Valeur)
+### 3.8 jet à faire (compétence/caractéristique + difficulté) — `test` (strate Valeur)
 
 65 ligne(s), 302 occurrence(s).
 Reconnu par : son noyau `difficulty`
@@ -1955,7 +1974,7 @@ Reconnu par : son noyau `difficulty`
 | config | `test` | `difficulty,skill` | historique | `water-exposure.json` | 1 | — |  |
 | config | `resistanceTest` | `difficulty+…` | divergente | `weather.json` | 2 | — |  |
 
-### 3.8 bornes du domaine d’un réglage (min,max) — `bornes` (strate Valeur)
+### 3.9 bornes du domaine d’un réglage (min,max) — `bornes` (strate Valeur)
 
 1 ligne(s), 23 occurrence(s).
 Reconnu par : son noyau `min` `max`
@@ -1964,7 +1983,7 @@ Reconnu par : son noyau `min` `max`
 |---|---|---|---|---|---|---|---|
 | entité | `(racine)` | `max,min+…` | cible | `reglesOptionnelles.json` | 23 | — | les bornes d’un réglage vivent SUR le réglage : la charge utile (`default`, `step`, `hint`…) est inhérente |
 
-### 3.9 plage de tirage (min,max) — `plage` (strate Valeur)
+### 3.10 plage de tirage (min,max) — `plage` (strate Valeur)
 
 62 ligne(s), 1431 occurrence(s).
 Reconnu par : son noyau `min` `max`
@@ -2034,7 +2053,7 @@ Reconnu par : son noyau `min` `max`
 | config | `diseases` | `max,min+…` | cible | `water-exposure.json` | 7 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `ranges` | `max,min+…` | cible | `weather.json` | 19 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 
-### 3.10 quantité (CountSpec : fixe ou tirée) — `quantite` (strate Valeur)
+### 3.11 quantité (CountSpec : fixe ou tirée) — `quantite` (strate Valeur)
 
 3 ligne(s), 47 occurrence(s).
 Reconnu par : son noyau `fixed`
@@ -2045,7 +2064,7 @@ Reconnu par : son noyau `fixed`
 | entité | `count` | `fixed` | cible | `classes.json` | 1 | — |  |
 | entité | `count` | `fixed` | cible | `creatures.json` | 1 | — |  |
 
-### 3.11 paramètres de séquence jouée en manches — `sequence` (strate Valeur)
+### 3.12 paramètres de séquence jouée en manches — `sequence` (strate Valeur)
 
 3 ligne(s), 3 occurrence(s).
 Reconnu par : son noyau `target` `drCap` `table` `rounds` `phases` `pot` `volley` `sides` `combined` `throwerPenalty` (≥ 2)
@@ -2056,7 +2075,7 @@ Reconnu par : son noyau `target` `drCap` `table` `rounds` `phases` `pot` `volley
 | entité | `(racine)` | `phases,target+…` | divergente | `tavernGames.json` | 1 | — |  |
 | entité | `(racine)` | `table,throwerPenalty+…` | divergente | `tavernGames.json` | 1 | — |  |
 
-### 3.12 ouverture cérémonielle de chapitre — `ouverture` (strate Document)
+### 3.13 ouverture cérémonielle de chapitre — `ouverture` (strate Document)
 
 2 ligne(s), 2 occurrence(s).
 Reconnu par : son noyau `titre` `pitch`
@@ -2066,7 +2085,7 @@ Reconnu par : son noyau `titre` `pitch`
 | config | `ouverture` | `pitch,titre+…` | cible | `barge-du-sel-projet.json` | 1 | — | `surtitre`, `sousTitre`, `chapitre`, `ambiance` et `source` sont OPTIONNELS au schéma : ce que la projection replie en `+…` est la part facultative de la porte, pas une divergence |
 | config | `ouverture` | `pitch,titre+…` | cible | `diligence-projet.json` | 1 | — | `surtitre`, `sousTitre`, `chapitre`, `ambiance` et `source` sont OPTIONNELS au schéma : ce que la projection replie en `+…` est la part facultative de la porte, pas une divergence |
 
-### 3.13 clôture de chapitre — `cloture` (strate Document)
+### 3.14 clôture de chapitre — `cloture` (strate Document)
 
 2 ligne(s), 2 occurrence(s).
 Reconnu par : son noyau `titre` `when`
@@ -2076,7 +2095,7 @@ Reconnu par : son noyau `titre` `when`
 | config | `cloture` | `titre,when+…` | cible | `barge-du-sel-projet.json` | 1 | — | `sousTitre` est OPTIONNEL au schéma |
 | config | `cloture` | `titre,when+…` | cible | `diligence-projet.json` | 1 | — | `sousTitre` est OPTIONNEL au schéma |
 
-### 3.14 bloc narratif d’un projet de campagne — `narratif` (strate Document)
+### 3.15 bloc narratif d’un projet de campagne — `narratif` (strate Document)
 
 4 ligne(s), 4 occurrence(s).
 Reconnu par : son noyau `affaires` `indices` `objets` `presetsPnj`
@@ -2088,7 +2107,7 @@ Reconnu par : son noyau `affaires` `indices` `objets` `presetsPnj`
 | config | `narratif` | `affaires,indices,objets,presetsPnj+…` | cible | `diligence-projet.json` | 1 | — | `ouverture` et `cloture` sont OPTIONNELLES au schéma (#717) : un projet qui pose son cadre de chapitre projette `+…` |
 | config | `narratif` | `affaires,indices,objets,presetsPnj` | cible | `loup-et-saumure-projet.json` | 1 | — |  |
 
-### 3.15 Condition à EXPRESSION (`kind` + `expr`) — `condition` (strate Document)
+### 3.16 Condition à EXPRESSION (`kind` + `expr`) — `condition` (strate Document)
 
 5 ligne(s), 38 occurrence(s).
 Reconnu par : son noyau `expr` `kind`
@@ -2101,7 +2120,7 @@ Reconnu par : son noyau `expr` `kind`
 | config | `cond` | `expr,kind` | cible | `loup-et-saumure-projet.json` | 1 | — |  |
 | config | `when` | `expr,kind` | cible | `loup-et-saumure-projet.json` | 6 | — |  |
 
-### 3.16 Homonymes nominatifs
+### 3.17 Homonymes nominatifs
 
 Une clé RÉSERVÉE à un concept qui porte ≥ 2 classes de type dans la donnée : le NOM ne dit plus le
 type. Cible #1463 S2 : un nom de concept est réservé à son type. Une clé réservée encore homonyme
@@ -2113,7 +2132,7 @@ ne FORCE aucun concept — seul `price` nomme le concept `prix`, parce que `Pric
 | `price` | null \\| number \\| object \\| string | 520 | **null** trappings.json:46 — **number** land-cargo.json:6 — **object** trappings.json:392 vehicles.json:31 creatures.json:14 sea-cargo.json:11 mass-battle.json:10 land-cargo.json:7 — **string** trappings.json:3 |
 | `count` | number \\| object | 92 | **number** spells.json:16 loup-et-saumure-projet.json:6 creatures.json:5 tavernGames.json:3 traits.json:2 sea-shanties.json:1 trappings.json:1 vehicles.json:1 … — **object** careerLevels.json:50 classes.json:3 creatures.json:1 spells.json:1 traits.json:1 |
 
-### 3.17 Paramètres d’entité (`arg`) et régimes de `price`
+### 3.18 Paramètres d’entité (`arg`) et régimes de `price`
 
 Valeurs distinctes d’`arg` sur un objet porteur d’`id` : **187** (715 occurrences) — **185** vues en `src/data`, **2** propres aux scènes (`chaos`, `Ténèbres`). Aucun schéma ne les DÉCLARE aujourd’hui :
 cette table EST le dénominateur A11 de #1466. La « nature » est devinée par MOTIF (id d’entité,
@@ -2321,7 +2340,7 @@ Prix du RAW, pas une bourse unique — un coefficient saisonnier n’est pas une
 | littéral « ND » | 3 |
 | objet {dice} | 1 |
 
-### 3.18 Dotations narratives `{text}`
+### 3.19 Dotations narratives `{text}`
 
 Un `{text}` n’est une occurrence de référence que si son texte normalisé (casse, accents, ponctuation,
 espaces) égale le `label` d’une entité d’un dataset de la CIBLE MAJORITAIRE de son site — de n’importe
@@ -2337,7 +2356,7 @@ sont le narratif irréductible que la forme `text` DÉCLARE (#1463, #624).
 | `count,text` | 26 | — |
 | `kind,plus,text` | 4 | — |
 
-### 3.19 Hors strate — signatures ORPHELINES
+### 3.20 Hors strate — signatures ORPHELINES
 
 Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réservée, clé d’identité) et qui ne
 résout vers RIEN, sans être un document, et qui ne porte pas d’`op` (la strate Ops le porterait).
@@ -2452,14 +2471,14 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12779** objets sur **48562** ne sont portés par AUCUNE
+Au-delà des orphelines, **12771** objets sur **48581** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1145** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1141** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2631,7 +2650,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `etats.json` | `flow` | `effect,kind` | 8 |
 | `loup-et-saumure-projet.json` | `char` | `B,M,agilite,capacite-de-combat,capacite-de-tir,dexterite,endurance,force,force-mentale,intelligence,sociabilite` | 8 |
 | `maneuvers.json` | `ops` | `char,mod,op` | 8 |
-| `miscast.json` | `rounds` | `dice` | 8 |
 | `miscast.json` | `ops` | `amount,ignoreAP,ignoreTB,op` | 8 |
 | `qualities.json` | `passive` | `drMod,op,phase` | 8 |
 | `spells.json` | `cond` | `kind,op,value` | 8 |
@@ -2651,7 +2669,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `land-cargo.json` | `avail` | `automne,ete,hiver,printemps` | 7 |
 | `loup-et-saumure-projet.json` | `effect` | `montant,type` | 7 |
 | `loup-et-saumure-projet.json` | `choices` | `flow,label` | 7 |
-| `miscast.json` | `amount` | `dice` | 7 |
 | `mutations.json` | `passive` | `mod,op` | 7 |
 | `mutations.json` | `passive` | `amount,loc,op` | 7 |
 | `ship-construction.json` | `sail` | `crew,m` | 7 |
@@ -2681,6 +2698,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `maneuvers.json` | `amount` | `indiceOf` | 6 |
 | `maneuvers.json` | `range` | `bonusOf,plus` | 6 |
 | `maneuvers.json` | `blast` | `bonusOf` | 6 |
+| `miscast.json` | `sum` | `dice` | 6 |
 | `mutations.json` | `appearance` | `colors` | 6 |
 | `naval-ports.json` | `demande` | `armes` | 6 |
 | `naval-traits.json` | `installation` | `bands,per` | 6 |
@@ -2710,6 +2728,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `loup-et-saumure-projet.json` | `effect` | `desc,title,type` | 5 |
 | `loup-et-saumure-projet.json` | `flags` | `` | 5 |
 | `maneuvers.json` | `flow` | `effect,kind` | 5 |
+| `miscast.json` | `rounds` | `dice` | 5 |
 | `miscast.json` | `ops` | `blocked,op,rounds,skill` | 5 |
 | `naval-ports.json` | `surplus` | `poisson-sale` | 5 |
 | `naval-ports.json` | `surplus` | `produits-de-luxe` | 5 |
@@ -2748,8 +2767,8 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `disponibilite.json` | `Exotique` | `get,give` | 4 |
 | `etats.json` | `steps` | `effect,kind` | 4 |
 | `loup-et-saumure-projet.json` | `ammoRangeMod` | `mult` | 4 |
+| `miscast.json` | `amount` | `dice` | 4 |
 | `river-navigation.json` | `arriere` | `pct` | 4 |
-| `sea-cargo.json` | `offerPrice` | `pct,sum` | 4 |
 | `sea-weather.json` | `arriere` | `pctOther,pctSail` | 4 |
 | `sea-weather.json` | `arriere` | `pctSail` | 4 |
 | `skills.json` | `combatAdvantage` | `cap` | 4 |
@@ -3053,7 +3072,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `traumas.json` | `cumul` | `escalade,parPalier,portee` | 2 |
 | `water-exposure.json` | `auto` | `kind,op,value` | 2 |
 | `aa-criticals.json` | `escalation` | `onRepeat` | 1 |
-| `aa-criticals.json` | `durationRounds` | `sum` | 1 |
 | `aa-criticals.json` | `sum` | `dice` | 1 |
 | `aa-criticals.json` | `sum` | `times` | 1 |
 | `aa-criticals.json` | `of` | `bonusOf` | 1 |
@@ -3121,7 +3139,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `criticals.json` | `escalation` | `onRepeat` | 1 |
 | `criticals.json` | `value` | `dice` | 1 |
 | `criticals.json` | `escalation` | `onNextCritWhileCondition` | 1 |
-| `criticals.json` | `durationRounds` | `sum` | 1 |
 | `criticals.json` | `sum` | `dice` | 1 |
 | `criticals.json` | `sum` | `times` | 1 |
 | `criticals.json` | `of` | `bonusOf` | 1 |
@@ -3169,7 +3186,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `etats.json` | `cond` | `kind,op,value` | 1 |
 | `etats.json` | `recover` | `characteristic,opposedBy` | 1 |
 | `etats.json` | `ops` | `amount,apFrom,ignoreAP,ignoreTB,min,op` | 1 |
-| `etats.json` | `amount` | `sum` | 1 |
 | `etats.json` | `sum` | `dice` | 1 |
 | `etats.json` | `sum` | `stacks` | 1 |
 | `etats.json` | `gating` | `action,movement` | 1 |
@@ -3221,7 +3237,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `merchantFamilies.json` | `match` | `` | 1 |
 | `miscast.json` | `value` | `dice` | 1 |
 | `miscast.json` | `ops` | `days,maxZeroDR,op,skill` | 1 |
-| `miscast.json` | `amount` | `sinPlus1` | 1 |
 | `miscast.json` | `onFailHard` | `dr,ops` | 1 |
 | `mutations.json` | `appearance` | `eyes` | 1 |
 | `mutations.json` | `effects` | `flow,on,trigger` | 1 |
@@ -3616,7 +3631,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **487** ; **78** recoupent le lexique
+Littéraux d’objet zod lus : **482** ; **75** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -3633,7 +3648,8 @@ Dont **0** littéral(aux) PARTIEL(s) du noyau — — : une mesure qui exigerait
 | Concept | Noyau | Littéraux | Defs | Liste des defs |
 |---|---|---|---|---|
 | monnaie | `gold,silver` | 0 | 0 | — |
-| de | `n,sides` | 3 | 2 | `maladies.ts` `miscast.ts` |
+| de | `n,sides` | 0 | 0 | — |
+| formule | `sum,sinPoints` | 2 | 2 | `miscast.ts` `sea-cargo.ts` |
 | source | `book` | 1 | 1 | `progression-schemas-derived.ts` |
 | test | `difficulty` | 31 | 19 | `aa-criticals.ts` `activities.ts` `arcane-phenomena.ts` `criticals.ts` `etats.ts` `land-cargo.ts` `maladies.ts` `miscast.ts` `psychology.ts` `river-navigation.ts` `sea-cargo.ts` `sea-navigation.ts` `sea-perils.ts` `sea-weather.ts` `steam-breakdown.ts` `symptoms.ts` `tavernGames.ts` `water-exposure.ts` `weather.ts` |
 | bornes | `min,max` | 5 | 5 | `advancementCosts.ts` `oups.ts` `reglesOptionnelles.ts` `tavernGames.ts` `water-exposure.ts` |
@@ -3667,24 +3683,20 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
 | `land-cargo.ts` | 25 | `price` | prix | declaree | `dice` | `formulaSchema` |
 | `land-cargo.ts` | 71 | `gossip` | test | divergente | `difficulty+…` | — |
-| `maladies.ts` | 16 | — | de | cible | `n,plus,sides` | `diceSpecSchema` |
-| `maladies.ts` | 27 | — | test | divergente | `difficulty+…` | — |
-| `maladies.ts` | 49 | `dailyTest` | test | divergente | `difficulty+…` | — |
-| `miscast.ts` | 29 | — | de | divergente | `n,plus,sides+…` | — |
-| `miscast.ts` | 39 | — | — | hors lexique | `dice` | `formulaSchema` |
-| `miscast.ts` | 51 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
-| `miscast.ts` | 52 | — | — | hors lexique | `charOf` | `formulaSchema` |
-| `miscast.ts` | 53 | — | — | hors lexique | `dice` | `formulaSchema` |
-| `miscast.ts` | 53 | `dice` | de | cible | `n,plus,sides` | `diceSpecSchema` |
-| `miscast.ts` | 54 | — | — | hors lexique | `rolled` | `formulaSchema` |
-| `miscast.ts` | 55 | — | — | hors lexique | `indiceOf` | `formulaSchema` |
-| `miscast.ts` | 56 | — | — | hors lexique | `stacks` | `formulaSchema` |
-| `miscast.ts` | 57 | — | — | hors lexique | `engagedAdvantageGap` | `formulaSchema` |
-| `miscast.ts` | 58 | — | — | hors lexique | `woundsDealt` | `formulaSchema` |
-| `miscast.ts` | 59 | — | — | hors lexique | `sum` | `formulaSchema` |
-| `miscast.ts` | 60 | — | — | hors lexique | `times` | `formulaSchema` |
-| `miscast.ts` | 60 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
-| `miscast.ts` | 93 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
+| `maladies.ts` | 22 | — | test | divergente | `difficulty+…` | — |
+| `maladies.ts` | 44 | `dailyTest` | test | divergente | `difficulty+…` | — |
+| `miscast.ts` | 34 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
+| `miscast.ts` | 35 | — | — | hors lexique | `charOf` | `formulaSchema` |
+| `miscast.ts` | 36 | — | — | hors lexique | `dice` | `formulaSchema` |
+| `miscast.ts` | 37 | — | — | hors lexique | `rolled` | `formulaSchema` |
+| `miscast.ts` | 38 | — | — | hors lexique | `indiceOf` | `formulaSchema` |
+| `miscast.ts` | 39 | — | — | hors lexique | `stacks` | `formulaSchema` |
+| `miscast.ts` | 40 | — | — | hors lexique | `engagedAdvantageGap` | `formulaSchema` |
+| `miscast.ts` | 41 | — | — | hors lexique | `woundsDealt` | `formulaSchema` |
+| `miscast.ts` | 42 | — | formule | cible | `sum` | `formulaSchema` |
+| `miscast.ts` | 43 | — | — | hors lexique | `times` | `formulaSchema` |
+| `miscast.ts` | 43 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
+| `miscast.ts` | 75 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
 | `montures.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
 | `naval-progression.ts` | 14 | — | — | hors lexique | `entries` | `corps` |
 | `obsessions.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
@@ -3697,6 +3709,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `river-navigation.ts` | 39 | `rowingAgility` | test | divergente | `difficulty+…` | — |
 | `river-navigation.ts` | 54 | `temporaryRepair` | test | divergente | `difficulty+…` | — |
 | `sea-cargo.ts` | 24 | `price` | prix | declaree | `dice` | `formulaSchema` |
+| `sea-cargo.ts` | 58 | `offerPrice` | formule | divergente | `sum+…` | — |
 | `sea-cargo.ts` | 61 | `producesGossip` | test | divergente | `difficulty+…` | — |
 | `sea-cargo.ts` | 62 | `surplusGossip` | test | divergente | `difficulty+…` | — |
 | `sea-cargo.ts` | 76 | `test` | test | divergente | `difficulty,skill+…` | — |
@@ -3740,7 +3753,7 @@ Conditions dont l’`op` est un COMPARATEUR (`kind` reconnu par `conditionSchema
 **249** Conditions au total, dont **191** sans `op` :
 celles-là n’ont jamais été comptées en op — le retrait des Conditions du compte d’ops vaut
 2187 → 2129, jamais 2187 → 1938.
-Noms d’op distincts : **103**, signatures distinctes : **233**.
+Noms d’op distincts : **103**, signatures distinctes : **232**.
 
 | `kind` de Condition | Avec `op` | Sans `op` |
 |---|---|---|
@@ -3846,7 +3859,7 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 | `condition` | `id,op,value` | `criticals.json` | 98 | — |
 | `condition` | `id,op,value` | `aa-criticals.json` | 92 | — |
 | `condition` | `id,op` | `spells.json` | 58 | — |
-| `condition` | `id,op,value` | `miscast.json` | 37 | — |
+| `condition` | `id,op,value` | `miscast.json` | 40 | — |
 | `condition` | `durationRounds,id,op` | `spells.json` | 9 | — |
 | `condition` | `id,op` | `maneuvers.json` | 8 | — |
 | `condition` | `id,op,value` | `spells.json` | 8 | — |
@@ -3864,7 +3877,6 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 | `condition` | `escapeStrength,id,op,value,valuePerSL` | `spells.json` | 3 | — |
 | `condition` | `id,op` | `domains.json` | 3 | — |
 | `condition` | `id,op` | `traits.json` | 3 | — |
-| `condition` | `id,op,sinPlus1Value` | `miscast.json` | 3 | — |
 | `condition` | `id,op,value` | `maneuvers.json` | 3 | — |
 | `condition` | `id,op,value` | `traits.json` | 3 | — |
 | `condition` | `durationHours,id,op` | `trappings.json` | 2 | — |

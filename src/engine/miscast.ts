@@ -18,7 +18,7 @@
  * La DONNÉE vit dans `src/data/miscast.json` (éditable) ; ce module = types +
  * chargement + résolution. Ajouter/régler une entrée = éditer le JSON, jamais ce fichier.
  */
-import { RNG, defaultRNG, d100, type DiceSpec } from './dice';
+import { RNG, defaultRNG, d100 } from './dice';
 import { findTableEntry } from './tables';
 import { rule } from './policy';
 import { findDomainById, combatStakeRef } from '../data';
@@ -83,30 +83,27 @@ interface NestedTest {
 // Types de la donnée JSON — sur-ensembles de GameOp/Formula qui encodent le paramétrage par Péché
 // ---------------------------------------------------------------------------
 
-/**
- * Descripteur de dé tel qu'il apparaît dans le JSON. Étend la forme `{ n, sides, plus? }` du moteur
- * d'un drapeau `sinPlus` optionnel : à `true`, le `plus` résolu vaut les `sinPoints` de l'appelant
- * (`{ n:1, sides:10, sinPlus:true }` dans le JSON).
- */
-interface JsonDice extends DiceSpec {
-  /** À `true`, `plus` = sinPoints à la résolution. */
-  sinPlus?: boolean;
+/** Terme « (Points de Péché) » d'une formule authorée (LDB 40 l.58/62/65/68/73/75) — porte zod
+ *  `sinPointsSchema` (`src/data/schemas/grammaire/valeurs.ts`). */
+interface SinPoints {
+  sinPoints: true;
 }
 
 /**
- * `Formula` telle qu'elle apparaît dans le JSON. Un nombre nu reste un nombre nu ; un descripteur de
- * dé passe par `JsonDice` (avec `sinPlus` optionnel) ; `{ sinPlus1: true }` encode le motif `1 + sin`.
+ * `Formula` telle qu'elle apparaît dans le JSON : la `Formula` du moteur, où le terme `{sinPoints}`
+ * peut prendre la place d'un terme quelconque (« 1d10 + (PP) » = `{sum:[{dice}, {sinPoints}]}`,
+ * « 1 + (PP) » = `{sum:[1, {sinPoints}]}`).
  */
 type JsonFormula =
-  | number
-  | { dice: JsonDice }
-  | { sinPlus1: true };
+  | Formula
+  | SinPoints
+  | { sum: JsonFormula[] }
+  | { times: { of: JsonFormula; factor: JsonFormula } };
 
 /**
  * Un `GameOp` unique tel que stocké dans le JSON. Miroir de l'union `GameOp` runtime, avec
  * `JsonFormula` à la place de `Formula` — `durationRounds` est un champ du `GameOp` `condition`
- * lui-même (`engine/ops.ts`). Seul `sinPlus1Value` est un champ EN PLUS du runtime : à `true`, la
- * `value` d'un op `condition` vaut `1 + sinPoints` à la résolution.
+ * lui-même (`engine/ops.ts`).
  */
 type JsonOp = {
   op: string;
@@ -114,8 +111,6 @@ type JsonOp = {
   id?: string;
   value?: JsonFormula;
   durationRounds?: JsonFormula;
-  /** À `true`, la `value` de la condition vaut `1 + sinPoints` (inexprimable en `Formula` nue). */
-  sinPlus1Value?: boolean;
   /** `GameOp['condition'].escapeStrength` (Empêtré : force de désengagement, ex. Tenue indisciplinée
    *  LDB 46) — déjà une `Formula` runtime valide, jamais sin-paramétrée : copiée telle quelle. */
   escapeStrength?: Formula;
@@ -164,14 +159,20 @@ interface JsonRow {
 // JSON → résolution runtime
 // ---------------------------------------------------------------------------
 
-/** Résout une `JsonFormula` en `Formula` runtime (`engine/ops`), en substituant les sinPoints là où
- *  le drapeau `sinPlus`/`sinPlus1` le demande. */
+/**
+ * Résout une `JsonFormula` en `Formula` runtime (`engine/ops`) : le terme `{sinPoints:true}` est
+ * SUBSTITUÉ par sa valeur, à toute profondeur de l'arbre ; le reste est rendu tel quel.
+ *
+ * La substitution se fait ICI, à l'EXPANSION de la rangée (`rollMiscast`), et non à l'application de
+ * l'op : `state/combatFlow.ts` expie le Péché avant d'appeler `applyOps`, une résolution paresseuse
+ * lirait donc `sin − 1`.
+ */
 function resolveJsonFormula(f: JsonFormula, sin: number): unknown {
-  if (typeof f === 'number') return f;
-  if ('sinPlus1' in f) return 1 + sin;
-  // descripteur de dé — sinPlus remplace le champ `plus` par les sinPoints courants
-  const { n, sides, sinPlus } = f.dice;
-  return sinPlus ? { dice: { n, sides, plus: sin } } : { dice: { n, sides } };
+  if (typeof f !== 'object' || f === null) return f;
+  if ('sinPoints' in f) return sin;
+  if ('sum' in f) return { sum: f.sum.map((t) => resolveJsonFormula(t, sin)) };
+  if ('times' in f) return { times: { of: resolveJsonFormula(f.times.of, sin), factor: resolveJsonFormula(f.times.factor, sin) } };
+  return f;
 }
 
 /**
@@ -181,11 +182,9 @@ function resolveJsonFormula(f: JsonFormula, sin: number): unknown {
 function expandOp(op: JsonOp, sin: number): GameOp {
   switch (op.op) {
     case 'condition': {
-      // sinPlus1Value → value = 1 + sin ; value nue → résolution de la formule ; absente → omise (op à durationRounds seul)
+      // `value` nue → résolution de la formule ; absente → omise (op à `durationRounds` seul)
       const base: Record<string, unknown> = { op: 'condition', id: op.id };
-      if (op.sinPlus1Value) {
-        base.value = 1 + sin;
-      } else if (op.value !== undefined) {
+      if (op.value !== undefined) {
         base.value = resolveJsonFormula(op.value, sin);
       }
       if (op.durationRounds !== undefined) {

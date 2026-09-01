@@ -1,9 +1,9 @@
 /**
  * Schéma de `miscast.json` — DIALECTE compilé (PAS des `GameOp` standard), cf. en-tête de
  * `src/data/data-wellformed.test.ts` et `src/engine/miscast.ts::expandOp`. Modélise
- * `JsonRow`/`JsonNestedTest`/`JsonOp`/`JsonFormula`/`JsonDice` TELS QU'ILS SONT LUS par
- * `miscast.ts` (miroir du `GameOp` runtime, mais `Formula` → `JsonFormula`, + `sinPlus1Value`/
- * `durationRounds` propres au dialecte).
+ * `JsonRow`/`JsonNestedTest`/`JsonOp` TELS QU'ILS SONT LUS par `miscast.ts` (miroir du `GameOp`
+ * runtime, mais `Formula` → `formulaSinSchema` — la formule générale plus le terme de Péché —, +
+ * `durationRounds` propre au dialecte).
  *
  * Le fichier porte une LISTE de 5 documents de famille `table` — un par jeu de rangées tirable :
  * `miscast-mineure`/`miscast-majeure` (LDB 46 folio 234), leurs révisions `-vdm` (VDM 02 folios
@@ -13,7 +13,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { diceSpecSchema, formulaSinSchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'miscast.json';
@@ -24,33 +24,16 @@ const difficultySchemaLocal = z.enum([
   'difficile', 'tresDifficile', 'presqueImpossible', 'impossible',
 ]);
 
-/** `JsonDice` (`engine/miscast.ts`) = `DiceSpec` (`engine/dice.ts`) + `sinPlus` (le `plus`
- *  du dé = Points de Péché à la résolution) — dé DÉCLARÉ en donnée, jamais une closure de code. */
-const jsonDiceSchema = z.strictObject({
-  n: z.number(),
-  sides: z.number(),
-  plus: z.number().optional(),
-  sinPlus: z.boolean().optional(),
-});
-
-/** `JsonFormula` (`engine/miscast.ts`) : nombre littéral, dé, ou `{sinPlus1}` (= 1 + Points de Péché). */
-const jsonFormulaSchema = z.union([
-  z.number(),
-  z.strictObject({ dice: jsonDiceSchema }),
-  z.strictObject({ sinPlus1: z.literal(true) }),
-]);
-
-/** `Formula` GÉNÉRAL du moteur (`engine/ops.ts`) — UNIQUEMENT pour `escapeStrength` : la donnée
+/** `Formula` GÉNÉRAL du moteur (`engine/ops.ts`) — porte d'`escapeStrength` UNIQUEMENT : la donnée
  *  réelle y écrit `{times:{of,factor}}` (entrées `mineure-tenue-indisciplinee` et
- *  `mineure-vdm-tenue-indisciplinee` de `miscast.json`), une forme HORS
- *  du dialecte `JsonFormula` (qui n'a que number/dice/sinPlus1) — ce champ n'est jamais sin-paramétré,
+ *  `mineure-vdm-tenue-indisciplinee` de `miscast.json`). Ce champ n'est jamais sin-paramétré :
  *  `expandOp` le recopie tel quel (`engine/miscast.ts`). */
 const engineFormulaSchema: z.ZodType<unknown> = z.lazy(() =>
   z.union([
     z.number(),
     z.strictObject({ bonusOf: z.string() }),
     z.strictObject({ charOf: z.string() }),
-    z.strictObject({ dice: z.strictObject({ n: z.number(), sides: z.number(), plus: z.number().optional() }) }),
+    z.strictObject({ dice: diceSpecSchema }),
     z.strictObject({ rolled: z.literal(true) }),
     z.strictObject({ indiceOf: z.literal(true) }),
     z.strictObject({ stacks: z.literal('self') }),
@@ -69,10 +52,9 @@ const engineFormulaSchema: z.ZodType<unknown> = z.lazy(() =>
 const jsonOpSchema = z.strictObject({
   op: z.string(),
   id: z.string().optional(),
-  value: jsonFormulaSchema.optional(),
-  durationRounds: jsonFormulaSchema.optional(),
-  sinPlus1Value: z.boolean().optional(),
-  amount: jsonFormulaSchema.optional(),
+  value: formulaSinSchema.optional(),
+  durationRounds: formulaSinSchema.optional(),
+  amount: formulaSinSchema.optional(),
   /** Mitigation DÉCLARÉE du `wounds` (garde `wounds-mitigation-declaree`) — recopiée telle quelle
    *  par `expandOp` : « qui ignorent les PA » seuls (Poupée de chiffon, LDB 46) ≠ « qui ignorent le
    *  Bonus d'Endurance et les PA » (Choc aethyrique, LDB 46). */
@@ -82,9 +64,9 @@ const jsonOpSchema = z.strictObject({
   mod: z.number().optional(),
   blocked: z.boolean().optional(),
   maxZeroDR: z.boolean().optional(),
-  rounds: jsonFormulaSchema.optional(),
-  hours: jsonFormulaSchema.optional(),
-  minutes: jsonFormulaSchema.optional(),
+  rounds: formulaSinSchema.optional(),
+  hours: formulaSinSchema.optional(),
+  minutes: formulaSinSchema.optional(),
   days: z.number().optional(),
   escapeStrength: engineFormulaSchema.optional(),
 });

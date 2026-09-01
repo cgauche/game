@@ -41,6 +41,8 @@
 //   - Le scan AST est borné aux littéraux `z.object`/`z.strictObject`/`z.looseObject` des `src/data/schemas/defs/*.ts` : il ne voit ni les clés ajoutées par `.extend(...)`, ni un schéma composé par une fabrique, ni les defs hors de ce dossier. Le « schéma commun candidat » est apparié par SIGNATURE EXACTE.
 //   - Les portes MOTEUR (`src/engine`, `src/state`) et les JSON hors documents (outillage, `public/qc/*`, baselines de gardes) ne sont pas mesurés : ce contrat parle de la DONNÉE authorée et de ses schémas.
 //   - Les CACHES de parse AST (`CACHE_SOURCE`, `CACHE_LITTERAUX`) sont module-level et ne sont jamais invalidés : en mode watch, une édition d’un `defs/*.ts` n’est pas re-mesurée sans redémarrage.
+//   - Le scan AST des redéclarations ne lit QUE `src/data/schemas/defs/` : les 150 littéraux zod de `src/data/schemas/defs-scenes/` (`effets.ts` 73, `scene.ts` 53, `worldmap.ts` 15, `narratif.ts` 7, `communs.ts` 2) en sont HORS PÉRIMÈTRE — deux d’entre eux seraient classés par le lexique s’ils y entraient (`effets.ts:205` `extendedTestSchema` et `scene.ts:438` `wallClimbSchema`, concept `test` par le noyau `difficulty`).
+//   - Le lexique FERMÉ est le PLAFOND de détection des redéclarations : un littéral dont le concept n’est pas au lexique n’est compté que s’il a un schéma commun de MÊME signature exacte — deux defs divergents sur un champ d’un concept absent restent invisibles aux occurrences, et seul le compte GLOBAL des littéraux (`totalLitteraux`, 482 après ce lot, 487 à `9739ee1f4`) bouge.
 //
 // COMMENT UNE LIGNE SE SOLDE — jamais en la retirant seule :
 //   1. on MIGRE la donnée (ou le schéma) vers la forme cible du lexique, dans le LOT porté par la
@@ -102,6 +104,10 @@ export const STRUCTURES_CIBLES = [
   { concept: "monnaie", signature: "gold,silver", date: "2026-09-01" },
   { concept: "de", signature: "n,sides", date: "2026-08-23" },
   { concept: "de", signature: "n,plus,sides", date: "2026-08-23" },
+  // #1463 L-de-1 : la COMPOSITION d'une `Formula` (`formulaSchema`, `grammaire/valeurs.ts`) et le
+  // terme de Péché qui s'y ajoute (`sinPointsSchema`) — LDB 40 l.58/62/63/65/68/71/72/73/75/77.
+  { concept: "formule", signature: "sum", date: "2026-09-01" },
+  { concept: "formule", signature: "sinPoints", date: "2026-09-01" },
   { concept: "source", signature: "book,page", date: "2026-08-23" },
   { concept: "source", signature: "book,note,page", date: "2026-08-23" },
   { concept: "plage", signature: "max,min", date: "2026-08-23" },
@@ -142,7 +148,6 @@ export const STRUCTURES_CIBLES = [
  *  `divergente` (graphie inconnue). `champ` = la clé PORTEUSE mesurée (`(racine)` = l'objet racine
  *  du document), `strate` = la strate de la grammaire (#1463), `lot` = qui l'éteint. */
 export const STRUCTURES_FORMES = [
-  { concept: "de", dataset: "miscast.json", champ: "dice", signature: "n,sides+…", statut: "divergente", strate: "Valeur", occurrences: 6, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "aa-criticals.json", champ: "apresDelai", signature: "versTraumaId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "aa-criticals.json", champ: "onFail", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "aa-criticals.json", champ: "onFail", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 17, lot: "L3 #1463", date: "2026-08-23" },
@@ -359,8 +364,8 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "merchantFamilies.json", champ: "match", signature: "categorie", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "miscast.json", champ: "onFail", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "miscast.json", champ: "onFail", signature: "op+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "miscast.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 28, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "miscast.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "miscast.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 31, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "miscast.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "miscast.json", champ: "ops", signature: "op+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "mutations.json", champ: "eyes", signature: "G", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "mutations.json", champ: "passive", signature: "arg,traitId+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-30", motif: "référence de TRAIT paramétré" },
@@ -586,6 +591,10 @@ export const STRUCTURES_FORMES = [
   { concept: "test", dataset: "river-criticals.json", champ: "crewTest", signature: "char,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "river-navigation.json", champ: "rowingAgility", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "river-navigation.json", champ: "temporaryRepair", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
+  // SURFACÉE par le concept `formule` (#1463 L-de-1) : un prix d'offre qui ÉTALE son pourcentage à
+  // côté de la somme, au lieu de composer la `Formula` générale. Divergence RÉELLE, jamais mesurable
+  // avant que le concept n'existe au lexique.
+  { concept: "formule", dataset: "sea-cargo.json", champ: "offerPrice", signature: "sum+…", statut: "divergente", strate: "Valeur", occurrences: 4, lot: "L4 #1463", date: "2026-09-01" },
   { concept: "test", dataset: "sea-cargo.json", champ: "producesGossip", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-cargo.json", champ: "surplusGossip", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-cargo.json", champ: "test", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -722,21 +731,18 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "land-cargo.ts", champ: "gossip", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "land-cargo.ts", champ: "price", concept: "prix", signature: "dice", statut: "declaree", commun: "formulaSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "maladies.ts", champ: "dailyTest", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" }, // EDOC 08 l.104 (#674)
-  { def: "maladies.ts", champ: "", concept: "de", signature: "n,plus,sides", statut: "cible", commun: "diceSpecSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "maladies.ts", champ: "", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "bonusOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "charOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "miscast.ts", champ: "", concept: "", signature: "dice", statut: "hors lexique", commun: "formulaSchema", occurrences: 2, lot: "L1a #1466", date: "2026-08-23" },
+  { def: "miscast.ts", champ: "", concept: "", signature: "dice", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "engagedAdvantageGap", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "indiceOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "rolled", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "stacks", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "miscast.ts", champ: "", concept: "", signature: "sum", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
+  { def: "miscast.ts", champ: "", concept: "formule", signature: "sum", statut: "cible", commun: "formulaSchema", occurrences: 1, lot: "L4 #1463", date: "2026-09-01" },
   { def: "miscast.ts", champ: "", concept: "", signature: "times", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "woundsDealt", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "miscast.ts", champ: "", concept: "de", signature: "n,plus,sides+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "test", signature: "characteristic,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "miscast.ts", champ: "dice", concept: "de", signature: "n,plus,sides", statut: "cible", commun: "diceSpecSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "miscast.ts", champ: "times", concept: "", signature: "factor,of", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "oups.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "cible", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "progression-schemas-derived.ts", champ: "schemas", concept: "source", signature: "book+…", statut: "divergente", commun: "", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
@@ -747,6 +753,7 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "river-navigation.ts", champ: "rowingAgility", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "river-navigation.ts", champ: "temporaryRepair", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "sea-cargo.ts", champ: "price", concept: "prix", signature: "dice", statut: "declaree", commun: "formulaSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
+  { def: "sea-cargo.ts", champ: "offerPrice", concept: "formule", signature: "sum+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-09-01" },
   { def: "sea-cargo.ts", champ: "producesGossip", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "sea-cargo.ts", champ: "surplusGossip", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "sea-cargo.ts", champ: "test", concept: "test", signature: "difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -1025,7 +1032,7 @@ export const STRUCTURES_OPS = [
   { op: "condition", signature: "id,op,value", dataset: "criticals.json", occurrences: 98, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "aa-criticals.json", occurrences: 92, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "spells.json", occurrences: 58, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "condition", signature: "id,op,value", dataset: "miscast.json", occurrences: 37, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "condition", signature: "id,op,value", dataset: "miscast.json", occurrences: 40, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "durationRounds,id,op", dataset: "spells.json", occurrences: 9, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "maneuvers.json", occurrences: 8, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "spells.json", occurrences: 8, lot: "L1c #1468", date: "2026-08-23" },
@@ -1043,7 +1050,6 @@ export const STRUCTURES_OPS = [
   { op: "condition", signature: "escapeStrength,id,op,value,valuePerSL", dataset: "spells.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "domains.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "traits.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "condition", signature: "id,op,sinPlus1Value", dataset: "miscast.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "maneuvers.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "durationHours,id,op", dataset: "trappings.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "durationRounds,id,op", dataset: "miscast.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },

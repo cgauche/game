@@ -68,7 +68,7 @@ export const deMonde = (rng: RNG = defaultRNG): number => d100(rng);
 
 /** Descripteur de jet de dés en DONNÉE (forme canonique partagée : « NdM(+P ») — `n`d`sides`+`plus`).
  *  Source UNIQUE réutilisée par la Formula `{dice}` (ops), les maladies (incubation/durée) et les
- *  Imparfaites (miscast, qui l'étend d'un `sinPlus`). */
+ *  Imparfaites (miscast). */
 export interface DiceSpec {
   n: number;
   sides: number;

@@ -188,6 +188,53 @@ describe('tables migrées — sweep d\'application', () => {
     }
     expect(found).toBe(true);
   });
+
+  it('« Je trouve inquiétant votre manque de foi » (LDB 40 l.62) : les Points de Péché ENTRENT dans la durée', () => {
+    // Contrat du terme `{sinPoints:true}` : la durée est `1d10 + (Points de Péché)`, donc la fenêtre
+    // se DÉCALE avec le Péché — [1,10] à 0, [4,13] à 3. Le Péché est substitué à l'EXPANSION de la
+    // rangée (`rollMiscast`), pas à l'application : `state/combatFlow.ts` l'expie AVANT `applyOps`,
+    // et une résolution paresseuse rendrait `sin − 1`.
+    //
+    // Le dé NATUREL est injecté (`forcedRoll`) parce que le Péché décale AUSSI le jet lui-même
+    // (`roll = base + sinPoints × 10`, `rollMiscast`) : la MÊME rangée 31-35 se tire à 31 sans Péché
+    // et à 1 avec 3 Points.
+    const dureesPour = (sin: number, deNaturel: number) => {
+      const out: number[] = [];
+      for (let seed = 0; seed < 60; seed++) {
+        const r = rollMiscast('colere', makeRNG(seed), sin, undefined, deNaturel);
+        expect(r.rowId, 'la rangée visée n’est pas celle tirée').toBe('colere-je-trouve-inquietant-votre-manque-de-foi');
+        const c = hero();
+        applyOps(c, r.ops, { rng: makeRNG(seed + 1), label: r.label });
+        out.push(c.castPenalties![0].roundsLeft!);
+      }
+      return out;
+    };
+
+    const sansPeche = dureesPour(0, 31);
+    const avecTrois = dureesPour(3, 1);
+    expect(sansPeche.length).toBe(60);
+    expect(sansPeche.filter((d) => d < 1 || d > 10), 'durées hors [1,10] à 0 Point de Péché').toEqual([]);
+    expect(avecTrois.filter((d) => d < 4 || d > 13), 'durées hors [4,13] à 3 Points de Péché').toEqual([]);
+    // La fenêtre s'est bien DÉPLACÉE : sans le terme de Péché, les deux séries tiendraient dans [1,10].
+    expect(Math.max(...avecTrois), 'aucune durée > 10 à 3 Points de Péché : le terme de Péché n’entre pas').toBeGreaterThan(10);
+    expect(Math.min(...avecTrois), 'une durée < 4 à 3 Points de Péché : le terme de Péché n’entre pas').toBeGreaterThanOrEqual(4);
+  });
+
+  it('« Partagez ma douleur » (LDB 40 l.63) : « 1 + (Points de Péché) Blessures » — le « 1 + » entre AUSSI', () => {
+    // Second régime du même terme : `{sum:[1, {sinPoints:true}]}`. Aucun dé dans la formule, donc la
+    // perte de Blessures est EXACTE (la mitigation déclarée ignore BE et PA, LDB 40 l.63). Dé naturel
+    // injecté pour la même raison qu'au-dessus : le Péché décale le jet de +10 par point.
+    const perdues = (sin: number, deNaturel: number) => {
+      const r = rollMiscast('colere', makeRNG(7), sin, undefined, deNaturel);
+      expect(r.rowId).toBe('colere-partagez-ma-douleur');
+      const c = hero();
+      const avant = c.wounds.current;
+      applyOps(c, r.ops, { rng: makeRNG(8), label: r.label });
+      return avant - c.wounds.current;
+    };
+    expect(perdues(0, 36), 'à 0 Point de Péché : 1 Blessure').toBe(1);
+    expect(perdues(3, 6), 'à 3 Points de Péché : 1 + 3 Blessures').toBe(4);
+  });
 });
 
 // Mitigation des Blessures : `miscast.json` la DÉCLARE par entrée (`ignoreTB`/`ignoreAP`), `expandOp`

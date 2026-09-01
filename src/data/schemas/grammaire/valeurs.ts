@@ -438,6 +438,19 @@ export const formulaSchema: z.ZodType<unknown> = z.lazy(() =>
   ]),
 );
 
+/** Terme « (Points de Péché) » du porteur du jet — `LDB 40 l.58/62/65/68/73/75`. Substitué à
+ *  l'EXPANSION d'une rangée de Colère des dieux (`engine/miscast.ts::resolveJsonFormula`), jamais à
+ *  l'application de l'op : le Péché est expié AVANT `applyOps` (`state/combatFlow.ts`). */
+export const sinPointsSchema = z.strictObject({ sinPoints: z.literal(true) });
+
+/** `Formula` du dialecte de la Colère des dieux : une formule GÉNÉRALE, le terme de Péché, ou leur
+ *  SOMME — la seule composition que le livre imprime (« 1d10 + (Points de Péché) »). */
+export const formulaSinSchema: z.ZodType<unknown> = z.union([
+  formulaSchema,
+  sinPointsSchema,
+  z.strictObject({ sum: z.array(z.union([formulaSchema, sinPointsSchema])) }),
+]);
+
 /** Compétences du Test d'Exposition à une Influence corruptrice — alphabet FERMÉ (`LDB 19 l.23-75`).
  *  SOURCE UNIQUE : les deux portes `corruptionExposure.skill` (op `GameOp`, effet de scène), le
  *  sélecteur de l'atelier (`ui/editor/GameOpEditor.tsx`) et la couture du slot

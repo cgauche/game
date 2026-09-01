@@ -9,15 +9,10 @@ import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
 import { idDe } from '../grammaire/ref';
+import { diceSpecSchema } from '../grammaire/valeurs';
 
 export const file = 'maladies.json';
 export const famille = 'entite';
-
-const diceSpecSchema = z.strictObject({
-  n: z.number(),
-  sides: z.number(),
-  plus: z.number().optional(),
-});
 
 const diseaseTimeSchema = z.strictObject({
   dice: diceSpecSchema,

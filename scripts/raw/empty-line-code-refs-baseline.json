@@ -11,7 +11,7 @@
   "src/scenes/diligence/edo-ch1-calibration-voyage.test.ts": 1,
   "src/state/cascade.ts": 1,
   "src/state/combat-tables-choix-porte.test.ts": 1,
-  "src/state/combatFlow.ts": 3,
+  "src/state/combatFlow.ts": 2,
   "src/state/interlude-catalog.test.ts": 1,
   "src/state/miscast-step.test.ts": 2,
   "src/state/pendings.ts": 1,
