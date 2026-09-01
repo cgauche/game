@@ -61,7 +61,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "a", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "acts", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "ambush", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "appearance", occurrences: 22, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "arene-projet.json", champ: "appearance", occurrences: 25, lot: "L2/L3 #1473", date: "2026-09-01" }, // +3 : les 3 statblocs d'auteur muets (nuées de rats, dragon) portent leur Espèce
   { dataset: "arene-projet.json", champ: "b", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "choices", occurrences: 14, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "dialogueId", occurrences: 9, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -192,7 +192,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "loup-et-saumure-projet.json", champ: "a", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "ambush", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "ammo", occurrences: 16, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "loup-et-saumure-projet.json", champ: "appearance", occurrences: 11, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "loup-et-saumure-projet.json", champ: "appearance", occurrences: 19, lot: "L2/L3 #1473", date: "2026-09-01" }, // +8 : l'équipage exposé des deux abordages portait un statbloc sans apparence
   { dataset: "loup-et-saumure-projet.json", champ: "b", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "backdrop", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "choices", occurrences: 23, lot: "L2/L3 #1473", date: "2026-08-26" },

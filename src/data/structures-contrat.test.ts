@@ -550,7 +550,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // stockée, pas forme neuve : son extinction est celle d'`entityAppearanceSchema`
       // (`src/data/schemas/grammaire/valeurs.ts`), où `species`/`tenue` sont des `z.string()` nus —
       // aucun `idDe(...)`, donc aucun slot, pour AUCUN des quatre porteurs.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 481],
+      // Cliquet REMONTÉ 481 → 483 (équipage du Grimm et statblocs d'auteur de l'arène, 2026-09-01) : le MÊnE trou
+      // étendu aux deux paquets restants — `loup-et-saumure` gagne la ligne `species,tenue` (équipage adverse
+      // anonyme des deux abordages), `arene` la ligne `species` (les statblocs d'auteur Nuée de rats / Dragon
+      // des ténèbres, sans tenue : une bête ne s'habille pas). Deux lignes SŒURS de plus, même lot, même
+      // extinction qu'au cliquet précédent — donnée neuve à la forme déjà stockée, pas forme neuve.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 483],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -759,7 +764,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // les trois références de CARTE que les trois autres projets portent déjà, même lot.
       // … puis 392 → 393 (équipage de la Louve grise, 3fe450675) : `barge-du-sel-projet.json › appearance {species, tenue}` — la
       // ligne sœur de `loup-et-saumure`/`arene`/`creatures.json`, même concept, même lot.
-      'L3 #1463': 393,
+      // … puis 393 → 395 (équipage du Grimm et statblocs d'auteur de l'arène, 2026-09-01) :
+      // `loup-et-saumure-projet.json › appearance {species, tenue}` et `arene-projet.json › appearance {species}` —
+      // les deux dernières lignes sœurs du même concept, même lot.
+      'L3 #1463': 395,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

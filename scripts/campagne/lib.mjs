@@ -279,13 +279,19 @@ export function fouille(effectsOrFlow, consume = false) {
   return { interact: { flow, ...(consume ? { consume: true } : {}) } };
 }
 
-/** Statblocks d'AUTEUR (sourcés à leur création). */
+/** Statblocks d'AUTEUR (sourcés à leur création). Sans réf de bestiaire, une entité `personnage` n'a
+ *  d'apparence à résoudre que par son Espèce — `entityRigProfileFor`
+ *  (`src/gameIso/rig/enemyProfile.ts:270-274`) n'en dérive AUCUNE sans l'une des deux : chaque statbloc
+ *  d'auteur voyage donc avec l'apparence à poser sur l'entité qui le porte. La nuée porte une VRAIE
+ *  espèce (`rat-geant`), pas un id de forme : `swarmFormOf` (`src/gameIso/rig/swarm/forms.ts:51-64`)
+ *  la route par le `plan` de sa def de créature (quadruped → forme « rats »). */
 export const NUEE_DE_RATS = {
   type: 'statblock',
   label: 'Nuée de rats',
   char: { M: 4, 'capacite-de-combat': 30, force: 25, endurance: 30, agilite: 40, B: 5 },
   traits: [{ id: 'nuee' }, { id: 'taille', arg: 'petite' }],
 };
+export const NUEE_DE_RATS_APPEARANCE = { species: 'rat-geant' };
 export const DRAGON_DES_TENEBRES = {
   type: 'statblock',
   label: 'Dragon des ténèbres',
@@ -314,3 +320,4 @@ export const DRAGON_DES_TENEBRES = {
   ],
   size: 'monstrueuse',
 };
+export const DRAGON_DES_TENEBRES_APPEARANCE = { species: 'dragon' };

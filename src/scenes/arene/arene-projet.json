@@ -7975,6 +7975,9 @@
         "arg": "petite"
        }
       ]
+     },
+     "appearance": {
+      "species": "rat-geant"
      }
     },
     {
@@ -8004,6 +8007,9 @@
         "arg": "petite"
        }
       ]
+     },
+     "appearance": {
+      "species": "rat-geant"
      }
     },
     {
@@ -19440,6 +19446,9 @@
        }
       ],
       "size": "monstrueuse"
+     },
+     "appearance": {
+      "species": "dragon"
      }
     },
     {

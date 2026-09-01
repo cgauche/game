@@ -1,5 +1,5 @@
 /** Zones 8-13 de l'échelle — le haut du tableau : Fosse, Caverne, Vermine, Cercle, Sépulcre, Dragon. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES, flowOf, flagWhen, testNode } from '../campagne/lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES, DRAGON_DES_TENEBRES_APPEARANCE, flowOf, flagWhen, testNode } from '../campagne/lib.mjs';
 
 // ── Zone 8 — La Fosse (30×20, roche) : gouffres, harde du Chaos, gladiateur ALLIÉ ───────────
 
@@ -591,7 +591,7 @@ export function makeZone13() {
       {
         id: 'enc-zone13',
         enemies: [
-          { statblock: DRAGON_DES_TENEBRES, pos: { x: 28, y: 9 } },
+          { statblock: DRAGON_DES_TENEBRES, appearance: DRAGON_DES_TENEBRES_APPEARANCE, pos: { x: 28, y: 9 } },
           { ref: 'gobelin', pos: { x: 24, y: 5 } },
           { ref: 'gobelin', pos: { x: 26, y: 16 } },
           { ref: 'gobelin', pos: { x: 21, y: 12 }, randomChars: true },

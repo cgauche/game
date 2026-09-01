@@ -77,10 +77,14 @@ const GUN_SKILLS = [{ id: 'projectiles', spec: 'poudre-noire', value: 55 }];
 
 /** Membre d'équipage exposé (MDG ch.14) SANS ref de bestiaire dédiée (aucune créature générique
  *  « marin »/« matelot » au catalogue, cf. journal) : CustomStatblock minimal justifié (règle stricte 7 —
- *  omission documentée, pas un « MJ décide »). `skills` (optionnel) : compétences navales du représentant. */
-function marinDuGrimm(id, x, y, label, skills) {
+ *  omission documentée, pas un « MJ décide »). `skills` (optionnel) : compétences navales du représentant.
+ *  `appearance` : descripteur EXPLICITE du rig. Sans réf de bestiaire, une entité `personnage` n'a
+ *  d'apparence à résoudre que par son Espèce — `entityRigProfileFor`
+ *  (`src/gameIso/rig/enemyProfile.ts:270-274`) n'en dérive AUCUNE sans l'une des deux. */
+function marinDuGrimm(id, x, y, label, skills, appearance) {
   return {
     id, kind: 'personnage', pos: { x, y }, label,
+    appearance,
     statblock: {
       type: 'statblock',
       label,
@@ -111,6 +115,13 @@ const OBJ = (desc) => ({ type: 'setObjective', id: 'ls-mission', desc });
 // même seed/colors/tenue → rendu identique quai ⇄ Erengrad) ; Köhler partagé quai ⇄ épilogue.
 const KRAMER_APPEARANCE = { species: 'humains-reiklander', tenue: 'marchand', sex: 'F', build: 0.45, seed: 20471 };
 const KOHLER_APPEARANCE = { species: 'humains-reiklander', tenue: 'noble', sex: 'M', build: 0.5, seed: 5120 };
+// Aldo et Griet ont DEUX incarnations chacun (le PNJ du quai, l'équipage exposé des deux abordages) :
+// même personnage → MÊME apparence, seed comprise.
+const ALDO_APPEARANCE = { species: 'humains-reiklander', tenue: 'pretre', sex: 'M', build: 0.6, seed: 31207 };
+const GRIET_APPEARANCE = { species: 'humains-reiklander', tenue: 'artiste', sex: 'F', build: 0.4, seed: 44810 };
+// Équipage ADVERSE anonyme : tenue de fonction (matelot au gouvernail, servant de pièce).
+const MARIN_APPEARANCE = { species: 'humains-reiklander', tenue: 'marin' };
+const ARTILLEUR_APPEARANCE = { species: 'humains-reiklander', tenue: 'artilleur-de-navire' };
 
 const scenes = [];
 
@@ -153,9 +164,9 @@ scenes.push(scene({
   entities: [
     hero(2, 4),
     NPC('kohler', 5, 3, 'Baron Ludolf Köhler', { facing: 'S', dialogueId: 'dlg-kohler', appearance: KOHLER_APPEARANCE }),
-    NPC('aldo', 8, 3, 'Frère Aldo', { facing: 'S', dialogueId: 'dlg-aldo', appearance: { species: 'humains-reiklander', tenue: 'pretre', sex: 'M', build: 0.6 } }),
+    NPC('aldo', 8, 3, 'Frère Aldo', { facing: 'S', dialogueId: 'dlg-aldo', appearance: ALDO_APPEARANCE }),
     NPC('kramer', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer', appearance: KRAMER_APPEARANCE }),
-    NPC('griet', 5, 6, 'Griet', { facing: 'N', dialogueId: 'dlg-griet', appearance: { species: 'humains-reiklander', tenue: 'artiste', sex: 'F', build: 0.4 } }),
+    NPC('griet', 5, 6, 'Griet', { facing: 'N', dialogueId: 'dlg-griet', appearance: GRIET_APPEARANCE }),
     NPC('avitailleuse', 9, 6, 'Cambuse du port (rations/eau)', { facing: 'N', merchant: { archetype: 'taverniere' }, appearance: { species: 'humains-reiklander', tenue: 'bourgeois', sex: 'F', build: 0.55 } }),
     NPC('armurier', 12, 6, 'Arsenal du port (munitions/pièces)', { facing: 'N', merchant: { archetype: 'armurier' }, appearance: { species: 'humains-reiklander', tenue: 'artisan', sex: 'M', build: 0.6 } }),
     NPC('avitailleur', 13, 4, 'Chandelier du quai (eau, rations de mer, pièces, boulets)', { facing: 'S', merchant: { archetype: 'avitailleur' }, appearance: { species: 'humains-reiklander', tenue: 'bourgeois', sex: 'M', build: 0.5 } }),
@@ -384,8 +395,8 @@ scenes.push(scene({
       [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('pierrier', 'proue', [{ ref: 'balles-et-poudre-pierrier', qty: 16 }])]),
-    marinDuGrimm('aldo-crew', 3, 6, 'Frère Aldo (équipage exposé)', HELM_SKILLS),
-    marinDuGrimm('griet-crew', 3, 8, 'Griet (équipage exposé)', GUN_SKILLS),
+    marinDuGrimm('aldo-crew', 3, 6, 'Frère Aldo (équipage exposé)', HELM_SKILLS, ALDO_APPEARANCE),
+    marinDuGrimm('griet-crew', 3, 8, 'Griet (équipage exposé)', GUN_SKILLS, GRIET_APPEARANCE),
     // Dent de Manann — passagers : les pirates + le chef (hors ordre/rendu à la Mer) ET des marins représentants
     // compétents (barreur/canonnier) pour que la coque manœuvre et fasse feu. Deux bordées + chasse de proue.
     hull('cogue', 'cogue', 18, 7, 'O', 'La Dent de Manann', ['pirate-1', 'pirate-2', 'chef-cogue', 'cogue-helm', 'cogue-gun'],
@@ -395,8 +406,8 @@ scenes.push(scene({
     { id: 'pirate-1', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 18, y: 6 }, label: 'Pirate' },
     { id: 'pirate-2', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 18, y: 8 }, label: 'Pirate' },
     { id: 'chef-cogue', kind: 'personnage', ref: 'chef-pirate', pos: { x: 19, y: 7 }, label: 'Le chef de la Dent de Manann' },
-    marinDuGrimm('cogue-helm', 18, 5, 'Barreur de la Dent de Manann', HELM_SKILLS),
-    marinDuGrimm('cogue-gun', 18, 9, 'Canonnier de la Dent de Manann', GUN_SKILLS),
+    marinDuGrimm('cogue-helm', 18, 5, 'Barreur de la Dent de Manann', HELM_SKILLS, MARIN_APPEARANCE),
+    marinDuGrimm('cogue-gun', 18, 9, 'Canonnier de la Dent de Manann', GUN_SKILLS, ARTILLEUR_APPEARANCE),
   ],
   encounters: [
     {
@@ -559,8 +570,8 @@ scenes.push(scene({
       [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('pierrier', 'poupe', [{ ref: 'balles-et-poudre-pierrier', qty: 16 }])]),
-    marinDuGrimm('aldo-crew-2', 3, 6, 'Frère Aldo (équipage exposé)', HELM_SKILLS),
-    marinDuGrimm('griet-crew-2', 3, 8, 'Griet (équipage exposé)', GUN_SKILLS),
+    marinDuGrimm('aldo-crew-2', 3, 6, 'Frère Aldo (équipage exposé)', HELM_SKILLS, ALDO_APPEARANCE),
+    marinDuGrimm('griet-crew-2', 3, 8, 'Griet (équipage exposé)', GUN_SKILLS, GRIET_APPEARANCE),
     // Le Serpent-de-Sel : Proue-idole de Stromfels (amélioration d'INSTANCE, #221) + Bélier de proue par sa
     // culture d'abordage. Passagers : les Norses + Olg (hors ordre/rendu) ET des marins représentants compétents.
     hull('serpent-de-sel', 'langskip', 18, 7, 'O', 'Le Serpent-de-Sel', ['norse-1', 'norse-2', 'olg', 'serpent-helm', 'serpent-gun'],
@@ -571,8 +582,8 @@ scenes.push(scene({
     { id: 'norse-1', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 18, y: 6 }, label: 'Norse' },
     { id: 'norse-2', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 18, y: 8 }, label: 'Norse' },
     { id: 'olg', kind: 'personnage', ref: 'olg-blodsalt', pos: { x: 19, y: 7 }, label: 'Olg Blóðsalt', weapon: 'hache-d-armes' },
-    marinDuGrimm('serpent-helm', 18, 5, 'Barreur du Serpent-de-Sel', HELM_SKILLS),
-    marinDuGrimm('serpent-gun', 18, 9, 'Canonnier du Serpent-de-Sel', GUN_SKILLS),
+    marinDuGrimm('serpent-helm', 18, 5, 'Barreur du Serpent-de-Sel', HELM_SKILLS, MARIN_APPEARANCE),
+    marinDuGrimm('serpent-gun', 18, 9, 'Canonnier du Serpent-de-Sel', GUN_SKILLS, ARTILLEUR_APPEARANCE),
   ],
   encounters: [
     {

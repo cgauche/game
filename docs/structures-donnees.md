@@ -449,7 +449,7 @@ sont les datasets qui couvrent ≥ 50 % de ses valeurs résolvantes. Une valeur 
 vers un dataset HORS de ces cibles est AMBIGUË : elle compte encore comme référence, mais le
 dataset atteint n’est pas celui que le site vise — c’est là qu’une collision d’ids peut mentir.
 
-**203** valeurs ambiguës, **936** occurrences. Les 40 plus fréquentes :
+**205** valeurs ambiguës, **939** occurrences. Les 40 plus fréquentes :
 
 | Dataset | Champ | Clé | Valeur | Résout vers | Cibles majoritaires du site | Occurrences |
 |---|---|---|---|---|---|---|
@@ -752,7 +752,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `arene-projet.json` | `scenes.dialogues.nodes` | 16 | `choices`(16) `desc`(16) `id`(16) |
 | `arene-projet.json` | `scenes.effectZones` | 9 | `area`(9) `id`(9) `label`(9) `presentation`(9) `z`(9) |
 | `arene-projet.json` | `scenes.encounters` | 20 | `id`(20) `members`(20) `onVictory`(20) `surprise`(6) |
-| `arene-projet.json` | `scenes.entities` | 442 | `anim`(10) `appearance`(20) `combat`(41) `dialogueId`(9) `facing`(16) `id`(442) `interact`(29) `kind`(442) `label`(85) `merchant`(4) `pos`(442) `ref`(406) `statblock`(3) `weapon`(6) |
+| `arene-projet.json` | `scenes.entities` | 442 | `anim`(10) `appearance`(23) `combat`(41) `dialogueId`(9) `facing`(16) `id`(442) `interact`(29) `kind`(442) `label`(85) `merchant`(4) `pos`(442) `ref`(406) `statblock`(3) `weapon`(6) |
 | `arene-projet.json` | `scenes.triggers` | 27 | `flow`(27) `id`(27) `once`(25) `rect`(27) |
 | `arene-projet.json` | `worldMap` | 1 | `id`(1) `label`(1) `places`(1) `routes`(1) |
 | `arene-projet.json` | `worldMap.places` | 4 | `entry`(1) `icon`(4) `id`(4) `label`(4) `pos`(4) `scene`(4) |
@@ -800,7 +800,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `loup-et-saumure-projet.json` | `scenes.dialogues.nodes.choices.flow.steps.effect` | 1 | `desc`(1) `id`(1) `type`(1) |
 | `loup-et-saumure-projet.json` | `scenes.encounters` | 2 | `id`(2) `members`(2) `onVictory`(2) `surprise`(2) `threat`(1) `victoryCondition`(2) |
 | `loup-et-saumure-projet.json` | `scenes.encounters.onVictory.steps.effect` | 1 | `desc`(1) `id`(1) `type`(1) |
-| `loup-et-saumure-projet.json` | `scenes.entities` | 36 | `appearance`(11) `crewIds`(4) `dialogueId`(8) `facing`(15) `id`(36) `interact`(2) `kind`(36) `label`(31) `merchant`(3) `pos`(36) `postes`(4) `ref`(10) `statblock`(8) `upgrades`(1) `weapon`(1) |
+| `loup-et-saumure-projet.json` | `scenes.entities` | 36 | `appearance`(19) `crewIds`(4) `dialogueId`(8) `facing`(15) `id`(36) `interact`(2) `kind`(36) `label`(31) `merchant`(3) `pos`(36) `postes`(4) `ref`(10) `statblock`(8) `upgrades`(1) `weapon`(1) |
 | `loup-et-saumure-projet.json` | `scenes.entities.interact.flow.steps.effect` | 1 | `desc`(1) `id`(1) `type`(1) |
 | `loup-et-saumure-projet.json` | `scenes.entities.upgrades` | 1 | `id`(1) |
 | `loup-et-saumure-projet.json` | `scenes.triggers` | 2 | `flow`(2) `id`(2) `once`(2) `rect`(2) `when`(1) |
@@ -1113,12 +1113,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **831** (cible 344 · declaree 6 · historique 122 · divergente 359). Objets JSON parcourus : **48105**, dont **31741** portent une forme
+Lignes concept × dataset × champ × forme : **833** (cible 344 · declaree 6 · historique 122 · divergente 361). Objets JSON parcourus : **48116**, dont **31752** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-474 ligne(s), 24413 occurrence(s).
+476 ligne(s), 24424 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1147,6 +1147,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `acts` | `act+…` | divergente | `arene-projet.json` | 1 | — | `regles.json` |  |
 | config | `ambush` | `encounter,scene` | divergente | `arene-projet.json` | 4 | — | `arene-projet.json` |  |
 | config | `appearance` | `id-nu` | historique | `arene-projet.json` | 2 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `appearance` | `species` | divergente | `arene-projet.json` | 3 | — | `creatures.json` |  |
 | config | `appearance` | `species,tenue` | divergente | `arene-projet.json` | 5 | — | `careers.json` `creatures.json` `obsessions.json` `skills.json` `species.json` `talents.json` |  |
 | config | `appearance` | `species,tenue+…` | divergente | `arene-projet.json` | 12 | — | `careers.json` `creatures.json` `groups.json` `obsessions.json` `skills.json` `species.json` … |  |
 | config | `appearance` | `tenue` | divergente | `arene-projet.json` | 1 | — | `careers.json` `talents.json` |  |
@@ -1331,7 +1332,8 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `a` | `id-nu` | historique | `loup-et-saumure-projet.json` | 2 | — | `books.json` `loup-et-saumure-projet.json` `naval-ports.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `ambush` | `encounter,scene` | divergente | `loup-et-saumure-projet.json` | 2 | — | `loup-et-saumure-projet.json` |  |
 | config | `ammo` | `kind,subType,trappingId+…` | divergente | `loup-et-saumure-projet.json` | 16 | — | `merchantFamilies.json` `trappings.json` `weaponGroups.json` |  |
-| config | `appearance` | `species,tenue+…` | divergente | `loup-et-saumure-projet.json` | 11 | — | `careers.json` `groups.json` `skills.json` `species.json` `talents.json` |  |
+| config | `appearance` | `species,tenue` | divergente | `loup-et-saumure-projet.json` | 4 | — | `careers.json` `species.json` |  |
+| config | `appearance` | `species,tenue+…` | divergente | `loup-et-saumure-projet.json` | 15 | — | `careers.json` `groups.json` `skills.json` `species.json` `talents.json` |  |
 | config | `b` | `id-nu` | historique | `loup-et-saumure-projet.json` | 2 | — | `loup-et-saumure-projet.json` `naval-ports.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `backdrop` | `id-nu` | historique | `loup-et-saumure-projet.json` | 2 | — | `lieux-services.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `choices` | `next+…` | divergente | `loup-et-saumure-projet.json` | 23 | — | `loup-et-saumure-projet.json` |  |
@@ -2396,7 +2398,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12494** objets sur **48105** ne sont portés par AUCUNE
+Au-delà des orphelines, **12494** objets sur **48116** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -4433,7 +4435,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `arene-projet.json` | `a` | 4 |
 | `arene-projet.json` | `acts` | 1 |
 | `arene-projet.json` | `ambush` | 4 |
-| `arene-projet.json` | `appearance` | 22 |
+| `arene-projet.json` | `appearance` | 25 |
 | `arene-projet.json` | `b` | 4 |
 | `arene-projet.json` | `choices` | 14 |
 | `arene-projet.json` | `dialogueId` | 9 |
@@ -4564,7 +4566,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `loup-et-saumure-projet.json` | `a` | 2 |
 | `loup-et-saumure-projet.json` | `ambush` | 2 |
 | `loup-et-saumure-projet.json` | `ammo` | 16 |
-| `loup-et-saumure-projet.json` | `appearance` | 11 |
+| `loup-et-saumure-projet.json` | `appearance` | 19 |
 | `loup-et-saumure-projet.json` | `b` | 2 |
 | `loup-et-saumure-projet.json` | `backdrop` | 2 |
 | `loup-et-saumure-projet.json` | `choices` | 23 |

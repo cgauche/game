@@ -1,6 +1,6 @@
 /** Zones 1-7 de l'échelle — refaites en GRAND (24×16 → 32×24), layouts structurés, fouilles,
  *  rencontres enrichies. Ids/flags conservés (`arene-zoneN`, `zoneN_clear`). */
-import { scene, P, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS, flowOf, testNode } from '../campagne/lib.mjs';
+import { scene, P, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS, NUEE_DE_RATS_APPEARANCE, flowOf, testNode } from '../campagne/lib.mjs';
 
 // ── Zone 1 — La Cour (24×16, sable) : échauffement, tutoriel du couvert ────────────────────
 
@@ -245,8 +245,8 @@ export function makeZone3() {
         enemies: [
           { ref: 'rat-geant', pos: { x: 10, y: 4 } },
           { ref: 'rat-geant', pos: { x: 24, y: 3 } },
-          { statblock: NUEE_DE_RATS, pos: { x: 8, y: 6 } },
-          { statblock: NUEE_DE_RATS, pos: { x: 22, y: 5 } },
+          { statblock: NUEE_DE_RATS, appearance: NUEE_DE_RATS_APPEARANCE, pos: { x: 8, y: 6 } },
+          { statblock: NUEE_DE_RATS, appearance: NUEE_DE_RATS_APPEARANCE, pos: { x: 22, y: 5 } },
           { ref: 'snotling', pos: { x: 15, y: 3 } },
           { ref: 'snotling', pos: { x: 18, y: 6 } },
         ],

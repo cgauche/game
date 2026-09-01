@@ -232,7 +232,8 @@
       "species": "humains-reiklander",
       "tenue": "pretre",
       "sex": "M",
-      "build": 0.6
+      "build": 0.6,
+      "seed": 31207
      }
     },
     {
@@ -267,7 +268,8 @@
       "species": "humains-reiklander",
       "tenue": "artiste",
       "sex": "F",
-      "build": 0.4
+      "build": 0.4,
+      "seed": 44810
      }
     },
     {
@@ -1418,6 +1420,13 @@
       "y": 6
      },
      "label": "Frère Aldo (équipage exposé)",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "pretre",
+      "sex": "M",
+      "build": 0.6,
+      "seed": 31207
+     },
      "statblock": {
       "type": "statblock",
       "label": "Frère Aldo (équipage exposé)",
@@ -1454,6 +1463,13 @@
       "y": 8
      },
      "label": "Griet (équipage exposé)",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "artiste",
+      "sex": "F",
+      "build": 0.4,
+      "seed": 44810
+     },
      "statblock": {
       "type": "statblock",
       "label": "Griet (équipage exposé)",
@@ -1627,6 +1643,10 @@
       "y": 5
      },
      "label": "Barreur de la Dent de Manann",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "marin"
+     },
      "statblock": {
       "type": "statblock",
       "label": "Barreur de la Dent de Manann",
@@ -1663,6 +1683,10 @@
       "y": 9
      },
      "label": "Canonnier de la Dent de Manann",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "artilleur-de-navire"
+     },
      "statblock": {
       "type": "statblock",
       "label": "Canonnier de la Dent de Manann",
@@ -2786,6 +2810,13 @@
       "y": 6
      },
      "label": "Frère Aldo (équipage exposé)",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "pretre",
+      "sex": "M",
+      "build": 0.6,
+      "seed": 31207
+     },
      "statblock": {
       "type": "statblock",
       "label": "Frère Aldo (équipage exposé)",
@@ -2822,6 +2853,13 @@
       "y": 8
      },
      "label": "Griet (équipage exposé)",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "artiste",
+      "sex": "F",
+      "build": 0.4,
+      "seed": 44810
+     },
      "statblock": {
       "type": "statblock",
       "label": "Griet (équipage exposé)",
@@ -3001,6 +3039,10 @@
       "y": 5
      },
      "label": "Barreur du Serpent-de-Sel",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "marin"
+     },
      "statblock": {
       "type": "statblock",
       "label": "Barreur du Serpent-de-Sel",
@@ -3037,6 +3079,10 @@
       "y": 9
      },
      "label": "Canonnier du Serpent-de-Sel",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "artilleur-de-navire"
+     },
      "statblock": {
       "type": "statblock",
       "label": "Canonnier du Serpent-de-Sel",
