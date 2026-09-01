@@ -355,6 +355,33 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     ).toEqual(lignes(stockees));
   });
 
+  /**
+   * CONTRAT du côté DÉCLARÉ : un document SCELLÉ par la fabrique `document()` — `pipe` à la racine —
+   * rend ses clés. La SORTIE d'un tel pipe est un `transform`, qui n'en porte AUCUNE : un relevé qui
+   * la prend pour entrée rend 0 clé sur TOUTE la famille config/record, et les deux volets qui
+   * comparent déclaré × observé (clés jamais observées, forme déclarée jamais posée) se taisent au
+   * lieu de mordre. La lecture se fait donc sur le nœud PORTEUR du pipe.
+   */
+  it('un document SCELLÉ par `document()` déclare ses clés — jamais zéro', () => {
+    const scelles = DECLARES.filter((d) => d.racine.startsWith('pipe<'));
+    expect(scelles.length, 'aucun document scellé au registre : le contrat ci-dessous ne mesurerait rien.').toBeGreaterThan(40);
+    // Les SEULS documents scellés sans clé à rendre sont les deux records de valeur SCALAIRE :
+    // `decorPalette.ts:18,31` et `teintesJeu.ts:140` déclarent `{}` champs et une `valeurRecord`
+    // chaîne (palettes hex). La liste est NOMINATIVE, pas un filtre : un muet de plus sort par son
+    // nom — c'est ainsi que se voit un relevé qui lirait la SORTIE du pipe (un `transform` sans clé)
+    // au lieu de son nœud PORTEUR.
+    expect(
+      scelles.filter((d) => Object.keys(d.cles).length === 0).map((d) => `${d.file} (${d.note})`).sort(),
+      'document(s) scellé(s) rendant ZÉRO clé déclarée — `introspecterDefs` (`scripts/docs/lib/zod-introspect.mts`) doit lire le nœud PORTEUR du pipe.',
+    ).toEqual(['decorPalette.json (non-objet(string))', 'teintesJeu.json (non-objet(string))']);
+    // Nominatif : un `config` (`crew-morale.ts:18-48`) et un `record` enveloppé rendent LEURS clés,
+    // pas seulement celles que la fabrique pose d'office.
+    expect(Object.keys(DECLARES.find((d) => d.file === 'crew-morale.json')!.cles).sort()).toEqual(
+      expect.arrayContaining(['base', 'bands', 'factors']),
+    );
+    expect(Object.keys(DECLARES.find((d) => d.file === 'sizes.json')!.cles).length).toBeGreaterThan(0);
+  });
+
   it('formes DÉCLARÉES jamais observées, sans lot de peuplement : observé == stock', () => {
     const cle = (x: { dataset: string; cle: string; date?: string }) => `${x.dataset} | ${x.cle} | ${x.date ?? DATE_STOCK}`;
     const observees: string[] = [];
@@ -531,7 +558,14 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // INCHANGÉE : aucun projet n'en portait avant, aucun n'en porte après.
       // Cliquet DESCENDU 27 → 26 (#684 L4, 2026-08-31) : `diligence-projet.json › worldMap` cesse
       // d'être un déclaré-jamais-observé — le document PORTE sa carte. Le cliquet suit la baisse.
-      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 26],
+      // Cliquet REMONTÉ 26 → 27 : c'est la COUVERTURE du relevé qui revient, pas la donnée qui
+      // régresse. `introspecterDefs` prenait pour entrée d'un `pipe` à la racine sa SORTIE — un
+      // `transform` sans clés : les 45 documents scellés par `document()` rendaient ZÉRO clé
+      // déclarée. Le relevé lit désormais le PORTEUR du pipe, et les 8 clés des 4 `*-projet.json`
+      // (`activeAxes`, `auteur`) redeviennent mesurables. Mesure du doc §2.4 : 370 → 621 clés
+      // déclarées-jamais-observées, dont 243 posées d'office par la fabrique, hors dénominateur ici
+      // (`CLES_POSEES_INCONDITIONNELLEMENT`) — ces 8-là sont les seules à entrer au stock.
+      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 27],
       // Cliquet DESCENDU 6 → 5 : le stock est à 5 depuis un lot antérieur et la marge n'avait pas été
       // reprise. Aucune raison de garder un cran libre : il servirait à absorber un homonyme neuf.
       // … et 5 → 4 (L2 #1548, commit 3d) : l'homonyme `skill` MEURT — la clé n'a plus qu'UNE classe

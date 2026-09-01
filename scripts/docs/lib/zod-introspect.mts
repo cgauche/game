@@ -179,8 +179,9 @@ export function introspecterDefs(defs: readonly SchemaDef[]): DefIntrospectee[] 
       } else if (def?.type === 'union') {
         famille = 'union à la racine';
       } else if (def?.type === 'pipe') {
-        // Enveloppes d'un `pipe` : `[in, out]` — l'entrée du doc est la SORTIE (ce qui est rendu).
-        entree = d!.enveloppes[d!.enveloppes.length - 1];
+        // L'entrée du doc reste le PIPE lui-même : `clesDeclarees` y applique le critère STRUCTUREL
+        // ci-dessous (le bout qui porte des clés), pas le rôle in/out.
+        entree = schema;
         famille = 'pipe à la racine';
         // RECORD ENVELOPPÉ (#1467 L1b V-FLIP-RECORD) : la fabrique `document()` SCELLE le document par
         // un `pipe`, mais la CHARGE d'un record reste sa carte clé→valeur sous `entries`. Le critère

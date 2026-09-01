@@ -630,17 +630,18 @@ export const STRUCTURES_DEFAUT = [
   // que sa donnée, et la ligne se solde en retirant l'option ou en écrivant une variante.
   { dataset: "traits.json", cle: "variants", date: "2026-08-26" },
   { dataset: "trappings.json", cle: "requiresMastery", date: "2026-08-26" },
-  // #1552 — les 8 lignes des 4 `*-projet.json` (`activeAxes` et `auteur`) SORTENT d'ici, et ce n'est
-  // PAS un solde : la donnée n'a pas changé, c'est le RELEVÉ qui ne les voit plus. En adoptant
-  // `document()`, le schéma de projet est devenu un `pipe` SCELLÉ à la racine, et `introspecterDefs`
-  // (`scripts/docs/lib/zod-introspect.mts`) y prend pour entrée la SORTIE du pipe — un `transform`,
-  // qui ne porte aucune clé (mesuré : `note=non-objet(transform)`, 0 clé déclarée). L'angle mort
-  // est PRÉEXISTANT et GÉNÉRAL : les 41 defs de famille `config`/`record` déjà adoptés y sont tous
-  // (`crew-morale.json`, `ambiance.json`, `aa-criticals.json`… mesurés à 0 clé déclarée) ; la famille
-  // `entite` y échappe parce que son entrée est l'ÉLÉMENT du tableau, et que `clesDeclarees` sait,
-  // LUI, descendre un `pipe` vers son nœud porteur (`traits.json` `variants` ci-dessus le prouve).
-  // Ce qui rend la mesure : `introspecterDefs` doit prendre le PORTEUR du pipe (l'entrée), comme sa
-  // propre prose l'énonce déjà (« la forme du document se lit sur l'ENTRÉE du pipe »).
+  // `activeAxes` : liste d'axes actifs déclarée par le schéma de projet et portée par 0 des 4 projets
+  // committés. `auteur` : champ d'identité de campagne (#766), optionnel, qu'AUCUN des 4 ne porte non
+  // plus (ils sont tous de première main). Même nature pour les 8 lignes — le schéma est plus large
+  // que sa donnée — et même solde : retirer le champ, ou l'écrire.
+  { dataset: "arene-projet.json", cle: "activeAxes", date: "2026-08-26" },
+  { dataset: "barge-du-sel-projet.json", cle: "activeAxes", date: "2026-08-26" },
+  { dataset: "diligence-projet.json", cle: "activeAxes", date: "2026-08-26" },
+  { dataset: "loup-et-saumure-projet.json", cle: "activeAxes", date: "2026-08-26" },
+  { dataset: "arene-projet.json", cle: "auteur", date: "2026-08-28" },
+  { dataset: "barge-du-sel-projet.json", cle: "auteur", date: "2026-08-28" },
+  { dataset: "diligence-projet.json", cle: "auteur", date: "2026-08-28" },
+  { dataset: "loup-et-saumure-projet.json", cle: "auteur", date: "2026-08-28" },
 ];
 
 export const STRUCTURES_HOMONYMES = [

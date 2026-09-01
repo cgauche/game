@@ -880,14 +880,18 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 
 #### A. Par défaut — sans lot de peuplement (stock `STRUCTURES_DEFAUT`)
 
-**79** documents portent au moins une clé déclarée jamais observée, **370** clés en tout
+**124** documents portent au moins une clé déclarée jamais observée, **621** clés en tout
 (stock `STRUCTURES_DEFAUT`, `scripts/guards/lib/structuresStock.mjs`, garde `src/data/structures-contrat.test.ts`).
 
 | Document | Clés | Détail |
 |---|---|---|
+| `aa-criticals.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `actions.json` | 4 | `alsoIn` `blocked` `desc` `labelF` |
 | `activities.json` | 3 | `alsoIn` `char` `labelF` |
 | `advancementCosts.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `ambiance.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `arcane-phenomena.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `artillery-misfire.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `astrology.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `axes.json` | 4 | `alsoIn` `icon` `labelF` `source` |
 | `books.json` | 5 | `alsoIn` `icon` `labelF` `maison` `source` |
@@ -902,36 +906,54 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 | `classes.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `combat-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `creatures.json` | 2 | `icon` `labelF` |
+| `crew-morale.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `crew-roles.json` | 3 | `alsoIn` `icon` `labelF` |
+| `crew-test-types.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `criticals.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `damage-types.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `details.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `disponibilite.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `domains.json` | 3 | `icon` `labelF` `maison` |
+| `donnees.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `driving-mishap.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `drunkenness.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `encumbranceTiers.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `etats.json` | 2 | `alsoIn` `labelF` |
 | `eyes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `flow-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `gods.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `grapple.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `groups.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `hairs.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `incidents-monture.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `interludeEvents.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `land-cargo.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `lieux-services.json` | 4 | `alsoIn` `labelF` `maison` `source` |
 | `lightLevels.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `lightTones.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `localisation.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `locations.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `maladies.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `maneuvers.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `priority` |
+| `mass-battle.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `merchantFamilies.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `merchants.json` | 8 | `alsoIn` `buyMarkup` `desc` `icon` `labelF` `maison` `restockDays` `source` |
 | `miscast.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `montures.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `mutations.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `mutationTables.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `names.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `naval-ports.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `naval-progression.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `naval-traits.json` | 2 | `icon` `labelF` |
 | `night-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `obsessions.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `oups.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `peripeties.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `pregens.json` | 8 | `age` `alsoIn` `desc` `icon` `labelF` `maison` `source` `weaponChoice` |
 | `primitives.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `problemes-vehicule.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `progression-schemas.derived.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `propMaterials.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `props.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `psychology.json` | 4 | `alsoIn` `gating` `labelF` `maison` |
@@ -943,16 +965,32 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 | `regles.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `reglesOptionnelles.json` | 4 | `alsoIn` `desc` `icon` `labelF` |
 | `reliefMaterials.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `rencontres-edoc.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `renduMonte.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `reseau-routier.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `river-criticals.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `river-navigation.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `river-perils.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `roofMaterials.json` | 7 | `alsoIn` `desc` `fasciaThickM` `icon` `labelF` `maison` `source` |
+| `sea-cargo.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `sea-events.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `sea-navigation.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `sea-perils.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `sea-shanties.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `sea-weather.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `ship-construction.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `ship-criticals.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `sizes.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `skills.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `species.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `speciesRace.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `spells.json` | 3 | `icon` `labelF` `maison` |
 | `stars.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `steam-breakdown.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `structure-criticals.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `structureAppearance.json` | 8 | `alsoIn` `bayPanel` `desc` `icon` `labelF` `maison` `relief` `source` |
 | `structures.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `surincantation.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `symptoms.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `systemes.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `tables.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
@@ -962,8 +1000,15 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 | `trappings.json` | 3 | `icon` `labelF` `requiresMastery` |
 | `traumas.json` | 3 | `alsoIn` `icon` `labelF` |
 | `vehicles.json` | 3 | `alsoIn` `labelF` `maison` |
+| `vents-tourbillonnants.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `voyage-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `water-exposure.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `weaponGroups.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `weather.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
+| `arene-projet.json` | 6 | `activeAxes` `alsoIn` `auteur` `desc` `labelF` `source` |
+| `barge-du-sel-projet.json` | 6 | `activeAxes` `alsoIn` `auteur` `desc` `labelF` `source` |
+| `diligence-projet.json` | 5 | `activeAxes` `alsoIn` `auteur` `labelF` `maison` |
+| `loup-et-saumure-projet.json` | 6 | `activeAxes` `alsoIn` `auteur` `desc` `labelF` `source` |
 
 #### B. `cible-declaree` — déclaré-avant-posé ASSUMÉ (émission, jamais un stock)
 
