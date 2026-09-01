@@ -10,11 +10,18 @@
  * affirmé « personne » sur une recherche trop étroite, sans surface pour le vérifier (cf.
  * `scripts/guards/lib/groundingCorpus.mjs`, cas `dotation-spec-consommateurs`).
  *
- * PÉRIMÈTRE MESURÉ / ANGLES MORTS — la plupart des `src/data/schemas/defs/*.ts` exportent un
- * `schema` ANONYME (`z.array(z.strictObject({…}))`, l'entrée de catalogue elle-même, ex.
- * `TrappingData`) SANS alias TS nommé exploitable pour le scope-de-liaison de ce détecteur (cf.
- * angles morts de `fieldConsumers.mjs`) — HORS PÉRIMÈTRE de ce rapport, dette non traitée.
- * Retenus à la place (`fieldConsumerTargets.mjs`) : les schémas exportés sous un nom
+ * PÉRIMÈTRE MESURÉ / ANGLES MORTS — le périmètre est borné par la FIDÉLITÉ du détecteur, pas par
+ * une absence de nom TS. Les catalogues `src/data/schemas/defs/*.ts` dont le `schema` d'entrée est
+ * ANONYME (`z.array(z.strictObject({…}))`) ONT pour la plupart un alias TS : `src/data/index.ts`
+ * porte 41 interfaces au patron `XData` (mesure 2026-09-01), dont `export interface TrappingData`
+ * (`index.ts:1113`), annotée par de vrais consommateurs (`src/engine/items.ts:20`,
+ * `src/engine/activities.ts:28`/`799`/`805`/`907`) ; et la liste des champs d'une entrée anonyme est
+ * dérivable sans nommage manuel (`scripts/docs/lib/zod-introspect.mts#introspecterDefs`, qui descend
+ * le sceau `document()`). Ce qui manque est la LIAISON FIABLE champ↔lecteur : cf. le second angle
+ * mort ci-dessous — détection SYNTAXIQUE, 9/16 = 56 % de faux négatifs mesurés sur les cas
+ * fondateurs. Élargir le corpus à ces catalogues avant de fiabiliser la liaison multiplierait un
+ * rapport majoritairement faux, là où il sert à décider un renommage/une suppression de champ.
+ * Retenus donc (`fieldConsumerTargets.mjs`, 23 cibles) : les schémas exportés sous un nom
  * `export const xSchema` ET portant un alias TS NOMMÉ vérifiable ailleurs dans le dépôt
  * (`interface`/`type X = …`) — c'est la classe exacte où vit `TrappingRef.spec`. Candidats
  * mesurés dans `src/data/schemas/grammaire/` (formes de valeur/référence/mécanique partagées par
@@ -22,12 +29,17 @@
  * `props.ts`), réduits par les deux catégories d'exclusion ci-dessous (non un cliquet — `TARGETS`
  * est un TABLEAU statique, étendu à la main si un nouveau schéma nommé apparaît).
  *
- * SORTIR un catalogue de l'angle mort = un geste d'auteur : NOMMER son schéma d'entrée (et ses
- * sous-schémas) dans SON def — `export const xSchema` dans `defs/<catalogue>.ts`, patron
- * `defs/criticals.ts` (`critEscalationSchema`, `amputationSchema`) — ou dans `grammaire/` si la forme
- * est RÉELLEMENT partagée entre documents, puis l'ajouter à `TARGETS`. Un def ADOPTÉ par `document()`
- * n'expose plus son entrée en nœud zod : il publie ses clés relevées avant le sceau (`cles` du handle,
- * patron `defs/props.ts`), et `TARGETS` porte alors `cles:` au lieu de `schema:`.
+ * ÉLARGIR le périmètre à ces catalogues (#1620) : d'abord un détecteur à vérificateur de types
+ * (`ts.Program`/`TypeChecker` dans `fieldConsumers.mjs`, re-mesure des 16 cas fondateurs à 0/16 faux
+ * négatif), PUIS la dérivation de `TARGETS` (champs par `introspecterDefs` + nom TS par jointure
+ * `type`↔`XData`), les defs sans type TS sortant par raison structurelle nommée. À l'unité, le geste
+ * d'auteur reste disponible : NOMMER son schéma d'entrée (et ses sous-schémas) dans SON def —
+ * `export const xSchema` dans `defs/<catalogue>.ts`, patron `defs/criticals.ts`
+ * (`critEscalationSchema`, `amputationSchema`) — ou dans `grammaire/` si la forme est RÉELLEMENT
+ * partagée entre documents, puis l'ajouter à `TARGETS`. Un def ADOPTÉ par `document()` n'expose plus
+ * son entrée en nœud zod : il publie ses clés relevées avant le sceau (`cles` du handle, patron
+ * `defs/props.ts`), et `TARGETS` porte alors `cles:` au lieu de `schema:` — fait pour `props.json`
+ * → `PropData`.
  *
  * SECOND ANGLE MORT, MESURÉ (pas hypothétique) — `fieldConsumers.mjs` ne borne une lecture que sur
  * un identifiant explicitement ANNOTÉ `T` (littéral du nom dans un type de paramètre/variable). Les
@@ -100,8 +112,14 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
   out += `Schémas NOMMÉS candidats : \`src/data/schemas/grammaire/\` (formes partagées entre documents) + les `
   out += `\`src/data/schemas/defs/\` dont les sous-schémas sont nommés (\`criticals.ts\`, \`props.ts\`) ; `
   out += `**${TARGETS.length} retenus** (voir en-tête du générateur pour les raisons d'exclusion). Les catalogues `
-  out += `\`src/data/schemas/defs/*.ts\` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE — sans alias TS nommé, `
-  out += `ce détecteur ne peut pas y borner une lecture ; en SORTIR un catalogue est un geste d'auteur (nommer `
+  out += `\`src/data/schemas/defs/*.ts\` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE par FIDÉLITÉ du `
+  out += `détecteur, non par absence de nom TS : l'alias existe pour la plupart (41 interfaces \`XData\` dans `
+  out += `\`src/data/index.ts\`, mesure 2026-09-01 — ex. \`TrappingData\` \`index.ts:1113\`, annotée par `
+  out += `\`src/engine/items.ts:20\` et \`src/engine/activities.ts:28\`) et les champs d'une entrée anonyme sont `
+  out += `dérivables (\`scripts/docs/lib/zod-introspect.mts#introspecterDefs\`) ; c'est la LIAISON champ↔lecteur `
+  out += `qui n'est pas fiable (56 % de faux négatifs, ci-dessous), et élargir le corpus avant de la fiabiliser `
+  out += `étendrait une mesure majoritairement fausse. Élargir exige donc d'abord un détecteur à vérificateur `
+  out += `de types (\`ts.Program\`/\`TypeChecker\`, #1620) ; à l'unité, le geste d'auteur reste ouvert (nommer `
   out += `son schéma d'entrée dans SON def — ou en \`grammaire/\` si la forme est réellement partagée — puis `
   out += `l'ajouter à \`TARGETS\`), fait pour \`props.json\` → \`PropData\`.\n\n`
   out += `Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant doit être `
