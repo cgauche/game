@@ -177,16 +177,13 @@ function rollDetail(
 /** Signe astral (Tableau des Signes astrologiques, ADE II 3 l.40) → `id` STABLE du signe (≠ libellé —
  *  multilangue-safe ; `Combatant.star` stocke l'id). `rand` = borne haute cumulée du 1d100. L'Étoile du
  *  Sorcier (l.62) regroupe plusieurs variantes sur la même borne, départagées par un 1d10 interne
- *  (`sub` = [min, max]) → table partagée. */
+ *  (`sub` = la fourchette de la variante) → table partagée, lue telle quelle par `findTableEntry`. */
 export function rollStar(rng: RNG = defaultRNG): { roll: number; id: string } {
   const sorted = [...starsTable].sort((a, b) => a.rand - b.rand);
   const r = roll(1, 100, rng);
   const hit = sorted.find((e) => r <= e.rand) ?? sorted[0];
-  const variants = sorted.filter((e) => e.rand === hit.rand && e.sub);
-  if (variants.length > 1) {
-    const table = variants.map((e) => ({ min: e.sub![0], max: e.sub![1], id: e.id }));
-    return { roll: r, id: findTableEntry(table, roll(1, 10, rng)).id };
-  }
+  const variants = sorted.flatMap((e) => (e.rand === hit.rand && e.sub ? [{ ...e.sub, id: e.id }] : []));
+  if (variants.length > 1) return { roll: r, id: findTableEntry(variants, roll(1, 10, rng)).id };
   return { roll: r, id: hit.id };
 }
 

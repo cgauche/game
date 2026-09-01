@@ -63,11 +63,40 @@ describe('buildShip — CONSTRUIRE UN NAVIRE en 4 étapes (MDG 12 l.108-164)', (
 });
 
 describe('installCost — pose d’une Amélioration par PALIER DE LONGUEUR (MDG 12 l.195-364, #277)', () => {
-  it('Taille dérivée de la longueur (l.120-129) — reste utile hors installation (buildShip)', () => {
-    expect(shipSizeOfLength(3)).toBe('minuscule');
-    expect(shipSizeOfLength(25)).toBe('moyenne');
-    expect(shipSizeOfLength(60)).toBe('enorme');
+  it('Taille dérivée de la longueur (l.120-129) — SOURCE UNIQUE, les DEUX bornes de chaque bande', () => {
+    // Le tableau CARACTÉRISTIQUES DE BATEAU STANDARD, colonne « Taille » (l.123-129) : sept bandes,
+    // bornes INCLUSIVES, la dernière ouverte (« 81+ »). La table est lue en donnée par
+    // `findTableEntry` — les bornes BASSES comptent donc autant que les hautes.
+    expect(shipSizeOfLength(1)).toBe('minuscule');
+    expect(shipSizeOfLength(10)).toBe('minuscule');
+    expect(shipSizeOfLength(11)).toBe('tres-petite');
+    expect(shipSizeOfLength(15)).toBe('tres-petite');
+    expect(shipSizeOfLength(16)).toBe('petite');
+    expect(shipSizeOfLength(20)).toBe('petite');
+    expect(shipSizeOfLength(21)).toBe('moyenne');
+    expect(shipSizeOfLength(35)).toBe('moyenne');
+    expect(shipSizeOfLength(36)).toBe('grande');
+    expect(shipSizeOfLength(50)).toBe('grande');
+    expect(shipSizeOfLength(51)).toBe('enorme');
+    expect(shipSizeOfLength(80)).toBe('enorme');
+    expect(shipSizeOfLength(81)).toBe('monstrueuse');
+    // La bande finale n'a PAS de plafond : le « 130 » que la donnée portait n'est imprimé nulle part.
     expect(shipSizeOfLength(130)).toBe('monstrueuse');
+    expect(shipSizeOfLength(400)).toBe('monstrueuse');
+  });
+
+  it('hors du domaine (0, négatif, longueur FRACTIONNAIRE) : anomalie NOMMÉE, jamais une Taille de repli', () => {
+    // La colonne « Taille » est une table d'ENTIERS contiguë depuis 1 m : entre deux bandes, il n'y a
+    // pas de rangée à rendre. Les deux replis possibles mentent — la DERNIÈRE bande rendrait
+    // « Monstrueuse » à une chaloupe, la PREMIÈRE rendrait « Minuscule » à un trois-mâts de 80,5 m.
+    // Le porteur, lui, est borné au schéma (`ship.lengthM: z.number().int().min(1)`).
+    for (const hors of [0, -5, 0.5, 10.5, 15.5, 20.5, 35.5, 50.5, 80.5]) {
+      expect(() => shipSizeOfLength(hors), `la longueur ${hors} m a reçu une Taille au lieu d’un refus`)
+        .toThrowError(/ne tombe dans aucune bande de la colonne/);
+    }
+    // AU-DESSUS de 81 m il n'y a plus de trou : la bande finale est OUVERTE (« 81+ », l.129) — une
+    // longueur fractionnaire y tombe, et c'est la seule qui passe.
+    expect(shipSizeOfLength(130.5)).toBe('monstrueuse');
   });
 
   it('Ancre : 10 CO / 50 Enc jusqu’à 35 m (borne « moyenne »), 20 CO / 75 Enc au-delà (l.207-209)', () => {

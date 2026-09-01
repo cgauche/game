@@ -250,7 +250,19 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // `plage max,min+…`). Le stock des FORMES à éteindre ne bouge pas (ces cinq étaient hors strate, pas
 // divergentes) ; les lignes de forme montent de 855 à 860 (cible 388 → 393) et le concept `plage`
 // passe de 66 à 71 lignes / 1454 à 1459 occurrences.
-const PLAFOND_HORS_STRATE = 1136;
+// Cliquet MONTÉ 1136 → 1137 (#1659 L-1659-3, 2026-09-01), et c'est le SEUL cran de hausse de la
+// vague : les 7 longueurs de coque passent du TUPLE à la fourchette, 6 entrent à la forme CIBLE
+// (`ship-construction.json › lengthM | max,min`) et la 7ᵉ — la bande FINALE, que MDG 12 l.129
+// imprime « 81+ » — porte `max: null`. Or l'ANGLE MORT déclaré du lexique dit que la candidature
+// `plage` est bornée au TYPE : « une borne non numérique (`null` d'une bande ouverte comprise)
+// n'ouvre pas la plage » (`scripts/docs/lib/structures-lexique.mts`). Une bande ouverte tombe donc
+// hors strate — précédents MESURÉS et déjà au doc : `advancementCosts.json › (racine)` et
+// `sea-cargo.json › offerPrice`. Ce cran n'est pas une structure neuve : c'est une fourchette rendue
+// VISIBLE, sur un type que la candidature du lexique exclut. Solde de la vague : 1141 → 1136
+// (L-1659-1) → 1137, net −4. Ce que ce +1 nomme : la candidature `plage` exclut `plageOuverteSchema`,
+// pourtant nœud DÉCLARÉ de la grammaire — l'y admettre sortirait les TROIS bandes ouvertes du
+// hors-strate d'un coup (le plafond qui en résulte est à MESURER, pas à prédire ici).
+const PLAFOND_HORS_STRATE = 1137;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 

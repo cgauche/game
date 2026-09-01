@@ -80,7 +80,12 @@ const doc = document(
     ship: z.strictObject({
       crew: z.number(),
       manoeuvre: z.number(),
-      lengthM: z.number(),
+      /** Longueur de coque en mètres. ENTIER ≥ 1 : c'est le domaine de la colonne « Taille » du
+       *  tableau standard (MDG 12 l.122-129, bandes d'entiers contiguës depuis 1 m), que
+       *  `shipSizeOfLength` (`src/engine/shipBuild.ts`) lit — une longueur hors domaine n'a pas de
+       *  Taille, et le refus se pose ICI plutôt qu'au tirage. Mesuré 2026-09-02 : les 20 navires de
+       *  `vehicles.json` sont entiers, de 3 à 130 m. */
+      lengthM: z.number().int().min(1),
       footprint: z.number().optional(),
       capacity: z.number(),
       sail: z.strictObject({ m: z.number(), crew: z.number() }).optional(),

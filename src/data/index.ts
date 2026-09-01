@@ -2145,9 +2145,9 @@ export interface StarData {
    *  (`GameOpEditor`) : `charMod` (±carac) et/ou `grantTalent` (talent octroyé). Appliqué une
    *  fois à la création (cf. `applyStarOps`), pas collecté en passif continu. */
   ops?: import('../engine/ops').GameOp[];
-  /** L'Étoile du Sorcier (ADE II 3 l.63) : fourchette du 1d10 interne `[min, max]` parmi les variantes
-   *  partageant `rand:100`. Absent = pas de sous-tirage (signe simple). */
-  sub?: [number, number];
+  /** L'Étoile du Sorcier (ADE II 3 l.63) : fourchette du 1d10 interne parmi les variantes partageant
+   *  `rand:100`, dans la forme que `findTableEntry` lit. Absent = pas de sous-tirage (signe simple). */
+  sub?: { min: number; max: number };
   desc?: string;
   source: SourceRef;
 }
@@ -2689,6 +2689,15 @@ const weatherData = weatherJson as {
 };
 /** 1 entrée par saison, `ranges` = plages d100 → météo (lecture par `rollStageWeather`). */
 export const weather = weatherData.seasons;
+/**
+ * Libellé d'affichage d'une SAISON (`Season`, `src/engine/travelStages.ts`) — SOURCE UNIQUE, keyée par
+ * l'id STABLE : le nom FR vit dans la donnée éditable (`weather.json › seasons[].label`), jamais en
+ * table d'écran. Même patron que `specLabel`/`refLabel` ci-dessous. Une saison sans fiche météo n'a
+ * pas de nom à afficher : elle est NOMMÉE par sa clé plutôt que passée sous silence.
+ */
+export function seasonLabel(id: string): string {
+  return weatherData.seasons.find((s) => s.id === id)?.label ?? `saison « ${id} » (sans fiche)`;
+}
 /** Effets par météo (visibilité, mods de tir, poudre, Tests physiques, plafond de mouvement…). */
 export const weatherConditions = weatherData.conditions;
 /** Caractéristiques réputées « physiques » (liste MAISON, EDOC 8 l.82 non chiffrée). */

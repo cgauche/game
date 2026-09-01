@@ -95,24 +95,6 @@ export function cargoBasePrice(cargo: CargoDef, season: Season, rng: RNG = defau
   return cargo.price[season];
 }
 
-/** Bande d'un tableau de PRIX D'OFFRE — fourchette d'un indice de Lieu, bornes INCLUSIVES. `max: null`
- *  = bande finale sans plafond (MDG 15 l.383 « 4 ou plus » ; JSON n'a pas d'Infinity). */
-export interface OfferBand { min: number; max: number | null }
-
-/** Le tableau d'offre tel que `findTableEntry` (`./tables`) le lit : SEULE la borne HAUTE de la
- *  dernière bande s'ouvre, parce que c'est la seule que les livres écrivent (MDG 15 l.383 « 4 ou
- *  plus » ; MSRC 13 l.150-156 n'en écrit aucune). La borne BASSE reste FERMÉE : rien n'entre sous le
- *  premier échelon imprimé — l'indice de Richesse s'arrête à 1 (MSRC 13 l.52-60 : « Misérable » y
- *  porte « - », donc aucun indice) et le schéma de scène borne la saisie (`defs-scenes/worldmap.ts`).
- *  Une valeur hors table est donc une ANOMALIE, que l'appelant NOMME (`findTableEntryIndex` < 0), et
- *  jamais le repli muet de `findTableEntry` sur la dernière bande. Entre les deux bornes, la
- *  contiguïté est tenue en donnée (`ecartsDeCouverture`, `src/data/schemas/defs/sea-cargo.ts` et
- *  `src/data/schemas/defs/land-cargo.ts`).
- *  PUR — brique commune aux deux commerces. */
-export function offerLookup<T extends OfferBand>(bandes: readonly T[]): (T & { max: number })[] {
-  return bandes.map((b) => ({ ...b, max: b.max ?? Number.POSITIVE_INFINITY }));
-}
-
 /** Un LOT de cargaison en cale/soute (`basePriceGold` = prix de base NOTÉ à l'achat, CO par point d'Enc —
  *  le Vin fige sa qualité/son 3d10 à ce moment). Modèle commun aux deux commerces. */
 export interface CargoLot {

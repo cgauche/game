@@ -18,7 +18,7 @@
  */
 import seaEventsJson from '../data/sea-events.json';
 import seaCargoJson from '../data/sea-cargo.json';
-import { findTableEntry, findTableEntryIndex } from './tables';
+import { findTableEntry, findTableEntryIndex, tableOuverte, type BandeOuverte } from './tables';
 import { d10, roll as rollDice, type RNG, defaultRNG } from './dice';
 import { rollTest, type TestResult } from './tests';
 import type { Difficulty } from './types';
@@ -26,7 +26,7 @@ import type { SkillRef } from './skills';
 import type { Season } from './travelStages';
 // Tronc commun cargaison (partagé avec le commerce terrestre MSRC, `landCargo.ts`) — modèle de lot,
 // tirage saisonnier, prix de base. Re-exporté pour les importeurs historiques de ce module.
-import { type CargoDef, type CargoEntry, type OfferBand, isEchangeable, isTradeHubColumn, offerLookup, rollSeasonalCargo } from './cargo';
+import { type CargoDef, type CargoEntry, isEchangeable, isTradeHubColumn, rollSeasonalCargo } from './cargo';
 export { type CargoDef, type CargoEntry, type CargoLot, isEchangeable, cargoTotalEnc, removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoBasePrice } from './cargo';
 
 // ── Types de la donnée ───────────────────────────────────────────────────────────────────────────
@@ -67,9 +67,9 @@ const EVENTS = seaEventsJson as unknown as {
  *  `mMod`/`manoeuvreDR` = −M et −DR Manœuvre appliqués au navire. */
 export interface OverloadPalier { id: string; fromPct: number; label: string; mMod: number; manoeuvreDR: number }
 
-/** Bande du tableau du Prix d'offre (l.378-383) : fourchette de Richesse + Taille + Demande (`OfferBand`,
- *  tronc commun) et son % du prix de base. */
-interface OfferPriceBand extends OfferBand { pct: number }
+/** Bande du tableau du Prix d'offre (l.378-383) : fourchette de Richesse + Taille + Demande
+ *  (`BandeOuverte`, tronc commun) et son % du prix de base. */
+interface OfferPriceBand extends BandeOuverte { pct: number }
 
 const CARGO = seaCargoJson as unknown as {
   cargoes: CargoEntry[];
@@ -101,8 +101,9 @@ export const CARGO_ENTRIES: readonly CargoEntry[] = CARGO.cargoes;
  *  cargaison aléatoire, éditeur et Compendium ne voient jamais un marqueur. */
 export const CARGOES: readonly CargoDef[] = CARGO.cargoes.filter(isEchangeable);
 export const OPPORTUNITE = CARGO.opportunite;
-/** La table du Prix d'offre telle que `findTableEntry` la lit (`offerLookup`, tronc commun). */
-const OFFER_PRICE_LOOKUP = offerLookup(CARGO.sell.offerPrice);
+/** La table du Prix d'offre telle que `findTableEntry` la lit (`tableOuverte`, tronc commun — sa
+ *  dernière bande est OUVERTE, MDG 15 l.383 « 4 ou plus »). */
+const OFFER_PRICE_LOOKUP = tableOuverte(CARGO.sell.offerPrice);
 /** Résout une MARCHANDISE (les marqueurs ne sont ni achetables ni vendables). */
 export const findCargoById = (id: string): CargoDef | undefined => CARGOES.find((c) => c.id === id);
 /** Résout une entrée QUELCONQUE de la colonne Production, marqueur compris (libellé d'affichage). */

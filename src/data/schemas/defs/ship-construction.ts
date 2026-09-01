@@ -6,7 +6,7 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { ecartsDeCouverture, plageOuverteSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'ship-construction.json';
 export const famille = 'config';
@@ -25,13 +25,33 @@ const champs = {
       /** Absent pour les catégories non propulsables à la voile/à la rame (l.133). */
       sail: propulsionRow.optional(),
       oars: propulsionRow.optional(),
-      lengthM: z.tuple([z.number(), z.number()]),
+      /** Colonne « Taille » du tableau standard (l.122-129), en mètres : une FOURCHETTE `{min, max}`
+       *  que `findTableEntry` (`src/engine/tables.ts`) lit. La dernière bande est OUVERTE — le livre
+       *  imprime « 81+ » (l.129) et aucun plafond (`plageOuverteSchema`). */
+      lengthM: plageOuverteSchema,
       e: z.number(),
       b: z.number(),
       capacity: z.number(),
       source: sourceRefSchema,
     }),
-  ),
+  ).superRefine((rangees, ctx) => {
+    // CONTIGUÏTÉ des longueurs — invariant du TABLEAU, pas d'une rangée : une taille seule ne sait
+    // pas si sa voisine commence là où elle s'arrête. Sans ce verrou, un trou ouvert au Codex ne
+    // lèverait RIEN — `shipSizeOfLength` (`src/engine/shipBuild.ts`) lit la table par
+    // `findTableEntry`, qui REPLIE sur la dernière bande : une chaloupe de 12 m serait Monstrueuse.
+    const ecarts = ecartsDeCouverture(
+      rangees.map((r) => ({ ...r.lengthM, size: r.size })),
+      1,
+      'ouverte',
+      (f) => `la taille « ${f.size} » (${f.min}–${f.max ?? '+'} m)`,
+    );
+    if (ecarts.length) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `ship-construction.json › standard : les longueurs ne couvrent pas la colonne « Taille » d'un seul tenant depuis 1 m — ${ecarts.join(' ; ')}.`,
+      });
+    }
+  }),
   propulsion: z.strictObject({ secondaryMalus: z.number(), secondaryMinM: z.number(), source: sourceRefSchema }),
   manoeuvrability: z.array(z.strictObject({ manDR: z.number(), costPct: z.number(), source: sourceRefSchema })),
   speedTraits: z.array(

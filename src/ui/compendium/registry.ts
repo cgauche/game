@@ -16,7 +16,7 @@ import {
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
-  isNamed, specCatalogOf, specLabel, SKILL_ACCES_LABEL,
+  isNamed, specCatalogOf, specLabel, seasonLabel, SKILL_ACCES_LABEL,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
   conditionLabel, traitProjectingManeuver,
@@ -2143,7 +2143,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         fact('Équipage', s.crew),
         s.sail ? fact('Voile', `M${s.sail.m} (équipage ${s.sail.crew})`) : null,
         s.oars ? fact('Rames', `M${s.oars.m} (équipage ${s.oars.crew})`) : null,
-        fact('Longueur', `${s.lengthM[0]}–${s.lengthM[1]} m`),
+        // Bande FINALE sans plafond (MDG 12 l.129 « 81+ ») : elle se dit « et plus », pas « –null ».
+        fact('Longueur', s.lengthM.max == null ? `${s.lengthM.min} m et plus` : `${s.lengthM.min}–${s.lengthM.max} m`),
         fact('Endurance', s.e), fact('Blessures', s.b), fact('Capacité', s.capacity),
       ),
       sections: sections(shipConstructionRulesSection()),
@@ -2291,12 +2292,12 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           },
           {
             title: 'Modificateur saisonnier', layout: 'list',
-            rows: [
-              { t: 'kv', k: 'Été', v: String(w.seasonMod.ete) } as CodexRow,
-              { t: 'kv', k: 'Automne', v: String(w.seasonMod.automne) } as CodexRow,
-              { t: 'kv', k: 'Printemps', v: String(w.seasonMod.printemps) } as CodexRow,
-              { t: 'kv', k: 'Hiver', v: String(w.seasonMod.hiver) } as CodexRow,
-            ],
+            // Les saisons ET leurs noms viennent de la DONNÉE (`weather` + `seasonLabel`) : la
+            // rubrique ne connaît ni la liste ni les libellés. Itérer les CLÉS de `seasonMod`
+            // rendrait en plus sa clé d'enveloppe `source`.
+            rows: weather.map((s) => (
+              { t: 'kv', k: seasonLabel(s.id), v: String((w.seasonMod as Record<string, unknown>)[s.id]) } as CodexRow
+            )),
           },
           {
             title: 'Précipitations', layout: 'list',

@@ -103,7 +103,13 @@ export function NumberField(props: NumberFieldProps) {
   const [brouillon, setBrouillon] = useState(courant != null ? String(courant) : '');
   const [invalide, setInvalide] = useState(false);
   const commis = useRef<number | null>(courant);
-  if (commit === 'geste' && commis.current !== courant) {
+  // Resynchronisation sur une valeur EXTERNE nouvelle (l'hôte passe d'une fiche à une entrée neuve,
+  // la même instance restant montée) : la valeur précédente est tenue en ÉTAT, jamais dans la seule
+  // réf — sous `StrictMode` le rendu est double, la réf mutée au premier passage faisait sauter la
+  // resynchronisation au second, et le brouillon gardait la valeur de la fiche d'avant.
+  const [precedente, setPrecedente] = useState<number | null>(courant);
+  if (commit === 'geste' && precedente !== courant) {
+    setPrecedente(courant);
     commis.current = courant;
     setBrouillon(courant != null ? String(courant) : '');
   }

@@ -15,10 +15,10 @@
  */
 import landCargoJson from '../data/land-cargo.json';
 import { d10, d100, roll as rollDice, type RNG, defaultRNG } from './dice';
-import { findTableEntry, findTableEntryIndex } from './tables';
+import { findTableEntry, findTableEntryIndex, tableOuverte } from './tables';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
-import { type CargoDef, type CargoMarkerDef, isEchangeable, isTradeHubColumn, offerLookup, rollSeasonalCargo, cargoBasePrice } from './cargo';
+import { type CargoDef, type CargoMarkerDef, isEchangeable, isTradeHubColumn, rollSeasonalCargo, cargoBasePrice } from './cargo';
 
 /** Un type de cargaison terrestre = `CargoDef` + éventuel marqueur `wine` (prix par table de qualité, non
  *  par la colonne saisonnière). */
@@ -57,8 +57,9 @@ export const LAND_CARGOES: readonly LandCargoDef[] = LAND.cargoes.filter(isEchan
  *  d'un cran dans le livre — arbitrage NOMMÉ en tête de
  *  `scripts/migrations/2026-09-01-1463-gram-seuils-prix-offre.mjs`. */
 export const LAND_RICHESSE_ROWS: readonly OfferRow[] = LAND.sell.offerByRichesse;
-/** La table de la Mise à prix telle que `findTableEntry` la lit (`offerLookup`, tronc commun). */
-const OFFER_BY_RICHESSE_LOOKUP = offerLookup(LAND.sell.offerByRichesse);
+/** La table de la Mise à prix telle que `findTableEntry` la lit (`tableOuverte`, tronc commun —
+ *  MSRC 13 l.150-156 n'écrit aucune bande sans plafond, mais la table est de la même famille). */
+const OFFER_BY_RICHESSE_LOOKUP = tableOuverte(LAND.sell.offerByRichesse);
 /** Résout une MARCHANDISE terrestre (les marqueurs ne sont ni achetables ni vendables). */
 export const findLandCargoById = (id: string): LandCargoDef | undefined => LAND_CARGOES.find((c) => c.id === id);
 /** Résout une entrée QUELCONQUE de la colonne Produits, marqueur compris (libellé d'affichage). */

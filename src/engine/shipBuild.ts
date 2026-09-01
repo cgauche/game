@@ -29,7 +29,7 @@
  */
 import shipConstructionJson from '../data/ship-construction.json';
 import steamBreakdownJson from '../data/steam-breakdown.json';
-import { findTableEntry } from './tables';
+import { findTableEntry, findTableEntryIndex, tableOuverte } from './tables';
 import { roll as rollDice, type RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import type { CharKey, Difficulty } from './types';
@@ -55,7 +55,9 @@ export interface StandardShipRow {
   crew: number;
   sail?: { m: number; crew: number };
   oars?: { m: number; crew: number };
-  lengthM: [number, number];
+  /** Colonne « Taille » du tableau standard (ch.12 l.122-129), en mètres ; `max: null` = la bande
+   *  FINALE, que le livre imprime « 81+ » (l.129). */
+  lengthM: { min: number; max: number | null };
   e: number;
   b: number;
   capacity: number;
@@ -74,11 +76,35 @@ const DATA = shipConstructionJson as unknown as {
 };
 
 
-/** Taille MDG d'un navire d'après sa LONGUEUR (tableau standard, ch.12 l.120-129 : 1-10 m Minuscule …
- *  81 m+ Monstrueuse). PUR. */
+/** La colonne « Taille » (ch.12 l.122-129) telle que `findTableEntry` la lit — `tableOuverte`
+ *  (`./tables`) est le tronc commun des tables dont la bande FINALE est ouverte (ici « 81+ », l.129).
+ *  Triée par borne basse : les DEUX bornes étant authorées, l'ordre des rangées au Codex ne décide
+ *  plus du résultat. La contiguïté, elle, est tenue en donnée (`ecartsDeCouverture`,
+ *  `src/data/schemas/defs/ship-construction.ts`). */
+const STANDARD_LOOKUP = tableOuverte(
+  [...DATA.standard].sort((a, b) => a.lengthM.min - b.lengthM.min).map((row) => ({ ...row.lengthM, size: row.size })),
+);
+
+/**
+ * Taille MDG d'un navire d'après sa LONGUEUR (tableau standard, ch.12 l.120-129 : 1-10 m Minuscule …
+ * 81 m+ Monstrueuse) — SOURCE UNIQUE de la dérivation Taille ← longueur pour tout le moteur.
+ *
+ * Le livre imprime des bandes d'ENTIERS contiguës depuis 1 m, la dernière ouverte : le domaine de
+ * cette fonction est donc l'entier ≥ 1, ce que le schéma exige du porteur
+ * (`ship.lengthM: z.number().int().min(1)`, `src/data/schemas/defs/vehicles.ts`). Une longueur hors
+ * de ce domaine — 0, négative, ou fractionnaire entre deux bandes — est une ANOMALIE NOMMÉE, jamais
+ * un repli muet : `findTableEntry` rendrait « Monstrueuse » au dépassement, et retomber sur la
+ * première bande rendrait « Minuscule » à un trois-mâts de 80,5 m.
+ * PUR.
+ */
 export function shipSizeOfLength(lengthM: number): ShipSize {
-  for (const row of DATA.standard) if (lengthM <= row.lengthM[1]) return row.size;
-  return 'monstrueuse';
+  const i = findTableEntryIndex(STANDARD_LOOKUP, lengthM);
+  if (i < 0) {
+    throw new Error(
+      `shipSizeOfLength : la longueur ${lengthM} m ne tombe dans aucune bande de la colonne « Taille » (MDG 12 l.122-129) — le tableau couvre les longueurs ENTIÈRES à partir de 1 m, sans plafond.`,
+    );
+  }
+  return STANDARD_LOOKUP[i].size;
 }
 
 export interface ShipBuildSpec {

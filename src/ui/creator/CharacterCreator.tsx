@@ -1364,7 +1364,7 @@ export function StarScreen({ d, setD }: StepProps) {
                 <PlaqueRow
                   key={m.id}
                   content={splitLabel(m.label).spec ?? m.label}
-                  meta={m.sub && <span className="hint">1d10 : {m.sub[0] === m.sub[1] ? m.sub[0] : `${m.sub[0]}-${m.sub[1]}`}</span>}
+                  meta={m.sub && <span className="hint">1d10 : {m.sub.min === m.sub.max ? m.sub.min : `${m.sub.min}-${m.sub.max}`}</span>}
                   selected={m.id === d.star}
                   onClick={() => setD({ ...d, star: m.id })}
                 />

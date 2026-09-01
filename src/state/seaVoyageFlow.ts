@@ -2460,7 +2460,15 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       // pour qu'un péril sans chance n'en consomme aucun.
       if (hazard.entangleChancePct != null) {
         // Empêtrement (l.485-491) : pénalité de Man/M par Taille du bateau, Test étendu de Force pour se dégager.
-        const lengthM = findVehicleById(get().vessel?.vehicleId ?? '')?.ship?.lengthM ?? 0;
+        const vehiculeId = get().vessel?.vehicleId ?? '';
+        const lengthM = findVehicleById(vehiculeId)?.ship?.lengthM;
+        // Un empêtrement se résout par la TAILLE du bateau : sans longueur, il n'y a pas de Taille —
+        // anomalie NOMMÉE, jamais un 0 qui rendrait « Minuscule » au premier trois-mâts venu.
+        if (lengthM == null) {
+          throw new Error(
+            `debrisEntangle : le navire « ${vehiculeId || '(aucun)'} » n'a pas de facette « ship » avec sa longueur — la pénalité d'empêtrement (MDG 13 l.485-491) se lit par Taille de bateau.`,
+          );
+        }
         // Dé de conséquence d'un événement de bord DÉJÀ posé en table — porte du canal (`deMonde`).
         const ent = debrisEntangleFor(hazard, shipSizeOfLength(lengthM), deMonde(rng));
         if (ent.entangled) {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shipSizeFromLength, meleeVsHullBE, isArtilleryWeapon, hullHitAdjust } from './shipMelee';
+import { meleeVsHullBE, isArtilleryWeapon, hullHitAdjust, shipHull } from './shipMelee';
 import { rederivePassiveAttack, woundsFromHit } from './combat';
 import type { Combatant, Weapon } from './types';
 import type { SizeCategory } from './size';
@@ -10,17 +10,16 @@ import type { SizeCategory } from './size';
  *  - corps à corps : TABLEAU DE COMPARAISON DES TAILLES (ch.13 l.618-637) — BE ajusté, « – » = aucun Dégât ;
  *  - « les tirs de petites armes […] n'infligent pas assez de Dégâts pour avoir un effet sur un vaisseau » (l.605).
  */
-describe('shipSizeFromLength — Taille par longueur (MDG 12 l.123-129)', () => {
-  it('bandes RAW : 1-10 Minuscule · 11-15 Très Petite · 16-20 Petite · 21-35 Moyenne · 36-50 Grande · 51-80 Énorme · 81+ Monstrueuse', () => {
-    expect(shipSizeFromLength(3)).toBe('minuscule');
-    expect(shipSizeFromLength(10)).toBe('minuscule');
-    expect(shipSizeFromLength(11)).toBe('tres-petite');
-    expect(shipSizeFromLength(20)).toBe('petite');
-    expect(shipSizeFromLength(21)).toBe('moyenne');
-    expect(shipSizeFromLength(35)).toBe('moyenne');
-    expect(shipSizeFromLength(50)).toBe('grande');
-    expect(shipSizeFromLength(80)).toBe('enorme');
-    expect(shipSizeFromLength(130)).toBe('monstrueuse');
+describe('shipHull — la coque et sa Taille, DÉRIVÉES du véhicule ciblé', () => {
+  it('la Taille vient de la longueur du véhicule, par la table en donnée (`shipSizeOfLength`)', () => {
+    // La colonne « Taille » (MDG 12 l.123-129) est lue UNE fois, en donnée
+    // (`ship-construction.json › standard[].lengthM`) : ce module ne la réécrit pas.
+    expect(shipHull(hull('coracle'))).toEqual({ size: 'minuscule', tb: 4 }); // 3 m
+    expect(shipHull(hull('cogue'))).toEqual({ size: 'moyenne', tb: 4 }); // 25 m
+    expect(shipHull(hull('galion-bretonnien'))).toEqual({ size: 'enorme', tb: 4 }); // 60 m
+  });
+  it('cible qui n’est pas une coque → null (chemin normal intact)', () => {
+    expect(shipHull(bruiser())).toBeNull();
   });
 });
 

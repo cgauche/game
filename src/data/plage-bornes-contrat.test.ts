@@ -9,7 +9,7 @@
  *  B. les bornes d'un RÉGLAGE et les bornes d'un TIRAGE sont disjointes ;
  *  C. la fourchette EMBOÎTÉE (`{range: {min, max}}`) n'existe nulle part ;
  *  D. l'en-tête de `STRUCTURES_ORPHELINES` dit ce que le stock mesure ;
- *  E. une seule bande est OUVERTE (`max: null`) dans toute la donnée, et elle est NOMMÉE — c'est ce
+ *  E. les bandes OUVERTES (`max: null`) de toute la donnée sont NOMMÉES, une par document — c'est ce
  *     qui justifie un nœud de grammaire à part (`plageOuverteSchema`, #1463 L-gram-1) plutôt qu'une
  *     borne haute rendue `nullable` partout ;
  *  F. la paire de bornes encodée en TUPLE `[min, max]` est INVENTORIÉE, site par site, en stock
@@ -139,20 +139,22 @@ function mesurer(): Mesure {
 
 /**
  * STOCK DÉCROISSANT des paires de bornes écrites en TUPLE `[min, max]` (volet F, #1659) — la sonde A
- * du design jugé du 2026-09-01, promue en test. 27 occurrences sur 10 sites, deux racines (99 sur 18 à
- * l'ouverture de la vague ; L-1659-2 en a soldé 72, cf. ci-dessous).
- * `exclu` = ce site n'est PAS une paire de bornes, et la chaîne dit pourquoi ; les autres sont à
- * migrer vers la forme `{min, max}` que `findTableEntry` lit (#1659 L3 pour les 7 longueurs de coque
- * et les 4 sous-tirages astraux).
+ * du design jugé du 2026-09-01, promue en test. 16 occurrences sur 8 sites, deux racines (99 sur 18 à
+ * l'ouverture de la vague ; L-1659-2 en a soldé 72 et L-1659-3 les 11 dernières, cf. ci-dessous).
+ * `exclu` = ce site n'est PAS une paire de bornes, et la chaîne dit pourquoi. Le stock n'a PLUS QUE
+ * des EXCLUS : plus une seule paire de bornes du dépôt ne s'écrit en tuple. Ce qui reste ici est donc
+ * un inventaire de VIGIE — il n'a plus à décroître, il a à ne pas REPOUSSER.
  * SOLDÉ par #1659 L-1659-2 (2026-09-01) : les 72 disponibilités saisonnières — `sea-cargo.json ›
  * cargoes[].avail.{4 saisons}` (44) et `land-cargo.json` (28) — sont des FOURCHETTES `{min, max}` que
  * `findTableEntryIndex` lit, et dont les 8 colonnes couvrent le d100 sous refine de def.
+ * SOLDÉ par #1659 L-1659-3 (2026-09-01) : les 7 `ship-construction.json › standard[].lengthM` (dont
+ * la bande FINALE OUVERTE, MDG 12 l.129 « 81+ » — le plafond `130` qu'inventait la donnée est mort)
+ * et les 4 `stars.json › [].sub` (1d10 de l'Étoile du Sorcier, ADE II 03 l.63) : `findTableEntry` les
+ * lit telles quelles, sans adaptateur au call-site.
  * HORS COMPTE, dit ici pour qu'il ne se croie pas oublié : `defs/progression-schemas-derived.ts:29`
  * `teinte` est un 3-TUPLE (une couleur), pas une paire — et il vit dans un schéma, pas en donnée.
  */
 const TUPLES_STOCK: Record<string, { n: number; exclu?: string }> = {
-  'ship-construction.json::.standard[].lengthM': { n: 7 },
-  'stars.json::[].sub': { n: 4 },
   'qualities.json::[].capabilities.fumbleDigits': {
     n: 1,
     exclu: 'ENSEMBLE de chiffres de Maladresse (`[8, 9]`), pas une bande : l’UNION est lue chiffre par chiffre (`src/engine/qualities/dispatch.ts:232`), et le schéma la déclare `z.array(z.number())`.',
@@ -202,21 +204,20 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
   });
 
   it('E — les bandes OUVERTES (`max: null`) sont NOMMÉES, une par document', () => {
-    // La divergence que `plageOuverteSchema` (`grammaire/valeurs.ts`) porte, et les DEUX endroits où
+    // La divergence que `plageOuverteSchema` (`grammaire/valeurs.ts`) porte, et les TROIS endroits où
     // un livre l'écrit : `LDB 07 l.49` ne pose aucun plafond au nombre d'Augmentations, la bande
     // « 71 et + » (l.70) n'a donc pas de borne haute ; `MDG 15 l.383` imprime « 4 ou plus » à la
-    // dernière bande du Prix d'offre. JSON n'a pas d'Infinity — c'est le lookup qui ouvre
-    // (`offerLookup`, `src/engine/cargo.ts` ; `ADVANCE_COST_LOOKUP`, `src/engine/advancement.ts`).
-    // Si une TROISIÈME population s'ouvrait sans revue, le nœud ouvert cesserait d'être l'exception
+    // dernière bande du Prix d'offre ; `MDG 12 l.129` imprime « 81+ » à la dernière taille de coque
+    // (#1659 L-1659-3 — la donnée y écrivait un plafond `130` absent de la l.129). JSON n'a
+    // pas d'Infinity — c'est le lookup qui ouvre, et il est UN pour les trois (`tableOuverte`,
+    // `src/engine/tables.ts`).
+    // Si une QUATRIÈME population s'ouvrait sans revue, le nœud ouvert cesserait d'être l'exception
     // mesurée qu'il dit être.
     expect(
       [...new Set(M.bandesOuvertes.map((s) => `${s.doc}${s.chemin}`))].sort(),
       'une bande à borne haute OUVERTE (`max: null`) est apparue ailleurs : `plageOuverteSchema` est le nœud d’une EXCEPTION nommée, pas la forme générale d’une fourchette.',
-    ).toEqual(['advancementCosts.json[]', 'sea-cargo.json.sell.offerPrice[]']);
-    expect(M.bandesOuvertes.length, 'une bande ouverte a disparu : la sonde ne mesure plus ce qu’elle nomme.').toBe(2);
-    // Le dénominateur : la population FERMÉE devant laquelle ces bandes sont l'exception (mesuré
-    // 2026-09-01 : 741 fourchettes fermées par bande ouverte).
-    expect(M.paires['min,max'] / M.bandesOuvertes.length).toBeGreaterThan(500);
+    ).toEqual(['advancementCosts.json[]', 'sea-cargo.json.sell.offerPrice[]', 'ship-construction.json.standard[].lengthM']);
+    expect(M.bandesOuvertes.length, 'une bande ouverte a disparu : la sonde ne mesure plus ce qu’elle nomme.').toBe(3);
   });
 
   it('F — les paires de bornes en TUPLE sont un STOCK NOMINATIF DÉCROISSANT, et ce qui n’en est pas est EXCLU NOMMÉMENT', () => {
@@ -228,16 +229,18 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     ).toEqual(attendu);
 
     const total = Object.values(M.tuples).reduce((s, n) => s + n, 0);
-    expect(total, 'stock des tuples en HAUSSE : la liste ne fait que décroître (#1659).').toBeLessThanOrEqual(27);
+    expect(total, 'stock des tuples en HAUSSE : la liste ne fait que décroître (#1659).').toBeLessThanOrEqual(16);
 
     // Le stock a DEUX populations, et le cardinal de chacune se mesure sur le RÉSULTAT — le mot
-    // « exclu » ne solde rien : une exclusion porte SA raison, et le reste est à migrer.
+    // « exclu » ne solde rien : une exclusion porte SA raison. La population À MIGRER est VIDE depuis
+    // #1659 L-1659-3 : aucune paire de bornes du dépôt ne s'écrit plus en tuple, et un site qui
+    // reparaîtrait ici sans raison écrite ferait rougir la comparaison nominative ci-dessus.
     const exclus = Object.entries(TUPLES_STOCK).filter(([, l]) => l.exclu);
     const cibles = Object.entries(TUPLES_STOCK).filter(([, l]) => !l.exclu);
     expect(exclus.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples EXCLUS a bougé sans qu’une raison soit dite.').toBe(16);
     expect(exclus.length).toBe(8);
-    expect(cibles.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples À MIGRER a bougé : #1659 L3 les porte, en donnée.').toBe(11);
-    expect(cibles.length).toBe(2);
+    expect(cibles.reduce((s, [, l]) => s + l.n, 0), 'un tuple À MIGRER est réapparu : la population est soldée depuis #1659 L-1659-3.').toBe(0);
+    expect(cibles.length).toBe(0);
     expect(
       exclus.filter(([, l]) => !l.exclu?.trim()).map(([s]) => s),
       'un site EXCLU sans raison écrite : une exclusion se motive, sinon c’est un angle mort déguisé.',

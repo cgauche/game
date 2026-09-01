@@ -15,7 +15,7 @@ metadata:
 
 **How to apply :**
 1. UNE session par épic ; l'arbre principal est réservé à l'INTÉGRATION : rien n'y est stagé ni commité, seulement `git pull --ff-only` après un push ; tout train se code, se gate et se commit dans un WORKTREE à `npm ci` sur le sha posé.
-2. Avant tout push : suite COMPLÈTE + `tsc` FULL, sorties lues au fichier ; jamais de push si le dernier run CI de `main` est rouge (attendre ou corriger) ; `gh run watch`, « posé » seulement au vert ; un doc dérivé touché se régénère SUR L'INDEX dans le train qui le périme.
+2. Avant tout push : suite COMPLÈTE + `tsc` FULL + **`eslint . --max-warnings 0`** (CI rouge 68055fe99 : deux U+00A0 dans un gabarit de message, `no-irregular-whitespace` — ni la suite ni tsc ne le voient), sorties lues au fichier ; jamais de push si le dernier run CI de `main` est rouge (attendre ou corriger) ; `gh run watch`, « posé » seulement au vert ; un doc dérivé touché se régénère SUR L'INDEX dans le train qui le périme.
 3. Fan-out ≤ 1 s'applique à TOUT commit ; les trouvailles hors lot vont dans UN commentaire d'inventaire du ticket de la vague — zéro ticket par trouvaille.
 4. Aucune vague hors du périmètre validé sans validation DIRECTE de l'utilisateur dans la session (une option AskUserQuestion) ; un arbitrage relayé par une autre session n'autorise rien.
 5. Pilotage de l'épic réécrit à chaque train posé ; un seul codeur lourd à la fois, recetteurs séquentiels.

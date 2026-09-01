@@ -14,8 +14,9 @@ import type { DiseaseSymptom } from '../../engine/disease';
 import { formatDice, parseDice } from '../../engine/dice';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger, TalentTest, TestMatch, SpecEntry } from '../../data';
-import { harvestRaritySchema } from '../../data/schemas/grammaire/valeurs';
-import { specEntryId, specEntryLabel, CHAR_ABR, findCreatureById, findVehicleById } from '../../data';
+import { dispoSaisonniereSchema, harvestRaritySchema } from '../../data/schemas/grammaire/valeurs';
+import { specEntryId, specEntryLabel, CHAR_ABR, findCreatureById, findVehicleById, seasonLabel } from '../../data';
+import type { z } from 'zod';
 import { slugId } from '../../data/slug';
 import { ConditionEditor } from '../editor/ConditionEditor';
 import { isOptionalNote, type TraitInstance, type OptionalEntry } from '../../engine/statEntry';
@@ -23,10 +24,14 @@ import { parseTraitInstance, formatTrait, optionalLabel } from '../../engine/tra
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 import { NumberField } from '../NumberField';
+import { PlageField } from '../PlageField';
 import { OptionChooser } from '../OptionChooser';
 import type { OptionalRule, RuleValue } from '../../engine/policy';
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
+
+/** Les quatre colonnes saisonnières d'une cargaison, telles que la grammaire les déclare. */
+type DispoSaisonniere = z.infer<typeof dispoSaisonniereSchema>;
 
 /** 1°ʳᵉ référence d'un slot qui porte une LISTE de réfs (`reverseFailed.skills` : Pilote → Ramer OU
  *  Voile) — le contrôle MONO de cet atelier n'édite que celle-là, les suivantes sont conservées. PURE. */
@@ -435,25 +440,32 @@ export function CharKeysField({ value, onChange }: { value: CharKey[] | undefine
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * 6) stars.sub — tuple [number, number] : sous-fourchette d100 (1d10 interne) → min/max.
+ * 6) sea-cargo / land-cargo `avail` — DISPONIBILITÉ SAISONNIÈRE : quatre colonnes d100, chacune une
+ *    fourchette `{min, max}` (`dispoSaisonniereSchema`). Une `PlageField` par saison.
  * ──────────────────────────────────────────────────────────────────────────── */
 
-export function StarSubField({ value, onChange }: { value: [number, number] | undefined; onChange: (v: [number, number] | undefined) => void }) {
-  const on = value != null;
-  const lo = value?.[0] ?? 1;
-  const hi = value?.[1] ?? 1;
+/** Les quatre colonnes, DÉRIVÉES du nœud de grammaire : la liste des saisons n'est écrite qu'une
+ *  fois dans le dépôt (`parSaison`, `schemas/grammaire/valeurs.ts`). */
+const SAISONS_DE_DISPO = Object.keys(dispoSaisonniereSchema.shape) as (keyof DispoSaisonniere)[];
+
+export function DispoSaisonniereField(
+  { label, value, onChange }: { label: string; value: DispoSaisonniere | undefined; onChange: (v: DispoSaisonniere) => void },
+) {
+  const colonnes = value ?? ({} as Partial<DispoSaisonniere>);
   return (
     <div className="ed-field">
-      <span>sous-fourchette du 1d10 interne (Étoile du Sorcier — ADE II) : décocher = signe simple</span>
-      <div className="tf-row">
-        <label className="dr"><input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked ? [lo, hi] : undefined)} /> sous-tirage</label>
-        {on && (
-          <label className="dr">d100&nbsp;
-            <NumberField variant="nu" label="Sous-fourchette d100 — borne basse" min={1} max={100} value={lo} onChange={(n) => onChange([n, hi])} />–
-            <NumberField variant="nu" label="Sous-fourchette d100 — borne haute" min={1} max={100} value={hi} onChange={(n) => onChange([lo, n])} />
-          </label>
-        )}
-      </div>
+      <span>{label}</span>
+      {SAISONS_DE_DISPO.map((saison) => (
+        <PlageField
+          key={saison}
+          label={seasonLabel(saison)}
+          // MDG 15 l.406-418 / MSRC 13 l.73-78 : les quatre colonnes sont tirées au d100, et chacune
+          // couvre 1 à 100 d'un seul tenant (refine de def, `catalogueSaisonnier`).
+          domaine={{ nom: 'd100', min: 1, max: 100 }}
+          value={colonnes[saison]}
+          onChange={(f) => f && onChange({ ...(colonnes as DispoSaisonniere), [saison]: f as { min: number; max: number } })}
+        />
+      ))}
     </div>
   );
 }

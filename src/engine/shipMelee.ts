@@ -1,6 +1,6 @@
 /**
  * COQUE DE NAVIRE sous les coups PERSONNELS (MDG 13 « Infliger des Dégâts aux navires ») — module
- * FEUILLE pur, consommé par `applyHit` (combat.ts) :
+ * PUR, consommé par `applyHit` (combat.ts) :
  *
  *  - **Tirs de petites armes** (l.603-605) : « les tirs de petites armes, c'est-à-dire d'armes à
  *    projectiles qui ne sont pas des pièces d'artillerie, n'infligent pas assez de Dégâts pour avoir un
@@ -14,26 +14,17 @@
  *    fait une certaine Taille » (l.616) → en mêlée contre une coque, les règles de Taille LDB 85 (Atouts
  *    conférés + ×N) sont REMPLACÉES par cet ajustement de BE.
  *
- * La Taille du navire est DÉRIVÉE de sa longueur (`ship.lengthM`, tableau CARACTÉRISTIQUES DE BATEAU
- * STANDARD, MDG 12 l.120-129 : 1-10 m Minuscule … 81 m+ Monstrueuse) — aucun champ de donnée redondant.
+ * La Taille du navire est DÉRIVÉE de sa longueur par `shipSizeOfLength` (`./shipBuild`), qui lit le
+ * tableau CARACTÉRISTIQUES DE BATEAU STANDARD en donnée (MDG 12 l.120-129) — aucun champ de donnée
+ * redondant, et aucune seconde écriture de la même table.
  */
 import type { Combatant, Weapon } from './types';
 import type { ShipSize } from '../data';
 import { findVehicleById } from '../data';
 import { ammoFamily } from './items';
+import { shipSizeOfLength } from './shipBuild';
 import { bonus, effectiveChar } from './characteristics';
 import { SIZE_ORDER, effectiveSize, type SizeCategory } from './size';
-
-/** Taille de navire par LONGUEUR (MDG 12 l.123-129, colonne « Taille » du tableau standard). */
-export function shipSizeFromLength(lengthM: number): ShipSize {
-  if (lengthM <= 10) return 'minuscule';
-  if (lengthM <= 15) return 'tres-petite';
-  if (lengthM <= 20) return 'petite';
-  if (lengthM <= 35) return 'moyenne';
-  if (lengthM <= 50) return 'grande';
-  if (lengthM <= 80) return 'enorme';
-  return 'monstrueuse';
-}
 
 const SHIP_SIZE_ORDER: Record<ShipSize, number> = {
   minuscule: 0, 'tres-petite': 1, petite: 2, moyenne: 3, grande: 4, enorme: 5, monstrueuse: 6,
@@ -69,7 +60,7 @@ export function shipHull(target: Combatant): { size: ShipSize; tb: number } | nu
   if (target.bodyShape !== 'vehicule') return null;
   const lengthM = findVehicleById(target.creatureId ?? '')?.ship?.lengthM;
   if (lengthM == null) return null;
-  return { size: shipSizeFromLength(lengthM), tb: bonus(effectiveChar(target, 'endurance')) };
+  return { size: shipSizeOfLength(lengthM), tb: bonus(effectiveChar(target, 'endurance')) };
 }
 
 /** Ajustement d'un COUP PERSONNEL contre une coque (MDG 13) — consommé par `applyHit` :

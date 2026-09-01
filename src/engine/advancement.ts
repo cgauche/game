@@ -8,7 +8,7 @@
 import { Combatant, CharKey } from './types';
 import { CareerSlot, parseRefKey } from './careerSlots';
 import advancementCostsJson from '../data/advancementCosts.json';
-import { findTableEntry } from './tables';
+import { findTableEntry, tableOuverte } from './tables';
 import { t } from '../i18n';
 
 /**
@@ -36,8 +36,9 @@ export interface AdvanceCostBand { min: number; max: number | null; coutCarac: n
 const ADVANCE_COST_TABLE: AdvanceCostBand[] = advancementCostsJson as AdvanceCostBand[];
 
 /** La table telle que `findTableEntry` la lit : la borne OUVERTE de la dernière bande devient son
- *  infini. Aucun plafond n'est écrit en donnée — c'est le lookup qui ouvre, pas la source. */
-const ADVANCE_COST_LOOKUP = ADVANCE_COST_TABLE.map((b) => ({ ...b, max: b.max ?? Number.POSITIVE_INFINITY }));
+ *  infini. Aucun plafond n'est écrit en donnée — c'est le lookup qui ouvre, pas la source, et il est
+ *  le tronc commun des tables ouvertes (`tableOuverte`, `./tables`). */
+const ADVANCE_COST_LOOKUP = tableOuverte(ADVANCE_COST_TABLE);
 
 /** Coût en PX de la PROCHAINE Augmentation (la N+1ᵉ), `advancesAlready` = N déjà achetées.
  *  Hors carrière, le coût est DOUBLÉ (LDB 07 l.91). `discount` : « 5 PX de moins par

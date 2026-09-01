@@ -57,16 +57,16 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 61 | `src/data/index.ts:2851` |
-| `spec` | 19 | `src/data/index.ts:3359` |
+| `id` | 61 | `src/data/index.ts:2860` |
+| `spec` | 19 | `src/data/index.ts:3368` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3371` |
-| `spec` | 1 | `src/data/index.ts:3372` |
-| `value` | 3 | `src/data/index.ts:3373` |
+| `id` | 4 | `src/data/index.ts:3380` |
+| `spec` | 1 | `src/data/index.ts:3381` |
+| `value` | 3 | `src/data/index.ts:3382` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -86,8 +86,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fixed` | 4 | `src/data/index.ts:3435` |
-| `roll` | 3 | `src/data/index.ts:3435` |
+| `fixed` | 4 | `src/data/index.ts:3444` |
+| `roll` | 3 | `src/data/index.ts:3444` |
 
 ### `TrappingRef` (src/data/index.ts)
 
@@ -95,27 +95,27 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `id` | 8 | `src/engine/items.ts:307` |
 | `spec` | 2 | `src/engine/items.ts:309` |
-| `count` | 10 | `src/data/index.ts:3435` |
-| `qualities` | 4 | `src/data/index.ts:3438` |
-| `qualityChoice` | 6 | `src/data/index.ts:3436` |
-| `text` | 2 | `src/data/index.ts:3429` |
-| `vehicleId` | 5 | `src/data/index.ts:3431` |
+| `count` | 10 | `src/data/index.ts:3444` |
+| `qualities` | 4 | `src/data/index.ts:3447` |
+| `qualityChoice` | 6 | `src/data/index.ts:3445` |
+| `text` | 2 | `src/data/index.ts:3438` |
+| `vehicleId` | 5 | `src/data/index.ts:3440` |
 | `label` | 7 | `src/engine/possessionGrants.ts:25` |
-| `creatureId` | 5 | `src/data/index.ts:3433` |
-| `choice` | 5 | `src/data/index.ts:3426` |
-| `wildcard` | 3 | `src/data/index.ts:3427` |
+| `creatureId` | 5 | `src/data/index.ts:3442` |
+| `choice` | 5 | `src/data/index.ts:3435` |
+| `wildcard` | 3 | `src/data/index.ts:3436` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:3408` |
+| `id` | 8 | `src/data/index.ts:3417` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
-| `choix` | 7 | `src/data/index.ts:2851` |
-| `pick` | 2 | `src/data/index.ts:3411` |
-| `of` | 6 | `src/data/index.ts:3410` |
+| `choix` | 7 | `src/data/index.ts:2860` |
+| `pick` | 2 | `src/data/index.ts:3420` |
+| `of` | 6 | `src/data/index.ts:3419` |
 | `table` | — | *absent du type TS* |
-| `random` | 3 | `src/data/index.ts:3413` |
+| `random` | 3 | `src/data/index.ts:3422` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 

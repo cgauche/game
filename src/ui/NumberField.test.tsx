@@ -8,7 +8,7 @@
  *  - le COMMIT (`frappe`/`geste`) décide du moment ET de la politique hors-domaine (caler / REFUSER).
  */
 import { describe, it, expect, afterEach, beforeAll, vi } from 'vitest';
-import { act } from 'react';
+import { act, StrictMode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { NumberField } from './NumberField';
 
@@ -188,6 +188,13 @@ describe('NumberField — commit `geste` : refus honnête, jamais un clamp silen
     const domaine = container.querySelector('[role="status"]') as HTMLElement;
     expect(domaine.textContent).toBe('1–10');
     expect(champ().getAttribute('aria-describedby')).toBe(domaine.id);
+  });
+
+  it('une valeur EXTERNE nouvelle resynchronise le brouillon, même sous StrictMode (l’atelier passe d’une fiche à une entrée neuve sans remonter le champ)', () => {
+    mount(<StrictMode><NumberField variant="nu" label="Longueur — borne basse" min={1} commit="geste" value={81} onChange={vi.fn()} /></StrictMode>);
+    expect(champ().value).toBe('81');
+    act(() => { root.render(<StrictMode><NumberField variant="nu" label="Longueur — borne basse" min={1} commit="geste" value={1} onChange={vi.fn()} /></StrictMode>); });
+    expect(champ().value).toBe('1');
   });
 
   it('champ VIDÉ puis Entrée : aucune saisie à refuser — pas d’état invalide', () => {

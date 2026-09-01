@@ -15,9 +15,9 @@ import { riverForceLabel, riverDirLabel } from '../engine/riverNavigation';
 import { cargoTotalEnc } from '../engine/seaVoyage';
 import { partyItemsCargoEnc, partyLandCapacity } from '../state/carriers';
 import { moraleBand } from '../engine/crewMorale';
-import { seasonOfMonth, weatherCondition, type Season } from '../engine/travelStages';
+import { seasonOfMonth, weatherCondition } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
-import { findVehicleById } from '../data';
+import { findVehicleById, seasonLabel } from '../data';
 import { ScreenShell } from './ScreenShell';
 import { MasterDetail } from './MasterDetail';
 import { NotchGauge, type GaugeTone } from './NotchGauge';
@@ -130,8 +130,6 @@ const cargoGaugeTone: (enc: number, cap: number) => GaugeTone = (enc, cap) => {
   return frac > 1 ? 'danger' : frac >= 0.8 ? 'warn' : 'ok';
 };
 
-const SEASON_LABEL: Record<Season, string> = { printemps: 'Printemps', ete: 'Été', automne: 'Automne', hiver: 'Hiver' };
-
 /** Tuile CHARGEMENT terre/fleuve (#327) : vrac porté par les bêtes/véhicules du convoi (porteurs RÉELS,
  *  `partyItemsCargoEnc` / `partyLandCapacity`). Omise si le groupe n'a aucun porteur de charge. */
 function pushCargoTile(tiles: VoyageTile[], party: Combatant[], possessions: Possession[]): void {
@@ -241,7 +239,7 @@ export function voyageTiles(
   }
   pushCargoTile(tiles, party, possessions); // chargement porté par les bêtes/véhicules du convoi (#327)
   const season = seasonOfMonth(toDate(gameTime).month);
-  tiles.push({ key: 'saison', icon: 'rest/cold', label: 'Saison', value: SEASON_LABEL[season] });
+  tiles.push({ key: 'saison', icon: 'rest/cold', label: 'Saison', value: seasonLabel(season) });
   return tiles;
 }
 

@@ -23,6 +23,7 @@ import { weatherIdSchema } from '../../data/schemas/defs/weather';
 import { RefField, refFieldCfg } from './RefField';
 import { Icon } from '../Icon';
 import { NumberField } from '../NumberField';
+import { PlageField, type PlageValue } from '../PlageField';
 import { GatedAction } from '../GatedAction';
 import { raceKeySchema } from '../../data/schemas/grammaire/valeurs';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
@@ -43,7 +44,7 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
-import { SymptomsField, SymptomTickField, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, OptionalsListField, HarvestField, SpecsField, RuleValueField, RuleActionField, type RuleShape } from './StructFields';
+import { SymptomsField, SymptomTickField, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, DispoSaisonniereField, DomainEffectsField, TraitListField, OptionalsListField, HarvestField, SpecsField, RuleValueField, RuleActionField, type RuleShape } from './StructFields';
 import type { OptionalRule } from '../../engine/policy';
 import type { TraitInstance, OptionalEntry } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
@@ -361,7 +362,12 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   // `windEffect`/`capsize`/`rowingAgility`/`outOfControl`/`echouage`/`temporaryRepair` sont des objets
   // (hétérogènes ou Record de Record) déjà couverts par le sous-formulaire récursif (`ObjectField`).
   if (categoryKey === 'riverNavigation') add('windForces', 'windDirections');
-  if (categoryKey === 'shipHullSizes') add('lengthM'); // [minM,maxM] — éditeur dédié (2 nombres, comme StarSubField)
+  // Fourchettes à DEUX bornes (#1659) — toutes servies par la MÊME primitive (`PlageField`) : la
+  // longueur de coque (bande finale ouverte, MDG 12 l.129), le sous-tirage astral (1d10, ADE II 03
+  // l.63) ci-dessus, et les quatre colonnes de disponibilité saisonnière (d100). Sans cette ligne,
+  // `avail` retombait sur le sous-formulaire générique et rendait ses clefs techniques à l'écran.
+  if (categoryKey === 'shipHullSizes') add('lengthM');
+  if (categoryKey === 'seaCargo' || categoryKey === 'landCargo') add('avail');
   // #168 : Activité — Test « posté » (contexts/skills « au choix »/char/difficulty) + table d'issues
   // `outcomes` (OutcomeBand[]) → éditeurs dédiés ; `onSuccess` couvert par opsFieldsOf ci-dessus.
   // `resolver` (#1318 V6) : vocabulaire FERMÉ → sélecteur dédié, jamais le champ texte générique.
@@ -496,8 +502,10 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   const hasTrappings = categoryKey === 'classes' || categoryKey === 'careerLevels' || categoryKey === 'creatures';
   // Niveau de carrière : `characteristics` = CharKey[] (vocab fermé) → multi-sélection (pas de saisie libre).
   const hasCharKeys = categoryKey === 'careerLevels';
-  // Étoile : `sub` = sous-fourchette d100 [min,max] (Étoile du Sorcier) → deux inputs number.
+  // Étoile : `sub` = la fourchette du 1d10 interne (Étoile du Sorcier, ADE II 03 l.63) → `PlageField`.
   const hasStarSub = categoryKey === 'stars';
+  // Cargaison (maritime/terrestre) : `avail` = quatre colonnes d100, une fourchette par saison.
+  const hasDispoSaisonniere = categoryKey === 'seaCargo' || categoryKey === 'landCargo';
   // Domaine de magie : `castBonus`/`missile`/`casterOps` = attributs de domaine (éditeur dédié).
   const hasDomainEffects = categoryKey === 'domains';
   // Créature : `traits`/`optionals` = TraitInstance[] (réutilise `TraitListField` du StatblockEditor),
@@ -679,7 +687,25 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {hasAdvancement && <AdvancementRefField ds="talents" label="Talents" value={entry.talents as AdvancementRef[] | undefined} onChange={(v) => edit('talents', v)} />}
         {hasTrappings && <TrappingRefField value={entry.trappings as TrappingRef[] | undefined} onChange={(v) => edit('trappings', v)} />}
         {hasCharKeys && <CharKeysField value={entry.characteristics as CharKey[] | undefined} onChange={(v) => edit('characteristics', v)} />}
-        {hasStarSub && <StarSubField value={entry.sub as [number, number] | undefined} onChange={(v) => edit('sub', v)} />}
+        {hasStarSub && (
+          <PlageField
+            label="Sous-tirage"
+            // ADE II 03 l.63 : « L'Étoile du Sorcier | Lancez un 1d10 » — le dé et son domaine sont un
+            // fait de la TABLE, cité ici ; la primitive n'en connaît aucun.
+            domaine={{ nom: '1d10', min: 1, max: 10 }}
+            optionnelle
+            activation="sous-tirage"
+            value={entry.sub as PlageValue | undefined}
+            onChange={(v) => edit('sub', v)}
+          />
+        )}
+        {hasDispoSaisonniere && (
+          <DispoSaisonniereField
+            label="Disponibilité par saison"
+            value={entry.avail as Parameters<typeof DispoSaisonniereField>[0]['value']}
+            onChange={(v) => edit('avail', v)}
+          />
+        )}
         {hasDomainEffects && (
           <DomainEffectsField
             castBonus={entry.castBonus as DomainData['castBonus']}
@@ -752,7 +778,17 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {isArcanePhenomena && <GenericArrayField label="tables (Tables du chapitre)" value={entry.tables as Record<string, unknown>[] | undefined} onChange={(v) => edit('tables', v)} />}
         {isRiverNavigation && <GenericArrayField label="windForces (Force du vent, 1d10)" value={entry.windForces as Record<string, unknown>[] | undefined} onChange={(v) => edit('windForces', v)} />}
         {isRiverNavigation && <GenericArrayField label="windDirections (Direction du vent, 1d10)" value={entry.windDirections as Record<string, unknown>[] | undefined} onChange={(v) => edit('windDirections', v)} />}
-        {hasHullLength && <LengthRangeField value={entry.lengthM as [number, number] | undefined} onChange={(v) => edit('lengthM', v)} />}
+        {hasHullLength && (
+          <PlageField
+            label="Longueur"
+            // MDG 12 l.122-129, colonne « Taille » : des mètres, depuis 1, et une dernière bande sans
+            // plafond (« 81+ », l.129).
+            domaine={{ nom: 'mètres', min: 1 }}
+            ouvrable
+            value={entry.lengthM as PlageValue | undefined}
+            onChange={(v) => v && edit('lengthM', v)}
+          />
+        )}
         {isActivity && <ActivityTestField entry={entry} edit={edit} />}
         {isActivity && <ActivityResolverField entry={entry} edit={edit} />}
         {isActivity && <OutcomeBandsField value={entry.outcomes as OutcomeBand[] | undefined} onChange={(v) => edit('outcomes', v.length ? v : undefined)} />}
@@ -1882,21 +1918,6 @@ function GenericArrayField({ label, value, onChange, columns }: { label: string;
         </div>
       ))}
       <button className="btn small" onClick={() => onChange([...list, {}])}>+ Ajouter</button>
-    </div>
-  );
-}
-
-/** Fourchette [minM,maxM] REQUISE (`ship-construction.json::standard[].lengthM`) — même idée que
- *  `StarSubField` mais tuple obligatoire (pas de bascule vide/actif). */
-function LengthRangeField({ value, onChange }: { value: [number, number] | undefined; onChange: (v: [number, number]) => void }) {
-  const [lo, hi] = value ?? [1, 1];
-  return (
-    <div className="ed-field">
-      <span>lengthM — longueur (m)</span>
-      <div className="tf-row">
-        <NumberField variant="nu" label="lengthM — longueur minimale (m)" min={1} value={lo} onChange={(n) => onChange([n, hi])} />–
-        <NumberField variant="nu" label="lengthM — longueur maximale (m)" min={1} value={hi} onChange={(n) => onChange([lo, n])} />
-      </div>
     </div>
   );
 }
