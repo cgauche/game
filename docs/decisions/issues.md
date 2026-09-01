@@ -169,14 +169,12 @@
 - #674 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.3 — Solde EDOC ch.5 (Voyager) : Étapes/arrivée, Pneumonie & Rhume, modificateurs régionaux
 - #675 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.4 — Solde EDOC ch.8 (mutants) : mécaniser les 5 mutations restantes, vérifier la couverture des tables
 - #676 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.5 — Solde EDOC ch.9 (La Main pourpre) : carrière Magus, culte en presets, division des Horreurs ; Dhar → #517
-- #677 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.6 — EDOC ch.3+6 : routes, compagnies de diligence, péages, 4 patrouilleurs en presets
 - #678 [bug, campagne:EDO, livre:EDO-EDOC] [campagne:EDO] B.7 — Réparation d'extraction Source EDO/EDOC : _GoBack porteur, ch.8 tronqué, en-têtes orphelins
 - #679 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.8 — Les 11 documents joueur + 3 plans en données (verbatim, présentés en jeu)
 - #680 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.9 — Curation des ~90 statblocs PNJ (EDO ch.1-9 + App.1, EDOC ch.6/7/10/11/12) en presets
 - #681 [campagne:EDO, domaine:UX, type:système] [campagne:EDO] C.1 — Fête foraine jouable : événements d100, ring de lutte, attractions (patron Schaffenfest, réutilisé par le Carnaval)
 - #682 [campagne:EDO, domaine:UX] [campagne:EDO] C.2 — Mise en scène de campagne : bannières d'événement (avec #589), prophéties, foule, musiques
 - #683 [campagne:EDO, domaine:UX] [campagne:EDO] C.3 — Bögenhafen jouable : arbitrage lieu par lieu (hub, scène, mention) + services temples/guildes
-- #684 [campagne:EDO] [campagne:EDO] D.0 — Ossature du projet : scripts/edo/generate.mjs, worldMap du Tome 1, entrée menu, frontières de chapitre
 - #685 [campagne:EDO] [campagne:EDO] D.1 — Chapitre 1 « On recherche : aventuriers courageux » : la soirée de l'auberge de la Diligence
 - #686 [campagne:EDO] [campagne:EDO] D.2 — Chapitre 2 « Erreur sur la personne » : l'embuscade des mutants et le sosie
 - #687 [campagne:EDO] [campagne:EDO] D.3 — Chapitre 3 « Le cœur de l'Empire » : Altdorf, la Main Pourpre et le chasseur de primes
@@ -207,7 +205,6 @@
 - #714 [campagne:EDO, type:système] [campagne:EDO] G.8 — Infiltration hors combat : approche discrète du groupe + détection PNJ (RAW Discrétion/Perception)
 - #715 [campagne:EDO, type:système] [campagne:EDO] G.9 — PNJ vivants : présence par plage horaire + déambulation d'ambiance
 - #716 [campagne:EDO, domaine:UX] [campagne:EDO] G.10 — Tutoriel contextuel : hints première-fois data-driven (le ch.1 est le didacticiel naturel)
-- #717 [campagne:EDO, domaine:UX] [campagne:EDO] G.11 — Cadre de campagne : ouverture cérémonielle + récap de fin de chapitre
 - #719 [campagne:EDO, domaine:UX] [campagne:EDO] G.13 — Verbe « examiner » : lire le monde sans le consommer
 - #720 [bug, domaine:UX] Clic mort : Evaluer/Detecter depuis le Roster ouvre pendingAppraise mais AppraiseModal n'est monte que dans CampaignView
 - #721 [bug] usePartyItem retire l'ItemInstance entiere au 1er usage meme si qty>1 (perte de consommables empiles)
@@ -811,12 +808,9 @@
 - #1545 [domaine:moteur-pur, livre:LDB, sev:mineur] Détecteur d'Incident de Tir : « arme mécanique » absente de la regex (fidélité RAW incertaine)
 - #1546 [audit:principe, sev:smell] docs/superpowers/plans/ : ~15 plans datés de juin à trier (supprimer si exécutés — politique docs/)
 - #1547 [audit:principe, sev:smell] build-structures : la parenthèse « stock gardé STRUCTURES_DEFAUT » attribue la métrique NON filtrée (82/379) au stock qui en compte 27
-- #1548 [audit:principe, chantier:grammaire-documents, type:système] L2 (#1463) — les RÉFÉRENCES : une graphie par concept référencé (Compétence 5 formes, caractéristique, talent) — ouvre à la clôture de L1b
 - #1549 [sev:smell, type:système] 32 fabrications de Scene à name: dans les tests — une TROISIÈME graphie qui n'a jamais été un champ
 - #1550 [domaine:UX, sev:mineur] Table Météo (Codex) : les sentinelles -9999/9999 des bornes ouvertes fuient à l'écran
 - #1551 [livre:LDB, sev:mineur, type:donnée] Fiche de Sigmar (Codex) : des « ** » orphelins rendus comme texte — gras Markdown non apparié
-- #1552 [audit:principe, chantier:grammaire-documents, type:système] defs-scenes : régime d'enveloppe PROPRE (type des 27 scènes, adoption document() au-delà du projet, rôle type au lexique)
-- #1553 [audit:non-branché, sev:smell, type:donnée] 92 entrées de donnée ORPHELINES (jamais référencées) — curation par dataset, propriétaire des lignes du stock
 - #1554 [domaine:primitives-UI, sev:mineur] CombatConsole:290 : disabled en dur sur le bouton du bandeau de phase — contre la doctrine GatedAction (aria-disabled, atteignable clavier/manette)
 - #1555 [bug] maladies.json : notes de source mensongères (« pas de folio Marker ») — 16 source.page à re-vérifier aux data-folio
 - #1556 [bug] Codex (détail) : la prose s affiche pleine largeur (~150 c/ligne) — le plafond de lecture de la charte n est pas appliqué
@@ -850,7 +844,60 @@
 - #1589 [] Outillage recette : __wfrp.travel (voyage terrestre) + dé posé depuis un scénario
 - #1590 [] 6 cartes id→label FR font encore écran à une donnée éditable (classe #1580) — inventaire mesuré
 - #1591 [domaine:orchestration] Boucle interne des agents : typecheck:fast incrémental + sortie runner en fichier + allowlist réparée (audit 2026-08-30)
-- #1592 [documentation, domaine:orchestration] Cartes qui disent vrai : purge docs/plans + garde plan↔issue-ouverte + repli des programmes d'épiques (audit 2026-08-30)
+- #1594 [type:système] MONTÉ = un état du PORTEUR, sa vitesse EST celle de sa monture — au seam du Mouvement pour TOUS les modes (voyage, poursuite, combat), héros ET PNJ (LDB 15 l.92+l.108 ; directives user 2026-08-31)
+- #1595 [bug] NAVAL : 3 comportements sous MDG 14 l.39 ETIREE hors de sa question (voile de nuit sans equipage, branche PNJ morte, artillerie indestructible par silence)
+- #1596 [audit:non-branché, domaine:UX, sev:mineur] [UI/data] La durée d'HORLOGE des GameOps (durationHours/Minutes) n'a ni édition ni rendu — 3 ops la portent, l'éditeur et le Codex ne connaissent que les Rounds
+- #1597 [audit:principe, chantier:grammaire-documents, sev:mineur, type:donnée] specEntrySchema sans canal maison : l'arbitrage Divinite vers les 3 Dieux Sombres n'a pas de trace canonique en donnee
+- #1598 [audit:principe, chantier:grammaire-documents, sev:majeur, sev:mineur, type:donnée] Les pools/groupes de specs se MUTUALISENT : specsSource existe mais Artiste/Maitre artisan/Travailleur qualifie vivent en copies qui ont derive - 8 specs de Metier impickables
+- #1599 [audit:non-branché, domaine:maladie, sev:majeur, type:système] [socle] États PORTÉS par un passif jamais matérialisés — un op condition dans severePassive est INERTE (Fièvre Grave → Inconscient LDB 20 l.170 impossible sans dérivation)
+- #1600 [chantier:grammaire-documents, sev:mineur, type:donnée] 2 refs de Competence en libelle FR survivent a la dette 3b (Apothicaire sur savoir = mauvaise Competence possible, Dessin absent du catalogue art)
+- #1601 [audit:principe, campagne:EDO, domaine:UX, type:système] [doctrine] Campagnes possédées par un GÉNÉRATEUR (barge-du-sel, loup-et-saumure) : l'édition studio y est impossible — statuer la migration vers MANUSCRIT (arbitrage user 2026-08-31)
+- #1602 [domaine:UX, sev:majeur, type:système] Combat : aucune fiche de pion ENNEMI ouvrable - la frise ne l'offre qu'aux heros, l'inspection d'adversaire n'existe pas
+- #1603 [domaine:UX, sev:mineur] Fiche creature du Compendium : ids slugs en MAJUSCULES a l'onglet Caracteristiques + lignes de competence a 0 inexplicables
+- #1604 [audit:non-branché, domaine:UX, sev:smell] Outillage recette : arbre gele requalifie BUDGET KILLER, __wfrp.creator(step) manquant, refs de snapshot perimees a documenter, roots de capture contradictoires
+- #1605 [domaine:UX, sev:majeur, type:système] Createur : le choix de specialisation est PRE-REMPLI en silence (premier du pool) et le selecteur est invisible - le joueur ne choisit jamais
+- #1606 [domaine:UX, domaine:primitives-UI, sev:mineur] Porte format-livre : unifier le RENDU/DECOUPE et le contrat de saisie (refsEnLignes dans CodexEdit, StatblockEditor re-parse par frappe, refus au champ manquant)
+- #1607 [domaine:UX, sev:mineur] Createur etape 5c : ids BRUTS dans les select de spec de talent, casse divergente, pied de page generique menteur (Magie mineure jamais presentee)
+- #1608 [livre:LDB, sev:mineur, type:donnée] Specs de Metier : coquilles visibles au joueur (Joallier, Sulpteur, Fabriquant) + doublon Constructeur de navires / Construction de bateaux - a confronter au Source
+- #1609 [domaine:UX, sev:mineur, type:système] Roster : Retirer vide le siege mais ne retire RIEN de la persistance (wfrp4.roster.v1 ne decroit jamais)
+- #1610 [chantier:grammaire-documents, sev:mineur, type:système] TalentInstance.talentId, dernier holdout du rename d'identite d'instance (skill/quality/condition disent id) - a faire au lot L3 avec la frontiere des homonymes mesuree
+- #1611 [sev:smell, type:donnée] Apostrophe ASCII dans « Empreint d'Ulgu » (et inventaire de la classe) - c'est une CLE d'authoring byte-sensible, correction avec toute la chaine
+- #1612 [audit:contenu-manquant, domaine:économie, livre:LDB, sev:mineur, type:donnée] Activite Mendier absente (LDB 09 l.95-99) : Test de Charme, Bonus Soc x DR sous de cuivre/heure - une declaration au socle des Activites
+- #1613 [audit:principe, sev:mineur, type:système] [outillage] migrations:replay est un gate CI-ONLY — le rouge n'est détectable qu'APRÈS push : hook pre-push qui rejoue sur un EXPORT de HEAD
+- #1614 [] Canari rouge — environnement ou suite cassés
+- #1615 [audit:principe, chantier:grammaire-documents, sev:mineur, type:système] refs(type) : le statut CIBLE ids-nus (-76 au ledger L2/0) n'a AUCUNE porte - 0 def adopte la fabrique, FK absent prouve par sonde (sea-weather accepte un id inexistant)
+- #1617 [domaine:outillage, sev:smell] knip ignoreExportsUsedInFile masque les exports morts a consommation interne - reveles des semaines plus tard avec attribution au mauvais lot (cause racine du faux blame #1616)
+- #1618 [bug, domaine:moteur-pur, sev:mineur] [gameIso] GameStage3D:238 — le tableau de deps du useMemo change de TAILLE entre rendus (scène La Diligence) : warning React systématique en jeu ET à l'éditeur
+- #1619 [bug] CI : effondrement NON-DÉTERMINISTE du job build en rouge massif jsdom (rendus vides) — famine du runner à instrumenter
+- #1620 [audit:principe, chantier:grammaire-documents, sev:mineur, type:système] DoD-4 de l'epic #1463 NON COUVERT : consommateurs-de-champs ignore les schemas d'entree ANONYMES (TARGETS a la main, angle mort structurel emis par le generateur) - a livrer avant cloture
+- #1621 [chantier:grammaire-documents, sev:majeur, type:système] specsOpen par TYPE = faux verrou dans les DEUX sens (82 faux refus talents / 0 controle des skills fermees) - l'ouverture vit PAR ENTREE ; bloquant du lot L3 #1463
+- #1622 [livre:LDB, livre:ZI, raw-audit, sev:majeur, type:donnée] 23 pages PERDUES de plus dans les extractions (ancres adjacentes a blancs seuls, texte atteste au PDF) - dont 15 au Zoo Imperial qui source le bestiaire ; baseline decroissante du detecteur #1457-A1
+- #1623 [bug] PartyScreen : après Échap depuis l'écran d'ouverture de campagne, le sélecteur affiche « Campagne : L'Arène » au lieu de la campagne chargée (étiquette seule)
+- #1624 [domaine:art, type:donnée] Décors ANCRÉS au bâtiment en volume — features de façade + ornements quittent le billboard (cheminée, enseigne sobre, clocheton, étal, applique murale) — vague de #1343, étalon diligence
+- #1625 [livre:EDO-EDOC, sev:smell, type:donnée] diligence-projet.json:7 : desc en PARAPHRASE d'EDO 01 (regle 5 : jamais une reformulation) - preexistant, desormais adosse a un folio par la racine sourcee #1552
+- #1626 [bug] Tables de tirage enregistrées au CHARGEMENT du module : la rangée APPLIQUÉE est un snapshot du dataset à l'import — une édition Codex n'atteint que la ligne AFFICHÉE
+- #1627 [audit:principe, domaine:UX, sev:majeur, type:système] Identite de projet : l'ENTREE de bibliotheque porte une identite PARALLELE au document (copies au meme id, divergences nom-masque, bandeau muet, icon ineditable) - une seule verite a designer
+- #1628 [domaine:UX, sev:mineur] Editeur/Bibliotheque : confirm() natif a l'import, modale autosave a 2 issues destructrices sans sortie neutre visible, export nomme par idScene au lieu du nom du projet
+- #1629 [sev:mineur, type:donnée] Bibliotheque : l'entree schema 2 « L'Embuscade » ne s'ouvre plus (rot de contenu anterieur - ambiance foret, dialogues.effects, triggers.flow) - chaine de migration a re-verifier depuis 2
+- #1630 [bug] SceneEntity.interact n'exprime PAS une affordance PERMANENTE : tout décor interactif non-consume est à usage unique
+- #1631 [domaine:économie, sev:mineur, type:donnée] Trappings : lentille d'ACHETABILITE (stock marchand par predicat merchants.json invisible du MODE 2) - dette reelle ~50 dont 38 LDB, nominatives - lot L4 de #1553
+- #1632 [audit:principe, domaine:outillage, sev:smell] Cliquet lookup-par-label : labelResolverCallStock VIDE mais borne engine/state - 20+ sites prod hors couverture (ui/data/gameIso/scenes) dont findSpell x3 - etendre la couverture
+- #1633 [audit:principe, chantier:grammaire-documents, sev:mineur, type:système] Lexique : les concepts d'ENVELOPPE n'existent pas (11 concepts de VALEUR seuls) - declarer ouverture/cloture/narratif/when en cible = refonte scopee de classerValeur + portes MULTIPLES nommees + re-baseline hors-strate
+- #1634 [bug] Artillerie navale : le sous-effectif INTERDIT le tir alors que le RAW le PÉNALISE (MDG 12 l.448-458 — recharge ×2, Imprécise, Dangereuse cumulatives)
+- #1635 [bug] Les DEUX vocabulaires d'appearance.species divergent : le validateur d'authoring (lib.mjs) refuse des espèces que le rig accepte (SWARM_FORMS, raceAppearance)
+- #1636 [audit:non-branché, sev:mineur, type:donnée] Cablage du bestiaire frenchy-bzh : 244 creatures curees sans AUCUNE scene porteuse (famille #1553-L3, plafond decroissant au stock)
+- #1637 [audit:non-branché, livre:Middenheim, sev:mineur, type:donnée] Cablage du bestiaire Middenheim : 37 creatures curees sans scene porteuse (famille #1553-L3)
+- #1638 [audit:non-branché, livre:ZI, sev:mineur, type:donnée] Cablage du bestiaire Zoo Imperial : 37 creatures curees sans scene porteuse (famille #1553-L3)
+- #1639 [audit:non-branché, livre:MDG, sev:mineur, type:donnée] Cablage de la faune Mer des Griffes : 15 creatures curees hors des evenements de mer (famille #1553-L3)
+- #1641 [bug] useDismissLayer : le refcount de la porte clavier peut dériver NÉGATIF (resetDismissLayers force montees=0 sous des couches encore montées)
+- #1642 [audit:principe, livre:LDB, sev:smell] 23 réfs RAW de code tombées sur une ligne VIDE du corpus (stock gelé par la garde neuve de check-code-refs, #1457-G1) — 3 lignes-cibles portent 14 sites (LDB 40 l.53 ×9, MDG 13 l.263 ×3, LDB 13 l.184 ×2)
+- #1643 [audit:contenu-manquant, livre:LDB, sev:smell, type:donnée] Reste mesuré après #1640 : 35 pages-carrière du LDB ch.08 dont l'ancre ne porte PAS la ligne-titre imprimée (dont 4 ARTISTE-like : Noble, Gladiateur, Prêtre guerrier, Saltimbanque — pitch attribué au folio−1 sans donnée fausse)
+- #1644 [domaine:art, type:donnée] Recettes volumiques — LOT A contenants & mobilier de base (tonneau, caisse, coffre, étagère, chaises/bancs, tables, comptoir…) — vague 2 de #1343, ~116 usages
+- #1645 [enhancement] Éditeur : « ▶ Tester » exige un groupe créé HORS de l'éditeur — aucun raccourci groupe-de-démo
+- #1646 [audit:non-branché, sev:mineur, type:donnée] Specs de talent HORS talents[] : 8 occurrences (passive de mutations ×5, ops de spells ×1, passive de traits ×2) échappent au contrat #1457-B1 — dont 2 dettes de spec identiques aux 82 stockées (traits.json savoir-vivre disciples-de-tzeentch / suivants-de-khorne)
+- #1647 [audit:non-branché, sev:mineur, type:système] pre-commit : docs:check ne tourne QUE si un docs/*.md est stagé — un lot de DONNÉE qui périme un doc généré (structures-donnees, catalogues) passe le hook et rougit la CI (vécu ×2 le 2026-09-01 : catalogue-carrieres après A2, structures-donnees après B2)
+- #1648 [audit:principe, sev:mineur, type:système] Migrations 11a/12a (entité-type) : la PORTE DE CARDINAL passe avant la détection « déjà appliqué » — chaque ajout légitime d'entrée dans ~40 datasets rougira le rejeu CI d'une migration d'août (taxe permanente sur l'authoring)
+- #1649 [audit:contenu-manquant, livre:LDB, sev:smell, type:donnée] Catalogues de specs : 19 paires creatures-only SANS source restent au pool joueur (art|redaction, chevaucher|loup/rats/squig…, savoir-vivre|cultistes, sens-aiguise|odorat/ouie…) et 2 pool:false SANS consommateur (savoir|slaanesh, savoir|nurgle) — cohérence source⇄pool à instruire
 
 ## Fermées
 
@@ -1354,8 +1401,11 @@
 - #669 [campagne:EDO, domaine:UX, type:système] [campagne:EDO] P0.4 — Dialogues multi-interlocuteurs : portrait par nœud + reprise de conversation
 - #670 [campagne:EDO, domaine:UX, type:système] [campagne:EDO] P0.5 — Carnet d'enquête : indices data-driven révélés en jeu (maison)
 - #671 [campagne:EDO, type:système] [campagne:EDO] P0.6 — Registre de PRESETS de PNJ nommés (statbloc + apparence + portrait, éditable)
+- #677 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.6 — EDOC ch.3+6 : routes, compagnies de diligence, péages, 4 patrouilleurs en presets
+- #684 [campagne:EDO] [campagne:EDO] D.0 — Ossature du projet : scripts/edo/generate.mjs, worldMap du Tome 1, entrée menu, frontières de chapitre
 - #707 [campagne:EDO, type:système] [campagne:EDO] G.1 — Persistance d'état des scènes au revisit (PNJ tués, coffres vidés, portes ouvertes)
 - #711 [campagne:EDO, type:système] [campagne:EDO] G.5 — Conditions de choix étendues : compétence, carrière, race, Statut dans l'algèbre de Condition
+- #717 [campagne:EDO, domaine:UX] [campagne:EDO] G.11 — Cadre de campagne : ouverture cérémonielle + récap de fin de chapitre
 - #718 [campagne:EDO, domaine:UX] [campagne:EDO] G.12 — Historique de dialogue + journal persistant de campagne (le journal actuel : 40 lignes, resetté par scène)
 - #722 [domaine:art] Audit pieds des monstres/creatures : tenue bareFoot->griffe propre (repli Nu = pied lisse, decision 2026-07-21)
 - #723 [] CarrierInventory Donner : impossible de charger heros->possession (cibles = heros seulement)
@@ -1583,9 +1633,15 @@
 - #1537 [enhancement] Vocabulaire RigSpeciesId ÉMIS divergent de la garde données : type vs VALID_SPECIES, repli humain, speciesNames vides, 35 casts sans slug
 - #1539 [enhancement] CodexEdit ancre les entrées de LISTE par LABEL (entryKey===label, :445) — names y entre en dépendant de l'unicité des libellés, contre la doctrine id/label
 - #1541 [audit:non-branché, sev:mineur, type:donnée] creatures.title : affordance MORTE porteuse de 53 valeurs réelles — brancher ou statuer
+- #1548 [audit:principe, chantier:grammaire-documents, type:système] L2 (#1463) — les RÉFÉRENCES : une graphie par concept référencé (Compétence 5 formes, caractéristique, talent) — ouvre à la clôture de L1b
+- #1552 [audit:principe, chantier:grammaire-documents, type:système] defs-scenes : régime d'enveloppe PROPRE (type des 27 scènes, adoption document() au-delà du projet, rôle type au lexique)
+- #1553 [audit:non-branché, sev:smell, type:donnée] 92 entrées de donnée ORPHELINES (jamais référencées) — curation par dataset, propriétaire des lignes du stock
 - #1560 [enhancement] Codex : ouvrir (ou non) la route d édition des effets de météo (weatherConditions) — décision produit extraite de #1472
 - #1565 [bug] crew-morale#bands : poser les 4 labels en donnée (verbatim MDG p.125) — l écran s5 titre en id kebab, jugé non montrable
 - #1567 [bug] siege-enceinte : les 4 pièces d artillerie sont INVISIBLES en jeu (chemin emplacement bind) — donnée saine, rendu muet, 0 signal console
 - #1578 [bug] Atelier Codex : la rangée Noms (7 sous-champs) fait défiler la PAGE horizontalement (1796>1600) — contraire à la charte
 - #1580 [] weatherConditions : le label vit en donnée — WEATHER_LABEL meurt (patron #1565)
+- #1592 [documentation, domaine:orchestration] Cartes qui disent vrai : purge docs/plans + garde plan↔issue-ouverte + repli des programmes d'épiques (audit 2026-08-30)
 - #1593 [domaine:orchestration, policy-à-trancher] Régime d'épique — file d'arbitrages : statuer les 12 épiques, .wt-1501 (67 commits), restes dormants (audit 2026-08-30)
+- #1616 [sev:smell, type:système] deps:exports rouge preexistant : 4 exports sans consommateur (dismissTopHandle, normaliseAssises, skillRefSchema scene, cles creatures)
+- #1640 [audit:contenu-manquant, livre:LDB, sev:mineur, type:donnée] Extraction LDB : lignes TITRE+espèces de pages de carrière ABSENTES du corpus (Ingénieur f.87 mesuré, Érudit amputé des espèces) — l'attribution de folio des pitchs est fausse et invisible aux gardes

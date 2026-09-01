@@ -7369,7 +7369,7 @@
   {
     "number": 677,
     "title": "[campagne:EDO] B.6 — EDOC ch.3+6 : routes, compagnies de diligence, péages, 4 patrouilleurs en presets",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "campagne:EDO",
       "livre:EDO-EDOC",
@@ -7377,7 +7377,7 @@
     ],
     "body": "Épique : #665. Méthode commune Phase B (cf. #672). **Bloqué par #671** (presets). **Débloque #684** (worldMap du Tome 1 : relais/péages posés en données de route).\n\n**Matière (EDOC 06 + 10)** :\n- Typologie des routes (impériale/principale/secondaire, largeurs — `06` l.5-19) ; 8 compagnies de diligences nommées (l.27-34) ; auberges-relais tous les ~50 km = ½ journée en diligence, 1 journée à pied (l.63-67) — calibrer les routes du Tome 1 (`inns`, `prices`, `speed`).\n- **Postes de péage** : 1-4 sc « par jambe », tous les 30-60 km (`10` l.26-32) — ARBITRAGE à rendre : péage = péripétie de route (table) ou poste FIXE sur la route (événement d'étape déterministe) ; consigner, étendre le vocabulaire de `MapRoute` seulement si l'existant ne l'exprime pas.\n- **4 PNJ patrouilleurs à statbloc + accroche** (Johann Hindersson l.42-54, Aleanora Basfond l.83-95 — recommandée « en tout début de campagne » l.79-81, Charlotte-Samantha Maiers l.98-110, Heinrich Steele l.122-132) → presets #671 (réutilisés par l'ouverture alternative #694).\n\n## DoD\n- [ ] Données de routes T1 prêtes à consommation par #684 ; arbitrage péage consigné ; 4 presets commités tagués source ; suite verte.\n\n",
     "createdAt": "2026-07-21T18:16:10Z",
-    "closedAt": null
+    "closedAt": "2026-08-31T03:25:22Z"
   },
   {
     "number": 678,
@@ -7458,13 +7458,13 @@
   {
     "number": 684,
     "title": "[campagne:EDO] D.0 — Ossature du projet : scripts/edo/generate.mjs, worldMap du Tome 1, entrée menu, frontières de chapitre",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "campagne:EDO"
     ],
     "body": "Épique : #665. **Bloqué par #666, #667, #677** (routes) **et #765** (paquet de campagne schema 3 — le générateur produit CE format). **Prérequis partagé avec #530** (Campagne > Aventure > Session : la frontière « chapitre = aventure » s'instruit AVEC #530, pas en fork) et **#442** (récompenses de fin de chapitre — la campagne est le premier consommateur). **Débloque #685…#694.**\n\n## Périmètre\n- `scripts/edo/generate.mjs` (imports `scripts/campagne/lib.mjs`, modèle : `barge-du-sel` le plus récent) → `src/scenes/edo/edo-projet.json` (**`{schema:3, meta, scenes, worldMap, narratif}`** — conception `docs/plans/2026-07-22-paquet-campagne-portable.md` ; le bloc `narratif` d'EDO — affaires/indices/presetsPnj/objets — s'alimente par #670/#671, l'ossature du champ vient de #765) ; conventions d'ids `edo-*` (doc programme §3.1).\n- **worldMap du Tome 1** : Auberge de la Diligence → Altdorf (route impériale, relais/péages #677) → canal de Weissbruck (`river`, 90 km — EDO 04 l.38-42, droit de passage 18/-) → Weissbruck → Bögenhafen (4 jours fluviaux, EDO 04 l.212-214).\n- Frontières de chapitre : interlude + `sessionEnd` + récompenses (giveXp ; Destin quand #442 livre) + objectifs posés/soldés (`setObjective`/`clearObjective`) + date qui avance (départ « fin Jahrdrung », EDO 01 l.11).\n- Entrée `builtinCampaigns` « L'Ennemi dans l'Ombre » — visible au menu quand #685 livre la première scène jouable (pas de coquille vide au menu).\n- Gardes : `edo-projet.test.ts` (réfs résolues) + garde de FLUX (modèle `arene-flow.test.ts`).\n\n## DoD\n- [ ] Projet généré, committé, rechargeable dans l'éditeur ; gardes vertes ; suite complète verte ; docs campagne-authoring citent le nouveau précédent si un patron neuf émerge.\n",
     "createdAt": "2026-07-21T18:16:19Z",
-    "closedAt": null
+    "closedAt": "2026-08-31T16:02:26Z"
   },
   {
     "number": 685,
@@ -7838,14 +7838,14 @@
   {
     "number": 717,
     "title": "[campagne:EDO] G.11 — Cadre de campagne : ouverture cérémonielle + récap de fin de chapitre",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "campagne:EDO",
       "domaine:UX"
     ],
     "body": "Épique : #665, Phase G. **Consommé par #684** (frontières de chapitre). ⚠ Écran de goût : validation user avant commit.\n\n**État MESURÉ** : lancer une campagne = `startScene` direct — le seul mécanisme d'intro est `startMessage` (une chaîne → modal skippable) ; `SessionEndModal` est un FORMULAIRE RAW (Ambitions/Motivation, PX) sans aucun récapitulatif narratif — rien ne dit au joueur « voilà ce que tu as vécu, voilà où tu en es ».\n\n## Périmètre\n- OUVERTURE de campagne authorable : écran cérémoniel (titre, pitch verbatim du livre, composition du groupe) — composer `ScreenShell`/`ParchmentCard`/`CreatorDice`, aucun écran ad hoc.\n- RÉCAP de fin de chapitre à la frontière (#684) : événements marquants (dérivés des objectifs soldés/flags, pas d'écriture double), PX, découvertes, morts — puis le formulaire RAW existant (`SessionEndModal`) en second volet, jamais supprimé.\n\n## DoD\n- [ ] Maquette validée en goût (AVANT commit) ; recette du flux complet lancement→ch.1→récap ; suite verte.\n",
     "createdAt": "2026-07-21T19:12:55Z",
-    "closedAt": null
+    "closedAt": "2026-08-31T18:45:13Z"
   },
   {
     "number": 718,
@@ -18420,7 +18420,7 @@
   {
     "number": 1548,
     "title": "L2 (#1463) — les RÉFÉRENCES : une graphie par concept référencé (Compétence 5 formes, caractéristique, talent) — ouvre à la clôture de L1b",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "audit:principe",
       "chantier:grammaire-documents",
@@ -18428,7 +18428,7 @@
     ],
     "body": "Lot L2 du chantier #1463, ouvert par anticipation à la clôture de #1467 (son DoD l'exige). Concept : la RÉFÉRENCE à une entité — aujourd'hui 5 formes pour « une compétence avec sa spec » (`{id,spec,value}` créatures / `{ref:{id,spec}}` species / `advancementRef` carrières / `{skillId,spec}` op grantCareerSkill / `{skill,spec}` ops+tables — mesuré au corps de #1463), `specEntrySchema` des talents divergent de celui des compétences (L3 de #1342), et les références de CARACTÉRISTIQUE en graphies multiples — dont la ligne re-taguée de V-P6 #1467 : `progression-schemas.derived.json` porte 666 marques `key` qui sont des FK vers `characteristics` (`gen-progression-schemas.py:304,311` écrit `CHAR_KEY`, `progressionSchemas.mjs:135-136` compare aux ids) — la migration prescrite `key`→`id` à L1b était FAUSSE (656 doublons : une marque de bande PDF n'est pas une identité). Le geste L2 : `key`→`characteristic` (graphie de RÉFÉRENCE, générateur Python d'abord — la régénération-preuve est hors gates, prouver par deep-equal de l'artefact), la ligne de stock STRUCTURES_ENVELOPPE se reclasse identité→référence.\n\nDoD : UN schéma de référence par concept dans la grammaire, tous les defs le réutilisent, consommateurs à une porte, migrations rejouables byte-identiques, stock décroissant.\n",
     "createdAt": "2026-08-28T22:32:38Z",
-    "closedAt": null
+    "closedAt": "2026-08-31T13:42:59Z"
   },
   {
     "number": 1549,
@@ -18470,7 +18470,7 @@
   {
     "number": 1552,
     "title": "defs-scenes : régime d'enveloppe PROPRE (type des 27 scènes, adoption document() au-delà du projet, rôle type au lexique)",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "audit:principe",
       "chantier:grammaire-documents",
@@ -18478,12 +18478,12 @@
     ],
     "body": "Né de la passe de RÉFUTATION de #1467 (2026-08-29, arbre baeeb124c). Les documents de `defs-scenes/` (0/11 par `document()`) vivent HORS du régime de la fabrique — motif MESURÉ et jugé pour le PROJET (`defs-scenes/projet.ts:11-17` : identité facultative, ni `type` ni `source`, version de forme = littéral `schema`), mais le motif n'est PAS instruit pour le reste de la chaîne, et les **27 documents de SCÈNE ne portent pas `type`** alors que le point 1 de la migration de #1467 les nommait explicitement.\n\n**Ce ticket** : instruire le régime d'enveloppe PROPRE des documents de scène — (a) le `type` des 27 scènes (poser `type:'scene'` exigerait schema 7 + bump save : la scène vivante est persistée — peser contre le fait qu'AUCUN consommateur ne discrimine une scène par type, l'identité est POSITIONNELLE dans `projet.scenes[]`, même classe que les lignes de table) ; (b) l'adoption `document()` ou l'écart motivé def par def pour `scene`/`worldmap`/`communs`/`narratif`/`effets` ; (c) le rôle `type` au lexique des structures pour que la case devienne MESURABLE (aujourd'hui aucune garde ne compte le `type` des scènes).\n\nL'écart est nommé au JSDoc de `defs-scenes/scene.ts` (posé au commit de fermeture de #1467) — ce ticket en est le propriétaire.\n",
     "createdAt": "2026-08-29T01:45:34Z",
-    "closedAt": null
+    "closedAt": "2026-08-31T22:37:31Z"
   },
   {
     "number": 1553,
     "title": "92 entrées de donnée ORPHELINES (jamais référencées) — curation par dataset, propriétaire des lignes du stock",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "audit:non-branché",
       "sev:smell",
@@ -18491,7 +18491,7 @@
     ],
     "body": "Né de la passe de RÉFUTATION de #1467 (2026-08-29) : STRUCTURES_ORPHELINES compte 92 lignes (93 à l'ouverture du lot), TOUTES taguées L1b #1467 par la RÈGLE PAR DÉFAUT de l'en-tête du stock — mais une entrée de donnée jamais référencée est de la CURATION de contenu (brancher, ou statuer la mort), pas de la forme d'enveloppe : le dénominateur « 205 lignes » du ticket L1b les comptait à tort. Ce ticket devient leur propriétaire : triage par dataset (docs/orphelines-donnees.md, généré, est l'instrument), chaque ligne se solde en branchant l'entrée ou en statuant sa mort — jamais par reclassement silencieux (précédent traits.variants, 12a de #1467). Le retag des 92 lignes vers ce ticket est posé au commit de fermeture de #1467.",
     "createdAt": "2026-08-29T01:45:36Z",
-    "closedAt": null
+    "closedAt": "2026-09-01T01:55:54Z"
   },
   {
     "number": 1554,
@@ -18893,14 +18893,14 @@
   {
     "number": 1592,
     "title": "Cartes qui disent vrai : purge docs/plans + garde plan↔issue-ouverte + repli des programmes d'épiques (audit 2026-08-30)",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "documentation",
       "domaine:orchestration"
     ],
     "body": "Issu de l'audit du workflow du 2026-08-30 (plan utilisateur approuvé en session). Sonde « programmes vs réalité » sur pièces.\n\n## Le problème mesuré — les cartes mentent, et c'est le moteur du « on diverge »\n\n- **`docs/plans/2026-07-21-programme-campagne-edo.md` (épique #665) est FAUX sur 5 des 6 affirmations d'état vérifiées** : « Enquête ABSENT » → carnet livré le 23/07 (#670, `src/state/clues.ts`, `src/ui/CarnetScreen.tsx`) ; « #707 ré-instanciation BLOQUE C.3/D.6-D.9 » → #707 corrigé le 23/07 (blocage fantôme depuis 38 j) ; « 0 entrée locations/gods/careers » → 55/244/108 ; « journal plafonné (#718) » → corrigé ; résidus tome1 → fichiers disparus (et `docs/ROADMAP.md` n'existe pas). Une vague qui relit ce programme re-spécifie du livré ou contourne un mur imaginaire.\n- **Deux programmes vivants se contredisent** (EDO juillet vs état-de-l'art août, sous-système enquête) — rien ne les réconcilie.\n- **~26 des 40 entrées de `docs/plans/` sont des chantiers TERMINÉS jamais supprimés** (politique CLAUDE.md : « supprimés une fois exécutés », jamais appliquée une seule fois). Cause structurelle : `docs:check` **exclut docs/plans/** — seule zone du dépôt sans garde, et c'est celle qui pourrit. `2026-08-16-hud-combat.md` (suivi) référence 3 `.dc.html` NON SUIVIS (fantômes pour un clone frais).\n- `TODO-vague-1388.md` (racine, non suivi) : état figé au 25/08 alors que #1388 a des commits jusqu'au 30/08.\n- Bruit racine non suivi : ~15 PNG de recette, `devserver.log`, `lg.log`, `my-index-hunk.patch`, `navalphase2.mbox`.\n\n## Lots\n\n- [ ] **Repli des programmes d'épiques ouvertes dans leur épique** : EDO d'abord — état RE-MESURÉ au passage (les 5 mensonges ci-dessus corrigés sur pièces), arbitrages verbatim conservés dans le corps/commentaire de #665, puis suppression du fichier. Même traitement pour tout autre programme d'épique ouverte de docs/plans/. Règle : un document de programme ne porte JAMAIS d'affirmations d'état (« X absent », « Y bloque Z ») — l'état vit dans les tickets et le code.\n- [ ] **Purge des ~26 plans exécutés** (git porte l'historique). Inventaire complet dans le rendu de sonde (session d'audit 2026-08-30) : naval juillet ×6, phase-0, chasses, porteur-de-charge, maquettes créateur/fiche/HUD (1,5 Mo d'artefacts), socle-possessions, diligences, audits de juin… Cas particuliers : `2026-07-05-audit-poison.md` (cité par le skill audit-poison → vivant), `2026-08-17-s4c-roster-pnj.md` (en attente légitime arbitrée), bandeaux ⚠️ ARCHIVE existants.\n- [ ] **Garde à cliquet `docs-plans`** (`scripts/guards/`) : chaque fichier de `docs/plans/` doit référencer une issue GitHub OUVERTE (ou porter un bandeau ARCHIVE arbitré) ; issue fermée → rouge « plan à supprimer ». Stock initial figé, décroissant. Design à faire juger avant code (régime du dépôt).\n- [ ] **Nettoyage du bruit racine** + entrée `.gitignore` si une famille est récurrente (PNG de recette → dossier dédié gitignoré).\n- [ ] **`TODO-vague-*.md`** : remplacé par le commentaire de pilotage GitHub (source unique) — plus de fichier d'état non suivi à la racine.\n\n## DoD\n\n`docs/plans/` ne contient plus que des plans adossés à une issue ouverte ou des ARCHIVE arbitrées ; la garde est rouge sur toute nouvelle dérive ; #665 porte l'état vrai re-mesuré ; un clone frais ne lit plus aucune référence fantôme.\n",
     "createdAt": "2026-08-30T09:37:40Z",
-    "closedAt": null
+    "closedAt": "2026-08-30T20:21:56Z"
   },
   {
     "number": 1593,
@@ -18913,5 +18913,719 @@
     "body": "Issu de l'audit du workflow du 2026-08-30 (plan utilisateur approuvé en session). Sonde « divergence des épiques » sur les 12 épiques ouvertes. Ce ticket est la **FILE D'ARBITRAGES** : chaque case est une décision utilisateur à rendre — les vagues n'attendent pas dessus (régime des validations asynchrones), elles se dépilent par rafales.\n\n## Le constat mesuré\n\n- **41 cases à cocher sur les 12 épiques ouvertes, 0 cochée** — la checklist de corps n'est jamais un instrument de pilotage (#1350 : lot 1 #1327 fermé le 18/08, case toujours vide).\n- Trois pathologies : **mort par salve** (#665 : 34 enfants en 26 s puis une seule phase exécutée, 0 commit depuis le 22/07 · #211 : 1 système confronté sur 5 · #834 : « 460 entités, 0 curée » exact 36 j après · #1361 : 0 commit) · **pivot silencieux** (#1348 : 20 commits de re-spec en un jour, zéro code, lot refusé jamais repris · #942 : DoD 1 livré le 30/07 jamais coché, travail d'août hors DoD) · **croissance des vivantes** (#1463 : 11 tickets neufs le 30/08, cliquet L2 « Σ gelée à 1334 depuis 3 vagues » · #1388 : 8 tickets routés avant son premier lot).\n- **Capture** : le travail VDM réel s'est fait sous #1318 ; le compteur de #834 ne bougera jamais.\n- Marqueurs des épiques qui TIENNENT (#1463, #1318) : commentaire de pilotage réécrit à chaque session, enfants créés au fil des vagues, lots fermés par juge de fermeture. Le régime correspondant est inscrit au skill `orchestrer-des-agents` (session d'audit).\n\n## Arbitrages à rendre — épiques dormantes (reprendre avec vague datée / geler avec label+raison / fermer par capture)\n\n- [ ] **#665 EDO** (40 j, 13/59 enfants fermés, phases V-G-B-C-D-E-F jamais démarrées) : reprendre / geler ?\n- [ ] **#834 VDM** (36 j, capturée par #1318) : fermer par capture → #1318, ou reprendre ?\n- [ ] **#211 attendu vs réalité** (53 j, 1 passe sur 5 faite) : reprendre les 4 systèmes restants / geler ?\n- [ ] **#1361 état de l'art** (0 commit, catalogue intact) : lancer un premier lot / geler ?\n- [ ] **#1348 + #1350 HUD/retour-visuel** (spec raffinée ×12, lot console refusé, rien repris) : retour maquette (fiche mémoire « écran neuf = maquette validée ») / geler ?\n- [ ] **#903 docs générées** (34 j de silence, « reste 19 docs manuscrits ») : vague de reprise / geler ?\n- [ ] **#1122 champs libres** (jamais lancée, cliquets jamais posés) : lancer / geler / fusionner dans #1388 (prose) ?\n- [ ] **#942 un hôte** (pivot silencieux, DoD à re-statuer : item 1 livré non coché) : re-cadrer le DoD ou clore sur état re-mesuré ?\n\n## Arbitrages à rendre — travail en vol / restes dormants\n\n- [ ] **`.wt-1501`** (worktree `chantier/1501-jets-mer`, **67 commits jamais fusionnés** + WIP non commité, figé 6 j — violation du trunk-based « fusionne le jour même ») : fusionner (vague de reprise) ou tuer ?\n- [ ] **Restes des « LIVRÉ »** : #1434, #1476, #1477 (restes de #1411, ouverts 7-11 j, quasi zéro commit) et #1454, #1455 (restes de #1318/E6) : tête de la prochaine vague de leur domaine, ou gel explicite daté ?\n- [ ] **17 worktrees ouverts** (12 `agent-*`, Game-1388, Game-1456, Game-mobilier, .wt-1501) : purge des agent-* morts au prochain rituel d'ouverture de session.\n\n## Actions mécaniques (sans arbitrage, au fil des prochains passages)\n\n- [ ] Créer le label `gelée`.\n- [ ] Retirer/convertir la checklist morte du corps de chaque épique touchée (état → commentaire de pilotage).\n\n## DoD\n\nChaque épique ouverte est soit VIVANTE (vague datée + pilotage tenu), soit `gelée` (label + raison + date), soit fermée (capture/constat) ; plus aucun worktree >48 h sans arbitrage ; les 5 restes dormants ont un sort explicite.\n",
     "createdAt": "2026-08-30T09:37:41Z",
     "closedAt": "2026-08-30T17:29:33Z"
+  },
+  {
+    "number": 1594,
+    "title": "MONTÉ = un état du PORTEUR, sa vitesse EST celle de sa monture — au seam du Mouvement pour TOUS les modes (voyage, poursuite, combat), héros ET PNJ (LDB 15 l.92+l.108 ; directives user 2026-08-31)",
+    "state": "OPEN",
+    "labels": [
+      "type:système"
+    ],
+    "body": "## Invariant (directives utilisateur 2026-08-31, verbatim)\n\n- « Les joueurs peuvent avoir une monture, les PNJs peuvent en avoir aussi, fait bien le gérer non ? »\n- « Gaffe a toi, mes \"directive\" de la poursuite montée n'est pas une exception pour ce mode de jeu. Elle est valable partout ou j'ai une monture, c'est ma vitesse de déplacement comme pour les PNJs »\n\n→ L'état MONTÉ vit chez le PORTEUR (héros comme PNJ) ; le Mouvement effectif le résout à UN seam ; chaque mode (voyage, poursuite, combat, exploration) le consomme sans le savoir. Jamais une branche par mode.\n\n## RAW (vérifié au Source, grounding du 2026-08-31)\n\n- LDB 15 l.92 : « Tout participant à la poursuite effectue un Test pour son Mouvement — **en fonction des circonstances**, ce sera un Test de Conduite d'Attelages, de Chevaucher ou d'Athlétisme. » (compétence PAR PARTICIPANT)\n- LDB 15 l.104-108 : bonus de DR = différence de Mouvement ; exemple monté intégral : « Son cheval possède **Mouvement 8** … les montures des Bandits ont Mouvement 7 et Mouvement 9 … une fois leurs **Tests de Chevaucher (Cheval)** effectués. » (le M du monté EST celui de la monture)\n- Précédent moteur : Charge montée déjà résolue de la monture (LDB 14 l.183, `heroCombatMount` → `chargeMount`/`dmgProxy`, combatSlice.ts:2826).\n\n## État mesuré (grounding lecteur, arbre 6c104be58 — sondes au rendu de session)\n\n- **Trou VIVANT côté joueur** : un groupe en `TravelMode 'monture'` qui déclenche `startPursuit` court sur le M À PIED de chaque héros (`pursuedMovement` → `effectiveMovement(h)`, encumbrance.ts:64-79 — aucune lecture de monture) et roule la compétence UNIQUE de l'auteur (`startPursuitSchema.skill`, défaut athletisme). `pursuitFlow`/`pursuit.ts` : 0 import de `mountTravel.ts`.\n- **Poursuite MIXTE inexprimable** : une seule Compétence par manche au schéma, contre l.92.\n- **PNJ** : `pursuitFoeSchema {id?, ref}` sans monture ; `creatures.json` sans lien monture ; un « brigand à cheval » n'est exprimable que fiche-fusionnée.\n- **Coutures RÉUTILISABLES** (le patron à généraliser, jamais un canal neuf) : `heroMount`/`heroCombatMount`/`partyMounts`/`partyFullyMounted` (mountTravel.ts:107-132, monture = Possession `nature:'bete'` au profil EDOC), `mountProfileForCreature` (possession.ts:9), `effectiveMovement` (seam candidat).\n\n## DoD\n\n- [ ] L'état « monté » du porteur est résolu à UN endroit (couture nommée), dérivé des coutures existantes (possession bête pour un héros ; référence de monture pour un PNJ — schéma à poser, patron livingRef/ref de créature).\n- [ ] Le Mouvement effectif d'un porteur MONTÉ est celui de sa monture, à TOUS les consommateurs de Mouvement (voyage, poursuite, combat, exploration) — inventaire des consommateurs au grounding d'ouverture, aucun mode spécial.\n- [ ] La Compétence de course d'une poursuite se résout PAR PARTICIPANT selon sa circonstance (monté → Chevaucher (spec de la monture), piéton → Athlétisme, attelage → Conduite) — LDB 15 l.92 ; la poursuite mixte de l'exemple l.108 est exprimable et testée.\n- [ ] Un PNJ de poursuite/scène peut porter une monture par référence (le M et le Chevaucher se résolvent des fiches — zéro valeur recopiée, patron #1548).\n- [ ] Recette navigateur : le scénario 95 étendu (un fuyard monté vs poursuivants mixtes) rejoue l'exemple de Perdita (l.108) aux DR près.\n\nTête de la prochaine vague du domaine déplacement/voyage (régime : reste rattaché à une vague nommée). Grounding complet et sondes : rendu du lecteur du 2026-08-31, session L2 #1548.\n",
+    "createdAt": "2026-08-30T22:23:35Z",
+    "closedAt": null
+  },
+  {
+    "number": 1595,
+    "title": "NAVAL : 3 comportements sous MDG 14 l.39 ETIREE hors de sa question (voile de nuit sans equipage, branche PNJ morte, artillerie indestructible par silence)",
+    "state": "OPEN",
+    "labels": [
+      "bug"
+    ],
+    "body": "## Origine\n\nAudit adversarial « citations RAW étirées » du 2026-08-31, déclenché par l'utilisateur (verbatim : « Je n'imagine même pas le nombre de décision que tu as gardé ou prise a cause de RAW mal compris ou utilisé en excuse pour justifier du mauvais code de fénéant »). Cas fondateur attrapé par l'utilisateur la veille : MDG 14 l.39 étirée hors de sa question. Bilan global : 25 sites jugés au Source, 19 adéquats — les 4 défauts réels sont TOUS navals et germent de la MÊME citation. Lentille (à appliquer à toute correction) : **une citation prouve ce qu'elle répond, jamais ce qu'on lui fait dire**.\n\n## Les 3 défauts de comportement (chacun vérifié au Source par le juge, sondes au rendu de session)\n\n### 1. La voile de nuit ignore l'effectif — le « silence » invoqué n'existe pas\n`src/state/seaVoyageFlow.ts:1321-1324` remplace les conditions RAW par un booléen global `sea-night-sailing` en invoquant « l'équipage est abstrait (MDG 14 l.39) ». Or MDG 15 « Distances de voyage » (verbatim) : « La distance parcourue par jour suppose que le vaisseau en question est doté d'**un équipage assez nombreux** et des installations nécessaires pour pouvoir voguer de nuit. Dans le cas contraire, **divisez par deux** la distance couverte en un jour. » Le jeu CONNAÎT l'effectif (`shipboardSouls` = nominal MDG 12 l.85 − `crewLost`) — sonde : équipage 1/15 = Manque de bras −18 DR, et `seaMilesPerDay(4, true, 0) = 72` inchangé (aucun paramètre d'équipage à `seaNavigation.ts:214`). DoD : la capacité nocturne dérive de l'effectif réel + des installations (la règle maison éditable ne garde que la part réellement silencieuse), et la sonde du juge (`auditraw-nightsail.mts`) est promue en test.\n\n### 2. La branche PNJ des Tests d'équipage est structurellement morte — la citation est tronquée au point-virgule\n`src/state/seaVoyageFlow.ts:27-29,478-479` : « les PJ tiennent les rôles (MDG 14 l.39) ». La phrase CONTINUE : « **Cependant, il existe quelques cas dans lesquels les PNJ peuvent intervenir :** — Si un rôle n'est pas occupé par un Personnage, mais pourrait contribuer au Test d'équipage et si un PNJ est disponible pour remplir ce rôle. » `shipCrew.ts:101-103` implémente ce cas (« sinon UN marin représentant, l.39/41 ») mais `crewTestContributors` reçoit `partyIds` construit du MÊME tableau que `combatants` → `pjs.length === group.length` TOUJOURS, le `else` est inatteignable hors combat. DoD : un rôle non tenu par un PJ reçoit son contributeur PNJ (test positif « MDG 14 l.41 » exigé), les 14 marins nominaux cessent de compter pour le Manque de bras et la consommation SANS jamais compter pour les Tests.\n\n### 3. L'artillerie indestructible par silence — l'absence d'une ligne de profil traitée comme une interdiction\n`src/engine/woundsCalc.ts:26-28` : « le RAW ne lui donne aucune Blessure → NON-DESTRUCTIBLE » (`return 0` en dur, propagé : `targeting.ts:33` cible `none`, `attackRelevance.ts:18` −Infinity). Or AA 10 détruit l'artillerie ailleurs : l.127 (Effondrement — « n'est plus utilisable avant d'être réparée ») et l.274-276 (Maladresse — « La pièce d'artillerie est détruite », DÉJÀ en donnée : `artillery-misfire.json` porte `destroyed: true`). L'objet a un état détruit et aucun chemin de dégâts. Credo cas 1 : silence sur les PB ⇒ valeur maison ÉDITABLE (statbloc/donnée), jamais une immunité codée.\n\n### (graine, à purger dans le geste) \n`src/gameIso/builders/tokens.ts:122` : paraphrase INVENTÉE (« la coque le représente, MDG 14 » — le livre ne le dit nulle part) ; réécrire la justification de rendu sans citation fabriquée.\n\n## Micro-corrections adjacentes (même domaine, pliables ici ou au solde de la vague qui prend le ticket)\n- `src/engine/volley.ts:69` : la phrase qui répond est MDG 14 **l.37**, pas l.39 (ref à corriger).\n- `src/state/shipPostes.ts:59-60` : la décision d'échelle (pas de slot d'initiative équipage) est plausible mais non sourcée — sourcer ou taguer maison.\n\n## Périmètre de l'audit d'origine (pour le repreneur)\nFamille commentaires-limitation : 104 sites, 19 jugés (18 %) — les domaines non navals sont SOUS-MESURÉS, pas indemnes ; corpus complet : sonde B du rendu (grep rejouable). La lentille entre au skill d'orchestration et à l'audit-poison périodique.\n\nTête de la prochaine vague du domaine NAVAL (régime : rattaché à une vague nommée).\n",
+    "createdAt": "2026-08-30T22:34:52Z",
+    "closedAt": null
+  },
+  {
+    "number": 1596,
+    "title": "[UI/data] La durée d'HORLOGE des GameOps (durationHours/Minutes) n'a ni édition ni rendu — 3 ops la portent, l'éditeur et le Codex ne connaissent que les Rounds",
+    "state": "OPEN",
+    "labels": [
+      "audit:non-branché",
+      "domaine:UX",
+      "sev:mineur"
+    ],
+    "body": "## Constat (mesuré par le codeur de solde #862, 2026-08-31)\n\nTrois ops portent une durée d'HORLOGE en donnée (`durationHours`/`durationMinutes`, résolue depuis `ctx.now`, purgée par `purgeClockEffects`) : `condition`, `charMod`, et désormais `grantTrait` (borne de semaine du Désespoir, VDM 09 l.280). Mais AUCUNE affordance ne l'expose :\n\n- **Éditeur** : `src/ui/editor/GameOpEditor.tsx:767` n'offre que « Rounds » (`durationRounds`) — un auteur ne peut ni poser ni voir une durée d'horloge.\n- **Codex** : `src/ui/compendium/humanize.ts:221` et `:235` ne rendent que `durationRounds` — la phrase humanisée TAIT la borne (le Désespoir affiché ne dit pas ses 168 h alors que la desc RAW dit « dans la semaine qui suit »).\n\nLe manque est GÉNÉRAL (3 ops) et PRÉ-EXISTANT — le corriger pour la seule `grantTrait` aurait été la variante interdite ; c'est l'affordance qui doit être posée UNE fois pour toute op portant la durée.\n\n## DoD\n- `GameOpEditor` : le champ durée propose l'unité (Rounds / heures / minutes) partout où l'op la porte au schéma.\n- `humanize`/`GameOpChips` : la durée d'horloge rendue dans la phrase (« pendant 7 jours », « pendant 2 h »).\n- Garde : toute op du schéma portant `durationHours`/`durationMinutes` a son rendu ET son édition (pas de liste manuelle).\n\nDécouvert au solde de #862 étage 1 (commentaire du rendu, point 5).\n",
+    "createdAt": "2026-08-31T07:40:11Z",
+    "closedAt": null
+  },
+  {
+    "number": 1597,
+    "title": "specEntrySchema sans canal maison : l'arbitrage Divinite vers les 3 Dieux Sombres n'a pas de trace canonique en donnee",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "chantier:grammaire-documents",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "# La grammaire des spécialisations n'a pas de canal « maison » — l'arbitrage Divinité→3 Dieux Sombres est sans trace canonique en donnée\n\n## Invariant\nCredo (`.claude/credo.md`) : « House-rule ≠ lacune … on PROPOSE : valeur maison paramétrable et éditable en donnée, **taguée maison** ». Le canal canonique EXISTE au niveau document : `src/data/schemas/grammaire/document.ts:254` (`maison: 'Arbitrage maison'`) + refine `source ∨ maison` (`document.ts:393`). Le commit de préservation `772a217cc` disait « arbitrage maison **tagué** ».\n\n## Constat (juge de diff 4bis, 2026-08-31)\n`specEntrySchema` (`src/data/schemas/grammaire/valeurs.ts:84`) est un `strictObject` SANS champ `maison` : le canal était **structurellement indisponible** au codeur du lot 4bis — pas une négligence, un manque de schéma.\n\nCas concret : l'ouverture du catalogue Savoir aux specs `slaanesh`/`nurgle` est un **report de notre fait** (le livre imprime « Magie des Arcanes (Divinité) … UN SEUL des Dieux Sombres : Tzeentch, Slaanesh ou Nurgle », frenchy.bzh 46 l.110 — une ligne de **Talent**, citée comme source de deux spécialisations de **Savoir**). La seule trace en donnée est `source: {book:'frenchy-bzh', page:269, note:'frenchy.bzh 46 l.110'}` : le lecteur qui suit la réf atterrit sur un Talent. L'arbitrage sort du radar de la donnée dès que le script de migration (`scripts/migrations/2026-08-31-l2-4bis-sentinelle-au-choix-vers-choix.mjs:56-59`, qui le dit honnêtement) est oublié.\n\n## DoD\n- `specEntrySchema` gagne le champ `maison` (même contrat que `document.ts:254`), refine `source ∨ maison` symétrique.\n- Les specs `slaanesh`/`nurgle` de `savoir` portent leur `maison` avec la citation frenchy.bzh 46 l.110 en note (verbatim, jamais paraphrasée).\n- Garde : une spec sans `source` ni `maison` refusée (même porte que les documents).\n\nContexte : épic #1463 (un concept = une structure), lot L2 #1548, commit 4bis.\n",
+    "createdAt": "2026-08-31T09:18:49Z",
+    "closedAt": null
+  },
+  {
+    "number": 1598,
+    "title": "Les pools/groupes de specs se MUTUALISENT : specsSource existe mais Artiste/Maitre artisan/Travailleur qualifie vivent en copies qui ont derive - 8 specs de Metier impickables",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "chantier:grammaire-documents",
+      "sev:majeur",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "# Les pools/groupes de specs se MUTUALISENT — la couture specsSource existe mais les talents sœurs (Artiste↔Art, Maître artisan/Travailleur qualifié↔Métier) vivent en COPIES qui ont dérivé : 8 specs de Métier invisibles aux joueurs\n\n## Invariant (arbitrages USER 2026-08-31, verbatim)\n> « Alors si tu regarde bien, les compétence peuvent avoir des groupes groupes de spec. Divinité ici représente un groupe de Spec, comme Guide pour Signes secrets »\n> « Comme Focalisation (Couleur) (ou un truc du genre) »\n> « C'est des exemple, dans tous les cas, normalement on est sensé avoir un système qui mutualise les groupes de specs, juste pour pouvoir les appeler dans plusieurs compétences différente comme Art et le talent Artiste, ou Métier et les talents Travailleur qualifié ou Maître artisan. Si ce n'est pas le cas, c'est un énorme défaut »\n\nCadres : épic #1463 (« un concept = une structure ») ; CLAUDE.md règle 5 (le texte affiché se recolle au livre) ; doctrine ids (le groupe/pool a un id stable, son label est l'affichage) ; credo (jamais de copie là où le général se paramètre).\n\n## État MESURÉ (2026-08-31, arbre)\n\n**La couture de mutualisation EXISTE** : `specsSource` + `SPEC_SOURCES`/`specPoolOf`/`specLabel` (`src/data/index.ts:3280`, JSDoc :1018-1021 « Quand présent, `specs[]` est ABSENT (le pool dérive) »). 5 talents l'utilisent : `magie-des-arcanes → arcaneDomains` (domains.json), `beni → cultBlessings` (+ `grantSpecGroups`), `invocation → cultMiracles`, `magie-du-chaos → cultChaos`, `chanson-de-marin → seaShanties`.\n\n**Le défaut** : la couture ne sait dériver que des pools inter-datasets — AUCUNE source ne dérive le catalogue de specs d'une AUTRE Compétence. Résultat, les talents sœurs portent des COPIES (182 talents ont un champ `specs` propre, 224 entrées), et elles ont DÉRIVÉ :\n- `artiste` (10 specs) vs `art` (12) : `boucherie`, `redaction` manquent au talent ;\n- `maitre-artisan` (46) et `travailleur-qualifie` (45) vs `metier` (53) : les **8 specs les plus récentes** de Métier manquent aux deux (`constructeur-de-navires`, `fabriquant-de-canons`, `mineur`, `boucher`, `frappeur-de-monnaie`, `fabricant-de-fleches`, `enluminure`, `reliure` — plusieurs nées de l'extraction e6a7a2713) ; et `maitre-artisan` porte un fantôme `fermiers` que Métier n'a pas (à confronter au Source : spec manquante de Métier ou id faux ?).\n\n**Conséquence joueur AUJOURD'HUI** : ces specs sont impickables via ces talents — le bug de classe exact que la duplication fabrique. La re-synchronisation des copies serait une rustine pro-legacy (refusée) : le fix est la couture.\n\n**Et les groupes IMPRIMÉS ont 3 structures** (constat initial du ticket) : Guilde = pseudo-spec aplatie dans `langue`/`signes-secrets` (LDB 08 l.250, LDB 09 l.504 « Guildes (au choix) ») ; Divinité = inexistante, membres éclatés en specs de `savoir` (`sigmar`, `ulric`, `tzeentch`/`slaanesh`/`nurgle` en `pool:false`) — le lot 4bis (#1548) encode le sous-ensemble Dieux Sombres en `choix:[…]` inline, mécaniquement juste mais l'écran rend « Savoir (Tzeentch ou Slaanesh ou Nurgle) 55 » là où le livre imprime « Savoir (Divinité) 55 » (frenchy.bzh 46 l.37/l.99/l.187) ; Couleur = rien (0 spec sur `focalisation`, la ref nue LDB 08 l.3259 au cliquet depuis e6a7a2713).\n\n## Direction de DoD\n- Le POOL/GROUPE de specs devient une donnée MUTUALISÉE à structure unique : id stable + label imprimé + membres (spec ids, dérivés d'un catalogue de Compétence, ou ouverts quand le livre ne ferme pas — cas Guilde). `SPEC_SOURCES` est la couture existante à GÉNÉRALISER (une source qui dérive le catalogue d'une Compétence : Artiste→Art, Maître artisan/Travailleur qualifié→Métier), pas un système parallèle.\n- Toute ref (statbloc, talent, carrière) peut référencer le groupe : l'affichage rend le label du groupe (recolle au livre), le choix/spawn désigne parmi les membres (le déterminisme du 4bis se conserve).\n- Les copies MEURENT (jamais de demi-migration) + garde par construction : un talent ne peut plus porter la copie du pool d'une Compétence sœur ; la dérive mesurée ci-dessus devient impossible, et les 8 specs manquantes redeviennent pickables par dérivation.\n- Guilde/Divinité/Couleur migrent vers la structure de groupe ; le fantôme `fermiers` se tranche au Source.\n- Design confronté à la grammaire #1463 (ref/specRef/pick : 4ᵉ membre de l'union ou raffinement de pick ? articulation avec `grantSpecGroups`) sous JUGE avant tout code.\n\nContexte : né du grief d'affichage du juge de diff 4bis (lot L2 #1548) ; l'encodage inline `choix:[…]` du 4bis reste l'état intermédiaire valide jusqu'à ce lot.\n",
+    "createdAt": "2026-08-31T09:18:51Z",
+    "closedAt": null
+  },
+  {
+    "number": 1599,
+    "title": "[socle] États PORTÉS par un passif jamais matérialisés — un op condition dans severePassive est INERTE (Fièvre Grave → Inconscient LDB 20 l.170 impossible sans dérivation)",
+    "state": "OPEN",
+    "labels": [
+      "audit:non-branché",
+      "domaine:maladie",
+      "sev:majeur",
+      "type:système"
+    ],
+    "body": "## Constat (mesuré par le codeur de solde pneumonie, 2026-08-31 — prescription de juge REFUSÉE sur pièces)\n\nLe juge du lot pneumonie prescrivait : `symptoms.json › fievre` reçoit un `severePassive` portant l'État *Inconscient* (LDB 20 l.170 : « Si la fièvre dont vous souffrez est indiquée comme (Grave) […] Gagnez l'État *Inconscient* »). Le codeur a REFUSÉ après mesure — la donnée serait INERTE :\n\n- Le canal passif des symptômes (`symptomPassive`, `src/engine/disease.ts:193-197` → `diseasePassiveOps` `:250`) n'a que DEUX consommateurs : `passiveMods` (`src/engine/trauma.ts:21`, modificateurs) et `diseasePsychTraits` (`disease.ts:271`, mine `grantPsychTrait`). **Aucun consommateur ne matérialise `op: 'condition'`** — un État posé en passif de symptôme ne serait jamais appliqué.\n- `severePassive` REMPLACE `passive` et se déclenche dès `severity: 'moderee'` — sur `fievre`, Inconscient tomberait à une Fièvre Modérée, hors RAW.\n- Poser le `condition` dans `pneumonie.dailyTest.onFail` serait une demi-migration : **4 maladies** portent déjà `fievre` en Grave (`maladies.json:103,234,590` + la mue rhume→pneumonie). Le RAW attache la conséquence au SYMPTÔME, pas à la maladie.\n\n## Ce qu'il faut (socle, pas rustine)\n\nUne dérivation générale « État porté par un passif » : un `op: 'condition'` dans le canal passif d'un symptôme (ou de tout porteur passif) doit se MATÉRIALISER sur le porteur tant que la condition du canal tient (Grave → Inconscient posé ; guérison/atténuation → retiré), avec la synchronisation attache/détache. Il n'existe aujourd'hui AUCUN point de lecture unique des États dérivables — c'est le manque à combler, une fois, pour tous les porteurs passifs.\n\nCas d'acceptation : un héros dont la Fièvre passe (Grave) — par pneumonie, fièvre cérébrale pourpre ou toute maladie qui l'authore — porte *Inconscient* (LDB 20 l.170), et le perd quand la Fièvre redescend. Test par le collecteur réel, mutation : dérivation débranchée → rouge.\n\nDécouvert au solde pneumonie #674 (écart brief↔code n°1 du rendu). La sévérité est désormais VISIBLE (EtatPanel, `symptomInstanceLabel`) mais toujours partiellement INERTE tant que ce socle manque.\n",
+    "createdAt": "2026-08-31T09:33:14Z",
+    "closedAt": null
+  },
+  {
+    "number": 1600,
+    "title": "2 refs de Competence en libelle FR survivent a la dette 3b (Apothicaire sur savoir = mauvaise Competence possible, Dessin absent du catalogue art)",
+    "state": "OPEN",
+    "labels": [
+      "chantier:grammaire-documents",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "## Invariant\nDoctrine ids (2026-07-09, verbatim au CLAUDE.md) : « au final ce qu'on manipule c'est des IDs ». La dette « refs de Compétence en libellé FR » était réputée éteinte au lot 3b de L2 #1548 — la mesure du correctif 4bis (inventaire 219 specs distinctes adjacentes à un id de skills.json, 126 fichiers src/data + src/scenes) montre 2 survivantes, déjà consignées nominativement dans REFS_EN_LIBELLE (src/data/spec-pool-contrat.test.ts:43-46).\n\n## Les 2 refs\n1. `src/data/talents.json:920` — `skill: { id: 'savoir', spec: 'Apothicaire' }`. DOUBLE défaut possible : graphie libellé, ET `apothicaire` n'existe pas au catalogue de `savoir` (il est au catalogue de `metier`) — possiblement une réf de MAUVAISE Compétence. À confronter au Source (quel talent, quelle ligne du livre ?) avant de corriger : la bonne cible est peut-être `{id:'metier', spec:'apothicaire'}`.\n2. `src/data/activities.json:129` — `{ id: 'art', spec: 'Dessin' }`. Le catalogue d'`art` ne porte aucun `dessin` (il a `peinture`, `calligraphie`, `gravure`…). À confronter au Source : spec manquante du catalogue (à ajouter avec sa réf) ou mauvais id.\n\n## DoD\n- Chaque ref confrontée à sa ligne Source (citation verbatim au rendu), corrigée en id du catalogue — ou la spec manquante AJOUTÉE au catalogue avec sa source, jamais l'inverse silencieux.\n- REFS_EN_LIBELLE (spec-pool-contrat.test.ts) redescend à [] et la liste d'exception MEURT.\n\nContexte : trouvaille du codeur correctifs 4bis (L2 #1548) ; le refine slug global a été écarté À CAUSE de ces 2 refs (catalogue skills.json : 254 ids, 0 non-slug).\n",
+    "createdAt": "2026-08-31T09:43:23Z",
+    "closedAt": null
+  },
+  {
+    "number": 1601,
+    "title": "[doctrine] Campagnes possédées par un GÉNÉRATEUR (barge-du-sel, loup-et-saumure) : l'édition studio y est impossible — statuer la migration vers MANUSCRIT (arbitrage user 2026-08-31)",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "campagne:EDO",
+      "domaine:UX",
+      "type:système"
+    ],
+    "body": "## Doctrine utilisateur (verbatim, 2026-08-31, arbitrage design #684)\n\n> « la diligence a été créé principalement pour s'assurer que le moteur sache construire ce batiment. Mais en définitive, une campagne doit pouvoir etre modifié depuis l'éditeur, et donc si la campagne est généré par un script, c'est un énorme défaut, car ca veux dire qu'aucune modification n'est possible. »\n\n## Constat mesuré\n\nLa garde `src/scenes/generateurs-byte-stables.test.ts` (#1522) fait de chaque `scripts/<dossier>/generate.mjs` le PROPRIÉTAIRE exclusif de son paquet (comparaison à l'octet de `build()` vs l'artefact) : toute édition studio d'un projet généré est écrasée/refusée. Projets sous ce régime aujourd'hui : **barge-du-sel** et **loup-et-saumure** (diligence-projet est déjà en `MANUSCRITS`). Sous la doctrine ci-dessus, ce régime est un DÉFAUT pour toute campagne JOUABLE — il n'est légitime que pour du contenu réellement calculé.\n\n## À statuer / DoD\n\n- [ ] Pour chacun des 2 projets : qu'est-ce qui est réellement CALCULÉ (rangées ASCII de mer, postes dérivés) vs ce qui est du CONTENU d'auteur figé dans le script ?\n- [ ] Migration : le paquet passe MANUSCRIT (entrée `MANUSCRITS`), le contenu calculé résiduel devient soit du one-shot de seed (script de migration daté, exécuté puis supprimé), soit une brique d'ÉDITEUR (outil de génération DANS le studio, qui pose de la donnée éditable).\n- [ ] Le générateur correspondant se SUPPRIME (zéro code mort) ; la garde continue de protéger ce qui reste légitimement généré.\n- [ ] docs/campagne-authoring.md acte la doctrine : une campagne est manuscrite/éditeur, jamais possédée par un script.\n\nDécouvert en jugeant le design de l'ossature EDO ch.1 (#684) — le générateur `scripts/edo/generate.mjs` du corps de ticket a été REFUSÉ pour la même raison.",
+    "createdAt": "2026-08-31T09:49:33Z",
+    "closedAt": null
+  },
+  {
+    "number": 1602,
+    "title": "Combat : aucune fiche de pion ENNEMI ouvrable - la frise ne l'offre qu'aux heros, l'inspection d'adversaire n'existe pas",
+    "state": "OPEN",
+    "labels": [
+      "domaine:UX",
+      "sev:majeur",
+      "type:système"
+    ],
+    "body": "## Invariant\nFinalité du jeu (fiche mémoire, arbitrage user) : OUTIL D'APPRENTISSAGE des règles — le joueur apprend en INSPECTANT. Et doctrine déclaration-avant-jets : on déclare contre un adversaire dont on peut lire la fiche.\n\n## Constat (recette navigateur 2026-08-31, C16 — vague L2 #1548)\nEn combat, il n'existe AUCUNE surface « fiche d'un pion ennemi » : dans la frise d'initiative, les héros portent un bouton « <nom> — fiche du personnage », les ennemis n'en portent pas ; cliquer le portrait ennemi ne monte rien (role=dialog null). Vérifier qu'une créature spawnée porte des specs concrètes (lot 4bis) n'est PAS POSSIBLE en jouant — la donnée le prouve (spec:\"nurgle\" désignée, mesure __wfrp) mais l'écran ne le montre jamais.\n\n## DoD\n- Une fiche ennemie ouvrable depuis la frise/le pion (même primitive que la fiche héros — HeroSheet/PortraitTile —, périmètre d'infos à arbitrer : tout ? profil+compétences ? cf. ce que BG3/Solasta montrent à l'examen).\n- La recette « spawn à choix concret » du 4bis devient jouable à l'écran.\n",
+    "createdAt": "2026-08-31T10:08:48Z",
+    "closedAt": null
+  },
+  {
+    "number": 1603,
+    "title": "Fiche creature du Compendium : ids slugs en MAJUSCULES a l'onglet Caracteristiques + lignes de competence a 0 inexplicables",
+    "state": "OPEN",
+    "labels": [
+      "domaine:UX",
+      "sev:mineur"
+    ],
+    "body": "## Constats (recette navigateur 2026-08-31, C5/C6 — fiche créature du Compendium, préexistants au lot 4bis)\n1. Onglet « Caractéristiques » : le joueur lit CAPACITE-DE-COMBAT, CAPACITE-DE-TIR, FORCE-MENTALE, DEXTERITE — l'ID SLUG affiché en majuscules au lieu du libellé FR accentué (Capacité de Combat…). Vu sur Bourgmestre ET Sorcier du Chaos. Violation doctrine ids : « le label est de l'AFFICHAGE » — ici c'est l'id qui s'affiche.\n2. Onglet « Compétences » : des lignes à VALEUR 0 s'affichent (Bourgmestre « Corps à corps 0 » à côté de « Corps à corps (Bagarre) 50 » ; Sorcier « Signes secrets (Cultistes) 0 ») — le joueur voit une compétence à zéro qu'il ne sait pas interpréter. À trancher : filtrer les 0, ou expliquer la ligne (base sans avance ?) — jamais un nombre nu inexplicable (fiche adversaire-réel-valeur-nue-anomalie).\n\nFamille : #1514 (défauts d'écran de l'ATELIER Codex — ici c'est la FICHE joueur du Compendium).\n",
+    "createdAt": "2026-08-31T10:08:51Z",
+    "closedAt": null
+  },
+  {
+    "number": 1604,
+    "title": "Outillage recette : arbre gele requalifie BUDGET KILLER, __wfrp.creator(step) manquant, refs de snapshot perimees a documenter, roots de capture contradictoires",
+    "state": "OPEN",
+    "labels": [
+      "audit:non-branché",
+      "domaine:UX",
+      "sev:smell"
+    ],
+    "body": "## Trouvailles du méta-rapport de recette 2026-08-31 (surfaces L2 #1548 — 25 % du budget d'appels perdu en environnement)\n1. REQUALIFIER le piège « arbre partagé pendant la recette » de gêne en BUDGET KILLER : 5 rechargements Vite (session voisine écrivant src/ en direct) ont tué 2 scénarios ×2 fois (~35 appels perdus). La fiche mémoire recette-navigateur-arbre-gele existe ; docs/recette-navigateur.md doit le prescrire : recette en WORKTREE GELÉ avec son propre npm run dev, ou gel annoncé de l'arbre.\n2. __wfrp.creator(step, {race, carriere}) MANQUANT : le créateur est le seul écran long sans raccourci de mise en place (scenario()/campaign()/interlude() en ont) — 14 clics pour atteindre l'étape 5, tout perdu à chaque reload. Famille : #1478 (ready(), editorOpen()), #1500, #1543.\n3. Doc : une ligne à ajouter à recette-navigateur.md — sur les écrans à re-render (créateur, atelier), viser par sélecteur role+nth, JAMAIS par ref de snapshot (refs périmées à chaque re-render — même piège que closure-sync, un cran plus haut). Et documenter comment reprendre un CRÉATEUR interrompu (resumeLastScenario ne couvre que les scénarios).\n4. Contradiction outillage : browser_take_screenshot refuse toute cible hors dépôt (« outside allowed roots ») alors que la consigne exige les captures HORS repo — arbitrer (%TEMP% autorisé côté MCP, ou .playwright-mcp/ acté comme dossier de capture légitime gitignoré).\n",
+    "createdAt": "2026-08-31T10:08:53Z",
+    "closedAt": null
+  },
+  {
+    "number": 1605,
+    "title": "Createur : le choix de specialisation est PRE-REMPLI en silence (premier du pool) et le selecteur est invisible - le joueur ne choisit jamais",
+    "state": "OPEN",
+    "labels": [
+      "domaine:UX",
+      "sev:majeur",
+      "type:système"
+    ],
+    "body": "## Invariant\nLe choix d'une spécialisation « (Au choix) » appartient au JOUEUR — doctrine déclaration/choix explicite (CLAUDE.md règle 7 : arbitrage explicite « ou choix joueur », jamais un contournement silencieux). Un défaut pré-rempli dans son dos n'est pas un choix.\n\n## Constats (recette 2026-08-31 C11/C12, ATTRIBUTION JUGÉE : PRÉEXISTANTS, byte-identiques à HEAD c04a282ba — aucun RNG, prémisse réfutée)\n1. La spec par défaut est le PREMIER DU POOL, posé silencieusement : src/engine/character.ts:287 (resolveEntry → concreteLabel(name, concrete[0])) et src/ui/creator/creatorDefaults.ts:121 (specChoices[o.entry] = o.choices[0]). Dès l'étape 3 la fiche vivante affiche « Artiste (Calligraphie) » sans que le joueur ait rien choisi, à côté d'emplacements étiquetés « au choix — 5c ».\n2. Le sélecteur EXISTE mais est invisible et pré-rempli : SpecSelect (CharacterCreator.tsx:1206, monté à :1689 sous garde isUnresolvedChoice && adv > 0, slot meta de PlaqueRow) — un <select> nu, non stylé, coincé contre le stepper, valeur déjà posée (« Alchimiste ») : le joueur ne voit jamais un choix À FAIRE. Le clic sur le libellé « Métier (Au choix) » ouvre le Codex (doc), affordance trompeuse (capture recette 01j).\n3. Balayage juge 13 170 rangées (toutes espèces × carrières) : 0 anomalie de câblage — le défaut est 100 % de VISIBILITÉ/AFFORDANCE + du pré-remplissage silencieux.\n\n## DoD (direction)\n- Un emplacement « (Au choix) » non résolu est un ÉTAT VISIBLE (pas un défaut pré-posé) : le joueur choisit, ou voit qu'il doit choisir avant de valider — au minimum SpecSelect stylé charte + vide-par-défaut + gate de complétion d'étape.\n- Le clic sur le libellé n'ouvre pas la doc À LA PLACE du choix (le Codex reste accessible, mais pas comme seule affordance).\n- Le premier-du-pool meurt comme défaut silencieux (character.ts:287, creatorDefaults.ts:121).\n\nContexte : trouvé en recette du lot 4bis L2 #1548 ; jugé préexistant (le lot ne l'a ni créé ni aggravé). Étape 5c/fiche finale non recettées (C14) — à couvrir au lot qui traite ce ticket.\n",
+    "createdAt": "2026-08-31T10:21:29Z",
+    "closedAt": null
+  },
+  {
+    "number": 1606,
+    "title": "Porte format-livre : unifier le RENDU/DECOUPE et le contrat de saisie (refsEnLignes dans CodexEdit, StatblockEditor re-parse par frappe, refus au champ manquant)",
+    "state": "OPEN",
+    "labels": [
+      "domaine:UX",
+      "domaine:primitives-UI",
+      "sev:mineur"
+    ],
+    "body": "## Invariant\nTable des primitives (CLAUDE.md) : une porte = UNE source. Le lot 4bis/#1548 a unifié le PARSE du format livre (src/ui/editor/refFormatLivre.ts, source unique de parseSkillRef/parseTalentRef) — mais la moitié RENDU/DÉCOUPE et le contrat de saisie restent scindés.\n\n## Constats (juge de cumul 2026-08-31, sondes rejouables au rendu)\n1. G5 — porte SCINDÉE : refsEnLignes/lignesEnRefs (rendu/découpe) vivent dans le composant de 1905 lignes CodexEdit.tsx:262-268, et StatblockEditor ne les consomme PAS : il refait le split inline avec des séparateurs DIVERGENTS ('\\n' skills :144, ',' talents :154, vs '\\n' pour les deux côté Codex). Deux graphies pour le même concept.\n2. G2 — StatblockEditor.tsx:140-157 re-parse à CHAQUE FRAPPE avec value dérivée du parse (mesuré : taper « Métier (A » rend « metier-a 0 » sous les doigts) — le défaut exact que le brouillon-au-blur de CodexEdit corrige. PRÉEXISTANT (parse HEAD identique sur 31 préfixes), pas une régression du lot.\n3. G3 (volet geste) — au blur d'une ligne INVALIDE, CodexEdit coerce en silence (« Zorglub 12 » réécrit « zorglub 12 ») ; le refus nominatif n'arrive qu'au Save transactionnel. La doctrine commit='geste' (NumberField) veut le hors-domaine REFUSÉ au champ.\n\n## DoD\n- refsEnLignes/lignesEnRefs migrent dans refFormatLivre.ts (la porte complète : parse + rendu + découpe) ; CodexEdit ET StatblockEditor la consomment ; les séparateurs divergents meurent.\n- StatblockEditor adopte le brouillon-posé-au-blur (le re-parse par frappe meurt) — patron CodexEdit.\n- Une ligne invalide au blur reçoit un refus nominatif AU CHAMP (id inconnu, spec irrésoluble), le Save restant le filet transactionnel.\n- Test de rendu montant le champ (le juge note qu'aucun test ne monte LignesFormatLivreField — l'invariant « pas de reflow sans frappe » non verrouillé).\n\nContexte : griefs consignables du juge de cumul des correctifs 4bis (L2 #1548) — aucun bloquant, le commit 4bis est parti avec la porte parse unifiée ; ce ticket finit l'unification côté édition.\n",
+    "createdAt": "2026-08-31T10:49:54Z",
+    "closedAt": null
+  },
+  {
+    "number": 1607,
+    "title": "Createur etape 5c : ids BRUTS dans les select de spec de talent, casse divergente, pied de page generique menteur (Magie mineure jamais presentee)",
+    "state": "OPEN",
+    "labels": [
+      "domaine:UX",
+      "sev:mineur"
+    ],
+    "body": "## Constats (re-recette C14, 2026-08-31, captures %TEMP%/recette-c14/)\nÉtape 5c du créateur (Talents), trois défauts d'affichage de la même famille — la couture id→label MANQUE au rendu, la donnée est saine :\n1. Les <select> de spec de TALENT affichent les IDS BRUTS : « Maître artisan (batteur-d-armure) », « (joallier) », « (sulpteur-sur-bois) », « Artiste (ecriture) »… — kebab-case, accents perdus. Le <select> de Métier deux blocs plus haut, MÊME écran, affiche les labels propres ; la fiche vivante rend « Maître artisan (Forgeron) ». Trois graphies du même concept sur un écran (doctrine ids : le label est l'affichage — ici c'est l'id qui s'affiche).\n2. Casse divergente sur le même écran : le tirage affiche « Résistance (chaos) », la fiche vivante « Résistance (Chaos) ».\n3. Pied de page MENTEUR générique : « Talents tranchés — race, carrière et Magie mineure réglés. » sur un Artisan qui n'a AUCUNE section Magie mineure présentée — le message affirme avoir réglé une chose jamais montrée (servi tel quel à toutes les carrières).\n\n## DoD\n- Les <select> de spec de talent rendent le LABEL (même lookup que le Métier voisin — la porte existe sur l'écran) ; la casse suit le label partout (tirage compris).\n- Le pied de 5c dit ce qui a été RÉELLEMENT réglé pour CETTE carrière (composition, pas gabarit).\nFamille : #1605 (UX du choix au créateur), #1598 (les alphabets divergents Métier vs Maître artisan vus au même écran = la dérive de copies, déjà mesurée là-bas).\n",
+    "createdAt": "2026-08-31T12:16:23Z",
+    "closedAt": null
+  },
+  {
+    "number": 1608,
+    "title": "Specs de Metier : coquilles visibles au joueur (Joallier, Sulpteur, Fabriquant) + doublon Constructeur de navires / Construction de bateaux - a confronter au Source",
+    "state": "OPEN",
+    "labels": [
+      "livre:LDB",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "## Constat (re-recette C14, 2026-08-31 — visibles au joueur dans le <select> de Métier, étape 5b/5c du créateur)\nLabels de spécialisations de metier (skills.json) portant coquilles ou doublon de concept :\n- « Joallier » (attendu : Joaillier ?)\n- « Sulpteur sur bois » (attendu : Sculpteur sur bois ?)\n- « Fabriquant de canons » (attendu : Fabricant ?)\n- Doublon indécidable au joueur : « Constructeur de navires » ET « Construction de bateaux » — deux entrées quasi identiques, le joueur ne peut pas les départager.\n\n## DoD\n- Chaque label CONFRONTÉ à sa ligne Source (règle 5 : verbatim recollable — si le LIVRE imprime « Joallier », le label reste et ce ticket se ferme sur citation ; sinon correction + source note).\n- Le doublon navires/bateaux tranché au Source : fusion (SecondaryRef alsoIn, patron rodeur/ranger de e6a7a2713) ou preuve que ce sont deux métiers distincts du livre.\n",
+    "createdAt": "2026-08-31T12:16:25Z",
+    "closedAt": null
+  },
+  {
+    "number": 1609,
+    "title": "Roster : Retirer vide le siege mais ne retire RIEN de la persistance (wfrp4.roster.v1 ne decroit jamais)",
+    "state": "OPEN",
+    "labels": [
+      "domaine:UX",
+      "sev:mineur",
+      "type:système"
+    ],
+    "body": "## Constat (re-recette C14, 2026-08-31, mesuré au localStorage)\nLe bouton « Retirer » d'un contrat du roster vide le SIÈGE mais ne retire PAS le héros de la persistance (wfrp4.roster.v1 : longueur inchangée après Retirer). Le roster persisté ne peut qu'enfler ; le joueur qui « retire » un héros le retrouvera au prochain chargement.\n\n## DoD\n- Retirer = retrait de la persistance (ou une affordance distincte assumée « libérer le siège » vs « supprimer le héros », mais jamais un Retirer qui ne retire pas).\n- Test committé sur le flux réel (roster → retirer → parse de la clé).\nTrouvé en restaurant l'état d'une recette (la chirurgie localStorage à la main a coûté 6 appels → helper __wfrp.roster() demandé sur #1604).\n",
+    "createdAt": "2026-08-31T12:16:27Z",
+    "closedAt": null
+  },
+  {
+    "number": 1610,
+    "title": "TalentInstance.talentId, dernier holdout du rename d'identite d'instance (skill/quality/condition disent id) - a faire au lot L3 avec la frontiere des homonymes mesuree",
+    "state": "OPEN",
+    "labels": [
+      "chantier:grammaire-documents",
+      "sev:mineur",
+      "type:système"
+    ],
+    "body": "## Invariant\nDoctrine ids + « un concept = un terme » : la grammaire des références (#1463) et les instances runtime disent `id` — après le commit 5 de L2 #1548, `QualityInstance.id`, `ConditionInstance.id`, `SkillInstance.id` parlent la même langue ; **`TalentInstance.talentId` (src/engine/types.ts:290) est le dernier holdout**. Fiche mémoire : jamais de demi-migration — le 4e champ se ticketise explicitement.\n\n## Obstacles MESURÉS (codeur commit 5, 2026-08-31 — deux tentatives instrumentées)\n1. `src/state/devtools.ts:1132` construit une `TalentInstance` — fichier occupé par le train #684 voisin au moment du lot.\n2. Concept HOMONYME `talentId` ≠ identité d'instance : champ des GameOps `grantTalent`/`grantCareerTalent` (src/engine/ops.ts:533/542), `grantedTalent` (types.ts:820), et l'alias de grammaire `{talentId, spec}` EN DONNÉE (axes.json, traits.json, spells.json, stars.json, tables.json, mutations.json) — consommé par GameOpEditor.tsx + humanize.ts. Le rename d'instance doit les LAISSER (ce sont des refs de DTO, pas des instances) — la frontière exacte est celle établie au commit 5 pour skillId (ex. pursuitFlow.ts:207 porte id ET skillId sur le même objet, légitime).\n3. Coût mesuré : renommer les deux champs ensemble = 630 erreurs tsc (vs 338 pour skillId seul).\n\n## DoD\n- `TalentInstance.talentId` → `id`, chaîne complète, mutation sur le câblage RÉEL (leçon commit 5 : muter le TYPE ne rougit pas un test runtime — viser l'appariement consommateur).\n- Les homonymes de DTO/GameOp/donnée INTACTS et re-listés en sortie (le contre-grep valide = tsc sur le type, jamais un grep du token).\n- Canaux persistés AUDITÉS AVANT le geste : saves (bump), roster EXPORT_VERSION + localStorage (le commit 5 a raté le roster — leçon payée, sondes promues en tests à imiter), projets de scène.\n- Candidat naturel : le lot L3 #1463 (refs de TALENT — mêmes fichiers, mêmes 13 sentinelles).\n",
+    "createdAt": "2026-08-31T12:18:41Z",
+    "closedAt": null
+  },
+  {
+    "number": 1611,
+    "title": "Apostrophe ASCII dans « Empreint d'Ulgu » (et inventaire de la classe) - c'est une CLE d'authoring byte-sensible, correction avec toute la chaine",
+    "state": "OPEN",
+    "labels": [
+      "sev:smell",
+      "type:donnée"
+    ],
+    "body": "## Constat (garde des clés d'authoring, commit 5 L2 #1548 — attrapé au premier run de la garde neuve)\nLa donnée porte « Empreint d'Ulgu » avec une apostrophe ASCII U+0027 là où le dépôt écrit l'apostrophe typographique « ' » (U+2019) partout ailleurs. La garde des clés speciesTalentChoices (draft.test.ts) l'a FIGÉE telle quelle : c'est une CLÉ d'authoring byte-sensible — la corriger naïvement casserait l'appariement des choix persistés/authorés.\n\n## DoD\n- Inventaire des apostrophes ASCII dans les libellés de src/data/*.json (la classe, pas le cas).\n- Correction AVEC la chaîne complète : la donnée, TOUT site qui keye sur le libellé (speciesTalentChoices, specChoices de draft…), la garde re-figée, et le bump de version persistée si une clé sauvegardée change (politique saves : reset).\n- Jamais une correction de graphie isolée : le précédent (registre des clés byte-sensibles, choixLabel/advancementLabel) fait foi.\n",
+    "createdAt": "2026-08-31T12:28:02Z",
+    "closedAt": null
+  },
+  {
+    "number": 1612,
+    "title": "Activite Mendier absente (LDB 09 l.95-99) : Test de Charme, Bonus Soc x DR sous de cuivre/heure - une declaration au socle des Activites",
+    "state": "OPEN",
+    "labels": [
+      "audit:contenu-manquant",
+      "domaine:économie",
+      "livre:LDB",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "## Invariant (RAW, verbatim relu au Source 2026-08-31)\nLDB 09 l.95-99 (« # MENDIER ») : « La Compétence de Charme peut être utilisée pour mendier dans les rues. Un Test réussi vous vaudra un nombre de sous de cuivre égal à votre Bonus de Sociabilité x DR par heure de la part des passants, dont la Difficulté est modifiée par le discours choisi pour mendier et à quel point votre apparence peut susciter la sympathie. Si vous n'obtenez pas de DR, mais que vous réussissez quand même le Test, vous ne réussissez à glaner qu'un sou. Un Échec Stupéfiant (-6) signifie que vous vous êtes peut-être attiré des ennuis avec les gardes locaux, ou avec d'autres mendiants du coin, ou que vous avez essuyé d'importants échecs. » + Remarque l.99 (perte de Statut probable hors Carrière de Mendiant/sans ressources).\n\n## Constat\nL'ACTIVITÉ Mendier n'existe pas en donnée (relevé pendant la vague L2 #1548). Le socle des Activités existe (src/engine/activities.ts, ActivityPane, activities.json) — c'est une déclaration de plus, pas une machinerie.\n\n## DoD\n- Activité en DONNÉE (activities.json) : Test de Charme, gain = Bonus Soc × DR sous de cuivre/heure (Formula existante ?), réussite à DR 0 = 1 sou, Échec Stupéfiant −6 = conséquence (table/choix — le RAW donne 3 pistes « peut-être » : arbitrage maison éditable tagué, règle 7), difficulté modifiée par le discours/l'apparence (paramètre éditable, cas 1 du credo — le RAW renvoie à l'appréciation).\n- La remarque Statut : consigner (mécanique de perte de Statut = vérifier si le vocabulaire existe, sinon volet documenté du ticket).\n- Porte NOMMÉE au DoD (le geste joueur qui l'atteint) + recette.\n",
+    "createdAt": "2026-08-31T12:52:29Z",
+    "closedAt": null
+  },
+  {
+    "number": 1613,
+    "title": "[outillage] migrations:replay est un gate CI-ONLY — le rouge n'est détectable qu'APRÈS push : hook pre-push qui rejoue sur un EXPORT de HEAD",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "sev:mineur",
+      "type:système"
+    ],
+    "body": "## Constat (2026-08-31, mesuré)\n\nLa CI de main était ROUGE depuis 3 pushes (runs 33342378024 / 33369696340 / 33394356200) sur le job `migrations` — cardinaux attendus dépassés par la croissance légitime du convoi + en-tête manquant + non-idempotence. Personne ne l'a vu avant : `npm run migrations:replay` ne tourne QUE dans la CI. Verbatim utilisateur : « C'est con que le rouge de la CI ne soit pas detectable avant ».\n\n## Pourquoi il n'est pas jouable en local naïvement\n\nLe rejeu est EN PLACE (`scripts/migrations/replay.mjs` : « 64 migration(s), ordre lexical, EN PLACE ») : il réécrit `src/data`/`src/scenes` puis vérifie `git diff`. Sur l'arbre de travail partagé (sessions parallèles, WIP permanent), le lancer serait destructif ET son verdict serait faux (le WIP casse les cardinaux).\n\n## DoD\n- [ ] Hook `pre-push` (scripts/git-hooks/, déclaré au postinstall comme les hooks existants) : exporte HEAD dans un dossier temporaire (`git checkout-index --prefix` ou `git archive` — le repli git-init-jetable de la session voisine a prouvé le patron, attention au piège `rev-parse --show-toplevel` mesuré par elle), y rejoue `migrations:replay`, BLOQUE le push si exit ≠ 0. Budget : le job CI fait ~40 s runner froid, l'export local doit tenir en ~10-15 s.\n- [ ] Le même script est invocable à la main (`npm run migrations:replay:head`) pour la porte d'orchestrateur avant push.\n- [ ] La skill d'orchestration ajoute le gate à sa checklist pré-push (fait dans le même geste, hors DoD code).\n\nFix des rouges COURANTS : codeur en vol (cardinaux motivés, en-tête L1, idempotence) — ce ticket porte la DÉTECTION, pas le fix du jour.",
+    "createdAt": "2026-08-31T13:05:33Z",
+    "closedAt": null
+  },
+  {
+    "number": 1614,
+    "title": "Canari rouge — environnement ou suite cassés",
+    "state": "OPEN",
+    "labels": [],
+    "body": "Run: https://github.com/cgauche/game/actions/runs/33396001399",
+    "createdAt": "2026-08-31T13:16:21Z",
+    "closedAt": null
+  },
+  {
+    "number": 1615,
+    "title": "refs(type) : le statut CIBLE ids-nus (-76 au ledger L2/0) n'a AUCUNE porte - 0 def adopte la fabrique, FK absent prouve par sonde (sea-weather accepte un id inexistant)",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "chantier:grammaire-documents",
+      "sev:mineur",
+      "type:système"
+    ],
+    "body": "## Invariant\nÉpic #1463 + doctrine VERROU PAR CONSTRUCTION : un statut « cible » ne se DÉCLARE pas, il se VERROUILLE — la forme canonique doit être la seule que le schéma accepte.\n\n## Constat (juge de fermeture L2 #1548, 2026-08-31 — sondes exécutées)\nLa plus grosse baisse du ledger de la vague (−76 lignes, commit L2/0 : « refs/ids-nus reçoit le statut CIBLE ») n'a AUCUNE porte : la fabrique `refs(type)` (src/data/schemas/grammaire/ref.ts:102 — liste d'ids nus brandée, FK au registre) est adoptée par ZÉRO def de donnée (tests seulement) ; refs('trapping') par UN seul (merchants.ts:32). Preuve du trou, sonde rejouable (scratchpad/probe-fk.mts) : defs/sea-weather.ts:66 porte `skills: z.array(z.string())` — un id de Compétence INEXISTANT injecté PARSE (aucun verrou FK) ; et :67-68 `spec: z.record(string, string)` est une graphie de « réf de Compétence + spec » ABSENTE de GRAMMAIRE_STOCK (le détecteur d'alias liste la clé `skill`, pas `skills`). La couverture actuelle est nominative (refs-migrated.test.ts:686) — exactement le régime que l'épic veut remplacer.\n\n## DoD\n- Les ~75 champs `string[]`-d'ids adoptent `refs(type)` (migration mécanique, FK par construction au parse) — ou chaque exception est stockée nominativement avec motif.\n- La sonde probe-fk PROMUE en test committé (mutation : id inexistant → parse REFUSÉ).\n- Le détecteur d'alias de GRAMMAIRE_STOCK apprend les clés PLURIELLES (`skills`…) — l'angle mort mesuré.\n- Le ledger : les 76 lignes « cible » redeviennent VRAIES (portées par le schéma), le reclassement de L2/0 cesse d'être une déclaration sur parole.\n\nContexte : disposition n°4 du juge de fermeture #1548 ; famille #1473 (refs validées au parse contre le registre).\n",
+    "createdAt": "2026-08-31T13:25:32Z",
+    "closedAt": null
+  },
+  {
+    "number": 1616,
+    "title": "deps:exports rouge preexistant : 4 exports sans consommateur (dismissTopHandle, normaliseAssises, skillRefSchema scene, cles creatures)",
+    "state": "CLOSED",
+    "labels": [
+      "sev:smell",
+      "type:système"
+    ],
+    "body": "## Constat (juge de fermeture L2 #1548, 2026-08-31 — reproduit localement, EXIT=1)\n`npm run deps:exports` rouge : 4 exports sans consommateur — src/state/dismissStack.ts:dismissTopHandle, src/ui/editor/editorState.ts:normaliseAssises, src/data/schemas/defs-scenes/scene.ts:skillRefSchema, src/data/schemas/defs/creatures.ts:cles. NON imputable à la vague L2 (vérifié : les deux derniers étaient déjà sans consommateur au commit de base e52cc3013, et scene.ts n'a pas été touché par la vague — git log vide).\n\n## DoD\nChaque export : consommateur câblé rétabli, ou mort PURGÉ (credo zéro code mort) — jamais une allowlist. Attribution d'origine à établir par git log au moment du geste.\n",
+    "createdAt": "2026-08-31T13:25:35Z",
+    "closedAt": "2026-08-31T13:47:31Z"
+  },
+  {
+    "number": 1617,
+    "title": "knip ignoreExportsUsedInFile masque les exports morts a consommation interne - reveles des semaines plus tard avec attribution au mauvais lot (cause racine du faux blame #1616)",
+    "state": "OPEN",
+    "labels": [
+      "domaine:outillage",
+      "sev:smell"
+    ],
+    "body": "## Constat (solde #1616, 2026-08-31 — cause racine mesurée)\nknip.json porte ignoreExportsUsedInFile: true → un export mort reste INVISIBLE à deps:exports tant qu'une consommation INTERNE au fichier existe. Quand une définition locale devient un re-export (cas mesuré : scene.ts:skillRefSchema, définition→re-export à 2a50ce86d), l'export sort de l'exemption et le rouge apparaît DES SEMAINES plus tard, attribué au lot qui a bougé le fichier — c'est ce mécanisme qui a produit deux attributions contradictoires entre sessions sur #1616 (départagées par git log -S).\n\n## DoD\n- Évaluer la désactivation d'ignoreExportsUsedInFile (ou une passe périodique sans l'exemption) : un export consommé SEULEMENT en interne n'a pas besoin d'être exporté — c'est du vocabulaire public mensonger.\n- Si désactivation : purger/dé-exporter le stock révélé dans le même geste (liste décroissante, pas d'allowlist).\n",
+    "createdAt": "2026-08-31T13:46:21Z",
+    "closedAt": null
+  },
+  {
+    "number": 1618,
+    "title": "[gameIso] GameStage3D:238 — le tableau de deps du useMemo change de TAILLE entre rendus (scène La Diligence) : warning React systématique en jeu ET à l'éditeur",
+    "state": "OPEN",
+    "labels": [
+      "bug",
+      "domaine:moteur-pur",
+      "sev:mineur"
+    ],
+    "body": "## Constat (recette #684 L3+L4, 2026-08-31)\n\nReproductible à CHAQUE rendu/re-rendu de la scène La Diligence (transition de voyage en jeu, ouverture du projet à l'éditeur — indépendant du gating testé) :\n\n```\nWarning: The final argument passed to %s changed size between renders.\nThe order and size of this array must remain constant.\n  at GameStage3D (src/gameIso/stage/GameStage3D.tsx:238:31)\n```\n\nLe useMemo liste le mobilier `diligence-salle-*` dans son tableau de deps — taille variable selon la scène. Préexistant (pas du lot #684). Racine non investiguée par la recette (constat seulement). Note : les 43 directives eslint-disable react-hooks étant des fantômes purgés (b6462891a) et le plugin absent (#922), AUCUNE garde lint ne couvre cette classe aujourd'hui — c'est #922 qui la rendra visible statiquement ; en attendant le warning console est le seul témoin.",
+    "createdAt": "2026-08-31T15:19:06Z",
+    "closedAt": null
+  },
+  {
+    "number": 1619,
+    "title": "CI : effondrement NON-DÉTERMINISTE du job build en rouge massif jsdom (rendus vides) — famine du runner à instrumenter",
+    "state": "OPEN",
+    "labels": [
+      "bug"
+    ],
+    "body": "## Symptôme\n\nLe job `build` de la CI s'effondre de façon NON-DÉTERMINISTE en rouge massif jsdom : des dizaines de fichiers de test UI rendent des composants VIDES (`expected [] to deeply equal [...]`, `Cannot read properties of null (reading 'textContent')`), sur des fichiers sans aucun rapport avec le commit poussé, et le LOT de fichiers touchés change d'une occurrence à l'autre.\n\n## Preuves (mesurées 2026-08-31)\n\n| Run | Commit | Verdict npm test |\n|---|---|---|\n| 33409799894 | ddfcc9310 | VERT (seul docs:structures rouge, autre cause) |\n| 33411876922 | 4b29cfaaf | ~109 rouges jsdom/stage « rendus vides » (RollLine, determination-reachability, PanneauParametre, cameras-reposees…) |\n| 33413153943 (1ʳᵉ passe) | 5aa40e513 | 1 seul rouge : flipbook-frames (identité CanvasTexture) — 21 217 verts |\n| 33413153943 (rerun --failed) | 5aa40e513 | Effondrement massif à nouveau, LOT DIFFÉRENT (modal-entree ×8, marche-tenue-clavier ×8, counterspell ×4, useGamepad, extended-progression…) |\n\nMÊME COMMIT (5aa40e513) : première passe quasi verte, rerun effondré → le code n'est pas la cause. La suite complète LOCALE sur ce même arbre : 21 217 verts, 153 fichiers jsdom tous verts.\n\n## Hypothèse (à instrumenter, pas à croire)\n\nFamine du runner 2 cœurs / 7 Go : `scripts/test/run.mjs` lance les partitions node et jsdom en CONCURRENCE, plus le bake WebGL de `murage-identite`/`silhouette-corps` au milieu — sous contention, les rendus jsdom sortent vides (motif identique à l'effondrement local mesuré quand DEUX suites complètes tournaient en même temps sur la machine de dev — 245 rouges, consigné au skill orchestrateur). Alternative à écarter : un worker OOM-tué en vol avec `isolate:false` (l'état de setup perdu, les fichiers suivants du worker empoisonnés).\n\n## Piste de correction (lot à instruire — juge de design d'abord)\n\n1. INSTRUMENTER d'abord : un run CI avec `time -v`/mesure mémoire par partition, ou logs vitest `--reporter=verbose` horodatés, pour départager contention CPU vs OOM.\n2. Si contention : SÉRIALISER les partitions node → jsdom sur CI (`process.env.CI` dans run.mjs), et borner `maxWorkers` de la partition jsdom.\n3. `scripts/test/run.mjs` est un fichier PARTAGÉ entre les deux sessions locales — coordination requise avant de le toucher.\n\n## DoD\n\n- [ ] Cause départagée par MESURE (contention vs OOM), pas par plausibilité.\n- [ ] 3 runs CI consécutifs verts (ou au pire rouges sur un VRAI défaut nominal) après le correctif.\n- [ ] Le flake `flipbook-frames` (CanvasTexture, 1ʳᵉ passe du run 33413153943) traité ou rattaché à la famille #1442.\n",
+    "createdAt": "2026-08-31T16:31:45Z",
+    "closedAt": null
+  },
+  {
+    "number": 1620,
+    "title": "DoD-4 de l'epic #1463 NON COUVERT : consommateurs-de-champs ignore les schemas d'entree ANONYMES (TARGETS a la main, angle mort structurel emis par le generateur) - a livrer avant cloture",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "chantier:grammaire-documents",
+      "sev:mineur",
+      "type:système"
+    ],
+    "body": "## Invariant\nDoD de l'épic #1463, point 4 (verbatim) : « le générateur docs/consommateurs-de-champs.md couvre les schémas d'entrée anonymes (angle mort déclaré l.10) ». Clause REQUISE pour la clôture de l'épic.\n\n## État MESURÉ (2026-08-31, HEAD ~5aa40e513) : NON COUVERT\n- docs/consommateurs-de-champs.md:10 (verbatim) : « Les catalogues src/data/schemas/defs/*.ts à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE — sans alias TS nommé, ce détecteur ne peut pas y borner une lecture ; en SORTIR un catalogue est un geste d'auteur (nommer son schéma d'entrée dans SON def …) — fait pour props.json → PropData. »\n- build-field-consumers.mts:13-16 : « la plupart des defs exportent un schema ANONYME … HORS PÉRIMÈTRE de ce rapport, dette non traitée » — la phrase est ÉMISE par le générateur (structurelle, :103-106).\n- TARGETS = tableau statique à la main (:22), pas un cliquet décroissant.\n- Exemple : defs/trappings.ts:299 `export const schema = doc.schema;` — aucun alias d'entrée → service/formChoices/prosthesisTraining n'apparaissent dans AUCUNE table du doc.\n\n## DoD\n- Chaque def de catalogue expose un schéma/alias d'ENTRÉE nommé (geste mécanique — mesurer si dérivable de document() plutôt que 100+ exports à la main : la fabrique CONNAÎT l'entrée, l'angle mort est peut-être soluble à la fabrique en une déclaration), et TARGETS devient DÉRIVÉ (ou cliquet décroissant nominatif).\n- La phrase d'angle mort l.10 du doc DISPARAÎT (ou se réduit aux exceptions nominatives datées).\n- Précédent du patron : props.json → PropData (le contre-exemple couvert).\n",
+    "createdAt": "2026-08-31T17:35:31Z",
+    "closedAt": null
+  },
+  {
+    "number": 1621,
+    "title": "specsOpen par TYPE = faux verrou dans les DEUX sens (82 faux refus talents / 0 controle des skills fermees) - l'ouverture vit PAR ENTREE ; bloquant du lot L3 #1463",
+    "state": "OPEN",
+    "labels": [
+      "chantier:grammaire-documents",
+      "sev:majeur",
+      "type:système"
+    ],
+    "body": "## Invariant\nÉpic #1463 : la grammaire des refs porte la vérité de forme. Or l'OUVERTURE d'un pool de spécialisations est portée PAR ENTRÉE dans la donnée (talents.json#specsOpen, skills.json specsOpen par entrée) — la grammaire la déclare PAR TYPE (src/data/schemas/grammaire/ref.ts:41-42 : skill: {specsOpen:true}, talent: {specsOpen:false}).\n\n## Constat (juge de design #1457, 2026-08-31 — sonde refOuSpec('talent') sur les 1724 talents[] de creatures.json)\nLe forfait par TYPE est un FAUX VERROU dans les deux sens :\n- talent: specsOpen:false → 82 FAUX REFUS de specs RAW-légitimes (l'ouverture réelle est à l'entrée) ;\n- skill: specsOpen:true → les Compétences à domaine FERMÉ ne sont contrôlées par AUCUN pool au parse (le refine ne mord que la sentinelle).\nDécomposition des 165 refus de la sonde : 82 faux-refus pool, 48 Unrecognized times (talentRefSchema a times, refOuSpec non), 24 « aucune spécialisation » (destinee×21 : la PROPHÉTIE est du contenu d'instance sans champ — frenesie×3), 11 sentinelles « au choix ».\n\n## DoD (bloquant du lot L3 #1463 — les refs de TALENT)\n- noeudASpecialisation lit specsOpen PAR ENTRÉE (le type ne porte qu'un défaut), les deux sens se referment (talents ouverts acceptés, skills fermées contrôlées).\n- refOuSpec gagne l'extra times ; régime choix des talents (les 11-12 sentinelles migrent, patron 4bis).\n- Champ de TEXTE D'INSTANCE sur la réf de talent (destinee : « proposez une Destinée appropriée » — la prose quitte spec).\n- Sonde du juge promue en test (165→0 refus décomposés).\n",
+    "createdAt": "2026-08-31T18:17:14Z",
+    "closedAt": null
+  },
+  {
+    "number": 1622,
+    "title": "23 pages PERDUES de plus dans les extractions (ancres adjacentes a blancs seuls, texte atteste au PDF) - dont 15 au Zoo Imperial qui source le bestiaire ; baseline decroissante du detecteur #1457-A1",
+    "state": "OPEN",
+    "labels": [
+      "livre:LDB",
+      "livre:ZI",
+      "raw-audit",
+      "sev:majeur",
+      "type:donnée"
+    ],
+    "body": "## Invariant\nRègle 1 : Source/ est la vérité citable — une page du PDF absente de l'extraction est un trou de corpus qui rend les données de cette page invérifiables.\n\n## Constat (juge de design #1457, 2026-08-31 — re-scan des 1352 .md de Source/ + tri au PDF)\n24 PAGES PERDUES (ancres data-folio adjacentes séparées de blancs seuls, >200 caractères au PDF) : LDB 08 folio 88 (3183 car. — le Juriste, traité au lot A de #1457) + 23 AUTRES dont 15 au ZOO IMPÉRIAL (livre qui source creatures.json), AA 03 folio 39 (1819 car.), 3 index/crédits, 2 MSR/EDO. 28 cas de blancs légitimes (pages blanches/filigranées) triés à part. AUCUNE garde ne voyait la classe (check-folio-continuity ne lit que la séquence).\n\n## DoD\n- Chaque page restituée depuis le PDF du dépôt (patron 48fcf0569 + pdf-extract.py, diff mot-à-mot) OU son trou déclaré légitime avec motif.\n- La baseline nominative du détecteur « ancre sans contenu utile » (posé au lot A1 de #1457) DÉCROÎT 23→0.\n- Priorité au ZI (15 pages, bestiaire sourcé).\n",
+    "createdAt": "2026-08-31T18:17:16Z",
+    "closedAt": null
+  },
+  {
+    "number": 1623,
+    "title": "PartyScreen : après Échap depuis l'écran d'ouverture de campagne, le sélecteur affiche « Campagne : L'Arène » au lieu de la campagne chargée (étiquette seule)",
+    "state": "OPEN",
+    "labels": [
+      "bug"
+    ],
+    "body": "Trouvaille de recette #717 (2026-08-31, capture 02-party-apres-echap-label-arene.png du rapport). Repro : bibliothèque → lancer « L'Ennemi Intérieur — chapitre 1 » → écran d'ouverture → Échap (« Retour au groupe ») → le PartyScreen réaffiche « Campagne : L'Arène ». État interne VÉRIFIÉ correct (campaignDoc/campaignSceneId = la-diligence) — seule l'ÉTIQUETTE ment ; « Reprendre → » revient à la bonne campagne. Défaut d'affichage probablement PRÉEXISTANT à #717 (le libellé du sélecteur ne lit pas la campagne réellement chargée), rencontré sur le chemin de recette. Aucune perte de données.",
+    "createdAt": "2026-08-31T18:43:54Z",
+    "closedAt": null
+  },
+  {
+    "number": 1624,
+    "title": "Décors ANCRÉS au bâtiment en volume — features de façade + ornements quittent le billboard (cheminée, enseigne sobre, clocheton, étal, applique murale) — vague de #1343, étalon diligence",
+    "state": "OPEN",
+    "labels": [
+      "domaine:art",
+      "type:donnée"
+    ],
+    "body": "# Décors ANCRÉS au bâtiment en volume — les features de façade et les ornements quittent le billboard (vague de #1343, étalon diligence)\n\n## Invariant\n\n- **Directive utilisateur (2026-08-09, verbatim, consignée à #1176 puis #1343)** : « Je compte bien me débarasser des billboards par des vrais objets 3d, et ne garder que les creatures en face/arriere/profil. » — elle répondait à la question de la CIBLE de la phase props de la migration WebGL.\n- **Arbitrage utilisateur (2026-08-31, cette vague)** — question posée : « L'enseigne : ce lot la passe-t-il en volume sobre (potence de fer + panneau de bois, sans pictural), le moteur génératif #389 venant PEINDRE la face du panneau plus tard — ou reste-t-elle en billboard jusqu'à ce que #389 soit designé et validé ? » → réponse : **« Volume sobre maintenant »**. La face du panneau reste la toile du futur moteur génératif #389 (« Moteur d ENSEIGNE generative (forme/couleur/motif) + nom de l auberge affiche — arbitrage user 2026-07-13 ») — le canal texture-sur-face est à la charge de #389, pas de ce lot.\n- **Cas canonique déjà couvert par le socle** : le chemin ENTITÉ volumique — `src/gameIso/builders/props.ts:88-99` (`refEstVolumique(ref)` → `buildPropVolumes(ent, prop, heightAt(...))`), recette `PropVolumeRecipe` de `src/data/props.types.ts`, 6 recettes livrées par #1443 (« Mobilier volumique + assise de La Diligence — exécution du plan 2026-08-20 »). Le nouveau cas (feature de façade, ornement) est une **INSTANCE** : la MÊME règle unique `refEstVolumique` appliquée au site d'émission, le MÊME builder généralisé par ancre — jamais une variante à branche par famille (`if (source === 'architecture')` dans le builder volumique serait la variante interdite).\n\n## État mesuré (HEAD main, 2026-08-31)\n\n- `buildProps` émet DEUX familles ancrées au bâtiment, toutes deux **billboard-only** (aucune branche volume) :\n  - *features de façade* — `src/gameIso/builders/props.ts:105-130` : ancre sur l'arête de mur (offset), `liftM` de la viz (`facadeFeatureViz`), clé `arch:<featureId>` ; `Face` porte DÉJÀ les champs `architectureFeatureId`/`architectureFeatureKind` (`src/gameIso/builders/types.ts`) prévus pour le picking.\n  - *ornements par style de bâtiment* — `props.ts:131-207` : ancres `ridge`/`facade`/`front` (`buildingFeatures(body.style)`), `liftM` calculé au site (faîte via nappe, haut de façade `WALL_H_M * 0.55`).\n- Population mesurée des sites (catalogues `src/gameIso/catalog/facades/defs/` + `buildings/defs/`) : `chimney`→`cheminee` (auberge-relais-imperiale liftM 2.25, forge), `sign`→`enseigne` (auberge liftM 2.2), `belfry`→`clocheton` (chapelle liftM 5) ; ornements `clocheton` ridge (chapelle), `cheminee` ridge (forge), `enseigne` facade (taverne), `etal-marche` front (echoppe).\n- **Diligence (étalon)** : 1 `sign` + 2 `chimney` sur l'auberge — les 3 dernières pancartes de bâtiment de la scène (le mobilier intérieur est déjà volumique, #1443).\n- Data : `cheminee`, `enseigne`, `clocheton`, `applique-murale` **ABSENTS de `src/data/props.json`** (sonde : script scratchpad `props-etat.mjs`, sortie collée à la vague) — art billboard seul, aucune `PropData` ; `etal-marche` présent sans `volume` ; `applique-murale` est un prop-ENTITÉ mural (chemin entité déjà volumique-capable, seule la recette manque).\n- Périmètre de la famille : cheminee, enseigne, clocheton, etal-marche, applique-murale. ÉCARTÉS (décors AU SOL sur socle/hampe, autre famille — le chemin entité les couvrira quand ils recevront une recette) : gargouille, etendard, banniere-chaos, panneau, toile.\n\n## Lots\n\n1. **Plomberie — un builder volumique par ANCRE** : généraliser `buildPropVolumes` en variante pure `(ancre {x,y}, facing, baseHeightM, prop, identité de picking)` — base = sol + `liftM` du site ; identité = `entId` (entités) OU `architectureFeatureId` (features) ; ornements non interactifs sans identité. Le chemin entité devient un cas particulier. Brancher `refEstVolumique` aux deux sites ancrés ; le billboard reste le REPLI pour tout ref sans recette (la donnée décide, aucun flag day). Caps : feature de façade = normale SORTANTE du mur ; ornement facade/front = `door.facing` ; ridge = à designer (axe du faîte). Tests builders au patron `props.test.ts` (faces à la bonne ancre / au bon cap / à la bonne base).\n2. **Recettes — 100 % donnée** (`src/data/props.json` + `propMaterials.json` si matière manquante, éditables au Codex ; convention 1 case ≈ 1 m des 6 recettes livrées — le recalage d'échelle global reste à #1507) : `cheminee`, `clocheton`, `etal-marche`, `applique-murale` (+ leur `PropData` à créer pour les 4 absents), `enseigne` SOBRE (potence fer + panneau bois pendu).\n3. **Vérification** : recette navigateur sur la diligence — **PORTE du lot** : l'enseigne et les 2 cheminées se voient en VOLUME à l'écran de jeu (occlusion par les murs correcte, pas de régression de picking) ; captures QC avant/après sur des scènes à taverne/chapelle/forge/échoppe ; suite complète + typecheck.\n\n## Dépendances / état\n\n- Père : #1343 « Props en VRAI 3D — le décor quitte les billboards (héritier #1176) » — ce ticket exécute sa phase « généralisation par familles » pour la famille ancrée-au-bâtiment.\n- S'appuie sur #1443 (livré, fusionné) ; convergence enseigne : #389 (la face du panneau volumique = sa toile) ; échelle : #1507 reste ouvert, ce lot n'y touche pas.\n- Design jugé AVANT codeur (exigence du père #1343 : « à re-designer au lancement — juge sur l'invariant AVANT codeur »).\n\n**DoD** : plus AUCUNE décoration ancrée au bâtiment ne rend en billboard quand sa recette existe ; les 5 recettes livrées et éditables au Codex ; la porte nommée (recette navigateur diligence) traversée ; gardes et suite complètes vertes.\n",
+    "createdAt": "2026-08-31T19:00:32Z",
+    "closedAt": null
+  },
+  {
+    "number": 1625,
+    "title": "diligence-projet.json:7 : desc en PARAPHRASE d'EDO 01 (regle 5 : jamais une reformulation) - preexistant, desormais adosse a un folio par la racine sourcee #1552",
+    "state": "OPEN",
+    "labels": [
+      "livre:EDO-EDOC",
+      "sev:smell",
+      "type:donnée"
+    ],
+    "body": "Constat du juge de diff #1552 (2026-08-31) : src/scenes/diligence/diligence-projet.json:7 porte un desc qui est une PARAPHRASE d'EDO 01 — pré-existant (identique à a0d584e39), mais le lot #1552 vient de sourcer la RACINE du document (EDO 01 l.5·l.13), ce qui adosse la paraphrase à un folio. Règle 5 : une prose est un copié/collé verbatim recollable dans Source/, jamais une reformulation. DoD : recoller le verbatim EDO 01 (chapitre 1 de L'Ennemi dans l'Ombre, folio 12+) ou retirer le desc si aucune ligne du livre ne le porte (le pitch narratif, lui, est déjà verbatim — vérifié par le juge l.5 et l.13).",
+    "createdAt": "2026-08-31T19:53:31Z",
+    "closedAt": null
+  },
+  {
+    "number": 1626,
+    "title": "Tables de tirage enregistrées au CHARGEMENT du module : la rangée APPLIQUÉE est un snapshot du dataset à l'import — une édition Codex n'atteint que la ligne AFFICHÉE",
+    "state": "OPEN",
+    "labels": [
+      "bug"
+    ],
+    "body": "Reste nommé du solde de la vague plage (#1463 P2, 2026-08-31). Mesuré : registerTableStep('stage-weather-<saison>', …) s'exécute au top-level de src/state/travelFlow.ts:642 et COPIE les rangées (ranges.map crée de nouveaux objets) = SNAPSHOT du dataset à l'import ; weatherFromRoll (src/engine/travelStages.ts:89-91) relit weather en DIRECT à chaque jet. Le commentaire « une édition au Codex change la météo tirée » (travelStages.ts:82-84) est vrai pour la ligne AFFICHÉE, faux pour la rangée APPLIQUÉE : après un setDataset au Codex, les deux vérités divergent à nouveau — non plus par la position (tuée par P2 + le test d'ordre committé), mais par la FRAÎCHEUR. Portée : TOUTE table enregistrée au chargement depuis un dataset (inventaire à faire — pas seulement la météo). Couture à concevoir : enregistrement PARESSEUX ou re-dérivation à l'ouverture de l'étape — jamais un rafraîchisseur par table (machinerie). DoD : inventaire des tables à snapshot, la couture unique, un test « édition Codex → rangée appliquée fraîche » sur au moins la météo.",
+    "createdAt": "2026-08-31T20:46:07Z",
+    "closedAt": null
+  },
+  {
+    "number": 1627,
+    "title": "Identite de projet : l'ENTREE de bibliotheque porte une identite PARALLELE au document (copies au meme id, divergences nom-masque, bandeau muet, icon ineditable) - une seule verite a designer",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "domaine:UX",
+      "sev:majeur",
+      "type:système"
+    ],
+    "body": "## Invariant\nDoctrine id/label + arbitrage user 2026-08-31 (« Un projet se NOMME avant d'être enregistré ») : l'identité d'un projet a UNE vérité — le DOCUMENT. Or la bibliothèque stocke une identité d'ENTRÉE parallèle qui peut diverger et GAGNE à l'écran.\n\n## Constats (recette #1552, captures %TEMP%/recette-1552/)\n1. Copie d'une builtin : le doc garde id:\"arene\"/label:\"L'Arène\", l'entrée s'appelle « Copie de L'Arène » — deux copies successives porteraient le MÊME id de document. La sémantique de COPIE (nouvel id ? versionContenu ?) n'est pas définie.\n2. Import par l'éditeur (avant le fix du mini-lot) : 2 entrées partageant le même id de doc, noms divergents — la classe générale : entrée⇄doc sans contrainte de cohérence.\n3. L'éditeur n'affiche NULLE PART le nom du projet chargé (bandeau muet — le nom ne se lit qu'au modal d'enregistrement) : pour un système où « un projet se nomme », le nom est invisible pendant tout le travail.\n4. icon fait partie de l'identité au schéma mais AUCUN champ du modal ne l'édite — un projet d'auteur n'a jamais d'icône.\n\n## DoD (design à juger avant code)\n- UNE vérité d'identité : l'entrée DÉRIVE du doc (label/icon affichés = ceux du doc), plus de champ d'entrée parallèle — ou la divergence est structurellement impossible.\n- Sémantique de copie définie : copier = nouvel id (+ versionContenu remis), label proposé « Copie de X » ÉCRIT AU DOC.\n- Le nom du projet vit au bandeau de l'éditeur (découvrabilité).\n- icon éditable au geste (modal d'identité), picker d'icônes existant réutilisé (docs/ajouter-une-icone.md).\n",
+    "createdAt": "2026-08-31T20:59:20Z",
+    "closedAt": null
+  },
+  {
+    "number": 1628,
+    "title": "Editeur/Bibliotheque : confirm() natif a l'import, modale autosave a 2 issues destructrices sans sortie neutre visible, export nomme par idScene au lieu du nom du projet",
+    "state": "OPEN",
+    "labels": [
+      "domaine:UX",
+      "sev:mineur"
+    ],
+    "body": "## Constats (recette #1552 — deux modales hors patron)\n1. Import par la Bibliothèque : la confirmation de remplacement (« v1 pas plus récente que v1… Remplacer quand même ? ») est un confirm() NATIF du navigateur — le patron que le dépôt bannit (ChoiceButtons/OptionChooser existent). À migrer dans l'écran.\n2. Modale « Reprendre une sauvegarde locale ? » (autosave) : DEUX issues visibles, toutes deux engageantes (« Ignorer et supprimer » / « Restaurer ») — la sortie neutre existe (Échap ferme sans supprimer) mais n'est PAS montrée : un auteur pressé détruit l'autosave d'une autre session sans le savoir (vécu en recette). Ajouter le bouton neutre (« Plus tard ») et dire ce que fait chaque issue.\n3. Export JSON nommé scene-<idScène>-projet.json — jamais le NOM du projet : nommer le fichier depuis le label du doc (slugifié).\n",
+    "createdAt": "2026-08-31T20:59:22Z",
+    "closedAt": null
+  },
+  {
+    "number": 1629,
+    "title": "Bibliotheque : l'entree schema 2 « L'Embuscade » ne s'ouvre plus (rot de contenu anterieur - ambiance foret, dialogues.effects, triggers.flow) - chaine de migration a re-verifier depuis 2",
+    "state": "OPEN",
+    "labels": [
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "Constat recette #1552 (capture 1552-02) : l'entrée préexistante « L'Embuscade » (schema 2) est refusée in-screen sur des motifs de CONTENU (scenes.0.ambiance « foret », dialogues…choices.effects, triggers.0.flow) — étrangers à l'identité du lot #1552, rot legacy antérieur. PROJECT_MIGRATIONS déclare 2→7 : soit une migration intermédiaire ne remonte pas réellement depuis 2, soit le contenu a pourri hors schéma. DoD : rejouer l'ouverture d'un doc schema 2 gelé en fixture, réparer la marche ou statuer l'abandon du format 2 avec refus NOMMÉ (« trop ancien, ré-importez depuis un export récent »).",
+    "createdAt": "2026-08-31T20:59:24Z",
+    "closedAt": null
+  },
+  {
+    "number": 1630,
+    "title": "SceneEntity.interact n'exprime PAS une affordance PERMANENTE : tout décor interactif non-consume est à usage unique",
+    "state": "OPEN",
+    "labels": [
+      "bug"
+    ],
+    "body": "Découvert au lot d'outillage barge-du-sel (2026-09-01). Mesuré : store.ts:2319-2327 — un décor `interact` sans `consume` pose `flags['__fouille_<id>']` et la garde `!get().flags['__fouille_' + entityId]` le mure définitivement ; avec `consume`, l'entité disparaît. Il n'existe donc AUCUNE graphie en donnée pour un décor RÉ-ACTIVABLE : le « Appareiller vers l'îlot » de barge-du-sel n'ouvre la carte du monde qu'UNE fois ; toute échelle, porte, cloche, poste d'observation aura le même défaut. Le canal (`interact.flow`) est bon — c'est son CLIQUET DE CONSOMMATION qui est codé en dur au lieu d'être un fait d'authoring. Piste : un 3e état d'authoring sur `SceneEntity.interact` (le cliquet devient une donnée, `consume` restant la variante destructive) — à juger en design, jamais un `if` de plus au site. Adjacent : `sel-embuscade-vaincue` reste un drapeau posé jamais lu (consommateur à décider ou suppression).",
+    "createdAt": "2026-08-31T23:02:49Z",
+    "closedAt": null
+  },
+  {
+    "number": 1631,
+    "title": "Trappings : lentille d'ACHETABILITE (stock marchand par predicat merchants.json invisible du MODE 2) - dette reelle ~50 dont 38 LDB, nominatives - lot L4 de #1553",
+    "state": "OPEN",
+    "labels": [
+      "domaine:économie",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "Né du juge de design #1553 (2026-09-01) : 87/137 trappings « orphelins » sont ACHETABLES chez un marchand via le prédicat EN DONNÉE de merchants.json (arch.category.categories/subTypes, merchantFlow:194-201) — invisible du MODE 2 (grammaire à littéral). L'instrument A ne doit PAS les compter en id-seul (instrument qui ment) : la bonne lentille est l'achetabilité (citations + scènes + stock marchand). DoD : lentille posée (patron computeObtainability — sonde du juge reproductible), dette réelle ~50 rendue nominative (38 LDB : gants, atelier-medecin…), chaque ligne câblée ou ancrée avec ticket. Sémantique à écrire au fichier comme pour creatures.",
+    "createdAt": "2026-08-31T23:05:46Z",
+    "closedAt": null
+  },
+  {
+    "number": 1632,
+    "title": "Cliquet lookup-par-label : labelResolverCallStock VIDE mais borne engine/state - 20+ sites prod hors couverture (ui/data/gameIso/scenes) dont findSpell x3 - etendre la couverture",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "domaine:outillage",
+      "sev:smell"
+    ],
+    "body": "Mesuré par la sonde #1553 (2026-09-01) : 29 sites de production appellent les résolveurs par label (findSpell ×3 prod : pregens:72, spellClips:57, draft:819 ; + les *IdByLabel de careerSlots/character/magic/talentEffects/ui). Le cliquet labelResolverCallStock.mjs est VIDE (zéro tenu) mais sa couverture déclarée = src/engine + src/state SEULEMENT — les sites ui/data/gameIso/scenes sont hors portée. DoD : couverture étendue aux 4 racines, stock nominatif décroissant des sites existants (un FAIT, son site, sa raison — les seams de conversion label→id au CHARGEMENT dans data/index.ts sont l'exception doctrinale à déclarer), gen-mutations-gallery.mts:82 (findCreature('Mutant') en dur) dans le lot.",
+    "createdAt": "2026-08-31T23:05:48Z",
+    "closedAt": null
+  },
+  {
+    "number": 1633,
+    "title": "Lexique : les concepts d'ENVELOPPE n'existent pas (11 concepts de VALEUR seuls) - declarer ouverture/cloture/narratif/when en cible = refonte scopee de classerValeur + portes MULTIPLES nommees + re-baseline hors-strate",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "chantier:grammaire-documents",
+      "sev:mineur",
+      "type:système"
+    ],
+    "body": "Né d'un arbitrage RÉFUTÉ par la mesure (2026-09-01, codeur de solde barge-du-sel de la session d'audit — j'endosse) : j'avais accordé « déclarer les 4 signatures narratif/#717 formes CIBLE avec la porte nommée ». Mesuré FAUX à 3 titres : (1) le lexique structures-lexique.mts n'a AUCUN concept d'ENVELOPPE — 11 concepts de VALEUR seulement ; le précédent cohérent est le bump (diligence/#717 : 1144→1146→1147 justifiés, +1149 barge) ; (2) classerValeur est GLOBAL, jamais scopé au dataset (structures-scan.mts:215-226) — une déclaration sortirait TOUS les datasets des invisibles d'un coup (refonte de socle, pas un solde) ; (3) la porte n'est PAS unique (formeNarratif ne garde que l'enveloppe narratif ; ouvertureSchema:59, clotureSchema:72, conditionSchema pour when) — ma condition « porte nommée » aurait produit 3 paraphrases fausses. DoD : concept(s) d'ENVELOPPE au lexique avec scoping propre de classerValeur (jamais un débordement global silencieux), portes MULTIPLES nommées par forme, re-baseline PLAFOND_HORS_STRATE en 2 colonnes (déclarations vs vraie dette), les bumps révisables 1147→1149 soldés. Famille : DoD-3 de l'épic #1463 (104 redéclarations), leçon #1615 (cible = porte) affinée : cible = porte(S) nommée(S) + mécanisme de mesure SCOPABLE.",
+    "createdAt": "2026-08-31T23:28:08Z",
+    "closedAt": null
+  },
+  {
+    "number": 1634,
+    "title": "Artillerie navale : le sous-effectif INTERDIT le tir alors que le RAW le PÉNALISE (MDG 12 l.448-458 — recharge ×2, Imprécise, Dangereuse cumulatives)",
+    "state": "OPEN",
+    "labels": [
+      "bug"
+    ],
+    "body": "Trouvaille de recette barge (2026-09-01) vérifiée au Source. RAW (MDG 12 l.458, verbatim) : « Les pénalités infligées par un équipage réduit sont cumulatives, ce qui signifie qu'une arme dotée d'Arme d'équipe 4, mais qui n'est maniée que par une seule personne voit son temps de recharge doublé et reçoit les Défauts *Imprécise* et *Dangereuse*. » Le tableau (l.448-456) : 1 servant sur Arme d'équipe 2/3/4 → recharge ×2 (+Imprécise, +Dangereuse selon le rang) — AUCUNE case n'interdit le tir. L'écran réalise une INTERDICTION (« ✗ NON qualifié · AIDE : ne compte pas, ne tire pas », aucun bouton de tir à effectif qualifié 0) — piste mesurée par la vérif : `resolveVolley` (~l.87, `if (!servants.length && !abstract) continue`) coupe au lieu d'appliquer les pénalités via `crewedFireWeapon`. DoD : le tir reste possible en sous-effectif avec les pénalités RAW cumulatives appliquées et DITES à l'écran (l'affordance porte le prix : recharge doublée, Imprécise, Dangereuse — GatedAction/infobulle, jamais un bouton muet) ; test moteur des 3 rangs du tableau ; l'écran de la pièce recetté. NB : la qualification (Projectiles Poudre noire) reste à vérifier séparément — le RAW cité couvre l'EFFECTIF, pas la compétence du servant.",
+    "createdAt": "2026-09-01T01:04:31Z",
+    "closedAt": null
+  },
+  {
+    "number": 1635,
+    "title": "Les DEUX vocabulaires d'appearance.species divergent : le validateur d'authoring (lib.mjs) refuse des espèces que le rig accepte (SWARM_FORMS, raceAppearance)",
+    "state": "OPEN",
+    "labels": [
+      "bug"
+    ],
+    "body": "Découvert au lot apparences (2026-09-01) : `scripts/campagne/lib.mjs:47-56` valide appearance.species contre species.json ∪ defs rig SEULEMENT, alors que `rigSpeciesVocab()` (src/gameIso/rig/appearance.ts:21-30) accepte AUSSI les ids de forme de nuée et raceAppearance — une donnée VALIDE au sens du rig (ex. species:'rats' pour une nuée) THROW à la génération, forçant le contournement par l'espèce de base (rat-geant → routée par le plan de la def, correct mais non évident). Remède : UN vocabulaire (le validateur d'authoring consomme rigSpeciesVocab() ou une source unique partagée), jamais deux listes parallèles. Adjacent signalé au même lot : réf périmée spawn.ts:322→339 dans un commentaire de barge-du-sel-projet.test.ts:83.",
+    "createdAt": "2026-09-01T01:45:17Z",
+    "closedAt": null
+  },
+  {
+    "number": 1636,
+    "title": "Cablage du bestiaire frenchy-bzh : 244 creatures curees sans AUCUNE scene porteuse (famille #1553-L3, plafond decroissant au stock)",
+    "state": "OPEN",
+    "labels": [
+      "audit:non-branché",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "Famille du stock entityOrphanStock.mjs (#1553 L3) : 244 créatures du supplément fan frenchy-bzh — curées, sourcées, schématisées (gardes de ville, bestiaire régional…) — qu'AUCUN chemin de JEU ne convoque (scène/donnée/code de prod ; la palette d'atelier n'est pas un consommateur, sémantique écrite à l'instrument). Liste NOMINATIVE : docs/orphelines-donnees.md (généré — la substitution se voit au diff). DoD : chaque créature câblée (scène/rencontre/table qui la convoque) fait DÉCROÎTRE le plafond famille ; famille vidée = ligne supprimée. Candidat naturel : les campagnes custom et les rencontres aléatoires à venir.",
+    "createdAt": "2026-09-01T01:49:48Z",
+    "closedAt": null
+  },
+  {
+    "number": 1637,
+    "title": "Cablage du bestiaire Middenheim : 37 creatures curees sans scene porteuse (famille #1553-L3)",
+    "state": "OPEN",
+    "labels": [
+      "audit:non-branché",
+      "livre:Middenheim",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "Famille du stock (#1553 L3) : 37 créatures Middenheim (ex. spectre-middenheim, loup-blanc, babrakkos) sans scène porteuse. Liste nominative au doc généré. DoD : câblage → décrue du plafond ; famille vidée = ligne supprimée. Candidat : les scènes de la campagne Middenheim quand elle s'authorera.",
+    "createdAt": "2026-09-01T01:49:50Z",
+    "closedAt": null
+  },
+  {
+    "number": 1638,
+    "title": "Cablage du bestiaire Zoo Imperial : 37 creatures curees sans scene porteuse (famille #1553-L3)",
+    "state": "OPEN",
+    "labels": [
+      "audit:non-branché",
+      "livre:ZI",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "Famille du stock (#1553 L3) : 37 créatures du Zoo Impérial sans scène porteuse. Liste nominative au doc généré. NOTE : 15 pages du ZI sont PERDUES à l'extraction (#1622) — le câblage et la restitution se nourrissent mutuellement. DoD : câblage → décrue ; famille vidée = supprimée.",
+    "createdAt": "2026-09-01T01:49:53Z",
+    "closedAt": null
+  },
+  {
+    "number": 1639,
+    "title": "Cablage de la faune Mer des Griffes : 15 creatures curees hors des evenements de mer (famille #1553-L3)",
+    "state": "OPEN",
+    "labels": [
+      "audit:non-branché",
+      "livre:MDG",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "Famille du stock (#1553 L3) : 15 créatures MdG (faune marine) hors des événements de mer existants. Liste nominative au doc généré. DoD : câblage aux boardEvents/périls/rencontres maritimes → décrue ; famille vidée = supprimée.",
+    "createdAt": "2026-09-01T01:49:55Z",
+    "closedAt": null
+  },
+  {
+    "number": 1640,
+    "title": "Extraction LDB : lignes TITRE+espèces de pages de carrière ABSENTES du corpus (Ingénieur f.87 mesuré, Érudit amputé des espèces) — l'attribution de folio des pitchs est fausse et invisible aux gardes",
+    "state": "CLOSED",
+    "labels": [
+      "audit:contenu-manquant",
+      "livre:LDB",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "Classe mise au jour par la vague #1457 (A2/A2-bis, 2026-09-01) : des pages de carrière du LDB ont perdu leur ligne de TITRE+espèces à l'extraction — l'ancre de folio est alors posée plus loin (souvent sur « Évolution de Carrière »), et tout le début de la page (pitch, citations, accroche) est attribué au folio PRÉCÉDENT.\n\n## Invariant\nCLAUDE.md règle 1 (verbatim) : « `Source/` reste la vérité **citable** (`LDB <chap> l.<ligne>`) ». Un pitch attribué au mauvais folio rend la citation fausse ; `source.page` d'une donnée = folio IMPRIMÉ (convention du dépôt) — la donnée suit le LIVRE, jamais le défaut d'extraction.\n\n## Constats mesurés (sondes A2-bis, rejouables)\n- **INGÉNIEUR (folio 87)** : `grep -n \"INGÉNIEUR\" \"Source/Warhammer v4 - Livre de base version corrigée/08 - Statut.md\"` → 0 résultat ; l'ancre `<span id=\"page-88-0\" data-folio=\"87\"></span>` vit sur `# **Évolution de Carrière**` (:2117) ; le pitch (~:2095-2109) tombe en plage folio 86. PDF (pypdf 88) : `INGÉNIEUR` / `Halfling, Humain, Nain` + pitch imprimés en tête de f.87. `careers.json:ingenieur source.page = 87` est JUSTE au livre mais improuvable au corpus — aucune garde ne le voit (book-source-integrity vert : il ne mesure que les collisions de desc retrouvées, pas les attributions décalées sans collision).\n- **ÉRUDIT (:2044)** : titre `# **ÉRUDIT**` présent mais SANS ligne d'espèces (à vérifier verbatim au PDF pypdf 87 — sonde non faite, dit).\n- Corrigés par la vague #1457 (patron du geste) : JURISTE f.88 (restitution entière) et MÉDECIN f.89 (ligne titre+espèces + ancre remontée) — voir le commit de la vague.\n\n## Geste (patron établi)\n1. INVENTAIRE d'abord : sonde corpus-wide (les fiches de carrière du LDB ch.08 ont un gabarit — titre `# **NOM**` + espèces ; lister celles où le gabarit manque ou l'ancre du folio est portée par « Évolution de Carrière » au lieu du titre). L'instrument des ancres-vides (empty-folios-baseline, #1457-A1) ne voit PAS cette classe (la page a du contenu) — dire si un détecteur pérenne vaut le coût ou si l'inventaire ponctuel suffit.\n2. Par page : restituer la ligne titre+espèces VERBATIM du PDF (`scripts/raw/lib/pdf-extract.py`, offset LDB folio+1), y remonter l'ancre (id de span conservé), dénuder l'ancien porteur. Patron exact : geste MÉDECIN d'A2-bis.\n3. Vérifier les `source.page` des données dont la desc vit dans les plages corrigées (book-source-integrity + folio-line-align rejoués).\n\nChevauchements : #1457-C1 (source.page faux — autre cause : déclaration fausse, pas attribution décalée) ; #1622 (pages VIDES — autre classe : ici la page a du contenu, il lui manque sa tête).",
+    "createdAt": "2026-09-01T03:10:32Z",
+    "closedAt": "2026-09-01T04:53:53Z"
+  },
+  {
+    "number": 1641,
+    "title": "useDismissLayer : le refcount de la porte clavier peut dériver NÉGATIF (resetDismissLayers force montees=0 sous des couches encore montées)",
+    "state": "OPEN",
+    "labels": [
+      "bug"
+    ],
+    "body": "Signalé par la mesure du fix CodexRef (2026-09-01, sonde C) : scripts — src/ui/useDismissLayer.ts:39-49, brancherPorte/debrancherPorte — quand resetDismissLayers() (qui force montees=0) est appelé alors que des couches sont ENCORE montées, un démontage ultérieur décrémente sous zéro et peut retirer la porte keydown d'une couche encore à l'écran. Non reproduit en banc (la pile se vide proprement au démontage du voisin), mais le compteur n'a aucun plancher ni assertion. Remède candidat : plancher Math.max(0,…) + un dev-warn si décrément sous zéro, OU resetDismissLayers qui débranche la porte elle-même. Adjacent couvert nulle part : deux popovers CodexRef simultanés → le premier se retire via onCouvert (comportement voulu, sans test).",
+    "createdAt": "2026-09-01T03:34:43Z",
+    "closedAt": null
+  },
+  {
+    "number": 1642,
+    "title": "23 réfs RAW de code tombées sur une ligne VIDE du corpus (stock gelé par la garde neuve de check-code-refs, #1457-G1) — 3 lignes-cibles portent 14 sites (LDB 40 l.53 ×9, MDG 13 l.263 ×3, LDB 13 l.184 ×2)",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "livre:LDB",
+      "sev:smell"
+    ],
+    "body": "Stock gelé au commit de la vague #1457 (train A2) : le contrôle « ligne citée non vide » promu dans `scripts/raw/check-code-refs.mjs` (sonde du juge de cumul A2, promue en garde) mesure **23 réfs / 19 fichiers de `src/`** dont la ligne citée est BLANCHE au corpus — la citation ne prouve plus rien. Baseline nominative DÉCROISSANTE : `scripts/raw/empty-line-code-refs-baseline.json` (une réf corrigée = une ligne supprimée ; toute hausse = rouge nominatif).\n\n## Invariant\nCLAUDE.md règle 6a : un commentaire porte la réf NUE (`LDB 13 l.142`) — une réf qui pointe une ligne vide est une réf morte de fait : elle a dérivé (ré-extraction, restitution de page) sans que rien ne la voie.\n\n## Concentration mesurée (le geste rentable d'abord)\n3 lignes-cibles portent 14 des 23 sites : `LDB 40 l.53` ×9 (cascade.ts, combatFlow.ts ×3, interlude-catalog, miscast-step ×2, pendings.ts, CascadeTableMode) · `MDG 13 l.263` ×3 (fr.ts, sequence-parite-catalogue ×2) · `LDB 13 l.184` ×2 (combat-tables-choix-porte, combatFlow.ts). Retrouver la VRAIE ligne de ces 3 cibles solde plus de la moitié du stock. Les 9 restantes : inventaire complet dans la baseline.\n\n## Limites DITES de la garde (rendu G1)\n- Elle attrape le VIDE, pas le DÉPLACEMENT vers un autre paragraphe (une réf pointant une ligne pleine mais fausse est invisible — 3 des 7 réfs cassées par le +44 de la restitution du folio 88 étaient dans ce cas).\n- Périmètre : `src/` seulement — `scripts/` mesuré à part (23 hits / 9 fichiers) mais NON couvert : l'écrasante majorité y sont des fixtures de test volontaires ; couvrir `scripts/` exigerait d'exclure les `*.test.mjs` (à arbitrer ici si voulu — les réfs réelles de `scripts/migrations/` restent alors sans garde).",
+    "createdAt": "2026-09-01T03:43:40Z",
+    "closedAt": null
+  },
+  {
+    "number": 1643,
+    "title": "Reste mesuré après #1640 : 35 pages-carrière du LDB ch.08 dont l'ancre ne porte PAS la ligne-titre imprimée (dont 4 ARTISTE-like : Noble, Gladiateur, Prêtre guerrier, Saltimbanque — pitch attribué au folio−1 sans donnée fausse)",
+    "state": "OPEN",
+    "labels": [
+      "audit:contenu-manquant",
+      "livre:LDB",
+      "sev:smell",
+      "type:donnée"
+    ],
+    "body": "Mesure du JUGE de cumul A3 (#1640, 2026-09-01) — le rendu du lot déclarait ~8 pages restantes, le juge en mesure **35** (contre 25 conformes après le lot) : pages du ch.08 dont l'ancre `page-K-0` ne porte pas la ligne-titre que le PDF imprime. AUCUNE donnée fausse (l'écart de folio careers/careerLevels est à ZÉRO, garde nominative bloquante posée par #1640) — le défaut restant est CITATIONNEL : le début de page (pitch, citations) est attribué au folio précédent, une citation `LDB 08 l.N` y ment sur le folio.\n\n## Invariant\nCLAUDE.md règle 1 : « `Source/` reste la vérité **citable** ». `source.page` = folio imprimé.\n\n## Les cas nommés (mesurés)\n- **4 ARTISTE-like** (titre PRÉSENT au corpus, ancre restée sur `# **Évolution de Carrière**` — le geste = remonter l'ancre, patron ARTISTE du commit #1640) : NOBLE md:939/ancre :959 · GLADIATEUR :1216/:1238 · PRÊTRE GUERRIER :1273/:1291 · SALTIMBANQUE :1920/:1936.\n- **HORS-LA-LOI** md:3069 : ancre OK mais ligne SANS espèces (PDF p.104 : « Elfe sylvain, Halfling, Haut Elfe, Humain, Nain »).\n- Titres ABSENTS sans écart de donnée (ancre déjà en tête de page) : AGITATEUR 53, ENQUÊTEUR 56, MENDIANT 58, MILICIEN 59, RATIER 60, ESPION 65, CHASSEUR DE PRIMES 77 (ancre sur le Schéma), NAUTONIER 99, + h1 sans espèces/ancre : ARTISAN 54, ÉMISSAIRE 64, GLADIATEUR/NOBLE (ci-dessus), PRÊTRE GUERRIER, SALTIMBANQUE, INGÉNIEUR 87… (inventaire complet = 35, à re-mesurer au lot).\n\n## Méthode de mesure (rejouable — les sondes du juge, à re-fabriquer ou committer en outil d'authoring)\nPDF `Source/Warhammer v4 - Livre de base version corrigée.pdf`, PyMuPDF : titre de page = span `CaslonAntique-Bold` sz 19 à y≈63.5 ; espèces = span `ACaslonPro-Regular` sz 9 à y≈83.0 même x ; folios 53→99 = une page par carrière, index pypdf = folio+1. Contrat par ligne-titre : `K == folio+1`, folio imprimé sur la page K, titre+espèces mot à mot. Une garde de génération (hors CI, patron empty-folios-stock) rendrait la restitution future auto-vérifiée et donnerait le cliquet décroissant 35→0.\n\n## Geste\nPatron MÉDECIN/ARTISTE du commit #1640 : ligne-titre verbatim PDF + ancre remontée + ancien porteur dénudé + repointage du sillage des insertions (réfs `LDB 08 l.N`, méthode identité-de-texte). Chevauchements : #1640 (CLOS par le lot A3 — ce ticket est son RESTE déclaré), #1622 (pages vides), #1642 (réfs sur ligne vide).",
+    "createdAt": "2026-09-01T04:42:07Z",
+    "closedAt": null
+  },
+  {
+    "number": 1644,
+    "title": "Recettes volumiques — LOT A contenants & mobilier de base (tonneau, caisse, coffre, étagère, chaises/bancs, tables, comptoir…) — vague 2 de #1343, ~116 usages",
+    "state": "OPEN",
+    "labels": [
+      "domaine:art",
+      "type:donnée"
+    ],
+    "body": "# Recettes volumiques — LOT A « contenants & mobilier de base » (12 refs, ~116 usages) — vague 2 de #1343\n\n## Invariant\n\n- **Directive utilisateur (2026-08-09, verbatim, #1176/#1343)** : « Je compte bien me débarasser des billboards par des vrais objets 3d, et ne garder que les creatures en face/arriere/profil. »\n- **Réaffirmée et élargie (2026-09-01, verbatim, consignée sur #1343)** : « Clairement je veux me débarrasser des billboards et tout passer en 3D sauf les creatures » — et « Et biensur nettoyer le code en conséquence, inutile de garder du code sur un système abandonné qui pourrait pousser d'autres sessions a l'utiliser a tord ».\n- **Cas canonique** : les 11 recettes `volume` de `src/data/props.json` (#1443 + #1624) — primitives `box`/`cylinder`/`prism` (`src/data/props.types.ts`), plomberie #1624 lot 1 (émetteur unique `elDeDecor`, `refEstVolumique` règle unique) : une recette de plus = une entrée de dataset de plus, ZÉRO code. Échelle : x/y en CASES ×`metresPerTile` (défaut 2) au rendu, `h` en mètres. Origine = l'ANCRE (centre d'empreinte pour une entité). Garde des 4 contrats DÉRIVÉE du catalogue (`src/gameIso/catalog/props-volumiques.test.ts`) — chaque recette neuve y entre d'office.\n\n## Périmètre (inventaire ré-instruit 2026-09-01, lecteur — usages mesurés sur `src/scenes/**/*.{json,ts}`)\n\n12 refs, usage cumulé ≈ 116, complexité SIMPLE-MOYENNE :\n`tonneau` (20) · `caisse` (16) · `coffre` (15) · `etagere` (11) · `chaise` (7) · `banc` (8) · `tabouret` (4) · `urne` (7) · `tonneaux-pile` (7) · `table-2x1` (3, foot 2×1) · `table` (2) · `comptoir` (6).\n\nPièges nommés :\n- `comptoir` vs `comptoir-droit`/`comptoir-angle` (déjà volumiques, #1443) : DOUBLON de concept présumé — mesurer les 6 usages (`src/scenes/opera/*.ts`) et trancher : recette propre OU migration des usages vers `comptoir-droit` + mort de la def `comptoir` (credo zéro doublon ; la décision se documente au rendu, avec la migration faite si c'est la voie).\n- `table-2x1` : multi-case (2×1) — première recette d'empreinte >1×1 : l'origine est le CENTRE de l'empreinte (contrat `props.types.ts` recalé au lot 1 de #1624) ; l'écart `seating.ts` (ancres sur `ent.pos`) est CONNU et signalé (#1509) — ne pas le résoudre ici, le mesurer si la table porte des places.\n- `chaise`/`banc`/`tabouret` : vérifier comment les meubles volumiques canoniques déclarent leurs places assises (`seatSlots`, #1443) et faire PAREIL si le patron l'exige — jamais un système parallèle.\n- `mare-sang` (17 usages) exclu : organique (famille à goût, fenêtre de présence utilisateur).\n\n## DoD\n\n- Les 12 refs (ou 11 + migration comptoir) portent leur recette, gardes dérivées vertes (props-volumiques ×4 contrats, props-integrity, label-parite), matériaux manquants créés en cohérence `decorPalette`.\n- Aucun code nouveau ; stocks structures/slots : hausse de CHIFFRE nommée au commit (adoption, précédents #1443/#1624).\n- PORTE : les scènes réelles qui posent ces refs (diligence, arène, opéra, embuscade…) rendent les volumes — vérifiée par la garde d'exclusivité (« jamais billboard monde ») + la recette navigateur de la vague en cours (#1624 lot 3, mutualisée).\n- Validation de GOÛT : captures QC jointes au ticket pour l'utilisateur (parquée en absence, ne bloque pas le commit — la donnée est éditable au Codex).\n\nPère : #1343 « Props en VRAI 3D — le décor quitte les billboards (héritier #1176) ». S'appuie sur #1624 (plomberie + garde dérivée). Suite planifiée (prose, pas de salve) : lots B-G de l'inventaire (opéra/théâtre, décor narratif, ruine/chaos, rue/ateliers, naval), familles à goût en présence utilisateur, puis phase 4 (mort du chemin billboard des props) quand la population billboard = 0.\n",
+    "createdAt": "2026-09-01T05:02:21Z",
+    "closedAt": null
+  },
+  {
+    "number": 1645,
+    "title": "Éditeur : « ▶ Tester » exige un groupe créé HORS de l'éditeur — aucun raccourci groupe-de-démo",
+    "state": "OPEN",
+    "labels": [
+      "enhancement"
+    ],
+    "body": "Friction de recette (EffectList 2026-09-01) : le bouton « ▶ Tester » de l'éditeur bloque avec « Ajoutez d'abord au moins un aventurier au groupe (menu Nouvelle partie) » — il faut sortir au menu principal et dérouler le créateur (×4) pour tester une scène qu'on vient d'éditer. Affordance candidate : un bouton « groupe de démo » dans l'éditeur (pré-tirés posés en un clic, patron __wfrp.campaign()/fillCreatorDefaults) ou l'alerte qui PROPOSE le raccourci. Boucle auteur→test = le cœur de l'éditeur ; chaque itération paie aujourd'hui le créateur complet.",
+    "createdAt": "2026-09-01T05:36:07Z",
+    "closedAt": null
+  },
+  {
+    "number": 1646,
+    "title": "Specs de talent HORS talents[] : 8 occurrences (passive de mutations ×5, ops de spells ×1, passive de traits ×2) échappent au contrat #1457-B1 — dont 2 dettes de spec identiques aux 82 stockées (traits.json savoir-vivre disciples-de-tzeentch / suivants-de-khorne)",
+    "state": "OPEN",
+    "labels": [
+      "audit:non-branché",
+      "sev:mineur",
+      "type:donnée"
+    ],
+    "body": "Angle mort MESURÉ par le juge du lot B1 (#1457, 2026-09-01) : le contrat positif des specs de Talent (refs-migrated.test.ts, stock `SPECS_DE_TALENT_A_CREER` = 82) ne walke que les tableaux `talents[]` (creatures/careerLevels/species). Or des refs de talent AVEC spec vivent ailleurs et n'y sont confrontées par AUCUNE garde (`spec-pool-contrat.test.ts:33-37` ne scanne pas traits.json ; son extension `:185` est skills-only par décision énoncée `:152-154`).\n\n## Invariant\n#1463 (directive 2026-08-23) : « un concept = une structure » et une porte — une ref de talent avec spec est le MÊME concept quel que soit son porteur (talents[] d'entité, passive d'une mutation/d'un trait, op d'un sort).\n\n## Les 8 hits (sonde probe5 du juge — walk des 2 racines JSON, nœuds {talentId|id, spec} hors `dans==='talents'`, filtrés par specResolves)\n- `mutations.json` passive : `sens-aiguise` → \"Odorat\"/\"Ouïe\"/\"Vue\" ×4 (catalogue=true) ; `attirant` → \"Mutants et hommes-bêtes\" (catalogue=false → frontière #1621 ?)\n- `spells.json` ops : `sens-aiguise` → \"Odorat\" (catalogue=true)\n- `traits.json:2051-2052` passive : `savoir-vivre` → \"disciples-de-tzeentch\" ; `traits.json:2692-2693` passive : `savoir-vivre` → \"suivants-de-khorne\" — **même classe de dette que les 82** (talent à catalogue, spec en id qui ne résout pas) → à verser aux lots B2/B3 de #1457 (création sourcée) ou ici.\n\n## Geste\nÉtendre le walker/`collecteSpecs` aux porteurs hors `talents[]` (passive/ops — les nœuds de GameOp portant `{ talent|talentId, spec }`), même porte `specResolves`, même stock nominatif (jamais un instrument parallèle) ; les 6 `sens-aiguise` se tranchent AU RAW (LDB 10 : Sens aiguisé (Sens) — le catalogue existe-t-il, et « Odorat/Ouïe/Vue » y sont-ils sous id ?). Angle mort DÉCLARÉ dans le docblock du stock B1 en attendant.",
+    "createdAt": "2026-09-01T07:43:10Z",
+    "closedAt": null
+  },
+  {
+    "number": 1647,
+    "title": "pre-commit : docs:check ne tourne QUE si un docs/*.md est stagé — un lot de DONNÉE qui périme un doc généré (structures-donnees, catalogues) passe le hook et rougit la CI (vécu ×2 le 2026-09-01 : catalogue-carrieres après A2, structures-donnees après B2)",
+    "state": "OPEN",
+    "labels": [
+      "audit:non-branché",
+      "sev:mineur",
+      "type:système"
+    ],
+    "body": "Angle mort MESURÉ par le juge B2 (#1457, 2026-09-01) : `scripts/git-hooks/pre-commit.mjs:191` ne déclenche `docs:check` que si un `docs/*.md` est STAGÉ (patron diff-scopé). Un commit qui ne touche QUE `src/data/*.json` (ou un schéma) périme `docs/structures-donnees.md`, `docs/raw/catalogue-*.md`, `docs/consommateurs-de-champs.md`… sans qu'aucune porte locale ne parle — la CI (`ci.yml:39 npm run docs:check`) rougit APRÈS le push. Vécu deux fois le même jour : le catalogue-carrieres après la restitution du folio 88 (run 33470507799) et structures-donnees après les 3 specs de B2 (attrapé par le juge avant push).\n\n## Invariant\nCLAUDE.md § docs : « Une référence vivante qui ment ne se tague pas, elle se corrige » et « docs:build régénère et nomme ce qui a bougé » ; règle actée entre sessions le 2026-09-01 : un doc dérivé se régénère SUR L'INDEX (jamais depuis l'arbre partagé).\n\n## Geste\nÉtendre la condition du hook : `docs:check` (ou le sous-ensemble des générateurs dont les ENTRÉES sont stagées — `GENERATORS[].sources` si le manifeste `scripts/docs/build-all.mjs` les déclare, sinon les déclarer) tourne aussi quand un fichier d'ENTRÉE d'un générateur est stagé (`src/data/**`, `src/data/schemas/**`, `src/engine/ops.ts`/`flowCore.ts` pour vocabulaire, `Source/**` pour les catalogues…). Rejouer sur l'INDEX (checkout-index) comme `check-docs-vs-head.mjs`, pas sur l'arbre. Mutation : un JSON de données stagé seul avec un doc périmé → refus nominatif.",
+    "createdAt": "2026-09-01T08:23:11Z",
+    "closedAt": null
+  },
+  {
+    "number": 1648,
+    "title": "Migrations 11a/12a (entité-type) : la PORTE DE CARDINAL passe avant la détection « déjà appliqué » — chaque ajout légitime d'entrée dans ~40 datasets rougira le rejeu CI d'une migration d'août (taxe permanente sur l'authoring)",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "sev:mineur",
+      "type:système"
+    ],
+    "body": "Constat 2026-09-01 (relevé lors de la coordination inter-sessions, vérifié au script) : `scripts/migrations/2026-08-28-l1b-11a-entite-type.mjs:96-118` (et 12a) applique sa PORTE DE CARDINAL (table `CARDINAUX` figée au 2026-08-28 + `TOTAL_ATTENDU`, exit 1 au moindre écart) AVANT toute détection d'idempotence. Or les migrations sont REJOUÉES EN PERMANENCE par la CI (`npm run migrations:replay`, no-op attendu) : dès qu'un dataset listé gagne ou perd UNE entrée (une créature au Compendium, une classe, un rôle d'équipage…), le rejeu d'une migration déjà appliquée sort 1 → CI rouge → il faut éditer un nombre dans un script d'août. Question de l'utilisateur au relevé : « c'est un truc temporaire le temps de finir la migration ? » — non, telle qu'écrite c'est permanent.\n\n## Invariant\nCredo « rien de hardcodé, le maximum en DONNÉES éditables » et CLAUDE.md § migrations : rejouables, no-op au 2e passage. Une porte de PREMIÈRE application (protéger le périmètre mesuré le jour J) ne doit pas devenir une taxe de rejeu.\n\n## Geste\nDans 11a/12a (et toute migration sœur au même patron) : détecter « déjà appliqué » (toutes les entrées portent la clé posée par la migration) AVANT la porte de cardinal → sortie 0 no-op sans compter ; la porte de cardinal ne mord que sur un arbre où la migration a encore quelque chose à écrire. Mutation : dataset listé +1 entrée déjà typée → rejeu vert ; arbre pré-migration avec cardinal faux → exit 1 (comportement conservé). Vérifier le patron des 71 autres migrations (`migrations:replay`) : lesquelles portent une porte de cardinal AVANT l'idempotence ?",
+    "createdAt": "2026-09-01T08:32:03Z",
+    "closedAt": null
+  },
+  {
+    "number": 1649,
+    "title": "Catalogues de specs : 19 paires creatures-only SANS source restent au pool joueur (art|redaction, chevaucher|loup/rats/squig…, savoir-vivre|cultistes, sens-aiguise|odorat/ouie…) et 2 pool:false SANS consommateur (savoir|slaanesh, savoir|nurgle) — cohérence source⇄pool à instruire",
+    "state": "OPEN",
+    "labels": [
+      "audit:contenu-manquant",
+      "livre:LDB",
+      "sev:smell",
+      "type:donnée"
+    ],
+    "body": "Mesures du micro-lot B2 (#1457, 2026-09-01) en posant la garde « spec sourcée + creatures-only ⇒ pool:false » (`spec-pool-contrat.test.ts`, describe #1457 B2 — 0 violation) :\n\n1. **19 paires (def, spec) employées UNIQUEMENT par creatures.json et SANS `source`** restent proposées au pool joueur (exclues du contrat par construction : entrée nue = pool imprimé de base) : `art|redaction`, `chevaucher|loup/rat-ogre/rats/sanglier/squig`, `divertissement|comedie`, `haine|morts-vivants`, `langue|nehekhara/noir-parler`, `metier|charpentier-naval/embaumeur/macon`, `musicien|luth`, `sans-peur|peaux-vertes`, `savant|necromancie`, `savoir-vivre|cultistes`, `sens-aiguise|odorat/ouie`. Règle 1 : une entrée de catalogue sans source n'est pas attestée — chacune se source (ligne joueur du RAW → reste au pool) ou se tague `pool:false` avec sa source statbloc (critère #1342 L3), jamais laissée nue.\n2. **`skills.json` `savoir|slaanesh` et `savoir|nurgle` portent `pool:false` sans AUCUN consommateur** dans toute la donnée — le critère 4 de la migration `2026-08-23-specs-statbloc-hors-pool.mjs` (« employée par aucun statbloc ⇒ arrêt ») les aurait refusées ; elles ne figurent pas dans sa table. Sens inverse de la garde neuve, donc non rouge : à instruire (qui les a posées, sont-elles attestées au RAW ?).\n\nChevauchements : #1457 B3 (73 specs frenchy statbloc-only → pool:false par construction), #1646, #1598 (mutualisation des pools).",
+    "createdAt": "2026-09-01T08:33:40Z",
+    "closedAt": null
   }
 ]
