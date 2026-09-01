@@ -576,7 +576,17 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `spells.json › range|target {text+… (résolvable)}` sont SOLDÉES — les 38 occurrences stockées (54 sites migrés — les 16 Mage/Shaman n'entraient pas au stock) qui
       // désignaient le lanceur en toutes lettres portent `{kind:'self'}`. Le cliquet SUIT la baisse :
       // deux crans libres absorberaient en silence la réapparition de la forme.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 481],
+      // Cliquet DESCENDU 481 → 479 (#1463 L-ref-0 + L-ref-1, 2026-09-01) : les DEUX lignes
+      // `careerLevels.json › trappings {text|count,text (résolvable)}` (64 occurrences) MEURENT. Elles
+      // ne mesuraient rien : la résolvabilité d'un `{text}` se calculait sur la seule clé `text` du
+      // site — vide de cible par construction, donc « n'importe quel dataset » (« Assistant »
+      // → `careerLevels`, « Bureau » → `props`, « Munitions » → `weaponGroups`). La mesure est
+      // scopée aux cibles majoritaires du SITE (`structures-scan.mts` › `ciblesMajoritairesDuSite`),
+      // et les 49 dotations qui NOMMAIENT vraiment une possession sont liées (`{id, spec}`, `{id}`,
+      // `choice`). Une ligne ENTRE en route — `careerLevels.json › choice {choice>id,spec}`, les deux
+      // branches d'`alchimiste-4` —, sœur des `choice>id` déjà stockées : le MÊME objet qui change de
+      // classement, pas une structure neuve. Solde : −2.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 480],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -822,7 +832,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 395 → 393 (L-ref-2, 2026-09-01) : `spells.json › range` et `spells.json › target`
       // `{text+… (résolvable)}` s'éteignent — les 38 occurrences stockées (54 sites migrés — les 16 Mage/Shaman n'entraient pas au stock) qui désignaient le lanceur en
       // toutes lettres portent `{kind:'self'}`. Cf. le cliquet `STRUCTURES_FORMES` ci-dessus.
-      'L3 #1463': 393,
+      // … puis 393 → 392 (L-ref-0 + L-ref-1, 2026-09-01) : `careerLevels.json › trappings` rend ses
+      // deux lignes `text (résolvable)` et reçoit `choice>id,spec`. Cf. le cliquet `STRUCTURES_FORMES`
+      // ci-dessus.
+      'L3 #1463': 392,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
@@ -1178,37 +1191,46 @@ describe('`{text}` : la forme DÉCLARÉE ne couvre que l’irréductible narrati
       (f) => f.concept === 'reference' && f.dataset === 'careerLevels.json' && f.champ === 'trappings' && f.signature === signature,
     );
 
-  it('un `{text}` dont le libellé RÉSOUT est `text (résolvable)` divergente ; « Sa Honte » reste `text` declaree', () => {
+  it('un `{text}` qui nomme une POSSESSION est `text (résolvable)` ; « Sa Honte » et « Assistant » restent `text` declaree (#1463 L-ref-0)', () => {
     const copie = mkdtempSync(join(tmpdir(), 'structures-text-'));
     try {
       for (const racine of ['src/data', 'src/scenes']) cpSync(join(ROOT, racine), join(copie, racine), { recursive: true });
       const temoin = scannerDonnees(copie, FAMILLES, CHOIX);
       expect(temoin.formes.length, 'la COPIE non mutée ne mesure pas comme l’arbre.').toBe(scan.formes.length);
       expect(forme(temoin, 'text'), 'la forme `text` déclarée a disparu du témoin.').toMatchObject({ statut: 'declaree' });
-      expect(forme(temoin, 'text (résolvable)'), 'la forme `text (résolvable)` a disparu du témoin.').toMatchObject({
-        statut: 'divergente',
-        strate: 'Référence',
-      });
+      expect(
+        forme(temoin, 'text (résolvable)'),
+        'aucune dotation de `careerLevels` ne doit être résolvable AU REPOS : les 49 qui nommaient une possession sont liées (L-ref-1).',
+      ).toBeUndefined();
 
       const chemin = join(copie, 'src/data/careerLevels.json');
       const niveaux = JSON.parse(readFileSync(chemin, 'utf8')) as Array<Record<string, unknown>>;
-      // « Dague » EST le `label` du trapping `dague` ; « Sa Honte » n’est le libellé d’aucune entité.
-      niveaux[0].trappings = [...(niveaux[0].trappings as unknown[]), { text: 'Dague' }, { text: 'Sa Honte' }];
+      // « Dague » EST le `label` du trapping `dague` — la cible MAJORITAIRE du site. « Sa Honte »
+      // n’est le libellé d’aucune entité. « Assistant » est le `label` d’un NIVEAU DE CARRIÈRE
+      // (`careerLevels.json`) et de RIEN dans `trappings.json` : ce n’est pas une possession, et
+      // c’est le contrôle NÉGATIF de la résolution scopée au site (avant #1463 L-ref-0, il comptait
+      // résolvable — la mesure acceptait n’importe quel dataset).
+      niveaux[0].trappings = [
+        ...(niveaux[0].trappings as unknown[]),
+        { text: 'Dague' },
+        { text: 'Sa Honte' },
+        { text: 'Assistant' },
+      ];
       writeFileSync(chemin, JSON.stringify(niveaux), 'utf8');
       const apres = scannerDonnees(copie, FAMILLES, CHOIX);
 
       expect(
-        forme(apres, 'text (résolvable)')!.occurrences - forme(temoin, 'text (résolvable)')!.occurrences,
-        '`{text:"Dague"}` sous `trappings` doit être classé `text (résolvable)` : un texte qui résout vers un `label` est une référence à migrer en `{id}` (#624), pas du narratif déclaré.',
+        forme(apres, 'text (résolvable)')?.occurrences,
+        '`{text:"Dague"}` sous `trappings` doit être classé `text (résolvable)` : un texte qui résout vers le `label` d’une POSSESSION est une référence à migrer en `{id}` (#624), pas du narratif déclaré.',
       ).toBe(1);
       expect(
         forme(apres, 'text')!.occurrences - forme(temoin, 'text')!.occurrences,
-        '`{text:"Sa Honte"}` doit rester la forme `text` DECLARÉE : l’irréductible narratif ne se migre pas.',
-      ).toBe(1);
+        '`{text:"Sa Honte"}` et `{text:"Assistant"}` doivent rester la forme `text` DECLARÉE : l’irréductible narratif ne se migre pas, et un homonyme d’un AUTRE dataset n’est pas une dotation.',
+      ).toBe(2);
       expect(
         forme(apres, 'text (résolvable)')!.cibles,
         'la forme résolvable doit IMPRIMER le dataset où le libellé a été trouvé.',
-      ).toContain('trappings.json');
+      ).toEqual(['trappings.json']);
     } finally {
       rmSync(copie, { recursive: true, force: true });
     }

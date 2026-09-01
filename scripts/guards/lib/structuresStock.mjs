@@ -202,15 +202,24 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "careerLevels.json", champ: "career", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 432, lot: "L3 #1463", date: "2026-08-30", motif: "référence de CARRIÈRE" },
   { concept: "reference", dataset: "careerLevels.json", champ: "choice", signature: "choice>id", statut: "historique", strate: "Référence", occurrences: 25, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "choice", signature: "choice>id,qualityChoice", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "choice", statut: "historique", strate: "Référence", occurrences: 13, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "count,id", statut: "historique", strate: "Référence", occurrences: 16, lot: "L3 #1463", date: "2026-08-23" },
+  // Ligne SŒUR des deux ci-dessus, née du MÊME objet migré (#1463 L-ref-1) : `alchimiste-4` ›
+  // « Atelier (Ingénierie ou Magie) » cesse d'écrire son choix en toutes lettres et devient l'emplacement
+  // `{choice:[{id,spec},{id,spec}]}`. Le CONTENU d'une graphie enveloppante hérite du statut de son
+  // enveloppe (`choice>id`, historique) : une branche `{id, spec}` est une CIBLE, c'est le `choice`
+  // qui reste à éteindre — avec les 25 de la ligne précédente, au même lot.
+  { concept: "reference", dataset: "careerLevels.json", champ: "choice", signature: "choice>id,spec", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-09-01" },
+  // 13 → 14 et 16 → 23 (#1463 L-ref-1) : AUCUNE structure neuve — les MÊMES objets changent de
+  // classement. « Atelier (Ingénierie ou Magie) » devient l'emplacement `choice` qu'il décrivait en
+  // toutes lettres, et les 7 dotations comptées qui NOMMAIENT une possession (« Carreaux » ×6,
+  // « Chiffon ») rejoignent `count,id`. Les deux lignes `text (résolvable)` qu'ils quittent, elles,
+  // MEURENT (cf. la ligne `text (résolvable)` de `creatures.json`, dernière du concept).
+  { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "choice", statut: "historique", strate: "Référence", occurrences: 14, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "count,id", statut: "historique", strate: "Référence", occurrences: 23, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "count,id,qualityChoice", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "count,text (résolvable)", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "count,vehicleId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "creatureId", statut: "historique", strate: "Référence", occurrences: 54, lot: "L3 #1463", date: "2026-08-30", motif: "dotation : référence de CRÉATURE" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "creatureId+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-30", motif: "dotation : référence de CRÉATURE" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "id,qualityChoice", statut: "historique", strate: "Référence", occurrences: 36, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "text (résolvable)", statut: "divergente", strate: "Référence", occurrences: 60, lot: "L3 #1463", date: "2026-08-30", motif: "dotation NARRATIVE (#624)" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "vehicleId", statut: "historique", strate: "Référence", occurrences: 15, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "vehicleId+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-30", motif: "dotation : référence de VÉHICULE" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "wildcard", statut: "historique", strate: "Référence", occurrences: 7, lot: "L3 #1463", date: "2026-08-23" },
@@ -848,7 +857,11 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "arene-projet.json", champ: "statblock", signature: "char,label,size,traits,type", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "arene-projet.json", champ: "statblock", signature: "char,label,traits,type", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "barge-du-sel-projet.json", champ: "statblock", signature: "char,label,skills,type", motif: "clé réservée", occurrences: 4, lot: "#1553", date: "2026-08-23" },
-  { dataset: "careerLevels.json", champ: "trappings", signature: "count,text", motif: "clé réservée", occurrences: 28, lot: "#1553", date: "2026-08-23" },
+  // 28 → 25 (#1463 L-ref-1) : « Chiffon » et les 6 « Carreaux » sont partis en `{id, count}` ; les 4
+  // dotations comptées que la mesure classait `count,text (résolvable)` (ligne morte du stock des
+  // FORMES) entrent ici — le `count,text` qui reste est du narratif compté, `noble-2 › {count:{fixed:4},
+  // text:"Employé de maison"}`.
+  { dataset: "careerLevels.json", champ: "trappings", signature: "count,text", motif: "clé réservée", occurrences: 25, lot: "#1553", date: "2026-08-23" },
   { dataset: "classes.json", champ: "trappings", signature: "count,text", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "creatures.json", champ: "purchase", signature: "availability,price", motif: "clé réservée", occurrences: 14, lot: "#1553", date: "2026-08-23" }, // +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
   { dataset: "crew-roles.json", champ: "wage", signature: "daily,source,weekly", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },

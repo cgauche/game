@@ -1002,19 +1002,25 @@ describe('spec de Compétence GROUPÉE — corps-a-corps/projectiles ne portent 
 // capuchon et les 3 robes de sorcier (`robe-de-sorcier-fonctionnelle`/`-ordinaire`/`-elaboree`,
 // `passive: skillDRBonus focalisation`) en `{id}`/`{creatureId}`. Il reste 8 dotations en `{text}`
 // sur ces 2 Carrières : 7 hors catalogue (licence magique ×2, objet magique ×2, apprenti,
-// bibliothèque, cercle d'informateurs) ; `atelier` est un 8e cas distinct — `trappingRefSchema`
-// (`schemas/grammaire/reference.ts`) porte un champ `spec` optionnel sur la branche `{id}`,
-// mais aucun consommateur (`trappingRefLabel`, SOURCE UNIQUE du libellé affiché, `data/index.ts`)
-// ne le lit pour cette branche : le poser y perdrait la précision de domaine en silence à
-// l'affichage, donc `atelier` reste en `{text}`.
+// bibliothèque, cercle d'informateurs) ; `atelier` était un 8e cas distinct — `trappingRefSchema`
+// (`schemas/grammaire/reference.ts`) porte un champ `spec` optionnel sur la branche `{id}`, que
+// `trappingRefLabel` (SOURCE UNIQUE du libellé affiché, `data/index.ts`) n'affichait pas.
 // 628 → 605 (#622) : les 3 robes de sorcier et `filet` n'étaient posées en `{id}` que là où le
 // geste précédent les avait touchées (Magister Vigilant/Umbramancien, chasseur-de-primes/femme-du-
 // fleuve pour `filet`) ; leurs 7 Carrières sœurs du même corpus VDM (hierophante, alchimiste,
 // druide, astromancien, spirite, pyromancien, chamane — niveaux 2 à 4) portaient les mêmes libellés
 // en `{text}`, donc SANS `passive: skillDRBonus focalisation` en jeu pour ces Carrières. Les 23
 // occurrences (21 robes + 2 `filet`) mesurées à l'identique du catalogue sont posées en `{id}`.
+// 605 → 557 (#1463 L-ref-1) : les 48 dotations de `careerLevels` qui NOMMAIENT une possession du
+// catalogue sont liées — 32 `{id, spec}` (« Outils professionnels (Maréchal-ferrant) », `LDB 08
+// l.1130`), 1 `{choice}` (`alchimiste-4`, « Atelier (Ingénierie ou Magie) ») et 15 graphies non
+// littérales (« Cartes »→`carte`, « Carreaux »→`carreau`, « Haches de lancer »→`hache-de-lancer`…).
+// `trappingRefLabel` affiche désormais la `spec` (par `refConcrete`), ce qui lève la réserve notée
+// plus haut sur `atelier`. Ce qui reste est hors catalogue ou narratif ; le contrat POSITIF qui
+// l'atteste ligne à ligne vit dans `src/data/dotations-catalogue.test.ts` — trois portes (libellé
+// entier, singulier, tête de parenthèse) et 6 exclusions nominatives, chacune avec sa raison.
 describe('careerLevels.trappings — cliquet anti-régression {text} (#622)', () => {
-  const BASELINE = 605;
+  const BASELINE = 557;
 
   function countText(items: unknown[]): number {
     let n = 0;

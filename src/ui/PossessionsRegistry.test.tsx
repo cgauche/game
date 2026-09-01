@@ -60,6 +60,25 @@ describe('PossessionsRegistry (#649) — registre des possessions dont le héros
     expect(container.textContent).not.toContain('AutrePropriétaire');
   });
 
+  it('un objet PORTÉ par la possession rend son libellé par `itemLabel` — spécialisation comprise (#1463 L-ref-1)', () => {
+    const h = hero('h1');
+    const sacoche: Possession[] = [
+      {
+        uid: 'pos-7', ownerId: 'h1', nature: 'bete', ref: { creatureId: 'cheval' }, location: { kind: 'avec-le-groupe' },
+        items: [
+          { uid: 'i1', trappingId: 'outils-professionnels', spec: 'Maréchal-ferrant', label: 'Outils professionnels', kind: 'misc', qualities: [], enc: 1, equipped: false },
+          { uid: 'i2', trappingId: 'bouclier', label: 'Bouclier', kind: 'armor', qualities: [], enc: 1, equipped: false },
+        ],
+      } as unknown as Possession,
+    ];
+    useGame.setState({ party: [h], possessions: sacoche, battle: null });
+    ({ container, root } = mount(<PossessionsRegistry hero={h} />));
+
+    expect(container.textContent).toContain('Outils professionnels (Maréchal-ferrant)');
+    expect(container.textContent).toContain('Bouclier');
+    expect(container.textContent, 'un objet SANS spéc ne gagne aucune parenthèse').not.toContain('Bouclier (');
+  });
+
   it('sans possession de ce héros, ne rend rien', () => {
     const h = hero('h1');
     useGame.setState({ party: [h], possessions: [], battle: null });

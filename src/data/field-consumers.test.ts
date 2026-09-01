@@ -99,14 +99,30 @@ describe('périmètre de TARGETS — aucune cible ne rend zéro champ', () => {
 });
 
 describe('cas fondateur #903 — qui lit TrappingRef.spec ?', () => {
-  it('trappingRefLabel (src/data/index.ts) NE lit PAS ref.spec — le seul lecteur est resolveOne (trappingChoices.ts)', () => {
+  /**
+   * `TrappingRef.spec` a DEUX lecteurs directs, un par ROLE : `resolveOne`
+   * (`src/engine/trappingChoices.ts`) qui reconduit la spec en résolvant un emplacement `{choice}`/
+   * `qualityChoice`, et `itemFromTrappingRef` (`src/engine/items.ts`) qui la MATÉRIALISE sur
+   * l'`ItemInstance` — sans quoi la spécialisation se perd entre la dotation et le sac (#1463
+   * L-ref-1). Le RENDU, lui, n'en est pas un : « base (spec) » passe par `refConcrete`
+   * (`src/data/index.ts`), SOURCE UNIQUE partagée par toute `Ref` dont le paramètre est un `Ref` —
+   * un lecteur mesuré dans `data/index.ts` signalerait une SECONDE définition du rendu, et c'est ce
+   * que cette garde refuse. La preuve d'AFFICHAGE vit sur la donnée réelle
+   * (`src/data/dotations-catalogue.test.ts`, `src/engine/integration-creation.test.ts`).
+   */
+  it('`TrappingRef.spec` : DEUX lecteurs, résolution et matérialisation — aucun dans le rendu', () => {
     const target = TARGETS.find((t) => t.type === 'TrappingRef');
     expect(target, 'TrappingRef absent de TARGETS — le cas fondateur a perdu sa surface').toBeTruthy();
     const byField = rapport().byType.get('TrappingRef');
     expect(byField, 'TrappingRef absent du rapport mesuré').toBeTruthy();
-    const specReaders = (byField!.get('spec') ?? []).map((h: { file: string; line: number }) => `${h.file}:${h.line}`);
-    expect(specReaders, 'TrappingRef.spec devrait avoir EXACTEMENT 1 lecteur mesuré (resolveOne)').toHaveLength(1);
-    expect(specReaders[0]).toMatch(/^src\/engine\/trappingChoices\.ts:/);
-    expect(specReaders.some((s: string) => s.includes('data/index.ts'))).toBe(false);
+    const specReaders = [...new Set((byField!.get('spec') ?? []).map((h: { file: string; line: number }) => h.file))];
+    expect(
+      specReaders.sort(),
+      'TrappingRef.spec devrait avoir EXACTEMENT 2 fichiers lecteurs : la résolution de choix et la matérialisation',
+    ).toEqual(['src/engine/items.ts', 'src/engine/trappingChoices.ts']);
+    expect(
+      specReaders.some((s: string) => s.includes('data/index.ts')),
+      'un lecteur de spec dans `data/index.ts` = une seconde définition du rendu « base (spec) », qui appartient à `refConcrete`',
+    ).toBe(false);
   });
 });

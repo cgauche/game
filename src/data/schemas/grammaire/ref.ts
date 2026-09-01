@@ -23,11 +23,13 @@ export interface CibleDeType {
   /** Nom de fichier du dataset qui fait AUTORITÉ sur les ids de ce type. */
   readonly dataset: string;
   /**
-   * Régime de la spécialisation d'une entité DÉJÀ spécialisable (`LDB 09 l.36-40` — la
-   * spécialisabilité, elle, est portée PAR ENTRÉE : `SPECS_PAR_DATASET`, cf. `estSpecialisable`).
-   * `true` = spécialisations OUVERTES : le joueur peut « créer une Spécialisation unique »
-   * (`LDB 09 l.40`), la valeur est donc un libellé libre et non une clé étrangère.
-   * `false` = pool FERMÉ : la spec doit appartenir au catalogue de l'entrée (`specCatalogOf`).
+   * Régime de la spécialisation d'une entité DÉJÀ spécialisable — la spécialisabilité, elle, est
+   * portée PAR ENTRÉE (`SPECS_PAR_DATASET`, cf. `estSpecialisable`). CONSTRUCTION du registre, et
+   * non une règle du livre : ce drapeau dit comment la DONNÉE de ce type d'entité s'écrit.
+   * `true` = spécialisations OUVERTES : pour une Compétence Groupée, le joueur peut « créer une
+   * Spécialisation unique » (`LDB 09 l.40`) — la valeur est donc un libellé libre, pas une clé
+   * étrangère. `false` = pool FERMÉ : la spec doit appartenir au catalogue de l'entrée
+   * (`specCatalogOf`).
    */
   readonly specsOpen: boolean;
 }
@@ -68,9 +70,11 @@ function catalogueSpecs(type: TypeEntite, id: string): readonly string[] {
 }
 
 /**
- * L'entrée porte-t-elle des Spécialisations ? `LDB 09 l.36-40`. La donnée l'exprime par un catalogue
- * NON VIDE — `specs[]` inline ou pool dérivé d'une `specsSource` (registre `SPECS_PAR_DATASET`,
- * `npm run gen`). Sans catalogue, ni `spec` ni `choix` n'ont de sens : la réf est un `ref(type)` nu.
+ * L'entrée porte-t-elle des Spécialisations ? La DONNÉE le dit, par un catalogue NON VIDE — `specs[]`
+ * inline ou pool dérivé d'une `specsSource` (registre `SPECS_PAR_DATASET`, `npm run gen`). Sans
+ * catalogue, ni `spec` ni `choix` n'ont de sens : la réf est un `ref(type)` nu. Pour les Compétences,
+ * ce catalogue est celui des Compétences Groupées (`LDB 09 l.36`) ; pour les autres types, c'est une
+ * déclaration du catalogue app-owned, sans équivalent au livre.
  */
 export function estSpecialisable(type: TypeEntite, id: string): boolean {
   return catalogueSpecs(type, id).length > 0;
@@ -128,8 +132,8 @@ export function typedRef(types: readonly TypeEntite[] = Object.keys(TYPES) as Ty
 /**
  * Référence À SPÉCIALISATION : `{ id, spec }` XOR `{ id, choix: true | [ids] }` — exactement UN des
  * deux régimes (une réf sans spécialisation est un `ref(type)` nu). L'entrée VISÉE doit d'abord être
- * spécialisable (`estSpecialisable`, `LDB 09 l.36-40`) ; `spec`/`choix` sont ensuite validés contre le
- * catalogue de l'entrée quand le type ferme ses spécialisations.
+ * spécialisable, c'est-à-dire déclarer un catalogue de specs (`estSpecialisable`) ; `spec`/`choix`
+ * sont ensuite validés contre ce catalogue quand le type ferme ses spécialisations.
  */
 /** FORME de sortie d'un nœud de référence à spécialisation — DÉCLARÉE (et non inferée) : les `extra`
  *  du porteur n'y figurent pas, un site qui les lit redéclare son type (patron `AxesData`,
@@ -175,7 +179,7 @@ function noeudASpecialisation<T extends TypeEntite>(
       if (!estSpecialisable(type, String(v.id))) {
         ctx.addIssue({
           code: 'custom',
-          message: `ref('${type}') : « ${String(v.id)} » ne déclare aucune spécialisation dans ${dataset} — « spec »/« choix » ne s'y applique pas (LDB 09 l.36-40).`,
+          message: `ref('${type}') : « ${String(v.id)} » ne déclare aucune spécialisation dans ${dataset} — « spec »/« choix » ne s'y applique pas (catalogue vide au registre « SPECS_PAR_DATASET »).`,
         });
         return;
       }
@@ -214,9 +218,9 @@ function noeudASpecialisation<T extends TypeEntite>(
 /**
  * Référence À SPÉCIALISATION : `{ id, spec }` XOR `{ id, choix: true | [ids] }` — exactement UN des
  * deux régimes (une réf sans spécialisation est un `ref(type)` nu, ou un `refOuSpec(type)` quand le
- * site accepte les deux). L'entrée VISÉE doit d'abord être spécialisable (`estSpecialisable`,
- * `LDB 09 l.36-40`) ; `spec`/`choix` sont ensuite validés contre le catalogue de l'entrée quand le
- * type ferme ses spécialisations.
+ * site accepte les deux). L'entrée VISÉE doit d'abord être spécialisable, c'est-à-dire déclarer un
+ * catalogue de specs (`estSpecialisable`) ; `spec`/`choix` sont ensuite validés contre ce catalogue
+ * quand le type ferme ses spécialisations.
  */
 export function specRef<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
   type: T,

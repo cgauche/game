@@ -5,6 +5,7 @@ import { casterTalents, learnableSpells } from './grimoire';
 import { blessingsOf, talentConcrete } from '../data';
 import { featuresOf } from './combatFeatures/dispatch';
 import { rationCount, dailyFoodUpkeep } from './provisions';
+import { itemLabel } from './items';
 import { bonus } from './characteristics';
 
 /**
@@ -58,5 +59,38 @@ describe('création ↔ Voyage & Nourriture (#T2, LDB 18 l.337-343)', () => {
     expect(r.ate).toBe(true);
     expect(r.rationConsumed).toBe(true);
     expect(rationCount(h)).toBe(before - 1);
+  });
+});
+
+/**
+ * INTÉGRATION création ↔ dotation SPÉCIALISÉE (#1463 L-ref-1). Le livre imprime la spécialisation
+ * d'une possession entre parenthèses (`LDB 08` l.1130, Écuyer : « outils de la profession
+ * (Maréchal-ferrant) ») ; la donnée l'écrit `{id, spec}`. Ce test suit le chemin RÉEL du créateur —
+ * `createHero` → `resolveTrappingChoices` → `buildInventory` → `itemFromTrappingRef` — et non une
+ * ref forgée : c'est entre la ref résolue et l'objet de sac que la spécialisation se perdait.
+ */
+describe('création ↔ dotation spécialisée (LDB 08 l.1130)', () => {
+  const ecuyer = () => createHero({ speciesId: 'humains-reiklander', careerId: 'chevalier', label: 'E', rng: makeRNG(7) });
+
+  it('l’Écuyer sort du créateur avec la spéc PORTÉE PAR L’OBJET, et l’affiche', () => {
+    const outils = (ecuyer().items ?? []).find((i) => i.trappingId === 'outils-professionnels');
+    expect(outils, 'la dotation `outils-professionnels` de chevalier-1 n’est pas matérialisée').toBeTruthy();
+    expect(outils!.spec, 'la spéc de la dotation tombe entre la ref résolue et l’objet de sac').toBe('Maréchal-ferrant');
+    expect(itemLabel(outils!)).toBe('Outils professionnels (Maréchal-ferrant)');
+  });
+
+  it('une dotation SANS spéc ne gagne aucune parenthèse parasite', () => {
+    const items = ecuyer().items ?? [];
+    const bouclier = items.find((i) => i.trappingId === 'bouclier');
+    expect(bouclier!.spec).toBeUndefined();
+    expect(itemLabel(bouclier!)).toBe('Bouclier');
+    expect(itemLabel(items.find((i) => i.trappingId === 'chemise-de-mailles')!)).toBe('Chemise de mailles');
+  });
+
+  it('la spéc SURVIT à la sérialisation d’une save (copie JSON profonde, `state/saves.ts`)', () => {
+    const relu = JSON.parse(JSON.stringify(ecuyer())) as ReturnType<typeof ecuyer>;
+    const outils = (relu.items ?? []).find((i) => i.trappingId === 'outils-professionnels');
+    expect(outils!.spec).toBe('Maréchal-ferrant');
+    expect(itemLabel(outils!)).toBe('Outils professionnels (Maréchal-ferrant)');
   });
 });

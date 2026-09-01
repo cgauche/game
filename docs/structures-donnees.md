@@ -1053,8 +1053,8 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 
 | Concept | Signature du lexique | Statut | Occurrences |
 |---|---|---|---|
-| reference | `id` | cible | 8893 |
-| reference | `id,spec` | cible | 1298 |
+| reference | `id` | cible | 8902 |
+| reference | `id,spec` | cible | 1332 |
 | reference | `choix,id` | cible | 278 |
 | reference | `id,type` | cible | 0 |
 | reference | `count,id,type` | cible | 0 |
@@ -1067,7 +1067,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `id,spec,value` | historique | 1375 |
 | reference | `arg,id` | historique | 545 |
 | reference | `arg,id,value` | historique | 125 |
-| reference | `count,id` | historique | 19 |
+| reference | `count,id` | historique | 26 |
 | reference | `count,text` | historique | 0 |
 | reference | `id,times` | historique | 48 |
 | reference | `id,qualityChoice` | historique | 36 |
@@ -1082,9 +1082,9 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `creatureId` | historique | 55 |
 | reference | `vehicleId` | historique | 15 |
 | reference | `career` | historique | 27 |
-| reference | `choice` | historique | 13 |
+| reference | `choice` | historique | 14 |
 | reference | `random` | historique | 21 |
-| reference | `text` | declaree | 561 |
+| reference | `text` | declaree | 577 |
 | reference | `id-nu` | historique | 2104 |
 | refs | `ids-nus` | cible | 611 |
 | monnaie | `brass,gold,silver` | cible | 465 |
@@ -1118,12 +1118,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **836** (cible 360 · declaree 6 · historique 117 · divergente 353). Objets JSON parcourus : **48529**, dont **31852** portent une forme
+Lignes concept × dataset × champ × forme : **837** (cible 362 · declaree 6 · historique 118 · divergente 351). Objets JSON parcourus : **48531**, dont **31857** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-474 ligne(s), 24506 occurrence(s).
+475 ligne(s), 24511 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1214,6 +1214,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `career` | `id-nu` | historique | `careerLevels.json` | 432 | — | `arene-projet.json` `careers.json` `creatures.json` `crew-roles.json` `groups.json` `interludeEvents.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `choice` | `choice>id` | historique | `careerLevels.json` | 25 | — | `qualities.json` `spells.json` `trappings.json` |  |
 | entité | `choice` | `choice>id,qualityChoice` | historique | `careerLevels.json` | 2 | — | `trappings.json` |  |
+| entité | `choice` | `choice>id,spec` | historique | `careerLevels.json` | 2 | — | `trappings.json` |  |
 | entité | `of` | `id` | cible | `careerLevels.json` | 2 | — | `talents.json` |  |
 | entité | `of` | `id,spec` | cible | `careerLevels.json` | 9 | — | `activities.json` `arene-projet.json` `breath-types.json` `careers.json` `damage-types.json` `lieux-services.json` … |  |
 | entité | `skills` | `choix,id` | cible | `careerLevels.json` | 171 | — | `activities.json` `axes.json` `creatures.json` `skills.json` `talents.json` | choix borné / libre (DESIGN v2 S2) |
@@ -1222,25 +1223,25 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `talents` | `choix,id` | cible | `careerLevels.json` | 66 | — | `activities.json` `careers.json` `psychology.json` `skills.json` `talents.json` `traits.json` … | choix borné / libre (DESIGN v2 S2) |
 | entité | `talents` | `id` | cible | `careerLevels.json` | 1493 | — | `actions.json` `careers.json` `crew-roles.json` `groups.json` `naval-traits.json` `psychology.json` … |  |
 | entité | `talents` | `id,spec` | cible | `careerLevels.json` | 165 | — | `activities.json` `axes.json` `breath-types.json` `careers.json` `creatures.json` `damage-types.json` … |  |
-| entité | `trappings` | `choice` | historique | `careerLevels.json` | 13 | — | — |  |
-| entité | `trappings` | `count,id` | historique | `careerLevels.json` | 16 | — | `spells.json` `trappings.json` |  |
+| entité | `trappings` | `choice` | historique | `careerLevels.json` | 14 | — | — |  |
+| entité | `trappings` | `count,id` | historique | `careerLevels.json` | 23 | — | `spells.json` `trappings.json` |  |
 | entité | `trappings` | `count,id,qualityChoice` | divergente | `careerLevels.json` | 1 | — | `trappings.json` |  |
-| entité | `trappings` | `count,text (résolvable)` | divergente | `careerLevels.json` | 4 | 4 | `arene-projet.json` `careerLevels.json` `merchantFamilies.json` `weaponGroups.json` |  |
 | entité | `trappings` | `count,vehicleId+…` | divergente | `careerLevels.json` | 1 | — | `structures.json` `vehicles.json` |  |
 | entité | `trappings` | `creatureId` | historique | `careerLevels.json` | 54 | — | `creatures.json` `montures.json` `skills.json` |  |
 | entité | `trappings` | `creatureId+…` | divergente | `careerLevels.json` | 5 | — | `creatures.json` `montures.json` `skills.json` |  |
-| entité | `trappings` | `id` | cible | `careerLevels.json` | 547 | — | `lightTones.json` `mass-battle.json` `props.json` `qualities.json` `spells.json` `trappings.json` … |  |
+| entité | `trappings` | `id` | cible | `careerLevels.json` | 555 | — | `lightTones.json` `mass-battle.json` `props.json` `qualities.json` `skills.json` `spells.json` … |  |
 | entité | `trappings` | `id,qualityChoice` | historique | `careerLevels.json` | 36 | — | `trappings.json` `weaponGroups.json` |  |
-| entité | `trappings` | `text` | declaree | `careerLevels.json` | 513 | — | — | dotation narrative — occurrence de référence seulement quand le texte normalisé résout vers un `label` (#1463, #624) |
-| entité | `trappings` | `text (résolvable)` | divergente | `careerLevels.json` | 60 | 60 | `arene-projet.json` `breath-types.json` `careerLevels.json` `careers.json` `damage-types.json` `groups.json` … |  |
+| entité | `trappings` | `id,spec` | cible | `careerLevels.json` | 32 | — | `trappings.json` |  |
+| entité | `trappings` | `text` | declaree | `careerLevels.json` | 532 | — | — | dotation narrative — occurrence de référence seulement quand le texte normalisé résout vers un `label` (#1463, #624) |
 | entité | `trappings` | `vehicleId` | historique | `careerLevels.json` | 15 | — | `diligence-projet.json` `props.json` `structures.json` `vehicles.json` |  |
 | entité | `trappings` | `vehicleId+…` | divergente | `careerLevels.json` | 11 | — | `arene-projet.json` `props.json` `skills.json` `structures.json` `vehicles.json` |  |
 | entité | `trappings` | `wildcard` | historique | `careerLevels.json` | 7 | — | `maneuvers.json` `qualitySubtypes.json` `traits.json` |  |
 | entité | `class` | `id-nu` | historique | `careers.json` | 108 | — | `classes.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `tenue` | `id-nu` | historique | `careers.json` | 15 | — | `arene-projet.json` `careers.json` `creatures.json` `groups.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `trappings` | `count,id` | historique | `classes.json` | 2 | — | `trappings.json` |  |
-| entité | `trappings` | `id` | cible | `classes.json` | 48 | — | `trappings.json` |  |
-| entité | `trappings` | `text` | declaree | `classes.json` | 6 | — | — | dotation narrative — occurrence de référence seulement quand le texte normalisé résout vers un `label` (#1463, #624) |
+| entité | `trappings` | `id` | cible | `classes.json` | 49 | — | `trappings.json` |  |
+| entité | `trappings` | `id,spec` | cible | `classes.json` | 2 | — | `trappings.json` |  |
+| entité | `trappings` | `text` | declaree | `classes.json` | 3 | — | — | dotation narrative — occurrence de référence seulement quand le texte normalisé résout vers un `label` (#1463, #624) |
 | entité | `entryCategory` | `id-nu` | historique | `combat-stakes.json` | 1 | — | `skills.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `kind` | `id-nu` | historique | `combat-stakes.json` | 7 | — | `combat-stakes.json` `spells.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `rule` | `id-nu` | historique | `combat-stakes.json` | 23 | — | `etats.json` `qualities.json` `regles.json` `sea-cargo.json` `skills.json` `spells.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
@@ -2275,10 +2276,10 @@ sont le narratif irréductible que la forme `text` DÉCLARE (#1463, #624).
 
 | Signature de l’objet | Occurrences | Résolvables |
 |---|---|---|
-| `text` | 622 | 61 |
+| `text` | 578 | 1 |
 | `op,text` | 507 | — |
 | `kind,text` | 206 | — |
-| `count,text` | 33 | 4 |
+| `count,text` | 26 | — |
 | `kind,plus,text` | 4 | — |
 
 ### 3.15 Hors strate — signatures ORPHELINES
@@ -2294,13 +2295,13 @@ lexique), pas une valeur qui pointerait vers rien — le contenu de ces objets e
 clé `source` à elle seule en déclenche la majorité. Ce motif-là se solde au VOCABULAIRE (#1463 S2 :
 un nom de concept est réservé à son type), pas en curant un contenu ni en posant une enveloppe.
 
-**98** signatures orphelines, **410** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 96 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 98.
+**98** signatures orphelines, **407** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 96 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 98.
 
 | Dataset | Champ | Signature | Motif | Occurrences |
 |---|---|---|---|---|
 | `talents.json` | `matches` | `manual,skill` | clé réservée | 74 |
 | `talents.json` | `matches` | `skill` | clé réservée | 34 |
-| `careerLevels.json` | `trappings` | `count,text` | clé réservée | 28 |
+| `careerLevels.json` | `trappings` | `count,text` | clé réservée | 25 |
 | `vehicles.json` | `hull` | `bodyShape,char,propulsion,rig` | clé réservée | 18 |
 | `domains.json` | `windModifiers` | `desc,dr,source,tests,when` | clé réservée | 17 |
 | `vehicles.json` | `purchase` | `price` | clé réservée | 17 |
@@ -2397,7 +2398,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12824** objets sur **48529** ne sont portés par AUCUNE
+Au-delà des orphelines, **12824** objets sur **48531** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -4445,11 +4446,11 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `barge-du-sel-projet.json` | `tiles` | 3 |
 | `barge-du-sel-projet.json` | `victoryCondition` | 1 |
 | `careerLevels.json` | `career` | 432 |
-| `careerLevels.json` | `choice` | 27 |
+| `careerLevels.json` | `choice` | 29 |
 | `careerLevels.json` | `of` | 11 |
 | `careerLevels.json` | `skills` | 2237 |
 | `careerLevels.json` | `talents` | 1724 |
-| `careerLevels.json` | `trappings` | 1283 |
+| `careerLevels.json` | `trappings` | 1286 |
 | `careers.json` | `class` | 108 |
 | `careers.json` | `grantGroups` | 6 |
 | `careers.json` | `tenue` | 15 |

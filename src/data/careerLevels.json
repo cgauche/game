@@ -298,7 +298,7 @@
         "id": "justaucorps-de-cuir"
       },
       {
-        "text": "Chiffon",
+        "id": "chiffons",
         "count": {
           "roll": {
             "n": 1,
@@ -3291,7 +3291,7 @@
     ],
     "trappings": [
       {
-        "text": "Clefs"
+        "id": "clef"
       },
       {
         "id": "lanterne"
@@ -4341,7 +4341,8 @@
         "id": "bouclier"
       },
       {
-        "text": "Outils professionnels (Maréchal-ferrant)"
+        "id": "outils-professionnels",
+        "spec": "Maréchal-ferrant"
       }
     ],
     "characteristics": [
@@ -6261,7 +6262,7 @@
         "id": "arbalete"
       },
       {
-        "text": "Carreaux",
+        "id": "carreau",
         "count": {
           "fixed": 10
         }
@@ -6331,16 +6332,18 @@
     ],
     "trappings": [
       {
-        "text": "Arme simple (Hache)"
+        "id": "arme-simple",
+        "spec": "Hache"
       },
       {
-        "text": "Flasque (Alcool)"
+        "id": "flasque",
+        "spec": "Alcool"
       },
       {
         "text": "Honte"
       },
       {
-        "text": "Tatouages"
+        "id": "tatouage"
       }
     ],
     "characteristics": [
@@ -6461,7 +6464,7 @@
         "text": "Tête de géant"
       },
       {
-        "text": "Haches de lancer"
+        "id": "hache-de-lancer"
       }
     ],
     "characteristics": [
@@ -6635,7 +6638,7 @@
         "id": "arbalete"
       },
       {
-        "text": "Carreaux",
+        "id": "carreau",
         "count": {
           "fixed": 10
         }
@@ -6844,7 +6847,8 @@
         }
       },
       {
-        "text": "Outils professionnels (Fabricant d'arcs)"
+        "id": "outils-professionnels",
+        "spec": "Fabricant d'arcs"
       }
     ],
     "characteristics": [
@@ -7271,7 +7275,7 @@
         "text": "Parc de diligences et de chevaux"
       },
       {
-        "text": "Cartes"
+        "id": "carte"
       }
     ],
     "characteristics": [
@@ -7417,7 +7421,8 @@
         "text": "Ensemble d'ustensiles de cuisine"
       },
       {
-        "text": "Outils professionnels (Bricoleur)"
+        "id": "outils-professionnels",
+        "spec": "Bricoleur"
       }
     ],
     "characteristics": [
@@ -8298,7 +8303,8 @@
         "id": "veste-de-cuir"
       },
       {
-        "text": "Outils professionnels (Cartographe)"
+        "id": "outils-professionnels",
+        "spec": "Cartographe"
       }
     ],
     "characteristics": [
@@ -8429,7 +8435,8 @@
     ],
     "trappings": [
       {
-        "text": "Outils professionnels (Maçonnerie)"
+        "id": "outils-professionnels",
+        "spec": "Maçonnerie"
       }
     ],
     "characteristics": [
@@ -8480,7 +8487,7 @@
         }
       },
       {
-        "text": "Cartes"
+        "id": "carte"
       },
       {
         "text": "Souvenirs de nombreux voyages"
@@ -9901,7 +9908,8 @@
         "text": "Os d'animaux sculptés (Grimoire)"
       },
       {
-        "text": "Outils professionnels (Boucher)"
+        "id": "outils-professionnels",
+        "spec": "Boucher"
       }
     ],
     "characteristics": [
@@ -10916,7 +10924,8 @@
         "text": "Apprenti"
       },
       {
-        "text": "Atelier (Remèdes)"
+        "id": "atelier",
+        "spec": "Remèdes"
       }
     ],
     "characteristics": [
@@ -11676,7 +11685,8 @@
         "text": "Apprenti"
       },
       {
-        "text": "Atelier (Magie)"
+        "id": "atelier",
+        "spec": "Magie"
       },
       {
         "text": "Bibliothèque (Magie)"
@@ -11742,7 +11752,8 @@
     ],
     "trappings": [
       {
-        "text": "Arme simple (Gaffe)"
+        "id": "arme-simple",
+        "spec": "Gaffe"
       },
       {
         "id": "veste-de-cuir"
@@ -12253,7 +12264,8 @@
     ],
     "trappings": [
       {
-        "text": "Arme simple (Gaffe)"
+        "id": "arme-simple",
+        "spec": "Gaffe"
       },
       {
         "id": "gants-en-cuir"
@@ -12800,7 +12812,8 @@
     ],
     "trappings": [
       {
-        "text": "Arme simple (Gaffe)"
+        "id": "arme-simple",
+        "spec": "Gaffe"
       },
       {
         "id": "veste-de-cuir"
@@ -13092,7 +13105,7 @@
         "id": "arbalete"
       },
       {
-        "text": "Carreaux",
+        "id": "carreau",
         "count": {
           "fixed": 10
         }
@@ -13218,7 +13231,8 @@
     ],
     "trappings": [
       {
-        "text": "Arme simple (Gaffe)"
+        "id": "arme-simple",
+        "spec": "Gaffe"
       },
       {
         "id": "lampe-tempete"
@@ -13458,7 +13472,8 @@
     ],
     "trappings": [
       {
-        "text": "Arme simple (Epée)"
+        "id": "arme-simple",
+        "spec": "Epée"
       },
       {
         "id": "veste-de-cuir"
@@ -13969,7 +13984,8 @@
     ],
     "trappings": [
       {
-        "text": "Flasque (Alcool)"
+        "id": "flasque",
+        "spec": "Alcool"
       }
     ],
     "characteristics": [
@@ -14627,7 +14643,7 @@
         "id": "sac-de-couchage"
       },
       {
-        "text": "Cartes"
+        "id": "carte"
       },
       {
         "id": "tente"
@@ -14826,7 +14842,7 @@
         "id": "arbalete-de-poing"
       },
       {
-        "text": "Carreaux",
+        "id": "carreau",
         "count": {
           "fixed": 10
         }
@@ -15187,7 +15203,7 @@
     ],
     "trappings": [
       {
-        "text": "Bougies"
+        "id": "bougie"
       },
       {
         "id": "craie"
@@ -15196,7 +15212,7 @@
         "id": "poupee"
       },
       {
-        "text": "Epingles"
+        "id": "epingle"
       }
     ],
     "characteristics": [
@@ -15496,7 +15512,8 @@
     ],
     "trappings": [
       {
-        "text": "Outils professionnels (Voleur)"
+        "id": "outils-professionnels",
+        "spec": "Voleur"
       },
       {
         "id": "corde"
@@ -15552,7 +15569,7 @@
         "id": "arbalete-de-poing"
       },
       {
-        "text": "Carreaux",
+        "id": "carreau",
         "count": {
           "fixed": 10
         }
@@ -16361,7 +16378,8 @@
         "text": "Sélection de cartes"
       },
       {
-        "text": "Outils professionnels (Cartographe)"
+        "id": "outils-professionnels",
+        "spec": "Cartographe"
       }
     ],
     "characteristics": [
@@ -16745,7 +16763,8 @@
     ],
     "trappings": [
       {
-        "text": "Arme simple (Faucille)"
+        "id": "arme-simple",
+        "spec": "Faucille"
       },
       {
         "id": "cataplasme-de-guerison"
@@ -16996,7 +17015,8 @@
     ],
     "trappings": [
       {
-        "text": "Arme simple (Pioche)"
+        "id": "arme-simple",
+        "spec": "Pioche"
       },
       {
         "id": "huile-de-lampe"
@@ -17291,7 +17311,8 @@
     ],
     "trappings": [
       {
-        "text": "Outils professionnels (Ecriture)"
+        "id": "outils-professionnels",
+        "spec": "Ecriture"
       }
     ],
     "characteristics": [
@@ -17337,7 +17358,8 @@
     ],
     "trappings": [
       {
-        "text": "Outils professionnels (Astrologie)"
+        "id": "outils-professionnels",
+        "spec": "Astrologie"
       }
     ],
     "characteristics": [
@@ -17707,7 +17729,8 @@
     ],
     "trappings": [
       {
-        "text": "Arme simple (Hache)"
+        "id": "arme-simple",
+        "spec": "Hache"
       },
       {
         "text": "Outils de la Profession (Identique au Métier)"
@@ -18167,7 +18190,8 @@
         "creatureId": "cheval-de-monte"
       },
       {
-        "text": "Outils professionnels (Maréchal-ferrant)"
+        "id": "outils-professionnels",
+        "spec": "Maréchal-ferrant"
       },
       {
         "id": "selle-et-harnais"
@@ -18429,13 +18453,15 @@
         "creatureId": "cheval-de-monte"
       },
       {
-        "text": "Outils professionnels (Maréchal-ferrant)"
+        "id": "outils-professionnels",
+        "spec": "Maréchal-ferrant"
       },
       {
         "id": "selle-et-harnais"
       },
       {
-        "text": "Symbole religieux (Myrmidia)"
+        "id": "symbole-religieux",
+        "spec": "Myrmidia"
       },
       {
         "id": "veste-de-cuir"
@@ -18697,13 +18723,15 @@
         "id": "marteau-a-bec-de-corbin"
       },
       {
-        "text": "Outils professionnels (Maréchal-ferrant)"
+        "id": "outils-professionnels",
+        "spec": "Maréchal-ferrant"
       },
       {
         "id": "selle-et-harnais"
       },
       {
-        "text": "Symbole religieux (Ulric)"
+        "id": "symbole-religieux",
+        "spec": "Ulric"
       },
       {
         "id": "veste-de-cuir"
@@ -18959,7 +18987,8 @@
         "creatureId": "cheval-de-monte"
       },
       {
-        "text": "Outils professionnels (Maréchal-ferrant)"
+        "id": "outils-professionnels",
+        "spec": "Maréchal-ferrant"
       },
       {
         "id": "selle-et-harnais"
@@ -22600,7 +22629,7 @@
         "id": "arbalete"
       },
       {
-        "text": "Carreaux",
+        "id": "carreau",
         "count": {
           "fixed": 10
         }
@@ -25145,7 +25174,16 @@
         "text": "Bibliothèque (Forgeron, Orfèvre ou Ingénieur)"
       },
       {
-        "text": "Atelier (Ingénierie ou Magie)"
+        "choice": [
+          {
+            "id": "atelier",
+            "spec": "Ingénierie"
+          },
+          {
+            "id": "atelier",
+            "spec": "Magie"
+          }
+        ]
       }
     ],
     "characteristics": [
@@ -25914,7 +25952,8 @@
         "text": "Bibliothèque (Magie)"
       },
       {
-        "text": "Atelier (Magie)"
+        "id": "atelier",
+        "spec": "Magie"
       }
     ],
     "characteristics": [
@@ -26174,7 +26213,8 @@
         "text": "Sixième et septième Clefs des Secrets"
       },
       {
-        "text": "Atelier (Magie)"
+        "id": "atelier",
+        "spec": "Magie"
       }
     ],
     "characteristics": [
@@ -26897,7 +26937,8 @@
         "text": "Cercle d'informateurs"
       },
       {
-        "text": "Atelier (Magie)"
+        "id": "atelier",
+        "spec": "Magie"
       }
     ],
     "characteristics": [

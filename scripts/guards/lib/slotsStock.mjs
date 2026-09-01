@@ -102,11 +102,19 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "tiles", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "victoryCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "careerLevels.json", champ: "career", occurrences: 432, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "careerLevels.json", champ: "choice", occurrences: 27, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // 27 → 29 (#1463 L-ref-1) : RAFRAÎCHISSEMENT DE COMPTE, pas un champ neuf — « Atelier (Ingénierie ou
+  // Magie) » (alchimiste-4) devient l'emplacement `{choice:[{id,spec},{id,spec}]}` et pose 2 références
+  // observées de plus sous le MÊME champ, déjà en dette d'adoption ici.
+  { dataset: "careerLevels.json", champ: "choice", occurrences: 29, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "careerLevels.json", champ: "of", occurrences: 11, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "careerLevels.json", champ: "skills", occurrences: 2237, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "careerLevels.json", champ: "talents", occurrences: 1724, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "careerLevels.json", champ: "trappings", occurrences: 1283, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // 1283 → 1286 (#1463 L-ref-0 + L-ref-1) : MÊME champ, compte rafraîchi. −4 — les 4 dotations comptées
+  // que la mesure classait `count,text (résolvable)` (une FORME de référence) redeviennent des
+  // orphelines « clé réservée », hors de cette somme ; +7 — « Chiffon » et les 6 « Carreaux » passent
+  // de `{count, text}` à `{count, id}`, donc D'une orpheline À une forme de référence. Les autres
+  // liaisons (`{text}` → `{id}`/`{id, spec}`) sont NEUTRES ici : les deux formes comptent déjà.
+  { dataset: "careerLevels.json", champ: "trappings", occurrences: 1286, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "careers.json", champ: "class", occurrences: 108, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "careers.json", champ: "grantGroups", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "careers.json", champ: "tenue", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },

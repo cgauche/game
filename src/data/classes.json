@@ -44,7 +44,8 @@
         "id": "corde"
       },
       {
-        "text": "Flasque (Alcool)"
+        "id": "flasque",
+        "spec": "Alcool"
       },
       {
         "id": "bourse"
@@ -83,7 +84,7 @@
         "id": "pince-a-epiler"
       },
       {
-        "text": "Cure-oreille (Multiple)"
+        "id": "cure-oreille"
       },
       {
         "id": "peigne"
@@ -212,7 +213,8 @@
         "id": "besace"
       },
       {
-        "text": "Flasque (Alcool)"
+        "id": "flasque",
+        "spec": "Alcool"
       }
     ],
     "desc": "Personnes qui vivivent et travaillent sur les rivières et voies navigables à travers le Reikland et au-delà. Les Riverains commencent tous avec un statut inférieur, mais certains ont des opportunités qui peuvent mener à une vie confortable.",

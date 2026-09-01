@@ -293,6 +293,30 @@ export function itemFromTrappingById(id: string, resolveTrapping: TrappingResolv
   };
 }
 
+/**
+ * Matérialise une `TrappingRef` RÉSOLUE (`{id, spec?, count?, qualities?}` — après
+ * `resolveTrappingChoices`) en objet de sac. COUTURE UNIQUE ref → objet : le catalogue donne les
+ * stats (`itemFromTrappingById`), la REF donne ce que la dotation ajoute par-dessus — la
+ * spécialisation imprimée entre parenthèses (`ItemInstance.spec`), la quantité d'un paquet de
+ * munitions, les Atouts ATTACHÉS. Aucun site ne recopie ces trois gestes : ils vivent ici.
+ */
+export function itemFromTrappingRef(
+  ref: Extract<TrappingRef, { id: string }>,
+  resolveTrapping: TrappingResolver = findTrappingById,
+): ItemInstance | null {
+  const it = itemFromTrappingById(ref.id, resolveTrapping);
+  if (!it) return null;
+  if (ref.spec) it.spec = ref.spec;
+  if (it.kind === 'ammo' && ref.count && 'fixed' in ref.count) it.qty = ref.count.fixed; // quantité de la carrière
+  if (ref.qualities?.length) {
+    // Atouts ATTACHÉS d'une dotation (joker de qualité résolu, #657 Lot 1) — même patron d'APPEND que
+    // `withGiveQualities` (giveTrapping magique), mais via `qualityInstance` (préserve `value` —
+    // « Solide 3 » — que le merge par id nu de `withGiveQualities` perdrait, correctif juge Lot 1).
+    it.qualities = [...(it.qualities ?? []), ...ref.qualities.map(qualityInstance)];
+  }
+  return it;
+}
+
 /** Objet « custom » minimal (trinket / objet de quête) quand le nom n'est PAS un vrai trapping de la
  *  base : permet de donner un objet au groupe via `giveTrapping` sans entrée de données (cf. retrait de
  *  l'inventaire de groupe — « donner un objet = un trapping custom OU réel »). kind `misc`, sans stats. */
@@ -333,8 +357,8 @@ export function giveTrappingLabel(give: { trappingId?: string; custom?: string }
  *  hors-base (nom libre — trinket/quête/pièces de monstre, sans `trappingId`). SOURCE UNIQUE de l'affichage
  *  du nom d'un objet catalogué (fiche/sac/pickers) : un objet CATALOGUÉ ne rend jamais son id brut, même si
  *  son champ `label` a dérivé (save ancienne, donnée fautive). */
-export function itemLabel(it: Pick<ItemInstance, 'trappingId' | 'label'>): string {
-  return it.trappingId ? refLabel('trappings', { id: it.trappingId }) : it.label;
+export function itemLabel(it: Pick<ItemInstance, 'trappingId' | 'label' | 'spec'>): string {
+  return it.trappingId ? refLabel('trappings', { id: it.trappingId, spec: it.spec }) : it.label;
 }
 
 /** Limite d'Encombrement = (Bonus de Force + Bonus d'Endurance) × facteur (ogre ADE II 2 l.708 :
@@ -922,17 +946,8 @@ export function buildInventory(refs: TrappingRef[]): ItemInstance[] {
   for (const ref of refs) {
     if ('vehicleId' in ref) continue; // dotation véhicule = grant de POSSESSION (matérialisé en T1, registre), jamais un objet de sac.
     if (!('id' in ref)) continue; // {text} narratif : pas d'objet à stats
-    const it = itemFromTrappingById(ref.id);
-    if (it) {
-      if (it.kind === 'ammo' && ref.count && 'fixed' in ref.count) it.qty = ref.count.fixed; // quantité de la carrière
-      if (ref.qualities?.length) {
-        // Atouts ATTACHÉS d'une dotation (joker de qualité résolu, #657 Lot 1) — même patron d'APPEND que
-        // `withGiveQualities` (giveTrapping magique, l.238), mais via `qualityInstance` (préserve `value` —
-        // « Solide 3 » — que le merge par id nu de `withGiveQualities` perdrait, correctif juge Lot 1).
-        it.qualities = [...(it.qualities ?? []), ...ref.qualities.map(qualityInstance)];
-      }
-      items.push(it);
-    }
+    const it = itemFromTrappingRef(ref);
+    if (it) items.push(it);
   }
   // Équipement par défaut : la MEILLEURE arme de mêlée + la première à distance + les armures
   // SANS conflit de couche (max une pièce par couche × localisation, meilleure PA d'abord —

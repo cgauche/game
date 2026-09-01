@@ -55,7 +55,7 @@ import {
 import { SIZE_LABEL } from '../../engine/size';
 import type { SourceRef } from '../../data/schemas/grammaire/valeurs';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../../engine/types';
-import { damageString, itemFromTrappingById } from '../../engine/items';
+import { damageString, itemFromTrappingById, itemLabel } from '../../engine/items';
 import { skillBaseValue } from '../../engine/skills';
 import { effectiveChar } from '../../engine/characteristics';
 import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
@@ -2420,7 +2420,7 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
         <Rubrique title="Possessions">
           <div className="skill-tags">
             {(hero.items ?? []).map((it) => (
-              <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={it.label} show={`${it.label}${it.qty ? ` ×${it.qty}` : ''}`} />
+              <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={itemLabel(it)} show={`${itemLabel(it)}${it.qty ? ` ×${it.qty}` : ''}`} />
             ))}
           </div>
         </Rubrique>

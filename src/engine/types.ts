@@ -1065,6 +1065,12 @@ export interface ItemInstance {
    *  `itemFromTrappingById`. ABSENT = objet CUSTOM (hors-base : `customTrapping`, pièces de monstre…).
    *  Source de re-dérivation (arme dérivée de prothèse, prix de revente, réparation) — ≠ name-match. */
   trappingId?: string;
+  /** Spécialisation de CETTE possession, telle que le livre l'imprime entre parenthèses — `LDB 08`
+   *  l.1130 « outils de la profession (Maréchal-ferrant) ». DONNÉE, pas affichage : elle vit sur
+   *  l'OBJET parce que deux « Outils professionnels » du même sac doivent rester DISCERNABLES (le
+   *  catalogue, lui, ne connaît que « Outils professionnels »). Posée par `itemFromTrappingRef`
+   *  depuis la `TrappingRef` résolue ; rendue par `itemLabel` via `refLabel`. */
+  spec?: string;
   label: string;
   kind: ItemKind;
   damage?: WeaponDamageSpec; // armes

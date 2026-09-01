@@ -91,17 +91,17 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3429` |
-| `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3430` |
-| `qualities` | 2 | `src/data/index.ts:3433` |
-| `qualityChoice` | 2 | `src/data/index.ts:3431` |
-| `text` | 1 | `src/data/index.ts:3424` |
-| `vehicleId` | 2 | `src/data/index.ts:3426` |
+| `id` | 4 | `src/engine/items.ts:307` |
+| `spec` | 2 | `src/engine/items.ts:309` |
+| `count` | 4 | `src/data/index.ts:3431` |
+| `qualities` | 4 | `src/data/index.ts:3434` |
+| `qualityChoice` | 2 | `src/data/index.ts:3432` |
+| `text` | 1 | `src/data/index.ts:3425` |
+| `vehicleId` | 2 | `src/data/index.ts:3427` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3428` |
-| `choice` | 3 | `src/data/index.ts:3421` |
-| `wildcard` | 1 | `src/data/index.ts:3422` |
+| `creatureId` | 2 | `src/data/index.ts:3429` |
+| `choice` | 3 | `src/data/index.ts:3422` |
+| `wildcard` | 1 | `src/data/index.ts:3423` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
@@ -290,4 +290,4 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Cas fondateur
 
-`TrappingRef.spec` : 1 lecteur(s) mesuré(s) — `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` ; l'unique lecteur est `resolveOne` (`src/engine/trappingChoices.ts`), qui le RECOPIE sans le consommer.
+`TrappingRef.spec` : 3 lecteur(s) mesuré(s) — `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` ; l'unique lecteur est `resolveOne` (`src/engine/trappingChoices.ts`), qui le RECOPIE sans le consommer.

@@ -14,7 +14,7 @@
 | Catalogue | Entités | Orphelines BRUTES (id seul) | Taux |
 |---|---|---|---|
 | `spells` | 576 | 278 | 48 % |
-| `trappings` | 441 | 211 | 48 % |
+| `trappings` | 441 | 207 | 47 % |
 
 Chacun échappe à la détection par id pour une raison PROPRE : un Sort ne se cite pas par id en
 prod (il s'obtient par Domaine / Talent de lanceur / `learnSpell` de scène — l'instrument juste

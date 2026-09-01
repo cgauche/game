@@ -561,6 +561,31 @@ export function scannerDonnees(
   const ambigues = new Map<string, ResolutionAmbigue>();
 
   /**
+   * Cibles majoritaires d'un SITE, TOUTES CLÉS DE RÉFÉRENCE CONFONDUES (#1463 L-ref-0) : c'est le
+   * site — `careerLevels.json | trappings` — qui a un référent, pas la clé `text`. La clé `text` est
+   * exclue de l'agrégat : elle est l'objet MESURÉ, et elle ne résout que vers des LIBELLÉS, jamais
+   * vers l'index des ids — son `resolvent` n'apporte aucune cible et ne peut donc pas fonder la
+   * sienne. Mesurer sur la seule clé `text` rendait un agrégat SANS cible, donc « n'importe quel
+   * dataset » : `Assistant`→`careerLevels`, `Bureau`→`props`, `Munitions`→`weaponGroups`.
+   */
+  const ciblesDuSite = new Map<string, string[]>();
+  const ciblesMajoritairesDuSite = (dataset: string, champ: string): string[] => {
+    const memo = ciblesDuSite.get(`${dataset}|${champ}`);
+    if (memo) return memo;
+    const cumul: Site = { resolvent: 0, total: 0, cibles: new Map() };
+    for (const [k2, s] of sitesDeCle) {
+      const [d, c, k] = k2.split('|');
+      if (d !== dataset || c !== champ || k === 'text' || !siteDeReference(d, c, k)) continue;
+      cumul.resolvent += s.resolvent;
+      cumul.total += s.total;
+      for (const [cible, n] of s.cibles) inc(cumul.cibles, cible, n);
+    }
+    const majoritaires = ciblesMajoritaires(cumul.resolvent ? cumul : undefined);
+    ciblesDuSite.set(`${dataset}|${champ}`, majoritaires);
+    return majoritaires;
+  };
+
+  /**
    * Datasets vers lesquels un `{text}` RÉSOUT : ceux où son texte normalisé est le `label` d'une
    * entité, RESTREINTS aux cibles majoritaires du site quand le site en a une. Un site sans cible
    * (aucune de ses valeurs ne résout vers un id indexé) accepte n'importe quel dataset. Liste vide
@@ -569,7 +594,7 @@ export function scannerDonnees(
   const datasetsDuTexte = (p: Prepare, o: Obj, champ: string, v: string): string[] => {
     const trouves = libelles.get(normaliserLibelle(v));
     if (!trouves) return [];
-    const maj = ciblesMajoritaires(sitesDeCle.get(`${p.nom}|${champDeSite(p, o, champ)}|text`));
+    const maj = ciblesMajoritairesDuSite(p.nom, champDeSite(p, o, champ));
     return (maj.length ? [...trouves].filter((d) => maj.includes(d)) : [...trouves]).sort();
   };
 

@@ -3415,8 +3415,9 @@ export function advancementBaseId(a: AdvancementRef): string | undefined {
   return 'id' in a ? a.id : undefined;
 }
 /** Libellé d'affichage d'une `TrappingRef` : « Marteau », « Pamphlétaire (3) », « Chiffon (1d10) »,
- *  texte narratif hors catalogue, choix « A ou B » (récursif), ou joker « Arme (au choix) ».
- *  SOURCE UNIQUE (Codex, créateur, marchand, inventaire). */
+ *  « Outils professionnels (Maréchal-ferrant) » (`spec`, rendue par `refConcrete` comme toute autre
+ *  `Ref` — `LDB 08 l.1130`), texte narratif hors catalogue, choix « A ou B » (récursif), ou joker
+ *  « Arme (au choix) ». SOURCE UNIQUE (Codex, créateur, marchand, inventaire). */
 export function trappingRefLabel(ref: TrappingRef): string {
   if ('choice' in ref) return ref.choice.map(trappingRefLabel).join(' ou ');
   if ('wildcard' in ref) return ref.wildcard === 'arme' ? 'Arme (au choix)' : `${ref.wildcard} (au choix)`;
@@ -3426,7 +3427,7 @@ export function trappingRefLabel(ref: TrappingRef): string {
       ? (findVehicleById(ref.vehicleId)?.label ?? ref.vehicleId)
       : 'creatureId' in ref
         ? (findCreatureById(ref.creatureId)?.label ?? ref.creatureId)
-        : (findTrappingById(ref.id)?.label ?? ref.id);
+        : refConcrete('trappings', ref);
   const count = ref.count ? ('fixed' in ref.count ? ` (${ref.count.fixed})` : ` (${formatDice(ref.count.roll)})`) : '';
   const quality = 'id' in ref && ref.qualityChoice
     ? ' (qualité au choix)'
