@@ -58,6 +58,8 @@ export default defineConfig({
     // Chaque test reposant sur le store établit son propre état (startScene/startCombat) + reset
     // global (cf. src/test-setup.ts).
     isolate: false,
+    // Paramètre de BANC calé sur le test volumique le plus lourd mesuré en CI (#1619) — le contrat des tests ne change pas.
+    testTimeout: 15_000,
     // Filet d'isolation GLOBAL : restaure les vrais timers après chaque test (cf. src/test-setup.ts) —
     // empêche tout fake timer fantôme de fuir d'un test à l'autre (flake de combat).
     setupFiles: ['./src/test-setup.ts'],

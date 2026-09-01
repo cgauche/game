@@ -50,8 +50,18 @@
  *    ne touche pas : sous `isolate:false` (module partagé entre fichiers du worker), ce timer en vol se
  *    déclenche pendant un test ULTÉRIEUR et corrompt son `battle`/sa séquence de RNG (#405, flake
  *    d'ordonnancement). `clearTrackedTimers()` annule tout timer tracé encore en vol au teardown (#405, #415).
+ *
+ * 3. BARRIÈRE DE FUITE DOM (`residusDom`/`messageResiduDom`, `afterEach`). react-dom est lui aussi un
+ *    module partagé par le worker sous `isolate:false` : une racine laissée MONTÉE par un fichier se met
+ *    à jour hors `act()` pendant les fichiers suivants (« Attempted to synchronously unmount a root while
+ *    React was already rendering », « Should not already be working ») et leurs rendus deviennent VIDES
+ *    (#1619). Tout nœud ÉLÉMENT resté enfant de `document.body` après un test échoue AU FICHIER FAUTIF,
+ *    sauf ceux du stock d'extinction `scripts/guards/lib/domResiduStock.mjs` (cliquet :
+ *    `src/dom-residu-stock.test.ts` ; re-mesure : variable `WFRP_DOM_RESIDU_COLLECTE`).
  */
-import { afterEach, beforeEach, vi } from 'vitest';
+import { afterEach, beforeEach, expect, vi } from 'vitest';
+import { appendFileSync } from 'node:fs';
+import { DOM_RESIDU_STOCK } from '../scripts/guards/lib/domResiduStock.mjs';
 import { useGame, resetSceneRegistry, type GameState } from './state/store';
 import { loadRuleOverrides } from './engine/policy';
 import { cascadeAppliers } from './state/cascade';
@@ -130,6 +140,46 @@ export function rigArtRegistrySignatures(): Map<string, string> {
 
 const PRISTINE_RIG_REGISTRIES = rigArtRegistrySignatures();
 
+/** Description d'un nœud ÉLÉMENT résiduel : `<tag class="…">`, jamais son contenu (le nom suffit à
+ *  retrouver le montage fautif, le contenu ferait un message illisible). */
+export function residusDom(body: { children: ArrayLike<Element> } | null | undefined): string[] {
+  if (!body) return [];
+  return Array.from(body.children as ArrayLike<Element>).map((el) => {
+    const tag = el.tagName.toLowerCase();
+    const cls = el.getAttribute?.('class');
+    return cls ? `<${tag} class="${cls}">` : `<${tag}>`;
+  });
+}
+
+/** Clé de stock d'un fichier de test : chemin POSIX relatif à la racine du dépôt. */
+export function cleFichierTest(testPath: string | undefined, racine = process.cwd()): string {
+  if (!testPath) return '(fichier inconnu)';
+  const p = testPath.split('\\').join('/');
+  const r = racine.split('\\').join('/').replace(/\/$/, '');
+  return p.startsWith(`${r}/`) ? p.slice(r.length + 1) : p;
+}
+
+/** Verdict de la barrière : message d'échec, ou `null` si rien à dire (aucun résidu, ou fichier du
+ *  stock d'extinction `scripts/guards/lib/domResiduStock.mjs`). */
+export function messageResiduDom(
+  fichier: string,
+  residus: readonly string[],
+  stock: ReadonlySet<string> = DOM_RESIDU_STOCK,
+): string | null {
+  if (!residus.length || stock.has(fichier)) return null;
+  return (
+    `Nœud(s) laissé(s) dans document.body par ${fichier} (${residus.length}) : ${residus.join(' ')}\n`
+    + `Sous test.isolate:false, react-dom est partagé par tout le worker : une racine restée montée se met à jour `
+    + `hors act() pendant les fichiers SUIVANTS, qui rendent alors le vide (#1619).\n`
+    + `Démonter ce que le test monte (act(() => root.unmount()) en afterEach, ou cleanup()) — jamais ajouter une ligne au stock.`
+  );
+}
+
+/** Fichier d'inventaire de la re-mesure (`WFRP_DOM_RESIDU_COLLECTE`) : la barrière n'échoue plus et
+ *  écrit `fichier<TAB>nombre<TAB>nœuds` — c'est ainsi que le stock d'extinction se re-établit. */
+const COLLECTE_RESIDU = process.env.WFRP_DOM_RESIDU_COLLECTE;
+const residuVus = new Set<string>();
+
 beforeEach(() => {
   useGame.setState(JSON.parse(PRISTINE_STATE) as Partial<GameState>);
   loadRuleOverrides({});
@@ -163,6 +213,24 @@ afterEach(() => {
   Object.assign(cascadeAppliers, cascadeSnapshot);
   vi.useRealTimers();
   clearTrackedTimers();
+  // FUITE DOM laissée par CE test (cf. §3 de l'en-tête) : observée au hook le plus EXTERNE, donc APRÈS
+  // les `afterEach` du fichier (démontage, `cleanup()`). On échoue ICI, au site fautif, plutôt que dans
+  // une victime éloignée du même worker. Stock d'extinction : scripts/guards/lib/domResiduStock.mjs.
+  if (typeof document !== 'undefined') {
+    const residus = residusDom(document.body);
+    if (residus.length) {
+      const fichier = cleFichierTest(expect.getState().testPath);
+      if (COLLECTE_RESIDU) {
+        if (!residuVus.has(fichier)) {
+          residuVus.add(fichier);
+          appendFileSync(COLLECTE_RESIDU, `${fichier}\t${residus.length}\t${residus.slice(0, 4).join(' ')}\n`);
+        }
+      } else {
+        const msg = messageResiduDom(fichier, residus);
+        if (msg) throw new Error(msg);
+      }
+    }
+  }
   // Dérive d'un registre d'ART laissée par CE test : elle fuirait vers tous les fichiers suivants du
   // worker (`isolate: false`). On échoue ICI, au site fautif, plutôt que dans une victime éloignée.
   const now = rigArtRegistrySignatures();
