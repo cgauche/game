@@ -1,0 +1,34 @@
+---
+name: project-1463-cloture-sous-decision-2026-09-01
+description: "Épic #1463 (un concept = une structure) au 2026-09-01 soir : grand juge = FERMABLE SOUS DÉCISION — 3 décisions d'objectif à l'utilisateur (#1654 AST 71, #1620 TypeChecker, #1657 concept test), puis #1388"
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 39a8970a-cba9-474a-be43-12bdf0b366e7
+  modified: 2026-09-01T12:50:17.964Z
+---
+
+État au 2026-09-01 ~18h (HEAD 9739ee1f4+, pilotage final au ticket, issuecomment-5494198273).
+
+**Fermés cette session** : #1548, #1552, #1553, #1616, #1640, #1457 (8 trains, réfutation de fermeture TIENT),
+#1633 (concepts d'enveloppe, hors-strate 1157→1145 exact). Vagues voisines terminées : plage, monnaie,
+reference (session d'audit) ; décors #1624/#1644 (game-66, session close).
+
+**Grand juge d'épic (sur pièces)** : clause 1 TIENT · clause 2 PARTIEL (grammaire/ est le porteur réel —
+corps amendé ; concept `test` 65 lignes/302 occ sans forme cible → #1657 ; « une porte moteur » non
+instrumentée) · clause 3 PARTIEL porté (#1654 : AST 71→0, plafond 76 à resserrer à 71, 2 angles morts :
+defs-scenes hors scan, lexique fermé = plafond de détection) · clause 4 RÉFUTÉE portée (#1620 : (i) phrase
+vraie livrée, (ii) TypeChecker 173 l. + (iii) dérivation TARGETS ouverts).
+
+**Les 3 décisions posées à l'utilisateur** (aucune prise par moi) :
+1. DoD-3 : fermer l'épic sur #1654 OUVERT (décrue portée par les vagues de résorption) vs attendre 0.
+2. DoD-4 : financer #1620 (ii) avant #1388 vs requalifier la clause (angle mort énoncé et chiffré suffit).
+3. #1657 (concept test) après #1388 (épic fermé en le portant) vs avant (épic ouvert).
+**Comment appliquer :** ne PAS fermer #1463 sans ces réponses ; dettes d'outillage nées cette semaine
+(#1640-#1656) = sériables APRÈS #1388 (doctrine : l'épic débouche sur la part joueur, pas sur de nouvelles
+vagues d'instrument) ; les 3 gestes minimaux (plafond 76→71, sonde C3 promue, 2 angles morts déclarés)
+sont confiés au train `de` de la session d'audit — vérifier au pilotage qu'ils ont atterri.
+
+Liens : [[project-1467-l1b-livre]] (carnet de dépilage), [[game-train-chirurgical-portes-sur-l-index]]
+(5 occurrences, règle suite complète), [[env-cache-vite-partage-worktree-faux-rouges]],
+[[feedback-pilotage-epic-commentaire-github]].
