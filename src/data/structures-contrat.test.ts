@@ -617,7 +617,16 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Le scanner ne résout PAS un spread : la garde est le test POSITIF de composition
       // (`grammaire/formes-partagees.test.ts`), qui refuse une rangée sans borne AU SCHÉMA PARTAGÉ et
       // à chacun des 9 documents adoptants. Le cliquet SUIT la baisse.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 97],
+      // Cliquet DESCENDU 97 → 88 (LOT P1-b, même graphie) : les rangées de table de MAGIE et les tables
+      // générales composent à leur tour `plageSchema` par la SHAPE — miscast › entries,
+      // arcane-phenomena › tables[].rows, vents-tourbillonnants › entries, tables › rows,
+      // interludeEvents (racine), drunkenness › entries, weather › seasons[].ranges, tavernGames › table
+      // et › pot.rows. TROIS lignes RESTENT au stock, refusées AVEC leur mesure : `oups.ts` et
+      // `reglesOptionnelles.ts` portent des bornes OPTIONNELLES (le premier hors table pour `misfire`, le
+      // second relève du concept `bornes` d'un réglage), `advancementCosts.ts` a une borne haute
+      // `nullable` (dernière bande ouverte). Le gate reste POSITIF (`grammaire/formes-partagees.test.ts`,
+      // +10 sites à la porte réelle `validateDataset`), le scanner ne résolvant pas un spread.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 88],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -791,7 +800,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 162 → 152 (vague `plage`, LOT P1-a) : les 10 lignes de REDÉCLARATIONS des rangées de
       // table « critiques & corps » sortent — leurs schémas composent `plageSchema` par la SHAPE, ou
       // l'adoptent nu quand les deux bornes sont toute la charge utile.
-      'L4 #1463': 152,
+      // … puis 152 → 143 (LOT P1-b) : les 9 lignes de REDÉCLARATIONS des rangées de table de magie et
+      // des tables générales sortent à leur tour, par composition de `plageSchema`.
+      'L4 #1463': 143,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`

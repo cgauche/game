@@ -7,6 +7,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { plageSchema } from '../grammaire/valeurs';
 
 export const file = 'interludeEvents.json';
 export const famille = 'entite';
@@ -27,8 +28,7 @@ const doc = document(
   'interludeEvents',
   famille,
   {
-    min: z.number(),
-    max: z.number(),
+    ...plageSchema.shape,
     fx: fxSchema.optional(),
     /** Note d'atelier — JAMAIS affichée au joueur ni journalisée (contrairement à `desc`) : précise
      *  ce que `fx` ne modélise pas pour cet événement, à l'usage des auteurs de données. */

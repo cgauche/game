@@ -8,6 +8,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
+import { plageSchema } from '../grammaire/valeurs';
 
 export const file = 'drunkenness.json';
 export const famille = 'config';
@@ -18,9 +19,8 @@ const doc = document(
   {
     entries: z.array(
       z.strictObject({
+        ...plageSchema.shape,
         id: z.string(),
-        min: z.number(),
-        max: z.number(),
         label: z.string(),
         outcome: z.enum(['bravoure', 'ami', 'staggering', 'belligerent', 'blackout']),
         desc: z.string(),

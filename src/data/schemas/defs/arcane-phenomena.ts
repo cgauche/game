@@ -15,7 +15,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, sourceRefSchema, castingNumberModSchema } from '../grammaire/valeurs';
+import { difficultySchema, plageSchema, sourceRefSchema, castingNumberModSchema } from '../grammaire/valeurs';
 
 export const file = 'arcane-phenomena.json';
 export const famille = 'config';
@@ -167,8 +167,7 @@ const doc = document(
       die: z.enum(['d10', 'd100']),
       rows: z.array(
         z.strictObject({
-          min: z.number(),
-          max: z.number(),
+          ...plageSchema.shape,
           label: z.string(),
           /** Flux magique : Domaine(s) désigné(s) par la rangée. */
           domainIds: z.array(z.string()).min(1).optional(),

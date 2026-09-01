@@ -6,6 +6,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
+import { plageSchema } from '../grammaire/valeurs';
 
 export const file = 'tables.json';
 export const famille = 'entite';
@@ -17,8 +18,7 @@ const doc = document(
     die: z.enum(['d10', 'd100']),
     rows: z.array(
       z.strictObject({
-        min: z.number(),
-        max: z.number(),
+        ...plageSchema.shape,
         label: z.string().optional(),
         ops: z.array(gameOpSchema),
       }),

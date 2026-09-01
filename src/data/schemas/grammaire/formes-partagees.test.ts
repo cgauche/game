@@ -17,6 +17,14 @@ import shipCriticals from '../../ship-criticals.json';
 import waterExposure from '../../water-exposure.json';
 import mutationTables from '../../mutationTables.json';
 import obsessions from '../../obsessions.json';
+import miscast from '../../miscast.json';
+import arcanePhenomena from '../../arcane-phenomena.json';
+import ventsTourbillonnants from '../../vents-tourbillonnants.json';
+import tables from '../../tables.json';
+import interludeEvents from '../../interludeEvents.json';
+import drunkenness from '../../drunkenness.json';
+import weather from '../../weather.json';
+import tavernGames from '../../tavernGames.json';
 import { corruptionExposureSchema } from '../defs-scenes/effets';
 import { menaceIds } from '../../../engine/menace';
 import { resolveTrappingChoices } from '../../../engine/trappingChoices';
@@ -89,6 +97,9 @@ describe('plageSchema — fourchette PARTAGÉE des rangées de table', () => {
     expect(etendu.safeParse({ ...CHARGE }).success).toBe(false); // la charge utile reste requise
   });
 
+  /** Position d'un jeu de taverne par son ID (jamais par sa place : la donnée est réordonnable au Codex). */
+  const jeuDeTaverne = (id: string) => String((tavernGames as ReadonlyArray<{ id: string }>).findIndex((j) => j.id === id));
+
   /**
    * Chaque document ADOPTANT est mesuré sur SA donnée réelle : on ampute la première rangée à deux
    * bornes de son `min`, et la porte doit refuser en nommant le CHEMIN de la borne. Une composition
@@ -107,6 +118,17 @@ describe('plageSchema — fourchette PARTAGÉE des rangées de table', () => {
     ['water-exposure.json', waterExposure, ['diseases']],
     ['mutationTables.json', mutationTables],
     ['obsessions.json', obsessions],
+    ['miscast.json', miscast],
+    ['arcane-phenomena.json', arcanePhenomena],
+    ['vents-tourbillonnants.json', ventsTourbillonnants],
+    ['tables.json', tables],
+    ['interludeEvents.json', interludeEvents],
+    ['drunkenness.json', drunkenness],
+    ['weather.json', weather],
+    // Deux sites de rangée y composent (`table` d'un jeu à score par plage, `pot.rows` d'un jeu à mises) ;
+    // sans descente, le parcours tomberait sur `pot.targetRange` — la plage adoptée NUE en P1-a.
+    ['tavernGames.json', tavernGames, [jeuDeTaverne('torchon'), 'table']],
+    ['tavernGames.json', tavernGames, [jeuDeTaverne('al-zahr'), 'pot', 'rows']],
   ];
 
   /** Chemin de la PREMIÈRE rangée `{min, max}` numériques rencontrée en parcours stable. */
@@ -143,7 +165,7 @@ describe('plageSchema — fourchette PARTAGÉE des rangées de table', () => {
     chemin.reduce<unknown>((acc, k) => (acc as Record<string, unknown>)[k], v);
 
   for (const [fichier, data, sous = []] of SITES) {
-    it(`${fichier} : sa donnée réelle passe, la MÊME rangée sans \`min\` est REFUSÉE`, () => {
+    it(`${fichier}${sous.length ? ` › ${sous.join('.')}` : ''} : sa donnée réelle passe, la MÊME rangée sans \`min\` est REFUSÉE`, () => {
       const relatif = premiereFourchette(descend(data, sous));
       const chemin = relatif && [...sous, ...relatif];
       expect(chemin, `aucune rangée {min,max} trouvée dans ${fichier}`).not.toBeNull();

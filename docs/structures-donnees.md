@@ -3566,7 +3566,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **492** ; **105** recoupent le lexique
+Littéraux d’objet zod lus : **492** ; **96** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -3586,8 +3586,8 @@ Dont **1** littéral(aux) PARTIEL(s) du noyau — `activities.ts:83` : une mesur
 | de | `n,sides` | 3 | 2 | `maladies.ts` `miscast.ts` |
 | source | `book` | 1 | 1 | `progression-schemas-derived.ts` |
 | test | `difficulty` | 31 | 19 | `aa-criticals.ts` `activities.ts` `arcane-phenomena.ts` `criticals.ts` `etats.ts` `land-cargo.ts` `maladies.ts` `miscast.ts` `psychology.ts` `river-navigation.ts` `sea-cargo.ts` `sea-navigation.ts` `sea-perils.ts` `sea-weather.ts` `steam-breakdown.ts` `symptoms.ts` `tavernGames.ts` `water-exposure.ts` `weather.ts` |
-| bornes | `min,max` | 27 | 22 | `advancementCosts.ts` `arcane-phenomena.ts` `artillery-misfire.ts` `crew-morale.ts` `driving-mishap.ts` `drunkenness.ts` `interludeEvents.ts` `land-cargo.ts` `mass-battle.ts` `miscast.ts` `naval-progression.ts` `oups.ts` `reglesOptionnelles.ts` `river-navigation.ts` `sea-events.ts` `sea-weather.ts` `steam-breakdown.ts` `tables.ts` `tavernGames.ts` `vents-tourbillonnants.ts` `water-exposure.ts` `weather.ts` |
-| plage | `min,max` | 27 | 22 | `advancementCosts.ts` `arcane-phenomena.ts` `artillery-misfire.ts` `crew-morale.ts` `driving-mishap.ts` `drunkenness.ts` `interludeEvents.ts` `land-cargo.ts` `mass-battle.ts` `miscast.ts` `naval-progression.ts` `oups.ts` `reglesOptionnelles.ts` `river-navigation.ts` `sea-events.ts` `sea-weather.ts` `steam-breakdown.ts` `tables.ts` `tavernGames.ts` `vents-tourbillonnants.ts` `water-exposure.ts` `weather.ts` |
+| bornes | `min,max` | 18 | 15 | `advancementCosts.ts` `artillery-misfire.ts` `crew-morale.ts` `driving-mishap.ts` `land-cargo.ts` `mass-battle.ts` `naval-progression.ts` `oups.ts` `reglesOptionnelles.ts` `river-navigation.ts` `sea-events.ts` `sea-weather.ts` `steam-breakdown.ts` `tavernGames.ts` `water-exposure.ts` |
+| plage | `min,max` | 18 | 15 | `advancementCosts.ts` `artillery-misfire.ts` `crew-morale.ts` `driving-mishap.ts` `land-cargo.ts` `mass-battle.ts` `naval-progression.ts` `oups.ts` `reglesOptionnelles.ts` `river-navigation.ts` `sea-events.ts` `sea-weather.ts` `steam-breakdown.ts` `tavernGames.ts` `water-exposure.ts` |
 | quantite | `fixed` | 0 | 0 | — |
 | sequence | `target,drCap,table,rounds,phases,pot,volley,sides,combined,throwerPenalty` | 2 | 2 | `activities.ts` `tavernGames.ts` |
 
@@ -3604,7 +3604,6 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `activities.ts` | 83 | `minInvest` | monnaie | divergente | `gold` | — |
 | `advancementCosts.ts` | 20 | — | plage | cible | `max,min+…` | — |
 | `arcane-phenomena.ts` | 153 | `controlFlux` | test | divergente | `difficulty+…` | — |
-| `arcane-phenomena.ts` | 169 | `rows` | plage | cible | `max,min+…` | — |
 | `artillery-misfire.ts` | 12 | — | plage | cible | `max,min+…` | — |
 | `creatures.ts` | 49 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `crew-morale.ts` | 36 | `bands` | plage | cible | `max,min+…` | — |
@@ -3616,10 +3615,8 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `domains.ts` | 82 | `requiresSkill` | reference | cible | `id,spec` | `refSchema` |
 | `driving-mishap.ts` | 17 | — | — | hors lexique | `entries` | `corps` |
 | `driving-mishap.ts` | 19 | `entries` | plage | cible | `max,min+…` | — |
-| `drunkenness.ts` | 18 | — | — | hors lexique | `entries` | `corps` |
-| `drunkenness.ts` | 20 | `entries` | plage | cible | `max,min+…` | — |
+| `drunkenness.ts` | 19 | — | — | hors lexique | `entries` | `corps` |
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
-| `interludeEvents.ts` | 29 | — | plage | cible | `max,min+…` | — |
 | `land-cargo.ts` | 25 | `price` | prix | declaree | `dice` | `formulaSchema` |
 | `land-cargo.ts` | 52 | `wineQuality` | plage | cible | `max,min+…` | — |
 | `land-cargo.ts` | 71 | `gossip` | test | divergente | `difficulty+…` | — |
@@ -3643,7 +3640,6 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `miscast.ts` | 60 | — | — | hors lexique | `times` | `formulaSchema` |
 | `miscast.ts` | 60 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
 | `miscast.ts` | 93 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
-| `miscast.ts` | 102 | — | plage | cible | `max,min+…` | — |
 | `montures.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
 | `naval-progression.ts` | 16 | `entries` | plage | cible | `max,min+…` | — |
 | `naval-progression.ts` | 14 | — | — | hors lexique | `entries` | `corps` |
@@ -3682,28 +3678,23 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `structures.ts` | 19 | — | reference | historique | `id,value` | — |
 | `surincantation.ts` | 16 | — | — | hors lexique | `entries` | `corps` |
 | `symptoms.ts` | 39 | `onTick` | test | divergente | `difficulty+…` | — |
-| `tables.ts` | 19 | `rows` | plage | cible | `max,min+…` | — |
 | `talents.ts` | 80 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
 | `tavernGames.ts` | 35 | — | sequence | divergente | `combined,drCap,phases,pot,sides,table,target,throwerPenalty,volley+…` | — |
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
-| `tavernGames.ts` | 93 | `table` | plage | cible | `max,min+…` | — |
 | `tavernGames.ts` | 103 | `rows` | test | divergente | `difficulty+…` | — |
 | `tavernGames.ts` | 140 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
-| `tavernGames.ts` | 180 | `rows` | plage | cible | `max,min+…` | — |
 | `trappings.ts` | 20 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `trappings.ts` | 27 | — | reference | historique | `id,spec,value` | — |
 | `trappings.ts` | 76 | `qualities` | reference | historique | `id,value` | — |
 | `vehicles.ts` | 15 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `vehicles.ts` | 17 | — | reference | historique | `id,value` | — |
 | `vehicles.ts` | 67 | `traits` | reference | historique | `arg,id,value` | — |
-| `vents-tourbillonnants.ts` | 14 | — | — | hors lexique | `entries` | `corps` |
-| `vents-tourbillonnants.ts` | 16 | `entries` | plage | cible | `max,min+…` | — |
+| `vents-tourbillonnants.ts` | 15 | — | — | hors lexique | `entries` | `corps` |
 | `water-exposure.ts` | 17 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
 | `water-exposure.ts` | 18 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
 | `water-exposure.ts` | 19 | — | plage | cible | `max,min+…` | — |
 | `water-exposure.ts` | 28 | `test` | test | historique | `difficulty,skill` | — |
-| `weather.ts` | 39 | `ranges` | plage | cible | `max,min+…` | — |
-| `weather.ts` | 77 | `resistanceTest` | test | divergente | `difficulty+…` | — |
+| `weather.ts` | 76 | `resistanceTest` | test | divergente | `difficulty+…` | — |
 
 ## 5. Ops en donnée (strate Ops)
 

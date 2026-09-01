@@ -91,7 +91,7 @@ const doc = document(
     dancers: z.number().optional(),
     /** Table de score par plage de DR (Torchon l.111) — lue par `findTableEntry` via le socle. */
     table: z.array(z.strictObject({
-      min: z.number(), max: z.number(), points: z.number(), label: z.string(),
+      ...plageSchema.shape, points: z.number(), label: z.string(),
     })).optional(),
     /** VOLÉE de lancers (famille 7 du socle) : Bête l.42, Arène l.65, Fléchettes l.83, Boules l.57.
      *  `gain`/`critique`/`maladresse`/`depassement` nomment un effet de lancer ENREGISTRÉ
@@ -178,8 +178,7 @@ const doc = document(
       /** Unité de borne de la famille : tours qu'une manche peut prendre (anti-boucle, pas une règle). */
       roundsPerManche: z.number().optional(),
       rows: z.array(z.strictObject({
-        min: z.number(),
-        max: z.number(),
+        ...plageSchema.shape,
         potEffectId: z.enum(['rafle-le-pot', 'reprend-mise', 'cible-ou-passe', 'remise-ou-abandon', 'quitte-la-manche']),
         /** Paramètre de l'effet : combien de mises il déplace (défaut 1). */
         mises: z.number().optional(),

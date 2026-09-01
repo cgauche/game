@@ -13,7 +13,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'miscast.json';
@@ -100,11 +100,10 @@ const jsonNestedTestSchema = z.strictObject({
 
 /** `JsonRow` (`engine/miscast.ts`) — entrée de table d100 (`min`/`max` inclusifs). */
 const jsonRowSchema = z.strictObject({
+  ...plageSchema.shape,
   /** Identité STABLE (#422, exposition Codex) — slug préfixé par table (`mineure-`/`majeure-`/`colere-`)
    *  pour éviter toute collision inter-tables ; consommée par le Codex, jamais par `engine/miscast.ts`. */
   id: z.string(),
-  min: z.number(),
-  max: z.number(),
   label: z.string(),
   ops: z.array(jsonOpSchema).optional(),
   test: jsonNestedTestSchema.optional(),

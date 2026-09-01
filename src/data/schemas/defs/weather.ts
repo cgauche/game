@@ -18,7 +18,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, ecartsDeCouverture, sourceRefSchema } from '../grammaire/valeurs';
+import { difficultySchema, ecartsDeCouverture, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'weather.json';
 export const famille = 'config';
@@ -37,8 +37,7 @@ const doc = document(
       label: z.string(),
       ranges: z.array(
         z.strictObject({
-          min: z.number(),
-          max: z.number(),
+          ...plageSchema.shape,
           weather: weatherIdSchema,
         }),
       ),
