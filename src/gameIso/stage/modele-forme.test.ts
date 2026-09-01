@@ -107,15 +107,23 @@ describe('#1300 — la famille se lit sur la normale que la loi d’orientation 
     // soffite : c'est cette inversion-là que ce test tient.
     for (const [nom, scene] of [['arène', arene.scene], ['opéra', opera.scene]] as const) {
       const baked = bakeWorldGeometry(scene, sceneMetresPerTile(scene));
+      // `shades` est un `Float32Array` : la valeur AUTHORÉE (double) ne s'y retrouve qu'arrondie — une
+      // clé non `fround`ée ne joint AUCUN sommet et ferait passer n'importe quel compte pour zéro.
+      const facteur = (v: number) => Math.fround(v);
       const compte = new Map<number, number>();
       for (const s of baked.shades) compte.set(s, (compte.get(s) ?? 0) + 1);
-      const part = (compte.get(AMBIANCE.faceShade.haut) ?? 0) / baked.shades.length;
-      // FIL-PIÈGE du soffite : la famille `bas` est INATTEIGNABLE aujourd'hui — `wallBoxPolys` omet le
-      // dessous d'un mur (`worldTris.ts`), et aucune autre face ne présente de normale vers le bas. Le
-      // JSDoc de `faceShade.bas` le dit CÔTÉ DONNÉE : régler ce bouton ne change rien à l'écran. Le
-      // jour où une face en produit un, ce zéro tombe et le fil-piège se transforme en couverture.
-      const soffites = compte.get(AMBIANCE.faceShade.bas) ?? 0;
-      expect([nom, part > 0.3, soffites]).toEqual([nom, true, 0]);
+      const part = (compte.get(facteur(AMBIANCE.faceShade.haut)) ?? 0) / baked.shades.length;
+      // Les SOLS, eux, ne sortent JAMAIS en soffite : c'est l'inversion décrite plus haut. Le compte se
+      // restreint donc à leurs sommets (`spans` porte l'élément de provenance) — la famille `bas`, elle,
+      // a désormais un producteur ailleurs : le DESSOUS d'un décor volumique, qui porte son propre dehors.
+      let solsEnSoffite = 0;
+      for (const span of baked.spans) {
+        if (span.el.kind !== 'floor') continue;
+        for (let v = span.start; v < span.start + span.count; v++)
+          if (baked.shades[v] === facteur(AMBIANCE.faceShade.bas)) solsEnSoffite++;
+      }
+      const soffites = compte.get(facteur(AMBIANCE.faceShade.bas)) ?? 0;
+      expect([nom, part > 0.3, solsEnSoffite, soffites > 0]).toEqual([nom, true, 0, true]);
     }
   });
 
@@ -180,9 +188,9 @@ describe('#1300 — le CÂBLAGE : le facteur arrive dans la couleur de sommet', 
       rapports.add(+r.toFixed(4));
       if (baked.shades[v] < 1) sommetsModelés++;
     }
-    // Les CINQ facteurs atteints sur cette carte : l'horizontale haute et les quatre verticales — le
-    // soffite est le sixième, et il n'a aucun producteur (fil-piège plus haut).
-    expect([...rapports].sort((a, b) => b - a)).toEqual([1, 0.95, 0.86, 0.7, 0.58]);
+    // Les SIX facteurs atteints sur cette carte : l'horizontale haute, les quatre verticales, et le
+    // soffite — le dessous des décors volumiques, qui présente sa normale vers le bas.
+    expect([...rapports].sort((a, b) => b - a)).toEqual([1, 0.95, 0.86, 0.7, 0.58, 0.55]);
     expect(sommetsModelés / baked.shades.length).toBeGreaterThan(0.3);
   });
 

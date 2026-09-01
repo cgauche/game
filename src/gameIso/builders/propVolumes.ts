@@ -8,8 +8,10 @@
  * `h` en mètres au-dessus du pied, cf. `data/props.types.ts`). Le cap (défaut `S` chez l'appelant) la
  * fait tourner UNE fois autour de l'origine locale ; `baseHeightM` s'ajoute UNE fois à chaque hauteur.
  *
- * ORIENTATION : chaque polygone sort tourné vers le DEHORS de la primitive qui le porte — la cuisson
- * (`backends/webgl/sceneMeshes`) propage ce sens tel quel pour la carte d'ombre.
+ * ORIENTATION : chaque polygone sort tourné vers le DEHORS de la primitive qui le porte, dans la
+ * convention du rendu (`(x, y, h) → three (X, Y, Z) = (x, h, y)`, `backends/webgl/worldTris:gpToWorld`),
+ * et le DÉCLARE par `Face.oriented` — la cuisson (`backends/webgl/sceneMeshes`) propage ce sens tel quel
+ * pour la carte d'ombre au lieu de le re-dériver du centre de la carte.
  */
 import { rotatePropLocal, type PropData, type PropPoint3, type PropPrimitive } from '../../data/props.types';
 import type { Dir8 } from '../../state/dir8';
@@ -31,12 +33,24 @@ function normale(poly: readonly Sommet[]): Sommet {
   return { x: nx, y: ny, h: nz };
 }
 
-/** Le polygone, tourné vers le DEHORS du centre fourni (sens de parcours inversé s'il regardait dedans). */
-function versLeDehors(poly: Sommet[], centre: PropPoint3): Sommet[] {
+/** Barycentre des sommets d'une primitive : un point STRICTEMENT INTÉRIEUR à son volume, quelle que
+ *  soit sa forme — le référent du dehors. Le centre de la BOÎTE n'en est pas un : pour un prisme, il
+ *  tombe exactement dans le plan du rampant (mi-hauteur à mi-pente), et le produit scalaire d'une face
+ *  passant par son propre référent ne décide plus rien. */
+function barycentre(polys: readonly (readonly Sommet[])[]): Sommet {
+  let n = 0;
+  const s = { x: 0, y: 0, h: 0 };
+  for (const poly of polys) for (const p of poly) { s.x += p.x; s.y += p.y; s.h += p.h; n++; }
+  return { x: s.x / n, y: s.y / n, h: s.h / n };
+}
+
+/** Le polygone, tourné vers le DEHORS du point intérieur fourni (sens de parcours inversé s'il regardait
+ *  dedans). */
+function versLeDehors(poly: Sommet[], dedans: PropPoint3): Sommet[] {
   const n = normale(poly);
   const c = poly.reduce((acc, p) => ({ x: acc.x + p.x / poly.length, y: acc.y + p.y / poly.length, h: acc.h + p.h / poly.length }), { x: 0, y: 0, h: 0 });
   // Produit scalaire en convention three : (X, Y, Z) = (x, h, y).
-  const dehors = n.x * (c.x - centre.x) + n.y * (c.h - centre.h) + n.h * (c.y - centre.y);
+  const dehors = n.x * (c.x - dedans.x) + n.y * (c.h - dedans.h) + n.h * (c.y - dedans.y);
   return dehors >= 0 ? poly : [...poly].reverse();
 }
 
@@ -53,7 +67,7 @@ function facesBoite(centre: PropPoint3, size: { x: number; y: number; h: number 
     [s(x0, y1, h0), s(x1, y1, h0), s(x1, y1, h1), s(x0, y1, h1)],
     [s(x0, y0, h0), s(x1, y0, h0), s(x1, y1, h0), s(x0, y1, h0)],
     [s(x0, y0, h1), s(x1, y0, h1), s(x1, y1, h1), s(x0, y1, h1)],
-  ].map((poly) => versLeDehors(poly, centre));
+  ];
 }
 
 /** Les `sides` faces latérales d'un cylindre, plus son dessus et son dessous. */
@@ -71,7 +85,7 @@ function facesCylindre(centre: PropPoint3, radius: number, heightM: number, side
   }
   out.push(anneau.map((p) => ({ ...p, h: h0 })));
   out.push(anneau.map((p) => ({ ...p, h: h1 })));
-  return out.map((poly) => versLeDehors(poly, centre));
+  return out;
 }
 
 /** Arête BASSE d'un prisme selon sa pente : la pente DESCEND vers ce côté, l'arête opposée porte la hauteur pleine. */
@@ -109,14 +123,17 @@ function facesPrisme(centre: PropPoint3, size: { x: number; y: number; h: number
       { x: haut.x, y: haut.y, h: h1 },
     ];
   });
-  return [semelle, rampant, dosseret, ...joues].map((poly) => versLeDehors(poly, centre));
+  return [semelle, rampant, dosseret, ...joues];
 }
 
-/** Les polygones LOCAUX d'une primitive, déjà tournés vers le dehors. */
+/** Les polygones LOCAUX d'une primitive, tournés vers le dehors par SON barycentre — une seule
+ *  définition du dehors pour les trois formes. */
 function polygonesLocaux(p: PropPrimitive): Sommet[][] {
-  if (p.kind === 'box') return facesBoite(p.center, p.size);
-  if (p.kind === 'cylinder') return facesCylindre(p.center, p.radius, p.heightM, p.sides);
-  return facesPrisme(p.center, p.size, p.slope);
+  const brutes = p.kind === 'box' ? facesBoite(p.center, p.size)
+    : p.kind === 'cylinder' ? facesCylindre(p.center, p.radius, p.heightM, p.sides)
+      : facesPrisme(p.center, p.size, p.slope);
+  const dedans = barycentre(brutes);
+  return brutes.map((poly) => versLeDehors(poly, dedans));
 }
 
 /** ANCRAGE d'une recette dans le monde : le point (fractionnaire, en cases) où son origine locale se
@@ -149,7 +166,7 @@ export function buildPropVolumes(prop: PropData, ancrage: AncrageVolume): Face[]
         const [rx, ry] = rotatePropLocal(p.x, p.y, facing);
         return { x: ancre.x + rx, y: ancre.y + ry, h: baseHeightM + p.h };
       });
-      out.push({ poly: monde, material, ...(entId ? { entId } : {}) });
+      out.push({ poly: monde, material, oriented: true, ...(entId ? { entId } : {}) });
     }
   }
   return out;

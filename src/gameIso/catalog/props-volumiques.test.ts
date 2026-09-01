@@ -8,7 +8,10 @@ import { findPropById, props } from '../../data';
 import { propFootOf, type PropPrimitive } from '../../data/props.types';
 import { decorFootGeometry } from '../../state/footprint';
 import { buildProps } from '../builders/props';
-import { collectBillboards, wholeSceneBillboardEls } from '../backends/webgl/sceneMeshes';
+import { buildPropVolumes } from '../builders/propVolumes';
+import { estPropVolumique, type Face } from '../builders/types';
+import { bakeWorldGeometry, collectBillboards, wholeSceneBillboardEls } from '../backends/webgl/sceneMeshes';
+import { facePoly, fanTriangles, polyNormal, type Vec3 } from '../backends/webgl/worldTris';
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
 
 /**
@@ -256,5 +259,76 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
     expect(instances.length, 'aucune instance authorée trouvée : le scan des scènes ne joint plus rien').toBeGreaterThan(0);
     expect(instances.filter((e) => e.facing === 'E' || e.facing === 'O')
       .map((e) => `${e.source}/${e.id} (${e.ref}, cap ${e.facing})`)).toEqual([]);
+  });
+});
+
+/**
+ * LE DEHORS — un décor volumique est une COQUILLE FERMÉE : chacune de ses faces regarde le dehors de la
+ * primitive qui la porte, et ce sens survit à la cuisson du monde. Mesuré dans la convention du RENDU
+ * (`gpToWorld` : `(x, y, h) → three (X, Y, Z) = (x, h, y)`, `worldTris.ts:49`), la seule qui décide de
+ * la frontalité au GPU et de la carte d'ombre — une normale retournée pousse sa face dans sa propre
+ * ombre (`sceneMeshes.ts:449`), ce qui se lit à l'écran comme un TROU dans le meuble.
+ *
+ * La liste est DÉRIVÉE du catalogue : une recette de plus entre sous contrat par sa seule déclaration.
+ */
+describe('décor volumique — chaque face regarde le DEHORS, de la recette au monde cuit', () => {
+  const centroide = (poly: readonly { x: number; y: number; z: number }[]) =>
+    poly.reduce((s, q) => ({ x: s.x + q.x / poly.length, y: s.y + q.y / poly.length, z: s.z + q.z / poly.length }), { x: 0, y: 0, z: 0 });
+
+  it.each(IDS)('%s : chaque face de chaque primitive est FRONT-visible depuis l’extérieur, le long de sa normale', (id) => {
+    const prop = findPropById(id)!;
+    const ancre = { x: 0, y: 0 };
+    const àRebours: string[] = [];
+    prop.volume!.primitives.forEach((primitive, ip) => {
+      const faces = buildPropVolumes({ ...prop, volume: { primitives: [primitive] } }, { ancre, facing: 'N', baseHeightM: 0 });
+      // Le DEDANS de référence est le barycentre des sommets de la primitive : un point strictement
+      // intérieur pour une boîte comme pour un coin de prisme, que le sens de parcours n'influence pas.
+      const centre = centroide(faces.flatMap((f) => facePoly(f, METRES_PAR_CASE)));
+      faces.forEach((face, k) => {
+        const poly = facePoly(face, METRES_PAR_CASE);
+        const n = polyNormal(poly);
+        expect(n, `${id} primitive ${ip} face ${k} : aire nulle`).not.toBeNull();
+        const g = centroide(poly);
+        if (n!.x * (g.x - centre.x) + n!.y * (g.y - centre.y) + n!.z * (g.z - centre.z) <= 0)
+          àRebours.push(`primitive ${ip} (${primitive.kind}) face ${k}`);
+      });
+    });
+    expect(àRebours, `${id} : faces tournées vers le DEDANS`).toEqual([]);
+  });
+
+  it.each(IDS)('%s : la cuisson du monde ne RETOURNE aucune de ses faces', (id) => {
+    const scene = sceneWith(propEntity({ id: 'e-1', ref: id, pos: { x: 3, y: 4 }, facing: 'N' }));
+    const el = buildProps(scene).find((e) => e.kind === 'prop' && estPropVolumique(e)) as { faces: Face[] } | undefined;
+    expect(el, `${id} : aucun décor volumique cuit dans la scène`).toBeDefined();
+    // Les triangles se comparent par AMAS de position, formés sur la géométrie du pivot, et ce qui est
+    // mesuré est le MULTI-ENSEMBLE des normales de chaque amas. Deux faces peuvent coïncider (le dessous
+    // d'un couvercle sur le dessus du coffre qui le porte) : seul le multi-ensemble distingue alors un
+    // retournement. Le biais coplanaire déplace un triangle cuit de 1,5 mm — il rejoint donc toujours
+    // l'amas dont il vient.
+    const dist = (a: Vec3, b: Vec3) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+    const dir = (n: Vec3) => [n.x, n.y, n.z].map((v) => (Math.abs(v) < 5e-4 ? 0 : v).toFixed(3)).join(',');
+    const amas: { g: Vec3; attendu: string[]; cuit: string[] }[] = [];
+    for (const face of el!.faces)
+      for (const tri of fanTriangles(facePoly(face, METRES_PAR_CASE)) as [Vec3, Vec3, Vec3][]) {
+        const g = centroide(tri);
+        const a = amas.find((c) => dist(c.g, g) < 0.01) ?? (amas.push({ g, attendu: [], cuit: [] }), amas[amas.length - 1]);
+        a.attendu.push(dir(polyNormal(tri)!));
+      }
+    const { geometry } = bakeWorldGeometry(scene, METRES_PAR_CASE);
+    const pos = geometry.getAttribute('position');
+    const sommet = (i: number) => ({ x: pos.getX(i), y: pos.getY(i), z: pos.getZ(i) });
+    let cuits = 0;
+    for (const plage of geometry.userData.propVertexRanges.filter((p) => p.entId === 'e-1'))
+      for (let i = plage.vertexStart; i + 2 < plage.vertexStart + plage.vertexCount; i += 3) {
+        cuits++;
+        const tri: [Vec3, Vec3, Vec3] = [sommet(i), sommet(i + 1), sommet(i + 2)];
+        const g = centroide(tri);
+        amas.reduce((meilleur, c) => (dist(c.g, g) < dist(meilleur.g, g) ? c : meilleur)).cuit.push(dir(polyNormal(tri)!));
+      }
+    expect(cuits, `${id} : triangles cuits`).toBe(amas.reduce((s, c) => s + c.attendu.length, 0));
+    const écarts = amas
+      .filter((c) => [...c.cuit].sort().join(' ') !== [...c.attendu].sort().join(' '))
+      .map((c) => `amas (${c.g.x.toFixed(2)}, ${c.g.y.toFixed(2)}, ${c.g.z.toFixed(2)}) : attendu [${[...c.attendu].sort().join(' | ')}], cuit [${[...c.cuit].sort().join(' | ')}]`);
+    expect(écarts, `${id} : normales retournées à la cuisson`).toEqual([]);
   });
 });

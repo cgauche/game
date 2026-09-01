@@ -41,6 +41,12 @@ export interface Face {
   /** Arête de la case qui porte la face (relief/wedge/mur) — les backends en dérivent l'orientation
    *  (arête écran en affine, normale en perspective) sans re-scanner la scène. */
   side?: CellSide;
+  /** Le SENS DE PARCOURS du polygone porte déjà le DEHORS du volume que la face ferme — c'est le
+   *  producteur qui le déclare (`builders/propVolumes.ts` : chaque primitive sort tournée vers son
+   *  dehors). Un consommateur qui a besoin d'une normale la prend TELLE QUELLE au lieu de la
+   *  re-dériver d'une heuristique de position (`backends/webgl/worldTris.ts:faceQuadsOriented`).
+   *  Absent : la face n'a aucune convention de sens (sols, murs, toits, montants). */
+  oriented?: boolean;
   /** Id de l'ENTITÉ de scène dont la face vient (décor volumique, `builders/propVolumes.ts`) — ce que
    *  le picking résout une fois la face fondue dans la géométrie commune du monde. */
   entId?: string;

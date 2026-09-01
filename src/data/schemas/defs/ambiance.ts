@@ -127,10 +127,10 @@ const tintFactor = z.number().min(0).max(1);
  *  disparaît. Le rapport max/min des verticales est plafonné : au-delà, la famille la plus sombre
  *  passe sous le plancher de luminance de la scène (palier `tenebres` × `fogTint.explored`).
  *
- *  `bas` est INATTEIGNABLE en l'état : `wallBoxPolys` (`gameIso/backends/webgl/worldTris.ts`) omet le
- *  dessous d'un mur, et aucune autre face ne présente de normale vers le bas — mesuré à 0 triangle sur
- *  l'arène, l'opéra et le siège. Le régler ne change donc rien à l'écran aujourd'hui ; la valeur tient
- *  la place du soffite pour le jour où une face en produira un. */
+ *  `bas` a un producteur : le DESSOUS d'un décor volumique (`gameIso/builders/propVolumes.ts`), dont
+ *  chaque face porte son propre dehors jusqu'à la cuisson. Les murs, eux, n'en produisent aucun —
+ *  `wallBoxPolys` (`gameIso/backends/webgl/worldTris.ts`) omet le dessous d'un mur, et un sol présente
+ *  toujours sa normale vers le haut (`gameIso/stage/modele-forme.test.ts`). */
 const faceShadeSchema = z
   .strictObject({
     haut: z.number().gt(0).max(1),
