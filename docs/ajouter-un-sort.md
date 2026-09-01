@@ -71,10 +71,10 @@ forme à 0 est déclarée mais jamais exercée par la donnée.
 
 | Forme (`kind`) | Champs | Entrées de `spells.json` |
 |---|---|---|
-| `self` | — | 114 |
+| `self` | — | 146 |
 | `touch` | — | 77 |
 | `distance` | `value`, `unit` | 263 |
-| `special` | `text` | 69 |
+| `special` | `text` | 37 |
 
 53 entrées portent `range: null` (portée non applicable ou non renseignée).
 
@@ -82,11 +82,11 @@ forme à 0 est déclarée mais jamais exercée par la donnée.
 
 | Forme (`kind`) | Champs | Entrées de `spells.json` |
 |---|---|---|
-| `self` | — | 105 |
+| `self` | — | 127 |
 | `count` | `n` | 179 |
 | `area` | `span`, `meters`, `excludesCaster?`, `affects?`, `maison?` | 99 |
 | `cone` | `lengthMeters`, `widthMeters`, `affects?`, `maison?` | 1 |
-| `special` | `text` | 139 |
+| `special` | `text` | 117 |
 
 ### `duration` — combien de temps (`src/engine/spellDuration.ts`)
 

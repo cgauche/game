@@ -40,7 +40,9 @@ describe('spellRange — parse de la prose réelle (sanity)', () => {
     expect(parseSpellRange("(Bonus d'Initiative) kilomètres")).toEqual({ kind: 'distance', value: { bonusOf: 'initiative' }, unit: 'km' });
     expect(parseSpellRange('Vous')).toEqual({ kind: 'self' });
     expect(parseSpellRange('Toucher')).toEqual({ kind: 'touch' });
-    expect(parseSpellRange('Skaven')).toEqual({ kind: 'special', text: 'Skaven' }); // homebrew misuse → escape hatch
+    // L'ÉCHAPPATOIRE tient au PARSE (une chaîne libre reste `special`) ; la DONNÉE, elle, n'écrit
+    // plus aucune désignation de lanceur — `src/data/spells-portee-lanceur.test.ts` (#1463 L-ref-2).
+    expect(parseSpellRange('Skaven')).toEqual({ kind: 'special', text: 'Skaven' });
   });
   it('cibles', () => {
     expect(parseSpellTarget(1)).toEqual({ kind: 'count', n: 1 });

@@ -3614,7 +3614,7 @@
               {
                 "op": "grantTalent",
                 "talentId": "sens-aiguise",
-                "spec": "Odorat"
+                "spec": "odorat"
               }
             ]
           }
@@ -14716,12 +14716,10 @@
     "subType": null,
     "cn": 2,
     "range": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "duration": {
       "kind": "special",
@@ -14827,12 +14825,10 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "Sorcier"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Sorcier"
+      "kind": "self"
     },
     "duration": {
       "kind": "rounds",
@@ -14857,12 +14853,10 @@
     "subType": null,
     "cn": 6,
     "range": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -14931,12 +14925,10 @@
     "subType": null,
     "cn": 4,
     "range": {
-      "kind": "special",
-      "text": "Mage"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Mage"
+      "kind": "self"
     },
     "duration": {
       "kind": "special",
@@ -14982,12 +14974,10 @@
     "subType": null,
     "cn": 3,
     "range": {
-      "kind": "special",
-      "text": "Shaman"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Shaman"
+      "kind": "self"
     },
     "duration": {
       "kind": "instant"
@@ -15063,8 +15053,7 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "Rebouteux"
+      "kind": "self"
     },
     "target": {
       "kind": "area",
@@ -15165,8 +15154,7 @@
     "subType": null,
     "cn": 2,
     "range": {
-      "kind": "special",
-      "text": "Shaman"
+      "kind": "self"
     },
     "target": {
       "kind": "area",
@@ -15325,8 +15313,7 @@
     "subType": null,
     "cn": 6,
     "range": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "target": {
       "kind": "area",
@@ -15714,8 +15701,7 @@
     "subType": null,
     "cn": 11,
     "range": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "target": {
       "kind": "area",
@@ -15889,8 +15875,7 @@
     "subType": null,
     "cn": 12,
     "range": {
-      "kind": "special",
-      "text": "Mage"
+      "kind": "self"
     },
     "target": {
       "kind": "area",
@@ -16279,12 +16264,10 @@
     "subType": null,
     "cn": 3,
     "range": {
-      "kind": "special",
-      "text": "Sorcière"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Sorcière"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -16310,12 +16293,10 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "Mage"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Mage"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -16454,12 +16435,10 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "Shaman"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Shaman"
+      "kind": "self"
     },
     "duration": {
       "kind": "rounds",
@@ -16580,12 +16559,10 @@
     "subType": null,
     "cn": 4,
     "range": {
-      "kind": "special",
-      "text": "Sorcier"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Sorcier"
+      "kind": "self"
     },
     "duration": {
       "kind": "rounds",
@@ -16694,12 +16671,10 @@
     "subType": null,
     "cn": 5,
     "range": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -16982,12 +16957,10 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "Sorcier"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Sorcier"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -17013,12 +16986,10 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -17044,12 +17015,10 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "Mage"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Mage"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -17075,12 +17044,10 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "démon"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "démon"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -17180,12 +17147,10 @@
     "subType": null,
     "cn": 8,
     "range": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -17433,8 +17398,7 @@
     "subType": null,
     "cn": 6,
     "range": {
-      "kind": "special",
-      "text": "Démon"
+      "kind": "self"
     },
     "target": {
       "kind": "area",
@@ -17514,12 +17478,10 @@
     "subType": null,
     "cn": 8,
     "range": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -17546,12 +17508,10 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "Rebouteux"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Rebouteux"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -17629,12 +17589,10 @@
     "subType": null,
     "cn": 6,
     "range": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -17661,12 +17619,10 @@
     "subType": null,
     "cn": 0,
     "range": {
-      "kind": "special",
-      "text": "Rebouteux"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Rebouteux"
+      "kind": "self"
     },
     "duration": {
       "kind": "instant"
@@ -17690,12 +17646,10 @@
     "subType": null,
     "cn": 4,
     "range": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "duration": {
       "kind": "special",
@@ -17889,8 +17843,7 @@
     "subType": null,
     "cn": 7,
     "range": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "target": {
       "kind": "area",
@@ -18268,8 +18221,7 @@
     "subType": null,
     "cn": 6,
     "range": {
-      "kind": "special",
-      "text": "Mage"
+      "kind": "self"
     },
     "target": {
       "kind": "area",
@@ -18298,8 +18250,7 @@
     "subType": null,
     "cn": 8,
     "range": {
-      "kind": "special",
-      "text": "Skaven"
+      "kind": "self"
     },
     "target": {
       "kind": "special",
@@ -18485,12 +18436,10 @@
     "subType": null,
     "cn": 3,
     "range": {
-      "kind": "special",
-      "text": "Shaman"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Shaman"
+      "kind": "self"
     },
     "duration": {
       "kind": "rounds",
@@ -18567,12 +18516,10 @@
     "subType": null,
     "cn": null,
     "range": {
-      "kind": "special",
-      "text": "Sorcière"
+      "kind": "self"
     },
     "target": {
-      "kind": "special",
-      "text": "Sorcière"
+      "kind": "self"
     },
     "duration": {
       "kind": "clock",
@@ -18598,8 +18545,7 @@
     "subType": null,
     "cn": 11,
     "range": {
-      "kind": "special",
-      "text": "Mage"
+      "kind": "self"
     },
     "target": {
       "kind": "area",

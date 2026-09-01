@@ -149,9 +149,13 @@ describe('#1342 L3 — contrat `pool` des spécialisations', () => {
  * ANGLES MORTS ÉNONCÉS :
  *  - la clé de def n'est lue que sur `skillId` / `skill` de chaîne / `id` du nœud porteur : une réf
  *    de Compétence désignée par un champ d'un AUTRE nom échappe à la mesure ;
- *  - seules les défs de COMPÉTENCE sont confrontées (le sondage du 2026-08-30 sur les TALENTS relève
- *    5 spécs en libellé sur `sens-aiguise` — 4 dans `mutations.json`, 1 dans `spells.json` — dont la
- *    résolution passe par `PairedSense` et non par `testValue`) : axe distinct, non tranché ici ;
+ *  - les défs de COMPÉTENCE et de TALENT sont confrontées (#1646, L-ref-3 du 2026-09-01 : les 5 spécs
+ *    en libellé de `sens-aiguise` — 4 dans `mutations.json`, 1 dans `spells.json`, résolues par
+ *    `PairedSense` et non par `testValue` — portent leur id) ; le volet SENTINELLE, lui, reste borné
+ *    aux Compétences : `talentRefSchema` n'a pas de régime `choix`, et les « Au choix » de
+ *    `maitre-artisan` (`creatures.json`, `stars.json`) s'éteignent avec #1457 ;
+ *  - une spéc qui n'apparie AUCUNE entrée du catalogue de sa def n'est pas mesurée (texte libre d'un
+ *    domaine ouvert, ou catalogue vide — `mutations.json › attirant`, dette nominative #1621) ;
  *  - un libellé AMBIGU (deux entrées du même catalogue au même libellé normalisé) n'est pas départagé.
  */
 const DOSSIER_DATA = fileURLToPath(new URL('.', import.meta.url));
@@ -182,11 +186,16 @@ function fichiersDeDonnees(dir: string): string[] {
   return out;
 }
 
-describe('L2 #1548 — aucune `spec` de Compétence écrite en LIBELLÉ (`src/data` ET `src/scenes`)', () => {
+describe('L2 #1548 — aucune `spec` de Compétence ni de Talent écrite en LIBELLÉ (`src/data` ET `src/scenes`)', () => {
   /** Par id de Compétence : « cet id résout-il ? » et l'index LIBELLÉ normalisé → id attendu. */
   const CATALOGUE = new Map(skills.map((s) => [
     s.id,
     { def: s, parLabel: new Map(specCatalogOf(s).map((id) => [normLabel(specLabel('skills', s.id, id)), id])) },
+  ]));
+  /** Même index pour les TALENTS — même doctrine id/label, autre porte de résolution. */
+  const CATALOGUE_TALENT = new Map(talents.map((t) => [
+    t.id,
+    { def: t, parLabel: new Map(specCatalogOf(t).map((id) => [normLabel(specLabel('talents', t.id, id)), id])) },
   ]));
 
   const fichiers = RACINES.flatMap(([racine, dir]) =>
@@ -201,7 +210,7 @@ describe('L2 #1548 — aucune `spec` de Compétence écrite en LIBELLÉ (`src/da
     expect(fichiers.filter((f) => f.ou.startsWith('scenes/')).length).toBeGreaterThan(0);
   });
 
-  it('toute `spec` adjacente à un id de Compétence est un ID du catalogue ou du TEXTE LIBRE — jamais un libellé, jamais la sentinelle', () => {
+  it('toute `spec` adjacente à un id de Compétence ou de Talent est un ID du catalogue ou du TEXTE LIBRE — jamais un libellé, jamais la sentinelle', () => {
     const regressions: string[] = [];
     /** CONTRAT POSITIF (L2 #1548, commit 4bis) : le littéral « au choix » ne désigne RIEN au catalogue
      *  — un emplacement non désigné s'écrit `choix` (`refOuSpec`). Stock ÉTEINT sur les Compétences,
@@ -226,6 +235,18 @@ describe('L2 #1548 — aucune `spec` de Compétence écrite en LIBELLÉ (`src/da
           const cle = `${ou}|${defId}|${spec}`;
           if (SPECS_EN_LIBELLE.some((d) => d.cle === cle)) vues.add(cle);
           else regressions.push(`${cle} — LIBELLÉ FR du catalogue (id attendu « ${attendu} ») : \`testValue\` n'appariera aucune spéc possédée`);
+        }
+      }
+      const talentDefId = (typeof n.talentId === 'string' && n.talentId)
+        || (typeof n.talent === 'string' && n.talent)
+        || (typeof n.id === 'string' && n.id) || null;
+      if (talentDefId && typeof spec === 'string' && CATALOGUE_TALENT.has(talentDefId)) {
+        const cat = CATALOGUE_TALENT.get(talentDefId)!;
+        const attendu = cat.parLabel.get(normLabel(spec));
+        if (attendu && !specResolves(cat.def, spec)) {
+          const cle = `${ou}|${talentDefId}|${spec}`;
+          if (SPECS_EN_LIBELLE.some((d) => d.cle === cle)) vues.add(cle);
+          else regressions.push(`${cle} — LIBELLÉ FR du catalogue de Talent (id attendu « ${attendu} ») : une spéc authorée est un ID`);
         }
       }
       for (const v of Object.values(n)) walk(v, ou);

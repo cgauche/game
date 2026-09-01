@@ -8,7 +8,7 @@ import { newOp, OP_LABEL, OP_REF_FIELDS, opRefValue, opWithRefValue } from '../e
 import { datasetArray } from '../../data/overrides';
 import { opRow, opRows, tableRows } from './opRows';
 import { codexLookupById } from './registry';
-import { characteristics, talents, skills, traits, psychologies, etats, trappings, maladies, symptoms, creatures, findSymptomById, effectTables } from '../../data';
+import { characteristics, talents, skills, traits, psychologies, etats, trappings, maladies, symptoms, creatures, mutations, findSymptomById, effectTables } from '../../data';
 import type { CharKey } from '../../engine/types';
 import { psychBranchOps } from '../../engine/psychology';
 
@@ -222,5 +222,27 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
     const [subi] = psychBranchOps({ kind: 'animosite', cible: 'hommes-betes', indice: 0 }, { success: false });
     const rowFail = opRow(subi);
     if (rowFail.t === 'ref') expect(rowFail.badge).toBe('hommes-betes');
+  });
+
+  /** #1646 (L-ref-3) — la donnée porte l'ID de la spécialisation (`spec: 'odorat'`), l'ÉCRAN rend le
+   *  LIBELLÉ : `refLabel('talents', …)` résout par `specs[].label` du catalogue. Sonde sur la donnée
+   *  RÉELLE (`mutations.json`), pas sur une op forgée — c'est la chaîne d'affichage
+   *  que la migration devait laisser intacte. */
+  it('une `spec` en ID s’AFFICHE par son libellé de catalogue (« Sens aiguisé (Odorat) »)', () => {
+    const attendus: [string, string][] = [
+      ['tete-bestiale-chien', 'Sens aiguisé (Odorat)'],
+      ['grandes-oreilles', 'Sens aiguisé (Ouïe)'],
+      ['trois-yeux', 'Sens aiguisé (Vue)'],
+    ];
+    for (const [mutationId, libelle] of attendus) {
+      const mutation = mutations.find((m) => m.id === mutationId)!;
+      const op = (mutation.passive ?? []).find((o) => o.op === 'grantTalent')!;
+      expect(op, mutationId).toBeTruthy();
+      expect((op as { spec?: string }).spec, `${mutationId} : la donnée porte l'ID, jamais le libellé`)
+        .toMatch(/^[a-z-]+$/);
+      const row = opRow(op);
+      expect(row.t).toBe('ref');
+      if (row.t === 'ref') expect(row.show).toBe(libelle);
+    }
   });
 });

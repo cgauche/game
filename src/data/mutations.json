@@ -941,7 +941,7 @@
       {
         "op": "grantTalent",
         "talentId": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       },
       {
         "op": "grantTrait",
@@ -1418,7 +1418,7 @@
       {
         "op": "grantTalent",
         "talentId": "sens-aiguise",
-        "spec": "Ouïe"
+        "spec": "ouie"
       }
     ],
     "note": "Note 1 : peut être dissimulée seulement par des vêtements.",
@@ -2387,7 +2387,7 @@
       {
         "op": "grantTalent",
         "talentId": "sens-aiguise",
-        "spec": "Odorat"
+        "spec": "odorat"
       }
     ],
     "appearance": {
@@ -2479,7 +2479,7 @@
       {
         "op": "grantTalent",
         "talentId": "sens-aiguise",
-        "spec": "Vue"
+        "spec": "vue"
       }
     ],
     "appearance": {

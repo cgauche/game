@@ -1117,12 +1117,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **838** (cible 360 · declaree 6 · historique 117 · divergente 355). Objets JSON parcourus : **48179**, dont **31770** portent une forme
+Lignes concept × dataset × champ × forme : **836** (cible 360 · declaree 6 · historique 117 · divergente 353). Objets JSON parcourus : **48179**, dont **31732** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-476 ligne(s), 24424 occurrence(s).
+474 ligne(s), 24386 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1486,11 +1486,9 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `perRound` | `id,unlessCondition+…` | divergente | `spells.json` | 1 | — | `etats.json` |  |
 | entité | `perRound` | `id+…` | divergente | `spells.json` | 3 | — | `etats.json` |  |
 | entité | `perRound` | `op+…` | divergente | `spells.json` | 2 | — | `actions.json` |  |
-| entité | `range` | `text+… (résolvable)` | divergente | `spells.json` | 22 | 22 | `careerLevels.json` `careers.json` `creatures.json` `groups.json` `raceAppearance.json` `skills.json` … |  |
 | entité | `skill` | `id` | cible | `spells.json` | 47 | — | `aa-criticals.json` `activities.json` `axes.json` `crew-test-types.json` `drunkenness.json` `river-navigation.json` … |  |
 | entité | `skill` | `id,spec` | cible | `spells.json` | 3 | — | `arene-projet.json` `lieux-services.json` `loup-et-saumure-projet.json` `merchants.json` `skills.json` `talents.json` |  |
 | entité | `subject` | `condition+…` | divergente | `spells.json` | 1 | — | `etats.json` |  |
-| entité | `target` | `text+… (résolvable)` | divergente | `spells.json` | 16 | 16 | `careerLevels.json` `careers.json` `creatures.json` `groups.json` `raceAppearance.json` `skills.json` … |  |
 | entité | `when` | `rule` | divergente | `spells.json` | 18 | — | `reglesOptionnelles.json` |  |
 | entité | `ascendant` | `id-nu` | historique | `stars.json` | 11 | — | `weather.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `ops` | `char+…` | divergente | `stars.json` | 42 | — | `characteristics.json` |  |
@@ -2278,7 +2276,7 @@ sont le narratif irréductible que la forme `text` DÉCLARE (#1463, #624).
 |---|---|---|
 | `text` | 622 | 61 |
 | `op,text` | 507 | — |
-| `kind,text` | 260 | 38 |
+| `kind,text` | 206 | — |
 | `count,text` | 33 | 4 |
 | `kind,plus,text` | 4 | — |
 
@@ -2398,7 +2396,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12565** objets sur **48179** ne sont portés par AUCUNE
+Au-delà des orphelines, **12603** objets sur **48179** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -2425,7 +2423,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `spells.json` | `range` | `kind,unit,value` | 263 |
 | `spells.json` | `value` | `bonusOf` | 258 |
 | `diligence-projet.json` | `tiles` | `x,y,z` | 241 |
-| `spells.json` | `range` | `kind` | 191 |
+| `spells.json` | `range` | `kind` | 223 |
 | `spells.json` | `duration` | `kind,value` | 187 |
 | `spells.json` | `target` | `kind,n` | 179 |
 | `spells.json` | `value` | `charOf` | 154 |
@@ -2434,13 +2432,13 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `talents.json` | `max` | `bonusOf` | 139 |
 | `spells.json` | `duration` | `kind,unit,value` | 130 |
 | `talents.json` | `test` | `matches,raw` | 128 |
-| `spells.json` | `target` | `kind,text` | 123 |
+| `spells.json` | `target` | `kind` | 127 |
 | `tables.json` | `ops` | `op,text` | 119 |
+| `spells.json` | `target` | `kind,text` | 117 |
 | `progression-schemas.derived.json` | `lv` | `1,2,3,4` | 111 |
 | `progression-schemas.derived.json` | `2` | `characteristic,col,teinte,x` | 111 |
 | `progression-schemas.derived.json` | `3` | `characteristic,col,teinte,x` | 111 |
 | `progression-schemas.derived.json` | `4` | `characteristic,col,teinte,x` | 111 |
-| `spells.json` | `target` | `kind` | 105 |
 | `naval-traits.json` | `bands` | `maxLengthM,value` | 103 |
 | `arene-projet.json` | `flow` | `kind,steps` | 94 |
 | `donnees.manifest.json` | `entrees` | `desc,files` | 93 |
@@ -2455,12 +2453,12 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `props.json` | `center` | `h,x,y` | 52 |
 | `spells.json` | `duration` | `kind,text` | 52 |
 | `trappings.json` | `effect` | `ops,type` | 52 |
-| `spells.json` | `range` | `kind,text` | 47 |
 | `loup-et-saumure-projet.json` | `pos` | `x,y` | 46 |
 | `species.json` | `talents` | `of,pick` | 40 |
 | `diligence-projet.json` | `area` | `h,kind,w,x,y` | 39 |
 | `spells.json` | `steps` | `fail,kind,success,test` | 39 |
 | `props.json` | `size` | `h,x,y` | 37 |
+| `spells.json` | `range` | `kind,text` | 37 |
 | `arene-projet.json` | `effect` | `montant,type` | 36 |
 | `arcane-phenomena.json` | `effects` | `label,tier` | 32 |
 | `spells.json` | `ops` | `char,mod,op` | 32 |
@@ -4371,7 +4369,7 @@ La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de référence
 (`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept
 par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 
-**345** couples (dataset, champ) sans slot déclaré.
+**343** couples (dataset, champ) sans slot déclaré.
 
 | Dataset | Champ | Occurrences observées |
 |---|---|---|
@@ -4649,10 +4647,8 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `spells.json` | `ops` | 205 |
 | `spells.json` | `perRound` | 6 |
 | `spells.json` | `qualities` | 5 |
-| `spells.json` | `range` | 22 |
 | `spells.json` | `skill` | 50 |
 | `spells.json` | `subject` | 1 |
-| `spells.json` | `target` | 16 |
 | `spells.json` | `when` | 18 |
 | `stars.json` | `ascendant` | 11 |
 | `stars.json` | `ops` | 55 |
