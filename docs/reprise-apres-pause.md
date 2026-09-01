@@ -87,7 +87,7 @@ de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 64 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 65 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).

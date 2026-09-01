@@ -24,11 +24,15 @@ export function partitionner(fichiers, lire, defaut = 'node') {
   return { node, jsdom }
 }
 
+/** Seuil du partage, en cœurs : sous 7 (`n − 1 < 6`), un seul processus Vitest. */
+export const SEUIL_PARTAGE = 7
+
 /** Workers par processus : 2/3 node · 1/3 jsdom sur `n − 1`, le cœur restant allant au parent.
- *  Le gain du partage est mesuré à 16 cœurs (10+5, 12+6) ; 4 vCPU (CI GitHub publique) non mesuré
- *  → un seul processus. Seuil du partage : `n − 1 ≥ 6`, soit 7 cœurs. */
+ *  Le gain du partage est mesuré à 16 cœurs (10+5, 12+6) ; la CI GitHub publique (4 vCPU) reste
+ *  sous le seuil, donc mono-processus. Le régime RÉEL de chaque run est mesuré et imprimé par la
+ *  ligne `[diag] machine` du lanceur (cœurs, mémoire, mode, bornes). */
 export function repartitionWorkers(n) {
-  if (n - 1 < 6) return { split: false, node: n, jsdom: 0 }
+  if (n < SEUIL_PARTAGE) return { split: false, node: n, jsdom: 0 }
   const node = Math.max(1, Math.round((2 / 3) * (n - 1)))
   return { split: true, node, jsdom: Math.max(1, n - 1 - node) }
 }
@@ -189,4 +193,47 @@ export function resumeLancement({ statut, bilan, queue, capture }) {
   }
   lignes.push(`capture : ${capture}`)
   return lignes.join('\n') + '\n'
+}
+
+/** Motifs de DÉTRESSE du run, comptés au fil de la sortie. Chaque regex est un fragment VERBATIM du
+ *  message émetteur : react/cjs/react.development.js:2620 (act chevauchants),
+ *  react-dom/cjs/react-dom.development.js:27628 (act hors act) et :29371 (unmount pendant rendu),
+ *  @vitest/runner/dist/index.js:72 (test expiré), tinypool/dist/index.js:118 (worker perdu — le
+ *  message porte une capitale, d'où le drapeau `i`). Un message d'amont qui change fait tomber le
+ *  test d'échantillons de `run.test.mjs`, jamais le compteur en silence. */
+export const SENTINELLES = [
+  ['act hors act', /inside a test was not wrapped in act/],
+  ['act chevauchants', /overlapping act\(\) calls/],
+  ['unmount pendant rendu', /synchronously unmount a root while React was already rendering/],
+  ['React coincé', /Should not already be working/],
+  ['test expiré', /Test timed out in \d+ms/],
+  ['worker perdu', /worker exited unexpectedly|JS heap out of memory/i],
+]
+
+/** Compte, par libellé, les lignes portant chaque sentinelle. Une ligne peut en porter plusieurs. */
+export function compterSentinelles(lignes) {
+  const compte = Object.fromEntries(SENTINELLES.map(([libelle]) => [libelle, 0]))
+  for (const ligne of lignes) {
+    for (const [libelle, motif] of SENTINELLES) if (motif.test(ligne)) compte[libelle]++
+  }
+  return compte
+}
+
+/** Bloc `[diag]` du run : machine (ce que le lanceur a RÉELLEMENT servi), pic de mémoire relevé au
+ *  fil du run, comptes de sentinelles. `partage` et `maxWorkers` sont FOURNIS et non déduits de
+ *  `cpus` : un drapeau global à un seul processus (`--coverage`) impose le mono même à 16 cœurs. */
+export function bilanDiagnostic(
+  compte,
+  { cpus, memGo, memMaxGo, rssMaxMo, secondes, partage, maxWorkers },
+) {
+  const pourcent = memGo > 0 ? Math.round((memMaxGo / memGo) * 100) : 0
+  const comptes = SENTINELLES.map(([libelle]) => `${libelle} ${compte[libelle] ?? 0}`).join(' · ')
+  return [
+    `[diag] machine : ${cpus} cœurs · ${memGo.toFixed(1)} Go · ${partage ? 'partagé' : 'mono'}` +
+      ` (seuil ${SEUIL_PARTAGE}) · maxWorkers=${maxWorkers}`,
+    `[diag] mémoire système max : ${memMaxGo.toFixed(1)} Go / ${memGo.toFixed(1)} Go (${pourcent} %)` +
+      ` · rss lanceur max ${Math.round(rssMaxMo)} Mo · fenêtre ${secondes.toFixed(1)} s`,
+    `[diag] sentinelles : ${comptes}`,
+    '',
+  ].join('\n')
 }

@@ -37,6 +37,23 @@ const VITEST_VERT = TRACE(
     'process.exit(0)\n',
 )
 
+/** Faux run de DÉTRESSE : le binaire crache une ligne canonique par sentinelle (les six), puis
+ *  échoue. Aucun vrai Vitest, aucune vraie racine React — seul le CHEMIN d'observation est mesuré. */
+const LIGNES_WEDGE = [
+  'Warning: An update to CombatConsole inside a test was not wrapped in act(...).',
+  'Warning: You seem to have overlapping act() calls, this is not supported. ',
+  'Warning: Attempted to synchronously unmount a root while React was already rendering.',
+  'Warning: Should not already be working.',
+  'Error: Test timed out in 5000ms.',
+  'Error: Worker exited unexpectedly',
+]
+
+const VITEST_WEDGE = TRACE(
+  LIGNES_WEDGE.map((l) => `process.stderr.write(${JSON.stringify(l + '\n')})\n`).join('') +
+    "process.stdout.write(' Test Files  1 failed (1)\\n')\n" +
+    'process.exit(1)\n',
+)
+
 const VITEST_SANS_BILAN = TRACE(
   "process.stderr.write('No test files found, exiting with code 1\\n')\n" + 'process.exit(1)\n',
 )
@@ -76,6 +93,58 @@ test('capture : en-tête d’emblée, sortie tee-ée, `status:` en queue, chemin
     assert.equal(run.stdout.trimEnd().split('\n').pop(), `capture : ${chemin}`)
     // Couleur : FORCE_COLOR SUPPRIMÉ (pas mis à `0`), NO_COLOR posé.
     assert.match(run.stdout, /couleur FORCE_COLOR=\(absent\) NO_COLOR=1/)
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+/** Ordre exigé : `[diag]` AVANT le résumé et avant `status:`, `capture :` dernière de la sortie,
+ *  `status:` dernière du fichier. Un pont d'outillage qui tronque la queue garde ainsi la mesure. */
+function verifierOrdreDiag({ run, capture, chemin }) {
+  const diagSortie = run.stdout.split('\n').filter((l) => l.startsWith('[diag] '))
+  assert.equal(diagSortie.length, 3, `bloc [diag] absent ou incomplet en sortie : ${run.stdout}`)
+  assert.match(diagSortie[0], /^\[diag\] machine : \d+ cœurs · [\d.]+ Go · (mono|partagé) \(seuil 7\) · maxWorkers=/)
+  assert.match(diagSortie[1], /^\[diag\] mémoire système max : [\d.]+ Go \/ [\d.]+ Go \(\d+ %\) · rss lanceur max \d+ Mo · fenêtre [\d.]+ s$/)
+  assert.match(diagSortie[2], /^\[diag\] sentinelles : act hors act \d+ · /)
+  assert.equal(run.stdout.trimEnd().split('\n').pop(), `capture : ${chemin}`)
+  assert.ok(run.stdout.indexOf('[diag] machine') < run.stdout.indexOf('capture : '), 'résumé avant [diag]')
+
+  const lignesCapture = capture.split('\n')
+  const diagCapture = lignesCapture.filter((l) => l.startsWith('[diag] '))
+  assert.deepEqual(diagCapture, diagSortie, `bloc [diag] absent de la capture : ${capture}`)
+  assert.equal(capture.trimEnd().split('\n').pop(), `status: ${run.status}`)
+  assert.ok(
+    lignesCapture.indexOf(diagCapture[0]) < lignesCapture.findIndex((l) => l.startsWith('status: ')),
+    `[diag] écrit APRÈS status: : ${capture}`,
+  )
+  return diagSortie
+}
+
+test('diagnostic : bloc [diag] en sortie ET en capture, avant `status:`, sur un run VERT', () => {
+  const base = fauxDepot(VITEST_VERT)
+  try {
+    const pose = lance(base)
+    assert.equal(pose.run.status, 0, `run en échec : ${pose.run.stdout}${pose.run.stderr}`)
+    const diag = verifierOrdreDiag(pose)
+    assert.equal(
+      diag[2],
+      '[diag] sentinelles : act hors act 0 · act chevauchants 0 · unmount pendant rendu 0 · React coincé 0 · test expiré 0 · worker perdu 0',
+    )
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+test('diagnostic : un run de DÉTRESSE compte ses six sentinelles, même ordre de sortie', () => {
+  const base = fauxDepot(VITEST_WEDGE)
+  try {
+    const pose = lance(base)
+    assert.equal(pose.run.status, 1)
+    const diag = verifierOrdreDiag(pose)
+    assert.equal(
+      diag[2],
+      '[diag] sentinelles : act hors act 1 · act chevauchants 1 · unmount pendant rendu 1 · React coincé 1 · test expiré 1 · worker perdu 1',
+    )
   } finally {
     rmSync(base, { recursive: true, force: true })
   }

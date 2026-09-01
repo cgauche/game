@@ -16,16 +16,19 @@ import { fileURLToPath } from 'node:url'
 import { spawn, spawnSync } from 'node:child_process'
 import {
   argumentsEnfant,
+  bilanDiagnostic,
   bornesWorkers,
   coeurs,
   codeAgrege,
   codeEnfant,
+  compterSentinelles,
   enteteCapture,
   envEnfant,
   partitionner,
   porteBilan,
   repartitionWorkers,
   resumeLancement,
+  SENTINELLES,
   cotesRequis,
   separerArguments,
   cheminsGlobSuspects,
@@ -73,9 +76,15 @@ const balayerAteliersMorts = () => {
 
 const posix = (p) => p.split(path.sep).join('/')
 
+const DEBUT = Date.now()
 const ARGV = process.argv.slice(2)
 const { filtres, mono } = separerArguments(ARGV, (t) => fs.existsSync(path.resolve(RACINE, t)))
 const ENV = envEnfant(process.env)
+const CPUS = coeurs(process.env, () => os.availableParallelism?.() ?? os.cpus().length)
+const WORKERS = repartitionWorkers(CPUS)
+// Mode RÉELLEMENT servi : le partage se décide au-delà du seuil, mais se retire encore après coup
+// (drapeau global à un seul processus, filtre qui ne touche qu'un côté, chemin à métacaractère).
+let partageEffectif = false
 
 let fdCapture = null
 const ecrireCapture = (texte) => {
@@ -126,10 +135,25 @@ const empiler = (file, ligne) => {
   file.push(ligne)
   if (file.length > 20) file.shift()
 }
+const compteSentinelles = compterSentinelles([])
 const observer = (ligne, erreur) => {
   if (porteBilan(ligne)) vu.bilan = true
+  const ajout = compterSentinelles([ligne])
+  for (const [libelle] of SENTINELLES) compteSentinelles[libelle] += ajout[libelle]
   empiler(erreur ? vu.erreur : vu.tout, ligne)
 }
+
+// La charge ne se lit qu'AU FIL du run : un pic passé est introuvable après coup. Deux maxima,
+// relevés toutes les 2 s — mémoire SYSTÈME (les processus Vitest sont des enfants) et rss du
+// lanceur. La minuterie est `unref`ée : elle ne retient jamais la sortie du processus.
+const memoire = { systemeMax: 0, rssMax: 0 }
+const echantillonnerMemoire = () => {
+  memoire.systemeMax = Math.max(memoire.systemeMax, os.totalmem() - os.freemem())
+  memoire.rssMax = Math.max(memoire.rssMax, process.memoryUsage.rss())
+}
+echantillonnerMemoire()
+const minuterieMemoire = setInterval(echantillonnerMemoire, 2000)
+minuterieMemoire.unref()
 
 /** Relais d'un flux d'enfant : vers la sortie du lanceur ET vers la capture, ligne à ligne. */
 const relayer = (flux, sortie, { prefixe = '', erreur = false } = {}) => {
@@ -176,9 +200,7 @@ function lancementUnique(args) {
 }
 
 async function principal() {
-  const cpus = coeurs(process.env, () => os.availableParallelism?.() ?? os.cpus().length)
-  const workers = repartitionWorkers(cpus)
-  if (mono || !workers.split) return lancementUnique(ARGV)
+  if (mono || !WORKERS.split) return lancementUnique(ARGV)
 
   balayerAteliersMorts()
   fs.mkdirSync(ATELIER, { recursive: true })
@@ -212,6 +234,7 @@ async function principal() {
     return lancementUnique(ARGV)
   }
 
+  partageEffectif = true
   const debut = Date.now()
   const enfants = []
 
@@ -227,7 +250,7 @@ async function principal() {
         `export default { ...base, root: ${JSON.stringify(posix(RACINE))}, ` +
         `test: { ...base.test, include: ${JSON.stringify(inclus)} } };\n`,
     )
-    const p = spawn(process.execPath, argumentsEnfant(VITEST, config, workers[cote], ARGV), {
+    const p = spawn(process.execPath, argumentsEnfant(VITEST, config, WORKERS[cote], ARGV), {
       cwd: RACINE,
       env: ENV,
     })
@@ -265,6 +288,23 @@ try {
 } finally {
   supprimer(ATELIER)
 }
+clearInterval(minuterieMemoire)
+echantillonnerMemoire()
+// Le bloc `[diag]` précède le résumé (dont la ligne `capture :` clôt la sortie) et, dans le
+// fichier, la ligne `status:` — un run lu à travers un pont d'outillage garde ainsi sa mesure.
+const diagnostic = bilanDiagnostic(compteSentinelles, {
+  cpus: CPUS,
+  memGo: os.totalmem() / 2 ** 30,
+  memMaxGo: memoire.systemeMax / 2 ** 30,
+  rssMaxMo: memoire.rssMax / 2 ** 20,
+  secondes: (Date.now() - DEBUT) / 1000,
+  partage: partageEffectif,
+  maxWorkers: partageEffectif
+    ? `node ${WORKERS.node}+jsdom ${WORKERS.jsdom}`
+    : (bornesWorkers(ARGV).find((b) => b.startsWith('--maxWorkers=')) ?? '=appelant').split('=')[1],
+})
+process.stdout.write(diagnostic)
+ecrireCapture(diagnostic)
 process.stdout.write(
   resumeLancement({
     statut: code,

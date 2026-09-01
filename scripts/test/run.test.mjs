@@ -19,6 +19,9 @@ import {
   repartitionWorkers,
   resumeLancement,
   separerArguments,
+  SENTINELLES,
+  compterSentinelles,
+  bilanDiagnostic,
 } from './partition.mjs'
 
 // `filterFiles` de Vitest résout ses filtres relatifs contre le CWD (`relative(dir, f)`) : la
@@ -225,4 +228,83 @@ test('verdicts : signal et code absent valent échec, les deux côtés doivent r
   assert.equal(codeAgrege([0, 1]), 1)
   assert.equal(codeAgrege([1, 0]), 1)
   assert.equal(codeAgrege([0]), 0)
+})
+
+// Une ligne CANONIQUE par sentinelle, copiée du message de son émetteur (références aux sources
+// dans `SENTINELLES`), préfixée comme la console la rend. Une sentinelle qui cesse de mordre —
+// message d'amont réécrit, regex retouchée — rend un compte à zéro indiscernable d'un run sain :
+// c'est ce silence-là que la table interdit.
+const ECHANTILLONS = {
+  'act hors act':
+    'Warning: An update to CombatConsole inside a test was not wrapped in act(...).',
+  'act chevauchants':
+    'Warning: You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. ',
+  'unmount pendant rendu':
+    'Warning: Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.',
+  'React coincé': 'Warning: Should not already be working.',
+  'test expiré': ' FAIL  src/ui/x.test.tsx > cas > Error: Test timed out in 5000ms.',
+  'worker perdu': 'Error: Worker exited unexpectedly',
+}
+
+test('sentinelles : chacune MORD sa ligne canonique, et elle seule', () => {
+  assert.deepEqual(
+    SENTINELLES.map(([libelle]) => libelle),
+    Object.keys(ECHANTILLONS),
+    'une sentinelle sans ligne canonique ne peut pas être prouvée mordante',
+  )
+  for (const [libelle, motif] of SENTINELLES) {
+    assert.ok(motif.test(ECHANTILLONS[libelle]), `sentinelle muette sur sa ligne : ${libelle}`)
+    for (const [autre, ligne] of Object.entries(ECHANTILLONS)) {
+      if (autre === libelle) continue
+      assert.ok(!motif.test(ligne), `sentinelle « ${libelle} » déborde sur « ${autre} »`)
+    }
+  }
+  // La seconde graphie de « worker perdu », et une ligne banale qui ne doit rien déclencher.
+  const [, motifWorker] = SENTINELLES.find(([l]) => l === 'worker perdu')
+  assert.ok(motifWorker.test('FATAL ERROR: Reached heap limit — JS heap out of memory'))
+  for (const [, motif] of SENTINELLES) assert.ok(!motif.test(' Test Files  1 passed (1)'))
+})
+
+test('comptage : cumul par libellé sur un mélange, zéros sur une sortie saine', () => {
+  const melange = [
+    ECHANTILLONS['act hors act'],
+    ECHANTILLONS['act hors act'],
+    '[jsdom] ' + ECHANTILLONS['React coincé'],
+    ECHANTILLONS['test expiré'],
+    ' Tests  3 passed (3)',
+  ]
+  assert.deepEqual(compterSentinelles(melange), {
+    'act hors act': 2,
+    'act chevauchants': 0,
+    'unmount pendant rendu': 0,
+    'React coincé': 1,
+    'test expiré': 1,
+    'worker perdu': 0,
+  })
+  assert.deepEqual(
+    compterSentinelles([]),
+    Object.fromEntries(SENTINELLES.map(([l]) => [l, 0])),
+    'le compte vide doit porter les six libellés à zéro',
+  )
+})
+
+test('bloc [diag] : trois lignes, mode et bornes RENDUS (jamais déduits des cœurs)', () => {
+  const compte = compterSentinelles([ECHANTILLONS['test expiré']])
+  const mesure = { cpus: 16, memGo: 31.9, memMaxGo: 12.75, rssMaxMo: 84.4, secondes: 97.83 }
+  const mono = bilanDiagnostic(compte, { ...mesure, partage: false, maxWorkers: '4' })
+  const lignes = mono.trimEnd().split('\n')
+  assert.equal(lignes.length, 3)
+  assert.equal(lignes[0], '[diag] machine : 16 cœurs · 31.9 Go · mono (seuil 7) · maxWorkers=4')
+  assert.equal(
+    lignes[1],
+    '[diag] mémoire système max : 12.8 Go / 31.9 Go (40 %) · rss lanceur max 84 Mo · fenêtre 97.8 s',
+  )
+  assert.equal(
+    lignes[2],
+    '[diag] sentinelles : act hors act 0 · act chevauchants 0 · unmount pendant rendu 0 · React coincé 0 · test expiré 1 · worker perdu 0',
+  )
+  // À cœurs IDENTIQUES, le mode dépend du run (`--coverage` impose le mono à 16 cœurs).
+  const partage = bilanDiagnostic(compte, { ...mesure, partage: true, maxWorkers: 'node 10+jsdom 5' })
+  assert.match(partage, /^\[diag\] machine : 16 cœurs · 31\.9 Go · partagé \(seuil 7\) · maxWorkers=node 10\+jsdom 5$/m)
+  assert.ok(mono.endsWith('\n'), 'le bloc doit clore sa dernière ligne')
 })
