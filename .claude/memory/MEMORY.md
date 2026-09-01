@@ -31,6 +31,7 @@
 - [FR uniquement](game-francais-jamais-anglais.md) · [sources FR élargies](game-source-fr-campagne-custom.md) · [PowerShell](env-use-powershell-not-bash.md) · [débloquer l'autre session](game-cross-session-console-unblock.md) · [pièges background](env-session-background-pieges-outils.md) · [CHARGE](env-charge-machine-un-seul-agent-lourd.md) — `--minWorkers=1` · [git show : commit AVANT --](env-git-show-ordre-commit-avant-paths.md).
 
 ## Chantiers récents / état
+- **[#1463 : FERMABLE SOUS DÉCISION (grand juge 2026-09-01)](project-1463-cloture-sous-decision-2026-09-01.md)** — 3 décisions user en attente (#1654 AST 71, #1620 TypeChecker, #1657 concept test) ; ne pas fermer sans ; puis #1388.
 - **[RÉGIME DE FERMETURE 2026-08-30](project-audit-workflow-2026-08-30-regime-de-fermeture.md)** — fan-out ≤1, zéro net, lots 10-12, épiques sans salve ; #1591 lot 3 PARQUÉ (#1552).
 - [#1411 CONSOLE JOUABLE : LIVRÉ](project-1411-console-jouable-livree.md) — restes = arbitrages #1434/#1476/#1477.
 - [HUD combat : console RT](game-arbitrage-hud-console-rt-2026-08-16.md) — dette Chance #1332. **[MODÈLE DE GESTES](game-arbitrage-modele-gestes-2026-08-19.md)**.
