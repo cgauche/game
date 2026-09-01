@@ -22,9 +22,14 @@ export const windDirectionSchema = z.enum(['nord', 'sud', 'est', 'ouest']);
 export const portProfileSchema = z
   .strictObject({
     ref: z.string().optional(),
-    /** Taille du Lieu (1-4). */
-    taille: z.number().optional(),
-    richesse: z.number().optional(),
+    /** Indice de Taille du Lieu. Le MDG n'imprime AUCUNE échelle : c'est celle de `MSRC 13 l.44-50`
+     *  (1 Hameau … 4 Grande ville) que son Index des ports emploie — mesuré 2026-09-01, 39/39 ports de
+     *  `naval-ports.json` dans 1..4, et `MDG 15 l.249` nomme « hameau ou petit village (Taille 1 ou 2) ». */
+    taille: z.number().int().min(1).max(4).optional(),
+    /** Indice de Richesse du Lieu, `MSRC 13 l.52-60` (1 à 5). Même mesure : 39/39 ports dans 1..5.
+     *  Le domaine est FERMÉ aux deux bouts — c'est lui qui entre dans le tableau du Prix d'offre
+     *  (`MDG 15 l.378-383`), dont la première bande commence à 1. */
+    richesse: z.number().int().min(1).max(5).optional(),
     /** Colonne Production : ids de cargaison, `'commerce'`/`'minimum-vital'` compris. */
     production: z.array(z.string()).optional(),
     /** Colonne Surplus : id de cargaison → indice. */
@@ -50,8 +55,11 @@ export const portProfileSchema = z
 /** `LandMarketProfile` (`engine/landCargo.ts:62`) — indices de commerce terrestre/fluvial (`MSRC 13`). */
 export const landMarketProfileSchema = z.strictObject({
   /** Indice de Taille de la communauté (1 Hameau … 4 Grande ville, `MSRC 13 l.44-50`). */
-  taille: z.number(),
-  richesse: z.number(),
+  taille: z.number().int().min(1).max(4),
+  /** Indice de Richesse, `MSRC 13 l.52-60` : la colonne n'imprime QUE 1 à 5 — « Misérable » y porte
+   *  « - », donc aucun indice, et n'est pas authorable. Domaine FERMÉ : c'est la colonne d'entrée du
+   *  tableau de la Mise à prix (`MSRC 13 l.150-156`), qui donne une ligne par indice de 1 à 5. */
+  richesse: z.number().int().min(1).max(5),
   /** Colonne Produits : ids d'entrées de `land-cargo.json` (marchandises ET marqueurs). */
   produits: z.array(z.string()),
   demande: z.array(z.string()).optional(),

@@ -18,7 +18,7 @@
  */
 import seaEventsJson from '../data/sea-events.json';
 import seaCargoJson from '../data/sea-cargo.json';
-import { findTableEntry } from './tables';
+import { findTableEntry, findTableEntryIndex } from './tables';
 import { d10, roll as rollDice, type RNG, defaultRNG } from './dice';
 import { rollTest, type TestResult } from './tests';
 import type { Difficulty } from './types';
@@ -26,7 +26,7 @@ import type { SkillRef } from './skills';
 import type { Season } from './travelStages';
 // Tronc commun cargaison (partagé avec le commerce terrestre MSRC, `landCargo.ts`) — modèle de lot,
 // tirage saisonnier, prix de base. Re-exporté pour les importeurs historiques de ce module.
-import { type CargoDef, type CargoEntry, isEchangeable, isTradeHubColumn, rollSeasonalCargo } from './cargo';
+import { type CargoDef, type CargoEntry, type OfferBand, isEchangeable, isTradeHubColumn, offerLookup, rollSeasonalCargo } from './cargo';
 export { type CargoDef, type CargoEntry, type CargoLot, isEchangeable, cargoTotalEnc, removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoBasePrice } from './cargo';
 
 // ── Types de la donnée ───────────────────────────────────────────────────────────────────────────
@@ -67,12 +67,16 @@ const EVENTS = seaEventsJson as unknown as {
  *  `mMod`/`manoeuvreDR` = −M et −DR Manœuvre appliqués au navire. */
 export interface OverloadPalier { id: string; fromPct: number; label: string; mMod: number; manoeuvreDR: number }
 
+/** Bande du tableau du Prix d'offre (l.378-383) : fourchette de Richesse + Taille + Demande (`OfferBand`,
+ *  tronc commun) et son % du prix de base. */
+interface OfferPriceBand extends OfferBand { pct: number }
+
 const CARGO = seaCargoJson as unknown as {
   cargoes: CargoEntry[];
   overload: { hardCapPct: number; paliers: OverloadPalier[] };
   buy: { availabilityMultiplier: number; merchantSkill: { d10: number; plus: number }; bigPortSkill: { d10: number; plus: number }; partialPurchaseSellerDR: number; surplusSellerDR: number };
   sell: {
-    offerPrice: { sum: number; pct: number }[];
+    offerPrice: OfferPriceBand[];
     noProduceTargetPerSize: number; commerceBonus: number;
     producesGossip: { difficulty: Difficulty; targetPerSize: number; minMilles: number };
     surplusGossip: { difficulty: Difficulty; targetPerSize: number };
@@ -97,6 +101,8 @@ export const CARGO_ENTRIES: readonly CargoEntry[] = CARGO.cargoes;
  *  cargaison aléatoire, éditeur et Compendium ne voient jamais un marqueur. */
 export const CARGOES: readonly CargoDef[] = CARGO.cargoes.filter(isEchangeable);
 export const OPPORTUNITE = CARGO.opportunite;
+/** La table du Prix d'offre telle que `findTableEntry` la lit (`offerLookup`, tronc commun). */
+const OFFER_PRICE_LOOKUP = offerLookup(CARGO.sell.offerPrice);
 /** Résout une MARCHANDISE (les marqueurs ne sont ni achetables ni vendables). */
 export const findCargoById = (id: string): CargoDef | undefined => CARGOES.find((c) => c.id === id);
 /** Résout une entrée QUELCONQUE de la colonne Production, marqueur compris (libellé d'affichage). */
@@ -305,11 +311,20 @@ export function sellChance(port: PortProfile, cargoId: string, milles: number): 
   return { gossip: { difficulty: CARGO.sell.surplusGossip.difficulty }, target: port.taille * CARGO.sell.surplusGossip.targetPerSize, sellerDR: CARGO.sell.sellerDR.surplus };
 }
 
-/** PRIX D'OFFRE d'un acheteur trouvé (l.374-383) : % du prix de base selon Richesse + Taille + Demande. PUR. */
+/** PRIX D'OFFRE d'un acheteur trouvé (l.374-383) : % du prix de base selon Richesse + Taille + Demande. PUR.
+ *  La table commence à 1 et sa dernière bande est ouverte : une somme SOUS la table ne peut venir que
+ *  d'un profil hors des indices imprimés (`defs-scenes/worldmap.ts` borne la saisie à 1..4 / 1..5). On
+ *  la NOMME plutôt que de la laisser tomber sur une bande : le repli de `findTableEntry` offrirait le
+ *  prix de base plein à un lieu que la table ne couvre pas. */
 export function offerPricePct(port: PortProfile, cargoId: string): number {
   const sum = port.richesse + port.taille + (port.demande?.[cargoId] ?? 0);
-  const row = [...CARGO.sell.offerPrice].reverse().find((r) => sum >= r.sum) ?? CARGO.sell.offerPrice[0];
-  return 100 + row.pct;
+  const i = findTableEntryIndex(OFFER_PRICE_LOOKUP, sum);
+  if (i < 0) {
+    throw new Error(
+      `Prix d'offre : Richesse (${port.richesse}) + Taille (${port.taille}) + Demande (${port.demande?.[cargoId] ?? 0}) = ${sum}, hors du tableau (MDG 15 l.378-383, bandes 1 à « 4 ou plus ») — cargaison ${cargoId}.`,
+    );
+  }
+  return 100 + OFFER_PRICE_LOOKUP[i].pct;
 }
 
 /** BRADER une cargaison invendable (l.399) : « pour un quart de son prix de base dans n'importe quel

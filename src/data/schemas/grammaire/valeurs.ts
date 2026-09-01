@@ -302,6 +302,33 @@ export const moneyPartialSchema = z.strictObject({ gold: z.number().optional(), 
 /** `DiceSpec` (`src/engine/dice.ts`) — jet `{n, sides, plus?}`, partagé par `CountSpec.roll` et `Formula.dice`. */
 export const diceSpecSchema = z.strictObject({ n: z.number(), sides: z.number(), plus: z.number().optional() });
 
+/**
+ * UNE VALEUR PAR SAISON — les deux livres de commerce impriment leurs tableaux en quatre colonnes
+ * saisonnières (`Season`, `src/engine/travelStages.ts`) : disponibilité d100 (MDG 15 l.406-418, MSRC 13
+ * l.73-78) comme prix de base (MDG 15 l.422-434, MSRC 13 l.84-89). Les quatre clés se déclarent ICI,
+ * une seule fois pour le dépôt ; ce que la colonne CONTIENT reste au porteur.
+ */
+export const parSaison = <T extends z.ZodTypeAny>(valeur: T) =>
+  z.strictObject({ printemps: valeur, ete: valeur, automne: valeur, hiver: valeur });
+
+/**
+ * PRIX DE BASE d'une cargaison par SAISON (MDG 15 l.422-434, MSRC 13 l.80-90) : le résolveur y lit la
+ * colonne de la saison courante. Le concept `prix` du lexique n'avait AUCUN nœud ici — les deux defs
+ * le retapaient à l'identique.
+ */
+export const prixSaisonnierSchema = parSaison(z.number());
+
+/**
+ * PRIX TIRÉ AU DÉ — une case du tableau de prix porte un jet au lieu d'un nombre (MDG 15 l.429 : le Vin
+ * maritime est à « 3d10 » aux quatre saisons, tiré une fois à l'achat et NOTÉ, l.436). Le dé est le
+ * `DiceSpec` unique du projet, jamais une expression en chaîne.
+ *
+ * Les deux branches s'exportent SÉPARÉMENT : chaque site compose l'union qu'il admet — un porteur de
+ * prix qui n'a pas de saisons (`trappings.price`) ne doit pas hériter des colonnes par une union
+ * fourre-tout.
+ */
+export const prixTireSchema = z.strictObject({ dice: diceSpecSchema });
+
 /** `{x,y}` en CASES de grille — position d'un poste de pont (`vehicles.json`) comme case d'ABORD
  *  d'une place assise (`props.json`). */
 export const cell2Schema = z.strictObject({ x: z.number().finite(), y: z.number().finite() });
@@ -494,9 +521,10 @@ export const plageSchema = z.strictObject({ min: z.number(), max: z.number() });
  * FOURCHETTE À BORNE HAUTE OUVERTE — même concept `plage`, une seule divergence : la DERNIÈRE bande
  * n'a pas de plafond, et JSON n'a pas d'Infinity (`max: null` ; c'est le lookup qui ouvre, cf.
  * `src/engine/advancement.ts`). Composée sur la SHAPE de `plageSchema`, graphie UNIQUE de dérivation
- * dans la grammaire. Mesuré 2026-09-01 sur les deux racines de donnée : UNE seule bande ouverte
- * (`advancementCosts.json`, « 71 et + », LDB 07 l.49/l.70) contre 1474 fourchettes FERMÉES — sonde
- * tenue par `src/data/plage-bornes-contrat.test.ts` (volet E). La couverture d'une suite de telles bandes se vérifie
+ * dans la grammaire. Mesuré 2026-09-01 sur les deux racines de donnée : DEUX bandes ouvertes
+ * (`advancementCosts.json`, « 71 et + », LDB 07 l.49/l.70 ; `sea-cargo.json › sell.offerPrice`,
+ * « 4 ou plus », MDG 15 l.383) contre plus de 1470 fourchettes FERMÉES — sonde tenue par
+ * `src/data/plage-bornes-contrat.test.ts` (volet E). La couverture d'une suite de telles bandes se vérifie
  * par `ecartsDeCouverture(…, 'ouverte')` ci-dessous.
  */
 export const plageOuverteSchema = z.strictObject({ ...plageSchema.shape, max: z.number().nullable() });

@@ -29,6 +29,7 @@ import artilleryMisfire from '../../artillery-misfire.json';
 import crewMorale from '../../crew-morale.json';
 import drivingMishap from '../../driving-mishap.json';
 import landCargo from '../../land-cargo.json';
+import seaCargo from '../../sea-cargo.json';
 import massBattle from '../../mass-battle.json';
 import navalProgression from '../../naval-progression.json';
 import riverNavigation from '../../river-navigation.json';
@@ -412,5 +413,64 @@ describe('références migrées — les 4 populations résolvent contre leur cat
     const vus = (structures as ReadonlyArray<{ traits?: ReadonlyArray<{ id: string }> }>).flatMap((s) => s.traits ?? []);
     expect(vus.length, 'la population des Traits de structure a disparu.').toBe(5);
     expect(vus.filter((t) => !CATALOGUES.traits.has(t.id)), 'Trait de structure hors de traits.json').toEqual([]);
+  });
+});
+
+/**
+ * COUVERTURE des deux tableaux de PRIX D'OFFRE (#1463 L-gram-3) — `ecartsDeCouverture` composé dans
+ * `defs/sea-cargo.ts` et `defs/land-cargo.ts`. Gate POSITIF par la porte réelle (`validateDataset`) :
+ * un refine ne se voit pas au scan de structures, et une garde jamais vue ROUGE ne prouve rien.
+ *
+ * Les quatre modes de panne, chacun avec le message qu'il doit NOMMER :
+ *  - un TROU (une bande commence après la fin de la précédente) — le lookup replierait en silence ;
+ *  - un CHEVAUCHEMENT (deux bandes couvrent la même valeur) — la seconde devient inatteignable ;
+ *  - la dernière bande MARITIME plafonnée alors que MDG 15 l.383 écrit « 4 ou plus » ;
+ *  - la dernière bande TERRESTRE ouverte alors que MSRC 13 l.150-156 n'écrit aucun « ou plus ».
+ */
+describe('prix d’offre — les bandes couvrent leur domaine d’un seul tenant (#1463 L-gram-3)', () => {
+  /** Remplace la N-ième bande d'un `sell.<cle>` par une version modifiée (copie, jamais l'arbre). */
+  const muter = (doc: unknown, cle: string, i: number, patch: Record<string, unknown>) => {
+    const d = doc as { sell: Record<string, Record<string, unknown>[]> };
+    const bandes = d.sell[cle].map((b, j) => (j === i ? { ...b, ...patch } : b));
+    return { ...d, sell: { ...d.sell, [cle]: bandes } };
+  };
+
+  it('sea-cargo.json › sell.offerPrice : la donnée réelle passe ; TROU, CHEVAUCHEMENT et plafond sur la bande FINALE sont REFUSÉS', () => {
+    expect(validateDataset('sea-cargo.json', seaCargo)).toBeNull();
+
+    const trou = validateDataset('sea-cargo.json', muter(seaCargo, 'offerPrice', 3, { min: 5 }));
+    expect(trou, 'un TROU entre deux bandes est accepté').not.toBeNull();
+    expect(trou).toContain('commence à 5 au lieu de 4');
+
+    const chevauchement = validateDataset('sea-cargo.json', muter(seaCargo, 'offerPrice', 1, { min: 1 }));
+    expect(chevauchement, 'un CHEVAUCHEMENT est accepté').not.toBeNull();
+    expect(chevauchement).toContain('commence à 1 au lieu de 2');
+
+    const plafonnee = validateDataset('sea-cargo.json', muter(seaCargo, 'offerPrice', 3, { max: 9 }));
+    expect(plafonnee, 'la bande « 4 ou plus » accepte un plafond').not.toBeNull();
+    expect(plafonnee).toContain('est la DERNIÈRE et porte un plafond');
+  });
+
+  it('land-cargo.json › sell.offerByRichesse : la donnée réelle passe ; TROU, CHEVAUCHEMENT, bande FINALE ouverte et débordement d’échelle sont REFUSÉS', () => {
+    expect(validateDataset('land-cargo.json', landCargo)).toBeNull();
+
+    const trou = validateDataset('land-cargo.json', muter(landCargo, 'offerByRichesse', 2, { min: 4 }));
+    expect(trou, 'un TROU entre deux bandes est accepté').not.toBeNull();
+    expect(trou).toContain('commence à 4 au lieu de 3');
+
+    const chevauchement = validateDataset('land-cargo.json', muter(landCargo, 'offerByRichesse', 1, { min: 1 }));
+    expect(chevauchement, 'un CHEVAUCHEMENT est accepté').not.toBeNull();
+    expect(chevauchement).toContain('commence à 1 au lieu de 2');
+
+    // Côté TERRE, le livre n'écrit aucun « ou plus » : la borne haute est REQUISE (`plageSchema`),
+    // et `max: null` est refusé AU TYPE, avant même la mesure de couverture.
+    const ouverte = validateDataset('land-cargo.json', muter(landCargo, 'offerByRichesse', 4, { max: null }));
+    expect(ouverte, 'la dernière bande terrestre accepte une borne haute OUVERTE').not.toBeNull();
+    expect(ouverte).toContain('sell.offerByRichesse.4.max');
+
+    // Le domaine s'arrête à 5 (MSRC 13 l.52-60) : une bande qui déborde n'a aucun indice à couvrir.
+    const deborde = validateDataset('land-cargo.json', muter(landCargo, 'offerByRichesse', 4, { max: 6 }));
+    expect(deborde, 'la table déborde l’échelle des indices imprimés').not.toBeNull();
+    expect(deborde).toContain("s'arrête à 6 au lieu de 5");
   });
 });

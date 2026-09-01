@@ -1005,7 +1005,7 @@ Chaque jour en mer, on tient un **total cumulé d'Humeur de Manann** (chaque mod
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Moral de l'équipage (MDG)](#moral-de-léquipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.81-263) → `ShoreLeaveBody`, `ManannBody`, `vaincre-stromfels`, `SeaActivitiesModal`, `grand-sacrifice`, `openEmbrigadementRecovery`, `coiffe-de-naissance`, `EscaleTab`, `SEA_ACTIVITIES_INTRO`, `sacrifice-moyen`, +127 — `src/data/activities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/sea-events.ts`, +19 fichiers
+- `MDG 15` (l.81-263) → `ShoreLeaveBody`, `ManannBody`, `vaincre-stromfels`, `SeaActivitiesModal`, `portProfileSchema`, `grand-sacrifice`, `openEmbrigadementRecovery`, `coiffe-de-naissance`, `EscaleTab`, `SEA_ACTIVITIES_INTRO`, +128 — `src/data/activities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs-scenes/worldmap.ts`, +20 fichiers
 
 ---
 
@@ -1058,5 +1058,5 @@ Deux actes : **acheter** une cargaison, la **vendre** ailleurs. Chaque port a un
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Activités en mer (MDG)](#activités-en-mer-mdg) (Commerce d'opportunité), [`merchantFlow.ts`](../../src/state/merchantFlow.ts) (Marchandage).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `doc`, `cargoMarqueur`, `PortHeader`, `PORT_PRODUITS`, `portProfileSchema`, `cereales`, `MapPlace`, `CargoMarkerDef`, +65 — `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/naval-ports.ts`, +24 fichiers
+- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `doc`, `PortHeader`, `portProfileSchema`, `PORT_PRODUITS`, `cereales`, `MapPlace`, `CargoMarkerDef`, `marienburg`, +72 — `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/naval-ports.ts`, +25 fichiers
 

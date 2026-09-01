@@ -123,10 +123,10 @@ export function WorldMapPlacePanel({ place, scenes, updPlace }: {
                     {TAILLE_LABELS.map((label, i) => <option key={i} value={i + 1}>{i + 1} — {label}</option>)}
                   </select>
                 </label>
-                <label className="ed-field">Richesse — Mise à prix (l.150-156)
+                <label className="ed-field">Indice de richesse — Mise à prix (l.52-60, l.150-156)
                   <select value={mk.richesse} onChange={(e) => updMarket({ richesse: Number(e.target.value) })}>
                     {LAND_RICHESSE_ROWS.map((r) => (
-                      <option key={r.richesse} value={r.richesse}>{r.richesse} — {r.label} ({r.pct >= 0 ? '+' : ''}{r.pct} %)</option>
+                      <option key={r.min} value={r.min}>{r.min} — {r.label} ({r.pct >= 0 ? '+' : ''}{r.pct} %)</option>
                     ))}
                   </select>
                 </label>
@@ -209,7 +209,7 @@ export function WorldMapPlacePanel({ place, scenes, updPlace }: {
                 <label className="ed-field">Richesse du port
                   <select value={pt.richesse} onChange={(e) => updPort({ richesse: Number(e.target.value) })}>
                     {LAND_RICHESSE_ROWS.map((r) => (
-                      <option key={r.richesse} value={r.richesse}>{r.richesse} — {r.label}</option>
+                      <option key={r.min} value={r.min}>{r.min} — {r.label}</option>
                     ))}
                   </select>
                 </label>

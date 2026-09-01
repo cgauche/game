@@ -18,7 +18,7 @@ import { d10, d100, roll as rollDice, type RNG, defaultRNG } from './dice';
 import { findTableEntry, findTableEntryIndex } from './tables';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
-import { type CargoDef, type CargoMarkerDef, isEchangeable, isTradeHubColumn, rollSeasonalCargo, cargoBasePrice } from './cargo';
+import { type CargoDef, type CargoMarkerDef, isEchangeable, isTradeHubColumn, offerLookup, rollSeasonalCargo, cargoBasePrice } from './cargo';
 
 /** Un type de cargaison terrestre = `CargoDef` + éventuel marqueur `wine` (prix par table de qualité, non
  *  par la colonne saisonnière). */
@@ -29,7 +29,9 @@ export interface LandCargoDef extends CargoDef { wine?: boolean }
 export type LandCargoEntry = LandCargoDef | CargoMarkerDef;
 
 interface WineTier { min: number; max: number; label: string; price: number }
-interface OfferRow { richesse: number; label: string; pct: number }
+/** Bande du tableau de la Mise à prix (l.150-156) : fourchette d'Indice de richesse, bornes INCLUSIVES.
+ *  Le livre imprime une ligne par indice (l.52-60 : 1 à 5) — les cinq bandes sont FERMÉES. */
+interface OfferRow { min: number; max: number; label: string; pct: number }
 export interface RumourRow { min: number; max: number; biens: string[]; desc: string }
 
 const LAND = landCargoJson as unknown as {
@@ -49,9 +51,14 @@ export const LAND_CARGO_ENTRIES: readonly LandCargoEntry[] = LAND.cargoes;
  *  À LA SOURCE sur le champ d'exclusion — source UNIQUE pour énumérer les Produits négociables d'un
  *  Lieu (éditeur de marché, négoce, Compendium), marqueurs jamais compris. */
 export const LAND_CARGOES: readonly LandCargoDef[] = LAND.cargoes.filter(isEchangeable) as LandCargoDef[];
-/** Échelons de Richesse et leur Mise à prix (MSRC 13 l.150-156) — source des libellés (1 Misérable …
- *  5 Prospère) pour l'éditeur de marché. */
+/** Échelons de Richesse et leur Mise à prix — source UNIQUE des libellés d'authoring de l'éditeur de
+ *  marché. Pourcentages de MSRC 13 l.150-156 ; libellés de l'échelle des indices l.52-60 (1 Pauvre …
+ *  5 Florissant), que l'exemple l.174 confirme contre la colonne Description de l.150-156, décalée
+ *  d'un cran dans le livre — arbitrage NOMMÉ en tête de
+ *  `scripts/migrations/2026-09-01-1463-gram-seuils-prix-offre.mjs`. */
 export const LAND_RICHESSE_ROWS: readonly OfferRow[] = LAND.sell.offerByRichesse;
+/** La table de la Mise à prix telle que `findTableEntry` la lit (`offerLookup`, tronc commun). */
+const OFFER_BY_RICHESSE_LOOKUP = offerLookup(LAND.sell.offerByRichesse);
 /** Résout une MARCHANDISE terrestre (les marqueurs ne sont ni achetables ni vendables). */
 export const findLandCargoById = (id: string): LandCargoDef | undefined => LAND_CARGOES.find((c) => c.id === id);
 /** Résout une entrée QUELCONQUE de la colonne Produits, marqueur compris (libellé d'affichage). */
@@ -62,7 +69,9 @@ export const findLandCargoEntryById = (id: string): LandCargoEntry | undefined =
 export interface LandMarketProfile {
   /** Indice de Taille de la communauté (1 Hameau … 4 Grande ville, l.44-50). */
   taille: number;
-  /** Indice de Richesse (1 Pauvre … 5 Florissant ; Misérable = 0/absent, l.52-60). */
+  /** Indice de Richesse, l.52-60 : 1 Pauvre … 5 Florissant. « Misérable » y porte « - » — il n'a AUCUN
+   *  indice, donc rien à authorer sous 1 (le schéma de scène borne la saisie à 1..5,
+   *  `src/data/schemas/defs-scenes/worldmap.ts`). */
   richesse: number;
   /** Colonne Produits : ids d'entrées de `land-cargo.json` — marchandises et/ou MARQUEURS (`echangeable:
    *  false`), le catalogue porte les deux (l.24-28, l.119). */
@@ -195,11 +204,17 @@ export function sellDemandTarget(place: LandMarketProfile): number {
   return place.taille * LAND.sell.targetPerSize + (hasCommerce(place) ? LAND.sell.commerceBonus : 0);
 }
 
-/** Mise à prix d'un acheteur (l.148-156) : % du prix de base selon la Richesse du Lieu (Misérable 50 %,
- *  Pauvre −20 %, Moyen prix de base, Animé +5 %, Prospère +10 %). PUR. Renvoie le POURCENTAGE (ex. 80, 100). */
+/** Mise à prix d'un acheteur (l.148-156) : % du prix de base selon l'Indice de richesse du Lieu. PUR.
+ *  Renvoie le POURCENTAGE (ex. 80, 100). Le tableau donne une ligne par indice de 1 à 5 et rien
+ *  au-delà : un indice hors de ce domaine est NOMMÉ, jamais rabattu en silence sur une bande. */
 export function sellOfferPct(place: LandMarketProfile): number {
-  const row = [...LAND.sell.offerByRichesse].reverse().find((o) => place.richesse >= o.richesse) ?? LAND.sell.offerByRichesse[0];
-  return 100 + row.pct;
+  const i = findTableEntryIndex(OFFER_BY_RICHESSE_LOOKUP, place.richesse);
+  if (i < 0) {
+    throw new Error(
+      `Mise à prix : Indice de richesse ${place.richesse} hors du tableau (MSRC 13 l.150-156, une ligne par indice de 1 à 5) — aucune ligne d'offre ne le couvre.`,
+    );
+  }
+  return 100 + OFFER_BY_RICHESSE_LOOKUP[i].pct;
 }
 
 /** BRADER une cargaison invendable (l.160) : « pour la moitié de son prix de base » à tout Lieu ayant le

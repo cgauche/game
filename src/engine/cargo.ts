@@ -6,7 +6,7 @@
  * TABLEAUX (cargaisons, prix) diffèrent → ils vivent dans le module propre à chaque livre, ces
  * briques-ci (modèle de lot, tirage saisonnier, prix de base, Marchandage) NE SONT PAS dupliquées.
  */
-import { d100, rollExpr, type RNG, defaultRNG } from './dice';
+import { d100, rollDice, type DiceSpec, type RNG, defaultRNG } from './dice';
 import type { Season } from './travelStages';
 
 /** Un type de cargaison (bien volumineux) : plages saisonnières d100 (Tableau des cargaisons) + prix de
@@ -17,7 +17,7 @@ export interface CargoDef {
   /** Absent sur une cargaison marchande — présent et `false` sur un MARQUEUR (`CargoMarkerDef`). */
   echangeable?: true;
   avail: Record<Season, [number, number]>;
-  price: Record<Season, number> | { dice: string };
+  price: Record<Season, number> | { dice: DiceSpec };
 }
 
 /** Un MARQUEUR de la colonne Production/Produits de l'Index (« Commerce », « Minimum vital »,
@@ -81,8 +81,26 @@ export function rollSeasonalCargo(cargoes: CargoDef[], season: Season, rng: RNG 
 /** Prix de BASE d'une cargaison (CO par 10 points d'Encombrement) pour la saison (MSRC 13 l.80-90, MDG 15
  *  l.420-436). Prix « à dés » (Vin maritime 3d10) tiré une fois à l'achat et NOTÉ. PUR (RNG injecté). */
 export function cargoBasePrice(cargo: CargoDef, season: Season, rng: RNG = defaultRNG): number {
-  if ('dice' in cargo.price) return rollExpr(cargo.price.dice, rng);
+  if ('dice' in cargo.price) return rollDice(cargo.price.dice, rng);
   return cargo.price[season];
+}
+
+/** Bande d'un tableau de PRIX D'OFFRE — fourchette d'un indice de Lieu, bornes INCLUSIVES. `max: null`
+ *  = bande finale sans plafond (MDG 15 l.383 « 4 ou plus » ; JSON n'a pas d'Infinity). */
+export interface OfferBand { min: number; max: number | null }
+
+/** Le tableau d'offre tel que `findTableEntry` (`./tables`) le lit : SEULE la borne HAUTE de la
+ *  dernière bande s'ouvre, parce que c'est la seule que les livres écrivent (MDG 15 l.383 « 4 ou
+ *  plus » ; MSRC 13 l.150-156 n'en écrit aucune). La borne BASSE reste FERMÉE : rien n'entre sous le
+ *  premier échelon imprimé — l'indice de Richesse s'arrête à 1 (MSRC 13 l.52-60 : « Misérable » y
+ *  porte « - », donc aucun indice) et le schéma de scène borne la saisie (`defs-scenes/worldmap.ts`).
+ *  Une valeur hors table est donc une ANOMALIE, que l'appelant NOMME (`findTableEntryIndex` < 0), et
+ *  jamais le repli muet de `findTableEntry` sur la dernière bande. Entre les deux bornes, la
+ *  contiguïté est tenue en donnée (`ecartsDeCouverture`, `src/data/schemas/defs/sea-cargo.ts` et
+ *  `src/data/schemas/defs/land-cargo.ts`).
+ *  PUR — brique commune aux deux commerces. */
+export function offerLookup<T extends OfferBand>(bandes: readonly T[]): (T & { max: number })[] {
+  return bandes.map((b) => ({ ...b, max: b.max ?? Number.POSITIVE_INFINITY }));
 }
 
 /** Un LOT de cargaison en cale/soute (`basePriceGold` = prix de base NOTÉ à l'achat, CO par point d'Enc —

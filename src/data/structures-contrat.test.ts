@@ -662,7 +662,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // entrent — la RÉFÉRENCE que ces objets portaient déjà et que `test` masquait (`activities › skills`
       // ×2, `› rule` id-nu, `maladies › symptoms {difficulty,symptomId}`, `› dailyTest`). Aucune donnée ne
       // bouge : −10 +5.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 462],
+      // Cliquet DESCENDU 462 → 461 (#1463 L-gram-3, 2026-09-01) : `sea-cargo.json › offerPrice {sum+…}`
+      // est SOLDÉE — la colonne d'entrée du tableau du Prix d'offre ÉTAIT un seuil (une borne basse
+      // seule, relue à l'envers) ; c'est une FOURCHETTE `{min, max}` que `findTableEntry` lit, la
+      // dernière bande gardant sa borne haute OUVERTE (« 4 ou plus », MDG 15 l.383). Le cliquet SUIT.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 461],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -772,7 +776,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (une entrée de table à `id`) et `tavernGames.ts › (racine)` (le concept `sequence` n'existe plus) ;
       // le 5ᵉ, `tavernGames.ts › rows`, change de concept et reste au dénominateur (`plage | max,min+…`,
       // cible — le littéral porte deux bornes numériques et `plage` le classe désormais avant `test`).
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 55],
+      // Cliquet DESCENDU 55 → 52 (#1463 L-gram-3, 2026-09-01) : le concept `prix` reçoit ses NŒUDS
+      // (`prixSaisonnierSchema` / `prixTireSchema`, `grammaire/valeurs.ts`) et les deux defs de commerce
+      // cessent de retaper l'union — `land-cargo.ts › price` et `sea-cargo.ts › price` sortent, la
+      // colonne saisonnière passant par la fabrique `parSaison` (que `avail` compose aussi, sinon la
+      // signature à quatre saisons du nœud neuf faisait ENTRER deux lignes — contrefactuel CF1/CF2 en
+      // fin de fichier) ; `sea-cargo.ts › offerPrice` sort avec elle, en composant `plageOuverteSchema`.
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 52],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -1009,7 +1019,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // 4 REDÉCLARATIONS ci-dessus sortent, et `maladies › dailyTest` entre ICI plutôt qu'en L3 —
       // c'est un JET (EDOC 08 l.104) que l'enveloppe `épreuve` de #1657 geste B reprendra, le lot des
       // références ne l'éteindrait jamais : −14 +1.
-      'L4 #1463': 94,
+      // … puis 94 → 90 (#1463 L-gram-3) : les DEUX `price` re-tapés des defs de commerce, la
+      // redéclaration `sea-cargo.ts › offerPrice` et la forme `sea-cargo.json › offerPrice {sum+…}`
+      // sortent ENSEMBLE (cf. les deux cliquets ci-dessus) : −4.
+      'L4 #1463': 90,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`
@@ -1796,5 +1809,98 @@ describe('scannerRedeclarations — contrôle POSITIF du détecteur (#1654)', ()
     } finally {
       rmSync(dossier, { recursive: true, force: true });
     }
+  });
+});
+
+
+/**
+ * CONTREFACTUEL du lot #1463 L-gram-3 — `parSaison` n'est pas un contournement de mesure.
+ *
+ * La décrue d'un stock de redéclarations est toujours suspecte : un nœud de grammaire inventé pour
+ * UN porteur ferait DISPARAÎTRE la ligne sans que la structure change (le scan ne résout ni une
+ * fabrique ni un spread). Ici c'est l'INVERSE qu'on prouve : si les deux defs de commerce RE-TAPAIENT
+ * ce que la grammaire déclare — la colonne à quatre saisons (CF1) ou l'union de prix (CF2) —, le
+ * scanner le VERRAIT, nominativement. Le lot a donc rendu 3 lignes parce que les littéraux ont
+ * disparu, pas parce que la mesure s'est éteinte.
+ *
+ * ROOTS SÉPARÉS + SOUS-PROCESSUS, obligatoires : les caches de parse du scanner (`CACHE_SOURCE`,
+ * `CACHE_LITTERAUX`) sont module-level et ne sont JAMAIS invalidés (angle mort déclaré au lexique) —
+ * un contrefactuel joué dans le processus de la suite, ou sur la MÊME racine, mesurerait le premier
+ * état lu et mentirait.
+ */
+describe('scannerRedeclarations — CONTREFACTUEL `parSaison` / `prix` (#1463 L-gram-3)', () => {
+  const PILOTE_CF = [
+    "import { pathToFileURL } from 'node:url';",
+    "import { join } from 'node:path';",
+    'const [avantRoot, apresRoot] = process.argv.slice(2);',
+    "const SCAN = pathToFileURL(join(process.cwd(), 'scripts/docs/lib/structures-scan.mjs')).href;",
+    'const { scannerRedeclarations } = await import(SCAN);',
+    'const avant = scannerRedeclarations(avantRoot);',
+    'const apres = scannerRedeclarations(apresRoot);',
+    "const cle = (r) => r.def + ' | ' + (r.champ || '(racine)') + ' | ' + r.signature + ' | ' + r.concept + ' | ' + r.statut + ' | ' + r.commun;",
+    'const clesAvant = avant.redeclarations.map(cle);',
+    'const clesApres = apres.redeclarations.map(cle);',
+    "process.stdout.write('<<<DIFF>>>' + JSON.stringify({",
+    '  avant: avant.redeclarations.length,',
+    '  apres: apres.redeclarations.length,',
+    '  nees: clesApres.filter((k) => !clesAvant.includes(k)).sort(),',
+    '  perdues: clesAvant.filter((k) => !clesApres.includes(k)).sort(),',
+    '}));',
+  ].join('\n');
+
+  /** Le littéral à quatre saisons, tel que les deux defs l'écrivaient avant `parSaison`. */
+  const SAISONS = (valeur: string) =>
+    `z.strictObject({ printemps: ${valeur}, ete: ${valeur}, automne: ${valeur}, hiver: ${valeur} })`;
+
+  /** Monte deux racines de scan (`avant` = l'arbre, `apres` = l'arbre + la contrefaçon). */
+  const contrefactuel = (patch: (source: string, def: string) => string) => {
+    const dossier = mkdtempSync(join(tmpdir(), 'structures-cf-gram3-'));
+    try {
+      for (const quoi of ['avant', 'apres']) {
+        cpSync(join(ROOT, 'src/data/schemas/defs'), join(dossier, quoi, 'src/data/schemas/defs'), { recursive: true });
+        cpSync(join(ROOT, 'src/data/schemas/grammaire'), join(dossier, quoi, 'src/data/schemas/grammaire'), { recursive: true });
+      }
+      for (const def of ['sea-cargo.ts', 'land-cargo.ts']) {
+        const chemin = join(dossier, 'apres/src/data/schemas/defs', def);
+        writeFileSync(chemin, patch(readFileSync(chemin, 'utf8'), def), 'utf8');
+      }
+      const pilote = join(dossier, 'pilote.mjs');
+      writeFileSync(pilote, PILOTE_CF, 'utf8');
+      const sortie = execFileSync(
+        process.execPath,
+        ['--import', 'tsx', pilote, join(dossier, 'avant'), join(dossier, 'apres')],
+        { cwd: ROOT, encoding: 'utf8' },
+      ).split('<<<DIFF>>>');
+      return JSON.parse(sortie[sortie.length - 1]) as { avant: number; apres: number; nees: string[]; perdues: string[] };
+    } finally {
+      rmSync(dossier, { recursive: true, force: true });
+    }
+  };
+
+  it('CF1 — `avail` re-tapé à la place de `parSaison` : DEUX lignes naissent, nominatives', () => {
+    const diff = contrefactuel((source) => source.replace('avail: parSaison(seasonRange),', `avail: ${SAISONS('seasonRange')},`));
+    expect(diff.avant, 'la copie NON MUTÉE ne mesure pas le même arbre que `scannerRedeclarations(ROOT)`.').toBe(redeclarations.length);
+    expect(diff.perdues, 'la copie a PERDU des redéclarations : la contrefaçon n’est pas isolée.').toEqual([]);
+    expect(diff.nees, 'un `avail` re-tapé n’est PAS vu : `parSaison` masquerait la mesure au lieu de la solder.').toEqual([
+      'land-cargo.ts | avail | automne,ete,hiver,printemps |  | hors lexique | parSaison',
+      'sea-cargo.ts | avail | automne,ete,hiver,printemps |  | hors lexique | parSaison',
+    ]);
+  });
+
+  it('CF2 — l’union de `price` re-tapée à la place des deux nœuds de grammaire : les lignes du concept `prix` renaissent', () => {
+    const diff = contrefactuel((source) =>
+      source.replace(
+        'price: z.union([prixSaisonnierSchema, prixTireSchema]),',
+        `price: z.union([${SAISONS('z.number()')}, z.strictObject({ dice: diceSpecSchema })]),`,
+      ),
+    );
+    expect(diff.avant, 'la copie NON MUTÉE ne mesure pas le même arbre que `scannerRedeclarations(ROOT)`.').toBe(redeclarations.length);
+    expect(diff.perdues, 'la copie a PERDU des redéclarations : la contrefaçon n’est pas isolée.').toEqual([]);
+    expect(diff.nees, 'un `price` re-tapé n’est PAS vu : les deux nœuds `prix` masqueraient la mesure.').toEqual([
+      'land-cargo.ts | price | automne,ete,hiver,printemps | prix | declaree | parSaison',
+      'land-cargo.ts | price | dice | prix | declaree | prixTireSchema',
+      'sea-cargo.ts | price | automne,ete,hiver,printemps | prix | declaree | parSaison',
+      'sea-cargo.ts | price | dice | prix | declaree | prixTireSchema',
+    ]);
   });
 });

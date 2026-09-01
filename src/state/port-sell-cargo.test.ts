@@ -92,7 +92,7 @@ describe('portSellCargo — cascade Ragot → acheteur → Marchandage (#275/#27
   });
 
   it('port SANS relation au bien, cible d’acheteur NULLE (Taille 0) → aucun marchand intéressé, cargaison intacte', async () => {
-    setup({ taille: 0, richesse: 0, production: [] }, [], 40);
+    setup({ taille: 0, richesse: 1, production: [] }, [], 40);
     seedBattleRng(2);
     get().portSellCargo(0);
     await drain();
@@ -103,7 +103,7 @@ describe('portSellCargo — cascade Ragot → acheteur → Marchandage (#275/#27
 
   it('cible d’acheteur AU PLANCHER (clamp policy `targetMin`) → 1ʳᵉ tentative ratée, la 2ᵉ (moitié du lot) trouve preneur', async () => {
     const hero = makePregens()[0];
-    setup({ taille: 0, richesse: 0, production: [] }, [hero]); // seed 1 (défaut de `setup`)
+    setup({ taille: 0, richesse: 1, production: [] }, [hero]); // seed 1 (défaut de `setup`)
     get().portSellCargo(0);
     await drain();
     expect(get().pendingCascade).toBeNull();

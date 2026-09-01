@@ -18,6 +18,8 @@ const ROOT = process.cwd();
 const RACINES = ['src/data', 'src/scenes'];
 /** Les 3 seules clés d'un `DiceSpec` (`src/engine/dice.ts`). */
 const CANON = ['n', 'sides', 'plus'];
+/** Expression de dé écrite EN CHAÎNE (`3d10`, `1d10+15`, `d10`) — la graphie que `rollExpr` accepte. */
+const EXPRESSION_DE_DE = /^\s*\d*\s*d\s*\d+/i;
 
 function fichiers(): { chemin: string; doc: unknown }[] {
   const out: { chemin: string; doc: unknown }[] = [];
@@ -64,5 +66,26 @@ describe('dé — forme UNIQUE dans la donnée authorée (#1463)', () => {
       Object.values(signatures).reduce((a, b) => a + b, 0),
       'le corpus de dés a FONDU sous la mesure de référence (134) : la sonde ne mesure plus ce qu’elle croit.',
     ).toBeGreaterThanOrEqual(134);
+  });
+
+  // Le PRIX est le premier porteur soldé du dé-en-CHAÎNE (#1652) : `sea-cargo.json` écrivait
+  // `price: { dice: "3d10" }` (MDG 15 l.429), lu par `rollExpr` — une seconde grammaire de dé, hors
+  // `DiceSpec`, invisible à `rollDice`/`formatDice` et au volet ci-dessus (qui exige `n` ET `sides`).
+  // `prixTireSchema` (`schemas/grammaire/valeurs.ts`) ferme la porte au schéma ; cette sonde la ferme
+  // sur la DONNÉE des 2 racines, à ZÉRO (1 porteur à la veille du lot).
+  it('aucun `price` ne porte un dé en CHAÎNE', () => {
+    const porteurs: string[] = [];
+    for (const { chemin, doc } of FICHIERS) marcherObjets(doc, (o) => {
+      const prix = o.price;
+      if (prix == null) return;
+      // Un prix EN CHAÎNE n'est pas forcément un dé : la colonne Prix du livre imprime aussi la marque
+      // « ND » (`trappings.json`, admise à `priceToMoney`). Seule l'EXPRESSION de dé est en cause.
+      if (typeof prix === 'string') { if (EXPRESSION_DE_DE.test(prix)) porteurs.push(`${chemin} price: "${prix}"`); return; }
+      if (typeof prix !== 'object') return;
+      const de = (prix as Record<string, unknown>).dice;
+      if (typeof de === 'string') porteurs.push(`${chemin} price.dice: "${de}"`);
+    });
+
+    expect(porteurs, 'prix portant un dé en CHAÎNE — le dé authoré est un `DiceSpec` `{n, sides, plus?}`').toEqual([]);
   });
 });

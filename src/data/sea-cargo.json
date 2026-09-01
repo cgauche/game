@@ -190,7 +190,10 @@
         ]
       },
       "price": {
-        "dice": "3d10"
+        "dice": {
+          "n": 3,
+          "sides": 10
+        }
       },
       "source": {
         "book": "mer-des-griffes",
@@ -408,19 +411,23 @@
   "sell": {
     "offerPrice": [
       {
-        "sum": 1,
+        "min": 1,
+        "max": 1,
         "pct": -50
       },
       {
-        "sum": 2,
+        "min": 2,
+        "max": 2,
         "pct": -25
       },
       {
-        "sum": 3,
+        "min": 3,
+        "max": 3,
         "pct": -10
       },
       {
-        "sum": 4,
+        "min": 4,
+        "max": null,
         "pct": 0
       }
     ],

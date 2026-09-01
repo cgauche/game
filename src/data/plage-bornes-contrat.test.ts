@@ -137,18 +137,22 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     ).toEqual(['talents.json[]', 'talents.json[].variants[]']);
   });
 
-  it('E — UNE seule bande est OUVERTE (`max: null`), et elle est NOMMÉE', () => {
-    // La divergence que `plageOuverteSchema` (`grammaire/valeurs.ts`) porte : `LDB 07 l.49` ne pose
-    // aucun plafond au nombre d'Augmentations, la bande « 71 et + » (l.70) n'a donc pas de borne
-    // haute — et JSON n'a pas d'Infinity. Si une SECONDE population s'ouvrait sans revue, le nœud
-    // ouvert cesserait d'être l'exception mesurée qu'il dit être.
+  it('E — les bandes OUVERTES (`max: null`) sont NOMMÉES, une par document', () => {
+    // La divergence que `plageOuverteSchema` (`grammaire/valeurs.ts`) porte, et les DEUX endroits où
+    // un livre l'écrit : `LDB 07 l.49` ne pose aucun plafond au nombre d'Augmentations, la bande
+    // « 71 et + » (l.70) n'a donc pas de borne haute ; `MDG 15 l.383` imprime « 4 ou plus » à la
+    // dernière bande du Prix d'offre. JSON n'a pas d'Infinity — c'est le lookup qui ouvre
+    // (`offerLookup`, `src/engine/cargo.ts` ; `ADVANCE_COST_LOOKUP`, `src/engine/advancement.ts`).
+    // Si une TROISIÈME population s'ouvrait sans revue, le nœud ouvert cesserait d'être l'exception
+    // mesurée qu'il dit être.
     expect(
       [...new Set(M.bandesOuvertes.map((s) => `${s.doc}${s.chemin}`))].sort(),
       'une bande à borne haute OUVERTE (`max: null`) est apparue ailleurs : `plageOuverteSchema` est le nœud d’une EXCEPTION nommée, pas la forme générale d’une fourchette.',
-    ).toEqual(['advancementCosts.json[]']);
-    expect(M.bandesOuvertes.length, 'la bande ouverte a disparu : la sonde ne mesure plus rien.').toBe(1);
-    // Le dénominateur : la population FERMÉE devant laquelle cette bande est une exception.
-    expect(M.paires['min,max']).toBeGreaterThan(M.bandesOuvertes.length * 1000);
+    ).toEqual(['advancementCosts.json[]', 'sea-cargo.json.sell.offerPrice[]']);
+    expect(M.bandesOuvertes.length, 'une bande ouverte a disparu : la sonde ne mesure plus ce qu’elle nomme.').toBe(2);
+    // Le dénominateur : la population FERMÉE devant laquelle ces bandes sont l'exception (mesuré
+    // 2026-09-01 : 741 fourchettes fermées par bande ouverte).
+    expect(M.paires['min,max'] / M.bandesOuvertes.length).toBeGreaterThan(500);
   });
 
   it('A — `rand` (borne haute d100 portée par l’ENTITÉ) est un RESTE NOMMÉ, borné à six documents', () => {

@@ -33,6 +33,7 @@ Ce que la mesure ci-dessous **ne voit pas** — un compte n’a de sens qu’ave
 - Le classement est ORDONNÉ : une VALEUR (reconnue à son noyau) passe avant une RÉFÉRENCE ; un objet qui recoupe deux concepts n’est compté qu’une fois.
 - Deux comparateurs de `water-exposure.json` (`<=`/`>=` sous `woundsRemaining`/`woundsLost`) échappent à `conditionSchema` et restent comptés en op.
 - Le scan AST est borné aux littéraux `z.object`/`z.strictObject`/`z.looseObject` des `src/data/schemas/defs/*.ts` : il ne voit ni les clés ajoutées par `.extend(...)`, ni un schéma composé par une fabrique, ni les defs hors de ce dossier. Le « schéma commun candidat » est apparié par SIGNATURE EXACTE.
+- `schemasCommuns` ne garde qu’UN nom par SIGNATURE (le premier vu, racines avant niches) : deux nœuds de grammaire de même signature se masquent l’un l’autre, et l’arrivée du second RENOMME le « commun » recommandé d’une ligne de redéclaration sans qu’aucun porteur n’ait bougé — mesuré 2026-09-01, `miscast.ts | dice` est passé de `formulaSchema` à `prixTireSchema` (#1463 L-gram-3) à donnée, def et signature INCHANGÉS.
 - Les portes MOTEUR (`src/engine`, `src/state`) et les JSON hors documents (outillage, `public/qc/*`, baselines de gardes) ne sont pas mesurés : ce contrat parle de la DONNÉE authorée et de ses schémas.
 - Les CACHES de parse AST (`CACHE_SOURCE`, `CACHE_LITTERAUX`) sont module-level et ne sont jamais invalidés : en mode watch, une édition d’un `defs/*.ts` n’est pas re-mesurée sans redémarrage.
 - Le concept `test` CÈDE tout objet qui DÉSIGNE une entité (clause `horsDesignation` : clé de `CLES_IDENTITE`, ou clé en `RX_CLE_REFERENCE`) et passe APRÈS `plage` : 12 objets porteurs de `difficulty` restent classés `test` sans en être un — `tavernGames.json › volley.rows` 7 (rangées sans bornes authorées), `sea-events.json › params` 3 (le sujet du jet y vit sous `testType`) et `etats.json › difficultyBy` 2. Ce qui leur manque n’est pas TOUT discriminant structurel (`difficultyBy` porte `{cond, difficulty}`, et `cond` en est un) : c’est une clé de DÉSIGNATION, la seule que ce concept cède.
@@ -1103,7 +1104,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | monnaie | `gold,silver` | cible | 3 |
 | prix | `automne,ete,hiver,printemps` | declaree | 17 |
 | prix | `dice` | declaree | 1 |
-| de | `n,sides` | cible | 115 |
+| de | `n,sides` | cible | 116 |
 | de | `n,plus,sides` | cible | 19 |
 | formule | `sum` | cible | 13 |
 | formule | `sinPoints` | cible | 10 |
@@ -1113,7 +1114,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | source | `book,chapter,page` | historique | 0 |
 | bornes | `max,min+…` | cible | 23 |
 | plage | `max,min` | cible | 0 |
-| plage | `max,min+…` | cible | 1446 |
+| plage | `max,min+…` | cible | 1454 |
 | quantite | `fixed` | cible | 47 |
 | quantite | `roll` | cible | 0 |
 | test | `difficulty,skill` | historique | 45 |
@@ -1133,7 +1134,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **853** (cible 385 · declaree 6 · historique 118 · divergente 344). Objets JSON parcourus : **48581**, dont **31893** portent une forme
+Lignes concept × dataset × champ × forme : **855** (cible 388 · declaree 6 · historique 118 · divergente 343). Objets JSON parcourus : **48582**, dont **31898** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 Entrées de racine sans concept de valeur : **3978** sur **4059** —
@@ -1744,7 +1745,7 @@ Reconnu par : la clé porteuse `price`
 
 ### 3.5 lancer de dés — `de` (strate Valeur)
 
-18 ligne(s), 134 occurrence(s).
+19 ligne(s), 135 occurrence(s).
 Reconnu par : son noyau `n` `sides`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1759,6 +1760,7 @@ Reconnu par : son noyau `n` `sides`
 | entité | `dice` | `n,sides` | cible | `maladies.json` | 25 | — |  |
 | entité | `dice` | `n,sides` | cible | `maneuvers.json` | 2 | — |  |
 | entité | `dice` | `n,sides` | cible | `miscast.json` | 24 | — |  |
+| config | `dice` | `n,sides` | cible | `sea-cargo.json` | 1 | — |  |
 | entité | `dice` | `n,plus,sides` | cible | `spells.json` | 1 | — |  |
 | entité | `dice` | `n,sides` | cible | `spells.json` | 10 | — |  |
 | entité | `dice` | `n,sides` | cible | `symptoms.json` | 4 | — |  |
@@ -1770,7 +1772,7 @@ Reconnu par : son noyau `n` `sides`
 
 ### 3.6 formule de quantité (Formula, engine/ops.ts) — `formule` (strate Valeur)
 
-8 ligne(s), 27 occurrence(s).
+7 ligne(s), 23 occurrence(s).
 Reconnu par : son noyau `sum` `sinPoints` (≥ 1)
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1782,7 +1784,6 @@ Reconnu par : son noyau `sum` `sinPoints` (≥ 1)
 | entité | `rounds` | `sum` | cible | `miscast.json` | 3 | — |  |
 | entité | `sum` | `sinPoints` | cible | `miscast.json` | 10 | — | terme « (Points de Péché) » — LDB 40 l.58/62/63/65/68/71/72/73/75/77 |
 | entité | `value` | `sum` | cible | `miscast.json` | 3 | — |  |
-| config | `offerPrice` | `sum+…` | divergente | `sea-cargo.json` | 4 | — |  |
 
 ### 3.7 référence de source (livre/folio) — `source` (strate Valeur)
 
@@ -1921,7 +1922,7 @@ Reconnu par : son noyau `min` `max`
 
 ### 3.9 plage de tirage (min,max) — `plage` (strate Valeur)
 
-64 ligne(s), 1446 occurrence(s).
+66 ligne(s), 1454 occurrence(s).
 Reconnu par : son noyau `min` `max`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1942,6 +1943,7 @@ Reconnu par : son noyau `min` `max`
 | config | `entries` | `max,min+…` | cible | `drunkenness.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `entries` | `max,min+…` | cible | `incidents-monture.json` | 4 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | table | `(racine)` | `max,min+…` | cible | `interludeEvents.json` | 31 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `offerByRichesse` | `max,min+…` | cible | `land-cargo.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `rumours` | `max,min+…` | cible | `land-cargo.json` | 20 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `wineQuality` | `max,min+…` | cible | `land-cargo.json` | 6 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `araignee` | `max,min+…` | cible | `localisation.json` | 3 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
@@ -1965,6 +1967,7 @@ Reconnu par : son noyau `min` `max`
 | config | `superstructure` | `max,min+…` | cible | `river-criticals.json` | 1 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `windDirections` | `max,min+…` | cible | `river-navigation.json` | 3 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `windForces` | `max,min+…` | cible | `river-navigation.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
+| config | `offerPrice` | `max,min+…` | cible | `sea-cargo.json` | 3 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `boardEvents` | `max,min+…` | cible | `sea-events.json` | 40 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `paliers` | `max,min+…` | cible | `sea-events.json` | 5 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
 | config | `portEvents` | `max,min+…` | cible | `sea-events.json` | 18 | — | FOURCHETTE d’une rangée de table : la charge utile est INHÉRENTE — cible = fourchette PLATE {min,max} + findTableEntry (src/engine/tables.ts). #1463 S1 amendé 2026-08-31, motif au pilotage. |
@@ -2464,7 +2467,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12771** objets sur **48581** ne sont portés par AUCUNE
+Au-delà des orphelines, **12767** objets sur **48582** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -2716,7 +2719,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `careerLevels.json` | `count` | `roll` | 5 |
 | `creatures.json` | `char` | `` | 5 |
 | `criticals.json` | `durationRounds` | `dice` | 5 |
-| `land-cargo.json` | `offerByRichesse` | `label,pct,richesse` | 5 |
 | `loup-et-saumure-projet.json` | `dimensions` | `h,w` | 5 |
 | `loup-et-saumure-projet.json` | `effect` | `desc,title,type` | 5 |
 | `loup-et-saumure-projet.json` | `flags` | `` | 5 |
@@ -3346,6 +3348,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `roofMaterials.json` | `tufts` | `colors,hM,perM2` | 1 |
 | `sea-cargo.json` | `merchantSkill` | `d10,plus` | 1 |
 | `sea-cargo.json` | `bigPortSkill` | `d10,plus` | 1 |
+| `sea-cargo.json` | `offerPrice` | `max,min,pct` | 1 |
 | `sea-cargo.json` | `sellerDR` | `demand,noProduce,produces,surplus` | 1 |
 | `sea-cargo.json` | `outcomes` | `minMissing,on,pct` | 1 |
 | `sea-cargo.json` | `outcomes` | `minExtraDR,on,pct` | 1 |
@@ -3624,7 +3627,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **475** ; **61** recoupent le lexique
+Littéraux d’objet zod lus : **469** ; **58** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -3642,7 +3645,7 @@ Dont **0** littéral(aux) PARTIEL(s) du noyau — — : une mesure qui exigerait
 |---|---|---|---|---|
 | monnaie | `gold,silver` | 0 | 0 | — |
 | de | `n,sides` | 0 | 0 | — |
-| formule | `sum,sinPoints` | 2 | 2 | `miscast.ts` `sea-cargo.ts` |
+| formule | `sum,sinPoints` | 1 | 1 | `miscast.ts` |
 | source | `book` | 1 | 1 | `progression-schemas-derived.ts` |
 | bornes | `min,max` | 2 | 2 | `oups.ts` `tavernGames.ts` |
 | plage | `min,max` | 2 | 2 | `oups.ts` `tavernGames.ts` |
@@ -3671,11 +3674,10 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `driving-mishap.ts` | 18 | — | — | hors lexique | `entries` | `corps` |
 | `drunkenness.ts` | 19 | — | — | hors lexique | `entries` | `corps` |
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
-| `land-cargo.ts` | 25 | `price` | prix | declaree | `dice` | `formulaSchema` |
-| `land-cargo.ts` | 71 | `gossip` | test | divergente | `difficulty+…` | — |
+| `land-cargo.ts` | 99 | `gossip` | test | divergente | `difficulty+…` | — |
 | `miscast.ts` | 34 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
 | `miscast.ts` | 35 | — | — | hors lexique | `charOf` | `formulaSchema` |
-| `miscast.ts` | 36 | — | — | hors lexique | `dice` | `formulaSchema` |
+| `miscast.ts` | 36 | — | — | hors lexique | `dice` | `prixTireSchema` |
 | `miscast.ts` | 37 | — | — | hors lexique | `rolled` | `formulaSchema` |
 | `miscast.ts` | 38 | — | — | hors lexique | `indiceOf` | `formulaSchema` |
 | `miscast.ts` | 39 | — | — | hors lexique | `stacks` | `formulaSchema` |
@@ -3695,11 +3697,9 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `raceAppearance.ts` | 33 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
 | `river-navigation.ts` | 39 | `rowingAgility` | test | divergente | `difficulty+…` | — |
 | `river-navigation.ts` | 54 | `temporaryRepair` | test | divergente | `difficulty+…` | — |
-| `sea-cargo.ts` | 24 | `price` | prix | declaree | `dice` | `formulaSchema` |
-| `sea-cargo.ts` | 58 | `offerPrice` | formule | divergente | `sum+…` | — |
-| `sea-cargo.ts` | 61 | `producesGossip` | test | divergente | `difficulty+…` | — |
-| `sea-cargo.ts` | 62 | `surplusGossip` | test | divergente | `difficulty+…` | — |
-| `sea-cargo.ts` | 76 | `test` | test | divergente | `difficulty,skill+…` | — |
+| `sea-cargo.ts` | 89 | `producesGossip` | test | divergente | `difficulty+…` | — |
+| `sea-cargo.ts` | 90 | `surplusGossip` | test | divergente | `difficulty+…` | — |
+| `sea-cargo.ts` | 104 | `test` | test | divergente | `difficulty,skill+…` | — |
 | `sea-navigation.ts` | 19 | `epuisement` | test | divergente | `difficulty+…` | — |
 | `sea-perils.ts` | 35 | `freeTest` | test | divergente | `char,difficulty,skill+…` | — |
 | `sea-perils.ts` | 60 | `evasion` | test | divergente | `difficulty+…` | — |

@@ -7,23 +7,51 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import {
+  difficultySchema,
+  ecartsDeCouverture,
+  parSaison,
+  plageOuverteSchema,
+  prixSaisonnierSchema,
+  prixTireSchema,
+  sourceRefSchema,
+} from '../grammaire/valeurs';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'sea-cargo.json';
 export const famille = 'config';
 
 const seasonRange = z.tuple([z.number(), z.number()]);
-const seasonPrice = z.strictObject({ printemps: z.number(), ete: z.number(), automne: z.number(), hiver: z.number() });
 
 /** Une CARGAISON ÉCHANGEABLE : disponibilité saisonnière + prix (tableau des cargaisons, l.406-434). */
 const cargoMarchand = z.strictObject({
   id: z.string(),
   label: z.string(),
-  avail: z.strictObject({ printemps: seasonRange, ete: seasonRange, automne: seasonRange, hiver: seasonRange }),
-  price: z.union([seasonPrice, z.strictObject({ dice: z.string() })]),
+  avail: parSaison(seasonRange),
+  price: z.union([prixSaisonnierSchema, prixTireSchema]),
   source: sourceRefSchema,
 });
+
+/**
+ * BANDES DU PRIX D'OFFRE (l.378-383) — la colonne « Richesse + Taille + Demande du Lieu » est un SEUIL,
+ * donc une fourchette : la table s'énumère 1, 2, 3, puis « 4 ou plus », dernière bande sans plafond
+ * (`plageOuverteSchema`). Le nom `sum` disait la formule qui produit l'entrée, pas ce que la colonne EST.
+ *
+ * La CONTIGUÏTÉ est un invariant du TABLEAU, pas d'une bande : sans elle, un trou ouvert au Codex ne
+ * lèverait rien — `findTableEntry` (`src/engine/tables.ts`) replie sur la dernière bande, et une escale
+ * misérable se verrait offrir le prix de base plein.
+ */
+const offerPriceSchema = z
+  .array(z.strictObject({ ...plageOuverteSchema.shape, pct: z.number() }))
+  .superRefine((bandes, ctx) => {
+    const ecarts = ecartsDeCouverture(bandes, 1, 'ouverte', (b) => `la bande ${b.min}–${b.max ?? '+'} (${b.pct} %)`);
+    if (ecarts.length) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `sea-cargo.json › sell.offerPrice : les bandes ne couvrent pas Richesse + Taille + Demande d'un seul tenant depuis 1 — ${ecarts.join(' ; ')}.`,
+      });
+    }
+  });
 
 /** Un MARQUEUR de la colonne Production de l'Index (« commerce », « minimum vital », MDG 15 l.321) :
  *  il occupe la même colonne que les cargaisons sans être une marchandise — donc ni disponibilité ni
@@ -55,7 +83,7 @@ const doc = document(
     source: sourceRefSchema,
   }),
   sell: z.strictObject({
-    offerPrice: z.array(z.strictObject({ sum: z.number(), pct: z.number() })),
+    offerPrice: offerPriceSchema,
     noProduceTargetPerSize: z.number(),
     commerceBonus: z.number(),
     producesGossip: z.strictObject({ difficulty: difficultySchema, targetPerSize: z.number(), minMilles: z.number() }),

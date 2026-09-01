@@ -39,6 +39,7 @@
 //   - Le classement est ORDONNÉ : une VALEUR (reconnue à son noyau) passe avant une RÉFÉRENCE ; un objet qui recoupe deux concepts n’est compté qu’une fois.
 //   - Deux comparateurs de `water-exposure.json` (`<=`/`>=` sous `woundsRemaining`/`woundsLost`) échappent à `conditionSchema` et restent comptés en op.
 //   - Le scan AST est borné aux littéraux `z.object`/`z.strictObject`/`z.looseObject` des `src/data/schemas/defs/*.ts` : il ne voit ni les clés ajoutées par `.extend(...)`, ni un schéma composé par une fabrique, ni les defs hors de ce dossier. Le « schéma commun candidat » est apparié par SIGNATURE EXACTE.
+//   - `schemasCommuns` ne garde qu’UN nom par SIGNATURE (le premier vu, racines avant niches) : deux nœuds de grammaire de même signature se masquent l’un l’autre, et l’arrivée du second RENOMME le « commun » recommandé d’une ligne de redéclaration sans qu’aucun porteur n’ait bougé — mesuré 2026-09-01, `miscast.ts | dice` est passé de `formulaSchema` à `prixTireSchema` (#1463 L-gram-3) à donnée, def et signature INCHANGÉS.
 //   - Les portes MOTEUR (`src/engine`, `src/state`) et les JSON hors documents (outillage, `public/qc/*`, baselines de gardes) ne sont pas mesurés : ce contrat parle de la DONNÉE authorée et de ses schémas.
 //   - Les CACHES de parse AST (`CACHE_SOURCE`, `CACHE_LITTERAUX`) sont module-level et ne sont jamais invalidés : en mode watch, une édition d’un `defs/*.ts` n’est pas re-mesurée sans redémarrage.
 //   - Le concept `test` CÈDE tout objet qui DÉSIGNE une entité (clause `horsDesignation` : clé de `CLES_IDENTITE`, ou clé en `RX_CLE_REFERENCE`) et passe APRÈS `plage` : 12 objets porteurs de `difficulty` restent classés `test` sans en être un — `tavernGames.json › volley.rows` 7 (rangées sans bornes authorées), `sea-events.json › params` 3 (le sujet du jet y vit sous `testType`) et `etats.json › difficultyBy` 2. Ce qui leur manque n’est pas TOUT discriminant structurel (`difficultyBy` porte `{cond, difficulty}`, et `cond` en est un) : c’est une clé de DÉSIGNATION, la seule que ce concept cède.
@@ -596,10 +597,6 @@ export const STRUCTURES_FORMES = [
   { concept: "test", dataset: "river-criticals.json", champ: "crewTest", signature: "char,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "river-navigation.json", champ: "rowingAgility", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "river-navigation.json", champ: "temporaryRepair", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  // SURFACÉE par le concept `formule` (#1463 L-de-1) : un prix d'offre qui ÉTALE son pourcentage à
-  // côté de la somme, au lieu de composer la `Formula` générale. Divergence RÉELLE, jamais mesurable
-  // avant que le concept n'existe au lexique.
-  { concept: "formule", dataset: "sea-cargo.json", champ: "offerPrice", signature: "sum+…", statut: "divergente", strate: "Valeur", occurrences: 4, lot: "L4 #1463", date: "2026-09-01" },
   { concept: "test", dataset: "sea-cargo.json", champ: "producesGossip", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-cargo.json", champ: "surplusGossip", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-cargo.json", champ: "test", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -737,10 +734,9 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "criticals.ts", champ: "resist", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { def: "etats.ts", champ: "", concept: "test", signature: "characteristic,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "land-cargo.ts", champ: "gossip", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "land-cargo.ts", champ: "price", concept: "prix", signature: "dice", statut: "declaree", commun: "formulaSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "bonusOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "charOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
-  { def: "miscast.ts", champ: "", concept: "", signature: "dice", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
+  { def: "miscast.ts", champ: "", concept: "", signature: "dice", statut: "hors lexique", commun: "prixTireSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" }, // `commun` recalé au 2026-09-01 (#1463 L-gram-3) : le littéral `{dice}` de la grammaire que le scan nomme est désormais `prixTireSchema` — MÊME signature, même ligne, aucun déplacement de porteur
   { def: "miscast.ts", champ: "", concept: "", signature: "engagedAdvantageGap", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "indiceOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "miscast.ts", champ: "", concept: "", signature: "rolled", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
@@ -757,8 +753,6 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "raceAppearance.ts", champ: "parts", concept: "", signature: "cheveux,visage", statut: "hors lexique", commun: "entityAppearanceSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "river-navigation.ts", champ: "rowingAgility", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "river-navigation.ts", champ: "temporaryRepair", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "sea-cargo.ts", champ: "price", concept: "prix", signature: "dice", statut: "declaree", commun: "formulaSchema", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "sea-cargo.ts", champ: "offerPrice", concept: "formule", signature: "sum+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-09-01" },
   { def: "sea-cargo.ts", champ: "producesGossip", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "sea-cargo.ts", champ: "surplusGossip", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "sea-cargo.ts", champ: "test", concept: "test", signature: "difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },

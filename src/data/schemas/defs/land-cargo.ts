@@ -7,13 +7,41 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
+import {
+  difficultySchema,
+  ecartsDeCouverture,
+  parSaison,
+  plageSchema,
+  prixSaisonnierSchema,
+  prixTireSchema,
+  sourceRefSchema,
+} from '../grammaire/valeurs';
 
 export const file = 'land-cargo.json';
 export const famille = 'config';
 
 const seasonRange = z.tuple([z.number(), z.number()]);
-const seasonPrice = z.strictObject({ printemps: z.number(), ete: z.number(), automne: z.number(), hiver: z.number() });
+
+/**
+ * BANDES DE LA MISE À PRIX (l.148-156) — la colonne « Richesse de l'emplacement » est un INDICE (l.52-60 :
+ * 1 à 5), et la table en donne une ligne par valeur : cinq bandes d'un point, FERMÉES aux deux bouts (le
+ * livre n'écrit ici aucun « ou plus », contrairement à son homologue maritime). Le nom `richesse` disait
+ * ce que la colonne CONTIENT ; la fourchette dit ce qu'elle est, et `findTableEntry` la lit.
+ *
+ * La CONTIGUÏTÉ est un invariant du TABLEAU : un trou ouvert au Codex ne lèverait rien — le lookup
+ * replie, et un lieu misérable se verrait offrir la prime d'un lieu prospère.
+ */
+const offerByRichesseSchema = z
+  .array(z.strictObject({ ...plageSchema.shape, label: z.string(), pct: z.number() }))
+  .superRefine((bandes, ctx) => {
+    const ecarts = ecartsDeCouverture(bandes, 1, 5, (b) => `la bande ${b.min}–${b.max} (« ${b.label} »)`);
+    if (ecarts.length) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `land-cargo.json › sell.offerByRichesse : les bandes ne couvrent pas l'Indice de richesse 1 à 5 d'un seul tenant — ${ecarts.join(' ; ')}.`,
+      });
+    }
+  });
 
 /** Une CARGAISON ÉCHANGEABLE : disponibilité saisonnière + prix (l.71-89). */
 const cargoMarchand = z.strictObject({
@@ -21,8 +49,8 @@ const cargoMarchand = z.strictObject({
   label: z.string(),
   /** Vin/Eau-de-vie : prix par `wineQuality`, pas par la colonne saisonnière (l.93-104). */
   wine: z.boolean().optional(),
-  avail: z.strictObject({ printemps: seasonRange, ete: seasonRange, automne: seasonRange, hiver: seasonRange }),
-  price: z.union([seasonPrice, z.strictObject({ dice: z.string() })]),
+  avail: parSaison(seasonRange),
+  price: z.union([prixSaisonnierSchema, prixTireSchema]),
   source: sourceRefSchema,
 });
 
@@ -65,7 +93,7 @@ const doc = document(
     targetPerSize: z.number(),
     commerceBonus: z.number(),
     dumpingPctOfBase: z.number(),
-    offerByRichesse: z.array(z.strictObject({ richesse: z.number(), label: z.string(), pct: z.number() })),
+    offerByRichesse: offerByRichesseSchema,
     source: sourceRefSchema,
   }),
   gossip: z.strictObject({ difficulty: difficultySchema, mod: z.number(), source: sourceRefSchema }),
