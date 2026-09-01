@@ -31,6 +31,7 @@
 - [FR uniquement](game-francais-jamais-anglais.md) · [sources FR élargies](game-source-fr-campagne-custom.md) · [PowerShell](env-use-powershell-not-bash.md) · [débloquer l'autre session](game-cross-session-console-unblock.md) · [pièges background](env-session-background-pieges-outils.md) · [CHARGE](env-charge-machine-un-seul-agent-lourd.md) — `--minWorkers=1` · [git show : commit AVANT --](env-git-show-ordre-commit-avant-paths.md).
 
 ## Chantiers récents / état
+- **[DIAGNOSTIC DE DÉRIVE 2026-09-01](project-diagnostic-derive-2026-09-01.md)** — 4 verdicts (CI rouge 100 % 3 semaines = portes absentes, pas le doublon ; fan-out ×16 ; règles en prose récidivent ; pertes réelles = lot A2 écran de capacités + WIP .wt-1501) ; 10 propositions EN ATTENTE de décision user.
 - **[#1463 : FERMABLE SOUS DÉCISION (grand juge 2026-09-01)](project-1463-cloture-sous-decision-2026-09-01.md)** — 3 décisions user en attente (#1654 AST 71, #1620 TypeChecker, #1657 concept test) ; ne pas fermer sans ; puis #1388.
 - **[RÉGIME DE FERMETURE 2026-08-30](project-audit-workflow-2026-08-30-regime-de-fermeture.md)** — fan-out ≤1, zéro net, lots 10-12, épiques sans salve ; #1591 lot 3 PARQUÉ (#1552).
 - [#1411 CONSOLE JOUABLE : LIVRÉ](project-1411-console-jouable-livree.md) — restes = arbitrages #1434/#1476/#1477.
@@ -70,3 +71,4 @@
 - **[FUSION des .json par `type`](user-direction-fusion-json-par-type.md)** — 2026-09-01 « fusionner des .json et juste rajouter un type pour des systèmes similaires » : cible par défaut = la collection la plus peuplée + discriminant, jamais une Nᵉ option de fabrique par fichier.
 - **[FINALITÉ #1463 = MUTUALISER](feedback-finalite-1463-mutualiser-les-divergences.md)** — 2026-09-01 « mutualiser les systèmes/structures qui ont divergé par manque de rigueur » ; le lexique/stock sont des instruments ; « liberté d'authoring » exige une preuve.
 - [Vagues de stock #1463 : leçons](game-vague-de-stock-lecons-2026-09-01.md) — cardinal sur le RÉSULTAT, noyau de lexique mesuré (vol de formes), le défaut est le LECTEUR, récapitulatif figé = dérivé.
+- **[UNE SESSION PAR CHANTIER](user-regime-une-session-par-chantier-2026-09-01.md)** — 2026-09-01 « Faut arreter les sessions en backgrounds » → arbre principal = INTÉGRATION seule, trains en worktree, suite complète + tsc avant push, pas de push sur CI rouge, fan-out ≤ 1 par commit, aucune vague hors plan sans validation DIRECTE (un arbitrage relayé n'autorise rien).
