@@ -65,9 +65,13 @@ function seaRows(w, h, footprints) {
  *  quoi que la coque MANŒUVRE et FASSE FEU à la couche Mer. Témoin cohérent avec `loup-et-saumure`. */
 const HELM_SKILLS = [{ id: 'voile', value: 55 }, { id: 'ramer', value: 45 }];
 const GUN_SKILLS = [{ id: 'projectiles', spec: 'poudre-noire', value: 55 }];
-/** Marin d'équipage COMPÉTENT (passager, hors rendu à la Mer) — CustomStatblock sourcé (règle stricte 7). */
-function marine(id, x, y, label, skills) {
+/** Marin d'équipage COMPÉTENT (passager, hors rendu à la Mer) — CustomStatblock sourcé (règle stricte 7).
+ *  `tenue` : id de garde-robe du rig (`src/gameIso/rig/parts/tenues/defs/`). Sans réf de bestiaire, une
+ *  entité `personnage` n'a d'apparence à résoudre que par son Espèce — `entityRigProfileFor`
+ *  (`src/gameIso/rig/enemyProfile.ts:270-274`) n'en dérive AUCUNE sans l'une des deux. */
+function marine(id, x, y, label, skills, tenue) {
   return { id, kind: 'personnage', pos: { x, y }, label,
+    appearance: { species: 'humains-reiklander', tenue },
     // Clés = `CharKey` (slugs pleins, #311/`src/engine/types.ts`) ∪ `M`/`B` (`CustomStatblock.char`).
     statblock: {
       type: 'statblock',
@@ -178,8 +182,8 @@ scenes.push(scene({
       [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('pierrier', 'proue', [{ ref: 'balles-et-poudre-pierrier', qty: 16 }])]),
-    marine('louve-helm', 3, 6, 'Timonier de la Louve grise', HELM_SKILLS),
-    marine('louve-gun', 3, 8, 'Canonnier de la Louve grise', GUN_SKILLS),
+    marine('louve-helm', 3, 6, 'Timonier de la Louve grise', HELM_SKILLS, 'marin'),
+    marine('louve-gun', 3, 8, 'Canonnier de la Louve grise', GUN_SKILLS, 'artilleur-de-navire'),
     // Trait naval du catalogue (`naval-traits.json`, kind:'trait') posé en amélioration d'INSTANCE sur la
     // coque pirate — « Renforcé » (MDG p.97, +10 Endurance/niveau), thématiquement une coque de pirates
     // renforcée pour l'abordage. Passagers : les pirates + le chef, + un barreur/canonnier compétents.
@@ -191,8 +195,8 @@ scenes.push(scene({
     { id: 'pirate-1', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 18, y: 6 }, label: 'Pirate' },
     { id: 'pirate-2', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 18, y: 8 }, label: 'Pirate' },
     { id: 'chef-pirate-1', kind: 'personnage', ref: 'chef-pirate', pos: { x: 19, y: 7 }, label: 'Le chef des pirates' },
-    marine('cogue-helm', 18, 5, 'Barreur de la cogue', HELM_SKILLS),
-    marine('cogue-gun', 18, 9, 'Canonnier de la cogue', GUN_SKILLS),
+    marine('cogue-helm', 18, 5, 'Barreur de la cogue', HELM_SKILLS, 'marin'),
+    marine('cogue-gun', 18, 9, 'Canonnier de la cogue', GUN_SKILLS, 'artilleur-de-navire'),
   ],
   encounters: [
     {

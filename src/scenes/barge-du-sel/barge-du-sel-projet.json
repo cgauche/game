@@ -791,6 +791,10 @@
       "y": 6
      },
      "label": "Timonier de la Louve grise",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "marin"
+     },
      "statblock": {
       "type": "statblock",
       "label": "Timonier de la Louve grise",
@@ -827,6 +831,10 @@
       "y": 8
      },
      "label": "Canonnier de la Louve grise",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "artilleur-de-navire"
+     },
      "statblock": {
       "type": "statblock",
       "label": "Canonnier de la Louve grise",
@@ -1006,6 +1014,10 @@
       "y": 5
      },
      "label": "Barreur de la cogue",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "marin"
+     },
      "statblock": {
       "type": "statblock",
       "label": "Barreur de la cogue",
@@ -1042,6 +1054,10 @@
       "y": 9
      },
      "label": "Canonnier de la cogue",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "artilleur-de-navire"
+     },
      "statblock": {
       "type": "statblock",
       "label": "Canonnier de la cogue",

@@ -7,6 +7,8 @@ import { chebyshev } from '../../engine/grid';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { sceneMetresPerTile, isMerScene, type Scene, type Effect } from '../../state/scene';
 import { findCreatureById, findVehicleById, findNavalTrait, findCrewRoleById } from '../../data';
+import { rigSpeciesVocab } from '../../gameIso/rig/appearance';
+import { TENUE_BY_ID } from '../../gameIso/rig/parts/tenues';
 // @ts-expect-error — outil d'auteur .mjs sans types (lib.mjs) ; on n'exerce que le forward de metresPerTile.
 import { scene as makeScene } from '../../../scripts/campagne/lib.mjs';
 
@@ -84,6 +86,27 @@ describe('La Barge du Sel — mini-campagne navale (zéro code applicatif)', () 
       for (const e of sc.entities)
         if (e.statblock && !e.statblock.label) missing.push(`${sc.id}:${e.id}`);
     expect(missing).toEqual([]);
+  });
+
+  /**
+   * Une entité `personnage` n'a d'apparence à résoudre que par sa RÉF (créature/véhicule du catalogue)
+   * ou par son ESPÈCE (`appearance.species`) : `entityRigProfileFor` (`src/gameIso/rig/enemyProfile.ts:270-274`)
+   * n'en dérive AUCUNE sans l'une des deux, et le rendu signale l'entité muette en dev. Le contrat
+   * porte sur TOUT le paquet — l'équipage exposé des deux coques compris.
+   */
+  it('toute entité PERSONNAGE résout son apparence : réf de catalogue OU Espèce du rig (tenue résolue)', () => {
+    const muettes: string[] = [];
+    const inconnues: string[] = [];
+    for (const sc of project)
+      for (const e of sc.entities) {
+        if (e.kind !== 'personnage') continue;
+        const species = e.appearance?.species;
+        if (!e.ref && !species) muettes.push(`${sc.id}:${e.id} (${e.label ?? 'sans libellé'})`);
+        if (species && !rigSpeciesVocab().has(species)) inconnues.push(`${sc.id}:${e.id} espèce « ${species} »`);
+        if (e.appearance?.tenue && !TENUE_BY_ID[e.appearance.tenue]) inconnues.push(`${sc.id}:${e.id} tenue « ${e.appearance.tenue} »`);
+      }
+    expect(muettes, 'entité(s) de personnage sans réf NI Espèce — le rig n’a rien à dessiner et le rendu le signale en dev').toEqual([]);
+    expect(inconnues, 'espèce/tenue hors des registres du rig — l’apparence retombe en repli muet').toEqual([]);
   });
 
   it('« La Louve grise » est une coque ALLIÉE armée de deux bordées + une chasse de proue (crewIds de poste vide)', () => {
