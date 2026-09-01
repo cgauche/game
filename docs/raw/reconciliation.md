@@ -35,8 +35,8 @@ _Aucune._
 ## A1-AUTRES — Chapitres appelés par le CODE (autres livres), ABSENTS de l'Atlas (trous durs)
 
 ### ADE I 2 — 2 réf(s) code, 0 dans l'Atlas
-- `src/data/talents.json:3154` (l.267) — "note": "ADE I 02 l.267"
-- `src/data/talents.json:4708` (l.276) — "note": "ADE I 02 l.276"
+- `src/data/talents.json:3194` (l.267) — "note": "ADE I 02 l.267"
+- `src/data/talents.json:4808` (l.276) — "note": "ADE I 02 l.276"
 
 ### EDO 10 — 1 réf(s) code, 0 dans l'Atlas
 - `src/data/skills.json:1878` (l.736) — "note": "EDO 10 l.736"
@@ -52,7 +52,7 @@ _Aucune._
 - `src/data/reseau-routier.json:192` (l.11) — "note": "EDOC 10 l.11 — section « Patrouilles routières » ; la phrase reprend l.17, l'encadré « LES JUSTICIERS » (l.13-15) la coupant."
 
 ### MCLB 2 — 5 réf(s) code, 0 dans l'Atlas
-- `src/data/creatures.json:59017` (l.2420) — "note": "MCLB 02 l.2420"
+- `src/data/creatures.json:59012` (l.2420) — "note": "MCLB 02 l.2420"
 - `src/data/skills.json:962` (l.1844) — "note": "MCLB 02 l.1844"
 - `src/data/skills.json:1559` (l.1322) — "note": "MCLB 02 l.1322"
 - `src/data/skills.json:1569` (l.2426) — "note": "MCLB 02 l.2426"
@@ -123,6 +123,11 @@ _Aucune._
 - l.46 — `src/state/interlude-activities.test.ts:303` — // ── Identifier un artefact magique (ADE II 4 l.46-59) ─────────────────────────────────────
 - l.50 — `src/state/interlude-activities.test.ts:362` — it('Identifier : Échec (−2 à −3) → confond avec un objet similaire, AUCUNE fausse Particularité (ADE II 4 l.50)', () => {
 
+### EDOC 13 — 3/8 ligne(s) code hors couverture
+- l.137 — `src/data/index.ts:1057` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
+- l.522 — `src/data/index.ts:1620` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
+- l.524 — `src/data/refs-migrated.test.ts:849` — *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
+
 ### MDG 15 — 3/43 ligne(s) code hors couverture
 - l.461 — `src/data/naval-ports.test.ts:47` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
 - l.468 — `src/data/naval-ports.test.ts:67` — it('Kirkjugarður Langskipa : production armes/produits-de-luxe, sans surplus ni demande (MDG 15 l.468-469, folio 138)', () => {
@@ -132,10 +137,6 @@ _Aucune._
 - l.353 — `src/data/arcanePhenomena.ts:77` — /** Modificateurs de NIVEAU D'INCANTATION apportés par le lieu (`VDM 14 l.353`, l.437, l.489) —
 - l.437 — `src/engine/castingNumber.test.ts:28` — it('Caverne de l’Attache : moitié ARRONDIE À L’INFÉRIEUR, Sorts de la Bête (VDM 14 l.437)', () => {
 - l.489 — `src/data/index.ts:2045` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
-
-### EDOC 13 — 2/7 ligne(s) code hors couverture
-- l.137 — `src/data/index.ts:1057` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
-- l.522 — `src/data/index.ts:1620` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
 
 ### ADE I 6 — 1/1 ligne(s) code hors couverture
 - l.185 — `src/data/index.ts:1057` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).

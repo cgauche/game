@@ -28,7 +28,10 @@ const CAS_TALENT: TalentRef[] = [
   { id: 'lire-ecrire' },
   { id: 'magie-des-arcanes', spec: 'bete' },
   { id: 'maitrise-du-combat', times: 3 },
-  { id: 'savoir-vivre', spec: 'Armée' },
+  // Spéc PAR ID, rendue « Savoir-vivre (Armée) » et relue à l'id : `armee` est au catalogue
+  // (frenchy.bzh 13 l.128, folio 30). Sans entrée de catalogue, le round-trip porterait du texte
+  // libre, pas l'id que l'en-tête exige.
+  { id: 'savoir-vivre', spec: 'armee' },
 ];
 
 describe('Format livre — round-trip texte d’une SkillRef (L2 #1548)', () => {

@@ -827,94 +827,34 @@ describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock no
   const dette = hors.filter((h) => h.catalogue);
   const textesDInstance = hors.filter((h) => !h.catalogue);
 
-  /** STOCK NOMINATIF DÉCROISSANT — mesure du 2026-09-01 (après B2) : 73 spécs de Talent à créer au
-   *  catalogue, clé `fichier|porteur|talentId|spec`. Par Talent : savoir-vivre 30, bon-marcheur 22,
-   *  sans-peur 10, savant 5, haine 2, travailleur-qualifie 2, maitre-artisan 2 ; par livre :
-   *  frenchy-bzh 73 — les livres OFFICIELS y sont à ZÉRO. Une clé se RETIRE quand sa spéc résout.
+  /** STOCK NOMINATIF DÉCROISSANT — mesure du 2026-09-01 (après B3) : 5 spécs de Talent à créer au
+   *  catalogue, clé `fichier|porteur|talentId|spec`. Par Talent : bon-marcheur 5 ; par livre :
+   *  frenchy-bzh 5 — les livres OFFICIELS y sont à ZÉRO. Une clé se RETIRE quand sa spéc résout.
+   *
+   *  CE QUI RESTE, ET POURQUOI : les 5 lignes impriment un CHOIX BORNÉ entre deux terrains, pas une
+   *  spéc — « Arpenteur (Plaine_OU_Forêt) » (`frenchy.bzh 26 l.366`, `l.413`) et « Arpenteur
+   *  (Forêt_ou_Plaine) » (`l.686`, `l.950`, `l.1008`), toutes cinq décrites « Bonus +N DR pour les
+   *  Tests d'Athlétisme réussis dans l'environnement CHOISI ». La forme canonique du dépôt pour ce
+   *  cas est `choix: [ids]` (L2 #1548) ; `talentRefSchema` (`schemas/grammaire/reference.ts`) n'a
+   *  pas ce régime, concept LOTÉ L3 #1463 (`schemas/defs-scenes/narratif.ts` l.127-133). La
+   *  sentinelle libre « au choix » les éteindrait en perdant la BORNE imprimée : elles restent ici.
    *
    *  ANGLE MORT ÉNONCÉ (mesure du 2026-09-01, #1646) — le contrat ne walke que les TABLEAUX
    *  `talents[]` de `creatures`/`careerLevels`/`species` (`walkSkillRefs`), seuls fichiers qui en
    *  portent (221 / 172 / 40 spécs relevées). Une réf de Talent spécialisée par un AUTRE champ
    *  échappe à l'instrument : 18 porteurs `{ talentId, spec }` mesurés hors de ces tableaux —
-   *  `spells.json` 6, `mutations.json` 5, `traits.json` 4, `stars.json` 2, `axes.json` 1. Deux sont
-   *  de la MÊME classe que le stock ci-dessus (spéc absente du catalogue de `savoir-vivre`) :
-   *  `traits.json:2051` `savoir-vivre|disciples-de-tzeentch` et `traits.json:2692`
-   *  `savoir-vivre|suivants-de-khorne` ; un de la classe du texte d'instance (Talent SANS catalogue,
+   *  `spells.json` 6, `mutations.json` 5, `traits.json` 4, `stars.json` 2, `axes.json` 1. Les deux
+   *  de la MÊME classe que le stock ci-dessus (`traits.json:2051` `savoir-vivre|disciples-de-tzeentch`
+   *  et `traits.json:2692` `savoir-vivre|suivants-de-khorne`) sont SOLDÉS par B3 : leurs entrées
+   *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
+   *  `MDG 07 l.250` folio 56). Reste un cas de la classe du texte d'instance (Talent SANS catalogue,
    *  #1621) : `mutations.json:1619` `attirant|Mutants et hommes-bêtes`. */
   const SPECS_DE_TALENT_A_CREER = new Set<string>([
-    'creatures|araignee-geante-adulte|bon-marcheur|Forêt',
-    'creatures|araignee-geante-impitoyable|bon-marcheur|Forêt',
-    'creatures|architechnomage|savant|Engingneurie',
-    'creatures|architechnomage|savoir-vivre|skavens',
-    'creatures|architechnomage|travailleur-qualifie|Engingneurie',
-    'creatures|batonnier|savoir-vivre|Lettrés',
-    'creatures|capitaine-du-guet|savoir-vivre|Armée',
-    'creatures|capitaine-patrouilleurs-fluviaux|sans-peur|Naufrageurs & Pirates Fluviaux',
-    'creatures|capitaine-patrouilleurs-ruraux|sans-peur|Bandits',
-    'creatures|capitaine-patrouilleurs-ruraux|savoir-vivre|Militaires',
-    'creatures|chasseresse-des-ombres|bon-marcheur|Forêt',
-    'creatures|chef-d-escadron|sans-peur|Nains',
-    'creatures|chef-d-escadron|savoir-vivre|skavens',
-    'creatures|chef-de-clan|savoir-vivre|Skavens',
-    'creatures|chef-de-meute|bon-marcheur|Forêt',
-    'creatures|chef-de-portee|savoir-vivre|Skavens',
-    'creatures|chef-de-section|savoir-vivre|skavens',
-    'creatures|erudit-de-renom|savoir-vivre|Lettrés',
-    'creatures|garde-chiourme|savoir-vivre|Skavens',
-    'creatures|gor-eclaireur|bon-marcheur|Forêt',
-    'creatures|grand-maitre-des-hybridations|maitre-artisan|Ingénierie',
-    'creatures|grand-maitre-des-hybridations|savant|Engingneurie',
-    'creatures|grand-sanglier-ombrageux|bon-marcheur|Forêt',
-    'creatures|grand-sanglier-ombrageux|sans-peur|Bêtes Sauvages',
-    'creatures|grande-pretresse-de-rhya|savoir-vivre|Religieux',
     'creatures|haut-druide-de-la-foi-antique|bon-marcheur|ForêtouPlaine',
-    'creatures|haut-druide-de-la-foi-antique|savoir-vivre|Religieux',
-    'creatures|haut-juge|savoir-vivre|Lettrés',
     'creatures|haut-pretre-rodeur-de-taal|bon-marcheur|ForêtouPlaine',
-    'creatures|jeune-araignee-geante|bon-marcheur|Forêt',
-    'creatures|jeune-loup|bon-marcheur|Forêt',
-    'creatures|jeune-sanglier|bon-marcheur|Forêt',
-    'creatures|juge|savoir-vivre|Lettrés',
-    'creatures|kapo|savoir-vivre|Skavens',
-    'creatures|loup-adulte|bon-marcheur|Forêt',
-    'creatures|maistre-apothicaire|savoir-vivre|Lettrés',
-    'creatures|maistre-herboriste|bon-marcheur|Forêt',
-    'creatures|maitre-des-hybridation|maitre-artisan|Ingénierie',
     'creatures|maitre-des-taillis|bon-marcheur|PlaineOUForêt',
-    'creatures|maraudeur-du-chaos-chef-de-bande|sans-peur|tous ennemis',
-    'creatures|maraudeur-du-chaos-chef-de-guerre|sans-peur|tous ennemis',
-    'creatures|maraudeur-du-chaos|sans-peur|tous ennemis',
-    'creatures|moine-d-ulric|savoir-vivre|Cultes',
-    'creatures|moine-de-sigmar|savoir-vivre|Cultes',
-    'creatures|moine-de-taal|savoir-vivre|Religieux',
-    'creatures|officier|savoir-vivre|Militaires',
-    'creatures|pretre-d-ulric|haine|Ennemis d’Ulric',
-    'creatures|pretre-d-ulric|savoir-vivre|Cultes',
-    'creatures|pretre-de-sigmar|haine|Ennemis de Sigmar',
-    'creatures|pretre-de-sigmar|savoir-vivre|Cultes',
     'creatures|pretre-rodeur-de-taal|bon-marcheur|ForêtouPlaine',
-    'creatures|pretresse-de-shallya|savoir-vivre|Cultes',
-    'creatures|pretresse-de-verena|savoir-vivre|Cultes',
     'creatures|rebouteux|bon-marcheur|PlaineOUForêt',
-    'creatures|reine-des-cryptes|savant|Local',
-    'creatures|religieuse-de-rhya|savoir-vivre|Religieux',
-    'creatures|religieuse-de-shallya|savoir-vivre|Cultes',
-    'creatures|religieuse-de-verena|savoir-vivre|Cultes',
-    'creatures|riverain-respecte|bon-marcheur|Marais',
-    'creatures|riverain-respecte|savant|Rivières',
-    'creatures|riverain|bon-marcheur|Marais',
-    'creatures|roi-du-trafic|sans-peur|Patrouilleurs',
-    'creatures|sanglier-adulte|bon-marcheur|Forêt',
-    'creatures|sanglier-feroce|bon-marcheur|Forêt',
-    'creatures|seigneur-brigand|sans-peur|Patrouilleurs',
-    'creatures|sergent-du-guet|savoir-vivre|Armée',
-    'creatures|sergent-patrouilleurs-ruraux|savoir-vivre|Militaires',
-    'creatures|sous-officier|savoir-vivre|Militaires',
-    'creatures|technomage-experimente|travailleur-qualifie|Engingneurie',
-    'creatures|traqueur-impitoyable|bon-marcheur|Forêt',
-    'creatures|traqueur-impitoyable|sans-peur|Bêtes Sauvages',
-    'creatures|venerable|savant|Local',
-    'creatures|vhargulf|bon-marcheur|Environnement au choix',
   ]);
 
   it('creatures/careerLevels/species : zéro spec de Talent hors catalogue sous un livre extrait, hors stock nominatif', () => {

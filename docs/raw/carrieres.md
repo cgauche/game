@@ -599,7 +599,7 @@ Ces Carrières sont les Carrières **existantes** (LDB + Côtiers), réinterpré
 **Sources RAW** : `MDG 07 l.263-311`
 **Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 7` (l.263-311) → `humains-bjornling-norse`, `humains-sarl-norse`, `humains-skaeling-norse`, `norsca`, `marque-de-khorne` — `src/data/skills.json`, `src/data/species.json`, `src/data/traits.json`
+- `MDG 7` (l.263-311) → `humains-bjornling-norse`, `humains-sarl-norse`, `humains-skaeling-norse`, `norsca`, `marque-de-khorne`, `suivants-de-khorne` — `src/data/skills.json`, `src/data/species.json`, `src/data/talents.json`, `src/data/traits.json`
 - sans code : `MDG 7` (l.305-311)
 
 ---
@@ -623,7 +623,7 @@ Trois origines humaines norses (`MDG 07 l.228-246`) :
 **Sources RAW** : `MDG 07 l.222-260`
 **Voir aussi** : [Carrières norses (MDG)](#carrières-norses-mdg) · [Trait Marque de Khorne (MDG)](#trait-marque-de-khorne-mdg)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 7` (l.222-260) → `hiddenGroupsOf`, `TraitInstance`, `passiveCastPenalties`, `careerTalentAdditions`, `traitGrantedTalents`, `effectiveTalents`, `humains-bjornling-norse`, `humains-sarl-norse`, `humains-skaeling-norse`, `norsca`, +4 — `src/data/creatures.json`, `src/data/index.ts`, `src/data/mutations.json`, `src/data/skills.json`, `src/data/species.json`, `src/data/traits.json`, +4 fichiers
+- `MDG 7` (l.222-260) → `hiddenGroupsOf`, `TraitInstance`, `passiveCastPenalties`, `careerTalentAdditions`, `traitGrantedTalents`, `effectiveTalents`, `humains-bjornling-norse`, `humains-sarl-norse`, `humains-skaeling-norse`, `norsca`, +5 — `src/data/creatures.json`, `src/data/index.ts`, `src/data/mutations.json`, `src/data/skills.json`, `src/data/species.json`, `src/data/talents.json`, +5 fichiers
 
 ---
 
@@ -640,7 +640,7 @@ De plus, le Personnage peut acheter les Talents suivants **comme s'ils étaient 
 **Sources RAW** : `MDG 07 l.250-252`
 **Voir aussi** : [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg) · [`talents.md`](talents.md) (Frénésie)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 7` (l.250-252) → `hiddenGroupsOf`, `TraitInstance`, `passiveCastPenalties`, `careerTalentAdditions`, `traitGrantedTalents`, `effectiveTalents`, `humains-bjornling-norse`, `humains-sarl-norse`, `humains-skaeling-norse`, `norsca`, +2 — `src/data/index.ts`, `src/data/skills.json`, `src/data/species.json`, `src/data/traits.json`, `src/engine/groups.ts`, `src/engine/magic.ts`, +2 fichiers
+- `MDG 7` (l.250-252) → `hiddenGroupsOf`, `TraitInstance`, `passiveCastPenalties`, `careerTalentAdditions`, `traitGrantedTalents`, `effectiveTalents`, `humains-bjornling-norse`, `humains-sarl-norse`, `humains-skaeling-norse`, `norsca`, +3 — `src/data/index.ts`, `src/data/skills.json`, `src/data/species.json`, `src/data/talents.json`, `src/data/traits.json`, `src/engine/groups.ts`, +3 fichiers
 
 <!-- VDM-CARRIERES-ARCANIQUES -->
 

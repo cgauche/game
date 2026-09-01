@@ -5906,7 +5906,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Armée"
+        "spec": "armee"
       },
       {
         "id": "coude-a-coude"
@@ -6083,7 +6083,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Armée"
+        "spec": "armee"
       },
       {
         "id": "coude-a-coude"
@@ -7207,7 +7207,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Militaires"
+        "spec": "armee"
       },
       {
         "id": "claquer-le-fouet"
@@ -7385,7 +7385,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Militaires"
+        "spec": "armee"
       },
       {
         "id": "claquer-le-fouet"
@@ -7395,7 +7395,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "Bandits"
+        "spec": "bandits"
       },
       {
         "id": "orateur"
@@ -8026,7 +8026,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "Naufrageurs & Pirates Fluviaux"
+        "spec": "naufrageurs-et-pirates-fluviaux"
       },
       {
         "id": "menacant"
@@ -8806,7 +8806,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Lettrés"
+        "spec": "lettres"
       },
       {
         "id": "lire-ecrire"
@@ -8938,7 +8938,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Lettrés"
+        "spec": "lettres"
       },
       {
         "id": "savoir-vivre",
@@ -9209,7 +9209,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Lettrés"
+        "spec": "lettres"
       },
       {
         "id": "lire-ecrire"
@@ -9696,7 +9696,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Militaires"
+        "spec": "armee"
       },
       {
         "id": "coude-a-coude"
@@ -9881,7 +9881,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Militaires"
+        "spec": "armee"
       },
       {
         "id": "coude-a-coude"
@@ -10964,7 +10964,7 @@
     "talents": [
       {
         "id": "savoir-vivre",
-        "spec": "Lettrés"
+        "spec": "lettres"
       },
       {
         "id": "perspicace"
@@ -11380,7 +11380,7 @@
     "talents": [
       {
         "id": "savoir-vivre",
-        "spec": "Cultes"
+        "spec": "cultes"
       },
       {
         "id": "lire-ecrire"
@@ -11517,7 +11517,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Cultes"
+        "spec": "cultes"
       },
       {
         "id": "invocation"
@@ -12434,7 +12434,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Lettrés"
+        "spec": "lettres"
       },
       {
         "id": "perspicace"
@@ -12857,7 +12857,7 @@
     "talents": [
       {
         "id": "savoir-vivre",
-        "spec": "Cultes"
+        "spec": "cultes"
       },
       {
         "id": "lire-ecrire"
@@ -13007,11 +13007,11 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Cultes"
+        "spec": "cultes"
       },
       {
         "id": "haine",
-        "spec": "Ennemis de Sigmar"
+        "spec": "ennemis-de-sigmar"
       },
       {
         "id": "invocation",
@@ -13179,7 +13179,7 @@
     "talents": [
       {
         "id": "savoir-vivre",
-        "spec": "Cultes"
+        "spec": "cultes"
       },
       {
         "id": "lire-ecrire"
@@ -13329,11 +13329,11 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Cultes"
+        "spec": "cultes"
       },
       {
         "id": "haine",
-        "spec": "Ennemis d’Ulric"
+        "spec": "ennemis-d-ulric"
       },
       {
         "id": "invocation",
@@ -13504,7 +13504,7 @@
     "talents": [
       {
         "id": "savoir-vivre",
-        "spec": "Cultes"
+        "spec": "cultes"
       },
       {
         "id": "lire-ecrire"
@@ -13659,7 +13659,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Cultes"
+        "spec": "cultes"
       },
       {
         "id": "invocation",
@@ -16954,7 +16954,7 @@
       },
       {
         "id": "savant",
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "dur-a-cuire"
@@ -18085,7 +18085,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Marais"
+        "spec": "marais"
       },
       {
         "id": "sociable"
@@ -18248,17 +18248,12 @@
       {
         "id": "orientation",
         "value": 55
-      },
-      {
-        "id": "metier",
-        "value": 70,
-        "spec": "charpentier-naval"
       }
     ],
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Marais"
+        "spec": "marais"
       },
       {
         "id": "sociable"
@@ -18268,7 +18263,7 @@
       },
       {
         "id": "savant",
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "nomade"
@@ -18599,7 +18594,7 @@
       },
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "perspicace"
@@ -19723,7 +19718,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Religieux"
+        "spec": "cultes"
       },
       {
         "id": "invocation"
@@ -20041,7 +20036,7 @@
     "talents": [
       {
         "id": "savoir-vivre",
-        "spec": "Religieux"
+        "spec": "cultes"
       },
       {
         "id": "lire-ecrire"
@@ -20379,7 +20374,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Religieux"
+        "spec": "cultes"
       },
       {
         "id": "sociable"
@@ -20706,7 +20701,7 @@
     "talents": [
       {
         "id": "savoir-vivre",
-        "spec": "Religieux"
+        "spec": "cultes"
       },
       {
         "id": "lire-ecrire"
@@ -21691,7 +21686,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "Patrouilleurs"
+        "spec": "patrouilleurs"
       },
       {
         "id": "menacant"
@@ -22335,7 +22330,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "Patrouilleurs"
+        "spec": "patrouilleurs"
       },
       {
         "id": "sens-de-l-orientation"
@@ -24049,7 +24044,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       }
     ],
     "trappings": [],
@@ -24177,7 +24172,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "oeil-du-chasseur"
@@ -24322,7 +24317,7 @@
       },
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "oeil-du-chasseur"
@@ -24476,11 +24471,11 @@
       },
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "sans-peur",
-        "spec": "Bêtes Sauvages"
+        "spec": "betes-sauvages"
       },
       {
         "id": "bonnes-jambes"
@@ -25259,7 +25254,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       }
     ],
     "trappings": [],
@@ -25374,7 +25369,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "charge-berserk"
@@ -25453,7 +25448,7 @@
       },
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "charge-berserk"
@@ -25609,14 +25604,14 @@
       },
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "charge-berserk"
       },
       {
         "id": "sans-peur",
-        "spec": "Bêtes Sauvages"
+        "spec": "betes-sauvages"
       },
       {
         "id": "menacant"
@@ -26464,7 +26459,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       }
     ],
     "trappings": [],
@@ -26598,7 +26593,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "dur-a-cuire"
@@ -26757,7 +26752,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "tireur-de-precision"
@@ -26929,7 +26924,7 @@
       },
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "tireur-de-precision"
@@ -27476,7 +27471,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Forêt"
+        "spec": "foret"
       },
       {
         "id": "sens-de-l-orientation"
@@ -29422,7 +29417,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "tous ennemis"
+        "spec": "tout"
       }
     ],
     "trappings": [],
@@ -29578,7 +29573,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "tous ennemis"
+        "spec": "tout"
       },
       {
         "id": "menacant"
@@ -29753,7 +29748,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "tous ennemis"
+        "spec": "tout"
       },
       {
         "id": "menacant"
@@ -34667,7 +34662,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Skavens"
+        "spec": "skavens"
       },
       {
         "id": "insignifiant"
@@ -34839,7 +34834,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Skavens"
+        "spec": "skavens"
       },
       {
         "id": "discret"
@@ -35339,7 +35334,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Skavens"
+        "spec": "skavens"
       },
       {
         "id": "insignifiant"
@@ -35524,7 +35519,7 @@
       },
       {
         "id": "savoir-vivre",
-        "spec": "Skavens"
+        "spec": "skavens"
       },
       {
         "id": "insignifiant"
@@ -36194,7 +36189,7 @@
       },
       {
         "id": "sans-peur",
-        "spec": "Nains"
+        "spec": "nains"
       }
     ],
     "trappings": [],
@@ -36747,7 +36742,7 @@
       },
       {
         "id": "travailleur-qualifie",
-        "spec": "Engingneurie"
+        "spec": "ingenieur"
       },
       {
         "id": "artilleur"
@@ -36977,11 +36972,11 @@
       },
       {
         "id": "travailleur-qualifie",
-        "spec": "Engingneurie"
+        "spec": "ingenieur"
       },
       {
         "id": "savant",
-        "spec": "Engingneurie"
+        "spec": "ingenierie"
       },
       {
         "id": "artilleur"
@@ -39117,7 +39112,7 @@
       },
       {
         "id": "maitre-artisan",
-        "spec": "Ingénierie"
+        "spec": "ingenieur"
       }
     ],
     "trappings": [],
@@ -39322,11 +39317,11 @@
       },
       {
         "id": "maitre-artisan",
-        "spec": "Ingénierie"
+        "spec": "ingenieur"
       },
       {
         "id": "savant",
-        "spec": "Engingneurie"
+        "spec": "ingenierie"
       },
       {
         "id": "nomade"
@@ -47264,7 +47259,7 @@
       },
       {
         "id": "savant",
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "dur-a-cuire"
@@ -49001,7 +48996,7 @@
     "talents": [
       {
         "id": "bon-marcheur",
-        "spec": "Environnement au choix"
+        "spec": "au choix"
       },
       {
         "id": "nomade"
