@@ -586,7 +586,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `choice`). Une ligne ENTRE en route — `careerLevels.json › choice {choice>id,spec}`, les deux
       // branches d'`alchimiste-4` —, sœur des `choice>id` déjà stockées : le MÊME objet qui change de
       // classement, pas une structure neuve. Solde : −2.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 480],
+      // Cliquet DESCENDU 480 → 479 (#1463 L-ref-1bis, 2026-09-01) : `creatures.json › trappings
+      // {text (résolvable)}` est SOLDÉE — son unique porteur (`long-drong-silver` › « cache-œil »,
+      // MDG `16 - Bestiaire.md` l.407) est lié à `{id:'cache-oeil'}`, la forme CIBLE que la même liste
+      // portait déjà (`{id:'crochet'}`). Plus AUCUNE ligne `text (résolvable)` au stock. Le cliquet
+      // SUIT la baisse : un cran libre absorberait en silence la réapparition de la forme.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 479],
       // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
@@ -835,7 +840,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 393 → 392 (L-ref-0 + L-ref-1, 2026-09-01) : `careerLevels.json › trappings` rend ses
       // deux lignes `text (résolvable)` et reçoit `choice>id,spec`. Cf. le cliquet `STRUCTURES_FORMES`
       // ci-dessus.
-      'L3 #1463': 392,
+      // … puis 392 → 391 (L-ref-1bis, 2026-09-01) : `creatures.json › trappings {text (résolvable)}`
+      // part avec son unique porteur lié. Cf. le cliquet `STRUCTURES_FORMES` ci-dessus.
+      'L3 #1463': 391,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

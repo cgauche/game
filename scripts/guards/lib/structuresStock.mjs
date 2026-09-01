@@ -212,7 +212,9 @@ export const STRUCTURES_FORMES = [
   // classement. « Atelier (Ingénierie ou Magie) » devient l'emplacement `choice` qu'il décrivait en
   // toutes lettres, et les 7 dotations comptées qui NOMMAIENT une possession (« Carreaux » ×6,
   // « Chiffon ») rejoignent `count,id`. Les deux lignes `text (résolvable)` qu'ils quittent, elles,
-  // MEURENT (cf. la ligne `text (résolvable)` de `creatures.json`, dernière du concept).
+  // MEURENT — et avec celle du bestiaire (L-ref-1bis, `long-drong-silver` › « cache-œil »), la
+  // signature `text (résolvable)` n'a plus AUCUN porteur au stock : le concept `reference` sort
+  // entièrement de la famille `{text}`.
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "choice", statut: "historique", strate: "Référence", occurrences: 14, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "count,id", statut: "historique", strate: "Référence", occurrences: 23, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "count,id,qualityChoice", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -245,7 +247,6 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "creatures.json", champ: "optionals", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "optionals", signature: "size+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "talents", signature: "id,times", statut: "historique", strate: "Référence", occurrences: 48, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "creatures.json", champ: "trappings", signature: "text (résolvable)", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "traits", signature: "arg,id", statut: "historique", strate: "Référence", occurrences: 408, lot: "L3 #1463", date: "2026-08-30", motif: "référence de TRAIT paramétré" },
   { concept: "reference", dataset: "creatures.json", champ: "traits", signature: "arg,id,value", statut: "historique", strate: "Référence", occurrences: 118, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "traits", signature: "arg,id,value+…", statut: "divergente", strate: "Référence", occurrences: 43, lot: "L3 #1463", date: "2026-08-23" },

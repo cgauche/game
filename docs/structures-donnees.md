@@ -1057,7 +1057,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 
 | Concept | Signature du lexique | Statut | Occurrences |
 |---|---|---|---|
-| reference | `id` | cible | 8902 |
+| reference | `id` | cible | 8903 |
 | reference | `id,spec` | cible | 1332 |
 | reference | `choix,id` | cible | 278 |
 | reference | `id,type` | cible | 0 |
@@ -1122,12 +1122,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **837** (cible 362 · declaree 6 · historique 118 · divergente 351). Objets JSON parcourus : **48562**, dont **31872** portent une forme
+Lignes concept × dataset × champ × forme : **836** (cible 362 · declaree 6 · historique 118 · divergente 350). Objets JSON parcourus : **48562**, dont **31872** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-475 ligne(s), 24510 occurrence(s).
+474 ligne(s), 24510 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1282,9 +1282,8 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `traits` | `id,value+…` | divergente | `creatures.json` | 3 | — | `maneuvers.json` `qualitySubtypes.json` `traits.json` |  |
 | entité | `trappings` | `count,id` | historique | `creatures.json` | 1 | — | `trappings.json` |  |
 | entité | `trappings` | `creatureId` | historique | `creatures.json` | 1 | — | `creatures.json` |  |
-| entité | `trappings` | `id` | cible | `creatures.json` | 87 | — | `props.json` `qualities.json` `spells.json` `trappings.json` `weaponGroups.json` |  |
+| entité | `trappings` | `id` | cible | `creatures.json` | 88 | — | `props.json` `qualities.json` `spells.json` `trappings.json` `weaponGroups.json` |  |
 | entité | `trappings` | `text` | declaree | `creatures.json` | 42 | — | — | dotation narrative — occurrence de référence seulement quand le texte normalisé résout vers un `label` (#1463, #624) |
-| entité | `trappings` | `text (résolvable)` | divergente | `creatures.json` | 1 | 1 | `trappings.json` |  |
 | entité | `skills` | `id` | cible | `crew-roles.json` | 7 | — | `crew-test-types.json` `skills.json` |  |
 | entité | `skills` | `id,spec` | cible | `crew-roles.json` | 3 | — | `crew-roles.json` `skills.json` `talents.json` `weaponGroups.json` |  |
 | config | `essential` | `id-nu` | historique | `crew-test-types.json` | 10 | — | `careers.json` `crew-roles.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
@@ -2280,7 +2279,7 @@ sont le narratif irréductible que la forme `text` DÉCLARE (#1463, #624).
 
 | Signature de l’objet | Occurrences | Résolvables |
 |---|---|---|
-| `text` | 578 | 1 |
+| `text` | 577 | — |
 | `op,text` | 507 | — |
 | `kind,text` | 206 | — |
 | `count,text` | 26 | — |

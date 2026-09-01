@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { careerLevels, classes, trappings, trappingRefLabel, type TrappingRef } from './index';
+import { careerLevels, classes, creatures, trappings, trappingRefLabel, type TrappingRef } from './index';
 
 /**
- * CONTRAT POSITIF (#1463 L-ref-1) — une dotation qui NOMME une possession du catalogue est une
+ * CONTRAT POSITIF (#1463 L-ref-1, étendu au bestiaire par L-ref-1bis) — une dotation qui NOMME une possession du catalogue est une
  * RÉFÉRENCE, jamais du texte. L'index label → ids est construit sur `trappings.json` SEUL : c'est le
  * catalogue DU SITE, et la résolvabilité vers n'importe quel autre dataset n'y vaut rien (« Assistant »,
  * « Bureau », « Écuyer », « Munitions » sont des ids AILLEURS — ce ne sont pas des possessions).
@@ -12,11 +12,10 @@ import { careerLevels, classes, trappings, trappingRefLabel, type TrappingRef } 
  * `hache-de-lancer`, « Cartes » ↔ `carte`). Sans la troisième, une dotation au pluriel reste du texte
  * en silence — c'est cet angle mort qui avait laissé passer `tueur-3`.
  *
- * PÉRIMÈTRE : les deux datasets qui portent des dotations de PERSONNAGE, `careerLevels.json` et
- * `classes.json`. `creatures.json` en est exclu (arbre co-édité, #1457) : sa dernière dotation
- * `{text}` résolvable (« cache-œil ») est au stock `STRUCTURES_FORMES`
- * (`scripts/guards/lib/structuresStock.mjs`, ligne `creatures.json | trappings | text (résolvable)`)
- * et part avec L-ref-1bis.
+ * PÉRIMÈTRE : les TROIS datasets qui portent des dotations — `careerLevels.json` et `classes.json`
+ * (dotations de PERSONNAGE), `creatures.json` (les Possessions d'un statbloc, MDG `16 - Bestiaire.md`
+ * l.407 pour `long-drong-silver`). Le catalogue et les trois portes sont les mêmes pour les trois :
+ * une possession NOMMÉE est une référence, quel que soit son porteur.
  */
 
 /** Normalisation de libellé — casse, accents et ponctuation, comme le scan de structures. */
@@ -70,12 +69,17 @@ const dotations = (): { porteur: string; ref: TrappingRef }[] => {
   };
   for (const c of classes) pousser(`classes.json › ${c.id}`, c.trappings);
   for (const l of careerLevels) pousser(`careerLevels.json › ${l.id}`, l.trappings);
+  for (const c of creatures) pousser(`creatures.json › ${c.id}`, c.trappings);
   return out;
 };
 
 describe('dotations : ce que le catalogue NOMME est une référence (#1463 L-ref-1)', () => {
-  it('le périmètre n’est pas vide — les deux datasets portent bien des dotations', () => {
+  it('le périmètre n’est pas vide — les trois datasets portent bien des dotations', () => {
     expect(dotations().length).toBeGreaterThan(700);
+    expect(
+      dotations().filter((d) => d.porteur.startsWith('creatures.json')).length,
+      'le bestiaire doit être DANS le périmètre — sans lui, ses `{text}` ne sont vus par aucune porte',
+    ).toBeGreaterThan(100);
   });
 
   it('les trois portes MORDENT — libellé entier, singulier, tête de parenthèse (contre-épreuve)', () => {
