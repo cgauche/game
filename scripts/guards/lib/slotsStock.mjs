@@ -88,6 +88,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "a", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "ambush", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "ammo", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "barge-du-sel-projet.json", champ: "appearance", occurrences: 4, lot: "L2/L3 #1473", date: "2026-09-01" },
   { dataset: "barge-du-sel-projet.json", champ: "b", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "crew", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "crewIds", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },

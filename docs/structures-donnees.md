@@ -761,7 +761,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `barge-du-sel-projet.json` | `scenes` | 3 | `ambiance`(3) `ambientLight`(3) `desc`(3) `dialogues`(3) `dimensions`(3) `encounters`(3) `entities`(3) `entryPoints`(1) `flags`(3) `id`(3) `label`(3) `layers`(3) `metresPerTile`(3) `triggers`(3) `type`(3) `weather`(1) |
 | `barge-du-sel-projet.json` | `scenes.encounters` | 1 | `id`(1) `members`(1) `onVictory`(1) `surprise`(1) `victoryCondition`(1) |
 | `barge-du-sel-projet.json` | `scenes.encounters.onVictory.steps.effect` | 1 | `desc`(1) `id`(1) `type`(1) |
-| `barge-du-sel-projet.json` | `scenes.entities` | 13 | `crewIds`(2) `facing`(2) `id`(13) `interact`(1) `kind`(13) `label`(10) `pos`(13) `postes`(2) `ref`(5) `statblock`(4) `upgrades`(1) |
+| `barge-du-sel-projet.json` | `scenes.entities` | 13 | `appearance`(4) `crewIds`(2) `facing`(2) `id`(13) `interact`(1) `kind`(13) `label`(10) `pos`(13) `postes`(2) `ref`(5) `statblock`(4) `upgrades`(1) |
 | `barge-du-sel-projet.json` | `scenes.entities.upgrades` | 1 | `id`(1) `value`(1) |
 | `barge-du-sel-projet.json` | `scenes.triggers` | 3 | `flow`(3) `id`(3) `once`(3) `rect`(3) |
 | `barge-du-sel-projet.json` | `scenes.triggers.flow.steps.effect` | 1 | `desc`(1) `id`(1) `type`(1) |
@@ -1113,12 +1113,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **830** (cible 344 · declaree 6 · historique 122 · divergente 358). Objets JSON parcourus : **48101**, dont **31737** portent une forme
+Lignes concept × dataset × champ × forme : **831** (cible 344 · declaree 6 · historique 122 · divergente 359). Objets JSON parcourus : **48105**, dont **31741** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-473 ligne(s), 24409 occurrence(s).
+474 ligne(s), 24413 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1192,6 +1192,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `a` | `id-nu` | historique | `barge-du-sel-projet.json` | 1 | — | `barge-du-sel-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `ambush` | `encounter,scene+…` | divergente | `barge-du-sel-projet.json` | 1 | — | `barge-du-sel-projet.json` |  |
 | config | `ammo` | `kind,subType,trappingId+…` | divergente | `barge-du-sel-projet.json` | 8 | — | `merchantFamilies.json` `trappings.json` `weaponGroups.json` |  |
+| config | `appearance` | `species,tenue` | divergente | `barge-du-sel-projet.json` | 4 | — | `careers.json` `species.json` |  |
 | config | `b` | `id-nu` | historique | `barge-du-sel-projet.json` | 1 | — | `barge-du-sel-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `crew` | `count,roleId` | divergente | `barge-du-sel-projet.json` | 1 | — | `crew-roles.json` |  |
 | config | `effect` | `type,vehicleId+…` | divergente | `barge-du-sel-projet.json` | 1 | — | `vehicles.json` |  |
@@ -2395,7 +2396,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12494** objets sur **48101** ne sont portés par AUCUNE
+Au-delà des orphelines, **12494** objets sur **48105** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -4398,7 +4399,7 @@ La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de référence
 (`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept
 par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 
-**344** couples (dataset, champ) sans slot déclaré.
+**345** couples (dataset, champ) sans slot déclaré.
 
 | Dataset | Champ | Occurrences observées |
 |---|---|---|
@@ -4459,6 +4460,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `barge-du-sel-projet.json` | `a` | 1 |
 | `barge-du-sel-projet.json` | `ambush` | 1 |
 | `barge-du-sel-projet.json` | `ammo` | 8 |
+| `barge-du-sel-projet.json` | `appearance` | 4 |
 | `barge-du-sel-projet.json` | `b` | 1 |
 | `barge-du-sel-projet.json` | `crew` | 1 |
 | `barge-du-sel-projet.json` | `crewIds` | 2 |

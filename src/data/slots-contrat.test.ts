@@ -111,7 +111,13 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // couples que les trois autres projets portent déjà pour leur worldMap : l'adoption de la fabrique
 // de référence se fait au schéma de carte (`defs-scenes/worldmap.ts`), en L2/L3 #1473, pour les
 // quatre projets à la fois.
-const DETTE_ADOPTION_MAX = 344;
+// Cliquet REMONTÉ 344 → 345 (équipage de la Louve grise, 3fe450675, 2026-09-01) : les entités
+// d'équipage de la barge reçoivent `appearance` — le MÊME couple que `loup-et-saumure`, `arene` et
+// `creatures.json` portent déjà. Aucune fabrique n'est disponible à adopter : dans
+// `entityAppearanceSchema` (`src/data/schemas/grammaire/valeurs.ts`), `species` et `tenue` sont des
+// `z.string()` nus, et `TYPES` (`grammaire/ref.ts`) n'a ni type `espece` ni type `tenue`. L'adoption
+// est celle de ce schéma, en L2/L3 #1473, pour les quatre porteurs à la fois.
+const DETTE_ADOPTION_MAX = 345;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {
