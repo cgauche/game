@@ -5,6 +5,6 @@ export const facade: FacadeAppearanceDef = {
   wallAppearance: 'mur-en-bois',
   wallFeatures: {},
   features: {
-    chimney: { prop: 'cheminee', liftM: 2.25 },
+    chimney: { prop: 'cheminee', base: 'toit', liftM: -0.3 },
   },
 };

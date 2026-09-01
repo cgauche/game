@@ -7,10 +7,9 @@ export const facade: FacadeAppearanceDef = {
     'window-band': 'mur-a-ossature-en-bois',
     'stone-entry': 'mur-en-pierre',
     gable: 'mur-a-ossature-en-bois',
-    sign: 'mur-en-bois',
   },
   features: {
-    chimney: { prop: 'cheminee', liftM: 2.25 },
+    chimney: { prop: 'cheminee', base: 'toit', liftM: -0.3 },
     sign: { prop: 'enseigne', liftM: 2.2 },
   },
 };

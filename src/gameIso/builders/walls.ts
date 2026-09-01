@@ -8,7 +8,7 @@
  * SOURCE UNIQUE de l'assemblage pour les DEUX backends (iso et POV) — ils dessinent ces mêmes faces,
  * chacun à sa résolution.
  */
-import { heightAt, tileAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type Scene, type WallSeg, type WallSide } from '../../state/scene';
+import { heightAt, tileAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { interiorCells } from '../../state/planDefects';
 import { memoByRef } from '../../state/sceneMemo';
 import { viewedBuilder, type Viewed } from './viewTruth';
@@ -311,6 +311,15 @@ const envelopeEdgesOf = memoByRef((scene: Scene): ReadonlySet<string> => {
   return out;
 });
 
+/**
+ * Kinds de feature rendus en DÉCOR ANCRÉ au bâtiment (`builders/props` : recette volumique ou
+ * billboard), et JAMAIS dans le plan du mur — leur `appearance` authorable
+ * (`data/schemas/defs-scenes/scene.ts`) nomme alors un DÉCOR, pas une apparence de mur. Le verrou est
+ * ICI, par CONSTRUCTION : sans lui, une apparence posée par l'auteur ferait sortir la même feature
+ * DEUX fois — sa géométrie de décor et un panneau plaqué sur la façade (#1624).
+ */
+const KINDS_DE_DECOR: ReadonlySet<FacadeFeature['kind']> = new Set(['chimney', 'sign', 'belfry']);
+
 function facadeFeatureFaces(
   seg: WallSeg,
   facade: FacadeEdge,
@@ -325,7 +334,7 @@ function facadeFeatureFaces(
   });
   const out: Face[] = [];
   for (const feature of facade.features) {
-    if (feature.kind === 'chimney') continue;
+    if (KINDS_DE_DECOR.has(feature.kind)) continue;
     if (feature.kind === 'window-band' && seg.window) continue;
     const appearance = feature.appearance ??
       facadeWallFeatureAppearance(facade.appearance, feature.kind);
@@ -374,8 +383,6 @@ function facadeFeatureFaces(
         { ...p1, h: baseH + WALL_H_M },
         { ...apex, h: baseH + WALL_H_M * 1.55 },
       ]));
-    } else if (feature.kind === 'sign') {
-      out.push(span('panneau', t0, t1, baseH + WALL_H_M * 0.58, baseH + WALL_H_M * 0.76));
     }
   }
   return out;

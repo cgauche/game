@@ -25,6 +25,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseProject } from '../../state/worldMap';
 import * as sceneMeshes from '../backends/webgl/sceneMeshes';
+import { refEstVolumique } from '../builders/props';
+import { props as catalogueDeDecor } from '../../data';
 import * as texturesStatiques from './texturesStatiques';
 import { CampaignView } from '../../ui/CampaignView';
 import { setStageRendererFactory } from './GameStage3D';
@@ -92,6 +94,20 @@ function remontes(avant: Map<string, { uuid: string; count: number }>, apres: Ma
 const canevas = () => canevasDe(hôte!);
 const cuissons = () => Number(canevas().dataset.bake ?? -1);
 
+/**
+ * DÉCOR ENCORE SERVI EN BILLBOARD par une scène — le plancher de population que ce banc exige avant
+ * de comparer deux relevés. DÉRIVÉ (`refEstVolumique`), jamais un chiffre en dur : la vague volumique
+ * (#1343) fait quitter le billboard à des refs lot par lot (mesuré sur le hub après #1644 : 51 décors,
+ * dont 25 en faces cuites — tonneau, caisse, coffre, étagère, urne, pile, étal), et un seuil figé se
+ * lirait comme « un quad en retard » là où il n'y a plus de quad du tout à attendre.
+ */
+const decorsBillboard = (sc: Scene): number =>
+  sc.entities.filter((e) => e.kind === 'prop' && !refEstVolumique(e.ref)).length;
+
+/** Une ref de décor encore BILLBOARD, DÉRIVÉE du catalogue : la scène d'arène ci-dessous a besoin de
+ *  SUJETS DE QUAD à apparier — un décor à recette n'en pose aucun, et le banc mesurerait le vide. */
+const REF_BILLBOARD = catalogueDeDecor.find((p) => !p.volume)!.id;
+
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientHeight', { configurable: true, get: () => TAILLE.h });
@@ -113,11 +129,11 @@ const HÉROS = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat',
 function scèneArène(): Scene {
   const base = emptyScene(14, 14);
   const props = Array.from({ length: 12 }, (_, i) => ({
-    id: `tonneau-${i}`,
+    id: `decor-${i}`,
     kind: 'prop',
     pos: { x: 3 + (i % 6) * 1, y: 3 + Math.floor(i / 6) * 2 },
     z: 0,
-    ref: 'tonneau',
+    ref: REF_BILLBOARD,
   })) as unknown as Scene['entities'];
   return { ...base, entities: props } as unknown as Scene;
 }
@@ -133,7 +149,7 @@ const HUB = parseProject(
 const DEPART = { ...(HUB.entities.find((e) => e.kind === 'heroStart')!.pos) };
 
 /** Le hub monté, groupé à son départ authored, décor SERVI. */
-async function monterHub(quadsAttendus = 40): Promise<void> {
+async function monterHub(quadsAttendus = decorsBillboard(HUB)): Promise<void> {
   viderCaptures();
   useGame.setState({
     scene: HUB,
@@ -212,6 +228,19 @@ async function battreAprèsLeFait(): Promise<void> {
 }
 
 describe('Bascule de regard — le monde ne se démonte pas (#1385)', () => {
+  it('le filet des seuils de population tient encore : le hub sert encore du décor en billboard', () => {
+    expect(
+      decorsBillboard(HUB),
+      'la phase 4 de #1343 (mort du chemin billboard des props) fera tomber ce filet EXPRÈS : le seuil '
+      + 'dérivé vaudrait 0 et les PRÉMISSES de ce banc ne mordraient plus — il faudra alors les '
+      + 'reformuler sur la population de FACES, pas les laisser passer du vide.',
+    ).toBeGreaterThan(0);
+    expect(
+      catalogueDeDecor.filter((p) => !p.volume).length,
+      'plus aucune ref billboard au catalogue : la scène d’arène de ce banc ne poserait plus un seul quad',
+    ).toBeGreaterThanOrEqual(2);
+  });
+
   it('même canevas, même monde cuit, aucune purge de cache, au plus un quad perdu', async () => {
     await monterCampagne();
     const canevasAvant = canevas();

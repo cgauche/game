@@ -214,27 +214,42 @@ describe('buildWalls — façades architecturales authorées', () => {
     expect(buildWalls(scene)).toHaveLength(scene.walls!.length);
   });
 
-  it('attache fenêtres, entrée maçonnée, pignon et enseigne au plan du mur avec ids qualifiés', () => {
+  it('attache fenêtres, entrée maçonnée et pignon au plan du mur avec ids qualifiés', () => {
     const scene = facadeScene();
     scene.architecture![0].facades[0].features = [
       { id: 'fenetres', kind: 'window-band', edge: { x: 3, y: 3, side: 'N' }, width: 0.7 },
       { id: 'entree', kind: 'stone-entry', edge: { x: 2, y: 3, side: 'N' }, width: 0.8 },
       { id: 'pignon', kind: 'gable', edge: { x: 3, y: 3, side: 'N' }, width: 0.9 },
-      { id: 'enseigne', kind: 'sign', edge: { x: 2, y: 3, side: 'N' }, width: 0.4 },
     ];
     const featureFaces = buildWalls(scene).flatMap((wall) =>
       wall.faces.filter((face) => face.architectureFeatureId));
     expect([...new Set(featureFaces.map((face) => face.architectureFeatureId))]).toEqual([
       'corps-auberge:facade-sud:entree',
-      'corps-auberge:facade-sud:enseigne',
       'corps-auberge:facade-sud:fenetres',
       'corps-auberge:facade-sud:pignon',
     ]);
     expect(featureFaces.some((face) => face.architectureFeatureKind === 'window-band' && face.material.part === 'vitre')).toBe(true);
     expect(featureFaces.some((face) => face.architectureFeatureKind === 'stone-entry' && face.material.id === 'mur-en-pierre')).toBe(true);
     expect(featureFaces.some((face) => face.architectureFeatureKind === 'gable' && face.poly.length === 3)).toBe(true);
-    expect(featureFaces.some((face) => face.architectureFeatureKind === 'sign' && face.material.part === 'panneau')).toBe(true);
     expect(buildWalls(scene)[1].faces.filter((face) => face.material.part === 'vitre')).toHaveLength(1);
+  });
+
+  /**
+   * Les kinds rendus en DÉCOR ANCRÉ (`KINDS_DE_DECOR`) n'ont AUCUNE face dans le plan du mur, et le
+   * verrou tient même quand l'auteur pose une `appearance` — champ authorable qui, sans lui, nommait
+   * ici une apparence de mur et là un décor, faisant sortir la même feature DEUX fois (#1624).
+   */
+  it.each(['sign', 'chimney', 'belfry'] as const)('%s : décor ancré, donc AUCUNE face de mur — apparence authorée ou non', (kind) => {
+    for (const appearance of [undefined, 'mur-en-bois', 'mur-en-pierre']) {
+      const scene = facadeScene();
+      scene.architecture![0].facades[0].features = [
+        { id: `orn-${kind}`, kind, edge: { x: 2, y: 3, side: 'N' }, width: 0.4, ...(appearance ? { appearance } : {}) },
+      ];
+      expect(
+        buildWalls(scene).flatMap((wall) => wall.faces).filter((face) => face.architectureFeatureId),
+        `${kind} / appearance=${appearance ?? '—'}`,
+      ).toEqual([]);
+    }
   });
 
   it('la largeur change seulement la portée horizontale, jamais la hauteur', () => {

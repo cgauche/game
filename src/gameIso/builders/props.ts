@@ -23,7 +23,7 @@ import { buildingFeatures } from '../catalog/buildings';
 import { facadeFeatureViz } from '../catalog/facades';
 import { WALL_H_M } from '../iso';
 import type { Dir8 } from '../../state/dir8';
-import { edgeKey, fieldHeightAt, nappeKey, resolveNappes, WALL_NB, type RoofShapeSpec } from './roofs';
+import { edgeKey, fieldHeightAt, nappeKey, resolveNappes, WALL_NB, type RoofField, type RoofShapeSpec } from './roofs';
 import type { FloorView } from './floors';
 import type { BillboardPropEl, PropEl } from './types';
 import { CARD_NB, outwardSide, wallEnds, type Card } from './walls';
@@ -177,6 +177,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
   }
   const physicalEdges = new Set((scene.walls ?? []).map((wall) => edgeKey(wall)));
   const emittedFeatures = new Set<string>();
+  const nappes = resolveNappes(scene);
   for (const body of scene.architecture ?? []) {
     for (const section of body.facades) {
       const sectionEdges = new Set(section.edges.map((edge) =>
@@ -201,13 +202,24 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
         // CÔTÉ SORTANT (`outwardSide`, l'unique lecture du dehors du dépôt) : le cap vers lequel le décor
         // habille le mur. Indéterminé (arête diagonale ou intérieure) ⇒ repli billboard déclaré.
         const sortant = outwardSide(scene, edge);
+        const solM = heightAt(scene, edge.x, edge.y, z);
+        // SURFACE de référence du décalage, DÉCLARÉE par la vignette (`FacadeFeatureViz.base`) : le sol
+        // de la case, ou la COUVERTURE à l'aplomb de l'ancre. La surelévation totale est calculée ICI,
+        // une fois, et sert les DEUX représentations — le volume la reçoit dans son pied
+        // (`baseHeightM`), le billboard la porte en `liftM`.
+        const couverture = viz.base === 'toit'
+          ? hauteurDeCouverture(nappes, [{ x: edge.x, y: edge.y }, { x: edge.x + nx, y: edge.y + ny }], ancre)
+          : null;
+        const surelevation = viz.base === 'toit' && couverture == null
+          ? 0 // repli DÉCLARÉ : pas de couverture, donc rien à quoi rapporter le décalage
+          : (couverture != null ? couverture - solM : 0) + (viz.liftM ?? 0);
         out.push(elDeDecor({
           key: `arch:${featureId}`,
           cell: { x: edge.x, y: edge.y, z },
           ancre,
           echelle: viz.scale ?? 1,
-          solM: heightAt(scene, edge.x, edge.y, z),
-          ...(viz.liftM != null ? { liftM: viz.liftM } : {}),
+          solM,
+          ...(surelevation !== 0 ? { liftM: surelevation } : {}),
           source: 'architecture',
           architectureFeatureId: featureId,
           ref: feature.appearance ?? viz.prop,
@@ -223,9 +235,8 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     }
   }
   // Ornements d'IDENTITÉ par TYPE de bâtiment (clocheton/cheminée/enseigne/étal) — dérivés de
-  // `buildingFeatures(body.style)`, un jeu par MASSE (#822), posés en billboard SUR (faîte/façade) ou DEVANT (étal) le
+  // `buildingFeatures(body.style)`, un jeu par MASSE (#822), posés SUR (faîte/façade) ou DEVANT (étal) le
   // bâtiment. 100 % donnée : aucun cas en dur par id de scène.
-  const nappes = resolveNappes(scene);
   for (const body of effectiveArchitecture(scene)) {
     const feats = buildingFeatures(body.style);
     if (!feats.length) continue;
@@ -308,6 +319,29 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     }
   }
   return out;
+}
+
+/**
+ * Hauteur (m) de la COUVERTURE à l'aplomb d'un point d'ancrage d'arête, ou `null` si aucune nappe ne
+ * couvre l'une des cases candidates (celle de l'arête et sa voisine d'en face : une cheminée est
+ * ASSISE sur le mur, la couverture qui la porte est d'un côté ou de l'autre). Lit le CHAMP des nappes
+ * (`resolveNappes` + `fieldHeightAt`), la source unique des hauteurs de toit — jamais une seconde
+ * formule. Le repère du champ est celui des COINS de case (coin nord-ouest de `(x,y)` = point
+ * `(x,y)`), là où l'ancre vit dans le repère graphique (centre de case en `(x,y)`) : d'où le `+0.5`.
+ * Deux nappes couvrent le point ? La PLUS HAUTE gagne — un décor perce la couverture qui le coiffe.
+ */
+function hauteurDeCouverture(
+  nappes: ReadonlyMap<string, { cells: ReadonlySet<string>; field: RoofField }>,
+  cases: readonly { x: number; y: number }[],
+  ancre: { x: number; y: number },
+): number | null {
+  let haut: number | null = null;
+  for (const nappe of nappes.values()) {
+    if (!cases.some((c) => nappe.cells.has(`${c.x},${c.y}`))) continue;
+    const h = fieldHeightAt(nappe.field, { x: ancre.x + 0.5, y: ancre.y + 0.5 });
+    if (haut === null || h > haut) haut = h;
+  }
+  return haut;
 }
 
 /** Cellules d'une nappe (clés « x,y ») en points de grille — la forme que porte l'élément. */

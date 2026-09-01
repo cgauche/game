@@ -49,6 +49,12 @@ export interface BuildingFeature {
 
 export interface FacadeFeatureViz {
   prop: string;
+  /** SURFACE dont `liftM` compte le décalage. `'sol'` (défaut) = la surface de la case porteuse.
+   *  `'toit'` = la COUVERTURE à l'aplomb de l'ancre, lue sur le champ des nappes
+   *  (`resolveNappes`/`fieldHeightAt`, source unique des hauteurs de toit) : un `liftM` négatif
+   *  ENCASTRE alors le décor dans la couverture qu'il perce. Aucune nappe ne couvre l'ancre ⇒ repli
+   *  DÉCLARÉ sur le sol, sans décalage — un décalage relatif à une couverture ne se lit pas sans elle. */
+  base?: 'sol' | 'toit';
   liftM?: number;
   scale?: number;
 }

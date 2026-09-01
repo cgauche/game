@@ -5,6 +5,6 @@ export const facade: FacadeAppearanceDef = {
   wallAppearance: 'mur-en-bois',
   wallFeatures: {},
   features: {
-    belfry: { prop: 'clocheton', liftM: 5 },
+    belfry: { prop: 'clocheton', base: 'toit', liftM: -0.15 },
   },
 };

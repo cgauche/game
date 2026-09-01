@@ -12,8 +12,6 @@ import type { Combatant } from '../../engine/types';
 import * as propsBuilder from '../builders/props';
 import * as roomPortalsModule from '../../state/roomPortals';
 import * as roofsBuilder from '../builders/roofs';
-import * as donnees from '../../data';
-import type { PropData } from '../../data/props.types';
 import { buildRoofs } from '../builders/roofs';
 import { estPropVolumique } from '../builders/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
@@ -362,9 +360,8 @@ describe('MondeDeCampagne — la caméra vise le milieu de la capsule du sujet',
  * DÉCOR VOLUMIQUE SOLIDAIRE D'UNE NAPPE (#1624) : un ornement de faîte cuit dans la masse commune ne
  * peut plus être sauté par le builder (la cuisson appelle `buildProps` SANS vue) — c'est la loi de
  * dégagement, la MÊME que pour les pans, qui doit le retirer quand le toit se lève. Le test interroge
- * la loi RÉELLEMENT remise au monde cuit (`applyCutawayMask`) avec les éléments RÉELS des builders.
- * Les recettes d'art arrivent au lot suivant : le catalogue est donc doté ici d'une recette de
- * clocheton, ce qui suffit à faire sortir le faîteau de la chapelle en faces monde.
+ * la loi RÉELLEMENT remise au monde cuit (`applyCutawayMask`) avec les éléments RÉELS des builders —
+ * catalogue compris : le clocheton de chapelle porte sa recette dans `props.json`.
  */
 describe('MondeDeCampagne — le faîteau volumique se lève AVEC son toit (#1624)', () => {
   let root: Root | null = null;
@@ -375,11 +372,6 @@ describe('MondeDeCampagne — le faîteau volumique se lève AVEC son toit (#162
     if (container) { container.remove(); container = null; }
     vi.restoreAllMocks();
   });
-
-  const CLOCHETON_A_RECETTE = {
-    id: 'clocheton', type: 'props', label: 'Clocheton',
-    volume: { primitives: [{ kind: 'box', center: { x: 0, y: 0, h: 0.5 }, size: { x: 0.4, y: 0.4, h: 1 }, material: 'bois-chene' }] },
-  } as PropData;
 
   function chapelle() {
     const scene = emptyScene(10, 10);
@@ -395,8 +387,6 @@ describe('MondeDeCampagne — le faîteau volumique se lève AVEC son toit (#162
 
   /** Monte l'hôte avec le groupe à `pos` et rend la loi de dégagement effectivement remise au bake. */
   function loiDeDégagement(scene: ReturnType<typeof chapelle>, pos: { x: number; y: number }): KeepEl {
-    const vrai = donnees.findPropById;
-    vi.spyOn(donnees, 'findPropById').mockImplementation((id: string) => (id === 'clocheton' ? CLOCHETON_A_RECETTE : vrai(id)));
     const spy = vi.spyOn(sceneMeshes, 'applyCutawayMask');
     useGame.setState({
       scene, mode: 'exploration', partyPos: pos, party: [hero('h1', pos)],

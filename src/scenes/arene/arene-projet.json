@@ -6064,7 +6064,7 @@
        ],
        "features": [
         {
-         "id": "enseigne",
+         "id": "enseigne-taverne",
          "kind": "sign",
          "edge": {
           "x": 10,
@@ -6092,7 +6092,7 @@
        ],
        "features": [
         {
-         "id": "clocheton",
+         "id": "clocheton-chapelle",
          "kind": "belfry",
          "edge": {
           "x": 40,
@@ -6119,7 +6119,7 @@
        ],
        "features": [
         {
-         "id": "cheminee",
+         "id": "cheminee-forge-du-bourg",
          "kind": "chimney",
          "edge": {
           "x": 2,

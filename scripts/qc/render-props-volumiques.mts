@@ -8,11 +8,13 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { buildPropVolumes } from '../../src/gameIso/builders/propVolumes';
 import { propSvg } from '../../src/gameIso/catalog/decor';
-import { findPropById, findPropMaterialById } from '../../src/data';
+import { findPropById, findPropMaterialById, props } from '../../src/data';
 import { DEFS } from '../../src/gameIso/sprites';
 import type { Face } from '../../src/gameIso/builders/types';
 
-const IDS = ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'table-ronde-4-tabourets', 'table-murale-2-tabourets', 'armoire'] as const;
+/** DÉRIVÉE du catalogue : une recette de plus entre en planche par sa seule déclaration en donnée —
+ *  une liste manuscrite laisserait les suivantes hors QC en silence. */
+const IDS = props.filter((p) => p.volume).map((p) => p.id);
 const METRES_PAR_CASE = 2; // `Scene.metresPerTile` de La Diligence
 const PX_PAR_METRE = 44;
 const CELL_W = 230, CELL_H = 250;

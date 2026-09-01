@@ -10,9 +10,16 @@
  * feature de façade, le milieu de l'empreinte pour un ornement de faîte. L'orientation vient du cap
  * déclaré (`SceneEntity.facing` pour un décor posé).
  *
- * ÉCART CONNU sur les places assises : `state/seating.ts` ancre les `seatSlots` sur `SceneEntity.pos`
- * (le coin NO), pas sur le centre de l'empreinte — les deux coïncident tant qu'un meuble à recette
- * reste 1×1, ce qui est le cas de tout le catalogue à ce jour (#1624).
+ * ÉCART OUVERT sur les places assises : `state/seating.ts` ancre les `seatSlots` sur `SceneEntity.pos`
+ * (le coin NO), le builder pose la recette sur le CENTRE de l'empreinte. Les deux coïncident sur un
+ * meuble 1×1 ; au-delà, ils divergent d'un demi-pas par axe étendu — le catalogue porte désormais un
+ * meuble 2×1 à recette (`table-2x1`, #1644). Résolution au socle #1509 (le corps tourné décide des
+ * cases) ; en attendant, aucun meuble multi-case ne déclare de place.
+ *
+ * TROU DE LA MÊME FAMILLE, tant que #1509 n'est pas construit : la recette TOURNE avec le cap, pas
+ * l'empreinte (`propFootTiles` ignore `facing`). Un meuble multi-case au cap E/O présente donc sa
+ * géométrie en travers de cases qui restent traversables, et bloque des cases vides. La population
+ * authorée est tenue aux caps N/S par un contrat de `gameIso/catalog/props-volumiques.test.ts`.
  *
  * CAP D'IDENTITÉ = `N` — contrat de DONNÉE, à connaître pour authorer : une recette (et les
  * `seatSlots` qui l'accompagnent) s'écrit FACE AU NORD, front vers `y` négatif, et c'est à ce cap

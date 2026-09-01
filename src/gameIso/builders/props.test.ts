@@ -1,16 +1,36 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, type SceneEntity, type WallSeg } from '../../state/scene';
+import { emptyScene, type Scene, type SceneEntity, type WallSeg } from '../../state/scene';
 import { buildProps, capDuFaite } from './props';
+import { buildWalls } from './walls';
 import { buildPropVolumes } from './propVolumes';
-import { findPropById } from '../../data';
-import { estPropVolumique, type BillboardPropEl } from './types';
+import { findPropById, props } from '../../data';
+import { estPropVolumique, type BillboardPropEl, type PropEl, type VolumePropEl } from './types';
 import type { Dir8 } from '../../state/dir8';
-import { fieldHeightAt, nappeKey, resolveNappes, ROOF_SLOPE_M } from './roofs';
+import { buildRoofs, fieldHeightAt, nappeKey, resolveNappes, ROOF_SLOPE_M } from './roofs';
 
 /** Le décor BILLBOARD d'une sortie de builder : un décor VOLUMIQUE n'a ni empreinte de billboard, ni
  *  surélévation, ni feature de façade à juger — il porte des faces. */
 const buildBillboardProps = (...args: Parameters<typeof buildProps>): BillboardPropEl[] =>
   buildProps(...args).filter((el): el is BillboardPropEl => !estPropVolumique(el));
+
+/** Un décor encore BILLBOARD, DÉRIVÉ du catalogue : la vague volumique (#1343) convertit les refs lot
+ *  par lot — une ref écrite en dur ferait rougir ces gardes le jour de SA recette. */
+const REF_BILLBOARD = props.find((p) => !p.volume)!.id;
+
+const volume = (el: PropEl): VolumePropEl => {
+  if (!estPropVolumique(el)) throw new Error(`${el.ref} : attendu en volume`);
+  return el;
+};
+/** Altitude du PIED d'un décor volumique : le `h` le plus bas de ses faces. Les recettes du
+ *  catalogue ancré s'écrivent depuis `h = 0`, donc ce plancher vaut `solM + liftM` du site d'émission. */
+const socleM = (el: PropEl) => Math.min(...volume(el).faces.flatMap((f) => f.poly.map((p) => p.h)));
+/** Le décor est-il posé à CETTE ancre, à ce cap ? Comparé à la recette compilée à son propre pied. */
+const poseA = (el: PropEl, ancre: { x: number; y: number }, facing: Dir8) =>
+  volume(el).faces.every((face, i) =>
+    face.poly.every((p, k) => {
+      const attendu = buildPropVolumes(findPropById(el.ref)!, { ancre, facing, baseHeightM: socleM(el) })[i].poly[k];
+      return Math.abs(p.x - attendu.x) < 1e-9 && Math.abs(p.y - attendu.y) < 1e-9 && Math.abs(p.h - attendu.h) < 1e-9;
+    }));
 
 /**
  * DÉCOR VOLUMIQUE — un type qui porte une recette (`PropData.volume`) sort en FACES monde, jamais en
@@ -48,9 +68,17 @@ describe('buildProps — un décor à recette sort en faces monde', () => {
 
   it('un décor SANS recette reste un billboard (le décor historique ne bouge pas)', () => {
     const scene = emptyScene(8, 8);
-    scene.entities = [{ id: 't1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'tonneau' }] as SceneEntity[];
+    scene.entities = [{ id: 't1', kind: 'prop', pos: { x: 2, y: 3 }, ref: REF_BILLBOARD }] as SceneEntity[];
     expect(buildProps(scene).filter(estPropVolumique)).toEqual([]);
     expect(buildBillboardProps(scene).map((el) => el.entId)).toEqual(['t1']);
+  });
+
+  it('le filet des fixtures billboard tient encore : au moins deux refs SANS recette au catalogue', () => {
+    expect(
+      props.filter((p) => !p.volume).length,
+      'la phase 4 de #1343 (mort du chemin billboard des props) fera tomber ce filet EXPRÈS : ces fixtures '
+      + 'devront alors être reformulées — il n’y aura plus de décor billboard à témoin.',
+    ).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -61,7 +89,7 @@ describe('buildProps — éléments prop du pivot', () => {
     s.layers[0].tiles[1 * 6 + 2] = 'mur'; // (2,1) : BLOC PLEIN — géré par le relief (solidHeightM), PAS un prop
     s.layers[0].tiles[3 * 6 + 4] = 'bois'; // (4,3) : overlay à DÉCOR (overlayProp → 'arbre')
     s.entities = [
-      { id: 'p1', kind: 'prop', pos: { x: 1, y: 1 } }, // ref absente → normalisée 'tonneau'
+      { id: 'p1', kind: 'prop', pos: { x: 1, y: 1 }, ref: REF_BILLBOARD },
       { id: 'p2', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'tente', facing: 'SE', interact: { flow: { kind: 'seq', steps: [] } } }, // tente 2×2 au catalogue
       { id: 'npc', kind: 'personnage', pos: { x: 5, y: 5 } }, // pas un prop → ignoré
     ] as SceneEntity[];
@@ -87,9 +115,15 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(hidden.states.visible).toBe(false); // mémorisé → sous le voile / culé en POV
   });
 
-  it('normalise la ref (défaut tonneau) et porte facing/empreinte/interact', () => {
+  it('normalise la ref ABSENTE en ‘tonneau’ — le défaut du builder, quelle que soit sa voie de rendu', () => {
+    const s = scene();
+    s.entities = [{ id: 'sans-ref', kind: 'prop', pos: { x: 0, y: 0 } }] as SceneEntity[];
+    expect(buildProps(s).filter((e) => e.source === 'entity').map((e) => e.ref)).toEqual(['tonneau']);
+  });
+
+  it('porte ref/facing/empreinte/interact', () => {
     const [p1, p2] = buildBillboardProps(scene()).filter((e) => e.source === 'entity');
-    expect(p1.ref).toBe('tonneau');
+    expect(p1.ref).toBe(REF_BILLBOARD);
     expect(p1.foot).toEqual({ offX: 0, offY: 0, scale: 1 });
     expect(p1.interact).toBe(false);
     expect(p2.ref).toBe('tente');
@@ -133,8 +167,10 @@ describe('buildProps — éléments prop du pivot', () => {
   });
 });
 
-/** ORNEMENTS d'identité par TYPE de bâtiment : dérivés de `buildingFeatures(body.style)`, posés en
- *  billboard sur/devant le bâtiment (ancres ridge/facade/front). 100 % donnée, aucun cas en dur. */
+/** ORNEMENTS d'identité par TYPE de bâtiment : dérivés de `buildingFeatures(body.style)`, posés
+ *  sur/devant le bâtiment (ancres ridge/facade/front). 100 % donnée, aucun cas en dur. Les quatre
+ *  ornements du catalogue portent une recette (#1624) : leur ANCRAGE se relit donc sur la géométrie
+ *  monde qu'ils rendent, jamais sur un `foot` de billboard. */
 describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBody.style)', () => {
   const withRoof = (style: string, foot: { x: number; y: number; w: number; h: number }, walls: WallSeg[] = []) => {
     const s = emptyScene(10, 10);
@@ -149,17 +185,17 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     return s;
   };
   const orns = (s: ReturnType<typeof withRoof>, visible?: Set<string>) =>
-    buildBillboardProps(s, visible).filter((e) => e.source === 'ornament');
+    buildProps(s, visible).filter((e) => e.source === 'ornament');
 
-  it("chapelle → clocheton au FAÎTE : partage l'empreinte/profondeur du toit, billboard centré, surélevé", () => {
+  it("chapelle → clocheton au FAÎTE : partage l'empreinte/profondeur du toit, centré, surélevé", () => {
     const [o] = orns(withRoof('chapelle', { x: 1, y: 1, w: 4, h: 5 }));
     expect(o.ref).toBe('clocheton');
     expect(o.key).toBe('orn:body-chapelle:mass-0:0');
     expect(o.cell).toEqual({ x: 1, y: 1, z: 0 }); // origine → même coin caméra-proche que le toit
     expect(o.span).toEqual({ w: 4, h: 5 }); // → propDepth == roofDepth (se peint PAR-DESSUS)
-    expect(o.foot).toEqual({ offX: 1.5, offY: 2, scale: 1 }); // recentré sur l'empreinte
-    expect(o.liftM!).toBeGreaterThan(2); // posé haut sur la pente (≈ égout + 0.6·flèche), pas au sol
     expect(o.facing).toBe('E'); // cap du faîtage résolu (ridge 'x' authoré par la fixture)
+    expect(poseA(o, { x: 2.5, y: 3 }, 'E')).toBe(true); // recentré sur l'empreinte 4×5
+    expect(socleM(o)).toBeGreaterThan(2); // posé haut sur la pente (≈ égout + 0.6·flèche), pas au sol
     expect(o.interact).toBe(false);
     expect(o.states.visible).toBe(true); // `visible` absent (éditeur/QC) → visible
   });
@@ -167,8 +203,8 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
   it('forge → cheminée au FAÎTE : centrée sur la masse et posée haut sur la pente', () => {
     const [o] = orns(withRoof('forge', { x: 0, y: 0, w: 3, h: 2 }));
     expect(o.ref).toBe('cheminee');
-    expect(o.foot.offX).toBeCloseTo(1, 6); // recentré sur l'empreinte 3×2
-    expect(o.liftM!).toBeGreaterThan(0);
+    expect(poseA(o, { x: 1, y: 0.5 }, 'E')).toBe(true); // recentré sur l'empreinte 3×2
+    expect(socleM(o)).toBeGreaterThan(0);
   });
 
   it("taverne → enseigne en FAÇADE : JUSTE devant la porte (hors mur), surélevée, tournée vers l'extérieur", () => {
@@ -178,9 +214,9 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     expect(o.ref).toBe('enseigne');
     expect(o.cell).toEqual({ x: 2, y: 4, z: 0 }); // case JUSTE À L'EXTÉRIEUR (le mur plein masquerait l'intérieur)
     expect(o.facing).toBe('S'); // normale sortante
-    expect(o.liftM!).toBeGreaterThan(0); // en haut du mur (potence saillante)
-    expect(o.span).toBeUndefined(); // billboard 1×1 (pas la profondeur du toit)
-    expect(o.foot).toEqual({ offX: 0, offY: 0.5, scale: 1 }); // saillie de ½ case vers l'extérieur (dégage la face du mur)
+    expect(o.span).toBeUndefined(); // 1×1 (pas la profondeur du toit)
+    expect(socleM(o)).toBeGreaterThan(0); // en haut du mur (potence saillante)
+    expect(poseA(o, { x: 2, y: 4.5 }, 'S')).toBe(true); // saillie de ½ case vers l'extérieur (dégage la face du mur)
   });
 
   it("échoppe → étal au SOL DEVANT la porte (case sortante), non surélevé, tourné vers l'extérieur", () => {
@@ -189,7 +225,8 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     expect(o.ref).toBe('etal-marche');
     expect(o.cell).toEqual({ x: 1, y: 3, z: 0 }); // case JUSTE À L'EXTÉRIEUR de la porte S
     expect(o.facing).toBe('S');
-    expect(o.liftM ?? 0).toBe(0); // au sol
+    expect(socleM(o)).toBe(0); // au sol
+    expect(poseA(o, { x: 1, y: 3 }, 'S')).toBe(true); // plaqué sur la case sortante, sans saillie
   });
 
   it('repli sans porte : façade SUD sous le centre bas de l’empreinte', () => {
@@ -231,10 +268,10 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     const foot = { x: 1, y: 1, w: 4, h: 4 }; // allié (2,2) DANS l'empreinte → roofHidden
     const ally = [{ x: 2, y: 2 }];
     // Faîte : sauté avec le toit en cutaway ; présent sans allié.
-    expect(buildBillboardProps(withRoof('chapelle', foot), undefined, { allies: ally }).filter((e) => e.source === 'ornament')).toHaveLength(0);
+    expect(buildProps(withRoof('chapelle', foot), undefined, { allies: ally }).filter((e) => e.source === 'ornament')).toHaveLength(0);
     expect(orns(withRoof('chapelle', foot))).toHaveLength(1);
     // Façade (au sol devant la porte) : le toit levé ne l'occulte pas → reste.
-    const tav = buildBillboardProps(withRoof('taverne', foot, [{ x: 2, y: 5, side: 'N', door: true }]), undefined, { allies: ally }).filter((e) => e.source === 'ornament');
+    const tav = buildProps(withRoof('taverne', foot, [{ x: 2, y: 5, side: 'N', door: true }]), undefined, { allies: ally }).filter((e) => e.source === 'ornament');
     expect(tav.map((e) => e.ref)).toEqual(['enseigne']);
   });
 
@@ -252,10 +289,10 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     const fleche = faite - field.shape.eaveHeightM;
     expect(fleche).toBeCloseTo(2 * field.shape.pitch, 9);
     const [o] = orns(s);
-    expect(o.liftM!).toBeCloseTo(field.shape.eaveHeightM + 0.6 * fleche, 9);
+    expect(socleM(o)).toBeCloseTo(field.shape.eaveHeightM + 0.6 * fleche, 9);
     // RÉFUTATION de la lecture par boîte englobante (`min(w,h)/2 × ROOF_SLOPE_M`) : elle rendait une
     // flèche étrangère à la pente de la nappe.
-    expect(o.liftM!).not.toBeCloseTo(field.shape.eaveHeightM + 0.6 * 2 * ROOF_SLOPE_M, 3);
+    expect(socleM(o)).not.toBeCloseTo(field.shape.eaveHeightM + 0.6 * 2 * ROOF_SLOPE_M, 3);
   });
 
   it("masse dont la nappe MANQUE à la carte : son ornement est omis, le reste des props se construit (aucune levée)", () => {
@@ -264,21 +301,19 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     const s = withRoof('chapelle', { x: 1, y: 1, w: 4, h: 4 });
     const bodies = s.architecture!;
     s.architecture = [];
-    s.entities = [{ id: 'p1', kind: 'prop', pos: { x: 8, y: 8 } }] as SceneEntity[];
+    s.entities = [{ id: 'p1', kind: 'prop', pos: { x: 8, y: 8 }, ref: REF_BILLBOARD }] as SceneEntity[];
     s.layers[0].tiles[7 * 10 + 7] = 'bois'; // (7,7) : overlay à décor
     expect(resolveNappes(s).size).toBe(0);
     s.architecture = bodies;
     expect(resolveNappes(s).get(nappeKey('body-chapelle', 'mass-0'))).toBeUndefined();
     const els = buildBillboardProps(s);
-    expect(els.filter((e) => e.source === 'ornament')).toHaveLength(0);
+    expect(buildProps(s).filter((e) => e.source === 'ornament')).toHaveLength(0);
     expect(els.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p1']);
     expect(els.filter((e) => e.source === 'terrain').map((e) => e.key)).toEqual(['ov:7,7,0']);
   });
 });
 
 describe('buildProps — features de façade authorées', () => {
-  const hasFeatureId = <T extends { architectureFeatureId?: string }>(prop: T): prop is T & { architectureFeatureId: string } =>
-    prop.architectureFeatureId !== undefined;
   const authoredFacade = () => {
     const s = emptyScene(10, 10);
     s.walls = [
@@ -309,14 +344,51 @@ describe('buildProps — features de façade authorées', () => {
     return s;
   };
 
+  /** La MÊME façade, mais le corps porte enfin sa MASSE couverte : les features à `base: 'toit'`
+   *  (cheminée, clocheton) y trouvent une couverture à l'aplomb de leur ancre. L'emprise s'arrête à
+   *  la rangée y=4 : les arêtes murales de la rangée y=5 la bordent par le SUD, comme au réel. */
+  const facadeCouverte = () => {
+    const s = authoredFacade();
+    s.architecture![0].masses = [{
+      id: 'corps', z: 0, footprint: [{ x: 2, y: 1, w: 4, h: 4 }], levels: 1,
+      profile: 'gable', ridge: 'x', pitchDeg: 30, material: 'tuile',
+    }];
+    return s;
+  };
+
+  /** Hauteur de la COUVERTURE à l'aplomb d'un point, lue sur les faces de toit que le builder ÉMET :
+   *  le PLAN du pan qui enjambe le point, évalué en ce point. Un pan n'a de sommets qu'à ses coins —
+   *  chercher un sommet proche ne mesurerait rien. Aucune arithmétique de nappe n'est rejouée ici :
+   *  seules les faces rendues parlent. */
+  const couvertureAu = (scene: Scene, p: { x: number; y: number }): number => {
+    let haut = Number.NEGATIVE_INFINITY;
+    for (const el of buildRoofs(scene))
+      for (const face of el.faces) {
+        const xs = face.poly.map((q) => q.x), ys = face.poly.map((q) => q.y);
+        if (p.x < Math.min(...xs) || p.x > Math.max(...xs) || p.y < Math.min(...ys) || p.y > Math.max(...ys)) continue;
+        const [a, b, c] = face.poly;
+        if (!c) continue;
+        // Plan par trois sommets : h(p) = a.h + (∇h · (p − a)), ∇h résolu sur (b−a, c−a).
+        const det = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+        if (Math.abs(det) < 1e-9) continue; // face verticale (pignon, fascia) : elle ne couvre rien
+        const dhx = ((b.h - a.h) * (c.y - a.y) - (c.h - a.h) * (b.y - a.y)) / det;
+        const dhy = ((c.h - a.h) * (b.x - a.x) - (b.h - a.h) * (c.x - a.x)) / det;
+        haut = Math.max(haut, a.h + dhx * (p.x - a.x) + dhy * (p.y - a.y));
+      }
+    return haut;
+  };
+
+  /** Clés d'émission des features de façade — l'identité que volume et billboard partagent. */
+  const clesDeFeature = (...args: Parameters<typeof buildProps>) =>
+    buildProps(...args).filter((prop) => prop.source === 'architecture').map((prop) => prop.key);
+
   it('émet chaque feature exactement une fois, dans l’ordre d’auteur', () => {
-    const out = buildBillboardProps(authoredFacade()).filter((prop) => prop.architectureFeatureId);
-    expect(out.map((prop) => prop.architectureFeatureId)).toEqual([
-      'corps-auberge:facade-rue:cheminee-ouest',
-      'corps-auberge:facade-rue:cheminee-est',
+    const out = buildProps(authoredFacade()).filter((prop) => prop.source === 'architecture');
+    expect(out.map((prop) => prop.key)).toEqual([
+      'arch:corps-auberge:facade-rue:cheminee-ouest',
+      'arch:corps-auberge:facade-rue:cheminee-est',
     ]);
     expect(new Set(out.map((prop) => prop.key)).size).toBe(2);
-    expect(out.every((prop) => prop.source === 'architecture')).toBe(true);
   });
 
   it('n’émet pas une feature dont l’arête ne porte aucun mur physique', () => {
@@ -326,19 +398,20 @@ describe('buildProps — features de façade authorées', () => {
       kind: 'sign',
       edge: { x: 8, y: 8, side: 'N' },
     });
-    expect(buildBillboardProps(scene).filter(hasFeatureId).some((prop) => prop.architectureFeatureId.endsWith(':enseigne-sans-mur'))).toBe(false);
+    expect(clesDeFeature(scene).some((cle) => cle.endsWith(':enseigne-sans-mur'))).toBe(false);
   });
 
   it('respecte z, offset, visibilité et filtrage d’étage sans dupliquer les ancres', () => {
     const scene = authoredFacade();
-    const visible = new Set(['4,5,0']);
-    const all = buildBillboardProps(scene, visible);
-    const chimney = all.filter(hasFeatureId).find((prop) => prop.architectureFeatureId.endsWith(':cheminee-ouest'))!;
+    const chimney = buildProps(scene, new Set(['4,5,0'])).find((prop) => prop.key.endsWith(':cheminee-ouest'))!;
     expect(chimney.cell).toEqual({ x: 4, y: 5, z: 0 });
-    expect(chimney.foot.offX).not.toBe(0);
+    // Arête N de (4,5) parcourue à 25 % → (3.75, 4.5).
+    expect(poseA(chimney, { x: 3.75, y: 4.5 }, 'N')).toBe(true);
+    // Cette fixture n'a AUCUNE masse : la cheminée, déclarée `base: 'toit'`, retombe sur le sol SANS
+    // son décalage — un décalage relatif à une couverture ne se lit pas sans couverture.
+    expect(socleM(chimney)).toBe(0);
     expect(chimney.states.visible).toBe(true);
-    expect(buildBillboardProps(scene, undefined, { activeZ: -1, viewZ: null })
-      .some((prop) => prop.architectureFeatureId)).toBe(false);
+    expect(clesDeFeature(scene, undefined, { activeZ: -1, viewZ: null })).toEqual([]);
   });
 
   it('qualifie les ids homonymes par corps et section', () => {
@@ -351,11 +424,10 @@ describe('buildProps — features de façade authorées', () => {
       appearance: 'auberge-relais-imperiale',
       features: [{ id: 'cheminee-ouest', kind: 'chimney', edge: { x: 6, y: 5, side: 'N' } }],
     });
-    expect(buildBillboardProps(scene).filter((prop) => prop.architectureFeatureId)
-      .map((prop) => prop.architectureFeatureId)).toEqual([
-      'corps-auberge:facade-rue:cheminee-ouest',
-      'corps-auberge:facade-rue:cheminee-est',
-      'corps-auberge:facade-cour:cheminee-ouest',
+    expect(clesDeFeature(scene)).toEqual([
+      'arch:corps-auberge:facade-rue:cheminee-ouest',
+      'arch:corps-auberge:facade-rue:cheminee-est',
+      'arch:corps-auberge:facade-cour:cheminee-ouest',
     ]);
   });
 
@@ -371,8 +443,8 @@ describe('buildProps — features de façade authorées', () => {
       id: 'placard-de-facade', kind: 'sign', edge: { x: 3, y: 5, side: 'N' }, offset: 0.25, appearance: 'armoire',
     });
     const volumes = buildProps(scene).filter(estPropVolumique);
-    expect(volumes.map((el) => el.key)).toEqual(['arch:corps-auberge:facade-rue:placard-de-facade']);
-    const [el] = volumes;
+    expect(volumes.filter((v) => v.ref === 'armoire').map((v) => v.key)).toEqual(['arch:corps-auberge:facade-rue:placard-de-facade']);
+    const [el] = volumes.filter((v) => v.ref === 'armoire');
     expect(el.source).toBe('architecture');
     expect(el.entId).toBeUndefined(); // rien à désigner au pointeur
     expect(el.facing).toBe('N'); // côté sortant de l'arête (2,5)-(3,5) côté N
@@ -400,5 +472,98 @@ describe('buildProps — features de façade authorées', () => {
     expect(estPropVolumique(el)).toBe(false);
     expect((el as BillboardPropEl).ref).toBe('armoire');
     expect(el.facing).toBeUndefined(); // aucun cap : l'arête n'a pas de dehors
+  });
+
+  /**
+   * UNE SEULE REPRÉSENTATION DE L'ENSEIGNE (#1624) : la même feature `sign` sortait à DEUX endroits —
+   * un décor ancré à la façade (`features.sign` du catalogue de façades) ET un panneau plaqué dans le
+   * plan du mur (`wallFeatures.sign`, `buildWalls`). Le catalogue ne lie plus `sign` qu'à son décor,
+   * dont la recette porte la potence et le panneau : la scène rend UN volume et AUCUNE face de mur
+   * de ce kind.
+   */
+  it('une enseigne authorée rend UN décor volumique et ZÉRO face de mur `sign`', () => {
+    const scene = authoredFacade();
+    scene.architecture![0].facades[0].features!.push({
+      id: 'enseigne-de-rue', kind: 'sign', edge: { x: 3, y: 5, side: 'N' }, offset: 0.5,
+    });
+    const enseignes = buildProps(scene).filter((prop) => prop.ref === 'enseigne');
+    expect(enseignes.map((el) => el.key)).toEqual(['arch:corps-auberge:facade-rue:enseigne-de-rue']);
+    expect(volume(enseignes[0]).faces.length).toBeGreaterThan(0);
+    expect(poseA(enseignes[0], { x: 3, y: 4.5 }, 'N')).toBe(true);
+    expect(socleM(enseignes[0])).toBe(2.2); // `features.sign.liftM` de l'auberge
+    expect(buildWalls(scene).flatMap((wall) => wall.faces)
+      .filter((face) => face.architectureFeatureKind === 'sign')).toEqual([]);
+  });
+
+  /**
+   * L'`appearance` d'une feature est AUTHORABLE (`data/schemas/defs-scenes/scene.ts`) et servait DEUX
+   * lecteurs : le nom d'un décor pour `buildProps`, celui d'une apparence de MUR pour `buildWalls`.
+   * Une enseigne à apparence authorée sortait donc en double. Le verrou est par CONSTRUCTION
+   * (`KINDS_DE_DECOR`, `builders/walls.ts`) : quoi que l'auteur pose, le plan du mur reste muet.
+   */
+  it.each([
+    ['sans apparence authorée', undefined],
+    ['apparence de MUR authorée', 'mur-en-bois'],
+    ['apparence de DÉCOR à recette authorée', 'armoire'],
+  ])('enseigne, %s : le plan du mur ne porte AUCUNE face', (_cas, appearance) => {
+    const scene = authoredFacade();
+    scene.architecture![0].facades[0].features!.push({
+      id: 'enseigne-de-rue', kind: 'sign', edge: { x: 3, y: 5, side: 'N' }, offset: 0.5,
+      ...(appearance ? { appearance } : {}),
+    });
+    expect(buildWalls(scene).flatMap((wall) => wall.faces)
+      .filter((face) => face.architectureFeatureKind === 'sign')).toEqual([]);
+    // ... et le décor, lui, sort bien UNE fois — le verrou ne doit pas avaler la représentation qui reste.
+    expect(clesDeFeature(scene).filter((cle) => cle.endsWith(':enseigne-de-rue'))).toHaveLength(1);
+  });
+
+  /**
+   * ANCRAGE À LA COUVERTURE (#1624) : une souche posée au sol + 2,25 m sortait à 3,73 m sous des toits
+   * dont la couverture atteint 4 m et plus — une cheminée NOYÉE dans son propre toit. La vignette
+   * déclare désormais `base: 'toit'` et son `liftM` est un DELTA : la souche s'encastre dans la nappe
+   * à l'aplomb de son ancre et la PERCE. Une seule machinerie de hauteur de toit
+   * (`resolveNappes`/`fieldHeightAt`), celle des faîteaux.
+   */
+  it('cheminée à `base: toit` : la souche s’ENCASTRE dans la couverture à son aplomb et la PERCE', () => {
+    const scene = facadeCouverte();
+    const chimney = buildProps(scene).find((prop) => prop.key.endsWith(':cheminee-ouest'))!;
+    const couverture = couvertureAu(scene, { x: 3.75, y: 4.5 });
+    expect(couverture).toBeGreaterThan(0);
+    const faces = volume(chimney).faces.flatMap((f) => f.poly.map((p) => p.h));
+    expect(socleM(chimney)).toBeCloseTo(couverture - 0.3, 9); // `liftM` = delta d'encastrement
+    expect(Math.min(...faces)).toBeLessThan(couverture); // pied SOUS la couverture : encastrée
+    expect(Math.max(...faces)).toBeGreaterThan(couverture); // sommet AU-DESSUS : elle perce
+  });
+
+  it('clocheton à `base: toit` : son pied ne FLOTTE pas au-dessus de la couverture', () => {
+    const scene = facadeCouverte();
+    scene.architecture![0].facades[0].appearance = 'chapelle';
+    scene.architecture![0].facades[0].features = [
+      { id: 'clocheton-nef', kind: 'belfry', edge: { x: 3, y: 5, side: 'N' }, offset: 0.5 },
+    ];
+    const belfry = buildProps(scene).find((prop) => prop.key.endsWith(':clocheton-nef'))!;
+    const couverture = couvertureAu(scene, { x: 3, y: 4.5 });
+    expect(socleM(belfry)).toBeCloseTo(couverture - 0.15, 9);
+    expect(socleM(belfry)).toBeLessThanOrEqual(couverture); // aucun vide entre le toit et le fût
+    expect(couverture - socleM(belfry)).toBeLessThan(0.5); // ... ni enfoui
+  });
+
+  it('`base: toit` vaut pour les DEUX représentations : le BILLBOARD porte la même surélévation', () => {
+    const scene = facadeCouverte();
+    scene.architecture![0].facades[0].features!.push({
+      // Apparence SANS recette : la même feature, servie par l'autre voie de rendu.
+      id: 'souche-dessinee', kind: 'chimney', edge: { x: 4, y: 5, side: 'N' }, offset: 0.25, appearance: REF_BILLBOARD,
+    });
+    const props = buildProps(scene);
+    const dessinee = props.find((prop) => prop.key.endsWith(':souche-dessinee'))!;
+    const volumique = props.find((prop) => prop.key.endsWith(':cheminee-ouest'))!;
+    expect(estPropVolumique(dessinee)).toBe(false);
+    expect((dessinee as BillboardPropEl).liftM).toBeCloseTo(socleM(volumique), 9);
+  });
+
+  it('`base: toit` sans AUCUNE couverture à l’aplomb : repli DÉCLARÉ sur le sol, sans décalage', () => {
+    const chimney = buildProps(authoredFacade()).find((prop) => prop.key.endsWith(':cheminee-est'))!;
+    expect((chimney as { liftM?: number }).liftM).toBeUndefined();
+    expect(socleM(chimney)).toBe(0);
   });
 });

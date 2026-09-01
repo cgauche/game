@@ -18,8 +18,9 @@
  *    existe pour rendre impossible : la valeur REÇUE que l'échec affiche est la mesure courante, mais
  *    elle ne devient un témoin qu'accompagnée de la raison du déplacement.
  *
- * Les trois scènes couvrent les trois régimes : une carte de ville MEUBLÉE (hub de l'arène), une carte
- * de ROUTE longue (diligence), une SALLE nue (zone 13 de l'arène — plancher de comparaison).
+ * DEUX étalons sont figés au chiffre : une carte de ville MEUBLÉE (hub de l'arène) et une SALLE nue
+ * (zone 13 de l'arène — plancher de comparaison). La carte de ROUTE longue (diligence) est couverte
+ * SANS chiffre : sa carte bouge encore sous le pinceau (`EN_AUTHORING` ci-dessous, arbitrage #1447).
  */
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -49,8 +50,12 @@ function compteursDe(scene: Scene): { sommets: number; triangles: number; spans:
  *  donnée). `spans` = une face du pivot ; `triangles` = ce que le GPU dessine ; `sommets` = l'index
  *  IDENTITÉ (aucun sommet partagé, donc exactement 3 par triangle). */
 const ETALONS: [string, () => Scene, { sommets: number; triangles: number; spans: number }][] = [
-  ['arene-hub', () => sceneDuProjet('arene-hub'), { sommets: 50694, triangles: 16898, spans: 4149 }],
-  ['arene-zone13', () => sceneDuProjet('arene-zone13'), { sommets: 8640, triangles: 2880, spans: 1440 }],
+  // Ré-étalonnées 2026-09-01 (#1644) : les onze recettes volumiques du LOT A (tonneau, caisse, coffre,
+  // étagère, chaise, banc, tabouret, urne, pile de tonneaux, table, table longue) font sortir en FACES
+  // monde des décors que ces deux scènes posaient jusque-là en billboards — hub 4446 → 6346 faces,
+  // zone13 1440 → 1474.
+  ['arene-hub', () => sceneDuProjet('arene-hub'), { sommets: 70056, triangles: 23352, spans: 6346 }],
+  ['arene-zone13', () => sceneDuProjet('arene-zone13'), { sommets: 8832, triangles: 2944, spans: 1474 }],
 ];
 
 /** EN AUTHORING — scènes SORTIES du compte exact le temps que leur carte bouge sous le pinceau : un

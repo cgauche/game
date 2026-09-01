@@ -429,9 +429,9 @@ const HUB_ARCHITECTURE = [
       { id: 'echoppe-z0', z: 0, parts: [{ id: 'echoppe-volume', foot: { x: 36, y: 27, w: 11, h: 9 } }], roomZoneIds: ['piece-echoppe'] },
     ],
     facades: [
-      { id: 'taverne-facade-sud', z: 0, edges: [{ x: 10, y: 13, side: 'N' }], appearance: 'auberge-relais-imperiale', roomZoneIds: ['piece-taverne'], features: [{ id: 'enseigne', kind: 'sign', edge: { x: 10, y: 13, side: 'N' }, offset: 0.5, width: 1.2 }] },
-      { id: 'chapelle-facade-sud', z: 0, edges: [{ x: 40, y: 14, side: 'N' }], appearance: 'chapelle', roomZoneIds: ['piece-chapelle'], features: [{ id: 'clocheton', kind: 'belfry', edge: { x: 40, y: 14, side: 'N' }, offset: 0.5 }] },
-      { id: 'forge-facade-ouest', z: 0, edges: [{ x: 2, y: 31, side: 'E' }], appearance: 'forge', roomZoneIds: ['piece-forge'], features: [{ id: 'cheminee', kind: 'chimney', edge: { x: 2, y: 31, side: 'E' }, offset: 0.5 }] },
+      { id: 'taverne-facade-sud', z: 0, edges: [{ x: 10, y: 13, side: 'N' }], appearance: 'auberge-relais-imperiale', roomZoneIds: ['piece-taverne'], features: [{ id: 'enseigne-taverne', kind: 'sign', edge: { x: 10, y: 13, side: 'N' }, offset: 0.5, width: 1.2 }] },
+      { id: 'chapelle-facade-sud', z: 0, edges: [{ x: 40, y: 14, side: 'N' }], appearance: 'chapelle', roomZoneIds: ['piece-chapelle'], features: [{ id: 'clocheton-chapelle', kind: 'belfry', edge: { x: 40, y: 14, side: 'N' }, offset: 0.5 }] },
+      { id: 'forge-facade-ouest', z: 0, edges: [{ x: 2, y: 31, side: 'E' }], appearance: 'forge', roomZoneIds: ['piece-forge'], features: [{ id: 'cheminee-forge-du-bourg', kind: 'chimney', edge: { x: 2, y: 31, side: 'E' }, offset: 0.5 }] },
     ],
     masses: [
       { id: 'taverne', z: 0, footprint: [{ x: 3, y: 3, w: 15, h: 10 }], levels: 1, profile: 'gable', pitchDeg: 30, material: 'tuile' },

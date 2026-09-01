@@ -214,7 +214,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `opaque` | **0 — JAMAIS LU** | — |
 | `cover` | **0 — JAMAIS LU** | — |
 | `light` | **0 — JAMAIS LU** | — |
-| `foot` | 1 | `src/data/props.types.ts:93` |
+| `foot` | 1 | `src/data/props.types.ts:100` |
 | `volume` | 1 | `src/gameIso/builders/propVolumes.ts:145` |
 | `seatSlots` | **0 — JAMAIS LU** | — |
 

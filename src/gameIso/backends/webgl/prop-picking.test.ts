@@ -1,7 +1,7 @@
 import { BufferAttribute, BufferGeometry, Mesh, MeshBasicMaterial, OrthographicCamera, PlaneGeometry, Raycaster, Vector2, Vector3, type Intersection } from 'three';
 import { describe, expect, it } from 'vitest';
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../../state/scene';
-import { findPropById, findPropMaterialById } from '../../../data';
+import { findPropById, findPropMaterialById, props } from '../../../data';
 import { buildWorldGeometry, wholeSceneBillboardEls, worldBakeDeps, type WorldGeometry } from './sceneMeshes';
 import { worldSurfaceMaterials } from './worldMaterials';
 import { pickNearestTarget, propEntityAtHit, type PickTarget, type PropVertexRange, type WorldPickMesh } from './spriteRaycast';
@@ -21,8 +21,11 @@ const NDC = { x: 0, y: 0 };
 const sceneWith = (...entities: SceneEntity[]): Scene => ({ ...emptyScene(8, 8), entities });
 const volumeEntity = (id: string): SceneEntity =>
   ({ id, kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }) as SceneEntity;
+/** Un décor encore BILLBOARD, DÉRIVÉ du catalogue : la vague volumique (#1343) convertit les refs lot
+ *  par lot — une ref écrite en dur ferait rougir cette garde le jour de SA recette. */
+const REF_BILLBOARD = props.find((p) => !p.volume)!.id;
 const legacyEntity = (id: string): SceneEntity =>
-  ({ id, kind: 'prop', pos: { x: 5, y: 5 }, ref: 'tonneau' }) as SceneEntity;
+  ({ id, kind: 'prop', pos: { x: 5, y: 5 }, ref: REF_BILLBOARD }) as SceneEntity;
 const figurant = (id: string): SceneEntity =>
   ({ id, kind: 'personnage', pos: { x: 6, y: 6 } }) as SceneEntity;
 /** Deux listes de deps sont-elles la MÊME ? — par IDENTITÉ, terme à terme : le patron de rétention. */
@@ -40,9 +43,9 @@ function* bakedPropFaces(world: WorldGeometry, entId: string): Generator<{ a: nu
 
 describe('Cuisson d’un décor volumique — une seule voie, et son id de picking', () => {
   it('cuit un prop volumique une fois, sans sujet billboard, et conserve son id de picking', () => {
-    const scene = sceneWith(volumeEntity('table-1'), legacyEntity('tonneau-1'));
+    const scene = sceneWith(volumeEntity('table-1'), legacyEntity('billboard-1'));
     const els = wholeSceneBillboardEls(scene);
-    expect(els.props.map((p) => p.entId)).toEqual(['tonneau-1']);
+    expect(els.props.map((p) => p.entId)).toEqual(['billboard-1']);
     const world = buildWorldGeometry(scene, 2, () => 1);
     expect(world.userData.propVertexRanges).toEqual(expect.arrayContaining([
       expect.objectContaining({ entId: 'table-1', vertexStart: expect.any(Number), vertexCount: expect.any(Number) }),
@@ -76,13 +79,21 @@ describe('Cuisson d’un décor volumique — une seule voie, et son id de picki
    * tableau : c'est la signature des seuls décors à recette.
    */
   it('ce qui n’est pas un décor volumique ne recuit RIEN — tableau reforgé, personnage déplacé, décor billboardé déplacé', () => {
-    const base = sceneWith(volumeEntity('table-1'), legacyEntity('tonneau-1'), figurant('pnj-1'));
+    const base = sceneWith(volumeEntity('table-1'), legacyEntity('billboard-1'), figurant('pnj-1'));
     for (const inerte of [
       { ...base, entities: [...base.entities] }, // même contenu, tableau NEUF
       patchEntity(base, 'pnj-1', { pos: { x: 7, y: 7 } }), // un corps qui marche
       { ...base, entities: base.entities.filter((e) => e.id !== 'pnj-1') }, // un despawn de combat
-      patchEntity(base, 'tonneau-1', { pos: { x: 1, y: 1 } }), // un décor BILLBOARD, hors de la masse cuite
+      patchEntity(base, 'billboard-1', { pos: { x: 1, y: 1 } }), // un décor BILLBOARD, hors de la masse cuite
     ]) expect(memesDeps(worldBakeDeps(inerte, 2), worldBakeDeps(base, 2))).toBe(true);
+  });
+
+  it('le filet des fixtures billboard tient encore : au moins deux refs SANS recette au catalogue', () => {
+    expect(
+      props.filter((p) => !p.volume).length,
+      'la phase 4 de #1343 (mort du chemin billboard des props) fera tomber ce filet EXPRÈS : ces fixtures '
+      + 'devront alors être reformulées — il n’y aura plus de décor billboard à témoin.',
+    ).toBeGreaterThanOrEqual(2);
   });
 
   /** La RECETTE elle-même est une dep : une retouche au Codex périme la cuisson sans que la scène bouge. */

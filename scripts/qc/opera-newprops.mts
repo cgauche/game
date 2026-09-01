@@ -5,7 +5,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { DEFS } from '../../src/gameIso/sprites';
 
-const ids = ['banc', 'coiffeuse', 'portant-costumes', 'comptoir', 'paravent', 'decor-flat', 'scie-chevalet', 'canape'];
+const ids = ['banc', 'coiffeuse', 'portant-costumes', 'paravent', 'decor-flat', 'scie-chevalet', 'canape'];
 const cols = 4, cw = 140, ch = 180;
 const cells = ids.map((id, i) => {
   const cx = (i % cols) * cw, cy = Math.floor(i / cols) * ch;
