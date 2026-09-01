@@ -112,7 +112,7 @@ const REMAP = new Map([
   ['savoir Engingneurie', 'ingenierie'],
   // frenchy.bzh 22 l.38 « Savoir (Plante) » ; frenchy.bzh 26 l.300 « Savoir (Plantes) » (catalogue)
   ['savoir Plante', 'plantes'],
-  // frenchy.bzh 17 l.62 « Savoir (Sorcellerie) » (Répurgateur) ; LDB 08 l.1889 « Répurgateur …
+  // frenchy.bzh 17 l.62 « Savoir (Sorcellerie) » (Répurgateur) ; LDB 08 l.1897 « Répurgateur …
   // Savoir (Sorcières) »
   ['savoir Sorcellerie', 'sorcieres'],
   // frenchy.bzh 71 l.37 « Artisanat (Embaumement) » ; LDB 09 l.364 « Embaumeur »

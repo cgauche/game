@@ -614,7 +614,7 @@ h **Chasseur de Rat – Bronze 3**
 60
 
 
-# **ARTISTE** Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
+# <span id="page-62-0" data-folio="61"></span>**ARTISTE** Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
 
 *Vous possédez un talent artistique inné, un de ceux qui transcendent la* 
 
@@ -636,7 +636,7 @@ Attirer les mécènes appropriés n'est pas toujours chose facile, et c'est la r
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    | h |   | h |    | h   |     |    |     |
 
-<span id="page-62-0" data-folio="61"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Artiste Apprenti – Argent 1**
 
@@ -663,9 +663,7 @@ h **Artiste Apprenti – Argent 1**
 **Compétences :** Chevaucher (Cheval), Recherche **Talents :** Ambidextre, Caïd, Lire/Écrire, Magnum Opus **Possessions :** 3 étudiants, bibliothèque (Art), grand atelier (Artiste)
 
 
-# **CONSEILLER**
-
-Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
+# <span id="page-63-0" data-folio="62"></span>**CONSEILLER** Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
 
 *Plein de sagesse et très bien renseigné, vous fournissez conseils et aides qui garantissent la prospérité de vos clients.*
 
@@ -687,7 +685,7 @@ Si quelque chose d'anormal ou de dangereux se produit sur le domaine de leur emp
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h | h | h  |     |     |    |     |
 
-<span id="page-63-0" data-folio="62"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Assistant – Argent 2**
 
@@ -724,6 +722,8 @@ Langue (au choix), Savoir (au choix)
 **Compétences :** Chevaucher (Cheval), Savoir (Héraldique) **Talents :** Affable, Caïd, Escroquer, Présence imposante **Possessions :** cheval de selle avec selle et harnais, costume luxueux et d'excellente qualité, suite de Conseillers et d'Assistants
 
 
+# <span id="page-64-0" data-folio="63"></span>**DUELLISTE** Haut Elfe, Humain, Nain
+
 *Entre vos mains entraînées à la manier avec une précision mortelle, votre lame est un instrument de justice hérité d'une tradition des plus anciennes.*
 
 Les Duellistes se battent au nom des autres – réglant tout problème d'honneur entre des individus ou des organisations, ou agissent en tant que représentant de la loi, prenant cause pour l'accusé ou le défenseur lors de procès aboutissant à un jugement par combat. Pour certains Duellistes, le fait de se battre est une récompense suffisante vis-à-vis des risques qu'ils prennent. L'entraînement est dangereux, et laisse certains novices handicapés ou défigurés à vie. Ceux qui vivent assez longtemps pour apprendre de leurs erreurs peuvent espérer devenir Maîtres duellistes et apprendre leurs imparables techniques à des étudiants avides de savoir. Les Champions de Justice se battent pour les nobles et les gouvernements, et le destin de nations entières repose sur leurs lames. Certains Duellistes, plus à la pointe, dont les étudiants d'Altdorf au sang chaud, préfèrent les pistolets. Ce que les générations les plus anciennes trouvent irrespectueux autant qu'idiot.
@@ -746,7 +746,7 @@ Les Duellistes, qu'ils soient expérimentés ou novices, parcourent l'Empire à 
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   |   | h | h  |     |     |    |     |
 
-<span id="page-64-0" data-folio="63"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Escrimeur – Argent 3**
 
@@ -987,6 +987,8 @@ Volonté de fer
 **Possessions :** 4 ensembles de somptueux costumes de cour, fleuret de qualité *ou* miroir à main, 500 CO, bijoux valant 500 CO, province
 
 
+# <span id="page-69-0" data-folio="68"></span>**SERVITEUR** Halfling, Humain, Nain
+
 *Vous êtes au service des puissants, et effectuez toutes sortes de tâches pour eux.*
 
 La plupart des personnes au service de la noblesse sont d'extraction paysanne et heureux de pouvoir échapper à cette masse laborieuse trimant dans les champs. On leur apprend à cuisiner, nettoyer, faire le service et s'occuper des écuries. On leur fournit une chambre, le couvert et un salaire, mais la qualité de vie d'un Serviteur va principalement dépendre de la façon dont il est traité. Certains d'entre eux habillent leurs maîtres, cuisinent ou servent les repas, gèrent les stocks de vin et autres provisions, ou encore s'occupent des espaces verts.
@@ -1009,7 +1011,7 @@ Un Serviteur peut être réquisitionné pour accompagner son employeur lorsque c
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    | h | h |   | h  |     |     |    |     |
 
-<span id="page-69-0" data-folio="68"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Domestique – Argent 1**
 
@@ -1044,6 +1046,8 @@ Résistance à l'alcool, Soin aux animaux
 **Possessions :** arme simple, vêtements élégants, serviteur
 
 
+# <span id="page-70-0" data-folio="69"></span>**CAVALIER** Elfe sylvain, Haut Elfe, Humain
+
 *Cavalier fringant et sans peur, vous apportez vitesse, polyvalence et adresse dans le maniement des armes sur le champ de bataille.*
 
 Que ce soit au sein d'unités de pistoliers, d'escorteurs, de demi-lanciers, d'archers montés ou similaires, les Cavaliers sont déployés afin d'obtenir un avantage stratégique maximal. En campagne, cela signifie effectuer les repérages, attaquer, harceler les lignes ennemies, ou défendre les paysans. Sur le champ de bataille, ils sont aussi particulièrement polyvalents, capables de frapper vite et de se disperser. En ce qui concerne la vélocité, le repérage, la versatilité et l'élan pur, personne n'égale les Cavaliers. La cavalerie légère, très rapide, est employée par beaucoup d'armées, y compris les forces armées des cultes et autres groupes moins formels, tels que les mercenaires de milices privées. Les armées bretonniennes emploient des hommes d'armes montés tandis que les Chevaliers elfes sylvains font partie des cavaliers légers les plus redoutés du Vieux Monde.
@@ -1062,7 +1066,7 @@ Un Cavalier en service dans l'Armée impériale ne va pas tout laisser tomber su
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    | h |   |   | h  |     |     |    |     |
 
-<span id="page-70-0" data-folio="69"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Apprenti Cavalier – Argent 2**
 
@@ -1321,9 +1325,7 @@ Seigneur de guerre
 **Possessions :** relique religieuse
 
 
-# **SOLDAT**
-
-Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
+# <span id="page-75-0" data-folio="74"></span>**SOLDAT** Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
 
 *Vous êtes payé pour vous entraîner, être discipliné et, quand c'est nécessaire, partir en guerre.*
 
@@ -1345,7 +1347,7 @@ Les Soldats ont peu de temps libre, mais ont toujours des opportunités d'aventu
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h |   |    |     |     | h  |     |
 
-<span id="page-75-0" data-folio="74"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Recrue – Argent 1**
 
@@ -1378,6 +1380,8 @@ rapide, Savoir-vivre (Soldats)
 **Talents :** Cœur vaillant, Exaltant, Orateur, Voyageur aguerri **Possessions :** lettre de nomination, cheval de guerre léger avec selle et harnais, carte, ordres de mission, unité de Soldats, uniforme de qualité, symbole de grade
 
 
+# <span id="page-76-0" data-folio="75"></span>**SPADASSIN** Haut Elfe, Humain, Nain
+
 *Un gros-bras à embaucher, pour intimider, combattre et peut-être même tuer pour de l'argent.*
 
 Les Spadassins vivent grâce à leur intelligence et leurs muscles et ne sont généralement pas regardants sur le genre de travail qu'ils effectuent. Un marchand peut vouloir effrayer son rival. Un employeur peut décider que ses employés ont besoin d'un peu d'encouragement pour finir plus rapidement un travail. Un noble peut vouloir faire fuir le prétendant de sa fille. Les Spadassins sont alors les personnes vers lesquelles ils se tournent. Ceux qui ont la pire réputation décrochent les meilleurs emplois. Un Spadassin peut être la brute d'une taverne locale, et tout le monde sait qu'il frappera pour de l'argent, ou celui est connu pour sa violence indéfectible. Certains Spadassins possèdent leur propre code de conduite, mais d'autres ne se soucient que de l'argent. Certains sont juste des brutes qui se contentent de chercher les querelles et de se battre avec des cibles potentielles pour voir s'ils peuvent tirer un peu d'argent de la situation.
@@ -1396,7 +1400,7 @@ Les Spadassins vivent grâce à leur intelligence et leurs muscles et ne sont g�
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h |   | h  |     |     |    |     |
 
-<span id="page-76-0" data-folio="75"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Matamore – Bronze 2**
 
@@ -1669,6 +1673,8 @@ Soin aux animaux **Talents :** Infatigable, Négociateur, Sens de l'orientation,
 valeur d'au moins 5d10 CO, 50 pistoles d'argent.
 
 
+# <span id="page-81-0" data-folio="80"></span>**FLAGELLANT** Humain
+
 *Alors que vous aviez perdu tout espoir, votre souffrance et la vertu de Sigmar vous ont sauvés !*
 
 Le pardon n'est pas chose facile, et n'est acquis que de haute lutte, dans la douleur et en respectant la volonté de Sigmar. Les Flagellants parcourent l'Empire, se fouettent en pénitence de leurs péchés et de celui des autres. Ils sont résolus à rester au service de Sigmar jusqu'à la fin du monde, qu'ils pensent imminente. Les bonnes personnes sont censées les accueillir, les aider, les nourrir et prier avec eux.
@@ -1695,7 +1701,7 @@ Il n'est pas compliqué pour un Flagellant de se retrouver embarqué dans une av
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    | h | h |   |    |     |     |    |     |
 
-<span id="page-81-0" data-folio="80"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Zélote – Bronze 0**
 
@@ -1728,9 +1734,7 @@ Voyageur aguerri **Possessions :** relique
 **Possessions :** livre (Religion), partisans (dont des Pénitents, des Flagellants et des Zélotes)
 
 
-# **MESSAGER**
-
-Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
+# <span id="page-82-0" data-folio="81"></span>**MESSAGER** Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
 
 *Rapide et le pas assuré, rien ne vous empêchera de délivrer votre message en temps et en heure.*
 
@@ -1754,7 +1758,7 @@ Les messages peuvent renfermer toutes sortes d'informations, et certains peuvent
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h | h | h  |     |     |    |     |
 
-<span id="page-82-0" data-folio="81"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Coureur – Bronze 3**
 
@@ -1799,6 +1803,8 @@ résistant
 d'écriture
 
 
+# <span id="page-83-0" data-folio="82"></span>**PATROUILLEUR ROUTIER** Halfling, Humain
+
 *L'œil toujours aux aguets et la main sur la garde de votre arme, vous parcourez les grandes routes de l'Empire en faisant respecter la loi.*
 
 Les Patrouilleurs routiers protègent les voyageurs des bandits, des peaux-vertes, des hommes-bêtes et des autres dangers qui rôdent près des principales grandes routes de l'Empire. Les Patrouilleurs sont payés grâce à un système de taxes de douane qu'ils collectent pour la plupart par eux-mêmes. Les Patrouilleurs routiers les plus reconnus sont très respectés et bien accueillis. On leur réserve bien souvent une couchette dans les auberges qu'ils rencontrent le long des routes. Une grande majorité de Patrouilleurs routiers, qui font partie de l'Armée impériale, parcourent les artères les plus importantes en temps de paix, parfaitement entraînés et impressionnants dans leurs uniformes impeccables. Les routes les moins fréquentées doivent se contenter des Patrouilleurs de la région, et il arrive que certains profitent de leur statut et délaissent la surveillance pour effectuer des tâches plus rémunératrices. Certains Patrouilleurs vont préférer demeurer dans leurs postes de garde fortifiés plutôt que d'aller surveiller les routes. Mais les voyageurs rechigneront à donner de l'argent si les routes sont mal entretenues et dangereuses.
@@ -1819,7 +1825,7 @@ Les Patrouilleurs routiers n'ont aucune difficulté à trouver de quoi partir à
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    | h  |   | h | h |    |     |     |    |     |
 
-<span id="page-83-0" data-folio="82"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Péager – Bronze 5**
 
@@ -1854,6 +1860,8 @@ Projectiles (Poudre noire) **Talents :** Flairer les ennuis, Haine (au choix), S
 **Possessions :** cheval de guerre léger, pistolet avec 10 munitions, chapeau et cape de qualité, unité de Patrouilleurs routiers
 
 
+# <span id="page-84-0" data-folio="83"></span>**RÉPURGATEUR** Humain
+
 *Vous chassez les sorcières illégales qui infestent l'Empire en usant de tous les moyens nécessaires.*
 
 Peu de personnes sont aussi craintes et respectées que les Répurgateurs, qui disposent d'une incroyable marge de manœuvre pour mener à bien leur devoir. Généralement équipés de lames en argent et d'une paire de pistolets – difficile en effet de dissiper le plomb – ils poursuivent leurs traques dans les coins les plus reculés du Vieux Monde, prêts à juger toute sorcière dont ils croiseraient la route ou quiconque oserait en héberger. La plupart des Répurgateurs de l'Empire appartiennent au Culte de Sigmar. Les plus profanes d'entre eux sont quelquefois embauchés par des gouvernements de province et ne sont ni plus ni moins que des chasseurs de primes spécialisés. Les Collèges de Magie ont leurs propres Répurgateurs qu'ils appellent Gardiens des Magisters et qui pourchassent les sorciers solitaires, les nécromanciens et les démonologues et ils pensent qu'il est plus sage d'envoyer un sorcier pour attraper un sorcier.
@@ -1876,7 +1884,7 @@ L'existence d'un Répurgateur est une aventure permanente au cours de laquelle i
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h |   |    |     |     | h  |     |
 
-<span id="page-84-0" data-folio="83"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Interrogateur – Argent 1**
 
@@ -1974,6 +1982,8 @@ Ragot, Représentation (au choix)
 La route à perte de vue, un nouveau village chaque nuit, l'odeur du fard et les rugissements de la foule – la vie en soi est une aventure pour un Saltimbanque qui amène joie et excitation dans la triste vie de ceux qu'il divertit. Compte tenu de leur existence en marge de la société respectable, les Saltimbanques un peu curieux de ce qui les entoure auront maintes opportunités de partir à l'aventure.
 
 
+# <span id="page-86-0" data-folio="85"></span>**APOTHICAIRE** Halfling, Haut Elfe, Humain, Nain
+
 *Vous êtes particulièrement doué en chimie et en préparations diverses. Vous fabriquez et vendez des médicaments de toutes sortes.*
 
 Les Apothicaires se spécialisent dans la préparation de traitements médicamenteux – le plus souvent pilules, inhalations et onguents – qu'ils vendent indifféremment aux malades ou aux docteurs. Leurs ateliers débordent d'impressionnants étalages d'alambics bouillonnants, de béchers débordants, de pilons et de mortiers usagés ainsi que de tout un attirail destiné à diverses préparations physiques. Certains Apothicaires arrondissent leurs fins de mois en vendant des substances illicites – en passant des stimulants pour les étudiants aux abois jusqu'aux plantes hallucinogènes les plus étranges destinées aux nobles oisifs, ou lorsqu'ils répondent à des commandes louches destinées à des groupes encore plus louches. C'est un commerce fort lucratif, mais dangereux. Les ingrédients les plus rares sont chers, et c'est la raison pour laquelle, bien souvent, les Apothicaires rencontrent des problèmes de trésorerie et qu'ils partent eux-mêmes explorer les contrées sauvages afin de trouver leurs propres ingrédients. Ils sont nombreux à accepter des missions de courte durée au sein de certaines expéditions de mercenaires ou militaires, ce qui leur rapporte quelques pièces supplémentaires.
@@ -1994,7 +2004,7 @@ Les Apothicaires se spécialisent dans la préparation de traitements médicamen
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h |   |    | h   | h   |    |     |
 
-<span id="page-86-0" data-folio="85"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Apprenti Apothicaire – Bronze 3**
 
@@ -2041,9 +2051,7 @@ Travailleur qualifié (Apothicaire) **Possessions :** apprenti, atelier, livre (
 **Possessions :** bon de commande, grand atelier
 
 
-# **ÉRUDIT**
-
-Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
+# <span id="page-87-0" data-folio="86"></span>**ÉRUDIT** Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
 
 *Vous consacrez votre vie à parfaire vos connaissances, et ce, quels que soient les chemins que vous aurez à emprunter.*
 
@@ -2065,7 +2073,7 @@ Les Érudits les plus pauvres qui ne peuvent, ou ne veulent pas enseigner auront
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h |   |    |     | h   | h  |     |
 
-<span id="page-87-0" data-folio="86"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Étudiant – Bronze 3**
 
@@ -2281,6 +2289,8 @@ Savoir-vivre (Érudits) **Possessions :** apprenti, atelier (Remèdes)
 **Possessions :** tenue d'apparat, lettre d'engagement
 
 
+# <span id="page-91-0" data-folio="90"></span>**NONNE** Humain
+
 *Vous êtes au service de votre divinité, ayant fait vœu d'une vie pieuse.*
 
 Les Nonnes font partie d'ordres religieux et sont en temps normal cloîtrées au sein d'une abbaye, d'un couvent ou d'un monastère. La plupart se lèvent avant le soleil pour effectuer leurs Prières du matin avant d'effectuer leur labeur dans les champs, de soigner les malades ou de travailler à la préservation de manuscrits importants. Les serments de pèlerinage en contraignent certaines à voyager à travers l'Empire alors que d'autres ont fait vœu d'aider la communauté, marchant aux côtés du peuple et répondant à ses besoins spirituels. Certains ermites, tout comme ceux qui prennent soin des sanctuaires, sont souvent appelés Nonnes ou Moines par les habitants de l'Empire. De nombreuses Nonnes apprennent les métiers, indispensables de vignerons, de brasseurs ou de cartographes. Les Abbesses mettent ces activités en avant afin d'attirer les dons de la noblesse locale. Les chefs d'ordres militaires, ou très rassembleurs, bénéficient d'une influence importante au sein de leur propre culte ainsi qu'avec la classe dirigeante d'une province. Pour en savoir plus sur les différentes religions et les différents ordres, référez-vous au **Chapitre 7 : Religions et Croyances**.
@@ -2301,7 +2311,7 @@ Lorsqu'un ordre religieux découvre de terribles secrets ou une partie d'une pro
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   |   |   |    | h   | h   |    | h   |
 
-<span id="page-91-0" data-folio="90"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Novice – Bronze 1**
 
@@ -2344,6 +2354,8 @@ fer
 **Possessions :** ordre religieux
 
 
+# <span id="page-92-0" data-folio="91"></span>**PRÊTRE** Humain
+
 *Vous portez la parole de votre dieu et assouvissez les besoins spirituels des masses.*
 
 Les Prêtres s'occupent de tous les fidèles du Vieux Monde. Même si la plupart sont affectés à des temples spécifiques, d'autres préfèrent une vie d'errance afin de toucher les fidèles qui ne peuvent, ou ne veulent pas se rendre dans les temples. On attend d'eux qu'ils incarnent les croyances de leur religion – ce qui va dépendre de la divinité qu'ils servent. Les Grands Prêtres sont responsables d'un temple, et de tous ses membres du culte et laïcs. Souvent, ils sont appelés, aux côtés des Lecteurs, afin de porter conseil aux classes dirigeantes, et nombreux sont ceux qui tiennent une place active dans la politique d'une région. Les Prêtres ont de nombreuses obligations relatives à leur dieu, comme le devoir de consécration des nouveaux navires des Prêtres de Manann ou la responsabilité de ceux de Shallya envers les malades et les blessés. Ils interviennent donc dans tous les aspects de la vie de l'Empire. Pour en apprendre plus sur la religion et les différents ordres, voir le **Chapitre 7 : Religions et Croyances**.
@@ -2368,7 +2380,7 @@ Certains Prêtres, qui doivent normalement rester en service dans des temples, c
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h |   | h  |     |     | h  |     |
 
-<span id="page-92-0" data-folio="91"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Initié – Bronze 2**
 
@@ -2409,6 +2421,8 @@ Savant (Théologie)
 subordonnés
 
 
+# <span id="page-93-0" data-folio="92"></span>**SORCIER** Elfe sylvain, Haut Elfe, Humain
+
 *Détenteur de plein droit d'une magie aussi puissante que dangereuse, vous êtes craint des citoyens de l'Empire à qui vous inspirez la plus grande méfiance.*
 
 Les Sorciers concentrent l'un des huit Vents de Magie, que seuls les lanceurs de sorts sont capables de percevoir, afin de lancer de puissants sortilèges. Pour avoir le droit d'utiliser la magie au sein de l'Empire, un humain doit suivre les Articles de l'Ordonnance impériale et appartenir à l'un des huit Collèges de Magie d'Altdorf – chacun spécialisé dans l'un des Vents, car les Magisters ne peuvent concentrer qu'un seul Vent sans risquer de se mettre en danger. Après avoir réussi leurs examens, les Sorciers novices deviennent des Magisters. Ils étudient et pratiquent leur art avec la plus grandes précautions, art que, selon les Articles, ils ne peuvent utiliser hors des collèges que pour défendre leur vie, ou contre les ennemis de l'Empire. De nombreux Magisters sont rattachés à l'Armée impériale, et même s'ils sont considérés avec grande méfiance, personne ne remet en cause leur efficacité sur le champ de bataille.
@@ -2427,7 +2441,7 @@ Les Sorciers font d'excellents Personnages, car ils ajoutent de la puissance de 
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   |   |   |    |     | h   | h  |     |
 
-<span id="page-93-0" data-folio="92"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Sorcier novice – Bronze 3**
 
@@ -2458,6 +2472,8 @@ Menaçant, Perception de la magie
 **Compétences :** Langue (au choix), Savoir (au choix) **Talents :** Effrayant, Mage de guerre, Vigilance, Volonté de fer **Possessions :** apprenti, atelier (Magie), bibliothèque (Magie)
 
 
+# <span id="page-94-0" data-folio="93"></span>**BATELIER** Halfling, Haut Elfe, Humain, Nain
+
 *Vous naviguez sur les eaux dangereuses du Vieux Monde, transportant tour à tour des passagers ou des marchandises, tout en relayant les dernières nouvelles.*
 
 De très nombreux bateaux et barges parcourent les voies navigables de l'Empire, transportant des biens provenant des coins les plus reculés des provinces vers les plus grandes villes. Ces navires à fond plat sont en mesure de naviguer bien plus facilement à contre-courant que les autres, et un important réseau de canaux leur permet d'atteindre les endroits les plus reculés. Les Capitaines sont des marins aguerris qui connaissent parfaitement les rivières qu'ils empruntent. Un Canotier n'est encore qu'un larbin, mais il ne faudra pas bien longtemps avant qu'il n'apprenne les ficelles. Les Bateliers pilotent des navires marchands chargés de marchandises vers, et depuis, les marchés, et sont soit à leur propre compte ou travaillent pour une chambre de commerce plus importante. De nombreux Bateliers sont également passeurs, faisant traverser les rivières à leurs passagers vers, ou depuis, les villes. Dans les cités les plus importantes, certains pilotent également des taxis de rivière, sont à la tête de bateaux de plaisance ou encore convoient des navires au nom d'un tiers.
@@ -2478,7 +2494,7 @@ Un Batelier n'aura pas besoin d'aller au-devant de l'aventure, car c'est elle qu
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    | h | h |   | h  |     |     |    |     |
 
-<span id="page-94-0" data-folio="93"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Canotier – Argent 1**
 
@@ -2521,6 +2537,8 @@ Négociateur
 **Possessions :** chapeau, bateau de transport fluvial et équipage
 
 
+# <span id="page-95-0" data-folio="94"></span>**CONTREBANDIER** Halfling, Haut Elfe, Humain, Nain
+
 *Vous faites de la contrebande de cargaisons, cherchant à éviter les taxes et esquiver les patrouilleurs fluviaux afin d'encaisser le maximum de bénéfice.*
 
 Le commerce est taxé par les seigneurs locaux, tout comme il est ponctionné, mais illégalement, par les bandits et par ceux qui font du racket. Les Contrebandiers se considèrent comme des âmes charitables : les marchands font de meilleurs profits, les clients paient moins cher, les Patrouilleurs fluviaux, peu étouffés par la moralité, prennent une petite commission, les hors-la-loi sont évités, au minimum. Une bonne dose d'ingéniosité et un peu de bouteille sont nécessaires pour éviter les huissiers, les douanes officielles, les receveurs d'octroi et tous ceux qui chercheront à les arrêter. Mais les Contrebandiers acceptent cette prise de risques, car ils doivent subvenir à leurs besoins et à ceux de leur famille.
@@ -2539,7 +2557,7 @@ Bien souvent, les Contrebandiers se retrouvent embarqués dans des aventures mê
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   |   |   | h  | h   |     | h  |     |
 
-<span id="page-95-0" data-folio="94"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Coureur de rivières – Bronze 2**
 
@@ -2572,6 +2590,8 @@ Pêcheur
 de transport fluvial
 
 
+# <span id="page-96-0" data-folio="95"></span>**DÉBARDEUR** Halfling, Humain, Nain
+
 *Même si vous déchargez les marchandises des navires contre rémunération, tout le monde sait que ce sont les Débardeurs qui font la loi sur les docks.*
 
 Même si leur seule attribution consiste à charger et à décharger les navires, les guildes de Débardeurs ont le pouvoir de ralentir ou d'accélérer le commerce. Ce qui leur confère un certain pouvoir, car beaucoup de quais sont dirigés par ces guildes. Dans les villes les plus grandes, il peut y avoir des affrontements violents entre plusieurs gangs afin de décider duquel aura le pouvoir. Les Contremaîtres à la mine renfrognée gèrent les affaires courantes de la guilde lorsqu'ils ne sont pas à user de leur sifflet pour faire sortir leur gang des tavernes du quai lors de l'arrivée d'un nouveau bateau, ou encore pour défendre leur territoire.
@@ -2594,7 +2614,7 @@ Malgré la monotonie et la répétition qui régissent la vie sur les quais, cer
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h | h |    |     |     |    |     |
 
-<span id="page-96-0" data-folio="95"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Porteur – Bronze 3**
 
@@ -2755,6 +2775,8 @@ Voyageur aguerri
 longue vue
 
 
+# <span id="page-99-0" data-folio="98"></span>**NAUFRAGEUR** Elfe sylvain, Humain, Nain
+
 *Vous attirez les navires et les faites couler par le fond avant d'en récupérer le chargement.*
 
 Quelquefois, les dieux vont offrir une aubaine aux riverains sous la forme d'un navire au tragique destin. Mais parfois, les dieux ont besoin d'un coup de main : c'est là que les Naufrageurs entrent en jeu. Par la pose de pièges perfides et l'envoi de signaux perturbateurs, les Naufrageurs parviennent à attirer les navigateurs imprudents vers des bancs de sable ou des rochers avant de récupérer ce qui se trouve dans l'épave, sans se préoccuper des protestations d'éventuels survivants de l'équipage.
@@ -2777,7 +2799,7 @@ La préparation et l'exécution d'un naufrage est une aventure en elle-même : �
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    | h |   | h |    |     |     |    |     |
 
-<span id="page-99-0" data-folio="98"></span># **Évolution de Carrière**
+# **Évolution de Carrière**
 
 h **Pilleur d'épaves – Bronze 2**
 

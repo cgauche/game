@@ -21,6 +21,7 @@ import {
   normTitle,
 } from '../../scripts/guards/lib/progressionSchemas.mjs';
 import { serializeDataset } from './serialize';
+import careers from './careers.json';
 import careerLevels from './careerLevels.json';
 import artefact from './progression-schemas.derived.json';
 
@@ -87,6 +88,50 @@ describe('schémas de progression (PDF -> careerLevels.json)', () => {
     } finally {
       rmSync(tmp, { force: true });
     }
+  });
+
+  it('le folio DÉCLARÉ par careers.json est celui que le PDF imprime (#1640)', () => {
+    expect(
+      audit.folioEcarts.map((e) => `${e.career} (${e.book}) déclare p.${e.declare}, imprimé ${e.imprime}`),
+    ).toEqual([]);
+  });
+
+  it('le CLI SORT en 1 et NOMME la Carrière dont le folio déclaré ment (#1640)', () => {
+    const mute = JSON.parse(JSON.stringify(careers)) as typeof careers;
+    const medecin = mute.find((c) => c.id === 'medecin')!;
+    medecin.source.page = 88; // le folio de l'extraction fausse — le PDF imprime 89
+    const tmp = join(tmpdir(), `careers-1640-${process.pid}.json`);
+    writeFileSync(tmp, JSON.stringify(mute), 'utf8');
+    try {
+      const r = spawnSync(
+        process.execPath,
+        [fileURLToPath(new URL('../../scripts/data/check-progression-schemas.mjs', import.meta.url)), '--careers', tmp],
+        { encoding: 'utf8' },
+      );
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain(
+        'FOLIO medecin (livre-de-base) : careers.json déclare p.88, le PDF imprime la page 89',
+      );
+      expect(r.stderr).toContain('1 désaccord(s)');
+    } finally {
+      rmSync(tmp, { force: true });
+    }
+  });
+
+  it('chaque niveau déclare le folio de la Carrière qu’il prolonge (careers.json ⇄ careerLevels.json)', () => {
+    // Un niveau porte SON `source.{book,page}` : rien ne l'arrime à celui de sa Carrière tant qu'une
+    // garde ne le tient — un folio corrigé d'un côté seul se rétablit en silence. Jointure par id :
+    // `careerLevels[].career` -> `careers[].id`.
+    const parId = new Map(careers.map((c) => [c.id, c]));
+    const desaccords = careerLevels.flatMap((l) => {
+      const c = parId.get(l.career);
+      if (!c) return [`${l.id} : aucune Carrière « ${l.career} » dans careers.json`];
+      if (l.source.book === c.source.book && l.source.page === c.source.page) return [];
+      return [
+        `${l.id} : niveau ${l.source.book} p.${l.source.page} vs Carrière ${c.source.book} p.${c.source.page}`,
+      ];
+    });
+    expect(desaccords).toEqual([]);
   });
 
   it("l'artefact couvre les 7 livres à Carrières et porte son ENVELOPPE de document", () => {

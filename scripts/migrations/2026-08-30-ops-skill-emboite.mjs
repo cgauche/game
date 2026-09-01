@@ -17,7 +17,7 @@
  * SPÉCIALISATION EN LIBELLÉ corrigée dans le geste (même correction que « Ingénieur » au commit 3b) :
  * `tavernGames` alvatafl écrivait `spec: "Art de la Guerre"` (LIBELLÉ) ×2 → id de pool `guerre`
  * (`src/data/skills.json:1394` `{"id":"guerre","label":"Guerre"}`). La graphie « Savoir (Guerre) » est
- * celle des sources FR (LDB 08 l.1085, ADE II 08 l.81 qui porte LA règle, VDM 04 l.90, ACE 05 l.1005) ;
+ * celle des sources FR (LDB 08 l.1089, ADE II 08 l.81 qui porte LA règle, VDM 04 l.90, ACE 05 l.1005) ;
  * « Savoir (Art de la Guerre) » (NADJ 16 l.25) en est la variante d'écriture, conservée VERBATIM dans
  * le `desc` de l'entrée — seule la RÉFÉRENCE mécanique prend l'id.
  *

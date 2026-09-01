@@ -40,13 +40,13 @@ const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').tri
  * @type {Record<string, string>}
  */
 const SINGULIERS = {
-  // « Savoir-vivre (Érudit) » LDB 08 l.2007 ⇄ « Savoir-vivre (Érudits) » LDB 08 l.2082, LDB 10 l.1071
+  // « Savoir-vivre (Érudit) » LDB 08 l.2017 ⇄ « Savoir-vivre (Érudits) » LDB 08 l.2090, LDB 10 l.1071
   'savoir-vivre|erudit': 'erudits',
   // « Savoir-vivre (Soldat) » ADE I 02 l.265 ⇄ « Savoir-vivre (Soldats) » LDB 08 l.547, LDB 10 l.1071
   'savoir-vivre|soldat': 'soldats',
   // « Savoir-vivre (Guilde) » ADE I 02 l.268, MDG 09 l.494 ⇄ « Guildes » LDB 10 l.1071
   'savoir-vivre|guilde': 'guildes',
-  // « Savoir-vivre (Criminel ou Guilde) » ADE I 02 l.272 ⇄ « Criminels » LDB 08 l.2558, LDB 10 l.1071
+  // « Savoir-vivre (Criminel ou Guilde) » ADE I 02 l.272 ⇄ « Criminels » LDB 08 l.2576, LDB 10 l.1071
   'savoir-vivre|criminel': 'criminels',
 };
 

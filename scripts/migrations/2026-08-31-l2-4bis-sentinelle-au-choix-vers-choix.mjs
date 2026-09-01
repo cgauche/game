@@ -60,7 +60,7 @@ const ADDS = {
  */
 const BORNES = new Map([
   // frenchy.bzh 29 l.83 « Savoir (Rivières_ou_Chemins) 55 » ; « Rivières » → `voies-fluviales`
-  // (remap #1342 L2-b), « Chemins » → `itineraires` (LDB 08 l.1602 « Savoir (Itinéraires) »).
+  // (remap #1342 L2-b), « Chemins » → `itineraires` (LDB 08 l.1606 « Savoir (Itinéraires) »).
   ['chef-contrebandier|savoir|Rivières ou Chemins', ['voies-fluviales', 'itineraires']],
   // frenchy.bzh 29 l.115 « Savoir (Rivières_ou_Chemins) 75 »
   ['roi-du-trafic|savoir|Rivières ou Chemins', ['voies-fluviales', 'itineraires']],

@@ -763,10 +763,10 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
     expect(perimes, `dossier(s) désormais réclamé(s) — retirer de NON_RECLAMES :\n${perimes.join('\n')}`).toEqual([]);
   });
 
-  // Une `ref` de Compétence GROUPÉE SANS `spec` est une forme RAW LÉGITIME, mesurée : LDB 08 l.3303
+  // Une `ref` de Compétence GROUPÉE SANS `spec` est une forme RAW LÉGITIME, mesurée : LDB 08 l.3325
   // « Calme, Discrétion (Rurale), Escamotage, Focalisation, Intimidation … » (Ensorceleur) et LDB 08
-  // l.3727 « Focalisation, *Intuition*, Langue (Magick) … » (Apprenti Sorcier de Village) impriment
-  // Focalisation nue là où LDB 08 l.2434 imprime « Focalisation (Couleur au choix) » ; MCLB 07 l.238
+  // l.3749 « Focalisation, *Intuition*, Langue (Magick) … » (Apprenti Sorcier de Village) impriment
+  // Focalisation nue là où LDB 08 l.2448 imprime « Focalisation (Couleur au choix) » ; MCLB 07 l.238
   // imprime « Charme 57, Discrétion 43, Escamotage 45 … ». Le contrat est donc un CLIQUET : le compte
   // ne croît pas — c'est lui qui attrape une migration qui effacerait une `spec` sans retirer sa `ref`.
   it('refs de Compétence groupée SANS spec : compte stable (forme RAW attestée, jamais un résidu de migration)', () => {

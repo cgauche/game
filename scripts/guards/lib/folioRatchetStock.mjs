@@ -65,8 +65,6 @@ export const FOLIO_RATCHET = new Set([
   'activities.json:survol', // p.215 -> hors livre (dernier folio 98)
   'activities.json:tenez-votre-position', // p.161 -> hors livre (dernier folio 98)
   'activities.json:tuez-la-bete', // p.211 -> hors livre (dernier folio 98)
-  // careers.json
-  'careers.json:chevalier-du-loup-blanc', // p.34 -> 32
   // characteristics.json
   'characteristics.json:chance', // p.34 -> 170
   // creatures.json
@@ -113,9 +111,6 @@ export const FOLIO_RATCHET = new Set([
   // spells.json
   'spells.json:bon-baiser-d-la-fosse-noire', // p.10 -> 15
   'spells.json:nuee-d-escampette', // p.10 -> 15
-  // symptoms.json : SOLDÉ (#1117 L0b) — les 5 folios réfutés sont corrigés à leur valeur MESURÉE au
-  // `data-folio`. Une fiche de symptôme est devenue une cible de renvoi JOUEUR (l'étape de maladie y
-  // pointe désormais) : son folio n'est plus une note d'atelier, il s'affiche.
   // tavernGames.json
   'tavernGames.json:al-zahr', // p.93 -> 91
   'tavernGames.json:bras-de-fer', // p.93 -> 92

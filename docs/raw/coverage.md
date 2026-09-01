@@ -123,30 +123,30 @@
 - **LDB 08** (Statut) :
   - 📖 l.765-772 « Maître duelliste – Or 1 » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.773-899 « Champion de Justice – Or 3 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.900-1182 « Schéma de Progression d'Intendant » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.1183-1192 « Garde – Argent 2 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.1193-1365 « Garde d'honneur – Argent 3 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.1366-1581 « Sergent – Argent 5 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.1582-1630 « h Postillon – Argent 1 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.1631-1847 « Schéma de Progression du Colporteur » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.1848-2061 « Capitaine Patrouilleur – Or 1 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.2062-2276 « Schéma de Progression de l'Érudit » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.2277-2443 « Médecin de la cour – Or 1 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.2444-2553 « Maître Sorcier – Or 1 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.2554-2559 « Contrebandier – Bronze 3 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.2560-2641 « Maître contrebandier – Bronze 5 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.2642-2671 « Schéma de Progression de la Femme du fleuve » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.2672-2797 « Sage des rives – Bronze 5 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.2798-2999 « Pirate des rivières – Bronze 5 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.3000-3037 « Schéma de progression de l'Entremetteur » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.3038-3259 « Meneur – Argent 3 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.3260-3304 « Maître receleur – Argent 3 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.3305-3367 « Sorcier dissident – Bronze 2 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.3368-3375 « Maître voleur – Bronze 5 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.3376-3512 « Cambrioleur – Argent 3 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.3513-3534 « Schéma de Progression de l'Éclaireur » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.3535-3811 « Guide – Argent 1 » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.3812-3821 « Doyen – Argent 2 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.900-1186 « Schéma de Progression d'Intendant » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.1187-1196 « Garde – Argent 2 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.1197-1367 « Garde d'honneur – Argent 3 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.1368-1585 « Sergent – Argent 5 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.1586-1634 « h Postillon – Argent 1 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.1635-1853 « Schéma de Progression du Colporteur » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.1854-2069 « Capitaine Patrouilleur – Or 1 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.2070-2284 « Schéma de Progression de l'Érudit » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.2285-2457 « Médecin de la cour – Or 1 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.2458-2571 « Maître Sorcier – Or 1 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.2572-2577 « Contrebandier – Bronze 3 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.2578-2661 « Maître contrebandier – Bronze 5 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.2662-2691 « Schéma de Progression de la Femme du fleuve » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.2692-2819 « Sage des rives – Bronze 5 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.2820-3021 « Pirate des rivières – Bronze 5 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.3022-3059 « Schéma de progression de l'Entremetteur » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.3060-3281 « Meneur – Argent 3 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.3282-3326 « Maître receleur – Argent 3 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.3327-3389 « Sorcier dissident – Bronze 2 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.3390-3397 « Maître voleur – Bronze 5 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.3398-3534 « Cambrioleur – Argent 3 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.3535-3556 « Schéma de Progression de l'Éclaireur » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.3557-3833 « Guide – Argent 1 » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.3834-3843 « Doyen – Argent 2 » — transcrit en catalogue, jamais traité, 0 réf
 - **LDB 11** (_3znysh7) :
   - 🔻 enfoui l.207-241 « RÈGLES » — titre orné rétrogradé par l'extraction, 13 réf
 - **LDB 15** (Déplacement) :

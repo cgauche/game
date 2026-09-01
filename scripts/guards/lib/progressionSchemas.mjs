@@ -7,12 +7,13 @@
 // deux niveaux satisfait les deux — mesuré sur `tueur` (LDB folio 76), niveaux 3 et 4 intervertis,
 // garde verte. Ce module compare l'AFFECTATION marque -> Caractéristique, niveau par niveau.
 //
-// JOINTURE : par TITRE imprimé, dans le livre déclaré — jamais par folio. Mesure à la pose (rendue
-// par `folioEcarts`, recomptée à chaque exécution) : 32 des 108 Carrières de `careers.json` portent un
-// `source.page` qui ne tombe pas sur le folio où le PDF imprime leur titre — `livre-de-base` 22,
-// `aux-armes` 10, dont « Chevalier du Loup Blanc » folio 34 déclaré / folio 32 imprimé. Un
-// rapprochement par folio aurait donc apparié des Carrières entre elles. Ces écarts sont RAPPORTÉS
-// sans faire échouer : le folio relève de `folioIntegrity.mjs`, pas de l'affectation des marques.
+// JOINTURE : par TITRE imprimé, dans le livre déclaré — jamais par folio. Le folio a été un support
+// de jointure INFIDÈLE : 26 des 108 Carrières de `careers.json` déclaraient un `source.page` qui ne
+// tombait pas sur le folio où le PDF imprime leur titre (à la veille de #1640 — `livre-de-base` 20,
+// `aux-armes` 6 : « Joueur d'épée » déclarait AA folio 12, celui qu'imprime « Arquebusier »), donc un
+// rapprochement par folio aurait apparié des Carrières entre elles. Ces écarts sont désormais NULS et
+// BLOQUANTS : `folioEcarts`, recompté à chaque exécution, compte dans le code de sortie du CLI
+// `scripts/data/check-progression-schemas.mjs` et est épinglé à vide par la suite.
 //
 // PÉRIMÈTRE MESURÉ (7 livres extraits, 111 bandes, 108 Carrières appariées) : `livre-de-base`
 // (65 bandes / 64 Carrières), `vents-de-la-magie` (14/12), `aux-armes` (15/15), `mer-des-griffes`
