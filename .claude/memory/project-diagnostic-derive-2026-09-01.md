@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 02e357dc-4cb8-4e52-8966-93c37c1ab79e
-  modified: 2026-09-01T19:46:02.840Z
+  modified: 2026-09-01T19:58:16.077Z
 ---
 
 Mandat utilisateur (2026-09-01, verbatim) : « On travail sur 3 grosses taches et apres 2-3 épiques et apres avoir tournés quelques jours, on voit que ca commence a derailler. Je te laisse investiguer et me proposer des solutions. » Chantiers : épic #1463 (deux sessions), décors volumiques #1624/#1644 (game-66), campagne EDO (#684/#717 fermés le 31/08).
@@ -44,7 +44,7 @@ Mandat utilisateur (2026-09-01, verbatim) : « On travail sur 3 grosses taches e
 ## Solde des constats (règles du projet appliquées, 2026-09-01 ~23h30)
 - Mesures COMMENTÉES sur les tickets qu'elles concernent : #1463 (trajectoire + descendance), #1624 (auteur du WIP .wt-1624), #828 et #584 (prémisses mortes), #665 (ancré sur un plan supprimé), #1614 (canari doublon), #1244/#1483 et #996/#1269 (doublons), #1501 (WIP non commité + panne de vapeur absente), #1509 (L1 absent de main).
 - UN ticket émis : **#1678** « Lot A2 écran de capacités absent de main — abandonné ou oublié ? » (labels sev:majeur, domaine:UX, type:système, policy-à-trancher). Fan-out de l'audit = 1.
-- Passe de réfutation NON demandée des 4 blocs de propositions : workflow wf_02389ec1 (verdicts à consigner ici).
+- Passe de réfutation NON demandée des 4 blocs de propositions (workflow wf_02389ec1, 4 juges) : **P1 portes FRAGILE** (export d'index = 27 s réels, `vitest --changed` réfuté par le graphe : 1 400 tests reliés à `src/data/index.ts`, pre-push sur main rouge = 89 % des pushes refusés, 22/35 tests « de fraîcheur » sont aussi des cliquets, « required check sans PR » n'existe pas) · **P2 tickets FRAGILE** (garde d'émission contournable 9/9, quota en DENY 8 semaines/8, plafond de reste contournable par `RAS :`, inventaire en commentaire sans porte, « fermer ~250 » sans donnée : 0 mort sur 12 sondés, 905/921 cités dans l'arbre) · **P3 épic FRAGILE** (la liste du jour 1 existait et dépendait de la mesure de L0 ; « zéro lot ajouté » amputerait 4 des 8 lots livrés et les 3 porteurs financés le 01/09 ; « liste vide = arrêt » = la demi-migration refusée ; pilotage v8 non auto-portant ; P3(5) réécrit un verbatim non révoqué) · **P4 canon FRAGILE** (5 vécus/20 sans fiche, « 30 lignes » = −245 lignes de règles, règle d'entrée refuserait 37 % des fiches, manifest sans champ « réflexe » : générer = perdre 26 rangées/53). **Versions corrigées intégrales au commentaire de #1679** (2026-09-01 ~23h50). Décisions user du soir : lot A2 « oublié, à reprendre » (maquette d'abord) ; WIP .wt-1501 committé `671d83332` ; morts/doublons par le rituel de solde.
 - Sondes jetables des juges (scratchpad : fanout.mjs, probe-label.mjs, prim.mjs, classe.mjs, dup2.mjs, dead2.mjs, wt.ps1, p9.mjs) : nommées aux tickets, à promouvoir en gardes committées DANS le commit de la réécriture retenue, jamais avant.
 
 ## Trajectoire de l'épic #1463 et modèle proposé pour « un épic confié de bout en bout »
