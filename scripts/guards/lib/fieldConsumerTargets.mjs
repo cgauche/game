@@ -12,8 +12,10 @@ import {
   propPoint3Schema, propSize3Schema,
 } from '../../../src/data/schemas/defs/props'
 
-/** `type` = alias TS NOMMÉ vérifié à la main (`interface`/`type X = …` trouvé ailleurs dans le dépôt) —
- *  c'est ce qui permet à `scanFieldReads` de borner une lecture sur une annotation explicite. */
+/** `type` + `home` = l'IDENTITÉ de la cible : `scanFieldReads` résout la déclaration de ce type DANS
+ *  ce module et compare des SYMBOLES — un homonyme d'un autre module n'entre pas, et aucune
+ *  annotation littérale n'est cherchée (#1620). Un `home` qui ne déclare pas le type est une ERREUR
+ *  levée, jamais une table muette. */
 export const TARGETS = [
   { schema: reference.traitInstanceSchema, type: 'TraitInstance', home: 'src/engine/statEntry.ts' },
   { schema: valeurs.sourceRefSchema, type: 'SourceRef', home: 'src/data/schemas/grammaire/valeurs.ts' },

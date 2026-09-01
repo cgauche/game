@@ -64,6 +64,7 @@
 // Module ESM pur — consommé par `src/ui/editor/scene-field-editability-guard.test.ts`.
 import path from 'node:path';
 import ts from 'typescript';
+import { repoProgram } from './tsProgram.mjs';
 
 /** Fichiers d'INTERFACE : un écrivain qui y vit est joignable au clic par construction — l'auteur
  *  ouvre l'écran. Crédit DIRECT. */
@@ -141,75 +142,30 @@ const schemaOwner = (decl) => {
 
 const norm = (p) => p.replace(/\\/g, '/');
 
-/** Racine des programmes en mémoire (`virtualProgram`) — à passer en `root` à l'audit. */
-export const VIRTUAL_ROOT = path.resolve(path.sep, 'repo-virtuel');
-
-/** Programme TypeScript du dépôt (tsconfig racine), mémoïsé : la construction coûte quelques
- *  secondes et la garde l'exploite plusieurs fois dans la même suite. */
+/** Le Program du dépôt pour le PÉRIMÈTRE de cette garde — les fichiers scannés (interface, pont,
+ *  pipeline) plus le document et son schéma —, MÉMOÏSÉ PAR RACINE : c'est tout ce que cette
+ *  fonction ajoute à la fabrique `repoProgram`. Le mémo vit ICI et pas dans la fabrique : la suite
+ *  de cette garde redemande le même Program cinq fois (audit, portée, gate `@fossile`) et chaque
+ *  construction coûte ~8 s, là où la fabrique ne doit rien retenir pour ses autres consommateurs. */
 const PROGRAM_CACHE = new Map();
 
-export function repoProgram(root) {
+export function programmeMemoise(root) {
   const key = norm(path.resolve(root));
   const hit = PROGRAM_CACHE.get(key);
   if (hit) return hit;
-  const cfgPath = ts.findConfigFile(key, ts.sys.fileExists, 'tsconfig.json');
-  if (!cfgPath) throw new Error(`tsconfig.json introuvable sous ${key}`);
-  const cfg = ts.readConfigFile(cfgPath, ts.sys.readFile);
-  const parsed = ts.parseJsonConfigFileContent(cfg.config, ts.sys, path.dirname(cfgPath));
   // Racines = les fichiers SCANNÉS plus le schéma ; TypeScript tire leur fermeture d'imports, donc
   // les types restent complets tout en évitant de compiler le dépôt entier.
-  const rootNames = parsed.fileNames.filter((f) => {
-    const rel = path.relative(key, f);
-    return (
-      !isTestFile(rel) &&
-      (isAuthorPath(rel) || isPipelinePath(rel) || norm(rel) === SCENE_FILE || norm(rel) === SCHEMA_FILE)
-    );
-  });
-  const program = ts.createProgram({
-    rootNames,
-    options: { ...parsed.options, noEmit: true },
-  });
+  const program = repoProgram(key, (fileNames) =>
+    fileNames.filter((f) => {
+      const rel = path.relative(key, f);
+      return (
+        !isTestFile(rel) &&
+        (isAuthorPath(rel) || isPipelinePath(rel) || norm(rel) === SCENE_FILE || norm(rel) === SCHEMA_FILE)
+      );
+    })
+  );
   PROGRAM_CACHE.set(key, program);
   return program;
-}
-
-/** Programme bâti sur des sources EN MÉMOIRE — support des preuves de non-vacance : on y déclare un
- *  faux `scene.ts` et de faux écrivains, et on mesure le verdict de la garde dessus.
- *  `files` : chemins RELATIFS (ex. `src/state/scene.ts`) → contenu. */
-export function virtualProgram(files) {
-  const options = {
-    target: ts.ScriptTarget.ES2020,
-    module: ts.ModuleKind.ESNext,
-    moduleResolution: ts.ModuleResolutionKind.Bundler,
-    strict: true,
-    noEmit: true,
-    skipLibCheck: true,
-  };
-  const libName = norm(ts.getDefaultLibFilePath(options));
-  // Tout le RÉPERTOIRE de `lib` est lisible, pas le seul `lib.*.full.d.ts` : ce fichier n'est qu'une
-  // coquille de `/// <reference>`. Le limiter privait le programme de `Array`, donc `T[]` ne
-  // résolvait pas et AUCUN type imbriqué dans un tableau n'entrait dans le périmètre dérivé.
-  const libDir = `${norm(path.dirname(ts.getDefaultLibFilePath(options)))}/`;
-  const sources = new Map(
-    Object.entries(files).map(([rel, text]) => [norm(path.resolve(VIRTUAL_ROOT, rel)), text])
-  );
-  const read = (name) =>
-    sources.get(norm(name)) ?? (norm(name).startsWith(libDir) ? ts.sys.readFile(name) : undefined);
-  const host = {
-    getSourceFile: (name) => {
-      const text = read(name);
-      return text === undefined ? undefined : ts.createSourceFile(name, text, options.target, true);
-    },
-    getDefaultLibFileName: () => libName,
-    writeFile: () => {},
-    getCurrentDirectory: () => VIRTUAL_ROOT,
-    getCanonicalFileName: (f) => norm(f),
-    useCaseSensitiveFileNames: () => false,
-    getNewLine: () => '\n',
-    fileExists: (name) => read(name) !== undefined,
-    readFile: read,
-  };
-  return ts.createProgram({ rootNames: [...sources.keys()], options, host });
 }
 
 function sceneSourceFile(program, root) {
@@ -710,7 +666,7 @@ export function uiReachableScopes(checker, program, root) {
  * @param {import('typescript').Program} [program] programme déjà construit (preuves en mémoire)
  * @returns {{ id: string, owner: string, field: string, at: string, authors: string[], pipeline: string[] }[]}
  */
-export function auditSceneFieldEditability(root, program = repoProgram(root)) {
+export function auditSceneFieldEditability(root, program = programmeMemoise(root)) {
   const checker = program.getTypeChecker();
   const scope = sceneScope(program, root);
   const declToId = new Map(scope.map((e) => [e.decl, e.id]));

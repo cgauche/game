@@ -4,7 +4,8 @@ import { OPTIONAL_RULES, type OptionalRule } from '../engine/policy';
  * Découpe du panneau des règles optionnelles en ONGLETS — DÉRIVÉE du registre, jamais une liste de
  * groupes en dur (une règle d'un groupe inédit doit apparaître toute seule, cf. #839 / chantier VDM).
  *
- * 77 règles en 15 groupes ne font pas 15 onglets utiles : un groupe n'obtient son onglet qu'à partir
+ * Autant de groupes que d'onglets ne ferait pas des onglets utiles (compte des règles et des groupes :
+ * `docs/regles-optionnelles.md`, GÉNÉRÉ) : un groupe n'obtient son onglet qu'à partir
  * de `OWN_TAB_MIN` entrées ; les résiduels se rassemblent dans un onglet fourre-tout DÉRIVÉ, où ils
  * gardent leur intertitre de groupe. Le partitionnement est TOTAL : la somme des règles des onglets
  * vaut toujours `OPTIONAL_RULES.length` (garde `houseRuleTabs.test.ts`).

@@ -3,7 +3,7 @@
  * PRÉSENTATION + BORNES en donnée : `id` STABLE (clé de surcharge, de persistance et de
  * `variants[].when.rule`), libellé/aide/groupe d'affichage, forme du contrôle auto-rendu (`kind`),
  * valeur par défaut et bornes de saisie. Lu par `src/engine/policy.ts` (types + `rule()`/`ruleDef()`),
- * rendu par le panneau in-game (`state/houseRules` + `ui/HouseRulesPanel`).
+ * rendu par le panneau in-game (`src/state/houseRules.ts` + `src/ui/HouseRulesModal.tsx`).
  *
  * `ref` = citation de la règle (même champ que `obsessions.json.ref`) : l'abréviation DOIT être un
  * `abbr` de `books.json` (garde `src/engine/policy-donnee.test.ts`), le reste est la localisation la

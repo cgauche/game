@@ -55,6 +55,7 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Quel code lit ce champ JSON, avant de le renommer ou de le supprimer ? | `docs/consommateurs-de-champs.md` (GÉNÉRÉ, `npm run docs:field-consumers`) |
 | **« Quelle forme a ce concept dans chaque dataset ? »** — comparer la structure d'une référence / d'une valeur / d'une enveloppe entre documents, AVANT de poser une Nᵉ graphie ou de croire une forme unique | `docs/structures-donnees.md` (GÉNÉRÉ, `npm run docs:structures` — observé × déclaré sur les 2 racines `src/data` + `src/scenes`, lexique fermé `scripts/docs/lib/structures-lexique.mts`, stock décroissant `scripts/guards/lib/structuresStock.mjs`) |
 | Une entrée de `src/data/*.json` est-elle orpheline (jamais référencée) ? | `docs/orphelines-donnees.md` (GÉNÉRÉ, `npm run docs:orphelines`) |
+| **Une race/carrière/table est ABSENTE à l'écran — est-elle gatée par une règle optionnelle ?** — AVANT de rapporter un manque | `docs/regles-optionnelles.md` (GÉNÉRÉ, `npm run docs:regles-optionnelles` — le registre complet, le défaut de chaque règle, et ce qu'elle change) |
 | Un sprite/rig est-il reconnaissable au premier coup d'œil (QC) ? | `docs/qc-reconnaissabilite-sprites.md` |
 | Reprendre un chantier après une pause (nouvelle machine, clone frais) | `docs/reprise-apres-pause.md` (GÉNÉRÉ, `npm run docs:reprise`) |
 | Quel est l'état RÉEL d'implémentation des sorts/miracles (écart catalogue vs code) ? | `docs/sorts-implementation.md` (GÉNÉRÉ, `npx tsx scripts/gen-sorts-doc.mts`) |
