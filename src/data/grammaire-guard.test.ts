@@ -135,7 +135,7 @@ function signaturesDeLaGrammaire(
 
 /** GRAPHIES HISTORIQUES de référence (invariant #1466, corps du ticket) : une clé qui désigne une
  *  entité sous son ancien nom, là où la grammaire écrit `ref(type)`. */
-const ALIAS = ['skillId', 'talentId', 'trappingId', 'traitId', 'skill', 'ref', 'wildcard', 'specOptions', 'bronze'];
+const ALIAS = ['skillId', 'talentId', 'trappingId', 'traitId', 'skill', 'ref', 'wildcard', 'specOptions'];
 
 /** Toutes les trouvailles du périmètre, clé `<fichier>:<symbole>[.<champ>]|<motif>|<detail>`. */
 function trouvailles(): { cle: string; ligne: number }[] {

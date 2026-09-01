@@ -19,7 +19,7 @@ import { INTERLUDE_EVENTS, interludeEventFor, type InterludeEventFx } from '../d
 import { registerCascadeApplier, registerTableStep, startCascade } from './cascade';
 import { freeCons, rollLine } from './rollSeam';
 import type { CascadeStep, CascadeTableDecl } from './pendings';
-import { fromBrass, toBrass, formatMoney, priceToMoney, canAfford, parseStatus, PA_PER_CO, PA_PER_SC } from '../engine/money';
+import { fromBrass, toBrass, toMoney, formatMoney, priceToMoney, canAfford, parseStatus, PA_PER_SC } from '../engine/money';
 import { partyMoneyTotal, bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse, debitBourse } from './bourseFlow';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon, autoStowNewItem } from '../engine/items';
 import { sleepParty } from './restFlow';
@@ -1283,7 +1283,7 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
   if (kind === 'mecenat') {
     const def = ACTIVITIES.find((a) => a.resolver === 'mecenat');
     if (!def || !activityAvailableAt(def, currentPlaceId(get()))) return;
-    const min = (def.minInvest?.gold ?? 0) * PA_PER_CO;
+    const min = toBrass(toMoney(def.minInvest ?? {}));
     if (Math.floor(amountBrass) < min) {
       get().log(msg('if.mecenatMin', { min: formatMoney(fromBrass(min)) }));
       return;

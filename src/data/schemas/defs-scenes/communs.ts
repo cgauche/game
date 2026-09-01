@@ -12,8 +12,6 @@ import { charStatKeySchema, sizeCategorySchema } from '../grammaire/valeurs';
 
 /** `Pt` (`state/path.ts`) — case, `z` = couche d'empilement (absent = base). */
 export const ptSchema = z.strictObject({ x: z.number(), y: z.number(), z: z.number().optional() });
-/** Bourse (`gold`/`silver`/`brass`) d'un coût ou d'un octroi. */
-export const moneySchema = z.strictObject({ gold: z.number().optional(), silver: z.number().optional(), brass: z.number().optional() });
 /** CANON de l'arête de mur — arête cardinale N/E, diagonales `\` (NO→SE) et `/` (NE→SO). Source
  *  UNIQUE de l'union : `state/scene.ts` (`WallSide`) et `engine/types.ts` (`WallEdgeSide`) en
  *  DÉRIVENT, l'éditeur en dérive ses options (`wallSideSchema.options`). Garde : `unions-canon.test.ts`. */

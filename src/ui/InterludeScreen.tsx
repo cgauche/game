@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { interludeEventFor } from '../data/interludeEvents';
-import { formatMoney, fromBrass, toBrass, add as moneyAdd, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
+import { formatMoney, fromBrass, toBrass, toMoney, add as moneyAdd, PA_PER_SC, type Money } from '../engine/money';
 import { bourseOf } from '../state/bourseFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, bestActivitySkill, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
@@ -926,7 +926,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Com
   const pa = Math.max(1, Math.floor(amountPa));
   const amountBrass = pa * PA_PER_SC;
   const quick = (frac: number) => setAmountPa(Math.max(1, Math.floor(purseBrass * frac / PA_PER_SC)));
-  const mecenatMinBrass = (mecenat?.minInvest?.gold ?? 0) * PA_PER_CO;
+  const mecenatMinBrass = toBrass(toMoney(mecenat?.minInvest ?? {}));
   return (
     <ActivityPane
       icon={PANE_ICON.bank}

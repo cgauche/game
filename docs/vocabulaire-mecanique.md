@@ -213,7 +213,7 @@ effet déclenché. Composables par `all`/`any`/`not`.
 | `flag` | `expr` | ET de drapeaux avec négation : « v1,!v2 » ⇔ flags.v1 && !flags.v2 (sémantique `condMet`). |
 | `time` | `window` | Fenêtre horaire (heure-du-jour, `before` exclusif) — sémantique `temporalConditionMet`. |
 | `hasItem` | `trappingId`, `count?` | Le GROUPE possède au moins `count` (défaut 1) exemplaire(s) de l'objet d'`id` `trappingId` (réf de catalogue stable). |
-| `money` | `atLeast` | La bourse du groupe vaut AU MOINS le seuil `atLeast` (comparaison en sous de bronze). |
+| `money` | `atLeast` | La bourse du groupe vaut AU MOINS le seuil `atLeast` (comparaison en sous de cuivre). |
 | `partyDead` | `who` | État vital du groupe : `any` = au moins un héros mort, `all` = tous morts. |
 | `skill` | `id`, `spec?`, `advances?`, `who?` | Un héros du groupe (`any`) OU tous (`all`, défaut `any`) possède la Compétence `id` (`spec` éventuel) avec au moins `advances` avances (défaut 0 = simple possession) — #711, gate de dialogue party-level. |
 | `career` | `id`, `who?` | Un héros du groupe (`any`/`all`) exerce la carrière `id` (`Combatant.career`) — #711. |

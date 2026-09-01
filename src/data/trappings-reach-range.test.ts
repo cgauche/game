@@ -13,7 +13,7 @@ import { priceToMoney, toBrass } from '../engine/money';
  *   - `range` = SPEC de Portée de tir : `number` (mètres fixes) OU `{bf}` (arme de jet : BF×bf m).
  *     UNIQUEMENT sur les armes à distance.
  */
-const rows = trappings as { id: string; categorie: string; subType?: string; reach?: unknown; range?: unknown; ammoRangeMod?: unknown; enc?: unknown; availability?: unknown; price: { gold: number; silver: number; bronze: number } | 'ND' | null }[];
+const rows = trappings as { id: string; categorie: string; subType?: string; reach?: unknown; range?: unknown; ammoRangeMod?: unknown; enc?: unknown; availability?: unknown; price: { gold: number; silver: number; brass: number } | 'ND' | null }[];
 
 const ALLONGE = new Set(['Personnelle', 'Très courte', 'Courte', 'Moyenne', 'Longue', 'Très longue', 'Considérable', 'Variable']);
 const isNumericLike = (v: unknown): boolean =>
@@ -189,7 +189,7 @@ describe('trappings — Prix : un montant, la marque « ND », ou rien', () => {
   it('le schéma ACCEPTE « ND », un montant et `null`, REFUSE toute autre marque (fail-fast)', () => {
     const gabarit = (price: unknown) => [{ ...rows.find((t) => t.id === 'hallebarde')!, price }];
     expect(validateDataset('trappings.json', gabarit(null))).toBeNull();
-    expect(validateDataset('trappings.json', gabarit({ gold: 2, silver: 0, bronze: 0 }))).toBeNull();
+    expect(validateDataset('trappings.json', gabarit({ gold: 2, silver: 0, brass: 0 }))).toBeNull();
     expect(validateDataset('trappings.json', gabarit('ND'))).toBeNull();
     const err = validateDataset('trappings.json', gabarit('Variable'));
     expect(err).not.toBeNull();

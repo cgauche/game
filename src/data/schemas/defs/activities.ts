@@ -7,7 +7,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, stakeFormSchema } from '../grammaire/valeurs';
+import { difficultySchema, moneyPartialSchema, stakeFormSchema } from '../grammaire/valeurs';
 import { gameOpSchema, stageOutcomeSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
 
@@ -80,7 +80,7 @@ const doc = document(
     onSuccess: z.array(gameOpSchema).optional(),
     outcomes: z.array(outcomeBandSchema).optional(),
     where: z.array(z.string()).optional(),
-    minInvest: z.strictObject({ gold: z.number() }).optional(),
+    minInvest: moneyPartialSchema.optional(),
     stageOutcome: stageOutcomeSchema.optional(),
     unavailableIfExtenue: z.boolean().optional(),
     // ── Bataille de masse (ADE II 8) ──

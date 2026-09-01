@@ -104,12 +104,12 @@ describe('craftSpecOf — dérivation partagée flux/catalogue', () => {
   });
   it('les 4 classes RAW (LDB 59 l.15) donnent une spec ; la Disponibilité est reportée telle quelle', () => {
     for (const av of AVAILABILITIES) {
-      expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: av })?.avail).toBe(av);
+      expect(craftSpecOf({ price: { gold: 0, silver: 5, brass: 0 }, availability: av })?.avail).toBe(av);
     }
   });
   it('hors des 4 classes (marque « ND » ou absence) → NON FABRICABLE : `null`, aucune classe inventée', () => {
-    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: 'ND' })).toBeNull();
-    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: null })).toBeNull();
+    expect(craftSpecOf({ price: { gold: 0, silver: 5, brass: 0 }, availability: 'ND' })).toBeNull();
+    expect(craftSpecOf({ price: { gold: 0, silver: 5, brass: 0 }, availability: null })).toBeNull();
   });
 });
 
@@ -143,7 +143,7 @@ describe('craftCatalog / orderCatalog', () => {
     expect(bat.availability).toBeNull();
     const entry = orderCatalog().find((o) => o.id === 'baton-enchante');
     expect(entry, 'baton-enchante doit être commandable (VDM 12 l.42)').toBeDefined();
-    expect(entry!.priceBrass).toBe(toBrass(priceToMoney({ gold: 15, silver: 0, bronze: 0 })));
+    expect(entry!.priceBrass).toBe(toBrass(priceToMoney({ gold: 15, silver: 0, brass: 0 })));
     expect(orderBlockOf(bat)).toBeNull();
   });
   /** HORS COMMERCE (LDB 59 l.15) : sans Disponibilité NI prix, ni FABRICATION ni COMMANDE — « Les

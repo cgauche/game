@@ -7,21 +7,13 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { availabilitySchema, formulaSchema, sizeCategorySchema } from '../grammaire/valeurs';
+import { availabilitySchema, formulaSchema, moneySchema, sizeCategorySchema } from '../grammaire/valeurs';
 import { gameOpSchema, flowSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';
 
 
 export const file = 'trappings.json';
 export const famille = 'entite';
-
-/** Montant CHIFFRÉ de la colonne « Prix »/« Coût » (LDB 62 l.20, LDB 68 l.7) — `{gold,silver,bronze}`
- *  tous `number`. Les formes NON chiffrées de cette colonne vivent sur le champ `price` lui-même. */
-const moneySchema = z.strictObject({
-  gold: z.number(),
-  silver: z.number(),
-  bronze: z.number(),
-});
 
 /** `QualityRef` (`Ref` + Indice éventuel) — shapes réellement observées : `{id}`, `{id,value}`, `{id,spec}`. */
 const qualityRefSchema = z.strictObject({
@@ -276,7 +268,7 @@ const doc = document(
     niConsumedPerDR: { label: 'NI consommé par DR', hint: 'Réserve de NI consommée par point de DR bonus accordé' },
     price: {
       label: 'Prix',
-      hint: 'Montant en or/argent/bronze ; « ND » = hors du commerce ordinaire ; vide = le livre n’imprime rien',
+      hint: 'Montant en or / argent / cuivre ; « ND » = hors du commerce ordinaire ; vide = le livre n’imprime rien',
     },
     derivedWeapon: {
       label: 'Arme dérivée',

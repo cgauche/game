@@ -235,7 +235,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   it('ÉCONOMIE : la vie est chère — l’or TOTAL du projet reste < 3 plates complètes ; l’XP est généreuse', () => {
     // La somme de tout l'argent distribuable du projet reste sous ~100 co, soit ~3 plates
     // en finissant ABSOLUMENT tout — et la zone 1 ne paie qu'en pistoles.
-    let totalSb = 0; // tout en sous de bronze (1 co = 240 sb, 1 pa = 12 sb)
+    let totalSb = 0; // tout en sous de cuivre (1 CO = 240 sc, 1 pistole = 12 sc)
     const walk = (flow: Flow) => walkFlow(flow, (node) => {
       if (node.kind !== 'do') return;
       const e = node.effect as any;

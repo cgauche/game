@@ -169,7 +169,11 @@
     {
       "id": "baliste",
       "label": "Baliste",
-      "price": "75 CO",
+      "price": {
+        "gold": 75,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 4,
       "availability": "Rare",
       "range": "150",
@@ -185,7 +189,11 @@
     {
       "id": "belier",
       "label": "Bélier",
-      "price": "10 CO",
+      "price": {
+        "gold": 10,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 6,
       "availability": "Limitée",
       "range": "Moyenne",
@@ -201,7 +209,11 @@
     {
       "id": "batterie-tonnerre-de-feu",
       "label": "Batterie tonnerre de feu",
-      "price": "200 CO",
+      "price": {
+        "gold": 200,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 4,
       "availability": "Exotique",
       "range": "200",
@@ -217,7 +229,11 @@
     {
       "id": "canon-a-repetition-feu-d-enfer",
       "label": "Canon à répétition feu d'enfer",
-      "price": "300 CO",
+      "price": {
+        "gold": 300,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 4,
       "availability": "Exotique",
       "range": "100",
@@ -233,7 +249,11 @@
     {
       "id": "canon",
       "label": "Canon",
-      "price": "120 CO",
+      "price": {
+        "gold": 120,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 4,
       "availability": "Exotique",
       "range": "120",
@@ -249,7 +269,11 @@
     {
       "id": "canon-a-flammes-nain",
       "label": "Canon à flammes nain",
-      "price": "200 CO",
+      "price": {
+        "gold": 200,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 4,
       "availability": "Exotique",
       "range": "60",
@@ -265,7 +289,11 @@
     {
       "id": "mangonneau",
       "label": "Mangonneau",
-      "price": "60 CO",
+      "price": {
+        "gold": 60,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 6,
       "availability": "Rare",
       "range": "60",
@@ -281,7 +309,11 @@
     {
       "id": "onagre",
       "label": "Onagre",
-      "price": "80 CO",
+      "price": {
+        "gold": 80,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 6,
       "availability": "Rare",
       "range": "100",
@@ -297,7 +329,11 @@
     {
       "id": "trebuchet",
       "label": "Trébuchet",
-      "price": "40 CO",
+      "price": {
+        "gold": 40,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 8,
       "availability": "Limitée",
       "range": "150",
@@ -313,7 +349,11 @@
     {
       "id": "mortier",
       "label": "Mortier",
-      "price": "100 CO",
+      "price": {
+        "gold": 100,
+        "silver": 0,
+        "brass": 0
+      },
       "crew": 6,
       "availability": "Exotique",
       "range": "200",

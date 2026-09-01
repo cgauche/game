@@ -295,7 +295,7 @@ export interface ActivityDef extends TestSpec {
    *  (ACE Annexe I = « à Altdorf »). Absent = partout — résolu par `activityAvailableAt`. */
   where?: string[];
   /** Mise MINIMALE d'un dépôt bancaire de cette Activité (Mécénat : « au moins 5 CO », ACE 12 l.49). */
-  minInvest?: { gold: number };
+  minInvest?: Partial<Money>;
   /** Issue de portée Étape (voyage). */
   stageOutcome?: StageOutcome;
   /** Indisponible si le héros porte un État Exténué cette Étape (Récupérer, EDOC 8 l.176). */

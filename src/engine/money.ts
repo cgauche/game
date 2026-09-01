@@ -1,7 +1,7 @@
 /**
  * Monnaie impériale (pur). RAW LDB 57 « La monnaie » p.290 : 1 couronne d'or (CO) = 20 pistoles
  * d'argent = 240 sous de cuivre ; 1 pistole = 12 sous. Le champ `brass` du store = le sou de cuivre
- * (= `price.bronze` des données). SOURCE UNIQUE du type `Money` : le state (`pendings.ts`) le
+ * (= `price.brass` des catalogues). SOURCE UNIQUE du type `Money` : le state (`pendings.ts`) le
  * ré-importe d'ici (sens autorisé state→engine), pas de copie. Affichage canon (LDB 57) : CO
  * (couronne d'or), notation `/` pour les
  * pistoles d'argent (« 6/8 », « 20/– »), sc (sou de cuivre). `formatMoney` = SOURCE UNIQUE d'affichage.
@@ -37,9 +37,8 @@ export function canAfford(purse: Money, cost: Money): boolean {
  *  la colonne Prix (`TrappingData.price` : la marque `'ND'`, ou `null`) et les rend à zéro sou —
  *  aucun appelant n'a de garde à recopier, aucun ne devine un montant. Les objets concernés sont hors
  *  du commerce ordinaire (`isTradable`, engine/disponibilite), qui les refuse sur la Disponibilité. */
-export function priceToMoney(p: { gold?: number; silver?: number; bronze?: number } | 'ND' | null): Money {
-  const m = typeof p === 'object' ? p : null;
-  return { gold: m?.gold ?? 0, silver: m?.silver ?? 0, brass: m?.bronze ?? 0 };
+export function priceToMoney(p: Partial<Money> | 'ND' | null): Money {
+  return p === 'ND' || p === null ? { gold: 0, silver: 0, brass: 0 } : toMoney(p);
 }
 /** Normalise un montant partiel `{gold?,silver?,brass?}` en `Money` plein (champs manquants = 0).
  *  `toBrass`/`canAfford` n'admettent pas les champs undefined → passer par ici pour un coût authored. */

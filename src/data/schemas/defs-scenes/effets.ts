@@ -13,10 +13,10 @@
  * partagés, aucune structure n'est recopiée.
  */
 import { z } from 'zod';
-import { charKeySchema, difficultySchema, hitLocationSchema, refTestDeCorruption } from '../grammaire/valeurs';
+import { charKeySchema, difficultySchema, hitLocationSchema, moneyPartialSchema, refTestDeCorruption } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, flowTestSchema, gameOpSchema, stakeRefSchema } from '../grammaire/mecanique';
 import { refOuSpec } from '../grammaire/ref';
-import { customStatblockSchema, moneySchema, ptSchema, wallSideSchema } from './communs';
+import { customStatblockSchema, ptSchema, wallSideSchema } from './communs';
 import type { Effect } from '../../../state/scene';
 import type { Flow } from '../../../engine/flowCore';
 
@@ -137,7 +137,7 @@ export const giveTrappingSchema = z.strictObject({
   detectTried: z.boolean().optional(),
   appraiseTriedDay: z.number().optional(),
   /** Valeur de marché propre posée sur l'instance (ex. pièces de monstre récoltées, `ZI`). */
-  price: moneySchema.optional(),
+  price: moneyPartialSchema.optional(),
 });
 
 /** Donne une POSSESSION (bête/serviteur/véhicule — le SOCLE POSSESSIONS #615, registre
@@ -272,7 +272,7 @@ export const openPortSchema = z.strictObject({ type: z.literal('openPort'), plac
 export const medicalAidSchema = z.strictObject({
   type: z.literal('medicalAid'),
   acts: z
-    .array(z.strictObject({ act: z.enum(['wounds', 'bleed', 'trauma', 'surgery']), cost: moneySchema.optional() }))
+    .array(z.strictObject({ act: z.enum(['wounds', 'bleed', 'trauma', 'surgery']), cost: moneyPartialSchema.optional() }))
     .optional(),
   entityId: z.string(),
 });

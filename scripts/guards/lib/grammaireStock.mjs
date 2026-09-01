@@ -87,10 +87,6 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs/domains.ts:doc.windModifiers.cancelledBy.requiresSkill|redeclaration|refSchema {id,spec}': e('Réf `{id, spec}` re-tapée sous `requiresSkill` (`STRUCTURES_REDECLARATIONS` domains.ts, statut `cible`, commun `refSchema`).', L3),
 
   // ── Formes de VALEUR re-tapées (monnaie, dé, cellule de grille) ───────────────────────────────
-  'src/data/schemas/defs/creatures.ts:moneySchema|alias|bronze': e('Monnaie `{gold, silver, bronze}` re-tapée dans le bestiaire (`STRUCTURES_REDECLARATIONS` creatures.ts, concept monnaie).', L4),
-  'src/data/schemas/defs/crew-roles.ts:money|alias|bronze': e('Monnaie re-tapée pour la solde d’équipage (`STRUCTURES_REDECLARATIONS` crew-roles.ts).', L4),
-  'src/data/schemas/defs/trappings.ts:moneySchema|alias|bronze': e('Monnaie re-tapée dans le catalogue des dotations (`STRUCTURES_REDECLARATIONS` trappings.ts).', L4),
-  'src/data/schemas/defs/vehicles.ts:moneySchema|alias|bronze': e('Monnaie re-tapée dans le catalogue des véhicules (`STRUCTURES_REDECLARATIONS` vehicles.ts).', L4),
   'src/data/schemas/defs/maladies.ts:diceSpecSchema|redeclaration|countSpecSchema|diceSpecSchema|formulaSchema|trappingRefSchema {n,plus,sides}': e('`diceSpecSchema` re-déclaré localement (`STRUCTURES_REDECLARATIONS` maladies.ts, statut `cible`, commun `diceSpecSchema`).', L4),
   'src/data/schemas/defs/miscast.ts:engineFormulaSchema.dice|redeclaration|countSpecSchema|diceSpecSchema|formulaSchema|trappingRefSchema {n,plus,sides}': e('Dé d’une Formula de maléfice re-tapé (`STRUCTURES_REDECLARATIONS` miscast.ts champ `dice`, commun `diceSpecSchema`).', L4),
   'src/data/schemas/defs-scenes/effets.ts:zoneBlastSchema.center|redeclaration|cell2Schema {x,y}': e('Centre d’une zone d’effet re-tapé `{x, y}` — la cellule de grille est `cell2Schema`.', L4),

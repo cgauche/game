@@ -20,9 +20,9 @@
  * existante par `PROJECT_MIGRATIONS[6]` (`src/state/worldMap.ts`, `schema` 6 → 7).
  */
 import { z } from 'zod';
-import { difficultySchema, entityAppearanceSchema } from '../grammaire/valeurs';
+import { difficultySchema, entityAppearanceSchema, moneyPartialSchema } from '../grammaire/valeurs';
 import { conditionSchema, flowTestSchema, gameOpSchema } from '../grammaire/mecanique';
-import { customStatblockSchema, moneySchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
+import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
 import { sceneFlowSchema } from './effets';
 import type { AuthoredShipPoste } from '../../../engine/types';
 import type { OptionalEntry } from '../../../engine/statEntry';
@@ -252,7 +252,7 @@ export const dialogueChoiceSchema = z.strictObject({
   when: conditionSchema.optional(),
   /** Prix de l'option (service payant : auberge, péage, pot-de-vin…). Le choix est RÉPÉTABLE mais
    *  désactivé si on ne peut pas payer ; à la sélection, le montant est débité AVANT le flow. */
-  cost: moneySchema.optional(),
+  cost: moneyPartialSchema.optional(),
   /** LOGIQUE exécutée à la sélection : séquence d'effets + branches `if`/`test` (exécutée par `runFlow`). */
   flow: sceneFlowSchema.optional(),
   /** Id du nœud suivant. */

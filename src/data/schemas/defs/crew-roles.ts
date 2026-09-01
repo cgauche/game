@@ -10,13 +10,11 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { moneySchema, sourceRefSchema } from '../grammaire/valeurs';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'crew-roles.json';
 export const famille = 'entite';
-
-const money = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
 
 const doc = document(
   'crew-roles',
@@ -28,8 +26,8 @@ const doc = document(
     // `maison` = correspondance rôle→type de mercenaire arbitrée. #216
     wage: z
       .strictObject({
-        daily: money,
-        weekly: money,
+        daily: moneySchema,
+        weekly: moneySchema,
         source: sourceRefSchema.optional(),
         maison: z.string().optional(),
       })

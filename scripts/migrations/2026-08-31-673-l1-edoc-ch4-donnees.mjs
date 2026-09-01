@@ -51,12 +51,12 @@ const ecrire = (p, data) => {
 }
 
 // ── Prix : « 2 CO » / « 3 /- » / « 5 sc » (LDB 57 l.7 : sc = sous de cuivre, /- = pistoles
-//    d'argent, CO = couronnes d'or) → { gold, silver, bronze }.
+//    d'argent, CO = couronnes d'or) → { gold, silver, brass }.
 function prix(cellule) {
   const m = /^(\d+)\s*(CO|\/-|sc)$/.exec(cellule)
   if (!m) throw new Error(`cellule de coût non reconnue : « ${cellule} »`)
   const n = Number(m[1])
-  return { gold: m[2] === 'CO' ? n : 0, silver: m[2] === '/-' ? n : 0, bronze: m[2] === 'sc' ? n : 0 }
+  return { gold: m[2] === 'CO' ? n : 0, silver: m[2] === '/-' ? n : 0, brass: m[2] === 'sc' ? n : 0 }
 }
 
 const CREATURES = 'src/data/creatures.json'

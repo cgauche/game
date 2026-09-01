@@ -108,6 +108,7 @@ import type { MutationData, MutationTable } from './mutations'; // type-only (é
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 import type { PowerEstimateRow, MightModifierRow, WarMachineRow, StructureRow as MassBattleStructureRow, HazardRow } from '../engine/massBattle'; // type-only (le runtime de massBattle.ts importe ces tableaux d'ici)
 import { type DiceSpec, formatDice } from '../engine/dice';
+import type { Money } from '../engine/money'; // type-only (`Money` = SOURCE UNIQUE de la bourse, engine/money.ts)
 import { SIZE_LABEL, sizeFromTalents } from '../engine/size'; // runtime : registre feuille (data/sizes.json + engine/qualities/ids), sans cycle vers data/index
 import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la donnée d'ici)
 import type { OupsRow } from './oups';
@@ -1252,7 +1253,7 @@ export interface TrappingData {
    *  livre imprime (LDB 62 l.28 Mains nues, l.31 Arme improvisée, LDB 68 l.11 Licence de Guilde), ou
    *  `null` quand le livre n'imprime AUCUNE valeur (Rocher, Filet, sel sacré, carte marine…). `'ND'`
    *  et `null` valent tous deux zéro sou au calcul (`priceToMoney`) ; seule la MARQUE se rend. */
-  price: { gold: number; silver: number; bronze: number } | 'ND' | null;
+  price: Money | 'ND' | null;
   source: SourceRef;
   /** Emplacement SECONDAIRE (#563) — même objet réimprimé/à cheval prose⇄ligne-de-stats ailleurs
    *  (ex. Cimeterre : prose AA 90, ligne de stats AA 91). Accessors `allLocations`/`sourceBooks`
@@ -1378,7 +1379,7 @@ export interface CreatureData {
    *  `engine/relations.ts`, que `CustomStatblock.followsCharacterRules` côté éditeur). Absent = créature. */
   followsCharacterRules?: boolean;
   /** Facette ACHAT (marché/possession de carrière) — LDB 70, EDOC 07. */
-  purchase?: { price: { gold: number; silver: number; bronze: number }; availability?: string };
+  purchase?: { price: Money; availability?: string };
   /** Arbitrage NON-verbatim documentant un ou plusieurs champs (ex. `char`/`purchase` approximés
    *  faute de statbloc imprimé) — même patron que `ActivityData.maison`, `TraumaData.maison`. */
   maison?: string;
@@ -2563,8 +2564,8 @@ export function findSeaShantyById(id: string): SeaShantyData | undefined {
 /** Solde d'un rôle (MDG 14 l.293-302 « Exemples de mercenaires ») : coûts quotidien/hebdomadaire
  *  verbatim ; `source` = correspondance RAW explicite, `maison` = correspondance arbitrée. #216 */
 export interface CrewWage {
-  daily: { gold: number; silver: number; bronze: number };
-  weekly: { gold: number; silver: number; bronze: number };
+  daily: Money;
+  weekly: Money;
   source?: SourceRef;
   maison?: string;
 }

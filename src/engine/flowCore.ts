@@ -77,7 +77,7 @@ export function leafOpsCtx<C extends { defaultUntilTime?: number; label?: string
 /** Algèbre CLOSE de Conditions (sérialisation-stable). `flag`/`time` reprennent la sémantique des
  *  anciens `condMet`/`temporalConditionMet` ; `all`/`any` composent ; `not` nie. Aucune condition
  *  qui MUTE l'état — purement interrogative. */
-/** Bourse (sous-ensemble de `Money`) — comparée en sous de bronze (1 CO = 240 sb, 1 pa = 12 sb). */
+/** Bourse (sous-ensemble de `Money`) — comparée en sous de cuivre (1 CO = 240 sc, 1 pistole = 12 sc). */
 export interface Purse { gold?: number; silver?: number; brass?: number }
 const brassValue = (m: Purse): number => (m.gold ?? 0) * 240 + (m.silver ?? 0) * 12 + (m.brass ?? 0);
 
@@ -126,7 +126,7 @@ export type Condition =
   /** Le GROUPE possède au moins `count` (défaut 1) exemplaire(s) de l'objet d'`id` `trappingId` (réf de
    *  catalogue stable). Repli sur le NOM pour les objets CUSTOM (hors-base, sans `trappingId`). */
   | { kind: 'hasItem'; trappingId: string; count?: number }
-  /** La bourse du groupe vaut AU MOINS le seuil `atLeast` (comparaison en sous de bronze). */
+  /** La bourse du groupe vaut AU MOINS le seuil `atLeast` (comparaison en sous de cuivre). */
   | { kind: 'money'; atLeast: Purse }
   /** État vital du groupe : `any` = au moins un héros mort, `all` = tous morts. */
   | { kind: 'partyDead'; who: 'any' | 'all' }

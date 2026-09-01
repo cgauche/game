@@ -50,7 +50,7 @@ describe('créature blaireau (bête du Moot montable)', () => {
   it('porte une facette purchase (dotation/achat)', () => {
     const c = findCreatureById('blaireau')!;
     expect(c.purchase).toBeDefined();
-    const total = c.purchase!.price.gold + c.purchase!.price.silver + c.purchase!.price.bronze;
+    const total = c.purchase!.price.gold + c.purchase!.price.silver + c.purchase!.price.brass;
     expect(total).toBeGreaterThan(0);
   });
 

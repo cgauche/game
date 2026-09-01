@@ -15,7 +15,7 @@
       "price": {
         "gold": 150,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Rare"
     },
@@ -63,7 +63,7 @@
       "price": {
         "gold": 25,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Rare"
     },
@@ -92,7 +92,7 @@
       "price": {
         "gold": 30,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Commune"
     },
@@ -121,7 +121,7 @@
       "price": {
         "gold": 45,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Exotique"
     },
@@ -188,7 +188,7 @@
       "price": {
         "gold": 225,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     }
   },
@@ -247,7 +247,7 @@
       "price": {
         "gold": 225,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Rare"
     }
@@ -288,7 +288,7 @@
       "price": {
         "gold": 6,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Limitée"
     }
@@ -309,7 +309,7 @@
       "price": {
         "gold": 20,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Commune"
     },
@@ -338,7 +338,7 @@
       "price": {
         "gold": 10,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Commune"
     },
@@ -367,7 +367,7 @@
       "price": {
         "gold": 75,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Commune"
     },
@@ -396,7 +396,7 @@
       "price": {
         "gold": 100,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Commune"
     },
@@ -425,7 +425,7 @@
       "price": {
         "gold": 125,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Commune"
     },
@@ -453,7 +453,7 @@
       "price": {
         "gold": 6,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Limitée"
     },
@@ -474,7 +474,7 @@
       "price": {
         "gold": 225,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Rare"
     },
@@ -495,7 +495,7 @@
       "price": {
         "gold": 2,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "availability": "Limitée"
     },
@@ -534,7 +534,7 @@
       "price": {
         "gold": 6,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -572,7 +572,7 @@
       "price": {
         "gold": 45,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -614,7 +614,7 @@
       "price": {
         "gold": 445,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -656,7 +656,7 @@
       "price": {
         "gold": 655,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -710,7 +710,7 @@
       "price": {
         "gold": 60,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -756,7 +756,7 @@
       "price": {
         "gold": 250,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -798,7 +798,7 @@
       "price": {
         "gold": 300,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -889,7 +889,7 @@
       "price": {
         "gold": 550,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -931,7 +931,7 @@
       "price": {
         "gold": 600,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -983,7 +983,7 @@
       "price": {
         "gold": 1200,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -1035,7 +1035,7 @@
       "price": {
         "gold": 3500,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -1080,7 +1080,7 @@
       "price": {
         "gold": 2500,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -1125,7 +1125,7 @@
       "price": {
         "gold": 550,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -1167,7 +1167,7 @@
       "price": {
         "gold": 500,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -1213,7 +1213,7 @@
       "price": {
         "gold": 400,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {
@@ -1251,7 +1251,7 @@
       "price": {
         "gold": 10000,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       }
     },
     "hull": {

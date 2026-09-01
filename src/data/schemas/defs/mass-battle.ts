@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { moneySchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'mass-battle.json';
 export const famille = 'config';
@@ -30,7 +30,7 @@ const mightModifierRowSchema = z.strictObject({
 const warMachineRowSchema = z.strictObject({
   id: z.string(),
   label: z.string(),
-  price: z.string(),
+  price: moneySchema,
   crew: z.number(),
   availability: z.string(),
   range: z.string(),

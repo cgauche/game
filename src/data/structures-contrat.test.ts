@@ -815,7 +815,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // des tables générales sortent à leur tour, par composition de `plageSchema`.
       // … puis 143 → 131 (LOT P1-c) : les 12 lignes de REDÉCLARATIONS des rangées de table de mer, de
       // route et de bataille sortent à leur tour, par composition de `plageSchema`.
-      'L4 #1463': 131,
+      // … puis 131 → 130 (L-monnaie-1) : `activities.minInvest` compose `moneyPartialSchema` de la
+      // grammaire (`grammaire/valeurs.ts`) au lieu de re-taper `{gold}`.
+      // … puis 130 → 121 (L-monnaie-2) : la clé `bronze` meurt (5 lignes de FORMES, 455 montants) et
+      // les 4 catalogues composent le `moneySchema` de la grammaire (4 REDÉCLARATIONS).
+      'L4 #1463': 121,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`

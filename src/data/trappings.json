@@ -26,7 +26,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -64,7 +64,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -97,7 +97,7 @@
     "price": {
       "gold": 0,
       "silver": 15,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -129,7 +129,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -183,7 +183,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -239,7 +239,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -284,7 +284,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -322,7 +322,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -360,7 +360,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 2
+      "brass": 2
     },
     "source": {
       "book": "livre-de-base",
@@ -391,7 +391,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -419,7 +419,7 @@
     "price": {
       "gold": 0,
       "silver": 16,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -453,7 +453,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -499,7 +499,7 @@
     "price": {
       "gold": 0,
       "silver": 16,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -542,7 +542,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -577,7 +577,7 @@
     "price": {
       "gold": 0,
       "silver": 15,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -612,7 +612,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -644,7 +644,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -679,7 +679,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -718,7 +718,7 @@
     "price": {
       "gold": 4,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -757,7 +757,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -795,7 +795,7 @@
     "price": {
       "gold": 0,
       "silver": 9,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -830,7 +830,7 @@
     "price": {
       "gold": 10,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -865,7 +865,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -893,7 +893,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -921,7 +921,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -952,7 +952,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -987,7 +987,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1018,7 +1018,7 @@
     "price": {
       "gold": 1,
       "silver": 2,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -1046,7 +1046,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1081,7 +1081,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1114,7 +1114,7 @@
     "price": {
       "gold": 6,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1152,7 +1152,7 @@
     "price": {
       "gold": 7,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1182,7 +1182,7 @@
     "price": {
       "gold": 4,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1212,7 +1212,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1249,7 +1249,7 @@
     "price": {
       "gold": 10,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1283,7 +1283,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1317,7 +1317,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1349,7 +1349,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1419,7 +1419,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1457,7 +1457,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1485,7 +1485,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1514,7 +1514,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1549,7 +1549,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1579,7 +1579,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1613,7 +1613,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1647,7 +1647,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1681,7 +1681,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -1756,7 +1756,7 @@
     "price": {
       "gold": 10,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1805,7 +1805,7 @@
     "price": {
       "gold": 15,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1848,7 +1848,7 @@
     "price": {
       "gold": 4,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1894,7 +1894,7 @@
     "price": {
       "gold": 100,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1936,7 +1936,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -1983,7 +1983,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2012,7 +2012,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2040,7 +2040,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2079,7 +2079,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2113,7 +2113,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 4
+      "brass": 4
     },
     "source": {
       "book": "livre-de-base",
@@ -2141,7 +2141,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 2
+      "brass": 2
     },
     "source": {
       "book": "livre-de-base",
@@ -2175,7 +2175,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 3
+      "brass": 3
     },
     "source": {
       "book": "livre-de-base",
@@ -2201,7 +2201,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 3
+      "brass": 3
     },
     "source": {
       "book": "livre-de-base",
@@ -2228,7 +2228,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 3
+      "brass": 3
     },
     "source": {
       "book": "livre-de-base",
@@ -2256,7 +2256,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2280,7 +2280,7 @@
     "price": {
       "gold": 0,
       "silver": 14,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2304,7 +2304,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2328,7 +2328,7 @@
     "price": {
       "gold": 0,
       "silver": 12,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2355,7 +2355,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2386,7 +2386,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2417,7 +2417,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2455,7 +2455,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2486,7 +2486,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2520,7 +2520,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2558,7 +2558,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2593,7 +2593,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2627,7 +2627,7 @@
     "price": {
       "gold": 10,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2661,7 +2661,7 @@
     "price": {
       "gold": 10,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2688,7 +2688,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2715,7 +2715,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2741,7 +2741,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 4
+      "brass": 4
     },
     "source": {
       "book": "livre-de-base",
@@ -2764,7 +2764,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2791,7 +2791,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 2
+      "brass": 2
     },
     "source": {
       "book": "livre-de-base",
@@ -2814,7 +2814,7 @@
     "price": {
       "gold": 0,
       "silver": 16,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2838,7 +2838,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2864,7 +2864,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2891,7 +2891,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -2921,7 +2921,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 8
+      "brass": 8
     },
     "source": {
       "book": "livre-de-base",
@@ -2948,7 +2948,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -2975,7 +2975,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -3002,7 +3002,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3025,7 +3025,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 2
+      "brass": 2
     },
     "source": {
       "book": "livre-de-base",
@@ -3068,7 +3068,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3092,7 +3092,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3118,7 +3118,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3141,7 +3141,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3164,7 +3164,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3188,7 +3188,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3211,7 +3211,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3235,7 +3235,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3258,7 +3258,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3282,7 +3282,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3305,7 +3305,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3328,7 +3328,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3352,7 +3352,7 @@
     "price": {
       "gold": 12,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3379,7 +3379,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3402,7 +3402,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3425,7 +3425,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3448,7 +3448,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3472,7 +3472,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3495,7 +3495,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 8
+      "brass": 8
     },
     "source": {
       "book": "livre-de-base",
@@ -3518,7 +3518,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3541,7 +3541,7 @@
     "price": {
       "gold": 1,
       "silver": 2,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3564,7 +3564,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3587,7 +3587,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 3
+      "brass": 3
     },
     "source": {
       "book": "livre-de-base",
@@ -3635,7 +3635,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3659,7 +3659,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 9
+      "brass": 9
     },
     "source": {
       "book": "livre-de-base",
@@ -3683,7 +3683,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -3708,7 +3708,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3732,7 +3732,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -3756,7 +3756,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -3779,7 +3779,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3802,7 +3802,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3825,7 +3825,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -3848,7 +3848,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 4
+      "brass": 4
     },
     "source": {
       "book": "livre-de-base",
@@ -3900,7 +3900,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3923,7 +3923,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -3946,7 +3946,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -3969,7 +3969,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4009,7 +4009,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4032,7 +4032,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4055,7 +4055,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 4
+      "brass": 4
     },
     "source": {
       "book": "livre-de-base",
@@ -4078,7 +4078,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -4101,7 +4101,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4124,7 +4124,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 2
+      "brass": 2
     },
     "source": {
       "book": "livre-de-base",
@@ -4147,7 +4147,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4171,7 +4171,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 2
+      "brass": 2
     },
     "source": {
       "book": "livre-de-base",
@@ -4194,7 +4194,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4217,7 +4217,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4240,7 +4240,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4263,7 +4263,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4288,7 +4288,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4311,7 +4311,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4334,7 +4334,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4358,7 +4358,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4381,7 +4381,7 @@
     "price": {
       "gold": 1,
       "silver": 1,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -4405,7 +4405,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4456,7 +4456,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4480,7 +4480,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4504,7 +4504,7 @@
     "price": {
       "gold": 0,
       "silver": 15,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4530,7 +4530,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -4553,7 +4553,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4577,7 +4577,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4600,7 +4600,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -4624,7 +4624,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -4647,7 +4647,7 @@
     "price": {
       "gold": 0,
       "silver": 14,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4670,7 +4670,7 @@
     "price": {
       "gold": 0,
       "silver": 16,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4693,7 +4693,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4716,7 +4716,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4739,7 +4739,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4762,7 +4762,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4785,7 +4785,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -4808,7 +4808,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4834,7 +4834,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -4857,7 +4857,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4880,7 +4880,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4903,7 +4903,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4927,7 +4927,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4971,7 +4971,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -4995,7 +4995,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5019,7 +5019,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5043,7 +5043,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5067,7 +5067,7 @@
     "price": {
       "gold": 15,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5091,7 +5091,7 @@
     "price": {
       "gold": 20,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5115,7 +5115,7 @@
     "price": {
       "gold": 15,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5139,7 +5139,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5166,7 +5166,7 @@
     "price": {
       "gold": 20,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5189,7 +5189,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5212,7 +5212,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5235,7 +5235,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5259,7 +5259,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5283,7 +5283,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5307,7 +5307,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5331,7 +5331,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5355,7 +5355,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5379,7 +5379,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5403,7 +5403,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5427,7 +5427,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5451,7 +5451,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5475,7 +5475,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5499,7 +5499,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5523,7 +5523,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5547,7 +5547,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5571,7 +5571,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5595,7 +5595,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5619,7 +5619,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5643,7 +5643,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5667,7 +5667,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5691,7 +5691,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5714,7 +5714,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 7
+      "brass": 7
     },
     "source": {
       "book": "livre-de-base",
@@ -5737,7 +5737,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 5
+      "brass": 5
     },
     "source": {
       "book": "livre-de-base",
@@ -5760,7 +5760,7 @@
     "price": {
       "gold": 6,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5783,7 +5783,7 @@
     "price": {
       "gold": 10,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5807,7 +5807,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 1
+      "brass": 1
     },
     "source": {
       "book": "livre-de-base",
@@ -5831,7 +5831,7 @@
     "price": {
       "gold": 1,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5879,7 +5879,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -5984,7 +5984,7 @@
     "price": {
       "gold": 40,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6038,7 +6038,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6128,7 +6128,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6232,7 +6232,7 @@
     "price": {
       "gold": 20,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6402,7 +6402,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6472,7 +6472,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6533,7 +6533,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6595,7 +6595,7 @@
     "price": {
       "gold": 0,
       "silver": 12,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6630,7 +6630,7 @@
     "price": {
       "gold": 0,
       "silver": 15,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6667,7 +6667,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6717,7 +6717,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6754,7 +6754,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6800,7 +6800,7 @@
     "price": {
       "gold": 0,
       "silver": 12,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6837,7 +6837,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -6880,7 +6880,7 @@
     "price": {
       "gold": 0,
       "silver": 15,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mort-sur-le-reik-compagnon",
@@ -6935,7 +6935,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mort-sur-le-reik-compagnon",
@@ -7047,7 +7047,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mort-sur-le-reik-compagnon",
@@ -7097,7 +7097,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -7156,7 +7156,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 4
+      "brass": 4
     },
     "source": {
       "book": "livre-de-base",
@@ -7180,7 +7180,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7216,7 +7216,7 @@
     "price": {
       "gold": 0,
       "silver": 16,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7240,7 +7240,7 @@
     "price": {
       "gold": 20,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7264,7 +7264,7 @@
     "price": {
       "gold": 0,
       "silver": 18,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7288,7 +7288,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7311,7 +7311,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7334,7 +7334,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 1
+      "brass": 1
     },
     "source": {
       "book": "livre-de-base",
@@ -7357,7 +7357,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7380,7 +7380,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7403,7 +7403,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 5
+      "brass": 5
     },
     "source": {
       "book": "livre-de-base",
@@ -7427,7 +7427,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 4
+      "brass": 4
     },
     "source": {
       "book": "livre-de-base",
@@ -7466,7 +7466,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -7489,7 +7489,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 2
+      "brass": 2
     },
     "source": {
       "book": "livre-de-base",
@@ -7512,7 +7512,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7543,7 +7543,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7566,7 +7566,7 @@
     "price": {
       "gold": 0,
       "silver": 7,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -7589,7 +7589,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 1
+      "brass": 1
     },
     "source": {
       "book": "livre-de-base",
@@ -7613,7 +7613,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 4
+      "brass": 4
     },
     "source": {
       "book": "livre-de-base",
@@ -7636,7 +7636,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "livre-de-base",
@@ -7659,7 +7659,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 8
+      "brass": 8
     },
     "source": {
       "book": "livre-de-base",
@@ -7682,7 +7682,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -7705,7 +7705,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -7729,7 +7729,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 10
+      "brass": 10
     },
     "source": {
       "book": "livre-de-base",
@@ -7753,7 +7753,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7777,7 +7777,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7801,7 +7801,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7839,7 +7839,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7870,7 +7870,7 @@
     "price": {
       "gold": 0,
       "silver": 12,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7893,7 +7893,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7916,7 +7916,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7939,7 +7939,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -7962,7 +7962,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 4
+      "brass": 4
     },
     "source": {
       "book": "livre-de-base",
@@ -7985,7 +7985,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -8009,7 +8009,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -8032,7 +8032,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 8
+      "brass": 8
     },
     "source": {
       "book": "livre-de-base",
@@ -8059,7 +8059,7 @@
     "price": {
       "gold": 0,
       "silver": 12,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "livre-de-base",
@@ -8094,7 +8094,7 @@
     "price": {
       "gold": 3,
       "silver": 15,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8140,7 +8140,7 @@
     "price": {
       "gold": 1,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8192,7 +8192,7 @@
     "price": {
       "gold": 30,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8238,7 +8238,7 @@
     "price": {
       "gold": 20,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8284,7 +8284,7 @@
     "price": {
       "gold": 40,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8330,7 +8330,7 @@
     "price": {
       "gold": 60,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8383,7 +8383,7 @@
     "price": {
       "gold": 500,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8432,7 +8432,7 @@
     "price": {
       "gold": 10,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8478,7 +8478,7 @@
     "price": {
       "gold": 500,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8524,7 +8524,7 @@
     "price": {
       "gold": 40,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8570,7 +8570,7 @@
     "price": {
       "gold": 100,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8616,7 +8616,7 @@
     "price": {
       "gold": 250,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8657,7 +8657,7 @@
     "price": {
       "gold": 50,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8696,7 +8696,7 @@
     "price": {
       "gold": 20,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8730,7 +8730,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8763,7 +8763,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8796,7 +8796,7 @@
     "price": {
       "gold": 4,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8832,7 +8832,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8867,7 +8867,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8895,7 +8895,7 @@
     "price": {
       "gold": 0,
       "silver": 16,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "nuits-agitees-et-dures-journees",
@@ -8931,7 +8931,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -8973,7 +8973,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9008,7 +9008,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9051,7 +9051,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9087,7 +9087,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9129,7 +9129,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9177,7 +9177,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9224,7 +9224,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9272,7 +9272,7 @@
     "price": {
       "gold": 30,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9314,7 +9314,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9347,7 +9347,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9379,7 +9379,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9414,7 +9414,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9451,7 +9451,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9492,7 +9492,7 @@
     "price": {
       "gold": 7,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9530,7 +9530,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9571,7 +9571,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9612,7 +9612,7 @@
     "price": {
       "gold": 10,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9653,7 +9653,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9694,7 +9694,7 @@
     "price": {
       "gold": 20,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9736,7 +9736,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9776,7 +9776,7 @@
     "price": {
       "gold": 15,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9817,7 +9817,7 @@
     "price": {
       "gold": 50,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9861,7 +9861,7 @@
     "price": {
       "gold": 12,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9899,7 +9899,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9937,7 +9937,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -9971,7 +9971,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -10008,7 +10008,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -10045,7 +10045,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -10082,7 +10082,7 @@
     "price": {
       "gold": 2,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -10122,7 +10122,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "aux-armes",
@@ -10139,7 +10139,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10182,7 +10182,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10231,7 +10231,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10284,7 +10284,7 @@
     "price": {
       "gold": 12,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10304,7 +10304,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10324,7 +10324,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10344,7 +10344,7 @@
     "price": {
       "gold": 1,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10364,7 +10364,7 @@
     "price": {
       "gold": 4,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10384,7 +10384,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10404,7 +10404,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10424,7 +10424,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10444,7 +10444,7 @@
     "price": {
       "gold": 18,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10464,7 +10464,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10484,7 +10484,7 @@
     "price": {
       "gold": 15,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10504,7 +10504,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10524,7 +10524,7 @@
     "price": {
       "gold": 1,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10544,7 +10544,7 @@
     "price": {
       "gold": 6,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10564,7 +10564,7 @@
     "price": {
       "gold": 36,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10584,7 +10584,7 @@
     "price": {
       "gold": 9,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10604,7 +10604,7 @@
     "price": {
       "gold": 4,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10624,7 +10624,7 @@
     "price": {
       "gold": 27,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10644,7 +10644,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10664,7 +10664,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10684,7 +10684,7 @@
     "price": {
       "gold": 1,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10704,7 +10704,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10724,7 +10724,7 @@
     "price": {
       "gold": 18,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10743,7 +10743,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10772,7 +10772,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10807,7 +10807,7 @@
     "price": {
       "gold": 6,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10836,7 +10836,7 @@
     "price": {
       "gold": 20,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10855,7 +10855,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10885,7 +10885,7 @@
     "price": {
       "gold": 4,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10917,7 +10917,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10958,7 +10958,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -10987,7 +10987,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -11025,7 +11025,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -11058,7 +11058,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -11097,7 +11097,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -11116,7 +11116,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -11135,7 +11135,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -11154,7 +11154,7 @@
     "price": {
       "gold": 0,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "zoo-imperial",
@@ -11186,7 +11186,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11219,7 +11219,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11250,7 +11250,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11284,7 +11284,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11321,7 +11321,7 @@
     "price": {
       "gold": 3,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11356,7 +11356,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11393,7 +11393,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 2
+      "brass": 2
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11421,7 +11421,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 2
+      "brass": 2
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11449,7 +11449,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11489,7 +11489,7 @@
     "price": {
       "gold": 4,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11523,7 +11523,7 @@
     "price": {
       "gold": 5,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11565,7 +11565,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11602,7 +11602,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11638,7 +11638,7 @@
     "price": {
       "gold": 0,
       "silver": 6,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11678,7 +11678,7 @@
     "price": {
       "gold": 14,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11716,7 +11716,7 @@
     "price": {
       "gold": 9,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11745,7 +11745,7 @@
     "price": {
       "gold": 0,
       "silver": 5,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11777,7 +11777,7 @@
     "price": {
       "gold": 0,
       "silver": 4,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11815,7 +11815,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11844,7 +11844,7 @@
     "price": {
       "gold": 20,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -11900,7 +11900,7 @@
     "price": {
       "gold": 0,
       "silver": 8,
-      "bronze": 6
+      "brass": 6
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11924,7 +11924,7 @@
     "price": {
       "gold": 0,
       "silver": 11,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11951,7 +11951,7 @@
     "price": {
       "gold": 0,
       "silver": 1,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -11978,7 +11978,7 @@
     "price": {
       "gold": 0,
       "silver": 2,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -12006,7 +12006,7 @@
     "price": {
       "gold": 0,
       "silver": 3,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -12039,7 +12039,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -12095,7 +12095,7 @@
     "price": {
       "gold": 1,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -12122,7 +12122,7 @@
     "price": {
       "gold": 0,
       "silver": 10,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "mer-des-griffes",
@@ -12174,7 +12174,7 @@
     "price": {
       "gold": 75,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12221,7 +12221,7 @@
     "price": {
       "gold": 10,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12276,7 +12276,7 @@
     "price": {
       "gold": 200,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12335,7 +12335,7 @@
     "price": {
       "gold": 300,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12394,7 +12394,7 @@
     "price": {
       "gold": 120,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12472,7 +12472,7 @@
     "price": {
       "gold": 200,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12525,7 +12525,7 @@
     "price": {
       "gold": 60,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12578,7 +12578,7 @@
     "price": {
       "gold": 80,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12631,7 +12631,7 @@
     "price": {
       "gold": 40,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12694,7 +12694,7 @@
     "price": {
       "gold": 100,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "archives-de-l-empire-2",
@@ -12723,7 +12723,7 @@
     "price": {
       "gold": 1,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "vents-de-la-magie",
@@ -12752,7 +12752,7 @@
     "price": {
       "gold": 8,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "vents-de-la-magie",
@@ -12781,7 +12781,7 @@
     "price": {
       "gold": 30,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "vents-de-la-magie",
@@ -12816,7 +12816,7 @@
     "price": {
       "gold": 15,
       "silver": 0,
-      "bronze": 0
+      "brass": 0
     },
     "source": {
       "book": "vents-de-la-magie",

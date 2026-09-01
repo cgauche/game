@@ -135,10 +135,10 @@ export const tracerCalque = () => {
       'Scene.entryPoints.x', // valeur d'un Record<K,V>
       'Dialogue.nodes',
       'DialogueNode.choices',
-      // Feuille PARTAGÉE d'un AUTRE module (`defs-scenes/communs.ts`, `moneySchema`) que le document
+      // Feuille PARTAGÉE d'un AUTRE module (`grammaire/valeurs.ts`, `moneyPartialSchema`) que le document
       // COMPOSE : elle n'entre que par l'inclusion par IDENTITÉ — une frontière posée sur le MODULE
       // perdait les 3 champs de coût d'un choix de dialogue (239 → 236, cf. le test d'identité).
-      'Money.gold',
+      'MoneyPartial.gold',
       // `Rect` est déclaré DANS le document (`defs-scenes/scene.ts:24`) : il ne doit rien à l'inclusion
       // par identité — `Trigger.rect.*` → `Rect.*` relève du NOMMAGE du porteur rendu par `z.infer`.
       'Rect.z',
@@ -163,9 +163,10 @@ export const tracerCalque = () => {
   });
 
   it('le périmètre inclut par IDENTITÉ — une feuille d’un AUTRE module composée par le document y entre, un nœud-frontière n’y entre pas', () => {
-    // Réplique STRUCTURELLE du seam réel : `sceneSchema` compose `moneySchema` (feuille de
-    // `defs-scenes/communs.ts`) et `conditionSchema` (vocabulaire partagé de `grammaire/`). La marche
-    // part de `sceneSchema` et suit les IDENTITÉS ; elle s'arrête au nœud-frontière.
+    // Réplique STRUCTURELLE du seam réel (`sceneSchema` compose `moneyPartialSchema`, feuille de
+    // `grammaire/valeurs.ts`, et `conditionSchema`, vocabulaire partagé de `grammaire/`) : le schéma
+    // composant vit dans un AUTRE module. La marche part de `sceneSchema` et suit les IDENTITÉS ;
+    // elle s'arrête au nœud-frontière.
     const program = virtualProgram({
       'src/data/schemas/grammaire/mecanique.ts': `declare function forme<T>(shape: T): { readonly sortie: T };
 export const conditionSchema = forme({ flag: '' });\n`,
@@ -220,9 +221,9 @@ export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc:
       horsDocument.map((r) => `${r.id} @ ${fichier(r)}`).sort(),
       'ce que la frontière par MODULE perdrait'
     ).toEqual([
-      'Money.brass @ src/data/schemas/defs-scenes/communs.ts',
-      'Money.gold @ src/data/schemas/defs-scenes/communs.ts',
-      'Money.silver @ src/data/schemas/defs-scenes/communs.ts',
+      'MoneyPartial.brass @ src/data/schemas/grammaire/valeurs.ts',
+      'MoneyPartial.gold @ src/data/schemas/grammaire/valeurs.ts',
+      'MoneyPartial.silver @ src/data/schemas/grammaire/valeurs.ts',
     ]);
     // Contre-témoin : `Rect` ne doit RIEN à l'inclusion par identité — il est déclaré DANS le document,
     // son renommage `Trigger.rect.*` → `Rect.*` vient du NOMMAGE du porteur rendu par `z.infer`.

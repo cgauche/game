@@ -52,7 +52,7 @@ describe('evalCondition — état VIVANT du groupe (hasItem / money / partyDead)
     expect(evalCondition({ kind: 'hasItem', trappingId: 'Amulette' }, { ...base, party })).toBe(false);
     expect(evalCondition({ kind: 'hasItem', trappingId: 'Clé en fer' }, base)).toBe(false); // pas de groupe → false
   });
-  it('money : bourse comparée en sous de bronze (1 CO = 240 sb, 1 pa = 12 sb)', () => {
+  it('money : bourse comparée en sous de cuivre (1 CO = 240 sc, 1 pistole = 12 sc)', () => {
     const ctx = { ...base, money: { gold: 1, silver: 2, brass: 0 } }; // 264 sb
     expect(evalCondition({ kind: 'money', atLeast: { gold: 1 } }, ctx)).toBe(true);
     expect(evalCondition({ kind: 'money', atLeast: { silver: 22 } }, ctx)).toBe(true); // 264 sb

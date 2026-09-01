@@ -2,6 +2,7 @@
 import { t } from '../i18n';
 import type { PlayerText } from '../i18n/playerText';
 import type { Duration } from './duration';
+import type { Money } from './money';
 import type { ReachId } from './items';
 import type { CodexTarget, ModProvenance } from './ruleRefs';
 import type { WallSide as WallSideCanon } from '../data/schemas/defs-scenes/communs';
@@ -189,7 +190,7 @@ export interface VehicleData {
   desc?: string;
   /** Facette ACHAT (marché / possession de carrière). `availability` absent pour les navires (MDG ne
    *  donne pas de Disponibilité). */
-  purchase?: { price: { gold: number; silver: number; bronze: number }; availability?: string };
+  purchase?: { price: Money; availability?: string };
   /** Facette VOYAGE (passage payant, LDB 51 l.178-189). `movement` = Déplacement du véhicule (km/h).
    *  `medium` = milieu du TRAJET PAYÉ — INDÉPENDANT de `hull.propulsion` (un véhicule peut être
    *  bi-milieu : la Barge navigue le fleuve, LDB 70 p.306, tout en figurant à la table navale MDG 12

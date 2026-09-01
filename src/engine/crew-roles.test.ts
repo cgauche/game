@@ -52,8 +52,8 @@ describe('Barème de solde (MDG 14 l.293-302) — lu depuis la donnée, #216', (
     expect(findCrewRoleById('mousse')!.wage!.source).toEqual({ book: 'mer-des-griffes', page: 126 });
     expect(findCrewRoleById('chirurgien')!.wage!.source).toEqual({ book: 'mer-des-griffes', page: 126 });
     // Mousse : 3/– par jour, 1 CO 4/– par semaine (colonnes NON multiples l'une de l'autre, verbatim).
-    expect(findCrewRoleById('mousse')!.wage!.daily).toEqual({ gold: 0, silver: 3, bronze: 0 });
-    expect(findCrewRoleById('mousse')!.wage!.weekly).toEqual({ gold: 1, silver: 4, bronze: 0 });
+    expect(findCrewRoleById('mousse')!.wage!.daily).toEqual({ gold: 0, silver: 3, brass: 0 });
+    expect(findCrewRoleById('mousse')!.wage!.weekly).toEqual({ gold: 1, silver: 4, brass: 0 });
     // Correspondances arbitrées → tag maison (pas de tag source).
     expect(findCrewRoleById('capitaine')!.wage!.maison).toBeTruthy();
     expect(findCrewRoleById('capitaine')!.wage!.source).toBeUndefined();

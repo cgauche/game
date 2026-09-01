@@ -135,10 +135,10 @@ un chiffre qui s'additionne.
 
 | Interface | Site | Drapeaux déclarés |
 |---|---|---|
-| `TraitCapabilities` | `src/data/index.ts:1615` | 43 |
-| `QualityCapabilities` | `src/data/index.ts:1813` | 26 |
-| `ItemCapabilities` | `src/data/index.ts:1069` | 12 |
-| `SymptomCapabilities` | `src/data/index.ts:1878` | 7 |
+| `TraitCapabilities` | `src/data/index.ts:1616` | 43 |
+| `QualityCapabilities` | `src/data/index.ts:1814` | 26 |
+| `ItemCapabilities` | `src/data/index.ts:1070` | 12 |
+| `SymptomCapabilities` | `src/data/index.ts:1879` | 7 |
 
 Lecture — un seul point d'entrée par portée, chaque canal restant disjoint par nom de capacité :
 
@@ -159,7 +159,7 @@ même si un second trait la déclare. C'est de la DONNÉE, jamais un chemin de c
 ### Une capacité est un marqueur de PRÉSENCE, jamais un nombre
 
 Le drapeau dit qu'une mécanique s'applique ; sa VALEUR (Salve N, Protectrice N, Solide N…) vit sur
-l'INSTANCE portée par l'objet — `QualityInstance.value` (`src/engine/types.ts:351`), que le
+l'INSTANCE portée par l'objet — `QualityInstance.value` (`src/engine/types.ts:352`), que le
 dispatcher runtime expose sous `indice` (`resolveQualities`, `src/engine/qualities/dispatch.ts:54`).
 La saisie en prose (« Solide 3 ») n'est convertie en instance qu'à l'AUTHORING, par
 `parseQuality` (`src/engine/qualities/normalize.ts:34`) — le runtime ne re-parse jamais un libellé

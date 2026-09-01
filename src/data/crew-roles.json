@@ -13,12 +13,12 @@
       "daily": {
         "gold": 0,
         "silver": 15,
-        "bronze": 0
+        "brass": 0
       },
       "weekly": {
         "gold": 5,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "maison": "Correspondance maison → mercenaire « Officier » (MDG 14 l.300) : le capitaine tient un rôle d'officier (l.143 « peuvent être considérés comme des officiers »). #216"
     },
@@ -38,12 +38,12 @@
       "daily": {
         "gold": 0,
         "silver": 9,
-        "bronze": 0
+        "brass": 0
       },
       "weekly": {
         "gold": 3,
         "silver": 12,
-        "bronze": 0
+        "brass": 0
       },
       "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : le Timonier est un marin expérimenté à la barre. #216"
     },
@@ -63,12 +63,12 @@
       "daily": {
         "gold": 0,
         "silver": 9,
-        "bronze": 0
+        "brass": 0
       },
       "weekly": {
         "gold": 3,
         "silver": 12,
-        "bronze": 0
+        "brass": 0
       },
       "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : la Vigie est un marin de quart posté en observation. #216"
     },
@@ -91,12 +91,12 @@
       "daily": {
         "gold": 0,
         "silver": 3,
-        "bronze": 0
+        "brass": 0
       },
       "weekly": {
         "gold": 1,
         "silver": 4,
-        "bronze": 0
+        "brass": 0
       },
       "source": {
         "book": "mer-des-griffes",
@@ -122,12 +122,12 @@
       "daily": {
         "gold": 0,
         "silver": 15,
-        "bronze": 0
+        "brass": 0
       },
       "weekly": {
         "gold": 5,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "maison": "Correspondance maison → mercenaire « Officier » (MDG 14 l.300) : la navigation d'un grand vaisseau est une charge d'officier. #216"
     },
@@ -148,12 +148,12 @@
       "daily": {
         "gold": 0,
         "silver": 9,
-        "bronze": 0
+        "brass": 0
       },
       "weekly": {
         "gold": 3,
         "silver": 12,
-        "bronze": 0
+        "brass": 0
       },
       "maison": "Correspondance maison → mercenaire « Mercenaire expérimenté » (MDG 14 l.301) : l'Artilleur est un combattant spécialiste des pièces. #216"
     },
@@ -174,12 +174,12 @@
       "daily": {
         "gold": 0,
         "silver": 3,
-        "bronze": 0
+        "brass": 0
       },
       "weekly": {
         "gold": 1,
         "silver": 4,
-        "bronze": 0
+        "brass": 0
       },
       "maison": "Correspondance maison → mercenaire « Nautonier » (MDG 14 l.299) : non-combattant de bord sans part de prise. #216"
     },
@@ -199,12 +199,12 @@
       "daily": {
         "gold": 0,
         "silver": 15,
-        "bronze": 0
+        "brass": 0
       },
       "weekly": {
         "gold": 5,
         "silver": 0,
-        "bronze": 0
+        "brass": 0
       },
       "source": {
         "book": "mer-des-griffes",
@@ -231,12 +231,12 @@
       "daily": {
         "gold": 0,
         "silver": 9,
-        "bronze": 0
+        "brass": 0
       },
       "weekly": {
         "gold": 3,
         "silver": 12,
-        "bronze": 0
+        "brass": 0
       },
       "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : le Chansonnier est un marin qui mène le chant. #216"
     },

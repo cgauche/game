@@ -6,7 +6,7 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { availabilitySchema, harvestRaritySchema, entityAppearanceSchema } from '../grammaire/valeurs';
+import { availabilitySchema, harvestRaritySchema, entityAppearanceSchema, moneySchema } from '../grammaire/valeurs';
 import { refSchema, talentRefSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
 import { refOuSpec } from '../grammaire/ref';
 
@@ -46,7 +46,6 @@ const skillRefSchema = refOuSpec('skill', { value: z.number() });
 /** `HarvestDanger` (`src/data/index.ts`). */
 const harvestDangerSchema = z.enum(['Inoffensive', 'Inquiétante', 'Menaçante', 'Mortelle']);
 
-const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
 
 /** Champs PROPRES d'une entrée de `creatures.json` — l'enveloppe est posée par `document()`. */
 const champs = {

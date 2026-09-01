@@ -69,7 +69,7 @@ import { sizeFromTraits } from '../../state/spawn';
 import { formatDice } from '../../engine/dice';
 import { formatDiseaseTime } from '../../engine/disease';
 import { costPerEnc } from '../../engine/harvest';
-import { formatMoney, priceToMoney } from '../../engine/money';
+import { formatMoney, priceToMoney, type Money } from '../../engine/money';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
 import { opRows, tableRows } from './opRows';
@@ -238,9 +238,9 @@ const specsFact = (cat: 'skills' | 'talents', def: { id: string; specsSource?: i
 /** Prix d'une possession → libellé monnaie canon. La MARQUE de la colonne Prix (`'ND'`, LDB 62 l.28/
  *  l.31, LDB 68 l.11) se rend TELLE QUELLE, comme la colonne Enc rend déjà la sienne (`fact('Enc',
  *  t.enc)`) — le Codex imprime ce que le livre imprime. Null si gratuit/absent. */
-const priceLabel = (p: { gold: number; silver: number; bronze: number } | 'ND' | null | undefined): string | null => {
+const priceLabel = (p: Money | 'ND' | null | undefined): string | null => {
   if (typeof p === 'string') return p;
-  return p && (p.gold || p.silver || p.bronze) ? formatMoney(priceToMoney(p)) : null;
+  return p && (p.gold || p.silver || p.brass) ? formatMoney(priceToMoney(p)) : null;
 };
 
 /** Fait « Dégâts » d'une arme/pièce : chaîne imprimée + note CONDITIONNELLE dérivée des capacités de qualité
@@ -1869,7 +1869,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'massBattleWarMachines', label: 'Bataille de masse — Machines de guerre', group: 'Tables', cluster: 'Bataille de masse',
     build: () => WAR_MACHINES.map((w) => depuisEnveloppe(w, {
       meta: facts(
-        fact('Prix', w.price), fact('Équipe', w.crew), fact('Disponibilité', w.availability),
+        fact('Prix', formatMoney(w.price)), fact('Équipe', w.crew), fact('Disponibilité', w.availability),
         fact('Portée', w.range), fact('Dégâts', w.damage), fact('Atouts', w.traits),
       ),
     })),
@@ -2136,7 +2136,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => datasetArray('shipHullSizes').map((s) => ({
       id: s.id, label: SHIP_SIZE_LABEL[s.size] ?? s.size, source: src(s.source),
       meta: facts(
-        fact('Coût', formatMoney(priceToMoney({ gold: s.costGold, silver: 0, bronze: 0 }))),
+        fact('Coût', formatMoney(priceToMoney({ gold: s.costGold, silver: 0, brass: 0 }))),
         fact('Équipage', s.crew),
         s.sail ? fact('Voile', `M${s.sail.m} (équipage ${s.sail.crew})`) : null,
         s.oars ? fact('Rames', `M${s.oars.m} (équipage ${s.oars.crew})`) : null,

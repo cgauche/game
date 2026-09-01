@@ -13,7 +13,7 @@ const qualIds = (id: string) => q(id).qualities.map((x) => x.id).sort();
 describe('#61 — armes de corps à corps des ogres (ADE II p.29)', () => {
   it('Massue ogre : 1 CO, Enc 2, Commune, Moyenne, BF+4 (personnalisation en desc)', () => {
     const e = q('massue-ogre');
-    expect(e.price).toEqual({ gold: 1, silver: 0, bronze: 0 });
+    expect(e.price).toEqual({ gold: 1, silver: 0, brass: 0 });
     expect(e.enc).toBe(2);
     expect(e.availability).toBe('Commune'); // « Courante » (ADE II) → enum de la donnée
     expect(e.reach).toBe('Moyenne');
@@ -92,7 +92,7 @@ describe('#61 — munitions & armure des ogres (ADE II p.29)', () => {
     expect(e.loc).toBe('Corps');
     expect(e.pa).toBe(3);
     expect(qualIds('pansiere-ogre')).toEqual(['impenetrable']);
-    expect(e.price).toEqual({ gold: 20, silver: 0, bronze: 0 });
+    expect(e.price).toEqual({ gold: 20, silver: 0, brass: 0 });
   });
   it('les 12 objets se construisent en ItemInstance (qualités du registre, aucune inconnue)', () => {
     for (const id of ['massue-ogre', 'poing-de-fer', 'grande-massue-ogre', 'lance-harpon', 'piege-a-chaines', 'grande-lance', 'canon-crache-plomb', 'pistolet-ogre', 'harpon', 'balle-crache-plomb', 'boulet-crache-plomb', 'pansiere-ogre']) {

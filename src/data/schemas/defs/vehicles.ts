@@ -6,13 +6,11 @@
  * 22/25, `ship` 20/25, `travel` 3/25, `deck` 1/25). `icon` est une clé d'ENVELOPPE, posée par la fabrique.
  */
 import { z } from 'zod';
-import { availabilitySchema, cell2Schema } from '../grammaire/valeurs';
+import { availabilitySchema, cell2Schema, moneySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 
 export const file = 'vehicles.json';
 export const famille = 'entite';
-
-const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
 
 const navalTraitRefSchema = z.strictObject({ id: z.string(), value: z.number().optional() });
 

@@ -1086,8 +1086,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `text` | declaree | 561 |
 | reference | `id-nu` | historique | 2104 |
 | refs | `ids-nus` | cible | 611 |
-| monnaie | `brass,gold,silver` | cible | 0 |
-| monnaie | `bronze,gold,silver` | historique | 455 |
+| monnaie | `brass,gold,silver` | cible | 465 |
 | monnaie | `gold,silver` | historique | 0 |
 | prix | `automne,ete,hiver,printemps` | declaree | 17 |
 | prix | `dice` | declaree | 1 |
@@ -1113,7 +1112,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **833** (cible 344 · declaree 6 · historique 122 · divergente 361). Objets JSON parcourus : **48116**, dont **31752** portent une forme
+Lignes concept × dataset × champ × forme : **834** (cible 350 · declaree 6 · historique 117 · divergente 361). Objets JSON parcourus : **48126**, dont **31762** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -1684,7 +1683,7 @@ Reconnu par : tableau de chaînes dont au moins un élément résout
 
 ### 3.3 somme d’argent — `monnaie` (strate Valeur)
 
-13 ligne(s), 508 occurrence(s).
+14 ligne(s), 518 occurrence(s).
 Reconnu par : son noyau `gold` `silver` (≥ 1)
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1696,12 +1695,13 @@ Reconnu par : son noyau `gold` `silver` (≥ 1)
 | config | `effect` | `gold+…` | divergente | `arene-projet.json` | 17 | — |  |
 | config | `effect` | `silver+…` | divergente | `arene-projet.json` | 16 | — |  |
 | config | `effect` | `gold+…` | divergente | `barge-du-sel-projet.json` | 1 | — |  |
-| entité | `price` | `bronze,gold,silver` | historique | `creatures.json` | 14 | — | bronze = erreur de traduction, collisionne StatusTier |
-| entité | `daily` | `bronze,gold,silver` | historique | `crew-roles.json` | 9 | — | bronze = erreur de traduction, collisionne StatusTier |
-| entité | `weekly` | `bronze,gold,silver` | historique | `crew-roles.json` | 9 | — | bronze = erreur de traduction, collisionne StatusTier |
+| entité | `price` | `brass,gold,silver` | cible | `creatures.json` | 14 | — |  |
+| entité | `daily` | `brass,gold,silver` | cible | `crew-roles.json` | 9 | — |  |
+| entité | `weekly` | `brass,gold,silver` | cible | `crew-roles.json` | 9 | — |  |
 | config | `effect` | `gold+…` | divergente | `loup-et-saumure-projet.json` | 7 | — |  |
-| entité | `price` | `bronze,gold,silver` | historique | `trappings.json` | 392 | — | bronze = erreur de traduction, collisionne StatusTier |
-| entité | `price` | `bronze,gold,silver` | historique | `vehicles.json` | 31 | — | bronze = erreur de traduction, collisionne StatusTier |
+| config | `price` | `brass,gold,silver` | cible | `mass-battle.json` | 10 | — |  |
+| entité | `price` | `brass,gold,silver` | cible | `trappings.json` | 392 | — |  |
+| entité | `price` | `brass,gold,silver` | cible | `vehicles.json` | 31 | — |  |
 
 ### 3.4 prix (Money | saisonnier | dé | ND) — `prix` (strate Valeur)
 
@@ -2046,7 +2046,7 @@ ne FORCE aucun concept — seul `price` nomme le concept `prix`, parce que `Pric
 | Clé | Classes | Occurrences | Détail par classe |
 |---|---|---|---|
 | `char` | object \\| string | 865 | **object** creatures.json:493 vehicles.json:29 structures.json:24 loup-et-saumure-projet.json:8 barge-du-sel-projet.json:4 arene-projet.json:3 — **string** mutations.json:56 spells.json:42 stars.json:42 symptoms.json:34 trappings.json:24 traits.json:21 talents.json:17 tables.json:15 … |
-| `price` | null \\| number \\| object \\| string | 520 | **null** trappings.json:46 — **number** land-cargo.json:6 — **object** trappings.json:392 vehicles.json:31 creatures.json:14 sea-cargo.json:11 land-cargo.json:7 — **string** mass-battle.json:10 trappings.json:3 |
+| `price` | null \\| number \\| object \\| string | 520 | **null** trappings.json:46 — **number** land-cargo.json:6 — **object** trappings.json:392 vehicles.json:31 creatures.json:14 sea-cargo.json:11 mass-battle.json:10 land-cargo.json:7 — **string** trappings.json:3 |
 | `cost` | number \\| object \\| string | 93 | **number** trappings.json:6 talents.json:1 — **object** naval-traits.json:20 arene-projet.json:8 qualities.json:1 talents.json:1 — **string** actions.json:55 naval-traits.json:1 |
 | `count` | number \\| object | 92 | **number** spells.json:16 loup-et-saumure-projet.json:6 creatures.json:5 tavernGames.json:3 traits.json:2 sea-shanties.json:1 trappings.json:1 vehicles.json:1 … — **object** careerLevels.json:50 classes.json:3 creatures.json:1 spells.json:1 traits.json:1 |
 
@@ -2251,10 +2251,9 @@ Prix du RAW, pas une bourse unique — un coefficient saisonnier n’est pas une
 
 | Régime de `price` | Occurrences |
 |---|---|
-| objet {bronze,gold,silver} | 437 |
+| objet {brass,gold,silver} | 447 |
 | absent (null) | 46 |
 | objet {automne,ete,hiver,printemps} | 17 |
-| chaîne libre | 10 |
 | nombre | 6 |
 | littéral « ND » | 3 |
 | objet {dice} | 1 |
@@ -2398,7 +2397,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12494** objets sur **48116** ne sont portés par AUCUNE
+Au-delà des orphelines, **12494** objets sur **48126** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -3566,7 +3565,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **492** ; **83** recoupent le lexique
+Littéraux d’objet zod lus : **487** ; **78** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -3574,15 +3573,15 @@ qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
 Un littéral qui porte le noyau d’un concept, même s’il a été classé sous un autre concept en §4.2 :
 ce compte lève l’angle mort du classement ordonné.
-Le DoD de #1463 annonçait « 5 defs redéclarent la monnaie » : la mesure en trouve **5** littéraux
-dans **5** defs (`activities.ts` `creatures.ts` `crew-roles.ts` `trappings.ts` `vehicles.ts`).
-Le chiffre du DoD est CONFIRMÉ par la mesure.
-Critère : ≥ **1** clé(s) du noyau `gold,silver`. Sites : `activities.ts:83` (`minInvest`) `{gold}` · `creatures.ts:49` `{gold,silver}` · `crew-roles.ts:19` `{gold,silver}` · `trappings.ts:20` `{gold,silver}` · `vehicles.ts:15` `{gold,silver}`.
-Dont **1** littéral(aux) PARTIEL(s) du noyau — `activities.ts:83` : une mesure qui exigerait le noyau COMPLET `gold,silver` en compterait **4**, pas 5. Le compte du DoD se lit avec le critère.
+Le DoD de #1463 annonçait « 5 defs redéclarent la monnaie » : la mesure en trouve **0** littéraux
+dans **0** defs ().
+Le chiffre du DoD n’a pas ce porteur dans l’arbre : il ne se recopie pas.
+Critère : ≥ **1** clé(s) du noyau `gold,silver`. Sites : —.
+Dont **0** littéral(aux) PARTIEL(s) du noyau — — : une mesure qui exigerait le noyau COMPLET `gold,silver` en compterait **0**, pas 0. Le compte du DoD se lit avec le critère.
 
 | Concept | Noyau | Littéraux | Defs | Liste des defs |
 |---|---|---|---|---|
-| monnaie | `gold,silver` | 5 | 5 | `activities.ts` `creatures.ts` `crew-roles.ts` `trappings.ts` `vehicles.ts` |
+| monnaie | `gold,silver` | 0 | 0 | — |
 | de | `n,sides` | 3 | 2 | `maladies.ts` `miscast.ts` |
 | source | `book` | 1 | 1 | `progression-schemas-derived.ts` |
 | test | `difficulty` | 31 | 19 | `aa-criticals.ts` `activities.ts` `arcane-phenomena.ts` `criticals.ts` `etats.ts` `land-cargo.ts` `maladies.ts` `miscast.ts` `psychology.ts` `river-navigation.ts` `sea-cargo.ts` `sea-navigation.ts` `sea-perils.ts` `sea-weather.ts` `steam-breakdown.ts` `symptoms.ts` `tavernGames.ts` `water-exposure.ts` `weather.ts` |
@@ -3601,11 +3600,8 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 |---|---|---|---|---|---|---|
 | `aa-criticals.ts` | 39 | `resist` | test | divergente | `difficulty,skill+…` | — |
 | `activities.ts` | 67 | — | test | divergente | `char,difficulty+…` | — |
-| `activities.ts` | 83 | `minInvest` | monnaie | divergente | `gold` | — |
 | `advancementCosts.ts` | 20 | — | plage | cible | `max,min+…` | — |
 | `arcane-phenomena.ts` | 153 | `controlFlux` | test | divergente | `difficulty+…` | — |
-| `creatures.ts` | 49 | — | monnaie | historique | `bronze,gold,silver` | — |
-| `crew-roles.ts` | 19 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `criticals.ts` | 54 | `resist` | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 66 | — | test | divergente | `difficulty+…` | — |
 | `criticals.ts` | 76 | `loss` | test | divergente | `difficulty+…` | — |
@@ -3670,12 +3666,10 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
 | `tavernGames.ts` | 103 | `rows` | test | divergente | `difficulty+…` | — |
 | `tavernGames.ts` | 140 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
-| `trappings.ts` | 20 | — | monnaie | historique | `bronze,gold,silver` | — |
-| `trappings.ts` | 27 | — | reference | historique | `id,spec,value` | — |
-| `trappings.ts` | 76 | `qualities` | reference | historique | `id,value` | — |
-| `vehicles.ts` | 15 | — | monnaie | historique | `bronze,gold,silver` | — |
-| `vehicles.ts` | 17 | — | reference | historique | `id,value` | — |
-| `vehicles.ts` | 67 | `traits` | reference | historique | `arg,id,value` | — |
+| `trappings.ts` | 19 | — | reference | historique | `id,spec,value` | — |
+| `trappings.ts` | 68 | `qualities` | reference | historique | `id,value` | — |
+| `vehicles.ts` | 15 | — | reference | historique | `id,value` | — |
+| `vehicles.ts` | 65 | `traits` | reference | historique | `arg,id,value` | — |
 | `vents-tourbillonnants.ts` | 15 | — | — | hors lexique | `entries` | `corps` |
 | `water-exposure.ts` | 17 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
 | `water-exposure.ts` | 18 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |

@@ -25,10 +25,10 @@
 // module. L'ENSEMBLE D'IDENTITÉS du document se construit en marchant les schémas depuis
 // `sceneSchema` (`data/schemas/defs-scenes/scene.ts`) : toute `PropertyAssignment` d'un shape
 // atteint en fait partie, y compris celles d'un schéma FEUILLE d'un autre module (`communs.ts` :
-// `moneySchema`, `ptSchema`) que le document compose. S'y ajoutent les `PropertySignature` des
+// `ptSchema` ; `grammaire/valeurs.ts` : `moneyPartialSchema`) que le document compose. S'y ajoutent les `PropertySignature` des
 // types encore MANUSCRITS (`src/state/scene.ts`). Une frontière posée sur le MODULE perdait ces
 // feuilles dès qu'un corps manuscrit passait en `z.infer` (mesuré : `DialogueChoice.cost.{gold,
-// silver,brass}` déclarés par `communs.ts:moneySchema`).
+// silver,brass}` déclarés par `grammaire/valeurs.ts:moneyPartialSchema`).
 // La marche S'ARRÊTE aux nœuds-frontière, désignés eux aussi par IDENTITÉ (module + nom du
 // `export const`) : `conditionSchema`, `gameOpSchema`, `flowTestSchema`, `sceneFlowSchema`,
 // `effectSchema`, `entityAppearanceSchema` — du vocabulaire PARTAGÉ, qui a ses propres primitives

@@ -271,7 +271,6 @@ export const CONCEPTS: readonly Concept[] = [
     strate: 'Valeur',
     signatures: [
       { sig: 'brass,gold,silver', statut: 'cible' },
-      { sig: 'bronze,gold,silver', statut: 'historique', note: 'bronze = erreur de traduction, collisionne StatusTier' },
       { sig: 'gold,silver', statut: 'historique' },
     ],
     noyau: ['gold', 'silver'],
