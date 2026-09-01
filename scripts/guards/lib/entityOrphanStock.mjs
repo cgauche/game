@@ -46,22 +46,22 @@
 
 /** Familles d'orphelines PAR LIVRE — prédicat `(category, book)` + plafond DÉCROISSANT. Une famille
  *  VIDÉE (compte 0) voit sa LIGNE SUPPRIMÉE, jamais laissée à zéro (garde : `entity-orphans.test.ts`).
- *  `note` = la disposition, avec le COMPTE et 3 ids d'exemple — la matière d'un ticket de câblage.
+ *  `note` = la disposition, avec le COMPTE, 3 ids d'exemple et le ticket de câblage qui la bloque.
  * @type {ReadonlyArray<{ category: string, book: string, max: number, note: string }>} */
 export const ENTITY_ORPHAN_FAMILIES = [
-  // Ticket de câblage À CRÉER — bestiaire du supplément maison `frenchy-bzh` (gardes de ville,
+  // bloqué par #1636 — bestiaire du supplément maison `frenchy-bzh` (gardes de ville,
   // gardes de village, milices…), entièrement curé : aucune scène ni rencontre ne le convoque.
   // Ex. `jeune-recrue-du-guet`, `homme-du-guet`, `sergent-du-guet`.
-  { category: 'creatures', book: 'frenchy-bzh', max: 244, note: 'bestiaire frenchy-bzh curé, aucune scène porteuse — ticket de câblage à créer' },
-  // Ticket de câblage À CRÉER — bestiaire de Middenheim, curé sans scène middenheimoise.
+  { category: 'creatures', book: 'frenchy-bzh', max: 244, note: 'bestiaire frenchy-bzh curé, aucune scène porteuse — bloqué par #1636' },
+  // bloqué par #1637 — bestiaire de Middenheim, curé sans scène middenheimoise.
   // Ex. `spectre-middenheim`, `loup-blanc`, `babrakkos`.
-  { category: 'creatures', book: 'middenheim', max: 37, note: 'bestiaire Middenheim curé, aucune scène porteuse — ticket de câblage à créer' },
-  // Ticket de câblage À CRÉER — Zoo Impérial : bestiaire de référence curé, sans rencontre ni scène.
+  { category: 'creatures', book: 'middenheim', max: 37, note: 'bestiaire Middenheim curé, aucune scène porteuse — bloqué par #1637' },
+  // bloqué par #1638 — Zoo Impérial : bestiaire de référence curé, sans rencontre ni scène.
   // Ex. `l-ombre-du-fleuve`, `arachnarok`, `gobelin-des-forets`.
-  { category: 'creatures', book: 'zoo-imperial', max: 37, note: 'bestiaire Zoo Impérial curé, aucune scène porteuse — ticket de câblage à créer' },
-  // Ticket de câblage À CRÉER — faune marine MdG : le voyage en mer existe (`sea-events.json` en
+  { category: 'creatures', book: 'zoo-imperial', max: 37, note: 'bestiaire Zoo Impérial curé, aucune scène porteuse — bloqué par #1638' },
+  // bloqué par #1639 — faune marine MdG : le voyage en mer existe (`sea-events.json` en
   // cite 4), ces 15-là n'y sont pas. Ex. `baudroye`, `crabe-boxeur`, `elementaire-de-mer`.
-  { category: 'creatures', book: 'mer-des-griffes', max: 15, note: 'faune MdG curée hors des événements de mer — ticket de câblage à créer' },
+  { category: 'creatures', book: 'mer-des-griffes', max: 15, note: 'faune MdG curée hors des événements de mer — bloqué par #1639' },
 ]
 
 /** @type {ReadonlySet<string>} */

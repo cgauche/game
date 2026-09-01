@@ -62,6 +62,7 @@ export default defineConfig({
     testTimeout: 15_000,
     // Filet d'isolation GLOBAL : restaure les vrais timers après chaque test (cf. src/test-setup.ts) —
     // empêche tout fake timer fantôme de fuir d'un test à l'autre (flake de combat).
-    setupFiles: ['./src/test-setup.ts'],
+    // Ancré sur le fichier : un root de worktree sans slash final ferait remonter un chemin relatif à l'arbre parent (#1679 L1c-M1).
+    setupFiles: [fileURLToPath(new URL('./src/test-setup.ts', import.meta.url))],
   },
 });
