@@ -30,10 +30,11 @@
 //
 // ANGLES MORTS, MESURÉS sur le corpus (1 952 fichiers de `src/`, 2026-09-01) :
 //   - REDÉCLARATION STRUCTURELLE du type cible à un site : un paramètre annoté d'un littéral de
-//     même forme que `T` (`hiddenGroupsOf(c: { traits?: { id: string; hidden?: boolean }[] })`,
-//     `src/engine/groups.ts:51`, redéclaration de `TraitInstance`) porte SES déclarations de
-//     propriété et ne crédite RIEN. C'est un défaut de la SOURCE, pas du détecteur : le rapport
-//     rend `TraitInstance.hidden` « 0 lecteur » tant que ce site n'annonce pas `TraitInstance[]` ;
+//     même forme que `T` (`(r: { id: string; spec?: string }) => r.spec` face à un `Ref` de même
+//     forme) porte SES déclarations de propriété et ne crédite RIEN — condition (1). C'est un défaut
+//     de la SOURCE (le site n'annonce pas le type qu'il consomme), pas du détecteur, et c'est aussi
+//     ce qui interdit tout faux positif de forme : les deux versants sont mordus sur fixtures dans
+//     `src/data/field-consumers.test.ts` ;
 //   - population de cette classe, avec sa DÉFINITION : sur 93 185 accès de propriété du code de
 //     production, 22 046 sont CANDIDATS (nom ∈ les 126 champs des 23 cibles) et 5 205 d'entre eux
 //     ont un porteur dont le type AU SITE est un littéral anonyme (`symbol.name === '__type'`) —
@@ -54,21 +55,35 @@ import { readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve, sep } from 'node:path'
 import { repoProgram } from './tsProgram.mjs'
 
-/** Fichiers de PRODUCTION `.ts(x)` sous `dir`, hors `*.test.ts(x)`. */
+/** Fichiers de PRODUCTION `.ts(x)` sous `dir`, hors `*.test.ts(x)`, en ORDRE TOTAL : tri du chemin
+ *  NORMALISÉ (`/`) par UNITÉS DE CODE (`<`/`>`), jamais l'ordre rendu par le système de fichiers
+ *  (NTFS trie sans tenir compte de la casse, ext4 rend l'ordre d'un hash) ni `localeCompare` (son
+ *  verdict dépend de la locale du processus). L'ordre des RACINES décide de celui de
+ *  `program.getSourceFiles()`, donc de l'index des accès, donc du site cité en exemple par le
+ *  rapport : sans ordre total, le même dépôt rend deux `.md` différents selon la machine. */
 export function listProdFiles(dir, out = []) {
+  collecterProdFiles(dir, out)
+  out.sort((a, b) => (norm(a) < norm(b) ? -1 : norm(a) > norm(b) ? 1 : 0))
+  return out
+}
+
+function collecterProdFiles(dir, out) {
   for (const entry of readdirSync(dir)) {
     const p = join(dir, entry)
     const st = statSync(p)
     if (st.isDirectory()) {
-      listProdFiles(p, out)
+      collecterProdFiles(p, out)
       continue
     }
     if (!/\.tsx?$/.test(entry) || /\.test\.tsx?$/.test(entry)) continue
     out.push(p)
   }
-  return out
 }
 
+/** Chemin en séparateurs `/`. La CASSE n'est pas repliée : les deux côtés de toute comparaison
+ *  viennent du MÊME Program (racines `resolve`ées depuis la même racine que le `home` visé), et une
+ *  divergence de casse ne se perdrait pas en silence — `cibleDe` ne trouverait pas le fichier du
+ *  `home` et lèverait « cible non résoluble » (mordu sur fixtures). */
 const norm = (p) => p.replace(/\\/g, '/')
 
 /** Constituants d'un type : lui-même, les membres d'une union/intersection, les arguments d'alias. */
@@ -127,6 +142,23 @@ function schemasInferes(checker, decl) {
   return out
 }
 
+/** ORDRE TOTAL sur un ensemble de déclarations : le MINIMUM de (fichier en unités de code, position
+ *  dans le fichier). L'ordre d'un `Set` peuplé depuis le `TypeChecker` suit le parcours du Program,
+ *  donc celui du système de fichiers — un `[0]` pris dessus ferait varier la sortie d'une machine à
+ *  l'autre (le nom du déclarant IMPRIMÉ par `fieldOwnership` en dépend). */
+function premiereDeclaration(declarations) {
+  let min
+  let cleMin
+  for (const d of declarations) {
+    const cle = [norm(d.getSourceFile().fileName), d.getStart()]
+    if (!min || cle[0] < cleMin[0] || (cle[0] === cleMin[0] && cle[1] < cleMin[1])) {
+      min = d
+      cleMin = cle
+    }
+  }
+  return min
+}
+
 /** Nom du DÉCLARANT d'une propriété, pour l'AFFICHAGE seul (jamais pour créditer) : le type ou le
  *  schéma qui la porte. */
 function nomDuDeclarant(decl) {
@@ -156,7 +188,12 @@ function declarationDeType(sf, nom) {
  * retour de l'appelant.
  */
 function contexteDe(cache, files, rootDir, programme = null) {
-  let ctx = cache.get('#contexte')
+  // CLÉ = le Program lui-même quand il est INJECTÉ (fixtures de `virtualProgram`) : deux Programs
+  // qui partagent un `cache` sont deux contextes, et le second n'obtient jamais l'index du premier.
+  // Sans injection, le Program est bâti sur `files` et le contexte est unique par cache — un
+  // rapport, un corpus (les 23 cibles le partagent, c'est son objet).
+  const cle = programme ?? '#contexte'
+  let ctx = cache.get(cle)
   if (ctx) return ctx
   const racines = files.map((f) => resolve(f))
   const program = programme ?? repoProgram(rootDir, () => racines)
@@ -183,7 +220,7 @@ function contexteDe(cache, files, rootDir, programme = null) {
     visit(sf)
   }
   ctx = { program, checker, index, sites: new Map(), cibles: new Map(), rootDir }
-  cache.set('#contexte', ctx)
+  cache.set(cle, ctx)
   return ctx
 }
 
@@ -304,13 +341,29 @@ export function scanFieldReads(cibleVisee, fields, files, rootDir, cache = new M
     if (!attendues?.size) continue
     const propre = propres.get(field)
     for (const site of sitesDe(ctx, field)) {
-      let laProp = null
-      for (const d of attendues) if (site.props.has(d)) { laProp = d; break }
-      if (!laProp) continue
-      if (!propre.has(laProp) && !porteurDe(ctx, site).has(decl)) continue
+      // Un champ peut avoir PLUSIEURS déclarations attendues (branches d'union, interface fusionnée).
+      // Le verdict porte sur l'EXISTENCE d'une déclaration PROPRE parmi celles résolues au site —
+      // jamais sur celle qu'un `Set` d'ordre TS rendrait la première.
+      let resolue = false
+      let propreAuSite = false
+      for (const d of attendues) {
+        if (!site.props.has(d)) continue
+        resolue = true
+        if (propre.has(d)) {
+          propreAuSite = true
+          break
+        }
+      }
+      if (!resolue) continue
+      if (!propreAuSite && !porteurDe(ctx, site).has(decl)) continue
       hits.push({ field, file: site.file, line: site.line })
     }
   }
+  // ORDRE TOTAL du résultat : (fichier en unités de code, ligne NUMÉRIQUE). L'ordre de récolte est
+  // celui de `program.getSourceFiles()` — racines puis dépendances, donc dépendant du parcours du
+  // système de fichiers ET du graphe d'imports. Trier ICI rend le « premier site » d'un champ
+  // (l'exemple publié par le rapport) égal au MINIMUM de cet ordre, sur toute machine.
+  hits.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : a.line - b.line))
   return hits
 }
 
@@ -339,7 +392,7 @@ export function fieldOwnership(cibleVisee, fields, files, rootDir, cache = new M
       etats.set(field, { etat: 'propre' })
       continue
     }
-    etats.set(field, { etat: 'herite', declarant: nomDuDeclarant([...attendues][0]) })
+    etats.set(field, { etat: 'herite', declarant: nomDuDeclarant(premiereDeclaration(attendues)) })
   }
   return etats
 }

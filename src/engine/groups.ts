@@ -8,6 +8,7 @@
  * Cf. spec : docs/superpowers/specs/2026-06-07-psychologie-design.md (§3).
  */
 import { norm } from '../lib/normalize';
+import type { TraitInstance } from './statEntry';
 import { findCareerById, findClassById, findGodById, findGroupById, findSpeciesById, findTalentById, findTraitById } from '../data';
 
 /** Ids de Groupe d'appartenance d'un combattant : espèce (`SpeciesData.grantGroups`) ∪ trait(s)
@@ -18,7 +19,9 @@ import { findCareerById, findClassById, findGodById, findGroupById, findSpeciesB
 export function groupsFor(src: {
   speciesId?: string;
   careerId?: string;
-  traits?: { id: string }[];
+  traits?: TraitInstance[];
+  /** VUE d'un Talent porté : `talentId` + `spec` suffisent au culte. `TalentInstance` porte en plus
+   *  `times` (requis), que les porteurs dérivés d'un statbloc ne construisent pas. */
   talents?: { talentId: string; spec?: string }[];
   extras?: string[];
 }): string[] {
@@ -48,7 +51,7 @@ export function groupsFor(src: {
  *  arbitrage `maison` MDG 07 l.250) — lus EN DIRECT sur `c.traits` (pas le `c.groups` figé au spawn, qui ne
  *  recalcule pas si le porteur cache/révèle sa marque). Consommé par `targetedTrigger` pour retirer ces ids
  *  du Groupe effectivement EXPOSÉ à la Cible d'un Trait psy réciproque. */
-export function hiddenGroupsOf(c: { traits?: { id: string; hidden?: boolean }[] }): string[] {
+export function hiddenGroupsOf(c: { traits?: TraitInstance[] }): string[] {
   const out: string[] = [];
   for (const t of c.traits ?? []) {
     if (!t.hidden) continue;

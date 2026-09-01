@@ -19,7 +19,7 @@ export function scanFieldReads(
   fields: string[],
   files: string[],
   rootDir: string,
-  cache?: Map<string, unknown>,
+  cache?: Map<unknown, unknown>,
   programme?: Program | null
 ): FieldReadHit[];
 
@@ -34,7 +34,7 @@ export function fieldOwnership(
   fields: string[],
   files: string[],
   rootDir: string,
-  cache?: Map<string, unknown>,
+  cache?: Map<unknown, unknown>,
   programme?: Program | null
 ): Map<string, FieldOwnership>;
 export function groupByField(fields: string[], hits: FieldReadHit[]): Map<string, FieldReadHit[]>;

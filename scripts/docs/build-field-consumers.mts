@@ -40,40 +40,34 @@
  * s'y confond pas).
  *
  * QUATRE ÉTATS, jamais un « 0 » indifférencié (`fieldOwnership`, `fieldConsumers.mjs`) : LU ·
- * « 0 — JAMAIS LU » (champ PROPRE au type, aucun lecteur) · HÉRITÉ d'un ancêtre (son « 0 » est
- * tautologique — les lecteurs comptent sous le déclarant, `QualityRef.spec` ← `Ref` et ses 18
- * lecteurs) · ABSENT du type TS (le champ du SCHÉMA n'existe pas sur le type du `home` :
+ * « 0 — JAMAIS LU » (champ PROPRE au type, aucun lecteur) · HÉRITÉ d'un ancêtre (la propriété est
+ * déclarée par un type que la cible COMPOSE : son « 0 » est tautologique, les lecteurs comptent sous
+ * le déclarant — la mesure du jour n'en porte aucun) · ABSENT du type TS (le champ du SCHÉMA
+ * n'existe pas sur le type du `home` :
  * `AdvancementRef.table`, et 6 champs de `PropData` que `src/data/props.types.ts` ne déclare pas —
  * divergence schéma↔type, ni lue ni lisible, hors du compte des « 0 lecteur » et listée à part dans
  * le rapport).
  *
- * FIDÉLITÉ RE-MESURÉE (2026-09-01, #1620 geste (ii)) — les 16 champs « 0 lecteur » de la PREMIÈRE
- * version de ce rapport, échantillon COMPLET, repassés au détecteur à vérificateur de types :
- *   - 10 ont maintenant leurs lecteurs mesurés : les 8 faux négatifs alors vérifiés à la main
- *     (`DetailRecipe.tintVar` 4, `EntityAppearance.armurePortee` 5, `CritEscalation.onRepeat` 2,
- *     `Amputation.timing` 2, `FlowTest.opposed` 5, `CountSpec.fixed` 4, `CountSpec.roll` 3,
- *     `TrappingRef.label` 7), PLUS deux que cette vérification manuelle avait classés « vrais
- *     zéros » : `FlowTest.argDifficulty` (`src/state/triggeredEffects.ts:73`, `f.test.argDifficulty`)
- *     et `TravelTableEntry.stageOutcome` (`src/state/travelPostes.ts:363`, `enc.stageOutcome` sur un
- *     retour INFÉRÉ) — la vérification à la main a le même angle mort que le scan syntaxique ;
- *   - 1 est un zéro TAUTOLOGIQUE : `QualityRef.spec`, hérité de `Ref` (`src/data/index.ts`,
- *     `interface QualityRef extends Ref`) — aucun porteur n'est déclaré `QualityRef`, la lecture
- *     réelle compte sous `Ref.spec` ;
- *   - 1 faux négatif SUBSISTE, NOMMÉ : `TraitInstance.hidden`. Ce n'est pas le détecteur mais la
- *     SOURCE — `src/engine/groups.ts:51` `hiddenGroupsOf` REDÉCLARE structurellement
- *     `TraitInstance` (`{ id: string; hidden?: boolean }[]`) au lieu de l'annoter ; corrigé au lot 2
- *     de #1620, où il repasse à ≥ 1 lecteur ;
- *   - 4 étaient et restent de VRAIS zéros : `SourceRef.note`, `CastingNumberMod.maison`/`.source`/
- *     `.desc`.
- * Sur tout le rapport (158 champs) : 41 « 0 lecteur » au scan syntaxique → 7 cellules
- * « 0 — JAMAIS LU » (dont le faux négatif `TraitInstance.hidden` ; les 6 autres sont de vrais zéros,
- * les deux derniers venus étant `PropData.type` et `PropData.label` — un décor lit sa géométrie,
- * jamais son libellé), 1 hérité, 7 absents du type TS. Les cardinaux du rapport sont ÉMIS depuis les
- * compteurs, jamais recopiés.
+ * FIDÉLITÉ DU DÉTECTEUR (2026-09-01, #1620 geste (ii)) — les 16 champs que la version SYNTAXIQUE de
+ * ce rapport donnait « 0 lecteur », échantillon COMPLET, mesurés au vérificateur de types :
+ *   - 12 ont un lecteur mesuré : `DetailRecipe.tintVar`, `EntityAppearance.armurePortee`,
+ *     `CritEscalation.onRepeat`, `Amputation.timing`, `FlowTest.opposed`, `CountSpec.fixed`,
+ *     `CountSpec.roll`, `TrappingRef.label`, `FlowTest.argDifficulty`
+ *     (`src/state/triggeredEffects.ts:73`, `f.test.argDifficulty`), `TravelTableEntry.stageOutcome`
+ *     (`src/state/travelPostes.ts:363`, `enc.stageOutcome` sur un retour INFÉRÉ), `QualityRef.spec`
+ *     (champ PROPRE : `qualityRefSchema` porte son propre shape) et `TraitInstance.hidden`, dont
+ *     `hiddenGroupsOf` annote le porteur `TraitInstance[]` (`src/engine/groups.ts:57`). Les deux
+ *     sites INFÉRÉS (`argDifficulty`, `stageOutcome`) échappent aussi à une vérification à la main,
+ *     qui a le même angle mort que le scan syntaxique ;
+ *   - 4 sont de VRAIS zéros : `SourceRef.note`, `CastingNumberMod.maison`/`.source`/`.desc`.
+ * Sur tout le rapport (158 champs) : 6 cellules « 0 — JAMAIS LU », toutes de VRAIS zéros — les deux
+ * qui ne sont pas de cet échantillon étant `PropData.type` et `PropData.label` (un décor lit sa
+ * géométrie, jamais son libellé) —, 0 hérité, 7 absents du type TS. Les cardinaux du rapport sont
+ * ÉMIS depuis les compteurs, jamais recopiés.
  * COÛT MESURÉ du rapport complet (23 types, 1 952 fichiers de `src/`, Program bâti UNE fois pour
- * les 23 et libéré au retour) : ~17 s et ~1,33 Go de pic, contre 1,8 s au scan syntaxique. Le
- * cliquet CI « 0 lecteur » n'existe toujours pas : il vient avec le geste (iii), une fois le dernier
- * faux négatif soldé.
+ * les 23 et libéré au retour) : ~17 s et ~1,33 Go de pic, contre 1,8 s au scan syntaxique. La liste
+ * des « 0 lecteur » sort NOMMÉE de cette fonction (`zeros`) et son CLIQUET vit dans
+ * `src/data/field-consumers.test.ts` : liste attendue écrite champ par champ, comparée à l'identique.
  *
  * EXCLUS, avec raison :
  *   - `secondarySourceRefSchema` (`grammaire/valeurs.ts`) : aucun alias TS nommé exploitable trouvé
@@ -103,13 +97,16 @@ type Hit = { file: string; line: number }
  * Le rapport, EN MÉMOIRE : le `.md` à écrire + les sites mesurés par type et par champ. UN SEUL
  * balayage du corpus nourrit les deux consommateurs — la fraîcheur du `.md` et le cas fondateur de
  * `src/data/field-consumers.test.ts`, qui appelle cette fonction EN PROCESSUS (le CLI ci-dessous
- * n'est qu'un autre appelant). Le `cache` porte le `ts.Program` et l'index des accès : créé ICI,
+ * n'est qu'un autre appelant). `files` est INJECTABLE — le corpus par défaut est `listProdFiles`, et
+ * la garde le rejoue en ordre INVERSÉ pour prouver que le `.md` ne dépend pas de l'ordre du système
+ * de fichiers (le rapport est committé depuis Windows et rejoué par la CI sous Linux). Le `cache`
+ * porte le `ts.Program` et l'index des accès : créé ICI,
  * partagé par les 23 cibles de `TARGETS`, et libéré au retour — ~1,33 Go ne survit pas à l'appel,
  * ce qui compte sous Vitest `isolate: false`.
  */
-export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<string, Hit[]>>; totalFields: number; totalUnread: number } {
-  const files = listProdFiles(SRC_DIR)
-  const cache = new Map<string, unknown>()
+export function buildFieldConsumersMd(files: string[] = listProdFiles(SRC_DIR)): { md: string; byType: Map<string, Map<string, Hit[]>>; totalFields: number; totalUnread: number; zeros: string[] } {
+  // Clés hétérogènes : le contexte de scan est clé par son Program (`fieldConsumers.mjs`).
+  const cache = new Map<unknown, unknown>()
 
   let out = `# Consommateurs par champ — GÉNÉRÉ\n\n`
   out += `> ⚠️ Fichier GÉNÉRÉ par \`npx tsx scripts/docs/build-field-consumers.mts\` (\`npm run docs:field-consumers\`) — NE PAS ÉDITER À LA MAIN.\n`
@@ -210,15 +207,14 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
   out += `(hérité, absent du type TS) ; ceux qui ont des membres ici : ${etats.join(' ; ')}, sur ${totalFields} `
   out += `champs de ${TARGETS.length} types.\n\n`
   out += `Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendait 41 champs « 0 lecteur » `
-  out += `sur ces mêmes ${totalFields}. Re-mesure des 16 « 0 lecteur » de la première version de ce rapport `
-  out += `(échantillon COMPLET) : 11 ont un lecteur réel — les 8 faux négatifs déjà vérifiés à la main, plus `
-  out += `\`argDifficulty\` et \`stageOutcome\` que cette vérification manuelle avait classés vrais zéros, plus `
-  out += `\`spec\` d'une \`QualityRef\`, devenu un champ PROPRE depuis que \`qualityRefSchema\` porte son propre `
-  out += `shape ; 1 faux négatif SUBSISTE, nommé — \`hidden\` d'un \`TraitInstance\`, que \`hiddenGroupsOf\` `
-  out += `redéclare structurellement au lieu de l'annoter (défaut de la SOURCE, corrigé au lot suivant de `
-  out += `#1620) ; les 4 autres sont de vrais zéros. Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan `
+  out += `sur ces mêmes ${totalFields}. Des 16 « 0 lecteur » de la première version de ce rapport `
+  out += `(échantillon COMPLET), 12 ont un lecteur mesuré — dont \`argDifficulty\` et \`stageOutcome\`, `
+  out += `qu'une vérification à la main manque comme le scan syntaxique, \`spec\` d'une \`QualityRef\` `
+  out += `(champ PROPRE : \`qualityRefSchema\` porte son propre shape) et \`hidden\` d'un \`TraitInstance\` `
+  out += `(\`hiddenGroupsOf\` annote \`TraitInstance[]\`) ; les 4 autres sont de vrais zéros. `
+  out += `Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan `
   out += `syntaxique. Angles morts (redéclaration structurelle, spread, clé dynamique, champ absent du type) : `
-  out += `en-tête de \`fieldConsumers.mjs\`. Pas encore de cliquet CI sur ces totaux.\n\n`
+  out += `en-tête de \`fieldConsumers.mjs\`.\n\n`
   out += tables
 
   // La section dédiée est le RENDU d'une liste : sans membre, elle est OMISE plutôt que titrée
@@ -233,9 +229,11 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
 
   out += `## Synthèse\n\n`
   out += `${TARGETS.length} types, ${totalFields} champs mesurés : ${totalRead} lus, **${totalUnread} avec `
-  out += `« 0 lecteur » mesuré** au \`TypeChecker\` (dont UN faux négatif nommé ci-dessus), ${herites.length} `
+  out += `« 0 lecteur » mesuré** au \`TypeChecker\`, ${herites.length} `
   out += `hérité${herites.length > 1 ? 's' : ''}, ${absents.length} absent${absents.length > 1 ? 's' : ''} du `
-  out += `type TS ; pas de cliquet CI sur ces totaux.\n\n`
+  out += `type TS. Ces « 0 lecteur » sont sous CLIQUET NOMINATIF (\`src/data/field-consumers.test.ts\`) : la `
+  out += `liste attendue y est écrite champ par champ — un zéro apparu comme un zéro disparu est rouge, et `
+  out += `la ligne ne se retire qu'avec le lecteur qui l'annule.\n\n`
   // Les lecteurs sont ÉNUMÉRÉS depuis la mesure (jamais un nom en dur) : la phrase reste vraie quand
   // le nombre de lecteurs change — #1463 L-ref-1 en a ajouté un (matérialisation de la spec sur
   // l'`ItemInstance`) et la version « l'unique lecteur est `resolveOne` » est devenue fausse en
@@ -256,7 +254,9 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
     ? `LIT \`ref.spec\` : une SECONDE définition du rendu « base (spec) », qui appartient à \`refConcrete\`.\n`
     : `ne lit PAS \`ref.spec\` — le rendu « base (spec) » passe par \`refConcrete\`, partagée par toute \`Ref\`.\n`
 
-  return { md: out, byType, totalFields, totalUnread }
+  // `zeros` sort NOMMÉ (`Type.champ`) : le cliquet de `src/data/field-consumers.test.ts` compare
+  // cette liste à la sienne, écrite en dur — aucun re-parsing du `.md`, dont la table est un RENDU.
+  return { md: out, byType, totalFields, totalUnread, zeros }
 }
 
 /** CLI : écriture du `.md`, ou `--check` (chaîné dans `npm run docs:check`). */
