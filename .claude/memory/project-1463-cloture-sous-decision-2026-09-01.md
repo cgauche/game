@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 39a8970a-cba9-474a-be43-12bdf0b366e7
-  modified: 2026-09-01T12:50:17.964Z
+  modified: 2026-09-01T13:01:22.050Z
 ---
 
 État au 2026-09-01 ~18h (HEAD 9739ee1f4+, pilotage final au ticket, issuecomment-5494198273).
@@ -20,14 +20,15 @@ instrumentée) · clause 3 PARTIEL porté (#1654 : AST 71→0, plafond 76 à res
 defs-scenes hors scan, lexique fermé = plafond de détection) · clause 4 RÉFUTÉE portée (#1620 : (i) phrase
 vraie livrée, (ii) TypeChecker 173 l. + (iii) dérivation TARGETS ouverts).
 
-**Les 3 décisions posées à l'utilisateur** (aucune prise par moi) :
-1. DoD-3 : fermer l'épic sur #1654 OUVERT (décrue portée par les vagues de résorption) vs attendre 0.
-2. DoD-4 : financer #1620 (ii) avant #1388 vs requalifier la clause (angle mort énoncé et chiffré suffit).
-3. #1657 (concept test) après #1388 (épic fermé en le portant) vs avant (épic ouvert).
-**Comment appliquer :** ne PAS fermer #1463 sans ces réponses ; dettes d'outillage nées cette semaine
-(#1640-#1656) = sériables APRÈS #1388 (doctrine : l'épic débouche sur la part joueur, pas sur de nouvelles
-vagues d'instrument) ; les 3 gestes minimaux (plafond 76→71, sonde C3 promue, 2 angles morts déclarés)
-sont confiés au train `de` de la session d'audit — vérifier au pilotage qu'ils ont atterri.
+**Les 3 décisions — TRANCHÉES par l'utilisateur le 2026-09-01 (verbatim aux tickets)** : « Garder l'épic
+ouvert jusqu'à 0 » (AST) · « Financer #1620 (ii) TypeChecker AVANT #1388 » · « Avant #1388 — l'épic reste
+ouvert » (concept test) ; puis « Pas de demi-migration j'ai dit, ça sert à quoi si on ferme l'épique sans
+avoir terminé ? » → [[feedback-epic-ne-se-ferme-jamais-sur-tickets-ouverts]] (mes « recommandés » étaient
+à contresens de la doctrine).
+**Comment appliquer :** #1463 RESTE OUVERT ; séquence = #1657 (concept test : forme cible en grammaire/,
+migration, stock −65, AST −30) → #1620 (ii) TypeChecker puis (iii) dérivation TARGETS → #1654 (AST → 0,
+inventaire nominatif par concept, décrue partagée avec les vagues de résorption voisines) → NOUVEAU grand
+juge → seulement alors #1388. Dettes d'outillage hors DoD (#1640-#1656) restent sériées après.
 
 Liens : [[project-1467-l1b-livre]] (carnet de dépilage), [[game-train-chirurgical-portes-sur-l-index]]
 (5 occurrences, règle suite complète), [[env-cache-vite-partage-worktree-faux-rouges]],
