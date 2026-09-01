@@ -179,33 +179,57 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
     tables += `\n`
   }
 
+  // Une classe d'état ne s'ÉNONCE que si elle a des membres : à 0, ni parenthèse vide ni glose
+  // commentant une liste inexistante — le membre disparaît de la phrase, cardinal compris (la
+  // Synthèse, elle, porte TOUJOURS les quatre cardinaux, y compris les zéros). Mesuré le
+  // 2026-09-01 : `QualityRef.spec` a gagné son propre shape, `hérités` est passé à 0, et la phrase
+  // rendait « **0 hérité** d'un type ancêtre () — leur « 0 » est tautologique ».
+  const classe = (membres: string[], tete: (n: number) => string, glose = ``) =>
+    membres.length === 0
+      ? null
+      : `**${membres.length} ${tete(membres.length)}** (${membres.map((m) => `\`${m}\``).join(', ')})${glose}`
+  const etats = [
+    totalRead === 0 ? null : `**${totalRead} lus**`,
+    classe(zeros, () => `« 0 — JAMAIS LU »`, ` — champ PROPRE au type, aucun lecteur`),
+    classe(
+      herites,
+      (n) => `hérité${n > 1 ? 's' : ''} d'un type ancêtre`,
+      ` — leur « 0 » est tautologique, les lecteurs comptent sous le déclarant`,
+    ),
+    classe(
+      absents,
+      (n) => `absent${n > 1 ? 's' : ''} du type TS`,
+      ` — le champ du schéma n'existe pas sur le type : divergence schéma↔type, listée en fin de rapport`,
+    ),
+  ].filter((p): p is string => p !== null)
+
   out += `Détection au VÉRIFICATEUR DE TYPES (\`ts.Program\`/\`TypeChecker\`) : un lecteur est un accès dont le `
   out += `SYMBOLE de propriété est celui déclaré par le type cible, la propriété devant lui être PROPRE ou son `
   out += `porteur être DÉCLARÉ de ce type — aucune annotation littérale n'est cherchée, et un type anonyme de `
-  out += `même forme ne crédite rien. Les champs se répartissent en QUATRE états, et deux d'entre eux ne sont `
-  out += `pas des mesures de lecture : **${totalRead} lus**, **${totalUnread} « 0 — JAMAIS LU »** (champ PROPRE `
-  out += `au type, aucun lecteur — ${zeros.map((z) => `\`${z}\``).join(', ')}), **${herites.length} `
-  out += `hérité${herites.length > 1 ? 's' : ''}** d'un type ancêtre (${herites.map((h) => `\`${h}\``).join(', ')}) `
-  out += `— leur « 0 » est tautologique, les lecteurs comptent sous le déclarant — et `
-  out += `**${absents.length} absents du type TS** (le champ du schéma n'existe pas sur le type : divergence `
-  out += `schéma↔type, listée en fin de rapport), sur ${totalFields} champs de ${TARGETS.length} types.\n\n`
+  out += `même forme ne crédite rien. Quatre états sont mesurés, dont deux ne sont pas des mesures de lecture `
+  out += `(hérité, absent du type TS) ; ceux qui ont des membres ici : ${etats.join(' ; ')}, sur ${totalFields} `
+  out += `champs de ${TARGETS.length} types.\n\n`
   out += `Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendait 41 champs « 0 lecteur » `
   out += `sur ces mêmes ${totalFields}. Re-mesure des 16 « 0 lecteur » de la première version de ce rapport `
-  out += `(échantillon COMPLET) : 10 ont un lecteur réel — les 8 faux négatifs déjà vérifiés à la main, plus `
-  out += `\`argDifficulty\` et \`stageOutcome\` que cette vérification manuelle avait classés vrais zéros ; 1 `
-  out += `(\`spec\` d'une \`QualityRef\`) est un zéro TAUTOLOGIQUE, hérité de \`Ref\` ; 1 faux négatif SUBSISTE, `
-  out += `nommé — \`hidden\` d'un \`TraitInstance\`, que \`hiddenGroupsOf\` redéclare structurellement au lieu de `
-  out += `l'annoter (défaut de la SOURCE, corrigé au lot suivant de #1620) ; les 4 autres sont de vrais zéros. `
-  out += `Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan syntaxique. Angles morts `
-  out += `(redéclaration structurelle, spread, clé dynamique, champ absent du type) : en-tête de `
-  out += `\`fieldConsumers.mjs\`. Pas encore de cliquet CI sur ces totaux.\n\n`
+  out += `(échantillon COMPLET) : 11 ont un lecteur réel — les 8 faux négatifs déjà vérifiés à la main, plus `
+  out += `\`argDifficulty\` et \`stageOutcome\` que cette vérification manuelle avait classés vrais zéros, plus `
+  out += `\`spec\` d'une \`QualityRef\`, devenu un champ PROPRE depuis que \`qualityRefSchema\` porte son propre `
+  out += `shape ; 1 faux négatif SUBSISTE, nommé — \`hidden\` d'un \`TraitInstance\`, que \`hiddenGroupsOf\` `
+  out += `redéclare structurellement au lieu de l'annoter (défaut de la SOURCE, corrigé au lot suivant de `
+  out += `#1620) ; les 4 autres sont de vrais zéros. Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan `
+  out += `syntaxique. Angles morts (redéclaration structurelle, spread, clé dynamique, champ absent du type) : `
+  out += `en-tête de \`fieldConsumers.mjs\`. Pas encore de cliquet CI sur ces totaux.\n\n`
   out += tables
 
-  out += `## Champs du schéma ABSENTS du type TS\n\n`
-  out += absents.length === 0
-    ? `Aucun — chaque champ de schéma mesuré existe sur son type.\n\n`
-    : `${absents.length} champs déclarés au SCHÉMA n'existent pas sur le type TS de leur \`home\` : ${absents.map((a) => `\`${a}\``).join(', ')}. ` +
-      `Divergence schéma↔type — ni lus ni lisibles, hors du compte des « 0 lecteur ».\n\n`
+  // La section dédiée est le RENDU d'une liste : sans membre, elle est OMISE plutôt que titrée
+  // « aucun » — un titre qui ne commente rien. Le fait « 0 absent » n'est pas perdu pour autant : la
+  // Synthèse émet les quatre cardinaux, zéros compris.
+  if (absents.length > 0) {
+    out += `## Champs du schéma ABSENTS du type TS\n\n`
+    out += `${absents.length} champs déclarés au SCHÉMA n'existent pas sur le type TS de leur \`home\` : `
+    out += `${absents.map((a) => `\`${a}\``).join(', ')}. `
+    out += `Divergence schéma↔type — ni lus ni lisibles, hors du compte des « 0 lecteur ».\n\n`
+  }
 
   out += `## Synthèse\n\n`
   out += `${TARGETS.length} types, ${totalFields} champs mesurés : ${totalRead} lus, **${totalUnread} avec `

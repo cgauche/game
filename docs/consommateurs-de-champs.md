@@ -9,9 +9,9 @@
 
 Schémas NOMMÉS candidats : `src/data/schemas/grammaire/` (formes partagées entre documents) + les `src/data/schemas/defs/` dont les sous-schémas sont nommés (`criticals.ts`, `props.ts`) ; **23 retenus** (voir en-tête du générateur pour les raisons d'exclusion). Les catalogues `src/data/schemas/defs/*.ts` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE — non par absence de nom TS : l'alias existe pour la plupart (41 interfaces `XData` dans `src/data/index.ts`, mesure 2026-09-01 — ex. `TrappingData` `index.ts:1113`, annotée par `src/engine/items.ts:20` et `src/engine/activities.ts:28`) et les champs d'une entrée anonyme sont dérivables (`scripts/docs/lib/zod-introspect.mts#introspecterDefs`) —, mais parce que la DÉRIVATION de `TARGETS` (jointure `type`↔`XData`) est un geste distinct, encore à faire (#1620) ; à l'unité, le geste d'auteur reste ouvert (nommer son schéma d'entrée dans SON def — ou en `grammaire/` si la forme est réellement partagée — puis l'ajouter à `TARGETS`), fait pour `props.json` → `PropData`.
 
-Détection au VÉRIFICATEUR DE TYPES (`ts.Program`/`TypeChecker`) : un lecteur est un accès dont le SYMBOLE de propriété est celui déclaré par le type cible, la propriété devant lui être PROPRE ou son porteur être DÉCLARÉ de ce type — aucune annotation littérale n'est cherchée, et un type anonyme de même forme ne crédite rien. Les champs se répartissent en QUATRE états, et deux d'entre eux ne sont pas des mesures de lecture : **143 lus**, **7 « 0 — JAMAIS LU »** (champ PROPRE au type, aucun lecteur — `TraitInstance.hidden`, `SourceRef.note`, `CastingNumberMod.maison`, `CastingNumberMod.source`, `CastingNumberMod.desc`, `PropData.type`, `PropData.label`), **1 hérité** d'un type ancêtre (`QualityRef.spec`) — leur « 0 » est tautologique, les lecteurs comptent sous le déclarant — et **7 absents du type TS** (le champ du schéma n'existe pas sur le type : divergence schéma↔type, listée en fin de rapport), sur 158 champs de 23 types.
+Détection au VÉRIFICATEUR DE TYPES (`ts.Program`/`TypeChecker`) : un lecteur est un accès dont le SYMBOLE de propriété est celui déclaré par le type cible, la propriété devant lui être PROPRE ou son porteur être DÉCLARÉ de ce type — aucune annotation littérale n'est cherchée, et un type anonyme de même forme ne crédite rien. Quatre états sont mesurés, dont deux ne sont pas des mesures de lecture (hérité, absent du type TS) ; ceux qui ont des membres ici : **144 lus** ; **7 « 0 — JAMAIS LU »** (`TraitInstance.hidden`, `SourceRef.note`, `CastingNumberMod.maison`, `CastingNumberMod.source`, `CastingNumberMod.desc`, `PropData.type`, `PropData.label`) — champ PROPRE au type, aucun lecteur ; **7 absents du type TS** (`AdvancementRef.table`, `PropData.labelF`, `PropData.desc`, `PropData.source`, `PropData.alsoIn`, `PropData.maison`, `PropData.icon`) — le champ du schéma n'existe pas sur le type : divergence schéma↔type, listée en fin de rapport, sur 158 champs de 23 types.
 
-Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendait 41 champs « 0 lecteur » sur ces mêmes 158. Re-mesure des 16 « 0 lecteur » de la première version de ce rapport (échantillon COMPLET) : 10 ont un lecteur réel — les 8 faux négatifs déjà vérifiés à la main, plus `argDifficulty` et `stageOutcome` que cette vérification manuelle avait classés vrais zéros ; 1 (`spec` d'une `QualityRef`) est un zéro TAUTOLOGIQUE, hérité de `Ref` ; 1 faux négatif SUBSISTE, nommé — `hidden` d'un `TraitInstance`, que `hiddenGroupsOf` redéclare structurellement au lieu de l'annoter (défaut de la SOURCE, corrigé au lot suivant de #1620) ; les 4 autres sont de vrais zéros. Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan syntaxique. Angles morts (redéclaration structurelle, spread, clé dynamique, champ absent du type) : en-tête de `fieldConsumers.mjs`. Pas encore de cliquet CI sur ces totaux.
+Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendait 41 champs « 0 lecteur » sur ces mêmes 158. Re-mesure des 16 « 0 lecteur » de la première version de ce rapport (échantillon COMPLET) : 11 ont un lecteur réel — les 8 faux négatifs déjà vérifiés à la main, plus `argDifficulty` et `stageOutcome` que cette vérification manuelle avait classés vrais zéros, plus `spec` d'une `QualityRef`, devenu un champ PROPRE depuis que `qualityRefSchema` porte son propre shape ; 1 faux négatif SUBSISTE, nommé — `hidden` d'un `TraitInstance`, que `hiddenGroupsOf` redéclare structurellement au lieu de l'annoter (défaut de la SOURCE, corrigé au lot suivant de #1620) ; les 4 autres sont de vrais zéros. Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan syntaxique. Angles morts (redéclaration structurelle, spread, clé dynamique, champ absent du type) : en-tête de `fieldConsumers.mjs`. Pas encore de cliquet CI sur ces totaux.
 
 ### `TraitInstance` (src/engine/statEntry.ts)
 
@@ -57,16 +57,16 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 61 | `src/engine/qualities/dispatch.ts:59` |
-| `spec` | 18 | `src/engine/careerSlots.ts:170` |
+| `id` | 61 | `src/engine/qualities/dispatch.ts:62` |
+| `spec` | 19 | `src/engine/careerSlots.ts:170` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/engine/qualities/dispatch.ts:59` |
-| `spec` | 0 ici — hérité de `Ref` | — |
-| `value` | 3 | `src/data/index.ts:3370` |
+| `id` | 4 | `src/engine/qualities/dispatch.ts:62` |
+| `spec` | 1 | `src/data/index.ts:3372` |
+| `value` | 3 | `src/data/index.ts:3373` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -86,8 +86,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fixed` | 4 | `src/data/index.ts:3431` |
-| `roll` | 3 | `src/data/index.ts:3431` |
+| `fixed` | 4 | `src/data/index.ts:3435` |
+| `roll` | 3 | `src/data/index.ts:3435` |
 
 ### `TrappingRef` (src/data/index.ts)
 
@@ -96,14 +96,14 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `id` | 8 | `src/engine/trappingChoices.ts:36` |
 | `spec` | 2 | `src/engine/trappingChoices.ts:36` |
 | `count` | 10 | `src/engine/trappingChoices.ts:36` |
-| `qualities` | 4 | `src/data/index.ts:3434` |
+| `qualities` | 4 | `src/data/index.ts:3438` |
 | `qualityChoice` | 6 | `src/engine/trappingChoices.ts:30` |
-| `text` | 2 | `src/data/index.ts:3425` |
-| `vehicleId` | 5 | `src/data/index.ts:3427` |
+| `text` | 2 | `src/data/index.ts:3429` |
+| `vehicleId` | 5 | `src/data/index.ts:3431` |
 | `label` | 7 | `src/engine/possessionGrants.ts:25` |
-| `creatureId` | 5 | `src/data/index.ts:3429` |
+| `creatureId` | 5 | `src/data/index.ts:3433` |
 | `choice` | 5 | `src/engine/trappingChoices.ts:22` |
-| `wildcard` | 3 | `src/data/index.ts:3423` |
+| `wildcard` | 3 | `src/data/index.ts:3427` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
@@ -112,10 +112,10 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `id` | 8 | `src/engine/careerSlots.ts:169` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
 | `choix` | 7 | `src/engine/careerSlots.ts:170` |
-| `pick` | 2 | `src/data/index.ts:3407` |
+| `pick` | 2 | `src/data/index.ts:3411` |
 | `of` | 6 | `src/engine/careerSlots.ts:173` |
 | `table` | — | *absent du type TS* |
-| `random` | 3 | `src/data/index.ts:3409` |
+| `random` | 3 | `src/data/index.ts:3413` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -292,7 +292,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 ## Synthèse
 
-23 types, 158 champs mesurés : 143 lus, **7 avec « 0 lecteur » mesuré** au `TypeChecker` (dont UN faux négatif nommé ci-dessus), 1 hérité, 7 absents du type TS ; pas de cliquet CI sur ces totaux.
+23 types, 158 champs mesurés : 144 lus, **7 avec « 0 lecteur » mesuré** au `TypeChecker` (dont UN faux négatif nommé ci-dessus), 0 hérité, 7 absents du type TS ; pas de cliquet CI sur ces totaux.
 
 ## Cas fondateur
 
