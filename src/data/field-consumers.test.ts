@@ -4,21 +4,24 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildFieldConsumersMd } from '../../scripts/docs/build-field-consumers.mjs';
 import { TARGETS, fieldsOf } from '../../scripts/guards/lib/fieldConsumerTargets.mjs';
+import { scanFieldReads, fieldOwnership, groupByField } from '../../scripts/guards/lib/fieldConsumers.mjs';
+import { virtualProgram, VIRTUAL_ROOT } from '../../scripts/guards/lib/tsProgram.mjs';
 
 /**
  * Garde du rapport « consommateurs par champ » (#903 — `scripts/docs/build-field-consumers.mts`,
  * `docs/consommateurs-de-champs.md`). PAS un cliquet décroissant sur le volume de champs « 0
- * lecteur » : la vérification manuelle des 16 candidats de la première mesure a réfuté 9/16 (56 %,
- * angles morts du détecteur syntaxique — variable de type inféré, accès chaîné, boucle `for…of` sur
- * tableau typé, cf. en-tête de `build-field-consumers.mts`) — verrouiller ce total aurait verrouillé
- * un fait faux. Cette garde se limite à ce qui a été vérifié À LA MAIN : la fraîcheur du doc généré,
- * et le cas FONDATEUR (`TrappingRef.spec`, #903) en CONTRAT POSITIF.
+ * lecteur » : le détecteur travaille au `TypeChecker` (#1620) et il RESTE un faux négatif nommé
+ * (`TraitInstance.hidden`, redéclaration structurelle de `src/engine/groups.ts`) — verrouiller ce
+ * total verrouillerait encore un fait faux. Cette garde tient donc trois choses : la fraîcheur du
+ * doc généré, le cas FONDATEUR (`TrappingRef.spec`, #903) en CONTRAT POSITIF sur le dépôt RÉEL, et
+ * la MORSURE du détecteur sur des fixtures en mémoire (dernier `describe`).
  */
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
-/** Le rapport, régénéré EN PROCESSUS et mémoïsé : un SEUL scan du corpus (~0,9 s) nourrit les deux
- *  assertions — fraîcheur du `.md` et cas fondateur. PARESSEUX : payé au 1ᵉʳ `it` qui le demande,
- *  jamais à la collecte de vitest. */
+/** Le rapport, régénéré EN PROCESSUS et mémoïsé : un SEUL scan du corpus nourrit les deux
+ *  assertions — fraîcheur du `.md` et cas fondateur. Il coûte ~17 s et ~1,3 Go (Program du dépôt,
+ *  1 952 fichiers) : d'où le timeout explicite posé sur le `it` qui le paie. PARESSEUX : payé au
+ *  1ᵉʳ `it` qui le demande, jamais à la collecte de vitest. */
 let _rapport: ReturnType<typeof buildFieldConsumersMd> | null = null;
 const rapport = () => (_rapport ??= buildFieldConsumersMd());
 
@@ -54,7 +57,11 @@ describe('docs/consommateurs-de-champs.md — le rapport GÉNÉRÉ est à jour',
       'docs/consommateurs-de-champs.md est PÉRIMÉ/ABSENT (les schémas/le code source ont changé)\n' +
         '  → régénérer via `npm run docs:field-consumers` et committer le résultat.',
     ).toBe('');
-  });
+    // 60 s : le corps est SYNCHRONE (vitest ne pourrait pas l'interrompre — il PASSERAIT sous le
+    // `testTimeout` global de 15 s de `vite.config.ts` sans rien dire), et il paie le Program du
+    // dépôt : 15,8 à 20,2 s mesurées sur cinq exécutions du 2026-09-01. Le chiffre est ici pour
+    // être RÉVISÉ quand la mesure bouge, pas pour donner une marge muette.
+  }, 60_000);
 });
 
 describe('MORSURE du diagnostic de fraîcheur — chaque écart se dit en clair', () => {
@@ -124,5 +131,133 @@ describe('cas fondateur #903 — qui lit TrappingRef.spec ?', () => {
       specReaders.some((s: string) => s.includes('data/index.ts')),
       'un lecteur de spec dans `data/index.ts` = une seconde définition du rendu « base (spec) », qui appartient à `refConcrete`',
     ).toBe(false);
+    // Même Program du dépôt que la fraîcheur ci-dessus (mémoïsé) — mais ce `it` le paie SEUL si on
+    // le lance à part (`-t`) : 60 s pour la même mesure.
+  }, 60_000);
+});
+
+/**
+ * MORSURE du détecteur, sur des sources EN MÉMOIRE (`virtualProgram`, `scripts/guards/lib/
+ * tsProgram.mjs` — le patron de la garde #841). Le rapport du dépôt ne PROUVE rien tout seul : il
+ * dit ce que le code contient aujourd'hui, jamais ce que le détecteur REFUSE. Ici, chaque site est
+ * écrit pour un verdict, et le verdict est asserté.
+ *
+ * `virtualProgram` ne sert que ses propres sources plus le répertoire `lib` de TypeScript : `zod`
+ * n'y est pas résoluble — SONDÉ le 2026-09-01, un `import { z } from 'zod'` y rend le diagnostic
+ * « Cannot find module 'zod' or its corresponding type declarations », le porteur se résout à
+ * `z.infer<any>` et la propriété lue n'a AUCUN symbole. Le triplet zod est donc reproduit par un module
+ * `src/z.ts` qui porte le SEUL trait qui compte pour le détecteur : un alias
+ * `type X = Infer<typeof S>` dont les propriétés pointent les `PropertyAssignment` du shape. Le cas
+ * zod RÉEL est couvert par la mesure du dépôt (`SourceRef` ← `sourceRefSchema`, `docs/
+ * consommateurs-de-champs.md`).
+ */
+describe('MORSURE du détecteur — fixtures en mémoire', () => {
+  const FIXTURES: Record<string, string> = {
+    'src/types.ts': `export interface Ref { id: string; spec?: string }
+export type TrappingRef = Ref & { qty?: number };
+export type U = Ref & { x?: number };
+`,
+    'src/lecteurs.ts': `import type { Ref, TrappingRef, U } from './types';
+// OUI l.3 — porteur ANNOTÉ du type cible
+export const direct = (r: TrappingRef) => r.spec;
+// OUI l.5 — variable au type INFÉRÉ depuis un porteur du type cible
+export function parVariable(r: TrappingRef) { const s = r; return s.spec; }
+// NON l.7 — \`U\` compose \`Ref\` comme \`TrappingRef\`, sans être \`TrappingRef\`
+export const surU = (u: U) => u.spec;
+// NON l.9 — porteur déclaré \`Ref\` : la lecture compte sous le DÉCLARANT
+export const surRef = (r: Ref) => r.spec;
+// OUI l.11 — opérateur de type appliqué à la cible (l'alias est PERDU, l'annotation le nomme)
+export const parExtract = (r: Extract<TrappingRef, { id: string }>) => r.spec;
+// OUI l.13 — élément inféré d'un tableau annoté du type cible
+export const parTableau = (rs: TrappingRef[]) => rs.map((r) => r.spec);
+// OUI l.15 — déstructuration directe
+export const parDestructuration = ({ spec }: TrappingRef) => spec;
+`,
+    'src/autre.ts': `// Homonyme STRICT : même nom \`Ref\`, autre module, autre DÉCLARATION.
+export interface Ref { id: string; spec?: string }
+export const surAutreRef = (r: Ref) => r.spec;
+`,
+    'src/z.ts': `export interface Schema<T> { readonly _sortie: T }
+export declare function objet<T extends object>(shape: T): Schema<T>;
+export declare function texte(): string;
+export type Infer<S> = S extends Schema<infer T> ? T : never;
+`,
+    'src/a.ts': `import { objet, texte } from './z';
+export const boxSchema = objet({ note: texte(), taille: texte() });
+`,
+    'src/c.ts': `import type { Infer } from './z';
+import { boxSchema } from './a';
+export type Carton = Infer<typeof boxSchema>;
+export const surCarton = (c: Carton) => c.note;
+`,
+    'src/d.ts': `import type { Carton } from './c';
+export interface Box extends Carton {}
+export const surBoxPure = (b: Box) => b.note;
+`,
+  };
+  const FICHIERS = Object.keys(FIXTURES).map((rel) => join(VIRTUAL_ROOT, rel));
+
+  /** Sites mesurés d'un champ sur une cible, sur le programme des fixtures. */
+  const sites = (type: string, home: string, champ: string): string[] => {
+    const programme = virtualProgram(FIXTURES);
+    const hits = scanFieldReads({ type, home }, [champ], FICHIERS, VIRTUAL_ROOT, new Map(), programme);
+    return [...new Set(groupByField([champ], hits).get(champ)!.map((h) => `${h.file}:${h.line}`))];
+  };
+
+  it('CONJONCTION (1)∧(2) — le porteur doit être du type, la propriété doit être la sienne', () => {
+    expect(sites('TrappingRef', 'src/types.ts', 'spec')).toEqual([
+      'src/lecteurs.ts:3',
+      'src/lecteurs.ts:5',
+      'src/lecteurs.ts:11',
+      'src/lecteurs.ts:13',
+      'src/lecteurs.ts:15',
+    ]);
+  });
+
+  it('le DÉCLARANT compte toutes les lectures de la propriété qu’il déclare (c’est son renommage qui les casse)', () => {
+    expect(sites('Ref', 'src/types.ts', 'spec')).toEqual([
+      'src/lecteurs.ts:3',
+      'src/lecteurs.ts:5',
+      'src/lecteurs.ts:7',
+      'src/lecteurs.ts:9',
+      'src/lecteurs.ts:11',
+      'src/lecteurs.ts:13',
+      'src/lecteurs.ts:15',
+    ]);
+  });
+
+  it('HOMONYMIE : deux `Ref` de modules différents ne se croisent jamais', () => {
+    expect(sites('Ref', 'src/types.ts', 'spec')).not.toContain('src/autre.ts:3');
+    expect(sites('Ref', 'src/autre.ts', 'spec')).toEqual(['src/autre.ts:3']);
+  });
+
+  it('shape → type inféré : le DÉCLARANT est reconnu par SYMBOLE du schéma, pas par son nom', () => {
+    // `Carton` DÉCLARE `note` (par le shape de `boxSchema`, dont son `typeof` donne le symbole) :
+    // ses deux lectures lui reviennent. Un lien par NOM fabriqué (`boxSchema` → « Box ») ne le
+    // reconnaîtrait PAS et lui retirerait la lecture faite sur un porteur `Box`.
+    expect(sites('Carton', 'src/c.ts', 'note')).toEqual(['src/c.ts:4', 'src/d.ts:3']);
+  });
+
+  it('shape → type inféré : un type qui COMPOSE le corps inféré ne capte pas les lecteurs du déclarant', () => {
+    // `Box` compose `Carton` sans rien déclarer : il ne compte QUE ses propres porteurs. Un lien par
+    // NOM (`boxSchema` → « Box » = la cible) lui attribuerait `src/c.ts:4`, dont le porteur est un
+    // `Carton` — l'exacte confusion `Ref`/`TrappingRef` que la condition (2) interdit.
+    expect(sites('Box', 'src/d.ts', 'note')).toEqual(['src/d.ts:3']);
+    expect(sites('Box', 'src/d.ts', 'note')).not.toContain('src/c.ts:4');
+  });
+
+  it('ÉTATS d’un champ : propre / hérité / absent du type TS', () => {
+    const programme = virtualProgram(FIXTURES);
+    const etats = fieldOwnership(
+      { type: 'TrappingRef', home: 'src/types.ts' },
+      ['spec', 'qty', 'fantome'],
+      FICHIERS,
+      VIRTUAL_ROOT,
+      new Map(),
+      programme,
+    );
+    expect(etats.get('spec')).toEqual({ etat: 'herite', declarant: 'Ref' });
+    expect(etats.get('qty')?.etat).toBe('propre');
+    expect(etats.get('fantome')).toEqual({ etat: 'absent' });
   });
 });

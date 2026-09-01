@@ -1,3 +1,5 @@
+import type { Program } from 'typescript';
+
 export interface FieldReadHit {
   field: string;
   file: string;
@@ -5,10 +7,34 @@ export interface FieldReadHit {
 }
 
 export function listProdFiles(dir: string, out?: string[]): string[];
-export interface FieldScanCacheEntry {
-  text: string;
-  sf: unknown;
+
+/** La cible d'un scan : le type NOMMÉ et le module qui le DÉCLARE (l'identité est la déclaration). */
+export interface FieldScanTarget {
+  type: string;
+  home: string;
 }
 
-export function scanFieldReads(typeName: string, fields: string[], files: string[], rootDir: string, cache?: Map<string, FieldScanCacheEntry>): FieldReadHit[];
+export function scanFieldReads(
+  cible: FieldScanTarget,
+  fields: string[],
+  files: string[],
+  rootDir: string,
+  cache?: Map<string, unknown>,
+  programme?: Program | null
+): FieldReadHit[];
+
+/** État d'un champ VIS-À-VIS du type : absent du type TS, hérité d'un ancêtre, ou propre à la cible. */
+export type FieldOwnership =
+  | { etat: 'absent' }
+  | { etat: 'herite'; declarant?: string }
+  | { etat: 'propre' };
+
+export function fieldOwnership(
+  cible: FieldScanTarget,
+  fields: string[],
+  files: string[],
+  rootDir: string,
+  cache?: Map<string, unknown>,
+  programme?: Program | null
+): Map<string, FieldOwnership>;
 export function groupByField(fields: string[], hits: FieldReadHit[]): Map<string, FieldReadHit[]>;

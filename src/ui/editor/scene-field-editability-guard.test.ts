@@ -6,12 +6,11 @@ import {
   auditSceneFieldEditability,
   orphanFields,
   sceneScope,
-  repoProgram,
-  virtualProgram,
+  programmeMemoise,
   fossileAudit,
   FOSSILES,
-  VIRTUAL_ROOT,
 } from '../../../scripts/guards/lib/sceneFieldEditability.mjs';
+import { virtualProgram, VIRTUAL_ROOT } from '../../../scripts/guards/lib/tsProgram.mjs';
 
 /**
  * GARDE #841 — « toute donnée de la scène s'édite au clic, sans dépendre d'une IA » (directive
@@ -126,7 +125,7 @@ export const tracerCalque = () => {
   });
 
   it('le périmètre se dérive du type `Scene` — types imbriqués, unions et littéraux anonymes compris', () => {
-    const scope = sceneScope(repoProgram(ROOT), ROOT);
+    const scope = sceneScope(programmeMemoise(ROOT), ROOT);
     const all = new Set(ids(scope));
     // Champs qu'un scanner limité aux interfaces atteignables « à la main » manque : ils vivent dans
     // des types que seule la traversée du type `Scene` ramène.
@@ -215,7 +214,7 @@ export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc:
     const DOC = ['src/state/scene.ts', 'src/data/schemas/defs-scenes/scene.ts'];
     const fichier = (r: { decl: ts.Declaration }) =>
       path.relative(ROOT, r.decl.getSourceFile().fileName).split(path.sep).join('/');
-    const scope: { id: string; decl: ts.Declaration }[] = sceneScope(repoProgram(ROOT), ROOT);
+    const scope: { id: string; decl: ts.Declaration }[] = sceneScope(programmeMemoise(ROOT), ROOT);
     const horsDocument = scope.filter((r) => !DOC.includes(fichier(r)));
     expect(
       horsDocument.map((r) => `${r.id} @ ${fichier(r)}`).sort(),
@@ -402,8 +401,8 @@ export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc:
   });
 
   it('gate @fossile : les deux sens sont muets à l’arbre, et le fossile gaté est HORS périmètre', () => {
-    expect(fossileAudit(repoProgram(ROOT), ROOT)).toEqual({ taguesHorsListe: [], entreesSansTag: [] });
-    expect(ids(sceneScope(repoProgram(ROOT), ROOT))).not.toContain('SceneEntity.foot');
+    expect(fossileAudit(programmeMemoise(ROOT), ROOT)).toEqual({ taguesHorsListe: [], entreesSansTag: [] });
+    expect(ids(sceneScope(programmeMemoise(ROOT), ROOT))).not.toContain('SceneEntity.foot');
   });
 
   it('NON VACANTE (a) : un champ frais, écrit par personne, est rapporté orphelin', () => {

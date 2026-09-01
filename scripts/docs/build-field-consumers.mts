@@ -10,63 +10,70 @@
  * affirmé « personne » sur une recherche trop étroite, sans surface pour le vérifier (cf.
  * `scripts/guards/lib/groundingCorpus.mjs`, cas `dotation-spec-consommateurs`).
  *
- * PÉRIMÈTRE MESURÉ / ANGLES MORTS — le périmètre est borné par la FIDÉLITÉ du détecteur, pas par
- * une absence de nom TS. Les catalogues `src/data/schemas/defs/*.ts` dont le `schema` d'entrée est
- * ANONYME (`z.array(z.strictObject({…}))`) ONT pour la plupart un alias TS : `src/data/index.ts`
- * porte 41 interfaces au patron `XData` (mesure 2026-09-01), dont `export interface TrappingData`
- * (`index.ts:1113`), annotée par de vrais consommateurs (`src/engine/items.ts:20`,
- * `src/engine/activities.ts:28`/`799`/`805`/`907`) ; et la liste des champs d'une entrée anonyme est
- * dérivable sans nommage manuel (`scripts/docs/lib/zod-introspect.mts#introspecterDefs`, qui descend
- * le sceau `document()`). Ce qui manque est la LIAISON FIABLE champ↔lecteur : cf. le second angle
- * mort ci-dessous — détection SYNTAXIQUE, 9/16 = 56 % de faux négatifs mesurés sur les cas
- * fondateurs. Élargir le corpus à ces catalogues avant de fiabiliser la liaison multiplierait un
- * rapport majoritairement faux, là où il sert à décider un renommage/une suppression de champ.
- * Retenus donc (`fieldConsumerTargets.mjs`, 23 cibles) : les schémas exportés sous un nom
+ * PÉRIMÈTRE MESURÉ — il n'est plus borné par la FIDÉLITÉ du détecteur : celui-ci travaille au
+ * vérificateur de types (`ts.Program`/`TypeChecker`, #1620 geste (ii)) — identité par SYMBOLE de
+ * propriété, porteur résolu à son type DÉCLARÉ ; la définition exacte d'une lecture et les angles
+ * morts qui restent sont en tête de `scripts/guards/lib/fieldConsumers.mjs`. Les catalogues
+ * `src/data/schemas/defs/*.ts` dont le `schema` d'entrée est ANONYME (`z.array(z.strictObject({…}))`)
+ * ONT pour la plupart un alias TS : `src/data/index.ts` porte 41 interfaces au patron `XData`
+ * (mesure 2026-09-01), dont `export interface TrappingData` (`index.ts:1113`), annotée par de vrais
+ * consommateurs (`src/engine/items.ts:20`, `src/engine/activities.ts:28`/`799`/`805`/`907`) ; et la
+ * liste des champs d'une entrée anonyme est dérivable sans nommage manuel
+ * (`scripts/docs/lib/zod-introspect.mts#introspecterDefs`, qui descend le sceau `document()`). Les
+ * y faire entrer est le geste (iii) de #1620 — dérivation de `TARGETS` par jointure `type`↔`XData`,
+ * les defs sans type TS sortant par raison structurelle nommée —, pas une conséquence de ce lot.
+ * Retenus (`fieldConsumerTargets.mjs`, 23 cibles) : les schémas exportés sous un nom
  * `export const xSchema` ET portant un alias TS NOMMÉ vérifiable ailleurs dans le dépôt
  * (`interface`/`type X = …`) — c'est la classe exacte où vit `TrappingRef.spec`. Candidats
  * mesurés dans `src/data/schemas/grammaire/` (formes de valeur/référence/mécanique partagées par
  * plusieurs documents) et dans les `defs/` dont les sous-schémas sont nommés (`criticals.ts`,
  * `props.ts`), réduits par les deux catégories d'exclusion ci-dessous (non un cliquet — `TARGETS`
- * est un TABLEAU statique, étendu à la main si un nouveau schéma nommé apparaît).
- *
- * ÉLARGIR le périmètre à ces catalogues (#1620) : d'abord un détecteur à vérificateur de types
- * (`ts.Program`/`TypeChecker` dans `fieldConsumers.mjs`, re-mesure des 16 cas fondateurs à 0/16 faux
- * négatif), PUIS la dérivation de `TARGETS` (champs par `introspecterDefs` + nom TS par jointure
- * `type`↔`XData`), les defs sans type TS sortant par raison structurelle nommée. À l'unité, le geste
- * d'auteur reste disponible : NOMMER son schéma d'entrée (et ses sous-schémas) dans SON def —
+ * est un TABLEAU statique, étendu à la main si un nouveau schéma nommé apparaît). À l'unité, le
+ * geste d'auteur reste disponible : NOMMER son schéma d'entrée (et ses sous-schémas) dans SON def —
  * `export const xSchema` dans `defs/<catalogue>.ts`, patron `defs/criticals.ts`
  * (`critEscalationSchema`, `amputationSchema`) — ou dans `grammaire/` si la forme est RÉELLEMENT
  * partagée entre documents, puis l'ajouter à `TARGETS`. Un def ADOPTÉ par `document()` n'expose plus
  * son entrée en nœud zod : il publie ses clés relevées avant le sceau (`cles` du handle, patron
  * `defs/props.ts`), et `TARGETS` porte alors `cles:` au lieu de `schema:` — fait pour `props.json`
- * → `PropData`.
+ * → `PropData`. Chaque cible doit AUSSI déclarer son `home` : c'est le module où le type est
+ * cherché, et son symbole de déclaration EST l'identité de la cible (un `Ref` d'un autre module ne
+ * s'y confond pas).
  *
- * SECOND ANGLE MORT, MESURÉ (pas hypothétique) — `fieldConsumers.mjs` ne borne une lecture que sur
- * un identifiant explicitement ANNOTÉ `T` (littéral du nom dans un type de paramètre/variable). Les
- * 16 champs mesurés « 0 lecteur » de la première version de ce rapport ont été vérifiés À LA MAIN
- * un par un (grep large, hors annotation) : **9/16 sont des FAUX NÉGATIFS du détecteur** — un
- * lecteur réel existe, mais accède via un chemin syntaxique que `fieldConsumers.mjs` ne suit pas :
- *   - `const x = a?.b` (variable sans annotation EXPLICITE, type INFÉRÉ) — `TraitInstance.hidden`
- *     (`engine/groups.ts` `hiddenGroupsOf`, param structurel dupliqué), `DetailRecipe.tintVar`
- *     (`gameIso/authoring/detailSvg.ts`), `EntityAppearance.armurePortee` (`gameIso/rig/
- *     enemyProfile.ts:185/254`, `cd = findCreatureById(...)?.appearance`), `CritEscalation.onRepeat`
- *     (`engine/{critical,aaCritical}.ts`, `entry.escalation?.onRepeat`), `Amputation.timing`
- *     (mêmes fichiers, `entry.amputation.timing`), `FlowTest.opposed` (`state/combat/
- *     triggeredTest.ts:320`, `const ft = node.test`) ;
- *   - accès CHAÎNÉ à travers un champ INTERMÉDIAIRE non lui-même annoté du type cible —
- *     `CountSpec.fixed`/`.roll` (`ref.count.fixed`/`.roll`, `data/index.ts`/`engine/{items,
- *     possessionGrants}.ts`/`ui/compendium/StructFields.tsx`, où seul `ref: TrappingRef` est
- *     annoté, jamais `ref.count: CountSpec`) ;
- *   - boucle `for…of` sur un tableau EXPLICITEMENT typé — `TrappingRef.label` (`engine/
- *     possessionGrants.ts`, `for (const ref of refs)` où `refs: TrappingRef[]` mais `ref` lui-même
- *     est inféré, non réannoté).
- * Taux de faux négatifs mesuré sur cet échantillon COMPLET (16/16 vérifiés) : 56 %, trop élevé pour
- * qu'un cliquet CI (`entityOrphanStock.mjs`) soit fiable SANS un vérificateur de types complet
- * (`ts.Program`/`TypeChecker`, hors budget de ce lot) — verrouiller ces 9 « orphelines » aurait été
- * verrouiller un FAIT FAUX. Ce rapport reste donc une mesure BRUTE, sans cliquet décroissant : la
- * garde (`src/data/field-consumers.test.ts`) ne verrouille QUE la fraîcheur du doc généré + le cas
- * fondateur `TrappingRef.spec` (vérifié indépendamment, non affecté par ces 9 faux négatifs — son
- * unique lecteur, `engine/trappingChoices.ts:36`, EST une annotation directe de paramètre).
+ * QUATRE ÉTATS, jamais un « 0 » indifférencié (`fieldOwnership`, `fieldConsumers.mjs`) : LU ·
+ * « 0 — JAMAIS LU » (champ PROPRE au type, aucun lecteur) · HÉRITÉ d'un ancêtre (son « 0 » est
+ * tautologique — les lecteurs comptent sous le déclarant, `QualityRef.spec` ← `Ref` et ses 18
+ * lecteurs) · ABSENT du type TS (le champ du SCHÉMA n'existe pas sur le type du `home` :
+ * `AdvancementRef.table`, et 6 champs de `PropData` que `src/data/props.types.ts` ne déclare pas —
+ * divergence schéma↔type, ni lue ni lisible, hors du compte des « 0 lecteur » et listée à part dans
+ * le rapport).
+ *
+ * FIDÉLITÉ RE-MESURÉE (2026-09-01, #1620 geste (ii)) — les 16 champs « 0 lecteur » de la PREMIÈRE
+ * version de ce rapport, échantillon COMPLET, repassés au détecteur à vérificateur de types :
+ *   - 10 ont maintenant leurs lecteurs mesurés : les 8 faux négatifs alors vérifiés à la main
+ *     (`DetailRecipe.tintVar` 4, `EntityAppearance.armurePortee` 5, `CritEscalation.onRepeat` 2,
+ *     `Amputation.timing` 2, `FlowTest.opposed` 5, `CountSpec.fixed` 4, `CountSpec.roll` 3,
+ *     `TrappingRef.label` 7), PLUS deux que cette vérification manuelle avait classés « vrais
+ *     zéros » : `FlowTest.argDifficulty` (`src/state/triggeredEffects.ts:73`, `f.test.argDifficulty`)
+ *     et `TravelTableEntry.stageOutcome` (`src/state/travelPostes.ts:363`, `enc.stageOutcome` sur un
+ *     retour INFÉRÉ) — la vérification à la main a le même angle mort que le scan syntaxique ;
+ *   - 1 est un zéro TAUTOLOGIQUE : `QualityRef.spec`, hérité de `Ref` (`src/data/index.ts`,
+ *     `interface QualityRef extends Ref`) — aucun porteur n'est déclaré `QualityRef`, la lecture
+ *     réelle compte sous `Ref.spec` ;
+ *   - 1 faux négatif SUBSISTE, NOMMÉ : `TraitInstance.hidden`. Ce n'est pas le détecteur mais la
+ *     SOURCE — `src/engine/groups.ts:51` `hiddenGroupsOf` REDÉCLARE structurellement
+ *     `TraitInstance` (`{ id: string; hidden?: boolean }[]`) au lieu de l'annoter ; corrigé au lot 2
+ *     de #1620, où il repasse à ≥ 1 lecteur ;
+ *   - 4 étaient et restent de VRAIS zéros : `SourceRef.note`, `CastingNumberMod.maison`/`.source`/
+ *     `.desc`.
+ * Sur tout le rapport (158 champs) : 41 « 0 lecteur » au scan syntaxique → 7 cellules
+ * « 0 — JAMAIS LU » (dont le faux négatif `TraitInstance.hidden` ; les 6 autres sont de vrais zéros,
+ * les deux derniers venus étant `PropData.type` et `PropData.label` — un décor lit sa géométrie,
+ * jamais son libellé), 1 hérité, 7 absents du type TS. Les cardinaux du rapport sont ÉMIS depuis les
+ * compteurs, jamais recopiés.
+ * COÛT MESURÉ du rapport complet (23 types, 1 952 fichiers de `src/`, Program bâti UNE fois pour
+ * les 23 et libéré au retour) : ~17 s et ~1,33 Go de pic, contre 1,8 s au scan syntaxique. Le
+ * cliquet CI « 0 lecteur » n'existe toujours pas : il vient avec le geste (iii), une fois le dernier
+ * faux négatif soldé.
  *
  * EXCLUS, avec raison :
  *   - `secondarySourceRefSchema` (`grammaire/valeurs.ts`) : aucun alias TS nommé exploitable trouvé
@@ -83,7 +90,7 @@
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
-import { listProdFiles, scanFieldReads, groupByField } from '../guards/lib/fieldConsumers.mjs'
+import { listProdFiles, scanFieldReads, fieldOwnership, groupByField } from '../guards/lib/fieldConsumers.mjs'
 import { TARGETS, fieldsOf } from '../guards/lib/fieldConsumerTargets.mjs'
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url)).replace(/\/$/, '').replace(/\\/g, '/')
@@ -96,73 +103,115 @@ type Hit = { file: string; line: number }
  * Le rapport, EN MÉMOIRE : le `.md` à écrire + les sites mesurés par type et par champ. UN SEUL
  * balayage du corpus nourrit les deux consommateurs — la fraîcheur du `.md` et le cas fondateur de
  * `src/data/field-consumers.test.ts`, qui appelle cette fonction EN PROCESSUS (le CLI ci-dessous
- * n'est qu'un autre appelant). Le cache de lecture/AST vit le temps de l'appel : il est créé ici,
- * partagé par tous les types de `TARGETS`, et libéré au retour.
+ * n'est qu'un autre appelant). Le `cache` porte le `ts.Program` et l'index des accès : créé ICI,
+ * partagé par les 23 cibles de `TARGETS`, et libéré au retour — ~1,33 Go ne survit pas à l'appel,
+ * ce qui compte sous Vitest `isolate: false`.
  */
 export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<string, Hit[]>>; totalFields: number; totalUnread: number } {
   const files = listProdFiles(SRC_DIR)
-  const cache = new Map<string, { text: string; sf: unknown }>()
+  const cache = new Map<string, unknown>()
 
   let out = `# Consommateurs par champ — GÉNÉRÉ\n\n`
   out += `> ⚠️ Fichier GÉNÉRÉ par \`npx tsx scripts/docs/build-field-consumers.mts\` (\`npm run docs:field-consumers\`) — NE PAS ÉDITER À LA MAIN.\n`
-  out += `> Pour chaque type de référence PARTAGÉ, qui LIT chaque champ (annotation de type explicite +\n`
-  out += `> accès/déstructuration, cf. \`scripts/guards/lib/fieldConsumers.mjs\`). Complète\n`
+  out += `> Pour chaque type de référence PARTAGÉ, qui LIT chaque champ (accès/déstructuration résolus au\n`
+  out += `> \`TypeChecker\`, cf. \`scripts/guards/lib/fieldConsumers.mjs\`). Complète\n`
   out += `> \`docs/orphelines-donnees.md\` (consommateurs d'ENTITÉ) — ici, consommateurs de CHAMP.\n\n`
   out += `## Périmètre mesuré / angles morts\n\n`
   out += `Schémas NOMMÉS candidats : \`src/data/schemas/grammaire/\` (formes partagées entre documents) + les `
   out += `\`src/data/schemas/defs/\` dont les sous-schémas sont nommés (\`criticals.ts\`, \`props.ts\`) ; `
   out += `**${TARGETS.length} retenus** (voir en-tête du générateur pour les raisons d'exclusion). Les catalogues `
-  out += `\`src/data/schemas/defs/*.ts\` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE par FIDÉLITÉ du `
-  out += `détecteur, non par absence de nom TS : l'alias existe pour la plupart (41 interfaces \`XData\` dans `
+  out += `\`src/data/schemas/defs/*.ts\` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE — non par absence de `
+  out += `nom TS : l'alias existe pour la plupart (41 interfaces \`XData\` dans `
   out += `\`src/data/index.ts\`, mesure 2026-09-01 — ex. \`TrappingData\` \`index.ts:1113\`, annotée par `
   out += `\`src/engine/items.ts:20\` et \`src/engine/activities.ts:28\`) et les champs d'une entrée anonyme sont `
-  out += `dérivables (\`scripts/docs/lib/zod-introspect.mts#introspecterDefs\`) ; c'est la LIAISON champ↔lecteur `
-  out += `qui n'est pas fiable (56 % de faux négatifs, ci-dessous), et élargir le corpus avant de la fiabiliser `
-  out += `étendrait une mesure majoritairement fausse. Élargir exige donc d'abord un détecteur à vérificateur `
-  out += `de types (\`ts.Program\`/\`TypeChecker\`, #1620) ; à l'unité, le geste d'auteur reste ouvert (nommer `
+  out += `dérivables (\`scripts/docs/lib/zod-introspect.mts#introspecterDefs\`) —, mais parce que la DÉRIVATION `
+  out += `de \`TARGETS\` (jointure \`type\`↔\`XData\`) est un geste distinct, encore à faire (#1620) ; à l'unité, `
+  out += `le geste d'auteur reste ouvert (nommer `
   out += `son schéma d'entrée dans SON def — ou en \`grammaire/\` si la forme est réellement partagée — puis `
   out += `l'ajouter à \`TARGETS\`), fait pour \`props.json\` → \`PropData\`.\n\n`
-  out += `Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant doit être `
-  out += `EXPLICITEMENT annoté du type cible. **Vérification manuelle des 16 champs « 0 lecteur »** de la `
-  out += `première mesure (échantillon COMPLET, pas partiel) : 9/16 (56 %) sont des FAUX NÉGATIFS — un `
-  out += `lecteur réel existe via une variable de type INFÉRÉ, un accès chaîné à travers un champ `
-  out += `intermédiaire non annoté, ou une boucle \`for…of\` sur un tableau typé (détail + fichiers : `
-  out += `en-tête du générateur). Taux trop élevé pour un cliquet CI fiable — ce rapport reste une mesure `
-  out += `BRUTE, non ratchetée.\n\n`
 
   let totalFields = 0
   let totalUnread = 0
+  let totalRead = 0
   let trappingRefSpecSites: string[] = []
+  const herites: string[] = []
+  const absents: string[] = []
+  const zeros: string[] = []
   const byType = new Map<string, Map<string, Hit[]>>()
+  // Les TABLES s'accumulent à part : le paragraphe de FIDÉLITÉ qui les précède cite les totaux
+  // MESURÉS, et un cardinal en dur y serait faux au premier champ qui gagne ou perd son lecteur.
+  let tables = ``
 
   // Une cible porte SOIT son nœud zod (`schema`), SOIT ses clés déjà relevées (`cles` d'un handle
   // `document()`, dont le nœud est scellé et n'expose plus de `.shape`).
   for (const { schema, cles, type, home } of TARGETS as readonly { schema?: unknown; cles?: readonly string[]; type: string; home: string }[]) {
     const fields = fieldsOf(schema ?? cles)
-    const hits = scanFieldReads(type, fields, files, ROOT, cache)
+    const hits = scanFieldReads({ type, home }, fields, files, ROOT, cache)
+    const etats = fieldOwnership({ type, home }, fields, files, ROOT, cache)
     const byField = groupByField(fields, hits)
     byType.set(type, byField)
     totalFields += fields.length
-    out += `### \`${type}\` (${home})\n\n`
-    out += `| Champ | Lecteurs | Exemple |\n|---|---|---|\n`
+    tables += `### \`${type}\` (${home})\n\n`
+    tables += `| Champ | Lecteurs | Exemple |\n|---|---|---|\n`
     for (const f of fields) {
       const list = byField.get(f) ?? []
       const uniqSites = [...new Set(list.map((h: { file: string; line: number }) => `${h.file}:${h.line}`))]
       if (type === 'TrappingRef' && f === 'spec') trappingRefSpecSites = uniqSites
-      if (uniqSites.length === 0) {
-        totalUnread++
-        out += `| \`${f}\` | **0 — JAMAIS LU** | — |\n`
+      const etat = etats.get(f)
+      // QUATRE états, jamais un « 0 » indifférencié : le champ ABSENT du type TS n'a rien à lire, le
+      // champ HÉRITÉ vit sous son déclarant (son « 0 » y est tautologique), et seul un champ PROPRE
+      // sans lecteur est une absence de lecture.
+      if (etat?.etat === 'absent') {
+        absents.push(`${type}.${f}`)
+        tables += `| \`${f}\` | — | *absent du type TS* |\n`
+      } else if (uniqSites.length > 0) {
+        totalRead++
+        tables += `| \`${f}\` | ${uniqSites.length} | \`${uniqSites[0]}\` |\n`
+      } else if (etat?.etat === 'herite') {
+        herites.push(`${type}.${f}`)
+        tables += `| \`${f}\` | 0 ici — hérité de \`${etat.declarant ?? '?'}\` | — |\n`
       } else {
-        out += `| \`${f}\` | ${uniqSites.length} | \`${uniqSites[0]}\` |\n`
+        totalUnread++
+        zeros.push(`${type}.${f}`)
+        tables += `| \`${f}\` | **0 — JAMAIS LU** | — |\n`
       }
     }
-    out += `\n`
+    tables += `\n`
   }
 
+  out += `Détection au VÉRIFICATEUR DE TYPES (\`ts.Program\`/\`TypeChecker\`) : un lecteur est un accès dont le `
+  out += `SYMBOLE de propriété est celui déclaré par le type cible, la propriété devant lui être PROPRE ou son `
+  out += `porteur être DÉCLARÉ de ce type — aucune annotation littérale n'est cherchée, et un type anonyme de `
+  out += `même forme ne crédite rien. Les champs se répartissent en QUATRE états, et deux d'entre eux ne sont `
+  out += `pas des mesures de lecture : **${totalRead} lus**, **${totalUnread} « 0 — JAMAIS LU »** (champ PROPRE `
+  out += `au type, aucun lecteur — ${zeros.map((z) => `\`${z}\``).join(', ')}), **${herites.length} `
+  out += `hérité${herites.length > 1 ? 's' : ''}** d'un type ancêtre (${herites.map((h) => `\`${h}\``).join(', ')}) `
+  out += `— leur « 0 » est tautologique, les lecteurs comptent sous le déclarant — et `
+  out += `**${absents.length} absents du type TS** (le champ du schéma n'existe pas sur le type : divergence `
+  out += `schéma↔type, listée en fin de rapport), sur ${totalFields} champs de ${TARGETS.length} types.\n\n`
+  out += `Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendait 41 champs « 0 lecteur » `
+  out += `sur ces mêmes ${totalFields}. Re-mesure des 16 « 0 lecteur » de la première version de ce rapport `
+  out += `(échantillon COMPLET) : 10 ont un lecteur réel — les 8 faux négatifs déjà vérifiés à la main, plus `
+  out += `\`argDifficulty\` et \`stageOutcome\` que cette vérification manuelle avait classés vrais zéros ; 1 `
+  out += `(\`spec\` d'une \`QualityRef\`) est un zéro TAUTOLOGIQUE, hérité de \`Ref\` ; 1 faux négatif SUBSISTE, `
+  out += `nommé — \`hidden\` d'un \`TraitInstance\`, que \`hiddenGroupsOf\` redéclare structurellement au lieu de `
+  out += `l'annoter (défaut de la SOURCE, corrigé au lot suivant de #1620) ; les 4 autres sont de vrais zéros. `
+  out += `Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan syntaxique. Angles morts `
+  out += `(redéclaration structurelle, spread, clé dynamique, champ absent du type) : en-tête de `
+  out += `\`fieldConsumers.mjs\`. Pas encore de cliquet CI sur ces totaux.\n\n`
+  out += tables
+
+  out += `## Champs du schéma ABSENTS du type TS\n\n`
+  out += absents.length === 0
+    ? `Aucun — chaque champ de schéma mesuré existe sur son type.\n\n`
+    : `${absents.length} champs déclarés au SCHÉMA n'existent pas sur le type TS de leur \`home\` : ${absents.map((a) => `\`${a}\``).join(', ')}. ` +
+      `Divergence schéma↔type — ni lus ni lisibles, hors du compte des « 0 lecteur ».\n\n`
+
   out += `## Synthèse\n\n`
-  out += `${TARGETS.length} types, ${totalFields} champs mesurés, **${totalUnread} avec « 0 lecteur » mesuré** `
-  out += `(56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de `
-  out += `cliquet CI sur ce total).\n\n`
+  out += `${TARGETS.length} types, ${totalFields} champs mesurés : ${totalRead} lus, **${totalUnread} avec `
+  out += `« 0 lecteur » mesuré** au \`TypeChecker\` (dont UN faux négatif nommé ci-dessus), ${herites.length} `
+  out += `hérité${herites.length > 1 ? 's' : ''}, ${absents.length} absent${absents.length > 1 ? 's' : ''} du `
+  out += `type TS ; pas de cliquet CI sur ces totaux.\n\n`
   // Les lecteurs sont ÉNUMÉRÉS depuis la mesure (jamais un nom en dur) : la phrase reste vraie quand
   // le nombre de lecteurs change — #1463 L-ref-1 en a ajouté un (matérialisation de la spec sur
   // l'`ItemInstance`) et la version « l'unique lecteur est `resolveOne` » est devenue fausse en
@@ -195,7 +244,7 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import
     check: process.argv.includes('--check'),
     staleMsg: `docs:field-consumers — ${OUT} est PÉRIMÉ (les schémas/le code source ont changé).`,
     rerunMsg: '  → relancer `npm run docs:field-consumers` et committer le résultat.',
-    okMsg: `docs:field-consumers — OK (${OUT} à jour, ${totalUnread}/${totalFields} champs « 0 lecteur »)`,
-    writeMsg: `${OUT} — ${totalUnread}/${totalFields} champs « 0 lecteur » sur ${TARGETS.length} types.`,
+    okMsg: `docs:field-consumers — OK (${OUT} à jour, ${totalUnread}/${totalFields} champs « 0 lecteur » PROPRES)`,
+    writeMsg: `${OUT} — ${totalUnread}/${totalFields} champs « 0 lecteur » PROPRES sur ${TARGETS.length} types.`,
   })
 }

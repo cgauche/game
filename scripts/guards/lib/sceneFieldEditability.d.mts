@@ -24,9 +24,6 @@ export interface FieldEditability {
   pipeline: string[];
 }
 
-/** Racine des programmes bâtis par `virtualProgram`. */
-export const VIRTUAL_ROOT: string;
-
 /** Registre NOMINATIF des fossiles tolérés au parse et hors périmètre éditable — gate bidirectionnel. */
 export const FOSSILES: string[];
 
@@ -40,8 +37,8 @@ export function fossileAudit(
  *  `sceneSchema`, nœuds-frontière exclus. */
 export function documentDeclarations(program: Program, root: string): Set<Node>;
 
-export function repoProgram(root: string): Program;
-export function virtualProgram(files: Record<string, string>): Program;
+/** Le Program du périmètre de cette garde, MÉMOÏSÉ par racine (la fabrique, elle, ne retient rien). */
+export function programmeMemoise(root: string): Program;
 export function sceneScope(program: Program, root: string): SceneField[];
 /** Portées d'exécution atteintes depuis `src/ui/**` par fermeture transitive des appels. */
 export function uiReachableScopes(checker: TypeChecker, program: Program, root: string): Set<Node>;
