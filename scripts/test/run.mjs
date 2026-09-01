@@ -177,7 +177,7 @@ const relayer = (flux, sortie, { prefixe = '', erreur = false } = {}) => {
 /** Lancement à un seul processus Vitest : machine sous le seuil de partage, drapeau global à un
  *  seul processus, ou filtre qui ne touche qu'un côté. */
 function lancementUnique(args) {
-  const p = spawn(process.execPath, [VITEST, 'run', ...bornesWorkers(args), ...args], {
+  const p = spawn(process.execPath, [VITEST, 'run', ...bornesWorkers(args, CPUS), ...args], {
     cwd: RACINE,
     env: ENV,
     stdio: ['inherit', 'pipe', 'pipe'],
@@ -301,7 +301,7 @@ const diagnostic = bilanDiagnostic(compteSentinelles, {
   partage: partageEffectif,
   maxWorkers: partageEffectif
     ? `node ${WORKERS.node}+jsdom ${WORKERS.jsdom}`
-    : (bornesWorkers(ARGV).find((b) => b.startsWith('--maxWorkers=')) ?? '=appelant').split('=')[1],
+    : (bornesWorkers(ARGV, CPUS).find((b) => b.startsWith('--maxWorkers=')) ?? '=appelant').split('=')[1],
 })
 process.stdout.write(diagnostic)
 ecrireCapture(diagnostic)

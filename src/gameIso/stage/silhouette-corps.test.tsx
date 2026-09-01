@@ -161,7 +161,8 @@ describe('Corps à travers les murs — le jumeau MONTÉ sur le quad (#1297 LOT 
     expect(mat.fog, 'la silhouette s’embrume comme le corps : ce n’est pas du chrome d’interface').toBe(matCorps.fog);
     expect(mat.fog).toBe(true);
     expect(mat.polygonOffset, 'aucun biais de profondeur : c’est le test retourné qui décide').toBe(false);
-  });
+    // Banc volumique mesuré à 15,3 s sur runner 4 cœurs à 96 % de mémoire ([diag] #1619) — borne de banc.
+  }, { timeout: 30_000 });
 
   it('la GÉOMÉTRIE est celle du corps, et la pose se transmet par la parenté — aucune écriture de plus', async () => {
     await monter(AFFINE);

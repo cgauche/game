@@ -6,6 +6,7 @@ import assert from 'node:assert/strict'
 import {
   argumentsEnfant,
   bornesWorkers,
+  maxWorkersMono,
   cheminsGlobSuspects,
   codeAgrege,
   codeEnfant,
@@ -150,19 +151,31 @@ test('argv de l’enfant : les arguments de l’appelant ressortent TELS QUELS, 
 })
 
 test('bornes de charge : injectées par PAIRE, et jamais par-dessus celles de l’appelant', () => {
-  assert.deepEqual(bornesWorkers([]), ['--minWorkers=1', '--maxWorkers=4'])
-  assert.deepEqual(bornesWorkers(['src/engine', '--retry', '2']), [
+  assert.deepEqual(bornesWorkers([], 16), ['--minWorkers=1', '--maxWorkers=4'])
+  assert.deepEqual(bornesWorkers(['src/engine', '--retry', '2'], 16), [
     '--minWorkers=1',
     '--maxWorkers=4',
   ])
   // Un `--minWorkers` en double fait sortir cac (« Expected a single value ») : aucune injection.
-  assert.deepEqual(bornesWorkers(['--minWorkers=2']), [])
-  assert.deepEqual(bornesWorkers(['--minWorkers', '2']), [])
-  assert.deepEqual(bornesWorkers(['--maxWorkers=8']), [])
-  assert.deepEqual(bornesWorkers(['--min-workers=2']), [])
-  assert.deepEqual(bornesWorkers(['--max-workers', '8']), [])
+  assert.deepEqual(bornesWorkers(['--minWorkers=2'], 16), [])
+  assert.deepEqual(bornesWorkers(['--minWorkers', '2'], 16), [])
+  assert.deepEqual(bornesWorkers(['--maxWorkers=8'], 16), [])
+  assert.deepEqual(bornesWorkers(['--min-workers=2'], 16), [])
+  assert.deepEqual(bornesWorkers(['--max-workers', '8'], 16), [])
   // Un POSITIONNEL qui contient le mot n’est pas un drapeau.
-  assert.deepEqual(bornesWorkers(['src/minWorkers.test.ts']), ['--minWorkers=1', '--maxWorkers=4'])
+  assert.deepEqual(bornesWorkers(['src/minWorkers.test.ts'], 16), [
+    '--minWorkers=1',
+    '--maxWorkers=4',
+  ])
+})
+
+test('plafond mono : min(4, cœurs − 1), plancher 1 — la CI 4 vCPU sert 3 workers', () => {
+  assert.equal(maxWorkersMono(4), 3)
+  assert.deepEqual(bornesWorkers([], 4), ['--minWorkers=1', '--maxWorkers=3'])
+  assert.equal(maxWorkersMono(5), 4)
+  assert.equal(maxWorkersMono(16), 4)
+  assert.equal(maxWorkersMono(2), 1)
+  assert.equal(maxWorkersMono(1), 1)
 })
 
 test('environnement des enfants : NO_COLOR posé, FORCE_COLOR SUPPRIMÉ (pas mis à zéro)', () => {

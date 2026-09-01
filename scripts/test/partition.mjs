@@ -141,17 +141,19 @@ export function cheminsGlobSuspects(chemins) {
   return chemins.filter((c) => /[*?[\]{}()!]/.test(c))
 }
 
-/** Bornes de charge du lancement mono-processus. Le lancement partagé a les siennes
+/** Plafond de workers du lancement mono-processus : `min(4, cœurs − 1)`, plancher 1 — le lanceur
+ *  occupe un cœur. La CI publique à 4 vCPU a relevé 14,9 Go / 15,6 Go (96 %) de mémoire système
+ *  avec 4 workers ([diag] du run 33458711078, #1619). Le lancement partagé a ses propres bornes
  *  (`argumentsEnfant`). */
-export const BORNES_WORKERS = ['--minWorkers=1', '--maxWorkers=4']
+export const maxWorkersMono = (cpus) => Math.max(1, Math.min(4, cpus - 1))
 
 /** Bornes à injecter devant l'argv de l'appelant : rien si l'appelant borne DÉJÀ lui-même — un
  *  `--minWorkers` en double fait sortir cac en 148 ms (« Expected a single value », mesuré
  *  2026-08-30). Les deux graphies acceptées par cac (`--minWorkers`, `--min-workers`) comptent. */
-export function bornesWorkers(argv) {
+export function bornesWorkers(argv, cpus) {
   const nom = (a) => a.split('=')[0].toLowerCase().replace(/-/g, '')
   const borne = argv.some((a) => a.startsWith('-') && ['minworkers', 'maxworkers'].includes(nom(a)))
-  return borne ? [] : [...BORNES_WORKERS]
+  return borne ? [] : ['--minWorkers=1', `--maxWorkers=${maxWorkersMono(cpus)}`]
 }
 
 /** Environnement des processus Vitest : sortie SANS séquence ANSI. `FORCE_COLOR` est SUPPRIMÉ, pas

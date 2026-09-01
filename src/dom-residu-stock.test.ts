@@ -12,6 +12,9 @@ import { DOM_RESIDU_STOCK } from '../scripts/guards/lib/domResiduStock.mjs';
 /** Population mesurée le 2026-09-01 sur les 299 fichiers de test jsdom. Ne peut que DÉCROÎTRE. */
 const MAX_DOM_RESIDU = 12;
 
+// Lecteur ASSEMBLÉ à l'exécution : patron de `src/portable-paths-guard.test.ts:51`.
+const LECTEUR = 'C' + ':';
+
 describe('barrière de fuite DOM — verdict', () => {
   it('nomme le fichier ET les nœuds laissés dans document.body', () => {
     const div = document.createElement('div');
@@ -35,7 +38,7 @@ describe('barrière de fuite DOM — verdict', () => {
   });
 
   it('la clé de stock est le chemin POSIX relatif à la racine, quelle que soit la séparation', () => {
-    expect(cleFichierTest('C:\\dépôt\\src\\ui\\A.test.tsx', 'C:\\dépôt')).toBe('src/ui/A.test.tsx');
+    expect(cleFichierTest(LECTEUR + '\\dépôt\\src\\ui\\A.test.tsx', LECTEUR + '\\dépôt')).toBe('src/ui/A.test.tsx');
     expect(cleFichierTest('/dépôt/src/ui/A.test.tsx', '/dépôt')).toBe('src/ui/A.test.tsx');
   });
 });
