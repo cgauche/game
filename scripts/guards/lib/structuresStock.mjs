@@ -646,10 +646,22 @@ export const STRUCTURES_DEFAUT = [
   { dataset: "loup-et-saumure-projet.json", cle: "auteur", date: "2026-08-28" },
 ];
 
+/** Nom du lexique porté par PLUSIEURS classes de valeur à la fois (#1463 S2 : un nom de concept est
+ *  réservé à son type) : une ligne disparaît quand le nom ne porte plus qu'UNE classe.
+ *  `cost` est sorti au L-monnaie-4 (2026-09-01) : les 55 coûts du Tour (`actions.json` → `coutAction`),
+ *  les 21 barèmes d'installation navale (→ `installation`), les 6 paliers de prothèse (→ `px`, LDB 73
+ *  l.19/23), le coût d'Avantage d'une réaction de défense (→ `avantage`) et les deux coûts d'Avantage du
+ *  Flow (→ `advantageCost` / `advantageOrMovement`, le vocabulaire de `ManeuverDef.advantageCost`) ont
+ *  rendu le nom ; il ne reste que les 8 vrais montants de scène, donc une seule classe.
+ *  `price` NE PEUT PAS sortir par le même geste, et sa ligne se tient ICI plutôt que dans un rendu
+ *  (refus MOTIVÉ, #1463 L-monnaie-4) : `null` (×46) et la marque `'ND'` (×3) SONT la colonne Prix telle
+ *  que le livre l'imprime, admises à la source unique de conversion (`priceToMoney`, `src/engine/money.ts`) ;
+ *  les curer serait inventer un montant. La seule classe encore réductible est `number` (×6,
+ *  `land-cargo.json wineQuality[].price`), qui n'est pas un prix mais un FACTEUR — son solde est déjà
+ *  prescrit hors de cette vague. La ligne se RÉÉCRIT donc au fil des lots, elle ne se retire pas. */
 export const STRUCTURES_HOMONYMES = [
   { cle: "char", classes: ["object","string"], occurrences: 865, lot: "L4 #1463", date: "2026-08-23" }, // +3 : profils vides Mouton + Cochon (object) + Trait Entêté (string), EDOC 07 folios 22 et 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
   { cle: "price", classes: ["null","number","object","string"], occurrences: 520, lot: "L4 #1463", date: "2026-08-23" }, // +1 : Anneau d'Opsianon, EDO 11 folio 148 (#672) ; +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
-  { cle: "cost", classes: ["number","object","string"], occurrences: 93, lot: "L4 #1463", date: "2026-08-23" },
   { cle: "count", classes: ["number","object"], occurrences: 92, lot: "L4 #1463", date: "2026-08-23" },
 ];
 
@@ -804,12 +816,12 @@ export const STRUCTURES_ENVELOPPE = [
  *  ne résout vers RIEN, sans être un document ni une op : HORS STRATE. `L1a #1466` quand le NOM de
  *  la clé annonçait une FK (`clé de référence non résolue`) — branche VIDE à ce jour, 0 ligne —,
  *  `#1553` sinon. CE QUE LE MOTIF DIT, ligne à ligne (mesuré 2026-08-31, #1463 L4 P3) : `clé
- *  réservée` 103 lignes / 437 occurrences, `identité non résolue` 2 / 2. Le motif `clé réservée` ne
+ *  réservée` 96 lignes / 408 occurrences, `identité non résolue` 2 / 2. Le motif `clé réservée` ne
  *  décrit PAS une valeur qui pointerait vers rien — le déclencheur est le NOM (`CLES_RESERVEES` du
  *  lexique : skill, char, talent, price, cost, count, source), et le contenu est légitime : `source`
- *  à lui seul déclenche 65 des 103 lignes (144 occurrences), qui portent de vraies références de
+ *  à lui seul déclenche 65 des 96 lignes (144 occurrences), qui portent de vraies références de
  *  livre. Il se solde donc au VOCABULAIRE (#1463 S2 : un nom de concept est réservé à son type),
- *  jamais en curant un contenu. Les 105 lignes de ce volet ne sont pas du ressort de `L1b #1467`,
+ *  jamais en curant un contenu. Les 98 lignes de ce volet ne sont pas du ressort de `L1b #1467`,
  *  dont le dénominateur (205) les comptait ; elles portent leur lot ligne à ligne. */
 export const STRUCTURES_ORPHELINES = [
   { dataset: "arcane-phenomena.json", champ: "niMods", signature: "delta,desc,scope,source", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
@@ -856,9 +868,6 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "land-cargo.json", champ: "sell", signature: "commerceBonus,dumpingPctOfBase,offerByRichesse,source,targetPerSize", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "localisation.json", champ: "personnage", signature: "shapes,source", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "loup-et-saumure-projet.json", champ: "statblock", signature: "char,label,skills,type", motif: "clé réservée", occurrences: 8, lot: "#1553", date: "2026-08-23" },
-  { dataset: "naval-traits.json", champ: "install", signature: "cost", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
-  { dataset: "naval-traits.json", champ: "install", signature: "cost,weightEnc", motif: "clé réservée", occurrences: 20, lot: "#1553", date: "2026-08-23" },
-  { dataset: "qualities.json", champ: "flow", signature: "cost,icon,kind,no,prompt,yes", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "river-navigation.json", champ: "capsize", signature: "removeSailDifficulty,rightCumulativePenalty,rightDifficulty,source", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "river-navigation.json", champ: "echouage", signature: "hullDamage,source", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "river-navigation.json", champ: "outOfControl", signature: "navPenalty,source", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
@@ -891,7 +900,6 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "spells.json", champ: "variants", signature: "desc,duration,source,when", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "spells.json", champ: "variants", signature: "desc,effects,source,when", motif: "clé réservée", occurrences: 5, lot: "#1553", date: "2026-08-23" },
   { dataset: "spells.json", champ: "variants", signature: "desc,source,when", motif: "clé réservée", occurrences: 11, lot: "#1553", date: "2026-08-23" },
-  { dataset: "talents.json", champ: "advantageDefenseReaction", signature: "cost", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "talents.json", champ: "matches", signature: "char,manual", motif: "clé réservée", occurrences: 7, lot: "#1553", date: "2026-08-23" },
   { dataset: "talents.json", champ: "variants", signature: "combat,desc,max,source,when", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "talents.json", champ: "variants", signature: "combat,desc,source,test,when", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
@@ -901,9 +909,6 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "tavernGames.json", champ: "dice", signature: "count,faces", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "tavernGames.json", champ: "phases", signature: "count,rounds", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "tavernGames.json", champ: "second", signature: "char", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
-  { dataset: "trappings.json", champ: "prosthesisTraining", signature: "cost,grants,label", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
-  { dataset: "trappings.json", champ: "prosthesisTraining", signature: "cost,grants,label,reduces", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
-  { dataset: "trappings.json", champ: "prosthesisTraining", signature: "cost,label,reduces", motif: "clé réservée", occurrences: 3, lot: "#1553", date: "2026-08-23" },
   { dataset: "vehicles.json", champ: "hull", signature: "bodyShape,char,criticalTable,locationTable,propulsion,rig", motif: "clé réservée", occurrences: 2, lot: "#1553", date: "2026-08-23" },
   { dataset: "vehicles.json", champ: "hull", signature: "bodyShape,char,propulsion", motif: "clé réservée", occurrences: 9, lot: "#1553", date: "2026-08-23" },
   { dataset: "vehicles.json", champ: "hull", signature: "bodyShape,char,propulsion,rig", motif: "clé réservée", occurrences: 18, lot: "#1553", date: "2026-08-23" },
@@ -1099,7 +1104,7 @@ export const STRUCTURES_OPS = [
   { op: "grantCareerTalent", signature: "op,talentId", dataset: "traits.json", occurrences: 18, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantCareerTalent", signature: "op,spec,talentId", dataset: "traits.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantCareerTalent", signature: "op,talentId", dataset: "talents.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "grantFreeAttack", signature: "cost,op,weapon,when", dataset: "talents.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "grantFreeAttack", signature: "advantageOrMovement,op,weapon,when", dataset: "talents.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantFreeAttack", signature: "op,perChargerOncePerRound,weapon,when", dataset: "talents.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantFreeAttack", signature: "op,weapon,when", dataset: "psychology.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantNaturalWeapon", signature: "bare,damage,label,op,plusBF,qualities", dataset: "mutations.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },

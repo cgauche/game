@@ -12,7 +12,9 @@
  *     et TOUJOURS dans un objet qui ne porte QU'ELLES : une action nomme sa charge (`giveMoney.montant`,
  *     `giveXp.amount`, `givePossession.ref`), elle ne l'étale pas parmi ses propres clés.
  *  B. les noms RÉSERVÉS `price`/`cost` : recensement par CLASSE réelle et par SIGNATURE d'objet —
- *     un nom de concept est réservé à son type (#1463 S2 ; solde de `cost` : L-monnaie-4).
+ *     un nom de concept est réservé à son type (#1463 S2). `cost` est SOLDÉ (L-monnaie-4) : il ne
+ *     porte plus qu'une classe. `price` en porte trois de plus que la monnaie — `null` et `'ND'` sont
+ *     la colonne Prix telle que le livre l'imprime, `number` est le facteur saisonnier du vin.
  */
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -105,13 +107,13 @@ describe('monnaie — forme UNIQUE dans la donnée authorée (#1463)', () => {
       dice: 1, // prix TIRÉ
     });
 
-    // `cost` porte encore trois types sous un seul nom (économie du Tour, bandes de coque, monnaie) :
-    // le nom se rend à son type au lot L-monnaie-4, ce recensement en est la mesure d'entrée.
-    expect(classes.cost, 'classes de `cost`').toEqual({ string: 56, object: 30, number: 7 });
+    // `cost` est RENDU à son type (L-monnaie-4) : il ne nomme plus QUE de la monnaie. L'économie du
+    // Tour dit `coutAction`, le barème d'installation navale `installation`, les paliers de prothèse
+    // `px`, les deux coûts d'Avantage du Flow `advantageCost` / `advantageOrMovement`, la réaction de
+    // défense `avantage`. UNE seule classe subsiste, et chaque objet est un montant.
+    expect(classes.cost, 'classes de `cost`').toEqual({ object: 8 });
     expect(signatures.cost, 'signatures d’objet sous `cost`').toEqual({
-      bands: 14, 'bands,per': 6, // bandes de coque (naval-traits)
-      advantage: 1, advantageOrMovement: 1, // Avantage / Avantage ou Mouvement
-      gold: 1, silver: 7, // vraie monnaie
+      gold: 1, silver: 7, // les 8 tarifs d'arène — la seule population qui garde le nom
     });
   });
 });

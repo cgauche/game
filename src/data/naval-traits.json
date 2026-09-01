@@ -75,7 +75,7 @@
     "label": "Ancre",
     "kind": "amelioration",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 35,
@@ -116,7 +116,7 @@
       "ap": 5
     },
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 15,
@@ -184,7 +184,7 @@
       }
     ],
     "install": {
-      "cost": {
+      "installation": {
         "per": "5m",
         "bands": [
           {
@@ -226,7 +226,7 @@
       }
     ],
     "install": {
-      "cost": {
+      "installation": {
         "per": "5m",
         "bands": [
           {
@@ -261,7 +261,7 @@
     "label": "Cabine de luxe",
     "kind": "amelioration",
     "install": {
-      "cost": {
+      "installation": {
         "per": "unite",
         "bands": [
           {
@@ -292,7 +292,7 @@
     "label": "Clinfoc",
     "kind": "amelioration",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 10,
@@ -369,7 +369,7 @@
     "label": "Embarcation de bord",
     "kind": "amelioration",
     "install": {
-      "cost": "modele",
+      "installation": "modele",
       "weightEnc": "modele"
     },
     "source": {
@@ -384,7 +384,7 @@
     "label": "Figure de proue",
     "kind": "amelioration",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": null,
@@ -419,7 +419,7 @@
       }
     ],
     "install": {
-      "cost": {
+      "installation": {
         "per": "5m",
         "bands": [
           {
@@ -455,7 +455,7 @@
       }
     ],
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 35,
@@ -492,7 +492,7 @@
     "label": "Propulsion à vapeur",
     "kind": "amelioration",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": null,
@@ -521,7 +521,7 @@
     "label": "Ralentisseurs latéraux",
     "kind": "amelioration",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 10,
@@ -599,7 +599,7 @@
     "kind": "amelioration",
     "deckCover": "totale",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 35,
@@ -639,7 +639,7 @@
     ],
     "navTestMod": 20,
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 5,
@@ -710,7 +710,7 @@
     "kind": "amelioration",
     "deckCover": "totale",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 5,
@@ -779,7 +779,7 @@
       }
     ],
     "install": {
-      "cost": {
+      "installation": {
         "per": "10m",
         "bands": [
           {
@@ -810,7 +810,7 @@
     "label": "Safran",
     "kind": "amelioration",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 5,
@@ -867,7 +867,7 @@
     "kind": "amelioration",
     "deckCover": "moyenne",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 5,
@@ -922,7 +922,7 @@
     "label": "Allégement",
     "kind": "amelioration",
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 5,
@@ -978,7 +978,7 @@
     "kind": "amelioration",
     "navTestMod": -10,
     "install": {
-      "cost": {
+      "installation": {
         "bands": [
           {
             "maxLengthM": 5,
@@ -1033,7 +1033,7 @@
     "label": "Fourquines",
     "kind": "amelioration",
     "install": {
-      "cost": {
+      "installation": {
         "per": "unite",
         "bands": [
           {

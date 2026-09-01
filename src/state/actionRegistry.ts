@@ -331,7 +331,7 @@ export const ACTION_PORTEURS: Record<string, (candidat: unknown) => ActionPorteu
 /** Ce que l'acte prend dans l'économie du tour, en toutes lettres — la donnée `cost` du registre, dite
  *  à l'endroit du geste (spec HUD zone 4 : « coût de l'Action affiché »). `null` = rien à annoncer. */
 export function actionCostLabel(def: ActionDef): string | null {
-  return def.cost === 'aucun' ? null : t(`acost.${def.cost}`);
+  return def.coutAction === 'aucun' ? null : t(`acost.${def.coutAction}`);
 }
 
 /** Paramètres d'exécution — l'action nomme SA cible ; jamais une closure qui la capture. */

@@ -171,7 +171,7 @@ function bandValue(bands: InstallBand[], lengthM: number): number {
  *  `per:'unite'` (× `units`). `'modele'` (Embarcation de bord) → `null` : le prix est celui du modèle
  *  embarqué, résolu par l'appelant. PUR. */
 export function installAmount(
-  part: NonNullable<NavalInstall['cost']>,
+  part: NonNullable<NavalInstall['installation']>,
   lengthM: number,
   units = 1,
 ): number | null {
@@ -186,7 +186,7 @@ export function installAmount(
 /** Coût + poids d'installation d'une Amélioration navale sur une coque de `lengthM` mètres. PUR. */
 export function installCost(install: NavalInstall, lengthM: number, units = 1): { gold: number | null; enc: number | null } {
   return {
-    gold: installAmount(install.cost, lengthM, units),
+    gold: installAmount(install.installation, lengthM, units),
     enc: install.weightEnc ? installAmount(install.weightEnc, lengthM, units) : 0,
   };
 }

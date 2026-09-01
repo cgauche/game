@@ -20,14 +20,14 @@ const installBandSchema = z.strictObject({
   maison: z.string().optional(),
 });
 
-const installCostSchema = z.union([
+const installBaremeSchema = z.union([
   z.strictObject({ bands: z.array(installBandSchema), per: z.enum(['5m', '10m', 'unite']).optional() }),
   z.literal('modele'),
 ]);
 
 const navalInstallSchema = z.strictObject({
-  cost: installCostSchema,
-  weightEnc: installCostSchema.optional(),
+  installation: installBaremeSchema,
+  weightEnc: installBaremeSchema.optional(),
 });
 
 const doc = document(

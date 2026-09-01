@@ -10,7 +10,7 @@
     "mode": "attack",
     "intent": "portee-arme",
     "candidates": "attaques-disponibles",
-    "cost": "action",
+    "coutAction": "action",
     "keys": [
       "g1-attaque"
     ]
@@ -23,7 +23,7 @@
     "surface": "deduite-du-set",
     "gate": "charge-possible",
     "intent": "portee-charge",
-    "cost": "mouvement",
+    "coutAction": "mouvement",
     "rule": "charger",
     "ruleCategory": "regles",
     "source": {
@@ -43,7 +43,7 @@
     "surface": "grille",
     "gate": "mouvement-restant-fantassin",
     "intent": "portee-course",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "course",
     "ruleCategory": "regles",
     "source": {
@@ -63,7 +63,7 @@
     "surface": "grille",
     "gate": "mouvement-restant-fantassin",
     "intent": "portee-mouvement",
-    "cost": "mouvement",
+    "coutAction": "mouvement",
     "maison": "le déplacement dépense le Mouvement du Tour — imputation du moteur, aucun verbatim de coût cité.",
     "rule": "mouvement",
     "ruleCategory": "regles",
@@ -79,7 +79,7 @@
     "surface": "deduite-du-set",
     "gate": "action-libre-hors-frenesie",
     "run": "battleAim",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "viser",
     "ruleCategory": "regles",
     "source": {
@@ -101,7 +101,7 @@
     "run": "battleReload",
     "candidates": "armes-a-distance",
     "panneau": true,
-    "cost": "action",
+    "coutAction": "action",
     "rule": "recharge",
     "ruleCategory": "qualities",
     "keys": [
@@ -118,7 +118,7 @@
     "gate": "toujours",
     "run": "battleSelectAmmo",
     "candidates": "munitions-compatibles",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "fixe la munition à charger ; le coût réel est celui du Rechargement qui suit."
   },
   {
@@ -129,7 +129,7 @@
     "surface": "deduite-du-set",
     "gate": "toujours",
     "run": "battleTogglePushback",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "arme un MODE d’attaque (la prochaine attaque repousse au lieu de blesser) — le coût est celui de l’attaque.",
     "rule": "perturbante",
     "ruleCategory": "qualities",
@@ -146,7 +146,7 @@
     "gate": "tir-immobile-armable",
     "run": "battleToggleStance",
     "stance": "heldGround",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "la bascule ne consomme rien ; c'est le TIR effectué en posture qui dépense le Mouvement du Tour.",
     "rule": "tir-en-mouvement",
     "ruleCategory": "regles",
@@ -163,7 +163,7 @@
     "gate": "tir-dans-le-tas-armable",
     "run": "battleToggleStance",
     "stance": "intoCrowd",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "la bascule ne consomme rien : elle change la Difficulté du TIR et la cible touchée, pas l'économie du Tour.",
     "rule": "tirer-dans-le-tas",
     "ruleCategory": "regles",
@@ -182,7 +182,7 @@
     "armed": "heal",
     "mode": "heal",
     "candidates": "cibles-soin",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "guerison",
     "ruleCategory": "skills",
     "keys": [
@@ -199,7 +199,7 @@
     "gate": "action-libre-hors-frenesie",
     "run": "battleWater",
     "candidates": "cibles-aspersion",
-    "cost": "action",
+    "coutAction": "action",
     "maison": "coût repris du site historique sans verbatim de coût cité ni Test exigé — à re-vérifier au Source (MDG).",
     "keys": [
       "water"
@@ -214,7 +214,7 @@
     "gate": "action-libre-hors-frenesie",
     "run": "battleUseItem",
     "candidates": "consommables",
-    "cost": "gratuit",
+    "coutAction": "gratuit",
     "source": {
       "book": "livre-de-base",
       "page": 158,
@@ -233,7 +233,7 @@
     "surface": "grille",
     "gate": "action-libre-hors-frenesie-fantassin",
     "run": "battleDefendTotal",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "sur-la-defensive",
     "ruleCategory": "regles",
     "source": {
@@ -253,7 +253,7 @@
     "surface": "grille",
     "gate": "desengagement",
     "run": "battleDisengage",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "desengagement",
     "ruleCategory": "regles",
     "source": {
@@ -276,7 +276,7 @@
     "armed": "cast",
     "mode": "cast",
     "candidates": "sorts-du-heros",
-    "cost": "action",
+    "coutAction": "action",
     "keys": [
       "sort-"
     ]
@@ -294,7 +294,7 @@
     ],
     "run": "battleFocusSpell",
     "candidates": "sorts-du-heros",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "focalisation-etendue",
     "ruleCategory": "regles"
   },
@@ -310,7 +310,7 @@
     "mode": "dispel",
     "candidates": "sorts-dissipables",
     "panneau": true,
-    "cost": "action",
+    "coutAction": "action",
     "rule": "dissipation",
     "ruleCategory": "regles",
     "source": {
@@ -331,7 +331,7 @@
     "gate": "action-libre-hors-frenesie",
     "run": "battleDispelSpell",
     "candidates": "sorts-dissipables",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "dissipation",
     "ruleCategory": "regles",
     "source": {
@@ -349,7 +349,7 @@
     "gate": "avantage-sous-plafond",
     "run": "battleGainAdvantage",
     "candidates": "competences-avantage",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "avantage",
     "ruleCategory": "regles",
     "keys": [
@@ -364,7 +364,7 @@
     "surface": "grille",
     "gate": "action-libre",
     "run": "battleRecoverState",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "en-flammes",
     "ruleCategory": "etats",
     "keys": [
@@ -379,7 +379,7 @@
     "surface": "grille",
     "gate": "action-libre",
     "run": "battleRecoverState",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "empetre",
     "ruleCategory": "etats",
     "keys": [
@@ -394,7 +394,7 @@
     "surface": "grille",
     "gate": "mouvement-intact",
     "run": "battleStandUp",
-    "cost": "mouvement",
+    "coutAction": "mouvement",
     "rule": "a-terre",
     "ruleCategory": "etats",
     "source": {
@@ -416,7 +416,7 @@
       "battement-cible-eligible"
     ],
     "run": "battleBattement",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "battement",
     "ruleCategory": "talents",
     "source": {
@@ -438,7 +438,7 @@
       "distraire-cible-eligible"
     ],
     "run": "battleDistraire",
-    "cost": "mouvement",
+    "coutAction": "mouvement",
     "rule": "distraire",
     "ruleCategory": "talents",
     "source": {
@@ -457,7 +457,7 @@
     "surface": "grille",
     "gate": "action-libre",
     "run": "battleFrenzy",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "frenesie",
     "ruleCategory": "talents",
     "keys": [
@@ -473,7 +473,7 @@
     "gate": "action-libre-hors-frenesie",
     "run": "battleSelfManeuver",
     "candidates": "manoeuvres-sur-soi",
-    "cost": "action",
+    "coutAction": "action",
     "maison": "la Métamorphose consomme DEUX Actions (celle-ci puis le tour perdu) — plafond maison, aucun verbatim de coût cité.",
     "keys": [
       "self-"
@@ -488,7 +488,7 @@
     "gate": "toujours",
     "run": "battleSelectAttack",
     "candidates": "attaques-disponibles",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "ARME l’attaque pour le clic-ennemi ; le coût est celui de l’attaque résolue.",
     "keys": [
       "attaque-"
@@ -503,7 +503,7 @@
     "gate": "action-libre",
     "run": "battleManeuverArea",
     "candidates": "attaques-disponibles",
-    "cost": "action",
+    "coutAction": "action",
     "keys": [
       "attaque-"
     ]
@@ -516,7 +516,7 @@
     "surface": "grille",
     "gate": "determination-en-reserve",
     "run": "battleResolvePsychImmune",
-    "cost": "gratuit",
+    "coutAction": "gratuit",
     "maison": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
     "rule": "determination",
     "ruleCategory": "characteristics"
@@ -529,7 +529,7 @@
     "surface": "grille",
     "gate": "determination-en-reserve",
     "run": "battleResolveIgnoreCrit",
-    "cost": "gratuit",
+    "coutAction": "gratuit",
     "maison": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
     "rule": "determination",
     "ruleCategory": "characteristics"
@@ -543,7 +543,7 @@
     "gate": "determination-en-reserve",
     "run": "battleSpendResolve",
     "candidates": "etats-retirables",
-    "cost": "gratuit",
+    "coutAction": "gratuit",
     "maison": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
     "rule": "determination",
     "ruleCategory": "characteristics"
@@ -557,7 +557,7 @@
     "gate": "mouvement-intact",
     "run": "battleMount",
     "candidates": "montures-adjacentes",
-    "cost": "mouvement",
+    "coutAction": "mouvement",
     "maison": "enfourcher n’exige aucun Test : l’imputation au Mouvement est notre arbitrage (la guideline ne tranche que les actes à Test).",
     "rule": "combat-monte",
     "ruleCategory": "regles",
@@ -573,7 +573,7 @@
     "surface": "geste-d-etat",
     "gate": "mouvement-intact",
     "run": "battleDismount",
-    "cost": "mouvement",
+    "coutAction": "mouvement",
     "maison": "descendre n’exige aucun Test : l’imputation au Mouvement est notre arbitrage.",
     "rule": "combat-monte",
     "ruleCategory": "regles",
@@ -590,7 +590,7 @@
     "gate": "toujours",
     "run": "battleManPoste",
     "candidates": "pieces-servables",
-    "cost": "gratuit",
+    "coutAction": "gratuit",
     "maison": "rejoindre une pièce est GRATUIT (on sert puis on agit le même Round) — arbitrage maison, aucun verbatim de coût cité.",
     "keys": [
       "man-poste"
@@ -604,7 +604,7 @@
     "surface": "geste-d-etat",
     "gate": "action-libre",
     "run": "battleLeavePoste",
-    "cost": "action",
+    "coutAction": "action",
     "maison": "quitter la pièce n’exige aucun Test : l’imputation à l’Action est notre arbitrage.",
     "keys": [
       "leave-poste"
@@ -624,7 +624,7 @@
     "candidates": "piece-poussable",
     "armed": "push",
     "mode": "push",
-    "cost": "mouvement",
+    "coutAction": "mouvement",
     "maison": "pousser l’engin dépense le MOUVEMENT de tout l’équipage — arbitrage maison (aucun Test, la guideline ne tranche pas).",
     "keys": [
       "push-engine"
@@ -638,7 +638,7 @@
     "surface": "grille",
     "gate": "action-libre",
     "run": "battleAidTeam",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "commandant-d-equipe",
     "ruleCategory": "talents",
     "keys": [
@@ -654,7 +654,7 @@
     "gate": "action-libre-hors-frenesie",
     "run": "battlePickup",
     "candidates": "objets-au-sol",
-    "cost": "action",
+    "coutAction": "action",
     "maison": "ramasser n’exige aucun Test : l’imputation à l’Action est notre arbitrage.",
     "keys": [
       "pickup-"
@@ -668,7 +668,7 @@
     "surface": "geste-d-etat",
     "gate": "action-libre",
     "run": "battleShipManeuver",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "test-equipage-manoeuvre",
     "ruleCategory": "regles",
     "keys": [
@@ -685,7 +685,7 @@
     "run": "battleSelectAction",
     "armed": "battery",
     "mode": "battery",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "test-equipage-batterie",
     "ruleCategory": "regles",
     "keys": [
@@ -700,7 +700,7 @@
     "surface": "grille",
     "gate": "navire-action",
     "run": "battleCrewTest",
-    "cost": "action",
+    "coutAction": "action",
     "rule": "test-equipage-rude-epreuve",
     "ruleCategory": "regles",
     "keys": [
@@ -715,7 +715,7 @@
     "surface": "grille",
     "gate": "toujours",
     "run": "battleSingShanty",
-    "cost": "gratuit",
+    "coutAction": "gratuit",
     "maison": "tâche PARALLÈLE : le chant occupe le chanteur, pas l’Action du navire — arbitrage maison (l’acte exige pourtant un Test).",
     "rule": "chanson-de-marin",
     "ruleCategory": "talents",
@@ -731,7 +731,7 @@
     "surface": "grille",
     "gate": "toujours",
     "run": "battleShipReload",
-    "cost": "gratuit",
+    "coutAction": "gratuit",
     "maison": "tâche d’équipage PARALLÈLE : elle occupe l’équipage, pas le tour du navire — arbitrage maison (l’acte exige pourtant un Test).",
     "rule": "recharge",
     "ruleCategory": "qualities",
@@ -747,7 +747,7 @@
     "surface": "gouttiere-arche",
     "gate": "deplacement-annulable",
     "run": "cancelMove",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "annulation d’un déplacement non commis — affordance d’interface, aucun coût de jeu.",
     "keys": [
       "undo-move"
@@ -761,7 +761,7 @@
     "surface": "coin-de-tour",
     "gate": "toujours",
     "run": "battleEndTurn",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "clôture du tour — ne dépense rien (ce qui reste est perdu).",
     "keys": [
       "end-turn"
@@ -775,7 +775,7 @@
     "surface": "bandeau-de-phase",
     "gate": "toujours",
     "run": "roundStart",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "ouverture du Round depuis la pause d’initiative — geste de table, aucun coût de jeu."
   },
   {
@@ -786,7 +786,7 @@
     "surface": "frise",
     "gate": "coop",
     "run": "raiseHand",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "demande de pause au prochain début de Round — geste de table (coop), aucun coût de jeu.",
     "keys": [
       "raise-hand"
@@ -801,7 +801,7 @@
     "gate": "set-commutable",
     "run": "battleSwitchLoadout",
     "candidates": "sets-d-armes",
-    "cost": "gratuit",
+    "coutAction": "gratuit",
     "maison": "la gratuité est RAW (LDB 13 l.106, « dégainer votre arme ») ; le plafond 1×/tour est l’arbitrage maison, porté par `battleSwitchLoadout`.",
     "source": {
       "book": "livre-de-base",
@@ -820,7 +820,7 @@
     "mode": "cleave",
     "exitSafe": false,
     "role": "valide",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "clore le balayage ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
   },
   {
@@ -834,7 +834,7 @@
     "mode": "dual",
     "exitSafe": false,
     "role": "renonce",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "renoncer à la 2ᵉ frappe ne dépense rien de plus (l’Action est déjà payée) — coût nul, arbitrage d’interface."
   },
   {
@@ -848,7 +848,7 @@
     "mode": "overcast",
     "exitSafe": true,
     "role": "valide",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "revenir à la modale avec les cibles désignées ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
   },
   {
@@ -862,7 +862,7 @@
     "mode": "placing-zone",
     "exitSafe": true,
     "role": "renonce",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "reposer le gabarit — retour à la modale du sort, ou placeur du pilonnage refermé — ne commet aucun acte de jeu : coût nul, arbitrage d’interface."
   },
   {
@@ -876,7 +876,7 @@
     "mode": "battery",
     "exitSafe": true,
     "role": "renonce",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "désarmer la désignation de bordée ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
   },
   {
@@ -890,7 +890,7 @@
     "mode": "teleport",
     "exitSafe": false,
     "role": "valide",
-    "cost": "aucun",
+    "coutAction": "aucun",
     "maison": "la case d’arrivée se choisit après un sort déjà payé ; arriver sur sa propre case ne coûte rien de plus — arbitrage d’interface."
   }
 ]

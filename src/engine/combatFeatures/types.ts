@@ -83,7 +83,7 @@ export interface CombatFeature {
    *  désengager. Déclarée en DONNÉE (variante `variants[].combat`, active en mode Avantage de groupe) ;
    *  offerte par le chooser de défense (`shieldReactionCost`), débitée par `campSpend`, résolue par
    *  `applyShieldReaction`. */
-  advantageDefenseReaction?: { cost: number };
+  advantageDefenseReaction?: { avantage: number };
   /** Contre-attaque en gagnant un Test opposé de défense en mêlée (Champion LDB 85 sans condition d'arme ;
    *  Riposte LDB 10 avec `counterRequiresFastParry`). GÉNÉRIQUE : tout talent/trait qui le déclare contre. */
   counterOnDefenseWin?: boolean;

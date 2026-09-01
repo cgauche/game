@@ -347,7 +347,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'attackWardFM': return { op: 'attackWardFM' };
     case 'grantWeapon': return { op: 'grantWeapon', label: '', damage: { bonusOf: 'force-mentale' } };
     case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', label: '', damage: 3 };
-    case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', cost: { advantageOrMovement: true } };
+    case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', advantageOrMovement: true };
     case 'grantTrait': return { op: 'grantTrait', traitId: '' };
     case 'removeTrait': return { op: 'removeTrait', traitId: '' };
     case 'grantPsychTrait': return { op: 'grantPsychTrait', psychType: '' };

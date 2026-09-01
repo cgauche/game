@@ -120,7 +120,7 @@ describe('inferFields porte le libellé sans perdre la clé', () => {
 
 /**
  * L'ENVELOPPE n'existe qu'au PREMIER NIVEAU. Population réelle mesurée : `naval-traits.json`
- * `install.cost.bands[]` porte `maison` sur 20 entrées, `activities.json` `outcomes[].ops[]` porte
+ * `install.installation.bands[]` porte `maison` sur 20 entrées, `activities.json` `outcomes[].ops[]` porte
  * `id` (« extenue ») sur 20 ops — homonymes de champs d'enveloppe, à NE PAS libeller.
  */
 describe('régime PROFONDEUR — pas de fuite des libellés d’enveloppe dans les sous-formulaires', () => {

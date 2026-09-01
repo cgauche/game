@@ -94,7 +94,7 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
     const choice = eff?.flow;
     expect(choice?.kind).toBe('choice');
     if (choice?.kind !== 'choice') throw new Error('flow doit être un choice');
-    expect(choice.cost?.advantage).toBe(2);
+    expect(choice.advantageCost).toBe(2);
     // Branche `yes` = Test OPPOSÉ Force/Athlétisme des deux côtés (défenseur jette F+athletisme,
     // attaquant pré-jeté opposed{F+athletisme}).
     const test = choice.yes;

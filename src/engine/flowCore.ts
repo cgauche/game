@@ -494,7 +494,7 @@ export type Flow<E = EffectOp> =
   | { kind: 'do'; effect: E }
   | { kind: 'if'; cond: Condition; then: Flow<E>; else?: Flow<E> }
   | { kind: 'test'; test: FlowTest; success: Flow<E>; fail: Flow<E> }
-  | { kind: 'choice'; prompt: string; cost?: { advantage: number }; icon?: string; yes: Flow<E>; no?: Flow<E> };
+  | { kind: 'choice'; prompt: string; advantageCost?: number; icon?: string; yes: Flow<E>; no?: Flow<E> };
 
 /** Flow vide (séquence sans étape) — neutre, sûr comme valeur par défaut d'un consommateur. */
 export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
@@ -695,7 +695,7 @@ export function spellFlowFor<E = EffectOp>(flow: Flow<E> | undefined, on: 'targe
       case 'seq': return { kind: 'seq', steps: f.steps.map(keep) };
       case 'if': return { kind: 'if', cond: f.cond, then: keep(f.then), ...(f.else ? { else: keep(f.else) } : {}) };
       case 'test': return { kind: 'test', test: f.test, success: keep(f.success), fail: keep(f.fail) };
-      case 'choice': return { kind: 'choice', prompt: f.prompt, ...(f.cost ? { cost: f.cost } : {}), ...(f.icon ? { icon: f.icon } : {}), yes: keep(f.yes), ...(f.no ? { no: keep(f.no) } : {}) };
+      case 'choice': return { kind: 'choice', prompt: f.prompt, ...(f.advantageCost != null ? { advantageCost: f.advantageCost } : {}), ...(f.icon ? { icon: f.icon } : {}), yes: keep(f.yes), ...(f.no ? { no: keep(f.no) } : {}) };
     }
   };
   return keep(flow);

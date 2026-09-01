@@ -61,7 +61,7 @@ describe('raise-hand — interrupteur, jamais un latch', () => {
     expect(battle().acted, 'le retrait a dépensé l’Action').toBe(false);
     expect(battle().movementUsed, 'le retrait a dépensé du Mouvement').toBe(0);
     expect(battle().log.length, 'la pose et son retrait se disent tous deux au journal').toBe(2);
-    expect(findActionById('raise-hand')!.cost).toBe('aucun');
+    expect(findActionById('raise-hand')!.coutAction).toBe('aucun');
   });
 
   it('un retrait SANS demande en cours est inerte (aucune ligne de journal fantôme)', () => {

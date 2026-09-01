@@ -357,7 +357,7 @@ export function humanizeFlow(f: Flow): string {
       return `Jet${opp} de ${who} : en cas de réussite, ${humanizeFlow(f.success)} ; en cas d'échec, ${humanizeFlow(f.fail)}`;
     }
     case 'choice':
-      return `Au choix${f.cost ? ` (${f.cost.advantage} Avantage)` : ''} « ${f.prompt} » : si oui, ${humanizeFlow(f.yes)}${f.no ? ` ; sinon ${humanizeFlow(f.no)}` : ''}`;
+      return `Au choix${f.advantageCost != null ? ` (${f.advantageCost} Avantage)` : ''} « ${f.prompt} » : si oui, ${humanizeFlow(f.yes)}${f.no ? ` ; sinon ${humanizeFlow(f.no)}` : ''}`;
   }
   return assertNever(f);
 }

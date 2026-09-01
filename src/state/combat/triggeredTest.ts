@@ -666,8 +666,8 @@ registerCascadeApplier('triggeredTest', (get, set, step, hero) => {
 });
 
 /** Le coût d'Avantage d'un nœud `choice` est-il payable par le décideur ? (Coût absent ⇒ gratuit ⇒ oui.) */
-function choiceAffordable(decider: Combatant | undefined, cost?: { advantage: number }): boolean {
-  return !cost || (decider?.advantage ?? 0) >= cost.advantage;
+function choiceAffordable(decider: Combatant | undefined, advantageCost?: number): boolean {
+  return advantageCost == null || (decider?.advantage ?? 0) >= advantageCost;
 }
 
 /**
@@ -688,7 +688,7 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
     // Décideur surfacé : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal),
     // routée au siège qui tient le décideur — l'hôte ne tranche ni ne dépense l'Avantage d'autrui.
     // Le coût (en libellé) est joint au « Oui » ; l'option est tranchée par `cascadeChoose`.
-    const yesLabel = node.cost ? `${node.prompt} (${node.cost.advantage} Av)` : node.prompt;
+    const yesLabel = node.advantageCost != null ? `${node.prompt} (${node.advantageCost} Av)` : node.prompt;
     // CIBLE de la branche : quand la branche vise une AUTRE unité que le décideur (`on:'victim'` —
     // Déstabilisante : le porteur décide, le Test opposé vise la VICTIME), on sérialise son id pour le
     // restaurer en `ctx.target` côté applier (sinon la branche viserait le décideur → Test sur soi-même).
@@ -700,7 +700,7 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
       defaultChoice: 'no',
       meta: {
         choiceYes: node.yes, choiceNo: node.no ?? EMPTY_FLOW, after,
-        ...(node.cost ? { choiceCost: node.cost.advantage } : {}),
+        ...(node.advantageCost != null ? { choiceCost: node.advantageCost } : {}),
         ...(branchTargetId ? { choiceTargetId: branchTargetId } : {}),
         // ENTITÉ PORTEUSE (ids) : la branche `yes` porte souvent LE Test (« Vous pouvez… » → jet) — sans
         // ce relais, le Test ouvert par le OUI perdrait son porteur et n'aurait plus d'enjeu (#1262 V2 L6d).
@@ -711,8 +711,8 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
     return;
   }
   // Ennemi / héros rapide-auto : décision INLINE (oui si payable). Dépense le coût puis joue la branche.
-  const yes = choiceAffordable(decider, node.cost);
-  if (yes && node.cost && decider) campSpend(ctx.get, decider, node.cost.advantage); // débite la réserve du camp (mode groupe) / le combattant (LDB)
+  const yes = choiceAffordable(decider, node.advantageCost);
+  if (yes && node.advantageCost != null && decider) campSpend(ctx.get, decider, node.advantageCost); // débite la réserve du camp (mode groupe) / le combattant (LDB)
   runCombatFlow({ ...ctx }, yes ? node.yes : (node.no ?? EMPTY_FLOW));
   if (after !== EMPTY_FLOW) runCombatFlow({ ...ctx }, after);
 }

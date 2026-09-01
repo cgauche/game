@@ -3447,10 +3447,10 @@ function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extra
   if ((uses[fa.key] ?? 0) >= fa.cap) return; // plafond /Round atteint (= niveau du talent)
   const ck = `${fa.key}:${target.id}`;
   if (op.perChargerOncePerRound && (uses[ck] ?? 0) >= 1) return; // 1 riposte par chargeur (Frappe réactive)
-  if (op.cost?.advantage != null && actor.advantage < op.cost.advantage) return; // Avantage insuffisant
-  if (op.cost?.advantageOrMovement && actor.advantage <= 0) return; // simplifié : Avantage requis (« ou Mouvement » = raffinement)
-  if (op.cost?.advantage != null) campSpend(get, actor, op.cost.advantage); // réserve du camp en mode groupe (AA 11 l.30-38) / le combattant (LDB)
-  else if (op.cost?.advantageOrMovement) campSpend(get, actor, 1);
+  if (op.advantageCost != null && actor.advantage < op.advantageCost) return; // Avantage insuffisant
+  if (op.advantageOrMovement && actor.advantage <= 0) return; // simplifié : Avantage requis (« ou Mouvement » = raffinement)
+  if (op.advantageCost != null) campSpend(get, actor, op.advantageCost); // réserve du camp en mode groupe (AA 11 l.30-38) / le combattant (LDB)
+  else if (op.advantageOrMovement) campSpend(get, actor, 1);
   actor.freeAttacksThisTurn = { ...uses, [fa.key]: (uses[fa.key] ?? 0) + 1, ...(op.perChargerOncePerRound ? { [ck]: 1 } : {}) };
   const prevActed = get().battle?.acted ?? false; // gratuite : Action préservée
   // Défenseur SURFACÉ : la frappe passe par la MÊME couture d'ouverture que les autres gratuites

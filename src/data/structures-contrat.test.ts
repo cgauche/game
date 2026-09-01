@@ -214,7 +214,15 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // `giveXp.amount`. Les 3 signatures NOMMÉES par la garde sont la MEME enveloppe `{montant, type}`, une
 // par projet porteur ; ce qu'elles remplacent (`{gold,type}`, `{silver,type}`, `{gold,silver,type}`)
 // était compté DIVERGENT au stock des formes, d'où la hausse ici et la baisse de 8 lignes là-bas.
-const PLAFOND_HORS_STRATE = 1152;
+// #1463 L-monnaie-4 (1152→1157) : AUCUNE structure neuve — le nom `cost` rend son type. Sept formes
+// quittent `STRUCTURES_ORPHELINES` (elles n'y étaient QUE parce que le NOM `cost` est réservé) et
+// rejoignent le hors-strate à l'identique : `install {installation}` / `{installation,weightEnc}`,
+// `flow {advantageCost,…}`, `advantageDefenseReaction {avantage}`, `prosthesisTraining` ×3 — d'où la
+// hausse ici et la baisse de 7 lignes (29 occurrences) là-bas. Trois autres sont des RENOMMAGES 1:1
+// (`cost|bands` → `installation|bands`, `cost|bands,per`, `ops {cost,…}` → `ops {advantageOrMovement,…}`),
+// et DEUX enveloppes à clef unique DISPARAISSENT, aplaties sur leur porteur (`qualities cost {advantage}`,
+// `talents cost {advantageOrMovement}`). Solde net +7 − 2 = +5.
+const PLAFOND_HORS_STRATE = 1157;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -832,13 +840,18 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (53 occurrences) — 44 `giveMoney` enveloppés dans `montant`, et les 9 montants PARTIELS
       // (`activities.minInvest`, coûts de choix d'arène) reconnus CIBLES par le lexique. Le concept
       // monnaie ne pèse plus AUCUNE ligne au stock des formes.
-      'L4 #1463': 113,
+      // … puis 113 → 112 (L-monnaie-4) : l'HOMONYME `cost` sort — le nom ne porte plus que la monnaie
+      // (8 tarifs d'arène), les 85 porteurs d'un autre type ayant reçu le nom de ce qu'ils chiffrent.
+      'L4 #1463': 112,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`
       // n'est plus un nom de concept réservé.
       // … puis 104 → 105 (#717) — l'ouverture du chapitre 1 et sa `source` embarquée (même motif).
-      '#1553': 105,
+      // … puis 105 → 98 (#1463 L-monnaie-4) — 7 lignes sortent : elles n'étaient ORPHELINES que par le
+      // NOM `cost`, rendu à son type (naval `install` ×2, `qualities.flow`, `advantageDefenseReaction`,
+      // `prosthesisTraining` ×3 ; 29 occurrences).
+      '#1553': 98,
     };
     expect(
       Object.keys(plafonds).sort(),

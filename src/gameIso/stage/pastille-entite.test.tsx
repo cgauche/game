@@ -400,7 +400,7 @@ describe('Pastille d’entité — le geste vit sur ce qui l’offre (#1411 P2-C
 describe('Pastille d’entité — le REGISTRE est la surface (aucun id d’action dans le rendu)', () => {
   const FABRIQUÉE: ActionDef = {
     id: 'geste-fabrique', label: 'Geste fabriqué', icon: 'action/mount', surface: 'pastille-entite',
-    gate: 'toujours', candidates: 'candidats-fabriques', cost: 'gratuit',
+    gate: 'toujours', candidates: 'candidats-fabriques', coutAction: 'gratuit',
   } as ActionDef;
 
   beforeEach(() => {

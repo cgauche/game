@@ -48,7 +48,7 @@ function kindOf(key: string, v: unknown): FieldKind {
 /**
  * RÉGIME de libellé d'un champ : à quel étage du document il vit, et quelle méta d'édition le nomme.
  * L'enveloppe (`id`/`desc`/`source`…) n'existe qu'au PREMIER NIVEAU : un `maison` de bande de coût
- * (`naval-traits.json install.cost.bands[]`) ou un `id` d'op (`activities.json outcomes[].ops[]`) n'est
+ * (`naval-traits.json install.installation.bands[]`) ou un `id` d'op (`activities.json outcomes[].ops[]`) n'est
  * PAS le champ d'enveloppe du même nom — lui poser « Arbitrage maison » / « Identifiant » mentirait.
  */
 export interface RegimeDeLibelle {

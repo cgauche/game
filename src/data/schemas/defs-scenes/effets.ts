@@ -703,7 +703,7 @@ export const sceneFlowSchema: z.ZodType<Flow<Effect>> = z.lazy(() =>
     z.strictObject({
       kind: z.literal('choice'),
       prompt: z.string(),
-      cost: z.strictObject({ advantage: z.number() }).optional(),
+      advantageCost: z.number().optional(),
       icon: z.string().optional(),
       yes: sceneFlowSchema,
       no: sceneFlowSchema.optional(),

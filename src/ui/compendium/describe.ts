@@ -54,7 +54,7 @@ function flowSummary(f: Flow): string {
       return `jet${opp} ${who} → réussite : ${flowSummary(f.success)} / échec : ${flowSummary(f.fail)}`;
     }
     case 'choice':
-      return `choix${f.cost ? ` (${f.cost.advantage} Av)` : ''} « ${f.prompt} » → oui : ${flowSummary(f.yes)}${f.no ? ` / non : ${flowSummary(f.no)}` : ''}`;
+      return `choix${f.advantageCost != null ? ` (${f.advantageCost} Av)` : ''} « ${f.prompt} » → oui : ${flowSummary(f.yes)}${f.no ? ` / non : ${flowSummary(f.no)}` : ''}`;
   }
 }
 

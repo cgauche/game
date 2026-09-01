@@ -198,7 +198,7 @@ const EFFECTIVE: Record<string, { off: CombatFeature | undefined; on: CombatFeat
     off: { keepAdvantageOnDisengage: true, disengageWithLessAdvantage: true },
     on: { keepAdvantageOnDisengage: false, disengageWithLessAdvantage: false, retreatCost: 1 },
   },
-  'porte-bouclier': { off: { shieldAdvantage: true }, on: { shieldAdvantage: false, advantageDefenseReaction: { cost: 2 } } },
+  'porte-bouclier': { off: { shieldAdvantage: true }, on: { shieldAdvantage: false, advantageDefenseReaction: { avantage: 2 } } },
   'rechargement-rapide': { off: { reloadDR: 'all' }, on: { reloadDR: 'all', reloadAssessAdvantage: true } },
   'renversement': { off: { stealAdvantage: true }, on: { stealAdvantage: false, stealOne: true } },
   // VDM #734 : la variante révisée de Concocter ne touche aucune `CombatFeature` (elle republie

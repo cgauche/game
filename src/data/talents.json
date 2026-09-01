@@ -279,9 +279,7 @@
                 "op": "grantFreeAttack",
                 "weapon": "held",
                 "when": "immediate",
-                "cost": {
-                  "advantageOrMovement": true
-                }
+                "advantageOrMovement": true
               }
             ]
           }
@@ -3917,7 +3915,7 @@
         "combat": {
           "shieldAdvantage": false,
           "advantageDefenseReaction": {
-            "cost": 2
+            "avantage": 2
           }
         }
       }

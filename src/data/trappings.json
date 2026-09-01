@@ -7110,22 +7110,22 @@
     "label": "Crochet",
     "prosthesisTraining": [
       {
-        "cost": 100,
+        "px": 100,
         "reduces": 5,
         "label": "racheter 5 points de la pénalité"
       },
       {
-        "cost": 100,
+        "px": 100,
         "reduces": 5,
         "label": "racheter 5 points de la pénalité"
       },
       {
-        "cost": 100,
+        "px": 100,
         "reduces": 5,
         "label": "racheter 5 points de la pénalité"
       },
       {
-        "cost": 100,
+        "px": 100,
         "reduces": 5,
         "grants": "all",
         "label": "retirer la pénalité entière"
@@ -7193,12 +7193,12 @@
     "label": "Fausse jambe",
     "prosthesisTraining": [
       {
-        "cost": 100,
+        "px": 100,
         "grants": "movement",
         "label": "récupérer le dernier Point de Mouvement perdu"
       },
       {
-        "cost": 200,
+        "px": 200,
         "grants": "all",
         "label": "réapprendre à utiliser Esquive"
       }

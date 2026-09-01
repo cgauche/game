@@ -179,7 +179,7 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     expect(
       parMotif,
       'la répartition PAR MOTIF des orphelines a bougé : l’en-tête du stock la CITE ligne à ligne, elle ne peut pas dériver en silence.',
-    ).toEqual({ 'clé réservée': { lignes: 103, occurrences: 437 }, 'identité non résolue': { lignes: 2, occurrences: 2 } });
+    ).toEqual({ 'clé réservée': { lignes: 96, occurrences: 408 }, 'identité non résolue': { lignes: 2, occurrences: 2 } });
     expect(
       parMotif['clé de référence non résolue'],
       'la branche `clé de référence non résolue` (la SEULE que la prose décrivait) s’est peuplée : l’en-tête doit alors la décrire pour de bon.',
@@ -197,12 +197,12 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
       .split('export const STRUCTURES_ORPHELINES')[0]
       .split('/** Objet qui ANNONCE une référence');
     const entete = blocs[blocs.length - 1];
-    for (const chiffre of ['103', '437', '2', '65', '144', '105']) {
+    for (const chiffre of ['96', '408', '2', '65', '144', '98']) {
       expect(entete, `l’en-tête des orphelines ne cite plus le compte \`${chiffre}\` qu’il affirme.`).toContain(chiffre);
     }
     expect(
       entete,
-      'l’en-tête des orphelines réaffirme « la valeur pointe vers rien » — mesuré FAUX pour les 103 lignes `clé réservée` : le déclencheur est le NOM de la clé, pas la valeur.',
+      'l’en-tête des orphelines réaffirme « la valeur pointe vers rien » — mesuré FAUX pour les 96 lignes `clé réservée` : le déclencheur est le NOM de la clé, pas la valeur.',
     ).not.toContain('la valeur pointe vers rien');
   });
 });

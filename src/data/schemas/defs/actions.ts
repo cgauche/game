@@ -48,7 +48,7 @@ const surfaceSchema = z.enum([
 ]);
 
 /** Ce que l'acte consomme dans l'économie du Tour. */
-const costSchema = z.enum(['action', 'mouvement', 'gratuit', 'aucun']);
+const coutActionSchema = z.enum(['action', 'mouvement', 'gratuit', 'aucun']);
 
 /** Vue des champs que les deux raffinements lisent — le nœud pré-sceau est `ZodObject<ZodRawShape>`,
  *  son `v` arrive donc en `unknown`. */
@@ -93,7 +93,7 @@ const doc = document(
     /** POSTURE de tir pré-armée basculée par cette action (`BattleState.stances`, champ du
      *  `PendingAttack` qu'elle pré-remplit) — exigée par le dispatcher `battleToggleStance`. */
     stance: z.enum(['heldGround', 'intoCrowd']).optional(),
-    cost: costSchema,
+    coutAction: coutActionSchema,
     /** FOYER de la règle : id de l'entrée Codex qui la porte (jamais une phrase recomposée). */
     rule: z.string().optional(),
     /** Catégorie Codex du foyer (`'regles'`, `'talents'`, `'etats'`…) — exigée avec `rule`. */
@@ -141,7 +141,7 @@ const doc = document(
       label: 'Posture de tir pré-armée',
       hint: 'Posture basculée par cette action (tenir sa position/foncer dans la mêlée)',
     },
-    cost: { label: 'Coût en Action', hint: 'Ce que l’acte consomme dans l’économie du Tour (Action/Mouvement/gratuit/aucun)' },
+    coutAction: { label: 'Coût en Action', hint: 'Ce que l’acte consomme dans l’économie du Tour (Action/Mouvement/gratuit/aucun)' },
     rule: { label: 'Règle associée', hint: 'Identifiant de l’entrée Codex qui porte la règle' },
     ruleCategory: { label: 'Catégorie de la règle' },
     keys: {

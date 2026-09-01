@@ -201,7 +201,7 @@ export function shieldAdvantageLevel(c: Combatant, parryWeapon: Weapon | undefin
  *  `effectiveEntry`, `src/engine/variants.ts`). */
 export function shieldReactionCost(c: Combatant, parryWeapon: Weapon | undefined): number {
   if (!parryWeapon || !isShieldItem(parryWeapon)) return 0;
-  for (const { def } of featuresOf(c)) if (def.advantageDefenseReaction) return def.advantageDefenseReaction.cost;
+  for (const { def } of featuresOf(c)) if (def.advantageDefenseReaction) return def.advantageDefenseReaction.avantage;
   return 0;
 }
 

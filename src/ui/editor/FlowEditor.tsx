@@ -41,7 +41,7 @@ function nodeSummary(node: Flow, ctx: Ctx): string | JSX.Element {
     case 'do': return <><Icon id={EFFECT_ICON[node.effect.type]} size="sm" /> {effectSummary(node.effect, ctx)}</>;
     case 'if': return <><Icon id="ui/branch" size="sm" /> Si {condSummary(node.cond)}{node.else != null ? ' · sinon…' : ''}</>;
     case 'test': return <><Icon id="nav/dice" size="sm" /> Test {node.test.skill ? refLabel('skills', node.test.skill) : (node.test.characteristic || '?')} → ✓ / ✗</>;
-    case 'choice': return <><Icon id="ui/balance" size="sm" /> Choix{node.cost ? ` (${node.cost.advantage} Av)` : ''} « {node.prompt} » → ✓ / ✗</>;
+    case 'choice': return <><Icon id="ui/balance" size="sm" /> Choix{node.advantageCost != null ? ` (${node.advantageCost} Av)` : ''} « {node.prompt} » → ✓ / ✗</>;
     case 'seq': return `▸ ${node.steps.length} bloc(s)`;
   }
 }

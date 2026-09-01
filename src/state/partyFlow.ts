@@ -662,10 +662,10 @@ export function trainProsthesis(get: Get, set: Set, heroId: string, uid: string)
         msg = done ? t('pf.prosthesisTrained', { name: clone.label, item: it.label }) : t('pf.prosthesisNotTrainable', { name: clone.label });
         return h;
       }
-      if ((clone.xp ?? 0) < tier.cost) { msg = t('pf.notEnoughXp', { name: clone.label, cost: tier.cost }); return h; }
-      clone.xp = (clone.xp ?? 0) - tier.cost;
+      if ((clone.xp ?? 0) < tier.px) { msg = t('pf.notEnoughXp', { name: clone.label, cost: tier.px }); return h; }
+      clone.xp = (clone.xp ?? 0) - tier.px;
       grantProsthesisTier(it, tier);
-      msg = t('pf.prosthesisTierBought', { name: clone.label, item: it.label, tier: tier.label, cost: tier.cost });
+      msg = t('pf.prosthesisTierBought', { name: clone.label, item: it.label, tier: tier.label, cost: tier.px });
       return clone;
     }),
   }));

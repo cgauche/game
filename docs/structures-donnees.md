@@ -507,7 +507,7 @@ nombre d’entrées qui la portent.
 | Document | Racine JSON | Famille déclarée | Famille mesurée | Entrées | Clés de 1er niveau |
 |---|---|---|---|---|---|
 | `src/data/aa-criticals.json` | object | pipe à la racine | config | 1 | `bras`:array(1) `corps`:array(1) `id`:string(1) `jambe`:array(1) `label`:string(1) `tete`:array(1) `type`:string(1) |
-| `src/data/actions.json` | array | liste | entité | 55 | `armed`:string(5) `candidates`:string(20) `cost`:string(55) `exitSafe`:boolean(6) `gate`:array/string(55) `hote`:string(1) `icon`:string(55) `id`:string(55) `intent`:string(4) `keys`:array(41) `label`:string(55) `maison`:string(30) `mode`:string(12) `panneau`:boolean(2) `role`:string(6) `rule`:string(32) `ruleCategory`:string(32) `run`:string(52) `source`:object(12) `stance`:string(2) `surface`:string(55) `type`:string(55) |
+| `src/data/actions.json` | array | liste | entité | 55 | `armed`:string(5) `candidates`:string(20) `coutAction`:string(55) `exitSafe`:boolean(6) `gate`:array/string(55) `hote`:string(1) `icon`:string(55) `id`:string(55) `intent`:string(4) `keys`:array(41) `label`:string(55) `maison`:string(30) `mode`:string(12) `panneau`:boolean(2) `role`:string(6) `rule`:string(32) `ruleCategory`:string(32) `run`:string(52) `source`:object(12) `stance`:string(2) `surface`:string(55) `type`:string(55) |
 | `src/data/activities.json` | array | liste | entité | 62 | `assisted`:boolean(1) `blocked`:object(7) `classGate`:object(12) `combined`:boolean(2) `contexts`:array(62) `desc`:string(61) `difficulty`:string(51) `difficultyFrom`:object(1) `encounter`:string(3) `extended`:object(1) `failExtenue`:boolean(7) `freeSkill`:boolean(1) `generalDownOn`:string(2) `grantsFlag`:string(2) `hold`:object(1) `icon`:string(62) `id`:string(62) `label`:string(62) `maison`:string(8) `minInvest`:object(1) `onSuccess`:array(1) `outcomes`:array(35) `requires`:array(2) `resolver`:string(21) `rounds`:number(7) `rule`:string(1) `ruleCategory`:string(1) `sceneKind`:string(13) `skills`:array(48) `source`:object(62) `stageOutcome`:string(7) `stake`:string(46) `stakeForm`:string(46) `testModFrom`:string(1) `threat`:object(1) `type`:string(62) `unavailableIfExtenue`:boolean(1) `weatherMod`:object(2) `where`:array(5) |
 | `src/data/advancementCosts.json` | array | liste | table | 15 | `coutCarac`:number(15) `coutCompetence`:number(15) `id`:string(15) `label`:string(15) `max`:null/number(15) `min`:number(15) `source`:object(15) `type`:string(15) |
 | `src/data/ambiance.json` | object | pipe à la racine | config | 1 | `ambientFloor`:number(1) `entreeEnScene`:object(1) `faceShade`:object(1) `fogTint`:object(1) `id`:string(1) `iso`:object(1) `label`:string(1) `pov`:object(1) `type`:string(1) |
@@ -1117,7 +1117,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **838** (cible 360 · declaree 6 · historique 117 · divergente 355). Objets JSON parcourus : **48173**, dont **31765** portent une forme
+Lignes concept × dataset × champ × forme : **838** (cible 360 · declaree 6 · historique 117 · divergente 355). Objets JSON parcourus : **48171**, dont **31765** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -2056,7 +2056,6 @@ ne FORCE aucun concept — seul `price` nomme le concept `prix`, parce que `Pric
 |---|---|---|---|
 | `char` | object \\| string | 865 | **object** creatures.json:493 vehicles.json:29 structures.json:24 loup-et-saumure-projet.json:8 barge-du-sel-projet.json:4 arene-projet.json:3 — **string** mutations.json:56 spells.json:42 stars.json:42 symptoms.json:34 trappings.json:24 traits.json:21 talents.json:17 tables.json:15 … |
 | `price` | null \\| number \\| object \\| string | 520 | **null** trappings.json:46 — **number** land-cargo.json:6 — **object** trappings.json:392 vehicles.json:31 creatures.json:14 sea-cargo.json:11 mass-battle.json:10 land-cargo.json:7 — **string** trappings.json:3 |
-| `cost` | number \\| object \\| string | 93 | **number** trappings.json:6 talents.json:1 — **object** naval-traits.json:20 arene-projet.json:8 qualities.json:1 talents.json:1 — **string** actions.json:55 naval-traits.json:1 |
 | `count` | number \\| object | 92 | **number** spells.json:16 loup-et-saumure-projet.json:6 creatures.json:5 tavernGames.json:3 traits.json:2 sea-shanties.json:1 trappings.json:1 vehicles.json:1 … — **object** careerLevels.json:50 classes.json:3 creatures.json:1 spells.json:1 traits.json:1 |
 
 ### 3.13 Paramètres d’entité (`arg`) et régimes de `price`
@@ -2296,14 +2295,13 @@ lexique), pas une valeur qui pointerait vers rien — le contenu de ces objets e
 clé `source` à elle seule en déclenche la majorité. Ce motif-là se solde au VOCABULAIRE (#1463 S2 :
 un nom de concept est réservé à son type), pas en curant un contenu ni en posant une enveloppe.
 
-**105** signatures orphelines, **439** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 103 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 105.
+**98** signatures orphelines, **410** occurrences. Par motif : `clé de référence non résolue` 0 · `clé réservée` 96 · `identité non résolue` 2. Le lot `L1a #1466` porte donc 0 ligne(s) ici, `#1553` en porte 98.
 
 | Dataset | Champ | Signature | Motif | Occurrences |
 |---|---|---|---|---|
 | `talents.json` | `matches` | `manual,skill` | clé réservée | 74 |
 | `talents.json` | `matches` | `skill` | clé réservée | 34 |
 | `careerLevels.json` | `trappings` | `count,text` | clé réservée | 28 |
-| `naval-traits.json` | `install` | `cost,weightEnc` | clé réservée | 20 |
 | `vehicles.json` | `hull` | `bodyShape,char,propulsion,rig` | clé réservée | 18 |
 | `domains.json` | `windModifiers` | `desc,dr,source,tests,when` | clé réservée | 17 |
 | `vehicles.json` | `purchase` | `price` | clé réservée | 17 |
@@ -2328,7 +2326,6 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `sea-navigation.json` | `lowMPenalty` | `dr,m,source` | clé réservée | 3 |
 | `sea-perils.json` | `gestionDesPerils` | `avoid,distanceM,source,spot` | clé réservée | 3 |
 | `talents.json` | `matches` | `skill,specFromInstance` | clé réservée | 3 |
-| `trappings.json` | `prosthesisTraining` | `cost,label,reduces` | clé réservée | 3 |
 | `arcane-phenomena.json` | `niMods` | `desc,divide,round,scope,source` | clé réservée | 2 |
 | `arcane-phenomena.json` | `testMods` | `desc,dr,drDie,drMax,source,tests` | clé réservée | 2 |
 | `arcane-phenomena.json` | `testMods` | `desc,dr,drMax,maison,scope,source,tests` | clé réservée | 2 |
@@ -2343,7 +2340,6 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `talents.json` | `variants` | `combat,desc,source,test,when` | clé réservée | 2 |
 | `talents.json` | `variants` | `desc,source,when` | clé réservée | 2 |
 | `tavernGames.json` | `phases` | `count,rounds` | clé réservée | 2 |
-| `trappings.json` | `prosthesisTraining` | `cost,grants,label` | clé réservée | 2 |
 | `trappings.json` | `test` | `label,skill` | clé réservée | 2 |
 | `vehicles.json` | `hull` | `bodyShape,char,criticalTable,locationTable,propulsion,rig` | clé réservée | 2 |
 | `arcane-phenomena.json` | `saturation` | `blocksPropagation,desc,source` | clé réservée | 1 |
@@ -2369,9 +2365,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `land-cargo.json` | `buy` | `availabilityMultiplier,merchantSkill,minEnc,partialSurchargePct,source,wineAlcoholResistThreshold,wineEvalDifficulty,wineEvalEasyDifficulty` | clé réservée | 1 |
 | `land-cargo.json` | `sell` | `commerceBonus,dumpingPctOfBase,offerByRichesse,source,targetPerSize` | clé réservée | 1 |
 | `localisation.json` | `personnage` | `shapes,source` | clé réservée | 1 |
-| `naval-traits.json` | `install` | `cost` | clé réservée | 1 |
 | `qualities.json` | `test` | `characteristic,opposed,skill` | clé réservée | 1 |
-| `qualities.json` | `flow` | `cost,icon,kind,no,prompt,yes` | clé réservée | 1 |
 | `qualities.json` | `test` | `opposed,skill` | clé réservée | 1 |
 | `river-navigation.json` | `echouage` | `hullDamage,source` | clé réservée | 1 |
 | `river-navigation.json` | `outOfControl` | `navPenalty,source` | clé réservée | 1 |
@@ -2398,22 +2392,20 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `ship-construction.json` | `propulsion` | `secondaryMalus,secondaryMinM,source` | clé réservée | 1 |
 | `spells.json` | `variants` | `cn,desc,source,when` | clé réservée | 1 |
 | `spells.json` | `variants` | `desc,duration,source,when` | clé réservée | 1 |
-| `talents.json` | `advantageDefenseReaction` | `cost` | clé réservée | 1 |
 | `talents.json` | `variants` | `desc,source,test,when` | clé réservée | 1 |
 | `tavernGames.json` | `second` | `char` | clé réservée | 1 |
 | `tavernGames.json` | `dice` | `count,faces` | clé réservée | 1 |
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
-| `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **12538** objets sur **48173** ne sont portés par AUCUNE
+Au-delà des orphelines, **12565** objets sur **48171** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1152** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1157** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2499,6 +2491,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `traits.json` | `indice` | `label` | 22 |
 | `arene-projet.json` | `effect` | `type` | 21 |
 | `arene-projet.json` | `onVictory` | `kind,steps` | 20 |
+| `naval-traits.json` | `install` | `installation,weightEnc` | 20 |
 | `loup-et-saumure-projet.json` | `flow` | `kind,steps` | 19 |
 | `raceAppearance.json` | `palette` | `cheveux,cheveuxH,cheveuxO,peau,peauH,peauO` | 19 |
 | `arene-projet.json` | `dimensions` | `h,w` | 18 |
@@ -2515,7 +2508,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `barge-du-sel-projet.json` | `pos` | `x,y` | 15 |
 | `tables.json` | `ops` | `bonus,op,skill` | 15 |
 | `barge-du-sel-projet.json` | `steps` | `effect,kind` | 14 |
-| `naval-traits.json` | `cost` | `bands` | 14 |
+| `naval-traits.json` | `installation` | `bands` | 14 |
 | `naval-traits.json` | `weightEnc` | `bands` | 14 |
 | `spells.json` | `fail` | `kind,steps` | 14 |
 | `spells.json` | `success` | `effect,kind` | 14 |
@@ -2637,7 +2630,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `maneuvers.json` | `blast` | `bonusOf` | 6 |
 | `mutations.json` | `appearance` | `colors` | 6 |
 | `naval-ports.json` | `demande` | `armes` | 6 |
-| `naval-traits.json` | `cost` | `bands,per` | 6 |
+| `naval-traits.json` | `installation` | `bands,per` | 6 |
 | `props.json` | `volume` | `primitives` | 6 |
 | `props.json` | `anchor` | `h,x,y` | 6 |
 | `props.json` | `approach` | `x,y` | 6 |
@@ -2811,6 +2804,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `trappings.json` | `ops` | `amount,ignoreAP,ignoreTB,op` | 3 |
 | `trappings.json` | `effect` | `on,ops,type` | 3 |
 | `trappings.json` | `times` | `factor,of` | 3 |
+| `trappings.json` | `prosthesisTraining` | `label,px,reduces` | 3 |
 | `traumas.json` | `ops` | `bonus,op,skill` | 3 |
 | `vehicles.json` | `ship` | `capacity,crew,footprint,lengthM,manoeuvre,oars,traits` | 3 |
 | `vehicles.json` | `postes` | `pos,side` | 3 |
@@ -3002,6 +2996,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `trappings.json` | `ops` | `level,op,skill` | 2 |
 | `trappings.json` | `minutes` | `times` | 2 |
 | `trappings.json` | `of` | `dice` | 2 |
+| `trappings.json` | `prosthesisTraining` | `grants,label,px` | 2 |
 | `trappings.json` | `flow` | `effect,kind` | 2 |
 | `trappings.json` | `on` | `near,radiusMeters` | 2 |
 | `traumas.json` | `cumul` | `parPalier,portee` | 2 |
@@ -3212,6 +3207,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `naval-ports.json` | `demande` | `bois,cereales` | 1 |
 | `naval-ports.json` | `demande` | `cereales,huile` | 1 |
 | `naval-traits.json` | `ram` | `ap,ic` | 1 |
+| `naval-traits.json` | `install` | `installation` | 1 |
 | `naval-traits.json` | `passive` | `den,num,op` | 1 |
 | `problemes-vehicule.json` | `occupantOps` | `amount,ignoreAP,ignoreTB,op` | 1 |
 | `problemes-vehicule.json` | `occupantOps` | `amount,ignoreAP,ignoreTB,min,op` | 1 |
@@ -3245,7 +3241,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `qualities.json` | `passive` | `flatMod,op,phase` | 1 |
 | `qualities.json` | `capabilities` | `parryAP` | 1 |
 | `qualities.json` | `capabilities` | `fastStrike` | 1 |
-| `qualities.json` | `cost` | `advantage` | 1 |
+| `qualities.json` | `flow` | `advantageCost,icon,kind,no,prompt,yes` | 1 |
 | `qualities.json` | `yes` | `fail,kind,success,test` | 1 |
 | `qualities.json` | `no` | `kind,steps` | 1 |
 | `qualities.json` | `capabilities` | `areaFire` | 1 |
@@ -3423,8 +3419,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `talents.json` | `offHandPenalty` | `perLevel,zeroAt` | 1 |
 | `talents.json` | `combat` | `corruptionThreshold` | 1 |
 | `talents.json` | `flow` | `effect,kind` | 1 |
-| `talents.json` | `ops` | `cost,op,weapon,when` | 1 |
-| `talents.json` | `cost` | `advantageOrMovement` | 1 |
+| `talents.json` | `ops` | `advantageOrMovement,op,weapon,when` | 1 |
 | `talents.json` | `combat` | `battement` | 1 |
 | `talents.json` | `combat` | `fearSizeAsMount` | 1 |
 | `talents.json` | `combat` | `surgery` | 1 |
@@ -3459,6 +3454,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `talents.json` | `combat` | `bargainBonus` | 1 |
 | `talents.json` | `combat` | `shieldAdvantage` | 1 |
 | `talents.json` | `combat` | `advantageDefenseReaction,shieldAdvantage` | 1 |
+| `talents.json` | `advantageDefenseReaction` | `avantage` | 1 |
 | `talents.json` | `combat` | `stealAdvantage` | 1 |
 | `talents.json` | `combat` | `stealAdvantage,stealOne` | 1 |
 | `talents.json` | `passive` | `amount,op` | 1 |
@@ -3551,6 +3547,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `trappings.json` | `subject` | `field,who` | 1 |
 | `trappings.json` | `amount` | `bonusOf` | 1 |
 | `trappings.json` | `daysPerSL` | `amount,every` | 1 |
+| `trappings.json` | `prosthesisTraining` | `grants,label,px,reduces` | 1 |
 | `trappings.json` | `capabilities` | `isShelter` | 1 |
 | `trappings.json` | `capabilities` | `preventForcedDrop` | 1 |
 | `trappings.json` | `capabilities` | `disarmImmune` | 1 |
@@ -3909,7 +3906,7 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 | `grantCareerTalent` | `op,talentId` | `traits.json` | 18 | `talentId` |
 | `grantCareerTalent` | `op,spec,talentId` | `traits.json` | 2 | `talentId` `spec` |
 | `grantCareerTalent` | `op,talentId` | `talents.json` | 1 | `talentId` |
-| `grantFreeAttack` | `cost,op,weapon,when` | `talents.json` | 1 | — |
+| `grantFreeAttack` | `advantageOrMovement,op,weapon,when` | `talents.json` | 1 | — |
 | `grantFreeAttack` | `op,perChargerOncePerRound,weapon,when` | `talents.json` | 1 | — |
 | `grantFreeAttack` | `op,weapon,when` | `psychology.json` | 1 | — |
 | `grantNaturalWeapon` | `bare,damage,label,op,plusBF,qualities` | `mutations.json` | 2 | — |

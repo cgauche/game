@@ -301,7 +301,7 @@ export interface ActionDef {
   armed?: string;
   /** Champ de POSTURE pré-armée basculé par l'action (`BattleState.stances`, spec HUD §1a G5). */
   stance?: 'heldGround' | 'intoCrowd';
-  cost: 'action' | 'mouvement' | 'gratuit' | 'aucun';
+  coutAction: 'action' | 'mouvement' | 'gratuit' | 'aucun';
   /** Arbitrage NON-verbatim du coût — la RAISON en clair (même patron que `TraitData.maison`). */
   maison?: string;
   source?: SourceRef;
@@ -1195,7 +1195,7 @@ export interface TrappingData {
    *  l.23) ; Crochet = rachat GRADUÉ (l.19 « 100 PX pour chaque tranche de 5, soustraite de la pénalité,
    *  retirant la pénalité entière pour 400 PX ») = 4 paliers `reduces:5`, le dernier portant `grants:'all'`.
    *  Lu par `nextProsthesisTier` (engine/trauma) — l'écran et le flux d'achat ne nomment aucune prothèse. */
-  prosthesisTraining?: { cost: number; label: string; reduces?: number; grants?: 'movement' | 'all' }[];
+  prosthesisTraining?: { px: number; label: string; reduces?: number; grants?: 'movement' | 'all' }[];
   /** Encombrement (Points d'Encombrement). Honnête : la donnée porte aussi des STRINGS pour des cas
    *  NON-ENCOMBRANTS / non chiffrés — `'ND'` (ateliers : on ne les transporte pas) et `'Variable'`
    *  (arme improvisée). Ces strings sont traitées comme 0 au calcul (`itemFromTrappingById`). */
@@ -2418,7 +2418,7 @@ export interface InstallBand { maxLengthM: number | null; value: number; maison?
  *  Donnée consommée par le chantier construction/réparation navale (lot systèmes) — aucune valeur codée en
  *  dur. */
 export interface NavalInstall {
-  cost: { bands: InstallBand[]; per?: '5m' | '10m' | 'unite' } | 'modele';
+  installation: { bands: InstallBand[]; per?: '5m' | '10m' | 'unite' } | 'modele';
   weightEnc?: { bands: InstallBand[]; per?: '5m' | '10m' | 'unite' } | 'modele';
 }
 export interface NavalTraitData {

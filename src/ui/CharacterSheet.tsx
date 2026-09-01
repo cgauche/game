@@ -848,7 +848,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
           rows.push({
             key: `${it.uid}-${it.prosthesisReduced ?? 0}-${tier.grants ?? 'palier'}`,
             label: `${it.label} — ${tier.label}`, // libellé du palier : DONNÉE éditable, jamais un texte d'écran
-            cost: tier.cost,
+            cost: tier.px,
             onBuy: () => trainProsthesis(hero.id, it.uid),
           });
         }

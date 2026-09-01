@@ -617,9 +617,7 @@
           "kind": "choice",
           "prompt": "Renverser",
           "icon": "condition/prone",
-          "cost": {
-            "advantage": 2
-          },
+          "advantageCost": 2,
           "yes": {
             "kind": "test",
             "test": {
