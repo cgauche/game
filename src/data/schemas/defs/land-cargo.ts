@@ -7,7 +7,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { difficultySchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'land-cargo.json';
 export const famille = 'config';
@@ -49,7 +49,7 @@ const doc = document(
   {
   cargoes: z.array(z.union([cargoMarchand, cargoMarqueur])),
   wineQuality: z.array(
-    z.strictObject({ min: z.number(), max: z.number(), label: z.string(), price: z.number(), source: sourceRefSchema }),
+    z.strictObject({ ...plageSchema.shape, label: z.string(), price: z.number(), source: sourceRefSchema }),
   ),
   buy: z.strictObject({
     availabilityMultiplier: z.number(),
@@ -71,8 +71,7 @@ const doc = document(
   gossip: z.strictObject({ difficulty: difficultySchema, mod: z.number(), source: sourceRefSchema }),
   rumours: z.array(
     z.strictObject({
-      min: z.number(),
-      max: z.number(),
+      ...plageSchema.shape,
       biens: z.array(z.string()),
       /** Prose de la rumeur — `desc`, la cible du rôle prose de l'enveloppe. Ces rangées n'ont pas de
        *  `label` : elles sortent du DÉNOMINATEUR du détecteur de structures, qui ne mesure que les

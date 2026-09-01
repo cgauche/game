@@ -25,6 +25,16 @@ import interludeEvents from '../../interludeEvents.json';
 import drunkenness from '../../drunkenness.json';
 import weather from '../../weather.json';
 import tavernGames from '../../tavernGames.json';
+import artilleryMisfire from '../../artillery-misfire.json';
+import crewMorale from '../../crew-morale.json';
+import drivingMishap from '../../driving-mishap.json';
+import landCargo from '../../land-cargo.json';
+import massBattle from '../../mass-battle.json';
+import navalProgression from '../../naval-progression.json';
+import riverNavigation from '../../river-navigation.json';
+import seaEvents from '../../sea-events.json';
+import seaWeather from '../../sea-weather.json';
+import steamBreakdown from '../../steam-breakdown.json';
 import { corruptionExposureSchema } from '../defs-scenes/effets';
 import { menaceIds } from '../../../engine/menace';
 import { resolveTrappingChoices } from '../../../engine/trappingChoices';
@@ -129,6 +139,25 @@ describe('plageSchema — fourchette PARTAGÉE des rangées de table', () => {
     // sans descente, le parcours tomberait sur `pot.targetRange` — la plage adoptée NUE en P1-a.
     ['tavernGames.json', tavernGames, [jeuDeTaverne('torchon'), 'table']],
     ['tavernGames.json', tavernGames, [jeuDeTaverne('al-zahr'), 'pot', 'rows']],
+    ['artillery-misfire.json', artilleryMisfire],
+    ['crew-morale.json', crewMorale, ['bands']],
+    ['driving-mishap.json', drivingMishap],
+    // Deux tables de tirage distinctes : la qualité SECRÈTE du vin (d100 de prix) et les rumeurs
+    // commerciales (d100 de prose) — la seconde ne serait jamais atteinte sans descente.
+    ['land-cargo.json', landCargo, ['wineQuality']],
+    ['land-cargo.json', landCargo, ['rumours']],
+    ['mass-battle.json', massBattle, ['hazards']],
+    ['naval-progression.json', navalProgression],
+    // Les deux tables d10 du vent fluvial partagent le MÊME schéma de rangée (`bandRow`) : chacune
+    // se mesure, une composition débranchée ne pouvant se cacher derrière la première rencontrée.
+    ['river-navigation.json', riverNavigation, ['windForces']],
+    ['river-navigation.json', riverNavigation, ['windDirections']],
+    ['sea-events.json', seaEvents, ['boardEvents']],
+    ['sea-events.json', seaEvents, ['portEvents']],
+    ['sea-events.json', seaEvents, ['fastVoyage', 'paliers']],
+    ['sea-weather.json', seaWeather, ['table']],
+    ['sea-weather.json', seaWeather, ['roseDesVents']],
+    ['steam-breakdown.json', steamBreakdown],
   ];
 
   /** Chemin de la PREMIÈRE rangée `{min, max}` numériques rencontrée en parcours stable. */

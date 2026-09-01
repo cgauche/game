@@ -6,7 +6,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'crew-morale.json';
 export const famille = 'config';
@@ -34,8 +34,7 @@ const doc = document(
   ),
   bands: z.array(
     z.strictObject({
-      min: z.number(),
-      max: z.number(),
+      ...plageSchema.shape,
       id: z.string(),
       label: z.string(),
       captainCmdDR: z.number(),

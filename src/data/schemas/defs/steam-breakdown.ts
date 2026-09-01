@@ -3,7 +3,7 @@
  * (`src/engine/shipBuild.ts`), consommée par `steamBreakdownFor` (le dé vient du canal).
  */
 import { z } from 'zod';
-import { charKeySchema, difficultySchema } from '../grammaire/valeurs';
+import { charKeySchema, difficultySchema, plageSchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { refOuSpec } from '../grammaire/ref';
 
@@ -14,8 +14,7 @@ const doc = document(
   'steam-breakdown',
   famille,
   {
-    min: z.number(),
-    max: z.number(),
+    ...plageSchema.shape,
     mMod: z.number().optional(),
     durationRounds: z.string().optional(),
     failDamage: z.string().optional(),

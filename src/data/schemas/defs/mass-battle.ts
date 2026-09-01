@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'mass-battle.json';
 export const famille = 'config';
@@ -50,9 +50,8 @@ const structureRowSchema = z.strictObject({
 });
 
 const hazardRowSchema = z.strictObject({
+  ...plageSchema.shape,
   id: z.string(),
-  min: z.number(),
-  max: z.number(),
   label: z.string(),
   desc: z.string(),
   source: sourceRefSchema,

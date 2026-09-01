@@ -12,7 +12,7 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { difficultySchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-weather.json';
 export const famille = 'config';
@@ -38,8 +38,7 @@ const windEffectTable = z.record(windForce, z.record(windAspect, windEffectCell)
 const champs = {
   table: z.array(
     z.strictObject({
-      min: z.number(),
-      max: z.number(),
+      ...plageSchema.shape,
       precipitations: z.enum(['aucune', 'legeres', 'abondantes', 'tres-abondantes']),
       temperature: z.enum(['caniculaire', 'chaude', 'mediane', 'froide', 'glaciale']),
       visibilite: z.enum(['degage', 'brume', 'brouillard', 'puree-de-pois']),
@@ -97,8 +96,7 @@ const champs = {
   vents: z.array(z.strictObject({ id: z.string(), label: z.string(), source: sourceRefSchema })),
   roseDesVents: z.array(
     z.strictObject({
-      min: z.number(),
-      max: z.number(),
+      ...plageSchema.shape,
       direction: z.enum(['dominant', 'nord', 'sud', 'ouest', 'est']),
       source: sourceRefSchema,
     }),

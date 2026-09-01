@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'naval-progression.json';
 export const famille = 'config';
@@ -14,10 +14,9 @@ export const famille = 'config';
 const champs = {
   entries: z.array(
     z.strictObject({
+      ...plageSchema.shape,
       /** id STABLE = `mode` (déjà une clé fermée à 5 valeurs) — identité d'entrée pour le Codex (#422). */
       id: z.string(),
-      min: z.number(),
-      max: z.number(),
       mode: z.enum(['plus2', 'plus1', 'normal', 'minus1', 'half']),
       desc: z.string(),
       source: sourceRefSchema,

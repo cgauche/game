@@ -6,7 +6,7 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { difficultySchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'river-navigation.json';
 export const famille = 'config';
@@ -14,7 +14,7 @@ export const famille = 'config';
 const riverWindDirId = z.enum(['arriere', 'cote', 'contraire']);
 
 /** `BandRow` (`src/engine/riverNavigation.ts`) — table de tirage par fourchette d10. */
-const bandRow = z.strictObject({ id: z.string(), label: z.string(), min: z.number(), max: z.number() });
+const bandRow = z.strictObject({ ...plageSchema.shape, id: z.string(), label: z.string() });
 
 /** `RiverWindEffect` (`src/engine/riverNavigation.ts`). */
 const riverWindEffect = z.strictObject({

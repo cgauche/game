@@ -626,7 +626,18 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // second relève du concept `bornes` d'un réglage), `advancementCosts.ts` a une borne haute
       // `nullable` (dernière bande ouverte). Le gate reste POSITIF (`grammaire/formes-partagees.test.ts`,
       // +10 sites à la porte réelle `validateDataset`), le scanner ne résolvant pas un spread.
-      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 88],
+      // Cliquet DESCENDU 88 → 76 (LOT P1-c, même graphie) : les rangées de table de MER, de ROUTE et de
+      // BATAILLE composent à leur tour `plageSchema` par la SHAPE — artillery-misfire › entries,
+      // crew-morale › bands, driving-mishap › entries, land-cargo › wineQuality et › rumours,
+      // mass-battle › hazards, naval-progression › entries, river-navigation › windForces/windDirections
+      // (même `bandRow`), sea-events › boardEvents/portEvents (même `seaEventDef`) et › fastVoyage.paliers,
+      // sea-weather › table et › roseDesVents, steam-breakdown (racine). La famille `plage` est à son
+      // ÉTAT TERMINAL : TROIS lignes restent, chacune refusée AVEC sa mesure — `oups.ts` (bornes
+      // OPTIONNELLES, le `kind` misfire est hors table), `advancementCosts.ts` (borne haute `nullable`,
+      // dernière bande ouverte) et `water-exposure.ts` (les deux bornes y sont celles d'un PRÉDICAT
+      // `auto.{kind:'woundsLost', op:'between'}` sur des Blessures perdues — aucune rangée tirable,
+      // aucun `findTableEntry` ; la table du document, `diseases`, compose depuis P1-a).
+      ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 76],
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
@@ -802,7 +813,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // l'adoptent nu quand les deux bornes sont toute la charge utile.
       // … puis 152 → 143 (LOT P1-b) : les 9 lignes de REDÉCLARATIONS des rangées de table de magie et
       // des tables générales sortent à leur tour, par composition de `plageSchema`.
-      'L4 #1463': 143,
+      // … puis 143 → 131 (LOT P1-c) : les 12 lignes de REDÉCLARATIONS des rangées de table de mer, de
+      // route et de bataille sortent à leur tour, par composition de `plageSchema`.
+      'L4 #1463': 131,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`

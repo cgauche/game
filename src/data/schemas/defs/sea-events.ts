@@ -8,7 +8,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-events.json';
 export const famille = 'config';
@@ -27,8 +27,7 @@ const manannFactor = z.strictObject({
 
 /** `SeaEventDef` (`src/engine/seaVoyage.ts`) — `params` = sac hétérogène PAR `kind`, lu par clé. */
 const seaEventDef = z.strictObject({
-  min: z.number(),
-  max: z.number(),
+  ...plageSchema.shape,
   id: z.string(),
   label: z.string(),
   desc: z.string(),
@@ -41,8 +40,7 @@ const seaEventDef = z.strictObject({
  *  fourchette `[min,max]` (`findTableEntry`) + conséquences en % (équipage/cargaison/Blessures) et
  *  Coups Critiques. `desc` = verbatim RAW (règle 5). */
 const fastVoyagePalier = z.strictObject({
-  min: z.number(),
-  max: z.number(),
+  ...plageSchema.shape,
   id: z.string(),
   label: z.string(),
   desc: z.string(),
