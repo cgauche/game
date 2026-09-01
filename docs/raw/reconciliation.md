@@ -6,7 +6,7 @@
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 0 chapitre(s) couverts avec des lignes non pinées. Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
-**Sens A — code → Atlas (14 autres livres)** : 10 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
+**Sens A — code → Atlas (14 autres livres)** : 11 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
 **Sens B — Atlas → code (LDB)** : 3 marqueur(s) « (non implémenté) » · 1 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 12 · 11 crédités par une source folio de `src/data`).
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
@@ -26,7 +26,7 @@ _Aucune._
 | EDO | 1 | 2 | 0 |
 | EDOC | 2 | 2 | 0 |
 | MCLB | 1 | 0 | 0 |
-| MDG | 1 | 1 | 0 |
+| MDG | 2 | 1 | 0 |
 | MSRC | 0 | 2 | 0 |
 | NADJ | 2 | 1 | 0 |
 | PDT | 2 | 0 | 0 |
@@ -51,17 +51,20 @@ _Aucune._
 - `src/data/reseau-routier.json:173` (l.30) — "note": "EDOC 10 l.30 — section « Postes de péage » ; tarif l.32."
 - `src/data/reseau-routier.json:192` (l.11) — "note": "EDOC 10 l.11 — section « Patrouilles routières » ; la phrase reprend l.17, l'encadré « LES JUSTICIERS » (l.13-15) la coupant."
 
-### MCLB 2 — 4 réf(s) code, 0 dans l'Atlas
+### MCLB 2 — 5 réf(s) code, 0 dans l'Atlas
+- `src/data/creatures.json:59017` (l.2420) — "note": "MCLB 02 l.2420"
 - `src/data/skills.json:962` (l.1844) — "note": "MCLB 02 l.1844"
 - `src/data/skills.json:1559` (l.1322) — "note": "MCLB 02 l.1322"
 - `src/data/skills.json:1569` (l.2426) — "note": "MCLB 02 l.2426"
-- `src/engine/spec-hors-pool.test.ts:14` (l.1322) — * Étalon nominatif : `savoir/local` — `MCLB 02 l.1322`, employée par 94 statblocs de `creatures.json`,
 
 ### MDG 3 — 5 réf(s) code, 0 dans l'Atlas
 - `src/state/restFlow.ts:68` (l.71) — /** À bord du navire de campagne (hamacs/quartiers, MDG 03 l.71 · 09 l.87) — couchage ABRITÉ (pas
 - `src/state/restFlow.ts:641` (l.71) — if (places.bord) out.push('bord'); // à bord = hamacs (MDG 03 l.71) ; par défaut si offert
 - `src/state/riverVoyageFlow.ts:1109` (l.71) — // Sur la rivière on peut mouiller le long de la berge : coucher À BORD (hamacs, MDG 03 l.71) offert
 - `src/state/seaActivities.ts:239` (l.71) — // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
+
+### MDG 6 — 1 réf(s) code, 0 dans l'Atlas
+- `src/data/species.json:2557` (l.50) — "note": "MDG 06 l.50"
 
 ### NADJ 4 — 7 réf(s) code, 0 dans l'Atlas
 - `src/data/schemas/defs-scenes/scene.ts:103` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */

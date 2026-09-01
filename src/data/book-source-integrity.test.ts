@@ -8,6 +8,13 @@
  * étant un copié/collé verbatim (règle stricte 5), elle localise l'entrée dans le `Source/` du livre
  * déclaré ; l'encadrement `data-folio` de l'occurrence réfute alors le folio qui ment. Mécanique
  * dans `scripts/guards/lib/folioIntegrity.mjs`, stock gelé dans `folioRatchetStock.mjs`.
+ *
+ * PÉRIMÈTRE MESURÉ ET ANGLE MORT au 2026-09-01 : `src/data/*.json` porte 4479 entrées à
+ * `source:{book,page}` ; 1185 citent aussi une ligne et `folio-line-align.test.ts` n'en juge que 305
+ * (880 écartées : 874 hors-forme, 6 queue-trouée), soit 6,8 % des folios vérifiés machine par cette
+ * voie. Cette garde-ci scanne 2716 entrées et en laisse 1252 hors de tout verdict d'encadrement
+ * (878 descs introuvables, 140 trop courtes, 92 en chapitre sans marqueur, 142 en livre hors Atlas) ;
+ * `noteAuthored` est empruntée 1 fois (`maladies.json:infection-du-sang` p.186).
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -54,7 +61,7 @@ describe('relation-livre id-pure — tout source.book est un id de books.json', 
  * 157 dettes affichées, CI verte). Le relever est un geste délibéré, visible en revue — l'inverse
  * d'un append discret. Il ne DESCEND qu'en soldant des folios au Source.
  */
-const FOLIO_RATCHET_MAX = 140;
+const FOLIO_RATCHET_MAX = 109;
 
 describe('intégrité du folio — source.page pointe sur la page qui porte la desc (#536)', () => {
   const { violations } = AUDIT;

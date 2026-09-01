@@ -36,6 +36,16 @@
 // une entrée dont la desc est reformulée (donc introuvable) ou trop courte, et dont le folio faux
 // reste DANS les bornes du livre, n'est réfutée par AUCUNE des deux voies. La voie A ne ferme que
 // l'évasion « page hors du livre ».
+//
+// PÉRIMÈTRE ET ANGLE MORT, EN CHIFFRES — mesure du 2026-09-01 (`node scripts/data/audit-folios.mjs`
+// pour cette voie, `folioLineAlign.auditDataDir` pour l'autre) :
+//   • `src/data/*.json` porte 4479 entrées à `source:{book,page}`. 1185 d'entre elles citent AUSSI
+//     une ligne ; `folio-line-align` n'en juge que 305 (880 écartées : 874 hors-forme, 6 queue-trouée),
+//     soit 305/4479 = 6,8 % des folios vérifiés machine par cette voie-là.
+//   • ce module scanne 2716 entrées et en laisse 1252 hors de tout verdict d'encadrement : 878 descs
+//     introuvables, 140 trop courtes, 92 en chapitre sans marqueur, 142 en livre hors Atlas.
+//   • `noteAuthored` — la sortie par note d'auteur, jamais cliquetée — est empruntée 1 fois
+//     (`maladies.json:infection-du-sang` p.186).
 
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname, basename } from 'node:path'

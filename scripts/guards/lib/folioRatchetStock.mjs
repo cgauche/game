@@ -20,10 +20,10 @@
 // `node scripts/data/audit-folios.mjs --stock` re-rend ce fichier et REFUSE de l'agrandir : l'outil
 // ne sait que solder.
 //
-// COUVERTURE — les angles morts, dits sans détour (aucune de ces entrées n'est « absoute ») : sur
-// 2082 entrées citées scannées, 1135 échappent à tout verdict d'encadrement — desc reformulée donc introuvable
-// (729), desc trop courte pour localiser (138), chapitre sans marqueur (127), livre sans
-// extraction FR (141). Une entrée neuve à desc non verbatim et à folio faux mais PLAUSIBLE
+// COUVERTURE — les angles morts, dits sans détour (aucune de ces entrées n'est « absoute »), MESURE
+// du 2026-09-01 : sur 2716 entrées citées scannées, 1252 échappent à tout verdict d'encadrement — desc
+// reformulée donc introuvable (878), desc trop courte pour localiser (140), chapitre sans marqueur
+// (92), livre sans extraction FR (142). Une entrée neuve à desc non verbatim et à folio faux mais PLAUSIBLE
 // (dans les bornes du livre) passe donc encore : seule la règle 5 la rattrape. La voie `hors livre`
 // ne ferme que l'évasion « folio au-delà du livre ».
 //
@@ -74,9 +74,7 @@ export const FOLIO_RATCHET = new Set([
   'creatures.json:brute', // p.145 -> 143
   'creatures.json:frere-bengt', // p.102 -> 100
   'creatures.json:gerdon-salzwed', // p.151 -> 150
-  'creatures.json:grand-vizir-bhar', // p.108 -> 106
   'creatures.json:hasso-schroeter', // p.152 -> 151
-  'creatures.json:hugo-vallonvert', // p.143 -> 141
   'creatures.json:johen', // p.80 -> 78
   'creatures.json:kat-sperber', // p.153 -> 152
   'creatures.json:naiade', // p.87 -> 88
@@ -103,11 +101,6 @@ export const FOLIO_RATCHET = new Set([
   'qualities.json:brise-coque', // p.48 -> 44
   // skills.json
   'skills.json:escalade', // p.12 -> 122
-  // species.json
-  'species.json:humains-bjornling-norse', // p.54 -> 56
-  'species.json:humains-sarl-norse', // p.54 -> 56
-  'species.json:humains-skaeling-norse', // p.54 -> 56
-  'species.json:nains-norse', // p.54 -> 41
   // spells.json
   'spells.json:bon-baiser-d-la-fosse-noire', // p.10 -> 15
   'spells.json:nuee-d-escampette', // p.10 -> 15

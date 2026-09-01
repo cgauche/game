@@ -26,7 +26,7 @@ import { GENERATORS } from './build-all.mjs'
 
 const OUTIL = 'docs-vs-commit'
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
-const git = (args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' })
+const git = (args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
 
 /** Un `target` de `GENERATORS` peut porter un glob (`docs/raw/catalogue-*.md`). */
 const CIBLES = GENERATORS.flatMap((g) => g.targets).map(
@@ -44,6 +44,12 @@ const cibles = (() => {
 
 if (!cibles.length) process.exit(0)
 
+/** Seul `git show :<chemin>` d'un chemin QUE L'INDEX NE PORTE PAS se conclut en `null` : git sort 128 en
+ * le nommant. Toute autre panne (ENOBUFS sur un gros blob, dépôt illisible…) se relance — un verdict
+ * « absent du commit » tiré d'une lecture ratée est un mensonge de la garde. */
+const absentDeLIndex = (e) =>
+  e?.status === 128 && /(exists on disk, but not in the index|does not exist)/.test(String(e.stderr ?? ''))
+
 /** Contenu d'un chemin DANS LE COMMIT (index). `null` si le commit ne le porte pas. */
 const auCommit = (() => {
   const cache = new Map()
@@ -52,7 +58,8 @@ const auCommit = (() => {
       let texte
       try {
         texte = git(['show', `:${p}`])
-      } catch {
+      } catch (e) {
+        if (!absentDeLIndex(e)) throw e
         texte = null
       }
       cache.set(p, texte)
