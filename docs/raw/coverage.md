@@ -1042,7 +1042,7 @@
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
 | 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ | 3 (corruption.md ×3) |
-| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 9 (talents.md ×6) |
+| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 10 (talents.md ×6) |
 | 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | |
 | 15 | CHAPITRE 11 - L’Affaire du joyau caché - Un mélodrame à l’intrigue complexe | ➖ hors-règle | |
 | 16 | CHAPITRE 12 - LE CARNAVAL DU PANDÉMONIUM | ➖ hors-règle | |
