@@ -58,13 +58,20 @@ const VITEST_SANS_BILAN = TRACE(
   "process.stderr.write('No test files found, exiting with code 1\\n')\n" + 'process.exit(1)\n',
 )
 
-/** `--coverage` force le lancement mono-processus (drapeau global à un seul processus). */
-function lance(base, args = []) {
+/** `--coverage` force le lancement mono-processus (drapeau global à un seul processus). `coeurs`
+ *  force la machine VUE par le lanceur (même levier qu'au chemin partagé) : les bornes de charge en
+ *  dépendent, un cas qui laisse parler le matériel du runner mesure la machine, pas le lanceur. */
+function lance(base, args = [], coeurs) {
   const trace = join(base, 'argv.json')
   const run = spawnSync(process.execPath, [join(base, 'scripts', 'test', 'run.mjs'), '--coverage', ...args], {
     cwd: base,
     encoding: 'utf8',
-    env: { ...process.env, FORCE_COLOR: '3', TRACE_ARGV: trace },
+    env: {
+      ...process.env,
+      FORCE_COLOR: '3',
+      TRACE_ARGV: trace,
+      ...(coeurs === undefined ? {} : { WFRP_TEST_COEURS: String(coeurs) }),
+    },
   })
   const cache = join(base, 'node_modules', '.cache')
   const fichiers = readdirSync(cache).filter((n) => /^vitest-run-\d+\.txt$/.test(n))
@@ -153,17 +160,21 @@ test('diagnostic : un run de DÉTRESSE compte ses six sentinelles, même ordre d
 test('bornes de charge : paire injectée par défaut, JAMAIS doublée si l’appelant borne', () => {
   // Un dépôt par lancement : la capture est nommée par PID, deux runs y déposeraient deux fichiers.
   const sansBorne = fauxDepot(VITEST_VERT)
+  const petiteMachine = fauxDepot(VITEST_VERT)
   const avecBorne = fauxDepot(VITEST_VERT)
   try {
-    assert.deepEqual(lance(sansBorne).argv.slice(0, 3), ['run', '--minWorkers=1', '--maxWorkers=4'])
+    assert.deepEqual(lance(sansBorne, [], 16).argv.slice(0, 3), ['run', '--minWorkers=1', '--maxWorkers=4'])
+    // Plafond `min(4, cœurs − 1)` sur le chemin RÉEL du lanceur, pas seulement dans la fonction pure.
+    assert.deepEqual(lance(petiteMachine, [], 4).argv.slice(0, 3), ['run', '--minWorkers=1', '--maxWorkers=3'])
 
-    const borne = lance(avecBorne, ['--minWorkers=2'])
+    const borne = lance(avecBorne, ['--minWorkers=2'], 16)
     assert.equal(borne.run.status, 0, `run en échec : ${borne.run.stdout}${borne.run.stderr}`)
     const mins = borne.argv.filter((a) => /^--min-?[wW]orkers(=|$)/.test(a))
     assert.equal(mins.length, 1, `--minWorkers en double : ${borne.argv.join(' ')}`)
-    assert.ok(!borne.argv.includes('--maxWorkers=4'), `borne injectée par-dessus : ${borne.argv.join(' ')}`)
+    const maxs = borne.argv.filter((a) => /^--max-?[wW]orkers(=|$)/.test(a))
+    assert.equal(maxs.length, 0, `borne injectée par-dessus : ${borne.argv.join(' ')}`)
   } finally {
-    for (const base of [sansBorne, avecBorne]) rmSync(base, { recursive: true, force: true })
+    for (const base of [sansBorne, petiteMachine, avecBorne]) rmSync(base, { recursive: true, force: true })
   }
 })
 
