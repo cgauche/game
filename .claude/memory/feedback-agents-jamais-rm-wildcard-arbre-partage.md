@@ -24,4 +24,10 @@ dans `scripts/`) aggravent : le scratch de chacun vit au même endroit.
    si un script doit vivre dans le repo pour tourner (imports relatifs), nom UNIQUE préfixé de la tâche et
    suppression par chemin exact au rendu.
 3. Vérifier à l'intégration : `git status` avant/après un agent qui a « nettoyé » quelque chose.
+4. **L'interdit vaut pour l'ORCHESTRATEUR aussi, et pour les fichiers SUIVIS** (récidive 2026-09-01,
+   game-66) : un `mv .claude/soldes/revue-palier-*.md <scratchpad>/` visant l'artefact du hook a
+   attrapé 5 ARCHIVES de palier COMMITTÉES par d'autres trains (restaurées aussitôt par
+   `git checkout -- .claude/soldes/`, zéro perte — mais uniquement parce qu'elles étaient dans HEAD).
+   Un wildcard sur un dossier partagé entre trains (`.claude/soldes/`) se remplace par le NOM EXACT du
+   seul fichier visé (`revue-palier-<hash-de-MON-commit>.md`).
 Lié : [[game-agents-stray-main-tree-destructive-git]], [[git-commits-propres-wip-parallele]].
