@@ -1,5 +1,5 @@
 import type { HitLocation, Difficulty } from '../engine/types';
-import type { Flow } from '../engine/flowCore';
+import type { FlowTestNode } from '../engine/flowCore';
 import type { Formula, GameOp } from '../engine/ops';
 import type { SourceRef } from './schemas/grammaire/valeurs';
 import criticalsJson from './criticals.json';
@@ -57,7 +57,7 @@ export interface CritEntry {
 /** Le nœud `test` du `Flow` (`engine/flowCore.ts`) tel qu'une rangée de Critique le porte — la forme
  *  UNIQUE du jet en donnée, partagée avec les sorts, les talents et les scènes. Jamais une graphie
  *  propriétaire : l'atelier du Codex l'édite avec le `FlowEditor` commun. */
-export type CritTestNode = Extract<Flow, { kind: 'test' }>;
+export type CritTestNode = FlowTestNode;
 
 /** SYSTÈME de règles dont un tableau est tiré — le DISCRIMINANT de la collection (`jeu` du document). */
 export type JeuDeCritique = 'ldb' | 'aa';

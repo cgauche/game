@@ -496,6 +496,10 @@ export type Flow<E = EffectOp> =
   | { kind: 'test'; test: FlowTest; success: Flow<E>; fail: Flow<E> }
   | { kind: 'choice'; prompt: string; advantageCost?: number; icon?: string; yes: Flow<E>; no?: Flow<E> };
 
+/** Le NŒUD `test` seul — la forme UNIQUE du jet en donnée (jet + conséquence des deux branches), telle
+ *  qu'un porteur l'épingle hors d'un Flow complet (rangée de Critique, cycle de maladie). */
+export type FlowTestNode<E = EffectOp> = Extract<Flow<E>, { kind: 'test' }>;
+
 /** Flow vide (séquence sans étape) — neutre, sûr comme valeur par défaut d'un consommateur. */
 export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
 

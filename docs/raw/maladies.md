@@ -314,8 +314,9 @@ Vous toussez et éternuez régulièrement, **propageant votre maladie**. Tout Pe
 
 Le RAW est COMPLET (le verbatim intégral vit dans `symptoms.json`, entrée `toxine` : échec du Test quotidien
 = mort ; difficulté indexée sur la sévérité — Très Facile +60, Modéré → Facile +40, Grave → Accessible +20).
-IMPLÉMENTÉ (#338) : `onTick.onFail` porte `{ op: 'kill' }` (Point de Destin sauve, LDB 17 l.29-37, sinon
-`Combatant.dead`) ; `onTick.difficultyBySeverity` indexe la difficulté sur la sévérité de l'instance
+IMPLÉMENTÉ (#338) : le cycle est un nœud `test` du Flow — sa branche d'échec (`onTick.test.fail`) porte
+`{ op: 'kill' }` (Point de Destin sauve, LDB 17 l.29-37, sinon `Combatant.dead`) ;
+`onTick.difficultyBySeverity` indexe la difficulté du nœud sur la sévérité de l'instance
 (lu par `symptomOnTick`, `src/engine/disease.ts`).
 
 ---
@@ -560,7 +561,7 @@ compte des Rounds de combat, `LDB 16 l.97`). Le Test est donc roulé à chaque j
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.4-160) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `mapRouteSchema`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, `resolveInlineFlowTest`, +23 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
+- `MSRC 16` (l.4-160) → `onTickSchema`, `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `mapRouteSchema`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, +24 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
 - sans code : `MSRC 16` (l.35-47)
 
 ---
@@ -605,7 +606,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** : aucun traitement connu. Toute tentative d'extraction chirurgicale fait plus de mal que de bien.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.121-144) → `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `testStatePenaltyParts`, +11 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
+- `MSRC 16` (l.121-144) → `onTickSchema`, `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, +12 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
 
 ---
 
@@ -624,7 +625,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.160`) : infusion d'écorce de saule → bonus de +10 à tous les Tests résultant de la colique pendant 1d10 heures. Pas d'autre traitement.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.149-160) → `doc`, `Disease`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `testStatePenaltyParts`, `firingOwnTestFailed`, `declareDisease`, `colique`, `EffectTrigger`, +8 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
+- `MSRC 16` (l.149-160) → `onTickSchema`, `doc`, `Disease`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `testStatePenaltyParts`, `firingOwnTestFailed`, `declareDisease`, `colique`, +9 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
 
 ---
 

@@ -57,16 +57,16 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 61 | `src/data/index.ts:2869` |
-| `spec` | 19 | `src/data/index.ts:3377` |
+| `id` | 61 | `src/data/index.ts:2870` |
+| `spec` | 19 | `src/data/index.ts:3378` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3389` |
-| `spec` | 1 | `src/data/index.ts:3390` |
-| `value` | 3 | `src/data/index.ts:3391` |
+| `id` | 4 | `src/data/index.ts:3390` |
+| `spec` | 1 | `src/data/index.ts:3391` |
+| `value` | 3 | `src/data/index.ts:3392` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -86,8 +86,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fixed` | 4 | `src/data/index.ts:3453` |
-| `roll` | 3 | `src/data/index.ts:3453` |
+| `fixed` | 4 | `src/data/index.ts:3454` |
+| `roll` | 3 | `src/data/index.ts:3454` |
 
 ### `TrappingRef` (src/data/index.ts)
 
@@ -95,27 +95,27 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `id` | 8 | `src/engine/items.ts:307` |
 | `spec` | 2 | `src/engine/items.ts:309` |
-| `count` | 10 | `src/data/index.ts:3453` |
-| `qualities` | 4 | `src/data/index.ts:3456` |
-| `qualityChoice` | 6 | `src/data/index.ts:3454` |
-| `text` | 2 | `src/data/index.ts:3447` |
-| `vehicleId` | 5 | `src/data/index.ts:3449` |
+| `count` | 10 | `src/data/index.ts:3454` |
+| `qualities` | 4 | `src/data/index.ts:3457` |
+| `qualityChoice` | 6 | `src/data/index.ts:3455` |
+| `text` | 2 | `src/data/index.ts:3448` |
+| `vehicleId` | 5 | `src/data/index.ts:3450` |
 | `label` | 7 | `src/engine/possessionGrants.ts:25` |
-| `creatureId` | 5 | `src/data/index.ts:3451` |
-| `choice` | 5 | `src/data/index.ts:3444` |
-| `wildcard` | 3 | `src/data/index.ts:3445` |
+| `creatureId` | 5 | `src/data/index.ts:3452` |
+| `choice` | 5 | `src/data/index.ts:3445` |
+| `wildcard` | 3 | `src/data/index.ts:3446` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:3426` |
+| `id` | 8 | `src/data/index.ts:3427` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
-| `choix` | 7 | `src/data/index.ts:2869` |
-| `pick` | 2 | `src/data/index.ts:3429` |
-| `of` | 6 | `src/data/index.ts:3428` |
+| `choix` | 7 | `src/data/index.ts:2870` |
+| `pick` | 2 | `src/data/index.ts:3430` |
+| `of` | 6 | `src/data/index.ts:3429` |
 | `table` | — | *absent du type TS* |
-| `random` | 3 | `src/data/index.ts:3431` |
+| `random` | 3 | `src/data/index.ts:3432` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -142,7 +142,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `skill` | 27 | `src/engine/critical.ts:61` |
 | `sense` | 2 | `src/state/combatEffects.ts:437` |
 | `characteristic` | 21 | `src/state/combat/triggeredTest.ts:193` |
-| `difficulty` | 6 | `src/engine/critical.ts:71` |
+| `difficulty` | 9 | `src/engine/critical.ts:71` |
 | `requireSL` | 2 | `src/state/combatEffects.ts:476` |
 | `label` | 11 | `src/state/combat/triggeredTest.ts:224` |
 | `tool` | 2 | `src/state/combatEffects.ts:439` |
@@ -203,7 +203,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:2643` |
+| `id` | 8 | `src/data/index.ts:2644` |
 | `type` | **0 — JAMAIS LU** | — |
 | `label` | **0 — JAMAIS LU** | — |
 | `labelF` | — | *absent du type TS* |
@@ -217,7 +217,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `cover` | 3 | `src/data/props.types.ts:370` |
 | `light` | 1 | `src/state/vision.ts:178` |
 | `foot` | 2 | `src/data/props.types.ts:325` |
-| `volume` | 8 | `src/data/index.ts:2649` |
+| `volume` | 8 | `src/data/index.ts:2650` |
 | `seatSlots` | 2 | `src/data/props.types.ts:374` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)

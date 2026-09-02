@@ -1029,7 +1029,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 385 → 376 (#1657 B2a) : 7 lignes de référence d'`aa-criticals.json` fusionnent dans
       // celles de `criticals.json`, et les 2 lignes `onFail` MEURENT — la conséquence d'un jet vit
       // dans la branche `fail` du nœud `test`, sous `ops` — une seule graphie au lieu de deux.
-      'L3 #1463': 376,
+      // … puis 376 → 374 (#1657 B2b) : les DEUX lignes `onFail` des maladies meurent à leur tour —
+      // `symptoms.json › onFail` (2 signatures) fusionne dans `› ops`, et la 8ᵉ réf de symptôme à
+      // Difficulté propre (posée au geste A) part : le document déclare désormais sa Difficulté par
+      // l'enum de la grammaire, un littéral d'enum n'ouvrant jamais de référence.
+      'L3 #1463': 374,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
@@ -1075,6 +1079,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `criticals.json` (amputation, loss, resist ×2), et `resist` devient le nœud `test` PARTAGÉ :
       // deux lignes (`test | difficulty` 38, `test | difficulty,skill` 1) là où il y en avait quatre,
       // plus la redéclaration de def `criticals.ts › resist` qui meurt avec la graphie propriétaire.
+      // … #1657 B2b : le plafond TIENT à 85, mesuré — le lot ne décroît pas ici. `symptoms.json ›
+      // onTick {difficulty+…}` et sa redéclaration de def (`symptoms.ts › onTick`) meurent avec la
+      // graphie propriétaire (−2), et le nœud partagé rend UNE forme par document porteur
+      // (`symptoms.json › test {difficulty}` 3, `maladies.json › test {difficulty}` 1, +2) : solde 0.
+      // Le terrain gagné est de SIGNATURE, pas de compte — les deux lignes neuves portent l'exacte
+      // `difficulty` du `flowTestSchema`, la MÊME que `criticals.json › test` depuis B2a, là où la
+      // graphie propriétaire projetait `difficulty+…`. Le décompte L3 (−2), lui, baisse.
       'L4 #1463': 85,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.

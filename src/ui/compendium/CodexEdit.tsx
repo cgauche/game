@@ -27,7 +27,7 @@ import { PlageField, type PlageValue } from '../PlageField';
 import { GatedAction } from '../GatedAction';
 import { raceKeySchema } from '../../data/schemas/grammaire/valeurs';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
-import { FlowEditor, TestFields } from '../editor/FlowEditor';
+import { FlowEditor, NoeudTestField, type NoeudTest } from '../editor/FlowEditor';
 import { GameOpEditor, FormulaField, opsMissingRefs } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 import type { ConsumableDuration } from '../../engine/consumables';
@@ -36,7 +36,6 @@ import { creatureSpeciesOptions, QUAD_SPECIES, WINGED_SPECIES } from '../../game
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
-import type { CritTestNode } from '../../data/criticals';
 import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
 import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL } from './maneuverLabels';
 import type { ManeuverDef, ManeuverMeasure } from '../../data';
@@ -45,7 +44,7 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
-import { SymptomsField, SymptomTickField, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, DispoSaisonniereField, DomainEffectsField, TraitListField, OptionalsListField, HarvestField, SpecsField, RuleValueField, RuleActionField, type RuleShape } from './StructFields';
+import { SymptomsField, SymptomTickField, DiseaseDailyTestField, type DiseaseDailyTest, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, DispoSaisonniereField, DomainEffectsField, TraitListField, OptionalsListField, HarvestField, SpecsField, RuleValueField, RuleActionField, type RuleShape } from './StructFields';
 import type { OptionalRule } from '../../engine/policy';
 import type { TraitInstance, OptionalEntry } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
@@ -322,7 +321,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   // #1318 E4/C-γ : paliers d'entraînement d'une PROTHÈSE (LDB 73) — `{cost,label,reduces?,grants?}[]`,
   // tableau d'objets HOMOGÈNES → éditeur GÉNÉRIQUE commun (`GenericArrayField`), jamais le repli JSON.
   if (categoryKey === 'trappings') add('prosthesisTraining');
-  if (categoryKey === 'maladies') add('symptoms');
+  if (categoryKey === 'maladies') add('symptoms', 'dailyTest'); // `dailyTest` porte un nœud `test` du Flow → DiseaseDailyTestField (#1657 B2b)
   if (categoryKey === 'talents') add('combat', 'test');
   if (VARIANT_FIELDS_BY_CATEGORY[categoryKey]) add('variants'); // variants → VariantsField (#563 Lot 5)
   if (['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains', 'creatures', 'races'].includes(categoryKey)) add('alsoIn'); // alsoIn → AlsoInField (#563 Lot 5)
@@ -615,7 +614,13 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
       <div className="codex-edit-form">
         {hasAppearance && <AppearanceField label={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
-        {CRITICAL_CATEGORIES.includes(categoryKey) && <CritTestField value={entry.test as CritTestNode | undefined} onChange={(v) => edit('test', v)} />}
+        {CRITICAL_CATEGORIES.includes(categoryKey) && (
+          <NoeudTestField
+            desc="jet de la rangée (nœud `test` — Difficulté, compétence, conséquences des deux branches)"
+            value={entry.test as NoeudTest | undefined}
+            onChange={(v) => edit('test', v)}
+          />
+        )}
         {isPassive && (
           <div className="ed-field">
             <span>modificateurs PASSIFS continus (mêmes ops que les sorts — sans déclencheur)</span>
@@ -680,6 +685,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {hasConsumable && <ConsumableDurationField value={entry.consumableDuration as ConsumableDuration | undefined} onChange={(v) => edit('consumableDuration', v)} />}
         {isMutation && <PsychTraitsField value={entry.psychTraits as PsychTrait[] | undefined} onChange={(v) => edit('psychTraits', v)} />}
         {isDisease && <SymptomsField value={entry.symptoms as DiseaseSymptom[] | undefined} onChange={(v) => edit('symptoms', v)} />}
+        {isDisease && <DiseaseDailyTestField value={entry.dailyTest as DiseaseDailyTest | undefined} onChange={(v) => edit('dailyTest', v)} />}
         {hasCombat && <TalentTestField value={entry.test as TalentTest | undefined} onChange={(v) => edit('test', v)} />}
         {hasCombat && <CombatField value={entry.combat as Partial<CombatFeature> | undefined} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('combat', v)} />}
         {variantFields && <VariantsField value={entry.variants as Variant[] | undefined} resolved={variantFields} entryFields={allFields} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('variants', v.length ? v : undefined)} />}
@@ -891,50 +897,6 @@ function SpellEffectsField({ value, onChange }: { value: Flow | undefined; onCha
   );
 }
 
-
-/**
- * Éditeur du JET d'une rangée de Blessure critique (`CritEntry.test`, #1682) — le champ porte UN nœud
- * `test`, pas un Flow quelconque : `{kind:'test', test, success, fail}`, la forme que `noeudTest` lit.
- *
- * On compose donc le SOUS-éditeur de nœud `test` (`TestFields` + un `FlowEditor` par branche), celui-là
- * même que `FlowEditor` monte quand il rencontre un `kind:'test'` à l'intérieur d'un Flow de sort — et
- * JAMAIS la racine `FlowEditor`, qui normalise ce qu'elle rend en `{kind:'seq', steps}` (`asSteps`/
- * `seqOf`) : le nœud y perdait son `kind`, et le document ne parsait plus son schéma au save.
- * Une rangée sans jet n'en porte pas : le bouton en POSE un COMPLET, jamais un nœud à moitié valide.
- */
-function CritTestField({ value, onChange }: { value: CritTestNode | undefined; onChange: (v: CritTestNode | undefined) => void }) {
-  /** `FlowEditor` édite la feuille de SCÈNE (transition/dialogue compris), la rangée n'admet que la
-   *  feuille `EffectOp` du moteur — même régime que `SpellEffectsField` : c'est le SCHÉMA du document
-   *  qui refuse au save une feuille hors vocabulaire, jamais un éditeur en double. */
-  const branche = (f: Flow): CritTestNode['success'] => f as CritTestNode['success'];
-  return (
-    <div className="ed-field">
-      <span>jet de la rangée (nœud `test` — Difficulté, compétence, conséquences des deux branches)</span>
-      {value ? (
-        <div className="eff-body flow-branch">
-          <TestFields test={value.test} onChange={(test) => onChange({ ...value, test })} />
-          <div className="branch">
-            <span className="branch-label ok">Si RÉUSSITE :</span>
-            <FlowEditor flow={value.success} ctx={{ encounters: [], dialogues: [] }} onChange={(success) => onChange({ ...value, success: branche(success) })} />
-          </div>
-          <div className="branch">
-            <span className="branch-label fail">Si ÉCHEC :</span>
-            <FlowEditor flow={value.fail} ctx={{ encounters: [], dialogues: [] }} onChange={(fail) => onChange({ ...value, fail: branche(fail) })} />
-          </div>
-          <button type="button" className="btn" onClick={() => onChange(undefined)}>Retirer le jet</button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="btn"
-          onClick={() => onChange({ kind: 'test', test: { difficulty: 'intermediaire' }, success: branche(EMPTY_FLOW), fail: branche(EMPTY_FLOW) })}
-        >
-          Ajouter un jet
-        </button>
-      )}
-    </div>
-  );
-}
 
 /** Éditeur des EFFETS DÉCLENCHÉS (`TriggeredEffect[]`) — porté indifféremment par un Trait OU un Atout
  *  d'arme. MÊME logique authorée que les sorts : une LISTE d'effets, chacun = un DÉCLENCHEUR (sur

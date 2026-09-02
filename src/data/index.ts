@@ -1906,16 +1906,17 @@ export interface SymptomData {
    *  Inconscient par paliers de `slThreshold`, MSRC 16 l.152-158). Source du dispatcher via
    *  `effectSourcesOf` (les symptômes ACTIFS deviennent une source, comme les États). */
   effects?: import('../state/flow').TriggeredEffect[];
-  /** `difficultyBySeverity` : la difficulté du Test de cycle est INDEXÉE sur la sévérité de l'instance
-   *  (Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible) — clé absente pour la sévérité portée
-   *  = `difficulty` de base inchangée. Lu par `symptomOnTick`. `afterDays`/`once` cadencent le cycle sur
-   *  la phase ACTIVE (Vers de carie : Test d'Endurance quotidien À PARTIR de J+7, MSRC 16 l.90 ; Vers du
-   *  Reik : éclatement UNE fois au 7ᵉ jour, MSRC 16 l.142). `difficulty` ABSENTE = conséquence
-   *  INCONDITIONNELLE (pas de jet — l'éclatement du Vers du Reik est d'issue invariante). */
+  /** Cycle de PHASE ACTIVE. `test` = le nœud `test` du Flow (`engine/flowCore.ts`) : le jet ET sa
+   *  conséquence (branche `fail`). `ops` = la conséquence CERTAINE d'un cycle sans jet (éclatement du
+   *  Vers du Reik, d'issue invariante — MSRC 16 l.142) : l'un OU l'autre, jamais les deux.
+   *  `difficultyBySeverity` INDEXE la Difficulté du nœud sur la sévérité de l'instance (Toxine,
+   *  LDB 20 l.215 : Modéré→Facile, Grave→Accessible) — clé absente pour la sévérité portée = Difficulté
+   *  du nœud inchangée. Lu par `symptomOnTick`. `afterDays`/`once` cadencent le cycle sur la phase
+   *  ACTIVE (Vers de carie : Test quotidien À PARTIR de J+7, MSRC 16 l.90 ; Vers du Reik : 7ᵉ jour). */
   onTick?: {
-    difficulty?: import('../engine/types').Difficulty;
+    test?: import('../engine/flowCore').FlowTestNode;
+    ops?: import('../engine/ops').GameOp[];
     difficultyBySeverity?: Partial<Record<'moderee' | 'grave', import('../engine/types').Difficulty>>;
-    onFail: import('../engine/ops').GameOp[];
     /** Ne se déclenche qu'à partir du Nᵉ jour de PHASE ACTIVE (1 = premier jour actif). Absent = dès le 1ᵉʳ. */
     afterDays?: number;
     /** UNE seule fois, au jour `afterDays` exact (Vers du Reik) ; absent/false = quotidien (Vers de carie). */

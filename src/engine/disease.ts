@@ -14,8 +14,9 @@
  * en 3 canaux (comme un trait/qualité) — ce module ne fait que les LIRE :
  *  - `passive`/`severePassive` (GameOp `charMod`) : pénalités continues (fièvre −10, convulsions −10/−20…)
  *    → collectées par `diseasePassiveOps` → `passiveMods` (kind 'maladie', annulable par Détermination).
- *  - `onTick { difficulty, onFail: GameOp[] }` : Test de cycle quotidien (Blessé → contractDisease
- *    'blessure-purulente' ; Toxine → test journalisé) — DIFFÉRÉ en cascade influençable (`diseaseTick`).
+ *  - `onTick` : cycle quotidien — soit une ÉPREUVE (`test`, le nœud `test` du Flow : jet + conséquence
+ *    de la branche `fail`), DIFFÉRÉE en cascade influençable (`diseaseTick`) ; soit une conséquence
+ *    CERTAINE (`ops`), appliquée sans jet.
  *  - `capabilities` (drapeaux irréductibles lus par la machinerie de CYCLE ci-dessous) : `blocksHealing`
  *    (Blessé/Gangrène), `amputation` (Gangrène), `stickyExtenue` (Malaise), `contagious` (Toux),
  *    `nausea` (combat), `endTest` (Persistant).
@@ -24,6 +25,7 @@ import { Combatant, Difficulty, UpkeepDeferTest, HitLocation, type ConditionEmit
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice, formatDice } from './dice';
 import { MINUTES_PER_DAY } from './clock';
 import { findTableEntry } from './tables';
+import { spellOps, type FlowTestNode } from './flowCore';
 import locJson from '../data/localisation.json';
 // Table de Localisation CANONIQUE (`src/data/localisation.json`, humanoïde) via la primitive `findTableEntry`
 // — MÊME source/lookup que `engine/combat.hitLocation`, réutilisée ici sans cycle (json + tables = feuilles).
@@ -105,11 +107,12 @@ export interface DiseaseDef {
    *  ensuite (MDG 14 l.209). Drapeau DÉCLARATIF lu par `buildBarrelSteps` (`state/seaVoyageFlow`). */
   contaminatesWaterBarrel?: boolean;
   /** Test de cycle quotidien porté par la MALADIE elle-même (≠ par un de ses symptômes) — EDOC 08
-   *  l.104-108. `symptomId` NOMME le symptôme que le Test met en jeu (libellé d'étape + réf d'enjeu) ;
-   *  l'échec applique `onFail` (GameOp), par le MÊME canal différé/influençable que les `onTick` de
-   *  symptôme (`diseaseTick`). CADENCE RÉELLE : chaque JOUR D'ENTRETIEN — écart mesuré à la condition
-   *  de déclenchement de `EDOC 08 l.104`, consigné au site de roulage (#674, `tickDisease`). */
-  dailyTest?: { difficulty: Difficulty; symptomId: string; onFail: GameOp[] };
+   *  l.104-108. `test` est le nœud `test` du Flow : il porte le jet ET sa conséquence (branche `fail`),
+   *  appliquée par le MÊME canal différé/influençable que les `onTick` de symptôme (`diseaseTick`).
+   *  `symptomId` NOMME le symptôme que le Test met en jeu (libellé d'étape + réf d'enjeu). CADENCE
+   *  RÉELLE : chaque JOUR D'ENTRETIEN — écart mesuré à la condition de déclenchement de `EDOC 08 l.104`,
+   *  consigné au site de roulage (#674, `tickDisease`). */
+  dailyTest?: { test: FlowTestNode; symptomId: string };
   /** MUE en une autre maladie au-delà de `afterDays` jours de phase ACTIVE — EDOC 08 l.122.
    *  `into` = id d'une entrée de `maladies.json`. */
   mutation?: { afterDays: number; into: string };
@@ -281,16 +284,30 @@ export function diseasePsychTraits(c: Combatant): PsychTrait[] {
   }
   return out;
 }
-/** Test/conséquence de cycle quotidien d'une instance de symptôme (Blessé/Toxine/Vers) — donnée. La
- *  difficulté est INDEXÉE sur la sévérité PORTÉE PAR L'INSTANCE quand le symptôme le prévoit
- *  (`difficultyBySeverity` — Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible). `difficulty`
- *  ABSENTE = conséquence INCONDITIONNELLE (pas de jet). `afterDays`/`once` cadencent le cycle sur la
- *  phase active (Vers de carie / Vers du Reik, MSRC 16). */
+/**
+ * Cycle quotidien d'une instance de symptôme (Blessé/Toxine/Vers) — lecture PURE de la donnée : les
+ * ops de la branche `fail` du nœud sont extraites par `spellOps` (`flowCore`), comme `resolveCritique`.
+ * `difficulty` ABSENTE = cycle SANS jet : la conséquence `ops` du porteur est certaine. Sinon la
+ * Difficulté est celle du nœud, INDEXÉE sur la sévérité portée par L'INSTANCE quand le symptôme le
+ * prévoit (`difficultyBySeverity` — Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible).
+ * `afterDays`/`once` cadencent le cycle sur la phase active (Vers de carie / Vers du Reik, MSRC 16).
+ */
 export function symptomOnTick(inst: DiseaseSymptom): { difficulty?: Difficulty; onFail: GameOp[]; afterDays?: number; once?: boolean } | undefined {
   const tick = findSymptomById(inst.symptomId)?.onTick;
   if (!tick) return undefined;
+  const cadence = {
+    ...(tick.afterDays !== undefined ? { afterDays: tick.afterDays } : {}),
+    ...(tick.once !== undefined ? { once: tick.once } : {}),
+  };
+  if (!tick.test) return { onFail: tick.ops ?? [], ...cadence };
   const bySeverity = inst.severity && tick.difficultyBySeverity?.[inst.severity];
-  return bySeverity ? { ...tick, difficulty: bySeverity } : tick;
+  return { difficulty: bySeverity || tick.test.test.difficulty, onFail: opsDeLEchec(tick.test), ...cadence };
+}
+
+/** Ops de la branche `fail` d'un nœud `test` de maladie — le canal différé `diseaseTick` n'applique QUE
+ *  l'échec (`state/restFlow.ts`), la branche `success` est du bruit authoré vide (contrat vérifié). */
+function opsDeLEchec(node: FlowTestNode): GameOp[] {
+  return spellOps(node.fail, 'target');
 }
 /** Interprète INLINE le sous-ensemble d'ops `onFail`/inconditionnelles que le cycle de maladie peut
  *  appliquer SANS `applyOps` (contrainte sans-cycle ops↔disease de l'en-tête) : contraction, mort (Destin,
@@ -572,9 +589,10 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
         survivors.push(dz);
         continue;
       }
-      // active — symptômes à Test de cycle quotidien (`onTick` : Blessé, Toxine). DONNÉE-DRIVEN : on lit
-      // l'onTick du symptôme (difficulté + conséquence GameOp `onFail`). DIFFÉRÉ en cascade influençable
-      // (l'`onFail` est appliqué par l'applier d'étape côté state via applyOps) ; sinon roulé ici (chemin
+      // active — symptômes à cycle quotidien (`onTick` : Blessé, Toxine). DONNÉE-DRIVEN : `symptomOnTick`
+      // lit le nœud `test` du symptôme (sa Difficulté, et les ops de sa branche d'ÉCHEC) ou ses `ops`
+      // certaines. DIFFÉRÉ en cascade influençable (l'applier d'étape côté state les passe à `applyOps`
+      // sur un échec, et à rien d'autre) ; sinon roulé ici (chemin
       // non-différé — `runDailyUpkeep` sans cascade de nuit + tests unitaires) : on interprète la
       // conséquence inline (`contractDisease` → contraction directe ; `kill` → `fateSaveOrDie` mutualisé,
       // seule l'interprétation des ops reste locale — pas d'import d'`applyOps`, contrainte sans-cycle
@@ -620,8 +638,12 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
         // d'ingénierie #674, hors source (`LDB 72 l.28` ne porte que sur les effets du symptôme).
         const daily = DISEASE_DEFS[dz.id]?.dailyTest;
         if (daily && !symptomSuppressed(c, daily.symptomId)) {
-          if (defer) defer({ kind: 'diseaseTick', label: t('step.sujetPrecision', { sujet: symptomLabel(daily.symptomId), precision: diseaseLabel(dz.id) }), base: rv, difficulty: daily.difficulty, meta: { diseaseName: dz.id, symptomId: daily.symptomId, onFail: daily.onFail } });
-          else if (!rollTest(rv, daily.difficulty, rng).success) applyOnFailInline(c, daily.onFail, contractOnce, log, emit);
+          // `difficulty` REQUISE au schéma du porteur (`noeudTest(…, { difficulteRequise: true })`,
+          // `defs/maladies.ts`) — `FlowTest` la laisse optionnelle pour les jets dont elle vient d'ailleurs.
+          const difficulty = daily.test.test.difficulty!;
+          const onFail = opsDeLEchec(daily.test);
+          if (defer) defer({ kind: 'diseaseTick', label: t('step.sujetPrecision', { sujet: symptomLabel(daily.symptomId), precision: diseaseLabel(dz.id) }), base: rv, difficulty, meta: { diseaseName: dz.id, symptomId: daily.symptomId, onFail } });
+          else if (!rollTest(rv, difficulty, rng).success) applyOnFailInline(c, onFail, contractOnce, log, emit);
         }
         // MUE (EDOC 08 l.122) : au-delà de `afterDays` jours de phase active, la maladie CÈDE la place
         // à `into` — propriété de la DONNÉE, aucun id codé ici.

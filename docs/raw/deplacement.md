@@ -501,7 +501,7 @@ Complexe (−10) ; les deux manquants → Difficile (−20). Hiver ou printemps 
 commun** (EDOC 08 l.110-122).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `EDOC 8` (l.21-40, l.50-59, l.62, l.88-92, l.110-122) → `plein-air`, `PosteCardinality`, `Season`, `weatherIdSchema`, `activityAsPoste`, `printemps`, `approvisionnement`, `doc`, `Weather`, `ete`, +53 — `src/data/activities.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/maladies.ts`, +18 fichiers
+- `EDOC 8` (l.21-40, l.50-59, l.62, l.88-92, l.110-122) → `plein-air`, `PosteCardinality`, `Season`, `weatherIdSchema`, `activityAsPoste`, `printemps`, `approvisionnement`, `doc`, `Weather`, `ete`, +55 — `src/data/activities.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/maladies.ts`, +19 fichiers
 - dette : #674
 
 ### Activités de Voyage (1 par Étape)

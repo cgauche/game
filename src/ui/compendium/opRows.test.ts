@@ -11,6 +11,7 @@ import { codexLookupById } from './registry';
 import { characteristics, talents, skills, traits, psychologies, etats, trappings, maladies, symptoms, creatures, mutations, findSymptomById, effectTables } from '../../data';
 import type { CharKey } from '../../engine/types';
 import { psychBranchOps } from '../../engine/psychology';
+import { spellOps } from '../../engine/flowCore';
 
 const ALL_KINDS = Object.keys(OP_LABEL) as GameOp['op'][];
 
@@ -138,7 +139,7 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
     it('rollTable INLINE (vers-de-carie, MSRC 16 l.90-101) : 8 rangées visibles, sous-titre + ops', () => {
       const s = findSymptomById('vers-de-carie');
       expect(s?.onTick).toBeTruthy();
-      const rows = opRows(s!.onTick!.onFail);
+      const rows = opRows(spellOps(s!.onTick!.test!.fail, 'target'));
       const subs = rows.filter((r) => r.t === 'sub');
       expect(subs).toHaveLength(8);
       expect(subs.map((r) => (r as { t: 'sub'; label: string }).label)).toEqual([

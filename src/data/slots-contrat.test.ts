@@ -126,7 +126,11 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // portent (`regles.json`, `symptoms.json`) ; les comptes de `activities | skills` (61 → 63) et de
 // `maladies | symptoms` (54 → 62) montent par la même mesure. La dette d’adoption qu’ils nomment
 // existait avant d’être visible — c’est le lot L2/L3 #1473 qui l’éteint, comme leurs sœurs.
-const DETTE_ADOPTION_MAX = 345;
+// Cliquet DESCENDU 345 → 344 (#1657 B2b, 2026-09-02) : `symptoms.json | onFail` (2) meurt — le cycle
+// d’un symptôme porte désormais sa conséquence sous la feuille `EffectOp` du nœud `test`, et ses deux
+// réfs rejoignent `symptoms.json | ops` (10 → 12), un couple déjà au dénominateur. `maladies.json |
+// onFail` (1) devient `| ops` par le même geste : même dette, autre champ porteur.
+const DETTE_ADOPTION_MAX = 344;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

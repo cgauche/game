@@ -325,6 +325,33 @@ export interface OptionsNoeudTest {
    * l'exigence que portait le schéma propre des Blessures critiques.
    */
   readonly difficulteRequise?: boolean;
+  /**
+   * Le porteur ne SERT que la branche `fail`, et il l'applique par extraction PLATE de ses ops
+   * (`spellOps`, `engine/flowCore.ts`) — c'est le régime du cycle de maladie : l'applier de repos
+   * (`registerNightBandApplier('diseaseTick')`, `state/restFlow.ts`) rend une liste VIDE sur une
+   * réussite, et `symptomOnTick` (`engine/disease.ts`) ne lit que `fail`.
+   * Deux formes seraient alors AUTHORABLES SANS EFFET, donc menteuses : une branche `success`
+   * peuplée (jamais jouée) et une branche `fail` à embranchement (`if`/`test`/`choice`), dont
+   * `spellOps` APLATIRAIT les ops — promises quelle que soit l'issue. Le contrat les REFUSE.
+   */
+  readonly echecSeulServi?: boolean;
+}
+
+/**
+ * Un Flow est-il une branche PLATE ? — que des `seq`/`do` : aucun embranchement dont `spellOps`
+ * (extraction plate) promettrait les ops des deux côtés. Rend le `kind` fautif, ou `null`.
+ */
+function kindDEmbranchement(flow: unknown): string | null {
+  const n = flow as { kind?: string; steps?: unknown[] } | null;
+  if (!n || typeof n !== 'object') return null;
+  if (n.kind === 'seq') {
+    for (const e of n.steps ?? []) {
+      const k = kindDEmbranchement(e);
+      if (k) return k;
+    }
+    return null;
+  }
+  return n.kind === 'do' ? null : (n.kind ?? 'inconnu');
 }
 
 /**
@@ -345,7 +372,33 @@ export function noeudTest<B extends z.ZodType>(branche: B, options: OptionsNoeud
         });
       })
     : flowTestSchema;
-  return z.strictObject({ kind: z.literal('test'), test, success: branche, fail: branche });
+  const noeud = z.strictObject({ kind: z.literal('test'), test, success: branche, fail: branche });
+  if (!options.echecSeulServi) return noeud;
+  return noeud.superRefine((valeur, ctx) => {
+    // La branche est GÉNÉRIQUE (`B extends z.ZodType`) : son type de sortie est opaque ici, seule la
+    // FORME du nœud de Flow est inspectée — celle que `flowCore.ts` déclare pour tout `Flow<E>`.
+    const v = valeur as { success: unknown; fail: unknown };
+    const succes = v.success as { kind?: string; steps?: unknown[] };
+    if (succes?.kind !== 'seq' || (succes.steps ?? []).length > 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['success'],
+        message:
+          'ce nœud ne SERT que sa branche d’ÉCHEC : une branche « success » peuplée ne serait jamais jouée. '
+          + 'Elle s’écrit vide : {kind:"seq",steps:[]}.',
+      });
+    }
+    const embranchement = kindDEmbranchement(v.fail);
+    if (embranchement) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['fail'],
+        message:
+          'branche d’ÉCHEC à EMBRANCHEMENT (« ' + embranchement + ' ») : ce nœud est lu par extraction PLATE '
+          + '(spellOps), qui appliquerait les ops des DEUX côtés. La branche d’échec ne porte que des feuilles « do ».',
+      });
+    }
+  });
 }
 
 /** `Flow<EffectOp>` (`engine/flowCore.ts:492`) — arbre récursif ACYCLIQUE (seq/do/if/test/choice). */

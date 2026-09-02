@@ -353,14 +353,16 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "loup-et-saumure-projet.json", champ: "weapon", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "maladies.json", champ: "dailyTest", signature: "symptomId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L4 #1463", date: "2026-09-01", motif: "JET (EDOC 08 l.104) compté en référence parce qu’il DÉSIGNE le symptôme qu’il inflige — l’enveloppe `épreuve {test, onFail}` de #1657 geste B le reprend ; le lot des références ne l’éteindrait jamais" },
   { concept: "reference", dataset: "maladies.json", champ: "mutation", signature: "into+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // mue Rhume → Pneumonie, EDOC 08 l.122 (#674)
-  { concept: "reference", dataset: "maladies.json", champ: "onFail", signature: "disease,symptomId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // cycle quotidien de la Pneumonie, EDOC 08 l.104-108 (#674)
+  { concept: "reference", dataset: "maladies.json", champ: "ops", signature: "disease,symptomId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // cycle quotidien de la Pneumonie, EDOC 08 l.104-108 (#674) — champ `onFail` → `ops` : la conséquence vit sous la feuille `EffectOp` du nœud `test` (#1657 B2b)
   { concept: "reference", dataset: "maladies.json", champ: "otherwise", signature: "disease,symptomId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // échelon Toxine du même cycle, EDOC 08 l.106-108 (#674)
-  // La 8ᵉ réf de symptôme à Difficulté PROPRE : sa valeur `difficile` RÉSOUT (id de `sea-events.json`),
-  // donc la projection garde les DEUX clés au lieu de replier la Difficulté en `+…`.
-  { concept: "reference", dataset: "maladies.json", champ: "symptoms", signature: "difficulty,symptomId", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-01" },
   { concept: "reference", dataset: "maladies.json", champ: "symptoms", signature: "spec,symptomId", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "maladies.json", champ: "symptoms", signature: "symptomId", statut: "divergente", strate: "Référence", occurrences: 47, lot: "L3 #1463", date: "2026-08-23" }, // +5 : Pneumonie (3) + Rhume commun (2), EDOC 08 folio 33 (#674)
-  { concept: "reference", dataset: "maladies.json", champ: "symptoms", signature: "symptomId+…", statut: "divergente", strate: "Référence", occurrences: 13, lot: "L3 #1463", date: "2026-08-23" },
+  // 13 → 14 (#1657 B2b) : la 8ᵉ réf de symptôme à Difficulté PROPRE avait sa ligne à elle, sa valeur
+  // `difficile` RÉSOLVANT vers un id de `sea-events.json`. En adoptant `noeudTest(flowSchema)`, le
+  // document déclare désormais `difficulty` par `difficultySchema` (`z.enum`, `grammaire/valeurs.ts`)
+  // au lieu du `z.string()` de son `dailyTest` propre — et une clé dont la valeur est un LITTÉRAL
+  // D'ENUM du schéma n'ouvre jamais de référence : l'homonyme meurt, la projection replie en `+…`.
+  { concept: "reference", dataset: "maladies.json", champ: "symptoms", signature: "symptomId+…", statut: "divergente", strate: "Référence", occurrences: 14, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "maneuvers.json", champ: "escapeStrength", signature: "charOf", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "maneuvers.json", champ: "ops", signature: "id,unlessCondition+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "maneuvers.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
@@ -468,13 +470,14 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "stars.json", champ: "ops", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 42, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "stars.json", champ: "ops", signature: "spec,talentId+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-30", motif: "référence de TALENT" },
   { concept: "reference", dataset: "stars.json", champ: "ops", signature: "talentId+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "symptoms.json", champ: "onFail", signature: "disease+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "symptoms.json", champ: "onFail", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "disease+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // la conséquence du cycle vit sous la feuille `EffectOp` du nœud `test` (#1657 B2b)
   { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "passive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 23, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "severePassive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "visiblePassive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
+  // 3 → 4 (#1657 B2b) : l'État *Sonné* de l'éclatement du Vers du Reik (MSRC 16 l.142) quitte `onFail`
+  // — nom menteur pour un effet CERTAIN — et rejoint les ops sous `ops`.
+  { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "traitId+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "passive", signature: "cible,psychType+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "passive", signature: "psychType+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -579,6 +582,7 @@ export const STRUCTURES_FORMES = [
   { concept: "test", dataset: "land-cargo.json", champ: "gossip", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "loup-et-saumure-projet.json", champ: "effect", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "loup-et-saumure-projet.json", champ: "test", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
+  { concept: "test", dataset: "maladies.json", champ: "test", signature: "difficulty", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" }, // le Test quotidien de la Pneumonie (EDOC 08 l.104) quitte la graphie propriétaire `dailyTest {difficulty, onFail}` pour le nœud `test` du Flow (#1657 B2b)
   { concept: "test", dataset: "maneuvers.json", champ: "test", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "miscast.json", champ: "test", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "miscast.json", champ: "test", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 13, lot: "L4 #1463", date: "2026-08-23" },
@@ -603,8 +607,11 @@ export const STRUCTURES_FORMES = [
   { concept: "test", dataset: "spells.json", champ: "test", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 8, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "steam-breakdown.json", champ: "restart", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 4, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "steam-breakdown.json", champ: "restart", signature: "char,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "test", dataset: "symptoms.json", champ: "onTick", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 3, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "symptoms.json", champ: "test", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
+  // Les 3 cycles à jet quittent la graphie propriétaire `onTick {difficulty, onFail}` pour le nœud
+  // `test` du Flow (#1657 B2b) : le champ mesuré devient `test`, la signature l'exacte `difficulty`
+  // du `flowTestSchema` — la MÊME que `criticals.json | test` depuis B2a.
+  { concept: "test", dataset: "symptoms.json", champ: "test", signature: "difficulty", statut: "divergente", strate: "Valeur", occurrences: 3, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "talents.json", champ: "test", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "talents.json", champ: "test", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "talents.json", champ: "test", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -737,7 +744,6 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "sea-weather.ts", champ: "affaler", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "spells.ts", champ: "", concept: "", signature: "kind", statut: "hors lexique", commun: "conditionSchema", occurrences: 5, lot: "L1a #1466", date: "2026-08-23" },
   { def: "steam-breakdown.ts", champ: "restart", concept: "test", signature: "char,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { def: "symptoms.ts", champ: "onTick", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "talents.ts", champ: "max", concept: "", signature: "bonusOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
   { def: "tavernGames.ts", champ: "options", concept: "test", signature: "char,difficulty,skill+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "tavernGames.ts", champ: "rows", concept: "plage", signature: "max,min+…", statut: "cible", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-09-01" },

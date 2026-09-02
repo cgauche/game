@@ -74,7 +74,7 @@ Documents porteurs :
 
 ## 3. Canal `effects` — le déclenché
 
-Un `TriggeredEffect` (`src/engine/flowCore.ts:549`) est un Flow d'ops appliqué à `on` quand `trigger` se
+Un `TriggeredEffect` (`src/engine/flowCore.ts:553`) est un Flow d'ops appliqué à `on` quand `trigger` se
 produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'entité.
 
 | Champ | Type | Rôle (JSDoc) |
@@ -87,12 +87,12 @@ produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'enti
 | `optional?` | `boolean` | Effet OPT-IN (RAW « Vous pouvez… » — Contrôle de la Frénésie, LDB 10 l.251-255) : le porteur CHOISIT de le déclencher. |
 | `source?` | `EffectSource` | ENTITÉ SOURCE — JAMAIS authorée : posée à l'ÉNUMÉRATION par `effectSourcesOf` (`src/state/triggeredEffects.ts`), qui seule sait de quelle entité l'effet est tiré. |
 
-### Les 20 déclencheurs (`EffectTrigger`, `src/engine/flowCore.ts:520`)
+### Les 20 déclencheurs (`EffectTrigger`, `src/engine/flowCore.ts:524`)
 
 `onHit` · `onCrit` · `onWoundLoss` · `onSlain` · `onRoundStart` · `onStartled` · `onKill` · `onCharged` · `onGainCondition` · `onCombatStart` · `onCombatEnd` · `onRoundEnd` · `onTurnStart` · `onTurnEnd` · `onDayStart` · `onWake` · `onAttackResolved` · `onCastResolved` · `onMiscast` · `onOwnTestFailed`
 
 
-### Les 6 formes de ciblage (`EffectTargeting`, `src/engine/flowCore.ts:546`)
+### Les 6 formes de ciblage (`EffectTargeting`, `src/engine/flowCore.ts:550`)
 
 - `'self'`
 - `'victim'`

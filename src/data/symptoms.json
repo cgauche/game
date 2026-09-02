@@ -310,13 +310,29 @@
     "label": "Blessé",
     "desc": "Vous avez une blessure ou une plaie ouverte qui ne guérit pas correctement à cause d'une infection. Pour chaque symptôme Blessé dont vous souffrez, vous ne pouvez pas guérir l'une de vos Blessures, qui reste donc ouverte et vous fait souffrir. Certains écoulements de pus sont même possibles. Chaque jour, réussissez un Test de **Résistance Accessible (+20)** ou subissez une Blessure Purulente si vous n'en avez pas déjà une.",
     "onTick": {
-      "difficulty": "accessible",
-      "onFail": [
-        {
-          "op": "contractDisease",
-          "disease": "blessure-purulente"
+      "test": {
+        "kind": "test",
+        "test": {
+          "difficulty": "accessible"
+        },
+        "success": {
+          "kind": "seq",
+          "steps": []
+        },
+        "fail": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "contractDisease",
+                "disease": "blessure-purulente"
+              }
+            ],
+            "on": "target"
+          }
         }
-      ]
+      }
     },
     "capabilities": {
       "blocksHealing": true
@@ -332,16 +348,32 @@
     "label": "Toxine",
     "desc": "Vous êtes gravement malade et sans doute plus très loin des Portes de Morr car un poison mortel se répand dans votre corps. Effectuez un Test de **Résistance Très Facile (+60)** tous les jours (en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie. Si *Toxine* est indiqué (*Modéré*), le Test est **Facile (+40)**. Si elle est indiquée (*Grave*), le Test est **Accessible (+20)**.",
     "onTick": {
-      "difficulty": "tresFacile",
+      "test": {
+        "kind": "test",
+        "test": {
+          "difficulty": "tresFacile"
+        },
+        "success": {
+          "kind": "seq",
+          "steps": []
+        },
+        "fail": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "kill"
+              }
+            ],
+            "on": "target"
+          }
+        }
+      },
       "difficultyBySeverity": {
         "moderee": "facile",
         "grave": "accessible"
-      },
-      "onFail": [
-        {
-          "op": "kill"
-        }
-      ]
+      }
     },
     "source": {
       "book": "livre-de-base",
@@ -463,120 +495,136 @@
       }
     ],
     "onTick": {
-      "difficulty": "accessible",
-      "afterDays": 7,
-      "onFail": [
-        {
-          "op": "rollTable",
-          "die": "d10",
-          "addNegativeSL": true,
-          "rows": [
-            {
-              "min": 1,
-              "max": 2,
-              "ops": [
-                {
-                  "op": "charDamage",
-                  "char": "initiative",
-                  "amount": {
-                    "dice": {
-                      "n": 1,
-                      "sides": 10
-                    }
+      "test": {
+        "kind": "test",
+        "test": {
+          "difficulty": "accessible"
+        },
+        "success": {
+          "kind": "seq",
+          "steps": []
+        },
+        "fail": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "rollTable",
+                "die": "d10",
+                "addNegativeSL": true,
+                "rows": [
+                  {
+                    "min": 1,
+                    "max": 2,
+                    "ops": [
+                      {
+                        "op": "charDamage",
+                        "char": "initiative",
+                        "amount": {
+                          "dice": {
+                            "n": 1,
+                            "sides": 10
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "min": 3,
+                    "max": 4,
+                    "ops": [
+                      {
+                        "op": "charDamage",
+                        "char": "intelligence",
+                        "amount": {
+                          "dice": {
+                            "n": 1,
+                            "sides": 10
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "min": 5,
+                    "max": 6,
+                    "ops": [
+                      {
+                        "op": "charDamage",
+                        "char": "force-mentale",
+                        "amount": {
+                          "dice": {
+                            "n": 1,
+                            "sides": 10
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "min": 7,
+                    "max": 8,
+                    "ops": [
+                      {
+                        "op": "charDamage",
+                        "char": "sociabilite",
+                        "amount": {
+                          "dice": {
+                            "n": 1,
+                            "sides": 10
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "min": 9,
+                    "max": 9,
+                    "ops": [
+                      {
+                        "op": "grantTrait",
+                        "traitId": "nerveux"
+                      }
+                    ]
+                  },
+                  {
+                    "min": 10,
+                    "max": 10,
+                    "ops": [
+                      {
+                        "op": "grantTrait",
+                        "traitId": "stupide"
+                      }
+                    ]
+                  },
+                  {
+                    "min": 11,
+                    "max": 12,
+                    "ops": [
+                      {
+                        "op": "grantTrait",
+                        "traitId": "bestial"
+                      }
+                    ]
+                  },
+                  {
+                    "min": 13,
+                    "max": 99,
+                    "ops": [
+                      {
+                        "op": "kill"
+                      }
+                    ]
                   }
-                }
-              ]
-            },
-            {
-              "min": 3,
-              "max": 4,
-              "ops": [
-                {
-                  "op": "charDamage",
-                  "char": "intelligence",
-                  "amount": {
-                    "dice": {
-                      "n": 1,
-                      "sides": 10
-                    }
-                  }
-                }
-              ]
-            },
-            {
-              "min": 5,
-              "max": 6,
-              "ops": [
-                {
-                  "op": "charDamage",
-                  "char": "force-mentale",
-                  "amount": {
-                    "dice": {
-                      "n": 1,
-                      "sides": 10
-                    }
-                  }
-                }
-              ]
-            },
-            {
-              "min": 7,
-              "max": 8,
-              "ops": [
-                {
-                  "op": "charDamage",
-                  "char": "sociabilite",
-                  "amount": {
-                    "dice": {
-                      "n": 1,
-                      "sides": 10
-                    }
-                  }
-                }
-              ]
-            },
-            {
-              "min": 9,
-              "max": 9,
-              "ops": [
-                {
-                  "op": "grantTrait",
-                  "traitId": "nerveux"
-                }
-              ]
-            },
-            {
-              "min": 10,
-              "max": 10,
-              "ops": [
-                {
-                  "op": "grantTrait",
-                  "traitId": "stupide"
-                }
-              ]
-            },
-            {
-              "min": 11,
-              "max": 12,
-              "ops": [
-                {
-                  "op": "grantTrait",
-                  "traitId": "bestial"
-                }
-              ]
-            },
-            {
-              "min": 13,
-              "max": 99,
-              "ops": [
-                {
-                  "op": "kill"
-                }
-              ]
-            }
-          ]
+                ]
+              }
+            ],
+            "on": "target"
+          }
         }
-      ]
+      },
+      "afterDays": 7
     },
     "capabilities": {
       "persistentActive": true
@@ -613,7 +661,7 @@
     "onTick": {
       "afterDays": 7,
       "once": true,
-      "onFail": [
+      "ops": [
         {
           "op": "wounds",
           "amount": 1,

@@ -229,7 +229,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "loup-et-saumure-projet.json", champ: "weapon", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "skill", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "maladies.json", champ: "mutation", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // mue Rhume → Pneumonie, EDOC 08 l.122 (#674)
-  { dataset: "maladies.json", champ: "onFail", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // cycle quotidien de la Pneumonie, EDOC 08 l.104-108 (#674)
+  { dataset: "maladies.json", champ: "ops", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // cycle quotidien de la Pneumonie, EDOC 08 l.104-108 (#674) — champ `onFail` → `ops` (#1657 B2b)
   { dataset: "maladies.json", champ: "otherwise", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // échelon Toxine du même cycle, EDOC 08 l.106-108 (#674)
   { dataset: "maladies.json", champ: "dailyTest", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-01" }, // EDOC 08 l.104 (#674) — le Test quotidien DÉSIGNE son symptôme (#1657 geste A)
   { dataset: "maladies.json", champ: "symptoms", occurrences: 62, lot: "L2/L3 #1473", date: "2026-08-26" }, // +5 : Pneumonie (3) + Rhume commun (2), EDOC 08 folio 33 (#674) ; 54 → 62 : les 8 réfs à Difficulté PROPRE, jusque-là classées `test` (#1657 geste A)
@@ -329,8 +329,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "stars.json", champ: "ops", occurrences: 55, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "steam-breakdown.json", champ: "skill", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-30" },
   { dataset: "structures.json", champ: "traits", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "symptoms.json", champ: "onFail", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "symptoms.json", champ: "ops", occurrences: 10, lot: "L1b #1467", date: "2026-08-28" },
+  { dataset: "symptoms.json", champ: "ops", occurrences: 12, lot: "L1b #1467", date: "2026-08-28" }, // 12 : les réfs du cycle (`onTick`) comptent ici, sous la feuille `EffectOp` du nœud `test` (#1657 B2b)
   { dataset: "symptoms.json", champ: "passive", occurrences: 25, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "symptoms.json", champ: "severePassive", occurrences: 6, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "symptoms.json", champ: "visiblePassive", occurrences: 1, lot: "L1b #1467", date: "2026-08-28" },

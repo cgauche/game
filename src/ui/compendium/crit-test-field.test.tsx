@@ -8,12 +8,13 @@
  * select, on Enregistre — et on exige DEUX choses : aucun refus de schéma, et la rangée mémoire porte
  * un nœud `{kind:'test', test, success, fail}` à la nouvelle Difficulté.
  *
- * CE QU'IL MORD : `CritTestField` composait la racine `FlowEditor`, qui normalise ce qu'elle rend en
- * `{kind:'seq', steps}` (`asSteps`/`seqOf`, `src/ui/editor/FlowEditor.tsx`) — le premier geste
- * d'édition faisait perdre son `kind` au nœud et le save était refusé (« expected "test" »,
- * « Unrecognized key: "steps" »). Le champ compose désormais le SOUS-éditeur de nœud `test`
- * (`TestFields` + un `FlowEditor` par branche), celui-là même que `FlowEditor` monte à l'intérieur
- * d'un Flow de sort.
+ * CE QU'IL MORD : la racine `FlowEditor` normalise ce qu'elle rend en `{kind:'seq', steps}`
+ * (`asSteps`/`seqOf`, `src/ui/editor/FlowEditor.tsx`) — montée sur ce champ, le premier geste
+ * d'édition ferait perdre son `kind` au nœud et le save serait refusé (« expected "test" »,
+ * « Unrecognized key: "steps" »). Le champ compose donc `NoeudTestField`, le SOUS-éditeur de nœud
+ * `test` (`TestFields` + un `FlowEditor` par branche servie), celui-là même que `FlowEditor` monte
+ * à l'intérieur d'un Flow de sort ; une rangée de Critique SERT ses deux branches (`critical.ts`),
+ * elle les édite donc toutes les deux.
  */
 import { describe, it, expect, afterEach, beforeAll } from 'vitest';
 import { act } from 'react';

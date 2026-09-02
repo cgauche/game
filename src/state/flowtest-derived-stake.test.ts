@@ -49,6 +49,7 @@ const KIND_PAR_FICHIER: Record<string, EffectSourceKind> = {
   'maneuvers.json': 'maneuver',
   'qualities.json': 'quality',
   'symptoms.json': 'symptom',
+  'maladies.json': 'disease',
 };
 
 /**

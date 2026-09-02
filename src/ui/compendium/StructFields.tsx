@@ -21,7 +21,8 @@ import { slugId } from '../../data/slug';
 import { ConditionEditor } from '../editor/ConditionEditor';
 import { isOptionalNote, type TraitInstance, type OptionalEntry } from '../../engine/statEntry';
 import { parseTraitInstance, formatTrait, optionalLabel } from '../../engine/traits/dispatch';
-import { GameOpEditor } from '../editor/GameOpEditor';
+import { GameOpEditor, newOp } from '../editor/GameOpEditor';
+import { NoeudTestField, noeudTestNeuf, type NoeudTest } from '../editor/FlowEditor';
 import type { GameOp } from '../../engine/ops';
 import { NumberField } from '../NumberField';
 import { PlageField } from '../PlageField';
@@ -74,38 +75,76 @@ export function SymptomsField({ value, onChange }: { value: DiseaseSymptom[] | u
   );
 }
 
-/** symptoms[].onTick — cycle quotidien de PHASE ACTIVE d'un symptôme : conséquence GameOp `onFail`,
- *  éventuellement gardée par un Test (`difficulty` — vide = INCONDITIONNEL, Vers du Reik) et cadencée sur
- *  la phase active (`afterDays` : Vers de carie J+7 ; `once` : éclatement UNE fois). `difficultyBySeverity`
- *  (Toxine) préservée par fusion — jamais perdue à l'édition. */
+/** symptoms[].onTick — cycle quotidien de PHASE ACTIVE d'un symptôme : SOIT une épreuve (`test`, le
+ *  nœud `test` du Flow, dont la branche d'échec porte la conséquence), SOIT des ops CERTAINES (`ops` —
+ *  éclatement du Vers du Reik, sans jet) ; cadencé sur la phase active (`afterDays` : Vers de carie
+ *  J+7 ; `once` : UNE fois). `difficultyBySeverity` (Toxine) préservée par fusion — jamais perdue à
+ *  l'édition. */
 export type SymptomTick = {
-  difficulty?: Difficulty;
+  test?: NoeudTest;
+  ops?: GameOp[];
   difficultyBySeverity?: Partial<Record<'moderee' | 'grave', Difficulty>>;
-  onFail: GameOp[];
   afterDays?: number;
   once?: boolean;
 };
 export function SymptomTickField({ value, onChange }: { value: SymptomTick | undefined; onChange: (v: SymptomTick | undefined) => void }) {
-  const patch = (p: Partial<SymptomTick>) => onChange({ onFail: [], ...value, ...p });
+  const patch = (p: Partial<SymptomTick>) => onChange({ ...value, ...p });
+  /** Bascule ÉPREUVE ↔ CERTAIN : les deux clefs sont EXCLUSIVES au schéma (`defs/symptoms.ts`), la
+   *  Difficulté par sévérité n'a de sens que sous jet et s'efface avec lui. */
+  const versEpreuve = () => patch({ test: value?.test ?? noeudTestNeuf(), ops: undefined });
+  // Le schéma exige une conséquence NON VIDE (`gameOpSchema[]` d'au moins une op serait sinon un
+  // cycle qui ne fait rien) : la bascule pose une op de départ éditable plutôt qu'un `ops: []` que
+  // le save refuserait sans que rien à l'écran ne le dise.
+  const versCertain = () => patch({ test: undefined, difficultyBySeverity: undefined, ops: value?.ops?.length ? value.ops : [newOp('wounds')] });
   return (
     <div className="ed-field">
-      <span>Cycle quotidien de phase active (Blessé / Toxine / Vers) — conséquence GameOp `onFail`, gardée par un Test (difficulté) ou inconditionnelle</span>
-      <label><input type="checkbox" checked={value != null} onChange={(e) => onChange(e.target.checked ? { onFail: value?.onFail ?? [] } : undefined)} /> cycle actif</label>
+      <span>Cycle quotidien de phase active (Blessé / Toxine / Vers) — sous jet (nœud `test`) ou conséquence certaine</span>
+      <label><input type="checkbox" checked={value != null} onChange={(e) => onChange(e.target.checked ? { test: noeudTestNeuf() } : undefined)} /> cycle actif</label>
       {value && (
         <>
-          <select value={value.difficulty ?? ''} onChange={(e) => patch({ difficulty: e.target.value ? (e.target.value as Difficulty) : undefined })}>
-            <option value="">— inconditionnel (pas de jet) —</option>
-            {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
-          </select>
+          <OptionChooser
+            layout="seg"
+            options={[
+              { key: 'cycle-epreuve', label: 'sous jet', selected: value.test != null, onSelect: versEpreuve },
+              { key: 'cycle-certain', label: 'certain (sans jet)', selected: value.test == null, onSelect: versCertain },
+            ]}
+          />
           <label>à partir du jour de phase active <NumberField variant="nu" label="Jour de phase active" min={1} vide value={value.afterDays} onChange={(n) => patch({ afterDays: n ?? undefined })} /></label>
           <label><input type="checkbox" checked={!!value.once} onChange={(e) => patch({ once: e.target.checked || undefined })} /> une seule fois (au jour exact)</label>
-          <GameOpEditor ops={value.onFail ?? []} onChange={(ops) => patch({ onFail: ops })} />
+          {value.test
+            ? <NoeudTestField desc="jet du cycle (Difficulté, compétence, conséquence de l’échec)" retirable={false} branches="echec" value={value.test} onChange={(t) => patch({ test: t ?? noeudTestNeuf() })} />
+            : <GameOpEditor ops={value.ops ?? []} onChange={(ops) => patch({ ops })} />}
         </>
       )}
     </div>
   );
 }
 
+/** maladies[].dailyTest — le Test de cycle porté par la MALADIE elle-même (EDOC 08 l.104) : le JET et
+ *  sa conséquence dans le nœud `test`, le symptôme MIS EN JEU (libellé d'étape, réf d'enjeu) sur le
+ *  porteur. Même canal que le cycle d'un symptôme : seule la branche d'échec est servie. */
+export type DiseaseDailyTest = { test: NoeudTest; symptomId: string };
+export function DiseaseDailyTestField({ value, onChange }: { value: DiseaseDailyTest | undefined; onChange: (v: DiseaseDailyTest | undefined) => void }) {
+  const syms = datasetArray('symptoms');
+  return (
+    <div className="ed-field">
+      <span>Test quotidien de la maladie (EDOC 08 l.104) — jet porté par la maladie, pas par un de ses symptômes</span>
+      <label><input type="checkbox" checked={value != null} onChange={(e) => onChange(e.target.checked ? { test: noeudTestNeuf(), symptomId: syms[0]?.id ?? '' } : undefined)} /> test quotidien actif</label>
+      {value && (
+        <>
+          <div className="de-reflrow">
+            <span>symptôme mis en jeu</span>
+            <select value={value.symptomId} onChange={(e) => onChange({ ...value, symptomId: e.target.value })}>
+              {!value.symptomId && <option value="">— (choisir un symptôme) —</option>}
+              {syms.map((sym) => <option key={sym.id} value={sym.id}>{sym.label}</option>)}
+            </select>
+          </div>
+          <NoeudTestField desc="jet du cycle (Difficulté, compétence, conséquence de l’échec)" retirable={false} branches="echec" value={value.test} onChange={(t) => onChange({ ...value, test: t ?? noeudTestNeuf() })} />
+        </>
+      )}
+    </div>
+  );
+}
 /* ─────────────────────────────────────────────────────────────────────────────
  * 1bis) talents.test — { raw verbatim, matches: TestMatch[] } (LDB 10 : +DR sur un Test lié)
  *    `raw` = la ligne « Tests : » du livre (affichage) ; `matches` = la règle STRUCTURÉE id-based

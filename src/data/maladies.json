@@ -683,23 +683,39 @@
       }
     ],
     "dailyTest": {
-      "difficulty": "intermediaire",
-      "symptomId": "fievre",
-      "onFail": [
-        {
-          "op": "aggravateSymptom",
-          "disease": "pneumonie",
-          "symptomId": "fievre",
-          "severity": "grave",
-          "otherwise": [
-            {
-              "op": "grantSymptom",
-              "disease": "pneumonie",
-              "symptomId": "toxine"
-            }
-          ]
+      "test": {
+        "kind": "test",
+        "test": {
+          "difficulty": "intermediaire"
+        },
+        "success": {
+          "kind": "seq",
+          "steps": []
+        },
+        "fail": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "aggravateSymptom",
+                "disease": "pneumonie",
+                "symptomId": "fievre",
+                "severity": "grave",
+                "otherwise": [
+                  {
+                    "op": "grantSymptom",
+                    "disease": "pneumonie",
+                    "symptomId": "toxine"
+                  }
+                ]
+              }
+            ],
+            "on": "target"
+          }
         }
-      ]
+      },
+      "symptomId": "fievre"
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",

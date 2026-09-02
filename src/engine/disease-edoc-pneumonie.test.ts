@@ -5,6 +5,7 @@ import { MINUTES_PER_DAY } from './clock';
 import { contractDisease, contractDiseaseOnce, tickDisease, aggravateDiseaseSymptom, DISEASE_DEFS } from './disease';
 import { dailyDiseaseUpkeep } from './rest';
 import { applyOps } from './ops';
+import { spellOps } from './flowCore';
 import { gameOpSchema } from '../data/schemas/grammaire/mecanique';
 
 /** RNG scripté : renvoie les valeurs dans l'ordre. */
@@ -106,7 +107,7 @@ describe('Pneumonie : le Test quotidien passe par le canal INFLUENÇABLE de l’
 
   it('l’applicateur de l’étape (applyOps sur `onFail`) produit la MÊME échelle d’aggravation', () => {
     const c = hero({ diseases: [contractDisease('pneumonie', seq([5, 5, 5]))!] });
-    const onFail = DISEASE_DEFS['pneumonie'].dailyTest!.onFail;
+    const onFail = spellOps(DISEASE_DEFS['pneumonie'].dailyTest!.test.fail, 'target');
     applyOps(c, onFail, { rng: seq([]) });
     expect(fievre(c).severity).toBe('grave');
     applyOps(c, onFail, { rng: seq([]) });
@@ -115,7 +116,7 @@ describe('Pneumonie : le Test quotidien passe par le canal INFLUENÇABLE de l’
 });
 
 describe('`aggravateSymptom` : TROIS issues distinctes, jamais un booléen (EDOC 08 l.104-108)', () => {
-  const onFail = () => DISEASE_DEFS['pneumonie'].dailyTest!.onFail;
+  const onFail = () => spellOps(DISEASE_DEFS['pneumonie'].dailyTest!.test.fail, 'target');
 
   it('symptôme présent, PAS encore à cette sévérité → `aggrave` (et rien de l’échelon suivant)', () => {
     const c = hero({ diseases: [contractDisease('pneumonie', seq([5, 5, 5]))!] });

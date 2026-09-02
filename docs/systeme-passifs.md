@@ -79,7 +79,7 @@ Producteurs nommés, avec leur site réel :
 
 | Producteur | Site | Rôle (JSDoc) |
 |---|---|---|
-| `diseasePassiveOps` | `src/engine/disease.ts:256` | Passifs de TOUTES les maladies ACTIVES (collecte unifiée, reprise telle quelle par `passiveMods`). |
+| `diseasePassiveOps` | `src/engine/disease.ts:259` | Passifs de TOUTES les maladies ACTIVES (collecte unifiée, reprise telle quelle par `passiveMods`). |
 | `qualityWearMods` | `src/engine/wearPenalty.ts:45` | Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinseque`, Σ) pour le collecteur passif unifié, chacune ATTRIBUÉE à la pièce qui la porte (`src`) pour que le détail de jet la NOMME. |
 | `talentPassiveMods` | `src/engine/talentEffects.ts:255` | Modificateurs PASSIFS continus des talents POSSÉDÉS (`TalentData.passive` : Coup puissant, Dur à cuire…, ou Frénésie → `grantFreeAttack`) en `GameOp[]`, émis kind `intrinseque` et RÉPÉTÉS par niveau (`t.times`). |
 | `traitPassiveMods` | `src/engine/traits/dispatch.ts:203` | PassiveMod[] de PROFIL des traits — la DONNÉE éditable `TraitData.passive` (vocab GameOp unifié, éditée par GameOpEditor comme un sort). |

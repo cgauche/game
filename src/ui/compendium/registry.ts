@@ -1540,10 +1540,11 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           ? {
               title: 'Cycle quotidien', layout: 'list',
               rows: [
-                { t: 'kv', k: 'Difficulté', v: s.onTick.difficulty ? DIFFICULTY_LABELS[s.onTick.difficulty] : 'inconditionnel' } as CodexRow,
+                { t: 'kv', k: 'Difficulté', v: s.onTick.test?.test.difficulty ? DIFFICULTY_LABELS[s.onTick.test.test.difficulty] : 'inconditionnel' } as CodexRow,
                 s.onTick.afterDays ? ({ t: 'kv', k: 'Déclenchement', v: `${s.onTick.once ? 'une fois, au' : 'à partir du'} ${s.onTick.afterDays}ᵉ jour de phase active` } as CodexRow) : null,
-                // Conséquence de l'échec (ops directes ou `rollTable` : table EXPANSÉE en rangées lisibles).
-                ...opRows(s.onTick.onFail),
+                // Conséquence : branche `fail` du nœud `test`, ou ops CERTAINES d'un cycle sans jet (ops
+                // directes ou `rollTable` : table EXPANSÉE en rangées lisibles).
+                ...opRows(s.onTick.test ? spellOps(s.onTick.test.fail, 'target') : (s.onTick.ops ?? [])),
               ].filter((r): r is CodexRow => r != null),
             }
           : null,

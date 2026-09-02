@@ -78,7 +78,11 @@ describe('effectSchema — le corpus RÉELLEMENT posé dans les deux racines aut
     // une branche `fail` en FEUILLE `{type:'ops'}` — là où la graphie propriétaire `resist.onFail`
     // portait une liste d'ops nue, invisible à ce scan. Les 39 branches `success` sont des `seq`
     // vides : elles ne posent aucune feuille, et ne comptent donc pas.
-    expect(poses.length).toBe(1100);
+    // +4 (#1657 B2b) : les 4 nœuds `test` du cycle des maladies (`symptoms.json` 3, `maladies.json` 1)
+    // portent leur conséquence dans une branche `fail` en FEUILLE `{type:'ops'}`, là où la graphie
+    // propriétaire `onTick.onFail`/`dailyTest.onFail` portait une liste d'ops nue. Le cycle SANS jet
+    // (Vers du Reik) garde ses ops nues sous `onTick.ops` : aucune feuille, il ne compte pas ici.
+    expect(poses.length).toBe(1104);
     const parType = new Set(poses.map((p) => (p.noeud as { type: string }).type));
     expect(parType.size).toBe(30); // 29 variantes authorées + la feuille `ops`
     expect(parType.has('ops')).toBe(true);

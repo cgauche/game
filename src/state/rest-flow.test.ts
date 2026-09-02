@@ -14,6 +14,7 @@ import { applyEffects } from './combatFlow';
 import { restPlacesHere, lodgingOptions } from './restFlow';
 import { resolveStake } from '../data';
 import { contractDisease, tickDisease, DISEASE_DEFS } from '../engine/disease';
+import { spellOps } from '../engine/flowCore';
 import { effectiveChar } from '../engine/characteristics';
 import { battleRng as battleRngFor } from './battleRng';
 import { seedBattleRng } from './battleRng';
@@ -173,7 +174,7 @@ describe('openRest / choix par héros', () => {
     const h = useGame.getState().party[0];
     h.diseases = [contractDisease('pneumonie', battleRngFor())!];
     useGame.setState((s) => ({ party: [...s.party] }));
-    const onFail = DISEASE_DEFS['pneumonie'].dailyTest!.onFail;
+    const onFail = spellOps(DISEASE_DEFS['pneumonie'].dailyTest!.test.fail, 'target');
     const bande = (id: string) => ({
       title: 'Entretien', purpose: 'travel' as const, cursor: 0, log: [], participants: [
         { id, kind: 'diseaseTick', label: fixtureText('Fièvre (Pneumonie)'), aggregate: 'none',

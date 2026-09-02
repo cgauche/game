@@ -10,6 +10,7 @@
  */
 import { Flow, FlowTest, EMPTY_FLOW } from '../../state/flow';
 import type { Effect } from '../../state/scene';
+import type { FlowTestNode } from '../../engine/flowCore';
 import type { SkillRef } from '../../engine/skills';
 import { Icon } from '../Icon';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
@@ -44,6 +45,62 @@ function nodeSummary(node: Flow, ctx: Ctx): string | JSX.Element {
     case 'choice': return <><Icon id="ui/balance" size="sm" /> Choix{node.advantageCost != null ? ` (${node.advantageCost} Av)` : ''} « {node.prompt} » → ✓ / ✗</>;
     case 'seq': return `▸ ${node.steps.length} bloc(s)`;
   }
+}
+
+/** Le NŒUD `test` tel qu'un porteur de SCÈNE l'épingle — la forme unique de `flowCore`, appliquée à
+ *  la feuille `Effect` de la scène (transition/dialogue compris), jamais une seconde déclaration. */
+export type NoeudTest = FlowTestNode<Effect>;
+
+/** Nœud `test` NEUF, complet dès la pose — jamais un nœud à moitié valide que le schéma refuserait. */
+export const noeudTestNeuf = (): NoeudTest => ({ kind: 'test', test: { difficulty: 'intermediaire' }, success: EMPTY_FLOW, fail: EMPTY_FLOW });
+
+/**
+ * Éditeur d'un CHAMP portant un nœud `test` (`{kind:'test', test, success, fail}`), pas un Flow
+ * quelconque. Il compose le SOUS-éditeur de nœud (`TestFields` + un `FlowEditor` par branche), celui-là
+ * même que `FlowEditor` monte quand il rencontre un `kind:'test'` — et JAMAIS la racine `FlowEditor`,
+ * qui normalise ce qu'elle rend en `{kind:'seq', steps}` (`asSteps`/`seqOf`) : le nœud y perdrait son
+ * `kind`, et le document ne parserait plus son schéma au save.
+ *
+ * `retirable` = le champ admet-il l'ABSENCE de jet (rangée de Critique sans jet). Un porteur dont le
+ * jet est la seule forme admise le passe à `false` : le bouton « Retirer » ne s'affiche pas, et le
+ * nœud reste porté quoi qu'il arrive.
+ *
+ * `branches` = ce que le CANAL du porteur sert vraiment. `'les-deux'` (défaut) pour un jet dont
+ * l'issue choisit sa branche (Blessures critiques, `engine/critical.ts`). `'echec'` pour un canal
+ * qui n'applique que l'échec (cycle de maladie, `state/restFlow.ts`) : la branche de réussite n'est
+ * pas rendue, et le schéma du porteur la refuse peuplée (`noeudTest`, option `echecSeulServi`) —
+ * une case qui ne changerait rien n'est pas offerte.
+ */
+export function NoeudTestField({ value, onChange, desc, retirable = true, branches = 'les-deux' }: {
+  value: NoeudTest | undefined;
+  onChange: (v: NoeudTest | undefined) => void;
+  desc: string;
+  retirable?: boolean;
+  branches?: 'echec' | 'les-deux';
+}) {
+  return (
+    <div className="ed-field">
+      <span>{desc}</span>
+      {value ? (
+        <div className="eff-body flow-branch">
+          <TestFields test={value.test} onChange={(test) => onChange({ ...value, test })} />
+          {branches === 'les-deux' && (
+            <div className="branch">
+              <span className="branch-label ok">Si RÉUSSITE :</span>
+              <FlowEditor flow={value.success} ctx={{ encounters: [], dialogues: [] }} onChange={(success) => onChange({ ...value, success })} />
+            </div>
+          )}
+          <div className="branch">
+            <span className="branch-label fail">Si ÉCHEC :</span>
+            <FlowEditor flow={value.fail} ctx={{ encounters: [], dialogues: [] }} onChange={(fail) => onChange({ ...value, fail })} />
+          </div>
+          {retirable && <button type="button" className="btn" onClick={() => onChange(undefined)}>Retirer le jet</button>}
+        </div>
+      ) : (
+        <button type="button" className="btn" onClick={() => onChange(noeudTestNeuf())}>Ajouter un jet</button>
+      )}
+    </div>
+  );
 }
 
 /** Éditeur du jet d'un nœud `test` (FlowTest : compétence/caractéristique, difficulté, DR, outil, groupes, easierIf). */
