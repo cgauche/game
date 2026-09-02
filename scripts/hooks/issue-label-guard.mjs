@@ -22,13 +22,15 @@
 // …"`, un `xargs gh issue create`, un `powershell -Command "…"` sont vus comme la création qu'ils
 // exécutent.
 //
-// VU / HORS PORTÉE (dit, jamais supposé) : `node scripts/x.mjs`, `npm run x` (la commande vit dans un
-// FICHIER) et `$GH issue create` (l'exécutable vient de l'environnement) — les trois formes que la
-// sonde `scripts/ops/sondes/audit-2026-09-01/sonde-bypass.mjs` laisse PASSER, par construction : une
-// commande inconnue avant son exécution ne se garde pas au PreToolUse.
+// VU / HORS PORTÉE (dit, jamais supposé) : `node scripts/x.mjs` et `$GH issue create` (l'exécutable
+// vient de l'environnement) PASSENT, par construction — une commande inconnue avant son exécution ne
+// se garde pas au PreToolUse. `npm run x` est VU depuis que le socle résout le script dans
+// `package.json` : la sonde `scripts/ops/sondes/audit-2026-09-01/sonde-bypass.mjs` le laisse passer
+// tant qu'AUCUN script `open-ticket` n'existe dans ce dépôt — le jour où il en porte un qui appelle
+// `gh issue create`, la création est refusée comme les autres.
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
-import { segmentsProfonds } from './solde-ticket-guard.mjs'
+import { segmentsProfonds, extractTargetDir, ancrerScriptsNpm } from './solde-ticket-guard.mjs'
 
 /** Un token porte-t-il une option de label ? (`--label`, `--label=X`, `-l`, `-lX` glué) */
 export const isLabelFlag = (t) => /^--label(=|$)/.test(t) || /^-l/.test(t)
@@ -120,10 +122,11 @@ const INTERPOLATION_RE = /[`]|\$\(/
  * Décision du hook (PURE, testable). `null` = silence ; `{ decision, reason }` sinon. Une commande
  * qui, dans un quelconque de ses segments PROFONDS (enchaînements, enrobeurs de tête, sous-shells),
  * ouvre un ticket SANS label — par l'une des trois portes — est refusée ; un texte interpolé aussi.
+ * `options` va au socle (`{ scripts }` : table des scripts npm où `npm run <x>` se résout).
  */
-export function evaluate(command) {
+export function evaluate(command, options) {
   if (!command) return null
-  for (const segment of segmentsProfonds(command)) {
+  for (const segment of segmentsProfonds(command, 0, options)) {
     const args = ghArgs(segment)
     if (!args) continue
     const porteTexte = indexSousCommande(args, 'issue', ACTIONS_TEXTE) !== -1 ||
@@ -162,10 +165,10 @@ const TITRE_MAX = 200
  * Contexte à INJECTER (jamais un refus) : familles de labels absentes, titre au-delà de `TITRE_MAX`.
  * `null` si la commande n'ouvre aucun ticket, ou si rien ne manque.
  */
-export function contexteEmission(command) {
+export function contexteEmission(command, options) {
   if (!command) return null
   const notes = []
-  for (const segment of segmentsProfonds(command)) {
+  for (const segment of segmentsProfonds(command, 0, options)) {
     if (!isGhIssueCreateSegment(segment)) continue
     const args = ghArgs(segment)
     const labels = valeursFlag(args, ['--label', '-l']).flatMap((v) => v.split(','))
@@ -195,7 +198,15 @@ if (isMain) {
   process.stdin.setEncoding('utf8')
   for await (const chunk of process.stdin) raw += chunk
   let command = ''
-  try { command = String(JSON.parse(raw)?.tool_input?.command ?? '') } catch { /* stdin illisible → silence */ }
+  // Le `cwd` du canal MCP `ctx_shell` (et un `cd`/`git -C` dans la commande) décide du dépôt où
+  // s'exécute la commande : `npm run <x>` s'y résout, jamais dans le dépôt du hook.
+  let baseCwd = process.cwd()
+  try {
+    const toolInput = JSON.parse(raw)?.tool_input
+    command = String(toolInput?.command ?? '')
+    if (typeof toolInput?.cwd === 'string' && toolInput.cwd) baseCwd = resolve(process.cwd(), toolInput.cwd)
+  } catch { /* stdin illisible → silence */ }
+  ancrerScriptsNpm(extractTargetDir(command, baseCwd))
   const decision = evaluate(command)
   if (decision) {
     console.log(JSON.stringify({

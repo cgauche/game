@@ -58,8 +58,21 @@ export function estComposantUI(rel) {
  *  UNE fois : tri, doublon et appariement se font tous sur elle. */
 export const cheminEntree = (e) => String((typeof e === 'string' ? e : e?.fichier) ?? '').replace(/\\/g, '/')
 
-/** Trace de validation de la maquette portée par une entrée (`''` pour le stock en chaîne). */
-export const maquetteEntree = (e) => (typeof e === 'string' ? '' : String(e?.maquette ?? '').trim())
+/** Marques de réservation : une trace qui ne désigne AUCUNE validation. */
+const MAQUETTE_RESERVEE = /^(?:(?:todo|à faire|a faire|tbd|fixme)\b|[-–—?.…]+$)/i
+
+/** Trace de validation de la maquette portée par une entrée (`''` pour le stock en chaîne, et pour
+ *  une marque de RÉSERVATION — « TODO » ne dit rien de l'endroit où la maquette a été validée).
+ *
+ *  CE QUE CETTE PORTE PROUVE : qu'une trace de validation a été ÉCRITE — garde-fou d'ÉTOURDERIE
+ *  (déclaration oubliée, réservation laissée en place), PAS de CONTREFAÇON (même statut que le
+ *  contrôle de capture de `solde-ticket-guard`). Rien ici ne dit que la maquette a été vue : c'est la
+ *  revue qui le juge. */
+export const maquetteEntree = (e) => {
+  if (typeof e === 'string') return ''
+  const trace = String(e?.maquette ?? '').trim()
+  return MAQUETTE_RESERVEE.test(trace) ? '' : trace
+}
 
 /**
  * Déclaré = cité par la table des primitives du CLAUDE.md, OU inscrit au registre des écrans. Une

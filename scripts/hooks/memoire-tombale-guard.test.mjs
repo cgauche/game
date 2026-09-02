@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { evaluate, enteteSupersession, lignesAjoutees, estFicheMemoire } from './memoire-tombale-guard.mjs'
+import { evaluate, enteteSupersession, estLigneEntete, lignesAjoutees, estFicheMemoire } from './memoire-tombale-guard.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const HOOK = join(REPO, 'scripts', 'hooks', 'memoire-tombale-guard.mjs')
@@ -32,6 +32,40 @@ test('les trois mots, avec ou sans ornements, en tête de ligne', () => {
     '**PÉRIMÉ** : la mesure a changé', '- Périmés : les trois seuils', '> ## SUPERSEDEE par #1679']) {
     assert.notEqual(decision({ file_path: FICHE, old_string: '', new_string: ligne }), null, ligne)
   }
+})
+
+// ── EN-TÊTE vs REPLI de phrase (sonde D1/P6) ───────────────────────────────────────────
+// Une ligne PHYSIQUE qui commence par le mot parce que la PHRASE s'y replie ne chapeaute rien :
+// mesurée au début de ligne seule, la garde rendait 3 `ask` sur 4 pour du récit daté légitime.
+test('ask : un en-tête ORNEMÉ ajouté sous une ligne pleine (le seul vrai cas)', () => {
+  const d = decision({
+    file_path: FICHE, old_string: 'ancre',
+    new_string: 'ancre\n> ⚠ **SUPERSÉDÉ (2026-09-02)** — voir l’autre fiche.',
+  })
+  assert.equal(d?.decision, 'ask')
+})
+
+test('SILENCE : le mot en tête de LIGNE par repli de phrase, ou en item descriptif', () => {
+  for (const neuf of [
+    'Le pre-commit a refusé le commit pour `raw:implemente`\npérimé (4 fiches) puis a repris.',
+    'isostage-perf et vision-fog sont partiellement\nsupersédés par le culling viewport — vérifier avant de couper.',
+    '- obsolètes : les trois anciens champs restent lus par le chargeur.',
+  ]) {
+    assert.equal(decision({ file_path: FICHE, old_string: 'ancre', new_string: 'ancre\n' + neuf }), null, neuf)
+  }
+})
+
+test('ask : un en-tête NU là où rien ne précède une phrase — filet `---`, ligne de tableau, 1re ligne', () => {
+  for (const precedente of ['---', '|---|---|', '| une | rangée |', '']) {
+    assert.match(enteteSupersession('SUPERSÉDÉ par la fiche X.', precedente) ?? '', /SUPERSÉDÉ/, `précédente : ${precedente}`)
+  }
+  assert.match(enteteSupersession('SUPERSÉDÉ par la fiche X.') ?? '', /SUPERSÉDÉ/, 'première ligne du texte')
+  // Cas réel : l'en-tête posé juste sous la fermeture du frontmatter d'une fiche.
+  const d = decision({
+    file_path: FICHE, old_string: '',
+    new_string: '---\nname: game-exemple\n---\nSUPERSÉDÉ par la fiche voisine.\n\nCorps.',
+  })
+  assert.equal(d?.decision, 'ask')
 })
 
 test('SILENCE : la RÉÉCRITURE au présent, que la règle prescrit', () => {
@@ -87,10 +121,18 @@ test('ctx_patch porte le texte en new_text/old_text', () => {
   assert.equal(d?.decision, 'ask')
 })
 
-test('unités : enteteSupersession / lignesAjoutees', () => {
+test('unités : enteteSupersession / estLigneEntete / lignesAjoutees', () => {
   assert.match(enteteSupersession('> ⚠ **SUPERSÉDÉ** — voir X'), /SUPERSÉDÉ/)
   assert.equal(enteteSupersession('Le périmètre a changé'), null)
   assert.equal(enteteSupersession('rien de spécial'), null)
+  assert.equal(enteteSupersession('périmé (4 fiches) puis a repris.', 'une phrase qui se replie'), null)
+  assert.match(enteteSupersession('**PÉRIMÉ** : la mesure a changé', 'une phrase pleine'), /PÉRIMÉ/)
+  // DÉCISION ÉCRITE : une puce SOUS du texte courant détaille le paragraphe, elle ne le chapeaute pas.
+  assert.equal(estLigneEntete('- obsolètes : trois champs', 'une phrase pleine'), false)
+  assert.equal(estLigneEntete('- obsolètes : trois champs', ''), true)
+  assert.equal(estLigneEntete('SUPERSÉDÉ par X', '---'), true)
+  assert.equal(estLigneEntete('SUPERSÉDÉ par X', '|---|---|'), true)
+  assert.equal(estLigneEntete('SUPERSÉDÉ par X', 'une phrase pleine'), false)
   assert.deepEqual(lignesAjoutees('a\nb\nc', 'a\nc').map((l) => l.texte), ['b'])
   assert.deepEqual(lignesAjoutees('---\nname: x\n---\nb', '').map((l) => l.texte), ['b'])
 })

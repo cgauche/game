@@ -195,10 +195,15 @@ export function splitCommandSegments(command) {
 // reconnaissance reste STRUCTURELLE de bout en bout : l'argument-chaîne est RE-TOKENISÉ par
 // `tokenizeCommand`, jamais grepé (invariant du parseur ci-dessus, #591 défaut 3).
 //
-// HORS PORTÉE, dit : `node script.mjs` et `npm run x` (la commande vit dans un FICHIER),
-// `$VAR issue create` (l'exécutable vient de l'environnement), `pwsh -File x.ps1` (fichier),
-// `bash -c "$(cat …)"` (l'argument est une substitution, inconnue avant exécution), et toute
-// imbrication au-delà de `PROFONDEUR_MAX_ENROBEURS` niveaux.
+// `npm run <x>` est VU : son corps vit dans `package.json`, un fichier LISIBLE que le socle lit
+// (même classe que le message `-F <fichier>` d'un commit, lu depuis toujours) — le script est
+// re-tokenisé et récursé, si bien qu'un `npm run <x>` porteur d'un `gh issue create` est vu comme
+// la création qu'il exécute.
+//
+// HORS PORTÉE, dit : `node script.mjs` (la commande vit dans un fichier que rien ne désigne comme
+// du shell), `$VAR issue create` (l'exécutable vient de l'environnement), `pwsh -File x.ps1`
+// (fichier), `bash -c "$(cat …)"` (l'argument est une substitution, inconnue avant exécution), et
+// toute imbrication au-delà de `PROFONDEUR_MAX_ENROBEURS` niveaux.
 
 /** Nom d'exécutable d'un token : basename, sans extension `.exe`/`.cmd`, en minuscules. */
 export function basenameExecutable(token) {
@@ -350,21 +355,75 @@ function epluchageTete(segment) {
 // commande PASSE (borne dite, préférée à une récursion non bornée dans un hook).
 const PROFONDEUR_MAX_ENROBEURS = 4
 
+// ── `npm run <x>` : le corps du script est LU dans package.json ─────────────────────────────────
+// Sous-commandes de `npm` qui lancent un script : `run`/`run-script` nomment leur script, les
+// quatre raccourcis portent leur nom pour nom (`npm test` lance `scripts.test`).
+const SOUS_COMMANDES_RUN = ['run', 'run-script']
+const RACCOURCIS_NPM = ['test', 'start', 'stop', 'restart']
+
+// Dépôt où `npm run <x>` se résout quand l'appelant ne le dit pas. Un driver de hook l'ANCRE sur le
+// répertoire où la commande s'exécute réellement (`extractTargetDir`) : sans cet ancrage, un
+// `cd <autre dépôt> && npm run x` serait lu dans le dépôt du HOOK. À défaut, le dépôt du hook.
+let racineScriptsNpm = null
+
+/** Ancre le dépôt de résolution des scripts npm pour ce processus (drivers de hook). */
+export function ancrerScriptsNpm(dir) {
+  racineScriptsNpm = dir || null
+}
+
+/** Table `scripts` du `package.json` de `dir` (`{}` s'il est absent ou illisible — un hook ne lève
+ *  jamais). Lue une fois par répertoire : un hook décide en quelques millisecondes. */
+const CACHE_SCRIPTS = new Map()
+export function scriptsNpm(dir = racineScriptsNpm ?? repoRoot()) {
+  const clef = resolve(dir)
+  if (!CACHE_SCRIPTS.has(clef)) {
+    let table = {}
+    try {
+      const pkg = JSON.parse(readFileSync(join(clef, 'package.json'), 'utf8'))
+      table = Object.fromEntries(Object.entries(pkg?.scripts ?? {}).filter(([, v]) => typeof v === 'string'))
+    } catch { /* pas de package.json lisible → aucun script résolu */ }
+    CACHE_SCRIPTS.set(clef, table)
+  }
+  return CACHE_SCRIPTS.get(clef)
+}
+
+/** Commande RÉELLE d'un segment `npm run <x>` (script résolu dans `scripts`, arguments de la ligne
+ *  recollés derrière lui comme npm le fait), ou `null` si le segment ne lance aucun script connu. */
+export function commandeScriptNpm(segment, scripts) {
+  const start = segment[0] === '&' ? 1 : 0
+  if (basenameExecutable(segment[start] ?? '') !== 'npm') return null
+  // Les flags PROPRES à npm (`--silent`, `-s`…) précèdent aussi bien la sous-commande que le nom du
+  // script : ils se sautent aux deux crans. `--` n'en est pas un — il OUVRE les arguments du script.
+  const apresFlags = (i) => {
+    while (segment[i] !== undefined && segment[i].startsWith('-') && segment[i] !== '--') i += 1
+    return i
+  }
+  const iSub = apresFlags(start + 1)
+  const sub = segment[iSub]
+  const iNom = SOUS_COMMANDES_RUN.includes(sub) ? apresFlags(iSub + 1) : iSub
+  const nom = SOUS_COMMANDES_RUN.includes(sub) ? segment[iNom] : (RACCOURCIS_NPM.includes(sub) ? sub : undefined)
+  const corps = nom === undefined ? undefined : scripts?.[nom]
+  if (typeof corps !== 'string') return null
+  // npm colle les arguments de la ligne derrière le script, `--` retiré (il n'est qu'un séparateur).
+  const suite = segment.slice(iNom + 1).filter((t) => t !== '--')
+  return suite.length > 0 ? `${corps} ${suite.join(' ')}` : corps
+}
+
 /** Liste ordonnée des PIPELINES réellement exécutés : un pipeline = les segments qu'un `|` relie,
  *  donc ceux dont les sorties/entrées se CHAÎNENT (les enchaînements `&&`/`;`/`||` en ouvrent un
  *  nouveau). Les enrobeurs de tête sont épluchés, et l'ARGUMENT-CHAÎNE d'un interpréteur est
  *  re-tokenisé : les pipelines qu'il porte sont rendus À PART (ceux d'un `sh -c "a | b"` ne se
  *  mêlent pas au pipeline hôte), avant le pipeline enrobant. `segmentsProfonds` en est l'APLATI :
  *  une garde qui n'a pas besoin du tube ignore ce groupement. */
-export function pipelinesProfonds(command, profondeur = 0) {
+export function pipelinesProfonds(command, profondeur = 0, { scripts = scriptsNpm() } = {}) {
   const pipelines = []
   if (!command || profondeur > PROFONDEUR_MAX_ENROBEURS) return pipelines
   let courant = []
   for (const { tokens, op } of segmentsAvecOperateur(command)) {
     const segment = epluchageTete(tokens)
     if (segment.length > 0) {
-      const inner = argumentChaine(segment)
-      if (inner !== null) pipelines.push(...pipelinesProfonds(inner, profondeur + 1))
+      const inner = argumentChaine(segment) ?? commandeScriptNpm(segment, scripts)
+      if (inner !== null) pipelines.push(...pipelinesProfonds(inner, profondeur + 1, { scripts }))
       courant.push(segment)
     }
     if (op !== '|' && courant.length > 0) {
@@ -380,8 +439,8 @@ export function pipelinesProfonds(command, profondeur = 0) {
  *  dans le même ordre (un segment enrobé précède son enrobeur : `cmd /c mklink …` n'a pas
  *  d'argument-chaîne unique, l'invocation vit sur ses arguments recollés — `git-destructive-guard`).
  *  `profondeur` = niveau d'imbrication de départ, borné par `PROFONDEUR_MAX_ENROBEURS`. */
-export function segmentsProfonds(command, profondeur = 0) {
-  return pipelinesProfonds(command, profondeur).flat()
+export function segmentsProfonds(command, profondeur = 0, options) {
+  return pipelinesProfonds(command, profondeur, options).flat()
 }
 
 const GLOBAL_VALUE_FLAGS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path'])
@@ -514,9 +573,30 @@ export function extractClosedIssues(command) {
 
 const VERIFIE_RE = /VERIFIE\s*:\s*(.+)/i
 const MIN_VERIFIE_LEN = 40
-// La section s'arrête au prochain titre, à la première ligne VIDE (le pied du fichier — date,
-// notes — vit après un blanc), ou à la fin du fichier.
-const RESTES_RE = /##\s*Restes\s*\n([\s\S]*?)(?:\n\s*\n|\n##|$)/i
+// Une section d'un solde court de son titre de niveau 2 jusqu'au PROCHAIN titre de niveau 2, ou la
+// fin du fichier : une ligne VIDE n'y termine rien, et les sous-titres `###` en font partie. Borne
+// unique des trois sections (« Restes », « Recette visuelle », « Réfutation ») — la borne à la
+// première ligne blanche rendait 1 reste vu pour 5 réels dès qu'une liste était aérée, et cachait la
+// grammaire de tout ce qui suivait le blanc (sonde D1 : 4 dispositions invalides sur 5 acceptées).
+const TITRE_RESTES = 'Restes'
+const TITRE_RECETTE_VISUELLE = 'Recette visuelle'
+const TITRE_REFUTATION = 'R[ée]futation'
+
+/** Corps de la section `## <titre>` d'un solde (`null` si elle est absente). `titre` est un motif
+ *  d'expression régulière : le titre s'écrit avec ou sans accents selon la section. */
+export function sectionDe(content, titre) {
+  // Sans le drapeau `m`, `$` est la fin du TEXTE : avec lui, il vaudrait fin de chaque ligne et la
+  // section s'arrêterait à la première. Le titre se reconnaît donc en tête de ligne par `(?:^|\n)`.
+  const m = new RegExp(`(?:^|\\n)##\\s*${titre}\\s*\\n([\\s\\S]*?)(?=\\n##[^#]|$)`, 'i').exec(String(content ?? ''))
+  return m ? m[1] : null
+}
+
+/** Nombre de fois que le titre `## <titre>` apparaît dans le document. Une section DUPLIQUÉE n'est pas
+ *  une section plus longue : `sectionDe` rend la PREMIÈRE, et tout ce que porte la seconde échappe au
+ *  plafond comme à la grammaire — elle se refuse, elle ne se devine pas. */
+export function compteSections(content, titre) {
+  return String(content ?? '').match(new RegExp(`(?:^|\\n)##\\s*${titre}\\s*\\n`, 'gi'))?.length ?? 0
+}
 // Cinq dispositions, et cinq seulement.
 //   `#N`                                   le reste ÉMET un ticket (plafonné, voir ci-dessous) ;
 //   `corrigé dans ce commit <f>:<l>`       la correction part AVEC le solde ;
@@ -539,7 +619,6 @@ const REF_SITE_RE = /([A-Za-z0-9_@./\\-]+\.[A-Za-z0-9]+):(\d+)/g
 const MAX_RESTES_ROUTANTS = 1
 const MIN_ETAT_INVENTAIRE = 20
 // Recette visuelle : la capture vit sous `public/qc/` (convention de `scripts/qc/capture-jeu.mjs`).
-const RECETTE_VISUELLE_RE = /##\s*Recette visuelle\s*\n([\s\S]*?)(?:\n\s*\n|\n##|$)/i
 const CAPTURE_RE = /capture\s*:\s*(\S+)/i
 const DOSSIER_CAPTURES = 'public/qc/'
 const ENTETE_PNG = [0x89, 0x50, 0x4e, 0x47]
@@ -548,7 +627,6 @@ const ENTETE_JPEG = [0xff, 0xd8, 0xff]
 // pas d'image, et 200 px la plus petite dimension dont on puisse JUGER quoi que ce soit.
 const TAILLE_MIN_CAPTURE = 1024
 const COTE_MIN_CAPTURE = 200
-const REFUTATION_RE = /##\s*R[ée]futation\s*\n([\s\S]*?)(?:\n\s*\n|\n##|$)/i
 const VERDICT_RE = /verdict\s*:\s*([A-Za-zÀ-ÖØ-öø-ÿ]+)/i
 const MIN_REFUTATION_LEN = 40
 const PALIER = 10
@@ -569,12 +647,11 @@ function lenWithoutVerdictLine(text) {
  *  (« un ticket réfuté ne se ferme pas »), le solde est TOUJOURS non conforme dans ce cas. */
 function checkRefutationSection(content) {
   const problems = []
-  const m = REFUTATION_RE.exec(content)
-  if (!m) {
+  const body = sectionDe(content, TITRE_REFUTATION)
+  if (body === null) {
     problems.push('section "## Réfutation" absente (verdict adversarial obligatoire)')
     return { problems, refuted: false }
   }
-  const body = m[1]
   const vMatch = VERDICT_RE.exec(body)
   if (!vMatch) {
     problems.push('ligne "verdict: CONFIRMÉ|PARTIEL|RÉFUTÉ" absente dans "## Réfutation"')
@@ -597,11 +674,21 @@ function checkRefutationSection(content) {
 /** Items de la section « ## Restes » d'un solde, un par ligne (`[]` si la section est absente ou
  *  vaut « RAS » pour le tout). Point d'entrée UNIQUE des mesures de stock et du garde. */
 export function restesItems(content) {
-  const m = RESTES_RE.exec(content ?? '')
-  if (!m) return []
-  const body = m[1].trim()
-  if (body === 'RAS') return []
-  return body.split('\n').map((l) => l.trim()).filter(Boolean)
+  const body = sectionDe(content, TITRE_RESTES)
+  if (body === null) return []
+  const lignes = lignesUtiles(body)
+  return estRAS(lignes) ? [] : lignes
+}
+
+/** Lignes PORTEUSES d'une section : un sous-titre la STRUCTURE (il n'en est pas un item) et une ligne
+ *  vide ne fait que séparer. */
+function lignesUtiles(section) {
+  return section.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
+}
+
+/** « RAS » pour le TOUT : le seul contenu de la section est ce mot. */
+function estRAS(lignes) {
+  return lignes.length === 1 && lignes[0] === 'RAS'
 }
 
 /** Items ROUTANTS (`-> #N`) : ceux qui émettent un ticket de reste. */
@@ -680,12 +767,18 @@ export function verifierCapture(chemin, { racine = process.cwd(), mtimeMin = 0 }
  *  des corrections, garde de l'inventaire. Voir `validateSolde` pour le contexte injecté. */
 function checkRestesSection(content, ctx) {
   const problems = []
-  const restesMatch = RESTES_RE.exec(content)
-  if (!restesMatch) {
+  const section = sectionDe(content, TITRE_RESTES)
+  if (section === null) {
     problems.push('section "## Restes" absente')
     return problems
   }
-  if (restesMatch[1].trim() === 'RAS') return problems
+  const occurrences = compteSections(content, TITRE_RESTES)
+  if (occurrences > 1) {
+    problems.push(`section "## Restes" DUPLIQUÉE (${occurrences} fois) : seule la PREMIÈRE est lue — les items des suivantes échappent au plafond et à la grammaire. Fusionner en une seule section.`)
+    return problems
+  }
+
+  if (estRAS(lignesUtiles(section))) return problems
 
   const lines = restesItems(content)
   if (lines.length === 0) {
@@ -742,12 +835,15 @@ function problemesCorrige(queue, rang, { fichiersStages, lignesStagees }) {
   return problems
 }
 
-/** « -> corrigé par <sha> <fichier>:<ligne> » : la correction est DÉJÀ dans l'histoire. Deux faits se
+/** « -> corrigé par <sha> <fichier>:<ligne> » : la correction est DÉJÀ dans l'histoire. Trois faits se
  *  vérifient contre git, jamais sur parole : le commit cité est un ANCÊTRE de HEAD (il est bien dans
- *  cette histoire), et il TOUCHE le fichier cité. Cas fondateur : `.claude/soldes/584.md:7` — le fix
- *  vit dans 4d6e1ff78, le solde dans 8a2807134, aucune des autres dispositions ne le dit sans mentir.
- *  Contrôles non fournis (appel PUR) = non joués ; la grammaire, elle, est toujours exigée. */
-function problemesCorrigePar([, sha, fichier, ligne], rang, { commitEstAncetre, fichiersDuCommit }) {
+ *  cette histoire), il TOUCHE le fichier cité, et la LIGNE citée est dans un de ses hunks — la même
+ *  preuve au site que « corrigé dans ce commit » exige, sans quoi « :999999 » passait. Cas fondateur :
+ *  `.claude/soldes/584.md:7` — le fix vit dans 4d6e1ff78, le solde dans 8a2807134, aucune des autres
+ *  dispositions ne le dit sans mentir. Un commit dont le diff de ce fichier est VIDE (fusion sans
+ *  changement propre) ne tranche rien : la ligne n'y est pas jugée. Contrôles non fournis (appel PUR)
+ *  = non joués ; la grammaire, elle, est toujours exigée. */
+function problemesCorrigePar([, sha, fichier, ligne], rang, { commitEstAncetre, fichiersDuCommit, lignesDuCommit }) {
   const problems = []
   const cite = fichier.replace(/\\/g, '/')
   if (commitEstAncetre && !commitEstAncetre(sha)) {
@@ -758,6 +854,13 @@ function problemesCorrigePar([, sha, fichier, ligne], rang, { commitEstAncetre, 
     const touches = fichiersDuCommit(sha)
     if (touches && !touches.some((f) => f.replace(/\\/g, '/') === cite)) {
       problems.push(`"corrigé par ${sha}" (ligne ${rang} du bloc) cite ${cite}:${ligne}, que ce commit ne touche PAS`)
+      return problems
+    }
+  }
+  if (lignesDuCommit) {
+    const lignes = lignesDuCommit(sha, cite)
+    if (lignes && lignes.length > 0 && !lignes.includes(Number(ligne))) {
+      problems.push(`"corrigé par ${sha}" (ligne ${rang} du bloc) cite ${cite}:${ligne}, hors des lignes que ce commit y modifie`)
     }
   }
   return problems
@@ -781,11 +884,11 @@ function problemesInventaire([, epic, etat], rang, { issuesFermees }) {
  *  (`src/ui/**` / `src/gameIso/**`, hors tests) — décision E1, un écran ne se solde pas sur parole. */
 function checkRecetteVisuelle(content, { touchesUi, verifierCaptureDe }) {
   if (!touchesUi) return []
-  const section = RECETTE_VISUELLE_RE.exec(content)
-  if (!section) {
+  const section = sectionDe(content, TITRE_RECETTE_VISUELLE)
+  if (section === null) {
     return ['section "## Recette visuelle" absente alors que le commit touche un écran (src/ui/** ou src/gameIso/**) — y porter "capture: public/qc/<fichier>.png"']
   }
-  const capture = CAPTURE_RE.exec(section[1])
+  const capture = CAPTURE_RE.exec(section)
   if (!capture) {
     return ['"## Recette visuelle" sans ligne "capture: <chemin sous public/qc/>"']
   }
@@ -798,7 +901,8 @@ function checkRecetteVisuelle(content, { touchesUi, verifierCaptureDe }) {
  * `fichiersStages` = chemins du diff stagé ; `lignesStagees(fichier)` = lignes que le commit y
  * modifie ; `issuesFermees` = tickets fermés par CE commit ; `touchesUi` = le diff touche un écran ;
  * `verifierCaptureDe(chemin)` = contrôle de la capture de recette (voir `verifierCapture`) ;
- * `commitEstAncetre(sha)` / `fichiersDuCommit(sha)` = l'histoire git, pour « corrigé par <sha> ».
+ * `commitEstAncetre(sha)` / `fichiersDuCommit(sha)` / `lignesDuCommit(sha, fichier)` = l'histoire
+ * git, pour « corrigé par <sha> ».
  */
 export function validateSolde(content, today, {
   fichiersStages = null,
@@ -808,6 +912,7 @@ export function validateSolde(content, today, {
   verifierCaptureDe = () => ({ ok: true, problemes: [] }),
   commitEstAncetre = null,
   fichiersDuCommit = null,
+  lignesDuCommit = null,
 } = {}) {
   if (!content) return { ok: false, problems: ['fichier absent'], refuted: false }
 
@@ -820,7 +925,7 @@ export function validateSolde(content, today, {
     problems.push(`"VERIFIE:" trop court (${vMatch[1].trim().length} car., ${MIN_VERIFIE_LEN} requis — décrire concrètement la vérification faite)`)
   }
 
-  problems.push(...checkRestesSection(content, { fichiersStages, lignesStagees, issuesFermees, commitEstAncetre, fichiersDuCommit }))
+  problems.push(...checkRestesSection(content, { fichiersStages, lignesStagees, issuesFermees, commitEstAncetre, fichiersDuCommit, lignesDuCommit }))
   problems.push(...checkRecetteVisuelle(content, { touchesUi, verifierCaptureDe }))
 
   const { problems: refutationProblems, refuted } = checkRefutationSection(content)
@@ -1429,6 +1534,17 @@ export function fichiersDuCommitGit(sha, dir = process.cwd()) {
   } catch { return [] }
 }
 
+/** Diff à ZERO contexte d'un fichier DANS le commit `sha` (`git show <sha> -U0 -- <fichier>`),
+ *  `''` si le commit ou le fichier est inconnu. Le commit se place AVANT le séparateur : après, git
+ *  le lirait comme un pathspec (`env-git-show-ordre-commit-avant-paths`). */
+export function diffDuCommitGit(sha, fichier, dir = process.cwd()) {
+  try {
+    return execFileSync('git', ['show', '-U0', '--format=', '--no-renames', sha, '--', fichier], {
+      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
+    })
+  } catch { return '' }
+}
+
 /** Date de dernière écriture la plus RÉCENTE parmi `fichiers` (ms, `0` si aucune lisible). */
 export function mtimeMaxDe(fichiers, racine = process.cwd()) {
   let max = 0
@@ -1463,28 +1579,86 @@ function fermetureGh(segment) {
   return null
 }
 
+// Endpoint d'UN ticket : `repos/<o>/<r>/issues/<N>` (avec ou sans barre de tête). SEUL cet appel peut
+// FERMER — la collection `/issues` CRÉE, `graphql` ne porte pas d'état sur cette route, et un GET ne
+// modifie rien.
+const ENDPOINT_UN_TICKET_RE = /(^|\/)issues\/\d+(\/|$)/
+
+/** Méthode HTTP demandée (`-X`/`--method`), `GET` par défaut comme `gh api`. */
+function methodeGh(args) {
+  const i = args.findIndex((a) => a === '-X' || a === '--method' || a.startsWith('--method='))
+  if (i === -1) return 'GET'
+  const brut = args[i].startsWith('--method=') ? args[i].slice('--method='.length) : (args[i + 1] ?? '')
+  return brut.toUpperCase() || 'GET'
+}
+
+/** Corps de requête d'un `gh api --input <fichier>` VISANT UN TICKET : le chemin est SUR LA LIGNE, le
+ *  fichier se LIT (même classe que le `-F <fichier>` d'un message de commit, lu depuis toujours).
+ *  `{ chemin, etat }` si le corps est lisible, `{ chemin, illisible: true }` sinon, `null` sinon.
+ *
+ *  PÉRIMÈTRE, dit — le corps n'est LU que là où une fermeture est possible : endpoint d'UN ticket
+ *  (`…/issues/<N>`) et méthode qui ÉCRIT. La création (`…/issues`), `graphql` et les GET passent en
+ *  SILENCE, corps absent ou non : au PreToolUse leur fichier est souvent écrit par la commande
+ *  elle-même, et un refus y mordrait un geste ROUTINIER. `--input -` (stdin) rend `null` : le corps
+ *  n'existe nulle part avant l'exécution. */
+function corpsInputGh(segment, lire) {
+  const start = segment[0] === '&' ? 1 : 0
+  if (basenameExecutable(segment[start]) !== 'gh') return null
+  const args = segment.slice(start + 1)
+  if (args[0] !== 'api') return null
+  // L'endpoint se cherche parmi TOUS les arguments nus : à position fixe, la valeur d'un flag de tête
+  // (`gh api -X PATCH /repos/…`) passerait pour lui.
+  const viseUnTicket = args.some((a) => !a.startsWith('-') && ENDPOINT_UN_TICKET_RE.test(a))
+  if (!viseUnTicket || methodeGh(args) === 'GET') return null
+  const i = args.findIndex((a) => a === '--input' || a.startsWith('--input='))
+  if (i === -1) return null
+  const chemin = args[i].startsWith('--input=') ? args[i].slice('--input='.length) : (args[i + 1] ?? '')
+  if (!chemin || chemin === '-') return null
+  try {
+    return { chemin, etat: JSON.parse(lire(chemin))?.state }
+  } catch {
+    return { chemin, illisible: true }
+  }
+}
+
 /**
  * Décision « fermeture d'un ticket HORS commit ». Toute fermeture doit naître d'un `git commit`
- * porteur de `corrige #N` — c'est le seul chemin où le solde est exigé.
+ * porteur de `corrige #N` — c'est le seul chemin où le solde est exigé. Le corps d'un
+ * `gh api --input <fichier>` est LU (`lire`, injecté par le driver depuis le répertoire d'exécution).
  *
- * HORS PORTÉE, dit : `gh api --input <fichier>` (et `--input -`), où le corps de la requête — donc
- * l'état `closed` — vit dans un FICHIER que la ligne de commande ne montre pas. Même classe que le
- * `-F` d'un message de commit, mais sans son recours : `-F` est lu parce qu'un chemin de message est
- * un chemin, alors qu'ici il faudrait interpréter un corps d'API. Lire aussi la sortie de
- * `scripts/ops/sondes/audit-2026-09-01/sonde-guard-fermetures.mjs`, qui joue ce cas.
+ * HORS PORTÉE, dit : `gh api --input -`, dont le corps arrive par l'entrée standard. Un fichier
+ * annoncé mais ILLISIBLE est refusé, jamais silencé (fail-closed sur sa propre annonce, comme le
+ * `-F` d'un message de commit). Lire aussi la sortie de
+ * `scripts/ops/sondes/audit-2026-09-01/sonde-guard-fermetures.mjs`, qui joue ces cas.
  * @returns {{ decision: 'deny', reason: string } | null}
  */
-export function evaluateFermetureHorsCommit(command) {
+export function evaluateFermetureHorsCommit(command, { lire = (p) => readFileSync(p, 'utf8') } = {}) {
   if (!command) return null
+  const parCommit =
+    `la fermeture passe par un commit \`corrige #N\` porteur de son solde (.claude/soldes/<N>.md) — ` +
+    `le closer \`scripts/git-hooks/post-commit\` ferme l'issue ET y poste le solde. Fermer à la main ` +
+    `court-circuite le contrôle entier.`
   for (const segment of segmentsProfonds(command)) {
     const forme = fermetureGh(segment)
-    if (!forme) continue
-    return {
-      decision: 'deny',
-      reason:
-        `⛔ Fermeture de ticket HORS commit (${forme}) : la fermeture passe par un commit \`corrige #N\` ` +
-        `porteur de son solde (.claude/soldes/<N>.md) — le closer \`scripts/git-hooks/post-commit\` ferme ` +
-        `l'issue ET y poste le solde. Fermer à la main court-circuite le contrôle entier.`,
+    if (forme) {
+      return { decision: 'deny', reason: `⛔ Fermeture de ticket HORS commit (${forme}) : ${parCommit}` }
+    }
+    const corps = corpsInputGh(segment, lire)
+    if (!corps) continue
+    if (corps.illisible) {
+      return {
+        decision: 'deny',
+        reason:
+          `⛔ Corps de requête \`gh api --input ${corps.chemin}\` illisible ou non-JSON pour le contrôle de ` +
+          `fermeture — écrire un corps JSON lisible à ce chemin (fail-closed : pas de \`state: closed\` ` +
+          `invisible).`,
+      }
+    }
+    if (corps.etat === 'closed') {
+      return {
+        decision: 'deny',
+        reason: `⛔ Fermeture de ticket HORS commit (gh api --input ${corps.chemin}, "state": "closed") : ${parCommit}`,
+      }
     }
   }
   return null
@@ -1621,6 +1795,10 @@ if (isMain) {
   const d = new Date()
   const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   const targetDir = extractTargetDir(command, baseCwd)
+  // `npm run <x>` se résout dans le package.json du dépôt où la commande s'exécute (un
+  // `cd <autre dépôt> && npm run x` n'y lit pas les scripts de CE dépôt-ci) — même discipline
+  // d'ancrage que `targetDir` pour l'index, le message `-F` et l'histoire git.
+  ancrerScriptsNpm(targetDir)
   const { touchesSrc, touchesUi, totalLines, fichiers } = analyzeStagedDiff(readStagedDiffStat(targetDir), extractCommitPathspecs(command))
 
   // Message `-F <chemin>` : résolu dans le répertoire où le `git commit` s'exécute RÉELLEMENT
@@ -1659,6 +1837,7 @@ if (isMain) {
       verifierCaptureDe: (chemin) => verifierCapture(chemin, { racine: targetDir, mtimeMin: mtimeEcrans }),
       commitEstAncetre: (sha) => commitEstAncetreDeHead(sha, targetDir),
       fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, targetDir),
+      lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDuCommitGit(sha, fichier, targetDir)),
     },
   })
   const antiEsquive = evaluateAntiEsquive({
@@ -1676,7 +1855,10 @@ if (isMain) {
   })
   const amendInvisible = evaluateAmendInvisible({ command, stagedTouchesSrc: touchesSrc })
   const manifestClosure = evaluateManifestClosure({ command: text, readStagedManifest: () => readStagedManifestFile(targetDir) })
-  const horsCommit = evaluateFermetureHorsCommit(command)
+  // Corps `--input <chemin>` : résolu là où la commande s'exécute RÉELLEMENT, comme le `-F` du commit.
+  const horsCommit = evaluateFermetureHorsCommit(command, {
+    lire: (chemin) => readFileSync(resolve(targetDir, chemin), 'utf8'),
+  })
   // Volet anti-tombale : `commentPoison` tire le vocabulaire RAW derrière lui — chargé SEULEMENT
   // quand la commande ferme un ticket.
   const fermes = extractClosedIssues(text)

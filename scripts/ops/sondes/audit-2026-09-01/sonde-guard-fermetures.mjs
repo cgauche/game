@@ -3,7 +3,8 @@
 // DRIVER stdin (`scripts/hooks/solde-ticket-guard.mjs` lancé comme le fait le hook PreToolUse), donc
 // par le cumul de TOUS ses évaluateurs — interroger `evaluate` seul ne mesurerait que le volet
 // « solde du commit » et rendrait SILENCE sur une fermeture qu'un AUTRE volet refuse.
-// COMPTEUR : verdict rendu pour chacune des commandes (attendu : DENY partout).
+// COMPTEUR : verdict rendu pour chacune des commandes (attendu : DENY partout, sauf le témoin
+// `gh issue create` et `gh api --input -`, dont le corps arrive par l'entrée standard : SILENCE).
 // Usage : node scripts/ops/sondes/audit-2026-09-01/sonde-guard-fermetures.mjs
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -17,9 +18,12 @@ const CAS = [
   ['gh issue close (sous-shell)', 'bash -lc "gh issue close 1636 1637"'],
   ['gh api PATCH state', 'gh api repos/cgauche/game/issues/1636 -X PATCH -f state=closed'],
   ['gh issue create (témoin)', 'gh issue create --title "x" --body-file b.md'],
-  // HORS PORTÉE, dit : le corps de la requête (donc l'état `closed`) vit dans un FICHIER que la
-  // ligne de commande ne montre pas — la sonde le JOUE pour que le trou reste visible.
-  ['gh api --input (hors portée)', 'gh api repos/cgauche/game/issues/1636 -X PATCH --input corps.json'],
+  // Le corps de la requête (donc l'état `closed`) vit dans un FICHIER dont le CHEMIN est sur la
+  // ligne : le garde le LIT, et un corps illisible est refusé (fail-closed) plutôt que silencé.
+  ['gh api --input (corps lu, fail-closed)', 'gh api repos/cgauche/game/issues/1636 -X PATCH --input corps.json'],
+  // `--input -` reste HORS PORTÉE, dit : le corps arrive par l'entrée standard, il n'existe nulle
+  // part avant l'exécution — la sonde le JOUE pour que le trou reste visible (SILENCE attendu).
+  ['gh api --input - (hors portée : stdin)', 'gh api repos/cgauche/game/issues/1636 -X PATCH --input -'],
 ];
 
 /** Verdict du hook pour une commande, tel que Claude Code le recevrait. */

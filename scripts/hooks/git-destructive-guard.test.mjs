@@ -159,3 +159,12 @@ test('la suppression récursive est vue DERRIÈRE un sous-shell et un enrobeur d
   assert.equal(evaluate('nohup rm -rf src/state')?.decision, 'ask')
   assert.ok(silent('sh -c "rm -rf node_modules"'))
 })
+
+test('PÉRIMÈTRE DIT : une cible venue de stdin ou d\'un autre programme n\'est pas sur la ligne', () => {
+  // Le silence est ici un FAIT du périmètre (docstring en tête du garde), pas un oubli : la ligne de
+  // commande ne porte aucun chemin, et le garde décide sur les chemins qu'il LIT.
+  assert.ok(silent('echo src/engine | xargs rm -rf'))
+  assert.ok(silent('find . -name "*.tmp" -exec rm -rf {} ;'))
+  // Le même geste, cible ÉCRITE sur la ligne, reste arbitré.
+  assert.equal(evaluate('xargs rm -rf src/engine')?.decision, 'ask')
+})

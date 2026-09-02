@@ -35,6 +35,8 @@ import {
   readRefFile,
   restesItems,
   restesRoutants,
+  sectionDe,
+  compteSections,
   lignesDeHunks,
   verifierCapture,
   estFichierEcran,
@@ -44,6 +46,7 @@ import {
   evaluateHunksEmportes,
   commitEstAncetreDeHead,
   fichiersDuCommitGit,
+  diffDuCommitGit,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
 
@@ -129,6 +132,60 @@ test('validateSolde : item sans disposition', () => {
   const r = validateSolde(content, TODAY)
   assert.equal(r.ok, false)
   assert.match(r.problems.join(' ; '), /sans disposition valide/)
+})
+
+// ── Borne de la section « ## Restes » : une ligne VIDE n'y termine rien (sonde D1/P1.1) ──────────
+// Bornée à la première ligne blanche, la section rendait 1 reste vu pour 5 réels dès qu'une liste
+// était aérée — le PLAFOND (seul seuil doctrinal du garde) et la grammaire s'évaporaient ensemble.
+test('section Restes : 5 restes routants AÉRÉS comptent 5, comme la même liste compacte', () => {
+  const compacte = '- a -> #1\n- b -> #2\n- c -> #3\n- d -> #4\n- e -> #5'
+  const aeree = '- a -> #1\n\n- b -> #2\n\n- c -> #3\n\n- d -> #4\n\n- e -> #5'
+  for (const restes of [compacte, aeree]) {
+    assert.equal(restesRoutants(solde({ restes })).length, 5, restes)
+    const r = validateSolde(solde({ restes }), TODAY)
+    assert.equal(r.ok, false)
+    assert.match(r.problems.join(' ; '), /5 restes ROUTÉS vers un ticket neuf \(plafond 1\)/)
+  }
+})
+
+test('section Restes : une disposition INVALIDE derrière une ligne blanche est toujours vue', () => {
+  const restes = '- a -> RAS : rien à router, tout est traité dans le lot.\n\n- b -> on verra plus tard\n- c -> #7'
+  const r = validateSolde(solde({ restes }), TODAY)
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /sans disposition valide.*on verra plus tard/s)
+})
+
+test('section Restes : un SOUS-TITRE structure la section — ses items comptent, lui non', () => {
+  const restes = '- a -> #1\n\n### Restes secondaires\n- b -> #2\n- c -> #3\n- d -> #4\n- e -> #5'
+  const contenu = solde({ restes })
+  assert.equal(restesItems(contenu).length, 5)
+  assert.equal(restesRoutants(contenu).length, 5)
+  const r = validateSolde(contenu, TODAY)
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /5 restes ROUTÉS/)
+  assert.doesNotMatch(r.problems.join(' ; '), /Restes secondaires/)
+})
+
+test('section Restes : la borne reste le PROCHAIN titre de niveau 2', () => {
+  const contenu = solde({ restes: '- a -> #1' })
+  assert.deepEqual(restesItems(contenu), ['- a -> #1'])
+  assert.equal(sectionDe(contenu, 'Restes').includes('verdict'), false)
+  assert.equal(sectionDe(contenu, 'Absente'), null)
+})
+
+test('section Restes : un titre DUPLIQUÉ est refusé (la seconde section échapperait au plafond)', () => {
+  const contenu = solde({ restes: '- a -> #1\n\n## Restes\n- b -> #2\n- c -> #3\n- d -> #4\n- e -> #5' })
+  assert.equal(compteSections(contenu, 'Restes'), 2)
+  const r = validateSolde(contenu, TODAY)
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /"## Restes" DUPLIQUÉE \(2 fois\)/)
+  assert.equal(compteSections(solde({ restes: '- a -> #1' }), 'Restes'), 1)
+})
+
+test('section Restes : « RAS » pour le tout reste conforme, même suivi d\'un pied de fichier', () => {
+  const r = validateSolde(solde({ restes: 'RAS' }), TODAY)
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+  assert.deepEqual(restesItems(solde({ restes: 'RAS' })), [])
 })
 
 test('validateSolde : section Réfutation absente', () => {
@@ -1198,6 +1255,55 @@ test('evaluateFermetureHorsCommit : silence sur ce qui ne ferme pas', () => {
   }
 })
 
+// ── `gh api --input <fichier>` : le corps de la requête est LU (abstention D6/a levée) ───────────
+test('evaluateFermetureHorsCommit : un corps `--input` porteur de "state": "closed" est refusé', () => {
+  const lire = () => JSON.stringify({ state: 'closed', state_reason: 'completed' })
+  for (const cmd of [
+    'gh api -X PATCH /repos/cgauche/game/issues/1679 --input corps.json',
+    'gh api --method PATCH /repos/o/r/issues/1 --input=corps.json',
+    'bash -lc "gh api -X PATCH /repos/o/r/issues/1 --input corps.json"',
+  ]) {
+    const d = evaluateFermetureHorsCommit(cmd, { lire })
+    assert.ok(d, `passé en silence : ${cmd}`)
+    assert.equal(d.decision, 'deny')
+    assert.match(d.reason, /la fermeture passe par un commit/)
+  }
+})
+
+test('evaluateFermetureHorsCommit : les gestes `--input` qui ne peuvent pas FERMER passent en silence', () => {
+  // Au PreToolUse le corps est souvent écrit APRÈS (par la commande elle-même) : refuser sur un
+  // fichier absent mordrait 4 gestes routiniers (sonde J4). Le corps n'est lu que sur l'endpoint
+  // d'UN ticket et une méthode qui ÉCRIT.
+  const absent = () => { throw new Error('ENOENT') }
+  for (const cmd of [
+    'gh api repos/cgauche/game/issues --input body.json',
+    'gh api graphql --input query.json',
+    'gh api repos/o/r/issues --input filtre.json -X GET',
+    'echo \'{"title":"x"}\' > body.json && gh api repos/o/r/issues --input body.json',
+    'gh api repos/o/r/issues/1636 --input corps.json',
+  ]) {
+    assert.equal(evaluateFermetureHorsCommit(cmd, { lire: absent }), null, `mordu à tort : ${cmd}`)
+  }
+})
+
+test('evaluateFermetureHorsCommit : un corps `--input` qui ne ferme pas passe ; `--input -` est HORS PORTÉE', () => {
+  const ouvert = () => JSON.stringify({ body: 'commentaire' })
+  assert.equal(evaluateFermetureHorsCommit('gh api -X PATCH /repos/o/r/issues/1 --input corps.json', { lire: ouvert }), null)
+  // stdin : le corps n'existe nulle part avant l'exécution — silence DIT, jamais un refus muet.
+  assert.equal(evaluateFermetureHorsCommit('gh api -X PATCH /repos/o/r/issues/1 --input -', {
+    lire: () => { throw new Error('jamais lu') },
+  }), null)
+})
+
+test('evaluateFermetureHorsCommit : sur l\'endpoint d\'UN ticket, un corps ILLISIBLE est refusé (fail-closed)', () => {
+  const d = evaluateFermetureHorsCommit('gh api -X PATCH /repos/o/r/issues/1 --input absent.json', {
+    lire: () => { throw new Error('ENOENT') },
+  })
+  assert.equal(d?.decision, 'deny')
+  assert.match(d.reason, /illisible ou non-JSON/)
+  assert.match(d.reason, /absent\.json/)
+})
+
 // ── Arbre PRINCIPAL vs worktree ───────────────────────────────────────────────────────────────────
 test('estArbrePrincipal : `.git` DOSSIER = principal, `.git` FICHIER = worktree lié', () => {
   const base = mkdtempSync(join(tmpdir(), 'solde-arbre-'))
@@ -1350,6 +1456,7 @@ const CORRIGE_PAR = '- chemin mort cité -> corrigé par 4d6e1ff78 src/data/sche
 const HISTOIRE_OK = {
   commitEstAncetre: () => true,
   fichiersDuCommit: () => ['src/data/schemas/defs/teintesJeu.ts', '.claude/soldes/revue-palier-2205fde51.md'],
+  lignesDuCommit: () => [88],
 }
 
 test('validateSolde : « corrigé par <sha> » conforme (ancêtre de HEAD, touche le fichier cité)', () => {
@@ -1373,6 +1480,20 @@ test('validateSolde : « corrigé par <sha> » citant un fichier que le commit n
   assert.match(r.problems.join(' ; '), /teintesJeu\.ts:88, que ce commit ne touche PAS/)
 })
 
+test('validateSolde : « corrigé par <sha> » citant une LIGNE hors des hunks du commit → refus', () => {
+  // La ligne se prouvait sur parole : « :999999 » passait tant que le FICHIER était touché (sonde
+  // D1/P1.3), là où « corrigé dans ce commit » exigeait déjà le site exact.
+  const restes = '- chemin mort cité -> corrigé par 4d6e1ff78 src/data/schemas/defs/teintesJeu.ts:999999'
+  const r = validateSolde(solde({ restes }), TODAY, HISTOIRE_OK)
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /teintesJeu\.ts:999999, hors des lignes que ce commit y modifie/)
+})
+
+test('validateSolde : « corrigé par <sha> » dont le diff du fichier est VIDE ne tranche pas la ligne', () => {
+  const r = validateSolde(solde({ restes: CORRIGE_PAR }), TODAY, { ...HISTOIRE_OK, lignesDuCommit: () => [] })
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+})
+
 test('validateSolde : « corrigé par » sans sha ni site reste hors grammaire', () => {
   const r = validateSolde(solde({ restes: '- chemin mort -> corrigé par 4d6e1ff78' }), TODAY, HISTOIRE_OK)
   assert.equal(r.ok, false)
@@ -1393,6 +1514,10 @@ test('commitEstAncetreDeHead / fichiersDuCommitGit : le cas fondateur #584 tient
     '4d6e1ff78 ne touche pas le fichier que le solde #584 lui attribue',
   )
   assert.equal(commitEstAncetreDeHead('0000000000000000000000000000000000000000', repoRoot()), false)
+  // La LIGNE que le solde #584 cite est bien dans un hunk de ce commit — lue au diff, pas sur parole.
+  const lignes = lignesDeHunks(diffDuCommitGit('4d6e1ff78', 'src/data/schemas/defs/teintesJeu.ts', repoRoot()))
+  assert.ok(lignes.includes(88), `lignes vues : ${lignes.join(',')}`)
+  assert.deepEqual(lignesDeHunks(diffDuCommitGit('4d6e1ff78', 'docs/architecture.md', repoRoot())), [])
 })
 
 test('le solde #584 de l\'arbre est CONFORME à sa propre grammaire', () => {
@@ -1407,6 +1532,7 @@ test('le solde #584 de l\'arbre est CONFORME à sa propre grammaire', () => {
   const r = validateSolde(contenu, '2026-09-02', {
     commitEstAncetre: (sha) => commitEstAncetreDeHead(sha, repoRoot()),
     fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, repoRoot()),
+    lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDuCommitGit(sha, fichier, repoRoot())),
   })
   assert.equal(r.ok, true, r.problems.join(' ; '))
 })

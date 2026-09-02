@@ -101,6 +101,17 @@ test('une entrée OBJET SANS maquette est refusée ; AVEC maquette, la création
   })
 })
 
+test('une maquette de RÉSERVATION (« TODO ») ne déclare rien', () => {
+  for (const marque of ['TODO', 'todo : à dessiner', 'à faire', 'TBD', '—', '?']) {
+    assert.equal(maquetteEntree({ fichier: FANTOME, maquette: marque }), '', marque)
+    avecEntree({ fichier: FANTOME, maquette: marque }, () => {
+      assert.notEqual(lance(join(REPO, FANTOME)).code, 0, `réservation acceptée pour maquette : ${marque}`)
+    })
+  }
+  // Une trace qui NOMME où la validation a eu lieu passe, même si elle parle d'un reste à faire.
+  assert.notEqual(maquetteEntree({ fichier: FANTOME, maquette: 'validée en présence 2026-09-02, reste à faire : le pied' }), '')
+})
+
 test('échappement SKIP_NEW_SRC_GUARD=1 → passe, et LOGGUE la dérogation', () => {
   const r = lance(join(REPO, FANTOME), { SKIP_NEW_SRC_GUARD: '1' })
   assert.equal(r.code, 0)

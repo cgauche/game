@@ -6,16 +6,22 @@
 // une pierre tombale ou du poison ? »). Le geste n'est pas interdit : il est ARBITRÉ (`ask`, patron
 // `enterine-guard`).
 //
-// PÉRIMÈTRE ÉTROIT, mesuré (2026-09-02, 361 fiches) : les seuls motifs retenus sont ceux d'un EN-TÊTE
-// de supersession — mot en TÊTE DE LIGNE (ornements markdown et ⚠ tolérés). Les mêmes mots DANS une
-// phrase relèvent du vécu daté légitime (49 lignes pour le premier mot, 28 pour « désormais », 43
-// pour le troisième) : les scanner ferait 84 fiches touchées sur 361, soit un garde qui crie sur du
-// récit — l'en-tête, lui, ne touche que 4 lignes du stock entier. `PORTÉ PAR <garde>` est admis :
-// nommer la garde qui porte l'invariant est une réécriture au présent, pas une tombale.
+// PÉRIMÈTRE ÉTROIT, mesuré (2026-09-02, 362 fiches) : les seuls motifs retenus sont ceux d'un EN-TÊTE
+// de supersession. Un en-tête se reconnaît à son ORNEMENT de tête (`>`, `#`, `**`, `⚠`) ou au fait
+// qu'il OUVRE un paragraphe (ligne précédente vide) ; une ligne de MILIEU de paragraphe porte la
+// suite d'une phrase repliée, jamais un chapeau. Les mêmes mots DANS une phrase relèvent du vécu
+// daté légitime (49 lignes pour le premier mot, 28 pour « désormais », 43 pour le troisième) : les
+// scanner ferait 84 fiches touchées sur 362, soit un garde qui crie sur du récit — l'en-tête, lui,
+// touche 2 lignes du stock entier (`game-collision-livres-identique-vs-divergent.md:10`,
+// `game-refonte-rendu-builders-backends.md:10` ; les deux autres lignes du motif large sont des
+// REPLIS de phrase). `PORTÉ PAR <garde>` est admis : nommer la garde qui porte l'invariant est une
+// réécriture au présent, pas une tombale.
 //
 // LIGNES AJOUTÉES seulement : un Edit se juge sur `new_string` privé de ce que portait déjà
 // `old_string` ; un Write se compare au fichier SUR DISQUE — sans quoi la RÉÉCRITURE que la règle
 // prescrit (re-sauver la fiche entière) se ferait refuser par les lignes qu'elle conserve.
+// CONSÉQUENCE DITE : replacer le MÊME en-tête dans `old_string` le rend silencieux — la ligne n'est
+// plus ajoutée. Le garde arbitre l'ÉCRITURE d'un en-tête, il n'inspecte pas la fiche existante.
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
@@ -48,8 +54,31 @@ export function lignesAjoutees(neuf, ancien) {
     .filter(({ texte, rang }) => !(bornes && rang < bornes[1]) && !avant.has(texte.trim()))
 }
 
-/** L'en-tête de supersession porté par une ligne AJOUTÉE, ou `null`. */
-export function enteteSupersession(ligne) {
+/** Ornements de tête d'un EN-TÊTE markdown : citation, titre, gras, avertissement. Une puce `-` n'en
+ *  est pas un — un item de liste décrit, il ne chapeaute rien. */
+const ORNEMENT_ENTETE = /^\s*(?:>|#{1,6}\s|\*\*|__|⚠)/u
+
+/** Une ligne qui OUVRE un paragraphe : la précédente est vide, absente (première ligne du texte),
+ *  ferme un frontmatter/sépare par un filet `---`, ou termine une ligne de TABLEAU `|…|`. Aucune de
+ *  ces trois ne porte de phrase que la suivante puisse continuer — ce qui suit chapeaute. */
+function ouvreParagraphe(precedente) {
+  const p = String(precedente ?? '').trim()
+  return p === '' || /^-{3,}$/.test(p) || p.startsWith('|')
+}
+
+/** La ligne CHAPEAUTE-t-elle ? Ornement de tête, ou ouverture de paragraphe : une ligne de MILIEU de
+ *  paragraphe est la continuation d'une phrase.
+ *  DÉCISION ÉCRITE : une puce `- SUPERSÉDÉ par …` posée SOUS du texte courant reste hors périmètre —
+ *  un item de liste qui suit un paragraphe le DÉTAILLE, il ne le chapeaute pas. La même puce en tête
+ *  de paragraphe, elle, est vue. */
+export function estLigneEntete(ligne, precedente) {
+  return ORNEMENT_ENTETE.test(ligne) || ouvreParagraphe(precedente)
+}
+
+/** L'en-tête de supersession porté par une ligne AJOUTÉE, ou `null`. `precedente` = la ligne
+ *  PHYSIQUE qui la précède dans le texte neuf. */
+export function enteteSupersession(ligne, precedente) {
+  if (!estLigneEntete(ligne, precedente)) return null
   const corps = nu(ligne)
   if (!MOTIF.test(corps) || PORTE_PAR.test(corps)) return null
   return corps.slice(0, 80)
@@ -71,8 +100,9 @@ export function evaluate(input, lireDisque = () => '') {
   const neuf = input?.new_string ?? input?.new_text ?? input?.content
   if (typeof neuf !== 'string') return null
   const ancien = input?.old_string ?? input?.old_text ?? (input?.content !== undefined ? lireDisque(chemin) : '')
-  for (const { texte } of lignesAjoutees(neuf, ancien)) {
-    const entete = enteteSupersession(texte)
+  const lignes = neuf.split(/\r?\n/)
+  for (const { texte, rang } of lignesAjoutees(neuf, ancien)) {
+    const entete = enteteSupersession(texte, lignes[rang - 1])
     if (!entete) continue
     return {
       decision: 'ask',

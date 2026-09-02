@@ -29,6 +29,8 @@ import {
   migrerCompteurPalier,
   readCounterFile,
   decisionCumulee,
+  scriptsNpm,
+  ancrerScriptsNpm,
   evaluate as evaluateSolde,
 } from './solde-ticket-guard.mjs'
 import { evaluate as evaluateLabel } from './issue-label-guard.mjs'
@@ -100,7 +102,7 @@ for (const { nom, git, gh } of FORMES_VUES) {
 // faux positif #591. Ces formes PASSENT, et c'est le contrat.
 const FORMES_HORS_PORTEE = [
   ['node script.mjs (la commande vit dans un fichier)', 'node scripts/tmp-open.mjs'],
-  ['npm run x (script du package.json)', 'npm run open-ticket'],
+  ['npm run x INCONNU du package.json (aucun corps à lire)', 'npm run open-ticket'],
   ['$VAR en exécutable (vient de l\'environnement)', '$GH issue create --title x'],
   ['pwsh -File (script)', 'pwsh -File ./ouvre.ps1'],
   ['bash -c "$(cat …)" (substitution)', 'bash -c "$(cat script.sh)"'],
@@ -112,6 +114,57 @@ for (const [nom, cmd] of FORMES_HORS_PORTEE) {
     assert.equal(evaluateLabel(cmd), null)
   })
 }
+
+// ── `npm run <x>` : le corps du script est LU dans package.json (abstention D6/b1 levée) ─────────
+const SCRIPTS_FIXTURE = {
+  'open-ticket': 'gh issue create --title "reste" --body-file corps.md',
+  typecheck: 'node scripts/lancer-local.mjs typescript -- tsc --noEmit',
+  test: 'node scripts/test/run.mjs',
+}
+
+test('npm run <x> : le script résolu est re-tokenisé, sa création sans label est VUE', () => {
+  const options = { scripts: SCRIPTS_FIXTURE }
+  assert.deepEqual(
+    segmentsProfonds('npm run open-ticket', 0, options)[0].slice(0, 3),
+    ['gh', 'issue', 'create'],
+  )
+  assert.ok(evaluateLabel('npm run open-ticket', options), 'création sans label invisible derrière npm run')
+  assert.equal(evaluateLabel('npm run open-ticket'), null, 'script ABSENT du package.json réel : silence')
+})
+
+test('npm run <x> : les trois graphies, les arguments de la ligne, et un script inconnu', () => {
+  const options = { scripts: SCRIPTS_FIXTURE }
+  for (const cmd of ['npm run open-ticket', 'npm run-script open-ticket', 'npm run --silent open-ticket']) {
+    assert.ok(evaluateLabel(cmd, options), cmd)
+  }
+  assert.deepEqual(
+    segmentsProfonds('npm test -- --reporter=dot', 0, options)[0],
+    ['node', 'scripts/test/run.mjs', '--reporter=dot'],
+  )
+  assert.deepEqual(segmentsProfonds('npm run inconnu', 0, options), [['npm', 'run', 'inconnu']])
+})
+
+test('npm run <x> : la résolution suit le dépôt ANCRÉ, pas celui du hook', () => {
+  const base = mkdtempSync(join(tmpdir(), 'npm-ancre-'))
+  try {
+    writeFileSync(join(base, 'package.json'), JSON.stringify({ scripts: { ferme: 'gh issue close 1679' } }), 'utf8')
+    assert.deepEqual(scriptsNpm(base), { ferme: 'gh issue close 1679' })
+    // Sans ancrage : le dépôt du hook, qui ne porte aucun script `ferme`.
+    assert.deepEqual(segmentsProfonds('npm run ferme'), [['npm', 'run', 'ferme']])
+    ancrerScriptsNpm(base)
+    try {
+      assert.deepEqual(
+        segmentsProfonds('npm run ferme'),
+        [['gh', 'issue', 'close', '1679'], ['npm', 'run', 'ferme']],
+      )
+    } finally {
+      ancrerScriptsNpm(null)
+    }
+    assert.deepEqual(segmentsProfonds('npm run ferme'), [['npm', 'run', 'ferme']], 'l’ancrage n’a pas été rendu')
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
 
 test('$\'…\' (ANSI-C quoting) est un span QUOTÉ : l\'exécutable de tête reste lisible', () => {
   assert.deepEqual(segmentsProfonds("bash -c $'gh issue create --title x'")[0].slice(0, 3), ['gh', 'issue', 'create'])

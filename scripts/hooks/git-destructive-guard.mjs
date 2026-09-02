@@ -8,6 +8,12 @@
 // séparateur) est REFUSÉ — git y voit un pathspec et rend le même résultat pour tous les commits,
 // sans erreur (fiche `env-git-show-ordre-commit-avant-paths`, mesuré le 2026-08-26).
 //
+// HORS PORTÉE, dit : une suppression dont les CIBLES ne sont pas sur la ligne de commande — elles
+// arrivent par l'entrée standard (`echo src/engine | xargs rm -rf`) ou d'un autre programme
+// (`find . -name x -exec rm -rf {} \;`). Le garde décide sur les chemins qu'il LIT : une cible
+// inconnue avant l'exécution ne se garde pas au PreToolUse (même borne que `$VAR issue create` pour
+// le socle). Le cas est JOUÉ par un test de périmètre, pour que le silence reste un fait mesuré.
+//
 // Détection STRUCTURELLE (jamais un grep de sous-chaîne sur la ligne entière) : on réutilise le
 // tokenizer quote-aware de `solde-ticket-guard` (`segmentsProfonds`/`gitSubcommand`, invariant
 // partagé) — sans lui, `Write-Output "git stash"` ou un message de commit citant `git reset --hard`
