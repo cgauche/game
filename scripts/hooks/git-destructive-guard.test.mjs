@@ -114,3 +114,48 @@ test('PASSE : le préfixe abrégé ne vise QUE les liens, et cmd sans mklink ne 
   assert.ok(silent(`cmd /c rmdir .wt-1679${BS}node_modules`))
   assert.equal(evaluate('git reset --hard').decision, 'ask')
 })
+
+// ── `git show` dont le commit passe APRÈS `--` : une MESURE fausse, silencieuse ────────────────────
+test('DENY : le commit placé après `--` devient un pathspec (mesuré 2026-08-26)', () => {
+  const d = evaluate('git show --stat --format= -- src/data src/scenes 951d6b1fd')
+  assert.equal(d?.decision, 'deny')
+  assert.match(d.reason, /951d6b1fd/)
+  assert.match(d.reason, /pathspec/i)
+  assert.match(d.reason, /git show <commit> -- <paths>/)
+  assert.equal(evaluate('git show --stat -- 21d0153b7')?.decision, 'deny')
+})
+
+test('PASSE : la forme correcte, et un `git show` sans séparateur', () => {
+  assert.ok(silent('git show --stat --format= 951d6b1fd -- src/data src/scenes'))
+  assert.ok(silent('git show 951d6b1fd'))
+  assert.ok(silent('git show HEAD -- src/ui'))
+  assert.ok(silent('git show --stat -- src/data'), 'un pathspec ordinaire ne ressemble pas à un sha')
+})
+
+// ── Suppression RÉCURSIVE : arbitrage humain hors des cibles jetables ─────────────────────────────
+test('ASK : rm -rf / Remove-Item -Recurse sur une cible qui peut porter du WIP', () => {
+  for (const cmd of ['rm -rf src/ui', 'rm -r .wt-1679-L1a', 'rm -rf docs/plans .claude/soldes',
+    'Remove-Item -Recurse -Force src/gameIso', 'Remove-Item -Recurse -Path .claude/memory']) {
+    const d = evaluate(cmd)
+    assert.equal(d?.decision, 'ask', cmd)
+    assert.match(d.reason, /RÉCURSIVE/)
+  }
+})
+
+test('PASSE : les cibles JETABLES (dépendances, artefacts, scratchpad) et une suppression non récursive', () => {
+  const BS2 = String.fromCharCode(92)
+  assert.ok(silent('rm -rf node_modules'))
+  assert.ok(silent('rm -rf .wt-1679-L1a/node_modules'))
+  assert.ok(silent('rm -rf node_modules/.cache dist'))
+  assert.ok(silent('rm -rf public/qc'))
+  assert.ok(silent('rm -rf /c/Users/x/AppData/Local/Temp/claude/session/scratchpad/t3'))
+  assert.ok(silent('Remove-Item -Recurse -Force C:' + BS2 + 'Users' + BS2 + 'x' + BS2 + 'AppData' + BS2 + 'Local' + BS2 + 'Temp' + BS2 + 'claude' + BS2 + 'sess' + BS2 + 'out'))
+  assert.ok(silent('rm src/ui/A.tsx'), 'sans -r, ce garde ne dit rien (un fichier nommé se relit en diff)')
+  assert.ok(silent('Remove-Item src/ui/A.tsx'))
+})
+
+test('la suppression récursive est vue DERRIÈRE un sous-shell et un enrobeur de tête', () => {
+  assert.equal(evaluate('sh -c "rm -rf src/state"')?.decision, 'ask')
+  assert.equal(evaluate('nohup rm -rf src/state')?.decision, 'ask')
+  assert.ok(silent('sh -c "rm -rf node_modules"'))
+})

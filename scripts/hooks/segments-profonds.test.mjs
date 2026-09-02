@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join, posix, resolve, win32 } from 'node:path'
 import {
   segmentsProfonds,
+  pipelinesProfonds,
   isGitCommitCommand,
   extractClosedIssues,
   extractTargetDir,
@@ -336,4 +337,45 @@ test('decisionCumulee : `ask` seul reste `ask` ; un refus sans champ vaut `deny`
   assert.equal(decisionCumulee([{ reason: 'a' }]).decision, 'deny')
   assert.equal(decisionCumulee([null, undefined]), null)
   assert.equal(decisionCumulee([]), null)
+})
+
+// ── PIPELINES : ce qu'un `|` chaîne réellement (#1679 L1a T3) ─────────────────────────────────────
+// `segmentsProfonds` aplatit ; une garde qui décide sur la SORTIE d'une commande (runner tronqué par
+// un filtre) a besoin du groupement, sans quoi deux commandes sans rapport enchaînées par `;`
+// passent pour un tube — 3 faux positifs mesurés.
+test('pipelinesProfonds : un pipeline par enchaînement, les segments d’un `|` restant groupés', () => {
+  assert.deepEqual(
+    pipelinesProfonds('npx eslint . ; git log | head -5'),
+    [[['eslint', '.']], [['git', 'log'], ['head', '-5']]],
+  )
+  assert.deepEqual(
+    pipelinesProfonds('npx vitest run | cat | tail -5'),
+    [[['vitest', 'run'], ['cat'], ['tail', '-5']]],
+  )
+  assert.deepEqual(
+    pipelinesProfonds('tsc --noEmit && tail -f log.txt'),
+    [[['tsc', '--noEmit']], [['tail', '-f', 'log.txt']]],
+  )
+})
+
+test('pipelinesProfonds : un pipeline IMBRIQUÉ est rendu à part, avant son enrobeur', () => {
+  assert.deepEqual(
+    pipelinesProfonds('sh -c "npx vitest run | tail -5" && git status'),
+    [
+      [['vitest', 'run'], ['tail', '-5']],
+      [['sh', '-c', 'npx vitest run | tail -5']],
+      [['git', 'status']],
+    ],
+  )
+})
+
+test('segmentsProfonds EST l’aplati de pipelinesProfonds (une seule traversée)', () => {
+  for (const cmd of [
+    'npx eslint . ; git log | head -5',
+    'sh -c "npx vitest run | tail -5" && git status',
+    'nohup env FOO=1 git commit -m x | tee f.txt',
+    '',
+  ]) {
+    assert.deepEqual(segmentsProfonds(cmd), pipelinesProfonds(cmd).flat(), cmd)
+  }
 })

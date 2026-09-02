@@ -1,6 +1,12 @@
 // Hook PreToolUse(Bash|PowerShell|mcp__lean-ctx__ctx_shell) : l'arbre est PARTAGÉ entre sessions
 // parallèles — toute commande git destructive (qui peut effacer du WIP non commité) exige une
 // confirmation humaine explicite, et tout LIEN posé sur un `node_modules` est REFUSÉ (#1679 L1c).
+// Même arbitrage pour une SUPPRESSION RÉCURSIVE (`rm -r`, `Remove-Item -Recurse`) dont la cible
+// n'est pas jetable (dépendances, artefacts, scratchpad de session).
+//
+// Un volet ne garde pas le WIP mais la MESURE : `git show ... -- <sha>` (le commit APRÈS le
+// séparateur) est REFUSÉ — git y voit un pathspec et rend le même résultat pour tous les commits,
+// sans erreur (fiche `env-git-show-ordre-commit-avant-paths`, mesuré le 2026-08-26).
 //
 // Détection STRUCTURELLE (jamais un grep de sous-chaîne sur la ligne entière) : on réutilise le
 // tokenizer quote-aware de `solde-ticket-guard` (`segmentsProfonds`/`gitSubcommand`, invariant
@@ -8,7 +14,7 @@
 // déclenchaient un `ask` sur une commande qui n'exécute rien (faux positif mesuré 2026-08-03).
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
-import { segmentsProfonds, gitSubcommand, valeurParametre } from './solde-ticket-guard.mjs'
+import { segmentsProfonds, gitSubcommand, valeurParametre, indexParametre } from './solde-ticket-guard.mjs'
 
 /** Une option courte parmi `letters` est-elle présente (isolée ou groupée : `-fd`, `-fdx`) ? */
 const hasShortFlag = (args, letters) =>
@@ -87,11 +93,65 @@ function lienNodeModules(segment) {
   return args.some((a) => /node_modules/i.test(a)) ? forme : null
 }
 
+/** Cibles qu'une suppression récursive peut emporter sans arbitrage : dépendances et artefacts
+ *  reconstructibles, et le scratchpad de session (hors dépôt, jetable par nature). */
+const CIBLES_JETABLES = [/(^|[\\/])node_modules([\\/]|$)/i, /(^|[\\/])\.cache([\\/]|$)/i,
+  /(^|[\\/])dist([\\/]|$)/i, /public[\\/]qc([\\/]|$)/i, /[\\/]Temp[\\/]claude[\\/]/i]
+
+/** Paramètres de `Remove-Item` (propres + communs) avec lesquels un préfixe pourrait être AMBIGU. */
+const PARAMS_REMOVE_ITEM = [
+  'Path', 'LiteralPath', 'Filter', 'Include', 'Exclude', 'Recurse', 'Force', 'Credential', 'Stream',
+  'WhatIf', 'Confirm', 'UseTransaction', 'Verbose', 'Debug', 'ErrorAction', 'ErrorVariable',
+  'WarningAction', 'WarningVariable', 'InformationAction', 'InformationVariable', 'OutVariable',
+  'OutBuffer', 'PipelineVariable',
+]
+
+/** Paramètres de `Remove-Item` qui prennent une VALEUR (les autres sont des switches). */
+const PARAMS_VALEUR_REMOVE_ITEM = [
+  'Path', 'LiteralPath', 'Filter', 'Include', 'Exclude', 'Stream', 'Credential', 'ErrorAction',
+  'ErrorVariable', 'WarningAction', 'WarningVariable', 'InformationAction', 'InformationVariable',
+  'OutVariable', 'OutBuffer', 'PipelineVariable',
+]
+
+/** Ce token est-il un paramètre à valeur (préfixe non ambigu accepté, comme l'hôte) ? */
+const prendValeur = (token) => PARAMS_VALEUR_REMOVE_ITEM.some((n) => indexParametre([token], n, PARAMS_REMOVE_ITEM) === 0)
+
+/** Cibles d'une SUPPRESSION RÉCURSIVE portée par ce segment (`[]` s'il n'en est pas une). Deux
+ *  graphies, une seule règle : `rm -r|-rf` (POSIX) et `Remove-Item -Recurse` (PowerShell). */
+function ciblesSuppressionRecursive(segment) {
+  const { exe, args } = executableDe(segment)
+  if (exe === 'rm') {
+    const recursif = hasShortFlag(args, 'rR') || args.includes('--recursive')
+    return recursif ? args.filter((a) => !a.startsWith('-')) : []
+  }
+  if (exe === 'remove-item' || exe === 'ri' || exe === 'rd' || exe === 'rmdir') {
+    if (indexParametre(args, 'Recurse', PARAMS_REMOVE_ITEM) === -1) return []
+    const nommees = ['Path', 'LiteralPath'].map((p) => valeurParametre(args, p, PARAMS_REMOVE_ITEM)).filter(Boolean)
+    // Un paramètre SWITCH (`-Force`, `-Recurse`) ne consomme pas le token suivant : sans cette
+    // distinction, la cible d'un `Remove-Item -Recurse -Force src/x` passait pour la valeur de -Force.
+    const positionnelles = args.filter((a, i) => !a.startsWith('-') && !prendValeur(args[i - 1] ?? ''))
+    return [...new Set([...nommees, ...positionnelles])]
+  }
+  return []
+}
+
+/** Le SHA passé APRÈS le séparateur `--` d'un `git show`, ou `null`. Tout ce qui suit `--` est un
+ *  PATHSPEC : le commit y devient un filtre de chemin, et la commande rend silencieusement le même
+ *  résultat pour tous les commits (piège mesuré 2026-08-26, fiche
+ *  `env-git-show-ordre-commit-avant-paths`). */
+function shaApresSeparateur({ sub, args }) {
+  if (sub !== 'show') return null
+  const sep = args.indexOf('--')
+  if (sep === -1) return null
+  return args.slice(sep + 1).find((a) => /^[0-9a-f]{7,40}$/i.test(a)) ?? null
+}
+
 /**
  * Décision du hook (PURE, testable). `null` = silence ; `{ decision, reason }` sinon — `ask` pour un
- * git destructif (l'humain arbitre), `deny` pour un lien sur `node_modules` (aucun cas légitime).
- * Une commande est visée si l'un de ses SEGMENTS PROFONDS (enchaînements, enrobeurs de tête,
- * sous-shells) l'exécute réellement.
+ * git destructif et pour une suppression récursive hors cibles jetables (l'humain arbitre), `deny`
+ * pour un lien sur `node_modules` et pour un `git show` dont le commit est passé APRÈS `--` (il rend
+ * un résultat FAUX sans le dire). Une commande est visée si l'un de ses SEGMENTS PROFONDS
+ * (enchaînements, enrobeurs de tête, sous-shells) l'exécute réellement.
  */
 export function evaluate(command) {
   if (!command) return null
@@ -107,8 +167,31 @@ export function evaluate(command) {
           `Poser un "npm ci" PROPRE dans l'arbre.`,
       }
     }
+    const cibles = ciblesSuppressionRecursive(segment)
+    const aArbitrer = cibles.filter((c) => !CIBLES_JETABLES.some((re) => re.test(c)))
+    if (aArbitrer.length > 0) {
+      return {
+        decision: 'ask',
+        reason:
+          `⚠ Suppression RÉCURSIVE dans un arbre partagé : ${aArbitrer.join(', ')}. Une cible qui n'est ` +
+          `ni node_modules, ni .cache, ni dist, ni public/qc, ni le scratchpad de session peut porter ` +
+          `du WIP vivant (le tien ou celui d'une autre session) — et un joker y emporte ce qui n'était ` +
+          `pas visé. Vérifier le contenu (git status, ls) avant de confirmer.`,
+      }
+    }
     const git = gitSubcommand(segment)
     if (!git) continue
+    const sha = shaApresSeparateur(git)
+    if (sha) {
+      return {
+        decision: 'deny',
+        reason:
+          `⛔ \`git show\` avec le commit (${sha}) APRÈS le séparateur \`--\` : tout ce qui suit \`--\` est ` +
+          `un PATHSPEC — la commande ne lit pas ce commit et rend SILENCIEUSEMENT le même résultat pour ` +
+          `tous (mesuré 2026-08-26 : 9 commits, 9 sorties identiques). Écrire ` +
+          `\`git show <commit> -- <paths>\`.`,
+      }
+    }
     const what = destructiveReason(git)
     if (!what) continue
     return {

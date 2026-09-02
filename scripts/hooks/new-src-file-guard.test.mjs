@@ -1,17 +1,20 @@
-// Garde BLOQUANTE des nouveaux composants d'UI (#1318 V5) : le hook est lancé POUR DE VRAI
-// (spawnSync + stdin JSON), aucun fichier n'est écrit sous src/ — les chemins testés sont des
-// fantômes qui n'existent pas (c'est précisément l'état qui déclenche la garde).
+// Garde BLOQUANTE des nouveaux composants d'UI et de rendu (#1318 V5, périmètre #1679 L1a) : le hook
+// est lancé POUR DE VRAI (spawnSync + stdin JSON), aucun fichier n'est écrit sous src/ — les chemins
+// testés sont des fantômes qui n'existent pas (c'est précisément l'état qui déclenche la garde).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { estComposantUI, estDeclare, relPath, REGISTRE } from './new-src-file-guard.mjs'
+import {
+  estComposantUI, estDeclare, relPath, cheminEntree, maquetteEntree, REGISTRE,
+} from './new-src-file-guard.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const HOOK = join(REPO, 'scripts', 'hooks', 'new-src-file-guard.mjs')
 const FANTOME = 'src/ui/FantomeGardeV5.tsx'
+const FANTOME_ISO = 'src/gameIso/stage/FantomeStageV5.tsx'
 
 function lanceAvec(tool_input, env = {}) {
   const r = spawnSync(process.execPath, [HOOK], {
@@ -24,8 +27,22 @@ function lanceAvec(tool_input, env = {}) {
 }
 const lance = (file_path, env = {}) => lanceAvec({ file_path }, env)
 
+/** Joue `fn` avec une entrée de plus au registre, puis REMET le fichier à l'octet. */
+function avecEntree(entree, fn) {
+  const brut = readFileSync(REGISTRE, 'utf8')
+  const registre = JSON.parse(brut)
+  registre.ecrans = [...registre.ecrans, entree]
+  writeFileSync(REGISTRE, JSON.stringify(registre, null, 2) + '\n')
+  try {
+    return fn()
+  } finally {
+    writeFileSync(REGISTRE, brut)
+  }
+}
+
 test('le fantôme de test n’existe pas (sinon la garde ne serait jamais sollicitée)', () => {
   assert.equal(existsSync(join(REPO, FANTOME)), false)
+  assert.equal(existsSync(join(REPO, FANTOME_ISO)), false)
 })
 
 test('composant d’UI NEUF non déclaré → sortie non-zéro + geste attendu dans le message', () => {
@@ -34,24 +51,54 @@ test('composant d’UI NEUF non déclaré → sortie non-zéro + geste attendu d
   assert.match(r.err, /NON DÉCLARÉ/)
   assert.match(r.err, /Primitives partagées/)
   assert.match(r.err, /scripts\/hooks\/ecrans-ui\.json/)
+  assert.match(r.err, /maquette validée EN PRÉSENCE/)
   assert.match(r.err, /SKIP_NEW_SRC_GUARD=1/)
   assert.equal(r.out.trim(), '', 'un refus n’injecte pas de contexte')
 })
 
+test('un .tsx NEUF de src/gameIso est BLOQUÉ au même titre (32 .tsx mesurés, aucune exception)', () => {
+  const r = lance(join(REPO, FANTOME_ISO))
+  assert.notEqual(r.code, 0, 'src/gameIso relève du régime bloquant')
+  assert.match(r.err, /NON DÉCLARÉ/)
+  assert.equal(estComposantUI('src/gameIso/stage/X.tsx'), true)
+  assert.equal(estComposantUI('src/gameIso/rig/composeRig.tsx'), true)
+  assert.equal(estComposantUI('src/gameIso/stage/X.test.tsx'), false)
+  assert.equal(estComposantUI('src/gameIso/builders/mur.ts'), false)
+})
+
 test('un composant qui EXISTE déjà (édition, pas création) ne déclenche rien', () => {
-  const inscrit = JSON.parse(readFileSync(REGISTRE, 'utf8')).ecrans[0]
+  const inscrit = cheminEntree(JSON.parse(readFileSync(REGISTRE, 'utf8')).ecrans[0])
   const r = lance(join(REPO, inscrit))
   assert.equal(r.code, 0)
   assert.equal(r.out.trim(), '')
   assert.equal(r.err.trim(), '')
 })
 
-test('primitive citée par le CLAUDE.md et écran inscrit sont tous deux « déclarés »', () => {
+test('primitive citée par le CLAUDE.md et écran du stock sont tous deux « déclarés »', () => {
   const claudeMd = readFileSync(join(REPO, 'CLAUDE.md'), 'utf8')
   const registre = JSON.parse(readFileSync(REGISTRE, 'utf8'))
   assert.ok(estDeclare('src/ui/NumberField.tsx', claudeMd, registre), 'primitive du CLAUDE.md')
-  assert.ok(estDeclare(registre.ecrans[0], claudeMd, registre), 'écran du registre')
+  assert.ok(estDeclare(cheminEntree(registre.ecrans[0]), claudeMd, registre, true), 'écran du stock, déjà dans l’arbre')
   assert.ok(!estDeclare(FANTOME, claudeMd, registre))
+})
+
+test('une entrée en CHAÎNE ne déclare pas un fichier NEUF (le stock du 2026-08-16 ne croît pas)', () => {
+  avecEntree(FANTOME, () => {
+    const r = lance(join(REPO, FANTOME))
+    assert.notEqual(r.code, 0, 'inscrire une chaîne ne remplace pas la maquette validée')
+    assert.match(r.err, /NON DÉCLARÉ/)
+  })
+})
+
+test('une entrée OBJET SANS maquette est refusée ; AVEC maquette, la création passe', () => {
+  avecEntree({ fichier: FANTOME, maquette: '' }, () => {
+    assert.notEqual(lance(join(REPO, FANTOME)).code, 0, 'objet sans maquette = pas de déclaration')
+  })
+  avecEntree({ fichier: FANTOME, maquette: 'validée en présence 2026-09-02 (session L1a)' }, () => {
+    const r = lance(join(REPO, FANTOME))
+    assert.equal(r.code, 0)
+    assert.match(r.out, /additionalContext/, 'le rappel anti-réinvention reste injecté')
+  })
 })
 
 test('échappement SKIP_NEW_SRC_GUARD=1 → passe, et LOGGUE la dérogation', () => {
@@ -118,12 +165,32 @@ test('registre ILLISIBLE → refus fail-closed dont le corps dit de RÉPARER, pa
   assert.equal(readFileSync(REGISTRE, 'utf8'), brut)
 })
 
-test('le registre des écrans est trié, sans doublon, et ne cite que des .tsx existants de src/ui', () => {
+test('le registre est trié, sans doublon SUR LA CLEF NORMALISÉE, et ne cite que des composants existants', () => {
   const { ecrans } = JSON.parse(readFileSync(REGISTRE, 'utf8'))
-  assert.deepEqual(ecrans, [...ecrans].sort(), 'registre non trié (diffs illisibles)')
-  assert.equal(new Set(ecrans).size, ecrans.length, 'doublon dans le registre')
-  for (const f of ecrans) {
+  // Le tri/dédoublonnage se fait sur le CHEMIN : deux objets se comparent en « [object Object] »
+  // (tri vacueux) et se distinguent par IDENTITÉ dans un Set (doublon invisible) — mesuré.
+  const clefs = ecrans.map(cheminEntree)
+  assert.deepEqual(clefs, [...clefs].sort(), 'registre non trié (diffs illisibles)')
+  assert.equal(new Set(clefs).size, clefs.length, 'doublon dans le registre')
+  for (const entree of ecrans) {
+    const f = cheminEntree(entree)
     assert.ok(estComposantUI(f), `${f} : pas un composant d'UI`)
     assert.ok(existsSync(join(REPO, f)), `${f} : inscrit mais absent de l'arbre`)
+    if (typeof entree !== 'string')
+      assert.notEqual(maquetteEntree(entree), '', `${f} : entrée objet sans trace de maquette validée`)
   }
+})
+
+test('CLIQUET : le stock d’entrées en CHAÎNE (207 mesurées le 2026-08-16) décroît, jamais l’inverse', () => {
+  const { ecrans } = JSON.parse(readFileSync(REGISTRE, 'utf8'))
+  const chaines = ecrans.filter((e) => typeof e === 'string').length
+  assert.ok(chaines <= 207, `stock legacy en hausse : ${chaines} > 207 — un écran NEUF s'inscrit en objet {fichier, maquette}`)
+})
+
+test('le tri sur la clef normalisée MORD sur un registre mixte désordonné (cas planté)', () => {
+  const mixte = ['src/ui/ActiveModal.tsx', { fichier: 'src/ui/AAA.tsx', maquette: 'x' }]
+  const clefs = mixte.map(cheminEntree)
+  assert.notDeepEqual(clefs, [...clefs].sort(), 'un objet mal placé doit être VU par le tri')
+  const doublons = [{ fichier: 'src/ui/X.tsx', maquette: 'a' }, { fichier: 'src/ui/X.tsx', maquette: 'b' }].map(cheminEntree)
+  assert.notEqual(new Set(doublons).size, doublons.length, 'deux entrées du MÊME fichier doivent être VUES')
 })

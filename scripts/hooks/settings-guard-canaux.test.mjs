@@ -1,6 +1,7 @@
-// Conformité des CANAUX gardés : les hooks PreToolUse qui gardent les commandes git
-// (`git-destructive-guard`, `solde-ticket-guard`, `issue-label-guard`) doivent couvrir tous les
-// outils par lesquels une commande shell part réellement — pas seulement `Bash`/`PowerShell`.
+// Conformité des CANAUX gardés : les hooks PreToolUse qui gardent les COMMANDES
+// (`git-destructive-guard`, `solde-ticket-guard`, `issue-label-guard`, `runner-capture-guard`)
+// doivent couvrir tous les outils par lesquels une commande shell part réellement — pas seulement
+// `Bash`/`PowerShell`.
 //
 // Défaut mesuré 2026-08-03 (#1052) : l'orchestrateur committe via l'outil MCP
 // `mcp__lean-ctx__ctx_shell`, hors matcher — le compteur de palier était à 32 pour un palier de 10,
@@ -25,8 +26,12 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 // Étendre un matcher d'un seul côté casse `npm run agents:check` au pre-commit du repo ENTIER.
 const SURFACES = [join(REPO, '.claude', 'settings.json'), join(REPO, '.codex', 'hooks.json')]
 
-/** Gardes de COMMANDES git : nom de script → canaux qui doivent tous matcher. */
-const GARDES_GIT = ['git-destructive-guard', 'solde-ticket-guard', 'issue-label-guard']
+/** Gardes de COMMANDES : nom de script → canaux qui doivent tous matcher. */
+const GARDES_COMMANDE = [
+  'git-destructive-guard', 'solde-ticket-guard', 'issue-label-guard', 'runner-capture-guard',
+]
+/** Gardes d'ÉCRITURE : mêmes exigences de parité, sur les canaux qui portent un contenu. */
+const GARDES_ECRITURE = ['memoire-tombale-guard']
 
 /** Canaux dont le `tool_input` porte un champ `command` — donc gardables par les scripts actuels.
  *  Liste NOMINATIVE : tout canal ajouté à un matcher hors de cette liste est un silence, pas une
@@ -42,9 +47,9 @@ function matchersFor(surface, script) {
     .map((entry) => String(entry.matcher ?? ''))
 }
 
-test('les 3 gardes git sont câblées en PreToolUse sur les DEUX surfaces (pas de passe à vide)', () => {
+test('les gardes de commande sont câblées en PreToolUse sur les DEUX surfaces (pas de passe à vide)', () => {
   for (const surface of SURFACES) {
-    for (const script of GARDES_GIT) {
+    for (const script of GARDES_COMMANDE) {
       assert.ok(
         matchersFor(surface, script).length > 0,
         `${surface} : aucun hook PreToolUse ne lance ${script}.mjs`,
@@ -53,9 +58,9 @@ test('les 3 gardes git sont câblées en PreToolUse sur les DEUX surfaces (pas d
   }
 })
 
-test('chaque garde git couvre TOUS les canaux shell, ctx_shell compris, sur les DEUX surfaces', () => {
+test('chaque garde de commande couvre TOUS les canaux shell, ctx_shell compris, sur les DEUX surfaces', () => {
   for (const surface of SURFACES) {
-    for (const script of GARDES_GIT) {
+    for (const script of GARDES_COMMANDE) {
       for (const matcher of matchersFor(surface, script)) {
         for (const canal of CANAUX_REQUIS) {
           assert.ok(
@@ -71,7 +76,7 @@ test('chaque garde git couvre TOUS les canaux shell, ctx_shell compris, sur les 
 
 test('tout canal listé au matcher est GARDABLE (son tool_input fournit `command`)', () => {
   for (const surface of SURFACES) {
-    for (const script of GARDES_GIT) {
+    for (const script of GARDES_COMMANDE) {
       for (const matcher of matchersFor(surface, script)) {
         for (const canal of matcher.split('|')) {
           assert.ok(
@@ -86,8 +91,8 @@ test('tout canal listé au matcher est GARDABLE (son tool_input fournit `command
   }
 })
 
-test('les matchers des gardes git sont IDENTIQUES entre .claude et .codex (parité agents:check)', () => {
-  for (const script of GARDES_GIT) {
+test('les matchers des gardes sont IDENTIQUES entre .claude et .codex (parité agents:check)', () => {
+  for (const script of [...GARDES_COMMANDE, ...GARDES_ECRITURE]) {
     const [claude, codex] = SURFACES.map((s) => matchersFor(s, script))
     assert.deepEqual(
       codex, claude,
@@ -161,16 +166,17 @@ function decisionOf(script, command) {
   return JSON.parse(run.stdout).hookSpecificOutput.permissionDecision
 }
 
-test('DRIVER : les 3 gardes décident bien sur un payload ctx_shell (câblage de bout en bout)', () => {
+test('DRIVER : les gardes de commande décident bien sur un payload ctx_shell (câblage de bout en bout)', () => {
   // Fermeture d'un ticket sans solde : deny quoi qu'il arrive (`.claude/soldes/999999.md` n'existe
   // pas — et un palier atteint denierait tout autant).
   assert.equal(decisionOf('solde-ticket-guard.mjs', 'git commit -m "feat: x (corrige #999999)"'), 'deny')
   assert.equal(decisionOf('issue-label-guard.mjs', 'gh issue create --title "X" --body "y"'), 'deny')
   assert.equal(decisionOf('git-destructive-guard.mjs', 'git reset --hard origin/main'), 'ask')
+  assert.equal(decisionOf('runner-capture-guard.mjs', 'npx vitest run | tail -20'), 'deny')
 })
 
-test('DRIVER : une commande anodine passe par les 3 gardes sans décision', () => {
-  for (const script of GARDES_GIT) {
+test('DRIVER : une commande anodine passe par toutes les gardes de commande sans décision', () => {
+  for (const script of GARDES_COMMANDE) {
     assert.equal(decisionOf(`${script}.mjs`, 'git status'), null, `${script} bloque un git status`)
   }
 })

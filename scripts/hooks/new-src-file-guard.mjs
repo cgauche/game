@@ -1,11 +1,20 @@
 // Hook PreToolUse — garde anti-réinvention à la création d'un fichier sous `src/`.
 //
-// Deux régimes (#1318 V5, 2026-08-16) :
-//   - `src/ui/**/*.tsx` NEUF (hors `*.test.tsx`) : BLOQUANT. Un composant d'UI est soit une PRIMITIVE
-//     partagée (citée par la table « Primitives partagées » du CLAUDE.md), soit un ÉCRAN/panneau
-//     inscrit au registre `scripts/hooks/ecrans-ui.json`. Ni l'un ni l'autre → sortie non-zéro : la
-//     déclaration se fait AVANT le code, en une ligne de registre.
+// Deux régimes (#1318 V5, 2026-08-16 ; périmètre étendu #1679 L1a) :
+//   - `src/ui/**/*.tsx` ET `src/gameIso/**/*.tsx` NEUFS (hors `*.test.tsx`) : BLOQUANT. Un composant
+//     d'UI ou de rendu est soit une PRIMITIVE partagée (citée par la table « Primitives partagées »
+//     du CLAUDE.md), soit un ÉCRAN/panneau/surcouche inscrit au registre
+//     `scripts/hooks/ecrans-ui.json`. Ni l'un ni l'autre → sortie non-zéro : la déclaration se fait
+//     AVANT le code. (`src/gameIso` porte 32 `.tsx` hors tests, mesurés le 2026-09-02 ; `authoring/`
+//     et `builders/` n'en portent aucun — le périmètre n'a pas d'exception à ménager.)
 //   - tout autre fichier neuf sous `src/` : injection de contexte (rappel anti-réinvention).
+//
+// DEUX FORMES d'entrée au registre, une seule règle :
+//   - chaîne `"src/ui/X.tsx"` = STOCK des écrans déjà en place le 2026-08-16 (207 mesurés) ; elle ne
+//     déclare que ce qui EXISTE déjà dans l'arbre, et ce stock ne croît plus.
+//   - objet `{ "fichier": "src/ui/X.tsx", "maquette": "<où la maquette a été validée>" }` pour tout
+//     fichier NEUF : un écran neuf se dessine et se fait valider EN PRÉSENCE avant d'être codé (E1) —
+//     l'entrée porte donc la trace de cette validation, sans quoi la déclaration est refusée.
 //
 // COUVERTURE RÉELLE (à énoncer, pas à supposer) — la garde ne voit que les outils listés au matcher
 // `PreToolUse` des DEUX surfaces (`.claude/settings.json`, `.codex/hooks.json`) : `Write` et
@@ -39,14 +48,29 @@ export function relPath(fp, repo = REPO) {
   return rel
 }
 
-/** Un composant d'UI soumis au régime bloquant (un harnais `.test.tsx` n'en est pas un). */
+/** Un composant soumis au régime bloquant (un harnais `.test.tsx` n'en est pas un). */
 export function estComposantUI(rel) {
-  return rel.startsWith('src/ui/') && rel.endsWith('.tsx') && !rel.endsWith('.test.tsx')
+  return (rel.startsWith('src/ui/') || rel.startsWith('src/gameIso/')) &&
+    rel.endsWith('.tsx') && !rel.endsWith('.test.tsx')
 }
 
-/** Déclaré = cité par la table des primitives du CLAUDE.md, OU inscrit au registre des écrans. */
-export function estDeclare(rel, claudeMd, registre) {
-  return claudeMd.includes(rel) || (registre.ecrans ?? []).includes(rel)
+/** Chemin porté par une entrée de registre (chaîne du stock, ou objet), en POSIX. Clef NORMALISÉE
+ *  UNE fois : tri, doublon et appariement se font tous sur elle. */
+export const cheminEntree = (e) => String((typeof e === 'string' ? e : e?.fichier) ?? '').replace(/\\/g, '/')
+
+/** Trace de validation de la maquette portée par une entrée (`''` pour le stock en chaîne). */
+export const maquetteEntree = (e) => (typeof e === 'string' ? '' : String(e?.maquette ?? '').trim())
+
+/**
+ * Déclaré = cité par la table des primitives du CLAUDE.md, OU inscrit au registre des écrans. Une
+ * entrée en CHAÎNE ne déclare que ce qui existe DÉJÀ (le stock du 2026-08-16) ; un fichier neuf exige
+ * l'entrée OBJET portant sa `maquette` validée.
+ */
+export function estDeclare(rel, claudeMd, registre, existe = false) {
+  if (claudeMd.includes(rel)) return true
+  const entree = (registre.ecrans ?? []).find((e) => cheminEntree(e) === rel)
+  if (entree === undefined) return false
+  return typeof entree === 'string' ? existe : maquetteEntree(entree) !== ''
 }
 
 /** Corps du refus quand le registre est ILLISIBLE : le geste attendu est de le réparer. */
@@ -66,13 +90,15 @@ export function messageRegistreCasse(rel, cause) {
 
 export function messageRefus(rel) {
   return [
-    `REFUS — composant d'UI NON DÉCLARÉ : ${rel}`,
+    `REFUS — composant NON DÉCLARÉ : ${rel}`,
     '',
-    "Un nouveau .tsx de src/ui se déclare AVANT d'être écrit (#1318 V5) :",
+    "Un nouveau .tsx de src/ui ou src/gameIso se déclare AVANT d'être écrit (#1318 V5) :",
     '  • PRIMITIVE partagée (réutilisable par N écrans) → ajouter sa ligne à la table',
     '    « Primitives partagées » du CLAUDE.md (besoin | primitive | fichier), puis relancer.',
-    `  • ÉCRAN / panneau / modale / champ → ajouter "${rel}" au tableau "ecrans" de`,
-    '    scripts/hooks/ecrans-ui.json (une ligne, ordre alphabétique), puis relancer.',
+    '  • ÉCRAN / panneau / modale / surcouche → maquette validée EN PRÉSENCE (une spec fige le',
+    '    mécanisme, pas le goût), puis inscription au tableau "ecrans" de',
+    `    scripts/hooks/ecrans-ui.json sous la forme { "fichier": "${rel}", "maquette": "<où et`,
+    '    quand la maquette a été validée>" } (ordre alphabétique), puis relancer.',
     '',
     "AVANT d'inscrire : vérifier qu'aucune primitive existante ne couvre le besoin (table du",
     'CLAUDE.md + 2-3 variantes du concept grepées dans src/ui) — la réutiliser ou l\'ÉTENDRE',
@@ -125,7 +151,8 @@ async function main() {
     try {
       const claudeMd = readFileSync(join(REPO, 'CLAUDE.md'), 'utf8')
       const registre = JSON.parse(readFileSync(REGISTRE, 'utf8'))
-      déclaré = estDeclare(rel, claudeMd, registre)
+      // Le fichier n'existe pas (contrôle ci-dessus) : le stock en chaîne ne le déclare donc pas.
+      déclaré = estDeclare(rel, claudeMd, registre, false)
     } catch (e) {
       panne = e.message
     }

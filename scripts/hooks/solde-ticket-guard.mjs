@@ -162,22 +162,29 @@ function tokenizeCommand(command) {
   return tokens
 }
 
-/** Découpe la commande en segments exécutables (aux enchaînements `&&`/`;`/`||`/`|` de premier
- *  niveau — les mêmes marqueurs À L'INTÉRIEUR d'une quote/here-string ont déjà été consommés comme
- *  contenu de token par `tokenizeCommand`, jamais comme séparateur). */
-export function splitCommandSegments(command) {
+/** Segments exécutables AVEC l'opérateur qui les enchaîne (`&&`/`;`/`||`/`|`, `null` pour le
+ *  dernier). Source unique du découpage : `splitCommandSegments` et `pipelinesProfonds` en dérivent,
+ *  le tube n'étant un séparateur QUE pour qui a besoin de le distinguer. */
+function segmentsAvecOperateur(command) {
   const segments = []
   let current = []
   for (const tok of tokenizeCommand(command)) {
     if (tok.op) {
-      segments.push(current)
+      segments.push({ tokens: current, op: tok.op })
       current = []
     } else {
       current.push(tok.text)
     }
   }
-  segments.push(current)
-  return segments.filter((s) => s.length > 0)
+  segments.push({ tokens: current, op: null })
+  return segments
+}
+
+/** Découpe la commande en segments exécutables (aux enchaînements `&&`/`;`/`||`/`|` de premier
+ *  niveau — les mêmes marqueurs À L'INTÉRIEUR d'une quote/here-string ont déjà été consommés comme
+ *  contenu de token par `tokenizeCommand`, jamais comme séparateur). */
+export function splitCommandSegments(command) {
+  return segmentsAvecOperateur(command).map((s) => s.tokens).filter((s) => s.length > 0)
 }
 
 // ── Enrobeurs : voir DERRIÈRE les sous-shells et les préfixes de tête ───────────────────────────
@@ -343,22 +350,38 @@ function epluchageTete(segment) {
 // commande PASSE (borne dite, préférée à une récursion non bornée dans un hook).
 const PROFONDEUR_MAX_ENROBEURS = 4
 
-/** Liste PLATE des segments RÉELLEMENT exécutés par la commande : découpe aux enchaînements
- *  (`splitCommandSegments`), épluchage des enrobeurs de TÊTE, puis récursion sur l'ARGUMENT-CHAÎNE
- *  des interpréteurs (re-tokenisé), jusqu'à `PROFONDEUR_MAX_ENROBEURS` niveaux d'imbrication. Le
- *  segment enrobant est RENDU LUI AUSSI, après ce qu'il contient : `cmd /c mklink …` n'a pas
- *  d'argument-chaîne unique, l'invocation vit sur ses arguments recollés (`git-destructive-guard`). */
-export function segmentsProfonds(command, profondeur = 0) {
-  const segments = []
-  if (!command || profondeur > PROFONDEUR_MAX_ENROBEURS) return segments
-  for (const brut of splitCommandSegments(command)) {
-    const segment = epluchageTete(brut)
-    if (segment.length === 0) continue
-    const inner = argumentChaine(segment)
-    if (inner !== null) segments.push(...segmentsProfonds(inner, profondeur + 1))
-    segments.push(segment)
+/** Liste ordonnée des PIPELINES réellement exécutés : un pipeline = les segments qu'un `|` relie,
+ *  donc ceux dont les sorties/entrées se CHAÎNENT (les enchaînements `&&`/`;`/`||` en ouvrent un
+ *  nouveau). Les enrobeurs de tête sont épluchés, et l'ARGUMENT-CHAÎNE d'un interpréteur est
+ *  re-tokenisé : les pipelines qu'il porte sont rendus À PART (ceux d'un `sh -c "a | b"` ne se
+ *  mêlent pas au pipeline hôte), avant le pipeline enrobant. `segmentsProfonds` en est l'APLATI :
+ *  une garde qui n'a pas besoin du tube ignore ce groupement. */
+export function pipelinesProfonds(command, profondeur = 0) {
+  const pipelines = []
+  if (!command || profondeur > PROFONDEUR_MAX_ENROBEURS) return pipelines
+  let courant = []
+  for (const { tokens, op } of segmentsAvecOperateur(command)) {
+    const segment = epluchageTete(tokens)
+    if (segment.length > 0) {
+      const inner = argumentChaine(segment)
+      if (inner !== null) pipelines.push(...pipelinesProfonds(inner, profondeur + 1))
+      courant.push(segment)
+    }
+    if (op !== '|' && courant.length > 0) {
+      pipelines.push(courant)
+      courant = []
+    }
   }
-  return segments
+  if (courant.length > 0) pipelines.push(courant)
+  return pipelines
+}
+
+/** Liste PLATE des segments RÉELLEMENT exécutés par la commande — l'aplati de `pipelinesProfonds`,
+ *  dans le même ordre (un segment enrobé précède son enrobeur : `cmd /c mklink …` n'a pas
+ *  d'argument-chaîne unique, l'invocation vit sur ses arguments recollés — `git-destructive-guard`).
+ *  `profondeur` = niveau d'imbrication de départ, borné par `PROFONDEUR_MAX_ENROBEURS`. */
+export function segmentsProfonds(command, profondeur = 0) {
+  return pipelinesProfonds(command, profondeur).flat()
 }
 
 const GLOBAL_VALUE_FLAGS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path'])
