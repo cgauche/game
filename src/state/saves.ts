@@ -62,13 +62,20 @@ import type { Scene } from './scene';
 // `state.scene` comprise : une save de 37 rouvrirait sur une scène vivante sans `type`, que le seam
 // `parseProject` refuserait au prochain export/import de son projet. La save se jette
 // (politique 2 ci-dessus).
-// 38 → 39 (#1657 B2a, #1682) : le déclencheur d'escalade PERSISTÉ sur une séquelle
+// 38 → 39 (2026-09-02, #1680 lot 1b) : le VOCABULAIRE des ids de place PERSISTÉ change. Une place de
+// meuble n'est plus nommée par son côté mais par son RANG (`place-nord` → `place-1`, 6 ids de
+// `props.json`) — un id cardinal mentait dès que le repère de la recette bougeait. `snapshotSave`
+// recopie le `state` ENTIER, `state.scene.seatAssignments` comprise, dont les CLÉS sont ces ids
+// (`propId → slotId`). Une save de 38 rouvrirait avec des clés que le catalogue ne connaît plus :
+// `pruneSeatAssignments` (`store.ts:88`) les élague AVANT l'entrée en état, et tous les assis se
+// lèveraient EN SILENCE — aucun message, aucune trace. La save se jette (politique 2 ci-dessus).
+// 39 → 40 (#1657 B2a, #1682) : le déclencheur d'escalade PERSISTÉ sur une séquelle
 // (`Trauma.critTrigger`) change de forme — sa graphie propriétaire `{resist:{difficulty, onFail}}`
-// devient le nœud `test` du Flow (`noeudTest`), la forme UNIQUE du jet en donnée. Une save de 38
+// devient le nœud `test` du Flow (`noeudTest`), la forme UNIQUE du jet en donnée. Une save de 39
 // rouvrirait avec une Commotion cérébrale dont `test` est `undefined` : `fireCritTriggers` lirait
 // `trig.test.test.difficulty` sur rien et le critique suivant crasherait. La save se jette
 // (politique 2 ci-dessus).
-export const SAVE_VERSION = 39;
+export const SAVE_VERSION = 40;
 
 export interface SaveMeta {
   version: number;

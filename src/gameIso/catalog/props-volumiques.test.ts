@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { propSvg } from './decor';
 import { scenarioEntities } from '../../scenes/opera/furnished';
 import { findPropById, props } from '../../data';
-import { aretesNonAppariees, propFootOf, REF_DECOR_DEFAUT, type PropPrimitive } from '../../data/props.types';
+import { aretesNonAppariees, CAP_IDENTITE_PROP, propFootOf, REF_DECOR_DEFAUT, type PropPrimitive } from '../../data/props.types';
 import { decorFootGeometry } from '../../state/footprint';
 import { buildProps } from '../builders/props';
 import { buildPropVolumes } from '../builders/propVolumes';
@@ -118,19 +118,19 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
    */
   it('la table ronde offre quatre places, la table murale deux', () => {
     expect(findPropById('table-ronde-4-tabourets')!.seatSlots).toEqual([
-      { id: 'place-nord', anchor: { x: 0, y: -0.48, h: 0.46 }, facing: 'S', approach: { x: 0, y: -1 } },
-      { id: 'place-est', anchor: { x: 0.48, y: 0, h: 0.46 }, facing: 'O', approach: { x: 1, y: 0 } },
-      { id: 'place-sud', anchor: { x: 0, y: 0.48, h: 0.46 }, facing: 'N', approach: { x: 0, y: 1 } },
-      { id: 'place-ouest', anchor: { x: -0.48, y: 0, h: 0.46 }, facing: 'E', approach: { x: -1, y: 0 } },
+      { id: 'place-1', anchor: { x: 0, y: 0.48, h: 0.46 }, facing: 'N', approach: { x: 0, y: 1 } },
+      { id: 'place-2', anchor: { x: -0.48, y: 0, h: 0.46 }, facing: 'E', approach: { x: -1, y: 0 } },
+      { id: 'place-3', anchor: { x: 0, y: -0.48, h: 0.46 }, facing: 'S', approach: { x: 0, y: -1 } },
+      { id: 'place-4', anchor: { x: 0.48, y: 0, h: 0.46 }, facing: 'O', approach: { x: 1, y: 0 } },
     ]);
-    expect(findPropById('table-murale-2-tabourets')!.seatSlots?.map((s) => s.id)).toEqual(['place-gauche', 'place-droite']);
+    expect(findPropById('table-murale-2-tabourets')!.seatSlots?.map((s) => s.id)).toEqual(['place-1', 'place-2']);
   });
 
   /** Ancres FIGÉES de la table murale : la sonde d'implantation de la salle les attend au millimètre. */
-  it('la table murale porte ses deux ancres canoniques, caps N et approches en diagonale', () => {
+  it('la table murale porte ses deux ancres canoniques, caps S et approches en diagonale', () => {
     expect(findPropById('table-murale-2-tabourets')!.seatSlots).toEqual([
-      { id: 'place-gauche', anchor: { x: -0.32, y: 0.2, h: 0.46 }, facing: 'N', approach: { x: -1, y: 1 } },
-      { id: 'place-droite', anchor: { x: 0.32, y: 0.2, h: 0.46 }, facing: 'N', approach: { x: 1, y: 1 } },
+      { id: 'place-1', anchor: { x: 0.32, y: -0.2, h: 0.46 }, facing: 'S', approach: { x: 1, y: -1 } },
+      { id: 'place-2', anchor: { x: -0.32, y: -0.2, h: 0.46 }, facing: 'S', approach: { x: -1, y: -1 } },
     ]);
   });
 
@@ -156,7 +156,9 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
   });
 
   it.each(propsAvecPlaces.map((p) => p.id))('%s : chaque ancre est à portée du plan de travail', (id) => {
-    const scene = sceneWith(propEntity({ id: 'e-1', ref: id, pos: { x: 3, y: 4 }, facing: 'N' }));
+    // Au CAP D'IDENTITÉ, et à lui seul, l'ancre AUTHORÉE d'une place et la géométrie monde sont dans
+    // le même repère : c'est ce qui rend la comparaison ci-dessous licite sans re-tourner l'ancre.
+    const scene = sceneWith(propEntity({ id: 'e-1', ref: id, pos: { x: 3, y: 4 }, facing: CAP_IDENTITE_PROP }));
     const el = buildProps(scene)[0] as { faces: { poly: { x: number; y: number; h: number }[] }[] };
     for (const slot of findPropById(id)!.seatSlots!) {
       const ancre = { x: 3 + slot.anchor.x, y: 4 + slot.anchor.y };
@@ -351,7 +353,7 @@ describe('décor volumique — chaque face regarde le DEHORS, de la recette au m
     const ancre = { x: 0, y: 0 };
     const àRebours: string[] = [];
     prop.volume!.primitives.forEach((primitive, ip) => {
-      const faces = buildPropVolumes({ ...prop, volume: { primitives: [primitive] } }, { ancre, facing: 'N', baseHeightM: 0 });
+      const faces = buildPropVolumes({ ...prop, volume: { ...prop.volume!, primitives: [primitive] } }, { ancre, facing: 'N', baseHeightM: 0 });
       // Le DEDANS de référence est le barycentre des sommets de la primitive : un point strictement
       // intérieur pour une boîte comme pour un coin de prisme, que le sens de parcours n'influence pas.
       const centre = centroide(faces.flatMap((f) => facePoly(f, METRES_PAR_CASE)));
@@ -378,7 +380,7 @@ describe('décor volumique — chaque face regarde le DEHORS, de la recette au m
     const prop = findPropById(id)!;
     const défauts: string[] = [];
     prop.volume!.primitives.forEach((primitive, ip) => {
-      const faces = buildPropVolumes({ ...prop, volume: { primitives: [primitive] } }, { ancre: { x: 3, y: 4 }, facing: 'E', baseHeightM: 1.5 });
+      const faces = buildPropVolumes({ ...prop, volume: { ...prop.volume!, primitives: [primitive] } }, { ancre: { x: 3, y: 4 }, facing: 'E', baseHeightM: 1.5 });
       for (const { arete, sens, contreSens } of aretesNonAppariees(faces.map((f) => f.poly)))
         défauts.push(`primitive ${ip} (${primitive.kind}, ${primitive.material}) : arête ${arete} — ${sens} dans le sens, ${contreSens} à contre-sens`);
     });
@@ -396,7 +398,7 @@ describe('décor volumique — chaque face regarde le DEHORS, de la recette au m
     const surLArete: string[] = [];
     prop.volume!.primitives.forEach((primitive, ip) => {
       if (primitive.kind !== 'cylinder') return;
-      const faces = buildPropVolumes({ ...prop, volume: { primitives: [primitive] } }, { ancre: { x: 0, y: 0 }, facing: 'N', baseHeightM: 0 });
+      const faces = buildPropVolumes({ ...prop, volume: { ...prop.volume!, primitives: [primitive] } }, { ancre: { x: 0, y: 0 }, facing: 'N', baseHeightM: 0 });
       faces.forEach((face, k) => {
         const n = polyNormal(facePoly(face, METRES_PAR_CASE))!;
         if (Math.abs(n.y) > 1e-6) return; // dessus / dessous : pas une face latérale

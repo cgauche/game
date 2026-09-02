@@ -28,6 +28,7 @@ import { rollSeamExcluded } from '../guards/lib/rollSeamWhitelist.mjs';
 import { scanBattleRngEngineLeak } from '../guards/lib/battleRngEngineLeak.mjs';
 import { battleRngEngineLeakExcluded } from '../guards/lib/battleRngEngineLeakWhitelist.mjs';
 import { scanNpmLockHoisted } from '../guards/lib/npmLockHoisted.mjs';
+import { scanArbresImbriques } from '../guards/lib/arbreImbrique.mjs';
 
 // Deux racines DISTINCTES, jamais interchangeables. `core.hooksPath` vaut `scripts/git-hooks` RELATIF
 // (`git config --show-origin --get-all core.hooksPath` → `.git/config`, valeur relative), donc le
@@ -73,6 +74,8 @@ const staged = argFiles.length
       .split('\n').filter(Boolean);
 
 const offenders = [];
+// #1679 L1c — le contenu d'un arbre de travail imbriqué n'appartient pas à un commit du dépôt hôte.
+for (const x of scanArbresImbriques(staged, { racine: ROOT })) offenders.push(x.detail);
 // Signaux non bloquants, en OBJETS `{ file, line, detail }` : ils passent par la baseline
 // nominative (`decisions-baseline.json`) avant impression, qui les range en NOUVEAU / BASELINE.
 const warnings = [];

@@ -34,7 +34,7 @@ import {
   cheminsGlobSuspects,
 } from './partition.mjs'
 import { refusOutillageLocal } from '../outillage-local.mjs'
-import { prendreVerrou } from './verrou.mjs'
+import { prendreVerrou, verrouRequis } from './verrou.mjs'
 
 const RACINE = fileURLToPath(new URL('../..', import.meta.url))
 const VITEST = path.join(RACINE, 'node_modules/vitest/vitest.mjs')
@@ -89,8 +89,16 @@ const DEBUT = Date.now()
 const ARGV = process.argv.slice(2)
 const { filtres, mono } = separerArguments(ARGV, (t) => fs.existsSync(path.resolve(RACINE, t)))
 // Verrou de SUITE à l'échelle machine (#1679 L1c-M7) : deux suites COMPLÈTES concurrentes se volent
-// cœurs et mémoire. Un run FILTRÉ (fichiers nommés) reste libre — il est court et ne sature rien.
-const verrou = filtres.length
+// cœurs et mémoire. Un run FILTRÉ reste libre — il est court et ne sature rien — à condition que
+// CHAQUE filtre nomme un FICHIER : un filtre-DOSSIER (`npm test src`) est une suite déguisée.
+const estFichier = (t) => {
+  try {
+    return fs.statSync(path.resolve(RACINE, t)).isFile()
+  } catch {
+    return false
+  }
+}
+const verrou = !verrouRequis(filtres, estFichier)
   ? { etat: 'ignore' }
   : prendreVerrou({
       commande: [process.execPath, ...process.argv.slice(1)].join(' '),

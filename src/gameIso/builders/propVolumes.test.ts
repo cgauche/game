@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DIR4_ORDER, type Dir4, type Dir8 } from '../../state/dir8';
+import { findPropById } from '../../data';
 import { capVolumique, type PropData } from '../../data/props.types';
 import { polyNormal } from '../backends/webgl/worldTris';
 import { buildPropVolumes, type AncrageVolume } from './propVolumes';
@@ -17,6 +18,7 @@ const PROP_TROIS_PRIMITIVES: PropData = {
   label: 'Banc d’épreuve',
   solid: true,
   volume: {
+    capIdentite: 'S',
     primitives: [
       { kind: 'box', center: { x: 0, y: 0, h: 0.45 }, size: { x: 0.8, y: 0.4, h: 0.1 }, material: 'bois-chene' },
       { kind: 'cylinder', center: { x: 0.2, y: 0, h: 0.2 }, radius: 0.06, heightM: 0.4, sides: 8, material: 'fer-noirci' },
@@ -89,12 +91,12 @@ describe('buildPropVolumes — la recette locale devient de la géométrie monde
   });
 
   /**
-   * CAP D'IDENTITÉ (contrat de donnée, `data/props.types.ts`) : une recette s'authore FACE AU NORD, et
-   * `N` est le seul cap qui la rende telle qu'écrite. Le piège que ce test matérialise : une entité
-   * SANS `facing` vaut `S` — un DEMI-TOUR — donc un meuble à dos posé sans cap explicite montre son dos
-   * là où l'auteur a dessiné sa face.
+   * CAP D'IDENTITÉ (contrat de donnée, `data/props.types.ts`) : une recette s'authore au cap `S`
+   * (`CAP_IDENTITE_PROP`), qui est AUSSI le défaut du monde — une instance SANS `facing` rend donc la
+   * géométrie AUTHORÉE, non tournée. C'est tout le contrat de #1680 ligne 16 : ce que l'auteur écrit
+   * est ce que la scène montre, sans demi-tour à tenir de tête.
    */
-  it('le cap `N` est l’identité de rotation ; l’absence de cap vaut `S`, soit un DEMI-TOUR', () => {
+  it('le cap `S` est l’identité de rotation ; SANS cap, la géométrie sort telle qu’AUTHORÉE', () => {
     /** L'emprise en x/y d'un matériau, RAMENÉE au repère local de la case d'ancrage. */
     const emprise = (facing: Dir8 | undefined, material: string) => {
       const pts = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ id: 'meuble', ancre: { x: 4, y: 6 }, ...(facing ? { facing } : {}) }))
@@ -105,15 +107,39 @@ describe('buildPropVolumes — la recette locale devient de la géométrie monde
         y: [r3(Math.min(...pts.map((p) => p.y))), r3(Math.max(...pts.map((p) => p.y)))],
       };
     };
-    // Au cap `N`, chaque primitive occupe EXACTEMENT l'emprise que la recette déclare (centre ± demi-
+    // Au cap `S`, chaque primitive occupe EXACTEMENT l'emprise que la recette déclare (centre ± demi-
     // dimension, centre ± rayon) : aucune rotation ne s'est appliquée.
-    expect(emprise('N', 'bois-chene')).toEqual({ x: [-0.4, 0.4], y: [-0.2, 0.2] }); // box (0,0) × (0.8, 0.4)
-    expect(emprise('N', 'fer-noirci')).toEqual({ x: [0.14, 0.26], y: [-0.06, 0.06] }); // cyl (0.2, 0) r 0.06
-    expect(emprise('N', 'pierre-atre')).toEqual({ x: [-0.35, -0.05], y: [0, 0.2] }); // prism (−0.2, 0.1) × (0.3, 0.2)
-    // …et l'ABSENCE de cap vaut `S` : un DEMI-TOUR, pas l'identité. Le pied change de bord.
+    expect(emprise('S', 'bois-chene')).toEqual({ x: [-0.4, 0.4], y: [-0.2, 0.2] }); // box (0,0) × (0.8, 0.4)
+    expect(emprise('S', 'fer-noirci')).toEqual({ x: [0.14, 0.26], y: [-0.06, 0.06] }); // cyl (0.2, 0) r 0.06
+    expect(emprise('S', 'pierre-atre')).toEqual({ x: [-0.35, -0.05], y: [0, 0.2] }); // prism (−0.2, 0.1) × (0.3, 0.2)
+    // …et l'ABSENCE de cap vaut `S` : la MÊME emprise, à l'identique — c'est l'invariant du lot.
+    expect(emprise(undefined, 'bois-chene')).toEqual(emprise('S', 'bois-chene'));
     expect(emprise(undefined, 'fer-noirci')).toEqual(emprise('S', 'fer-noirci'));
-    expect(emprise(undefined, 'fer-noirci')).toEqual({ x: [-0.26, -0.14], y: [-0.06, 0.06] });
-    expect(emprise(undefined, 'pierre-atre')).toEqual({ x: [0.05, 0.35], y: [-0.2, 0] });
+    expect(emprise(undefined, 'pierre-atre')).toEqual(emprise('S', 'pierre-atre'));
+    // Le cap `N` est désormais le DEMI-TOUR : le pied et le rampant changent de bord.
+    expect(emprise('N', 'fer-noirci')).toEqual({ x: [-0.26, -0.14], y: [-0.06, 0.06] });
+    expect(emprise('N', 'pierre-atre')).toEqual({ x: [0.05, 0.35], y: [-0.2, 0] });
+  });
+
+  /**
+   * LE CONTRAT SUR UNE RECETTE RÉELLE ET ASYMÉTRIQUE — le `coffre` du catalogue, dont la SERRURE est
+   * la seule primitive de `laiton-dore` et n'est centrée sur aucun axe. Sans cap, le monde la pose
+   * exactement là où la donnée l'écrit : c'est la formulation mesurable de « une recette s'authore
+   * telle qu'elle se voit ». Une recette restée sous l'ancien repère la poserait à l'opposé.
+   */
+  it('coffre : SANS cap, la serrure sort du côté que la DONNÉE déclare', () => {
+    const coffre = findPropById('coffre')!;
+    const serrure = coffre.volume!.primitives.find((p) => p.material === 'laiton-dore')!;
+    const faces = buildPropVolumes(coffre, ancrageDe({ id: 'coffre-1', ancre: { x: 5, y: 7 } }))
+      .filter((f) => f.material.id === 'laiton-dore');
+    expect(faces.length).toBeGreaterThan(0);
+    const pts = faces.flatMap((f) => f.poly);
+    const centre = {
+      x: r3((Math.min(...pts.map((p) => p.x)) + Math.max(...pts.map((p) => p.x))) / 2 - 5),
+      y: r3((Math.min(...pts.map((p) => p.y)) + Math.max(...pts.map((p) => p.y))) / 2 - 7),
+    };
+    expect(centre).toEqual({ x: r3(serrure.center.x), y: r3(serrure.center.y) });
+    expect(Math.sign(centre.y), 'la serrure n’est pas sur l’axe : le côté est mesurable').not.toBe(0);
   });
 
   /**

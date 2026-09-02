@@ -31,5 +31,5 @@ inventaire nominatif par concept, décrue partagée avec les vagues de résorpti
 juge → seulement alors #1388. Dettes d'outillage hors DoD (#1640-#1656) restent sériées après.
 
 Liens : [[project-1467-l1b-livre]] (carnet de dépilage), [[game-train-chirurgical-portes-sur-l-index]]
-(5 occurrences, règle suite complète), [[env-cache-vite-partage-worktree-faux-rouges]],
+(5 occurrences, règle suite complète), [[feedback-attribution-rouge-suite-sonde-arbre-committe]],
 [[feedback-pilotage-epic-commentaire-github]].

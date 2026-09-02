@@ -10,12 +10,14 @@ metadata:
 Plomberie éprouvée le 2026-07-16 (vague masse-de-tickets) quand l'arbre principal porte du WIP
 d'autres sessions (rebase impossible, stash interdit sur le travail d'autrui) :
 
-- **Rebase/push** : `git worktree add --detach <chemin-court> HEAD` (⚠ BUG git sur les chemins
-  scratchpad très longs : « How come '' becomes empty after sanitization » — utiliser un sibling
-  court type `../game-rebase-wt`), rebaser LÀ, `git push origin HEAD:main`, `git worktree remove`.
-  Les scripts `scripts/raw/*.mjs` tournent en node nu dans le worktree (pas de node_modules) ;
-  vitest/tsc NON (déps absentes — jamais junctionner node_modules,
-  [[game-worktree-node-modules-junction-hazard]]).
+- **Rebase/push** : `git worktree add --detach <chemin> HEAD` (⚠ BUG git sur les chemins
+  scratchpad très longs : « How come '' becomes empty after sanitization »), rebaser LÀ,
+  `git push origin HEAD:main`, `git worktree remove`. **Convention de chemin (#1679 L1c, 2026-09-02) :
+  un worktree de lot vit À LA RACINE du dépôt sous `.wt-<ticket>-L<n>` (gitignoré par `/.wt-*/`,
+  et le pre-commit refuse tout worktree/clone imbriqué stagé quel que soit son nom) ; puis `npm ci`
+  DEDANS.** Les scripts `scripts/raw/*.mjs` tournent en node nu (pas de node_modules) ;
+  vitest/tsc sont REFUSÉS nommément sans `node_modules` local (`scripts/outillage-local.mjs`) —
+  jamais junctionner node_modules ([[game-worktree-node-modules-junction-hazard]], refus mécanique).
 - **Build/deploy/tests sur état distant** : `git clone --no-checkout . <sibling>` + checkout SHA +
   `npm ci` (~2 min). ⚠ PIÈGE VÉCU : le clone a **origin = le repo LOCAL** — `git pull --rebase
   origin main` y tire la vieille ligne locale divergente (conflits absurdes sur les commits

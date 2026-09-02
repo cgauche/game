@@ -23,7 +23,7 @@ import type { Combatant } from '../engine/types';
 const TABLE = 'table-ronde-4-tabourets';
 const PROP = 'table-1';
 /** Les places de la table, dans l'ordre du catalogue : une par rang, pour lire le résultat d'un œil. */
-const SLOT_DU_RANG = ['place-nord', 'place-est', 'place-sud', 'place-ouest'];
+const SLOT_DU_RANG = ['place-1', 'place-2', 'place-3', 'place-4'];
 
 const hero = (id: string): Combatant =>
   ({ id, label: id.toUpperCase(), kind: 'hero', xp: 0, wounds: { current: 12, max: 12 }, conditions: [], movement: 4 }) as unknown as Combatant;
@@ -67,7 +67,7 @@ describe('recomposition du groupe — l’emplacement dont le corps change se l�
 
   it('PERMUTER l’ordre du groupe lève la chaise : elle ne se transmet pas au corps suivant', () => {
     attable([1], [hero('h1'), hero('h2')]);
-    expect(poseDe(1)).toMatchObject({ slotId: 'place-nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'place-1' });
     // Écriture BRUTE : cet appelant ne connaît pas la couture, et n'a pas à la connaître.
     useGame.setState((s) => ({ party: [s.party[1], s.party[0]] }));
     expect(poseDe(1)).toBeNull();
@@ -76,8 +76,8 @@ describe('recomposition du groupe — l’emplacement dont le corps change se l�
 
   it('RETIRER le premier héros lève les rangs qui glissent, et EUX SEULS', () => {
     attable([2, 3], [hero('h1'), hero('h2'), hero('h3')]);
-    expect(poseDe(2)).toMatchObject({ slotId: 'place-est' });
-    expect(poseDe(3)).toMatchObject({ slotId: 'place-sud' });
+    expect(poseDe(2)).toMatchObject({ slotId: 'place-2' });
+    expect(poseDe(3)).toMatchObject({ slotId: 'place-3' });
     useGame.getState().partyRemoveHero('h1');
     // h2 et h3 ont glissé d'un cran : « Héros 2 » désigne un AUTRE corps, « Héros 3 » plus personne.
     expect(useGame.getState().party.map((h) => h.id)).toEqual(['h2', 'h3']);
@@ -90,14 +90,14 @@ describe('recomposition du groupe — l’emplacement dont le corps change se l�
     useGame.getState().partyReplaceHero('h2', hero('neuf'));
     expect(useGame.getState().party.map((h) => h.id)).toEqual(['h1', 'neuf', 'h3']);
     expect(poseDe(2)).toBeNull();
-    expect(poseDe(3)).toMatchObject({ slotId: 'place-sud' }); // son corps n'a pas bougé : il garde sa chaise
+    expect(poseDe(3)).toMatchObject({ slotId: 'place-3' }); // son corps n'a pas bougé : il garde sa chaise
   });
 
   it('un remplacement À MÊME ID (édition en place) ne lève personne, et n’écrit pas la scène', () => {
     attable([1], [hero('h1')]);
     const avant = useGame.getState().scene!;
     useGame.getState().partyReplaceHero('h1', { ...hero('h1'), label: 'Retouché' } as Combatant);
-    expect(poseDe(1)).toMatchObject({ slotId: 'place-nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'place-1' });
     expect(useGame.getState().scene).toBe(avant); // aucune écriture inutile
   });
 
@@ -128,17 +128,17 @@ describe('recomposition du groupe — l’emplacement dont le corps change se l�
     expect(useGame.getState().saveGame(1)).toBe(true);
 
     attable([1], [hero('h9')]);           // une AUTRE partie, même scène, même place, autre corps
-    expect(poseDe(1)).toMatchObject({ slotId: 'place-nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'place-1' });
     expect(useGame.getState().loadGame(1)).toBe(true);
     expect(useGame.getState().party.map((h) => h.id)).toEqual(['h1']);
-    expect(poseDe(1)).toMatchObject({ slotId: 'place-nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'place-1' });
   });
 
   it('RECRUTER un héros au rang suivant ne touche à rien de ce qui est assis', () => {
     attable([1], [hero('h1')]);
     useGame.getState().partyAddHero(hero('h2'));
     expect(useGame.getState().party.map((h) => h.id)).toEqual(['h1', 'h2']);
-    expect(poseDe(1)).toMatchObject({ slotId: 'place-nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'place-1' });
   });
 
   it('CHARGEMENT d’une save dont le groupe n’atteint pas le rang assis : élagage SILENCIEUX', () => {

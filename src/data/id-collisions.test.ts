@@ -41,7 +41,13 @@
  *           « Décor : routé par la NATURE… ») donc SANS DANGER, mais actée : chaise (chaise de meuble vs
  *           chaise à porteurs EDOC 07 l.192), charrette, barque.
  *       • décor↔trapping : un DÉCOR homonyme d'une POSSESSION ordinaire (le sac PORTE l'objet, la scène
- *           POSE le décor — deux entités, même mot) — rocher, tonneau, marmite, tente.
+ *           POSE le décor — deux entités, même mot) — rocher, tonneau, marmite, tente, bourse (la
+ *           Bourse de sac, LDB folio 301, vs la bourse POSÉE au sol — #1680 ligne 14).
+ *       • décor↔qualité : siege — la qualité d'arme « Siège » (ADE II folio 89) vs le FAUTEUIL d'opéra
+ *           (`src/gameIso/catalog/decor/defs/siege.ts`, #1680 ligne 14). Même patron que `belier`,
+ *           déjà listé : le vocabulaire de siège (au sens militaire) et le mobilier partagent le mot.
+ *       • décor↔trait : toile — le Trait de créature « Toile » (LDB folio 343, pose l'État Empêtré)
+ *           vs la TOILE d'araignée posée en décor (#1680 ligne 14) : le trait la TISSE, le décor la montre.
  */
 import { describe, it, expect } from 'vitest';
 import { traits, talents, qualities, maneuvers, spells, trappings, skills, creatures, props, vehicles } from './index';
@@ -50,13 +56,13 @@ const CATEGORIES: Record<string, { id: string }[]> = { traits, talents, qualitie
 
 /** Ensemble VOULU des ids partagés entre ≥ 2 catalogues (cf. familles documentées ci-dessus). */
 const KNOWN_CROSS = [
-  'arme', 'barque', 'belier', 'beni', 'bouclier', 'broyeur-d-os', 'carreau', 'chaise', 'charrette',
+  'arme', 'barque', 'belier', 'beni', 'bouclier', 'bourse', 'broyeur-d-os', 'carreau', 'chaise', 'charrette',
   'cornes', 'effrayant', 'etreinte-glaciale',
   'filet', 'flechette', 'frenesie', 'frisson-paralysant', 'haine', 'hurlement-de-la-bete-indomptable',
   'hurlement-fantomatique', 'infecte', 'langue-prehensile', 'magique', 'marmite', 'maudit', 'mauvais-oeil',
   'morsure', 'nuee', 'ogre', 'perturbant', 'pistolet', 'poudre-impregnee-d-aqshy',
   'poulet', 'protection', 'rapide', 'regard-petrifiant', 'regeneration', 'resistance', 'resistance-a-la-magie',
-  'rocher', 'sang-corrosif', 'silence', 'singe', 'souffle', 'taille', 'tente', 'tentacules', 'tonneau', 'vers',
+  'rocher', 'sang-corrosif', 'siege', 'silence', 'singe', 'souffle', 'taille', 'tente', 'tentacules', 'toile', 'tonneau', 'vers',
   'vision-nocturne', 'vol', 'vomissement',
 ].sort();
 

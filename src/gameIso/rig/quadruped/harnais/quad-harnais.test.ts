@@ -15,7 +15,7 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { QUAD_HARNAIS, quadHarnaisDeco, harnaisOptions } from './index';
@@ -85,9 +85,16 @@ describe('registre des sets d\'équipement quadrupèdes : étanchéité', () => 
 // ── pipeline d'atelier : dessin de set → compilé, sous la porte `--check` ─────────────────────
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../..');
 const SET = 'set-factice-l1';
-// `tsx` se résout par la remontée de Node depuis CE fichier (#1679 L1c-M3), par le sous-chemin
-// EXPORTÉ `tsx/cli` — jamais par un chemin `node_modules/` collé à la racine de l'arbre.
-const TSX = createRequire(import.meta.url).resolve('tsx/cli');
+// `tsx` se résout par le sous-chemin EXPORTÉ `tsx/cli` — jamais par un chemin `node_modules/` collé
+// à la racine de l'arbre. Cette résolution REMONTE les dossiers parents (#1679 L1c-M3) : hors du
+// chemin `npm test`, qui refuse en amont un outillage non local, elle servirait le tsx d'un AUTRE
+// arbre. Un chemin résolu hors de ROOT est donc refusé ici, en le nommant.
+const TSX = (() => {
+  const resolu = createRequire(import.meta.url).resolve('tsx/cli');
+  if (!resolve(resolu).startsWith(resolve(ROOT) + sep))
+    throw new Error(`tsx résolu hors de cet arbre : ${resolu} — node_modules local absent`);
+  return resolu;
+})();
 
 /**
  * Le pipeline tourne dans un BAC À SABLE hors de l'arbre (`QUAD_RIG_RACINE`, cf.

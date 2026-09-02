@@ -51,7 +51,7 @@ describe('interactEntity sur un meuble à places — bascule s’asseoir / se re
 
   it('assoit puis relève party[0] par le même interactEntity', () => {
     useGame.getState().interactEntity(PROP);
-    expect(poseDuMeneur()).toMatchObject({ propId: PROP, slotId: 'place-nord' });
+    expect(poseDuMeneur()).toMatchObject({ propId: PROP, slotId: 'place-1' });
     expect(dernierJournal()).toContain('Vous prenez place');
 
     useGame.getState().interactEntity(PROP);
@@ -78,7 +78,7 @@ describe('interactEntity sur un meuble à places — bascule s’asseoir / se re
 
   it('toutes les places prises → refus explicite, aucune écriture', () => {
     const pris = (id: string): SeatOccupant => ({ kind: 'entity', entityId: id });
-    poser(ABORD_NORD, { [PROP]: { 'place-nord': pris('pnj-1'), 'place-est': pris('pnj-2'), 'place-sud': pris('pnj-3'), 'place-ouest': pris('pnj-4') } });
+    poser(ABORD_NORD, { [PROP]: { 'place-1': pris('pnj-1'), 'place-2': pris('pnj-2'), 'place-3': pris('pnj-3'), 'place-4': pris('pnj-4') } });
     const avant = useGame.getState().scene!;
     useGame.getState().interactEntity(PROP);
     expect(poseDuMeneur()).toBeNull();
@@ -88,7 +88,7 @@ describe('interactEntity sur un meuble à places — bascule s’asseoir / se re
 
   it('un seul gagnant sur la DERNIÈRE place : celle que tient déjà un corps ne se redonne pas', () => {
     // « nord » (le seul abord sous les pieds du groupe) est déjà tenu par un PNJ.
-    poser(ABORD_NORD, { [PROP]: { 'place-nord': { kind: 'entity', entityId: 'pnj-1' } } });
+    poser(ABORD_NORD, { [PROP]: { 'place-1': { kind: 'entity', entityId: 'pnj-1' } } });
     useGame.getState().interactEntity(PROP);
     expect(poseDuMeneur()).toBeNull();
     const sc = useGame.getState().scene!;
@@ -134,13 +134,13 @@ describe('meuble à places ET fouillable — les deux affordances restent atteig
     expect(poseDuMeneur(), 'la fouille ne fait pas asseoir').toBeNull();
 
     useGame.getState().interactEntity(PROP); // fouille épuisée → la place prend le relais
-    expect(poseDuMeneur()).toMatchObject({ slotId: 'place-nord' });
+    expect(poseDuMeneur()).toMatchObject({ slotId: 'place-1' });
     expect(dernierJournal()).toContain('Vous prenez place');
   });
 
   it('TABLE PLEINE : la fouille reste atteignable (elle n’est jamais avalée par l’assise)', () => {
     const pris = (id: string): SeatOccupant => ({ kind: 'entity', entityId: id });
-    posrFouillable(ABORD_NORD, { [PROP]: { 'place-nord': pris('a'), 'place-est': pris('b'), 'place-sud': pris('c'), 'place-ouest': pris('d') } });
+    posrFouillable(ABORD_NORD, { [PROP]: { 'place-1': pris('a'), 'place-2': pris('b'), 'place-3': pris('c'), 'place-4': pris('d') } });
     useGame.getState().interactEntity(PROP);
     expect(journalEntier()).toContain('Vous fouillez');
     // …et une fois épuisée, le meuble dit la seule chose qui reste vraie.
@@ -217,7 +217,7 @@ describe('marcher, c’est se lever — et le déplacement-puis-assise arrive su
 
     useGame.getState().moveParty(ABORD_NORD); // sur l'abord → assise automatique
     expect(useGame.getState().pendingInteract).toBeNull();
-    expect(poseDuMeneur()).toMatchObject({ slotId: 'place-nord' });
+    expect(poseDuMeneur()).toMatchObject({ slotId: 'place-1' });
   });
 
   /**
@@ -238,7 +238,7 @@ describe('marcher, c’est se lever — et le déplacement-puis-assise arrive su
     expect(journalEntier(), 'aucun refus d’assise en passant').not.toContain('Vous devez rejoindre la place');
 
     useGame.getState().moveParty(ABORD_NORD);
-    expect(poseDuMeneur(), 'un seul geste : le meneur est assis à l’arrivée').toMatchObject({ slotId: 'place-nord' });
+    expect(poseDuMeneur(), 'un seul geste : le meneur est assis à l’arrivée').toMatchObject({ slotId: 'place-1' });
   });
 
   it('les 4 abords de la table mènent chacun à LEUR place', () => {

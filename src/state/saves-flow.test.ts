@@ -18,6 +18,9 @@ import { stampCriticalEscalation } from '../engine/trauma';
 import { CRITIQUE_DOCS } from '../data/criticals';
 import type { Combatant, Trauma } from '../engine/types';
 import { testScene } from '../scenes/test-fixture';
+import { emptyScene } from './scene';
+import { pruneSeatAssignments } from './seating';
+import { findPropById } from '../data/index';
 
 /** Porteur minimal du motif de bump 38 → 39 : `stampCriticalEscalation` ne lit que ses séquelles. */
 const hero38 = (): Combatant => ({ id: 'h', label: 'H', kind: 'hero', conditions: [], skills: [], traumas: [] } as unknown as Combatant);
@@ -156,13 +159,37 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(testScene.type, 'une scène du dépôt s’annonce').toBe('scene');
     expect((data.scene as { type?: string }).type, 'la scène persistée doit porter son `type`').toBe('scene');
   });
-  it('MESURE du motif de bump 38 → 39 (#1657 B2a) : le `critTrigger` persisté porte le nœud `test`', () => {
+  it('MESURE du motif de bump 38 → 39 (#1680) : le vocabulaire des ids de PLACE persisté change', () => {
+    // `state.scene.seatAssignments` est keyée `propId → slotId` et voyage ENTIÈRE dans la save. Les
+    // ids de place ne portent plus un côté mais un RANG : une save de 38 rouvrirait avec des clés
+    // que le catalogue ne connaît plus, et `pruneSeatAssignments` les élaguerait SANS un mot — les
+    // assis se relèvent en silence. C'est la VERSION qui doit l'arrêter, pas l'élagage.
+    expect(SAVE_VERSION, 'le bump 38 → 39 de #1680 est acquis (les bumps suivants s’y ajoutent)').toBeGreaterThanOrEqual(39);
+    expect(parseSave({ ...cur, version: 38 }), 'une save de 38 ne se charge plus').toBeNull();
+    // Le catalogue ne connaît QUE des rangs — la source du vocabulaire.
+    const places = findPropById('table-ronde-4-tabourets')!.seatSlots!.map((s) => s.id);
+    expect(places).toEqual(['place-1', 'place-2', 'place-3', 'place-4']);
+
+    // LE DÉFAUT, mesuré sur le chemin réel : ce que ferait le chargement si la version laissait passer.
+    const scene = emptyScene(12, 12);
+    scene.entities = [
+      { id: 'table-1', kind: 'prop', ref: 'table-ronde-4-tabourets', pos: { x: 5, y: 5 } },
+      { id: 'pnj-1', kind: 'personnage', pos: { x: 5, y: 6 } },
+    ] as typeof scene.entities;
+    const ancien = { 'table-1': { 'place-nord': { kind: 'entity' as const, entityId: 'pnj-1' } } };
+    expect(pruneSeatAssignments({ ...scene, seatAssignments: ancien }, 4), 'l’élagage est MUET').toEqual({});
+    // La MÊME assise, dite au vocabulaire courant, SURVIT : c'est bien l'id, et rien d'autre, qui
+    // décide — sans cette moitié, le contrat ci-dessus passerait aussi sur une scène mal formée.
+    const courant = { 'table-1': { 'place-1': { kind: 'entity' as const, entityId: 'pnj-1' } } };
+    expect(pruneSeatAssignments({ ...scene, seatAssignments: courant }, 4)).toEqual(courant);
+  });
+  it('MESURE du motif de bump 39 → 40 (#1657 B2a) : le `critTrigger` persisté porte le nœud `test`', () => {
     // `Trauma.critTrigger` (« Commotion cérébrale », LDB 18 l.74) est PERSISTÉ sur la séquelle du
     // héros. Sa graphie propriétaire `{resist:{difficulty, onFail}}` est devenue le nœud `test` du
-    // Flow : une save de 38 rouvrirait avec `test === undefined`, et le critique suivant lirait
+    // Flow : une save de 39 rouvrirait avec `test === undefined`, et le critique suivant lirait
     // `trig.test.test.difficulty` sur rien (`fireCritTriggers`).
-    expect(SAVE_VERSION).toBe(39);
-    expect(parseSave({ ...cur, version: 38 })).toBeNull();
+    expect(SAVE_VERSION).toBe(40);
+    expect(parseSave({ ...cur, version: 39 })).toBeNull();
     const commotion = CRITIQUE_DOCS.flatMap((d) => d.entries).find((e) => e.id === 'commotion-cerebrale')!;
     const arme = commotion.escalation!.onNextCritWhileCondition!;
     expect(arme.test.kind, 'la donnée doit porter le nœud, pas la graphie `resist`').toBe('test');

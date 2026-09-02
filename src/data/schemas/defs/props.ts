@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { cell2Schema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
-import { PROP_CYLINDER_SIDES } from '../../props.types';
+import { CAP_IDENTITE_PROP, PROP_CYLINDER_SIDES } from '../../props.types';
 
 export const file = 'props.json';
 export const famille = 'entite';
@@ -30,13 +30,20 @@ export const propPrimitiveSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('prism'), center: propPoint3Schema, size: propSize3Schema, slope: z.enum(['x+', 'x-', 'y+', 'y-']), material: z.string().min(1) }),
 ]);
 
-/** `PropVolumeRecipe` (`src/data/props.types.ts`) — la recette volumique d'un décor. */
-export const propVolumeRecipeSchema = z.strictObject({ primitives: z.array(propPrimitiveSchema) });
+/** `PropVolumeRecipe` (`src/data/props.types.ts`) — la recette volumique d'un décor. `capIdentite`
+ *  déclare le REPÈRE dans lequel la géométrie est écrite : le cap auquel elle sort telle qu'authorée,
+ *  égal au défaut du monde (`CAP_IDENTITE_PROP`, même source que le type et `rotatePropLocal` — une
+ *  chaîne recopiée ici dériverait au premier changement de repère). REQUIS : une recette écrite sous un
+ *  autre repère ne peut pas entrer en silence (#1680 ligne 16). */
+export const propVolumeRecipeSchema = z.strictObject({ capIdentite: z.literal(CAP_IDENTITE_PROP), primitives: z.array(propPrimitiveSchema) });
 
 /** `PropSeatSlot` (`src/data/props.types.ts`) — place assise offerte par un décor : ancre du corps,
  *  cap du corps assis (Dir8), et case d'ABORD relative à l'ancre de l'empreinte. */
 export const propSeatSlotSchema = z.strictObject({
-  id: z.string().min(1),
+  // `place-<rang>` — un id de place ne porte JAMAIS de côté (#1680 ligne 16) : le côté vit dans
+  // `anchor`/`facing`/`approach`, qui tournent avec le cap de l'instance quand l'id, lui, ne tourne pas.
+  // Verrou par CONSTRUCTION : un `place-nord` ne peut plus entrer.
+  id: z.string().regex(/^place-\d+$/, 'id de place : `place-<rang>` attendu (un id de place ne porte pas de côté)'),
   anchor: propPoint3Schema,
   facing: z.enum(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']),
   approach: cell2Schema,
