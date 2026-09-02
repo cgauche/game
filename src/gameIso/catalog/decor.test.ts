@@ -3,6 +3,15 @@ import { PROPS, propSvg, missingPropSvg } from './decor';
 import { MISSING_TONE } from './missing';
 import { propSprite } from '../sprites';
 import { findPropById } from '../../data';
+import { CAP_IDENTITE_PROP, empreinteDuProp } from '../../data/props.types';
+import { sceneMetresPerTile } from '../../state/scene';
+
+/** L'échelle à laquelle ce catalogue est jugé : le défaut du monde (`LDB 15 l.12`), LU à sa source
+ *  unique — l'empreinte d'un décor à recette en dépend depuis #1509. */
+const MPT = sceneMetresPerTile(undefined);
+/** Les cases qu'un décor couvre au cap d'identité : `foot` déclaré pour un billboard, corps tourné
+ *  pour une recette — la couture UNIQUE, celle que la scène lit. */
+const empreinteDe = (id: string) => empreinteDuProp(findPropById(id), CAP_IDENTITE_PROP, MPT);
 
 describe('catalogue décors', () => {
   it('contient les placeables de base', () => {
@@ -78,8 +87,11 @@ describe('Opéra — props de théâtre', () => {
       expect(PROPS[id].label, id).not.toBe(PROPS[base].label);
       expect(propSvg(id), id).toBe(propSvg(base)); // même vignette que sa base
       expect(propSvg(id).length, id).toBeGreaterThan(40);
-      expect(findPropById(id)?.foot, id).toEqual({ w: 2, h: 1 });
-      expect(findPropById(base)?.foot, base).toBeUndefined();
+      // L'empreinte EFFECTIVE, pas le `foot` déclaré : `table-2x1` est une RECETTE et n'en porte plus
+      // depuis #1509 (ses deux cases viennent de son corps), là où `bureau-2x1`/`etabli-2x1` sont des
+      // billboards qui le déclarent. Les deux familles répondent à la même couture.
+      expect(empreinteDe(id), id).toEqual({ w: 2, h: 1 });
+      expect(empreinteDe(base), base).toEqual({ w: 1, h: 1 });
     }
   });
   it('le mobilier d’ambiance d’opéra est enregistré et rendu (applique, pupitre, fauteuil)', () => {

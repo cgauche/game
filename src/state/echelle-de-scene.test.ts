@@ -43,7 +43,7 @@ const DIVISION = /\/\s*(?:opts\.mpt\b|mpt\b|MPT\b|metresPerTile\b|sceneMetresPer
 const RECOPIE = /metresPerTile\s*\?\?\s*2/;
 
 /**
- * Les 21 sites DÉCLARÉS, chacun avec son RÔLE. Le texte est la ligne elle-même : il ne dérive pas
+ * Les 22 sites DÉCLARÉS, chacun avec son RÔLE. Le texte est la ligne elle-même : il ne dérive pas
  * avec les numéros de ligne, et un site NEUF porte forcément un texte neuf — donc un rouge nominatif.
  */
 const SITES: readonly { fichier: string; texte: string; role: string }[] = [
@@ -55,6 +55,7 @@ const SITES: readonly { fichier: string; texte: string; role: string }[] = [
   { fichier: 'state/seating.ts', texte: 'const [ax, ay] = rotatePropLocal(slot.anchor.xM / mpt, slot.anchor.yM / mpt, facing);', role: 'ANCRE d’une place assise → case du corps assis' },
   { fichier: 'state/vision.ts', texte: 'const [x, y] = rotatePropLocal(emettrice.center.xM / mpt, emettrice.center.yM / mpt, facing ?? CAP_IDENTITE_PROP);', role: 'FOYER d’une lampe (centre de la primitive émettrice) → offset en cases' },
   { fichier: 'state/vision.ts', texte: 'export const rayonEnCases = (radiusM: number, mpt: number): number => radiusM / mpt;', role: 'RAYON d’une source de lumière → cases (RÉEL : le dégradé le lit comme une longueur)' },
+  { fichier: 'data/props.types.ts', texte: 'const enCases = (metres: number): number => Math.max(1, Math.ceil(metres / mpt - 1e-9));', role: 'EMPRISE du corps tourné d’un décor → cases de son empreinte (#1509, arrondi haut, plancher 1)' },
 
   // ── LES PORTÉES de règle chiffrées en mètres
   { fichier: 'state/combatGeometry.ts', texte: 'export const porteeEnCases = (metres: number, mpt: number): number => Math.max(1, Math.ceil(metres / mpt));', role: 'PORTÉE d’une aura/d’un effet d’aire → cases (arrondi haut, plancher 1)' },
@@ -102,10 +103,11 @@ describe('échelle de la scène — les sites de traduction mètres ⇄ cases so
 
   it('chaque site déclaré porte un RÔLE, et chaque rôle de conversion de DÉCOR est unique', () => {
     expect(SITES.filter((s) => !s.role.trim())).toEqual([]);
-    // Les quatre coutures du décor volumique (#1507) : géométrie, ancre de place, foyer, rayon.
+    // Les CINQ coutures du décor volumique : géométrie, ancre de place, foyer, rayon (#1507), et
+    // l'emprise du corps tourné qui décide des cases (#1509).
     // Un CONCEPT = un site. Deux sites pour le même concept, c'est la divergence que ce lot supprime.
-    const coutures = SITES.filter((s) => /GÉOMÉTRIE|ANCRE|FOYER|RAYON/.test(s.role));
-    expect(coutures.map((s) => s.role.split(' ')[0])).toEqual(['GÉOMÉTRIE', 'ANCRE', 'FOYER', 'RAYON']);
+    const coutures = SITES.filter((s) => /GÉOMÉTRIE|ANCRE|FOYER|RAYON|EMPRISE/.test(s.role));
+    expect(coutures.map((s) => s.role.split(' ')[0])).toEqual(['GÉOMÉTRIE', 'ANCRE', 'FOYER', 'RAYON', 'EMPRISE']);
   });
 
   it('plus AUCUNE recopie du défaut (`metresPerTile ?? 2`) hors de sa lecture canonique', () => {

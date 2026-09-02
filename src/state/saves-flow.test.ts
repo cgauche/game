@@ -20,6 +20,7 @@ import type { Combatant, Trauma } from '../engine/types';
 import { testScene } from '../scenes/test-fixture';
 import { emptyScene } from './scene';
 import { pruneSeatAssignments } from './seating';
+import { entityBlockedAt } from './sceneRules';
 import { findPropById, findSpellById } from '../data/index';
 import { spellEffectOps } from './flow';
 import { applyOps } from '../engine/ops';
@@ -185,6 +186,23 @@ describe('parseSave — la version DOIT être la courante', () => {
     const courant = { 'table-1': { 'place-1': { kind: 'entity' as const, entityId: 'pnj-1' } } };
     expect(pruneSeatAssignments({ ...scene, seatAssignments: courant }, 4)).toEqual(courant);
   });
+  it('MESURE du motif de bump 41 → 42 (#1509) : l’empreinte d’un décor à recette TOURNE avec son cap', () => {
+    // La scène ÉDITÉE du joueur est PERSISTÉE telle quelle (`snapshotSave` recopie `state.scene`). Rien
+    // n'y empêche un `table-2x1` au cap E : le schéma ne refuse que la diagonale. Une save de 41
+    // rouvrirait avec une empreinte figée sur l'axe x, donc une autre marchabilité — un héros posé sur
+    // (x, y+1) se retrouverait DANS le meuble. D'où le REJET.
+    expect(SAVE_VERSION).toBe(42);
+    expect(parseSave({ ...cur, version: 41 })).toBeNull();
+    // LE DÉFAUT, mesuré sur le chemin réel : les deux caps ne bloquent pas les mêmes cases.
+    const scene = emptyScene(12, 12);
+    scene.entities = [{ id: 'table-1', kind: 'prop', ref: 'table-2x1', pos: { x: 5, y: 5 }, facing: 'E' }] as typeof scene.entities;
+    expect(entityBlockedAt(scene, 5, 6, 0), 'au cap E la table occupe la case au SUD').toBe(true);
+    expect(entityBlockedAt(scene, 6, 5, 0), 'au cap E la case à l’EST est libre').toBe(false);
+    const auSud = { ...scene, entities: [{ ...scene.entities[0], facing: 'S' }] as typeof scene.entities };
+    expect(entityBlockedAt(auSud, 6, 5, 0), 'au cap S la table occupe la case à l’EST').toBe(true);
+    expect(entityBlockedAt(auSud, 5, 6, 0), 'au cap S la case au SUD est libre').toBe(false);
+  });
+
   it('MESURE du motif de bump 40 → 41 (#1507) : les rayons de lumière PERSISTÉS sont en MÈTRES', () => {
     // Deux formes persistées portent un rayon de source : `SceneEntity.light` (override d'instance,
     // recopié avec `state.scene` par `snapshotSave`) et `ActiveEffect.light` (posé sur un héros par
@@ -192,7 +210,7 @@ describe('parseSave — la version DOIT être la courante', () => {
     // pré-divisée par 2) à `radiusM` (mètres, la valeur du folio telle quelle). Une save de 40
     // rouvrirait avec `radiusM === undefined` : `rayonEnCases` rendrait `NaN`, et la lampe du héros
     // s'éteindrait en silence — d'où le REJET plutôt que l'élagage.
-    expect(SAVE_VERSION).toBe(41);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(41);
     expect(parseSave({ ...cur, version: 40 })).toBeNull();
     const lumiere = spellEffectOps(findSpellById('lumiere')!.effects).find((o) => o.op === 'light')!;
     expect((lumiere as unknown as Record<string, unknown>).radiusTiles, 'graphie en cases ressuscitée').toBeUndefined();

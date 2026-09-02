@@ -28,10 +28,10 @@
  * meuble 2×1 à recette (`table-2x1`, #1644). Résolution au socle #1509 (le corps tourné décide des
  * cases) ; en attendant, aucun meuble multi-case ne déclare de place.
  *
- * TROU DE LA MÊME FAMILLE, tant que #1509 n'est pas construit : la recette TOURNE avec le cap, pas
- * l'empreinte (`propFootTiles` ignore `facing`). Un meuble multi-case au cap E/O présente donc sa
- * géométrie en travers de cases qui restent traversables, et bloque des cases vides. La population
- * authorée est tenue aux caps N/S par un contrat de `gameIso/catalog/props-volumiques.test.ts`.
+ * L'EMPREINTE TOURNE AVEC LE CAP (#1509) : les cases d'un décor à recette sont celles de son CORPS
+ * tourné, sièges exclus (`empreinteDeriveeDuProp` ci-dessous, servie à tous les consommateurs par
+ * `empreinteDuProp` puis `state/footprint.ts` `propFootTiles`). Une table 2×1 au cap E occupe 1×2.
+ * Un BILLBOARD, qui n'a pas de corps, garde son empreinte DÉCLARÉE (`foot`).
  *
  * CAP D'IDENTITÉ = `S` (`CAP_IDENTITE_PROP`) — contrat de DONNÉE, à connaître pour authorer : une
  * recette (et les `seatSlots` qui l'accompagnent) s'écrit telle qu'elle se voit à l'instance SANS
@@ -48,9 +48,12 @@ import { DIR8_ORDER, estCardinal, type Dir4, type Dir8 } from '../state/dir8';
  * Le CAP d'un décor volumique, résolu et VERROUILLÉ. Une entité sans `facing` vaut `S` : le défaut du
  * monde, et le CAP D'IDENTITÉ des recettes (`CAP_IDENTITE_PROP`, cf. l'en-tête de ce module) — un
  * décor posé sans cap explicite sort donc exactement tel qu'il est authoré.
- * Ce que cette porte verrouille, c'est la DIAGONALE, refusée nominativement : la recette tourne là où
- * l'empreinte solide ne tourne pas (#1509), une diagonale poserait le corps en travers de cases restées
- * traversables. Dernier filet d'une chaîne : le schéma de scène la refuse au parse
+ * Ce que cette porte verrouille, c'est la DIAGONALE, refusée nominativement, pour deux raisons
+ * MESURÉES : (1) l'empreinte est un RECTANGLE d'axes de grille, et la boîte englobante d'un corps
+ * tourné de 45° enfle jusqu'à ×√2 par axe — une table 2×1 en diagonale muterait 2×2 cases pour un
+ * corps qui n'en occupe vraiment aucune entière : du SUR-blocage, pas du débordement ; (2) le
+ * cuiseur du monde LÈVE sur un cap diagonal (`gameIso/builders/props.ts`), donc une telle donnée ne
+ * se rend même pas. Dernier filet d'une chaîne : le schéma de scène la refuse au parse
  * (`schemas/defs-scenes/scene.ts`), l'éditeur ne l'offre pas (`ui/editor/Inspector.tsx`) et
  * `state/validateScene.ts` la nomme à l'écran. PURE.
  */
@@ -363,8 +366,110 @@ export interface PropData {
   seatSlots?: PropSeatSlot[];
 }
 
-/** Empreinte EFFECTIVE d'un type de prop — défaut 1×1. Source unique de la dérivation par les consommateurs. */
+/** Empreinte DÉCLARÉE d'un type de prop — défaut 1×1. Vérité des dimensions d'un décor SANS recette
+ *  (billboard) ; un décor à recette tire la sienne de son CORPS (`empreinteDeriveeDuProp`). */
 export const propFootOf = (prop: PropData | undefined): { w: number; h: number } => prop?.foot ?? { w: 1, h: 1 };
+
+/** Boîte englobante au plan d'une primitive dans le repère LOCAL (mètres) et la hauteur de son sommet
+ *  (mètres) — mesurée sur `polygonesDePrimitive`, la seule géométrie que le catalogue possède. PURE. */
+function empriseLocaleM(p: PropPrimitive): { x0: number; x1: number; y0: number; y1: number; haut: number } {
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, haut = -Infinity;
+  for (const poly of polygonesDePrimitive(p))
+    for (const s of poly) {
+      x0 = Math.min(x0, s.xM); x1 = Math.max(x1, s.xM);
+      y0 = Math.min(y0, s.yM); y1 = Math.max(y1, s.yM);
+      haut = Math.max(haut, s.hM);
+    }
+  return { x0, x1, y0, y1, haut };
+}
+
+/**
+ * LA PLACE dont cette primitive est le SIÈGE, s'il y en a une — discriminant STRUCTUREL du tabouret,
+ * jamais un nom de ref : la primitive dont l'emprise au plan CONTIENT l'ancre d'une place ET qui ne
+ * monte pas plus haut que cette assise (l'assise et son fût). Un plateau qui SURVOLE l'ancre reste du
+ * corps. Mesuré en MÈTRES de bout en bout (ancre et géométrie sont dans le même repère) : aucune
+ * échelle n'entre ici.
+ *
+ * UNE définition, deux lecteurs : l'empreinte dérivée ci-dessous, qui exclut les sièges du corps qui
+ * décide des cases (un tabouret n'est pas un obstacle : c'est par lui qu'on s'assoit), et le contrat
+ * de catalogue `gameIso/catalog/props-volumiques.test.ts`. PURE.
+ */
+export function placeAssiseDe(prop: PropData, primitive: PropPrimitive): PropSeatSlot | undefined {
+  const e = empriseLocaleM(primitive);
+  return (prop.seatSlots ?? []).find((s) =>
+    s.anchor.xM >= e.x0 - 1e-9 && s.anchor.xM <= e.x1 + 1e-9
+    && s.anchor.yM >= e.y0 - 1e-9 && s.anchor.yM <= e.y1 + 1e-9
+    && e.haut <= s.anchor.hM + 1e-9);
+}
+
+/** Le jeu de places VIDE, en un SEUL objet : sans lui, `prop.seatSlots ?? []` fabriquerait une clé
+ *  neuve à chaque appel et le cache ne servirait jamais les décors sans place — la moitié du
+ *  catalogue. */
+const SANS_PLACES: readonly PropSeatSlot[] = [];
+
+/** Cache d'empreintes dérivées, de niveau CATALOGUE (au plus une recette × 4 caps par échelle jouée),
+ *  jamais de niveau scène : l'empreinte d'un TYPE ne dépend d'aucune instance.
+ *  Clé COMPOSÉE des DEUX données dont le résultat dépend, chacune par IDENTITÉ de référence (patron
+ *  `state/sceneMemo.ts`) : la RECETTE (le corps mesuré) ET les PLACES (ce qui en est exclu,
+ *  `placeAssiseDe`). Ni l'une ni l'autre seule ne suffit — deux `PropData` peuvent partager la même
+ *  recette et différer par leurs places, et rendre alors des empreintes différentes (table ronde :
+ *  1×1 avec ses quatre places, 2×2 sans elles). Un cache par id du prop serait pire encore : il
+ *  survivrait à la surcharge d'un dataset (`data/overrides.ts`) et rendrait l'empreinte d'un corps
+ *  qui n'existe plus. Rien à invalider à la main : une donnée ré-authored est un NOUVEL objet. */
+const empreintesDerivees = new WeakMap<PropVolumeRecipe, WeakMap<readonly PropSeatSlot[], Map<string, { w: number; h: number }>>>();
+
+/**
+ * EMPREINTE DÉRIVÉE d'un décor à recette : les cases que son CORPS occupe une fois TOURNÉ au cap de
+ * l'instance — `w` = étendue en x arrondie au supérieur (plancher 1), `h` idem en y. Les SIÈGES sont
+ * exclus du corps (`placeAssiseDe`) : la case qu'un tabouret effleure reste traversable, sinon les
+ * abords d'une table ronde seraient murés par ses propres tabourets.
+ *
+ * C'est l'empreinte qui TOURNE : une table 2×1 au cap E occupe 1×2. La dérivation dépend de l'ÉCHELLE
+ * de la scène (`metresPerTile`) — le même corps de 1,8 m tient sur une case à 2 m/case et sur deux à
+ * 1 m/case —, donc elle se calcule À LA CONSOMMATION et ne se fige jamais en donnée.
+ *
+ * Prend les HUIT caps : cette fonction MESURE, elle n'arbitre pas. Le refus de la diagonale sur un
+ * décor à recette est la porte de `capVolumique`, tenue en amont par le schéma de scène, le validateur
+ * et l'émetteur ; une empreinte qui lèverait aussi ferait tomber la MARCHABILITÉ d'une scène fautive,
+ * donc l'éditeur où l'auteur doit justement lire l'erreur.
+ * PURE (mémoïsée par identité de recette, cap et échelle).
+ */
+export function empreinteDeriveeDuProp(prop: PropData, facing: Dir8, mpt: number): { w: number; h: number } {
+  if (!prop.volume) return propFootOf(prop);
+  let parPlaces = empreintesDerivees.get(prop.volume);
+  if (!parPlaces) { parPlaces = new WeakMap(); empreintesDerivees.set(prop.volume, parPlaces); }
+  const places = prop.seatSlots ?? SANS_PLACES;
+  let parCap = parPlaces.get(places);
+  if (!parCap) { parCap = new Map(); parPlaces.set(places, parCap); }
+  const cle = `${facing}|${mpt}`;
+  const connue = parCap.get(cle);
+  if (connue) return connue;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const primitive of prop.volume?.primitives ?? []) {
+    if (placeAssiseDe(prop, primitive)) continue;
+    for (const poly of polygonesDePrimitive(primitive))
+      for (const s of poly) {
+        const [rx, ry] = rotatePropLocal(s.xM, s.yM, facing);
+        x0 = Math.min(x0, rx); x1 = Math.max(x1, rx);
+        y0 = Math.min(y0, ry); y1 = Math.max(y1, ry);
+      }
+  }
+  // LE site de conversion mètres → cases de ce module (#1507, déclaré par `state/echelle-de-scene.test.ts`).
+  const enCases = (metres: number): number => Math.max(1, Math.ceil(metres / mpt - 1e-9));
+  const val = Number.isFinite(x0) ? { w: enCases(x1 - x0), h: enCases(y1 - y0) } : propFootOf(prop);
+  parCap.set(cle, val);
+  return val;
+}
+
+/**
+ * EMPREINTE EFFECTIVE d'un type de décor au cap d'une instance — la couture UNIQUE que lisent tous les
+ * consommateurs de cases (walkability, Ligne de Vue, lumière, halo). Un décor à recette la tire de son
+ * CORPS tourné ; un BILLBOARD, qui n'a pas de corps, garde son empreinte déclarée. PURE.
+ */
+export function empreinteDuProp(prop: PropData | undefined, facing: Dir8 | undefined, mpt: number): { w: number; h: number } {
+  if (!prop?.volume) return propFootOf(prop);
+  return empreinteDeriveeDuProp(prop, facing ?? CAP_IDENTITE_PROP, mpt);
+}
 
 /** Anomalies d'UNE primitive : matériau connu, coordonnées finies, dimensions positives, côtés admis,
  *  et FERMETURE en coquille close. La fermeture n'est mesurée que sur une géométrie déjà non ambiguë —
@@ -393,8 +498,13 @@ function erreursDePrimitive(propId: string, primitive: PropPrimitive, materiauxC
  * Invariants de CATALOGUE que le schéma seul ne peut pas voir (référence croisée aux matériaux, cohérence
  * géométrique, FERMETURE de chaque primitive en coquille close, côtés admis d'un cylindre, unicité des
  * places). Renvoie la liste des anomalies en français, `[]` = catalogue intègre.
+ *
+ * `mpt` — l'ÉCHELLE à laquelle le catalogue est jugé. L'abord d'une place se mesure contre l'empreinte
+ * EFFECTIVE (`empreinteDuProp`), qui dépend de l'échelle depuis #1509 : un catalogue intègre à 2 m/case
+ * ne l'est pas forcément à 1. Un catalogue n'a pas de scène, donc l'échelle lui est DONNÉE, jamais
+ * devinée — et l'anomalie la NOMME, pour qu'un verdict ne se lise jamais hors de son échelle.
  */
-export function validatePropCatalog(entries: readonly PropData[], materials: readonly PropMaterialData[]): string[] {
+export function validatePropCatalog(entries: readonly PropData[], materials: readonly PropMaterialData[], mpt: number): string[] {
   const known = new Set(materials.map((m) => m.id));
   const errors: string[] = [];
   for (const prop of entries) {
@@ -422,7 +532,9 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
       errors.push(`${prop.id}: primitive « emet » sans \`light\` — un foyer sans source n’éclaire rien`);
     if (prop.light && prop.volume && !emettrices.length)
       errors.push(`${prop.id}: \`light\` sur une recette volumique sans primitive « emet » — le foyer d’un volume se DÉCLARE, il ne se devine pas`);
-    const { w, h } = propFootOf(prop);
+    // ABORD au CAP D'IDENTITÉ : c'est le seul cap auquel `approach` (écrit par l'auteur) et l'empreinte
+    // sont dans le même repère. Aux autres caps, les deux tournent ENSEMBLE — la mesure est la même.
+    const { w, h } = empreinteDuProp(prop, CAP_IDENTITE_PROP, mpt);
     for (const slot of prop.seatSlots ?? []) {
       if (!slot.id.trim()) errors.push(`${prop.id}: slot sans id`);
       else if (slots.has(slot.id)) errors.push(`${prop.id}: slot dupliqué « ${slot.id} »`);
@@ -432,7 +544,7 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
       approaches.add(key);
       const dansEmpreinte = slot.approach.x >= -0.5 && slot.approach.x <= w - 0.5
         && slot.approach.y >= -0.5 && slot.approach.y <= h - 0.5;
-      if (prop.solid && dansEmpreinte) errors.push(`${prop.id}: approche « ${slot.id} » dans l’empreinte (${key})`);
+      if (prop.solid && dansEmpreinte) errors.push(`${prop.id}: approche « ${slot.id} » dans l’empreinte ${w}×${h} à ${mpt} m/case (${key})`);
     }
   }
   return errors;

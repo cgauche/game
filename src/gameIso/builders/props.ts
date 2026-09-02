@@ -15,14 +15,14 @@
 import { Scene, tileAt, heightAt, sceneMetresPerTile, type ArchitectureRect } from '../../state/scene';
 import { roofHidden, massFootBBox } from '../../state/buildings';
 import { effectiveArchitecture } from '../../state/sceneEdit';
-import { decorAncre, decorFootGeometry, propDeclaredFoot } from '../../state/footprint';
+import { decorAncre, decorFootGeometry } from '../../state/footprint';
 import { findPropById, refEstVolumique } from '../../data';
 import { buildPropVolumes } from './propVolumes';
 import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../catalog/buildings';
 import { facadeFeatureViz } from '../catalog/facades';
 import { WALL_H_M } from '../iso';
-import { capVolumique, REF_DECOR_DEFAUT } from '../../data/props.types';
+import { capVolumique, empreinteDuProp, REF_DECOR_DEFAUT } from '../../data/props.types';
 import type { Dir4, Dir8 } from '../../state/dir8';
 import { edgeKey, fieldHeightAt, nappeKey, resolveNappes, WALL_NB, type RoofField, type RoofShapeSpec } from './roofs';
 import type { FloorView } from './floors';
@@ -157,7 +157,10 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     if (ent.kind !== 'prop') continue;
     const z = ent.z ?? 0;
     if (hasLayerView && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
-    const empreinte = propDeclaredFoot(ent.ref);
+    // L'empreinte EFFECTIVE au cap de l'instance (#1509) : le corps tourné pour un décor à recette,
+    // l'empreinte déclarée pour un billboard. `span` la porte jusqu'au halo d'interaction
+    // (`interactHalos.ts`), qui ne connaît l'étendue d'un élément que par lui.
+    const empreinte = empreinteDuProp(findPropById(ent.ref ?? REF_DECOR_DEFAUT), ent.facing, mpt);
     // Le décor s'ancre au CENTRE de son empreinte (`decorFootGeometry` : une case posée y reste sur son
     // centre) — le dessin comme la recette.
     const dessin = decorFootGeometry(empreinte);
@@ -167,7 +170,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       ancre: decorAncre(ent.pos, empreinte),
       echelle: dessin.scale,
       solM: heightAt(scene, ent.pos.x, ent.pos.y, z),
-      ...(empreinte ? { span: { w: empreinte.w, h: empreinte.h } } : {}),
+      span: { w: empreinte.w, h: empreinte.h },
       source: 'entity',
       entId: ent.id,
       ref: ent.ref ?? REF_DECOR_DEFAUT,

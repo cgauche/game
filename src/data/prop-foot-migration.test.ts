@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { props, findPropById } from './index';
-import { normalizeScene, emptyScene, type Scene, type SceneEntity } from '../state/scene';
+import { normalizeScene, emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../state/scene';
+import { empreinteDuProp } from './props.types';
+import { buildOperaFloorplan } from '../scenes/opera/floorplan';
 import { entityBlockedAt } from '../state/sceneRules';
 import { parseProject } from '../state/worldMap';
 import { scenarioEntities } from '../scenes/opera/furnished';
@@ -37,7 +39,10 @@ const LEGACY_PROP_FOOT_TABLE: [string, number, number][] = [
   ['rideau-scene', 3, 1],
   ['rouleau-de-cordage', 1, 1],
   ['stalle-ecurie', 1, 1],
-  ['table-2x1', 2, 1],
+  // `table-2x1` a QUITTÉ cette table : c'est une RECETTE, et depuis #1509 un décor à recette n'a plus
+  // de `foot` — ses deux cases viennent de son corps (migration
+  // `2026-09-03-1509-foot-volumique-mort.mjs`). La table ci-dessus ne liste plus que des BILLBOARDS,
+  // les seuls à qui le champ appartient.
   ['tente', 2, 2],
   ['tribune', 3, 1],
 ];
@@ -80,6 +85,10 @@ const areneDoc = parseProject(JSON.parse(readFileSync(ARENE_JSON, 'utf8')));
 const OPERA = 'opera/furnished';
 const entitiesOf = (scene: string): SceneEntity[] =>
   scene === OPERA ? scenarioEntities : areneDoc.scenes.find((s) => s.id === scene)!.entities;
+/** L'ÉCHELLE de la scène PORTEUSE : l'empreinte d'un décor à recette en dépend (#1509). Lue à sa
+ *  source unique (`sceneMetresPerTile`), jamais écrite en littéral. */
+const mptDe = (scene: string): number =>
+  sceneMetresPerTile(scene === OPERA ? buildOperaFloorplan() : areneDoc.scenes.find((s) => s.id === scene));
 
 /** Les vingt-quatre instances qui portaient une empreinte D'INSTANCE avant la migration. */
 const LEGACY_AUTHORED_FOOT_SITES: [string, string][] = [
@@ -109,11 +118,14 @@ const LEGACY_AUTHORED_FOOT_SITES: [string, string][] = [
   [OPERA, 'c26-etabli'],
 ];
 
-/** Empreinte EFFECTIVE d'une instance authorée : sa ref courante et l'empreinte que lui donne le catalogue. */
+/** Empreinte EFFECTIVE d'une instance authorée : sa ref courante et les cases que le catalogue lui
+ *  donne AU CAP ET À L'ÉCHELLE de sa scène — `foot` déclaré pour un billboard, corps tourné pour un
+ *  décor à recette depuis #1509 (`empreinteDuProp`, la couture unique). Lire le seul `foot` rendrait
+ *  désormais 1×1 pour les trois tables d'Opéra, et ce contrat prouverait l'inverse de son titre. */
 function authoredPropFoot(scene: string, id: string): [string, number, number] {
   const ent = entitiesOf(scene).find((e) => e.id === id)!;
-  const foot = findPropById(ent.ref ?? '')?.foot ?? { w: 1, h: 1 };
-  return [ent.ref!, foot.w, foot.h];
+  const { w, h } = empreinteDuProp(findPropById(ent.ref ?? ''), ent.facing, mptDe(scene));
+  return [ent.ref!, w, h];
 }
 
 const authoredPropFootTable = (): [string, string, string, number, number][] =>

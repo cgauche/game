@@ -5,7 +5,8 @@
  * Composant de PRÉSENTATION : l'état (outil, pinceau, rencontre cible) vit dans Editor.
  */
 import { useState, type ReactNode } from 'react';
-import type { Scene, Terrain } from '../../state/scene';
+import { sceneMetresPerTile, type Scene, type Terrain } from '../../state/scene';
+import { CAP_IDENTITE_PROP, empreinteDuProp } from '../../data/props.types';
 import { Icon } from '../Icon';
 import { OptionChooser } from '../OptionChooser';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
@@ -15,7 +16,7 @@ import { REF_DECOR_DEFAUT } from '../../data/props.types';
 import { terrainDef } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
-import { structures } from '../../data';
+import { findPropById, structures } from '../../data';
 import { structureAppearance } from '../../gameIso/catalog/structures';
 import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
 import { GatedAction } from '../GatedAction';
@@ -459,7 +460,20 @@ export function Palette({
             {searchBox('décor…')}
             <div className="pal-list">
               {filterByLabel(Object.values(PROPS), (p) => p.label, search).map((p) => {
-                const empreinte = propDeclaredFoot(p.id);
+                // L'empreinte que la PALETTE annonce est celle que la scène posera : dérivée du corps
+                // pour un décor à recette (#1509), déclarée pour un billboard — au cap d'IDENTITÉ, le
+                // seul que la palette connaît (l'instance choisira le sien), et à l'échelle de la
+                // scène ÉDITÉE : la même recette ne couvre pas les mêmes cases à 2 et à 4 m/case.
+                // `PROPS` est le catalogue d'ART (vignettes) ; la physique du décor vit dans la
+                // donnée app-owned, lue par la même `findPropById` que le monde.
+                const donnee = findPropById(p.id);
+                const effective = donnee?.volume
+                  ? empreinteDuProp(donnee, CAP_IDENTITE_PROP, sceneMetresPerTile(scene))
+                  : propDeclaredFoot(p.id);
+                // Un décor à recette n'a plus de tri-état à montrer (son corps décide toujours) : sa
+                // chip ne dit quelque chose que s'il dépasse UNE case. Pour un billboard, la présence
+                // même du `foot` est l'information — elle reste annoncée telle quelle.
+                const empreinte = effective && (!donnee?.volume || effective.w > 1 || effective.h > 1) ? effective : undefined;
                 return (
                 <button
                   key={p.id}

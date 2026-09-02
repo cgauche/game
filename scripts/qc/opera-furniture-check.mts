@@ -5,7 +5,7 @@
  */
 import { buildOperaFloorplan, parterreSeatCells } from '../../src/scenes/opera/floorplan';
 import { scenarioEntities } from '../../src/scenes/opera/furnished';
-import { tileAt } from '../../src/state/scene';
+import { sceneMetresPerTile, tileAt } from '../../src/state/scene';
 import { propFootTiles } from '../../src/state/footprint';
 import { terrainWalkable } from '../../src/state/terrain';
 
@@ -20,7 +20,7 @@ const FLOATING = new Set(['lustre-opera']);
 for (const e of scenarioEntities) {
   if (e.kind !== 'prop' || !e.ref || FLOATING.has(e.ref)) continue;
   const z = e.z ?? 0;
-  for (const { x, y } of propFootTiles(e.ref, e.pos)) {
+  for (const { x, y } of propFootTiles(e.ref, e.pos, e.facing, sceneMetresPerTile(scene))) {
     if (x < 0 || y < 0 || x >= W || y >= H) { bad.push(`${e.id} HORS-GRILLE (${x},${y})`); continue; }
     const t = tileAt(scene, x, y, z);
     if (!terrainWalkable(t)) bad.push(`${e.id} DANS UN MUR/vide (${x},${y}) tile=${t} z=${z}`);

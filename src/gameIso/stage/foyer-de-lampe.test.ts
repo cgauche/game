@@ -111,19 +111,30 @@ describe('la lampe d’un décor VOLUMIQUE est posée sur sa primitive émettric
    * `pos` seul reste juste tant que tous les émetteurs sont 1×1 (offset nul) et se détache dès la
    * première empreinte plus large — mesuré à 1,414 m sur un 2×2, quatorze fois la tolérance.
    *
-   * Le décor d'épreuve est l'âtre RÉEL, son empreinte forcée à 2×2 : la recette, le foyer déclaré et
-   * la cuisson sont ceux du catalogue, seule l'empreinte varie. Le catalogue n'a aujourd'hui aucun
-   * émetteur volumique à empreinte large — c'est exactement pourquoi ce cas se teste ici plutôt que
-   * de s'attendre à être découvert par la première donnée qui le posera.
+   * Le décor d'épreuve est l'âtre RÉEL, son CORPS élargi le temps de la mesure : la recette, le foyer
+   * déclaré et la cuisson sont ceux du catalogue, seule l'étendue du corps varie. Depuis #1509
+   * l'empreinte d'un décor à recette se DÉRIVE de ce corps tourné — poser un `foot` sur un volumique
+   * ne déplacerait plus rien. Le catalogue n'a aujourd'hui aucun émetteur volumique à corps large —
+   * c'est exactement pourquoi ce cas se teste ici plutôt que de s'attendre à être découvert par la
+   * première donnée qui le posera.
    */
   it.each(CAPS)('cap %s : empreinte 2×2 — la lampe suit l’ANCRE, pas la case', (facing) => {
     const scene = sceneAvec('cheminee-interieure', facing);
-    // Le builder (`propDeclaredFoot`) comme `mapLights` (`foyerDe`) lisent la MÊME entrée de catalogue,
-    // par la même `findPropById` : lui poser son empreinte le temps de la mesure les sert tous deux, et
-    // c'est la seule façon de mesurer les deux chemins sur une donnée strictement identique.
-    const entree = findPropById('cheminee-interieure')! as { foot?: { w: number; h: number } };
-    const footInitial = entree.foot;
-    entree.foot = { w: 2, h: 2 };
+    // Le builder comme `mapLights` (`foyerDe`) lisent la MÊME entrée de catalogue, par la même
+    // `findPropById` : lui poser sa recette élargie le temps de la mesure les sert tous deux, et c'est
+    // la seule façon de mesurer les deux chemins sur une donnée strictement identique. La recette est
+    // REMPLACÉE (objet neuf), pas mutée : c'est son identité qui clé le cache d'empreinte.
+    const entree = findPropById('cheminee-interieure')!;
+    const recetteInitiale = entree.volume!;
+    // Une semelle de 3,5 m de côté ⇒ 1,75 case ⇒ empreinte 2×2 ; posée au ras du sol et dans un
+    // matériau qui n'est pas celui du foyer, elle ne touche ni la mesure du barycentre ni le foyer.
+    entree.volume = {
+      ...recetteInitiale,
+      primitives: [...recetteInitiale.primitives, {
+        kind: 'box', center: { xM: 0, yM: 0, hM: 0.01 }, size: { xM: 3.5, yM: 3.5, hM: 0.02 },
+        material: recetteInitiale.primitives[0].material,
+      }],
+    };
     try {
       const lampe = lampeDe(scene);
       const foyer = barycentreCuit(scene, MATIERE_DU_FOYER);
@@ -133,8 +144,7 @@ describe('la lampe d’un décor VOLUMIQUE est posée sur sa primitive émettric
       // Et l'offset est bien NON NUL : sans lui, le test ci-dessus ne prouverait rien de plus que le 1×1.
       expect(mapLights(scene)[0].foyer!.x).not.toBeCloseTo(0, 6);
     } finally {
-      if (footInitial === undefined) delete entree.foot;
-      else entree.foot = footInitial;
+      entree.volume = recetteInitiale;
     }
   });
 

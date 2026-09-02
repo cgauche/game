@@ -75,7 +75,15 @@ import type { Scene } from './scene';
 // rouvrirait avec une Commotion cérébrale dont `test` est `undefined` : `fireCritTriggers` lirait
 // `trig.test.test.difficulty` sur rien et le critique suivant crasherait. La save se jette
 // (politique 2 ci-dessus).
-export const SAVE_VERSION = 41;
+// 41 → 42 (#1509) : les cases qu'un décor à recette OCCUPE ne se lisent plus sur son `foot` déclaré
+// mais se DÉRIVENT de son corps TOURNÉ au cap de l'instance. Aucune instance LIVRÉE ne change (les 140
+// décors volumiques authored rendent la même empreinte qu'avant), mais `snapshotSave` recopie le
+// `state` ENTIER, `state.scene.entities` comprise : une save porte la scène ÉDITÉE du joueur, où rien
+// n'empêche de poser `table-2x1` au cap E — le schéma ne refuse que la diagonale. Une telle save,
+// rouverte, changerait de MARCHABILITÉ : les cases bloquées passeraient de (x,y)+(x+1,y) à
+// (x,y)+(x,y+1), et un héros sauvegardé sur l'une d'elles se retrouverait DANS le meuble. La save se
+// jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 42;
 
 export interface SaveMeta {
   version: number;

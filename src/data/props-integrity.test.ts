@@ -2,14 +2,19 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { schema as propsSchema } from './schemas/defs/props';
 import { PROPS_VOLUMIQUES } from './schemas/_ids.generated';
-import { props, propMaterials, findPropMaterialById } from './index';
-import { aretesNonAppariees, polygonesDePrimitive, sommetLocal, validatePropCatalog, type PropData, type PropPrimitive } from './props.types';
+import { props, propMaterials, findPropMaterialById, findPropById } from './index';
+import { aretesNonAppariees, empreinteDeriveeDuProp, polygonesDePrimitive, sommetLocal, validatePropCatalog, type PropData, type PropPrimitive } from './props.types';
+import { sceneMetresPerTile } from '../state/scene';
 
 /** Les polygones LOCAUX d'une primitive, réduits aux triplets que mesure `aretesNonAppariees` : la
  *  fermeture est TOPOLOGIQUE, elle ignore le repère — c'est l'appelant qui DIT lequel il mesure. */
 const sommetsLocaux = (p: PropPrimitive) => polygonesDePrimitive(p).map((poly) => poly.map(sommetLocal));
 
 const propFixture = (patch: Partial<PropData>): PropData => ({ id: 'x', type: 'props', label: 'X d’épreuve', solid: true, ...patch });
+
+/** L'ÉCHELLE à laquelle ce catalogue est jugé : le défaut du monde (`LDB 15 l.12`), LU à sa source
+ *  unique et jamais réécrit — depuis #1509 l'empreinte effective d'un décor à recette en dépend. */
+const MPT = sceneMetresPerTile(undefined);
 
 describe('props.json — formes strictes de la recette volumique et des places assises', () => {
   it('refuse une primitive inconnue et un matériau absent', () => {
@@ -19,6 +24,7 @@ describe('props.json — formes strictes de la recette volumique et des places a
     expect(validatePropCatalog(
       [{ id: 'x', type: 'props', label: 'X d’épreuve', volume: { capIdentite: 'S', primitives: [{ kind: 'box', center: { xM: 0, yM: 0, hM: 0.5 }, size: { xM: 1, yM: 1, hM: 1 }, material: 'absent' }] } }],
       [{ id: 'bois-chene', type: 'propMaterials', label: 'Chêne', color: '#5b3a22', roughness: 0.82, metalness: 0 }],
+      MPT,
     )).toContain('x: matériau inconnu « absent »');
   });
 
@@ -28,7 +34,6 @@ describe('props.json — formes strictes de la recette volumique et des places a
       type: 'props',
       label: 'X d’épreuve',
       solid: true,
-      foot: { w: 2, h: 1 },
       volume: {
         capIdentite: 'S',
         primitives: [
@@ -39,6 +44,27 @@ describe('props.json — formes strictes de la recette volumique et des places a
       },
       seatSlots: [{ id: 'place-1', anchor: { xM: 0, yM: -0.35, hM: 0.48 }, facing: 'S', approach: { x: 0, y: -1 } }],
     }])).not.toThrow();
+  });
+
+  /**
+   * `foot` EST LA VÉRITÉ D'UN BILLBOARD, ET DE LUI SEUL (#1509). Les cases d'un décor à recette se
+   * dérivent de son corps tourné (`empreinteDeriveeDuProp`) : un `foot` posé à côté d'une recette
+   * n'est lu par personne, et ment au premier cap E/O — le `foot` ne tourne pas, l'empreinte si. Le
+   * refus est À L'ENTRÉE, sans quoi le champ mort reviendrait par le prochain authoring.
+   */
+  it('refuse un `foot` sur une recette volumique, et l’accepte sur un billboard', () => {
+    const avecRecette = {
+      id: 'x', type: 'props', label: 'X d’épreuve', foot: { w: 2, h: 1 },
+      volume: { capIdentite: 'S', primitives: [{ kind: 'box', center: { xM: 0, yM: 0, hM: 0.5 }, size: { xM: 1, yM: 1, hM: 1 }, material: 'bois-chene' }] },
+    };
+    const echec = propsSchema.safeParse([avecRecette]);
+    expect(echec.success).toBe(false);
+    // Le message NOMME l'entrée et la raison — un refus muet n'apprendrait rien à l'auteur.
+    expect(JSON.stringify(echec.error?.issues)).toContain('x : `foot` sur une recette volumique');
+    // Un BILLBOARD au MÊME `foot` entre sans discuter : c'est bien la CO-PRÉSENCE qui est refusée.
+    const { volume, ...billboard } = avecRecette;
+    void volume;
+    expect(propsSchema.safeParse([billboard]).success).toBe(true);
   });
 
   it('refuse une face de cylindre hors barème et une pente inconnue', () => {
@@ -138,7 +164,7 @@ describe('validatePropCatalog — invariants de données du décor', () => {
         { id: 'place-1', anchor: { xM: 0.3, yM: 0, hM: 0.48 }, facing: 'O', approach: { x: 0, y: 1 } },
       ],
     });
-    expect(validatePropCatalog([bad], propMaterials)).toEqual(expect.arrayContaining([
+    expect(validatePropCatalog([bad], propMaterials, MPT)).toEqual(expect.arrayContaining([
       expect.stringContaining('dimension non positive'),
       expect.stringContaining('slot dupliqué « place-1 »'),
       expect.stringContaining('approche dupliquée (0,1)'),
@@ -147,43 +173,43 @@ describe('validatePropCatalog — invariants de données du décor', () => {
 
   it('distingue un slot SANS id d’un slot DUPLIQUÉ (deux causes, deux messages)', () => {
     const sansId = propFixture({ seatSlots: [{ id: '  ', anchor: { xM: 0, yM: -0.35, hM: 0.48 }, facing: 'S', approach: { x: 0, y: -1 } }] });
-    expect(validatePropCatalog([sansId], propMaterials)).toEqual(['x: slot sans id']);
+    expect(validatePropCatalog([sansId], propMaterials, MPT)).toEqual(['x: slot sans id']);
   });
 
   it('refuse une coordonnée non finie, sur une boîte comme sur un cylindre', () => {
     const boite = propFixture({ volume: { capIdentite: 'S', primitives: [{ kind: 'box', center: { xM: Number.NaN, yM: 0, hM: 0.5 }, size: { xM: 1, yM: 1, hM: 1 }, material: 'bois-chene' }] } });
     const cylindre = propFixture({ volume: { capIdentite: 'S', primitives: [{ kind: 'cylinder', center: { xM: 0, yM: 0, hM: 0.5 }, radiusM: Number.POSITIVE_INFINITY, heightM: 1, sides: 16, material: 'fer-noirci' }] } });
-    expect(validatePropCatalog([boite], propMaterials)).toContain('x: coordonnée non finie');
-    expect(validatePropCatalog([cylindre], propMaterials)).toContain('x: coordonnée non finie');
+    expect(validatePropCatalog([boite], propMaterials, MPT)).toContain('x: coordonnée non finie');
+    expect(validatePropCatalog([cylindre], propMaterials, MPT)).toContain('x: coordonnée non finie');
   });
 
   it('refuse une approche qui tombe DANS l’empreinte d’un décor solide — empreinte 2×1 comprise', () => {
     const unSurUn = propFixture({ seatSlots: [{ id: 'place-1', anchor: { xM: 0, yM: 0, hM: 0.48 }, facing: 'S', approach: { x: 0, y: 0 } }] });
-    expect(validatePropCatalog([unSurUn], propMaterials)).toContain('x: approche « place-1 » dans l’empreinte (0,0)');
+    expect(validatePropCatalog([unSurUn], propMaterials, MPT)).toContain('x: approche « place-1 » dans l’empreinte 1×1 à 2 m/case (0,0)');
 
     const deuxSurUn = propFixture({
       foot: { w: 2, h: 1 },
       seatSlots: [{ id: 'place-1', anchor: { xM: 1, yM: 0, hM: 0.48 }, facing: 'O', approach: { x: 1, y: 0 } }],
     });
-    expect(validatePropCatalog([deuxSurUn], propMaterials)).toContain('x: approche « place-1 » dans l’empreinte (1,0)');
+    expect(validatePropCatalog([deuxSurUn], propMaterials, MPT)).toContain('x: approche « place-1 » dans l’empreinte 2×1 à 2 m/case (1,0)');
 
     const degage = propFixture({
       foot: { w: 2, h: 1 },
       seatSlots: [{ id: 'place-1', anchor: { xM: 1, yM: 0, hM: 0.48 }, facing: 'O', approach: { x: 2, y: 0 } }],
     });
-    expect(validatePropCatalog([degage], propMaterials)).toEqual([]);
+    expect(validatePropCatalog([degage], propMaterials, MPT)).toEqual([]);
   });
 
   it('refuse une recette dont le REPÈRE déclaré n’est pas celui qu’implémente `rotatePropLocal`', () => {
     const primitives: PropPrimitive[] = [{ kind: 'box', center: { xM: 0, yM: 0, hM: 0.5 }, size: { xM: 1, yM: 1, hM: 1 }, material: 'bois-chene' }];
     const auNord = propFixture({ volume: { capIdentite: 'N', primitives } as unknown as PropData['volume'] });
-    expect(validatePropCatalog([auNord], propMaterials)).toContain('x: recette au repère « N » (seul S est implémenté)');
-    expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives } })], propMaterials)).toEqual([]);
+    expect(validatePropCatalog([auNord], propMaterials, MPT)).toContain('x: recette au repère « N » (seul S est implémenté)');
+    expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives } })], propMaterials, MPT)).toEqual([]);
   });
 
   it('un décor NON solide se laisse aborder sur sa propre case', () => {
     const traversable = propFixture({ solid: false, seatSlots: [{ id: 'place-1', anchor: { xM: 0, yM: 0, hM: 0.48 }, facing: 'S', approach: { x: 0, y: 0 } }] });
-    expect(validatePropCatalog([traversable], propMaterials)).toEqual([]);
+    expect(validatePropCatalog([traversable], propMaterials, MPT)).toEqual([]);
   });
 
   /**
@@ -221,20 +247,20 @@ describe('validatePropCatalog — invariants de données du décor', () => {
         { kind: 'box', center: { xM: 0, yM: 0, hM: 0.8 }, size: { xM: 0.4, yM: 0.4, hM: 0.4 }, material: 'braises', ...(emet ? { emet: true } as const : {}) },
       ] },
     });
-    expect(validatePropCatalog([deux(true)], propMaterials).join(' ')).toMatch(/2 primitives « emet » — une source ponctuelle n’a qu’UN foyer/);
-    expect(validatePropCatalog([deux(false)], propMaterials)).toEqual([]);
+    expect(validatePropCatalog([deux(true)], propMaterials, MPT).join(' ')).toMatch(/2 primitives « emet » — une source ponctuelle n’a qu’UN foyer/);
+    expect(validatePropCatalog([deux(false)], propMaterials, MPT)).toEqual([]);
   });
 
   it('refuse un foyer SANS source, et une source volumique SANS foyer', () => {
     const braises = (emet: boolean): PropPrimitive =>
       ({ kind: 'box', center: { xM: 0, yM: 0, hM: 0.2 }, size: { xM: 0.4, yM: 0.4, hM: 0.4 }, material: 'braises', ...(emet ? { emet: true } as const : {}) });
-    expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives: [braises(true)] } })], propMaterials).join(' '))
+    expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives: [braises(true)] } })], propMaterials, MPT).join(' '))
       .toMatch(/primitive « emet » sans `light`/);
-    expect(validatePropCatalog([propFixture({ light: { radiusM: 3 }, volume: { capIdentite: 'S', primitives: [braises(false)] } })], propMaterials).join(' '))
+    expect(validatePropCatalog([propFixture({ light: { radiusM: 3 }, volume: { capIdentite: 'S', primitives: [braises(false)] } })], propMaterials, MPT).join(' '))
       .toMatch(/sans primitive « emet » — le foyer d’un volume se DÉCLARE/);
     // Un BILLBOARD qui éclaire (aucune recette) n'a pas de primitive où poser son foyer : il garde le
     // défaut nommé du rendu, et ce n'est pas une anomalie.
-    expect(validatePropCatalog([propFixture({ light: { radiusM: 3 } })], propMaterials)).toEqual([]);
+    expect(validatePropCatalog([propFixture({ light: { radiusM: 3 } })], propMaterials, MPT)).toEqual([]);
   });
 
   it('`emet: false` n’entre pas — l’absence dit déjà l’absence', () => {
@@ -245,7 +271,45 @@ describe('validatePropCatalog — invariants de données du décor', () => {
   });
 
   it('le catalogue RÉEL est intègre', () => {
-    expect(validatePropCatalog(props, propMaterials)).toEqual([]);
+    expect(validatePropCatalog(props, propMaterials, MPT)).toEqual([]);
+  });
+});
+
+/**
+ * EMPREINTE DÉRIVÉE — ce dont elle DÉPEND, et donc ce que sa mémoïsation doit distinguer (#1509).
+ * Deux données la décident : la RECETTE (le corps mesuré) et les PLACES (ce qui en est exclu,
+ * `placeAssiseDe`). Deux `PropData` peuvent partager la MÊME recette — un spread la recopie par
+ * RÉFÉRENCE — et différer par leurs places : ils rendent alors des empreintes DIFFÉRENTES. Un cache
+ * qui ne retiendrait que la recette servirait la valeur du premier appelant au second, en silence,
+ * dans les DEUX ordres.
+ *
+ * La table ronde le montre en clair : ses quatre tabourets débordent du plateau, donc ils comptent
+ * dans le corps dès qu'ils ne sont plus des sièges. Mesuré à 1 m/case, où l'écart est franc.
+ */
+describe('empreinte dérivée — la RECETTE et les PLACES la décident toutes les deux', () => {
+  const ronde = findPropById('table-ronde-4-tabourets')!;
+
+  it('une recette PARTAGÉE rend deux empreintes selon les places, dans les deux ordres d’appel', () => {
+    // Deux paires, chacune sur une COPIE de la recette : la seconde part d'un cache froid, ce qui
+    // mesure l'ordre INVERSE (sans elle, un cache fautif ne serait vu que dans un sens).
+    const avecPlaces = { ...ronde, volume: { ...ronde.volume! } };
+    const sansPlaces = { ...avecPlaces, seatSlots: [] };
+    expect(sansPlaces.volume, 'la recette doit être PARTAGÉE : sinon ce contrat ne mesure aucun cache').toBe(avecPlaces.volume);
+    expect(empreinteDeriveeDuProp(avecPlaces, 'S', 1), 'places d’abord : les tabourets sont exclus du corps').toEqual({ w: 2, h: 2 });
+    expect(empreinteDeriveeDuProp(sansPlaces, 'S', 1), 'même recette, SANS place : les tabourets redeviennent du corps').toEqual({ w: 3, h: 3 });
+
+    const froidSansPlaces = { ...ronde, volume: { ...ronde.volume! }, seatSlots: [] };
+    const froidAvecPlaces = { ...froidSansPlaces, seatSlots: ronde.seatSlots };
+    expect(empreinteDeriveeDuProp(froidSansPlaces, 'S', 1)).toEqual({ w: 3, h: 3 });
+    expect(empreinteDeriveeDuProp(froidAvecPlaces, 'S', 1)).toEqual({ w: 2, h: 2 });
+  });
+
+  it('deux décors SANS place partagent bien leur entrée de cache (l’absence de place est UNE clé, pas N)', () => {
+    // Sans jeu de places CANONIQUE, `?? []` fabriquerait une clé neuve par appel et le cache serait
+    // mort pour tout le catalogue sans siège. Mesuré par l'IDENTITÉ du résultat, que seul un cache rend.
+    const a = { ...ronde, volume: { ...ronde.volume! }, seatSlots: undefined };
+    const b = { ...a };
+    expect(empreinteDeriveeDuProp(b, 'S', 1)).toBe(empreinteDeriveeDuProp(a, 'S', 1));
   });
 });
 
@@ -283,10 +347,10 @@ describe('FERMETURE — une primitive est une COQUILLE CLOSE', () => {
 
   it('le validateur refuse un cylindre à 12 côtés arrivé par la DONNÉE (le JSON n’est pas typé à l’exécution)', () => {
     const douze = { kind: 'cylinder', center: { xM: 0, yM: 0, hM: 0.5 }, radiusM: 0.3, heightM: 1, sides: 12, material: 'fer-noirci' } as unknown as PropPrimitive;
-    expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives: [douze] } })], propMaterials))
+    expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives: [douze] } })], propMaterials, MPT))
       .toEqual(['x: cylindre à 12 côtés (admis : 8 ou 16)']);
     const huit: PropPrimitive = { ...(douze as { kind: 'cylinder' } & PropPrimitive), sides: 8 };
-    expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives: [huit] } })], propMaterials)).toEqual([]);
+    expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives: [huit] } })], propMaterials, MPT)).toEqual([]);
   });
 });
 

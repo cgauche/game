@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { allBuiltinCampaigns } from './campaign';
 import { testScenarios } from './test-scenarios';
 import { propFootTiles, propDeclaredFoot } from '../state/footprint';
-import type { Scene, SceneEntity } from '../state/scene';
+import { sceneMetresPerTile, type Scene, type SceneEntity } from '../state/scene';
 
 /**
  * CONTRAT POSITIF de la migration « l'empreinte vient du TYPE » (#mobilier T1) : une empreinte
@@ -31,7 +31,7 @@ function occupantsDansUnDecor(source: string, scene: Scene): string[] {
   const couverture = new Map<string, string>();
   for (const e of scene.entities ?? []) {
     if (e.kind !== 'prop' || !propDeclaredFoot(e.ref)) continue;
-    for (const t of propFootTiles(e.ref, e.pos)) couverture.set(`${t.x},${t.y},${zDe(e)}`, `${e.ref} (${e.id})`);
+    for (const t of propFootTiles(e.ref, e.pos, e.facing, sceneMetresPerTile(scene))) couverture.set(`${t.x},${t.y},${zDe(e)}`, `${e.ref} (${e.id})`);
   }
   const fautifs: string[] = [];
   for (const e of scene.entities ?? []) {

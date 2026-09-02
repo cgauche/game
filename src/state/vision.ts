@@ -20,7 +20,7 @@ import { sceneIsDark } from './sceneRules';
 import { propFootTiles, decorAncre } from './footprint';
 import { Pt, chebyshev } from './path';
 import { LIGHT_LEVEL_BY_ID, findTraitById, findPropById, findTrappingById } from '../data';
-import { rotatePropLocal, CAP_IDENTITE_PROP, type PropData } from '../data/props.types';
+import { empreinteDuProp, rotatePropLocal, CAP_IDENTITE_PROP, type PropData } from '../data/props.types';
 import type { Dir8 } from './dir8';
 import { memoByRef } from './sceneMemo';
 
@@ -106,7 +106,7 @@ function buildOpaqueUncached(scene: Scene): Occ {
       }
   for (const e of scene.entities) {
     if (e.kind !== 'prop' || !e.ref || !findPropById(e.ref)?.opaque) continue;
-    for (const { x, y } of propFootTiles(e.ref, e.pos))
+    for (const { x, y } of propFootTiles(e.ref, e.pos, e.facing, sceneMetresPerTile(scene)))
       if (x >= 0 && y >= 0 && x < w && y < h) { g[y * w + x] = 1; topH[y * w + x] = heightAt(scene, x, y, 0) + METRES_PER_LEVEL; }
   }
   // Arêtes bloquantes (z0) en SET → test O(1) au rayon (au lieu de `scene.walls.some` O(murs) : 171 ms
@@ -213,7 +213,8 @@ export function mapLights(scene: Scene): LightSource[] {
  * primitive, exprimé RELATIVEMENT à `pos` comme le veut `LightSource.foyer`.
  *
  * Il se compose EXACTEMENT comme la géométrie, et depuis les MÊMES deux sources qu'elle :
- *  - l'ANCRE du décor (`decorAncre`, `state/footprint.ts`) — le centre de son empreinte, que
+ *  - l'ANCRE du décor (`decorAncre`, `state/footprint.ts`) — le centre de son empreinte EFFECTIVE
+ *    (`empreinteDuProp`, corps tourné depuis #1509), que
  *    `gameIso/builders/props.ts` lit pour poser la recette ; une empreinte 2×2 la décale d'une
  *    demi-case sur chaque axe, et une lampe calée sur `pos` seul s'en détacherait de 1,414 m ;
  *  - la ROTATION au cap de l'instance (`rotatePropLocal`, `data/props.types.ts`), l'unique définition
@@ -226,7 +227,7 @@ export function mapLights(scene: Scene): LightSource[] {
 function foyerDe(prop: PropData | undefined, pos: Pt, facing: Dir8 | undefined, mpt: number): { foyer?: LightSource['foyer'] } {
   const emettrice = prop?.volume?.primitives.find((p) => p.emet);
   if (!emettrice) return {};
-  const ancre = decorAncre(pos, prop?.foot);
+  const ancre = decorAncre(pos, empreinteDuProp(prop, facing, mpt));
   const [x, y] = rotatePropLocal(emettrice.center.xM / mpt, emettrice.center.yM / mpt, facing ?? CAP_IDENTITE_PROP);
   return { foyer: { x: ancre.x - pos.x + x, y: ancre.y - pos.y + y, h: emettrice.center.hM } };
 }

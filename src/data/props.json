@@ -993,10 +993,6 @@
     "type": "props",
     "label": "Table longue",
     "solid": true,
-    "foot": {
-      "w": 2,
-      "h": 1
-    },
     "volume": {
       "capIdentite": "S",
       "primitives": [

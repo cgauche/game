@@ -1,6 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { sizeFootprint, footprintN, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap, combatDistance, decorFootGeometry, propDeclaredFoot, propFootTiles } from './footprint';
 import { datasetObject, setObjectDataset } from '../data/overrides';
+import { entityBlockedAt } from './sceneRules';
+import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from './scene';
 import { chebyshev } from './path';
 import type { Combatant } from '../engine/types';
 import type { SizeCategory } from '../engine/size';
@@ -92,6 +94,10 @@ describe('footprint — empreinte N×N par Taille (donnée `sizes.json::footprin
 });
 
 describe('propDeclaredFoot / propFootTiles — l’empreinte d’un décor vient du CATALOGUE', () => {
+  /** L'échelle des scènes de ce fichier — LUE, jamais redite : `emptyScene` ne pose pas de
+   *  `metresPerTile`, donc c'est le défaut du monde (`LDB 15 l.12`) qui s'applique. */
+  const MPT = sceneMetresPerTile(emptyScene(4, 4));
+
   it('empreinte déclarée (charrette 2×1, tente 2×2) ; absente pour un décor sans empreinte', () => {
     expect(propDeclaredFoot('charrette')).toEqual({ w: 2, h: 1 });
     expect(propDeclaredFoot('tente')).toEqual({ w: 2, h: 2 });
@@ -99,9 +105,47 @@ describe('propDeclaredFoot / propFootTiles — l’empreinte d’un décor vient
     expect(propDeclaredFoot(undefined)).toBeUndefined();
   });
   it('cases couvertes : le rectangle déclaré ancré au coin NO, la seule case sinon', () => {
-    expect(propFootTiles('charrette', { x: 3, y: 2 })).toEqual([{ x: 3, y: 2 }, { x: 4, y: 2 }]);
-    expect(propFootTiles('tente', { x: 0, y: 0 })).toHaveLength(4);
-    expect(propFootTiles('tonneau', { x: 7, y: 1 })).toEqual([{ x: 7, y: 1 }]);
+    expect(propFootTiles('charrette', { x: 3, y: 2 }, 'S', MPT)).toEqual([{ x: 3, y: 2 }, { x: 4, y: 2 }]);
+    expect(propFootTiles('tente', { x: 0, y: 0 }, 'S', MPT)).toHaveLength(4);
+    expect(propFootTiles('tonneau', { x: 7, y: 1 }, 'S', MPT)).toEqual([{ x: 7, y: 1 }]);
+  });
+
+  /**
+   * L'EMPREINTE TOURNE AVEC LE CAP pour un décor à RECETTE (#1509) : ses cases sont celles de son
+   * CORPS tourné. `table-2x1` est la première recette multi-case du catalogue — 2×1 aux caps N/S,
+   * 1×2 aux caps E/O. Un BILLBOARD, lui, n'a pas de corps : son empreinte DÉCLARÉE ne tourne pas.
+   */
+  it('un décor à RECETTE couvre les cases de son corps tourné (table-2x1 : 2×1 en N/S, 1×2 en E/O)', () => {
+    expect(propFootTiles('table-2x1', { x: 3, y: 2 }, 'S', MPT)).toEqual([{ x: 3, y: 2 }, { x: 4, y: 2 }]);
+    expect(propFootTiles('table-2x1', { x: 3, y: 2 }, 'N', MPT)).toEqual([{ x: 3, y: 2 }, { x: 4, y: 2 }]);
+    expect(propFootTiles('table-2x1', { x: 3, y: 2 }, 'E', MPT)).toEqual([{ x: 3, y: 2 }, { x: 3, y: 3 }]);
+    expect(propFootTiles('table-2x1', { x: 3, y: 2 }, 'O', MPT)).toEqual([{ x: 3, y: 2 }, { x: 3, y: 3 }]);
+  });
+
+  it('un BILLBOARD multi-case garde son empreinte déclarée à tous les caps (charrette 2×1)', () => {
+    for (const cap of ['N', 'E', 'S', 'O'] as const)
+      expect(propFootTiles('charrette', { x: 3, y: 2 }, cap, MPT), `charrette cap ${cap}`)
+        .toEqual([{ x: 3, y: 2 }, { x: 4, y: 2 }]);
+  });
+
+  /**
+   * L'ÉTENDUE N'EST PAS LA PORTE. La dérivation (#1509) alimente les CASES d'un décor ; ce qui décide
+   * qu'un décor BLOQUE reste `entityBlockedAt` (`sceneRules.ts`) : empreinte DÉCLARÉE, interaction, ou
+   * solidité. Ces quatre recettes n'ont ni `foot` ni `solid` — elles ne doivent PAS se mettre à murer
+   * leur case du seul fait que leur corps a désormais une empreinte. Liste NOMINATIVE : un
+   * cinquième décor de cette famille se déclare ici, ou il passe sans preuve.
+   */
+  const TRAVERSABLES_A_RECETTE = ['cheminee', 'enseigne', 'clocheton', 'applique-murale'] as const;
+
+  it.each(TRAVERSABLES_A_RECETTE)('%s : recette NON solide et sans `foot` — sa case reste traversable', (ref) => {
+    expect(propDeclaredFoot(ref), `${ref} déclare un foot : ce contrat mesurerait autre chose`).toBeUndefined();
+    const scene: Scene = { ...emptyScene(8, 8), entities: [{ id: 'd-1', kind: 'prop', ref, pos: { x: 3, y: 3 } }] as SceneEntity[] };
+    expect(entityBlockedAt(scene, 3, 3, 0)).toBe(false);
+  });
+
+  it('témoin : un décor à recette SOLIDE, lui, bloque bien sa case (sans quoi le contrat ci-dessus passerait sur du vide)', () => {
+    const scene: Scene = { ...emptyScene(8, 8), entities: [{ id: 'd-1', kind: 'prop', ref: 'tonneau', pos: { x: 3, y: 3 } }] as SceneEntity[] };
+    expect(entityBlockedAt(scene, 3, 3, 0)).toBe(true);
   });
 });
 

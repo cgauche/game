@@ -13,7 +13,9 @@
  * de DÉCOR (`propDeclaredFoot`/`propFootTiles`) LISENT le catalogue app-owned `props.json` (`../data`),
  * vérité unique de l'empreinte d'un prop — ce module n'est donc pas sans dépendance de données.
  */
-import { findPropById, propFootOf } from '../data';
+import { findPropById } from '../data';
+import { empreinteDuProp } from '../data/props.types';
+import type { Dir8 } from './dir8';
 import { effectiveSize, sizeFootprintSide, type SizeCategory } from '../engine/size';
 import type { Combatant } from '../engine/types';
 import type { Pt } from './path';
@@ -66,9 +68,19 @@ export function decorAncre(pos: { x: number; y: number }, foot?: { w: number; h:
   return { x: pos.x + offX, y: pos.y + offY };
 }
 
-/** Cases couvertes par un décor de ref `ref` ancré en `pos` (sa seule case si aucune empreinte déclarée). */
-export function propFootTiles(ref: string | undefined, pos: Pt): Pt[] {
-  const { w, h } = propFootOf(findPropById(ref ?? ''));
+/**
+ * Cases couvertes par un décor de ref `ref` ancré en `pos`, au cap `facing` et à l'échelle `mpt` —
+ * la COUTURE UNIQUE de l'empreinte effective d'un décor pour tous ses consommateurs de cases
+ * (walkability `sceneRules`, Ligne de Vue `lineOfSight`, opacité de lumière `vision`, outillage).
+ *
+ * L'étendue vient de `empreinteDuProp` (`data/props.types.ts`) : le CORPS TOURNÉ pour un décor à
+ * recette (#1509 — une table 2×1 au cap E couvre 1×2), l'empreinte DÉCLARÉE pour un billboard.
+ * Ce que cette fonction rend, c'est une ÉTENDUE ; elle ne dit RIEN de la porte de blocage — un décor
+ * qui ne bloque pas (`sceneRules` `entityBlockedAt`) ne se met pas à bloquer parce que ses cases sont
+ * désormais dérivées.
+ */
+export function propFootTiles(ref: string | undefined, pos: Pt, facing: Dir8 | undefined, mpt: number): Pt[] {
+  const { w, h } = empreinteDuProp(findPropById(ref ?? ''), facing, mpt);
   const out: Pt[] = [];
   for (let dy = 0; dy < h; dy++) for (let dx = 0; dx < w; dx++) out.push({ x: pos.x + dx, y: pos.y + dy });
   return out;

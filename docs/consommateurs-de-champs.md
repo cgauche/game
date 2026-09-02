@@ -212,59 +212,59 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `alsoIn` | — | *absent du type TS* |
 | `maison` | — | *absent du type TS* |
 | `icon` | — | *absent du type TS* |
-| `solid` | 2 | `src/data/props.types.ts:435` |
-| `opaque` | 3 | `src/data/props.types.ts:412` |
-| `cover` | 3 | `src/data/props.types.ts:412` |
-| `light` | 3 | `src/data/props.types.ts:421` |
-| `foot` | 3 | `src/data/props.types.ts:367` |
-| `volume` | 11 | `src/data/index.ts:2650` |
-| `seatSlots` | 2 | `src/data/props.types.ts:426` |
+| `solid` | 2 | `src/data/props.types.ts:547` |
+| `opaque` | 3 | `src/data/props.types.ts:522` |
+| `cover` | 3 | `src/data/props.types.ts:522` |
+| `light` | 3 | `src/data/props.types.ts:531` |
+| `foot` | 2 | `src/data/props.types.ts:371` |
+| `volume` | 18 | `src/data/index.ts:2650` |
+| `seatSlots` | 4 | `src/data/props.types.ts:399` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `capIdentite` | 2 | `src/data/props.types.ts:406` |
-| `primitives` | 5 | `src/data/props.types.ts:414` |
+| `capIdentite` | 2 | `src/data/props.types.ts:516` |
+| `primitives` | 6 | `src/data/props.types.ts:448` |
 
 ### `PropPrimitive` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `kind` | 5 | `src/data/props.types.ts:270` |
-| `center` | 6 | `src/data/props.types.ts:270` |
-| `size` | 3 | `src/data/props.types.ts:270` |
-| `material` | 4 | `src/data/props.types.ts:374` |
-| `emet` | 2 | `src/data/props.types.ts:418` |
-| `radiusM` | 2 | `src/data/props.types.ts:271` |
-| `heightM` | 2 | `src/data/props.types.ts:271` |
-| `sides` | 2 | `src/data/props.types.ts:271` |
-| `slope` | 1 | `src/data/props.types.ts:272` |
+| `kind` | 5 | `src/data/props.types.ts:273` |
+| `center` | 6 | `src/data/props.types.ts:273` |
+| `size` | 3 | `src/data/props.types.ts:273` |
+| `material` | 4 | `src/data/props.types.ts:479` |
+| `emet` | 2 | `src/data/props.types.ts:528` |
+| `radiusM` | 2 | `src/data/props.types.ts:274` |
+| `heightM` | 2 | `src/data/props.types.ts:274` |
+| `sides` | 2 | `src/data/props.types.ts:274` |
+| `slope` | 1 | `src/data/props.types.ts:275` |
 
 ### `PropSeatSlot` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/props.types.ts:427` |
-| `anchor` | 2 | `src/state/seating.ts:146` |
+| `id` | 5 | `src/data/props.types.ts:539` |
+| `anchor` | 5 | `src/data/props.types.ts:400` |
 | `facing` | 1 | `src/state/seating.ts:154` |
-| `approach` | 4 | `src/data/props.types.ts:430` |
+| `approach` | 4 | `src/data/props.types.ts:542` |
 
 ### `PropPoint3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `xM` | 13 | `src/data/props.types.ts:164` |
-| `yM` | 13 | `src/data/props.types.ts:163` |
-| `hM` | 13 | `src/data/props.types.ts:163` |
+| `xM` | 16 | `src/data/props.types.ts:167` |
+| `yM` | 16 | `src/data/props.types.ts:166` |
+| `hM` | 15 | `src/data/props.types.ts:166` |
 
 ### `PropSize3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `xM` | 3 | `src/data/props.types.ts:193` |
-| `yM` | 3 | `src/data/props.types.ts:194` |
-| `hM` | 3 | `src/data/props.types.ts:195` |
+| `xM` | 3 | `src/data/props.types.ts:196` |
+| `yM` | 3 | `src/data/props.types.ts:197` |
+| `hM` | 3 | `src/data/props.types.ts:198` |
 
 ### `CritEscalation` (src/data/criticals.ts)
 
@@ -301,4 +301,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: 4c2633588ffe68ca3d8c576c4303b2a4dd1b7bca (2082 fichiers, 169 dossiers) -->
+<!-- sources-empreinte: f7a6d5d09fa7f6877d4367d3681bcaedf3295a18 (2082 fichiers, 169 dossiers) -->

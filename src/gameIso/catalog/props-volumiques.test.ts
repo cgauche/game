@@ -4,8 +4,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { propSvg } from './decor';
 import { scenarioEntities } from '../../scenes/opera/furnished';
+import { buildOperaFloorplan } from '../../scenes/opera/floorplan';
 import { findPropById, props } from '../../data';
-import { aretesNonAppariees, CAP_IDENTITE_PROP, propFootOf, REF_DECOR_DEFAUT, type PropData, type PropPrimitive } from '../../data/props.types';
+import { aretesNonAppariees, CAP_IDENTITE_PROP, empreinteDeriveeDuProp, placeAssiseDe, REF_DECOR_DEFAUT, rotatePropLocal, type PropData, type PropPrimitive } from '../../data/props.types';
 import { decorFootGeometry } from '../../state/footprint';
 import { buildProps } from '../builders/props';
 import { buildPropVolumes } from '../builders/propVolumes';
@@ -40,7 +41,7 @@ const cuire = (prop: PropData, ancrage: Parameters<typeof buildPropVolumes>[1]) 
   buildPropVolumes(prop, ancrage, METRES_PAR_CASE);
 
 /** Un décor authoré quelque part dans `src/scenes` : sa provenance, son id, sa ref et son cap. */
-interface DecorAuthore { source: string; id: string; kind?: string; ref?: string; facing?: string }
+interface DecorAuthore { source: string; id: string; kind?: string; ref?: string; facing?: string; mpt: number }
 
 /**
  * TOUTES les instances de décor AUTHORÉES : les documents `.json` de `src/scenes` (récursif, toute
@@ -56,7 +57,10 @@ function entitesAuthorees(): DecorAuthore[] {
     if (Array.isArray(o)) { for (const x of o) recolte(x, fichier); return; }
     const noeud = o as Record<string, unknown>;
     if (Array.isArray(noeud.entities))
-      for (const e of noeud.entities as DecorAuthore[]) out.push({ ...e, source: fichier });
+      // L'ÉCHELLE de la scène PORTEUSE voyage avec l'instance : l'empreinte d'un décor à recette en
+      // dépend (#1509), la juger à une autre échelle que la sienne ne mesurerait rien de réel.
+      // Lue par la MÊME règle que le monde (`sceneMetresPerTile`), jamais par un littéral.
+      for (const e of noeud.entities as DecorAuthore[]) out.push({ ...e, source: fichier, mpt: sceneMetresPerTile(noeud as { metresPerTile?: number }) });
     for (const v of Object.values(noeud)) recolte(v, fichier);
   };
   const parcours = (dir: string, rel: string): void => {
@@ -67,14 +71,9 @@ function entitesAuthorees(): DecorAuthore[] {
     }
   };
   parcours(RACINE_SCENES, '');
-  for (const e of scenarioEntities as unknown as DecorAuthore[]) out.push({ ...e, source: 'opera/furnished.ts' });
+  for (const e of scenarioEntities as unknown as DecorAuthore[]) out.push({ ...e, source: 'opera/furnished.ts', mpt: sceneMetresPerTile(buildOperaFloorplan()) });
   return out;
 }
-
-/** Les refs volumiques dont l'empreinte déclarée dépasse UNE case. */
-const IDS_MULTI_CASE = props
-  .filter((p) => p.volume && ((p.foot?.w ?? 1) > 1 || (p.foot?.h ?? 1) > 1))
-  .map((p) => p.id);
 
 /** Emprise d'une primitive : sa boîte englobante au sol en CASES (la recette est en mètres, #1507 —
  *  c'est l'échelle de la scène qui la ramène à la grille) et ses deux hauteurs, en mètres. */
@@ -182,52 +181,91 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
   });
 
   /**
-   * EMPREINTE — le CORPS d'un meuble tient dans l'empreinte DÉCLARÉE de son type (`foot`, défaut 1×1,
-   * origine à son CENTRE) ; seuls ses TABOURETS en débordent, d'au plus 0,45 case, et uniquement du
-   * côté de l'abord de la place qu'ils portent. La solidité reste celle de l'empreinte : la case qu'un
-   * tabouret effleure demeure traversable.
+   * EMPREINTE — les cases d'un décor à recette sont celles de son CORPS TOURNÉ, sièges exclus
+   * (`empreinteDeriveeDuProp`, #1509). Le `foot` déclaré n'est plus la vérité d'un volumique : il n'en
+   * reste QUE la vérité d'un billboard. Ces contrats mesurent donc la DÉRIVÉE, en positif.
    *
-   * Le discriminant est STRUCTUREL, jamais un nom de ref : un tabouret est la primitive dont l'emprise
-   * au plan CONTIENT l'ancre d'une place ET qui ne monte pas plus haut que l'assise (l'assise et son
-   * fût) — un plateau qui survolerait l'ancre reste du corps, et se mesure comme tel.
+   * L'exclusion des sièges EST le prédicat : un tabouret n'est pas un obstacle, c'est par lui qu'on
+   * s'assoit — sans elle, la table ronde passerait de 1×1 à 2×2 solide et ses quatre abords
+   * sauteraient. Le discriminant est STRUCTUREL, jamais un nom de ref (`placeAssiseDe`,
+   * `data/props.types.ts`) : la primitive dont l'emprise au plan CONTIENT l'ancre d'une place ET qui
+   * ne monte pas plus haut que cette assise ; un plateau qui survole l'ancre reste du corps.
    */
-  const DEBORD_TABOURET = 0.45;
-  /** Demi-empreinte déclarée du type, en cases — la borne du repaire local (1×1 ⇒ 0,5 × 0,5). */
-  const demiEmpreinte = (id: string) => {
-    const { w, h } = propFootOf(findPropById(id));
+  /** Le CORPS d'une recette (sièges exclus) et ses SIÈGES, chacun avec la place qu'il porte. */
+  const corpsEtSieges = (id: string) => {
+    const prop = findPropById(id)!;
+    const parts = prop.volume!.primitives.map((p) => ({ e: emprise(p), slot: placeAssiseDe(prop, p) }));
+    return { corps: parts.filter((v) => !v.slot), sieges: parts.filter((v) => v.slot) };
+  };
+  /** Demi-empreinte DÉRIVÉE du type à ce cap, en cases — la borne du repère local (1×1 ⇒ 0,5 × 0,5). */
+  const demiAuCap = (id: string, facing: Dir4) => {
+    const { w, h } = empreinteDeriveeDuProp(findPropById(id)!, facing, METRES_PAR_CASE);
     return { x: w / 2, y: h / 2 };
   };
-  const tabouretsDe = (id: string) => {
-    const prop = findPropById(id)!;
-    const demi = demiEmpreinte(id);
-    return prop.volume!.primitives.map((p) => {
-      const e = emprise(p);
-      const slot = (prop.seatSlots ?? []).find((s) => {
-        const ax = s.anchor.xM / METRES_PAR_CASE, ay = s.anchor.yM / METRES_PAR_CASE;
-        return ax >= e.x0 - 1e-9 && ax <= e.x1 + 1e-9 && ay >= e.y0 - 1e-9 && ay <= e.y1 + 1e-9 && e.haut <= s.anchor.hM + 1e-9;
-      });
-      const debord = Math.max(
-        Math.max(Math.abs(e.x0), Math.abs(e.x1)) - demi.x,
-        Math.max(Math.abs(e.y0), Math.abs(e.y1)) - demi.y,
-      );
-      return { e, slot, debord };
-    });
+
+  /**
+   * LE CONTRAT DU SOCLE, en ATTENDUS NOMINAUX : l'empreinte de chaque recette, à chacun de ses quatre
+   * caps. Elle ne se compare à AUCUNE donnée — `foot` a disparu des recettes (migration
+   * `2026-09-03-1509-foot-volumique-mort.mjs`, refine `defs/props.ts`), et se comparer à ce que le
+   * code dérive lui-même ne rougirait jamais. La liste est CLOSE et son cardinal verrouillé : une
+   * recette de plus s'y déclare avec ses cases mesurées, ou elle sort rouge sans être vue.
+   */
+  const EMPREINTES_ATTENDUES: Readonly<Record<string, { ns: [number, number]; eo: [number, number] }>> = {
+    // La seule recette MULTI-CASE du catalogue : son plateau de 3,8 m tient sur deux cases en x, une
+    // en y — et les échange au quart de tour. C'est TOUT le socle #1509, sur une ligne.
+    'table-2x1': { ns: [2, 1], eo: [1, 2] },
+    // Toutes les autres tiennent sur UNE case, à tous les caps. La table ronde n'y tient que parce
+    // que ses quatre tabourets sont exclus du corps (sans eux elle mesurerait 2×2 — cf. le contrat de
+    // cache de `data/props-integrity.test.ts`).
+    ...Object.fromEntries(([
+      'tonneau', 'tonneaux-pile', 'caisse', 'coffre', 'urne', 'table', 'chaise', 'banc', 'tabouret',
+      'armoire', 'etagere', 'etal-marche', 'cheminee-interieure', 'comptoir-droit', 'comptoir-angle',
+      'table-ronde-4-tabourets', 'table-murale-2-tabourets', 'cheminee', 'enseigne', 'clocheton',
+      'applique-murale',
+    ]).map((id) => [id, { ns: [1, 1], eo: [1, 1] }])),
   };
 
-  it.each(IDS)('%s : son corps tient dans son empreinte', (id) => {
-    expect(tabouretsDe(id).filter((v) => !v.slot && v.debord > 1e-9).map((v) => v.e)).toEqual([]);
+  it('la liste des empreintes attendues couvre EXACTEMENT le catalogue des recettes', () => {
+    expect(Object.keys(EMPREINTES_ATTENDUES).sort()).toEqual([...IDS].sort());
+    expect(IDS.length, 'cardinal des recettes volumiques').toBe(22);
+    // Au moins une recette MULTI-CASE, sans quoi la rotation d'empreinte ne serait mesurée sur rien.
+    expect(Object.values(EMPREINTES_ATTENDUES).filter((a) => a.ns[0] > 1 || a.ns[1] > 1).length).toBeGreaterThan(0);
   });
 
-  it.each(IDS)('%s : ses tabourets débordent d’au plus 0,45 case, vers l’abord de leur place', (id) => {
-    for (const { e, slot, debord } of tabouretsDe(id)) {
-      if (!slot) continue;
-      expect(debord, `${id}/${slot.id} : débord (cases)`).toBeLessThanOrEqual(DEBORD_TABOURET);
+  it.each(IDS)('%s : son empreinte DÉRIVÉE, à chacun de ses quatre caps, est celle que le catalogue MESURE', (id) => {
+    const attendu = EMPREINTES_ATTENDUES[id];
+    for (const facing of DIR4_ORDER) {
+      const [w, h] = facing === 'E' || facing === 'O' ? attendu.eo : attendu.ns;
+      expect(empreinteDeriveeDuProp(findPropById(id)!, facing, METRES_PAR_CASE), `${id} cap ${facing}`).toEqual({ w, h });
+    }
+  });
+
+  it('plus AUCUNE recette ne déclare de `foot` — c’est la vérité d’un BILLBOARD, et de lui seul (#1509)', () => {
+    expect(IDS.filter((id) => findPropById(id)!.foot !== undefined)).toEqual([]);
+    // Et le champ vit toujours, chez ceux à qui il appartient : sans cette moitié, le contrat
+    // ci-dessus passerait aussi sur un `foot` disparu du schéma.
+    expect(props.filter((p) => !p.volume && p.foot).length).toBeGreaterThan(20);
+  });
+
+  it.each(IDS)('%s : son CORPS (sièges exclus) tient dans son empreinte dérivée, à chacun de ses caps', (id) => {
+    for (const facing of DIR4_ORDER) {
+      const demi = demiAuCap(id, facing);
+      const bornes = facing === 'E' || facing === 'O' ? { x: demi.y, y: demi.x } : demi;
+      const debordants = corpsEtSieges(id).corps.filter(({ e }) =>
+        Math.max(Math.abs(e.x0), Math.abs(e.x1)) - bornes.x > 1e-9
+        || Math.max(Math.abs(e.y0), Math.abs(e.y1)) - bornes.y > 1e-9);
+      expect(debordants.map((v) => v.e), `${id} cap ${facing}`).toEqual([]);
+    }
+  });
+
+  it.each(IDS)('%s : chaque siège déborde vers l’abord de SA place, jamais du côté opposé', (id) => {
+    const demi = demiAuCap(id, CAP_IDENTITE_PROP);
+    for (const { e, slot } of corpsEtSieges(id).sieges) {
       // Le débord suit l'abord : jamais un tabouret jeté du côté opposé à la case d'où l'on s'assoit.
-      const demi = demiEmpreinte(id);
-      if (e.x1 > demi.x) expect(Math.sign(slot.approach.x), `${id}/${slot.id} débord est`).toBe(1);
-      if (e.x0 < -demi.x) expect(Math.sign(slot.approach.x), `${id}/${slot.id} débord ouest`).toBe(-1);
-      if (e.y1 > demi.y) expect(Math.sign(slot.approach.y), `${id}/${slot.id} débord sud`).toBe(1);
-      if (e.y0 < -demi.y) expect(Math.sign(slot.approach.y), `${id}/${slot.id} débord nord`).toBe(-1);
+      if (e.x1 > demi.x) expect(Math.sign(slot!.approach.x), `${id}/${slot!.id} débord est`).toBe(1);
+      if (e.x0 < -demi.x) expect(Math.sign(slot!.approach.x), `${id}/${slot!.id} débord ouest`).toBe(-1);
+      if (e.y1 > demi.y) expect(Math.sign(slot!.approach.y), `${id}/${slot!.id} débord sud`).toBe(1);
+      if (e.y0 < -demi.y) expect(Math.sign(slot!.approach.y), `${id}/${slot!.id} débord nord`).toBe(-1);
     }
   });
 
@@ -235,49 +273,56 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
    * CAPS MESURÉS : les QUATRE cardinaux, pour TOUTE recette. Les diagonales n'ont pas à être mesurées —
    * elles sont refusées À LA DONNÉE par le schéma de scène (`src/data/schemas/defs-scenes/scene.ts`,
    * `superRefine` de `sceneEntitySchema` sur `PROPS_VOLUMIQUES`), et le chargement d'un projet en
-   * meurt (`parseProject`). Ce que la mesure suit, c'est l'empreinte TOURNÉE : à E/O la
-   * recette tourne (`rotatePropLocal`), donc ses bornes échangent leurs axes.
-   * L'empreinte SOLIDE, elle, ne tourne pas (`propFootTiles` ignore `facing`) — un meuble
-   * multi-case au cap E/O poserait son corps en travers de cases restées traversables. Ce TROU est le
-   * socle #1509 (« le corps tourné décide des cases »), pas ce lot ; le contrat de POPULATION ci-dessous
-   * tient la donnée hors de lui en attendant.
+   * meurt (`parseProject`).
+   *
+   * Ce que cette mesure suit, c'est la POSE dans le monde : le corps cuit part de l'ANCRE de
+   * l'empreinte DÉRIVÉE au cap (`decorAncre`), pas du coin NO ni d'une empreinte figée. Un builder qui
+   * calerait la recette sur un autre point la décalerait de la demi-case d'un 2×1 tourné.
    */
-  /** Demi-empreinte au cap : à E/O la recette a tourné d'un quart de tour, ses bornes aussi. */
-  const demiAuCap = (id: string, facing: 'N' | 'E' | 'S' | 'O') => {
-    const demi = demiEmpreinte(id);
-    return facing === 'E' || facing === 'O' ? { x: demi.y, y: demi.x } : demi;
-  };
-
-  it.each(IDS)('%s, cuit à chacun de ses caps, ne descend jamais sous le sol et reste dans son empreinte élargie', (id) => {
-    // L'ANCRE monde du décor est le centre de son empreinte (`decorFootGeometry`), pas le coin NO :
-    // pour une empreinte >1×1 elle tombe entre les cases, et c'est d'elle que la recette part.
-    const { offX, offY } = decorFootGeometry(propFootOf(findPropById(id)));
+  it.each(IDS)('%s, cuit à chacun de ses caps, part de l’ancre de son empreinte dérivée et ne descend jamais sous le sol', (id) => {
     for (const facing of DIR4_ORDER) {
-      const demi = demiAuCap(id, facing);
+      const { offX, offY } = decorFootGeometry(empreinteDeriveeDuProp(findPropById(id)!, facing, METRES_PAR_CASE));
+      // La borne, sans constante magique : l'emprise du corps ENTIER (sièges compris) tourné au cap.
+      const parts = [...corpsEtSieges(id).corps, ...corpsEtSieges(id).sieges];
+      let borneX = 0, borneY = 0;
+      for (const { e } of parts)
+        for (const [lx, ly] of [[e.x0, e.y0], [e.x1, e.y0], [e.x0, e.y1], [e.x1, e.y1]]) {
+          const [rx, ry] = rotatePropLocal(lx, ly, facing);
+          borneX = Math.max(borneX, Math.abs(rx));
+          borneY = Math.max(borneY, Math.abs(ry));
+        }
       const scene = sceneWith(propEntity({ id: 'e-1', ref: id, pos: { x: 3, y: 4 }, facing }));
       const el = buildProps(scene)[0] as { faces: { poly: { x: number; y: number; h: number }[] }[] };
       for (const face of el.faces)
         for (const p of face.poly) {
-          expect(Math.abs(p.x - (3 + offX)), `${id} cap ${facing} x`).toBeLessThanOrEqual(demi.x + DEBORD_TABOURET);
-          expect(Math.abs(p.y - (4 + offY)), `${id} cap ${facing} y`).toBeLessThanOrEqual(demi.y + DEBORD_TABOURET);
+          expect(Math.abs(p.x - (3 + offX)), `${id} cap ${facing} x`).toBeLessThanOrEqual(borneX + 1e-9);
+          expect(Math.abs(p.y - (4 + offY)), `${id} cap ${facing} y`).toBeLessThanOrEqual(borneY + 1e-9);
           expect(p.h, `${id} cap ${facing} h`).toBeGreaterThanOrEqual(0);
         }
     }
   });
 
   /**
-   * POPULATION — verrou par CONSTRUCTION du trou ci-dessus : tant que l'empreinte ne tourne pas avec
-   * le cap (#1509), aucune instance authorée d'un décor volumique MULTI-CASE ne prend un cap E/O. Un
-   * tel meuble poserait son plateau en travers de cases traversables et bloquerait des cases vides.
-   * Ce contrat TOMBE avec le socle #1509 : c'est là qu'il faut le supprimer, pas le contourner.
+   * POPULATION — l'empreinte tourne désormais avec le cap (#1509), donc plus aucun cap n'est interdit
+   * à un meuble multi-case. Ce que ce contrat mesure à la place, c'est que le catalogue est authoré
+   * POUR l'échelle de ses scènes : à l'échelle RÉELLE de la scène qui la porte, chaque instance
+   * volumique couvre exactement les cases que le catalogue mesure à la grille terrestre (2 m/case,
+   * `LDB 15 l.12`). Une scène à une AUTRE échelle — le monde naval est à 4 m/case et plus — y ferait
+   * fondre ses meubles, ou les ferait enfler sur une grille plus fine ; ce contrat le NOMME au lieu
+   * de le laisser sortir en pixels.
    */
-  it('aucune instance authorée d’un décor volumique MULTI-CASE ne porte un cap E/O (trou d’empreinte non tournée, #1509)', () => {
-    expect(IDS_MULTI_CASE.length, 'aucun décor volumique multi-case : ce contrat mesurerait du néant').toBeGreaterThan(0);
-    const multi = new Set(IDS_MULTI_CASE);
-    const instances = entitesAuthorees().filter((e) => e.ref && multi.has(e.ref));
-    expect(instances.length, 'aucune instance authorée trouvée : le scan des scènes ne joint plus rien').toBeGreaterThan(0);
-    expect(instances.filter((e) => e.facing === 'E' || e.facing === 'O')
-      .map((e) => `${e.source}/${e.id} (${e.ref}, cap ${e.facing})`)).toEqual([]);
+  it('chaque instance authorée d’un décor volumique couvre, à l’échelle RÉELLE de sa scène, les cases du catalogue', () => {
+    const volumiques = new Set(IDS);
+    const instances = entitesAuthorees().filter((e) => e.kind === 'prop' && volumiques.has(e.ref ?? REF_DECOR_DEFAUT));
+    expect(instances.length, 'aucune instance de décor volumique authorée : le scan ne joint plus rien').toBeGreaterThan(100);
+    const ecarts = instances.filter((e) => {
+      const prop = findPropById(e.ref ?? REF_DECOR_DEFAUT)!;
+      const cap = (e.facing ?? CAP_IDENTITE_PROP) as Dir4;
+      const chezElle = empreinteDeriveeDuProp(prop, cap, e.mpt);
+      const auCatalogue = empreinteDeriveeDuProp(prop, cap, METRES_PAR_CASE);
+      return chezElle.w !== auCatalogue.w || chezElle.h !== auCatalogue.h;
+    });
+    expect(ecarts.map((e) => `${e.source}/${e.id} (${e.ref}, cap ${e.facing ?? CAP_IDENTITE_PROP}, ${e.mpt} m/case)`)).toEqual([]);
   });
 
   /**

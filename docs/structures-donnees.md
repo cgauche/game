@@ -588,7 +588,7 @@ nombre d’entrées qui la portent.
 | `src/data/problemes-vehicule.json` | object | pipe à la racine | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/progression-schemas.derived.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `livres`:array(1) `schemas`:array(1) `type`:string(1) |
 | `src/data/propMaterials.json` | array | liste | entité | 8 | `color`:string(8) `id`:string(8) `label`:string(8) `metalness`:number(8) `roughness`:number(8) `type`:string(8) |
-| `src/data/props.json` | array | liste | entité | 123 | `cover`:string(32) `foot`:object(26) `id`:string(123) `label`:string(123) `light`:object(10) `maison`:string(41) `opaque`:boolean(5) `seatSlots`:array(2) `solid`:boolean(91) `type`:string(123) `volume`:object(22) |
+| `src/data/props.json` | array | liste | entité | 123 | `cover`:string(32) `foot`:object(25) `id`:string(123) `label`:string(123) `light`:object(10) `maison`:string(41) `opaque`:boolean(5) `seatSlots`:array(2) `solid`:boolean(91) `type`:string(123) `volume`:object(22) |
 | `src/data/psychology.json` | array | liste | entité | 9 | `attackDR`:object(5) `becomes`:string(1) `containedSocialMod`:number(2) `desc`:string(9) `effects`:array(1) `endedByOtherPsych`:boolean(2) `failAmount`:object(1) `failCondition`:string(1) `icon`:string(9) `id`:string(9) `immuneToFromTarget`:array(1) `immuneWhileActive`:array(1) `label`:string(9) `passive`:array(1) `psychImmune`:boolean(1) `resolution`:string(7) `source`:object(9) `stake`:string(7) `stakeForm`:string(7) `targetCauses`:object(1) `targeted`:boolean(6) `test`:object(7) `triggerOn`:string(2) `type`:string(9) |
 | `src/data/qualities.json` | array | liste | entité | 59 | `alsoIn`:array(2) `capabilities`:object(31) `desc`:string(59) `effects`:array(10) `id`:string(59) `indice`:object(1) `label`:string(59) `passive`:array(17) `polarite`:string(59) `source`:object(59) `subType`:string(59) `type`:string(59) |
 | `src/data/qualitySubtypes.json` | array | liste | entité | 3 | `id`:string(3) `label`:string(3) `type`:string(3) |
@@ -646,7 +646,7 @@ nombre d’entrées qui la portent.
 
 ### 2.2 Fréquence globale des signatures d’entrée
 
-Signatures distinctes d’entrée de document : **607**. Les 40 plus fréquentes :
+Signatures distinctes d’entrée de document : **606**. Les 40 plus fréquentes :
 
 | Signature d’entrée | Entrées |
 |---|---|
@@ -1128,7 +1128,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **846** (cible 392 · declaree 6 · historique 119 · divergente 329). Objets JSON parcourus : **48970**, dont **32110** portent une forme
+Lignes concept × dataset × champ × forme : **846** (cible 392 · declaree 6 · historique 119 · divergente 329). Objets JSON parcourus : **48969**, dont **32110** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **85**.
 
 Entrées de racine sans concept de valeur : **4024** sur **4105** —
@@ -2452,7 +2452,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13010** objets sur **48970** ne sont portés par AUCUNE
+Au-delà des orphelines, **13009** objets sur **48969** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -2538,9 +2538,9 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `species.json` | `baseChar` | `agilite,capacite-de-combat,capacite-de-tir,dexterite,endurance,force,force-mentale,initiative,intelligence,sociabilite` | 27 |
 | `arene-projet.json` | `effect` | `amount,type` | 26 |
 | `creatures.json` | `appearance` | `species` | 26 |
-| `props.json` | `foot` | `h,w` | 26 |
 | `sea-events.json` | `effect` | `d10,flat,sign` | 26 |
 | `arene-projet.json` | `choices` | `flow,icon,label,when` | 25 |
+| `props.json` | `foot` | `h,w` | 25 |
 | `diligence-projet.json` | `pos` | `x,y` | 24 |
 | `structures.json` | `char` | `B,BE` | 24 |
 | `activities.json` | `battle` | `amount,scale,side,target` | 22 |
@@ -4718,4 +4718,4 @@ pèse **1917** slots sur 2134.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 6cddf66b8e19cf2404ac63dacf86c0efae208f0e (358 fichiers, 11 dossiers) -->
+<!-- sources-empreinte: c4fd3e19f6db9556ed810bfda00e120672ed3ab5 (358 fichiers, 11 dossiers) -->
