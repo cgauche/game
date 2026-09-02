@@ -128,7 +128,7 @@ _Aucune._
 - l.522 — `src/data/index.ts:1620` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
 - l.524 — `src/data/refs-migrated.test.ts:850` — *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
 
-### MDG 15 — 3/48 ligne(s) code hors couverture
+### MDG 15 — 3/49 ligne(s) code hors couverture
 - l.461 — `src/data/naval-ports.test.ts:47` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
 - l.468 — `src/data/naval-ports.test.ts:67` — it('Kirkjugarður Langskipa : production armes/produits-de-luxe, sans surplus ni demande (MDG 15 l.468-469, folio 138)', () => {
 - l.474 — `src/data/naval-ports.test.ts:74` — it('Fjirgard : production produits-de-luxe, Demande armes +1, sans surplus (MDG 15 l.474, folio 138)', () => {
