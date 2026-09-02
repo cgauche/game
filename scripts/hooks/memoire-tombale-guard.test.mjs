@@ -62,7 +62,6 @@ test('SILENCE : le frontmatter, même quand le NOM de la fiche porte le mot', ()
   const contenu = [
     '---',
     'name: game-presets-pnj-supersede-customstatblock',
-    'description: les presets de PNJ supersèdent le CustomStatblock',
     '---',
     '',
     'Le préset porte la statblock.',
