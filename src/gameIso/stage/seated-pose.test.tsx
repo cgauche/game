@@ -33,7 +33,7 @@ function scèneAttablée(assis: boolean, species = 'humain'): Scene {
     { id: PROP, kind: 'prop', pos: { x: 2, y: 2 }, ref: TABLE, facing: 'N' },
     { id: 'f1', kind: 'personnage', pos: { x: 3, y: 2 }, facing: 'S', appearance: { species } },
   ] as unknown as SceneEntity[];
-  if (assis) s.seatAssignments = { [PROP]: { 'place-est': { kind: 'entity', entityId: 'f1' } } };
+  if (assis) s.seatAssignments = { [PROP]: { 'place-2': { kind: 'entity', entityId: 'f1' } } };
   return s;
 }
 
@@ -164,7 +164,7 @@ describe('MENEUR attablé — l’acteur du monde volumique consomme la même pl
 describe('partyTokenOf — la dérivation UNIQUE du jeton de groupe', () => {
   it('meneur assis : la position de RENDU devient l’ancre, la place voyage avec lui', () => {
     const scene = scèneAttablée(false);
-    scene.seatAssignments = { [PROP]: { 'place-est': { kind: 'party', rang: 1 } } };
+    scene.seatAssignments = { [PROP]: { 'place-2': { kind: 'party', rang: 1 } } };
     const jeton = partyTokenOf(scene, meneur(), { x: 3, y: 2 })!;
     const place = seatPoseOf(scene, { kind: 'party', rang: 1 })!;
     expect(jeton.seat).toEqual(place);
@@ -241,7 +241,7 @@ describe('buildTokens → rendu : la chaîne complète', () => {
   it('le sujet `figurant` d’un attablé expose sa place, et le billboard la lit', () => {
     const els = buildTokens(scèneAttablée(true), toutVisible(scèneAttablée(true)), null, { activeZ: 0, viewZ: null, top: false });
     const tk = els.find((e) => e.id === 'f1') as TokenEl;
-    expect(tk.subject).toMatchObject({ kind: 'figurant', seat: { propId: PROP, slotId: 'place-est' } });
+    expect(tk.subject).toMatchObject({ kind: 'figurant', seat: { propId: PROP, slotId: 'place-2' } });
   });
 });
 

@@ -62,7 +62,14 @@ import type { Scene } from './scene';
 // `state.scene` comprise : une save de 37 rouvrirait sur une scène vivante sans `type`, que le seam
 // `parseProject` refuserait au prochain export/import de son projet. La save se jette
 // (politique 2 ci-dessus).
-export const SAVE_VERSION = 38;
+// 38 → 39 (2026-09-02, #1680 lot 1b) : le VOCABULAIRE des ids de place PERSISTÉ change. Une place de
+// meuble n'est plus nommée par son côté mais par son RANG (`place-nord` → `place-1`, 6 ids de
+// `props.json`) — un id cardinal mentait dès que le repère de la recette bougeait. `snapshotSave`
+// recopie le `state` ENTIER, `state.scene.seatAssignments` comprise, dont les CLÉS sont ces ids
+// (`propId → slotId`). Une save de 38 rouvrirait avec des clés que le catalogue ne connaît plus :
+// `pruneSeatAssignments` (`store.ts:88`) les élague AVANT l'entrée en état, et tous les assis se
+// lèveraient EN SILENCE — aucun message, aucune trace. La save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 39;
 
 export interface SaveMeta {
   version: number;

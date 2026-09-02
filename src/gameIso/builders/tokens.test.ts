@@ -62,10 +62,10 @@ describe('buildTokens — figurants (PNJ d’ambiance)', () => {
       { id: 'f2', kind: 'personnage', pos: { x: 4, y: 4 } }, // debout : aucune place
     ] as SceneEntity[];
     s.encounters = [] as Scene['encounters'];
-    s.seatAssignments = { 'table-1': { 'place-est': { kind: 'entity', entityId: 'f1' } } };
+    s.seatAssignments = { 'table-1': { 'place-2': { kind: 'entity', entityId: 'f1' } } };
     const par = new Map(buildTokens(s, allVisible(s), null, VIEW).map((e) => [e.id, e.subject]));
     const assis = par.get('f1') as { kind: string; seat?: { slotId: string; facing: string; anchor: { x: number; y: number; h: number } } };
-    expect(assis.seat?.slotId).toBe('place-est');
+    expect(assis.seat?.slotId).toBe('place-2');
     expect(assis.seat?.facing).toBe('O');           // recette face au N : le corps de l'est regarde l'ouest
     expect(assis.seat?.anchor.x).toBeCloseTo(1.48, 4);
     expect(assis.seat?.anchor.h).toBeCloseTo(0.46, 4);

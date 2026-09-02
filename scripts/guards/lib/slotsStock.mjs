@@ -77,7 +77,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "modes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "optionals", occurrences: 13, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "qualities", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "ref", occurrences: 293, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "arene-projet.json", champ: "ref", occurrences: 406, lot: "L2/L3 #1473", date: "2026-08-26" }, // 293→406 : +113 OCCURRENCES — 24 ids de décor sont posés dans cette scène, 23 n'y résolvaient rien faute d'entrée `props.json` (#1680 ligne 14) ; `toile` ×4 résolvait déjà, par le Trait homonyme
   { dataset: "arene-projet.json", champ: "roomZoneIds", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "scene", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "spells", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },

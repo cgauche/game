@@ -21,22 +21,21 @@
  * géométrie en travers de cases qui restent traversables, et bloque des cases vides. La population
  * authorée est tenue aux caps N/S par un contrat de `gameIso/catalog/props-volumiques.test.ts`.
  *
- * CAP D'IDENTITÉ = `N` — contrat de DONNÉE, à connaître pour authorer : une recette (et les
- * `seatSlots` qui l'accompagnent) s'écrit FACE AU NORD, front vers `y` négatif, et c'est à ce cap
- * seul qu'elle sort telle qu'authorée. Les sept autres caps la tournent de 45° par cran, en sens
- * horaire (l'ordre de `DIR8_ORDER`).
- *
- * PIÈGE QUI EN DÉCOULE : une instance de scène SANS `facing` vaut `S` (le défaut canonique du monde),
- * donc un DEMI-TOUR par rapport à la recette. Un meuble à dos (comptoir, âtre, lit) placé sans cap
- * explicite présente donc son dos là où l'auteur a dessiné sa face : l'auteur pose le cap, il ne le
- * laisse pas au défaut. Matérialisé par `builders/propVolumes.test.ts`.
+ * CAP D'IDENTITÉ = `S` (`CAP_IDENTITE_PROP`) — contrat de DONNÉE, à connaître pour authorer : une
+ * recette (et les `seatSlots` qui l'accompagnent) s'écrit telle qu'elle se voit à l'instance SANS
+ * cap, front vers `y` positif, et c'est à ce cap seul qu'elle sort telle qu'authorée. Les sept autres
+ * caps la tournent de 45° par cran, en sens horaire (l'ordre de `DIR8_ORDER`). Le repère d'auteur est
+ * le DÉFAUT DU MONDE (`capVolumique`) : ce que l'auteur écrit est ce que la scène montre.
+ * Chaque recette le DÉCLARE (`PropVolumeRecipe.capIdentite`, requis du compilateur comme du schéma) —
+ * le repère est dans la donnée, pas dans la tête de l'auteur. Matérialisé par
+ * `builders/propVolumes.test.ts`.
  */
 import { DIR8_ORDER, estCardinal, type Dir4, type Dir8 } from '../state/dir8';
 
 /**
- * Le CAP d'un décor volumique, résolu et VERROUILLÉ. Une entité sans `facing` vaut `S` : c'est le
- * défaut du monde, pas une vertu — une recette s'authore au cap `N` (cf. l'en-tête de ce module), si
- * bien qu'un décor posé sans cap explicite présente son DOS. L'écart est traité par #1680 ligne 16.
+ * Le CAP d'un décor volumique, résolu et VERROUILLÉ. Une entité sans `facing` vaut `S` : le défaut du
+ * monde, et le CAP D'IDENTITÉ des recettes (`CAP_IDENTITE_PROP`, cf. l'en-tête de ce module) — un
+ * décor posé sans cap explicite sort donc exactement tel qu'il est authoré.
  * Ce que cette porte verrouille, c'est la DIAGONALE, refusée nominativement : la recette tourne là où
  * l'empreinte solide ne tourne pas (#1509), une diagonale poserait le corps en travers de cases restées
  * traversables. Dernier filet d'une chaîne : le schéma de scène la refuse au parse
@@ -50,14 +49,30 @@ export function capVolumique(facing: Dir8 | undefined, quoi: string): Dir4 {
 }
 
 /**
+ * CAP D'IDENTITÉ d'une recette de décor : le cap auquel elle sort telle qu'authorée, et le DÉFAUT du
+ * monde pour une entité sans `facing` (`capVolumique`) — les deux sont la MÊME valeur, c'est tout le
+ * contrat (#1680 ligne 16). Déclaré par chaque recette (`PropVolumeRecipe.capIdentite`).
+ */
+export const CAP_IDENTITE_PROP = 'S' as const satisfies Dir4;
+
+/**
+ * CRANS de 45° horaires que le cap d'une instance fait subir à une recette, comptés DEPUIS le cap
+ * d'identité. Source UNIQUE de ce décompte : la rotation de géométrie (`rotatePropLocal`) et celle du
+ * cap d'un corps assis (`state/seating.ts`, `rotateDir8(slot.facing, crans)`) tournent du MÊME
+ * nombre de crans — deux décomptes divergeraient au premier changement de repère. PURE.
+ */
+export const cransDepuisCapIdentite = (facing: Dir8): number =>
+  (DIR8_ORDER.indexOf(facing) - DIR8_ORDER.indexOf(CAP_IDENTITE_PROP) + 8) % 8;
+
+/**
  * Rotation d'un point du repère LOCAL d'une recette vers le repère de la scène, au cap d'auteur —
  * l'UNIQUE définition de ce que `SceneEntity.facing` fait subir à une géométrie de décor (volumes,
  * ancres de place, cases d'abord). Vit ici, à l'étage NEUTRE, pour être servie aussi bien au
  * builder volumique (`gameIso`) qu'à la résolution d'assise (`state`) : deux copies divergeraient.
- * `N` (index 0 de `DIR8_ORDER`) est l'identité ; chaque cran vaut 45° horaires. PURE.
+ * `CAP_IDENTITE_PROP` est l'identité ; chaque cran vaut 45° horaires. PURE.
  */
 export function rotatePropLocal(x: number, y: number, facing: Dir8): [number, number] {
-  const a = DIR8_ORDER.indexOf(facing) * Math.PI / 4;
+  const a = cransDepuisCapIdentite(facing) * Math.PI / 4;
   return [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
 }
 
@@ -102,8 +117,11 @@ export type PropPrimitive =
   | { kind: 'cylinder'; center: PropPoint3; radius: number; heightM: number; sides: PropCylinderSides; material: PropMaterialId }
   | { kind: 'prism'; center: PropPoint3; size: PropSize3; slope: 'x+' | 'x-' | 'y+' | 'y-'; material: PropMaterialId };
 
-/** Recette volumique d'un prop : la liste de ses primitives, dans le repère local. */
-export interface PropVolumeRecipe { primitives: PropPrimitive[] }
+/** Recette volumique d'un prop : la liste de ses primitives, dans le repère local.
+ *  `capIdentite` DÉCLARE ce repère — le cap auquel la recette sort telle qu'écrite. Une seule valeur
+ *  est admise (`CAP_IDENTITE_PROP`), et elle est REQUISE : le repère d'une géométrie ne se déduit pas
+ *  d'un commentaire, et une recette écrite sous un autre repère ne peut pas entrer en silence. */
+export interface PropVolumeRecipe { capIdentite: typeof CAP_IDENTITE_PROP; primitives: PropPrimitive[] }
 
 // ————————————————————————————————————————————————————————————————
 // GÉOMÉTRIE LOCALE d'une primitive — UNE définition, deux consommateurs
@@ -268,9 +286,12 @@ export function aretesNonAppariees(polys: readonly (readonly PropPoint3[])[]): {
 
 /** Place assise offerte par un prop : ancre du corps, cap du corps assis, et case d'ABORD (relative à
  *  l'ancre de l'empreinte) depuis laquelle on rejoint la place.
- *  `id` : préfixé `place-` — il entre dans l'index GLOBAL des ids de la donnée authorée
- *  (`scripts/docs/lib/structures-scan.mts`), où un mot commun (`nord`) résoudrait depuis un autre
- *  dataset. Il reste keyé sous son meuble dans `Scene.seatAssignments` (`propId → slotId`). */
+ *  `id` : `place-<rang>`, SANS CÔTÉ (#1680 ligne 16). Le préfixe le tient hors des homonymes de
+ *  l'index GLOBAL des ids authorés (`scripts/docs/lib/structures-scan.mts`, où un mot commun résoudrait
+ *  depuis un autre dataset) ; le RANG, lui, est tout ce qu'une clé d'identité a le droit de porter — le
+ *  côté vit dans `anchor`/`facing`/`approach`, qui TOURNENT avec le cap de l'instance quand l'id, lui,
+ *  ne tourne pas. Un id cardinal (`place-nord`) mentait dès que le repère bougeait. Il reste keyé sous
+ *  son meuble dans `Scene.seatAssignments` (`propId → slotId`) : deux meubles peuvent porter `place-1`. */
 export interface PropSeatSlot { id: string; anchor: PropPoint3; facing: Dir8; approach: { x: number; y: number } }
 
 /** Matériau de rendu d'une primitive : couleur de base + réponse à la lumière. Aucune émission — une
@@ -337,6 +358,17 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
   for (const prop of entries) {
     const slots = new Set<string>();
     const approaches = new Set<string>();
+    // Le JSON n'est pas typé à l'EXÉCUTION (même raison que les côtés de cylindre ci-dessus) : le REPÈRE
+    // déclaré par la recette doit être celui que `rotatePropLocal` implémente, sans quoi la géométrie
+    // sort d'un demi-tour sans que rien ne le dise.
+    if (prop.volume && prop.volume.capIdentite !== CAP_IDENTITE_PROP)
+      errors.push(`${prop.id}: recette au repère « ${prop.volume.capIdentite} » (seul ${CAP_IDENTITE_PROP} est implémenté)`);
+    // COUVERT D'UN DÉCOR OPAQUE — un décor qui coupe la Ligne de Vue est lu par `tileBlocksSight`
+    // (`state/lineOfSight.ts:158-163`), qui rend « bloqué » ou force « totale » au contact AVANT que la
+    // classe de `cover` ne soit lue : toute autre classe déclarée sous `opaque` est une règle que le
+    // moteur n'applique jamais. Le catalogue ne peut donc pas la porter.
+    if (prop.opaque && prop.cover !== 'totale')
+      errors.push(`${prop.id}: opaque avec cover ${prop.cover ? `« ${prop.cover} »` : 'absent'} — un décor opaque ne rend que « totale » (lineOfSight)`);
     for (const primitive of prop.volume?.primitives ?? []) errors.push(...erreursDePrimitive(prop.id, primitive, known));
     const { w, h } = propFootOf(prop);
     for (const slot of prop.seatSlots ?? []) {

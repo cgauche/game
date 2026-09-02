@@ -12,6 +12,7 @@ import { propSvg } from '../../src/gameIso/catalog/decor';
 import { findPropById, findPropMaterialById, props } from '../../src/data';
 import { DEFS } from '../../src/gameIso/sprites';
 import type { Face } from '../../src/gameIso/builders/types';
+import { CAP_IDENTITE_PROP } from '../../src/data/props.types';
 
 /** DÉRIVÉE du catalogue : une recette de plus entre en planche par sa seule déclaration en donnée —
  *  une liste manuscrite laisserait les suivantes hors QC en silence. */
@@ -90,8 +91,11 @@ function vueSvg(faces: readonly Face[], rot: number, top: boolean): { svg: strin
   return { svg: corps, peintes: visibles.length };
 }
 
-/** Ancrage de PLANCHE : la recette au cap d'identité, origine de grille, sol à 0 m — aucune scène. */
-const ancrageDePlanche = { ancre: { x: 0, y: 0 }, facing: 'N' as const, baseHeightM: 0 };
+/** Ancrage de PLANCHE : la recette au CAP D'IDENTITÉ (`CAP_IDENTITE_PROP`, jamais un cap littéral —
+ *  une planche à un autre cap montrerait chaque décor tourné par rapport à ce que la donnée écrit et à
+ *  ce qu'une scène sans cap montre), origine de grille, sol à 0 m — aucune scène.
+ *  Contrat : `src/gameIso/catalog/planche-qc-cap-identite.test.ts`. */
+const ancrageDePlanche = { ancre: { x: 0, y: 0 }, facing: CAP_IDENTITE_PROP, baseHeightM: 0 };
 
 const COLONNES = [
   { titre: 'rot0', rot: 0, top: false },
@@ -129,7 +133,7 @@ const html = `<!doctype html><html lang="fr"><meta charset="utf-8"><title>QC —
 </style>
 <h1>Mobilier volumique — géométrie monde des recettes de <code>props.json</code></h1>
 <p>Quatre rotations de caméra + vue de dessus, peintes depuis les <code>Face[]</code> réelles de
-<code>buildPropVolumes</code> (cap d'identité <code>N</code>, sol à 0 m, case de 2 m). Dernière colonne :
+<code>buildPropVolumes</code> (cap d'identité <code>${CAP_IDENTITE_PROP}</code>, sol à 0 m, case de 2 m). Dernière colonne :
 la vignette SVG de palette, qui n'est jamais le corps monde.</p>
 <table><thead><tr><th>ref</th>${COLONNES.map((c) => `<th>${c.titre}</th>`).join('')}<th>vignette</th></tr></thead>
 <tbody>

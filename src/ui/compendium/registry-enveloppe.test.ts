@@ -365,7 +365,9 @@ const PARTIELS: string[] = [
   // +4 décors de bâtiment #1624 (cheminee, enseigne, clocheton, applique-murale) puis +1 banc #1644
   // (le seul décor de l'Opéra qui n'avait AUCUNE entrée de donnée) — MÊME angle mort source/desc que
   // les 78 existants : le catalogue de décor est app-owned, aucune page ne le source.
-  "props.json#0 (83)",
+  // Puis 83→123 : #1680 ligne 14, BIJECTION art ⇄ donnée (les 40 defs d'art sans entrée reçoivent la
+  // leur) — même angle mort, même cause.
+  "props.json#0 (123)",
   "qualitySubtypes.json#0 (3)",
   "river-navigation.json#0 (5)",
   "sea-cargo.json#0 (13)",

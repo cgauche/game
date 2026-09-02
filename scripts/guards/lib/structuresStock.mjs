@@ -208,7 +208,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "arene-projet.json", champ: "merchant", signature: "archetype", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-30", motif: "référence d’ARCHÉTYPE de marchand" },
   { concept: "reference", dataset: "arene-projet.json", champ: "optionals", signature: "arg,id", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-30", motif: "paramètre d’ENTITÉ (trait, talent)" },
   { concept: "reference", dataset: "arene-projet.json", champ: "optionals", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "arene-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 293, lot: "L3 #1463", date: "2026-08-30", motif: "référence de PION de scène" },
+  { concept: "reference", dataset: "arene-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 406, lot: "L3 #1463", date: "2026-08-30", motif: "référence de PION de scène" }, // 293→406 : +113 OCCURRENCES — 24 ids de décor sont posés dans cette scène, 23 n'y résolvaient rien faute d'entrée `props.json` (#1680 ligne 14) ; `toile` ×4 résolvait déjà, par le Trait homonyme
   { concept: "reference", dataset: "arene-projet.json", champ: "scene", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "start", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 9, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "style", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
@@ -802,7 +802,7 @@ export const STRUCTURES_ENVELOPPE = [
   // ci-dessus (aucune page de livre ne décrit une couleur de matériau) : le lot L1d tranche la forme
   // de `source` d'un document maison pour les deux à la fois.
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "propMaterials.json", chemin: "(entrées)", entrees: 8, lot: "L1d #1469", date: "2026-08-23" }, // +1 : albatre, matière de l'urne (#1644)
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "props.json", chemin: "(entrées)", entrees: 83, lot: "L1d #1469", date: "2026-08-23" }, // +1 : banc, qui n'avait aucune entrée de donnée (#1644)
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "props.json", chemin: "(entrées)", entrees: 123, lot: "L1d #1469", date: "2026-08-23" }, // 83→123 : bijection art ⇄ donnée (#1680 ligne 14) — le catalogue de décor est app-owned, aucune page ne le source
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualitySubtypes.json", chemin: "(entrées)", entrees: 3, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualityTypes.json", chemin: "(entrées)", entrees: 2, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1d #1469", date: "2026-08-23" },

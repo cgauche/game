@@ -35,7 +35,7 @@
  * `SceneEntity.pos === approche résolue` est un invariant du document, gardé par `validateScene`.
  */
 import { findPropById } from '../data';
-import { rotatePropLocal } from '../data/props.types';
+import { cransDepuisCapIdentite, rotatePropLocal } from '../data/props.types';
 import { DIR8_DELTA, DIR8_ORDER, rotateDir8, type Dir8 } from './dir8';
 import { PARTY_MAX } from './combatants';
 import { heightAt, isWalkable, wallBetween, type Scene, type SceneEntity } from './scene';
@@ -136,7 +136,7 @@ function placesPartielles(scene: Scene): PlacePartielle[] {
     const slots = findPropById(ent.ref ?? '')?.seatSlots ?? [];
     if (!slots.length) continue;
     const facing = ent.facing ?? 'S';
-    const crans = DIR8_ORDER.indexOf(facing);
+    const crans = cransDepuisCapIdentite(facing);
     const z = ent.z ?? 0;
     const sol = heightAt(scene, ent.pos.x, ent.pos.y, z);
     for (const slot of slots) {

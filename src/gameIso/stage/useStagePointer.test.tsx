@@ -934,8 +934,8 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
     scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
-    // Seule la place SUD reste libre : la marche vers son abord passe par celui de la place NORD.
-    scene.seatAssignments = { 'table-1': { 'place-nord': pnjAssis('a'), 'place-est': pnjAssis('b'), 'place-ouest': pnjAssis('d') } };
+    // Une SEULE place reste libre (`place-3`) : la marche vers son abord longe celui d'une place prise.
+    scene.seatAssignments = { 'table-1': { 'place-1': pnjAssis('a'), 'place-2': pnjAssis('b'), 'place-4': pnjAssis('d') } };
     const vierge = useGame.getInitialState();
     useGame.setState({
       scene, mode: 'exploration', partyPos: { x: 6, y: 6 }, party: [meneurJouable()], dialogue: null, battle: null,
@@ -946,7 +946,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     // PRÉCONDITION : le chemin planifié croise bien une case adjacente au meuble qui n'est PAS l'abord visé.
     const sc = useGame.getState().scene!;
     const plan = exploreSeatPlan(sc, { x: 6, y: 6 }, 'table-1')!;
-    expect(plan.slotId, 'la seule place libre est au sud').toBe('place-sud');
+    expect(plan.slotId, 'la seule place libre est `place-3`').toBe('place-3');
     const croisees = plan.path.slice(0, -1).filter((p) => chebyshev(p, { x: 2, y: 3 }) <= 1);
     expect(croisees.length, 'le chemin DOIT longer le meuble, sinon le test ne mord pas').toBeGreaterThan(0);
 
@@ -958,7 +958,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     act(() => { vi.runAllTimers(); });
 
     expect(useGame.getState().journal.join(' | '), 'aucun refus d’assise en chemin').not.toContain('Vous devez rejoindre la place');
-    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 }), 'assis EN UN GESTE').toMatchObject({ propId: 'table-1', slotId: 'place-sud' });
+    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 }), 'assis EN UN GESTE').toMatchObject({ propId: 'table-1', slotId: 'place-3' });
     expect(useGame.getState().pendingInteract).toBeNull();
   });
 
@@ -972,10 +972,10 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
     scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
-    scene.seatAssignments = { 'table-1': { 'place-nord': pnjAssis('a') } }; // seule la place NORD est prise
+    scene.seatAssignments = { 'table-1': { 'place-1': pnjAssis('a') } }; // une seule des quatre places est prise
     const vierge = useGame.getInitialState();
     const places = seatSlotsOf(scene, 'table-1');
-    const PRISE = places.find((s) => s.slotId === 'place-nord')!.approach; // on se tient SUR son abord
+    const PRISE = places.find((s) => s.slotId === 'place-1')!.approach; // on se tient SUR son abord
     useGame.setState({
       scene, mode: 'exploration', partyPos: { x: PRISE.x, y: PRISE.y }, party: [meneurJouable()], dialogue: null, battle: null,
       pendingInteract: null, journal: [], flags: {},
@@ -993,7 +993,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const pose = seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 });
     expect(useGame.getState().journal.join(' | '), 'aucun refus : il restait trois places').not.toContain('Vous devez rejoindre la place');
     expect(pose, 'assis à une place LIBRE, en un geste').toMatchObject({ propId: 'table-1' });
-    expect(pose!.slotId, 'jamais la place prise').not.toBe('place-nord');
+    expect(pose!.slotId, 'jamais la place prise').not.toBe('place-1');
   });
 
   /**
@@ -1007,7 +1007,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
     scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
-    scene.seatAssignments = { 'table-1': { 'place-nord': pnjAssis('a'), 'place-est': pnjAssis('b'), 'place-sud': pnjAssis('c'), 'place-ouest': pnjAssis('d') } };
+    scene.seatAssignments = { 'table-1': { 'place-1': pnjAssis('a'), 'place-2': pnjAssis('b'), 'place-3': pnjAssis('c'), 'place-4': pnjAssis('d') } };
     const vierge = useGame.getInitialState();
     const poser = (pos: { x: number; y: number }) => useGame.setState({
       scene, mode: 'exploration', partyPos: pos, party: [meneurJouable()], dialogue: null, battle: null,
@@ -1087,7 +1087,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
   it('meuble à places PLEIN mais fouillable : le clic replie sur la FOUILLE, jamais un refus d’assise', () => {
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
-    const prises = { 'place-nord': pnjAssis('a'), 'place-est': pnjAssis('b'), 'place-sud': pnjAssis('c'), 'place-ouest': pnjAssis('d') };
+    const prises = { 'place-1': pnjAssis('a'), 'place-2': pnjAssis('b'), 'place-3': pnjAssis('c'), 'place-4': pnjAssis('d') };
     scene.entities = [{
       id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S',
       interact: { flow: { kind: 'seq', steps: [] } },
@@ -1135,7 +1135,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
       id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S',
       interact: { flow: { kind: 'seq', steps: [] } },
     }] as typeof scene.entities;
-    scene.seatAssignments = { 'table-1': { 'place-nord': pnjAssis('a'), 'place-est': pnjAssis('b'), 'place-sud': pnjAssis('c'), 'place-ouest': pnjAssis('d') } };
+    scene.seatAssignments = { 'table-1': { 'place-1': pnjAssis('a'), 'place-2': pnjAssis('b'), 'place-3': pnjAssis('c'), 'place-4': pnjAssis('d') } };
     const vierge = useGame.getInitialState();
     const DIAG = { x: 1, y: 2 }; // diagonale du meuble, et AUCUN des quatre abords
     useGame.setState({

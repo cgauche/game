@@ -15,6 +15,9 @@ import { createHero } from '../engine/character';
 import { testValue } from '../engine/skills';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
+import { emptyScene } from './scene';
+import { pruneSeatAssignments } from './seating';
+import { findPropById } from '../data/index';
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
 function fakeStorage(): Storage {
@@ -144,12 +147,35 @@ describe('parseSave — la version DOIT être la courante', () => {
     // `snapshotSave` recopie l'ÉTAT entier, `state.scene` comprise : la forme persistée change avec
     // celle du document de scène. Une save de 37 rouvrirait sur une scène muette, que le seam
     // `parseProject` refuserait au prochain export de son projet.
-    expect(SAVE_VERSION).toBe(38);
     expect(parseSave({ ...cur, version: 37 })).toBeNull();
     const initial = useGame.getInitialState() as unknown as Record<string, unknown>;
     const data = snapshotSave({ ...initial, scene: testScene }, initial, '2026-08-31T00:00:00.000Z').data;
     expect(testScene.type, 'une scène du dépôt s’annonce').toBe('scene');
     expect((data.scene as { type?: string }).type, 'la scène persistée doit porter son `type`').toBe('scene');
+  });
+  it('MESURE du motif de bump 38 → 39 (#1680) : le vocabulaire des ids de PLACE persisté change', () => {
+    // `state.scene.seatAssignments` est keyée `propId → slotId` et voyage ENTIÈRE dans la save. Les
+    // ids de place ne portent plus un côté mais un RANG : une save de 38 rouvrirait avec des clés
+    // que le catalogue ne connaît plus, et `pruneSeatAssignments` les élaguerait SANS un mot — les
+    // assis se relèvent en silence. C'est la VERSION qui doit l'arrêter, pas l'élagage.
+    expect(SAVE_VERSION).toBe(39);
+    expect(parseSave({ ...cur, version: 38 }), 'une save de 38 ne se charge plus').toBeNull();
+    // Le catalogue ne connaît QUE des rangs — la source du vocabulaire.
+    const places = findPropById('table-ronde-4-tabourets')!.seatSlots!.map((s) => s.id);
+    expect(places).toEqual(['place-1', 'place-2', 'place-3', 'place-4']);
+
+    // LE DÉFAUT, mesuré sur le chemin réel : ce que ferait le chargement si la version laissait passer.
+    const scene = emptyScene(12, 12);
+    scene.entities = [
+      { id: 'table-1', kind: 'prop', ref: 'table-ronde-4-tabourets', pos: { x: 5, y: 5 } },
+      { id: 'pnj-1', kind: 'personnage', pos: { x: 5, y: 6 } },
+    ] as typeof scene.entities;
+    const ancien = { 'table-1': { 'place-nord': { kind: 'entity' as const, entityId: 'pnj-1' } } };
+    expect(pruneSeatAssignments({ ...scene, seatAssignments: ancien }, 4), 'l’élagage est MUET').toEqual({});
+    // La MÊME assise, dite au vocabulaire courant, SURVIT : c'est bien l'id, et rien d'autre, qui
+    // décide — sans cette moitié, le contrat ci-dessus passerait aussi sur une scène mal formée.
+    const courant = { 'table-1': { 'place-1': { kind: 'entity' as const, entityId: 'pnj-1' } } };
+    expect(pruneSeatAssignments({ ...scene, seatAssignments: courant }, 4)).toEqual(courant);
   });
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
     const sv = talents.find((t) => t.id === 'savoir-vivre')!;

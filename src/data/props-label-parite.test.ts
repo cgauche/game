@@ -1,22 +1,49 @@
 /**
- * PARITÉ des libellés de décor (#1467 L1b V-P0d) : le `label` de chaque entrée de `props.json` est le
- * MIROIR du `label` de la def d'ART du même id (`src/gameIso/catalog/decor/defs/<id>.ts`).
+ * BIJECTION art ⇄ donnée du décor (#1680 ligne 14) et PARITÉ des libellés (#1467 L1b V-P0d).
  *
- * La donnée le porte parce que l'enveloppe de document l'exige ; l'art le porte parce que le catalogue
- * gameIso dessine la vignette. Deux porteurs, une seule vérité — sans cette garde, renommer un décor
- * d'un côté laisserait l'autre mentir en silence.
+ * DEUX SENS, un seul contrat : chaque entrée de `props.json` a sa def d'ART
+ * (`src/gameIso/catalog/decor/defs/<id>.ts`) et chaque def d'ART a son entrée. Le sens donnée→art
+ * était seul gardé ; une def d'art SANS donnée passait donc en silence, et le monde la traitait
+ * comme « passable, transparente, sans couvert » par simple ABSENCE (`PropData` non trouvé,
+ * `state/sceneRules.ts`, `state/lineOfSight.ts`) — un défaut muet, jamais une déclaration.
+ *
+ * Le `label`, lui, est le MIROIR d'un porteur à l'autre : la donnée le porte parce que l'enveloppe de
+ * document l'exige, l'art parce que le catalogue gameIso dessine la vignette. Deux porteurs, une
+ * seule vérité — sans cette garde, renommer un décor d'un côté laisserait l'autre mentir en silence.
  *
  * L'extraction du label d'art vient du foyer UNIQUE `scripts/guards/lib/propArtLabels.mjs`, celui-là
  * même dont la migration `2026-08-28-l1b-10a-props-labels.mjs` a DÉRIVÉ la donnée : la vérification ne
  * peut pas s'écarter de la dérivation.
  */
 import { describe, it, expect } from 'vitest';
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import propsJson from './props.json';
 import { fileURLToPath } from 'node:url';
-import { labelDArt } from '../../scripts/guards/lib/propArtLabels.mjs';
+import { DECOR_DEFS_DIR, labelDArt } from '../../scripts/guards/lib/propArtLabels.mjs';
 
 const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 const entrees = propsJson as { id: string; label: string }[];
+
+/** Les ids des defs d'ART : un fichier `<id>.ts` du répertoire des defs, hors tests. */
+const idsDArt = (): string[] =>
+  readdirSync(join(RACINE, DECOR_DEFS_DIR))
+    .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
+    .map((f) => f.replace(/\.ts$/, ''))
+    .sort();
+
+describe('décor — BIJECTION entre les defs d’art et les entrées de props.json', () => {
+  it('chaque def d’ART a son `PropData`, et chaque `PropData` sa def d’art', () => {
+    const art = idsDArt();
+    const donnee = entrees.map((p) => p.id).sort();
+    expect(art.length, 'aucune def d’art lue : ce contrat mesurerait du néant').toBeGreaterThan(100);
+    const dansLaDonnee = new Set(donnee);
+    const dansLArt = new Set(art);
+    expect(art.filter((id) => !dansLaDonnee.has(id)), 'def d’ART sans `PropData` — physique, opacité et couvert seraient un DÉFAUT silencieux').toEqual([]);
+    expect(donnee.filter((id) => !dansLArt.has(id)), '`PropData` sans def d’art — rien ne le dessine').toEqual([]);
+    expect(donnee).toEqual(art);
+  });
+});
 
 describe('props.json — parité des labels avec les defs d’art', () => {
   it('chaque entrée porte un label non vide', () => {

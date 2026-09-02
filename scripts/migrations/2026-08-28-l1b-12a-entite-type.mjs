@@ -84,8 +84,9 @@ const CARDINAUX = {
   'pregens.json': 8,
   // 78→83 : recalé #1624/#1644 (+5 props : cheminee, enseigne, clocheton, applique-murale, banc) — le
   // cardinal est une porte d'IDENTITÉ de dataset, il suit la donnée qu'un train fait croître, dans le
-  // MÊME train.
-  'props.json': 83,
+  // MÊME train. Puis 83→123 : #1680 ligne 14, BIJECTION art ⇄ donnée (les 40 defs d'art qui n'avaient
+  // pas d'entrée reçoivent la leur ; garde `src/data/props-label-parite.test.ts`).
+  'props.json': 123,
   'reglesOptionnelles.json': 81,
   'skills.json': 48,
   'steam-breakdown.json': 6,
@@ -98,7 +99,8 @@ const CARDINAUX = {
   'vehicles.json': 31,
 };
 // 1290→1293 : +2 maladies (#674) +1 trait (#673). Puis 1293→1298 : +5 décors de `props.json` (#1624/#1644).
-const TOTAL_ATTENDU = 1298;
+// Puis 1298→1338 : +40 décors de `props.json` (#1680 ligne 14, bijection art ⇄ donnée).
+const TOTAL_ATTENDU = 1338;
 
 /**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. L'enveloppe veut
