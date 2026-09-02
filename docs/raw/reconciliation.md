@@ -68,7 +68,7 @@ _Aucune._
 
 ### NADJ 4 — 7 réf(s) code, 0 dans l'Atlas
 - `src/data/schemas/defs-scenes/scene.ts:109` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
-- `src/state/scene.ts:122` (l.72) — *  Le patron est AUTHORÉ dans la source, pas inventé : `NADJ 04 l.72` — « Elle jouera une partie de
+- `src/state/scene.ts:123` (l.72) — *  Le patron est AUTHORÉ dans la source, pas inventé : `NADJ 04 l.72` — « Elle jouera une partie de
 - `src/state/tavern-npc-a-fiche.test.ts:6` (l.72) — *  · `NADJ 04 l.72` — « Elle jouera une partie de L'Impératrice écarlate avec quiconque lui propose,
 - `src/state/tavern-npc-a-fiche.test.ts:98` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
 
