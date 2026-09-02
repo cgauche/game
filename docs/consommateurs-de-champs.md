@@ -57,16 +57,16 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 61 | `src/data/index.ts:2860` |
-| `spec` | 19 | `src/data/index.ts:3368` |
+| `id` | 61 | `src/data/index.ts:2866` |
+| `spec` | 19 | `src/data/index.ts:3374` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3380` |
-| `spec` | 1 | `src/data/index.ts:3381` |
-| `value` | 3 | `src/data/index.ts:3382` |
+| `id` | 4 | `src/data/index.ts:3386` |
+| `spec` | 1 | `src/data/index.ts:3387` |
+| `value` | 3 | `src/data/index.ts:3388` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -86,8 +86,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fixed` | 4 | `src/data/index.ts:3444` |
-| `roll` | 3 | `src/data/index.ts:3444` |
+| `fixed` | 4 | `src/data/index.ts:3450` |
+| `roll` | 3 | `src/data/index.ts:3450` |
 
 ### `TrappingRef` (src/data/index.ts)
 
@@ -95,27 +95,27 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `id` | 8 | `src/engine/items.ts:307` |
 | `spec` | 2 | `src/engine/items.ts:309` |
-| `count` | 10 | `src/data/index.ts:3444` |
-| `qualities` | 4 | `src/data/index.ts:3447` |
-| `qualityChoice` | 6 | `src/data/index.ts:3445` |
-| `text` | 2 | `src/data/index.ts:3438` |
-| `vehicleId` | 5 | `src/data/index.ts:3440` |
+| `count` | 10 | `src/data/index.ts:3450` |
+| `qualities` | 4 | `src/data/index.ts:3453` |
+| `qualityChoice` | 6 | `src/data/index.ts:3451` |
+| `text` | 2 | `src/data/index.ts:3444` |
+| `vehicleId` | 5 | `src/data/index.ts:3446` |
 | `label` | 7 | `src/engine/possessionGrants.ts:25` |
-| `creatureId` | 5 | `src/data/index.ts:3442` |
-| `choice` | 5 | `src/data/index.ts:3435` |
-| `wildcard` | 3 | `src/data/index.ts:3436` |
+| `creatureId` | 5 | `src/data/index.ts:3448` |
+| `choice` | 5 | `src/data/index.ts:3441` |
+| `wildcard` | 3 | `src/data/index.ts:3442` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:3417` |
+| `id` | 8 | `src/data/index.ts:3423` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
-| `choix` | 7 | `src/data/index.ts:2860` |
-| `pick` | 2 | `src/data/index.ts:3420` |
-| `of` | 6 | `src/data/index.ts:3419` |
+| `choix` | 7 | `src/data/index.ts:2866` |
+| `pick` | 2 | `src/data/index.ts:3426` |
+| `of` | 6 | `src/data/index.ts:3425` |
 | `table` | — | *absent du type TS* |
-| `random` | 3 | `src/data/index.ts:3422` |
+| `random` | 3 | `src/data/index.ts:3428` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -203,7 +203,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:2639` |
+| `id` | 6 | `src/data/index.ts:2640` |
 | `type` | **0 — JAMAIS LU** | — |
 | `label` | **0 — JAMAIS LU** | — |
 | `labelF` | — | *absent du type TS* |
@@ -212,57 +212,57 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `alsoIn` | — | *absent du type TS* |
 | `maison` | — | *absent du type TS* |
 | `icon` | — | *absent du type TS* |
-| `solid` | 2 | `src/data/props.types.ts:131` |
+| `solid` | 2 | `src/data/props.types.ts:351` |
 | `opaque` | 2 | `src/state/lineOfSight.ts:111` |
 | `cover` | 1 | `src/state/lineOfSight.ts:29` |
 | `light` | 1 | `src/state/vision.ts:178` |
-| `foot` | 2 | `src/data/props.types.ts:100` |
-| `volume` | 6 | `src/data/props.types.ts:112` |
-| `seatSlots` | 2 | `src/data/props.types.ts:122` |
+| `foot` | 2 | `src/data/props.types.ts:304` |
+| `volume` | 6 | `src/data/index.ts:2646` |
+| `seatSlots` | 2 | `src/data/props.types.ts:342` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `primitives` | 3 | `src/data/props.types.ts:112` |
+| `primitives` | 3 | `src/data/props.types.ts:340` |
 
 ### `PropPrimitive` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `kind` | 3 | `src/data/props.types.ts:115` |
-| `center` | 4 | `src/data/props.types.ts:114` |
-| `size` | 3 | `src/data/props.types.ts:117` |
-| `material` | 3 | `src/data/props.types.ts:113` |
-| `radius` | 2 | `src/data/props.types.ts:116` |
-| `heightM` | 2 | `src/data/props.types.ts:116` |
-| `sides` | 1 | `src/gameIso/builders/propVolumes.ts:118` |
-| `slope` | 1 | `src/gameIso/builders/propVolumes.ts:119` |
+| `kind` | 5 | `src/data/props.types.ts:230` |
+| `center` | 4 | `src/data/props.types.ts:230` |
+| `size` | 3 | `src/data/props.types.ts:230` |
+| `material` | 4 | `src/data/props.types.ts:311` |
+| `radius` | 2 | `src/data/props.types.ts:231` |
+| `heightM` | 2 | `src/data/props.types.ts:231` |
+| `sides` | 2 | `src/data/props.types.ts:231` |
+| `slope` | 1 | `src/data/props.types.ts:232` |
 
 ### `PropSeatSlot` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/props.types.ts:123` |
+| `id` | 5 | `src/data/props.types.ts:343` |
 | `anchor` | 2 | `src/state/seating.ts:143` |
 | `facing` | 1 | `src/state/seating.ts:151` |
-| `approach` | 4 | `src/data/props.types.ts:126` |
+| `approach` | 4 | `src/data/props.types.ts:346` |
 
 ### `PropPoint3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `x` | 6 | `src/data/props.types.ts:114` |
-| `y` | 6 | `src/data/props.types.ts:114` |
-| `h` | 6 | `src/data/props.types.ts:114` |
+| `x` | 12 | `src/data/props.types.ts:124` |
+| `y` | 12 | `src/data/props.types.ts:123` |
+| `h` | 12 | `src/data/props.types.ts:123` |
 
 ### `PropSize3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `x` | 1 | `src/data/props.types.ts:117` |
-| `y` | 1 | `src/data/props.types.ts:117` |
-| `h` | 1 | `src/data/props.types.ts:117` |
+| `x` | 3 | `src/data/props.types.ts:153` |
+| `y` | 3 | `src/data/props.types.ts:154` |
+| `h` | 3 | `src/data/props.types.ts:155` |
 
 ### `CritEscalation` (src/data/criticals.ts)
 

@@ -6,7 +6,7 @@
  * Chaque fonction renvoie une NOUVELLE Scène (immuable). `editorState.ts` les RÉ-EXPORTE : les câblages
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
-import { Scene, SceneEntity, SceneEffectZone, Terrain, EncounterMember, layerTiles, tileAt, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults } from './scene';
+import { Scene, SceneEntity, SceneEffectZone, Terrain, CellSide, EncounterMember, layerTiles, tileAt, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults } from './scene';
 import { memoByRef } from './sceneMemo';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -171,17 +171,17 @@ export function removeLayer(scene: Scene, z: number): Scene {
 // ── Outil MURS (arêtes + portes + diagonales). Une cloison est stockée sous forme CANONIQUE N/E : le S
 //    d'une case = le N de la case du dessous, le O = le E de la case de gauche → chaque arête n'existe
 //    qu'une fois, quel que soit le côté cliqué. ──
-export type Edge4 = 'N' | 'E' | 'S' | 'O';
+// L'ARÊTE d'une case a UN terme, `CellSide` (`./scene`) : ce module n'en déclare pas un second.
 
 /** Arête (case, side N/E/S/O) → forme CANONIQUE (case, N|E). */
-export function canonEdge(x: number, y: number, side: Edge4): { x: number; y: number; side: 'N' | 'E' } {
+export function canonEdge(x: number, y: number, side: CellSide): { x: number; y: number; side: 'N' | 'E' } {
   if (side === 'S') return { x, y: y + 1, side: 'N' };
   if (side === 'O') return { x: x - 1, y, side: 'E' };
   return { x, y, side };
 }
 
 /** État d'une arête : 'none' | 'wall' (pleine) | 'door' (franchissable), sur l'étage `z`. */
-export function edgeWallState(scene: Scene, x: number, y: number, side: Edge4, z = 0): 'none' | 'wall' | 'door' {
+export function edgeWallState(scene: Scene, x: number, y: number, side: CellSide, z = 0): 'none' | 'wall' | 'door' {
   const e = canonEdge(x, y, side);
   const w = (scene.walls ?? []).find((w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z);
   return !w ? 'none' : w.door ? 'door' : 'wall';
@@ -190,7 +190,7 @@ export function edgeWallState(scene: Scene, x: number, y: number, side: Edge4, z
 /** Pose / change / retire l'arête à l'état `want`. Source unique de l'écriture d'une cloison cardinale.
  *  `structure` (id de `structures.json`) pose le MATÉRIAU en même temps que l'arête — l'outil de dessin
  *  porte son matériau, l'auteur n'a plus à repasser par l'inspecteur segment par segment (#830). */
-export function setEdgeWall(scene: Scene, x: number, y: number, side: Edge4, z: number, want: 'none' | 'wall' | 'door', structure?: string): Scene {
+export function setEdgeWall(scene: Scene, x: number, y: number, side: CellSide, z: number, want: 'none' | 'wall' | 'door', structure?: string): Scene {
   const e = canonEdge(x, y, side);
   const others = (scene.walls ?? []).filter((w) => !(w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z));
   if (want === 'none') return { ...scene, walls: others.length ? others : undefined };
@@ -199,7 +199,7 @@ export function setEdgeWall(scene: Scene, x: number, y: number, side: Edge4, z: 
 }
 
 /** Clic de l'outil : l'arête prend l'état `want`, ou disparaît si elle l'avait déjà (toggle). */
-export function toggleEdgeWall(scene: Scene, x: number, y: number, side: Edge4, z: number, want: 'wall' | 'door', structure?: string): Scene {
+export function toggleEdgeWall(scene: Scene, x: number, y: number, side: CellSide, z: number, want: 'wall' | 'door', structure?: string): Scene {
   return setEdgeWall(scene, x, y, side, z, edgeWallState(scene, x, y, side, z) === want ? 'none' : want, structure);
 }
 

@@ -8,7 +8,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
 import { siegeEngines } from '../../data';
 import { propRefPatch } from './propDefaults';
-import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, addEntity, editEntity, moveEntityTo, removeEntity } from '../../state/sceneEdit';
+import { type Rect, type Pt, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, addEntity, editEntity, moveEntityTo, removeEntity } from '../../state/sceneEdit';
 
 export {
   addArchitectureBody,
@@ -54,7 +54,9 @@ export {
   editEntity,
   editEntityCombat,
 } from '../../state/sceneEdit';
-export type { Rect, Pt, Edge4, EffectZoneSeed } from '../../state/sceneEdit';
+export type { Rect, Pt, EffectZoneSeed } from '../../state/sceneEdit';
+import type { CellSide } from '../../state/scene';
+export type { CellSide } from '../../state/scene';
 export { planStairFlight, applyStairFlight, minFlightCells } from '../../state/stairFlight';
 export type { StairCell, StairStep, StairFlightPlan } from '../../state/stairFlight';
 
@@ -504,9 +506,9 @@ export function changePropRef(scene: Scene, propId: string, ref: string): Scene 
 }
 
 /** Arête la plus proche du centre de la case, depuis l'offset (ox,oy) ∈ [-0.5,0.5] du pointeur. */
-export function nearestEdge(ox: number, oy: number): Edge4 {
-  const d: Record<Edge4, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
-  return (['N', 'E', 'S', 'O'] as Edge4[]).reduce((a, b) => (d[b] < d[a] ? b : a));
+export function nearestEdge(ox: number, oy: number): CellSide {
+  const d: Record<CellSide, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
+  return (['N', 'E', 'S', 'O'] as CellSide[]).reduce((a, b) => (d[b] < d[a] ? b : a));
 }
 
 /** Seuil de proximité (fraction de case) en deçà duquel l'outil ↖ SÉLECTIONNE une arête-mur plutôt que la
@@ -520,7 +522,7 @@ export function pickWallEdge(scene: Scene, fx: number, fy: number, z: number): {
   const px = Math.round(fx), py = Math.round(fy);
   const ox = fx - px, oy = fy - py;
   const side = nearestEdge(ox, oy);
-  const dist: Record<Edge4, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
+  const dist: Record<CellSide, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
   if (dist[side] > EDGE_PICK) return null;
   const e = canonEdge(px, py, side);
   return edgeWallState(scene, e.x, e.y, e.side, z) === 'none' ? null : e;
@@ -530,7 +532,7 @@ export function pickArchitectureEdge(scene: Scene, fx: number, fy: number, z: nu
   const px = Math.round(fx), py = Math.round(fy);
   const ox = fx - px, oy = fy - py;
   const side = nearestEdge(ox, oy);
-  const dist: Record<Edge4, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
+  const dist: Record<CellSide, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
   if (dist[side] > EDGE_PICK) return null;
   const edge = canonEdge(px, py, side);
   for (const body of scene.architecture ?? []) {

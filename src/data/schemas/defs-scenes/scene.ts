@@ -24,6 +24,8 @@ import { difficultySchema, entityAppearanceSchema, moneyPartialSchema } from '..
 import { conditionSchema, flowTestSchema, gameOpSchema } from '../grammaire/mecanique';
 import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
 import { sceneFlowSchema } from './effets';
+import { PROPS_VOLUMIQUES } from '../_ids.generated';
+import { capDecorAdmis, REF_DECOR_DEFAUT } from '../../props.types';
 import type { AuthoredShipPoste } from '../../../engine/types';
 import type { OptionalEntry } from '../../../engine/statEntry';
 
@@ -53,7 +55,11 @@ export const seatOccupantSchema = z.discriminatedUnion('kind', [
  *  l'interaction (dialogueId) ne distinguaient pas. */
 export const entityKindSchema = z.enum(['heroStart', 'personnage', 'prop']);
 
-/** `SceneEntity` (`state/scene.ts:41`). `id` = identité STABLE partagée avec le `Combatant` au spawn. */
+const VOLUMIQUES = new Set(PROPS_VOLUMIQUES);
+
+/** `SceneEntity` (`state/scene.ts:41`). `id` = identité STABLE partagée avec le `Combatant` au spawn.
+ *  Le `superRefine` en pied porte le seul invariant CROSS-CHAMP de l'entité : le cap d'un décor
+ *  volumique (cf. `PROPS_VOLUMIQUES`). */
 export const sceneEntitySchema = z.strictObject({
   id: z.string(),
   kind: entityKindSchema,
@@ -115,6 +121,19 @@ export const sceneEntitySchema = z.strictObject({
       hiddenUntilCombat: z.boolean().optional(),
     })
     .optional(),
+}).superRefine((ent, ctx) => {
+  // CAP D'UN DÉCOR VOLUMIQUE — verrou AU PARSE (#1680 ligne 3) : un décor dont le TYPE porte une
+  // recette ne prend qu'un cap CARDINAL. Sa recette tourne (`rotatePropLocal`) là où son empreinte
+  // solide ne tourne pas (#1509) : une diagonale poserait son corps en travers de cases restées
+  // traversables. La couche schémas ne lit pas le catalogue au runtime (`src/data/index.ts` importe
+  // les schemas) : elle lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
+  if (ent.kind !== 'prop') return;
+  if (capDecorAdmis(VOLUMIQUES.has(ent.ref ?? REF_DECOR_DEFAUT), ent.facing)) return;
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: ['facing'],
+    message: `décor volumique « ${ent.ref ?? REF_DECOR_DEFAUT} » au cap ${ent.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`,
+  });
 });
 
 // ── Architecture ────────────────────────────────────────────────────────────────────────────────

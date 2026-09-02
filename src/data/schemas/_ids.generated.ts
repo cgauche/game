@@ -157,3 +157,12 @@ export const SPECS_PAR_DATASET: Readonly<Record<string, Readonly<Record<string, 
     'taille': ['enorme', 'grande', 'minuscule', 'monstrueuse', 'moyenne', 'petite', 'tresPetite'],
   },
 };
+
+/**
+ * Ids des décors dont le TYPE porte une recette VOLUMIQUE (`props.json`, `volume.primitives`) —
+ * ce que la couche schémas doit savoir d'un `ref` de décor sans pouvoir lire le catalogue au
+ * runtime. Un tel décor ne prend qu'un cap CARDINAL : sa recette tourne là où son empreinte solide
+ * ne tourne pas (#1509), et une diagonale poserait son corps en travers de cases restées
+ * traversables. Refusé AU PARSE par `sceneEntitySchema` (`defs-scenes/scene.ts`).
+ */
+export const PROPS_VOLUMIQUES: readonly string[] = ['applique-murale', 'armoire', 'banc', 'caisse', 'chaise', 'cheminee', 'cheminee-interieure', 'clocheton', 'coffre', 'comptoir-angle', 'comptoir-droit', 'enseigne', 'etagere', 'etal-marche', 'table', 'table-2x1', 'table-murale-2-tabourets', 'table-ronde-4-tabourets', 'tabouret', 'tonneau', 'tonneaux-pile', 'urne'];

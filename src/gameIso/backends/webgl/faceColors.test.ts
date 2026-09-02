@@ -43,7 +43,7 @@ const HERBE_SWATCH = '#3d6630';
 const SOL_INCONNU = '#6b6250';
 
 const scene = buildScene(siegeSpec);
-const face = (material: Face['material']): Face => ({ poly: [], material });
+const face = (material: Face['material']): Face => ({ poly: [], material, oriented: false });
 const couleur = (material: Face['material']): string => faceSurface(face(material)).color;
 
 describe('la DONNÉE dit bien ce que le test attend (sinon l’attendu ment)', () => {
@@ -207,6 +207,7 @@ describe('faceSurface — matériau de DÉCOR volumique (domaine `prop`)', () =>
     poly: [{ x: 0, y: 0, h: 0 }, { x: 1, y: 0, h: 0 }, { x: 1, y: 0, h: 1 }],
     material: { domain: 'prop', id },
     entId: 'meuble-1',
+    oriented: true, // face de coquille close (décor volumique)
   });
 
   it('rend la teinte et la réponse à la lumière AUTHORÉES, sans recette ni échelle d’UV', () => {

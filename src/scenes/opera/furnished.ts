@@ -149,8 +149,10 @@ const ents: SceneEntity[] = [
 
   // 22 BUREAU DU CONCIERGE / 23 GESTIONNAIRE (petites pièces NE gx37-42).
   { id: 'b22-bureau', kind: 'prop', ref: 'bureau-2x1', pos: { x: 39, y: 6 } },
-  // Chaise au SO du bureau (39-40, 6) : elle en regarde le coin, cap NE.
-  { id: 'b22-chaise', kind: 'prop', ref: 'chaise', pos: { x: 38, y: 7 }, facing: 'NE' },
+  // Chaise en (38,7), au SO du bureau : le bureau occupe (39,6) et (40,6), donc TOUT le bloc est à
+  // l'EST de la colonne 38 — le nord de la chaise ne donne que sur la case vide (38,6). Cap E, le seul
+  // cardinal qui la tourne vers le bureau (un décor volumique n'en prend pas d'autre, #1680 ligne 3).
+  { id: 'b22-chaise', kind: 'prop', ref: 'chaise', pos: { x: 38, y: 7 }, facing: 'E' },
   { id: 'b23-bureau', kind: 'prop', ref: 'bureau-2x1', pos: { x: 39, y: 11 } },
   // Étagère en colonne 38 : dos au mur OUEST des petites pièces NE (gx37-42), cap E.
   { id: 'b23-etag', kind: 'prop', ref: 'etagere', pos: { x: 38, y: 13 }, facing: 'E' },

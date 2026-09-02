@@ -137,7 +137,11 @@ describe('FUSION — toute la scène en UNE géométrie', () => {
 
 describe('ORIENTATION — les triangles regardent DEHORS (la carte d’ombre en dépend)', () => {
   /** Le dehors d'une face ORIENTÉE est celui de SON volume ; celui d'une face sans orientation propre est
-   *  le haut (horizontale) ou l'extérieur de la carte (verticale). */
+   *  le haut (horizontale) ou l'extérieur de la carte (verticale).
+   *  Deux façons de porter son volume, deux mesures : une BOÎTE MINCE (plusieurs quads, `g.normal` nul)
+   *  se mesure au centre de sa boîte ; une face qui ferme DÉJÀ un volume (décor volumique : un seul quad,
+   *  `g.normal` renseigné) se mesure à SA propre normale — le centre de sa boîte est dans son plan, et
+   *  l'y projeter ne mesurerait que du bruit de virgule flottante. */
   function bilan(scn: Scene) {
     const m = sceneMetresPerTile(scn);
     const listées = worldFaces(scn);
@@ -163,7 +167,10 @@ describe('ORIENTATION — les triangles regardent DEHORS (la carte d’ombre en 
         if (g.oriented) {
           const c = { x: n.centre.x, y: n.centre.y, z: n.centre.z };
           b.volumiques++;
-          if (n.x * (c.x - mid.x) + n.y * (c.y - mid.y) + n.z * (c.z - mid.z) < 0) b.rentrantes++;
+          const dehors = g.normal
+            ? n.x * g.normal.x + n.y * g.normal.y + n.z * g.normal.z
+            : n.x * (c.x - mid.x) + n.y * (c.y - mid.y) + n.z * (c.z - mid.z);
+          if (dehors < 0) b.rentrantes++;
         } else if (Math.abs(n.y) > 1e-6) {
           b.horizontales++;
           if (n.y < 0) b.versLeBas++;
@@ -846,7 +853,7 @@ describe('TEINTE de sommet — la variance par case est CUITE dans `color`', () 
 describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde', () => {
   /** Face nue de matériau `mat`, avec la pente de nappe `pitchM` (pans de toit) et son côté d'arête. */
   const wf = (mat: Face['material'], pitchM?: number, side?: WorldFace['side']): WorldFace => {
-    const face = { poly: [], material: mat } as Face;
+    const face: Face = { poly: [], material: mat, oriented: false };
     const cell = { x: 3, y: 4, z: 0 };
     return { face, cell, cellKey: '3,4,0', el: { kind: 'floor', cell, faces: [face] } as unknown as SceneEl, pitchM, side };
   };

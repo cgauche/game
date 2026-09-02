@@ -39,6 +39,7 @@ import type {
   WallClimb,
   ArchitectureBody,
   ArchitectureRect,
+  CellSide,
 } from './scene';
 import { emptyScene, tileAt } from './scene';
 import { planStairFlight, applyStairFlight } from './stairFlight';
@@ -52,7 +53,6 @@ import { chebyshev } from '../engine/grid';
 import { seatAssignmentDefects, type SeatAssignments } from './seating';
 import {
   type Pt,
-  type Edge4,
   canonEdge,
   setEdgeWall,
   edgeWallState,
@@ -95,7 +95,7 @@ const CELL_MASS: Terrain = 'mur';
 export interface WallSpec {
   x: number;
   y: number;
-  side: Edge4 | '\\' | '/';
+  side: CellSide | '\\' | '/';
   z?: number;
   door?: boolean;
   /** Structure destructible posée sur l'arête (id de `structures.json`, ex. `porte-de-ville`). */
@@ -167,8 +167,8 @@ export interface EncounterSpec {
 export interface CellRecipe {
   /** Sol / FONDATION de la case (défaut = base de l'étage — évite l'herbe surprise sous une enceinte). */
   terrain?: Terrain;
-  wall?: { structure: string; facing?: Edge4; height?: number };
-  gate?: { structure: string; facing?: Edge4 };
+  wall?: { structure: string; facing?: CellSide; height?: number };
+  gate?: { structure: string; facing?: CellSide };
   hero?: boolean;
   /** VOLÉE d'escalier : relie la surface de l'étage du run (couche z où la lettre est peinte) au
    *  plancher de l'étage `to`, par une rampe de hauteurs interpolées (Δ≤STEP_MAX_M). Connexité
@@ -214,7 +214,7 @@ export interface MapSpec {
    *  char de LÉGENDE → arête d'une case. `side` = l'arête portée (N/E/S/O, canonicalisée). Ex.
    *  `{ M: { side: 'N', structure: 'mur-en-pierre' }, D: { side: 'N', structure: 'porte-de-ville' } }` pose une
    *  ligne d'enceinte + porte en marquant la rangée du mur. Pour un plan complet (arêtes tous côtés) → `walled`. */
-  edgeWalls?: Record<string, { side: Edge4; structure?: string; door?: boolean }>;
+  edgeWalls?: Record<string, { side: CellSide; structure?: string; door?: boolean }>;
   /** RECETTE par LETTRE de CASE COMPLÈTE (`CellRecipe`) : `wall` (enceinte pleine), `gate` (tunnel brèchable),
    *  `hero` (départ), `stair` (volée d'escalier, #780). Une lettre `cells` résout son `terrain` dans la
    *  légende ASCII, puis auto-pose sa structure/rôle (zone rempart z+1, herse, heroStart, rampe interpolée
@@ -780,7 +780,7 @@ export function buildScene(spec: MapSpec): Scene {
     // Garde #781 : un pan diagonal BISEAUTE deux coins opposés — il n'est légal que s'il adosse au
     // moins un coin FERMÉ (ses deux arêtes orthogonales murées), sinon c'est un pan flottant qui ferait
     // croire à une séparation/un blocage inexistants (le pan reste un habillage, jamais une frontière).
-    const closed = (edgeA: Edge4, edgeB: Edge4) =>
+    const closed = (edgeA: CellSide, edgeB: CellSide) =>
       edgeWallState(s, wall.x, wall.y, edgeA, z) === 'wall' && edgeWallState(s, wall.x, wall.y, edgeB, z) === 'wall';
     const legal = wall.side === '\\' ? closed('N', 'O') || closed('S', 'E') : closed('N', 'E') || closed('S', 'O');
     if (!legal) {

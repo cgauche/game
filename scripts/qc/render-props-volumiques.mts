@@ -7,6 +7,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { buildPropVolumes } from '../../src/gameIso/builders/propVolumes';
+import { polyNormal } from '../../src/gameIso/backends/webgl/worldTris';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { findPropById, findPropMaterialById, props } from '../../src/data';
 import { DEFS } from '../../src/gameIso/sprites';
@@ -37,18 +38,22 @@ function projeter(p: Pt3, top: boolean): { sx: number; sy: number } {
   };
 }
 
-/** Normale (non unitaire) d'un polygone métrique, en repère (x est, y sud, h haut) — Newell. */
+/** Normale UNITAIRE d'un polygone métrique, dans les axes de la planche (x est, y sud, h haut). Le
+ *  DEHORS n'a qu'une définition, celle du rendu (`polyNormal`, repère three `(X, Y, Z) = (x, h, y)`) :
+ *  la planche l'appelle au lieu d'en tenir une seconde. */
 function normale(poly: readonly Pt3[]): Pt3 {
-  let nx = 0, ny = 0, nh = 0;
-  for (let i = 0; i < poly.length; i++) {
-    const a = poly[i], b = poly[(i + 1) % poly.length];
-    nx += (a.y - b.y) * (a.h + b.h);
-    ny += (a.h - b.h) * (a.x + b.x);
-    nh += (a.x - b.x) * (a.y + b.y);
-  }
-  const n = Math.hypot(nx, ny, nh) || 1;
-  return { x: nx / n, y: ny / n, h: nh / n };
+  const n = polyNormal(poly.map((p) => ({ x: p.x, y: p.h, z: p.y })));
+  return n ? { x: n.x, y: n.z, h: n.y } : { x: 0, y: 0, h: 0 };
 }
+
+/** Direction de l'ŒIL : le NOYAU de `projeter` — un déplacement de (1,1,1) ne bouge aucun des deux axes
+ *  d'écran de l'isométrique, et l'œil est à la verticale en vue de dessus. Sert à la FRONTALITÉ comme à
+ *  la PROFONDEUR : le peintre trie sur la même mesure qu'il cull. */
+const VERS_OEIL = {
+  iso: { x: Math.sqrt(1 / 3), y: Math.sqrt(1 / 3), h: Math.sqrt(1 / 3) },
+  top: { x: 0, y: 0, h: 1 },
+};
+const versOeil = (p: Pt3, v: Pt3): number => p.x * v.x + p.y * v.y + p.h * v.h;
 
 /** Couleur du matériau, assombrie selon l'orientation de la face (lumière fixe, QC seulement). */
 function teinte(couleur: string, facteur: number): string {
@@ -65,13 +70,13 @@ function vueSvg(faces: readonly Face[], rot: number, top: boolean): { svg: strin
   const polys = faces.map((f) => {
     const metrique = f.poly.map((p) => enMetres(p, rot));
     const n = normale(metrique);
-    const vers = top ? { x: 0, y: 0, h: 1 } : { x: 0.577, y: -0.577, h: 0.577 };
+    const vers = top ? VERS_OEIL.top : VERS_OEIL.iso;
     return {
       metrique,
       n,
       face: f,
-      visible: n.x * vers.x + n.y * vers.y + n.h * vers.h > 0,
-      profondeur: metrique.reduce((acc, p) => acc + (top ? p.h : p.x + p.y + p.h) / metrique.length, 0),
+      visible: versOeil(n, vers) > 0,
+      profondeur: metrique.reduce((acc, p) => acc + versOeil(p, vers) / metrique.length, 0),
     };
   });
   const visibles = polys.filter((p) => p.visible).sort((a, b) => a.profondeur - b.profondeur);

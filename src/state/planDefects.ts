@@ -9,7 +9,7 @@ import { sceneZoneTiles } from './zones';
 import { TERRAIN_DEFS } from './terrain';
 import { gradeBetween, METRES_PER_LEVEL } from './relief';
 import { memoByRef } from './sceneMemo';
-import type { Edge4 } from './sceneEdit';
+import type { CellSide } from './scene';
 
 /** Terrains BÂTIS : ceux dont la def porte `built` (`TerrainDef.built`) — surface construite qui PORTE
  *  l'étage posé dessus (plancher, dallage, pavage, bloc de maçonnerie). */
@@ -33,16 +33,16 @@ export function scenesZ(scene: Scene): number[] {
   return [...new Set(scene.layers.map((l) => l.z))].sort((a, b) => a - b);
 }
 
-/** Convertit une arête `Edge4` (N/E/S/O d'une case) vers sa forme CANONIQUE de stockage `WallSeg`
+/** Convertit une arête `CellSide` (N/E/S/O d'une case) vers sa forme CANONIQUE de stockage `WallSeg`
  *  (`N`/`E` seulement — S de (x,y) = N de (x,y+1) ; O de (x,y) = E de (x-1,y), cf. `scene.ts` l.680). */
-function canonical(x: number, y: number, side: Edge4): { x: number; y: number; side: 'N' | 'E' } {
+function canonical(x: number, y: number, side: CellSide): { x: number; y: number; side: 'N' | 'E' } {
   if (side === 'S') return { x, y: y + 1, side: 'N' };
   if (side === 'O') return { x: x - 1, y, side: 'E' };
   return { x, y, side };
 }
 
 /** Un mur (plein, porte ou structure) existe-t-il sur cette arête, à cet étage ? */
-function edgeExists(scene: Scene, x: number, y: number, side: Edge4, z: number): boolean {
+function edgeExists(scene: Scene, x: number, y: number, side: CellSide, z: number): boolean {
   const c = canonical(x, y, side);
   return (scene.walls ?? []).some((w) => (w.z ?? 0) === z && w.side === c.side && w.x === c.x && w.y === c.y);
 }
@@ -71,7 +71,7 @@ export type PlanDefectFamily =
 /** OÙ se corrige le défaut — l'éditeur en fait une sélection, le CLI une coordonnée. */
 export type PlanDefectAt =
   | { kind: 'cell'; x: number; y: number; z: number }
-  | { kind: 'edge'; x: number; y: number; side: Edge4; z: number }
+  | { kind: 'edge'; x: number; y: number; side: CellSide; z: number }
   /** `tiles` = les cases FAUTIVES du défaut, à allumer d'un bloc sur la carte (l'éditeur sélectionne
    *  la zone par `zoneId`, et met en évidence exactement ces cases-là). */
   | { kind: 'zone'; zoneId: string; z: number; tiles: { x: number; y: number; z: number }[] };
@@ -126,7 +126,7 @@ export interface Defect {
   z: number;
   x: number;
   y: number;
-  side?: Edge4;
+  side?: CellSide;
   message: string;
 }
 
@@ -194,10 +194,10 @@ function exteriorVoidCells(scene: Scene, z: number): Set<string> {
   return exterior;
 }
 
-const NEIGHBOR_EDGE: Record<Edge4, { x: number; y: number }> = { O: { x: -1, y: 0 }, E: { x: 1, y: 0 }, N: { x: 0, y: -1 }, S: { x: 0, y: 1 } };
+const NEIGHBOR_EDGE: Record<CellSide, { x: number; y: number }> = { O: { x: -1, y: 0 }, E: { x: 1, y: 0 }, N: { x: 0, y: -1 }, S: { x: 0, y: 1 } };
 
 /** Les quatre côtés d'une case, dans l'ordre du rapport — foyer unique des balayages d'arêtes. */
-const SIDES4: readonly Edge4[] = ['N', 'E', 'S', 'O'];
+const SIDES4: readonly CellSide[] = ['N', 'E', 'S', 'O'];
 
 /** Cases À L'AIR LIBRE d'un étage : remplissage depuis le HORS-GRILLE, avec pour SEULE barrière une
  *  arête MURÉE (`edgeExists` : mur plein, porte, structure, arête grimpable — la géométrie du plan).
@@ -298,7 +298,7 @@ export function interiorCells(scene: Scene, z: number): ReadonlySet<string> {
   return out;
 }
 
-const SHIFT: Record<Edge4, [number, number][]> = {
+const SHIFT: Record<CellSide, [number, number][]> = {
   O: [[-1, 0], [1, 0]],
   E: [[-1, 0], [1, 0]],
   N: [[0, -1], [0, 1]],

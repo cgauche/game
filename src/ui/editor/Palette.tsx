@@ -11,6 +11,7 @@ import { OptionChooser } from '../OptionChooser';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import { TERRAINS } from '../../state/terrain';
 import { propDeclaredFoot } from '../../state/footprint';
+import { REF_DECOR_DEFAUT } from '../../data/props.types';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
@@ -144,7 +145,7 @@ export function Palette({
   const [search, setSearch] = useState(''); // filtre partagé des catalogues (réinitialisé au changement d'outil)
   // Derniers choix par famille → re-cliquer l'icône retrouve l'outil précis.
   const [lastTerrain, setLastTerrain] = useState<Terrain>('herbe');
-  const [lastProp, setLastProp] = useState('tonneau');
+  const [lastProp, setLastProp] = useState(REF_DECOR_DEFAUT);
   const [lastEngine, setLastEngine] = useState(SIEGE_ENGINES[0]?.id ?? 'baliste');
   // Matériau MÉMORISÉ par sous-mode (Cloison/Porte) — l'outil porte son matériau comme un pinceau porte
   // sa couleur : la palette ne montre que ce qui est POSABLE sur une arête pour ce sous-mode (#830).

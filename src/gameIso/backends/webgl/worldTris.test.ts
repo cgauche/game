@@ -156,6 +156,7 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur AUTHOR
     const montant: Face = {
       poly: [{ x: 1, y: 1, h: 4 }, { x: 1, y: 1, h: 0 }],
       material: { domain: 'structure', id: 'mur-pierre', part: 'poteau' },
+      oriented: false,
     };
     expect(faceDepthM(montant)).toBeCloseTo(uprightCrossM('poteau', WALL_MATTER_M), 12);
     const [bras] = faceQuads(montant, 2, faceDepthM(montant));
@@ -202,6 +203,7 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur AUTHOR
     const face: Face = {
       poly: [{ x: 1, y: 1, h: 4 }, { x: 1, y: 1, h: 0 }],
       material: { domain: 'structure', id: 'mur-en-bois', part: 'poteau' },
+      oriented: false,
     };
     const [geom] = facesGeometry([face], 2, faceDepthOf());
     expect(geom.tris).toHaveLength(4);
@@ -446,6 +448,7 @@ describe('ÉPAISSEUR de mur — un plan d’épaisseur nulle n’a AUCUNE surfac
   const partFace = (part: WallPart): Face => ({
     poly: [{ x: 1, y: 0, h: 3 }, { x: 2, y: 0, h: 3 }, { x: 2, y: 0, h: 1 }, { x: 1, y: 0, h: 1 }],
     material: { domain: 'structure', id: 'mur-en-bois', part },
+    oriented: false,
   });
 
   it('SAILLIE : une boîte CENTRÉE sur le plan médian, épaisseur = mur + 2 × saillie', () => {

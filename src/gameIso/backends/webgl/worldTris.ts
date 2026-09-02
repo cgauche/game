@@ -411,16 +411,21 @@ export function faceQuads(face: Face, mpt: number, depthM?: number): WorldPoly[]
  *  herse, gravats — le pivot n'émet AUCUNE face derrière elles) deviennent la MÊME boîte centrée sur le
  *  plan médian du mur. Centrée, parce qu'une `Face` de mur ne porte AUCUNE notion de joue intérieure ou
  *  extérieure (`builders/walls.ts` ne renseigne jamais `face.side`) : il n'y a pas de côté à choisir, un
- *  seul volume est visible des deux bords. Profondeur NULLE ⇒ plan unique au médian et `oriented: false`
- *  — un sens de parcours y serait arbitraire, et la carte d'ombre le suivrait. */
+ *  seul volume est visible des deux bords. Profondeur NULLE ⇒ plan unique au médian, et le sens rendu
+ *  est celui que la FACE déclare (`Face.oriented`) : une face qui ferme déjà un volume (décor
+ *  volumique) porte son dehors dans son parcours, une face qui n'en déclare aucun n'a pas de sens à
+ *  propager — il serait arbitraire, et la carte d'ombre le suivrait. */
 export function faceQuadsOriented(face: Face, mpt: number, depthM?: number): { quads: WorldPoly[]; oriented: boolean } {
   const poly = facePoly(face, mpt);
+  // Un MONTANT n'est pas un polygone : ses deux quads croisés sont fabriqués ici, aucun sens d'auteur
+  // ne les précède.
   if (poly.length === 2)
     return { quads: crossQuadPolys(poly[0], poly[1], depthM ?? SANS_VOLUME), oriented: false };
+  const porté = face.oriented;
   const n = polyNormal(poly);
-  if (!n || Math.abs(n.y) > 1e-6) return { quads: [poly], oriented: false }; // seul un plan VERTICAL a une épaisseur d'arête
+  if (!n || Math.abs(n.y) > 1e-6) return { quads: [poly], oriented: porté }; // seul un plan VERTICAL a une épaisseur d'arête
   const t = depthM ?? SANS_VOLUME;
-  if (t <= 0) return { quads: [poly], oriented: false };
+  if (t <= 0) return { quads: [poly], oriented: porté };
   return { quads: wallBoxPolys(poly, n, t), oriented: true };
 }
 

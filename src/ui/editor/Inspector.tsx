@@ -25,7 +25,7 @@ import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { allMusicDefs } from '../../audio/music';
-import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, roofMaterials, structureAppearances } from '../../data';
+import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, roofMaterials, structureAppearances, refEstVolumique } from '../../data';
 import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
 
@@ -67,6 +67,17 @@ import { nextEntityId } from '../../state/entityId';
 import { ListRow } from '../ListRow';
 import { OptionChooser } from '../OptionChooser';
 import { LayerField, LayerChip, sceneLayerZs } from './LayerField';
+import { estCardinal, type Dir8 } from '../../state/dir8';
+import { REF_DECOR_DEFAUT } from '../../data/props.types';
+
+/** Caps OFFERTS au sélecteur d'orientation, dans l'ordre horaire de `DIR8_ORDER` : les huit pour une
+ *  entité ordinaire, les quatre CARDINAUX pour un décor volumique (`Dir4`, #1680 ligne 3). Un seul
+ *  couple id→libellé, jamais deux listes de `<option>` recopiées. */
+const CAPS_OFFERTS: readonly (readonly [Dir8, string])[] = [
+  ['N', 'Nord'], ['NE', 'Nord-Est'], ['E', 'Est'], ['SE', 'Sud-Est'],
+  ['S', 'Sud'], ['SO', 'Sud-Ouest'], ['O', 'Ouest'], ['NO', 'Nord-Ouest'],
+];
+const CAPS_OFFERTS_CARDINAUX = CAPS_OFFERTS.filter(([cap]) => estCardinal(cap));
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -1227,15 +1238,15 @@ function EntityPanel({
         </label>
         <label className="ed-field">
           Orientation
+          {/* Un décor VOLUMIQUE n'a que les quatre cardinaux À OFFRIR : sa recette tourne là où son
+              empreinte solide ne tourne pas (#1509), et une diagonale poserait son corps en travers
+              de cases restées traversables. Le geste n'a donc pas à être réparé après coup — il
+              n'est pas proposable. Source de la règle : le CATALOGUE (`refEstVolumique`), la même
+              que lit le schéma de scène au parse et `validateScene` à l'écran. */}
           <select value={ent.facing ?? 'S'} onChange={(e) => updateSel({ facing: e.target.value as SceneEntity['facing'] })}>
-            <option value="N">Nord</option>
-            <option value="NE">Nord-Est</option>
-            <option value="E">Est</option>
-            <option value="SE">Sud-Est</option>
-            <option value="S">Sud</option>
-            <option value="SO">Sud-Ouest</option>
-            <option value="O">Ouest</option>
-            <option value="NO">Nord-Ouest</option>
+            {(refEstVolumique(ent.ref) && ent.kind === 'prop' ? CAPS_OFFERTS_CARDINAUX : CAPS_OFFERTS).map(([cap, libelle]) => (
+              <option key={cap} value={cap}>{libelle}</option>
+            ))}
           </select>
         </label>
         <LayerField z={ent.z} layers={sceneLayerZs(scene)} onChange={(z) => updateSel({ z: z || undefined })} />
@@ -1440,7 +1451,7 @@ function EntityPanel({
         <Fold title="Décor & interaction" open>
           <label className="ed-field">
             Décor
-            <select value={ent.ref ?? 'tonneau'} onChange={(e) => setScene(changePropRef(scene, ent.id, e.target.value))}>
+            <select value={ent.ref ?? REF_DECOR_DEFAUT} onChange={(e) => setScene(changePropRef(scene, ent.id, e.target.value))}>
               {Object.values(PROPS).map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.label}

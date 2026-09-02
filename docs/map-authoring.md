@@ -67,7 +67,7 @@ const scene = buildScene({ size: [16, 10], id: 'test-x', label: 'Bac à sable', 
 | `walled?` | `Record<string, string>` | Grilles BOX-DRAWING par étage (`z0`/`z1`/…) : arêtes DANS l'ASCII (`parseWalledAscii`, (2W+1)×(2H+1)). |
 | `wallStructures?` | `Record<string, string>` | Char d'arête → id de `structures.json` (structure destructible sur l'arête d'un étage `walled`, ex. herse). |
 | `elevate?` | `Record<string, number \| { height: number; parapet: string }>` | HAUTEUR (relief) pilotée par l'ASCII (coordonnée-free) : char de LÉGENDE → hauteur métrique, `number` seul (`{ '4': 4, '3': 3 }` pour une rampe), OU `{ height, parapet }` pour une ZONE REMPART solide crénelée (`{ W: { height: 4, parapet: 'mur-en-pierre' } }` → face de maçonnerie + crénelure de périmètre au rendu). |
-| `edgeWalls?` | `Record<string, { side: Edge4; structure?: string; door?: boolean }>` | MUR D'ARÊTE posé sur une case d'une grille `levels` (coordonnée-free, sans passer au `walled` box-drawing) : char de LÉGENDE → arête d'une case. |
+| `edgeWalls?` | `Record<string, { side: CellSide; structure?: string; door?: boolean }>` | MUR D'ARÊTE posé sur une case d'une grille `levels` (coordonnée-free, sans passer au `walled` box-drawing) : char de LÉGENDE → arête d'une case. |
 | `cells?` | `Record<string, CellRecipe>` | RECETTE par LETTRE de CASE COMPLÈTE (`CellRecipe`) : `wall` (enceinte pleine), `gate` (tunnel brèchable), `hero` (départ), `stair` (volée d'escalier, #780). |
 | `walls?` | `WallSpec[]` | — |
 | `relief?` | `ReliefSpec[]` | — |
@@ -117,7 +117,7 @@ Spec de relief EN COORDONNÉES (repli bas niveau ; préférer `elevate` piloté 
 |---|---|---|
 | `x` | `number` | — |
 | `y` | `number` | — |
-| `side` | `Edge4 \| '\\' \| '/'` | — |
+| `side` | `CellSide \| '\\' \| '/'` | — |
 | `z?` | `number` | — |
 | `door?` | `boolean` | — |
 | `structure?` | `string` | Structure destructible posée sur l'arête (id de `structures.json`, ex. `porte-de-ville`). |
@@ -130,8 +130,8 @@ Spec de relief EN COORDONNÉES (repli bas niveau ; préférer `elevate` piloté 
 | Champ | Type | Rôle (JSDoc) |
 |---|---|---|
 | `terrain?` | `Terrain` | Sol / FONDATION de la case (défaut = base de l'étage — évite l'herbe surprise sous une enceinte). |
-| `wall?` | `{ structure: string; facing?: Edge4; height?: number }` | — |
-| `gate?` | `{ structure: string; facing?: Edge4 }` | — |
+| `wall?` | `{ structure: string; facing?: CellSide; height?: number }` | — |
+| `gate?` | `{ structure: string; facing?: CellSide }` | — |
 | `hero?` | `boolean` | — |
 | `stair?` | `{ to: string }` | VOLÉE d'escalier : relie la surface de l'étage du run (couche z où la lettre est peinte) au plancher de l'étage `to`, par une rampe de hauteurs interpolées (Δ≤STEP_MAX_M). |
 

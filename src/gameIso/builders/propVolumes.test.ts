@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DIR8_ORDER, type Dir8 } from '../../state/dir8';
-import type { PropData } from '../../data/props.types';
+import { DIR4_ORDER, type Dir4, type Dir8 } from '../../state/dir8';
+import { capVolumique, type PropData } from '../../data/props.types';
 import { polyNormal } from '../backends/webgl/worldTris';
 import { buildPropVolumes, type AncrageVolume } from './propVolumes';
 import type { Face } from './types';
@@ -27,7 +27,7 @@ const PROP_TROIS_PRIMITIVES: PropData = {
 
 /** L'ANCRAGE d'un meuble posé : son point monde, son cap, l'altitude de son pied, l'entité porteuse. */
 function ancrageDe({ id, ancre, facing, baseHeightM = 0 }: { id?: string; ancre: { x: number; y: number }; facing?: Dir8; baseHeightM?: number }): AncrageVolume {
-  return { ancre, facing: facing ?? 'S', baseHeightM, ...(id ? { entId: id } : {}) };
+  return { ancre, facing: capVolumique(facing, id ?? 'sonde'), baseHeightM, ...(id ? { entId: id } : {}) };
 }
 
 const r3 = (n: number): number => Math.round(n * 1000) / 1000;
@@ -49,7 +49,7 @@ function aire(face: Face): number {
 }
 
 describe('buildPropVolumes — la recette locale devient de la géométrie monde', () => {
-  it.each<Dir8>(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'])('compile les trois primitives au cap %s', (facing) => {
+  it.each<Dir4>(DIR4_ORDER)('compile les trois primitives au cap %s', (facing) => {
     const ancrage = ancrageDe({ id: `meuble-${facing}`, ancre: { x: 4, y: 6 }, facing });
     const faces = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrage);
     expect(faces.length).toBe(6 + 10 + 5); // boîte, cylindre à 8 pans (+ dessus + dessous), prisme
@@ -72,14 +72,14 @@ describe('buildPropVolumes — la recette locale devient de la géométrie monde
   });
 
   it('le CAP tourne la géométrie une seule fois, autour de la case d’ancrage', () => {
-    const parCap = DIR8_ORDER.map((facing) =>
+    const parCap = DIR4_ORDER.map((facing) =>
       buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ id: 'meuble', ancre: { x: 4, y: 6 }, facing })));
-    // Le cylindre est excentré (x = 0.2) : chaque cap le pose ailleurs — huit positions DISTINCTES.
+    // Le cylindre est excentré (x = 0.2) : chaque cap le pose ailleurs — quatre positions DISTINCTES.
     const piedsParCap = parCap.map((faces) => {
       const pied = faces.filter((f) => f.material.id === 'fer-noirci').flatMap((f) => f.poly);
       return `${r3(Math.min(...pied.map((p) => p.x)))},${r3(Math.min(...pied.map((p) => p.y)))}`;
     });
-    expect(new Set(piedsParCap).size).toBe(8);
+    expect(new Set(piedsParCap).size).toBe(4);
     // …et l'ancrage ne bouge pas : le centre de la boîte reste sur la case, à tous les caps.
     for (const faces of parCap) {
       const boite = faces.filter((f) => f.material.id === 'bois-chene').flatMap((f) => f.poly);
@@ -122,8 +122,8 @@ describe('buildPropVolumes — la recette locale devient de la géométrie monde
    * normales face à face, mêmes aires, le seul écart étant le décalage demandé.
    */
   it('une ancre FRACTIONNAIRE translate la recette sans la déformer', () => {
-    const surCase = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ ancre: { x: 4, y: 3 }, facing: 'NE' }));
-    const entreCases = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ ancre: { x: 4.5, y: 3.5 }, facing: 'NE' }));
+    const surCase = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ ancre: { x: 4, y: 3 }, facing: 'E' }));
+    const entreCases = buildPropVolumes(PROP_TROIS_PRIMITIVES, ancrageDe({ ancre: { x: 4.5, y: 3.5 }, facing: 'E' }));
     expect(entreCases).toHaveLength(surCase.length);
     for (const [i, face] of entreCases.entries()) {
       const ref = surCase[i];
@@ -135,6 +135,16 @@ describe('buildPropVolumes — la recette locale devient de la géométrie monde
       expect([r3(a.x), r3(a.y), r3(a.z)]).toEqual([r3(b.x), r3(b.y), r3(b.z)]);
       expect(r3(aire(face))).toBe(r3(aire(ref)));
     }
+  });
+
+  /**
+   * CAP CARDINAL SEULEMENT (#1680 ligne 3) : le type d'`AncrageVolume` refuse déjà la diagonale au
+   * compilateur ; `capVolumique` est la porte qui la refuse à la DONNÉE, nominativement. La rotation
+   * générique (`rotatePropLocal`), elle, garde ses huit caps — elle sert aussi aux places assises.
+   */
+  it.each<Dir8>(['NE', 'SE', 'SO', 'NO'])('refuse le cap diagonal %s, en le nommant', (diagonal) => {
+    expect(() => ancrageDe({ id: 'meuble', ancre: { x: 4, y: 6 }, facing: diagonal }))
+      .toThrow(`meuble : cap ${diagonal} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`);
   });
 
   it('la hauteur du sol s’ajoute UNE fois à chaque hauteur locale', () => {

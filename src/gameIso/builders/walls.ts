@@ -17,6 +17,7 @@ import { wallApp, structureAppearance, type StructureAppearanceDef, type WallPar
 import { facadeStructureAppearance, facadeWallFeatureAppearance } from '../catalog/facades';
 import { WALL_H_M, isoPxToM } from '../iso';
 import { METRES_PER_LEVEL, gradeBetween } from '../../state/relief';
+import { DIR4_ORDER, type Dir4 } from '../../state/dir8';
 import type { Face, GP, WallEl } from './types';
 import type { FloorView } from './floors';
 import {
@@ -82,7 +83,7 @@ export function crownFaces(app: StructureAppearanceDef, A: GXY, B: GXY, baseH: n
   const mat = (part: WallPart) => ({ domain: 'structure' as const, id: app.id, part });
   const span = (part: WallPart, t0: number, t1: number, hLo: number, hHi: number): Face => {
     const P0 = at(t0), P1 = at(t1);
-    return { poly: [{ ...P0, h: hHi }, { ...P1, h: hHi }, { ...P1, h: hLo }, { ...P0, h: hLo }], material: mat(part) };
+    return { poly: [{ ...P0, h: hHi }, { ...P1, h: hHi }, { ...P1, h: hLo }, { ...P0, h: hLo }], material: mat(part), oriented: false };
   };
   const slab = (part: WallPart, hLo: number, hHi: number): Face => span(part, 0, 1, hLo, hHi);
   const P = par.heightLevelFrac * METRES_PER_LEVEL; // hauteur dressée du parapet (LEVEL_H·frac px ⇔ m)
@@ -111,12 +112,12 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
   /** Quad vertical [A@haut, B@haut, B@bas, A@bas] sur le tronçon [t0,t1] de l'arête. */
   const span = (part: WallPart, t0: number, t1: number, hLo: number, hHi: number): Face => {
     const P0 = at(t0), P1 = at(t1);
-    return { poly: [{ ...P0, h: hHi }, { ...P1, h: hHi }, { ...P1, h: hLo }, { ...P0, h: hLo }], material: mat(part) };
+    return { poly: [{ ...P0, h: hHi }, { ...P1, h: hHi }, { ...P1, h: hLo }, { ...P0, h: hLo }], material: mat(part), oriented: false };
   };
   const slab = (part: WallPart, hLo: number, hHi: number): Face => span(part, 0, 1, hLo, hHi);
   const upright = (part: WallPart, t: number, hLo: number, hHi: number): Face => {
     const P = at(t);
-    return { poly: [{ ...P, h: hHi }, { ...P, h: hLo }], material: mat(part) };
+    return { poly: [{ ...P, h: hHi }, { ...P, h: hLo }], material: mat(part), oriented: false };
   };
   /** BRÈCHE (structure abattue) : tas de gravats dentelé laissant le passage + moignons de poteau. */
   const breach = (): Face[] => {
@@ -124,6 +125,7 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
     const heap: Face = {
       poly: [{ ...A, h: b }, { ...at(BREACH_M1), h: b + hr }, { ...at(BREACH_M2), h: b + hr * 0.7 }, { ...B, h: b }],
       material: mat('gravats-tas'),
+      oriented: false,
     };
     return [slab('gravats', b, b + hr * 0.5), heap, upright('poteau', 0, b, b + hr * BREACH_POST_A), upright('poteau', 1, b, b + hr * BREACH_POST_B)];
   };
@@ -286,7 +288,7 @@ export const dehorsDeScene = memoByRef((scene: Scene) => {
  *  ce qu'un décor de façade doit savoir pour se dresser du bon côté du mur. `null` quand aucun des deux
  *  côtés n'est le dehors (arête intérieure) et pour une arête DIAGONALE, dont `WALL_NB` rend un voisin
  *  nul : l'appelant tranche son repli. */
-export function outwardSide(scene: Scene, edge: Pick<WallSeg, 'x' | 'y' | 'side'> & { z?: number }): Card | null {
+export function outwardSide(scene: Scene, edge: Pick<WallSeg, 'x' | 'y' | 'side'> & { z?: number }): Dir4 | null {
   const [nx, ny] = NB[edge.side];
   if (nx === 0 && ny === 0) return null;
   const z = edge.z ?? 0;
@@ -349,6 +351,7 @@ function facadeFeatureFaces(
       material: { domain: 'structure', id: appearance, part },
       architectureFeatureId: id,
       architectureFeatureKind: feature.kind,
+      oriented: false,
     });
     const span = (part: WallPart, from: number, to: number, lo: number, hi: number): Face => {
       const p0 = at(from), p1 = at(to);
@@ -407,11 +410,9 @@ function tagExistingFacadeFaces(faces: Face[], seg: WallSeg, facade: FacadeEdge,
 }
 
 // ── CRÉNELURE (décoration de RENDU) — dérivation du PÉRIMÈTRE (générale, toute forme, opt-in donnée) ──
-export type Card = 'N' | 'E' | 'S' | 'O';
-const CARD: Card[] = ['N', 'E', 'S', 'O'];
 /** Delta (dx,dy) d'un cap cardinal — SOURCE UNIQUE, partagée avec le décor de façade (`builders/props`,
  *  saillie d'un ornement vers l'extérieur) : la crénelure et lui lisent la même table. */
-export const CARD_NB: Record<Card, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], O: [-1, 0] };
+export const CARD_NB: Record<Dir4, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], O: [-1, 0] };
 
 /** Éléments `wall` SYNTHÉTIQUES de CRÉNELURE (RENDU PUR, comme un toit auto-dessiné) : pour chaque arête de
  *  PÉRIMÈTRE d'une tuile crénelée (voisin même-z NON crénelé), la seule CRÊTE crénelée (`crownFaces` :
@@ -432,7 +433,7 @@ function crestGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
         if (!appId) continue;
         const surfaceH = heightAt(scene, x, y, z);
         const cApp = structureAppearance(appId);
-        for (const side of CARD) {
+        for (const side of DIR4_ORDER) {
           const [dx, dy] = CARD_NB[side];
           const nx = x + dx, ny = y + dy;
           if (isCrenellated(scene, nx, ny, z)) continue; // arête INTERNE → pas de crête
@@ -554,7 +555,7 @@ function roofSeamGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
           door: false,
           appearance,
           ends: [gp0lo, gp1lo],
-          faces: [{ poly: [gp0hi, gp1hi, gp1lo, gp0lo], material: { domain: 'structure', id: appearance, part: 'face' } }],
+          faces: [{ poly: [gp0hi, gp1hi, gp1lo, gp0lo], material: { domain: 'structure', id: appearance, part: 'face' }, oriented: false }],
           states: { visible: false, down: false, open: false },
         },
         rule: { kind: 'enVue', keys: [`${x},${y},${z}`, `${nx},${ny},${z}`] },

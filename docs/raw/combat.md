@@ -143,7 +143,7 @@ Hors Combat, la mesure du temps des actions est **bien plus flexible**. Mais il 
 **Voir aussi** : Surprise et État Surpris ; Effectuer votre Tour (Action + Mouvement) ; Tests et Degrés de Réussite (DR) ; Tests opposés ; Tests étendus ; Talents affectant l'ordre de combat (Combat instinctif).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 13` (l.11-15, l.19-29, l.31, l.33, l.37-42, l.43, l.46-47, l.50) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `pickDoctrine`, `ambush-surprise`, `combat-init-method`, `encounterDefSchema`, `combat-init-reroll`, `applySurprise`, +5 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/combat.ts`, `src/engine/suffocation.ts`, +7 fichiers
+- `LDB 13` (l.11-15, l.19-29, l.31, l.33, l.37-42, l.43, l.46-47, l.50) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `pickDoctrine`, `ambush-surprise`, `combat-init-method`, `combat-init-reroll`, `encounterDefSchema`, `applySurprise`, +5 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/combat.ts`, `src/engine/suffocation.ts`, +7 fichiers
 
 ---
 
@@ -2712,7 +2712,7 @@ Autrement dit, lorsqu'un Coup Critique frappe un membre exotique (tentacule, que
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.132-153) → `localisation`, `useDefenseJetProps`, `useHoverTargeting`, `useAttackJetProps`, `Condition`, `FLOWS`, `chooseEnemyAction`, `attackEnv`, `createCombatSlice`, `previewDefense`, +7 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +5 fichiers
-- `LDB 76` (l.16-19, l.21-26, l.40, l.41) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `sceneEntitySchema`, `criticalTableFor`, `SceneEntity`, `SpawnExtras`, `critTableKeyFor`, `creatureToCombatant`, `rollCritical`, +1 — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
+- `LDB 76` (l.16-19, l.21-26, l.40, l.41) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `sceneEntitySchema`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `critTableKeyFor`, `creatureToCombatant`, `rollCritical`, +1 — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
 
 ---
 
@@ -3022,7 +3022,7 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 **Voir aussi** : Localisation et Tableaux de Critiques (localisation inversée, Tableau des Bras pour membres sans table) ; Taille et combat (Dévastatrice/Percutante, Frappe Mortelle, Piétinement) ; Psychologie (Peur, Terreur, Frénésie, Animosité, Haine, Préjugé) ; États (Empêtré, Sonné, Inconscient, Hémorragique — infligés par les Traits MSRC) ; Blessures et Bonus de caractéristique (BF+2×BE+BFM) ; Corruption et Mutations ; Attaques gratuites et Avantage.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.9-13, l.16-28, l.31-37, l.38-45) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `sceneEntitySchema`, `criticalTableFor`, `SceneEntity`, `SpawnExtras`, `critTableKeyFor`, `creatureToCombatant`, `rollCritical`, +1 — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
+- `LDB 76` (l.9-13, l.16-28, l.31-37, l.38-45) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `sceneEntitySchema`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `critTableKeyFor`, `creatureToCombatant`, `rollCritical`, +1 — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
 - `LDB 77` (l.7-68) → `humain`, `nain`, `halfling`, `elfe-haut-et-sylvain`, `ogre` — `src/data/creatures.json`
 - `LDB 85` (l.9-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, +171 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +34 fichiers
 - `ZI 14` (l.1013-1035, l.1037-1087) → `ethere`, `fouissement` — `src/data/traits.json`

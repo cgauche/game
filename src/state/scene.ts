@@ -47,8 +47,6 @@ import { type Grade, gradeBetween } from './relief';
 /** Un terrain est un id de catalogue (cf. src/state/terrain.ts). */
 export type Terrain = string;
 
-export type Facing = 'N' | 'S' | 'E' | 'O';
-
 export type EntityKind = z.infer<typeof entityKindSchema>;
 
 /** Statbloc personnalisé (PNJ/bête custom d'éditeur) — moteur pur, `engine/statblock.ts` (#614) :
@@ -488,6 +486,12 @@ export function surfaceLink(
   const hb = heightAt(scene, b.x, b.y, b.z ?? 0);
   return { grade: gradeBetween(ha, hb), drop: hb - ha };
 }
+
+/** ARÊTE cardinale d'une case, côté MONDE (N = vers y−1, E = vers x+1…) : QUEL des quatre bords d'une
+ *  case porte une chose (mur, porte, paroi de relief, wedge, pan de toit). Distinct de `Dir4`
+ *  (`state/dir8.ts`), qui est un CAP — une direction de déplacement ou d'orientation. Même cardinal,
+ *  deux concepts : on ne « tourne » pas vers une arête, on ne pose pas un mur sur un cap. */
+export type CellSide = 'N' | 'E' | 'S' | 'O';
 
 /** Mur sur ARÊTE de case. `side:'N'` = arête entre (x,y) et (x,y-1) ; `side:'E'` = arête entre (x,y)
  *  et (x+1,y). Les DIAGONALES `'\\'` (coin NO→SE) et `'/'` (coin NE→SO) tracent une cloison OBLIQUE en

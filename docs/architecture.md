@@ -93,8 +93,10 @@ src/state/
                             (55 `z.infer` de `defs-scenes/effets.ts` + `DelayedEffect`/`PetitePriere`/
                             `EffectOp` = 58 membres). Restent 7 MANUSCRITS : `Scene`, `SceneEntity`,
                             `SceneEffectZone` (corps du document), `DelayedEffect`, `PetitePriere`
-                            (annotations du `z.lazy`), `Terrain`, `Facing` (alias primitifs). Comptes et
-                            liste GATÉS par `ui/editor/scene-field-editability-guard.test.ts`
+                            (annotations du `z.lazy`), `Terrain`, `CellSide` (alias primitifs). Comptes
+                            et liste GATÉS par `ui/editor/scene-field-editability-guard.test.ts`.
+                            `CellSide` = l'ARÊTE d'une case (quel bord porte un mur) ; le CAP, lui, vit
+                            au foyer des caps (`state/dir8.ts`)
   worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2
                             (`ProjectDoc`, `activeAxes?: string[]` #409 — axes de forces/faiblesses ACTIFS de
                             la campagne, ids de `data/axes.json`, défaut `CORE_AXIS_IDS` via `resolveActiveAxes`).

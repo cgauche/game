@@ -535,3 +535,35 @@ describe('Inspector — places assises d’un décor', () => {
     expect(sceneOf().seatAssignments).toEqual({});
   });
 });
+
+/**
+ * CAP D'UN DÉCOR VOLUMIQUE (#1680 ligne 3) — verrou au GESTE : le sélecteur d'orientation n'OFFRE pas
+ * la diagonale sur un décor dont le type porte une recette. Un cap qu'on ne peut pas choisir n'a pas
+ * à être réparé après coup ; le schéma de scène (`sceneEntitySchema`) reste le refus au chargement,
+ * `validateScene` le signalement, `buildProps` le dernier filet. La règle est celle du CATALOGUE
+ * (`refEstVolumique`) : un décor BILLBOARD garde ses huit caps.
+ */
+describe('Inspector — orientation : les caps OFFERTS suivent le catalogue', () => {
+  const capsOfferts = (container: HTMLElement) => {
+    const champ = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Orientation'));
+    return [...(champ!.querySelector('select') as HTMLSelectElement).options].map((o) => o.value);
+  };
+
+  it('décor VOLUMIQUE : quatre cardinaux, aucune diagonale', () => {
+    const h = mount({ id: 'table-1', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'table-ronde-4-tabourets', facing: 'N' });
+    h.mount();
+    expect(capsOfferts(h.container)).toEqual(['N', 'E', 'S', 'O']);
+  });
+
+  it('décor BILLBOARD : les huit caps restent offerts', () => {
+    const h = mount({ id: 'brasero-1', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'brasero', facing: 'NE' });
+    h.mount();
+    expect(capsOfferts(h.container)).toEqual(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']);
+  });
+
+  it('PERSONNAGE : les huit caps restent offerts (la règle ne parle que du décor)', () => {
+    const h = mount({ id: 'pnj-1', kind: 'personnage', pos: { x: 1, y: 1 }, facing: 'SE' });
+    h.mount();
+    expect(capsOfferts(h.container)).toEqual(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']);
+  });
+});

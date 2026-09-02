@@ -4,7 +4,7 @@
  * surbrillances) sont PRÉ-TRIÉES une fois par leurs memos ; à la frame, seuls les éléments DYNAMIQUES
  * (tokens qui marchent, halos/tethers/aperçus) s'insèrent par DICHOTOMIE — plus de retri global.
  */
-import type { Edge4 } from '../../state/sceneEdit';
+import type { CellSide } from '../../state/scene';
 import type { ScreenBounds } from '../../geometry/iso';
 
 /** Un objet du tri de profondeur.
@@ -24,7 +24,7 @@ export interface StageObj {
   h?: number;
   ghost?: boolean;
   kind?: 'floor' | 'wall' | 'roof' | 'prop';
-  side?: Edge4;
+  side?: CellSide;
   roomZoneIds?: readonly string[];
   bounds?: ScreenBounds;
   roofCell?: { x: number; y: number; z: number };

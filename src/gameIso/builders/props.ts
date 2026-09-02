@@ -16,21 +16,18 @@ import { Scene, tileAt, heightAt, type ArchitectureRect } from '../../state/scen
 import { roofHidden, massFootBBox } from '../../state/buildings';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { decorFootGeometry, propDeclaredFoot } from '../../state/footprint';
-import { findPropById } from '../../data';
+import { findPropById, refEstVolumique } from '../../data';
 import { buildPropVolumes } from './propVolumes';
 import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../catalog/buildings';
 import { facadeFeatureViz } from '../catalog/facades';
 import { WALL_H_M } from '../iso';
-import type { Dir8 } from '../../state/dir8';
+import { capVolumique, REF_DECOR_DEFAUT } from '../../data/props.types';
+import type { Dir4, Dir8 } from '../../state/dir8';
 import { edgeKey, fieldHeightAt, nappeKey, resolveNappes, WALL_NB, type RoofField, type RoofShapeSpec } from './roofs';
 import type { FloorView } from './floors';
 import type { BillboardPropEl, PropEl } from './types';
-import { CARD_NB, outwardSide, wallEnds, type Card } from './walls';
-
-/** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? RÈGLE UNIQUE, lue
- *  par l'émetteur ci-dessous comme par ses appelants — aucun site ne la redevine. */
-export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref ?? 'tonneau')?.volume;
+import { CARD_NB, outwardSide, wallEnds } from './walls';
 
 /** La scène porte-t-elle AU MOINS un décor volumique désignable ? Ce que le pointeur demande pour
  *  savoir si une face du monde peut nommer une entité sous le pixel — seul un décor d'ENTITÉ porte un
@@ -69,9 +66,12 @@ interface AncrageDecor {
   states: { visible: boolean };
 }
 
-/** ÉMETTEUR UNIQUE d'un décor : la règle `refEstVolumique` se lit ICI et nulle part ailleurs. Volume =
- *  la recette compilée sur l'ancre (`buildPropVolumes`) ; billboard = le dessin ancré aux pieds, décalé
- *  de `ancre − cell`. Les deux portent la MÊME identité, la même empreinte et les mêmes vérités de scène. */
+/** ÉMETTEUR UNIQUE d'un décor : c'est ICI, et nulle part ailleurs dans le rendu, que se DÉCIDE la voie
+ *  d'un décor. La règle elle-même vit dans le CATALOGUE (`refEstVolumique`, `src/data/index.ts`) — cet
+ *  émetteur la LIT, comme la lisent le validateur de scène (`state/validateScene.ts`) et le sélecteur
+ *  d'orientation de l'éditeur (`ui/editor/Inspector.tsx`) ; aucun d'eux ne la redevine. Volume = la
+ *  recette compilée sur l'ancre (`buildPropVolumes`) ; billboard = le dessin ancré aux pieds, décalé de
+ *  `ancre − cell`. Les deux portent la MÊME identité, la même empreinte et les mêmes vérités de scène. */
 function elDeDecor(a: AncrageDecor): PropEl {
   const commun = {
     kind: 'prop' as const,
@@ -86,7 +86,7 @@ function elDeDecor(a: AncrageDecor): PropEl {
   };
   const prop = !a.sansVolume && refEstVolumique(a.ref) ? findPropById(a.ref) : undefined;
   if (prop?.volume) {
-    const facing = a.facing ?? 'S';
+    const facing = capVolumique(a.facing, `décor volumique « ${a.ref} » (${a.entId ?? a.key})`);
     return {
       ...commun,
       facing,
@@ -169,7 +169,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       ...(empreinte ? { span: { w: empreinte.w, h: empreinte.h } } : {}),
       source: 'entity',
       entId: ent.id,
-      ref: ent.ref ?? 'tonneau',
+      ref: ent.ref ?? REF_DECOR_DEFAUT,
       ...(ent.facing ? { facing: ent.facing } : {}),
       interact: !!ent.interact,
       states: { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) },
@@ -356,7 +356,7 @@ const cellsOf = (cells: ReadonlySet<string>): { x: number; y: number }[] =>
  *  stockée sur la case voisine). Repli : façade SUD, sous le centre bas de l'empreinte. */
 interface DoorAnchor {
   frontCell: { x: number; y: number };
-  facing: Card;
+  facing: Dir4;
 }
 function buildingDoor(scene: Scene, f: ArchitectureRect, z: number): DoorAnchor {
   const x0 = f.x, y0 = f.y, x1 = f.x + f.w - 1, y1 = f.y + f.h - 1;

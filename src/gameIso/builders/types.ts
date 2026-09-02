@@ -4,11 +4,17 @@
  * (écran-affine iso/edge-on/top, perspective POV) les projettent et les dessinent. Un builder n'importe
  * NI `Dims` NI caméra : sa sortie mémoïsée survit à toute rotation/projection (contrat de perf du stage),
  * et le POV n'hérite d'aucun concept d'écran.
+ *
+ * SENS DES FACES : toute `Face` déclare son régime (`oriented`, requis) — une face de coquille close
+ * porte son dehors dans son sens de parcours ; une surface ouverte (sol, mur nu, toit, montant) déclare
+ * `false` et reçoit alors le régime de la cuisson : normale vers le HAUT si elle est horizontale, vers
+ * l'EXTÉRIEUR de la carte si elle est verticale.
  */
 
-import type { FacadeFeature, SceneEntity, WallSide } from '../../state/scene';
+import type { CellSide, FacadeFeature, SceneEntity, WallSide } from '../../state/scene';
+export type { CellSide };
 import type { Combatant } from '../../engine/types';
-import type { Dir8 } from '../../state/dir8';
+import type { Dir4, Dir8 } from '../../state/dir8';
 import type { SeatPose } from '../../state/seating';
 
 /** Point MONDE : (x,y) en unités de GRILLE continues (coins de case à ±0.5), `h` en MÈTRES.
@@ -30,9 +36,6 @@ export interface MaterialRef {
   part?: string;
 }
 
-/** Arête cardinale d'une case, côté MONDE (N = vers y−1, E = vers x+1…). */
-export type CellSide = 'N' | 'E' | 'S' | 'O';
-
 export interface Face {
   poly: GP[];
   material: MaterialRef;
@@ -41,6 +44,15 @@ export interface Face {
   /** Arête de la case qui porte la face (relief/wedge/mur) — les backends en dérivent l'orientation
    *  (arête écran en affine, normale en perspective) sans re-scanner la scène. */
   side?: CellSide;
+  /** REQUIS — chaque producteur DÉCLARE le régime de sa face, le compilateur refuse l'oubli.
+   *  `true` : le SENS DE PARCOURS du polygone porte déjà le DEHORS du volume que la face ferme
+   *  (`builders/propVolumes.ts` : chaque primitive sort tournée vers son dehors) ; un consommateur qui
+   *  a besoin d'une normale la prend TELLE QUELLE (`backends/webgl/worldTris.ts:faceQuadsOriented`).
+   *  `false` : surface OUVERTE, sans convention de sens (sol, mur nu, toit, montant) — le consommateur
+   *  l'oriente lui-même, et le régime déclaré de ces faces est l'heuristique de la cuisson (vers le
+   *  HAUT si horizontale, vers l'EXTÉRIEUR de la carte si verticale,
+   *  `backends/webgl/sceneMeshes.ts:bakeWorldGeometry`). */
+  oriented: boolean;
   /** Id de l'ENTITÉ de scène dont la face vient (décor volumique, `builders/propVolumes.ts`) — ce que
    *  le picking résout une fois la face fondue dans la géométrie commune du monde. */
   entId?: string;
@@ -152,7 +164,7 @@ export interface BillboardPropEl extends ElBase {
   source: 'entity' | 'terrain' | 'ornament' | 'architecture';
   /** Id stable qualifié `bodyId:facadeSectionId:featureId`. */
   architectureFeatureId?: string;
-  /** Id de dessin : ref de prop NORMALISÉE (défaut 'tonneau', la même partout — décor d'entité OU de terrain). */
+  /** Id de dessin : ref de prop NORMALISÉE (défaut `REF_DECOR_DEFAUT`, la même partout — décor d'entité OU de terrain). */
   ref: string;
   /** Orientation MONDE d'auteur (props directionnels) — chaque backend la projette avec SA caméra. */
   facing?: Dir8;
@@ -178,7 +190,8 @@ export interface VolumePropEl extends ElBase {
   source: BillboardPropEl['source'];
   ref: string;
   entId?: string;
-  facing: Dir8;
+  /** Cap CARDINAL, jamais diagonal (cf. `Dir4`) — l'émetteur unique le refuse à la donnée. */
+  facing: Dir4;
   /** Empreinte (cases) du décor — profondeur de tri, comme pour son billboard. */
   span?: { w: number; h: number };
   /** NAPPE PORTEUSE : la masse dont ce décor suit le SORT au dégagement (un ornement de faîte se lève

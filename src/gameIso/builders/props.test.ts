@@ -4,6 +4,7 @@ import { buildProps, capDuFaite } from './props';
 import { buildWalls } from './walls';
 import { buildPropVolumes } from './propVolumes';
 import { findPropById, props } from '../../data';
+import { capVolumique } from '../../data/props.types';
 import { estPropVolumique, type BillboardPropEl, type PropEl, type VolumePropEl } from './types';
 import type { Dir8 } from '../../state/dir8';
 import { buildRoofs, fieldHeightAt, nappeKey, resolveNappes, ROOF_SLOPE_M } from './roofs';
@@ -28,7 +29,7 @@ const socleM = (el: PropEl) => Math.min(...volume(el).faces.flatMap((f) => f.pol
 const poseA = (el: PropEl, ancre: { x: number; y: number }, facing: Dir8) =>
   volume(el).faces.every((face, i) =>
     face.poly.every((p, k) => {
-      const attendu = buildPropVolumes(findPropById(el.ref)!, { ancre, facing, baseHeightM: socleM(el) })[i].poly[k];
+      const attendu = buildPropVolumes(findPropById(el.ref)!, { ancre, facing: capVolumique(facing, el.ref), baseHeightM: socleM(el) })[i].poly[k];
       return Math.abs(p.x - attendu.x) < 1e-9 && Math.abs(p.y - attendu.y) < 1e-9 && Math.abs(p.h - attendu.h) < 1e-9;
     }));
 
