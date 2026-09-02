@@ -9,7 +9,7 @@
 // Options :
 //   --screen <id>   id d'écran __wfrp (obligatoire, ex. gallery, menu, party, compendium…)
 //   --out <dir>     dossier de sortie des captures (défaut : CWD)
-//   --url <url>     URL de l'app (défaut : http://localhost:5173/)
+//   --url <url>     URL de l'app (défaut : le port de CET arbre, cf. scripts/port-dev.mjs)
 //   --mobile        viewport 360x740 (charte-ui.md, testable dès 360px)
 //   --width/--height  viewport explicite (ignoré si --mobile)
 //   --settle <ms>   attente après navigation avant capture (défaut 600ms)

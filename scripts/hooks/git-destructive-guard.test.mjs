@@ -46,3 +46,71 @@ test('SILENCE : la commande destructive CITÉE dans une chaîne n\'exécute rien
   assert.ok(silent('git commit -m "doc: ne jamais faire git reset --hard sur un arbre partagé"'))
   assert.ok(silent('gh issue create --title X --label bug --body "éviter git clean -fd ici"'))
 })
+
+// ── Liens sur node_modules (#1679 L1c) ─────────────────────────────────────────────────────
+
+const refuse = (cmd) => evaluate(cmd)?.decision === 'deny'
+const BS = String.fromCharCode(92) // antislash Windows, sans échappement à relire
+const WT = 'C:' + BS + 'w' + BS + '.wt-1679' + BS + 'node_modules'
+const PRINCIPAL = 'C:' + BS + 'w' + BS + 'Game' + BS + 'node_modules'
+
+test('DENY : les quatre graphies de lien vers un node_modules', () => {
+  assert.ok(refuse(`New-Item -ItemType Junction -Path "${WT}" -Target "${PRINCIPAL}"`))
+  assert.ok(refuse('New-Item -ItemType SymbolicLink -Path .wt-1679/node_modules -Target ../node_modules'))
+  assert.ok(refuse(`mklink /J "${WT}" "${PRINCIPAL}"`))
+  assert.ok(refuse('ln -s ../Game/node_modules ./node_modules'))
+})
+
+test('DENY : le refus dit POURQUOI et ce qu\'il faut faire à la place', () => {
+  const d = evaluate('ln -s ../Game/node_modules ./node_modules')
+  assert.equal(d.decision, 'deny')
+  assert.match(d.reason, /node_modules/)
+  assert.match(d.reason, /npm ci/)
+})
+
+test('PASSE : un lien qui ne touche AUCUN node_modules', () => {
+  assert.ok(silent(`New-Item -ItemType Junction -Path .${BS}Source -Target ..${BS}Source`))
+  assert.ok(silent('ln -s ../Game/src/data/qualities.json ./qualities.json'))
+})
+
+test('PASSE : New-Item ordinaire, et la commande simplement CITÉE', () => {
+  assert.ok(silent('New-Item -ItemType Directory -Force node_modules'))
+  assert.ok(silent('git commit -m "doc: jamais de junction sur node_modules (ln -s ../node_modules)"'))
+})
+
+test('un git destructif reste un ASK, jamais un DENY', () => {
+  assert.equal(evaluate('git reset --hard').decision, 'ask')
+})
+
+// Deux trous MESURÉS du deny (juge #1679 L1c) : PowerShell accepte tout préfixe NON AMBIGU d'un
+// nom de paramètre, et `mklink` est un builtin de `cmd` — l'exécutable lu était alors `cmd`.
+
+test('DENY : `-ItemType` abrégé en préfixe non ambigu (PowerShell l\'accepte)', () => {
+  for (const p of ['-it', '-item', '-itemt', '-ItemTy', '-ITEMTYPE']) {
+    const d = evaluate(`New-Item ${p} Junction -Path .wt-1679${BS}node_modules -Target ..${BS}node_modules`)
+    assert.equal(d?.decision, 'deny', p)
+    assert.match(d.reason, /node_modules/)
+    assert.match(d.reason, /npm ci/)
+  }
+})
+
+test('DENY : `mklink` lancé DERRIÈRE cmd /c (builtin, l\'exe lu est `cmd`)', () => {
+  const cmds = [
+    `cmd /c mklink /J .wt-1679${BS}node_modules ..${BS}node_modules`,
+    `cmd.exe /C mklink /D .wt-1679${BS}node_modules ..${BS}node_modules`,
+    `cmd /c "cd .wt-1679 & mklink /J node_modules ..${BS}node_modules"`,
+    `cmd /c cd .wt-1679 & mklink /J node_modules ..${BS}node_modules`,
+  ]
+  for (const c of cmds) {
+    const d = evaluate(c)
+    assert.equal(d?.decision, 'deny', c)
+    assert.match(d.reason, /node_modules/)
+    assert.match(d.reason, /npm ci/)
+  }
+})
+
+test('PASSE : le préfixe abrégé ne vise QUE les liens, et cmd sans mklink ne dit rien', () => {
+  assert.ok(silent('New-Item -it Directory node_modules'))
+  assert.ok(silent(`cmd /c rmdir .wt-1679${BS}node_modules`))
+  assert.equal(evaluate('git reset --hard').decision, 'ask')
+})

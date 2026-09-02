@@ -14,7 +14,7 @@
 //   --mode <cadence|profile>  cadence = intervalles rAF repos/rotation/marche (défaut) ;
 //                        profile = temps CPU propre par fonction pendant une marche (CDP Profiler)
 //   --seed <n>           graine RNG du scénario (défaut 42)
-//   --url <url>           URL de l'app (défaut http://localhost:5173/)
+//   --url <url>           URL de l'app (défaut : le port de CET arbre, cf. scripts/port-dev.mjs)
 //   --click-x/--click-y   coordonnées écran du clic de marche (défaut 700,620 — case de sol visible
 //                         au chargement par défaut ; à ajuster si le scénario cadre différemment)
 //   --sampling-interval   µs entre échantillons du profileur CDP (mode profile, défaut 200)

@@ -4,15 +4,44 @@
 > feature UI dans le navigateur.
 
 **Vérification** : après une feature UI, valider dans le navigateur (Playwright MCP) — charger
-`localhost:5173`, dérouler le flux, vérifier `console` (0 erreur) et screenshoter. Le menu
+l'app de CET arbre (`npm run dev` imprime son URL), dérouler le flux, vérifier `console` (0 erreur)
+et screenshoter. Le menu
 **« 🧪 Tests — scénarios »** ouvre un choix de scénarios de test (groupe fixé + scène adaptée,
 combat direct) ; **passer par le scénario adapté, sinon en créer un** — un scénario = un fichier
 dans `src/scenes/test-scenarios/` (cf. `docs/test-scenarios.md`).
 
-**Quel process sert le port ?** (5173 peut servir un AUTRE worktree que celui qu'on recette) :
-`Get-NetTCPConnection -LocalPort 5173` → colonne `OwningProcess` = le PID RÉEL. Ne pas s'en remettre
-à `ps -W` seul : il rend le WINPID du wrapper npm, pas celui du serveur Vite. L'arrêt par PID passe
-par un script `.mjs` (`process.kill(pid)`) — `taskkill`/`Stop-Process` sont bloqués par l'allowlist shell.
+**Le port est PROPRE À L'ARBRE** (#1679 L1c) : `scripts/port-dev.mjs` rend **5173 pour l'arbre
+principal** (celui dont `.git` est un DOSSIER — arbre de travail ou clone) et un **port dérivé du
+chemin absolu de la racine pour un worktree lié** (`.git` y est un fichier), dans la plage 5174-5272 ;
+`vite preview` suit la même règle sur 4173 / 4174-4272 (`portDev`, `portPreview`). `vite.config.ts`
+pose `strictPort` — deux arbres servis en même temps ne peuvent plus se recouvrir, et un port déjà
+pris fait ÉCHOUER `npm run dev` au lieu de glisser sur le suivant. Le kit de recette vise ce même
+port par défaut (`DEFAULT_URL`, `scripts/recette/lib.mjs`) ; `WFRP_DEV_URL` ou `--url` visent un
+autre serveur.
+
+**La recette est adossée à l'arbre qu'elle mesure** (#1679 L1c) — trois contrôles, tous portés par
+`scripts/recette/lib.mjs`, aucun à recoder par scénario :
+
+- **arbre SERVI** — le serveur publie sa racine dans un en-tête (`vite.config.ts`), `checkServer` la
+  compare à l'arbre courant et REFUSE au premier geste sinon (`verdictArbreServi`). Fail-closed :
+  un serveur qui ne publie rien est refusé aussi. `WFRP_RECETTE_ARBRE_LIBRE=1` lève ce contrôle
+  quand la cible est délibérément ailleurs (app déployée, tunnel).
+- **arbre GELÉ** — `withReloadRetry` relève `empreinteArbre` (mtime max + cardinal de `src/**` et
+  `vite.config.ts`) avant, puis à chaque rechargement de page : un `src/` réécrit en plein vol fait
+  ÉCHOUER la recette en NOMMANT le fichier (`verdictArbreGele`) au lieu de rejouer en silence.
+- **état PERSISTANT** — `openApp` prend un instantané des stockages de la page
+  (`instantanerStockage`) et le remet à `session.close()` : une recette ne laisse pas derrière elle
+  les sauvegardes et réglages qu'elle a créés en jouant.
+
+`evaluate` est BORNÉE (`DELAI_EVALUATE`, 15 s par défaut, réglable par appel) : le plafond part au
+navigateur par le paramètre `timeout` du CDP — seul levier qui interrompt aussi une boucle
+SYNCHRONE — doublé d'une course côté Node pour qu'une réponse qui ne revient jamais rejette au lieu
+de figer le script sans message.
+
+**Quel process sert un port ?** `Get-NetTCPConnection -LocalPort <port>` → colonne `OwningProcess` = le
+PID RÉEL. Ne pas s'en remettre à `ps -W` seul : il rend le WINPID du wrapper npm, pas celui du serveur
+Vite. L'arrêt par PID passe par un script `.mjs` (`process.kill(pid)`) — `taskkill`/`Stop-Process` sont
+bloqués par l'allowlist shell.
 
 ## Preuve headless (agents)
 
@@ -62,7 +91,7 @@ node scripts/recette/shot-screen.mjs --screen menu --mobile
 ```
 
 Options : `--screen <id>` (obligatoire, un id de `SCREENS`, `src/state/store.ts`), `--out <dir>`
-(défaut CWD), `--url <url>` (défaut `http://localhost:5173/`), `--mobile` (viewport 360×740),
+(défaut CWD), `--url <url>` (défaut : le port de CET arbre, cf. `scripts/port-dev.mjs`), `--mobile` (viewport 360×740),
 `--width`/`--height`, `--settle <ms>`. Exit ≠ 0 si la console a remonté une erreur/exception après
 l'ouverture de l'écran.
 
@@ -874,8 +903,8 @@ socle est un filet pour les chemins d'échec non couverts, PAS un teardown.
 filtre par `sessionId` est déjà dans le socle).
 
 ```js
-import { openApp, evaluate, waitFor, consoleGuard } from './scripts/recette/lib.mjs';
-const APP = 'http://localhost:5173/';
+import { openApp, evaluate, waitFor, consoleGuard, DEFAULT_URL } from './scripts/recette/lib.mjs';
+const APP = DEFAULT_URL; // port propre à CET arbre (scripts/port-dev.mjs)
 const hote = await openApp(APP);
 const gHote = consoleGuard(hote);
 try {

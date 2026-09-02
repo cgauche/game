@@ -176,7 +176,7 @@ app-owned** (commitée, éditable au Compendium), curée à la main, chaque entr
 
 ```bash
 npm install           # active le hook post-commit : "corrige #N" (ou fixes/closes/ferme #N) dans le message de commit ferme l'issue #N automatiquement
-npm run dev          # serveur de dev (http://localhost:5173) — src/data/*.json est la SOURCE app-owned (commitée)
+npm run dev          # serveur de dev — http://localhost:5173 sur l'ARBRE PRINCIPAL, port dérivé strict en worktree lié (`scripts/port-dev.mjs`, imprimé au lancement) ; src/data/*.json est la SOURCE app-owned (commitée)
 npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit
 npm run typecheck:fast # typecheck INCRÉMENTAL (~7-10 s), sortie complète dans node_modules/.cache/typecheck-last.txt — la porte de vérité des gates reste `npm run typecheck` (full)

@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 // @ts-expect-error - generateur ESM JS (pas de types)
 import { genAll, REGISTRIES } from './scripts/gen-registry.mjs';
+// @ts-expect-error - module ESM JS (pas de types)
+import { ENTETE_RACINE, portDev, portPreview, valeurEnteteRacine } from './scripts/port-dev.mjs';
 
 /** Auto-génération des registres « dépose un fichier → intégré » : régénère l'index explicite
  *  au démarrage et à chaque ajout/suppression dans un dossier `defs/` (HMR récupère ensuite). */
@@ -23,6 +25,21 @@ function registryGen() {
 export default defineConfig({
   plugins: [registryGen(), react()],
   base: './',
+  // Port propre à l'arbre + `strictPort` (#1679 L1c-M6) : sans lui, Vite glisse sur le port suivant
+  // quand un autre arbre tient déjà le sien, et une recette lancée sur le port attendu mesure
+  // l'AUTRE arbre. Ici, chaque arbre a son port, et une collision fait ÉCHOUER le lancement.
+  // L'en-tête publie en plus la racine SERVIE : la recette refuse un serveur qui sert un autre arbre
+  // (`verdictArbreServi`, `scripts/recette/lib.mjs`) au lieu de mesurer le voisin sans le savoir.
+  server: {
+    port: portDev(),
+    strictPort: true,
+    headers: { [String(ENTETE_RACINE)]: String(valeurEnteteRacine()) },
+  },
+  preview: {
+    port: portPreview(),
+    strictPort: true,
+    headers: { [String(ENTETE_RACINE)]: String(valeurEnteteRacine()) },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

@@ -7,7 +7,7 @@
 //
 // Usage :
 //   node scripts/recette/console-pont-formes.mjs
-//   node scripts/recette/console-pont-formes.mjs --url http://localhost:5173/ --widths 900,700
+//   node scripts/recette/console-pont-formes.mjs [--url <url>] --widths 900,700
 //   node scripts/recette/console-pont-formes.mjs --mesures      (imprime les mesures, aucun verdict)
 //
 // Ce qui est VÉRIFIÉ, à chaque largeur et dans les TROIS formes de console :

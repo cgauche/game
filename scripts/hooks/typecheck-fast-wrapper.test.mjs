@@ -17,6 +17,7 @@ function fauxDepot(sourceDuFauxTsc) {
   const base = mkdtempSync(join(tmpdir(), 'typecheck-fast-'))
   mkdirSync(join(base, 'scripts'), { recursive: true })
   copyFileSync(WRAPPER, join(base, 'scripts', 'typecheck-fast.mjs'))
+  copyFileSync(join(REPO, 'scripts', 'outillage-local.mjs'), join(base, 'scripts', 'outillage-local.mjs'))
   if (sourceDuFauxTsc !== null) {
     mkdirSync(join(base, 'node_modules', 'typescript', 'bin'), { recursive: true })
     writeFileSync(join(base, 'node_modules', 'typescript', 'bin', 'tsc'), sourceDuFauxTsc, 'utf8')
@@ -91,16 +92,19 @@ test('échec SANS erreur TS : jamais « 0 erreur(s) », la sortie brute est rend
   }
 })
 
-test('tsc introuvable : la cause est imprimée, jamais un résumé vert', () => {
+test('tsc absent de l’arbre : refus NOMMÉ avant tout lancement, jamais un résumé vert', () => {
   const base = fauxDepot(null)
   try {
     const run = lance(base)
-    assert.notEqual(run.status, 0)
+    assert.equal(run.status, 2, `code de refus attendu 2, obtenu ${run.status}`)
     assert.ok(
       !/0 erreur\(s\)/.test(run.stdout),
-      `résumé menteur sur tsc introuvable :\n${run.stdout}`,
+      `résumé menteur sur tsc absent :\n${run.stdout}`,
     )
-    assert.match(run.stdout, /ÉCHEC/)
+    // Le refus nomme l'outil, l'arbre et la cause — jamais un `Cannot find module` non attribué.
+    assert.match(run.stderr, /\[outillage\] tsc n'est pas installé dans cet arbre/)
+    assert.ok(run.stderr.includes(base), `l'arbre n'est pas nommé :\n${run.stderr}`)
+    assert.match(run.stderr, /AUTRE arbre/)
   } finally {
     rmSync(base, { recursive: true, force: true })
   }

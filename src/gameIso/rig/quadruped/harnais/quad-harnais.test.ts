@@ -17,6 +17,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { QUAD_HARNAIS, quadHarnaisDeco, harnaisOptions } from './index';
 import type { QuadHarnaisDef } from './types';
 import { buildQuadSkeleton, type QuadProps } from '../quadSkeleton';
@@ -84,6 +85,9 @@ describe('registre des sets d\'équipement quadrupèdes : étanchéité', () => 
 // ── pipeline d'atelier : dessin de set → compilé, sous la porte `--check` ─────────────────────
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../..');
 const SET = 'set-factice-l1';
+// `tsx` se résout par la remontée de Node depuis CE fichier (#1679 L1c-M3), par le sous-chemin
+// EXPORTÉ `tsx/cli` — jamais par un chemin `node_modules/` collé à la racine de l'arbre.
+const TSX = createRequire(import.meta.url).resolve('tsx/cli');
 
 /**
  * Le pipeline tourne dans un BAC À SABLE hors de l'arbre (`QUAD_RIG_RACINE`, cf.
@@ -93,7 +97,7 @@ const SET = 'set-factice-l1';
  * lu du moteur réel : c'est bien `boeuf` du registre d'espèces qui est cuit.
  */
 const compilateurDe = (racine: string) => (...args: string[]) =>
-  spawnSync(process.execPath, [join(ROOT, 'node_modules/tsx/dist/cli.mjs'), join(ROOT, 'scripts/rig/compile-dessin-quad.mts'), ...args],
+  spawnSync(process.execPath, [TSX, join(ROOT, 'scripts/rig/compile-dessin-quad.mts'), ...args],
     { cwd: ROOT, encoding: 'utf8', env: { ...process.env, QUAD_RIG_RACINE: racine } });
 const md5 = (f: string) => createHash('md5').update(readFileSync(f)).digest('hex');
 

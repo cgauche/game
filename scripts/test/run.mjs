@@ -33,9 +33,18 @@ import {
   separerArguments,
   cheminsGlobSuspects,
 } from './partition.mjs'
+import { refusOutillageLocal } from '../outillage-local.mjs'
+import { prendreVerrou } from './verrou.mjs'
 
 const RACINE = fileURLToPath(new URL('../..', import.meta.url))
 const VITEST = path.join(RACINE, 'node_modules/vitest/vitest.mjs')
+// Outillage LOCAL exigé AVANT tout lancement (#1679 L1c) : sans `node_modules/vitest` dans CET
+// arbre, la remontée de Node servirait le vitest d'un AUTRE arbre au lieu d'échouer.
+const refusVitest = refusOutillageLocal(RACINE, 'vitest', VITEST)
+if (refusVitest) {
+  console.error(refusVitest)
+  process.exit(2)
+}
 // Atelier jetable, un dossier par processus lanceur (deux runs concurrents ne se recouvrent pas) :
 // hors de l'arbre versionné, mais SOUS le projet — les configs générées y résolvent
 // `vite`/`@vitejs/plugin-react` par remontée normale de `node_modules`.
@@ -79,6 +88,20 @@ const posix = (p) => p.split(path.sep).join('/')
 const DEBUT = Date.now()
 const ARGV = process.argv.slice(2)
 const { filtres, mono } = separerArguments(ARGV, (t) => fs.existsSync(path.resolve(RACINE, t)))
+// Verrou de SUITE à l'échelle machine (#1679 L1c-M7) : deux suites COMPLÈTES concurrentes se volent
+// cœurs et mémoire. Un run FILTRÉ (fichiers nommés) reste libre — il est court et ne sature rien.
+const verrou = filtres.length
+  ? { etat: 'ignore' }
+  : prendreVerrou({
+      commande: [process.execPath, ...process.argv.slice(1)].join(' '),
+      cwd: RACINE,
+      estVivant,
+    })
+if (verrou.etat === 'refus') {
+  console.error(verrou.message)
+  process.exit(2)
+}
+if (verrou.avertissement) console.error(verrou.avertissement)
 const ENV = envEnfant(process.env)
 const CPUS = coeurs(process.env, () => os.availableParallelism?.() ?? os.cpus().length)
 const WORKERS = repartitionWorkers(CPUS)
@@ -287,6 +310,7 @@ try {
   code = await principal()
 } finally {
   supprimer(ATELIER)
+  verrou.liberer?.()
 }
 clearInterval(minuterieMemoire)
 echantillonnerMemoire()

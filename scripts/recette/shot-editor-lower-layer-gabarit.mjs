@@ -3,7 +3,7 @@
 // ouvre l'éditeur, charge « La Diligence — exploration », passe en Couche 1 (vue plan par défaut),
 // capture au réglage par défaut puis aux deux extrêmes du curseur d'opacité du gabarit.
 //
-// Usage : node scripts/recette/shot-editor-lower-layer-gabarit.mjs [--url http://localhost:5173/] [--out dir]
+// Usage : node scripts/recette/shot-editor-lower-layer-gabarit.mjs [--url <url>] [--out dir]
 import { openApp, gotoScreen, evaluate, waitFor, sleep, consoleGuard, shot } from './lib.mjs';
 
 function parseArgs(argv) {

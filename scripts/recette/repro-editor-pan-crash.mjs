@@ -2,7 +2,7 @@
 // Recette navigateur — pan répété/rapide (clic-milieu + glisser) sur l'éditeur avec La Diligence
 // chargée : 0 erreur console attendue, l'Editor ne doit JAMAIS se démonter (SceneErrorBoundary).
 //
-// Usage : node scripts/recette/repro-editor-pan-crash.mjs [--url http://localhost:5173/]
+// Usage : node scripts/recette/repro-editor-pan-crash.mjs [--url <url>]
 import { openApp, gotoScreen, evaluate, waitFor, sleep, consoleGuard } from './lib.mjs';
 
 function parseArgs(argv) {
