@@ -30,7 +30,7 @@ import { traceLineOf, testTraceLabel } from '../../engine/traceLine';
 import { CHAR_LABELS } from '../../engine/types';
 import type { CharKey, Combatant, Difficulty, EffectSource } from '../../engine/types';
 import { refLabel, derivedStake } from '../../data';
-import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpureOp, flowHasTest, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
+import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpureOp, flowHasTest, poserEnjeu, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
 import { condCtx } from '../bourseFlow';
 import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
@@ -203,9 +203,7 @@ function testIds(ft: FlowTest): { skill?: string; char?: CharKey; spec?: string 
  * l'affichage par `resolveStake`. Sans porteur résoluble, le `FlowTest` ressort inchangé.
  */
 export function withDerivedStake(ft: FlowTest, source: EffectSource | undefined): FlowTest {
-  if (ft.stake) return ft;
-  const stake = derivedStake(source);
-  return stake ? { ...ft, stake } : ft;
+  return poserEnjeu(ft, derivedStake(source));
 }
 
 /** SOURCE UNIQUE du squelette d'étape `triggeredTest` d'un Test SIMPLE (non opposé) : ligne montée par

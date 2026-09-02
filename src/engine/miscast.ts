@@ -29,7 +29,7 @@ import type { SkillRef } from './skills';
 // le nœud de Test imbriqué d'une entrée de table EST un nœud de Flow `test` — la STRUCTURE de logique
 // partagée du jeu (noyau engine `flowCore`, feuille EffectOp), exécutée cadence-aware par `runCombatFlow`.
 // AUCUNE dépendance runtime au store : les tables restent du moteur pur (`rollMiscast` testable seul).
-import type { Flow } from './flowCore';
+import { poserEnjeu, type Flow, type FlowTest } from './flowCore';
 import miscastJson from '../data/miscast.json';
 
 export type MiscastSeverity = 'mineure' | 'majeure' | 'colere';
@@ -387,12 +387,12 @@ function mkTest(t: NestedTest, rowId: string, severity: MiscastSeverity): Flow {
         ],
       }
     : doOps(t.onFail);
+  const test: FlowTest = {
+    ...(t.skill ? { skill: t.skill } : {}), ...(t.characteristic ? { characteristic: t.characteristic } : {}), difficulty: t.difficulty,
+  };
   return {
     kind: 'test',
-    test: {
-      ...(t.skill ? { skill: t.skill } : {}), ...(t.characteristic ? { characteristic: t.characteristic } : {}), difficulty: t.difficulty,
-      stake: combatStakeRef('miscastRowTest', { entryId: rowId, entryCategory: MISCAST_ROW_CATEGORY[severity] }),
-    },
+    test: poserEnjeu(test, combatStakeRef('miscastRowTest', { entryId: rowId, entryCategory: MISCAST_ROW_CATEGORY[severity] })),
     success: { kind: 'seq', steps: [] },
     fail,
   };

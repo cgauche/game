@@ -19,6 +19,7 @@ import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import {
   scanPendingJetFabrication, engineRollerExports, scanEngineDelegatedRoll,
 } from '../guards/lib/rollSeamExclusivity.mjs'
+import { scanFlowTestEngineRoll } from '../guards/lib/flowTestEngineRoll.mjs'
 import {
   ROLL_SEAM_CORE, ROLL_SEAM_PHASE2_STOCK,
   PENDING_JET_FABRICATION_STOCK, ENGINE_DELEGATED_ROLL_STOCK, SEAM_CALLERS,
@@ -65,17 +66,94 @@ for (const { rel, text } of prodFiles('src/state', 'src/ui')) {
 }
 
 // --- population AUTHORÉE (donnée, pas code) ---------------------------------------------------
-// Nœuds `test` des Flows authorés de src/data/spells.json : le champ `test` d'un pas d'effet
-// (`FlowTest` — engine/flowCore.ts). Ils ne sont PAS un stock : c'est de la donnée, dont le chemin de
-// résolution est unique et vérifié ci-dessous.
-const spells = JSON.parse(readFileSync(join(ROOT, 'src/data/spells.json'), 'utf8'))
-let authoredTests = 0
-const countTests = (o) => {
-  if (!o || typeof o !== 'object') return
-  if (!Array.isArray(o) && o.test !== undefined) authoredTests++
-  for (const k of Object.keys(o)) countTests(o[k])
+// Nœuds `test` des Flows authorés des DEUX racines de donnée (`src/data`, `src/scenes`) : le nœud
+// `{ kind: 'test', test, success, fail }` de `Flow` (engine/flowCore.ts:496), la forme UNIQUE du jet
+// en donnée. Ils ne sont PAS un stock : c'est de la donnée, dont les chemins de résolution sont
+// dénombrés ci-dessous.
+//
+// Le critère est `kind === 'test'`, pas « l'objet porte une propriété `test` » : cette dernière
+// forme compte AUSSI l'enveloppe qui épingle le nœud (une rangée de Critique porte `test` ET le
+// nœud porte son `FlowTest`), soit 78 objets pour 39 nœuds dans `criticals.json` — et elle rate le
+// point : ce qu'un registre de jets dénombre, ce sont les JETS.
+
+/** Fichiers `.json` d'un jeu de dossiers, en chemin relatif POSIX, TRIÉS (ordre total : le rendu ne
+ *  dépend pas de l'ordre de `readdirSync`, qui diffère entre NTFS et ext4). */
+function jsonFiles(...dirs) {
+  const out = []
+  const walk = (dir) => {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e)
+      if (statSync(p).isDirectory()) walk(p)
+      else if (e.endsWith('.json')) out.push(relative(ROOT, p).split('\\').join('/'))
+    }
+  }
+  for (const d of dirs) walk(join(ROOT, d))
+  return out.sort()
 }
-countTests(spells)
+
+/** Nœuds `kind:'test'` d'un document, à toute profondeur. */
+function countNoeudsTest(o) {
+  if (!o || typeof o !== 'object') return 0
+  let n = Array.isArray(o) ? 0 : (o.kind === 'test' && o.test !== undefined ? 1 : 0)
+  for (const k of Object.keys(o)) n += countNoeudsTest(o[k])
+  return n
+}
+
+const authoredByFile = []
+for (const rel of jsonFiles('src/data', 'src/scenes')) {
+  let doc
+  try { doc = JSON.parse(readFileSync(join(ROOT, rel), 'utf8')) } catch { continue }
+  const n = countNoeudsTest(doc)
+  if (n) authoredByFile.push([rel, n])
+}
+const authoredTests = authoredByFile.reduce((n, [, c]) => n + c, 0)
+
+// --- nœuds authorés NON ROUTÉS par la porte -----------------------------------------------------
+// Un nœud `test` n'atteint les routeurs canoniques que si personne ne l'a résolu AVANT. Le garde
+// `flowTestEngineRoll` (#1657 B3) mesure les fonctions de `src/engine/**` qui LISENT un nœud et le
+// ROULENT ; là où l'une d'elles est le résolveur d'un document, les nœuds de ce document n'ont
+// AUCUNE fenêtre — ni enjeu affiché, ni Chance, ni Pacte, ni Résilience, et la valeur testée n'est
+// pas celle de la porte (#1685).
+// Le RATTACHEMENT document → site moteur est DÉCLARÉ : aucun scan ne relie un `.json` à la fonction
+// qui le lit. Ses DEUX bouts sont vérifiés à chaque génération — le document porte des nœuds, et le
+// site figure dans le stock mesuré du garde. Une entrée dont le site a quitté le stock est PÉRIMÉE
+// et fait échouer le générateur : c'est le cliquet qui vide cette section en B3-1/B3-2.
+const NON_ROUTES = [
+  ['src/data/criticals.json', 'src/engine/critical.ts:71', '#1657 B3-1',
+    'roule le nœud de la rangée avec le RNG du combat, dans le geste de `resolveCritique` — le résultat paraît déjà tranché.'],
+  ['src/data/river-criticals.json', 'src/engine/shipCritical.ts:166', '#1657 B3-2',
+    "roule le nœud de chaque marin visé dans le geste d'`applyHullCritical` — aucune étape n'est poussée."],
+  ['src/data/ship-criticals.json', 'src/engine/shipCritical.ts:166', '#1657 B3-2',
+    "roule le nœud du MÊME geste que pour la table fluviale — même résolveur, même appelant (`applyHullCritical`)."],
+]
+// Le stock du garde indexe le SITE DU DÉ ; il porte AUSSI le nom du résolveur et sa ligne de
+// DÉCLARATION. Les deux servent, et pas au même endroit : le cliquet mord sur le site du dé (ce que
+// le garde mesure), tandis que le doc CITE la déclaration — la garde de commit `docs-vs-commit`
+// (`scripts/docs/check-docs-vs-head.mjs`) exige que le symbole backtiqué d'une phrase se lise à ±2
+// lignes du `fichier:ligne` qu'elle cite, et le nom d'une fonction ne se lit qu'à sa déclaration.
+const stockGarde = new Map(
+  scanFlowTestEngineRoll(prodFiles('src/engine')).map((x) => [`${x.file}:${x.line}`, x]))
+const nonRoutes = []
+const desyncNonRoutes = []
+for (const [rel, site, lot, pourquoi] of NON_ROUTES) {
+  const n = authoredByFile.find(([f]) => f === rel)?.[1]
+  if (!n) {
+    desyncNonRoutes.push(`${rel} : déclaré NON ROUTÉ, mais le document ne porte aucun nœud \`test\``)
+    continue
+  }
+  const mesure = stockGarde.get(site)
+  if (!mesure) {
+    desyncNonRoutes.push(`${rel} : site ${site} ABSENT du stock mesuré de \`flowTestEngineRoll\` — entrée PÉRIMÉE (le nœud passe-t-il par la porte ? retirer l'entrée)`)
+    continue
+  }
+  nonRoutes.push([rel, n, site, lot, pourquoi, mesure.fn, `${mesure.file}:${mesure.fnLine}`, mesure.name])
+}
+if (desyncNonRoutes.length) {
+  console.error(`${TOOL} — section « nœuds NON ROUTÉS » désynchronisée :`)
+  for (const l of desyncNonRoutes) console.error(`  ${l}`)
+  process.exit(1)
+}
+const nonRoutesTotal = nonRoutes.reduce((n, [, c]) => n + c, 0)
 
 // Les DEUX routeurs qui résolvent un nœud `test` de Flow — mesurés, pas supposés.
 const ROUTEURS_AUTHORES = [
@@ -151,8 +229,12 @@ out += `  \`massBattleFlow.ts:834\` (\`massBattleSetHazard\`, facteur environnem
 out += `  RAW résolu en silence, hors de tout registre. Le surfaçage vit sur #1067, qui le nomme déjà.\n`
 out += `- Les formes **(S)** « position de spec » et **(M)** « dé de monde » restent des exclusions par FORME du garde\n`
 out += `  d'exclusivité (critères et angles morts : en-tête de \`scripts/guards/lib/rollSeamExclusivity.mjs\`).\n`
-out += `- La population authorée ne compte que \`src/data/spells.json\` — les autres porteurs de \`FlowTest\` (traits,\n`
-out += `  talents, États, consommables) ne sont pas dénombrés ici.\n`
+out += `- La population authorée couvre les DEUX racines de donnée (\`src/data\`, \`src/scenes\`) et ne compte que le\n`
+out += `  NŒUD canonique (\`kind:'test'\`). Une conséquence de jet exprimée dans une forme PROPRIÉTAIRE (hors nœud)\n`
+out += `  n'y figure donc pas : c'est la population que #1657 fait converger, et son cardinal se lit ici.\n`
+out += `- **Porter le nœud canonique n'est pas passer par la porte** : ${nonRoutesTotal} nœuds authorés sont résolus DANS le moteur,\n`
+out += `  avant tout routeur. Le rattachement document → résolveur est DÉCLARÉ dans le générateur (aucun scan ne relie un\n`
+out += `  \`.json\` à la fonction qui le lit) et vérifié contre le stock mesuré du garde \`flowTestEngineRoll\`.\n`
 out += `- Les **justifications** sont écrites à la main : ce sont des engagements, pas des mesures. Le registre garantit\n`
 out += `  qu'elles EXISTENT et que les comptes sont exacts, pas qu'elles disent vrai.\n\n`
 
@@ -199,12 +281,32 @@ out += `> Le tri de population est SOLDÉ (#1070) : \`tri\` n'est plus une valeu
 
 // --- population authorée ---
 out += `## Population AUTHORÉE (donnée, pas code)\n\n`
-out += `**${authoredTests}** nœuds \`test\` (\`FlowTest\`) dans \`src/data/spells.json\`. Ce n'est pas un stock : la donnée\n`
-out += `n'a pas de call-site à router. Son chemin de résolution est unique et à DEUX routeurs mesurés :\n\n`
+out += `**${authoredTests}** nœuds \`test\` (\`{ kind: 'test', test: FlowTest, success, fail }\`) dans **${authoredByFile.length}** documents\n`
+out += `de \`src/data\` et \`src/scenes\` : **${authoredTests - nonRoutesTotal} ROUTÉS** par la porte, **${nonRoutesTotal} NON ROUTÉS** (résolus DANS le\n`
+out += `moteur — mesure ci-dessous). Ce n'est pas un stock : la donnée n'a pas de call-site à router.\n\n`
+out += `### Les ${authoredTests - nonRoutesTotal} routés — deux routeurs mesurés\n\n`
 for (const [name, file, role] of ROUTEURS_AUTHORES) out += `- \`${name}\` (\`${file}\`) — ${role}\n`
-out += `\nLe premier ouvre \`openSkillTest\` (famille canonique) ; le second est sa branche non-interactive. Un nœud\n`
-out += `\`test\` enfoui sans routeur cadence-aware lève (\`resolveInlineFlowTest\` : « un test enfoui exige un routeur\n`
-out += `cadence-aware ») — c'est le fail-closed de la donnée.\n\n`
+out += `\nLe premier ouvre \`openSkillTest\` (famille canonique) ; le second est sa branche non-interactive. **Pour eux**,\n`
+out += `un nœud \`test\` enfoui sans routeur cadence-aware lève (\`resolveInlineFlowTest\` : « un test enfoui exige un\n`
+out += `routeur cadence-aware ») — c'est le fail-closed de la donnée.\n\n`
+out += `### Les ${nonRoutesTotal} NON routés — résolus dans le moteur, aucune fenêtre\n\n`
+out += `Le fail-closed ci-dessus **ne les protège pas** : leur nœud est consommé avant d'atteindre un routeur, donc rien\n`
+out += `ne lève. Conséquence pour le joueur : ni enjeu affiché, ni Chance, ni Pacte, ni Résilience, et la valeur testée\n`
+out += `n'est pas celle de la porte (#1685). Le résolveur de chacun est mesuré NOMINATIVEMENT par le garde\n`
+out += `\`flowTestEngineRoll\` (\`scripts/guards/lib/\`) : les sites ci-dessous sont vérifiés contre son stock à chaque\n`
+out += `génération, et une entrée dont le site a disparu fait ÉCHOUER le générateur.\n\n`
+for (const [rel, n, site, lot, pourquoi, fn, decl, motif] of nonRoutes) {
+  out += `- \`${rel}\` — **${n}** nœud${n > 1 ? 's' : ''}, joué${n > 1 ? 's' : ''} par \`${fn}\` (\`${decl}\`) ; meurt en ${lot}.\n`
+  out += `  \`${fn}\` ${pourquoi}\n`
+  out += `  Dé mesuré par le garde : \`${motif}\` à \`${site}\`.\n`
+}
+out += `\n### Par document\n\n`
+out += `| Document | Nœuds \`test\` | dont NON ROUTÉS | Résolveur moteur | Site du dé | Meurt en |\n|---|---|---|---|---|---|\n`
+for (const [rel, n] of authoredByFile) {
+  const nr = nonRoutes.find(([f]) => f === rel)
+  out += `| \`${rel}\` | ${n} | ${nr ? `**${nr[1]}**` : '—'} | ${nr ? `\`${nr[5]}\` (\`${nr[6]}\`)` : '—'} | ${nr ? `\`${nr[7]}\` \`${nr[2]}\`` : '—'} | ${nr ? nr[3] : '—'} |\n`
+}
+out += `\n_${nonRoutesTotal} nœuds NON ROUTÉS dans ${nonRoutes.length} documents sur ${authoredByFile.length}._\n\n`
 
 // --- rappel du stock historique ---
 out += `## Rappel — stock du garde d'exclusivité (\`rollTest\`/\`d100\`/\`TestOutcome.seal\` bruts)\n\n`
@@ -221,5 +323,5 @@ emitOrCheck({
   staleMsg: `${TOOL} — docs/registre-jets.md est PÉRIMÉ (le registre ou la population ont bougé).`,
   rerunMsg: 'Régénérer : npm run docs:registre-jets',
   okMsg: `${TOOL} — docs/registre-jets.md à jour`,
-  writeMsg: `${TOOL} — docs/registre-jets.md écrit (${total(fabrication)} sites (F), ${total(delegue)} call-sites (D), ${SEAM_CALLERS.length} familles, ${authoredTests} nœuds authorés)`,
+  writeMsg: `${TOOL} — docs/registre-jets.md écrit (${total(fabrication)} sites (F), ${total(delegue)} call-sites (D), ${SEAM_CALLERS.length} familles, ${authoredTests} nœuds authorés dont ${nonRoutesTotal} NON routés)`,
 })
