@@ -14,6 +14,8 @@ import type { Combatant } from '../engine/types';
  */
 const ship = () => vehicleCombatant(findVehicleById('cogue')!)!; // hull E45/B50, rig 'voile'
 const setStub = (() => {}) as never;
+/** Lecture d'état HORS bataille (aucun équipage à résoudre, aucune cascade à ouvrir). */
+const getHorsBataille = (() => ({ battle: undefined, party: [] })) as never;
 const sailor = (id: string): Combatant => ({
   id, name: id, kind: 'npc', characteristics: { 'capacite-de-combat': 31, 'capacite-de-tir': 31, force: 31, endurance: 31, initiative: 31, agilite: 36, dexterite: 36, intelligence: 31, 'force-mentale': 31, sociabilite: 36 },
   skills: [], talents: [], traits: [], conditions: [], activeEffects: [], liveTraits: [], weapons: [],
@@ -26,7 +28,7 @@ describe('applyCriticalToTarget — coque/navire (MDG 13) au lieu de Trauma huma
   it('un véhicule ne subit JAMAIS de Trauma humain ; le Critique compte et est journalisé', () => {
     const s = ship();
     const log: string[] = [];
-    applyCriticalToTarget(s, 'corps', true, 0, log, setStub);
+    applyCriticalToTarget(s, 'corps', true, 0, log, setStub, { get: getHorsBataille });
     expect(s.traumas ?? []).toHaveLength(0); // aucune amputation/fracture humaine sur une coque
     expect(s.criticalWounds).toBe(1);
     expect(log.length).toBeGreaterThan(0);
@@ -41,7 +43,7 @@ describe('applyCriticalToTarget — coque/navire (MDG 13) au lieu de Trauma huma
     for (let seed = 1; seed <= 40 && !posed; seed++) {
       seedBattleRng(seed);
       const s = ship();
-      applyCriticalToTarget(s, 'corps', true, 0, [], setStub);
+      applyCriticalToTarget(s, 'corps', true, 0, [], setStub, { get: getHorsBataille });
       if (stacks(s, 'voie-d-eau') > 0 || stacks(s, 'en-flammes-navire') > 0) posed = true;
     }
     expect(posed).toBe(true);
@@ -49,7 +51,7 @@ describe('applyCriticalToTarget — coque/navire (MDG 13) au lieu de Trauma huma
 
   it('renvoie false (la coque ne « meurt » pas d’un Critique — destruction par Blessures/Naufrage)', () => {
     const s: Combatant = ship();
-    expect(applyCriticalToTarget(s, 'corps', true, 0, [], setStub)).toBe(false);
+    expect(applyCriticalToTarget(s, 'corps', true, 0, [], setStub, { get: getHorsBataille })).toBe(false);
   });
 });
 
@@ -68,10 +70,10 @@ describe('applyCriticalToTarget — l’équipage lié (crewIds) encaisse via la
     expect(crewTouched).toBe(true);
   });
 
-  it('sans get (hors bataille) → effets de coque seuls, aucun crash', () => {
+  it('hors bataille (aucun combattant à résoudre) → effets de coque seuls, aucun crash', () => {
     seedBattleRng(1);
     const s = ship();
     s.crewIds = ['m0'];
-    expect(applyCriticalToTarget(s, 'corps', true, 0, [], setStub)).toBe(false);
+    expect(applyCriticalToTarget(s, 'corps', true, 0, [], setStub, { get: getHorsBataille })).toBe(false);
   });
 });

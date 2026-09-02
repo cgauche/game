@@ -227,13 +227,14 @@ describe('Livre de base (LDB 18 « Traumatisme ») — lignes nommées', () => {
   });
 
   // #195 — variantes de la table JAMBE.
-  it('Orteil contusionné : Résistance ratée → charMod Ag −10 à durée 2 Rounds', () => {
-    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(5, 60)); // 5 = crit ; 60 > 50 → Résistance ratée
-    expect(r.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -10, durationRounds: 2 });
-  });
-  it('Orteil contusionné : Résistance réussie → aucune pénalité d’Agilité', () => {
-    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(5, 40)); // 40 ≤ 50 → réussite
-    expect(r.ops.some((o) => o.op === 'charMod')).toBe(false);
+  it('Orteil contusionné : le nœud de la rangée part en `testFlow` (Résistance) — la pénalité d’Agilité est sa branche `fail`', () => {
+    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(5)); // 5 = crit « Orteil contusionné »
+    const n = r.testFlow as Extract<typeof r.testFlow, { kind: 'test' }>;
+    expect(n.kind).toBe('test');
+    expect(n.test.skill).toEqual({ id: 'resistance' }); // LDB 18 l.164 : « Test de Résistance » (la COMPÉTENCE)
+    expect(spellOps(n.fail, 'target')).toContainEqual({ op: 'charMod', char: 'agilite', mod: -10, durationRounds: 2 });
+    expect(spellOps(n.success, 'target')).toEqual([]); // Test réussi : aucune pénalité
+    expect(r.ops.some((o) => o.op === 'charMod')).toBe(false); // l'issue vient de la porte, pas du moteur
   });
   it('l’entrée porte une note maison traçant la valeur `durationRounds` (règle stricte 7)', () => {
     const e = critiqueTable('ldb', 'jambeD').find((x) => x.id === 'orteil-contusionne')!;
@@ -290,12 +291,14 @@ describe('Aux Armes (AA 07, approche alternative) — lignes nommées', () => {
     expect(r.lethal).toBe(false);
   });
 
-  it('nœud `test` auto-résolu : échec → ops de la branche `fail` ajoutées (l.140)', () => {
+  it('nœud `test` de la rangée : RENDU par `testFlow`, jamais roulé — sa branche `fail` porte l’À Terre (l.140)', () => {
     // Torse 21-25 « Coup au ventre » : 1 Sonné + Résistance Facile (+40) sous peine À Terre.
-    // E 30 → cible 70 ; jet 90 > 70 → échec → À Terre.
-    const r = resolveCritique('aa', cible(), 'corps', seq(22, 90));
+    const r = resolveCritique('aa', cible(), 'corps', seq(22));
     expect(r.label).toBe('Coup au ventre');
-    expect(r.ops).toEqual([{ op: 'wounds', amount: 1, ignoreTB: true, ignoreAP: true }, { op: 'condition', id: 'sonne', value: 1 }, { op: 'condition', id: 'a-terre', value: 1 }]);
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 1, ignoreTB: true, ignoreAP: true }, { op: 'condition', id: 'sonne', value: 1 }]);
+    const n = r.testFlow as Extract<typeof r.testFlow, { kind: 'test' }>;
+    expect(n.test.difficulty).toBe('facile');
+    expect(spellOps(n.fail, 'target')).toEqual([{ op: 'condition', id: 'a-terre', value: 1 }]);
   });
 
   it('lignes triviales « T » (l.79) DÉRIVÉES — non létales et sans perte de Blessure', () => {
@@ -358,16 +361,20 @@ describe('Aux Armes (AA 07, approche alternative) — lignes nommées', () => {
     expect(r.ops).toEqual([{ op: 'wounds', amount: 2, ignoreTB: true, ignoreAP: true }, { op: 'charMod', char: 'agilite', mod: -20, durationRounds: { dice: { n: 1, sides: 10 } } }]);
   });
 
-  it('« Orteil contusionné » (jambe 01-10, l.164) : nœud échoué → −10 Ag 1 Round', () => {
-    const r = resolveCritique('aa', cible(), 'jambeG', seq(5, 90)); // 90 > cible 50 (E30+20) → échec
+  it('« Orteil contusionné » (jambe 01-10, l.164) : la branche `fail` du nœud rendu porte −10 Ag 1 Round', () => {
+    const r = resolveCritique('aa', cible(), 'jambeG', seq(5));
     expect(r.label).toBe('Orteil contusionné');
-    expect(r.ops).toEqual([{ op: 'charMod', char: 'agilite', mod: -10, durationRounds: 1 }]);
+    expect(r.ops).toEqual([]); // aucun effet immédiat : tout tient au Test
+    const n = r.testFlow as Extract<typeof r.testFlow, { kind: 'test' }>;
+    expect(spellOps(n.fail, 'target')).toEqual([{ op: 'charMod', char: 'agilite', mod: -10, durationRounds: 1 }]);
   });
 
   it('« Perte d’équilibre » (jambe 11-20, l.165) : le nœud teste l’ATHLÉTISME, pas la Résistance', () => {
-    const r = resolveCritique('aa', cible(), 'jambeG', seq(15, 90)); // Athlétisme (Ag30) : 90 > 30 → échec
+    const r = resolveCritique('aa', cible(), 'jambeG', seq(15));
     expect(r.label).toBe("Perte d'équilibre");
-    expect(r.ops).toEqual([{ op: 'condition', id: 'a-terre', value: 1 }]);
+    const n = r.testFlow as Extract<typeof r.testFlow, { kind: 'test' }>;
+    expect(n.test.skill).toEqual({ id: 'athletisme' }); // AA 07 l.165
+    expect(spellOps(n.fail, 'target')).toEqual([{ op: 'condition', id: 'a-terre', value: 1 }]);
     expect(critiqueTable('aa', 'jambeG').find((e) => e.id === 'aa-jambe-11')!.test!.test.skill).toEqual({ id: 'athletisme' });
   });
 

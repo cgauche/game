@@ -78,10 +78,12 @@ describe('N+1 — un 9ᵉ document-table lu sans une ligne de moteur', () => {
   it('la RÉSOLUTION le joue dès que son régime est déclaré — UNE déclaration, aucune branche', () => {
     poser();
     REGIMES_DE_CRITIQUE[JEU_NEUF] = { severite: () => 0, journal: 'Blessure de morsure' };
-    const r = resolveCritique(JEU_NEUF, cible(), 'tete', seq(50, 90)); // 90 > cible 50 (E30+20) → échec du nœud
+    const r = resolveCritique(JEU_NEUF, cible(), 'tete', seq(50));
     expect(r.entryId).toBe('morsure-tete-01');
     expect(r.roll).toBe(50);
-    expect(r.ops).toEqual([{ op: 'wounds', amount: 4, ignoreTB: true, ignoreAP: true }, { op: 'condition', id: 'sonne', value: 1 }]);
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 4, ignoreTB: true, ignoreAP: true }]); // effet IMMÉDIAT seul
+    // Le nœud de la rangée sort par `testFlow` (la porte le joue) — le 9ᵉ tableau n'a rien de spécial à déclarer.
+    expect(r.testFlow?.kind).toBe('test');
     expect(r.log.startsWith('Blessure de morsure (')).toBe(true);
   });
 

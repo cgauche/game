@@ -13,6 +13,8 @@
  * CE QU'ELLE VOIT (fail-closed sur l'avenir) : un fichier de données NEUF portant un `kind:'test'`
  * sans nature de source déclarée ici rougit — la table `KIND_PAR_FICHIER` est le seul endroit où une
  * famille d'entités se rattache à son `EffectSourceKind`, et l'oublier ne peut pas passer en silence.
+ * Seconde porte, MEME contrat : `ENJEU_AU_PRODUCTEUR`, pour les nœuds dont l'enjeu n'est PAS dérivable
+ * d'une nature de source (rangée de Critique — cf. sa déclaration).
  *
  * CE QU'ELLE NE PEUT PAS VOIR, et pourquoi (limite STRUCTURELLE, pas un manque de zèle) : la RÉF
  * PENDANTE. L'enjeu dérivé ne stocke aucun id authoré — il LIT celui de l'entrée qui porte le nœud
@@ -29,11 +31,14 @@ import { fileURLToPath } from 'node:url';
 import { simpleTriggeredTestStep, withDerivedStake } from './combat/triggeredTest';
 import { effectSourcesOf } from './triggeredEffects';
 import { EMPTY_FLOW, type FlowTest } from './flow';
-import { resolveStake, findById, combatStakeRef } from '../data';
+import { resolveStake, findById, combatStakeRef, type StakeRef } from '../data';
+import { CRITIQUE_DOCS } from '../data/criticals';
+import { resolveCritique } from '../engine/critical';
+import { makeRNG } from '../engine/dice';
 import { applyOps } from '../engine/ops';
 import { recomputeLoadout, parseDamage } from '../engine/items';
 import type { TriggeredEffect } from '../engine/flowCore';
-import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind, type Combatant, type ItemInstance } from '../engine/types';
+import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind, type Combatant, type HitLocation, type ItemInstance } from '../engine/types';
 
 const DATA = join(fileURLToPath(new URL('.', import.meta.url)), '..', 'data');
 
@@ -59,13 +64,56 @@ const KIND_PAR_FICHIER: Record<string, EffectSourceKind> = {
  * aucun nœud fait rougir (assertion ci-dessous), comme une famille qui en porterait sans nature.
  */
 const AUTO_RESOLUS: Record<string, string> = {
-  'criticals.json':
-    'Blessures critiques (LDB 18 / AA 07) : le nœud de la rangée est joué par `resolveCritique` avec le RNG du combat, dans le même geste que le d100 de sévérité — le résultat est révélé déjà résolu (`previewCritEntry`), il n’y a pas de fenêtre où un enjeu se poserait.',
   'river-criticals.json':
     'Coup à l’équipage d’un Critique de coque fluviale (MSRC 07 l.78/l.94) : le nœud est joué par `applyCrewHit` (`engine/shipCritical.ts`) avec le RNG du combat, DANS le geste d’`applyHullCritical` que `combatFlow.ts:1819` appelle — aucune étape n’est poussée, le journal ne rend que l’issue.',
   'ship-criticals.json':
     'Coup à l’équipage d’un Critique de coque navale (« Canon détaché », MDG 13 l.763) : MÊME chemin et MÊME geste que la table fluviale — le nœud est résolu dans `applyHullCritical`, sans fenêtre.',
 };
+
+/**
+ * Familles dont l'ENJEU est POSÉ PAR LE PRODUCTEUR moteur (patron `miscast.mkTest`) — ni une exemption
+ * ni un silence : le fichier listé ici est tenu au MÊME contrat positif, mais interrogé par SON
+ * producteur au lieu de la dérivation par nature de source.
+ *
+ * POURQUOI cette seconde porte, nommée : `KIND_PAR_FICHIER` est une table 1:1 `fichier →
+ * EffectSourceKind → UNE catégorie Codex`, et elle rattache le nœud à l'entrée de TÊTE du document.
+ * Une rangée de Critique ne tient dans NI l'un NI l'autre : son foyer est la LIGNE (`nez-casse`), pas le
+ * document-table (`criticals-ldb-tete`), et cette ligne vit dans l'une des 8 catégories que la porte (b)
+ * `entryCategory` choisit AU TIRAGE (`data/index.ts`, `STAKE_ENTRY_POOLS` : `criticalsTete`…
+ * `aaCriticalsJambe`). Le producteur est donc le seul à pouvoir la nommer — exactement comme
+ * `miscast.mkTest`, dont le nœud n'existe pas non plus en donnée.
+ *
+ * Chaque entrée rend, pour CHAQUE nœud `test` du fichier, l'enjeu que la production pose réellement.
+ */
+const ENJEU_AU_PRODUCTEUR: Record<string, () => { entryId: string; stake: StakeRef | undefined }[]> = {
+  'criticals.json': enjeuxDesRangeesDeCritique,
+};
+
+/** LOCALISATION représentative d'une table (`critTableKeyFor` la reprojette à l'identique). */
+const LOC_PAR_TABLE: Record<string, HitLocation> = { tete: 'tete', bras: 'brasD', corps: 'corps', jambe: 'jambeD' };
+
+/**
+ * Les enjeux RÉELLEMENT posés par `resolveCritique` sur les nœuds `test` de `criticals.json` : celui de
+ * la rangée (dé FORCÉ sur son propre `min` → c'est bien SA ligne qui sort), et celui du nœud d'escalade
+ * armé sur la séquelle (`Trauma.critTrigger`, posé par `stampCriticalEscalation`).
+ */
+function enjeuxDesRangeesDeCritique(): { entryId: string; stake: StakeRef | undefined }[] {
+  const out: { entryId: string; stake: StakeRef | undefined }[] = [];
+  for (const doc of CRITIQUE_DOCS) {
+    const loc = LOC_PAR_TABLE[doc.localisation];
+    for (const e of doc.entries) {
+      if (!e.test && !e.escalation?.onNextCritWhileCondition) continue;
+      const crit = resolveCritique(doc.jeu, hero(), loc, makeRNG(1), { forcedRoll: e.min });
+      if (e.test) {
+        const n = crit.testFlow?.kind === 'test' ? crit.testFlow : undefined;
+        out.push({ entryId: e.id, stake: n?.test.stake });
+      }
+      const arme = crit.traumas.find((t) => t.critTrigger)?.critTrigger;
+      if (e.escalation?.onNextCritWhileCondition) out.push({ entryId: e.id, stake: arme?.test.test.stake });
+    }
+  }
+  return out;
+}
 
 interface Noeud { fichier: string; entryId: string; ft: FlowTest }
 
@@ -108,9 +156,35 @@ describe('#1262 V2 L6d — TOUT `FlowTest` de la donnée dit ce qui se joue', ()
     expect(noeuds.length, 'aucun nœud `kind:test` trouvé : le scan de la donnée a glissé').toBeGreaterThanOrEqual(70);
   });
 
-  it('chaque famille porteuse de `FlowTest` a sa NATURE de source déclarée (ou son auto-résolution)', () => {
-    const orphelines = [...new Set(noeuds.map((n) => n.fichier))].filter((f) => !KIND_PAR_FICHIER[f] && !AUTO_RESOLUS[f]);
+  it('chaque famille porteuse de `FlowTest` a sa NATURE de source déclarée (ou son producteur, ou son auto-résolution)', () => {
+    const orphelines = [...new Set(noeuds.map((n) => n.fichier))]
+      .filter((f) => !KIND_PAR_FICHIER[f] && !ENJEU_AU_PRODUCTEUR[f] && !AUTO_RESOLUS[f]);
     expect(orphelines, 'famille de données porteuse d’un jet sans nature de source : son enjeu ne pourrait pas se dériver').toEqual([]);
+  });
+
+  /** MÊME contrat positif que la dérivation, sur les familles dont le producteur pose l'enjeu : chaque
+   *  nœud dit ce qui se joue, et le renvoi Codex descend à LA RANGÉE qui exige le jet (jamais au
+   *  document-table, jamais au foyer générique du `kind`). Mesuré sur la production, pas sur une liste. */
+  it('enjeu POSÉ PAR LE PRODUCTEUR : chaque nœud renvoie à la fiche de SA rangée', () => {
+    const muets: string[] = [];
+    let mesures = 0;
+    for (const [fichier, produire] of Object.entries(ENJEU_AU_PRODUCTEUR)) {
+      const poses = produire();
+      const attendus = noeuds.filter((n) => n.fichier === fichier).length;
+      expect(poses.length, `${fichier} : ${poses.length} enjeu(x) pour ${attendus} nœud(s) — la sonde a glissé`).toBe(attendus);
+      for (const { entryId, stake } of poses) {
+        mesures++;
+        if (!stake) { muets.push(`${fichier}:${entryId} — nœud sans enjeu`); continue; }
+        const resolu = resolveStake(stake);
+        if (!resolu.rule) muets.push(`${fichier}:${entryId} — aucun renvoi Codex`);
+        // Le renvoi doit descendre à la RANGÉE : un `entryId` que le pool de sa catégorie ne connaît
+        // pas replie sur le foyer du `kind` (`blessures-critiques`) — c'est ce repli que cette
+        // comparaison attrape, sans jamais avoir à lister les 8 catégories ici.
+        else if (resolu.rule.id !== entryId) muets.push(`${fichier}:${entryId} — renvoi hors de sa propre rangée (${resolu.rule.category}:${resolu.rule.id})`);
+      }
+    }
+    expect(mesures, 'la sonde du producteur n’a rien mesuré').toBeGreaterThanOrEqual(39);
+    expect(muets, ['Jet de donnée MUET — chaque nœud posé par son producteur dit ce qui se joue :', ...muets].join('\n')).toEqual([]);
   });
 
   it('les exemptions d’AUTO-RÉSOLUTION sont VIVANTES et disjointes des natures déclarées', () => {

@@ -130,7 +130,15 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // d’un symptôme porte désormais sa conséquence sous la feuille `EffectOp` du nœud `test`, et ses deux
 // réfs rejoignent `symptoms.json | ops` (10 → 12), un couple déjà au dénominateur. `maladies.json |
 // onFail` (1) devient `| ops` par le même geste : même dette, autre champ porteur.
-const DETTE_ADOPTION_MAX = 344;
+// Cliquet REMONTÉ 344 → 345 (#1657 B3-1, 2026-09-02) : `criticals.json | skill` (39) ENTRE au
+// dénominateur. Aucune donnée neuve — les 39 nœuds `test` des rangées de Critique NOMMENT désormais
+// la Compétence que leur `desc` verbatim exige (`LDB 18` « Réussissez un Test de Résistance… » ;
+// `AA 07 l.165` « Test d'Athlétisme », seul nœud qui la nommait déjà) : sans elle, la porte n'a rien
+// à tester et la valeur se recalculait à la main dans le moteur. La dette d'ADOPTION qu'elle nomme
+// est celle, déjà au stock, de `spells | skill` (50), `talents | skill` (123), `miscast | skill`
+// (26)… — 21 datasets portent le MÊME couple : l'adoption est celle de `refOuSpec('skill')` au
+// schéma de `FlowTest`, en L2/L3 #1473, pour tous à la fois.
+const DETTE_ADOPTION_MAX = 345;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

@@ -227,8 +227,8 @@ describe('DÉTERMINISME cross-OS — le rapport ne dépend pas du système de fi
 const RECOUVRES: readonly (readonly [string, string, string])[] = [
   ['DetailRecipe', 'tintVar', 'src/gameIso/authoring/detailSvg.ts:177'],
   ['EntityAppearance', 'armurePortee', 'src/state/spawn.ts:427'],
-  ['CritEscalation', 'onRepeat', 'src/engine/critical.ts:325'],
-  ['Amputation', 'timing', 'src/engine/critical.ts:339'],
+  ['CritEscalation', 'onRepeat', 'src/engine/critical.ts:334'],
+  ['Amputation', 'timing', 'src/engine/critical.ts:348'],
   ['FlowTest', 'opposed', 'src/state/combat/triggeredTest.ts:291'],
   ['CountSpec', 'fixed', 'src/data/index.ts:3454'],
   ['CountSpec', 'roll', 'src/data/index.ts:3454'],

@@ -14,7 +14,8 @@ import { Combatant, CharKey, CHAR_LABELS, HitLocation, ItemInstance, Trauma, Dif
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import type { CritEscalation } from '../data/criticals';
-import { spellOps } from './flowCore';
+import { poserEnjeu, type FlowTestNode } from './flowCore';
+import type { StakeRef } from '../data';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
 import { findById, findConditionById, findPsychologyById, findTrappingById, refLabel } from '../data';
 import type { CodexTarget } from './ruleRefs';
@@ -525,6 +526,9 @@ export function stampCriticalEscalation(
   ref: Combatant,
   rng: RNG = defaultRNG,
   existing: Trauma[] = [],
+  /** ENJEU (#1117) POSÉ sur le nœud `critTrigger` à l'armement — la rangée qui arme EST le foyer, et
+   *  seul ce point la connaît (la séquelle, elle, ne porte que son nœud). Il voyage avec le Trauma. */
+  enjeu?: StakeRef,
 ): void {
   if (!esc) return;
   let plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
@@ -566,10 +570,11 @@ export function stampCriticalEscalation(
     const n = esc.onNextCritWhileCondition;
     const same = (t: Trauma) => t.critTrigger?.whileCondition === n.whileCondition && t.critTrigger?.location === n.location;
     if (!existing.some(same) && !traumas.some(same)) {
+      const noeud = structuredClone(n.test);
       traumas.push({
         label: n.label,
         location,
-        critTrigger: { location: n.location, whileCondition: n.whileCondition, test: structuredClone(n.test) },
+        critTrigger: { location: n.location, whileCondition: n.whileCondition, test: { ...noeud, test: poserEnjeu(noeud.test, enjeu) } },
       });
     }
   }
@@ -603,12 +608,11 @@ export function settleHealedCriticals(c: Combatant): string[] {
 /** Déclencheurs d'escalade (« Commotion cérébrale » : autre critique à la tête pendant Exténué → Test de
  *  Résistance ou Inconscient, LDB 18 l.74) armés sur `target` (`Trauma.critTrigger`) que le critique COURANT
  *  (à `location`) fait feu : pour chaque signature DISTINCTE dont le personnage porte l'État `whileCondition`
- *  et dont la `location` correspond (ou est absente), le nœud `test` de sauvegarde est joué (valeur `resistVal`,
- *  RNG seedé) et la branche empruntée rend ses ops (lecture PURE, `spellOps`). Lu au point unique de résolution
- *  (`resolveCritique`) ; n'arme rien et ne consomme AUCUN RNG en l'absence de déclencheur (patron partagé des
- *  escalades). */
-export function fireCritTriggers(target: Combatant, location: HitLocation, resistVal: number, rng: RNG = defaultRNG): GameOp[] {
-  const out: GameOp[] = [];
+ *  et dont la `location` correspond (ou est absente), le nœud `test` de sauvegarde est RENDU — jamais roulé :
+ *  l'appelant `state` l'ouvre par la porte, dans le geste du critique qui l'a fait feu. Lu au point unique de
+ *  résolution (`resolveCritique`) ; PUR, aucun RNG. */
+export function fireCritTriggers(target: Combatant, location: HitLocation): FlowTestNode[] {
+  const out: FlowTestNode[] = [];
   const seen = new Set<string>();
   for (const t of target.traumas ?? []) {
     const trig = t.critTrigger;
@@ -618,8 +622,7 @@ export function fireCritTriggers(target: Combatant, location: HitLocation, resis
     const key = `${trig.location ?? ''}|${trig.whileCondition}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    const res = rollTest(resistVal, trig.test.test.difficulty, rng);
-    out.push(...spellOps(res.success ? trig.test.success : trig.test.fail, 'target').map((o) => ({ ...o })));
+    out.push(trig.test);
   }
   return out;
 }

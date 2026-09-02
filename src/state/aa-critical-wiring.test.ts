@@ -26,6 +26,8 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
   ({ id: 't', name: 'Cible', kind: 'enemy', characteristics: CHARS, wounds: { current: 10, max: 10 }, conditions: [], skills: [], bodyShape: 'humanoide', size: 'moyenne', weapons: [], items: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, ...over } as unknown as Combatant);
 
 const noop = () => {};
+/** Lecture d'état minimale : hors bataille, horloge à 0 (les tests qui la sollicitent fournissent la leur). */
+const getStub = (() => ({ battle: undefined, party: [], gameTime: 0 })) as never;
 
 describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)', () => {
   afterEach(() => resetRule('combat-aa-blessures'));
@@ -37,7 +39,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     // brasD d100 5 → « Choc au poignet » (01-10) = trivial « T ».
     const crit = resolveCritique('aa', target, 'brasD', seq(5), { overkill: 0 });
     expect(crit.roll).toBe(5);
-    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
+    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit, get: getStub });
     expect(target.criticalWounds ?? 0).toBe(0); // trivial → non compté pour la mort
   });
 
@@ -47,7 +49,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     const target = mk();
     // brasD d100 25 → « Coupure mineure » (21-25) = 1 Blessure (pas trivial).
     const crit = resolveCritique('aa', target, 'brasD', seq(25), { overkill: 0 });
-    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
+    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit, get: getStub });
     expect(target.criticalWounds ?? 0).toBe(1);
   });
 
@@ -57,7 +59,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     const target = mk({ wounds: { current: 10, max: 10 } });
     // Coup Critique (double) sans overkill : la cible a 10 PB → le Critique s'applique quand même.
     const crit = resolveCritique('aa', target, 'brasD', seq(25), { overkill: 0 }); // 1 Blessure supplémentaire
-    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
+    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit, get: getStub });
     expect(target.criticalWounds ?? 0).toBe(1);          // Critique bien infligé
     expect(target.wounds.current).toBeGreaterThan(0);    // … alors qu’il RESTE des Blessures (PB > 0)
   });
@@ -68,7 +70,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     const target = mk();
     const crit = resolveCritique('aa', target, 'brasG', seq(15), { overkill: 0 }); // 11-20 → Choc au bras
     expect(target.activeEffects ?? []).toHaveLength(0); // rien avant application (l'ops n'est encore que DONNÉE)
-    applyCriticalToTarget(target, 'brasG', true, 0, [], noop, { prerolled: crit });
+    applyCriticalToTarget(target, 'brasG', true, 0, [], noop, { prerolled: crit, get: getStub });
     expect(cannotWieldTwoHanded(target)).toBe(true); // effet RÉEL, pas du texte arbitré
     const eff = target.activeEffects?.find((e) => e.maxWeaponHands != null);
     expect(eff?.duration.scale).toBe('rounds'); // TEMPORAIRE (≠ séquelle permanente 'permanent')
@@ -80,7 +82,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     // En LDB, aucune notion de trivial : le décompte incrémente toujours.
     const target = mk();
     const crit = resolveCritique('aa', target, 'brasD', seq(5), { overkill: 0 }); // table AA, mais rule=ldb → pas d’exclusion
-    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
+    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit, get: getStub });
     expect(target.criticalWounds ?? 0).toBe(1); // compté (le garde-fou trivial ne s’active qu’en mode AA)
   });
 
@@ -115,7 +117,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
       activeLoadoutId: 'l1',
     });
     const crit = resolveCritique('aa', target, 'brasD', seq(5), { overkill: 0 }); // 01-10 → Choc au poignet (trivial, op disarm)
-    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
+    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit, get: getStub });
     expect(target.loadouts![0].main).toBeUndefined(); // brasD → main → l'Épée est lâchée
   });
 });

@@ -22,11 +22,11 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 /**
  * STOCK au 2026-09-02 — chaque entrée porte le lot qui la tue. Ordre TOTAL (fichier, ligne, famille,
  * nom) : le rendu du scanner ne dépend pas de l'ordre de marche du corpus, donc pas de la machine.
+ * DÉCROISSANCE mesurée : baseline 11 → 7 — les 4 sites des Blessures critiques (`critical.ts` ×3,
+ * `trauma.ts` ×1) passent par la porte depuis B3-1 ; leurs entrées se retirent d'ici dans le MÊME
+ * commit que le lot qui les route.
  */
 const STOCK_2026_09_02: [site: string, mortEn: string][] = [
-  ['src/engine/critical.ts:71 [lecteur opsDuNoeud → rollTest]', 'B3-1 — `opsDuNoeud` supprimé, `resolveCritique` rend `testFlow`'],
-  ['src/engine/critical.ts:320 [appelant resolveCritique → opsDuNoeud]', 'B3-1 — l\'appel disparaît avec `opsDuNoeud`'],
-  ['src/engine/critical.ts:355 [appelant resolveCritique → fireCritTriggers]', 'B3-1 — `fireCritTriggers` rend son nœud au lieu de le rouler'],
   ['src/engine/disease.ts:617 [lecteur tickDisease → rollTest]', 'B3-3 — chemin non-`defer` de `tickDisease` retiré'],
   ['src/engine/disease.ts:623 [lecteur tickDisease → rollTest]', 'B3-3 — idem (gangrène)'],
   ['src/engine/disease.ts:646 [lecteur tickDisease → rollTest]', 'B3-3 — idem (Test de cycle de la maladie)'],
@@ -34,7 +34,6 @@ const STOCK_2026_09_02: [site: string, mortEn: string][] = [
   ['src/engine/rest.ts:64 [appelant dailyDiseaseUpkeep → tickDisease]', 'B3-3 — l\'appel cesse d\'atteindre un rouleur'],
   ['src/engine/shipCritical.ts:166 [lecteur applyCrewHit → rollTest]', 'B3-2 — `applyCrewHit` rend `testFlow`'],
   ['src/engine/shipCritical.ts:217 [appelant applyHullCritical → applyCrewHit]', 'B3-2 — l\'appel cesse d\'atteindre un rouleur'],
-  ['src/engine/trauma.ts:621 [lecteur fireCritTriggers → rollTest]', 'B3-1 — nœud d\'escalade de Trauma (`critTrigger.test`), rendu au lieu d\'être roulé'],
 ];
 
 function sitesReels(): string[] {
@@ -110,12 +109,12 @@ describe('garde `flowTestEngineRoll` — le critère sépare la FABRIQUE du ROUL
 
   it('LECTURE + roulage DIRECT : rouge, nommé', () => {
     const sites = scan([
-      'function opsDuNoeud(target: Combatant, node: CritTestNode, rng: RNG): GameOp[] {',
-      '  const res = rollTest(valeurTestee(target, node), node.test.difficulty, rng);',
+      'function rouleNoeud(target: Combatant, node: CritTestNode, rng: RNG): GameOp[] {',
+      '  const res = rollTest(valeurDuNoeud(target, node), node.test.difficulty, rng);',
       "  return spellOps(res.success ? node.success : node.fail, 'target');",
       '}',
     ].join('\n'));
-    expect(sites.map(siteLabel)).toEqual(['src/engine/x.ts:2 [lecteur opsDuNoeud → rollTest]']);
+    expect(sites.map(siteLabel)).toEqual(['src/engine/x.ts:2 [lecteur rouleNoeud → rollTest]']);
   });
 
   it('LECTURE par ACCÈS `.test.<champ>` (sans paramètre typé) : rouge', () => {

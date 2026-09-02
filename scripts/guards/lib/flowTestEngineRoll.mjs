@@ -33,8 +33,8 @@
 // DEUX FAMILLES rendues, qui meurent ensemble avec le stock :
 //  - `lecteur`  : le site de roulage lui-même, dans le corps d'une fonction qui lit le nœud ;
 //  - `appelant` : le site d'appel, ailleurs dans `src/engine/**`, d'une fonction `lecteur` — c'est
-//    par là que la lecture-roulage remonte au résolveur qui l'emploie (`resolveCritique` →
-//    `opsDuNoeud`). Sans cette famille, supprimer l'appel ne serait mesuré nulle part.
+//    par là que la lecture-roulage remonte au résolveur qui l'emploie (`applyHullCritical` →
+//    `applyCrewHit`). Sans cette famille, supprimer l'appel ne serait mesuré nulle part.
 //
 // FORMES LÉGITIMES, vertes par CONSTRUCTION (le critère sépare, il ne liste pas) :
 //  - `miscast.ts` `mkTest` FABRIQUE le nœud (`poserEnjeu` nomme son enjeu) et le REND — (R) faux ;

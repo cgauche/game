@@ -13,16 +13,16 @@ import { d100, d10, RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
-import { testValue } from './skills';
 import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
 import {
   CRITIQUE_DOCS, critTableKeyFor, critiqueDoc, critiqueTable,
-  type Amputation, type CritEntry, type CritTableKey, type CritTestNode, type JeuDeCritique,
+  type Amputation, type CritEntry, type CritTableKey, type JeuDeCritique,
 } from '../data/criticals';
 import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers, consolidateAmputations, setTraumaCount, AMPUTATION_WOUND_DESC } from './trauma';
 import { rule } from './policy';
-import { spellOps } from './flowCore';
+import { poserEnjeu, type Flow, type FlowTestNode } from './flowCore';
+import { combatStakeRef, type StakeRef } from '../data';
 import { applyOps, resolveFormula, type GameOp } from './ops';
 
 export type { CritTableKey, JeuDeCritique };
@@ -53,23 +53,23 @@ export function critResistValue(c: Combatant): number {
 }
 
 /**
- * Valeur testée par un nœud de Critique. `test.skill` (AA 07 l.165 : Test d'Athlétisme, pas de
- * Résistance) passe par `testValue`, qui couvre déjà les compétences de base non entraînées ; sans
- * compétence nommée, le jet est le Test de Résistance du critique (`critResistValue`).
+ * ENJEU (#1117) du Test d'une rangée de Critique — patron `miscast.mkTest` : le producteur nomme la
+ * LIGNE qui exige le jet, et sa catégorie Codex se choisit au tirage parmi les 8 tables (porte (b)
+ * `entryCategory`, `src/data/index.ts`). PUR.
  */
-function valeurTestee(target: Combatant, node: CritTestNode): number {
-  const skill = node.test.skill;
-  return skill ? testValue(target, skill.id, undefined, skill.spec) : critResistValue(target);
+function enjeuDeRangee(jeu: JeuDeCritique, location: HitLocation, entryId: string): StakeRef {
+  return combatStakeRef('critRowTest', { entryId, entryCategory: critEntryCodexCategory(critTableKeyFor(location), jeu) });
 }
 
 /**
- * Résout le nœud `test` d'une rangée (RNG seedé) et rend les ops de la branche empruntée. Lecture
- * PURE du Flow : `spellOps` extrait les `GameOp` des feuilles `EffectOp` de la branche — aucune
- * mécanique n'est déduite du texte, et une branche `success` non vide serait servie tout autant.
+ * Le nœud `test` d'une rangée, ENJEU POSÉ, prêt à partir par la porte — jumelle de `miscast.mkTest` :
+ * une fabrique PURE, séparée du résolveur, qui ne tire AUCUN dé. Les branches `fail`/`success` sont
+ * déjà en donnée ; il n'y a rien à composer, seulement l'enjeu à nommer.
  */
-function opsDuNoeud(target: Combatant, node: CritTestNode, rng: RNG): GameOp[] {
-  const res = rollTest(valeurTestee(target, node), node.test.difficulty, rng);
-  return spellOps(res.success ? node.success : node.fail, 'target').map((o) => ({ ...o }));
+function noeudDeRangee(entry: CritEntry, jeu: JeuDeCritique, location: HitLocation): FlowTestNode | undefined {
+  if (!entry.test) return undefined;
+  const noeud: FlowTestNode = { ...entry.test, test: poserEnjeu(entry.test.test, enjeuDeRangee(jeu, location, entry.id)) };
+  return noeud;
 }
 
 /**
@@ -139,9 +139,15 @@ export interface CriticalResolved {
    *  par `applyCriticalToTarget` pour l'historique d'occurrence (escalade `onRepeat`). */
   entryId: string;
   label: string;
-  /** Effet IMMÉDIAT RÉSOLU (PB ignorant BE+PA + États immédiats + branche empruntée du nœud `test` +
-   *  Amputation), appliqué par `applyOps` chez l'appelant — valeurs littérales (RNG déjà consommé ici). */
+  /** Effet IMMÉDIAT RÉSOLU (PB ignorant BE+PA + États immédiats + Amputation), appliqué par `applyOps`
+   *  chez l'appelant — valeurs littérales (RNG déjà consommé ici). */
   ops: GameOp[];
+  /** Le(s) Test(s) que la Blessure impose, à OUVRIR PAR LA PORTE canonique — le nœud `test` de la
+   *  rangée (LDB 18 / AA 07) et ceux qu'un déclencheur de séquelle fait feu (`Trauma.critTrigger`,
+   *  LDB 18 l.74), enjeu posé. Un nœud `test` EST déjà un `Flow` ; plusieurs voyagent en `seq`, joué
+   *  en séquence par l'exécuteur. L'appelant `state` l'ouvre (`routeTriggeredTest`), le moteur ne le
+   *  roule jamais — patron `MiscastResult.testFlow` (`miscast.ts`). */
+  testFlow?: Flow;
   lethal: boolean;
   /** Traumatismes posés (LDB 18), à la localisation du critique. */
   traumas: Trauma[];
@@ -299,7 +305,8 @@ export interface OptionsCritique {
 
 /**
  * Résout une Blessure critique sur `target` à la `location`, dans le `jeu` donné. Le nœud `test` de
- * l'entrée est auto-résolu (RNG seedé) : les ops de la branche empruntée s'ajoutent à l'effet.
+ * l'entrée n'est PAS joué ici : il ressort en `testFlow`, enjeu posé, et l'appelant `state` l'ouvre
+ * par la porte canonique (`user-doctrine-forme-canonique-unique-jets`).
  * La Localisation n'est JAMAIS re-tirée ici (LDB 18 l.53 / AA 07 l.32) — l'appelant la fournit.
  */
 export function resolveCritique(
@@ -317,7 +324,9 @@ export function resolveCritique(
   const entry = findTableEntry(critiqueTable(jeu, location), roll); // repli Bras (LDB 76 l.21) si loc sans table dédiée
   const resistVal = critResistValue(target);
   const ops: GameOp[] = [...(entry.ops ?? [])];
-  if (entry.test) ops.push(...opsDuNoeud(target, entry.test, rng));
+  // Nœud `test` de la rangée : FABRIQUÉ à part (enjeu à la LIGNE), jamais roulé — il part par la porte.
+  const rangee = noeudDeRangee(entry, jeu, location);
+  const tests = rangee ? [rangee] : [];
   // Occurrence-count PAR ID D'ENTRÉE (LDB 18 l.71 : « Si vous tombez une seconde fois sur cette blessure… » ;
   // AA 07 l.96) : la MÊME entrée déjà subie → effet ALTERNATIF `escalation.onRepeat` (séquelles REMPLACÉES,
   // ops immédiates AJOUTÉES). L'effet IMMÉDIAT de base reste appliqué (le coup blesse toujours).
@@ -347,17 +356,18 @@ export function resolveCritique(
   // Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du pied sans
   // Chirurgie sous 1d10 jours ; « Épaule luxée »/« Genou démis » : membre désactivé jusqu'au Test étendu de
   // Guérison) — placée en DERNIER (ne décale que les critiques à escalade).
-  stampCriticalEscalation(traumas, entry.escalation, location, target, rng, target.traumas ?? []);
+  stampCriticalEscalation(traumas, entry.escalation, location, target, rng, target.traumas ?? [], enjeuDeRangee(jeu, location, entry.id));
   // Déclencheurs armés par un critique ANTÉRIEUR (« Commotion cérébrale » : autre critique tête pendant
   // Exténué, LDB 18 l.74) — lus sur `target.traumas` (jamais la séquelle stampée à l'instant : elle n'est pas
   // encore sur la cible), et kind-agnostiques (un critique LDB peut avoir armé ce qu'un critique AA fait
-  // feu). En DERNIER pour ne décaler le flux RNG que des critiques qui font effectivement feu.
-  ops.push(...fireCritTriggers(target, location, resistVal, rng));
+  // feu). Leurs nœuds rejoignent le `testFlow` : même porte, même fenêtre, dans le geste du critique.
+  tests.push(...fireCritTriggers(target, location));
   return {
     location,
     entryId: entry.id,
     label: entry.label,
     ops,
+    ...(tests.length ? { testFlow: tests.length === 1 ? tests[0] : { kind: 'seq' as const, steps: tests } } : {}),
     lethal: !!entry.lethal,
     traumas,
     desc: entry.desc,

@@ -256,7 +256,7 @@ import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
-import { runCombatFlow, rollFrozenOpposedAttacker, frozenOpposedBatchStep, simpleBatchTestStep } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unique ; Surprise : opposition figée + bande de guetteurs)
+import { runCombatFlow, routeTriggeredTest, rollFrozenOpposedAttacker, frozenOpposedBatchStep, simpleBatchTestStep } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unique ; Surprise : opposition figée + bande de guetteurs)
 export { aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour + gate d'action
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
 import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
@@ -1700,14 +1700,16 @@ export function applyCriticalToTarget(
   overkill: number,
   log: string[],
   set: SetFn,
-  opts?: {
+  opts: {
     ctx?: DeviationCtx; // qui inflige le coup + l'arme (→ modale enrichie) ; critTwice = B. de Sauvagerie de l'attaquant
     prerolled?: CriticalResolved; // Critique déjà tiré (déviation : on a montré CE Critique → on l'applique tel quel, sans re-tirer)
     suppressReveal?: boolean; // la modale de déviation a DÉJÀ affiché le Critique → ne pas re-pousser une révélation
-    get?: Get; // navire : résout l'ÉQUIPAGE (`crewIds`) depuis la bataille pour répercuter Équipage/Éclats sur de vrais marins
+    /** REQUIS : résout l'ÉQUIPAGE (`crewIds`) d'un navire, et OUVRE par la porte le Test que la rangée
+     *  impose (`CriticalResolved.testFlow`) — un appelant sans `get` perdrait ce jet en silence. */
+    get: Get;
   },
 ): boolean {
-  const { ctx, prerolled, suppressReveal, get } = opts ?? {};
+  const { ctx, prerolled, suppressReveal, get } = opts;
   // Structure de siège (AA 10 p.121) : modèle de Critique DISTINCT du personnage — table propre (pas de Trauma
   // humain) et pas de « Mort » de personnage. Filet de sécurité pour TOUT appelant (opposé/magie) ; le chemin
   // d'attaque normal passe déjà par `applyStructureCriticalToTarget` (cf. `applyAttackResult`).
@@ -1769,7 +1771,7 @@ export function applyCriticalToTarget(
     // `now` : horloge de jeu — sans elle, un effet d'HORLOGE (durée en jours, #153) calculerait son
     // échéance depuis 0 → expirerait immédiatement au tick suivant (`purgeClockEffects` compare à `get().gameTime`
     // réel). `location` : main affectée par l'op `disarm` (#153, convention DROITIER `brasD`→main/`brasG`→off).
-    applyOps(target, crit.ops, { rng: battleRng(), now: get?.().gameTime, location: loc }); // effet immédiat (PB ignorant BE+PA + États) — langue GameOp
+    applyOps(target, crit.ops, { rng: battleRng(), now: get().gameTime, location: loc }); // effet immédiat (PB ignorant BE+PA + États) — langue GameOp
     if (crit.desc) {
       log.push(`  ↳ ${crit.desc}`); // effet long terme journalisé, non simulé
       revealLines.push(`  ↳ ${crit.desc}`);
@@ -1791,6 +1793,12 @@ export function applyCriticalToTarget(
       crit: { location: locationLabel(crit.location, target.bodyShape), woundsLost: sum.woundsLost, conditions: sum.conditions.length ? sum.conditions : undefined },
     }, { table: severity?.table }); // la DÉCLARATION résolue voyage avec la révélation : dé + ligne atteinte sur la rangée
   }
+  // Le(s) Test(s) que la Blessure impose (LDB 18 : « Réussissez un Test de Résistance… » ; l.74 pour un
+  // déclencheur de séquelle) passent par la PORTE canonique, APRÈS la révélation du Critique : le SOCLE
+  // seul décide de la surface (porteur tenu → étape influençable ; sinon voie inline). Patron
+  // `MiscastResult.testFlow` (l.4146). Létal : le RAW n'applique aucun effet supplémentaire (l'`applyOps`
+  // ci-dessus est gaté pareillement) — le Test n'a plus d'objet.
+  if (crit.testFlow && !crit.lethal) routeTriggeredTest(get, set, target, target, crit.testFlow, { label: crit.label });
   return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
 }
 

@@ -52,7 +52,7 @@ const CLES: Record<string, string> = {
   "nightStakes": '54a15ad6883f8c31',
   "voyageStakes": '688a26d167439e19',
   "flowStakes": '5991b421e4d718b4',
-  "combatStakes": '1940d85367050a88',
+  "combatStakes": '3896272fa391e15e',
   "races": '0728d04812275962',
   "careers": '482f179346c5e761',
   "characteristics": '532e47bfff4a9328',

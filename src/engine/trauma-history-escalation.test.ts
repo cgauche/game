@@ -87,37 +87,38 @@ describe('#194 (2) — Commotion cérébrale : déclencheur « autre critique t�
     },
   });
 
-  it('fireCritTriggers : Exténué + critique tête → Test de Résistance ; ÉCHEC → Inconscient', () => {
+  it('fireCritTriggers : Exténué + critique tête → le nœud de sauvegarde est RENDU (Accessible, échec → Inconscient)', () => {
     const c = C({ traumas: [armed()], conditions: [{ id: 'extenue', value: 1 }] });
-    const ops = fireCritTriggers(c, 'tete', 30, seq([90])); // cible 30+20=50 ; 90 > 50 → échec
-    expect(hasCondOp(ops as never, 'inconscient')).toBe(true);
+    const noeuds = fireCritTriggers(c, 'tete');
+    expect(noeuds).toHaveLength(1);
+    expect(noeuds[0].test.difficulty).toBe('accessible');
+    expect(hasCondOp(spellOps(noeuds[0].fail, 'target') as never, 'inconscient')).toBe(true);
+    expect(spellOps(noeuds[0].success, 'target')).toEqual([]); // le Test réussi n'octroie rien (LDB 18 l.74)
   });
 
-  it('fireCritTriggers : Test RÉUSSI → pas d\'Inconscient', () => {
-    const c = C({ traumas: [armed()], conditions: [{ id: 'extenue', value: 1 }] });
-    expect(fireCritTriggers(c, 'tete', 30, seq([10]))).toEqual([]); // 10 <= 50 → réussite
-  });
-
-  it('fireCritTriggers : pas d\'Exténué → aucun feu (aucun RNG consommé)', () => {
+  it('fireCritTriggers : pas d\'Exténué → aucun nœud', () => {
     const c = C({ traumas: [armed()], conditions: [] });
-    expect(fireCritTriggers(c, 'tete', 30, seq([90]))).toEqual([]);
+    expect(fireCritTriggers(c, 'tete')).toEqual([]);
   });
 
-  it('fireCritTriggers : critique à une AUTRE Localisation (corps) → aucun feu', () => {
+  it('fireCritTriggers : critique à une AUTRE Localisation (corps) → aucun nœud', () => {
     const c = C({ traumas: [armed()], conditions: [{ id: 'extenue', value: 1 }] });
-    expect(fireCritTriggers(c, 'corps', 30, seq([90]))).toEqual([]);
+    expect(fireCritTriggers(c, 'corps')).toEqual([]);
   });
 
-  it('fireCritTriggers : plusieurs déclencheurs identiques → UN seul Test (dédup par signature)', () => {
+  it('fireCritTriggers : plusieurs déclencheurs identiques → UN seul nœud (dédup par signature)', () => {
     const c = C({ traumas: [armed(), armed()], conditions: [{ id: 'extenue', value: 1 }] });
-    const ops = fireCritTriggers(c, 'tete', 30, seq([90]));
-    expect(ops.filter((o) => o.op === 'condition' && (o as { id?: string }).id === 'inconscient')).toHaveLength(1);
+    expect(fireCritTriggers(c, 'tete')).toHaveLength(1);
   });
 
-  it('bout-en-bout : critique tête SUBSÉQUENT pendant Exténué (échec) → Inconscient dans les ops du critique', () => {
+  it('bout-en-bout : critique tête SUBSÉQUENT pendant Exténué → le nœud armé part en `testFlow` (jamais roulé au moteur)', () => {
     const c = C({ traumas: [armed()], conditions: [{ id: 'extenue', value: 1 }] });
-    const crit = resolveCritique('ldb', c, 'tete', seq([28, 90])); // 26-30 Frappe à l'oreille (sans resist) ; 90 → échec du Test armé
-    expect(hasCondOp(crit.ops as never, 'inconscient')).toBe(true);
+    const crit = resolveCritique('ldb', c, 'tete', seq([28])); // 26-30 Frappe à l'oreille (rangée sans nœud propre)
+    expect(crit.testFlow?.kind).toBe('test');
+    const noeud = crit.testFlow as Extract<typeof crit.testFlow, { kind: 'test' }>;
+    expect(noeud.test.difficulty).toBe('accessible');
+    expect(hasCondOp(spellOps(noeud.fail, 'target') as never, 'inconscient')).toBe(true);
+    expect(hasCondOp(crit.ops as never, 'inconscient')).toBe(false); // l'issue n'est plus tranchée dans le moteur
   });
 });
 

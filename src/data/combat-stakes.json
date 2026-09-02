@@ -175,6 +175,19 @@
     }
   },
   {
+    "id": "crit-row-test",
+    "type": "combat-stakes",
+    "label": "Blessure critique — Test de la ligne tirée",
+    "kind": "critRowTest",
+    "rule": "blessures-critiques",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 174,
+      "note": "LDB 18 l.72"
+    }
+  },
+  {
     "id": "structure-critical",
     "type": "combat-stakes",
     "label": "Critique de Structure",

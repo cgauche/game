@@ -1088,7 +1088,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Le terrain gagné est de SIGNATURE, pas de compte — les deux lignes neuves portent l'exacte
       // `difficulty` du `flowTestSchema`, la MÊME que `criticals.json › test` depuis B2a, là où la
       // graphie propriétaire projetait `difficulty+…`. Le décompte L3 (−2), lui, baisse.
-      'L4 #1463': 85,
+      // … #1657 B3-1 : 85 → 84. Les DEUX formes de nœud `test` de `criticals.json` n'en font plus
+      // qu'UNE : les 38 rangées qui ne nommaient PAS leur Compétence rejoignent `difficulty,skill`
+      // (1 → 39), la seule graphie que la porte sache tester. Ce que le silence coûtait : le moteur
+      // recomposait la valeur à la main (Endurance + avances de Résistance), hors `testValue`.
+      'L4 #1463': 84,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`

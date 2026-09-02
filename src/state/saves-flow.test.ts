@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useGame } from './store';
 import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, parseSave, snapshotSave, takeObsoleteNotice, SAVE_VERSION, type SaveGame } from './saves';
 import { rule, setRule, loadRuleOverrides } from '../engine/policy';
-import { talents, careerLevels, specResolves } from '../data/index';
+import { talents, careerLevels, specResolves, combatStakeRef } from '../data/index';
 import { talentSlots, slotCovers } from '../engine/careerSlots';
 import { createHero } from '../engine/character';
 import { testValue } from '../engine/skills';
@@ -191,7 +191,7 @@ describe('parseSave — la version DOIT être la courante', () => {
     // n'y empêche un `table-2x1` au cap E : le schéma ne refuse que la diagonale. Une save de 41
     // rouvrirait avec une empreinte figée sur l'axe x, donc une autre marchabilité — un héros posé sur
     // (x, y+1) se retrouverait DANS le meuble. D'où le REJET.
-    expect(SAVE_VERSION).toBe(42);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(42);
     expect(parseSave({ ...cur, version: 41 })).toBeNull();
     // LE DÉFAUT, mesuré sur le chemin réel : les deux caps ne bloquent pas les mêmes cases.
     const scene = emptyScene(12, 12);
@@ -220,20 +220,24 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(effet.light!.radiusM, 'la forme PERSISTÉE porte les mètres du folio (LDB 74 l.58)').toBe(20);
     expect((effet.light as unknown as Record<string, unknown>).radiusTiles).toBeUndefined();
   });
-  it('MESURE du motif de bump 39 → 40 (#1657 B2a) : le `critTrigger` persisté porte le nœud `test`', () => {
+  it('MESURE du motif de bump 42 → 43 (#1657 B3-1) : le `critTrigger` persisté porte son ENJEU', () => {
     // `Trauma.critTrigger` (« Commotion cérébrale », LDB 18 l.74) est PERSISTÉ sur la séquelle du
-    // héros. Sa graphie propriétaire `{resist:{difficulty, onFail}}` est devenue le nœud `test` du
-    // Flow : une save de 39 rouvrirait avec `test === undefined`, et le critique suivant lirait
-    // `trig.test.test.difficulty` sur rien (`fireCritTriggers`).
-    expect(SAVE_VERSION).toBeGreaterThanOrEqual(40);
-    expect(parseSave({ ...cur, version: 39 })).toBeNull();
+    // héros. Son nœud `test` ne s'auto-résout plus au moteur : il part par la porte, dont le mint
+    // d'étape REFUSE un enjeu muet (`monoStep`) — une save de 42 rouvrirait avec un nœud sans
+    // `stake`, et le critique suivant se verrait refuser sa fenêtre au lieu d'ouvrir le Test.
+    expect(SAVE_VERSION).toBe(43);
+    expect(parseSave({ ...cur, version: 42 })).toBeNull();
     const commotion = CRITIQUE_DOCS.flatMap((d) => d.entries).find((e) => e.id === 'commotion-cerebrale')!;
     const arme = commotion.escalation!.onNextCritWhileCondition!;
     expect(arme.test.kind, 'la donnée doit porter le nœud, pas la graphie `resist`').toBe('test');
-    expect((arme as unknown as Record<string, unknown>).resist, 'graphie propriétaire ressuscitée').toBeUndefined();
+    expect(arme.test.test.stake, 'la DONNÉE ne porte pas d’enjeu : il est posé à l’armement').toBeUndefined();
     const traumas: Trauma[] = [];
-    stampCriticalEscalation(traumas, commotion.escalation!, 'tete', hero38(), makeRNG(1), []);
-    expect(traumas.find((t) => t.critTrigger)!.critTrigger!.test).toEqual(arme.test);
+    const enjeu = combatStakeRef('critRowTest', { entryId: 'commotion-cerebrale', entryCategory: 'criticalsTete' });
+    stampCriticalEscalation(traumas, commotion.escalation!, 'tete', hero38(), makeRNG(1), [], enjeu);
+    const pose = traumas.find((t) => t.critTrigger)!.critTrigger!.test;
+    expect(pose.test.stake, 'le nœud PERSISTÉ doit porter l’enjeu de la rangée qui l’a armé').toEqual(enjeu);
+    expect({ ...pose, test: { ...pose.test, stake: undefined } })
+      .toEqual({ ...arme.test, test: { ...arme.test.test, stake: undefined } }); // rien d’autre n’a bougé
   });
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
     const sv = talents.find((t) => t.id === 'savoir-vivre')!;

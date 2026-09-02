@@ -35,7 +35,7 @@ describe('routage des révélations (spec coop §4bis)', () => {
   it('Critique ennemi↔ennemi → AUCUNE modale (journal seul)', () => {
     const log: string[] = [];
     applyCriticalToTarget(mkEnemy('e1'), 'corps', true, 0, log, useGame.setState,
-      { ctx: { attackerId: 'e2', attackerKind: 'enemy' } });
+      { ctx: { attackerId: 'e2', attackerKind: 'enemy' }, get: useGame.getState });
     expect(useGame.getState().pendingCascade).toBeNull();
     expect(log.length).toBeGreaterThan(0); // le détail vit dans le journal
   });
@@ -43,7 +43,7 @@ describe('routage des révélations (spec coop §4bis)', () => {
   it('un HÉROS inflige le Critique à un ennemi → séquence inline (panneau grave)', () => {
     const log: string[] = [];
     applyCriticalToTarget(mkEnemy('e1'), 'corps', true, 0, log, useGame.setState,
-      { ctx: { attackerId: 'h1', attackerKind: 'hero' } });
+      { ctx: { attackerId: 'h1', attackerKind: 'hero' }, get: useGame.getState });
     const crit = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'critical');
     expect(crit).toBeTruthy();
     expect(crit!.reveal?.severity).toBe('grave');
@@ -53,7 +53,7 @@ describe('routage des révélations (spec coop §4bis)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(3) });
     const log: string[] = [];
     applyCriticalToTarget(hero, 'corps', true, 0, log, useGame.setState,
-      { ctx: { attackerId: 'e1', attackerKind: 'enemy' } });
+      { ctx: { attackerId: 'e1', attackerKind: 'enemy' }, get: useGame.getState });
     const crit = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'critical');
     expect(crit).toBeTruthy();
     expect(crit!.reveal?.severity).toBe('grave');

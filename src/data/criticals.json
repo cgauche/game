@@ -348,6 +348,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -406,6 +409,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -494,6 +500,9 @@
             "test": {
               "kind": "test",
               "test": {
+                "skill": {
+                  "id": "resistance"
+                },
                 "difficulty": "accessible"
               },
               "success": {
@@ -706,6 +715,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "tresDifficile"
           },
           "success": {
@@ -1032,6 +1044,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "complexe"
           },
           "success": {
@@ -1115,6 +1130,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -1228,6 +1246,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -1409,6 +1430,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -1479,6 +1503,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -1586,6 +1613,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "facile"
           },
           "success": {
@@ -1630,6 +1660,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -1713,6 +1746,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "accessible"
           },
           "success": {
@@ -1920,6 +1956,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -2023,6 +2062,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -2245,6 +2287,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "accessible"
           },
           "success": {
@@ -2347,6 +2392,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -2396,6 +2444,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "accessible"
           },
           "success": {
@@ -2534,6 +2585,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -2611,6 +2665,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -2663,6 +2720,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -2723,6 +2783,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -2843,6 +2906,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -3355,6 +3421,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -3403,6 +3472,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -3936,6 +4008,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "complexe"
           },
           "success": {
@@ -4017,6 +4092,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -4266,6 +4344,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -4330,6 +4411,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -4404,6 +4488,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "accessible"
           },
           "success": {
@@ -4476,6 +4563,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "facile"
           },
           "success": {
@@ -4519,6 +4609,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -4742,6 +4835,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -4842,6 +4938,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -5041,6 +5140,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "accessible"
           },
           "success": {
@@ -5182,6 +5284,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "accessible"
           },
           "success": {
@@ -5316,6 +5421,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "intermediaire"
           },
           "success": {
@@ -5453,6 +5561,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {
@@ -5574,6 +5685,9 @@
         "test": {
           "kind": "test",
           "test": {
+            "skill": {
+              "id": "resistance"
+            },
             "difficulty": "difficile"
           },
           "success": {

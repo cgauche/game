@@ -83,7 +83,12 @@ import type { Scene } from './scene';
 // rouverte, changerait de MARCHABILITÉ : les cases bloquées passeraient de (x,y)+(x+1,y) à
 // (x,y)+(x,y+1), et un héros sauvegardé sur l'une d'elles se retrouverait DANS le meuble. La save se
 // jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 42;
+// 42 → 43 (#1657 B3-1) : le MÊME `Trauma.critTrigger` persisté gagne son ENJEU (`test.test.stake`,
+// posé à l'armement par `stampCriticalEscalation`). Le nœud ne s'auto-résout plus au moteur : il part
+// par la porte, et le mint d'étape REFUSE un enjeu muet (`monoStep`, `rollSeam.ts`). Une save de 42
+// rouvrirait avec une Commotion cérébrale sans enjeu : le critique suivant ouvrirait une fenêtre
+// refusée au lieu du Test. La save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 43;
 
 export interface SaveMeta {
   version: number;

@@ -119,8 +119,6 @@ const authoredTests = authoredByFile.reduce((n, [, c]) => n + c, 0)
 // site figure dans le stock mesuré du garde. Une entrée dont le site a quitté le stock est PÉRIMÉE
 // et fait échouer le générateur : c'est le cliquet qui vide cette section en B3-1/B3-2.
 const NON_ROUTES = [
-  ['src/data/criticals.json', 'src/engine/critical.ts:71', '#1657 B3-1',
-    'roule le nœud de la rangée avec le RNG du combat, dans le geste de `resolveCritique` — le résultat paraît déjà tranché.'],
   ['src/data/river-criticals.json', 'src/engine/shipCritical.ts:166', '#1657 B3-2',
     "roule le nœud de chaque marin visé dans le geste d'`applyHullCritical` — aucune étape n'est poussée."],
   ['src/data/ship-criticals.json', 'src/engine/shipCritical.ts:166', '#1657 B3-2',
