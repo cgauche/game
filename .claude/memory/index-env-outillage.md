@@ -23,3 +23,4 @@ Déplacés ici depuis `MEMORY.md` le 2026-09-01 (compaction) — les fiches font
 
 ## Navigateur / recette
 - [tempo navigateur](game-browser-verif-tempo.md) · [evaluate borné](game-browser-evaluate-no-infinite-loop.md) · [Captures QC = arbre AU REPOS](env-capture-qc-arbre-au-repos-vite-reload.md) · [5173 peut servir un AUTRE worktree](env-recette-port-5173-sert-un-autre-worktree.md) — PID du port avant recette.
+- [Bash background TUÉ → gates au premier plan ; chemin littéral pour le message de commit](env-bash-background-tue-gates-au-premier-plan.md) — 2026-09-02.
