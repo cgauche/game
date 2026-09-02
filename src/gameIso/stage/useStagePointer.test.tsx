@@ -2,7 +2,7 @@
 import { act, useRef } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { screenToTileAtZ, tileCenter, type Dims } from '../../geometry/iso';
 import { emptyScene, isWalkable, setDoorOpen } from '../../state/scene';
 import { metricToLift } from '../../state/relief';
@@ -25,9 +25,13 @@ import { SENSIBILITE_DRAG_DEG_PX, getStageYaw, poserYaw, resetStageYaw } from '.
 import { getStagePan, resetStagePan } from '../../state/stagePan';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-Object.defineProperty(window, 'matchMedia', {
-  configurable: true,
-  value: vi.fn().mockReturnValue({ matches: true }),
+Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn() });
+// L'implémentation par défaut se REPOSE avant CHAQUE test : `restoreMocks: true` (vite.config.ts)
+// rend tout espion et tout `vi.fn()` à son état nu entre deux tests, y compris celui-ci. Un test qui
+// ne la pose pas lui-même lirait sinon `undefined` au lieu d'un `MediaQueryList`.
+// `matches: true` = pointeur FIN (souris) : le défaut de ce banc ; un test tactile pose `false`.
+beforeEach(() => {
+  vi.mocked(window.matchMedia).mockReturnValue({ matches: true } as unknown as MediaQueryList);
 });
 
 const dims: Dims = { w: 8, h: 8, rot: 0, view: 'iso' };
@@ -98,7 +102,6 @@ describe('useStagePointer — picking exploration', () => {
       root = null;
     }
     vi.useRealTimers();
-    vi.mocked(window.matchMedia).mockReturnValue({ matches: true } as unknown as MediaQueryList);
   });
 
   it('préfère la surface marchable de activeZ à une couche supérieure superposée', () => {
