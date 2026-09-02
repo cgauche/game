@@ -8,7 +8,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { refusOutillageLocal } from '../outillage-local.mjs'
-import { prendreVerrou } from './verrou.mjs'
+import { prendreVerrou, verrouRequis } from './verrou.mjs'
 
 test('entrée absente de l’arbre : refus qui NOMME l’arbre, l’outil et la cause', () => {
   const refus = refusOutillageLocal('/arbres/.wt-42', 'vitest', '/arbres/.wt-42/node_modules/vitest/vitest.mjs', () => false)
@@ -33,6 +33,29 @@ test('une entrée présente AILLEURS ne vaut pas présence dans l’arbre', () =
   const entree = '/arbres/.wt-42/node_modules/vitest/vitest.mjs'
   const refus = refusOutillageLocal('/arbres/.wt-42', 'vitest', entree, (p) => p !== entree)
   assert.ok(refus, 'seul le fichier attendu compte')
+})
+
+// ── quels runs prennent le verrou ───────────────────────────────────────────────
+const FICHIERS = new Set(['src/engine/x.test.ts', 'src/ui/y.test.tsx'])
+const estFichier = (t) => FICHIERS.has(t)
+
+test('run SANS filtre : verrou REQUIS', () => {
+  assert.equal(verrouRequis([], estFichier), true)
+})
+
+test('filtre-DOSSIER : verrou REQUIS — `npm test src` énumère la suite entière', () => {
+  assert.equal(verrouRequis(['src'], estFichier), true)
+  assert.equal(verrouRequis(['.'], estFichier), true)
+  assert.equal(verrouRequis(['src/engine'], estFichier), true)
+})
+
+test('filtres-FICHIERS : verrou LIBRE, même à plusieurs', () => {
+  assert.equal(verrouRequis(['src/engine/x.test.ts'], estFichier), false)
+  assert.equal(verrouRequis(['src/engine/x.test.ts', 'src/ui/y.test.tsx'], estFichier), false)
+})
+
+test('un seul filtre-DOSSIER parmi des fichiers suffit à exiger le verrou', () => {
+  assert.equal(verrouRequis(['src/engine/x.test.ts', 'src'], estFichier), true)
 })
 
 // ── verrou de SUITE à l'échelle machine (#1679 L1c-M7) ────────────────────────────────────────

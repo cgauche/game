@@ -2,6 +2,10 @@
 // temps (deux arbres de travail, deux sessions) se disputent les cœurs et la mémoire, et la classe
 // « 245 rouges jsdom » en sort. Le verrou est CONSULTATIF : il refuse le second lanceur en NOMMANT
 // le premier (PID + commande), il ne tue personne. Opt-out EXPLICITE par `WFRP_SUITE_LOCK=0`.
+// PORTÉE : le chemin `npm test` (`scripts/test/run.mjs`). Les autres entrées de Vitest ne passent pas
+// par ce lanceur et restent hors porte : `npm run test:watch`, `npm run test:map` (scripts/map, court)
+// et tout `npx vitest run` tapé à la main — `scripts/lancer-local.mjs` leur sert au moins le vitest
+// de CET arbre.
 import fsReel from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -91,6 +95,15 @@ export function prendreVerrou({
     message:
       `[verrou] verrou disputé (${chemin}) : un autre lanceur le reprend en boucle — relancer.`,
   }
+}
+
+/**
+ * Le verrou est-il REQUIS pour ce run ? Un positionnel qui désigne un DOSSIER est une suite (`npm
+ * test src` énumère 1 580 fichiers) : seul un run dont CHAQUE filtre nomme un FICHIER s'en passe.
+ * `estFichier` est injecté pour la mesure ; le lanceur y met un `statSync().isFile()`.
+ */
+export function verrouRequis(filtres, estFichier) {
+  return filtres.length === 0 || !filtres.every((f) => estFichier(f))
 }
 
 /** Contenu du verrou, ou `null` s'il est illisible / sans PID exploitable. */

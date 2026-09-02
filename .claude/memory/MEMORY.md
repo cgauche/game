@@ -57,7 +57,7 @@
 
 ## Environnement / outillage
 - [Mémoire = junction repo](game-memoire-junction-repo.md) — jamais de git destructif ; index PARTAGÉ (relire avant d'écrire).
-- Pièges worktree/vitest/RTK/lean-ctx/shell/navigateur (cache .vite, npm 10, isolate:false, exit avalé, faux vert RTK, ctx_patch faux succès, backticks exécutés, port 5173…) : **[sous-index env/outillage](index-env-outillage.md)**.
+- Pièges worktree/vitest/RTK/lean-ctx/shell/navigateur (portes d'isolation des worktrees, npm 10, isolate:false, exit avalé, faux vert RTK, ctx_patch faux succès, backticks exécutés…) : **[sous-index env/outillage](index-env-outillage.md)**.
 - **[OUTILLAGE DÉGRADÉ 2026-08-31](env-outillage-degrade-session-2026-08-31.md)** — Bash seul verbatim (triage ampute, ctx_search/ctx_patch mentent) · **[COORDINATION 2 SESSIONS même arbre](env-coordination-arbre-partage-sessions.md)** — trains annoncés, hunks, docs sur export d'index, jamais de reset ; pre-commit = ARBRE → commit via worktree à `npm ci` + ff quand l'arbre porte un WIP voisin ; GEL d'écritures pendant une recette.
 - **[DOC DÉRIVÉ ≠ cross-OS](env-doc-derive-determinisme-cross-os.md)** — readdirSync non trié (NTFS/ext4) → CI rouge MUETTE ; ordre TOTAL + morsure ordre inverse + vérifier la CI sur le sha avant « POSÉ ».
 - [Agents `tools:` natifs = zéro outil](env-agents-tools-natifs-denies-leanctx.md) · [câblage vs ctx forgé](game-test-de-cablage-vs-ctx-forge.md) · [Sous-agents BACKGROUND figés → tout au premier plan](env-sous-agents-background-figes.md) — jamais de sous-agent sur Fable (fiche passage-fable).

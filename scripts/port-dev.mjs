@@ -2,7 +2,8 @@
 //
 // Vite auto-incrémente le port quand celui demandé est pris : deux arbres lancés côte à côte
 // donnaient `5173` au premier et `5174` au second, et une recette qui tape `5173` mesure alors
-// l'AUTRE arbre (faux vert — fiche mémoire `env-recette-port-5173-sert-un-autre-worktree`).
+// l'AUTRE arbre (faux vert) : un port fixe fait servir l'arbre d'un worktree VOISIN à la recette
+// (vécu 2026-08-23, #1426 : 5 serveurs Vite sur 5173-5178, rapport de bugs fantômes).
 //
 // La règle ne se branche PAS sur la forme du chemin (`.wt-*`, nom du dossier…) mais sur le seul
 // fait qui distingue les deux natures d'arbre pour git : `<racine>/.git` est un DOSSIER dans un

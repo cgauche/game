@@ -7,6 +7,7 @@
 import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { binLocal, envIsole, resoudreOutilLocal } from '../lancer-local.mjs'
 
 /** `{ runner, script, targets, check }` — `runner` = 'node' | 'tsx' ; `targets` = docs ÉCRITS
  *  (glob toléré, cf. la garde de taxonomie de scripts/git-hooks/merge-docs.test.mjs) ;
@@ -58,22 +59,37 @@ export const NON_GENERATOR_CHECKS = [
 /** Scripts que `docs:check` passe en `--check` (source unique : ceux qui SAVENT vérifier). */
 export const checkedScripts = () => new Set(GENERATORS.filter((g) => g.check !== false).map((g) => g.script))
 
-function run({ runner, script }, { cwd, quiet, check }) {
-  const cmd = runner === 'tsx' ? 'npx' : process.execPath
-  const args = [...(runner === 'tsx' ? ['tsx', script] : [script]), ...(check ? ['--check'] : [])]
-  execFileSync(cmd, args, { cwd, stdio: quiet ? ['ignore', 'ignore', 'pipe'] : 'inherit', shell: runner === 'tsx' && process.platform === 'win32' })
+/** Entrée `tsx` de l'arbre GÉNÉRÉ, résolue une seule fois — `npx` remonterait aux arbres parents. */
+function tsxDe(cwd) {
+  const { entree, refus } = resoudreOutilLocal(cwd, 'tsx', 'tsx')
+  if (refus) {
+    console.error(refus)
+    process.exit(2)
+  }
+  return entree
+}
+
+function run({ runner, script }, { cwd, quiet, check, tsx }) {
+  const args = [...(runner === 'tsx' ? [tsx ?? tsxDe(cwd), script] : [script]), ...(check ? ['--check'] : [])]
+  execFileSync(process.execPath, args, {
+    cwd,
+    env: envIsole(process.env, binLocal(cwd)),
+    stdio: quiet ? ['ignore', 'ignore', 'pipe'] : 'inherit',
+  })
 }
 
 function main() {
   const quiet = process.argv.includes('--quiet')
   const check = process.argv.includes('--check')
   const cwd = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
+  // Refus d'un tsx NON LOCAL avant le premier générateur : à mi-chaîne, docs/ serait à moitié écrit.
+  const tsx = GENERATORS.some((g) => g.runner === 'tsx') ? tsxDe(cwd) : null
   // Fail-fast : un générateur rouge laisse docs/ à moitié régénéré ; enchaîner les suivants
   // fabriquerait un lot incohérent que le hook annoncerait « à committer ».
   for (const g of GENERATORS) {
     if (check && g.check === false) continue
     try {
-      run(g, { cwd, quiet, check })
+      run(g, { cwd, quiet, check, tsx })
     } catch (e) {
       process.stderr.write(`docs:build — ARRÊT sur ${g.script} (code ${e.status ?? e.message}) : docs/ n'est PAS à jour.\n`)
       process.exit(1)
