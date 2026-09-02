@@ -95,7 +95,7 @@ de ce que `npm install` pose seul.
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
-- Les gardes de SESSION : 12 scripts sous `scripts/hooks/`, déclarés dans
+- Les gardes de SESSION : 15 scripts sous `scripts/hooks/`, déclarés dans
   `.claude/settings.json` (versionné) — détail au § 5.
 - Les schémas de données : `src/data/schemas/` (`src/data/schemas/types.ts`,
   `src/data/schemas/validate.ts`, `src/data/schemas/_registry.generated.ts`,
@@ -157,10 +157,12 @@ refaire `npm install`.
 | `PreToolUse` | Write \| Edit | `scripts/hooks/data-edit-guard.mjs` | Grounding donnée (src/data — check-first #148) |
 | `PreToolUse` | Write \| Edit | `scripts/hooks/enterine-guard.mjs` | Tag [entériné] = validation utilisateur |
 | `PreToolUse` | Write \| Edit | `scripts/hooks/exception-add-guard.mjs` | Ajout d'exception de garde = autorisation utilisateur |
+| `PreToolUse` | Write \| Edit \| mcp__lean-ctx__ctx_patch | `scripts/hooks/memoire-tombale-guard.mjs` | Fiche mémoire : réécrire au présent, jamais une pierre tombale |
 | `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/git-destructive-guard.mjs` | Garde git destructif (arbre partagé) |
 | `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/solde-ticket-guard.mjs` | Fermeture de ticket au commit = solde écrit obligatoire |
 | `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/issue-label-guard.mjs` | Ticket sans label refusé (index du backlog) |
 | `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/runner-fast-reminder.mjs` | Rappel typecheck:fast (tsc nu ~42 s) |
+| `PreToolUse` | Bash \| PowerShell \| mcp__lean-ctx__ctx_shell | `scripts/hooks/runner-capture-guard.mjs` | Runner sans capture : sortie complète en fichier |
 | `PreToolUse` | Agent | `scripts/hooks/agent-dispatch-design-reminder.mjs` | Rappel altitude de design (dispatch d'agent) |
 | `PostToolUse` | Write \| Edit | `scripts/hooks/poison-postcheck.mjs` | Garde anti-poison au stylo (tombstone/excuse/label) |
 | `PostToolUse` | Agent | `scripts/hooks/agent-return-judge-reminder.mjs` | Rappel juge adversarial (retour d'agent) |
