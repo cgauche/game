@@ -66,6 +66,8 @@
  * base↔ombre) à la place de part claire, `p10SurBase` (« ancrage » bas) à la place de `p90SurBase`.
  */
 import { decodePng, type PlancheRGBA } from './lib/pngDecode.mjs';
+// @ts-expect-error - lib de garde ESM JS (pas de types)
+import { enteteArbre } from '../guards/lib/enteteArbre.mjs';
 import { Resvg } from '@resvg/resvg-js';
 import { resolveRig, type ResolvedBone } from '../../src/gameIso/rig/composeRig';
 import { toSvg } from '../../src/gameIso/rig/kinematics';
@@ -151,6 +153,10 @@ if (!allMode && !creatureArg && !TENUE_BY_ID[tenueArg]) {
   const near = SPECIFIC_TENUES.filter((t) => t.id.includes(asId.slice(0, 5)) || asId.includes(t.id.slice(0, 5))).slice(0, 6);
   die(`tenue inconnue: ${tenueArg}` + (near.length ? `\nproches: ${near.map((t) => `${t.id} (${t.label})`).join(', ')}` : `\n${SPECIFIC_TENUES.length} tenues disponibles.`));
 }
+
+// FILIGRANE : un chiffre de volume ne veut rien dire sans l'arbre qui l'a produit. Rendu sur STDERR
+// — en `--json` stdout est un flux machine, un préfixe de prose y casserait le lecteur.
+console.error(`FILIGRANE — ${enteteArbre(process.cwd())}`);
 
 /** Liste des tenues à mesurer — 1 en mode mono, N en `--all` (bornée par `--ids`). */
 let tenueIds: string[];

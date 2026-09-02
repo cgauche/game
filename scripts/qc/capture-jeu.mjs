@@ -20,6 +20,7 @@
  */
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { openApp, evaluate, waitFor, consoleGuard, withReloadRetry, sleep, clickButtonByText, DEFAULT_URL } from '../recette/lib.mjs';
+import { enteteArbre } from '../guards/lib/enteteArbre.mjs';
 
 const OUT_DIR = 'public/qc/jeu';
 const SHEET = 'public/qc/jeu.html';
@@ -205,6 +206,8 @@ async function main() {
   if (erreur) { console.error(`capture-jeu : ${erreur}\n\n${USAGE}`); process.exit(2); }
   if (options.aide) { console.log(USAGE); process.exit(0); }
 
+  // Les planches se comparent d'une session à l'autre : elles disent SUR QUEL ARBRE elles sont prises.
+  console.log(`FILIGRANE — ${enteteArbre(process.cwd())}`);
   mkdirSync(options.out, { recursive: true });
   const session = await openApp(options.url, { width: options.largeur, height: options.hauteur });
   const guard = consoleGuard(session);

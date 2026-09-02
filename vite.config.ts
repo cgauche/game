@@ -71,10 +71,15 @@ export default defineConfig({
     // WORKER au lieu d'une fois par fichier de test → effondre la phase `collect` (l'essentiel du temps
     // de suite). Contrepartie : le graphe étant partagé, un mock de MODULE ne se lie plus de façon
     // déterministe (l'ordre des fichiers du worker décide) — interdit et gardé par
-    // `src/vi-mock-isolate-guard.test.ts`, qui déclare aussi ce que la garde ne couvre pas (`spyOn`).
+    // `src/vi-mock-isolate-guard.test.ts`.
     // Chaque test reposant sur le store établit son propre état (startScene/startCombat) + reset
     // global (cf. src/test-setup.ts).
     isolate: false,
+    // Second effet du graphe PARTAGÉ : un `vi.spyOn` sur un namespace de module (ou sur un prototype
+    // `three`) mute l'instance du worker et fuit vers les fichiers suivants. Fermé PAR CONSTRUCTION
+    // ici plutôt que par une règle textuelle : chaque espion est rendu après SON test, les 144
+    // occurrences de `spyOn` des 48 fichiers du périmètre comprises (mesure 2026-09-02).
+    restoreMocks: true,
     // Paramètre de BANC calé sur le test volumique le plus lourd mesuré en CI (#1619) — le contrat des tests ne change pas.
     testTimeout: 15_000,
     // Filet d'isolation GLOBAL : restaure les vrais timers après chaque test (cf. src/test-setup.ts) —

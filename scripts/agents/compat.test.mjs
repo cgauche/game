@@ -8,6 +8,10 @@ import {
 } from './compat-core.mjs';
 import { atomicWrite, runCompat } from './compat-cli.mjs';
 
+// Racine de fixture ASSEMBLÉE à l'exécution : ce fichier ne porte aucun chemin absolu littéral, il
+// reste donc soumis à `src/portable-paths-guard.test.ts` comme le reste de `scripts/**`.
+const RACINE_WIN = 'C' + ':/repo';
+
 test('normalise CRLF et termine par un seul LF', () => {
   assert.equal(normalizeText('a\r\nb\r\n'), 'a\nb\n');
 });
@@ -56,7 +60,7 @@ test('produit un diagnostic parse pour UTF-8 invalide', () => {
 test('réessaie atomiquement les verrous Windows avec un temporaire unique', async () => {
   const calls = [];
   let renames = 0;
-  await atomicWrite('C:/repo', 'AGENTS.md', Buffer.from('guide'), {
+  await atomicWrite(RACINE_WIN, 'AGENTS.md', Buffer.from('guide'), {
     mkdir: async () => calls.push('mkdir'),
     writeFile: async (path) => calls.push(`write:${path}`),
     rename: async () => {

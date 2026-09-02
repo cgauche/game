@@ -30,10 +30,12 @@ export function estFichierScanne(cheminRelatifOuAbsolu) {
 }
 
 /**
- * @typedef {{ text: string, line: number }} Comment
+ * @typedef {{ text: string, line: number, start: number, end: number }} Comment
  * Commentaire extrait, délimiteurs inclus. Les lignes `//` consécutives sur des lignes sources
  * adjacentes sont FUSIONNÉES en un seul commentaire logique (un tag porté sur la ligne suivante
  * neutralise l'excuse de la ligne précédente, comme le lirait un humain).
+ * `start`/`end` sont les OFFSETS dans la source d'origine (`[start, end)`, groupe fusionné compris) :
+ * ils donnent son inverse à l'extraction — `codeSeul` blanchit ces spans pour rendre le CODE seul.
  */
 
 /**
@@ -53,6 +55,49 @@ function blankContinuations(text) {
     if (m && m[0]) lignes[i] = ' '.repeat(m[0].length) + lignes[i].slice(m[0].length);
   }
   return lignes.join('\n');
+}
+
+// Un `/` ouvre un littéral de regex quand ce qui le précède attend une VALEUR (opérateur, ouvrante,
+// mot-clé) ; après un identifiant, un nombre ou une fermante, c'est une division. Liste STRICTE :
+// hors d'elle, on retombe sur le balayage ordinaire, jamais sur un saut à l'aveugle.
+const AVANT_VALEUR = /[=(,:[!&|?{};+\-*%~^<>]$/;
+const MOTS_AVANT_VALEUR = /\b(return|typeof|instanceof|in|of|new|delete|void|case|do|else|yield|await)$/;
+
+/** @param {string} src @param {number} i @returns {boolean} */
+function estDebutRegex(src, i) {
+  // `/>` FERME une balise JSX auto-fermante (`<F attr={x} />`) : le `}` qui la précède attend
+  // pourtant une valeur, et sans cette sortie le balayage sauterait la fin de la ligne,
+  // commentaire compris (site réel : src/ui/PlaqueRow.test.tsx). Un littéral `/>/`, lui, se balaie
+  // caractère à caractère comme du code ordinaire : sans guillemet, il n'a rien à désynchroniser.
+  if (src[i + 1] === '>') return false;
+  let j = i - 1;
+  while (j >= 0 && (src[j] === ' ' || src[j] === '\t' || src[j] === '\n' || src[j] === '\r')) j--;
+  if (j < 0) return true;
+  // `++` / `--` DOUBLÉS : post-incrément suivi d'une DIVISION (`a++ / 2`), jamais une regex. Le
+  // simple `+`/`-` reste, lui, un opérateur qui attend une valeur.
+  if ((src[j] === '+' || src[j] === '-') && src[j - 1] === src[j]) return false;
+  const avant = src.slice(Math.max(0, j - 11), j + 1);
+  return AVANT_VALEUR.test(avant) || MOTS_AVANT_VALEUR.test(avant);
+}
+
+/** Index APRÈS le `/` fermant d'un littéral de regex ouvert en `i`, ou `-1` si la ligne se termine
+ *  avant (donc : pas un littéral de regex — le balayage ordinaire reprend la main).
+ *  @param {string} src @param {number} i @returns {number} */
+function finRegex(src, i) {
+  let j = i + 1;
+  let classe = false;
+  while (j < src.length && src[j] !== '\n') {
+    const c = src[j];
+    if (c === '\\') {
+      j += 2;
+      continue;
+    }
+    if (c === '[') classe = true;
+    else if (c === ']') classe = false;
+    else if (c === '/' && !classe) return j + 1;
+    j++;
+  }
+  return -1;
 }
 
 /**
@@ -79,7 +124,7 @@ export function extractComments(src) {
       const startLine = line;
       let j = i + 2;
       while (j < n && src[j] !== '\n') j++;
-      raw.push({ kind: 'line', text: src.slice(i, j), line: startLine });
+      raw.push({ kind: 'line', text: src.slice(i, j), line: startLine, start: i, end: j });
       i = j;
       continue;
     }
@@ -91,9 +136,20 @@ export function extractComments(src) {
         j++;
       }
       j = Math.min(j + 2, n);
-      raw.push({ kind: 'block', text: src.slice(i, j), line: startLine });
+      raw.push({ kind: 'block', text: src.slice(i, j), line: startLine, start: i, end: j });
       i = j;
       continue;
+    }
+    // Littéral d'EXPRESSION RÉGULIÈRE : ses guillemets ne sont pas des chaînes. Sans ce saut, un
+    // motif comme `("[^"]*"|…)` désynchronise le balayage de chaînes et TOUT le reste du fichier
+    // devient invisible aux gardes (mesuré 2026-09-02 sur `scripts/hooks/solde-ticket-guard.mjs` :
+    // 2 commentaires vus sur 1 902 lignes, tout ce qui suit la ligne 55 muet).
+    if (ch === '/' && estDebutRegex(src, i)) {
+      const fin = finRegex(src, i);
+      if (fin > 0) {
+        i = fin;
+        continue;
+      }
     }
     if (ch === '"' || ch === "'" || ch === '`') {
       const quote = ch;
@@ -124,20 +180,42 @@ export function extractComments(src) {
     if (cur.kind === 'line') {
       let text = cur.text;
       let endLine = cur.line;
+      let end = cur.end;
       let m = k + 1;
       while (m < raw.length && raw[m].kind === 'line' && raw[m].line === endLine + 1) {
         text += '\n' + raw[m].text;
         endLine = raw[m].line;
+        end = raw[m].end;
         m++;
       }
-      merged.push({ text: blankContinuations(text), line: cur.line });
+      merged.push({ text: blankContinuations(text), line: cur.line, start: cur.start, end });
       k = m;
     } else {
-      merged.push({ text: blankContinuations(cur.text), line: cur.line });
+      merged.push({ text: blankContinuations(cur.text), line: cur.line, start: cur.start, end: cur.end });
       k++;
     }
   }
   return merged;
+}
+
+/**
+ * INVERSE d'`extractComments` : la source privée de ses commentaires, le CODE seul. Chaque span de
+ * commentaire est BLANCHI (caractères remplacés par des espaces, `\n` conservés) — la longueur et la
+ * numérotation des lignes sont donc identiques à la source, un `fichier:ligne` calculé sur le rendu
+ * vaut pour l'original. SOCLE des gardes qui traquent une forme dans le CODE et pas dans la prose
+ * (`src/portable-paths-guard.test.ts` : une graphie de chemin CITÉE en JSDoc documente, elle ne casse
+ * aucune machine ; le même littéral dans une expression, si).
+ * @param {string} src @returns {string}
+ */
+export function codeSeul(src) {
+  let out = '';
+  let pos = 0;
+  // `extractComments` rend ses spans dans l'ordre de la source et sans recouvrement.
+  for (const c of extractComments(src)) {
+    out += src.slice(pos, c.start) + src.slice(c.start, c.end).replace(/[^\n]/g, ' ');
+    pos = c.end;
+  }
+  return out + src.slice(pos);
 }
 
 /** Ligne absolue (1-based) d'un index de match DANS `comment.text`.
@@ -360,6 +438,12 @@ const REPORT_AILLEURS = 'à ' + VERBES_REPARATION + ' (séparément|ailleurs|plu
 // planté en chaîne dans `src/comment-poison-guard.test.ts` (#828).
 const RESTE_A_REPARER = '(reste|restent|restait|restaient) à ' + VERBES_REPARATION;
 const ALIBI_PERIMETRE = '(était|étaient) hors périmètre|hors périmètre le jour d';
+// Dette laissée à la locution d'ATTENTE devant le mot « arbitrage » : le commentaire renvoie la
+// décision à personne et à aucune date — c'est une excuse au sens de 6b. Motif STRICT : le simple
+// pointeur « arbitrage #N », qui NOMME le ticket où la question vit, reste hors motif (17 sites
+// légitimes mesurés le 2026-09-02). Comme les familles ci-dessus, la forme LITTÉRALE n'est pas
+// écrite ici (elle mordrait sur ce commentaire même) : elle est plantée dans le test (#828).
+const ATTENTE_ARBITRAGE = 'en attente d' + APOS + '\\s*(un )?arbitrage';
 export const EXCUSE_RX = new RegExp(
   "(assume|épargn[ée]\\w*(?!\\w)(?!\\s+(par|pour)\\s)|pour l'instant|" +
     REPORT_AILLEURS +
@@ -367,6 +451,8 @@ export const EXCUSE_RX = new RegExp(
     RESTE_A_REPARER +
     '|' +
     ALIBI_PERIMETRE +
+    '|' +
+    ATTENTE_ARBITRAGE +
     '|pas encore (?!' +
     GAME_STATE_PARTICIPLE +
     ')|(?<!\\b(accordée?s?|prime|insensible)\\s)temporairement(?!\\s+(insensible|accordé|accordée|accordées|prime)))',

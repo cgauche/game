@@ -210,7 +210,8 @@ function candidates(tok) {
 }
 
 /** Le jeton tolère les espaces (noms de plans à espaces) ; il est borné par les délimiteurs de
- *  citation. `(?<![\w./-])` évite de mordre dans une mention historique explicite (`ex-docs/plans/…`). */
+ *  citation. `(?<![\w./-])` exige un délimiteur devant `docs/plans/` : un jeton collé par un mot, un
+ *  point ou un tiret est une mention EN PROSE, pas une référence à vérifier. */
 const REF_RE = /(?<![\w./-])docs\/plans\/[^\n"'`)\],;<>|]*/g
 /** Métavariables (patron de nommage, élision) : un chemin non instancié ne se vérifie pas. */
 const META = /[…<>{}]|AAAA|MM-JJ/

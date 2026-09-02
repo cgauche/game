@@ -1308,9 +1308,9 @@ export function readRefFile(n, scriptUrl = import.meta.url) {
 // AUTRE dépôt (worktree) avant `git commit` doit faire lire ses états git (manifest stagé, diff
 // staged) DANS CE RÉPERTOIRE, pas celui de la session — sinon un manifest propre dans le worktree
 // est jugé contre l'arbre principal encore sale (démontré empiriquement, #587). Le solde est une
-// lecture d'état GIT depuis qu'il doit être STAGÉ : il se lit dans l'index de `targetDir`. Sa lecture
-// DISQUE (côté session, là où les soldes s'écrivent) ne sert plus qu'à nommer le défaut « écrit mais
-// non stagé ».
+// lecture d'état GIT — le solde doit être STAGÉ : il se lit dans l'index de `targetDir`. Sa lecture
+// DISQUE (côté session, là où les soldes s'écrivent) sert à nommer le défaut « écrit mais non
+// stagé ».
 // La cible se lit sur les segments PROFONDS : un `cd` ou un `git -C` posé dans un sous-shell
 // (`sh -c "cd wt && git commit …"`) désigne le même répertoire réel qu'en surface.
 

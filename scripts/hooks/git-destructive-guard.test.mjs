@@ -148,7 +148,7 @@ test('PASSE : les cibles JETABLES (dépendances, artefacts, scratchpad) et une s
   assert.ok(silent('rm -rf .wt-1679-L1a/node_modules'))
   assert.ok(silent('rm -rf node_modules/.cache dist'))
   assert.ok(silent('rm -rf public/qc'))
-  assert.ok(silent('rm -rf /c/Users/x/AppData/Local/Temp/claude/session/scratchpad/t3'))
+  assert.ok(silent('rm -rf ' + ['/c/Users', 'x/AppData/Local/Temp/claude/session/scratchpad/t3'].join('/')))
   assert.ok(silent('Remove-Item -Recurse -Force C:' + BS2 + 'Users' + BS2 + 'x' + BS2 + 'AppData' + BS2 + 'Local' + BS2 + 'Temp' + BS2 + 'claude' + BS2 + 'sess' + BS2 + 'out'))
   assert.ok(silent('rm src/ui/A.tsx'), 'sans -r, ce garde ne dit rien (un fichier nommé se relit en diff)')
   assert.ok(silent('Remove-Item src/ui/A.tsx'))

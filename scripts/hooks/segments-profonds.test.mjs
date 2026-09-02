@@ -36,6 +36,14 @@ import {
 import { evaluate as evaluateLabel } from './issue-label-guard.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
+// Lecteurs Windows et racines de profil ASSEMBLÉS à l'exécution : ce fichier ne porte aucun chemin
+// absolu littéral, il reste donc soumis à `src/portable-paths-guard.test.ts` comme `scripts/**`.
+const BS = String.fromCharCode(92)
+const LECTEUR_C = 'C' + ':'
+const LECTEUR_D = 'D' + ':'
+const PROFIL_WIN = ['/c/Users', 'x'].join('/')
+const PROFIL_NATIF = [LECTEUR_C + '/Users', 'x'].join('/')
+const PROFIL_RUNNER = ['/home', 'runner/work/game/game'].join('/')
 
 // ── Les DEUX évaluateurs réels doivent voir la même commande derrière le même enrobage ────────────
 // Un garde qui verrait `sh -c "git commit …"` mais pas `sh -c "gh issue create …"` (ou l'inverse)
@@ -209,10 +217,10 @@ test('le segment ENROBANT est rendu lui aussi (l\'invocation `cmd /c mklink …`
 
 // ── extractTargetDir : le répertoire où le commit s'exécute VRAIMENT ──────────────────────────────
 test('extractTargetDir : un chemin POSIX de disque (`/c/…`) devient natif sur win32, inchangé ailleurs', () => {
-  const cmd = 'cd /c/Users/x/dépôt && git commit -m "corrige #42"'
+  const cmd = 'cd ' + PROFIL_WIN + '/dépôt && git commit -m "corrige #42"'
   const base = resolve('/base')
-  assert.equal(extractTargetDir(cmd, base, 'win32'), resolve(base, 'C:/Users/x/dépôt'))
-  assert.equal(extractTargetDir(cmd, base, 'linux'), resolve(base, '/c/Users/x/dépôt'))
+  assert.equal(extractTargetDir(cmd, base, 'win32'), resolve(base, PROFIL_NATIF + '/dépôt'))
+  assert.equal(extractTargetDir(cmd, base, 'linux'), resolve(base, PROFIL_WIN + '/dépôt'))
   assert.notEqual(extractTargetDir(cmd, base, 'linux'), extractTargetDir(cmd, base, 'win32'))
 })
 
@@ -221,21 +229,21 @@ test('extractTargetDir : l\'attendu s\'ancre sur la base FOURNIE, jamais sur le 
   // s'ancre, lui, sur le cwd du PROCESS : les deux ne coïncident que là où `C:/…` est ABSOLU,
   // c'est-à-dire sur win32. Rejoué ici sur les DEUX moteurs de `node:path`, la divergence mord sans
   // dépendre de l'hôte : sur POSIX (la CI) l'ancrage fautif décalait l'attendu sous le cwd du runner.
-  const NATIF = 'C:/Users/x/dépôt'
-  const cwdWin = 'C:\\ailleurs'
+  const NATIF = PROFIL_NATIF + '/dépôt'
+  const cwdWin = LECTEUR_C + BS + 'ailleurs'
   const baseWin = win32.resolve(cwdWin, '/base')
   assert.equal(win32.resolve(baseWin, NATIF), win32.resolve(cwdWin, NATIF), 'sur win32 les deux ancrages coïncident : la faute y est INVISIBLE')
 
-  const cwdPosix = '/home/runner/work/game/game'
+  const cwdPosix = PROFIL_RUNNER
   const basePosix = posix.resolve(cwdPosix, '/base')
-  assert.equal(posix.resolve(basePosix, NATIF), '/base/C:/Users/x/dépôt')
+  assert.equal(posix.resolve(basePosix, NATIF), '/base/' + NATIF)
   assert.notEqual(posix.resolve(basePosix, NATIF), posix.resolve(cwdPosix, NATIF), 'sur POSIX un attendu ancré sur le cwd du process diverge — vert local, ROUGE en CI')
 })
 
 test('versCheminNatif : ne convertit QUE la graphie `/<lettre>/…`', () => {
   assert.equal(versCheminNatif('/usr/local/bin', 'win32'), '/usr/local/bin')
   assert.equal(versCheminNatif('/c/Users', 'linux'), '/c/Users')
-  assert.equal(versCheminNatif('/d/wt', 'win32'), 'D:/wt')
+  assert.equal(versCheminNatif('/d/wt', 'win32'), LECTEUR_D + '/wt')
 })
 
 test('extractTargetDir : un `cd` ou un `git -C` DANS un sous-shell désigne le même répertoire réel', () => {

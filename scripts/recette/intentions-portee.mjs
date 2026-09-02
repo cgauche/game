@@ -20,15 +20,11 @@
 //   4. Échap annule ; re-clic de la case annule ;
 //   5. un clic-ennemi SANS intention reste une attaque normale (non-régression).
 // Sortie : exit 1 au premier défaut (liste complète imprimée), exit 0 si tout passe.
-import { execFileSync } from 'node:child_process';
 import { openApp, evaluate, sleep, shot, clickButtonByText, consoleGuard, frapperTouche, cliquerAction } from './lib.mjs';
+import { enteteArbre } from '../guards/lib/enteteArbre.mjs';
 
 /** FILIGRANE : l'arbre RÉELLEMENT joué (une recette sans son arbre ne prouve rien). */
-function filigrane() {
-  const git = (...a) => execFileSync('git', a, { encoding: 'utf8' }).trim();
-  const sales = git('status', '--short').split(/\r?\n/).filter(Boolean).length;
-  return `arbre ${git('rev-parse', '--short', 'HEAD')} « ${git('log', '-1', '--format=%s').slice(0, 70)} » + ${sales} fichier(s) non committé(s)`;
-}
+const filigrane = () => enteteArbre(process.cwd());
 
 const CASCADE_LABELS = ['Tout lancer', 'Commencer', 'Lancer', 'Continuer', 'Appliquer', 'Poursuivre', 'Suivant', 'Valider', 'Terminer', 'Fermer'];
 

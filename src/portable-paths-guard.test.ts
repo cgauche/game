@@ -2,55 +2,78 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// @ts-expect-error - lib de garde ESM JS (pas de types)
+import { codeSeul } from '../scripts/guards/lib/commentPoison.mjs';
 
 /**
  * Garde-fou chemins PORTABLES — un chemin absolu de machine de dev (lecteur Windows, racine de
- * profil POSIX) écrit en dur dans une source `src/**` est mort partout ailleurs que sur la machine
- * qui l'a écrit : sur la CI (ubuntu-latest) il rend ENOENT. La résolution se fait relativement au
- * module : `fileURLToPath(new URL('./styles/x.css', import.meta.url))` en environnement `node`
+ * profil POSIX) écrit en dur dans une source est mort partout ailleurs que sur la machine qui l'a
+ * écrit : sur la CI (ubuntu-latest) il rend ENOENT. La résolution se fait relativement au module :
+ * `fileURLToPath(new URL('./styles/x.css', import.meta.url))` en environnement `node`
  * (patron de `src/ui/atelier-conformance.test.ts`) ; en environnement `jsdom`, `new URL(rel, base)`
  * est détourné vers la base du document, la résolution y passe donc par
  * `join(dirname(fileURLToPath(import.meta.url)), '..', 'styles', 'x.css')`.
+ *
+ * PÉRIMÈTRE : `src/**` (`.ts`/`.tsx`) ET `scripts/**` (`.mjs`/`.mts`) — l'outillage tourne sur la CI
+ * et dans les worktrees d'agents, un chemin de machine y meurt exactement pareil.
+ *
+ * CODE SEUL (`codeSeul`, `scripts/guards/lib/commentPoison.mjs`) : la garde juge ce qui S'EXÉCUTE.
+ * Une graphie de chemin CITÉE dans une JSDoc documente le comportement de la fonction (deux sites :
+ * `scripts/hooks/new-src-file-guard.mjs`, `scripts/hooks/solde-ticket-guard.mjs`) et ne casse aucune
+ * machine ; le même littéral dans une expression, si. Le blanchiment conserve la numérotation des
+ * lignes, donc les `fichier:ligne` du rapport valent pour la source d'origine.
  *
  * Détection STRUCTURELLE (aucune liste d'exception par fichier) :
  *   - lettre de lecteur Windows suivie d'un séparateur, non précédée d'une autre lettre — ce qui
  *     écarte les schémas d'URL (`http://`, `file://`) sans avoir à les nommer ;
  *   - racine de profil POSIX (`home`/`Users` + nom d'utilisateur).
  * Les cas plantés ci-dessous sont ASSEMBLÉS à l'exécution : ce fichier ne porte lui-même aucun
- * littéral de chemin absolu, il est donc soumis à sa propre garde comme le reste de `src/**`.
+ * littéral de chemin absolu, il est donc soumis à sa propre garde comme le reste du périmètre.
  */
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)); // racine du projet (src/ → ..)
-const SRC_DIR = join(ROOT, 'src');
 
-const WIN_DRIVE = /(?<![A-Za-z])[A-Za-z]:[\\/]+[A-Za-z0-9._-]/;
+/** Racines scannées : dossier + extensions retenues. */
+const SCAN_ROOTS: { dir: string; re: RegExp }[] = [
+  { dir: join(ROOT, 'src'), re: /\.(ts|tsx)$/ },
+  { dir: join(ROOT, 'scripts'), re: /\.(mjs|mts)$/ },
+];
+
+const WIN_DRIVE = /(?<![A-Za-z])[A-Za-z]:[\\/]+[A-Za-z0-9._-]/g;
 const POSIX_HOME = /\/(?:home|Users)\/[A-Za-z0-9._-]+\//;
+/** Racines d'INSTALLATION de la plateforme : identiques sur toute machine Windows, elles ne nomment
+ *  aucune machine (`C:\Program Files\Git\git.exe` vaut sur n'importe quel poste). SYMÉTRIQUE du côté
+ *  POSIX, qui ne mord déjà que les racines de PROFIL (`/home/x/`), jamais `/usr/local/bin`. */
+const WIN_SYSTEME = /^[A-Za-z]:[\\/]+(?:Program Files(?: \(x86\))?|Windows|ProgramData)[\\/]/;
 
 /** RETOURNE le motif de chemin absolu machine trouvé dans une ligne de source, ou `null`. */
 export function absoluteMachinePathIn(line: string): string | null {
-  const win = WIN_DRIVE.exec(line);
-  if (win) return win[0];
+  for (const win of line.matchAll(WIN_DRIVE)) {
+    if (win.index !== undefined && WIN_SYSTEME.test(line.slice(win.index))) continue;
+    return win[0];
+  }
   const posix = POSIX_HOME.exec(line);
   if (posix) return posix[0];
   return null;
 }
 
-function scanSrcFiles(): string[] {
+function scanFiles(): string[] {
   const files: string[] = [];
-  const walk = (dir: string) => {
+  const walk = (dir: string, re: RegExp) => {
     for (const e of readdirSync(dir)) {
+      if (e === 'node_modules') continue;
       const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.(ts|tsx)$/.test(e)) files.push(p);
+      if (statSync(p).isDirectory()) walk(p, re);
+      else if (re.test(e)) files.push(p);
     }
   };
-  walk(SRC_DIR);
+  for (const r of SCAN_ROOTS) walk(r.dir, r.re);
   return files;
 }
 
 const DRIVE = 'C' + ':';
 
-describe('garde-fou chemins portables — aucun chemin absolu de machine dans src/**', () => {
+describe('garde-fou chemins portables — aucun chemin absolu de machine dans le CODE', () => {
   it('cas planté : un chemin de lecteur Windows est détecté (preuve TDD)', () => {
     const p = DRIVE + '/Users/' + 'dev' + '/projet/src/ui/styles/x.css';
     expect(absoluteMachinePathIn("readFileSync('" + p + "', 'utf8')")).not.toBeNull();
@@ -71,11 +94,35 @@ describe('garde-fou chemins portables — aucun chemin absolu de machine dans sr
     expect(absoluteMachinePathIn("const img = 'data:image/svg+xml;base64,AA';")).toBeNull();
   });
 
-  it('aucune source de src/** ne porte de chemin absolu de machine (tolérance ZÉRO)', () => {
+  it('faux positif écarté : une racine d’INSTALLATION de la plateforme ne nomme aucune machine', () => {
+    const PF = DRIVE + '\\Program Files';
+    expect(absoluteMachinePathIn("'" + PF + "\\Git\\git.exe'")).toBeNull();
+    expect(absoluteMachinePathIn("'" + DRIVE + "\\Program Files (x86)\\Google\\Chrome\\chrome.exe'")).toBeNull();
+    expect(absoluteMachinePathIn("'/usr/local/bin/node'")).toBeNull();
+    // …mais un profil de machine posé sur la MÊME ligne reste vu.
+    expect(absoluteMachinePathIn("[" + PF + "\\Git, " + DRIVE + "\\Users\\moi\\jeu]")).not.toBeNull();
+  });
+
+  it('cas planté : le motif reste vu dans le CODE quand un commentaire le suit sur la MÊME ligne', () => {
+    const source = "const p = '" + DRIVE + "/x';" + ' // note';
+    const lignes = (codeSeul(source) as string).split(/\r?\n/);
+    expect(absoluteMachinePathIn(lignes[0])).not.toBeNull();
+  });
+
+  it('cas planté : le MÊME motif écrit en commentaire est hors de portée (prose, pas machine)', () => {
+    const bloc = ['// ' + DRIVE + '/x/projet', '/* ' + DRIVE + '/y/projet */'].join('\n');
+    const rendu = codeSeul(bloc) as string;
+    expect(absoluteMachinePathIn(rendu)).toBeNull();
+    // La numérotation des lignes survit au blanchiment : un rapport `fichier:ligne` reste juste.
+    expect(rendu.split('\n')).toHaveLength(2);
+    expect(rendu).toHaveLength(bloc.length);
+  });
+
+  it('aucune source du périmètre ne porte de chemin absolu de machine (tolérance ZÉRO)', () => {
     const offenders: string[] = [];
-    for (const f of scanSrcFiles()) {
+    for (const f of scanFiles()) {
       const rel = relative(ROOT, f).split('\\').join('/');
-      const lines = readFileSync(f, 'utf8').split(/\r?\n/);
+      const lines = (codeSeul(readFileSync(f, 'utf8')) as string).split(/\r?\n/);
       lines.forEach((line, i) => {
         const hit = absoluteMachinePathIn(line);
         if (hit) offenders.push(`${rel}:${i + 1} → ${hit}`);

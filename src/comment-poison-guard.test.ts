@@ -128,6 +128,38 @@ describe('garde-fou commentaires — en-tête structuré (#1475)', () => {
 // Familles de regex + `tombstonesIn` : `scripts/guards/lib/commentPoison.mjs` (mécanique partagée).
 // ---------------------------------------------------------------------------------------------
 
+describe('balayage — un `/` de CODE ne fait jamais disparaître le commentaire qui suit', () => {
+  // Le balayage doit distinguer le littéral de REGEX (dont les guillemets ne sont pas des chaînes)
+  // de la division et de la fermeture JSX. Rater la distinction rend MUET tout ce qui suit dans le
+  // fichier — mesuré sur `scripts/hooks/solde-ticket-guard.mjs` : 2 commentaires vus sur 1 902 lignes.
+  const TEMOIN = 'TEMOIN' + '_DE_QUEUE';
+  const vu = (code: string) => extractComments(code).some((c) => c.text.includes(TEMOIN));
+
+  it('DIVISION et post-incrément : le commentaire de queue reste vu', () => {
+    expect(vu('const q = a / b; // ' + TEMOIN)).toBe(true);
+    expect(vu('const v = (a + b) / 2; // ' + TEMOIN)).toBe(true);
+    expect(vu('const q = a++ / 2; // ' + TEMOIN)).toBe(true);
+    expect(vu('const q = a-- / 2; // ' + TEMOIN)).toBe(true);
+  });
+
+  it('JSX auto-fermant : `/>` n’ouvre pas de regex, même précédé d’une accolade fermante', () => {
+    expect(vu('const el = <F attr={x} />; // ' + TEMOIN)).toBe(true);
+    expect(vu('const el = <F />; // ' + TEMOIN)).toBe(true);
+  });
+
+  it('REGEX : ses guillemets ne sont pas des chaînes, et la suite du fichier reste lisible', () => {
+    expect(vu('const re = /("[^"]*")/; // ' + TEMOIN)).toBe(true);
+    expect(vu('return /x/.test(s); // ' + TEMOIN)).toBe(true);
+    expect(vu('const x = c ? /a/ : /b/; // ' + TEMOIN)).toBe(true);
+    expect(vu('const re = /[/]/; // ' + TEMOIN)).toBe(true);
+  });
+
+  it('CHAÎNE et gabarit : un `/` entre guillemets n’ouvre rien', () => {
+    expect(vu('const s = "a/b"; // ' + TEMOIN)).toBe(true);
+    expect(vu('const t = `a/${b}/c`; // ' + TEMOIN)).toBe(true);
+  });
+});
+
 describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c)', () => {
   it('cas planté : un rappel d\'ancien emplacement est détecté (preuve TDD)', () => {
     const planted = "// Cette logique vit ici anciennement dans un autre module.";
@@ -355,6 +387,19 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
     // au PASSÉ portant un complément de SOURCE est une prose DESCRIPTIVE, pas une dette laissée — elle
     // MORD quand même. 0 occurrence dans le corpus le 2026-08-30 : motif tenu STRICT tant que c'est 0.
     expect(untaggedExcuseMatch("// ce champ était hors périmètre de l'extraction FR.")).not.toBeNull();
+  });
+
+  it('dette laissée EN ATTENTE D’ARBITRAGE = excuse ; le POINTEUR vers le ticket reste admis', () => {
+    // Verbatim du site réel `src/state/combatFlow.ts` (reformulé dans le même geste) : la divergence
+    // y était renvoyée à une décision que personne ne portait et qu'aucune date n'échéançait.
+    expect(untaggedExcuseMatch('// divergence MESURÉE, en attente d\'arbitrage (#1265).')).not.toBeNull();
+    expect(untaggedExcuseMatch('// en attente d’un arbitrage utilisateur')).not.toBeNull();
+    // Contrôle négatif : NOMMER le ticket où la question vit n'est pas une excuse — c'est un renvoi
+    // vérifiable. 17 sites du dépôt portent cette forme (mesure 2026-09-02).
+    expect(untaggedExcuseMatch('// le critère métier du site, arbitrage #1265.')).toBeNull();
+    expect(untaggedExcuseMatch('// arbitrage utilisateur 2026-08-24 : la raison vit au survol.')).toBeNull();
+    // Le report ASSUMÉ par l'utilisateur reste admis, comme tout le volet excuses.
+    expect(untaggedExcuseMatch("// en attente d'arbitrage [entériné 2026-09-02]")).toBeNull();
   });
 
   it('faux positif écarté : une phrase de DONNÉE qui dit « séparément »/« ailleurs » décrit le découpage RÉEL', () => {

@@ -5930,7 +5930,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   // Rangée qui rejoint la cascade influençable : porteur SURFACÉ (#1262 — le héros d'un autre siège en
   // est, c'est SON joueur qui roule) et pas hors d'action. `isOutOfAction` est le critère MÉTIER du
   // site : ici il fait tomber le Test dans la voie RÉSOLUE D'OFFICE (il est jeté), là où la fin de Round
-  // le SAUTE tout court (`openRoundEndCascade`) — divergence MESURÉE, en attente d'arbitrage (#1265).
+  // le SAUTE tout court (`openRoundEndCascade`) — divergence MESURÉE (#1265).
   const manual = (id: string) => { const c = actorIn(get(), id); return !!c && surfaceOf(get, c.id) && !isOutOfAction(c); };
   if (inlineLines.length) get().log(inlineLines);
   for (const band of combatEndBands(monos)) routeBandByPilot(get, set, band, steps, manual);
@@ -7020,7 +7020,8 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
     // SON joueur qui roulera. Prédicat MIROIR des hooks `roundBoundary` (roundHooks) et du dispatcher
     // (`deferInteractiveTest`) : décaler l'un des deux perdrait ou doublerait le Test. `isOutOfAction`
     // reste le critère MÉTIER du site : ici le porteur hors d'action est SAUTÉ, là où la fin de combat
-    // (`openCombatEndCascade`) le fait tomber dans la voie INLINE — divergence préservée (#1265).
+    // (`openCombatEndCascade`) le fait tomber dans la voie INLINE — ÉCART AU RAW suivi par #1265
+    // (Test d'entretien de fin de Round : LDB 16 l.68-78).
     if (!surfaceOf(get, c.id) || isOutOfAction(c)) continue;
     // 1) Upkeep du combattant (effets RNG-free). 2) Peur de fin de Round, regroupée en bandes ci-dessous.
     //    (La sortie de Frénésie est un effet `onTurnStart` en données, jouée au début du tour du héros.)

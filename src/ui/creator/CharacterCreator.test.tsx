@@ -77,10 +77,11 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
   it('#393 P4 — après le tirage, le mur de boutons meurt : le résultat vit dans l\'encrier, PLUS de badge par chip de lignée (l\'éligibilité vit dans l\'encrier + le liseré de la carte de famille)', () => {
     const rolled = rollDraftSpecies(withSpecies(newDraft(7), SP.id));
     const html = renderToStaticMarkup(<SpeciesRaceScreen d={rolled} setD={() => {}} />);
-    // Encrier « résolu » (rendu laiton) — plus de bouton de tirage ni de grille d'options de borne.
+    // Encrier « résolu » (rendu laiton) : le jet et sa borne y vivent seuls, sans bouton de tirage ni
+    // grille d'options de borne à l'écran.
     expect(html).toContain('dicewell done');
     expect(html).toMatch(/Jet : <b>\d+<\/b> — borne \w+/);
-    expect(html).not.toMatch(/\(\+20 PX\)<\/(?:span|button)>\s*<\/button>/); // pas d'ancien libellé de bouton de borne
+    expect(html).not.toMatch(/\(\+20 PX\)<\/(?:span|button)>\s*<\/button>/); // aucun libellé de bouton de borne à l'écran
     // Mort du badge « +20 PX » par chip de lignée (#393 P4) — la borne couvre une famille entière,
     // l'éligibilité vit dans l'encrier rendu (ci-dessus) + le liseré `.rolled`/`.sel` de la carte de
     // famille (surfaces existantes déjà couvertes par les autres assertions de ce fichier).

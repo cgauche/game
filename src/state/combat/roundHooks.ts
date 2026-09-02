@@ -57,6 +57,8 @@ registerCombatHook({
       // fireTriggers réunit toutes les sources, aucun chemin par-kind. Inerte sans donnée. Pas de réaction
       // de fin de Round pour un combattant HORS COMBAT (un cadavre ne brûle/saigne plus — le dispatcher
       // autorise désormais les effets `on:'self'` sur une cible hors-combat, on filtre donc ici).
+      // Le porteur hors d'action est SAUTÉ ici comme dans `openRoundEndCascade` (prédicat MIROIR) —
+      // ÉCART AU RAW suivi par #1265 (Test d'entretien de fin de Round : LDB 16 l.68-78).
       // `deferInteractiveTest` : un Test de RÉCUPÉRATION d'État en DONNÉES (Empoisonné Résistance…) routé
       // pour un porteur SURFACÉ (`surfaceOf` : un siège humain QUELCONQUE le tient, cadence manuelle) n'est
       // PAS poussé ici (la cascade de fin de Round n'est pas encore ouverte) — il est COLLECTÉ par

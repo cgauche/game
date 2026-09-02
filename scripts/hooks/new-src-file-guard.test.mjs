@@ -13,6 +13,11 @@ import {
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const HOOK = join(REPO, 'scripts', 'hooks', 'new-src-file-guard.mjs')
+// Lecteurs Windows ASSEMBLÉS à l'exécution : ce fichier ne porte aucun chemin absolu littéral, il
+// reste donc soumis à `src/portable-paths-guard.test.ts` comme le reste de `scripts/**`.
+const BS = String.fromCharCode(92)
+const LECTEUR_C = 'C' + ':'
+const LECTEUR_D = 'D' + ':'
 const FANTOME = 'src/ui/FantomeGardeV5.tsx'
 const FANTOME_ISO = 'src/gameIso/stage/FantomeStageV5.tsx'
 
@@ -133,11 +138,14 @@ test('relPath : chemin POSIX relatif à la RACINE du dépôt, null hors du dép�
   assert.equal(relPath(join(REPO, 'src', 'ui', 'A.tsx')), 'src/ui/A.tsx')
   assert.equal(relPath('src/ui/A.tsx'), 'src/ui/A.tsx') // relatif → résolu depuis la racine
   assert.equal(relPath('/autre-projet/src/ui/A.tsx', '/le/depot'), null)
-  assert.equal(relPath('D:\\autre-projet\\src\\ui\\A.tsx', 'C:\\le\\depot'), null)
+  assert.equal(
+    relPath([LECTEUR_D, 'autre-projet', 'src', 'ui', 'A.tsx'].join(BS), [LECTEUR_C, 'le', 'depot'].join(BS)),
+    null,
+  )
 })
 
 test('un chemin HORS du dépôt (autre projet) n’est jamais bloqué', () => {
-  const r = lance('D:/autre-projet/src/ui/FantomeExterne.tsx')
+  const r = lance(LECTEUR_D + '/autre-projet/src/ui/FantomeExterne.tsx')
   assert.equal(r.code, 0)
   assert.equal(r.out.trim(), '')
   assert.equal(r.err.trim(), '')

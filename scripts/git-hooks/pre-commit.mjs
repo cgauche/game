@@ -1,5 +1,10 @@
 // Hook pre-commit : la porte AU COMMIT — gardes anti-poison diff-scopées sur les fichiers stagés.
 // Mécanique partagée : scripts/guards/lib/ (source unique avec les tests Vitest et le hook au stylo).
+// CE QUI EST JOUÉ ICI : les scanners de commentaires/code sur le contenu de l'INDEX, `validate-data`,
+// `docs:check` + `check-docs-vs-head` + `check-plans-anchors`, `raw:implemente`, `compile-dessin-quad`,
+// `test:raw`, `test:recette`, `agents:check`, et le LINT des fichiers stagés (≈ 4 s / 20 fichiers).
+// CE QUI N'EST PAS JOUÉ ICI : ni typecheck, ni suite Vitest, ni les scanners de corpus entier — ils
+// coûtent des dizaines de secondes et restent à la CI. La durée totale est imprimée en fin de hook.
 // Contrat : BLOQUE (exit 1) sur pierre tombale et logique-par-label (tolérance zéro, arbre à zéro) ;
 // les excuses sans tag bloquent quand EXCUSE_GUARD_ACTIVE est vrai, sinon elles rejoignent le canal
 // non bloquant. Ce canal (affirmations RAW, revendications d'autorité, hardcode réactif) est trié par
@@ -29,6 +34,9 @@ import { scanBattleRngEngineLeak } from '../guards/lib/battleRngEngineLeak.mjs';
 import { battleRngEngineLeakExcluded } from '../guards/lib/battleRngEngineLeakWhitelist.mjs';
 import { scanNpmLockHoisted } from '../guards/lib/npmLockHoisted.mjs';
 import { scanArbresImbriques } from '../guards/lib/arbreImbrique.mjs';
+import { fichiersALinter, lancerLint } from '../guards/lib/lintStage.mjs';
+
+const DEBUT_MS = Date.now();
 
 // Deux racines DISTINCTES, jamais interchangeables. `core.hooksPath` vaut `scripts/git-hooks` RELATIF
 // (`git config --show-origin --get-all core.hooksPath` → `.git/config`, valeur relative), donc le
@@ -310,6 +318,14 @@ if (recetteInfraStaged) {
   }
 }
 
+// LINT du diff (≈ 4 s / 20 fichiers) : la CI joue `npm run lint` sur le dépôt entier, ce hook le joue
+// sur les seuls stagés EXISTANTS — câblage et raisons dans `scripts/guards/lib/lintStage.mjs`.
+const aLinter = fichiersALinter(staged, ROOT);
+if (aLinter.length) {
+  const { defauts } = lancerLint(ROOT, aLinter);
+  for (const d of defauts) offenders.push(`${d.site} [lint ${d.gravite}] ${d.regle} — ${d.message}`);
+}
+
 try {
   execFileSync('npm', ['run', 'agents:check'], {
     cwd: ROOT,
@@ -328,6 +344,7 @@ const rapport = formatBaselineReport(verdict);
 if (rapport.length) {
   process.stderr.write(`pre-commit — signaux de commentaires (non bloquant) :\n${rapport.map((l) => `  ${l}`).join('\n')}\n`);
 }
+process.stderr.write(`[pre-commit] ${staged.length} fichier(s) stagé(s), ${aLinter.length} linté(s) — ${((Date.now() - DEBUT_MS) / 1000).toFixed(1)} s\n`);
 if (offenders.length) {
   process.stderr.write(`pre-commit REFUSÉ — poison détecté (mêmes gardes que la CI, cf. scripts/guards/lib/) :\n${offenders.map((o) => `  ${o}`).join('\n')}\n`);
   process.exit(1);

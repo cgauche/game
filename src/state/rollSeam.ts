@@ -419,7 +419,7 @@ export function surfaceDesEtapes(get: Get, steps: readonly CascadeStep[]): Surfa
  * (`netOwnership.canFixDie`, au site unique de la pose `ui/forcedDieRow`), jamais le fait de VOIR le jet.
  *
  * `isOutOfAction` n'entre PAS ici : « le sujet peut-il encore jouer » est un critère MÉTIER, tranché
- * au site (les sites divergent aujourd'hui — arbitrage #1265).
+ * au site ; les sites divergent (#1265).
  */
 export function surfaceOf(get: Get, porteurId: string | undefined): boolean {
   if (cadenceAuto()) return false;

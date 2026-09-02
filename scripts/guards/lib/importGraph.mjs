@@ -6,22 +6,29 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-const EXTS = ['.ts', '.tsx', '.mts', '.js'];
+// Extensions de MODULE que le dépôt écrit réellement : les libs de garde et les générateurs vivent en
+// `.mjs` (109 imports relatifs de `src/**` vers `scripts/**` mesurés le 2026-09-02), donc `.mjs`/`.cjs`
+// font partie de ce qu'un spécificateur relatif peut désigner ici.
+const EXTS = ['.ts', '.tsx', '.mts', '.mjs', '.cjs', '.js'];
 
 /** Capture les imports/réexports statiques (`from '…'`) ET dynamiques (`import('…')`, ex. `lazy`).
  *  Spécificateur en m[1] (statique) ou m[2] (dynamique). @type {RegExp} */
 export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 
+/** Extensions qu'un spécificateur peut porter LUI-MÊME (le chemin désigne alors le fichier). */
+const EXTS_EXPLICITES = [...EXTS, '.json'];
+
 /**
- * Résout un spécificateur d'import RELATIF (`./foo`, `../bar`) vers un fichier source réel
- * (`.ts`/`.tsx`/`.mts`/`.js`, avec repli `index.*`). Les paquets npm / alias non-relatifs
- * renvoient `null` (hors périmètre — pas résolus ici).
+ * Résout un spécificateur d'import RELATIF (`./foo`, `../bar`) vers un fichier source réel :
+ * spécificateur portant DÉJÀ son extension (`./x.mjs`, `./data.json` — la forme des 109 imports de
+ * `src/**` vers les libs de garde), sinon extension déduite d'`EXTS`, sinon repli `index.*`. Les
+ * paquets npm / alias non-relatifs renvoient `null` (hors périmètre — pas résolus ici).
  * @param {string} fromFile @param {string} spec @returns {string|null}
  */
 export function resolveImport(fromFile, spec) {
   if (!spec.startsWith('.')) return null;
   const base = resolve(dirname(fromFile), spec);
-  if (spec.endsWith('.json')) return existsSync(base) ? base.split('\\').join('/') : null;
+  if (EXTS_EXPLICITES.some((e) => spec.endsWith(e))) return existsSync(base) ? base.split('\\').join('/') : null;
   for (const ext of EXTS) if (existsSync(base + ext)) return (base + ext).split('\\').join('/');
   if (existsSync(base) && existsSync(join(base, 'index.ts'))) return join(base, 'index.ts').split('\\').join('/');
   for (const ext of EXTS) if (existsSync(join(base, 'index' + ext))) return join(base, 'index' + ext).split('\\').join('/');

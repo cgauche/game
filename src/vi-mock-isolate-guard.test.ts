@@ -12,15 +12,10 @@ import { fileURLToPath } from 'node:url';
  * Un besoin de tenue/donnée fabriquée s'enregistre dans le REGISTRE lu à l'appel (patron
  * `withTenue` de `src/gameIso/rig/parts/resolve-membre.test.ts`), jamais par mock de module.
  *
- * PÉRIMÈTRE MESURÉ (2026-07-28, 1102 fichiers de test scannés = `test.include` de vite.config.ts) :
- *   - mock de module : 0 occurrence → la garde échoue au premier retour.
- *   - espion (`spyOn`) : 33 occurrences dans 10 fichiers → HORS garde.
- * ANGLE MORT ASSUMÉ — `spyOn` n'est PAS couvert. Deux familles s'y cachent, de risque inégal :
- * l'espion de `console` (inoffensif, restauré par le test qui le pose) et l'espion sur un NAMESPACE
- * DE MODULE (`IsoStage.test.tsx`, `harpoon-rope-cut.test.ts`, `ship-maneuver.test.ts`), qui mute
- * l'instance partagée du worker et fuit vers les fichiers suivants tant qu'aucune restauration
- * globale n'existe (`src/test-setup.ts` restaure les timers et les singletons, pas les espions).
- * Cette seconde famille reste à trancher ; la garde ne la mesure pas, elle ne la couvre donc pas.
+ * PÉRIMÈTRE : le mock de MODULE, et lui seul. L'autre famille du graphe partagé — l'espion posé sur
+ * un namespace de module ou sur un prototype `three` — est fermée PAR CONSTRUCTION par
+ * `test.restoreMocks: true` (vite.config.ts) : chaque espion est rendu après SON test, aucun ne fuit
+ * vers les fichiers suivants du worker. La garde ne mesure donc que ce qu'elle couvre.
  * Les motifs traqués sont composés à l'exécution (jamais écrits en clair) : la garde est soumise à
  * la règle qu'elle fait respecter (#828) et ne se détecte pas elle-même.
  */
@@ -68,6 +63,13 @@ const ISOLATE_FALSE = /isolate\s*:\s*false/.test(VITE_CONFIG);
 describe('garde-fou — mock de module interdit tant que la suite partage son graphe (`isolate: false`)', () => {
   it('la garde s\'arme sur l\'état RÉEL de vite.config.ts (`isolate: false` lu, jamais supposé)', () => {
     expect(ISOLATE_FALSE).toBe(true);
+  });
+
+  it('l’autre famille du graphe partagé est fermée par construction (`restoreMocks` LU dans la config)', () => {
+    expect(
+      /restoreMocks\s*:\s*true/.test(VITE_CONFIG),
+      "l'en-tête de ce fichier affirme que `spyOn` est fermé par construction : `test.restoreMocks: true` doit exister dans vite.config.ts",
+    ).toBe(true);
   });
 
   it('le périmètre scanné est celui de `test.include` — toute dérive de config casse ici', () => {

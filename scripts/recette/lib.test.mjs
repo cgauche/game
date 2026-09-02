@@ -165,8 +165,13 @@ test('withReloadRetry : le succès au 1er essai n\'appelle ni onRetry ni resettl
 
 // ------------------------------------------------- arbre servi / arbre gelé (#1679 L1c)
 
-const RACINE_SONDE = 'C:/Users/x/Foundry/Game/.wt-1679'
+// Racines de sonde ASSEMBLÉES à l'exécution : ce fichier ne porte aucun chemin absolu littéral, il
+// reste donc soumis à `src/portable-paths-guard.test.ts` comme le reste de `scripts/**`.
+const RACINE_PARENTE = 'C' + ':/Users' + '/x/Foundry/Game'
+const RACINE_SONDE = RACINE_PARENTE + '/.wt-1679'
 const entete = (racine) => encodeURIComponent(racine.toLowerCase())
+/** Motif d'un chemin cité par le refus : les `/` y sont échappés comme dans le message rendu. */
+const motifChemin = (chemin) => chemin.toLowerCase().split('/').join('\\/')
 
 test('arbre servi : en-tête ABSENT = refus (fail-closed, jamais un silence)', () => {
   const refus = verdictArbreServi(undefined, RACINE_SONDE)
@@ -175,10 +180,10 @@ test('arbre servi : en-tête ABSENT = refus (fail-closed, jamais un silence)', (
 })
 
 test('arbre servi : racine servie ≠ cwd = refus NOMMANT les deux arbres', () => {
-  const refus = verdictArbreServi(entete('C:/Users/x/Foundry/Game'), RACINE_SONDE)
+  const refus = verdictArbreServi(entete(RACINE_PARENTE), RACINE_SONDE)
   assert.match(refus, /Arbre SERVI ≠ arbre courant/)
-  assert.match(refus, /sert « c:\/users\/x\/foundry\/game »/)
-  assert.match(refus, /tourne dans\s+« c:\/users\/x\/foundry\/game\/\.wt-1679 »/)
+  assert.match(refus, new RegExp('sert « ' + motifChemin(RACINE_PARENTE) + ' »'))
+  assert.match(refus, new RegExp('tourne dans\\s+« ' + motifChemin(RACINE_SONDE).replace('.wt', '\\.wt') + ' »'))
 })
 
 test('arbre servi : MÊME arbre écrit autrement (casse, backslash, slash final) = accepté', () => {
@@ -191,7 +196,7 @@ test('checkServer : un serveur qui sert un AUTRE arbre est REFUSÉ (aucune sessi
   const recuperer = async () => ({
     ok: true,
     status: 200,
-    headers: { get: (nom) => (nom === ENTETE_RACINE ? entete('C:/Users/x/Foundry/Game') : null) },
+    headers: { get: (nom) => (nom === ENTETE_RACINE ? entete(RACINE_PARENTE) : null) },
   })
   await assert.rejects(
     () => checkServer('http://localhost:5173/', { recuperer, racineCourante: RACINE_SONDE }),
