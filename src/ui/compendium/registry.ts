@@ -703,11 +703,14 @@ function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem
   });
 }
 
-/** Item Codex d'une entrée de Critique de coque (`ShipCritEntry` — MDG 13 navire, MSRC 7 fluvial,
- *  #157 suite) : plage d10 → effet immédiat (`ops`) + Test d'équipage (échec) authoré en `GameOp`, MÊME
+/** Item Codex d'une entrée de Critique de coque (`ShipCritEntry` — MDG 13 navire, MSRC 07 fluvial,
+ *  #157 suite) : plage d10 → effet immédiat (`ops`) + coup à l'équipage (`crewHit` : qui encaisse, et
+ *  soit l'épreuve du nœud `test` avec les ops de sa branche d'échec, soit les ops certaines), MÊME
  *  vocabulaire que les autres Critiques (`critEntryItem`). */
 function shipCritEntryItem(e: ShipCritEntry): CodexItem {
-  const ct = e.crewTest;
+  const ch = e.crewHit;
+  const jet = ch?.test?.test;
+  const sujet = jet && (jet.skill ? refLabel('skills', jet.skill) : jet.characteristic ? CHAR_LABELS[jet.characteristic] : '');
   return depuisEnveloppe(e, {
     sub: `d10 ${e.min}–${e.max}`,
     desc: e.note,
@@ -717,17 +720,17 @@ function shipCritEntryItem(e: ShipCritEntry): CodexItem {
     ),
     sections: sections(
       passiveSection(e.ops, 'Effet immédiat'),
-      ct
+      ch
         ? {
-            title: 'Test d’équipage',
+            title: 'Coup à l’équipage',
             layout: 'list',
             rows: [
-              { t: 'kv', k: 'Jet', v: ct.skill ? `${refLabel('skills', ct.skill)}${ct.difficulty ? ` ${DIFFICULTY_LABELS[ct.difficulty]}` : ''}` : 'Automatique (aucun Test)' } as CodexRow,
-              { t: 'kv', k: 'Cible', v: ct.crewTarget === 'deck' ? 'Toute personne sur le pont' : 'Équipage du poste tiré au sort' } as CodexRow,
+              { t: 'kv', k: 'Jet', v: jet ? `${sujet}${jet.difficulty ? ` ${DIFFICULTY_LABELS[jet.difficulty]}` : ''}` : 'Automatique (aucun Test)' } as CodexRow,
+              { t: 'kv', k: 'Cible', v: ch.crewTarget === 'deck' ? 'Toute personne sur le pont' : 'Équipage du poste tiré au sort' } as CodexRow,
             ],
           }
         : null,
-      ct ? passiveSection(ct.onFail, 'Conséquence (échec du Test)') : null,
+      ch ? passiveSection(ch.test ? spellOps(ch.test.fail, 'target') : ch.ops, ch.test ? 'Conséquence (échec du Test)' : 'Conséquence (certaine)') : null,
     ),
   });
 }

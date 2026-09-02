@@ -82,7 +82,11 @@ describe('effectSchema — le corpus RÉELLEMENT posé dans les deux racines aut
     // portent leur conséquence dans une branche `fail` en FEUILLE `{type:'ops'}`, là où la graphie
     // propriétaire `onTick.onFail`/`dailyTest.onFail` portait une liste d'ops nue. Le cycle SANS jet
     // (Vers du Reik) garde ses ops nues sous `onTick.ops` : aucune feuille, il ne compte pas ici.
-    expect(poses.length).toBe(1104);
+    // +3 (#1657 B2c) : les 3 nœuds `test` du coup à l'équipage d'un Critique de coque
+    // (`river-criticals.json` 2, `ship-criticals.json` 1) portent leur conséquence en FEUILLE
+    // `{type:'ops'}`, là où `crewTest.onFail` portait une liste nue. Le coup SANS jet (Rames
+    // fluviales, MSRC 07 l.82) garde ses ops nues sous `crewHit.ops` : il ne compte pas ici.
+    expect(poses.length).toBe(1107);
     const parType = new Set(poses.map((p) => (p.noeud as { type: string }).type));
     expect(parType.size).toBe(30); // 29 variantes authorées + la feuille `ops`
     expect(parType.has('ops')).toBe(true);

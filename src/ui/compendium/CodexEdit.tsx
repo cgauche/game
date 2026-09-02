@@ -8,7 +8,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { datasetArray, setDataset, datasetObject, setObjectDataset, datasetFile, datasetSerializeRoot, datasetObjectFile, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
 import { CATEGORY_DATASET_DERIVE, OBJECT_CATEGORY_DERIVE } from '../../data/schemas/exposition-derivee';
-import type { ShipCrewTest } from '../../data/shipCriticals';
 import type { SkillRef } from '../../engine/skills';
 import type { SteamBreakdownEntry } from '../../engine/shipBuild';
 import { serializeDataset } from '../../data/serialize';
@@ -44,7 +43,7 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
-import { SymptomsField, SymptomTickField, DiseaseDailyTestField, type DiseaseDailyTest, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, DispoSaisonniereField, DomainEffectsField, TraitListField, OptionalsListField, HarvestField, SpecsField, RuleValueField, RuleActionField, type RuleShape } from './StructFields';
+import { SymptomsField, SymptomTickField, DiseaseDailyTestField, type DiseaseDailyTest, ShipCrewHitField, type ShipCrewHitValue, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, DispoSaisonniereField, DomainEffectsField, TraitListField, OptionalsListField, HarvestField, SpecsField, RuleValueField, RuleActionField, type RuleShape } from './StructFields';
 import type { OptionalRule } from '../../engine/policy';
 import type { TraitInstance, OptionalEntry } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
@@ -91,8 +90,9 @@ const REF_LIST_DATASET: Record<string, DatasetKey> = {
  *  `occupantOps` (subi par un tiers — cavalier/passager), `crewOps`/`captainOps` (Chant de marin).
  *  Généralise l'idée d'`isPassive` (qui ne couvre QUE `passive`) sans dupliquer l'éditeur : ajouter une
  *  source = ajouter SA/SES clé(s) ici (lu par `dedicatedFieldKeys` ET le rendu). */
-/** Les 10 catégories de Critiques de coque (MDG 13 navire + MSRC 7 fluvial, #157 suite) —
- *  MÊME forme `ShipCritEntry` (`ops` + `crewTest` structuré), partagée par `OPS_FIELDS` et le rendu. */
+/** Les 10 catégories de Critiques de coque (MDG 13 navire + MSRC 07 fluvial, #157 suite) —
+ *  MÊME forme `ShipCritEntry` (`ops` sur la coque + `crewHit` sur l'équipage), partagée par
+ *  `OPS_FIELDS` et le rendu. */
 const SHIP_CRIT_CATEGORIES = [
   'shipCriticalsCargaison', 'shipCriticalsGreement', 'shipCriticalsCoque', 'shipCriticalsAvirons', 'shipCriticalsEquipements',
   'riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure',
@@ -346,7 +346,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'tavernGames') add('options', 'table', 'sides');
   if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
   if (categoryKey === 'details') add('texts');
-  if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skill?,difficulty?,crewTarget?,onFail}
+  if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewHit'); // {crewTarget?, test | ops} — nœud `test` du Flow → ShipCrewHitField (#1657 B2c)
   if (categoryKey === 'waterExposure') add('test', 'modifiers', 'diseases'); // #157 suite (MSRC 16)
   // LOT 1 #422 : seules les tables NICHÉES en TABLEAU top-level d'une fiche-objet navale retombent en
   // json (repli générique) — chaque sous-objet HÉTÉROGÈNE (vitesseMax/salissures/orientation/phares/
@@ -520,8 +520,9 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   // Espèce : Trait racial (`traits`, #572) → réutilise TraitListField (comme creatures/structures) —
   // Ogre `{id:'ogre'}` (encombrance/consommation ×2 ; la Taille est portée par le talent Massif/Petit).
   const isRace = categoryKey === 'races';
-  // Critique de coque (10 catégories navire/fluvial, #157 suite) : `crewTest` (skill?/difficulty?/
-  // crewTarget?/onFail) → éditeur dédié (ShipCrewTestField) ; `ops` reste sur le lot GameOpEditor commun.
+  // Critique de coque (10 catégories navire/fluvial, #157 suite) : `crewHit` (crewTarget?, et `test`
+  // ⊕ `ops`) → éditeur dédié (`ShipCrewHitField`) ; les `ops` de la COQUE restent sur le lot
+  // GameOpEditor commun.
   const isShipCrit = SHIP_CRIT_CATEGORIES.includes(categoryKey);
   // Exposition à l'eau (`waterExposure`, #157 suite, MSRC 16) : `test` (Compétence+Difficulté),
   // `modifiers` (WaterExposureModifier[]) et `diseases` (plages d100 → maladie) ont chacun leur éditeur.
@@ -763,7 +764,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
         {hasProsthesis && <ProsthesisField value={entry.prosthesis as { trappingId: string; cancels: 'all' | 'movement' }[] | undefined} onChange={(v) => edit('prosthesis', v.length ? v : undefined)} />}
         {hasTraumaList && <TraumaListField value={entry.traumas as string[] | undefined} onChange={(v) => edit('traumas', v.length ? v : undefined)} />}
         {hasRestartTest && <RestartTestField value={entry.restart as RestartTest[] | undefined} onChange={(v) => edit('restart', v.length ? v : undefined)} />}
-        {isShipCrit && <ShipCrewTestField value={entry.crewTest as ShipCrewTest | undefined} onChange={(v) => edit('crewTest', v)} />}
+        {isShipCrit && <ShipCrewHitField value={entry.crewHit as ShipCrewHitValue | undefined} onChange={(v) => edit('crewHit', v)} />}
         {isWaterExposure && <WaterTestField value={entry.test as WaterTest | undefined} onChange={(v) => edit('test', v)} />}
         {isWaterExposure && <WaterModifiersField value={entry.modifiers as WaterExposureModifier[] | undefined} onChange={(v) => edit('modifiers', v)} />}
         {isWaterExposure && <WaterDiseasesField value={entry.diseases as WaterExposureData['diseases'] | undefined} onChange={(v) => edit('diseases', v)} />}
@@ -1317,51 +1318,6 @@ function RestartTestField({ value, onChange }: { value: RestartTest[] | undefine
         </div>
       ))}
       <button className="btn small" onClick={() => set([...list, { skill: { id: '' }, difficulty: DIFFICULTIES[0] }])}>+ Test</button>
-    </div>
-  );
-}
-
-/** Test d'ÉQUIPAGE (échec) d'un Critique de coque (`ShipCritEntry.crewTest`, MDG 13 / MSRC 7,
- *  #157 suite) : Compétence + Difficulté (vide = dégâts AUTOMATIQUES, aucun Test) + cible (poste tiré
- *  au sort ou tout le pont) + conséquence en `GameOp[]` (même éditeur que les modificateurs passifs). */
-function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefined; onChange: (v: ShipCrewTest | undefined) => void }) {
-  const skillOpts = datasetArray('skills') as { id: string; label: string }[];
-  const v = value;
-  return (
-    <div className="ed-field">
-      <span>Test d’équipage (échec) — Compétence OU Caractéristique (aucune = dégâts automatiques) + cible + conséquence</span>
-      <div className="tf-row">
-        <label className="dr"><input type="checkbox" checked={!!v} onChange={(e) => onChange(e.target.checked ? { crewTarget: 'poste', onFail: [] } : undefined)} /> Test requis</label>
-        {v && (
-          <>
-            <select value={v.skill?.id ?? ''} onChange={(e) => onChange({ ...v, skill: e.target.value ? { id: e.target.value } : undefined })}>
-              <option value="">— (Caractéristique, ou aucune) —</option>
-              {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-            </select>
-            {!v.skill && (
-              <select value={v.char ?? ''} onChange={(e) => onChange({ ...v, char: (e.target.value || undefined) as CharKey | undefined })}>
-                <option value="">— (aucune, dégâts automatiques) —</option>
-                {CHAR_KEYS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}
-              </select>
-            )}
-            {(v.skill || v.char) && (
-              <select value={v.difficulty ?? DIFFICULTIES[0]} onChange={(e) => onChange({ ...v, difficulty: e.target.value as Difficulty })}>
-                {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
-              </select>
-            )}
-            <select value={v.crewTarget ?? 'poste'} onChange={(e) => onChange({ ...v, crewTarget: e.target.value as 'poste' | 'deck' })}>
-              <option value="poste">Équipage du poste (tiré au sort)</option>
-              <option value="deck">Toute personne sur le pont</option>
-            </select>
-          </>
-        )}
-      </div>
-      {v && (
-        <div className="ed-subfield">
-          <span>conséquence (GameOp[]) — en cas d’échec (ou dégâts directs si aucun sujet de Test)</span>
-          <GameOpEditor ops={v.onFail ?? []} onChange={(ops) => onChange({ ...v, onFail: ops })} />
-        </div>
-      )}
     </div>
   );
 }

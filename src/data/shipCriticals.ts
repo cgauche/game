@@ -2,22 +2,16 @@ import shipCriticalsJson from './ship-criticals.json';
 import riverCriticalsJson from './river-criticals.json';
 import type { ShipLocation } from '../engine/combat';
 import type { GameOp } from '../engine/ops';
-import type { CharKey, Difficulty } from '../engine/types';
-import type { SkillRef } from '../engine/skills';
+import type { FlowTestNode } from '../engine/flowCore';
 
-/** Test encouru par l'ÉQUIPAGE sur un Critique de coque — compétence + difficulté en DONNÉE, conséquence
- *  d'échec en `GameOp` (langue unique). Sujet du Test : `skill` (Compétence) OU `char` (Caractéristique).
- *  Sujet ou `difficulty` ABSENTS = dégâts AUTOMATIQUES (pas de Test —
- *  MSRC « les échardes infligent +5 Dégâts aux rameurs »). `crewTarget` : `poste` (équipage d'un poste tiré
- *  au sort — MDG « Canon détaché », défaut) ou `deck` (toute personne exposée sur le pont — MSRC
- *  gréement/superstructure « Toute personne présente sur le pont… »). Pas de valeur/règle codée en dur. */
-export interface ShipCrewTest {
-  skill?: SkillRef;
-  char?: CharKey;
-  difficulty?: Difficulty;
+/** Ce qu'un Critique de coque fait à l'ÉQUIPAGE. `crewTarget` dit QUI encaisse : `poste` (équipage d'un
+ *  poste tiré au sort — MDG 13 l.763, défaut) ou `deck` (toute personne exposée sur le pont — MSRC 07
+ *  l.78/l.94). L'ISSUE est SOIT une ÉPREUVE (`test` : le nœud `test` du Flow, sa branche d'échec porte
+ *  la conséquence), SOIT des ops CERTAINES (`ops` — MSRC 07 l.82, où le livre n'appelle aucun jet). */
+export interface ShipCrewHit {
   crewTarget?: 'poste' | 'deck';
-  /** Appliqué à CHAQUE servant qui RATE le Test (ou à tous si aucun Test — ex. `[{op:'wounds', amount:12}]`). */
-  onFail: GameOp[];
+  test?: FlowTestNode;
+  ops?: GameOp[];
 }
 
 /**
@@ -50,9 +44,9 @@ export interface ShipCritEntry {
   shrapnel?: number;
   /** Critiques supplémentaires sur la Coque (notation de dés). */
   hullCrits?: string;
-  /** « Canon détaché » (MDG 13 l.763-764) : l'équipage du poste tiré au sort encourt ce Test ; un échec
-   *  applique `onFail` (le canon RESTE à bord — ≠ « Canon perdu » qui utilise l'op `removeShipPoste` dans `ops`). */
-  crewTest?: ShipCrewTest;
+  /** « Canon détaché » (MDG 13 l.763-764) : le coup encaissé par l'ÉQUIPAGE (le canon RESTE à bord —
+   *  ≠ « Canon perdu », qui utilise l'op `removeShipPoste` dans `ops`, appliquée à la COQUE). */
+  crewHit?: ShipCrewHit;
   note: string;
 }
 export type ShipCritTable = ShipCritEntry[];

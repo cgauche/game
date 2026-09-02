@@ -145,6 +145,45 @@ export function DiseaseDailyTestField({ value, onChange }: { value: DiseaseDaily
     </div>
   );
 }
+/** `ShipCritEntry.crewHit` — ce qu'un Critique de coque fait à l'ÉQUIPAGE (MDG 13 l.763, MSRC 07
+ *  l.78/l.82/l.94) : le porteur dit QUI encaisse (`crewTarget`), l'issue est SOIT une épreuve (le
+ *  nœud `test`, dont seule la branche d'ÉCHEC est servie par `applyCrewHit`), SOIT des ops CERTAINES
+ *  (`ops`). Même bascule que le cycle d'un symptôme — les deux clefs sont EXCLUSIVES au schéma. */
+export type ShipCrewHitValue = { crewTarget?: 'poste' | 'deck'; test?: NoeudTest; ops?: GameOp[] };
+export function ShipCrewHitField({ value, onChange }: { value: ShipCrewHitValue | undefined; onChange: (v: ShipCrewHitValue | undefined) => void }) {
+  const patch = (p: Partial<ShipCrewHitValue>) => onChange({ ...value, ...p });
+  const versEpreuve = () => patch({ test: value?.test ?? noeudTestNeuf(), ops: undefined });
+  // Le schéma exige une conséquence NON VIDE : la bascule pose une op de départ éditable plutôt
+  // qu'un `ops: []` que le save refuserait sans que rien à l'écran ne le dise.
+  const versCertain = () => patch({ test: undefined, ops: value?.ops?.length ? value.ops : [newOp('wounds')] });
+  return (
+    <div className="ed-field">
+      <span>Coup à l’équipage — qui encaisse, puis l’issue : un Test à réussir, ou une conséquence certaine</span>
+      <label><input type="checkbox" checked={value != null} onChange={(e) => onChange(e.target.checked ? { crewTarget: 'poste', test: noeudTestNeuf() } : undefined)} /> coup à l’équipage</label>
+      {value && (
+        <>
+          <div className="tf-row">
+            <select value={value.crewTarget ?? 'poste'} onChange={(e) => patch({ crewTarget: e.target.value as 'poste' | 'deck' })}>
+              <option value="poste">Équipage du poste (tiré au sort)</option>
+              <option value="deck">Toute personne sur le pont</option>
+            </select>
+          </div>
+          <OptionChooser
+            layout="seg"
+            options={[
+              { key: 'coup-epreuve', label: 'un Test à réussir', selected: value.test != null, onSelect: versEpreuve },
+              { key: 'coup-certain', label: 'conséquence certaine', selected: value.test == null, onSelect: versCertain },
+            ]}
+          />
+          {value.test
+            ? <NoeudTestField desc="Test encouru — Difficulté, Compétence ou Caractéristique, et ce que l’échec inflige" retirable={false} branches="echec" value={value.test} onChange={(t) => patch({ test: t ?? noeudTestNeuf() })} />
+            : <GameOpEditor ops={value.ops ?? []} onChange={(ops) => patch({ ops })} />}
+        </>
+      )}
+    </div>
+  );
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
  * 1bis) talents.test — { raw verbatim, matches: TestMatch[] } (LDB 10 : +DR sur un Test lié)
  *    `raw` = la ligne « Tests : » du livre (affichage) ; `matches` = la règle STRUCTURÉE id-based

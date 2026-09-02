@@ -13,7 +13,7 @@ import type { Effect } from '../../state/scene';
 import type { FlowTestNode } from '../../engine/flowCore';
 import type { SkillRef } from '../../engine/skills';
 import { Icon } from '../Icon';
-import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
+import { DIFFICULTY_LABELS, Difficulty, CHAR_KEYS, CHAR_LABELS, type CharKey } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import { menaceIds } from '../../engine/menace';
 import { RefField } from '../compendium/RefField';
@@ -103,7 +103,12 @@ export function NoeudTestField({ value, onChange, desc, retirable = true, branch
   );
 }
 
-/** Éditeur du jet d'un nœud `test` (FlowTest : compétence/caractéristique, difficulté, DR, outil, groupes, easierIf). */
+/**
+ * Éditeur du jet d'un nœud `test` (FlowTest : Compétence ET/OU Caractéristique, Difficulté, DR, outil,
+ * groupes, easierIf). Les deux sujets ne s'excluent PAS — `flowTestSchema` les déclare tous deux
+ * optionnels sans refinement, et `testValue` (`engine/skills.ts`) lit `characteristic` comme la carac
+ * EXPLICITE contre laquelle le jet roule, celle de la Compétence n'étant que le défaut.
+ */
 export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: FlowTest) => void }) {
   const upd = (patch: Partial<FlowTest>) => onChange({ ...test, ...patch });
   const setEase = (patch: Partial<NonNullable<FlowTest['easierIf']>>) => {
@@ -114,6 +119,21 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
     <>
       <div className="tf-row">
         <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="Compétence" value={test.skill} onChange={(v) => upd({ skill: (v as SkillRef | null) ?? undefined })} nullable />
+        {/* Caractéristique : les deux clefs COEXISTENT au schéma (`flowTestSchema`, aucune exclusion) et
+            au moteur — `testValue` passe `characteristic` en `explicit` à `effectiveSkillCharKey`, qui
+            REMPLACE la caractéristique par défaut de la Compétence dont les avances comptent toujours.
+            Sans Compétence, c'est un Test de Caractéristique nue (Gréement fluvial : Initiative). */}
+        <select
+          aria-label="Caractéristique testée"
+          title={test.skill ? 'Caractéristique testée à la place de celle de la Compétence (ses avances comptent toujours)' : 'Caractéristique testée — sans Compétence, le jet roule dessus seule'}
+          value={test.characteristic ?? ''}
+          onChange={(e) => upd({ characteristic: (e.target.value || undefined) as CharKey | undefined })}
+        >
+          <option value="">{test.skill ? '— Caractéristique de la Compétence —' : '— aucune Caractéristique —'}</option>
+          {CHAR_KEYS.map((k) => (
+            <option key={k} value={k}>{CHAR_LABELS[k]}</option>
+          ))}
+        </select>
         <select value={test.difficulty ?? 'intermediaire'} onChange={(e) => upd({ difficulty: e.target.value as Difficulty })}>
           {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((d) => (
             <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>

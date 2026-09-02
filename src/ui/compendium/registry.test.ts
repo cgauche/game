@@ -280,21 +280,34 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
     expect(coqueDegradee.meta?.find((f) => f.label === 'Éclats (Indice)')?.value).toBe('4');
   });
 
-  it('un Critique fluvial (Gréement) porte son effet immédiat + son Test d’équipage (Compétence/Difficulté/Cible/Conséquence)', () => {
+  it('un Critique fluvial (Gréement) porte son effet immédiat + son coup à l’équipage, jet NOMMÉ jusqu’à la Caractéristique (MSRC 07 l.78)', () => {
     const items = categoryByKey('riverCriticalsGreement')!.items;
     const g = items.find((i) => i.label === 'Gréement')!;
-    expect(g, 'Gréement (fluvial, MSRC 7)').toBeTruthy();
+    expect(g, 'Gréement (fluvial, MSRC 07)').toBeTruthy();
     expect(g.sections?.some((s) => s.title === 'Effet immédiat')).toBe(true);
-    const testSec = g.sections?.find((s) => s.title === 'Test d’équipage');
-    expect(testSec, 'section Test d’équipage').toBeTruthy();
-    expect(testSec!.rows.some((r) => r.t === 'kv' && r.k === 'Cible' && r.v === 'Toute personne sur le pont')).toBe(true);
+    const coupSec = g.sections?.find((s) => s.title === 'Coup à l’équipage');
+    expect(coupSec, 'section Coup à l’équipage').toBeTruthy();
+    // Le jet est une CARACTÉRISTIQUE (Initiative) : le Codex la nomme — un sujet non-compétence ne
+    // s'affiche plus « Automatique (aucun Test) », ce que la lecture par `crewTest.skill` faisait.
+    expect(coupSec!.rows.some((r) => r.t === 'kv' && r.k === 'Jet' && r.v === 'Initiative Intermédiaire (+0)')).toBe(true);
+    expect(coupSec!.rows.some((r) => r.t === 'kv' && r.k === 'Cible' && r.v === 'Toute personne sur le pont')).toBe(true);
     expect(g.sections?.some((s) => s.title === 'Conséquence (échec du Test)')).toBe(true);
   });
 
-  it('un Critique SANS Test d’équipage (Coque fluviale, dégâts purement automatiques) omet la section Test', () => {
+  it('un coup à l’équipage SANS jet (Rames fluviales, MSRC 07 l.82) s’annonce automatique et porte une conséquence CERTAINE', () => {
+    const items = categoryByKey('riverCriticalsAvirons')!.items;
+    const rames = items.find((i) => i.label === 'Rames')!;
+    const coupSec = rames.sections?.find((s) => s.title === 'Coup à l’équipage');
+    expect(coupSec, 'section Coup à l’équipage').toBeTruthy();
+    expect(coupSec!.rows.some((r) => r.t === 'kv' && r.k === 'Jet' && r.v === 'Automatique (aucun Test)')).toBe(true);
+    expect(rames.sections?.some((s) => s.title === 'Conséquence (certaine)')).toBe(true);
+    expect(rames.sections?.some((s) => s.title === 'Conséquence (échec du Test)')).toBe(false);
+  });
+
+  it('un Critique SANS coup à l’équipage (Coque fluviale) omet la section', () => {
     const items = categoryByKey('riverCriticalsCoque')!.items;
     const coque = items.find((i) => i.label === 'Coque')!;
-    expect(coque.sections?.some((s) => s.title === 'Test d’équipage')).toBe(false);
+    expect(coque.sections?.some((s) => s.title === 'Coup à l’équipage')).toBe(false);
     expect(coque.sections?.some((s) => s.title === 'Effet immédiat')).toBe(true);
   });
 

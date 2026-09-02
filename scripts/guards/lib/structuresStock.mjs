@@ -410,8 +410,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "raceAppearance.json", champ: "head", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 7, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "raceAppearance.json", champ: "tenue", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 14, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "reglesOptionnelles.json", champ: "default", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "river-criticals.json", champ: "onFail", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "river-criticals.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "river-criticals.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" }, // 4 → 5 (#1657 B2c) : l'État *Empêtré* du gréement (MSRC 07 l.78) quitte `crewTest.onFail` pour la feuille `EffectOp` de la branche d'échec du nœud
   { concept: "reference", dataset: "sea-events.json", champ: "escalation", signature: "vents+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "sea-events.json", champ: "params", signature: "bribeDifficulty+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "sea-events.json", champ: "params", signature: "chefRef,crewRef,ship+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-30", motif: "paramètres d’ÉVÉNEMENT (créature, véhicule)" },
@@ -587,7 +586,7 @@ export const STRUCTURES_FORMES = [
   { concept: "test", dataset: "miscast.json", champ: "test", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "miscast.json", champ: "test", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 13, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "psychology.json", champ: "test", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 7, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "test", dataset: "river-criticals.json", champ: "crewTest", signature: "char,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
+  { concept: "test", dataset: "river-criticals.json", champ: "test", signature: "characteristic,difficulty", statut: "historique", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" }, // le coup à l'équipage (MSRC 07 l.78/l.94) quitte la graphie propriétaire `crewTest {char, difficulty, onFail}` pour le nœud `test` du Flow (#1657 B2c) — `char` → `characteristic`, la clé de `flowTestSchema`
   { concept: "test", dataset: "river-navigation.json", champ: "rowingAgility", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "river-navigation.json", champ: "temporaryRepair", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-cargo.json", champ: "producesGossip", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
@@ -599,7 +598,7 @@ export const STRUCTURES_FORMES = [
   { concept: "test", dataset: "sea-perils.json", champ: "freeTest", signature: "char,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-perils.json", champ: "tourbillonSwim", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-weather.json", champ: "affaler", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "test", dataset: "ship-criticals.json", champ: "crewTest", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
+  { concept: "test", dataset: "ship-criticals.json", champ: "test", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" }, // « Canon détaché » (MDG 13 l.763) : même passage au nœud `test` du Flow (#1657 B2c)
   { concept: "test", dataset: "spells.json", champ: "crossTest", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "spells.json", champ: "test", signature: "characteristic,difficulty", statut: "historique", strate: "Valeur", occurrences: 5, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "spells.json", champ: "test", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 3, lot: "L4 #1463", date: "2026-08-23" },
@@ -691,7 +690,7 @@ export const STRUCTURES_DEFAUT = [
  *  `land-cargo.json wineQuality[].price`), qui n'est pas un prix mais un FACTEUR — son solde est déjà
  *  prescrit hors de cette vague. La ligne se RÉÉCRIT donc au fil des lots, elle ne se retire pas. */
 export const STRUCTURES_HOMONYMES = [
-  { cle: "char", classes: ["object","string"], occurrences: 865, lot: "L4 #1463", date: "2026-08-23" }, // +3 : profils vides Mouton + Cochon (object) + Trait Entêté (string), EDOC 07 folios 22 et 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
+  { cle: "char", classes: ["object","string"], occurrences: 863, lot: "L4 #1463", date: "2026-08-23" }, // +3 : profils vides Mouton + Cochon (object) + Trait Entêté (string), EDOC 07 folios 22 et 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673 ; −2 (#1657 B2c) : les 2 `crewTest.char` de `river-criticals.json` adoptent `characteristic`, la clé de `flowTestSchema` (le fichier en sort avec ZERO `char` — pas d'état mixte, #1658)
   { cle: "price", classes: ["null","number","object","string"], occurrences: 520, lot: "L4 #1463", date: "2026-08-23" }, // +1 : Anneau d'Opsianon, EDO 11 folio 148 (#672) ; +3 : achat Chien + Mouton + Cochon, EDOC 07 folio 24 (#673) ; +1 : Chien de trait, EDOC 07 folio 22, #673
   { cle: "count", classes: ["number","object"], occurrences: 92, lot: "L4 #1463", date: "2026-08-23" },
 ];

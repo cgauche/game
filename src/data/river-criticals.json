@@ -28,23 +28,39 @@
             "value": 1
           }
         ],
-        "crewTest": {
-          "char": "initiative",
-          "difficulty": "intermediaire",
+        "crewHit": {
           "crewTarget": "deck",
-          "onFail": [
-            {
-              "op": "wounds",
-              "amount": 5,
-              "ignoreTB": false,
-              "ignoreAP": false
+          "test": {
+            "kind": "test",
+            "test": {
+              "characteristic": "initiative",
+              "difficulty": "intermediaire"
             },
-            {
-              "op": "condition",
-              "id": "empetre",
-              "value": 1
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": 5,
+                    "ignoreTB": false,
+                    "ignoreAP": false
+                  },
+                  {
+                    "op": "condition",
+                    "id": "empetre",
+                    "value": 1
+                  }
+                ],
+                "on": "target"
+              }
             }
-          ]
+          }
         },
         "note": "La voile lâche et entraîne avec elle cordes et palans. Toute personne présente sur le pont doit faire un Test d'Initiative ou subir +5 Dégâts, et gagner un État *Empêtré*. Tant que le gréement n'est pas réparé, le bateau ne peut que se laisser dériver."
       }
@@ -62,9 +78,9 @@
             "value": 1
           }
         ],
-        "crewTest": {
+        "crewHit": {
           "crewTarget": "deck",
-          "onFail": [
+          "ops": [
             {
               "op": "wounds",
               "amount": 5,
@@ -115,18 +131,34 @@
         "max": 10,
         "id": "superstructure-fluvial",
         "label": "Superstructure",
-        "crewTest": {
-          "char": "initiative",
-          "difficulty": "intermediaire",
+        "crewHit": {
           "crewTarget": "deck",
-          "onFail": [
-            {
-              "op": "wounds",
-              "amount": 5,
-              "ignoreTB": false,
-              "ignoreAP": false
+          "test": {
+            "kind": "test",
+            "test": {
+              "characteristic": "initiative",
+              "difficulty": "intermediaire"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "wounds",
+                    "amount": 5,
+                    "ignoreTB": false,
+                    "ignoreAP": false
+                  }
+                ],
+                "on": "target"
+              }
             }
-          ]
+          }
         },
         "note": "Si le bateau dispose d'une cale, et que cette dernière est touchée, tous les Personnages qui s'y trouvent doivent faire un Test d'**Initiative** ou subir +5 Dégâts à cause des éclats d'échardes. À part ça, le bateau n'est pas affecté."
       }

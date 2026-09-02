@@ -61,6 +61,10 @@ const KIND_PAR_FICHIER: Record<string, EffectSourceKind> = {
 const AUTO_RESOLUS: Record<string, string> = {
   'criticals.json':
     'Blessures critiques (LDB 18 / AA 07) : le nœud de la rangée est joué par `resolveCritique` avec le RNG du combat, dans le même geste que le d100 de sévérité — le résultat est révélé déjà résolu (`previewCritEntry`), il n’y a pas de fenêtre où un enjeu se poserait.',
+  'river-criticals.json':
+    'Coup à l’équipage d’un Critique de coque fluviale (MSRC 07 l.78/l.94) : le nœud est joué par `applyCrewHit` (`engine/shipCritical.ts`) avec le RNG du combat, DANS le geste d’`applyHullCritical` que `combatFlow.ts:1819` appelle — aucune étape n’est poussée, le journal ne rend que l’issue.',
+  'ship-criticals.json':
+    'Coup à l’équipage d’un Critique de coque navale (« Canon détaché », MDG 13 l.763) : MÊME chemin et MÊME geste que la table fluviale — le nœud est résolu dans `applyHullCritical`, sans fenêtre.',
 };
 
 interface Noeud { fichier: string; entryId: string; ft: FlowTest }

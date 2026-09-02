@@ -26,8 +26,10 @@
  *  - **Dangers** (l.119-166) : Débris, Barrage, Rochers, Eaux peu profondes — cf. `river-perils.json`.
  */
 import riverNavJson from '../data/river-navigation.json';
-import riverCriticalsJson from '../data/river-criticals.json';
 import riverPerilsJson from '../data/river-perils.json';
+import { RIVER_CRIT_SET, type ShipCrewHit, type ShipCritKey } from '../data/shipCriticals';
+import { spellOps } from './flowCore';
+import type { GameOp } from './ops';
 import { findTableEntry } from './tables';
 import { d10, d100, rollExpr, type RNG, defaultRNG } from './dice';
 import { bonus } from './characteristics';
@@ -199,26 +201,28 @@ export function holeSinkMinutes(hullEndurance: number): number {
 
 // ── Critiques de bateau (l.72-94) ────────────────────────────────────────────────────────────────
 
-type RiverCritEntry = {
-  ops?: { op: string; id?: string }[];
-  crewTest?: { char?: string; onFail: { op: string; id?: string; amount?: number }[] };
-  shrapnel?: number;
-};
-const RIVER_CRIT_TABLES = riverCriticalsJson.tables as Record<string, RiverCritEntry[]>;
-const RIVER_SPLINTER = (riverCriticalsJson.shrapnelHit as { op: string; amount?: number }[]).find((o) => o.op === 'wounds')?.amount;
+const RIVER_SPLINTER = RIVER_CRIT_SET.shrapnelHit.find((o) => o.op === 'wounds')?.amount;
+
+/** Conséquence encaissée par l'équipage : les ops de la branche d'ÉCHEC du nœud `test`, ou les ops
+ *  CERTAINES du coup sans jet (`spellOps` — même lecture PURE que `applyCrewHit`). */
+function opsDuCoup(hit: ShipCrewHit | undefined): GameOp[] {
+  if (!hit) return [];
+  return hit.test ? spellOps(hit.test.fail, 'target') : hit.ops ?? [];
+}
 
 /** Vue « voyage » d'un Coup Critique de bateau fluvial (l.72-94), DÉRIVÉE de l'unique source
  *  `river-criticals.json` (la même que le combat lit via `RIVER_CRIT_SET`) — un seul fait RAW, deux vues.
  *  Chaque table MSRC n'a qu'une entrée (effet déterministe par Localisation, pas de sous-jet d10). PUR. */
 export function riverCritical(location: string): CritDef | undefined {
-  const e = RIVER_CRIT_TABLES[location]?.[0];
+  const e = RIVER_CRIT_SET.tables[location as ShipCritKey]?.[0];
   if (!e) return undefined;
   const hasCond = (id: string) => e.ops?.some((o) => o.op === 'condition' && o.id === id) ?? false;
-  const splinter = e.crewTest?.onFail?.find((o) => o.op === 'wounds')?.amount ?? (e.shrapnel ? RIVER_SPLINTER : undefined);
+  const surLEquipage = opsDuCoup(e.crewHit);
+  const splinter = surLEquipage.find((o) => o.op === 'wounds')?.amount ?? (e.shrapnel ? RIVER_SPLINTER : undefined);
   return {
-    splinterDamage: splinter,
-    initiativeTest: e.crewTest?.char === 'initiative' || undefined,
-    conditionId: e.crewTest?.onFail?.some((o) => o.op === 'condition' && o.id === 'empetre') ? 'empetre' : undefined,
+    splinterDamage: typeof splinter === 'number' ? splinter : undefined,
+    initiativeTest: e.crewHit?.test?.test.characteristic === 'initiative' || undefined,
+    conditionId: surLEquipage.some((o) => o.op === 'condition' && o.id === 'empetre') ? 'empetre' : undefined,
     driftUntilRepair: hasCond('derive') || undefined,
     navDifficulty: hasCond('gouvernail-brise') ? 'tresDifficile' : undefined,
     hole: hasCond('voie-d-eau') || undefined,

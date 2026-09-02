@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { applyCrewHit } from './shipCritical';
 import { applyOps } from './ops';
 import type { Combatant, ShipPoste } from './types';
-import type { ShipCrewTest } from '../data/shipCriticals';
+import type { ShipCrewHit } from '../data/shipCriticals';
 
 /** Marin minimal — assez pour `testValue('athletisme')` (Ag=36) + `applyOps` wounds (BE=3, PA=0). */
 const sailor = (id: string, over: Partial<Combatant> = {}): Combatant => ({
@@ -49,15 +49,21 @@ describe('op removeShipPoste — Canon perdu (MDG 13 l.765)', () => {
   });
 });
 
-/** Test « Canon détaché » authoré en DONNÉE : compétence + difficulté + conséquence d'échec en `GameOp`. */
-const detachTest: ShipCrewTest = {
-  skill: { id: 'athletisme' }, difficulty: 'intermediaire',
-  onFail: [{ op: 'wounds', amount: 12, ignoreTB: false, ignoreAP: false }],
+/** « Canon détaché » authoré en DONNÉE : le nœud `test` du Flow porte le jet ET, dans sa branche
+ *  d'ÉCHEC, la conséquence en `GameOp` (branche `success` vide — `applyCrewHit` ne sert que l'échec). */
+const detachTest: ShipCrewHit = {
+  test: {
+    kind: 'test',
+    test: { skill: { id: 'athletisme' }, difficulty: 'intermediaire' },
+    success: { kind: 'seq', steps: [] },
+    fail: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'wounds', amount: 12, ignoreTB: false, ignoreAP: false }], on: 'target' } },
+  },
 };
 
 /**
- * « Canon détaché » (MDG 13 l.763-764) : l'équipage du poste encourt `crewTest` (data-driven) ; un échec
- * applique `onFail`. Le canon RESTE à bord (≠ « Canon perdu »). Plus aucune valeur (12 / Athlétisme) en dur.
+ * « Canon détaché » (MDG 13 l.763-764) : l'équipage du poste encourt le `crewHit` (data-driven) ; un
+ * échec applique les ops de sa branche `fail`. Le canon RESTE à bord (≠ « Canon perdu »). Plus aucune
+ * valeur (12 / Athlétisme) en dur.
  */
 describe('applyCrewHit — Canon détaché (data-driven, MDG 13 l.763-764)', () => {
   const hullWith = (crewIds: string[]) => {

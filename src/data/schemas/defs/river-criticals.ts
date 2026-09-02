@@ -1,7 +1,7 @@
 /**
  * Schéma de `river-criticals.json` — Critiques de coque fluviale (Mort sur le Reik Compagnon ch.5,
  * p.29). MÊME patron que `ship-criticals.json` (`ShipCritSet`, `src/data/shipCriticals.ts`), PROMU
- * dans `grammaire/mecanique.ts` (`shipCritEntrySchema`/`shipCrewTestSchema`), mais 5 Localisations DISTINCTES
+ * dans `grammaire/mecanique.ts` (`shipCritEntrySchema`/`shipCrewHitSchema`), mais 5 Localisations DISTINCTES
  * (greement/avirons/gouvernail/coque/superstructure — pas de cargaison ni d'équipements côté
  * fluvial) et sans `die` (absent du JSON, à la différence du jeu MDG).
  */

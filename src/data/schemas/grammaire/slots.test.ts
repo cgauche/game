@@ -91,7 +91,7 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       'marque(s) de référence perdue(s) ou apparue(s) — une feuille marquée puis clonée hors fabrique (`.refine` EXTERNE) disparaît de la marche SANS erreur : c’est le zéro silencieux que ce stock nominatif détecte.',
     // 11 sites de référence de Compétence ADOPTÉS au lot L2 #1548 (commit 3b) : `refOuSpec('skill')`
     // pose UNE marque par INSTANCE de fabrique (activities, axes, crew-roles, creatures, sea-cargo,
-    // sea-perils ×2, steam-breakdown, water-exposure, `mount.riderTest`, `shipCrewTest`) — puis
+    // sea-perils ×2, steam-breakdown, water-exposure, `mount.riderTest`, `shipCrewHitSchema`) — puis
     // 11 → 30 au commit 3c, où la référence emboîtée gagne 19 instances : la grammaire (`flowTest`),
     // les conteneurs de Test (`criticals.test`, `etats.recover`, `psychology.test`,
     // `spells.opposed`, `miscast` ×2), le matcher `talents.testMatch`, les 4 instances de l'union
@@ -138,7 +138,11 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // partagé (`flowTestSchema.skill`, `grammaire/mecanique.ts`), qui n'est pas un champ de DEF et
       // ne se compte donc pas ici. Une marche de MOINS pour la MÊME référence validée : le site n'a
       // pas disparu, il a rejoint la grammaire commune — c'est le sens même de cette vague.
-      ...Array.from({ length: 36 }, () => "idDe('skill')"),
+      // … puis 36 → 35 (#1657 B2c), MOUVEMENT IDENTIQUE : `shipCrewTestSchema.skill` meurt avec la
+      // graphie propriétaire du coup à l'équipage — le sujet du jet est celui du nœud partagé
+      // (`flowTestSchema.skill`), qui n'est pas un champ de DEF. La référence « Canon détaché »
+      // (`athletisme`, MDG 13 l.763) reste VALIDÉE, par la marche de la grammaire.
+      ...Array.from({ length: 35 }, () => "idDe('skill')"),
       ...Array.from({ length: 4 }, () => "idDe('table')"),
       ...Array.from({ length: 6 }, () => "idDe('talent')"),
       "idDe('trait')",

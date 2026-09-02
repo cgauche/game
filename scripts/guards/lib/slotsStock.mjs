@@ -280,8 +280,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "raceAppearance.json", champ: "tenue", occurrences: 14, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "reglesOptionnelles.json", champ: "default", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "reglesOptionnelles.json", champ: "options", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "river-criticals.json", champ: "onFail", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "river-criticals.json", champ: "ops", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "river-criticals.json", champ: "ops", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" }, // `onFail` mort, `ops` 4 → 5 (#1657 B2c) : la conséquence du coup à l'équipage vit sous la feuille `EffectOp` du nœud `test`
   { dataset: "sea-events.json", champ: "escalation", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "sea-events.json", champ: "params", occurrences: 9, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "sea-events.json", champ: "skills", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

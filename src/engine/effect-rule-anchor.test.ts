@@ -144,7 +144,7 @@ function unanchoredCallsites(): Callsite[] {
 const BASELINE: string[] = [
   'engine/critical.ts | r.ops | { rng }', // ops d'une Blessure critique tirée sur sa table de localisation
   "engine/domainAttributes.ts | ops | { rng, label: 'Attribut de domaine' }", // ops d'un Attribut de domaine de magie
-  'engine/shipCritical.ts | crewTest.onFail | { rng }', // échec du Test d'équipage d'un critique de navire
+  'engine/shipCritical.ts | ops | { rng }', // conséquence du coup à l'équipage d'un critique de navire (branche d'échec du nœud, ou ops certaines)
   'engine/shipCritical.ts | crit.ops | { rng }', // ops d'un critique de navire
   'engine/shipCritical.ts | crit.ops | { rng, crew }', // ops d'un critique de navire (équipage)
   'engine/shipCritical.ts | set.shrapnelHit | { rng }', // éclats d'un critique de navire

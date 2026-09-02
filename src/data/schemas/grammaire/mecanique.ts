@@ -492,14 +492,26 @@ export const travelTableEntrySchema = z.strictObject({
   }).optional(),
 });
 
-/** `ShipCrewTest` (`src/data/shipCriticals.ts`) — Test d'équipage déclenché par un Critique de coque. */
-export const shipCrewTestSchema = z.strictObject({
-  skill: refOuSpec('skill').optional(),
-  char: charKeySchema.optional(),
-  difficulty: difficultySchema.optional(),
-  crewTarget: z.enum(['poste', 'deck']).optional(),
-  onFail: z.array(gameOpSchema),
-});
+/**
+ * `ShipCrewHit` (`src/data/shipCriticals.ts`) — ce qu'un Critique de coque fait à l'ÉQUIPAGE. Le
+ * porteur dit QUI encaisse (`crewTarget`) ; l'ISSUE est SOIT une épreuve (le nœud `test` du Flow,
+ * dont la branche d'échec porte la conséquence — MDG 13 l.763, MSRC 07 l.78/l.94), SOIT des ops
+ * CERTAINES (`ops` — MSRC 07 l.82, où le livre n'appelle aucun jet). Les deux clefs sont EXCLUSIVES.
+ */
+export const shipCrewHitSchema = z
+  .strictObject({
+    crewTarget: z.enum(['poste', 'deck']).optional(),
+    test: noeudTest(flowSchema, { difficulteRequise: true, echecSeulServi: true }).optional(),
+    ops: z.array(gameOpSchema).optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (!v.test === !v.ops) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'un coup à l’équipage porte SOIT une épreuve (`test`) SOIT une conséquence certaine (`ops`) — jamais les deux, jamais aucune.',
+      });
+    }
+  });
 
 /** `ShipCritEntry` (`src/data/shipCriticals.ts`) — entrée d100 de Critique de coque, partagée par
  *  `ship-criticals` (navale) et `river-criticals` (fluviale). */
@@ -510,6 +522,6 @@ export const shipCritEntrySchema = z.strictObject({
   ops: z.array(gameOpSchema).optional(),
   shrapnel: z.number().optional(),
   hullCrits: z.string().optional(),
-  crewTest: shipCrewTestSchema.optional(),
+  crewHit: shipCrewHitSchema.optional(),
   note: z.string(),
 });

@@ -1033,7 +1033,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `symptoms.json › onFail` (2 signatures) fusionne dans `› ops`, et la 8ᵉ réf de symptôme à
       // Difficulté propre (posée au geste A) part : le document déclare désormais sa Difficulté par
       // l'enum de la grammaire, un littéral d'enum n'ouvrant jamais de référence.
-      'L3 #1463': 374,
+      // … puis 374 → 373 (#1657 B2c) : la ligne `river-criticals.json › onFail` MEURT à son tour — la
+      // conséquence du coup à l'équipage rejoint `› ops` (4 → 5 occurrences), une seule graphie.
+      'L3 #1463': 373,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

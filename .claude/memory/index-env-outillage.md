@@ -25,3 +25,4 @@ Déplacés ici depuis `MEMORY.md` le 2026-09-01 (compaction) — les fiches font
 - [tempo navigateur](game-browser-verif-tempo.md) · [evaluate borné](game-browser-evaluate-no-infinite-loop.md) · [Captures QC = arbre AU REPOS](env-capture-qc-arbre-au-repos-vite-reload.md) · la recette REFUSE le serveur d'un autre arbre (`checkServer`, `docs/recette-navigateur.md` § « Quel process sert un port ? »).
 - [Bash background TUÉ → gates au premier plan ; chemin littéral pour le message de commit](env-bash-background-tue-gates-au-premier-plan.md) — 2026-09-02.
 - [Recette JAMAIS en parallèle d'un juge qui teste (gen-registry réécrit src/data → HMR → TDZ)](env-recette-jamais-en-parallele-dun-juge-qui-teste.md) — 2026-09-02.
+- [Recette en WORKTREE : preview racine `--prefix`, volet masqué = rAF figé, kit = lib du même arbre](env-recette-worktree-preview-kit.md) — 2026-09-02, la sonde de picking rendait « aucune » par caméra du store.

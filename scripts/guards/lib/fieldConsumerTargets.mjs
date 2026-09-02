@@ -30,7 +30,7 @@ export const TARGETS = [
   { schema: valeurs.entityAppearanceSchema, type: 'EntityAppearance', home: 'src/engine/authoringAppearance.ts' },
   { schema: mecanique.flowTestSchema, type: 'FlowTest', home: 'src/engine/flowCore.ts' },
   { schema: mecanique.travelTableEntrySchema, type: 'TravelTableEntry', home: 'src/engine/travelTables.ts' },
-  { schema: mecanique.shipCrewTestSchema, type: 'ShipCrewTest', home: 'src/data/shipCriticals.ts' },
+  { schema: mecanique.shipCrewHitSchema, type: 'ShipCrewHit', home: 'src/data/shipCriticals.ts' },
   { schema: mecanique.shipCritEntrySchema, type: 'ShipCritEntry', home: 'src/data/shipCriticals.ts' },
   // `PropData` est l'ENTRÉE d'un def adopté par `document()` : son nœud est SCELLé (pas de `.shape`).
   // Ses clés viennent donc du handle (`cles`, relevées avant le sceau) — un `schema:` ici rendrait
