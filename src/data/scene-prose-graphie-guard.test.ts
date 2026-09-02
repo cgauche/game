@@ -13,7 +13,8 @@
  * migrés au geste du même lot, ils n'étaient gardés par rien.
  *
  * PÉRIMÈTRE : `src/**` et `scripts/**`, tests COMPRIS (une fixture de test est un producteur comme
- * un autre — trois d'entre elles ont été trouvées à l'ancienne graphie par ce même lot).
+ * un autre — trois d'entre elles ont été trouvées à l'ancienne graphie par ce même lot). Les blocs
+ * de FRONTMATTER y sont MASQUÉS (`masquerFrontmatter`) : `description` y est une clé de fiche.
  *
  * ANGLE MORT DÉCLARÉ : la détection est TEXTUELLE et ancrée sur des formes d'AUTHORING littérales
  * (`type: 'journal', text:`, `description:` d'une scène, `choices: [{ text:`). Un document construit
@@ -64,6 +65,34 @@ const FORMES: readonly { motif: RegExp; quoi: string; cible: string }[] = [
   { motif: /type:\s*'(?:journal|document|setObjective)'[^\n]*?,\s*text\s*[,}\)]/g, quoi: "effet `journal`/`document`/`setObjective` à `text` RACCOURCI", cible: 'desc' },
 ];
 
+/**
+ * FRONTMATTER masqué AVANT toute mesure — exclusion STRUCTURELLE, jamais un site ni un fichier.
+ *
+ * Un bloc `---`…`---` est l'en-tête d'une FICHE (mémoire, skill), format où `description:` est une
+ * clé LÉGITIME : rien de ce qui vit là n'authore un document de scène. Le bloc est reconnu à ses
+ * DÉLIMITEURS, y compris quand une fixture le construit en lignes de code
+ * (`'---', 'name: x', 'description: y', '---'`) — c'est cette forme qui a fait rougir la garde sur
+ * deux fiches mémoire, et une exemption au fichier aurait rendu ces fichiers aveugles au reste.
+ *
+ * Les lignes masquées sont VIDÉES, jamais retirées : les `fichier:ligne` rendus restent ceux du
+ * fichier réel.
+ */
+const DELIMITEUR_FRONTMATTER = /^\s*['"`]?---['"`]?,?\s*$/;
+
+function masquerFrontmatter(texte: string): string {
+  let dedans = false;
+  return texte
+    .split('\n')
+    .map((ligne) => {
+      if (DELIMITEUR_FRONTMATTER.test(ligne)) {
+        dedans = !dedans;
+        return '';
+      }
+      return dedans ? '' : ligne;
+    })
+    .join('\n');
+}
+
 describe('graphie de la prose de scène — aucun producteur ne réécrit la forme retirée (#1467 L1b)', () => {
   const corpus = readCorpus(RACINES, { exts: EXTS, tests: true }).filter((f) => !EXEMPTS.some((x) => x.test(f.rel)));
 
@@ -86,14 +115,34 @@ describe('graphie de la prose de scène — aucun producteur ne réécrit la for
     }
   });
 
+  it('frontmatter : la clé `description` d’une FICHE passe, celle d’une scène reste attrapée', () => {
+    // Forme RÉELLE d'une fixture de fiche mémoire : l'en-tête construit en lignes de code.
+    const fixtureDeFiche = [
+      'const fiche = [',
+      "  '---',",
+      "  'name: user-doctrine-x',",
+      "  'description: Doctrine utilisateur',",
+      "  'metadata: ',",
+      "  '---',",
+      '].join(SAUT);',
+    ].join('\n');
+    const documentDeScene = "const scene = { id: 'a', description: 'une scène' };";
+    const mord = (src: string) => new RegExp(FORMES[2].motif.source, 'g').test(masquerFrontmatter(src));
+    expect(mord(fixtureDeFiche), 'un en-tête de fiche est lu comme un document de scène').toBe(false);
+    expect(mord(documentDeScene), 'un `description:` HORS frontmatter doit rester attrapé').toBe(true);
+    // Le masque ne DÉCALE aucune ligne : la garde cite des `fichier:ligne`.
+    expect(masquerFrontmatter(fixtureDeFiche).split('\n')).toHaveLength(fixtureDeFiche.split('\n').length);
+  });
+
   it('aucun site à l’ancienne graphie dans `src/**` ni `scripts/**`', () => {
     const trouves: string[] = [];
     for (const f of corpus) {
+      const texte = masquerFrontmatter(f.text);
       for (const forme of FORMES) {
         const re = new RegExp(forme.motif.source, 'g');
         let m: RegExpExecArray | null;
-        while ((m = re.exec(f.text)) !== null) {
-          const ligne = f.text.slice(0, m.index).split('\n').length;
+        while ((m = re.exec(texte)) !== null) {
+          const ligne = texte.slice(0, m.index).split('\n').length;
           trouves.push(`${f.rel}:${ligne} — ${forme.quoi} → migrer en \`${forme.cible}\``);
         }
       }

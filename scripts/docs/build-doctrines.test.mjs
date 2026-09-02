@@ -15,12 +15,14 @@ import {
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
-/** Fiche de fixture au format réel : frontmatter `name`/`description`/`metadata`, puis corps. */
-const fiche = (nom, { description = 'sans date', modified = '', corps }) =>
+/** Fiche de fixture au format réel : frontmatter `name`/`description`/`metadata`, puis corps.
+ *  `resume` alimente la clé `description` de l’EN-TÊTE — la garde de graphie de scène ne lit une clé
+ *  `description:` que HORS frontmatter (`src/data/scene-prose-graphie-guard.test.ts`). */
+const fiche = (nom, { resume = 'sans date', modified = '', corps }) =>
   [
     '---',
     `name: ${nom}`,
-    `description: "${description}"`,
+    `description: "${resume}"`,
     'metadata: ',
     '  node_type: memory',
     ...(modified ? [`  modified: ${modified}`] : []),
@@ -33,7 +35,7 @@ const fiche = (nom, { description = 'sans date', modified = '', corps }) =>
 const DATEE = {
   fichier: '.claude/memory/user-doctrine-datee.md',
   texte: fiche('user-doctrine-datee', {
-    description: 'Doctrine utilisateur (2026-08-24, verbatim) — le jet apparaît toujours',
+    resume: 'Doctrine utilisateur (2026-08-24, verbatim) — le jet apparaît toujours',
     modified: '2026-08-25T14:37:16.358Z',
     corps: [
       'Directive utilisateur (2026-08-20, verbatim, lot #1426) : « On migre tout vers une forme',
@@ -47,7 +49,7 @@ const DATEE = {
 const ENTETE_SEULE = {
   fichier: '.claude/memory/user-doctrine-entete.md',
   texte: fiche('user-doctrine-entete', {
-    description: 'Doctrine utilisateur — aucune date au corps',
+    resume: 'Doctrine utilisateur — aucune date au corps',
     modified: '2026-07-29T10:56:20.170Z',
     corps: 'Verbatim utilisateur : « Pour moi il ne devait pas y avoir plusieurs hôtes de jet »',
   }),
