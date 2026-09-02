@@ -52,6 +52,11 @@ scripts/data/.out/
 # survivre). Seul le compteur de palier, état local régénéré par le hook post-commit, reste ignoré.
 !.claude/soldes/
 .claude/soldes/.compteur
+
+# Worktrees d'agents posés d'un niveau sous la racine (`.wt-<ticket>/`) : arbres de travail, jamais du
+# contenu du dépôt. Ceux de `.claude/worktrees/` sont déjà couverts par `.claude/*` ci-dessus. #1679 L1c
+/.wt-*/
+
 *.exe
 *.log
 

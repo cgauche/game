@@ -6,7 +6,11 @@
 //
 // Usage :
 //   node scripts/recette/hud-clickables.mjs
-//   node scripts/recette/hud-clickables.mjs --url http://localhost:4173/ --widths 700,560,360
+//   node scripts/recette/hud-clickables.mjs --widths 700,560,360
+//   node scripts/recette/hud-clickables.mjs --url <autre serveur>   # défaut : le port de CET arbre
+//
+// Sans `--url`, la cible est le serveur de DEV de cet arbre (`DEFAULT_URL`, scripts/port-dev.mjs) ;
+// une preview (`npm run preview`) a son propre port, imprimé à son lancement.
 //
 // Ce qui est VÉRIFIÉ, à chaque largeur, par `elementFromPoint` au centre de chaque surface :
 //   · chaque `.vc-btn` (commandes de vue) reçoit SON propre clic — rien ne le recouvre ;

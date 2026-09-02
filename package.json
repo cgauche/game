@@ -16,7 +16,7 @@
     "build": "npm run gen && tsc -b && vite build",
     "preview": "vite preview",
     "test": "node scripts/test/run.mjs",
-    "test:runner": "node --test scripts/test/run.test.mjs scripts/test/run-capture.test.mjs",
+    "test:runner": "node --test scripts/test/run.test.mjs scripts/test/run-capture.test.mjs scripts/test/run-isolation.test.mjs",
     "test:watch": "vitest",
     "agents:sync": "node scripts/agents/compat-cli.mjs sync",
     "agents:check": "node scripts/agents/compat-cli.mjs check",

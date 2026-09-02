@@ -311,8 +311,12 @@ longue pause. Chaque chemin/symbole cité existe dans le repo — vérifié via 
 git clone <url> && cd Game
 npm install     # pose ${CONFIGS.length} réglages git (script "postinstall" de package.json)
 npm test        # suite du moteur — deux processus Vitest (node + jsdom) si ≥ ${SEUIL} cœurs, sinon un seul
-npm run dev     # http://localhost:5173
+npm run dev     # http://localhost:5173 (un CLONE garde le port historique)
 \`\`\`
+
+Le port n'est historique QUE pour un arbre principal ou un clone : un **worktree lié** en dérive un
+autre (5174-5272, \`scripts/port-dev.mjs\`) pour que deux arbres servis en même temps ne se recouvrent
+jamais. \`npm run dev\` imprime celui qu'il sert.
 
 \`npm install\` déclenche le script \`postinstall\`, qui pose : ${listeCode(CONFIGS)}.
 

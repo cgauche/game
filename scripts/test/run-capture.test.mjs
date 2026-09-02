@@ -12,13 +12,18 @@ import { dirname, join } from 'node:path'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 
+/** Le faux dépôt n'est pas une SUITE : il ne prend pas le verrou machine du lanceur (#1679 L1c-M7),
+ *  qui refuserait la vraie suite d'à côté. L'opt-out lui-même est mesuré par `run-isolation.test.mjs`. */
+const SANS_VERROU = { WFRP_SUITE_LOCK: '0' }
+
 /** Faux dépôt : le lanceur et sa logique pure copiés, plus un Vitest de substitution. */
 function fauxDepot(sourceDuFauxVitest) {
   const base = mkdtempSync(join(tmpdir(), 'vitest-run-'))
   mkdirSync(join(base, 'scripts', 'test'), { recursive: true })
-  for (const nom of ['run.mjs', 'partition.mjs']) {
+  for (const nom of ['run.mjs', 'partition.mjs', 'verrou.mjs']) {
     copyFileSync(join(ICI, nom), join(base, 'scripts', 'test', nom))
   }
+  copyFileSync(join(ICI, '..', 'outillage-local.mjs'), join(base, 'scripts', 'outillage-local.mjs'))
   mkdirSync(join(base, 'node_modules', 'vitest'), { recursive: true })
   writeFileSync(join(base, 'node_modules', 'vitest', 'vitest.mjs'), sourceDuFauxVitest, 'utf8')
   return base
@@ -70,6 +75,7 @@ function lance(base, args = [], coeurs) {
       ...process.env,
       FORCE_COLOR: '3',
       TRACE_ARGV: trace,
+      ...SANS_VERROU,
       ...(coeurs === undefined ? {} : { WFRP_TEST_COEURS: String(coeurs) }),
     },
   })
@@ -211,6 +217,7 @@ test('partage node/jsdom : DEUX processus, sorties préfixées par côté, les d
         ...process.env,
         TRACE_ARGV: trace,
         WFRP_TEST_COEURS: '16',
+        ...SANS_VERROU,
         TRACE_FICHIERS: JSON.stringify([cote.node, cote.jsdom].map((p) => p.split('\\').join('/'))),
       },
     })
@@ -245,7 +252,7 @@ test('bornage du cache : les captures de plus de 7 jours partent, les fraîches 
     const run = spawnSync(process.execPath, [join(base, 'scripts', 'test', 'run.mjs'), '--coverage'], {
       cwd: base,
       encoding: 'utf8',
-      env: { ...process.env, TRACE_ARGV: join(base, 'argv.json') },
+      env: { ...process.env, TRACE_ARGV: join(base, 'argv.json'), ...SANS_VERROU },
     })
     assert.equal(run.status, 0, `run en échec : ${run.stdout}${run.stderr}`)
     const restants = readdirSync(cache).filter((n) => /^vitest-run-\d+\.txt$/.test(n))

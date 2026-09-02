@@ -6,8 +6,19 @@ import { spawnSync } from 'node:child_process'
 import { closeSync, mkdirSync, openSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { refusOutillageLocal } from './outillage-local.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..')
+const TSC = join(REPO, 'node_modules', 'typescript', 'bin', 'tsc')
+
+// Outillage LOCAL exigé AVANT tout lancement (#1679 L1c) : sans `node_modules/typescript` dans CET
+// arbre, la remontée de Node servirait le tsc d'un AUTRE arbre au lieu d'échouer.
+const refusTypescript = refusOutillageLocal(REPO, 'tsc', TSC)
+if (refusTypescript) {
+  console.error(refusTypescript)
+  process.exit(2)
+}
+
 const CACHE = join(REPO, 'node_modules', '.cache')
 const TSBUILDINFO = join(CACHE, 'typecheck.tsbuildinfo')
 const SORTIE = join(CACHE, 'typecheck-last.txt')
@@ -15,7 +26,7 @@ const SORTIE = join(CACHE, 'typecheck-last.txt')
 const full = process.argv.slice(2).includes('--full')
 
 const args = [
-  join(REPO, 'node_modules', 'typescript', 'bin', 'tsc'),
+  TSC,
   '--noEmit',
   '--incremental',
   '--tsBuildInfoFile',

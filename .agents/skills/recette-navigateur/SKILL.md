@@ -1,6 +1,6 @@
 ---
 name: recette-navigateur
-description: À utiliser avant de valider TOUTE feature visible en jeu (UI, combat, IA, voyage) dans le navigateur — Playwright sur localhost:5173 — ou quand un clic/survol/état ne répond pas comme attendu en recette. Obligatoire avant de déclarer une feature UI terminée.
+description: À utiliser avant de valider TOUTE feature visible en jeu (UI, combat, IA, voyage) dans le navigateur — Playwright sur le serveur de dev de CET arbre (localhost:5173 sur l'arbre principal, port dérivé en worktree lié — scripts/port-dev.mjs) — ou quand un clic/survol/état ne répond pas comme attendu en recette. Obligatoire avant de déclarer une feature UI terminée.
 ---
 <!-- GENERATED: agents:sync; source=.claude/skills/recette-navigateur/SKILL.md -->
 

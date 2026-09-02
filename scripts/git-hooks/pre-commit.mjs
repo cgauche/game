@@ -29,14 +29,24 @@ import { scanBattleRngEngineLeak } from '../guards/lib/battleRngEngineLeak.mjs';
 import { battleRngEngineLeakExcluded } from '../guards/lib/battleRngEngineLeakWhitelist.mjs';
 import { scanNpmLockHoisted } from '../guards/lib/npmLockHoisted.mjs';
 
-// Deux racines DISTINCTES, jamais interchangeables — le hook est installé par `core.hooksPath` ABSOLU,
-// donc le FICHIER joué est toujours celui de l'arbre principal, quel que soit le worktree qui committe.
+// Deux racines DISTINCTES, jamais interchangeables. `core.hooksPath` vaut `scripts/git-hooks` RELATIF
+// (`git config --show-origin --get-all core.hooksPath` → `.git/config`, valeur relative), donc le
+// FICHIER joué est la copie de l'arbre QUI COMMITTE, worktree compris (#1679 L1c). Ce `.git/config`
+// est COMMUN à tous les worktrees : une valeur absolue y désignerait un seul arbre pour tous.
 //  - ROOT = racine du worktree QUI COMMITTE, l'arbre à JUGER (contenu lu, scripts de garde joués, cwd
 //    des sous-processus). git chdir dans la racine de la copie de travail avant d'invoquer un hook
 //    (githooks(5)), donc process.cwd() la porte ; `rev-parse --show-toplevel` la normalise.
-//  - HOOK_TREE = arbre qui HÉBERGE le hook, seul garanti `npm install`é (un worktree d'agent ne porte
-//    qu'un node_modules de caches). Il ne sert QU'À retrouver l'outillage installé, jamais à juger.
-const HOOK_TREE = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+//  - HOOK_TREE = arbre PRINCIPAL, seul garanti `npm install`é (un worktree d'agent ne porte souvent
+//    qu'un node_modules de caches). Il ne sert QU'À retrouver l'outillage installé, jamais à juger, et
+//    se calcule par `git rev-parse --git-common-dir` (rend le `.git` de l'arbre principal depuis
+//    n'importe quel worktree) ; à défaut, le dossier qui héberge ce fichier.
+const DOSSIER_DU_HOOK = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const HOOK_TREE = (() => {
+  try {
+    const commun = execFileSync('git', ['rev-parse', '--git-common-dir'], { cwd: DOSSIER_DU_HOOK, encoding: 'utf8' }).trim();
+    return commun ? resolve(DOSSIER_DU_HOOK, commun, '..') : DOSSIER_DU_HOOK;
+  } catch { return DOSSIER_DU_HOOK; }
+})();
 const ROOT = (() => {
   try {
     const top = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();

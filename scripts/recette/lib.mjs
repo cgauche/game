@@ -2,11 +2,94 @@
 // (des-v5-verify.mjs, gallery-v2-tour.mjs, repro-399.mjs, dice-reduced-motion.mjs) : CDP nu sur
 // Chrome, zéro dépendance nouvelle. Voir docs/recette-navigateur.md § « Preuve headless (agents) ».
 import { spawn, spawnSync } from 'node:child_process';
-import { writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs';
+import { writeFileSync, mkdirSync, existsSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import os from 'node:os';
+import { ENTETE_RACINE, RACINE, normaliserRacine, racineDepuisEntete, urlDev } from '../port-dev.mjs';
 
-export const DEFAULT_URL = 'http://localhost:5173/';
+/** URL de l'app servie par CET arbre (#1679 L1c) : le port est propre à l'arbre, jamais une
+ *  constante — un port fixe faisait recetter le serveur d'un arbre VOISIN. `WFRP_DEV_URL` prime,
+ *  pour une app servie ailleurs (autre machine, tunnel). */
+export const DEFAULT_URL = process.env.WFRP_DEV_URL || urlDev();
+
+/** Racine de l'arbre depuis lequel CETTE recette tourne. */
+export const RACINE_COURANTE = normaliserRacine(RACINE);
+
+/**
+ * VERDICT sur l'arbre SERVI (#1679 L1c) — `null` si le serveur sert bien `racineCourante`, sinon le
+ * message de refus. Une recette ne prouve un écran que si le serveur qu'elle interroge sert L'ARBRE
+ * où elle tourne ; le serveur publie sa racine dans l'en-tête `x-wfrp-racine` (`vite.config.ts`).
+ * FAIL-CLOSED : en-tête ABSENT = refus lui aussi — un serveur muet est soit un autre arbre (config
+ * d'avant #1679), soit un proxy, et dans les deux cas la mesure ne vaut rien. Fonction PURE.
+ */
+export function verdictArbreServi(valeurEntete, racineCourante = RACINE_COURANTE) {
+  const servie = racineDepuisEntete(valeurEntete);
+  if (!servie) {
+    return (
+      `Le serveur interrogé ne publie pas l'en-tête « ${ENTETE_RACINE} » : impossible de prouver ` +
+      `qu'il sert CET arbre (${racineCourante}). Relancer "npm run dev" DANS cet arbre — ou viser ` +
+      `explicitement l'autre serveur par WFRP_DEV_URL/--url en assumant la mesure.`
+    );
+  }
+  if (servie !== normaliserRacine(racineCourante)) {
+    return (
+      `Arbre SERVI ≠ arbre courant : le serveur sert « ${servie} », la recette tourne dans ` +
+      `« ${normaliserRacine(racineCourante)} ». La mesure porterait sur l'AUTRE arbre. Lancer ` +
+      `"npm run dev" dans CET arbre (son port lui est propre, cf. scripts/port-dev.mjs).`
+    );
+  }
+  return null;
+}
+
+/** Chemins SURVEILLÉS pendant une recette : tout ce dont une écriture recharge la page. */
+const SURVEILLES = ['src', 'vite.config.ts'];
+
+/** Liste `{ chemin, mtimeMs }` des fichiers surveillés sous `racine` (récursif, sans suivre `node_modules`). */
+function fichiersSurveilles(racine) {
+  const trouves = [];
+  const visiter = (chemin) => {
+    let info;
+    try { info = statSync(chemin); } catch { return; }
+    if (info.isDirectory()) {
+      for (const nom of readdirSync(chemin)) visiter(join(chemin, nom));
+    } else {
+      trouves.push({ chemin, mtimeMs: info.mtimeMs });
+    }
+  };
+  for (const cible of SURVEILLES) visiter(join(racine, cible));
+  return trouves;
+}
+
+/**
+ * EMPREINTE de l'arbre à un instant : `{ nb, mtimeMax, plusRecent }` sur `src/**` + `vite.config.ts`.
+ * `lister` est injecté pour la mesure ; par défaut, le disque.
+ */
+export function empreinteArbre(racine = RACINE, lister = fichiersSurveilles) {
+  const fichiers = lister(racine);
+  let mtimeMax = 0;
+  let plusRecent = null;
+  for (const f of fichiers) {
+    if (f.mtimeMs > mtimeMax) { mtimeMax = f.mtimeMs; plusRecent = f.chemin; }
+  }
+  return { nb: fichiers.length, mtimeMax, plusRecent };
+}
+
+/**
+ * VERDICT sur le GEL de l'arbre entre deux empreintes — `null` si rien n'a bougé, sinon le message
+ * d'échec NOMMANT le fichier. Un rejeu silencieux après rechargement (`withReloadRetry`) masquait
+ * qu'une autre session avait réécrit `src/` en plein vol : la recette prouvait alors un arbre qui
+ * n'est plus celui qu'on croit mesurer. Fonction PURE.
+ */
+export function verdictArbreGele(avant, apres) {
+  if (apres.mtimeMax === avant.mtimeMax && apres.nb === avant.nb) return null;
+  const quoi = apres.mtimeMax !== avant.mtimeMax
+    ? `fichier ${apres.plusRecent ?? '(inconnu)'}`
+    : `${apres.nb - avant.nb} fichier(s) ajouté(s)/supprimé(s)`;
+  return (
+    `L'arbre a été modifié pendant la recette : ${quoi}. La mesure porte sur un arbre qui a bougé ` +
+    `sous elle — relancer en fenêtre calme plutôt que de rejouer (#1679 L1c).`
+  );
+}
 const CHROME_CANDIDATES = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -86,18 +169,27 @@ function resolveChromePath(explicit) {
   return CHROME_CANDIDATES.find((p) => existsSync(p)) ?? CHROME_CANDIDATES[0];
 }
 
-/** Vérifie que le serveur de dev répond (le kit ne le DÉMARRE jamais) — message d'aide sinon. */
-export async function checkServer(url = DEFAULT_URL) {
+/**
+ * Vérifie que le serveur de dev répond (le kit ne le DÉMARRE jamais) ET qu'il sert BIEN cet arbre
+ * (#1679 L1c) — message d'aide sinon. `WFRP_RECETTE_ARBRE_LIBRE=1` lève le second contrôle pour les
+ * cas où la cible est délibérément ailleurs (app déployée, tunnel) ; il reste actif par défaut.
+ */
+export async function checkServer(url = DEFAULT_URL, { recuperer = fetch, racineCourante = RACINE_COURANTE } = {}) {
+  let reponse;
   try {
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    reponse = await recuperer(url);
+    if (!reponse.ok) throw new Error(`HTTP ${reponse.status}`);
   } catch (e) {
     throw new Error(
-      `Serveur de dev injoignable sur ${url} — lancer "npm run dev" dans un autre terminal avant ` +
-      `d'utiliser le kit de recette (le kit s'ATTACHE, il ne démarre rien). Détail : ${e.message}`,
+      `Serveur de dev injoignable sur ${url} — lancer "npm run dev" dans CET arbre, dans un autre ` +
+      `terminal, avant d'utiliser le kit de recette (le kit s'ATTACHE, il ne démarre rien). Le port ` +
+      `est propre à l'arbre ; pour viser un autre serveur : WFRP_DEV_URL, ou --url. Détail : ${e.message}`,
       { cause: e }
     );
   }
+  if (process.env.WFRP_RECETTE_ARBRE_LIBRE === '1') return;
+  const refus = verdictArbreServi(reponse.headers?.get?.(ENTETE_RACINE), racineCourante);
+  if (refus) throw new Error(`${refus} (URL interrogée : ${url})`);
 }
 
 async function waitForWsUrl(port, timeoutMs = 10000) {
@@ -220,13 +312,84 @@ export async function launchSession({ chromePath, width = 1600, height = 900, po
   }
 }
 
-/** Évalue une expression JS dans la page (attend les promesses) et lève une erreur lisible si ça throw. */
-export async function evaluate(session, expression) {
-  const r = await session.rpc('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+/** Plafond par défaut d'une évaluation en page, et marge du filet côté Node. */
+export const DELAI_EVALUATE = 15000;
+export const MARGE_EVALUATE = 2000;
+
+/**
+ * Course entre `promesse` et un délai : rejette avec `message` si le délai gagne. Le minuteur est
+ * TOUJOURS annulé (`unref` ne suffit pas : un rejet non annulé garde le process en vie). PURE.
+ */
+export function courseContreMontre(promesse, delaiMs, message) {
+  let minuteur;
+  return Promise.race([
+    promesse,
+    new Promise((_, rejeter) => { minuteur = setTimeout(() => rejeter(new Error(message)), delaiMs); }),
+  ]).finally(() => clearTimeout(minuteur));
+}
+
+/**
+ * Évalue une expression JS dans la page (attend les promesses) et lève une erreur lisible si ça throw.
+ *
+ * BORNÉE des DEUX côtés (#1679 L1c) : `Runtime.evaluate` reçoit son `timeout` CDP — le seul levier
+ * qui interrompt aussi une boucle SYNCHRONE (aucun minuteur posé DANS la page ne s'exécuterait, le
+ * fil est occupé) — doublé d'une course côté Node, pour qu'une réponse CDP qui ne revient jamais
+ * (socket muette) rejette au lieu de figer le script sans message.
+ */
+export async function evaluate(session, expression, { timeoutMs = DELAI_EVALUATE, margeMs = MARGE_EVALUATE } = {}) {
+  const depart = Date.now();
+  const borne = (delai) =>
+    `evaluate : la page n'a pas rendu la main en ${delai}ms (boucle non bornée ou attente sans fin ` +
+    `dans l'expression évaluée) — expression : ${expression.slice(0, 200)}`;
+  let r;
+  try {
+    r = await courseContreMontre(
+      session.rpc('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true, timeout: timeoutMs }),
+      timeoutMs + margeMs,
+      borne(timeoutMs + margeMs),
+    );
+  } catch (e) {
+    // Le CDP interrompt bien l'exécution au `timeout`, mais rend un « Internal error » nu (mesuré
+    // 2026-09-02, Chrome headless) : le requalifier ici, sinon un plafond ATTEINT se lit comme un
+    // défaut mystérieux du scénario. Le rejet de la course côté Node porte déjà son message.
+    if (Date.now() - depart >= timeoutMs && !isNavigationError(e) && !e.message?.startsWith('evaluate : ')) {
+      throw new Error(`${borne(timeoutMs)} — le navigateur a rendu : ${e.message}`, { cause: e });
+    }
+    throw e;
+  }
   if (r.exceptionDetails) {
     throw cdpError(r.exceptionDetails.exception?.description || JSON.stringify(r.exceptionDetails));
   }
   return r.result.value;
+}
+
+/** Instantané des stockages de la page — `{ local, session }`, tout en chaînes. */
+export async function instantanerStockage(session) {
+  return evaluate(session, `(() => ({
+    local: Object.fromEntries(Object.entries(window.localStorage)),
+    session: Object.fromEntries(Object.entries(window.sessionStorage)),
+  }))()`);
+}
+
+/** Expression de RESTAURATION d'un instantané de stockage (PURE — testable sans navigateur). */
+export function expressionRestaurerStockage(instantane) {
+  return `(() => {
+    const s = ${JSON.stringify(instantane ?? {})};
+    for (const [nom, contenu] of [['localStorage', s.local || {}], ['sessionStorage', s.session || {}]]) {
+      const zone = window[nom];
+      zone.clear();
+      for (const [k, v] of Object.entries(contenu)) zone.setItem(k, v);
+    }
+    return true;
+  })()`;
+}
+
+/**
+ * Restaure un instantané de stockage : une recette ne laisse JAMAIS l'état persistant du joueur
+ * modifié derrière elle (sauvegardes, réglages) — appelé par `openApp` à la fermeture.
+ */
+export async function restaurerStockage(session, instantane) {
+  return evaluate(session, expressionRestaurerStockage(instantane));
 }
 
 /** Attend qu'une expression JS devienne vraie (poll), lève si le délai expire. */
@@ -260,14 +423,19 @@ async function waitForAppSilently(session, timeoutMs) {
  * Entre deux tentatives : on ré-attend l'app, puis `resettle` remet l'écran courant en place.
  * Toute erreur qui n'est PAS une navigation remonte telle quelle (aucun masquage de vrai défaut).
  */
-export async function withReloadRetry(session, fn, { tries = 3, resettle, onRetry, timeoutMs = 20000 } = {}) {
+export async function withReloadRetry(session, fn, { tries = 3, resettle, onRetry, timeoutMs = 20000, empreinte = empreinteArbre } = {}) {
   let last;
+  const avant = empreinte();
   for (let i = 0; i < tries; i++) {
     session.contextCleared = false;
     try {
       return await fn();
     } catch (e) {
       if (!isNavigationError(e) && !session.contextCleared) throw e;
+      // Rechargement CONSTATÉ : avant de rejouer, dire POURQUOI la page a rechargé (#1679 L1c). Un
+      // arbre qui bouge sous la recette invalide la mesure ; le rejeu la maquillerait en vert.
+      const bouge = verdictArbreGele(avant, empreinte());
+      if (bouge) throw new Error(bouge, { cause: e });
       last = e;
       if (i === tries - 1) break;
       if (onRetry) await onRetry(e, i + 1, tries);
@@ -298,6 +466,14 @@ export async function openApp(url = DEFAULT_URL, opts = {}) {
   try {
     await session.rpc('Page.navigate', { url });
     await waitFor(session, APP_READY, { timeoutMs: 10000 });
+    // ÉTAT PERSISTANT (#1679 L1c) : la recette joue — elle crée des héros, sauvegarde, change des
+    // réglages. L'instantané pris ici est remis à la fermeture, pour qu'elle ne laisse rien derrière.
+    session.stockageInitial = await instantanerStockage(session);
+    const fermer = session.close;
+    session.close = async () => {
+      try { await restaurerStockage(session, session.stockageInitial); } catch { /* page déjà morte */ }
+      await fermer();
+    };
     return session;
   } catch (e) {
     await session.close();

@@ -7,7 +7,11 @@
 // selectionner volontairement depuis l'interface. Car actuellement pour charger, il est difficile de
 // connaitre la distance. »
 //
-// Usage : node scripts/recette/intentions-portee.mjs --url http://localhost:5211/ --out <dossier>
+// Usage :
+//   node scripts/recette/intentions-portee.mjs --out <dossier>
+//   node scripts/recette/intentions-portee.mjs --url <autre serveur> --out <dossier>
+//
+// Sans `--url`, la cible est le serveur de DEV de cet arbre (`DEFAULT_URL`, scripts/port-dev.mjs).
 //
 // Ce qui est JOUÉ (aux vrais clics / aux vraies touches, jamais un setState forgé) :
 //   1. armer Course à la case de console → la bande de Course s'allume à l'écran (capture) ;
