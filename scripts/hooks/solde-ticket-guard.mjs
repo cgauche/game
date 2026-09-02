@@ -40,12 +40,14 @@
 //   `evaluateTombale`             (scripts/hooks/solde-tombale.mjs) commentaire de dette citant le
 //                                 ticket fermé ;
 //   `evaluateArbrePrincipal`      `ask` sur un commit hors worktree ;
-//   `evaluateHunksEmportes`       `git commit -- <paths>` qui prendrait l'arbre au lieu de l'index.
+//   `evaluateHunksEmportes`       `git commit -- <paths>` qui prendrait l'arbre au lieu de l'index ;
+//   `evaluateStocksQuiGrandissent` stock nominatif qui naît ou grandit sans `CLIQUET:` au message.
 import { Buffer } from 'node:buffer'
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 import { execFileSync, execSync } from 'node:child_process'
+import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
 
 // Message passé par FICHIER (`git commit -F <path>` / `--file <path>` / `--file=<path>`) : le
 // driver stdin ne voit que `tool_input.command` — un message packé dans un fichier externe y est
@@ -1761,6 +1763,23 @@ export function evaluateHunksEmportes({ command, fichiersModifies = [], fichiers
   }
 }
 
+// ── Stock nominatif qui naît ou grandit ───────────────────────────────────────────────────
+// Un stock nominatif est une DETTE vers zéro (`scripts/guards/lib/stock.mjs`) ; l'append y est
+// toujours le chemin le plus court vers une CI verte. La porte le rend VISIBLE au commit : la
+// croissance passe si, et seulement si, le message la DIT.
+
+/**
+ * Décision « un stock nominatif a grossi sans que le message le dise ». `command` = texte du
+ * message (comme les autres évaluateurs), `diffStage` = diff unifié de l'index (les fichiers
+ * porteurs suffisent). Ne se prononce que sur un `git commit`.
+ * @returns {{ decision: 'deny', reason: string } | null}
+ */
+export function evaluateStocksQuiGrandissent({ command, diffStage }) {
+  if (!command || !isGitCommitCommand(command) || !diffStage) return null
+  const restantes = croissancesNonCouvertes({ diff: diffStage, message: command ?? '' })
+  return restantes.length ? { decision: 'deny', reason: raisonDeRefus(restantes) } : null
+}
+
 /** Décision d'ensemble d'un cumul de refus (patron de driver partagé avec `git-destructive-guard` :
  *  la décision est PORTÉE par l'évaluateur, `deny` à défaut). `null` si aucun refus, sinon la PLUS
  *  STRICTE — un seul `deny` fait basculer tout le cumul — et les raisons jointes. */
@@ -1881,9 +1900,17 @@ if (isMain) {
     fichiersModifies: readChangedNames(targetDir),
     fichiersStages: readChangedNames(targetDir, { cached: true }),
   })
+  // Diff des seuls fichiers PORTEURS de stock : le `-U0` par fichier existe déjà (même lecture que
+  // les preuves au site), et l'index entier ne se relit pas pour une poignée de fichiers. Hors
+  // `git commit`, aucun `git diff` n'est payé.
+  const porteursDeStock = isGitCommitCommand(text) ? fichiers.filter(estPorteurDeStock) : []
+  const stocks = evaluateStocksQuiGrandissent({
+    command: text,
+    diffStage: porteursDeStock.map((f) => readStagedFileDiff(f, targetDir)).join('\n'),
+  })
   const cumul = decisionCumulee([
     decision, antiEsquive, juge, amendInvisible, manifestClosure,
-    horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null,
+    horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null, stocks,
   ])
   if (cumul) {
     console.log(JSON.stringify({

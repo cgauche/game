@@ -1,7 +1,8 @@
 // Hook pre-commit : la porte AU COMMIT — gardes anti-poison diff-scopées sur les fichiers stagés.
 // Mécanique partagée : scripts/guards/lib/ (source unique avec les tests Vitest et le hook au stylo).
 // CE QUI EST JOUÉ ICI : les scanners de commentaires/code sur le contenu de l'INDEX, `validate-data`,
-// `docs:check` + `check-docs-vs-head` + `check-plans-anchors`, `raw:implemente`, `compile-dessin-quad`,
+// `docs:check` + `check-docs-vs-head` + `check-plans-anchors`, `raw:implemente`, `build-doctrines`,
+// `compile-dessin-quad`,
 // `test:raw`, `test:recette`, `agents:check`, et le LINT des fichiers stagés (≈ 4 s / 20 fichiers).
 // CE QUI N'EST PAS JOUÉ ICI : ni typecheck, ni suite Vitest, ni les scanners de corpus entier — ils
 // coûtent des dizaines de secondes et restent à la CI. La durée totale est imprimée en fin de hook.
@@ -270,6 +271,21 @@ if (rawFicheStaged) {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'raw', 'build-implemente.mjs'), '--check'], { cwd: ROOT, stdio: 'inherit' });
   } catch {
     offenders.push('raw:implemente --check en échec (champ Implémente périmé — relancer `npm run raw:implemente` et committer)');
+  }
+}
+
+// #1679 L1b — le bloc « Doctrines utilisateur » de CLAUDE.md est DÉRIVÉ des fiches
+// `.claude/memory/user-*.md` : le --check tourne dès qu'une fiche user-* ou CLAUDE.md est stagé
+// (même patron borné que #487 ci-dessus).
+const doctrineStaged = staged.some((f) => {
+  const r = f.replace(/\\/g, '/');
+  return r === 'CLAUDE.md' || /^\.claude\/memory\/user-[^/]+\.md$/.test(r);
+});
+if (doctrineStaged) {
+  try {
+    execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'build-doctrines.mjs'), '--check'], { cwd: ROOT, stdio: 'inherit' });
+  } catch {
+    offenders.push('build-doctrines --check en échec (bloc « Doctrines utilisateur » périmé ou édité à la main — relancer `node scripts/docs/build-doctrines.mjs` puis `npm run agents:sync`)');
   }
 }
 

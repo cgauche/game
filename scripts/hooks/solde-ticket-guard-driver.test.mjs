@@ -106,6 +106,42 @@ test('DRIVER : « corrigé par <sha> » est confronté à l\'histoire git RÉELL
   }
 })
 
+// Stock nominatif qui grandit : la règle vit dans `scripts/guards/lib/stocksNominatifs.mjs`, mais
+// c'est le DRIVER qui lui apporte l'index du dépôt cible et le message — ce câblage-là se teste ici.
+test('DRIVER : un stock nominatif qui GRANDIT dans l\'index est refusé, sauf CLIQUET au message', () => {
+  const repo = mkdtempSync(join(tmpdir(), 'solde-stock-'))
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    git('init', '-q')
+    git('config', 'user.email', 'sonde@test')
+    git('config', 'user.name', 'sonde')
+    git('config', 'commit.gpgsign', 'false')
+    mkdirSync(join(repo, 'src', 'state'), { recursive: true })
+    const stock = join(repo, 'src', 'state', 'exemptions.test.ts')
+    writeFileSync(stock, 'export const STOCK = [\n]\n', 'utf8')
+    git('add', 'src/state/exemptions.test.ts')
+    git('commit', '-q', '--no-verify', '-m', 'socle')
+
+    writeFileSync(stock, ["export const STOCK = [", "  'src/state/combatFlow.ts',", "  'src/ui/RollShell.tsx',", ']', ''].join('\n'), 'utf8')
+    git('add', 'src/state/exemptions.test.ts')
+
+    const refus = decisionOf('git commit -m "feat: deux exemptions de plus"', repo)
+    assert.ok(refus, 'aucune décision : le stock a grossi sans que rien ne le dise')
+    assert.equal(refus.decision, 'deny')
+    assert.match(refus.reason, /STOCK NOMINATIF qui NAÎT ou GRANDIT/)
+    assert.match(refus.reason, /src\/state\/exemptions\.test\.ts : \+2/)
+
+    const avecCliquet = decisionOf(
+      'git commit -m "feat: deux exemptions de plus' +
+      '\n\nCLIQUET: src/state/exemptions.test.ts +2 — deux sites mesurés ce jour, extinction sous #9999"',
+      repo,
+    )
+    assert.doesNotMatch(avecCliquet?.reason ?? '', /STOCK NOMINATIF/, 'un CLIQUET nommé et compté doit passer')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
 // Volet ANCÊTRE de la même disposition : un sha qui n'est dans AUCUNE histoire de ce dépôt.
 test('DRIVER : « corrigé par <sha> » dont le commit n\'existe pas dans le dépôt cible → refus', () => {
   const repo = mkdtempSync(join(tmpdir(), 'solde-ancetre-'))

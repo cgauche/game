@@ -2,6 +2,9 @@
 // SOURCE UNIQUE de la liste des générateurs : `GENERATORS`. `npm run docs:check` chaîne les MÊMES
 // scripts en `--check` (plus des vérificateurs purs, qui n'écrivent rien) ; la garde
 // scripts/git-hooks/merge-docs.test.mjs refuse toute dérive entre les deux listes.
+// Une cible n'est pas toujours un `docs/*.md` ÉCRIT EN ENTIER : `build-implemente.mjs` injecte un
+// champ dans les fiches raw, `build-doctrines.mjs` injecte le bloc « Doctrines utilisateur » entre
+// marqueurs dans CLAUDE.md — ces deux-là déclarent `targets: []` et se jouent comme les autres.
 // Ordre motivé : les rapports d'Atlas LISENT les fiches docs/raw (coverage.mjs:309, reconcile.mjs:54,
 // reanchor.mjs:207), ils passent donc APRÈS build-catalogs/build-implemente qui les écrivent.
 import { execFileSync } from 'node:child_process'
@@ -37,6 +40,9 @@ export const GENERATORS = [
   { runner: 'node', script: 'scripts/docs/build-sort.mjs', targets: ['docs/ajouter-un-sort.md'] },
   { runner: 'node', script: 'scripts/docs/build-ajouter-donnee.mjs', targets: ['docs/ajouter-une-donnee.md'] },
   { runner: 'node', script: 'scripts/docs/build-regles-optionnelles.mjs', targets: ['docs/regles-optionnelles.md'] },
+  // Écrit un BLOC entre marqueurs dans CLAUDE.md, fichier manuscrit : `targets: []` comme
+  // build-implemente.mjs (la taxonomie de fusion ne vaut que pour un fichier écrit EN ENTIER).
+  { runner: 'node', script: 'scripts/docs/build-doctrines.mjs', targets: [] },
   { runner: 'tsx', script: 'scripts/gen-sorts-doc.mts', targets: ['docs/sorts-implementation.md'] },
   { runner: 'tsx', script: 'scripts/docs/build-field-consumers.mts', targets: ['docs/consommateurs-de-champs.md'] },
   { runner: 'tsx', script: 'scripts/docs/build-structures.mts', targets: ['docs/structures-donnees.md'] },
