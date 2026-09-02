@@ -51,6 +51,17 @@ const KIND_PAR_FICHIER: Record<string, EffectSourceKind> = {
   'symptoms.json': 'symptom',
 };
 
+/**
+ * Familles dont les nœuds `test` sont AUTO-RÉSOLUS — aucune étape n'est poussée, aucune modale ne
+ * s'ouvre, donc aucun ENJEU n'est à afficher : l'issue est déjà tranchée quand le résultat paraît.
+ * Chacune porte SA raison, et l'exemption s'AUTO-PURGE : une famille listée ici qui ne porterait plus
+ * aucun nœud fait rougir (assertion ci-dessous), comme une famille qui en porterait sans nature.
+ */
+const AUTO_RESOLUS: Record<string, string> = {
+  'criticals.json':
+    'Blessures critiques (LDB 18 / AA 07) : le nœud de la rangée est joué par `resolveCritique` avec le RNG du combat, dans le même geste que le d100 de sévérité — le résultat est révélé déjà résolu (`previewCritEntry`), il n’y a pas de fenêtre où un enjeu se poserait.',
+};
+
 interface Noeud { fichier: string; entryId: string; ft: FlowTest }
 
 /** Tous les nœuds `kind:'test'` de la base app-owned, avec l'ENTRÉE qui les porte (id STABLE). */
@@ -92,9 +103,16 @@ describe('#1262 V2 L6d — TOUT `FlowTest` de la donnée dit ce qui se joue', ()
     expect(noeuds.length, 'aucun nœud `kind:test` trouvé : le scan de la donnée a glissé').toBeGreaterThanOrEqual(70);
   });
 
-  it('chaque famille porteuse de `FlowTest` a sa NATURE de source déclarée', () => {
-    const orphelines = [...new Set(noeuds.map((n) => n.fichier))].filter((f) => !KIND_PAR_FICHIER[f]);
+  it('chaque famille porteuse de `FlowTest` a sa NATURE de source déclarée (ou son auto-résolution)', () => {
+    const orphelines = [...new Set(noeuds.map((n) => n.fichier))].filter((f) => !KIND_PAR_FICHIER[f] && !AUTO_RESOLUS[f]);
     expect(orphelines, 'famille de données porteuse d’un jet sans nature de source : son enjeu ne pourrait pas se dériver').toEqual([]);
+  });
+
+  it('les exemptions d’AUTO-RÉSOLUTION sont VIVANTES et disjointes des natures déclarées', () => {
+    const porteuses = new Set(noeuds.map((n) => n.fichier));
+    const mortes = Object.keys(AUTO_RESOLUS).filter((f) => !porteuses.has(f));
+    expect(mortes, 'exemption(s) sans un seul nœud à exempter — elle ne sert plus qu’à mentir').toEqual([]);
+    expect(Object.keys(AUTO_RESOLUS).filter((f) => KIND_PAR_FICHIER[f]), 'un fichier des DEUX régimes rend le verdict ambigu').toEqual([]);
   });
 
   it('chaque nœud produit une étape MINTÉE dont l’enjeu se résout en texte + renvoi Codex', () => {

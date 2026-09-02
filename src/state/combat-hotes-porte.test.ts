@@ -10,7 +10,7 @@ import { stakeAtTableRow } from './cascade';
 import { combatStakeRef } from '../data';
 import { modalOwnerOf, seatOwns, ownsLocally } from './netOwnership';
 import { seedBattleRng, battleRng } from './battleRng';
-import { rollCritical } from '../engine/critical';
+import { resolveCritique } from '../engine/critical';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant, Weapon } from '../engine/types';
 import type { CascadeStep } from './pendings';
@@ -246,7 +246,7 @@ describe('#1262 lot 5a — MALADRESSE : le seul hôte dont la donnée vit sur l�
     maybeOpenDefense(useGame.getState, useGame.setState, enemy, hero);
     useGame.getState().defenseRoll();
     const res = useGame.getState().pendingDefense!.result!;
-    const crit = rollCritical(hero, 'corps', battleRng(), 0, false, 30);
+    const crit = resolveCritique('ldb', hero, 'corps', battleRng(), { forcedRoll: 30 });
     // Reprise d'une attaque SUSPENDUE par la fenêtre de Critique de la victime (`resolveDeviation` est
     // le corps de l'applier `deviation`) : c'est là que la Maladresse du défenseur s'appende.
     useGame.setState({ pendingDefense: null, pendingCascade: null } as never);

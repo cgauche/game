@@ -10,8 +10,8 @@ metadata:
 Déplacés ici depuis `MEMORY.md` le 2026-09-01 (compaction) — les fiches font foi, ce sous-index ne fait que router.
 
 ## Worktree, cache, dépendances
-- [cache .vite partagé worktree = faux rouges d'un WIP tiers](env-cache-vite-partage-worktree-faux-rouges.md) — purger avant run probant ; « impossible à HEAD » se contre-prouve par `git show`.
-- [Worktree/clone : remotes](game-worktree-clone-remotes-pieges.md) · [npm 10 jamais 11](env-npm-lock-regen-npm10-ci.md) · [jamais junctionner node_modules](game-worktree-node-modules-junction-hazard.md) · [worktree agent : node_modules VIDE](env-worktree-node-modules-vide-tsx-spawn.md) — un worktree DANS le dépôt résout par remontée ESM.
+- Isolation d'un worktree = PORTES, pas des consignes (#1679 L1c) : setup vitest ancré + garde `src/worktree-isolation-guard.test.ts` (son en-tête explique le mécanisme), refus nommé sans `node_modules` local (`scripts/outillage-local.mjs`), verrou de suite complète (`scripts/test/verrou.mjs`), port de dev dérivé strict (`scripts/port-dev.mjs`). Un rouge « impossible à HEAD » se contre-prouve par `git show HEAD:<fichier>` avant toute attribution ([rouge = ARBRE COMMITTÉ](feedback-attribution-rouge-suite-sonde-arbre-committe.md)).
+- [Worktree/clone : remotes, convention `.wt-<ticket>-L<n>`](game-worktree-clone-remotes-pieges.md) · [npm 10 jamais 11](env-npm-lock-regen-npm10-ci.md) · [jamais junctionner node_modules](game-worktree-node-modules-junction-hazard.md) (refusé par `git-destructive-guard`).
 
 ## Vitest / RTK / preuve des runners
 - [Vitest isolate:false](game-tests-isolate-false-speedup.md) + [vi.mock = ORDRE](game-vi-mock-isolate-false-liaison-ordre.md).
@@ -22,5 +22,6 @@ Déplacés ici depuis `MEMORY.md` le 2026-09-01 (compaction) — les fiches font
 - [backticks EXÉCUTÉS dans un contenu interpolé](env-backticks-executes-dans-contenu-interpole.md) — `--body-file` ; le pont mange aussi variables/boucles shell → scripts `.mjs` · [EOL mutilées](env-eol-mutilees-arbre-local-parseurs-seam.md) · [écritures HORS DÉPÔT éphémères](env-ecritures-hors-depot-ephemeres-inter-appels.md) · diagnostics LSP sur fichiers d'agents frais = souvent PÉRIMÉS, foi au typecheck.
 
 ## Navigateur / recette
-- [tempo navigateur](game-browser-verif-tempo.md) · [evaluate borné](game-browser-evaluate-no-infinite-loop.md) · [Captures QC = arbre AU REPOS](env-capture-qc-arbre-au-repos-vite-reload.md) · [5173 peut servir un AUTRE worktree](env-recette-port-5173-sert-un-autre-worktree.md) — PID du port avant recette.
+- [tempo navigateur](game-browser-verif-tempo.md) · [evaluate borné](game-browser-evaluate-no-infinite-loop.md) · [Captures QC = arbre AU REPOS](env-capture-qc-arbre-au-repos-vite-reload.md) · la recette REFUSE le serveur d'un autre arbre (`checkServer`, `docs/recette-navigateur.md` § « Quel process sert un port ? »).
 - [Bash background TUÉ → gates au premier plan ; chemin littéral pour le message de commit](env-bash-background-tue-gates-au-premier-plan.md) — 2026-09-02.
+- [Recette JAMAIS en parallèle d'un juge qui teste (gen-registry réécrit src/data → HMR → TDZ)](env-recette-jamais-en-parallele-dun-juge-qui-teste.md) — 2026-09-02.

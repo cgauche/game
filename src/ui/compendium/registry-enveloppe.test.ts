@@ -381,6 +381,10 @@ const PARTIELS: string[] = [
 /** Tableaux identifiés qu'AUCUNE catégorie ne touche (manifestes d'outillage, vocabulaires de
  *  rendu, tables nichées exposées autrement). Gelé au même titre que `PARTIELS`. */
 const ORPHELINS: string[] = [
+  // Les 8 DOCUMENTS-tables de `criticals.json` (#1657 B2a) — même angle mort que `miscast.json#0` :
+  // ce que le Codex expose, ce sont leurs RANGÉES (8 catégories, 160 items), jamais le document
+  // porteur. Un document sans item Codex propre n'est donc pas un manque, c'est la charge qui compte.
+  "criticals.json#0 (8)",
   "donnees.manifest.json#0 (11)",
   "lieux-services.json#0 (7)",
   "miscast.json#0 (5)",
@@ -497,7 +501,7 @@ describe('Codex — défaut d’enveloppe (#1467 L1b)', () => {
     expect(muets).toEqual(MUETS);
     expect(partiels).toEqual(PARTIELS);
     expect(orphelins).toEqual(ORPHELINS);
-    expect(apparies.length).toBe(115);
+    expect(apparies.length).toBe(107);
   });
 });
 

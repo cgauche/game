@@ -101,7 +101,7 @@ export function registerCascadeApplier(kind: string, apply: CascadeApplier): voi
 /**
  * PLI « APRÈS LE DÉ » d'une étape à table — ce que le `kind` dérive du tirage AU MOMENT où il tombe,
  * et qui ne peut PAS être re-dérivé plus tard : la sévérité d'une Blessure critique consomme du RNG
- * même sous dé posé (`engine/critical.rollCritical`, Sauvagerie/relances), donc la recalculer au rendu
+ * même sous dé posé (`engine/critical.resolveCritique`, Sauvagerie/relances), donc la recalculer au rendu
  * donnerait une autre Blessure à chaque redessin. Le pli pose sur l'étape ce que la fenêtre montre
  * (charge de l'applier + `reveal`) : le dé, la ligne et la conséquence parlent d'UN SEUL tirage.
  *

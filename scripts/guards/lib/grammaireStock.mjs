@@ -48,7 +48,6 @@ const e = (raison, lot) => ({ raison, lot, date: DATE });
 
 export const GRAMMAIRE_STOCK = {
   // ── Graphies historiques de COMPÉTENCE (`skill`, `skillId`) ──────────────────────────────────
-  'src/data/schemas/defs/aa-criticals.ts:aaEntrySchema.resist|alias|skill': e('Test de résistance d’une blessure critique authoré par LIBELLÉ de Compétence sous `skill`.', L2),
   // #1467 L1b V-FLIP-ENTITE-b : la ligne REVIT sous le binding `doc` — l'adoption de `document()`
   // l'avait fait sortir du scan (l'argument `champs` n'était pas visité), pas de la déclaration.
   // Le champ `skill` est toujours là, la donnée n'a pas bougé.

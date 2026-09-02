@@ -62,7 +62,13 @@ import type { Scene } from './scene';
 // `state.scene` comprise : une save de 37 rouvrirait sur une scène vivante sans `type`, que le seam
 // `parseProject` refuserait au prochain export/import de son projet. La save se jette
 // (politique 2 ci-dessus).
-export const SAVE_VERSION = 38;
+// 38 → 39 (#1657 B2a, #1682) : le déclencheur d'escalade PERSISTÉ sur une séquelle
+// (`Trauma.critTrigger`) change de forme — sa graphie propriétaire `{resist:{difficulty, onFail}}`
+// devient le nœud `test` du Flow (`noeudTest`), la forme UNIQUE du jet en donnée. Une save de 38
+// rouvrirait avec une Commotion cérébrale dont `test` est `undefined` : `fireCritTriggers` lirait
+// `trig.test.test.difficulty` sur rien et le critique suivant crasherait. La save se jette
+// (politique 2 ci-dessus).
+export const SAVE_VERSION = 39;
 
 export interface SaveMeta {
   version: number;

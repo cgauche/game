@@ -147,11 +147,11 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
   it('le CONTENU des deux listes d’exemption est gelé (un ajout sort des entrées du cliquet)', () => {
     // Le cardinal ne suffit pas : un échange à cardinal constant doit rougir. On gèle les CLÉS.
     expect(Object.keys(SOURCE_EN_PROFONDEUR).sort()).toEqual([
-      // `aa-criticals` y entre par #1467 L1b V-FLIP-CONFIG : sa note libre `_source` est morte, ses
-      // 80 entrées portent chacune leur folio (83/84/85/86), et la racine reste NUE.
       // `miscast` en SORT par #1467 L1b V-FLIP-TABLE : son fichier porte 5 DOCUMENTS, chacun avec SA
       // `source` à son entrée de premier niveau — il n'y a plus de racine nue à exempter.
-      'aa-criticals', 'arcane-phenomena', 'crew-test-types', 'criticals', 'disponibilite', 'land-cargo',
+      // `criticals` et `aa-criticals` en SORTENT par #1657 B2a, MEME chemin : les deux racines nues
+      // sont devenues 8 documents-tables dans un seul fichier, chacun portant SA `source`.
+      'arcane-phenomena', 'crew-test-types', 'disponibilite', 'land-cargo',
       'mass-battle', 'naval-progression', 'river-perils', 'sea-cargo', 'sea-events',
       'sea-navigation', 'sea-perils', 'sea-weather', 'ship-construction', 'weather',
     ]);
@@ -169,7 +169,8 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     expect(communes).toEqual([]);
     // 50 → 51 : `aa-criticals` rejoint `SOURCE_EN_PROFONDEUR` (#1467 L1b V-FLIP-CONFIG).
     // 51 → 50 : `miscast` en sort (#1467 L1b V-FLIP-TABLE).
-    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(50);
+    // 50 → 48 : `criticals` et `aa-criticals` en sortent (#1657 B2a) — le régime ne fait que décroître.
+    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(48);
   });
 
   it('`maison` est TOUJOURS une chaîne — zéro drapeau booléen, à TOUTE profondeur des deux racines', () => {

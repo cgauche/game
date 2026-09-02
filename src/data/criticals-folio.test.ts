@@ -1,18 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { auditFolio } from '../../scripts/guards/lib/folioIntegrity.mjs';
-import aa from './aa-criticals.json';
+import { CRITIQUE_DOCS } from './criticals';
+import type { SourceRef } from './schemas/grammaire/valeurs';
 
 /**
- * Garde-fou « le folio déclaré par une entrée d'`aa-criticals.json` est celui où vit sa `desc` »
- * (#1467 L1b V-FLIP-CONFIG).
+ * Garde-fou « le folio déclaré par une entrée d'Aux Armes de `criticals.json` est celui où vit sa
+ * `desc` » (#1467 L1b V-FLIP-CONFIG ; les 4 tables AA sont devenues 4 des 8 documents de
+ * `criticals.json` en #1657 B2a).
  *
  * Le dataset a longtemps porté une NOTE LIBRE `_source` annonçant « p.≈118-124 » : ce sont des pages
- * PDF, pas des folios imprimés. La migration
- * `scripts/migrations/2026-08-28-l1b-7b-aa-criticals-source.mjs` l'a remplacée par un
- * `source: {book:'aux-armes', page}` PAR ENTRÉE, aux folios relevés sur les ancres `data-folio` de
- * `Source/WH - V4 - Aux Armes/07 - MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE.md` : 83 juste avant
- * « TABLEAU DES BLESSURES CRITIQUES À LA TÊTE », 84 « … AU BRAS », 85 « … AU TORSE », 86
- * « … À LA JAMBE ». Ce test est ce qui rend la migration VÉRIFIABLE plutôt que déclarée.
+ * PDF, pas des folios imprimés. Elle est morte, remplacée par un `source: {book:'aux-armes', page}`
+ * PAR ENTRÉE — et, depuis #1657 B2a, par document-table aussi. Les folios sont relevés sur les ancres
+ * `data-folio` de `Source/WH - V4 - Aux Armes/07 - MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE.md` : 83 juste
+ * avant « TABLEAU DES BLESSURES CRITIQUES À LA TÊTE », 84 « … AU BRAS », 85 « … AU TORSE », 86
+ * « … À LA JAMBE ». Ce test est ce qui rend ce relevé VÉRIFIABLE plutôt que déclaré.
  *
  * COUVERTURE DITE, PAS SUPPOSÉE. `auditFolio` juge par la voie VERBATIM : il cherche la `desc` dans
  * l'extraction Markdown. Mesuré sur les 80 entrées : 22 y sont retrouvées (verdict `folio-ok` sur le
@@ -25,7 +26,7 @@ import aa from './aa-criticals.json';
  *    NOMMÉES et mesurées — leur `desc` est le MÊME texte dans les deux tables voisines.
  */
 
-type Entree = { id: string; desc: string; source: { book: string; page: number } };
+type Entree = { id: string; desc: string; source: SourceRef };
 type Famille = 'tete' | 'bras' | 'corps' | 'jambe';
 
 /** Folio IMPRIMÉ de chaque table, et son CROISÉ (la table voisine — la plus petite erreur possible). */
@@ -33,13 +34,14 @@ const FOLIO: Record<Famille, number> = { tete: 83, bras: 84, corps: 85, jambe: 8
 const CROISE: Record<Famille, number> = { tete: 84, bras: 83, corps: 86, jambe: 85 };
 const FAMILLES = Object.keys(FOLIO) as Famille[];
 
-const doc = aa as unknown as Record<string, unknown>;
-const entreesDe = (f: Famille) => doc[f] as Entree[];
+/** Les 4 documents-tables d'Aux Armes, adressés par leur DISCRIMINANT (`jeu`), jamais par leur rang. */
+const docAA = (f: Famille) => CRITIQUE_DOCS.find((d) => d.jeu === 'aa' && d.localisation === f)!;
+const entreesDe = (f: Famille) => docAA(f).entries as unknown as Entree[];
 const toutes = FAMILLES.flatMap((f) => entreesDe(f).map((e) => ({ ...e, famille: f })));
 
 const verdict = (page: number, desc: string) => auditFolio({ book: 'aux-armes', page, desc }).verdict;
 
-describe('aa-criticals.json — folio de source confronté à l’extraction (#1467 L1b)', () => {
+describe('criticals.json (Aux Armes) — folio de source confronté à l’extraction (#1467 L1b, #1657 B2a)', () => {
   it('les 80 entrées portent leur `source` au folio de LEUR famille (83/84/85/86)', () => {
     expect(toutes.length).toBe(80);
     const fautifs = toutes
@@ -77,9 +79,19 @@ describe('aa-criticals.json — folio de source confronté à l’extraction (#1
     expect(attestees.length - survivantes.length).toBe(20);
   });
 
-  it('la note libre `_source` est MORTE — la provenance vit à l’entrée', () => {
-    expect(doc._source).toBeUndefined();
-    expect(doc.id).toBe('aa-criticals');
-    expect(doc.type).toBe('aa-criticals');
+  it('la note libre `_source` est MORTE — et chaque document-table porte le folio de SA table', () => {
+    for (const f of FAMILLES) {
+      const d = docAA(f) as unknown as Record<string, unknown> & { source?: SourceRef };
+      expect(d._source, `${f} : note libre ressuscitée`).toBeUndefined();
+      expect(d.id).toBe(`criticals-aa-${f}`);
+      expect(d.type).toBe('criticals');
+      expect(d.jeu).toBe('aa');
+      // Le document répète le folio que portent ses 20 rangées — pas une racine qui les AVALE (elles
+      // gardent le leur), le folio de la table, celui-là même que ce fichier confronte à l'extraction.
+      expect(d.source?.book, `${f} : livre`).toBe('aux-armes');
+      expect(d.source?.page, `${f} : folio de table`).toBe(FOLIO[f]);
+      expect(d.source?.note, `${f} : la note dit COMMENT le folio est relevé`).toContain('data-folio');
+      for (const e of entreesDe(f)) expect(e.source.page, `${f}/${e.id}`).toBe(FOLIO[f]);
+    }
   });
 });

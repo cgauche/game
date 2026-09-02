@@ -236,7 +236,7 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // touchée : c'est le lexique qui reconnaît des formes déjà posées, et le cliquet SUIT la baisse.
 // Cliquet DESCENDU 1145 → 1141 (#1463 L-de-1, 2026-09-01) : le lexique NOMME la composition d'une
 // `Formula` (concept `formule`, signatures `sum` et `sinPoints`), et 7 signatures quittent le hors
-// strate pour la strate Valeur — `aa-criticals`/`criticals › durationRounds | sum`,
+// strate pour la strate Valeur — `criticals › durationRounds | sum` (les deux jeux),
 // `etats › amount | sum`, `miscast › amount|rounds|value | sum` et `miscast › sum | sinPoints` —,
 // tandis qu'une 8ᵉ entre au stock des FORMES comme divergente (`sea-cargo › offerPrice | sum+…`).
 // Les 10 termes de Péché de la Colère des dieux sont à la forme CIBLE : ils ne pèsent nulle part.
@@ -743,7 +743,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // de table se déclarent UNE fois — `plageSchema` (`grammaire/valeurs.ts`) — et les schémas de
       // RANGÉE la composent PAR SHAPE (`z.strictObject({ ...plageSchema.shape, … })`, graphie unique
       // de dérivation tenue par `grammaire-guard.test.ts`). Dix lignes SORTENT : sept par composition
-      // (criticals, aa-criticals, localisation — une ligne à 2 occurrences —, structure-criticals,
+      // (criticals × 2 jeux, localisation — une ligne à 2 occurrences —, structure-criticals,
       // water-exposure › diseases, mutationTables › ranges, obsessions › entries), trois par ADOPTION
       // NUE, les deux bornes y étant toute la charge utile (sea-navigation, tavernGames › libre et
       // › targetRange). `shipCritEntrySchema` (grammaire) porte river/ship-criticals, déjà hors stock.
@@ -955,7 +955,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 400 → 402 (#862) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
       // … puis 402 → 404 (#674) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
       // … puis 404 → 403 (#1463 L-de-1) : cf. le cliquet `STRUCTURES_OPS` ci-dessus.
-      'L1c #1468': 403,
+      // … puis 403 → 391 (#1657 B2a) : les 12 lignes de signature d'op d'`aa-criticals.json` FUSIONNENT
+      // dans celles de `criticals.json` — un fichier de moins, les mêmes ops (les occurrences se
+      // somment, cf. le cliquet `STRUCTURES_OPS` ci-dessus).
+      'L1c #1468': 391,
       // L1d #1469 : 62 → 61 (#1552) — « La Diligence » CITE désormais son folio à la racine
       // (`ennemi-dans-l-ombre` 12, la référence que son bloc narratif portait déjà en profondeur) ;
       // sa ligne « source | clé absente » est SOLDÉE.
@@ -964,7 +967,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `STRUCTURES_ENVELOPPE` ci-dessus).
       // … puis 59 → 58 (#1463 L-gram-4) : la redéclaration du def `progression-schemas-derived.ts`
       // sort — il compose `sourceRefSchema.shape` et le générateur émet `page`.
-      'L1d #1469': 58 /* +2 : alsoIn creatures/species posés par e89a836d3 SANS leur ligne de stock (sillage C1 #1457) — le lot RE-GONFLE à titre de dérive relevée, à SOLDER par la vague L1d (#1469) */,
+      // … puis 58 → 56 (#1657 B2a) : les DEUX lignes « source | clé absente » des racines de
+      // `criticals.json` et `aa-criticals.json` sont SOLDÉES — les 8 documents-tables qui les
+      // remplacent portent chacun leur `source` (LDB 174 ×4, AA 83/84/85/86).
+      'L1d #1469': 56 /* +2 : alsoIn creatures/species posés par e89a836d3 SANS leur ligne de stock (sillage C1 #1457) — le lot RE-GONFLE à titre de dérive relevée, à SOLDER par la vague L1d (#1469) */,
       // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
       // … puis 48 → 18 (commit 3c) : cette référence PLATE MEURT à SON TOUR — 30 lignes s'éteignent avec
@@ -1020,7 +1026,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (`maladies › symptoms {difficulty,symptomId}`, sa Difficulté RÉSOUT donc la projection garde les
       // deux clés) et la RÈGLE d'une Activité (`activities › rule {id-nu}`, `augure` → `tableau-augure`,
       // que la classification en `test` empêchait de mesurer). La somme L2+L3+L4 BAISSE : 494 → 485.
-      'L3 #1463': 385,
+      // … puis 385 → 376 (#1657 B2a) : 7 lignes de référence d'`aa-criticals.json` fusionnent dans
+      // celles de `criticals.json`, et les 2 lignes `onFail` MEURENT — la conséquence d'un jet vit
+      // dans la branche `fail` du nœud `test`, sous `ops` — une seule graphie au lieu de deux.
+      'L3 #1463': 376,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
@@ -1062,7 +1071,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 94 → 90 (#1463 L-gram-3) : les DEUX `price` re-tapés des defs de commerce, la
       // redéclaration `sea-cargo.ts › offerPrice` et la forme `sea-cargo.json › offerPrice {sum+…}`
       // sortent ENSEMBLE (cf. les deux cliquets ci-dessus) : −4.
-      'L4 #1463': 90,
+      // … #1657 B2a : 90 → 85. Les 4 lignes de test d'`aa-criticals.json` fusionnent dans celles de
+      // `criticals.json` (amputation, loss, resist ×2), et `resist` devient le nœud `test` PARTAGÉ :
+      // deux lignes (`test | difficulty` 38, `test | difficulty,skill` 1) là où il y en avait quatre,
+      // plus la redéclaration de def `criticals.ts › resist` qui meurt avec la graphie propriétaire.
+      'L4 #1463': 85,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`
@@ -1195,7 +1208,7 @@ describe('la référence est ANCRÉE sur l’index des ids (contrats positifs)',
     ['creatures.json', 'skills', 'id,value', 'skills.json'],
     ['careerLevels.json', 'skills', 'id,spec', 'skills.json'],
     ['careerLevels.json', 'skills', 'choix,id', 'skills.json'],
-    ['aa-criticals.json', 'ops', 'id,value+…', 'etats.json'],
+    ['criticals.json', 'ops', 'id,value+…', 'etats.json'],
     ['arene-projet.json', 'members', 'entityId', 'arene-projet.json'],
     ['maladies.json', 'symptoms', 'symptomId', 'symptoms.json'],
     ['activities.json', 'ops', 'tableId+…', 'tables.json'],
@@ -1635,7 +1648,11 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // du réveil du Désespoir).
     // #674 : +2 ops authorées (`aggravateSymptom` + son échelon `grantSymptom`, cycle quotidien de la
     // Pneumonie, EDOC 08 l.104-108).
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2187);
+    // #1657 B2a : +70 ops authorées — la colonne « Blessures » d'Aux Armes (AA 07 l.40) était
+    // construite en TypeScript (`{op:'wounds', amount}` fabriqué au vol par l'ancien lecteur AA) ;
+    // elle descend en DONNÉE avec sa mitigation écrite. 70 rangées la portent (les 6 autres valent
+    // « T » et ne posent aucune op).
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2257);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le

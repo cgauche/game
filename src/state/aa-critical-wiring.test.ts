@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { applyCriticalToTarget } from './combatFlow';
-import { resolveAACritical } from '../engine/aaCritical';
+import { resolveCritique } from '../engine/critical';
 import { inDeathCondition } from '../engine/conditions';
 import { setRule, resetRule } from '../engine/policy';
 import { cannotWieldTwoHanded } from '../engine/trauma';
@@ -30,12 +30,12 @@ const noop = () => {};
 describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)', () => {
   afterEach(() => resetRule('combat-aa-blessures'));
 
-  it('Critique TRIVIAL (« T », l.2521) : n’incrémente PAS criticalWounds', () => {
+  it('Critique TRIVIAL (« T », l.79) : n’incrémente PAS criticalWounds', () => {
     seedBattleRng(1);
     setRule('combat-aa-blessures', 'aa');
     const target = mk();
     // brasD d100 5 → « Choc au poignet » (01-10) = trivial « T ».
-    const crit = resolveAACritical(target, 'brasD', seq(5), 0);
+    const crit = resolveCritique('aa', target, 'brasD', seq(5), { overkill: 0 });
     expect(crit.roll).toBe(5);
     applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
     expect(target.criticalWounds ?? 0).toBe(0); // trivial → non compté pour la mort
@@ -46,27 +46,27 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     setRule('combat-aa-blessures', 'aa');
     const target = mk();
     // brasD d100 25 → « Coupure mineure » (21-25) = 1 Blessure (pas trivial).
-    const crit = resolveAACritical(target, 'brasD', seq(25), 0);
+    const crit = resolveCritique('aa', target, 'brasD', seq(25), { overkill: 0 });
     applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
     expect(target.criticalWounds ?? 0).toBe(1);
   });
 
-  it('Coup Critique sur DOUBLE même avec PB restants (l.2473) : crit appliqué, il reste des Blessures', () => {
+  it('Coup Critique sur DOUBLE même avec PB restants (l.29) : crit appliqué, il reste des Blessures', () => {
     seedBattleRng(1);
     setRule('combat-aa-blessures', 'aa');
     const target = mk({ wounds: { current: 10, max: 10 } });
     // Coup Critique (double) sans overkill : la cible a 10 PB → le Critique s'applique quand même.
-    const crit = resolveAACritical(target, 'brasD', seq(25), 0); // 1 Blessure supplémentaire
+    const crit = resolveCritique('aa', target, 'brasD', seq(25), { overkill: 0 }); // 1 Blessure supplémentaire
     applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
     expect(target.criticalWounds ?? 0).toBe(1);          // Critique bien infligé
     expect(target.wounds.current).toBeGreaterThan(0);    // … alors qu’il RESTE des Blessures (PB > 0)
   });
 
-  it("#125 — « Choc au bras » (l.2557) appliqué de bout en bout : main inutilisable N Rounds → cannotWieldTwoHanded VRAI, PAS permanent", () => {
+  it("#125 — « Choc au bras » (l.113) appliqué de bout en bout : main inutilisable N Rounds → cannotWieldTwoHanded VRAI, PAS permanent", () => {
     seedBattleRng(3);
     setRule('combat-aa-blessures', 'aa');
     const target = mk();
-    const crit = resolveAACritical(target, 'brasG', seq(15), 0); // 11-20 → Choc au bras
+    const crit = resolveCritique('aa', target, 'brasG', seq(15), { overkill: 0 }); // 11-20 → Choc au bras
     expect(target.activeEffects ?? []).toHaveLength(0); // rien avant application (l'ops n'est encore que DONNÉE)
     applyCriticalToTarget(target, 'brasG', true, 0, [], noop, { prerolled: crit });
     expect(cannotWieldTwoHanded(target)).toBe(true); // effet RÉEL, pas du texte arbitré
@@ -79,7 +79,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     seedBattleRng(1);
     // En LDB, aucune notion de trivial : le décompte incrémente toujours.
     const target = mk();
-    const crit = resolveAACritical(target, 'brasD', seq(5), 0); // table AA, mais rule=ldb → pas d’exclusion
+    const crit = resolveCritique('aa', target, 'brasD', seq(5), { overkill: 0 }); // table AA, mais rule=ldb → pas d’exclusion
     applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
     expect(target.criticalWounds ?? 0).toBe(1); // compté (le garde-fou trivial ne s’active qu’en mode AA)
   });
@@ -91,7 +91,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     seedBattleRng(1);
     setRule('combat-aa-blessures', 'aa');
     const target = mk();
-    const crit = resolveAACritical(target, 'tete', seq(78), 0); // 76-80 → Commotion cérébrale
+    const crit = resolveCritique('aa', target, 'tete', seq(78), { overkill: 0 }); // 76-80 → Commotion cérébrale
     expect(crit.label).toBe('Commotion cérébrale');
     const NOW = 5000; // horloge de jeu à un instant NON NUL (mid-partie) — le bug : ctx.now absent → 0
     const get = (() => ({ gameTime: NOW })) as never;
@@ -114,13 +114,13 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
       loadouts: [{ id: 'l1', main: 'w1' }] as never,
       activeLoadoutId: 'l1',
     });
-    const crit = resolveAACritical(target, 'brasD', seq(5), 0); // 01-10 → Choc au poignet (trivial, op disarm)
+    const crit = resolveCritique('aa', target, 'brasD', seq(5), { overkill: 0 }); // 01-10 → Choc au poignet (trivial, op disarm)
     applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
     expect(target.loadouts![0].main).toBeUndefined(); // brasD → main → l'Épée est lâchée
   });
 });
 
-describe('#38 — mort par accumulation de Blessures Critiques (inDeathCondition, l.2517)', () => {
+describe('#38 — mort par accumulation de Blessures Critiques (inDeathCondition, l.73)', () => {
   afterEach(() => resetRule('combat-aa-blessures'));
 
   const dying = (cw: number): Combatant =>
@@ -133,7 +133,7 @@ describe('#38 — mort par accumulation de Blessures Critiques (inDeathCondition
     expect(inDeathCondition(mk({ wounds: { current: 5, max: 10 }, conditions: [{ id: 'inconscient', value: 1 }] as never, criticalWounds: 4 }))).toBe(false); // PB > 0
   });
 
-  it('même formule qu’en LDB (l.34 ≡ l.2517) : comportement identique', () => {
+  it('même formule qu’en LDB (l.34 ≡ l.73) : comportement identique', () => {
     resetRule('combat-aa-blessures');
     expect(inDeathCondition(dying(4))).toBe(true);
     expect(inDeathCondition(dying(3))).toBe(false);

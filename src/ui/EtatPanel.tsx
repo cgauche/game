@@ -331,17 +331,17 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
           tone="sang"
           count={criticalEntries.length}
           // Pas de catégorie UNIQUE (chaque ligne a la SIENNE, `critEntryCodexCategory` par
-          // table×kind — cf. `PlaqueRow` ci-dessous) : le titre de bande pointe vers la catégorie
+          // table×jeu — cf. `PlaqueRow` ci-dessous) : le titre de bande pointe vers la catégorie
           // de la PREMIÈRE entrée listée, la plus « juste » approximation d'un lien de groupe
           // (arbitrage LOT L pt.2 — aucune catégorie fédératrice n'existe au Compendium).
-          codexCategory={critEntryCodexCategory(criticalEntries[0].table, criticalEntries[0].kind)}
+          codexCategory={critEntryCodexCategory(criticalEntries[0].table, criticalEntries[0].jeu)}
         >
           {criticalEntries.map((c) => {
             const row = (
               <PlaqueRow valueMuted
                 key={c.id}
                 prefix={<Icon id="medical/scalpel" size="sm" />}
-                content={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.label}>{c.entry.label}</CodexRef>}
+                content={<CodexRef category={critEntryCodexCategory(c.table, c.jeu)} id={c.id} label={c.entry.label}>{c.entry.label}</CodexRef>}
                 sub={locationLabel(critLocation(c.table), hero.bodyShape)}
                 fx={(c.entry.ops?.length ?? 0) > 0 ? <GameOpChips ops={c.entry.ops!} /> : undefined}
                 value={c.count > 1 ? `×${c.count}` : undefined}

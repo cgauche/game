@@ -11,6 +11,8 @@ metadata:
 
 **Fusions issues de #1673 (2026-09-02, AskUserQuestion, option retenue « Après #1657 B1/B2, avant la famille table »)** : #1681 (enjeux ×4) / #1682 (critiques LDB+AA) / #1684 (catalogue cargo) s'insèrent APRÈS #1657 B2 et AVANT la famille `table` ; #1683 (porte `tableParId`) vient après #1667/#1669 dont il dépend. Prémisse corrigée par l'inventaire : le discriminant est `kind`, jamais `type` (nom de document, littéral de fabrique).
 
+**Train unique B2a + #1682 (2026-09-02, AskUserQuestion, option retenue « UN seul train B2a + #1682 »)** : sur mesure du juge de design (10 des 11 artefacts de B2a réécrits par #1682, double migration/tests/recette), les critiques LDB 18 + AA 07 se traitent en UN train (forme du jet + enveloppe + lecteur unique, discriminant `jeu`). Leçon : deux tickets qui touchent les MÊMES fichiers et les mêmes rangées se mesurent AVANT d'être séquencés — un ordre validé sur une prémisse fausse se ré-arbitre avec la mesure en main.
+
 **Contexte** : deux sessions orchestratrices sur le même arbre pendant 48 h (#1463 × #1457/#1620/#1657) — ~55 trains, zéro conflit d'index, mais re-baselines croisées des plafonds, docs régénérés sur le WIP du voisin, trois rouges CI par trous de gate, worktrees verrouillés, et un diagnostic de DÉRIVE : la vague `grammaire` et le juge `tuples` ont été ouverts sur un arbitrage RELAYÉ par l'autre session, jamais validé directement par l'utilisateur ici.
 
 **Why :** la parallélisation sur les mêmes fichiers coûte plus qu'elle ne rend, et une autorité relayée n'est pas une validation — [[feedback-brief-fait-autorite-grounding-seconde-main]], [[feedback-plan-approuve-sexecute-sans-relance]] (le plan approuvé, pas ses extensions).

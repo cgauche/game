@@ -4,7 +4,7 @@ import type { RNG } from './dice';
 import { hasActiveFlag, consumeActiveFlag } from './activeFlags';
 import { applyOps } from './ops';
 import { addCondition, hasCondition, combatTestPenalty, testStatePenalty, endOfRound } from './conditions';
-import { rollCritical } from './critical';
+import { resolveCritique } from './critical';
 import { findSpell } from '../data';
 import { spellOps } from '../state/flow';
 
@@ -113,14 +113,14 @@ describe('Sommeil — « Si la cible possède un État À Terre, elle gagne Inco
 });
 
 describe('Bénédiction de Sauvagerie — « deux lancers, choisissez le meilleur » (LDB 41)', () => {
-  it('rollCritical(twice) : garde le plus sévère des deux d100', () => {
-    const single = rollCritical(mk(), 'corps', seq([15]), 0);
-    const double = rollCritical(mk(), 'corps', seq([15, 85]), 0, true);
+  it('resolveCritique(twice) : garde le plus sévère des deux d100', () => {
+    const single = resolveCritique('ldb', mk(), 'corps', seq([15]));
+    const double = resolveCritique('ldb', mk(), 'corps', seq([15, 85]), { twice: true });
     expect(single.roll).toBe(15);
     expect(double.roll).toBe(85);
   });
-  it('rollCritical(twice) : l’ordre des tirages est indifférent (max)', () => {
-    const r = rollCritical(mk(), 'corps', seq([85, 15]), 0, true);
+  it('resolveCritique(twice) : l’ordre des tirages est indifférent (max)', () => {
+    const r = resolveCritique('ldb', mk(), 'corps', seq([85, 15]), { twice: true });
     expect(r.roll).toBe(85);
   });
   it('effets curés : Bénédiction de Sauvagerie porte l’op critTwice', () => {

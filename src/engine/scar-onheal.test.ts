@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { stampCriticalEscalation, settleHealedCriticals, removeSurgicalTrauma, passiveSkillSum, surgeryTraumas } from './trauma';
-import { rollCritical } from './critical';
+import { resolveCritique } from './critical';
 import { addCondition, removeCondition } from './conditions';
 import { applyOps, skillDRBonus } from './ops';
 import type { Combatant, HitLocation } from './types';
@@ -86,9 +86,9 @@ describe('#192 — séquelles POST-guérison (cicatrices) : marqueur onHealGrant
     expect(skillDRBonus(c, 'intimidation')).toBe(0);
   });
 
-  it('flux complet via rollCritical + applyOps + retrait d\'État (Blessure spectaculaire, tête 01-10)', () => {
+  it('flux complet via resolveCritique + applyOps + retrait d\'État (Blessure spectaculaire, tête 01-10)', () => {
     const c = C({ conditions: [], criticalWounds: 0 });
-    const res = rollCritical(c, 'tete', seq([5])); // d100=5 → Blessure spectaculaire
+    const res = resolveCritique('ldb', c, 'tete', seq([5])); // d100=5 → Blessure spectaculaire
     expect(res.label).toBe('Blessure spectaculaire');
     c.criticalWounds = 1;
     c.traumas = res.traumas;

@@ -21,9 +21,10 @@ import { fileURLToPath } from 'node:url';
  *
  * PÉRIMÈTRE MESURÉ — les `wounds` écrits en DONNÉE (`src/data/*.json`), tous fichiers, toute
  * profondeur. HORS MESURE — les `wounds` construits en TypeScript, qui héritent du même défaut sans
- * qu'aucune assertion ne les touche : `src/engine/aaCritical.ts:109`, `src/engine/structureCritical.ts:45`,
- * `src/state/combatEffects.ts:913` et `:930`, `src/state/massBattleFlow.ts:80`,
- * `src/state/combatFlow.ts:5899` et `src/state/combatSlice.ts:1917` (ces deux-là n'écrivent que `ignoreTB`).
+ * qu'aucune assertion ne les touche : `src/engine/structureCritical.ts`, `src/state/combatEffects.ts`
+ * (deux sites), `src/state/massBattleFlow.ts`, `src/state/combatFlow.ts` et `src/state/combatSlice.ts`
+ * (ces deux-là n'écrivent que `ignoreTB`). Les 70 ops de la colonne « Blessures » d'Aux Armes
+ * (AA 07 l.40) sont SOUS cette garde : elles vivent en donnée, dans `criticals.json`.
  */
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));

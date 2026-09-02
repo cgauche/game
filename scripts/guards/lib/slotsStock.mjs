@@ -32,13 +32,6 @@
 export const SLOTS_INTERNES = [];
 
 export const SLOTS_SANS_DECLARATION = [
-  { dataset: "aa-criticals.json", champ: "apresDelai", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "aa-criticals.json", champ: "onFail", occurrences: 18, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "aa-criticals.json", champ: "ops", occurrences: 85, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "aa-criticals.json", champ: "perRound", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "aa-criticals.json", champ: "recoveryPenalty", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "aa-criticals.json", champ: "sequels", occurrences: 13, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "aa-criticals.json", champ: "traumas", occurrences: 24, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "actions.json", champ: "armed", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "actions.json", champ: "gate", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "actions.json", champ: "hote", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -145,16 +138,22 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "crew-test-types.json", champ: "essential", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "crew-test-types.json", champ: "roles", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "crew-test-types.json", champ: "rule", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "criticals.json", champ: "apresDelai", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "criticals.json", champ: "onFail", occurrences: 24, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // #1657 B2a (2026-09-02) : `aa-criticals.json` (7 lignes / 144 occ.) et `criticals.json`
+  // (11 lignes / 159 occ.) fusionnent — 18 lignes → 10, à occurrences CONSTANTES (303), le stock
+  // DÉCROÎT en LIGNES sans qu'une seule référence sorte de la mesure. Ce qui a bougé, nommément :
+  // `onFail` (18+24 = 42) rejoint `ops` (85+88 = 173 → 215) : la conséquence d'un jet vit
+  // dans la branche `fail` du nœud `test` ; les 9 autres couples se somment simplement
+  // (1+1 → 2, 13+13 → 26, 24+24 → 48, 2+2 → 4) ou restent propres au LDB (`onHealGrant`,
+  // `onNextCritWhileCondition`, `subject`, `whenClear` — aucune ligne AA ne les portait).
+  { dataset: "criticals.json", champ: "apresDelai", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-02" },
   { dataset: "criticals.json", champ: "onHealGrant", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "criticals.json", champ: "onNextCritWhileCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "criticals.json", champ: "ops", occurrences: 88, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "criticals.json", champ: "perRound", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "criticals.json", champ: "recoveryPenalty", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "criticals.json", champ: "sequels", occurrences: 13, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "criticals.json", champ: "ops", occurrences: 215, lot: "L2/L3 #1473", date: "2026-09-02" },
+  { dataset: "criticals.json", champ: "perRound", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-02" },
+  { dataset: "criticals.json", champ: "recoveryPenalty", occurrences: 4, lot: "L2/L3 #1473", date: "2026-09-02" },
+  { dataset: "criticals.json", champ: "sequels", occurrences: 26, lot: "L2/L3 #1473", date: "2026-09-02" },
   { dataset: "criticals.json", champ: "subject", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "criticals.json", champ: "traumas", occurrences: 24, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "criticals.json", champ: "traumas", occurrences: 48, lot: "L2/L3 #1473", date: "2026-09-02" },
   { dataset: "criticals.json", champ: "whenClear", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "diligence-projet.json", champ: "a", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "diligence-projet.json", champ: "b", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" },

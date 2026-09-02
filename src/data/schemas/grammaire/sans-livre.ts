@@ -101,9 +101,12 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
  * `miscast` en est SORTI le 2026-08-28 (#1467 L1b V-FLIP-TABLE) : son fichier ne porte plus une
  * racine nue mais 5 DOCUMENTS, chacun avec SA `source` (LDB 234 ×2, VDM 24, VDM 25, LDB 218) — la
  * provenance y est redevenue exigible à l'entrée, et la fabrique l'exige.
+ *
+ * `criticals` et `aa-criticals` en sont SORTIS le 2026-09-02 (#1657 B2a) par le MÊME chemin : les
+ * deux racines nues sont devenues 8 DOCUMENTS-tables dans un seul fichier, chacun portant SA
+ * `source` (LDB 174 ×4 ; AA 83/84/85/86) en plus des 160 rangées qui gardent la leur.
  */
 export const SOURCE_EN_PROFONDEUR: Readonly<Record<string, string>> = {
-  'aa-criticals': 'racine nue, citations par sous-entrée (80/80) — une source racine rendrait le dataset aveugle',
   'sea-weather': 'racine nue, citations par sous-entrée (34/34) — une source racine rendrait le dataset aveugle',
   'sea-events': 'racine nue, citations par sous-entrée (58/58) — une source racine rendrait le dataset aveugle',
   'sea-navigation': 'racine nue, citations par sous-entrée (2/2) — une source racine rendrait le dataset aveugle',
@@ -112,7 +115,6 @@ export const SOURCE_EN_PROFONDEUR: Readonly<Record<string, string>> = {
   'land-cargo': 'racine nue, citations par sous-entrée (35/35) — une source racine rendrait le dataset aveugle',
   'river-perils': 'racine nue, citations par sous-entrée (4/4) — une source racine rendrait le dataset aveugle',
   weather: 'racine nue, citations par sous-entrée (10/10) — une source racine rendrait le dataset aveugle',
-  criticals: 'racine nue, citations par sous-entrée (80/80) — une source racine rendrait le dataset aveugle',
   'mass-battle': 'racine nue, citations par sous-entrée (39/39) — une source racine rendrait le dataset aveugle',
   'arcane-phenomena': 'racine nue, citations par sous-entrée (41/41) — une source racine rendrait le dataset aveugle',
   'ship-construction': 'racine nue, citations par sous-entrée (22/22) — une source racine rendrait le dataset aveugle',

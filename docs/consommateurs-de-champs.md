@@ -57,16 +57,16 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 61 | `src/data/index.ts:2866` |
-| `spec` | 19 | `src/data/index.ts:3374` |
+| `id` | 61 | `src/data/index.ts:2869` |
+| `spec` | 19 | `src/data/index.ts:3377` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3386` |
-| `spec` | 1 | `src/data/index.ts:3387` |
-| `value` | 3 | `src/data/index.ts:3388` |
+| `id` | 4 | `src/data/index.ts:3389` |
+| `spec` | 1 | `src/data/index.ts:3390` |
+| `value` | 3 | `src/data/index.ts:3391` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -86,8 +86,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fixed` | 4 | `src/data/index.ts:3450` |
-| `roll` | 3 | `src/data/index.ts:3450` |
+| `fixed` | 4 | `src/data/index.ts:3453` |
+| `roll` | 3 | `src/data/index.ts:3453` |
 
 ### `TrappingRef` (src/data/index.ts)
 
@@ -95,27 +95,27 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `id` | 8 | `src/engine/items.ts:307` |
 | `spec` | 2 | `src/engine/items.ts:309` |
-| `count` | 10 | `src/data/index.ts:3450` |
-| `qualities` | 4 | `src/data/index.ts:3453` |
-| `qualityChoice` | 6 | `src/data/index.ts:3451` |
-| `text` | 2 | `src/data/index.ts:3444` |
-| `vehicleId` | 5 | `src/data/index.ts:3446` |
+| `count` | 10 | `src/data/index.ts:3453` |
+| `qualities` | 4 | `src/data/index.ts:3456` |
+| `qualityChoice` | 6 | `src/data/index.ts:3454` |
+| `text` | 2 | `src/data/index.ts:3447` |
+| `vehicleId` | 5 | `src/data/index.ts:3449` |
 | `label` | 7 | `src/engine/possessionGrants.ts:25` |
-| `creatureId` | 5 | `src/data/index.ts:3448` |
-| `choice` | 5 | `src/data/index.ts:3441` |
-| `wildcard` | 3 | `src/data/index.ts:3442` |
+| `creatureId` | 5 | `src/data/index.ts:3451` |
+| `choice` | 5 | `src/data/index.ts:3444` |
+| `wildcard` | 3 | `src/data/index.ts:3445` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:3423` |
+| `id` | 8 | `src/data/index.ts:3426` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
-| `choix` | 7 | `src/data/index.ts:2866` |
-| `pick` | 2 | `src/data/index.ts:3426` |
-| `of` | 6 | `src/data/index.ts:3425` |
+| `choix` | 7 | `src/data/index.ts:2869` |
+| `pick` | 2 | `src/data/index.ts:3429` |
+| `of` | 6 | `src/data/index.ts:3428` |
 | `table` | — | *absent du type TS* |
-| `random` | 3 | `src/data/index.ts:3428` |
+| `random` | 3 | `src/data/index.ts:3431` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -139,10 +139,10 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | Champ | Lecteurs | Exemple |
 |---|---|---|
 | `stake` | 10 | `src/state/combat/triggeredTest.ts:206` |
-| `skill` | 25 | `src/state/combat/triggeredTest.ts:193` |
+| `skill` | 27 | `src/engine/critical.ts:61` |
 | `sense` | 2 | `src/state/combatEffects.ts:437` |
 | `characteristic` | 21 | `src/state/combat/triggeredTest.ts:193` |
-| `difficulty` | 3 | `src/engine/flowCore.ts:371` |
+| `difficulty` | 6 | `src/engine/critical.ts:71` |
 | `requireSL` | 2 | `src/state/combatEffects.ts:476` |
 | `label` | 11 | `src/state/combat/triggeredTest.ts:224` |
 | `tool` | 2 | `src/state/combatEffects.ts:439` |
@@ -166,7 +166,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | Champ | Lecteurs | Exemple |
 |---|---|---|
 | `min` | 2 | `src/state/travelFlow.ts:1145` |
-| `max` | 1 | `src/ui/compendium/registry.ts:692` |
+| `max` | 1 | `src/ui/compendium/registry.ts:700` |
 | `id` | 8 | `src/engine/mountTravel.ts:214` |
 | `label` | 8 | `src/engine/mountTravel.ts:198` |
 | `desc` | 1 | `src/state/travelPostes.ts:362` |
@@ -189,8 +189,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:704` |
-| `max` | 1 | `src/ui/compendium/registry.ts:704` |
+| `min` | 1 | `src/ui/compendium/registry.ts:712` |
+| `max` | 1 | `src/ui/compendium/registry.ts:712` |
 | `id` | 1 | `src/engine/shipCritical.ts:80` |
 | `label` | 2 | `src/engine/shipCritical.ts:81` |
 | `ops` | 2 | `src/engine/shipCritical.ts:76` |
@@ -203,7 +203,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 6 | `src/data/index.ts:2640` |
+| `id` | 6 | `src/data/index.ts:2643` |
 | `type` | **0 — JAMAIS LU** | — |
 | `label` | **0 — JAMAIS LU** | — |
 | `labelF` | — | *absent du type TS* |
@@ -217,7 +217,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `cover` | 1 | `src/state/lineOfSight.ts:29` |
 | `light` | 1 | `src/state/vision.ts:178` |
 | `foot` | 2 | `src/data/props.types.ts:304` |
-| `volume` | 6 | `src/data/index.ts:2646` |
+| `volume` | 6 | `src/data/index.ts:2649` |
 | `seatSlots` | 2 | `src/data/props.types.ts:342` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
@@ -268,23 +268,23 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `perRound` | 1 | `src/engine/trauma.ts:530` |
-| `apresDelai` | 2 | `src/engine/trauma.ts:531` |
-| `medicalAidGate` | 2 | `src/engine/trauma.ts:538` |
-| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:549` |
-| `onRepeat` | 2 | `src/engine/aaCritical.ts:121` |
-| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:561` |
-| `onHealGrant` | 2 | `src/engine/trauma.ts:555` |
+| `perRound` | 1 | `src/engine/trauma.ts:531` |
+| `apresDelai` | 2 | `src/engine/trauma.ts:532` |
+| `medicalAidGate` | 2 | `src/engine/trauma.ts:539` |
+| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:550` |
+| `onRepeat` | 1 | `src/engine/critical.ts:325` |
+| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:562` |
+| `onHealGrant` | 2 | `src/engine/trauma.ts:556` |
 
 ### `Amputation` (src/data/criticals.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `difficulty` | 1 | `src/engine/critical.ts:64` |
-| `sequels` | 1 | `src/engine/critical.ts:79` |
-| `unites` | 1 | `src/engine/critical.ts:77` |
-| `timing` | 2 | `src/engine/aaCritical.ts:133` |
-| `loss` | 5 | `src/engine/critical.ts:59` |
+| `difficulty` | 1 | `src/engine/critical.ts:95` |
+| `sequels` | 1 | `src/engine/critical.ts:110` |
+| `unites` | 1 | `src/engine/critical.ts:108` |
+| `timing` | 1 | `src/engine/critical.ts:339` |
+| `loss` | 5 | `src/engine/critical.ts:90` |
 
 ## Champs du schéma ABSENTS du type TS
 

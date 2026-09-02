@@ -28,7 +28,7 @@ import traitsJson from './traits.json';
 import qualitiesJson from './qualities.json';
 import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
-import criticalsRawJson from './criticals.json';
+import { critiqueEntries } from './criticals';
 import structureCriticalsRawJson from './structure-criticals.json';
 import miscastRawJson from './miscast.json';
 import trappingsJson from './trappings.json';
@@ -425,10 +425,14 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   // Familles à TABLE (#1117 L2 vague 4b) : la LIGNE tirée est déjà une entrée Codex éditable — son
   // foyer est SA fiche, jamais une fiche de règle doublon (amendement A). La catégorie voyage avec
   // l'id, versée par la re-pose post-tirage (`stakeAtTableRow`, `state/cascade.ts`).
-  criticalsTete: (id) => criticalsRows.tete.some((r) => r.id === id),
-  criticalsBras: (id) => criticalsRows.bras.some((r) => r.id === id),
-  criticalsCorps: (id) => criticalsRows.corps.some((r) => r.id === id),
-  criticalsJambe: (id) => criticalsRows.jambe.some((r) => r.id === id),
+  criticalsTete: (id) => critiqueEntries('criticals-ldb-tete').some((r) => r.id === id),
+  criticalsBras: (id) => critiqueEntries('criticals-ldb-bras').some((r) => r.id === id),
+  criticalsCorps: (id) => critiqueEntries('criticals-ldb-corps').some((r) => r.id === id),
+  criticalsJambe: (id) => critiqueEntries('criticals-ldb-jambe').some((r) => r.id === id),
+  aaCriticalsTete: (id) => critiqueEntries('criticals-aa-tete').some((r) => r.id === id),
+  aaCriticalsBras: (id) => critiqueEntries('criticals-aa-bras').some((r) => r.id === id),
+  aaCriticalsCorps: (id) => critiqueEntries('criticals-aa-corps').some((r) => r.id === id),
+  aaCriticalsJambe: (id) => critiqueEntries('criticals-aa-jambe').some((r) => r.id === id),
   structureCriticals: (id) => structureCriticalRows.some((r) => r.id === id),
   miscastMinor: (id) => miscastMinorRows.some((r) => r.id === id),
   miscastMajor: (id) => miscastMajorRows.some((r) => r.id === id),
@@ -457,7 +461,6 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
 
 /** Rangées BRUTES des tables tirées par une étape, réduites à leur id — le résolveur d'enjeu n'a
  *  besoin que du pool d'ids, et les lit sur le MÊME JSON que le Codex édite. */
-const criticalsRows = criticalsRawJson as Record<'tete' | 'bras' | 'corps' | 'jambe', { id: string }[]>;
 const structureCriticalRows = (structureCriticalsRawJson as { entries: { id: string }[] }).entries;
 const miscastDocs = miscastRawJson as unknown as { id: string; entries: { id: string }[] }[];
 /** Rangées d'UN tableau d'Incantation Imparfaite, par id de DOCUMENT (`miscast.json`) — FAIL-FAST :

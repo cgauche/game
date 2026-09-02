@@ -14,6 +14,7 @@ import { Combatant, CharKey, CHAR_LABELS, HitLocation, ItemInstance, Trauma, Dif
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import type { CritEscalation } from '../data/criticals';
+import { spellOps } from './flowCore';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
 import { findById, findConditionById, findPsychologyById, findTrappingById, refLabel } from '../data';
 import type { CodexTarget } from './ruleRefs';
@@ -150,7 +151,7 @@ export function traumaRecoveryDays(kind: TraumaKind, severity: TraumaSeverity, b
 }
 
 /** Résout la fiche de déchirure/fracture (`traumas.json`) pour un `{kind,severity,location}` — utilisé
- *  par `rollCritical` (refs déjà résolues dans `criticals.json`) et l'éditeur (`inflictTrauma`). */
+ *  par `resolveCritique` (refs déjà résolues dans `criticals.json`) et l'éditeur (`inflictTrauma`). */
 export function dechirureFractureFicheId(kind: TraumaKind, severity: TraumaSeverity, location: HitLocation): string {
   const onLeg = LEG.includes(location);
   const sevW = severity === 'majeur' ? 'majeure' : 'mineure';
@@ -507,10 +508,10 @@ export function tickTraumaEscalation(c: Combatant, _rng: RNG = defaultRNG): stri
 
 /**
  * Instancie l'escalade GATÉE d'un critique (`CritEscalation`, LDB / Aux Armes) — SOURCE UNIQUE partagée par
- * `rollCritical` et `resolveAACritical` :
- *  - `perRound` (« Main ouverte », l.2571) → l'escalade périodique DÉCLARÉE + `awaitingMedicalAid` SUR la
+ * `resolveCritique` (les deux jeux) :
+ *  - `perRound` (« Main ouverte », l.127) → l'escalade périodique DÉCLARÉE + `awaitingMedicalAid` SUR la
  *    plaie chirurgicale (jouée à chaque fin de Round par `tickTraumaEscalation`) ;
- *  - `apresDelai` (« Pied écrasé », l.2624) → `amputateAfterDays` (délai résolu) + `amputateSequel` SUR la
+ *  - `apresDelai` (« Pied écrasé », l.180) → `amputateAfterDays` (délai résolu) + `amputateSequel` SUR la
  *    plaie (séquelle posée si pas de Chirurgie à temps ; décompté à l'entretien par `tickTraumaRecovery`) ;
  *  - « Épaule luxée »/« Genou démis » (`medicalAidGate`) → POUSSE une NOUVELLE séquelle « membre désactivé » à
  *    `location` (pas de plaie chirurgicale : le membre n'est pas amputé mais inutilisable), porteuse de
@@ -560,7 +561,7 @@ export function stampCriticalEscalation(
   }
   if (esc.onNextCritWhileCondition) {
     // « Commotion cérébrale » (LDB 18 l.74) : séquelle porteuse d'un `critTrigger` — tant que le personnage
-    // porte `whileCondition`, un critique subséquent à `location` impose le Test `resist`. Dédupliquée (une
+    // porte `whileCondition`, un critique subséquent à `location` impose le nœud `test`. Dédupliquée (une
     // même Localisation+État n'arme qu'un seul déclencheur : plusieurs commotions ne multiplient pas le Test).
     const n = esc.onNextCritWhileCondition;
     const same = (t: Trauma) => t.critTrigger?.whileCondition === n.whileCondition && t.critTrigger?.location === n.location;
@@ -568,7 +569,7 @@ export function stampCriticalEscalation(
       traumas.push({
         label: n.label,
         location,
-        critTrigger: { location: n.location, whileCondition: n.whileCondition, resist: { difficulty: n.resist.difficulty, onFail: n.resist.onFail.map((o) => ({ ...o })) } },
+        critTrigger: { location: n.location, whileCondition: n.whileCondition, test: structuredClone(n.test) },
       });
     }
   }
@@ -602,9 +603,10 @@ export function settleHealedCriticals(c: Combatant): string[] {
 /** Déclencheurs d'escalade (« Commotion cérébrale » : autre critique à la tête pendant Exténué → Test de
  *  Résistance ou Inconscient, LDB 18 l.74) armés sur `target` (`Trauma.critTrigger`) que le critique COURANT
  *  (à `location`) fait feu : pour chaque signature DISTINCTE dont le personnage porte l'État `whileCondition`
- *  et dont la `location` correspond (ou est absente), un Test de sauvegarde `resist` (valeur `resistVal`, RNG
- *  seedé) dont l'ÉCHEC renvoie ses `onFail`. Lu au point unique de résolution (rollCritical/resolveAACritical) ;
- *  n'arme rien et ne consomme AUCUN RNG en l'absence de déclencheur (patron partagé des escalades). */
+ *  et dont la `location` correspond (ou est absente), le nœud `test` de sauvegarde est joué (valeur `resistVal`,
+ *  RNG seedé) et la branche empruntée rend ses ops (lecture PURE, `spellOps`). Lu au point unique de résolution
+ *  (`resolveCritique`) ; n'arme rien et ne consomme AUCUN RNG en l'absence de déclencheur (patron partagé des
+ *  escalades). */
 export function fireCritTriggers(target: Combatant, location: HitLocation, resistVal: number, rng: RNG = defaultRNG): GameOp[] {
   const out: GameOp[] = [];
   const seen = new Set<string>();
@@ -616,8 +618,8 @@ export function fireCritTriggers(target: Combatant, location: HitLocation, resis
     const key = `${trig.location ?? ''}|${trig.whileCondition}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    const res = rollTest(resistVal, trig.resist.difficulty, rng);
-    if (!res.success) out.push(...trig.resist.onFail.map((o) => ({ ...o })));
+    const res = rollTest(resistVal, trig.test.test.difficulty, rng);
+    out.push(...spellOps(res.success ? trig.test.success : trig.test.fail, 'target').map((o) => ({ ...o })));
   }
   return out;
 }

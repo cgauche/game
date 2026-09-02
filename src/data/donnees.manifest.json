@@ -204,10 +204,9 @@
         },
         {
           "files": [
-            "criticals.json",
-            "aa-criticals.json"
+            "criticals.json"
           ],
-          "desc": "Blessures critiques par localisation (base · variante *Aux Armes*)"
+          "desc": "Blessures critiques par localisation — 8 documents-tables, un par jeu × Localisation (base · variante *Aux Armes*)"
         },
         {
           "files": [

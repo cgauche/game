@@ -833,7 +833,7 @@ export interface ActiveEffect {
    *  consommé à l'usage au point de relance des flux de jet (engine/activeFlags). */
   freeReroll?: boolean;
   /** « Deux lancers, choisissez le meilleur » quand le PORTEUR inflige une Blessure Critique
-   *  (Bénédiction de Sauvagerie, LDB 41) — lu par rollCritical via l'attaquant. */
+   *  (Bénédiction de Sauvagerie, LDB 41) — lu par `resolveCritique` via l'attaquant. */
   critRollTwice?: boolean;
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —
    *  lu par combatTestPenalty/testStatePenalty. */
@@ -1022,11 +1022,11 @@ export interface Trauma {
   bleedOnReinjury?: number;
   /** Déclencheur d'escalade posé par un critique (« Commotion cérébrale », LDB 18 l.74) : tant que le
    *  personnage porte l'État `whileCondition`, tout critique SUBSÉQUENT à `location` (ou toute Localisation si
-   *  absente) impose le Test de sauvegarde `resist` (échec → ses `onFail`). Stampé par `stampCriticalEscalation`,
-   *  lu par `fireCritTriggers` au point unique de résolution des critiques. */
-  critTrigger?: { location?: HitLocation; whileCondition: string; resist: { difficulty: Difficulty; onFail: import('./ops').GameOp[] } };
+   *  absente) impose le nœud `test` de sauvegarde (la branche empruntée porte ses ops). Stampé par
+   *  `stampCriticalEscalation`, lu par `fireCritTriggers` au point unique de résolution des critiques. */
+  critTrigger?: { location?: HitLocation; whileCondition: string; test: import('../data/criticals').CritTestNode };
   /** Amputation DIFFÉRÉE à la fin de la rencontre (LDB 18, « Coupure à l'orteil » l.171 : « Une fois la
-   *  rencontre terminée… ») : marqueur posé par `rollCritical` pour un `amputation.timing === 'postEncounter'`,
+   *  rencontre terminée… ») : marqueur posé par `resolveCritique` pour un `amputation.timing === 'postEncounter'`,
    *  résolu par `resolvePostEncounterAmputations` au foyer de fin de combat (jet + séquelle/plaie/États). */
   pendingAmputation?: import('../data/criticals').Amputation;
   /** Séquelle POST-guérison (LDB 18 l.61/72 : « Une fois que la blessure est guérie… ») : marqueur de la
@@ -1610,10 +1610,10 @@ export interface Combatant {
   /** A subi ≥1 Blessure critique DANS le combat courant (transitoire) — déclenche en fin de combat le Test
    *  de Résistance Très Facile (+60) « ou Infection Mineure » (LDB 20 l.90). Remis à zéro au prochain combat. */
   tookCriticalThisFight?: boolean;
-  /** Historique des ENTRÉES de Blessure critique subies (ids STABLES de `criticals.json`/`aa-criticals.json`),
+  /** Historique des ENTRÉES de Blessure critique subies (ids STABLES de `criticals.json`),
    *  appendé à chaque résolution (`applyCriticalToTarget`). PERSISTE à vie (jamais réinitialisé au combat) :
    *  sert les escalades conditionnées à l'occurrence (« Si vous tombez une seconde fois sur cette blessure… »,
-   *  Blessure majeure à l'oreille, LDB 18 l.71) — lu par `rollCritical`/`resolveAACritical` (`escalation.onRepeat`). */
+   *  Blessure majeure à l'oreille, LDB 18 l.71) — lu par `resolveCritique` (`escalation.onRepeat`). */
   critEntriesSuffered?: string[];
   /** La blessure a été PANSÉE (matériel stérile / pansement) DANS le combat courant — un soin de Guérison
    *  réussi ou un bandage suffit : « aucune Infection ne se développera suite à la blessure »

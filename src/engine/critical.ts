@@ -1,20 +1,31 @@
 /**
- * Résolution des Blessures critiques — Livre de base, « Traumatisme » (LDB 18).
- * Jet 1d100 sur la table de la localisation ; -20 si l'overkill dépasse le Bonus d'Endurance
- * (LDB 18 l.17, min 01) ; PB perdus en ignorant BE+PA ; États appliqués + Test de Résistance auto-résolu.
+ * Résolution des Blessures critiques — LECTEUR UNIQUE des DEUX systèmes (#1657 B2a, #1682) :
+ * le Livre de base (« Traumatisme », LDB 18) et l'approche ALTERNATIVE d'Aux Armes (AA 07,
+ * l.13-186), activée par la règle facultative `combat-aa-blessures = 'aa'`.
+ *
+ * Le SOCLE résout la séquence, la même pour les deux jeux : lookup `findTableEntry` → jet de la
+ * rangée → `onRepeat` → `traumas` → `amputation` → `stampCriticalEscalation` → `fireCritTriggers`.
+ * Les FEUILLES n'adressent que ce qui diffère, déclaré une fois dans `REGIMES` : le modificateur de
+ * SÉVÉRITÉ du d100 (LDB 18 l.17 : −20 quand l'overkill dépasse le Bonus d'Endurance, minimum 01 /
+ * AA 07 l.36 : +10 par Blessure au-delà de 0) et le libellé de journal.
  */
 import { d100, d10, RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
+import { testValue } from './skills';
 import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
-import { CRITICAL_TABLES, criticalTableFor, type Amputation, type CritEntry } from '../data/criticals';
+import {
+  CRITIQUE_DOCS, critTableKeyFor, critiqueDoc, critiqueTable,
+  type Amputation, type CritEntry, type CritTableKey, type CritTestNode, type JeuDeCritique,
+} from '../data/criticals';
 import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers, consolidateAmputations, setTraumaCount, AMPUTATION_WOUND_DESC } from './trauma';
 import { rule } from './policy';
-import { resolveAACritical } from './aaCritical';
+import { spellOps } from './flowCore';
 import { applyOps, resolveFormula, type GameOp } from './ops';
-import aaCriticalsJson from '../data/aa-criticals.json';
+
+export type { CritTableKey, JeuDeCritique };
 
 /**
  * Séquelles PERMANENTES d'une amputation (LDB 18 l.233-286) — distinctes de la plaie chirurgicale : elles
@@ -42,8 +53,28 @@ export function critResistValue(c: Combatant): number {
 }
 
 /**
- * Résout une Amputation (LDB 18 l.237) — SOURCE UNIQUE partagée par `rollCritical` (LDB), `resolveAACritical`
- * (Aux Armes) et la résolution post-rencontre. Renvoie l'effet immédiat (`ops` : États À Terre/Sonné/Inconscient)
+ * Valeur testée par un nœud de Critique. `test.skill` (AA 07 l.165 : Test d'Athlétisme, pas de
+ * Résistance) passe par `testValue`, qui couvre déjà les compétences de base non entraînées ; sans
+ * compétence nommée, le jet est le Test de Résistance du critique (`critResistValue`).
+ */
+function valeurTestee(target: Combatant, node: CritTestNode): number {
+  const skill = node.test.skill;
+  return skill ? testValue(target, skill.id, undefined, skill.spec) : critResistValue(target);
+}
+
+/**
+ * Résout le nœud `test` d'une rangée (RNG seedé) et rend les ops de la branche empruntée. Lecture
+ * PURE du Flow : `spellOps` extrait les `GameOp` des feuilles `EffectOp` de la branche — aucune
+ * mécanique n'est déduite du texte, et une branche `success` non vide serait servie tout autant.
+ */
+function opsDuNoeud(target: Combatant, node: CritTestNode, rng: RNG): GameOp[] {
+  const res = rollTest(valeurTestee(target, node), node.test.difficulty, rng);
+  return spellOps(res.success ? node.success : node.fail, 'target').map((o) => ({ ...o }));
+}
+
+/**
+ * Résout une Amputation (LDB 18 l.237) — SOURCE UNIQUE partagée par `resolveCritique` (les deux jeux)
+ * et la résolution post-rencontre. Renvoie l'effet immédiat (`ops` : États À Terre/Sonné/Inconscient)
  * et les `traumas` (plaie chirurgicale `needsSurgery` + séquelles permanentes). RNG consommé :
  *  - `loss.difficulty` présent → 1 Test SÉPARÉ (gate) D'ABORD : sa RÉUSSITE annule TOUT (ni séquelle, ni plaie, ni
  *    États). Sinon on continue (« Coupure à l'orteil » : gate Intermédiaire).
@@ -82,7 +113,7 @@ export function resolveAmputation(amp: Amputation, location: HitLocation, resist
 
 /**
  * Résout à la FIN de la rencontre (LDB 18) les amputations DIFFÉRÉES (`Trauma.pendingAmputation`, posé par
- * `rollCritical` pour un `amputation.timing === 'postEncounter'`, ex. « Coupure à l'orteil »). Retire les
+ * `resolveCritique` pour un `amputation.timing === 'postEncounter'`, ex. « Coupure à l'orteil »). Retire les
  * marqueurs, applique les États résultants et pose les séquelles/plaie, puis consolide (orteils cumulés).
  * Mute `c` ; renvoie le journal. Appelé au foyer de fin de combat (`state/combatFlow.ts`).
  */
@@ -104,19 +135,19 @@ export function resolvePostEncounterAmputations(c: Combatant, rng: RNG = default
 
 export interface CriticalResolved {
   location: HitLocation;
-  /** id STABLE de l'entrée de table (`criticals.json`/`aa-criticals.json`) — appendé à `critEntriesSuffered`
+  /** id STABLE de l'entrée de table (`criticals.json`) — appendé à `critEntriesSuffered`
    *  par `applyCriticalToTarget` pour l'historique d'occurrence (escalade `onRepeat`). */
   entryId: string;
   label: string;
-  /** Effet IMMÉDIAT RÉSOLU (PB ignorant BE+PA + États immédiats + onFail du Test de Résistance/Amputation),
-   *  appliqué par `applyOps` chez l'appelant — valeurs littérales (RNG déjà consommé ici). */
+  /** Effet IMMÉDIAT RÉSOLU (PB ignorant BE+PA + États immédiats + branche empruntée du nœud `test` +
+   *  Amputation), appliqué par `applyOps` chez l'appelant — valeurs littérales (RNG déjà consommé ici). */
   ops: GameOp[];
   lethal: boolean;
   /** Traumatismes posés (LDB 18), à la localisation du critique. */
   traumas: Trauma[];
   /** Texte canon (LONG TERME), DISPLAY-ONLY — jamais parsé pour de la mécanique. */
   desc: string;
-  /** Jet d100 effectif (après -20 éventuel). */
+  /** Jet d100 effectif (après modificateur de sévérité). */
   roll: number;
   log: string;
 }
@@ -133,44 +164,23 @@ export function critImmediateSummary(ops: GameOp[]): { woundsLost: number; condi
   return { woundsLost, conditions };
 }
 
-/** Table de rattachement d'un Coup Critique (bras/jambe couvrent les DEUX côtés — LDB 18 : une SEULE
- *  table par membre, projetée sur `brasG`/`brasD` et `jambeG`/`jambeD`, cf. `CRITICAL_TABLES`). */
-export type CritTableKey = 'tete' | 'bras' | 'corps' | 'jambe';
-
-const AA_T = aaCriticalsJson as unknown as { tete: CritEntry[]; bras: CritEntry[]; corps: CritEntry[]; jambe: CritEntry[] };
-
-/** Catégorie Codex EXACTE (`registry.ts`) d'un Coup Critique, par table + système actif (LDB/Aux Armes). */
-export function critEntryCodexCategory(table: CritTableKey, kind: 'ldb' | 'aa'): string {
+/** Catégorie Codex EXACTE (`registry.ts`) d'un Coup Critique, par table + jeu (LDB/Aux Armes). */
+export function critEntryCodexCategory(table: CritTableKey, jeu: JeuDeCritique): string {
   const seg = table === 'tete' ? 'Tete' : table === 'bras' ? 'Bras' : table === 'corps' ? 'Corps' : 'Jambe';
-  return `${kind === 'aa' ? 'aaCriticals' : 'criticals'}${seg}`;
+  return `${jeu === 'aa' ? 'aaCriticals' : 'criticals'}${seg}`;
 }
 
-/** Retrouve l'entrée de Coup Critique (catalogue LDB ou Aux Armes) portant cet id STABLE — un id de
- *  `critEntriesSuffered` (`Combatant`) n'a PAS de localisation attachée (compteur d'occurrence pour
- *  l'escalade `onRepeat` seulement, LDB 18 l.71) : `bras`/`jambe` regroupent les deux côtés, on ne peut
- *  donc afficher que la TABLE (« Bras »/« Jambe »), pas le côté précis (G/D). SOURCE UNIQUE de lecture
- *  d'un id de `critEntriesSuffered` — l'onglet État (rendu du journal des Blessures critiques subies)
- *  et tout futur point d'affichage passent par ici. */
-export function findCritEntrySuffered(id: string): { entry: CritEntry; table: CritTableKey; kind: 'ldb' | 'aa' } | undefined {
-  const ldbTables: [CritTableKey, CritEntry[]][] = [
-    ['tete', CRITICAL_TABLES.tete],
-    ['bras', CRITICAL_TABLES.brasG],
-    ['corps', CRITICAL_TABLES.corps],
-    ['jambe', CRITICAL_TABLES.jambeG],
-  ];
-  for (const [table, entries] of ldbTables) {
-    const entry = entries.find((e) => e.id === id);
-    if (entry) return { entry, table, kind: 'ldb' };
-  }
-  const aaTables: [CritTableKey, CritEntry[]][] = [
-    ['tete', AA_T.tete],
-    ['bras', AA_T.bras],
-    ['corps', AA_T.corps],
-    ['jambe', AA_T.jambe],
-  ];
-  for (const [table, entries] of aaTables) {
-    const entry = entries.find((e) => e.id === id);
-    if (entry) return { entry, table, kind: 'aa' };
+/** Retrouve l'entrée de Coup Critique portant cet id STABLE — un id de `critEntriesSuffered`
+ *  (`Combatant`) n'a PAS de localisation attachée (compteur d'occurrence pour l'escalade `onRepeat`
+ *  seulement, LDB 18 l.71) : `bras`/`jambe` regroupent les deux côtés, on ne peut donc afficher que la
+ *  TABLE (« Bras »/« Jambe »), pas le côté précis (G/D). SOURCE UNIQUE de lecture d'un id de
+ *  `critEntriesSuffered` — l'onglet État (rendu du journal des Blessures critiques subies) et tout
+ *  futur point d'affichage passent par ici. UNE boucle sur les 8 documents : un 9ᵉ tableau y entre
+ *  sans une ligne de plus. */
+export function findCritEntrySuffered(id: string): { entry: CritEntry; table: CritTableKey; jeu: JeuDeCritique } | undefined {
+  for (const doc of CRITIQUE_DOCS) {
+    const entry = doc.entries.find((e) => e.id === id);
+    if (entry) return { entry, table: doc.localisation, jeu: doc.jeu };
   }
   return undefined;
 }
@@ -192,69 +202,125 @@ export function critWoundLocation(rng: RNG, bodyShape: BodyShape = 'humanoide', 
 /**
  * Réduction du d100 de SÉVÉRITÉ d'une Blessure critique — LDB 18 l.17 (verbatim : « vous ôtez -20 à
  * votre résultat sur le Tableau des Critiques avec un résultat minimum de 01 »), quand les PB négatifs
- * dépassent le Bonus d'Endurance. SOURCE UNIQUE du modificateur : `rollCritical` l'applique à SON
+ * dépassent le Bonus d'Endurance. SOURCE UNIQUE du modificateur : le régime `ldb` l'applique à SON
  * lookup, la DÉCLARATION d'étape à table le porte en `mod` (négatif) — les deux lisent la même valeur.
  */
 export function critSeverityReduction(target: Combatant, overkill: number): number {
   return overkill > bonus(effectiveChar(target, 'endurance')) ? 20 : 0;
 }
 
-/** Table de rattachement d'une Localisation (repli Bras, LDB 76 l.21, pour une loc sans table dédiée) —
- *  SOURCE UNIQUE de la projection loc→clé de table, partagée par `criticalTableFor` (les lignes) et par
- *  la déclaration d'étape à table (l'`id` de table tirée). */
-export function critTableKeyFor(location: HitLocation): CritTableKey {
-  if (location === 'tete' || location === 'corps') return location;
-  if (location === 'jambeG' || location === 'jambeD') return 'jambe';
-  return 'bras';
+/** Décalage AA du jet de Critique (AA 07 l.36) : +10 par Blessure au-delà de 0. PUR. */
+export function aaCriticalOffset(overkill: number): number {
+  return 10 * Math.max(0, overkill);
 }
 
-/** Lignes LDB de la table d'une clé — passées PAR RÉFÉRENCE au registre d'étapes (zéro duplication). */
-export function critTableRows(key: CritTableKey): CritEntry[] {
-  return key === 'tete' ? CRITICAL_TABLES.tete : key === 'corps' ? CRITICAL_TABLES.corps : key === 'jambe' ? CRITICAL_TABLES.jambeG : CRITICAL_TABLES.brasG;
+/** Ce qu'un JEU adresse — le reste de la résolution est au socle. */
+interface RegimeCritique {
+  /** Modificateur appliqué au d100 NATUREL avant le lookup (le plancher 01 est au socle). */
+  severite(target: Combatant, overkill: number): number;
+  /** En-tête de la ligne de journal. */
+  journal: string;
 }
 
 /**
- * Résout une Blessure critique sur `target` à la `location`. `overkill` = PB perdus au-delà des
- * PB courants (0 pour un Coup Critique sans overkill). Le Test de Résistance d'une entrée est
- * auto-résolu (RNG seedé) : sur un échec, les États `onFail` sont ajoutés à `conditions`.
- *
- * `forcedRoll` = d100 de sévérité INJECTÉ (dé de l'étape à table, dé posé, test) : c'est le dé
- * NATUREL — la réduction d'overkill reste appliquée ICI, comme sur un dé tiré. Il PRIME sur `twice`
- * (aucun dé n'est tiré) : les DEUX lancers de la Bénédiction de Sauvagerie (LDB 41 l.170 : « Quand
- * votre cible inflige par la suite des Blessures Critiques, effectuez deux lancers et choisissez le
- * meilleur résultat. ») sont alors déjà tranchés en amont — par l'étape à table (`keepHighest`, qui
- * retient un dé et l'affiche) ou par le dé que POSE le joueur (le résultat gardé que `LDB 41 l.170` /
- * `AA 13 l.57` lui confient, nommé directement).
- * `twice` reste lu pour la bifurcation Aux Armes ci-dessous, même avec un `forcedRoll`.
- *
- * Le CHOIX que le RAW confie au porteur béni (« choisissez ») a pour référent l'ATTAQUANT ; sa
- * surface joueur est portée par #982 (le tirage rend ici un dé déjà arbitré).
+ * CE QUE COÛTE UN JEU DE PLUS — une DÉCLARATION ici, et rien d'autre : la séquence de résolution, le
+ * lookup, la lecture des id subis et l'exposition Codex sont entièrement pilotés par la DONNÉE (les
+ * documents-tables de `criticals.json`). Table ouverte à l'écriture pour que la morsure N+1
+ * (`crit-n-plus-1.test.ts`) puisse en poser une et la retirer — le moteur, lui, ne l'écrit jamais.
  */
-export function rollCritical(
+export const REGIMES_DE_CRITIQUE: Record<string, RegimeCritique> = {
+  ldb: { severite: (target, overkill) => -critSeverityReduction(target, overkill), journal: 'Blessure critique' },
+  aa: { severite: (_target, overkill) => aaCriticalOffset(overkill), journal: 'Blessure critique AA' },
+};
+
+/** Régime d'un jeu — FAIL-FAST NOMINATIF : un document-table dont le `jeu` n'a pas de régime déclaré
+ *  se résoudrait sinon sur `undefined`, et le critique crasherait loin de sa cause. */
+function regimeDe(jeu: JeuDeCritique): RegimeCritique {
+  const regime = REGIMES_DE_CRITIQUE[jeu];
+  if (!regime) {
+    throw new Error(
+      `resolveCritique : le jeu « ${jeu} » n'a pas de régime déclaré (REGIMES_DE_CRITIQUE : ${Object.keys(REGIMES_DE_CRITIQUE).join(', ')}) — un tableau de plus déclare SA sévérité et SON libellé de journal.`,
+    );
+  }
+  return regime;
+}
+
+/**
+ * Le JEU qui résout un Coup Critique : l'approche alternative d'Aux Armes quand la règle facultative
+ * `combat-aa-blessures` vaut `aa`. `twice` (Bénédiction de Sauvagerie, LDB 41 l.170) reste au chemin
+ * LDB — l'Atout ne coexiste pas avec la variante AA. SOURCE UNIQUE du choix : la couche combat le lit
+ * pour ses propres décisions (trivialité, déclaration d'étape à table) plutôt que de le recalculer.
+ */
+export function jeuDeCritique(twice = false): JeuDeCritique {
+  return !twice && rule('combat-aa-blessures') === 'aa' ? 'aa' : 'ldb';
+}
+
+/** Lignes de la table d'un (jeu, clé) — passées PAR RÉFÉRENCE au registre d'étapes (zéro duplication). */
+export function critTableRows(jeu: JeuDeCritique, key: CritTableKey): CritEntry[] {
+  return critiqueDoc(jeu, key).entries;
+}
+
+/**
+ * Une Blessure critique est-elle TRIVIALE (« T », AA 07 l.79) — non comptée pour la mort par
+ * accumulation ? DÉRIVÉE, jamais authorée : une rangée non létale qui ne fait perdre AUCUNE Blessure.
+ * Lue par la couche combat pour ne pas incrémenter `criticalWounds`. PUR.
+ */
+export function critiqueTriviale(jeu: JeuDeCritique, location: HitLocation, roll: number): boolean {
+  const entry = findTableEntry(critiqueTable(jeu, location), Math.max(1, roll));
+  return !entry.lethal && !(entry.ops ?? []).some((o) => o.op === 'wounds');
+}
+
+/** Mort par accumulation de Blessures Critiques (AA 07 l.73) : un combattant Inconscient à 0 PB dont
+ *  le nombre de Blessures Critiques dépasse son Bonus d'Endurance succombe en fin de Round. PUR. */
+export function aaDeathByCriticalCount(inconscient: boolean, wounds: number, criticalWounds: number, be: number): boolean {
+  return inconscient && wounds <= 0 && criticalWounds > be;
+}
+
+/** Ce que l'appelant peut moduler sur un Coup Critique — tout est optionnel, le socle a ses défauts. */
+export interface OptionsCritique {
+  /** PB perdus au-delà des PB courants (LDB 18 l.17 : réduction de sévérité ; AA 07 l.36 : +10 chacun). */
+  overkill?: number;
+  /** Bénédiction de Sauvagerie (LDB 41 l.170) : deux lancers, le porteur béni CHOISIT lequel. */
+  twice?: boolean;
+  /**
+   * d100 de sévérité INJECTÉ (dé de l'étape à table, dé posé, test) : c'est le dé NATUREL — le
+   * modificateur de sévérité du jeu reste appliqué ICI, comme sur un dé tiré. Il PRIME sur `twice`
+   * (aucun dé n'est tiré) : les DEUX lancers de la Bénédiction de Sauvagerie (LDB 41 l.170 : « Quand
+   * votre cible inflige par la suite des Blessures Critiques, effectuez deux lancers et choisissez le
+   * meilleur résultat. ») sont alors déjà tranchés en amont — par l'étape à table (`keepHighest`, qui
+   * retient un dé et l'affiche) ou par le dé que POSE le joueur (le résultat gardé que `LDB 41 l.170` /
+   * `AA 13 l.57` lui confient, nommé directement).
+   *
+   * Le CHOIX que le RAW confie au porteur béni (« choisissez ») a pour référent l'ATTAQUANT ; sa
+   * surface joueur est portée par #982 (le tirage rend ici un dé déjà arbitré).
+   */
+  forcedRoll?: number;
+}
+
+/**
+ * Résout une Blessure critique sur `target` à la `location`, dans le `jeu` donné. Le nœud `test` de
+ * l'entrée est auto-résolu (RNG seedé) : les ops de la branche empruntée s'ajoutent à l'effet.
+ * La Localisation n'est JAMAIS re-tirée ici (LDB 18 l.53 / AA 07 l.32) — l'appelant la fournit.
+ */
+export function resolveCritique(
+  jeu: JeuDeCritique,
   target: Combatant,
   location: HitLocation,
   rng: RNG = defaultRNG,
-  overkill = 0,
-  twice = false, // Bénédiction de Sauvagerie (LDB 41 l.170) : deux lancers, le porteur béni CHOISIT lequel
-  forcedRoll?: number,
+  options: OptionsCritique = {},
 ): CriticalResolved {
-  // BIFURCATION du système ALTERNATIF Aux Armes (l.2441-2627) : tables + décalage +10/Blessure propres.
-  // `twice` (Sauvagerie) reste au chemin LDB (l'Atout ne coexiste pas avec la variante AA).
-  if (!twice && rule('combat-aa-blessures') === 'aa') return resolveAACritical(target, location, rng, overkill);
+  const { overkill = 0, twice = false, forcedRoll } = options;
+  const regime = regimeDe(jeu);
   const be = bonus(effectiveChar(target, 'endurance'));
-  const reduction = critSeverityReduction(target, overkill);
   const raw = forcedRoll ?? (twice ? Math.max(d100(rng), d100(rng)) : d100(rng));
-  const roll = Math.max(1, raw - reduction);
-  const entry = findTableEntry(criticalTableFor(location), roll); // repli Bras (LDB 76 l.21) si loc sans table dédiée
+  const roll = Math.max(1, raw + regime.severite(target, overkill));
+  const entry = findTableEntry(critiqueTable(jeu, location), roll); // repli Bras (LDB 76 l.21) si loc sans table dédiée
   const resistVal = critResistValue(target);
   const ops: GameOp[] = [...(entry.ops ?? [])];
-  if (entry.resist) {
-    const res = rollTest(resistVal, entry.resist.difficulty, rng);
-    if (!res.success) ops.push(...entry.resist.onFail);
-  }
-  // Occurrence-count PAR ID D'ENTRÉE (LDB 18 l.71 : « Si vous tombez une seconde fois sur cette blessure… ») :
-  // la MÊME entrée déjà subie → effet ALTERNATIF `escalation.onRepeat` (séquelles REMPLACÉES, ops immédiates
-  // AJOUTÉES). L'effet IMMÉDIAT de base (PB, États) reste appliqué (le coup blesse toujours).
+  if (entry.test) ops.push(...opsDuNoeud(target, entry.test, rng));
+  // Occurrence-count PAR ID D'ENTRÉE (LDB 18 l.71 : « Si vous tombez une seconde fois sur cette blessure… » ;
+  // AA 07 l.96) : la MÊME entrée déjà subie → effet ALTERNATIF `escalation.onRepeat` (séquelles REMPLACÉES,
+  // ops immédiates AJOUTÉES). L'effet IMMÉDIAT de base reste appliqué (le coup blesse toujours).
   const repeated = (target.critEntriesSuffered ?? []).includes(entry.id);
   const repeat = repeated ? entry.escalation?.onRepeat : undefined;
   if (repeat?.ops) ops.push(...repeat.ops.map((o) => ({ ...o })));
@@ -264,11 +330,11 @@ export function rollCritical(
   // portent leur `kind` → on instancie à la localisation du coup.
   const traumas = traumaRefs.map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
-  // Amputation (LDB 18 l.237) : DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`, jamais lue par regex sur le texte).
-  // Résolue par `resolveAmputation` (SOURCE UNIQUE LDB/AA/post-rencontre). Placée en DERNIER (rien ne tire
-  // après) pour ne décaler le flux RNG que des critiques d'amputation. `timing: 'postEncounter'` (« Coupure à
-  // l'orteil », l.171 : « Une fois la rencontre terminée… ») → aucun jet ICI : marqueur `pendingAmputation`
-  // résolu au foyer de fin de combat (`resolvePostEncounterAmputations`).
+  // Amputation (LDB 18 l.237 ; AA 07 « voir Amputation en page 180 de WFJDR ») : DÉCLARÉE STRUCTURELLEMENT
+  // (`entry.amputation`, jamais lue par regex sur le texte). Placée en DERNIER (rien ne tire après) pour ne
+  // décaler le flux RNG que des critiques d'amputation. `timing: 'postEncounter'` (« Coupure à l'orteil »,
+  // l.171 : « Une fois la rencontre terminée… ») → aucun jet ICI : marqueur `pendingAmputation` résolu au
+  // foyer de fin de combat (`resolvePostEncounterAmputations`).
   if (!entry.lethal && entry.amputation) {
     if (entry.amputation.timing === 'postEncounter') {
       traumas.push({ label: entry.label, location, pendingAmputation: entry.amputation });
@@ -280,11 +346,12 @@ export function rollCritical(
   }
   // Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du pied sans
   // Chirurgie sous 1d10 jours ; « Épaule luxée »/« Genou démis » : membre désactivé jusqu'au Test étendu de
-  // Guérison) — placée en DERNIER (ne décale que les critiques à escalade). Même patron que le chemin AA.
+  // Guérison) — placée en DERNIER (ne décale que les critiques à escalade).
   stampCriticalEscalation(traumas, entry.escalation, location, target, rng, target.traumas ?? []);
   // Déclencheurs armés par un critique ANTÉRIEUR (« Commotion cérébrale » : autre critique tête pendant
   // Exténué, LDB 18 l.74) — lus sur `target.traumas` (jamais la séquelle stampée à l'instant : elle n'est pas
-  // encore sur la cible). En DERNIER pour ne décaler le flux RNG que des critiques qui font effectivement feu.
+  // encore sur la cible), et kind-agnostiques (un critique LDB peut avoir armé ce qu'un critique AA fait
+  // feu). En DERNIER pour ne décaler le flux RNG que des critiques qui font effectivement feu.
   ops.push(...fireCritTriggers(target, location, resistVal, rng));
   return {
     location,
@@ -295,6 +362,8 @@ export function rollCritical(
     traumas,
     desc: entry.desc,
     roll,
-    log: `Blessure critique (${locationLabel(location, target.bodyShape)}) — ${entry.label}${entry.lethal ? ' — MORT !' : ''}.`,
+    log: `${regime.journal} (${locationLabel(location, target.bodyShape)}) — ${entry.label}${entry.lethal ? ' — MORT !' : ''}.`,
   };
 }
+
+export { critTableKeyFor };

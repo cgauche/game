@@ -621,7 +621,7 @@ export type GameOp =
    *  drapeau consommé à l'usage au point de relance des flux de jet. */
   | { op: 'freeReroll' }
   /** « Deux lancers [de Blessure Critique], choisissez le meilleur » quand le porteur INFLIGE un
-   *  Critique (Bénédiction de Sauvagerie, LDB 41) — lu par rollCritical via l'attaquant. */
+   *  Critique (Bénédiction de Sauvagerie, LDB 41) — lu par `resolveCritique` via l'attaquant. */
   | { op: 'critTwice' }
   /** Putréfaction (LDB 47) : « le cuir se racornit (perdant 1 PA à 1 Localisation) » — seule la
    *  matière `cuir` est mécanisée (pièce d'armure portée) ; le reste (denrées, vêtements) reste MJ. */

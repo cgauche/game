@@ -74,7 +74,11 @@ describe('effectSchema — le corpus RÉELLEMENT posé dans les deux racines aut
     // (`mutations.json`) et l'État Exténué du réveil du Désespoir (`traits.json`, VDM 09 l.280).
     // +3 (#684) : les effets du cap et de l'accostage de la Barge du Sel — `setFlag sel-cap-donne`
     // + `journal` du trigger du quai, et `setFlag sel-ilot-accoste` de l'arrivée sur l'îlot.
-    expect(poses.length).toBe(1061);
+    // +39 (#1657 B2a) : les 39 nœuds `test` des Blessures critiques (`criticals.json`) ont désormais
+    // une branche `fail` en FEUILLE `{type:'ops'}` — là où la graphie propriétaire `resist.onFail`
+    // portait une liste d'ops nue, invisible à ce scan. Les 39 branches `success` sont des `seq`
+    // vides : elles ne posent aucune feuille, et ne comptent donc pas.
+    expect(poses.length).toBe(1100);
     const parType = new Set(poses.map((p) => (p.noeud as { type: string }).type));
     expect(parType.size).toBe(30); // 29 variantes authorées + la feuille `ops`
     expect(parType.has('ops')).toBe(true);

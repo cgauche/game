@@ -3,9 +3,13 @@ import type { Combatant, ConditionUnlock } from './types';
 import type { Condition } from './flowCore';
 import { addCondition, removeCondition, hasCondition, stacks, isConditionLocked, releaseConditionLocks, hasSurgeryLockedCondition } from './conditions';
 import { applyOps } from './ops';
-import criticalsJson from '../data/criticals.json';
-import aaCriticalsJson from '../data/aa-criticals.json';
+import { CRITIQUE_DOCS } from '../data/criticals';
+import { spellOps } from './flowCore';
 import miscastJson from '../data/miscast.json';
+
+/** Toutes les rangées de Blessure critique, les 8 documents-tables confondus (LDB + Aux Armes) —
+ *  la lecture ne nomme aucune famille : un 9ᵉ tableau y entre sans une ligne. */
+const rangees = () => CRITIQUE_DOCS.flatMap((d) => d.entries);
 
 function mk(): Combatant {
   return {
@@ -106,35 +110,24 @@ describe('Verrou d’acte de soin — unlockBy (LDB 18 : medicalAid / surgery / 
 
 describe('Données — verrous & escapeStrength câblés (RAW)', () => {
   it('Critique Tête « En plein front » (46-50) : l’op Aveuglé porte lockedUntil == 0 Hémorragique', () => {
-    const entry = (criticalsJson as { tete: { id: string; ops?: { op: string; id?: string; lockedUntil?: unknown }[] }[] }).tete.find((e) => e.id === 'en-plein-front')!;
+    const entry = rangees().find((e) => e.id === 'en-plein-front')! as { ops?: { op: string; id?: string; lockedUntil?: unknown }[] };
     const aveugleOp = entry.ops!.find((o) => o.op === 'condition' && o.id === 'aveugle')!;
     expect(aveugleOp.lockedUntil).toEqual(noHemo);
   });
 
   it('Critique Corps « Hémorragie interne » (97-99) : l’op Hémorragique porte unlockBy surgery', () => {
-    const entry = (criticalsJson as { corps: { id: string; ops?: { op: string; id?: string; unlockBy?: string }[] }[] }).corps.find((e) => e.id === 'hemorragie-interne')!;
+    const entry = rangees().find((e) => e.id === 'hemorragie-interne')! as { ops?: { op: string; id?: string; unlockBy?: string }[] };
     const op = entry.ops!.find((o) => o.op === 'condition' && o.id === 'hemorragique')!;
     expect(op.unlockBy).toBe('surgery');
   });
 
   it('Critiques « Aide Médicale » (œil/thorax/clavicule/épaule/genou) : unlockBy medicalAid (LDB + jumeaux AA)', () => {
     type Op = { op: string; id?: string; unlockBy?: string };
-    type Entry = { id: string; ops?: Op[]; resist?: { onFail: Op[] } };
-    const all = [
-      // Le document porte son ENVELOPPE (`id`/`type`/`label`, #1467) : les 4 familles sont des CHAMPS
-      // parmi d'autres, plus les seules clés de la racine — d'où la lecture par champ nommé.
-      ...(criticalsJson as Record<string, unknown>).tete as Entry[],
-      ...(criticalsJson as Record<string, unknown>).corps as Entry[],
-      ...(criticalsJson as Record<string, unknown>).bras as Entry[],
-      ...(criticalsJson as Record<string, unknown>).jambe as Entry[],
-      ...(aaCriticalsJson as Record<string, unknown>).tete as Entry[],
-      ...(aaCriticalsJson as Record<string, unknown>).corps as Entry[],
-      ...(aaCriticalsJson as Record<string, unknown>).bras as Entry[],
-      ...(aaCriticalsJson as Record<string, unknown>).jambe as Entry[],
-    ];
     const opsOf = (id: string, cond: string): Op | undefined => {
-      const e = all.find((x) => x.id === id)!;
-      return [...(e.ops ?? []), ...(e.resist?.onFail ?? [])].find((o) => o.op === 'condition' && o.id === cond);
+      const e = rangees().find((x) => x.id === id)!;
+      // L'effet peut vivre dans l'effet IMMÉDIAT ou dans la branche `fail` du nœud `test` de la rangée.
+      return [...((e.ops ?? []) as Op[]), ...(spellOps(e.test?.fail, 'target') as unknown as Op[])]
+        .find((o) => o.op === 'condition' && o.id === cond);
     };
     // œil (Aveuglé), thorax (Sonné), clavicule (Inconscient) — LDB + jumeaux AA aa-tete-41/aa-corps-91/aa-corps-96.
     expect(opsOf('blessure-majeure-a-l-il', 'aveugle')!.unlockBy).toBe('medicalAid');

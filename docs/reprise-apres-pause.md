@@ -49,7 +49,7 @@ Le partage de la suite (`node scripts/test/run.mjs`) est décidé par `repartiti
 variable d'environnement `WFRP_TEST_COEURS` force ce nombre (seule façon de jouer l'autre chemin sur
 une machine quelconque).
 
-`src/data/*.json` (122 fichiers) est la **SOURCE app-owned** : rien à régénérer après le clone.
+`src/data/*.json` (121 fichiers) est la **SOURCE app-owned** : rien à régénérer après le clone.
 
 Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
 `0 6 * * 1`) rejoue exactement ce chemin en CI, sur un runner propre, en
@@ -90,7 +90,7 @@ de ce que `npm install` pose seul.
 ## 2. Ce que le clone CONTIENT
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
-- `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
+- `src/data/` — données app-owned (121 fichiers JSON commités, éditables au Compendium).
 - Les gardes de données : `scripts/guards/validate-data.mts` + 66 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
@@ -100,7 +100,7 @@ de ce que `npm install` pose seul.
 - Les schémas de données : `src/data/schemas/` (`src/data/schemas/types.ts`,
   `src/data/schemas/validate.ts`, `src/data/schemas/_registry.generated.ts`,
   `src/data/schemas/_ids.generated.ts`, `src/data/schemas/grammaire/` — le vocabulaire partagé —
-  `src/data/schemas/defs/` : 127 fichiers, un par catalogue, et
+  `src/data/schemas/defs/` : 126 fichiers, un par catalogue, et
   `src/data/schemas/defs-scenes/` : 17 fichiers pour les documents de scène).
 - `scripts/art-ref/` — le PIPELINE d'extraction d'images (`extract.py`, `ldb_extract.py`, `ldb_map.py`, `probe.py`) : le code est
   tracké, ses SORTIES (images) ne le sont pas (§ 3).

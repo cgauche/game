@@ -16,7 +16,7 @@ import { d10, d100, rollDice, parseDice, type RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
 import { applyOps, type GameOp } from './ops';
 import { shipHitLocation, hitLocation, type ShipRig, type ShipLocation } from './combat';
-import { rollCritical, type CriticalResolved } from './critical';
+import { resolveCritique, jeuDeCritique, type CriticalResolved } from './critical';
 import { rollTest } from './tests';
 import { testValue } from './skills';
 import type { Combatant } from './types';
@@ -63,7 +63,7 @@ export interface ShipCriticalResolved {
 }
 
 /** Résout un Critique de navire sur la `location` touchée (Localisation déterminée en amont via
- *  `shipHitLocation` ; l'Équipage, lui, passe par `rollCritical`). `forcedRoll` = d10 imposé (tests). PUR. */
+ *  `shipHitLocation` ; l'Équipage, lui, passe par `resolveCritique`). `forcedRoll` = d10 imposé (tests). PUR. */
 export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, forcedRoll?: number, set: ShipCritSet = SHIP_CRIT_SET): ShipCriticalResolved {
   const roll = forcedRoll ?? d10(rng);
   const table = set.tables[location];
@@ -90,7 +90,7 @@ export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, f
 }
 
 /** Résultat d'un Critique encaissé par un NAVIRE : la Localisation touchée, et soit un coup à l'ÉQUIPAGE
- *  (résolu par l'appelant en Critique de PERSONNAGE — `rollCritical` — sur un marin exposé), soit un
+ *  (résolu par l'appelant en Critique de PERSONNAGE — `resolveCritique` — sur un marin exposé), soit un
  *  Critique de Coque (`crit`). */
 export interface ShipCriticalHit {
   location: ShipLocation;
@@ -175,9 +175,9 @@ export function applyCrewHit(hull: Combatant, crew: Combatant[], crewTest: ShipC
 /**
  * APPLIQUE un coup critique encaissé par une COQUE à elle-même ET à son ÉQUIPAGE (MDG 13-14) — la
  * brique qui fait que `crewIds` touche de VRAIS marins. PUR (mute la coque + les marins via `applyOps` /
- * `rollCritical`, RNG injecté) :
+ * `resolveCritique`, RNG injecté) :
  *  - Localisation « Équipage » → un marin EXPOSÉ encaisse un Critique de PERSONNAGE (table LDB/AA via
- *    `rollCritical`, aucune table dupliquée) ;
+ *    `resolveCritique`, aucune table dupliquée) ;
  *  - sinon → les États navals de la table sont posés sur la coque ; les Éclats infligent 9 Dégâts à
  *    autant de marins exposés ; les Critiques de Coque supplémentaires (1d10…) sont résolus sur la coque.
  */
@@ -195,7 +195,7 @@ export function applyHullCritical(
       lines.push(t('shipCrit.crewNoneExposed'));
       return { location: 'equipage', hullOps: [], shrapnel: [], extraHullCrits: [], lines };
     }
-    const crit = rollCritical(sailor, hitLocation(d100(rng)), rng);
+    const crit = resolveCritique(jeuDeCritique(), sailor, hitLocation(d100(rng)), rng);
     applyOps(sailor, crit.ops, { rng });
     if (crit.traumas.length) sailor.traumas = [...(sailor.traumas ?? []), ...crit.traumas];
     if (crit.lethal) { sailor.wounds.current = 0; sailor.dead = true; }

@@ -636,7 +636,10 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     //         chacun à sa charge `entries` par `options.rangee`) — un def SCELLÉ de plus dans la
     //         population de ce mesureur, qui GAGNE là une couverture (78 → 79) : la famille qu'il
     //         portait sortait ce def de tout filtre `entite` de ce fichier.
-    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 79, mesures: 0 });
+    //   #1657 B2a : `criticals` fait de même (79 → 80) — les deux racines-objet `criticals`/
+    //         `aa-criticals` fusionnent en UNE liste de 8 documents-tables, famille `entite` à charge
+    //         `entries` ; le def d'`aa-criticals` meurt, celui de `criticals` entre dans la population.
+    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 80, mesures: 0 });
   });
 
 });

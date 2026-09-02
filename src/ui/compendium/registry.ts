@@ -40,6 +40,7 @@ import { RIVER_PERILS } from '../../engine/riverNavigation';
 import { MORALE_FACTORS, MORALE_BANDS } from '../../engine/crewMorale';
 import { STEAM_BREAKDOWNS } from '../../engine/shipBuild';
 import { traumaFicheById } from '../../engine/trauma';
+import { spellOps } from '../../engine/flowCore';
 import type { ShipCritEntry } from '../../data/shipCriticals';
 import { datasetArray, datasetObject } from '../../data/overrides';
 import type { CritTableEntry, MiscastRowEntry } from '../../data/overrides';
@@ -661,19 +662,26 @@ function makeCategory(spec: CodexCategorySpec): CodexCategory {
 const traumaLabelOf = (id: string): string => { try { return traumaFicheById(id).label; } catch { return id; } };
 
 /** Item Codex d'une entrée de table de Blessures Critiques par Localisation (LDB 18 « Traumatisme » ET
- *  AA « approche alternative », #157) — 8 catégories (4 familles LDB + 4 AA), MÊME projection : plage
- *  d100 → nom, effet immédiat (`ops`, même vocabulaire GameOp que passifs/sorts) + Traumatismes engendrés
- *  en cross-réf (résolus par id → libellé, comme les Tables de Corruption pour les mutations). */
+ *  AA « approche alternative », #157) — 8 catégories (4 familles × 2 jeux), MÊME projection : plage
+ *  d100 → nom, effet immédiat (`ops`, même vocabulaire GameOp que passifs/sorts), le JET de la rangée
+ *  (Difficulté + conséquence de l'échec, #1682) et les Traumatismes engendrés en cross-réf (résolus par
+ *  id → libellé, comme les Tables de Corruption pour les mutations). La trivialité (« T », AA 07
+ *  l.79) est DÉRIVÉE de la rangée, jamais relue d'un champ. */
 function critEntryItem(e: CritTableEntry): CodexItem {
+  const jet = e.test;
   return depuisEnveloppe(e, {
     sub: `d100 ${e.min}–${e.max}`,
     meta: facts(
-      typeof e.blessures === 'number' ? fact('Blessures', e.blessures) : null,
-      e.trivial ? fact('Type', 'Triviale (« T »)') : null,
       e.lethal ? fact('Létal', 'oui') : null,
+      !e.lethal && !(e.ops ?? []).some((o) => o.op === 'wounds') ? fact('Type', 'Triviale (« T »)') : null,
+      // Sans compétence nommée, le jet est le Test de RÉSISTANCE du critique (`critResistValue`) —
+      // le libellé se résout PAR ID, jamais écrit en dur.
+      jet ? fact('Jet', `${refLabel('skills', jet.test.skill ?? { id: 'resistance' })} ${DIFFICULTY_LABELS[jet.test.difficulty!]}`) : null,
     ),
     sections: sections(
       passiveSection(e.ops, 'Effet immédiat'),
+      jet ? passiveSection(spellOps(jet.fail, 'target'), 'Si le jet échoue') : null,
+      jet ? passiveSection(spellOps(jet.success, 'target'), 'Si le jet réussit') : null,
       e.traumas?.length
         ? {
             title: 'Traumatismes engendrés', layout: 'chips',

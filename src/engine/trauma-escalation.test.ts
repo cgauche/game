@@ -2,14 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { receiveMedicalAid, tickTraumaEscalation, tickTraumaRecovery, stampCriticalEscalation,
   recoverableTraumas, hasRecoverableTrauma, hasLimbAwaitingAid, recoverDisabledLimb, cannotWieldTwoHanded,
   traumaMovementHalved, reinjuryBleed, removeSurgicalTrauma } from './trauma';
-import { rollCritical } from './critical';
+import { resolveCritique } from './critical';
 import { addCondition, removeCondition, hasCondition, releaseConditionLocks } from './conditions';
 import { applyOps } from './ops';
-import { resolveAACritical } from './aaCritical';
 import type { Combatant, Trauma, HitLocation } from './types';
 import type { RNG } from './dice';
-import aaJson from '../data/aa-criticals.json';
-import criticalsJson from '../data/criticals.json';
+import { critiqueDoc } from '../data/criticals';
+
 
 const C = (over: Partial<Combatant>): Combatant =>
   ({
@@ -20,11 +19,11 @@ const C = (over: Partial<Combatant>): Combatant =>
     ...over,
   } as Combatant);
 
-/** Plaie chirurgicale (« Amputation ») telle que la posent rollCritical/resolveAACritical. */
+/** Plaie chirurgicale (« Amputation ») telle que la pose resolveCritique. */
 const plaie = (loc: HitLocation, extra: Partial<Trauma> = {}): Trauma =>
   ({ label: 'Amputation', location: loc, needsSurgery: true, desc: 'x', ...extra });
 
-/** Escalade « Main ouverte » telle qu'elle est DÉCLARÉE en donnée (`criticals.json`/`aa-criticals.json`). */
+/** Escalade « Main ouverte » telle qu'elle est DÉCLARÉE en donnée (`criticals.json`, les deux jeux). */
 const FINGER_PER_ROUND = { versTraumaId: 'doigt-ampute' };
 /** Escalade « Pied écrasé » DÉCLARÉE : délai 1d10 jours puis perte du membre. */
 const FOOT_AFTER_DELAY = { jours: { dice: { n: 1, sides: 10 } }, versTraumaId: 'membre-inferieur-ampute' };
@@ -132,16 +131,16 @@ describe('#166/#167 — câblage DONNÉE→plaie (stampCriticalEscalation) + ent
   });
   it('les 4 entrées d’escalade doigt/pied portent l’escalade attendue', () => {
     const find = (arr: { id: string; escalation?: unknown }[], id: string) => arr.find((e) => e.id === id)!.escalation as Record<string, unknown>;
-    expect(find(aaJson.bras, 'aa-bras-116')).toEqual({ perRound: FINGER_PER_ROUND });
-    expect(find(aaJson.jambe, 'aa-jambe-106')).toEqual({ apresDelai: FOOT_AFTER_DELAY });
-    expect(find(criticalsJson.bras, 'main-ouverte')).toEqual({ perRound: FINGER_PER_ROUND });
-    expect(find(criticalsJson.jambe, 'pied-ecrase')).toEqual({ apresDelai: FOOT_AFTER_DELAY });
+    expect(find(critiqueDoc('aa', 'bras').entries, 'aa-bras-116')).toEqual({ perRound: FINGER_PER_ROUND });
+    expect(find(critiqueDoc('aa', 'jambe').entries, 'aa-jambe-106')).toEqual({ apresDelai: FOOT_AFTER_DELAY });
+    expect(find(critiqueDoc('ldb', 'bras').entries, 'main-ouverte')).toEqual({ perRound: FINGER_PER_ROUND });
+    expect(find(critiqueDoc('ldb', 'jambe').entries, 'pied-ecrase')).toEqual({ apresDelai: FOOT_AFTER_DELAY });
   });
-  it('resolveAACritical(« Pied écrasé ») stampe l’escalade sur la plaie (overkill place le jet en 106-115)', () => {
+  it('resolveCritique(aa, « Pied écrasé ») stampe l’escalade sur la plaie (overkill place le jet en 106-115)', () => {
     // roll = d100 + 10×overkill ; d100=100, overkill=1 → 110 (aa-jambe-106). Puis Test de Résistance
     // d’amputation (d100 haut = échec sans conséquence de flag), puis d10=5 pour amputateAfterDays.
     const c = C({ skills: [{ id: 'resistance', characteristic: 'endurance', advances: 0 }] });
-    const res = resolveAACritical(c, 'jambeD', seq([100, 1, 5]), 1);
+    const res = resolveCritique('aa', c, 'jambeD', seq([100, 1, 5]), { overkill: 1 });
     const p = res.traumas.find((t) => t.label === 'Amputation');
     expect(p?.amputateAfterDays).toBe(5);
     expect(p?.amputateSequel).toBe('membre-inferieur-ampute');
@@ -207,9 +206,9 @@ describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé 
     expect(hasCondition(c, 'sonne')).toBe(false);
   });
 
-  it('resolveAACritical(« Épaule luxée » 96-109) stampe le membre désactivé (usage à récupérer)', () => {
+  it('resolveCritique(aa, « Épaule luxée » 96-109) stampe le membre désactivé (usage à récupérer)', () => {
     const c = C({});
-    const res = resolveAACritical(c, 'brasD', seq([100]), 0); // d100=100 → aa-bras-96 (96-109)
+    const res = resolveCritique('aa', c, 'brasD', seq([100])); // d100=100 → aa-bras-96 (96-109)
     const t = res.traumas.find((x) => x.restoreDR != null);
     expect(t?.restoreDR).toBe(6);
     expect(t?.awaitingMedicalAid).toBe(true);
@@ -220,10 +219,10 @@ describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé 
   it('les 4 entrées « Épaule luxée »/« Genou démis » portent `medicalAidGate` (DR 6)', () => {
     const gate = (arr: { id: string; escalation?: { medicalAidGate?: { restoreDR: number } } }[], id: string) =>
       arr.find((e) => e.id === id)!.escalation!.medicalAidGate!;
-    expect(gate(aaJson.bras, 'aa-bras-96').restoreDR).toBe(6);
-    expect(gate(aaJson.jambe, 'aa-jambe-96').restoreDR).toBe(6);
-    expect(gate(criticalsJson.bras, 'epaule-luxee').restoreDR).toBe(6);
-    expect(gate(criticalsJson.jambe, 'genou-demis').restoreDR).toBe(6);
+    expect(gate(critiqueDoc('aa', 'bras').entries, 'aa-bras-96').restoreDR).toBe(6);
+    expect(gate(critiqueDoc('aa', 'jambe').entries, 'aa-jambe-96').restoreDR).toBe(6);
+    expect(gate(critiqueDoc('ldb', 'bras').entries, 'epaule-luxee').restoreDR).toBe(6);
+    expect(gate(critiqueDoc('ldb', 'jambe').entries, 'genou-demis').restoreDR).toBe(6);
   });
 });
 
@@ -258,9 +257,9 @@ describe('#190 — réouverture (bleedOnReinjury) : chaque Dégât à la Localis
     expect(c.criticalWounds).toBe(0);
   });
 
-  it('rollCritical(« Blessure béante » bras 46-50) stampe la plaie `bleedOnReinjury` à la localisation du coup', () => {
+  it('resolveCritique(ldb, « Blessure béante » bras 46-50) stampe la plaie `bleedOnReinjury` à la localisation du coup', () => {
     const c = C({ skills: [{ id: 'resistance', characteristic: 'endurance', advances: 0 }] });
-    const res = rollCritical(c, 'brasG', seq([48]), 0); // 48 ∈ 46-50 (Blessure béante)
+    const res = resolveCritique('ldb', c, 'brasG', seq([48])); // 48 ∈ 46-50 (Blessure béante)
     const p = res.traumas.find((t) => t.bleedOnReinjury != null);
     expect(p).toMatchObject({ location: 'brasG', bleedOnReinjury: 1, needsSurgery: true });
   });
@@ -269,18 +268,18 @@ describe('#190 — réouverture (bleedOnReinjury) : chaque Dégât à la Localis
     const bleed = (arr: { id: string; escalation?: { bleedOnReinjury?: { amount: number } } }[], id: string) =>
       arr.find((e) => e.id === id)?.escalation?.bleedOnReinjury?.amount;
     // LDB (6 entrées)
-    expect(bleed(criticalsJson.bras, 'blessure-beante')).toBe(1);
-    expect(bleed(criticalsJson.bras, 'artere-endommagee')).toBe(2);
-    expect(bleed(criticalsJson.corps, 'blessure-beante-2')).toBe(1);
-    expect(bleed(criticalsJson.corps, 'degats-arteriels')).toBe(2);
-    expect(bleed(criticalsJson.corps, 'blessure-majeure-au-torse')).toBe(2);
-    expect(bleed(criticalsJson.jambe, 'cuisse-laceree')).toBe(1);
+    expect(bleed(critiqueDoc('ldb', 'bras').entries, 'blessure-beante')).toBe(1);
+    expect(bleed(critiqueDoc('ldb', 'bras').entries, 'artere-endommagee')).toBe(2);
+    expect(bleed(critiqueDoc('ldb', 'corps').entries, 'blessure-beante-2')).toBe(1);
+    expect(bleed(critiqueDoc('ldb', 'corps').entries, 'degats-arteriels')).toBe(2);
+    expect(bleed(critiqueDoc('ldb', 'corps').entries, 'blessure-majeure-au-torse')).toBe(2);
+    expect(bleed(critiqueDoc('ldb', 'jambe').entries, 'cuisse-laceree')).toBe(1);
     // AA (5 entrées) — l’« Artère endommagée » AA (aa-bras-91) n’a PAS la clause de réouverture (RAW AA 07)
-    expect(bleed(aaJson.bras, 'aa-bras-56')).toBe(1);
-    expect(bleed(aaJson.corps, 'aa-corps-56')).toBe(1);
-    expect(bleed(aaJson.corps, 'aa-corps-66')).toBe(2);
-    expect(bleed(aaJson.corps, 'aa-corps-81')).toBe(2);
-    expect(bleed(aaJson.jambe, 'aa-jambe-76')).toBe(1);
-    expect(bleed(aaJson.bras, 'aa-bras-91')).toBeUndefined();
+    expect(bleed(critiqueDoc('aa', 'bras').entries, 'aa-bras-56')).toBe(1);
+    expect(bleed(critiqueDoc('aa', 'corps').entries, 'aa-corps-56')).toBe(1);
+    expect(bleed(critiqueDoc('aa', 'corps').entries, 'aa-corps-66')).toBe(2);
+    expect(bleed(critiqueDoc('aa', 'corps').entries, 'aa-corps-81')).toBe(2);
+    expect(bleed(critiqueDoc('aa', 'jambe').entries, 'aa-jambe-76')).toBe(1);
+    expect(bleed(critiqueDoc('aa', 'bras').entries, 'aa-bras-91')).toBeUndefined();
   });
 });

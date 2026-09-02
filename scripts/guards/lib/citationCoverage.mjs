@@ -150,10 +150,11 @@ export function auditDataset(data) {
  * exempté, et son entrée devient un mensonge dormant. `src/data/citation-coverage-guard.test.ts`
  * rougit sur toute entrée dont `auditDataset` rend `cited === total` (> 0). Trois sont mortes à ce
  * lot : `axes.json` (9/9, migré `source:'maison'` → `maison` par 2026-08-27-l1b-1c), et deux
- * PRÉEXISTANTES que personne ne relisait — `aa-criticals.json` et `characteristics.json` (19/19,
- * curé depuis). `aa-criticals.json` compte désormais 80/80 par entrée (#1467 L1b V-FLIP-CONFIG) : sa
- * note libre `_source`, qui à elle seule le rendait « 1/1 cité », est morte avec le dernier porteur
- * de `freeSourceNoteSchema` — le bras `_source` d'`isCitedItem` avec elle.
+ * PRÉEXISTANTES que personne ne relisait — les tables d'Aux Armes et `characteristics.json` (19/19,
+ * curé depuis). Ces tables comptent 80/80 par entrée depuis #1467 L1b V-FLIP-CONFIG : leur note libre
+ * `_source`, qui à elle seule les rendait « 1/1 cité », est morte avec le dernier porteur de
+ * `freeSourceNoteSchema` — le bras `_source` d'`isCitedItem` avec elle. Elles vivent depuis #1657 B2a
+ * dans `criticals.json`, mesurées par le bras `array-of-documents` (168/168 : 8 documents + 160 rangées).
  * @type {Record<string, string>}
  */
 export const EXEMPT_DATASETS = {

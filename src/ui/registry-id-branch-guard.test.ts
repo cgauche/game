@@ -159,7 +159,6 @@ const RAW_KNOWN: Record<string, number> = {
   'scripts/gen-bestiary-gallery.mts': 1,
   'scripts/gen-creature-attacks-gallery.mts': 2,
   'scripts/qc/opera-furniture-check.mts': 1,
-  'src/engine/aaCritical.ts': 1,
   'src/engine/activities.ts': 1,
   'src/engine/careerSlots.ts': 1, // reste `s.id === 'focalisation'` (lookup par id stable)
   'src/engine/conditions.ts': 1,

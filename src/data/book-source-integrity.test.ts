@@ -115,7 +115,8 @@ const FOLIO_TITLE_RATCHET_MAX = 0;
  * folios au `Source/` ; l'entrée `interludeEvents:kleptomane`, elle, n'était pas irrésolue mais
  * RÉFUTÉE (folio 193 déclaré, desc en 194) — corrigée à la donnée dans le même lot.
  *
- * Relevé 713 → 771 le 2026-08-28 (#1467 L1b V-FLIP-CONFIG), même lecture : `aa-criticals.json` ne
+ * Relevé 713 → 771 le 2026-08-28 (#1467 L1b V-FLIP-CONFIG), même lecture — `aa-criticals.json` est
+ * depuis #1657 B2a l'un des deux jeux de `criticals.json`, ces 80 entrées y sont toujours : il ne
  * portait AUCUNE `source` (une note libre `_source` approximative), ses 80 entrées étaient donc hors
  * de l'audit. Sourcées au folio, elles y entrent : 22 sont prouvées par leur desc, 58 restent
  * irrésolues (51 `desc-introuvable`, 7 `desc-trop-courte` — les cellules du tableau AA portent des
@@ -126,8 +127,8 @@ const FOLIO_TITLE_RATCHET_MAX = 0;
  * citées, dont 4 restent irrésolues — 3 classes de route déclarées au folio 19, qu'`EDOC 06` ne
  * marque d'AUCUNE ancre `data-folio` (verdict `sans-marqueur` : le span est introuvable, pas la
  * desc), et `patrouille-routiere` (folio 39) dont la desc recolle les deux moitiés d'une phrase que
- * l'extraction coupe autour de l'encadré « LES JUSTICIERS » — même classe que les `<br>`
- * d'`aa-criticals` ci-dessus. Population qui grandit, pas détecteur qui faiblit.
+ * l'extraction coupe autour de l'encadré « LES JUSTICIERS » — même classe que les `<br>` des tables
+ * d'Aux Armes ci-dessus. Population qui grandit, pas détecteur qui faiblit.
  */
 const UNRESOLVED_MAX = 775;
 

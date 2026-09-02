@@ -507,8 +507,9 @@ const estUnLibelle = (v) => /^[A-ZÀ-Þ]/.test(v) || /\s/.test(v);
  * registre. Chaque entrée porte l'obstacle MESURÉ. DEUX voies de retrait, toutes deux mesurées par le
  * contrat `verifieExhaustiviteDesIds` ci-dessous : le commit qui donne au document des ids de premier
  * niveau, OU celui qui le RE-ÉTIQUETTE dans une famille qui n'en attend aucun (`config` — c'est par
- * cette seconde voie qu'`aa-criticals.json` est sorti d'ici, V-FLIP-CONFIG #1467 : ses 4 familles sont
- * des CHAMPS de document, pas des clés de record). Un dataset ni registré ni inscrit ici fait ROUGIR
+ * cette seconde voie que les tables d'Aux Armes sont sorties d'ici, V-FLIP-CONFIG #1467 : leurs 4
+ * familles étaient des CHAMPS de document, pas des clés de record — elles sont depuis #1657 B2a 4 des
+ * 8 documents de `criticals.json`, famille `entite` à ids de premier niveau). Un dataset ni registré ni inscrit ici fait ROUGIR
  * `npm run gen` ; une entrée survivante sur un document `config` aussi.
  */
 const DEFAUTS_IDS = {

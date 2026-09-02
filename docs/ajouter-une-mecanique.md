@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-mecanique.mjs` (`npm run docs:mecanique`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : le SITE réel du lecteur de
-chaque canal (`src/engine/trauma.ts:919`, `src/state/triggeredEffects.ts:429`, `src/engine/capabilities.ts:45`), les
+chaque canal (`src/engine/trauma.ts:921`, `src/state/triggeredEffects.ts:429`, `src/engine/capabilities.ts:45`), les
 20 membres d'`EffectTrigger` et les 6 formes d'`EffectTargeting`
 (`src/engine/flowCore.ts`), les 7 champs de `TriggeredEffect`, les 8 kinds
 de source réunis par `effectSourcesOf`, les 4 interfaces de capacités et leur nombre de
@@ -23,7 +23,7 @@ Toute mécanique — trait de créature, talent, atout d'arme/armure, mutation, 
 
 | Canal | Ce qu’il porte | Lu par |
 |---|---|---|
-| `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:919`) |
+| `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:921`) |
 | `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:429`) |
 | `capabilities` | drapeau IRRÉDUCTIBLE que le moteur INTERROGE (aucune valeur numérique ni formule) | `hasCapability` (`src/engine/capabilities.ts:45`) |
 
@@ -53,7 +53,7 @@ signal qu'il faut étendre le vocabulaire.
 ## 2. Canal `passive` — le continu
 
 Le même vocabulaire d'ops que les sorts. Le collecteur UNIQUE est `passiveMods`
-(`src/engine/trauma.ts:919`) ; **ne jamais lire un champ typé d'origine** dans un consommateur — toujours
+(`src/engine/trauma.ts:921`) ; **ne jamais lire un champ typé d'origine** dans un consommateur — toujours
 passer par ses helpers d'extraction. Détail complet (profils d'annulation, combinaison, branches du
 collecteur) : `docs/systeme-passifs.md`.
 
@@ -135,10 +135,10 @@ un chiffre qui s'additionne.
 
 | Interface | Site | Drapeaux déclarés |
 |---|---|---|
-| `TraitCapabilities` | `src/data/index.ts:1616` | 43 |
-| `QualityCapabilities` | `src/data/index.ts:1814` | 26 |
-| `ItemCapabilities` | `src/data/index.ts:1070` | 12 |
-| `SymptomCapabilities` | `src/data/index.ts:1879` | 7 |
+| `TraitCapabilities` | `src/data/index.ts:1619` | 43 |
+| `QualityCapabilities` | `src/data/index.ts:1817` | 26 |
+| `ItemCapabilities` | `src/data/index.ts:1073` | 12 |
+| `SymptomCapabilities` | `src/data/index.ts:1882` | 7 |
 
 Lecture — un seul point d'entrée par portée, chaque canal restant disjoint par nom de capacité :
 

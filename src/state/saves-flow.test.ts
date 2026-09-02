@@ -14,7 +14,13 @@ import { talentSlots, slotCovers } from '../engine/careerSlots';
 import { createHero } from '../engine/character';
 import { testValue } from '../engine/skills';
 import { makeRNG } from '../engine/dice';
+import { stampCriticalEscalation } from '../engine/trauma';
+import { CRITIQUE_DOCS } from '../data/criticals';
+import type { Combatant, Trauma } from '../engine/types';
 import { testScene } from '../scenes/test-fixture';
+
+/** Porteur minimal du motif de bump 38 → 39 : `stampCriticalEscalation` ne lit que ses séquelles. */
+const hero38 = (): Combatant => ({ id: 'h', label: 'H', kind: 'hero', conditions: [], skills: [], traumas: [] } as unknown as Combatant);
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
 function fakeStorage(): Storage {
@@ -144,12 +150,26 @@ describe('parseSave — la version DOIT être la courante', () => {
     // `snapshotSave` recopie l'ÉTAT entier, `state.scene` comprise : la forme persistée change avec
     // celle du document de scène. Une save de 37 rouvrirait sur une scène muette, que le seam
     // `parseProject` refuserait au prochain export de son projet.
-    expect(SAVE_VERSION).toBe(38);
     expect(parseSave({ ...cur, version: 37 })).toBeNull();
     const initial = useGame.getInitialState() as unknown as Record<string, unknown>;
     const data = snapshotSave({ ...initial, scene: testScene }, initial, '2026-08-31T00:00:00.000Z').data;
     expect(testScene.type, 'une scène du dépôt s’annonce').toBe('scene');
     expect((data.scene as { type?: string }).type, 'la scène persistée doit porter son `type`').toBe('scene');
+  });
+  it('MESURE du motif de bump 38 → 39 (#1657 B2a) : le `critTrigger` persisté porte le nœud `test`', () => {
+    // `Trauma.critTrigger` (« Commotion cérébrale », LDB 18 l.74) est PERSISTÉ sur la séquelle du
+    // héros. Sa graphie propriétaire `{resist:{difficulty, onFail}}` est devenue le nœud `test` du
+    // Flow : une save de 38 rouvrirait avec `test === undefined`, et le critique suivant lirait
+    // `trig.test.test.difficulty` sur rien (`fireCritTriggers`).
+    expect(SAVE_VERSION).toBe(39);
+    expect(parseSave({ ...cur, version: 38 })).toBeNull();
+    const commotion = CRITIQUE_DOCS.flatMap((d) => d.entries).find((e) => e.id === 'commotion-cerebrale')!;
+    const arme = commotion.escalation!.onNextCritWhileCondition!;
+    expect(arme.test.kind, 'la donnée doit porter le nœud, pas la graphie `resist`').toBe('test');
+    expect((arme as unknown as Record<string, unknown>).resist, 'graphie propriétaire ressuscitée').toBeUndefined();
+    const traumas: Trauma[] = [];
+    stampCriticalEscalation(traumas, commotion.escalation!, 'tete', hero38(), makeRNG(1), []);
+    expect(traumas.find((t) => t.critTrigger)!.critTrigger!.test).toEqual(arme.test);
   });
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
     const sv = talents.find((t) => t.id === 'savoir-vivre')!;

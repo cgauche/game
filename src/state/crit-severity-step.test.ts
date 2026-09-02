@@ -6,8 +6,8 @@ import { stepInteraction, rollTableStep, tableStepDefs } from './cascade';
 import { draineCascade } from './cascadeTestKit';
 import { seedBattleRng, battleRng } from './battleRng';
 import { makeRNG, d100 } from '../engine/dice';
-import { rollCritical, critTableKeyFor, critTableRows, critSeverityReduction } from '../engine/critical';
-import { criticalTableFor, CRITICAL_TABLES } from '../data/criticals';
+import { resolveCritique, critTableRows, critSeverityReduction } from '../engine/critical';
+import { critiqueTable, critTableKeyFor } from '../data/criticals';
 import { findTableEntry } from '../engine/tables';
 import { createHero } from '../engine/character';
 import { setDesFixes, resetDesFixes, desFixes } from '../engine/fixedDie';
@@ -25,7 +25,7 @@ import type { AttackResult } from '../engine/combat';
 /**
  * SÉVÉRITÉ d'une Blessure critique en SEAM (#942 L4) — le d100 du Tableau des Critiques (LDB 18) est
  * une étape à TABLE de la séquence : tiré par le résolveur unique `rollTableStep`, injecté au moteur
- * en `forcedRoll` (dé NATUREL — `rollCritical` applique LUI-MÊME la réduction d'overkill, LDB 18 l.17
+ * en `forcedRoll` (dé NATUREL — `resolveCritique` applique LUI-MÊME la réduction d'overkill, LDB 18 l.17
  * verbatim « vous ôtez -20 à votre résultat sur le Tableau des Critiques avec un résultat minimum de
  * 01 »), et POSABLE (option « Dés fixés » + siège qui contrôle la victime) avant que le coup ne soit
  * résolu. Sans l'option, le chemin reste bit-à-bit celui d'avant (sonde différentielle ci-dessous).
@@ -72,14 +72,14 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     for (const key of ['tete', 'bras', 'corps', 'jambe'] as const) {
       const def = tableStepDefs[CRIT_TABLE_IDS[key]];
       expect(def, `table « ${key} » non enregistrée`).toBeDefined();
-      expect(def.rows).toBe(critTableRows(key)); // par RÉFÉRENCE : zéro duplication de fourchettes
+      expect(def.rows).toBe(critTableRows('ldb', key)); // par RÉFÉRENCE : zéro duplication de fourchettes
       expect(def.die).toBe(100);
     }
     // La projection Localisation → table est celle du moteur (repli Bras compris) : un seul chemin.
-    for (const loc of LOCS) expect(critTableRows(critTableKeyFor(loc))).toBe(criticalTableFor(loc));
+    for (const loc of LOCS) expect(critTableRows('ldb', critTableKeyFor(loc))).toBe(critiqueTable('ldb', loc));
     // La ligne d'affichage est le libellé de l'entrée atteinte par le dé EFFECTIF.
     expect(rollTableStep({ tableId: CRIT_TABLE_IDS.corps, forcedRoll: 46 }, makeRNG(1)).lines[0])
-      .toBe(findTableEntry(CRITICAL_TABLES.corps, 46).label);
+      .toBe(findTableEntry(critiqueTable('ldb', 'corps'), 46).label);
   });
 
   it('déclaration : la réduction d’overkill est un `mod` NÉGATIF, et la table BORNE à 01 (LDB 18 l.17)', () => {
@@ -93,9 +93,9 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     // que le lookup moteur (qui fait son propre `Math.max(1, …)`).
     const rolled = rollTableStep({ ...decl, forcedRoll: 7 }, makeRNG(1));
     expect(rolled).toMatchObject({ roll: 7, die: 1 });
-    expect(rolled.id).toBe(findTableEntry(CRITICAL_TABLES.corps, 1).id);
+    expect(rolled.id).toBe(findTableEntry(critiqueTable('ldb', 'corps'), 1).id);
     seedBattleRng(3);
-    expect(rollCritical(H, 'corps', battleRng(), gros, false, 7).roll).toBe(1);
+    expect(resolveCritique('ldb', H, 'corps', battleRng(), { overkill: gros, forcedRoll: 7 }).roll).toBe(1);
   });
 
   it('SONDE DIFFÉRENTIELLE (option ÉTEINTE) : même ligne ET même flux RNG que le tirage moteur d’avant', () => {
@@ -103,7 +103,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     for (let seed = 1; seed <= 25; seed++) {
       // Référence = le chemin d'avant : le moteur tire LUI-MÊME son d100 de sévérité.
       seedBattleRng(seed);
-      const avant = rollCritical(H, 'corps', battleRng(), 0);
+      const avant = resolveCritique('ldb', H, 'corps', battleRng());
       const apresRef = d100(battleRng()); // dé SUIVANT → mesure la consommation exacte du flux
       // Seam : le dé passe par l'étape à table, le moteur reçoit le naturel.
       seedBattleRng(seed);
@@ -157,7 +157,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     const { H, E } = startFight();
     setDesFixes(true);
     // Ligne CHOISIE dans la donnée : une entrée à État (op `condition`), ni létale ni amputante.
-    const entry = CRITICAL_TABLES.corps.find((e) => !e.lethal && !e.amputation && (e.ops ?? []).some((o) => o.op === 'condition'))!;
+    const entry = critiqueTable('ldb', 'corps').find((e) => !e.lethal && !e.amputation && (e.ops ?? []).some((o) => o.op === 'condition'))!;
     const cond = (entry.ops ?? []).find((o) => o.op === 'condition') as { op: 'condition'; id: string };
     applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
     const step = useGame.getState().pendingCascade!.participants[0];
@@ -177,7 +177,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
   });
 
   /**
-   * PLI POST-DÉ IMPUR (#1426) — `rollCritical` consomme du RNG même sous dé posé (amputation, relances) :
+   * PLI POST-DÉ IMPUR (#1426) — `resolveCritique` consomme du RNG même sous dé posé (amputation, relances) :
    * sans mémo, explorer les poses (76 → 20 → 76) rendrait TROIS Critiques différents pour DEUX valeurs,
    * et la fenêtre mentirait sur son propre dé. Contrat mesuré : pour une étape donnée, un dé posé rend
    * TOUJOURS la même conséquence, et une valeur DÉJÀ VUE ne re-consomme aucun dé.
@@ -238,14 +238,14 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
       expect(critSeverityInSeam(false)).toBe(false);
       expect(critSeverityInSeam(true)).toBe(true); // Sauvagerie → tables LDB (l'Atout ne coexiste pas avec AA)
       // Défense en profondeur : fabriquer une déclaration LDB sous AA promettrait une ligne que
-      // `resolveAACritical` n'appliquerait pas → levée, jamais un dé posé silencieusement ignoré.
+      // le résolveur AA n'appliquerait pas → levée, jamais un dé posé silencieusement ignoré.
       expect(() => critSeverityDecl(H, 'corps', 0, false)).toThrow(/combat-aa-blessures/);
       const suspended = applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
       expect(suspended, 'fenêtre LDB ouverte sous la variante AA').toBe(false);
       expect(useGame.getState().pendingCascade!.participants.some((s) => s.table?.tableId === CRIT_TABLE_IDS.corps && s.kind === 'deviation')).toBe(false);
       // Le Critique appliqué vient bien des tables AA (id absent des tables LDB de la localisation).
       const victime = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-      expect(CRITICAL_TABLES.corps.some((e) => e.id === lastCrit(victime))).toBe(false);
+      expect(critiqueTable('ldb', 'corps').some((e) => e.id === lastCrit(victime))).toBe(false);
     } finally {
       resetRule('combat-aa-blessures');
     }
@@ -271,7 +271,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
       const { crit, table } = resolveCritSeverity(H, 'corps', 0, true);
       expect(table!.result!.roll).toBe(Math.max(a, b));
       expect(crit.roll).toBe(Math.max(a, b));
-      expect(crit.entryId).toBe(findTableEntry(CRITICAL_TABLES.corps, Math.max(a, b)).id);
+      expect(crit.entryId).toBe(findTableEntry(critiqueTable('ldb', 'corps'), Math.max(a, b)).id);
     }
   });
 
@@ -286,7 +286,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     seedBattleRng(5);
     const { crit } = resolveCritSeverity(H, 'corps', 0, true, 42);
     expect(crit.roll, 'le dé posé a été écrasé par le multiplicateur de lancers').toBe(42);
-    expect(crit.entryId).toBe(findTableEntry(CRITICAL_TABLES.corps, 42).id);
+    expect(crit.entryId).toBe(findTableEntry(critiqueTable('ldb', 'corps'), 42).id);
   });
 
   /**
@@ -305,7 +305,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     expect(new Set(etapes.map((s) => s.id)).size, `id partagé : ${etapes[0].id}`).toBe(2);
     // Et la pose n'agit que sur l'étape SOUS LE CURSEUR : le dé de la seconde ne suit pas celui de la
     // première (avec un id partagé, elles répondaient au même geste).
-    const entry = CRITICAL_TABLES.corps.find((e) => !e.lethal && !e.amputation)!;
+    const entry = critiqueTable('ldb', 'corps').find((e) => !e.lethal && !e.amputation)!;
     useGame.getState().cascadeTableSetForcedRoll(etapes[0].id, entry.min);
     const apres = useGame.getState().pendingCascade!.participants.filter((s) => s.kind === 'deviation');
     expect(apres[0].table!.result!.id).toBe(entry.id);

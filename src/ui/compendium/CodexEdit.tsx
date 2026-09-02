@@ -27,7 +27,7 @@ import { PlageField, type PlageValue } from '../PlageField';
 import { GatedAction } from '../GatedAction';
 import { raceKeySchema } from '../../data/schemas/grammaire/valeurs';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
-import { FlowEditor } from '../editor/FlowEditor';
+import { FlowEditor, TestFields } from '../editor/FlowEditor';
 import { GameOpEditor, FormulaField, opsMissingRefs } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 import type { ConsumableDuration } from '../../engine/consumables';
@@ -36,6 +36,7 @@ import { creatureSpeciesOptions, QUAD_SPECIES, WINGED_SPECIES } from '../../game
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
+import type { CritTestNode } from '../../data/criticals';
 import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
 import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL } from './maneuverLabels';
 import type { ManeuverDef, ManeuverMeasure } from '../../data';
@@ -98,9 +99,9 @@ const SHIP_CRIT_CATEGORIES = [
   'riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure',
 ];
 
-/** Les 8 catégories de Critiques localisés (LDB 6 + AA, #173) partageant `traumas: string[]` — DES
+/** Les 8 catégories de Critiques localisés (LDB 18 + AA 07, #173) partageant `traumas: string[]` — DES
  *  IDS de fiches de traumatisme (`traumas.json`), résolus PAR ID (`traumaFicheById`/`traumaById`,
- *  `engine/critical.ts:120`/`engine/aaCritical.ts`). Éditeur dédié (`TraumaListField`, sélecteurs
+ *  `engine/critical.ts`). Éditeur dédié (`TraumaListField`, sélecteurs
  *  id→label) plutôt que le datalist générique : les fiches partagent des labels NON uniques (deux
  *  fiches « Fracture » à sévérité différente) — un datalist par label ne pourrait même pas les distinguer. */
 const CRITICAL_CATEGORIES = [
@@ -309,7 +310,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'crewRoles') add('skills'); // {id,spec?}[] → éditeur dédié (SkillSpecListField)
   if (categoryKey === 'axes') add('skills', 'talents'); // #409 : {id,spec?}[]/{talentId,spec?}[] → SkillSpecListField/TalentSpecListField
   if (categoryKey === 'traumas') add('prosthesis'); // {trappingId,cancels}[] → éditeur dédié (ProsthesisField)
-  if (CRITICAL_CATEGORIES.includes(categoryKey)) add('traumas'); // string[] d'ids → éditeur dédié (TraumaListField, #173)
+  if (CRITICAL_CATEGORIES.includes(categoryKey)) add('traumas', 'test'); // string[] d'ids → TraumaListField (#173) ; `test` → FlowEditor (#1682)
   if (categoryKey === 'steamBreakdowns') add('restart'); // {skill:{id,spec?},difficulty,extendedDR?}[] → éditeur dédié
   add(...opsFieldsOf(categoryKey)); // ops/occupantOps/crewOps/captainOps → GameOpEditor (#157)
   if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick', 'visiblePassive', 'visibleLocations'); // GameOp[] + test de cycle + gate visibilité → éditeurs dédiés (capabilities = sous-form générique)
@@ -614,6 +615,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
       <div className="codex-edit-form">
         {hasAppearance && <AppearanceField label={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
+        {CRITICAL_CATEGORIES.includes(categoryKey) && <CritTestField value={entry.test as CritTestNode | undefined} onChange={(v) => edit('test', v)} />}
         {isPassive && (
           <div className="ed-field">
             <span>modificateurs PASSIFS continus (mêmes ops que les sorts — sans déclencheur)</span>
@@ -890,6 +892,50 @@ function SpellEffectsField({ value, onChange }: { value: Flow | undefined; onCha
 }
 
 
+/**
+ * Éditeur du JET d'une rangée de Blessure critique (`CritEntry.test`, #1682) — le champ porte UN nœud
+ * `test`, pas un Flow quelconque : `{kind:'test', test, success, fail}`, la forme que `noeudTest` lit.
+ *
+ * On compose donc le SOUS-éditeur de nœud `test` (`TestFields` + un `FlowEditor` par branche), celui-là
+ * même que `FlowEditor` monte quand il rencontre un `kind:'test'` à l'intérieur d'un Flow de sort — et
+ * JAMAIS la racine `FlowEditor`, qui normalise ce qu'elle rend en `{kind:'seq', steps}` (`asSteps`/
+ * `seqOf`) : le nœud y perdait son `kind`, et le document ne parsait plus son schéma au save.
+ * Une rangée sans jet n'en porte pas : le bouton en POSE un COMPLET, jamais un nœud à moitié valide.
+ */
+function CritTestField({ value, onChange }: { value: CritTestNode | undefined; onChange: (v: CritTestNode | undefined) => void }) {
+  /** `FlowEditor` édite la feuille de SCÈNE (transition/dialogue compris), la rangée n'admet que la
+   *  feuille `EffectOp` du moteur — même régime que `SpellEffectsField` : c'est le SCHÉMA du document
+   *  qui refuse au save une feuille hors vocabulaire, jamais un éditeur en double. */
+  const branche = (f: Flow): CritTestNode['success'] => f as CritTestNode['success'];
+  return (
+    <div className="ed-field">
+      <span>jet de la rangée (nœud `test` — Difficulté, compétence, conséquences des deux branches)</span>
+      {value ? (
+        <div className="eff-body flow-branch">
+          <TestFields test={value.test} onChange={(test) => onChange({ ...value, test })} />
+          <div className="branch">
+            <span className="branch-label ok">Si RÉUSSITE :</span>
+            <FlowEditor flow={value.success} ctx={{ encounters: [], dialogues: [] }} onChange={(success) => onChange({ ...value, success: branche(success) })} />
+          </div>
+          <div className="branch">
+            <span className="branch-label fail">Si ÉCHEC :</span>
+            <FlowEditor flow={value.fail} ctx={{ encounters: [], dialogues: [] }} onChange={(fail) => onChange({ ...value, fail: branche(fail) })} />
+          </div>
+          <button type="button" className="btn" onClick={() => onChange(undefined)}>Retirer le jet</button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="btn"
+          onClick={() => onChange({ kind: 'test', test: { difficulty: 'intermediaire' }, success: branche(EMPTY_FLOW), fail: branche(EMPTY_FLOW) })}
+        >
+          Ajouter un jet
+        </button>
+      )}
+    </div>
+  );
+}
+
 /** Éditeur des EFFETS DÉCLENCHÉS (`TriggeredEffect[]`) — porté indifféremment par un Trait OU un Atout
  *  d'arme. MÊME logique authorée que les sorts : une LISTE d'effets, chacun = un DÉCLENCHEUR (sur
  *  événement) + une CIBLE + un `Flow` d'ops éditable (réutilise `FlowEditor`/`GameOpEditor`). Écrit le
@@ -1152,7 +1198,7 @@ function ProsthesisField({ value, onChange }: { value: { trappingId: string; can
 }
 
 /** Traumatismes STRUCTURELS infligés par un Critique localisé (`criticals[Tete|Bras|Corps|Jambe].traumas`,
- *  `aaCriticals*`, LDB 6/AA, #173) : `string[]` d'ids de fiche (`traumas.json`), lus PAR ID
+ *  `aaCriticals*`, LDB 18/AA 07, #173) : `string[]` d'ids de fiche (`traumas.json`), lus PAR ID
  *  (`traumaFicheById`/`traumaById`). Sélecteurs id→label (comme `SkillSpecListField`/`ProsthesisField`),
  *  PAS le motif `<datalist>` par label : plusieurs fiches partagent le même libellé (« Fracture » mineure
  *  ET majeure) — un datalist par label ne pourrait même pas les distinguer, et écrirait un libellé au lieu

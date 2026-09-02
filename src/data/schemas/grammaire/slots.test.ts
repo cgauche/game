@@ -93,7 +93,7 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     // pose UNE marque par INSTANCE de fabrique (activities, axes, crew-roles, creatures, sea-cargo,
     // sea-perils ×2, steam-breakdown, water-exposure, `mount.riderTest`, `shipCrewTest`) — puis
     // 11 → 30 au commit 3c, où la référence emboîtée gagne 19 instances : la grammaire (`flowTest`),
-    // les conteneurs de Test (`aa-criticals.resist`, `etats.recover`, `psychology.test`,
+    // les conteneurs de Test (`criticals.test`, `etats.recover`, `psychology.test`,
     // `spells.opposed`, `miscast` ×2), le matcher `talents.testMatch`, les 4 instances de l'union
     // `talents.reverseFailed` (2 branches × base et `variants`, que `variantOf` clone), les 5 slots de
     // `tavernGames` et les 2 effets de scène `extendedTest`/`startPursuit`. Les DEUX portes
@@ -133,7 +133,12 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // `defs/creatures.ts › skills` et `defs-scenes/communs.ts › skills` composent
       // `refOuSpec('skill', {value})` là où ils redéclaraient chacun leur `{id, spec?, value}`.
       // 1 marque par instance de fabrique. Le stock des sites ADOPTÉS ne peut que CROÎTRE.
-      ...Array.from({ length: 37 }, () => "idDe('skill')"),
+      // … puis 37 → 36 (#1657 B2a) : `defs/aa-criticals.ts › aaEntrySchema.resist.skill` MEURT avec
+      // son def — la Compétence testée par une rangée de Critique est désormais celle du nœud
+      // partagé (`flowTestSchema.skill`, `grammaire/mecanique.ts`), qui n'est pas un champ de DEF et
+      // ne se compte donc pas ici. Une marche de MOINS pour la MÊME référence validée : le site n'a
+      // pas disparu, il a rejoint la grammaire commune — c'est le sens même de cette vague.
+      ...Array.from({ length: 36 }, () => "idDe('skill')"),
       ...Array.from({ length: 4 }, () => "idDe('table')"),
       ...Array.from({ length: 6 }, () => "idDe('talent')"),
       "idDe('trait')",

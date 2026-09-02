@@ -315,6 +315,18 @@ export const extendedTestSchema = z.strictObject({
   stake: stakeRefSchema.optional(),
 });
 
+/** Options de `noeudTest` — ce qu'un document RESSERRE sur le nœud partagé, jamais un spread. */
+export interface OptionsNoeudTest {
+  /**
+   * `flowTestSchema.difficulty` est OPTIONNELLE — un Flow peut porter un Test dont la Difficulté est
+   * fixée ailleurs (`difficultyBy`, opposition). Un document dont TOUTES les rangées la portent le
+   * DÉCLARE ici, et le contrat se resserre pour lui seul : `criticals.json` (39 nœuds sur 39 avec
+   * `difficulty`) — sans ce resserrement, l'adoption du nœud partagé aurait relâché en SILENCE
+   * l'exigence que portait le schéma propre des Blessures critiques.
+   */
+  readonly difficulteRequise?: boolean;
+}
+
 /**
  * NŒUD `test` d'un Flow (`Flow<E>`, `engine/flowCore.ts:492`) — jet ALÉATOIRE interactif dont l'issue
  * choisit la branche `success` ou `fail`. Le nœud ne dépend PAS du type de la feuille `do` de ses
@@ -322,8 +334,18 @@ export const extendedTestSchema = z.strictObject({
  * `defs-scenes/effets.ts`). La fabrique le déclare donc une seule fois, paramétré par sa branche —
  * `test` est toujours `flowTestSchema`, la forme UNIQUE du jet en donnée.
  */
-export function noeudTest<B extends z.ZodType>(branche: B) {
-  return z.strictObject({ kind: z.literal('test'), test: flowTestSchema, success: branche, fail: branche });
+export function noeudTest<B extends z.ZodType>(branche: B, options: OptionsNoeudTest = {}) {
+  const test = options.difficulteRequise
+    ? flowTestSchema.superRefine((v, ctx) => {
+        if (v.difficulty !== undefined) return;
+        ctx.addIssue({
+          code: 'custom',
+          path: ['difficulty'],
+          message: 'nœud `test` à difficulté REQUISE : `difficulty` absente — un site sans Difficulté n’est pas une épreuve.',
+        });
+      })
+    : flowTestSchema;
+  return z.strictObject({ kind: z.literal('test'), test, success: branche, fail: branche });
 }
 
 /** `Flow<EffectOp>` (`engine/flowCore.ts:492`) — arbre récursif ACYCLIQUE (seq/do/if/test/choice). */

@@ -15,12 +15,12 @@
 **Périmètre mesuré et angles morts** — la carte §A vient du manifeste ÉDITORIAL
 `src/data/donnees.manifest.json` (rangement par rubrique, description, homonymes) : rien de tout cela
 ne se devine de l'arbre, un jugement humain reste nécessaire. Ce que ce générateur CALCULE et
-réfute au besoin : (1) bijection stricte manifeste ⇄ `122` fichiers réels de
+réfute au besoin : (1) bijection stricte manifeste ⇄ `121` fichiers réels de
 `src/data/*.json` (un `.json` neuf non cartographié, ou une entrée de manifeste pointant sur un
 fichier disparu, casse la génération) ; (2) nombre d'entrées par fichier (comptage `Array.isArray`,
 `objet à sous-catalogues` sinon — angle mort assumé : cette étiquette ne dit RIEN du contenu réel
 d'un objet à sous-catalogues, juste qu'il n'est pas un tableau plat) ; (3) couverture du contrat de
-schéma zod (`122/122`, cf. §E-bis) ; (4) présence effective sur disque de
+schéma zod (`121/121`, cf. §E-bis) ; (4) présence effective sur disque de
 chaque fichier cité par un cas d'homonyme de §D. Angle mort déclaré : les DESCRIPTIONS de rubrique,
 de fichier et d'homonyme restent du texte manuscrit du manifeste — ce générateur ne les vérifie PAS
 contre le contenu réel des `.json` (une description qui ment sur ce que porte un fichier ne casse
@@ -31,7 +31,7 @@ La colonne **Exposition** de §A est DÉRIVÉE des `exposition` déclarées par 
 (`document(type, famille, champs, meta, exposition)` → `src/data/schemas/exposition-derivee.ts`,
 dumpée par `scripts/docs/lib/dump-exposition.mts`) : clés de catégorie Codex exposées, route
 d'édition (`dataset` / `objet single|record` / `niché` / aucune), ou EXEMPTION motivée
-(`27` fichier(s) exempt(s) sur `122`). Aucune de ces valeurs n'est écrite ici :
+(`27` fichier(s) exempt(s) sur `121`). Aucune de ces valeurs n'est écrite ici :
 un def qui change d'exposition change cette colonne au prochain `npm run docs:donnees`.
 
 ## §A — Carte : où va chaque donnée
@@ -79,7 +79,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 | `qualityTypes.json` · `qualitySubtypes.json` | atout/defaut · arme/armure/objet (2 entrée(s) · 3 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `weaponGroups.json` | Groupes d'armes (Base, Escrime, Parade…) (38 entrée(s)) | `weaponGroups` — dataset `weaponGroups` |
 | `maneuvers.json` | Manœuvres (attaques spéciales : morsure, souffle…) (20 entrée(s)) | `maneuvers` — dataset `maneuvers` |
-| `criticals.json` · `aa-criticals.json` | Blessures critiques par localisation (base · variante *Aux Armes*) (objet à sous-catalogues · objet à sous-catalogues) | `criticalsTete` · `criticalsBras` · `criticalsCorps` · `criticalsJambe` — niché (`criticalsTete` · `criticalsBras` · `criticalsCorps` · `criticalsJambe`) ; `aaCriticalsTete` · `aaCriticalsBras` · `aaCriticalsCorps` · `aaCriticalsJambe` — niché (`aaCriticalsTete` · `aaCriticalsBras` · `aaCriticalsCorps` · `aaCriticalsJambe`) |
+| `criticals.json` | Blessures critiques par localisation — 8 documents-tables, un par jeu × Localisation (base · variante *Aux Armes*) (8 entrée(s)) | `criticalsTete` · `criticalsBras` · `criticalsCorps` · `criticalsJambe` · `aaCriticalsTete` · `aaCriticalsBras` · `aaCriticalsCorps` · `aaCriticalsJambe` — niché (`criticalsTete` · `criticalsBras` · `criticalsCorps` · `criticalsJambe` · `aaCriticalsTete` · `aaCriticalsBras` · `aaCriticalsCorps` · `aaCriticalsJambe`) |
 | `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (20 entrée(s)) | `effectTables` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
 | `grapple.json` | Lutte / empoignade (objet à sous-catalogues) | `grapple` — objet single |
@@ -257,7 +257,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   `src/data/variants-integrity.test.ts`) — `talents.json` résout quatre champs, UNE CITATION PAR LIGNE,
   chacune à côté du SYMBOLE qu'elle porte (lignes MESURÉES à la génération, `citeLigne`) :
 
-  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1416`
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1424`
   - `test` — `talentTestSLBonus`, `src/engine/magic.ts:359`
   - `max` — `talentMaxById`, `src/engine/careerSlots.ts:326`
   - `combat` — `featuresOf`, `src/engine/combatFeatures/dispatch.ts:52`
@@ -265,7 +265,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 
   `traits.json` ne résout, lui, que deux champs :
 
-  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:555`
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:556`
 
   `passive` et `effects` en sont EXCLUS — le moteur les lit sur
   l'entrée brute (`src/engine/talentEffects.ts`, `src/engine/traits/dispatch.ts`) ; un champ n'entre
@@ -315,7 +315,7 @@ Deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont
 ## §E-bis — Contrat de schéma (`src/data/schemas/`)
 
 Chaque document authoré valide contre un schéma zod **STRICT**, sur les **DEUX racines** de
-documents : `src/data` (catalogues de jeu, **122/122** datasets sous contrat, décompte
+documents : `src/data` (catalogues de jeu, **121/121** datasets sous contrat, décompte
 CALCULÉ des defs présentes dans `src/data/schemas/defs/`) et `src/scenes` (projets de campagne
 `*-projet.json`, defs dans `src/data/schemas/defs-scenes/`).
 

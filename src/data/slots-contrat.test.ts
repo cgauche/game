@@ -82,7 +82,7 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
  * `idDe('trait')` (fait, `grammaire/mecanique.ts`) DÉCLARE bien le slot, mais son path projette sur le
  * champ `traitId` quand le scan mesure l'objet-op au champ `ops` — la ligne ne bouge pas d'un pouce.
  * C'est l'angle mort DÉCLARÉ ci-dessus (projection sur le dernier segment-clé) : ces lignes `ops`
- * (aa-criticals 85, activities 16, traits 21…) meurent en L3 #1473, quand la référence de Trait
+ * (criticals 215, activities 16, traits 21…) meurent en L3 #1473, quand la référence de Trait
  * s'écrit `trait: { id }` comme la Compétence s'écrit `skill: { id, spec? }` depuis L2 #1548 — pas avant.
  * Cause de l'essentiel des crans — jamais de la donnée neuve : le CHAMP PORTEUR bouge (la référence
  * de Compétence sort de son conteneur et devient son propre champ `skill`/`skills`), ce qui SCINDE

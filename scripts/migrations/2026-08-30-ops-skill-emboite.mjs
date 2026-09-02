@@ -43,7 +43,9 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 /** Chemins PORTEURS, par fichier : la suite des clés depuis la racine, `[]` traversant un tableau,
  *  `{}` traversant les valeurs d'un objet. Relevé exhaustif du 2026-08-30 sur les 2 racines authorées. */
 const CHEMINS = [
-  ['src/data/aa-criticals.json', ['{}', '[]', 'resist']],
+  // #1657 B2a : la Compétence testée d'une rangée de Critique vit dans le nœud `test` du Flow,
+  // dont `flowTestSchema.skill` est DÉJÀ la référence emboîtée — plus aucun chemin à migrer ici.
+  ['src/data/criticals.json', ['[]', 'entries', '[]', 'test', 'test']],
   ['src/data/activities.json', ['[]', 'outcomes', '[]', 'ops', '[]']],
   ['src/data/domains.json', ['[]', 'windModifiers', '[]', 'cancelledBy', 'test']],
   ['src/data/drunkenness.json', ['entries', '[]', 'ops', '[]']],

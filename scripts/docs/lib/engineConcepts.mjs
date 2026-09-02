@@ -15,7 +15,6 @@
 //     seulement un filet mort : un motif de cette liste sans AUCUNE correspondance est une erreur
 //     (motif obsolète, cf. la même règle sur `CONCEPTS` de `build-vocabulaire.mjs`).
 export const FILE_CONCEPTS = new Map([
-  ['src/engine/aaCritical.ts', 'Blessures Critiques Aux Armes (AA) : tables et décalages'],
   ['src/engine/activeFlags.ts', "Drapeaux d'effet actif : consommation, relance gratuite"],
   ['src/engine/activities.ts', 'Activités hors combat : contexte, issues, bandes de résultat'],
   ['src/engine/advancement.ts', 'Avancement de personnage : Points d\'Expérience, changement de Carrière'],

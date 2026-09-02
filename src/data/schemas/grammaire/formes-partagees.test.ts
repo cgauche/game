@@ -9,7 +9,6 @@ import { flowTestSchema, gameOpSchema } from './mecanique';
 import { TESTS_DE_CORRUPTION, bornesSchema, ecartDeCoPresenceDesBornes, plageOuverteSchema, plageSchema } from './valeurs';
 import { validateDataset } from '../validate';
 import criticals from '../../criticals.json';
-import aaCriticals from '../../aa-criticals.json';
 import localisation from '../../localisation.json';
 import structureCriticals from '../../structure-criticals.json';
 import riverCriticals from '../../river-criticals.json';
@@ -120,6 +119,8 @@ describe('plageSchema — fourchette PARTAGÉE des rangées de table', () => {
 
   /** Position d'un jeu de taverne par son ID (jamais par sa place : la donnée est réordonnable au Codex). */
   const jeuDeTaverne = (id: string) => String((tavernGames as ReadonlyArray<{ id: string }>).findIndex((j) => j.id === id));
+  /** Position d'un document-table de Blessures critiques par son ID — même règle : jamais par son rang. */
+  const docCritique = (id: string) => String((criticals as ReadonlyArray<{ id: string }>).findIndex((d) => d.id === id));
 
   /**
    * Chaque document ADOPTANT est mesuré sur SA donnée réelle : on ampute la première rangée à deux
@@ -127,8 +128,10 @@ describe('plageSchema — fourchette PARTAGÉE des rangées de table', () => {
    * débranchée (spread perdu, borne rendue optionnelle) laisserait passer.
    */
   const SITES: ReadonlyArray<readonly [string, unknown, string[]?]> = [
-    ['criticals.json', criticals],
-    ['aa-criticals.json', aaCriticals],
+    // Les DEUX jeux vivent dans le même fichier (#1657 B2a) : chacun se mesure sur SON document-table,
+    // une composition débranchée ne pouvant se cacher derrière le premier rencontré.
+    ['criticals.json', criticals, [docCritique('criticals-ldb-tete'), 'entries']],
+    ['criticals.json', criticals, [docCritique('criticals-aa-tete'), 'entries']],
     ['localisation.json', localisation],
     ['structure-criticals.json', structureCriticals],
     ['river-criticals.json', riverCriticals],

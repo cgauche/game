@@ -159,7 +159,7 @@ import { hasActiveFlag } from '../engine/activeFlags';
 /** Deux lancers de Blessure Critique, dont le porteur CHOISIT le résultat gardé (LDB 41 l.170) :
  *  Bénédiction de Sauvagerie (drapeau TEMPORAIRE `hasActiveFlag`) OU Frappe blessante — variante AA
  *  (AA 13 l.57, capacité PERMANENTE de talent `hasCritRollTwiceTalent`). Point de fusion UNIQUE —
- *  `rollCritical` ne connaît que le booléen, et le tri des deux dés se déclare sur l'étape à table
+ *  `resolveCritique` ne connaît que le booléen, et le tri des deux dés se déclare sur l'étape à table
  *  (`CascadeTableDecl.keepHighest` : politique du maximum, défaut de l'IA — le choix que le RAW
  *  confie au porteur n'est pas surfacé au joueur, #982). */
 function critRollTwiceFor(c: Combatant | undefined | null): boolean {
@@ -169,9 +169,8 @@ import { domainOnHitEffects, domainCasterOps, isSorceryDomain, domainEnvironment
 import { decayZones, discTiles, wallTiles, clampZoneTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { contractionDue, applyContraction, hasActiveCapability, DISEASE_DEFS } from '../engine/disease';
-import { rollCritical, critWoundLocation, critImmediateSummary, resolvePostEncounterAmputations, critSeverityReduction, critTableKeyFor, critTableRows, type CriticalResolved, type CritTableKey } from '../engine/critical';
+import { resolveCritique, jeuDeCritique, critiqueTriviale, critWoundLocation, critImmediateSummary, resolvePostEncounterAmputations, critSeverityReduction, critTableKeyFor, critTableRows, type CriticalResolved, type CritTableKey } from '../engine/critical';
 import { findTableEntry } from '../engine/tables';
-import { aaCriticalIsTrivial } from '../engine/aaCritical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { rollArtillerySalveMisfire } from '../engine/artilleryMisfire';
 import { traumaById, dechirureFractureFicheId, consolidateAmputations, maxFingersLostForWeapon, reinjuryBleed } from '../engine/trauma';
@@ -1626,7 +1625,7 @@ const CRIT_TABLE_CATEGORIES: Record<CritTableKey, string> = {
   tete: 'criticalsTete', bras: 'criticalsBras', corps: 'criticalsCorps', jambe: 'criticalsJambe',
 };
 for (const key of Object.keys(CRIT_TABLE_IDS) as CritTableKey[]) {
-  const rows = critTableRows(key);
+  const rows = critTableRows('ldb', key);
   registerTableStep(CRIT_TABLE_IDS[key], {
     label: `Blessures critiques — ${CRIT_TABLE_LABELS[key]}`,
     die: 100,
@@ -1637,14 +1636,14 @@ for (const key of Object.keys(CRIT_TABLE_IDS) as CritTableKey[]) {
 }
 
 /**
- * La SÉVÉRITÉ se tire-t-elle sur les tables LDB (donc par une étape à table) ? Prédicat UNIQUE, calqué
- * sur la bifurcation du moteur (`rollCritical` : `!twice && rule === 'aa'` → `resolveAACritical`) —
- * le seam, la déclaration et la FENÊTRE de pose s'y gatent tous, sinon le dé posé irait à un résolveur
- * qui ne le lit pas. Variante Aux Armes : ses tables (décalage +10/Blessure propre) ne sont pas
- * déclarées en étapes → dé au résolveur AA, sans étape (couverture AA : #974).
+ * La SÉVÉRITÉ se tire-t-elle sur les tables LDB (donc par une étape à table) ? Prédicat UNIQUE, qui LIT
+ * le choix de jeu du moteur (`jeuDeCritique`) plutôt que de le recalculer — le seam, la déclaration et la
+ * FENÊTRE de pose s'y gatent tous, sinon le dé posé irait à une table qui ne le lit pas. Variante Aux
+ * Armes : ses tables (décalage +10/Blessure propre) ne sont pas déclarées en étapes → dé au résolveur,
+ * sans étape (couverture AA : #974).
  */
 export function critSeverityInSeam(twice?: boolean): boolean {
-  return !!twice || rule('combat-aa-blessures') !== 'aa';
+  return jeuDeCritique(twice) === 'ldb';
 }
 
 /** DÉCLARATION du tirage de SÉVÉRITÉ d'une Blessure critique (LDB 18) : la table de la Localisation,
@@ -1652,12 +1651,12 @@ export function critSeverityInSeam(twice?: boolean): boolean {
  *  `clamp` : plancher « avec un résultat minimum de 01 » (LDB 18 l.17), la même borne que le
  *  `Math.max(1, …)` du lookup moteur. `keepHighest: 2` sous Bénédiction de Sauvagerie (LDB 41 l.170).
  *  Le dé de la déclaration est le dé NATUREL (le `mod` s'applique au lookup) : c'est exactement ce que
- *  `rollCritical` attend en `forcedRoll`, qui applique LUI-MÊME la réduction — les deux lookups tombent
+ *  `resolveCritique` attend en `forcedRoll`, qui applique LUI-MÊME la réduction — les deux lookups tombent
  *  donc sur la même ligne. LÈVE hors du périmètre du seam (défense en profondeur : une déclaration LDB
  *  fabriquée sous la variante AA promettrait une ligne que le résolveur AA n'appliquerait pas). */
 export function critSeverityDecl(target: Combatant, location: HitLocation, overkill: number, twice?: boolean): CascadeTableDecl {
   if (!critSeverityInSeam(twice)) {
-    throw new Error(`critSeverityDecl : tables LDB déclarées sous la variante « combat-aa-blessures » — la sévérité y est résolue par resolveAACritical (#974).`);
+    throw new Error(`critSeverityDecl : tables LDB déclarées sous la variante « combat-aa-blessures » — la sévérité y est résolue sur les tables AA (#974).`);
   }
   return {
     tableId: CRIT_TABLE_IDS[critTableKeyFor(location)], die: 100,
@@ -1669,7 +1668,7 @@ export function critSeverityDecl(target: Combatant, location: HitLocation, overk
 /**
  * SEAM du d100 de SÉVÉRITÉ d'une Blessure critique (#942 L4) : le dé passe par le résolveur d'étape
  * UNIQUE (`rollTableStep`) — Sauvagerie comprise (`keepHighest` : les DEUX lancers sont consommés là,
- * et le dé RETENU est celui qui s'affiche) — puis le moteur (`rollCritical`) résout la ligne sur CE dé
+ * et le dé RETENU est celui qui s'affiche) — puis le moteur (`resolveCritique`) résout la ligne sur CE dé
  * naturel. Rend le Critique ET la déclaration résolue (portée par l'étape poussée → dé et ligne
  * visibles, journal « dé fixé » compris).
  *
@@ -1682,10 +1681,12 @@ export function critSeverityDecl(target: Combatant, location: HitLocation, overk
 export function resolveCritSeverity(
   target: Combatant, location: HitLocation, overkill: number, twice?: boolean, forcedNatural?: number,
 ): { crit: CriticalResolved; table?: CascadeTableDone } {
-  if (!critSeverityInSeam(twice)) return { crit: rollCritical(target, location, battleRng(), overkill, twice) };
+  if (!critSeverityInSeam(twice)) {
+    return { crit: resolveCritique(jeuDeCritique(twice), target, location, battleRng(), { overkill, twice }) };
+  }
   const decl = critSeverityDecl(target, location, overkill, twice);
   const rolled = rollTableStep({ ...decl, forcedRoll: forcedNatural }, battleRng());
-  const crit = rollCritical(target, location, battleRng(), overkill, twice, rolled.roll);
+  const crit = resolveCritique(jeuDeCritique(twice), target, location, battleRng(), { overkill, twice, forcedRoll: rolled.roll });
   return { crit, table: { ...decl, forcedRoll: rolled.roll, result: rolled } };
 }
 
@@ -1723,7 +1724,7 @@ export function applyCriticalToTarget(
   }
   // Coque inerte (véhicule / navire) : aucun Trauma humain. Le coup se résout sur les tables de NAVIRE
   // (MDG 13) via le module FRÈRE `shipCritical` — localisation par gréement (Coque/Gréement/Avirons/…
-  // vs Équipage), effets en `GameOp` (Voie d'eau / En flammes) posés par `applyOps`. (Le `rollCritical` de
+  // vs Équipage), effets en `GameOp` (Voie d'eau / En flammes) posés par `applyOps`. (Le `resolveCritique` de
   // personnage indexerait des Traumatismes humains, hors-sujet pour une coque.)
   if (target.bodyShape === 'vehicule') {
     return applyHullCriticalToTarget(target, log, set, { ctx, suppressReveal, get });
@@ -1734,14 +1735,14 @@ export function applyCriticalToTarget(
   const loc = location;
   const severity = prerolled ? undefined : resolveCritSeverity(target, loc, overkill, ctx?.critTwice); // dé de sévérité par l'étape à table (seam UNIQUE)
   const crit = prerolled ?? severity!.crit;
-  // Variante Aux Armes (l.2521-2523) : un Coup Critique « T » (trivial) n'est PAS compté dans le nombre de
+  // Variante Aux Armes (l.79) : un Coup Critique « T » (trivial) n'est PAS compté dans le nombre de
   // Blessures Critiques nécessaires pour tuer → il n'incrémente pas `criticalWounds` (le LDB n'a pas de
   // trivial : chaque Critique compte). `critTwice` (Sauvagerie) reste tables LDB même en mode AA (critical.ts).
-  const aaTrivial = !ctx?.critTwice && rule('combat-aa-blessures') === 'aa' && aaCriticalIsTrivial(crit.location, crit.roll);
+  const aaTrivial = jeuDeCritique(ctx?.critTwice) === 'aa' && critiqueTriviale('aa', crit.location, crit.roll);
   if (!aaTrivial) target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.90)
   // Historique d'occurrence PAR ID D'ENTRÉE (LDB 18 l.71) : appendé après résolution — persiste à vie (jamais
-  // réinitialisé au combat). `rollCritical`/`resolveAACritical` l'ont LU avant (`onRepeat` sur une 2e occurrence).
+  // réinitialisé au combat). `resolveCritique` l'a LU avant (`onRepeat` sur une 2e occurrence).
   target.critEntriesSuffered = [...(target.critEntriesSuffered ?? []), crit.entryId];
   log.push(crit.log);
   const revealLines = [crit.log];
@@ -2049,8 +2050,8 @@ function pushDeviationStep(set: SetFn, spec: DeviationStepSpec): void {
 
 /**
  * PLI POST-DÉ de l'étape « Blessure critique » (#1426) — le dé de l'étape EST le dé naturel du Critique :
- * le moteur en fait la ligne AU MOMENT où le dé tombe (`rollCritical` en `forcedRoll`, qui prime sur
- * `twice`), et le résultat est POSÉ sur l'étape. Il ne peut pas être re-dérivé au rendu : `rollCritical`
+ * le moteur en fait la ligne AU MOMENT où le dé tombe (`resolveCritique` en `forcedRoll`, qui prime sur
+ * `twice`), et le résultat est POSÉ sur l'étape. Il ne peut pas être re-dérivé au rendu : `resolveCritique`
  * consomme du RNG (amputation, relances) même sous dé posé, donc chaque redessin donnerait une autre
  * Blessure. C'est un pli IMPUR : le site unique de pose le MÉMORISE par valeur de dé sur l'étape
  * (`tableStepResolved`), de sorte qu'explorer les poses puis revenir sur un dé déjà vu rend LE MÊME
@@ -2063,7 +2064,7 @@ registerCascadeTableFold('deviation', (step, get) => {
   if (!p || !rolled) return step;
   const target = inBattleId(get().battle, p.targetId);
   if (!target) return step;
-  const crit = rollCritical(target, p.location, battleRng(), p.overkill, p.twice, rolled.roll);
+  const crit = resolveCritique(jeuDeCritique(p.twice), target, p.location, battleRng(), { overkill: p.overkill, twice: p.twice, forcedRoll: rolled.roll });
   const reveal = previewCritEntry(target, crit, { attackerId: p.attackerId, weapon: p.weapon?.label });
   const dev: PendingDeviation = {
     mode: 'melee', attackerId: p.attackerId, targetId: p.targetId, weapon: p.weapon, res: p.res,

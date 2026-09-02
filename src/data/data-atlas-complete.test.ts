@@ -2,7 +2,7 @@
  * Garde de COMPLÉTUDE de l'atlas des données : tout `src/data/*.json` doit être cartographié dans
  * `docs/donnees.md` (§A). Empêche la carte de pourrir quand un fichier data est ajouté sans être
  * cartographié. Scan de `src/data` SEUL (jamais les worktrees). Frontière de nom pour éviter qu'un nom
- * plus long ne satisfasse un plus court (`aa-criticals.json` ne compte pas pour `criticals.json`).
+ * plus long ne satisfasse un plus court (`river-criticals.json` ne compte pas pour `criticals.json`).
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';

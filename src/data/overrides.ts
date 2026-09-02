@@ -45,13 +45,12 @@ import seaCargoRawJson from './sea-cargo.json';
 import riverPerilsRawJson from './river-perils.json';
 import crewMoraleRawJson from './crew-morale.json';
 import { DATASET_FICHIER_DERIVE } from './schemas/exposition-derivee';
-import { CRITICAL_TABLES } from './criticals';
+import { critiqueEntries, type CritTestNode } from './criticals';
 import { SHIP_CRITICAL_TABLES, RIVER_CRIT_SET } from './shipCriticals';
 import type { GameOp } from '../engine/ops';
 import type { Difficulty } from '../engine/types';
 import type { SourceRef } from './schemas/grammaire/valeurs';
 import criticalsRawJson from './criticals.json';
-import aaCriticalsRawJson from './aa-criticals.json';
 import traumasRawJson from './traumas.json';
 import shipCriticalsRawJson from './ship-criticals.json';
 import riverCriticalsRawJson from './river-criticals.json';
@@ -130,26 +129,24 @@ export interface TraumaFicheEntry {
 const traumas = traumasRawJson as TraumaFicheEntry[];
 
 /** Entrée de table de Blessures Critiques par Localisation (LDB 18 « Traumatisme » ET AA « approche
- *  alternative ») — MÊME schéma pour les 2 familles (l'AA ajoute `blessures`/`trivial`, jamais retiré). */
+ *  alternative ») — MÊME schéma pour les DEUX jeux depuis leur fusion (#1657 B2a) : `test` est le nœud
+ *  `test` du Flow, la forme UNIQUE du jet en donnée. */
 export interface CritTableEntry {
   id: string; min: number; max: number; label: string;
-  blessures?: number; trivial?: boolean; lethal?: boolean;
-  ops?: GameOp[]; resist?: { difficulty: Difficulty; onFail: GameOp[]; skill?: string };
+  lethal?: boolean;
+  ops?: GameOp[]; test?: CritTestNode;
   amputation?: { difficulty: Difficulty; sequels: string[] }; traumas?: string[]; desc: string;
 }
-// LDB 18 : 4 tables UNIQUES (bras gauche = bras droit, jambe gauche = jambe droite) — réutilise
-// `CRITICAL_TABLES` (typé, `data/criticals.ts`) pour les tableaux LIVE (même référence que le moteur).
-const criticalsTete = CRITICAL_TABLES.tete as unknown as CritTableEntry[];
-const criticalsBras = CRITICAL_TABLES.brasG as unknown as CritTableEntry[];
-const criticalsCorps = CRITICAL_TABLES.corps as unknown as CritTableEntry[];
-const criticalsJambe = CRITICAL_TABLES.jambeG as unknown as CritTableEntry[];
-// AA (Aux Armes, système alternatif) : aucun export tableau (seules des fonctions PURES sortent
-// d'`aaCritical.ts`) — importé RAW ici (singleton ESM, même fichier que le moteur relit).
-const aaCriticalsRoot = aaCriticalsRawJson as unknown as { tete: CritTableEntry[]; bras: CritTableEntry[]; corps: CritTableEntry[]; jambe: CritTableEntry[] };
-const aaCriticalsTete = aaCriticalsRoot.tete;
-const aaCriticalsBras = aaCriticalsRoot.bras;
-const aaCriticalsCorps = aaCriticalsRoot.corps;
-const aaCriticalsJambe = aaCriticalsRoot.jambe;
+// Les 8 documents-tables de `criticals.json` (4 Localisations × 2 jeux) — rangées LIVE par id de
+// DOCUMENT (`critiqueEntries`, même référence que le moteur, patron `miscastEntries`).
+const criticalsTete = critiqueEntries('criticals-ldb-tete') as unknown as CritTableEntry[];
+const criticalsBras = critiqueEntries('criticals-ldb-bras') as unknown as CritTableEntry[];
+const criticalsCorps = critiqueEntries('criticals-ldb-corps') as unknown as CritTableEntry[];
+const criticalsJambe = critiqueEntries('criticals-ldb-jambe') as unknown as CritTableEntry[];
+const aaCriticalsTete = critiqueEntries('criticals-aa-tete') as unknown as CritTableEntry[];
+const aaCriticalsBras = critiqueEntries('criticals-aa-bras') as unknown as CritTableEntry[];
+const aaCriticalsCorps = critiqueEntries('criticals-aa-corps') as unknown as CritTableEntry[];
+const aaCriticalsJambe = critiqueEntries('criticals-aa-jambe') as unknown as CritTableEntry[];
 
 /** 3 catégories de Rencontres de voyage (EDOC 8, `rencontres-edoc.json`) — `encounterTable` retourne
  *  la table LIVE (accès de propriété sur le JSON importé par `engine/travelTables.ts`, jamais une copie). */
@@ -184,7 +181,7 @@ const ARRAYS = {
   criticalsTete, criticalsBras, criticalsCorps, criticalsJambe,
   aaCriticalsTete, aaCriticalsBras, aaCriticalsCorps, aaCriticalsJambe,
   // #157 (suite) : jeux de Critiques de coque — MDG 13 (navire) / MSRC 7 (fluvial) — nichés PAR
-  // Localisation dans LEUR fichier (même patron que criticals.json/aa-criticals.json ci-dessus).
+  // Localisation dans LEUR fichier (même patron que `criticals.json` ci-dessus).
   shipCriticalsCargaison: SHIP_CRITICAL_TABLES.cargaison,
   shipCriticalsGreement: SHIP_CRITICAL_TABLES.greement,
   shipCriticalsCoque: SHIP_CRITICAL_TABLES.coque,
@@ -330,17 +327,17 @@ const NESTED_ARRAY_ROOT: Partial<Record<DatasetKey, { root: () => unknown }>> = 
   massBattleHazards: { root: () => massBattleData },
   massBattleMightModifiers: { root: () => massBattleData },
   massBattlePowerEstimate: { root: () => massBattleData },
-  // Blessures critiques (LDB 18 « Traumatisme ») : 4 tables (Tête/Bras/Corps/Jambe) NICHÉES dans
-  // `criticals.json` — même patron que mass-battle (réécrire le PARENT entier au save).
+  // Blessures critiques, LES DEUX jeux (#1657 B2a) : rangées NICHÉES dans l'un des 8 documents-tables
+  // de `criticals.json` — réécrire la LISTE entière au save (les 7 documents frères doivent survivre),
+  // même patron que `miscast.json`.
   criticalsTete: { root: () => criticalsRawJson },
   criticalsBras: { root: () => criticalsRawJson },
   criticalsCorps: { root: () => criticalsRawJson },
   criticalsJambe: { root: () => criticalsRawJson },
-  // Blessures critiques AA (« approche alternative ») : mêmes 4 familles, NICHÉES dans `aa-criticals.json`.
-  aaCriticalsTete: { root: () => aaCriticalsRawJson },
-  aaCriticalsBras: { root: () => aaCriticalsRawJson },
-  aaCriticalsCorps: { root: () => aaCriticalsRawJson },
-  aaCriticalsJambe: { root: () => aaCriticalsRawJson },
+  aaCriticalsTete: { root: () => criticalsRawJson },
+  aaCriticalsBras: { root: () => criticalsRawJson },
+  aaCriticalsCorps: { root: () => criticalsRawJson },
+  aaCriticalsJambe: { root: () => criticalsRawJson },
   // Critiques de coque (MDG 13, navire) : 5 Localisations NICHÉES dans `ship-criticals.json`.
   shipCriticalsCargaison: { root: () => shipCriticalsRawJson },
   shipCriticalsGreement: { root: () => shipCriticalsRawJson },

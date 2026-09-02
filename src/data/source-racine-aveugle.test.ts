@@ -31,9 +31,6 @@ const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
  * couverts par `citation-coverage-guard.test.ts`.
  */
 const RACINE_NUE = [
-  // #1467 L1b V-FLIP-CONFIG : `aa-criticals.json` remplit les critères depuis que sa note libre
-  // `_source` est morte et que ses 80 entrées portent chacune leur folio (83/84/85/86).
-  'aa-criticals.json',
   'sea-weather.json',
   'sea-events.json',
   'sea-navigation.json',
@@ -42,7 +39,6 @@ const RACINE_NUE = [
   'land-cargo.json',
   'river-perils.json',
   'weather.json',
-  'criticals.json',
   'mass-battle.json',
   'arcane-phenomena.json',
   'ship-construction.json',
@@ -61,8 +57,14 @@ const RACINE_NUE = [
  *  `array-of-documents` d'`auditDataset` (`scripts/guards/lib/citationCoverage.mjs`) descend dans la
  *  charge `entries[]` de chaque document, rend 116/116 cités, et `citation-coverage-guard.test.ts`
  *  en gèle la morsure (une source de rangée retirée est nommée `<doc>.<rangée>`). Le retrait de la
- *  classe RACINE_NUE ne baisse donc pas la couverture réelle — il change de garde. */
-const SOUS_ENTREES_MESUREES = 454;
+ *  classe RACINE_NUE ne baisse donc pas la couverture réelle — il change de garde.
+ *
+ *  294 le 2026-09-02 : `criticals.json` ET `aa-criticals.json` SORTENT de la classe (#1657 B2a) par
+ *  le MÊME chemin que `miscast` — les deux racines-objet nues sont devenues 8 documents-tables dans
+ *  un seul fichier, chacun portant SA `source` (LDB 174 ×4, AA 83/84/85/86). Il n'y a plus de racine
+ *  à rendre aveugle, et leurs 168 entrées (8 documents + 160 rangées) restent SOUS garde de
+ *  couverture, mesuré : `auditDataset` rend `array-of-documents` 168/168. */
+const SOUS_ENTREES_MESUREES = 294;
 
 const lire = (f: string): unknown => JSON.parse(readFileSync(join(DATA_DIR, f), 'utf8'));
 

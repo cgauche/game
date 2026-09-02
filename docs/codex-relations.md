@@ -6,7 +6,7 @@
 `addReverse(...)` de `src/ui/compendium/relations.ts` (catégorie référante, catégorie cible, titre FR de section,
 `fichier:ligne`), l'API publique du même module (AST + 1re phrase de JSDoc), le littéral
 `CODEX_SPECS` de `src/ui/compendium/registry.ts` (125 catégories, leurs groupes et sous-groupes
-`cluster`), et l'`exposition` DÉCLARÉE par les 122 defs de `src/data/schemas/defs/`
+`cluster`), et l'`exposition` DÉCLARÉE par les 121 defs de `src/data/schemas/defs/`
 (dumpée par `scripts/docs/lib/dump-exposition.mts`), les cas NOMMÉS par `src/data/schemas/exposition-contrats.test.ts`, les fonctions
 exportées de `src/ui/compendium/describe.ts` et `src/ui/compendium/humanize.ts`, et le compte d'épigraphes de Carrière dumpé par
 `scripts/docs/lib/dump-epigraphes.mts` (`extractEpigraph` appliqué aux `careers` réelles — aucune
@@ -70,7 +70,7 @@ par `src/data/schemas/exposition-contrats.test.ts`, dont voici les cas, tels que
 Un document neuf se pose donc en DEUX endroits du MÊME commit : son `exposition` au def, sa
 catégorie dans `CODEX_SPECS`.
 
-Sur 122 defs, 27 sont EXEMPTS d'exposition Codex :
+Sur 121 defs, 27 sont EXEMPTS d'exposition Codex :
 
 - `dette` — 2 fichier(s)
 - `vocabulaire-app-interne` — 25 fichier(s)
@@ -82,10 +82,10 @@ est celle du document porteur, telle que `document()` la déclare.
 
 | Clé de catégorie | Libellé (`CODEX_SPECS`) | Déclarée par | Route d'édition |
 |---|---|---|---|
-| `aaCriticalsBras` | Critiques — Bras (approche alternative) | `src/data/aa-criticals.json` | niché (4 catégorie(s)) |
-| `aaCriticalsCorps` | Critiques — Corps (approche alternative) | `src/data/aa-criticals.json` | niché (4 catégorie(s)) |
-| `aaCriticalsJambe` | Critiques — Jambe (approche alternative) | `src/data/aa-criticals.json` | niché (4 catégorie(s)) |
-| `aaCriticalsTete` | Critiques — Tête (approche alternative) | `src/data/aa-criticals.json` | niché (4 catégorie(s)) |
+| `aaCriticalsBras` | Critiques — Bras (approche alternative) | `src/data/criticals.json` | niché (8 catégorie(s)) |
+| `aaCriticalsCorps` | Critiques — Corps (approche alternative) | `src/data/criticals.json` | niché (8 catégorie(s)) |
+| `aaCriticalsJambe` | Critiques — Jambe (approche alternative) | `src/data/criticals.json` | niché (8 catégorie(s)) |
+| `aaCriticalsTete` | Critiques — Tête (approche alternative) | `src/data/criticals.json` | niché (8 catégorie(s)) |
 | `activities` | Activités | `src/data/activities.json` | dataset `activities` |
 | `advancementCosts` | Coût des Augmentations | `src/data/advancementCosts.json` | dataset `advancementCosts` |
 | `arcanePhenomena` | Magie environnementale | `src/data/arcane-phenomena.json` | objet `single` |
@@ -107,10 +107,10 @@ est celle du document porteur, telle que `document()` la déclare.
 | `crewMoraleFactors` | Moral d’équipage — Facteurs | `src/data/crew-morale.json` | niché (2 catégorie(s)) |
 | `crewRoles` | Rôles d’équipage | `src/data/crew-roles.json` | dataset `crewRoles` |
 | `crewTestTypes` | Tests d’équipage (types) | `src/data/crew-test-types.json` | niché (1 catégorie(s)) |
-| `criticalsBras` | Critiques — Bras (Traumatisme) | `src/data/criticals.json` | niché (4 catégorie(s)) |
-| `criticalsCorps` | Critiques — Corps (Traumatisme) | `src/data/criticals.json` | niché (4 catégorie(s)) |
-| `criticalsJambe` | Critiques — Jambe (Traumatisme) | `src/data/criticals.json` | niché (4 catégorie(s)) |
-| `criticalsTete` | Critiques — Tête (Traumatisme) | `src/data/criticals.json` | niché (4 catégorie(s)) |
+| `criticalsBras` | Critiques — Bras (Traumatisme) | `src/data/criticals.json` | niché (8 catégorie(s)) |
+| `criticalsCorps` | Critiques — Corps (Traumatisme) | `src/data/criticals.json` | niché (8 catégorie(s)) |
+| `criticalsJambe` | Critiques — Jambe (Traumatisme) | `src/data/criticals.json` | niché (8 catégorie(s)) |
+| `criticalsTete` | Critiques — Tête (Traumatisme) | `src/data/criticals.json` | niché (8 catégorie(s)) |
 | `details` | Détails de création | `src/data/details.json` | objet `single` |
 | `disponibilite` | Disponibilité & Troc | `src/data/disponibilite.json` | objet `single` |
 | `domains` | Domaines | `src/data/domains.json` | dataset `domains` |
@@ -263,7 +263,7 @@ Le JSDoc est rapporté en ENTIER : le contrat d'une couture relationnelle tient 
 | `tokenizeLinks` | function | `src/ui/compendium/relations.ts:502` | Tokenise une prose en alternant texte brut et mentions d'entité à LIER (auto-liage du Codex, façon `dev.html`). PUR & locale-scoped (matcher dérivé des libellés de la locale active, jamais une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI et les libellés inconnus/courts — la comparaison est 100 % id-based (`selfId` si l'appelant le connaît, sinon résolu depuis `selfLabel` via `idByLabelCached`, repli des appelants non encore migrés). `selfCategory` (catégorie de la fiche affichante) tranche les homonymes en priorité — cf. `resolveLink`/`PRIORITY_CAT_ORDER`. Seul le vocabulaire de RÈGLES est lié. |
 
 `bookContents` est projeté DANS le `build` (paresseux) de la catégorie Livres
-(`src/ui/compendium/registry.ts:1719`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
+(`src/ui/compendium/registry.ts:1727`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
 items — aucun cycle de projection.
 
 ## Barre de catégories — sous-groupes repliables (`cluster`)

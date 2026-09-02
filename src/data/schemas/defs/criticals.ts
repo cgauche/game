@@ -1,17 +1,37 @@
 /**
- * Schéma de `criticals.json` — Tables de Blessures critiques LDB (Traumatisme, LDB 18), 4 familles
- * (Tête/Bras/Corps/Jambe, projetées sur les 6 `HitLocation`). Reflet de `CritEntry`/`CritTable`
- * (`src/data/criticals.ts`).
+ * Schéma de `criticals.json` — Blessures critiques par Localisation, LES DEUX systèmes réunis
+ * (#1657 B2a, #1682). Le fichier porte une LISTE de 8 documents-tables, un par (jeu × Localisation) :
+ * le Livre de base (« Traumatisme », LDB 18) et l'approche ALTERNATIVE d'Aux Armes (AA 07), activée
+ * par la règle facultative `combat-aa-blessures = 'aa'`.
+ *
+ * DISCRIMINANT `jeu` — jamais `type`, qui est le type de DOCUMENT posé par la fabrique
+ * (`grammaire/document.ts`, `enveloppe`).
+ * Chaque document porte SON identité, SA charge et SON espace de tirage d100 : les fourchettes des
+ * deux jeux se recouvrent (80/80 mesurées), une table = un espace, le lecteur ne filtre rien.
+ *
+ * PROVENANCE : chaque RANGÉE porte son `source: {book, page}` (160/160) — LDB folios 174-177, AA
+ * folios 83 (Tête), 84 (Bras), 85 (Torse), 86 (Jambe), relevés aux ancres `data-folio`
+ * (`src/data/criticals-folio.test.ts`).
+ *
+ * MODÉLISATION (réfs nues) : `ops` = effet IMMÉDIAT (PB en ignorant BE+PA — LDB 18 l.62 —, États,
+ * et la colonne « Blessures » d'AA 07 l.40, absorbée en `{op:'wounds'}`). `test` = nœud `test` du
+ * Flow (`noeudTest`), la forme UNIQUE du jet en donnée : sa branche `fail` porte la conséquence.
+ * `lethal` = « Mort ». La TRIVIALITÉ d'AA 07 l.79 (« T ») n'est plus authorée : elle se DÉDUIT
+ * (`critiqueTriviale`, `engine/critical.ts`) — une rangée non létale qui ne fait perdre aucune
+ * Blessure. `desc` = texte canon VERBATIM (règle 5).
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { difficultySchema, hitLocationSchema, plageSchema, sourceRefSchema, formulaSchema } from '../grammaire/valeurs';
-import { gameOpSchema } from '../grammaire/mecanique';
+import { gameOpSchema, flowSchema, noeudTest } from '../grammaire/mecanique';
 
 export const file = 'criticals.json';
-// Les 4 familles de Localisation sont des CLÉS FIXES du document, donc des CHAMPS : `config`, jamais
-// un `record` à clés libres (#1467 L1b V-FLIP-CONFIG).
-export const famille = 'config';
+// Un FICHIER, 8 DOCUMENTS-tables : famille `entite` + charge `options.rangee` (patron `miscast.ts`).
+export const famille = 'entite';
+
+/** Le nœud de jet des Blessures critiques : `difficulty` RESSERRÉE (39/39 la portent, aucune n'est
+ *  une épreuve sans Difficulté). Partagé par la rangée et par l'escalade `onNextCritWhileCondition`. */
+const noeudCritique = noeudTest(flowSchema, { difficulteRequise: true });
 
 /** Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du membre sans
  *  Chirurgie sous 1d10 jours) — reflet de `CritEscalation` (`src/data/criticals.ts`). Partagée AA/LDB. */
@@ -36,7 +56,7 @@ export const critEscalationSchema = z.strictObject({
   bleedOnReinjury: z.strictObject({ amount: z.number(), label: z.string() }).optional(),
   // « Si vous tombez une seconde fois sur cette blessure… » (Blessure majeure à l'oreille, LDB 18 l.71 / AA
   // 07 l.96) : effet ALTERNATIF à la 2e occurrence de l'entrée (`onRepeat.traumas` remplace les séquelles de
-  // base, `onRepeat.ops` s'ajoute à l'effet immédiat). Évalué par `rollCritical`/`resolveAACritical`.
+  // base, `onRepeat.ops` s'ajoute à l'effet immédiat). Évalué par `resolveCritique`.
   onRepeat: z
     .strictObject({
       traumas: z.array(z.string()).optional(),
@@ -45,13 +65,13 @@ export const critEscalationSchema = z.strictObject({
     .optional(),
   // « Si vous recevez une autre Blessure critique à la tête alors que vous êtes Exténué… » (Commotion
   // cérébrale, LDB 18 l.74) : séquelle porteuse d'un `critTrigger` — tant que `whileCondition` tient, tout
-  // critique subséquent à `location` impose le Test `resist`. Stampé par `stampCriticalEscalation`.
+  // critique subséquent à `location` impose le `test`. Stampé par `stampCriticalEscalation`.
   onNextCritWhileCondition: z
     .strictObject({
       label: z.string(),
       location: hitLocationSchema.optional(),
       whileCondition: z.string(),
-      resist: z.strictObject({ difficulty: difficultySchema, onFail: z.array(gameOpSchema) }),
+      test: noeudCritique,
     })
     .optional(),
   // « Une fois que la blessure est guérie… » (Blessure spectaculaire l.61 / Nez cassé l.72) : marqueur de
@@ -61,8 +81,8 @@ export const critEscalationSchema = z.strictObject({
 });
 
 /** Amputation (LDB 18 l.237) — reflet de `Amputation` (`src/data/criticals.ts`), SOURCE UNIQUE de forme
- *  partagée LDB (`criticals.json`) et Aux Armes (`aa-criticals.json`, mêmes textes « Une fois la rencontre
- *  terminée… »/« un orteil par DR »). Résolue par `resolveAmputation`. */
+ *  partagée par les deux jeux (mêmes textes « Une fois la rencontre terminée… »/« un orteil par DR »).
+ *  Résolue par `resolveAmputation`. */
 export const amputationSchema = z.strictObject({
   difficulty: difficultySchema,
   sequels: z.array(z.string()),
@@ -81,12 +101,7 @@ const critEntrySchema = z.strictObject({
   id: z.string(),
   label: z.string(),
   ops: z.array(gameOpSchema).optional(),
-  resist: z
-    .strictObject({
-      difficulty: difficultySchema,
-      onFail: z.array(gameOpSchema),
-    })
-    .optional(),
+  test: noeudCritique.optional(),
   lethal: z.boolean().optional(),
   amputation: amputationSchema.optional(),
   traumas: z.array(z.string()).optional(),
@@ -94,28 +109,36 @@ const critEntrySchema = z.strictObject({
   // Note MAISON (#195) : trace éditable d'une valeur mécanique absente littéralement du texte RAW (règle stricte 7).
   maison: z.string().optional(),
   desc: z.string(),
-  source: sourceRefSchema.optional(),
+  source: sourceRefSchema,
 });
+
+/** Catégorie Codex de chaque document-table, dans l'ordre de la donnée (LDB puis Aux Armes). */
+const CATEGORIES = [
+  'criticalsTete', 'criticalsBras', 'criticalsCorps', 'criticalsJambe',
+  'aaCriticalsTete', 'aaCriticalsBras', 'aaCriticalsCorps', 'aaCriticalsJambe',
+] as const;
 
 const doc = document(
   'criticals',
   famille,
   {
-    tete: z.array(critEntrySchema),
-    bras: z.array(critEntrySchema),
-    corps: z.array(critEntrySchema),
-    jambe: z.array(critEntrySchema),
+    /** SYSTÈME de règles dont ce tableau est tiré — le DISCRIMINANT de la collection. `ldb` = LDB 18
+     *  « Traumatisme » (défaut) ; `aa` = l'approche alternative d'AA 07, servie quand la règle
+     *  optionnelle `combat-aa-blessures` vaut `aa`. */
+    jeu: z.enum(['ldb', 'aa']),
+    /** Famille de Localisation du tableau — les 4 tables couvrent les 6 `HitLocation` (bras gauche =
+     *  bras droit, jambe gauche = jambe droite ; repli Bras pour une loc sans table, LDB 76 l.21). */
+    localisation: z.enum(['tete', 'bras', 'corps', 'jambe']),
   },
   {
-    tete: { label: 'Table — Tête' },
-    bras: { label: 'Table — Bras' },
-    corps: { label: 'Table — Corps' },
-    jambe: { label: 'Table — Jambe' },
+    jeu: { label: 'Système de règles', hint: 'ldb = Traumatisme (LDB 18) ; aa = approche alternative (AA 07)' },
+    localisation: { label: 'Localisation', hint: 'Famille de Localisation couverte par ce tableau' },
   },
   {
-    codex: { keys: ['criticalsTete', 'criticalsBras', 'criticalsCorps', 'criticalsJambe'] },
-    edit: { niche: { categories: ['criticalsTete', 'criticalsBras', 'criticalsCorps', 'criticalsJambe'] } },
+    codex: { keys: [...CATEGORIES] },
+    edit: { niche: { categories: [...CATEGORIES] } },
   },
+  { rangee: critEntrySchema },
 );
 
 export const schema = doc.schema;

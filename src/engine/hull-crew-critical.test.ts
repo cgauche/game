@@ -6,7 +6,7 @@ import { makeRNG } from './dice';
 import { usesSuddenDeath, isOutOfAction, applyZeroWounds, tickDeath, hasCondition, COND } from './conditions';
 import type { Combatant } from './types';
 
-/** Marin minimal (Combattant de personnage) — assez pour `rollCritical`/`applyOps`. */
+/** Marin minimal (Combattant de personnage) — assez pour `resolveCritique`/`applyOps`. */
 const sailor = (id: string, over: Partial<Combatant> = {}): Combatant => ({
   id, name: id, kind: 'npc', characteristics: { 'capacite-de-combat': 31, 'capacite-de-tir': 31, force: 31, endurance: 31, initiative: 31, agilite: 36, dexterite: 36, intelligence: 31, 'force-mentale': 31, sociabilite: 36 },
   skills: [], talents: [], traits: [], conditions: [], activeEffects: [], liveTraits: [], weapons: [],
@@ -20,7 +20,7 @@ const hull = () => vehicleCombatant(findVehicleById('cogue')!)!; // rig 'voile'
  * coup à l'Équipage = Critique de PERSONNAGE sur un marin exposé ; Éclats = 9 Dégâts à autant de marins.
  */
 describe('applyHullCritical — l’équipage encaisse réellement (pas qu’un journal)', () => {
-  it("Localisation Équipage (d100≤9) → un marin EXPOSÉ subit un Critique de personnage (rollCritical)", () => {
+  it("Localisation Équipage (d100≤9) → un marin EXPOSÉ subit un Critique de personnage (resolveCritique)", () => {
     const ship = hull();
     const crew = [sailor('marin-1'), sailor('marin-2')];
     const before = crew[0].wounds.current;

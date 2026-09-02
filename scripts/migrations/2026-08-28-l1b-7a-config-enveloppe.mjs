@@ -1,6 +1,7 @@
 /**
  * Migration #1467 L1b V-FLIP-CONFIG — les 27 documents que le lot passe en famille `config` (24 déjà
- * `config`, plus les 3 re-étiquetés `record` → `config` : criticals, aa-criticals, localisation)
+ * `config`, plus `localisation` re-étiqueté `record` → `config` ; `criticals`/`aa-criticals`, fondus en
+ * une LISTE de documents par #1657 B2a, ne sont plus des racines-objet et sortent du lot)
  * reçoivent leur ENVELOPPE d'identité : `id`, `type`, `label`.
  *
  * MOTIF : la fabrique `document()` (`src/data/schemas/grammaire/document.ts`) pose l'enveloppe sur
@@ -60,8 +61,6 @@ const IDENTITES = {
   'water-exposure.json': { id: 'maladies-hydriques', type: 'water-exposure', label: "Maladies transmises par l'eau" },
   'weather.json': { id: 'weather', type: 'weather', label: 'Météo de voyage' },
   // Les 3 RE-ÉTIQUETÉS `record` → `config` : leurs clés fixes deviennent des CHAMPS de document.
-  'aa-criticals.json': { id: 'aa-criticals', type: 'aa-criticals', label: 'Blessures critiques par localisation (approche alternative)' },
-  'criticals.json': { id: 'criticals', type: 'criticals', label: 'Blessures critiques par localisation (Traumatisme)' },
   'localisation.json': { id: 'localisation', type: 'localisation', label: 'Tables de Localisation (d100)' },
 };
 
