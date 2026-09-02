@@ -289,7 +289,7 @@ describe('Absence de `tone` = `flamme`, et le reste ne bouge pas d’un octet (#
       { id: 'p3', kind: 'prop', pos: { x: 4, y: 1 }, ref: 'brasero' },
     ] } as unknown as Scene;
     expect(mapLights(s).map((l) => [l.srcId, l.radiusTiles, l.tone])).toEqual([
-      ['p0', 3, 'chandelle'],            // hérité du type
+      ['p0', 5, 'chandelle'],            // hérité du type (rayon recalé sur l’étalon de la bougie, #1680 ligne 5)
       ['p1', 9, 'chandelle'],            // rayon surchargé, TON conservé
       ['p2', 3, 'magique'],              // ton surchargé
       ['p3', 4, undefined],              // le brasero reste MUET : son défaut EST `flamme`

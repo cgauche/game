@@ -9,9 +9,9 @@
 
 Schémas NOMMÉS candidats : `src/data/schemas/grammaire/` (formes partagées entre documents) + les `src/data/schemas/defs/` dont les sous-schémas sont nommés (`criticals.ts`, `props.ts`) ; **23 retenus** (voir en-tête du générateur pour les raisons d'exclusion). Les catalogues `src/data/schemas/defs/*.ts` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE — non par absence de nom TS : l'alias existe pour la plupart (41 interfaces `XData` dans `src/data/index.ts`, mesure 2026-09-01 — ex. `TrappingData` `index.ts:1113`, annotée par `src/engine/items.ts:20` et `src/engine/activities.ts:28`) et les champs d'une entrée anonyme sont dérivables (`scripts/docs/lib/zod-introspect.mts#introspecterDefs`) —, mais parce que la DÉRIVATION de `TARGETS` (jointure `type`↔`XData`) est un geste distinct, encore à faire (#1620) ; à l'unité, le geste d'auteur reste ouvert (nommer son schéma d'entrée dans SON def — ou en `grammaire/` si la forme est réellement partagée — puis l'ajouter à `TARGETS`), fait pour `props.json` → `PropData`.
 
-Détection au VÉRIFICATEUR DE TYPES (`ts.Program`/`TypeChecker`) : un lecteur est un accès dont le SYMBOLE de propriété est celui déclaré par le type cible, la propriété devant lui être PROPRE ou son porteur être DÉCLARÉ de ce type — aucune annotation littérale n'est cherchée, et un type anonyme de même forme ne crédite rien. Quatre états sont mesurés, dont deux ne sont pas des mesures de lecture (hérité, absent du type TS) ; ceux qui ont des membres ici : **146 lus** ; **6 « 0 — JAMAIS LU »** (`SourceRef.note`, `CastingNumberMod.maison`, `CastingNumberMod.source`, `CastingNumberMod.desc`, `PropData.type`, `PropData.label`) — champ PROPRE au type, aucun lecteur ; **7 absents du type TS** (`AdvancementRef.table`, `PropData.labelF`, `PropData.desc`, `PropData.source`, `PropData.alsoIn`, `PropData.maison`, `PropData.icon`) — le champ du schéma n'existe pas sur le type : divergence schéma↔type, listée en fin de rapport, sur 159 champs de 23 types.
+Détection au VÉRIFICATEUR DE TYPES (`ts.Program`/`TypeChecker`) : un lecteur est un accès dont le SYMBOLE de propriété est celui déclaré par le type cible, la propriété devant lui être PROPRE ou son porteur être DÉCLARÉ de ce type — aucune annotation littérale n'est cherchée, et un type anonyme de même forme ne crédite rien. Quatre états sont mesurés, dont deux ne sont pas des mesures de lecture (hérité, absent du type TS) ; ceux qui ont des membres ici : **147 lus** ; **6 « 0 — JAMAIS LU »** (`SourceRef.note`, `CastingNumberMod.maison`, `CastingNumberMod.source`, `CastingNumberMod.desc`, `PropData.type`, `PropData.label`) — champ PROPRE au type, aucun lecteur ; **7 absents du type TS** (`AdvancementRef.table`, `PropData.labelF`, `PropData.desc`, `PropData.source`, `PropData.alsoIn`, `PropData.maison`, `PropData.icon`) — le champ du schéma n'existe pas sur le type : divergence schéma↔type, listée en fin de rapport, sur 160 champs de 23 types.
 
-Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendait 41 champs « 0 lecteur » sur ces mêmes 159. Des 16 « 0 lecteur » de la première version de ce rapport (échantillon COMPLET), 12 ont un lecteur mesuré — dont `argDifficulty` et `stageOutcome`, qu'une vérification à la main manque comme le scan syntaxique, `spec` d'une `QualityRef` (champ PROPRE : `qualityRefSchema` porte son propre shape) et `hidden` d'un `TraitInstance` (`hiddenGroupsOf` annote `TraitInstance[]`) ; les 4 autres sont de vrais zéros. Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan syntaxique. Angles morts (redéclaration structurelle, spread, clé dynamique, champ absent du type) : en-tête de `fieldConsumers.mjs`.
+Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendait 41 champs « 0 lecteur » sur ces mêmes 160. Des 16 « 0 lecteur » de la première version de ce rapport (échantillon COMPLET), 12 ont un lecteur mesuré — dont `argDifficulty` et `stageOutcome`, qu'une vérification à la main manque comme le scan syntaxique, `spec` d'une `QualityRef` (champ PROPRE : `qualityRefSchema` porte son propre shape) et `hidden` d'un `TraitInstance` (`hiddenGroupsOf` annote `TraitInstance[]`) ; les 4 autres sont de vrais zéros. Coût : ~17 s et ~1,3 Go pour un rapport complet, contre 1,8 s au scan syntaxique. Angles morts (redéclaration structurelle, spread, clé dynamique, champ absent du type) : en-tête de `fieldConsumers.mjs`.
 
 ### `TraitInstance` (src/engine/statEntry.ts)
 
@@ -203,7 +203,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:2644` |
+| `id` | 11 | `src/data/index.ts:2644` |
 | `type` | **0 — JAMAIS LU** | — |
 | `label` | **0 — JAMAIS LU** | — |
 | `labelF` | — | *absent du type TS* |
@@ -212,58 +212,59 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `alsoIn` | — | *absent du type TS* |
 | `maison` | — | *absent du type TS* |
 | `icon` | — | *absent du type TS* |
-| `solid` | 2 | `src/data/props.types.ts:383` |
-| `opaque` | 3 | `src/data/props.types.ts:370` |
-| `cover` | 3 | `src/data/props.types.ts:370` |
-| `light` | 1 | `src/state/vision.ts:178` |
-| `foot` | 2 | `src/data/props.types.ts:325` |
-| `volume` | 8 | `src/data/index.ts:2650` |
-| `seatSlots` | 2 | `src/data/props.types.ts:374` |
+| `solid` | 2 | `src/data/props.types.ts:403` |
+| `opaque` | 3 | `src/data/props.types.ts:380` |
+| `cover` | 3 | `src/data/props.types.ts:380` |
+| `light` | 3 | `src/data/props.types.ts:389` |
+| `foot` | 3 | `src/data/props.types.ts:335` |
+| `volume` | 11 | `src/data/index.ts:2650` |
+| `seatSlots` | 2 | `src/data/props.types.ts:394` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `capIdentite` | 2 | `src/data/props.types.ts:364` |
-| `primitives` | 3 | `src/data/props.types.ts:372` |
+| `capIdentite` | 2 | `src/data/props.types.ts:374` |
+| `primitives` | 5 | `src/data/props.types.ts:382` |
 
 ### `PropPrimitive` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `kind` | 5 | `src/data/props.types.ts:248` |
-| `center` | 4 | `src/data/props.types.ts:248` |
-| `size` | 3 | `src/data/props.types.ts:248` |
-| `material` | 4 | `src/data/props.types.ts:332` |
-| `radius` | 2 | `src/data/props.types.ts:249` |
-| `heightM` | 2 | `src/data/props.types.ts:249` |
-| `sides` | 2 | `src/data/props.types.ts:249` |
-| `slope` | 1 | `src/data/props.types.ts:250` |
+| `kind` | 5 | `src/data/props.types.ts:258` |
+| `center` | 6 | `src/data/props.types.ts:258` |
+| `size` | 3 | `src/data/props.types.ts:258` |
+| `material` | 4 | `src/data/props.types.ts:342` |
+| `emet` | 2 | `src/data/props.types.ts:386` |
+| `radius` | 2 | `src/data/props.types.ts:259` |
+| `heightM` | 2 | `src/data/props.types.ts:259` |
+| `sides` | 2 | `src/data/props.types.ts:259` |
+| `slope` | 1 | `src/data/props.types.ts:260` |
 
 ### `PropSeatSlot` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/props.types.ts:375` |
+| `id` | 5 | `src/data/props.types.ts:395` |
 | `anchor` | 2 | `src/state/seating.ts:143` |
 | `facing` | 1 | `src/state/seating.ts:151` |
-| `approach` | 4 | `src/data/props.types.ts:378` |
+| `approach` | 4 | `src/data/props.types.ts:398` |
 
 ### `PropPoint3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `x` | 12 | `src/data/props.types.ts:142` |
-| `y` | 12 | `src/data/props.types.ts:141` |
-| `h` | 12 | `src/data/props.types.ts:141` |
+| `x` | 13 | `src/data/props.types.ts:152` |
+| `y` | 13 | `src/data/props.types.ts:151` |
+| `h` | 13 | `src/data/props.types.ts:151` |
 
 ### `PropSize3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `x` | 3 | `src/data/props.types.ts:171` |
-| `y` | 3 | `src/data/props.types.ts:172` |
-| `h` | 3 | `src/data/props.types.ts:173` |
+| `x` | 3 | `src/data/props.types.ts:181` |
+| `y` | 3 | `src/data/props.types.ts:182` |
+| `h` | 3 | `src/data/props.types.ts:183` |
 
 ### `CritEscalation` (src/data/criticals.ts)
 
@@ -293,7 +294,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 ## Synthèse
 
-23 types, 159 champs mesurés : 146 lus, **6 avec « 0 lecteur » mesuré** au `TypeChecker`, 0 hérité, 7 absents du type TS. Ces « 0 lecteur » sont sous CLIQUET NOMINATIF (`src/data/field-consumers.test.ts`) : la liste attendue y est écrite champ par champ — un zéro apparu comme un zéro disparu est rouge, et la ligne ne se retire qu'avec le lecteur qui l'annule.
+23 types, 160 champs mesurés : 147 lus, **6 avec « 0 lecteur » mesuré** au `TypeChecker`, 0 hérité, 7 absents du type TS. Ces « 0 lecteur » sont sous CLIQUET NOMINATIF (`src/data/field-consumers.test.ts`) : la liste attendue y est écrite champ par champ — un zéro apparu comme un zéro disparu est rouge, et la ligne ne se retire qu'avec le lecteur qui l'annule.
 
 ## Cas fondateur
 

@@ -30,8 +30,9 @@ import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';
 import { facadeStructureAppearance } from '../../catalog/facades';
 import { wallPartColor, type WallPart } from '../../catalog/structures';
-import { TERRAIN_DEFS } from '../../../state/terrain';
-import { findPropMaterialById } from '../../../data';
+import { terrainDef } from '../../catalog/terrain';
+import { propMaterial } from '../../catalog/propMaterials';
+import { MISSING_TONE } from '../../catalog/missing';
 import { TINT_SPREAD } from '../../detail/expand';
 import { coursesPeriodM, groundPeriodM } from '../../detail/courses';
 import { hash32 } from '../../detail/hash';
@@ -42,10 +43,6 @@ import { SHADE_CYCLE, type ShadeFamily } from './worldTris';
 /** Modes de rendu d'une face — deux MATÉRIAUX du renderer, une seule couleur de base (`faceSurface`). */
 export type ColorMode = 'unlit' | 'lit';
 
-const TERRAIN_BY_ID = new Map(TERRAIN_DEFS.map((t) => [t.id, t]));
-/** Sol sans terrain connu — repli neutre. */
-const FLOOR_FALLBACK = reliefMaterial('sol-inconnu').face;
-
 function reliefColor(id: string, part: string | undefined): string {
   const m = reliefMaterial(id);
   return (part === 'ramp' ? m.slopeTop : undefined) ?? m.face;
@@ -54,12 +51,20 @@ function reliefColor(id: string, part: string | undefined): string {
 /** Couleur d'une face de TOITURE. Les PANS partagent tous la teinte de référence `N` du matériau, quel
  *  que soit leur cardinal : `sh.N` est déjà le repli des deux backends pour une part sans ton propre.
  *  `soffite` et `fascia` gardent la leur — ce sont des PARTIES distinctes (dessous débordant, planche de
- *  rive), pas deux orientations d'une même couverture. */
+ *  rive), pas deux orientations d'une même couverture.
+ *
+ *  Un matériau de toit qui n'a AUCUNE teinte de pente peint au ton d'alarme (#877) : `roofMaterial` a
+ *  déjà rendu son repli visible pour un id inconnu, il reste le cas d'une entrée RÉELLE sans `N` — les
+ *  teintes de pente sont optionnelles au type (`catalog/roofs/types.ts:18`). Mesuré le 2026-09-02 :
+ *  1 entrée sur 4 est dans ce cas (`plan`, qui ne porte que ses teintes de vue du dessus) et AUCUNE
+ *  masse de toit des documents du dépôt ne la nomme — la donnée n'est donc pas fautive, mais rien
+ *  n'interdit à un auteur de la choisir (`validateScene` admet les 4 ids), et ce jour-là la face se
+ *  voit au lieu de prendre la teinte d'un sol. */
 function roofColor(id: string, part: string | undefined): string {
   const sh = roofMaterial(id);
-  if (part === 'soffite') return sh.soffite ?? sh.N ?? FLOOR_FALLBACK;
-  if (part === 'fascia') return sh.fascia ?? sh.line ?? sh.N ?? FLOOR_FALLBACK;
-  return sh.N ?? FLOOR_FALLBACK;
+  if (part === 'soffite') return sh.soffite ?? sh.N ?? MISSING_TONE;
+  if (part === 'fascia') return sh.fascia ?? sh.line ?? sh.N ?? MISSING_TONE;
+  return sh.N ?? MISSING_TONE;
 }
 
 /** Surface d'une face : ce qu'il faut pour la peindre ET pour la texturer. */
@@ -90,7 +95,7 @@ function faceRecipe(face: Face): DetailRecipe | undefined {
     case 'roof':
       return roofMaterial(id).detail;
     case 'terrain':
-      return TERRAIN_BY_ID.get(id)?.detail;
+      return terrainDef(id).detail;
     case 'prop':
       return undefined;
   }
@@ -106,9 +111,9 @@ function faceBaseColor(face: Face): string {
     case 'roof':
       return roofColor(id, part);
     case 'terrain':
-      return TERRAIN_BY_ID.get(id)?.swatch ?? FLOOR_FALLBACK;
+      return terrainDef(id).swatch;
     case 'prop':
-      return findPropMaterialById(id)?.color ?? FLOOR_FALLBACK;
+      return propMaterial(id).color;
   }
 }
 
@@ -131,7 +136,7 @@ export function surfaceKeyOf(color: string, recipe?: DetailRecipe): string {
 export function faceSurface(face: Face): FaceSurface {
   const color = faceBaseColor(face);
   const recipe = faceRecipe(face);
-  const mat = face.material.domain === 'prop' ? findPropMaterialById(face.material.id) : undefined;
+  const mat = face.material.domain === 'prop' ? propMaterial(face.material.id) : undefined;
   return {
     color,
     recipe,

@@ -1,7 +1,7 @@
 /** Présentation des terrains — DÉRIVÉE du registre unifié `state/terrain/defs/` (gradient/swatch).
  *  La méta sémantique (walkable/priority) vit côté state ; ici on n'expose que le visuel. */
-import { TERRAIN_DEFS } from '../../state/terrain';
-import { warnMissing } from './missing';
+import { TERRAIN_DEFS, type TerrainDef } from '../../state/terrain';
+import { catalogEntry, MISSING_ID, MISSING_LABEL, MISSING_TONE } from './missing';
 
 export interface TerrainViz {
   id: string;
@@ -16,10 +16,29 @@ export const TERRAIN_VIZ: Record<string, TerrainViz> = Object.fromEntries(
  *  jamais l'herbe (ni aucun autre terrain réel). */
 export const MISSING_GRADIENT = 'g_terrain_manquant';
 
+const DEF_BY_ID: Record<string, TerrainDef> = Object.fromEntries(TERRAIN_DEFS.map((t) => [t.id, t]));
+
+/** Entrée de REPLI VISIBLE (#877) : un terrain au ton d'alarme, jamais l'apparence d'un autre terrain.
+ *  `stops` VIDE : le dégradé peint du repli est `MISSING_GRADIENT`, émis par `DEFS` — une rampe recopiée
+ *  ici en serait une seconde définition. Infranchissable et de priorité nulle : le repli ne déborde sur
+ *  aucun voisin et n'ouvre aucun passage que la donnée n'a pas authorisé. */
+const MISSING: TerrainDef = {
+  id: MISSING_ID,
+  label: MISSING_LABEL,
+  walkable: false,
+  priority: 0,
+  gradient: MISSING_GRADIENT,
+  swatch: MISSING_TONE,
+  stops: [],
+};
+
+/** Terrain par id ; id absent du registre → repli VISIBLE + avertissement DEV. Le seul accès du rendu
+ *  au registre : `swatch`, `detail` et `gradient` en sortent tous, donc du MÊME repli. */
+export function terrainDef(id: string): TerrainDef {
+  return catalogEntry(DEF_BY_ID, id, 'terrain', MISSING);
+}
+
 /** Id du dégradé d'un terrain ; id absent du registre → repli VISIBLE + avertissement DEV. */
 export function terrainGradient(id: string): string {
-  const viz = TERRAIN_VIZ[id];
-  if (viz) return viz.gradient;
-  warnMissing('terrain', id);
-  return MISSING_GRADIENT;
+  return terrainDef(id).gradient;
 }

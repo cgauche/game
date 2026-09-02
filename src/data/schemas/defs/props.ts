@@ -17,17 +17,23 @@ export const famille = 'entite';
 export const propPoint3Schema = z.strictObject({ x: z.number().finite(), y: z.number().finite(), h: z.number().finite() });
 export const propSize3Schema = z.strictObject({ x: z.number().finite(), y: z.number().finite(), h: z.number().finite() });
 
+/** FOYER d'un décor qui éclaire (`PropPrimitive.emet`, `src/data/props.types.ts`). `true` SEUL est
+ *  admis, comme au type : un `emet: false` dirait l'absence en une seconde graphie. Le CARDINAL (une
+ *  primitive émettrice au plus) et sa cohérence avec `light` sont vérifiés par `validatePropCatalog` —
+ *  ils portent sur la RECETTE ENTIÈRE, pas sur la primitive que ce schéma valide. */
+const emetSchema = z.literal(true).optional();
+
 /** `PropPrimitive` (`src/data/props.types.ts`) — volume élémentaire d'une recette : caisse droite,
  *  cylindre à N faces, prisme en pente. `material` réfère un id de `propMaterials.json`. */
 export const propPrimitiveSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('box'), center: propPoint3Schema, size: propSize3Schema, material: z.string().min(1) }),
+  z.strictObject({ kind: z.literal('box'), center: propPoint3Schema, size: propSize3Schema, material: z.string().min(1), emet: emetSchema }),
   z.strictObject({
     kind: z.literal('cylinder'), center: propPoint3Schema, radius: z.number().finite(), heightM: z.number().finite(),
     // CÔTÉS ADMIS : la même source que le type et le validateur de catalogue (`PROP_CYLINDER_SIDES`,
     // `src/data/props.types.ts`) — une union recopiée ici dériverait de l'union TS au premier ajout.
-    sides: z.literal(PROP_CYLINDER_SIDES), material: z.string().min(1),
+    sides: z.literal(PROP_CYLINDER_SIDES), material: z.string().min(1), emet: emetSchema,
   }),
-  z.strictObject({ kind: z.literal('prism'), center: propPoint3Schema, size: propSize3Schema, slope: z.enum(['x+', 'x-', 'y+', 'y-']), material: z.string().min(1) }),
+  z.strictObject({ kind: z.literal('prism'), center: propPoint3Schema, size: propSize3Schema, slope: z.enum(['x+', 'x-', 'y+', 'y-']), material: z.string().min(1), emet: emetSchema }),
 ]);
 
 /** `PropVolumeRecipe` (`src/data/props.types.ts`) — la recette volumique d'un décor. `capIdentite`
@@ -86,6 +92,29 @@ const doc = document(
       },
     },
     edit: { none: 'édité à la PALETTE de décor de l’éditeur de carte, jamais par une catégorie du Codex' },
+  },
+  {
+    /**
+     * PROVENANCE PAR CHAMP (#1680 ligne 5). Le DATASET est exempté de provenance (`SANS_LIVRE`) parce
+     * que ce qu'il décrit est de l'art : un volume, un libellé, une empreinte, la solidité physique de
+     * l'objet — rien de tout cela n'a de table à citer. Trois de ses champs ne sont PAS de l'art : ils
+     * portent des concepts que le canon chiffre — l'ÉCLAIRAGE (`light`, LDB 74 l.43/56/58) et le
+     * COUVERT (`cover`/`opaque`, LDB 14 l.72/81/86). Une entrée qui en porte un doit donc dire d'OÙ
+     * vient sa valeur : `source` quand un folio la donne, `maison` quand elle est extrapolée d'un
+     * étalon — jamais rien. C'est l'exemption du dataset qui rendait ces trois champs muets ; le
+     * refine la referme à l'ENTRÉE, là où la valeur est écrite.
+     */
+    affinerEntree: (entree) =>
+      entree.superRefine((v, ctx) => {
+        const e = v as { id: string; light?: unknown; cover?: unknown; opaque?: unknown; source?: unknown; maison?: unknown };
+        const regles = (['light', 'cover', 'opaque'] as const).filter((k) => e[k] !== undefined);
+        if (regles.length && e.source === undefined && (typeof e.maison !== 'string' || !e.maison))
+          ctx.addIssue({
+            code: 'custom',
+            path: ['maison'],
+            message: `${e.id} : ${regles.join('/')} sans provenance — un champ de RÈGLE porte \`source\` (le folio) ou \`maison\` (l’étalon dont il est extrapolé)`,
+          });
+      }),
   },
 );
 

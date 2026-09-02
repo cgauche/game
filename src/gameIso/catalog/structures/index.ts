@@ -36,7 +36,8 @@ export function wallApp(seg: WallSeg, baseH: number): StructureAppearanceDef {
 }
 
 /** Croisée de repli (def SANS bloc `window`) = celle de `plain` (DONNÉE JSON : verre froid + ambre allumé) —
- *  jamais un littéral de couleur (garde-fou renderer), au même titre que `FLOOR_FALLBACK`/`CEIL_BASE`. */
+ *  jamais un littéral de couleur (garde-fou renderer). C'est un repli de PART absente sur une def
+ *  RÉELLE, pas le repli d'un id inconnu : celui-là est le ton d'alarme de `catalog/missing.ts` (#877). */
 const defaultWindow = () => structureAppearance('plain').window;
 /** Couleur ÉMISSIVE d'une fenêtre allumée (nuit) — la def sinon le repli `plain`. Source unique iso + POV. */
 export function windowLit(app: StructureAppearanceDef): string {

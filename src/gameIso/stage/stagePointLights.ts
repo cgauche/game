@@ -58,7 +58,11 @@ import { LIGHT_COLOR } from '../backends/webgl/sceneMeshes';
  *  sources POSÉES qui passent (cf. `pointLightWrites`). */
 export const POINT_LIGHT_BUDGET = 12;
 
-/** Hauteur (m) de la flamme au-dessus du sol de sa case — apparence, aucune règle. */
+/** Hauteur (m) par DÉFAUT d'une flamme au-dessus du sol de sa case — le foyer d'un émetteur qui n'a
+ *  AUCUNE primitive déclarée : un billboard (dont le dessin n'a pas de volume monde où pointer) ou une
+ *  lampe PORTÉE (dont le foyer est une main, pas une recette). Un décor VOLUMIQUE, lui, déclare sa
+ *  primitive émettrice (`PropPrimitive.emet`) et sa source est posée à SON centre (`LightSource.foyer`,
+ *  `state/vision.ts`) : ce sont deux valeurs d'UN paramètre, pas deux régimes. Apparence, aucune règle. */
 export const FLAME_LIFT_M = 1;
 
 /** Luminance VISÉE au foyer d'UNE flaque au palier `nuit` (part d'albédo, `ambianceLum` comprise). En
@@ -305,11 +309,15 @@ export function pointLightWrites(
     // `FLAME_INTENSITY` — une lanterne est plus pâle qu'un feu, aucune source n'est plus forte que
     // ce que la marge anti-saturation autorise.
     const ton = resolveTone(s.tone);
+    // FOYER : le décor volumique qui déclare sa primitive émettrice pose sa lampe à SON centre — même
+    // repère et même échelle que la géométrie cuite (`x`/`y` en cases × `mpt`, `h` en mètres au-dessus
+    // du sol de la case, cf. `backends/webgl/worldTris:gpToWorld` et `builders/propVolumes`). Sans
+    // foyer, la hauteur par défaut à l'aplomb de la case.
     const w: PointLightWrite = {
       srcId: s.srcId,
-      x: s.pos.x * opts.mpt,
-      y: heightAt(opts.scene, s.pos.x, s.pos.y, z) + FLAME_LIFT_M,
-      z: s.pos.y * opts.mpt,
+      x: (s.pos.x + (s.foyer?.x ?? 0)) * opts.mpt,
+      y: heightAt(opts.scene, s.pos.x, s.pos.y, z) + (s.foyer?.h ?? FLAME_LIFT_M),
+      z: (s.pos.y + (s.foyer?.y ?? 0)) * opts.mpt,
       intensity: FLAME_INTENSITY * Math.PI * extinction * ton.intensity,
       distance: s.radiusTiles * opts.mpt,
       color: toneHex(ton),

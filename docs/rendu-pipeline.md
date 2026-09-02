@@ -106,7 +106,7 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 | `src/gameIso/authoring/` | 5 | 0 | peintres SVG (plan de station, aperçu d’éditeur, oracles de parité) — pilotés par `Dims`, seul pont monde→écran |
 | `src/gameIso/backends/` | 0 | 1 | le MONDE, cuit en géométrie et rendu par une caméra réelle (three) — LE moteur du jeu en toutes vues |
 | `src/gameIso/builders/` | 12 | 1 | dérivation PURE de la Scène en éléments sémantiques, en espace MONDE (aucun import de caméra ni d’écran) |
-| `src/gameIso/catalog/` | 5 | 6 | catalogues d’apparence : ambiance, décor, dégradés — la couleur y est une DONNÉE |
+| `src/gameIso/catalog/` | 6 | 6 | catalogues d’apparence : ambiance, décor, dégradés — la couleur y est une DONNÉE |
 | `src/gameIso/detail/` | 4 | 0 | détail de surface (matériaux v2) : recettes dépliées en primitives UV, déterministes au seed |
 | `src/gameIso/fx/` | 5 | 0 | effets de combat — hors périmètre de la garde anti-couleur (couleur d’intention, pas d’identité de matériau) |
 | `src/gameIso/pov/` | 3 | 0 | première personne : caméra, brume, boîtes de billboard, voiles d’écran |

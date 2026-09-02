@@ -392,7 +392,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "night-stakes.json", champ: "rule", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 15, lot: "L3 #1463", date: "2026-08-30", motif: "référence de RÈGLE" },
   { concept: "reference", dataset: "pregens.json", champ: "career", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 8, lot: "L3 #1463", date: "2026-08-30", motif: "référence de CARRIÈRE" },
   { concept: "reference", dataset: "pregens.json", champ: "species", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 8, lot: "L3 #1463", date: "2026-08-30", motif: "référence d’ESPÈCE" },
-  { concept: "reference", dataset: "props.json", champ: "light", signature: "tone+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "props.json", champ: "light", signature: "tone+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" }, // 3→6 : +3 OCCURRENCES — les trois luminaires allumés par #1680 ligne 5 (`applique-murale`, `lustre-opera`, `lanterne-de-poupe`) portent un `light.tone`, de la MÊME forme que les trois déjà comptés
   { concept: "reference", dataset: "props.json", champ: "primitives", signature: "material+…", statut: "divergente", strate: "Référence", occurrences: 172, lot: "L3 #1463", date: "2026-08-23" }, // 89 → 172 : les 11 recettes du LOT A #1644
   { concept: "reference", dataset: "psychology.json", champ: "becomes", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "psychology.json", champ: "failCondition", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -792,7 +792,6 @@ export const STRUCTURES_ENVELOPPE = [
   // ci-dessus (aucune page de livre ne décrit une couleur de matériau) : le lot L1d tranche la forme
   // de `source` d'un document maison pour les deux à la fois.
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "propMaterials.json", chemin: "(entrées)", entrees: 8, lot: "L1d #1469", date: "2026-08-23" }, // +1 : albatre, matière de l'urne (#1644)
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "props.json", chemin: "(entrées)", entrees: 123, lot: "L1d #1469", date: "2026-08-23" }, // 83→123 : bijection art ⇄ donnée (#1680 ligne 14) — le catalogue de décor est app-owned, aucune page ne le source
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualitySubtypes.json", chemin: "(entrées)", entrees: 3, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualityTypes.json", chemin: "(entrées)", entrees: 2, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1d #1469", date: "2026-08-23" },

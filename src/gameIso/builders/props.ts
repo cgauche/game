@@ -15,7 +15,7 @@
 import { Scene, tileAt, heightAt, type ArchitectureRect } from '../../state/scene';
 import { roofHidden, massFootBBox } from '../../state/buildings';
 import { effectiveArchitecture } from '../../state/sceneEdit';
-import { decorFootGeometry, propDeclaredFoot } from '../../state/footprint';
+import { decorAncre, decorFootGeometry, propDeclaredFoot } from '../../state/footprint';
 import { findPropById, refEstVolumique } from '../../data';
 import { buildPropVolumes } from './propVolumes';
 import { terrainOverlayProp } from '../../state/terrain';
@@ -163,7 +163,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     out.push(elDeDecor({
       key: `prop:${ent.id}`,
       cell: { x: ent.pos.x, y: ent.pos.y, z },
-      ancre: { x: ent.pos.x + dessin.offX, y: ent.pos.y + dessin.offY },
+      ancre: decorAncre(ent.pos, empreinte),
       echelle: dessin.scale,
       solM: heightAt(scene, ent.pos.x, ent.pos.y, z),
       ...(empreinte ? { span: { w: empreinte.w, h: empreinte.h } } : {}),

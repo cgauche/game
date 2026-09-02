@@ -6,7 +6,8 @@
     "solid": true,
     "light": {
       "radiusTiles": 5
-    }
+    },
+    "maison": "rayon maison : aucun folio ne chiffre un feu de camp — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases), le plus petit que le canon chiffre, un foyer ouvert n’éclairant pas moins qu’une chandelle"
   },
   {
     "id": "brasero",
@@ -15,7 +16,8 @@
     "solid": true,
     "light": {
       "radiusTiles": 4
-    }
+    },
+    "maison": "rayon maison : aucun folio ne chiffre un brasero — un cran SOUS le feu de camp (4 cases contre 5), la cuve n’ouvrant sa flamme que vers le haut"
   },
   {
     "id": "chandelier",
@@ -23,9 +25,10 @@
     "label": "Candélabre",
     "solid": true,
     "light": {
-      "radiusTiles": 3,
+      "radiusTiles": 5,
       "tone": "chandelle"
-    }
+    },
+    "maison": "rayon maison : le chandelier PORTE des bougies — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases) ; un chandelier n’est pas une bougie, d’où l’arbitrage plutôt que le folio"
   },
   {
     "id": "lampadaire",
@@ -33,9 +36,10 @@
     "label": "Lampadaire",
     "solid": true,
     "light": {
-      "radiusTiles": 5,
+      "radiusTiles": 10,
       "tone": "lanterne"
-    }
+    },
+    "maison": "rayon maison : le lampadaire PORTE une lanterne — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m = 10 cases) ; un lampadaire n’est pas une lanterne de poing, d’où l’arbitrage plutôt que le folio"
   },
   {
     "id": "pupitre-chef",
@@ -54,7 +58,8 @@
     "type": "props",
     "label": "Clôture",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : une clôture EST la barrière en bois de l’étalon de couvert MOYEN (LDB 14 l.81) — même objet, aucune extrapolation"
   },
   {
     "id": "palissade",
@@ -107,8 +112,9 @@
     "type": "props",
     "label": "Statue",
     "solid": true,
+    "cover": "totale",
     "opaque": true,
-    "cover": "totale"
+    "maison": "couvert maison : un bloc de pierre taillée s’apparente au mur de pierre de l’étalon de couvert TOTAL (LDB 14 l.86), et il coupe la vue"
   },
   {
     "id": "gargouille",
@@ -161,14 +167,16 @@
     "type": "props",
     "label": "Fontaine",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : une margelle maçonnée à hauteur de taille protège comme la barrière en bois de l’étalon MOYEN (LDB 14 l.81) — plus dure, mais plus basse"
   },
   {
     "id": "puits",
     "type": "props",
     "label": "Puits",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : margelle de pierre à hauteur de taille — même arbitrage que la fontaine, l’étalon MOYEN de la barrière en bois (LDB 14 l.81)"
   },
   {
     "id": "abreuvoir",
@@ -215,7 +223,8 @@
     "type": "props",
     "label": "Arbre",
     "solid": true,
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "maison": "couvert maison : un tronc ne masque qu’une part du corps et le feuillage ne masque rien — l’étalon IMPARFAIT de la haie (LDB 14 l.72)"
   },
   {
     "id": "arbre-mort",
@@ -311,7 +320,8 @@
           "material": "bois-chene"
         }
       ]
-    }
+    },
+    "maison": "couvert maison : un fût de bois à hauteur de taille EST du bois plein comme la barrière de l’étalon MOYEN (LDB 14 l.81)"
   },
   {
     "id": "tonneaux-pile",
@@ -606,7 +616,8 @@
           "material": "bois-chene"
         }
       ]
-    }
+    },
+    "maison": "couvert maison : une caisse de bois à hauteur de taille — même matière et même hauteur que la barrière de l’étalon MOYEN (LDB 14 l.81)"
   },
   {
     "id": "coffre",
@@ -836,7 +847,11 @@
     "id": "marmite",
     "type": "props",
     "label": "Marmite de troll",
-    "solid": true
+    "solid": true,
+    "light": {
+      "radiusTiles": 4
+    },
+    "maison": "rayon maison : braises SOUS la marmite (def d’art), sans flamme dégagée — même cran que le brasero (4 cases), le chaudron masquant une part du foyer"
   },
   {
     "id": "oeuf-dragon",
@@ -853,7 +868,8 @@
     "foot": {
       "w": 2,
       "h": 1
-    }
+    },
+    "maison": "couvert maison : un plateau et des ridelles de bois s’apparentent à la barrière en bois de l’étalon MOYEN (LDB 14 l.81)"
   },
   {
     "id": "epave-carrosse",
@@ -864,7 +880,8 @@
     "foot": {
       "w": 2,
       "h": 2
-    }
+    },
+    "maison": "couvert maison : une caisse de voiture éventrée reste une paroi de bois trouée — l’étalon MOYEN de la barrière en bois (LDB 14 l.81)"
   },
   {
     "id": "barque",
@@ -1798,7 +1815,8 @@
           "material": "toile-rouge"
         }
       ]
-    }
+    },
+    "maison": "couvert maison : un plateau de bois sur tréteaux protège comme la barrière en bois de l’étalon MOYEN (LDB 14 l.81)"
   },
   {
     "id": "tente",
@@ -1814,7 +1832,8 @@
     "id": "tas-foin",
     "type": "props",
     "label": "Tas de foin",
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "maison": "couvert maison : le foin arrête le regard mais pas un trait — l’étalon IMPARFAIT de la haie (LDB 14 l.72), dont il partage la nature végétale"
   },
   {
     "id": "cheval-mort",
@@ -1824,7 +1843,8 @@
     "foot": {
       "w": 2,
       "h": 1
-    }
+    },
+    "maison": "couvert maison : une carcasse au sol ne couvre qu’un corps à terre — l’étalon IMPARFAIT de la haie (LDB 14 l.72)"
   },
   {
     "id": "balustrade-bois",
@@ -1893,10 +1913,14 @@
     "id": "foyer-de-forge",
     "type": "props",
     "label": "Foyer de forge",
+    "light": {
+      "radiusTiles": 5
+    },
     "foot": {
       "w": 1,
       "h": 1
-    }
+    },
+    "maison": "rayon maison : cuve de charbons ardents (def d’art) — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m = 5 cases), c’est un lit de braises à ciel ouvert"
   },
   {
     "id": "passerelle-d-embarquement",
@@ -1930,12 +1954,12 @@
     "type": "props",
     "label": "Cheminée intérieure",
     "solid": true,
-    "opaque": true,
-    "cover": "totale",
     "light": {
       "radiusTiles": 5,
       "tone": "flamme"
     },
+    "cover": "totale",
+    "opaque": true,
     "volume": {
       "capIdentite": "S",
       "primitives": [
@@ -2049,10 +2073,12 @@
             "y": 0.3,
             "h": 0.12
           },
-          "material": "braises"
+          "material": "braises",
+          "emet": true
         }
       ]
-    }
+    },
+    "maison": "rayon maison : aucun folio ne chiffre un âtre — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m = 5 cases), c’est le même foyer ouvert. Couvert maison : un manteau d’âtre maçonné s’apparente au mur de pierre de l’étalon de couvert TOTAL (LDB 14 l.86), et il coupe la vue"
   },
   {
     "id": "comptoir-droit",
@@ -2204,7 +2230,8 @@
           "material": "fer-noirci"
         }
       ]
-    }
+    },
+    "maison": "couvert maison : un comptoir de bois à hauteur de poitrine EST du bois plein comme la barrière de l’étalon MOYEN (LDB 14 l.81)"
   },
   {
     "id": "comptoir-angle",
@@ -2356,7 +2383,8 @@
           "material": "fer-noirci"
         }
       ]
-    }
+    },
+    "maison": "couvert maison : même objet que le comptoir droit, replié en angle — l’étalon MOYEN de la barrière en bois (LDB 14 l.81)"
   },
   {
     "id": "table-ronde-4-tabourets",
@@ -2972,6 +3000,10 @@
     "id": "applique-murale",
     "type": "props",
     "label": "Applique murale",
+    "light": {
+      "radiusTiles": 5,
+      "tone": "chandelle"
+    },
     "volume": {
       "capIdentite": "S",
       "primitives": [
@@ -3121,10 +3153,12 @@
           "radius": 0.05,
           "heightM": 0.06,
           "sides": 8,
-          "material": "laiton-dore"
+          "material": "laiton-dore",
+          "emet": true
         }
       ]
-    }
+    },
+    "maison": "rayon maison : l’applique PORTE trois bougies (def d’art : bras à bougies et flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases), le canon ne chiffrant pas le nombre de mèches"
   },
   {
     "id": "ancre-de-navire",
@@ -3137,8 +3171,9 @@
     "type": "props",
     "label": "Arche en ruine",
     "solid": true,
+    "cover": "totale",
     "opaque": true,
-    "cover": "totale"
+    "maison": "couvert maison : un piédroit de maçonnerie EST le mur de pierre de l’étalon de couvert TOTAL (LDB 14 l.86), et il coupe la vue"
   },
   {
     "id": "banniere-chaos",
@@ -3157,7 +3192,8 @@
     "type": "props",
     "label": "Bastingage",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : une lisse de pavois est une barrière en bois de bord — l’étalon MOYEN (LDB 14 l.81), même objet"
   },
   {
     "id": "bourse",
@@ -3168,20 +3204,23 @@
     "id": "buisson",
     "type": "props",
     "label": "Buisson",
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "maison": "couvert maison : un buisson EST la haie de l’étalon de couvert IMPARFAIT (LDB 14 l.72) — même objet, aucune extrapolation"
   },
   {
     "id": "cabestan",
     "type": "props",
     "label": "Cabestan",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : un fût de bois cerclé à hauteur de taille — l’étalon MOYEN de la barrière en bois (LDB 14 l.81)"
   },
   {
     "id": "cadavre",
     "type": "props",
     "label": "Cadavre",
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "maison": "couvert maison : un corps au sol ne couvre qu’un corps à terre — l’étalon IMPARFAIT de la haie (LDB 14 l.72)"
   },
   {
     "id": "canape",
@@ -3199,7 +3238,8 @@
     "type": "props",
     "label": "Champignons géants",
     "solid": true,
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "maison": "couvert maison : un chapeau charnu arrête le regard sans arrêter un trait — l’étalon IMPARFAIT de la haie (LDB 14 l.72), dont il partage la nature végétale"
   },
   {
     "id": "cle",
@@ -3211,7 +3251,8 @@
     "type": "props",
     "label": "Cocon de soie",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : une masse de soie dense à hauteur d’homme protège comme la barrière en bois de l’étalon MOYEN (LDB 14 l.81)"
   },
   {
     "id": "coiffeuse",
@@ -3224,21 +3265,24 @@
     "type": "props",
     "label": "Crâne de monstre",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : une boîte crânienne de grande créature est une coque d’os pleine — l’étalon MOYEN de la barrière en bois (LDB 14 l.81)"
   },
   {
     "id": "decor-flat",
     "type": "props",
     "label": "Châssis de décor",
     "solid": true,
+    "cover": "totale",
     "opaque": true,
-    "cover": "totale"
+    "maison": "couvert maison : châssis de décor peint pleine hauteur, il masque tout ce qui est derrière — l’étalon TOTAL du mur de pierre (LDB 14 l.86), et il coupe la vue"
   },
   {
     "id": "detritus",
     "type": "props",
     "label": "Tas d'immondices",
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "maison": "couvert maison : un tas d’ordures bas et meuble — l’étalon IMPARFAIT de la haie (LDB 14 l.72)"
   },
   {
     "id": "etendard",
@@ -3251,7 +3295,8 @@
     "type": "props",
     "label": "Tas de gravats",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : un amas de pierres de démolition à hauteur de taille — l’étalon MOYEN de la barrière en bois (LDB 14 l.81), en plus dur et plus bas"
   },
   {
     "id": "grille",
@@ -3262,7 +3307,12 @@
     "id": "lanterne-de-poupe",
     "type": "props",
     "label": "Lanterne de poupe",
-    "solid": true
+    "solid": true,
+    "light": {
+      "radiusTiles": 10,
+      "tone": "lanterne"
+    },
+    "maison": "rayon maison : c’est une lanterne, vitrée et à cage de fer (def d’art) — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m = 10 cases) ; montée en poupe et non portée, d’où l’arbitrage plutôt que le folio"
   },
   {
     "id": "lettre",
@@ -3272,7 +3322,12 @@
   {
     "id": "lustre-opera",
     "type": "props",
-    "label": "Lustre d'opéra"
+    "label": "Lustre d'opéra",
+    "light": {
+      "radiusTiles": 5,
+      "tone": "chandelle"
+    },
+    "maison": "rayon maison : le lustre PORTE des bougies (def d’art : bras porte-bougies à flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases), le canon ne chiffrant pas le nombre de mèches"
   },
   {
     "id": "mare-sang",
@@ -3294,7 +3349,8 @@
     "id": "ossements",
     "type": "props",
     "label": "Tas d'ossements",
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "maison": "couvert maison : un amoncellement d’os creux et bas — l’étalon IMPARFAIT de la haie (LDB 14 l.72)"
   },
   {
     "id": "panneau",
@@ -3307,8 +3363,9 @@
     "type": "props",
     "label": "Paravent",
     "solid": true,
+    "cover": "totale",
     "opaque": true,
-    "cover": "totale"
+    "maison": "couvert maison : un panneau pleine hauteur masque tout le corps et la vue — l’étalon TOTAL du mur de pierre (LDB 14 l.86), en bien plus fragile"
   },
   {
     "id": "pieu",
@@ -3321,20 +3378,23 @@
     "type": "props",
     "label": "Portant à costumes",
     "solid": true,
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "maison": "couvert maison : des vêtements pendus laissent voir entre les pans — l’étalon IMPARFAIT de la haie (LDB 14 l.72)"
   },
   {
     "id": "roseaux",
     "type": "props",
     "label": "Roseaux",
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "maison": "couvert maison : une touffe de roseaux EST végétale et ajourée comme la haie de l’étalon IMPARFAIT (LDB 14 l.72)"
   },
   {
     "id": "roue-dentee",
     "type": "props",
     "label": "Engin à malepierre",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : un bâti de bois et une roue pleine à hauteur de taille — l’étalon MOYEN de la barrière en bois (LDB 14 l.81)"
   },
   {
     "id": "scie-chevalet",
@@ -3358,7 +3418,8 @@
     "type": "props",
     "label": "Terrier skaven",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "maison": "couvert maison : un bourrelet de terre à hauteur de taille au bord du trou — l’étalon MOYEN de la barrière en bois (LDB 14 l.81)"
   },
   {
     "id": "toile",

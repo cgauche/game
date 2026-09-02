@@ -132,6 +132,64 @@ describe('validatePropCatalog — invariants de données du décor', () => {
     expect(validatePropCatalog([traversable], propMaterials)).toEqual([]);
   });
 
+  /**
+   * PROVENANCE PAR CHAMP (#1680 ligne 5) — `props.json` est exempté de provenance au DATASET
+   * (`SANS_LIVRE` : c'est de l'art), mais trois de ses champs portent des concepts que le canon
+   * chiffre : `light` (LDB 74 l.43/56/58), `cover` et `opaque` (LDB 14 l.72/81/86). Ce que ces
+   * sondes mordent est l'ANGLE MORT que l'exemption ouvrait : une valeur de règle écrite sans dire
+   * d'où elle vient, invisible de tout lecteur de provenance.
+   */
+  it.each(['light', 'cover', 'opaque'] as const)('refuse une entrée qui porte `%s` SANS provenance', (champ) => {
+    const valeur = { light: { radiusTiles: 4 }, cover: 'moyenne', opaque: true }[champ];
+    const nu = { id: 'x', type: 'props', label: 'X d’épreuve', solid: true, [champ]: valeur, ...(champ === 'opaque' ? { cover: 'totale' } : {}) };
+    expect(() => propsSchema.parse([nu])).toThrow(/sans provenance/);
+    // Les DEUX régimes passent : le folio quand il en existe un, l'arbitrage sinon.
+    expect(() => propsSchema.parse([{ ...nu, maison: 'valeur maison d’épreuve' }])).not.toThrow();
+    expect(() => propsSchema.parse([{ ...nu, source: { book: 'livre-de-base', page: 308 } }])).not.toThrow();
+    // Un `maison` VIDE ne dit aucune raison : il ne vaut pas provenance.
+    expect(() => propsSchema.parse([{ ...nu, maison: '' }])).toThrow(/sans provenance/);
+  });
+
+  it('un décor SANS champ de règle n’exige AUCUNE provenance (le document reste de l’art)', () => {
+    // `solid` est un fait physique de l'objet : aucune table ne chiffre qu'un tonneau bloque le pas.
+    expect(() => propsSchema.parse([{ id: 'x', type: 'props', label: 'X d’épreuve', solid: true, foot: { w: 2, h: 1 } }])).not.toThrow();
+  });
+
+  /**
+   * FOYER DÉCLARÉ (#1680 ligne 5) — la lumière d'un décor VOLUMIQUE se pose sur une primitive nommée,
+   * jamais devinée. Les trois anomalies sont les trois façons dont `emet` et `light` se contredisent.
+   */
+  it('refuse DEUX primitives « emet » dans une même recette', () => {
+    const deux = (emet: boolean): PropData => propFixture({
+      light: { radiusTiles: 3 },
+      volume: { capIdentite: 'S', primitives: [
+        { kind: 'box', center: { x: 0, y: 0, h: 0.2 }, size: { x: 0.4, y: 0.4, h: 0.4 }, material: 'braises', emet: true },
+        { kind: 'box', center: { x: 0, y: 0, h: 0.8 }, size: { x: 0.4, y: 0.4, h: 0.4 }, material: 'braises', ...(emet ? { emet: true } as const : {}) },
+      ] },
+    });
+    expect(validatePropCatalog([deux(true)], propMaterials).join(' ')).toMatch(/2 primitives « emet » — une source ponctuelle n’a qu’UN foyer/);
+    expect(validatePropCatalog([deux(false)], propMaterials)).toEqual([]);
+  });
+
+  it('refuse un foyer SANS source, et une source volumique SANS foyer', () => {
+    const braises = (emet: boolean): PropPrimitive =>
+      ({ kind: 'box', center: { x: 0, y: 0, h: 0.2 }, size: { x: 0.4, y: 0.4, h: 0.4 }, material: 'braises', ...(emet ? { emet: true } as const : {}) });
+    expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives: [braises(true)] } })], propMaterials).join(' '))
+      .toMatch(/primitive « emet » sans `light`/);
+    expect(validatePropCatalog([propFixture({ light: { radiusTiles: 3 }, volume: { capIdentite: 'S', primitives: [braises(false)] } })], propMaterials).join(' '))
+      .toMatch(/sans primitive « emet » — le foyer d’un volume se DÉCLARE/);
+    // Un BILLBOARD qui éclaire (aucune recette) n'a pas de primitive où poser son foyer : il garde le
+    // défaut nommé du rendu, et ce n'est pas une anomalie.
+    expect(validatePropCatalog([propFixture({ light: { radiusTiles: 3 } })], propMaterials)).toEqual([]);
+  });
+
+  it('`emet: false` n’entre pas — l’absence dit déjà l’absence', () => {
+    expect(() => propsSchema.parse([{
+      id: 'x', type: 'props', label: 'X d’épreuve',
+      volume: { capIdentite: 'S', primitives: [{ kind: 'box', center: { x: 0, y: 0, h: 0.2 }, size: { x: 1, y: 1, h: 1 }, material: 'braises', emet: false }] },
+    }])).toThrow();
+  });
+
   it('le catalogue RÉEL est intègre', () => {
     expect(validatePropCatalog(props, propMaterials)).toEqual([]);
   });

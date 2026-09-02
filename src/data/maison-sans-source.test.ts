@@ -22,7 +22,7 @@ import { SANS_LIVRE, SANS_PROVENANCE_EXIGEE, SOURCE_EN_PROFONDEUR } from './sche
  * Ce que cette borne masque AUJOURD'HUI est GELÉ NOMINATIVEMENT (`MASQUES_GELES`, asserté plus bas) :
  * 29 des 30 raisons de coût d'`actions.json`, entrées dans le périmètre mesurable par la migration
  * `2026-08-27-l1b-4b-actions-maison-raison.mjs` (le couple `maison: true` + `costNote` y est devenu la
- * RAISON en clair). Chacune de ces 29 entrées porte sa raison dans le champ `maison` ; `actions` est
+ * RAISON en clair), et les 41 règles de `props.json` (#1680 ligne 5, cf. `MASQUES_GELES`). Chacune de ces 29 entrées porte sa raison dans le champ `maison` ; `actions` est
  * dans `SANS_LIVRE` (`schemas/grammaire/sans-livre.ts:41`), et 12 de ses 55 entrées citent malgré tout
  * un folio. 29 et non 30 : `switch-loadout`
  * porte SA raison ET son folio (LDB 13 l.106) — le prédicat exige `source` absente, il n'est donc pas
@@ -57,10 +57,21 @@ const BASELINES: Record<string, number> = {
 
 const TOTAL_GELE = 44;
 
-/** Entrées `maison` sans `source` des datasets EXEMPTÉS — gelé au 2026-08-27, APRÈS la migration 4b.
- *  Ce que la borne soustrait au cliquet, nommé dataset par dataset : un masqué de plus, ici ou
- *  ailleurs, n'a nulle part où se cacher. */
-const MASQUES_GELES: Record<string, number> = { 'actions.json': 29 };
+/**
+ * Entrées `maison` sans `source` des datasets EXEMPTÉS — gelé au 2026-08-27 (migration 4b), ÉTENDU le
+ * 2026-09-02 (#1680 ligne 5). Ce que la borne soustrait au cliquet, nommé dataset par dataset : un
+ * masqué de plus, ici ou ailleurs, n'a nulle part où se cacher.
+ *
+ * `props.json` (41) ENTRE dans ce stock au geste même qui l'y rend mesurable, comme `axes.json` est
+ * entré dans `BASELINES`. Ces 41 règles — `light` (éclairage, LDB 74 l.43/56/58), `cover` et `opaque`
+ * (couvert, LDB 14 l.72/81/86) — existaient NON TAGUÉES depuis `270fe58a4` : le document est exempté
+ * au dataset (c'est de l'art), et l'exemption couvrait aussi ces trois champs, qui n'en sont pas. Elles
+ * sont désormais écrites (`scripts/migrations/2026-09-02-1680-props-provenance.mjs`) et EXIGÉES par
+ * `affinerEntree` (`schemas/defs/props.ts`). Le stock ne CROÎT pas : il devient VISIBLE. Il n'est pas
+ * attendu à décroître non plus — aucun folio ne chiffre le couvert d'un tonneau ni le rayon d'un feu
+ * de camp ; ce sont des extrapolations d'étalons, et `maison` est leur régime définitif.
+ */
+const MASQUES_GELES: Record<string, number> = { 'actions.json': 29, 'props.json': 41 };
 
 const lire = (dir: string, f: string): unknown => JSON.parse(readFileSync(join(dir, f), 'utf8'));
 

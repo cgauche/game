@@ -7,6 +7,10 @@ import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';
 import { structureAppearance } from '../../catalog/structures';
 import { TERRAIN_DEFS } from '../../../state/terrain';
+import { terrainGradient, MISSING_GRADIENT } from '../../catalog/terrain';
+import { propMaterial } from '../../catalog/propMaterials';
+import { MISSING_ID, MISSING_LABEL, MISSING_TONE, MISSING_TONE_DARK } from '../../catalog/missing';
+import { reliefMaterials, roofMaterials, propMaterials } from '../../../data';
 import { buildFloors } from '../../builders/floors';
 import { buildWalls } from '../../builders/walls';
 import { buildRoofs } from '../../builders/roofs';
@@ -88,12 +92,6 @@ describe('faceSurface — chaque domaine résolu par SON catalogue, jamais un li
 
   it('terrain : le `swatch` du registre, comme le POV', () => {
     expect(couleur({ domain: 'terrain', id: 'herbe' })).toBe(HERBE_SWATCH);
-  });
-
-  it('id absent d’un catalogue : repli VISIBLE, jamais l’apparence d’un autre matériau', () => {
-    const missing = couleur({ domain: 'terrain', id: 'terrain-qui-n-existe-pas' });
-    expect(missing).toBe(SOL_INCONNU);
-    expect(TERRAIN_DEFS.some((t) => t.swatch === missing)).toBe(false);
   });
 
   it('toutes les faces de siege-enceinte reçoivent une couleur (aucune indéfinie)', () => {
@@ -223,14 +221,74 @@ describe('faceSurface — matériau de DÉCOR volumique (domaine `prop`)', () =>
     });
   });
 
-  it('un matériau ABSENT retombe sur le repli visible, et n’invente aucune réponse à la lumière', () => {
-    const surface = faceSurface(faceProp('materiau-fantome'));
-    expect(surface.color).toBe(reliefMaterial('sol-inconnu').face);
-    expect(surface.pbr).toBeUndefined();
-  });
-
   it('deux matériaux de décor ne partagent pas une clé de surface', () => {
     expect(faceSurface(faceProp('bois-chene')).surfaceKey)
       .not.toBe(faceSurface(faceProp('fer-noirci')).surfaceKey);
+  });
+});
+
+/**
+ * REPLI VISIBLE (#877, `catalog/missing.ts`) — contrat POSITIF des TROIS domaines que `faceSurface`
+ * résout par un registre indexé (relief, toiture, terrain, matière de décor) : un id absent rend le TON
+ * D'ALARME et n'emprunte l'identité d'AUCUNE entrée réelle. C'est le contrat qui manquait : `terrain` et
+ * `prop` retombaient sur `reliefMaterial('sol-inconnu').face`, l'identité d'un matériau de relief RÉEL,
+ * et le rendu déguisait donc la donnée fautive en sol. La formulation est NÉGATIVE PAR CONSTRUCTION
+ * (« aucune entrée réelle ») : elle balaye le registre entier, pas la seule entrée qui servait de repli.
+ */
+describe('faceSurface — REPLI VISIBLE d’un id absent du catalogue (#877)', () => {
+  const face = (domain: 'relief' | 'roof' | 'terrain' | 'prop', id: string, part?: string): Face => ({
+    poly: [{ x: 0, y: 0, h: 0 }, { x: 1, y: 0, h: 0 }, { x: 1, y: 0, h: 1 }],
+    material: { domain, id, ...(part ? { part } : {}) },
+    oriented: domain === 'prop',
+  });
+
+  /** Toutes les teintes qu'une entrée RÉELLE de l'un des quatre registres peut peindre — l'ensemble
+   *  dont le repli doit rester dehors. */
+  const TEINTES_REELLES = new Set<string>([
+    ...reliefMaterials.flatMap((m) => [m.face, m.foot, m.slopeTop].filter((c): c is string => !!c)),
+    ...roofMaterials.flatMap((m) => [m.N, m.E, m.S, m.O, m.line, m.soffite, m.fascia].filter((c): c is string => !!c)),
+    ...TERRAIN_DEFS.map((t) => t.swatch),
+    ...propMaterials.map((m) => m.color),
+  ]);
+
+  /** Les DEUX tons d'alarme : l'entrée de repli d'un registre peint ses parties de STRUCTURE au ton
+   *  sombre (le `line` d'une couverture, le `foot` d'un relief) comme le fait une entrée réelle. Les
+   *  deux sont de l'alarme ; ni l'un ni l'autre n'appartient à une entrée du catalogue. */
+  const ALARME = [MISSING_TONE, MISSING_TONE_DARK];
+
+  it.each([
+    ['relief', 'relief-fantome', undefined],
+    ['roof', 'toiture-fantome', undefined],
+    ['roof', 'toiture-fantome', 'soffite'],
+    ['roof', 'toiture-fantome', 'fascia'],
+    ['terrain', 'terrain-fantome', undefined],
+    ['prop', 'materiau-fantome', undefined],
+  ] as const)('domaine %s / id %s / part %s : ton d’ALARME, et l’identité d’AUCUNE entrée réelle', (domain, id, part) => {
+    const couleur = faceSurface(face(domain, id, part)).color;
+    expect(ALARME).toContain(couleur);
+    expect(TEINTES_REELLES.has(couleur)).toBe(false);
+  });
+
+  it('la matière de décor de repli est une ENTRÉE du catalogue : sa réponse à la lumière est NEUTRE', () => {
+    // Le repli n'est pas « pas de matériau » mais un matériau d'ERREUR ASSUMÉE : il porte une réponse à
+    // la lumière, et elle est diffuse pure — le repli n'invente ni vernis ni métal.
+    expect(propMaterial('materiau-fantome')).toMatchObject({ id: MISSING_ID, label: MISSING_LABEL, roughness: 1, metalness: 0 });
+    expect(faceSurface(face('prop', 'materiau-fantome')).pbr).toEqual({ roughness: 1, metalness: 0 });
+  });
+
+  it('l’id de repli n’est CELUI D’AUCUNE entrée réelle des quatre registres', () => {
+    const idsReels = [
+      ...reliefMaterials.map((m) => m.id),
+      ...roofMaterials.map((m) => m.id),
+      ...TERRAIN_DEFS.map((t) => t.id),
+      ...propMaterials.map((m) => m.id),
+    ];
+    expect(idsReels).not.toContain(MISSING_ID);
+  });
+
+  it('un terrain ABSENT ne peint pas non plus le DÉGRADÉ ni la RECETTE d’un terrain réel', () => {
+    expect(terrainGradient('terrain-fantome')).toBe(MISSING_GRADIENT);
+    expect(TERRAIN_DEFS.map((t) => t.gradient)).not.toContain(MISSING_GRADIENT);
+    expect(faceSurface(face('terrain', 'terrain-fantome')).recipe).toBeUndefined();
   });
 });

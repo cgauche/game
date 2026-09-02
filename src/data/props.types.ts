@@ -111,11 +111,21 @@ export interface PropSize3 { x: number; y: number; h: number }
 export type PropCylinderSides = 8 | 16;
 export const PROP_CYLINDER_SIDES: readonly PropCylinderSides[] = [8, 16];
 
+/**
+ * FOYER d'un décor qui éclaire : la primitive de sa recette d'où part la lumière (le lit de braises
+ * d'un âtre, la coupelle d'une bougie). UNE au plus par recette (`validatePropCatalog`) — une source
+ * ponctuelle a un seul foyer. Le rendu en tire la POSITION MONDE de la lampe (`state/vision.ts`
+ * `mapLights` → `LightSource.foyer`), au lieu de la poser à l'aplomb de la case : elle suit donc la
+ * géométrie, cap compris. Sans `emet`, le rendu applique sa hauteur par défaut (`FLAME_LIFT_M`).
+ * `true` seul est admis : `emet: false` dirait la même chose que l'absence, en une seconde graphie.
+ */
+type PrimitiveEmettrice = { emet?: true };
+
 /** Volume élémentaire d'une recette : caisse droite, cylindre à N faces, ou prisme en pente. */
 export type PropPrimitive =
-  | { kind: 'box'; center: PropPoint3; size: PropSize3; material: PropMaterialId }
-  | { kind: 'cylinder'; center: PropPoint3; radius: number; heightM: number; sides: PropCylinderSides; material: PropMaterialId }
-  | { kind: 'prism'; center: PropPoint3; size: PropSize3; slope: 'x+' | 'x-' | 'y+' | 'y-'; material: PropMaterialId };
+  | ({ kind: 'box'; center: PropPoint3; size: PropSize3; material: PropMaterialId } & PrimitiveEmettrice)
+  | ({ kind: 'cylinder'; center: PropPoint3; radius: number; heightM: number; sides: PropCylinderSides; material: PropMaterialId } & PrimitiveEmettrice)
+  | ({ kind: 'prism'; center: PropPoint3; size: PropSize3; slope: 'x+' | 'x-' | 'y+' | 'y-'; material: PropMaterialId } & PrimitiveEmettrice);
 
 /** Recette volumique d'un prop : la liste de ses primitives, dans le repère local.
  *  `capIdentite` DÉCLARE ce repère — le cap auquel la recette sort telle qu'écrite. Une seule valeur
@@ -370,6 +380,16 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
     if (prop.opaque && prop.cover !== 'totale')
       errors.push(`${prop.id}: opaque avec cover ${prop.cover ? `« ${prop.cover} »` : 'absent'} — un décor opaque ne rend que « totale » (lineOfSight)`);
     for (const primitive of prop.volume?.primitives ?? []) errors.push(...erreursDePrimitive(prop.id, primitive, known));
+    // FOYER D'UNE SOURCE VOLUMIQUE (#1680 ligne 5) — les trois anomalies sont les trois façons dont
+    // `emet` et `light` peuvent se contredire, et aucune n'est rattrapable au rendu : une lumière dont
+    // le foyer n'est pas DÉCLARÉ se devinerait, et deviner l'ancre d'une lampe est ce que ce lot supprime.
+    const emettrices = (prop.volume?.primitives ?? []).filter((p) => p.emet);
+    if (emettrices.length > 1)
+      errors.push(`${prop.id}: ${emettrices.length} primitives « emet » — une source ponctuelle n’a qu’UN foyer`);
+    if (emettrices.length && !prop.light)
+      errors.push(`${prop.id}: primitive « emet » sans \`light\` — un foyer sans source n’éclaire rien`);
+    if (prop.light && prop.volume && !emettrices.length)
+      errors.push(`${prop.id}: \`light\` sur une recette volumique sans primitive « emet » — le foyer d’un volume se DÉCLARE, il ne se devine pas`);
     const { w, h } = propFootOf(prop);
     for (const slot of prop.seatSlots ?? []) {
       if (!slot.id.trim()) errors.push(`${prop.id}: slot sans id`);

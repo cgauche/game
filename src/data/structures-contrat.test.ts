@@ -970,7 +970,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 58 → 56 (#1657 B2a) : les DEUX lignes « source | clé absente » des racines de
       // `criticals.json` et `aa-criticals.json` sont SOLDÉES — les 8 documents-tables qui les
       // remplacent portent chacun leur `source` (LDB 174 ×4, AA 83/84/85/86).
-      'L1d #1469': 56 /* +2 : alsoIn creatures/species posés par e89a836d3 SANS leur ligne de stock (sillage C1 #1457) — le lot RE-GONFLE à titre de dérive relevée, à SOLDER par la vague L1d (#1469) */,
+      'L1d #1469': 55 /* 56→55 : la ligne d'enveloppe « `source` absente » de `props.json` meurt (#1680 ligne 5). PORTÉE EXACTE, à ne pas surestimer : elle s'éteint par `satisfaitAutrement = parCle.has(def.alternative)` (`scripts/docs/lib/structures-scan.mts:1081`) — la divergence est relevée PAR DOCUMENT, et la présence de la clé alternative `maison` sur AU MOINS UNE entrée suffit à l'éteindre pour tout le document. Ce ne sont donc PAS les 123 entrées qui deviennent sourcées : 41 portent `maison` (celles qui portent une RÈGLE — `light`/`cover`/`opaque` — que `affinerEntree` exige désormais), 82 restent muettes et le demeurent légitimement (leur contenu est de l'art). Le +2 antérieur (alsoIn creatures/species posés par e89a836d3 SANS leur ligne de stock, sillage C1 #1457) reste à SOLDER par la vague L1d (#1469) */,
       // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
       // … puis 48 → 18 (commit 3c) : cette référence PLATE MEURT à SON TOUR — 30 lignes s'éteignent avec

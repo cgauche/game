@@ -52,6 +52,20 @@ export function occupiesTile(pos: Pt, n: number, x: number, y: number): boolean 
 export const propDeclaredFoot = (ref: string | undefined): { w: number; h: number } | undefined =>
   (ref ? findPropById(ref)?.foot : undefined);
 
+/**
+ * ANCRE MONDE d'un décor posé en `pos` — le point sur lequel TOUT ce que le décor projette se pose :
+ * sa géométrie volumique (`gameIso/builders/props.ts` → `buildPropVolumes`), son dessin billboard, et
+ * le FOYER de la source qu'il porte (`state/vision.ts` → `LightSource.foyer`). Un décor s'ancre au
+ * CENTRE de son empreinte : `pos` en est le coin NO, `decorFootGeometry` donne le décalage
+ * fractionnaire vers ce centre. UNE définition, parce qu'une lampe calée sur un autre point que sa
+ * propre géométrie s'en détacherait dès la première empreinte non 1×1 — mesuré à 1,414 m sur une
+ * empreinte 2×2 (#1680 ligne 5). PURE.
+ */
+export function decorAncre(pos: { x: number; y: number }, foot?: { w: number; h: number }): { x: number; y: number } {
+  const { offX, offY } = decorFootGeometry(foot);
+  return { x: pos.x + offX, y: pos.y + offY };
+}
+
 /** Cases couvertes par un décor de ref `ref` ancré en `pos` (sa seule case si aucune empreinte déclarée). */
 export function propFootTiles(ref: string | undefined, pos: Pt): Pt[] {
   const { w, h } = propFootOf(findPropById(ref ?? ''));

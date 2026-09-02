@@ -12,7 +12,7 @@ import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import { TERRAINS } from '../../state/terrain';
 import { propDeclaredFoot } from '../../state/footprint';
 import { REF_DECOR_DEFAUT } from '../../data/props.types';
-import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
+import { terrainDef } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { structures } from '../../data';
@@ -297,7 +297,7 @@ export function Palette({
                 <button
                   key={t}
                   className={`terrain-swatch ${tool.terrain === t ? 'active' : ''}`}
-                  style={{ background: TERRAIN_VIZ[t]?.swatch ?? '#888' }}
+                  style={{ background: terrainDef(t).swatch }}
                   onClick={() => {
                     setLastTerrain(t as Terrain);
                     setTool({ mode: 'tile', terrain: t as Terrain });

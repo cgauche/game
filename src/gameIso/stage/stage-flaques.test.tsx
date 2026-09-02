@@ -245,6 +245,38 @@ describe('Le PROFIL d’une flaque — épinglé, et calé sous la saturation', 
     expect(profil).toEqual([0.5221, 0.3687, 0.2308, 0.1095, 0.0381, 0, 0, 0]);
   });
 
+  /**
+   * PROFIL D'UNE SOURCE ANCRÉE À SA PRIMITIVE (#1680 ligne 5) — l'âtre (`cheminee-interieure`, rayon 5
+   * cases = 10 m) est la seule source VOLUMIQUE du catalogue : sa lampe descend de la hauteur
+   * forfaitaire des billboards (1 m) au centre de son lit de braises (0,24 m, `PropPrimitive.emet`).
+   *
+   * Ce que cela CHANGE, mesuré : le PIC au foyer ne bouge pas (`dotNL` vaut 1 à l'aplomb, quelle que
+   * soit la hauteur — c'est pourquoi `FOYER_NUIT_CIBLE` tient sans retoucher aucune constante), mais le
+   * cœur clair se RESSERRE — sa demi-largeur à mi-hauteur passe de 1,725 m à 0,416 m. C'est la
+   * géométrie : une flamme basse rase le sol, et le cosinus d'incidence tombe d'autant plus vite
+   * qu'elle est près de lui. Aucune constante n'est retouchée ; ce test épingle la conséquence.
+   */
+  it('l’âtre ANCRÉ : même pic au foyer, cœur clair RESSERRÉ (profil épinglé)', () => {
+    const ext = extinctionDe(AMB_NUIT);
+    const D_ATRE = 10; // cheminée : 5 cases × 2 m
+    const H_BRAISES = 0.24; // centre de la primitive « braises » de la recette
+    const pts = [0, 0.5, 1, 2, 3, 4, 6, 8];
+    expect(pts.map((d) => +flaquePart(d, D_ATRE, ext, FLAME_LIFT_M).toFixed(4)))
+      .toEqual([0.5223, 0.4671, 0.3691, 0.2325, 0.1619, 0.1195, 0.064, 0.0216]);
+    expect(pts.map((d) => +flaquePart(d, D_ATRE, ext, H_BRAISES).toFixed(4)))
+      .toEqual([0.5224, 0.2261, 0.1219, 0.062, 0.041, 0.0297, 0.0158, 0.0054]);
+    // Le PIC est le même à 1/10 000 près : la cible de nuit ne dépend pas de la hauteur du foyer.
+    expect(flaquePart(0, D_ATRE, ext, H_BRAISES)).toBeCloseTo(flaquePart(0, D_ATRE, ext, FLAME_LIFT_M), 3);
+    // DEMI-LARGEUR du cœur clair (rayon où la part retombe à la moitié du pic), mesurée au pas du mm.
+    const demiLargeur = (liftM: number) => {
+      const pic = flaquePart(0, D_ATRE, ext, liftM);
+      for (let d = 0; d <= D_ATRE; d += 0.001) if (flaquePart(d, D_ATRE, ext, liftM) < pic / 2) return +d.toFixed(3);
+      return D_ATRE;
+    };
+    expect(demiLargeur(FLAME_LIFT_M)).toBeCloseTo(1.725, 2);
+    expect(demiLargeur(H_BRAISES)).toBeCloseTo(0.416, 2);
+  });
+
   it('AUCUN palier ne sature : le foyer d’UNE flaque reste sous 1 aux cinq paliers de `lightLevels.json`', () => {
     const mesuré = lightLevels.map((l) => [l.id, +flaqueLuminance(ambianceLuminance(l.scalar), 0, D).toFixed(4)]);
     expect(mesuré).toEqual([['jour', 1], ['couvert', 0.9542], ['crepuscule', 0.8992], ['nuit', 0.8497], ['tenebres', 0.8168]]);
@@ -286,7 +318,12 @@ describe('Le PROFIL d’une flaque — épinglé, et calé sous la saturation', 
     // Des flaques SE RECOUVRENT bel et bien dans les scènes livrées (deux braséros à deux cases) : c'est
     // la SOMME qui doit tenir, pas leur séparation.
     expect(recouvrements).toBeGreaterThan(0);
-    expect([où, +pire.toFixed(4)]).toEqual(['arene-zone4 h0 (26,32)', 0.9592]);
+    // Point le plus clair des scènes livrées. Il a MIGRÉ le 2026-09-02 (#1680 ligne 5) : la zone 4
+    // (0,9592, l'aplomb d'un brasero dans la flaque de son voisin) cède la place à la zone 12
+    // (0,9694) — le recalage des rayons sur les étalons du canon (chandelier 3 → 5 cases, lampadaire
+    // 5 → 10) et les cinq émetteurs neufs y font se recouvrir des flaques qui ne se touchaient pas.
+    // L'INVARIANT, lui, ne bouge pas et reste celui qui compte : la somme tient sous 1.
+    expect([où, +pire.toFixed(4)]).toEqual(['arene-zone12 h0 (28,32)', 0.9694]);
     expect(pire).toBeLessThan(1);
   });
 });

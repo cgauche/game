@@ -1,9 +1,9 @@
 /**
- * Ligne de Vue & Couvert (LDB `13 - Combat.md` l.123 ; `14 - _GoBack.md` l.103/114/120, l.75).
+ * Ligne de Vue & Couvert (LDB 14 l.72/81/86 — les trois étalons de couvert ; l.75 — le tir dissimulé).
  * Lit la Scène (terrain, bâtiments, décors, occupants) — vit en `state` car l'engine pur ne dépend
  * jamais de `Scene`. Le `coverModifier` numérique est injecté dans `attackModifiers` via `env: ModLine[]`
- * (cf. combatFlow). La table de couvert n'est pas exhaustive (LDB l.75 : « servez-vous de ces exemples
- * comme guide ») — la classification des décors/créatures est une extrapolation des exemplaires canon.
+ * (cf. combatFlow). La table de couvert n'est pas exhaustive (LDB 14 l.48 : « servez-vous de ces
+ * exemples comme guide ») — la classification des décors/créatures est une extrapolation des étalons.
  */
 import { Scene, SceneEntity, tileAt, wallBetween, heightAt, sceneMetresPerTile } from './scene';
 import { TERRAINS } from './terrain';

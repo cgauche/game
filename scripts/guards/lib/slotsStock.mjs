@@ -258,7 +258,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "pregens.json", champ: "species", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "progression-schemas.derived.json", champ: "livres", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "progression-schemas.derived.json", champ: "titresPage", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "props.json", champ: "light", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "props.json", champ: "light", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" }, // 3→6 : +3 OCCURRENCES — les trois luminaires allumés par #1680 ligne 5 (`applique-murale` et `lustre-opera` en `chandelle`, `lanterne-de-poupe` en `lanterne`) portent un `light.tone`, comme les trois déjà comptés. L'ADOPTION de la fabrique NE SOLDE PAS cette ligne, mesuré le 2026-09-02 : `idDe('lightTone')` sur `light.tone` déclare un slot au path `[].light.tone`, que `champDuPath` projette sur `tone` — jamais sur le champ PORTEUR `light` que le scan observe (angle mort déclaré en tête de ce fichier). La ligne se solde avec cet angle mort, pas avant.
   { dataset: "props.json", champ: "primitives", occurrences: 172, lot: "L2/L3 #1473", date: "2026-08-26" }, // 89 → 172 : les 11 recettes du LOT A #1644 (contenants et mobilier de base)
   { dataset: "psychology.json", champ: "becomes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "psychology.json", champ: "failCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

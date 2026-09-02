@@ -16,9 +16,11 @@ import { wallOnSight } from './lineOfSight';
 import { TERRAINS, terrainSolidHeightM } from './terrain';
 import { METRES_PER_LEVEL } from './relief';
 import { sceneIsDark } from './sceneRules';
-import { propFootTiles } from './footprint';
+import { propFootTiles, decorAncre } from './footprint';
 import { Pt, chebyshev } from './path';
 import { LIGHT_LEVEL_BY_ID, findTraitById, findPropById, findTrappingById } from '../data';
+import { rotatePropLocal, CAP_IDENTITE_PROP, type PropData } from '../data/props.types';
+import type { Dir8 } from './dir8';
 import { memoByRef } from './sceneMemo';
 
 /** Un observateur : sa case, son rayon de vue (cases éclairées qu'il distingue) et sa portée de
@@ -49,6 +51,17 @@ export interface LightSource {
    *  vacillement). Le champ de lumière mécanique l'IGNORE : il ne connaît que le rayon (LDB 74) ; seul
    *  le rendu le résout (`gameIso/stage/stagePointLights.ts`). Absent = `flamme`. */
   tone?: string;
+  /** FOYER de la source, RELATIF à `pos` : le centre de la primitive que la recette du décor déclare
+   *  émettrice (`PropPrimitive.emet`, `data/props.types.ts`). `x`/`y` en CASES, `h` en MÈTRES au-dessus
+   *  du sol de la case — les mêmes unités que le repère local d'une recette, et il subit ICI la MÊME
+   *  transformation rigide que la géométrie (`rotatePropLocal` au cap de l'instance) : la lampe et le
+   *  volume qu'elle éclaire tournent donc ensemble, et un déplacement de l'ancre les déplace tous deux.
+   *
+   *  Comme le `tone`, le champ de lumière MÉCANIQUE l'ignore : le couvert et la portée se comptent en
+   *  cases depuis `pos`, et un décalage sous-métrique dans la case n'y change rien. Seul le RENDU le
+   *  lit. Absent = la source n'a pas de primitive déclarée (billboard, lampe portée) : le rendu applique
+   *  alors sa hauteur par défaut (`FLAME_LIFT_M`). */
+  foyer?: { x: number; y: number; h: number };
 }
 
 /** Champ de lumière : niveau d'éclairement 0..1 d'une case. `sourceLit` = cases éclairées par une
@@ -175,11 +188,35 @@ export function mapLights(scene: Scene): LightSource[] {
     // Rayon et TON se surchargent CHAMP PAR CHAMP : une instance qui ne pose qu'un rayon garde le ton
     // de son type de prop, et réciproquement — un override d'instance ne déshabille pas le reste.
     const inst = e.light;
-    const type = e.ref ? findPropById(e.ref)?.light : undefined;
+    const prop = e.ref ? findPropById(e.ref) : undefined;
+    const type = prop?.light;
     const r = inst?.radiusTiles ?? type?.radiusTiles;
-    if (r && r > 0) out.push({ pos: e.pos, z: e.z, radiusTiles: r, srcId: e.id, tone: inst?.tone ?? type?.tone });
+    if (r && r > 0) out.push({ pos: e.pos, z: e.z, radiusTiles: r, srcId: e.id, tone: inst?.tone ?? type?.tone, ...foyerDe(prop, e.pos, e.facing) });
   }
   return out;
+}
+
+/**
+ * FOYER d'un décor dont la recette DÉCLARE sa primitive émettrice (`emet`) : le centre de cette
+ * primitive, exprimé RELATIVEMENT à `pos` comme le veut `LightSource.foyer`.
+ *
+ * Il se compose EXACTEMENT comme la géométrie, et depuis les MÊMES deux sources qu'elle :
+ *  - l'ANCRE du décor (`decorAncre`, `state/footprint.ts`) — le centre de son empreinte, que
+ *    `gameIso/builders/props.ts` lit pour poser la recette ; une empreinte 2×2 la décale d'une
+ *    demi-case sur chaque axe, et une lampe calée sur `pos` seul s'en détacherait de 1,414 m ;
+ *  - la ROTATION au cap de l'instance (`rotatePropLocal`, `data/props.types.ts`), l'unique définition
+ *    de ce que `SceneEntity.facing` fait subir à une géométrie de décor.
+ * Aucun des deux n'est recalculé ici : un second calcul d'offset divergerait au premier changement
+ * d'ancrage, et c'est précisément ce que ce foyer ne doit pas pouvoir faire.
+ *
+ * Rien à rendre sans recette ou sans `emet` : la source garde alors le défaut du rendu. PUR.
+ */
+function foyerDe(prop: PropData | undefined, pos: Pt, facing: Dir8 | undefined): { foyer?: LightSource['foyer'] } {
+  const emettrice = prop?.volume?.primitives.find((p) => p.emet);
+  if (!emettrice) return {};
+  const ancre = decorAncre(pos, prop?.foot);
+  const [x, y] = rotatePropLocal(emettrice.center.x, emettrice.center.y, facing ?? CAP_IDENTITE_PROP);
+  return { foyer: { x: ancre.x - pos.x + x, y: ancre.y - pos.y + y, h: emettrice.center.h } };
 }
 
 /** Source de lumière PORTÉE par un combattant/groupe : le plus grand rayon parmi ses émetteurs, émis depuis
