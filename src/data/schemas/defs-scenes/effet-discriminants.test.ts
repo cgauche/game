@@ -18,15 +18,18 @@
  *   `z.lazy` est déroulé — la seule façon de voir ce que la porte accepte VRAIMENT).
  * Manquants et en-trop sont NOMMÉS dans les deux sens.
  *
- * ANGLES MORTS MESURÉS (2026-08-26) :
+ * ANGLES MORTS MESURÉS (2026-09-02) :
  * — le côté TYPE ne sait lire un membre `z.infer<typeof xSchema>` que si `xSchema` est déclaré dans
- *   `effets.ts`. Un schéma d'effet PARFAITEMENT VIVANT mais déclaré ailleurs sortirait
- *   `<symbole introuvable…>` et ferait rougir le verrou À TORT : c'est une contrainte de CROISSANCE
- *   (les schémas d'effet vivent dans `effets.ts`), pas une vérification. La déplacer suppose
- *   d'élargir `litterauxDesSchemas` aux modules concernés ;
+ *   l'un des `MODULES_DE_SCHEMAS` (`effets.ts` et la grammaire `grammaire/mecanique.ts`, qui porte
+ *   les nœuds partagés par les deux instances du Flow — `extendedTestSchema`, #1657). Un schéma
+ *   d'effet vivant déclaré hors de cette liste sort `<symbole introuvable…>` et fait rougir le
+ *   verrou : c'est une contrainte de CROISSANCE (un module de schémas d'effet s'ajoute ICI), pas une
+ *   vérification. Une COLLISION de nom entre deux modules est refusée nommément ;
  * — `lit ??=` retient le PREMIER `z.literal(…)` porté par une clé `type` rencontré dans le schéma, y
  *   compris IMBRIQUÉ (un `type: z.literal(…)` d'un sous-objet du schéma serait pris pour le
- *   discriminant de l'effet). Aucun schéma d'`effets.ts` n'est dans ce cas aujourd'hui.
+ *   discriminant de l'effet). Aucun schéma des `MODULES_DE_SCHEMAS` n'est dans ce cas : les `type:
+ *   z.literal(…)` y sont tous à la RACINE de leur `export const`, zéro imbriqué (mesuré à l'AST
+ *   2026-09-02 — 56 dans `effets.ts`, 2 dans `mecanique.ts`).
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -36,6 +39,12 @@ import { effectSchema } from './effets';
 
 const SCENE = fileURLToPath(new URL('../../../state/scene.ts', import.meta.url));
 const EFFETS = fileURLToPath(new URL('./effets.ts', import.meta.url));
+const MECANIQUE = fileURLToPath(new URL('../grammaire/mecanique.ts', import.meta.url));
+/** Modules où vit un schéma composé par un membre `z.infer<…>` de l'union `Effect`. */
+const MODULES_DE_SCHEMAS = [EFFETS, MECANIQUE];
+
+type Module = { nom: string; texte: string };
+const contenusDesModules = (): Module[] => MODULES_DE_SCHEMAS.map((nom) => ({ nom, texte: readFileSync(nom, 'utf8') }));
 const FLOW_CORE = fileURLToPath(new URL('../../../engine/flowCore.ts', import.meta.url));
 
 const source = (f: string): ts.SourceFile => ts.createSourceFile(f, readFileSync(f, 'utf8'), ts.ScriptTarget.ESNext, true);
@@ -71,11 +80,14 @@ function corpsManuscrits(f: string): Map<string, string | null> {
   return out;
 }
 
-/** Discriminants des SCHÉMAS d'effet, lus à l'AST d'`effets.ts` : `export const xSchema =
- *  z.strictObject({ type: z.literal('x'), … })`. */
-function litterauxDesSchemas(): Map<string, string | null> {
+/** Discriminants des SCHÉMAS d'effet, lus à l'AST des modules donnés : `export const xSchema =
+ *  z.strictObject({ type: z.literal('x'), … })`. Un nom porté par DEUX modules LÈVE, toujours : deux
+ *  `xSchema` homonymes rendraient un discriminant au hasard de l'ordre de lecture, et l'union `Effect`
+ *  n'a qu'un `typeof xSchema` par nom — la collision est la faute, pas son issue.
+ *  @param modules le contenu des modules à lire, `{ nom, texte }` — injectable pour la preuve de câblage. */
+function litterauxDesSchemas(modules: readonly Module[] = contenusDesModules()): Map<string, string | null> {
   const out = new Map<string, string | null>();
-  source(EFFETS).forEachChild((n) => {
+  for (const { nom: fichier, texte } of modules) ts.createSourceFile(fichier, texte, ts.ScriptTarget.ESNext, true).forEachChild((n) => {
     if (!ts.isVariableStatement(n)) return;
     for (const d of n.declarationList.declarations) {
       if (!ts.isIdentifier(d.name) || !d.initializer) continue;
@@ -95,6 +107,8 @@ function litterauxDesSchemas(): Map<string, string | null> {
         ts.forEachChild(x, chercher);
       };
       chercher(d.initializer);
+      if (out.has(d.name.text))
+        throw new Error(`\`${d.name.text}\` est déclaré par DEUX modules de schémas (${fichier}) : un nom, un module.`);
       out.set(d.name.text, lit);
     }
   });
@@ -120,11 +134,11 @@ function typesDuType(texteScene?: string): string[] {
       const arg = m.typeArguments?.[0];
       if (arg && ts.isTypeQueryNode(arg) && ts.isIdentifier(arg.exprName)) {
         const nom = arg.exprName.text;
-        // DEUX causes distinctes, deux libellés : le schéma n'existe pas dans `effets.ts`, ou il y
-        // existe mais ne porte aucun `type: z.literal(…)`. Les confondre enverrait chercher un
-        // discriminant manquant là où c'est le SYMBOLE qui est introuvable.
+        // DEUX causes distinctes, deux libellés : le schéma n'existe dans aucun module de
+        // `MODULES_DE_SCHEMAS`, ou il y existe mais ne porte aucun `type: z.literal(…)`. Les
+        // confondre enverrait chercher un discriminant manquant là où c'est le SYMBOLE qui manque.
         if (!schemas.has(nom)) {
-          types.push(`<symbole introuvable dans effets.ts: ${nom}>`);
+          types.push(`<symbole introuvable dans les modules de schémas: ${nom}>`);
           continue;
         }
         types.push(schemas.get(nom) ?? `<schéma sans littéral \`type\`: ${nom}>`);
@@ -176,6 +190,18 @@ describe('`effectSchema` — verrou d\'union : les discriminants du SCHÉMA == c
     expect(enTrop, `Option(s) d'\`effectSchema\` sans membre correspondant dans \`Effect\` :\n${enTrop.join('\n')}`).toEqual([]);
   });
 
+  it('deux modules qui déclarent le MÊME `xSchema` lèvent NOMMÉMENT (preuve de câblage de la garde de collision)', () => {
+    const homonyme = "export const revealClueSchema = z.strictObject({ type: z.literal('revealClue'), indiceId: z.string() });";
+    // Le jouet REJOUE la lecture réelle : le vrai `effets.ts` PLUS un module qui redéclare l'un de ses
+    // symboles. Sans la garde, la seconde lecture écraserait la première en silence.
+    const jouet = [
+      { nom: EFFETS, texte: readFileSync(EFFETS, 'utf8') },
+      { nom: 'src/data/schemas/grammaire/jouet.ts', texte: ["import { z } from 'zod';", homonyme, ''].join('\n') },
+    ];
+    expect(() => litterauxDesSchemas(jouet)).toThrowError(/revealClueSchema.*DEUX modules de schémas/s);
+    expect(() => litterauxDesSchemas(), 'les modules RÉELS ne doivent porter aucun homonyme.').not.toThrow();
+  });
+
   it('un membre dont le SCHÉMA n’est plus résolu sort NOMMÉ, jamais en silence (preuve de câblage)', () => {
     const brut = readFileSync(SCENE, 'utf8');
     // La sonde vise un membre de l'UNION `Effect` : `state/scene.ts` compose aussi les FORMES de la
@@ -193,7 +219,7 @@ describe('`effectSchema` — verrou d\'union : les discriminants du SCHÉMA == c
     // Un symbole de schéma qui disparaît ne doit PAS s'évaporer de l'union (le verrou deviendrait
     // vert en mesurant une union amputée) : il sort sous sa clé `<…>` et fait rougir l'égalité.
     expect(typesDuType(mute).filter((k) => k.startsWith('<'))).toEqual([
-      `<symbole introuvable dans effets.ts: ${nom}Ailleurs>`,
+      `<symbole introuvable dans les modules de schémas: ${nom}Ailleurs>`,
     ]);
   });
 });

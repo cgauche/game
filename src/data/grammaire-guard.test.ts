@@ -67,6 +67,13 @@ const GARDE = {
       'fabrique générique (`variantOf`, `valeurs.ts`) échappe au scan, son récepteur étant un paramètre.',
     'le périmètre est celui de l’invariant (defs, defs-scenes, state, + grammaire pour `.extend`) : une ' +
       'redéclaration posée dans `src/engine/**` ou `src/ui/**` est HORS garde.',
+    'un symbole DÉPLACÉ vers `src/data/schemas/grammaire/` y perd ses trouvailles `alias` sans qu’aucune ' +
+      'graphie n’ait bougé : la graphie de la grammaire EST le canon (`PERIMETRE_FABRIQUES`, scanné ' +
+      '`sansRedeclaration`), donc sa ligne de stock devient périmée par SORTIE DE PÉRIMÈTRE et non par ' +
+      'solde — c’est une perte de COUVERTURE, du même genre que celle qu’avait produite l’adoption de ' +
+      '`document()` (#1467 L1b V-FLIP-ENTITE-b). Les `alias` que `scan(…, sansRedeclaration: false)` relève ' +
+      'dans la grammaire sont hors stock par construction ; ils sont ÉNUMÉRÉS et comptés par le test ' +
+      '« les graphies de la grammaire sont hors stock par construction », qui rougit si l’un naît ou meurt.',
   ],
   baseline: {
     fichier: 'scripts/guards/lib/grammaireStock.mjs',
@@ -267,6 +274,30 @@ describe('formes re-tapées et portes étendues — stock nominatif daté, DÉCR
       ecarts.perimees,
       `Entrée(s) de GRAMMAIRE_STOCK sans site correspondant :\n${ecarts.perimees.join('\n')}`,
     ).toEqual([]);
+  });
+
+  // La grammaire n'est scannée que pour `.extend` : ses graphies de référence sont le CANON. Ce test
+  // REND cette perte de couverture VISIBLE et CHIFFRÉE — sans lui, un symbole déplacé vers la grammaire
+  // sortirait du stock en silence, et le cliquet décroissant lirait une évasion comme un solde.
+  it('les graphies de la grammaire sont hors stock par construction — la liste est NOMMÉE et son cardinal TENU', () => {
+    const regles = { signatures: signaturesDeLaGrammaire(), alias: ALIAS };
+    const dansLaGrammaire = readCorpus(PERIMETRE_FABRIQUES)
+      .flatMap((f) => scan(f.rel, f.text, { ...regles, sansRedeclaration: false }).map((t) => ({ f, t })))
+      .filter(({ t }) => t.motif === 'alias')
+      .map(({ f, t }) => `${f.rel}:${t.symbole}${t.champ ? '.' + t.champ : ''}|${t.detail}`)
+      .sort();
+    expect(dansLaGrammaire).toEqual([
+      'src/data/schemas/grammaire/mecanique.ts:OP_DEFS.corruptionExposure|skill',
+      'src/data/schemas/grammaire/mecanique.ts:OP_DEFS.removeTrait|traitId',
+      'src/data/schemas/grammaire/mecanique.ts:conditionSchema|trappingId',
+      'src/data/schemas/grammaire/mecanique.ts:extendedTestSchema|skill',
+      'src/data/schemas/grammaire/mecanique.ts:flowTestSchema|skill',
+      'src/data/schemas/grammaire/mecanique.ts:shipCrewTestSchema|skill',
+      'src/data/schemas/grammaire/mecanique.ts:travelTableEntrySchema.mount.riderTest|skill',
+      'src/data/schemas/grammaire/reference.ts:trappingRefSchema|wildcard',
+    ]);
+    const auStock = dansLaGrammaire.filter((cle) => cle in GRAMMAIRE_STOCK);
+    expect(auStock, `Graphie(s) de la grammaire inscrite(s) au stock, qui ne l'y verra jamais : ${auStock.join(', ')}`).toEqual([]);
   });
 
   it('chaque entrée porte son LOT de mort et sa DATE (une liste sans échéance est un régime)', () => {

@@ -68,7 +68,11 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs/tavernGames.ts:doc.combined.second|alias|skill': e('Second volet d’un test COMBINÉ de jeu de taverne, même graphie `skill`.', L2),
   'src/data/schemas/defs/tavernGames.ts:doc.throwerPenalty.test|alias|skill': e('Malus du lanceur d’un jeu de taverne, même graphie `skill`.', L2),
   'src/data/schemas/defs/water-exposure.ts:doc.test|alias|skill': e('Test d’exposition à l’eau : réf de Compétence EMBOÎTÉE (`skill: {id, spec?}`) ; le conteneur reste au lot L4.', L2),
-  'src/data/schemas/defs-scenes/effets.ts:extendedTestSchema|alias|skill': e('Effet `extendedTest` (test étendu de scène) désignant sa Compétence par `skill`.', L2),
+  // AUCUNE entrée pour les graphies portées par `src/data/schemas/grammaire/` : ce module n'est scanné
+  // que pour `.extend` (`PERIMETRE_FABRIQUES`, `sansRedeclaration`), ses littéraux ÉTANT le canon. La
+  // liste nominative de ces graphies et son cardinal sont tenus par le test « les graphies de la
+  // grammaire sont hors stock par construction » (`src/data/grammaire-guard.test.ts`), et la perte de
+  // couverture qu'un déplacement vers la grammaire produit est déclarée en `GARDE.angleMort`.
   'src/data/schemas/defs-scenes/effets.ts:corruptionExposureSchema|alias|skill': e('Effet `corruptionExposure` désignant la Compétence du jet de résistance par `skill`.', L2),
   'src/data/schemas/defs-scenes/effets.ts:startPursuitSchema|alias|skill': e('Effet `startPursuit` désignant la Compétence de course par `skill`.', L2),
 

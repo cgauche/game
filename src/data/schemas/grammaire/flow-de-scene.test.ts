@@ -74,3 +74,50 @@ describe('grammaire — `flowSchema` (Flow<EffectOp>) ≠ Flow de scène (Flow<E
     expect(conditionSchema.safeParse({ kind: 'flag', expr: 'porte-ouverte' }).success).toBe(true);
   });
 });
+
+/**
+ * Le nœud `test` est déclaré UNE fois (`noeudTest`, `grammaire/mecanique.ts`) et paramétré par sa
+ * branche : les deux instances du Flow en reçoivent la MÊME forme (#1657). Ce contrat est POSITIF et
+ * SYMÉTRIQUE — il nomme les clés attendues des deux côtés et refuse la clé inconnue des deux côtés :
+ * une clé renommée dans la fabrique fait rougir les deux, jamais un seul.
+ */
+describe('grammaire — le nœud `test` des DEUX instances du Flow vient de la même fabrique', () => {
+  const jet = { skill: { id: 'escalade' }, difficulty: 'intermediaire' };
+  const noeudMecanique = {
+    kind: 'test',
+    test: jet,
+    success: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: 1 }] } },
+    fail: { kind: 'seq', steps: [] },
+  };
+  const noeudScene = {
+    kind: 'test',
+    test: jet,
+    success: { kind: 'do', effect: { type: 'startCombat', encounter: 'enc-1' } },
+    fail: { kind: 'seq', steps: [] },
+  };
+
+  it('POSITIF — le nœud `test` passe `flowSchema` (branche mécanique) ET `sceneFlowSchema` (branche de scène)', () => {
+    const m = flowSchema.safeParse(noeudMecanique);
+    expect(m.success, m.success ? '' : JSON.stringify(m.error.issues)).toBe(true);
+    const sc = sceneFlowSchema.safeParse(noeudScene);
+    expect(sc.success, sc.success ? '' : JSON.stringify(sc.error.issues)).toBe(true);
+  });
+
+  it('les DEUX branches sont exigées, sous les MÊMES noms — `success` et `fail`', () => {
+    const cas = [
+      ['flowSchema', flowSchema, noeudMecanique],
+      ['sceneFlowSchema', sceneFlowSchema, noeudScene],
+    ] as const;
+    for (const [nom, schema, noeud] of cas)
+      for (const branche of ['success', 'fail'] as const) {
+        const ampute: Record<string, unknown> = { ...noeud };
+        delete ampute[branche];
+        expect(schema.safeParse(ampute).success, `${nom} : la branche \`${branche}\` n'est plus exigée.`).toBe(false);
+      }
+  });
+
+  it('une clé INCONNUE est refusée des deux côtés (le nœud reste STRICT)', () => {
+    expect(flowSchema.safeParse({ ...noeudMecanique, succes: noeudMecanique.success }).success).toBe(false);
+    expect(sceneFlowSchema.safeParse({ ...noeudScene, succes: noeudScene.success }).success).toBe(false);
+  });
+});
