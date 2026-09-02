@@ -3,7 +3,11 @@
  * MÈTRES) deviennent des triangles en repère three (Y = haut) : `(x, y, h) → (x·mpt, h, y·mpt)`.
  * Module PUR : ni DOM, ni renderer, ni `three`, ni catalogue (des points nus suffisent au maillage).
  *
- * Quatre politiques y vivent, chacune une fonction :
+ * Six politiques y vivent, chacune une fonction :
+ *  - ORIENTATION (`orienterPoly`) : le DEHORS d'une face, selon le régime qu'elle DÉCLARE — la
+ *    cuisson en tire son sens de parcours, l'instrument de QC son cull ; une seule définition ;
+ *  - FAMILLE D'OMBRAGE (`shadeFamily`) : l'axe dominant de la normale ORIENTÉE. Le facteur
+ *    d'irradiance de la famille est une lecture de catalogue et vit avec elle (`faceColors.ts`) ;
  *  - TRIANGULATION en ÉVENTAIL (les faces du pivot sont planes, convexes, ≤ 4 points) ;
  *  - VOLUME d'une face VERTICALE : une face du pivot est un plan d'épaisseur NULLE (l'affine peint des
  *    quads d'écran) — sans surface à 90° de plongée, sans chant à éclairer. Toute face verticale à qui
@@ -68,6 +72,62 @@ export function polyNormal(poly: WorldPoly): Vec3 | null {
   const len = Math.hypot(nx, ny, nz);
   if (len < 1e-12) return null;
   return { x: nx / len, y: ny / len, z: nz / len };
+}
+
+/** CENTRE de la carte, en mètres et en repère three (X = est, Z = sud) : le repère dont la LOI
+ *  D'ORIENTATION tire le DEHORS d'une surface ouverte verticale. */
+export interface CentreCarte {
+  x: number;
+  z: number;
+}
+
+/** En deçà de cette composante verticale, une normale est tenue pour horizontale. */
+const NORMALE_HORIZONTALE = 1e-6;
+
+/** LOI D'ORIENTATION d'un polygone monde — UNIQUE définition du DEHORS, servie à la CUISSON
+ *  (`sceneMeshes.ts:bakeWorldGeometry`, qui en tire le sens de parcours des triangles et la famille
+ *  d'ombrage) comme à l'INSTRUMENT DE QC (`scripts/qc/lib/plancheVolumique.ts`, qui en tire son
+ *  cull et sa teinte). Deux régimes, selon ce que la face DÉCLARE (`Face.oriented`) :
+ *   - `oriented` : le sens de parcours PORTE déjà le dehors du volume (coquilles closes du décor
+ *     volumique `builders/propVolumes.ts`, boîtes de mur) — il se propage tel quel ;
+ *   - surface OUVERTE (sol, mur nu, toit, montant) : vers le HAUT si horizontale, vers l'EXTÉRIEUR de
+ *     la carte si verticale.
+ *  Un rendu en `DoubleSide` se moque du sens de parcours, mais la CARTE D'OMBRE non : le décalage de
+ *  biais suit la normale, et une normale à l'envers pousse le receveur DANS son ombre.
+ *  `normale` est la normale TELLE QUE LA LOI LA PRÉSENTE — retournée quand le parcours va à l'envers ;
+ *  la normale géométrique nue ne porte de sens QUE sous le régime `oriented`. */
+export function orienterPoly(
+  poly: WorldPoly,
+  oriented: boolean,
+  centre: CentreCarte,
+): { versLExterieur: boolean; normale: Vec3 | null } {
+  const n = polyNormal(poly);
+  const g = poly.reduce((s, p) => ({ x: s.x + p.x / poly.length, z: s.z + p.z / poly.length }), { x: 0, z: 0 });
+  const dehors = n ? n.x * (g.x - centre.x) + n.z * (g.z - centre.z) : 0;
+  const versLExterieur = oriented || !n ? true : Math.abs(n.y) > NORMALE_HORIZONTALE ? n.y > 0 : dehors >= 0;
+  return { versLExterieur, normale: n && !versLExterieur ? { x: -n.x, y: -n.y, z: -n.z } : n };
+}
+
+/** FAMILLES D'ORIENTATION du modelé de forme (#1300) : les deux horizontales (`haut` = sol, toit,
+ *  chant supérieur ; `bas` = soffite), et les quatre verticales NOMMÉES PAR LA DIRECTION QU'ELLES
+ *  REGARDENT, dans l'ordre CYCLIQUE de la grille. */
+export type ShadeFamily = 'haut' | 'bas' | '-z' | '+x' | '+z' | '-x';
+
+/** L'ordre CYCLIQUE de la grille — l'index d'une verticale ici EST l'index de son facteur dans la
+ *  donnée (`AMBIANCE.faceShade.verticales`), dont le schéma tient la décroissance stricte. Deux
+ *  familles voisines dans ce cycle forment un ANGLE de la scène : c'est la paire qui doit se séparer.
+ *  Le facteur d'irradiance de chaque famille est une lecture de CATALOGUE : il vit avec les autres
+ *  (`faceColors.ts:shadeFactorOf`), ce module ne connaissant aucune donnée d'ambiance. */
+export const SHADE_CYCLE: readonly ShadeFamily[] = ['-z', '+x', '+z', '-x'];
+
+/** Famille d'une normale — l'axe DOMINANT décide, son signe nomme la famille. `null` pour une normale
+ *  indéterminée (triangle dégénéré). Une pente à 45° compte pour horizontale : elle se marche.
+ *  La normale attendue est celle que présente `orienterPoly` : lue avant elle, 100 % des triangles de
+ *  sol (normale géométrique vers le bas) tomberaient en famille de soffite. */
+export function shadeFamily(n: { x: number; y: number; z: number } | null): ShadeFamily | null {
+  if (!n) return null;
+  if (Math.abs(n.y) >= Math.max(Math.abs(n.x), Math.abs(n.z))) return n.y > 0 ? 'haut' : 'bas';
+  return Math.abs(n.x) >= Math.abs(n.z) ? (n.x > 0 ? '+x' : '-x') : n.z > 0 ? '+z' : '-z';
 }
 
 /** Écart maximal (m) des sommets au plan moyen — 0 pour un polygone plan. INSTRUMENT DE GARDE, au même

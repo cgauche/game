@@ -636,7 +636,8 @@ describe('Pions en disques — la vue du dessus n’a plus un seul billboard de 
 
   it('LE CENTRAGE : le disque est posé au CENTRE de sa case — c’est ce qui rend le clic par case JUSTE', () => {
     // Le picking du dessus n'a plus de cible de personnage sous le rayon (aucun quad) : `pickTile`
-    // retombe sur `tileFromEvent`, et ne répond juste que si le disque est centré sur SA case.
+    // retombe sur le repli de surface de `stage/pickResolve.ts:resoudrePixel`, et ne répond juste que
+    // si le disque est centré sur SA case.
     const top = monter({ viewMode: 'top' });
     const dimsTop: Dims = { ...emptyScene(10, 10).dimensions, rot: 0, view: 'top', edge: false } as Dims;
     const { cx, cy } = tileCenter(3, 3, dimsTop, 0);

@@ -32,8 +32,8 @@ import { roofCourseStepM, variantOf } from '../../detail/courses';
 import type { DetailRecipe } from '../../detail/types';
 import type { PeriodKind } from './periodTexture';
 import { faceBakeKey, needsFaceBake } from './faceBake';
-import { facePoly, faceUvFrame, facesGeometry, polyNormal } from './worldTris';
-import { faceSurface, tintVarFactor } from './faceColors';
+import { facePoly, faceUvFrame, facesGeometry, orienterPoly, shadeFamily } from './worldTris';
+import { faceSurface, shadeFactorOf, tintVarFactor } from './faceColors';
 import { faceDepthOf } from './faceRelief';
 import { BB_W, BB_H } from '../../pov/billboardCore';
 import { povDepth } from '../../pov/camera';
@@ -298,34 +298,6 @@ export interface BakedWorld {
   percables: Float32Array;
 }
 
-/** FAMILLES D'ORIENTATION du modelé de forme (#1300) : les deux horizontales (`haut` = sol, toit,
- *  chant supérieur ; `bas` = soffite), et les quatre verticales NOMMÉES PAR LA DIRECTION QU'ELLES
- *  REGARDENT, dans l'ordre CYCLIQUE de la grille. */
-export type ShadeFamily = 'haut' | 'bas' | '-z' | '+x' | '+z' | '-x';
-
-/** L'ordre CYCLIQUE de la grille — l'index d'une verticale ici EST l'index de son facteur dans la
- *  donnée (`AMBIANCE.faceShade.verticales`), dont le schéma tient la décroissance stricte. Deux
- *  familles voisines dans ce cycle forment un ANGLE de la scène : c'est la paire qui doit se séparer. */
-export const SHADE_CYCLE: readonly ShadeFamily[] = ['-z', '+x', '+z', '-x'];
-
-/** Famille d'une normale — l'axe DOMINANT décide, son signe nomme la famille. `null` pour une normale
- *  indéterminée (triangle dégénéré). Une pente à 45° compte pour horizontale : elle se marche. */
-export function shadeFamily(n: { x: number; y: number; z: number } | null): ShadeFamily | null {
-  if (!n) return null;
-  if (Math.abs(n.y) >= Math.max(Math.abs(n.x), Math.abs(n.z))) return n.y > 0 ? 'haut' : 'bas';
-  return Math.abs(n.x) >= Math.abs(n.z) ? (n.x > 0 ? '+x' : '-x') : n.z > 0 ? '+z' : '-z';
-}
-
-/** Facteur d'irradiance ambiante de cette famille (donnée `AMBIANCE.faceShade`). Une famille
- *  indéterminée ne modèle rien : facteur NEUTRE, jamais un assombrissement par défaut. */
-export function shadeFactorOf(f: ShadeFamily | null): number {
-  const d = AMBIANCE.faceShade;
-  if (f === null) return 1;
-  if (f === 'haut') return d.haut;
-  if (f === 'bas') return d.bas;
-  return d.verticales[SHADE_CYCLE.indexOf(f)];
-}
-
 /** PORTE du modelé : ce que le facteur de famille devient sous un soleil allumé à la part `fade`
  *  (`sunFade`, `stage/stageLights.ts`). `fade = 0` — intérieur, nuit, soleil rasant — laisse le
  *  facteur PLEIN ; `fade = 1` le ramène à 1, la directionnelle faisant seule le modelé. CONTINUE et
@@ -447,19 +419,14 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const spans: FaceSpan[] = [];
   const shades: number[] = [];
   const percables: number[] = [];
-  // ORIENTATION des triangles : un rendu en `DoubleSide` se moque du sens de parcours, mais la CARTE
-  // D'OMBRE non — le décalage de biais suit la normale, et une normale à l'envers pousse le receveur
-  // DANS son ombre (mesuré : scène entière retombée à la seule ambiante). Deux régimes, selon ce que la
-  // face DÉCLARE (`Face.oriented`, requis) :
-  //  - `g.oriented` : le sens PORTE déjà le dehors du VOLUME — on le propage tel quel. Producteurs :
-  //    les coquilles closes du DÉCOR VOLUMIQUE (`builders/propVolumes.ts`, le gros du stock) et les
-  //    boîtes de mur fabriquées ici même (`faceQuadsOriented`, copies par joue). L'heuristique
-  //    ci-dessous y retournait la joue intérieure de chaque boîte (mesuré #1176 : siège 1216/2480
-  //    triangles de mur, arène 2756/5512, soit ~50 %) et 1887/4020 triangles de décor (#1624) ;
-  //  - surfaces OUVERTES (sol, mur nu, toit, montant), qui déclarent `oriented: false` : vers le HAUT
-  //    si horizontale, vers l'EXTÉRIEUR de la carte si verticale.
-  const cx = ((scene.dimensions.w - 1) / 2) * mpt;
-  const cz = ((scene.dimensions.h - 1) / 2) * mpt;
+  // ORIENTATION des triangles : la LOI est `worldTris.ts:orienterPoly`, seule définition du dehors —
+  // la cuisson en tire le sens de parcours et la famille d'ombrage, l'instrument de QC son cull et sa
+  // teinte (`scripts/qc/lib/plancheVolumique.ts`). Sous le régime `oriented`, l'heuristique de
+  // carte y retournait la joue intérieure de chaque boîte de mur (mesuré #1176 : siège 1216/2480
+  // triangles de mur, arène 2756/5512, soit ~50 %) et 1887/4020 triangles de décor (#1624).
+  // Le CENTRE de la carte est ce que ce site fournit à la loi : elle en tire le dehors d'une surface
+  // ouverte verticale.
+  const centreCarte = { x: ((scene.dimensions.w - 1) / 2) * mpt, z: ((scene.dimensions.h - 1) / 2) * mpt };
   // PLAGES DE PICKING : les sommets ORIGINAUX d'un décor volumique, relevés AVANT toute indexation —
   // un cutaway réécrit l'index de dessin, jamais les sommets. Un lot par (entité × groupe de surface) :
   // la cuisson groupe par matériau, donc un même décor à deux matériaux occupe deux plages disjointes.
@@ -471,17 +438,13 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
     // PERÇABILITÉ (#1176) : le `kind` de l'élément de provenance, et lui seul — le SOL ne se troue pas.
     const perçable = listées[i].el.kind === 'floor' ? 0 : 1;
     g.tris.forEach((tri, t) => {
-      const n = polyNormal(tri);
-      const centre = { x: (tri[0].x + tri[1].x + tri[2].x) / 3, z: (tri[0].z + tri[1].z + tri[2].z) / 3 };
-      const dehors = n ? n.x * (centre.x - cx) + n.z * (centre.z - cz) : 0;
-      const versLExterieur = g.oriented || !n ? true : Math.abs(n.y) > 1e-6 ? n.y > 0 : dehors >= 0;
-      // MODELÉ DE FORME (#1300) : la famille se lit sur la normale TELLE QUE LA LOI CI-DESSUS LA
-      // PRÉSENTE — la normale géométrique d'origine ne porte de sens QUE si `g.oriented`. Mesuré sur
-      // trois cartes (arène, opéra, siège) : 100 % des triangles de sol sortent du pivot avec une
-      // normale géométrique vers le BAS (5 112 / 1 178 / 3 328), que cette loi retourne vers le haut ;
-      // les lire avant elle aurait peint tous les sols de toutes les scènes en famille de soffite.
-      const vue = n && !versLExterieur ? { x: -n.x, y: -n.y, z: -n.z } : n;
-      const s = shadeFactorOf(shadeFamily(vue));
+      const { versLExterieur, normale } = orienterPoly(tri, g.oriented, centreCarte);
+      // MODELÉ DE FORME (#1300) : la famille se lit sur la normale TELLE QUE LA LOI LA PRÉSENTE — la
+      // normale géométrique d'origine ne porte de sens QUE sous le régime `oriented`. Mesuré sur trois
+      // cartes (arène, opéra, siège) : 100 % des triangles de sol sortent du pivot avec une normale
+      // géométrique vers le BAS (5 112 / 1 178 / 3 328), que cette loi retourne vers le haut ; les lire
+      // avant elle aurait peint tous les sols de toutes les scènes en famille de soffite.
+      const s = shadeFactorOf(shadeFamily(normale));
       // Le retournement d'un triangle PERMUTE ses UV comme ses sommets (elles sont par SOMMET).
       const ordre = versLExterieur ? [0, 1, 2] : [0, 2, 1];
       for (const k of ordre) {

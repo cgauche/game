@@ -74,7 +74,9 @@ const BASELINES: Record<string, number> = {
   // src/gameIso (#410 — stock à résorber par #276)
   'src/gameIso/builders/highlights.ts': 1,
   'src/gameIso/fx/useCombatFx.ts': 6,
-  'src/gameIso/stage/MondeDeCampagne.tsx': 1,
+  // -1 (1 → 0) : `state/viewLevel.ts:etageActif` tient l'étage affiché, et son combattant qui joue par
+  // `inBattleId` — le `find` local part avec la définition qu'il servait.
+  'src/gameIso/stage/MondeDeCampagne.tsx': 0,
   'src/gameIso/stage/AimOverlay.tsx': 1,
   'src/gameIso/stage/CrewTooltip.tsx': 3,
   // -1 (4 → 3) : la mort de la voie de jeu affine (#1176 P3-4, commit C5a) emporte l'aperçu tap-1 de
@@ -84,7 +86,9 @@ const BASELINES: Record<string, number> = {
   'src/gameIso/stage/SiegeHitAreas.tsx': 1,
   'src/gameIso/stage/useHoverTargeting.ts': 5,
   'src/gameIso/stage/useStageCamera.ts': 8,
-  'src/gameIso/stage/useStagePointer.ts': 2,
+  // -1 (2 → 1) : la chaîne de picking descend en `stage/pickResolve.ts`, dont la branche `combatant`
+  // passe par `inBattleId`.
+  'src/gameIso/stage/useStagePointer.ts': 1,
   'src/gameIso/stage/ZdeTemplate.tsx': 1,
   'src/gameIso/usePlanAnim.ts': 1,
 };

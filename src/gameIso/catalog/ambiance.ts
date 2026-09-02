@@ -74,7 +74,7 @@ export interface AmbianceDef {
   fogTint: Record<Visibility, number>;
   /** MODELÉ DE FORME de la voie VOLUMIQUE (#1300) : facteur d'irradiance ambiante par FAMILLE
    *  D'ORIENTATION, multiplié dans la couleur de sommet de chaque face selon la direction qu'elle
-   *  regarde (`shadeFactorOf`, `backends/webgl/sceneMeshes.ts`). `verticales[0..3]` suit l'ordre
+   *  regarde (`shadeFactorOf`, `backends/webgl/faceColors.ts`). `verticales[0..3]` suit l'ordre
    *  CYCLIQUE de la grille (−z, +x, +z, −x) ; le schéma en tient les bornes et l'absence de paire
    *  cycliquement adjacente jumelle (`data/schemas/defs/ambiance.ts`). */
   faceShade: { haut: number; verticales: readonly number[]; bas: number };

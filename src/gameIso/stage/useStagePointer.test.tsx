@@ -123,7 +123,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -165,7 +164,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -224,7 +222,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -272,7 +269,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -316,7 +312,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -371,7 +366,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -419,7 +413,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -461,7 +454,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -514,7 +506,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -585,7 +576,6 @@ describe('useStagePointer — picking exploration', () => {
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -619,14 +609,13 @@ describe('useStagePointer — picking exploration', () => {
  * mette à voler le clic au sol qu'on foule.
  */
 describe('useStagePointer — relief et franchissement d’étage à la souris', () => {
-  const mountProbe = (scene: ReturnType<typeof emptyScene>, activeZ = 0) => {
+  const mountProbe = (activeZ = 0) => {
     let pointer: StagePointer | undefined;
     const Probe = () => {
       const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
-        scene,
         dims,
         zoom: 1,
         camRef,
@@ -659,7 +648,7 @@ describe('useStagePointer — relief et franchissement d’étage à la souris',
     // Le piège : à plat, ce pixel désigne la case du GROUPE — le clic n'allait donc nulle part.
     expect(screenToTileAtZ(marche.cx, marche.cy, dims, 0)).toEqual({ x: 2, y: 1 });
 
-    clickAt(mountProbe(scene), marche.cx, marche.cy);
+    clickAt(mountProbe(), marche.cx, marche.cy);
 
     expect(moveParty).toHaveBeenLastCalledWith({ x: 3, y: 2 });
   });
@@ -682,7 +671,7 @@ describe('useStagePointer — relief et franchissement d’étage à la souris',
     expect(auSol).toEqual({ x: 2, y: 1 });
     expect(isWalkable(scene, auSol.x, auSol.y, 0)).toBe(true);
 
-    clickAt(mountProbe(scene), palier.cx, palier.cy);
+    clickAt(mountProbe(), palier.cx, palier.cy);
 
     expect(moveParty).toHaveBeenLastCalledWith({ x: 5, y: 4, z: 1 });
   });
@@ -702,7 +691,7 @@ describe('useStagePointer — relief et franchissement d’étage à la souris',
     // 4 m au-dessus du sol : aucune rampe, donc aucun pas — ni clavier ni souris — ne l'atteint.
     expect(walkNeighbors(scene, { x: 2, y: 3 }).some((n) => (n.z ?? 0) === 1)).toBe(false);
 
-    clickAt(mountProbe(scene), surplomb.cx, surplomb.cy);
+    clickAt(mountProbe(), surplomb.cx, surplomb.cy);
 
     expect(moveParty).toHaveBeenLastCalledWith({ x: 3, y: 3 });
   });
@@ -714,12 +703,12 @@ describe('useStagePointer — relief et franchissement d’étage à la souris',
  * milieu, et elle doit suivre le pointeur AU DEGRÉ dit par `SENSIBILITE_DRAG_DEG_PX`.
  */
 describe('useStagePointer — glisser-tourner au bouton MILIEU', () => {
-  const monter = (scene: ReturnType<typeof emptyScene>) => {
+  const monter = () => {
     let pointer: StagePointer | undefined;
     const Probe = () => {
       const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
-      pointer = useStagePointer({ svgRef, scene, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0 });
+      pointer = useStagePointer({ svgRef, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0 });
       return null;
     };
     renderToStaticMarkup(<Probe />);
@@ -743,7 +732,7 @@ describe('useStagePointer — glisser-tourner au bouton MILIEU', () => {
     useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 1 }, party: [], dialogue: null });
     resetStageYaw();
     poserYaw(30); // on part d'un angle QUELCONQUE : le glisser est relatif à l'angle du début de geste
-    const pointer = monter(scene);
+    const pointer = monter();
 
     pointer.handlers.onPointerDown(evBouton(100, 100, 1));
     act(() => pointer.handlers.onPointerMove(evBouton(220, 100, 1)));
@@ -762,7 +751,7 @@ describe('useStagePointer — glisser-tourner au bouton MILIEU', () => {
     useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 1 }, party: [], dialogue: null, camPan: { x: 0, y: 0 } });
     resetStageYaw();
     resetStagePan();
-    const pointer = monter(scene);
+    const pointer = monter();
 
     pointer.handlers.onPointerDown(evBouton(100, 100, 0));
     act(() => pointer.handlers.onPointerMove(evBouton(220, 100, 0)));
@@ -820,12 +809,12 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     return scene;
   };
 
-  const monter = (scene: ReturnType<typeof sceneMeuble>) => {
+  const monter = () => {
     let pointer: StagePointer | undefined;
     const Probe = () => {
       const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
-      pointer = useStagePointer({ svgRef, scene, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0 });
+      pointer = useStagePointer({ svgRef, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0 });
       return null;
     };
     renderToStaticMarkup(<Probe />);
@@ -839,7 +828,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null, interactEntity, setPendingInteract: vi.fn() });
     setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
 
-    const pointer = monter(scene);
+    const pointer = monter();
     // Un pixel VOLONTAIREMENT loin de la case du meuble : sans le routage, le clic irait à cette tuile.
     const ailleurs = tileCenter(6, 6, dims);
     const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
@@ -869,7 +858,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     });
     setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
 
-    const pointer = monter(scene);
+    const pointer = monter();
     const ailleurs = tileCenter(7, 7, dims);
     const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
     pointer.handlers.onPointerDown(ev);
@@ -915,7 +904,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
       const interactEntity = vi.fn();
       useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null, interactEntity, setPendingInteract: vi.fn(), flags: {} });
       setSpritePicker(rayon);
-      const pointer = monter(scene);
+      const pointer = monter();
       const ev = pointerEvent(surLaTable.cx, surLaTable.cy);
       pointer.handlers.onPointerDown(ev);
       pointer.handlers.onPointerUp(ev);
@@ -950,7 +939,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const croisees = plan.path.slice(0, -1).filter((p) => chebyshev(p, { x: 2, y: 3 }) <= 1);
     expect(croisees.length, 'le chemin DOIT longer le meuble, sinon le test ne mord pas').toBeGreaterThan(0);
 
-    const pointer = monter(scene);
+    const pointer = monter();
     const ailleurs = tileCenter(7, 7, dims);
     const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
     pointer.handlers.onPointerDown(ev);
@@ -983,7 +972,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     });
     setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
 
-    const pointer = monter(scene);
+    const pointer = monter();
     const ailleurs = tileCenter(7, 7, dims);
     const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
     pointer.handlers.onPointerDown(ev);
@@ -1021,7 +1010,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     poser({ x: 6, y: 6 });
     const promis = exploreMovePlan(useGame.getState().scene!, { x: 6, y: 6 }, { x: 2, y: 3 }, { blocked: new Set() });
     expect(promis, 'précondition : le survol trace bien une marche').not.toBeNull();
-    const p1 = monter(scene);
+    const p1 = monter();
     const loin = pointerEvent(surLaTable.cx, surLaTable.cy);
     p1.handlers.onPointerDown(loin);
     p1.handlers.onPointerUp(loin);
@@ -1031,7 +1020,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
 
     // À PORTÉE — plus rien à marcher : là, et là seulement, on dit pourquoi le meuble ne sert pas.
     poser({ x: 2, y: 2 });
-    const p2 = monter(scene);
+    const p2 = monter();
     const pres = pointerEvent(surLaTable.cx, surLaTable.cy);
     p2.handlers.onPointerDown(pres);
     p2.handlers.onPointerUp(pres);
@@ -1059,7 +1048,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const surLeTonneau = tileCenter(2, 3, dims);
 
     poser({ x: 6, y: 6 });
-    const p1 = monter(scene);
+    const p1 = monter();
     const loin = pointerEvent(surLeTonneau.cx, surLeTonneau.cy);
     p1.handlers.onPointerDown(loin);
     p1.handlers.onPointerUp(loin);
@@ -1069,7 +1058,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     expect(chebyshev(arrivee, { x: 2, y: 3 }), 'on s’est approché, comme du sol nu').toBe(1);
 
     poser({ x: 2, y: 2 }); // déjà à portée : plus rien à marcher
-    const p2 = monter(scene);
+    const p2 = monter();
     const pres = pointerEvent(surLeTonneau.cx, surLeTonneau.cy);
     p2.handlers.onPointerDown(pres);
     p2.handlers.onPointerUp(pres);
@@ -1107,7 +1096,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
       useGame.getState().scene!, {}, null, { exploring: true, combat: false },
     ).fouilles, 'le halo DOIT appeler pour que le test morde').toHaveLength(1);
 
-    const pointer = monter(scene);
+    const pointer = monter();
     const ailleurs = tileCenter(7, 7, dims);
     const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
     pointer.handlers.onPointerDown(ev);
@@ -1152,7 +1141,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     expect(exploreMovePlan(sc, DIAG, { x: 2, y: 3 }, { blocked: new Set() }),
       'déjà à portée : aucun plan de marche — c’est CE trou que la fallthrough couvre').toBeNull();
 
-    const pointer = monter(scene);
+    const pointer = monter();
     const ailleurs = tileCenter(7, 7, dims);
     const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
     pointer.handlers.onPointerDown(ev);
@@ -1171,7 +1160,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     setSpritePicker(picker);
     const sansVolume = sceneMeuble(REF_BILLBOARD); // décor BILLBOARD : rien que le rayon monde puisse nommer
     useGame.setState({ scene: sansVolume, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null });
-    const p1 = monter(sansVolume);
+    const p1 = monter();
     const centre = tileCenter(3, 3, dims);
     p1.handlers.onPointerMove(pointerEvent(centre.cx, centre.cy));
     expect(picker).not.toHaveBeenCalled();
@@ -1180,7 +1169,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     // fait qu'aucun pointeur n'ait bougé.
     const avecVolume = sceneMeuble('table-ronde-4-tabourets');
     useGame.setState({ scene: avecVolume });
-    const p2 = monter(avecVolume);
+    const p2 = monter();
     p2.handlers.onPointerMove(pointerEvent(centre.cx, centre.cy));
     expect(picker).toHaveBeenCalled();
   });

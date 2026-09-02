@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { IMPORT_RE } from '../../../../scripts/guards/lib/importGraph.mjs';
 import {
   COPLANAR_BIAS_M,
   biasPoly,
@@ -771,5 +774,60 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
     const parts = new Set(facesRendues(buildVitrineScene()).map((f) => f.material.part));
     for (const part of ['gravats', 'gravats-tas', 'seuil', 'vantail', 'vantail-planche', 'poignee'])
       expect(parts.has(part as WallPart), `${part} absent de la vitrine`).toBe(true);
+  });
+});
+
+/**
+ * PURETÉ DU MODULE — sa liste d'IMPORTS est un contrat, pas une intention de JSDoc.
+ *
+ * `worldTris.ts` annonce en tête « Module PUR : ni DOM, ni renderer, ni `three`, ni catalogue » : c'est
+ * ce qui lui permet d'être la SEULE définition du dehors, partagée par la cuisson (`sceneMeshes.ts`) et
+ * par l'instrument de QC hors navigateur (`scripts/qc/lib/plancheVolumique.ts`, exécuté par `tsx` en
+ * ligne de commande). Un `three` ou un `document` qui y entrerait casserait le QC sans que rien ne le
+ * dise, et la LOI d'orientation se dédoublerait aussitôt.
+ *
+ * Le parseur d'imports est le CANONIQUE du dépôt (`scripts/guards/lib/importGraph.mjs:IMPORT_RE`) —
+ * jamais un second.
+ */
+describe('worldTris — module PUR : ses imports sont son contrat (#1680)', () => {
+  const SRC = readFileSync(fileURLToPath(new URL('./worldTris.ts', import.meta.url)), 'utf8');
+  /** Le code seul : une réf `'./x'` citée en commentaire n'est pas un import. Seul le COMMENTAIRE
+   *  est masqué, jamais la ligne entière — `const el = document.body; // …` doit rester lisible par
+   *  la clause DOM ci-dessous. */
+  const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const specificateurs = [...CODE.matchAll(IMPORT_RE)].map((m) => m[1] ?? m[2]);
+
+  it('n’importe QUE la géométrie pure et la FORME du pivot', () => {
+    expect(specificateurs.length, 'aucun import lu : ce contrat ne mesure plus rien').toBeGreaterThan(0);
+    expect([...specificateurs].sort()).toEqual(
+      [
+        '../../../geometry/iso', // projection pure (TW) — zéro dépendance framework
+        '../../builders/types', // TYPE seul : la forme `Face`/`GP` que le pivot émet
+      ].sort(),
+    );
+  });
+
+  it('ni three, ni catalogue, ni voisin de backends/webgl', () => {
+    const fautes = specificateurs.flatMap((s) => {
+      if (/(^|\/)three($|\/)/.test(s)) return [`${s} — renderer`];
+      if (/(^|\/)catalog\//.test(s)) return [`${s} — catalogue d’apparence (les épaisseurs arrivent par FaceDepth)`];
+      if (/^\.\//.test(s)) return [`${s} — voisin de backends/webgl`];
+      return [];
+    });
+    expect(fautes).toEqual([]);
+  });
+
+  it('aucun accès au DOM ni au global du navigateur', () => {
+    const dom = /\b(document|window|navigator|globalThis|HTMLElement|SVGElement|requestAnimationFrame)\b/g;
+    expect([...CODE.matchAll(dom)].map((m) => m[0])).toEqual([]);
+  });
+});
+
+/** Une déclaration d'import BARE (`import 'x'`, effet de bord) n'entre pas dans `IMPORT_RE` : un module
+ *  pur n'en porte aucune, et la clause le dit à part plutôt que d'élargir le parseur canonique. */
+describe('worldTris — aucun import à effet de bord', () => {
+  it('zéro `import \'…\'` nu', () => {
+    const SRC = readFileSync(fileURLToPath(new URL('./worldTris.ts', import.meta.url)), 'utf8');
+    expect(SRC.match(/^\s*import\s+['"][^'"]+['"]\s*;?\s*$/gm)).toBeNull();
   });
 });

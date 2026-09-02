@@ -388,7 +388,7 @@ describe('décor volumique — chaque face regarde le DEHORS, de la recette au m
   });
 
   /**
-   * ARÊTE DE COUTEAU du modelé de forme : `shadeFamily` (`backends/webgl/sceneMeshes.ts`) départage une
+   * ARÊTE DE COUTEAU du modelé de forme : `shadeFamily` (`backends/webgl/worldTris.ts`) départage une
    * normale par le plus grand de |nx| et |nz|, et une égalité exacte est indécidable — un fût y prend
    * des tons de familles voisines sur des faces symétriques. C'est ce qui exclut `sides: 12` du type
    * (`PropCylinderSides`) ; ce contrat le mesure sur la géométrie, jamais sur la valeur authorée.

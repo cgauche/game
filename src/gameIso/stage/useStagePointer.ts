@@ -1,10 +1,11 @@
 /**
  * Pointeur du stage iso :
- *  - `tileFromEvent` : écran → tuile — en exploration le PAS INTER-ÉTAGES du groupe d'abord (parité
- *    souris↔clavier), puis `activeZ`, puis fallback CROSS-COUCHE (`screenToTileAtLift` +
- *    `resolveCursorZ`). Les trois chemins inversent la projection du STAGE (`stage/projection.ts`,
- *    `stage/stageCam.ts`) — la même que le peintre, affine ou volumique ;
- *  - `pickTile` : picking SPRITE-aware, hit-test délégué à la voie de rendu (`targetUnderPointer`) ;
+ *  - `pickTile` : écran → tuile. Ce hook n'y apporte que les COORDONNÉES du `PointerEvent` React
+ *    (`ev.clientX/clientY`) et interroge la voie de rendu (`targetUnderPointer` : `elementFromPoint`
+ *    en affine, lancer de rayon en volumique). L'inversion du pixel (`pointStageSousPixel`) comme la
+ *    CHAÎNE de résolution — rayon, meuble dessiné, pas inter-étages, case marchable, sol cross-couche
+ *    — sont `stage/pickResolve.ts`, que la sonde de recette (`stage/pickProbe.ts`) appelle aussi :
+ *    une seule règle, deux porteurs, aucun étage propre à l'un des deux ;
  *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) — bouton
  *    principal : panoramique posé HORS de React (`state/stagePan`, un battement de frame par
  *    mouvement) et commis au store en UN `set` au relâchement ; bouton MILIEU : lacet libre de la vue ;
@@ -17,9 +18,7 @@
  */
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useGame } from '../../state/store';
-import { Scene as GameScene, heightAt, isWalkable, toggleDoorIn } from '../../state/scene';
-import { metricToLift } from '../../state/relief';
-import { memoByRef } from '../../state/sceneMemo';
+import { toggleDoorIn } from '../../state/scene';
 import { entityBlockedAt } from '../../state/sceneRules';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
 import { exploreMovePlan, exploreSeatPlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
@@ -34,7 +33,6 @@ import { effectiveMovement } from '../../engine/encumbrance';
 import { Combatant } from '../../engine/types';
 import { bus, EVT } from '../../state/bus';
 import { combatantAtTile } from '../../state/combatGeometry';
-import { resolveCursorZ } from '../../state/combatCursor';
 import { controlsActive } from '../../state/netOwnership';
 import { SENSIBILITE_DRAG_DEG_PX, getStageYaw, poserYaw } from '../../state/stageYaw';
 import { accordsPan, getStagePan, poserPan } from '../../state/stagePan';
@@ -44,21 +42,12 @@ import { hoverClickCommits } from '../../ui/pointerCaps';
 import { bestAttack } from '../../state/attackRelevance';
 import { type Dims } from '../../geometry/iso';
 import { STEP_MS } from '../../geometry/walk';
-import { poseFromDims, screenToTileAtLift } from './projection';
-import { stagePointAt, viewBoxPointAt } from './stageCam';
-import { hasSpritePicker, targetUnderPointer } from './spritePicker';
-import { sceneAUnPropVolumique } from '../builders/props';
+import { poseFromDims } from './projection';
+import { targetUnderPointer } from './spritePicker';
+import { pointStageSousPixel, pointViewBoxSousPixel, resoudrePixel, tireLeRayon } from './pickResolve';
 import type { RoomPortal } from '../../state/roomPortals';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
-
-/** LIFTS D'AFFICHAGE distincts d'une scène, du plus HAUT au plus bas — l'ensemble des hauteurs auxquelles
- *  une case peut être DESSINÉE (`metricToLift` de chaque hauteur de relief authorée, plus le sol). Un
- *  pixel doit être inversé à CHACUN d'eux pour retrouver la case qu'on voit : le relief n'est pas une
- *  couche, c'est une hauteur continue. Mémoïsé par identité de scène (`memoByRef`, patron canonique). */
-const sceneLifts = memoByRef((scene: GameScene): readonly number[] =>
-  [...new Set([0, ...scene.layers.flatMap((layer) => [...(layer.height ?? [])]).map(metricToLift)])]
-    .sort((a, b) => b - a));
 
 export interface StagePointer {
   /** Tuile survolée (tooltip + réticule de visée ; suivie dans tous les modes de ciblage). */
@@ -80,7 +69,6 @@ export interface StagePointer {
 
 export function useStagePointer({
   svgRef,
-  scene,
   dims,
   zoom,
   camRef,
@@ -89,7 +77,6 @@ export function useStagePointer({
   activeZ = 0,
 }: {
   svgRef: RefObject<SVGSVGElement>;
-  scene: GameScene | null;
   dims: Dims;
   zoom: number;
   /** Caméra du RENDU COURANT (réf mise à jour par l'hôte du monde après le calcul du focal — les handlers
@@ -128,149 +115,37 @@ export function useStagePointer({
   // géométrie que le peintre, quelle que soit la voie.
   const pose = poseFromDims(dims);
 
-  /** Case d'un AUTRE étage visée par le pointeur, BORNÉE au voisinage marchable du groupe
-   *  (`walkNeighbors` — exactement la connectivité qu'emprunte le pas clavier `exploreStepDest`) : le
-   *  franchissement vertical (marches, rampe, tablier) se CLIQUE donc comme il se pousse au clavier, et
-   *  la parité souris↔clavier annoncée en tête de fichier tient. Hors de ce voisinage l'étage ACTIF
-   *  garde la priorité : une case d'un étage qu'AUCUN pas ne rejoint reste une silhouette translucide
-   *  posée au-dessus du sol qu'on foule, et ne lui vole jamais le clic.
-   *  Le LIFT de chaque candidat est sa HAUTEUR MÉTRIQUE rendue (`metricToLift(heightAt)`), PAS son index
-   *  de couche — même correction qu'au curseur clavier (`screenStepDot`, `combatCursor.ts`) : sans elle
-   *  un tablier rejoint par une rampe serait cherché à une hauteur fantôme, à côté du pixel dessiné. */
-  const stepFromScreen = (gx: number, gy: number): Pt | null => {
-    if (!scene) return null;
-    for (const n of walkNeighbors(scene, useGame.getState().partyPos)) {
-      const nz = n.z ?? 0;
-      if (nz === activeZ) continue; // même étage : la résolution de l'étage actif ci-dessous suffit
-      const { x, y } = screenToTileAtLift(pose, { x: gx, y: gy }, metricToLift(heightAt(scene, n.x, n.y, nz)));
-      if (x === n.x && y === n.y) return n;
-    }
-    return null;
-  };
-
-  /** Case MARCHABLE de la couche `z` réellement DESSINÉE sous le pixel. Chaque case est projetée à son
-   *  LIFT MÉTRIQUE (`metricToLift(heightAt)`), JAMAIS au seul index de couche : une marche d'escalier est
-   *  dessinée soulevée, et l'inverser à plat rendait la case voisine 1 à 3 pas plus loin — les 8 marches
-   *  de `la-diligence` étaient toutes injouables à la souris, donc l'étage inatteignable. On inverse donc
-   *  à chacun des lifts DISTINCTS de la scène et on retient la case dont le lift EST celui auquel on l'a
-   *  trouvée ; le plus HAUT gagne — c'est lui qu'on voit, et une case cachée DERRIÈRE une marche n'a pas
-   *  à être cliquable. Même vérité de projection que le curseur clavier (`screenStepDot`, `combatCursor.ts`).
-   *  Scène sans relief ⇒ un seul lift (0) ⇒ strictement l'inversion plan-sol historique. */
-  const walkableAtScreen = (gx: number, gy: number, z: number): Pt | null => {
-    if (!scene) return null;
-    for (const lift of sceneLifts(scene)) {
-      const { x, y } = screenToTileAtLift(pose, { x: gx, y: gy }, lift);
-      if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
-      if (metricToLift(heightAt(scene, x, y, z)) !== lift) continue; // cette case n'est pas dessinée à ce lift
-      if (!isWalkable(scene, x, y, z)) continue;
-      return z ? { x, y, z } : { x, y };
-    }
-    return null;
-  };
-
-  /** Case du MEUBLE réellement dessinée sous le pixel, à la couche `z` : la MÊME inversion par LIFT
-   *  que `walkableAtScreen`, mais pour une case qu'un décor `prop` OCCUPE — donc justement celle que
-   *  la marchabilité écarte (l'empreinte d'un meuble solide n'est pas marchable). Sans elle, le pixel
-   *  d'un plateau FIN que le rayon ne touche pas retombait sur la boucle CROSS-COUCHE de
-   *  `tileFromEvent`, qui rendait une case d'un AUTRE ÉTAGE : mesuré sur `la-diligence`, le clic de la
-   *  table murale (13,10) résolvait (16,13,z1) et envoyait le groupe à l'autre bout de la salle. */
-  const propAtScreen = (gx: number, gy: number, z: number): Pt | null => {
-    if (!scene) return null;
-    for (const lift of sceneLifts(scene)) {
-      const { x, y } = screenToTileAtLift(pose, { x: gx, y: gy }, lift);
-      if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
-      if (metricToLift(heightAt(scene, x, y, z)) !== lift) continue; // cette case n'est pas dessinée à ce lift
-      // PREMIÈRE case dessinée sous le pixel (lift le plus haut) : c'est celle qu'on VOIT, et elle
-      // décide seule — porte-t-elle un meuble ou non. Continuer à sonder les lifts plus bas
-      // rendrait un meuble d'AILLEURS, la maladie même qu'on soigne.
-      return scene.entities.some((e) => e.kind === 'prop' && e.pos.x === x && e.pos.y === y && (e.z ?? 0) === z)
-        ? (z ? { x, y, z } : { x, y })
-        : null;
-    }
-    return null;
-  };
-
-  /** Point de PROJECTION du stage sous le pixel : le pixel de l'élément remonte la chaîne d'affichage
-   *  à l'envers par les DEUX étages de `stageCam` (recouvrement `slice`, puis caméra du groupe), et
-   *  retombe dans le repère où `tileCenter`/`worldToScreen` dessinent. Entrée COMMUNE de la résolution
-   *  de tuile (`tileFromEvent`) et de celle de meuble (`propAtScreen`). */
-  const stagePointOf = (ev: React.PointerEvent): { x: number; y: number } | null => {
-    const vb = clientToSvg(ev);
-    if (!vb || !scene) return null;
-    return stagePointAt(vb, camRef.current!, zoom);
-  };
-
-  // Écran → tuile.
-  const tileFromEvent = (ev: React.PointerEvent): Pt | null => {
-    const p = stagePointOf(ev);
-    if (!p || !scene) return null;
-    const { x: gx, y: gy } = p;
-    if (useGame.getState().mode === 'exploration') {
-      const step = stepFromScreen(gx, gy);
-      if (step) return step;
-      const here = walkableAtScreen(gx, gy, activeZ);
-      if (here) return here;
-    }
-    // Fallback CROSS-COUCHE aligné sur le curseur clavier : chaque couche est inversée à son lift,
-    // puis `resolveCursorZ` tranche la surface réelle la plus haute de la case candidate.
-    for (const z of scene.layers.map((l) => l.z).sort((a, b) => b - a)) {
-      const { x, y } = screenToTileAtLift(pose, { x: gx, y: gy }, z);
-      if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
-      if (resolveCursorZ(scene, x, y) !== z) continue; // la surface réelle la plus haute ici n'est pas cette couche
-      return z ? { x, y, z } : { x, y };
-    }
-    return null;
-  };
+  /** Point de PROJECTION du stage sous le pixel de l'événement — l'inversion partagée
+   *  (`pickResolve.ts:pointStageSousPixel`), à la caméra et au zoom du RENDU COURANT. */
+  const stagePointOf = (ev: React.PointerEvent): { x: number; y: number } | null =>
+    pointStageSousPixel(svgRef.current, ev.clientX, ev.clientY, camRef.current!, zoom);
 
   // Picking SPRITE-aware : si un TOKEN (ou un décor volumique) est réellement dessiné sous le curseur,
   // on cible SA tuile — pas la tuile « derrière » le sprite (ancré au-dessus de sa case en iso, d'où
   // l'ancienne « chasse aux pieds »). Le hit-test lui-même appartient à la VOIE DE RENDU
   // (`targetUnderPointer` : `elementFromPoint` en affine, lancer de rayon en volumique) — l'empilement
-  // s'y tranche, de la seule façon que la voie sait trancher. Sans cible dessinée → la tuile du sol
-  // (tileFromEvent) pour le déplacement.
+  // s'y tranche, de la seule façon que la voie sait trancher.
+  //
+  // La CHAÎNE ELLE-MÊME (condition de tir, nature nommée, inversion du pixel, meuble dessiné, pas
+  // inter-étages, case marchable, sol cross-couche) vit en UN lieu : `stage/pickResolve.ts`, que la
+  // sonde de recette (`stage/pickProbe.ts`) appelle aussi. Ce hook n'y apporte que les coordonnées de
+  // l'événement et la caméra du rendu que son hôte lui tend.
   const pickTile = (ev: React.PointerEvent): Pt | null => {
     const st = useGame.getState();
-    // On n'interroge la voie de rendu que là où sa réponse peut changer le verdict, et le hit-test
-    // tourne À CHAQUE `pointermove` : en COMBAT, pour le jeton sous le pixel (le chemin historique,
-    // quads seuls) ; hors combat, seulement si une voie volumique est inscrite ET que la scène porte
-    // un meuble à recette — c'est la seule chose que le rayon MONDE puisse nommer, et c'est lui qui
-    // coûte (la masse triangulée de la carte). Une scène sans mobilier volumique ne paie donc rien,
-    // et le survol garde son affordance là où il y a un meuble à désigner.
-    const enCombat = st.mode === 'battle' && !!st.battle;
-    const meublesVolumiques = !!st.scene && hasSpritePicker() && sceneAUnPropVolumique(st.scene);
-    const visé = enCombat || meublesVolumiques ? targetUnderPointer(ev.clientX, ev.clientY) : null;
-    if (visé?.kind === 'combatant' && enCombat && st.battle) {
-      const c = st.battle.combatants.find((x) => x.id === visé.id);
-      if (c?.pos) return c.pos.z ? { x: c.pos.x, y: c.pos.y, z: c.pos.z } : { x: c.pos.x, y: c.pos.y };
-    }
-    // DÉCOR VOLUMIQUE : c'est le MEUBLE qui est dessiné sous le pixel, pas la tuile derrière lui — on
-    // cible sa case d'ancrage, d'où l'interaction d'exploration le reprend comme n'importe quel décor.
-    // LE RAYON DÉCIDE EN PREMIER : il touche la FACE réellement dessinée, à sa hauteur réelle, donc il
-    // est juste même sur le DESSUS d'un meuble haut — là où une inversion écran→case au lift du SOL
-    // décale la case (mesuré sur `la-diligence` : un pixel sur le dessus de `comptoir-2` (11,24) rend
-    // (10,23), la table voisine). Une OCCULTATION n'est pas un défaut : le joueur clique ce qu'il voit.
-    if (visé?.kind === 'entity') {
-      const ent = useGame.getState().scene?.entities.find((e) => e.id === visé.id);
-      if (ent) return ent.z ? { x: ent.pos.x, y: ent.pos.y, z: ent.z } : { x: ent.pos.x, y: ent.pos.y };
-    }
-    // REPLI, quand le rayon ne nomme RIEN : la case DESSINÉE sous le pixel. Un plateau FIN ne présente
-    // aucune face au rayon, et la résolution de tuile l'écartait (l'empreinte d'un meuble n'est pas
-    // marchable) pour rendre une case d'un AUTRE ÉTAGE — la table murale (13,10) résolvait (16,13,z1).
-    const p = st.mode !== 'battle' ? stagePointOf(ev) : null;
-    const meuble = p ? propAtScreen(p.x, p.y, activeZ) : null;
-    if (meuble) return meuble;
-    return tileFromEvent(ev);
+    const visé = tireLeRayon(st) ? targetUnderPointer(ev.clientX, ev.clientY) : null;
+    // Le point de stage est passé en THUNK : quand le rayon nomme sa cible, le pixel n'est jamais
+    // inversé — donc aucun `getBoundingClientRect()` par `pointermove` (cf. `resoudrePixel`).
+    const { tile } = resoudrePixel(st, visé, () => stagePointOf(ev), { pose, dims, activeZ });
+    if (!tile) return null;
+    return tile.z ? { x: tile.x, y: tile.y, z: tile.z } : { x: tile.x, y: tile.y };
   };
 
-  // Écran → coordonnées de VIEWBOX — base du panoramique (delta de glissement). Le seul étage de
-  // `stageCam` qui s'inverse ici est le recouvrement `slice` : la caméra du groupe reste en place,
-  // c'est elle qu'on déplace. Deux entrées, une seule inversion : un point CLIENT nu (milieu de deux
-  // doigts) et l'événement de pointeur.
-  const clientPtToSvg = (cx: number, cy: number): { x: number; y: number } | null => {
-    const r = svgRef.current?.getBoundingClientRect();
-    if (!r || !r.width || !r.height) return null; // élément sans surface mesurée : aucun pixel à inverser
-    return viewBoxPointAt({ sx: cx - r.left, sy: cy - r.top }, { w: r.width, h: r.height });
-  };
+  // Écran → coordonnées de VIEWBOX — base du panoramique (delta de glissement), premier étage de
+  // l'inversion partagée (`pickResolve.ts:pointViewBoxSousPixel`) : la caméra du groupe reste en
+  // place, c'est elle qu'on déplace. Deux entrées : un point CLIENT nu (milieu de deux doigts) et
+  // l'événement de pointeur.
+  const clientPtToSvg = (cx: number, cy: number): { x: number; y: number } | null =>
+    pointViewBoxSousPixel(svgRef.current, cx, cy);
   const clientToSvg = (ev: React.PointerEvent): { x: number; y: number } | null => clientPtToSvg(ev.clientX, ev.clientY);
 
   const pathOpts = (): PathOpts => {

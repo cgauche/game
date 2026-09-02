@@ -49,9 +49,9 @@ export interface Face {
    *  (`builders/propVolumes.ts` : chaque primitive sort tournée vers son dehors) ; un consommateur qui
    *  a besoin d'une normale la prend TELLE QUELLE (`backends/webgl/worldTris.ts:faceQuadsOriented`).
    *  `false` : surface OUVERTE, sans convention de sens (sol, mur nu, toit, montant) — le consommateur
-   *  l'oriente lui-même, et le régime déclaré de ces faces est l'heuristique de la cuisson (vers le
-   *  HAUT si horizontale, vers l'EXTÉRIEUR de la carte si verticale,
-   *  `backends/webgl/sceneMeshes.ts:bakeWorldGeometry`). */
+   *  l'oriente lui-même, et le régime déclaré de ces faces est l'heuristique de la LOI D'ORIENTATION
+   *  (vers le HAUT si horizontale, vers l'EXTÉRIEUR de la carte si verticale,
+   *  `backends/webgl/worldTris.ts:orienterPoly`). */
   oriented: boolean;
   /** Id de l'ENTITÉ de scène dont la face vient (décor volumique, `builders/propVolumes.ts`) — ce que
    *  le picking résout une fois la face fondue dans la géométrie commune du monde. */

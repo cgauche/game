@@ -16,7 +16,9 @@ import { poseFromDims, screenToWorldAtLift } from './projection';
 import { stagePointAt, viewBoxPointAt } from './stageCam';
 import { stage3dFraming } from './stage3dCamera';
 import { useStagePointer, type StagePointer } from './useStagePointer';
-import { setSpritePicker } from './spritePicker';
+import { setSpritePicker, setStageFrame, type CadreRendu } from './spritePicker';
+import { pickTileAt } from './pickProbe';
+import { caseAuSol } from './pickResolve';
 import { buildPropVolumes } from '../builders/propVolumes';
 import { findPropById } from '../../data';
 import { capVolumique } from '../../data/props.types';
@@ -32,7 +34,7 @@ import type { SceneEntity } from '../../state/scene';
  * three elle-même (`stage3dFraming` → `affineCamera`), inversée ici par résolution du système affine
  * qu'elle applique, à chacune des hauteurs de relief de la carte. La RÈGLE, elle, est la même des deux
  * côtés — celle du rendu : parmi les surfaces marchables dessinées sous le pixel, LA PLUS HAUTE gagne,
- * c'est celle qu'on voit (cf. `walkableAtScreen`).
+ * c'est celle qu'on voit (cf. `stage/pickResolve.ts:caseMarchable`).
  *
  * L'échantillonnage couvre ce que le relief a de piégeux : rampes et tablier du pont, les DEUX étages
  * de `la-diligence` (dont les 8 marches qui étaient injouables à la souris), les remparts du siège, et
@@ -52,6 +54,10 @@ const AU_BORD = 0.35;
 const DE_COTE = 0.17;
 
 const dimsDe = (scene: Scene): Dims => ({ w: scene.dimensions.w, h: scene.dimensions.h, rot: 0, view: 'iso' });
+
+/** Le cadre que l'hôte PUBLIE : projection commise + caméra RENDUE (un lecteur, comme `camRef`) + zoom. */
+const cadreRendu = (dims: Dims, cam: { x: number; y: number } = CAM, zoom = ZOOM): CadreRendu =>
+  ({ dims, camRendue: () => cam, zoom });
 
 type Camera = OrthographicCamera | PerspectiveCamera;
 
@@ -131,15 +137,15 @@ afterEach(() => {
 });
 
 /** Monte le pointeur sur une scène, à l'étage `activeZ`, et rend « viser un pixel → la case survolée ». */
-function viseur(scene: Scene, activeZ: number, partyPos: Pt): (sx: number, sy: number) => Pt | null {
-  const dims = dimsDe(scene);
+function viseur(scene: Scene, activeZ: number, partyPos: Pt, cadre?: Dims): (sx: number, sy: number) => Pt | null {
+  const dims = cadre ?? dimsDe(scene);
   useGame.setState({ scene, mode: 'exploration', partyPos, party: [], battle: null, dialogue: null });
   let pointer: StagePointer | undefined;
   const Probe = () => {
     const svgRef = useRef(stageEl());
     const camRef = useRef(CAM);
     pointer = useStagePointer({
-      svgRef, scene, dims, zoom: ZOOM, camRef, hoverTracking: false, partyLeader: undefined, activeZ,
+      svgRef, dims, zoom: ZOOM, camRef, hoverTracking: false, partyLeader: undefined, activeZ,
     });
     return null;
   };
@@ -171,7 +177,8 @@ function echantillon(scene: Scene, z: number, combien: number): Pt[] {
 }
 
 /** Point de départ du groupe qui ne CHANGE PAS d'étage d'un pas : le pas inter-étages
- *  (`stepFromScreen`) a sa propre garde (`useStagePointer.test.tsx`) et n'a rien à faire ici. */
+ *  (`stage/pickResolve.ts:pasInterEtages`) a sa propre garde (`useStagePointer.test.tsx`) et n'a rien
+ *  à faire ici. */
 function posteDuGroupe(scene: Scene, z: number, defaut: Pt): Pt {
   for (let y = 0; y < scene.dimensions.h; y++) {
     for (let x = 0; x < scene.dimensions.w; x++) {
@@ -346,5 +353,266 @@ describe('meuble HAUT — le rayon décide, la case dessinée n’est qu’un re
     const vise = viseur(scene, 0, posteDuGroupe(scene, 0, { x: 0, y: 0 }));
     const vu = vise(px.sx, px.sy);
     expect(`${vu?.x},${vu?.y}`, `le repli désigne ${voisin!.id}, pas ${ent.id}`).toBe(`${voisin!.pos.x},${voisin!.pos.y}`);
+  });
+});
+
+/**
+ * SONDE DE RECETTE ⇄ GESTE — la sonde `__wfrp.pickTileAt` rapporte ce qu'un CLIC ferait (#1680).
+ *
+ * La sonde sert à diagnostiquer un « clic qui ne fait rien » : si elle et le geste divergent, elle
+ * innocente le pixel que le clic manque, et la recette conclut faux. Les deux décisions du picking
+ * vivent donc en un lieu (`stage/pickResolve.ts`) : la CONDITION DE TIR du rayon — que la sonde
+ * bornait au COMBAT alors que le geste tire aussi hors combat sur une scène à décor volumique — et la
+ * RÉSOLUTION de ce que le rayon nomme, dont la branche `entity` retombait en silence sur le sol.
+ */
+describe('sonde de picking — hors combat, un décor volumique nommé rend SA case (#1680)', () => {
+  const scene = diligence.scene as Scene;
+  const cible = scene.entities.find((e) => e.kind === 'prop' && (e.z ?? 0) === 0)!;
+  const mpt = sceneMetresPerTile(scene);
+  /** Un pixel qui tombe sur une SURFACE dessinée : le repli de sol y a donc une réponse, et le
+   *  témoin mesure bien la voie choisie, pas un hors-carte. */
+  const px = pixelVolumique(
+    cameraVolumique(dimsDe(scene), mpt), mpt,
+    cible.pos.x, cible.pos.y, heightAt(scene, cible.pos.x, cible.pos.y, 0),
+  );
+  const pixel = { x: px.sx, y: px.sy };
+
+  /** Élément de stage que la sonde cherche dans le DOM (`svg.iso-stage`), mesuré au cadre du test. */
+  function poserStage(): SVGSVGElement {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    el.setAttribute('class', 'iso-stage');
+    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
+    document.body.appendChild(el);
+    return el;
+  }
+
+  afterEach(() => {
+    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
+    setStageFrame(null);
+  });
+
+  /** Le poste du groupe est POSÉ, jamais hérité : `partyPos.z` décide de l'étage sur lequel la sonde
+   *  résout (`state/viewLevel.ts:etageActif`), donc de la voie qui répond — un `z` de 1 laissé par un
+   *  test voisin fait rendre `sol` là où l'étage 0 rend `meuble`. */
+  function armer(): void {
+    poserStage();
+    setStageFrame(cadreRendu(dimsDe(scene)));
+    useGame.setState({
+      scene, mode: 'exploration', battle: null, dialogue: null,
+      partyPos: posteDuGroupe(scene, 0, { x: 0, y: 0 }),
+      camPan: CAM, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'iso',
+    });
+  }
+
+  it('le rayon nomme une ENTITÉ : la sonde rend sa case d’ancrage, par la voie `decor`', () => {
+    armer();
+    setSpritePicker(() => ({ kind: 'entity', id: cible.id }));
+    expect(pickTileAt(pixel)).toEqual({
+      tile: { x: cible.pos.x, y: cible.pos.y, z: cible.z ?? 0 },
+      cid: null,
+      via: 'decor',
+    });
+  });
+
+  it('TÉMOIN — sans voie de rayon inscrite, la même sonde retombe sur la surface du SOL', () => {
+    armer();
+    setSpritePicker(null);
+    const vu = pickTileAt(pixel);
+    // La VOIE change — c'est le seul discriminant : au MÊME pixel, la branche `entity` répondait
+    // `null` et la sonde poursuivait la chaîne en silence, en rapportant l'étage suivant là où le
+    // geste rend le décor que le rayon nomme.
+    expect(vu?.via).toBe('meuble');
+  });
+});
+
+/**
+ * PLATEAU FIN — le repli par le MEUBLE DESSINÉ appartient à la CHAÎNE, pas au geste (#1680).
+ *
+ * Un plateau fin ne présente aucune face au rayon : c'est alors la case DESSINÉE qui décide. La
+ * résolution de tuile l'écarte (l'empreinte d'un meuble solide n'est pas marchable) et le repli
+ * cross-couche rend une case d'un AUTRE ÉTAGE — décalage mesuré sur `la-diligence` : (+3,+3) et z0→z1,
+ * soit la table voisine, à l'autre bout de la salle. Le geste s'en protégeait seul ; la sonde de
+ * recette, qui n'avait pas cet étage, innocentait donc le pixel que le clic manquait.
+ */
+describe('sonde de picking — plateau FIN : la case du meuble DESSINÉ, jamais celle d’un autre étage (#1680)', () => {
+  const scene = diligence.scene as Scene;
+  const dims = dimsDe(scene);
+  const mpt = sceneMetresPerTile(scene);
+  const camera = cameraVolumique(dims, mpt);
+  const pose = poseFromDims(dims);
+  const poste = posteDuGroupe(scene, 0, { x: 0, y: 0 });
+
+  /** Les décors de l'étage 0 et le pixel de leur case, à la hauteur du SOL — le pixel d'un plateau fin. */
+  const decors = scene.entities
+    .filter((e) => e.kind === 'prop' && (e.z ?? 0) === 0)
+    .map((ent) => ({ ent, px: pixelVolumique(camera, mpt, ent.pos.x, ent.pos.y, heightAt(scene, ent.pos.x, ent.pos.y, 0)) }));
+
+  function poserStage(): void {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    el.setAttribute('class', 'iso-stage');
+    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
+    document.body.appendChild(el);
+    setStageFrame(cadreRendu(dims));
+    useGame.setState({
+      scene, mode: 'exploration', battle: null, dialogue: null, partyPos: poste,
+      camPan: CAM, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'iso',
+    });
+  }
+
+  afterEach(() => {
+    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
+    setStageFrame(null);
+  });
+
+  it('sans rayon, chaque décor de l’étage rend SA case par la voie `meuble`', () => {
+    poserStage();
+    setSpritePicker(null);
+    expect(decors.length, 'la Diligence DOIT porter des décors à l’étage 0').toBeGreaterThan(0);
+    const ecarts: string[] = [];
+    for (const { ent, px } of decors) {
+      const vu = pickTileAt({ x: px.sx, y: px.sy });
+      if (vu?.via !== 'meuble' || vu.tile?.x !== ent.pos.x || vu.tile?.y !== ent.pos.y || vu.tile?.z !== 0)
+        ecarts.push(`${ent.id} (${ent.pos.x},${ent.pos.y}) → ${vu ? `${vu.via} ${vu.tile?.x},${vu.tile?.y},z${vu.tile?.z}` : 'rien'}`);
+    }
+    expect(ecarts).toEqual([]);
+  });
+
+  it('TÉMOIN — le repli cross-couche, lui, désigne bien une case d’un AUTRE étage : c’est ce que cet étage évite', () => {
+    const pieges: string[] = [];
+    for (const { ent, px } of decors) {
+      const g = stagePointAt(viewBoxPointAt({ sx: px.sx, sy: px.sy }, CANVAS), CAM, ZOOM);
+      const sol = caseAuSol(scene, { pose, dims, activeZ: 0 }, g);
+      if (sol && (sol.x !== ent.pos.x || sol.y !== ent.pos.y || (sol.z ?? 0) !== 0))
+        pieges.push(`${ent.id} (${ent.pos.x},${ent.pos.y}) → sol ${sol.x},${sol.y},z${sol.z ?? 0}`);
+    }
+    expect(pieges.length, 'aucun piège mesuré : ce contrat ne départage plus rien').toBeGreaterThan(0);
+    // Le décalage EST celui du bug : la case rendue est celle de l'étage du dessus, trois pas plus loin.
+    expect(pieges).toContain('diligence-salle-table-murale-1 (14,11) → sol 17,14,z1');
+  });
+});
+
+/**
+ * LE CADRE EST PUBLIÉ, PAS REBÂTI — la sonde résout sur la pose que l'écran REND (#1680).
+ *
+ * L'hôte de rendu commet un cadre qui n'est PAS le store nu : `view: pov ? 'iso' : viewMode`
+ * (`MondeDeCampagne.tsx`) — en première personne le monde reste projeté en iso alors que le store peut
+ * porter `viewMode: 'top'` — et un `yawDeg` LISSÉ pendant une rotation. Une sonde qui rebâtit le cadre
+ * depuis le store résout donc sur une AUTRE pose que l'image, et innocente le pixel que le clic manque.
+ * Le cadre commis est publié (`spritePicker.ts:setStageFrame`) ; la sonde le lit.
+ */
+describe('sonde de picking — le CADRE est celui que l’écran rend, jamais le store nu (#1680)', () => {
+  const scene = diligence.scene as Scene;
+  const poste = posteDuGroupe(scene, 0, { x: 0, y: 0 });
+
+  afterEach(() => {
+    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
+    setStageFrame(null);
+  });
+
+  /** Monte le stage, PUBLIE `cadre`, et pose au store un `viewMode` DIVERGENT — celui qu'une sonde
+   *  rebâtisseuse lirait. C'est exactement la situation de la première personne. */
+  function armerCadre(cadre: Dims): void {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    el.setAttribute('class', 'iso-stage');
+    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
+    document.body.appendChild(el);
+    setStageFrame(cadreRendu(cadre));
+    useGame.setState({
+      scene, mode: 'exploration', battle: null, dialogue: null, partyPos: poste,
+      camPan: CAM, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'top', // le store DIVERGE du cadre commis
+    });
+  }
+
+  /** Les pixels d'échantillon : les décors de l'étage 0 vus au cadre PUBLIÉ. */
+  const echantillonPixels = (cadre: Dims) => {
+    const mpt = sceneMetresPerTile(scene);
+    const camera = cameraVolumique(cadre, mpt);
+    return scene.entities
+      .filter((e) => e.kind === 'prop' && (e.z ?? 0) === 0)
+      .map((ent) => pixelVolumique(camera, mpt, ent.pos.x, ent.pos.y, heightAt(scene, ent.pos.x, ent.pos.y, 0)));
+  };
+
+  for (const [nom, cadre] of [
+    ['première personne (monde en iso, store en top)', { ...dimsDe(scene), view: 'iso' }],
+    ['rotation en cours (lacet LISSÉ, hors cran)', { ...dimsDe(scene), view: 'iso', yawDeg: 31.5 }],
+  ] as [string, Dims][]) {
+    it(`${nom} : la sonde résout à la case du GESTE, au cadre publié`, () => {
+      armerCadre(cadre);
+      setSpritePicker(null);
+      const pixels = echantillonPixels(cadre);
+      expect(pixels.length, 'aucun pixel d’échantillon : ce contrat ne mesure plus rien').toBeGreaterThan(0);
+      const ecarts: string[] = [];
+      for (const px of pixels) {
+        // Le GESTE, monté sur le MÊME cadre : c'est lui l'étalon, jamais une seconde formule.
+        const vise = viseur(scene, 0, poste, cadre);
+        const attendu = vise(px.sx, px.sy);
+        act(() => root!.unmount());
+        root = null;
+        const vu = pickTileAt({ x: px.sx, y: px.sy });
+        const cle = (t: { x: number; y: number; z?: number } | null | undefined) => (t ? `${t.x},${t.y},z${t.z ?? 0}` : 'rien');
+        if (cle(vu?.tile) !== cle(attendu)) ecarts.push(`(${px.sx.toFixed(1)},${px.sy.toFixed(1)}) geste=${cle(attendu)} sonde=${cle(vu?.tile)}`);
+      }
+      expect(ecarts).toEqual([]);
+    });
+  }
+
+  it('hors montage du stage, la sonde NOMME l’absence d’image plutôt que de résoudre à l’aveugle', () => {
+    armerCadre(dimsDe(scene));
+    setStageFrame(null); // aucun hôte de rendu : plus aucune pose commise
+    expect(pickTileAt({ x: CANVAS.w / 2, y: CANVAS.h / 2 })).toEqual({ tile: null, cid: null, via: 'aucune' });
+  });
+});
+
+/**
+ * LA CAMÉRA DU CADRE EST CELLE DU RENDU, PAS CELLE DU STORE (#1680).
+ *
+ * Un écran qui SUIT le groupe ne pose rien dans `store.camPan` : le focal vit dans la réf que la boucle
+ * d'images réécrit (`MondeDeCampagne.tsx:camRef`), et c'est cette valeur-là que le geste inverse à
+ * l'instant de l'événement. Une sonde qui inverse avec le store part donc de tout le focal à côté —
+ * mesuré sur Chrome (scène `diligence`, 1600×900) : au pixel MÊME dont le clic déplaçait le groupe en
+ * (19,4), la sonde rendait `{tile: null, via: 'aucune'}`.
+ *
+ * D'où le cadre PUBLIÉ en LECTEUR de caméra : les deux porteurs lisent la même valeur au même instant.
+ */
+describe('sonde de picking — la CAMÉRA du cadre est celle du RENDU, jamais `store.camPan` (#1680)', () => {
+  const scene = diligence.scene as Scene;
+  const dims = dimsDe(scene);
+  const mpt = sceneMetresPerTile(scene);
+  const camera = cameraVolumique(dims, mpt);
+  const poste = posteDuGroupe(scene, 0, { x: 0, y: 0 });
+  /** Les décors de l'étage 0, vus au pixel de leur case : l'échantillon des deux contrats voisins. */
+  const decors = scene.entities
+    .filter((e) => e.kind === 'prop' && (e.z ?? 0) === 0)
+    .map((ent) => ({ ent, px: pixelVolumique(camera, mpt, ent.pos.x, ent.pos.y, heightAt(scene, ent.pos.x, ent.pos.y, 0)) }));
+
+  afterEach(() => {
+    document.querySelectorAll('svg.iso-stage').forEach((el) => el.remove());
+    setStageFrame(null);
+  });
+
+  it('cadre publié à la caméra du RENDU, store AU REPOS : la sonde résout la case du geste', () => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    el.setAttribute('class', 'iso-stage');
+    el.getBoundingClientRect = () => ({ left: 0, top: 0, width: CANVAS.w, height: CANVAS.h }) as DOMRect;
+    document.body.appendChild(el);
+    // L'image est cadrée en `CAM` (c'est la caméra que `viseur` tend au geste par sa réf) ; le store,
+    // lui, reste à l'origine — exactement l'état d'un écran centré sur le groupe.
+    setStageFrame(cadreRendu(dims, CAM));
+    useGame.setState({
+      scene, mode: 'exploration', battle: null, dialogue: null, partyPos: poste,
+      camPan: { x: 0, y: 0 }, zoom: ZOOM, camRot: 0, camEdge: false, viewMode: 'iso',
+    });
+    setSpritePicker(null);
+    expect(decors.length, 'aucun pixel d’échantillon : ce contrat ne mesure plus rien').toBeGreaterThan(0);
+    const cle = (t: { x: number; y: number; z?: number } | null | undefined) => (t ? `${t.x},${t.y},z${t.z ?? 0}` : 'rien');
+    const ecarts: string[] = [];
+    for (const { ent, px } of decors) {
+      const attendu = viseur(scene, 0, poste, dims)(px.sx, px.sy); // le GESTE, étalon
+      act(() => root!.unmount());
+      root = null;
+      const vu = pickTileAt({ x: px.sx, y: px.sy });
+      if (cle(vu?.tile) !== cle(attendu)) ecarts.push(`${ent.id} : geste=${cle(attendu)} sonde=${cle(vu?.tile)} (via ${vu?.via ?? 'rien'})`);
+    }
+    expect(ecarts).toEqual([]);
   });
 });

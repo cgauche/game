@@ -29,7 +29,8 @@ import { partyLeaderOf } from '../../state/combatants';
 import { placingZoneOf } from '../../state/combatFlow';
 import { controlsActive } from '../../state/netOwnership';
 import { Dims, capsuleCenter } from '../../geometry/iso';
-import { getViewZ, subscribeViewZ } from '../../state/viewLevel';
+import { etageActif, getViewZ, subscribeViewZ } from '../../state/viewLevel';
+import { setStageFrame } from './spritePicker';
 import { setVisibleTileBounds } from '../viewport';
 import { useWalkAnim } from '../fx/useWalkAnim';
 import { subscribeStageFrames, subscribeStagePrelude, battreStageFrames, demanderFrames, relacherFrames, useBattementContinu } from './stageFrames';
@@ -61,6 +62,7 @@ import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayOverhea
 import { clePercage } from './percage';
 import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, adoucirFocal, DUREE_FOCALE_MS, VW, VH, type LissageFocal } from './useStageCamera';
 import { useStagePointer } from './useStagePointer';
+import { inBattleId } from '../../state/combatants';
 import { useHoverTargeting } from './useHoverTargeting';
 import { SceneErrorBoundary } from '../../ui/SceneErrorBoundary';
 import { SurcoucheIso } from '../SurcoucheIso';
@@ -158,8 +160,11 @@ function CorpsDuMonde() {
   // ── Vérités de scène : étage actif, hauteurs métriques, brouillard ──────────────────────────────
   // Étages rendus = l'ACTIF + ceux du DESSOUS (sélection des builders). Override DEBUG viewLevel(z).
   const viewZ = useSyncExternalStore(subscribeViewZ, getViewZ, getViewZ);
-  const activeC = mode === 'battle' && battle ? battle.combatants.find((c) => c.id === battle.order[battle.turn]) : undefined;
-  const activeZ = viewZ ?? ((activeC?.pos as { z?: number } | undefined)?.z ?? partyPos.z ?? 0);
+  const activeC = mode === 'battle' && battle ? inBattleId(battle, battle.order[battle.turn]) : undefined;
+  // L'étage actif se DÉDUIT (`state/viewLevel.ts:etageActif`), il ne se recalcule pas ici : le
+  // picking résout sur le MÊME étage que celui-ci montre, sinon la sonde de recette et le clic
+  // désignent des couches différentes.
+  const activeZ = etageActif({ mode, battle, partyPos }, viewZ);
   // STYLE DE LA VUE (#1176, P3-5) : ce que ce regard choisit de MONTRER (`stage/viewPolicy`). Les
   // verdicts en descendent tous — l'étage isolé ci-dessous comme le découvert des toits de `keepEl`.
   // La vue du DESSUS est un regard de PLATEAU : à hauteur d'œil, c'est le style iso qui vaut.
@@ -246,6 +251,12 @@ function CorpsDuMonde() {
   const dimsVue = useMemo<Dims>(() => ({ ...dims, yawDeg: yawVue }), [dims, yawVue]);
   const dimsVueRef = useRef(dimsVue);
   dimsVueRef.current = dimsVue;
+  // Le cadre COMMIS est PUBLIÉ (`stage/spritePicker.ts`) : la sonde de recette résout sur celui que
+  // l'écran rend — première personne et lacet lissé compris — au lieu de le rebâtir depuis le store.
+  // La CAMÉRA y va en LECTEUR de `camRef` (jamais une copie) : c'est la valeur que le pointeur lui-même
+  // inverse, et la boucle d'images la réécrit après chaque calcul de focal, sans rendu React.
+  useEffect(() => { setStageFrame({ dims: dimsVue, camRendue: () => camRef.current, zoom }); }, [dimsVue, zoom]);
+  useEffect(() => () => setStageFrame(null), []);
   const partyLeader = partyLeaderOf(party);
   // PLACE ASSISE du meneur — résolue UNE fois pour tout l'écran (corps, chrome, caméra, POV). Le
   // point de RENDU du meneur en découle : son ancre s'il est attablé, sa case sinon. `partyPos`, lui,
@@ -556,7 +567,7 @@ function CorpsDuMonde() {
   // Le picking inverse la projection COMMISE : exacte à chaque commit du lacet (cran, départ, arrêt,
   // pose au pointeur). PENDANT un maintien entre deux crans, elle retarde du lacet parcouru depuis le
   // dernier commit — jusqu'à un demi-cran, le temps du geste (#1403).
-  const pointeur = useStagePointer({ svgRef, scene, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ });
+  const pointeur = useStagePointer({ svgRef, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ });
   const hover = pointeur.hover;
   const visée = useHoverTargeting(scene, hover, myTurn, pointeur.hoveredPortal);
 

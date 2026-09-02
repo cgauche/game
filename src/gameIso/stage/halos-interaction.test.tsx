@@ -27,7 +27,8 @@ import { PING_S } from './interactHaloPose';
  * ANGLES MORTS DÉCLARÉS. (a) Le SURVOL n'est pas posé par un vrai pointeur : jsdom n'a ni layout ni
  * géométrie, donc aucun `pointermove` n'y désigne une tuile. Il passe par la couture DEV de
  * `useStagePointer` (`__wfrpSetHover`, celle de la recette navigateur) — la chaîne pixel → tuile
- * (`stepFromScreen`) reste donc hors mesure ICI, elle est couverte par `stage/pick-parity`. (b) Ce banc
+ * (`stage/pickResolve.ts:pasInterEtages`) reste donc hors mesure ICI, elle est couverte par
+ * `stage/pick-parity`. (b) Ce banc
  * ne juge PAS le rendu : jsdom ne rastérise rien — l'apparence (teinte, épaisseur perçue, lueur de
  * survol) se juge au navigateur, pas ici.
  */

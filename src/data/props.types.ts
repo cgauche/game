@@ -106,7 +106,7 @@ export interface PropPoint3 { x: number; y: number; h: number }
 export interface PropSize3 { x: number; y: number; h: number }
 
 /** Côtés admis d'un cylindre. 12 est EXCLU : ses faces latérales tombent sur l'arête de couteau du
- *  modelé de forme (4 normales à ±45°, `backends/webgl/sceneMeshes:shadeFamily` départage alors des
+ *  modelé de forme (4 normales à ±45°, `backends/webgl/worldTris:shadeFamily` départage alors des
  *  familles de 4/3/3/2 au lieu de 3/3/3/3) — un fût de la même recette y prend deux tons de trop. */
 export type PropCylinderSides = 8 | 16;
 export const PROP_CYLINDER_SIDES: readonly PropCylinderSides[] = [8, 16];

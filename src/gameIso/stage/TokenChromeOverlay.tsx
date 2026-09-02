@@ -61,7 +61,8 @@ export function chromeHeadPx(pions: boolean, mark: { scaleK: number; n: number; 
 /** Position ÉCRAN du jeton à l'instant que porte `wp` : le CENTRE de son bloc d'empreinte, glissement
  *  de marche compris. Un seul calcul, partagé par le rendu React et le battement de marche — deux
  *  formules divergeraient au premier pas. C'est aussi ce qui rend le clic JUSTE sous `pionsEnDisques` :
- *  le disque est centré sur sa case, donc `tileFromEvent` y répond le même jeton. */
+ *  le disque est centré sur sa case, donc le repli de surface du picking
+ *  (`stage/pickResolve.ts:resoudrePixel`) y répond le même jeton. */
 export function chromeTransform(m: Pick<TokenChromeMark, 'id' | 'cell' | 'n'>, dims: Dims, liftAt: LiftAt, wp: WalkPos): string {
   const p = wp(m.id, m.cell.x, m.cell.y, m.cell.z);
   const off = (m.n - 1) / 2;

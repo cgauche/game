@@ -17,15 +17,9 @@
  */
 import { describe, expect, it } from 'vitest';
 import { AMBIANCE } from '../catalog/ambiance';
-import {
-  SHADE_CYCLE,
-  applyVisibilityTint,
-  bakeWorldGeometry,
-  shadeFactorOf,
-  shadeFamily,
-  shadeSousSoleil,
-  type ShadeFamily,
-} from '../backends/webgl/sceneMeshes';
+import { applyVisibilityTint, bakeWorldGeometry, shadeSousSoleil } from '../backends/webgl/sceneMeshes';
+import { SHADE_CYCLE, shadeFamily, type ShadeFamily } from '../backends/webgl/worldTris';
+import { shadeFactorOf } from '../backends/webgl/faceColors';
 import { extinctionDe, pointLightWrites } from './stagePointLights';
 import { stageLightScalars } from './stageLights';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';

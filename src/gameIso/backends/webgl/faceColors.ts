@@ -6,7 +6,10 @@
  *
  * Les DEUX modes d'usage du renderer (unlit = couleur cuite au sommet ; lit = matériau éclairé) partent
  * de CETTE couleur de base : le mode est un choix de MATÉRIAU, pas de couleur, et ne se paramètre donc
- * pas ici. Aucun ombrage d'écran pré-calculé n'y est cuit — la lumière du renderer le remplace.
+ * pas ici. Aucun ombrage d'écran pré-calculé n'y est cuit — la lumière du renderer le remplace. Seul
+ * le MODELÉ DE FORME y a son facteur (`shadeFactorOf`) : c'est une irradiance ambiante AUTHORÉE
+ * (`AMBIANCE.faceShade`), donc une lecture de catalogue comme les couleurs, indexée par la famille
+ * d'orientation que la géométrie donne (`worldTris.ts:shadeFamily`).
  *
  * DIVERGENCE ASSUMÉE avec l'affine sur les SOLS : un `TerrainDef` porte un dégradé `stops` (ombrage
  * CUIT dans l'image, du clair en haut vers le sombre en bas de la tuile) en plus de son `swatch`. Ce
@@ -22,6 +25,7 @@
  * perdait jusqu'à son appareillage, le joint de la recette y étant PLUS CLAIR que le pan. Garde de
  * planche « MATIÈRE UNIQUE par toit ».
  */
+import { AMBIANCE } from '../../catalog/ambiance';
 import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';
 import { facadeStructureAppearance } from '../../catalog/facades';
@@ -33,6 +37,7 @@ import { coursesPeriodM, groundPeriodM } from '../../detail/courses';
 import { hash32 } from '../../detail/hash';
 import type { DetailRecipe } from '../../detail/types';
 import type { Face } from '../../builders/types';
+import { SHADE_CYCLE, type ShadeFamily } from './worldTris';
 
 /** Modes de rendu d'une face — deux MATÉRIAUX du renderer, une seule couleur de base (`faceSurface`). */
 export type ColorMode = 'unlit' | 'lit';
@@ -134,6 +139,18 @@ export function faceSurface(face: Face): FaceSurface {
     uvScaleM: faceUvScaleM(face, recipe),
     ...(mat ? { pbr: { roughness: mat.roughness, metalness: mat.metalness } } : {}),
   };
+}
+
+/** Facteur d'irradiance ambiante d'une FAMILLE D'ORIENTATION (`worldTris.ts:shadeFamily`), lu à la
+ *  donnée d'ambiance (`AMBIANCE.faceShade`) : la famille est une géométrie, son facteur un catalogue —
+ *  d'où sa place ici, avec les autres lectures de catalogue de la face. Une famille indéterminée ne
+ *  modèle rien : facteur NEUTRE, jamais un assombrissement par défaut. */
+export function shadeFactorOf(f: ShadeFamily | null): number {
+  const d = AMBIANCE.faceShade;
+  if (f === null) return 1;
+  if (f === 'haut') return d.haut;
+  if (f === 'bas') return d.bas;
+  return d.verticales[SHADE_CYCLE.indexOf(f)];
 }
 
 /** Facteur de variance de TEINTE d'une surface à l'identité MONDE de sa case ∈ [1−tintVar, 1+tintVar] :

@@ -1,11 +1,12 @@
 import { useGame, SCREENS } from './store';
 
 /** Ce que la SONDE DE PICKING du rendu rend (`gameIso/stage/pickProbe`) : la case que le picking
- *  résoudrait sous un pixel CLIENT, le combattant dont le corps s'y trouve, et par quelle voie. */
+ *  résoudrait sous un pixel CLIENT, le combattant dont le corps s'y trouve, et par quelle voie. Les
+ *  voies sont celles de `gameIso/stage/pickResolve.ts`, partagées avec le geste. */
 export type PickProbe = (px: { x: number; y: number }) => {
   tile: { x: number; y: number; z: number } | null;
   cid: string | null;
-  via: 'sprite' | 'sol' | 'aucune';
+  via: 'sprite' | 'decor' | 'meuble' | 'pas-etage' | 'sol' | 'aucune';
 } | null;
 
 let sondeDePicking: PickProbe | null = null;
@@ -46,7 +47,7 @@ import { builtinCampaigns } from '../scenes/campaign';
 import { makeShowcaseParty } from '../data/pregens';
 import { hoverTargeting } from './targeting';
 import { maneuverShip } from './shipManeuver';
-import { getViewZ, setViewZ } from './viewLevel';
+import { etageActif, getViewZ, setViewZ } from './viewLevel';
 import { setRevealAll } from './visionState';
 import { rule, setRule, ruleDef, OPTIONAL_RULES, type RuleValue } from '../engine/policy';
 import { houseRulesMutability, resetHouseRule } from './houseRules';
@@ -100,7 +101,7 @@ function routesRendues(map: WorldMap, sceneId: string | undefined): { route: Map
  *   __wfrp.tileScreenPos({x,y,z?}) → même bounding box ÉCRAN pour une CASE (vide comprise), là où
  *                           `screenPos` exige un token `data-cid` — viser un déplacement au clic réel
  *   __wfrp.pickTileAt({x,y}) → l'INVERSE : ce que le PICKING RÉEL résoudrait sous ce pixel écran
- *                           ({tile, cid, via:'sprite'|'sol'|'aucune'}) — lecture seule, aucun clic
+ *                           ({tile, cid, via:'sprite'|'decor'|'meuble'|'pas-etage'|'sol'|'aucune'}) — lecture seule, aucun clic
  *   __wfrp.talk('id')     → téléporte le groupe à côté de l'entité et l'interpelle (dialogue/marchand)
  *   __wfrp.goto('id')     → place le groupe sur la case de l'entité (déclenche portes/triggers au pas)
  *   __wfrp.screen('menu') → navigue vers un écran
@@ -545,8 +546,8 @@ export function buildApi() {
     },
 
     /** OBSERVATION seule : CE QUE LE PICKING RÉEL RÉSOUDRAIT sous un pixel d'écran — l'INVERSE exact de
-     *  `tileScreenPos`, et le miroir de la chaîne que le stage exécute au clic (`useStagePointer` :
-     *  `clientToSvg` → `stagePointAt` → hit-test sprite puis sol). Ne clique RIEN : il DIT quelle case
+     *  `tileScreenPos`, et la chaîne MÊME que le stage exécute au clic (`gameIso/stage/pickResolve` :
+     *  inversion du pixel → hit-test sprite puis sol). Ne clique RIEN : il DIT quelle case
      *  (et quel combattant, si un corps est dessiné sous le pixel) recevrait le geste. C'est l'instrument
      *  qui tranche « ma case est-elle visée ? » sans tâtonner au clic — un clic qui « ne fait rien » y
      *  montre soit un `cid` inattendu (le corps d'un voisin/engin couvre la case, et le clic part alors
@@ -594,7 +595,7 @@ export function buildApi() {
       const wallsByZ: Record<number, number> = {};
       for (const wl of sc.walls ?? []) wallsByZ[wl.z ?? 0] = (wallsByZ[wl.z ?? 0] ?? 0) + 1;
       return {
-        etageActif: getViewZ() ?? (s.partyPos.z ?? 0),
+        etageActif: etageActif(s, getViewZ()),
         override: getViewZ(),
         groupeZ: s.partyPos.z ?? 0,
         couches: [...sc.layers].sort((a, b) => a.z - b.z).map((l) => {

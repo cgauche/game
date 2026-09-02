@@ -73,7 +73,8 @@ describe('pickNearestTarget (billboards seuls) — le plus PROCHE tranche, et un
     // Sous le verdict `pionsEnDisques` (vue du dessus), le monde ne monte AUCUN sujet `personnage`
     // (`stage/GameStage3D`) : les seules cibles restantes sont du DÉCOR, qui ne rend jamais d'id. Le
     // picking de sprite se tait donc PAR CONSTRUCTION, et `useStagePointer.pickTile` résout par
-    // `tileFromEvent` — juste, puisque le disque est centré sur SA case.
+    // le repli de surface de `stage/pickResolve.ts:resoudrePixel` — juste, puisque le disque est
+    // centré sur SA case.
     const cibles = [decor(-9).cible, decor(-3).cible];
     expect(cidLePlusProche(CAMERA, cibles, CENTRE)).toBeNull();
     expect(cidLePlusProche(CAMERA, cibles, BORD)).toBeNull();

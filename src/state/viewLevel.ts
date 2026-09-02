@@ -1,10 +1,18 @@
 /**
  * Niveau (étage z) AFFICHÉ — « un étage à la fois » : IsoStage ne rend QUE l'étage actif (les autres ne
- * sont pas dessinés). L'étage actif suit le groupe (ou le combattant actif). Ce module ne porte QUE
- * l'override DEBUG (devtool `__wfrp.viewLevel(z)`) : `null` = automatique (suit le groupe). Store externe
- * minimal (hors store Zustand : isolé, zéro couplage). Vit dans `state` (#161) —
- * le devtool (`state/devtools.ts`) le PILOTE, le rendu (`gameIso/stage/MondeDeCampagne.tsx`) le LIT.
+ * sont pas dessinés). Ce module porte les deux faces de cette vérité :
+ *  - l'override DEBUG (devtool `__wfrp.viewLevel(z)`) : `null` = automatique. Store externe minimal
+ *    (hors store Zustand : isolé, zéro couplage) ; le devtool le PILOTE, le rendu le LIT ;
+ *  - `etageActif` : la RÈGLE qui en déduit l'étage montré. UNE définition, trois lecteurs — le rendu
+ *    (`gameIso/stage/MondeDeCampagne.tsx`), le picking (`gameIso/stage/pickResolve.ts`) et la recette
+ *    (`state/devtools.ts:__wfrp.levels`). Tenue en triple, elle divergeait : la copie du devtool
+ *    ignorait le combattant qui joue et annonçait l'étage du groupe pendant un tour d'ennemi posté un
+ *    étage plus haut.
+ * Vit dans `state` (#161) : `src/gameIso` en dépend, jamais l'inverse.
  */
+import { inBattleId } from './combatants';
+import type { GameState } from './store';
+
 let _viewZ: number | null = null;
 const subs = new Set<() => void>();
 
@@ -16,4 +24,21 @@ export function setViewZ(z: number | null): void {
 export function subscribeViewZ(f: () => void): () => void {
   subs.add(f);
   return () => { subs.delete(f); };
+}
+
+/** Ce que la règle de l'étage affiché lit de l'état — la tranche EXACTE, jamais le store entier. */
+export interface EtatEtage {
+  mode: GameState['mode'];
+  battle: GameState['battle'];
+  partyPos: GameState['partyPos'];
+}
+
+/** ÉTAGE ACTIF — celui que le rendu montre et sur lequel le picking résout : l'override DEBUG d'abord,
+ *  sinon l'étage du combattant qui JOUE, sinon celui du groupe. `viewZ` est PASSÉ et non relu ici : le
+ *  rendu s'y abonne (`subscribeViewZ`) pour se redessiner, et doit résoudre sur la valeur qu'il a
+ *  commise — la relire ferait diverger l'image et le clic pendant le battement. */
+export function etageActif(st: EtatEtage, viewZ: number | null): number {
+  if (viewZ !== null) return viewZ;
+  const actif = st.mode === 'battle' && st.battle ? inBattleId(st.battle, st.battle.order[st.battle.turn]) : undefined;
+  return actif?.pos?.z ?? st.partyPos?.z ?? 0;
 }
