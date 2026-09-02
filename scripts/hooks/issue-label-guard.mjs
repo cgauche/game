@@ -6,12 +6,14 @@
 // Pendant du garde `solde-ticket-guard` (fermeture sans solde) : même contrat de sortie deny.
 //
 // Robustesse : on ne fait PAS un grep de sous-chaîne (`gh issue create` cité dans un `--body`/un `echo`
-// mordrait à tort) — on réutilise le TOKENIZER quote-aware de `solde-ticket-guard` (`splitCommandSegments`,
+// mordrait à tort) — on réutilise le TOKENIZER quote-aware de `solde-ticket-guard` (`segmentsProfonds`,
 // invariant partagé, jamais redupliqué) puis on détecte STRUCTURELLEMENT l'exécutable `gh` + la
 // sous-commande `issue create|new` (tokens `issue` puis `create`/`new` ADJACENTS après l'exe `gh`).
+// Les segments sont PROFONDS : un `sh -c "gh issue create …"`, un `xargs gh issue create`, un
+// `powershell -Command "…"` sont vus comme la création qu'ils exécutent.
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
-import { splitCommandSegments } from './solde-ticket-guard.mjs'
+import { segmentsProfonds } from './solde-ticket-guard.mjs'
 
 /** Un token porte-t-il une option de label ? (`--label`, `--label=X`, `-l`, `-lX` glué) */
 export const isLabelFlag = (t) => /^--label(=|$)/.test(t) || /^-l/.test(t)
@@ -31,16 +33,17 @@ export function isGhIssueCreateSegment(segment) {
 }
 
 /**
- * Décision du hook (PURE, testable). `null` = silence (commande autorisée) ; `{ reason }` = deny.
- * Une commande qui, dans un quelconque de ses segments (enchaînements `&&`/`;`/`||`/`|`), exécute
- * `gh issue create|new` SANS aucune option de label est refusée.
+ * Décision du hook (PURE, testable). `null` = silence (commande autorisée) ; `{ decision, reason }`
+ * sinon. Une commande qui, dans un quelconque de ses segments PROFONDS (enchaînements, enrobeurs de
+ * tête, sous-shells), exécute `gh issue create|new` SANS aucune option de label est refusée.
  */
 export function evaluate(command) {
   if (!command) return null
-  for (const segment of splitCommandSegments(command)) {
+  for (const segment of segmentsProfonds(command)) {
     if (!isGhIssueCreateSegment(segment)) continue
     if (segment.some(isLabelFlag)) continue
     return {
+      decision: 'deny',
       reason:
         '⚠ Création de ticket SANS label refusée (credo : « les LABELS sont l\'index du backlog », ' +
         'gabarit #101+). Ajouter au moins un `--label` couvrant les axes pertinents : ' +
@@ -68,7 +71,7 @@ if (isMain) {
     console.log(JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
+        permissionDecision: decision.decision ?? 'deny',
         permissionDecisionReason: decision.reason,
       },
     }))

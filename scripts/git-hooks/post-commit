@@ -16,9 +16,11 @@
 # le citent par chemin doivent pouvoir être relus. Sans solde (fermeture héritée, hors du repo
 # `Game`…) : comportement hérité, commentaire générique.
 #
-# Palier de revue adversariale (même demande, extension 2026-07-14) : `.claude/soldes/.compteur`
-# cumule depuis la dernière revue de PALIER ; le même hook PreToolUse bloque toute fermeture une
-# fois `.compteur` >= 10 sans `.claude/soldes/revue-palier.md` conforme.
+# Palier de revue adversariale (même demande, extension 2026-07-14) :
+# `<git-common-dir>/wfrp-palier.compteur` cumule depuis la dernière revue de PALIER ; le même hook
+# PreToolUse bloque toute fermeture une fois ce compteur >= 10 sans `.claude/soldes/revue-palier.md`
+# conforme. UN compteur par DÉPÔT : le répertoire git commun est partagé par l'arbre principal et
+# tous ses worktrees, là où un fichier d'ARBRE donnait à chaque worktree son propre compte.
 #
 # Extension 2026-07-14 (constat utilisateur : un commit « ref #N »/sans ticket n'avançait jamais le
 # palier) : le compteur incrémente désormais sur TOUT commit de substance — dont le diff touche
@@ -47,8 +49,24 @@ fi
 HASH="$(git rev-parse --short HEAD 2>/dev/null)"
 [ -n "$HASH" ] || HASH="?"
 
-COUNTER_FILE=".claude/soldes/.compteur"
+COMMON_DIR="$(git rev-parse --git-common-dir 2>/dev/null)"
+[ -n "$COMMON_DIR" ] || COMMON_DIR=".git"
+COUNTER_FILE="$COMMON_DIR/wfrp-palier.compteur"
+COUNTER_FILE_ARBRE=".claude/soldes/.compteur"
 REVUE_PALIER_FILE=".claude/soldes/revue-palier.md"
+
+# Reprise du compteur d'ARBRE vers le compteur partagé : au premier passage sa valeur est copiée,
+# puis le fichier d'arbre disparaît — une seule source subsiste. Un fichier d'arbre qui RÉAPPARAÎT
+# ensuite est supprimé SANS être relu : le partagé fait foi.
+if [ -f "$COUNTER_FILE_ARBRE" ]; then
+  if [ -f "$COUNTER_FILE" ]; then
+    rm -f "$COUNTER_FILE_ARBRE"
+    warn "$COUNTER_FILE_ARBRE supprimé — $COUNTER_FILE fait foi"
+  else
+    cp "$COUNTER_FILE_ARBRE" "$COUNTER_FILE" 2>/dev/null && rm -f "$COUNTER_FILE_ARBRE"
+    warn "compteur de palier repris dans $COUNTER_FILE"
+  fi
+fi
 
 # Extrait tous les numéros d'issue suivant fixes/closes/corrige/ferme, dédupliqués.
 ISSUES="$(printf '%s\n' "$MSG" | grep -Eio '(fixes|closes|corrige|ferme)[[:space:]]+#[0-9]+' | grep -Eo '[0-9]+' | sort -un)"

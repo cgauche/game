@@ -30,7 +30,6 @@ import {
   repoRoot,
   readSoldeFile,
   readStagedSoldeFile,
-  readCounterFile,
   readRevuePalierFile,
   readRefFile,
 } from './solde-ticket-guard.mjs'
@@ -939,7 +938,7 @@ test('repoRoot : résolu depuis l\'emplacement du script, retrouve la racine du 
   }
 })
 
-test('readSoldeFile/readCounterFile/readRevuePalierFile/readRefFile : trouvent leur fichier depuis un cwd différent de la racine', () => {
+test('readSoldeFile/readRevuePalierFile/readRefFile : trouvent leur fichier depuis un cwd différent de la racine', () => {
   const fakeRepo = mkdtempSync(join(tmpdir(), 'solde-guard-fakerepo-'))
   const hooksDir = join(fakeRepo, 'scripts', 'hooks')
   const soldesDir = join(fakeRepo, '.claude', 'soldes')
@@ -947,7 +946,6 @@ test('readSoldeFile/readCounterFile/readRevuePalierFile/readRefFile : trouvent l
   mkdirSync(soldesDir, { recursive: true })
   const fakeScript = pathToFileURL(join(hooksDir, 'fake.mjs')).href
   writeFileSync(join(soldesDir, '999.md'), 'solde-999')
-  writeFileSync(join(soldesDir, '.compteur'), '3')
   writeFileSync(join(soldesDir, 'revue-palier.md'), 'revue-palier')
   writeFileSync(join(soldesDir, 'ref-999.md'), 'ref-999')
 
@@ -956,7 +954,6 @@ test('readSoldeFile/readCounterFile/readRevuePalierFile/readRefFile : trouvent l
   try {
     process.chdir(elsewhere)
     assert.equal(readSoldeFile(999, fakeScript), 'solde-999')
-    assert.equal(readCounterFile(fakeScript), 3)
     assert.equal(readRevuePalierFile(fakeScript), 'revue-palier')
     assert.equal(readRefFile(999, fakeScript), 'ref-999')
   } finally {

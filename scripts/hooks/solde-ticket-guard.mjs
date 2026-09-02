@@ -19,13 +19,14 @@
 // forceait a faire une review reversal, elle ne doit clairement pas marcher » puis « Ou alors
 // seulement sur les tickets ? » : un commit « ref #N » (rattaché SANS fermer) échappait à tout
 // regard adversarial ET n'avançait jamais le compteur de palier. Deux volets : (1) le compteur
-// (`.claude/soldes/.compteur`, incrémenté par `scripts/git-hooks/post-commit`) avance désormais sur
+// (`<git-common-dir>/wfrp-palier.compteur`, incrémenté par `scripts/git-hooks/post-commit`) avance sur
 // TOUT commit de substance (diff touche `src/**`/`scripts/**`), pas seulement les fermetures ;
 // (2) anti-esquive — un commit `ref #N` qui touche `src/**` (≥10 lignes de diff staged) exige lui
 // aussi sa réfutation (ligne `REFUTATION:` dans le message, ou fichier `.claude/soldes/ref-<N>.md`).
 // Le déclencheur reste le TICKET explicitement rattaché (fermeture ou `ref #N`) — un commit sans
 // AUCUN ticket n'entre jamais dans ce mécanisme (périmètre tranché #591, 2026-07-17).
-import { readFileSync } from 'node:fs'
+import { Buffer } from 'node:buffer'
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 import { execSync } from 'node:child_process'
@@ -108,6 +109,19 @@ function tokenizeCommand(command) {
     while (j < n) {
       const c = command[j]
       if (/\s/.test(c) || c === ';' || c === '|' || (c === '&' && command[j + 1] === '&')) break
+      // ANSI-C quoting `$'…'` (bash) : span QUOTÉ au même titre que `'…'`. Sans lui le `$` restait
+      // collé au mot suivant (`bash -c $'gh issue create …'` rendait un token `$gh`) et l'exécutable
+      // de tête devenait méconnaissable. Un `\x` y rend son caractère littéral : la reconnaissance
+      // porte sur des noms d'exécutable, jamais sur des octets de contrôle.
+      if (c === '$' && command[j + 1] === "'") {
+        j += 2
+        while (j < n && command[j] !== "'") {
+          if (command[j] === '\\' && j + 1 < n) { buf += command[j + 1]; j += 2; continue }
+          buf += command[j]; j++
+        }
+        j++ // saute la quote fermante (si absente — quote non refermée — j a déjà atteint n)
+        continue
+      }
       if (c === '"' || c === "'") {
         const quote = c
         j++
@@ -150,6 +164,187 @@ export function splitCommandSegments(command) {
   return segments.filter((s) => s.length > 0)
 }
 
+// ── Enrobeurs : voir DERRIÈRE les sous-shells et les préfixes de tête ───────────────────────────
+// Une commande réelle voyage souvent enveloppée : soit passée en ARGUMENT-CHAÎNE à un interpréteur
+// (`sh -c "…"`, `powershell -Command "…"`, `eval "…"`), soit précédée d'un PRÉFIXE qui ne fait que
+// l'exécuter (`env FOO=1 …`, `timeout 30 …`, `xargs -I{} …`). `segmentsProfonds` rend la liste PLATE
+// des segments RÉELLEMENT exécutés, et c'est là que toutes les gardes de commande itèrent. La
+// reconnaissance reste STRUCTURELLE de bout en bout : l'argument-chaîne est RE-TOKENISÉ par
+// `tokenizeCommand`, jamais grepé (invariant du parseur ci-dessus, #591 défaut 3).
+//
+// HORS PORTÉE, dit : `node script.mjs` et `npm run x` (la commande vit dans un FICHIER),
+// `$VAR issue create` (l'exécutable vient de l'environnement), `pwsh -File x.ps1` (fichier),
+// `bash -c "$(cat …)"` (l'argument est une substitution, inconnue avant exécution), et toute
+// imbrication au-delà de `PROFONDEUR_MAX_ENROBEURS` niveaux.
+
+/** Nom d'exécutable d'un token : basename, sans extension `.exe`/`.cmd`, en minuscules. */
+export function basenameExecutable(token) {
+  return String(token ?? '').replace(/\\/g, '/').split('/').pop().replace(/\.(exe|cmd)$/i, '').toLowerCase()
+}
+
+/** Index d'un paramètre PowerShell nommé dans `args`, cherché par PRÉFIXE NON AMBIGU et insensible à
+ *  la casse : `-Command` s'écrit aussi bien `-com`, `-Comm`… — PowerShell accepte tout préfixe
+ *  qu'aucun AUTRE paramètre de la commande ne partage. `noms` = tous ses paramètres. `-1` si absent. */
+export function indexParametre(args, nom, noms = [nom]) {
+  const cible = nom.toLowerCase()
+  const autres = noms.map((n) => n.toLowerCase()).filter((n) => n !== cible)
+  return args.findIndex((a) => {
+    if (a[0] !== '-') return false
+    const p = a.slice(1).toLowerCase()
+    return p !== '' && cible.startsWith(p) && !autres.some((n) => n.startsWith(p))
+  })
+}
+
+/** Valeur d'un paramètre PowerShell nommé (`''` si absent) — voir `indexParametre`. */
+export function valeurParametre(args, nom, noms = [nom]) {
+  const i = indexParametre(args, nom, noms)
+  return i !== -1 ? (args[i + 1] ?? '') : ''
+}
+
+// Paramètres de l'hôte `powershell.exe`/`pwsh` : base d'ambiguïté des préfixes. `-c` y est traité à
+// part (`porteurCourt`) — l'hôte le résout en `-Command` bien qu'il préfixe aussi
+// `-ConfigurationName`.
+const PARAMS_HOTE_POWERSHELL = [
+  'Command', 'File', 'EncodedCommand', 'ExecutionPolicy', 'ConfigurationName', 'InputFormat',
+  'OutputFormat', 'NoProfile', 'NoLogo', 'NoExit', 'NonInteractive', 'Sta', 'Mta', 'Version',
+  'WindowStyle', 'WorkingDirectory',
+]
+
+// `-o` (isolé ou en fin de groupe court : `-euo pipefail`) et `--rcfile`/`--init-file` prennent le
+// token SUIVANT pour valeur : sans ce saut, `pipefail` passait pour la commande à exécuter.
+const FAMILLE_SH = {
+  porteurs: ['-c', '-lc'],
+  estFlag: (t) => t.startsWith('-'),
+  aValeur: (t) => /^-[a-zA-Z]*o$/.test(t) || t === '--rcfile' || t === '--init-file',
+}
+const FAMILLE_CMD = {
+  porteurs: ['/c', '/k'],
+  porteurInsensible: true,
+  estFlag: (t) => t.startsWith('/'),
+  aValeur: () => false,
+}
+const FAMILLE_POWERSHELL = {
+  parametre: 'Command', parametreEncode: 'EncodedCommand', params: PARAMS_HOTE_POWERSHELL, porteurCourt: '-c',
+}
+const FAMILLE_EVAL = { premierNonFlag: true }
+// `npx` est à la fois un enrobeur de TÊTE (`npx gh issue create`) et, avec `-c`/`--call`, un
+// interpréteur à argument-chaîne : `epluchageTete` interroge la table A à chaque cran, la forme
+// `-c` part donc en récursion au lieu d'être AVALÉE comme la valeur d'un flag (contournement mesuré).
+const FAMILLE_NPX = {
+  porteurs: ['-c', '--call'],
+  estFlag: (t) => t.startsWith('-'),
+  aValeur: (t) => t === '-p' || t === '--package',
+}
+
+/** Commande portée par un `-EncodedCommand` PowerShell : base64 d'UTF-16LE (contrat de l'hôte).
+ *  `null` si absente ou indécodable — un hook ne lève jamais. */
+function decodeCommandeEncodee(valeur) {
+  if (!valeur) return null
+  try { return Buffer.from(valeur, 'base64').toString('utf16le') || null } catch { return null }
+}
+
+/** Enrobeurs à ARGUMENT-CHAÎNE : l'exécutable reçoit la commande réelle comme UNE chaîne. Ajouter un
+ *  interpréteur = une ligne de plus ici, jamais un chemin de reconnaissance parallèle. */
+const ENROBEURS_ARGUMENT = new Map([
+  ['sh', FAMILLE_SH], ['bash', FAMILLE_SH], ['dash', FAMILLE_SH], ['zsh', FAMILLE_SH],
+  ['powershell', FAMILLE_POWERSHELL], ['pwsh', FAMILLE_POWERSHELL],
+  ['cmd', FAMILLE_CMD],
+  ['eval', FAMILLE_EVAL], ['invoke-expression', FAMILLE_EVAL],
+  ['npx', FAMILLE_NPX],
+])
+
+/** Argument-chaîne porté par ce segment (la commande à ré-analyser), ou `null`. Le flag porteur est
+ *  cherché PARMI LES FLAGS DE TÊTE, jamais à une position fixe : `bash -euo pipefail -c "…"`,
+ *  `sh -ex -c "…"`, `powershell -NoProfile -Command "…"` sont des formes courantes. */
+function argumentChaine(segment) {
+  const famille = ENROBEURS_ARGUMENT.get(basenameExecutable(segment[0]))
+  if (!famille) return null
+  const args = segment.slice(1)
+  if (famille.premierNonFlag) return args.find((a) => !a.startsWith('-')) ?? null
+  if (famille.parametre) {
+    const court = args.findIndex((a) => a.toLowerCase() === famille.porteurCourt)
+    const i = court !== -1 ? court : indexParametre(args, famille.parametre, famille.params)
+    if (i !== -1) return args[i + 1] ?? null
+    const encode = indexParametre(args, famille.parametreEncode, famille.params)
+    return encode !== -1 ? decodeCommandeEncodee(args[encode + 1]) : null
+  }
+  const memeFlag = famille.porteurInsensible
+    ? (a, b) => a.toLowerCase() === b.toLowerCase()
+    : (a, b) => a === b
+  for (let k = 0; k < args.length && famille.estFlag(args[k]); k++) {
+    if (famille.porteurs.some((f) => memeFlag(f, args[k]))) return args[k + 1] ?? null
+    if (famille.aValeur(args[k])) k += 1
+  }
+  return null
+}
+
+/** Enrobeurs de TÊTE : préfixes qui ne font qu'exécuter la suite de la ligne. `flags` = les flags à
+ *  VALEUR SÉPARÉE de cet enrobeur (les autres flags sont sautés seuls ; sans clef `flags`, aucun flag
+ *  n'est sauté — `command -v git` n'exécute rien) ; `affectations` = `VAR=val` admis parmi eux ;
+ *  `positionnels` = arguments propres avant la commande (la durée de `timeout`). */
+const ENROBEURS_TETE = new Map([
+  ['env', { flags: ['-u', '--unset'], affectations: true }],
+  ['nohup', {}],
+  ['command', {}],
+  ['winpty', {}],
+  ['time', {}],
+  ['npx', { flags: ['-p', '--package'] }],
+  ['sudo', { flags: ['-u', '--user', '-g', '--group', '-p', '--prompt'] }],
+  ['setsid', { flags: [] }],
+  ['timeout', { flags: ['-k', '--kill-after', '-s', '--signal'], positionnels: 1 }],
+  ['xargs', { flags: ['-I', '-i', '-n', '-P', '-d', '-E', '-e', '-s', '-a', '-L'] }],
+  ['stdbuf', { flags: ['-i', '-o', '-e', '--input', '--output', '--error'] }],
+  ['nice', { flags: ['-n', '--adjustment'] }],
+])
+
+/** Tokens de tête sans exécutable propre : call-operator PowerShell et accolades de bloc `& { … }`. */
+const TOKENS_TETE_NUS = new Set(['&', '{', '}'])
+const AFFECTATION_RE = /^[A-Za-z_][A-Za-z0-9_]*=/
+
+/** Segment débarrassé de ses enrobeurs de TÊTE, épluchés jusqu'à stabilité (`nohup env FOO=1 git …`).
+ *  `[]` si le segment n'est fait que d'enrobeurs. */
+function epluchageTete(segment) {
+  let i = 0
+  for (;;) {
+    const t = segment[i]
+    if (t === undefined) return []
+    if (TOKENS_TETE_NUS.has(t) || AFFECTATION_RE.test(t)) { i += 1; continue }
+    // Un enrobeur qui porte ICI un argument-chaîne rend la main : la récursion le déploiera.
+    if (argumentChaine(segment.slice(i)) !== null) return segment.slice(i)
+    const enrobeur = ENROBEURS_TETE.get(basenameExecutable(t))
+    if (!enrobeur) return segment.slice(i)
+    i += 1
+    if (enrobeur.flags) {
+      while (i < segment.length && (segment[i].startsWith('-') || (enrobeur.affectations && AFFECTATION_RE.test(segment[i])))) {
+        i += enrobeur.flags.includes(segment[i]) ? 2 : 1
+      }
+    }
+    i += enrobeur.positionnels ?? 0
+  }
+}
+
+// Une commande réelle dépasse rarement deux niveaux ; au-delà de quatre, l'analyse s'arrête et la
+// commande PASSE (borne dite, préférée à une récursion non bornée dans un hook).
+const PROFONDEUR_MAX_ENROBEURS = 4
+
+/** Liste PLATE des segments RÉELLEMENT exécutés par la commande : découpe aux enchaînements
+ *  (`splitCommandSegments`), épluchage des enrobeurs de TÊTE, puis récursion sur l'ARGUMENT-CHAÎNE
+ *  des interpréteurs (re-tokenisé), jusqu'à `PROFONDEUR_MAX_ENROBEURS` niveaux d'imbrication. Le
+ *  segment enrobant est RENDU LUI AUSSI, après ce qu'il contient : `cmd /c mklink …` n'a pas
+ *  d'argument-chaîne unique, l'invocation vit sur ses arguments recollés (`git-destructive-guard`). */
+export function segmentsProfonds(command, profondeur = 0) {
+  const segments = []
+  if (!command || profondeur > PROFONDEUR_MAX_ENROBEURS) return segments
+  for (const brut of splitCommandSegments(command)) {
+    const segment = epluchageTete(brut)
+    if (segment.length === 0) continue
+    const inner = argumentChaine(segment)
+    if (inner !== null) segments.push(...segmentsProfonds(inner, profondeur + 1))
+    segments.push(segment)
+  }
+  return segments
+}
+
 const GLOBAL_VALUE_FLAGS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path'])
 
 /** Index de la SOUS-COMMANDE git dans un segment (`[&] git [flags globales] <sub>`), `-1` si le
@@ -160,8 +355,7 @@ const GLOBAL_VALUE_FLAGS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--n
 export function gitSubcommandIndex(segment) {
   const start = segment[0] === '&' ? 1 : 0
   if (segment.length <= start) return -1
-  const exe = segment[start].replace(/\\/g, '/').split('/').pop().replace(/\.(exe|cmd)$/i, '').toLowerCase()
-  if (exe !== 'git') return -1
+  if (basenameExecutable(segment[start]) !== 'git') return -1
   let idx = start + 1
   while (idx < segment.length) {
     const t = segment[idx]
@@ -190,11 +384,12 @@ function gitCommitSubcommandIndex(segment) {
   return idx !== -1 && segment[idx] === 'commit' ? idx : -1
 }
 
-/** `true` si la commande exécute STRUCTURELLEMENT un `git commit` (un segment quelconque, entre
- *  enchaînements) — jamais un grep de sous-chaîne sur la ligne entière (#591 défaut 3). */
+/** `true` si la commande exécute STRUCTURELLEMENT un `git commit` (un segment PROFOND quelconque :
+ *  enchaînements, enrobeurs de tête, sous-shells) — jamais un grep de sous-chaîne sur la ligne
+ *  entière (#591 défaut 3). */
 export function isGitCommitCommand(command) {
   if (!command) return false
-  return splitCommandSegments(command).some((segment) => gitCommitSubcommandIndex(segment) !== -1)
+  return segmentsProfonds(command).some((segment) => gitCommitSubcommandIndex(segment) !== -1)
 }
 
 // Longs à valeur SÉPARÉE (`--message truc`, `-c truc`) : le token suivant est la valeur, jamais un
@@ -228,7 +423,7 @@ const PATHSPEC_GLOB_RE = /[*?[]/
  *  scoping mal résolu qui tairait la garde). */
 export function extractCommitPathspecs(command) {
   if (!command) return []
-  for (const segment of splitCommandSegments(command)) {
+  for (const segment of segmentsProfonds(command)) {
     const subIdx = gitCommitSubcommandIndex(segment)
     if (subIdx === -1) continue
     const paths = []
@@ -262,12 +457,19 @@ export function extractCommitPathspecs(command) {
 // ET le texte étendu par `extractMessageSources` quand le message est passé par `-F`).
 const CLOSE_KEYWORD_RE = /(corrige|fixe?s?|closes?|ferme)\s+#(\d+)/gi
 
+/** Texte où chercher les mots-clefs : la commande TELLE QU'ÉCRITE, plus ses segments profonds
+ *  recomposés — un message qui n'apparaît qu'après déroulage (`-EncodedCommand` en base64) resterait
+ *  sinon invisible alors que le `git commit` qu'il porte est, lui, reconnu. */
+function texteProfond(command) {
+  return [command, ...segmentsProfonds(command).map((s) => s.join(' '))].join('\n')
+}
+
 /** Numéros de ticket que la commande FERME, dédupliqués/triés. `[]` si la commande n'est pas un
  *  `git commit`, ou si aucun mot-clef de fermeture n'apparaît. */
 export function extractClosedIssues(command) {
   if (!command || !isGitCommitCommand(command)) return []
   const nums = new Set()
-  for (const m of command.matchAll(CLOSE_KEYWORD_RE)) nums.add(Number(m[2]))
+  for (const m of texteProfond(command).matchAll(CLOSE_KEYWORD_RE)) nums.add(Number(m[2]))
   return [...nums].sort((a, b) => a - b)
 }
 
@@ -386,12 +588,13 @@ export function validateRevuePalier(content, today) {
  * Décision du hook (PURE, testable). `readSolde(n)` renvoie le contenu STAGÉ (index git du commit
  * en cours) de `.claude/soldes/<n>.md`, ou `null`/`''` s'il n'y est pas. `soldeOnDisk(n)` renvoie le
  * contenu du même fichier sur le DISQUE : il ne sert qu'à distinguer « jamais écrit » de « écrit mais
- * non stagé » dans le message. `counter` = valeur courante de `.claude/soldes/.compteur` (tickets
- * fermés depuis la dernière revue de palier). `readRevuePalier()` renvoie le contenu de
+ * non stagé » dans le message. `counter` = valeur courante du compteur de palier PARTAGÉ (commits de
+ * substance depuis la dernière revue), `cheminCompteur` son chemin — nommé dans le refus, pour que
+ * la valeur opposée soit vérifiable. `readRevuePalier()` renvoie le contenu de
  * `.claude/soldes/revue-palier.md` ou `null`.
- * @returns {{ reason: string } | null} — non-null = `deny`, null = silence.
+ * @returns {{ decision: 'deny', reason: string } | null} — non-null = refus, null = silence.
  */
-export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, counter = 0, readRevuePalier = () => null }) {
+export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, counter = 0, readRevuePalier = () => null, cheminCompteur = null }) {
   const issues = extractClosedIssues(command)
   if (issues.length === 0) return null
 
@@ -399,11 +602,13 @@ export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, 
     const { ok, problems } = validateRevuePalier(readRevuePalier(), today)
     if (!ok) {
       return {
+        decision: 'deny',
         reason:
           `⚠ Palier de ${PALIER} tickets fermés atteint : revue adversariale de PALIER exigée avant ` +
           `toute nouvelle fermeture — ${problems.join(' ; ')}. Écrire .claude/soldes/revue-palier.md ` +
           `(ligne "verdict: CONFIRMÉ|PARTIEL|RÉFUTÉ", ≥${MIN_REVUE_PALIER_LEN} caractères de synthèse sur ` +
-          `le CUMUL des ${PALIER} dernières fermetures, date du jour).`,
+          `le CUMUL des ${PALIER} dernières fermetures, date du jour). Compteur lu : ` +
+          `${cheminCompteur ?? COMPTEUR_PALIER} — un seul par dépôt, partagé par tous ses worktrees.`,
       }
     }
   }
@@ -425,6 +630,7 @@ export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, 
 
   const detail = failures.map(({ n, problems }) => `#${n} (.claude/soldes/${n}.md) — ${problems.join(' ; ')}`).join(' | ')
   return {
+    decision: 'deny',
     reason:
       `⚠ Fermeture de ticket au commit sans SOLDE conforme : ${detail}. Écrire (ou compléter) le fichier ` +
       `avec une ligne "VERIFIE: <ce que l'orchestrateur a concrètement vérifié, ≥${MIN_VERIFIE_LEN} caractères>", ` +
@@ -432,7 +638,8 @@ export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, 
       `corrigé dans ce commit | RAS : justification>"), une section "## Réfutation" (ligne "verdict: ` +
       `CONFIRMÉ|PARTIEL|RÉFUTÉ", ≥${MIN_REFUTATION_LEN} caractères — qui a attaqué quoi sur le diff/DoD), et ` +
       `la date du jour (demande 2026-07-14), puis le STAGER (\`git add .claude/soldes/<N>.md\`) : la preuve ` +
-      `citée par le message de commit vit dans git.`,
+      `citée par le message de commit vit dans git. L'index est lu AVANT l'exécution : un \`git add\` ` +
+      `placé dans la MÊME commande n'est jamais vu — stager d'abord, committer ensuite.`,
   }
 }
 
@@ -459,11 +666,51 @@ export function readStagedSoldeFile(n, dir = process.cwd()) {
   } catch { return null }
 }
 
-/** Lecture du compteur de palier depuis le disque. `0` si absent/illisible/non numérique. */
-export function readCounterFile(scriptUrl = import.meta.url) {
+// ── Compteur de palier : UN fichier par DÉPÔT, partagé par tous ses worktrees ────────────────────
+// Le palier compte les commits de substance du DÉPÔT. Porté par un fichier d'ARBRE
+// (`.claude/soldes/.compteur`), chaque worktree tenait son propre compte : le palier n'arrivait
+// jamais. Il vit dans le RÉPERTOIRE GIT COMMUN (`git rev-parse --git-common-dir`) — que l'arbre
+// principal et tous ses worktrees partagent, et qu'aucun index ne suit.
+export const COMPTEUR_PALIER = 'wfrp-palier.compteur'
+const COMPTEUR_PALIER_ARBRE = '.claude/soldes/.compteur'
+
+/** Chemin du compteur de palier partagé, vu depuis `dir`. `null` hors dépôt git. */
+export function cheminCompteurPalier(dir = process.cwd()) {
   try {
-    const raw = readFileSync(join(repoRoot(scriptUrl), '.claude/soldes/.compteur'), 'utf8').trim()
-    const n = Number.parseInt(raw, 10)
+    const commun = execSync('git rev-parse --git-common-dir', {
+      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+    return commun ? join(resolve(dir, commun), COMPTEUR_PALIER) : null
+  } catch { return null }
+}
+
+/** Reprise du compteur d'ARBRE vers le compteur partagé : au premier passage sa valeur est copiée,
+ *  puis le fichier d'arbre supprimé — une seule source subsiste. Un fichier d'arbre qui RÉAPPARAÎT
+ *  ensuite (outil, restauration, autre worktree) est supprimé SANS être relu : le partagé fait foi,
+ *  et le geste est annoncé sur stderr. Rend ce qui a été fait (`'reprise'`/`'purge'`/`null`). */
+export function migrerCompteurPalier(dir = process.cwd(), partage = cheminCompteurPalier(dir)) {
+  if (!partage) return null
+  const arbre = join(dir, COMPTEUR_PALIER_ARBRE)
+  try {
+    if (!existsSync(arbre)) return null
+    if (existsSync(partage)) {
+      rmSync(arbre, { force: true })
+      process.stderr.write(`solde-ticket-guard: ${COMPTEUR_PALIER_ARBRE} supprimé — ${partage} fait foi\n`)
+      return 'purge'
+    }
+    writeFileSync(partage, readFileSync(arbre, 'utf8').trim(), 'utf8')
+    rmSync(arbre, { force: true })
+    process.stderr.write(`solde-ticket-guard: compteur de palier repris dans ${partage}\n`)
+    return 'reprise'
+  } catch { return null } // un compteur illisible repart de 0 — jamais un hook en échec
+}
+
+/** Valeur du compteur de palier partagé, vu depuis `dir`. `0` si absent/illisible/non numérique. */
+export function readCounterFile(dir = process.cwd()) {
+  const partage = cheminCompteurPalier(dir)
+  if (!partage) return 0
+  try {
+    const n = Number.parseInt(readFileSync(partage, 'utf8').trim(), 10)
     return Number.isFinite(n) && n >= 0 ? n : 0
   } catch { return 0 }
 }
@@ -488,7 +735,7 @@ const SUBSTANTIVE_MIN_LINES = 10
 export function extractRefIssues(command) {
   if (!command || !isGitCommitCommand(command)) return []
   const nums = new Set()
-  for (const m of command.matchAll(REF_KEYWORD_RE)) nums.add(Number(m[1]))
+  for (const m of texteProfond(command).matchAll(REF_KEYWORD_RE)) nums.add(Number(m[1]))
   return [...nums].sort((a, b) => a - b)
 }
 
@@ -689,25 +936,49 @@ export function readRefFile(n, scriptUrl = import.meta.url) {
 // lecture d'état GIT depuis qu'il doit être STAGÉ : il se lit dans l'index de `targetDir`. Sa lecture
 // DISQUE (côté session, là où les soldes s'écrivent) ne sert plus qu'à nommer le défaut « écrit mais
 // non stagé ».
-const CD_RE = /(?:^|&&|;|\|)\s*cd\s+("[^"]*"|'[^']*'|\S+)/i
-const GIT_DASH_C_RE = /git\s+-C\s+("[^"]*"|'[^']*'|\S+)/i
+// La cible se lit sur les segments PROFONDS : un `cd` ou un `git -C` posé dans un sous-shell
+// (`sh -c "cd wt && git commit …"`) désigne le même répertoire réel qu'en surface.
 
-function stripQuotes(s) {
-  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-    return s.slice(1, -1)
-  }
-  return s
+// Chemin POSIX de disque Windows (`/c/Users/…`, graphie Git Bash / MSYS) : sur win32 `resolve()` le
+// prend pour un relatif du disque courant (`C:\c\Users\…`) et le garde lisait l'index du MAUVAIS
+// dépôt. Hors win32, `/c/...` est un vrai chemin absolu — aucune conversion.
+const DISQUE_POSIX_RE = /^\/([A-Za-z])\/(.*)$/
+
+/** Chemin de commande rendu natif pour la plateforme (`/c/Users/x` → `C:/Users/x` sur win32). */
+export function versCheminNatif(chemin, platform = process.platform) {
+  if (platform !== 'win32') return chemin
+  const m = DISQUE_POSIX_RE.exec(chemin)
+  return m ? `${m[1].toUpperCase()}:/${m[2]}` : chemin
 }
 
-/** Répertoire dans lequel le `git commit` de la commande s'exécute réellement : premier `cd <path>`
- *  du pipeline, ou `git -C <path>`, résolu contre `cwd` (le cwd du process hook). `cwd` inchangé si
- *  ni l'un ni l'autre n'est présent (comportement d'origine hors worktree). */
-export function extractTargetDir(command, cwd = process.cwd()) {
+/** Valeur du flag global `git -C <path>` d'un segment, ou `null` (segment non-git, ou sans `-C`). */
+function valeurGitDashC(segment) {
+  const start = segment[0] === '&' ? 1 : 0
+  if (basenameExecutable(segment[start]) !== 'git') return null
+  for (let k = start + 1; k < segment.length; k++) {
+    const t = segment[k]
+    if (!t.startsWith('-')) return null
+    if (t === '-C') return segment[k + 1] ?? null
+    if (GLOBAL_VALUE_FLAGS.has(t)) k += 1
+  }
+  return null
+}
+
+/** Répertoire dans lequel le `git commit` de la commande s'exécute réellement : `git -C <path>` en
+ *  priorité, sinon le premier `cd <path>` du pipeline, résolu contre `cwd` (le cwd du process hook).
+ *  `cwd` inchangé si ni l'un ni l'autre n'est présent (comportement d'origine hors worktree). */
+export function extractTargetDir(command, cwd = process.cwd(), platform = process.platform) {
   if (!command) return cwd
-  const gitC = GIT_DASH_C_RE.exec(command)
-  if (gitC) return resolve(cwd, stripQuotes(gitC[1]))
-  const cd = CD_RE.exec(command)
-  if (cd) return resolve(cwd, stripQuotes(cd[1]))
+  const segments = segmentsProfonds(command)
+  for (const segment of segments) {
+    const dashC = valeurGitDashC(segment)
+    if (dashC) return resolve(cwd, versCheminNatif(dashC, platform))
+  }
+  for (const segment of segments) {
+    if (basenameExecutable(segment[0]) === 'cd' && segment[1]) {
+      return resolve(cwd, versCheminNatif(segment[1], platform))
+    }
+  }
   return cwd
 }
 
@@ -808,7 +1079,19 @@ export function readStagedDiffStat(dir = process.cwd()) {
   } catch { return '' }
 }
 
-// ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────────
+/** Décision d'ensemble d'un cumul de refus (patron de driver partagé avec `git-destructive-guard` :
+ *  la décision est PORTÉE par l'évaluateur, `deny` à défaut). `null` si aucun refus, sinon la PLUS
+ *  STRICTE — un seul `deny` fait basculer tout le cumul — et les raisons jointes. */
+export function decisionCumulee(decisions) {
+  const refus = decisions.filter(Boolean)
+  if (refus.length === 0) return null
+  return {
+    decision: refus.some((d) => (d.decision ?? 'deny') === 'deny') ? 'deny' : 'ask',
+    reason: refus.map((d) => d.reason).join(' || '),
+  }
+}
+
+// ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 if (isMain) {
   let raw = ''
@@ -849,12 +1132,14 @@ if (isMain) {
     process.exit(0)
   }
 
+  migrerCompteurPalier(targetDir)
   const decision = evaluate({
     command: text,
     today,
     readSolde: (n) => readStagedSoldeFile(n, targetDir),
     soldeOnDisk: (n) => readSoldeFile(n),
-    counter: readCounterFile(),
+    counter: readCounterFile(targetDir),
+    cheminCompteur: cheminCompteurPalier(targetDir),
     readRevuePalier: readRevuePalierFile,
   })
   const antiEsquive = evaluateAntiEsquive({
@@ -872,13 +1157,13 @@ if (isMain) {
   })
   const amendInvisible = evaluateAmendInvisible({ command, stagedTouchesSrc: touchesSrc })
   const manifestClosure = evaluateManifestClosure({ command: text, readStagedManifest: () => readStagedManifestFile(targetDir) })
-  const reasons = [decision, antiEsquive, juge, amendInvisible, manifestClosure].filter(Boolean).map((d) => d.reason)
-  if (reasons.length > 0) {
+  const cumul = decisionCumulee([decision, antiEsquive, juge, amendInvisible, manifestClosure])
+  if (cumul) {
     console.log(JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: reasons.join(' || '),
+        permissionDecision: cumul.decision,
+        permissionDecisionReason: cumul.reason,
       },
     }))
   }

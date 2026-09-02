@@ -112,7 +112,7 @@ via `inBattleId`, mort→destroyed items co-localisés / blessée→wounds clamp
 Possession{navire} par `vehicleId` + embarquées `destroyed`). ⚠ **DORMANTES** (comme #657) : spawn combat = #621, navire-Possession
 = T2/#267 ; testées en contexte forgé. **#622 RESTE OUVERT** (bloqué levé mais gaps propres : résidus `{text}` Cheval/Charette/
 Bateau fluvial/Voilier/Rhinox à migrer, cliquet décroissant absent, `partyAddHero` ne sème pas le rejoint-en-cours).
-⚠ **Gate de PALIER** : `.claude/soldes/.compteur` compte les fermetures ; à **10** (`PALIER`), `scripts/hooks/solde-ticket-guard.mjs` exige une revue adversariale du CUMUL — `.claude/soldes/revue-palier.md`, ligne `verdict: CONFIRMÉ|PARTIEL|RÉFUTÉ` + ≥80 car. de synthèse + date — avant toute nouvelle fermeture. La revue consommée, le compteur repart ; c'est le compteur qu'on lit pour savoir si le gate mord, jamais la présence du fichier.
+⚠ **Gate de PALIER** : le compteur `wfrp-palier.compteur` (dans `git rev-parse --git-common-dir`, un seul par dépôt, tous worktrees — #1679 L1a) compte les commits de SUBSTANCE (`src/`/`scripts/`, fermeture ou pas) ; à **10** (`PALIER`), `scripts/hooks/solde-ticket-guard.mjs` exige une revue adversariale du CUMUL — `.claude/soldes/revue-palier.md`, ligne `verdict: CONFIRMÉ|PARTIEL|RÉFUTÉ` + ≥80 car. de synthèse + date — avant toute nouvelle fermeture. La revue consommée, le compteur repart ; c'est le compteur qu'on lit pour savoir si le gate mord, jamais la présence du fichier.
 ⚠ `scripts/qc/_tmp-*.mts` (scratch session art/rig, untracked) cassent `tsc` brut — filtrer `_tmp` ; et ils font des `git clean`
 qui EFFACENT les soldes gitignorés (#657/#618 disparus post-commit, sans impact — hooks lus au commit).
 

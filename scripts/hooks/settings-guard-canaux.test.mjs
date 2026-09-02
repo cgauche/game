@@ -3,8 +3,8 @@
 // outils par lesquels une commande shell part réellement — pas seulement `Bash`/`PowerShell`.
 //
 // Défaut mesuré 2026-08-03 (#1052) : l'orchestrateur committe via l'outil MCP
-// `mcp__lean-ctx__ctx_shell`, hors matcher — le compteur de palier `.claude/soldes/.compteur`
-// était à 32 pour un palier de 10, la garde n'ayant jamais tiré.
+// `mcp__lean-ctx__ctx_shell`, hors matcher — le compteur de palier était à 32 pour un palier de 10,
+// la garde n'ayant jamais tiré.
 //
 // `mcp__lean-ctx__ctx_execute` n'est pas un canal gardable en l'état : son `tool_input` (schéma
 // tools/list de lean-ctx 3.9.12, relevé 2026-08-03) n'expose aucun champ `command` — il porte

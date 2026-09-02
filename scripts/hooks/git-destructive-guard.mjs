@@ -3,12 +3,12 @@
 // confirmation humaine explicite, et tout LIEN posé sur un `node_modules` est REFUSÉ (#1679 L1c).
 //
 // Détection STRUCTURELLE (jamais un grep de sous-chaîne sur la ligne entière) : on réutilise le
-// tokenizer quote-aware de `solde-ticket-guard` (`splitCommandSegments`/`gitSubcommand`, invariant
+// tokenizer quote-aware de `solde-ticket-guard` (`segmentsProfonds`/`gitSubcommand`, invariant
 // partagé) — sans lui, `Write-Output "git stash"` ou un message de commit citant `git reset --hard`
 // déclenchaient un `ask` sur une commande qui n'exécute rien (faux positif mesuré 2026-08-03).
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
-import { splitCommandSegments, gitSubcommand } from './solde-ticket-guard.mjs'
+import { segmentsProfonds, gitSubcommand, valeurParametre } from './solde-ticket-guard.mjs'
 
 /** Une option courte parmi `letters` est-elle présente (isolée ou groupée : `-fd`, `-fdx`) ? */
 const hasShortFlag = (args, letters) =>
@@ -52,23 +52,6 @@ const PARAMS_NEW_ITEM = [
   'InformationAction', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable',
 ]
 
-/**
- * Valeur d'un paramètre PowerShell nommé, cherché par PRÉFIXE NON AMBIGU et insensible à la casse :
- * `-ItemType Junction` s'écrit aussi bien `-it`, `-item`, `-itemt`… — PowerShell accepte tout
- * préfixe qu'aucun AUTRE paramètre de la cmdlet ne partage (trou mesuré : le garde ne lisait que le
- * nom entier). `noms` = tous les paramètres de la cmdlet, `nom` celui dont on veut la valeur.
- */
-function valeurParametre(args, nom, noms = [nom]) {
-  const cible = nom.toLowerCase()
-  const autres = noms.map((n) => n.toLowerCase()).filter((n) => n !== cible)
-  const i = args.findIndex((a) => {
-    if (a[0] !== '-') return false
-    const p = a.slice(1).toLowerCase()
-    return p !== '' && cible.startsWith(p) && !autres.some((n) => n.startsWith(p))
-  })
-  return i !== -1 ? (args[i + 1] ?? '') : ''
-}
-
 /** `mklink` est un BUILTIN de `cmd` : derrière `cmd /c`, l'exécutable du segment est `cmd`, et le
  *  reste de la ligne (chaînée par `&`/`;`, quotée ou non) porte l'invocation. On la lit sur les
  *  arguments RECOLLÉS — une chaîne quotée en un seul token la porte tout entière. */
@@ -107,11 +90,12 @@ function lienNodeModules(segment) {
 /**
  * Décision du hook (PURE, testable). `null` = silence ; `{ decision, reason }` sinon — `ask` pour un
  * git destructif (l'humain arbitre), `deny` pour un lien sur `node_modules` (aucun cas légitime).
- * Une commande est visée si l'un de ses SEGMENTS l'exécute réellement.
+ * Une commande est visée si l'un de ses SEGMENTS PROFONDS (enchaînements, enrobeurs de tête,
+ * sous-shells) l'exécute réellement.
  */
 export function evaluate(command) {
   if (!command) return null
-  for (const segment of splitCommandSegments(command)) {
+  for (const segment of segmentsProfonds(command)) {
     const lien = lienNodeModules(segment)
     if (lien) {
       return {
