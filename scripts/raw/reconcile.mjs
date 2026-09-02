@@ -11,10 +11,11 @@
 //   cités par l'Atlas mais jamais référencés dans le code → l'Atlas décrit une règle hors-code.
 //   (Sens B reste borné au LDB — hors périmètre #434 défaut 9.)
 // Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs
-import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
+import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
 export const RAWDIR = 'docs/raw'
@@ -363,7 +364,7 @@ export function renderReport(data) {
 
 function main() {
   const data = computeReconciliation()
-  writeFileSync(join(RAWDIR, 'reconciliation.md'), renderReport(data))
+  ecrireDoc(join(RAWDIR, 'reconciliation.md'), renderReport(data))
   console.log(`Sens A (LDB) : ${data.hardA.length} trous durs · ${data.softA.length} chapitres à lignes non pinées · folios Atlas ignorés ${data.folioIgnored}`)
   const noChapterCount = [...data.codeOtherNoCh.values()].reduce((n, a) => n + a.length, 0)
   console.log(`Sens A (autres livres) : ${data.hardAOther.length} trou(s) dur(s) chapitre-livre · ${data.softAOther.length} chapitre(s)-livre à lignes non pinées · ${noChapterCount} réf(s) sans chapitre (hors mesure)`)

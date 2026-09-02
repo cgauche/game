@@ -12,10 +12,11 @@
 // supprime plus ses trous de section, il les ÉTIQUETTE (`classifyHole`) — fiche / catalogue / scénario /
 // hors-règle / trou. Le dénominateur de la ligne de résumé est DÉRIVÉ (jamais un compte recopié).
 // Sortie : docs/raw/coverage.md
-import { readdirSync, writeFileSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS, esc, chapterFile, folioSpan, readText } from './_lib.mjs'
+import { BOOKS, esc, chapterFile, folioSpan, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
+import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 const rawDir = 'docs/raw'
 // Chapitres HORS-RÈGLE (exclus du dénominateur) : section MJ/cadre du LDB (terrain/politique/colonies/
 // sites = direction de jeu, pas des règles PC) + front-matter (index/intro/préface) de tout livre.
@@ -306,7 +307,7 @@ const HOLE_LABEL = { catalogue: 'transcrit en catalogue, jamais traité', scenar
 
 function main() {
   // Profondeur-conscient : on garde chaque fiche séparée pour compter les refs et trouver la fiche PROPRIÉTAIRE.
-  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && f !== 'coverage.md')
+  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
     .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
   // Chapitres crédités par un catalogue : source unique `catalogChaptersOf` (#604 défaut latent —
   // extraite pour être réutilisée par `check-catalogue-complete.mjs`, jamais une resaisie).
@@ -418,7 +419,7 @@ function main() {
   const summaryLine = `**Couverture (profondeur) : ✅ ${gOk} traités par une fiche · 📖 ${gCat} transcrits par un catalogue seul (jamais traités) · 🟡 ${gMid} effleurés · ⬜ ${gHole} trous** sur ${denom} chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur ${gSecCatalogue + gSecHorsRegle + gSecHoles} section(s) non couvertes par une fiche : **${gSecCatalogue} transcrite(s) en catalogue** (recopiées, pas traitées) · **${gSecHorsRegle} hors-règle** (chapitre explicitement exclu) · **${gSecHolesScenario} bruit de scénario** (livres \`SCENARIO_PUR\` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **${gSecHolesRegle} candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et ${gSecEnfoui} titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (\`ABBR NN p.X\`, #606) : ${gIgnoredFolios} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : ${perBook.join(' · ')}.`
   const summaryIdx = out.indexOf(SUMMARY_PLACEHOLDER)
   out[summaryIdx] = summaryLine
-  writeFileSync(join(rawDir, 'coverage.md'), out.join('\n'))
+  ecrireDoc(join(rawDir, 'coverage.md'), out.join('\n'))
   console.log(`coverage profondeur : ✅ ${gOk} · 📖 ${gCat} · 🟡 ${gMid} · ⬜ ${gHole} (sur ${denom} chapitres) · sections non-fiche : catalogue ${gSecCatalogue} · hors-règle ${gSecHorsRegle} · scénario ${gSecHolesScenario} · règle ${gSecHolesRegle} · 🔻enfoui ${gSecEnfoui} · folios ignorés ${gIgnoredFolios}`)
   console.log('par livre : ' + perBook.join(' · '))
 }

@@ -8,7 +8,7 @@ import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { catalogueBlocksOf, scanIncompleteChapters } from './check-catalogue-complete.mjs'
 import { sectionsOf, sectionLevelOf, cleanTitle, catalogChaptersOf } from './coverage.mjs'
-import { chapterFile, readText } from './_lib.mjs'
+import { chapterFile, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
 import { normalizeLoose } from './check-entity-in-chapter.mjs'
 
 test('catalogueBlocksOf : un bloc `## [ABBR NN]` collecte tous ses headings jusqu\'au PROCHAIN bloc, jamais au-delà', () => {
@@ -76,7 +76,7 @@ test('scanIncompleteChapters : chapitre crédité mais UNE section absente du bl
 
 test('#604 stock réel (Disque RÉEL, tolérance zéro) : 0 violation sur les chapitres réellement crédités', () => {
   const rawDir = 'docs/raw'
-  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && f !== 'coverage.md')
+  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
     .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
   const catalogCh = catalogChaptersOf(docs)
   const blocks = catalogueBlocksOf(docs)

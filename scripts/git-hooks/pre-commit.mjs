@@ -36,6 +36,7 @@ import { battleRngEngineLeakExcluded } from '../guards/lib/battleRngEngineLeakWh
 import { scanNpmLockHoisted } from '../guards/lib/npmLockHoisted.mjs';
 import { scanArbresImbriques } from '../guards/lib/arbreImbrique.mjs';
 import { fichiersALinter, lancerLint } from '../guards/lib/lintStage.mjs';
+import { generateursArmes } from '../guards/lib/empreinteStage.mjs';
 
 const DEBUT_MS = Date.now();
 
@@ -224,6 +225,27 @@ if (docsStaged) {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-docs-vs-head.mjs'), ...staged], { cwd: ROOT, stdio: 'inherit' });
   } catch {
     offenders.push('docs-vs-commit en échec (doc généré qui décrit un arbre absent du commit — régénérer sur l’arbre stagé, ou stager le code décrit)');
+  }
+}
+
+// #1679 L1b — EMPREINTE DE SOURCES des docs dérivés. UN déclencheur : un doc GÉNÉRÉ est stagé. Pour
+// ce doc-là, les blobs figés dans son pied doivent être ceux de l'INDEX — sinon il décrit un arbre
+// que ce commit n'embarque pas. Une SOURCE stagée sans régénération n'arme rien ici (le pied qu'elle
+// périme porte un doc qui ne part pas dans ce commit) : c'est `docs:check` qui la juge en CI, sur le
+// CONTENU régénéré. Ce qui est joué ici ne régénère RIEN (recalcul sur l'index, `git ls-files -s`),
+// contre 49,8 s pour la régénération des 13 générateurs qu'un `src/data/*.json` arme (mesuré 2026-09-02).
+// CHAÎNE DE CONFIANCE : `docs/.sources-lues.json` est lu ici dans l'ARBRE (il ne sert qu'à CHOISIR
+// les générateurs), SANS être revérifié ; le VERDICT, lui, ne sort que de l'INDEX. Sa fraîcheur est
+// gatée en CI par `docs:check`, qui le REGÉNÈRE et le compare comme tout dérivé. DÉFAUT CONNU : s'il
+// est illisible, la sélection rend une liste vide et la porte se tait ici — la CI reste le filet.
+const armes = (() => {
+  try { return generateursArmes(JSON.parse(readFileSync(join(ROOT, 'docs', '.sources-lues.json'), 'utf8')), staged); } catch { return []; }
+})();
+if (armes.length) {
+  try {
+    execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'build-all.mjs'), '--empreinte', '--only', ...armes], { cwd: ROOT, stdio: 'inherit' });
+  } catch {
+    offenders.push('empreinte de sources en échec (un doc GÉNÉRÉ stagé a été fabriqué sur un arbre ≠ index — stage les sources nommées ci-dessus, ou régénère le doc après les avoir stagées)');
   }
 }
 

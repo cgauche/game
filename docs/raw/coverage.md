@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 98 traités par une fiche · 📖 78 transcrits par un catalogue seul (jamais traités) · 🟡 0 effleurés · ⬜ 1 trous** sur 177 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3430 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2359 hors-règle** (chapitre explicitement exclu) · **156 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **280 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅9·📖4·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅1·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅6·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 88 traités par une fiche · 📖 78 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 1 trous** sur 169 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3458 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2493 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **272 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅9·📖4·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -22,23 +22,23 @@
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | *(artefact OCR)* | ➖ | |
 | 04 | Cités et villes | ✅ | 7 (creation.md ×7) |
-| 05 | Points de vue | ✅ | 91 (creation.md ×52) |
+| 05 | Points de vue | ✅ | 90 (creation.md ×52) |
 | 06 | *(artefact OCR)* | ➖ | |
-| 07 | Carrières | ✅ | 86 (avancement.md ×61) |
+| 07 | Carrières | ✅ | 83 (avancement.md ×61) |
 | 08 | Statut | ✅ | 26 (carrieres.md ×22) |
 | 09 | Compétences | ✅ | 146 (competences.md ×137) |
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
 | 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
 | 12 | Tests | ✅ | 50 (tests.md ×45) |
-| 13 | Combat | ✅ | 133 (combat.md ×122) |
+| 13 | Combat | ✅ | 132 (combat.md ×122) |
 | 14 | OPTION : FRAPPE MORTELLE | ✅ | 141 (combat.md ×136) |
 | 15 | Déplacement | ✅ | 70 (combat.md ×62) |
 | 16 | États | ✅ | 55 (etats.md ×30) |
-| 17 | Destin et Résistance | ✅ | 54 (destin.md ×31) |
+| 17 | Destin et Résistance | ✅ | 52 (destin.md ×31) |
 | 18 | Traumatisme | ✅ | 103 (traumatisme.md ×68) |
-| 19 | Corruption | ✅ | 36 (corruption.md ×29) |
+| 19 | Corruption | ✅ | 35 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
-| 21 | Psychologie | ✅ | 54 (psychologie.md ×29) |
+| 21 | Psychologie | ✅ | 53 (psychologie.md ×29) |
 | 22 | Événements | ✅ | 4 (activites.md ×4) |
 | 23 | Activités | ✅ | 41 (activites.md ×36) |
 | 24 | Les dieux | 📖 | catalogue (catalogue-*.md) |
@@ -63,7 +63,7 @@
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
 | 44 | L’Aethyr | ✅ | 10 (magie.md ×10) |
 | 45 | • MAGIE • | ➖ hors-règle | |
-| 46 | Les règles magiques | ✅ | 95 (magie.md ×51) |
+| 46 | Les règles magiques | ✅ | 91 (magie.md ×51) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 18 (magie.md ×18) |
 | 49 | Sorcellerie | ✅ | 4 (magie.md ×3) |
@@ -102,7 +102,7 @@
 | 82 | Les morts sans repos | 📖 | catalogue (catalogue-*.md) |
 | 83 | Esclaves des Ténèbres | 📖 | catalogue (catalogue-*.md) |
 | 84 | Guerrier du Chaos | 📖 | catalogue (catalogue-*.md) |
-| 85 | Traits de créature | ✅ | 302 (combat.md ×205) |
+| 85 | Traits de créature | ✅ | 299 (combat.md ×205) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -266,7 +266,7 @@
 | 01 | Mercenaires ogres dans le Vieux Monde | 📖 | catalogue (catalogue-*.md) |
 | 02 | Les ogres | ✅ | 51 (combat.md ×43) |
 | 03 | Des signes dans le ciel | 📖 | catalogue (catalogue-*.md) |
-| 04 | Un peu de magie | ✅ | 35 (combat.md ×24) |
+| 04 | Un peu de magie | ✅ | 28 (combat.md ×24) |
 | 05 | L’hospice | ➖ hors-règle | |
 | 06 | Le personnel | ➖ hors-règle | |
 | 07 | Les patients | ➖ hors-règle | |
@@ -344,6 +344,8 @@
 - **ADE II 04** (Un peu de magie) :
   - 🔻 enfoui l.508-521 « LE GRAND HOSPICE » — titre orné rétrogradé par l'extraction, 0 réf
   - ⬜ l.3-16 « UN PEU DE MAGIE OBJETS MAGIQUES ET ENCHANTEMENTS • • » — candidat trou de règle, 0 réf
+  - ⬜ l.17-53 « Trouver un artefact magique » — candidat trou de règle, 0 réf
+  - ⬜ l.54-72 « Commander un artefact magique » — candidat trou de règle, 0 réf
   - ⬜ l.102-117 « LE PRODUIT FINI » — candidat trou de règle, 0 réf
   - ⬜ l.118-134 « TABLEAU DE CRÉATURE ALÉATOIRE » — candidat trou de règle, 0 réf
   - ⬜ l.185-192 « Armes magiques » — candidat trou de règle, 0 réf
@@ -373,7 +375,7 @@
 | 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ | 46 (combat.md ×41) |
 | 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 100 (combat.md ×99) |
 | 09 | LE COMBAT MONTÉ | ✅ | 24 (combat.md ×23) |
-| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 98 (combat.md ×92) |
+| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 97 (combat.md ×92) |
 | 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
 | 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 21 (combat.md ×20) |
 | 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 17 (combat.md ×17) |
@@ -483,7 +485,7 @@
 | 10 | Macareux à bec tranchant | 📖 | catalogue (catalogue-*.md) |
 | 11 | Chat sauvage | 📖 | catalogue (catalogue-*.md) |
 | 12 | Il Potente Granchio | 📖 | catalogue (catalogue-*.md) |
-| 13 | Sirène | ✅ | 6 (etats.md ×3) |
+| 13 | Sirène | ✅ | 5 (etats.md ×3) |
 | 14 | Expéditions prévues | ✅ | 26 (combat.md ×22) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
@@ -550,13 +552,13 @@
   - 📖 l.700-847 « VASYA GHORSHKOV » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.1291-1372 « Index » — transcrit en catalogue, jamais traité, 0 réf
 
-## MCLB — ✅ 1 · 📖 5 · 🟡 0 · ⬜ 0
+## MCLB — ✅ 0 · 📖 5 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | MIDDENHEIM | ➖ hors-règle | |
-| 02 | Guide du visiteur | ✅ | 4 (reconciliation.md ×4) |
+| 02 | Guide du visiteur | ➖ hors-règle | |
 | 03 | Au-delà des murs | ➖ hors-règle | |
 | 04 | Bestiaire | 📖 | catalogue (catalogue-*.md) |
 | 05 | Le Grand-Duché | ➖ hors-règle | |
@@ -568,259 +570,6 @@
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
-- **MCLB 02** (Guide du visiteur) :
-  - ➖ l.3-12 « MIDDENHEIM GUIDE DU VISITEUR » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.13-23 « Portes de la cité » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.24-37 « TRAVAILLER DANS LA CITÉ » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.38-41 « Péages et taxes » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.42-47 « Trafic sur les viaducs » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.48-53 « Contrôles ponctuels » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.54-68 « TERMINUS DU TÉLÉSIÈGE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.69-76 « Sergent Wereburga Krotpreffer » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.77-90 « SERGENT WOLFGARD HOHMANN - GARDE D'HONNEUR HUMAIN (ARGENT 3) » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.91-107 « SERGENT WEREBURGA KROTPREFFER - GARDE D'HONNEUR HUMAIN (ARGENT 3) » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.108-115 « ALTMARKT » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.116-123 « Le marché » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.124-129 « Eckzähnehaus » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.130-139 « LÂCHEZ LES CHIENS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.140-144 « S'EN PAYER UNE TRANCHE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.145-148 « Gewürzwagen » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.149-163 « CHANTAGE ET HÉRÉSIE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.164-173 « La Glacière » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.174-190 « Marché aux fruits et légumes du Marktag » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.191-196 « AMÈRE RÉCOLTE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.197-204 « Au Traînard » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.205-210 « MIEUX VAUT TENIR SA LANGUE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.211-222 « L'HonorableGuildedes Législateurs » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.223-228 « L'ALTQUARTIER » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.229-241 « La Dame Présomptueuse » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.242-247 « APPÂTÉ » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.248-260 « Le temple de Heinrich le Béni » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.261-264 « LE RÉSEAU D'UN CRIMINEL » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.265-270 « Le Coupe-bourse » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.271-276 « Le Terrain du Quartier Est » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.277-299 « Alfric « Demi-nez » Brisenclume » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.300-305 « La Dernière Goutte » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.306-315 « L'asile de nuit de Sargant » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.316-319 « BROTKOPFS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.320-330 « Compagnie dramatique de Brotkopfs » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.331-347 « Résidence de Gotthard Wallenstein » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.348-359 « DEHORS LES DEMI-PORTIONS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.360-367 « La Guilde des Marchands » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.368-378 « Le Cygne et la Voile » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.379-388 « Les Diligences du Loup coureur » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.389-392 « SUSPICION » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.393-409 « FREIBURG » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.410-431 « IMPRIMERIE DE DRUCKER » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.432-442 « Grand Temple de Sigmar » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.443-446 « UN COMPLOT GROTESQUE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.447-452 « Le théâtre de Königsgarten » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.453-458 « Le Kupferkanne » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.459-466 « DÉSACCORDS SECTAIRES » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.467-493 « La Grande Guilde des Sorciers de Middenheim » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.494-501 « Les livres et antiquités de Neugierde » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.502-520 « MIDDENHEIM ET LA SECONDE VUE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.521-541 « La Lune Rouge » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.542-551 « Le Grand magasin de Stiefel » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.552-555 « LES CASSEURS DE PIONS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.556-566 « LES SORCIERS DISSIDENTS ET LES ACHATS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.567-574 « GELDMUND » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.575-580 « Domaine Arbernard » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.581-584 « UN CHOIX IMPRUDENT » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.585-590 « Le manoir des Seiter » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.591-603 « LE MONSTRE DE LA FAMINE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.604-609 « Les Écuries de Staller » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.610-613 « LE MORS AUX TROUSSES » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.614-617 « UN ACCUEIL GLACIAL » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.618-638 « Les Armes du Templier » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.639-642 « UN COCKTAIL EXPLOSIF » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.643-650 « Le Palais des Tore » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.651-654 « LOYAUTÉ HORS TAXE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.655-661 « Le presbytère des Valgeir » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.662-681 « Wulfric Tore » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.682-702 « Capitaine Moritz Valgeir » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.703-708 « GRAFPLATZ » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.709-716 « Ambassade impériale » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.717-721 « L'ART DE LA DIPLOMATIE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.722-742 « Place des parades » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.743-759 « Statue d'Artur » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.760-765 « Pavillon de Blitzbeil » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.766-771 « Domaine Eisenhal » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.772-776 « UNE TERRE ANCIENNE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.777-791 « UNE STATUE CONTROVERSÉE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.792-801 « Presbytère Kärzburdger » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.802-805 « POLITIQUE ET CONVOITISE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.806-814 « Manoir Helstein » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.815-822 « Le Haut Bollwerk » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.823-828 « Manoir de Torlichelm » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.829-834 « L'Arche de l'Unité » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.835-851 « Stade Bernabau » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.852-862 « DES COMBATTANTS PRISÉS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.863-866 « DANS LES PROFONDEURS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.867-872 « Le Bassin aux Monuments » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.873-882 « Le site du feu de joie » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.883-886 « La Tête du Gladiateur » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.887-891 « UNE DETTE EMBARRASSANTE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.892-903 « Le Bateau-théâtre » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.904-909 « Jardins botaniques royaux » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.910-917 « KAUFSEIT » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.918-928 « L'Entrepôt de Brunhilde » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.929-934 « LE PROBLÈME GNOBLAR » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.935-942 « La Guilde des Restaurateurs » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.943-951 « La lutherie de la Laurelorn » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.952-967 « ATTENTION, ÇA VA COUPER » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.968-981 « Recrutement chez Pâtebrisée » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.982-987 « La Mission de la Miséricorde » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.988-995 « UN SYSTÈME VÉNAL » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.996-999 « KLEINMOOT » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1000-1007 « La Guilde des Contremaîtres » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1008-1015 « L'Âtre Flamboyant » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1016-1030 « LES CLANS HALFLINGS DE MIDDENHEIM » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1031-1036 « LE PRIX DE LA BONNE CHÈRE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1037-1044 « Les Objets Trouvés de Hob » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1045-1051 « UN DISCRET ASSASSINAT » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1052-1059 « KÖNIGSGARTEN » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1060-1069 « Le kiosque commémoratif de la gravine Solveig » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1070-1073 « TOUS EN SCÈNE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1074-1086 « La Folie du graf Berholdt » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1087-1092 « Les menhirs » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1093-1096 « COUP DE *GHUR* » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1097-1106 « La Clairière aux Songes » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1107-1133 « LES CHARMES DE LA CLAIRIÈRE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1134-1154 « Grain d'achillée le lutin » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1155-1162 « La Sainte Guilde des Porteurs d'eau » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1163-1170 « Diligences de la Tour du Roc » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1171-1174 « DES DIRECTEURS DILIGENTS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1175-1189 « La maroquinerie de Vertvallon » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1190-1205 « L'armurerie de Hans Rustung » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1206-1209 « POUDRIÈRE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1210-1217 « Les ciriers de Klaus Kerzer » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1218-1228 « Quartiers du Neumarkt » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1229-1238 « Le Voile Déchiré » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1239-1242 « RELATIONS MANQUÉES » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1243-1250 « Les Céramiques de Topfer » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1251-1254 « EN DIRECT DES MARAIS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1255-1267 « Le Pion Vermillon » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1268-1272 « LE DÉMON DE L'ARMOIRE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1273-1286 « OBJET MAGIQUES À VENDRE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1287-1309 « DÉTOURNER LES QUESTIONS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1310-1315 « Marta Gerbenshreiber » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1333-1338 « NORDGARTEN » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1339-1346 « Le Repos du Graf » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1347-1369 « Les Créations de Klump » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1370-1382 « LE MARCHÉ NOIR DE LUXE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1383-1388 « Le Bon Espoir » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1389-1393 « VIRÉE NOCTURNE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1394-1399 « Sanctuaire d'Handrich » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1400-1406 « AIDE-TOI, TOI-MÊME » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1407-1414 « Geist Haus » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1415-1424 « Le Collège royal de Musique » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1425-1439 « MAUVAIS ESPRIT » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1440-1456 « L'Épée et le Fléau » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1457-1473 « Orphelinat du Refuge de l'Hiver » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1474-1485 « WALDTRAUD BLASS - MAÎTRE APOTHICAIRE HUMAIN, ANCIEN APPRENTI ARTISAN (ARGENT 3) » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1486-1506 « Johen » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1507-1512 « OSTTOR » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1513-1522 « Scriptorium de Bleistift » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1523-1526 « AVERTISSEMENT » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1527-1534 « La coutellerie d'Irinka » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1535-1545 « À COUTEAUX TIRÉS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1546-1557 « GARDE RAPPROCHÉE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1558-1567 « La Lune Chantante » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1568-1574 « La Chute du Templier » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1575-1581 « LUTTES D'INTÉRÊTS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1582-1594 « Le Trou du Loup » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1595-1600 « Le Rat Noyé » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1601-1605 « BONJOUR AUX HABITUÉS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1606-1618 « Clinique d'Erich » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1619-1622 « MÉDECINE CLANDESTINE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1623-1634 « Guilde des Apothicaires » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1635-1648 « LA POUDRE NOIRE D'AL-AZIR » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1649-1654 « Chez Pfandleiher » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1655-1665 « PION D'UN PETIT ROI » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1666-1670 « DIFFICULTÉS QUOTIDIENNES » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1671-1678 « La Maison du Régent » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1679-1682 « UN VERNIS DE COURTOISIE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1683-1688 « Hospice de Shallya » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1689-1704 « UN VOISINAGE IMPITOYABLE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1705-1727 « Ritta » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1728-1741 « La Grande porte » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1742-1750 « La Magnam Odenhaus Pantera » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1751-1760 « LA DETTE DE L'ORDRE ENVERS LES TODBRINGER » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1761-1772 « Un sacrifice héroïque » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1773-1789 « Un présage d'événements à venir » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1790-1795 « Les sous-sols du palais » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1796-1805 « La Caserne royale » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1806-1829 « L'Hôtel des Monnaies » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1855-1860 « Le Grunpark » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1861-1870 « L'Âne Rieur » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1871-1886 « VICTIMES DE LA MODE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1887-1890 « Le coût exorbitant de la mort » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1891-1896 « Pillage au clair de lune » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1897-1902 « UNE FUNESTE AFFAIRE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1903-1910 « MORT SUR LE FAUSCHLAG » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1911-1920 « Le temple de Myrmidia » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1921-1929 « L'horloge hydraulique » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1930-1933 « HORLOGE MÉCANIQUE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1934-1939 « La place de la Miséricorde » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1940-1943 « UN COUP DE MAIN SECRET » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1944-1949 « SUDTOR » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1950-1968 « Les Terriers » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1969-1978 « Les Bières du Dragon » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1979-1986 « L'hospice des manouvriers » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1987-1994 « Le poste de Garde du Sudtor » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.1995-2017 « UN TANTINET DANGEREUX » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2018-2023 « Helmut Beckenbauer » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2024-2038 « HELMUT BECKENBAUER - CHEF DE GANG HUMAIN (ARGENT 3) » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2039-2044 « ULRICSMUND » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2045-2050 « Le Begierbaden » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2051-2054 « ÉPICENTRE ÉPIDÉMIQUE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2055-2060 « Le Mémorial de la Peste noire » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2061-2064 « SERMENTS D'HYPOCRITES » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2065-2087 « La Guilde des Médecins » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2088-2097 « Le Grand Temple d'Ulric » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2098-2116 « BÉNÉDICTIONS DE LA FLAMME » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2117-2122 « Les dépendances du Temple » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2123-2131 « LaGuilde desMineurs duMiddenland » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2132-2136 « DÉSASTRE MINIER » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2137-2148 « L'Aigle Déployé » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2149-2181 « Le temple de Verena » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2182-2202 « Frère Bengt » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2203-2206 « WESTOR » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2207-2214 « La Cloche et le Seau » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2215-2218 « DE L'IMPORTANCE DE BIEN CHOISIR SES MOTS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2219-2224 « Le Cinquième Doigt » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2225-2237 « Le Temple de Shallya » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2238-2241 « UNE ABSENCE REMARQUÉE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2242-2253 « La résidence Nikse » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2254-2257 « LAQUAIS DU GRAF » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2258-2268 « Le sanctuaire de Manann » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2269-2274 « LA VENELLE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2275-2284 « Chapelle de Grungni » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2285-2292 « Guilde des Ingénieurs nains » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2293-2309 « Guilde des Maçons et Architectes » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2310-2311 « Festivals de Middenheim » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2312-2337 « Le Nouvel An » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2338-2352 « Automne et hiver » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2353-2362 « Windhund Transports & Cie » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2363-2366 « MAIN D'ŒUVRE MORTE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2367-2372 « Le Compagnon » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2373-2382 « L'imprimerie d'Otto » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2383-2397 « ERREUR DE DESTINATAIRE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2398-2411 « ANDREA BRUHN - CONSEILLER MUNICIPAL HUMAIN (ARGENT 5) » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2412-2419 « Grand vizir Bhar » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2431-2436 « LA CITÉ SOUTERRAINE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2437-2444 « LA TOUR DE GRUNGNI » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2445-2452 « Les égouts » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2453-2469 « Les tunnels supérieurs » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2470-2477 « Les Entrailles du Loup » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2478-2483 « FOYER D'EXTRÉMISME » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2484-2504 « Source de *Ghur* » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2505-2516 « INFECTE BÉNÉDICTION » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2517-2555 « Châtelain-Chef de guerre Gnawretch Skrray » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2556-2571 « ARCHIPRÉLAT KANKER FLETT » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2572-2579 « Maître-Moulder Skree » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.2580-2593 « MAÎTRE-MOULDER SKREE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
 - **MCLB 04** (Bestiaire) :
   - 📖 l.3-4 « MIDDENHEIM • BESTIAIRE • » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.5-13 « PRÉDATEUR SANGLANT » — transcrit en catalogue, jamais traité, 0 réf
@@ -912,18 +661,18 @@
   - 📖 l.113-116 « 2519 CI » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.117-376 « Le rôle de la Couronne Rouge » — transcrit en catalogue, jamais traité, 0 réf
 
-## EDO — ✅ 4 · 📖 0 · 🟡 0 · ⬜ 0
+## EDO — ✅ 3 · 📖 0 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | Chapitre 1 - On recherche - aventuriers courageux | ✅ | 8 (reconciliation.md ×6) |
+| 01 | Chapitre 1 - On recherche - aventuriers courageux | ➖ hors-règle | |
 | 02 | Chapitre 2 - Erreur sur la personne | ➖ hors-règle | |
 | 03 | Chapitre 3 - Le cœur de l’Empire | ➖ hors-règle | |
 | 04 | Chapitre 4 - Sur la route de Bögenhafen… | ➖ hors-règle | |
 | 05 | Chapitre 5 - Le faux héritage | ➖ hors-règle | |
 | 06 | Chapitre 6 - La Schaffenfest | ➖ hors-règle | |
-| 07 | Chapitre 7 - Dans les ténèbres | ✅ | 6 (combat.md ×3) |
+| 07 | Chapitre 7 - Dans les ténèbres | ✅ | 3 (combat.md ×3) |
 | 08 | Chapitre 8 - Chasser les ombres | ➖ hors-règle | |
 | 09 | Chapitre 9 - L’heure fatidique | ✅ | 3 (combat.md ×3) |
 | 10 | APPENDICE 1 - Un guide de Bögenhafen | ➖ hors-règle | |
@@ -932,32 +681,6 @@
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
-- **EDO 01** (Chapitre 1 - On recherche - aventuriers courageux) :
-  - ⬜ l.42-53 « 5. Écuries et remise » — bruit de scénario, 0 réf
-  - ⬜ l.54-57 « 8. Brasserie » — bruit de scénario, 0 réf
-  - ⬜ l.58-65 « 9. Salle commune » — bruit de scénario, 0 réf
-  - ⬜ l.66-74 « 11. Quartiers des serviteurs » — bruit de scénario, 0 réf
-  - ⬜ l.75-82 « L'APPROCHE DE L'AUBERGE » — bruit de scénario, 0 réf
-  - ⬜ l.83-90 « La diligence » — bruit de scénario, 0 réf
-  - ⬜ l.91-109 « Dans l'auberge » — bruit de scénario, 0 réf
-  - ⬜ l.110-115 « Les PNJ » — bruit de scénario, 0 réf
-  - ⬜ l.116-191 « Le propriétaire » — bruit de scénario, 0 réf
-  - ⬜ l.192-197 « Gérer l'inattendu » — bruit de scénario, 0 réf
-  - ⬜ l.224-244 « Une volée de plomb » — bruit de scénario, 0 réf
-  - ⬜ l.245-248 « LE VOYAGE » — bruit de scénario, 0 réf
-  - ⬜ l.249-259 « Debout là-dedans ! » — bruit de scénario, 0 réf
-  - ⬜ l.301-306 « Un léger contretemps » — bruit de scénario, 0 réf
-  - ⬜ l.307-316 « Le voyage commence » — bruit de scénario, 0 réf
-  - ⬜ l.317-324 « Chantons sous la pluie ! » — bruit de scénario, 0 réf
-  - ⬜ l.325-337 « OPTIONS : COMPAGNONS DE VOYAGE » — bruit de scénario, 0 réf
-  - ⬜ l.344-345 « CONCLUSION » — bruit de scénario, 0 réf
-  - ⬜ l.346-355 « Récompenses » — bruit de scénario, 0 réf
-  - ⬜ l.356-357 « PNJ » — bruit de scénario, 0 réf
-  - ⬜ l.358-398 « Le personnel de l'auberge » — bruit de scénario, 0 réf
-  - ⬜ l.399-416 « Les cochers » — bruit de scénario, 0 réf
-  - ⬜ l.417-453 « Dame Isolde et sa suite » — bruit de scénario, 0 réf
-  - ⬜ l.454-475 « Le garde du corps » — bruit de scénario, 0 réf
-  - ⬜ l.476-528 « Les autres voyageurs » — bruit de scénario, 0 réf
 - **EDO 07** (Chapitre 7 - Dans les ténèbres) :
   - ⬜ l.9-14 « ENTRER DANS LES ÉGOUTS » — bruit de scénario, 0 réf
   - ⬜ l.15-20 « PENDANT CE TEMPS-LÀ, AILLEURS… » — bruit de scénario, 0 réf
@@ -969,6 +692,7 @@
   - ⬜ l.85-155 « TABLE DES ÉVÉNEMENTS ALÉATOIRES » — bruit de scénario, 0 réf
   - ⬜ l.156-159 « EMPLACEMENTS PRINCIPAUX » — bruit de scénario, 0 réf
   - ⬜ l.160-173 « Lieu d'entrée du gobelin » — bruit de scénario, 0 réf
+  - ⬜ l.174-209 « Porte des Piques Croisées » — bruit de scénario, 0 réf
   - ⬜ l.210-225 « Cadavre de Gottri » — bruit de scénario, 0 réf
   - ⬜ l.226-229 « Tuyaux d'évacuation » — bruit de scénario, 0 réf
   - ⬜ l.230-233 « Canal <sup>à</sup> ciel ouvert » — bruit de scénario, 0 réf
@@ -1025,7 +749,7 @@
   - 📖 l.107-120 « Litanie de la Pestilence » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.247-266 « ANNEAU D'OPSIANON » — transcrit en catalogue, jamais traité, 0 réf
 
-## EDOC — ✅ 6 · 📖 0 · 🟡 0 · ⬜ 0
+## EDOC — ✅ 4 · 📖 0 · 🟡 1 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -1035,14 +759,14 @@
 | 03 | CHAPITRE 1 - « Easter eggs » | ➖ hors-règle | |
 | 04 | ORGANISATIONS ET LIEUX | ➖ hors-règle | |
 | 05 | CHAPITRE 2 - L’Empire | ➖ hors-règle | |
-| 06 | Chapitre 3 - Les routes et grandes routes | ✅ | 13 (reconciliation.md ×12) |
+| 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
 | 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
-| 08 | CHAPITRE 5 - Voyager | ✅ | 17 (deplacement.md ×7) |
-| 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ✅ | 4 (reconciliation.md ×4) |
+| 08 | CHAPITRE 5 - Voyager | ✅ | 16 (deplacement.md ×7) |
+| 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ➖ hors-règle | |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
 | 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ | 3 (corruption.md ×3) |
-| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 10 (talents.md ×6) |
+| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 6 (talents.md ×6) |
 | 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | |
 | 15 | CHAPITRE 11 - L’Affaire du joyau caché - Un mélodrame à l’intrigue complexe | ➖ hors-règle | |
 | 16 | CHAPITRE 12 - LE CARNAVAL DU PANDÉMONIUM | ➖ hors-règle | |
@@ -1050,6 +774,13 @@
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
 - **EDOC 06** (Chapitre 3 - Les routes et grandes routes) :
+  - ⬜ l.3-12 « LES ROUTES » — candidat trou de règle, 0 réf
+  - ⬜ l.13-16 « Routes principales » — candidat trou de règle, 0 réf
+  - ⬜ l.17-20 « Routes secondaires » — candidat trou de règle, 0 réf
+  - ⬜ l.21-38 « LES RELAIS DE DILIGENCES » — candidat trou de règle, 0 réf
+  - ⬜ l.39-44 « Les Diligences des Quatre Saisons » — candidat trou de règle, 0 réf
+  - ⬜ l.45-52 « Les Diligences de la Tour du Roc » — candidat trou de règle, 0 réf
+  - ⬜ l.53-62 « Les Lignes Rochet » — candidat trou de règle, 0 réf
   - ⬜ l.63-68 « Auberges relais » — candidat trou de règle, 0 réf
   - ⬜ l.69-74 « ACCROCHE D'AVENTURE UN CARROSSE TROP LOIN » — candidat trou de règle, 0 réf
 - **EDOC 07** (Chapitre 4 - Montures et véhicules) :
@@ -1094,6 +825,7 @@
   - ➖ l.113-118 « CULTISTES DE LA MAIN POURPRE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.119-126 « Cultistes » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.127-132 « Acolytes » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
+  - ➖ l.133-144 « Magus du Culte » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.145-169 « SORCIERS DU CHAOS DE TZEENTCH » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.170-210 « Évolution de Carrière » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.211-223 « SOURCES DE *DHAR* » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
@@ -1108,6 +840,7 @@
   - ➖ l.445-458 « Feu rose de Tzeentch » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.459-482 « Feu spirituel » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.483-494 « La Main Pourpre » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
+  - ➖ l.495-543 « Malédiction de Tzeentch » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.544-549 « Percevoir l'écheveau » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.550-563 « Tempête de feu de Tzeentch » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.564-575 « Transformation de Tzeentch » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
@@ -1141,7 +874,7 @@
   - 📖 l.141-359 « LE RANÇONNEUR » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.360-419 « CHRONOLOGIE DE L'AVENTURE » — transcrit en catalogue, jamais traité, 0 réf
 
-## MSRC — ✅ 4 · 📖 4 · 🟡 0 · ⬜ 0
+## MSRC — ✅ 3 · 📖 4 · 🟡 1 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -1157,7 +890,7 @@
 | 09 | CHAPITRE 7 - Compagnons de voyage | 📖 | catalogue (catalogue-*.md) |
 | 10 | CHAPITRE 8 - LES RIVERAINS | ➖ hors-règle | |
 | 11 | CHAPITRE 9 - Le service des tours impériales à signaux | ➖ hors-règle | |
-| 12 | CHAPITRE 10 - Personnalisation | ✅ | 10 (reconciliation.md ×8) |
+| 12 | CHAPITRE 10 - Personnalisation | 🟡 | 2 (combat.md ×2) |
 | 13 | CHAPITRE 11 - Règles du commerce | 📖 | catalogue (catalogue-*.md) |
 | 14 | CHAPITRE 12 - Naufrageurs, contrebandiers et pirates | 📖 | catalogue (catalogue-*.md) |
 | 15 | CHAPITRE 13 - Bestiaire fluvial | ✅ | 14 (combat.md ×14) |
@@ -1225,9 +958,12 @@
   - ⬜ l.60-67 « Bouteur » — candidat trou de règle, 0 réf
   - ⬜ l.68-75 « Ralentisseurs latéraux » — candidat trou de règle, 0 réf
   - ⬜ l.76-77 « SUPERSTRUCTURE » — candidat trou de règle, 0 réf
+  - ⬜ l.78-86 « Murs blindés » — candidat trou de règle, 0 réf
   - ⬜ l.87-104 « Sabord » — candidat trou de règle, 0 réf
+  - ⬜ l.105-120 « Plat-bord » — candidat trou de règle, 0 réf
   - ⬜ l.121-122 « GRÉEMENT » — candidat trou de règle, 0 réf
   - ⬜ l.123-130 « Clinfoc » — candidat trou de règle, 0 réf
+  - ⬜ l.131-141 « Gréement de course » — candidat trou de règle, 0 réf
   - ⬜ l.142-143 « RAMES » — candidat trou de règle, 0 réf
   - ⬜ l.144-151 « Dames de nage fermées » — candidat trou de règle, 0 réf
   - ⬜ l.152-159 « Cuillères » — candidat trou de règle, 0 réf
@@ -1285,7 +1021,7 @@
   - ⬜ l.173-176 « Salive analgésique » — candidat trou de règle, 0 réf
   - ⬜ l.177-182 « Salive anticoagulante » — candidat trou de règle, 0 réf
 
-## PDT — ✅ 4 · 📖 2 · 🟡 0 · ⬜ 0
+## PDT — ✅ 2 · 📖 2 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -1297,8 +1033,8 @@
 | 05 | LE PLAN MACHIAVÉLIQUE | ➖ hors-règle | |
 | 06 | Enquêtes préliminaires | ➖ hors-règle | |
 | 07 | LE CARNAVAL | ➖ hors-règle | |
-| 08 | Les pouvoirs en place | ✅ | 3 (reconciliation.md ×3) |
-| 09 | LE TRAÎTRE DÉMASQUÉ | ✅ | 3 (reconciliation.md ×3) |
+| 08 | Les pouvoirs en place | ➖ hors-règle | |
+| 09 | LE TRAÎTRE DÉMASQUÉ | ➖ hors-règle | |
 | 10 | Fiches de PNJ | 📖 | catalogue (catalogue-*.md) |
 | 11 | dopplegänger | 📖 | catalogue (catalogue-*.md) |
 | 12 | HYPNOTISME | ✅ | 6 (competences.md ×6) |
@@ -1307,82 +1043,6 @@
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
-- **PDT 08** (Les pouvoirs en place) :
-  - ⬜ l.9-23 « RENCONTRE AVEC LES PNJ » — bruit de scénario, 0 réf
-  - ⬜ l.24-33 « SUIVRE À LA TRACE » — bruit de scénario, 0 réf
-  - ⬜ l.34-49 « FRÉQUENTATIONS ET MACHINATIONS À LA COUR DE MIDDENHEIM » — bruit de scénario, 0 réf
-  - ⬜ l.50-68 « Toc toc » — bruit de scénario, 0 réf
-  - ⬜ l.69-74 « Ragot » — bruit de scénario, 0 réf
-  - ⬜ l.75-80 « Les bonnes manières » — bruit de scénario, 0 réf
-  - ⬜ l.81-137 « Le Carnaval » — bruit de scénario, 0 réf
-  - ⬜ l.138-204 « AR-ULRIC » — bruit de scénario, 0 réf
-  - ⬜ l.205-211 « DIVERSION » — bruit de scénario, 0 réf
-  - ⬜ l.212-215 « NASTASSIA, L'ESPIONNE » — bruit de scénario, 0 réf
-  - ⬜ l.216-235 « SE SERVIR DE NASTASSIA » — bruit de scénario, 0 réf
-  - ⬜ l.236-260 « VOS PAUPIÈRES SONT LOURDES… » — bruit de scénario, 0 réf
-  - ⬜ l.261-268 « Découverte » — bruit de scénario, 0 réf
-  - ⬜ l.269-303 « Que faire ? » — bruit de scénario, 0 réf
-  - ⬜ l.304-334 « Déshypnotiser Dieter » — bruit de scénario, 0 réf
-  - ⬜ l.335-342 « Après l'hypnose » — bruit de scénario, 0 réf
-  - ⬜ l.343-348 « Ce qu'il faut retenir » — bruit de scénario, 0 réf
-  - ⬜ l.384-398 « Panique à l'auberge » — bruit de scénario, 0 réf
-  - ⬜ l.399-429 « Les skavens » — bruit de scénario, 0 réf
-  - ⬜ l.430-437 « Une aide précieuse » — bruit de scénario, 0 réf
-  - ⬜ l.438-458 « Erina Eberhauer » — bruit de scénario, 0 réf
-  - ⬜ l.459-466 « Le combat » — bruit de scénario, 0 réf
-  - ⬜ l.467-474 « Les prisonniers » — bruit de scénario, 0 réf
-  - ⬜ l.475-478 « UNE CHANCE MITIGÉE » — bruit de scénario, 0 réf
-  - ⬜ l.479-482 « La légende des skavens » — bruit de scénario, 0 réf
-  - ⬜ l.483-503 « LA PHARMALCOOLOGIE » — bruit de scénario, 0 réf
-  - ⬜ l.504-520 « GROGNARDS : SOMMES-NOUS AU BON ENDROIT ? » — bruit de scénario, 0 réf
-  - ⬜ l.521-522 « LE PERSONNEL DE LA FOSSE » — bruit de scénario, 0 réf
-  - ⬜ l.523-538 « Fritz Dreckig, Propriétaire » — bruit de scénario, 0 réf
-  - ⬜ l.539-554 « Otto Geschwur, Serveur » — bruit de scénario, 0 réf
-  - ⬜ l.555-572 « Selena, Serveuse » — bruit de scénario, 0 réf
-  - ⬜ l.573-574 « CLIENTS DE LA FOSSE » — bruit de scénario, 0 réf
-  - ⬜ l.575-605 « Bruno Kohl » — bruit de scénario, 0 réf
-  - ⬜ l.606-615 « Faire affaire avec Bruno » — bruit de scénario, 0 réf
-  - ⬜ l.616-619 « Autres incidents » — bruit de scénario, 0 réf
-- **PDT 09** (LE TRAÎTRE DÉMASQUÉ) :
-  - ⬜ l.7-12 « PIONS DU SORCIER DÉMONIAQUE » — bruit de scénario, 0 réf
-  - ⬜ l.13-37 « LES PIONS » — bruit de scénario, 0 réf
-  - ⬜ l.38-55 « Dagmar Mitschuldige, Mercenaire » — bruit de scénario, 0 réf
-  - ⬜ l.56-73 « Hultz Fleischer, Coupe-jarret » — bruit de scénario, 0 réf
-  - ⬜ l.74-87 « Anton Hundish, sorcier novice » — bruit de scénario, 0 réf
-  - ⬜ l.88-98 « REMARQUE SUR LES POSSESSIONS » — bruit de scénario, 0 réf
-  - ⬜ l.99-122 « « Frau Kenner » » — bruit de scénario, 0 réf
-  - ⬜ l.123-133 « LE REPAIRE DES PIONS » — bruit de scénario, 0 réf
-  - ⬜ l.134-137 « Palier de la cave » — bruit de scénario, 0 réf
-  - ⬜ l.138-141 « Chambre de Dagmar » — bruit de scénario, 0 réf
-  - ⬜ l.142-145 « Chambre de Hultz » — bruit de scénario, 0 réf
-  - ⬜ l.146-151 « Cellier » — bruit de scénario, 0 réf
-  - ⬜ l.152-155 « Latrines » — bruit de scénario, 0 réf
-  - ⬜ l.156-159 « Réserve » — bruit de scénario, 0 réf
-  - ⬜ l.160-170 « Chambre de Brunhilde » — bruit de scénario, 0 réf
-  - ⬜ l.171-174 « Salle de bain » — bruit de scénario, 0 réf
-  - ⬜ l.175-178 « Chambre d'Anton » — bruit de scénario, 0 réf
-  - ⬜ l.179-182 « STRATÉGIE DES PNJ » — bruit de scénario, 0 réf
-  - ⬜ l.183-198 « Faire avancer le scénario » — bruit de scénario, 0 réf
-  - ⬜ l.199-221 « Le plan de Wasmeier » — bruit de scénario, 0 réf
-  - ⬜ l.222-255 « La soirée du Festag » — bruit de scénario, 0 réf
-  - ⬜ l.348-351 « Les appartements de Wasmeier » — bruit de scénario, 0 réf
-  - ⬜ l.352-369 « L'ordre du Graf » — bruit de scénario, 0 réf
-  - ⬜ l.370-410 « La maison de ville de Wasmeier » — bruit de scénario, 0 réf
-  - ⬜ l.411-438 « Écurie » — bruit de scénario, 0 réf
-  - ⬜ l.439-442 « Salle de bain » — bruit de scénario, 0 réf
-  - ⬜ l.443-450 « Bureau » — bruit de scénario, 0 réf
-  - ⬜ l.451-477 « Chambre d'amis » — bruit de scénario, 0 réf
-  - ⬜ l.478-481 « LES SBIRES DE WASMEIER » — bruit de scénario, 0 réf
-  - ⬜ l.482-521 « Swelt Tunger, cuisinier et cambrioleur » — bruit de scénario, 0 réf
-  - ⬜ l.522-537 « Faucon, jardinier et braconnier » — bruit de scénario, 0 réf
-  - ⬜ l.538-571 « PIÈGE À OURS » — bruit de scénario, 0 réf
-  - ⬜ l.572-589 « Lurk, garde du corps » — bruit de scénario, 0 réf
-  - ⬜ l.590-606 « Le Seigneur des Lois attend » — bruit de scénario, 0 réf
-  - ⬜ l.607-614 « Wasmeier prend la fuite » — bruit de scénario, 0 réf
-  - ⬜ l.615-631 « CONCLUSION » — bruit de scénario, 0 réf
-  - ⬜ l.632-677 « RENVERSEMENT DE SITUATION » — bruit de scénario, 0 réf
-  - ⬜ l.678-685 « Préparation pour le Rat Cornu » — bruit de scénario, 0 réf
-  - ⬜ l.686-713 « CONDITIONS NÉCESSAIRES » — bruit de scénario, 0 réf
 - **PDT 10** (Fiches de PNJ) :
   - 📖 l.7-24 « LE CHANCELIER : JOSEF SPARSAM » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.25-28 « Rôle » — transcrit en catalogue, jamais traité, 0 réf
@@ -1620,7 +1280,7 @@
 | 25 | Index des PNJ | ➖ hors-règle | |
 | 26 | *(section sans titre)* | ➖ hors-règle | |
 
-## NADJ — ✅ 8 · 📖 0 · 🟡 0 · ⬜ 0
+## NADJ — ✅ 6 · 📖 0 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -1628,8 +1288,8 @@
 | 01 | Avant-propos | ➖ hors-règle | |
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | Une nuit agitée aux Trois Plumes | ➖ hors-règle | |
-| 04 | Les autres invités | ✅ | 4 (reconciliation.md ×4) |
-| 05 | 22h00 | ✅ | 7 (combat.md ×4) |
+| 04 | Les autres invités | ➖ hors-règle | |
+| 05 | 22h00 | ✅ | 6 (combat.md ×4) |
 | 06 | Une journée au tribunal | ✅ | 13 (combat.md ×13) |
 | 07 | Les dignitaires du tribunal | ➖ hors-règle | |
 | 08 | Une nuit à l’Opéra | ✅ | 3 (combat.md ×3) |
@@ -1638,23 +1298,12 @@
 | 11 | Le joyau volé | ✅ | 6 (combat.md ×6) |
 | 12 | *(artefact OCR)* | ➖ | |
 | 13 | SEIGNEUR D’UBERSREIK - | ➖ hors-règle | |
-| 14 | appendice I - Gnomes | ✅ | 4 (reconciliation.md ×4) |
+| 14 | appendice I - Gnomes | ➖ hors-règle | |
 | 15 | LE PEUPLE DES LANDES | ✅ | 4 (talents.md ×3) |
-| 16 | JEUX DE TAVERNE | ✅ | 18 (tests.md ×14) |
+| 16 | JEUX DE TAVERNE | ✅ | 17 (tests.md ×14) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
-- **NADJ 04** (_Hlk18182212) :
-  - ⬜ l.5-12 « Les autres invités » — candidat trou de règle, 0 réf
-  - ⬜ l.13-14 « Résumé des intrigues » — candidat trou de règle, 0 réf
-  - ⬜ l.15-18 « Intrigue n° 1 – Une question d'importance » — candidat trou de règle, 0 réf
-  - ⬜ l.19-22 « Intrigue n° 2 – Dispositions compromettantes » — candidat trou de règle, 0 réf
-  - ⬜ l.23-29 « Intrigue n° 3 – Un visage surgissant du passé » — candidat trou de règle, 0 réf
-  - ⬜ l.30-53 « Intrigue n° 4 – Faire un scandale » — candidat trou de règle, 0 réf
-  - ⬜ l.74-77 « 21h10 » — candidat trou de règle, 0 réf
-  - ⬜ l.78-81 « 21h15 » — candidat trou de règle, 0 réf
-  - ⬜ l.82-85 « 21h20 » — candidat trou de règle, 0 réf
-  - ⬜ l.86-101 « 21h25 » — candidat trou de règle, 0 réf
 - **NADJ 05** (_GoBack) :
   - ⬜ l.5-10 « 22h00 » — candidat trou de règle, 0 réf
   - ⬜ l.11-22 « 22h10 » — candidat trou de règle, 0 réf
@@ -1794,18 +1443,6 @@
   - ⬜ l.5-17 « La duchesse douairière du Telland » — candidat trou de règle, 0 réf
   - ⬜ l.34-53 « Le Spectre » — candidat trou de règle, 0 réf
   - ⬜ l.54-59 « Le voleur gnome » — candidat trou de règle, 0 réf
-- **NADJ 14** (appendice I - Gnomes) :
-  - ⬜ l.7-18 « GNOMES » — candidat trou de règle, 0 réf
-  - ⬜ l.19-20 « Points de vue » — candidat trou de règle, 0 réf
-  - ⬜ l.21-27 « Sur les nains… » — candidat trou de règle, 0 réf
-  - ⬜ l.28-33 « Sur les elfes sylvains… » — candidat trou de règle, 0 réf
-  - ⬜ l.34-39 « Sur les hauts elfes… » — candidat trou de règle, 0 réf
-  - ⬜ l.40-45 « Sur les halflings…… » — candidat trou de règle, 0 réf
-  - ⬜ l.46-51 « Sur les humains… » — candidat trou de règle, 0 réf
-  - ⬜ l.52-57 « Sur les ogres… » — candidat trou de règle, 0 réf
-  - ⬜ l.58-61 « PERSONNAGES GNOMES » — candidat trou de règle, 0 réf
-  - ⬜ l.62-76 « 1) Races » — candidat trou de règle, 0 réf
-  - ⬜ l.77-126 « 2) Classes et carrières » — candidat trou de règle, 0 réf
 - **NADJ 15** (_GoBack) :
   - ⬜ l.68-73 « Noms de clan gnomes » — candidat trou de règle, 0 réf
   - ⬜ l.74-77 « Traits physiques » — candidat trou de règle, 0 réf
@@ -1828,19 +1465,20 @@
   - ⬜ l.84-92 « LE CEREVIS » — candidat trou de règle, 0 réf
   - ⬜ l.101-106 « LES DOMINOS » — candidat trou de règle, 0 réf
   - ⬜ l.107-112 « LE TORCHON TREMPÉ » — candidat trou de règle, 0 réf
+  - ⬜ l.113-120 « MIDDENBALL » — candidat trou de règle, 0 réf
   - ⬜ l.121-126 « LES MOULINS » — candidat trou de règle, 0 réf
   - ⬜ l.127-132 « QUESTIONS - RÉPONSES » — candidat trou de règle, 0 réf
   - ⬜ l.133-140 « L'IMPÉRATRICE ÉCARLATE » — candidat trou de règle, 0 réf
   - ⬜ l.141-146 « LES PIERRES » — candidat trou de règle, 0 réf
 
-## MDG — ✅ 9 · 📖 2 · 🟡 0 · ⬜ 0
+## MDG — ✅ 8 · 📖 2 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | La Mer des Griffes | ➖ hors-règle | |
 | 02 | La Bretonnie et le Wasteland | ✅ | 4 (magie.md ×4) |
-| 03 | La côte du Nordland | ✅ | 4 (reconciliation.md ×4) |
+| 03 | La côte du Nordland | ➖ hors-règle | |
 | 04 | La côte de l'Ostland | ➖ hors-règle | |
 | 05 | Le Pays des Trolls | ➖ hors-règle | |
 | 06 | Kraka Ravnsvake | ➖ hors-règle | |
@@ -1849,24 +1487,14 @@
 | 09 | La classe Côtier | ✅ | 32 (carrieres.md ×32) |
 | 10 | Le culte de Manann | 📖 | 2 (religion.md ×2) |
 | 11 | Le culte de Stromfels | 📖 | 1 (religion.md ×1) |
-| 12 | Navires et construction navale | ✅ | 132 (equipement.md ×60) |
+| 12 | Navires et construction navale | ✅ | 130 (equipement.md ×60) |
 | 13 | Navigation maritime | ✅ | 143 (combat.md ×83) |
 | 14 | Navigation à bord de grands vaisseaux | ✅ | 52 (maladies.md ×19) |
-| 15 | Longs voyages | ✅ | 49 (deplacement.md ×23) |
+| 15 | Longs voyages | ✅ | 45 (deplacement.md ×23) |
 | 16 | Bestiaire | ✅ | 10 (bestiaire.md ×10) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
-- **MDG 03** (La côte du Nordland) :
-  - ➖ l.103-139 « BARON LUDOLF KÖHLER LE JEUNE » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.140-189 « HISSEZ LES VOILES DU NAVIRE TERRESTRE ! » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.190-199 « LE DILEMME DE SCHMIDT » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.200-212 « ÇA MORD » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.213-229 « APAISER LES MORTS » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.230-239 « UNE VILLE DANS LA BRUME » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.240-251 « SOUS LES ALGUES » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.252-279 « LA DIVERSION » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
-  - ➖ l.280-299 « LA DÉMISSION » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
 - **MDG 07** (La côte des Skaelings) :
   - ⬜ l.38-41 « MÉCHANTS OU MARCHANDS ? » — candidat trou de règle, 0 réf
   - ⬜ l.42-100 « SUR LA GLACE » — candidat trou de règle, 0 réf
@@ -1913,12 +1541,13 @@
 | 09 | Shyish — Domaine de la Mort | 📖 | catalogue (catalogue-*.md) |
 | 10 | Aqshy — Domaine du Feu | 📖 | catalogue (catalogue-*.md) |
 | 11 | Ghur — Domaine de la Bête | 📖 | catalogue (catalogue-*.md) |
-| 12 | Artefacts magiques | 📖 | 1 (reconciliation.md ×1) |
+| 12 | Artefacts magiques | 📖 | catalogue (catalogue-*.md) |
 | 13 | Créatures magiques | ✅ | 9 (magie.md ×9) |
-| 14 | Les Vents à l'œuvre | ✅ | 27 (magie.md ×24) |
+| 14 | Les Vents à l'œuvre | ✅ | 24 (magie.md ×24) |
 | 15 | Némésis et aventures magiques | 📖 | catalogue (catalogue-*.md) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
 - **VDM 09** (Shyish — Domaine de la Mort) :
   - 📖 l.375-536 « Le Labyrinthe de Cristal » — transcrit en catalogue, jamais traité, 0 réf
+<!-- sources-empreinte: f260027321ba475039bfb5000e3503a2cb24070c (347 fichiers, 17 dossiers) -->

@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
 import { countsByChapterRef, assertAgainstBaseline } from './check-refs.mjs'
+import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 const APPLY = process.argv.includes('--apply')
 // --remap : ré-ancre les réfs de SYNTHÈSE (sans citation) par alignement de contenu old↔new.
@@ -340,7 +341,7 @@ function buildReport(result, { apply, remap }) {
 function main() {
   const result = scan(RAWDIR, { apply: APPLY, remap: REMAP })
   const { tally, totalRefs, totalQuotes, appliedTotal, remappedTotal, DOCS, lowRows } = result
-  writeFileSync(join(RAWDIR, 'reanchor.md'), buildReport(result, { apply: APPLY, remap: REMAP }))
+  ecrireDoc(join(RAWDIR, 'reanchor.md'), buildReport(result, { apply: APPLY, remap: REMAP }))
 
   const driftLabel = APPLY ? `🔧 ${appliedTotal} corrigées` : `🔧 ${tally.DRIFT} dérives (relancer --apply)`
   const remapLabel = REMAP ? ` · 🧭 ${remappedTotal} synthèses ré-ancrées (diff)` : ''

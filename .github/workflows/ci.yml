@@ -45,6 +45,8 @@ jobs:
       - run: npm run test:map
       - run: npm run build
       - run: npm run docs:check
+      # Pied « sources-empreinte » de chaque doc dérivé confronté aux blobs de l'INDEX (#1679 L1b).
+      - run: node scripts/docs/build-all.mjs --empreinte
       - name: Fraîcheur des catalogues Atlas RAW
         run: npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'
       - run: npm run raw:coverage

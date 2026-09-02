@@ -5,7 +5,8 @@
 // src/state/scene.ts) et scripts/docs/build-vocabulaire.mjs (unions `GameOp` de src/engine/ops.ts,
 // `Condition`/`Flow`/`EffectTrigger`/`EffectTargeting` de src/engine/flowCore.ts).
 import ts from 'typescript'
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
+import { ecrireDoc, retirerPied } from './empreinte-sources.mjs'
 
 /** Abréviations FR à ne PAS prendre pour une fin de phrase (« ex. », « l. », « p. »… — sinon un
  *  « (ex. » tronque le rôle en pleine parenthèse ouverte). */
@@ -172,7 +173,9 @@ export function renderFields(fieldGroups) {
  */
 export function emitOrCheck({ out, path, check, staleMsg, rerunMsg, okMsg, writeMsg }) {
   if (check) {
-    const current = existsSync(path) ? readFileSync(path, 'utf8') : null
+    // Le pied « sources-empreinte » est posé APRÈS coup par build-all.mjs (#1679 L1b) : le générateur
+    // ne le connaît pas, la comparaison porte donc sur le corps.
+    const current = existsSync(path) ? retirerPied(readFileSync(path, 'utf8')) : null
     if (current !== out) {
       console.error(staleMsg)
       console.error(rerunMsg)
@@ -180,7 +183,7 @@ export function emitOrCheck({ out, path, check, staleMsg, rerunMsg, okMsg, write
     }
     console.log(okMsg)
   } else {
-    writeFileSync(path, out)
+    ecrireDoc(path, out)
     console.log(writeMsg)
   }
 }

@@ -7,7 +7,7 @@
 // message actionnable si diff — jamais d'écriture en mode --check. Mécanique d'émission partagée :
 // emitOrCheck (scripts/docs/lib/jsdocUnion.mjs), patron `scripts/docs/build-systemes.mjs`.
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
-import { execFileSync } from 'node:child_process'
+import { sortieOutilLocal } from '../lancer-local.mjs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 
 const DATA_DIR = 'src/data'
@@ -76,9 +76,7 @@ const schemaCoverage = filesOnDisk.filter(hasSchema).length
 // --- EXPOSITION Codex/éditeur (#1472) : DÉRIVÉE des defs, jamais une table écrite ici. Le dumper
 // `scripts/docs/lib/dump-exposition.mts` (tsx) rend `fichier → { codex, edit }` tel que `document()`
 // le déclare ; un def sans `exposition` fait échouer la génération, comme au runtime.
-const EXPOSITION = JSON.parse(
-  execFileSync('npx', ['tsx', 'scripts/docs/lib/dump-exposition.mts'], { encoding: 'utf8', shell: process.platform === 'win32' }),
-)
+const EXPOSITION = JSON.parse(sortieOutilLocal(process.cwd(), 'tsx', 'tsx', ['scripts/docs/lib/dump-exposition.mts']))
 
 /** Colonne « Exposition » d'un `xxx.json` : clés Codex exposées, route d'édition, ou exemption. */
 function expositionOf(jsonFile) {

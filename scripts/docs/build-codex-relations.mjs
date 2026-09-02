@@ -18,7 +18,7 @@
  *   node scripts/docs/build-codex-relations.mjs
  */
 import { readFileSync, existsSync } from 'node:fs'
-import { execFileSync } from 'node:child_process'
+import { sortieOutilLocal } from '../lancer-local.mjs'
 import ts from 'typescript'
 import { emitOrCheck, loadSource, jsdocBody } from './lib/jsdocUnion.mjs'
 import { fileExports } from './lib/engineExports.mjs'
@@ -43,10 +43,7 @@ function lire(p) {
 // ── Exposition DÉCLARÉE aux defs (#1472) ─────────────────────────────────────────────────────────
 
 const EXPOSITION = JSON.parse(
-  execFileSync('npx', ['tsx', 'scripts/docs/lib/dump-exposition.mts'], {
-    encoding: 'utf8',
-    shell: process.platform === 'win32',
-  }),
+  sortieOutilLocal(process.cwd(), 'tsx', 'tsx', ['scripts/docs/lib/dump-exposition.mts']),
 )
 
 /** Route d'édition d'un def, dans le vocabulaire de `document()` — jamais un libellé inventé. */
@@ -220,10 +217,7 @@ const CONTRATS_CAS = (() => {
 /** Épigraphes de Carrière : compte et périmètre de SOURCE, dumpés par le code lui-même
  *  (`extractEpigraph` + `careers`) — jamais une re-implémentation de la sélection ici. */
 const EPIGRAPHES = JSON.parse(
-  execFileSync('npx', ['tsx', 'scripts/docs/lib/dump-epigraphes.mts'], {
-    encoding: 'utf8',
-    shell: process.platform === 'win32',
-  }),
+  sortieOutilLocal(process.cwd(), 'tsx', 'tsx', ['scripts/docs/lib/dump-epigraphes.mts']),
 )
 if (!EPIGRAPHES.total) abandon('dump-epigraphes : aucune carrière lue — la façade `src/data` a bougé')
 

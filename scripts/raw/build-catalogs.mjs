@@ -7,10 +7,11 @@
 // connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel par
 // extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
 // node scripts/raw/build-catalogs.mjs
-import { existsSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, chapterFile as chapterFileLib, readText } from './_lib.mjs'
+import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 export const BLOCK_START = /^<!-- ([A-Z0-9_-]+-INTEGRATION) -->/
 const blockEnd = (tag) => new RegExp(`^<!-- /${tag} -->\\s*$`)
@@ -105,7 +106,7 @@ for (const dom of DOMAINS) {
   const path = `docs/raw/${dom.file}`
   const preserved = extractPreservedBlocks(path)
   const body = appendPreservedBlocks(header + parts.join('\n') + '\n', preserved)
-  writeFileSync(path, body)
+  ecrireDoc(path, body)
   log.push(`${dom.file} : ${refs.length} ch., ${Math.round(body.length / 1024)} Ko${missing.length ? ' · MANQUE ' + missing.join(', ') : ''}${preserved.length ? ` · ${preserved.length} bloc(s) préservé(s)` : ''}`)
 }
 console.log(log.join('\n'))

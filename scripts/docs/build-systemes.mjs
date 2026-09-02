@@ -5,9 +5,10 @@
 // Re-run : node scripts/docs/build-systemes.mjs (npm run docs:systemes).
 // Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
 // exit 1 avec message actionnable si diff — jamais d'écriture en mode --check.
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { closureOf } from '../guards/lib/importGraph.mjs'
+import { emitOrCheck } from './lib/jsdocUnion.mjs'
 
 const PRIMITIVES = JSON.parse(readFileSync('src/data/primitives.manifest.json', 'utf8'))
 const SYSTEMES = JSON.parse(readFileSync('src/data/systemes.manifest.json', 'utf8'))
@@ -104,16 +105,12 @@ if (errors.length) {
   process.exit(1)
 }
 
-const CHECK = process.argv.includes('--check')
-if (CHECK) {
-  const current = existsSync('docs/systemes.md') ? readFileSync('docs/systemes.md', 'utf8') : null
-  if (current !== out) {
-    console.error('docs:systemes — docs/systemes.md est PÉRIMÉ (diverge du graphe d\'imports réel).')
-    console.error('  → relancer `npm run docs:systemes` et committer le résultat.')
-    process.exit(1)
-  }
-  console.log('docs:systemes — OK (docs/systemes.md à jour)')
-} else {
-  writeFileSync('docs/systemes.md', out)
-  console.log(`docs/systemes.md — ${SYSTEMES.length} systèmes, ${PRIMITIVES.length} primitives, ${orphanPrimitives.length} primitive(s) orpheline(s), ${uncovered.length} module(s) non rattaché(s).`)
-}
+emitOrCheck({
+  out,
+  path: 'docs/systemes.md',
+  check: process.argv.includes('--check'),
+  staleMsg: "docs:systemes — docs/systemes.md est PÉRIMÉ (diverge du graphe d'imports réel).",
+  rerunMsg: '  → relancer `npm run docs:systemes` et committer le résultat.',
+  okMsg: 'docs:systemes — OK (docs/systemes.md à jour)',
+  writeMsg: `docs/systemes.md — ${SYSTEMES.length} systèmes, ${PRIMITIVES.length} primitives, ${orphanPrimitives.length} primitive(s) orpheline(s), ${uncovered.length} module(s) non rattaché(s).`,
+})

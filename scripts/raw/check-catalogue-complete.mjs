@@ -18,7 +18,7 @@ import { readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { sectionsOf, sectionLevelOf, catalogChaptersOf, cleanTitle } from './coverage.mjs'
-import { chapterFile, readText } from './_lib.mjs'
+import { chapterFile, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
 import { normalizeLoose } from './check-entity-in-chapter.mjs'
 
 const rawDir = 'docs/raw'
@@ -89,7 +89,7 @@ export function scanIncompleteChapters(catalogCh, blocks) {
 }
 
 function main() {
-  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && f !== 'coverage.md')
+  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
     .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
   const catalogCh = catalogChaptersOf(docs)
   const blocks = catalogueBlocksOf(docs)

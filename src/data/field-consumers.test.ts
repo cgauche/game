@@ -6,6 +6,7 @@ import { buildFieldConsumersMd } from '../../scripts/docs/build-field-consumers.
 import { TARGETS, fieldsOf } from '../../scripts/guards/lib/fieldConsumerTargets.mjs';
 import { listProdFiles, scanFieldReads, fieldOwnership, groupByField } from '../../scripts/guards/lib/fieldConsumers.mjs';
 import { virtualProgram, VIRTUAL_ROOT } from '../../scripts/guards/lib/tsProgram.mjs';
+import { retirerPied } from '../../scripts/docs/lib/empreinte-sources.mjs';
 
 /**
  * Garde du rapport « consommateurs par champ » (#903 — `scripts/docs/build-field-consumers.mts`,
@@ -80,7 +81,9 @@ export function apercuEcart(regenere: string, committe: string | null, max = 10)
 describe('docs/consommateurs-de-champs.md — le rapport GÉNÉRÉ est à jour', () => {
   it('régénéré en mémoire == committé (sinon : npm run docs:field-consumers)', () => {
     const chemin = join(ROOT, 'docs/consommateurs-de-champs.md');
-    const committe = existsSync(chemin) ? readFileSync(chemin, 'utf8') : null;
+    // Le pied « sources-empreinte » est posé APRÈS coup par build-all.mjs (#1679 L1b) : la fraîcheur
+    // se juge sur le CORPS, que le générateur est seul à produire.
+    const committe = existsSync(chemin) ? retirerPied(readFileSync(chemin, 'utf8')) : null;
     const ecart = ecartDoc(rapport().md, committe);
     // Un rouge doit NOMMER sa cause : le rapporteur tronque la chaîne comparée par un `toBe`, donc
     // le MESSAGE porte lui-même la première divergence et l'aperçu borné des suivantes — constat CI

@@ -12,7 +12,7 @@
 // de cmd.exe sur les arguments, et le même chemin de code sur win32 et sur posix.
 import fs from 'node:fs'
 import path from 'node:path'
-import { spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { refusOutillageLocal } from './outillage-local.mjs'
 import { codeEnfant } from './test/partition.mjs'
@@ -65,6 +65,22 @@ export function resoudreOutilLocal(racine, paquet, bin) {
   const entree = path.join(racine, 'node_modules', paquet, relatif)
   const refusEntree = refusOutillageLocal(racine, `${paquet}/${bin}`, entree)
   return refusEntree ? { refus: refusEntree } : { entree }
+}
+
+/**
+ * STDOUT d'un outil de CET ARBRE joué sur un script (`tsx <dumper>`). `npx` est proscrit : il remonte
+ * aux arbres ancêtres, et son enfant perd le `cwd`/l'env que l'appelant vient de poser — un
+ * enregistreur de lectures ne verrait rien du dumper (#1679 L1b).
+ */
+export function sortieOutilLocal(racine, paquet, bin, args) {
+  const { entree, refus } = resoudreOutilLocal(racine, paquet, bin)
+  if (refus) throw new Error(refus)
+  return execFileSync(process.execPath, [entree, ...args], {
+    cwd: racine,
+    encoding: 'utf8',
+    env: envIsole(process.env, binLocal(racine)),
+    maxBuffer: 1 << 28,
+  })
 }
 
 /** Dossier des binaires de l'arbre — le SEUL `node_modules/.bin` que voit l'enfant. */
