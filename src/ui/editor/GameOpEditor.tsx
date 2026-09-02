@@ -387,7 +387,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'transform': return { op: 'transform', tag: 'forme', ops: [] };
     case 'endTransform': return { op: 'endTransform', tag: 'forme' };
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
-    case 'light': return { op: 'light', radiusTiles: 5 };
+    case 'light': return { op: 'light', radiusM: 10 };
     case 'skillMod': return { op: 'skillMod', skill: { id: '' }, mod: -10 };
     case 'skillDRBonus': return { op: 'skillDRBonus', bonus: 1 };
     case 'charDRBonus': return { op: 'charDRBonus', char: 'sociabilite', bonus: 1 };
@@ -836,9 +836,9 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'light' && (
           <>
-            <label className="dr">Rayon (cases)
-              <NumberField variant="nu" label="Rayon (cases)" min={1} value={o.radiusTiles ?? 1}
-                onChange={(radiusTiles) => upd({ radiusTiles })} />
+            <label className="dr">Rayon (m)
+              <NumberField variant="nu" label="Rayon (m)" min={1} value={o.radiusM ?? 1}
+                onChange={(radiusM) => upd({ radiusM })} />
             </label>
             <label className="dr">Ton
               <select value={o.tone ?? ''} onChange={(e) => upd({ tone: e.target.value || undefined })}>

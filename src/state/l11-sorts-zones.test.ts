@@ -5,7 +5,8 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { applyCast, wardedAgainst, organicProjectile } from './combatFlow';
+import { applyCast, wardedAgainst, organicProjectile, zoneRadiusTilesAt } from './combatFlow';
+import { sceneMetresPerTile, emptyScene } from './scene';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { findSpell } from '../data';
@@ -72,10 +73,34 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     // Géométrie : héros adjacent au porteur = couvert vs un tireur lointain…
     const ally = { ...caster, id: 'ally', activeEffects: [], pos: { x: 6, y: 10 } } as Combatant;
     const combatants = [caster, ally, T];
-    expect(wardedAgainst(combatants, T, ally, 'arrowWard')).toBe(true);
+    const mptTerre = sceneMetresPerTile(useGame.getState().scene);
+    expect(wardedAgainst(combatants, T, ally, 'arrowWard', mptTerre)).toBe(true);
     // …mais un attaquant DANS la zone n'est pas gêné (le projectile n'« entre » pas).
     const inside = { ...T, id: 'in', pos: { x: 5, y: 11 } } as Combatant;
-    expect(wardedAgainst([caster, ally, inside], inside, ally, 'arrowWard')).toBe(false);
+    expect(wardedAgainst([caster, ally, inside], inside, ally, 'arrowWard', mptTerre)).toBe(false);
+    // ÉCHELLE DE LA SCÈNE (#1507) : l'aura est chiffrée en MÈTRES (4 m). À 2 m/case elle couvre
+    // 2 cases ; à 10 m/case, une seule (4 m tiennent dans la maille). Un allié à DEUX cases du porteur
+    // est donc couvert à terre et découvert en mer — avant ce lot, le littéral `2` le couvrait dans
+    // les deux, soit une aura de 4 m qui protégeait sur 20.
+    const loin = { ...caster, id: 'loin', activeEffects: [], pos: { x: 7, y: 10 } } as Combatant;
+    expect(wardedAgainst([caster, loin, T], T, loin, 'arrowWard', mptTerre)).toBe(true);
+    expect(wardedAgainst([caster, loin, T], T, loin, 'arrowWard', 10)).toBe(false);
+    // …et la case du PORTEUR reste couverte à toute échelle (plancher d'UNE case de `porteeEnCases`).
+    expect(wardedAgainst(combatants, T, ally, 'arrowWard', 10)).toBe(true);
+  });
+
+  /**
+   * GABARIT d'un sort de ZONE (#1507) — `op zone` écrit son rayon en MÈTRES (`radiusMeters`) ; c'est
+   * `zoneRadiusTilesAt` qui le pose en cases, à l'échelle de la SCÈNE. Une ZdE de 4 m couvre 2 cases
+   * à terre et 0 case en mer (0,4 case : le gabarit est plus petit que la maille, il ne déborde pas
+   * de la case posée). Le littéral `2` d'avant peignait 2 cases de 10 m, soit un disque de 40 m.
+   */
+  it('gabarit de ZONE : 4 m = 2 cases à 2 m/case, 0 case à 10 m/case', () => {
+    const mptTerre = sceneMetresPerTile(emptyScene(1, 1));
+    expect([mptTerre, zoneRadiusTilesAt(4, 0, mptTerre)]).toEqual([2, 2]);
+    expect(zoneRadiusTilesAt(4, 0, 10)).toBe(0);
+    // La Surincantation « +Zone » agrandit le MÊME gabarit métrique : elle suit l'échelle elle aussi.
+    expect(zoneRadiusTilesAt(4, 1, mptTerre)).toBeGreaterThan(zoneRadiusTilesAt(4, 0, mptTerre));
   });
 
   it('organicProjectile : flag maison Weapon.organicProjectile — flèches/carreaux/javelots oui, poudre/fronde/couteaux non', () => {

@@ -6,7 +6,7 @@
  * Chaque fonction renvoie une NOUVELLE Scène (immuable). `editorState.ts` les RÉ-EXPORTE : les câblages
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
-import { Scene, SceneEntity, SceneEffectZone, Terrain, CellSide, EncounterMember, layerTiles, tileAt, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults } from './scene';
+import { Scene, SceneEntity, SceneEffectZone, Terrain, CellSide, EncounterMember, layerTiles, tileAt, sceneMetresPerTile, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults } from './scene';
 import { memoByRef } from './sceneMemo';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -959,7 +959,7 @@ export function rectCoverOf(cells: ReadonlySet<string>): ArchitectureRect[] {
  *  l'échelle de la grille, plancher à 1 case (une scène à très grosses cases garde le pignon sur une
  *  case de portée plutôt que sur aucune). */
 export function gableSpanMaxTiles(scene: Scene): number {
-  return Math.max(1, Math.floor(ROOF_GABLE_SPAN_MAX_M / (scene.metresPerTile ?? 2)));
+  return Math.max(1, Math.floor(ROOF_GABLE_SPAN_MAX_M / sceneMetresPerTile(scene)));
 }
 
 /** DÉRIVE les masses manquantes de CHAQUE corps depuis le plancher réel (#829, corrige #822 : éditer
@@ -1139,7 +1139,7 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
           // La PENTE s'adapte à la portée sous la borne de comble ; une pente POSÉE par l'auteur ne
           // s'adapte jamais.
           pitchDeg: body.roofDefaults?.pitchDeg ?? fittedPitchDeg(
-            span, scene.metresPerTile ?? 2, DEFAULT_ROOF_DEFAULTS.pitchDeg,
+            span, sceneMetresPerTile(scene), DEFAULT_ROOF_DEFAULTS.pitchDeg,
             defaults.riseMaxStoreys ?? DEFAULT_ROOF_DEFAULTS.riseMaxStoreys,
           ),
           material: defaults.material,

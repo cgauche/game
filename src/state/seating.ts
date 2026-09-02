@@ -38,7 +38,7 @@ import { findPropById } from '../data';
 import { cransDepuisCapIdentite, rotatePropLocal } from '../data/props.types';
 import { DIR8_DELTA, DIR8_ORDER, rotateDir8, type Dir8 } from './dir8';
 import { PARTY_MAX } from './combatants';
-import { heightAt, isWalkable, wallBetween, type Scene, type SceneEntity } from './scene';
+import { heightAt, isWalkable, sceneMetresPerTile, wallBetween, type Scene, type SceneEntity } from './scene';
 import { memoByRef } from './sceneMemo';
 import type { Pt } from './path';
 
@@ -131,6 +131,9 @@ interface PlacePartielle {
  *  du catalogue — c'est cet ordre qui rend l'arbitrage ci-dessous déterministe. */
 function placesPartielles(scene: Scene): PlacePartielle[] {
   const out: PlacePartielle[] = [];
+  // SECONDE des deux coutures de traduction mètres→cases (la première est `buildPropVolumes`) : l'ancre
+  // d'une place est MÉTRIQUE au catalogue, le plan de la scène est en CASES.
+  const mpt = sceneMetresPerTile(scene);
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
     const slots = findPropById(ent.ref ?? '')?.seatSlots ?? [];
@@ -140,8 +143,8 @@ function placesPartielles(scene: Scene): PlacePartielle[] {
     const z = ent.z ?? 0;
     const sol = heightAt(scene, ent.pos.x, ent.pos.y, z);
     for (const slot of slots) {
-      const [ax, ay] = rotatePropLocal(slot.anchor.x, slot.anchor.y, facing);
-      const anchor = { x: ent.pos.x + ax, y: ent.pos.y + ay, h: sol + slot.anchor.h };
+      const [ax, ay] = rotatePropLocal(slot.anchor.xM / mpt, slot.anchor.yM / mpt, facing);
+      const anchor = { x: ent.pos.x + ax, y: ent.pos.y + ay, h: sol + slot.anchor.hM };
       const [px, py] = rotatePropLocal(slot.approach.x, slot.approach.y, facing);
       out.push({
         propId: ent.id,

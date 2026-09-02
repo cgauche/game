@@ -313,7 +313,7 @@ describe('meuble HAUT — le rayon décide, la case dessinée n’est qu’un re
       facing: capVolumique(ent.facing, ent.id),
       baseHeightM: heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0),
       entId: ent.id,
-    });
+    }, mpt);
     return Math.max(...faces.flatMap((f) => f.poly.map((p) => p.h)));
   };
 

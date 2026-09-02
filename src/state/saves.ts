@@ -75,7 +75,7 @@ import type { Scene } from './scene';
 // rouvrirait avec une Commotion cérébrale dont `test` est `undefined` : `fireCritTriggers` lirait
 // `trig.test.test.difficulty` sur rien et le critique suivant crasherait. La save se jette
 // (politique 2 ci-dessus).
-export const SAVE_VERSION = 40;
+export const SAVE_VERSION = 41;
 
 export interface SaveMeta {
   version: number;

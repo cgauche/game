@@ -349,7 +349,7 @@ export const fr = {
   'op.skillMod': '{name} : {mod} aux Tests de {skill} ({src}).',
   'op.drBonus': '{name} : bonus de DR aux Tests de {what} ({src}).',
   'op.crewTestMod': '{name} : {mod} aux Tests individuels des Tests d’équipage ({src}).',
-  'op.light': '{name} émet de la lumière sur {n} cases ({src}).',
+  'op.light': '{name} émet de la lumière sur {n} m ({src}).',
   'op.moveScale': '{name} : Mouvement ×{num}/{den} ({src}).',
   'op.moveMod': '{name} : {mod} Mouvement ({src}).',
   'op.maxWeaponHands': '{name} : armes limitées à {hands} main(s) ({src}).',

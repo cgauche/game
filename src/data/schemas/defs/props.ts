@@ -12,10 +12,12 @@ import { CAP_IDENTITE_PROP, PROP_CYLINDER_SIDES } from '../../props.types';
 export const file = 'props.json';
 export const famille = 'entite';
 
-/** `PropPoint3` / `PropSize3` (`src/data/props.types.ts`) — repère LOCAL d'une recette de décor :
- *  `x`/`y` en cases depuis le centre de la case d'ancrage, `h` en mètres depuis le sol de la case. */
-export const propPoint3Schema = z.strictObject({ x: z.number().finite(), y: z.number().finite(), h: z.number().finite() });
-export const propSize3Schema = z.strictObject({ x: z.number().finite(), y: z.number().finite(), h: z.number().finite() });
+/** `PropPoint3` / `PropSize3` (`src/data/props.types.ts`) — repère LOCAL d'une recette de décor, en
+ *  MÈTRES sur les trois axes (#1507) : `xM`/`yM` depuis l'ancre du décor, `hM` depuis le sol de la case.
+ *  `z.strictObject` : une recette qui porterait encore `x`/`y`/`h` (cases) n'entre pas — c'est le
+ *  verrou d'unité, il n'a PAS d'alias. */
+export const propPoint3Schema = z.strictObject({ xM: z.number().finite(), yM: z.number().finite(), hM: z.number().finite() });
+export const propSize3Schema = z.strictObject({ xM: z.number().finite(), yM: z.number().finite(), hM: z.number().finite() });
 
 /** FOYER d'un décor qui éclaire (`PropPrimitive.emet`, `src/data/props.types.ts`). `true` SEUL est
  *  admis, comme au type : un `emet: false` dirait l'absence en une seconde graphie. Le CARDINAL (une
@@ -28,7 +30,7 @@ const emetSchema = z.literal(true).optional();
 export const propPrimitiveSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('box'), center: propPoint3Schema, size: propSize3Schema, material: z.string().min(1), emet: emetSchema }),
   z.strictObject({
-    kind: z.literal('cylinder'), center: propPoint3Schema, radius: z.number().finite(), heightM: z.number().finite(),
+    kind: z.literal('cylinder'), center: propPoint3Schema, radiusM: z.number().finite(), heightM: z.number().finite(),
     // CÔTÉS ADMIS : la même source que le type et le validateur de catalogue (`PROP_CYLINDER_SIDES`,
     // `src/data/props.types.ts`) — une union recopiée ici dériverait de l'union TS au premier ajout.
     sides: z.literal(PROP_CYLINDER_SIDES), material: z.string().min(1), emet: emetSchema,
@@ -43,8 +45,9 @@ export const propPrimitiveSchema = z.discriminatedUnion('kind', [
  *  autre repère ne peut pas entrer en silence (#1680 ligne 16). */
 export const propVolumeRecipeSchema = z.strictObject({ capIdentite: z.literal(CAP_IDENTITE_PROP), primitives: z.array(propPrimitiveSchema) });
 
-/** `PropSeatSlot` (`src/data/props.types.ts`) — place assise offerte par un décor : ancre du corps,
- *  cap du corps assis (Dir8), et case d'ABORD relative à l'ancre de l'empreinte. */
+/** `PropSeatSlot` (`src/data/props.types.ts`) — place assise offerte par un décor : ancre MÉTRIQUE du
+ *  corps (`propPoint3Schema`), cap du corps assis (Dir8), et case d'ABORD relative à l'ancre de
+ *  l'empreinte (`cell2Schema` : un offset de CASE, pas une longueur). */
 export const propSeatSlotSchema = z.strictObject({
   // `place-<rang>` — un id de place ne porte JAMAIS de côté (#1680 ligne 16) : le côté vit dans
   // `anchor`/`facing`/`approach`, qui tournent avec le cap de l'instance quand l'id, lui, ne tourne pas.
@@ -69,7 +72,7 @@ const doc = document(
     cover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),
     // `tone` (#1245, L4) = APPARENCE seule (`lightTones.json` : couleur/intensité/vacillement),
     // résolue au bord du rendu ; le RAYON reste la seule chose que le moteur lise d'une source.
-    light: z.strictObject({ radiusTiles: z.number(), tone: z.string().optional() }).optional(),
+    light: z.strictObject({ radiusM: z.number(), tone: z.string().optional() }).optional(),
     foot: z.strictObject({ w: z.number().int().positive(), h: z.number().int().positive() }).optional(),
     volume: propVolumeRecipeSchema.optional(),
     seatSlots: z.array(propSeatSlotSchema).optional(),
@@ -78,9 +81,9 @@ const doc = document(
     solid: { label: 'Bloque le passage', hint: 'Empêche de marcher sur la case (combat et exploration)' },
     opaque: { label: 'Bloque la vue', hint: 'Coupe la ligne de vue (LdV)' },
     cover: { label: 'Couvert', hint: 'Degré de couvert offert (imparfaite/moyenne/totale)' },
-    light: { label: 'Source lumineuse', hint: 'Rayon éclairé (en cases) et ton optionnel de la source' },
+    light: { label: 'Source lumineuse', hint: 'Rayon éclairé (en mètres) et ton optionnel de la source' },
     foot: { label: 'Empreinte au sol', hint: 'Largeur × profondeur en cases occupées par le décor' },
-    volume: { label: 'Recette volumique', hint: 'Primitives (caisse/cylindre/prisme) composant le rendu volumique du décor' },
+    volume: { label: 'Recette volumique', hint: 'Primitives (caisse/cylindre/prisme) composant le rendu volumique du décor — cotes en mètres' },
     seatSlots: { label: 'Places assises', hint: 'Ancres, orientation et case d’abord des places offertes par le décor' },
   },
   {

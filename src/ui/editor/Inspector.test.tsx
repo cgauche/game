@@ -133,7 +133,7 @@ describe('Inspector — l’empreinte d’un décor n’est plus une propriété
 });
 
 describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
-  it('light.radiusTiles : la case + le rayon atterrissent dans la Scène et survivent au round-trip', async () => {
+  it('light.radiusM : la case + le rayon atterrissent dans la Scène et survivent au round-trip', async () => {
     const h = mount({ id: 'lanterne', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau' });
     await h.mount();
 
@@ -142,7 +142,7 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
     await act(async () => {
       checkbox.click();
     });
-    expect(h.entOf().light).toEqual({ radiusTiles: 3 });
+    expect(h.entOf().light).toEqual({ radiusM: 6 });
 
     const radiusInput = Array.from(h.container.querySelectorAll('input[type="number"]'))
       .find((el) => el.closest('label')?.textContent?.includes("Rayon d'éclairage")) as HTMLInputElement;
@@ -150,8 +150,8 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(radiusInput, '6');
       radiusInput.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    expect(h.entOf().light).toEqual({ radiusTiles: 6 });
-    expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusTiles: 6 });
+    expect(h.entOf().light).toEqual({ radiusM: 6 });
+    expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusM: 6 });
 
     await act(async () => {
       h.root.unmount();
@@ -160,7 +160,7 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
   });
 
   it('light.tone : le ton d’instance SURVIT au rayon, s’élit/se retire, et survit au round-trip', async () => {
-    const h = mount({ id: 'brasero', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau', light: { radiusTiles: 4, tone: 'lanterne' } });
+    const h = mount({ id: 'brasero', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau', light: { radiusM: 4, tone: 'lanterne' } });
     await h.mount();
 
     // (1) régler le rayon ne DÉTRUIT pas le ton posé (l’objet `light` se patche, il ne se remplace pas).
@@ -170,7 +170,7 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(radiusInput, '6');
       radiusInput.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    expect(h.entOf().light).toEqual({ radiusTiles: 6, tone: 'lanterne' });
+    expect(h.entOf().light).toEqual({ radiusM: 6, tone: 'lanterne' });
 
     // (2) le ton est ÉLISABLE dans le catalogue, et retirable (hérité du type de décor).
     const toneSelect = Array.from(h.container.querySelectorAll('select'))
@@ -182,15 +182,15 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
       toneSelect.value = 'chandelle';
       toneSelect.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    expect(h.entOf().light).toEqual({ radiusTiles: 6, tone: 'chandelle' });
-    expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusTiles: 6, tone: 'chandelle' });
+    expect(h.entOf().light).toEqual({ radiusM: 6, tone: 'chandelle' });
+    expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusM: 6, tone: 'chandelle' });
 
     await act(async () => {
       toneSelect.value = '';
       toneSelect.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    expect(h.entOf().light).toEqual({ radiusTiles: 6 });
-    expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusTiles: 6 });
+    expect(h.entOf().light).toEqual({ radiusM: 6 });
+    expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusM: 6 });
 
     await act(async () => {
       h.root.unmount();

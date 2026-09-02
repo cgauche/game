@@ -12,7 +12,7 @@
  * Consommé par l'hôte du monde de campagne (`stage/MondeDeCampagne`, qui le sert à SES DEUX regards)
  * et par l'éditeur — mêmes décors partout.
  */
-import { Scene, tileAt, heightAt, type ArchitectureRect } from '../../state/scene';
+import { Scene, tileAt, heightAt, sceneMetresPerTile, type ArchitectureRect } from '../../state/scene';
 import { roofHidden, massFootBBox } from '../../state/buildings';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { decorAncre, decorFootGeometry, propDeclaredFoot } from '../../state/footprint';
@@ -72,7 +72,7 @@ interface AncrageDecor {
  *  d'orientation de l'éditeur (`ui/editor/Inspector.tsx`) ; aucun d'eux ne la redevine. Volume = la
  *  recette compilée sur l'ancre (`buildPropVolumes`) ; billboard = le dessin ancré aux pieds, décalé de
  *  `ancre − cell`. Les deux portent la MÊME identité, la même empreinte et les mêmes vérités de scène. */
-function elDeDecor(a: AncrageDecor): PropEl {
+function elDeDecor(a: AncrageDecor, mpt: number): PropEl {
   const commun = {
     kind: 'prop' as const,
     key: a.key,
@@ -97,7 +97,7 @@ function elDeDecor(a: AncrageDecor): PropEl {
         facing,
         baseHeightM: a.solM + (a.liftM ?? 0),
         ...(a.entId ? { entId: a.entId } : {}),
-      }),
+      }, mpt),
     };
   }
   return {
@@ -123,6 +123,7 @@ export function capDuFaite(shape: RoofShapeSpec): Dir8 {
  *  scène en vue est tagué `visible` (dessiné AU-DESSUS du voile), mémorisé → dessous (grisé). Les
  *  overlays de terrain restent TOUJOURS sous le voile (décor « mémorisé », convention des sols). */
 export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): PropEl[] {
+  const mpt = sceneMetresPerTile(scene);
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
   // Le tri par COUCHE n'est actif que si l'appelant l'a demandé (`activeZ`/`viewZ`) — passer SEULEMENT
@@ -148,7 +149,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
           ref,
           interact: false,
           states: { visible: !visible || visible.has(`${x},${y},${lvl.z}`) },
-        }));
+        }, mpt));
       }
   }
   // Props de scène (décor) — visibles dans les deux modes (exploration ET combat).
@@ -173,7 +174,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       ...(ent.facing ? { facing: ent.facing } : {}),
       interact: !!ent.interact,
       states: { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) },
-    }));
+    }, mpt));
   }
   const physicalEdges = new Set((scene.walls ?? []).map((wall) => edgeKey(wall)));
   const emittedFeatures = new Set<string>();
@@ -230,7 +231,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
               visible.has(`${edge.x},${edge.y},${z}`) ||
               visible.has(`${edge.x + nx},${edge.y + ny},${z}`),
           },
-        }));
+        }, mpt));
       }
     }
   }
@@ -293,7 +294,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
             liftM: eaveM - heightAt(scene, cx, cy, z) + 0.6 * (apexM - eaveM),
             nappe: { sectionId: mass.id, cells: cellsOf(cells) },
             ...(roomZoneIds?.length ? { roomZoneIds } : {}),
-          }));
+          }, mpt));
           return;
         }
         door ??= buildingDoor(scene, f, z);
@@ -314,7 +315,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
           facing: door.facing, // Dir8 vers l'EXTÉRIEUR
           solM: heightAt(scene, door.frontCell.x, door.frontCell.y, z),
           liftM: facade ? WALL_H_M * 0.55 : 0, // enseigne : haut de la façade ; étal : au sol
-        }));
+        }, mpt));
       });
     }
   }

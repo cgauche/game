@@ -2482,7 +2482,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `spells.json` | `range` | `kind` | 223 |
 | `spells.json` | `duration` | `kind,value` | 187 |
 | `spells.json` | `target` | `kind,n` | 179 |
-| `props.json` | `center` | `h,x,y` | 172 |
+| `props.json` | `center` | `hM,xM,yM` | 172 |
 | `spells.json` | `value` | `charOf` | 154 |
 | `criticals.json` | `ops` | `amount,ignoreAP,ignoreTB,op` | 146 |
 | `trappings.json` | `damage` | `flat,plusBF` | 145 |
@@ -2491,7 +2491,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `spells.json` | `duration` | `kind,unit,value` | 130 |
 | `talents.json` | `test` | `matches,raw` | 128 |
 | `spells.json` | `target` | `kind` | 127 |
-| `props.json` | `size` | `h,x,y` | 122 |
+| `props.json` | `size` | `hM,xM,yM` | 122 |
 | `tables.json` | `ops` | `op,text` | 119 |
 | `spells.json` | `target` | `kind,text` | 117 |
 | `progression-schemas.derived.json` | `lv` | `1,2,3,4` | 111 |
@@ -2689,7 +2689,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `mutations.json` | `appearance` | `colors` | 6 |
 | `naval-ports.json` | `demande` | `armes` | 6 |
 | `naval-traits.json` | `installation` | `bands,per` | 6 |
-| `props.json` | `anchor` | `h,x,y` | 6 |
+| `props.json` | `anchor` | `hM,xM,yM` | 6 |
 | `props.json` | `approach` | `x,y` | 6 |
 | `raceAppearance.json` | `pose` | `cou,epauleD,epauleG,tete,torse` | 6 |
 | `spells.json` | `ops` | `meters,op` | 6 |
@@ -2755,7 +2755,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `etats.json` | `steps` | `effect,kind` | 4 |
 | `loup-et-saumure-projet.json` | `ammoRangeMod` | `mult` | 4 |
 | `miscast.json` | `amount` | `dice` | 4 |
-| `props.json` | `light` | `radiusTiles` | 4 |
+| `props.json` | `light` | `radiusM` | 4 |
 | `river-navigation.json` | `arriere` | `pct` | 4 |
 | `sea-weather.json` | `arriere` | `pctOther,pctSail` | 4 |
 | `sea-weather.json` | `arriere` | `pctSail` | 4 |
@@ -3966,9 +3966,9 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 | `kill` | `op` | `spells.json` | 1 | — |
 | `lifeSteal` | `den,num,op` | `traits.json` | 2 | — |
 | `lifeSteal` | `den,num,op,round` | `spells.json` | 2 | — |
-| `light` | `op,radiusTiles,tone` | `trappings.json` | 4 | — |
-| `light` | `op,radiusTiles,tone` | `spells.json` | 2 | — |
-| `light` | `op,radiusTiles,tone` | `tables.json` | 1 | — |
+| `light` | `op,radiusM,tone` | `trappings.json` | 4 | — |
+| `light` | `op,radiusM,tone` | `spells.json` | 2 | — |
+| `light` | `op,radiusM,tone` | `tables.json` | 1 | — |
 | `loseTurn` | `op,what` | `maneuvers.json` | 2 | — |
 | `loseTurn` | `op,what` | `spells.json` | 2 | — |
 | `loseTurn` | `op` | `spells.json` | 1 | — |

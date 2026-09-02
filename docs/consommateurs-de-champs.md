@@ -151,7 +151,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `begging` | 3 | `src/state/combatEffects.ts:348` |
 | `vsCapricieux` | 1 | `src/state/combatEffects.ts:352` |
 | `easierIf` | 11 | `src/state/combatEffects.ts:393` |
-| `argDifficulty` | 1 | `src/state/triggeredEffects.ts:73` |
+| `argDifficulty` | 1 | `src/state/triggeredEffects.ts:74` |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:151` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:152` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
@@ -212,59 +212,59 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `alsoIn` | — | *absent du type TS* |
 | `maison` | — | *absent du type TS* |
 | `icon` | — | *absent du type TS* |
-| `solid` | 2 | `src/data/props.types.ts:403` |
-| `opaque` | 3 | `src/data/props.types.ts:380` |
-| `cover` | 3 | `src/data/props.types.ts:380` |
-| `light` | 3 | `src/data/props.types.ts:389` |
-| `foot` | 3 | `src/data/props.types.ts:335` |
+| `solid` | 2 | `src/data/props.types.ts:435` |
+| `opaque` | 3 | `src/data/props.types.ts:412` |
+| `cover` | 3 | `src/data/props.types.ts:412` |
+| `light` | 3 | `src/data/props.types.ts:421` |
+| `foot` | 3 | `src/data/props.types.ts:367` |
 | `volume` | 11 | `src/data/index.ts:2650` |
-| `seatSlots` | 2 | `src/data/props.types.ts:394` |
+| `seatSlots` | 2 | `src/data/props.types.ts:426` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `capIdentite` | 2 | `src/data/props.types.ts:374` |
-| `primitives` | 5 | `src/data/props.types.ts:382` |
+| `capIdentite` | 2 | `src/data/props.types.ts:406` |
+| `primitives` | 5 | `src/data/props.types.ts:414` |
 
 ### `PropPrimitive` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `kind` | 5 | `src/data/props.types.ts:258` |
-| `center` | 6 | `src/data/props.types.ts:258` |
-| `size` | 3 | `src/data/props.types.ts:258` |
-| `material` | 4 | `src/data/props.types.ts:342` |
-| `emet` | 2 | `src/data/props.types.ts:386` |
-| `radius` | 2 | `src/data/props.types.ts:259` |
-| `heightM` | 2 | `src/data/props.types.ts:259` |
-| `sides` | 2 | `src/data/props.types.ts:259` |
-| `slope` | 1 | `src/data/props.types.ts:260` |
+| `kind` | 5 | `src/data/props.types.ts:270` |
+| `center` | 6 | `src/data/props.types.ts:270` |
+| `size` | 3 | `src/data/props.types.ts:270` |
+| `material` | 4 | `src/data/props.types.ts:374` |
+| `emet` | 2 | `src/data/props.types.ts:418` |
+| `radiusM` | 2 | `src/data/props.types.ts:271` |
+| `heightM` | 2 | `src/data/props.types.ts:271` |
+| `sides` | 2 | `src/data/props.types.ts:271` |
+| `slope` | 1 | `src/data/props.types.ts:272` |
 
 ### `PropSeatSlot` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/props.types.ts:395` |
-| `anchor` | 2 | `src/state/seating.ts:143` |
-| `facing` | 1 | `src/state/seating.ts:151` |
-| `approach` | 4 | `src/data/props.types.ts:398` |
+| `id` | 5 | `src/data/props.types.ts:427` |
+| `anchor` | 2 | `src/state/seating.ts:146` |
+| `facing` | 1 | `src/state/seating.ts:154` |
+| `approach` | 4 | `src/data/props.types.ts:430` |
 
 ### `PropPoint3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `x` | 13 | `src/data/props.types.ts:152` |
-| `y` | 13 | `src/data/props.types.ts:151` |
-| `h` | 13 | `src/data/props.types.ts:151` |
+| `xM` | 13 | `src/data/props.types.ts:164` |
+| `yM` | 13 | `src/data/props.types.ts:163` |
+| `hM` | 13 | `src/data/props.types.ts:163` |
 
 ### `PropSize3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `x` | 3 | `src/data/props.types.ts:181` |
-| `y` | 3 | `src/data/props.types.ts:182` |
-| `h` | 3 | `src/data/props.types.ts:183` |
+| `xM` | 3 | `src/data/props.types.ts:193` |
+| `yM` | 3 | `src/data/props.types.ts:194` |
+| `hM` | 3 | `src/data/props.types.ts:195` |
 
 ### `CritEscalation` (src/data/criticals.ts)
 

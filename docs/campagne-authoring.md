@@ -123,7 +123,10 @@ Une coque RICHE (équipage exposé `crewIds`, artillerie `postes`, amélioration
 (`isMerScene`, `src/state/scene.ts`) bascule le combat naval en modèle NAVIRE-UNITÉ (équipage passager hors
 `order`, tour de coque, action Bordée/Manœuvre — `combatOrder`/`isPassengerInBattle`). En dessous (défaut
 2 m/case, PERSON-scale) : l'équipage combat individuellement, les héros SERVENT les pièces (`Servir <pièce>`)
-et l'abordage se joue à la case (`reachTiles`, LDB 15 : 1 case = 2 m fixe, indépendant de `metresPerTile`).
+et l'abordage se joue à la case. L'Allonge, elle, est le SEUL endroit où 2 m/case est figé : `reachTiles`
+(`src/engine/engagement.ts`) traduit les mètres de LDB 62 l.163/164 en cases avec le facteur RAW
+`LDB 15 l.12`, sans lire `metresPerTile`. Tout le reste SUIT l'échelle de la scène — bandes de portée,
+géométrie des recettes de décor, ancres de place, rayons de lumière (#1507).
 Les grilles d'ABORDAGE restent à 2 m/case : le modèle MER exige une IA de manœuvre de coque ENNEMIE qui
 n'existe pas encore (`runEnemyAI` ne pilote aucun `bodyShape:'vehicule'` → la coque adverse ne s'avance ni ne
 vire), et la bordée (portée en mètres) tombe hors d'atteinte sans manœuvre d'approche. L'échelle mer vaut

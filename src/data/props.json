@@ -5,9 +5,9 @@
     "label": "Feu de camp",
     "solid": true,
     "light": {
-      "radiusTiles": 5
+      "radiusM": 10
     },
-    "maison": "rayon maison : aucun folio ne chiffre un feu de camp — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases), le plus petit que le canon chiffre, un foyer ouvert n’éclairant pas moins qu’une chandelle"
+    "maison": "rayon maison : aucun folio ne chiffre un feu de camp — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m), le plus petit que le canon chiffre, un foyer ouvert n’éclairant pas moins qu’une chandelle"
   },
   {
     "id": "brasero",
@@ -15,9 +15,9 @@
     "label": "Brasero",
     "solid": true,
     "light": {
-      "radiusTiles": 4
+      "radiusM": 8
     },
-    "maison": "rayon maison : aucun folio ne chiffre un brasero — un cran SOUS le feu de camp (4 cases contre 5), la cuve n’ouvrant sa flamme que vers le haut"
+    "maison": "rayon maison : aucun folio ne chiffre un brasero — un cran SOUS le feu de camp (8 m contre 10), la cuve n’ouvrant sa flamme que vers le haut"
   },
   {
     "id": "chandelier",
@@ -25,10 +25,10 @@
     "label": "Candélabre",
     "solid": true,
     "light": {
-      "radiusTiles": 5,
+      "radiusM": 10,
       "tone": "chandelle"
     },
-    "maison": "rayon maison : le chandelier PORTE des bougies — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases) ; un chandelier n’est pas une bougie, d’où l’arbitrage plutôt que le folio"
+    "maison": "rayon maison : le chandelier PORTE des bougies — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m) ; un chandelier n’est pas une bougie, d’où l’arbitrage plutôt que le folio"
   },
   {
     "id": "lampadaire",
@@ -36,10 +36,10 @@
     "label": "Lampadaire",
     "solid": true,
     "light": {
-      "radiusTiles": 10,
+      "radiusM": 20,
       "tone": "lanterne"
     },
-    "maison": "rayon maison : le lampadaire PORTE une lanterne — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m = 10 cases) ; un lampadaire n’est pas une lanterne de poing, d’où l’arbitrage plutôt que le folio"
+    "maison": "rayon maison : le lampadaire PORTE une lanterne — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m) ; un lampadaire n’est pas une lanterne de poing, d’où l’arbitrage plutôt que le folio"
   },
   {
     "id": "pupitre-chef",
@@ -250,11 +250,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.07
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.07
           },
-          "radius": 0.15,
+          "radiusM": 0.3,
           "heightM": 0.14,
           "sides": 16,
           "material": "bois-chene"
@@ -262,11 +262,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.44
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.44
           },
-          "radius": 0.18,
+          "radiusM": 0.36,
           "heightM": 0.62,
           "sides": 16,
           "material": "bois-chene"
@@ -274,11 +274,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.79
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.79
           },
-          "radius": 0.15,
+          "radiusM": 0.3,
           "heightM": 0.12,
           "sides": 16,
           "material": "bois-chene"
@@ -286,11 +286,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.26
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.26
           },
-          "radius": 0.187,
+          "radiusM": 0.374,
           "heightM": 0.06,
           "sides": 16,
           "material": "fer-noirci"
@@ -298,11 +298,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.62
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.62
           },
-          "radius": 0.187,
+          "radiusM": 0.374,
           "heightM": 0.06,
           "sides": 16,
           "material": "fer-noirci"
@@ -310,11 +310,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.865
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.865
           },
-          "radius": 0.152,
+          "radiusM": 0.304,
           "heightM": 0.03,
           "sides": 16,
           "material": "bois-chene"
@@ -334,11 +334,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.185,
-            "y": 0,
-            "h": 0.07
+            "xM": 0.37,
+            "yM": 0,
+            "hM": 0.07
           },
-          "radius": 0.15,
+          "radiusM": 0.3,
           "heightM": 0.14,
           "sides": 16,
           "material": "bois-chene"
@@ -346,11 +346,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.185,
-            "y": 0,
-            "h": 0.44
+            "xM": 0.37,
+            "yM": 0,
+            "hM": 0.44
           },
-          "radius": 0.18,
+          "radiusM": 0.36,
           "heightM": 0.62,
           "sides": 16,
           "material": "bois-chene"
@@ -358,11 +358,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.185,
-            "y": 0,
-            "h": 0.79
+            "xM": 0.37,
+            "yM": 0,
+            "hM": 0.79
           },
-          "radius": 0.15,
+          "radiusM": 0.3,
           "heightM": 0.12,
           "sides": 16,
           "material": "bois-chene"
@@ -370,11 +370,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.185,
-            "y": 0,
-            "h": 0.26
+            "xM": 0.37,
+            "yM": 0,
+            "hM": 0.26
           },
-          "radius": 0.187,
+          "radiusM": 0.374,
           "heightM": 0.06,
           "sides": 16,
           "material": "fer-noirci"
@@ -382,11 +382,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.185,
-            "y": 0,
-            "h": 0.62
+            "xM": 0.37,
+            "yM": 0,
+            "hM": 0.62
           },
-          "radius": 0.187,
+          "radiusM": 0.374,
           "heightM": 0.06,
           "sides": 16,
           "material": "fer-noirci"
@@ -394,11 +394,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.185,
-            "y": 0,
-            "h": 0.865
+            "xM": 0.37,
+            "yM": 0,
+            "hM": 0.865
           },
-          "radius": 0.152,
+          "radiusM": 0.304,
           "heightM": 0.03,
           "sides": 16,
           "material": "bois-chene"
@@ -406,11 +406,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.185,
-            "y": 0,
-            "h": 0.07
+            "xM": -0.37,
+            "yM": 0,
+            "hM": 0.07
           },
-          "radius": 0.15,
+          "radiusM": 0.3,
           "heightM": 0.14,
           "sides": 16,
           "material": "bois-chene"
@@ -418,11 +418,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.185,
-            "y": 0,
-            "h": 0.44
+            "xM": -0.37,
+            "yM": 0,
+            "hM": 0.44
           },
-          "radius": 0.18,
+          "radiusM": 0.36,
           "heightM": 0.62,
           "sides": 16,
           "material": "bois-chene"
@@ -430,11 +430,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.185,
-            "y": 0,
-            "h": 0.79
+            "xM": -0.37,
+            "yM": 0,
+            "hM": 0.79
           },
-          "radius": 0.15,
+          "radiusM": 0.3,
           "heightM": 0.12,
           "sides": 16,
           "material": "bois-chene"
@@ -442,11 +442,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.185,
-            "y": 0,
-            "h": 0.26
+            "xM": -0.37,
+            "yM": 0,
+            "hM": 0.26
           },
-          "radius": 0.187,
+          "radiusM": 0.374,
           "heightM": 0.06,
           "sides": 16,
           "material": "fer-noirci"
@@ -454,11 +454,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.185,
-            "y": 0,
-            "h": 0.62
+            "xM": -0.37,
+            "yM": 0,
+            "hM": 0.62
           },
-          "radius": 0.187,
+          "radiusM": 0.374,
           "heightM": 0.06,
           "sides": 16,
           "material": "fer-noirci"
@@ -466,11 +466,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.185,
-            "y": 0,
-            "h": 0.865
+            "xM": -0.37,
+            "yM": 0,
+            "hM": 0.865
           },
-          "radius": 0.152,
+          "radiusM": 0.304,
           "heightM": 0.03,
           "sides": 16,
           "material": "bois-chene"
@@ -478,11 +478,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.95
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.95
           },
-          "radius": 0.15,
+          "radiusM": 0.3,
           "heightM": 0.14,
           "sides": 16,
           "material": "bois-chene"
@@ -490,11 +490,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.32
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.32
           },
-          "radius": 0.18,
+          "radiusM": 0.36,
           "heightM": 0.62,
           "sides": 16,
           "material": "bois-chene"
@@ -502,11 +502,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.67
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.67
           },
-          "radius": 0.15,
+          "radiusM": 0.3,
           "heightM": 0.12,
           "sides": 16,
           "material": "bois-chene"
@@ -514,11 +514,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.1400000000000001
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.1400000000000001
           },
-          "radius": 0.187,
+          "radiusM": 0.374,
           "heightM": 0.06,
           "sides": 16,
           "material": "fer-noirci"
@@ -526,11 +526,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.5
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.5
           },
-          "radius": 0.187,
+          "radiusM": 0.374,
           "heightM": 0.06,
           "sides": 16,
           "material": "fer-noirci"
@@ -538,11 +538,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.745
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.745
           },
-          "radius": 0.152,
+          "radiusM": 0.304,
           "heightM": 0.03,
           "sides": 16,
           "material": "bois-chene"
@@ -562,56 +562,56 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.43
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.43
           },
           "size": {
-            "x": 0.44,
-            "y": 0.44,
-            "h": 0.86
+            "xM": 0.88,
+            "yM": 0.88,
+            "hM": 0.86
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.1
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.1
           },
           "size": {
-            "x": 0.47,
-            "y": 0.47,
-            "h": 0.08
+            "xM": 0.94,
+            "yM": 0.94,
+            "hM": 0.08
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.78
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.78
           },
           "size": {
-            "x": 0.47,
-            "y": 0.47,
-            "h": 0.08
+            "xM": 0.94,
+            "yM": 0.94,
+            "hM": 0.08
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.89
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.89
           },
           "size": {
-            "x": 0.46,
-            "y": 0.46,
-            "h": 0.06
+            "xM": 0.92,
+            "yM": 0.92,
+            "hM": 0.06
           },
           "material": "bois-chene"
         }
@@ -630,28 +630,28 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.21
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.21
           },
           "size": {
-            "x": 0.44,
-            "y": 0.3,
-            "h": 0.42
+            "xM": 0.88,
+            "yM": 0.6,
+            "hM": 0.42
           },
           "material": "bois-chene"
         },
         {
           "kind": "prism",
           "center": {
-            "x": 0,
-            "y": 0.075,
-            "h": 0.55
+            "xM": 0,
+            "yM": 0.15,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.44,
-            "y": 0.15,
-            "h": 0.26
+            "xM": 0.88,
+            "yM": 0.3,
+            "hM": 0.26
           },
           "slope": "y+",
           "material": "bois-chene"
@@ -659,14 +659,14 @@
         {
           "kind": "prism",
           "center": {
-            "x": 0,
-            "y": -0.075,
-            "h": 0.55
+            "xM": 0,
+            "yM": -0.15,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.44,
-            "y": 0.15,
-            "h": 0.26
+            "xM": 0.88,
+            "yM": 0.3,
+            "hM": 0.26
           },
           "slope": "y-",
           "material": "bois-chene"
@@ -674,42 +674,42 @@
         {
           "kind": "box",
           "center": {
-            "x": 0.15,
-            "y": 0,
-            "h": 0.22
+            "xM": 0.3,
+            "yM": 0,
+            "hM": 0.22
           },
           "size": {
-            "x": 0.04,
-            "y": 0.32,
-            "h": 0.44
+            "xM": 0.08,
+            "yM": 0.64,
+            "hM": 0.44
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.15,
-            "y": 0,
-            "h": 0.22
+            "xM": -0.3,
+            "yM": 0,
+            "hM": 0.22
           },
           "size": {
-            "x": 0.04,
-            "y": 0.32,
-            "h": 0.44
+            "xM": 0.08,
+            "yM": 0.64,
+            "hM": 0.44
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.155,
-            "h": 0.34
+            "xM": 0,
+            "yM": 0.31,
+            "hM": 0.34
           },
           "size": {
-            "x": 0.08,
-            "y": 0.03,
-            "h": 0.08
+            "xM": 0.16,
+            "yM": 0.06,
+            "hM": 0.08
           },
           "material": "laiton-dore"
         }
@@ -727,39 +727,39 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.05
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.05
           },
           "size": {
-            "x": 0.24,
-            "y": 0.24,
-            "h": 0.1
+            "xM": 0.48,
+            "yM": 0.48,
+            "hM": 0.1
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.16
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.16
           },
           "size": {
-            "x": 0.2,
-            "y": 0.2,
-            "h": 0.12
+            "xM": 0.4,
+            "yM": 0.4,
+            "hM": 0.12
           },
           "material": "pierre-atre"
         },
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.43
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.43
           },
-          "radius": 0.13,
+          "radiusM": 0.26,
           "heightM": 0.42,
           "sides": 16,
           "material": "albatre"
@@ -767,11 +767,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.71
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.71
           },
-          "radius": 0.1,
+          "radiusM": 0.2,
           "heightM": 0.14,
           "sides": 16,
           "material": "albatre"
@@ -779,11 +779,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.83
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.83
           },
-          "radius": 0.065,
+          "radiusM": 0.13,
           "heightM": 0.1,
           "sides": 16,
           "material": "albatre"
@@ -791,11 +791,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.91
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.91
           },
-          "radius": 0.09,
+          "radiusM": 0.18,
           "heightM": 0.06,
           "sides": 16,
           "material": "albatre"
@@ -803,11 +803,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.975
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.975
           },
-          "radius": 0.035,
+          "radiusM": 0.07,
           "heightM": 0.07,
           "sides": 8,
           "material": "albatre"
@@ -815,28 +815,28 @@
         {
           "kind": "box",
           "center": {
-            "x": 0.14,
-            "y": 0,
-            "h": 0.58
+            "xM": 0.28,
+            "yM": 0,
+            "hM": 0.58
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 0.2
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 0.2
           },
           "material": "albatre"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.14,
-            "y": 0,
-            "h": 0.58
+            "xM": -0.28,
+            "yM": 0,
+            "hM": 0.58
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 0.2
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 0.2
           },
           "material": "albatre"
         }
@@ -849,9 +849,9 @@
     "label": "Marmite de troll",
     "solid": true,
     "light": {
-      "radiusTiles": 4
+      "radiusM": 8
     },
-    "maison": "rayon maison : braises SOUS la marmite (def d’art), sans flamme dégagée — même cran que le brasero (4 cases), le chaudron masquant une part du foyer"
+    "maison": "rayon maison : braises SOUS la marmite (def d’art), sans flamme dégagée — même cran que le brasero (8 m), le chaudron masquant une part du foyer"
   },
   {
     "id": "oeuf-dragon",
@@ -904,84 +904,84 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.745
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.745
           },
           "size": {
-            "x": 0.47,
-            "y": 0.42,
-            "h": 0.07
+            "xM": 0.94,
+            "yM": 0.84,
+            "hM": 0.07
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.675
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.675
           },
           "size": {
-            "x": 0.4,
-            "y": 0.35,
-            "h": 0.07
+            "xM": 0.8,
+            "yM": 0.7,
+            "hM": 0.07
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.195,
-            "y": 0.165,
-            "h": 0.32
+            "xM": 0.39,
+            "yM": 0.33,
+            "hM": 0.32
           },
           "size": {
-            "x": 0.05,
-            "y": 0.05,
-            "h": 0.64
+            "xM": 0.1,
+            "yM": 0.1,
+            "hM": 0.64
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.195,
-            "y": 0.165,
-            "h": 0.32
+            "xM": -0.39,
+            "yM": 0.33,
+            "hM": 0.32
           },
           "size": {
-            "x": 0.05,
-            "y": 0.05,
-            "h": 0.64
+            "xM": 0.1,
+            "yM": 0.1,
+            "hM": 0.64
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.195,
-            "y": -0.165,
-            "h": 0.32
+            "xM": 0.39,
+            "yM": -0.33,
+            "hM": 0.32
           },
           "size": {
-            "x": 0.05,
-            "y": 0.05,
-            "h": 0.64
+            "xM": 0.1,
+            "yM": 0.1,
+            "hM": 0.64
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.195,
-            "y": -0.165,
-            "h": 0.32
+            "xM": -0.39,
+            "yM": -0.33,
+            "hM": 0.32
           },
           "size": {
-            "x": 0.05,
-            "y": 0.05,
-            "h": 0.64
+            "xM": 0.1,
+            "yM": 0.1,
+            "hM": 0.64
           },
           "material": "bois-chene"
         }
@@ -1003,84 +1003,84 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.745
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.745
           },
           "size": {
-            "x": 1.9,
-            "y": 0.42,
-            "h": 0.07
+            "xM": 3.8,
+            "yM": 0.84,
+            "hM": 0.07
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.665
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.665
           },
           "size": {
-            "x": 1.78,
-            "y": 0.34,
-            "h": 0.08
+            "xM": 3.56,
+            "yM": 0.68,
+            "hM": 0.08
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.86,
-            "y": 0.165,
-            "h": 0.315
+            "xM": 1.72,
+            "yM": 0.33,
+            "hM": 0.315
           },
           "size": {
-            "x": 0.05,
-            "y": 0.05,
-            "h": 0.63
+            "xM": 0.1,
+            "yM": 0.1,
+            "hM": 0.63
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.86,
-            "y": 0.165,
-            "h": 0.315
+            "xM": -1.72,
+            "yM": 0.33,
+            "hM": 0.315
           },
           "size": {
-            "x": 0.05,
-            "y": 0.05,
-            "h": 0.63
+            "xM": 0.1,
+            "yM": 0.1,
+            "hM": 0.63
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.86,
-            "y": -0.165,
-            "h": 0.315
+            "xM": 1.72,
+            "yM": -0.33,
+            "hM": 0.315
           },
           "size": {
-            "x": 0.05,
-            "y": 0.05,
-            "h": 0.63
+            "xM": 0.1,
+            "yM": 0.1,
+            "hM": 0.63
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.86,
-            "y": -0.165,
-            "h": 0.315
+            "xM": -1.72,
+            "yM": -0.33,
+            "hM": 0.315
           },
           "size": {
-            "x": 0.05,
-            "y": 0.05,
-            "h": 0.63
+            "xM": 0.1,
+            "yM": 0.1,
+            "hM": 0.63
           },
           "material": "bois-chene"
         }
@@ -1098,168 +1098,168 @@
         {
           "kind": "box",
           "center": {
-            "x": 0.15,
-            "y": 0.15,
-            "h": 0.225
+            "xM": 0.3,
+            "yM": 0.3,
+            "hM": 0.225
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 0.45
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 0.45
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.15,
-            "y": 0.15,
-            "h": 0.225
+            "xM": -0.3,
+            "yM": 0.3,
+            "hM": 0.225
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 0.45
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 0.45
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.15,
-            "y": -0.15,
-            "h": 0.225
+            "xM": 0.3,
+            "yM": -0.3,
+            "hM": 0.225
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 0.45
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 0.45
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.15,
-            "y": -0.15,
-            "h": 0.225
+            "xM": -0.3,
+            "yM": -0.3,
+            "hM": 0.225
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 0.45
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 0.45
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.475
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.475
           },
           "size": {
-            "x": 0.36,
-            "y": 0.36,
-            "h": 0.05
+            "xM": 0.72,
+            "yM": 0.72,
+            "hM": 0.05
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.15,
-            "y": -0.155,
-            "h": 0.71
+            "xM": 0.3,
+            "yM": -0.31,
+            "hM": 0.71
           },
           "size": {
-            "x": 0.035,
-            "y": 0.035,
-            "h": 0.42
+            "xM": 0.07,
+            "yM": 0.07,
+            "hM": 0.42
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.15,
-            "y": -0.155,
-            "h": 0.71
+            "xM": -0.3,
+            "yM": -0.31,
+            "hM": 0.71
           },
           "size": {
-            "x": 0.035,
-            "y": 0.035,
-            "h": 0.42
+            "xM": 0.07,
+            "yM": 0.07,
+            "hM": 0.42
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.155,
-            "h": 0.861
+            "xM": 0,
+            "yM": -0.31,
+            "hM": 0.861
           },
           "size": {
-            "x": 0.33,
-            "y": 0.03,
-            "h": 0.05
+            "xM": 0.66,
+            "yM": 0.06,
+            "hM": 0.05
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.155,
-            "h": 0.58
+            "xM": 0,
+            "yM": -0.31,
+            "hM": 0.58
           },
           "size": {
-            "x": 0.33,
-            "y": 0.03,
-            "h": 0.05
+            "xM": 0.66,
+            "yM": 0.06,
+            "hM": 0.05
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.045,
-            "y": -0.155,
-            "h": 0.718
+            "xM": 0.09,
+            "yM": -0.31,
+            "hM": 0.718
           },
           "size": {
-            "x": 0.03,
-            "y": 0.025,
-            "h": 0.236
+            "xM": 0.06,
+            "yM": 0.05,
+            "hM": 0.236
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.045,
-            "y": -0.155,
-            "h": 0.718
+            "xM": -0.09,
+            "yM": -0.31,
+            "hM": 0.718
           },
           "size": {
-            "x": 0.03,
-            "y": 0.025,
-            "h": 0.236
+            "xM": 0.06,
+            "yM": 0.05,
+            "hM": 0.236
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.15,
-            "h": 0.15
+            "xM": 0,
+            "yM": 0.3,
+            "hM": 0.15
           },
           "size": {
-            "x": 0.33,
-            "y": 0.03,
-            "h": 0.03
+            "xM": 0.66,
+            "yM": 0.06,
+            "hM": 0.03
           },
           "material": "bois-chene"
         }
@@ -1277,84 +1277,84 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.45
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.45
           },
           "size": {
-            "x": 0.47,
-            "y": 0.17,
-            "h": 0.06
+            "xM": 0.94,
+            "yM": 0.34,
+            "hM": 0.06
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.19,
-            "y": 0.06,
-            "h": 0.21
+            "xM": 0.38,
+            "yM": 0.12,
+            "hM": 0.21
           },
           "size": {
-            "x": 0.04,
-            "y": 0.04,
-            "h": 0.42
+            "xM": 0.08,
+            "yM": 0.08,
+            "hM": 0.42
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.19,
-            "y": 0.06,
-            "h": 0.21
+            "xM": -0.38,
+            "yM": 0.12,
+            "hM": 0.21
           },
           "size": {
-            "x": 0.04,
-            "y": 0.04,
-            "h": 0.42
+            "xM": 0.08,
+            "yM": 0.08,
+            "hM": 0.42
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.19,
-            "y": -0.06,
-            "h": 0.21
+            "xM": 0.38,
+            "yM": -0.12,
+            "hM": 0.21
           },
           "size": {
-            "x": 0.04,
-            "y": 0.04,
-            "h": 0.42
+            "xM": 0.08,
+            "yM": 0.08,
+            "hM": 0.42
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.19,
-            "y": -0.06,
-            "h": 0.21
+            "xM": -0.38,
+            "yM": -0.12,
+            "hM": 0.21
           },
           "size": {
-            "x": 0.04,
-            "y": 0.04,
-            "h": 0.42
+            "xM": 0.08,
+            "yM": 0.08,
+            "hM": 0.42
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.12
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.12
           },
           "size": {
-            "x": 0.4,
-            "y": 0.03,
-            "h": 0.03
+            "xM": 0.8,
+            "yM": 0.06,
+            "hM": 0.03
           },
           "material": "bois-chene"
         }
@@ -1372,11 +1372,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.43
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.43
           },
-          "radius": 0.09,
+          "radiusM": 0.18,
           "heightM": 0.06,
           "sides": 16,
           "material": "bois-chene"
@@ -1384,53 +1384,53 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.07,
-            "h": 0.2
+            "xM": 0,
+            "yM": 0.14,
+            "hM": 0.2
           },
           "size": {
-            "x": 0.035,
-            "y": 0.035,
-            "h": 0.4
+            "xM": 0.07,
+            "yM": 0.07,
+            "hM": 0.4
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.061,
-            "y": -0.035,
-            "h": 0.2
+            "xM": -0.122,
+            "yM": -0.07,
+            "hM": 0.2
           },
           "size": {
-            "x": 0.035,
-            "y": 0.035,
-            "h": 0.4
+            "xM": 0.07,
+            "yM": 0.07,
+            "hM": 0.4
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.061,
-            "y": -0.035,
-            "h": 0.2
+            "xM": 0.122,
+            "yM": -0.07,
+            "hM": 0.2
           },
           "size": {
-            "x": 0.035,
-            "y": 0.035,
-            "h": 0.4
+            "xM": 0.07,
+            "yM": 0.07,
+            "hM": 0.4
           },
           "material": "bois-chene"
         },
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.15
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.15
           },
-          "radius": 0.062,
+          "radiusM": 0.124,
           "heightM": 0.025,
           "sides": 8,
           "material": "bois-chene"
@@ -1449,84 +1449,84 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.06
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.06
           },
           "size": {
-            "x": 0.47,
-            "y": 0.24,
-            "h": 0.12
+            "xM": 0.94,
+            "yM": 0.48,
+            "hM": 0.12
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.9
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.9
           },
           "size": {
-            "x": 0.45,
-            "y": 0.225,
-            "h": 1.56
+            "xM": 0.9,
+            "yM": 0.45,
+            "hM": 1.56
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.74
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.74
           },
           "size": {
-            "x": 0.5,
-            "y": 0.26,
-            "h": 0.12
+            "xM": 1,
+            "yM": 0.52,
+            "hM": 0.12
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.115,
-            "h": 0.9
+            "xM": 0,
+            "yM": 0.23,
+            "hM": 0.9
           },
           "size": {
-            "x": 0.02,
-            "y": 0.02,
-            "h": 1.56
+            "xM": 0.04,
+            "yM": 0.04,
+            "hM": 1.56
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.035,
-            "y": 0.125,
-            "h": 0.95
+            "xM": 0.07,
+            "yM": 0.25,
+            "hM": 0.95
           },
           "size": {
-            "x": 0.015,
-            "y": 0.03,
-            "h": 0.05
+            "xM": 0.03,
+            "yM": 0.06,
+            "hM": 0.05
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.035,
-            "y": 0.125,
-            "h": 0.95
+            "xM": -0.07,
+            "yM": 0.25,
+            "hM": 0.95
           },
           "size": {
-            "x": 0.015,
-            "y": 0.03,
-            "h": 0.05
+            "xM": 0.03,
+            "yM": 0.06,
+            "hM": 0.05
           },
           "material": "fer-noirci"
         }
@@ -1592,70 +1592,70 @@
         {
           "kind": "box",
           "center": {
-            "x": 0.205,
-            "y": 0,
-            "h": 0.88
+            "xM": 0.41,
+            "yM": 0,
+            "hM": 0.88
           },
           "size": {
-            "x": 0.04,
-            "y": 0.18,
-            "h": 1.76
+            "xM": 0.08,
+            "yM": 0.36,
+            "hM": 1.76
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.205,
-            "y": 0,
-            "h": 0.88
+            "xM": -0.41,
+            "yM": 0,
+            "hM": 0.88
           },
           "size": {
-            "x": 0.04,
-            "y": 0.18,
-            "h": 1.76
+            "xM": 0.08,
+            "yM": 0.36,
+            "hM": 1.76
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.36
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.36
           },
           "size": {
-            "x": 0.45,
-            "y": 0.18,
-            "h": 0.05
+            "xM": 0.9,
+            "yM": 0.36,
+            "hM": 0.05
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.04
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.04
           },
           "size": {
-            "x": 0.45,
-            "y": 0.18,
-            "h": 0.05
+            "xM": 0.9,
+            "yM": 0.36,
+            "hM": 0.05
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.715
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.715
           },
           "size": {
-            "x": 0.45,
-            "y": 0.18,
-            "h": 0.05
+            "xM": 0.9,
+            "yM": 0.36,
+            "hM": 0.05
           },
           "material": "bois-chene"
         }
@@ -1704,98 +1704,98 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.42
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.42
           },
           "size": {
-            "x": 0.76,
-            "y": 0.36,
-            "h": 0.84
+            "xM": 1.52,
+            "yM": 0.72,
+            "hM": 0.84
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.87
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.87
           },
           "size": {
-            "x": 0.8,
-            "y": 0.4,
-            "h": 0.06
+            "xM": 1.6,
+            "yM": 0.8,
+            "hM": 0.06
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.38,
-            "y": 0.18,
-            "h": 0.95
+            "xM": 0.76,
+            "yM": 0.36,
+            "hM": 0.95
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 1.9
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 1.9
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.38,
-            "y": 0.18,
-            "h": 0.95
+            "xM": -0.76,
+            "yM": 0.36,
+            "hM": 0.95
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 1.9
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 1.9
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.38,
-            "y": -0.18,
-            "h": 0.95
+            "xM": 0.76,
+            "yM": -0.36,
+            "hM": 0.95
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 1.9
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 1.9
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.38,
-            "y": -0.18,
-            "h": 0.95
+            "xM": -0.76,
+            "yM": -0.36,
+            "hM": 0.95
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 1.9
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 1.9
           },
           "material": "bois-chene"
         },
         {
           "kind": "prism",
           "center": {
-            "x": 0,
-            "y": 0.05,
-            "h": 2.01
+            "xM": 0,
+            "yM": 0.1,
+            "hM": 2.01
           },
           "size": {
-            "x": 0.9,
-            "y": 0.55,
-            "h": 0.22
+            "xM": 1.8,
+            "yM": 1.1,
+            "hM": 0.22
           },
           "slope": "y+",
           "material": "toile-rouge"
@@ -1803,14 +1803,14 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.325,
-            "h": 1.83
+            "xM": 0,
+            "yM": 0.65,
+            "hM": 1.83
           },
           "size": {
-            "x": 0.9,
-            "y": 0.02,
-            "h": 0.14
+            "xM": 1.8,
+            "yM": 0.04,
+            "hM": 0.14
           },
           "material": "toile-rouge"
         }
@@ -1914,13 +1914,13 @@
     "type": "props",
     "label": "Foyer de forge",
     "light": {
-      "radiusTiles": 5
+      "radiusM": 10
     },
     "foot": {
       "w": 1,
       "h": 1
     },
-    "maison": "rayon maison : cuve de charbons ardents (def d’art) — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m = 5 cases), c’est un lit de braises à ciel ouvert"
+    "maison": "rayon maison : cuve de charbons ardents (def d’art) — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m), c’est un lit de braises à ciel ouvert"
   },
   {
     "id": "passerelle-d-embarquement",
@@ -1955,7 +1955,7 @@
     "label": "Cheminée intérieure",
     "solid": true,
     "light": {
-      "radiusTiles": 5,
+      "radiusM": 10,
       "tone": "flamme"
     },
     "cover": "totale",
@@ -1966,119 +1966,119 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.02,
-            "h": 0.09
+            "xM": 0,
+            "yM": -0.04,
+            "hM": 0.09
           },
           "size": {
-            "x": 0.95,
-            "y": 0.5,
-            "h": 0.18
+            "xM": 1.9,
+            "yM": 1,
+            "hM": 0.18
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.365,
-            "y": -0.02,
-            "h": 0.72
+            "xM": 0.73,
+            "yM": -0.04,
+            "hM": 0.72
           },
           "size": {
-            "x": 0.22,
-            "y": 0.5,
-            "h": 1.08
+            "xM": 0.44,
+            "yM": 1,
+            "hM": 1.08
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.365,
-            "y": -0.02,
-            "h": 0.72
+            "xM": -0.73,
+            "yM": -0.04,
+            "hM": 0.72
           },
           "size": {
-            "x": 0.22,
-            "y": 0.5,
-            "h": 1.08
+            "xM": 0.44,
+            "yM": 1,
+            "hM": 1.08
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.02,
-            "h": 1.36
+            "xM": 0,
+            "yM": -0.04,
+            "hM": 1.36
           },
           "size": {
-            "x": 1,
-            "y": 0.56,
-            "h": 0.2
+            "xM": 2,
+            "yM": 1.12,
+            "hM": 0.2
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.22,
-            "h": 0.72
+            "xM": 0,
+            "yM": -0.44,
+            "hM": 0.72
           },
           "size": {
-            "x": 0.51,
-            "y": 0.1,
-            "h": 1.08
+            "xM": 1.02,
+            "yM": 0.2,
+            "hM": 1.08
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.14,
-            "y": 0.02,
-            "h": 0.28
+            "xM": 0.28,
+            "yM": 0.04,
+            "hM": 0.28
           },
           "size": {
-            "x": 0.045,
-            "y": 0.34,
-            "h": 0.2
+            "xM": 0.09,
+            "yM": 0.68,
+            "hM": 0.2
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.14,
-            "y": 0.02,
-            "h": 0.28
+            "xM": -0.28,
+            "yM": 0.04,
+            "hM": 0.28
           },
           "size": {
-            "x": 0.045,
-            "y": 0.34,
-            "h": 0.2
+            "xM": 0.09,
+            "yM": 0.68,
+            "hM": 0.2
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.01,
-            "h": 0.24
+            "xM": 0,
+            "yM": 0.02,
+            "hM": 0.24
           },
           "size": {
-            "x": 0.38,
-            "y": 0.3,
-            "h": 0.12
+            "xM": 0.76,
+            "yM": 0.6,
+            "hM": 0.12
           },
           "material": "braises",
           "emet": true
         }
       ]
     },
-    "maison": "rayon maison : aucun folio ne chiffre un âtre — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m = 5 cases), c’est le même foyer ouvert. Couvert maison : un manteau d’âtre maçonné s’apparente au mur de pierre de l’étalon de couvert TOTAL (LDB 14 l.86), et il coupe la vue"
+    "maison": "rayon maison : aucun folio ne chiffre un âtre — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m), c’est le même foyer ouvert. Couvert maison : un manteau d’âtre maçonné s’apparente au mur de pierre de l’étalon de couvert TOTAL (LDB 14 l.86), et il coupe la vue"
   },
   {
     "id": "comptoir-droit",
@@ -2092,140 +2092,140 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.15,
-            "h": 0.55
+            "xM": 0,
+            "yM": -0.3,
+            "hM": 0.55
           },
           "size": {
-            "x": 1,
-            "y": 0.7,
-            "h": 0.9
+            "xM": 2,
+            "yM": 1.4,
+            "hM": 0.9
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.17,
-            "h": 0.05
+            "xM": 0,
+            "yM": -0.34,
+            "hM": 0.05
           },
           "size": {
-            "x": 1,
-            "y": 0.66,
-            "h": 0.1
+            "xM": 2,
+            "yM": 1.32,
+            "hM": 0.1
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.36,
-            "y": 0.215,
-            "h": 0.55
+            "xM": 0.72,
+            "yM": 0.43,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.18,
-            "y": 0.03,
-            "h": 0.55
+            "xM": 0.36,
+            "yM": 0.06,
+            "hM": 0.55
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.12,
-            "y": 0.215,
-            "h": 0.55
+            "xM": 0.24,
+            "yM": 0.43,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.18,
-            "y": 0.03,
-            "h": 0.55
+            "xM": 0.36,
+            "yM": 0.06,
+            "hM": 0.55
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.12,
-            "y": 0.215,
-            "h": 0.55
+            "xM": -0.24,
+            "yM": 0.43,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.18,
-            "y": 0.03,
-            "h": 0.55
+            "xM": 0.36,
+            "yM": 0.06,
+            "hM": 0.55
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.36,
-            "y": 0.215,
-            "h": 0.55
+            "xM": -0.72,
+            "yM": 0.43,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.18,
-            "y": 0.03,
-            "h": 0.55
+            "xM": 0.36,
+            "yM": 0.06,
+            "hM": 0.55
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.12,
-            "h": 1.03
+            "xM": 0,
+            "yM": -0.24,
+            "hM": 1.03
           },
           "size": {
-            "x": 1,
-            "y": 0.76,
-            "h": 0.06
+            "xM": 2,
+            "yM": 1.52,
+            "hM": 0.06
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.235,
-            "h": 0.18
+            "xM": 0,
+            "yM": 0.47,
+            "hM": 0.18
           },
           "size": {
-            "x": 1,
-            "y": 0.05,
-            "h": 0.05
+            "xM": 2,
+            "yM": 0.1,
+            "hM": 0.05
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.34,
-            "y": 0.235,
-            "h": 0.09
+            "xM": 0.68,
+            "yM": 0.47,
+            "hM": 0.09
           },
           "size": {
-            "x": 0.04,
-            "y": 0.05,
-            "h": 0.18
+            "xM": 0.08,
+            "yM": 0.1,
+            "hM": 0.18
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.34,
-            "y": 0.235,
-            "h": 0.09
+            "xM": -0.68,
+            "yM": 0.47,
+            "hM": 0.09
           },
           "size": {
-            "x": 0.04,
-            "y": 0.05,
-            "h": 0.18
+            "xM": 0.08,
+            "yM": 0.1,
+            "hM": 0.18
           },
           "material": "fer-noirci"
         }
@@ -2245,140 +2245,140 @@
         {
           "kind": "box",
           "center": {
-            "x": -0.15,
-            "y": -0.15,
-            "h": 0.55
+            "xM": -0.3,
+            "yM": -0.3,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.7,
-            "y": 0.7,
-            "h": 0.9
+            "xM": 1.4,
+            "yM": 1.4,
+            "hM": 0.9
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.17,
-            "y": -0.17,
-            "h": 0.05
+            "xM": -0.34,
+            "yM": -0.34,
+            "hM": 0.05
           },
           "size": {
-            "x": 0.66,
-            "y": 0.66,
-            "h": 0.1
+            "xM": 1.32,
+            "yM": 1.32,
+            "hM": 0.1
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.03,
-            "y": 0.215,
-            "h": 0.55
+            "xM": -0.06,
+            "yM": 0.43,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.18,
-            "y": 0.03,
-            "h": 0.55
+            "xM": 0.36,
+            "yM": 0.06,
+            "hM": 0.55
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.27,
-            "y": 0.215,
-            "h": 0.55
+            "xM": -0.54,
+            "yM": 0.43,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.18,
-            "y": 0.03,
-            "h": 0.55
+            "xM": 0.36,
+            "yM": 0.06,
+            "hM": 0.55
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.215,
-            "y": -0.03,
-            "h": 0.55
+            "xM": 0.43,
+            "yM": -0.06,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.03,
-            "y": 0.18,
-            "h": 0.55
+            "xM": 0.06,
+            "yM": 0.36,
+            "hM": 0.55
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.215,
-            "y": -0.27,
-            "h": 0.55
+            "xM": 0.43,
+            "yM": -0.54,
+            "hM": 0.55
           },
           "size": {
-            "x": 0.03,
-            "y": 0.18,
-            "h": 0.55
+            "xM": 0.06,
+            "yM": 0.36,
+            "hM": 0.55
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.12,
-            "y": -0.12,
-            "h": 1.03
+            "xM": -0.24,
+            "yM": -0.24,
+            "hM": 1.03
           },
           "size": {
-            "x": 0.76,
-            "y": 0.76,
-            "h": 0.06
+            "xM": 1.52,
+            "yM": 1.52,
+            "hM": 0.06
           },
           "material": "bois-chene"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.12,
-            "y": 0.235,
-            "h": 0.18
+            "xM": -0.24,
+            "yM": 0.47,
+            "hM": 0.18
           },
           "size": {
-            "x": 0.76,
-            "y": 0.05,
-            "h": 0.05
+            "xM": 1.52,
+            "yM": 0.1,
+            "hM": 0.05
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.235,
-            "y": -0.12,
-            "h": 0.18
+            "xM": 0.47,
+            "yM": -0.24,
+            "hM": 0.18
           },
           "size": {
-            "x": 0.05,
-            "y": 0.76,
-            "h": 0.05
+            "xM": 0.1,
+            "yM": 1.52,
+            "hM": 0.05
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.235,
-            "y": 0.235,
-            "h": 0.09
+            "xM": 0.47,
+            "yM": 0.47,
+            "hM": 0.09
           },
           "size": {
-            "x": 0.05,
-            "y": 0.05,
-            "h": 0.18
+            "xM": 0.1,
+            "yM": 0.1,
+            "hM": 0.18
           },
           "material": "fer-noirci"
         }
@@ -2397,11 +2397,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.78
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.78
           },
-          "radius": 0.42,
+          "radiusM": 0.84,
           "heightM": 0.08,
           "sides": 16,
           "material": "bois-chene"
@@ -2409,11 +2409,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.37
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.37
           },
-          "radius": 0.14,
+          "radiusM": 0.28,
           "heightM": 0.74,
           "sides": 16,
           "material": "fer-noirci"
@@ -2421,11 +2421,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.035
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.035
           },
-          "radius": 0.3,
+          "radiusM": 0.6,
           "heightM": 0.07,
           "sides": 16,
           "material": "fer-noirci"
@@ -2433,11 +2433,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0.48,
-            "h": 0.425
+            "xM": 0,
+            "yM": 0.96,
+            "hM": 0.425
           },
-          "radius": 0.16,
+          "radiusM": 0.32,
           "heightM": 0.07,
           "sides": 16,
           "material": "bois-chene"
@@ -2445,11 +2445,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0.48,
-            "h": 0.195
+            "xM": 0,
+            "yM": 0.96,
+            "hM": 0.195
           },
-          "radius": 0.075,
+          "radiusM": 0.15,
           "heightM": 0.39,
           "sides": 8,
           "material": "fer-noirci"
@@ -2457,11 +2457,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.48,
-            "y": 0,
-            "h": 0.425
+            "xM": -0.96,
+            "yM": 0,
+            "hM": 0.425
           },
-          "radius": 0.16,
+          "radiusM": 0.32,
           "heightM": 0.07,
           "sides": 16,
           "material": "bois-chene"
@@ -2469,11 +2469,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.48,
-            "y": 0,
-            "h": 0.195
+            "xM": -0.96,
+            "yM": 0,
+            "hM": 0.195
           },
-          "radius": 0.075,
+          "radiusM": 0.15,
           "heightM": 0.39,
           "sides": 8,
           "material": "fer-noirci"
@@ -2481,11 +2481,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": -0.48,
-            "h": 0.425
+            "xM": 0,
+            "yM": -0.96,
+            "hM": 0.425
           },
-          "radius": 0.16,
+          "radiusM": 0.32,
           "heightM": 0.07,
           "sides": 16,
           "material": "bois-chene"
@@ -2493,11 +2493,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": -0.48,
-            "h": 0.195
+            "xM": 0,
+            "yM": -0.96,
+            "hM": 0.195
           },
-          "radius": 0.075,
+          "radiusM": 0.15,
           "heightM": 0.39,
           "sides": 8,
           "material": "fer-noirci"
@@ -2505,11 +2505,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.48,
-            "y": 0,
-            "h": 0.425
+            "xM": 0.96,
+            "yM": 0,
+            "hM": 0.425
           },
-          "radius": 0.16,
+          "radiusM": 0.32,
           "heightM": 0.07,
           "sides": 16,
           "material": "bois-chene"
@@ -2517,11 +2517,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.48,
-            "y": 0,
-            "h": 0.195
+            "xM": 0.96,
+            "yM": 0,
+            "hM": 0.195
           },
-          "radius": 0.075,
+          "radiusM": 0.15,
           "heightM": 0.39,
           "sides": 8,
           "material": "fer-noirci"
@@ -2532,9 +2532,9 @@
       {
         "id": "place-1",
         "anchor": {
-          "x": 0,
-          "y": 0.48,
-          "h": 0.46
+          "xM": 0,
+          "yM": 0.96,
+          "hM": 0.46
         },
         "facing": "N",
         "approach": {
@@ -2545,9 +2545,9 @@
       {
         "id": "place-2",
         "anchor": {
-          "x": -0.48,
-          "y": 0,
-          "h": 0.46
+          "xM": -0.96,
+          "yM": 0,
+          "hM": 0.46
         },
         "facing": "E",
         "approach": {
@@ -2558,9 +2558,9 @@
       {
         "id": "place-3",
         "anchor": {
-          "x": 0,
-          "y": -0.48,
-          "h": 0.46
+          "xM": 0,
+          "yM": -0.96,
+          "hM": 0.46
         },
         "facing": "S",
         "approach": {
@@ -2571,9 +2571,9 @@
       {
         "id": "place-4",
         "anchor": {
-          "x": 0.48,
-          "y": 0,
-          "h": 0.46
+          "xM": 0.96,
+          "yM": 0,
+          "hM": 0.46
         },
         "facing": "O",
         "approach": {
@@ -2594,28 +2594,28 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.19,
-            "h": 0.76
+            "xM": 0,
+            "yM": 0.38,
+            "hM": 0.76
           },
           "size": {
-            "x": 0.96,
-            "y": 0.5,
-            "h": 0.06
+            "xM": 1.92,
+            "yM": 1,
+            "hM": 0.06
           },
           "material": "bois-chene"
         },
         {
           "kind": "prism",
           "center": {
-            "x": 0.34,
-            "y": 0.2,
-            "h": 0.365
+            "xM": 0.68,
+            "yM": 0.4,
+            "hM": 0.365
           },
           "size": {
-            "x": 0.08,
-            "y": 0.44,
-            "h": 0.73
+            "xM": 0.16,
+            "yM": 0.88,
+            "hM": 0.73
           },
           "slope": "y-",
           "material": "bois-chene"
@@ -2623,14 +2623,14 @@
         {
           "kind": "prism",
           "center": {
-            "x": -0.34,
-            "y": 0.2,
-            "h": 0.365
+            "xM": -0.68,
+            "yM": 0.4,
+            "hM": 0.365
           },
           "size": {
-            "x": 0.08,
-            "y": 0.44,
-            "h": 0.73
+            "xM": 0.16,
+            "yM": 0.88,
+            "hM": 0.73
           },
           "slope": "y-",
           "material": "bois-chene"
@@ -2638,11 +2638,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.32,
-            "y": -0.2,
-            "h": 0.425
+            "xM": 0.64,
+            "yM": -0.4,
+            "hM": 0.425
           },
-          "radius": 0.16,
+          "radiusM": 0.32,
           "heightM": 0.07,
           "sides": 16,
           "material": "bois-chene"
@@ -2650,11 +2650,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.32,
-            "y": -0.2,
-            "h": 0.195
+            "xM": 0.64,
+            "yM": -0.4,
+            "hM": 0.195
           },
-          "radius": 0.075,
+          "radiusM": 0.15,
           "heightM": 0.39,
           "sides": 8,
           "material": "fer-noirci"
@@ -2662,11 +2662,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.32,
-            "y": -0.2,
-            "h": 0.425
+            "xM": -0.64,
+            "yM": -0.4,
+            "hM": 0.425
           },
-          "radius": 0.16,
+          "radiusM": 0.32,
           "heightM": 0.07,
           "sides": 16,
           "material": "bois-chene"
@@ -2674,11 +2674,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.32,
-            "y": -0.2,
-            "h": 0.195
+            "xM": -0.64,
+            "yM": -0.4,
+            "hM": 0.195
           },
-          "radius": 0.075,
+          "radiusM": 0.15,
           "heightM": 0.39,
           "sides": 8,
           "material": "fer-noirci"
@@ -2689,9 +2689,9 @@
       {
         "id": "place-1",
         "anchor": {
-          "x": 0.32,
-          "y": -0.2,
-          "h": 0.46
+          "xM": 0.64,
+          "yM": -0.4,
+          "hM": 0.46
         },
         "facing": "S",
         "approach": {
@@ -2702,9 +2702,9 @@
       {
         "id": "place-2",
         "anchor": {
-          "x": -0.32,
-          "y": -0.2,
-          "h": 0.46
+          "xM": -0.64,
+          "yM": -0.4,
+          "hM": 0.46
         },
         "facing": "S",
         "approach": {
@@ -2724,42 +2724,42 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.65
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.65
           },
           "size": {
-            "x": 0.25,
-            "y": 0.25,
-            "h": 1.3
+            "xM": 0.5,
+            "yM": 0.5,
+            "hM": 1.3
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.36
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.36
           },
           "size": {
-            "x": 0.31,
-            "y": 0.31,
-            "h": 0.12
+            "xM": 0.62,
+            "yM": 0.62,
+            "hM": 0.12
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.45
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.45
           },
           "size": {
-            "x": 0.11,
-            "y": 0.11,
-            "h": 0.06
+            "xM": 0.22,
+            "yM": 0.22,
+            "hM": 0.06
           },
           "material": "fer-noirci"
         }
@@ -2776,70 +2776,70 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.005,
-            "h": 0.5
+            "xM": 0,
+            "yM": 0.01,
+            "hM": 0.5
           },
           "size": {
-            "x": 0.05,
-            "y": 0.03,
-            "h": 1
+            "xM": 0.1,
+            "yM": 0.06,
+            "hM": 1
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.175,
-            "h": 0.86
+            "xM": 0,
+            "yM": 0.35,
+            "hM": 0.86
           },
           "size": {
-            "x": 0.025,
-            "y": 0.37,
-            "h": 0.05
+            "xM": 0.05,
+            "yM": 0.74,
+            "hM": 0.05
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.335,
-            "h": 0.78
+            "xM": 0,
+            "yM": 0.67,
+            "hM": 0.78
           },
           "size": {
-            "x": 0.015,
-            "y": 0.012,
-            "h": 0.12
+            "xM": 0.03,
+            "yM": 0.024,
+            "hM": 0.12
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.035,
-            "h": 0.78
+            "xM": 0,
+            "yM": 0.07,
+            "hM": 0.78
           },
           "size": {
-            "x": 0.015,
-            "y": 0.012,
-            "h": 0.12
+            "xM": 0.03,
+            "yM": 0.024,
+            "hM": 0.12
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.185,
-            "h": 0.465
+            "xM": 0,
+            "yM": 0.37,
+            "hM": 0.465
           },
           "size": {
-            "x": 0.03,
-            "y": 0.35,
-            "h": 0.55
+            "xM": 0.06,
+            "yM": 0.7,
+            "hM": 0.55
           },
           "material": "bois-chene"
         }
@@ -2856,81 +2856,81 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 0.09
+            "xM": 0,
+            "yM": 0,
+            "hM": 0.09
           },
           "size": {
-            "x": 0.55,
-            "y": 0.55,
-            "h": 0.18
+            "xM": 1.1,
+            "yM": 1.1,
+            "hM": 0.18
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 1.3
+            "xM": 0,
+            "yM": 0,
+            "hM": 1.3
           },
           "size": {
-            "x": 0.5,
-            "y": 0.5,
-            "h": 2.24
+            "xM": 1,
+            "yM": 1,
+            "hM": 2.24
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 2.5
+            "xM": 0,
+            "yM": 0,
+            "hM": 2.5
           },
           "size": {
-            "x": 0.58,
-            "y": 0.58,
-            "h": 0.16
+            "xM": 1.16,
+            "yM": 1.16,
+            "hM": 0.16
           },
           "material": "pierre-atre"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0.25,
-            "h": 1.85
+            "xM": 0,
+            "yM": 0.5,
+            "hM": 1.85
           },
           "size": {
-            "x": 0.26,
-            "y": 0.03,
-            "h": 0.6
+            "xM": 0.52,
+            "yM": 0.06,
+            "hM": 0.6
           },
           "material": "fer-noirci"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.25,
-            "h": 1.85
+            "xM": 0,
+            "yM": -0.5,
+            "hM": 1.85
           },
           "size": {
-            "x": 0.26,
-            "y": 0.03,
-            "h": 0.6
+            "xM": 0.52,
+            "yM": 0.06,
+            "hM": 0.6
           },
           "material": "fer-noirci"
         },
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": 0.285,
-            "h": 1.85
+            "xM": 0,
+            "yM": 0.57,
+            "hM": 1.85
           },
-          "radius": 0.05,
+          "radiusM": 0.1,
           "heightM": 0.26,
           "sides": 8,
           "material": "laiton-dore"
@@ -2938,14 +2938,14 @@
         {
           "kind": "prism",
           "center": {
-            "x": 0,
-            "y": 0.125,
-            "h": 3.13
+            "xM": 0,
+            "yM": 0.25,
+            "hM": 3.13
           },
           "size": {
-            "x": 0.5,
-            "y": 0.27,
-            "h": 1.1
+            "xM": 1,
+            "yM": 0.54,
+            "hM": 1.1
           },
           "slope": "y+",
           "material": "ardoise"
@@ -2953,14 +2953,14 @@
         {
           "kind": "prism",
           "center": {
-            "x": 0,
-            "y": -0.125,
-            "h": 3.13
+            "xM": 0,
+            "yM": -0.25,
+            "hM": 3.13
           },
           "size": {
-            "x": 0.5,
-            "y": 0.27,
-            "h": 1.1
+            "xM": 1,
+            "yM": 0.54,
+            "hM": 1.1
           },
           "slope": "y-",
           "material": "ardoise"
@@ -2968,28 +2968,28 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 3.83
+            "xM": 0,
+            "yM": 0,
+            "hM": 3.83
           },
           "size": {
-            "x": 0.02,
-            "y": 0.02,
-            "h": 0.3
+            "xM": 0.04,
+            "yM": 0.04,
+            "hM": 0.3
           },
           "material": "laiton-dore"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": 0,
-            "h": 3.88
+            "xM": 0,
+            "yM": 0,
+            "hM": 3.88
           },
           "size": {
-            "x": 0.09,
-            "y": 0.02,
-            "h": 0.03
+            "xM": 0.18,
+            "yM": 0.04,
+            "hM": 0.03
           },
           "material": "laiton-dore"
         }
@@ -3001,7 +3001,7 @@
     "type": "props",
     "label": "Applique murale",
     "light": {
-      "radiusTiles": 5,
+      "radiusM": 10,
       "tone": "chandelle"
     },
     "volume": {
@@ -3010,123 +3010,123 @@
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.465,
-            "h": 1.6
+            "xM": 0,
+            "yM": -0.93,
+            "hM": 1.6
           },
           "size": {
-            "x": 0.09,
-            "y": 0.05,
-            "h": 0.34
+            "xM": 0.18,
+            "yM": 0.1,
+            "hM": 0.34
           },
           "material": "laiton-dore"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.44,
-            "h": 1.86
+            "xM": 0,
+            "yM": -0.88,
+            "hM": 1.86
           },
           "size": {
-            "x": 0.04,
-            "y": 0.03,
-            "h": 0.16
+            "xM": 0.08,
+            "yM": 0.06,
+            "hM": 0.16
           },
           "material": "laiton-dore"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.155,
-            "y": -0.395,
-            "h": 1.72
+            "xM": 0.31,
+            "yM": -0.79,
+            "hM": 1.72
           },
           "size": {
-            "x": 0.2,
-            "y": 0.03,
-            "h": 0.03
+            "xM": 0.4,
+            "yM": 0.06,
+            "hM": 0.03
           },
           "material": "laiton-dore"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.155,
-            "y": -0.395,
-            "h": 1.72
+            "xM": -0.31,
+            "yM": -0.79,
+            "hM": 1.72
           },
           "size": {
-            "x": 0.2,
-            "y": 0.03,
-            "h": 0.03
+            "xM": 0.4,
+            "yM": 0.06,
+            "hM": 0.03
           },
           "material": "laiton-dore"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.365,
-            "h": 1.8
+            "xM": 0,
+            "yM": -0.73,
+            "hM": 1.8
           },
           "size": {
-            "x": 0.03,
-            "y": 0.21,
-            "h": 0.03
+            "xM": 0.06,
+            "yM": 0.42,
+            "hM": 0.03
           },
           "material": "laiton-dore"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0.25,
-            "y": -0.395,
-            "h": 1.8
+            "xM": 0.5,
+            "yM": -0.79,
+            "hM": 1.8
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 0.19
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 0.19
           },
           "material": "laiton-dore"
         },
         {
           "kind": "box",
           "center": {
-            "x": -0.25,
-            "y": -0.395,
-            "h": 1.8
+            "xM": -0.5,
+            "yM": -0.79,
+            "hM": 1.8
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 0.19
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 0.19
           },
           "material": "laiton-dore"
         },
         {
           "kind": "box",
           "center": {
-            "x": 0,
-            "y": -0.27,
-            "h": 1.86
+            "xM": 0,
+            "yM": -0.54,
+            "hM": 1.86
           },
           "size": {
-            "x": 0.03,
-            "y": 0.03,
-            "h": 0.19
+            "xM": 0.06,
+            "yM": 0.06,
+            "hM": 0.19
           },
           "material": "laiton-dore"
         },
         {
           "kind": "cylinder",
           "center": {
-            "x": 0.25,
-            "y": -0.395,
-            "h": 1.92
+            "xM": 0.5,
+            "yM": -0.79,
+            "hM": 1.92
           },
-          "radius": 0.05,
+          "radiusM": 0.1,
           "heightM": 0.06,
           "sides": 8,
           "material": "laiton-dore"
@@ -3134,11 +3134,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": -0.25,
-            "y": -0.395,
-            "h": 1.92
+            "xM": -0.5,
+            "yM": -0.79,
+            "hM": 1.92
           },
-          "radius": 0.05,
+          "radiusM": 0.1,
           "heightM": 0.06,
           "sides": 8,
           "material": "laiton-dore"
@@ -3146,11 +3146,11 @@
         {
           "kind": "cylinder",
           "center": {
-            "x": 0,
-            "y": -0.27,
-            "h": 1.98
+            "xM": 0,
+            "yM": -0.54,
+            "hM": 1.98
           },
-          "radius": 0.05,
+          "radiusM": 0.1,
           "heightM": 0.06,
           "sides": 8,
           "material": "laiton-dore",
@@ -3158,7 +3158,7 @@
         }
       ]
     },
-    "maison": "rayon maison : l’applique PORTE trois bougies (def d’art : bras à bougies et flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases), le canon ne chiffrant pas le nombre de mèches"
+    "maison": "rayon maison : l’applique PORTE trois bougies (def d’art : bras à bougies et flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m), le canon ne chiffrant pas le nombre de mèches"
   },
   {
     "id": "ancre-de-navire",
@@ -3309,10 +3309,10 @@
     "label": "Lanterne de poupe",
     "solid": true,
     "light": {
-      "radiusTiles": 10,
+      "radiusM": 20,
       "tone": "lanterne"
     },
-    "maison": "rayon maison : c’est une lanterne, vitrée et à cage de fer (def d’art) — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m = 10 cases) ; montée en poupe et non portée, d’où l’arbitrage plutôt que le folio"
+    "maison": "rayon maison : c’est une lanterne, vitrée et à cage de fer (def d’art) — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m) ; montée en poupe et non portée, d’où l’arbitrage plutôt que le folio"
   },
   {
     "id": "lettre",
@@ -3324,10 +3324,10 @@
     "type": "props",
     "label": "Lustre d'opéra",
     "light": {
-      "radiusTiles": 5,
+      "radiusM": 10,
       "tone": "chandelle"
     },
-    "maison": "rayon maison : le lustre PORTE des bougies (def d’art : bras porte-bougies à flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases), le canon ne chiffrant pas le nombre de mèches"
+    "maison": "rayon maison : le lustre PORTE des bougies (def d’art : bras porte-bougies à flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m), le canon ne chiffrant pas le nombre de mèches"
   },
   {
     "id": "mare-sang",

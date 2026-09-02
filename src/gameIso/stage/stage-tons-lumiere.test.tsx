@@ -284,13 +284,15 @@ describe('Absence de `tone` = `flamme`, et le reste ne bouge pas d’un octet (#
   it('le TON d’un prop s’hérite du type, et une instance peut le surcharger champ par champ', () => {
     const s = { ...SCÈNE, entities: [
       { id: 'p0', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'chandelier' },
-      { id: 'p1', kind: 'prop', pos: { x: 2, y: 1 }, ref: 'chandelier', light: { radiusTiles: 9 } },
-      { id: 'p2', kind: 'prop', pos: { x: 3, y: 1 }, ref: 'chandelier', light: { radiusTiles: 3, tone: 'magique' } },
+      { id: 'p1', kind: 'prop', pos: { x: 2, y: 1 }, ref: 'chandelier', light: { radiusM: 18 } },
+      { id: 'p2', kind: 'prop', pos: { x: 3, y: 1 }, ref: 'chandelier', light: { radiusM: 6, tone: 'magique' } },
       { id: 'p3', kind: 'prop', pos: { x: 4, y: 1 }, ref: 'brasero' },
     ] } as unknown as Scene;
+    // Les rayons de la DONNÉE sont en MÈTRES (#1507) ; `mapLights` les rend en CASES, à l'échelle de
+    // la scène — 10 m d'étalon de bougie font 5 cases à 2 m/case.
     expect(mapLights(s).map((l) => [l.srcId, l.radiusTiles, l.tone])).toEqual([
       ['p0', 5, 'chandelle'],            // hérité du type (rayon recalé sur l’étalon de la bougie, #1680 ligne 5)
-      ['p1', 9, 'chandelle'],            // rayon surchargé, TON conservé
+      ['p1', 9, 'chandelle'],            // rayon surchargé (18 m), TON conservé
       ['p2', 3, 'magique'],              // ton surchargé
       ['p3', 4, undefined],              // le brasero reste MUET : son défaut EST `flamme`
     ]);
@@ -298,7 +300,7 @@ describe('Absence de `tone` = `flamme`, et le reste ne bouge pas d’un octet (#
   });
 
   it('le ton d’un PORTEUR suit l’émetteur RETENU (le plus grand rayon), pas le dernier vu', () => {
-    // Bougie (rayon 5, `chandelle`) ET lanterne (rayon 10, `lanterne`) en main : c'est la lanterne
+    // Bougie (10 m, `chandelle`) ET lanterne (20 m, `lanterne`) en main : c'est la lanterne
     // qui fait la source — donc c'est SON apparence que le porteur émet.
     const l = combatantLights({
       id: 'h1',
@@ -307,12 +309,12 @@ describe('Absence de `tone` = `flamme`, et le reste ne bouge pas d’un octet (#
         { uid: 'i1', trappingId: 'bougie', equipped: true },
         { uid: 'i2', trappingId: 'lanterne', equipped: true },
       ],
-    });
+    }, MPT);
     expect(l.map((x) => [x.radiusTiles, x.tone])).toEqual([[10, 'lanterne']]);
   });
 
   it('un SORT porte son ton jusqu’à la lampe (`ActiveEffect.light`, chemin de l’op)', () => {
-    const l = combatantLights({ id: 'h1', pos: { x: 2, y: 2 }, activeEffects: [{ light: { radiusTiles: 10, tone: 'magique' } }] });
+    const l = combatantLights({ id: 'h1', pos: { x: 2, y: 2 }, activeEffects: [{ light: { radiusM: 20, tone: 'magique' } }] }, MPT);
     expect(l[0].tone).toBe('magique');
     const ton = resolveTone(l[0].tone);
     expect(ton.flicker).toBeUndefined();        // une lueur magique ne vacille pas

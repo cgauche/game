@@ -3288,7 +3288,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const next = { ...oc, [axis]: v };
       // ZdE : chaque pas ajoute le Ø INITIAL — le rayon du gabarit suit (pose et aperçu lisent `zone.radius`).
       const zone = axis === 'zone' && pc.zone
-        ? { ...pc.zone, radius: zoneRadiusTilesAt(pc.zone.r0m ?? 0, next.zone) }
+        ? { ...pc.zone, radius: zoneRadiusTilesAt(pc.zone.r0m ?? 0, next.zone, sceneMetresPerTile(get().scene)) }
         : pc.zone;
       // Cible RÉDUITE : on élague les désignations au-delà de la nouvelle capacité (alloc ⊥ désignation).
       const caster = (get().battle?.combatants ?? get().party).find((c) => c.id === pc.casterId);

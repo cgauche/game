@@ -40,8 +40,15 @@ export const RECETTES = props.filter((p) => p.volume).map((p) => p.id);
  *  ne dirait rien de plus qu'un cran de caméra. */
 export type VuePlanche = Extract<ProjKind, 'iso' | 'top'>;
 
-/** `Scene.metresPerTile` de La Diligence — l'échelle métrique sous laquelle la planche projette. */
-export const METRES_PAR_CASE = 2;
+/** Échelle du monde que la planche PROJETTE (m/case, celle de La Diligence) : la cadence de la caméra
+ *  (`affineScales`) et le pas de sol, qui se compte en CASES (`projectStep`), en dépendent tous deux.
+ *  Ce n'est pas une unité d'authoring — depuis #1507 une recette est écrite en MÈTRES. */
+export const ECHELLE_PROJETEE = 2;
+
+/** La planche n'a pas de scène : elle cuit les recettes dans un monde d'UNE case par mètre, d'où des
+ *  faces déjà MÉTRIQUES. Plus aucune conversion de recette ne vit donc ici — la seule qui reste est
+ *  celle de la PROJECTION (`ECHELLE_PROJETEE`), et elle appartient à la caméra, pas à la donnée. */
+const CASE_METRIQUE = 1;
 
 /** Point de la planche : mètres à l'est (x), au sud (y), en hauteur (h). */
 export interface Pt3 { x: number; y: number; h: number }
@@ -50,10 +57,11 @@ export interface Pt3 { x: number; y: number; h: number }
 const versThree = (p: Pt3): Vec3 => ({ x: p.x, y: p.h, z: p.y });
 const versPlanche = (v: Vec3): Pt3 => ({ x: v.x, y: v.z, h: v.y });
 
-/** Sommet MONDE (cases en x/y, mètres en h) → mètres, tourné du cran de caméra `rot`. */
+/** Sommet du monde de la planche (déjà métrique sur les trois axes, cf. `CASE_METRIQUE`), tourné du
+ *  cran de caméra `rot`. */
 export function enMetres(p: GP, rot: Rot): Pt3 {
   const t = rotOffset(rotYaw(rot), { x: p.x, y: p.y });
-  return { x: t.x * METRES_PAR_CASE, y: t.y * METRES_PAR_CASE, h: p.h };
+  return { x: t.x, y: t.y, h: p.h };
 }
 
 /** Projection ÉCRAN (px) d'un point métrique. La cadence SOL est celle de l'affine de production
@@ -61,8 +69,8 @@ export function enMetres(p: GP, rot: Rot): Pt3 {
  *  sont les deux cadences INDÉPENDANTES dont `affineScales` est faite, jamais un pitch uniforme. La
  *  vue du dessus regarde à la verticale — son pitch droit y annule la hauteur, sans branchement. */
 export function projeterPlanche(p: Pt3, vue: VuePlanche): { sx: number; sy: number } {
-  const { sy, pitch } = affineScales(vue, METRES_PAR_CASE);
-  const sol = projectStep(stepOf(vue), { x: p.x / METRES_PAR_CASE, y: p.y / METRES_PAR_CASE });
+  const { sy, pitch } = affineScales(vue, ECHELLE_PROJETEE);
+  const sol = projectStep(stepOf(vue), { x: p.x / ECHELLE_PROJETEE, y: p.y / ECHELLE_PROJETEE });
   return { sx: sol.dx, sy: sol.dy - p.h * sy * Math.cos(pitch) };
 }
 
@@ -71,7 +79,7 @@ export function projeterPlanche(p: Pt3, vue: VuePlanche): { sx: number; sy: numb
  *  caméra de production : l'iso regarde la diagonale du sol sous ce pitch, le dessus est à la
  *  verticale. Sert à la FRONTALITÉ (cull) comme à la PROFONDEUR (tri du peintre). */
 export function versOeilDe(vue: VuePlanche): Pt3 {
-  const { pitch } = affineScales(vue, METRES_PAR_CASE);
+  const { pitch } = affineScales(vue, ECHELLE_PROJETEE);
   const sol = Math.cos(pitch) * Math.SQRT1_2;
   return { x: sol, y: sol, h: Math.sin(pitch) };
 }
@@ -88,6 +96,10 @@ const CENTRE_PLANCHE = { x: 0, z: 0 };
  *  ce qu'une scène sans cap montre), origine de grille, sol à 0 m — aucune scène.
  *  Contrat : `src/gameIso/catalog/planche-qc-cap-identite.test.ts`. */
 export const ancrageDePlanche = { ancre: { x: 0, y: 0 }, facing: CAP_IDENTITE_PROP, baseHeightM: 0 };
+
+/** Le `metresPerTile` sous lequel la planche cuit ses recettes — exporté pour que ses contrats cuisent
+ *  la MÊME géométrie qu'elle, jamais un second réglage. */
+export const MPT_DE_PLANCHE = CASE_METRIQUE;
 
 /** Une face passée par les lois de la cuisson, prête à peindre. */
 export interface FacePreparee {
@@ -161,7 +173,7 @@ export function construireHtml(): { html: string; vides: string[] } {
   const lignes = RECETTES.map((id) => {
     const prop = findPropById(id);
     if (!prop?.volume) throw new Error(`recette absente : ${id}`);
-    const faces = buildPropVolumes(prop, ancrageDePlanche);
+    const faces = buildPropVolumes(prop, ancrageDePlanche, CASE_METRIQUE);
     const cellules = COLONNES.map(({ titre, rot, vue }) => {
       const { svg, peintes } = vueSvg(faces, rot, vue);
       if (peintes === 0) vides.push(`${id}/${titre}`);
@@ -185,7 +197,7 @@ export function construireHtml(): { html: string; vides: string[] } {
 </style>
 <h1>Mobilier volumique — géométrie monde des recettes de <code>props.json</code></h1>
 <p>Quatre crans de caméra + vue de dessus, peintes depuis les <code>Face[]</code> réelles de
-<code>buildPropVolumes</code> (cap d'identité <code>${CAP_IDENTITE_PROP}</code>, sol à 0 m, case de ${METRES_PAR_CASE} m), à la
+<code>buildPropVolumes</code> (cap d'identité <code>${CAP_IDENTITE_PROP}</code>, sol à 0 m, case de ${ECHELLE_PROJETEE} m), à la
 projection, au dehors et au modelé de forme de la CUISSON. Dernière colonne : la vignette SVG de
 palette, qui n'est jamais le corps monde.</p>
 <table><thead><tr><th>ref</th>${COLONNES.map((c) => `<th>${c.titre}</th>`).join('')}<th>vignette</th></tr></thead>

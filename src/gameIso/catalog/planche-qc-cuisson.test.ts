@@ -19,7 +19,8 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
 import {
-  METRES_PAR_CASE,
+  ECHELLE_PROJETEE,
+  MPT_DE_PLANCHE,
   RECETTES,
   ancrageDePlanche,
   preparerVue,
@@ -36,7 +37,7 @@ import type { Rot } from '../../geometry/iso';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const CRANS: Rot[] = [0, 1, 2, 3];
-const facesDe = (id: string) => buildPropVolumes(findPropById(id)!, ancrageDePlanche);
+const facesDe = (id: string) => buildPropVolumes(findPropById(id)!, ancrageDePlanche, MPT_DE_PLANCHE);
 
 /** Repère de la planche (x est, y sud, h haut) → repère three (X est, Y haut, Z sud). */
 const versTrois = (p: Pt3): Vec3 => ({ x: p.x, y: p.h, z: p.y });
@@ -135,7 +136,7 @@ describe('planche QC — la PROJECTION peinte est celle de la caméra de product
    *  (diagonale (x−y)/√2 en iso, x en vue du dessus), `sy` px/m le long de l'axe écran vertical, dont
    *  le pitch départage la part de PROFONDEUR sol et la part de HAUTEUR. */
   const parLaCamera = (p: Pt3, vue: VuePlanche) => {
-    const { sx, sy, pitch } = affineScales(vue, METRES_PAR_CASE);
+    const { sx, sy, pitch } = affineScales(vue, ECHELLE_PROJETEE);
     if (vue === 'top') return { sx: p.x * sx, sy: p.y * sy };
     return {
       sx: sx * (p.x - p.y) * Math.SQRT1_2,

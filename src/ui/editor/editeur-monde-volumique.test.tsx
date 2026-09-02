@@ -87,7 +87,7 @@ function sceneDeuxCouches(): Scene {
 function sceneLampe(): Scene {
   const s = emptyScene(6, 6);
   const brasero = {
-    id: 'brasero-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'tonneau', light: { radiusTiles: 3 },
+    id: 'brasero-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'tonneau', light: { radiusM: 6 },
   } as unknown as Scene['entities'][number];
   return { ...s, entities: [brasero] };
 }

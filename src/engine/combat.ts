@@ -1230,7 +1230,7 @@ export function resolveMelee(
  * Bandes de portée d'un tir (table des Difficultés de Combat, LDB `14 - _GoBack.md` l.82-118) :
  * Bout portant (≤ Portée÷10) +40, Courte (≤ Portée÷2) +20, Moyenne (≤ Portée) +0, Longue (≤ Portée×2)
  * −10, Extrême (≤ Portée×3) −30 ; au-delà = hors de portée. Échelle 1 case = `metresPerTile` (défaut 2 m,
- * LDB Déplacement l.55 ; une Scène MER en déclare une autre, cf. `sceneMetresPerTile`).
+ * LDB 15 l.12 ; une Scène MER en déclare une autre, cf. `sceneMetresPerTile`).
  * SOURCE UNIQUE des seuils : le modificateur ET le nom y lisent. `rangeMeters` = Portée de l'arme en m.
  */
 const RANGE_BANDS: { id: RangeBandId; maxFactor: number; mod: number; label: string }[] = [

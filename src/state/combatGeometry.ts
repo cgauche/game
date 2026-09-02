@@ -221,6 +221,20 @@ export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number })
 }
 
 /**
+ * MÈTRES d'une règle → CASES de PORTÉE, à l'échelle de la scène (`Scene.metresPerTile`, défaut
+ * `LDB 15 l.12`). UNIQUE définition de cette conversion : les auras portées (`arrowWard`/`domeWard`,
+ * `combat/hitModifiers.ts`), l'aura anti-Sort (`castWardLine`, `combatFlow.ts`) et les effets
+ * DÉCLENCHÉS d'aire (`on: {near, radiusMeters}`, `triggeredEffects.ts`) la partagent — trois
+ * divisions par le littéral `2` y figeaient l'échelle terrestre, et une aura de 4 m couvrait donc
+ * 2 cases de 10 m en combat naval (#1507).
+ * Arrondi au SUPÉRIEUR et plancher à UNE case : une aura chiffrée en mètres couvre au moins la case
+ * de son porteur, quelle que soit la finesse de la grille. Le champ de LUMIÈRE, lui, ne passe pas
+ * par ici — son rayon reste RÉEL (`rayonEnCases`, `state/vision.ts`) parce que son dégradé le lit
+ * comme une longueur, pas comme un nombre de cases à parcourir. PURE.
+ */
+export const porteeEnCases = (metres: number, mpt: number): number => Math.max(1, Math.ceil(metres / mpt));
+
+/**
  * PRIMITIVE de géométrie d'aire PARTAGÉE (Chebyshev) : les combattants POSITIONNÉS à ≤ `radiusTiles` cases
  * de `center`, du plus proche au plus loin, après un `filter` optionnel (groupe/vivant/exclusion). SOURCE
  * UNIQUE du motif « collecter les combattants dans un rayon PUIS appliquer un effet par cible » — l'ORCHESTRATEUR

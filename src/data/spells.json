@@ -1501,7 +1501,7 @@
             "ops": [
               {
                 "op": "light",
-                "radiusTiles": 10,
+                "radiusM": 20,
                 "tone": "magique"
               },
               {
@@ -20101,7 +20101,7 @@
             "ops": [
               {
                 "op": "light",
-                "radiusTiles": 5,
+                "radiusM": 10,
                 "tone": "magique"
               },
               {

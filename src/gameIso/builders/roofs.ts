@@ -28,7 +28,7 @@
  * `domain:'structure'`). C'est pourquoi ce module tient aussi l'indexation des murs et des façades
  * authorées (`edgeKey`/`facadeEdges`/`WALL_NB`), SOURCE UNIQUE relue par `walls.ts`.
  */
-import { heightAt, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
+import { heightAt, sceneMetresPerTile, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { memoByRef } from '../../state/sceneMemo';
 import { DEFAULT_ROOF_DEFAULTS, effectiveArchitecture, fittedPitchDeg, localCrossSpans } from '../../state/sceneEdit';
@@ -1094,7 +1094,7 @@ function footInSight(z: number, cells: ReadonlySet<string>, sight: ReadonlySet<s
 export function resolveMass(scene: Scene, mass: BuildingMass): { cells: Set<string>; shape: RoofShapeSpec; roomZoneIds: string[] } {
   const cells = massFootprintCells(mass.footprint);
   const ridge = resolveMassRidge(mass, cells);
-  const pitch = (scene.metresPerTile ?? 2) * Math.tan((mass.pitchDeg * Math.PI) / 180);
+  const pitch = sceneMetresPerTile(scene) * Math.tan((mass.pitchDeg * Math.PI) / 180);
   // Hauteur d'égout ABSOLUE (`GP.h`, cf. `backends/project.projGP`) : le toit repose sur le SOMMET des
   // murs de l'étage `mass.z`, et un mur s'assoit sur le RELIEF de SA case (`buildWalls` : `heightAt`
   // + `WALL_H_M`). L'égout se lit donc sur la MÊME source — la cote métrique du plancher sous
@@ -1177,7 +1177,7 @@ function groupField(scene: Scene, body: ArchitectureBody, group: readonly Resolv
   const dep = bfsDepth(domain, segs);
   let deepest = 0;
   for (const d of dep.values()) deepest = Math.max(deepest, d);
-  const metresPerTile = scene.metresPerTile ?? 2;
+  const metresPerTile = sceneMetresPerTile(scene);
   const pitchDeg = fittedPitchDeg(
     2 * deepest,
     metresPerTile,

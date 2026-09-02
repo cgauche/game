@@ -124,10 +124,10 @@ describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () =
   });
 
   it('light a un éditeur dédié : rayon SAISISSABLE et ton élu dans le catalogue lightTones', () => {
-    const ops: GameOp[] = [{ op: 'light', radiusTiles: 7, tone: 'chandelle' }];
+    const ops: GameOp[] = [{ op: 'light', radiusM: 7, tone: 'chandelle' }];
     const html = renderToStaticMarkup(<GameOpEditor ops={ops} onChange={() => {}} />);
     expect(html).not.toContain('(JSON)'); // éditeur dédié, pas un repli
-    expect(html).toContain('Rayon (cases)');
+    expect(html).toContain('Rayon (m)');
     expect(html).toContain('value="7"'); // rayon éditable
     // Le select liste TOUT le catalogue (aucune liste en dur), et l'op élue est sélectionnée.
     for (const t of lightTones) expect(html).toContain(`value="${t.id}"`);

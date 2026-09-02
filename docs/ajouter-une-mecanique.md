@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-mecanique.mjs` (`npm run docs:mecanique`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : le SITE réel du lecteur de
-chaque canal (`src/engine/trauma.ts:921`, `src/state/triggeredEffects.ts:429`, `src/engine/capabilities.ts:45`), les
+chaque canal (`src/engine/trauma.ts:921`, `src/state/triggeredEffects.ts:430`, `src/engine/capabilities.ts:45`), les
 20 membres d'`EffectTrigger` et les 6 formes d'`EffectTargeting`
 (`src/engine/flowCore.ts`), les 7 champs de `TriggeredEffect`, les 8 kinds
 de source réunis par `effectSourcesOf`, les 4 interfaces de capacités et leur nombre de
@@ -24,7 +24,7 @@ Toute mécanique — trait de créature, talent, atout d'arme/armure, mutation, 
 | Canal | Ce qu’il porte | Lu par |
 |---|---|---|
 | `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:921`) |
-| `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:429`) |
+| `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:430`) |
 | `capabilities` | drapeau IRRÉDUCTIBLE que le moteur INTERROGE (aucune valeur numérique ni formule) | `hasCapability` (`src/engine/capabilities.ts:45`) |
 
 Chaque champ est du **`GameOp[]`** ou du **`TriggeredEffect[]`** — jamais un type propre à
@@ -103,8 +103,8 @@ produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'enti
 
 ### Le dispatcher unique — `fireTriggers`
 
-`fireTriggers` (`src/state/triggeredEffects.ts:429`) est le **SEUL** point d'entrée pour jouer les effets
-déclenchés d'un combattant. Il réunit ses sources via `effectSourcesOf` (`src/state/triggeredEffects.ts:93`), qui
+`fireTriggers` (`src/state/triggeredEffects.ts:430`) est le **SEUL** point d'entrée pour jouer les effets
+déclenchés d'un combattant. Il réunit ses sources via `effectSourcesOf` (`src/state/triggeredEffects.ts:94`), qui
 énumère aujourd'hui **8 kinds** dans un ordre FIGÉ (déroulé RNG déterministe) :
 `trapping` → `trait` → `quality` → `talent` → `symptom` → `mutation` → `condition` → `psychology`.
 

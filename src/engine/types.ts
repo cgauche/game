@@ -938,10 +938,11 @@ export interface ActiveEffect {
   moveMod?: number;
   /** Plafond de mains d'arme maniables (op `maxWeaponHands`) — lu par `cannotWieldTwoHanded`. */
   maxWeaponHands?: number;
-  /** Lumière émise par un SORT pendant sa durée (op `light` — Lumière, LDB 241) : rayon en cases, lu par
-   *  `combatantLights` (vision) au MÊME point que la lumière d'un objet porté. `tone` (#1245, L4) : id
+  /** Lumière émise par un SORT pendant sa durée (op `light` — Lumière, LDB 241) : `radiusM` = le rayon
+   *  en MÈTRES, recopié de l'op, lu par `combatantLights` (vision) au MÊME point que la lumière d'un
+   *  objet porté — c'est là qu'il devient des cases (`rayonEnCases`). `tone` (#1245, L4) : id
    *  d'un `lightTones`, APPARENCE seule, recopié de l'op et résolu au bord du rendu ; absent = `flamme`. */
-  light?: { radiusTiles: number; tone?: string };
+  light?: { radiusM: number; tone?: string };
 }
 
 /** Traumatisme (LDB 18-Traumatisme) — conséquence persistante d'une Blessure critique ou d'une

@@ -322,7 +322,7 @@ export function humanizeOp(o: GameOp): string {
     case 'armourPierce': { const cat = armourBypassCatLabel(o.bypass); return `perce ${o.amount} PA${cat ? ` (ignore ${cat})` : ''}`; }
     case 'critOnRoll': return `déclenche un Critique sur certains jets`;
     case 'spendAdvantage': return `dépense ${o.amount} point(s) d'Avantage`;
-    case 'light': return `émet de la lumière sur ${o.radiusTiles} case(s)`;
+    case 'light': return `émet de la lumière sur ${o.radiusM} m`;
     case 'intoxicate': return `échoue à résister à l'alcool`;
     case 'narrative': return o.text;
   }

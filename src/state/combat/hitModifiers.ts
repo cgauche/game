@@ -30,7 +30,8 @@ import { canPushback } from '../../engine/qualities/dispatch';
 import { isOutOfAction, loseWounds, applyZeroWounds, isMagicallyAsleep, wakeSleeper } from '../../engine/conditions';
 import { bonus, effectiveChar } from '../../engine/characteristics';
 import { combatDistance } from '../footprint';
-import { pushBackTiles } from '../combatGeometry';
+import { porteeEnCases, pushBackTiles } from '../combatGeometry';
+import { sceneMetresPerTile } from '../scene';
 import { inBattleId } from '../combatants';
 
 // ── Helpers propres aux sauvegardes, DÉPLACÉS depuis combatFlow (ré-exporté via le baril pour applyCast / tests) ──
@@ -51,11 +52,12 @@ export function wardedAgainst(
   attacker: Combatant,
   target: Combatant,
   field: 'arrowWard' | 'domeWard',
+  mpt: number,
 ): boolean {
   return combatants.some((w) => !isOutOfAction(w) && w.pos && (w.activeEffects ?? []).some((e) => {
     const ward = e[field];
     if (!ward) return false;
-    const r = Math.max(1, Math.ceil(ward.radiusMeters / 2));
+    const r = porteeEnCases(ward.radiusMeters, mpt);
     return combatDistance(w, target) <= r && combatDistance(w, attacker) > r;
   }));
 }
@@ -161,7 +163,7 @@ registerHitModifier({
   order: 20,
   apply: ({ get, attacker, target, weapon, res }) => {
     if (res.hit && weapon.type === 'ranged' && organicProjectile(weapon)
-      && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'arrowWard')) {
+      && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'arrowWard', sceneMetresPerTile(get().scene))) {
       res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `Le projectile se désagrège en entrant dans la zone — ${target.label} est indemne (Bouclier anti-flèches).` };
     }
     return res;
@@ -174,7 +176,7 @@ registerHitModifier({
   order: 30,
   apply: ({ get, attacker, target, weapon, res }) => {
     if (res.hit && res.woundsLost && weapon.type === 'ranged'
-      && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'domeWard')) {
+      && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'domeWard', sceneMetresPerTile(get().scene))) {
       const d = d10(battleRng());
       if (d >= 6) res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.label} est couvert par le Dôme — sauvegarde ${d} ≥ 6, le tir est dévié.` };
     }
@@ -208,7 +210,7 @@ registerHitModifier({
 
 registerHitModifier({
   // Perturbante (LDB 62 l.272-274) : mode « Repousser » armé → l'attaque réussie ne cause PAS de
-  // Dégâts, l'adversaire recule d'1 m par DR du Test opposé (1 case = 2 m, LDB Déplacement l.55).
+  // Dégâts, l'adversaire recule d'1 m par DR du Test opposé (1 case = 2 m, LDB 15 l.12).
   id: 'pushback',
   order: 50,
   apply: ({ get, attacker, target, weapon, res }) => {

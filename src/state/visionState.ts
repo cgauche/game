@@ -4,7 +4,7 @@
  * EXPLORÉ par scène (`explored[sceneId]`, persistant). `visible` est DÉRIVÉ au bord rendu (memo
  * d'IsoStage via `computeStateVisible`) — pas stocké, donc rien à invalider pendant la marche.
  */
-import { Scene } from './scene';
+import { Scene, sceneMetresPerTile } from './scene';
 import { Pt } from './path';
 import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, combatantLights, buildOpaque, type LightSource, type Occ } from './vision';
 import { memoByRef } from './sceneMemo';
@@ -29,9 +29,10 @@ export interface VisionInput {
  *  mécanique (`sceneLightField`) et le rendu (les lampes du monde volumique) lisent la MÊME liste, donc
  *  le même gate de port et les mêmes rayons. PUR. */
 export function sceneLightSources(s: Pick<VisionInput, 'scene' | 'battle' | 'party' | 'partyPos'>): LightSource[] {
+  const mpt = sceneMetresPerTile(s.scene!);
   const sources = mapLights(s.scene!);
   if (s.battle) {
-    for (const c of s.battle.combatants) sources.push(...combatantLights(c));
+    for (const c of s.battle.combatants) sources.push(...combatantLights(c, mpt));
     return sources;
   }
   // Combattant SYNTHÉTIQUE du groupe : items + armes tenues + effets actifs agrégés → `combatantLights`
@@ -47,7 +48,7 @@ export function sceneLightSources(s: Pick<VisionInput, 'scene' | 'battle' | 'par
     items: party.flatMap((p) => p.items ?? []),
     weapons: party.flatMap((p) => p.weapons ?? []),
     activeEffects: party.flatMap((p) => p.activeEffects ?? []),
-  }));
+  }, mpt));
   return sources;
 }
 

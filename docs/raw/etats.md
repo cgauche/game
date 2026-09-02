@@ -69,7 +69,7 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.11-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `doc`, `STABLE_COND_KINDS`, `addCondition`, `mouvementIntact`, `stopBleedOutcome`, `hitModifiers`, `useAttackJetProps`, `addClockCondition`, +51 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +18 fichiers
+- `LDB 16` (l.11-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `doc`, `STABLE_COND_KINDS`, `addCondition`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `addClockCondition`, +51 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +18 fichiers
 
 ---
 
@@ -311,7 +311,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Inconscient, Traumatisme (`traumatisme.md`), Maladies (`maladies.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.103-109) → `unstable`, `combat-fatigue`, `doc`, `mouvementIntact`, `stopBleedOutcome`, `hitModifiers`, `useAttackJetProps`, `brise`, `needsRecoveryRoll`, `sleepParty`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +13 fichiers
+- `LDB 16` (l.103-109) → `unstable`, `combat-fatigue`, `doc`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `brise`, `needsRecoveryRoll`, `sleepParty`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +13 fichiers
 
 ---
 
@@ -335,7 +335,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Hémorragique, Empoisonné, À Terre, Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.111-119) → `unstable`, `combat-fatigue`, `doc`, `STABLE_COND_KINDS`, `mouvementIntact`, `stopBleedOutcome`, `hitModifiers`, `useAttackJetProps`, `brise`, `needsRecoveryRoll`, +31 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +13 fichiers
+- `LDB 16` (l.111-119) → `unstable`, `combat-fatigue`, `doc`, `STABLE_COND_KINDS`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `brise`, `needsRecoveryRoll`, +31 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +13 fichiers
 
 ---
 
@@ -359,7 +359,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Exténué, Magie (`magie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.123-129) → `doc`, `STABLE_COND_KINDS`, `mouvementIntact`, `hitModifiers`, `useAttackJetProps`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `combat-helpless-mode`, `pickDoctrine`, `incomingMeleeAdvantage`, +20 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/state/actionRegistry.ts`, +7 fichiers
+- `LDB 16` (l.123-129) → `doc`, `STABLE_COND_KINDS`, `mouvementIntact`, `useAttackJetProps`, `hitModifiers`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `combat-helpless-mode`, `pickDoctrine`, `incomingMeleeAdvantage`, +20 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/state/actionRegistry.ts`, +7 fichiers
 
 ---
 

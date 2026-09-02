@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, type Scene, type SceneEntity, type WallSeg } from '../../state/scene';
+import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity, type WallSeg } from '../../state/scene';
 import { buildProps, capDuFaite } from './props';
 import { buildWalls } from './walls';
 import { buildPropVolumes } from './propVolumes';
@@ -25,11 +25,14 @@ const volume = (el: PropEl): VolumePropEl => {
 /** Altitude du PIED d'un décor volumique : le `h` le plus bas de ses faces. Les recettes du
  *  catalogue ancré s'écrivent depuis `h = 0`, donc ce plancher vaut `solM + liftM` du site d'émission. */
 const socleM = (el: PropEl) => Math.min(...volume(el).faces.flatMap((f) => f.poly.map((p) => p.h)));
+/** L'échelle des scènes de ce fichier — LUE sur une scène : toutes sortent d'`emptyScene`, qui ne pose
+ *  pas de `metresPerTile`, donc c'est le défaut du monde (`LDB 15 l.12`). */
+const MPT = sceneMetresPerTile(emptyScene(1, 1));
 /** Le décor est-il posé à CETTE ancre, à ce cap ? Comparé à la recette compilée à son propre pied. */
 const poseA = (el: PropEl, ancre: { x: number; y: number }, facing: Dir8) =>
   volume(el).faces.every((face, i) =>
     face.poly.every((p, k) => {
-      const attendu = buildPropVolumes(findPropById(el.ref)!, { ancre, facing: capVolumique(facing, el.ref), baseHeightM: socleM(el) })[i].poly[k];
+      const attendu = buildPropVolumes(findPropById(el.ref)!, { ancre, facing: capVolumique(facing, el.ref), baseHeightM: socleM(el) }, MPT)[i].poly[k];
       return Math.abs(p.x - attendu.x) < 1e-9 && Math.abs(p.y - attendu.y) < 1e-9 && Math.abs(p.h - attendu.h) < 1e-9;
     }));
 
@@ -454,7 +457,7 @@ describe('buildProps — features de façade authorées', () => {
     // vignette d'enseigne (2.2 m, `facades/defs/auberge-relais-imperiale`).
     expect(el.faces).toEqual(buildPropVolumes(findPropById('armoire')!, {
       ancre: { x: 2.75, y: 4.5 }, facing: 'N', baseHeightM: 2.2,
-    }));
+    }, MPT));
   });
 
   /**

@@ -93,7 +93,7 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 |---|---|---|---|
 | `buildFloors` | `FloorEl[]` | `src/gameIso/builders/floors.ts:315` | Éléments `floor` de la scène. |
 | `buildHighlights` | `HighlightEl[]` | `src/gameIso/builders/highlights.ts:64` | — |
-| `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:46` | Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`. |
+| `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:52` | Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`. |
 | `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:125` | Éléments `prop` de la scène. |
 | `buildRoofs` | `RoofEl[]` | `src/gameIso/builders/roofs.ts:1387` | Éléments `roof` de la scène. |
 | `buildTokens` | `TokenEl[]` | `src/gameIso/builders/tokens.ts:80` | Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). |

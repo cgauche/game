@@ -1,9 +1,59 @@
 import { describe, it, expect } from 'vitest';
-import { computeVisible, computeLightField, ambientScalar, baseSightTiles, combatantLights, darkSightTiles, mapLights, type LightField } from './vision';
-import { Scene, WallSeg } from './scene';
+import { computeVisible, computeLightField, ambientScalar, baseSightTiles, combatantLights, darkSightTiles, mapLights, rayonEnCases, type LightField } from './vision';
+import { Scene, WallSeg, emptyScene, sceneMetresPerTile } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 import { computeStateVisible } from './visionState';
-import { campaign, diligenceCampaign } from '../scenes/campaign';
+import { campaign, diligenceCampaign, builtinCampaigns } from '../scenes/campaign';
+
+/** L'échelle des scènes de ce fichier — LUE, jamais redite : elles ne déclarent pas de
+ *  `metresPerTile`, donc c'est le défaut du monde (`LDB 15 l.12`). */
+const MPT = sceneMetresPerTile(emptyScene(1, 1));
+/** L'échelle MER, LUE sur une scène LIVRÉE : l'abordage de la cogue (combat naval, MDG 13). */
+const MPT_MER = sceneMetresPerTile(
+  builtinCampaigns.find((c) => c.id === 'loup-et-saumure')!.scenes.find((s) => s.id === 'ls-abordage-cogue')!,
+);
+
+/**
+ * RAYON RÉEL (#1507) — la donnée porte des MÈTRES, `rayonEnCases` les divise par l'échelle de la
+ * scène, et le résultat n'est PLUS ENTIER : un brasero de 8 m vaut 0,8 case en mer. Le champ de
+ * lumière DOIT l'accepter — ses bornes d'itération s'arrondissent vers l'extérieur, la distance
+ * décide en réels, et la case de la source (distance 0) est toujours éclairée. Sans cela, les bornes
+ * fractionnaires n'écrivaient que des clés impossibles (« 5.2,5.2,0 ») : AUCUNE case éclairée, et la
+ * lampe s'éteignait en silence.
+ */
+describe('computeLightField — un rayon RÉEL éclaire, une lampe ne s’éteint jamais en silence', () => {
+  const NUIT = 0; // aucun plancher ambiant : seul le halo des sources compte
+  const halo = (rayonM: number, mpt: number) => {
+    const s = scene(9, 1);
+    const src = [{ pos: { x: 4, y: 0 }, radiusTiles: rayonEnCases(rayonM, mpt) }];
+    const f = computeLightField(s, NUIT, src);
+    return { champ: f, cases: [...Array(9).keys()].filter((x) => f.at(x, 0) > 0) };
+  };
+
+  it('brasero (8 m) sur une scène MER : 0,8 case — SA case est éclairée, aucune autre', () => {
+    const { champ, cases } = halo(8, MPT_MER);
+    expect(rayonEnCases(8, MPT_MER)).toBeCloseTo(0.8);
+    expect(cases).toEqual([4]);
+    expect(champ.at(4, 0)).toBeCloseTo(1);
+    expect(champ.sourceLit!.has('4,0,0'), 'la case de la source est ÉCLAIRÉE, pas seulement non nulle').toBe(true);
+  });
+
+  it('marque arcanique (2 m, tables.json) en mer : 0,2 case — sa case reste éclairée', () => {
+    const { cases, champ } = halo(2, MPT_MER);
+    expect(cases).toEqual([4]);
+    expect(champ.sourceLit!.has('4,0,0')).toBe(true);
+  });
+
+  it('lanterne (20 m) : 2 cases en mer, 10 à terre — le halo SUIT l’échelle', () => {
+    expect(halo(20, MPT_MER).cases).toEqual([3, 4, 5]);       // 2 cases de rayon, bord exclu (falloff nul)
+    expect(halo(20, MPT).cases.length).toBe(9);               // 10 cases de rayon : toute la bande de 9
+  });
+
+  it('à 2 m/case, un rayon ENTIER rend exactement ce qu’il rendait (aucun décalage de bornes)', () => {
+    expect(halo(10, MPT).cases).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]); // bougie 10 m = 5 cases
+    expect(halo(4, MPT).cases).toEqual([3, 4, 5]);                    // 2 cases de rayon
+  });
+});
 
 const DAY = 12 * 60; // 12:00 → jour
 const NIGHT = 23 * 60; // 23:00 → nuit (NIGHT_WINDOW 22:00-05:00)
@@ -209,7 +259,7 @@ describe('combatantLights — la source PORTÉE suit son porteur : son ÉTAGE et
 
   it('une lanterne portée à l’ÉTAGE inscrit son halo à cet étage, et laisse le sol noir', () => {
     const s = deuxEtages();
-    const src = combatantLights(porteur(1));
+    const src = combatantLights(porteur(1), MPT);
     expect(src.length).toBe(1);
     expect(src[0].z).toBe(1);
     const f = computeLightField(s, 0, src); // ténèbres + la seule lanterne
@@ -220,13 +270,13 @@ describe('combatantLights — la source PORTÉE suit son porteur : son ÉTAGE et
   });
 
   it('au SOL (aucun z), le halo reste au sol — l’étage du porteur, jamais un défaut', () => {
-    const f = computeLightField(deuxEtages(), 0, combatantLights(porteur()));
+    const f = computeLightField(deuxEtages(), 0, combatantLights(porteur(), MPT));
     expect(f.at(2, 0, 0)).toBeCloseTo(1);
     expect(f.at(2, 0, 1)).toBe(0);
   });
 
   it('la source PORTÉE nomme son porteur, la source POSÉE nomme son entité (`srcId`)', () => {
-    expect(combatantLights(porteur(0))[0].srcId).toBe('h1');
+    expect(combatantLights(porteur(0), MPT)[0].srcId).toBe('h1');
     const s = { ...scene(9, 1), entities: [{ id: 'b7', kind: 'prop', pos: { x: 5, y: 0 }, ref: 'brasero' }] } as unknown as Scene;
     expect(mapLights(s)[0].srcId).toBe('b7');
   });

@@ -9,9 +9,10 @@
  * RÈGLE 1 : la portée de vue de base et le seuil d'éclairement n'ont pas de valeur canon (le LDB ne
  * stat pas la vue) → réglages MAISON injectés en paramètres ; les rayons de lumière (Bougie 10 m,
  * Lanterne 20 m — `LDB 74 l.43`, `LDB 74 l.58`) et la Vision nocturne (20 m/niv — `LDB 11 l.176`)
- * sont canon, convertis à l'échelle 1 case = 2 m (`LDB Déplacement l.55`).
+ * sont canon ; la DONNÉE les porte en mètres et `rayonEnCases` les convertit à l'échelle de la scène
+ * (`Scene.metresPerTile`, défaut `LDB 15 l.12`).
  */
-import { Scene, tileAt, heightAt, edgeOf, wallIsOpen } from './scene';
+import { Scene, tileAt, heightAt, edgeOf, sceneMetresPerTile, wallIsOpen } from './scene';
 import { wallOnSight } from './lineOfSight';
 import { TERRAINS, terrainSolidHeightM } from './terrain';
 import { METRES_PER_LEVEL } from './relief';
@@ -53,9 +54,10 @@ export interface LightSource {
   tone?: string;
   /** FOYER de la source, RELATIF à `pos` : le centre de la primitive que la recette du décor déclare
    *  émettrice (`PropPrimitive.emet`, `data/props.types.ts`). `x`/`y` en CASES, `h` en MÈTRES au-dessus
-   *  du sol de la case — les mêmes unités que le repère local d'une recette, et il subit ICI la MÊME
-   *  transformation rigide que la géométrie (`rotatePropLocal` au cap de l'instance) : la lampe et le
-   *  volume qu'elle éclaire tournent donc ensemble, et un déplacement de l'ancre les déplace tous deux.
+   *  du sol de la case — les mêmes unités que le MONDE, et il subit ICI la MÊME transformation rigide
+   *  que la géométrie (division du plan par le `metresPerTile` de la scène, puis `rotatePropLocal` au cap
+   *  de l'instance) : la lampe et le volume qu'elle éclaire tournent donc ensemble, et un déplacement de
+   *  l'ancre les déplace tous deux.
    *
    *  Comme le `tone`, le champ de lumière MÉCANIQUE l'ignore : le couvert et la portée se comptent en
    *  cases depuis `pos`, et un décalage sous-métrique dans la case n'y change rien. Seul le RENDU le
@@ -179,10 +181,20 @@ export function baseSightTiles(scene: Scene, gameTime: number): number {
   return levelOf(scene, gameTime).baseSightTiles;
 }
 
+/**
+ * Rayon d'une source de lumière : des MÈTRES que porte la donnée (la valeur RAW telle qu'elle est
+ * écrite — Bougie 10 m `LDB 74 l.43`, Lanterne 20 m `LDB 74 l.58`) aux CASES du champ mécanique.
+ * UNIQUE définition de cette conversion : les DEUX fabriques de `LightSource` (posée `mapLights`,
+ * portée `combatantLights`) la partagent — un second calcul divergerait dès qu'une scène change
+ * d'échelle, et c'est exactement le défaut que #1507 supprime. PURE.
+ */
+export const rayonEnCases = (radiusM: number, mpt: number): number => radiusM / mpt;
+
 /** Sources de lumière POSÉES sur la carte : props dont le TYPE (`props.json` `light`) émet, ou
  *  override d'instance `SceneEntity.light`. PUR. */
 export function mapLights(scene: Scene): LightSource[] {
   const out: LightSource[] = [];
+  const mpt = sceneMetresPerTile(scene);
   for (const e of scene.entities) {
     if (e.kind !== 'prop') continue;
     // Rayon et TON se surchargent CHAMP PAR CHAMP : une instance qui ne pose qu'un rayon garde le ton
@@ -190,8 +202,8 @@ export function mapLights(scene: Scene): LightSource[] {
     const inst = e.light;
     const prop = e.ref ? findPropById(e.ref) : undefined;
     const type = prop?.light;
-    const r = inst?.radiusTiles ?? type?.radiusTiles;
-    if (r && r > 0) out.push({ pos: e.pos, z: e.z, radiusTiles: r, srcId: e.id, tone: inst?.tone ?? type?.tone, ...foyerDe(prop, e.pos, e.facing) });
+    const rM = inst?.radiusM ?? type?.radiusM;
+    if (rM && rM > 0) out.push({ pos: e.pos, z: e.z, radiusTiles: rayonEnCases(rM, mpt), srcId: e.id, tone: inst?.tone ?? type?.tone, ...foyerDe(prop, e.pos, e.facing, mpt) });
   }
   return out;
 }
@@ -211,12 +223,12 @@ export function mapLights(scene: Scene): LightSource[] {
  *
  * Rien à rendre sans recette ou sans `emet` : la source garde alors le défaut du rendu. PUR.
  */
-function foyerDe(prop: PropData | undefined, pos: Pt, facing: Dir8 | undefined): { foyer?: LightSource['foyer'] } {
+function foyerDe(prop: PropData | undefined, pos: Pt, facing: Dir8 | undefined, mpt: number): { foyer?: LightSource['foyer'] } {
   const emettrice = prop?.volume?.primitives.find((p) => p.emet);
   if (!emettrice) return {};
   const ancre = decorAncre(pos, prop?.foot);
-  const [x, y] = rotatePropLocal(emettrice.center.x, emettrice.center.y, facing ?? CAP_IDENTITE_PROP);
-  return { foyer: { x: ancre.x - pos.x + x, y: ancre.y - pos.y + y, h: emettrice.center.h } };
+  const [x, y] = rotatePropLocal(emettrice.center.xM / mpt, emettrice.center.yM / mpt, facing ?? CAP_IDENTITE_PROP);
+  return { foyer: { x: ancre.x - pos.x + x, y: ancre.y - pos.y + y, h: emettrice.center.hM } };
 }
 
 /** Source de lumière PORTÉE par un combattant/groupe : le plus grand rayon parmi ses émetteurs, émis depuis
@@ -229,28 +241,28 @@ export function combatantLights(c: {
   pos?: Pt;
   items?: { uid?: string; trappingId?: string; equipped?: boolean }[];
   weapons?: { uid?: string }[];
-  activeEffects?: { light?: { radiusTiles: number; tone?: string } }[];
-}): LightSource[] {
+  activeEffects?: { light?: { radiusM: number; tone?: string } }[];
+}, mpt: number): LightSource[] {
   if (!c.pos) return [];
   // Le TON suit l'émetteur RETENU, jamais le dernier vu : c'est le plus grand rayon qui fait la source,
    // donc c'est SON apparence qu'elle porte — une bougie au sac ne déteindrait pas sur la lanterne en main.
-  let r = 0;
+  let rM = 0;
   let tone: string | undefined;
   for (const it of c.items ?? []) {
     const held = !!it.equipped || (c.weapons ?? []).some((w) => w.uid === it.uid);
     if (!held || !it.trappingId) continue;
     for (const op of findTrappingById(it.trappingId)?.passive ?? []) {
-      if (op.op === 'light' && op.radiusTiles > r) { r = op.radiusTiles; tone = op.tone; }
+      if (op.op === 'light' && op.radiusM > rM) { rM = op.radiusM; tone = op.tone; }
     }
   }
   for (const e of c.activeEffects ?? []) {
-    const lr = e.light?.radiusTiles;
-    if (lr && lr > r) { r = lr; tone = e.light?.tone; }
+    const lr = e.light?.radiusM;
+    if (lr && lr > rM) { rM = lr; tone = e.light?.tone; }
   }
   // `z` = l'ÉTAGE du porteur : le champ de lumière indexe ses cases par `"x,y,z"` (`computeLightField`
   // lit `s.z ?? 0`), donc une source sans `z` inscrit son halo au SOL — une lanterne portée sur le
   // chemin de ronde éclairait la cour en contrebas et laissait le rempart noir.
-  return r > 0 ? [{ pos: c.pos, z: c.pos.z, radiusTiles: r, srcId: c.id, carried: true, tone }] : [];
+  return rM > 0 ? [{ pos: c.pos, z: c.pos.z, radiusTiles: rayonEnCases(rM, mpt), srcId: c.id, carried: true, tone }] : [];
 }
 
 /** Portée de vision dans le noir (cases) d'un combattant : max des `darkSightTiles` de ses traits
@@ -265,8 +277,23 @@ export function darkSightTiles(c: { traits?: { id: string }[]; talents?: { talen
   return m;
 }
 
+/**
+ * BORNES ENTIÈRES d'un balayage de grille autour d'un point, pour un rayon RÉEL. Le rayon d'une
+ * source ou d'un viewer n'est plus entier depuis #1507 (`rayonEnCases` rend des mètres divisés par
+ * l'échelle : une bougie de 10 m vaut 1 case en mer, un brasero de 8 m en vaut 0,8) ; une borne
+ * fractionnaire ferait démarrer la boucle sur un x fractionnaire et n'écrirait que des clés de grille
+ * impossibles (`"5.2,5.2,0"`), c'est-à-dire AUCUNE case éclairée. Les bornes s'arrondissent donc vers
+ * l'extérieur, et c'est la DISTANCE (réelle) qui décide ensuite — la case de la source, à distance 0,
+ * reste éclairée quel que soit le rayon. PURE.
+ */
+const bornes = (centre: number, rayon: number, max: number): [number, number] =>
+  [Math.max(0, Math.ceil(centre - rayon)), Math.min(max, Math.floor(centre + rayon))];
+
 /** Contribution d'une source à une case à distance `d` (dégradé linéaire, 1 au centre → 0 au bord). */
 function falloff(d: number, radius: number): number {
+  // Un rayon INFÉRIEUR à la case (bougie de 10 m sur une scène MER, 1 case = 10 m) éclaire sa propre
+  // case et rien d'autre : la source y est à distance 0, donc à pleine intensité (`1 − 0/radius` = 1
+  // quel que soit le rayon), et la case suivante tombe déjà sous le dégradé.
   if (radius <= 0) return d === 0 ? 1 : 0;
   return Math.max(0, 1 - d / radius);
 }
@@ -283,8 +310,8 @@ export function computeLightField(scene: Scene, ambient: number, sources: LightS
   for (const s of sources) {
     const z = s.z ?? 0;
     const R = s.radiusTiles;
-    const x0 = Math.max(0, s.pos.x - R), x1 = Math.min(w - 1, s.pos.x + R);
-    const y0 = Math.max(0, s.pos.y - R), y1 = Math.min(h - 1, s.pos.y + R);
+    const [x0, x1] = bornes(s.pos.x, R, w - 1);
+    const [y0, y1] = bornes(s.pos.y, R, h - 1);
     for (let y = y0; y <= y1; y++)
       for (let x = x0; x <= x1; x++) {
         const d = chebyshev(s.pos, { x, y });
@@ -319,8 +346,8 @@ export function computeVisible(scene: Scene, viewers: Viewer[], light: LightFiel
     // hauteur — sinon on reste aveugle à l'étage du dessus alors qu'on est physiquement à son niveau.
     const zTop = Math.max(z, Math.min(maxZ, Math.floor(viewerH / METRES_PER_LEVEL + 0.01)));
     const R = Math.max(v.radiusTiles, v.darkTiles);
-    const x0 = Math.max(0, v.pos.x - R), x1 = Math.min(w - 1, v.pos.x + R);
-    const y0 = Math.max(0, v.pos.y - R), y1 = Math.min(h - 1, v.pos.y + R);
+    const [x0, x1] = bornes(v.pos.x, R, w - 1);
+    const [y0, y1] = bornes(v.pos.y, R, h - 1);
     for (let y = y0; y <= y1; y++)
       for (let x = x0; x <= x1; x++) {
         const d = chebyshev(v.pos, { x, y });

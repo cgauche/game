@@ -101,7 +101,7 @@ await evaluate(session, `(() => {
   const s = __wfrp.store.getState();
   const scene = { ...s.scene, entities: s.scene.entities.map((e) => (
     e.kind === 'prop' && e.ref && /brasero|feu-camp|chandelier|lampadaire/.test(e.ref)
-      ? { ...e, light: { radiusTiles: 4, tone: 'lanterne' } } : e)) };
+      ? { ...e, light: { radiusM: 8, tone: 'lanterne' } } : e)) };
   __wfrp.store.setState({ scene });
 })()`);
 await new Promise((r) => setTimeout(r, 500));

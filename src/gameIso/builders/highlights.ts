@@ -138,7 +138,7 @@ export function buildHighlights(scene: Scene, battle: BattleState, view: Highlig
   if (view.rangeBandSource) {
     const { pos, rangeM } = view.rangeBandSource;
     const mpt = sceneMetresPerTile(scene);
-    const maxTiles = Math.ceil((rangeM * 3) / mpt); // 1 case = mpt m (LDB Déplacement l.55, défaut 2)
+    const maxTiles = Math.ceil((rangeM * 3) / mpt); // 1 case = mpt m (défaut 2, LDB 15 l.12)
     const x0 = Math.max(0, pos.x - maxTiles), x1 = Math.min(sw - 1, pos.x + maxTiles);
     const y0 = Math.max(0, pos.y - maxTiles), y1 = Math.min(sh - 1, pos.y + maxTiles);
     const z = pos.z ?? 0;

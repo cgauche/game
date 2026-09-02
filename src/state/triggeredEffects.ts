@@ -26,7 +26,8 @@ import { SIZE_ORDER, effectiveSize } from '../engine/size';
 import { combatDistance } from './footprint';
 import { chebyshev } from './path';
 import { losClear, tileSeenByFoe } from './lineOfSight';
-import { smokeOf, combatantsWithinRadius } from './combatGeometry';
+import { smokeOf, combatantsWithinRadius, porteeEnCases } from './combatGeometry';
+import { sceneMetresPerTile } from './scene';
 import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, findSymptomById, findMutationById, refLabel } from '../data';
 import { activeSymptoms } from '../engine/disease';
 import { difficultyFromLabel, rollTest } from '../engine/tests';
@@ -185,7 +186,7 @@ function targetsFor(get: Get, actor: Combatant, on: TriggeredEffect['on'], victi
     // GÉOMÉTRIE : tous les combattants à portée d'un centre (arc d'Azyr, Trait/Talent d'aire)
     const center = on.near === 'self' ? actor : victim;
     if (!center?.pos) return [];
-    const radius = Math.max(1, Math.ceil(on.radiusMeters / 2)); // 1 case = 2 m
+    const radius = porteeEnCases(on.radiusMeters, sceneMetresPerTile(get().scene));
     // ORCHESTRATEUR d'aire PARTAGÉ (combatantsWithinRadius), distance d'EMPREINTE (la Taille compte) : un effet
     // déclenché SOURCE-AGNOSTIQUE (Trait/Talent/Atout/État portant `on:{near,radiusMeters}`) applique son Flow
     // de GameOps à TOUTES les cibles du rayon — MÊME collecte que munitions/zoneBlast/manœuvres.

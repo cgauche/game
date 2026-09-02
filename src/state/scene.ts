@@ -102,11 +102,13 @@ export interface SceneEntity {
   /** Arme ÉQUIPÉE : `trappingId` STABLE du catalogue d'armes — affichée par le rig (tenue prête si à
    *  distance). Ex. `'arbalete'`. Résolue par `weaponFromId` (lookup exact, warn si hors catalogue). */
   weapon?: string;
-  /** Source de lumière (brouillard de guerre) : rayon d'éclairage en cases. Override de l'instance ;
-   *  sinon le rayon vient du TYPE de prop (`props.json` `light`). Absent + type sans `light` = pas de lumière.
+  /** Source de lumière (brouillard de guerre) : rayon d'éclairage en MÈTRES, la même unité qu'au
+   *  catalogue (`PropData.light`, #1507) — c'est `rayonEnCases` (`state/vision.ts`) qui le ramène aux
+   *  cases de la scène. Override de l'instance ; sinon le rayon vient du TYPE de prop
+   *  (`props.json` `light`). Absent + type sans `light` = pas de lumière.
    *  `tone` (#1245, L4) : id d'un `lightTones` — APPARENCE seule (couleur/intensité/vacillement),
    *  résolue au bord du rendu, hérité du type de prop s'il n'est pas posé ici ; absent = `flamme`. */
-  light?: { radiusTiles: number; tone?: string };
+  light?: { radiusM: number; tone?: string };
   /** Marchand (#2) : ce PNJ ouvre un panneau d'achat/vente (référence un archétype de `state/merchants`).
    *  `settlement`/`resaleRate`/`buyMarkup` surchargent l'archétype pour cette entité (prix paramétrables :
    *  resaleRate = rachat à la vente, buyMarkup = majoration à l'achat). */
@@ -329,11 +331,15 @@ export interface Scene {
   label: string;
   desc?: string;
   dimensions: { w: number; h: number };
-  /** Échelle métrique d'une CASE (m/case) — défaut 2 (person-scale). Une Scène MER (combat naval, MDG 13)
+  /** Échelle métrique d'une CASE (m/case) — défaut 2 (`LDB 15 l.12`). Une Scène MER (combat naval, MDG 13)
    *  vaut ~10 (1 pt de Distance = 10 m, `ch.13 l.362`) → le M des navires et les portées canon (50/75/150 m)
-   *  tombent en nombres de cases jouables. Lue via `sceneMetresPerTile` ; consommée par les bandes de portée
-   *  (`rangeBandAt`, engine/combat.ts, #249) et l'avance des navires. N'altère AUCUNE géométrie de rendu —
-   *  seul le SENS d'une case change. */
+   *  tombent en nombres de cases jouables. Lue via `sceneMetresPerTile`.
+   *  Elle décide de TOUT ce qui traduit entre mètres et cases : les bandes de portée (`rangeBandAt`,
+   *  engine/combat.ts, #249) et l'avance des navires ; la géométrie des recettes de décor et l'ancre des
+   *  places assises, divisées par elle (`builders/propVolumes.ts`, `state/seating.ts`, #1507) ; le rayon
+   *  des sources de lumière (`rayonEnCases`, `state/vision.ts`) ; et, du côté du RENDU, la cadence de la
+   *  cuisson (`gpToWorld`, `backends/webgl/worldTris.ts`), la pente des toits (`resolveMass`,
+   *  `builders/roofs.ts`) et la portée maximale d'un pignon (`gableSpanMaxTiles`, `state/sceneEdit.ts`). */
   metresPerTile?: number;
   /** Décor : 'interieur' (éclairé en permanence, l'horloge ne l'assombrit pas) vs 'exterieur'
    *  (jour/nuit = horloge). Absent = extérieur. */

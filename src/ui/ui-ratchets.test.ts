@@ -1352,7 +1352,9 @@ const NUMBER_INPUT_EXEMPT_FILES = new Set(['NumberField.tsx']);
 const NUMBER_INPUT_BASELINE: Record<string, number> = {
   // -2 (25 → 23) : les deux `<input type="number">` de l'empreinte de décor disparaissent avec le
   // champ lui-même (empreinte verrouillée à la source). Stock baissé, détecteur inchangé.
-  'editor/Inspector.tsx': 23,
+  // -1 (23 → 22, #1507) : le rayon d'éclairage d'une instance compose `NumberField` — l'écran touché
+  // par le passage du rayon en mètres a rendu son champ à la primitive.
+  'editor/Inspector.tsx': 22,
   'editor/Palette.tsx': 1,
 };
 

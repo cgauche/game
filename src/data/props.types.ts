@@ -3,8 +3,20 @@
  * et places assises. Vivent hors de `src/data/index.ts` pour rester importables par `src/state` comme par
  * `src/gameIso` sans traverser le chargeur app-owned. PUR — aucune donnée, aucune caméra, aucun rendu.
  *
- * Repère LOCAL d'une recette : origine à l'ANCRE du décor, `x`/`y` en cases, `h` en mètres depuis le
- * pied de l'ancrage. L'ancre est le point MONDE que le builder déclare (`AncrageDecor`,
+ * RÈGLE D'UNITÉ (#1507) : une recette est en MÈTRES dans son repère local ; le monde est en CASES ; la
+ * traduction mètres→cases se fait par DIVISION par `metresPerTile` de la scène, et cases→mètres par
+ * UNE multiplication (`gpToWorld`, `gameIso/backends/webgl/worldTris.ts`).
+ * Un CONCEPT du décor = UNE couture, nommée — quatre en tout, et pas deux pour le même concept :
+ *  - la GÉOMÉTRIE de la recette → `buildPropVolumes` (`gameIso/builders/propVolumes.ts`) ;
+ *  - l'ANCRE d'une place assise → `placesPartielles` (`state/seating.ts`) ;
+ *  - le FOYER d'une lampe (le centre de la primitive `emet`) → `foyerDe` (`state/vision.ts`) ;
+ *  - le RAYON d'une source de lumière → `rayonEnCases` (`state/vision.ts`).
+ * La LISTE COMPLÈTE des sites qui traduisent entre mètres et cases — décor compris, et jusqu'aux
+ * portées de règle et aux cadences de rendu — est tenue NOMINATIVEMENT par
+ * `state/echelle-de-scene.test.ts` : un site de plus s'y déclare, ou il sort rouge.
+ *
+ * Repère LOCAL d'une recette : origine à l'ANCRE du décor, `xM`/`yM` en mètres dans le plan, `hM` en
+ * mètres depuis le pied de l'ancrage. L'ancre est le point MONDE que le builder déclare (`AncrageDecor`,
  * `gameIso/builders/props.ts`) : le CENTRE de l'empreinte pour un décor d'entité (donc le centre de sa
  * case quand elle est 1×1, le milieu du bloc au-delà), le point fractionnaire de l'arête pour une
  * feature de façade, le milieu de l'empreinte pour un ornement de faîte. L'orientation vient du cap
@@ -100,10 +112,10 @@ export const capDecorAdmis = (estVolumique: boolean, facing: Dir8 | undefined): 
 /** Id d'un matériau de `propMaterials.json`. */
 export type PropMaterialId = string;
 
-/** Point du repère local d'une recette (cases en x/y, mètres en h). */
-export interface PropPoint3 { x: number; y: number; h: number }
-/** Dimensions dans le repère local d'une recette (cases en x/y, mètres en h). */
-export interface PropSize3 { x: number; y: number; h: number }
+/** Point du repère local d'une recette — MÈTRES sur les trois axes (cf. la RÈGLE D'UNITÉ, en tête). */
+export interface PropPoint3 { xM: number; yM: number; hM: number }
+/** Dimensions dans le repère local d'une recette — MÈTRES sur les trois axes. */
+export interface PropSize3 { xM: number; yM: number; hM: number }
 
 /** Côtés admis d'un cylindre. 12 est EXCLU : ses faces latérales tombent sur l'arête de couteau du
  *  modelé de forme (4 normales à ±45°, `backends/webgl/worldTris:shadeFamily` départage alors des
@@ -124,7 +136,7 @@ type PrimitiveEmettrice = { emet?: true };
 /** Volume élémentaire d'une recette : caisse droite, cylindre à N faces, ou prisme en pente. */
 export type PropPrimitive =
   | ({ kind: 'box'; center: PropPoint3; size: PropSize3; material: PropMaterialId } & PrimitiveEmettrice)
-  | ({ kind: 'cylinder'; center: PropPoint3; radius: number; heightM: number; sides: PropCylinderSides; material: PropMaterialId } & PrimitiveEmettrice)
+  | ({ kind: 'cylinder'; center: PropPoint3; radiusM: number; heightM: number; sides: PropCylinderSides; material: PropMaterialId } & PrimitiveEmettrice)
   | ({ kind: 'prism'; center: PropPoint3; size: PropSize3; slope: 'x+' | 'x-' | 'y+' | 'y-'; material: PropMaterialId } & PrimitiveEmettrice);
 
 /** Recette volumique d'un prop : la liste de ses primitives, dans le repère local.
@@ -148,11 +160,11 @@ function normale(poly: readonly PropPoint3[]): PropPoint3 {
   for (let i = 0; i < poly.length; i++) {
     const a = poly[i];
     const b = poly[(i + 1) % poly.length];
-    nx += (a.h - b.h) * (a.y + b.y);
-    ny += (a.y - b.y) * (a.x + b.x);
-    nz += (a.x - b.x) * (a.h + b.h);
+    nx += (a.hM - b.hM) * (a.yM + b.yM);
+    ny += (a.yM - b.yM) * (a.xM + b.xM);
+    nz += (a.xM - b.xM) * (a.hM + b.hM);
   }
-  return { x: nx, y: ny, h: nz };
+  return { xM: nx, yM: ny, hM: nz };
 }
 
 /** Barycentre des sommets d'une primitive : un point STRICTEMENT INTÉRIEUR à son volume, quelle que
@@ -161,27 +173,27 @@ function normale(poly: readonly PropPoint3[]): PropPoint3 {
  *  passant par son propre référent ne décide plus rien. */
 function barycentre(polys: readonly (readonly PropPoint3[])[]): PropPoint3 {
   let n = 0;
-  const s = { x: 0, y: 0, h: 0 };
-  for (const poly of polys) for (const p of poly) { s.x += p.x; s.y += p.y; s.h += p.h; n++; }
-  return { x: s.x / n, y: s.y / n, h: s.h / n };
+  const s = { xM: 0, yM: 0, hM: 0 };
+  for (const poly of polys) for (const p of poly) { s.xM += p.xM; s.yM += p.yM; s.hM += p.hM; n++; }
+  return { xM: s.xM / n, yM: s.yM / n, hM: s.hM / n };
 }
 
 /** Le polygone, tourné vers le DEHORS du point intérieur fourni (sens de parcours inversé s'il regardait
  *  dedans). */
 function versLeDehors(poly: PropPoint3[], dedans: PropPoint3): PropPoint3[] {
   const n = normale(poly);
-  const c = poly.reduce((acc, p) => ({ x: acc.x + p.x / poly.length, y: acc.y + p.y / poly.length, h: acc.h + p.h / poly.length }), { x: 0, y: 0, h: 0 });
-  // Produit scalaire en convention three : (X, Y, Z) = (x, h, y).
-  const dehors = n.x * (c.x - dedans.x) + n.y * (c.h - dedans.h) + n.h * (c.y - dedans.y);
+  const c = poly.reduce((acc, p) => ({ xM: acc.xM + p.xM / poly.length, yM: acc.yM + p.yM / poly.length, hM: acc.hM + p.hM / poly.length }), { xM: 0, yM: 0, hM: 0 });
+  // Produit scalaire en convention three : (X, Y, Z) = (xM, hM, yM).
+  const dehors = n.xM * (c.xM - dedans.xM) + n.yM * (c.hM - dedans.hM) + n.hM * (c.yM - dedans.yM);
   return dehors >= 0 ? poly : [...poly].reverse();
 }
 
 /** Les six faces d'une caisse droite, dans l'ordre −x, +x, −y, +y, bas, haut. */
 function facesBoite(centre: PropPoint3, size: PropSize3): PropPoint3[][] {
-  const x0 = centre.x - size.x / 2, x1 = centre.x + size.x / 2;
-  const y0 = centre.y - size.y / 2, y1 = centre.y + size.y / 2;
-  const h0 = centre.h - size.h / 2, h1 = centre.h + size.h / 2;
-  const s = (x: number, y: number, h: number): PropPoint3 => ({ x, y, h });
+  const x0 = centre.xM - size.xM / 2, x1 = centre.xM + size.xM / 2;
+  const y0 = centre.yM - size.yM / 2, y1 = centre.yM + size.yM / 2;
+  const h0 = centre.hM - size.hM / 2, h1 = centre.hM + size.hM / 2;
+  const s = (xM: number, yM: number, hM: number): PropPoint3 => ({ xM, yM, hM });
   return [
     [s(x0, y0, h0), s(x0, y1, h0), s(x0, y1, h1), s(x0, y0, h1)],
     [s(x1, y0, h0), s(x1, y1, h0), s(x1, y1, h1), s(x1, y0, h1)],
@@ -193,20 +205,20 @@ function facesBoite(centre: PropPoint3, size: PropSize3): PropPoint3[][] {
 }
 
 /** Les `sides` faces latérales d'un cylindre, plus son dessus et son dessous. */
-function facesCylindre(centre: PropPoint3, radius: number, heightM: number, sides: number): PropPoint3[][] {
-  const h0 = centre.h - heightM / 2, h1 = centre.h + heightM / 2;
+function facesCylindre(centre: PropPoint3, radiusM: number, heightM: number, sides: number): PropPoint3[][] {
+  const h0 = centre.hM - heightM / 2, h1 = centre.hM + heightM / 2;
   const anneau = Array.from({ length: sides }, (_, k) => {
     const a = (k / sides) * 2 * Math.PI;
-    return { x: centre.x + radius * Math.cos(a), y: centre.y + radius * Math.sin(a) };
+    return { xM: centre.xM + radiusM * Math.cos(a), yM: centre.yM + radiusM * Math.sin(a) };
   });
   const out: PropPoint3[][] = [];
   for (let k = 0; k < sides; k++) {
     const a = anneau[k];
     const b = anneau[(k + 1) % sides];
-    out.push([{ ...a, h: h0 }, { ...b, h: h0 }, { ...b, h: h1 }, { ...a, h: h1 }]);
+    out.push([{ ...a, hM: h0 }, { ...b, hM: h0 }, { ...b, hM: h1 }, { ...a, hM: h1 }]);
   }
-  out.push(anneau.map((p) => ({ ...p, h: h0 })));
-  out.push(anneau.map((p) => ({ ...p, h: h1 })));
+  out.push(anneau.map((p) => ({ ...p, hM: h0 })));
+  out.push(anneau.map((p) => ({ ...p, hM: h1 })));
   return out;
 }
 
@@ -220,29 +232,29 @@ const BAS_DE_PENTE: Record<'x+' | 'x-' | 'y+' | 'y-', (p: { x: number; y: number
 
 /** Les cinq faces d'un prisme : semelle, rampant, dosseret vertical du haut de pente, deux joues triangulaires. */
 function facesPrisme(centre: PropPoint3, size: PropSize3, slope: 'x+' | 'x-' | 'y+' | 'y-'): PropPoint3[][] {
-  const dx = size.x / 2, dy = size.y / 2;
-  const h0 = centre.h - size.h / 2, h1 = centre.h + size.h / 2;
+  const dx = size.xM / 2, dy = size.yM / 2;
+  const h0 = centre.hM - size.hM / 2, h1 = centre.hM + size.hM / 2;
   const bas = BAS_DE_PENTE[slope];
   // Les quatre coins de la semelle, en tour, plus la hauteur de crête que chacun porte.
   const coins = [
     { x: -dx, y: -dy }, { x: dx, y: -dy }, { x: dx, y: dy }, { x: -dx, y: dy },
-  ].map((c) => ({ x: centre.x + c.x, y: centre.y + c.y, crete: bas(c) ? h0 : h1 }));
-  const semelle = coins.map((c) => ({ x: c.x, y: c.y, h: h0 }));
-  const rampant = coins.map((c) => ({ x: c.x, y: c.y, h: c.crete }));
+  ].map((c) => ({ xM: centre.xM + c.x, yM: centre.yM + c.y, crete: bas(c) ? h0 : h1 }));
+  const semelle = coins.map((c) => ({ xM: c.xM, yM: c.yM, hM: h0 }));
+  const rampant = coins.map((c) => ({ xM: c.xM, yM: c.yM, hM: c.crete }));
   const hauts = coins.filter((c) => c.crete === h1);
   const dosseret = [
-    { x: hauts[0].x, y: hauts[0].y, h: h0 },
-    { x: hauts[1].x, y: hauts[1].y, h: h0 },
-    { x: hauts[1].x, y: hauts[1].y, h: h1 },
-    { x: hauts[0].x, y: hauts[0].y, h: h1 },
+    { xM: hauts[0].xM, yM: hauts[0].yM, hM: h0 },
+    { xM: hauts[1].xM, yM: hauts[1].yM, hM: h0 },
+    { xM: hauts[1].xM, yM: hauts[1].yM, hM: h1 },
+    { xM: hauts[0].xM, yM: hauts[0].yM, hM: h1 },
   ];
   const joues = [0, 1].map((k) => {
     const haut = hauts[k];
-    const bas0 = coins.find((c) => c.crete === h0 && (c.x === haut.x || c.y === haut.y))!;
+    const bas0 = coins.find((c) => c.crete === h0 && (c.xM === haut.xM || c.yM === haut.yM))!;
     return [
-      { x: haut.x, y: haut.y, h: h0 },
-      { x: bas0.x, y: bas0.y, h: h0 },
-      { x: haut.x, y: haut.y, h: h1 },
+      { xM: haut.xM, yM: haut.yM, hM: h0 },
+      { xM: bas0.xM, yM: bas0.yM, hM: h0 },
+      { xM: haut.xM, yM: haut.yM, hM: h1 },
     ];
   });
   return [semelle, rampant, dosseret, ...joues];
@@ -256,27 +268,40 @@ function facesPrisme(centre: PropPoint3, size: PropSize3, slope: 'x+' | 'x-' | '
  */
 export function polygonesDePrimitive(p: PropPrimitive): PropPoint3[][] {
   const brutes = p.kind === 'box' ? facesBoite(p.center, p.size)
-    : p.kind === 'cylinder' ? facesCylindre(p.center, p.radius, p.heightM, p.sides)
+    : p.kind === 'cylinder' ? facesCylindre(p.center, p.radiusM, p.heightM, p.sides)
       : facesPrisme(p.center, p.size, p.slope);
   const dedans = barycentre(brutes);
   return brutes.map((poly) => versLeDehors(poly, dedans));
 }
 
-/** Clé d'un sommet local, arrondie au nanomètre — deux sommets calculés par des chemins différents
+/**
+ * Un SOMMET pour la mesure de FERMETURE : trois coordonnées, SANS unité. La fermeture est une
+ * propriété TOPOLOGIQUE — elle vaut aussi bien sur la géométrie LOCALE d'une recette (mètres,
+ * `PropPoint3`) que sur les faces MONDE qu'un builder en tire (cases dans le plan, mètres en
+ * hauteur — `GP`, `gameIso/builders/types.ts`). Ces deux repères ne portent PLUS les mêmes noms de
+ * champs depuis #1507, et c'est le verrou : le triplet est l'unique forme qu'ils partagent, et
+ * chaque appelant DIT lequel des deux il mesure.
+ */
+export type Sommet3 = readonly [number, number, number];
+
+/** Le sommet LOCAL d'une recette, réduit à son triplet. */
+export const sommetLocal = (p: PropPoint3): Sommet3 => [p.xM, p.yM, p.hM];
+
+/** Clé d'un sommet, arrondie au nanomètre — deux sommets calculés par des chemins différents
  *  (coin partagé de deux faces) doivent porter la MÊME clé. `+ 0` normalise le zéro négatif. */
-const cléSommet = (p: PropPoint3): string =>
-  `${Math.round(p.x * 1e9) / 1e9 + 0},${Math.round(p.y * 1e9) / 1e9 + 0},${Math.round(p.h * 1e9) / 1e9 + 0}`;
+const cléSommet = (s: Sommet3): string =>
+  `${Math.round(s[0] * 1e9) / 1e9 + 0},${Math.round(s[1] * 1e9) / 1e9 + 0},${Math.round(s[2] * 1e9) / 1e9 + 0}`;
 
 /**
  * ARÊTES NON APPARIÉES d'un jeu de polygones — le défaut de FERMETURE, nommé. Une COQUILLE CLOSE porte
  * chaque arête par EXACTEMENT deux faces, parcourues en sens OPPOSÉS (a→b sur l'une, b→a sur l'autre) :
  * c'est ce qui rend le volume étanche ET son orientation cohérente. Rend la liste des arêtes fautives
  * (clé `sommet→sommet` et le compte des deux sens), `[]` = coquille close.
- * Prend des POLYGONES, pas une primitive : le même contrat se mesure sur la géométrie LOCALE du
- * catalogue (`polygonesDePrimitive`) comme sur les faces MONDE que le builder en tire — la
- * transformation rigide du cap et de l'ancre doit le préserver. PURE.
+ * Prend des POLYGONES de `Sommet3`, pas une primitive : le même contrat se mesure sur la géométrie
+ * LOCALE du catalogue (`polygonesDePrimitive`, via `sommetLocal`) comme sur les faces MONDE que le
+ * builder en tire — la transformation rigide du cap, de l'échelle et de l'ancre doit le préserver. PURE.
  */
-export function aretesNonAppariees(polys: readonly (readonly PropPoint3[])[]): { arete: string; sens: number; contreSens: number }[] {
+export function aretesNonAppariees(polys: readonly (readonly Sommet3[])[]): { arete: string; sens: number; contreSens: number }[] {
   const compte = new Map<string, number>();
   for (const poly of polys)
     for (let i = 0; i < poly.length; i++) {
@@ -301,7 +326,11 @@ export function aretesNonAppariees(polys: readonly (readonly PropPoint3[])[]): {
  *  depuis un autre dataset) ; le RANG, lui, est tout ce qu'une clé d'identité a le droit de porter — le
  *  côté vit dans `anchor`/`facing`/`approach`, qui TOURNENT avec le cap de l'instance quand l'id, lui,
  *  ne tourne pas. Un id cardinal (`place-nord`) mentait dès que le repère bougeait. Il reste keyé sous
- *  son meuble dans `Scene.seatAssignments` (`propId → slotId`) : deux meubles peuvent porter `place-1`. */
+ *  son meuble dans `Scene.seatAssignments` (`propId → slotId`) : deux meubles peuvent porter `place-1`.
+ *  UNITÉS — `anchor` est MÉTRIQUE (`PropPoint3`, la RÈGLE D'UNITÉ en tête) : elle est collée à la
+ *  géométrie de la recette et subit la MÊME transformation qu'elle (`state/seating.ts` la tourne au cap
+ *  puis la divise par le `metresPerTile` de la scène). `approach`, lui, est un offset de CASE voisine —
+ *  un pas de grille, pas une longueur : il ne se divise par rien. */
 export interface PropSeatSlot { id: string; anchor: PropPoint3; facing: Dir8; approach: { x: number; y: number } }
 
 /** Matériau de rendu d'une primitive : couleur de base + réponse à la lumière. Aucune émission — une
@@ -325,7 +354,10 @@ export interface PropData {
   solid?: boolean;
   opaque?: boolean;
   cover?: 'imparfaite' | 'moyenne' | 'totale';
-  light?: { radiusTiles: number; tone?: string };
+  /** Source lumineuse : `radiusM` = le rayon éclairé en MÈTRES, la valeur RAW telle qu'elle est écrite
+   *  (LDB 74 l.43/58). Le LECTEUR le divise par le `metresPerTile` de la scène pour en faire les cases
+   *  d'une `LightSource` (`state/vision.ts`, `rayonEnCases`). */
+  light?: { radiusM: number; tone?: string };
   foot?: { w: number; h: number };
   volume?: PropVolumeRecipe;
   seatSlots?: PropSeatSlot[];
@@ -340,10 +372,10 @@ export const propFootOf = (prop: PropData | undefined): { w: number; h: number }
 function erreursDePrimitive(propId: string, primitive: PropPrimitive, materiauxConnus: ReadonlySet<string>): string[] {
   const errors: string[] = [];
   if (!materiauxConnus.has(primitive.material)) errors.push(`${propId}: matériau inconnu « ${primitive.material} »`);
-  const centre = [primitive.center.x, primitive.center.y, primitive.center.h];
+  const centre = [primitive.center.xM, primitive.center.yM, primitive.center.hM];
   const dimensions = primitive.kind === 'cylinder'
-    ? [primitive.radius, primitive.heightM]
-    : [primitive.size.x, primitive.size.y, primitive.size.h];
+    ? [primitive.radiusM, primitive.heightM]
+    : [primitive.size.xM, primitive.size.yM, primitive.size.hM];
   const fini = [...centre, ...dimensions].every((n) => Number.isFinite(n));
   const positif = dimensions.every((n) => !Number.isFinite(n) || n > 0);
   // Le JSON n'est pas typé à l'EXÉCUTION : l'union `PropCylinderSides` se re-vérifie ici.
@@ -352,7 +384,7 @@ function erreursDePrimitive(propId: string, primitive: PropPrimitive, materiauxC
   if (!positif) errors.push(`${propId}: dimension non positive`);
   if (!côtésAdmis) errors.push(`${propId}: cylindre à ${(primitive as { sides: number }).sides} côtés (admis : ${PROP_CYLINDER_SIDES.join(' ou ')})`);
   if (fini && positif && côtésAdmis)
-    for (const { arete, sens, contreSens } of aretesNonAppariees(polygonesDePrimitive(primitive)))
+    for (const { arete, sens, contreSens } of aretesNonAppariees(polygonesDePrimitive(primitive).map((poly) => poly.map(sommetLocal))))
       errors.push(`${propId}: primitive ${primitive.kind} « ${primitive.material} » — arête non appariée ${arete} (${sens} dans le sens, ${contreSens} à contre-sens)`);
   return errors;
 }

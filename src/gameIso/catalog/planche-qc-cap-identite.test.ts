@@ -25,7 +25,7 @@ import { join } from 'node:path';
 import { CAP_IDENTITE_PROP } from '../../data/props.types';
 import { findPropById } from '../../data';
 import { buildPropVolumes } from '../builders/propVolumes';
-import { ancrageDePlanche } from '../../../scripts/qc/lib/plancheVolumique';
+import { ancrageDePlanche, MPT_DE_PLANCHE } from '../../../scripts/qc/lib/plancheVolumique';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const lire = (rel: string) => readFileSync(join(RACINE, rel), 'utf8');
@@ -64,7 +64,7 @@ describe('planche QC des recettes volumiques — le cap peint est le CAP D’IDE
   it('coffre : la planche pose la serrure du côté que la DONNÉE déclare', () => {
     const coffre = findPropById('coffre')!;
     const serrure = coffre.volume!.primitives.find((p) => p.material === 'laiton-dore')!;
-    const pts = buildPropVolumes(coffre, ancrageDePlanche)
+    const pts = buildPropVolumes(coffre, ancrageDePlanche, MPT_DE_PLANCHE)
       .filter((f) => f.material.id === 'laiton-dore')
       .flatMap((f) => f.poly);
     const r3 = (n: number) => Math.round(n * 1000) / 1000;
@@ -72,6 +72,6 @@ describe('planche QC des recettes volumiques — le cap peint est le CAP D’IDE
       x: r3((Math.min(...pts.map((p) => p.x)) + Math.max(...pts.map((p) => p.x))) / 2),
       y: r3((Math.min(...pts.map((p) => p.y)) + Math.max(...pts.map((p) => p.y))) / 2),
     };
-    expect(centre).toEqual({ x: r3(serrure.center.x), y: r3(serrure.center.y) });
+    expect(centre).toEqual({ x: r3(serrure.center.xM), y: r3(serrure.center.yM) });
   });
 });

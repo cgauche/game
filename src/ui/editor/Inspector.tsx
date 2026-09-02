@@ -9,8 +9,9 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 import {
   Scene, SceneEntity, Trigger, SceneEffectZone, WallSeg,
   type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type BuildingMass, type RoofDefaults,
-  type ArchitectureRect, type SceneStationAnchor, isDescriptiveZone,
+  type ArchitectureRect, type SceneStationAnchor, isDescriptiveZone, sceneMetresPerTile,
 } from '../../state/scene';
+import { NumberField } from '../NumberField';
 import { sceneZoneTiles, zoneAreaTiles } from '../../state/zones';
 import type { WorldMap } from '../../state/worldMap';
 import type { NarratifBlock } from '../../state/campaignNarratif';
@@ -1464,19 +1465,20 @@ function EntityPanel({
             <input
               type="checkbox"
               checked={!!ent.light}
-              onChange={(e) => updateSel({ light: e.target.checked ? { ...ent.light, radiusTiles: ent.light?.radiusTiles ?? 3 } : undefined })}
+              onChange={(e) => updateSel({ light: e.target.checked ? { ...ent.light, radiusM: ent.light?.radiusM ?? 6 } : undefined })}
             />{' '}
             <Icon id="ui/eye" size="sm" /> Source de lumière (override de l'instance — sinon rayon du type de décor)
           </label>
           {ent.light && (
             <>
               <label className="ed-field">
-                Rayon d'éclairage (cases)
-                <input
-                  type="number"
+                Rayon d'éclairage (mètres)
+                <NumberField
+                  variant="nu"
+                  label="Rayon d'éclairage (mètres)"
                   min={1}
-                  value={ent.light.radiusTiles}
-                  onChange={(e) => updateSel({ light: { ...ent.light!, radiusTiles: Math.max(1, Number(e.target.value) || 1) } })}
+                  value={ent.light.radiusM}
+                  onChange={(radiusM) => updateSel({ light: { ...ent.light!, radiusM } })}
                 />
               </label>
               <label className="ed-field">
@@ -1875,7 +1877,7 @@ function SceneProps({
           <input
             type="number"
             min={1}
-            value={scene.metresPerTile ?? 2}
+            value={sceneMetresPerTile(scene)}
             onChange={(e) => setScene(setMetresPerTile(scene, Math.max(1, Number(e.target.value) || 2)))}
           />
         </label>

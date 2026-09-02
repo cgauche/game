@@ -7535,7 +7535,7 @@
     "passive": [
       {
         "op": "light",
-        "radiusTiles": 5,
+        "radiusM": 10,
         "tone": "chandelle"
       }
     ],
@@ -7810,7 +7810,7 @@
     "passive": [
       {
         "op": "light",
-        "radiusTiles": 5,
+        "radiusM": 10,
         "tone": "lanterne"
       }
     ]
@@ -7831,7 +7831,7 @@
     "passive": [
       {
         "op": "light",
-        "radiusTiles": 10,
+        "radiusM": 20,
         "tone": "lanterne"
       }
     ],
@@ -7862,7 +7862,7 @@
     "passive": [
       {
         "op": "light",
-        "radiusTiles": 10,
+        "radiusM": 20,
         "tone": "lanterne"
       }
     ],

@@ -91,8 +91,9 @@ export const sceneEntitySchema = z.strictObject({
    *  le champ est hors périmètre éditable, et un tag posé sans entrée au registre est ROUGE.
    *  @fossile */
   foot: z.strictObject({ w: z.number(), h: z.number() }).optional(),
-  /** Source de lumière : rayon en cases ; `tone` = id d'un `lightTones` (apparence seule). */
-  light: z.strictObject({ radiusTiles: z.number(), tone: z.string().optional() }).optional(),
+  /** Source de lumière : `radiusM` = rayon en MÈTRES (même unité qu'au catalogue, #1507) ;
+   *  `tone` = id d'un `lightTones` (apparence seule). */
+  light: z.strictObject({ radiusM: z.number(), tone: z.string().optional() }).optional(),
   /** Marchand : archétype + surcharges de prix et des 3 règles maison Marché (LDB 59/60). */
   merchant: z
     .strictObject({

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createHash } from 'node:crypto';
 import { diligenceCampaign } from '../campaign';
-import { doorAt, heightAt, isWalkable, wallBetween, type Scene, type SceneEntity } from '../../state/scene';
+import { doorAt, heightAt, isWalkable, sceneMetresPerTile, wallBetween, type Scene, type SceneEntity } from '../../state/scene';
 import { walkNeighbors, type Pt } from '../../state/path';
 import { sceneZoneTiles } from '../../state/zones';
 import { seatSlotsOf, seatIsOccupiable, type ResolvedSeatSlot } from '../../state/seating';
@@ -100,6 +100,9 @@ const meubleAt = (x: number, y: number): SceneEntity =>
 
 interface Boite { x0: number; x1: number; y0: number; y1: number; h0: number; h1: number }
 
+/** L'échelle de LA scène mesurée ici — les recettes sont en mètres (#1507), la grille est en cases. */
+const MPT = sceneMetresPerTile(scene);
+
 /** Ancrage MONDE d'un meuble posé : sa case, son cap, le sol qu'il touche — ce que le builder déclare. */
 const ancrageDe = (ent: SceneEntity) => ({
   ancre: ent.pos,
@@ -113,7 +116,7 @@ const ancrageDe = (ent: SceneEntity) => ({
  *  volumique (billboard) n'a pas de corps monde : `null`. */
 function propBounds(ent: SceneEntity): Boite | null {
   const prop = findPropById(ent.ref ?? '')!;
-  const faces = buildPropVolumes(prop, ancrageDe(ent));
+  const faces = buildPropVolumes(prop, ancrageDe(ent), MPT);
   const pts = faces.flatMap((f) => f.poly);
   if (!pts.length) return null;
   return {
@@ -132,16 +135,19 @@ const corpsMonde = (id: string): Boite => propBounds(scene.entities.find((e) => 
  */
 function corpsBounds(ent: SceneEntity): Boite {
   const prop = findPropById(ent.ref ?? '')!;
+  // Les cotes de la recette sont MÉTRIQUES : la division par l'échelle de la scène les met en CASES,
+  // le repère de tout ce que ce fichier mesure.
   const demi = (p: PropPrimitive) => ({
-    dx: p.kind === 'cylinder' ? p.radius : p.size.x / 2,
-    dy: p.kind === 'cylinder' ? p.radius : p.size.y / 2,
+    dx: (p.kind === 'cylinder' ? p.radiusM : p.size.xM / 2) / MPT,
+    dy: (p.kind === 'cylinder' ? p.radiusM : p.size.yM / 2) / MPT,
   });
   const xs: number[] = [], ys: number[] = [];
   for (const p of prop.volume?.primitives ?? []) {
     const { dx, dy } = demi(p);
-    if ((prop.seatSlots ?? []).some((s) => Math.abs(s.anchor.x - p.center.x) <= dx + 1e-9 && Math.abs(s.anchor.y - p.center.y) <= dy + 1e-9)) continue;
+    const cx = p.center.xM / MPT, cy = p.center.yM / MPT;
+    if ((prop.seatSlots ?? []).some((s) => Math.abs(s.anchor.xM / MPT - cx) <= dx + 1e-9 && Math.abs(s.anchor.yM / MPT - cy) <= dy + 1e-9)) continue;
     for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
-      const [rx, ry] = rotatePropLocal(p.center.x + sx * dx, p.center.y + sy * dy, ent.facing ?? 'S');
+      const [rx, ry] = rotatePropLocal(cx + sx * dx, cy + sy * dy, ent.facing ?? 'S');
       xs.push(ent.pos.x + rx);
       ys.push(ent.pos.y + ry);
     }
@@ -158,7 +164,7 @@ function corpsBounds(ent: SceneEntity): Boite {
  */
 function ferDuComptoir(id: string): { x: number; y: number } {
   const ent = scene.entities.find((e) => e.id === id)!;
-  const faces = buildPropVolumes(findPropById(ent.ref ?? '')!, ancrageDe(ent))
+  const faces = buildPropVolumes(findPropById(ent.ref ?? '')!, ancrageDe(ent), MPT)
     .filter((f) => f.material.id === 'fer-noirci');
   const pts = faces.flatMap((f) => f.poly);
   return {

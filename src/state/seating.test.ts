@@ -53,6 +53,46 @@ const ATTENDU_NORD: Record<Dir8, { dx: number; dy: number; facing: Dir8; approch
   NO: { dx: -D, dy: -D, facing: 'SE', approche: { x: 4, y: 4 } },
 };
 
+/**
+ * UNITÉ DE L'ANCRE (#1507) — l'ancre d'une place est écrite en MÈTRES au catalogue ; la scène, elle,
+ * est en CASES. La résolution d'assise est l'UNE des quatre coutures qui divisent par
+ * `Scene.metresPerTile` (cf. `state/echelle-de-scene.test.ts`) : le corps assis reste donc à la
+ * MÊME distance MÉTRIQUE du meuble quelle que soit la finesse de la grille — c'est l'invariant, et
+ * c'est le siège lui-même qui bouge de case quand l'échelle change, jamais la géométrie du meuble.
+ * Même patron que `gameIso/builders/propVolumes.test.ts` pour la géométrie.
+ */
+describe('seatSlotsOf — l’ÉCHELLE de la scène ne déplace pas le corps assis, en mètres', () => {
+  const ecartMetrique = (mpt: number) => {
+    const scene = { ...seatingScene(), metresPerTile: mpt };
+    return seatSlotsOf(scene, PROP).map((s) => ({
+      id: s.slotId,
+      dxM: Math.round((s.anchor.x - POS.x) * mpt * 1e6) / 1e6,
+      dyM: Math.round((s.anchor.y - POS.y) * mpt * 1e6) / 1e6,
+      hM: s.anchor.h,
+    }));
+  };
+
+  it('la MÊME table place ses quatre corps aux mêmes mètres à 2 et à 10 m/case', () => {
+    expect(ecartMetrique(10)).toEqual(ecartMetrique(2));
+    // …et ces mètres sont EXACTEMENT ceux que la donnée écrit (l'ancre canonique de la place 1).
+    expect(ecartMetrique(2)[0]).toEqual({ id: 'place-1', dxM: 0, dyM: 0.96, hM: 0.46 });
+  });
+
+  it('l’écart en CASES, lui, SUIT l’échelle : 0,48 case à 2 m/case, 0,096 à 10', () => {
+    const enCases = (mpt: number) => {
+      const scene = { ...seatingScene(), metresPerTile: mpt };
+      const s = seatSlotsOf(scene, PROP)[0];
+      return Math.round((s.anchor.y - POS.y) * 1e6) / 1e6;
+    };
+    expect([enCases(2), enCases(10)]).toEqual([0.48, 0.096]);
+  });
+
+  it('la HAUTEUR d’assise ne bouge pas : elle est métrique des deux côtés', () => {
+    const h = (mpt: number) => seatSlotsOf({ ...seatingScene(), metresPerTile: mpt }, PROP)[0].anchor.h;
+    expect(h(10)).toBe(h(2));
+  });
+});
+
 describe('seatSlotsOf — transformation des places au cap de l’instance', () => {
   it.each<Dir8>(DIR8_ORDER)('résout slots, cap et approche en %s', (facing) => {
     const scene = seatingScene({ propFacing: facing });

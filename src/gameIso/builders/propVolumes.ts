@@ -4,9 +4,13 @@
  * ni React, ni store, ni `three` ne sont importés ici — l'appelant apporte le type de décor et son
  * ANCRAGE (point monde, cap, altitude du pied), d'où qu'il vienne.
  *
- * REPÈRE : la recette est authorée dans le repère LOCAL du type (origine à l'ancre, `x`/`y` en cases,
- * `h` en mètres au-dessus du pied, cf. `data/props.types.ts`). Le cap (défaut `S` chez l'appelant) la
- * fait tourner UNE fois autour de l'origine locale ; `baseHeightM` s'ajoute UNE fois à chaque hauteur.
+ * REPÈRE ET UNITÉS : la recette est authorée dans le repère LOCAL du type, en MÈTRES sur les trois axes
+ * (origine à l'ancre, `hM` au-dessus du pied, cf. la RÈGLE D'UNITÉ de `data/props.types.ts`). Le monde,
+ * lui, est en CASES : ce builder est la PREMIÈRE des deux coutures qui traduisent, par DIVISION du plan
+ * par le `metresPerTile` de la scène (`mpt`) — la seconde est la résolution d'assise
+ * (`state/seating.ts`). La hauteur, elle, est métrique des deux côtés : rien à diviser.
+ * Le cap (défaut `S` chez l'appelant) fait tourner la recette UNE fois autour de l'origine locale ;
+ * `baseHeightM` s'ajoute UNE fois à chaque hauteur.
  *
  * GÉOMÉTRIE : les polygones locaux d'une primitive viennent de `polygonesDePrimitive`
  * (`data/props.types.ts`), leur SEULE définition — celle même que `validatePropCatalog` vérifie en
@@ -42,16 +46,18 @@ export interface AncrageVolume {
  * faîte : la recette y subit la MÊME translation rigide. Chaque face porte le matériau de sa primitive
  * (`domain: 'prop'`) et, s'il y en a un, l'id de l'ENTITÉ sur lequel le picking la résout une fois
  * fondue dans la géométrie commune.
+ * `mpt` est un paramètre DISTINCT de l'ancrage : une ancre est un point, un cap et un pied — l'échelle
+ * de la scène n'en fait pas partie.
  */
-export function buildPropVolumes(prop: PropData, ancrage: AncrageVolume): Face[] {
+export function buildPropVolumes(prop: PropData, ancrage: AncrageVolume, mpt: number): Face[] {
   const { ancre, facing, baseHeightM, entId } = ancrage;
   const out: Face[] = [];
   for (const primitive of prop.volume?.primitives ?? []) {
     const material = { domain: 'prop' as const, id: primitive.material };
     for (const poly of polygonesDePrimitive(primitive)) {
       const monde: GP[] = poly.map((p) => {
-        const [rx, ry] = rotatePropLocal(p.x, p.y, facing);
-        return { x: ancre.x + rx, y: ancre.y + ry, h: baseHeightM + p.h };
+        const [rx, ry] = rotatePropLocal(p.xM / mpt, p.yM / mpt, facing);
+        return { x: ancre.x + rx, y: ancre.y + ry, h: baseHeightM + p.hM };
       });
       out.push({ poly: monde, material, oriented: true, ...(entId ? { entId } : {}) });
     }

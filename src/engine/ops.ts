@@ -1012,12 +1012,14 @@ export type GameOp =
   /** Dépense `amount` Points d'Avantage du RÉFÉRENT (Déstabilisante : coût d'un Test de renversement).
    *  Effet PUR appliqué par `applyOps` (jamais sous 0). */
   | { op: 'spendAdvantage'; amount: number }
-  /** Émission de LUMIÈRE (rayon en cases, brouillard de guerre, 1 case=2 m). Côté OBJET (`passive`) :
+  /** Émission de LUMIÈRE — `radiusM` = le rayon éclairé en MÈTRES, la valeur RAW telle qu'elle est
+   *  écrite (Bougie 10 m `LDB 74 l.43`, Lanterne 20 m `LDB 74 l.58`) ; c'est `rayonEnCases`
+   *  (`state/vision.ts`) qui la ramène aux cases du brouillard de guerre. Côté OBJET (`passive`) :
    *  INERTE dans applyOps — lu par `combatantLights` (vision) pour les objets PORTÉS/TENUS. Côté SORT :
    *  pousse un `ActiveEffect.light` temporisé (durée), lu au MÊME point.
    *  `tone` : id d'un `lightTones` — APPARENCE seule (couleur/intensité/vacillement), résolue au bord
    *  du rendu et jamais ici ; absent = `flamme`. Le RAYON reste seul à porter une conséquence de règle. */
-  | { op: 'light'; radiusTiles: number; tone?: string; durationRounds?: Formula }
+  | { op: 'light'; radiusM: number; tone?: string; durationRounds?: Formula }
   /** Boisson alcoolisée : enregistre UN échec de Résistance à l'alcool (LDB 09 l.475) sur la cible —
    *  −10 aux CC/CT/Ag/Dex/Int (plafond −30), et Ivresse (1d10) au seuil BE. Posé sur la branche `fail`
    *  du Flow de consommable d'une boisson (le Test de Résistance à l'alcool est le nœud `test` du Flow). */
@@ -2255,9 +2257,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const dur: Duration = o.durationRounds != null
           ? { scale: 'rounds', left: resolveFormula(o.durationRounds, ref, rng) }
           : durationFromCtx(ctx);
-        const lumière = o.tone ? { radiusTiles: o.radiusTiles, tone: o.tone } : { radiusTiles: o.radiusTiles };
+        const lumière = o.tone ? { radiusM: o.radiusM, tone: o.tone } : { radiusM: o.radiusM };
         applyActiveEffect(target, { label: ctx.label ?? 'Lumière', bonus: 0, light: lumière, duration: dur });
-        lines.push(t('op.light', { name: target.label, n: o.radiusTiles, src: ctx.label ?? 'sort' }));
+        lines.push(t('op.light', { name: target.label, n: o.radiusM, src: ctx.label ?? 'sort' }));
         break;
       }
       case 'moveScale': {

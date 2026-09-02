@@ -219,7 +219,7 @@ import { massBattleTrackHit } from './massBattleFlow';
 // l'usage interne ET ré-exportée (baril) pour les importeurs de combatFlow.
 import {
   occupied, cannotStopOn, moveEnv, displaceSmaller, removeEntities, inRect,
-  applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
+  applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf, porteeEnCases,
 } from './combatGeometry';
 export * from './combatGeometry';
 import { releaseSeat, releaseUnavailableSeats } from './seating';
@@ -4591,9 +4591,13 @@ export function zoneRadiusMeters(spell: NonNullable<ReturnType<typeof findSpell>
 }
 
 /** Rayon en CASES après `alloc` Surincantations « +Zone » — multiplicateur SOURCE UNIQUE
- *  (`zoneDiameterMultiplier`, LDB 47 l.15 / `VDM 02 l.207-215`). La ZdE est réservée à l'arcane. 1 case = 2 m. */
-export const zoneRadiusTilesAt = (r0m: number, alloc: number): number =>
-  Math.max(0, Math.floor((r0m * zoneDiameterMultiplier('arcane', alloc)) / 2));
+ *  (`zoneDiameterMultiplier`, LDB 47 l.15 / `VDM 02 l.207-215`). La ZdE est réservée à l'arcane.
+ *  `mpt` = l'échelle de la SCÈNE (#1507) : le rayon d'un sort est écrit en MÈTRES en donnée
+ *  (`op zone`, `radiusMeters`), c'est ici qu'il devient un nombre de cases de gabarit. Arrondi au
+ *  PLANCHER, minimum 0 — un gabarit plus petit que la case ne couvre aucune case au-delà du centre
+ *  posé, et c'est la règle de POSE, pas celle d'une portée (cf. `porteeEnCases`). */
+export const zoneRadiusTilesAt = (r0m: number, alloc: number, mpt: number): number =>
+  Math.max(0, Math.floor((r0m * zoneDiameterMultiplier('arcane', alloc)) / mpt));
 
 /** Ouvre la modale d'un sort de ZONE — flux « jet PUIS pose » (LDB 47 l.15/28) : pas de cible à
  *  désigner, le centre se choisit APRÈS le jet et la Surincantation (+Zone agrandit le gabarit).
@@ -4620,7 +4624,7 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
     pendingCast: {
       casterId: caster.id, targetId: caster.id, spellId: spell.id, missile: isMagicMissile(spell),
       focused: focusedNI0, result: null,
-      zone: { center: null, radius: zoneRadiusTilesAt(r0m, 0), r0m },
+      zone: { center: null, radius: zoneRadiusTilesAt(r0m, 0, sceneMetresPerTile(get().scene)), r0m },
     },
   });
   openCastCascade(get, set, caster); // hôte la situation d'incantation (jet → pose de zone → effets) dans la cascade
@@ -5232,7 +5236,7 @@ export function applyCast(
         mres = evaluateMissile(caster, t, spell, { ...mres, zoneSpellDRMod: zoneMod(t) }, mres.location, 0, overcastDamageSteps);
       }
       // Dôme (LDB 47 — L11) : Protection (6+) contre une Attaque MAGIQUE venant de l'extérieur.
-      if (mres.hit && mres.woundsLost && battle && wardedAgainst(battle.combatants, caster, t, 'domeWard')) {
+      if (mres.hit && mres.woundsLost && battle && wardedAgainst(battle.combatants, caster, t, 'domeWard', sceneMetresPerTile(get().scene))) {
         const d = d10(battleRng());
         if (d >= 6) {
           logLines.push(tr('cf.domeSaved', { name: t.label, d }));
@@ -5727,7 +5731,7 @@ export function castWardLine(s: GameState, target: Combatant, spell: SpellLike):
     if (isOutOfAction(w) || !w.pos) continue;
     for (const e of w.activeEffects ?? []) {
       if (!e.castWard) continue;
-      if (combatDistance(w, target) > Math.max(1, Math.ceil(e.castWard.radiusMeters / 2))) continue;
+      if (combatDistance(w, target) > porteeEnCases(e.castWard.radiusMeters, sceneMetresPerTile(s.scene))) continue;
       return { label: e.label, value: -20, famille: 'jet', ref: effectRef(e), by: [{ id: w.id }] };
     }
   }

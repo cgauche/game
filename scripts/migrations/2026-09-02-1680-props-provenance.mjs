@@ -12,7 +12,7 @@
  *
  * (1) RECALAGE de deux rayons INCOHÉRENTS avec les étalons du canon. Le canon chiffre trois lampes
  *     portatives : bougie 10 m, lanterne 20 m, lampe tempête 20 m (30 ciblée) — LDB 74 l.43/56/58.
- *     À 2 m la case (`metresPerTile`), cela vaut 5 et 10 cases. Or `chandelier` portait 3 (un
+ *     Ces rayons sont écrits en MÈTRES depuis #1507 (`light.radiusM`). Or `chandelier` portait 3 cases (un
  *     chandelier éclairait donc MOINS qu'une bougie seule) et `lampadaire` 5 (la moitié d'une lanterne
  *     de poing). Les deux prennent la valeur de l'étalon qu'ils PORTENT : 5 et 10.
  *
@@ -65,7 +65,8 @@ const CHAMPS_DE_REGLE = ['light', 'cover', 'opaque'];
 const aUneRegle = (e) => CHAMPS_DE_REGLE.some((k) => e?.[k] !== undefined);
 
 /** (1) Rayons RECALÉS sur l'étalon que le décor porte : `de` est la valeur attendue en entrée (porte
- *  d'identité — un rayon déjà retouché ailleurs fait sortir 1), `vers` celle du canon en cases. */
+ *  d'identité — un rayon déjà retouché ailleurs fait sortir 1), `vers` celle du canon. Les DEUX sont
+ *  en CASES : `rayonEnCases` (plus bas) ramène la donnée métrique de #1507 à cette unité. */
 const RECALAGES = {
   chandelier: { de: 3, vers: 5 },
   lampadaire: { de: 5, vers: 10 },
@@ -101,25 +102,25 @@ const FOYERS = {
 const RAISONS = {
   // ── ÉCLAIRAGE (LDB 74 l.43/56/58) — aucun folio ne chiffre un feu ni un luminaire de décor.
   'feu-camp':
-    'rayon maison : aucun folio ne chiffre un feu de camp — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases), le plus petit que le canon chiffre, un foyer ouvert n’éclairant pas moins qu’une chandelle',
+    'rayon maison : aucun folio ne chiffre un feu de camp — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m), le plus petit que le canon chiffre, un foyer ouvert n’éclairant pas moins qu’une chandelle',
   brasero:
-    'rayon maison : aucun folio ne chiffre un brasero — un cran SOUS le feu de camp (4 cases contre 5), la cuve n’ouvrant sa flamme que vers le haut',
+    'rayon maison : aucun folio ne chiffre un brasero — un cran SOUS le feu de camp (8 m contre 10), la cuve n’ouvrant sa flamme que vers le haut',
   chandelier:
-    'rayon maison : le chandelier PORTE des bougies — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases) ; un chandelier n’est pas une bougie, d’où l’arbitrage plutôt que le folio',
+    'rayon maison : le chandelier PORTE des bougies — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m) ; un chandelier n’est pas une bougie, d’où l’arbitrage plutôt que le folio',
   lampadaire:
-    'rayon maison : le lampadaire PORTE une lanterne — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m = 10 cases) ; un lampadaire n’est pas une lanterne de poing, d’où l’arbitrage plutôt que le folio',
+    'rayon maison : le lampadaire PORTE une lanterne — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m) ; un lampadaire n’est pas une lanterne de poing, d’où l’arbitrage plutôt que le folio',
   'cheminee-interieure':
-    'rayon maison : aucun folio ne chiffre un âtre — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m = 5 cases), c’est le même foyer ouvert. Couvert maison : un manteau d’âtre maçonné s’apparente au mur de pierre de l’étalon de couvert TOTAL (LDB 14 l.86), et il coupe la vue',
+    'rayon maison : aucun folio ne chiffre un âtre — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m), c’est le même foyer ouvert. Couvert maison : un manteau d’âtre maçonné s’apparente au mur de pierre de l’étalon de couvert TOTAL (LDB 14 l.86), et il coupe la vue',
   'applique-murale':
-    'rayon maison : l’applique PORTE trois bougies (def d’art : bras à bougies et flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases), le canon ne chiffrant pas le nombre de mèches',
+    'rayon maison : l’applique PORTE trois bougies (def d’art : bras à bougies et flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m), le canon ne chiffrant pas le nombre de mèches',
   'lustre-opera':
-    'rayon maison : le lustre PORTE des bougies (def d’art : bras porte-bougies à flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m = 5 cases), le canon ne chiffrant pas le nombre de mèches',
+    'rayon maison : le lustre PORTE des bougies (def d’art : bras porte-bougies à flammes) — calé sur l’étalon de la bougie (LDB 74 l.43, 10 m), le canon ne chiffrant pas le nombre de mèches',
   'lanterne-de-poupe':
-    'rayon maison : c’est une lanterne, vitrée et à cage de fer (def d’art) — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m = 10 cases) ; montée en poupe et non portée, d’où l’arbitrage plutôt que le folio',
+    'rayon maison : c’est une lanterne, vitrée et à cage de fer (def d’art) — calé sur l’étalon de la lanterne (LDB 74 l.58, 20 m) ; montée en poupe et non portée, d’où l’arbitrage plutôt que le folio',
   'foyer-de-forge':
-    'rayon maison : cuve de charbons ardents (def d’art) — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m = 5 cases), c’est un lit de braises à ciel ouvert',
+    'rayon maison : cuve de charbons ardents (def d’art) — même étalon que le feu de camp (bougie, LDB 74 l.43, 10 m), c’est un lit de braises à ciel ouvert',
   marmite:
-    'rayon maison : braises SOUS la marmite (def d’art), sans flamme dégagée — même cran que le brasero (4 cases), le chaudron masquant une part du foyer',
+    'rayon maison : braises SOUS la marmite (def d’art), sans flamme dégagée — même cran que le brasero (8 m), le chaudron masquant une part du foyer',
 
   // ── COUVERT (LDB 14 l.72/81/86) — étalons : haie (imparfaite), barrière en bois (moyenne), mur de pierre (totale).
   cloture:
@@ -186,6 +187,15 @@ const RAISONS = {
     'couvert maison : un bourrelet de terre à hauteur de taille au bord du trou — l’étalon MOYEN de la barrière en bois (LDB 14 l.81)',
 };
 
+/**
+ * Rayon d'une entrée, rendu en CASES — l'unité dans laquelle les étalons de `RECALAGES` et
+ * d'`EMETTEURS_NEUFS` sont écrits ci-dessus. Deux graphies peuvent se présenter : `light.radiusTiles`
+ * (cases, la forme que ce script a écrite) et `light.radiusM` (mètres, la forme qu'a posée
+ * `2026-09-02-1507-recettes-en-metres.mjs` en la multipliant par 2). Sans cette lecture des deux, le
+ * rejeu de ce script sur l'arbre courant sortirait ROUGE sur sa propre écriture.
+ */
+const rayonEnCases = (e) => (e?.light?.radiusM !== undefined ? e.light.radiusM / 2 : e?.light?.radiusTiles);
+
 const echecs = [];
 const brut = fs.readFileSync(CIBLE, 'utf8');
 const avant = JSON.parse(brut);
@@ -216,8 +226,8 @@ const avant = JSON.parse(brut);
   for (const [id, { de }] of Object.entries(RECALAGES)) {
     const e = parId.get(id);
     if (!e) ecarts.push(`${id} : entrée introuvable (recalage)`);
-    else if (e.light?.radiusTiles !== de && e.light?.radiusTiles !== RECALAGES[id].vers)
-      ecarts.push(`${id} : rayon ${e.light?.radiusTiles} ∉ {${de} (à recaler), ${RECALAGES[id].vers} (déjà recalé)}`);
+    else if (rayonEnCases(e) !== de && rayonEnCases(e) !== RECALAGES[id].vers)
+      ecarts.push(`${id} : rayon ${rayonEnCases(e)} ∉ {${de} (à recaler), ${RECALAGES[id].vers} (déjà recalé)}`);
   }
   for (const id of Object.keys(EMETTEURS_NEUFS)) {
     const e = parId.get(id);
@@ -331,9 +341,9 @@ fs.writeFileSync(CIBLE, sortieTexte, 'utf8');
   }
   const parId = new Map(relu.map((e) => [e.id, e]));
   for (const [id, { vers }] of Object.entries(RECALAGES))
-    if (parId.get(id)?.light?.radiusTiles !== vers) echecs.push(`POST ${id} : rayon ${parId.get(id)?.light?.radiusTiles} ≠ ${vers}`);
+    if (rayonEnCases(parId.get(id)) !== vers) echecs.push(`POST ${id} : rayon ${rayonEnCases(parId.get(id))} ≠ ${vers}`);
   for (const [id, { radiusTiles }] of Object.entries(EMETTEURS_NEUFS))
-    if (parId.get(id)?.light?.radiusTiles !== radiusTiles) echecs.push(`POST ${id} : rayon ${parId.get(id)?.light?.radiusTiles} ≠ ${radiusTiles}`);
+    if (rayonEnCases(parId.get(id)) !== radiusTiles) echecs.push(`POST ${id} : rayon ${rayonEnCases(parId.get(id))} ≠ ${radiusTiles}`);
   for (const [id, { rang }] of Object.entries(FOYERS))
     if (!parId.get(id)?.volume?.primitives?.[rang]?.emet) echecs.push(`POST ${id} : primitive de rang ${rang} sans « emet »`);
 }

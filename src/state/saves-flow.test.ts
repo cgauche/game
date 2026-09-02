@@ -20,7 +20,9 @@ import type { Combatant, Trauma } from '../engine/types';
 import { testScene } from '../scenes/test-fixture';
 import { emptyScene } from './scene';
 import { pruneSeatAssignments } from './seating';
-import { findPropById } from '../data/index';
+import { findPropById, findSpellById } from '../data/index';
+import { spellEffectOps } from './flow';
+import { applyOps } from '../engine/ops';
 
 /** Porteur minimal du motif de bump 38 → 39 : `stampCriticalEscalation` ne lit que ses séquelles. */
 const hero38 = (): Combatant => ({ id: 'h', label: 'H', kind: 'hero', conditions: [], skills: [], traumas: [] } as unknown as Combatant);
@@ -183,12 +185,29 @@ describe('parseSave — la version DOIT être la courante', () => {
     const courant = { 'table-1': { 'place-1': { kind: 'entity' as const, entityId: 'pnj-1' } } };
     expect(pruneSeatAssignments({ ...scene, seatAssignments: courant }, 4)).toEqual(courant);
   });
+  it('MESURE du motif de bump 40 → 41 (#1507) : les rayons de lumière PERSISTÉS sont en MÈTRES', () => {
+    // Deux formes persistées portent un rayon de source : `SceneEntity.light` (override d'instance,
+    // recopié avec `state.scene` par `snapshotSave`) et `ActiveEffect.light` (posé sur un héros par
+    // l'op `light` du sort Lumière). Toutes deux passent de `radiusTiles` (cases, valeur RAW
+    // pré-divisée par 2) à `radiusM` (mètres, la valeur du folio telle quelle). Une save de 40
+    // rouvrirait avec `radiusM === undefined` : `rayonEnCases` rendrait `NaN`, et la lampe du héros
+    // s'éteindrait en silence — d'où le REJET plutôt que l'élagage.
+    expect(SAVE_VERSION).toBe(41);
+    expect(parseSave({ ...cur, version: 40 })).toBeNull();
+    const lumiere = spellEffectOps(findSpellById('lumiere')!.effects).find((o) => o.op === 'light')!;
+    expect((lumiere as unknown as Record<string, unknown>).radiusTiles, 'graphie en cases ressuscitée').toBeUndefined();
+    const porteur = hero38();
+    applyOps(porteur, [lumiere], { label: 'Lumière' });
+    const effet = (porteur.activeEffects ?? []).find((e) => e.light)!;
+    expect(effet.light!.radiusM, 'la forme PERSISTÉE porte les mètres du folio (LDB 74 l.58)').toBe(20);
+    expect((effet.light as unknown as Record<string, unknown>).radiusTiles).toBeUndefined();
+  });
   it('MESURE du motif de bump 39 → 40 (#1657 B2a) : le `critTrigger` persisté porte le nœud `test`', () => {
     // `Trauma.critTrigger` (« Commotion cérébrale », LDB 18 l.74) est PERSISTÉ sur la séquelle du
     // héros. Sa graphie propriétaire `{resist:{difficulty, onFail}}` est devenue le nœud `test` du
     // Flow : une save de 39 rouvrirait avec `test === undefined`, et le critique suivant lirait
     // `trig.test.test.difficulty` sur rien (`fireCritTriggers`).
-    expect(SAVE_VERSION).toBe(40);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(40);
     expect(parseSave({ ...cur, version: 39 })).toBeNull();
     const commotion = CRITIQUE_DOCS.flatMap((d) => d.entries).find((e) => e.id === 'commotion-cerebrale')!;
     const arme = commotion.escalation!.onNextCritWhileCondition!;
