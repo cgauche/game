@@ -313,4 +313,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: 3254b59f98edb64f2b694150f179fd4b6c3704a6 (414 fichiers, 0 dossiers) -->
+<!-- sources-empreinte: 663c5a1ccf704e131184971dc445d0012b386455 (414 fichiers, 0 dossiers) -->

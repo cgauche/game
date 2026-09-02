@@ -111,4 +111,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 8cf1a4d425492d7d68d197365ad4d403ab5da3c7 (1813 fichiers, 2 dossiers) -->
+<!-- sources-empreinte: 3bd88768b66ea3a520ff44bd400a31a45b4a8562 (1813 fichiers, 2 dossiers) -->
