@@ -3,8 +3,9 @@
 // adversariale (demande 2026-07-14). Lancé par `npm run test:hooks`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { Buffer } from 'node:buffer'
 import { resolve, join } from 'node:path'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { pathToFileURL } from 'node:url'
@@ -32,7 +33,19 @@ import {
   readStagedSoldeFile,
   readRevuePalierFile,
   readRefFile,
+  restesItems,
+  restesRoutants,
+  lignesDeHunks,
+  verifierCapture,
+  estFichierEcran,
+  estArbrePrincipal,
+  evaluateFermetureHorsCommit,
+  evaluateArbrePrincipal,
+  evaluateHunksEmportes,
+  commitEstAncetreDeHead,
+  fichiersDuCommitGit,
 } from './solde-ticket-guard.mjs'
+import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
 
 const TODAY = '2026-07-14'
 const VERIFIE_OK = 'VERIFIE: relu le diff complet, lancé npm test et vérifié les 3 fichiers touchés à la main.'
@@ -73,7 +86,7 @@ test('validateSolde : conforme (RAS, verdict CONFIRMÉ)', () => {
 test('validateSolde : conforme (items avec dispositions variées, verdict PARTIEL)', () => {
   const restes = [
     '- perf du picker signalée par l\'agent -> #512',
-    '- typo doc trouvée en route -> corrigé dans ce commit',
+    '- typo doc trouvée en route -> corrigé dans ce commit (src/ui/RollShell.tsx:12)',
     '- flakiness test réseau -> RAS : reproduit hors périmètre, déjà connu (#490)',
   ].join('\n')
   const r = validateSolde(solde({ restes, verdict: 'PARTIEL' }), TODAY)
@@ -306,8 +319,8 @@ test('analyzeStagedDiff : docs-only ne touche pas src', () => {
 })
 
 test('analyzeStagedDiff : vide/absent → aucune touche, 0 ligne', () => {
-  assert.deepEqual(analyzeStagedDiff(''), { touchesSrc: false, touchesUi: false, totalLines: 0 })
-  assert.deepEqual(analyzeStagedDiff(undefined), { touchesSrc: false, touchesUi: false, totalLines: 0 })
+  assert.deepEqual(analyzeStagedDiff(''), { touchesSrc: false, touchesUi: false, totalLines: 0, fichiers: [] })
+  assert.deepEqual(analyzeStagedDiff(undefined), { touchesSrc: false, touchesUi: false, totalLines: 0, fichiers: [] })
 })
 
 test('analyzeStagedDiff : touche src/ui/** → touchesUi', () => {
@@ -1017,4 +1030,455 @@ test('readStagedSoldeFile : rend le contenu de l\'INDEX, `null` pour un fichier 
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }
+})
+
+// ── Plafond de restes ROUTÉS (skill orchestrer § Fermeture) ───────────────────────────────────────
+// « une fermeture qui émettrait PLUS D'UN ticket de reste n'est PAS fermable : soit le lot GROSSIT
+// pour absorber le reste, soit le ticket RESTE OUVERT ».
+test('validateSolde : UN reste routé passe', () => {
+  const r = validateSolde(solde({ restes: '- perf du picker -> #512' }), TODAY)
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+})
+
+test('validateSolde : DEUX restes routés → le ticket reste ouvert sur ce reste', () => {
+  const restes = ['- perf du picker -> #512', '- flakiness réseau -> #513'].join('\n')
+  const r = validateSolde(solde({ restes }), TODAY)
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /2 restes ROUTÉS/)
+  assert.match(r.problems.join(' ; '), /le ticket reste ouvert sur ce reste/)
+})
+
+test('restesItems / restesRoutants : « RAS » global ne compte aucun item', () => {
+  assert.deepEqual(restesItems(solde()), [])
+  assert.deepEqual(
+    restesRoutants(solde({ restes: '- a -> #1\n- b -> RAS : rien à faire ici, mesuré au grep' })),
+    ['- a -> #1'],
+  )
+})
+
+// ── « corrigé dans ce commit » : la correction se prouve à son SITE ───────────────────────────────
+// Cas fondateur : le solde #584 déclarait « corrigé » un site (src/data/schemas/defs/teintesJeu.ts:88)
+// réparé par un AUTRE commit (4d6e1ff78) que celui qui portait le solde (8a2807134) — le fichier
+// n'était pas dans son diff.
+test('validateSolde : « corrigé dans ce commit » sans fichier:ligne → refus', () => {
+  const r = validateSolde(solde({ restes: '- typo doc -> corrigé dans ce commit' }), TODAY)
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /sans référence <fichier>:<ligne>/)
+})
+
+test('validateSolde : « corrigé dans ce commit » citant un fichier HORS du diff stagé → refus (cas #584)', () => {
+  const restes = '- chemin mort cité -> corrigé dans ce commit (src/data/schemas/defs/teintesJeu.ts:88)'
+  const r = validateSolde(solde({ restes }), TODAY, { fichiersStages: ['.claude/soldes/584.md'] })
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /teintesJeu\.ts, ABSENT du diff stagé/)
+})
+
+test('validateSolde : « corrigé dans ce commit » citant une ligne HORS des hunks → refus', () => {
+  const restes = '- chemin mort cité -> corrigé dans ce commit (src/data/schemas/defs/teintesJeu.ts:88)'
+  const ctx = {
+    fichiersStages: ['src/data/schemas/defs/teintesJeu.ts'],
+    lignesStagees: () => [12, 13],
+  }
+  const r = validateSolde(solde({ restes }), TODAY, ctx)
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /teintesJeu\.ts:88, hors des lignes que ce commit modifie/)
+})
+
+test('validateSolde : site cité présent dans le diff ET dans un hunk → passe', () => {
+  const restes = '- chemin mort cité -> corrigé dans ce commit (src/data/schemas/defs/teintesJeu.ts:88)'
+  const ctx = {
+    fichiersStages: ['src/data/schemas/defs/teintesJeu.ts'],
+    lignesStagees: () => [87, 88, 89],
+  }
+  const r = validateSolde(solde({ restes }), TODAY, ctx)
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+})
+
+test('lignesDeHunks : les deux côtés du @@ sont recevables (une correction peut SUPPRIMER)', () => {
+  const diff = [
+    'diff --git a/x.ts b/x.ts',
+    '@@ -10,0 +11,2 @@',
+    '+une',
+    '+deux',
+    '@@ -40 +42 @@',
+    '+trois',
+  ].join('\n')
+  // `-10,0` = ZÉRO ligne retirée (insertion APRÈS la 10) : le côté source n'apporte rien ici.
+  assert.deepEqual(lignesDeHunks(diff), [11, 12, 40, 42])
+  assert.deepEqual(lignesDeHunks(''), [])
+})
+
+test('lignesDeHunks : une SUPPRESSION pure rend les lignes DISPARUES (le chemin mort retiré se prouve)', () => {
+  // `@@ -10,5 +9,0 @@` : cinq lignes retirées à partir de la 10, rien d'ajouté. Sans le côté source,
+  // « corrigé dans ce commit (f:12) » sur ce geste était impossible à prouver.
+  assert.deepEqual(lignesDeHunks('@@ -10,5 +9,0 @@\n-mort\n'), [10, 11, 12, 13, 14])
+})
+
+// ── Inventaire gaté ───────────────────────────────────────────────────────────────────────────────
+test('validateSolde : « inventaire #<épic> » ne compte PAS comme un reste routé', () => {
+  const restes = [
+    '- classe hors périmètre -> inventaire #1679 : écart mesuré sur 4 sites, converti par classe',
+    '- autre classe hors périmètre -> inventaire #1679 : écart mesuré sur 2 sites, converti par classe',
+    '- vrai reste -> #512',
+  ].join('\n')
+  const r = validateSolde(solde({ restes }), TODAY)
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+})
+
+test('validateSolde : « inventaire » sans état lisible → refus', () => {
+  const r = validateSolde(solde({ restes: '- classe -> inventaire #1679 : vu' }), TODAY)
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /sans état lisible/)
+})
+
+test('validateSolde : écart porté à un épic que CE COMMIT ferme → convertir en ticket par classe', () => {
+  const restes = '- classe hors périmètre -> inventaire #1679 : écart mesuré sur 4 sites, à convertir'
+  const r = validateSolde(solde({ restes }), TODAY, { issuesFermees: [1679] })
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /convertir en ticket par CLASSE avant la clôture/)
+})
+
+// ── Anti-tombale : le SCAN porte sur les COMMENTAIRES, jamais sur les chaînes ─────────────────────
+const SRC_COMMENTAIRE = ['// Dette : le cas B reste à traiter (#4242)', 'export const x = 1', ''].join('\n')
+const SRC_CHAINE = ["export const fixture = ['- dette : #4242']", ''].join('\n')
+const SRC_PROVENANCE = ['// Contrat posé par #4242 : la table est ordonnée par identité.', 'export const y = 2', ''].join('\n')
+
+test('tombalesDansSource : un commentaire de dette citant le ticket fermé est TROUVÉ', () => {
+  const t = tombalesDansSource([4242], { fichiers: ['src/a.ts'], lire: () => SRC_COMMENTAIRE })
+  assert.equal(t.length, 1)
+  assert.equal(t[0].fichier, 'src/a.ts')
+  assert.equal(t[0].ligne, 1)
+})
+
+test('tombalesDansSource : le MÊME motif dans une CHAÎNE n\'est pas un commentaire', () => {
+  assert.deepEqual(tombalesDansSource([4242], { fichiers: ['src/b.ts'], lire: () => SRC_CHAINE }), [])
+})
+
+test('tombalesDansSource : citer la PROVENANCE d\'un choix (sans motif de dette) est toléré', () => {
+  assert.deepEqual(tombalesDansSource([4242], { fichiers: ['src/c.ts'], lire: () => SRC_PROVENANCE }), [])
+})
+
+test('tombalesDansSource : hors périmètre de fichier (racine ou extension) → rien', () => {
+  assert.deepEqual(tombalesDansSource([4242], { fichiers: ['server/relay.ts'], lire: () => SRC_COMMENTAIRE }), [])
+  assert.deepEqual(tombalesDansSource([4242], { fichiers: ['src/data/spells.json'], lire: () => SRC_COMMENTAIRE }), [])
+})
+
+test('evaluateTombale : deny NOMMÉ fichier:ligne ; silence sans fermeture', () => {
+  const d = evaluateTombale({ issuesFermees: [4242], fichiers: ['src/a.ts'], lire: () => SRC_COMMENTAIRE })
+  assert.ok(d)
+  assert.equal(d.decision, 'deny')
+  assert.match(d.reason, /src\/a\.ts:1/)
+  assert.equal(evaluateTombale({ issuesFermees: [], fichiers: ['src/a.ts'], lire: () => SRC_COMMENTAIRE }), null)
+})
+
+// ── Fermeture HORS commit ─────────────────────────────────────────────────────────────────────────
+test('evaluateFermetureHorsCommit : `gh issue close` refusé, y compris derrière un sous-shell', () => {
+  for (const cmd of [
+    'gh issue close 1636 --comment "fait"',
+    'bash -lc "gh issue close 1636"',
+    'gh issue edit 1636 --state closed',
+    'gh api repos/cgauche/game/issues/1636 -X PATCH -f state=closed',
+    'gh api repos/cgauche/game/issues/1636 --method PATCH --field state=closed',
+  ]) {
+    const d = evaluateFermetureHorsCommit(cmd)
+    assert.ok(d, `passé en silence : ${cmd}`)
+    assert.equal(d.decision, 'deny')
+    assert.match(d.reason, /la fermeture passe par un commit/)
+  }
+})
+
+test('evaluateFermetureHorsCommit : silence sur ce qui ne ferme pas', () => {
+  for (const cmd of [
+    'gh issue create --title "x" --body-file b.md',
+    'gh issue view 1636 --json state',
+    'gh issue edit 1636 --add-label bug',
+    'git commit -m "corrige #1636"',
+  ]) {
+    assert.equal(evaluateFermetureHorsCommit(cmd), null, `mordu à tort : ${cmd}`)
+  }
+})
+
+// ── Arbre PRINCIPAL vs worktree ───────────────────────────────────────────────────────────────────
+test('estArbrePrincipal : `.git` DOSSIER = principal, `.git` FICHIER = worktree lié', () => {
+  const base = mkdtempSync(join(tmpdir(), 'solde-arbre-'))
+  try {
+    mkdirSync(join(base, 'principal', '.git'), { recursive: true })
+    mkdirSync(join(base, 'principal', 'src'), { recursive: true })
+    mkdirSync(join(base, 'lie'), { recursive: true })
+    writeFileSync(join(base, 'lie', '.git'), 'gitdir: ../principal/.git/worktrees/lie\n', 'utf8')
+
+    assert.equal(estArbrePrincipal(join(base, 'principal')), true)
+    assert.equal(estArbrePrincipal(join(base, 'principal', 'src')), true, 'un sous-dossier remonte à son arbre')
+    assert.equal(estArbrePrincipal(join(base, 'lie')), false)
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+test('evaluateArbrePrincipal : `ask` (jamais deny) dans l\'arbre principal, silence en worktree', () => {
+  const d = evaluateArbrePrincipal({ command: 'git commit -m "x"', principal: true, fichiersStages: ['src/a.ts'] })
+  assert.ok(d)
+  assert.equal(d.decision, 'ask')
+  assert.match(d.reason, /src\/a\.ts/)
+  assert.match(d.reason, /\.wt-<ticket>-L<n>/)
+  assert.equal(evaluateArbrePrincipal({ command: 'git commit -m "x"', principal: false }), null)
+  assert.equal(evaluateArbrePrincipal({ command: 'git status', principal: true }), null)
+})
+
+// ── `git commit -- <paths>` : l'ARBRE, pas l'index ────────────────────────────────────────────────
+test('evaluateHunksEmportes : chemin nommé stagé ET modifié → deny', () => {
+  const d = evaluateHunksEmportes({
+    command: 'git commit -m "x" -- src/a.ts',
+    fichiersModifies: ['src/a.ts', 'src/b.ts'],
+    fichiersStages: ['src/a.ts'],
+  })
+  assert.ok(d)
+  assert.equal(d.decision, 'deny')
+  assert.match(d.reason, /prend le contenu de l'ARBRE et ignore l'index/)
+})
+
+test('evaluateHunksEmportes : chemin nommé modifié SEULEMENT → contexte, jamais un refus', () => {
+  const d = evaluateHunksEmportes({
+    command: 'git commit -m "x" -- src/a.ts',
+    fichiersModifies: ['src/a.ts'],
+    fichiersStages: ['src/b.ts'],
+  })
+  assert.ok(d)
+  assert.equal(d.decision, undefined)
+  assert.match(d.contexte, /src\/a\.ts/)
+})
+
+test('evaluateHunksEmportes : commit NU (sans pathspec) → silence', () => {
+  assert.equal(evaluateHunksEmportes({
+    command: 'git commit -m "x"',
+    fichiersModifies: ['src/a.ts'],
+    fichiersStages: ['src/a.ts'],
+  }), null)
+})
+
+// ── Écran touché : capture de recette visuelle (E1) ───────────────────────────────────────────────
+test('estFichierEcran : src/ui et src/gameIso, jamais leurs tests', () => {
+  assert.equal(estFichierEcran('src/ui/RollShell.tsx'), true)
+  assert.equal(estFichierEcran('src/gameIso/stage/GameStage3D.tsx'), true)
+  assert.equal(estFichierEcran('src/ui/RollShell.test.tsx'), false)
+  assert.equal(estFichierEcran('src/engine/combat.ts'), false)
+})
+
+test('analyzeStagedDiff : src/gameIso/** compte comme écran', () => {
+  const r = analyzeStagedDiff('40\t5\tsrc/gameIso/stage/GameStage3D.tsx\n')
+  assert.equal(r.touchesUi, true)
+  assert.deepEqual(r.fichiers, ['src/gameIso/stage/GameStage3D.tsx'])
+})
+
+/** PNG plausible : signature + en-tête IHDR aux dimensions données, rembourré au poids voulu. */
+function pngDe(largeur, hauteur, taille) {
+  const buf = Buffer.alloc(Math.max(taille, 24))
+  Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).copy(buf, 0)
+  buf.writeUInt32BE(13, 8)
+  buf.write('IHDR', 12, 'ascii')
+  buf.writeUInt32BE(largeur, 16)
+  buf.writeUInt32BE(hauteur, 20)
+  return buf
+}
+
+test('verifierCapture : une capture PLAUSIBLE passe ; les six défauts sont NOMMÉS', () => {
+  const base = mkdtempSync(join(tmpdir(), 'solde-capture-'))
+  try {
+    mkdirSync(join(base, 'public', 'qc'), { recursive: true })
+    writeFileSync(join(base, 'public', 'qc', 'ok.png'), pngDe(1280, 720, 4096))
+    writeFileSync(join(base, 'public', 'qc', 'entete-seul.png'), pngDe(1280, 720, 24))
+    writeFileSync(join(base, 'public', 'qc', 'vignette.png'), pngDe(64, 48, 4096))
+    writeFileSync(join(base, 'public', 'qc', 'vide.png'), Buffer.alloc(0))
+    writeFileSync(join(base, 'public', 'qc', 'faux.png'), 'ceci est du texte', 'utf8')
+
+    assert.equal(verifierCapture('public/qc/ok.png', { racine: base }).ok, true)
+    assert.match(verifierCapture('docs/ok.png', { racine: base }).problemes[0], /hors de public\/qc\//)
+    assert.match(verifierCapture('public/qc/absente.png', { racine: base }).problemes[0], /introuvable/)
+    assert.match(verifierCapture('public/qc/vide.png', { racine: base }).problemes[0], /ni un PNG ni un JPEG/)
+    assert.match(verifierCapture('public/qc/faux.png', { racine: base }).problemes[0], /ni un PNG ni un JPEG/)
+    // Le défaut qui passait AVANT le juge : un en-tête PNG de 8 octets était accepté.
+    assert.match(verifierCapture('public/qc/entete-seul.png', { racine: base }).problemes.join(' ; '), /trop légère/)
+    assert.match(verifierCapture('public/qc/vignette.png', { racine: base }).problemes.join(' ; '), /trop petite \(64×48 px/)
+    const futur = Date.now() + 60_000
+    assert.match(verifierCapture('public/qc/ok.png', { racine: base, mtimeMin: futur }).problemes[0], /plus ANCIENNE/)
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+test('validateSolde : un commit qui touche un ÉCRAN exige « ## Recette visuelle » et sa capture', () => {
+  const sansSection = validateSolde(solde(), TODAY, { touchesUi: true })
+  assert.equal(sansSection.ok, false)
+  assert.match(sansSection.problems.join(' ; '), /"## Recette visuelle" absente/)
+
+  const avecCapture = `${VERIFIE_OK}\n\n## Restes\nRAS\n\n## Recette visuelle\ncapture: public/qc/console.png\n\n## Réfutation\nverdict: CONFIRMÉ\n${REFUTATION_OK}\n\n(${TODAY})\n`
+  const sansCapture = `${VERIFIE_OK}\n\n## Restes\nRAS\n\n## Recette visuelle\nj'ai regardé l'écran\n\n## Réfutation\nverdict: CONFIRMÉ\n${REFUTATION_OK}\n\n(${TODAY})\n`
+  assert.match(
+    validateSolde(sansCapture, TODAY, { touchesUi: true }).problems.join(' ; '),
+    /sans ligne "capture: /,
+  )
+  const refuse = validateSolde(avecCapture, TODAY, {
+    touchesUi: true,
+    verifierCaptureDe: () => ({ ok: false, problemes: ['capture "public/qc/console.png" introuvable sur le disque'] }),
+  })
+  assert.equal(refuse.ok, false)
+  assert.match(refuse.problems.join(' ; '), /introuvable/)
+  assert.equal(validateSolde(avecCapture, TODAY, { touchesUi: true }).ok, true)
+  assert.equal(validateSolde(solde(), TODAY, { touchesUi: false }).ok, true, 'aucun écran touché : rien n\'est exigé')
+})
+
+// Un en-tête de fichier énonce couramment une dette D'UN sujet et cite AILLEURS le ticket d'un
+// AUTRE : les juger au BLOC rapprochait 206 paires dans l'arbre (mesuré 2026-09-02), à la LIGNE 57.
+const SRC_ENTETE_MIXTE = [
+  '/**',
+  ' * Rapport GÉNÉRÉ. Le volet B reste non implémenté (#4242).',
+  ' * Le classement par identité est celui posé par #4243.',
+  ' */',
+  'export const z = 3',
+  '',
+].join('\n')
+
+test('tombalesDansSource : la dette et le ticket doivent tenir sur la MÊME ligne de commentaire', () => {
+  const t = tombalesDansSource([4242, 4243], { fichiers: ['src/d.ts'], lire: () => SRC_ENTETE_MIXTE })
+  assert.deepEqual(t.map((x) => `#${x.n}@${x.ligne}`), ['#4242@2'])
+})
+
+// ── « corrigé par <sha> <fichier>:<ligne> » : la correction est DÉJÀ dans l'histoire ──────────────
+// Cas fondateur : `.claude/soldes/584.md:7` — le fix vit dans 4d6e1ff78, le solde a été écrit dans
+// 8a2807134 ; « corrigé dans ce commit » y serait faux, « RAS » tairait une correction réelle.
+const CORRIGE_PAR = '- chemin mort cité -> corrigé par 4d6e1ff78 src/data/schemas/defs/teintesJeu.ts:88'
+const HISTOIRE_OK = {
+  commitEstAncetre: () => true,
+  fichiersDuCommit: () => ['src/data/schemas/defs/teintesJeu.ts', '.claude/soldes/revue-palier-2205fde51.md'],
+}
+
+test('validateSolde : « corrigé par <sha> » conforme (ancêtre de HEAD, touche le fichier cité)', () => {
+  const r = validateSolde(solde({ restes: CORRIGE_PAR }), TODAY, HISTOIRE_OK)
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+})
+
+test('validateSolde : « corrigé par <sha> » ne compte PAS comme un reste routé', () => {
+  assert.deepEqual(restesRoutants(solde({ restes: CORRIGE_PAR })), [])
+})
+
+test('validateSolde : « corrigé par <sha> » dont le sha n\'est PAS un ancêtre de HEAD → refus', () => {
+  const r = validateSolde(solde({ restes: CORRIGE_PAR }), TODAY, { ...HISTOIRE_OK, commitEstAncetre: () => false })
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /n'est pas un ANCÊTRE de HEAD/)
+})
+
+test('validateSolde : « corrigé par <sha> » citant un fichier que le commit ne touche PAS → refus', () => {
+  const r = validateSolde(solde({ restes: CORRIGE_PAR }), TODAY, { ...HISTOIRE_OK, fichiersDuCommit: () => ['docs/architecture.md'] })
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /teintesJeu\.ts:88, que ce commit ne touche PAS/)
+})
+
+test('validateSolde : « corrigé par » sans sha ni site reste hors grammaire', () => {
+  const r = validateSolde(solde({ restes: '- chemin mort -> corrigé par 4d6e1ff78' }), TODAY, HISTOIRE_OK)
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /item sans disposition valide/)
+})
+
+test('commitEstAncetreDeHead / fichiersDuCommitGit : le cas fondateur #584 tient contre git RÉEL', () => {
+  // Un clone SUPERFICIEL (CI sans `fetch-depth: 0`) ne porte pas 4d6e1ff78 : le test doit dire QUOI
+  // corriger, jamais verdir sur une histoire qu'il n'a pas lue.
+  assert.equal(
+    execFileSync('git', ['rev-parse', '--is-shallow-repository'], { cwd: repoRoot(), encoding: 'utf8' }).trim(),
+    'false',
+    'dépôt SUPERFICIEL : ce test lit l\'HISTOIRE — poser `fetch-depth: 0` sur le `actions/checkout` du job qui joue `test:hooks`.',
+  )
+  assert.equal(commitEstAncetreDeHead('4d6e1ff78', repoRoot()), true)
+  assert.ok(
+    fichiersDuCommitGit('4d6e1ff78', repoRoot()).includes('src/data/schemas/defs/teintesJeu.ts'),
+    '4d6e1ff78 ne touche pas le fichier que le solde #584 lui attribue',
+  )
+  assert.equal(commitEstAncetreDeHead('0000000000000000000000000000000000000000', repoRoot()), false)
+})
+
+test('le solde #584 de l\'arbre est CONFORME à sa propre grammaire', () => {
+  // Même fail-loud que ci-dessus : sur un clone superficiel, ce solde serait déclaré FAUX alors que
+  // c'est l'histoire qui manque.
+  assert.equal(
+    execFileSync('git', ['rev-parse', '--is-shallow-repository'], { cwd: repoRoot(), encoding: 'utf8' }).trim(),
+    'false',
+    'dépôt SUPERFICIEL : ce test lit l\'HISTOIRE — poser `fetch-depth: 0` sur le `actions/checkout` du job qui joue `test:hooks`.',
+  )
+  const contenu = readFileSync(join(repoRoot(), '.claude', 'soldes', '584.md'), 'utf8')
+  const r = validateSolde(contenu, '2026-09-02', {
+    commitEstAncetre: (sha) => commitEstAncetreDeHead(sha, repoRoot()),
+    fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, repoRoot()),
+  })
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+})
+
+// ── C2/C3/C4/C5 : les règles resserrées après le juge de diff ─────────────────────────────────────
+test('fichiersDuCommitGit : un RENOMMAGE rend les deux chemins NUS, jamais « {ancien => nouveau} »', () => {
+  // Mesuré sur 26be12347 : `.claude/soldes/revue-palier.md` renommée en `revue-palier-2205fde51.md`.
+  // Sans `--no-renames`, `git show --numstat` rend UNE ligne agrégée qu'aucun chemin cité n'égale —
+  // un solde JUSTE était refusé.
+  const repo = mkdtempSync(join(tmpdir(), 'solde-renommage-'))
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    git('init', '-q')
+    git('config', 'user.email', 'sonde@test')
+    git('config', 'user.name', 'sonde')
+    git('config', 'commit.gpgsign', 'false')
+    mkdirSync(join(repo, 'src'), { recursive: true })
+    writeFileSync(join(repo, 'src', 'ancien.ts'), 'export const a = 1\n'.repeat(20), 'utf8')
+    git('add', '-A')
+    git('commit', '-q', '--no-verify', '-m', 'socle')
+    execFileSync('git', ['mv', 'src/ancien.ts', 'src/nouveau.ts'], { cwd: repo, stdio: 'ignore' })
+    git('commit', '-q', '--no-verify', '-am', 'renomme')
+    const sha = git('rev-parse', 'HEAD').trim()
+
+    const touches = fichiersDuCommitGit(sha, repo)
+    assert.ok(touches.includes('src/nouveau.ts'), `chemins rendus : ${JSON.stringify(touches)}`)
+    assert.ok(touches.includes('src/ancien.ts'), `chemins rendus : ${JSON.stringify(touches)}`)
+    assert.deepEqual(touches.filter((f) => f.includes('=>')), [], 'un chemin agrégé « {a => b} » reste illisible pour un solde')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('EXEMPTIONS_TOMBALE : stock NOMINATIF au site, borné, chaque entrée justifiée', () => {
+  assert.ok(EXEMPTIONS_TOMBALE.length <= 5, `stock d'exemption à ${EXEMPTIONS_TOMBALE.length} — il DÉCROÎT`)
+  for (const { site, raison } of EXEMPTIONS_TOMBALE) {
+    assert.match(site, /^[\w./-]+:\d+$/, `exemption non ancrée à un SITE : "${site}" (jamais un fichier entier)`)
+    assert.ok(raison.length >= 30, `exemption "${site}" sans raison lisible`)
+  }
+  assert.equal(new Set(EXEMPTIONS_TOMBALE.map((e) => e.site)).size, EXEMPTIONS_TOMBALE.length)
+})
+
+test('tombalesDansSource : un mot d\'ÉTAT du domaine n\'est pas une dette', () => {
+  const etat = ['/** Ouverture cérémonielle EN ATTENTE (#4242) — posée par loadProject. */', 'const x = 1', ''].join('\n')
+  const regle = ['/** Départ BLOQUÉ par la porte d\'heure maison (#4242) ? */', 'const y = 2', ''].join('\n')
+  assert.deepEqual(tombalesDansSource([4242], { fichiers: ['src/a.ts'], lire: () => etat }), [])
+  assert.deepEqual(tombalesDansSource([4242], { fichiers: ['src/b.ts'], lire: () => regle }), [])
+})
+
+test('tombalesDansSource : une dette DÉCLARÉE ÉTEINTE sur la ligne n\'en est plus une', () => {
+  const eteinte = ['// dette #4242, résorbée par le renommage du champ', 'const x = 1', ''].join('\n')
+  const vivante = ['// dette #4242 : le cas B reste à traiter', 'const y = 2', ''].join('\n')
+  assert.deepEqual(tombalesDansSource([4242], { fichiers: ['src/a.ts'], lire: () => eteinte }), [])
+  assert.equal(tombalesDansSource([4242], { fichiers: ['src/b.ts'], lire: () => vivante }).length, 1)
+})
+
+test('estFichierEcran : borné au RENDU — un module de calcul sous src/ui n\'est pas un écran', () => {
+  assert.equal(estFichierEcran('src/ui/breakdown.ts'), false)
+  assert.equal(estFichierEcran('src/gameIso/builders/walls.ts'), false)
+  assert.equal(estFichierEcran('src/ui/styles/tabs.css'), true)
+  assert.equal(estFichierEcran('src/engine/tables.ts'), false)
+})
+
+test('evaluateHunksEmportes : `git commit -a` emporte TOUT le modifié suivi → contexte nommé', () => {
+  const d = evaluateHunksEmportes({
+    command: 'git commit -am "x"',
+    fichiersModifies: ['src/a.ts', 'src/b.ts'],
+    fichiersStages: ['src/a.ts'],
+  })
+  assert.ok(d, '`-a` passé en silence')
+  assert.equal(d.decision, undefined, 'jamais un refus : `-a` est un geste légitime')
+  assert.match(d.contexte, /src\/b\.ts/)
+  assert.doesNotMatch(d.contexte, /src\/a\.ts/, 'ce que l\'index porte déjà n\'est pas une surprise')
+  assert.equal(evaluateHunksEmportes({ command: 'git commit -a -m "x"', fichiersModifies: [], fichiersStages: [] }), null)
 })

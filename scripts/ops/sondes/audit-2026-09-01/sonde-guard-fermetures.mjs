@@ -1,33 +1,44 @@
-// SONDE (lecture seule) — PÉRIMÈTRE du garde de solde de ticket : il ne voit qu'un `git commit`.
-// `extractClosedIssues` sort la liste VIDE dès que `isGitCommitCommand` rend `false`
-// (`scripts/hooks/solde-ticket-guard.mjs:268`), et `evaluate` rend `null` sur liste vide (l.396).
-// Deux commandes fermant les MÊMES tickets sont donc jugées différemment : le message de commit est
-// REFUSÉ sans solde conforme, la fermeture par `gh issue close` passe hors du garde.
-// COMPTEUR : verdict rendu pour chacune des deux commandes (attendu DENY / SILENCE).
+// SONDE (lecture seule) — PÉRIMÈTRE du garde de solde de ticket, mesuré sur le CHEMIN RÉEL.
+// Deux commandes qui ferment les MÊMES tickets sont-elles jugées pareil ? La mesure passe par le
+// DRIVER stdin (`scripts/hooks/solde-ticket-guard.mjs` lancé comme le fait le hook PreToolUse), donc
+// par le cumul de TOUS ses évaluateurs — interroger `evaluate` seul ne mesurerait que le volet
+// « solde du commit » et rendrait SILENCE sur une fermeture qu'un AUTRE volet refuse.
+// COMPTEUR : verdict rendu pour chacune des commandes (attendu : DENY partout).
 // Usage : node scripts/ops/sondes/audit-2026-09-01/sonde-guard-fermetures.mjs
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { spawnSync } from 'node:child_process';
 import { RACINE } from './_socle.mjs';
 
-const { evaluate, extractClosedIssues } = await import(
-  pathToFileURL(join(RACINE, 'scripts', 'hooks', 'solde-ticket-guard.mjs')).href
-);
+const GARDE = join(RACINE, 'scripts', 'hooks', 'solde-ticket-guard.mjs');
 
 const CAS = [
   ['git commit', 'git commit -m "fix(data): stock recalé — corrige #1636 corrige #1637"'],
   ['gh issue close', 'gh issue close 1636 1637 --comment "corrige #1636 corrige #1637"'],
+  ['gh issue close (sous-shell)', 'bash -lc "gh issue close 1636 1637"'],
+  ['gh api PATCH state', 'gh api repos/cgauche/game/issues/1636 -X PATCH -f state=closed'],
+  ['gh issue create (témoin)', 'gh issue create --title "x" --body-file b.md'],
+  // HORS PORTÉE, dit : le corps de la requête (donc l'état `closed`) vit dans un FICHIER que la
+  // ligne de commande ne montre pas — la sonde le JOUE pour que le trou reste visible.
+  ['gh api --input (hors portée)', 'gh api repos/cgauche/game/issues/1636 -X PATCH --input corps.json'],
 ];
 
-for (const [nom, command] of CAS) {
-  const verdict = evaluate({
-    command,
-    today: '2026-09-01',
-    readSolde: () => null,
-    soldeOnDisk: () => null,
-    counter: 0,
-    readRevuePalier: () => null,
+/** Verdict du hook pour une commande, tel que Claude Code le recevrait. */
+function verdict(command) {
+  const payload = JSON.stringify({
+    session_id: 'sonde', hook_event_name: 'PreToolUse',
+    tool_name: 'mcp__lean-ctx__ctx_shell', tool_input: { command, cwd: RACINE },
   });
-  console.log(
-    `${nom.padEnd(15)} issues détectées = [${extractClosedIssues(command)}]  ->  ${verdict ? 'DENY' : 'SILENCE'}`,
-  );
+  const run = spawnSync(process.execPath, [GARDE], { input: payload, encoding: 'utf8', cwd: RACINE });
+  if (run.status !== 0) return { decision: `EXIT ${run.status}`, raison: run.stderr.trim().slice(0, 200) };
+  if (!run.stdout.trim()) return { decision: 'SILENCE', raison: '' };
+  const sortie = JSON.parse(run.stdout).hookSpecificOutput;
+  return {
+    decision: (sortie.permissionDecision ?? 'contexte').toUpperCase(),
+    raison: (sortie.permissionDecisionReason ?? sortie.additionalContext ?? '').slice(0, 120),
+  };
+}
+
+for (const [nom, command] of CAS) {
+  const { decision, raison } = verdict(command);
+  console.log(`${nom.padEnd(28)} -> ${decision.padEnd(8)} ${raison}`);
 }

@@ -28,7 +28,7 @@ const FICHE = [
   'Prose manuscrite de l esquive.',
   '',
   '**Implémente :** (non implémenté)',
-  '- dette : #1234',
+  '- dette : #0',
   '',
 ].join('\n')
 
@@ -85,7 +85,7 @@ const SECTION_ASSAUT = [
   'Prose manuscrite de l assaut.',
   '',
   '**Implémente :** (non implémenté)',
-  '- dette : #999',
+  '- dette : #0',
   '',
 ].join('\n')
 
@@ -96,7 +96,7 @@ test('fusion — section AJOUTEE par l entrant AVANT une autre : chaque champ re
   assert.equal(r.text, theirs) // aucun champ deplace, aucune ligne de dette perdue
   const blocs = stripImplemente(r.text).blocks
   assert.deepEqual([...blocs.keys()], ['assaut', 'parade', 'esquive'])
-  assert.deepEqual(blocs.get('assaut'), ['**Implémente :** (non implémenté)', '- dette : #999'])
+  assert.deepEqual(blocs.get('assaut'), ['**Implémente :** (non implémenté)', '- dette : #0'])
   assert.equal(blocs.get('parade')[0], '**Implémente :** _(généré — `npm run raw:implemente`)_')
 })
 

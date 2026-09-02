@@ -9,7 +9,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # `fetch-depth: 0` : `test:hooks` interroge l’HISTOIRE (soldes de fermeture depuis le
+      # 2026-08-01, commit fondateur d’un solde « corrigé par <sha> »). Dans le clone superficiel
+      # par défaut (depth 1) `git log --since` est vide et les shas anciens sont absents.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

@@ -1,4 +1,8 @@
 // SONDE (lecture seule) — contournabilité d'un plafond « ≤ 1 reste routant » confronté au validateur RÉEL du garde de solde.
+// LECTURE DE LA SORTIE : trois des cinq acceptations sont LÉGITIMES et le resteront — un solde qui
+// fond ses restes en UNE ligne routante, un qui les range tous en « RAS : … », un qui n'en déclare
+// aucun n'émettent respectivement qu'UN, ZÉRO et ZÉRO ticket : le plafond porte sur les tickets
+// ÉMIS, pas sur le nombre de lignes. Seuls les deux premiers cas sont des contournements.
 // Usage : node scripts/ops/sondes/audit-2026-09-01/sonde-solde.mjs
 
 import { validateSolde } from '../../../hooks/solde-ticket-guard.mjs'

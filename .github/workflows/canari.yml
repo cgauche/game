@@ -13,7 +13,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # `fetch-depth: 0` : `test:hooks` interroge l’HISTOIRE (voir ci.yml) — le clone superficiel
+      # par défaut rendrait `git log --since` vide et le cliquet des fermetures décoratif.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

@@ -25,11 +25,27 @@
 // aussi sa réfutation (ligne `REFUTATION:` dans le message, ou fichier `.claude/soldes/ref-<N>.md`).
 // Le déclencheur reste le TICKET explicitement rattaché (fermeture ou `ref #N`) — un commit sans
 // AUCUN ticket n'entre jamais dans ce mécanisme (périmètre tranché #591, 2026-07-17).
+//
+// Ce que le garde exige AUJOURD'HUI, par volet (chacun a son évaluateur PUR et ses tests) :
+//   `evaluate`                    solde conforme pour chaque ticket fermé — dont, dans « ## Restes »,
+//                                 UN SEUL reste routé (skill orchestrer § Fermeture), une preuve au
+//                                 site (`fichier:ligne`) pour « corrigé dans ce commit », un état
+//                                 lisible pour « inventaire #<épic> », et une « ## Recette visuelle »
+//                                 à capture vérifiée quand un ÉCRAN est touché ;
+//   `evaluateAntiEsquive`         réfutation d'un commit « ref #N » de substance ;
+//   `evaluateJuge`                preuve de juge adversarial (+ JUGE-VISION sur un écran) ;
+//   `evaluateAmendInvisible`      amend dont le message échappe au contrôle ;
+//   `evaluateManifestClosure`     ticket encore porté par le manifest RAW stagé ;
+//   `evaluateFermetureHorsCommit` `gh issue close` & co — la fermeture passe par le commit ;
+//   `evaluateTombale`             (scripts/hooks/solde-tombale.mjs) commentaire de dette citant le
+//                                 ticket fermé ;
+//   `evaluateArbrePrincipal`      `ask` sur un commit hors worktree ;
+//   `evaluateHunksEmportes`       `git commit -- <paths>` qui prendrait l'arbre au lieu de l'index.
 import { Buffer } from 'node:buffer'
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
-import { execSync } from 'node:child_process'
+import { execFileSync, execSync } from 'node:child_process'
 
 // Message passé par FICHIER (`git commit -F <path>` / `--file <path>` / `--file=<path>`) : le
 // driver stdin ne voit que `tool_input.command` — un message packé dans un fichier externe y est
@@ -478,7 +494,37 @@ const MIN_VERIFIE_LEN = 40
 // La section s'arrête au prochain titre, à la première ligne VIDE (le pied du fichier — date,
 // notes — vit après un blanc), ou à la fin du fichier.
 const RESTES_RE = /##\s*Restes\s*\n([\s\S]*?)(?:\n\s*\n|\n##|$)/i
-const DISPOSITION_RE = /^-\s*.+->\s*(#\d+|corrigé dans ce commit|RAS\s*:\s*\S.*)\s*$/iu
+// Cinq dispositions, et cinq seulement.
+//   `#N`                                   le reste ÉMET un ticket (plafonné, voir ci-dessous) ;
+//   `corrigé dans ce commit <f>:<l>`       la correction part AVEC le solde ;
+//   `corrigé par <sha> <f>:<l>`            la correction est DÉJÀ dans l'histoire (un solde écrit
+//                                          après coup ne peut pas dire « ce commit » sans mentir) ;
+//   `RAS : <justification>`                rien à router ;
+//   `inventaire #<épic> : <état>`          écart PORTÉ à un programme (aucun ticket neuf émis).
+const DISPOSITION_RE = /^-\s*.+->\s*(#\d+|corrigé dans ce commit\b.*|corrigé par\s+[0-9a-f]{7,40}\s+\S+:\d+|RAS\s*:\s*\S.*|inventaire\s+#\d+\s*:\s*\S.*)\s*$/iu
+// Le plafond compte les tickets ÉMIS : un item qui route vers `#N` en compte un, que la ligne soit
+// bien formée ou non (une queue de prose derrière le numéro est refusée à part, par la grammaire).
+const ROUTANT_RE = /->\s*#\d+/
+const CORRIGE_RE = /->\s*corrigé dans ce commit\b(.*)$/iu
+const CORRIGE_PAR_RE = /->\s*corrigé par\s+([0-9a-f]{7,40})\s+(\S+):(\d+)\s*$/iu
+const INVENTAIRE_RE = /->\s*inventaire\s+#(\d+)\s*:\s*(\S.*)$/iu
+// `fichier.ext:ligne` — le point d'extension distingue un chemin d'une prose à deux-points.
+const REF_SITE_RE = /([A-Za-z0-9_@./\\-]+\.[A-Za-z0-9]+):(\d+)/g
+// Skill orchestrer § Fermeture (audit 2026-08-30) : « une fermeture qui émettrait PLUS D'UN ticket
+// de reste n'est PAS fermable : soit le lot GROSSIT pour absorber le reste, soit le ticket RESTE
+// OUVERT avec la formule historique des soldes #829/#900 ».
+const MAX_RESTES_ROUTANTS = 1
+const MIN_ETAT_INVENTAIRE = 20
+// Recette visuelle : la capture vit sous `public/qc/` (convention de `scripts/qc/capture-jeu.mjs`).
+const RECETTE_VISUELLE_RE = /##\s*Recette visuelle\s*\n([\s\S]*?)(?:\n\s*\n|\n##|$)/i
+const CAPTURE_RE = /capture\s*:\s*(\S+)/i
+const DOSSIER_CAPTURES = 'public/qc/'
+const ENTETE_PNG = [0x89, 0x50, 0x4e, 0x47]
+const ENTETE_JPEG = [0xff, 0xd8, 0xff]
+// Une capture d'écran de jeu pèse des dizaines de Kio ; 1 Kio est le plancher sous lequel il n'y a
+// pas d'image, et 200 px la plus petite dimension dont on puisse JUGER quoi que ce soit.
+const TAILLE_MIN_CAPTURE = 1024
+const COTE_MIN_CAPTURE = 200
 const REFUTATION_RE = /##\s*R[ée]futation\s*\n([\s\S]*?)(?:\n\s*\n|\n##|$)/i
 const VERDICT_RE = /verdict\s*:\s*([A-Za-zÀ-ÖØ-öø-ÿ]+)/i
 const MIN_REFUTATION_LEN = 40
@@ -525,9 +571,221 @@ function checkRefutationSection(content) {
   return { problems, refuted }
 }
 
-/** Valide le CONTENU d'un solde (PUR, testable indépendamment du filesystem/de la date système).
- *  `today` = date du jour en `YYYY-MM-DD`. */
-export function validateSolde(content, today) {
+/** Items de la section « ## Restes » d'un solde, un par ligne (`[]` si la section est absente ou
+ *  vaut « RAS » pour le tout). Point d'entrée UNIQUE des mesures de stock et du garde. */
+export function restesItems(content) {
+  const m = RESTES_RE.exec(content ?? '')
+  if (!m) return []
+  const body = m[1].trim()
+  if (body === 'RAS') return []
+  return body.split('\n').map((l) => l.trim()).filter(Boolean)
+}
+
+/** Items ROUTANTS (`-> #N`) : ceux qui émettent un ticket de reste. */
+export function restesRoutants(content) {
+  return restesItems(content).filter((l) => ROUTANT_RE.test(l))
+}
+
+/** Lignes RECEVABLES comme site d'une correction dans un diff unifié à zéro contexte
+ *  (`git diff --cached -U0 -- <fichier>`) : les lignes du côté DESTINATION (`+a,b`, du code ajouté
+ *  ou modifié) ET celles du côté SOURCE (`-a,b`). Le côté source compte parce qu'une correction est
+ *  souvent une SUPPRESSION (le geste « chemin mort retiré » n'ajoute rien) : sans lui, prouver la
+ *  correction à son site était impossible pour toute une classe de gestes. */
+export function lignesDeHunks(diffU0) {
+  const lignes = new Set()
+  for (const m of String(diffU0 ?? '').matchAll(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/gm)) {
+    for (const [debut, compte] of [[m[1], m[2]], [m[3], m[4]]]) {
+      const n = compte === undefined ? 1 : Number(compte)
+      for (let k = 0; k < n; k++) lignes.add(Number(debut) + k)
+    }
+  }
+  return [...lignes].sort((a, b) => a - b)
+}
+
+/**
+ * Contrôle d'une capture de recette visuelle : sous `public/qc/`, présente, d'un poids d'image, PNG
+ * ou JPEG à ses octets de tête, aux dimensions lisibles (PNG : l'en-tête IHDR porte largeur et
+ * hauteur), et pas plus ANCIENNE que le dernier fichier d'écran stagé (`mtimeMin`, millisecondes).
+ * `racine` = arbre où le chemin se résout.
+ *
+ * CE QUE CETTE PORTE PROUVE : qu'une image d'écran plausible existe et vient d'être produite —
+ * garde-fou d'ÉTOURDERIE (chemin périmé, fichier vide, capture d'avant le geste), PAS de
+ * CONTREFAÇON. Rien ici ne dit que l'image montre l'écran modifié : c'est la recette qui le juge.
+ */
+export function verifierCapture(chemin, { racine = process.cwd(), mtimeMin = 0 } = {}) {
+  const problemes = []
+  const norm = String(chemin ?? '').replace(/\\/g, '/').replace(/^\.\//, '')
+  if (!norm.startsWith(DOSSIER_CAPTURES)) {
+    problemes.push(`capture "${chemin}" hors de ${DOSSIER_CAPTURES} (les captures de recette y vivent, cf. scripts/qc/capture-jeu.mjs)`)
+    return { ok: false, problemes }
+  }
+  let info
+  let octets
+  try {
+    const abs = join(racine, norm)
+    info = statSync(abs)
+    octets = readFileSync(abs)
+  } catch {
+    problemes.push(`capture "${norm}" introuvable sur le disque`)
+    return { ok: false, problemes }
+  }
+  const estPng = ENTETE_PNG.every((b, i) => octets[i] === b)
+  const estJpeg = ENTETE_JPEG.every((b, i) => octets[i] === b)
+  if (!estPng && !estJpeg) {
+    problemes.push(`capture "${norm}" n'est ni un PNG ni un JPEG à ses octets de tête`)
+    return { ok: false, problemes }
+  }
+  if (info.size < TAILLE_MIN_CAPTURE) {
+    problemes.push(`capture "${norm}" trop légère (${info.size} octets, ${TAILLE_MIN_CAPTURE} minimum) — un en-tête d'image n'est pas une capture`)
+  }
+  if (estPng) {
+    // En-tête IHDR : largeur à l'octet 16, hauteur à l'octet 20. Un fichier plus court que ça n'a pas
+    // d'en-tête du tout — dimensions nulles, refus (un hook ne lève jamais).
+    const largeur = octets.length >= 24 ? octets.readUInt32BE(16) : 0
+    const hauteur = octets.length >= 24 ? octets.readUInt32BE(20) : 0
+    if (largeur < COTE_MIN_CAPTURE || hauteur < COTE_MIN_CAPTURE) {
+      problemes.push(`capture "${norm}" trop petite (${largeur}×${hauteur} px, ${COTE_MIN_CAPTURE} minimum par côté) — rien n'y est jugeable`)
+    }
+  }
+  if (mtimeMin && info.mtimeMs < mtimeMin) {
+    problemes.push(`capture "${norm}" plus ANCIENNE que le dernier fichier d'écran stagé — recapturer APRÈS le geste`)
+  }
+  return { ok: problemes.length === 0, problemes }
+}
+
+/** Section « ## Restes » : grammaire des dispositions, plafond de restes routants, preuve au site
+ *  des corrections, garde de l'inventaire. Voir `validateSolde` pour le contexte injecté. */
+function checkRestesSection(content, ctx) {
+  const problems = []
+  const restesMatch = RESTES_RE.exec(content)
+  if (!restesMatch) {
+    problems.push('section "## Restes" absente')
+    return problems
+  }
+  if (restesMatch[1].trim() === 'RAS') return problems
+
+  const lines = restesItems(content)
+  if (lines.length === 0) {
+    problems.push('section "## Restes" vide (attendu "RAS" ou des items "- <reste> -> <disposition>")')
+    return problems
+  }
+
+  const routants = lines.filter((l) => ROUTANT_RE.test(l))
+  if (routants.length > MAX_RESTES_ROUTANTS) {
+    problems.push(
+      `${routants.length} restes ROUTÉS vers un ticket neuf (plafond ${MAX_RESTES_ROUTANTS}) : le ticket reste ouvert ` +
+      `sur ce reste — soit le lot GROSSIT pour absorber les restes, soit la fermeture attend (skill orchestrer ` +
+      `§ Fermeture ; formule historique des soldes #829/#900)`,
+    )
+  }
+
+  for (const [i, line] of lines.entries()) {
+    if (!DISPOSITION_RE.test(line)) {
+      problems.push(`item sans disposition valide dans "## Restes" (ligne ${i + 1} du bloc) : "${line}" — attendu "-> #N" / "-> corrigé dans ce commit (<fichier>:<ligne>)" / "-> corrigé par <sha> <fichier>:<ligne>" / "-> RAS : <justification>" / "-> inventaire #<épic> : <état>"`)
+      continue
+    }
+    const corrige = CORRIGE_RE.exec(line)
+    if (corrige) problems.push(...problemesCorrige(corrige[1], i + 1, ctx))
+    const corrigePar = CORRIGE_PAR_RE.exec(line)
+    if (corrigePar) problems.push(...problemesCorrigePar(corrigePar, i + 1, ctx))
+    const inventaire = INVENTAIRE_RE.exec(line)
+    if (inventaire) problems.push(...problemesInventaire(inventaire, i + 1, ctx))
+  }
+  return problems
+}
+
+/** « -> corrigé dans ce commit » : la correction se PROUVE à son site (`fichier:ligne`), le fichier
+ *  doit être dans le diff STAGÉ et la ligne dans un de ses hunks. Les contrôles dont le contexte
+ *  n'est pas fourni (appel PUR) ne se jouent pas — la grammaire, elle, est toujours exigée. */
+function problemesCorrige(queue, rang, { fichiersStages, lignesStagees }) {
+  const problems = []
+  const refs = [...String(queue).matchAll(REF_SITE_RE)]
+    .map((m) => ({ fichier: m[1].replace(/\\/g, '/'), ligne: Number(m[2]) }))
+  if (refs.length === 0) {
+    problems.push(`item "corrigé dans ce commit" sans référence <fichier>:<ligne> (ligne ${rang} du bloc) — une correction annoncée se prouve à son site`)
+    return problems
+  }
+  for (const ref of refs) {
+    if (fichiersStages && !fichiersStages.some((f) => f.replace(/\\/g, '/') === ref.fichier)) {
+      problems.push(`"corrigé dans ce commit" (ligne ${rang} du bloc) cite ${ref.fichier}, ABSENT du diff stagé de ce commit`)
+      continue
+    }
+    if (!lignesStagees) continue
+    const lignes = lignesStagees(ref.fichier)
+    if (lignes && !lignes.includes(ref.ligne)) {
+      problems.push(`"corrigé dans ce commit" (ligne ${rang} du bloc) cite ${ref.fichier}:${ref.ligne}, hors des lignes que ce commit modifie`)
+    }
+  }
+  return problems
+}
+
+/** « -> corrigé par <sha> <fichier>:<ligne> » : la correction est DÉJÀ dans l'histoire. Deux faits se
+ *  vérifient contre git, jamais sur parole : le commit cité est un ANCÊTRE de HEAD (il est bien dans
+ *  cette histoire), et il TOUCHE le fichier cité. Cas fondateur : `.claude/soldes/584.md:7` — le fix
+ *  vit dans 4d6e1ff78, le solde dans 8a2807134, aucune des autres dispositions ne le dit sans mentir.
+ *  Contrôles non fournis (appel PUR) = non joués ; la grammaire, elle, est toujours exigée. */
+function problemesCorrigePar([, sha, fichier, ligne], rang, { commitEstAncetre, fichiersDuCommit }) {
+  const problems = []
+  const cite = fichier.replace(/\\/g, '/')
+  if (commitEstAncetre && !commitEstAncetre(sha)) {
+    problems.push(`"corrigé par ${sha}" (ligne ${rang} du bloc) cite un commit qui n'est pas un ANCÊTRE de HEAD — la correction annoncée n'est pas dans cette histoire`)
+    return problems
+  }
+  if (fichiersDuCommit) {
+    const touches = fichiersDuCommit(sha)
+    if (touches && !touches.some((f) => f.replace(/\\/g, '/') === cite)) {
+      problems.push(`"corrigé par ${sha}" (ligne ${rang} du bloc) cite ${cite}:${ligne}, que ce commit ne touche PAS`)
+    }
+  }
+  return problems
+}
+
+/** « -> inventaire #<épic> : <état> » : un écart PORTÉ, pas un reste routé. Le porter à un épic que
+ *  LE MÊME commit ferme laisserait l'écart sans destinataire — il se convertit alors en ticket. */
+function problemesInventaire([, epic, etat], rang, { issuesFermees }) {
+  const problems = []
+  const texte = etat.trim()
+  if (texte.length < MIN_ETAT_INVENTAIRE) {
+    problems.push(`"inventaire #${epic}" (ligne ${rang} du bloc) sans état lisible (${texte.length} car., ${MIN_ETAT_INVENTAIRE} requis)`)
+  }
+  if (issuesFermees.includes(Number(epic)) && /écart/i.test(texte)) {
+    problems.push(`"inventaire #${epic}" (ligne ${rang} du bloc) porte un écart à un épic que CE COMMIT ferme : convertir en ticket par CLASSE avant la clôture`)
+  }
+  return problems
+}
+
+/** Section « ## Recette visuelle » : exigée dès que le diff stagé touche un fichier d'écran
+ *  (`src/ui/**` / `src/gameIso/**`, hors tests) — décision E1, un écran ne se solde pas sur parole. */
+function checkRecetteVisuelle(content, { touchesUi, verifierCaptureDe }) {
+  if (!touchesUi) return []
+  const section = RECETTE_VISUELLE_RE.exec(content)
+  if (!section) {
+    return ['section "## Recette visuelle" absente alors que le commit touche un écran (src/ui/** ou src/gameIso/**) — y porter "capture: public/qc/<fichier>.png"']
+  }
+  const capture = CAPTURE_RE.exec(section[1])
+  if (!capture) {
+    return ['"## Recette visuelle" sans ligne "capture: <chemin sous public/qc/>"']
+  }
+  return verifierCaptureDe(capture[1]).problemes
+}
+
+/**
+ * Valide le CONTENU d'un solde. `today` = date du jour en `YYYY-MM-DD`.
+ * Contexte INJECTÉ (le driver le remplit depuis git/le disque, un appel nu ne joue que la grammaire) :
+ * `fichiersStages` = chemins du diff stagé ; `lignesStagees(fichier)` = lignes que le commit y
+ * modifie ; `issuesFermees` = tickets fermés par CE commit ; `touchesUi` = le diff touche un écran ;
+ * `verifierCaptureDe(chemin)` = contrôle de la capture de recette (voir `verifierCapture`) ;
+ * `commitEstAncetre(sha)` / `fichiersDuCommit(sha)` = l'histoire git, pour « corrigé par <sha> ».
+ */
+export function validateSolde(content, today, {
+  fichiersStages = null,
+  lignesStagees = null,
+  issuesFermees = [],
+  touchesUi = false,
+  verifierCaptureDe = () => ({ ok: true, problemes: [] }),
+  commitEstAncetre = null,
+  fichiersDuCommit = null,
+} = {}) {
   if (!content) return { ok: false, problems: ['fichier absent'], refuted: false }
 
   const problems = []
@@ -539,23 +797,8 @@ export function validateSolde(content, today) {
     problems.push(`"VERIFIE:" trop court (${vMatch[1].trim().length} car., ${MIN_VERIFIE_LEN} requis — décrire concrètement la vérification faite)`)
   }
 
-  const restesMatch = RESTES_RE.exec(content)
-  if (!restesMatch) {
-    problems.push('section "## Restes" absente')
-  } else {
-    const body = restesMatch[1].trim()
-    if (body !== 'RAS') {
-      const lines = body.split('\n').map((l) => l.trim()).filter(Boolean)
-      if (lines.length === 0) {
-        problems.push('section "## Restes" vide (attendu "RAS" ou des items "- <reste> -> <disposition>")')
-      }
-      for (const [i, line] of lines.entries()) {
-        if (!DISPOSITION_RE.test(line)) {
-          problems.push(`item sans disposition valide dans "## Restes" (ligne ${i + 1} du bloc) : "${line}" — attendu "-> #N" / "-> corrigé dans ce commit" / "-> RAS : <justification>"`)
-        }
-      }
-    }
-  }
+  problems.push(...checkRestesSection(content, { fichiersStages, lignesStagees, issuesFermees, commitEstAncetre, fichiersDuCommit }))
+  problems.push(...checkRecetteVisuelle(content, { touchesUi, verifierCaptureDe }))
 
   const { problems: refutationProblems, refuted } = checkRefutationSection(content)
   problems.push(...refutationProblems)
@@ -591,10 +834,12 @@ export function validateRevuePalier(content, today) {
  * non stagé » dans le message. `counter` = valeur courante du compteur de palier PARTAGÉ (commits de
  * substance depuis la dernière revue), `cheminCompteur` son chemin — nommé dans le refus, pour que
  * la valeur opposée soit vérifiable. `readRevuePalier()` renvoie le contenu de
- * `.claude/soldes/revue-palier.md` ou `null`.
+ * `.claude/soldes/revue-palier.md` ou `null`. `contexteSolde` = le contexte injecté de
+ * `validateSolde` (diff stagé, hunks, écran touché, contrôle de capture) — `issuesFermees` y est
+ * posé ICI, c'est cette décision qui connaît les tickets fermés.
  * @returns {{ decision: 'deny', reason: string } | null} — non-null = refus, null = silence.
  */
-export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, counter = 0, readRevuePalier = () => null, cheminCompteur = null }) {
+export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, counter = 0, readRevuePalier = () => null, cheminCompteur = null, contexteSolde = {} }) {
   const issues = extractClosedIssues(command)
   if (issues.length === 0) return null
 
@@ -623,7 +868,7 @@ export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, 
       })
       continue
     }
-    const { ok, problems } = validateSolde(staged, today)
+    const { ok, problems } = validateSolde(staged, today, { ...contexteSolde, issuesFermees: issues })
     if (!ok) failures.push({ n, problems })
   }
   if (failures.length === 0) return null
@@ -634,8 +879,10 @@ export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, 
     reason:
       `⚠ Fermeture de ticket au commit sans SOLDE conforme : ${detail}. Écrire (ou compléter) le fichier ` +
       `avec une ligne "VERIFIE: <ce que l'orchestrateur a concrètement vérifié, ≥${MIN_VERIFIE_LEN} caractères>", ` +
-      `une section "## Restes" ("RAS" seul, ou des items "- <reste signalé par l'agent> -> <#N nouveau ticket | ` +
-      `corrigé dans ce commit | RAS : justification>"), une section "## Réfutation" (ligne "verdict: ` +
+      `une section "## Restes" ("RAS" seul, ou des items "- <reste signalé par l'agent> -> <#N nouveau ticket ` +
+      `(un SEUL par fermeture) | corrigé dans ce commit (<fichier>:<ligne>) | corrigé par <sha> ` +
+      `<fichier>:<ligne> | RAS : justification | inventaire #<épic> : <état>>"), une section ` +
+      `"## Réfutation" (ligne "verdict: ` +
       `CONFIRMÉ|PARTIEL|RÉFUTÉ", ≥${MIN_REFUTATION_LEN} caractères — qui a attaqué quoi sur le diff/DoD), et ` +
       `la date du jour (demande 2026-07-14), puis le STAGER (\`git add .claude/soldes/<N>.md\`) : la preuve ` +
       `citée par le message de commit vit dans git. L'index est lu AVANT l'exécution : un \`git add\` ` +
@@ -886,7 +1133,7 @@ export function evaluateJuge({ command, stagedTouchesSrc, stagedTotalLines, stag
   if (!visionSatisfied) {
     missing.push(
       `ligne "JUGE-VISION: <captures jugées — ≥${MIN_JUGE_VISION_LINE_LEN} caractères>" (ou section ` +
-      `"## Juge-Vision" dans .claude/soldes/ref-<N>.md) — src/ui/** touché`,
+      `"## Juge-Vision" dans .claude/soldes/ref-<N>.md) — un ÉCRAN est touché (src/ui/** ou src/gameIso/**)`,
     )
   }
 
@@ -1042,7 +1289,22 @@ function pathMatchesPathspec(path, ps) {
   return np === nps || np.startsWith(`${nps}/`)
 }
 
-/** Analyse du diff STAGED (`git diff --cached --numstat`) : touche-t-il `src/**` ? `src/ui/**` ?
+/** Fichier d'ÉCRAN : ce que l'utilisateur VOIT — un composant `.tsx` de `src/ui/**`/`src/gameIso/**`
+ *  ou une feuille de `src/ui/styles/**`, hors tests. Concept unique, partagé par la preuve
+ *  JUGE-VISION (`evaluateJuge`) et la section « ## Recette visuelle » du solde.
+ *  BORNÉ au rendu, à dessein : `src/ui/breakdown.ts` (calcul pur) et `src/gameIso/builders/**.ts`
+ *  (géométrie pure) vivent sous ces racines sans rien AFFICHER — exiger d'eux une capture ferait de
+ *  la recette visuelle une formalité qu'on remplit sans regarder. Un diff qui ne touche que des
+ *  tests d'écran n'a pas davantage de capture à montrer. */
+export function estFichierEcran(path) {
+  const p = String(path ?? '').replace(/\\/g, '/')
+  if (/\.(test|spec)\./.test(p)) return false
+  if (/^src\/ui\/styles\/.+\.css$/.test(p)) return true
+  return /^src\/(ui|gameIso)\/.+\.tsx$/.test(p)
+}
+
+/** Analyse du diff STAGED (`git diff --cached --numstat`) : touche-t-il `src/**` ? un ÉCRAN
+ *  (`estFichierEcran`, rendu par `touchesUi`) ?
  *  combien de lignes (insertions+suppressions) au total ? Fichiers binaires (`-\t-\t<path>`)
  *  comptés 0 ligne mais peuvent toucher `src/**`. `''`/erreur git → aucune touche, 0 ligne
  *  (silence, jamais un deny par accident hors dépôt).
@@ -1056,17 +1318,19 @@ export function analyzeStagedDiff(raw, pathspecs = []) {
   let touchesSrc = false
   let touchesUi = false
   let totalLines = 0
+  const fichiers = []
   const scoped = pathspecs.length > 0
   for (const line of String(raw ?? '').split('\n')) {
     if (!line.trim()) continue
     const [ins, del, ...pathParts] = line.split('\t')
     const path = pathParts.join('\t')
     if (scoped && !pathspecs.some((ps) => pathMatchesPathspec(path, ps))) continue
+    fichiers.push(path)
     totalLines += (Number.parseInt(ins, 10) || 0) + (Number.parseInt(del, 10) || 0)
     if (/^src\//.test(path)) touchesSrc = true
-    if (/^src\/ui\//.test(path)) touchesUi = true
+    if (estFichierEcran(path)) touchesUi = true
   }
-  return { touchesSrc, touchesUi, totalLines }
+  return { touchesSrc, touchesUi, totalLines, fichiers }
 }
 
 /** Lecture du diff STAGED brut (`git diff --cached --numstat`), dans `dir` (répertoire cible du
@@ -1077,6 +1341,227 @@ export function readStagedDiffStat(dir = process.cwd()) {
       encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
     })
   } catch { return '' }
+}
+
+/** Diff STAGÉ d'UN fichier à zéro contexte (`git diff --cached -U0 -- <fichier>`), dans `dir`. */
+export function readStagedFileDiff(fichier, dir = process.cwd()) {
+  try {
+    return execFileSync('git', ['diff', '--cached', '-U0', '--', fichier], {
+      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
+    })
+  } catch { return '' }
+}
+
+/** Chemins rendus par `git diff --name-only [--cached]` dans `dir`. */
+export function readChangedNames(dir = process.cwd(), { cached = false } = {}) {
+  try {
+    const args = ['diff', '--name-only']
+    if (cached) args.push('--cached')
+    return execFileSync('git', args, { encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'] })
+      .split('\n').map((l) => l.trim()).filter(Boolean)
+  } catch { return [] }
+}
+
+/** Fichiers de l'INDEX qui citent un des `numeros` (pré-filtre `git grep --cached`) : le scan de
+ *  commentaires ne s'applique qu'à eux, jamais à l'arbre entier. */
+export function fichiersCitantTickets(numeros, dir = process.cwd()) {
+  if (numeros.length === 0) return []
+  const motif = `#(${numeros.join('|')})([^0-9]|$)`
+  try {
+    return execFileSync('git', ['grep', '--cached', '-l', '-E', motif, '--', 'src', 'scripts'], {
+      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
+    }).split('\n').map((l) => l.trim()).filter(Boolean)
+  } catch { return [] } // aucun match : `git grep` sort en 1
+}
+
+/** Contenu d'un chemin dans l'INDEX de `dir` (`git show :<path>`), `null` s'il n'y est pas. */
+export function readStagedPath(path, dir = process.cwd()) {
+  try {
+    return execFileSync('git', ['show', `:${path}`], {
+      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
+    })
+  } catch { return null }
+}
+
+/** `true` si `sha` est un ANCÊTRE de HEAD dans `dir` (donc réellement dans cette histoire). */
+export function commitEstAncetreDeHead(sha, dir = process.cwd()) {
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', sha, 'HEAD'], {
+      cwd: dir, stdio: ['ignore', 'ignore', 'ignore'],
+    })
+    return true
+  } catch { return false }
+}
+
+/** Chemins touchés par le commit `sha` dans `dir`, `[]` si le sha est inconnu du dépôt.
+ *  `--no-renames` : sans lui, un renommage rend UNE ligne `{ancien => nouveau}` qu'aucun chemin cité
+ *  ne peut égaler — un solde juste était refusé (mesuré sur le renommage de `.claude/soldes/revue-palier.md`). */
+export function fichiersDuCommitGit(sha, dir = process.cwd()) {
+  try {
+    return execFileSync('git', ['show', '--numstat', '--no-renames', '--pretty=format:', sha], {
+      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
+    }).split('\n').map((l) => l.trim()).filter(Boolean)
+      .map((l) => l.split('\t').slice(2).join('\t'))
+      .filter(Boolean)
+  } catch { return [] }
+}
+
+/** Date de dernière écriture la plus RÉCENTE parmi `fichiers` (ms, `0` si aucune lisible). */
+export function mtimeMaxDe(fichiers, racine = process.cwd()) {
+  let max = 0
+  for (const f of fichiers) {
+    try { max = Math.max(max, statSync(join(racine, f)).mtimeMs) } catch { /* fichier supprimé */ }
+  }
+  return max
+}
+
+// ── Fermeture hors commit (l'angle mort mesuré du garde) ──────────────────────────────────────────
+// Le mécanisme entier s'accroche à `git commit` : `gh issue close` fermait le MÊME ticket sans que
+// rien ne demande son solde (sonde `scripts/ops/sondes/audit-2026-09-01/sonde-guard-fermetures.mjs`,
+// revue de palier `revue-palier-2205fde51.md:17`). La fermeture passe par le commit, un point.
+
+/** `true` si les arguments portent un état `closed` (`--state closed`, `--state=closed`,
+ *  `-f state=closed`, `--field state=closed`, `--raw-field state=closed`). */
+function porteEtatFerme(args) {
+  return args.some((a, i) => {
+    if (/^(-f|-F|--field|--raw-field|--state)$/.test(a)) return /^(state=)?closed$/i.test(args[i + 1] ?? '')
+    return /^--state=closed$/i.test(a) || /^state=closed$/i.test(a)
+  })
+}
+
+/** Forme de fermeture `gh` portée par un segment, ou `null`. */
+function fermetureGh(segment) {
+  const start = segment[0] === '&' ? 1 : 0
+  if (basenameExecutable(segment[start]) !== 'gh') return null
+  const args = segment.slice(start + 1)
+  if (args[0] === 'issue' && args[1] === 'close') return 'gh issue close'
+  if (args[0] === 'issue' && args[1] === 'edit' && porteEtatFerme(args)) return 'gh issue edit --state closed'
+  if (args[0] === 'api' && porteEtatFerme(args)) return 'gh api … state=closed'
+  return null
+}
+
+/**
+ * Décision « fermeture d'un ticket HORS commit ». Toute fermeture doit naître d'un `git commit`
+ * porteur de `corrige #N` — c'est le seul chemin où le solde est exigé.
+ *
+ * HORS PORTÉE, dit : `gh api --input <fichier>` (et `--input -`), où le corps de la requête — donc
+ * l'état `closed` — vit dans un FICHIER que la ligne de commande ne montre pas. Même classe que le
+ * `-F` d'un message de commit, mais sans son recours : `-F` est lu parce qu'un chemin de message est
+ * un chemin, alors qu'ici il faudrait interpréter un corps d'API. Lire aussi la sortie de
+ * `scripts/ops/sondes/audit-2026-09-01/sonde-guard-fermetures.mjs`, qui joue ce cas.
+ * @returns {{ decision: 'deny', reason: string } | null}
+ */
+export function evaluateFermetureHorsCommit(command) {
+  if (!command) return null
+  for (const segment of segmentsProfonds(command)) {
+    const forme = fermetureGh(segment)
+    if (!forme) continue
+    return {
+      decision: 'deny',
+      reason:
+        `⛔ Fermeture de ticket HORS commit (${forme}) : la fermeture passe par un commit \`corrige #N\` ` +
+        `porteur de son solde (.claude/soldes/<N>.md) — le closer \`scripts/git-hooks/post-commit\` ferme ` +
+        `l'issue ET y poste le solde. Fermer à la main court-circuite le contrôle entier.`,
+    }
+  }
+  return null
+}
+
+// ── Arbre PRINCIPAL vs worktree ───────────────────────────────────────────────────────────────────
+// Régime 2026-09-01 : l'arbre principal est d'INTÉGRATION, les trains vivent en worktree
+// `.wt-<ticket>-L<n>`. Un worktree lié porte un `.git` FICHIER (`gitdir: …`), l'arbre principal un
+// `.git` DOSSIER : le fait se lit, il ne se déclare pas.
+
+/** `true` si `dir` (ou un de ses ancêtres) est un arbre git dont le `.git` est un DOSSIER. */
+export function estArbrePrincipal(dir = process.cwd()) {
+  let courant = resolve(dir)
+  for (;;) {
+    const point = join(courant, '.git')
+    try {
+      if (existsSync(point)) return statSync(point).isDirectory()
+    } catch { return false }
+    const parent = dirname(courant)
+    if (parent === courant) return false
+    courant = parent
+  }
+}
+
+/**
+ * Décision « commit dans l'ARBRE PRINCIPAL ». `ask` (jamais `deny`) : les cas légitimes existent, et
+ * une porte bloquante sur un geste ROUTINIER arrêterait le programme en l'absence de l'utilisateur.
+ * @returns {{ decision: 'ask', reason: string } | null}
+ */
+export function evaluateArbrePrincipal({ command, principal = false, fichiersStages = [] }) {
+  if (!command || !isGitCommitCommand(command) || !principal) return null
+  const liste = fichiersStages.length
+    ? `${fichiersStages.length} chemin(s) stagé(s) : ${fichiersStages.slice(0, 8).join(', ')}${fichiersStages.length > 8 ? ' …' : ''}`
+    : 'index vide vu par le garde'
+  return {
+    decision: 'ask',
+    reason:
+      `⚠ Commit dans l'ARBRE PRINCIPAL (son .git est un DOSSIER) — ${liste}. Les commits se font en ` +
+      `worktree \`.wt-<ticket>-L<n>\`, l'arbre principal est d'INTÉGRATION (régime 2026-09-01). ` +
+      `Cas légitimes : conflit d'intégration, commit rectificatif, WIP orphelin.`,
+  }
+}
+
+// ── Hunks stagés emportés par `git commit -- <paths>` ─────────────────────────────────────────────
+// `git commit -- <paths>` prend le contenu de l'ARBRE DE TRAVAIL de ces chemins, PAS l'index : un
+// stage par HUNK y est silencieusement annulé, et le WIP non stagé part dans le commit (incidents
+// acf2a447, bb824bafb). Le geste réel est une SÉQUENCE de deux appels — la porte se pose donc sur
+// le commit, jamais sur « les deux dans une commande ».
+
+/** `true` si un segment `git commit` de la commande porte `-a`/`--all` (isolé ou groupé : `-am`). */
+function aFlagTout(command) {
+  for (const segment of segmentsProfonds(command)) {
+    const idx = gitCommitSubcommandIndex(segment)
+    if (idx === -1) continue
+    for (const t of segment.slice(idx + 1)) {
+      if (t === '--all') return true
+      if (/^-[a-zA-Z]*a/.test(t) && !t.startsWith('--')) return true
+    }
+  }
+  return false
+}
+
+/**
+ * Décision « le commit prendra l'ARBRE, pas l'index ». `fichiersModifies` = `git diff --name-only`
+ * (non stagé), `fichiersStages` = `git diff --cached --name-only`.
+ * @returns {{ decision: 'deny', reason: string } | { contexte: string } | null}
+ */
+export function evaluateHunksEmportes({ command, fichiersModifies = [], fichiersStages = [] }) {
+  if (!command || !isGitCommitCommand(command)) return null
+  // `git commit -a` stage TOUT le modifié suivi avant de committer : même effet qu'un pathspec sur
+  // l'arbre entier, même surprise (le WIP non stagé part), donc même mot.
+  if (aFlagTout(command)) {
+    const emportes = fichiersModifies.filter((f) => !fichiersStages.includes(f))
+    if (emportes.length === 0) return null
+    return {
+      contexte:
+        `Note : \`git commit -a\` emporte TOUT le modifié suivi, y compris ce que l'index ne porte ` +
+        `pas : ${emportes.join(', ')}.`,
+    }
+  }
+  const pathspecs = extractCommitPathspecs(command)
+  if (pathspecs.length === 0) return null
+  const nommes = fichiersModifies.filter((f) => pathspecs.some((ps) => pathMatchesPathspec(f, ps)))
+  if (nommes.length === 0) return null
+  const aussiStages = nommes.filter((f) => fichiersStages.includes(f))
+  if (aussiStages.length > 0) {
+    return {
+      decision: 'deny',
+      reason:
+        `⛔ \`git commit -- <paths>\` prend le contenu de l'ARBRE et ignore l'index : ` +
+        `${aussiStages.join(', ')} porte(nt) À LA FOIS des modifications stagées et non stagées — le ` +
+        `stage par hunk serait annulé et le reste emporté. Committer sans pathspec (l'index fait foi), ` +
+        `ou stager tout le fichier avant.`,
+    }
+  }
+  return {
+    contexte:
+      `Note : ${nommes.join(', ')} porte(nt) des modifications NON stagées ; \`git commit -- <paths>\` ` +
+      `les emportera (il prend l'arbre, pas l'index).`,
+  }
 }
 
 /** Décision d'ensemble d'un cumul de refus (patron de driver partagé avec `git-destructive-guard` :
@@ -1113,7 +1598,7 @@ if (isMain) {
   const d = new Date()
   const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   const targetDir = extractTargetDir(command, baseCwd)
-  const { touchesSrc, touchesUi, totalLines } = analyzeStagedDiff(readStagedDiffStat(targetDir), extractCommitPathspecs(command))
+  const { touchesSrc, touchesUi, totalLines, fichiers } = analyzeStagedDiff(readStagedDiffStat(targetDir), extractCommitPathspecs(command))
 
   // Message `-F <chemin>` : résolu dans le répertoire où le `git commit` s'exécute RÉELLEMENT
   // (targetDir), jamais dans celui d'où part la commande — un `cd wt && git commit -F m.txt`
@@ -1133,6 +1618,9 @@ if (isMain) {
   }
 
   migrerCompteurPalier(targetDir)
+  // Le mtime plancher de la capture de recette est celui du DERNIER fichier d'écran stagé : une
+  // capture antérieure au geste montre l'écran d'avant.
+  const mtimeEcrans = mtimeMaxDe(fichiers.filter(estFichierEcran), targetDir)
   const decision = evaluate({
     command: text,
     today,
@@ -1141,6 +1629,14 @@ if (isMain) {
     counter: readCounterFile(targetDir),
     cheminCompteur: cheminCompteurPalier(targetDir),
     readRevuePalier: readRevuePalierFile,
+    contexteSolde: {
+      fichiersStages: fichiers,
+      lignesStagees: (f) => lignesDeHunks(readStagedFileDiff(f, targetDir)),
+      touchesUi,
+      verifierCaptureDe: (chemin) => verifierCapture(chemin, { racine: targetDir, mtimeMin: mtimeEcrans }),
+      commitEstAncetre: (sha) => commitEstAncetreDeHead(sha, targetDir),
+      fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, targetDir),
+    },
   })
   const antiEsquive = evaluateAntiEsquive({
     command: text,
@@ -1157,7 +1653,33 @@ if (isMain) {
   })
   const amendInvisible = evaluateAmendInvisible({ command, stagedTouchesSrc: touchesSrc })
   const manifestClosure = evaluateManifestClosure({ command: text, readStagedManifest: () => readStagedManifestFile(targetDir) })
-  const cumul = decisionCumulee([decision, antiEsquive, juge, amendInvisible, manifestClosure])
+  const horsCommit = evaluateFermetureHorsCommit(command)
+  // Volet anti-tombale : `commentPoison` tire le vocabulaire RAW derrière lui — chargé SEULEMENT
+  // quand la commande ferme un ticket.
+  const fermes = extractClosedIssues(text)
+  let tombale = null
+  if (fermes.length > 0) {
+    const { evaluateTombale } = await import('./solde-tombale.mjs')
+    tombale = evaluateTombale({
+      issuesFermees: fermes,
+      fichiers: fichiersCitantTickets(fermes, targetDir),
+      lire: (p) => readStagedPath(p, targetDir),
+    })
+  }
+  const arbrePrincipal = evaluateArbrePrincipal({
+    command,
+    principal: estArbrePrincipal(targetDir),
+    fichiersStages: fichiers,
+  })
+  const hunks = evaluateHunksEmportes({
+    command,
+    fichiersModifies: readChangedNames(targetDir),
+    fichiersStages: readChangedNames(targetDir, { cached: true }),
+  })
+  const cumul = decisionCumulee([
+    decision, antiEsquive, juge, amendInvisible, manifestClosure,
+    horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null,
+  ])
   if (cumul) {
     console.log(JSON.stringify({
       hookSpecificOutput: {
@@ -1165,6 +1687,10 @@ if (isMain) {
         permissionDecision: cumul.decision,
         permissionDecisionReason: cumul.reason,
       },
+    }))
+  } else if (hunks?.contexte) {
+    console.log(JSON.stringify({
+      hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: hunks.contexte },
     }))
   }
   process.exit(0)
