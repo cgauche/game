@@ -58,8 +58,8 @@
     "type": "props",
     "label": "Clôture",
     "solid": true,
-    "cover": "moyenne",
-    "maison": "couvert maison : une clôture EST la barrière en bois de l’étalon de couvert MOYEN (LDB 14 l.81) — même objet, aucune extrapolation"
+    "cover": "imparfaite",
+    "maison": "couvert maison : la def d’art est une clôture à CLAIRE-VOIE (quatre poteaux, deux lisses). Aucun ancrage canon ne colle : la clôture en clayonnage d’AA (l.28-51) vaut +0 mais est un TRESSAGE serré de minces branches de saule (AA 10 l.65), et la barrière en bois de l’étalon MOYEN (LDB 14 l.81) est faite de planches pleines. À claire-voie, l’objet est entre les deux — valeur INTERCALÉE sur l’étalon IMPARFAIT de la haie (LDB 14 l.72), le seul que le canon donne à un obstacle AJOURÉ"
   },
   {
     "id": "palissade",

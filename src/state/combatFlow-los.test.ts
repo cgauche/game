@@ -43,7 +43,7 @@ const mkGet = (sc: Scene, combatants: Combatant[]): (() => GameState) =>
  *  simplement déplacée dans la Difficulté. */
 const nomme = (d: RollBreakdown): ModLine[] => [...(d.mods ?? []), ...(d.difficultyParts ?? [])];
 
-describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', () => {
+describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.114 / 14)', () => {
   it('mur intercalé à distance de la cible → pas de Ligne de Vue → null (pas de tir)', () => {
     seedBattleRng(1);
     const s = scene(7, { '3,0': 'mur' });

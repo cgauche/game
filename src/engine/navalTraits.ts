@@ -21,6 +21,7 @@
 import { findNavalTrait } from '../data';
 import type { GameOp } from './ops';
 import type { DeckCoverClass, DeckPosteSlot, NavalTraitRef } from './types';
+import { couvertLePlusProtecteur } from './cover';
 
 /** Indice (niveau) du Trait naval `id` dans une liste de réfs : `value` de la réf (défaut 1 si présent sans
  *  Indice explicite), absent → 0. PUR. Source UNIQUE de lecture de l'Indice (jamais un parsing de libellé). */
@@ -123,12 +124,6 @@ export function navalNavTestDR(traits: NavalTraitRef[] | undefined): number {
   return Math.trunc(navalNavTestMod(traits) / 10);
 }
 
-/** Ordre croissant du couvert de pont (pire → meilleur pour le défenseur) — parallèle à `coverModifier`
- *  (`state/lineOfSight.ts`) sans dépendance state→engine. */
-const DECK_COVER_ORDER: (DeckCoverClass | 'none')[] = ['none', 'imparfaite', 'moyenne', 'totale'];
-const bestDeckCover = (a: DeckCoverClass | 'none', b: DeckCoverClass | 'none'): DeckCoverClass | 'none' =>
-  DECK_COVER_ORDER.indexOf(b) > DECK_COVER_ORDER.indexOf(a) ? b : a;
-
 /** COUVERT de pont conféré par les Traits/Améliorations d'une coque — champ de domaine `deckCover` GRADUÉ
  *  (`DeckCoverClass`, migré du booléen) : **Sabord** et **Murs blindés** = `totale` (MDG 12 l.364 / MSRC 12
  *  l.85), **Plat-bord** = `moyenne` (MSRC 12 l.111, « couverture moyenne … tirs Difficiles »). Retourne le
@@ -137,7 +132,7 @@ export function navalDeckCover(traits: NavalTraitRef[] | undefined): DeckCoverCl
   let best: DeckCoverClass | 'none' = 'none';
   for (const ref of traits ?? []) {
     const dc = findNavalTrait(ref.id)?.deckCover;
-    if (dc) best = bestDeckCover(best, dc);
+    if (dc) best = couvertLePlusProtecteur(best, dc);
   }
   return best;
 }
@@ -152,7 +147,7 @@ export function navalDeckCover(traits: NavalTraitRef[] | undefined): DeckCoverCl
 export function effectiveDeckPostes(postes: DeckPosteSlot[], cover: DeckCoverClass | 'none'): DeckPosteSlot[] {
   if (cover === 'none') return postes;
   return postes.map((p) => {
-    const eff = bestDeckCover(p.cover ?? 'none', cover);
+    const eff = couvertLePlusProtecteur(p.cover ?? 'none', cover);
     return eff === (p.cover ?? 'none') ? p : { ...p, cover: eff as DeckCoverClass };
   });
 }

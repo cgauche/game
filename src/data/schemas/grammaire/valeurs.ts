@@ -5,7 +5,7 @@
  * fichier ne compose que la RÉFÉRENCE (`refOuSpec`).
  */
 import { z } from 'zod';
-import { AVAILABILITIES, STAKE_FORMS } from '../../../engine/types';
+import { AVAILABILITIES, COUVERT_DIFFICULTES, STAKE_FORMS } from '../../../engine/types';
 import { refOuSpec } from './ref';
 
 /**
@@ -267,6 +267,14 @@ export const difficultySchema = z.enum([
   'presqueImpossible',
   'impossible',
 ]);
+
+/**
+ * Sous-ensemble de `difficultySchema` que la colonne « Pénalité de Couvert » d'une Structure peut porter
+ * (`AA 10 l.28-51`) : les quatre échelons auxquels une classe de couvert répond (`CoverClass`,
+ * `engine/cover.ts`). DÉRIVE du tuple canon `COUVERT_DIFFICULTES` (`src/engine/types.ts`) par
+ * `.extract` — il ne re-tape rien.
+ */
+export const couvertDifficultySchema = difficultySchema.extract(COUVERT_DIFFICULTES);
 
 /**
  * `CharKey` (`src/engine/types.ts`) — les 10 Caractéristiques. Réf récurrente (Conditions `compare`,

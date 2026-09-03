@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, wallBetween, isWalkable, wallIsOpen, doorIsOpen, doorAt, type WallSeg } from './scene';
 import { roofHidden } from './buildings';
+import { lineOfSightCover } from './lineOfSight';
 
 /**
  * Modèle « relief unifié » : un bâtiment n'est plus une entité monolithique (périmètre implicite +
@@ -46,17 +47,31 @@ describe('bâtiment COMPOSÉ — cloisons d’arête (wallBetween) + terrain', (
   });
 });
 
-describe('INVARIANT COMBAT — une fenêtre est DÉCORATIVE (bloque EXACTEMENT comme un mur plein)', () => {
-  it('window n’est lu par AUCUNE règle : wallIsOpen + wallBetween identiques à un mur nu', () => {
-    const plain = emptyScene(6, 6); plain.walls = [{ x: 2, y: 2, side: 'N' }];
-    const win = emptyScene(6, 6); win.walls = [{ x: 2, y: 2, side: 'N', window: true }];
-    // wallIsOpen (LdV/vision) : false = bloque, identique.
-    expect(wallIsOpen(win, win.walls![0])).toBe(false);
-    expect(wallIsOpen(win, win.walls![0])).toBe(wallIsOpen(plain, plain.walls![0]));
-    // wallBetween (passage/marchabilité) : identique de part et d'autre de l'arête.
-    expect(wallBetween(win, 2, 2, 2, 1)).toBe(true);
-    expect(wallBetween(win, 2, 2, 2, 1)).toBe(wallBetween(plain, 2, 2, 2, 1));
-    expect(isWalkable(win, 2, 2)).toBe(isWalkable(plain, 2, 2));
+/**
+ * INVARIANT COMBAT de la FENÊTRE. Une croisée est une OUVERTURE dans une Structure qui tient : le
+ * canon en connaît l'effet, c'est celui d'une Percée (`AA 10 l.122`) — le couvert descend d'un cran,
+ * la Structure ne devient PAS transparente ni franchissable. La fenêtre est donc lue par EXACTEMENT
+ * une règle, le cran de couvert (`couvertDArete`, `state/lineOfSight.ts`) ; passage, marchabilité et
+ * occultation restent ceux d'un mur plein.
+ */
+describe('INVARIANT COMBAT — la fenêtre n’ouvre RIEN sauf un cran de couvert', () => {
+  const plain = () => { const s = emptyScene(6, 6); s.walls = [{ x: 2, y: 2, side: 'N', structure: 'mur-de-chateau' }]; return s; };
+  const win = () => { const s = emptyScene(6, 6); s.walls = [{ x: 2, y: 2, side: 'N', structure: 'mur-de-chateau', window: true }]; return s; };
+
+  it('passage et occultation : IDENTIQUES à un mur plein (wallIsOpen, wallBetween, isWalkable)', () => {
+    const [p, w] = [plain(), win()];
+    expect(wallIsOpen(w, w.walls![0])).toBe(false);
+    expect(wallIsOpen(w, w.walls![0])).toBe(wallIsOpen(p, p.walls![0]));
+    expect(wallBetween(w, 2, 2, 2, 1)).toBe(true);
+    expect(wallBetween(w, 2, 2, 2, 1)).toBe(wallBetween(p, 2, 2, 2, 1));
+    expect(isWalkable(w, 2, 2)).toBe(isWalkable(p, 2, 2));
+  });
+
+  it('COUVERT : la croisée coûte un cran à la Structure qui la porte (AA 10 l.122)', () => {
+    const tireur = { x: 1, y: 1 };
+    const cible = { x: 2, y: 2 };
+    expect(lineOfSightCover(plain(), tireur, cible, []).cover).toBe('totale');
+    expect(lineOfSightCover(win(), tireur, cible, []).cover).toBe('moyenne');
   });
 });
 

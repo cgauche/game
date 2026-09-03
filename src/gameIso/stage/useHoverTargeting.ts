@@ -70,7 +70,7 @@ export function useHoverTargeting(
   const effFocusId = combatCursor?.snappedId ?? hoverCombatantId;
 
   // Grisage hors-LdV : ennemis que le héros actif ne peut PAS viser au tir faute de Ligne de Vue
-  // (LDB 13 l.123) → pion fantomatique. Distingue « hors LdV » de « hors de portée ». Actif pendant la
+  // (LDB 13 l.114) → pion fantomatique. Distingue « hors LdV » de « hors de portée ». Actif pendant la
   // visée — mode neutre ou catégorie Tir ouverte — tant que l'Action n'est pas consommée.
   const ghostIds = useMemo<Set<string>>(() => {
     if (mode !== 'battle' || !battle || battle.over) return new Set();

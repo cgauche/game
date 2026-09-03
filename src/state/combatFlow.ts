@@ -191,7 +191,8 @@ import { STEP_MAX_M } from './relief';
 import { placeCombatant } from './spawn';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove, riderFearSize, combatGeomOf, attackGeomOf, meleeWeaponInRange, pickAttackWeaponList } from './mount';
-import { lineOfSightCover, losClear, coverModifier, worstCover, tilesBetween, tileSeenByFoe } from './lineOfSight';
+import { lineOfSightCover, losClear, tilesBetween, tileSeenByFoe } from './lineOfSight';
+import { coverModifier, couvertLePlusProtecteur } from '../engine/cover';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, crewPosteOf } from './shipPostes';
 import { isVehicle } from '../engine/vehicle';
 import { targetArc, headingToBear } from './fireArc';
@@ -687,7 +688,7 @@ export function attackEnv(
     // elle-même coupe la LdV vers la case DERRIÈRE elle (un canon ne « voit pas à travers » la porte qu'il vise).
     const losTo = isStructure(target) ? structureAimCell(attacker.pos!, target) : target.pos!;
     const los = lineOfSightCover(scene, attacker.pos!, losTo, occupants, smokeOf(battle));
-    if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.123)
+    if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.114)
     // Météo du JOUR (EDOC 8) : le tir sous l'orage encaisse la pénalité de temps (Pluie -10 l.76,
     // Pluie diluvienne -20 l.82), la poudre EXPOSÉE meurt (l.82), le Blizzard rend le tir impossible
     // (l.127) — MÊME contexte de « conditions du jour » que les Activités de l'Étape.
@@ -705,7 +706,7 @@ export function attackEnv(
     // MSRC f.66 l.111) reçoit sa classe par le MÊME chemin que le couvert de terrain — le plus protecteur
     // des deux (`DeckCoverClass ⊂ CoverClass`). `crewPosteOf` couvre tout l'équipage (chef ET support).
     const posteCover = crewPosteOf(target.id, battle.combatants)?.poste.cover;
-    const cover = posteCover ? worstCover(los.cover, posteCover) : los.cover;
+    const cover = posteCover ? couvertLePlusProtecteur(los.cover, posteCover) : los.cover;
     if (cover !== 'none') env.push({ label: tr('cf.coverLabel', { cover }), value: coverModifier(cover), famille: 'circonstance' });
     // Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne : annule la pénalité d'obscurité.
     if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -20, famille: 'circonstance', ref: RULE_REF['cible-dissimulee'] }); // cible dissimulée (LDB 14 l.75)
@@ -1091,7 +1092,7 @@ export function eligibleAttackTargetIds(get: Get): Set<string> {
   return ids;
 }
 
-/** Ennemis SANS Ligne de Vue depuis le héros actif (LDB 13 l.123 — le tir est impossible) :
+/** Ennemis SANS Ligne de Vue depuis le héros actif (LDB 13 l.114 — le tir est impossible) :
  *  l'UI les GRISE pour distinguer « hors LdV » de « hors de portée » (pas d'anneau dans les
  *  deux cas). Même vérité que l'attaque réelle (`previewAttack.blocked`, arme à distance
  *  seulement — la mêlée n'est jamais bloquée par la LdV). */
@@ -1546,7 +1547,7 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
   // QUE la pièce servie (bélier, #210) n'a aucune arme personnelle et ferait échouer l'invariant mains-nues.
   // `assertAttackWeapon(active.weapons)` seul masquait le canon d'un poste RANGED (arme d'équipe, MDG 12) : le
   // tir joueur retombait sur une arme perso de mêlée et refusait « hors de portée » (#BUG-A). Gate PRÉ-clic
-  // (parité sort) : sans Ligne de Vue (LDB 13 l.123) ou au-delà de la bande Extrême (Portée ×3), refuser AVANT
+  // (parité sort) : sans Ligne de Vue (LDB 13 l.114) ou au-delà de la bande Extrême (Portée ×3), refuser AVANT
   // la modale — sinon « Lancer » fabrique un raté garanti qui consomme l'Action. Les gates de la résolution
   // restent (défense en profondeur). Le gate de RESSOURCE (Recharge/munition) est porté par `firedAttackBlock`
   // (concern orthogonal), rejoué par le clic ET le survol sur ce `{kind:'attack'}`.

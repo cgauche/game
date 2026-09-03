@@ -22,7 +22,7 @@ function scene(w: number, tiles?: Record<string, string>): Scene {
   return { id: 's', name: 's', dimensions: { w, h: 1 }, ambiance: 'jour', layers: [{ z: 0, tiles: grid }], entities: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene;
 }
 
-describe('IA — respecte la Ligne de Vue au tir (LDB 13 l.123)', () => {
+describe('IA — respecte la Ligne de Vue au tir (LDB 13 l.114)', () => {
   it('cible visible → tire', () => {
     const action = chooseEnemyAction({ enemy: enemy(), heroes: [hero(5)], scene: scene(7), blocked: new Set(), movement: 4, spells: [] });
     expect(action.kind).toBe('shoot');

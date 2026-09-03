@@ -1,26 +1,22 @@
 /**
  * Ligne de Vue & Couvert (LDB 14 l.72/81/86 — les trois étalons de couvert ; l.75 — le tir dissimulé).
  * Lit la Scène (terrain, bâtiments, décors, occupants) — vit en `state` car l'engine pur ne dépend
- * jamais de `Scene`. Le `coverModifier` numérique est injecté dans `attackModifiers` via `env: ModLine[]`
- * (cf. combatFlow). La table de couvert n'est pas exhaustive (LDB 14 l.48 : « servez-vous de ces
- * exemples comme guide ») — la classification des décors/créatures est une extrapolation des étalons.
+ * jamais de `Scene`. Le barème et la fusion des classes vivent au moteur (`engine/cover.ts`) ; leur
+ * `coverModifier` numérique est injecté dans `attackModifiers` via `env: ModLine[]` (cf. combatFlow).
+ * La table de couvert n'est pas exhaustive (LDB 14 l.48 : « servez-vous de ces exemples comme guide »)
+ * — la classification des décors/créatures est une extrapolation des étalons ; celle des STRUCTURES
+ * d'arête est authored et sourcée (`couvertPenalty`, `AA 10 l.23`).
  */
-import { Scene, tileAt, wallBetween, heightAt, sceneMetresPerTile } from './scene';
+import { Scene, tileAt, wallBetween, heightAt, sceneMetresPerTile, edgeOf, structureAt, structureIsDown } from './scene';
 import { TERRAINS } from './terrain';
-import { findPropById } from '../data';
+import { findPropById, findStructureById } from '../data';
 import { decorEnCase } from './decorIndex';
 import { Pt } from './path';
-import type { Combatant } from '../engine/types';
+import type { Combatant, CoverClass } from '../engine/types';
+import { couvertDepuisDifficulte, couvertLePlusProtecteur, cranDeCouvertEnMoins } from '../engine/cover';
 import { chebyshev } from '../engine/grid';
 
-export type CoverClass = 'none' | 'imparfaite' | 'moyenne' | 'totale';
-
-const COVER_MOD: Record<CoverClass, number> = { none: 0, imparfaite: -10, moyenne: -20, totale: -30 };
-export const coverModifier = (c: CoverClass): number => COVER_MOD[c];
-/** Retient le couvert le PLUS protecteur des deux (modificateur le plus bas). Source unique de la
- *  fusion terrain × couvert de pont (`DeckCoverClass ⊂ CoverClass`, cf. combatFlow `attackEnv`). */
-export const worstCover = (a: CoverClass, b: CoverClass): CoverClass => (COVER_MOD[b] < COVER_MOD[a] ? b : a);
-const worst = worstCover;
+const worst = couvertLePlusProtecteur;
 
 /** Couvert d'un terrain partiel. */
 const TERRAIN_COVER: Record<string, CoverClass> = { bois: 'imparfaite' };
@@ -107,12 +103,73 @@ export function tileBlocksSight(scene: Scene, x: number, y: number): boolean {
 }
 
 /**
+ * Arêtes de la case CIBLE dont le côté REGARDE le tireur — une en approche cardinale, deux en
+ * diagonale. GRANDEUR MAISON, au même titre que le seuil d'angle mort plus bas et `STEP_MAX_M`
+ * (`relief.ts`) : le canon décrit la POSTURE (`AA 10 l.23`, on « s'en sert activement comme d'un
+ * couvert ») et jamais la géométrie de grille qui dit QUELLE arête abrite. Formulation retenue — la
+ * plus simple qui rende cette posture : on se plaque contre l'arête de SA PROPRE case du côté d'où
+ * vient le tir. Elle n'exige aucune notion de hauteur (le dépôt n'en a aucune côté règles), ne dépend
+ * pas du trajet du rayon (donc ni de son arrondi, ni de l'ordre des pas) et reste locale à la cible —
+ * ce que le canon décrit : un couvert dont la cible SE SERT, pas un obstacle rencontré. Les arêtes
+ * DIAGONALES (`\`,`/`) n'en sont jamais : `edgeOf` ne connaît que le cardinal, comme `wallBetween`.
+ */
+function aretesAbritantes(from: Pt, to: Pt): { x: number; y: number; side: 'N' | 'E' }[] {
+  const out: { x: number; y: number; side: 'N' | 'E' }[] = [];
+  if (from.x !== to.x) {
+    const e = edgeOf(to.x, to.y, from.x < to.x ? to.x - 1 : to.x + 1, to.y);
+    if (e) out.push(e);
+  }
+  if (from.y !== to.y) {
+    const e = edgeOf(to.x, to.y, to.x, from.y < to.y ? to.y - 1 : to.y + 1);
+    if (e) out.push(e);
+  }
+  return out;
+}
+
+/**
+ * Couvert que les STRUCTURES d'arête abritant la cible offrent à celle-ci (`AA 10 l.23` : la Pénalité
+ * de Couvert d'une Structure EST la Difficulté par défaut d'un assaillant qui tire sur qui s'y abrite ;
+ * barème `couvertDepuisDifficulte`). Le couvert est une propriété de la STRUCTURE, pas du trait de mur :
+ * une arête sans `structure` n'en donne aucun, et les Structures dont la colonne est N/A (`Herse`
+ * `AA 10 l.42`, `Solide porte en bois` l.50) comme celles dont le profil n'a pas cette colonne (les 5
+ * entrées ADE II, `ADE II 8 l.282-288`) n'en donnent pas davantage — aucune valeur n'est supposée.
+ * Une arête ABATTUE n'abrite plus rien (`AA 10 l.127`, Effondrement).
+ *
+ * MÊME ÉTAGE SEULEMENT. `AA 10 l.23` décrit un défenseur posté SUR une Structure (« les créneaux du
+ * rempart d'un château »), et aucune donnée du dépôt ne dit qu'une Structure se défend depuis le haut :
+ * `structures.json` n'a pas de champ pour ça et `fortified` est documenté RENDU
+ * (`schemas/defs/structures.ts`). Étendre le couvert d'arête au tir inter-étages sans ce fait revient à
+ * accorder la protection d'un rempart aux planchers d'une auberge — d'autant que la LdV inter-étages
+ * ignore déjà les arêtes (plus bas) : la cible serait couverte à travers des murs qu'on ne voit pas.
+ * Le couvert du défenseur perché attend donc la donnée qui le porte, il ne s'extrapole pas ici.
+ *
+ * FENÊTRE : un cran de moins (`cranDeCouvertEnMoins`). Référence `AA 10 l.122` ; l'application à une
+ * croisée est MAISON — extrapolation de Percée : une fenêtre est une ouverture permanente de même
+ * nature que la petite brèche que ce critique ouvre, et le canon y dégrade le couvert d'exactement un
+ * cran sans rendre la Structure transparente (elle reste occultante, comme l'Enfoncée l.126 le reste).
+ */
+export function couvertDArete(scene: Scene, from: Pt, to: Pt): CoverClass {
+  const z = to.z ?? 0;
+  if ((from.z ?? 0) !== z) return 'none';
+  let cover: CoverClass = 'none';
+  for (const e of aretesAbritantes(from, to)) {
+    const seg = structureAt(scene, e.x, e.y, e.side, z);
+    if (!seg?.structure || structureIsDown(scene, seg)) continue;
+    const pen = findStructureById(seg.structure)?.couvertPenalty;
+    if (!pen) continue;
+    const brut = couvertDepuisDifficulte(pen);
+    cover = worst(cover, seg.window ? cranDeCouvertEnMoins(brut) : brut);
+  }
+  return cover;
+}
+
+/**
  * Couvert + Ligne de Vue du tireur `from` vers la cible `to`. `occupants` = cases occupées par
  * d'autres combattants (couvert imparfait, extrapolation `14` l.75). `smoke` = cases enfumées
  * (Souffle (Fumée)) qui BLOQUENT entièrement la vue (RAW « bloquant les Lignes de vue ») —
- * y compris si le tireur ou la cible est DANS la fumée. `blocked:true` = pas de tir (cible
- * entièrement masquée, `13` l.123) ; un bloqueur de vue ADJACENT à la cible = couverture totale
- * −30 (« derrière un mur de pierre », `14` l.120) sans empêcher le tir.
+ * y compris si le tireur ou la cible est DANS la fumée. `blocked:true` = pas de tir (la Ligne de Vue
+ * est requise pour tirer, `13` l.114) ; un bloqueur de vue ADJACENT à la cible = couverture totale
+ * −30 (« derrière un mur de pierre », `14` l.86) sans empêcher le tir.
  */
 export function lineOfSightCover(
   scene: Scene,
@@ -146,7 +203,11 @@ export function lineOfSightCover(
     const horizM = chebyshev(from, to) * sceneMetresPerTile(scene);
     if (dzM > horizM) return { blocked: true, cover: 'totale' };
   }
-  let cover: CoverClass = 'none';
+  // Structures d'arête qui ABRITENT la cible (`AA 10 l.23`) : le contournement d'EXTRÉMITÉ, seule
+  // situation où le tir atteint une cible qu'une arête intacte abrite — `wallOnSight` vient de laisser
+  // passer le rayon par le côté ouvert du coin. `couvertDArete` se borne au MÊME étage (son JSDoc dit
+  // pourquoi) : le tir inter-étages n'en reçoit aucun.
+  let cover: CoverClass = couvertDArete(scene, from, to);
   for (const t of tilesBetween(from, to)) {
     const terr = tileAt(scene, t.x, t.y);
     const decor = decorEnCase(scene, t.x, t.y);

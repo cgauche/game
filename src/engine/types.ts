@@ -271,8 +271,9 @@ export interface StructureData {
   /** Limite d'Encombrement supportée par la Structure elle-même (AA 10 l.28-52) — `undefined` = N/A. */
   encLimit?: number;
   /** Pénalité de Couvert par défaut pour un assaillant qui tire sur une cible réfugiée sur/derrière la
-   *  Structure (AA 10 l.28-52) — `undefined` = N/A (aucun couvert, ex. Herse/Solide porte en bois). */
-  couvertPenalty?: Difficulty;
+   *  Structure (AA 10 l.23, colonne l.28-51) — `undefined` = N/A (aucun couvert : Herse l.42 et Solide
+   *  porte en bois l.50 ; les 5 entrées ADE II, dont la table n'a pas cette colonne, ADE II 8 l.282-288). */
+  couvertPenalty?: CouvertDifficulty;
   /** Provenance RAW au FOLIO imprimé (ADE II 89 ; AA 119-120) — même forme que `SourceRef`. */
   source: { book: string; page: number };
   desc?: string;
@@ -1221,10 +1222,14 @@ export interface ItemInstance {
   source?: EffectSource;
 }
 
-/** Niveau de COUVERT gradué d'un poste de pont (Sabord/Plat-bord/Murs blindés) — mêmes libellés que le
- *  `CoverClass` du combat (`state/lineOfSight.ts`, ceux au-dessus de `none`) : `moyenne` (−20, tir Difficile,
- *  Plat-bord) < `totale` (−30, tir Très Difficile, Sabord/Murs blindés). Assignable tel quel à `coverModifier`. */
+/** Niveau de COUVERT gradué d'un poste de pont (Sabord/Plat-bord/Murs blindés) — les classes de couvert
+ *  du combat AU-DESSUS de `none` : `moyenne` (−20, tir Difficile, Plat-bord) < `totale` (−30, tir Très
+ *  Difficile, Sabord/Murs blindés). L'inclusion `DeckCoverClass ⊂ CoverClass` est STRUCTURELLE (ci-dessous). */
 export type DeckCoverClass = 'imparfaite' | 'moyenne' | 'totale';
+
+/** Classe de COUVERT d'une cible de tir — les trois étalons que la table de difficulté du combat imprime
+ *  (`LDB 14 l.72/81/86`) plus l'absence de couvert. Barème et fusion : `engine/cover.ts`. */
+export type CoverClass = 'none' | DeckCoverClass;
 
 /** Pièce d'artillerie MONTÉE — forme AUTHORÉE/STOCKÉE (donnée de scène, #222). La base (Dégâts/Qualités/Enc/
  *  Portée…) n'est PLUS matérialisée : elle est HYDRATÉE au spawn depuis `trappingId` par `hydratePoste`
@@ -1819,6 +1824,12 @@ export type Difficulty =
   // Difficultés extrêmes de L'Ennemi dans l'Ombre (EDO App.2 l.156-165, « MAIS C'EST IMPOSSIBLE ! »).
   | 'presqueImpossible' // -40
   | 'impossible'; // -50
+
+/** Les QUATRE Difficultés que la colonne « Pénalité de Couvert » d'une Structure peut porter
+ *  (`AA 10 l.28-51`), dans l'ordre croissant de protection. Canon UNIQUE : `couvertDifficultySchema`
+ *  (`schemas/grammaire/valeurs.ts`) en dérive, `CoverClass` leur répond un pour un (`engine/cover.ts`). */
+export const COUVERT_DIFFICULTES = ['intermediaire', 'complexe', 'difficile', 'tresDifficile'] as const satisfies readonly Difficulty[];
+export type CouvertDifficulty = (typeof COUVERT_DIFFICULTES)[number];
 
 export const DIFFICULTY_MODIFIERS: Record<Difficulty, number> = {
   tresFacile: 60,

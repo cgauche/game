@@ -10,7 +10,7 @@
  * `missileDamage`), le positionnement réutilise la géométrie (`isFlankOrRear`/`lineOfSightCover`). Les
  * HEURISTIQUES de CHOIX (menace, positionnement) ne sont pas des règles canon (latitude permise), mais
  * chaque chiffre dérive d'une fonction du moteur — pas de constante magique « pifométrique » — et toute
- * action jouée passe par la résolution RAW (LoS LDB 13 l.123, bandes de portée appliquées au jet).
+ * action jouée passe par la résolution RAW (LoS LDB 13 l.114, bandes de portée appliquées au jet).
  *
  * Lot 3 — l'IA vise par MENACE (`targetThreat`, plus le « PV le plus bas »), achève proprement
  * (`killSecure`), ne s'acharne pas (`overkillPenalty`), valorise les États infligés (`CONDITION_THREAT`,
@@ -29,6 +29,7 @@ import { reachable, flyReachable, manhattan, chebyshev, Pt, type TraverseCapabil
 import { footprintChebyshev, footprintN, combatDistance } from './footprint';
 import { verticalTiles } from './relief';
 import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
+import { COVER_ORDER } from '../engine/cover';
 import { rangeBandModifier, outnumberMod, canFireWhileEngaged, type ModLine } from '../engine/combat';
 import { effectiveWeaponRange } from '../engine/weaponDamage';
 import { loadedAmmo } from '../engine/items';
@@ -562,7 +563,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Adversaires au Combat rapproché (au contact). Avec une arme de mêlée, on les frappe plutôt que
   // de tirer : une arme à distance sans Atout Pistolet ne tire pas en mêlée (LDB Armes l.297-298).
   const adjacentFoes = heroes.filter(inMelee);
-  // Ligne de Vue (LDB 13 l.123) : on ne vise au tir/sort qu'une cible visible. Occupants ignorés
+  // Ligne de Vue (LDB 13 l.114) : on ne vise au tir/sort qu'une cible visible. Occupants ignorés
   // ici (une créature ne BLOQUE pas la vue — elle ne donne qu'un couvert imparfait, géré au jet).
   const visible = (h: Combatant): boolean => losClear(scene, pos, h.pos!, smoke ?? []);
   const shootableHeroes = heroes.filter(visible);
@@ -601,7 +602,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
   const reach = (flying ? flyReachable : reachable)(scene, pos, movement, { blocked, foot: footprintN(enemy), noStop: input.noStop, traverse });
 
-  // ANTI-IMMOBILISME (combat ENGAGÉ, fidélité LDB 13 l.123) : si la perception ne montre AUCUNE cible
+  // ANTI-IMMOBILISME (combat ENGAGÉ, fidélité LDB 13 l.114) : si la perception ne montre AUCUNE cible
   // (lumière/Ligne de Vue) mais que des adversaires EXISTENT, l'ennemi avance d'un cran vers le plus
   // proche NON perçu — il ne tire/lance PAS dessus (pas de vue), il se RAPPROCHE seulement (mouvement
   // seul), au lieu de passer son tour planté. Pur : aucune cible non perçue n'est jamais visée.
@@ -823,13 +824,13 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     // Gain de couvert POUR SOI face à la menace la plus proche : un couvert imparfait/moyen/total à
     // l'arrivée réduit les tirs adverses (lineOfSightCover, direction héros→case). Cran gagné vs case actuelle.
     const coverRank = (from: Pt): number => {
-      let worst = 0;
+      let meilleur = 0;
       for (const h of heroes) {
         const c = lineOfSightCover(scene, h.pos!, from, [], smoke ?? []);
-        const rank = c.cover === 'totale' ? 3 : c.cover === 'moyenne' ? 2 : c.cover === 'imparfaite' ? 1 : 0;
-        if (rank > worst) worst = rank;
+        const rang = COVER_ORDER.indexOf(c.cover); // échelle UNIQUE du couvert (engine/cover.ts)
+        if (rang > meilleur) meilleur = rang;
       }
-      return worst;
+      return meilleur;
     };
     const coverDelta = coverRank(to) - coverRank(pos);
     if (coverDelta > 0) v += Weff.coverGain * coverDelta;

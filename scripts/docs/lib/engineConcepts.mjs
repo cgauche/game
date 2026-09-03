@@ -44,6 +44,7 @@ export const FILE_CONCEPTS = new Map([
   ['src/engine/conditions.ts', 'États (Conditions LDB 16)'],
   ['src/engine/conjuredWeapons.ts', 'Armes conjurées (magie)'],
   ['src/engine/consumables.ts', 'Consommables : usage, effets'],
+  ['src/engine/cover.ts', 'Couvert : barème, fusion, bijection avec la Difficulté'],
   ['src/engine/corruption.ts', 'Corruption, Chaos, mutation, Péché'],
   ['src/engine/creation.ts', "Création de personnage : Carrière aléatoire (tirage), espèce aléatoire, achat de points"],
   ['src/engine/creatureAttacks.ts', 'Attaques de créature (bestiaire)'],

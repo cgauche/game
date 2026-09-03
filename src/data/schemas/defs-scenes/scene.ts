@@ -483,10 +483,12 @@ export const wallSegSchema = z.strictObject({
   /** Apparence de rendu (`structureAppearance.json`) indépendante de `structure`. N'affecte ni
    *  résistance, ni couvert, ni collision : absent = apparence dérivée de la structure/façade. */
   appearance: z.string().optional(),
-  /** DÉCORATIF uniquement : l'arête porte une FENÊTRE (croisée vitrée) au rendu. Un mur fenêtré reste un
-   *  mur PLEIN (vitre SERTIE, pas une ouverture) — il bloque passage/vue/vision/marchabilité EXACTEMENT
-   *  comme un mur nu (`window` n'est lu par AUCUNE règle de combat : ni `wallIsOpen`, ni `vision`, ni
-   *  `isWalkable`). N'affecte que l'apparence iso + POV (nuit : vitre ambrée émissive). */
+  /** L'arête porte une FENÊTRE (croisée vitrée). Un mur fenêtré reste un mur PLEIN pour le passage,
+   *  la vue, la vision et la marchabilité (vitre SERTIE, pas une ouverture) : ni `wallIsOpen`, ni
+   *  `vision`, ni `isWalkable` ne la lisent. La SEULE règle qui la lit est le COUVERT (`couvertDArete`,
+   *  `state/lineOfSight.ts`) : la croisée coûte un cran à la Pénalité de Couvert de la Structure qui la
+   *  porte — extrapolation MAISON du critique Percée (`AA 10 l.122`), qui dégrade d'un cran sans rendre
+   *  transparent ; le canon ne chiffre pas la croisée. Côté rendu, apparence iso + POV (vitre ambrée). */
   window: z.boolean().optional(),
   /** ESCALADABLE (`LDB 15 l.53-57`) : l'arête sépare deux surfaces de hauteurs différentes (une FALAISE au
    *  sens `surfaceLink` — infranchissable à pied) qu'un Personnage peut GRIMPER.

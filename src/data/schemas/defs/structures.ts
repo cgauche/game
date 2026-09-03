@@ -8,7 +8,7 @@
  * Folios : ADE II 89 ; AA 119-120 (`src/data/structures-folio.test.ts` les confronte à `auditFolio`).
  */
 import { z } from 'zod';
-import { difficultySchema } from '../grammaire/valeurs';
+import { couvertDifficultySchema } from '../grammaire/valeurs';
 import { document } from '../grammaire/document';
 import { ref } from '../grammaire/ref';
 
@@ -34,7 +34,7 @@ const doc = document(
      *  elles-mêmes (Herse/Solide porte en bois sans Pénalité de Couvert, Structures fixes sans ENC). */
     enc: z.number().optional(),
     encLimit: z.number().optional(),
-    couvertPenalty: difficultySchema.optional(),
+    couvertPenalty: couvertDifficultySchema.optional(),
   },
   {
     kind: { label: 'Nature de la Structure', hint: 'Porte ou Mur, pour la résolution mécanique' },
