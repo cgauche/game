@@ -218,6 +218,7 @@ npm run dev          # serveur de dev — http://localhost:5173 sur l'ARBRE PRIN
 npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit
 npm run typecheck:fast # typecheck INCRÉMENTAL (~7-10 s), sortie complète dans node_modules/.cache/typecheck-last.txt — la porte de vérité des gates reste `npm run typecheck` (full)
+npm run gates        # joue les gates de ci.yml manquantes pour le contenu de HEAD et écrit leurs justificatifs — régime : commit FINAL → gates → push (le pre-push refuse sans justificatif vert sur le contenu poussé)
 npm run galleries              # (re)génère toutes les galeries QC -> public/galeries.html (hub)
 # package-lock.json : régénérer TOUJOURS avec npm 10 (`npx --yes npm@10.9.3 install --package-lock-only`) — npm 11 ampute les hoistées @emnapi/*, garde pre-commit #528
 

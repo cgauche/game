@@ -1,0 +1,6 @@
+#!/bin/sh
+# scripts/git-hooks/pre-push — porte au PUSH : justificatifs de gates, fast-forward, CI de main.
+# Toute la logique vit dans pre-push.mjs (mécanique partagée scripts/guards/lib/justificatif.mjs).
+# Même contrat que pre-commit : ce hook DOIT pouvoir refuser le push (exit != 0). Les refs à pousser
+# arrivent sur stdin, que `exec` transmet tel quel.
+exec node "$(dirname "$0")/pre-push.mjs" "$@"

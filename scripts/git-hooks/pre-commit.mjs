@@ -37,6 +37,7 @@ import { scanNpmLockHoisted } from '../guards/lib/npmLockHoisted.mjs';
 import { scanArbresImbriques } from '../guards/lib/arbreImbrique.mjs';
 import { fichiersALinter, lancerLint } from '../guards/lib/lintStage.mjs';
 import { generateursArmes } from '../guards/lib/empreinteStage.mjs';
+import { porteAuPushManquante } from '../guards/lib/portePush.mjs';
 
 const DEBUT_MS = Date.now();
 
@@ -84,6 +85,10 @@ const staged = argFiles.length
       .split('\n').filter(Boolean);
 
 const offenders = [];
+// #1679 L2 — l'arbre qui committe doit PORTER la porte au push : `core.hooksPath` sert le hook de
+// l'arbre courant, donc un worktree resté en arrière pousserait sans aucune gate exigée.
+for (const f of porteAuPushManquante(ROOT))
+  offenders.push(`${f} absent : arbre non rebasé sur L2, il pousserait sans porte au push (git rebase origin/main)`);
 // #1679 L1c — le contenu d'un arbre de travail imbriqué n'appartient pas à un commit du dépôt hôte.
 for (const x of scanArbresImbriques(staged, { racine: ROOT })) offenders.push(x.detail);
 // Signaux non bloquants, en OBJETS `{ file, line, detail }` : ils passent par la baseline

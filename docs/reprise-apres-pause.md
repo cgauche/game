@@ -36,7 +36,7 @@ jamais. `npm run dev` imprime celui qu'il sert.
 
 **Sans ce postinstall, 2 familles de mécanismes sont MORTES.**
 
-1. `core.hooksPath` → `scripts/git-hooks` : les hooks `post-commit`, `post-merge`, `post-rewrite`, `pre-commit` ne tournent plus. Le
+1. `core.hooksPath` → `scripts/git-hooks` : les hooks `post-commit`, `post-merge`, `post-rewrite`, `pre-commit`, `pre-push` ne tournent plus. Le
    `pre-commit` porte les gardes anti-poison/anti-dérive de chaque commit ; le `post-commit` ferme
    automatiquement les issues GitHub citées dans le message (`fixes`/`closes`/`corrige`/`ferme #N`,
    cf. le commentaire de tête du script).
@@ -91,7 +91,7 @@ de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (121 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 74 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 78 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
@@ -144,7 +144,7 @@ les non-versionnés locaux, elle ne touche pas au repo.
 
 ## 5. Portes de qualité — où elles vivent, comment vérifier qu'elles tournent
 
-**Hooks Git locaux** (`post-commit`, `post-merge`, `post-rewrite`, `pre-commit`) : posés par `npm install` via `core.hooksPath`.
+**Hooks Git locaux** (`post-commit`, `post-merge`, `post-rewrite`, `pre-commit`, `pre-push`) : posés par `npm install` via `core.hooksPath`.
 Vérifier : `git config core.hooksPath` doit répondre `scripts/git-hooks`. Si vide → hooks MORTS,
 refaire `npm install`.
 
@@ -180,4 +180,4 @@ refaire `npm install`.
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
 porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).
-<!-- sources-empreinte: 8c903ea06b60457986dadd42727456bb0f2a82c9 (12 fichiers, 9 dossiers) -->
+<!-- sources-empreinte: 975fd5c3b7e4bdd3cc6a7849bf467d533af4bb78 (12 fichiers, 9 dossiers) -->

@@ -24,6 +24,14 @@ function fauxDepot(sourceDuFauxVitest) {
     copyFileSync(join(ICI, nom), join(base, 'scripts', 'test', nom))
   }
   copyFileSync(join(ICI, '..', 'outillage-local.mjs'), join(base, 'scripts', 'outillage-local.mjs'))
+  // Le lanceur pose le justificatif de la gate `test` (#1679 L2) : sa lib fait partie de lui.
+  // Le faux dépôt n'est pas un dépôt git — l'écriture y échoue et le lanceur le DIT, sans changer
+  // son verdict ni sa capture (c'est le contrat de `scripts/gates/justifie.mjs`).
+  mkdirSync(join(base, 'scripts', 'guards', 'lib'), { recursive: true })
+  copyFileSync(
+    join(ICI, '..', 'guards', 'lib', 'justificatif.mjs'),
+    join(base, 'scripts', 'guards', 'lib', 'justificatif.mjs'),
+  )
   mkdirSync(join(base, 'node_modules', 'vitest'), { recursive: true })
   writeFileSync(join(base, 'node_modules', 'vitest', 'vitest.mjs'), sourceDuFauxVitest, 'utf8')
   return base

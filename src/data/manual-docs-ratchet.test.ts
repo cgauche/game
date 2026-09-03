@@ -23,6 +23,8 @@ import { MANUAL_DOCS_STOCK } from '../../scripts/guards/lib/manualDocsStock.mjs'
 import { ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
 // @ts-expect-error - orchestrateur ESM JS (pas de types)
 import { NON_GENERATOR_CHECKS, checkedScripts } from '../../scripts/docs/build-all.mjs';
+// @ts-expect-error - lib de garde ESM JS (pas de types)
+import { commandeEffective } from '../../scripts/guards/lib/justificatif.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const DOCS_DIR = join(ROOT, 'docs');
@@ -102,7 +104,9 @@ describe('le marqueur GÉNÉRÉ engage réellement son générateur (#903 suite)
   const PACKAGE_JSON = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as {
     scripts?: Record<string, string>;
   };
-  const DOCS_CHECK_SCRIPT = PACKAGE_JSON.scripts?.['docs:check'] ?? '';
+  // L'enveloppe de justificatif de gate (#1679 L2) n'est pas la porte : ce qui est jugé ici, c'est la
+  // chaîne RÉELLEMENT jouée, résolue par `commandeEffective` (source unique du dépaquetage).
+  const DOCS_CHECK_SCRIPT = commandeEffective(PACKAGE_JSON.scripts, 'docs:check');
   // Source UNIQUE des générateurs vérifiés : `docs:check` ne les nomme plus un à un, il délègue à
   // `build-all.mjs --check`. Parser la chaîne npm ne mesurerait plus rien.
   const CHECKED: Set<string> = checkedScripts();

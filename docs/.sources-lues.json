@@ -5185,6 +5185,7 @@
       "scripts/data/lib",
       "scripts/docs",
       "scripts/docs/lib",
+      "scripts/gates",
       "scripts/git-hooks",
       "scripts/guards",
       "scripts/guards/lib",

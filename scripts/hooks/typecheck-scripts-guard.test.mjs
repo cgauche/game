@@ -9,12 +9,23 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { commandeEffective } from '../guards/lib/justificatif.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const scripts = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')).scripts
 
+test('`npm run typecheck` passe par l’enveloppe de justificatif de gate (#1679 L2)', () => {
+  assert.match(
+    scripts.typecheck ?? '',
+    /^node scripts\/gates\/justifie\.mjs typecheck -- /,
+    `scripts.typecheck = "${scripts.typecheck}" — sans l’enveloppe, la porte de vérité tourne sans rien ` +
+      'laisser au pre-push, qui la réclamera au push',
+  )
+})
+
 test('`npm run typecheck` est FULL (--incremental false)', () => {
-  const commande = scripts.typecheck ?? ''
+  // L'enveloppe enregistre le verdict ; ce qui est jugé ici, c'est la commande RÉELLEMENT jouée.
+  const commande = commandeEffective(scripts, 'typecheck')
   assert.match(
     commande,
     /^node scripts\/lancer-local\.mjs typescript -- tsc\b/,

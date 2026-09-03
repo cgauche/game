@@ -19,45 +19,71 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
-      - run: npm run agents:check
-      - run: npm run test:agents
-      - run: npm run test:hooks
-      - run: npm run test:ops
-      - run: npm run test:runner
-      - run: npm run test:docs
-      - run: npm run deps:unused
-      - run: npm run test:recette
-      - name: Idempotence des adaptateurs agents
-        run: |
-          set -e
-          npm run agents:sync
-          git diff --exit-code -- AGENTS.md .agents/skills .codex/credo.md
+      - id: install
+        run: npm ci
+      # Chaque gate ci-dessous se joue même si une précédente est ROUGE : sans cette condition, le
+      # premier rouge SKIPPE les 20 suivants et un run ne rend qu'un verdict sur 21 (runs 33717131460
+      # et 33719038837). Le job reste rouge dès qu'un step l'est — jamais de `continue-on-error`, qui
+      # rendrait le step VERT. Seul l'échec de l'installation coupe la suite : rien ne s'y jouerait.
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run agents:check
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:agents
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:hooks
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:ops
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:runner
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:docs
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run deps:unused
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:recette
       # src/data/*.json sont la SOURCE app-owned (commitée) — plus de régénération build:data.
       - name: Dérive des registres générés
         # Glob sur TOUS les fichiers générés, pas les seuls `_registry` : `_ids.generated.ts`,
         # `_registry-scenes.generated.ts` et `qualityId.generated.ts` en tombaient dehors, si bien
         # qu'une recette ajoutée sans `npm run gen` périmait le registre en silence (#1680).
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run gen && git diff --exit-code -- '*.generated.ts'
-      - run: npm run typecheck
-      - run: npm run lint
-      - run: npm test
-      - run: npm run test:map
-      - run: npm run build
-      - run: npm run docs:check
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run typecheck
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run lint
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm test
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:map
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run build
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run docs:check
       # Pied « sources-empreinte » de chaque doc dérivé confronté aux blobs de l'INDEX (#1679 L1b).
-      - run: node scripts/docs/build-all.mjs --empreinte
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run docs:empreinte
       - name: Fraîcheur des catalogues Atlas RAW
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'
-      - run: npm run raw:coverage
-      - run: npm run raw:reconcile
-      - run: npm run test:raw
-      - run: npm run raw:check-refs
-      - run: npm run raw:check-code-refs
-      - run: npm run raw:check-folio-continuity
-      - run: npm run raw:reanchor
-      - run: npm --prefix server ci
-      - run: npm --prefix server run typecheck
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:coverage
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:reconcile
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:raw
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:check-refs
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:check-code-refs
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:check-folio-continuity
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:reanchor
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm --prefix server ci
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run server:typecheck
 
   # Les migrations de donnée sont REJOUABLES : rejouées sur l'arbre courant, elles ne réécrivent
   # RIEN. Job DÉDIÉ (il écrit dans l'arbre du runner, jamais dans celui du job `build`).
