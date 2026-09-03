@@ -115,18 +115,6 @@
     }
   },
   {
-    "id": "river-splinter-dodge",
-    "type": "voyage-stakes",
-    "label": "Éclats du Critique",
-    "kind": "riverSplinterDodge",
-    "template": "Échec : +{damage} Dégâts d’éclats et État {condition}.",
-    "source": {
-      "book": "mort-sur-le-reik-compagnon",
-      "page": 29,
-      "note": "MSRC 7 l.78"
-    }
-  },
-  {
     "id": "river-hole-repair",
     "type": "voyage-stakes",
     "label": "Calfatage d’urgence",

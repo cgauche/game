@@ -50,7 +50,7 @@ export const ROLL_SEAM_PHASE2_STOCK = new Map([
   ['src/state/interludeFlow.ts', 3], // 4 → 3 (#942 L7 : le d100 d'Événement passe par l'étape à table)
   ['src/state/massBattleFlow.ts', 1],
   ['src/state/pursuitFlow.ts', 1],
-  ['src/state/riverVoyageFlow.ts', 4],
+  ['src/state/riverVoyageFlow.ts', 3],
   ['src/state/seaVoyageFlow.ts', 4], // #1501 : 1 jet de l'adversaire d'une Poursuite (:1851) + les 3 Tests de reprise de machine de `runRestart` (:2024/:2027/:2028), roulés en boucle bornée hors modale
   ['src/state/shipManeuver.ts', 2],
   ['src/state/travelFlow.ts', 3], // 6→3 au câblage allure forcée (#673 L3) : les 3 rollTest inline (conducteur + 2 Résistance des bêtes) ont MIGRÉ vers les résolveurs purs de vehicle.ts (forcedPaceCheck/forcedPaceBeastCheck), comptés au stock (D)

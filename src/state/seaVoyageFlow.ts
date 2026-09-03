@@ -89,7 +89,9 @@ import { beginShipwreck } from './shipwreck';
 import type { NightEntry } from './restFlow';
 import { toMoney, canAfford, type Money } from '../engine/money';
 import { partyMoneyTotal, payFromGroup } from './bourseFlow';
-import { rollShipCritical } from '../engine/shipCritical';
+import { rollShipCritical, applyCrewHit, exposedCrew, type ShipCriticalResolved } from '../engine/shipCritical';
+import { bandeTriggeredTest } from './combat/triggeredTest';
+import { drainPendingLog } from './combatEffects';
 import type { ShipCritKey } from '../data/shipCriticals';
 import { contractDisease, applyContraction, contractionDue, DISEASE_DEFS } from '../engine/disease';
 import { CHAR_LABELS, DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
@@ -97,7 +99,7 @@ import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
 import { openPartyTest, openWorldTest, composeRollLabel, openSequence, freeCons, rollLine, rollStep, monoStep, tableStep, bandStep, buildBand, choiceStep, openChoice, pousseSi, type RollRequest, type Consequence, type FreeConsLine, type BuiltCascadeStep } from './rollSeam';
-import { registerCascadeApplier, registerCascadeSuccessRule, registerTableStep, startCascade, runCascadeImmediate } from './cascade';
+import { registerCascadeApplier, registerCascadeSuccessRule, registerTableStep, startCascade, runCascadeImmediate, pushStep } from './cascade';
 import { exposureWaveBand } from './nightBands';
 import { dataLabel } from '../data';
 import { t, t as tr } from '../i18n'; // `tr` : alias pour les portées où `t` est un identifiant local (résultat de jet)
@@ -1004,7 +1006,7 @@ function applyFastPalier(get: Get, set: Set, palierId?: string): void {
   const locs: ShipCritKey[] = ['greement', 'coque', 'avirons', 'equipements', 'cargaison'];
   for (let i = 0; i < palier.criticals; i++) {
     const crit = rollShipCritical(locs[rng.int(0, locs.length - 1)], rng);
-    applyVesselCritical(get, set, crit.log, crit.note);
+    applyVesselCritical(get, set, crit);
   }
 }
 
@@ -1769,7 +1771,7 @@ function affalerConsequence(get: Get, set: Set, step: CascadeStep): Consequence[
   if (step.result.success) { const j = [t('sv.sailsStruckInTime')]; noteSeaLine(get, set, j); return freeCons(j); }
   const rng = battleRng();
   const crit = rollShipCritical(AFFALER_RULES.failCritLocation as ShipCritKey, rng);
-  applyVesselCritical(get, set, crit.log, crit.note);
+  applyVesselCritical(get, set, crit);
   return [];
 }
 registerCascadeApplier('affaler', (get, set, step) => ({ consequences: affalerConsequence(get, set, step) }));
@@ -2063,7 +2065,7 @@ export function applySteamBreakdown(get: Get, set: Set, b: SteamBreakdownEntry, 
   if (b.engineDestroyed && get().vessel) {
     set({ vessel: { ...get().vessel!, upgrades: (get().vessel!.upgrades ?? []).filter((u) => u.id !== 'propulsion-a-vapeur') } });
   }
-  if (b.hullCritical) { const c = rollShipCritical('coque', rng); applyVesselCritical(get, set, c.log, c.note); }
+  if (b.hullCritical) applyVesselCritical(get, set, rollShipCritical('coque', rng));
 
   // IMMOBILISATION du moteur : fenêtre à vitesse réduite (`mMod`) ou nulle (`mSet:0`) → fraction perdue.
   const secPerRound = Number(rule('combat-round-seconds')); // LDB 13 l.13 (MJ décide, valeur maison)
@@ -2312,11 +2314,34 @@ registerCascadeApplier('sea-pirate-tribute', (get, set, step) => {
 
 /** Critique de navire au VOYAGE : Blessures non chiffrées par la table (les effets sont l'entrée) →
  *  l'entrée est PERSISTÉE sur le navire (`vessel.criticals`) et racontée ; ses effets mécaniques fins
- *  s'appliquent quand la coque redevient un combattant (combat naval). */
-function applyVesselCritical(get: Get, set: Set, logLine: string, note: string): void {
+ *  s'appliquent quand la coque redevient un combattant (combat naval).
+ *
+ *  Le coup à l'ÉQUIPAGE de la rangée (MDG 13 l.763), lui, s'applique ICI — jusqu'à #1657 B3-2 il
+ *  n'était JAMAIS joué en voyage (seuls `log` et `note` remontaient) : conséquence certaine appliquée,
+ *  ÉPREUVE ouverte par la PORTE canonique (bande pour les héros tenus, voie inline sinon), sur les
+ *  personnes exposées à bord. */
+function applyVesselCritical(get: Get, set: Set, crit: ShipCriticalResolved): void {
   const vessel = get().vessel;
-  if (vessel) set({ vessel: { ...vessel, criticals: [...(vessel.criticals ?? []), note] } });
-  tell(get, set, [`${logLine}`, `→ ${note}`]);
+  if (vessel) set({ vessel: { ...vessel, criticals: [...(vessel.criticals ?? []), crit.note] } });
+  tell(get, set, [`${crit.log}`, `→ ${crit.note}`]);
+  if (!crit.crewHit) return;
+  const coque = get().travelPlan?.vehicle;
+  if (!coque) return;
+  const equipage = exposedCrew(get().party);
+  const coup = applyCrewHit(coque, equipage, crit.crewHit, battleRng());
+  if (coup.hits.length) {
+    set({ party: [...get().party] });
+    tell(get, set, [t('shipCrit.crewTakes', { n: coup.hits.length, label: crit.label })]);
+  }
+  if (!coup.testFlow) return;
+  const victimes = coup.victims.map((id) => equipage.find((c) => c.id === id)).filter(Boolean) as Combatant[];
+  pushStep(set, (index) => bandeTriggeredTest(
+    get, set, victimes, coup.testFlow!, `sea-crew-hit-${crit.id}-${index}`, { label: crit.label },
+  ), 'travelDay');
+  // Voie INLINE (personne à bord sans siège) : ses lignes partent dans la file différée — la mer n'a
+  // pas de `battle.log`, on les déverse dans le journal du voyage (source unique `drainPendingLog`).
+  const lignes = drainPendingLog(get, set).map((e) => e.text);
+  if (lignes.length) { set({ party: [...get().party] }); tell(get, set, lignes); }
 }
 
 // ── Événements de bord (ch.15 l.132-236) — application MÉCANIQUE par `kind` ─────────────────────
@@ -2351,7 +2376,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
     case 'coup-critique': {
       const locs: ShipCritKey[] = ['greement', 'coque', 'avirons', 'equipements', 'cargaison'];
       const crit = rollShipCritical(locs[rng.int(0, locs.length - 1)] as ShipCritKey, rng);
-      applyVesselCritical(get, set, crit.log, crit.note);
+      applyVesselCritical(get, set, crit);
       break;
     }
     case 'ouragan': {
@@ -2360,7 +2385,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       // `voyageCadence.ts`), toujours en cascade INTERACTIVE (jamais l'auto-pilote).
       const st = buildVoyageCrewStep(get, 'affaler', 'sea-ouragan-affaler', { extraDR: -2, icon: 'nautical/wind' });
       if (st) startCascade(get, set, { title: 'Ouragan — Affaler !', icon: 'nautical/wind', purpose: 'test', steps: [st] });
-      else for (let i = 0; i < 3; i++) { const c = rollShipCritical('greement', rng); applyVesselCritical(get, set, c.log, c.note); }
+      else for (let i = 0; i < 3; i++) applyVesselCritical(get, set, rollShipCritical('greement', rng));
       break;
     }
     case 'infestation': {

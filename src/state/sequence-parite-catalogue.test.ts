@@ -18,7 +18,7 @@
 import { describe, it, expect } from 'vitest';
 import { t } from '../i18n';
 import { stepDetail, stepFraction, stepPrecision } from './rollSeam';
-import { dataLabel, conditionLabel } from '../data';
+import { dataLabel } from '../data';
 import { riverForceLabel } from '../engine/riverNavigation';
 import { locationLabel } from '../engine/types';
 import { shipLocationLabel } from '../engine/shipCritical';
@@ -410,14 +410,6 @@ const V8C2: Site[] = [
     site: 'riverVoyageFlow.ts:424 — progression du jour (branche DÉRIVE, tiret cadratin + %)',
     avant: `Progression du jour : ${18} km${' (dérive — 25 % de la vitesse).'}`,
     apres: t('rv.progress', { km: 18, note: t('rv.fragDrift') }),
-  },
-  {
-    site: 'riverVoyageFlow.ts:816 — éclats du Critique (DEUX fragments optionnels enchaînés)',
-    // CORRIGÉ (#1318 V8c₂, micro-passe) : la branche IA rendait l'ID d'État (« gagne l'État empetre »)
-    // là où sa jumelle influençable rendait `conditionLabel`, et la Localisation était l'id de table
-    // (« Critique au greement »). L'oracle est le texte CORRECT : la parité avec un bug n'est pas un abri.
-    avant: `Critique au ${'gréement'} — ${HEROS3} subit ${5} Dégâts d'éclats${` et gagne l'État ${'Empêtré'}.`}${` (Initiative ${62}/${41} ratée)`}`,
-    apres: t('rv.splinterHit', { loc: shipLocationLabel('greement'), name: HEROS3, dmg: 5, cond: t('rv.fragSplinterCond', { cond: conditionLabel('empetre') }), dodge: t('rv.fragDodgeFailed', { roll: 62, target: 41 }) }),
   },
   {
     site: 'riverVoyageFlow.ts:962 — échouage + renflouage (suite optionnelle à trois clés imbriquées)',
@@ -861,11 +853,13 @@ describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue es
     expect(SIGNES.length, 'DR positif, nul, négatif — le signe ne vit pas dans le gabarit').toBe(3);
     expect(COMBAT.length, 'les littéraux de combatFlow rendus au catalogue (V8c₀)').toBe(6 + 1);
     expect(V8C1.length, 'échantillons des trois flux passés MIGRÉS par V8c₁ (interlude / bataille de masse / marchand)').toBe(17);
-    expect(V8C2.length, 'échantillons des cinq fichiers passés MIGRÉS par V8c₂ (effets / store / voyage terrestre / fluvial / maladies)').toBe(23);
+    // 23 → 22 (#1657 B3-2) : le site « éclats du Critique » de `riverVoyageFlow` est MORT — le coup à
+    // l'équipage passe par la porte, sa ligne est celle du dériveur de jet, plus une phrase de flux.
+    expect(V8C2.length, 'échantillons des cinq fichiers passés MIGRÉS par V8c₂ (effets / store / voyage terrestre / fluvial / maladies)').toBe(22);
     expect(V8C3.length, 'échantillons des fichiers passés MIGRÉS par V8c₃ (mer / guérison / repos / nuit / équipage / séquelles)').toBe(19);
     expect(V8C4.length, 'échantillons des QUATORZE fichiers de la longue traîne passés MIGRÉS par V8c₄').toBe(19);
     expect(V8C5.length, 'échantillons de la TRANCHE FINALE (18 fichiers gelés + advancement/careerSlots)').toBe(29);
-    expect(TOUS.length).toBe(134);
+    expect(TOUS.length).toBe(133); // 134 → 133 (#1657 B3-2, même site mort que V8c₂)
   });
 
   it('MUTATION : l’oracle est SENSIBLE — un tiret cadratin changé en tiret court diverge', () => {

@@ -437,6 +437,36 @@ describe('REGISTRE des chemins de jet (#1070) — le tri de population est SOLD�
   });
 });
 
+/**
+ * LE DOC DÉRIVÉ DÉCRIT CE QUI EST (#1657 B3-2) — la section « Les N NON routés » raconte un DÉFAUT :
+ * des nœuds `test` de la donnée consommés avant tout routeur. À N=0 elle n'a plus de sujet, et un
+ * doc qui continue de décrire un mal éteint se relit comme s'il durait. Le générateur la rend donc
+ * SOUS CONDITION, et ne laisse qu'une LIGNE DE MESURE — c'est ce commutateur que ce contrat tient,
+ * dans les DEUX états : la mesure décide, jamais une main.
+ */
+describe('REGISTRE des chemins de jet (#1657 B3-2) — la section « NON routés » suit la MESURE', () => {
+  const doc = () => readFileSync(join(ROOT, 'docs/registre-jets.md'), 'utf8');
+  /** Cardinal MESURÉ des nœuds hors porte, lu sur le doc généré (jamais un littéral recopié). */
+  const horsPorte = (): number => {
+    const m = /\*\*(\d+) nœuds? authoré[s]? hors porte\*\*|\*\*(\d+) NON ROUTÉS\*\*/.exec(doc());
+    expect(m, 'le doc ne dit plus son cardinal de nœuds hors porte').toBeTruthy();
+    return Number(m![1] ?? m![2]);
+  };
+
+  it('à ZÉRO : aucune section de défaut, mais une ligne de MESURE — et la table par document reste', () => {
+    const n = horsPorte();
+    const d = doc();
+    if (n === 0) {
+      expect(d, 'section « NON routés » rendue alors qu’il n’y a plus de nœud hors porte').not.toMatch(/### Les \d+ NON routés/);
+      expect(d, 'le cardinal ZÉRO doit rester DIT (une absence de section n’est pas une mesure)')
+        .toMatch(/\*\*0 nœud authoré hors porte\*\*/);
+    } else {
+      expect(d, 'des nœuds sont hors porte : la section qui les NOMME doit être rendue').toMatch(new RegExp(`### Les ${n} NON routés`));
+    }
+    expect(d, 'la table par document est le cardinal par famille — elle vit dans les deux états').toMatch(/### Par document/);
+  });
+});
+
 describe('REGISTRE des chemins de jet (#1066) — (F) fabrication d’un pending de jet', () => {
   const mesure = () => {
     const m = new Map<string, number>();

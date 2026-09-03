@@ -792,6 +792,17 @@
     }
   },
   {
+    "id": "critiques-de-bateau",
+    "type": "regles",
+    "label": "Coups Critiques au bateau",
+    "desc": "Quand un double est obtenu au jet de dés, le bateau subit un Coup Critique là où il a été touché. Une fois le bateau réduit à zéro Point de Blessure, chaque nouveau coup reçu est considéré comme Critique. Un Coup Critique au bateau peut entraîner les conséquences suivantes :",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 07 l.74"
+    }
+  },
+  {
     "id": "blessures-critiques",
     "type": "regles",
     "label": "Tableau des Critiques",

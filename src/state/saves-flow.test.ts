@@ -10,6 +10,8 @@ import { useGame } from './store';
 import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, parseSave, snapshotSave, takeObsoleteNotice, SAVE_VERSION, type SaveGame } from './saves';
 import { rule, setRule, loadRuleOverrides } from '../engine/policy';
 import { talents, careerLevels, specResolves, combatStakeRef } from '../data/index';
+import { cascadeAppliers } from './cascade';
+import './combatFlow'; // baril : enregistre les appliers de cascade (`triggeredBatchTest`), effet de bord
 import { talentSlots, slotCovers } from '../engine/careerSlots';
 import { createHero } from '../engine/character';
 import { testValue } from '../engine/skills';
@@ -248,13 +250,12 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect({ ...pose, test: { ...pose.test, stake: undefined } })
       .toEqual({ ...arme.test, test: { ...arme.test.test, stake: undefined } }); // rien d’autre n’a bougé
   });
-  it('MESURE du motif de bump 41 → 42 (#1657 B3-1b) : le marqueur d’amputation DIFFÉRÉE porte son NŒUD', () => {
+  it('MESURE du motif de bump 43 → 44 (#1657 B3-1b) : le marqueur d’amputation DIFFÉRÉE porte son NŒUD', () => {
     // `Trauma.pendingAmputation` (« Coupure à l'orteil », LDB 18 l.171) est PERSISTÉ sur la séquelle du
     // héros. Il portait la DONNÉE `Amputation` (`{difficulty, sequels, loss…}`) ; il porte désormais le
     // Flow FABRIQUÉ au critique, enjeu posé, que `prendreAmputationsDifferees` envoie à la porte. Une
-    // save de 41 rouvrirait avec un objet sans `kind` : ni Test ouvert, ni séquelle posée.
-    expect(SAVE_VERSION).toBe(42);
-    expect(parseSave({ ...cur, version: 41 })).toBeNull();
+    // save de 43 rouvrirait avec un objet sans `kind` : ni Test ouvert, ni séquelle posée.
+    expect(parseSave({ ...cur, version: 43 })).toBeNull();
     const coupure = CRITIQUE_DOCS.flatMap((d) => d.entries).find((e) => e.id === 'coupure-a-l-orteil')!;
     expect(coupure.amputation!.timing).toBe('postEncounter');
     const r = resolveCritique('ldb', heroCritique(), 'jambeD', makeRNG(1), { forcedRoll: coupure.min });
@@ -263,6 +264,15 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect((marque as Extract<typeof marque, { kind: 'test' }>).test.stake, 'et porter l’enjeu de sa rangée')
       .toEqual(combatStakeRef('critRowTest', { entryId: 'coupure-a-l-orteil', entryCategory: 'criticalsJambe' }));
   });
+  it('MESURE du motif de bump 44 → 45 (#1657 B3-2) : le coup à l’équipage d’un bateau s’ouvre en BANDE', () => {
+    // `pendingCascade` est PERSISTÉ, et le `kind` d'étape qui y voyage change : le coup à l'équipage
+    // (MSRC 07 l.78) s'ouvre par la porte en `triggeredBatchTest`. Une save de 44 rouvrirait sur une
+    // étape d'un vocabulaire que la version courante ne sert plus.
+    expect(SAVE_VERSION).toBe(45);
+    expect(parseSave({ ...cur, version: 44 })).toBeNull();
+    expect(Object.keys(cascadeAppliers), 'la porte qui sert désormais ce jet doit exister').toContain('triggeredBatchTest');
+  });
+
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
     const sv = talents.find((t) => t.id === 'savoir-vivre')!;
     expect(specResolves(sv, 'Érudit'), 'valeur PERSISTÉE par un héros de 33').toBe(false);

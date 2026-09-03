@@ -13,19 +13,20 @@ import { readFileSync } from 'node:fs';
  * ROULE, l'issue est décidée hors de toute fenêtre de joueur — ni Chance, ni Pacte, ni Résilience —
  * c'est-à-dire la « classe spéciale » de Test que la doctrine des jets interdit.
  *
- * MODE **MESURE** en B3-0 : le stock ci-dessous est la population MESURÉE au 2026-09-02, nominative
- * et DÉCROISSANTE. Le contrat est une ÉGALITÉ, pas un plafond : un site qui NAÎT est rouge, un site
- * qui MEURT l'est aussi (il se retire de la liste dans le même commit que sa mort). La garde passe
- * BLOQUANTE (liste vide, plus de stock) en B3-3, quand `AUTO_RESOLUS`
- * (`src/state/flowtest-derived-stake.test.ts`) tombe à 0.
+ * MODE **MESURE** : le stock ci-dessous est la population MESURÉE, nominative et DÉCROISSANTE. Le
+ * contrat est une ÉGALITÉ, pas un plafond : un site qui NAÎT est rouge, un site qui MEURT l'est aussi
+ * (il se retire de la liste dans le même commit que sa mort). Les 5 sites restants sont ceux du cycle
+ * de maladie (`disease.ts` ×4, `rest.ts` ×1) ; la garde passe BLOQUANTE (liste vide, plus de stock)
+ * en B3-3, quand ils passent à leur tour par la porte.
  */
 
 /**
  * STOCK au 2026-09-02 — chaque entrée porte le lot qui la tue. Ordre TOTAL (fichier, ligne, famille,
  * nom) : le rendu du scanner ne dépend pas de l'ordre de marche du corpus, donc pas de la machine.
- * DÉCROISSANCE mesurée : baseline 11 → 7 — les 4 sites des Blessures critiques (`critical.ts` ×3,
- * `trauma.ts` ×1) passent par la porte depuis B3-1 ; leurs entrées se retirent d'ici dans le MÊME
- * commit que le lot qui les route. B3-1b n'en change pas le cardinal : les 2 sites d'AMPUTATION qu'il
+ * DÉCROISSANCE mesurée : baseline 11 → 7 → 5 — les 4 sites des Blessures critiques (`critical.ts` ×3,
+ * `trauma.ts` ×1) passent par la porte depuis B3-1, les 2 du coup à l'ÉQUIPAGE (`shipCritical.ts`
+ * ×2) depuis B3-2 ; chaque entrée se retire d'ici dans le MÊME commit que le lot qui la route.
+ * B3-1b n'en changeait pas le cardinal : les 2 sites d'AMPUTATION qu'il
  * tue n'y ont jamais figuré — ils lisaient une forme PROPRIÉTAIRE (le type `Amputation`), invisible au
  * critère (L) : cet angle mort est déclaré en tête du module et mordu ci-dessous.
  */
@@ -35,8 +36,6 @@ const STOCK_2026_09_02: [site: string, mortEn: string][] = [
   ['src/engine/disease.ts:646 [lecteur tickDisease → rollTest]', 'B3-3 — idem (Test de cycle de la maladie)'],
   ['src/engine/disease.ts:680 [lecteur tickDisease → rollTest]', 'B3-3 — idem (fin de Durée `persistDifficulty`)'],
   ['src/engine/rest.ts:64 [appelant dailyDiseaseUpkeep → tickDisease]', 'B3-3 — l\'appel cesse d\'atteindre un rouleur'],
-  ['src/engine/shipCritical.ts:166 [lecteur applyCrewHit → rollTest]', 'B3-2 — `applyCrewHit` rend `testFlow`'],
-  ['src/engine/shipCritical.ts:217 [appelant applyHullCritical → applyCrewHit]', 'B3-2 — l\'appel cesse d\'atteindre un rouleur'],
 ];
 
 function sitesReels(): string[] {

@@ -16,7 +16,7 @@
  * à défaut, réussi/échec (simple) ou, pour l'opposée, l'une des TROIS issues de `resolveOpposed` —
  * résiste / l'emporte / égalité parfaite (statu quo, `LDB 12 l.160`). Le patron ne lui appartient pas.
  */
-import { t } from '../i18n';
+import { t, deElide } from '../i18n';
 import { DIFFICULTY_LABELS, type Difficulty } from './types';
 
 /** Structure LUE par le dériveur — celle qu'une rangée/étape porte déjà (`CascadeRoll`, `TestResult`). */
@@ -95,5 +95,5 @@ function opposedLine(o: TraceOpposed): string {
 /** Libellé de ligne d'un Test résolu SANS fenêtre : la Compétence/Caractéristique lancée AVEC sa
  *  Difficulté — aucune rangée ne s'étant ouverte, la ligne est le seul endroit où elle se lit. */
 export function testTraceLabel(what: string, difficulty: Difficulty): string {
-  return t('casc.traceTestLabel', { what, diff: DIFFICULTY_LABELS[difficulty] });
+  return t('casc.traceTestLabel', { sujet: deElide(what), diff: DIFFICULTY_LABELS[difficulty] });
 }

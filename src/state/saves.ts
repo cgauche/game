@@ -95,7 +95,13 @@ import type { Scene } from './scene';
 // Une save de 43 rouvrirait avec un marqueur que `prendreAmputationsDifferees` enverrait tel quel à
 // `routeTriggeredTest` : un objet sans `kind`, ni Test ouvert ni séquelle posée. La save se jette
 // (politique 2 ci-dessus).
-export const SAVE_VERSION = 44;
+
+// 44 → 45 (#1657 B3-2) : le `kind` d'étape `riverSplinterDodge` SORT du vocabulaire — le coup à
+// l'équipage d'un Critique de bateau passe par la porte (`triggeredBatchTest`). `pendingCascade` est
+// persisté : une save de 44 prise sur une journée fluviale dont l'esquive d'éclats est ouverte
+// rouvrirait avec une étape dont plus aucun applier n'est enregistré — le jet se validerait sans
+// conséquence, en silence. La save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 45;
 
 export interface SaveMeta {
   version: number;

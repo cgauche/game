@@ -256,7 +256,7 @@ import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
-import { runCombatFlow, routeTriggeredTest, rollFrozenOpposedAttacker, frozenOpposedBatchStep, simpleBatchTestStep } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unique ; Surprise : opposition figée + bande de guetteurs)
+import { runCombatFlow, routeTriggeredTest, bandeTriggeredTest, rollFrozenOpposedAttacker, frozenOpposedBatchStep, simpleBatchTestStep } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unique ; Surprise : opposition figée + bande de guetteurs)
 export { aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour + gate d'action
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
 import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
@@ -1836,6 +1836,26 @@ function applyHullCriticalToTarget(
       kind: 'critical', title: 'Critique de navire', dice: outcome.crewCrit?.crit.roll ?? 0, lines: outcome.lines,
       subjectId: target.id, severity: 'grave', actorId: ctx?.attackerId, weapon: ctx?.weapon, details: [],
     });
+  }
+  // Les Test(s) que la rangée impose passent par la PORTE canonique, APRÈS la révélation — mêmes deux
+  // voies que `applyCriticalToTarget` (l.1801), et le socle seul décide de la surface :
+  //  · Localisation « Équipage » → le marin encaisse un Critique de PERSONNAGE, dont le nœud de rangée
+  //    (LDB 18) est celui de `resolveCritique` ;
+  //  · sinon → le coup à l'équipage de la rangée (MSRC 07 l.78/l.94, MDG 13 l.763) sur N marins :
+  //    UNE bande de N rangées pour ceux que des sièges tiennent, voie inline pour les autres.
+  if (get) {
+    const crit = outcome.crewCrit;
+    const blesse = crit ? crew.find((c) => c.id === crit.crewId) : undefined;
+    if (crit?.crit.testFlow && !crit.crit.lethal && blesse) {
+      routeTriggeredTest(get, set, blesse, blesse, crit.crit.testFlow, { label: crit.crit.label });
+    }
+    const coup = outcome.crewHit;
+    if (coup?.testFlow) {
+      const victimes = coup.victims.map((id) => crew.find((c) => c.id === id)).filter(Boolean) as Combatant[];
+      pushCombatStep(set, (index) => bandeTriggeredTest(
+        get, set, victimes, coup.testFlow!, `ship-crew-hit-${target.id}-${index}`, { label: coup.label },
+      ));
+    }
   }
   return false;
 }

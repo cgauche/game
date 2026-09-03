@@ -1,5 +1,6 @@
 /**
- * #1657 B2c — le coup à l'ÉQUIPAGE d'un Critique de coque porte son JET dans le nœud `test` du Flow.
+ * #1657 — le coup à l'ÉQUIPAGE d'un Critique de coque : son JET vit dans le nœud `test` du Flow
+ * (B2c), et ce nœud part par la PORTE canonique au lieu d'être roulé dans le moteur (B3-2).
  *
  * Contrat POSITIF, mesuré sur la donnée RÉELLE (`river-criticals.json`, `ship-criticals.json`) :
  *  1. le nœud est LU par la grammaire partagée — `noeudTest(flowSchema, { difficulteRequise: true,
@@ -9,31 +10,29 @@
  *     sujet du jet, ni sa Difficulté, ni la conséquence ;
  *  3. un coup SANS jet n'est pas une épreuve : il porte `ops` (MSRC 07 l.82), et le XOR
  *     `test` ⊕ `ops` est verrouillé par le schéma ;
- *  4. INVARIANCE : `applyCrewHit` rend, sur 40 seeds × chaque porteur RÉEL, exactement ce que
- *     rendait le lecteur d'AVANT la migration — mêmes victimes, mêmes Blessures, et le MÊME nombre
- *     de tirages consommés dans le MÊME ordre. Le lecteur d'avant est transcrit VERBATIM ici et
- *     nourri par la DÉ-MIGRATION de la donnée committée : aucune fixture figée, aucune valeur
- *     recopiée à la main.
+ *  4. `applyCrewHit` DÉSIGNE et REND : sur 40 seeds × chaque porteur RÉEL, il rend exactement les
+ *     victimes que `posteCrew`/`exposedCrew` désignent, le nœud AUTHORÉ tel quel, et ne consomme
+ *     AUCUN dé au-delà du tirage du poste — donc aucune Blessure ne tombe hors d'une fenêtre ;
+ *  5. l'ENJEU est posé par le PRODUCTEUR (`rollShipCritical`) et renvoie à SA rangée dans la
+ *     catégorie Codex de la Localisation touchée.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { applyCrewHit, exposedCrew } from './shipCritical';
-import { applyOps, type GameOp } from './ops';
-import { rollTest } from './tests';
-import { testValue } from './skills';
+import { applyCrewHit, exposedCrew, rollShipCritical, shipCritEntryCodexCategory } from './shipCritical';
 import { spellOps } from './flowCore';
 import { makeRNG, type RNG } from './dice';
-import type { Combatant, ShipPoste, CharKey, Difficulty } from './types';
-import type { SkillRef } from './skills';
-import type { ShipCrewHit, ShipCritEntry } from '../data/shipCriticals';
+import { resolveStake } from '../data';
+import type { Combatant, ShipPoste } from './types';
+import { SHIP_CRIT_SET, RIVER_CRIT_SET, type ShipCritEntry, type ShipCritKey, type ShipCritSet } from '../data/shipCriticals';
 import { shipCrewHitSchema, flowSchema, noeudTest } from '../data/schemas/grammaire/mecanique';
 
 const DATA = join(fileURLToPath(new URL('.', import.meta.url)), '..', 'data');
 const lire = (f: string) => JSON.parse(readFileSync(join(DATA, f), 'utf8')) as { tables: Record<string, ShipCritEntry[]> };
 const FICHIERS = ['river-criticals.json', 'ship-criticals.json'] as const;
+const JEUX: [ShipCritSet, string][] = [[RIVER_CRIT_SET, 'river-criticals.json'], [SHIP_CRIT_SET, 'ship-criticals.json']];
 
 /** LE schéma du PORTEUR, celui que `shipCritEntrySchema` compose — jamais une recomposition locale :
  *  une option perdue dans `grammaire/mecanique.ts` doit rougir ICI. */
@@ -46,6 +45,15 @@ const coups = () =>
       .flat()
       .filter((e) => e.crewHit)
       .map((e) => ({ fichier: f, id: e.id, hit: e.crewHit! })),
+  );
+
+/** Les porteurs de coup RÉSOLUS par le producteur (dé FORCÉ sur le `min` de la rangée → c'est bien SA
+ *  ligne qui sort), avec la Localisation qui les porte — la seule voie par laquelle `state` les voit. */
+const coupsResolus = () =>
+  JEUX.flatMap(([jeu, fichier]) =>
+    Object.entries(jeu.tables).flatMap(([loc, rows]) => (rows ?? [])
+      .filter((e) => e.crewHit)
+      .map((e) => ({ fichier, jeu, loc: loc as ShipCritKey, id: e.id, resolu: rollShipCritical(loc as ShipCritKey, makeRNG(1), e.min, jeu) }))),
   );
 
 /** Marin minimal — assez pour `testValue` (Ag/I) + `applyOps` wounds (BE=3, PA=0). */
@@ -76,45 +84,15 @@ function rngCompteur(seed: number): RNG & { tirages: number[] } {
   } as RNG & { tirages: number[] };
 }
 
-/** La graphie PROPRIÉTAIRE d'avant la migration, telle que la donnée la portait. */
-type CrewTestAvant = { skill?: SkillRef; char?: CharKey; difficulty?: Difficulty; crewTarget?: 'poste' | 'deck'; onFail: GameOp[] };
-
-/** DÉ-MIGRATION : le `crewHit` committé rendu à sa graphie d'avant — la source du lecteur de référence. */
-function demigrer(hit: ShipCrewHit): CrewTestAvant {
-  const n = hit.test;
-  return {
-    ...(n?.test.skill ? { skill: n.test.skill } : {}),
-    ...(n?.test.characteristic ? { char: n.test.characteristic } : {}),
-    ...(n?.test.difficulty ? { difficulty: n.test.difficulty } : {}),
-    ...(hit.crewTarget ? { crewTarget: hit.crewTarget } : {}),
-    onFail: n ? spellOps(n.fail, 'target') : hit.ops ?? [],
-  };
-}
-
-/** Équipage EXPOSÉ d'un poste tiré au sort — transcription VERBATIM de `posteCrew` d'avant le lot. */
-function posteCrewAvant(hull: Combatant, crew: Combatant[], rng: RNG): Combatant[] {
+/** Équipage EXPOSÉ d'un poste tiré au sort — transcription VERBATIM de `posteCrew` (privé au moteur) :
+ *  c'est la SEULE part du coup que le RNG décide encore, et ce test la fige. */
+function posteCrewAttendu(hull: Combatant, crew: Combatant[], rng: RNG): Combatant[] {
   const postes = hull.postes;
   if (!postes?.length) return [];
   const poste = postes[rng.int(0, postes.length - 1)];
   return (poste.crewIds ?? [])
     .map((id) => crew.find((c) => c.id === id))
     .filter((c): c is Combatant => !!c && !c.dead && (c.wounds?.current ?? 0) > 0);
-}
-
-/** `applyCrewHit` d'AVANT la migration — transcription VERBATIM du lecteur de `1e14c9922`. */
-function applyCrewHitAvant(hull: Combatant, crew: Combatant[], crewTest: CrewTestAvant, rng: RNG): { crewId: string }[] {
-  const victims = crewTest.crewTarget === 'deck' ? exposedCrew(crew) : posteCrewAvant(hull, crew, rng);
-  const hits: { crewId: string }[] = [];
-  for (const sailorC of victims) {
-    const fails = (crewTest.skill || crewTest.char) && crewTest.difficulty
-      ? !rollTest(testValue(sailorC, crewTest.skill?.id, crewTest.char, crewTest.skill?.spec), crewTest.difficulty, rng).success
-      : true;
-    if (fails) {
-      applyOps(sailorC, crewTest.onFail, { rng });
-      hits.push({ crewId: sailorC.id });
-    }
-  }
-  return hits;
 }
 
 describe('coup à l’équipage — le JET vit dans le nœud `test` du Flow (#1657 B2c)', () => {
@@ -131,7 +109,7 @@ describe('coup à l’équipage — le JET vit dans le nœud `test` du Flow (#16
       expect(schemaDuCoup.safeParse(hit).success, `${fichier}/${id} : porteur refusé par la grammaire`).toBe(true);
       // Le PORTEUR ne redit rien du jet : ni sujet, ni Difficulté, ni conséquence.
       expect(Object.keys(hit).filter((k) => k !== 'test' && k !== 'crewTarget'), `${fichier}/${id}`).toEqual([]);
-      // La branche de RÉUSSITE est vide : `applyCrewHit` ne sert que l'échec.
+      // La branche de RÉUSSITE est vide : seul l'échec est servi.
       expect(spellOps(hit.test.success, 'target'), `${fichier}/${id} : branche success peuplée`).toEqual([]);
       expect(spellOps(hit.test.fail, 'target').length, `${fichier}/${id} : branche fail vide`).toBeGreaterThan(0);
     }
@@ -156,24 +134,46 @@ describe('coup à l’équipage — le JET vit dans le nœud `test` du Flow (#16
     expect(schemaDuCoup.safeParse({ ...porteur, ops: [] }).success, 'un porteur à la fois épreuve ET certain passe').toBe(false);
     expect(schemaDuCoup.safeParse({ crewTarget: 'deck' }).success, 'un porteur sans aucune issue passe').toBe(false);
   });
+});
 
-  it('INVARIANCE — 40 seeds × chaque porteur RÉEL : victimes, Blessures et FLUX de tirages identiques au lecteur d’avant', () => {
-    for (const { fichier, id, hit } of coups()) {
-      const avant = demigrer(hit);
+describe('coup à l’équipage — le moteur DÉSIGNE et REND, il ne roule plus (#1657 B3-2)', () => {
+  it('40 seeds × chaque porteur RÉEL : victimes = la désignation `crewTarget`, nœud rendu TEL QUEL, aucun dé d’issue', () => {
+    for (const { fichier, id, resolu } of coupsResolus()) {
+      const hit = resolu.crewHit!;
       for (let seed = 1; seed <= 40; seed++) {
         const ids = ['m1', 'm2', 'm3'];
-        const equipageA = ids.map((i) => sailor(i));
-        const equipageB = ids.map((i) => sailor(i));
-        const rngA = rngCompteur(seed);
-        const rngB = rngCompteur(seed);
+        const equipage = ids.map((i) => sailor(i));
+        const temoins = ids.map((i) => sailor(i));
+        const rng = rngCompteur(seed);
+        const rngTemoin = rngCompteur(seed);
 
-        const hitsA = applyCrewHitAvant(coqueAvecPostes(ids), equipageA, avant, rngA);
-        const hitsB = applyCrewHit(coqueAvecPostes(ids), equipageB, hit, rngB);
+        const out = applyCrewHit(coqueAvecPostes(ids), equipage, hit, rng);
+        const attendues = hit.crewTarget === 'deck'
+          ? exposedCrew(temoins)
+          : posteCrewAttendu(coqueAvecPostes(ids), temoins, rngTemoin);
 
-        expect(hitsB, `${fichier}/${id} seed ${seed} : victimes`).toEqual(hitsA);
-        expect(equipageB.map((c) => c.wounds.current), `${fichier}/${id} seed ${seed} : Blessures`).toEqual(equipageA.map((c) => c.wounds.current));
-        expect(rngB.tirages, `${fichier}/${id} seed ${seed} : FLUX de tirages`).toEqual(rngA.tirages);
+        expect(out.victims, `${fichier}/${id} seed ${seed} : victimes`).toEqual(attendues.map((c) => c.id));
+        expect(rng.tirages, `${fichier}/${id} seed ${seed} : un dé d’ISSUE est encore tiré`).toEqual(rngTemoin.tirages);
+        if (hit.test) {
+          expect(out.testFlow, `${fichier}/${id} : le nœud AUTHORÉ n’est pas rendu tel quel`).toBe(hit.test);
+          expect(out.hits, `${fichier}/${id} : une conséquence est appliquée avant la fenêtre`).toEqual([]);
+          expect(equipage.map((c) => c.wounds.current), `${fichier}/${id} seed ${seed} : Blessures hors fenêtre`).toEqual([40, 40, 40]);
+        } else {
+          // Coup CERTAIN (MSRC 07 l.82) : la conséquence tombe sur place, sans jet.
+          expect(out.hits.map((h) => h.crewId), `${fichier}/${id}`).toEqual(attendues.map((c) => c.id));
+        }
       }
+    }
+  });
+
+  it('ENJEU posé par le producteur : chaque nœud renvoie à SA rangée, dans la catégorie de sa Localisation', () => {
+    const mesures = coupsResolus().filter(({ resolu }) => resolu.crewHit?.test);
+    expect(mesures.length, 'la sonde du producteur n’a rien mesuré').toBe(3);
+    for (const { fichier, jeu, loc, id, resolu } of mesures) {
+      const stake = resolu.crewHit!.test!.test.stake;
+      expect(stake, `${fichier}/${id} : nœud sans enjeu`).toBeTruthy();
+      expect(resolveStake(stake!).rule, `${fichier}/${id} : renvoi hors de sa propre rangée`)
+        .toEqual({ category: shipCritEntryCodexCategory(jeu.id, loc), id });
     }
   });
 });

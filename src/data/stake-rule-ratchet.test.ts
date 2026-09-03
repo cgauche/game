@@ -25,10 +25,9 @@ import miscastRawJson from './miscast.json';
  *  L6b — EDOC 08 l.90 convoque le Test de LDB p181 : UNE entrée sert la nuit ET l'Étape terrestre).
  *  Retirer un id d'ici est le geste de solde. */
 const VOYAGE_SANS_REGLE = [
-  // Fluvial — périls de rivière (MSRC 7 : tables de dangers) et esquive d'éclats.
+  // Fluvial — périls de rivière (MSRC 7 : tables de dangers).
   'river-peril-nav',
   'river-peril-detect',
-  'river-splinter-dodge',
   // Maritime — survitesse, rythme forcé, épuisement, maladies de bord, exposition, dégagement.
   'sea-overspeed',
   'sea-force-pace',

@@ -763,7 +763,7 @@ export const fr = {
   'casc.autoRowMiss': 'échec',
   'casc.autoRowFallbackLabel': 'Test',
   // Libellé de ligne d'un Test résolu sans fenêtre : la Compétence lancée AVEC sa Difficulté.
-  'casc.traceTestLabel': 'Test de {what} {diff}',
+  'casc.traceTestLabel': 'Test {sujet} {diff}',
   // Forme OPPOSÉE (#1294) : les DEUX jets d'une même opposition sur UNE ligne — `issue` vient des trois
   // verdicts de `resolveOpposed` par défaut (vue du DÉFENSEUR), du domaine sinon.
   'casc.opposedTrace': '{who} ({label}) {roll}/{target} (DR {dr}) vs {who2} ({label2}) {roll2}/{target2} (DR {dr2}) — {issue}.',
@@ -1210,8 +1210,6 @@ export const fr = {
   'step.detection': 'détection',
   'step.obstacleStats': 'Endurance {endurance}, {blessures} Blessures',
   'step.forcerOuDeblayer': 'forcer ou déblayer ?',
-  'step.critiqueAu': 'Critique au {loc}',
-  'step.eclats': 'éclats',
   'step.riverHoleRepair': 'Calfatage d’urgence',
   'step.riverEchouage': 'Renflouage',
   // Voyage maritime
@@ -1489,11 +1487,6 @@ export const fr = {
   'rv.rammed': '{peril} — forcé au bélier : la coque subit {dmg} Dégâts (reste {cur}/{max}).',
   'rv.clearedPlain': '{peril} — déblayé à la main : la coque est épargnée.',
   'rv.cleared': '{peril} — déblayé à la main : {objects} objets ({enc} Enc) dégagés en ~{hours} h, coque épargnée (progression du jour −{pct} %).',
-  'rv.splinterDodged': 'Critique au {loc} — {name} esquive les éclats.',
-  'rv.splinterDodgedRoll': 'Critique au {loc} — {name} esquive les éclats (Initiative {roll}/{target}).',
-  'rv.splinterHit': "Critique au {loc} — {name} subit {dmg} Dégâts d'éclats{cond}{dodge}",
-  'rv.fragSplinterCond': " et gagne l'État {cond}.",
-  'rv.fragDodgeFailed': ' (Initiative {roll}/{target} ratée)',
   'rv.holeRepairOk': "{name} colmate la voie d'eau : +{n} Blessure(s) de coque restaurées (réparation temporaire, l.116).",
   'rv.holeRepairKo': "{name} — le calfatage d'urgence ne tient pas.",
   'rv.sinkLeak': "La coque prend l'eau plus vite qu'on ne la vide — le bateau sombre (MSRC 7 l.103).",

@@ -33,7 +33,9 @@ import { effectSourcesOf } from './triggeredEffects';
 import { EMPTY_FLOW, type Flow, type FlowTest } from './flow';
 import { resolveStake, findById, combatStakeRef, type StakeRef } from '../data';
 import { CRITIQUE_DOCS } from '../data/criticals';
+import { SHIP_CRIT_SET, RIVER_CRIT_SET, type ShipCritSet, type ShipCritKey } from '../data/shipCriticals';
 import { resolveCritique } from '../engine/critical';
+import { rollShipCritical } from '../engine/shipCritical';
 import { makeRNG } from '../engine/dice';
 import { applyOps } from '../engine/ops';
 import { recomputeLoadout, parseDamage } from '../engine/items';
@@ -58,19 +60,6 @@ const KIND_PAR_FICHIER: Record<string, EffectSourceKind> = {
 };
 
 /**
- * Familles dont les nœuds `test` sont AUTO-RÉSOLUS — aucune étape n'est poussée, aucune modale ne
- * s'ouvre, donc aucun ENJEU n'est à afficher : l'issue est déjà tranchée quand le résultat paraît.
- * Chacune porte SA raison, et l'exemption s'AUTO-PURGE : une famille listée ici qui ne porterait plus
- * aucun nœud fait rougir (assertion ci-dessous), comme une famille qui en porterait sans nature.
- */
-const AUTO_RESOLUS: Record<string, string> = {
-  'river-criticals.json':
-    'Coup à l’équipage d’un Critique de coque fluviale (MSRC 07 l.78/l.94) : le nœud est joué par `applyCrewHit` (`engine/shipCritical.ts`) avec le RNG du combat, DANS le geste d’`applyHullCritical` que `combatFlow.ts:1819` appelle — aucune étape n’est poussée, le journal ne rend que l’issue.',
-  'ship-criticals.json':
-    'Coup à l’équipage d’un Critique de coque navale (« Canon détaché », MDG 13 l.763) : MÊME chemin et MÊME geste que la table fluviale — le nœud est résolu dans `applyHullCritical`, sans fenêtre.',
-};
-
-/**
  * Familles dont l'ENJEU est POSÉ PAR LE PRODUCTEUR moteur (patron `miscast.mkTest`) — ni une exemption
  * ni un silence : le fichier listé ici est tenu au MÊME contrat positif, mais interrogé par SON
  * producteur au lieu de la dérivation par nature de source.
@@ -87,7 +76,28 @@ const AUTO_RESOLUS: Record<string, string> = {
  */
 const ENJEU_AU_PRODUCTEUR: Record<string, () => { entryId: string; stake: StakeRef | undefined }[]> = {
   'criticals.json': enjeuxDesRangeesDeCritique,
+  // Coup à l'ÉQUIPAGE d'un Critique de coque (MSRC 07 l.78/l.94, MDG 13 l.763) : même raison exactement
+  // — le foyer est la RANGÉE (`greement-fluvial`, `canon-detache`), qui vit dans l'une des 10
+  // catégories Codex de coque choisies à la LOCALISATION touchée, jamais le document-table.
+  'river-criticals.json': () => enjeuxDesCoupsAEquipage(RIVER_CRIT_SET),
+  'ship-criticals.json': () => enjeuxDesCoupsAEquipage(SHIP_CRIT_SET),
 };
+
+/** Les enjeux RÉELLEMENT posés par `rollShipCritical` sur les nœuds `test` d'un jeu de Critiques de
+ *  coque : un par rangée portant un coup à l'équipage À ÉPREUVE (un coup CERTAIN — `ops`, MSRC 07
+ *  l.82 — n'a pas de nœud, donc rien à nommer). Dé FORCÉ sur le `min` de la rangée → c'est bien SA
+ *  ligne qui sort. */
+function enjeuxDesCoupsAEquipage(jeu: ShipCritSet): { entryId: string; stake: StakeRef | undefined }[] {
+  const out: { entryId: string; stake: StakeRef | undefined }[] = [];
+  for (const [loc, rows] of Object.entries(jeu.tables)) {
+    for (const e of rows ?? []) {
+      if (!e.crewHit?.test) continue;
+      const resolu = rollShipCritical(loc as ShipCritKey, makeRNG(1), e.min, jeu);
+      out.push({ entryId: e.id, stake: resolu.crewHit?.test?.test.stake });
+    }
+  }
+  return out;
+}
 
 /**
  * Nœuds `test` que le PRODUCTEUR fabrique EN PLUS de ceux écrits en donnée — cardinal MESURÉ au
@@ -182,9 +192,9 @@ describe('#1262 V2 L6d — TOUT `FlowTest` de la donnée dit ce qui se joue', ()
     expect(noeuds.length, 'aucun nœud `kind:test` trouvé : le scan de la donnée a glissé').toBeGreaterThanOrEqual(70);
   });
 
-  it('chaque famille porteuse de `FlowTest` a sa NATURE de source déclarée (ou son producteur, ou son auto-résolution)', () => {
+  it('chaque famille porteuse de `FlowTest` a sa NATURE de source déclarée (ou son producteur)', () => {
     const orphelines = [...new Set(noeuds.map((n) => n.fichier))]
-      .filter((f) => !KIND_PAR_FICHIER[f] && !ENJEU_AU_PRODUCTEUR[f] && !AUTO_RESOLUS[f]);
+      .filter((f) => !KIND_PAR_FICHIER[f] && !ENJEU_AU_PRODUCTEUR[f]);
     expect(orphelines, 'famille de données porteuse d’un jet sans nature de source : son enjeu ne pourrait pas se dériver').toEqual([]);
   });
 
@@ -209,15 +219,8 @@ describe('#1262 V2 L6d — TOUT `FlowTest` de la donnée dit ce qui se joue', ()
         else if (resolu.rule.id !== entryId) muets.push(`${fichier}:${entryId} — renvoi hors de sa propre rangée (${resolu.rule.category}:${resolu.rule.id})`);
       }
     }
-    expect(mesures, 'la sonde du producteur n’a rien mesuré').toBeGreaterThanOrEqual(67);
+    expect(mesures, 'la sonde du producteur n’a rien mesuré').toBeGreaterThanOrEqual(70);
     expect(muets, ['Jet de donnée MUET — chaque nœud posé par son producteur dit ce qui se joue :', ...muets].join('\n')).toEqual([]);
-  });
-
-  it('les exemptions d’AUTO-RÉSOLUTION sont VIVANTES et disjointes des natures déclarées', () => {
-    const porteuses = new Set(noeuds.map((n) => n.fichier));
-    const mortes = Object.keys(AUTO_RESOLUS).filter((f) => !porteuses.has(f));
-    expect(mortes, 'exemption(s) sans un seul nœud à exempter — elle ne sert plus qu’à mentir').toEqual([]);
-    expect(Object.keys(AUTO_RESOLUS).filter((f) => KIND_PAR_FICHIER[f]), 'un fichier des DEUX régimes rend le verdict ambigu').toEqual([]);
   });
 
   it('chaque nœud produit une étape MINTÉE dont l’enjeu se résout en texte + renvoi Codex', () => {

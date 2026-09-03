@@ -50,7 +50,7 @@ describe('op removeShipPoste — Canon perdu (MDG 13 l.765)', () => {
 });
 
 /** « Canon détaché » authoré en DONNÉE : le nœud `test` du Flow porte le jet ET, dans sa branche
- *  d'ÉCHEC, la conséquence en `GameOp` (branche `success` vide — `applyCrewHit` ne sert que l'échec). */
+ *  d'ÉCHEC, la conséquence en `GameOp` (branche `success` vide — seul l'échec est servi). */
 const detachTest: ShipCrewHit = {
   test: {
     kind: 'test',
@@ -60,44 +60,58 @@ const detachTest: ShipCrewHit = {
   },
 };
 
+/** Coup à l'équipage SANS jet (MSRC 07 l.82 « les échardes infligent +5 Dégâts ») — la conséquence est
+ *  CERTAINE, c'est le seul cas où `applyCrewHit` applique encore quelque chose. */
+const echardes: ShipCrewHit = { ops: [{ op: 'wounds', amount: 5, ignoreTB: false, ignoreAP: false }] };
+
 /**
- * « Canon détaché » (MDG 13 l.763-764) : l'équipage du poste encourt le `crewHit` (data-driven) ; un
- * échec applique les ops de sa branche `fail`. Le canon RESTE à bord (≠ « Canon perdu »). Plus aucune
- * valeur (12 / Athlétisme) en dur.
+ * « Canon détaché » (MDG 13 l.763-764) : `applyCrewHit` DÉSIGNE l'équipage du poste et REND le nœud
+ * `test` de la rangée — il ne le ROULE plus (#1657 B3-2, la porte canonique décide de la surface).
+ * Le canon RESTE à bord (≠ « Canon perdu »). Plus aucune valeur (12 / Athlétisme) en dur.
  */
 describe('applyCrewHit — Canon détaché (data-driven, MDG 13 l.763-764)', () => {
   const hullWith = (crewIds: string[]) => {
     const poste: ShipPoste = { item: { uid: 'p1', name: 'Canon' } as never, side: 'tribord', crewIds };
     return { hull: { id: 'hull', postes: [poste] } as unknown as Combatant, poste };
   };
-  // int(1,100) = d100 du Test ; int(0,n) = tirage du poste (index 0).
-  const rngFail = { int: (min: number) => (min === 1 ? 100 : 0) }; // d100=100 → raté
-  const rngPass = { int: (min: number) => (min === 1 ? 1 : 0) };   // d100=1  → réussi
+  // Le SEUL tirage restant est celui du poste (`int(0, n)`) : plus aucun d100 n'est consommé ici.
+  const rngPoste = { int: () => 0 };
 
-  it('servant qui RATE → `onFail` appliqué (12 Dégâts mitigés BE/PA)', () => {
+  it('l’équipage du poste est DÉSIGNÉ et le nœud RENDU — rien n’est appliqué, rien n’est jeté', () => {
     const { hull } = hullWith(['m1']);
     const m1 = sailor('m1');
-    const hits = applyCrewHit(hull, [m1], detachTest, rngFail);
-    expect(hits).toEqual([{ crewId: 'm1' }]);
-    expect(m1.wounds.current).toBe(13 - (12 - 3)); // 12 − BE(3) − PA(0) = 9 PB perdus → 4
-  });
-
-  it('servant qui RÉUSSIT → indemne', () => {
-    const { hull } = hullWith(['m1']);
-    const m1 = sailor('m1');
-    expect(applyCrewHit(hull, [m1], detachTest, rngPass)).toHaveLength(0);
+    const out = applyCrewHit(hull, [m1], detachTest, rngPoste);
+    expect(out.victims).toEqual(['m1']);
+    expect(out.testFlow).toBe(detachTest.test); // le nœud AUTHORÉ part tel quel à la porte
+    expect(out.hits).toEqual([]);               // aucune conséquence : l'issue n'est pas encore jouée
     expect(m1.wounds.current).toBe(13);
   });
 
-  it('coque sans poste → [] (rien à détacher)', () => {
+  it('AUCUN dé n’est consommé pour l’issue : seul le tirage du POSTE part', () => {
+    const { hull } = hullWith(['m1']);
+    const tirages: [number, number][] = [];
+    const rng = { int: (min: number, max: number) => { tirages.push([min, max]); return 0; } };
+    applyCrewHit(hull, [sailor('m1')], detachTest, rng);
+    expect(tirages, 'un d100 est encore tiré dans le moteur — le Test échapperait à la porte').toEqual([[0, 0]]);
+  });
+
+  it('coque sans poste → personne de visé (rien à détacher)', () => {
     const hull = { id: 'hull', postes: [] } as unknown as Combatant;
-    expect(applyCrewHit(hull, [], detachTest, rngFail)).toEqual([]);
+    expect(applyCrewHit(hull, [], detachTest, rngPoste).victims).toEqual([]);
   });
 
   it('servants déjà hors de combat (mort / 0 PB) ignorés', () => {
     const { hull } = hullWith(['mort', 'ko']);
     const mort = sailor('mort', { dead: true });
     const ko = sailor('ko', { wounds: { current: 0, max: 13, base: 13 } as never });
-    expect(applyCrewHit(hull, [mort, ko], detachTest, rngFail)).toHaveLength(0);
+    expect(applyCrewHit(hull, [mort, ko], detachTest, rngPoste).victims).toEqual([]);
+  });
+
+  it('coup CERTAIN (`ops`, MSRC 07 l.82) : appliqué sur place, aucun nœud à ouvrir', () => {
+    const m1 = sailor('m1');
+    const out = applyCrewHit({ id: 'hull' } as unknown as Combatant, [m1], { ...echardes, crewTarget: 'deck' }, rngPoste);
+    expect(out.testFlow).toBeUndefined();
+    expect(out.hits).toEqual([{ crewId: 'm1' }]);
+    expect(m1.wounds.current).toBe(13 - (5 - 3)); // 5 − BE(3) − PA(0) = 2 PB perdus
   });
 });

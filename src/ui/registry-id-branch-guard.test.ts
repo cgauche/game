@@ -179,7 +179,7 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/rest.ts': 1,
   // 3 → 2 (L2 #1548, commit 3b) : le Test d'équipage d'un Critique fluvial désigne une CARACTÉRISTIQUE
   // (`crewTest.char === 'initiative'`), plus un id de registre de Compétence.
-  'src/engine/riverNavigation.ts': 2,
+  'src/engine/riverNavigation.ts': 1,
   'src/engine/seaNavigation.ts': 1,
   // 4 → 7 (L2 #1548, commit 3c) : AUCUNE comparaison neuve — les trois `o.skill === 'esquive'` de
   // `downgradeTornMuscle`/`traumaDodgePenalty`/`traumaSkillPenalty` lisent la MÊME chose qu'avant, mais

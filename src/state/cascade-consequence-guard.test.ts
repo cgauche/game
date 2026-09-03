@@ -19,7 +19,7 @@ import { ESLint } from 'eslint';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url)); // racine du repo
 
-/** Isole les littéraux `journal: [...]` d'un CascadeApplier (canal déprécié) — exclut les écritures
+/** Isole les littéraux `journal: [...]` d'un CascadeApplier (canal MORT depuis #295, tout retour = régression) — exclut les écritures
  *  d'ÉTAT `journal: [...get().journal...]` (spread de `state.journal`, un champ homonyme sans rapport). */
 function journalLiterals(src: string): string[] {
   return src.match(/\bjournal:\s*\[(?!\.\.\.get\(\)\.journal)[^\]]*\]/gs) ?? [];
@@ -42,7 +42,7 @@ function dupCounts(src: string): { journalArrays: number; jetDup: number; verdic
  *  `travelPostes`/`seaVoyageFlow`/`shipwreck`/`pursuitFlow`/`combatFlow`/`combat/roundHooks`/
  *  `combat/turnHooks`/`combat/triggeredTest`/`restFlow`/`embrigadementFlow`/`riverVoyageFlow` (Lot 1) +
  *  `combatEffects`/`combatManeuvers`/`encounterPsychFlow` (mort du canal, #295) — plus aucun fichier
- *  du scope ne porte le canal `journal:` déprécié. */
+ *  du scope ne porte le canal `journal:` (mort, #295). */
 const BASELINE: Record<string, { journalArrays: number; jetDup: number; verdict: number }> = {};
 
 const SCOPE = [
@@ -160,7 +160,6 @@ const CATALOG_BASELINE = [
   'cs.shameOvercome', 'cs.dispelRoll', // #410 : jet incisé dans la narration
   // #1318 V8c₂ — les 5 venus de travelFlow/riverVoyageFlow (les mêmes qu'avant migration, au même titre) :
   'tf.beastExhausted', // bêtes de l'attelage : porteur SANS identité, dé parenthétique en justification
-  'rv.splinterDodgedRoll', 'rv.fragDodgeFailed', // éclats : jet INCISÉ dans une narration d'ÉVÉNEMENT
   'rv.holeInline', 'rv.fragRefloat', // calfatage / renflouage IA : idem
   // #1318 V8c₃ — le site #295 de `seaVoyageFlow.runRestart`, venu du compteur de CODE au même titre :
   // la ligne porte le DR CUMULÉ du Test étendu (`lastDR`), que le patron du dériveur ne saurait dire.
@@ -234,7 +233,9 @@ describe('cliquet composeur — CONTENU des conséquences : re-print roll/target
     expect(/\{roll\}\/\{target\}/.test("'x.y': 'Test : {roll}/{target} → {issue}'")).toBe(true);
     expect(DERIVEUR_KEYS.has('casc.rowTraceAnon')).toBe(true);
     // …et le compte réel n'est pas vide (un scan cassé rendrait la garde verte pour rien).
-    expect(catalogJetEchoKeys().length).toBeGreaterThanOrEqual(10);
+    // Plancher 10 → 9 (#1657 B3-2) : `rv.splinterDodgedRoll`/`rv.fragDodgeFailed` sont MORTES avec le
+    // double applier d'éclats — le stock de résorption décroît, le plancher de la sonde le suit.
+    expect(catalogJetEchoKeys().length).toBeGreaterThanOrEqual(9);
   });
 
   it('fail-closed : le compteur détecte un re-print roll/target SYNTHÉTIQUE hors littéral journal:', () => {

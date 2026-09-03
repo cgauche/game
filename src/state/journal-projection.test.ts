@@ -4,6 +4,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { traceLineOf, testTraceLabel } from '../engine/traceLine';
+import { deElide } from '../i18n';
 import { startCascade, runCascadeImmediate } from './cascade';
 import { spyApplier } from './cascadeTestKit';
 import { FLOWS } from './rollFlowSpecs';
@@ -40,6 +41,18 @@ describe('le dériveur — patron unique de la ligne de dé', () => {
   it('Test résolu SANS fenêtre : le libellé porte la Compétence ET sa Difficulté (elle ne se lit nulle part ailleurs)', () => {
     expect(traceLineOf({ who: 'Brawn', label: testTraceLabel('Résistance', 'difficile'), roll: 45, target: 60, sl: 2, success: true }))
       .toBe('Brawn — Test de Résistance Difficile (−20) : 45/60 → réussi (DR +2).');
+  });
+
+  /** La PRÉPOSITION s'élide devant une voyelle (« Test d'Initiative », jamais « Test de Initiative ») —
+   *  une seule écriture, `deElide` (`src/i18n`), composée par le patron du catalogue. */
+  it('le sujet du Test porte son ÉLISION : « d’Initiative » devant voyelle, « de Résistance » sinon', () => {
+    expect(testTraceLabel('Initiative', 'intermediaire')).toBe('Test d’Initiative Intermédiaire (+0)');
+    expect(testTraceLabel('Endurance', 'intermediaire')).toBe('Test d’Endurance Intermédiaire (+0)');
+    expect(testTraceLabel('Agilité', 'intermediaire')).toBe('Test d’Agilité Intermédiaire (+0)');
+    expect(testTraceLabel('Résistance', 'intermediaire')).toBe('Test de Résistance Intermédiaire (+0)');
+    expect(testTraceLabel('Navigation', 'intermediaire')).toBe('Test de Navigation Intermédiaire (+0)');
+    // PÉRIMÈTRE DÉCLARÉ du helper : le `h` n'est PAS élidé (aspiré vs muet, indécidable sur le mot).
+    expect(deElide('Halfling')).toBe('de Halfling');
   });
 
   it('forme OPPOSÉE (#1294) : DEUX jets sur UNE ligne, issue par défaut vue du DÉFENSEUR', () => {

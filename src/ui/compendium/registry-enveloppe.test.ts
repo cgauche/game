@@ -50,9 +50,9 @@ const CLES: Record<string, string> = {
   "miscastMajor": '416a3aa0219e8f4e',
   "miscastWrath": '3da49a322927f1e7',
   "nightStakes": '54a15ad6883f8c31',
-  "voyageStakes": '688a26d167439e19',
+  "voyageStakes": '9ce6e042bf3b10d8',
   "flowStakes": '5991b421e4d718b4',
-  "combatStakes": '3896272fa391e15e',
+  "combatStakes": 'db6c17396c10c31b',
   "races": '0728d04812275962',
   "careers": '482f179346c5e761',
   "characteristics": '532e47bfff4a9328',
@@ -162,7 +162,7 @@ const CLES: Record<string, string> = {
   "crewMoraleFactors": '91a12d65f9274e14',
   "crewMoraleBands": '817ce48b209e1729',
   "steamBreakdowns": '0241598713ede3cd',
-  "regles": '5d8038eb4d292abc',
+  "regles": 'b26d715609ca1d9a',
 };
 
 /** Union des clés PRÉSENTES par catégorie (diagnostic lisible — un item isolé qui gagne une clé que

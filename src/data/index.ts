@@ -29,6 +29,7 @@ import qualitiesJson from './qualities.json';
 import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
 import { critiqueEntries } from './criticals';
+import { SHIP_CRIT_SET, RIVER_CRIT_SET, type ShipCritSet } from './shipCriticals';
 import structureCriticalsRawJson from './structure-criticals.json';
 import miscastRawJson from './miscast.json';
 import trappingsJson from './trappings.json';
@@ -434,6 +435,11 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   aaCriticalsCorps: (id) => critiqueEntries('criticals-aa-corps').some((r) => r.id === id),
   aaCriticalsJambe: (id) => critiqueEntries('criticals-aa-jambe').some((r) => r.id === id),
   structureCriticals: (id) => structureCriticalRows.some((r) => r.id === id),
+  // Critiques de COQUE : une catégorie Codex par jeu × Localisation (`registry.ts`, clusters
+  // « Critiques de navire » / « Critiques fluviaux »). Dérivées des jeux CHARGÉS, jamais recopiées :
+  // une Localisation de plus dans un `.json` entre ici sans une ligne de code.
+  ...shipCritPools(SHIP_CRIT_SET, 'shipCriticals'),
+  ...shipCritPools(RIVER_CRIT_SET, 'riverCriticals'),
   miscastMinor: (id) => miscastMinorRows.some((r) => r.id === id),
   miscastMajor: (id) => miscastMajorRows.some((r) => r.id === id),
   miscastWrath: (id) => miscastWrathRows.some((r) => r.id === id),
@@ -462,6 +468,16 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
 /** Rangées BRUTES des tables tirées par une étape, réduites à leur id — le résolveur d'enjeu n'a
  *  besoin que du pool d'ids, et les lit sur le MÊME JSON que le Codex édite. */
 const structureCriticalRows = (structureCriticalsRawJson as { entries: { id: string }[] }).entries;
+
+/** POOLS d'ids d'un jeu de Critiques de coque, une entrée par Localisation — les clés sont celles des
+ *  catégories Codex (`shipCriticalsGreement`…), et la MEME dérivation (préfixe + segment capitalisé)
+ *  que `shipCritEntryCodexCategory` (`engine/shipCritical.ts`) côté producteur. */
+function shipCritPools(set: ShipCritSet, prefixe: string): Record<string, (id: string) => boolean> {
+  return Object.fromEntries(Object.entries(set.tables).map(([loc, rows]) => [
+    `${prefixe}${loc[0].toUpperCase()}${loc.slice(1)}`,
+    (id: string) => (rows ?? []).some((r) => r.id === id),
+  ]));
+}
 const miscastDocs = miscastRawJson as unknown as { id: string; entries: { id: string }[] }[];
 /** Rangées d'UN tableau d'Incantation Imparfaite, par id de DOCUMENT (`miscast.json`) — FAIL-FAST :
  *  un id absent rendrait le résolveur d'enjeu silencieusement aveugle. */

@@ -777,6 +777,35 @@ export function routeTriggeredTest(get: Get, set: SetFn, target: Combatant, acto
   runCombatFlow({ mode: 'combat', get, set, target, caster: actor, label: opsCtx?.label ?? 'Effet', opsCtx }, flow);
 }
 
+/**
+ * MÊME PORTE, N TESTEURS (#1657 B3-2) — `routeTriggeredTest` généralisé : un SEUL nœud `test` que N
+ * porteurs subissent en même temps (le coup à l'ÉQUIPAGE d'un Critique de coque, MSRC 07 l.78 « Toute
+ * personne présente sur le pont »). La forme MÉCANIQUE se DÉRIVE de la situation, elle ne se déclare
+ * pas : les testeurs SURFACÉS (`surfaceOf` — un siège humain les tient) prennent UNE bande de N
+ * rangées, une par siège (`simpleBatchTestStep`, possession posée par `bandStep`) ; les autres
+ * (marins PNJ, cadence auto) passent par la voie INLINE de la porte (`runCombatFlow` →
+ * `resolveFlowTest`), qui journalise. Le mono EST le cas N=1 — aucune seconde forme.
+ *
+ * Rend l'étape à INSÉRER (`undefined` si personne n'est surfacé) : la couture décide où elle atterrit
+ * (combat → `pushCombatStep` ; voyage → `insert` de l'applier ou `pushStep(…, 'travelDay')`), et
+ * DRAINE elle-même les lignes inline (`drainPendingLog`) dans SON journal.
+ */
+export function bandeTriggeredTest(
+  get: Get, set: SetFn, testeurs: Combatant[], node: Extract<Flow, { kind: 'test' }>, id: string, opsCtx?: OpsCtx,
+): BuiltCascadeStep | undefined {
+  const surfaces: Combatant[] = [];
+  for (const c of testeurs) {
+    if (surfaceOf(get, c.id)) { surfaces.push(c); continue; }
+    runCombatFlow({ mode: 'combat', get, set, target: c, caster: c, label: opsCtx?.label ?? 'Effet', ...(opsCtx ? { opsCtx } : {}) }, node);
+  }
+  if (!surfaces.length) return undefined;
+  const ft = withDerivedStake(node.test, opsCtx?.source);
+  return simpleBatchTestStep(
+    surfaces, ft, { onSuccess: node.success, onFail: node.fail }, EMPTY_FLOW,
+    resolveTestDifficulty(ft, combatConditionCtx(surfaces[0], opsCtx ?? {})), id,
+  );
+}
+
 /** Implémentation du hook `setZoneCrossTestHook` (combatGeometry.ts, #500) — un `crossTest` de zone
  *  (Forêt d'épines, LDB 48 l.749) EST un `test` de Flow comme un autre : délègue à `routeTriggeredTest`,
  *  aucune machinerie propre. Injectée par le store (`createCombatSlice`), calque `freeAttackHookImpl`.

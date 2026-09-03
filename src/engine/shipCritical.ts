@@ -17,11 +17,10 @@ import { findTableEntry } from './tables';
 import { applyOps, type GameOp } from './ops';
 import { shipHitLocation, hitLocation, type ShipRig, type ShipLocation } from './combat';
 import { resolveCritique, jeuDeCritique, type CriticalResolved } from './critical';
-import { rollTest } from './tests';
-import { testValue } from './skills';
-import { spellOps } from './flowCore';
+import { poserEnjeu, type FlowTestNode } from './flowCore';
+import { combatStakeRef, type StakeRef } from '../data';
 import type { Combatant } from './types';
-import { SHIP_CRIT_SET, shipCritSet, type ShipCritSet, type ShipCritKey, type ShipCrewHit } from '../data/shipCriticals';
+import { SHIP_CRIT_SET, RIVER_CRIT_SET, shipCritSet, type ShipCritSet, type ShipCritKey, type ShipCrewHit } from '../data/shipCriticals';
 import { t, type MsgKey } from '../i18n';
 import type { PlayerText } from '../i18n/playerText';
 
@@ -41,6 +40,31 @@ export const shipLocationLabel = (loc: ShipLocation): PlayerText => t(SHIP_LOC_K
 /** Réfs de tables data-driven d'une coque (MDG naval par défaut / MSRC fluvial) — `hull.locationTable` (colonne
  *  de Localisation) + `hull.criticalTable` (jeu de Critiques). Absentes → jeu naval MDG (comportement historique). */
 export interface HullCritOpts { locationTable?: string | null; criticalTable?: string | null }
+
+/** Catégorie Codex EXACTE (`registry.ts`) d'une rangée de Critique de coque, par jeu × Localisation —
+ *  jumelle de `critEntryCodexCategory` (`critical.ts`). Table CLOSE : une Localisation absente du jeu
+ *  n'a pas de fiche, et l'enjeu replie alors sur le foyer du `kind` (jamais un nom inventé). */
+const SHIP_CRIT_CODEX_SEGMENT: Record<ShipCritKey, string> = {
+  avirons: 'Avirons', greement: 'Greement', coque: 'Coque', equipements: 'Equipements',
+  cargaison: 'Cargaison', gouvernail: 'Gouvernail', superstructure: 'Superstructure',
+};
+export function shipCritEntryCodexCategory(setId: string, location: ShipCritKey): string {
+  return `${setId === RIVER_CRIT_SET.id ? 'riverCriticals' : 'shipCriticals'}${SHIP_CRIT_CODEX_SEGMENT[location]}`;
+}
+
+/** ENJEU (#1117) du coup à l'ÉQUIPAGE d'une rangée de Critique de coque — patron `enjeuDeRangee`
+ *  (`critical.ts`) : le producteur nomme la LIGNE qui exige le jet, sa catégorie Codex se choisit au
+ *  tirage parmi les 10 tables de coque (porte (b) `entryCategory`, `src/data/index.ts`). PUR. */
+function enjeuDuCoup(setId: string, location: ShipCritKey, entryId: string): StakeRef {
+  return combatStakeRef('shipCrewHit', { entryId, entryCategory: shipCritEntryCodexCategory(setId, location) });
+}
+
+/** Le coup à l'équipage d'une rangée, ENJEU POSÉ sur son nœud `test` — fabrique PURE, aucun dé
+ *  (jumelle de `noeudDeRangee`). Un coup CERTAIN (`ops`, MSRC 07 l.82) ressort inchangé. */
+function coupDeRangee(hit: ShipCrewHit | undefined, setId: string, location: ShipCritKey, entryId: string): ShipCrewHit | undefined {
+  if (!hit?.test) return hit;
+  return { ...hit, test: { ...hit.test, test: poserEnjeu(hit.test.test, enjeuDuCoup(setId, location, entryId)) } };
+}
 
 export interface ShipCriticalResolved {
   location: ShipCritKey;
@@ -84,7 +108,7 @@ export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, f
     ops,
     shrapnel: entry.shrapnel ?? 0,
     extraHullCrits,
-    crewHit: entry.crewHit,
+    crewHit: coupDeRangee(entry.crewHit, set.id, location, entry.id),
     note: entry.note,
     log: t('shipCrit.line', { loc: shipLocationLabel(location), label: entry.label, eclats: entry.shrapnel ? t('shipCrit.fragShrapnel', { n: entry.shrapnel }) : '', extra: extraHullCrits ? t('shipCrit.fragExtraHull', { n: extraHullCrits }) : '' }),
   };
@@ -133,6 +157,9 @@ export interface HullCriticalOutcome {
   shrapnel: { crewId: string }[];
   /** Critiques de Coque SUPPLÉMENTAIRES résolus (1d10…) — ops déjà appliqués à la coque. */
   extraHullCrits: ShipCriticalResolved[];
+  /** Coup à l'ÉQUIPAGE de la rangée : conséquence certaine DÉJÀ appliquée, épreuve RENDUE. L'appelant
+   *  (`state`) ouvre `testFlow` par la porte canonique sur les `victims`. */
+  crewHit?: CrewHitOutcome & { label: string };
   lines: string[];
 }
 
@@ -146,31 +173,40 @@ function posteCrew(hull: Combatant, crew: Combatant[], rng: RNG): Combatant[] {
     .filter((c): c is Combatant => !!c && !c.dead && (c.wounds?.current ?? 0) > 0);
 }
 
+/** Issue d'un coup à l'ÉQUIPAGE : QUI est visé, l'ÉPREUVE à ouvrir par la porte, et ce que la
+ *  conséquence CERTAINE a déjà fait. */
+export interface CrewHitOutcome {
+  /** Ids des marins VISÉS par le coup (`crewTarget`) — l'ordre est celui de la sélection. */
+  victims: string[];
+  /** Nœud `test` de la rangée, ENJEU POSÉ : la couche `state` l'OUVRE (une bande de N rangées, une
+   *  par siège). Absent quand la rangée n'appelle aucun jet. */
+  testFlow?: FlowTestNode;
+  /** Marins ayant réellement encaissé la conséquence CERTAINE (`ops`, déjà appliquée). */
+  hits: { crewId: string }[];
+}
+
 /**
  * Coup à l'ÉQUIPAGE consécutif à un Critique de coque, data-driven (`ShipCrewHit`) :
  *  - `crewTarget` : `poste` (équipage d'un poste tiré au sort — MDG 13 l.763, défaut) ou `deck` (toute
  *    personne EXPOSÉE sur le pont — MSRC 07 l.78/l.94) ;
- *  - `test` PRÉSENT → chaque cible encourt l'épreuve ; l'échec applique les ops de sa branche `fail` ;
- *  - `ops` à la place → conséquence CERTAINE, sans jet (MSRC 07 l.82).
- * Lecture PURE du nœud : `spellOps` extrait les `GameOp` des feuilles `EffectOp` de la branche —
- * `applyCrewHit` ne SERT que l'échec (une réussite n'applique rien), verrouillé par `echecSeulServi`
- * (`grammaire/mecanique.ts`). PUR (mute les marins touchés via `applyOps`, RNG injecté).
+ *  - `test` PRÉSENT → le nœud est RENDU (jamais roulé ici) : la porte canonique décide de la surface ;
+ *  - `ops` à la place → conséquence CERTAINE, sans jet, appliquée ici (MSRC 07 l.82).
+ * La branche d'ÉCHEC porte seule la conséquence (une réussite n'applique rien), verrouillé par
+ * `echecSeulServi` (`grammaire/mecanique.ts`) ; c'est la porte qui la joue. PUR (mute les marins
+ * touchés par un coup CERTAIN via `applyOps`) ; le RNG injecté sert au
+ * SEUL tirage du poste (MDG 13 l.763), jamais à l'issue d'un Test.
  */
-export function applyCrewHit(hull: Combatant, crew: Combatant[], crewHit: ShipCrewHit, rng: RNG = defaultRNG): { crewId: string }[] {
+export function applyCrewHit(hull: Combatant, crew: Combatant[], crewHit: ShipCrewHit, rng: RNG = defaultRNG): CrewHitOutcome {
   const victims = crewHit.crewTarget === 'deck' ? exposedCrew(crew) : posteCrew(hull, crew, rng);
-  const node = crewHit.test;
-  const ops = node ? spellOps(node.fail, 'target') : crewHit.ops ?? [];
+  const ids = victims.map((c) => c.id);
+  if (crewHit.test) return { victims: ids, testFlow: crewHit.test, hits: [] };
+  const ops = crewHit.ops ?? [];
   const hits: { crewId: string }[] = [];
   for (const sailor of victims) {
-    const fails = node
-      ? !rollTest(testValue(sailor, node.test.skill?.id, node.test.characteristic, node.test.skill?.spec), node.test.difficulty, rng).success
-      : true;
-    if (fails) {
-      applyOps(sailor, ops, { rng });
-      hits.push({ crewId: sailor.id });
-    }
+    applyOps(sailor, ops, { rng });
+    hits.push({ crewId: sailor.id });
   }
-  return hits;
+  return { victims: ids, hits };
 }
 
 /**
@@ -212,10 +248,13 @@ export function applyHullCritical(
 
   // Coup à l'équipage consécutif au Critique (`crewHit` data-driven) : poste tiré au sort (MDG « Canon
   // détaché », épreuve) ou toute personne EXPOSÉE sur le pont (MSRC gréement/superstructure, épreuve — ou
-  // rames, ops certaines). Le canon reste à bord (≠ « Canon perdu », op `removeShipPoste`).
+  // rames, ops certaines). Le canon reste à bord (≠ « Canon perdu », op `removeShipPoste`). L'ÉPREUVE
+  // n'est PAS jouée ici : elle ressort en `crewHit.testFlow`, que l'appelant ouvre par la porte.
+  let crewHitOut: (CrewHitOutcome & { label: string }) | undefined;
   if (crit.crewHit) {
-    const hits = applyCrewHit(hull, crew, crit.crewHit, rng);
-    if (hits.length) lines.push(t('shipCrit.crewTakes', { n: hits.length, label: crit.label }));
+    const out = applyCrewHit(hull, crew, crit.crewHit, rng);
+    crewHitOut = { ...out, label: crit.label };
+    if (out.hits.length) lines.push(t('shipCrit.crewTakes', { n: out.hits.length, label: crit.label }));
   }
 
   // Éclats → effet data `set.shrapnelHit` (op `wounds` : 9 Dégâts en mer MDG / +5 en fleuve MSRC) à autant de
@@ -242,5 +281,5 @@ export function applyHullCritical(
   }
   if (extraHullCrits.length) lines.push(t('shipCrit.extraHull', { n: extraHullCrits.length }));
 
-  return { location: crit.location, hullOps: crit.ops, shrapnel, extraHullCrits, lines };
+  return { location: crit.location, hullOps: crit.ops, shrapnel, extraHullCrits, ...(crewHitOut ? { crewHit: crewHitOut } : {}), lines };
 }

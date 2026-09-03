@@ -63,7 +63,9 @@ describe('applyCriticalToTarget — l’équipage lié (crewIds) encaisse via la
       const s = ship();
       const crew = Array.from({ length: 8 }, (_, i) => sailor(`m${i}`));
       s.crewIds = crew.map((c) => c.id);
-      const get = (() => ({ battle: { combatants: crew } })) as never;
+      // La bataille PORTE la file de journal différée : depuis #1657 B3-1/B3-2, le Test de la rangée
+      // du Critique encaissé par le marin part par la PORTE — sa voie inline y pousse ses lignes.
+      const get = (() => ({ battle: { combatants: crew }, party: [], pendingLogQueue: [] })) as never;
       applyCriticalToTarget(s, 'corps', true, 0, [], setStub, { get });
       crewTouched = crew.some((c) => c.wounds.current < 13 || (c.traumas?.length ?? 0) > 0 || c.conditions.length > 0);
     }

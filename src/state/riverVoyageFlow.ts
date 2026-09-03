@@ -29,13 +29,12 @@ import { applyEffects } from './combatEffects';
 import { openRest, placesOfKind } from './restFlow';
 import { placeById, type MapRoute, type WorldMap } from './worldMap';
 import { damageVesselHull, healVesselHull, syncHullWoundsFromVessel, spoilVesselCargoOnLeak } from './seaVoyageFlow';
-import { applyOps } from '../engine/ops';
 import { baseHoursPerDay } from './travelFlow';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import { toRecapLines } from './recapLine';
 import { travelSpeed } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
-import { voyageStakeRef, conditionLabel, findVehicleById, refLabel, specLabel } from '../data';
+import { voyageStakeRef, findVehicleById, refLabel, specLabel } from '../data';
 import type { StakeRef } from '../data';
 import { partyCargoTotalEnc } from './carriers';
 import { partyAssisted } from '../engine/skills';
@@ -43,7 +42,6 @@ import { rollTest, type TestResult } from '../engine/tests';
 import type { ModLine } from '../engine/combat';
 import { RULE_REF } from '../engine/ruleRefs';
 import { testValue } from '../engine/skills';
-import { addCondition } from '../engine/conditions';
 import { deMonde, rollExpr, type RNG } from '../engine/dice';
 import { difficultyFromModifier } from '../engine/tests';
 import { effectiveChar } from '../engine/characteristics';
@@ -66,7 +64,10 @@ import type { CascadeStep, CascadeStepMeta } from './pendings';
 import type { Get, Set } from './flowTypes';
 import { dataLabel } from '../data';
 import { t } from '../i18n';
-import { shipLocationLabel } from '../engine/shipCritical';
+import { shipLocationLabel, rollShipCritical, applyCrewHit, exposedCrew } from '../engine/shipCritical';
+import { RIVER_CRIT_SET } from '../data/shipCriticals';
+import { bandeTriggeredTest } from './combat/triggeredTest';
+import { drainPendingLog } from './combatEffects';
 import { stepDetail, stepPrecision } from './rollSeam';
 
 /** SPÉCIALISATIONS de Métier lues par la réparation de bateau (l.107-117) — ids STABLES de
@@ -77,8 +78,7 @@ const SPEC = { constructionBateaux: 'construction-de-bateaux', charpentier: 'cha
 
 /** LOCALISATIONS de Critique de bateau (clés des tables de `river-criticals.json`) — le type restreint
  *  rend le résolveur TOTAL : aucun repli sur l'id, donc aucune fuite de moteur-speak à l'écran. */
-const RIVER_LOCS = ['greement', 'avirons', 'gouvernail', 'coque', 'superstructure'] as const;
-export type RiverCritLocation = typeof RIVER_LOCS[number];
+export type RiverCritLocation = 'greement' | 'avirons' | 'gouvernail' | 'coque' | 'superstructure';
 /** Libellé JOUEUR d'une Localisation de bateau : le foyer est au moteur (`shipLocationLabel`), qui
  *  couvre les huit `ShipLocation` — les cinq d'ici en sont un sous-ensemble.
  *
@@ -87,10 +87,6 @@ export type RiverCritLocation = typeof RIVER_LOCS[number];
  *  NOMINATIVE et locale au fluvial ; les quatre autres restent au foyer commun. */
 export const riverLocLabel = (loc: RiverCritLocation): PlayerText =>
   (loc === 'avirons' ? t('rv.locRames') : shipLocationLabel(loc));
-/** Ramène une méta d'étape (chaîne sérialisée) dans le domaine des Localisations connues ; à défaut, la
- *  COQUE (le corps du bateau) — jamais l'id inconnu rendu tel quel. */
-const riverCritLocationOf = (v: unknown): RiverCritLocation =>
-  (typeof v === 'string' && (RIVER_LOCS as readonly string[]).includes(v) ? v : 'coque') as RiverCritLocation;
 
 /** État FLUVIAL d'un TravelPlan (route `river`) — persiste avec le plan. */
 export interface RiverVoyageState {
@@ -788,23 +784,6 @@ registerCascadeApplier('riverPerilNav', (get, set, step) => {
   return resolveRiverPerilConsequence(get, set, peril, step, battleRng());
 });
 
-/** Esquive INFLUENÇABLE des éclats d'un Critique de bateau (#270, Initiative) — la victime EXPOSÉE tente
- *  d'éviter les Dégâts (l.78-94) ; échec = Dégâts + État éventuel. */
-registerCascadeApplier('riverSplinterDodge', (get, set, step, hero) => {
-  if (!step.result || !hero) return;
-  const dmg = Number(step.meta?.dmg ?? 0);
-  const conditionId = String(step.meta?.conditionId ?? '') || undefined;
-  // La méta voyage en chaîne (sérialisable) : on la RAMÈNE dans le domaine des Localisations connues,
-  // sinon rien à nommer — le résolveur reste total, l'id ne s'affiche jamais.
-  const location = riverCritLocationOf(step.meta?.location);
-  if (step.result.success) return { consequences: freeCons([{ text: t('rv.splinterDodged', { loc: riverLocLabel(location), name: hero.label }), tone: 'ok' }]) };
-  // HÉROS (pas la coque) : applyOps direct — les éclats sont un Dégât fixe RAW, sans mitigation BE/PA.
-  applyOps(hero, [{ op: 'wounds', amount: dmg, ignoreTB: true, ignoreAP: true }]);
-  if (conditionId) addCondition(hero, conditionId as Parameters<typeof addCondition>[1]);
-  set({ party: [...get().party] });
-  return { consequences: freeCons([{ text: t('rv.splinterHit', { loc: riverLocLabel(location), name: hero.label, dmg, cond: conditionId ? t('rv.fragSplinterCond', { cond: conditionLabel(conditionId) }) : t('rv.fragDot'), dodge: '' }), tone: 'bad' }]) };
-});
-
 /** Réparation d'urgence INFLUENÇABLE d'une coque PERCÉE (#270, Métier) — succès = voie d'eau colmatée
  *  (+1d10 Blessures de coque, l.116) ; échec = le bateau sombre (l.103). */
 registerCascadeApplier('riverHoleRepair', (get, set, step, hero) => {
@@ -846,38 +825,30 @@ registerCascadeApplier('riverPerilDetect', (get, set, step) => {
  *  (#270, Initiative) quand le jet de la victime exposée se surface, sinon inline — États, dérive, ou
  *  coque percée (réparation elle-même GATÉE, `holeBoat`). Renvoie les étapes-jet à INSÉRER, propagées par
  *  l'appelant (build-time `applyBoatCriticalNoPilot` ou applier `riverRigging`/`riverPerilDetect`). */
-function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoyageState, _coque: Combatant, location: RiverCritLocation, tell: (l: string[]) => void, rng: RNG, idPrefix: string): BuiltCascadeStep[] {
+function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoyageState, coque: Combatant, location: RiverCritLocation, tell: (l: string[]) => void, rng: RNG, idPrefix: string): BuiltCascadeStep[] {
   const crit = riverCritical(location);
   if (!crit) return [];
   const insert: BuiltCascadeStep[] = [];
-  if (crit.splinterDamage) {
-    // Éclats à un membre d'équipage exposé (l.78-94) : le barreur/premier héros vivant encaisse. Le RAW
-    // gréement/superstructure OFFRE un Test d'Initiative pour ÉVITER les +5 Dégâts (et l'Empêtré, l.78).
-    const victim = get().party.find((h) => !h.dead);
-    const dodgeStep = victim && crit.initiativeTest && surfaceOf(get, victim.id)
-      ? monoStep({
-        id: `${idPrefix}-splinter`, kind: 'riverSplinterDodge', actor: victim, icon: 'ui/warning',
-        label: stepDetail(t('step.critiqueAu', { loc: riverLocLabel(location) }), t('step.eclats')), rollLabel: t('char.initiative'), difficulty: 'intermediaire',
-        ligne: { test: { char: 'initiative' } },
-        stake: voyageStakeRef('riverSplinterDodge', { damage: crit.splinterDamage ?? 0, condition: conditionLabel(crit.conditionId ?? 'empetre') }),
-        meta: { dmg: crit.splinterDamage, conditionId: crit.conditionId ?? '', location },
-      })
-      : undefined;
-    if (dodgeStep) {
-      insert.push(dodgeStep);
-    } else if (victim) {
-      // Repli SANS pilote humain (pas d'étape insérée ci-dessus) : aucune rangée nulle part pour ce
-      // jet — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
-      const dodge = crit.initiativeTest ? rollTest(testValue(victim, undefined, 'initiative'), 'intermediaire', rng) : null;
-      if (dodge?.success) {
-        tell([t('rv.splinterDodgedRoll', { loc: riverLocLabel(location), name: victim.label, roll: dodge.roll, target: dodge.target })]);
-      } else {
-        // HÉROS (pas la coque) : applyOps direct — Dégâts d'éclats fixes RAW, sans mitigation BE/PA.
-        applyOps(victim, [{ op: 'wounds', amount: crit.splinterDamage, ignoreTB: true, ignoreAP: true }]);
-        if (crit.conditionId) addCondition(victim, crit.conditionId as Parameters<typeof addCondition>[1]);
-        set({ party: [...get().party] });
-        tell([t('rv.splinterHit', { loc: riverLocLabel(location), name: victim.label, dmg: crit.splinterDamage ?? 0, cond: crit.conditionId ? t('rv.fragSplinterCond', { cond: conditionLabel(crit.conditionId) }) : t('rv.fragDot'), dodge: dodge ? t('rv.fragDodgeFailed', { roll: dodge.roll, target: dodge.target }) : '' })]);
-      }
+  // Coup à l'équipage (l.78-94) : MÊME résolveur que le combat naval (`rollShipCritical` →
+  // `applyCrewHit`, jeu MSRC), donc UNE seule lecture de la donnée. Ce qui est CERTAIN (rames, l.82)
+  // s'applique là ; ce qui est une ÉPREUVE (gréement l.78, superstructure l.94) ressort en nœud `test`
+  // et part par la PORTE — bande pour les héros tenus, voie inline (journalisée) pour les autres.
+  const equipage = exposedCrew(get().party);
+  const resolu = rollShipCritical(location, rng, undefined, RIVER_CRIT_SET);
+  if (resolu.crewHit) {
+    const coup = applyCrewHit(coque, equipage, resolu.crewHit, rng);
+    if (coup.hits.length) {
+      set({ party: [...get().party] });
+      tell([t('shipCrit.crewTakes', { n: coup.hits.length, label: resolu.label })]);
+    }
+    if (coup.testFlow) {
+      const victimes = coup.victims.map((id) => equipage.find((c) => c.id === id)).filter(Boolean) as Combatant[];
+      const bande = bandeTriggeredTest(get, set, victimes, coup.testFlow, `${idPrefix}-crew-hit`, { label: resolu.label });
+      if (bande) insert.push(bande);
+      // Voie INLINE (marin sans siège) : ses lignes partent dans la file différée — le voyage n'a pas
+      // de `battle.log`, on les déverse dans SON journal (source unique `drainPendingLog`).
+      const lignes = drainPendingLog(get, set).map((e) => e.text);
+      if (lignes.length) { set({ party: [...get().party] }); tell(lignes); }
     }
   }
   if (crit.driftUntilRepair) set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, broken: true } } });

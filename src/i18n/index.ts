@@ -65,3 +65,18 @@ export function t(key: MsgKey, params?: Params): PlayerText {
   const pat: string = CATALOGS[locale][key] ?? CATALOGS.fr[key] ?? key;
   return interpolate(pat, params) as PlayerText;
 }
+
+/**
+ * FRAGMENT « de X » ÉLIDÉ — source UNIQUE de l'élision de la préposition devant un nom propre de
+ * règle (Compétence, Caractéristique) : « Test **de** Résistance » mais « Test **d'**Initiative ».
+ * Composé par les patrons qui nomment le SUJET d'un jet (`casc.traceTestLabel`) : le catalogue porte
+ * le trou, l'élision se décide ici et nulle part ailleurs.
+ *
+ * PÉRIMÈTRE DÉCLARÉ : voyelles seulement (accentuées comprises). Le `h` reste NON élidé — muet ou
+ * aspiré n'est pas décidable sur le seul mot (« d'Hypnotisme » mais « de Halfling »), et aucune
+ * donnée ne le porte : l'inventer produirait un faux à l'écran. Un nom en `h` qui l'exigerait se
+ * traite en donnée, jamais par une heuristique ici.
+ */
+export function deElide(nom: string): string {
+  return /^[aeiouyàâäéèêëîïôöùûü]/i.test(nom) ? `d’${nom}` : `de ${nom}`;
+}

@@ -181,7 +181,7 @@ Un EXTRAIT par fiche — la FICHE fait foi : avant tout brief, tout verdict ou t
 - **user-doctrine-verrou-par-construction** (2026-08-10, 3 verbatims) : « Tout ca car tu ne veux pas régler le vrai problème, que je tente de régler depuis 1 mois, a savoir que chacun fait ce qu'il veut. » — `.claude/memory/user-doctrine-verrou-par-construction.md`
 - **user-mandat-chef-de-produit** (2026-07-09, 5 verbatims) : « On est parti d'un attendu vs réalité — ce n'est pas 2-3 mineurs, c'est des systèmes entiers à modifier/améliorer/refacto/refaire. Aujourd'hui les combats navals, demain le voyage terrestre/fluvial/siège/combat de masse. » — `.claude/memory/user-mandat-chef-de-produit.md`
 - **user-passage-fable-derives-opus** (2026-08-30) : « Evite les sous agent faible 5 s'il te plait » — `.claude/memory/user-passage-fable-derives-opus.md`
-- **user-regime-une-session-par-chantier-2026-09-01** (2026-09-01, 4 verbatims) : « Finir le merge, puis une seule session par chantier » — `.claude/memory/user-regime-une-session-par-chantier-2026-09-01.md`
+- **user-regime-une-session-par-chantier-2026-09-01** (2026-09-01, 5 verbatims) : « Finir le merge, puis une seule session par chantier » — `.claude/memory/user-regime-une-session-par-chantier-2026-09-01.md`
 - **user-ressource-licence-chatgpt** (2026-08-31, 2 verbatims) : « Je n'ai pas autant de ressource pour faire une review ou reprendre le travail » — `.claude/memory/user-ressource-licence-chatgpt.md`
 
 <!-- DOCTRINES-UTILISATEUR:fin -->

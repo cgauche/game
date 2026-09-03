@@ -188,6 +188,19 @@
     }
   },
   {
+    "id": "ship-crew-hit",
+    "type": "combat-stakes",
+    "label": "Critique de bateau — coup à l’équipage",
+    "kind": "shipCrewHit",
+    "rule": "critiques-de-bateau",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 07 l.78"
+    }
+  },
+  {
     "id": "structure-critical",
     "type": "combat-stakes",
     "label": "Critique de Structure",

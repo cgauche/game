@@ -27,9 +27,7 @@
  */
 import riverNavJson from '../data/river-navigation.json';
 import riverPerilsJson from '../data/river-perils.json';
-import { RIVER_CRIT_SET, type ShipCrewHit, type ShipCritKey } from '../data/shipCriticals';
-import { spellOps } from './flowCore';
-import type { GameOp } from './ops';
+import { RIVER_CRIT_SET, type ShipCritKey } from '../data/shipCriticals';
 import { findTableEntry } from './tables';
 import { d10, d100, rollExpr, type RNG, defaultRNG } from './dice';
 import { bonus } from './characteristics';
@@ -59,7 +57,7 @@ export interface RiverWindEffect {
 }
 
 interface BandRow { id: string; label: string; min: number; max: number }
-interface CritDef { splinterDamage?: number; initiativeTest?: boolean; conditionId?: string; driftUntilRepair?: boolean; navDifficulty?: Difficulty; hole?: boolean }
+interface CritDef { driftUntilRepair?: boolean; hole?: boolean }
 
 const DATA = riverNavJson as unknown as {
   windForces: BandRow[];
@@ -201,30 +199,20 @@ export function holeSinkMinutes(hullEndurance: number): number {
 
 // ── Critiques de bateau (l.72-94) ────────────────────────────────────────────────────────────────
 
-const RIVER_SPLINTER = RIVER_CRIT_SET.shrapnelHit.find((o) => o.op === 'wounds')?.amount;
-
-/** Conséquence encaissée par l'équipage : les ops de la branche d'ÉCHEC du nœud `test`, ou les ops
- *  CERTAINES du coup sans jet (`spellOps` — même lecture PURE que `applyCrewHit`). */
-function opsDuCoup(hit: ShipCrewHit | undefined): GameOp[] {
-  if (!hit) return [];
-  return hit.test ? spellOps(hit.test.fail, 'target') : hit.ops ?? [];
-}
-
 /** Vue « voyage » d'un Coup Critique de bateau fluvial (l.72-94), DÉRIVÉE de l'unique source
  *  `river-criticals.json` (la même que le combat lit via `RIVER_CRIT_SET`) — un seul fait RAW, deux vues.
- *  Chaque table MSRC n'a qu'une entrée (effet déterministe par Localisation, pas de sous-jet d10). PUR. */
+ *  Chaque table MSRC n'a qu'une entrée (effet déterministe par Localisation, pas de sous-jet d10).
+ *
+ *  PÉRIMÈTRE (#1657 B3-2) : uniquement ce que la COQUE encaisse (États navals de `ops`), que le flux
+ *  de voyage persiste dans son propre état (`river.broken`, `river.holed`). Ce que le coup fait à
+ *  l'ÉQUIPAGE ne se dérive pas ici : voyage et combat lisent la même rangée par le même résolveur
+ *  (`rollShipCritical` → `applyCrewHit`), qui rend son nœud `test` à la porte canonique. PUR. */
 export function riverCritical(location: string): CritDef | undefined {
   const e = RIVER_CRIT_SET.tables[location as ShipCritKey]?.[0];
   if (!e) return undefined;
   const hasCond = (id: string) => e.ops?.some((o) => o.op === 'condition' && o.id === id) ?? false;
-  const surLEquipage = opsDuCoup(e.crewHit);
-  const splinter = surLEquipage.find((o) => o.op === 'wounds')?.amount ?? (e.shrapnel ? RIVER_SPLINTER : undefined);
   return {
-    splinterDamage: typeof splinter === 'number' ? splinter : undefined,
-    initiativeTest: e.crewHit?.test?.test.characteristic === 'initiative' || undefined,
-    conditionId: surLEquipage.some((o) => o.op === 'condition' && o.id === 'empetre') ? 'empetre' : undefined,
     driftUntilRepair: hasCond('derive') || undefined,
-    navDifficulty: hasCond('gouvernail-brise') ? 'tresDifficile' : undefined,
     hole: hasCond('voie-d-eau') || undefined,
   };
 }

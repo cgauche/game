@@ -351,7 +351,7 @@ Un **Critique** (double réussi) lors de la Focalisation signifie qu'un flux pui
 > **Verbatim** (l.186-187) : « tant de magie concentrée si rapidement en un endroit entraîne un contrecoup magique : lancez 1d100 et consultez le Tableau des Incantations Imparfaites Mineures (voir p.234), sauf si vous possédez le Talent Harmonisation aethyrique (voir p.138). »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.135-137) → `combat-spell-plus`, `FocusInterruptHook`, `focalisation-etendue`, `lecture-au-grimoire`, `dispel-roll`, `castingBaseValue`, `miscast-table`, `castingValue`, `miscast-row-test`, `BattleState`, +21 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/magic.ts`, +7 fichiers
+- `LDB 46` (l.135-137) → `combat-spell-plus`, `FocusInterruptHook`, `focalisation-etendue`, `lecture-au-grimoire`, `dispel-roll`, `castingBaseValue`, `castingValue`, `miscast-table`, `miscast-row-test`, `BattleState`, +21 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/magic.ts`, +7 fichiers
 
 ---
 
@@ -364,7 +364,7 @@ La définition de **Maladresse est élargie** lors d'un Test de Focalisation : c
 > **Verbatim** (l.190-192) : « Concentrer les Vents de la Magie en un flux important est dangereux. Considérez comme Maladresse tout double ou tout résultat terminant par un 0 au-delà de votre Compétence, donc 00, 99, 90, 88, etc. Si vous obtenez une Maladresse à un Test de Focalisation, vous subissez une Incantation Imparfaite. Lancez 1d100 et consultez le Tableau des Incantations Imparfaites Majeures. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.139-141) → `FocusInterruptHook`, `focalisation-etendue`, `dispel-roll`, `armourCastDRPenalty`, `dispel`, `dispel-spell`, `focus-interrupt`, `createCombatSlice`, `runCombatFlow`, `CastTestKind`, +13 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, +7 fichiers
+- `LDB 46` (l.139-141) → `FocusInterruptHook`, `focalisation-etendue`, `dispel-roll`, `armourCastDRPenalty`, `dispel`, `dispel-spell`, `createCombatSlice`, `focus-interrupt`, `runCombatFlow`, `CastTestKind`, +13 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, +7 fichiers
 
 ---
 
@@ -377,7 +377,7 @@ La concentration est vitale pour focaliser. Si perturbé par quelque chose (brui
 > **Verbatim** (l.193-195) : « Si vous êtes perturbé par quelque chose – bruits forts, Dégâts subis, lumières aveuglantes ou autres –, vous devrez réussir un Test de Calme Difficile (−20) ou subir une Incantation Imparfaite Mineure et perdre tous les DR accumulés jusque-là au Test étendu de Focalisation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.143-145) → `FocusInterruptHook`, `focalisation-etendue`, `dispel-roll`, `armourCastDRPenalty`, `dispel`, `dispel-spell`, `focus-interrupt`, `createCombatSlice`, `runCombatFlow`, `CastTestModsContext`, +13 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, +7 fichiers
+- `LDB 46` (l.143-145) → `FocusInterruptHook`, `focalisation-etendue`, `dispel-roll`, `armourCastDRPenalty`, `dispel`, `dispel-spell`, `createCombatSlice`, `focus-interrupt`, `runCombatFlow`, `CastTestModsContext`, +13 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, +7 fichiers
 
 ---
 
@@ -545,7 +545,7 @@ Pour les sorts nécessitant de **toucher la cible** en combat (ou si la cible ne
 3. Si le sort est un *Projectile magique*, le Test de Corps à corps (Bagarre) est utilisé pour déterminer la **Localisation** (à la place du Test de Langue Magick inversé).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.123-124) → `combat-spell-plus`, `useHoverTargeting`, `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `dispel-roll`, `castingBaseValue`, `miscast-table`, `castingValue`, `miscast-row-test`, +32 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/magic.ts`, +11 fichiers
+- `LDB 46` (l.123-124) → `combat-spell-plus`, `useHoverTargeting`, `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `dispel-roll`, `castingBaseValue`, `castingValue`, `miscast-table`, `miscast-row-test`, +32 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/magic.ts`, +11 fichiers
 
 ---
 
@@ -557,7 +557,7 @@ Pour les sorts nécessitant de **toucher la cible** en combat (ou si la cible ne
 - Gain d'Avantage spécifique pendant l'incantation : si la cible a déjà été visée par un sort **du même Domaine** durant ce Round → +1 Avantage (le renforcement du Vent aide à focaliser la magie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.122-126) → `combat-spell-plus`, `useHoverTargeting`, `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `dispel-roll`, `castingBaseValue`, `miscast-table`, `castingValue`, `miscast-row-test`, +33 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/magic.ts`, +11 fichiers
+- `LDB 46` (l.122-126) → `combat-spell-plus`, `useHoverTargeting`, `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `dispel-roll`, `castingBaseValue`, `castingValue`, `miscast-table`, `miscast-row-test`, +33 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/magic.ts`, +11 fichiers
 
 ---
 

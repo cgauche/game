@@ -10,6 +10,8 @@ import {
   CAPSIZE_RIGHT_DIFFICULTY, CAPSIZE_RIGHT_CUMULATIVE, capsizeSinkTurns, holeSinkMinutes,
   riverCritical, resolveRiverImpact, rollBarrage, echouageDamage, findRiverPeril, RIVER_PERILS,
 } from './riverNavigation';
+import { rollShipCritical } from './shipCritical';
+import { RIVER_CRIT_SET } from '../data/shipCriticals';
 
 /**
  * NAVIGATION FLUVIALE — couche PURE de MSRC 7 (« Navigation fluviale »). Tables VERBATIM du chapitre,
@@ -114,9 +116,22 @@ describe('Chavirage & naufrage (note 4 l.40 ; l.101-103)', () => {
 });
 
 describe('Critiques de bateau (l.72-94)', () => {
-  it('effets des Critiques déclenchés par la navigation : gréement (Empêtré + dérive), coque (percée)', () => {
-    expect(riverCritical('greement')).toMatchObject({ splinterDamage: 5, initiativeTest: true, conditionId: 'empetre', driftUntilRepair: true });
-    expect(riverCritical('coque')).toMatchObject({ hole: true });
+  it('la vue « voyage » ne rend QUE ce que la COQUE encaisse : dérive (gréement l.78), percée (coque l.90)', () => {
+    expect(riverCritical('greement')).toEqual({ driftUntilRepair: true });
+    expect(riverCritical('coque')).toEqual({ hole: true });
+  });
+
+  /** Ce que le coup fait à l'ÉQUIPAGE ne se DÉRIVE plus ici (#1657 B3-2) : voyage et combat lisent la
+   *  MÊME source par le MÊME résolveur (`rollShipCritical` → nœud `test` rendu à la porte). Une
+   *  seconde dérivation qui renaîtrait ici rendrait de nouveau DEUX régimes de jet pour un fait RAW. */
+  it('AUCUNE conséquence d’équipage ne s’y dérive — le nœud vit dans la donnée, lu par le résolveur unique', () => {
+    for (const loc of ['greement', 'avirons', 'gouvernail', 'coque', 'superstructure']) {
+      expect(
+        Object.keys(riverCritical(loc) ?? {}).filter((k) => !['driftUntilRepair', 'hole'].includes(k)),
+        `${loc} : une clé d’équipage est revenue dans la vue voyage`,
+      ).toEqual([]);
+    }
+    expect(rollShipCritical('greement', makeRNG(1), 1, RIVER_CRIT_SET).crewHit?.test?.test.characteristic).toBe('initiative');
   });
 });
 

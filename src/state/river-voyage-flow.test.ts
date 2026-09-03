@@ -426,20 +426,21 @@ describe('descente end-to-end — le Reik jusqu\'à Altdorf (cascades jour + nui
 });
 
 /**
- * #270 — sous-tests de CONSÉQUENCE d'un péril (esquive d'éclats de Critique) : jusqu'ici inline même en
- * cascade `travelDay` (aucune Chance offerte sur un jet de survie subi). Gate CONTRÔLEUR (`humanControlled`,
- * état neuf du test = `combat-cadence` par défaut 'manuel' → héros non-`aiControlled` = piloté par un
- * humain) : victime humaine → étape `riverSplinterDodge` INSÉRÉE (influençable) ; victime IA → inline
- * (comportement historique, conséquence identique).
+ * #270 / #1657 B3-2 — CONSÉQUENCE d'un Critique au gréement sur les personnes à bord (MSRC 07 l.78 :
+ * « Toute personne présente sur le pont doit faire un Test d'Initiative ou subir +5 Dégâts, et gagner
+ * un État *Empêtré* »). Le jet ne se dérive plus au voyage : c'est le MÊME nœud `test` de la rangée
+ * que lit le combat naval, ouvert par la PORTE canonique. La SURFACE reste la seule variable, et elle
+ * est tranchée par le socle : porteurs tenus par un siège → UNE bande de N rangées ; personne à bord
+ * n'est piloté par un humain → voie INLINE, journalisée.
  */
-describe('#270 — Critique au gréement : esquive d’éclats gâtée par contrôleur', () => {
+describe('#270 / #1657 B3-2 — Critique au gréement : le coup à l’équipage passe par la porte', () => {
   function riggingFailStep(actorId: string) {
     return { title: 'Journée', purpose: 'travelDay' as const, cursor: 0, log: [],
       participants: [{ id: 'rig', kind: 'riverRigging', actorId, rollLabel: 'Voile', base: 40, target: 40,
         result: { roll: 90, target: 40, sl: -5, success: false }, interactive: true }] };
   }
 
-  it('victime PILOTÉE PAR UN HUMAIN → esquive INFLUENÇABLE insérée (riverSplinterDodge), pas résolue d’office', () => {
+  it('personnes PILOTÉES PAR UN HUMAIN → UNE bande influençable (une rangée par siège), rien de résolu d’office', () => {
     launch();
     const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
     set({ travelPlan: plan, journal: [] });
@@ -449,24 +450,32 @@ describe('#270 — Critique au gréement : esquive d’éclats gâtée par contr
     get().cascadeNext(); // valide l'échec → Critique au gréement
     const pc = get().pendingCascade;
     expect(pc).toBeTruthy();
-    expect(pc!.participants.some((s) => s.kind === 'riverSplinterDodge' && s.actorId === h.id)).toBe(true);
+    const bande = pc!.participants.find((s) => s.kind === 'triggeredBatchTest');
+    expect(bande, 'aucune bande : le Test d’Initiative de la rangée est resté silencieux').toBeTruthy();
+    expect(bande!.participants!.map((p) => p.id)).toEqual(get().party.map((x) => x.id));
+    expect(bande!.participants!.every((p) => p.interactive && !p.result), 'un dé est déjà tombé').toBe(true);
     expect(get().party.find((x) => x.id === h.id)!.dead).toBeFalsy(); // pas encore résolu
   });
 
-  it('même Critique, victime IA (`aiControlled`) → esquive résolue INLINE (aucune étape insérée)', () => {
+  it('même Critique, personnes IA (`aiControlled`) → voie INLINE de la porte (aucune bande), et le journal PORTE les jets', () => {
     launch();
     const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
     set({ travelPlan: plan, journal: [] });
     seedBattleRng(1);
-    const h = { ...get().party[0], aiControlled: true };
-    set({ party: [h, ...get().party.slice(1)] });
+    set({ party: get().party.map((x) => ({ ...x, aiControlled: true })) });
+    const h = get().party[0];
     set({ pendingCascade: riggingFailStep(h.id) as never });
     get().cascadeNext();
-    expect(get().pendingCascade).toBeNull(); // 1 seule étape, résolue inline → cascade close
+    expect(get().pendingCascade).toBeNull(); // 1 seule étape, tout résolu inline → cascade close
+    const journal = get().journal.join('\n');
     // La Localisation se LIT (« gréement »), elle ne s'affiche plus par son id de table (#1318 V8c₂) :
     // cette attente verrouillait la fuite de moteur-speak.
-    expect(get().journal.join('\n')).toMatch(/Critique au gréement/);
-    expect(get().journal.join('\n'), 'aucun id de table à l’écran').not.toMatch(/greement|empetre/);
+    expect(journal).toMatch(/Critique au gréement/);
+    // Le journal est la SEULE surface d'un porteur que personne ne tient : il PORTE le jet (une ligne
+    // par personne à bord), au lieu de ne rendre que son issue.
+    expect(journal.match(/Test d[eu’'] ?Initiative/g) ?? [], 'un jet inline n’est pas dit au journal')
+      .toHaveLength(get().party.length);
+    expect(journal, 'aucun id de table à l’écran').not.toMatch(/greement|empetre/);
   });
 });
 
