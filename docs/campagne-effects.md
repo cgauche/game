@@ -73,4 +73,4 @@ câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne 
 | `endDialogue` | — | — |
 
 _58 Effects — dérivés de `src/data/schemas/defs-scenes/effets.ts`._
-<!-- sources-empreinte: 8bcd84efe3603653f2541d253ef93564da545c04 (5 fichiers, 0 dossiers) -->
+<!-- sources-empreinte: deaab979709858b1010092c02036bf592ed708f8 (5 fichiers, 0 dossiers) -->

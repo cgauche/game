@@ -18,14 +18,19 @@ import { fileURLToPath } from 'node:url';
  *     renderer de banc est unique, et un banc qui se réécrit le sien au lieu de composer
  *     `BancRenderer` est détecté ;
  *  4. tout `.test.` qui importe le harnais appelle `brancherArdoise(` : un importeur sans ardoise
- *     démarre sur les caches de MODULE laissés chargés par le fichier précédent (`isolate: false`).
+ *     démarre sur les caches de MODULE laissés chargés par le fichier précédent (`isolate: false`) ;
+ *  5. tout `.test.` qui MONTE l'écran volumique l'appelle aussi — le fait 4 ne couvre que les
+ *     IMPORTEURS du harnais, et un banc peut monter l'écran par un hôte (`EditorCanvas`) sans rien
+ *     lui emprunter. Il hérite alors des DEUX drapeaux de module qui gouvernent le travail différé de
+ *     l'écran (`sliceArmed` du cuiseur, `image` du battement), et les lègue armés au suivant.
  *
- * PÉRIMÈTRE : `src/**` en entier pour les faits 1, 3 et 4 ; `src/gameIso/**` pour le fait 2 (le
+ * PÉRIMÈTRE : `src/**` en entier pour les faits 1, 3, 4 et 5 ; `src/gameIso/**` pour le fait 2 (le
  * harnais est un harnais de rendu ; hors de `gameIso`, `src/test-setup.ts` est le point d'entrée
  * légitime).
  * ANGLE MORT ASSUMÉ : le scan est TEXTUEL, sur les lignes d'`import` (faits 1, 2, 4), sur la forme
  * de DÉCLARATION `class X implements StageRenderer` (fait 3) et sur l'occurrence textuelle de `brancherArdoise(`
- * (fait 4). Un `await import()` dynamique au chemin composé à l'exécution, une ré-exportation du
+ * (fait 4), sur l'élément `<GameStage3D` et sur la pose de son renderer (`setStageRendererFactory(`,
+ * fait 5 — le seul signal d'un montage INDIRECT). Un `await import()` dynamique au chemin composé à l'exécution, une ré-exportation du
  * harnais depuis un troisième module, une classe de banc déclarée sans clause `implements` (ou via un
  * alias de type), un appel de `brancherArdoise` enveloppé dans une fonction d'un autre fichier :
  * aucun n'existe aujourd'hui, aucun n'est couvert.
@@ -94,6 +99,12 @@ export function renderersDeBanc(source: string, label: string): string[] {
 
 /** Un banc branche-t-il l'ardoise ? (occurrence textuelle de l'appel, pas de l'import seul). */
 export const brancheLArdoise = (source: string): boolean => /\bbrancherArdoise\s*\(/.test(source);
+
+/** Un `.test.` MONTE-t-il l'écran volumique ? Deux signaux, chacun suffisant : l'élément lui-même, et
+ *  la POSE de son renderer de banc — un écran monté par un hôte (`EditorCanvas`) n'a que le second,
+ *  et c'est pourtant le même écran, avec le même travail différé à hériter. */
+export const monteLEcranVolumique = (source: string): boolean =>
+  /<GameStage3D\b/.test(source) || /\bsetStageRendererFactory\s*\(/.test(source);
 
 /** Les `.test.` de `src/**` qui importent le harnais, par chemin relatif à la racine. */
 function bancs(): { chemin: string; source: string }[] {
@@ -173,6 +184,25 @@ describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
     expect(liste.length, 'plus aucun banc n’importe le harnais : ce fait serait vrai du vide').toBeGreaterThan(30);
     const sansArdoise = liste.filter(({ source }) => !brancheLArdoise(source)).map(({ chemin }) => chemin);
     expect(sansArdoise, 'un banc démarre sur les caches de MODULE du fichier précédent').toEqual([]);
+  });
+
+  it('cas planté : un banc qui MONTE l’écran volumique sans brancher l’ardoise est détecté (preuve TDD)', () => {
+    expect(monteLEcranVolumique('act(() => root.render(<GameStage3D scene={s} />));')).toBe(true);
+    // Le montage INDIRECT : aucun `<GameStage3D` dans la source, mais le renderer de banc y est posé.
+    expect(monteLEcranVolumique('beforeAll(() => setStageRendererFactory(rendererDeBanc));')).toBe(true);
+    // …et rien de tout cela ne se déclenche sur un banc qui ne monte pas cet écran.
+    expect(monteLEcranVolumique("import { GameStage3D } from './GameStage3D';")).toBe(false);
+    expect(monteLEcranVolumique('const x = 1;')).toBe(false);
+  });
+
+  it('tout `.test.` qui MONTE l’écran volumique APPELLE `brancherArdoise`', () => {
+    const monteurs = sources(SRC)
+      .filter((p) => EST_TEST.test(p) && p !== join(GAME_ISO, 'stage', 'banc-volumique.test.ts'))
+      .map((p) => ({ chemin: relative(ROOT, p).replace(/\\/g, '/'), source: readFileSync(p, 'utf8') }))
+      .filter(({ source }) => monteLEcranVolumique(source));
+    expect(monteurs.length, 'plus aucun banc ne monte l’écran volumique : ce fait serait vrai du vide').toBeGreaterThan(30);
+    const sansArdoise = monteurs.filter(({ source }) => !brancheLArdoise(source)).map(({ chemin }) => chemin);
+    expect(sansArdoise, 'un banc monte l’écran volumique sur les drapeaux de module ARMÉS du fichier précédent : sa file de cuisson et sa boucle d’images peuvent n’être jamais servies').toEqual([]);
   });
 
   it('PRÉMISSE — le scan voit bien des fichiers : un périmètre vide rendrait les faits gratuits', () => {

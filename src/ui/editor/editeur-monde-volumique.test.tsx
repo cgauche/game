@@ -16,6 +16,7 @@ import { CALAGE_APLAT, NOM_ARETES_CALAGE, rangsDeDecor as rangsDeDecorDuMonde } 
 import type { WorldGeometry } from '../../gameIso/backends/webgl/sceneMeshes';
 import { effectiveLowerLayerMode, layerHidden, LOWER_LAYER_ISOLATE_BELOW } from './lowerLayerGabarit';
 import type { PlanDefectAt } from '../../state/planDefects';
+import { brancherArdoise } from '../../gameIso/stage/banc-volumique';
 
 /**
  * L'ÉDITEUR SUR LA VOIE VOLUMIQUE (#1176, P3-3, vague A). Ce qui se mesure ici :
@@ -57,6 +58,9 @@ function facesDessinees(): number {
 }
 
 beforeAll(() => setStageRendererFactory(rendererDeBanc));
+// Cet écran MONTE `GameStage3D` : il hérite donc des caches, de la file du cuiseur et de la boucle
+// d'images que la suite partage (`isolate: false`), et les lègue au fichier suivant.
+brancherArdoise();
 
 /** Scène d'atelier : du sol partout (le SVG affine en peint les losanges), aucune entité — les
  *  billboards n'ont alors rien à rasteriser, ce que jsdom ne saurait pas faire. */

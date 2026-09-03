@@ -13,7 +13,7 @@
  *    des tâches et des textures d'ailleurs, et son écran se monte sans un seul quad.
  */
 import { act } from 'react';
-import { afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
 import * as THREE from 'three';
 import type { StageRenderer } from './GameStage3D';
 import { frameRectOf } from './boardPose';
@@ -22,6 +22,7 @@ import { clearFaceBakes } from '../backends/webgl/faceBake';
 import { clearPeriodTextures } from '../backends/webgl/periodTexture';
 import { clearBillboardTextures } from '../backends/webgl/svgTexture';
 import { viderTexturesStatiques } from './texturesStatiques';
+import { resetStageFrames } from './stageFrames';
 
 /** Les scènes three DESSINÉES, dans l'ordre — accumulateur de MODULE : plusieurs écrans montés à la
  *  fois y versent leurs frames, et un banc peut donc compter les rendus de tout ce qui vit. */
@@ -78,6 +79,15 @@ export interface Rasterisation {
   résoudreUne(): void;
   /** Sert toutes les images en vol. */
   résoudreTout(): void;
+  /** PERD la prochaine image en vol : sa promesse de texture REJETTE (`rasterizeSvg`, un SVG illisible
+   *  par le navigateur). L'autre issue d'une rasterisation, celle qu'un `onload` ne montre jamais. */
+  rejeterUne(): void;
+}
+
+/** Ce qu'un banc tient d'une image retenue : ses DEUX issues. */
+interface ImageRetenue {
+  onload: (() => void) | null;
+  onerror: (() => void) | null;
 }
 
 /** `URL.createObjectURL`/`revokeObjectURL` d'AVANT la première pose (jsdom ne les fournit pas : il n'y
@@ -99,12 +109,17 @@ let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObj
  */
 export function simulerRasterisation(mode: 'auto' | 'retenue' = 'auto'): Rasterisation {
   const enAttente: Array<() => void> = [];
-  vi.stubGlobal('Image', class {
+  /** L'image DERRIÈRE chaque service en attente : c'est par elle que la file rend l'autre issue
+   *  (`rejeterUne`) sans que `enAttente` cesse d'être la file de services que les bancs épuisent. */
+  const derrière = new Map<() => void, ImageRetenue>();
+  vi.stubGlobal('Image', class implements ImageRetenue {
     onload: (() => void) | null = null;
     onerror: (() => void) | null = null;
     set src(_v: string) {
-      if (mode === 'auto') queueMicrotask(() => this.onload?.());
-      else enAttente.push(() => this.onload?.());
+      if (mode === 'auto') { queueMicrotask(() => this.onload?.()); return; }
+      const servir = (): void => { this.onload?.(); };
+      derrière.set(servir, this);
+      enAttente.push(servir);
     }
   });
   // La file du cuiseur prend sa propre couture d'INACTIVITÉ, servie par les VRAIS timers : sans elle
@@ -119,7 +134,45 @@ export function simulerRasterisation(mode: 'auto' | 'retenue' = 'auto'): Rasteri
     enAttente,
     résoudreUne(): void { enAttente.shift()?.(); },
     résoudreTout(): void { for (const f of enAttente.splice(0)) f(); },
+    rejeterUne(): void {
+      const servir = enAttente.shift();
+      if (!servir) return;
+      derrière.get(servir)?.onerror?.();
+      derrière.delete(servir);
+    },
   };
+}
+
+/** Les CACHES et la FILE que la suite partage sous `isolate: false`, rendus à leur point de départ :
+ *  la file cadencée du cuiseur et son budget de tranche, les caches d'atlas, de textures de billboard,
+ *  de gabarits de face et de périodes, et les frames captées. Aucun mock ni global n'y est touché —
+ *  ceux d'un banc sont à lui, et se rendent à sa sortie. Le BATTEMENT du stage n'est pas ici : il ne
+ *  se lave qu'en amont (`ardoiseAmont`). */
+function ardoiseNeuve(): void {
+  resetBakeQueue();
+  setBudgetTrancheMs(BUDGET_TRANCHE_MS_DEFAUT);
+  clearAtlasCache();
+  clearBillboardTextures();
+  clearFaceBakes();
+  clearPeriodTextures();
+  viderTexturesStatiques();
+  viderCaptures();
+}
+
+/** L'ardoise du BOUT AMONT : les caches ci-dessus, PLUS le battement du stage.
+ *
+ *  Deux drapeaux de MODULE gouvernent le travail différé de l'écran volumique, et tous deux s'arment
+ *  sur une couture que l'environnement jsdom d'un autre fichier peut emporter avec lui :
+ *  `sliceArmed` (`backends/webgl/atlasBake.requestSlice`, la tranche du cuiseur) et `image`
+ *  (`stageFrames.armer`, la boucle d'images). Armé sur un rappel qui ne partira jamais, l'un comme
+ *  l'autre bloque son réarmement pour tous les bancs suivants — aucune rasterisation ne part, aucune
+ *  image n'est peinte.
+ *
+ *  `resetStageFrames` ne vaut QU'ICI : il vide les sources d'images, et un écran resté monté par un
+ *  banc négligent doit garder les siennes jusqu'à sa sortie, où il se voit (`stageFrames.ts:138-144`). */
+function ardoiseAmont(): void {
+  ardoiseNeuve();
+  resetStageFrames();
 }
 
 /**
@@ -135,14 +188,14 @@ export function simulerRasterisation(mode: 'auto' | 'retenue' = 'auto'): Rasteri
  * ici, dans la même main : le banc appelant n'a rien à rendre lui-même.
  */
 export function brancherArdoise(): void {
+  // L'ardoise se lave AUX DEUX BOUTS. Le bout AMONT est le seul qui couvre la frontière de FICHIER :
+  // ce qui entre dans un banc vient du fichier précédent, qui n'a pas forcément ce harnais — et il en
+  // revient parfois ARMÉ SANS SERVIR, file du cuiseur comme boucle d'images (mesuré : 2 tâches en
+  // file, 0 servie après 200 ms de pompe ; une boucle armée sur un rAF mort ne peint plus rien). Le
+  // rouge d'un banc n'accuse plus alors qu'une machine lente.
+  beforeEach(ardoiseAmont);
   afterEach(() => {
-    resetBakeQueue();
-    setBudgetTrancheMs(BUDGET_TRANCHE_MS_DEFAUT);
-    clearAtlasCache();
-    clearBillboardTextures();
-    clearFaceBakes();
-    clearPeriodTextures();
-    viderTexturesStatiques();
+    ardoiseNeuve();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     if (urlAvant) {
@@ -150,7 +203,6 @@ export function brancherArdoise(): void {
       URL.revokeObjectURL = urlAvant.revoke;
       urlAvant = null;
     }
-    viderCaptures();
   });
 }
 

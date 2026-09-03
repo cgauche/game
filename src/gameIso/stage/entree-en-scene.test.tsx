@@ -18,7 +18,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import * as THREE from 'three';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Dir8 } from '../../state/dir8';
-import type { PropEl } from '../builders/types';
+import type { BillboardPropEl } from '../builders/types';
 import type { ActorPose, KeepEl, SceneBillboardEls, TintAt } from '../backends/webgl/sceneMeshes';
 import * as svgTexture from '../backends/webgl/svgTexture';
 import { bakeQueueLength } from '../backends/webgl/atlasBake';
@@ -63,11 +63,11 @@ const TINT: TintAt = () => 1;
 const KEEP: KeepEl = () => true;
 const SANS_ACTEUR: ActorPose[] = [];
 
-const décor = (id: string, x: number, y = GROUPE.y): PropEl => ({
+const décor = (id: string, x: number, y = GROUPE.y): BillboardPropEl => ({
   kind: 'prop', source: 'entity', key: `prop:${id}`, ref: 'tonneau', facing: 'S',
   cell: { x, y, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 }, interact: false,
   states: { visible: true },
-} as unknown as PropEl);
+});
 
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;

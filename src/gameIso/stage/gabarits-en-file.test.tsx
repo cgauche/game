@@ -35,7 +35,7 @@ import { AMBIANCE } from '../catalog/ambiance';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
 import { BancRenderer, PLAFOND_ATTENTE_MS, PLAFOND_HORS_ATTEINTE_MS, attendreEntréeFinie, attendreQue, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures, type Rasterisation } from './banc-volumique';
 import type { ActorPose, KeepEl, SceneBillboardEls, TintAt } from '../backends/webgl/sceneMeshes';
-import type { PropEl } from '../builders/types';
+import type { BillboardPropEl } from '../builders/types';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -54,11 +54,11 @@ const SANS_BILLBOARD: SceneBillboardEls = { tokens: [], props: [] };
 
 /** Un décor posé à une case — même patron que `entree-en-scene.test.tsx` : de quoi donner à la
  *  population des billboards une clé à faire attendre. */
-const décor = (id: string, x: number, y = GROUPE.y): PropEl => ({
+const décor = (id: string, x: number, y = GROUPE.y): BillboardPropEl => ({
   kind: 'prop', source: 'entity', key: `prop:${id}`, ref: 'tonneau', facing: 'S',
   cell: { x, y, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 }, interact: false,
   states: { visible: true },
-} as unknown as PropEl);
+});
 
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;

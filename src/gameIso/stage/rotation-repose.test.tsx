@@ -21,7 +21,7 @@ import type { Dir8 } from '../../state/dir8';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import type { Rot } from '../../geometry/iso';
-import type { PropEl } from '../builders/types';
+import type { BillboardPropEl } from '../builders/types';
 import type { ActorPose, KeepEl, SceneBillboardEls, TintAt } from '../backends/webgl/sceneMeshes';
 import { atlasLayout, billboardView } from '../backends/webgl/billboardMath';
 import { dir8Basis } from '../pov/camera';
@@ -55,11 +55,11 @@ const KEEP: KeepEl = () => true;
 /** Liste d'acteurs VIDE et stable — même raison : `[]` reforgé par rendu remonte tout le groupe. */
 const SANS_ACTEUR: ActorPose[] = [];
 
-const décor = (id: string, x: number): PropEl => ({
+const décor = (id: string, x: number): BillboardPropEl => ({
   kind: 'prop', source: 'entity', key: `prop:${id}`, ref: 'tonneau', facing: 'S',
   cell: { x, y: 4, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 }, interact: false,
   states: { visible: true },
-} as unknown as PropEl);
+});
 
 const ELS: SceneBillboardEls = { tokens: [], props: [décor('a', 6), décor('b', 7), décor('c', 8)] };
 

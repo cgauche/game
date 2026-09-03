@@ -849,6 +849,12 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     setEntréeEnScène(true);
     plafondEntréeRef.current = setTimeout(finirEntrée, AMBIANCE.entreeEnScene.plafondMs);
     return () => {
+      // Le voile s'ÉTEINT ici, et c'est le seul lieu qui l'éteigne au démontage (#1680) : toute sa
+      // file (`finirEntrée`, `attendreEntrée`, `servirEntrée`) ne s'exécute que voile LEVÉ, donc une
+      // texture qui arrive — ou qui échoue — après coup ne sert plus rien et ne pose plus
+      // `setEntréeEnScène` sur un composant démonté. Sans lui, le rejet tardif d'un billboard
+      // (`textureAuCran`, plus bas) faisait tomber le voile hors de la vie du composant.
+      entréeRef.current = false;
       if (plafondEntréeRef.current !== null) clearTimeout(plafondEntréeRef.current);
       plafondEntréeRef.current = null;
     };
