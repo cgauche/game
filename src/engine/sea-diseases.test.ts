@@ -3,10 +3,11 @@ import { Combatant } from './types';
 import { RNG, makeRNG } from './dice';
 import { MINUTES_PER_DAY } from './clock';
 import { contractDisease, tickDisease } from './disease';
+import { porteEntretien, applique } from './upkeepPorte.testkit';
 
 /** RNG scripté : renvoie les valeurs dans l'ordre. */
 const seq = (values: number[]): RNG => { let i = 0; return { int: () => values[i++] }; };
-const sick = (over: Partial<Combatant> = {}): Combatant => ({ label: 'Marin', diseases: [], ...over }) as Combatant;
+const sick = (over: Partial<Combatant> = {}): Combatant => ({ label: 'Marin', diseases: [], conditions: [], skills: [], ...over }) as Combatant;
 
 /**
  * Maladies marines (MDG 14) — réutilisent le CYCLE de maladie EXISTANT (`disease.ts` + `maladies.json`),
@@ -22,7 +23,10 @@ describe('Mal de mer (MDG 14) — cycle de maladie réutilisé', () => {
 
   it('guérison (Test de fin réussi) → immunité « ne souffrira plus jamais de cette forme » (immuneAfterCure)', () => {
     const c = sick({ diseases: [contractDisease('mal-de-mer', seq([]), { incubation: 0, duration: 1 })!] });
-    tickDisease(c, MINUTES_PER_DAY, seq([3]), 60); // fin de durée → Résistance 3/60 = réussite auto → guéri
+    // Fin de durée → le Test de fin part à la porte ; issue INJECTÉE : réussite → guérison.
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
+    for (const s of specs) applique(c, s, { success: true });
     expect(c.diseases).toHaveLength(0);
     expect(c.diseaseImmunities).toContain('mal-de-mer');
   });

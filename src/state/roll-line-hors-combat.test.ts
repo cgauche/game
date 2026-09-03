@@ -8,8 +8,6 @@ import { bestActivitySkill } from './interludeFlow';
 import { inexplique, soutienDe, jetDe } from './cascadeTestKit';
 import { skillBaseValue, testValue, partyAssisted } from '../engine/skills';
 import { cascadeAppliers } from './cascade';
-import { effectiveChar } from '../engine/characteristics';
-import { restResistVal } from '../engine/rest';
 import { clampTarget } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 import { rule } from '../engine/policy';
@@ -18,7 +16,7 @@ import { rule } from '../engine/policy';
  * MONTEUR CANONIQUE — les flux HORS COMBAT (#1153 L3). Chaque site migré est jugé sur DEUX grandeurs
  * indissociables :
  *  1. la CIBLE reste celle que `rollTest` jettera — recalculée ICI à la main depuis la valeur du RAW
- *     (`testValue`/`restResistVal` + Difficulté, écrêtée par `clampTarget`), jamais relue du site ;
+ *     (`testValue` + Difficulté, écrêtée par `clampTarget`), jamais relue du site ;
  *  2. l'écart base→cible est INTÉGRALEMENT nommé (`inexplique === 0`) : plus une chip « autres ».
  * L'acteur porte un ÉTAT (`empoisonne`, −10 par valeur, LDB 16) : sans lui, une base FONDUE se
  * confondrait avec le Niveau de Compétence nu et le test passerait sur un monteur faux.
@@ -87,18 +85,27 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
     fresh([dormeur]);
     const { steps } = buildNightCascade(get, set, restPending([dormeur]), {
       fedDaily: true,
-      extraContagion: [{ heroId: dormeur.id, diseaseName: 'courante-galopante', difficulty: 'accessible', resVal: restResistVal(dormeur) }],
+      extraContagion: [{ heroId: dormeur.id, diseaseName: 'courante-galopante', difficulty: 'accessible' }],
     } as never);
 
     const contagion = jetDe(steps.find((s) => s.kind === 'contagion')!);
-    // `restResistVal` (E effective + avances) est la valeur RAW du Test passif : elle ne subit PAS l'État.
-    expect(contagion.target).toBe(clampTarget(restResistVal(dormeur) + DIFFICULTY_MODIFIERS.accessible).target);
-    expect(contagion.base).toBe(restResistVal(dormeur));
+    // Contraction = « Test de Résistance » (LDB 20 l.25) : la valeur est celle de la PORTE — base NUE
+    // (LDB 09 l.17), État NOMMÉ en chip (LDB 16 l.125), plus aucune formule maison (#1685).
+    const nueRes = skillBaseValue(dormeur, 'resistance');
+    const jeteeRes = testValue(dormeur, 'resistance');
+    expect(jeteeRes, 'l’État sépare la nue de la valeur jetée — sinon le test ne prouve rien').toBeLessThan(nueRes);
+    expect(contagion.base).toBe(nueRes);
+    expect(contagion.target).toBe(clampTarget(jeteeRes + DIFFICULTY_MODIFIERS.accessible).target);
     expect(inexplique(contagion), 'aucune chip « autres » sur la Contagion').toBe(0);
 
     const cauchemar = jetDe(steps.find((s) => s.kind === 'nightmare')!);
-    const calme = effectiveChar(dormeur, 'force-mentale'); // aucune avance de Calme sur la fixture
-    expect(cauchemar.target).toBe(clampTarget(calme + DIFFICULTY_MODIFIERS.facile).target);
+    // Cauchemars = « Test de Calme Facile (+40) » (LDB 21 l.95) : la porte compte l'État comme partout
+    // ailleurs (LDB 16 l.125) — base NUE, écart NOMMÉ (#1685).
+    const nueCalme = skillBaseValue(dormeur, 'calme');
+    const jeteeCalme = testValue(dormeur, 'calme');
+    expect(jeteeCalme, 'l’État doit séparer la nue de la valeur jetée').toBeLessThan(nueCalme);
+    expect(cauchemar.base).toBe(nueCalme);
+    expect(cauchemar.target).toBe(clampTarget(jeteeCalme + DIFFICULTY_MODIFIERS.facile).target);
     expect(inexplique(cauchemar), 'aucune chip « autres » sur les Cauchemars').toBe(0);
   });
 
@@ -142,8 +149,8 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
   it('TOUTES les étapes d’entretien d’une journée réelle : `inexplique === 0`, héros sous État', () => {
     // Harnais RÉEL (`runDailyUpkeep`) sur un héros cumulant Faim, Soif, ivresse et convalescence de
     // fracture — les 4 producteurs joignables en une journée. Ceux qui NOMMENT leur Test se
-    // décomposent, celui qui tire sa valeur de `restResistVal` (convalescence) reste déclaré
-    // étranger : dans les DEUX cas l'écart base→cible doit être INTÉGRALEMENT nommé.
+    // décomposent — et depuis #1685 ils le font TOUS, convalescence comprise : l'écart base→cible est
+    // INTÉGRALEMENT nommé, plus aucune valeur étrangère sur ces quatre familles.
     const eprouve = hero({
       id: 'epr', label: 'Éprouvé',
       conditions: [{ id: 'empoisonne', value: 1 }] as never,
@@ -166,14 +173,17 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
     for (const st of deferredUpkeepSteps(get().party, deferred)) {
       expect(inexplique(st), `chip « autres » sur l’étape ${st.kind}`).toBe(0);
     }
-    // Les producteurs qui NOMMENT leur Test livrent une base NUE ; celui qui ne le nomme pas garde la sienne.
+    // TOUS les producteurs NOMMENT leur Test et livrent une base NUE (#1685 : plus une seule formule maison).
     const nomme = deferred.filter((t) => t.test).map((t) => t.kind).sort();
-    expect(nomme, 'faim/soif/dessoûlage nomment leur Test ; la convalescence tire de `restResistVal`').toEqual(['dessoulage', 'faim', 'soif']);
+    expect(nomme, 'les quatre familles nomment leur Test').toEqual(['dessoulage', 'faim', 'soif', 'traumaFracture']);
     const faim = deferred.find((t) => t.kind === 'faim')!;
     expect(faim.base).toBe(skillBaseValue(eprouve, 'resistance', undefined, 'endurance'));
     const conv = deferred.find((t) => t.kind === 'traumaFracture')!;
-    expect(conv.base, 'valeur ÉTRANGÈRE assumée (Test passif, aucune pénalité d’État)').toBe(restResistVal(eprouve));
-    expect(conv.mods ?? [], 'rien à nommer sur une valeur étrangère').toEqual([]);
+    // Convalescence = « Test de Résistance Accessible (+20) » (LDB 18 l.202) : base NUE, État en chip.
+    expect(conv.test).toEqual({ skill: 'resistance' });
+    expect(conv.base).toBe(skillBaseValue(eprouve, 'resistance'));
+    const etatConv = (conv.mods ?? []).reduce((s, m) => s + m.value, 0);
+    expect(etatConv, 'l’État Empoisonné pesait en silence : il a désormais SA chip').toBe(testValue(eprouve, 'resistance') - skillBaseValue(eprouve, 'resistance'));
   });
 
   it('Dessoûlage : le libellé de compétence est celui du RAW (« Résistance à l’alcool », LDB 09 l.485)', () => {
@@ -230,17 +240,20 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
     expect(inexplique(st)).toBe(0);
   });
 
-  it('Récupération : valeur ÉTRANGÈRE assumée, cible = `restResistVal` + Accessible (LDB 18 l.296)', () => {
+  it('Récupération : base NUE + Accessible (+20), valeur de la PORTE (LDB 18 l.296)', () => {
     // Sans Empoisonné : cet État rend le repos INSTABLE (LDB 16 l.105) — aucun Test de récupération.
-    const blesse = campeur({ id: 'ble', label: 'Blessé', wounds: { current: 4, max: 12 }, conditions: [] as never });
+    // Un Exténué (LDB 16 l.90), lui, laisse dormir ET pèse −10 sur le Test : c'est ce que #1685 rendait
+    // la porte compte (`LDB 16 l.125`), et c'est ce que ce test mesure (#1685).
+    const blesse = campeur({ id: 'ble', label: 'Blessé', wounds: { current: 4, max: 12 }, conditions: [{ id: 'extenue', value: 1 }] as never });
     fresh([blesse]);
     const { steps } = buildNightCascade(get, set, restPending([blesse], 'auberge'), { fedDaily: true });
     const st = jetDe(steps.find((s) => s.kind === 'recovery')!);
-    // `restResistVal` ≠ `testValue` (Test passif : aucune pénalité d'État) → base = valeur, zéro chip.
-    expect(st.base).toBe(restResistVal(blesse));
-    expect(st.mods ?? []).toEqual([]);
-    // CIBLE INVARIANTE : `restResistVal` + Accessible (+20) — la valeur que le site posait, à l'écrêtage près.
-    expect(st.target).toBe(clampTarget(restResistVal(blesse) + DIFFICULTY_MODIFIERS.accessible).target);
+    const nue = skillBaseValue(blesse, 'resistance');
+    const jetee = testValue(blesse, 'resistance');
+    expect(jetee, 'l’État sépare la nue de la valeur jetée — sinon le test ne prouve rien').toBeLessThan(nue);
+    expect(st.base).toBe(nue);
+    expect((st.mods ?? []).reduce((s, m) => s + m.value, 0)).toBe(jetee - nue);
+    expect(st.target).toBe(clampTarget(jetee + DIFFICULTY_MODIFIERS.accessible).target);
     expect(inexplique(st)).toBe(0);
   });
 
@@ -281,10 +294,13 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
     const st = jetDe(expo[0]);
     const pen = Number(rule('exposure-no-coat-penalty'));
     expect(pen, 'sans pénalité de manteau, ce test ne mesure rien').toBeGreaterThan(0);
-    expect(st.base, 'valeur ÉTRANGÈRE (Test passif) : la base EST `restResistVal`').toBe(restResistVal(transi));
-    expect((st.mods ?? []).reduce((s, m) => s + m.value, 0)).toBe(-pen);
-    // CIBLE INVARIANTE vs l'ancien `exposureTarget` (= max(0, resVal − pénalité)), à l'écrêtage près.
-    expect(st.target).toBe(clampTarget(restResistVal(transi) + DIFFICULTY_MODIFIERS.intermediaire - pen).target);
+    // Exposition = « Test de Résistance » (LDB 18 l.328) : base NUE, États en chips, pénalité de manteau
+    // SUR LA CIBLE — les trois séparément, plus aucune valeur maison (#1685).
+    const nue = skillBaseValue(transi, 'resistance');
+    const jetee = testValue(transi, 'resistance');
+    expect(st.base).toBe(nue);
+    expect((st.mods ?? []).reduce((s, m) => s + m.value, 0)).toBe(jetee - nue - pen);
+    expect(st.target).toBe(clampTarget(jetee + DIFFICULTY_MODIFIERS.intermediaire - pen).target);
     expect(inexplique(st)).toBe(0);
   });
 

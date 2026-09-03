@@ -29,8 +29,9 @@ import { Combatant, UpkeepDeferTest } from './types';
 import { RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { effectiveChar, bonus } from './characteristics';
+import { testValue } from './skills';
 import { addCondition, removeCondition, stacks, hasCondition, nightmareCheck } from './conditions';
-import { tickDisease, activeMalaiseCount, diseaseBlesseCount, DISEASE_DEFS } from './disease';
+import { tickDisease, activeMalaiseCount, diseaseBlesseCount, applyDiseasePersist, DISEASE_DEFS } from './disease';
 import { MINUTES_PER_DAY } from './clock';
 import { isStarving, isThirsty, isDeprived } from './provisions';
 import { applyHealWounds } from './healing';
@@ -44,12 +45,6 @@ function unstable(c: Combatant): boolean {
   return hasCondition(c, 'hemorragique') || hasCondition(c, 'en-flammes') || hasCondition(c, 'empoisonne');
 }
 
-/** Valeur de Résistance « brute » (E effective + augmentations de Résistance) — formule partagée
- *  repos/entretien (les pénalités d'État ne s'appliquent pas à un Test de récupération passif). */
-export function restResistVal(c: Combatant): number {
-  return effectiveChar(c, 'endurance') + (c.skills?.find((s) => s.id === 'resistance')?.advances ?? 0);
-}
-
 /**
  * UNE journée de maladie (LDB 20) pour `c` — appelée par l'entretien quotidien (#T3) à CHAQUE
  * franchissement de jour (repos OU PAS) : fait avancer incubation/durée (`tickDisease`), applique les
@@ -58,10 +53,10 @@ export function restResistVal(c: Combatant): number {
  * l'Exténué « collant » du malaise (l.153 : apparition d'une maladie → +1 ; guérison → −1).
  * Mute `c`, renvoie le journal.
  */
-export function dailyDiseaseUpkeep(c: Combatant, rng: RNG = defaultRNG, caredFor = false, defer?: UpkeepDeferTest): string[] {
+export function dailyDiseaseUpkeep(c: Combatant, rng: RNG, defer: UpkeepDeferTest, caredFor = false): string[] {
   if (c.dead || !c.diseases?.length) return [];
   const malaiseStart = activeMalaiseCount(c);
-  const log = tickDisease(c, MINUTES_PER_DAY, rng, restResistVal(c), defer, bonus(effectiveChar(c, 'endurance')));
+  const log = tickDisease(c, MINUTES_PER_DAY, rng, defer, bonus(effectiveChar(c, 'endurance')));
   if (caredFor) {
     for (const dz of c.diseases ?? []) {
       // −1 JOUR supplémentaire par maladie active, minimum 1 jour restant (LDB 09-Compétences).
@@ -71,6 +66,24 @@ export function dailyDiseaseUpkeep(c: Combatant, rng: RNG = defaultRNG, caredFor
   const malaiseDelta = activeMalaiseCount(c) - malaiseStart;
   if (malaiseDelta > 0) addCondition(c, 'extenue', malaiseDelta);
   else if (malaiseDelta < 0) removeCondition(c, 'extenue', -malaiseDelta);
+  return log;
+}
+
+/**
+ * FIN d'une infection persistante (`LDB 20 l.200`) : la résolution du Test de fin (`applyDiseasePersist`)
+ * ET la réconciliation de l'Exténué « collant » du malaise qu'elle entraîne (`l.153` : maladie guérie
+ * → −1 Exténué). SOURCE UNIQUE des deux gestes — l'applier de nuit (`state/restFlow.ts`) comme tout
+ * autre appelant passent par ici, jamais par la moitié.
+ *
+ * Le foyer est CE module et non `disease.ts` : la réconciliation lit `conditions`, que `disease.ts` ne
+ * peut pas importer (cycle mesuré `conditions` → `trauma` → `disease`).
+ */
+export function applyDiseaseEnd(c: Combatant, diseaseName: string, success: boolean, sl: number, rng: RNG = defaultRNG): string[] {
+  const malaiseStart = activeMalaiseCount(c);
+  const log = applyDiseasePersist(c, diseaseName, success, sl, rng);
+  const delta = activeMalaiseCount(c) - malaiseStart;
+  if (delta < 0) removeCondition(c, 'extenue', -delta);
+  else if (delta > 0) addCondition(c, 'extenue', delta);
   return log;
 }
 
@@ -193,8 +206,8 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
     // volet a (LDB 18 l.296) : Test de Résistance Accessible (+20) — lancé seulement si utile (PB < max, non affamé).
     let roll: { sl: number; success: boolean } | null = null;
     if (needsRecoveryRoll(c)) {
-      const res = rollTest(restResistVal(c), 'accessible', rng);
-      collect?.push({ kind: 'recovery', base: restResistVal(c), target: res.target, roll: res.roll, sl: res.sl, success: res.success });
+      const res = rollTest(testValue(c, 'resistance'), 'accessible', rng);
+      collect?.push({ kind: 'recovery', base: testValue(c, 'resistance'), target: res.target, roll: res.roll, sl: res.sl, success: res.success });
       roll = { sl: res.sl, success: res.success };
     }
     // Conséquence du jour (dissipation + soin volets a/b + plafond blessé + réveil) — logique PARTAGÉE.
@@ -203,7 +216,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
     if (c.nightmares) {
       const before = stacks(c, 'extenue');
       const out: { base: number; result: import('./tests').TestResult }[] = [];
-      nightmareCheck(c, rng, out);
+      nightmareCheck(c, testValue(c, 'calme'), rng, out); // LDB 21 l.95 — Test de Calme, valeur de la porte
       for (const o of out) collect?.push({ kind: 'nightmare', base: o.base, target: o.result.target, roll: o.result.roll, sl: o.result.sl, success: o.result.success });
       if (stacks(c, 'extenue') > before) nightmareNights++;
     }

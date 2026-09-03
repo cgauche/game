@@ -33,6 +33,8 @@ import { effectSourcesOf } from './triggeredEffects';
 import { EMPTY_FLOW, type Flow, type FlowTest } from './flow';
 import { resolveStake, findById, combatStakeRef, type StakeRef } from '../data';
 import { CRITIQUE_DOCS } from '../data/criticals';
+import { scanFlowTestEngineRoll, siteLabel } from '../../scripts/guards/lib/flowTestEngineRoll.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { SHIP_CRIT_SET, RIVER_CRIT_SET, type ShipCritSet, type ShipCritKey } from '../data/shipCriticals';
 import { resolveCritique } from '../engine/critical';
 import { rollShipCritical } from '../engine/shipCritical';
@@ -239,6 +241,42 @@ describe('#1262 V2 L6d — TOUT `FlowTest` de la donnée dit ce qui se joue', ()
       else if (resolu.rule.id !== n.entryId) muets.push(`${n.fichier}:${n.entryId} — renvoi hors de sa propre fiche (${resolu.rule.category}:${resolu.rule.id})`);
     }
     expect(muets, ['Jet de donnée MUET — chaque `FlowTest` dit ce qui se joue :', ...muets].join('\n')).toEqual([]);
+  });
+
+  /**
+   * ASSERTION INVERSE (#1657 B3-3) — « un chemin de résolution par la porte existe, ET AUCUN AUTRE ».
+   *
+   * Les `it` ci-dessus tiennent le premier bout : chaque nœud authoré atteint un routeur canonique, qui
+   * monte une étape à enjeu résolu. Ça ne dit RIEN du second : un résolveur de `src/engine/**` qui LIT
+   * un nœud et le ROULE consomme le jet AVANT la porte, et la donnée reste pourtant « routée » sur le
+   * papier — c'est exactement ce que faisaient les 42 nœuds de Critiques/équipage/maladie jusqu'en B3.
+   *
+   * Le second bout se mesure donc sur le MOTEUR, avec le scanner du garde (aucun second socle) : la
+   * population attendue est VIDE. Contrat POSITIF, sans liste ni exemption — le seul moyen d'y échapper
+   * serait de RENDRE le nœud (`miscast.mkTest`) ou de le DIFFÉRER (`UpkeepDeferTest`), c'est-à-dire de
+   * repasser par la porte.
+   */
+  it('assertion INVERSE : les 3 portes existent, et AUCUN moteur ne résout un nœud hors d’elles', () => {
+    const portes: [string, string][] = [
+      ['resolveFlowTest', 'src/state/combat/triggeredTest.ts'],
+      ['resolveInlineFlowTest', 'src/state/triggeredEffects.ts'],
+      ['bandeTriggeredTest', 'src/state/combat/triggeredTest.ts'],
+    ];
+    const RACINE = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..');
+    const absentes = portes.filter(([nom, fichier]) =>
+      !new RegExp(`function\\s+${nom}\\b`).test(readFileSync(join(RACINE, fichier), 'utf8')));
+    expect(absentes.map(([n]) => n), 'porte de résolution introuvable : la thèse n’est plus mesurable').toEqual([]);
+
+    const corpus = readCorpus(['src/engine']).map(({ rel, text }) => ({ rel, text }));
+    const rouleurs = scanFlowTestEngineRoll(corpus).map(siteLabel);
+    expect(
+      rouleurs,
+      'un résolveur de `src/engine/**` consomme un nœud `test` AVANT la porte : la donnée serait « routée »\n'
+      + 'sans que le joueur voie rien (ni enjeu, ni Chance, ni Résilience, et la valeur ne serait pas celle\n'
+      + 'de la porte). Sites :\n' + rouleurs.join('\n'),
+    ).toEqual([]);
+    expect(noeuds.length + Object.values(NOEUDS_FABRIQUES).reduce((s, n) => s + n, 0),
+      'la sonde doit couvrir une population RÉELLE de nœuds, sinon « aucun autre chemin » ne dit rien').toBeGreaterThanOrEqual(100);
   });
 
   /** L'ENJEU DÉCLARÉ PRIME — l'étage 1 du contrat : la dérivation ne recouvre jamais ce que le

@@ -97,9 +97,9 @@ describe('#167 — « Main ouverte » : 1 doigt de plus par Round sans Aide Méd
 describe('#167 — « Pied écrasé » : perte du pied si pas de Chirurgie sous 1d10 jours (AA 07 l.180 / LDB)', () => {
   it('le décompte expire sans Chirurgie → séquelle permanente du membre inférieur posée', () => {
     const c = C({ traumas: [plaie('jambeD', { amputateAfterDays: 3, amputateSequel: 'membre-inferieur-ampute' })] });
-    tickTraumaRecovery(c, 1);
+    tickTraumaRecovery(c, 1, () => {});
     expect(c.traumas!.find((t) => t.label === 'Amputation')?.amputateAfterDays).toBe(2);
-    const log = tickTraumaRecovery(c, 2); // échéance atteinte
+    const log = tickTraumaRecovery(c, 2, () => {}); // échéance atteinte
     expect(log.join(' ')).toMatch(/membre est perdu/);
     const seqT = c.traumas!.find((t) => t.traumaId === 'membre-inferieur-ampute');
     expect(seqT).toBeTruthy();
@@ -110,7 +110,7 @@ describe('#167 — « Pied écrasé » : perte du pied si pas de Chirurgie sous 
   it('Chirurgie AVANT l’échéance (plaie retirée) → pas d’amputation du pied', () => {
     const c = C({ traumas: [plaie('jambeD', { amputateAfterDays: 3, amputateSequel: 'membre-inferieur-ampute' })] });
     c.traumas = []; // simule removeSurgicalTrauma (l’opération a retiré la plaie chirurgicale)
-    const log = tickTraumaRecovery(c, 5);
+    const log = tickTraumaRecovery(c, 5, () => {});
     expect(log.join(' ')).not.toMatch(/membre est perdu/);
     expect(c.traumas!.some((t) => t.traumaId === 'membre-inferieur-ampute')).toBe(false);
   });

@@ -79,6 +79,7 @@ describe('#1262 — monoStep : un porteur, un jet, une cible', () => {
   it('les slots HYBRIDES (révélation, lignes de conséquence) voyagent tels quels', () => {
     const step = monoStep({
       id: 'h', kind: 'k', label: fixtureText('L'), actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU,
+      ligne: { test: { char: 'force-mentale' } },
       reveal: { kind: 'effet', title: 'Ce qui vient d’arriver', lines: ['a'] },
     })!;
     expect(step.reveal!.title).toBe('Ce qui vient d’arriver');
@@ -108,7 +109,7 @@ describe('#1262 — monoStep : un porteur, un jet, une cible', () => {
 
   it('enjeu MUET en DEV → THROW : la dégradation se voit au premier passage', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    expect(() => monoStep({ id: 'muet', kind: 'k', label: fixtureText('Jet dû'), actor: hero('H1'), difficulty: 'intermediaire', stake: undefined }))
+    expect(() => monoStep({ id: 'muet', kind: 'k', label: fixtureText('Jet dû'), actor: hero('H1'), difficulty: 'intermediaire', stake: undefined, ligne: { test: { char: 'force-mentale' } } }))
       .toThrow(/enjeu MUET/);
   });
 });
@@ -268,7 +269,7 @@ describe('#1262 — la MARQUE mure la porte', () => {
   });
 
   it('`openSequence` ouvre la séquence d’une étape MINTÉE', () => {
-    const step = monoStep({ id: 'm', kind: 'k', label: fixtureText('L'), actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU })!;
+    const step = monoStep({ id: 'm', kind: 'k', label: fixtureText('L'), actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU, ligne: { test: { char: 'force-mentale' } } })!;
     openSequence(useGame.getState, useGame.setState, { title: 'Titre', purpose: 'test', steps: [step] });
     expect(useGame.getState().pendingCascade!.title).toBe('Titre');
     expect(etapes()).toHaveLength(1);
@@ -295,7 +296,7 @@ describe('#1262 — la MARQUE mure la porte', () => {
   });
 
   it('`pushCombatStep` accepte l’étape MINTÉE (la voie qui reste ouverte)', () => {
-    const step = monoStep({ id: 'm', kind: 'k', label: fixtureText('L'), actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU })!;
+    const step = monoStep({ id: 'm', kind: 'k', label: fixtureText('L'), actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU, ligne: { test: { char: 'force-mentale' } } })!;
     pushCombatStep(useGame.setState, step);
     expect(etapes().map((s) => s.id)).toEqual(['m']);
     expect(useGame.getState().pendingCascade!.purpose).toBe('combat');
@@ -304,20 +305,20 @@ describe('#1262 — la MARQUE mure la porte', () => {
 
 describe('#1262 — les portes d’APPEND', () => {
   it('l’appelant ne fournit NI titre NI purpose : l’étape rejoint la séquence de combat', () => {
-    pushMono(useGame.setState, { id: 'a', kind: 'k', label: fixtureText('Étape A'), actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU });
+    pushMono(useGame.setState, { id: 'a', kind: 'k', label: fixtureText('Étape A'), actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU, ligne: { test: { char: 'force-mentale' } } });
     expect(useGame.getState().pendingCascade!.purpose).toBe('combat');
     expect(etapes()[0].id).toBe('a');
   });
 
   it('FABRIQUE-INDEX : deux étapes de MÊME clé prennent des ids DISTINCTS dans la séquence', () => {
-    const decl = (index: number) => ({ id: `miscast-${index}`, kind: 'k', label: fixtureText('Imparfaite'), actor: hero('H1'), difficulty: 'intermediaire' as const, stake: ENJEU });
+    const decl = (index: number) => ({ id: `miscast-${index}`, kind: 'k', label: fixtureText('Imparfaite'), actor: hero('H1'), difficulty: 'intermediaire' as const, stake: ENJEU, ligne: { test: { char: 'force-mentale' as const } } });
     pushMono(useGame.setState, decl);
     pushMono(useGame.setState, decl);
     expect(etapes().map((s) => s.id)).toEqual(['miscast-0', 'miscast-1']);
   });
 
   it('une déclaration REFUSÉE par son mint n’appende RIEN', () => {
-    pushMono(useGame.setState, { id: 'ok', kind: 'k', label: fixtureText('L'), actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU });
+    pushMono(useGame.setState, { id: 'ok', kind: 'k', label: fixtureText('L'), actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU, ligne: { test: { char: 'force-mentale' } } });
     expect(() => pushTable(useGame.setState, {
       id: 'ko', kind: 'k', label: fixtureText('L'), actorId: 'H1',
       table: { tableId: TABLE, result: { roll: 60, die: 60, id: 'haute', lines: [] } },

@@ -1860,25 +1860,37 @@ export const STAKE_FORMS = ['verbatim', 'descripteur'] as const;
 /** Forme déclarée d'un enjeu — union FERMÉE dérivée de `STAKE_FORMS`. */
 export type StakeForm = (typeof STAKE_FORMS)[number];
 
+/** Ids de ce qui est TESTÉ — ce qu'un producteur NOMME pour que la porte en tire la valeur
+ *  (`rollLine` → `testValue`) au lieu de la calculer chez lui. Union FAIL-CLOSED : au moins un id,
+ *  jamais `{}` (qui ferait jouer la porte sur une valeur de 0, auto-échec muet — #1657 B3-3). Une
+ *  Compétence PEUT nommer la Caractéristique sur laquelle elle se joue (Venin : Résistance sur
+ *  Endurance) ; une Caractéristique NUE se déclare seule (ver de carie, `MSRC 16 l.90`). */
+export type TestIds =
+  | { skill: string; char?: CharKey; spec?: string }
+  | { char: CharKey; skill?: undefined; spec?: undefined };
+
 /** Spec d'un Test de Résistance d'entretien DIFFÉRÉ (cascade de nuit influençable) : le moteur le
  *  COLLECTE au lieu de le rouler (`state/upkeep` calcule la cible et en fait une étape de cascade,
  *  résolue par l'applicateur de `kind`). Garde l'invariante « si y'a un jet, y'a une étape ». */
 export type UpkeepDeferTest = (spec: {
   kind: NightTestKind;
   label: string;
-  base: number;
-  /** Ids du Test dont `base` est la valeur, quand le producteur les CONNAÎT (Faim/Soif/Dessoûlage :
-   *  `testValue` de Résistance). Le monteur décompose alors `base` en Niveau de Compétence NU +
-   *  composantes NOMMÉES (États, Encombrement, passifs). ABSENT = la valeur vient d'une autre formule
-   *  (`restResistVal`, Test passif) : elle reste DÉCLARÉE étrangère, aucune composante à deviner. */
-  test?: { skill?: string; char?: CharKey; spec?: string };
   difficulty: Difficulty;
-  /** Pénalité NOMMÉE du Test : sa valeur voyage AVEC son étiquette et sa règle, depuis le producteur
-   *  qui l'applique (`engine/provisions` pour la Faim/Soif). Couture GÉNÉRIQUE (14 `kind`) : rien n'y
-   *  est codé en dur, un `kind` futur apporte SA règle ou n'affiche aucune chip. */
-  penalty?: ModLine;
+  /** Modificateurs NOMMÉS du Test : chacun voyage AVEC son étiquette et sa règle, depuis le producteur
+   *  qui l'applique (`engine/provisions` pour la Faim/Soif, `engine/disease` pour les bonus d'effet
+   *  scopés à la maladie). Couture GÉNÉRIQUE (16 `kind`) : rien n'y est codé en dur, un `kind` futur
+   *  apporte SES règles ou n'affiche aucune chip. */
+  mods?: ModLine[];
   meta?: Record<string, unknown>; // p.ex. { diseaseName, onFail: GameOp[] } — porté tel quel par l'étape de cascade
-}) => void;
+} & (
+  /** Le producteur NOMME les ids de son Test : la valeur est celle de la PORTE (`rollLine` →
+   *  `testValue` : États, Encombrement, séquelles, passifs), décomposée en Niveau de Compétence NU +
+   *  composantes NOMMÉES. `base` reste possible quand le producteur la calcule DÉJÀ par `testValue`
+   *  (Faim/Soif/Dessoûlage) — elle doit alors se reconstruire, `rollLine` le vérifie. */
+  | { test: TestIds; base?: number }
+  /** Aucun id : la valeur vient d'une autre formule, DÉCLARÉE étrangère (aucune composante à deviner). */
+  | { base: number; test?: never }
+)) => void;
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   tresFacile: t('difficulty.tresFacile'),

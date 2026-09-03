@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { traumaById, dechirureFractureFicheId, traumaRecoveryDays, tickTraumaRecovery, applyFractureEnd, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma, AMPUTATION_WOUND_DESC } from './trauma';
 import type { HitLocation } from './types';
+import type { UpkeepDeferTest } from './types';
 const tk = (k: 'dechirure' | 'fracture', sv: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, sv, loc), opts, loc);
 import { testValue } from './skills';
 import type { Combatant } from './types';
-import type { RNG } from './dice';
 
 const C = (over: Partial<Combatant>): Combatant =>
   ({
@@ -14,6 +14,18 @@ const C = (over: Partial<Combatant>): Combatant =>
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...over,
   } as Combatant);
+
+
+/** LA PORTE, côté test : `tickTraumaRecovery` ne roule plus le Test de fin de fracture (#1657 B3-3) —
+ *  il le DIFFÈRE. `finDeFracture` INJECTE l'issue par la MÊME route que l'applier de nuit
+ *  `traumaFracture` (`state/restFlow.ts` → `applyFractureEnd`). */
+function porteFracture(): { specs: Parameters<UpkeepDeferTest>[0][]; defer: UpkeepDeferTest } {
+  const specs: Parameters<UpkeepDeferTest>[0][] = [];
+  return { specs, defer: (s) => { specs.push(s); } };
+}
+function finDeFracture(c: Combatant, specs: Parameters<UpkeepDeferTest>[0][], success: boolean): string[] {
+  return specs.flatMap((s) => applyFractureEnd(c, success, String(s.meta!.severity), String(s.meta!.location), String(s.meta!.traumaLabel)));
+}
 
 describe('Convalescence des Blessures critiques (LDB 18)', () => {
   it('traumaRecoveryDays : déchirure mineure 30−BE, majeure ×2, fracture 30+1d10 (+10 majeure)', () => {
@@ -34,9 +46,9 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
 
   it('tickTraumaRecovery : guérit une déchirure à 0 (retire trauma + pénalités, décrémente criticalWounds)', () => {
     const c = C({ traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 28 })], criticalWounds: 1 }); // 2 jours
-    tickTraumaRecovery(c, 1);
+    tickTraumaRecovery(c, 1, () => {});
     expect(c.traumas![0].recoveryDays).toBe(1);
-    const log = tickTraumaRecovery(c, 1);
+    const log = tickTraumaRecovery(c, 1, () => {});
     expect(c.traumas!.length).toBe(0);
     expect(c.criticalWounds).toBe(0);
     expect(log.join(' ')).toMatch(/guérit/);
@@ -47,11 +59,11 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     const c = C({ traumas: [t] });
     const esquiveMod = (tr: typeof t) => tr.ops?.flatMap((o) => (o.op === 'skillMod' && o.skill.id === 'esquive' ? [o.mod] : []))[0];
     expect(esquiveMod(c.traumas![0])).toBe(-20);
-    tickTraumaRecovery(c, 9); // reste 11 > 10 → toujours −20
+    tickTraumaRecovery(c, 9, () => {}); // reste 11 > 10 → toujours −20
     expect(esquiveMod(c.traumas![0])).toBe(-20);
-    tickTraumaRecovery(c, 1); // reste 10 ≤ 10 → −10
+    tickTraumaRecovery(c, 1, () => {}); // reste 10 ≤ 10 → −10
     expect(esquiveMod(c.traumas![0])).toBe(-10);
-    tickTraumaRecovery(c, 10); // reste 0 → guéri
+    tickTraumaRecovery(c, 10, () => {}); // reste 0 → guéri
     expect(c.traumas!.length).toBe(0);
   });
 
@@ -59,8 +71,9 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     const t = tk('fracture', 'mineur', 'jambeD', { be: 28 });
     t.recoveryDays = 1; // résolution au prochain tick
     const c = C({ traumas: [t], criticalWounds: 1 });
-    const collected: { kind: string; meta?: Record<string, unknown> }[] = [];
-    tickTraumaRecovery(c, 1, undefined, 30, (spec) => collected.push(spec));
+    const { specs: collected, defer } = porteFracture();
+    tickTraumaRecovery(c, 1, defer);
+    expect(collected[0]?.test, 'LDB 18 l.202 — « Test de Résistance »').toEqual({ skill: 'resistance' });
     expect(collected[0]?.kind).toBe('traumaFracture'); // Test de fin DIFFÉRÉ en étape
     expect(c.traumas!.length).toBe(0); // la fracture est retirée (résolution déférée)
     expect(c.criticalWounds).toBe(0);
@@ -73,8 +86,9 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   it('fracture : Test de Résistance de fin RATÉ → séquelle permanente (−5 Ag) (l.300)', () => {
     const t = tk('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 }); // 35 jours
     const c = C({ traumas: [t], criticalWounds: 1 });
-    const fail: RNG = { int: () => 95 }; // resistVal 0 → cible 20 ; 95 > 20 → échec
-    tickTraumaRecovery(c, 40, fail, 0);
+    const { specs, defer } = porteFracture();
+    tickTraumaRecovery(c, 40, defer);
+    finDeFracture(c, specs, false); // issue INJECTÉE : Test de fin RATÉ
     expect(c.traumas!.length).toBe(1); // la fracture part, mais une séquelle reste
     expect(c.traumas![0].label).toMatch(/mal ressoudée/);
     expect(c.traumas![0].ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -5 });
@@ -84,8 +98,9 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   it('fracture : Test de fin RÉUSSI → guérison propre (aucune séquelle)', () => {
     const t = tk('fracture', 'mineur', 'jambeG', { be: 4, d10: 5 });
     const c = C({ traumas: [t] });
-    const ok: RNG = { int: () => 10 }; // resistVal 60 → cible 80 ; 10 ≤ 80 → réussite
-    tickTraumaRecovery(c, 40, ok, 60);
+    const { specs, defer } = porteFracture();
+    tickTraumaRecovery(c, 40, defer);
+    finDeFracture(c, specs, true); // issue INJECTÉE : Test de fin RÉUSSI
     expect(c.traumas!.length).toBe(0);
   });
 
@@ -95,8 +110,9 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     expect(hasTreatableTrauma(c)).toBe(true); // dans la semaine
     treatTrauma(c, 2);
     expect(c.traumas![0].fractureSet).toBe(true);
-    const fail: RNG = { int: () => 99 };
-    tickTraumaRecovery(c, 40, fail, 0); // fractureSet → aucun Test → guérison propre malgré le mauvais jet
+    const { specs, defer } = porteFracture();
+    tickTraumaRecovery(c, 40, defer);
+    expect(specs, 'fractureSet → AUCUN Test posé à la porte').toEqual([]);
     expect(c.traumas!.length).toBe(0);
   });
 
@@ -116,8 +132,9 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
   it('fracture à la TÊTE mal ressoudée → séquelle de Langue permanente (l.300/309)', () => {
     const t = tk('fracture', 'majeur', 'tete', { be: 4, d10: 5 });
     const c = C({ traumas: [t], skills: [{ id: 'langue', spec: 'reikspiel', advances: 20, characteristic: 'intelligence' } as never] });
-    const fail: RNG = { int: () => 95 };
-    tickTraumaRecovery(c, 50, fail, 0); // fin de convalescence, Test raté
+    const { specs, defer } = porteFracture();
+    tickTraumaRecovery(c, 50, defer); // fin de convalescence
+    finDeFracture(c, specs, false); // issue INJECTÉE : Test raté
     const seq = c.traumas![0];
     expect(seq.ops).toContainEqual({ op: 'skillMod', skill: { id: 'langue' }, mod: -10 }); // majeure
     expect(traumaSkillPenalty(c, 'langue')).toBe(-10); // séquelle de Langue (par id stable)
@@ -168,6 +185,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
  * production) : débrancher `locationLabel` au site les rougit, ce qu'un oracle de catalogue ne ferait
  * pas — il refait l'appel lui-même.
  */
+
 describe('#1318 V8c₃ — aucune ligne de séquelle ne rend un ID de Localisation', () => {
   /** Tous les ids de `HitLocation`, tels qu'ils fuiraient dans une phrase. */
   const IDS = /\b(tete|brasG|brasD|jambeG|jambeD)\b/;
@@ -175,7 +193,7 @@ describe('#1318 V8c₃ — aucune ligne de séquelle ne rend un ID de Localisati
   it('tickTraumaRecovery : la rémission d’une déchirure majeure de jambe nomme « Jambe gauche »', () => {
     const t = tk('dechirure', 'majeur', 'jambeG', { be: 4 });
     const c = C({ traumas: [{ ...t, recoveryDays: (t.recoveryTotal ?? 52) / 2 + 1 }] });
-    const log = tickTraumaRecovery(c, 2).join(' ');
+    const log = tickTraumaRecovery(c, 2, () => {}).join(' ');
     expect(log, 'la ligne de rémission est bien émise').toMatch(/rémission partielle/);
     expect(log).toContain('Jambe gauche');
     expect(IDS.test(log), `id de Localisation à l'écran : « ${log} »`).toBe(false);
@@ -184,7 +202,7 @@ describe('#1318 V8c₃ — aucune ligne de séquelle ne rend un ID de Localisati
   it('tickTraumaRecovery : la guérison d’une déchirure nomme la Localisation en français', () => {
     const t = tk('dechirure', 'mineur', 'brasD', { be: 4 });
     const c = C({ traumas: [{ ...t, recoveryDays: 1 }], criticalWounds: 1 });
-    const log = tickTraumaRecovery(c, 5).join(' ');
+    const log = tickTraumaRecovery(c, 5, () => {}).join(' ');
     expect(log).toContain('Bras droit');
     expect(IDS.test(log), `id de Localisation à l'écran : « ${log} »`).toBe(false);
   });

@@ -88,7 +88,7 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.92 / 18 l.380 / 21 l.95)
   it('maladie : l’incubation se déclare à l’entretien quotidien et le malaise impose un Exténué « collant » (LDB 20 l.153)', () => {
     // Infection Mineure : incubation 1 j, durée 5 j. E 40 → blessé Accessible (cible 60) réussi avec d100=10.
     const c = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('infection-mineure', { int: () => 1 }, { incubation: 1, duration: 5 })!] });
-    dailyDiseaseUpkeep(c, { int: () => 10 }); // jour 1 (cascade #T3) → symptômes déclarés → +1 Exténué (malaise)
+    dailyDiseaseUpkeep(c, { int: () => 10 }, () => {}); // jour 1 (cascade #T3) → symptômes déclarés → +1 Exténué (malaise)
     expect(c.diseases![0].phase).toBe('active');
     expect(stacks(c, 'extenue')).toBe(1);
     restRecovery(c, { int: () => 10 }); // la nuit de sommeil ne dissipe PAS l'Exténué du malaise
@@ -98,8 +98,8 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.92 / 18 l.380 / 21 l.95)
   it('maladie : les soins d’un soignant raccourcissent la durée (−1 j/jour en plus, LDB 09-Compétences)', () => {
     const cared = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('infection-mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
     const alone = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('infection-mineure', { int: () => 1 }, { incubation: 0, duration: 6 })!] });
-    dailyDiseaseUpkeep(cared, { int: () => 10 }, true);  // soigné : tick naturel −1 + soins −1
-    dailyDiseaseUpkeep(alone, { int: () => 10 }, false); // seul : tick naturel −1
+    dailyDiseaseUpkeep(cared, { int: () => 10 }, () => {}, true);  // soigné : tick naturel −1 + soins −1
+    dailyDiseaseUpkeep(alone, { int: () => 10 }, () => {}, false); // seul : tick naturel −1
     expect(cared.diseases![0].minutesLeft).toBe(alone.diseases![0].minutesLeft - MINUTES_PER_DAY);
   });
 

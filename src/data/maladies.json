@@ -686,6 +686,9 @@
       "test": {
         "kind": "test",
         "test": {
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "intermediaire"
         },
         "success": {

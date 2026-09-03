@@ -72,11 +72,11 @@ const CARDINAUX = {
   'mutationTables.json': 17,
   'primitives.manifest.json': 28,
   'qualities.json': 59,
-  'regles.json': 84,
+  'regles.json': 85, // +1 `critiques-de-bateau` (#1657 B3-2)
   'stars.json': 23,
   'systemes.manifest.json': 16,
   'tables.json': 20,
-  'voyage-stakes.json': 43,
+  'voyage-stakes.json': 42, // −1 `river-splinter-dodge` (#1657 B3-2)
   'weaponGroups.json': 38,
 };
 const TOTAL_ATTENDU = 801;

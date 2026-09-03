@@ -313,6 +313,9 @@
       "test": {
         "kind": "test",
         "test": {
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "accessible"
         },
         "success": {
@@ -351,6 +354,9 @@
       "test": {
         "kind": "test",
         "test": {
+          "skill": {
+            "id": "resistance"
+          },
           "difficulty": "tresFacile"
         },
         "success": {
@@ -498,6 +504,7 @@
       "test": {
         "kind": "test",
         "test": {
+          "characteristic": "endurance",
           "difficulty": "accessible"
         },
         "success": {

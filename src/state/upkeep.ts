@@ -30,13 +30,11 @@ import { dayIndex } from '../engine/clock';
 import { dailyFoodUpkeep, dailyWaterUpkeep, feedFromMeal } from '../engine/provisions';
 import { testValue } from '../engine/skills';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
-import { loseWounds, addClockCondition } from '../engine/conditions';
-import { rollTest } from '../engine/tests';
-import { soberUp } from '../engine/drunkenness';
+import { loseWounds } from '../engine/conditions';
 import { type CharKey, type Difficulty, type UpkeepDeferTest, type NightTestKind } from '../engine/types';
 import { rollStep } from './rollSeam';
 import type { ModLine } from '../engine/combat';
-import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
+import { dailyDiseaseUpkeep } from '../engine/rest';
 import { conditionLabel } from '../data';
 import { t } from '../i18n';
 import { rule } from '../engine/policy';
@@ -142,7 +140,7 @@ export interface DeferredUpkeepTest {
   meta?: Record<string, unknown>; // p.ex. { diseaseName, onFail: GameOp[] } — porté tel quel jusqu'à l'applier
 }
 
-export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean; onDeferTest?: (t: DeferredUpkeepTest) => void } = {}): string[] {
+export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean; onDeferTest: (t: DeferredUpkeepTest) => void }): string[] {
   // Dissipations d'effets d'horloge : au FRANCHISSEMENT de jour, elles font partie du rapport
   // visible (hors franchissement — rythme combat — le journal et les icônes d'État suffisent).
   const purged = purgeClockEffects(get, set);
@@ -165,26 +163,26 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       // `onDeferTest` (cascade de nuit) : TOUT Test de Résistance d'entretien (Faim, maladie,
       //  convalescence) est DIFFÉRÉ en étape influençable au lieu d'être roulé ici (sinon témoin
       //  pré-résolu). Le wrapper calcule la cible (base + difficulté + pénalité) et ajoute le héros.
-      const defer: UpkeepDeferTest | undefined = opts.onDeferTest
-        ? (spec) => {
-          const surLaCible = spec.penalty ? [{ label: spec.penalty.label, value: spec.penalty.value, famille: spec.penalty.famille, ref: spec.penalty.ref }] : [];
-          // Le producteur DIT les ids de son Test quand il les connaît (Faim/Soif/Dessoûlage :
-          // `testValue` de Résistance) → la valeur se décompose en Niveau de Compétence nu +
-          // composantes NOMMÉES. Les producteurs qui tirent leur valeur de `restResistVal` (maladie,
-          // convalescence) n'en portent pas : leur valeur reste DÉCLARÉE étrangère — approximation
-          // assumée, `restResistVal` VAUT le Niveau de Compétence nu (≡ `skillBaseValue('resistance')`),
-          // c'est la composition des ÉTATS qui diverge (Test passif). 3ᵉ régime à venir (ticket).
-          const decl = spec.test
-            ? { actor: h, test: spec.test, valeur: spec.base, difficulty: spec.difficulty, surLaCible }
-            : { actor: h, valeur: spec.base, valeurEtrangere: true as const, difficulty: spec.difficulty, surLaCible };
-          opts.onDeferTest!({
+      const defer: UpkeepDeferTest = (spec) => {
+          // Les modificateurs du producteur passent TELS QUELS : ce site ne re-classe rien (famille) et
+          // ne perd rien (renvoi Codex) — il transporte.
+          const surLaCible = spec.mods ?? [];
+          // Le producteur DIT les ids de son Test (`spec.test`) → la valeur est celle de la PORTE
+          // (`testValue` : États, Encombrement, séquelles, passifs), décomposée en Niveau de Compétence
+          // nu + composantes NOMMÉES. Une `base` déjà calculée par le producteur (Faim/Soif/Dessoûlage)
+          // la remplace — `rollLine` vérifie qu'elle se reconstruit. Sans ids : valeur étrangère assumée.
+          const decl = !spec.test
+            ? { actor: h, valeur: spec.base, valeurEtrangere: true as const, difficulty: spec.difficulty, surLaCible }
+            : spec.base !== undefined
+              ? { actor: h, test: spec.test, valeur: spec.base, difficulty: spec.difficulty, surLaCible }
+              : { actor: h, test: spec.test, difficulty: spec.difficulty, surLaCible };
+          opts.onDeferTest({
             heroId: h.id, kind: spec.kind, label: spec.label, difficulty: spec.difficulty, day: d,
             ...(spec.test ? { test: spec.test } : {}),
             ...rollStep(decl),
             meta: spec.meta,
           });
-        }
-        : undefined;
+        };
       // 1. Nourriture (LDB 18 l.337-343).
       const r = dailyFoodUpkeep(h, testValue(h, 'resistance', 'endurance'), bonus(effectiveChar(h, 'endurance')), battleRng(), defer);
       if (r.rationConsumed) rations++;
@@ -199,19 +197,14 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       if (h.drunk) {
         const alcool = { skill: 'resistance-a-l-alcool', char: 'endurance' } as const;
         const alc = testValue(h, alcool.skill, alcool.char);
-        // DIFFÉRÉ comme ses voisins (faim/soif) quand un canal influençable existe : le Test de
-        // Résistance à l'alcool devient une étape de cascade au lieu d'être roulé ici (sinon pré-résolu).
-        if (defer) defer({ kind: 'dessoulage', label: t('upkeep.sobering'), base: alc, test: alcool, difficulty: 'intermediaire' });
-        else {
-          const sr = soberUp(h, get().gameTime, rollTest(alc, 'intermediaire', battleRng()).sl, rollTest(alc, 'intermediaire', battleRng()).sl);
-          lines.push(...sr.log);
-          if (sr.hangover) addClockCondition(h, sr.hangover.id, sr.hangover.value, sr.hangover.until);
-        }
+        // DIFFÉRÉ comme ses voisins (faim/soif) : le Test de Résistance à l'alcool est une étape de
+        // cascade, jamais un jet roulé ici (sinon pré-résolu).
+        defer({ kind: 'dessoulage', label: t('upkeep.sobering'), base: alc, test: alcool, difficulty: 'intermediaire' });
       }
       // 2. Maladies (LDB 20 — jours calendaires, #T3). Règle optionnelle : désactivable (disease-mode off).
-      if (rule('disease-mode') !== 'off') lines.push(...dailyDiseaseUpkeep(h, battleRng(), opts.caredFor, defer));
+      if (rule('disease-mode') !== 'off') lines.push(...dailyDiseaseUpkeep(h, battleRng(), defer, opts.caredFor));
       // 3. Convalescence des Blessures critiques (LDB 18 — jours calendaires, #T3).
-      lines.push(...tickTraumaRecovery(h, 1, battleRng(), restResistVal(h), defer));
+      lines.push(...tickTraumaRecovery(h, 1, defer));
     }
     // 4. Effets déclenchés d'HORLOGE portés par la DONNÉE (Trait, Mutation, État… — `clockHooks`,
     //    bus-owned). `onDayStart` : une émission par jour franchi (le rattrapage en doit autant que

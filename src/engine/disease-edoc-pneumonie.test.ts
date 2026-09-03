@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { Combatant } from './types';
+import type { Combatant, UpkeepDeferTest } from './types';
+import { porteEntretien, applique } from './upkeepPorte.testkit';
 import type { RNG } from './dice';
 import { MINUTES_PER_DAY } from './clock';
 import { contractDisease, contractDiseaseOnce, tickDisease, aggravateDiseaseSymptom, DISEASE_DEFS } from './disease';
@@ -7,6 +8,7 @@ import { dailyDiseaseUpkeep } from './rest';
 import { applyOps } from './ops';
 import { spellOps } from './flowCore';
 import { gameOpSchema } from '../data/schemas/grammaire/mecanique';
+/** La porte, quand le Test différé n'est pas le sujet du test. */const ignore: UpkeepDeferTest = () => {};
 
 /** RNG scripté : renvoie les valeurs dans l'ordre. */
 function seq(values: number[]): RNG {
@@ -31,19 +33,19 @@ describe('Rhume commun → Pneumonie : la mue à 14 jours (EDOC 08 l.122)', () =
   it('14 jours de symptômes : le rhume tient encore ; le 15ᵉ : il se transforme en pneumonie', () => {
     const c = hero({ diseases: [contractDisease('rhume-commun', seq([]), { incubation: 0, duration: 40 })!] });
     // Le rhume ne porte aucun Test de cycle (Toux et éternuements / Malaise n'ont pas d'`onTick`) : rien n'est tiré.
-    tickDisease(c, 14 * MINUTES_PER_DAY, seq([]), 40);
+    tickDisease(c, 14 * MINUTES_PER_DAY, seq([]), ignore);
     expect(c.diseases!.map((d) => d.id)).toEqual(['rhume-commun']);
     expect(c.diseases![0].activeDaysElapsed).toBe(14);
 
     // 15ᵉ jour : la durée de la PNEUMONIE contractée est 3d10 → 4+4+4 = 12 jours.
-    const log = tickDisease(c, MINUTES_PER_DAY, seq([4, 4, 4]), 40);
+    const log = tickDisease(c, MINUTES_PER_DAY, seq([4, 4, 4]), ignore);
     expect(c.diseases!.map((d) => d.id)).toEqual(['pneumonie']);
     expect(log.some((l) => /se transforme en/.test(l))).toBe(true);
   });
 
   it('la pneumonie née de la mue démarre ACTIVE avec ses symptômes RAW (l.100-102)', () => {
     const c = hero({ diseases: [contractDisease('rhume-commun', seq([]), { incubation: 0, duration: 40 })!] });
-    tickDisease(c, 15 * MINUTES_PER_DAY, seq([4, 4, 4]), 40);
+    tickDisease(c, 15 * MINUTES_PER_DAY, seq([4, 4, 4]), ignore);
     const pn = c.diseases![0];
     expect(pn.phase).toBe('active');
     expect(pn.minutesLeft).toBe(12 * MINUTES_PER_DAY);
@@ -61,25 +63,34 @@ describe('Pneumonie : le Test de Résistance quotidien (EDOC 08 l.104-108)', () 
     const c = hero({ diseases: [contractDisease('pneumonie', seq([5, 5, 5]))!] });
     expect(c.diseases![0].phase).toBe('active');
 
-    // Résistance 30, Intermédiaire (+0) → cible 30 ; d100 = 99 → échec.
-    tickDisease(c, MINUTES_PER_DAY, seq([99]), 30);
+    // Le Test part à la porte ; l'issue est INJECTÉE (échec), la conséquence passe par l'applier.
+    const jour = (success: boolean) => {
+      const { specs, defer } = porteEntretien();
+      tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
+      for (const s of specs) applique(c, s, { success });
+    };
+    jour(false);
     expect(fievre(c).severity).toBe('grave');
     expect(symptomIds(c)).toEqual(['fievre', 'malaise', 'touxEternuements']); // pas encore de Toxine
 
-    tickDisease(c, MINUTES_PER_DAY, seq([99]), 30);
+    jour(false);
     expect(symptomIds(c)).toEqual(['fievre', 'malaise', 'touxEternuements', 'toxine']);
   });
 
   it('réussite → rien ne s’aggrave (la Fièvre reste au palier de base)', () => {
     const c = hero({ diseases: [contractDisease('pneumonie', seq([5, 5, 5]))!] });
-    tickDisease(c, MINUTES_PER_DAY, seq([1]), 30); // d100 = 1 ≤ 30 → réussite
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
+    for (const s of specs) applique(c, s, { success: true }); // issue INJECTÉE : réussite
     expect(fievre(c).severity).toBeUndefined();
     expect(symptomIds(c)).toEqual(['fievre', 'malaise', 'touxEternuements']);
   });
 
   it('l’aggravation ne touche QUE l’instance portée (le catalogue partagé reste intact)', () => {
     const c = hero({ diseases: [contractDisease('pneumonie', seq([5, 5, 5]))!] });
-    tickDisease(c, MINUTES_PER_DAY, seq([99]), 30);
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
+    for (const s of specs) applique(c, s, { success: false });
     expect(fievre(c).severity).toBe('grave');
     expect(DISEASE_DEFS['pneumonie'].symptoms.find((s) => s.symptomId === 'fievre')!.severity).toBeUndefined();
   });
@@ -88,11 +99,13 @@ describe('Pneumonie : le Test de Résistance quotidien (EDOC 08 l.104-108)', () 
 describe('Pneumonie : le Test quotidien passe par le canal INFLUENÇABLE de l’entretien', () => {
   it('tickDisease(defer) : le Test est DIFFÉRÉ en étape `diseaseTick` et n’est PAS roulé', () => {
     const c = hero({ diseases: [contractDisease('pneumonie', seq([5, 5, 5]))!] });
-    const specs: { kind: string; difficulty: string; meta?: Record<string, unknown> }[] = [];
-    // seq([]) : un seul jet tiré renverrait `undefined` — la cascade ne DOIT rien rouler.
-    tickDisease(c, MINUTES_PER_DAY, seq([]), 30, (s) => specs.push(s));
+    const { specs, defer } = porteEntretien();
+    // seq([]) : un seul jet tiré renverrait `undefined` — le moteur ne DOIT rien rouler.
+    tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
     expect(specs.map((s) => s.kind)).toEqual(['diseaseTick']);
     expect(specs[0].difficulty).toBe('intermediaire');
+    expect(specs[0].test, 'EDOC 08 l.104 — « Test de Résistance Intermédiaire (+0) »').toEqual({ skill: 'resistance' });
+    expect(specs[0].base, 'aucune valeur maison : la porte la calcule').toBeUndefined();
     expect(specs[0].meta?.diseaseName).toBe('pneumonie');
     expect(specs[0].meta?.symptomId, 'l’étape NOMME le symptôme mis en jeu').toBe('fievre');
     expect(fievre(c).severity, 'rien n’est pré-résolu').toBeUndefined();
@@ -100,8 +113,8 @@ describe('Pneumonie : le Test quotidien passe par le canal INFLUENÇABLE de l’
 
   it('dailyDiseaseUpkeep(defer) : la même étape remonte depuis l’entretien quotidien', () => {
     const c = hero({ diseases: [contractDisease('pneumonie', seq([5, 5, 5]))!] });
-    const specs: { kind: string }[] = [];
-    dailyDiseaseUpkeep(c, seq([]), false, (s) => specs.push(s));
+    const { specs, defer } = porteEntretien();
+    dailyDiseaseUpkeep(c, seq([]), defer);
     expect(specs.map((s) => s.kind)).toEqual(['diseaseTick']);
   });
 
@@ -179,8 +192,8 @@ describe('MUE vers une maladie DÉJÀ portée : le journal ne ment pas (#674 R2)
         contractDisease('pneumonie', seq([]), { duration: 60 })!,
       ],
     });
-    // Tous les jets réussissent (d100 = 1) : seule la MUE du 15ᵉ jour bouge la liste des maladies.
-    const log = tickDisease(c, 15 * MINUTES_PER_DAY, seq(Array(64).fill(1)), 99);
+    // Aucun jet n'est roulé par le moteur (ils partent à la porte) : seule la MUE du 15ᵉ jour bouge la liste.
+    const log = tickDisease(c, 15 * MINUTES_PER_DAY, seq([]), ignore);
     expect(c.diseases!.map((d) => d.id), 'le rhume disparaît (la mue a bien eu lieu)').toEqual(['pneumonie']);
     expect(log.some((l) => /se transforme en/.test(l)), 'aucune 2ᵉ pneumonie n’a été contractée').toBe(false);
     expect(log.some((l) => /cède la place/.test(l)), 'la mue est journalisée pour ce qu’elle est').toBe(true);

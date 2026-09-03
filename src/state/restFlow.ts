@@ -26,12 +26,12 @@ import type { RNG } from '../engine/dice';
 import type { RollBreakdown } from '../engine/combat';
 import type { RecapTone } from './recapLine';
 import { battleRng } from './battleRng';
-import { partyAssisted } from '../engine/skills';
+import { partyAssisted, testValue } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
 import { soberUpDissipate, soberUpHangover } from '../engine/drunkenness';
-import { isOutOfAction, addCondition, removeCondition, loseWounds, addClockCondition } from '../engine/conditions';
-import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, type RestRoll } from '../engine/rest';
-import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
+import { isOutOfAction, addCondition, loseWounds, addClockCondition } from '../engine/conditions';
+import { restRecovery, applyRecoveryDay, needsRecoveryRoll, applyDiseaseEnd, type RestRoll } from '../engine/rest';
+import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseGangrene, diseaseTestModLines } from '../engine/disease';
 import { applyOps } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { type Difficulty } from '../engine/types';
@@ -40,7 +40,7 @@ import type { DeferredUpkeepTest } from './upkeep';
 import { weatherExposure, exposureTestCount, expireOnRespite, exposureShelterFromTent, applyExposureFailure, exposureCoatMods, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { applyForcedMarch } from '../engine/travel';
-import { registerCascadeApplier, startCascade } from './cascade';
+import { registerCascadeApplier, startCascade, runCascadeImmediate } from './cascade';
 import { nightBands, registerNightBandApplier, nightRowId, genuineExposureFail, nextExposureWave, exposureWaveBand, EXPOSURE_BAND_KINDS } from './nightBands';
 import { freeCons, testSkillLabel, monoStep, choiceStep, pousseSi, type BuiltCascadeStep } from './rollSeam';
 import type { CascadeStepMeta } from './pendings';
@@ -171,9 +171,15 @@ export function sleepParty(
     set({ gameTime: night === 0 ? from + firstNight : before + MINUTES_PER_DAY });
     bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - before });
     set({ lastNightDay: dayIndex(get().gameTime) }); // nuit JOUÉE (#340) — désamorce la privation de sommeil
-    for (const text of runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily })) {
+    // Les Tests d'entretien de la journée (faim, soif, maladie, convalescence, dessoûlage) sont MONTÉS
+    // par la porte, comme dans la nuit interactive : ce chemin les résout d'office (`runCascadeImmediate`
+    // — branche I du seam), il ne les roule pas lui-même et ne saute aucune fenêtre qui existerait.
+    const deferred: DeferredUpkeepTest[] = [];
+    for (const text of runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily, onDeferTest: (d) => deferred.push(d) })) {
       entries.push({ actorId: get().party.find((h) => text.startsWith(h.label))?.id, icon: 'time/calendar', label: 'Entretien quotidien', text, tone: 'info' });
     }
+    const steps = nightBands(deferredUpkeepSteps(get().party, deferred));
+    if (steps.length) runCascadeImmediate(get, set, steps);
   }
 
   // Récupération + cauchemars, héros par héros (jets structurés pour le bilan).
@@ -222,7 +228,7 @@ function runContagion(party: Combatant[], n: number, rng: RNG): { actorId: strin
         if (other === sick || other.dead) continue;
         const def = DISEASE_DEFS[dz.id];
         for (let d = 0; d < n; d++) {
-          const log = rollContraction(other, dz.id, restResistVal(other), def?.contractDifficulty ?? 'accessible', rng);
+          const log = rollContraction(other, dz.id, testValue(other, 'resistance'), def?.contractDifficulty ?? 'accessible', rng);
           if (log.length) out.push({ actorId: other.id, dz: dz.id, log });
         }
       }
@@ -232,7 +238,7 @@ function runContagion(party: Combatant[], n: number, rng: RNG): { actorId: strin
 }
 
 /** Un Test de Contraction d'entretien différé (contagion de promiscuité OU tambouille piètre). */
-interface ContagionSpec { heroId: string; diseaseName: string; difficulty: Difficulty; resVal: number; }
+interface ContagionSpec { heroId: string; diseaseName: string; difficulty: Difficulty; }
 
 /** RECENSE les Tests de Contraction de promiscuité DÛS (sans les rouler) — pour la cascade de nuit :
  *  chaque héros sain résiste à la maladie contagieuse d'un compagnon (1 jet par paire, dédoublonné). */
@@ -246,7 +252,7 @@ function collectContagion(party: Combatant[]): ContagionSpec[] {
         const key = `${other.id}:${dz.id}`;
         if (seen.has(key) || !contractionDue(other, dz.id)) continue;
         seen.add(key);
-        out.push({ heroId: other.id, diseaseName: dz.id, difficulty: DISEASE_DEFS[dz.id]?.contractDifficulty ?? 'accessible', resVal: restResistVal(other) });
+        out.push({ heroId: other.id, diseaseName: dz.id, difficulty: DISEASE_DEFS[dz.id]?.contractDifficulty ?? 'accessible' });
       }
     }
   }
@@ -272,17 +278,14 @@ function buildExposureBand(party: Combatant[], camperIds: string[], count: numbe
   for (const id of camperIds) {
     const h = party.find((x) => x.id === id);
     if (!h) continue;
-    // `restResistVal` VAUT le Niveau de Compétence nu (mesuré : ≡ `skillBaseValue('resistance')`) ; ce
-    // qui diverge de `testValue`, c'est la composition des ÉTATS — un Test passif n'en subit aucun. Le
-    // drapeau `valeurEtrangere` est donc APPROXIMATIF ici (3ᵉ régime à venir, ticket) : il dit la
-    // vérité utile (rien à décomposer) au prix d'une base pourtant NUE. La pénalité maison « sans
-    // manteau » pèse SUR LA CIBLE, en ligne nommée (`exposureCoatMods`), plus fondue par un helper.
-    const resVal = restResistVal(h);
+    // Exposition = « Test de Résistance » (`LDB 18 l.328`) : la valeur est celle de la porte
+    // (`testValue`, États compris — `LDB 16 l.125`). La pénalité maison « sans manteau » pèse SUR LA
+    // CIBLE, en ligne nommée (`exposureCoatMods`), plus fondue par un helper.
     const coat = exposureCoatMods(h).mods ?? [];
     const st = monoStep({ id: `expo-${id}`, kind: 'exposure', actor: h, label: t('step.exposition'), icon: 'rest/cold',
       rollLabel: SKILL_RESISTANCE(), difficulty: 'intermediaire',
       stake: nightStakeRef('exposure'),
-      ligne: { valeur: resVal, valeurEtrangere: true, surLaCible: coat } });
+      ligne: { test: { skill: 'resistance' }, surLaCible: coat } });
     pousseSi(steps, st);
   }
   return exposureWaveBand(steps, 'froid', count);
@@ -425,7 +428,10 @@ registerNightBandApplier('diseaseTick', (_get, _set, _band, row, hero) => {
   const onFail = (row.meta?.onFail ?? []) as import('../engine/ops').GameOp[];
   // `sl` (DR négatif de l'échec) → alimente `rollTable{addNegativeSL}` (Vers de carie : « ajoutez le
   // nombre de DR négatifs », MSRC 16 l.90) et les échelles `perSL` d'un `onFail`.
-  return { consequences: freeCons(applyOps(hero, onFail, { rng: battleRng(), sl: row.result!.sl })) };
+  // La MALADIE est l'entité SOURCE de ce qu'elle inflige : tout effet actif posé par `onFail` (Trait
+  // octroyé, État durable) porte son ancrage de règle, donc sa fiche à l'écran.
+  const source = { kind: 'disease' as const, id: String(row.meta?.diseaseName ?? '') };
+  return { consequences: freeCons(applyOps(hero, onFail, { rng: battleRng(), sl: row.result!.sl, source })) };
 });
 
 registerNightBandApplier('diseaseGangrene', (_get, _set, _band, row, hero) => {
@@ -433,23 +439,14 @@ registerNightBandApplier('diseaseGangrene', (_get, _set, _band, row, hero) => {
 });
 
 registerNightBandApplier('diseasePersist', (_get, _set, _band, row, hero) => {
-  const before = activeMalaiseCount(hero);
-  const journal = applyDiseasePersist(hero, String(row.meta?.diseaseName ?? ''), row.result!.success, row.result!.sl, battleRng());
-  // Réconcilie l'Exténué « collant » du malaise (l.153 : maladie guérie → −1) — différé avec le Test.
-  const delta = activeMalaiseCount(hero) - before;
-  if (delta < 0) removeCondition(hero, 'extenue', -delta);
-  else if (delta > 0) addCondition(hero, 'extenue', delta);
-  return { consequences: freeCons(journal) };
+  // Fin de Durée : résolution ET réconciliation de l'Exténué « collant » (LDB 20 l.153) en UN geste —
+  // `applyDiseaseEnd` (engine/rest) est le foyer unique, ici comme dans toute autre voie.
+  return { consequences: freeCons(applyDiseaseEnd(hero, String(row.meta?.diseaseName ?? ''), row.result!.success, row.result!.sl, battleRng())) };
 });
 
 registerNightBandApplier('contagion', (_get, _set, _band, row, hero) => {
   return { consequences: freeCons(applyContraction(hero, String(row.meta?.diseaseName ?? ''), row.result!.success, battleRng())) };
 });
-
-/** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
-function calmeVal(c: Combatant): number {
-  return effectiveChar(c, 'force-mentale') + (c.skills?.find((s) => s.id === 'calme')?.advances ?? 0);
-}
 
 /** Icône d'étape de cascade par `kind` de Test d'entretien différé. */
 const UPKEEP_STEP_ICON: Record<string, string> = {
@@ -538,9 +535,9 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     const st = monoStep({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actor: h, label: stepPrecision(t('step.contagion'), dataLabel(c.diseaseName)), icon: 'medical/infection',
       rollLabel: SKILL_RESISTANCE(), difficulty: c.difficulty,
       stake: nightStakeRef('contagion'),
-      // `resVal` = `restResistVal` (E effective + avances de Résistance, `engine/rest.ts`) : une AUTRE
-      // formule que `testValue` (aucune pénalité d'État sur un Test passif) — déclarée comme telle.
-      ligne: { valeur: c.resVal, valeurEtrangere: true },
+      // Contraction = « Test de Résistance » (`LDB 20 l.25`) : valeur de la porte, et les bonus d'effet
+      // SCOPÉS à cette maladie (Fleur de lune, Tonique digestif) en lignes NOMMÉES sur la cible.
+      ligne: { test: { skill: 'resistance' }, surLaCible: diseaseTestModLines(h, c.diseaseName) },
       meta: { diseaseName: c.diseaseName },
       menace: 'maladie' }); // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
     pousseSi(steps, st);
@@ -577,13 +574,11 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const h of party) {
     if (h.dead) continue;
     if (needsRecoveryRoll(h)) {
-      // `restResistVal` VAUT le Niveau de Compétence nu (≡ `skillBaseValue('resistance')`) ; seule la
-      // composition des ÉTATS diverge de `testValue` (Test passif). `valeurEtrangere` est donc
-      // APPROXIMATIF ici — rien à décomposer, mais la base EST nue (3ᵉ régime à venir, ticket).
+      // Récupération = « Test de Résistance Accessible (+20) » (`LDB 18 l.296`) : valeur de la porte.
       const st = monoStep({ id: `recov-${h.id}`, kind: 'recovery', actor: h, label: t('step.recuperation'), icon: 'rest/bed',
         rollLabel: SKILL_RESISTANCE(), difficulty: 'accessible',
         stake: nightStakeRef('recovery'),
-        ligne: { valeur: restResistVal(h), valeurEtrangere: true } });
+        ligne: { test: { skill: 'resistance' } } });
       pousseSi(steps, st);
     } else {
       const before = h.wounds.current;
@@ -595,8 +590,8 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       const st = monoStep({ id: `nm-${h.id}`, kind: 'nightmare', actor: h, label: t('step.cauchemars'), icon: 'creature/scream',
         rollLabel: SKILL_CALME(), difficulty: 'facile',
         stake: nightStakeRef('nightmare'),
-        // `calmeVal` : FM effective + avances de Calme (formule locale, hors `testValue`).
-        ligne: { valeur: calmeVal(h), valeurEtrangere: true } });
+        // Cauchemars = « Test de Calme Facile (+40) » (`LDB 21 l.95`) : valeur de la porte, États compris.
+        ligne: { test: { skill: 'calme' } } });
       pousseSi(steps, st);
     }
   }
@@ -749,7 +744,7 @@ export function restSleep(get: Get, set: Set): void {
     if (cfg.food === 'repas' || cfg.food === 'maison') {
       feedFromMeal(h);
       if (cfg.food === 'repas' && p.quality === 'pietre' && rng.int(1, 100) <= 10 && contractionDue(h, 'courante-galopante')) {
-        extraContagion.push({ heroId: h.id, diseaseName: 'courante-galopante', difficulty: DISEASE_DEFS['courante-galopante']?.contractDifficulty ?? 'accessible', resVal: restResistVal(h) });
+        extraContagion.push({ heroId: h.id, diseaseName: 'courante-galopante', difficulty: DISEASE_DEFS['courante-galopante']?.contractDifficulty ?? 'accessible' });
       }
     }
     // 'ration' : consommée par l'entretien quotidien (#T3) ; 'rien' : la Faim suivra son cours.

@@ -268,9 +268,22 @@ describe('parseSave — la version DOIT être la courante', () => {
     // `pendingCascade` est PERSISTÉ, et le `kind` d'étape qui y voyage change : le coup à l'équipage
     // (MSRC 07 l.78) s'ouvre par la porte en `triggeredBatchTest`. Une save de 44 rouvrirait sur une
     // étape d'un vocabulaire que la version courante ne sert plus.
-    expect(SAVE_VERSION).toBe(45);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(45);
     expect(parseSave({ ...cur, version: 44 })).toBeNull();
+    expect(parseSave({ ...cur, version: 42 })).toBeNull();
     expect(Object.keys(cascadeAppliers), 'la porte qui sert désormais ce jet doit exister').toContain('triggeredBatchTest');
+  });
+
+  it('MESURE du motif de bump 45 → 46 (#1657 B3-3) : les étapes d’entretien PERSISTÉES portaient une valeur MAISON', () => {
+    // Les lignes des étapes de nuit (maladie, Exposition, Récupération, contagion, convalescence)
+    // étaient montées sur une valeur qui ignorait les États (#1685) : une save de 45
+    // rouvrirait une fenêtre déjà montée dont la cible n'est plus celle de la porte, qu'aucun applier
+    // ne recalcule. La version courante est 44, et 43 se jette.
+    expect(SAVE_VERSION).toBe(46);
+    expect(parseSave({ ...cur, version: 45 })).toBeNull();
+    // La porte qui monte désormais ces lignes est celle de tout le monde : les appliers de nuit
+    // servent des étapes dont la valeur vient de `rollStep`/`testValue`.
+    expect(Object.keys(cascadeAppliers), 'l’applier du cycle de maladie doit exister').toContain('diseaseTick');
   });
 
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {

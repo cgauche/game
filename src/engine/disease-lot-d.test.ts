@@ -6,6 +6,7 @@ import {
 import { makeRNG } from './dice';
 import { MINUTES_PER_DAY } from './clock';
 import type { Combatant } from './types';
+import { porteEntretien, applique } from './upkeepPorte.testkit';
 import type { GameOp } from './ops';
 
 /** Pénalité de Caractéristique due aux maladies actives (lit les GameOp passifs des symptômes). */
@@ -73,7 +74,10 @@ describe('nouveaux symptômes — pénalités (LDB 20 l.99-200)', () => {
 describe('Vérole Urticante — immunité après guérison (l.97)', () => {
   it('guérison naturelle → inscrite dans diseaseImmunities ; recontraction impossible', () => {
     const c = mk({ diseases: [contractDisease('verole-urticante', makeRNG(2), { incubation: 0, duration: 1 })!] });
-    tickDisease(c, 2 * MINUTES_PER_DAY, makeRNG(3), 40);
+    // Le Test de fin part à la porte ; l'issue est INJECTÉE (réussite) → guérison + immunité.
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, 2 * MINUTES_PER_DAY, makeRNG(3), defer);
+    for (const s of specs) applique(c, s, { success: true });
     expect(c.diseases).toEqual([]);
     expect(c.diseaseImmunities).toContain('verole-urticante');
     const log = rollContraction(c, 'verole-urticante', 0, 'tresDifficile', makeRNG(4)); // Test impossible à réussir
@@ -85,8 +89,15 @@ describe('Vérole Urticante — immunité après guérison (l.97)', () => {
 describe('gangrène — progression journalière (l.135+)', () => {
   it('échecs cumulés > BE → Localisation perdue (journalisée)', () => {
     const c = mk({ diseases: [contractDisease('peste-noire', makeRNG(5), { incubation: 0, duration: 30 })!] });
-    // resistVal 0 → tout Test raté ; BE ≈ 0 → perdue dès le 1er échec.
-    const log = tickDisease(c, 3 * MINUTES_PER_DAY, makeRNG(6), 0);
+    // Le Test journalier de Gangrène part à la porte (« Test de Résistance Accessible (+20) », LDB 20
+    // l.176) ; issues INJECTÉES : tout raté, BE 0 → Localisation perdue dès le 1er échec.
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, 3 * MINUTES_PER_DAY, makeRNG(6), defer, 0);
+    const gangrenes = specs.filter((s) => s.kind === 'diseaseGangrene');
+    expect(gangrenes.length, 'un Test par journée pleine').toBe(3);
+    expect(gangrenes[0].test, 'la porte sait ce qui est testé').toEqual({ skill: 'resistance' });
+    expect(gangrenes[0].difficulty).toBe('accessible');
+    const log = gangrenes.flatMap((s) => applique(c, s, { success: false }));
     expect(log.some((l) => /Gangrène a gagné/.test(l))).toBe(true);
     expect(c.diseases![0].gangreneLost).toBe(true);
   });

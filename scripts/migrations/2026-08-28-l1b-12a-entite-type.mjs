@@ -71,7 +71,7 @@ const TYPES = {
  */
 const CARDINAUX = {
   'careerLevels.json': 432,
-  'combat-stakes.json': 35,
+  'combat-stakes.json': 37, // +1 `critTrigger` (#1657 B3-1), +1 `shipCrewHit` (#1657 B3-2)
   'domains.json': 20,
   'etats.json': 21,
   'flow-stakes.json': 34,
@@ -100,7 +100,8 @@ const CARDINAUX = {
 };
 // 1290→1293 : +2 maladies (#674) +1 trait (#673). Puis 1293→1298 : +5 décors de `props.json` (#1624/#1644).
 // Puis 1298→1338 : +40 décors de `props.json` (#1680 ligne 14, bijection art ⇄ donnée).
-const TOTAL_ATTENDU = 1338;
+// Puis 1338→1340 : +2 enjeux de `combat-stakes.json` (#1657 B3-1, B3-2).
+const TOTAL_ATTENDU = 1340;
 
 /**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. L'enveloppe veut

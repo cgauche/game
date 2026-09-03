@@ -8,12 +8,16 @@
  *
  *  A. chaque porteur se dé-migre SANS PERTE — le nœud n'a que les clés que la migration pose
  *     (`kind`/`test`/`success`/`fail`), sa `success` est la séquence vide, sa `fail` est la feuille
- *     `{type:'ops', on:'target'}` et son `test` ne porte que `difficulty`. Une forme que la
- *     migration n'aurait pas pu produire (branche peuplée, `if` imbriqué, clé de jet en plus)
- *     rougit ICI, même si personne ne rejoue le script.
+ *     `{type:'ops', on:'target'}` et son `test` ne porte que `difficulty` PLUS les ids de ce qui est
+ *     testé (`skill` XOR `characteristic`), AUTHORÉS après coup (#1657 B3-3 : `LDB 20 l.145/l.212`
+ *     Résistance, `MSRC 16 l.90` Endurance, `EDOC 08 l.104` Résistance). Une forme que ni la
+ *     migration ni cet authoring n'auraient pu produire (branche peuplée, `if` imbriqué, 3ᵉ clé de
+ *     jet) rougit ICI, même si personne ne rejoue le script.
  *  B. ALLER-RETOUR par le VRAI script, sur un arbre JETABLE : la pré-image dé-migrée en A, écrite
- *     dans un arbre temporaire puis remigrée, rend l'arbre committé BYTE POUR BYTE. Aucune fixture
- *     figée à maintenir — la pré-image se DÉRIVE de l'arbre.
+ *     dans un arbre temporaire puis remigrée, rend l'arbre committé BYTE POUR BYTE — aux ids
+ *     AUTHORÉS près, qu'une migration DATÉE ne peut pas avoir posés (ils sont retirés des DEUX
+ *     côtés de la comparaison, et A tient qu'ils sont là). Aucune fixture figée — la pré-image se
+ *     DÉRIVE de l'arbre.
  *  C. REJEU : le script relancé sur son propre résultat ne réécrit pas un octet.
  *
  * Périmètre : les DEUX fichiers que la migration déclare en ENTRÉES (`symptoms.json`,
@@ -46,7 +50,12 @@ function ecartsDeForme(n: Noeud): string[] {
   const e: string[] = [];
   if (Object.keys(n).sort().join(',') !== 'fail,kind,success,test') e.push(`cles du noeud : ${Object.keys(n).sort().join(',')}`);
   if (n.kind !== 'test') e.push(`kind « ${n.kind} »`);
-  if (Object.keys(n.test).join(',') !== 'difficulty') e.push(`cles du jet : ${Object.keys(n.test).join(',')}`);
+  // Clés du jet : la `difficulty` posée par la migration, et AU PLUS un id de ce qui est testé
+  // (authoré en B3-3 ; `skill` XOR `characteristic`, jamais les deux — `FlowTest` le dit).
+  const clesJet = Object.keys(n.test).sort();
+  const idsJet = clesJet.filter((k) => k === 'skill' || k === 'characteristic');
+  if (clesJet.filter((k) => k !== 'skill' && k !== 'characteristic').join(',') !== 'difficulty') e.push(`cles du jet : ${clesJet.join(',')}`);
+  if (idsJet.length > 1) e.push(`jet à DEUX ids (skill ET characteristic) : ${idsJet.join(',')}`);
   if (canonique(n.success) !== canonique({ kind: 'seq', steps: [] })) e.push(`branche success PEUPLEE : ${canonique(n.success)}`);
   const f = n.fail as { kind?: string; effect?: Record<string, unknown> };
   if (f.kind !== 'do') e.push(`branche fail a EMBRANCHEMENT (« ${f.kind} »)`);
@@ -73,6 +82,27 @@ function demigrer(p: Porteur): { avant: Porteur; ecarts: string[] } {
     }
   }
   return { avant, ecarts };
+}
+
+/** Les ids AUTHORÉS sur le nœud (`skill` XOR `characteristic`), s'il y en a. */
+function idsDuJet(n: Noeud): unknown {
+  return n.test.skill ?? n.test.characteristic;
+}
+
+/** Le texte d'un fichier, PRIVÉ des ids authorés APRÈS la migration — la seule chose qu'un script
+ *  DATÉ ne peut pas reproduire. Portée STRICTE : le nœud du PORTEUR de cycle de ce fichier
+ *  (`onTick.test` / `dailyTest.test`) et lui seul — les nœuds `test` qui vivaient DÉJÀ ailleurs dans
+ *  ces documents (l'`onOwnTestFailed` des Crampes, MSRC 16) gardent leurs ids, et l'aller-retour les
+ *  compare tels quels. Appliqué aux DEUX côtés de la comparaison. */
+function sansIdsAuthores(fichier: string, texte: string): string {
+  const doc = JSON.parse(texte) as Porteur[];
+  for (const e of doc) {
+    const noeud = (e[PORTEUR[fichier]] as Porteur | undefined)?.test as Noeud | undefined;
+    if (!noeud?.test) continue;
+    delete noeud.test.skill;
+    delete noeud.test.characteristic;
+  }
+  return canonique(doc);
 }
 
 /** L'arbre committé, dé-migré fichier par fichier — la PRÉ-IMAGE, dérivée, jamais figée. */
@@ -103,6 +133,9 @@ describe('migration #1657 B2b — fidélité, aller-retour et rejeu', () => {
         // La forme ancienne est COMPLÈTE : une conséquence, et une Difficulté dès qu'il y a un jet.
         if (!Array.isArray(avant.onFail) || !avant.onFail.length) ecarts.push(`${f}/${String(e.id)} : consequence VIDE apres de-migration`);
         if (p.test && avant.difficulty === undefined) ecarts.push(`${f}/${String(e.id)} : epreuve sans Difficulte recouvree`);
+        // Une ÉPREUVE dit ce qu'elle teste (#1657 B3-3) : sans ids, la porte n'aurait aucune valeur à
+        // calculer et retomberait sur une formule maison (#1685).
+        if (p.test && !idsDuJet(p.test as Noeud)) ecarts.push(`${f}/${String(e.id)} : epreuve qui ne NOMME pas ce qu'elle teste`);
         if (p.ops && 'difficulty' in avant) ecarts.push(`${f}/${String(e.id)} : effet certain porteur d'une Difficulte`);
       }
     }
@@ -123,7 +156,7 @@ describe('migration #1657 B2b — fidélité, aller-retour et rejeu', () => {
       for (const f of FICHIERS) expect(avant[f], `${f} : pre-image identique a l'arbre`).not.toBe(lire(f));
 
       execFileSync(process.execPath, [script], { encoding: 'utf8', stdio: 'pipe' });
-      for (const f of FICHIERS) expect(readFileSync(join(dir, 'src', 'data', f), 'utf8'), f).toBe(lire(f));
+      for (const f of FICHIERS) expect(readFileSync(join(dir, 'src', 'data', f), 'utf8'), f).toBe(sansIdsAuthores(f, lire(f)));
 
       const apres = FICHIERS.map((f) => readFileSync(join(dir, 'src', 'data', f), 'utf8'));
       execFileSync(process.execPath, [script], { encoding: 'utf8', stdio: 'pipe' });

@@ -1092,7 +1092,16 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // qu'UNE : les 38 rangées qui ne nommaient PAS leur Compétence rejoignent `difficulty,skill`
       // (1 → 39), la seule graphie que la porte sache tester. Ce que le silence coûtait : le moteur
       // recomposait la valeur à la main (Endurance + avances de Résistance), hors `testValue`.
-      'L4 #1463': 84,
+      // … #1657 B3-3 : 84 → 85, cliquet REMONTÉ d'UNE ligne, et c'est une CONVERGENCE, pas une dérive.
+      // Les 4 nœuds du cycle de maladie NOMMENT ce qu'ils testent (`LDB 20 l.145/l.212` Résistance,
+      // `MSRC 16 l.90` Endurance, `EDOC 08 l.104` Résistance) : la graphie APPAUVRIE `test
+      // {difficulty}` — celle qui laissait le moteur recomposer la valeur à la main (#1685) — MEURT
+      // dans les deux documents (−2 lignes), et ses occurrences se répartissent sur DEUX graphies déjà
+      // au lexique et déjà majoritaires ailleurs : `difficulty,skill` (`criticals`, `spells`,
+      // `maneuvers`, `talents`…) ×2+1, `characteristic,difficulty` ×1 (+3 lignes). Le +1 net est
+      // mécanique : un document qui distingue Compétence et Caractéristique porte deux lignes là où
+      // l'appauvrissement n'en portait qu'une.
+      'L4 #1463': 85,
       // #1553 : 92 → 106 (commit 3c) — le lot des ORPHELINES reçoit les 14 conteneurs qui quittent
       // `L2 #1463` (−30 ci-dessus) : mêmes objets, autre stock, somme des deux en BAISSE.
       // … puis 106 → 104 (commit 3d) — `talents.json › reverseFailed` sort du lot : sa clé `skills`

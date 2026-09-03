@@ -21,7 +21,7 @@
  *    (Blessé/Gangrène), `amputation` (Gangrène), `stickyExtenue` (Malaise), `contagious` (Toux),
  *    `nausea` (combat), `endTest` (Persistant).
  */
-import { Combatant, Difficulty, UpkeepDeferTest, HitLocation, type ConditionEmit } from './types';
+import { Combatant, Difficulty, UpkeepDeferTest, HitLocation, effectRef, type ConditionEmit, type ModLine, type TestIds } from './types';
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice, formatDice } from './dice';
 import { MINUTES_PER_DAY } from './clock';
 import { findTableEntry } from './tables';
@@ -210,14 +210,19 @@ export function symptomPassive(inst: DiseaseSymptom): GameOp[] {
 export function symptomSuppressed(c: Combatant, symptomId: string): boolean {
   return (c.activeEffects ?? []).some((e) => e.suppressedSymptom === symptomId);
 }
-/** Σ des bonus/malus d'effets ACTIFS aux Tests liés à la maladie `diseaseName` (op `diseaseTestMod` —
- *  Fleur de lune +30 vs Peste noire, Racine de terre +10, Tonique digestif +20) : appliqué aux Tests
- *  de CONTRACTION (`rollContraction`) et de CYCLE/FIN (`tickDisease` — inline ET bases différées). */
-export function activeDiseaseTestMod(c: Combatant, diseaseName: string): number {
-  let n = (c.activeEffects ?? []).reduce((s, e) => {
+/** Bonus/malus NOMMÉS d'effets ACTIFS aux Tests liés à la maladie `diseaseName` (op `diseaseTestMod` —
+ *  Fleur de lune +30 vs Peste noire, Racine de terre +10, Tonique digestif +20), plus la rampe
+ *  d'infection et le résidu (MSRC 16 l.138). Chacun voyage en `ModLine` (étiquette + renvoi Codex)
+ *  jusqu'à la ligne de jet de la porte : la valeur d'un Test de maladie n'en absorbe plus aucune. */
+export function diseaseTestModLines(c: Combatant, diseaseName: string): ModLine[] {
+  const lignes: ModLine[] = [];
+  for (const e of c.activeEffects ?? []) {
     const m = e.diseaseTestMod;
-    return s + (m && (!m.diseases || m.diseases.includes(diseaseName)) ? m.amount : 0);
-  }, 0);
+    if (!m || (m.diseases && !m.diseases.includes(diseaseName)) || !m.amount) continue;
+    // Renvoi Codex : l'entité SOURCE de l'effet quand elle est propagée, sinon la MALADIE que ce
+    // modificateur vise — jamais une chip nue.
+    lignes.push({ label: e.label, famille: 'jet', value: m.amount, ref: effectRef(e) ?? { category: 'maladies', id: diseaseName } });
+  }
   // Passifs d'INFECTION (Vers du Reik « −5 aux Tests de Résistance par période complète de 30 jours
   // d'infection », MSRC 16 l.138) : rampés par le nombre de tranches de 30 jours écoulées depuis la
   // contraction — sur TOUTE l'infection (incubation ET phase active, l.138 « d'infection »).
@@ -226,13 +231,20 @@ export function activeDiseaseTestMod(c: Combatant, diseaseName: string): number 
     const periods = Math.floor((dz.infectedMinutes ?? 0) / PERIOD);
     if (periods <= 0) continue;
     for (const op of DISEASE_DEFS[dz.id]?.infectionPassive ?? []) {
-      if (op.op === 'diseaseTestMod' && (!op.diseases || op.diseases.includes(diseaseName))) n += op.amount * periods;
+      if (op.op === 'diseaseTestMod' && (!op.diseases || op.diseases.includes(diseaseName)) && op.amount) {
+        lignes.push({ label: diseaseLabel(dz.id), famille: 'jet', value: op.amount * periods, ref: { category: 'maladies', id: dz.id } });
+      }
     }
   }
   // Résidu POST-fin qui décroît de 1/jour (Vers du Reik « réduite de 1 point par jour après la mort du
   // ver », MSRC 16 l.138) : magnitude ≥ 0 stockée sur le porteur, retranchée aux Tests (pénalité négative).
-  if (c.residualDiseaseTestMod) n -= c.residualDiseaseTestMod;
-  return n;
+  if (c.residualDiseaseTestMod) lignes.push({ label: t('dz.residualMod'), famille: 'jet', value: -c.residualDiseaseTestMod, ref: { category: 'maladies', id: diseaseName } });
+  return lignes;
+}
+/** Σ des lignes ci-dessus — la VALEUR seule, pour les sites qui n'affichent pas de ligne (Test de
+ *  CONTRACTION roulé au moteur, `rollContraction`). Dérivée, jamais recalculée en parallèle. */
+export function activeDiseaseTestMod(c: Combatant, diseaseName: string): number {
+  return diseaseTestModLines(c, diseaseName).reduce((s, m) => s + m.value, 0);
 }
 /** Fige le RÉSIDU post-fin d'une maladie à `infectionPassive` (Vers du Reik) : la pénalité accumulée
  *  (magnitude × tranches de 30 jours) reste sur le porteur et décroît de 1/jour (MSRC 16 l.138). */
@@ -285,6 +297,16 @@ export function diseasePsychTraits(c: Combatant): PsychTrait[] {
   return out;
 }
 /**
+ * Cycle quotidien d'une instance de symptôme, en DEUX formes exclusives : une ÉPREUVE (Difficulté ET
+ * ids de ce qui est testé — l'un ne va pas sans l'autre, le schéma le refuse) ou une conséquence
+ * CERTAINE (ni jet, ni ids). Le type porte l'exclusivité : un site ne peut pas différer un jet sans
+ * dire ce qu'il teste (#1657 B3-3).
+ */
+export type CycleQuotidien =
+  | { difficulty: Difficulty; test: TestIds; onFail: GameOp[]; afterDays?: number; once?: boolean }
+  | { difficulty?: undefined; test?: undefined; onFail: GameOp[]; afterDays?: number; once?: boolean };
+
+/**
  * Cycle quotidien d'une instance de symptôme (Blessé/Toxine/Vers) — lecture PURE de la donnée : les
  * ops de la branche `fail` du nœud sont extraites par `spellOps` (`flowCore`), comme `resolveCritique`.
  * `difficulty` ABSENTE = cycle SANS jet : la conséquence `ops` du porteur est certaine. Sinon la
@@ -292,7 +314,7 @@ export function diseasePsychTraits(c: Combatant): PsychTrait[] {
  * prévoit (`difficultyBySeverity` — Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible).
  * `afterDays`/`once` cadencent le cycle sur la phase active (Vers de carie / Vers du Reik, MSRC 16).
  */
-export function symptomOnTick(inst: DiseaseSymptom): { difficulty?: Difficulty; onFail: GameOp[]; afterDays?: number; once?: boolean } | undefined {
+export function symptomOnTick(inst: DiseaseSymptom): CycleQuotidien | undefined {
   const tick = findSymptomById(inst.symptomId)?.onTick;
   if (!tick) return undefined;
   const cadence = {
@@ -301,7 +323,27 @@ export function symptomOnTick(inst: DiseaseSymptom): { difficulty?: Difficulty; 
   };
   if (!tick.test) return { onFail: tick.ops ?? [], ...cadence };
   const bySeverity = inst.severity && tick.difficultyBySeverity?.[inst.severity];
-  return { difficulty: bySeverity || tick.test.test.difficulty, onFail: opsDeLEchec(tick.test), ...cadence };
+  // `difficulty` REQUISE au schéma du cycle (`noeudTest(…, { difficulteRequise: true })`, defs/symptoms) —
+  // `FlowTest` la laisse optionnelle pour les jets dont elle vient d'ailleurs.
+  const difficulty = bySeverity || tick.test.test.difficulty!;
+  return { difficulty, test: idsDuNoeud(tick.test), onFail: opsDeLEchec(tick.test), ...cadence };
+}
+
+/** Ce que testent les deux jets du cycle que la DONNÉE ne porte pas en nœud (la machinerie stateful les
+ *  fabrique) : la Gangrène (`LDB 20 l.176`) et la fin de Durée d'une infection persistante
+ *  (`LDB 20 l.200`) — tous deux « Test de Résistance ». */
+const TEST_RESISTANCE: TestIds = { skill: 'resistance' };
+
+/** Ce que le nœud NOMME comme testé — la forme que le producteur DIT à la porte (`UpkeepDeferTest.test`),
+ *  qui en tire la valeur (`testValue`). MSRC 16 l.90 : le ver de carie teste l'Endurance NUE, LDB 20
+ *  l.145/l.212 : Blessé et Toxine testent la Compétence Résistance. */
+function idsDuNoeud(node: FlowTestNode): TestIds {
+  const { skill, characteristic } = node.test;
+  if (skill) return { skill: skill.id, ...(characteristic ? { char: characteristic } : {}), ...(skill.spec ? { spec: skill.spec } : {}) };
+  if (characteristic) return { char: characteristic };
+  // Inatteignable en donnée : le schéma REFUSE un nœud sans ids (`flowTestSchema`, refine #1657 B3-3).
+  // Le dire ici plutôt que rendre `{}` : un nœud forgé en mémoire ne se joue pas sur une valeur de 0.
+  throw new Error(`nœud \`test\` sans compétence ni caractéristique : ${JSON.stringify(node.test)}`);
 }
 
 /** Ops de la branche `fail` d'un nœud `test` de maladie — le canal différé `diseaseTick` n'applique QUE
@@ -529,8 +571,8 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
 /**
  * Décompte de `minutes` de maladie écoulées pour `c` (l'entretien quotidien feed `MINUTES_PER_DAY` par
  * journée calendaire ; les tests peuvent passer un délai sous-journalier). Mute `c.diseases`, renvoie le
- * journal. `resistVal` = Résistance effective (E + augmentations) ; `beForGangrene` = Bonus d'Endurance
- * SEUL (seuil de Gangrène, ≠ resistVal). Tous deux passés par l'appelant (cycle évité).
+ * journal. `beForGangrene` = Bonus d'Endurance (seuil de Gangrène, l.176), passé par l'appelant (cycle
+ * évité). AUCUNE valeur de Test n'entre ici : le nœud NOMME ce qu'il teste, la porte le calcule.
  *
  * Le délai est découpé en PAS : autant de JOURNÉES PLEINES (`MINUTES_PER_DAY`) que possible, puis un
  * reliquat sous-journalier. Par pas :
@@ -541,13 +583,15 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
  *             sinon guérison. Une durée sous-journalière (heures/minutes) s'épuise donc DANS la journée,
  *             sans déclencher de Test « quotidien ».
  *
- * `defer` (CASCADE de nuit, journée unique) : les Tests de Résistance (cycle `onTick`/gangrène/persistant)
- * sont COLLECTÉS en étapes influençables au lieu d'être roulés ici ; l'état avance (incubation/durée),
- * la maladie en fin de durée reste `endTestPending` jusqu'à la validation de son étape. La conséquence
- * d'un `onTick` (GameOp `onFail`) est appliquée par l'applier `diseaseTick` côté state (restFlow) ;
- * gangrène/persistant par `applyDiseaseGangrene/Persist`.
+ * `defer` (#1657 B3-3) : TOUT Test du cycle (`onTick` de symptôme, `dailyTest` de maladie, gangrène,
+ * fin de Durée) est COLLECTÉ — le moteur n'en roule AUCUN. Il DIT ce qui est testé (`test`, ids lus au
+ * nœud) et ses modificateurs NOMMÉS (`mods`) ; la porte calcule la valeur (`testValue`), ouvre la
+ * fenêtre et applique. L'état avance ici (incubation/durée), la maladie en fin de durée reste
+ * `endTestPending` jusqu'à la validation de son étape. La conséquence d'un `onTick` (GameOp `onFail`)
+ * est appliquée par l'applier `diseaseTick` côté state (restFlow) ; gangrène/persistant par
+ * `applyDiseaseGangrene/Persist`.
  */
-export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest, beForGangrene = Math.floor(resistVal / 10), emit?: ConditionEmit): string[] {
+export function tickDisease(c: Combatant, minutes: number, rng: RNG, defer: UpkeepDeferTest, beForGangrene = 0, emit?: ConditionEmit): string[] {
   if (minutes <= 0) return [];
   // Décroissance du RÉSIDU post-infection : −1 par jour plein (Vers du Reik « réduite de 1 point par jour
   // après la mort du ver », MSRC 16 l.138) — indépendante de toute maladie en cours.
@@ -580,9 +624,9 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
     const survivors: Disease[] = [];
     for (const dz of c.diseases) {
       dz.infectedMinutes = (dz.infectedMinutes ?? 0) + stepMin; // temps depuis la contraction (rampe d'incubation, l.138)
-      // Résistance EFFECTIVE de CETTE maladie : base + bonus d'effets actifs scopés (op `diseaseTestMod`
-      // — Fleur de lune +30 vs Peste noire, Tonique digestif +20). Injectée inline ET dans les bases différées.
-      const rv = resistVal + activeDiseaseTestMod(c, dz.id);
+      // Bonus/malus d'effets scopés à CETTE maladie (op `diseaseTestMod` — Fleur de lune +30 vs Peste
+      // noire, Tonique digestif +20) : lignes NOMMÉES remises à la porte, qui les pose sur la cible.
+      const mods = diseaseTestModLines(c, dz.id);
       if (dz.phase === 'incubation') {
         dz.minutesLeft -= stepMin;
         if (dz.minutesLeft <= 0) log.push(...declareDisease(c, dz, rng));
@@ -590,14 +634,10 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
         continue;
       }
       // active — symptômes à cycle quotidien (`onTick` : Blessé, Toxine). DONNÉE-DRIVEN : `symptomOnTick`
-      // lit le nœud `test` du symptôme (sa Difficulté, et les ops de sa branche d'ÉCHEC) ou ses `ops`
-      // certaines. DIFFÉRÉ en cascade influençable (l'applier d'étape côté state les passe à `applyOps`
-      // sur un échec, et à rien d'autre) ; sinon roulé ici (chemin
-      // non-différé — `runDailyUpkeep` sans cascade de nuit + tests unitaires) : on interprète la
-      // conséquence inline (`contractDisease` → contraction directe ; `kill` → `fateSaveOrDie` mutualisé,
-      // seule l'interprétation des ops reste locale — pas d'import d'`applyOps`, contrainte sans-cycle
-      // de l'en-tête du fichier). Cadence RAW « par jour » → uniquement sur une JOURNÉE PLEINE (une
-      // durée sous-journalière s'épuise sans Test « quotidien »).
+      // lit le nœud `test` du symptôme (ce qu'il teste, sa Difficulté, les ops de sa branche d'ÉCHEC) ou
+      // ses `ops` certaines. Le jet part à la porte (`defer`), qui l'ouvre et passe l'échec à `applyOps`.
+      // Cadence RAW « par jour » → uniquement sur une JOURNÉE PLEINE (une durée sous-journalière
+      // s'épuise sans Test « quotidien »).
       if (isFullDay) {
         dz.activeDaysElapsed = (dz.activeDaysElapsed ?? 0) + 1; // Jᵉ jour de phase active (MSRC 16 : cadence des Vers)
         const activeDay = dz.activeDaysElapsed;
@@ -611,25 +651,19 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
           if (tick.once && activeDay !== tick.afterDays) continue;
           if (tick.difficulty == null) {
             // Conséquence INCONDITIONNELLE (pas de jet — éclatement du Vers du Reik, issue invariante,
-            // MSRC 16 l.142) : appliquée DIRECTEMENT ici (defer ou non), via l'interprète inline restreint.
+            // MSRC 16 l.142) : appliquée DIRECTEMENT ici, via l'interprète inline restreint.
             applyOnFailInline(c, tick.onFail, contractOnce, log, emit);
-          } else if (defer) defer({ kind: 'diseaseTick', label: t('step.sujetPrecision', { sujet: symptomLabel(inst.symptomId), precision: diseaseLabel(dz.id) }), base: rv, difficulty: tick.difficulty, meta: { diseaseName: dz.id, symptomId: inst.symptomId, onFail: tick.onFail } });
-          else if (!rollTest(rv, tick.difficulty, rng).success) applyOnFailInline(c, tick.onFail, contractOnce, log, emit);
+          } else {
+            defer({ kind: 'diseaseTick', label: t('step.sujetPrecision', { sujet: symptomLabel(inst.symptomId), precision: diseaseLabel(dz.id) }), test: tick.test, difficulty: tick.difficulty, ...(mods.length ? { mods } : {}), meta: { diseaseName: dz.id, symptomId: inst.symptomId, onFail: tick.onFail } });
+          }
         }
         // Gangrène (l.176) : capacité `amputation` — Test de Résistance Accessible (+20) journalier ; plus
         // d'échecs que le Bonus d'Endurance → la Localisation est PERDUE (Amputation). Machinerie stateful.
         if (diseaseHasCapability(dz, 'amputation') && !dz.gangreneLost) {
-          if (defer) defer({ kind: 'diseaseGangrene', label: symptomLabel('gangrene'), base: rv, difficulty: 'accessible', meta: { diseaseName: dz.id, symptomId: 'gangrene', be: beForGangrene } });
-          else if (!rollTest(rv, 'accessible', rng).success) {
-            dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
-            if (dz.gangreneFails > beForGangrene) {
-              dz.gangreneLost = true;
-              log.push(t('dz.gangreneLost', { name: c.label }));
-            } else log.push(t('dz.gangreneProgress', { name: c.label, fails: dz.gangreneFails }));
-          }
+          defer({ kind: 'diseaseGangrene', label: symptomLabel('gangrene'), test: TEST_RESISTANCE, difficulty: 'accessible', ...(mods.length ? { mods } : {}), meta: { diseaseName: dz.id, symptomId: 'gangrene', be: beForGangrene } });
         }
         // Test de cycle quotidien porté par la MALADIE (EDOC 08 l.104-108) — même canal différé que les
-        // `onTick` de symptôme (`diseaseTick`), donc influençable ; sinon roulé ici (chemin non-différé).
+        // `onTick` de symptôme (`diseaseTick`), donc influençable.
         // ÉCART MESURÉ à `EDOC 08 l.104`, #674 (2026-08-31) : la condition de déclenchement citée là-bas
         // porte sur les journées d'EFFORT, signal que le moteur n'a pas — `effortRounds`
         // (`engine/types.ts:1507`) compte des ROUNDS de combat, pas des journées d'activité. Faute de ce
@@ -642,8 +676,7 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
           // `defs/maladies.ts`) — `FlowTest` la laisse optionnelle pour les jets dont elle vient d'ailleurs.
           const difficulty = daily.test.test.difficulty!;
           const onFail = opsDeLEchec(daily.test);
-          if (defer) defer({ kind: 'diseaseTick', label: t('step.sujetPrecision', { sujet: symptomLabel(daily.symptomId), precision: diseaseLabel(dz.id) }), base: rv, difficulty, meta: { diseaseName: dz.id, symptomId: daily.symptomId, onFail } });
-          else if (!rollTest(rv, difficulty, rng).success) applyOnFailInline(c, onFail, contractOnce, log, emit);
+          defer({ kind: 'diseaseTick', label: t('step.sujetPrecision', { sujet: symptomLabel(daily.symptomId), precision: diseaseLabel(dz.id) }), test: idsDuNoeud(daily.test), difficulty, ...(mods.length ? { mods } : {}), meta: { diseaseName: dz.id, symptomId: daily.symptomId, onFail } });
         }
         // MUE (EDOC 08 l.122) : au-delà de `afterDays` jours de phase active, la maladie CÈDE la place
         // à `into` — propriété de la DONNÉE, aucun id codé ici.
@@ -672,28 +705,9 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
       }
       // Fin de Durée — résolution (DIFFÉRÉE en cascade : la maladie reste en attente).
       if (dz.persistDifficulty) {
-        if (defer) {
-          dz.endTestPending = true;
-          defer({ kind: 'diseasePersist', label: t('dz.endStep', { disease: diseaseLabel(dz.id) }), base: rv, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.id, symptomId: 'persistant' } });
-          survivors.push(dz);
-        } else {
-          const res = rollTest(rv, dz.persistDifficulty, rng); // l.162
-          if (res.success) {
-            log.push(t('dz.cured', { name: c.label, disease: diseaseLabel(dz.id) }));
-            if (DISEASE_DEFS[dz.id]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.id]; // Vérole Urticante (l.97)
-          } else if (res.sl <= -6) {
-            log.push(t('dz.degenerate', { name: c.label, disease: diseaseLabel(dz.id) }));
-            contractOnce('infection-du-sang');
-          } else if (res.sl <= -2) {
-            log.push(t('dz.infects', { name: c.label, disease: diseaseLabel(dz.id) }));
-            contractOnce('blessure-purulente');
-          } else {
-            const extra = roll(1, 10, rng); // échec minime → +1d10 jours (l.163)
-            dz.minutesLeft = extra * MINUTES_PER_DAY;
-            log.push(t('dz.persists', { name: c.label, disease: diseaseLabel(dz.id), days: extra }));
-            survivors.push(dz);
-          }
-        }
+        dz.endTestPending = true;
+        defer({ kind: 'diseasePersist', label: t('dz.endStep', { disease: diseaseLabel(dz.id) }), test: TEST_RESISTANCE, difficulty: dz.persistDifficulty, ...(mods.length ? { mods } : {}), meta: { diseaseName: dz.id, symptomId: 'persistant' } });
+        survivors.push(dz);
       } else {
         log.push(t('dz.cured', { name: c.label, disease: diseaseLabel(dz.id) }));
         snapshotInfectionResidual(c, dz); // Vers du Reik : la pénalité de Résistance survit et décroît −1/jour (l.138)

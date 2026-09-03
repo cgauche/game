@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { Combatant } from './types';
+import { Combatant, type UpkeepDeferTest } from './types';
+import { porteEntretien, applique } from './upkeepPorte.testkit';
 import { RNG } from './dice';
 import { MINUTES_PER_DAY } from './clock';
 import {
@@ -22,8 +23,15 @@ function seq(values: number[]): RNG {
   return { int: () => values[i++] };
 }
 
+/** La PORTE, quand le Test différé n'est PAS le sujet du test (avance d'incubation/durée) : elle reçoit
+ *  et on n'en juge rien. Les tests qui jugent une CONSÉQUENCE collectent (`porteEntretien`) puis
+ *  INJECTENT l'issue (`applique`) — le moteur ne roule plus aucun de ces jets (#1657 B3-3). */
+const ignore: UpkeepDeferTest = () => {};
+
+/** Porteur de sonde — `conditions`/`skills` présents comme sur un vrai Combatant : la guérison
+ *  réconcilie l'Exténué « collant » du malaise (`LDB 20 l.153`), elle LIT donc les États. */
 const sick = (over: Partial<Combatant> = {}): Combatant =>
-  ({ label: 'Malade', diseases: [], ...over }) as Combatant;
+  ({ label: 'Malade', diseases: [], conditions: [], skills: [], ...over }) as Combatant;
 
 describe('disease — cycle de vie (LDB 20, sourcé)', () => {
   it('contractDisease(Infection Mineure) : incubation/durée figées, symptômes sourcés', () => {
@@ -46,20 +54,20 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(dz.phase).toBe('incubation'); // 2 h > 0 : plus jamais arrondi à 0 → vrai temps d'incubation
     expect(dz.minutesLeft).toBe(120);
     const c = sick({ diseases: [dz] });
-    tickDisease(c, 60, seq([]), 80); // +1 h (sous la journée) → pas encore
+    tickDisease(c, 60, seq([]), ignore); // +1 h (sous la journée) → pas encore
     expect(c.diseases![0].phase).toBe('incubation');
     expect(c.diseases![0].minutesLeft).toBe(60);
-    tickDisease(c, 60, seq([]), 80); // +1 h → 2 h écoulées → symptômes ACTIFS
+    tickDisease(c, 60, seq([]), ignore); // +1 h → 2 h écoulées → symptômes ACTIFS
     expect(c.diseases![0].phase).toBe('active');
     expect(c.diseases![0].minutesLeft).toBe(4 * MINUTES_PER_DAY); // durée mémorisée (4 jours)
   });
 
   it('maladie à l’ÉCHELLE jour : avance jour par jour (comportement existant préservé)', () => {
     const c = sick({ diseases: [contractDisease('infection-mineure', seq([]), { incubation: 2, duration: 5 })!] });
-    tickDisease(c, MINUTES_PER_DAY, seq([]), 80); // 1 jour
+    tickDisease(c, MINUTES_PER_DAY, seq([]), ignore); // 1 jour
     expect(c.diseases![0].phase).toBe('incubation');
     expect(c.diseases![0].minutesLeft).toBe(1 * MINUTES_PER_DAY);
-    tickDisease(c, MINUTES_PER_DAY, seq([]), 80); // 2e jour → actif
+    tickDisease(c, MINUTES_PER_DAY, seq([]), ignore); // 2e jour → actif
     expect(c.diseases![0].phase).toBe('active');
     expect(c.diseases![0].minutesLeft).toBe(5 * MINUTES_PER_DAY);
   });
@@ -69,7 +77,10 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(dz.phase).toBe('active');
     expect(dz.minutesLeft).toBe(60);
     const c = sick({ diseases: [dz] });
-    const log = tickDisease(c, 60, seq([3]), 80); // 1 h écoulée → fin de durée → Test de fin Intermédiaire (80) réussi
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, 60, seq([]), defer); // 1 h écoulée → fin de durée → le Test de fin part À LA PORTE
+    expect(specs.map((s) => s.kind)).toEqual(['diseasePersist']);
+    const log = applique(c, specs[0], { success: true }); // issue INJECTÉE : réussite
     expect(c.diseases).toHaveLength(0); // guérie en moins d’une journée — plus de durée « ≈ 1 jour » parasite
     expect(c.diseaseImmunities).toContain('mal-de-mer');
     expect(log.some((l) => /guérit/.test(l))).toBe(true);
@@ -78,7 +89,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
   it('incubation → active : les symptômes se déclarent, puis comptent', () => {
     const c = sick({ diseases: [contractDisease('infection-mineure', seq([]), { incubation: 2, duration: 5 })!] });
     expect(activeMalaiseCount(c)).toBe(0); // incubation = pas encore de symptômes
-    const log = tickDisease(c, 2 * MINUTES_PER_DAY, seq([]), 80);
+    const log = tickDisease(c, 2 * MINUTES_PER_DAY, seq([]), ignore);
     expect(c.diseases![0].phase).toBe('active');
     expect(c.diseases![0].minutesLeft).toBe(5 * MINUTES_PER_DAY);
     expect(log.some((l) => /se déclarent/.test(l))).toBe(true);
@@ -88,17 +99,25 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
 
   it('persistant réussi en fin de durée → guérison naturelle', () => {
     const c = sick({ diseases: [contractDisease('infection-mineure', seq([]), { incubation: 0, duration: 1 })!] });
-    // jour actif : blessé Résistance Accessible (d100=5 réussit), puis persistant Facile (d100=5 réussit)
-    const log = tickDisease(c, MINUTES_PER_DAY, seq([5, 5]), 80);
+    // jour actif : Blessé (Résistance Accessible) puis persistant (Facile) — les DEUX partent à la porte,
+    // et les DEUX sont ici réussis (issue INJECTÉE).
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
+    const log = specs.flatMap((s) => applique(c, s, { success: true }));
     expect(c.diseases!.length).toBe(0);
     expect(log.some((l) => /guérit/.test(l))).toBe(true);
   });
 
   it('blessé raté → développe une Blessure Purulente (l.110)', () => {
     const c = sick({ diseases: [contractDisease('infection-mineure', seq([]), { incubation: 0, duration: 1 })!] });
-    // blessé Résistance Accessible raté (d100=50 > 21) → contracte BP (sa durée = 1d10 → 5) ; puis persistant
-    // Facile raté (d100=99, sl≈−5) → BP (déjà là, no-op). L'Infection Mineure s'achève.
-    tickDisease(c, MINUTES_PER_DAY, seq([50, 5, 99]), 1);
+    // Blessé RATÉ → contracte BP (sa durée = 1d10 → 5) ; puis persistant RATÉ d'un échec MINIME (DR 0)
+    // → BP (déjà là). L'Infection Mineure s'achève. Les deux issues sont INJECTÉES.
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
+    const tick = specs.find((s) => s.kind === 'diseaseTick')!;
+    const persist = specs.find((s) => s.kind === 'diseasePersist')!;
+    applique(c, tick, { success: false }, seq([5]));
+    applique(c, persist, { success: false, sl: -3 }, seq([5]));
     expect(c.diseases!.map((d) => d.id)).toEqual(['blessure-purulente']);
     expect(c.diseases![0].phase).toBe('active'); // contractée « instantanément » (l.32)
   });
@@ -107,7 +126,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     const c = sick({ diseases: [contractDisease('infection-mineure', seq([]), { incubation: 0, duration: 1 })!] });
     const kinds: string[] = [];
     // seq([]) : si un seul jet était tiré, il renverrait undefined — la cascade ne DOIT rien rouler.
-    const log = tickDisease(c, MINUTES_PER_DAY, seq([]), 80, (spec) => kinds.push(spec.kind));
+    const log = tickDisease(c, MINUTES_PER_DAY, seq([]), (spec) => kinds.push(spec.kind));
     expect(kinds.sort()).toEqual(['diseasePersist', 'diseaseTick']); // Blessé → étape générique 'diseaseTick'
     expect(c.diseases![0].endTestPending).toBe(true); // la maladie attend la validation de son étape
     expect(log.some((l) => /guérit|persiste|Purulente|Gangrène/.test(l))).toBe(false); // RIEN pré-résolu
@@ -122,7 +141,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
   it('tickDisease(defer) : chaque Test différé porte le SYMPTÔME joué dans son meta', () => {
     const c = sick({ diseases: [contractDisease('infection-mineure', seq([]), { incubation: 0, duration: 1 })!] });
     const specs: { kind: string; meta?: Record<string, unknown> }[] = [];
-    tickDisease(c, MINUTES_PER_DAY, seq([]), 80, (spec) => specs.push(spec));
+    tickDisease(c, MINUTES_PER_DAY, seq([]), (spec) => specs.push(spec));
     const bySymptom = Object.fromEntries(specs.map((s) => [s.kind, s.meta?.symptomId]));
     expect(bySymptom.diseaseTick, 'le cycle quotidien nomme SON symptôme').toBe('blesse');
     expect(bySymptom.diseasePersist, 'la fin de Durée nomme le symptôme Persistant').toBe('persistant');
@@ -131,9 +150,12 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
   it('persistant échec stupéfiant (−6) → Infection du Sang', () => {
     // résistance haute pour réussir le blessé (pas de BP parasite), mais on force l'échec stupéfiant du persistant.
     const c = sick({ diseases: [contractDisease('blessure-purulente', seq([]), { incubation: 0, duration: 1 })!] });
-    // resVal 5 → blessé cible 25 ; d100=1 réussit (pas de BP parasite). Persistant Intermédiaire cible 5,
-    // d100=100 → sl 0−10 = −10 ≤ −6 → Infection du Sang (sa durée = 1d10 → 5).
-    const log = tickDisease(c, MINUTES_PER_DAY, seq([1, 100, 5]), 5);
+    // Blessé RÉUSSI (pas de BP parasite) ; persistant raté d'un échec STUPÉFIANT (DR −10 ≤ −6) →
+    // Infection du Sang (sa durée = 1d10 → 5). Issues INJECTÉES.
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
+    applique(c, specs.find((s) => s.kind === 'diseaseTick')!, { success: true });
+    const log = applique(c, specs.find((s) => s.kind === 'diseasePersist')!, { success: false, sl: -10 }, seq([5]));
     expect(c.diseases!.map((d) => d.id)).toContain('infection-du-sang');
     expect(log.some((l) => /stupéfiant/.test(l))).toBe(true);
   });
@@ -163,9 +185,11 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(isFrenzyCapable(sick())).toBe(false); // témoin : sans maladie ni trait/talent
     expect(isFrenzyCapable(c)).toBe(true);
 
-    // Fin de durée → Test persistant (Accessible) réussi → guérison → Traits retirés d'office (dérivation,
-    // zéro bookkeeping : la maladie n'est plus active donc plus rien à dériver).
-    tickDisease(c, MINUTES_PER_DAY, lowRng, 80);
+    // Fin de durée → Test persistant (Accessible) RÉUSSI (issue injectée) → guérison → Traits retirés
+    // d'office (dérivation, zéro bookkeeping : la maladie n'est plus active donc plus rien à dériver).
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, MINUTES_PER_DAY, lowRng, defer);
+    for (const s of specs) applique(c, s, { success: true });
     expect(c.diseases).toHaveLength(0);
     expect(effectivePsychTraits(c)).toEqual([]);
   });
@@ -204,27 +228,43 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
       expect(tick.difficulty).toBe('accessible');
     });
 
-    it('Test raté (chemin non-différé) → la cible MEURT (LDB 20 l.215 : « ou vous mourrez »)', () => {
-      // infection-du-sang porte Toxine sans sévérité indiquée (tresFacile, cible 61 avec resVal 1).
-      const c = sick({ diseases: [contractDisease('infection-du-sang', seq([]), { incubation: 0, duration: 5 })!], fate: 0 });
-      const log = tickDisease(c, MINUTES_PER_DAY, seq([99]), 1); // d100=99 > cible 61 → échec
+    /** Le Test part à la porte ; on juge la branche sur une issue INJECTÉE, jamais sur un dé tiré ici. */
+    const toxine = (over: Partial<Combatant>) => {
+      const c = sick({ diseases: [contractDisease('infection-du-sang', seq([]), { incubation: 0, duration: 5 })!], ...over });
+      const { specs, defer } = porteEntretien();
+      tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
+      const tick = specs.find((s) => s.kind === 'diseaseTick' && s.meta?.symptomId === 'toxine')!;
+      expect(tick, 'la Toxine doit poser SON Test à la porte').toBeTruthy();
+      return { c, tick };
+    };
+
+    it('le Test de la Toxine passe par la PORTE, en nommant ce qu’il teste (LDB 20 l.212 : Résistance)', () => {
+      const { tick } = toxine({ fate: 0 });
+      expect(tick.test).toEqual({ skill: 'resistance' });
+      expect(tick.difficulty).toBe('tresFacile');
+      expect(tick.base, 'aucune valeur maison : la porte la calcule').toBeUndefined();
+    });
+
+    it('Test RATÉ (issue injectée) → la cible MEURT (LDB 20 l.215 : « ou vous mourrez »)', () => {
+      const { c, tick } = toxine({ fate: 0 });
+      const log = applique(c, tick, { success: false });
       expect(c.dead).toBe(true);
       expect(log.some((l) => /succombe/.test(l))).toBe(true);
     });
 
     it('Test raté MAIS 1 Point de Destin (LDB 17 l.29-37) → sauvé in extremis, pas mort', () => {
-      const c = sick({ diseases: [contractDisease('infection-du-sang', seq([]), { incubation: 0, duration: 5 })!], fate: 1, wounds: { current: 0, max: 10 } });
-      const log = tickDisease(c, MINUTES_PER_DAY, seq([99]), 1); // échec du Test de Résistance
+      const { c, tick } = toxine({ fate: 1, wounds: { current: 0, max: 10 } });
+      const log = applique(c, tick, { success: false });
       expect(c.dead).toBeFalsy();
       expect(c.fate).toBe(0);
       expect(log.some((l) => /sauvé/.test(l))).toBe(true);
     });
 
-    it('Test réussi → aucune conséquence, la maladie continue', () => {
-      const c = sick({ diseases: [contractDisease('infection-du-sang', seq([]), { incubation: 0, duration: 5 })!], fate: 0 });
-      const log = tickDisease(c, MINUTES_PER_DAY, seq([5]), 1); // d100=5 ≤ 61 → réussite
+    it('Test RÉUSSI → aucune conséquence, la maladie continue', () => {
+      const { c, tick } = toxine({ fate: 0 });
+      const log = applique(c, tick, { success: true });
       expect(c.dead).toBeFalsy();
-      expect(log.some((l) => /succombe|sauvé/.test(l))).toBe(false);
+      expect(log).toEqual([]);
     });
   });
 
@@ -294,9 +334,9 @@ describe('MSRC 16 — Vers de carie : phase active PERSISTANTE (dégénérescenc
     expect(c.diseases![0].durationMinutes).toBe(7 * MINUTES_PER_DAY); // installation = 1 semaine
     const steps: { kind: string }[] = [];
     const defer = (s: { kind: string }) => steps.push(s);
-    for (let d = 0; d < 6; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), 40, defer as never);
+    for (let d = 0; d < 6; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
     expect(steps.filter((s) => s.kind === 'diseaseTick').length).toBe(0); // < J+7 : aucun Test de cycle
-    for (let d = 0; d < 5; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), 40, defer as never); // J+7 → J+11
+    for (let d = 0; d < 5; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), defer); // J+7 → J+11
     expect(c.diseases?.length).toBe(1); // TOUJOURS active (persistentActive — pas de guérison à l'épuisement de la Durée)
     expect(steps.filter((s) => s.kind === 'diseaseTick').length).toBeGreaterThanOrEqual(5); // dégénérescence CHAQUE jour ≥ J+7
   });
@@ -305,7 +345,7 @@ describe('MSRC 16 — Vers de carie : phase active PERSISTANTE (dégénérescenc
     const c = fullSick({ diseases: [contractDisease('vers-de-carie', seq([]), { incubation: 0 })!] });
     const steps: { meta?: Record<string, unknown> }[] = [];
     const defer = (s: { meta?: Record<string, unknown> }) => steps.push(s);
-    for (let d = 0; d < 7; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), 40, defer as never);
+    for (let d = 0; d < 7; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), defer);
     const table = steps.map((s) => s.meta?.onFail).find((o): o is import('./ops').GameOp[] => Array.isArray(o) && o[0]?.op === 'rollTable')!;
     const dead = fullSick();
     applyOps(dead, table, { rng: { int: () => 10 }, sl: -3 }); // d10=10 + |DR −3| = 13 → Mort
@@ -319,12 +359,12 @@ describe('MSRC 16 — Vers de carie : phase active PERSISTANTE (dégénérescenc
 describe('MSRC 16 — Vers du Reik : −10 Soc GATÉ visibilité (l.140) + éclatement au 7ᵉ jour', () => {
   it('−5 Agilité toujours ; −10 Sociabilité SEULEMENT si la cloque est à un endroit VISIBLE (jet de Localisation)', () => {
     const vis = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 1 })!] });
-    tickDisease(vis, MINUTES_PER_DAY, seq([5]), 40); // transition → localisation 5 = Tête (VISIBLE)
+    tickDisease(vis, MINUTES_PER_DAY, seq([5]), ignore); // transition → localisation 5 = Tête (VISIBLE)
     expect(vis.diseases![0].blisterLocation).toBe('tete');
     expect(diseasePassiveOps(vis).map((m) => m.op)).toContainEqual({ op: 'charMod', char: 'agilite', mod: -5 });
     expect(diseasePassiveOps(vis).map((m) => m.op)).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -10 });
     const cov = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 1 })!] });
-    tickDisease(cov, MINUTES_PER_DAY, seq([50]), 40); // transition → localisation 50 = Corps (COUVERT)
+    tickDisease(cov, MINUTES_PER_DAY, seq([50]), ignore); // transition → localisation 50 = Corps (COUVERT)
     expect(cov.diseases![0].blisterLocation).toBe('corps');
     expect(diseasePassiveOps(cov).map((m) => m.op)).toContainEqual({ op: 'charMod', char: 'agilite', mod: -5 });
     expect(diseasePassiveOps(cov).some(({ op: o }) => o.op === 'charMod' && o.char === 'sociabilite')).toBe(false);
@@ -332,9 +372,9 @@ describe('MSRC 16 — Vers du Reik : −10 Soc GATÉ visibilité (l.140) + écla
 
   it('éclatement au 7ᵉ jour actif (inconditionnel) : 1 Blessure + État Sonné', () => {
     const c = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 0 })!] });
-    for (let d = 0; d < 6; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), 40);
+    for (let d = 0; d < 6; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), ignore);
     expect(c.wounds.current).toBe(12);
-    tickDisease(c, MINUTES_PER_DAY, seq([]), 40); // 7ᵉ jour actif → cloque éclate
+    tickDisease(c, MINUTES_PER_DAY, seq([]), ignore); // 7ᵉ jour actif → cloque éclate
     expect(c.wounds.current).toBe(11);
     expect(c.conditions.find((x) => x.id === 'sonne')?.value).toBe(1);
   });
@@ -362,9 +402,9 @@ describe('MSRC 16 — Vers du Reik : rampe −5/30j sur TOUTE l’infection + d�
     const c = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 200, duration: 7 })!] });
     expect(c.diseases![0].phase).toBe('incubation');
     expect(activeDiseaseTestMod(c, 'peste-noire')).toBe(0); // < 30 j : aucune tranche complète
-    tickDisease(c, 30 * MINUTES_PER_DAY, seq([]), 40);
+    tickDisease(c, 30 * MINUTES_PER_DAY, seq([]), ignore);
     expect(activeDiseaseTestMod(c, 'peste-noire')).toBe(-5); // 1 période
-    tickDisease(c, 30 * MINUTES_PER_DAY, seq([]), 40);
+    tickDisease(c, 30 * MINUTES_PER_DAY, seq([]), ignore);
     expect(activeDiseaseTestMod(c, 'peste-noire')).toBe(-10); // 2 périodes
   });
 
@@ -378,12 +418,12 @@ describe('MSRC 16 — Vers du Reik : rampe −5/30j sur TOUTE l’infection + d�
   it('décroissance résiduelle −1/jour jusqu’à 0 après la mort du ver', () => {
     const c = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 0, duration: 7 })!] });
     c.diseases![0].infectedMinutes = 60 * MINUTES_PER_DAY; // 2 périodes déjà courues
-    tickDisease(c, 7 * MINUTES_PER_DAY, seq([]), 40); // épuise la durée active → guérison → résidu figé
+    tickDisease(c, 7 * MINUTES_PER_DAY, seq([]), ignore); // épuise la durée active → guérison → résidu figé
     expect(c.diseases?.length ?? 0).toBe(0);
     expect(c.residualDiseaseTestMod).toBe(10); // 2 × 5, survit à la mort du ver
-    tickDisease(c, 3 * MINUTES_PER_DAY, seq([]), 40); // −1/jour × 3
+    tickDisease(c, 3 * MINUTES_PER_DAY, seq([]), ignore); // −1/jour × 3
     expect(c.residualDiseaseTestMod).toBe(7);
-    tickDisease(c, 7 * MINUTES_PER_DAY, seq([]), 40); // −7 → 0 → nettoyé
+    tickDisease(c, 7 * MINUTES_PER_DAY, seq([]), ignore); // −7 → 0 → nettoyé
     expect(c.residualDiseaseTestMod).toBeUndefined();
   });
 });

@@ -232,7 +232,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     if (deferTest) {
       // Cascade de nuit : le Test devient une ÉTAPE influençable (résolue par `applyFaimTest`).
       c.hunger = h; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-      deferTest({ kind: 'faim', label: t('prov.faim'), base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
+      deferTest({ kind: 'faim', label: t('prov.faim'), base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', mods: [hungerThirstPenalty(penalty)] });
       return res;
     }
     const t2 = rollTest(resVal, 'intermediaire', rng, penalty);
@@ -309,7 +309,7 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   const penalty = -10 * s.tests || 0; // LDB 18 l.338 : chaque Test est plus dur (cumulatif ; évite −0)
   if (deferTest) {
     c.thirst = s; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-    deferTest({ kind: 'soif', label: t('prov.soif'), base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
+    deferTest({ kind: 'soif', label: t('prov.soif'), base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', mods: [hungerThirstPenalty(penalty)] });
     return res;
   }
   const t2 = rollTest(resVal, 'intermediaire', rng, penalty);

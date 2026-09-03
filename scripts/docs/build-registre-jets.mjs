@@ -148,16 +148,30 @@ if (desyncNonRoutes.length) {
 }
 const nonRoutesTotal = nonRoutes.reduce((n, [, c]) => n + c, 0)
 
-// Les DEUX routeurs qui résolvent un nœud `test` de Flow — mesurés, pas supposés.
+// Les TROIS routeurs qui résolvent un nœud `test` de Flow — mesurés, pas supposés.
 const ROUTEURS_AUTHORES = [
   ['resolveFlowTest', 'src/state/combat/triggeredTest.ts', 'voie CADENCE-AWARE : ouvre `openSkillTest` (modale influençable) quand l\'acteur est piloté.'],
   ['resolveInlineFlowTest', 'src/state/triggeredEffects.ts', 'jumeau store-free de la branche NON-interactive du précédent (jet résolu inline, journalisé).'],
+  ['bandeTriggeredTest', 'src/state/combat/triggeredTest.ts', 'MÊME porte, N TESTEURS (#1657 B3-2) : une BANDE de N rangées pour les porteurs surfacés, la voie inline pour les autres.'],
 ]
 const routeursManquants = ROUTEURS_AUTHORES.filter(([name, file]) =>
   !new RegExp(`function\\s+${name}\\b`).test(readFileSync(join(ROOT, file), 'utf8')))
 if (routeursManquants.length) {
   console.error(`${TOOL} — routeur de nœud \`test\` authoré introuvable (la thèse « tout nœud test passe par ces routeurs » n'est plus mesurable) :`)
   for (const [n, f] of routeursManquants) console.error(`  ${n} (${f})`)
+  process.exit(1)
+}
+
+// --- ASSERTION INVERSE (#1657 B3-3) : « … et AUCUN AUTRE chemin » ---------------------------------
+// Vérifier que les routeurs EXISTENT dit qu'un chemin canonique est disponible ; ça ne dit pas qu'il
+// est le SEUL. Le second bout se mesure sur le moteur : un `src/engine/**` qui LIT un nœud `test` et le
+// ROULE court-circuite la porte, quel que soit le nombre de routeurs en place. Le scan est celui du
+// garde (`flowTestEngineRoll`), déjà chargé ci-dessus pour la section des non-routés : la population
+// attendue est VIDE, et le générateur refuse de publier « tous routés » tant qu'elle ne l'est pas.
+if (stockGarde.size) {
+  console.error(`${TOOL} — assertion INVERSE en échec : ${stockGarde.size} site(s) de \`src/engine/**\` résolvent un nœud \`test\` HORS de la porte :`)
+  for (const [site, x] of stockGarde) console.error(`  ${site} [${x.famille} ${x.fn} → ${x.name}]`)
+  console.error('  → le moteur REND le nœud (patron `miscast.mkTest`) ou le DIFFÈRE (`UpkeepDeferTest`) ; il ne le roule pas.')
   process.exit(1)
 }
 
@@ -259,7 +273,12 @@ out += `\n_${total(fabrication)} sites mesurés dans ${fabrication.size} fichier
 out += `## (D) Roulage délégué à un export de \`src/engine\`\n\n`
 out += `\`rollSeamExcluded\` exempte \`src/engine/**\` de principe (le moteur reçoit un rng, il ne décide pas du\n`
 out += `surfaçage) — ce qui suppose que l'APPELANT passe par le seam. Un export d'engine qui roule, appelé par un\n`
-out += `flux, rend donc le call-site invisible aux deux gardes. La liste des rouleurs est **dérivée** (corps appelant\n`
+out += `flux, rend donc le call-site invisible aux deux gardes. **Cette supposition est désormais TENUE des deux\n`
+out += `côtés** (#1657 B3-3) : \`battleRngEngineLeak\` ferme la moitié APPELANT (un flux qui remet un rng vivant à un\n`
+out += `résolveur moteur), \`flowTestEngineRoll\` ferme la moitié DONNÉE et n'admet plus aucun site (garde BLOQUANTE,\n`
+out += `population attendue VIDE) : un moteur qui LIT un nœud \`test\` le REND ou le DIFFÈRE. La table ci-dessous\n`
+out += `inventorie ce qui reste : des résolveurs qui roulent LEURS PROPRES dés, sans lire de nœud authoré.\n`
+out += `La liste des rouleurs est **dérivée** (corps appelant\n`
 out += `\`rollTest\`/\`d100\`, puis clôture TRANSITIVE — sans elle, \`resolveClash\` (qui ne roule qu'à travers\n`
 out += `\`rollMightTest\`) reste invisible), \`rollTest\`/\`d100\` eux-mêmes exclus (population du garde d'exclusivité).\n`
 out += `La forme (S) « position de spec » garde son exclusion structurelle.\n\n`
@@ -280,11 +299,15 @@ out += `**${authoredTests}** nœuds \`test\` (\`{ kind: 'test', test: FlowTest, 
 out += nonRoutesTotal
   ? `de \`src/data\` et \`src/scenes\` : **${authoredTests - nonRoutesTotal} ROUTÉS** par la porte, **${nonRoutesTotal} NON ROUTÉS** (résolus DANS le\nmoteur — mesure ci-dessous). Ce n'est pas un stock : la donnée n'a pas de call-site à router.\n\n`
   : `de \`src/data\` et \`src/scenes\`, **tous ROUTÉS** par la porte. Ce n'est pas un stock : la donnée n'a pas de\ncall-site à router.\n\n`
-out += `### Les ${authoredTests - nonRoutesTotal} routés — deux routeurs mesurés\n\n`
+out += `### Les ${authoredTests - nonRoutesTotal} routés — ${ROUTEURS_AUTHORES.length} routeurs mesurés\n\n`
 for (const [name, file, role] of ROUTEURS_AUTHORES) out += `- \`${name}\` (\`${file}\`) — ${role}\n`
-out += `\nLe premier ouvre \`openSkillTest\` (famille canonique) ; le second est sa branche non-interactive. **Pour eux**,\n`
+out += `\nLe premier ouvre \`openSkillTest\` (famille canonique), le deuxième est sa branche non-interactive, le\n`
+out += `troisième la même porte pour N testeurs à la fois. **Pour eux**,\n`
 out += `un nœud \`test\` enfoui sans routeur cadence-aware lève (\`resolveInlineFlowTest\` : « un test enfoui exige un\n`
 out += `routeur cadence-aware ») — c'est le fail-closed de la donnée.\n\n`
+out += `ASSERTION INVERSE (« … et aucun AUTRE chemin ») : la génération ÉCHOUE si un seul site de \`src/engine/**\`\n`
+out += `lit un nœud \`test\` et le roule (même scan que le garde \`flowTestEngineRoll\`). Exister ne suffit pas à une\n`
+out += `porte : elle doit être la SEULE.\n\n`
 // La section « NON routés » ne se rend QUE s'il y en a : un doc dérivé décrit ce qui EST, jamais un mal
 // éteint. À zéro, il ne reste qu'une LIGNE DE MESURE — le cardinal, vérifié à chaque génération.
 if (!nonRoutesTotal) {

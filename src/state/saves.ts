@@ -101,7 +101,15 @@ import type { Scene } from './scene';
 // persisté : une save de 44 prise sur une journée fluviale dont l'esquive d'éclats est ouverte
 // rouvrirait avec une étape dont plus aucun applier n'est enregistré — le jet se validerait sans
 // conséquence, en silence. La save se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 45;
+
+// 45 → 46 (#1657 B3-3, corrige #1685) : les étapes d'entretien PERSISTÉES (`pendingCascade`,
+// `deferredUpkeepQueue` — cycle de maladie, Exposition, Récupération, contagion, convalescence)
+// portaient une ligne montée sur une valeur qui IGNORAIT les États du porteur (#1685, `LDB 16
+// l.125`). La forme du pas est la même, mais ses NOMBRES (base, mods, target)
+// ne sont plus ceux de la porte : une save de 45 rouvrirait une fenêtre déjà montée dont la cible est
+// celle d'avant (jusqu'à +30 en faveur du joueur sur un héros sous États), sans qu'aucun applier ne
+// puisse la recalculer. La save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 46;
 
 export interface SaveMeta {
   version: number;

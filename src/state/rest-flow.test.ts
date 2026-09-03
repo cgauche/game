@@ -15,7 +15,6 @@ import { restPlacesHere, lodgingOptions } from './restFlow';
 import { resolveStake } from '../data';
 import { contractDisease, tickDisease, DISEASE_DEFS } from '../engine/disease';
 import { spellOps } from '../engine/flowCore';
-import { effectiveChar } from '../engine/characteristics';
 import { battleRng as battleRngFor } from './battleRng';
 import { seedBattleRng } from './battleRng';
 import { emptyScene } from './scene';
@@ -413,7 +412,7 @@ describe('CHEMIN RÉEL — la règle d’une étape de maladie est celle du SYMP
     const dz = contractDisease('blessure-purulente', battleRngFor())!;
     h.diseases = [...(h.diseases ?? []), dz];
     // Comme le helper de recette `__wfrp.disease(..., { phase:'active' })` : on AVANCE le vrai cycle.
-    if (dz.phase === 'incubation') tickDisease(h, dz.minutesLeft, battleRngFor(), effectiveChar(h, 'endurance'));
+    if (dz.phase === 'incubation') tickDisease(h, dz.minutesLeft, battleRngFor(), () => {});
     useGame.setState((s) => ({ party: [...s.party] }));
     return h;
   }

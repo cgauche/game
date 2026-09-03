@@ -161,7 +161,6 @@ const RAW_KNOWN: Record<string, number> = {
   'scripts/qc/opera-furniture-check.mts': 1,
   'src/engine/activities.ts': 1,
   'src/engine/careerSlots.ts': 1, // reste `s.id === 'focalisation'` (lookup par id stable)
-  'src/engine/conditions.ts': 1,
   'src/engine/corruption.ts': 2,
   'src/engine/crewedWeapon.ts': 1,
   'src/engine/drunkenness.ts': 1,
@@ -176,7 +175,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/menace.ts': 1,
   'src/engine/provisions.ts': 1,
   'src/engine/psychology.ts': 3,
-  'src/engine/rest.ts': 1,
   // 3 → 2 (L2 #1548, commit 3b) : le Test d'équipage d'un Critique fluvial désigne une CARACTÉRISTIQUE
   // (`crewTest.char === 'initiative'`), plus un id de registre de Compétence.
   'src/engine/riverNavigation.ts': 1,
@@ -208,7 +206,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/state/devtools.ts': 1,
   'src/state/interludeFlow.ts': 4,
   'src/state/mount.ts': 1,
-  'src/state/restFlow.ts': 1,
   'src/state/riverVoyageFlow.ts': 4,
   'src/state/seaVoyageFlow.ts': 3, // 4 → 3 (#1479 : la conséquence d'un péril lit sa DONNÉE `entangleChancePct`, plus `hazard.id === 'debris-marins'`)
   'src/state/store.ts': 1,

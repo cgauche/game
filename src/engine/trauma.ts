@@ -11,7 +11,6 @@
  * CC/CT global). Le trauma est enregistré (label+note) même sans effet modélisé.
  */
 import { Combatant, CharKey, CHAR_LABELS, HitLocation, ItemInstance, Trauma, Difficulty, UpkeepDeferTest, Weapon, effectRef, locationLabel, type BodyShape, type ModFamille } from './types';
-import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
 import type { CritEscalation } from '../data/criticals';
 import { poserEnjeu, type FlowTestNode } from './flowCore';
@@ -297,10 +296,11 @@ export function applyFractureEnd(c: Combatant, success: boolean, severity: strin
  *  - fracture atteignant 0 → Test de Résistance de fin (Accessible mineure / Intermédiaire majeure, l.202/212)
  *    SAUF si la fracture a été « réduite » (bandée, `fractureSet`, l.204) ; un échec laisse une séquelle
  *    permanente (−5/−10 Ag). Sinon le trauma disparaît (pénalités levées) + `criticalWounds`−−.
- * `resistVal` = valeur de Résistance effective de `c` (passée par l'appelant pour éviter le cycle d'import).
+ * Le Test de fin de fracture n'est PAS roulé ici : il part à la porte (`defer`), qui en calcule la
+ * valeur (`testValue` de Résistance, `LDB 18 l.202`) et l'ouvre — #1657 B3-3.
  * Pur ; mute `c`, renvoie le journal.
  */
-export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest): string[] {
+export function tickTraumaRecovery(c: Combatant, days: number, defer: UpkeepDeferTest): string[] {
   if (!c.traumas?.length || days <= 0) return [];
   const log: string[] = [];
   const remaining: Trauma[] = [];
@@ -334,15 +334,13 @@ export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaul
     else log.push(tr('tra.recovered', { name: c.label, label: t.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) }));
   }
   c.traumas = remaining;
-  // Test de fin de fracture (l.202/212) : DIFFÉRÉ en étape de cascade si `defer`, sinon roulé ici.
+  // Test de fin de fracture (l.202/212) : le producteur NOMME ce qui est testé (« Test de Résistance »)
+  // et DIFFÈRE — la valeur est celle de la porte (`testValue` : États compris), la conséquence est
+  // appliquée par l'applier `traumaFracture` (`applyFractureEnd`). La porte est EXIGÉE au type : il n'y
+  // a pas de chemin où cette fracture se résout dans le dos du joueur.
   for (const f of fractureTests) {
-    if (defer) {
-      defer({ kind: 'traumaFracture', label: `Convalescence — ${f.label}`, base: resistVal, difficulty: fractureEndDifficulty(f.severity),
-        meta: { severity: f.severity, location: f.location, traumaLabel: f.label } });
-    } else {
-      const res = rollTest(resistVal, fractureEndDifficulty(f.severity), rng);
-      log.push(...applyFractureEnd(c, res.success, f.severity, f.location, f.label));
-    }
+    defer({ kind: 'traumaFracture', label: `Convalescence — ${f.label}`, test: { skill: 'resistance' }, difficulty: fractureEndDifficulty(f.severity),
+      meta: { severity: f.severity, location: f.location, traumaLabel: f.label } });
   }
   return log;
 }

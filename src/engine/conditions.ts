@@ -661,9 +661,11 @@ export function tickDurations(c: Combatant, emit?: ConditionEmit): string[] {
  * Cauchemars (trauma psychologique, LDB 21 l.95) : chaque nuit, un Personnage marqué effectue un
  * Test de **Calme Facile (+40)** ; sur un échec, il est en proie à de terribles cauchemars et gagne
  * un État **Exténué**. Pur ; mute `c`, renvoie le journal.
+ *
+ * `calme` = la valeur de la PORTE (`testValue(c, 'calme')`), passée par l'appelant : `testValue` vit
+ * dans `skills.ts`, qui importe CE module — le cycle interdit de la lire ici (#1657 B3-3).
  */
-export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base: number; result: TestResult }[]): string[] {
-  const calme = effectiveChar(c, 'force-mentale') + (c.skills?.find((s) => s.id === 'calme')?.advances ?? 0);
+export function nightmareCheck(c: Combatant, calme: number, rng: RNG = defaultRNG, out?: { base: number; result: TestResult }[]): string[] {
   const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
   out?.push({ base: calme, result: res });
   if (res.success) return [t('cond.nightmareNone', { name: c.label })];

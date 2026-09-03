@@ -844,6 +844,13 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
   const fusedSum = dansLaValeur.reduce((s, m) => s + m.value, 0);
   const dv = DIFFICULTY_MODIFIERS[spec.difficulty];
   if (typeof dv !== 'number') throw new Error(`rollLine : Difficulté inconnue « ${String(spec.difficulty)} » — la cible serait NaN.`);
+  // Un ACTEUR jette forcément QUELQUE CHOSE : sans valeur posée (`valeur`), sans canal de combat et
+  // sans ids, `testValue` rendrait 0 et la ligne annoncerait une cible qui n'est la valeur de
+  // personne — auto-échec MUET (#1657 B3-3). Le producteur nomme son Test, ou pose sa valeur.
+  if (spec.actor && spec.valeur === undefined && !spec.combat && !t.skill && !t.char) {
+    throw new Error(`rollLine : Test de « ${spec.actor.label} » sans compétence ni caractéristique et sans valeur posée `
+      + '— la porte le jouerait sur 0 (auto-échec muet). Nommer `test.skill`/`test.char`, ou passer `valeur`.');
+  }
   const value = spec.valeur ?? (spec.combat
     ? combatChannelValue(spec.actor, spec.combat, t)
     : (spec.actor ? testValue(spec.actor, t.skill, t.char, t.spec, t.sense) : 0));
@@ -1089,7 +1096,8 @@ export type BandLigne = RollLineDecl extends infer U ? (U extends unknown ? Omit
 export interface BandPorteur {
   /** Le porteur — la rangée prend son id, et sa SURFACE se déduit de lui (`surfaceRow`). */
   actor: Combatant;
-  /** Ligne du jet. Omise, la ligne se dérive du seul acteur (aucun Test nommé : base `testValue`). */
+  /** Ligne du jet — le porteur NOMME ce qu'il teste (`test`) ou pose sa valeur (`valeur`). Omise sur
+   *  une rangée à jet, la porte REFUSE : elle jouerait sur une valeur de 0 (#1657 B3-3). */
   ligne?: BandLigne;
   /** Difficulté de CETTE rangée, quand elle diverge de celle de la bande (allègement porté par un
    *  Talent du seul porteur). Absente : celle de la bande. */

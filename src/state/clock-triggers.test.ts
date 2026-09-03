@@ -74,7 +74,7 @@ describe('onDayStart — une émission PAR JOUR franchi (rattrapage compris)', (
     attachMutation(h, mutFromCatalog(HAINE_SPORADIQUE), makeRNG(7));
     atDays([h], 0, 3);
 
-    const lines = runDailyUpkeep(get, set);
+    const lines = runDailyUpkeep(get, set, { onDeferTest: () => {} });
 
     const gains = lines.filter((l) => l.includes('gagne le Trait'));
     expect(gains).toHaveLength(3); // un par jour franchi — jamais « un seul pour tout le saut »
@@ -85,7 +85,7 @@ describe('onDayStart — une émission PAR JOUR franchi (rattrapage compris)', (
     attachMutation(h, mutFromCatalog(HAINE_SPORADIQUE), makeRNG(7));
     atDays([h], 3, 3);
 
-    expect(runDailyUpkeep(get, set)).toEqual([]);
+    expect(runDailyUpkeep(get, set, { onDeferTest: () => {} })).toEqual([]);
   });
 });
 
@@ -96,7 +96,7 @@ describe('Re-ciblage sans EMPILEMENT — [removeTrait, grantTrait]', () => {
     expect(haineTraits(h)).toHaveLength(1); // attache : la mutation confère le Trait immédiatement
     atDays([h], 0, 3);
 
-    runDailyUpkeep(get, set);
+    runDailyUpkeep(get, set, { onDeferTest: () => {} });
 
     const porte = get().party[0];
     expect(haineTraits(porte)).toHaveLength(1);
@@ -109,7 +109,7 @@ describe('Re-ciblage sans EMPILEMENT — [removeTrait, grantTrait]', () => {
     attachMutation(h, mutFromCatalog(HAINE_SPORADIQUE), makeRNG(3));
     atDays([h], 0, 1);
 
-    runDailyUpkeep(get, set);
+    runDailyUpkeep(get, set, { onDeferTest: () => {} });
 
     expect(haineTraits(get().party[0])[0].arg).toBeTruthy();
   });
@@ -122,7 +122,7 @@ describe('Re-ciblage sans EMPILEMENT — [removeTrait, grantTrait]', () => {
     expect(haineTraits(h)).toHaveLength(4); // 3 du prêtre + 1 de la mutation
     atDays([h], 0, 1);
 
-    runDailyUpkeep(get, set);
+    runDailyUpkeep(get, set, { onDeferTest: () => {} });
 
     const args = haineTraits(get().party[0]).map((t) => t.arg);
     expect(args, 'le re-ciblage quotidien de la mutation a purgé les Haine d’un TIERS.').toContain('peau-verte');
@@ -137,7 +137,7 @@ describe('onWake — le RÉVEIL n’est pas le franchissement de jour', () => {
   it('24 h franchies SANS nuit jouée → aucun État Exténué du réveil (Désespoir, VDM 09 l.280)', () => {
     atDays([desespere(), hero('Témoin', 2)], 0, 1, 0); // lastNightDay = 0 : la nuit du jour 1 n'a pas été jouée
 
-    runDailyUpkeep(get, set);
+    runDailyUpkeep(get, set, { onDeferTest: () => {} });
 
     expect(ecart()).toBe(0);
   });
@@ -145,7 +145,7 @@ describe('onWake — le RÉVEIL n’est pas le franchissement de jour', () => {
   it('nuit JOUÉE le jour franchi (`lastNightDay`) → l’État Exténué du réveil est posé', () => {
     atDays([desespere(), hero('Témoin', 2)], 0, 1, 1); // restFlow a posé lastNightDay = 1 avant l'entretien
 
-    runDailyUpkeep(get, set);
+    runDailyUpkeep(get, set, { onDeferTest: () => {} });
 
     expect(ecart()).toBe(1);
   });
@@ -179,7 +179,7 @@ describe('BORNE du Trait accordé — la semaine du Désespoir (VDM 09 l.280) vi
     for (let d = 1; d <= 30; d++) {
       const avant = ecart();
       set({ lastUpkeepDay: d - 1, lastNightDay: d, gameTime: d * 24 * 60 + 8 * 60 });
-      runDailyUpkeep(get, set);
+      runDailyUpkeep(get, set, { onDeferTest: () => {} });
       if (ecart() > avant) matins++;
     }
 

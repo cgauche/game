@@ -199,7 +199,7 @@ describe('cycle de maladie — le JET vit dans le nœud `test` du Flow (#1657 B2
         const c = sick({ diseases: [contractDisease(maladie, rng, { incubation: 0, duration: 30 })!] });
         const etapes: { kind: string; difficulty: string; meta?: Record<string, unknown> }[] = [];
         const defer: UpkeepDeferTest = (spec) => { etapes.push(spec as never); };
-        for (let j = 0; j < 15; j++) tickDisease(c, MINUTES_PER_DAY, rng, 45, defer, 4);
+        for (let j = 0; j < 15; j++) tickDisease(c, MINUTES_PER_DAY, rng, defer, 4);
         for (const e of etapes) {
           if (e.kind !== 'diseaseTick') continue; // gangrène/persistant : machinerie stateful, hors nœud
           vus++;

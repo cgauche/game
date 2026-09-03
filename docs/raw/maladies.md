@@ -561,7 +561,7 @@ compte des Rounds de combat, `LDB 16 l.97`). Le Test est donc roulé à chaque j
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.4-160) → `onTickSchema`, `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `mapRouteSchema`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, +24 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
+- `MSRC 16` (l.4-160) → `onTickSchema`, `doc`, `DiseaseDef`, `OPS_FIELDS`, `water-exposure`, `Disease`, `diseaseTestModLines`, `mapRouteSchema`, `snapshotInfectionResidual`, `crampes-abdominales`, +27 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +16 fichiers
 - sans code : `MSRC 16` (l.35-47)
 
 ---
@@ -606,7 +606,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** : aucun traitement connu. Toute tentative d'extraction chirurgicale fait plus de mal que de bien.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.121-144) → `onTickSchema`, `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, +12 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
+- `MSRC 16` (l.121-144) → `onTickSchema`, `doc`, `DiseaseDef`, `OPS_FIELDS`, `Disease`, `diseaseTestModLines`, `snapshotInfectionResidual`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, +13 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +9 fichiers
 
 ---
 
@@ -625,7 +625,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.160`) : infusion d'écorce de saule → bonus de +10 à tous les Tests résultant de la colique pendant 1d10 heures. Pas d'autre traitement.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.149-160) → `onTickSchema`, `doc`, `Disease`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `testStatePenaltyParts`, `firingOwnTestFailed`, `declareDisease`, `colique`, +9 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
+- `MSRC 16` (l.149-160) → `onTickSchema`, `doc`, `Disease`, `crampes-abdominales`, `resolveInlineFlowTest`, `combatTestPenaltyParts`, `testStatePenaltyParts`, `firingOwnTestFailed`, `colique`, `declareDisease`, +9 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
 
 ---
 

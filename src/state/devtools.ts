@@ -37,7 +37,6 @@ import { bus, EVT } from './bus';
 import { ev } from './combatLog';
 import { isOutOfAction, addCondition } from '../engine/conditions';
 import { contractDisease, tickDisease } from '../engine/disease';
-import { effectiveChar } from '../engine/characteristics';
 import { battleRng } from './battleRng';
 import { applyOps } from '../engine/ops';
 import { parseQualityInstance } from '../engine/qualities/normalize';
@@ -1205,12 +1204,15 @@ export function buildApi() {
       c.diseases = [...(c.diseases ?? []), dz];
       // `phase:'active'` : on AVANCE le cycle réel de l'incubation (jamais `phase='active'` posé à la main)
       // → transition, jet de Localisation de la cloque, infectedMinutes… exactement comme le temps qui passe.
-      if (opts?.phase === 'active' && dz.phase === 'incubation') tickDisease(c, dz.minutesLeft, battleRng(), effectiveChar(c, 'endurance'));
+      // Les Tests du cycle ne se roulent PLUS nulle part (#1657 B3-3) : la triche les COMPTE et le dit
+      // — ils se jouent à la nuit/l'avance d'horloge, par la porte. (Une incubation n'en doit aucun.)
+      const dus: string[] = [];
+      if (opts?.phase === 'active' && dz.phase === 'incubation') tickDisease(c, dz.minutesLeft, battleRng(), (spec) => dus.push(spec.kind));
       useGame.setState((st) => ({
         party: [...st.party],
         battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
       }));
-      return `✓ ${c.label} : ${maladieId} (${c.diseases[c.diseases.length - 1].phase})`;
+      return `✓ ${c.label} : ${maladieId} (${c.diseases[c.diseases.length - 1].phase})${dus.length ? ` — ${dus.length} Test(s) dû(s) à la prochaine nuit : ${dus.join(', ')}` : ''}`;
     },
 
     /** RECETTE : instancie une créature du REGISTRE (`creatures.json`) directement EN COMBAT — VRAI

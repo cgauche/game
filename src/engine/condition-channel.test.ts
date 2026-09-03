@@ -151,8 +151,8 @@ describe('sites HORS applyOps — paramètre `emit` (LDB 18 verrous, durées de 
 
   it('tickDisease : l’éclatement du Vers du Reik (MSRC 16 l.142) notifie le gain de Sonné', () => {
     const c = hero({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 0 })!] });
-    for (let d = 0; d < 6; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), 40);
-    const { seen } = withSpy((emit) => tickDisease(c, MINUTES_PER_DAY, seq([]), 40, undefined, 4, emit));
+    for (let d = 0; d < 6; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), () => {});
+    const { seen } = withSpy((emit) => tickDisease(c, MINUTES_PER_DAY, seq([]), () => {}, 4, emit));
     expect(c.conditions.find((x) => x.id === COND.sonne)?.value).toBe(1); // le geste a bien eu lieu
     expect(seen).toEqual([{ stateId: COND.sonne, change: 'gain', targetId: 'h' }]);
   });

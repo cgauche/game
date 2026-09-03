@@ -292,6 +292,18 @@ export const flowTestSchema = z.strictObject({
       attackerBonusSL: z.number().optional(),
     })
     .optional(),
+}).superRefine((v, ctx) => {
+  // UN JET NOMME CE QU'IL TESTE (#1657 B3-3). Sans `skill` ni `characteristic`, la porte n'a rien à
+  // calculer : `testValue` rend 0 et le jet devient un auto-échec SILENCIEUX, sur une cible qui n'est
+  // la valeur de personne. Les deux peuvent coexister — une Compétence jouée sur une autre
+  // Caractéristique que la sienne (Venin : Résistance sur Endurance, `LDB 20`) est une forme RAW.
+  if (v.skill || v.characteristic) return;
+  ctx.addIssue({
+    code: 'custom',
+    path: ['skill'],
+    message: 'jet SANS compétence ni caractéristique : la porte le jouerait sur une valeur de 0 '
+      + '(auto-échec muet). Nommer `skill` (id de compétence) ou `characteristic`.',
+  });
 });
 
 /** EFFECTOP — pont UNIQUE entre la logique authorée (Flow) et le moteur mécanique des sorts : applique

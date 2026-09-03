@@ -18,6 +18,7 @@ import type { Combatant } from './types';
 import { makeRNG } from './dice';
 import { MINUTES_PER_DAY } from './clock';
 import { contractDisease, tickDisease, diseasePassiveOps } from './disease';
+import { porteEntretien, applique } from './upkeepPorte.testkit';
 import { findSymptomById, findDiseaseById } from '../data';
 
 const sick = (over: Partial<Combatant> = {}): Combatant =>
@@ -33,7 +34,7 @@ describe('Fièvre Cérébrale Pourpre — EDO App.2 p.145', () => {
     expect(dz.phase).toBe('incubation');
     expect(dz.minutesLeft).toBe(5 * 60);
     const c = sick({ diseases: [dz] });
-    tickDisease(c, 5 * 60, { int: () => 5 }, 80); // 5 h écoulées (sous la journée) → symptômes ACTIFS
+    tickDisease(c, 5 * 60, { int: () => 5 }, () => {}); // 5 h écoulées (sous la journée) → symptômes ACTIFS
     expect(c.diseases![0].phase).toBe('active');
   });
 
@@ -68,8 +69,10 @@ describe('Fièvre Cérébrale Pourpre — EDO App.2 p.145', () => {
   it("tick jour 1 — Toxine (Très Facile) réussit ; Persistant (Difficile) réussit → guérison", () => {
     const dz = contractDisease('fievre-cerebrale-pourpre', makeRNG(1), { incubation: 0, duration: 1 })!;
     const c = sick({ diseases: [dz] });
-    // d100 = 1 pour tous les jets → Toxine Très Facile (cible E+60) et Persistant Difficile (cible E−20) réussis
-    const log = tickDisease(c, MINUTES_PER_DAY, { int: () => 1 }, 80);
+    // Les deux Tests (Toxine Très Facile, Persistant Difficile) partent à la porte ; issues INJECTÉES : réussis.
+    const { specs, defer } = porteEntretien();
+    tickDisease(c, MINUTES_PER_DAY, { int: () => 1 }, defer);
+    const log = specs.flatMap((s) => applique(c, s, { success: true }));
     expect(c.diseases).toHaveLength(0);
     expect(log.some((l) => /guérit/.test(l))).toBe(true);
   });

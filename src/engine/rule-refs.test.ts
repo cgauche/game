@@ -291,11 +291,10 @@ describe('Famille — chaque ModLine ÉMISE dit si elle DÉTERMINE la Difficult�
   });
 
   /** Une famille CALCULÉE n'est légitime qu'en RELAI : le site rhabille une composante déjà classée
-   *  par son producteur (`spec.penalty.famille`), il ne la décide pas — la re-décider créerait deux
-   *  classements pour une même règle. Le stock est ÉNUMÉRÉ pour qu'un vrai calcul ne s'y glisse pas. */
-  const RELAIS = [
-    'src/state/upkeep.ts · spec.penalty.label',
-  ].sort();
+   *  par son producteur, il ne la décide pas — la re-décider créerait deux classements pour une même
+   *  règle. Le stock est ÉNUMÉRÉ pour qu'un vrai calcul ne s'y glisse pas ; il est VIDE depuis #1657
+   *  B3-3, l'entretien transportant les `ModLine` de ses producteurs telles quelles. */
+  const RELAIS: string[] = [];
 
   it('une famille CALCULÉE n’est qu’un RELAI énuméré (jamais une décision au site)', () => {
     const opaques = modLineSites().filter((s) => s.famille === '?').map((s) => s.at).sort();

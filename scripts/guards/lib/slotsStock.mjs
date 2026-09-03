@@ -331,6 +331,12 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "structures.json", champ: "traits", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "symptoms.json", champ: "ops", occurrences: 12, lot: "L1b #1467", date: "2026-08-28" }, // 12 : les réfs du cycle (`onTick`) comptent ici, sous la feuille `EffectOp` du nœud `test` (#1657 B2b)
   { dataset: "symptoms.json", champ: "passive", occurrences: 25, lot: "L1b #1467", date: "2026-08-28" },
+  // #1657 B3-3 : Blessé et Toxine nomment la Compétence de leur RAW (« Test de Résistance », LDB 20
+  // l.145/l.212) dans leur nœud `test` — MÊME fabrique `SkillRef` que `criticals | skill` (39) et
+  // `spells | skill`, donc MÊME angle mort de projection (une référence ENVELOPPÉE `{id}` projette
+  // sur la clé `id`, jamais sur son champ porteur — déclaré en tête de ce fichier) : la ligne ne se
+  // solde pas par l'adoption, elle attend `typedRef` (L2 #1473) comme ses 2 sœurs.
+  { dataset: "symptoms.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-03" },
   { dataset: "symptoms.json", champ: "severePassive", occurrences: 6, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "symptoms.json", champ: "visiblePassive", occurrences: 1, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "tables.json", champ: "ops", occurrences: 78, lot: "L2/L3 #1473", date: "2026-08-26" },
