@@ -444,7 +444,8 @@
       "src/ui/compendium/registry.ts",
       "src/ui/compendium/relations.ts",
       "src/ui/compendium/triggerLabels.ts",
-      "src/ui/weaponStats.ts"
+      "src/ui/weaponStats.ts",
+      "tsconfig.json"
     ],
     "dossiers": []
   },
@@ -834,7 +835,8 @@
       "src/i18n/messages/fr.ts",
       "src/lib/normalize.ts",
       "src/state/dir8.ts",
-      "src/ui/compendium/registry.ts"
+      "src/ui/compendium/registry.ts",
+      "tsconfig.json"
     ],
     "dossiers": [
       "src/data",
@@ -8664,7 +8666,8 @@
       "src/scenes/barge-du-sel/barge-du-sel-projet.json",
       "src/scenes/diligence/diligence-projet.json",
       "src/scenes/loup-et-saumure/loup-et-saumure-projet.json",
-      "src/state/dir8.ts"
+      "src/state/dir8.ts",
+      "tsconfig.json"
     ],
     "dossiers": [
       "src/data",
@@ -13537,7 +13540,8 @@
       "src/i18n/messages/fr.ts",
       "src/lib/normalize.ts",
       "src/state/dir8.ts",
-      "src/state/flow.ts"
+      "src/state/flow.ts",
+      "tsconfig.json"
     ],
     "dossiers": []
   },

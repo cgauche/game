@@ -57,12 +57,27 @@ test('sous-processus : build-donnees mesure les schémas lus par son dumper tsx 
   const lues = mesurer('scripts/docs/build-donnees.mjs', 'docs/donnees.md')
   const schemas = lues.fichiers.filter((f) => f.startsWith('src/data/schemas/'))
   assert.ok(schemas.length > 100, `schémas mesurés : ${schemas.length} (le dumper est un sous-processus)`)
+  assert.ok(lues.fichiers.includes('tsconfig.json'), 'tsconfig.json absent : le thread des hooks du dumper n\'est pas mesuré')
 })
 
 test('runner tsx : build-structures mesure src/data ET src/scenes (entrée tsx/esm)', () => {
   const lues = mesurer('scripts/docs/build-structures.mts', 'docs/structures-donnees.md', { tsx: true })
   assert.ok(lues.fichiers.some((f) => f.startsWith('src/data/')), 'aucune source src/data')
   assert.ok(lues.fichiers.some((f) => f.startsWith('src/scenes/')), 'aucune source src/scenes')
+})
+
+// Le chargement du TypeScript par tsx LIT `tsconfig.json` depuis le thread des hooks, sur les deux
+// OS. Sans l'enveloppe de `fs` de `enregistreur-hooks.mjs`, ce chemin ne rentre que sous Linux (la
+// CI ubuntu 33791873905 le rendait en +1 par générateur tsx) et le dérivé cesse d'être cross-OS.
+test('thread des hooks : un générateur chargé par tsx mesure tsconfig.json (dérivé cross-OS)', () => {
+  const lues = mesurer('scripts/docs/build-structures.mts', 'docs/structures-donnees.md', { tsx: true })
+  assert.ok(
+    lues.fichiers.includes('tsconfig.json'),
+    `tsconfig.json absent du set (${lues.fichiers.length} sources) : les lectures du thread des hooks ne sont pas enregistrées`,
+  )
+  // Le hook `load` voit aussi des spécificateurs sans chemin sur le disque : un `node:child_process`
+  // pris pour un chemin relatif fait échouer le hachage de l'empreinte (ENOENT sur `<racine>/node:…`).
+  assert.deepEqual(lues.fichiers.filter((f) => /^[a-z]+:/.test(f)), [], 'un spécificateur non-fichier est entré dans le set')
 })
 
 test('un set vide ou minuscule ARRÊTE la génération, en nommant le générateur', () => {

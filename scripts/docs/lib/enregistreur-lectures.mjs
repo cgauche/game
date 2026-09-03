@@ -121,8 +121,8 @@ if (RACINE && SORTIE && !globalThis[MARQUE]) {
     racine: RACINE,
     cibles: (process.env.WFRP_LECTURES_CIBLE ?? '').split(',').filter(Boolean),
   })
-  // Les modules chargés par un THREAD DE HOOKS (tsx) échappent à l'enveloppe de `fs` : le volet
-  // `enregistreur-hooks.mjs` les enregistre depuis ce thread-là.
+  // Ce qu'un THREAD DE HOOKS (tsx) charge et lit échappe à l'enveloppe de `fs` posée ici : le volet
+  // `enregistreur-hooks.mjs` enregistre depuis ce thread-là les modules ET les fichiers lus.
   register(new URL('enregistreur-hooks.mjs', import.meta.url).href, {
     data: {
       racine: path.resolve(RACINE),
