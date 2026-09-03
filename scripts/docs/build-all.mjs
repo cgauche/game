@@ -32,7 +32,7 @@ import path, { resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { binLocal, envIsole, resoudreOutilLocal } from '../lancer-local.mjs'
 import {
-  avecPied, empreinteDeLIndex, empreinteDuDisque, existeFichier, fusionnerLectures,
+  avecPied, deltaSourcesLues, empreinteDeLIndex, empreinteDuDisque, existeFichier, fusionnerLectures,
   hashBlobDisque, ignoresGit, indexGit, lirePied, serialiserSourcesLues,
 } from './lib/empreinte-sources.mjs'
 
@@ -181,6 +181,51 @@ export function ciblesNonSignees(cwd, parGenerateur) {
 /** Le dérivé committé (`{}` quand le dépôt n'en porte pas : `docs:build` l'écrit). */
 function lireSourcesLues(cwd) {
   try { return JSON.parse(readFileSync(path.join(cwd, SOURCES_LUES), 'utf8')) } catch { return {} }
+}
+
+/** Nombre de chemins imprimés par sens dans le diagnostic de fraîcheur. */
+const CHEMINS_IMPRIMES = 12
+
+const listeCourte = (chemins, signe) => [
+  ...chemins.slice(0, CHEMINS_IMPRIMES).map((c) => `      ${signe} ${c}`),
+  ...(chemins.length > CHEMINS_IMPRIMES ? [`      … et ${chemins.length - CHEMINS_IMPRIMES} autres`] : []),
+]
+
+/** Premier octet où deux textes divergent, ou `-1` s'ils sont identiques octet pour octet. */
+function premierOctetDivergent(a, b) {
+  const x = Buffer.from(a, 'utf8')
+  const y = Buffer.from(b, 'utf8')
+  const n = Math.min(x.length, y.length)
+  for (let i = 0; i < n; i++) if (x[i] !== y[i]) return i
+  return x.length === y.length ? -1 : n
+}
+
+/**
+ * Ce qui a bougé entre le dérivé COMMITTÉ et la mesure, NOMMÉ. Un rouge de fraîcheur muet ne se
+ * diagnostique pas depuis l'autre OS : la CI ubuntu du run 33717131460 rougissait sur un arbre vert
+ * sous Windows sans dire quel générateur ni quels chemins. Le cas « aucun delta » est le second
+ * verdict utile : la divergence porte alors sur la SÉRIALISATION seule (fin de ligne, ordre), pas sur
+ * le contenu mesuré.
+ */
+function diagnosticSourcesLues(actuel, rendu, mesure) {
+  if (actuel === null) return `  ${SOURCES_LUES} est ABSENT ou illisible sur le disque : rien à comparer.\n`
+  let avant
+  try { avant = JSON.parse(actuel) } catch (e) {
+    return `  ${SOURCES_LUES} n'est pas du JSON valide (${e.message}) : rien à comparer.\n`
+  }
+  const deltas = deltaSourcesLues(avant, mesure)
+  if (deltas.length) {
+    return deltas
+      .flatMap((d) => [
+        `  ${d.generateur} ${d.champ} : +${d.ajoutes.length} / -${d.retires.length}`,
+        ...listeCourte(d.ajoutes, '+'),
+        ...listeCourte(d.retires, '-'),
+      ])
+      .join('\n') + '\n'
+  }
+  const i = premierOctetDivergent(actuel, rendu)
+  const ctx = (t) => JSON.stringify(Buffer.from(t, 'utf8').subarray(i, i + 20).toString('utf8'))
+  return `  différence de SÉRIALISATION seule : ${Buffer.byteLength(actuel)} / ${Buffer.byteLength(rendu)} octets, première divergence à l'octet ${i} : ${ctx(actuel)} vs ${ctx(rendu)}\n`
 }
 
 /**
@@ -354,7 +399,8 @@ function main() {
     )
     process.exit(1)
   }
-  const rendu = serialiserSourcesLues(check ? { ...lireSourcesLues(cwd), ...parGenerateur } : parGenerateur)
+  const mesure = check ? { ...lireSourcesLues(cwd), ...parGenerateur } : parGenerateur
+  const rendu = serialiserSourcesLues(mesure)
   const cheminRendu = path.join(cwd, SOURCES_LUES)
   if (!check) {
     writeFileSync(cheminRendu, rendu)
@@ -364,6 +410,7 @@ function main() {
   let actuel
   try { actuel = readFileSync(cheminRendu, 'utf8') } catch { actuel = null }
   if (actuel !== rendu) {
+    process.stderr.write(diagnosticSourcesLues(actuel, rendu, mesure))
     process.stderr.write(`docs:check — ${SOURCES_LUES} est PÉRIMÉ (les sources MESURÉES d'au moins un générateur ont changé).\n  → relancer \`npm run docs:build\` et committer le résultat.\n`)
     process.exit(1)
   }

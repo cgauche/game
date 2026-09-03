@@ -172,5 +172,32 @@ export function serialiserSourcesLues(parGenerateur) {
   return `{\n${corps.join(',\n')}\n}\n`
 }
 
+/** Les trois champs qu'une entrée de `docs/.sources-lues.json` porte, dans l'ordre du rendu. */
+const CHAMPS = ['cibles', 'dossiers', 'fichiers']
+
+const listeDe = (entree, champ) => (Array.isArray(entree?.[champ]) ? entree[champ] : [])
+
+/**
+ * Delta entre deux `parGenerateur` déjà parsés : `{ generateur, champ, ajoutes, retires }` pour chaque
+ * champ qui diffère, un générateur absent d'un côté rendant tout son champ en ajout ou en retrait.
+ * Le rouge de fraîcheur (`build-all.mjs --check`) NOMME ainsi ce qui a bougé — sans quoi la CI d'un
+ * autre OS ne dit que « PÉRIMÉ » (run 33717131460 : vert sous Windows, rouge muet sous ubuntu).
+ * Tri : par générateur, puis par champ, chemins triés en unités de code.
+ */
+export function deltaSourcesLues(avant, apres) {
+  const noms = [...new Set([...Object.keys(avant ?? {}), ...Object.keys(apres ?? {})])].sort()
+  const deltas = []
+  for (const generateur of noms) {
+    for (const champ of CHAMPS) {
+      const a = new Set(listeDe(avant?.[generateur], champ))
+      const b = new Set(listeDe(apres?.[generateur], champ))
+      const ajoutes = [...b].filter((v) => !a.has(v)).sort()
+      const retires = [...a].filter((v) => !b.has(v)).sort()
+      if (ajoutes.length || retires.length) deltas.push({ generateur, champ, ajoutes, retires })
+    }
+  }
+  return deltas
+}
+
 /** Le doc EXISTE-t-il sur le disque (une cible en glob peut ne rien viser). */
 export const existeFichier = (p) => { try { return statSync(p).isFile() } catch { return false } }

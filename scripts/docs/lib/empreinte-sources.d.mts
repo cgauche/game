@@ -47,4 +47,9 @@ export function serialiserSourcesLues(
   parGenerateur: Record<string, { cibles: readonly string[]; fichiers: readonly string[]; dossiers: readonly string[] }>,
 ): string;
 
+export function deltaSourcesLues(
+  avant: Record<string, { cibles?: readonly string[]; fichiers?: readonly string[]; dossiers?: readonly string[] }> | null | undefined,
+  apres: Record<string, { cibles?: readonly string[]; fichiers?: readonly string[]; dossiers?: readonly string[] }> | null | undefined,
+): { generateur: string; champ: 'cibles' | 'dossiers' | 'fichiers'; ajoutes: string[]; retires: string[] }[];
+
 export function existeFichier(chemin: string): boolean;
