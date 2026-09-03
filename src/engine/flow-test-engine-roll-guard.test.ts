@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { scanFlowTestEngineRoll, siteLabel } from '../../scripts/guards/lib/flowTestEngineRoll.mjs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
+import { readFileSync } from 'node:fs';
 
 /**
  * Garde-fou « le moteur ne ROULE pas le nœud qu'il LIT » (#1657 train B3-0 — mécanique dans
@@ -24,7 +25,9 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
  * nom) : le rendu du scanner ne dépend pas de l'ordre de marche du corpus, donc pas de la machine.
  * DÉCROISSANCE mesurée : baseline 11 → 7 — les 4 sites des Blessures critiques (`critical.ts` ×3,
  * `trauma.ts` ×1) passent par la porte depuis B3-1 ; leurs entrées se retirent d'ici dans le MÊME
- * commit que le lot qui les route.
+ * commit que le lot qui les route. B3-1b n'en change pas le cardinal : les 2 sites d'AMPUTATION qu'il
+ * tue n'y ont jamais figuré — ils lisaient une forme PROPRIÉTAIRE (le type `Amputation`), invisible au
+ * critère (L) : cet angle mort est déclaré en tête du module et mordu ci-dessous.
  */
 const STOCK_2026_09_02: [site: string, mortEn: string][] = [
   ['src/engine/disease.ts:617 [lecteur tickDisease → rollTest]', 'B3-3 — chemin non-`defer` de `tickDisease` retiré'],
@@ -137,6 +140,22 @@ describe('garde `flowTestEngineRoll` — le critère sépare la FABRIQUE du ROUL
       'src/engine/x.ts:2 [lecteur lit → jette]',
       'src/engine/x.ts:3 [appelant amont → lit]',
     ]);
+  });
+
+  it('ANGLE MORT DÉCLARÉ : un rouleur qui lit une forme PROPRIÉTAIRE n’est PAS vu — et le module le DIT', () => {
+    // Source synthétique calquée sur la forme que B3-1b a tuée (#1657) : le jet y est décrit par un type
+    // PROPRE au domaine, jamais par le nœud canonique — (R) tient, (L) est faux, la garde rend 0.
+    const sites = scan([
+      'function resolveAmputation(amp: Amputation, resistVal: number, rng: RNG): GameOp[] {',
+      '  const res = rollTest(resistVal, amp.difficulty, rng);',
+      "  return res.success ? [] : [{ op: 'condition', id: 'a-terre' }];",
+      '}',
+    ].join('\n'));
+    expect(sites, 'la garde verrait une forme propriétaire : l’angle mort en tête du module a été fermé, le mettre à jour').toEqual([]);
+    // Le contrat n'est donc PAS « la garde couvre tout » mais « l’angle mort est NOMMÉ » : sans cette
+    // moitié, un vert ci-dessus se lirait comme une couverture qu’il n’a pas.
+    const module = readFileSync(new URL('../../scripts/guards/lib/flowTestEngineRoll.mjs', import.meta.url), 'utf8');
+    expect(module, 'angle mort « forme propriétaire » non déclaré en tête du module').toMatch(/ANGLE MORT STRUCTUREL[\s\S]*FORME PROPRIÉTAIRE/);
   });
 
   it('les deux formes LÉGITIMES réelles restent hors du stock (`miscast.ts`, `riverNavigation.ts`)', () => {

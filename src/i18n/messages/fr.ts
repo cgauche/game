@@ -314,6 +314,7 @@ export const fr = {
   'op.noDiseaseToCure': "{name} n'a aucune maladie à purger.",
   'op.preventInfection': "{name} : ses blessures ne s'infecteront pas ({src}).",
   'op.noCritToCure': "{name} n'a aucune Blessure critique guérissable (les amputations sont hors d'atteinte).",
+  'op.amputer': '{name} : {label} ({loc}).',
   'op.grantTalent': '{name} gagne le Talent {talent} ({src}).',
   'op.grantTalent.max': '{name} porte déjà le Talent {talent} au Maxi — aucune acquisition de plus ({src}).',
   'op.reduceToZero': '{name} : Blessures réduites à 0.',

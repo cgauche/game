@@ -39,8 +39,11 @@ import type { SeaEventDef, ManannFactor } from '../../engine/seaVoyage';
 import { RIVER_PERILS } from '../../engine/riverNavigation';
 import { MORALE_FACTORS, MORALE_BANDS } from '../../engine/crewMorale';
 import { STEAM_BREAKDOWNS } from '../../engine/shipBuild';
-import { traumaFicheById } from '../../engine/trauma';
-import { spellOps } from '../../engine/flowCore';
+import { traumaLabelOf } from '../../engine/trauma';
+import { spellOps, type Flow, type FlowTestNode } from '../../engine/flowCore';
+import type { GameOp } from '../../engine/ops';
+import { noeudAmputation } from '../../engine/critical';
+import { CRIT_TABLE_LOCATION, type CritTableKey, type JeuDeCritique } from '../../data/criticals';
 import type { ShipCritEntry } from '../../data/shipCriticals';
 import { datasetArray, datasetObject } from '../../data/overrides';
 import type { CritTableEntry, MiscastRowEntry } from '../../data/overrides';
@@ -657,31 +660,72 @@ function makeCategory(spec: CodexCategorySpec): CodexCategory {
   };
 }
 
-/** Libellé d'une fiche de Traumatisme par id, SANS crasher si la réf est cassée (contrairement à
- *  `traumaFicheById`, qui lève — le Codex reste défensif comme `codexLookup`). */
-const traumaLabelOf = (id: string): string => { try { return traumaFicheById(id).label; } catch { return id; } };
+/** Les nœuds `test` d'un Flow, dans l'ordre de jeu — le joueur doit voir AUTANT de jets que le moteur
+ *  en joue (doctrine de la forme canonique des jets). Marche récursive, aucune forme n'est supposée. */
+function noeudsDeTest(f: Flow | undefined): FlowTestNode[] {
+  if (!f) return [];
+  switch (f.kind) {
+    case 'test': return [f, ...noeudsDeTest(f.success), ...noeudsDeTest(f.fail)];
+    case 'seq': return f.steps.flatMap(noeudsDeTest);
+    case 'if': return [...noeudsDeTest(f.then), ...noeudsDeTest(f.else)];
+    case 'choice': return [...noeudsDeTest(f.yes), ...noeudsDeTest(f.no)];
+    default: return [];
+  }
+}
+
+/**
+ * Ops d'un Flow SANS FRANCHIR un jet — la conséquence de CE niveau, les sous-jets exclus. C'est ce qui
+ * distingue « ce que ce jet applique » de « ce que le jet suivant appliquera » : `spellOps` descend dans
+ * les branches d'un `test` imbriqué et ferait promettre à un jet les États du suivant (« Coupure à
+ * l'orteil » : le gate l.171 annoncerait les États du Test l.237). Les `if` sont TRAVERSÉS (leurs deux
+ * branches font partie de la conséquence de ce niveau — l'échelle de DR de l.237), les `test` NON.
+ * Sur le Flow entier, la même marche rend l'amputation que la ligne PRONONCE hors de tout jet
+ * (« Vous perdez votre main – Amputation (Difficile) », LDB 18 l.124). Question DISTINCTE de
+ * `certainFlowOps` (« que promet CETTE branche », fail-closed sur tout nœud incertain).
+ */
+function opsHorsJet(f: Flow | undefined): GameOp[] {
+  if (!f) return [];
+  if (f.kind === 'seq') return f.steps.flatMap(opsHorsJet);
+  if (f.kind === 'if') return [...opsHorsJet(f.then), ...opsHorsJet(f.else)];
+  if (f.kind === 'do' && f.effect.type === 'ops') return f.effect.ops;
+  return [];
+}
+
+/** Libellé d'un nœud `test` : « Compétence Difficulté », la Compétence résolue PAR ID. */
+function libelleDeJet(n: FlowTestNode): string {
+  return `${refLabel('skills', n.test.skill ?? { id: 'resistance' })} ${DIFFICULTY_LABELS[n.test.difficulty!]}`;
+}
 
 /** Item Codex d'une entrée de table de Blessures Critiques par Localisation (LDB 18 « Traumatisme » ET
  *  AA « approche alternative », #157) — 8 catégories (4 familles × 2 jeux), MÊME projection : plage
  *  d100 → nom, effet immédiat (`ops`, même vocabulaire GameOp que passifs/sorts), le JET de la rangée
  *  (Difficulté + conséquence de l'échec, #1682) et les Traumatismes engendrés en cross-réf (résolus par
  *  id → libellé, comme les Tables de Corruption pour les mutations). La trivialité (« T », AA 07
- *  l.79) est DÉRIVÉE de la rangée, jamais relue d'un champ. */
-function critEntryItem(e: CritTableEntry): CodexItem {
+ *  l.79) est DÉRIVÉE de la rangée, jamais relue d'un champ.
+ *
+ *  Le/les Test(s) d'AMPUTATION (LDB 18 l.237) sont DÉRIVÉS du nœud que le moteur fabrique
+ *  (`noeudAmputation`) — jamais re-décrits ici : la vue et le jeu ne peuvent pas diverger. */
+function critEntryItem(e: CritTableEntry, jeu: JeuDeCritique, table: CritTableKey): CodexItem {
   const jet = e.test;
+  const amputation = noeudAmputation(e, jeu, CRIT_TABLE_LOCATION[table]);
+  const jetsAmp = noeudsDeTest(amputation);
   return depuisEnveloppe(e, {
     sub: `d100 ${e.min}–${e.max}`,
     meta: facts(
       e.lethal ? fact('Létal', 'oui') : null,
       !e.lethal && !(e.ops ?? []).some((o) => o.op === 'wounds') ? fact('Type', 'Triviale (« T »)') : null,
-      // Sans compétence nommée, le jet est le Test de RÉSISTANCE du critique (`critResistValue`) —
-      // le libellé se résout PAR ID, jamais écrit en dur.
-      jet ? fact('Jet', `${refLabel('skills', jet.test.skill ?? { id: 'resistance' })} ${DIFFICULTY_LABELS[jet.test.difficulty!]}`) : null,
+      jet ? fact('Jet', libelleDeJet(jet)) : null,
+      jetsAmp.length ? fact(jetsAmp.length > 1 ? 'Jets d’Amputation' : 'Jet d’Amputation', jetsAmp.map(libelleDeJet).join(' puis ')) : null,
+      e.amputation?.timing === 'postEncounter' ? fact('Quand', 'Une fois la rencontre terminée') : null,
     ),
     sections: sections(
       passiveSection(e.ops, 'Effet immédiat'),
-      jet ? passiveSection(spellOps(jet.fail, 'target'), 'Si le jet échoue') : null,
-      jet ? passiveSection(spellOps(jet.success, 'target'), 'Si le jet réussit') : null,
+      jet ? passiveSection(opsHorsJet(jet.fail), 'Si le jet échoue') : null,
+      jet ? passiveSection(opsHorsJet(jet.success), 'Si le jet réussit') : null,
+      ...jetsAmp.map((n) => passiveSection(opsHorsJet(n.fail), `${libelleDeJet(n)} — si le jet échoue`)),
+      // L'amputation que la ligne PRONONCE (22 rangées sur 26 : « Vous perdez votre main ») vit HORS des
+      // branches — sans cette section, le Codex ne montrerait que le jet et tairait la perte elle-même.
+      passiveSection(opsHorsJet(amputation), 'Amputation — quoi que donne le jet'),
       e.traumas?.length
         ? {
             title: 'Traumatismes engendrés', layout: 'chips',
@@ -1999,35 +2043,35 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'criticalsTete', label: 'Critiques — Tête (Traumatisme)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'LDB 18',
-    build: () => datasetArray('criticalsTete').map(critEntryItem),
+    build: () => datasetArray('criticalsTete').map((e) => critEntryItem(e, 'ldb', 'tete')),
   },
   {
     key: 'criticalsBras', label: 'Critiques — Bras (Traumatisme)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'LDB 18',
-    build: () => datasetArray('criticalsBras').map(critEntryItem),
+    build: () => datasetArray('criticalsBras').map((e) => critEntryItem(e, 'ldb', 'bras')),
   },
   {
     key: 'criticalsCorps', label: 'Critiques — Corps (Traumatisme)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'LDB 18',
-    build: () => datasetArray('criticalsCorps').map(critEntryItem),
+    build: () => datasetArray('criticalsCorps').map((e) => critEntryItem(e, 'ldb', 'corps')),
   },
   {
     key: 'criticalsJambe', label: 'Critiques — Jambe (Traumatisme)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'LDB 18',
-    build: () => datasetArray('criticalsJambe').map(critEntryItem),
+    build: () => datasetArray('criticalsJambe').map((e) => critEntryItem(e, 'ldb', 'jambe')),
   },
   {
     key: 'aaCriticalsTete', label: 'Critiques — Tête (approche alternative)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'AA',
-    build: () => datasetArray('aaCriticalsTete').map(critEntryItem),
+    build: () => datasetArray('aaCriticalsTete').map((e) => critEntryItem(e, 'aa', 'tete')),
   },
   {
     key: 'aaCriticalsBras', label: 'Critiques — Bras (approche alternative)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'AA',
-    build: () => datasetArray('aaCriticalsBras').map(critEntryItem),
+    build: () => datasetArray('aaCriticalsBras').map((e) => critEntryItem(e, 'aa', 'bras')),
   },
   {
     key: 'aaCriticalsCorps', label: 'Critiques — Corps (approche alternative)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'AA',
-    build: () => datasetArray('aaCriticalsCorps').map(critEntryItem),
+    build: () => datasetArray('aaCriticalsCorps').map((e) => critEntryItem(e, 'aa', 'corps')),
   },
   {
     key: 'aaCriticalsJambe', label: 'Critiques — Jambe (approche alternative)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'AA',
-    build: () => datasetArray('aaCriticalsJambe').map(critEntryItem),
+    build: () => datasetArray('aaCriticalsJambe').map((e) => critEntryItem(e, 'aa', 'jambe')),
   },
   {
     key: 'incidentsMonture', label: 'Incidents de monte', group: 'Tables', cluster: 'Voyage terrestre',

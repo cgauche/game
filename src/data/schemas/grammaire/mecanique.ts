@@ -48,6 +48,19 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     symptomId: idDe('symptome'),
     severity: z.enum(['moderee', 'grave']).optional(),
   }),
+  /** `amputer` (LDB 18 l.233-286) : AUTHORABLE comme toute op (l'atelier la propose sous « Séquelles &
+   *  mobilité » — un Trait de créature qui tranche un membre s'écrit avec elle), mais AUCUNE donnée
+   *  committée ne la porte aujourd'hui : ses seuls producteurs sont les rangées de Critique, où
+   *  `noeudAmputation` (engine/critical.ts) la fabrique depuis `entry.amputation`. Son payload est typé
+   *  ICI comme celui de toute op authorée ; ses `sequels` sont des ids de fiche `traumas.json`, dataset
+   *  non encore déclaré à `TYPES` (même graphie que `amputationSchema`). */
+  amputer: z.strictObject({
+    op: z.literal('amputer'),
+    sequels: z.array(z.string()),
+    loc: hitLocationSchema.optional(),
+    unites: formulaSchema.optional(),
+    unitesPerSL: perSLSchema.optional(),
+  }),
   heal: z.strictObject({ op: z.literal('heal'), amount: formulaSchema, perSL: perSLSchema.optional() }),
   healCaster: z.strictObject({ op: z.literal('healCaster'), amount: formulaSchema }),
   kill: z.strictObject({ op: z.literal('kill') }),

@@ -1027,9 +1027,11 @@ export interface Trauma {
    *  `stampCriticalEscalation`, lu par `fireCritTriggers` au point unique de résolution des critiques. */
   critTrigger?: { location?: HitLocation; whileCondition: string; test: import('../data/criticals').CritTestNode };
   /** Amputation DIFFÉRÉE à la fin de la rencontre (LDB 18, « Coupure à l'orteil » l.171 : « Une fois la
-   *  rencontre terminée… ») : marqueur posé par `resolveCritique` pour un `amputation.timing === 'postEncounter'`,
-   *  résolu par `resolvePostEncounterAmputations` au foyer de fin de combat (jet + séquelle/plaie/États). */
-  pendingAmputation?: import('../data/criticals').Amputation;
+   *  rencontre terminée… ») : le/les Test(s) FABRIQUÉS par `resolveCritique` pour un
+   *  `amputation.timing === 'postEncounter'`, ENJEU POSÉ — ARMÉS ici (même patron de nœud persisté que
+   *  `critTrigger`), CONSOMMÉS par `prendreAmputationsDifferees` au foyer de fin de combat et ouverts par
+   *  la porte canonique (`routeTriggeredTest`). Le moteur ne les roule jamais. */
+  pendingAmputation?: import('./flowCore').Flow;
   /** Séquelle POST-guérison (LDB 18 l.61/72 : « Une fois que la blessure est guérie… ») : marqueur de la
    *  Blessure critique EN COURS DE GUÉRISON. Le critique est GUÉRI quand tous les États `whenClear` sont
    *  retirés (LDB 18 « Guérir les Blessures critiques » : « pas guéries tant que tous les États associés

@@ -169,7 +169,7 @@ import { domainOnHitEffects, domainCasterOps, isSorceryDomain, domainEnvironment
 import { decayZones, discTiles, wallTiles, clampZoneTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { contractionDue, applyContraction, hasActiveCapability, DISEASE_DEFS } from '../engine/disease';
-import { resolveCritique, jeuDeCritique, critiqueTriviale, critWoundLocation, critImmediateSummary, resolvePostEncounterAmputations, critSeverityReduction, critTableKeyFor, critTableRows, type CriticalResolved, type CritTableKey } from '../engine/critical';
+import { resolveCritique, jeuDeCritique, critiqueTriviale, critWoundLocation, critImmediateSummary, prendreAmputationsDifferees, critSeverityReduction, critTableKeyFor, critTableRows, type CriticalResolved, type CritTableKey } from '../engine/critical';
 import { findTableEntry } from '../engine/tables';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { rollArtillerySalveMisfire } from '../engine/artilleryMisfire';
@@ -5898,14 +5898,15 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   const steps: BuiltCascadeStep[] = [];
   const monos: BuiltCascadeStep[] = [];
   const inlineLines: string[] = [];
-  // Amputations DIFFÉRÉES à la fin de la rencontre (LDB 18, « Coupure à l'orteil » : « Une fois la rencontre
-  // terminée… ») : jet + séquelle/plaie/États résolus ICI pour tout survivant porteur d'un marqueur (mute le
-  // combattant → repris par `carryOverState` au writeback). Jet silencieux (journal) — cette famille-ci
-  // n'est PAS bandée (deux Tests ENCHAÎNÉS et conditionnels, hors du périmètre L4).
+  // Amputations DIFFÉRÉES à la fin de la rencontre (LDB 18 l.171 : « Une fois la rencontre terminée… ») :
+  // le nœud ARMÉ au critique (`Trauma.pendingAmputation`, enjeu posé) part par la PORTE canonique — porteur
+  // SURFACÉ : étape influençable APPENDÉE à la cascade 'combat' de fin de combat (`startCascade` OU-e la
+  // borne quand `openSequence` suit) ; sinon voie inline de la porte, dont le journal est drainé ici.
   for (const c of battle.combatants) {
     if (c.dead) continue;
-    inlineLines.push(...resolvePostEncounterAmputations(c, battleRng()));
+    for (const a of prendreAmputationsDifferees(c)) routeTriggeredTest(get, set, c, c, a.flow, { label: a.label });
   }
+  inlineLines.push(...drainPendingLog(get, set).map((e) => e.text));
   for (const c of battle.combatants) {
     if (!followsCharacterRules(c) || c.dead) continue; // #143 : RAW « Personnage » (LDB 18 l.5, LDB 20 l.14/206) — les créatures génériques et les défaits n'ont pas de jet de maladie/Corruption de fin de combat
     const decided = decideCombatEndHeroTests(c, corr?.level ?? null);
@@ -5960,6 +5961,11 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   // `bandStep`) comme ceux venus de la file, qui est elle-même typée à la marque (#1262 V2) — la dernière
   // ouverture de combat par littéral passe donc par la porte.
   if (steps.length) openSequence(get, set, { title: 'Conséquences du combat', icon: 'condition/bleeding', purpose: 'combat', steps, combatEndBoundary: true });
+  // La BORNE porte sur la cascade RÉELLEMENT ouverte : un Test d'amputation surfacé peut l'avoir ouverte
+  // à lui seul (`startCascade` renonce sur `steps` vide). Sans elle, sa fermeture rappellerait
+  // `openCombatEndCascade` et rejouerait l'Exposition à la Corruption, dont le Degré n'est pas un marqueur.
+  const ouverte = get().pendingCascade;
+  if (ouverte && ouverte.purpose === 'combat' && !ouverte.combatEndBoundary) set({ pendingCascade: { ...ouverte, combatEndBoundary: true } });
 }
 
 /**

@@ -1293,6 +1293,7 @@ describe('GameOp — toute référence de la donnée committée résout dans son
 
   const MUTATION_TABLE_IDS = new Set(mutationTables.map((t) => t.id));
   const EFFECT_TABLE_IDS = new Set(effectTables.map((t) => t.id));
+  const TRAUMA_IDS = new Set((traumasJson as { id: string }[]).map((t) => t.id));
 
   const resolvers: Record<string, (id: string) => boolean> = {
     etats: (id) => !!findConditionById(id),
@@ -1303,6 +1304,7 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     skills: (id) => !!byId('skill', id),
     maladies: (id) => !!findDiseaseById(id),
     symptoms: (id) => !!findSymptomById(id),
+    traumas: (id) => TRAUMA_IDS.has(id),
     trappings: (id) => !!findTrappingById(id),
     qualities: (id) => !!findQualityById(id),
     weaponGroups: (id) => !!findWeaponGroupById(id),

@@ -11,46 +11,20 @@
  */
 import { d100, d10, RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
-import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
 import {
   CRITIQUE_DOCS, critTableKeyFor, critiqueDoc, critiqueTable,
-  type Amputation, type CritEntry, type CritTableKey, type JeuDeCritique,
+  type CritEntry, type CritTableKey, type JeuDeCritique,
 } from '../data/criticals';
-import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers, consolidateAmputations, setTraumaCount, AMPUTATION_WOUND_DESC } from './trauma';
+import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers } from './trauma';
 import { rule } from './policy';
-import { poserEnjeu, type Flow, type FlowTestNode } from './flowCore';
+import { EMPTY_FLOW, poserEnjeu, type Flow, type FlowTestNode } from './flowCore';
 import { combatStakeRef, type StakeRef } from '../data';
-import { applyOps, resolveFormula, type GameOp } from './ops';
+import { type GameOp } from './ops';
 
 export type { CritTableKey, JeuDeCritique };
-
-/**
- * Séquelles PERMANENTES d'une amputation (LDB 18 l.233-286) — distinctes de la plaie chirurgicale : elles
- * survivent à la Chirurgie (le membre reste absent). Instanciées depuis les `sequels` (ids de fiche
- * `traumas.json`) DÉCLARÉS STRUCTURELLEMENT sur le critique (`entry.amputation.sequels`) — plus aucune
- * lecture du texte. La latéralité (brasG/brasD, jambeG/jambeD) provient de la `location` réelle du coup —
- * hypothèse de jeu : **tout le monde est DROITIER** (main principale = brasD). Une séquelle CUMULATIVE
- * (`TraumaFiche.cumul`) reçoit ici le nombre d'unités que la LIGNE de Critique fait perdre (`units`,
- * résolu par `resolveAmputation` depuis `amputation.unites` — « Perdez 1d10 dents » — et
- * `amputation.loss.perDR` — « un orteil par DR en dessous de 0 »). Une séquelle NON cumulative l'ignore
- * (« perdez votre langue ET 1d10 dents »). L'agrégation et les seuils suivent (`consolidateAmputations`).
- */
-export function permanentAmputations(sequels: string[], location: HitLocation, units = 1): Trauma[] {
-  return sequels.map((id) => {
-    const fiche = traumaFicheById(id);
-    const t = traumaById(id, undefined, location);
-    if (fiche.cumul) setTraumaCount(t, fiche, units);
-    return t;
-  });
-}
-
-/** Valeur de Résistance d'un Coup Critique (LDB 18) : Endurance effective + Avances de Résistance. SOURCE UNIQUE. */
-export function critResistValue(c: Combatant): number {
-  return effectiveChar(c, 'endurance') + (c.skills.find((s) => s.id === 'resistance')?.advances ?? 0);
-}
 
 /**
  * ENJEU (#1117) du Test d'une rangée de Critique — patron `miscast.mkTest` : le producteur nomme la
@@ -72,65 +46,70 @@ function noeudDeRangee(entry: CritEntry, jeu: JeuDeCritique, location: HitLocati
   return noeud;
 }
 
+/** Feuille `do` d'une liste d'ops — la forme Flow d'un effet, écrite une fois pour ce module. */
+const feuille = (ops: GameOp[]): Flow => ({ kind: 'do', effect: { type: 'ops', ops } });
+
 /**
- * Résout une Amputation (LDB 18 l.237) — SOURCE UNIQUE partagée par `resolveCritique` (les deux jeux)
- * et la résolution post-rencontre. Renvoie l'effet immédiat (`ops` : États À Terre/Sonné/Inconscient)
- * et les `traumas` (plaie chirurgicale `needsSurgery` + séquelles permanentes). RNG consommé :
- *  - `loss.difficulty` présent → 1 Test SÉPARÉ (gate) D'ABORD : sa RÉUSSITE annule TOUT (ni séquelle, ni plaie, ni
- *    États). Sinon on continue (« Coupure à l'orteil » : gate Intermédiaire).
- *  - puis le Test de Résistance `difficulty` (États par DR). Sans `loss.difficulty`, un `loss` sans gate propre fait
- *    de CE Test le déterminant de la perte (« Pied écrasé » : un seul Test Accessible gate ET États).
- *  - `loss.perDR` → nombre d'occurrences perdues = 1 + DR en dessous de 0 du Test qui gate la perte.
- * Sans `loss` : séquelle TOUJOURS (membre tranché — pied sectionné, tendon coupé…).
+ * Le(s) Test(s) d'une Amputation (LDB 18 l.237), ENJEU POSÉ, prêts à partir par la porte — fabrique
+ * PURE jumelle de `noeudDeRangee` : aucun dé n'est tiré ici, la porte les roule (avec les États du
+ * porteur, sa Chance et sa Résilience). Les branches sont COMPOSÉES du vocabulaire existant
+ * (`condition`, Condition `slThreshold`, op `amputer`) — rien n'est spécial à l'amputation.
+ *
+ * Trois formes, toutes PARAMÉTRIQUES (la DONNÉE décide, le code ne branche sur aucun cas nommé) :
+ *  - `loss.difficulty` (l.171) — Test ENGLOBANT dont la réussite annule tout ; son échec joue le reste ;
+ *  - `loss` sans gate (l.180) — le Test l.237 détermine LUI-MÊME la perte : `amputer` dans sa `fail` ;
+ *  - sans `loss` (l.124, l.237) — la ligne fait perdre le membre quoi qu'il arrive : `amputer` suit le
+ *    Test en séquence, et le Test ne décide que des États.
+ * `loss.perDR` (l.180) devient `unitesPerSL {every:1, amount:1, onFailure:true}` : `ctx.sl` de la
+ * branche `fail` porte le DR, `slBonus` en tire « un orteil par DR en dessous de 0 ».
+ *
+ * Le LIBELLÉ sépare les deux Tests d'une même ligne (`entry.label` pour le gate, la plaie pour l.237) :
+ * `triggeredTestStepId` keye par (porteur, libellé, Compétence) — deux « Résistance » homonymes
+ * rendraient la seconde étape injoignable.
  */
-export function resolveAmputation(amp: Amputation, location: HitLocation, resistVal: number, ref: Combatant, rng: RNG = defaultRNG): { ops: GameOp[]; traumas: Trauma[] } {
-  const ops: GameOp[] = [];
-  const traumas: Trauma[] = [];
-  let units = 1;
-  if (amp.loss?.difficulty) {
-    const gate = rollTest(resistVal, amp.loss.difficulty, rng);
-    if (gate.success) return { ops, traumas }; // Test gate réussi → pas d'amputation du tout
-    if (amp.loss.perDR) units = 1 + Math.max(0, -gate.sl);
-  }
-  const res = rollTest(resistVal, amp.difficulty, rng);
-  if (!res.success) {
-    ops.push({ op: 'condition', id: 'a-terre', value: 1 });
-    if (res.sl <= -2) ops.push({ op: 'condition', id: 'sonne', value: 1 });
-    if (res.sl <= -4) ops.push({ op: 'condition', id: 'inconscient', value: 1 });
-  }
-  if (amp.loss && !amp.loss.difficulty) {
-    // Pas de gate séparé : le Test de Résistance ci-dessus détermine LUI-MÊME la perte (succès → pas d'amputation).
-    if (res.success) return { ops, traumas };
-    if (amp.loss.perDR) units = 1 + Math.max(0, -res.sl);
-  }
-  // Quantité DÉCLARÉE par la ligne (« Perdez 1d10 dents ») — résolue ICI, après les Tests, pour ne
-  // consommer le dé que sur les lignes qui en portent un.
-  if (amp.unites != null) units = resolveFormula(amp.unites, ref, rng) + (units - 1);
-  traumas.push({ label: 'Amputation', location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC });
-  traumas.push(...permanentAmputations(amp.sequels, location, units));
-  return { ops, traumas };
+export function noeudAmputation(entry: CritEntry, jeu: JeuDeCritique, location: HitLocation): Flow | undefined {
+  const amp = entry.amputation;
+  if (!amp) return undefined;
+  const enjeu = enjeuDeRangee(jeu, location, entry.id);
+  const perteGateeParCeTest = !!amp.loss && !amp.loss.difficulty;
+  const amputer = feuille([{
+    op: 'amputer', sequels: amp.sequels, loc: location,
+    ...(amp.unites != null ? { unites: amp.unites } : {}),
+    ...(amp.loss?.perDR ? { unitesPerSL: { every: 1, amount: 1, onFailure: true } } : {}),
+  }]);
+  const etats: Flow[] = [
+    feuille([{ op: 'condition', id: 'a-terre', value: 1 }]),
+    { kind: 'if', cond: { kind: 'slThreshold', op: '<=', value: -2 }, then: feuille([{ op: 'condition', id: 'sonne', value: 1 }]) },
+    { kind: 'if', cond: { kind: 'slThreshold', op: '<=', value: -4 }, then: feuille([{ op: 'condition', id: 'inconscient', value: 1 }]) },
+  ];
+  const noeud: FlowTestNode = {
+    kind: 'test',
+    test: poserEnjeu({ skill: { id: 'resistance' }, difficulty: amp.difficulty, label: traumaFicheById('amputation-plaie').label }, enjeu),
+    success: EMPTY_FLOW,
+    fail: { kind: 'seq', steps: perteGateeParCeTest ? [...etats, amputer] : etats },
+  };
+  if (perteGateeParCeTest) return noeud;
+  const avecPerte: Flow = { kind: 'seq', steps: [noeud, amputer] };
+  if (!amp.loss?.difficulty) return avecPerte;
+  return {
+    kind: 'test',
+    test: poserEnjeu({ skill: { id: 'resistance' }, difficulty: amp.loss.difficulty, label: entry.label }, enjeu),
+    success: EMPTY_FLOW,
+    fail: avecPerte,
+  };
 }
 
 /**
- * Résout à la FIN de la rencontre (LDB 18) les amputations DIFFÉRÉES (`Trauma.pendingAmputation`, posé par
- * `resolveCritique` pour un `amputation.timing === 'postEncounter'`, ex. « Coupure à l'orteil »). Retire les
- * marqueurs, applique les États résultants et pose les séquelles/plaie, puis consolide (orteils cumulés).
- * Mute `c` ; renvoie le journal. Appelé au foyer de fin de combat (`state/combatFlow.ts`).
+ * Amputations DIFFÉRÉES à la fin de la rencontre (LDB 18 l.171) — CONSOMME les marqueurs
+ * `Trauma.pendingAmputation` armés par `resolveCritique` et rend les Flows à ouvrir par la porte
+ * canonique. PUR au sens du jet : aucun dé n'est tiré ici (le nœud a été fabriqué au critique, enjeu
+ * posé) ; seule la liste des séquelles de `c` est mutée, comme le faisait le retrait de marqueur.
  */
-export function resolvePostEncounterAmputations(c: Combatant, rng: RNG = defaultRNG): string[] {
+export function prendreAmputationsDifferees(c: Combatant): { label: string; flow: Flow }[] {
   const pending = (c.traumas ?? []).filter((t) => t.pendingAmputation);
   if (!pending.length) return [];
-  const resistVal = critResistValue(c);
   c.traumas = (c.traumas ?? []).filter((t) => !t.pendingAmputation);
-  const log: string[] = [];
-  for (const t of pending) {
-    const r = resolveAmputation(t.pendingAmputation!, t.location, resistVal, c, rng);
-    applyOps(c, r.ops, { rng });
-    c.traumas = [...(c.traumas ?? []), ...r.traumas];
-    log.push(r.traumas.length > 1 ? `${c.label} : ${t.label} — amputation confirmée après la rencontre.` : `${c.label} : ${t.label} — sans séquelle après la rencontre.`);
-  }
-  consolidateAmputations(c);
-  return log;
+  return pending.map((t) => ({ label: t.label, flow: t.pendingAmputation! }));
 }
 
 export interface CriticalResolved {
@@ -322,11 +301,10 @@ export function resolveCritique(
   const raw = forcedRoll ?? (twice ? Math.max(d100(rng), d100(rng)) : d100(rng));
   const roll = Math.max(1, raw + regime.severite(target, overkill));
   const entry = findTableEntry(critiqueTable(jeu, location), roll); // repli Bras (LDB 76 l.21) si loc sans table dédiée
-  const resistVal = critResistValue(target);
   const ops: GameOp[] = [...(entry.ops ?? [])];
   // Nœud `test` de la rangée : FABRIQUÉ à part (enjeu à la LIGNE), jamais roulé — il part par la porte.
   const rangee = noeudDeRangee(entry, jeu, location);
-  const tests = rangee ? [rangee] : [];
+  const tests: Flow[] = rangee ? [rangee] : [];
   // Occurrence-count PAR ID D'ENTRÉE (LDB 18 l.71 : « Si vous tombez une seconde fois sur cette blessure… » ;
   // AA 07 l.96) : la MÊME entrée déjà subie → effet ALTERNATIF `escalation.onRepeat` (séquelles REMPLACÉES,
   // ops immédiates AJOUTÉES). L'effet IMMÉDIAT de base reste appliqué (le coup blesse toujours).
@@ -340,18 +318,14 @@ export function resolveCritique(
   const traumas = traumaRefs.map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
   // Amputation (LDB 18 l.237 ; AA 07 « voir Amputation en page 180 de WFJDR ») : DÉCLARÉE STRUCTURELLEMENT
-  // (`entry.amputation`, jamais lue par regex sur le texte). Placée en DERNIER (rien ne tire après) pour ne
-  // décaler le flux RNG que des critiques d'amputation. `timing: 'postEncounter'` (« Coupure à l'orteil »,
-  // l.171 : « Une fois la rencontre terminée… ») → aucun jet ICI : marqueur `pendingAmputation` résolu au
-  // foyer de fin de combat (`resolvePostEncounterAmputations`).
+  // (`entry.amputation`, jamais lue par regex sur le texte). Son/ses Test(s) sont FABRIQUÉS ici et rejoignent
+  // le `testFlow` APRÈS le nœud de la rangée (ordre RAW : la rangée, puis l'amputation qu'elle prononce) —
+  // aucun dé n'est tiré. `timing: 'postEncounter'` (l.171 : « Une fois la rencontre terminée… ») → le nœud
+  // est ARMÉ sur le marqueur `pendingAmputation`, ouvert par la porte au foyer de fin de combat.
   if (!entry.lethal && entry.amputation) {
-    if (entry.amputation.timing === 'postEncounter') {
-      traumas.push({ label: entry.label, location, pendingAmputation: entry.amputation });
-    } else {
-      const amp = resolveAmputation(entry.amputation, location, resistVal, target, rng);
-      ops.push(...amp.ops);
-      traumas.push(...amp.traumas);
-    }
+    const noeud = noeudAmputation(entry, jeu, location)!;
+    if (entry.amputation.timing === 'postEncounter') traumas.push({ label: entry.label, location, pendingAmputation: noeud });
+    else tests.push(noeud);
   }
   // Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du pied sans
   // Chirurgie sous 1d10 jours ; « Épaule luxée »/« Genou démis » : membre désactivé jusqu'au Test étendu de

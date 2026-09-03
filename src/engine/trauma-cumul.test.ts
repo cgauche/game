@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traumaById, consolidateAmputations, setTraumaCount, traumaCumulOps, traumaCharPenalties, traumaFicheById } from './trauma';
-import { permanentAmputations } from './critical';
+import { traumaById, consolidateAmputations, setTraumaCount, traumaCumulOps, traumaCharPenalties, traumaFicheById, permanentAmputations } from './trauma';
 import type { Combatant, Trauma, HitLocation } from './types';
 
 /**

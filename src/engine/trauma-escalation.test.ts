@@ -137,10 +137,11 @@ describe('#166/#167 — câblage DONNÉE→plaie (stampCriticalEscalation) + ent
     expect(find(critiqueDoc('ldb', 'jambe').entries, 'pied-ecrase')).toEqual({ apresDelai: FOOT_AFTER_DELAY });
   });
   it('resolveCritique(aa, « Pied écrasé ») stampe l’escalade sur la plaie (overkill place le jet en 106-115)', () => {
-    // roll = d100 + 10×overkill ; d100=100, overkill=1 → 110 (aa-jambe-106). Puis Test de Résistance
-    // d’amputation (d100 haut = échec sans conséquence de flag), puis d10=5 pour amputateAfterDays.
+    // roll = d100 + 10×overkill ; d100=100, overkill=1 → 110 (aa-jambe-106). Puis d10=5 pour
+    // `amputateAfterDays` : depuis #1657 B3-1b le Test d'amputation n'est plus roulé ici (il part par
+    // la porte), donc AUCUN dé ne s'intercale entre la sévérité et le délai de l'escalade.
     const c = C({ skills: [{ id: 'resistance', characteristic: 'endurance', advances: 0 }] });
-    const res = resolveCritique('aa', c, 'jambeD', seq([100, 1, 5]), { overkill: 1 });
+    const res = resolveCritique('aa', c, 'jambeD', seq([100, 5]), { overkill: 1 });
     const p = res.traumas.find((t) => t.label === 'Amputation');
     expect(p?.amputateAfterDays).toBe(5);
     expect(p?.amputateSequel).toBe('membre-inferieur-ampute');

@@ -88,7 +88,14 @@ import type { Scene } from './scene';
 // par la porte, et le mint d'étape REFUSE un enjeu muet (`monoStep`, `rollSeam.ts`). Une save de 42
 // rouvrirait avec une Commotion cérébrale sans enjeu : le critique suivant ouvrirait une fenêtre
 // refusée au lieu du Test. La save se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 43;
+
+// 43 → 44 (#1657 B3-1b) : le marqueur d'amputation DIFFÉRÉE persisté (`Trauma.pendingAmputation`,
+// « Coupure à l'orteil ») change de forme — la donnée `Amputation` (`{difficulty, sequels, loss…}`)
+// devient le/les nœud(s) `test` FABRIQUÉS au critique, enjeu posé (même patron que `critTrigger`).
+// Une save de 43 rouvrirait avec un marqueur que `prendreAmputationsDifferees` enverrait tel quel à
+// `routeTriggeredTest` : un objet sans `kind`, ni Test ouvert ni séquelle posée. La save se jette
+// (politique 2 ci-dessus).
+export const SAVE_VERSION = 44;
 
 export interface SaveMeta {
   version: number;

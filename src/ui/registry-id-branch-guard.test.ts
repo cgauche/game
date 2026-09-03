@@ -164,7 +164,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/conditions.ts': 1,
   'src/engine/corruption.ts': 2,
   'src/engine/crewedWeapon.ts': 1,
-  'src/engine/critical.ts': 1, // reste `s.id === 'resistance'` (lookup par id stable)
   'src/engine/drunkenness.ts': 1,
   'src/engine/engagement.ts': 2,
   'src/engine/equipCompare.ts': 2,

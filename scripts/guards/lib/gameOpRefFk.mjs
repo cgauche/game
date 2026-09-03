@@ -107,6 +107,8 @@ export const GAMEOP_FIELD_TARGETS = {
   'grantTalent.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
   'grantCareerTalent.spec': { coveredBy: 'refs-migrated.test.ts § GARDE EXHAUSTIVE (Phase 3 complétude)' },
 
+  // ── Séquelles (traumas.json) — `permanentAmputations` (src/engine/trauma.ts) instancie CHAQUE id ──
+  'amputer.sequels': { registry: 'traumas' },
   // ── Maladies / symptômes ──
   'exposeDisease.disease': { registry: 'maladies' },
   'contractDisease.disease': { registry: 'maladies' },

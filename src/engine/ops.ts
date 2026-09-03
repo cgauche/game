@@ -32,7 +32,7 @@ import { setGrapple } from './grapple'; // op `condition {grapple:true}` → rel
 import type { CodexTarget } from './ruleRefs'; // module FEUILLE (aucun import) : type de l'identité de source portée par PassiveMod
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
-import { cureCriticalWounds, receiveMedicalAid, traumaPassiveMods } from './trauma';
+import { cureCriticalWounds, receiveMedicalAid, traumaPassiveMods, permanentAmputations, consolidateAmputations, traumaFicheById, estPlaieAmputation, AMPUTATION_WOUND_DESC } from './trauma';
 import { applyHealWounds } from './healing';
 import { fateSaveOrDie } from './fortune';
 import { talentMaxReached } from './careerSlots';
@@ -60,6 +60,8 @@ import {
   HIT_LOCATION_LABELS,
   ItemInstance,
   Weapon,
+  locationLabel,
+  type Trauma,
   type ReachValue,
   type ConditionEmit,
 } from './types';
@@ -602,6 +604,16 @@ export type GameOp =
   /** Guérit `count` (+échelle DR) Blessures critiques de convalescence — jamais une amputation
    *  (Larmes de Shallya, LDB 42). */
   | { op: 'cureCriticalWound'; count?: number; countPerSL?: PerSL }
+  /** AMPUTATION (LDB 18 l.233-286) : pose la plaie chirurgicale (`needsSurgery`) et les séquelles
+   *  PERMANENTES `sequels` (ids de fiche `traumas.json`), puis consolide les cumuls
+   *  (`consolidateAmputations` — doigts/orteils/dents/organes pairés). `loc` = Localisation du membre
+   *  perdu (défaut : celle du coup courant, `ctx.location`). `unites` = quantité perdue par les séquelles
+   *  CUMULATIVES (« Perdez 1d10 dents », défaut 1) ; `unitesPerSL` l'échelonne sur le DR (« plus un orteil
+   *  par DR en dessous de 0 » ⇔ `{every:1, amount:1, onFailure:true}` lu sur le `ctx.sl` de la branche
+   *  `fail`). Ses producteurs actuels sont les rangées de Critique (`noeudAmputation`,
+   *  engine/critical.ts) : c'est la conséquence que la ligne prononce, exprimée dans le vocabulaire
+   *  commun — donc authoréable comme toute op (Trait de créature qui tranche un membre). */
+  | { op: 'amputer'; sequels: string[]; loc?: HitLocation; unites?: Formula; unitesPerSL?: PerSL }
   /** PB réduits à 0 SEUL (Châtiment, Tonnerre et foudre — LDB 40). L'Inconscient/Enflammé est posé
    *  par une op `condition` séparée dans l'entrée appelante. */
   | { op: 'reduceToZero' }
@@ -1723,6 +1735,24 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = Math.max(0, (o.count ?? 1) + slBonus(ctx.sl, o.countPerSL));
         const cured = cureCriticalWounds(target, n);
         lines.push(...(cured.length ? cured : [t('op.noCritToCure', { name: target.label })]));
+        break;
+      }
+      case 'amputer': {
+        const loc = o.loc ?? ctx.location ?? 'corps';
+        // Quantité perdue par les séquelles CUMULATIVES : dé de la ligne (« 1d10 dents ») + échelle de DR
+        // (« un orteil par DR en dessous de 0 ») — le dé est une QUANTITÉ, jamais un Test.
+        const units = Math.max(1, (o.unites != null ? resolveFormula(o.unites, ref, rng) : 1) + slBonus(ctx.sl, o.unitesPerSL));
+        // Au plus UNE plaie chirurgicale par membre : l'escalade de la ligne (« Pied écrasé », LDB 18 l.180)
+        // l'a déjà posée avec son échéance (`stampCriticalEscalation`) — la doubler perdrait cette échéance.
+        const dejaPlaie = (target.traumas ?? []).some((t) => estPlaieAmputation(t) && t.location === loc);
+        const poses: Trauma[] = [
+          ...(dejaPlaie ? [] : [{ label: traumaFicheById('amputation-plaie').label, location: loc, needsSurgery: true, desc: AMPUTATION_WOUND_DESC } as Trauma]),
+          ...permanentAmputations(o.sequels, loc, units),
+        ];
+        target.traumas = [...(target.traumas ?? []), ...poses];
+        for (const p of poses) lines.push(t('op.amputer', { name: target.label, label: p.label, loc: locationLabel(loc, target.bodyShape) }));
+        // Cumuls (LDB 18 l.247/251/273/277/281) : agrégation + escalade au seuil, au MÊME point que la pose.
+        lines.push(...consolidateAmputations(target));
         break;
       }
       case 'grantTalent': {

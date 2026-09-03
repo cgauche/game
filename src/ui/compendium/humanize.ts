@@ -20,6 +20,7 @@ import type { Camp, Relation } from '../../engine/relations';
 import { CHAR_LABELS, HIT_LOCATION_LABELS, type CharKey, type ArmourBypass } from '../../engine/types';
 import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
 import { giveTrappingLabel } from '../../engine/items';
+import { traumaLabelOf } from '../../engine/trauma';
 import { formatMoney } from '../../engine/money';
 import {
   conditionLabel, psychologyLabel, groupLabel, symptomLabel, creatureLabel,
@@ -247,6 +248,13 @@ export function humanizeOp(o: GameOp): string {
     case 'contractDisease': return `contracte la maladie ${diseaseLabel(o.disease)}`;
     case 'kill': return `meurt (sauf point de Destin dépensé)`;
     case 'cureCriticalWound': return `soigne ${o.count ?? 1} Blessure(s) critique(s)`;
+    case 'amputer': {
+      // La QUANTITÉ de la ligne (« Perdez 1d10 dents », LDB 18 l.77) porte sur les séquelles cumulatives ;
+      // `unitesPerSL` est l'échelle de DR (« plus un orteil par DR en dessous de 0 », l.180).
+      const quantite = o.unites != null ? `${humanizeFormula(o.unites)} ` : '';
+      const echelle = o.unitesPerSL ? ', et un de plus par DR en dessous de 0' : '';
+      return `perd ${quantite}${o.sequels.map((id) => traumaLabelOf(id)).join(' et ')}${echelle} — Amputation`;
+    }
     case 'reduceToZero': return `voit ses PB réduits à 0`;
     case 'banish': return `est retiré du jeu`;
     case 'ignoreStatePenalties': return `ignore les pénalités ${o.count ? `de ses ${o.count} pire(s) États` : "d'État"}`;

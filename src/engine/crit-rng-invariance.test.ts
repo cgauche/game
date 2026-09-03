@@ -14,17 +14,24 @@ import type { JeuDeCritique } from '../data/criticals';
  * × 6 Localisations × 2 jeux, la moitié avec 8 points d'overkill pour exercer le modificateur de
  * sévérité de chaque jeu.
  *
- * PÉRIMÈTRE, depuis B3-1 : le résolveur ne roule PLUS le nœud `test` de la rangée (il le REND en
- * `testFlow`, la porte le joue) — l'issue de ce Test n'est donc PAS déterministe par seed, et n'a pas
- * à l'être : c'est une fenêtre de joueur (Chance = relance). Restent invariants, et ce test les fige :
- * le d100 de SÉVÉRITÉ (`roll`), la RANGÉE atteinte (`entryId`/`label`/`lethal`/`desc`), les effets
- * immédiats, les séquelles, et le nœud RENDU lui-même (branches + enjeu posé).
+ * PÉRIMÈTRE, depuis B3-1/B3-1b : le résolveur ne roule PLUS aucun nœud `test` — ni celui de la rangée,
+ * ni celui de l'Amputation (LDB 18 l.237) : il les REND en `testFlow` (ou les ARME sur
+ * `Trauma.pendingAmputation`), la porte les joue. Leur issue n'est donc PAS déterministe par seed, et
+ * n'a pas à l'être : c'est une fenêtre de joueur (Chance = relance). Restent invariants, et ce test les
+ * fige : le d100 de SÉVÉRITÉ (`roll`), la RANGÉE atteinte (`entryId`/`label`/`lethal`/`desc`), les
+ * effets immédiats, les séquelles, et les nœuds RENDUS eux-mêmes (branches + enjeu posé).
  *
- * La RÉFÉRENCE (`crit-rng-invariance.fixture.json`) a été RE-CAPTURÉE au lot B3-1. Mesure faite au
- * moment de la recapture, sur la référence PRÉ-B3-1 (capturée, elle, sur `a8220854d` avant toute
- * refacto) : les 480 cas rendent le MÊME `roll`, le MÊME `entryId`, le MÊME `label`, le MÊME `lethal`
- * et la MÊME `desc` — 0 divergence. Le dé de sévérité et la ligne tirée n'ont pas bougé d'un cran ;
- * seul ce qui dépendait du dé du nœud a changé, comme attendu.
+ * La RÉFÉRENCE (`crit-rng-invariance.fixture.json`) a été RE-CAPTURÉE au lot B3-1b. Mesure faite au
+ * moment de la recapture, contre la référence B3-1 : les 480 cas rendent le MÊME `roll`, le MÊME
+ * `entryId`, le MÊME `label`, le MÊME `lethal` et la MÊME `desc` — 0 divergence. Ce qui bouge est
+ * NOMMÉ : 36 cas d'amputation (23 aux `ops`, 36 aux `traumas`, 30 au `testFlow`) — le résolveur cesse
+ * d'y consommer 1 à 2 dés, et 6 d'entre eux portent leur nœud sur `pendingAmputation`.
+ *
+ * CE QUI NE DOIT PAS BOUGER, et que le contrat ci-dessous CHIFFRE : l'ESCALADE de la ligne, qui vit sur
+ * la plaie chirurgicale et ne dépend d'aucun jet — `perRound` (« Main ouverte », LDB 18 l.122) 4 cas,
+ * `awaitingMedicalAid` 12, `amputateAfterDays`/`amputateSequel` (« Pied écrasé », l.180) 4 chacun, aux
+ * MÊMES cardinaux qu'avant le lot. Une première recapture les avait vus tomber à 0/8 sans que rien ne
+ * rougisse : le compte est désormais ÉCRIT ici, pas seulement encodé dans la fixture.
  */
 
 const CHARS = { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
@@ -55,9 +62,12 @@ describe('invariance du RNG des Blessures critiques — référence figée AVANT
     expect([...jeux].sort()).toEqual(['aa', 'ldb']);
   });
 
-  it('la référence porte bien des nœuds RENDUS (sinon elle ne mesurerait plus la porte)', () => {
+  it('la référence porte bien des nœuds RENDUS et ARMÉS (sinon elle ne mesurerait plus la porte)', () => {
     const avecNoeud = Object.values(REFERENCE).filter((c) => (c as { testFlow?: unknown }).testFlow);
-    expect(avecNoeud.length, 'aucun `testFlow` dans la référence : le nœud de rangée a disparu du chemin').toBe(122);
+    expect(avecNoeud.length, 'aucun `testFlow` dans la référence : le nœud de rangée a disparu du chemin').toBe(146);
+    const armes = Object.values(REFERENCE)
+      .filter((c) => (c as { traumas?: { pendingAmputation?: unknown }[] }).traumas?.some((t) => t.pendingAmputation));
+    expect(armes.length, 'aucun nœud ARMÉ : l’amputation différée (l.171) a quitté le chemin').toBe(6);
   });
 
   it('les 480 cas rendent un `CriticalResolved` IDENTIQUE à la référence', () => {
@@ -74,6 +84,19 @@ describe('invariance du RNG des Blessures critiques — référence figée AVANT
       }
     }
     expect(divergences, `${divergences.length} cas divergent de la référence :\n  ${divergences.slice(0, 5).join('\n  ')}`).toEqual([]);
+  });
+
+  it('l’ESCALADE de la ligne survit à la porte : elle vit sur la plaie, jamais sur une branche de jet', () => {
+    const porteurs = (champ: string) => Object.entries(REFERENCE)
+      .filter(([, c]) => ((c as { traumas?: Record<string, unknown>[] }).traumas ?? []).some((t) => t[champ] !== undefined))
+      .map(([cle]) => cle);
+    // LDB 18 l.122 (« Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez
+    // un autre doigt ») : « Main ouverte » / `aa-bras-116`, sur les deux bras des cas à overkill.
+    expect(porteurs('perRound').length, 'l’escalade par Round a disparu de la référence').toBe(4);
+    expect(porteurs('awaitingMedicalAid').length).toBe(12);
+    // LDB 18 l.180 (« Si vous n'êtes pas soigné par Chirurgie au cours des 1d10 jours suivants »).
+    expect(porteurs('amputateAfterDays').length).toBe(4);
+    expect(porteurs('amputateSequel').length).toBe(4);
   });
 
   it('la référence n’est pas vide de substance (elle exercerait sinon un chemin trivial)', () => {

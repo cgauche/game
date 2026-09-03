@@ -15,6 +15,7 @@ import { createHero } from '../engine/character';
 import { testValue } from '../engine/skills';
 import { makeRNG } from '../engine/dice';
 import { stampCriticalEscalation } from '../engine/trauma';
+import { resolveCritique } from '../engine/critical';
 import { CRITIQUE_DOCS } from '../data/criticals';
 import type { Combatant, Trauma } from '../engine/types';
 import { testScene } from '../scenes/test-fixture';
@@ -27,6 +28,13 @@ import { applyOps } from '../engine/ops';
 
 /** Porteur minimal du motif de bump 38 → 39 : `stampCriticalEscalation` ne lit que ses séquelles. */
 const hero38 = (): Combatant => ({ id: 'h', label: 'H', kind: 'hero', conditions: [], skills: [], traumas: [] } as unknown as Combatant);
+
+/** Le MÊME porteur, doté de ses Caractéristiques : `resolveCritique` lit l'Endurance (sévérité du d100). */
+const heroCritique = (): Combatant => ({
+  ...hero38(),
+  characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
+  wounds: { current: 6, max: 12 }, bodyShape: 'humanoide', critEntriesSuffered: [],
+} as unknown as Combatant);
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
 function fakeStorage(): Storage {
@@ -225,8 +233,9 @@ describe('parseSave — la version DOIT être la courante', () => {
     // héros. Son nœud `test` ne s'auto-résout plus au moteur : il part par la porte, dont le mint
     // d'étape REFUSE un enjeu muet (`monoStep`) — une save de 42 rouvrirait avec un nœud sans
     // `stake`, et le critique suivant se verrait refuser sa fenêtre au lieu d'ouvrir le Test.
-    expect(SAVE_VERSION).toBe(43);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(43);
     expect(parseSave({ ...cur, version: 42 })).toBeNull();
+    expect(parseSave({ ...cur, version: 40 })).toBeNull();
     const commotion = CRITIQUE_DOCS.flatMap((d) => d.entries).find((e) => e.id === 'commotion-cerebrale')!;
     const arme = commotion.escalation!.onNextCritWhileCondition!;
     expect(arme.test.kind, 'la donnée doit porter le nœud, pas la graphie `resist`').toBe('test');
@@ -238,6 +247,21 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(pose.test.stake, 'le nœud PERSISTÉ doit porter l’enjeu de la rangée qui l’a armé').toEqual(enjeu);
     expect({ ...pose, test: { ...pose.test, stake: undefined } })
       .toEqual({ ...arme.test, test: { ...arme.test.test, stake: undefined } }); // rien d’autre n’a bougé
+  });
+  it('MESURE du motif de bump 41 → 42 (#1657 B3-1b) : le marqueur d’amputation DIFFÉRÉE porte son NŒUD', () => {
+    // `Trauma.pendingAmputation` (« Coupure à l'orteil », LDB 18 l.171) est PERSISTÉ sur la séquelle du
+    // héros. Il portait la DONNÉE `Amputation` (`{difficulty, sequels, loss…}`) ; il porte désormais le
+    // Flow FABRIQUÉ au critique, enjeu posé, que `prendreAmputationsDifferees` envoie à la porte. Une
+    // save de 41 rouvrirait avec un objet sans `kind` : ni Test ouvert, ni séquelle posée.
+    expect(SAVE_VERSION).toBe(42);
+    expect(parseSave({ ...cur, version: 41 })).toBeNull();
+    const coupure = CRITIQUE_DOCS.flatMap((d) => d.entries).find((e) => e.id === 'coupure-a-l-orteil')!;
+    expect(coupure.amputation!.timing).toBe('postEncounter');
+    const r = resolveCritique('ldb', heroCritique(), 'jambeD', makeRNG(1), { forcedRoll: coupure.min });
+    const marque = r.traumas.find((t) => t.pendingAmputation)!.pendingAmputation!;
+    expect(marque.kind, 'le marqueur PERSISTÉ doit être un nœud `test`, pas la donnée `Amputation`').toBe('test');
+    expect((marque as Extract<typeof marque, { kind: 'test' }>).test.stake, 'et porter l’enjeu de sa rangée')
+      .toEqual(combatStakeRef('critRowTest', { entryId: 'coupure-a-l-orteil', entryCategory: 'criticalsJambe' }));
   });
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
     const sv = talents.find((t) => t.id === 'savoir-vivre')!;

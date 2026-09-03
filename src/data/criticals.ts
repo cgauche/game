@@ -67,7 +67,8 @@ export type JeuDeCritique = 'ldb' | 'aa';
 export type CritTableKey = 'tete' | 'bras' | 'corps' | 'jambe';
 
 /** Amputation (LDB 18 l.237) — SOURCE UNIQUE de forme, partagée par les DEUX jeux, résolue par
- *  `resolveAmputation` (`src/engine/critical.ts`).
+ *  `noeudAmputation` (`src/engine/critical.ts`), qui en FABRIQUE le/les nœud(s) `test` — le moteur ne
+ *  roule pas ce jet, la porte le joue.
  *  - `difficulty` = Test de Résistance de l'Amputation (échec → À Terre ; DR≤−2 → +Sonné ; DR≤−4 → +Inconscient).
  *  - `sequels` = ids de fiches de séquelle PERMANENTE (`traumas.json`), instanciées par `permanentAmputations`.
  *  - `timing: 'postEncounter'` = Test différé à la FIN de la rencontre (« Coupure à l'orteil », l.171 : « Une fois
@@ -164,6 +165,11 @@ export function critiqueEntries(docId: string): CritTable {
   }
   return doc.entries;
 }
+
+/** Localisation REPRÉSENTATIVE d'une table de Critiques — inverse de `critTableKeyFor` pour les vues qui
+ *  projettent une TABLE et non un coup réel (Codex, contrats). Côté DROIT par la convention DROITIER du
+ *  moteur (`permanentAmputations`) : la table « Bras » couvre les deux côtés, la vue en montre un. */
+export const CRIT_TABLE_LOCATION: Record<CritTableKey, HitLocation> = { tete: 'tete', bras: 'brasD', corps: 'corps', jambe: 'jambeD' };
 
 /** Table de rattachement d'une Localisation (repli Bras, LDB 76 l.21, pour une loc sans table dédiée) —
  *  SOURCE UNIQUE de la projection loc→clé de table, partagée par `critiqueTable` (les lignes) et par la

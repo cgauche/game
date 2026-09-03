@@ -17,6 +17,7 @@ import { RefField } from '../compendium/RefField';
 import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
 import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
+import { traumaLabelOf } from '../../engine/trauma';
 import { AddMenu, TypeMenu, pickable, type TypeMenuGroup } from './AddMenu';
 import { JsonField } from './JsonField';
 import { Icon } from '../Icon';
@@ -102,6 +103,7 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   reduceDiseaseDays: 'Raccourcir une maladie',
   preventInfection: 'Empêcher l’infection',
   cureCriticalWound: 'Guérir une Blessure critique',
+  amputer: 'Amputer (plaie + séquelles permanentes)',
   diseaseTestMod: 'Modif. aux Tests d’une maladie',
   suppressSymptom: 'Suspendre un symptôme',
   aggravateSymptom: 'Aggraver un symptôme',
@@ -172,7 +174,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   grantTrait: 'mechanic/invoke', removeTrait: 'magic/gust', grantPsychTrait: 'mechanic/mind', removePsychTrait: 'mechanic/mind',
   grantTalent: 'mechanic/invoke', grantCareerSkill: 'mechanic/invoke', grantCareerTalent: 'mechanic/invoke',
   augmentWeapon: 'item/weapon', cureDisease: 'medical/infection', reduceDiseaseDays: 'medical/infection',
-  preventInfection: 'medical/infection', cureCriticalWound: 'medical/crutch', diseaseTestMod: 'medical/infection',
+  preventInfection: 'medical/infection', cureCriticalWound: 'medical/crutch', amputer: 'medical/crutch', diseaseTestMod: 'medical/infection',
   suppressSymptom: 'medical/infection', aggravateSymptom: 'medical/infection', grantSymptom: 'medical/infection',
   actGate: 'ui/wait', delayed: 'ui/wait', suppressPsych: 'mechanic/mind',
   suffocate: 'mechanic/ward', noBreath: 'mechanic/ward', noHunger: 'mechanic/ward', ignoreAnimosity: 'mechanic/ward', weatherWard: 'mechanic/ward',
@@ -200,7 +202,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Projection & téléportation', ['push', 'teleport', 'chain']],
   ['Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom', 'aggravateSymptom', 'grantSymptom']],
   ['Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
-  ['Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'handGate', 'senseLoss']],
+  ['Séquelles & mobilité', ['amputer', 'skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'handGate', 'senseLoss']],
   ['Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
   ['Contrôle', ['rollThreshold', 'rollTable', 'rollMutation', 'spendAdvantage']],
   ['Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
@@ -366,6 +368,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'delayed': return { op: 'delayed', afterHours: 1, ops: [] };
     case 'preventInfection': return { op: 'preventInfection' };
     case 'cureCriticalWound': return { op: 'cureCriticalWound', count: 1 };
+    case 'amputer': return { op: 'amputer', sequels: [] };
     case 'suppressPsych': return { op: 'suppressPsych' };
     case 'suffocate': return { op: 'suffocate' };
     case 'noBreath': return { op: 'noBreath' };
@@ -558,6 +561,7 @@ export function opSummary(o: GameOp): string {
     case 'delayed': return `${o.ops.length} op(s) différée(s)${o.afterDuration ? ' (à la dissipation)' : ''}`;
     case 'preventInfection': return 'pas d’infection';
     case 'cureCriticalWound': return `${o.count ?? 1} critique(s)`;
+    case 'amputer': return `${o.sequels.map((id) => traumaLabelOf(id)).join(' + ') || 'aucune séquelle'}${o.unitesPerSL ? ' (+1 par DR)' : ''}`;
     case 'suppressPsych': return 'Traits psy. apaisés';
     case 'suffocate': return 'suffocation';
     case 'noBreath': return 'plus besoin de respirer';

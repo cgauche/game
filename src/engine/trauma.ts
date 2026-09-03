@@ -36,7 +36,7 @@ export type TraumaSeverity = 'mineur' | 'majeur';
 const LEG: HitLocation[] = ['jambeG', 'jambeD'];
 
 /** Texte de la plaie chirurgicale d'une amputation (fiche `amputation-plaie`, LDB 18 l.239, DISPLAY-ONLY) —
- *  SOURCE UNIQUE partagée par `resolveAmputation` (critical.ts) et `stampCriticalEscalation` (« Pied écrasé »). */
+ *  SOURCE UNIQUE partagée par l'op `amputer` (ops.ts) et `stampCriticalEscalation` (« Pied écrasé »). */
 export const AMPUTATION_WOUND_DESC = (traumasJson as TraumaFiche[]).find((f) => f.id === 'amputation-plaie')!.desc;
 
 /**
@@ -218,6 +218,37 @@ export function traumaById(id: string, opts?: { be?: number; d10?: number }, loc
   if (f.cosmetic) out.cosmetic = true;
   if (f.passiveKind) out.passiveKind = f.passiveKind;
   return out;
+}
+
+/** La PLAIE chirurgicale d'une amputation (fiche `amputation-plaie`, LDB 18 l.239) : instanciée INLINE,
+ *  donc SANS `traumaId` — au plus UNE par membre. SOURCE UNIQUE du prédicat, partagée par l'op `amputer`
+ *  (qui la pose) et par `stampCriticalEscalation` (qui l'échelonne : `perRound`, `amputateAfterDays`). */
+export const estPlaieAmputation = (t: Trauma): boolean => !!t.needsSurgery && t.traumaId == null;
+
+/** Libellé d'une fiche de Traumatisme par id, SANS lever si la réf est cassée (contrairement à
+ *  `traumaFicheById`) — SOURCE UNIQUE des points d'AFFICHAGE défensifs (Codex, humanisation d'op). */
+export function traumaLabelOf(id: string): string {
+  try { return traumaFicheById(id).label; } catch { return id; }
+}
+
+/**
+ * Séquelles PERMANENTES d'une amputation (LDB 18 l.233-286) — distinctes de la plaie chirurgicale : elles
+ * survivent à la Chirurgie (le membre reste absent). Instanciées depuis les `sequels` (ids de fiche
+ * `traumas.json`) DÉCLARÉS STRUCTURELLEMENT sur le critique (`entry.amputation.sequels`, relayés par l'op
+ * `amputer`) — plus aucune lecture du texte. La latéralité (brasG/brasD, jambeG/jambeD) provient de la
+ * `location` réelle du coup — hypothèse de jeu : **tout le monde est DROITIER** (main principale = brasD).
+ * Une séquelle CUMULATIVE (`TraumaFiche.cumul`) reçoit ici le nombre d'unités que la LIGNE de Critique
+ * fait perdre (`units` — « Perdez 1d10 dents », « un orteil par DR en dessous de 0 ») ; une séquelle NON
+ * cumulative l'ignore (« perdez votre langue ET 1d10 dents »). L'agrégation et les seuils suivent
+ * (`consolidateAmputations`). SOURCE UNIQUE.
+ */
+export function permanentAmputations(sequels: string[], location: HitLocation, units = 1): Trauma[] {
+  return sequels.map((id) => {
+    const fiche = traumaFicheById(id);
+    const t = traumaById(id, undefined, location);
+    if (fiche.cumul) setTraumaCount(t, fiche, units);
+    return t;
+  });
 }
 
 /** Une déchirure musculaire MAJEURE de jambe guérit en DEUX temps (LDB 18 l.231) : après la 1ʳᵉ moitié
@@ -531,14 +562,19 @@ export function stampCriticalEscalation(
   enjeu?: StakeRef,
 ): void {
   if (!esc) return;
-  let plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
-  if (plaie && esc.perRound) { plaie.perRound = { ...esc.perRound }; plaie.awaitingMedicalAid = true; }
-  if (esc.apresDelai) {
-    // « Pied écrasé » (LDB 18 l.180) : le pied est une plaie chirurgicale À PART ENTIÈRE (« Si vous n'êtes pas
-    // soigné par Chirurgie… vous perdez votre pied »), indépendante de la perte d'orteil (`amputation.loss`
-    // peut n'avoir posé aucune plaie sur un Test réussi) → on en CRÉE une si aucune n'existe.
+  // La PLAIE chirurgicale est le PORTEUR de l'escalade — `perRound` (« Main ouverte », LDB 18 l.122) comme
+  // `apresDelai` (« Pied écrasé », l.180) vivent SUR elle. Le nœud d'Amputation la pose à la porte, APRÈS
+  // ce point : l'escalade la CRÉE donc elle-même. UNE écriture de cette création, partagée par les deux
+  // escalades ; l'op `amputer` dédoublonne par membre (`estPlaieAmputation`), la plaie reste unique.
+  let plaie = traumas.find(estPlaieAmputation);
+  const plaieOuCreee = (): Trauma => {
     if (!plaie) { plaie = { label: traumaFicheById('amputation-plaie').label, location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC }; traumas.push(plaie); }
-    plaie.amputateAfterDays = resolveFormula(esc.apresDelai.jours, ref, rng); plaie.amputateSequel = esc.apresDelai.versTraumaId;
+    return plaie;
+  };
+  if (esc.perRound) { const p = plaieOuCreee(); p.perRound = { ...esc.perRound }; p.awaitingMedicalAid = true; }
+  if (esc.apresDelai) {
+    const p = plaieOuCreee();
+    p.amputateAfterDays = resolveFormula(esc.apresDelai.jours, ref, rng); p.amputateSequel = esc.apresDelai.versTraumaId;
   }
   if (esc.medicalAidGate) {
     const g = esc.medicalAidGate;

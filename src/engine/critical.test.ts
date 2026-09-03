@@ -3,11 +3,12 @@ import { makeRNG } from './dice';
 import type { RNG } from './dice';
 import {
   resolveCritique, jeuDeCritique, critiqueTriviale, aaCriticalOffset, aaDeathByCriticalCount,
-  critLocationRoll, critWoundLocation, permanentAmputations, resolvePostEncounterAmputations,
+  critLocationRoll, critWoundLocation, prendreAmputationsDifferees,
   critEntryCodexCategory, findCritEntrySuffered,
 } from './critical';
-import { removeSurgicalTrauma } from './trauma';
-import { spellOps } from './flowCore';
+import { removeSurgicalTrauma, permanentAmputations } from './trauma';
+import { applyOps, type GameOp } from './ops';
+import { spellOps, type Flow, type FlowTestNode } from './flowCore';
 import { setRule, resetRule } from './policy';
 import { CRITIQUE_DOCS, critiqueTable, type JeuDeCritique } from '../data/criticals';
 import locJson from '../data/localisation.json';
@@ -36,6 +37,23 @@ const cible = (E = 30): Combatant =>
 
 const LOCS: HitLocation[] = ['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD'];
 const JEUX: JeuDeCritique[] = ['ldb', 'aa'];
+
+/** Étapes d'un Flow rendu en `seq` (le nœud puis sa suite) — lecture NOMINATIVE, aucune forme supposée. */
+const flowEtapes = (f: Flow | undefined): Flow[] => (f && f.kind === 'seq' ? f.steps : f ? [f] : []);
+/** Le nœud `test` d'un Flow qui EN EST un — rouge nommé sinon (jamais un `undefined` silencieux). */
+function noeudDeTest(f: Flow | undefined): FlowTestNode {
+  if (!f || f.kind !== 'test') throw new Error(`noeud test attendu, recu : ${f ? f.kind : 'rien'}`);
+  return f;
+}
+/** Ops d'une feuille `do` — la conséquence telle qu'elle partira à `applyOps`. */
+const opsDe = (f: Flow | undefined): GameOp[] => spellOps(f, 'target');
+/** Le Flow d'amputation d'une rangée NOMMÉE — dé de sévérité FORCÉ sur son propre `min`. */
+function critFlowAmputation(jeu: JeuDeCritique, loc: HitLocation, entryId: string): Flow | undefined {
+  const e = critiqueTable(jeu, loc).find((x) => x.id === entryId)!;
+  const r = resolveCritique(jeu, cible(), loc, makeRNG(1), { forcedRoll: e.min });
+  expect(r.entryId).toBe(entryId);
+  return r.testFlow;
+}
 
 // ---------------------------------------------------------------------------------------------
 // CORPS PARAMÉTRÉ — ce que les deux jeux tiennent à l'identique.
@@ -180,46 +198,48 @@ describe('Livre de base (LDB 18 « Traumatisme ») — lignes nommées', () => {
     throw new Error('aucune Fracture trouvée sur 60 seeds');
   });
 
-  // « Doigt sectionné » (BRAS 81-85) : « Amputation (Accessible) », sans nœud `test` ni fracture →
-  // exactement 2 jets (d100 du critique, puis d100 du Test de Résistance d'amputation).
-  it('Doigt sectionné : plaie chirurgicale + À Terre sur Résistance ratée', () => {
-    const r = resolveCritique('ldb', cible(30), 'brasD', seq(83, 60)); // E30 → Accessible cible 50 ; 60 > 50 → échec (DR −1)
-    expect(r.traumas.some((t) => t.needsSurgery && t.label.startsWith('Amputation'))).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'inconscient')).toBe(false); // DR −1 : pas d'Inconscient
+  // « Doigt sectionné » (BRAS 81-85) : « Amputation (Accessible) », sans nœud `test` de rangée → le
+  // critique ne consomme qu'UN dé (la sévérité), et rend le Test d'Amputation à ouvrir par la porte.
+  it('Doigt sectionné : un SEUL dé au moteur, et le Test d’Amputation (Accessible) rendu à la porte', () => {
+    const r = resolveCritique('ldb', cible(30), 'brasD', seq(83)); // un seul dé : rien d'autre ne tire
+    expect(r.entryId).toBe('doigt-sectionne');
+    const [noeud, perte] = flowEtapes(r.testFlow);
+    expect(noeudDeTest(noeud).test).toMatchObject({ skill: { id: 'resistance' }, difficulty: 'accessible', label: 'Amputation' });
+    expect(opsDe(perte)).toEqual([{ op: 'amputer', sequels: ['doigt-ampute'], loc: 'brasD' }]);
+    expect(r.traumas).toEqual([]);                                    // la plaie vient de l'op, à l'application
   });
 
-  it('Doigt sectionné : échec catastrophique (DR ≤ −4) ajoute Sonné ET Inconscient', () => {
-    const r = resolveCritique('ldb', cible(30), 'brasD', seq(83, 99)); // cible 50 ; 99 → DR −4
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'sonne')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'inconscient')).toBe(true);
-  });
-
-  it('Doigt sectionné : Résistance réussie → membre amputé quand même, sans À Terre du choc', () => {
-    const r = resolveCritique('ldb', cible(30), 'brasD', seq(83, 5)); // 5 ≤ 50 → réussite
-    expect(r.traumas.some((t) => t.needsSurgery)).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(false);
+  it('Doigt sectionné : l’op POSE la plaie chirurgicale et la séquelle, quel que soit le sort du Test (l.121)', () => {
+    const [, perte] = flowEtapes(resolveCritique('ldb', cible(30), 'brasD', seq(83)).testFlow);
+    const c = cible(30);
+    applyOps(c, opsDe(perte), {});
+    expect(c.traumas!.some((t) => t.needsSurgery && t.label.startsWith('Amputation'))).toBe(true);
+    expect(c.traumas!.some((t) => t.traumaId === 'doigt-ampute')).toBe(true);
   });
 
   it('« Bouche explosée » : le 1d10 de la LIGNE (`unites`) pilote le comptage de bout en bout', () => {
-    // d100=83 → « Bouche explosée » (81-85) ; puis le Test de Résistance de l'Amputation ; puis le 1d10
-    // des dents DÉCLARÉ par la ligne (`amputation.unites`).
-    const r = resolveCritique('ldb', cible(30), 'tete', seq(83, 5, 7));
-    const dents = r.traumas.find((t) => t.traumaId === 'dents-perdues')!;
+    // d100=83 → « Bouche explosée » (81-85) ; le 1d10 des dents DÉCLARÉ par la ligne (`amputation.unites`)
+    // est désormais tiré par l'op, à l'application — c'est une QUANTITÉ, pas un Test.
+    const [, perte] = flowEtapes(resolveCritique('ldb', cible(30), 'tete', seq(83)).testFlow);
+    const c = cible(30);
+    applyOps(c, opsDe(perte), { rng: seq(7) });
+    const dents = c.traumas!.find((t) => t.traumaId === 'dents-perdues')!;
     expect(dents.count).toBe(7);
     expect(dents.ops).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -3 }); // 7 dents = 3 paires
   });
 
-  it('rollCritique (jambe) : pose la plaie chirurgicale ET la séquelle permanente de mobilité', () => {
-    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(95, 5)); // « Pied sectionné » (94-96), Résistance réussie
-    expect(r.traumas.some((t) => t.needsSurgery)).toBe(true);
-    expect(r.traumas.some((t) => t.ops?.some((o) => o.op === 'moveScale') && !t.needsSurgery)).toBe(true);
+  it('« Pied sectionné » : l’op pose la plaie chirurgicale ET la séquelle permanente de mobilité', () => {
+    const [, perte] = flowEtapes(resolveCritique('ldb', cible(30), 'jambeD', seq(95)).testFlow); // 94-96
+    const c = cible(30);
+    applyOps(c, opsDe(perte), {});
+    expect(c.traumas!.some((t) => t.needsSurgery)).toBe(true);
+    expect(c.traumas!.some((t) => t.ops?.some((o) => o.op === 'moveScale') && !t.needsSurgery)).toBe(true);
   });
 
   it('la séquelle permanente survit à la Chirurgie (le membre reste absent)', () => {
-    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(95, 5));
+    const [, perte] = flowEtapes(resolveCritique('ldb', cible(30), 'jambeD', seq(95)).testFlow);
     const c = cible(30);
-    c.traumas = r.traumas;
+    applyOps(c, opsDe(perte), {});
     c.criticalWounds = 1;
     removeSurgicalTrauma(c); // opère la plaie chirurgicale
     expect(c.traumas!.some((t) => t.needsSurgery)).toBe(false); // plaie réparée
@@ -257,22 +277,32 @@ describe('Livre de base (LDB 18 « Traumatisme ») — lignes nommées', () => {
 
   // « Pied écrasé » (91-93) : un Test Accessible (+20) ; échec → perte d'1 orteil + 1 par DR en dessous de 0,
   // ET le pied reste une plaie chirurgicale (perte du pied sans Chirurgie sous 1d10 jours).
-  it('Pied écrasé : échec à −2 DR → 3 orteils perdus, À Terre + Sonné, plaie à échéance', () => {
-    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(92, 70, 5)); // 92 crit ; 70 vs cible 50 → DR −2 ; 5 = 1d10 échéance
-    const orteil = r.traumas.find((t) => t.traumaId === 'orteil-ampute')!;
-    expect(orteil.count).toBe(3); // 1 + 2 DR
-    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -3 });
-    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-combat', mod: -3 });
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'sonne')).toBe(true);
+  it('Pied écrasé : la plaie À ÉCHÉANCE est posée par l’escalade — le Test ne décide que de la PERTE', () => {
+    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(92, 5)); // 92 crit ; 5 = 1d10 échéance (escalade)
+    expect(r.entryId).toBe('pied-ecrase');
     const plaie = r.traumas.find((t) => t.needsSurgery && t.label === 'Amputation')!;
     expect(plaie.amputateAfterDays).toBe(5);
     expect(plaie.amputateSequel).toBe('membre-inferieur-ampute');
+    expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false); // rien n'est perdu avant le Test
   });
-  it('Pied écrasé : Test réussi → aucun orteil perdu, mais le pied reste une plaie chirurgicale', () => {
-    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(92, 20, 7)); // 20 ≤ 50 → réussite ; 7 = 1d10 échéance
-    expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
-    expect(r.ops.some((o) => o.op === 'condition' && (o.id === 'a-terre' || o.id === 'sonne'))).toBe(false);
+  it('Pied écrasé : sur un ÉCHEC à −2 DR, l’op retire 3 orteils SANS doubler la plaie à échéance', () => {
+    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(92, 5));
+    const n = noeudDeTest(r.testFlow);
+    const fail = n.fail as Extract<Flow, { kind: 'seq' }>;
+    const c = cible(30);
+    c.traumas = r.traumas;
+    applyOps(c, opsDe(fail.steps[fail.steps.length - 1]), { sl: -2 });
+    const orteil = c.traumas!.find((t) => t.traumaId === 'orteil-ampute')!;
+    expect(orteil.count).toBe(3); // 1 + 2 DR
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -3 });
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-combat', mod: -3 });
+    const plaies = c.traumas!.filter((t) => t.needsSurgery && t.label === 'Amputation');
+    expect(plaies).toHaveLength(1);                        // une seule plaie par membre
+    expect(plaies[0].amputateAfterDays).toBe(5);           // et son échéance est intacte
+  });
+  it('Pied écrasé : Test RÉUSSI → aucun orteil perdu, mais le pied reste une plaie chirurgicale', () => {
+    const r = resolveCritique('ldb', cible(30), 'jambeD', seq(92, 7));
+    expect(spellOps(noeudDeTest(r.testFlow).success, 'target')).toEqual([]); // réussite : rien
     const plaie = r.traumas.find((t) => t.needsSurgery && t.label === 'Amputation')!;
     expect(plaie.amputateAfterDays).toBe(7);
     expect(plaie.amputateSequel).toBe('membre-inferieur-ampute');
@@ -378,48 +408,115 @@ describe('Aux Armes (AA 07, approche alternative) — lignes nommées', () => {
     expect(critiqueTable('aa', 'jambeG').find((e) => e.id === 'aa-jambe-11')!.test!.test.skill).toEqual({ id: 'athletisme' });
   });
 
-  // #153 — Amputation AA déclarée STRUCTURELLEMENT, même cascade que le chemin LDB.
-  it('« Oreille mutilée » (tête 61-65, Accessible) : Résistance échouée → À Terre + séquelle permanente', () => {
-    const r = resolveCritique('aa', cible(), 'tete', seq(63, 60)); // cible 50 ; 60 > 50 → échec (DR −1)
+  // #1657 B3-1b — l'Amputation (LDB 18 l.237) est FABRIQUÉE, jamais roulée : ce que le moteur rend est
+  // le/les nœud(s) `test` que la porte ouvrira, et l'op `amputer` qui pose plaie + séquelles.
+  it('« Oreille mutilée » (tête 61-65, l.237) : AUCUN dé consommé, un nœud de Résistance Accessible rendu', () => {
+    const r = resolveCritique('aa', cible(), 'tete', seq(63)); // un SEUL dé : la sévérité ; plus aucun jet ici
     expect(r.label).toBe('Oreille mutilée');
-    expect(r.traumas.some((t) => t.needsSurgery && t.label.startsWith('Amputation'))).toBe(true);
-    expect(r.traumas.some((t) => t.traumaId === 'oreille-perdue')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'sonne')).toBe(false);
+    // Les États du Test (À Terre / Sonné / Inconscient, l.237) ne sont plus pré-décidés au moteur : seuls
+    // restent les effets IMMÉDIATS que la ligne inflige (Blessures, Assourdi, Hémorragique).
+    expect(r.ops.filter((o) => o.op === 'condition').map((o) => o.id)).toEqual(['assourdi', 'hemorragique']);
+    expect(r.traumas).toEqual([]);                              // ni plaie ni séquelle pré-posées
+    const [noeud, perte] = flowEtapes(r.testFlow);
+    expect(noeudDeTest(noeud).test.skill).toEqual({ id: 'resistance' });   // LDB 18 l.237
+    expect(noeudDeTest(noeud).test.difficulty).toBe('accessible');
+    expect(spellOps(noeudDeTest(noeud).success, 'target')).toEqual([]);
+    expect(opsDe(perte)).toEqual([{ op: 'amputer', sequels: ['oreille-perdue'], loc: 'tete' }]);
   });
 
-  it('« Oreille mutilée » : Résistance RÉUSSIE → séquelle quand même, sans À Terre du choc', () => {
-    const r = resolveCritique('aa', cible(), 'tete', seq(63, 5));
-    expect(r.traumas.some((t) => t.traumaId === 'oreille-perdue')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(false);
+  it('« Oreille mutilée » : les États du Test sont ÉCHELONNÉS par DR dans la branche `fail` (l.237)', () => {
+    const n = noeudDeTest(flowEtapes(resolveCritique('aa', cible(), 'tete', seq(63)).testFlow)[0]);
+    const fail = n.fail as Extract<Flow, { kind: 'seq' }>;
+    expect(opsDe(fail.steps[0])).toEqual([{ op: 'condition', id: 'a-terre', value: 1 }]);
+    const paliers = fail.steps.slice(1).map((etape) => etape as Extract<Flow, { kind: 'if' }>);
+    expect(paliers.map((pal) => pal.cond)).toEqual([
+      { kind: 'slThreshold', op: '<=', value: -2 },
+      { kind: 'slThreshold', op: '<=', value: -4 },
+    ]);
+    expect(paliers.map((pal) => opsDe(pal.then))).toEqual([
+      [{ op: 'condition', id: 'sonne', value: 1 }],
+      [{ op: 'condition', id: 'inconscient', value: 1 }],
+    ]);
   });
 
-  it('« Oreille mutilée » : échec catastrophique (DR ≤ −4) ajoute Sonné ET Inconscient', () => {
-    const r = resolveCritique('aa', cible(), 'tete', seq(63, 99));
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'sonne')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'inconscient')).toBe(true);
+  it('« Main mutilée » (LDB bras 94-96, l.124) : DEUX Tests — la rangée PUIS l’amputation, la séquelle HORS du Test', () => {
+    // RAW l.124 : « Vous perdez votre main – Amputation (Difficile). […] Réussissez un Test de
+    // Résistance Difficile (-20) ou gagnez les États Sonné et À Terre » — deux jets, pas un doublon.
+    const [rangee, amputation] = flowEtapes(critFlowAmputation('ldb', 'brasD', 'main-mutilee'));
+    expect(noeudDeTest(rangee).test.difficulty).toBe('difficile');
+    const [noeud, perte] = flowEtapes(amputation);
+    expect(noeudDeTest(noeud).test.difficulty).toBe('difficile');
+    expect(noeudDeTest(noeud).test.label).toBe('Amputation');   // distinct du libellé de la rangée
+    expect(opsDe(perte)).toEqual([{ op: 'amputer', sequels: ['main-bras-ampute'], loc: 'brasD' }]);
   });
 
-  it('« Coup défigurant » (tête 86-94, Difficile) cumule 2 séquelles (œil + nez)', () => {
-    const r = resolveCritique('aa', cible(), 'tete', seq(90, 5)); // Difficile = E30−20 = 10 ; 5 ≤ 10 → réussite
-    expect(r.label).toBe('Coup défigurant');
-    expect(r.traumas.some((t) => t.traumaId === 'oeil-perdu')).toBe(true);
-    expect(r.traumas.some((t) => t.traumaId === 'nez-ampute')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(false);
-  });
-
-  it('« Pied écrasé » (jambe 106-115, l.180) : `loss.perDR` → orteils gradués par DR sur ÉCHEC', () => {
-    // overkill 6 → +60 : d100 50 → roll 110. Test Accessible (E30+20=50) : 75 → DR −2 → 1+2 = 3 orteils.
-    const r = resolveCritique('aa', cible(), 'jambeD', seq(50, 75), { overkill: 6 });
+  it('« Pied écrasé » (l.180) : le Test GATE la perte — `amputer` est DANS `fail`, échelonné par DR', () => {
+    const r = resolveCritique('aa', cible(), 'jambeD', seq(50), { overkill: 6 }); // 50 + 60 → 110
     expect(r.label).toBe('Pied écrasé');
-    expect(r.traumas.find((t) => t.traumaId === 'orteil-ampute')!.count).toBe(3);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(true);
+    const n = noeudDeTest(r.testFlow);                         // un seul nœud : la perte est dans SA branche
+    expect(n.test.difficulty).toBe('accessible');
+    expect(spellOps(n.success, 'target')).toEqual([]);          // réussi → aucun orteil, aucun État
+    const fail = n.fail as Extract<Flow, { kind: 'seq' }>;
+    expect(opsDe(fail.steps[fail.steps.length - 1])).toEqual([
+      { op: 'amputer', sequels: ['orteil-ampute'], loc: 'jambeD', unitesPerSL: { every: 1, amount: 1, onFailure: true } },
+    ]);
   });
 
-  it('« Pied écrasé » : Test Accessible RÉUSSI → aucun orteil (le `loss` gate LUI-MÊME la perte)', () => {
-    const r = resolveCritique('aa', cible(), 'jambeD', seq(50, 10), { overkill: 6 });
-    expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
-    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(false);
+  it('« Pied écrasé » : sur un DR INJECTÉ de −3, l’op retire 1 + 3 = 4 orteils (l.180)', () => {
+    const n = noeudDeTest(resolveCritique('aa', cible(), 'jambeD', seq(50), { overkill: 6 }).testFlow);
+    const fail = n.fail as Extract<Flow, { kind: 'seq' }>;
+    const c = cible();
+    applyOps(c, opsDe(fail.steps[fail.steps.length - 1]), { sl: -3 });
+    expect(c.traumas!.find((t) => t.traumaId === 'orteil-ampute')!.count).toBe(4);
+    expect(c.traumas!.some((t) => t.needsSurgery)).toBe(true);  // la plaie chirurgicale suit la séquelle
+  });
+
+  // ESCALADE de la ligne (LDB 18 l.122 « Pour chaque Round au cours duquel vous ne recevez pas d'Aide
+  // Médicale, vous perdez un autre doigt » ; l.180 pour le délai de Chirurgie) : elle vit SUR la plaie
+  // chirurgicale, que le nœud d'Amputation ne pose qu'à la porte — le critère doit donc la CRÉER.
+  it.each([
+    { jeu: 'ldb' as JeuDeCritique, loc: 'brasD' as HitLocation, id: 'main-ouverte', de: 88, overkill: 0 },
+    { jeu: 'aa' as JeuDeCritique, loc: 'brasD' as HitLocation, id: 'aa-bras-116', de: 98, overkill: 2 }, // 98 + 2×10 = 118
+  ])('« Main ouverte » ($jeu, l.122) : la plaie chirurgicale PORTE l’escalade par Round', ({ jeu, loc, id, de, overkill }) => {
+    const r = resolveCritique(jeu, cible(), loc, seq(de), { overkill });
+    expect(r.entryId).toBe(id);
+    const plaie = r.traumas.find((t) => t.needsSurgery && t.label === 'Amputation')!;
+    expect(plaie, 'aucune plaie chirurgicale : l’escalade par Round n’a plus de porteur').toBeTruthy();
+    expect(plaie.perRound).toEqual({ versTraumaId: 'doigt-ampute' });
+    expect(plaie.awaitingMedicalAid).toBe(true);
+    expect(plaie.location).toBe(loc);
+  });
+
+  it.each([
+    { jeu: 'ldb' as JeuDeCritique, loc: 'jambeD' as HitLocation, id: 'pied-ecrase', de: 92, overkill: 0 },
+    { jeu: 'aa' as JeuDeCritique, loc: 'jambeD' as HitLocation, id: 'aa-jambe-106', de: 90, overkill: 2 }, // 90 + 2×10 = 110
+  ])('« Pied écrasé » ($jeu, l.180) : la MEME plaie porte le délai de Chirurgie', ({ jeu, loc, id, de, overkill }) => {
+    const r = resolveCritique(jeu, cible(), loc, seq(de, 5), { overkill });
+    expect(r.entryId).toBe(id);
+    const plaies = r.traumas.filter((t) => t.needsSurgery && t.label === 'Amputation');
+    expect(plaies, 'une plaie chirurgicale et une seule par membre').toHaveLength(1);
+    expect(plaies[0].amputateAfterDays).toBe(5);
+    expect(plaies[0].amputateSequel).toBe('membre-inferieur-ampute');
+  });
+
+  it('« Main ouverte » : sur le chemin RÉEL, l’op `amputer` NE DOUBLE PAS la plaie qui porte l’escalade', () => {
+    const r = resolveCritique('ldb', cible(), 'brasD', seq(88));
+    const c = cible();
+    c.traumas = r.traumas;                                   // ce qu'`applyCriticalToTarget` pose avant la porte
+    const [, perte] = flowEtapes(r.testFlow);
+    applyOps(c, opsDe(perte), {});                           // ce que la porte applique en jouant le nœud
+    const plaies = c.traumas!.filter((t) => t.needsSurgery && t.label === 'Amputation');
+    expect(plaies).toHaveLength(1);
+    expect(plaies[0].perRound, 'l’escalade a été perdue à l’application').toEqual({ versTraumaId: 'doigt-ampute' });
+    expect(c.traumas!.some((t) => t.traumaId === 'doigt-ampute'), 'le doigt de la ligne n’est pas posé').toBe(true);
+  });
+
+  it('« Mâchoire mutilée » : la QUANTITÉ (1d10 dents) reste un dé de l’op, pas un Test (l.237)', () => {
+    const [, amputation] = flowEtapes(critFlowAmputation('ldb', 'tete', 'machoire-mutilee'));
+    const [, perte] = flowEtapes(amputation);
+    expect(opsDe(perte)).toEqual([
+      { op: 'amputer', sequels: ['langue-amputee', 'dents-perdues'], loc: 'tete', unites: { dice: { n: 1, sides: 10 } } },
+    ]);
   });
 });
 
@@ -427,35 +524,46 @@ describe('Aux Armes (AA 07, approche alternative) — lignes nommées', () => {
 // AMPUTATION DIFFÉRÉE — même patron pour les deux jeux (« Une fois la rencontre terminée… »).
 // ---------------------------------------------------------------------------------------------
 describe.each([
-  { jeu: 'ldb' as JeuDeCritique, roll: 48, label: "Coupure à l'orteil" },
-  { jeu: 'aa' as JeuDeCritique, roll: 58, label: "Coupure à l'orteil" },
-])('amputation DIFFÉRÉE ($jeu) — « Une fois la rencontre terminée… » (l.171)', ({ jeu, roll, label }) => {
-  it('pose un marqueur `pendingAmputation`, AUCUN jet ni amputation immédiate', () => {
-    const r = resolveCritique(jeu, cible(30), 'jambeD', seq(roll)); // un seul dé : rien d'autre ne tire
-    expect(r.label).toBe(label);
-    expect(r.traumas.some((t) => t.pendingAmputation)).toBe(true);
+  { jeu: 'ldb' as JeuDeCritique, roll: 48 },
+  { jeu: 'aa' as JeuDeCritique, roll: 58 },
+])('amputation DIFFÉRÉE ($jeu) — « Une fois la rencontre terminée… » (l.171)', ({ jeu, roll }) => {
+  const marqueur = () => resolveCritique(jeu, cible(30), 'jambeD', seq(roll)); // un seul dé : rien d'autre ne tire
+
+  it('ARME le nœud sur le marqueur `pendingAmputation` : aucun dé, aucune séquelle, aucun État ici', () => {
+    const r = marqueur();
+    expect(r.label).toBe("Coupure à l'orteil");
+    expect(r.testFlow).toBeUndefined();                    // le Test ne part PAS dans le geste du critique
+    expect(r.traumas.find((t) => t.pendingAmputation)!.label).toBe("Coupure à l'orteil");
     expect(r.traumas.some((t) => t.needsSurgery)).toBe(false);
-    expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
-    expect(r.ops.some((o) => o.op === 'condition' && (o.id === 'a-terre' || o.id === 'sonne'))).toBe(false);
+    // Seuls restent les effets IMMÉDIATS de la ligne (Blessures + Hémorragique) : aucun État du Test.
+    expect(r.ops.filter((o) => o.op === 'condition').map((o) => o.id)).toEqual(['hemorragique']);
   });
 
-  it('résolution post-rencontre : gate Intermédiaire RATÉ → orteil amputé + plaie chirurgicale', () => {
-    const c = cible(30);
-    c.traumas = resolveCritique(jeu, cible(30), 'jambeD', seq(roll)).traumas;
-    // gate Intermédiaire cible 30 : 55 > 30 → raté ; États Accessible cible 50 : 40 ≤ 50 → pas d'États.
-    resolvePostEncounterAmputations(c, seq(55, 40));
-    expect(c.traumas!.some((t) => t.pendingAmputation)).toBe(false); // marqueur consommé
-    expect(c.traumas!.some((t) => t.traumaId === 'orteil-ampute')).toBe(true);
-    expect(c.traumas!.some((t) => t.needsSurgery && t.label === 'Amputation')).toBe(true);
+  it('le nœud ARMÉ est le GATE Intermédiaire (l.171) dont l’échec joue le Test d’Amputation Accessible (l.237)', () => {
+    const gate = noeudDeTest(marqueur().traumas.find((t) => t.pendingAmputation)!.pendingAmputation);
+    expect(gate.test.skill).toEqual({ id: 'resistance' });
+    expect(gate.test.difficulty).toBe('intermediaire');
+    expect(spellOps(gate.success, 'target')).toEqual([]);   // gate réussi → PAS d'amputation du tout
+    const [interne, perte] = flowEtapes(gate.fail);
+    expect(noeudDeTest(interne).test.difficulty).toBe('accessible');
+    expect(opsDe(perte)).toEqual([{ op: 'amputer', sequels: ['orteil-ampute'], loc: 'jambeD' }]);
   });
 
-  it('résolution post-rencontre : gate Intermédiaire RÉUSSI → aucun orteil, aucune plaie', () => {
+  it('les DEUX Tests portent des LIBELLÉS distincts — deux « Résistance » homonymes seraient injoignables', () => {
+    const gate = noeudDeTest(marqueur().traumas.find((t) => t.pendingAmputation)!.pendingAmputation);
+    const interne = noeudDeTest(flowEtapes(gate.fail)[0]);
+    expect(gate.test.label).toBe("Coupure à l'orteil");
+    expect(interne.test.label).toBe('Amputation');
+  });
+
+  it('`prendreAmputationsDifferees` CONSOMME le marqueur et rend le Flow à ouvrir par la porte', () => {
     const c = cible(30);
-    c.traumas = resolveCritique(jeu, cible(30), 'jambeD', seq(roll)).traumas;
-    resolvePostEncounterAmputations(c, seq(10)); // 10 ≤ 30 → gate réussi : pas d'amputation du tout
-    expect(c.traumas!.some((t) => t.pendingAmputation)).toBe(false);
-    expect(c.traumas!.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
-    expect(c.traumas!.some((t) => t.needsSurgery)).toBe(false);
+    c.traumas = marqueur().traumas;
+    const dus = prendreAmputationsDifferees(c);
+    expect(dus.map((d) => d.label)).toEqual(["Coupure à l'orteil"]);
+    expect(dus[0].flow.kind).toBe('test');
+    expect(c.traumas!.some((t) => t.pendingAmputation)).toBe(false);   // marqueur consommé
+    expect(prendreAmputationsDifferees(c)).toEqual([]);                // et non rejouable
   });
 });
 

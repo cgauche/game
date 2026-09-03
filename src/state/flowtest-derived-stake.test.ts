@@ -30,7 +30,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { simpleTriggeredTestStep, withDerivedStake } from './combat/triggeredTest';
 import { effectSourcesOf } from './triggeredEffects';
-import { EMPTY_FLOW, type FlowTest } from './flow';
+import { EMPTY_FLOW, type Flow, type FlowTest } from './flow';
 import { resolveStake, findById, combatStakeRef, type StakeRef } from '../data';
 import { CRITIQUE_DOCS } from '../data/criticals';
 import { resolveCritique } from '../engine/critical';
@@ -89,25 +89,51 @@ const ENJEU_AU_PRODUCTEUR: Record<string, () => { entryId: string; stake: StakeR
   'criticals.json': enjeuxDesRangeesDeCritique,
 };
 
+/**
+ * Nœuds `test` que le PRODUCTEUR fabrique EN PLUS de ceux écrits en donnée — cardinal MESURÉ au
+ * 2026-09-03 (#1657 B3-1b) : les 26 rangées `amputation` de `criticals.json` imposent 28 Tests de
+ * Résistance (LDB 18 l.237), les 2 rangées à gate `loss.difficulty` (« Coupure à l'orteil », l.171)
+ * en portant DEUX. Sans ce cardinal, la sonde pourrait perdre un nœud fabriqué sans rougir.
+ */
+const NOEUDS_FABRIQUES: Record<string, number> = { 'criticals.json': 28 };
+
 /** LOCALISATION représentative d'une table (`critTableKeyFor` la reprojette à l'identique). */
 const LOC_PAR_TABLE: Record<string, HitLocation> = { tete: 'tete', bras: 'brasD', corps: 'corps', jambe: 'jambeD' };
 
+/** Tous les nœuds `test` d'un Flow, dans l'ordre de jeu — le producteur en pose plusieurs (rangée,
+ *  puis Test(s) d'Amputation) et le contrat les tient TOUS, jamais le premier seulement. */
+function noeudsDuFlow(f: Flow | undefined): Extract<Flow, { kind: 'test' }>[] {
+  if (!f) return [];
+  switch (f.kind) {
+    case 'test': return [f, ...noeudsDuFlow(f.success), ...noeudsDuFlow(f.fail)];
+    case 'seq': return f.steps.flatMap(noeudsDuFlow);
+    case 'if': return [...noeudsDuFlow(f.then), ...noeudsDuFlow(f.else)];
+    case 'choice': return [...noeudsDuFlow(f.yes), ...noeudsDuFlow(f.no)];
+    default: return [];
+  }
+}
+
 /**
- * Les enjeux RÉELLEMENT posés par `resolveCritique` sur les nœuds `test` de `criticals.json` : celui de
- * la rangée (dé FORCÉ sur son propre `min` → c'est bien SA ligne qui sort), et celui du nœud d'escalade
- * armé sur la séquelle (`Trauma.critTrigger`, posé par `stampCriticalEscalation`).
+ * Les enjeux RÉELLEMENT posés par `resolveCritique` sur les nœuds `test` de `criticals.json` : ceux de
+ * la rangée et de son/ses Test(s) d'Amputation (dé FORCÉ sur son propre `min` → c'est bien SA ligne qui
+ * sort), celui du nœud ARMÉ sur le marqueur d'amputation DIFFÉRÉE (`Trauma.pendingAmputation`), et celui
+ * du nœud d'escalade armé sur la séquelle (`Trauma.critTrigger`, posé par `stampCriticalEscalation`).
+ * Un nœud produit SANS enjeu est un jet muet : il rougit ici, quelle que soit sa place dans le Flow.
  */
 function enjeuxDesRangeesDeCritique(): { entryId: string; stake: StakeRef | undefined }[] {
   const out: { entryId: string; stake: StakeRef | undefined }[] = [];
   for (const doc of CRITIQUE_DOCS) {
     const loc = LOC_PAR_TABLE[doc.localisation];
     for (const e of doc.entries) {
-      if (!e.test && !e.escalation?.onNextCritWhileCondition) continue;
+      if (!e.test && !e.amputation && !e.escalation?.onNextCritWhileCondition) continue;
       const crit = resolveCritique(doc.jeu, hero(), loc, makeRNG(1), { forcedRoll: e.min });
-      if (e.test) {
-        const n = crit.testFlow?.kind === 'test' ? crit.testFlow : undefined;
-        out.push({ entryId: e.id, stake: n?.test.stake });
-      }
+      const differee = crit.traumas.find((t) => t.pendingAmputation)?.pendingAmputation;
+      const noeuds = [...noeudsDuFlow(crit.testFlow), ...noeudsDuFlow(differee)];
+      // Cardinal ATTENDU, nommé : 1 par rangée à `test` + les Tests que l'Amputation impose (2 quand la
+      // ligne porte un gate `loss.difficulty`, 1 sinon) — un nœud PERDU en route ne peut pas se cacher.
+      const attendus = (e.test ? 1 : 0) + (e.amputation ? (e.amputation.loss?.difficulty ? 2 : 1) : 0);
+      expect(noeuds.length, `${e.id} : ${noeuds.length} nœud(s) produits pour ${attendus} attendu(s)`).toBe(attendus);
+      for (const n of noeuds) out.push({ entryId: e.id, stake: n.test.stake });
       const arme = crit.traumas.find((t) => t.critTrigger)?.critTrigger;
       if (e.escalation?.onNextCritWhileCondition) out.push({ entryId: e.id, stake: arme?.test.test.stake });
     }
@@ -170,7 +196,7 @@ describe('#1262 V2 L6d — TOUT `FlowTest` de la donnée dit ce qui se joue', ()
     let mesures = 0;
     for (const [fichier, produire] of Object.entries(ENJEU_AU_PRODUCTEUR)) {
       const poses = produire();
-      const attendus = noeuds.filter((n) => n.fichier === fichier).length;
+      const attendus = noeuds.filter((n) => n.fichier === fichier).length + (NOEUDS_FABRIQUES[fichier] ?? 0);
       expect(poses.length, `${fichier} : ${poses.length} enjeu(x) pour ${attendus} nœud(s) — la sonde a glissé`).toBe(attendus);
       for (const { entryId, stake } of poses) {
         mesures++;
@@ -183,7 +209,7 @@ describe('#1262 V2 L6d — TOUT `FlowTest` de la donnée dit ce qui se joue', ()
         else if (resolu.rule.id !== entryId) muets.push(`${fichier}:${entryId} — renvoi hors de sa propre rangée (${resolu.rule.category}:${resolu.rule.id})`);
       }
     }
-    expect(mesures, 'la sonde du producteur n’a rien mesuré').toBeGreaterThanOrEqual(39);
+    expect(mesures, 'la sonde du producteur n’a rien mesuré').toBeGreaterThanOrEqual(67);
     expect(muets, ['Jet de donnée MUET — chaque nœud posé par son producteur dit ce qui se joue :', ...muets].join('\n')).toEqual([]);
   });
 

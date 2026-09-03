@@ -45,10 +45,9 @@ import seaCargoRawJson from './sea-cargo.json';
 import riverPerilsRawJson from './river-perils.json';
 import crewMoraleRawJson from './crew-morale.json';
 import { DATASET_FICHIER_DERIVE } from './schemas/exposition-derivee';
-import { critiqueEntries, type CritTestNode } from './criticals';
+import { critiqueEntries, type CritEntry } from './criticals';
 import { SHIP_CRITICAL_TABLES, RIVER_CRIT_SET } from './shipCriticals';
 import type { GameOp } from '../engine/ops';
-import type { Difficulty } from '../engine/types';
 import type { SourceRef } from './schemas/grammaire/valeurs';
 import criticalsRawJson from './criticals.json';
 import traumasRawJson from './traumas.json';
@@ -129,24 +128,21 @@ export interface TraumaFicheEntry {
 const traumas = traumasRawJson as TraumaFicheEntry[];
 
 /** Entrée de table de Blessures Critiques par Localisation (LDB 18 « Traumatisme » ET AA « approche
- *  alternative ») — MÊME schéma pour les DEUX jeux depuis leur fusion (#1657 B2a) : `test` est le nœud
- *  `test` du Flow, la forme UNIQUE du jet en donnée. */
-export interface CritTableEntry {
-  id: string; min: number; max: number; label: string;
-  lethal?: boolean;
-  ops?: GameOp[]; test?: CritTestNode;
-  amputation?: { difficulty: Difficulty; sequels: string[] }; traumas?: string[]; desc: string;
-}
+ *  alternative ») — MÊME schéma pour les DEUX jeux depuis leur fusion (#1657 B2a). ALIAS de `CritEntry`
+ *  (`src/data/criticals.ts`), la SEULE déclaration de la forme : une redéclaration structurelle en
+ *  amputait `source`, `escalation` et les champs d'`Amputation` (`timing`/`loss`/`unites`), si bien que
+ *  le Codex ne pouvait pas voir ce que le moteur joue. */
+export type CritTableEntry = CritEntry;
 // Les 8 documents-tables de `criticals.json` (4 Localisations × 2 jeux) — rangées LIVE par id de
 // DOCUMENT (`critiqueEntries`, même référence que le moteur, patron `miscastEntries`).
-const criticalsTete = critiqueEntries('criticals-ldb-tete') as unknown as CritTableEntry[];
-const criticalsBras = critiqueEntries('criticals-ldb-bras') as unknown as CritTableEntry[];
-const criticalsCorps = critiqueEntries('criticals-ldb-corps') as unknown as CritTableEntry[];
-const criticalsJambe = critiqueEntries('criticals-ldb-jambe') as unknown as CritTableEntry[];
-const aaCriticalsTete = critiqueEntries('criticals-aa-tete') as unknown as CritTableEntry[];
-const aaCriticalsBras = critiqueEntries('criticals-aa-bras') as unknown as CritTableEntry[];
-const aaCriticalsCorps = critiqueEntries('criticals-aa-corps') as unknown as CritTableEntry[];
-const aaCriticalsJambe = critiqueEntries('criticals-aa-jambe') as unknown as CritTableEntry[];
+const criticalsTete = critiqueEntries('criticals-ldb-tete');
+const criticalsBras = critiqueEntries('criticals-ldb-bras');
+const criticalsCorps = critiqueEntries('criticals-ldb-corps');
+const criticalsJambe = critiqueEntries('criticals-ldb-jambe');
+const aaCriticalsTete = critiqueEntries('criticals-aa-tete');
+const aaCriticalsBras = critiqueEntries('criticals-aa-bras');
+const aaCriticalsCorps = critiqueEntries('criticals-aa-corps');
+const aaCriticalsJambe = critiqueEntries('criticals-aa-jambe');
 
 /** 3 catégories de Rencontres de voyage (EDOC 8, `rencontres-edoc.json`) — `encounterTable` retourne
  *  la table LIVE (accès de propriété sur le JSON importé par `engine/travelTables.ts`, jamais une copie). */

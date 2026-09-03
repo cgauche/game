@@ -82,7 +82,7 @@ export const critEscalationSchema = z.strictObject({
 
 /** Amputation (LDB 18 l.237) — reflet de `Amputation` (`src/data/criticals.ts`), SOURCE UNIQUE de forme
  *  partagée par les deux jeux (mêmes textes « Une fois la rencontre terminée… »/« un orteil par DR »).
- *  Résolue par `resolveAmputation`. */
+ *  Le/les Test(s) qu'elle impose sont fabriqués par `noeudAmputation` (`src/engine/critical.ts`). */
 export const amputationSchema = z.strictObject({
   difficulty: difficultySchema,
   sequels: z.array(z.string()),

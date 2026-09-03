@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { useGame, type BattleState } from './store';
 import { avanceEtapeCascade } from './cascadeTestKit';
-import { applyCriticalToTarget } from './combatFlow';
+import { applyCriticalToTarget, openCombatEndCascade } from './combatFlow';
 import { resolveCritique } from '../engine/critical';
+import { runPureFlowLines } from './combatEffects';
+import { testValue } from '../engine/skills';
+import { addCondition } from '../engine/conditions';
+import { CRITIQUE_DOCS } from '../data/criticals';
+import type { Flow } from '../engine/flowCore';
 import { seedBattleRng, battleRng } from './battleRng';
 import { makeRNG } from '../engine/dice';
 import { resolveStake } from '../data';
@@ -170,5 +175,95 @@ describe('#1657 B3-1 — le Test d’une Blessure critique naît comme une ÉTAP
     expect(st!.actorId).toBe('h');
     expect(st!.difficulty).toBe('accessible'); // LDB 18 l.74 : « Test de Résistance Accessible (+20) »
     expect(resolveStake(st!.stake!).rule).toEqual({ category: 'criticalsTete', id: 'commotion-cerebrale' });
+  });
+});
+
+
+/**
+ * #1657 B3-1b — LES 28 TESTS D'AMPUTATION (LDB 18 l.237) PASSENT PAR LA MÊME PORTE.
+ *
+ * RAW l.237, verbatim : « À chaque fois que vous subissez une Blessure critique où il est indiqué
+ * *Amputation (Difficulté)*, vous devez réussir un Test de **Résistance** (la difficulté est indiquée
+ * entre parenthèses) ou gagner 1 État *À Terre*. Sur un échec (-2 DR) ou pire, vous recevez également
+ * un État *Sonné*. Si vous échouez avec au moins -4 DR, gagnez un État *Inconscient*. »
+ *
+ * Le moteur les roulait, sur une valeur calculée à la main (Endurance + Avances de Résistance) qui
+ * ignorait les États du jeteur — donc sans Chance, sans Pacte, sans Résilience. Ils naissent désormais
+ * comme des étapes, et la valeur testée est celle de la PORTE (`rollLine` → `testValue`).
+ */
+describe('#1657 B3-1b — le Test d’AMPUTATION naît comme une étape, à la valeur de la porte', () => {
+  /** Le nœud `test` d'un Flow qui EN EST un — rouge nommé sinon. */
+  const noeudDeTest = (f: Flow | undefined) => {
+    if (!f || f.kind !== 'test') throw new Error(`noeud test attendu, recu : ${f ? f.kind : 'rien'}`);
+    return f;
+  };
+  const etapes = (f: Flow | undefined): Flow[] => (f && f.kind === 'seq' ? f.steps : f ? [f] : []);
+
+  it('(vi) héros 2× Sonné, « Doigt sectionné » (dé 83) : la cible est celle de la PORTE, États compris', () => {
+    seedBattleRng(1);
+    const hero = mk('h', 'hero');
+    addCondition(hero, 'sonne', 2); // LDB 16 l.125 : « une pénalité de -10 à tous les Tests », ×2
+    combat(hero, mk('e', 'enemy'));
+    subirCritique(hero, 'brasD', 83); // LDB bras 81-85 « Doigt sectionné » — Amputation (Accessible)
+
+    const st = etapeTest();
+    expect(st, 'aucune étape : le Test d’Amputation est resté silencieux au moteur').toBeTruthy();
+    expect(st!.actorId).toBe('h');
+    expect(st!.rollLabel).toBe('Résistance');       // l.237 — la COMPÉTENCE, jamais l'Endurance nue
+    expect(st!.difficulty).toBe('accessible');
+    // Endurance 35 → Niveau de Résistance 35 ; 2× Sonné = −20 ⇒ 15 (LDB 16 l.125). Une valeur calculée
+    // hors de la porte (Endurance + Avances) rendrait 35 : elle ne voit aucun État.
+    expect(testValue(hero, 'resistance')).toBe(15);
+    expect(st!.target, 'la cible ignore les États : la valeur maison est revenue').toBe(15 + 20);
+    expect(hero.traumas, 'ni plaie ni séquelle avant le jet').toEqual([]);
+  });
+
+  it('(vii) POST-RENCONTRE (l.171) : le nœud ARMÉ part par la porte à la fin du combat, jamais en silence', () => {
+    seedBattleRng(1);
+    const hero = mk('h', 'hero');
+    const coupure = CRITIQUE_DOCS.flatMap((d) => d.entries).find((e) => e.id === 'coupure-a-l-orteil')!;
+    // Marqueur ARMÉ par un critique antérieur (« Coupure à l'orteil » : « Une fois la rencontre terminée… »).
+    (hero as unknown as { traumas: Trauma[] }).traumas =
+      resolveCritique('ldb', mk('h', 'hero'), 'jambeD', makeRNG(1), { forcedRoll: coupure.min }).traumas;
+    combat(hero, mk('e', 'enemy'));
+
+    openCombatEndCascade(useGame.getState, useGame.setState);
+
+    const st = etapeTest();
+    expect(st, 'le Test différé s’est joué en silence : aucune fenêtre au bilan de combat').toBeTruthy();
+    expect(st!.actorId).toBe('h');
+    expect(st!.rollLabel).toBe('Résistance');
+    expect(st!.difficulty).toBe('intermediaire'); // l.171 : le GATE, « un Test de Résistance Intermédiaire (+0) »
+    expect(resolveStake(st!.stake!).rule).toEqual({ category: 'criticalsJambe', id: 'coupure-a-l-orteil' });
+    expect(hero.traumas!.some((t) => t.pendingAmputation), 'le marqueur doit être CONSOMMÉ').toBe(false);
+    // La cascade porte la borne de fin de combat : sans elle, sa fermeture rejouerait le bilan.
+    expect(useGame.getState().pendingCascade!.combatEndBoundary).toBe(true);
+  });
+
+  it('(viii) « Coupure à l’orteil » : gate RÉUSSI = rien ; gate raté puis Test raté à −2 DR = Sonné + amputation', () => {
+    seedBattleRng(1);
+    const hero = mk('h', 'hero');
+    const coupure = CRITIQUE_DOCS.flatMap((d) => d.entries).find((e) => e.id === 'coupure-a-l-orteil')!;
+    const gate = noeudDeTest(
+      resolveCritique('ldb', hero, 'jambeD', makeRNG(1), { forcedRoll: coupure.min })
+        .traumas.find((t) => t.pendingAmputation)!.pendingAmputation,
+    );
+
+    // Gate RÉUSSI (l.171 : la perte n'a lieu que « sur un échec ») — aucune conséquence, pas même un État.
+    const sauf = mk('h', 'hero');
+    runPureFlowLines(sauf, sauf, gate.success, { sl: 3 });
+    expect(sauf.traumas).toEqual([]);
+    expect(stacks(sauf, 'a-terre')).toBe(0);
+
+    // Gate RATÉ → le Test d'Amputation (l.237) ; RATÉ à −2 DR → À Terre + Sonné + la perte de l'orteil.
+    const [interne, perte] = etapes(gate.fail);
+    const touche = mk('h', 'hero');
+    runPureFlowLines(touche, touche, noeudDeTest(interne).fail, { sl: -2 });
+    runPureFlowLines(touche, touche, perte, { sl: -2 });
+    expect(stacks(touche, 'a-terre')).toBe(1);
+    expect(stacks(touche, 'sonne')).toBe(1);
+    expect(stacks(touche, 'inconscient'), 'l’Inconscient n’arrive qu’à −4 DR').toBe(0);
+    expect(touche.traumas!.some((t) => t.traumaId === 'orteil-ampute')).toBe(true);
+    expect(touche.traumas!.some((t) => t.needsSurgery)).toBe(true);
   });
 });

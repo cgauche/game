@@ -56,39 +56,110 @@
         "value": 2
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "tete",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Oreille perdue",
-        "traumaId": "oreille-perdue",
-        "location": "tete",
-        "desc": "Perdre une oreille est douloureux, mais on apprend à vivre sans assez vite. Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par oreille perdue lorsque les autres voient votre visage.",
-        "ops": [
-          {
-            "op": "senseLoss",
-            "sense": "ouie"
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "accessible",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-tete-61",
+                "entryCategory": "aaCriticalsTete"
+              }
+            }
           },
-          {
-            "op": "charMod",
-            "char": "sociabilite",
-            "mod": -5
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "oreille-perdue"
+                ],
+                "loc": "tete"
+              }
+            ]
           }
-        ],
-        "count": 1
-      }
-    ],
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Un coup vous déchire l'oreille. Vous recevez 3 États Assourdi et 2 États Hémorragique. Vous perdez votre oreille – Amputation (Accessible).",
     "roll": 63,
     "log": "Blessure critique AA (Tête) — Oreille mutilée."
@@ -1281,35 +1352,116 @@
         "value": 2
       }
     ],
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "facile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-tete-66",
+                "entryCategory": "aaCriticalsTete"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "dents-perdues"
+                ],
+                "loc": "tete",
+                "unites": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "tete",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Dents perdues",
-        "traumaId": "dents-perdues",
-        "location": "tete",
-        "desc": "La perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité.",
-        "prosthesis": [
-          {
-            "trappingId": "dents-en-bois",
-            "cancels": "all"
-          }
-        ],
-        "count": 5,
-        "ops": [
-          {
-            "op": "charMod",
-            "char": "sociabilite",
-            "mod": -2
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup vous déchausse plusieurs dents. Vous recevez 2 États Hémorragique. Vous perdez 1d10 dents – Amputation (Facile).",
     "roll": 73,
     "log": "Blessure critique AA (Tête) — Bouche explosée."
@@ -2466,42 +2618,118 @@
         "op": "condition",
         "id": "hemorragique",
         "value": 2
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
       }
     ],
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "facile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-tete-66",
+                "entryCategory": "aaCriticalsTete"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "dents-perdues"
+                ],
+                "loc": "tete",
+                "unites": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "tete",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Dents perdues",
-        "traumaId": "dents-perdues",
-        "location": "tete",
-        "desc": "La perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité.",
-        "prosthesis": [
-          {
-            "trappingId": "dents-en-bois",
-            "cancels": "all"
-          }
-        ],
-        "count": 3,
-        "ops": [
-          {
-            "op": "charMod",
-            "char": "sociabilite",
-            "mod": -1
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup vous déchausse plusieurs dents. Vous recevez 2 États Hémorragique. Vous perdez 1d10 dents – Amputation (Facile).",
     "roll": 69,
     "log": "Blessure critique AA (Tête) — Bouche explosée."
@@ -3067,67 +3295,149 @@
       }
     ],
     "testFlow": {
-      "kind": "test",
-      "test": {
-        "skill": {
-          "id": "resistance"
-        },
-        "difficulty": "difficile",
-        "stake": {
-          "key": {
-            "dataset": "combat",
-            "kind": "critRowTest",
-            "entryId": "aa-bras-131",
-            "entryCategory": "aaCriticalsBras"
-          }
-        }
-      },
-      "success": {
-        "kind": "seq",
-        "steps": []
-      },
-      "fail": {
-        "kind": "do",
-        "effect": {
-          "type": "ops",
-          "ops": [
-            {
-              "op": "condition",
-              "id": "inconscient",
-              "value": 1
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "difficile",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-131",
+                "entryCategory": "aaCriticalsBras"
+              }
             }
-          ],
-          "on": "target"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "inconscient",
+                  "value": 1
+                }
+              ],
+              "on": "target"
+            }
+          }
+        },
+        {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "test",
+              "test": {
+                "skill": {
+                  "id": "resistance"
+                },
+                "difficulty": "tresDifficile",
+                "label": "Amputation",
+                "stake": {
+                  "key": {
+                    "dataset": "combat",
+                    "kind": "critRowTest",
+                    "entryId": "aa-bras-131",
+                    "entryCategory": "aaCriticalsBras"
+                  }
+                }
+              },
+              "success": {
+                "kind": "seq",
+                "steps": []
+              },
+              "fail": {
+                "kind": "seq",
+                "steps": [
+                  {
+                    "kind": "do",
+                    "effect": {
+                      "type": "ops",
+                      "ops": [
+                        {
+                          "op": "condition",
+                          "id": "a-terre",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -2
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "sonne",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -4
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "inconscient",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "amputer",
+                    "sequels": [
+                      "main-bras-ampute"
+                    ],
+                    "loc": "brasG"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      }
+      ]
     },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "brasG",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Main/bras amputé",
-        "traumaId": "main-bras-ampute",
-        "location": "brasG",
-        "desc": "Vous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d’armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d’Arme effectués avec votre main secondaire.",
-        "ops": [
-          {
-            "op": "maxWeaponHands",
-            "hands": 1
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient.",
     "roll": 133,
     "log": "Blessure critique AA (Bras gauche) — Tendons coupés."
@@ -3189,67 +3499,149 @@
       }
     ],
     "testFlow": {
-      "kind": "test",
-      "test": {
-        "skill": {
-          "id": "resistance"
-        },
-        "difficulty": "difficile",
-        "stake": {
-          "key": {
-            "dataset": "combat",
-            "kind": "critRowTest",
-            "entryId": "aa-bras-131",
-            "entryCategory": "aaCriticalsBras"
-          }
-        }
-      },
-      "success": {
-        "kind": "seq",
-        "steps": []
-      },
-      "fail": {
-        "kind": "do",
-        "effect": {
-          "type": "ops",
-          "ops": [
-            {
-              "op": "condition",
-              "id": "inconscient",
-              "value": 1
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "difficile",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-131",
+                "entryCategory": "aaCriticalsBras"
+              }
             }
-          ],
-          "on": "target"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "inconscient",
+                  "value": 1
+                }
+              ],
+              "on": "target"
+            }
+          }
+        },
+        {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "test",
+              "test": {
+                "skill": {
+                  "id": "resistance"
+                },
+                "difficulty": "tresDifficile",
+                "label": "Amputation",
+                "stake": {
+                  "key": {
+                    "dataset": "combat",
+                    "kind": "critRowTest",
+                    "entryId": "aa-bras-131",
+                    "entryCategory": "aaCriticalsBras"
+                  }
+                }
+              },
+              "success": {
+                "kind": "seq",
+                "steps": []
+              },
+              "fail": {
+                "kind": "seq",
+                "steps": [
+                  {
+                    "kind": "do",
+                    "effect": {
+                      "type": "ops",
+                      "ops": [
+                        {
+                          "op": "condition",
+                          "id": "a-terre",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -2
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "sonne",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -4
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "inconscient",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "amputer",
+                    "sequels": [
+                      "main-bras-ampute"
+                    ],
+                    "loc": "brasD"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      }
+      ]
     },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "brasD",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Main/bras amputé",
-        "traumaId": "main-bras-ampute",
-        "location": "brasD",
-        "desc": "Vous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d’armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d’Arme effectués avec votre main secondaire.",
-        "ops": [
-          {
-            "op": "maxWeaponHands",
-            "hands": 1
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient.",
     "roll": 133,
     "log": "Blessure critique AA (Bras droit) — Tendons coupés."
@@ -3926,18 +4318,117 @@
         "op": "condition",
         "id": "sonne",
         "value": 3
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
       }
     ],
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "difficile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-tete-95",
+                "entryCategory": "aaCriticalsTete"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "langue-amputee",
+                  "dents-perdues"
+                ],
+                "loc": "tete",
+                "unites": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
     "lethal": false,
     "traumas": [
       {
@@ -3950,47 +4441,6 @@
         "recoveryDays": 47,
         "recoveryTotal": 47,
         "needsSurgery": true
-      },
-      {
-        "label": "Amputation",
-        "location": "tete",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Langue amputée",
-        "traumaId": "langue-amputee",
-        "location": "tete",
-        "desc": "Dépourvu de langue, vous ne pouvez plus que marmonner et grommeler, ou vous servir d’un système de signes maison pour communiquer. Tous les Tests de Langue qui impliquent la parole se soldent automatiquement par un échec.",
-        "ops": [
-          {
-            "op": "skillMod",
-            "skill": {
-              "id": "langue"
-            },
-            "mod": -100
-          }
-        ]
-      },
-      {
-        "label": "Dents perdues",
-        "traumaId": "dents-perdues",
-        "location": "tete",
-        "desc": "La perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité.",
-        "prosthesis": [
-          {
-            "trappingId": "dents-en-bois",
-            "cancels": "all"
-          }
-        ],
-        "count": 7,
-        "ops": [
-          {
-            "op": "charMod",
-            "char": "sociabilite",
-            "mod": -3
-          }
-        ]
       }
     ],
     "desc": "Le coup vous fracasse totalement la mâchoire : il vous détruit la langue et fait voler vos dents. Vous recevez 4 États Hémorragique et 3 États Sonné. Vous subissez le Traumatisme Fracture (Majeure) et vous perdez votre langue et 1d10 dents – Amputation (Difficile).",
@@ -4968,85 +5418,152 @@
         "op": "condition",
         "id": "sonne",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
     "testFlow": {
-      "kind": "test",
-      "test": {
-        "skill": {
-          "id": "resistance"
-        },
-        "difficulty": "difficile",
-        "stake": {
-          "key": {
-            "dataset": "combat",
-            "kind": "critRowTest",
-            "entryId": "aa-bras-131",
-            "entryCategory": "aaCriticalsBras"
-          }
-        }
-      },
-      "success": {
-        "kind": "seq",
-        "steps": []
-      },
-      "fail": {
-        "kind": "do",
-        "effect": {
-          "type": "ops",
-          "ops": [
-            {
-              "op": "condition",
-              "id": "inconscient",
-              "value": 1
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "difficile",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-131",
+                "entryCategory": "aaCriticalsBras"
+              }
             }
-          ],
-          "on": "target"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "inconscient",
+                  "value": 1
+                }
+              ],
+              "on": "target"
+            }
+          }
+        },
+        {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "test",
+              "test": {
+                "skill": {
+                  "id": "resistance"
+                },
+                "difficulty": "tresDifficile",
+                "label": "Amputation",
+                "stake": {
+                  "key": {
+                    "dataset": "combat",
+                    "kind": "critRowTest",
+                    "entryId": "aa-bras-131",
+                    "entryCategory": "aaCriticalsBras"
+                  }
+                }
+              },
+              "success": {
+                "kind": "seq",
+                "steps": []
+              },
+              "fail": {
+                "kind": "seq",
+                "steps": [
+                  {
+                    "kind": "do",
+                    "effect": {
+                      "type": "ops",
+                      "ops": [
+                        {
+                          "op": "condition",
+                          "id": "a-terre",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -2
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "sonne",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -4
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "inconscient",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "amputer",
+                    "sequels": [
+                      "main-bras-ampute"
+                    ],
+                    "loc": "brasG"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      }
+      ]
     },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "brasG",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Main/bras amputé",
-        "traumaId": "main-bras-ampute",
-        "location": "brasG",
-        "desc": "Vous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d’armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d’Arme effectués avec votre main secondaire.",
-        "ops": [
-          {
-            "op": "maxWeaponHands",
-            "hands": 1
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient.",
     "roll": 131,
     "log": "Blessure critique AA (Bras gauche) — Tendons coupés."
@@ -5105,85 +5622,152 @@
         "op": "condition",
         "id": "sonne",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
     "testFlow": {
-      "kind": "test",
-      "test": {
-        "skill": {
-          "id": "resistance"
-        },
-        "difficulty": "difficile",
-        "stake": {
-          "key": {
-            "dataset": "combat",
-            "kind": "critRowTest",
-            "entryId": "aa-bras-131",
-            "entryCategory": "aaCriticalsBras"
-          }
-        }
-      },
-      "success": {
-        "kind": "seq",
-        "steps": []
-      },
-      "fail": {
-        "kind": "do",
-        "effect": {
-          "type": "ops",
-          "ops": [
-            {
-              "op": "condition",
-              "id": "inconscient",
-              "value": 1
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "difficile",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-131",
+                "entryCategory": "aaCriticalsBras"
+              }
             }
-          ],
-          "on": "target"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "inconscient",
+                  "value": 1
+                }
+              ],
+              "on": "target"
+            }
+          }
+        },
+        {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "test",
+              "test": {
+                "skill": {
+                  "id": "resistance"
+                },
+                "difficulty": "tresDifficile",
+                "label": "Amputation",
+                "stake": {
+                  "key": {
+                    "dataset": "combat",
+                    "kind": "critRowTest",
+                    "entryId": "aa-bras-131",
+                    "entryCategory": "aaCriticalsBras"
+                  }
+                }
+              },
+              "success": {
+                "kind": "seq",
+                "steps": []
+              },
+              "fail": {
+                "kind": "seq",
+                "steps": [
+                  {
+                    "kind": "do",
+                    "effect": {
+                      "type": "ops",
+                      "ops": [
+                        {
+                          "op": "condition",
+                          "id": "a-terre",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -2
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "sonne",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -4
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "inconscient",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "amputer",
+                    "sequels": [
+                      "main-bras-ampute"
+                    ],
+                    "loc": "brasD"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      }
+      ]
     },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "brasD",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Main/bras amputé",
-        "traumaId": "main-bras-ampute",
-        "location": "brasD",
-        "desc": "Vous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d’armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d’Arme effectués avec votre main secondaire.",
-        "ops": [
-          {
-            "op": "maxWeaponHands",
-            "hands": 1
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient.",
     "roll": 131,
     "log": "Blessure critique AA (Bras droit) — Tendons coupés."
@@ -6292,6 +6876,108 @@
         "value": 2
       }
     ],
+    "testFlow": {
+      "kind": "test",
+      "test": {
+        "skill": {
+          "id": "resistance"
+        },
+        "difficulty": "accessible",
+        "label": "Amputation",
+        "stake": {
+          "key": {
+            "dataset": "combat",
+            "kind": "critRowTest",
+            "entryId": "aa-jambe-106",
+            "entryCategory": "aaCriticalsJambe"
+          }
+        }
+      },
+      "success": {
+        "kind": "seq",
+        "steps": []
+      },
+      "fail": {
+        "kind": "seq",
+        "steps": [
+          {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "a-terre",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "if",
+            "cond": {
+              "kind": "slThreshold",
+              "op": "<=",
+              "value": -2
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "sonne",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "kind": "if",
+            "cond": {
+              "kind": "slThreshold",
+              "op": "<=",
+              "value": -4
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "inconscient",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "amputer",
+                  "sequels": [
+                    "orteil-ampute"
+                  ],
+                  "loc": "jambeG",
+                  "unitesPerSL": {
+                    "every": 1,
+                    "amount": 1,
+                    "onFailure": true
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
     "lethal": false,
     "traumas": [
       {
@@ -6299,7 +6985,7 @@
         "location": "jambeG",
         "needsSurgery": true,
         "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.",
-        "amputateAfterDays": 6,
+        "amputateAfterDays": 1,
         "amputateSequel": "membre-inferieur-ampute"
       }
     ],
@@ -6378,6 +7064,108 @@
         "value": 2
       }
     ],
+    "testFlow": {
+      "kind": "test",
+      "test": {
+        "skill": {
+          "id": "resistance"
+        },
+        "difficulty": "accessible",
+        "label": "Amputation",
+        "stake": {
+          "key": {
+            "dataset": "combat",
+            "kind": "critRowTest",
+            "entryId": "aa-jambe-106",
+            "entryCategory": "aaCriticalsJambe"
+          }
+        }
+      },
+      "success": {
+        "kind": "seq",
+        "steps": []
+      },
+      "fail": {
+        "kind": "seq",
+        "steps": [
+          {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "a-terre",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "if",
+            "cond": {
+              "kind": "slThreshold",
+              "op": "<=",
+              "value": -2
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "sonne",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "kind": "if",
+            "cond": {
+              "kind": "slThreshold",
+              "op": "<=",
+              "value": -4
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "inconscient",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "amputer",
+                  "sequels": [
+                    "orteil-ampute"
+                  ],
+                  "loc": "jambeD",
+                  "unitesPerSL": {
+                    "every": 1,
+                    "amount": 1,
+                    "onFailure": true
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
     "lethal": false,
     "traumas": [
       {
@@ -6385,7 +7173,7 @@
         "location": "jambeD",
         "needsSurgery": true,
         "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.",
-        "amputateAfterDays": 6,
+        "amputateAfterDays": 1,
         "amputateSequel": "membre-inferieur-ampute"
       }
     ],
@@ -6742,13 +7530,127 @@
         "label": "Coupure à l'orteil",
         "location": "jambeG",
         "pendingAmputation": {
-          "difficulty": "accessible",
-          "sequels": [
-            "orteil-ampute"
-          ],
-          "timing": "postEncounter",
-          "loss": {
-            "difficulty": "intermediaire"
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "intermediaire",
+            "label": "Coupure à l'orteil",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-56",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "test",
+                "test": {
+                  "skill": {
+                    "id": "resistance"
+                  },
+                  "difficulty": "accessible",
+                  "label": "Amputation",
+                  "stake": {
+                    "key": {
+                      "dataset": "combat",
+                      "kind": "critRowTest",
+                      "entryId": "aa-jambe-56",
+                      "entryCategory": "aaCriticalsJambe"
+                    }
+                  }
+                },
+                "success": {
+                  "kind": "seq",
+                  "steps": []
+                },
+                "fail": {
+                  "kind": "seq",
+                  "steps": [
+                    {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "a-terre",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -2
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "sonne",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -4
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "inconscient",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "amputer",
+                      "sequels": [
+                        "orteil-ampute"
+                      ],
+                      "loc": "jambeG"
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       }
@@ -6823,13 +7725,127 @@
         "label": "Coupure à l'orteil",
         "location": "jambeD",
         "pendingAmputation": {
-          "difficulty": "accessible",
-          "sequels": [
-            "orteil-ampute"
-          ],
-          "timing": "postEncounter",
-          "loss": {
-            "difficulty": "intermediaire"
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "intermediaire",
+            "label": "Coupure à l'orteil",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-56",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "test",
+                "test": {
+                  "skill": {
+                    "id": "resistance"
+                  },
+                  "difficulty": "accessible",
+                  "label": "Amputation",
+                  "stake": {
+                    "key": {
+                      "dataset": "combat",
+                      "kind": "critRowTest",
+                      "entryId": "aa-jambe-56",
+                      "entryCategory": "aaCriticalsJambe"
+                    }
+                  }
+                },
+                "success": {
+                  "kind": "seq",
+                  "steps": []
+                },
+                "fail": {
+                  "kind": "seq",
+                  "steps": [
+                    {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "a-terre",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -2
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "sonne",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -4
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "inconscient",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "amputer",
+                      "sequels": [
+                        "orteil-ampute"
+                      ],
+                      "loc": "jambeD"
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       }
@@ -7126,62 +8142,112 @@
         "op": "condition",
         "id": "a-terre",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "jambeG",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Membre inférieur amputé",
-        "traumaId": "membre-inferieur-ampute",
-        "location": "jambeG",
-        "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
-        "ops": [
-          {
-            "op": "moveScale",
-            "num": 1,
-            "den": 2
-          },
-          {
-            "op": "skillMod",
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
             "skill": {
-              "id": "esquive"
+              "id": "resistance"
             },
-            "mod": -20
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+            "difficulty": "tresDifficile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-121",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
           },
-          {
-            "trappingId": "fausse-jambe",
-            "cancels": "movement"
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ]
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "membre-inferieur-ampute"
+                ],
+                "loc": "jambeG"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Votre jambe cède sous le poids de votre corps. Vous gagnez 2 États Hémorragique, 2 États Sonné et 1 État À Terre et vous perdez l'usage de votre jambe – Amputation (Très Difficile).",
     "roll": 125,
     "log": "Blessure critique AA (Jambe gauche) — Tendon coupé."
@@ -7234,62 +8300,112 @@
         "op": "condition",
         "id": "a-terre",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "jambeD",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Membre inférieur amputé",
-        "traumaId": "membre-inferieur-ampute",
-        "location": "jambeD",
-        "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
-        "ops": [
-          {
-            "op": "moveScale",
-            "num": 1,
-            "den": 2
-          },
-          {
-            "op": "skillMod",
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
             "skill": {
-              "id": "esquive"
+              "id": "resistance"
             },
-            "mod": -20
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+            "difficulty": "tresDifficile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-121",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
           },
-          {
-            "trappingId": "fausse-jambe",
-            "cancels": "movement"
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ]
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "membre-inferieur-ampute"
+                ],
+                "loc": "jambeD"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Votre jambe cède sous le poids de votre corps. Vous gagnez 2 États Hémorragique, 2 États Sonné et 1 État À Terre et vous perdez l'usage de votre jambe – Amputation (Très Difficile).",
     "roll": 125,
     "log": "Blessure critique AA (Jambe droite) — Tendon coupé."
@@ -7991,35 +9107,116 @@
         "value": 2
       }
     ],
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "facile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-tete-66",
+                "entryCategory": "aaCriticalsTete"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "dents-perdues"
+                ],
+                "loc": "tete",
+                "unites": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "tete",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Dents perdues",
-        "traumaId": "dents-perdues",
-        "location": "tete",
-        "desc": "La perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité.",
-        "prosthesis": [
-          {
-            "trappingId": "dents-en-bois",
-            "cancels": "all"
-          }
-        ],
-        "count": 6,
-        "ops": [
-          {
-            "op": "charMod",
-            "char": "sociabilite",
-            "mod": -3
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup vous déchausse plusieurs dents. Vous recevez 2 États Hémorragique. Vous perdez 1d10 dents – Amputation (Facile).",
     "roll": 68,
     "log": "Blessure critique AA (Tête) — Bouche explosée."
@@ -8571,23 +9768,110 @@
         "op": "condition",
         "id": "sonne",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "complexe",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-116",
+                "entryCategory": "aaCriticalsBras"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "doigt-ampute"
+                ],
+                "loc": "brasG"
+              }
+            ]
+          }
+        }
+      ]
+    },
     "lethal": false,
     "traumas": [
       {
@@ -8599,19 +9883,6 @@
           "versTraumaId": "doigt-ampute"
         },
         "awaitingMedicalAid": true
-      },
-      {
-        "label": "Doigts amputés",
-        "traumaId": "doigt-ampute",
-        "location": "brasG",
-        "desc": "Avec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée.",
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ],
-        "count": 1
       }
     ],
     "desc": "Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe).",
@@ -8661,23 +9932,110 @@
         "op": "condition",
         "id": "sonne",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "complexe",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-116",
+                "entryCategory": "aaCriticalsBras"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "doigt-ampute"
+                ],
+                "loc": "brasD"
+              }
+            ]
+          }
+        }
+      ]
+    },
     "lethal": false,
     "traumas": [
       {
@@ -8689,19 +10047,6 @@
           "versTraumaId": "doigt-ampute"
         },
         "awaitingMedicalAid": true
-      },
-      {
-        "label": "Doigts amputés",
-        "traumaId": "doigt-ampute",
-        "location": "brasD",
-        "desc": "Avec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée.",
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ],
-        "count": 1
       }
     ],
     "desc": "Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe).",
@@ -8831,62 +10176,112 @@
         "op": "condition",
         "id": "a-terre",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "jambeG",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Membre inférieur amputé",
-        "traumaId": "membre-inferieur-ampute",
-        "location": "jambeG",
-        "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
-        "ops": [
-          {
-            "op": "moveScale",
-            "num": 1,
-            "den": 2
-          },
-          {
-            "op": "skillMod",
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
             "skill": {
-              "id": "esquive"
+              "id": "resistance"
             },
-            "mod": -20
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+            "difficulty": "difficile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-116",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
           },
-          {
-            "trappingId": "fausse-jambe",
-            "cancels": "movement"
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ]
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "membre-inferieur-ampute"
+                ],
+                "loc": "jambeG"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Votre pied est sectionné – Amputation (Difficile). Vous gagnez les États suivants : 3 États Hémorragique, 2 États Sonné et 1 État À Terre.",
     "roll": 120,
     "log": "Blessure critique AA (Jambe gauche) — Pied sectionné."
@@ -8945,62 +10340,112 @@
         "op": "condition",
         "id": "a-terre",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "jambeD",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Membre inférieur amputé",
-        "traumaId": "membre-inferieur-ampute",
-        "location": "jambeD",
-        "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
-        "ops": [
-          {
-            "op": "moveScale",
-            "num": 1,
-            "den": 2
-          },
-          {
-            "op": "skillMod",
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
             "skill": {
-              "id": "esquive"
+              "id": "resistance"
             },
-            "mod": -20
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+            "difficulty": "difficile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-116",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
           },
-          {
-            "trappingId": "fausse-jambe",
-            "cancels": "movement"
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ]
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "membre-inferieur-ampute"
+                ],
+                "loc": "jambeD"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Votre pied est sectionné – Amputation (Difficile). Vous gagnez les États suivants : 3 États Hémorragique, 2 États Sonné et 1 État À Terre.",
     "roll": 120,
     "log": "Blessure critique AA (Jambe droite) — Pied sectionné."
@@ -10832,45 +12277,112 @@
         "op": "condition",
         "id": "hemorragique",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "brasG",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Doigts amputés",
-        "traumaId": "doigt-ampute",
-        "location": "brasG",
-        "desc": "Avec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée.",
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "accessible",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-110",
+                "entryCategory": "aaCriticalsBras"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ],
-        "count": 1
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "doigt-ampute"
+                ],
+                "loc": "brasG"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Vous perdez un doigt – Amputation (Accessible). Vous subissez 1 État Hémorragique.",
     "roll": 114,
     "log": "Blessure critique AA (Bras gauche) — Doigt sectionné."
@@ -10913,45 +12425,112 @@
         "op": "condition",
         "id": "hemorragique",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "brasD",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Doigts amputés",
-        "traumaId": "doigt-ampute",
-        "location": "brasD",
-        "desc": "Avec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée.",
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "accessible",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-110",
+                "entryCategory": "aaCriticalsBras"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ],
-        "count": 1
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "doigt-ampute"
+                ],
+                "loc": "brasD"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Vous perdez un doigt – Amputation (Accessible). Vous subissez 1 État Hémorragique.",
     "roll": 114,
     "log": "Blessure critique AA (Bras droit) — Doigt sectionné."
@@ -11082,23 +12661,110 @@
         "op": "condition",
         "id": "hemorragique",
         "value": 2
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
+    "testFlow": {
+      "kind": "test",
+      "test": {
+        "skill": {
+          "id": "resistance"
+        },
+        "difficulty": "accessible",
+        "label": "Amputation",
+        "stake": {
+          "key": {
+            "dataset": "combat",
+            "kind": "critRowTest",
+            "entryId": "aa-jambe-106",
+            "entryCategory": "aaCriticalsJambe"
+          }
+        }
+      },
+      "success": {
+        "kind": "seq",
+        "steps": []
+      },
+      "fail": {
+        "kind": "seq",
+        "steps": [
+          {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "a-terre",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "if",
+            "cond": {
+              "kind": "slThreshold",
+              "op": "<=",
+              "value": -2
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "sonne",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "kind": "if",
+            "cond": {
+              "kind": "slThreshold",
+              "op": "<=",
+              "value": -4
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "inconscient",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "amputer",
+                  "sequels": [
+                    "orteil-ampute"
+                  ],
+                  "loc": "jambeG",
+                  "unitesPerSL": {
+                    "every": 1,
+                    "amount": 1,
+                    "onFailure": true
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
     "lethal": false,
     "traumas": [
       {
@@ -11106,27 +12772,8 @@
         "location": "jambeG",
         "needsSurgery": true,
         "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.",
-        "amputateAfterDays": 3,
+        "amputateAfterDays": 10,
         "amputateSequel": "membre-inferieur-ampute"
-      },
-      {
-        "label": "Orteil(s) amputé(s)",
-        "traumaId": "orteil-ampute",
-        "location": "jambeG",
-        "desc": "La perte d’orteils a un effet sur votre équilibre. Pour chaque orteil perdu, vous subissez une perte définitive de -1 à votre Agilité et à votre Capacité de Combat.",
-        "count": 5,
-        "ops": [
-          {
-            "op": "charMod",
-            "char": "agilite",
-            "mod": -5
-          },
-          {
-            "op": "charMod",
-            "char": "capacite-de-combat",
-            "mod": -5
-          }
-        ]
       }
     ],
     "desc": "Effectuez un Test de Résistance Accessible (+20) ; sur un Échec, vous gagnez l'État À Terre et perdez un orteil, plus un orteil par DR en dessous de 0 – Amputation (Accessible). Gagnez 2 États Hémorragique. Si vous n'êtes pas soigné par Chirurgie au cours des 1d10 jours suivants, vous perdez votre pied.",
@@ -11177,23 +12824,110 @@
         "op": "condition",
         "id": "hemorragique",
         "value": 2
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
+    "testFlow": {
+      "kind": "test",
+      "test": {
+        "skill": {
+          "id": "resistance"
+        },
+        "difficulty": "accessible",
+        "label": "Amputation",
+        "stake": {
+          "key": {
+            "dataset": "combat",
+            "kind": "critRowTest",
+            "entryId": "aa-jambe-106",
+            "entryCategory": "aaCriticalsJambe"
+          }
+        }
+      },
+      "success": {
+        "kind": "seq",
+        "steps": []
+      },
+      "fail": {
+        "kind": "seq",
+        "steps": [
+          {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "a-terre",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "if",
+            "cond": {
+              "kind": "slThreshold",
+              "op": "<=",
+              "value": -2
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "sonne",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "kind": "if",
+            "cond": {
+              "kind": "slThreshold",
+              "op": "<=",
+              "value": -4
+            },
+            "then": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "inconscient",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "amputer",
+                  "sequels": [
+                    "orteil-ampute"
+                  ],
+                  "loc": "jambeD",
+                  "unitesPerSL": {
+                    "every": 1,
+                    "amount": 1,
+                    "onFailure": true
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
     "lethal": false,
     "traumas": [
       {
@@ -11201,27 +12935,8 @@
         "location": "jambeD",
         "needsSurgery": true,
         "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.",
-        "amputateAfterDays": 3,
+        "amputateAfterDays": 10,
         "amputateSequel": "membre-inferieur-ampute"
-      },
-      {
-        "label": "Orteil(s) amputé(s)",
-        "traumaId": "orteil-ampute",
-        "location": "jambeD",
-        "desc": "La perte d’orteils a un effet sur votre équilibre. Pour chaque orteil perdu, vous subissez une perte définitive de -1 à votre Agilité et à votre Capacité de Combat.",
-        "count": 5,
-        "ops": [
-          {
-            "op": "charMod",
-            "char": "agilite",
-            "mod": -5
-          },
-          {
-            "op": "charMod",
-            "char": "capacite-de-combat",
-            "mod": -5
-          }
-        ]
       }
     ],
     "desc": "Effectuez un Test de Résistance Accessible (+20) ; sur un Échec, vous gagnez l'État À Terre et perdez un orteil, plus un orteil par DR en dessous de 0 – Amputation (Accessible). Gagnez 2 États Hémorragique. Si vous n'êtes pas soigné par Chirurgie au cours des 1d10 jours suivants, vous perdez votre pied.",
@@ -11577,13 +13292,127 @@
         "label": "Coupure à l'orteil",
         "location": "jambeG",
         "pendingAmputation": {
-          "difficulty": "accessible",
-          "sequels": [
-            "orteil-ampute"
-          ],
-          "timing": "postEncounter",
-          "loss": {
-            "difficulty": "intermediaire"
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "intermediaire",
+            "label": "Coupure à l'orteil",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-56",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "test",
+                "test": {
+                  "skill": {
+                    "id": "resistance"
+                  },
+                  "difficulty": "accessible",
+                  "label": "Amputation",
+                  "stake": {
+                    "key": {
+                      "dataset": "combat",
+                      "kind": "critRowTest",
+                      "entryId": "aa-jambe-56",
+                      "entryCategory": "aaCriticalsJambe"
+                    }
+                  }
+                },
+                "success": {
+                  "kind": "seq",
+                  "steps": []
+                },
+                "fail": {
+                  "kind": "seq",
+                  "steps": [
+                    {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "a-terre",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -2
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "sonne",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -4
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "inconscient",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "amputer",
+                      "sequels": [
+                        "orteil-ampute"
+                      ],
+                      "loc": "jambeG"
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       }
@@ -11658,13 +13487,127 @@
         "label": "Coupure à l'orteil",
         "location": "jambeD",
         "pendingAmputation": {
-          "difficulty": "accessible",
-          "sequels": [
-            "orteil-ampute"
-          ],
-          "timing": "postEncounter",
-          "loss": {
-            "difficulty": "intermediaire"
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "intermediaire",
+            "label": "Coupure à l'orteil",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-56",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "test",
+                "test": {
+                  "skill": {
+                    "id": "resistance"
+                  },
+                  "difficulty": "accessible",
+                  "label": "Amputation",
+                  "stake": {
+                    "key": {
+                      "dataset": "combat",
+                      "kind": "critRowTest",
+                      "entryId": "aa-jambe-56",
+                      "entryCategory": "aaCriticalsJambe"
+                    }
+                  }
+                },
+                "success": {
+                  "kind": "seq",
+                  "steps": []
+                },
+                "fail": {
+                  "kind": "seq",
+                  "steps": [
+                    {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "a-terre",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -2
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "sonne",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -4
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "inconscient",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "amputer",
+                      "sequels": [
+                        "orteil-ampute"
+                      ],
+                      "loc": "jambeD"
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       }
@@ -11761,85 +13704,152 @@
         "op": "condition",
         "id": "sonne",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
     "testFlow": {
-      "kind": "test",
-      "test": {
-        "skill": {
-          "id": "resistance"
-        },
-        "difficulty": "difficile",
-        "stake": {
-          "key": {
-            "dataset": "combat",
-            "kind": "critRowTest",
-            "entryId": "aa-bras-131",
-            "entryCategory": "aaCriticalsBras"
-          }
-        }
-      },
-      "success": {
-        "kind": "seq",
-        "steps": []
-      },
-      "fail": {
-        "kind": "do",
-        "effect": {
-          "type": "ops",
-          "ops": [
-            {
-              "op": "condition",
-              "id": "inconscient",
-              "value": 1
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "difficile",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-131",
+                "entryCategory": "aaCriticalsBras"
+              }
             }
-          ],
-          "on": "target"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "inconscient",
+                  "value": 1
+                }
+              ],
+              "on": "target"
+            }
+          }
+        },
+        {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "test",
+              "test": {
+                "skill": {
+                  "id": "resistance"
+                },
+                "difficulty": "tresDifficile",
+                "label": "Amputation",
+                "stake": {
+                  "key": {
+                    "dataset": "combat",
+                    "kind": "critRowTest",
+                    "entryId": "aa-bras-131",
+                    "entryCategory": "aaCriticalsBras"
+                  }
+                }
+              },
+              "success": {
+                "kind": "seq",
+                "steps": []
+              },
+              "fail": {
+                "kind": "seq",
+                "steps": [
+                  {
+                    "kind": "do",
+                    "effect": {
+                      "type": "ops",
+                      "ops": [
+                        {
+                          "op": "condition",
+                          "id": "a-terre",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -2
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "sonne",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -4
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "inconscient",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "amputer",
+                    "sequels": [
+                      "main-bras-ampute"
+                    ],
+                    "loc": "brasG"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      }
+      ]
     },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "brasG",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Main/bras amputé",
-        "traumaId": "main-bras-ampute",
-        "location": "brasG",
-        "desc": "Vous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d’armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d’Arme effectués avec votre main secondaire.",
-        "ops": [
-          {
-            "op": "maxWeaponHands",
-            "hands": 1
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient.",
     "roll": 132,
     "log": "Blessure critique AA (Bras gauche) — Tendons coupés."
@@ -11898,85 +13908,152 @@
         "op": "condition",
         "id": "sonne",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
     "testFlow": {
-      "kind": "test",
-      "test": {
-        "skill": {
-          "id": "resistance"
-        },
-        "difficulty": "difficile",
-        "stake": {
-          "key": {
-            "dataset": "combat",
-            "kind": "critRowTest",
-            "entryId": "aa-bras-131",
-            "entryCategory": "aaCriticalsBras"
-          }
-        }
-      },
-      "success": {
-        "kind": "seq",
-        "steps": []
-      },
-      "fail": {
-        "kind": "do",
-        "effect": {
-          "type": "ops",
-          "ops": [
-            {
-              "op": "condition",
-              "id": "inconscient",
-              "value": 1
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "difficile",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-131",
+                "entryCategory": "aaCriticalsBras"
+              }
             }
-          ],
-          "on": "target"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "inconscient",
+                  "value": 1
+                }
+              ],
+              "on": "target"
+            }
+          }
+        },
+        {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "test",
+              "test": {
+                "skill": {
+                  "id": "resistance"
+                },
+                "difficulty": "tresDifficile",
+                "label": "Amputation",
+                "stake": {
+                  "key": {
+                    "dataset": "combat",
+                    "kind": "critRowTest",
+                    "entryId": "aa-bras-131",
+                    "entryCategory": "aaCriticalsBras"
+                  }
+                }
+              },
+              "success": {
+                "kind": "seq",
+                "steps": []
+              },
+              "fail": {
+                "kind": "seq",
+                "steps": [
+                  {
+                    "kind": "do",
+                    "effect": {
+                      "type": "ops",
+                      "ops": [
+                        {
+                          "op": "condition",
+                          "id": "a-terre",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -2
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "sonne",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "kind": "if",
+                    "cond": {
+                      "kind": "slThreshold",
+                      "op": "<=",
+                      "value": -4
+                    },
+                    "then": {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "inconscient",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "amputer",
+                    "sequels": [
+                      "main-bras-ampute"
+                    ],
+                    "loc": "brasD"
+                  }
+                ]
+              }
+            }
+          ]
         }
-      }
+      ]
     },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "brasD",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Main/bras amputé",
-        "traumaId": "main-bras-ampute",
-        "location": "brasD",
-        "desc": "Vous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d’armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d’Arme effectués avec votre main secondaire.",
-        "ops": [
-          {
-            "op": "maxWeaponHands",
-            "hands": 1
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient.",
     "roll": 132,
     "log": "Blessure critique AA (Bras droit) — Tendons coupés."
@@ -12910,62 +14987,112 @@
         "op": "condition",
         "id": "a-terre",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "jambeG",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Membre inférieur amputé",
-        "traumaId": "membre-inferieur-ampute",
-        "location": "jambeG",
-        "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
-        "ops": [
-          {
-            "op": "moveScale",
-            "num": 1,
-            "den": 2
-          },
-          {
-            "op": "skillMod",
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
             "skill": {
-              "id": "esquive"
+              "id": "resistance"
             },
-            "mod": -20
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+            "difficulty": "tresDifficile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-121",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
           },
-          {
-            "trappingId": "fausse-jambe",
-            "cancels": "movement"
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ]
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "membre-inferieur-ampute"
+                ],
+                "loc": "jambeG"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Votre jambe cède sous le poids de votre corps. Vous gagnez 2 États Hémorragique, 2 États Sonné et 1 État À Terre et vous perdez l'usage de votre jambe – Amputation (Très Difficile).",
     "roll": 123,
     "log": "Blessure critique AA (Jambe gauche) — Tendon coupé."
@@ -13018,62 +15145,112 @@
         "op": "condition",
         "id": "a-terre",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "jambeD",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Membre inférieur amputé",
-        "traumaId": "membre-inferieur-ampute",
-        "location": "jambeD",
-        "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
-        "ops": [
-          {
-            "op": "moveScale",
-            "num": 1,
-            "den": 2
-          },
-          {
-            "op": "skillMod",
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
             "skill": {
-              "id": "esquive"
+              "id": "resistance"
             },
-            "mod": -20
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+            "difficulty": "tresDifficile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-121",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
           },
-          {
-            "trappingId": "fausse-jambe",
-            "cancels": "movement"
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ]
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "membre-inferieur-ampute"
+                ],
+                "loc": "jambeD"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Votre jambe cède sous le poids de votre corps. Vous gagnez 2 États Hémorragique, 2 États Sonné et 1 État À Terre et vous perdez l'usage de votre jambe – Amputation (Très Difficile).",
     "roll": 123,
     "log": "Blessure critique AA (Jambe droite) — Tendon coupé."
@@ -13884,42 +16061,118 @@
         "op": "condition",
         "id": "hemorragique",
         "value": 2
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
       }
     ],
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "facile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-tete-66",
+                "entryCategory": "aaCriticalsTete"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "dents-perdues"
+                ],
+                "loc": "tete",
+                "unites": {
+                  "dice": {
+                    "n": 1,
+                    "sides": 10
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
     "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "tete",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Dents perdues",
-        "traumaId": "dents-perdues",
-        "location": "tete",
-        "desc": "La perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité.",
-        "prosthesis": [
-          {
-            "trappingId": "dents-en-bois",
-            "cancels": "all"
-          }
-        ],
-        "count": 8,
-        "ops": [
-          {
-            "op": "charMod",
-            "char": "sociabilite",
-            "mod": -4
-          }
-        ]
-      }
-    ],
+    "traumas": [],
     "desc": "Le coup vous déchausse plusieurs dents. Vous recevez 2 États Hémorragique. Vous perdez 1d10 dents – Amputation (Facile).",
     "roll": 68,
     "log": "Blessure critique AA (Tête) — Bouche explosée."
@@ -14471,23 +16724,110 @@
         "op": "condition",
         "id": "sonne",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "complexe",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-116",
+                "entryCategory": "aaCriticalsBras"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "doigt-ampute"
+                ],
+                "loc": "brasG"
+              }
+            ]
+          }
+        }
+      ]
+    },
     "lethal": false,
     "traumas": [
       {
@@ -14499,19 +16839,6 @@
           "versTraumaId": "doigt-ampute"
         },
         "awaitingMedicalAid": true
-      },
-      {
-        "label": "Doigts amputés",
-        "traumaId": "doigt-ampute",
-        "location": "brasG",
-        "desc": "Avec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée.",
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ],
-        "count": 1
       }
     ],
     "desc": "Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe).",
@@ -14561,23 +16888,110 @@
         "op": "condition",
         "id": "sonne",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "complexe",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-bras-116",
+                "entryCategory": "aaCriticalsBras"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "doigt-ampute"
+                ],
+                "loc": "brasD"
+              }
+            ]
+          }
+        }
+      ]
+    },
     "lethal": false,
     "traumas": [
       {
@@ -14589,19 +17003,6 @@
           "versTraumaId": "doigt-ampute"
         },
         "awaitingMedicalAid": true
-      },
-      {
-        "label": "Doigts amputés",
-        "traumaId": "doigt-ampute",
-        "location": "brasD",
-        "desc": "Avec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée.",
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
-          }
-        ],
-        "count": 1
       }
     ],
     "desc": "Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe).",
@@ -14731,62 +17132,112 @@
         "op": "condition",
         "id": "a-terre",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "jambeG",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Membre inférieur amputé",
-        "traumaId": "membre-inferieur-ampute",
-        "location": "jambeG",
-        "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
-        "ops": [
-          {
-            "op": "moveScale",
-            "num": 1,
-            "den": 2
-          },
-          {
-            "op": "skillMod",
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
             "skill": {
-              "id": "esquive"
+              "id": "resistance"
             },
-            "mod": -20
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+            "difficulty": "difficile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-116",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
           },
-          {
-            "trappingId": "fausse-jambe",
-            "cancels": "movement"
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ]
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "membre-inferieur-ampute"
+                ],
+                "loc": "jambeG"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Votre pied est sectionné – Amputation (Difficile). Vous gagnez les États suivants : 3 États Hémorragique, 2 États Sonné et 1 État À Terre.",
     "roll": 119,
     "log": "Blessure critique AA (Jambe gauche) — Pied sectionné."
@@ -14845,62 +17296,112 @@
         "op": "condition",
         "id": "a-terre",
         "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "a-terre",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "sonne",
-        "value": 1
-      },
-      {
-        "op": "condition",
-        "id": "inconscient",
-        "value": 1
       }
     ],
-    "lethal": false,
-    "traumas": [
-      {
-        "label": "Amputation",
-        "location": "jambeD",
-        "needsSurgery": true,
-        "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien."
-      },
-      {
-        "label": "Membre inférieur amputé",
-        "traumaId": "membre-inferieur-ampute",
-        "location": "jambeD",
-        "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
-        "ops": [
-          {
-            "op": "moveScale",
-            "num": 1,
-            "den": 2
-          },
-          {
-            "op": "skillMod",
+    "testFlow": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
             "skill": {
-              "id": "esquive"
+              "id": "resistance"
             },
-            "mod": -20
-          }
-        ],
-        "prosthesis": [
-          {
-            "trappingId": "merveille-d-ingenierie",
-            "cancels": "all"
+            "difficulty": "difficile",
+            "label": "Amputation",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-116",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
           },
-          {
-            "trappingId": "fausse-jambe",
-            "cancels": "movement"
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -2
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "sonne",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "if",
+                "cond": {
+                  "kind": "slThreshold",
+                  "op": "<=",
+                  "value": -4
+                },
+                "then": {
+                  "kind": "do",
+                  "effect": {
+                    "type": "ops",
+                    "ops": [
+                      {
+                        "op": "condition",
+                        "id": "inconscient",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           }
-        ]
-      }
-    ],
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "amputer",
+                "sequels": [
+                  "membre-inferieur-ampute"
+                ],
+                "loc": "jambeD"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "lethal": false,
+    "traumas": [],
     "desc": "Votre pied est sectionné – Amputation (Difficile). Vous gagnez les États suivants : 3 États Hémorragique, 2 États Sonné et 1 État À Terre.",
     "roll": 119,
     "log": "Blessure critique AA (Jambe droite) — Pied sectionné."
@@ -15254,13 +17755,127 @@
         "label": "Coupure à l'orteil",
         "location": "jambeG",
         "pendingAmputation": {
-          "difficulty": "accessible",
-          "sequels": [
-            "orteil-ampute"
-          ],
-          "timing": "postEncounter",
-          "loss": {
-            "difficulty": "intermediaire"
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "intermediaire",
+            "label": "Coupure à l'orteil",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-56",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "test",
+                "test": {
+                  "skill": {
+                    "id": "resistance"
+                  },
+                  "difficulty": "accessible",
+                  "label": "Amputation",
+                  "stake": {
+                    "key": {
+                      "dataset": "combat",
+                      "kind": "critRowTest",
+                      "entryId": "aa-jambe-56",
+                      "entryCategory": "aaCriticalsJambe"
+                    }
+                  }
+                },
+                "success": {
+                  "kind": "seq",
+                  "steps": []
+                },
+                "fail": {
+                  "kind": "seq",
+                  "steps": [
+                    {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "a-terre",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -2
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "sonne",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -4
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "inconscient",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "amputer",
+                      "sequels": [
+                        "orteil-ampute"
+                      ],
+                      "loc": "jambeG"
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       }
@@ -15335,13 +17950,127 @@
         "label": "Coupure à l'orteil",
         "location": "jambeD",
         "pendingAmputation": {
-          "difficulty": "accessible",
-          "sequels": [
-            "orteil-ampute"
-          ],
-          "timing": "postEncounter",
-          "loss": {
-            "difficulty": "intermediaire"
+          "kind": "test",
+          "test": {
+            "skill": {
+              "id": "resistance"
+            },
+            "difficulty": "intermediaire",
+            "label": "Coupure à l'orteil",
+            "stake": {
+              "key": {
+                "dataset": "combat",
+                "kind": "critRowTest",
+                "entryId": "aa-jambe-56",
+                "entryCategory": "aaCriticalsJambe"
+              }
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "test",
+                "test": {
+                  "skill": {
+                    "id": "resistance"
+                  },
+                  "difficulty": "accessible",
+                  "label": "Amputation",
+                  "stake": {
+                    "key": {
+                      "dataset": "combat",
+                      "kind": "critRowTest",
+                      "entryId": "aa-jambe-56",
+                      "entryCategory": "aaCriticalsJambe"
+                    }
+                  }
+                },
+                "success": {
+                  "kind": "seq",
+                  "steps": []
+                },
+                "fail": {
+                  "kind": "seq",
+                  "steps": [
+                    {
+                      "kind": "do",
+                      "effect": {
+                        "type": "ops",
+                        "ops": [
+                          {
+                            "op": "condition",
+                            "id": "a-terre",
+                            "value": 1
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -2
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "sonne",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "kind": "if",
+                      "cond": {
+                        "kind": "slThreshold",
+                        "op": "<=",
+                        "value": -4
+                      },
+                      "then": {
+                        "kind": "do",
+                        "effect": {
+                          "type": "ops",
+                          "ops": [
+                            {
+                              "op": "condition",
+                              "id": "inconscient",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "ops": [
+                    {
+                      "op": "amputer",
+                      "sequels": [
+                        "orteil-ampute"
+                      ],
+                      "loc": "jambeD"
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       }
