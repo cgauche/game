@@ -183,19 +183,32 @@ describe('validatePropCatalog — invariants de données du décor', () => {
     expect(validatePropCatalog([cylindre], propMaterials, MPT)).toContain('x: coordonnée non finie');
   });
 
+  /**
+   * L'abord est jugé sur la case que le RUNTIME posera (`placesLocalesDuProp`) : celle du SIÈGE, plus
+   * `approach`. Sur une empreinte 2×1 le siège n'est pas le coin NO — l'ancre du décor est à une
+   * demi-case de lui —, donc c'est le SENS de l'approche qui décide, pas sa distance au coin. Jugé
+   * dans un repère à part, le validateur admettait `(-1,0)`, qui tombe sur le meuble, et refusait
+   * `(1,0)`, qui en sort.
+   */
   it('refuse une approche qui tombe DANS l’empreinte d’un décor solide — empreinte 2×1 comprise', () => {
     const unSurUn = propFixture({ seatSlots: [{ id: 'place-1', anchor: { xM: 0, yM: 0, hM: 0.48 }, facing: 'S', approach: { x: 0, y: 0 } }] });
-    expect(validatePropCatalog([unSurUn], propMaterials, MPT)).toContain('x: approche « place-1 » dans l’empreinte 1×1 à 2 m/case (0,0)');
+    expect(validatePropCatalog([unSurUn], propMaterials, MPT))
+      .toContain('x: approche « place-1 » (0,0) tombe sur la case (0,0) de l’empreinte 1×1 à 2 m/case');
 
-    const deuxSurUn = propFixture({
+    // Siège en (1,0) — la seconde case de l'empreinte : l'approche qui revient vers le coin NO tombe
+    // sur la première, donc sur le meuble.
+    const versLeMeuble = propFixture({
       foot: { w: 2, h: 1 },
-      seatSlots: [{ id: 'place-1', anchor: { xM: 1, yM: 0, hM: 0.48 }, facing: 'O', approach: { x: 1, y: 0 } }],
+      seatSlots: [{ id: 'place-1', anchor: { xM: 1, yM: 0, hM: 0.48 }, facing: 'O', approach: { x: -1, y: 0 } }],
     });
-    expect(validatePropCatalog([deuxSurUn], propMaterials, MPT)).toContain('x: approche « place-1 » dans l’empreinte 2×1 à 2 m/case (1,0)');
+    expect(validatePropCatalog([versLeMeuble], propMaterials, MPT))
+      .toContain('x: approche « place-1 » (-1,0) tombe sur la case (0,0) de l’empreinte 2×1 à 2 m/case');
 
+    // …et l'approche qui s'en éloigne sort du meuble par sa case (2,0), quoique son offset soit le
+    // même en valeur absolue.
     const degage = propFixture({
       foot: { w: 2, h: 1 },
-      seatSlots: [{ id: 'place-1', anchor: { xM: 1, yM: 0, hM: 0.48 }, facing: 'O', approach: { x: 2, y: 0 } }],
+      seatSlots: [{ id: 'place-1', anchor: { xM: 1, yM: 0, hM: 0.48 }, facing: 'O', approach: { x: 1, y: 0 } }],
     });
     expect(validatePropCatalog([degage], propMaterials, MPT)).toEqual([]);
   });

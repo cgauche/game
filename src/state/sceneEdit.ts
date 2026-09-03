@@ -28,6 +28,7 @@ import {
   type SeatOccupant,
 } from './seating';
 import { METRES_PER_LEVEL } from './relief';
+import { decorEnCaseEtage } from './decorIndex';
 
 export type Rect = { x: number; y: number; w: number; h: number };
 export type Pt = { x: number; y: number };
@@ -35,9 +36,16 @@ export type Pt = { x: number; y: number };
 /** Entité posée à `p` sur la couche `z` (défaut 0) — prédicat UNIQUE de picking/gomme/collision
  *  d'entités. Source unique remplaçant les comparaisons dupliquées `pos.x===p.x && pos.y===p.y`
  *  qui omettaient le filtre de couche (#835 FU-3) : `hitAt`/`eraseAt`/`addEnemyMember` et la pose
- *  directe (`entity`/`emplacement`) le partagent tous. */
+ *  directe (`entity`/`emplacement`) le partagent tous.
+ *
+ *  Un décor répond sur TOUTE son EMPREINTE (`state/decorIndex.ts`, la même lecture que le picking du
+ *  jeu, `gameIso/stage/pickResolve.ts`) et rend son entité, donc sa case d'ANCRAGE : sans elle, la
+ *  seconde case d'une table 2×1 ne se sélectionnait, ne s'effaçait et ne se déplaçait pas au canevas
+ *  d'authoring, et un clic y posait une entité DANS le meuble. La pose EXACTE garde la priorité —
+ *  un corps debout sur une case d'empreinte se désigne lui-même, pas le meuble sous ses pieds. */
 export function entityAt(scene: Scene, p: Pt, z = 0): SceneEntity | undefined {
-  return scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y && (e.z ?? 0) === z);
+  return scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y && (e.z ?? 0) === z)
+    ?? decorEnCaseEtage(scene, p.x, p.y, z);
 }
 
 function boundedRect(scene: Scene, rect: Rect): Rect {

@@ -1550,4 +1550,4 @@
 
 - **VDM 09** (Shyish — Domaine de la Mort) :
   - 📖 l.375-536 « Le Labyrinthe de Cristal » — transcrit en catalogue, jamais traité, 0 réf
-<!-- sources-empreinte: 3b562d0f487529b3751d324a9d2aabf0285bebed (347 fichiers, 17 dossiers) -->
+<!-- sources-empreinte: 8f23de5f6fb4aab667ed86810c2922f4b04c8f34 (347 fichiers, 17 dossiers) -->

@@ -14,7 +14,7 @@
  * vérité unique de l'empreinte d'un prop — ce module n'est donc pas sans dépendance de données.
  */
 import { findPropById } from '../data';
-import { empreinteDuProp } from '../data/props.types';
+import { empreinteDuProp, offsetAncre } from '../data/props.types';
 import type { Dir8 } from './dir8';
 import { effectiveSize, sizeFootprintSide, type SizeCategory } from '../engine/size';
 import type { Combatant } from '../engine/types';
@@ -88,11 +88,12 @@ export function propFootTiles(ref: string | undefined, pos: Pt, facing: Dir8 | u
 
 /** Géométrie d'un DÉCOR à empreinte rectangulaire (`PropData.foot {w,h}`, ancre = coin NO) :
  *  décalage fractionnaire vers le CENTRE du bloc (pour y poser le token) et facteur d'échelle
- *  visuel (côté max). Absent/1×1 ⇒ identité — le décor historique ne bouge pas. */
+ *  visuel (côté max). Absent/1×1 ⇒ identité — le décor historique ne bouge pas.
+ *  Le décalage est LU à `data/props.types.ts` (`offsetAncre`), où le validateur de catalogue et la
+ *  résolution des places le lisent aussi : `src/data` ne peut pas remonter jusqu'ici sans cycle. */
 export function decorFootGeometry(foot?: { w: number; h: number }): { offX: number; offY: number; scale: number } {
-  const w = Math.max(1, foot?.w ?? 1);
-  const h = Math.max(1, foot?.h ?? 1);
-  return { offX: (w - 1) / 2, offY: (h - 1) / 2, scale: Math.max(w, h) };
+  const { x, y } = offsetAncre(foot);
+  return { offX: x, offY: y, scale: Math.max(Math.max(1, foot?.w ?? 1), Math.max(1, foot?.h ?? 1)) };
 }
 
 /** Écart 1D minimal entre les intervalles [a, a+an) et [b, b+bn) (0 s'ils se recouvrent ou se touchent). */

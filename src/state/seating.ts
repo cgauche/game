@@ -35,7 +35,7 @@
  * `SceneEntity.pos === approche résolue` est un invariant du document, gardé par `validateScene`.
  */
 import { findPropById } from '../data';
-import { cransDepuisCapIdentite, rotatePropLocal } from '../data/props.types';
+import { caseDe, cransDepuisCapIdentite, placesLocalesDuProp } from '../data/props.types';
 import { DIR8_DELTA, DIR8_ORDER, rotateDir8, type Dir8 } from './dir8';
 import { PARTY_MAX } from './combatants';
 import { heightAt, isWalkable, sceneMetresPerTile, wallBetween, type Scene, type SceneEntity } from './scene';
@@ -106,9 +106,6 @@ const propEntity = (scene: Scene, propId: string): SceneEntity | undefined =>
  *  l'interaction d'assise (store) et le clic de meuble (`stage/useStagePointer`). */
 export const memeCase = (a: Pt, b: Pt): boolean => a.x === b.x && a.y === b.y && (a.z ?? 0) === (b.z ?? 0);
 
-/** Case (entière) qui porte un point du plan. */
-const caseDe = (x: number, y: number) => ({ x: Math.round(x), y: Math.round(y) });
-
 /** Clé de case (étage compris), pour la réservation des abords à l'échelle de la SCÈNE. */
 const cleCase = (p: { x: number; y: number }, z: number) => `${p.x},${p.y},${z}`;
 
@@ -131,30 +128,36 @@ interface PlacePartielle {
  *  du catalogue — c'est cet ordre qui rend l'arbitrage ci-dessous déterministe. */
 function placesPartielles(scene: Scene): PlacePartielle[] {
   const out: PlacePartielle[] = [];
-  // SECONDE des deux coutures de traduction mètres→cases (la première est `buildPropVolumes`) : l'ancre
-  // d'une place est MÉTRIQUE au catalogue, le plan de la scène est en CASES.
+  // L'ÉCHELLE de la scène, passée à la règle des places : l'ancre d'une place est MÉTRIQUE au
+  // catalogue, le plan de la scène est en CASES — la division vit avec la règle
+  // (`data/props.types.ts`, site déclaré par `state/echelle-de-scene.test.ts`).
   const mpt = sceneMetresPerTile(scene);
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
-    const slots = findPropById(ent.ref ?? '')?.seatSlots ?? [];
-    if (!slots.length) continue;
+    const prop = findPropById(ent.ref ?? '');
     const facing = ent.facing ?? 'S';
     const crans = cransDepuisCapIdentite(facing);
     const z = ent.z ?? 0;
+    // ALTITUDE : le PIED du décor, à sa case `ent.pos` — la même que `gameIso/builders/props.ts`
+    // pose sous la recette (`solM`). C'est ce qui colle l'assise au tabouret DESSINÉ : la lire à la
+    // case du siège l'en décollerait dès qu'une marche traverse l'empreinte. Le PLAN, lui, part de
+    // l'ancre du décor — les deux ne répondent pas à la même question.
     const sol = heightAt(scene, ent.pos.x, ent.pos.y, z);
-    for (const slot of slots) {
-      const [ax, ay] = rotatePropLocal(slot.anchor.xM / mpt, slot.anchor.yM / mpt, facing);
-      const anchor = { x: ent.pos.x + ax, y: ent.pos.y + ay, h: sol + slot.anchor.hM };
-      const [px, py] = rotatePropLocal(slot.approach.x, slot.approach.y, facing);
+    // PLAN : ancre, siège et abord viennent de la règle UNIQUE `placesLocalesDuProp`
+    // (`data/props.types.ts`), en offsets depuis `ent.pos`, et le validateur de catalogue lit la
+    // MÊME. Elle part de l'ancre du DÉCOR (`decorAncre`/`offsetAncre`), celle de la géométrie et du
+    // foyer d'une lampe, jamais du coin NO : au-delà d'un meuble 1×1, une place ancrée sur le coin
+    // se décale d'une demi-case par axe étendu et le corps assis quitte sa chaise dessinée.
+    for (const place of placesLocalesDuProp(prop, facing, mpt)) {
       out.push({
         propId: ent.id,
-        slotId: slot.id,
-        anchor,
+        slotId: place.slot.id,
+        anchor: { x: ent.pos.x + place.ancre.x, y: ent.pos.y + place.ancre.y, h: sol + place.slot.anchor.hM },
         ground: sol,
-        facing: rotateDir8(slot.facing, crans),
+        facing: rotateDir8(place.slot.facing, crans),
         z,
-        declaree: caseDe(ent.pos.x + px, ent.pos.y + py),
-        siege: caseDe(anchor.x, anchor.y),
+        declaree: { x: ent.pos.x + place.abord.x, y: ent.pos.y + place.abord.y },
+        siege: { x: ent.pos.x + place.siege.x, y: ent.pos.y + place.siege.y },
       });
     }
   }

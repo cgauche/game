@@ -212,19 +212,19 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `alsoIn` | — | *absent du type TS* |
 | `maison` | — | *absent du type TS* |
 | `icon` | — | *absent du type TS* |
-| `solid` | 2 | `src/data/props.types.ts:547` |
-| `opaque` | 3 | `src/data/props.types.ts:522` |
-| `cover` | 3 | `src/data/props.types.ts:522` |
-| `light` | 3 | `src/data/props.types.ts:531` |
+| `solid` | 2 | `src/data/props.types.ts:608` |
+| `opaque` | 3 | `src/data/props.types.ts:580` |
+| `cover` | 3 | `src/data/props.types.ts:580` |
+| `light` | 3 | `src/data/props.types.ts:589` |
 | `foot` | 2 | `src/data/props.types.ts:371` |
 | `volume` | 18 | `src/data/index.ts:2650` |
-| `seatSlots` | 4 | `src/data/props.types.ts:399` |
+| `seatSlots` | 3 | `src/data/props.types.ts:399` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `capIdentite` | 2 | `src/data/props.types.ts:516` |
+| `capIdentite` | 2 | `src/data/props.types.ts:574` |
 | `primitives` | 6 | `src/data/props.types.ts:448` |
 
 ### `PropPrimitive` (src/data/props.types.ts)
@@ -234,8 +234,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `kind` | 5 | `src/data/props.types.ts:273` |
 | `center` | 6 | `src/data/props.types.ts:273` |
 | `size` | 3 | `src/data/props.types.ts:273` |
-| `material` | 4 | `src/data/props.types.ts:479` |
-| `emet` | 2 | `src/data/props.types.ts:528` |
+| `material` | 4 | `src/data/props.types.ts:537` |
+| `emet` | 2 | `src/data/props.types.ts:586` |
 | `radiusM` | 2 | `src/data/props.types.ts:274` |
 | `heightM` | 2 | `src/data/props.types.ts:274` |
 | `sides` | 2 | `src/data/props.types.ts:274` |
@@ -245,10 +245,10 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/props.types.ts:539` |
+| `id` | 5 | `src/data/props.types.ts:599` |
 | `anchor` | 5 | `src/data/props.types.ts:400` |
-| `facing` | 1 | `src/state/seating.ts:154` |
-| `approach` | 4 | `src/data/props.types.ts:542` |
+| `facing` | 1 | `src/state/seating.ts:157` |
+| `approach` | 2 | `src/data/props.types.ts:527` |
 
 ### `PropPoint3` (src/data/props.types.ts)
 
@@ -301,4 +301,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: f7a6d5d09fa7f6877d4367d3681bcaedf3295a18 (2082 fichiers, 169 dossiers) -->
+<!-- sources-empreinte: e25d76e0afdf16ace310c1399e46111a03b24005 (2083 fichiers, 169 dossiers) -->

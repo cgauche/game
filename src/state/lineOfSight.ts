@@ -5,11 +5,10 @@
  * (cf. combatFlow). La table de couvert n'est pas exhaustive (LDB 14 l.48 : « servez-vous de ces
  * exemples comme guide ») — la classification des décors/créatures est une extrapolation des étalons.
  */
-import { Scene, SceneEntity, tileAt, wallBetween, heightAt, sceneMetresPerTile } from './scene';
+import { Scene, tileAt, wallBetween, heightAt, sceneMetresPerTile } from './scene';
 import { TERRAINS } from './terrain';
 import { findPropById } from '../data';
-import { propFootTiles } from './footprint';
-import { memoByRefDeps } from './sceneMemo';
+import { decorEnCase } from './decorIndex';
 import { Pt } from './path';
 import type { Combatant } from '../engine/types';
 import { chebyshev } from '../engine/grid';
@@ -97,38 +96,13 @@ export function smokeZone(from: Pt, center: Pt, radius: number): Pt[] {
   return [...seen.values()];
 }
 
-/** Index O(1) case → décor pour la Ligne de Vue, bâti UNE fois par identité de `scene.entities`
- *  (patron `buildEntityBlockIndex`, sceneRules.ts). La case retient le PREMIER décor du tableau qui
- *  la couvre : même préséance que le balayage `find` qu'il remplace. Aucun filtre d'étage ici — la
- *  LdV lit la case, pas la couche (contrairement à `entityBlockedAt`). */
-function buildDecorIndex(entities: readonly SceneEntity[], mpt: number): ReadonlyMap<string, SceneEntity> {
-  const at = new Map<string, SceneEntity>();
-  for (const e of entities) {
-    if (e.kind !== 'prop') continue;
-    for (const t of propFootTiles(e.ref, e.pos, e.facing, mpt)) {
-      const k = `${t.x},${t.y}`;
-      if (!at.has(k)) at.set(k, e);
-    }
-  }
-  return at;
-}
-/** Mémoïsé par IDENTITÉ de `scene.entities` — PAS `scene` : même raison qu'en `sceneRules.ts` (le
- *  tableau est la clé la plus fine, toujours neuf à chaque ajout/retrait), et même dépendance à
- *  l'ÉCHELLE (l'empreinte d'un décor à recette en dépend, #1509). */
-const decorIndex = memoByRefDeps<readonly SceneEntity[], ReadonlyMap<string, SceneEntity>>();
-
-const decorAt = (scene: Scene, x: number, y: number): SceneEntity | undefined => {
-  const mpt = sceneMetresPerTile(scene);
-  return decorIndex(scene.entities, [mpt], () => buildDecorIndex(scene.entities, mpt)).get(`${x},${y}`);
-};
-
 /** Une CASE bloque-t-elle la vue ? (terrain opaque `mur/porte`, décor opaque `statue`). Prédicat UNIQUE
  *  d'opacité de tuile — utilisé par le couvert (`lineOfSightCover`) ET la vision (échantillonnage
  *  anti-fuite). N'inclut PAS les murs d'arête (cf. `wallBetween`) : une cloison fine de bâtiment est un
  *  `WallSeg`, pas une tuile opaque. */
 export function tileBlocksSight(scene: Scene, x: number, y: number): boolean {
   if (TERRAINS[tileAt(scene, x, y)]?.opaque) return true;
-  const dc = decorAt(scene, x, y);
+  const dc = decorEnCase(scene, x, y);
   return !!dc && !!findPropById(dc.ref ?? '')?.opaque;
 }
 
@@ -175,7 +149,7 @@ export function lineOfSightCover(
   let cover: CoverClass = 'none';
   for (const t of tilesBetween(from, to)) {
     const terr = tileAt(scene, t.x, t.y);
-    const decor = decorAt(scene, t.x, t.y);
+    const decor = decorEnCase(scene, t.x, t.y);
     if (tileBlocksSight(scene, t.x, t.y)) {
       if (adjacent(t, to)) {
         cover = worst(cover, 'totale'); // cible collée au couvert → −30, tir possible

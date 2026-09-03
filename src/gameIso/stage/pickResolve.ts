@@ -17,6 +17,7 @@
 import { heightAt, isWalkable, type Scene } from '../../state/scene';
 import { metricToLift } from '../../state/relief';
 import { memoByRef } from '../../state/sceneMemo';
+import { decorEnCaseEtage } from '../../state/decorIndex';
 import { resolveCursorZ } from '../../state/combatCursor';
 import { walkNeighbors, type Pt } from '../../state/path';
 import { inBattleId } from '../../state/combatants';
@@ -143,7 +144,12 @@ export interface CadreDePick {
  *  marchabilité écarte (l'empreinte d'un meuble solide n'est pas marchable). Sans elle, le pixel d'un
  *  plateau FIN que le rayon ne touche pas retombe sur la boucle CROSS-COUCHE, qui rend une case d'un
  *  AUTRE ÉTAGE : mesuré sur `la-diligence`, la table murale (13,10) résolvait (16,13,z1) et envoyait le
- *  groupe à l'autre bout de la salle. */
+ *  groupe à l'autre bout de la salle.
+ *
+ *  L'OCCUPATION se lit à l'index case → décor (`state/decorIndex.ts`, bâti sur `propFootTiles`) : un
+ *  meuble répond sur TOUTES les cases de son empreinte, donc les deux d'une table 2×1. Le verdict,
+ *  lui, rend la case d'ANCRAGE du meuble — la même que la voie `decor` du rayon (`caseVisee`), d'où
+ *  l'interaction d'exploration le reprend comme n'importe quel décor. */
 export function meubleDessine(scene: Scene, cadre: CadreDePick, g: PointStage, z: number): Pt | null {
   for (const lift of sceneLifts(scene)) {
     const { x, y } = screenToTileAtLift(cadre.pose, g, lift);
@@ -152,9 +158,8 @@ export function meubleDessine(scene: Scene, cadre: CadreDePick, g: PointStage, z
     // PREMIÈRE case dessinée sous le pixel (lift le plus haut) : c'est celle qu'on VOIT, et elle
     // décide seule — porte-t-elle un meuble ou non. Continuer à sonder les lifts plus bas
     // rendrait un meuble d'AILLEURS, la maladie même qu'on soigne.
-    return scene.entities.some((e) => e.kind === 'prop' && e.pos.x === x && e.pos.y === y && (e.z ?? 0) === z)
-      ? { x, y, z }
-      : null;
+    const meuble = decorEnCaseEtage(scene, x, y, z);
+    return meuble ? { x: meuble.pos.x, y: meuble.pos.y, z } : null;
   }
   return null;
 }

@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, isDescriptiveZone, Scene } from '../../state/scene';
+import { propFootTiles } from '../../state/footprint';
+import { entityAt } from '../../state/sceneEdit';
 import { validateScene } from '../../state/validateScene';
 import { findCreatureById, creatureLabel } from '../../data';
 import {
@@ -742,5 +744,45 @@ describe('éditeur — les places assises suivent le geste, atomiquement', () =>
     const s = emptyScene(10, 10);
     s.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets' }];
     expect(deleteSel(s, { type: 'entity', id: 'table-1' }).seatAssignments).toBeUndefined();
+  });
+});
+
+/**
+ * SÉLECTION D'UN DÉCOR MULTI-CASE AU CANEVAS (#1509 L6′) — même règle qu'au picking du jeu
+ * (`gameIso/stage/pickResolve.ts`) : un décor répond sur TOUTE son empreinte, lue à l'index unique
+ * `state/decorIndex.ts`, et c'est SON entité (donc sa case d'ancrage) qui est désignée. Sans elle, la
+ * seconde case d'une table 2×1 restait un trou d'authoring : rien à sélectionner, rien à effacer, et
+ * un clic d'outil y posait une entité DANS le meuble.
+ */
+describe('canevas — un décor de deux cases se désigne par chacune d’elles', () => {
+  const REF = 'table-2x1';
+  /** `table-2x1` occupe 2 cases en N/S et 1×2 en E/O — à l'échelle par DÉFAUT de la scène. */
+  const salle = (facing: 'S' | 'E'): Scene => {
+    const s = emptyScene(10, 10);
+    s.entities = [{ id: 'table', kind: 'prop', pos: { x: 3, y: 3 }, ref: REF, facing }];
+    return s;
+  };
+
+  it('la fixture EXERCE le cas : l’empreinte couvre bien deux cases, et elle tourne', () => {
+    expect(propFootTiles(REF, { x: 3, y: 3 }, 'S', 2)).toEqual([{ x: 3, y: 3 }, { x: 4, y: 3 }]);
+    expect(propFootTiles(REF, { x: 3, y: 3 }, 'E', 2)).toEqual([{ x: 3, y: 3 }, { x: 3, y: 4 }]);
+  });
+
+  it.each([['S', { x: 4, y: 3 }], ['E', { x: 3, y: 4 }]] as const)(
+    'cap %s : la SECONDE case sélectionne le meuble et rend son ancre', (facing, seconde) => {
+      const scene = salle(facing);
+      expect(hitAt(scene, seconde, DEFAULT_LAYERS)).toEqual({ type: 'entity', id: 'table' });
+      expect(entityAt(scene, seconde)?.pos).toEqual({ x: 3, y: 3 });
+      expect(eraseAt(scene, seconde).entities).toEqual([]);
+    });
+
+  it('un CORPS posé sur une case d’empreinte se désigne lui-même : la pose exacte prime', () => {
+    const scene = salle('S');
+    scene.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 4, y: 3 } });
+    expect(hitAt(scene, { x: 4, y: 3 }, DEFAULT_LAYERS)).toEqual({ type: 'entity', id: 'pnj' });
+  });
+
+  it('une case HORS empreinte ne désigne rien : la règle ne répond pas partout', () => {
+    expect(hitAt(salle('S'), { x: 5, y: 3 }, DEFAULT_LAYERS)).toBeNull();
   });
 });

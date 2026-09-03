@@ -22,11 +22,11 @@
  * feature de façade, le milieu de l'empreinte pour un ornement de faîte. L'orientation vient du cap
  * déclaré (`SceneEntity.facing` pour un décor posé).
  *
- * ÉCART OUVERT sur les places assises : `state/seating.ts` ancre les `seatSlots` sur `SceneEntity.pos`
- * (le coin NO), le builder pose la recette sur le CENTRE de l'empreinte. Les deux coïncident sur un
- * meuble 1×1 ; au-delà, ils divergent d'un demi-pas par axe étendu — le catalogue porte désormais un
- * meuble 2×1 à recette (`table-2x1`, #1644). Résolution au socle #1509 (le corps tourné décide des
- * cases) ; en attendant, aucun meuble multi-case ne déclare de place.
+ * PLACES ASSISES : `state/seating.ts` ancre les `seatSlots` d'un meuble sur `decorAncre`
+ * (`state/footprint.ts`), le CENTRE de son empreinte effective — la même ancre que celle sur
+ * laquelle le builder pose sa recette, et que le foyer de la lampe qu'il porte. Un meuble à places
+ * couvre donc autant de cases que son corps : la chaise DESSINÉE et la place où le corps s'assoit
+ * tiennent au même point, quelle que soit l'étendue de l'empreinte.
  *
  * L'EMPREINTE TOURNE AVEC LE CAP (#1509) : les cases d'un décor à recette sont celles de son CORPS
  * tourné, sièges exclus (`empreinteDeriveeDuProp` ci-dessous, servie à tous les consommateurs par
@@ -471,6 +471,64 @@ export function empreinteDuProp(prop: PropData | undefined, facing: Dir8 | undef
   return empreinteDeriveeDuProp(prop, facing ?? CAP_IDENTITE_PROP, mpt);
 }
 
+/**
+ * OFFSET de l'ANCRE dans son empreinte : du coin NO (`SceneEntity.pos`) vers le CENTRE du bloc, en
+ * cases. Écrite ICI parce que `src/data` ne peut pas remonter vers `src/state` sans cycle, et qu'il
+ * n'en existe qu'UNE : `state/footprint.ts` (`decorFootGeometry`, puis `decorAncre` qui la sert au
+ * monde) la LIT, elle ne la refait pas. 1×1 ⇒ (0,0). PURE.
+ */
+export function offsetAncre(foot?: { w: number; h: number }): { x: number; y: number } {
+  return { x: (Math.max(1, foot?.w ?? 1) - 1) / 2, y: (Math.max(1, foot?.h ?? 1) - 1) / 2 };
+}
+
+/** Une place d'un décor, résolue dans le repère de l'INSTANCE : des offsets depuis `SceneEntity.pos`
+ *  (le coin NO), à ajouter tels quels. `ancre` est FRACTIONNAIRE (le point où le corps s'assoit) ;
+ *  `siege` et `abord` sont des CASES ENTIÈRES. */
+export interface PlaceLocale {
+  slot: PropSeatSlot;
+  ancre: { x: number; y: number };
+  siege: { x: number; y: number };
+  abord: { x: number; y: number };
+}
+
+/** La case ENTIÈRE qui porte un point du plan — définition UNIQUE du passage point → case pour les
+ *  places (`state/seating.ts` l'importe au lieu d'en garder une copie). L'arrondi ne départage un
+ *  demi-entier que pour un point posé EXACTEMENT sur la couture de deux cases ; c'est pourquoi
+ *  `placesLocalesDuProp` applique l'abord depuis la CASE du siège, jamais depuis l'ancre
+ *  fractionnaire du meuble, où l'empreinte paire y tomberait à chaque fois. */
+export const caseDe = (x: number, y: number): { x: number; y: number } => ({ x: Math.round(x), y: Math.round(y) });
+
+/**
+ * LES PLACES D'UN DÉCOR, dans le repère de son instance — la règle d'ancrage d'une place, en UN lieu,
+ * lue par la résolution d'assise (`state/seating.ts`) comme par le validateur de catalogue ci-dessous.
+ * Tenue en double, elle divergeait : le validateur jugeait l'abord depuis le COIN NO pendant que le
+ * runtime le posait depuis l'ANCRE — une approche refusée au catalogue tombait hors du meuble, et une
+ * approche admise tombait dessus.
+ *
+ * Trois points, chacun dans son unité :
+ *  - `ancre` = l'ancre du DÉCOR (`offsetAncre`, le centre de l'empreinte effective) plus l'ancre
+ *    LOCALE de la place, en mètres au catalogue, divisée par l'échelle et tournée au cap ;
+ *  - `siege` = la CASE qui porte cette ancre ;
+ *  - `abord` = `approach` appliqué depuis la CASE DU SIÈGE, en cases entières. L'appliquer depuis
+ *    l'ancre fractionnaire du meuble ferait tomber un arrondi sur un demi-entier dès que l'empreinte
+ *    est paire, et deux places symétriques recevraient des abords asymétriques.
+ * PURE.
+ */
+export function placesLocalesDuProp(prop: PropData | undefined, facing: Dir8 | undefined, mpt: number): PlaceLocale[] {
+  const slots = prop?.seatSlots ?? [];
+  if (!slots.length) return [];
+  const cap = facing ?? CAP_IDENTITE_PROP;
+  const centre = offsetAncre(empreinteDuProp(prop, cap, mpt));
+  return slots.map((slot) => {
+    // LE site de conversion mètres → cases des places (#1507, déclaré par `state/echelle-de-scene.test.ts`).
+    const [ax, ay] = rotatePropLocal(slot.anchor.xM / mpt, slot.anchor.yM / mpt, cap);
+    const ancre = { x: centre.x + ax, y: centre.y + ay };
+    const siege = caseDe(ancre.x, ancre.y);
+    const [px, py] = rotatePropLocal(slot.approach.x, slot.approach.y, cap);
+    return { slot, ancre, siege, abord: caseDe(siege.x + px, siege.y + py) };
+  });
+}
+
 /** Anomalies d'UNE primitive : matériau connu, coordonnées finies, dimensions positives, côtés admis,
  *  et FERMETURE en coquille close. La fermeture n'est mesurée que sur une géométrie déjà non ambiguë —
  *  des dimensions folles n'ajouteraient qu'un bruit d'arêtes par-dessus leur propre diagnostic. */
@@ -516,7 +574,7 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
     if (prop.volume && prop.volume.capIdentite !== CAP_IDENTITE_PROP)
       errors.push(`${prop.id}: recette au repère « ${prop.volume.capIdentite} » (seul ${CAP_IDENTITE_PROP} est implémenté)`);
     // COUVERT D'UN DÉCOR OPAQUE — un décor qui coupe la Ligne de Vue est lu par `tileBlocksSight`
-    // (`state/lineOfSight.ts:158-163`), qui rend « bloqué » ou force « totale » au contact AVANT que la
+    // (`state/lineOfSight.ts:tileBlocksSight`), qui rend « bloqué » ou force « totale » au contact AVANT que la
     // classe de `cover` ne soit lue : toute autre classe déclarée sous `opaque` est une règle que le
     // moteur n'applique jamais. Le catalogue ne peut donc pas la porter.
     if (prop.opaque && prop.cover !== 'totale')
@@ -534,17 +592,20 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
       errors.push(`${prop.id}: \`light\` sur une recette volumique sans primitive « emet » — le foyer d’un volume se DÉCLARE, il ne se devine pas`);
     // ABORD au CAP D'IDENTITÉ : c'est le seul cap auquel `approach` (écrit par l'auteur) et l'empreinte
     // sont dans le même repère. Aux autres caps, les deux tournent ENSEMBLE — la mesure est la même.
+    // La case d'abord est celle que le RUNTIME posera (`placesLocalesDuProp`, la règle unique) : une
+    // formule propre au validateur jugerait dans un repère que la scène n'emploie pas.
     const { w, h } = empreinteDuProp(prop, CAP_IDENTITE_PROP, mpt);
-    for (const slot of prop.seatSlots ?? []) {
+    for (const { slot, abord } of placesLocalesDuProp(prop, CAP_IDENTITE_PROP, mpt)) {
       if (!slot.id.trim()) errors.push(`${prop.id}: slot sans id`);
       else if (slots.has(slot.id)) errors.push(`${prop.id}: slot dupliqué « ${slot.id} »`);
       slots.add(slot.id);
-      const key = `${slot.approach.x},${slot.approach.y}`;
+      const key = `${abord.x},${abord.y}`;
+      // DEUX places ne peuvent pas s'aborder par la MÊME case : c'est la case RÉSOLUE qui le dit, deux
+      // `approach` identiques menant à deux cases distinctes dès que les sièges le sont.
       if (approaches.has(key)) errors.push(`${prop.id}: approche dupliquée (${key})`);
       approaches.add(key);
-      const dansEmpreinte = slot.approach.x >= -0.5 && slot.approach.x <= w - 0.5
-        && slot.approach.y >= -0.5 && slot.approach.y <= h - 0.5;
-      if (prop.solid && dansEmpreinte) errors.push(`${prop.id}: approche « ${slot.id} » dans l’empreinte ${w}×${h} à ${mpt} m/case (${key})`);
+      const dansEmpreinte = abord.x >= 0 && abord.x < w && abord.y >= 0 && abord.y < h;
+      if (prop.solid && dansEmpreinte) errors.push(`${prop.id}: approche « ${slot.id} » (${slot.approach.x},${slot.approach.y}) tombe sur la case (${key}) de l’empreinte ${w}×${h} à ${mpt} m/case`);
     }
   }
   return errors;
