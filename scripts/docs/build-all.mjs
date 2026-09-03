@@ -99,7 +99,13 @@ const ENREGISTREUR = pathToFileURL(fileURLToPath(new URL('lib/enregistreur-lectu
 /**
  * Entrée ESM de `tsx` DANS CET ARBRE (`exports['./esm']`). L'exécutable `tsx` re-spawne un processus
  * node : le générateur y perdrait le préchargeur passé en argument. `resoudreOutilLocal` porte le
- * refus nommé quand l'arbre ne l'a pas installé (porte d'outillage local, #1679 L1c).
+ * refus nommé quand l'arbre ne l'a pas installé (porte d'outillage local, #1679 L1c) — la résolution
+ * ci-dessous ne peut donc rendre que le paquet de cet arbre, trouvé au premier `node_modules` remonté.
+ * Le sous-chemin se résout par le SPÉCIFICATEUR (`import.meta.resolve`), pas en relisant `exports`
+ * à la main : c'est la résolution que joue `node --import`, conditions d'import comprises, et elle
+ * est LUE STATIQUEMENT par `knip --dependencies` — sans elle `tsx` n'a plus aucune référence de code
+ * et est rapporté devDependency inutilisée (CI 33691303703, rouge après le passage de `npx tsx` à la
+ * résolution par nom).
  */
 function tsxEsmDe(cwd) {
   const { refus } = resoudreOutilLocal(cwd, 'tsx', 'tsx')
@@ -107,13 +113,7 @@ function tsxEsmDe(cwd) {
     console.error(refus)
     process.exit(2)
   }
-  const paquet = path.join(cwd, 'node_modules', 'tsx')
-  const sousChemin = JSON.parse(readFileSync(path.join(paquet, 'package.json'), 'utf8')).exports?.['./esm']
-  if (typeof sousChemin !== 'string') {
-    console.error(`[outillage] le paquet tsx de cet arbre n'expose pas « ./esm » : ${paquet}`)
-    process.exit(2)
-  }
-  return path.join(paquet, sousChemin)
+  return fileURLToPath(import.meta.resolve('tsx/esm'))
 }
 
 /** Chemins visés par une liste de `targets`/`injecte` — un glob se déplie sur le disque. */
