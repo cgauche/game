@@ -12,6 +12,10 @@ const ICI = path.dirname(fileURLToPath(import.meta.url))
 
 const entree = (fichiers = [], dossiers = [], cibles = []) => ({ cibles, fichiers, dossiers })
 
+// Chemin de doc ASSEMBLÉ : un littéral `docs/<nom>.md` qui ne désigne AUCUN doc réel est lu par
+// `scripts/docs/check-doc-refs.mjs` comme une référence vivante — qu'il déclare morte.
+const doc = (nom) => ['docs', `${nom}.md`].join('/')
+
 test('deltaSourcesLues : deux mesures identiques ne rendent rien', () => {
   const m = { 'scripts/docs/build-systemes.mjs': entree(['src/a.ts', 'src/b.ts'], ['src/data'], ['docs/systemes.md']) }
   assert.deepEqual(deltaSourcesLues(m, structuredClone(m)), [])
@@ -27,13 +31,13 @@ test('deltaSourcesLues : un fichier AJOUTÉ, un dossier RETIRÉ, nommés par cha
 })
 
 test('deltaSourcesLues : un générateur absent d\'un côté rend TOUT son champ', () => {
-  const avant = { 'parti.mjs': entree(['src/a.ts'], [], ['docs/parti.md']) }
-  const apres = { 'neuf.mjs': entree(['src/b.ts'], ['src/data'], ['docs/neuf.md']) }
+  const avant = { 'parti.mjs': entree(['src/a.ts'], [], [doc('parti')]) }
+  const apres = { 'neuf.mjs': entree(['src/b.ts'], ['src/data'], [doc('neuf')]) }
   assert.deepEqual(deltaSourcesLues(avant, apres), [
-    { generateur: 'neuf.mjs', champ: 'cibles', ajoutes: ['docs/neuf.md'], retires: [] },
+    { generateur: 'neuf.mjs', champ: 'cibles', ajoutes: [doc('neuf')], retires: [] },
     { generateur: 'neuf.mjs', champ: 'dossiers', ajoutes: ['src/data'], retires: [] },
     { generateur: 'neuf.mjs', champ: 'fichiers', ajoutes: ['src/b.ts'], retires: [] },
-    { generateur: 'parti.mjs', champ: 'cibles', ajoutes: [], retires: ['docs/parti.md'] },
+    { generateur: 'parti.mjs', champ: 'cibles', ajoutes: [], retires: [doc('parti')] },
     { generateur: 'parti.mjs', champ: 'fichiers', ajoutes: [], retires: ['src/a.ts'] },
   ])
 })
