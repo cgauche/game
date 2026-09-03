@@ -68,7 +68,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Position, zone, poussée, téléportation, rebond | `arrowWard`, `push`, `teleport`, `chain`, `zone`, `delayed` |
 | Psychologie : Peur, Terreur, Frénésie, Animosité, Obsession | `endPsych`, `beginPsych`, `grantTrait`, `grantPsychTrait`, `removePsychTrait`, `grantCareerTalent`, `suppressPsych`, `ignoreAnimosity`, `grantFreeAttack`, `sbBonus` |
 | Ressources : Chance, Destin, Résilience, Détermination | `gainResource`, `kill`, `freeReroll`, `zone`, `attrMod` |
-| Sens et organes : vue, ouïe, cécité, surdité | `senseLoss` |
+| Sens et organes : vue, ouïe, cécité, surdité | `amputer`, `senseLoss` |
 | Soin, guérison, régénération, aide médicale | `heal`, `healCaster`, `cureCriticalWound`, `rollThreshold` |
 | Statut social, Réputation, Standing | `statusMod` |
 | Suffocation, respiration, exposition météo | `suffocate`, `noBreath`, `weatherWard` |
@@ -77,12 +77,13 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Traits de créature : octroyer, retirer | `grantTrait`, `removeTrait`, `grantPsychTrait`, `removePsychTrait`, `suppressPsych`, `polymorph`, `endTransform`, `incomingSpellDRMod`, `moveMod` |
 | Transformation, métamorphose, forme alternative | `polymorph`, `transform`, `endTransform` |
 
-## GameOp — les 106 opérations
+## GameOp — les 107 opérations
 
 | Op | Champs | Résolution | Résolveurs | Donnée | Rôle |
 |---|---|---|---|---|---|
 | `actGate` | `char` | exécutée | — | 2 — `spells.json:desorientation`, `trappings.json:racine-de-mandragore` | GATE d'action par Round (Racine de mandragore, LDB 71 l.35 : « Les utilisateurs doivent réussir un Test de Force Mentale à chaque Round pour effectuer une Action ou un Mouvement (un au choix) ») — `ActiveEffect.actGate` vérifié au DÉBUT du tour du porteur en combat (cadence-aware : héros manuel = étape de cascade influençable + choix Action/Mouvement ; IA/auto = jet inline, l'Action est gardée). |
 | `aggravateSymptom` | `disease`, `symptomId`, `severity`, `otherwise?` | exécutée | `engine/disease.ts` | 1 — `maladies.json:pneumonie` | AGGRAVE un symptôme déjà porté par la maladie `disease` (EDOC 08 l.104 : « le symptôme Fièvre devient Grave »). |
+| `amputer` | `sequels`, `loc?`, `unites?`, `unitesPerSL?` | exécutée | `engine/critical.ts` | **0** | AMPUTATION (LDB 18 l.233-286) : pose la plaie chirurgicale (`needsSurgery`) et les séquelles PERMANENTES `sequels` (ids de fiche `traumas.json`), puis consolide les cumuls (`consolidateAmputations` — doigts/orteils/dents/organes pairés). |
 | `ap` | `loc?`, `amount`, `noDeviation?`, `atHitLocation?` | exécutée | `engine/corruption.ts`, `engine/navalTraits.ts`, `state/aiSpellValue.ts` | 22 — `mutations.json:peau-d-acier`, `mutations.json:ecailles-epineuses` … | PA à une Localisation (`loc`) ou à TOUTES (`loc` absent — Armure Aethyrique « +1 PA à toutes les Localisations »). |
 | `armourPierce` | `amount`, `bypass?` | **inerte au switch** | `engine/qualities/dispatch.ts`, `state/targetingModes.ts` | 1 — `qualities.json:perforante` | PASSIF d'ARME : Perforante (LDB 62 l.270) — `bypass` (ex. `'nonMetal'`) puis `amount` PA retirés du reliquat à la mitigation. |
 | `arrowWard` | `radius` | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 1 — `spells.json:bouclier-anti-fleches` | Bouclier anti-flèches (LDB 47 — L11) : « les projectiles constitués de matière organique sont automatiquement détruits s'ils entrent dans la Zone d'Effet ». |
@@ -185,13 +186,14 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `weaponDamageMod` | `mode?`, `plusUnits?`, `negateAtouts?`, `chargeGated?` | **inerte au switch** | `engine/qualities/dispatch.ts` | 5 — `qualities.json:devastatrice`, `qualities.json:percutante` … | PASSIF d'ARME : modificateur de DÉGÂTS (LDB 62-63) — Dévastatrice (DR = max(DR, dé des unités), `mode:'maxUnits'`), Percutante (+ dé des unités, `plusUnits`), Inoffensive (annule les Atouts de Dégâts, `negateAtouts`), Épuisante (`chargeGated` : Percutante/Dévastatrice de l'arme inertes hors Charge). |
 | `weaponRollMod` | `phase`, `drMod?`, `flatMod?` | **inerte au switch** | `engine/qualities/dispatch.ts` | 10 — `qualities.json:a-enroulement`, `qualities.json:defensive` … | PASSIF d'ARME (Atout/Défaut, LDB 62-63) : modificateur de DR/plat à une PHASE de jet de combat — Précise (+10 `flatMod` en attaque), Imprécise (−1 DR en attaque), Pointue (+1 DR au Test d'attaque RÉUSSI, `phase:'attackSuccess'`, LDB 62 l.288), Défensive (+1 DR parade du défenseur), À Enroulement (−1 DR parade adverse), Lente (+1 DR à TOUTE défense adverse), Pratique/Peu Fiable (±1 DR à un Test raté). |
 | `weatherWard` | — | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 3 — `spells.json:protection-contre-la-pluie`, `spells.json:peau-de-loup-d-hiver` … | Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup d'hiver (Ulric), Protection contre la pluie. |
-| `wounds` | `amount`, `perSL?`, `onlyGroups?`, `ignoreTB?`, `ignoreAP?`, `bypassArmour?`, `apFrom?`, `min?`, `extraAP?`, `weaponHit?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +9 | 226 — `criticals.json:blessure-spectaculaire`, `criticals.json:coupure-mineure` … | Blessures subies DIRECTEMENT. |
+| `wounds` | `amount`, `perSL?`, `onlyGroups?`, `ignoreTB?`, `ignoreAP?`, `bypassArmour?`, `apFrom?`, `min?`, `extraAP?`, `weaponHit?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +9 | 225 — `criticals.json:blessure-spectaculaire`, `criticals.json:coupure-mineure` … | Blessures subies DIRECTEMENT. |
 | `zone` | `shape`, `radiusMeters?`, `lengthMeters?`, `lengthPerSL?`, `blocksLoS?`, `onCross?`, `perRound?`, `crossTest?`, `barrier?`, `gate?`, `noCorruption?` | **inerte au switch** | `engine/overcast.ts`, `state/combatFlow.ts`, `state/zones.ts` | 13 — `spells.json:vol-du-destin`, `spells.json:grands-feux-d-u-zhul` … | ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). |
 
-_106 ops (107 membres d'union avant fusion des formes) — 83 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
+_107 ops (108 membres d'union avant fusion des formes) — 84 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
 
-### Ops à ZÉRO usage en donnée (6)
+### Ops à ZÉRO usage en donnée (7)
 
+- `amputer`
 - `beginPsych`
 - `breakBlade`
 - `interruptFocus`
@@ -303,4 +305,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: 08c2b6782e2637e1036bcd991b3bf60635a5bcfb (658 fichiers, 16 dossiers) -->
+<!-- sources-empreinte: b0cdf6e9d3d67f6f45d5442eb484403fb7897fe8 (659 fichiers, 16 dossiers) -->
