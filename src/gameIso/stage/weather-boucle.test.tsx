@@ -16,7 +16,7 @@
  */
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import type { Dims } from '../../geometry/iso';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
@@ -40,6 +40,24 @@ const TAILLE = { w: 800, h: 600 };
 let rafs: (() => void)[] = [];
 const rafOrigine = globalThis.requestAnimationFrame;
 const cancelOrigine = globalThis.cancelAnimationFrame;
+
+/**
+ * L'HORLOGE DU BANC. La boucle CÈDE le pas à toute image déjà peinte (`stageFrames.armer` : elle ne
+ * bat que si `performance.now()` a dépassé la dernière peinte de plus de `MEME_IMAGE_MS`). Lue sur le
+ * MUR, cette fenêtre est une prémisse d'ENVIRONNEMENT, pas une propriété du code : une horloge qui
+ * n'avance pas entre le commit React et le service du rAF rend la boucle muette, et le banc rougit
+ * « 0 image » sans qu'aucune ligne de production n'ait bougé (rouge CI du 2026-09-01, run 33788542747,
+ * reproduit à l'identique en gelant `performance.now`). Le banc PILOTE donc son temps : les images
+ * qu'il compte sont celles qu'il a fait battre, ni plus ni moins.
+ *
+ * `toFake` ne prend QUE l'horloge : le rAF reste le collecteur du banc (ci-dessous), et `setTimeout`
+ * reste réel pour tout ce que React et three planifient hors de la mesure.
+ */
+beforeEach(() => { vi.useFakeTimers({ toFake: ['performance'] }); });
+afterEach(() => { vi.useRealTimers(); });
+
+/** De quoi franchir la fenêtre de cession de `stageFrames.armer` à chaque battement. */
+const MS_PAR_IMAGE = 16;
 
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
@@ -104,9 +122,10 @@ function monter(scene: Scene, zoom: number): void {
 
 const rendre = (scene: Scene, zoom: number) => act(() => root!.render(<GameStage3D {...props(scene, zoom)} />));
 
-/** Fait battre la boucle une fois — après le délai qu'elle s'impose pour céder le pas à la marche. */
-async function battre(): Promise<void> {
-  await new Promise((r) => setTimeout(r, 12));
+/** UNE image de la boucle, PILOTÉE : l'horloge du module avance au-delà de la fenêtre de cession,
+ *  puis le rAF armé est servi. Aucune attente de mur — ce banc ne mesure pas la vitesse de la machine. */
+function battre(): void {
+  vi.advanceTimersByTime(MS_PAR_IMAGE);
   const enAttente = rafs.splice(0);
   act(() => enAttente.forEach((cb) => cb()));
 }
@@ -123,7 +142,7 @@ afterEach(() => {
 });
 
 describe('Boucle de chute — elle peint la frame COURANTE (#1176 P2-6)', () => {
-  it('un zoom changé sans toucher au semis est celui que la boucle dessine', async () => {
+  it('un zoom changé sans toucher au semis est celui que la boucle dessine', () => {
     const scene = scenePluie();
     monter(scene, 1);
     // Le banc mesure quelque chose : il tombe bien un semis, et la frame est bien dessinée.
@@ -137,8 +156,15 @@ describe('Boucle de chute — elle peint la frame COURANTE (#1176 P2-6)', () => 
     expect(cadrage2).not.toBe(cadrage1); // le zoom EST discriminable dans la projection
 
     frames = [];
-    await battre();
-    expect(frames.length).toBeGreaterThan(0); // la boucle a bien dessiné
+    // PRÉMISSE : une boucle armée, et UNE seule — deux rappels en vol diraient deux boucles
+    // concurrentes, et le compte d'images ci-dessous ne vaudrait plus rien.
+    expect(rafs.length).toBe(1);
+
+    const IMAGES = 3;
+    for (let i = 0; i < IMAGES; i++) { battre(); expect(rafs.length).toBe(1); }
+    // UN écran abonné, UNE image peinte par battement : le compte est EXACT. « Au moins une » laissait
+    // passer une boucle qui s'éteint après la première, comme une boucle qui repeint en rafale.
+    expect(frames.length).toBe(IMAGES);
     expect([...new Set(frames.map((f) => f.projection))]).toEqual([cadrage2]);
   });
 });
