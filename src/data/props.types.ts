@@ -567,7 +567,8 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
   const errors: string[] = [];
   for (const prop of entries) {
     const slots = new Set<string>();
-    const approaches = new Set<string>();
+    /** Abord RÉSOLU → case de SIÈGE qui l'a posé le premier (cf. la règle d'ambiguïté plus bas). */
+    const approaches = new Map<string, string>();
     // Le JSON n'est pas typé à l'EXÉCUTION (même raison que les côtés de cylindre ci-dessus) : le REPÈRE
     // déclaré par la recette doit être celui que `rotatePropLocal` implémente, sans quoi la géométrie
     // sort d'un demi-tour sans que rien ne le dise.
@@ -595,15 +596,22 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
     // La case d'abord est celle que le RUNTIME posera (`placesLocalesDuProp`, la règle unique) : une
     // formule propre au validateur jugerait dans un repère que la scène n'emploie pas.
     const { w, h } = empreinteDuProp(prop, CAP_IDENTITE_PROP, mpt);
-    for (const { slot, abord } of placesLocalesDuProp(prop, CAP_IDENTITE_PROP, mpt)) {
+    for (const { slot, siege, abord } of placesLocalesDuProp(prop, CAP_IDENTITE_PROP, mpt)) {
       if (!slot.id.trim()) errors.push(`${prop.id}: slot sans id`);
       else if (slots.has(slot.id)) errors.push(`${prop.id}: slot dupliqué « ${slot.id} »`);
       slots.add(slot.id);
       const key = `${abord.x},${abord.y}`;
-      // DEUX places ne peuvent pas s'aborder par la MÊME case : c'est la case RÉSOLUE qui le dit, deux
-      // `approach` identiques menant à deux cases distinctes dès que les sièges le sont.
-      if (approaches.has(key)) errors.push(`${prop.id}: approche dupliquée (${key})`);
-      approaches.add(key);
+      const siegeKey = `${siege.x},${siege.y}`;
+      // AMBIGUÏTÉ D'ABORD — une case d'abord qui dessert DEUX SIÈGES DISTINCTS ne dit plus où l'on
+      // s'assoit : c'est l'anomalie. Deux places qui S'EFFONDRENT dans la MÊME case de siège n'en sont
+      // pas une : à une échelle grossière (la barge du sel et le Loup & Saumure sont à 10 m/case), tout
+      // meuble à N places tient sur une case, et ses places n'y sont plus distinguables SPATIALEMENT.
+      // Elles restent occupables une à une — `state/seating.ts` (`placesResolues`, 2ᵉ passe) réserve les
+      // abords sur la SCÈNE et replie la seconde sur une voisine atteignable du siège.
+      const parLeMemeAbord = approaches.get(key);
+      if (parLeMemeAbord !== undefined && parLeMemeAbord !== siegeKey)
+        errors.push(`${prop.id}: abord AMBIGU (${key}) — il dessert deux sièges distincts, (${parLeMemeAbord}) et (${siegeKey})`);
+      else approaches.set(key, siegeKey);
       const dansEmpreinte = abord.x >= 0 && abord.x < w && abord.y >= 0 && abord.y < h;
       if (prop.solid && dansEmpreinte) errors.push(`${prop.id}: approche « ${slot.id} » (${slot.approach.x},${slot.approach.y}) tombe sur la case (${key}) de l’empreinte ${w}×${h} à ${mpt} m/case`);
     }

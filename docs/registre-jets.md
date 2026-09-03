@@ -143,4 +143,4 @@ reste `ROLL_SEAM_PHASE2_STOCK`. 32 sites dans 15 fichiers.
 | `src/state/triggeredEffects.ts` | 1 |
 | `src/state/upkeep.ts` | 2 |
 
-<!-- sources-empreinte: 1f5cca1bcc63922d2f3a52392b5ab02a035337b3 (1960 fichiers, 137 dossiers) -->
+<!-- sources-empreinte: 4d5a99e5fb83b54f76cea2c1dd29949fe77427f5 (1960 fichiers, 137 dossiers) -->

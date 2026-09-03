@@ -3,6 +3,11 @@
  * affiché à la fois — fini la pile infinie du POC). Pose DIRECTE depuis les catalogues
  * recherchables (décors `PROPS`, espèces du rig, bâtiments par catégorie, créatures du bestiaire).
  * Composant de PRÉSENTATION : l'état (outil, pinceau, rencontre cible) vit dans Editor.
+ *
+ * APERÇU AU CAP D'IDENTITÉ : ce que la palette annonce d'un décor — sa chip d'empreinte — se lit au
+ * `CAP_IDENTITE_PROP`, le seul cap qu'un catalogue connaisse : un TYPE n'a pas d'orientation, seule
+ * une instance en porte une. L'empreinte d'un décor à recette TOURNE avec le cap (#1509) : c'est
+ * l'INSPECTEUR, qui tient une instance, qui l'annonce au cap RÉEL (`Inspector.tsx`).
  */
 import { useState, type ReactNode } from 'react';
 import { sceneMetresPerTile, type Scene, type Terrain } from '../../state/scene';

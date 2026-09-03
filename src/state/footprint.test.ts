@@ -151,16 +151,24 @@ describe('propDeclaredFoot / propFootTiles — l’empreinte d’un décor vient
 
 describe('decorFootGeometry — empreinte rectangulaire des décors (`PropData.foot`)', () => {
   it('absent ou 1×1 → identité (le décor historique ne bouge pas)', () => {
-    expect(decorFootGeometry(undefined)).toEqual({ offX: 0, offY: 0, scale: 1 });
-    expect(decorFootGeometry({ w: 1, h: 1 })).toEqual({ offX: 0, offY: 0, scale: 1 });
+    expect(decorFootGeometry(undefined)).toEqual({ offX: 0, offY: 0, sx: 1, sy: 1, scale: 1 });
+    expect(decorFootGeometry({ w: 1, h: 1 })).toEqual({ offX: 0, offY: 0, sx: 1, sy: 1, scale: 1 });
   });
   it('tente 2×2 → centre du bloc (+0.5,+0.5), échelle ×2', () => {
-    expect(decorFootGeometry({ w: 2, h: 2 })).toEqual({ offX: 0.5, offY: 0.5, scale: 2 });
+    expect(decorFootGeometry({ w: 2, h: 2 })).toEqual({ offX: 0.5, offY: 0.5, sx: 2, sy: 2, scale: 2 });
   });
-  it('tribune 3×1 → centre (+1,0), échelle = côté max (×3)', () => {
-    expect(decorFootGeometry({ w: 3, h: 1 })).toEqual({ offX: 1, offY: 0, scale: 3 });
+  /**
+   * DEUX grandeurs, deux emplois (#1509 L9′) : `sx`/`sy` est l'étendue AXE PAR AXE — ce que suit toute
+   * figure posée au sol sur l'empreinte (le halo d'interaction) — quand `scale` reste l'échelle du
+   * DESSIN, isotrope, celle d'une vignette de billboard qui s'agrandit sans se déformer.
+   */
+  it('tribune 3×1 → centre (+1,0), étendue 3×1, échelle de dessin = côté max (×3)', () => {
+    expect(decorFootGeometry({ w: 3, h: 1 })).toEqual({ offX: 1, offY: 0, sx: 3, sy: 1, scale: 3 });
+  });
+  it('table murale 1×2 → l’étendue distingue les axes là où l’échelle de dessin les confond', () => {
+    expect(decorFootGeometry({ w: 1, h: 2 })).toEqual({ offX: 0, offY: 0.5, sx: 1, sy: 2, scale: 2 });
   });
   it('valeurs dégénérées (0/négatives) ramenées à 1', () => {
-    expect(decorFootGeometry({ w: 0, h: -2 })).toEqual({ offX: 0, offY: 0, scale: 1 });
+    expect(decorFootGeometry({ w: 0, h: -2 })).toEqual({ offX: 0, offY: 0, sx: 1, sy: 1, scale: 1 });
   });
 });

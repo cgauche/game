@@ -6,7 +6,8 @@ import { walkNeighbors, type Pt } from '../../state/path';
 import { sceneZoneTiles } from '../../state/zones';
 import { seatSlotsOf, seatIsOccupiable, type ResolvedSeatSlot } from '../../state/seating';
 import { findPropById } from '../../data';
-import { capVolumique, rotatePropLocal, type PropPrimitive } from '../../data/props.types';
+import { decorAncre } from '../../state/footprint';
+import { capVolumique, empreinteDuProp, rotatePropLocal, type PropPrimitive } from '../../data/props.types';
 import { buildPropVolumes } from '../../gameIso/builders/propVolumes';
 import { chebyshev } from '../../engine/grid';
 
@@ -103,9 +104,12 @@ interface Boite { x0: number; x1: number; y0: number; y1: number; h0: number; h1
 /** L'échelle de LA scène mesurée ici — les recettes sont en mètres (#1507), la grille est en cases. */
 const MPT = sceneMetresPerTile(scene);
 
-/** Ancrage MONDE d'un meuble posé : sa case, son cap, le sol qu'il touche — ce que le builder déclare. */
+/** Ancrage MONDE d'un meuble posé : le CENTRE de son empreinte (`decorAncre`, la règle unique que
+ *  `gameIso/builders/props.ts` applique), son cap, le sol qu'il touche — ce que le builder déclare.
+ *  Ce centre n'est la case d'ancrage que tant que l'empreinte est 1×1 : une murale 1×2 le pose une
+ *  demi-case plus loin, et une recette lue depuis `pos` sortirait du monde décalée d'autant. */
 const ancrageDe = (ent: SceneEntity) => ({
-  ancre: ent.pos,
+  ancre: decorAncre(ent.pos, empreinteDuProp(findPropById(ent.ref ?? ''), ent.facing, MPT)),
   facing: capVolumique(ent.facing, ent.id),
   baseHeightM: heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0),
   entId: ent.id,
@@ -142,14 +146,15 @@ function corpsBounds(ent: SceneEntity): Boite {
     dy: (p.kind === 'cylinder' ? p.radiusM : p.size.yM / 2) / MPT,
   });
   const xs: number[] = [], ys: number[] = [];
+  const ancre = ancrageDe(ent).ancre;
   for (const p of prop.volume?.primitives ?? []) {
     const { dx, dy } = demi(p);
     const cx = p.center.xM / MPT, cy = p.center.yM / MPT;
     if ((prop.seatSlots ?? []).some((s) => Math.abs(s.anchor.xM / MPT - cx) <= dx + 1e-9 && Math.abs(s.anchor.yM / MPT - cy) <= dy + 1e-9)) continue;
     for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
       const [rx, ry] = rotatePropLocal(cx + sx * dx, cy + sy * dy, ent.facing ?? 'S');
-      xs.push(ent.pos.x + rx);
-      ys.push(ent.pos.y + ry);
+      xs.push(ancre.x + rx);
+      ys.push(ancre.y + ry);
     }
   }
   return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), h0: 0, h1: 0 };
@@ -180,6 +185,14 @@ const intersects = (a: Boite, b: Boite, eps = 1e-9) =>
 /** Boîte au sol d'une case : le monde des décors centre la case sur ses coordonnées entières. */
 const caseBox = (x: number, y: number): Boite =>
   ({ x0: x - 0.5, x1: x + 0.5, y0: y - 0.5, y1: y + 0.5, h0: -Infinity, h1: Infinity });
+
+/** Boîte au sol de l'EMPREINTE d'un meuble posé : le bloc de cases que son corps tourné occupe
+ *  (`empreinteDuProp`, #1509), depuis `pos` — le coin NO. Un meuble d'une case rend exactement sa
+ *  `caseBox` ; la table murale, deux cases le long du mur. */
+const empreinteBox = (ent: SceneEntity): Boite => {
+  const { w, h } = empreinteDuProp(findPropById(ent.ref ?? ''), ent.facing, MPT);
+  return { x0: ent.pos.x - 0.5, x1: ent.pos.x + w - 0.5, y0: ent.pos.y - 0.5, y1: ent.pos.y + h - 0.5, h0: -Infinity, h1: Infinity };
+};
 
 const contenu = (petit: Boite, grand: Boite, eps = 1e-9) =>
   petit.x0 >= grand.x0 - eps && petit.x1 <= grand.x1 + eps && petit.y0 >= grand.y0 - eps && petit.y1 <= grand.y1 + eps;
@@ -246,10 +259,13 @@ describe('La Diligence — implantation de la salle principale', () => {
     expect(meubles().filter((e) => !dansSalle.has(`${e.pos.x},${e.pos.y}`)).map((e) => e.id)).toEqual([]);
   });
 
-  it('la salle meublée garde 84 tuiles libres sur 104, en une seule composante', () => {
+  /** 82 libres, et non plus 84 : les deux TABLES MURALES occupent désormais deux cases chacune — leur
+   *  corps mesure 3,00 m le long du mur (#1509 L9′), donc (14,12) et (14,17) passent sous meuble. */
+  it('la salle meublée garde 82 tuiles libres sur 104, en une seule composante', () => {
     expect(tuilesSalle).toHaveLength(104);
     const libres = tuilesSalle.filter((t) => isWalkable(scene, t.x, t.y, 0));
-    expect(libres).toHaveLength(84);
+    expect(libres).toHaveLength(82);
+    expect(libres.filter((t) => `${t.x},${t.y}` === '14,12' || `${t.x},${t.y}` === '14,17')).toEqual([]);
     const vues = new Set([cle(libres[0])]);
     const file: Pt[] = [libres[0]];
     while (file.length) {
@@ -308,12 +324,17 @@ describe('La Diligence — implantation de la salle principale', () => {
     expect(meubles().filter((e) => SEUILS.has(`${e.pos.x},${e.pos.y}`)).map((e) => e.id)).toEqual([]);
   });
 
-  it('chaque volume tient dans sa propre case, n’en recoupe aucun autre et laisse le plan des ouvertures libre', () => {
-    const corps = meubles().map((e) => ({ id: e.id, pos: e.pos, boite: propBounds(e), corps: corpsBounds(e) }))
-      .filter((c): c is { id: string; pos: { x: number; y: number }; boite: Boite; corps: Boite } => c.boite !== null);
-    // Le CORPS d'un meuble tient dans sa case ; seuls ses tabourets débordent (contrat de catalogue,
+  it('chaque volume tient dans son empreinte, n’en recoupe aucun autre et laisse le plan des ouvertures libre', () => {
+    const corps = meubles().map((e) => ({ id: e.id, pos: e.pos, empreinte: empreinteBox(e), boite: propBounds(e), corps: corpsBounds(e) }))
+      .filter((c): c is { id: string; pos: { x: number; y: number }; empreinte: Boite; boite: Boite; corps: Boite } => c.boite !== null);
+    // Le CORPS d'un meuble tient dans son EMPREINTE — sa case tant qu'il en occupe une, les DEUX cases
+    // des tables murales depuis #1509 L9′ ; seuls ses tabourets débordent (contrat de catalogue,
     // `gameIso/catalog/props-volumiques.test.ts`), et jamais jusqu'à recouper un meuble voisin.
-    expect(corps.filter((c) => !contenu(c.corps, caseBox(c.pos.x, c.pos.y))).map((c) => c.id)).toEqual([]);
+    expect(corps.filter((c) => !contenu(c.corps, c.empreinte)).map((c) => c.id)).toEqual([]);
+    // Et l'empreinte reste la MESURE du corps, pas un blanc-seing : dix-huit meubles tiennent toujours
+    // dans leur seule case, les deux murales sont les seules à en occuper deux.
+    expect(corps.filter((c) => !contenu(c.corps, caseBox(c.pos.x, c.pos.y))).map((c) => c.id))
+      .toEqual(['diligence-salle-table-murale-1', 'diligence-salle-table-murale-2']);
     const collisions: string[] = [];
     for (let i = 0; i < corps.length; i++)
       for (let j = i + 1; j < corps.length; j++)
@@ -422,11 +443,11 @@ describe('La Diligence — implantation de la salle principale', () => {
    * (`walkNeighbors`, SOURCE UNIQUE) : les seize abords appartiennent à la composante jouable, celle
    * qui porte aussi la cour d'arrivée.
    */
-  it('les seize abords sont dans la composante jouable — 970 tuiles au rez, 422 à l’étage', () => {
+  it('les seize abords sont dans la composante jouable — 968 tuiles au rez, 422 à l’étage', () => {
     const depart = tuilesSalle.find((t) => isWalkable(scene, t.x, t.y, 0))!;
     const vus = composante({ x: depart.x, y: depart.y });
     const parEtage = [...vus].reduce<Record<string, number>>((acc, k) => ({ ...acc, [k.split(',')[2]]: (acc[k.split(',')[2]] ?? 0) + 1 }), {});
-    expect(parEtage).toEqual({ 0: 970, 1: 422 });
+    expect(parEtage).toEqual({ 0: 968, 1: 422 });
     expect(placesDeLaSalle().filter((s) => !vus.has(`${s.approach.x},${s.approach.y},0`)).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
     // La cour d'arrivée est HORS de la salle et dans la MÊME composante : ce qui joint les places
     // joint le dehors — le groupe entre à pied et va s'asseoir.
@@ -444,16 +465,25 @@ describe('La Diligence — implantation de la salle principale', () => {
       .toEqual(['place-1:12,7', 'place-2:10,8', 'place-3:11,7', 'place-4:12,8']);
   });
 
-  it('les deux tables murales assoient leurs convives DU CÔTÉ SALLE, jamais dans le mur est', () => {
+  /**
+   * LES DEUX TABLES MURALES tiennent maintenant sur DEUX cases le long du mur est (cap E, empreinte
+   * 1×2 — #1509 L9′, fait utilisateur du 2026-08-31). Chacune de leurs places a désormais SA case, et
+   * s'aborde droit depuis la salle : la place du nord en (13,y), celle du sud en (13,y+1).
+   */
+  it('les deux tables murales assoient leurs convives DU CÔTÉ SALLE, une place par case, jamais dans le mur est', () => {
     for (const [x, y] of [[14, 11], [14, 16]] as const) {
       const table = meubleAt(x, y);
       expect(table.ref).toBe('table-murale-2-tabourets');
-      expect(wallBetween(scene, x, y, x + 1, y, 0), 'le mur est DOIT longer la table pour que le test morde').toBe(true);
+      expect(empreinteDuProp(findPropById(table.ref!), table.facing, MPT)).toEqual({ w: 1, h: 2 });
+      // Le mur est DOIT longer la table — ses DEUX cases — pour que le test morde.
+      for (const yy of [y, y + 1]) expect(wallBetween(scene, x, yy, x + 1, yy, 0), `mur est en (${x},${yy})`).toBe(true);
       const places = seatSlotsOf(scene, table.id);
       expect(places).toHaveLength(2);
       expect(places.every((s) => seatIsOccupiable(scene, s))).toBe(true);
       expect(places.map((s) => `${s.slotId}:${s.approach.x},${s.approach.y}`))
-        .toEqual([`place-1:13,${y - 1}`, `place-2:13,${y + 1}`]);
+        .toEqual([`place-1:13,${y}`, `place-2:13,${y + 1}`]);
+      // Une place PAR CASE : les deux sièges occupent les deux cases de l'empreinte, jamais la même.
+      expect(places.map((s) => caseDuCorps(s))).toEqual([`${x},${y}`, `${x},${y + 1}`]);
     }
   });
 });

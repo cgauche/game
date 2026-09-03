@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { schema as propsSchema } from './schemas/defs/props';
 import { PROPS_VOLUMIQUES } from './schemas/_ids.generated';
 import { props, propMaterials, findPropMaterialById, findPropById } from './index';
-import { aretesNonAppariees, empreinteDeriveeDuProp, polygonesDePrimitive, sommetLocal, validatePropCatalog, type PropData, type PropPrimitive } from './props.types';
+import { aretesNonAppariees, CAP_IDENTITE_PROP, empreinteDeriveeDuProp, placesLocalesDuProp, polygonesDePrimitive, sommetLocal, validatePropCatalog, type PropData, type PropPrimitive } from './props.types';
 import { sceneMetresPerTile } from '../state/scene';
 
 /** Les polygones LOCAUX d'une primitive, réduits aux triplets que mesure `aretesNonAppariees` : la
@@ -167,8 +167,50 @@ describe('validatePropCatalog — invariants de données du décor', () => {
     expect(validatePropCatalog([bad], propMaterials, MPT)).toEqual(expect.arrayContaining([
       expect.stringContaining('dimension non positive'),
       expect.stringContaining('slot dupliqué « place-1 »'),
-      expect.stringContaining('approche dupliquée (0,1)'),
     ]));
+    // …et PAS d'anomalie d'abord : ces deux places tombent dans la MÊME case de siège (0,0) à
+    // 2 m/case, donc leur abord commun ne désigne qu'un siège — rien à départager (contrat suivant).
+    expect(validatePropCatalog([bad], propMaterials, MPT).filter((m) => m.includes('abord'))).toEqual([]);
+  });
+
+  /**
+   * ABORD AMBIGU — la règle UNIQUE que le catalogue tient sur les abords, et elle porte sur ce que la
+   * case désigne : un abord qui dessert DEUX SIÈGES DISTINCTS ne dit plus où l'on s'assoit. Deux places
+   * qui s'effondrent dans la MÊME case de siège sont légitimes — c'est l'état de TOUT meuble à N places
+   * aux échelles grossières (10 m/case, la barge du sel et le Loup & Saumure) — et `state/seating.ts`
+   * les sert l'une après l'autre (contrat `seating-abord-effondre.test.ts`). La règle précédente, qui
+   * refusait tout abord RÉPÉTÉ, interdisait ces meubles-là dès qu'une scène les posait à 10 m/case.
+   */
+  it('l’abord n’est AMBIGU que s’il dessert deux sièges distincts — deux places d’une même case ne le sont pas', () => {
+    // MORSURE : deux sièges dans DEUX cases distinctes de l'empreinte 2×1, un seul et même abord
+    // résolu (1,-1) — le pas qui mène là ne dit plus sur laquelle des deux on s'assoit.
+    const ambigu = propFixture({
+      foot: { w: 2, h: 1 },
+      seatSlots: [
+        { id: 'gauche', anchor: { xM: -1, yM: 0, hM: 0.48 }, facing: 'S', approach: { x: 1, y: -1 } },
+        { id: 'droite', anchor: { xM: 1, yM: 0, hM: 0.48 }, facing: 'S', approach: { x: 0, y: -1 } },
+      ],
+    });
+    expect(validatePropCatalog([ambigu], propMaterials, MPT))
+      .toEqual(['x: abord AMBIGU (1,-1) — il dessert deux sièges distincts, (0,0) et (1,0)']);
+
+    // TÉMOIN : les MÊMES deux places, une case chacune, chacune SON abord — rien à signaler.
+    const distinctes = propFixture({
+      foot: { w: 2, h: 1 },
+      seatSlots: [
+        { id: 'gauche', anchor: { xM: -1, yM: 0, hM: 0.48 }, facing: 'S', approach: { x: 0, y: -1 } },
+        { id: 'droite', anchor: { xM: 1, yM: 0, hM: 0.48 }, facing: 'S', approach: { x: 0, y: -1 } },
+      ],
+    });
+    expect(validatePropCatalog([distinctes], propMaterials, MPT)).toEqual([]);
+
+    // EFFONDREMENT, sur la donnée RÉELLE : à 10 m/case le corps de la table murale tient sur UNE case,
+    // ses deux places y tombent ensemble et partagent leur abord — aucun siège à départager, donc
+    // aucune anomalie. C'est l'état que les scènes à 10 m/case donnent à TOUT meuble à N places.
+    const murale = findPropById('table-murale-2-tabourets')!;
+    expect(placesLocalesDuProp(murale, CAP_IDENTITE_PROP, 10).map((pl) => `${pl.siege.x},${pl.siege.y}|${pl.abord.x},${pl.abord.y}`))
+      .toEqual(['0,0|0,-1', '0,0|0,-1']);
+    expect(validatePropCatalog([murale], propMaterials, 10)).toEqual([]);
   });
 
   it('distingue un slot SANS id d’un slot DUPLIQUÉ (deux causes, deux messages)', () => {
@@ -283,8 +325,35 @@ describe('validatePropCatalog — invariants de données du décor', () => {
     }])).toThrow();
   });
 
-  it('le catalogue RÉEL est intègre', () => {
-    expect(validatePropCatalog(props, propMaterials, MPT)).toEqual([]);
+  /**
+   * ÉCHELLES EN USAGE — l'intégrité d'un catalogue dépend de l'ÉCHELLE depuis #1509 (l'empreinte
+   * effective d'un décor à recette s'en déduit, et avec elle la case de chaque siège et de chaque
+   * abord). Le juger à la seule échelle par défaut laisse passer ce qu'une scène LIVRÉE fait vraiment :
+   * la barge du sel et le Loup & Saumure sont à 10 m/case, où tout meuble à N places tient sur une case.
+   * La liste est DÉRIVÉE des documents (glob des `*-projet.json`) plus le défaut du monde — une scène
+   * qui adopte une nouvelle échelle entre sous garde par sa seule déclaration.
+   */
+  const ECHELLES_EN_USAGE = (() => {
+    const vues = new Set<number>([MPT]);
+    const racine = new URL('../scenes/', import.meta.url);
+    for (const dossier of readdirSync(racine, { withFileTypes: true })) {
+      if (!dossier.isDirectory()) continue;
+      for (const fichier of readdirSync(new URL(`${dossier.name}/`, racine))) {
+        if (!fichier.endsWith('-projet.json')) continue;
+        const doc = JSON.parse(readFileSync(new URL(`${dossier.name}/${fichier}`, racine), 'utf8')) as { scenes?: { metresPerTile?: number }[] };
+        for (const sc of doc.scenes ?? []) if (typeof sc.metresPerTile === 'number') vues.add(sc.metresPerTile);
+      }
+    }
+    return [...vues].sort((a, b) => a - b);
+  })();
+
+  it('le catalogue RÉEL est intègre à CHAQUE échelle en usage dans les documents livrés', () => {
+    // La liste est mesurée, pas écrite : si elle retombait à une seule échelle, ce contrat ne
+    // mesurerait plus que le défaut du monde — et c'est précisément le trou qu'il ferme.
+    expect(ECHELLES_EN_USAGE.length, 'échelles en usage').toBeGreaterThan(1);
+    expect(ECHELLES_EN_USAGE).toContain(MPT);
+    const anomalies = ECHELLES_EN_USAGE.flatMap((mpt) => validatePropCatalog(props, propMaterials, mpt));
+    expect(anomalies).toEqual([]);
   });
 });
 

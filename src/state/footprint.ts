@@ -86,14 +86,27 @@ export function propFootTiles(ref: string | undefined, pos: Pt, facing: Dir8 | u
   return out;
 }
 
-/** Géométrie d'un DÉCOR à empreinte rectangulaire (`PropData.foot {w,h}`, ancre = coin NO) :
- *  décalage fractionnaire vers le CENTRE du bloc (pour y poser le token) et facteur d'échelle
- *  visuel (côté max). Absent/1×1 ⇒ identité — le décor historique ne bouge pas.
- *  Le décalage est LU à `data/props.types.ts` (`offsetAncre`), où le validateur de catalogue et la
- *  résolution des places le lisent aussi : `src/data` ne peut pas remonter jusqu'ici sans cycle. */
-export function decorFootGeometry(foot?: { w: number; h: number }): { offX: number; offY: number; scale: number } {
+/**
+ * Géométrie d'un DÉCOR à empreinte rectangulaire (`PropData.foot {w,h}` pour un billboard, empreinte
+ * DÉRIVÉE du corps tourné pour une recette, #1509 ; ancre = coin NO) : décalage fractionnaire vers le
+ * CENTRE du bloc (pour y poser le token), ÉTENDUE en cases sur chaque axe, et facteur d'échelle
+ * visuel. Absent/1×1 ⇒ identité — le décor historique ne bouge pas.
+ *
+ * DEUX grandeurs, deux emplois, et pas l'une pour l'autre :
+ *  - `sx`/`sy` = l'étendue de l'empreinte, AXE PAR AXE. C'est ce que suit toute figure POSÉE AU SOL
+ *    sur l'empreinte — le halo d'interaction (`gameIso/builders/interactHalos`). Un `scale` isotrope
+ *    y débordait d'une demi-case sur l'axe court d'un meuble 1×2 : le halo d'une table murale passait
+ *    à travers le mur, dans la pièce voisine.
+ *  - `scale` = l'échelle du DESSIN, isotrope par nature : une vignette de billboard s'agrandit sans
+ *    se déformer, donc au plus grand côté (`gameIso/builders/props.ts`, `PropEl.echelle`).
+ * Le décalage est LU à `data/props.types.ts` (`offsetAncre`), où le validateur de catalogue et la
+ * résolution des places le lisent aussi : `src/data` ne peut pas remonter jusqu'ici sans cycle.
+ */
+export function decorFootGeometry(foot?: { w: number; h: number }): { offX: number; offY: number; sx: number; sy: number; scale: number } {
   const { x, y } = offsetAncre(foot);
-  return { offX: x, offY: y, scale: Math.max(Math.max(1, foot?.w ?? 1), Math.max(1, foot?.h ?? 1)) };
+  const sx = Math.max(1, foot?.w ?? 1);
+  const sy = Math.max(1, foot?.h ?? 1);
+  return { offX: x, offY: y, sx, sy, scale: Math.max(sx, sy) };
 }
 
 /** Écart 1D minimal entre les intervalles [a, a+an) et [b, b+bn) (0 s'ils se recouvrent ou se touchent). */

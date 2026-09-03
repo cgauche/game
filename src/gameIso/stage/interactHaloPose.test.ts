@@ -52,7 +52,7 @@ const fouille = (id: string, extra: Record<string, unknown> = {}) => ({
   cell: { x: 3, y: 4, z: 0 },
   span: { w: 1, h: 1 },
   centre: { x: 3, y: 4 },
-  scale: 1,
+  echelle: { x: 1, y: 1 },
   hovered: false,
   visible: true,
   ...extra,
@@ -149,8 +149,41 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
 
   it('un décor GRAND porte un halo GRAND — l’échelle du décor entre dans le rayon', () => {
     const p = pools();
-    poseInteractHalos(p, halos({ fouilles: [fouille('epave', { scale: 2 })] }), frame(0));
+    poseInteractHalos(p, halos({ fouilles: [fouille('epave', { echelle: { x: 2, y: 2 } })] }), frame(0));
     expect(instance(p.fouilleDisque!, 0).scl.x).toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * 2 * MPT, 6);
+  });
+
+  /**
+   * EMPREINTE NON CARRÉE (#1509 L9′) : le halo est une ELLIPSE, un demi-axe par axe de l'empreinte.
+   * Avec un facteur isotrope, le halo d'une table murale 1×2 débordait d'une demi-case sur son axe
+   * COURT — à travers le mur qu'elle longe. Un décor d'une case, lui, garde un halo ROND.
+   */
+  it('un décor 1×2 porte un halo ALLONGÉ — le disque et son contour épousent chaque axe', () => {
+    const p = pools();
+    poseInteractHalos(p, halos({ fouilles: [fouille('murale', { echelle: { x: 1, y: 2 } })] }), frame(0));
+    const disque = instance(p.fouilleDisque!, 0);
+    expect(disque.scl.x, 'axe court : une case').toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * 1 * MPT, 6);
+    expect(disque.scl.z, 'axe long : deux cases').toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * 2 * MPT, 6);
+    // Le CONTOUR suit la MÊME ellipse : aucune de ses cordes ne sort des demi-axes (c'est la
+    // CONTENANCE qui compte — le halo ne doit pas traverser le mur), et il s'étire bien sur l'axe long
+    // (les cordes sont posées à des angles DISCRETS : leur maximum n'atteint le demi-axe qu'à la
+    // résolution du chapelet, on ne l'exige donc pas à l'égalité).
+    const rx = haloRadiusK(HALO_RX_PX) * 1 * MPT;
+    const ry = haloRadiusK(HALO_RX_PX) * 2 * MPT;
+    const cordes = [...Array(p.fouilleContour!.count).keys()].map((i) => instance(p.fouilleContour!, i));
+    const ecartX = Math.max(...cordes.map((c) => Math.abs(c.pos.x - 3 * MPT)));
+    const ecartZ = Math.max(...cordes.map((c) => Math.abs(c.pos.z - 4 * MPT)));
+    expect(ecartX, 'axe court : rien ne sort du demi-axe').toBeLessThanOrEqual(rx + 1e-5);
+    expect(ecartZ, 'axe long : rien ne sort du demi-axe').toBeLessThanOrEqual(ry + 1e-5);
+    expect(ecartZ, 'le contour s’allonge VRAIMENT sur l’axe long').toBeGreaterThan(rx * 1.5);
+  });
+
+  it('un décor 1×1 garde un halo ROND (contrat de non-régression)', () => {
+    const p = pools();
+    poseInteractHalos(p, halos({ fouilles: [fouille('coffre')] }), frame(0));
+    const disque = instance(p.fouilleDisque!, 0);
+    expect(disque.scl.x).toBeCloseTo(2 * haloRadiusK(HALO_RX_PX) * MPT, 6);
+    expect(disque.scl.z).toBeCloseTo(disque.scl.x, 6);
   });
 
   it('SURVOL : le halo change de pool, s’agrandit de 1,32 et laisse le pool de repos VIDE', () => {
@@ -236,13 +269,16 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
   });
 
   it('l’ÉTINCELLE ne grandit ni ne monte avec le décor — seule sa POSITION suit l’échelle', () => {
-    // `h.scale` porte sur la seule POSITION du glyphe : son tracé garde ses `SPARK_R_PX` px et son
-    // flottement ses `SPARK_RISE_PX` px (`interactHaloPose.poserEtincelle`, `sparkBob`).
+    // L'échelle porte sur la seule POSITION du glyphe : son tracé garde ses `SPARK_R_PX` px et son
+    // flottement ses `SPARK_RISE_PX` px (`interactHaloPose.poserEtincelle`, `sparkBob`). L'étincelle
+    // flotte AU-DESSUS du décor : elle suit le PLUS GRAND côté de l'empreinte, là où le halo, couché au
+    // sol, suit chaque axe.
     const mesure = (scale: number) => {
+      const echelle = { x: scale, y: scale };
       const p = pools();
-      poseInteractHalos(p, halos({ fouilles: [fouille('e', { scale })] }), frame(0));
+      poseInteractHalos(p, halos({ fouilles: [fouille('e', { echelle })] }), frame(0));
       const bas = instance(p.fouilleEtincelle!, 0);
-      poseInteractHalos(p, halos({ fouilles: [fouille('e', { scale })] }), frame(SPARK_S / 2));
+      poseInteractHalos(p, halos({ fouilles: [fouille('e', { echelle })] }), frame(SPARK_S / 2));
       const haut = instance(p.fouilleEtincelle!, 0);
       return { côté: bas.scl.x, montée: haut.pos.y - bas.pos.y, hauteur: bas.pos.y };
     };

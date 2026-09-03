@@ -33,7 +33,7 @@ const FOUILLE = {
   cell: { x: 3, y: 4, z: 0 },
   span: { w: 1, h: 1 },
   centre: { x: 3, y: 4 },
-  scale: 1,
+  echelle: { x: 1, y: 1 },
   hovered: false,
   visible: true,
 };

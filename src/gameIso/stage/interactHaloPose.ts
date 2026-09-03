@@ -173,24 +173,27 @@ function poserAnneauDeHalo(
   slotContour: HaloSlot,
   compte: HaloCounts,
   centre: { x: number; y: number; z: number },
-  rK: number,
+  rK: { x: number; y: number },
   largeurPx: number,
   f: HaloFrame,
 ): void {
-  const tirets = ringDashes(rK, null, f.kind);
+  // DENSITÉ des tirets : le rayon MOYEN — un anneau n'a qu'un chapelet, et sur un cercle
+  // (`rK.x === rK.y`, tout décor d'une case) c'est exactement le rayon.
+  const tirets = ringDashes((rK.x + rK.y) / 2, null, f.kind);
   const phi0 = ringPhaseRad(f.kind) + ((f.yawDeg ?? 0) * Math.PI) / 180;
-  const rM = rK * f.mpt;
+  const rMx = rK.x * f.mpt;
+  const rMy = rK.y * f.mpt;
   const contour = pools[slotContour];
   if (contour) {
     if (compte[slotContour] + tirets.length > contour.instanceMatrix.count) return;
     centreDe(centre.x, centre.y, centre.z, haloSlotLiftM(slotContour), f, CENTRE);
-    compte[slotContour] = writeRingChords(contour, compte[slotContour], CENTRE, rM, strokeWidthK(largeurPx) * f.mpt, tirets, phi0);
+    compte[slotContour] = writeRingChords(contour, compte[slotContour], CENTRE, rMx, strokeWidthK(largeurPx) * f.mpt, tirets, phi0, undefined, rMy);
   }
   const disque = pools[slotDisque];
   if (disque && compte[slotDisque] < disque.instanceMatrix.count) {
     centreDe(centre.x, centre.y, centre.z, haloSlotLiftM(slotDisque), f, CENTRE);
     Q.identity();
-    S.set(2 * rM, 1, 2 * rM); // le gabarit unité a un DIAMÈTRE de 1
+    S.set(2 * rMx, 1, 2 * rMy); // le gabarit unité a un DIAMÈTRE de 1
     disque.setMatrixAt(compte[slotDisque]++, M.compose(CENTRE, Q, S));
   }
 }
@@ -198,9 +201,11 @@ function poserAnneauDeHalo(
 /** Écrit l'ÉTINCELLE d'un décor fouillable : le glyphe ALIGNÉ ÉCRAN, décalé du centre du décor (droite
  *  `SPARK_DX_PX`, haut `SPARK_DY_PX`, flottement compris).
  *
- *  CE QUI SUIT L'ÉCHELLE DU DÉCOR, ET CE QUI NE LA SUIT PAS : `h.scale` porte sur la seule POSITION du
+ *  CE QUI SUIT L'ÉCHELLE DU DÉCOR, ET CE QUI NE LA SUIT PAS : l'échelle porte sur la seule POSITION du
  *  glyphe ; son tracé garde ses 6 px et son flottement ses 4 px, quel que soit le décor — la taille et
- *  la montée sont INVARIANTES de `h.scale`.
+ *  la montée en sont INVARIANTES. L'étincelle est un point posé AU-DESSUS du décor, pas une figure
+ *  couchée sur son empreinte : elle se décale du PLUS GRAND côté (`h.echelle`), là où le halo, lui,
+ *  suit chaque axe.
  *
  *  L'ÉLÉVATION suit le HAUT DE L'ÉCRAN, pas l'axe Y du monde : patron `sceneMeshes.billboardPose`,
  *  celui des billboards de la scène (`boardPose`). Une élévation en Y monde disparaîtrait sous la vue
@@ -210,8 +215,9 @@ function poserEtincelle(mesh: THREE.InstancedMesh, n: number, h: InteractHalo, m
   const parMetre = pxPerM(f.mpt); // px d'écran par mètre HORIZONTAL
   centreDe(h.centre.x, h.centre.y, h.cell.z, 0, f, CENTRE);
   DROITE.set(1, 0, 0).applyQuaternion(f.camQuat);
-  CENTRE.addScaledVector(DROITE, (SPARK_DX_PX * h.scale) / parMetre);
-  const hauteurM = (SPARK_DY_PX * h.scale + montéePx) / ISO_PX_PER_M; // px d'écran VERTICAUX par mètre
+  const echelle = Math.max(h.echelle.x, h.echelle.y);
+  CENTRE.addScaledVector(DROITE, (SPARK_DX_PX * echelle) / parMetre);
+  const hauteurM = (SPARK_DY_PX * echelle + montéePx) / ISO_PX_PER_M; // px d'écran VERTICAUX par mètre
   P.copy(billboardPose(CENTRE, hauteurM, f.camQuat));
   Q.copy(f.camQuat).multiply(REDRESSER);
   const côtéM = (2 * SPARK_R_PX) / parMetre;
@@ -251,28 +257,33 @@ export function poseInteractHalos(pools: HaloPools, halos: InteractionHalos, f: 
   const ping = haloPing(f.tSec);
   const spark = sparkBob(f.tSec);
   for (const h of halos.fouilles) {
-    const rK = haloRadiusK(HALO_RX_PX) * h.scale;
+    // Le halo épouse l'EMPREINTE, axe par axe (`InteractHalo.echelle`) : rond sur un décor d'une case,
+    // allongé sur une table murale 1×2 — où un rayon isotrope débordait d'une demi-case à travers le
+    // mur qu'elle longe.
+    const rK = { x: haloRadiusK(HALO_RX_PX) * h.echelle.x, y: haloRadiusK(HALO_RX_PX) * h.echelle.y };
     const centre = caseDe(h.centre.x, h.centre.y, h.cell.z);
     // La variante de SURVOL est le MÊME anneau, agrandi et épaissi : le facteur porte sur le halo
     // entier, donc sur le rayon ET sur le trait.
     if (h.hovered)
-      poserAnneauDeHalo(pools, 'fouilleDisqueSurvol', 'fouilleContourSurvol', n, centre, rK * HALO_HOVER_SCALE, HALO_HOVER_STROKE_PX * HALO_HOVER_SCALE, f);
+      poserAnneauDeHalo(pools, 'fouilleDisqueSurvol', 'fouilleContourSurvol', n, centre, { x: rK.x * HALO_HOVER_SCALE, y: rK.y * HALO_HOVER_SCALE }, HALO_HOVER_STROKE_PX * HALO_HOVER_SCALE, f);
     else poserAnneauDeHalo(pools, 'fouilleDisque', 'fouilleContour', n, centre, rK, HALO_STROKE_PX, f);
     // ONDE « SONAR » : le même cercle, à l'échelle de l'instant — trait compris, l'échelle porte sur
     // le halo ENTIER.
     const onde = pools.fouillePing;
     if (onde && ping.opacity > 0) {
-      const tirets = ringDashes(rK, null, f.kind);
+      const tirets = ringDashes(((rK.x + rK.y) / 2) * ping.scale, null, f.kind);
       if (n.fouillePing + tirets.length <= onde.instanceMatrix.count) {
         centreDe(centre.x, centre.y, centre.z, haloSlotLiftM('fouillePing'), f, CENTRE);
         n.fouillePing = writeRingChords(
           onde,
           n.fouillePing,
           CENTRE,
-          rK * ping.scale * f.mpt,
+          rK.x * ping.scale * f.mpt,
           strokeWidthK(PING_STROKE_PX * ping.scale) * f.mpt,
           tirets,
           ringPhaseRad(f.kind) + ((f.yawDeg ?? 0) * Math.PI) / 180,
+          undefined,
+          rK.y * ping.scale * f.mpt,
         );
       }
     }
@@ -287,7 +298,7 @@ export function poseInteractHalos(pools: HaloPools, halos: InteractionHalos, f: 
       'pnjContour',
       n,
       caseDe(p.cell.x, p.cell.y, p.cell.z),
-      haloRadiusK(NPC_HALO_RX_PX) * HALO_HOVER_SCALE,
+      { x: haloRadiusK(NPC_HALO_RX_PX) * HALO_HOVER_SCALE, y: haloRadiusK(NPC_HALO_RX_PX) * HALO_HOVER_SCALE },
       HALO_HOVER_STROKE_PX * HALO_HOVER_SCALE,
       f,
     );

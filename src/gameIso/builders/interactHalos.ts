@@ -65,8 +65,11 @@ export interface InteractHalo {
   span: { w: number; h: number };
   /** Centre de l'empreinte (décalages de `foot` appliqués) : le halo est aux PIEDS du décor. */
   centre: { x: number; y: number };
-  /** Échelle du décor (côté max de son empreinte) — le halo grandit avec lui. */
-  scale: number;
+  /** ÉTENDUE du halo en cases, AXE PAR AXE (`decorFootGeometry` : `sx`/`sy` de l'empreinte) — le halo
+   *  grandit avec le décor, et seulement dans les axes où le décor grandit. Isotrope pour un 1×1
+   *  (`{ x: 1, y: 1 }`) ; `{ x: 1, y: 2 }` pour une table murale au cap E, dont le halo reste ainsi
+   *  DANS ses deux cases au lieu de traverser le mur qu'elle longe. */
+  echelle: { x: number; y: number };
   /** La tuile sous le curseur EST celle du décor → variante renforcée. */
   hovered: boolean;
   /** Le décor est EN VUE (au-dessus du voile de brouillard, `ElStates.visible`). */
@@ -127,7 +130,7 @@ export function interactionHalos(
       cell: { x: el.cell.x, y: el.cell.y, z: ez },
       span: { w: el.span?.w ?? 1, h: el.span?.h ?? 1 },
       centre: { x: el.cell.x + foot.offX, y: el.cell.y + foot.offY },
-      scale: foot.scale,
+      echelle: { x: foot.sx, y: foot.sy },
       hovered: ctx.exploring && !!hover && hover.x === el.cell.x && hover.y === el.cell.y && (hover.z ?? 0) === ez,
       visible: el.states.visible,
     });

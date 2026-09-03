@@ -368,3 +368,56 @@ describe('pruneSeatAssignments — normalisation déterministe', () => {
     expect(pruneSeatAssignments(scene, GROUPE)).toEqual({ [PROP]: { 'place-1': PARTY } });
   });
 });
+
+/**
+ * PLACES EFFONDRÉES DANS UNE MÊME CASE — l'état de TOUT meuble à N places aux échelles grossières
+ * (10 m/case : la barge du sel, le Loup & Saumure). Le catalogue ne le refuse pas — l'anomalie qu'il
+ * nomme est l'abord AMBIGU, celui qui dessert deux sièges DISTINCTS (`data/props.types.ts`,
+ * `validatePropCatalog`) —, et c'est ICI que se lit ce qu'un tel meuble donne au joueur : deux places
+ * distinctes par leur id, toutes deux occupables, l'une après l'autre. L'abord partagé se DÉPARTAGE à
+ * la résolution (`placesResolues`, 2ᵉ passe) : la première place garde l'abord déclaré, la seconde se
+ * replie sur une voisine atteignable du siège — la règle de scène « deux places simultanément
+ * occupables n'ont jamais le même abord » tient donc sans que le catalogue ait à interdire le meuble.
+ */
+describe('assise — deux places dans la MÊME case de siège restent deux places', () => {
+  const MURALE = 'table-murale-2-tabourets';
+  const grosseGrille = (): Scene => ({
+    ...emptyScene(12, 12),
+    metresPerTile: 10, // à cette échelle le corps de la murale (3,00 m) tient sur UNE case
+    entities: [
+      { id: 'murale', kind: 'prop', pos: { x: 4, y: 4 }, ref: MURALE, facing: 'S' } as SceneEntity,
+      { id: 'convive', kind: 'personnage', pos: { x: 5, y: 3 } } as SceneEntity,
+    ],
+  });
+
+  it('la fixture EXERCE l’effondrement : un seul siège pour les deux places', () => {
+    const scene = grosseGrille();
+    const places = seatSlotsOf(scene, 'murale');
+    expect(places.map((p) => p.slotId)).toEqual(['place-1', 'place-2']);
+    expect(places.map((p) => `${Math.round(p.anchor.x)},${Math.round(p.anchor.y)}`)).toEqual(['4,4', '4,4']);
+  });
+
+  it('les deux places sont occupables, avec des abords EFFECTIFS distincts', () => {
+    const scene = grosseGrille();
+    const places = seatSlotsOf(scene, 'murale');
+    expect(places.every((p) => seatIsOccupiable(scene, p))).toBe(true);
+    // Abord déclaré (0,−1) pour les deux ; la 2ᵉ passe replie la seconde sur une voisine du siège.
+    expect(places.map((p) => `${p.approach.x},${p.approach.y}`)).toEqual(['4,3', '5,3']);
+    expect(new Set(places.map((p) => `${p.approach.x},${p.approach.y}`)).size).toBe(2);
+  });
+
+  it('on s’y assoit l’une APRÈS l’autre — la seconde n’est pas volée par la première', () => {
+    let scene = grosseGrille();
+    const premier = assignSeat(scene, 'murale', 'place-1', PARTY, GROUPE);
+    expect(premier.ok).toBe(true);
+    if (!premier.ok) return;
+    scene = premier.scene;
+    const second = assignSeat(scene, 'murale', 'place-2', { kind: 'entity', entityId: 'convive' }, GROUPE);
+    expect(second.ok, 'la seconde place d’une case effondrée reste occupable').toBe(true);
+    if (!second.ok) return;
+    expect(second.scene.seatAssignments?.murale).toEqual({
+      'place-1': { kind: 'party', rang: 1 },
+      'place-2': { kind: 'entity', entityId: 'convive' },
+    });
+  });
+});

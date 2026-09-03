@@ -64,7 +64,31 @@ describe('Halos d’interaction — le décor FOUILLABLE (#1176 P3-0g)', () => {
     expect(h.cell).toEqual({ x: 4, y: 6, z: 2 });
     expect(h.centre).toEqual({ x: 4.5, y: 6.5 });
     expect(h.span).toEqual({ w: 2, h: 2 });
-    expect(h.scale, 'un grand décor porte un grand halo').toBe(2);
+    expect(h.echelle, 'un grand décor porte un grand halo').toEqual({ x: 2, y: 2 });
+  });
+
+  /**
+   * LE HALO ÉPOUSE L'EMPREINTE, AXE PAR AXE (#1509 L9′). Un facteur ISOTROPE (le côté max) faisait
+   * déborder le halo d'une demi-case sur l'axe COURT : sur les tables murales de la Diligence (1×2,
+   * dos au mur est), l'anneau doré passait à travers la cloison, dans la pièce voisine. Ce que ce
+   * contrat tient, c'est la CONTENANCE : le halo tient dans le bloc de cases du décor, et rien d'autre
+   * ne change pour les décors d'une case.
+   */
+  it('l’échelle du halo suit CHAQUE axe de l’empreinte, et le halo tient dans son bloc de cases', () => {
+    const murale = décor('murale', 14, 11, { span: { w: 1, h: 2 }, foot: { offX: 0, offY: 0.5, scale: 2 } });
+    const [h] = interactionHalos([murale], scèneAvec(), {}, null, EXPLORE).fouilles;
+    expect(h.echelle, 'un 1×2 ne grandit que sur y').toEqual({ x: 1, y: 2 });
+    // CONTENANCE, en cases : demi-axes du halo (rayon monde × échelle) contre le demi-bloc (w/2, h/2).
+    const demi = { x: haloRadiusK(HALO_RX_PX) * h.echelle.x, y: haloRadiusK(HALO_RX_PX) * h.echelle.y };
+    expect(demi.x, 'axe court : le halo reste dans la case, jamais dans le mur').toBeLessThanOrEqual(h.span.w / 2);
+    expect(demi.y, 'axe long : le halo reste dans les deux cases').toBeLessThanOrEqual(h.span.h / 2);
+  });
+
+  /** Les décors d'UNE case ne bougent pas d'un flottant : leur halo reste le cercle qu'il était. */
+  it('un décor 1×1 garde un halo ISOTROPE (contrat de non-régression)', () => {
+    const [h] = interactionHalos([décor('coffre', 3, 4)], scèneAvec(), {}, null, EXPLORE).fouilles;
+    expect(h.echelle).toEqual({ x: 1, y: 1 });
+    expect(h.centre).toEqual({ x: 3, y: 4 });
   });
 
   it('le SURVOL renforce le halo — sur SA case, à SON étage, et seulement en exploration', () => {

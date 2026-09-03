@@ -110,11 +110,16 @@ describe('Inspector — apparence visuelle des murs', () => {
 });
 
 describe('Inspector — l’empreinte d’un décor n’est plus une propriété d’instance', () => {
-  it('aucun contrôle d’empreinte n’est rendu ; changer de ref ne pose rien sur l’entité', async () => {
+  it('l’empreinte est ANNONCÉE, jamais saisie ; changer de ref ne pose rien sur l’entité', async () => {
     const h = mount({ id: 'p', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau' });
     await h.mount();
 
-    expect(h.container.textContent).not.toContain('Empreinte');
+    // Annoncée : un tonneau tient sur sa case. Et AUCUN contrôle ne la saisit — l'empreinte se dérive
+    // du type (corps tourné pour une recette, `foot` déclaré pour un billboard), elle ne s'édite pas.
+    const ligne = Array.from(h.container.querySelectorAll('p'))
+      .find((el) => el.textContent?.startsWith('Empreinte')) as HTMLParagraphElement;
+    expect(ligne.textContent).toBe('Empreinte 1×1 (0, 0)');
+    expect(ligne.querySelectorAll('input, select')).toHaveLength(0);
 
     const select = Array.from(h.container.querySelectorAll('select'))
       .find((el) => el.closest('label')?.textContent?.includes('Décor')) as HTMLSelectElement;
@@ -124,6 +129,58 @@ describe('Inspector — l’empreinte d’un décor n’est plus une propriété
     });
     expect(h.entOf().ref).toBe('tribune');
     expect(h.entOf()).not.toHaveProperty('foot');
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+
+  /**
+   * L'INSTANCE tient un cap, donc l'inspecteur annonce l'empreinte AU CAP RÉEL (#1509 L7′) : la même
+   * `table-2x1` occupe deux cases en x au sud, deux en y à l'est, et ses cases suivent le changement
+   * d'orientation fait dans le même volet. La PALETTE, elle, n'a pas d'instance : elle annonce au cap
+   * d'identité (`Palette.tsx`).
+   */
+  it('annonce l’empreinte au CAP RÉEL de l’instance, et ses cases suivent le changement de cap', async () => {
+    const h = mount({ id: 'longue', kind: 'prop', pos: { x: 1, y: 2 }, ref: 'table-2x1', facing: 'S' });
+    await h.mount();
+
+    const ligne = () => (Array.from(h.container.querySelectorAll('p'))
+      .find((el) => el.textContent?.startsWith('Empreinte')) as HTMLParagraphElement).textContent;
+    expect(ligne()).toBe('Empreinte 2×1 (1, 2) (2, 2)');
+
+    const orientation = Array.from(h.container.querySelectorAll('select'))
+      .find((el) => el.closest('label')?.textContent?.includes('Orientation')) as HTMLSelectElement;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')!.set!.call(orientation, 'E');
+      orientation.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(h.entOf().facing).toBe('E');
+    expect(ligne()).toBe('Empreinte 1×2 (1, 2) (1, 3)');
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+
+  /** La table MURALE a rejoint les meubles à deux cases par ré-authoring de ses cotes (#1509 L9′,
+   *  fait utilisateur du 2026-08-31) : contre un mur, au cap E, elle occupe 1×2. */
+  it('la table murale annonce 2×1 au sud et 1×2 à l’est', async () => {
+    const h = mount({ id: 'murale', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'table-murale-2-tabourets', facing: 'S' });
+    await h.mount();
+    const ligne = () => (Array.from(h.container.querySelectorAll('p'))
+      .find((el) => el.textContent?.startsWith('Empreinte')) as HTMLParagraphElement).textContent;
+    expect(ligne()).toBe('Empreinte 2×1 (0, 0) (1, 0)');
+
+    const orientation = Array.from(h.container.querySelectorAll('select'))
+      .find((el) => el.closest('label')?.textContent?.includes('Orientation')) as HTMLSelectElement;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')!.set!.call(orientation, 'E');
+      orientation.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(ligne()).toBe('Empreinte 1×2 (0, 0) (0, 1)');
 
     await act(async () => {
       h.root.unmount();

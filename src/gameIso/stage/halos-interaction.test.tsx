@@ -206,7 +206,7 @@ describe('Halos d’interaction — le monde volumique peint l’affordance (#11
 const SCENE_NUE: Scene = emptyScene(10, 10);
 const DIMS: Dims = { w: SCENE_NUE.dimensions.w, h: SCENE_NUE.dimensions.h, rot: 0, view: 'iso' };
 const HALOS: InteractionHalos = {
-  fouilles: [{ id: 'coffre', cell: { x: 3, y: 4, z: 0 }, span: { w: 1, h: 1 }, centre: { x: 3, y: 4 }, scale: 1, hovered: false, visible: true }],
+  fouilles: [{ id: 'coffre', cell: { x: 3, y: 4, z: 0 }, span: { w: 1, h: 1 }, centre: { x: 3, y: 4 }, echelle: { x: 1, y: 1 }, hovered: false, visible: true }],
   pnjs: [],
 };
 

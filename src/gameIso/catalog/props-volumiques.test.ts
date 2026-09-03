@@ -6,7 +6,7 @@ import { propSvg } from './decor';
 import { scenarioEntities } from '../../scenes/opera/furnished';
 import { buildOperaFloorplan } from '../../scenes/opera/floorplan';
 import { findPropById, props } from '../../data';
-import { aretesNonAppariees, CAP_IDENTITE_PROP, empreinteDeriveeDuProp, placeAssiseDe, REF_DECOR_DEFAUT, rotatePropLocal, type PropData, type PropPrimitive } from '../../data/props.types';
+import { aretesNonAppariees, CAP_IDENTITE_PROP, empreinteDeriveeDuProp, placeAssiseDe, placesLocalesDuProp, REF_DECOR_DEFAUT, rotatePropLocal, type PropData, type PropPrimitive } from '../../data/props.types';
 import { decorFootGeometry } from '../../state/footprint';
 import { buildProps } from '../builders/props';
 import { buildPropVolumes } from '../builders/propVolumes';
@@ -133,12 +133,20 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
     expect(findPropById('table-murale-2-tabourets')!.seatSlots?.map((s) => s.id)).toEqual(['place-1', 'place-2']);
   });
 
-  /** Ancres FIGÉES de la table murale : la sonde d'implantation de la salle les attend au millimètre. */
-  it('la table murale porte ses deux ancres canoniques, caps S et approches en diagonale', () => {
+  /** Ancres FIGÉES de la table murale : la sonde d'implantation de la salle les attend au millimètre.
+   *  Ses deux places sont à ±1 m, soit le CENTRE de chacune des deux cases de son empreinte à 2 m/case
+   *  (#1509 L9′) : une place par case, et donc un abord DROIT (0,−1) — depuis la salle, en face de son
+   *  siège. La diagonale d'avant tenait à l'empreinte 1×1, où les deux sièges tombaient dans la MÊME
+   *  case et où deux abords droits n'en auraient fait qu'un. */
+  it('la table murale porte ses deux ancres canoniques, caps S et abords droits, une place par case', () => {
     expect(findPropById('table-murale-2-tabourets')!.seatSlots).toEqual([
-      { id: 'place-1', anchor: { xM: 0.64, yM: -0.4, hM: 0.46 }, facing: 'S', approach: { x: 1, y: -1 } },
-      { id: 'place-2', anchor: { xM: -0.64, yM: -0.4, hM: 0.46 }, facing: 'S', approach: { x: -1, y: -1 } },
+      { id: 'place-1', anchor: { xM: 1, yM: -0.4, hM: 0.46 }, facing: 'S', approach: { x: 0, y: -1 } },
+      { id: 'place-2', anchor: { xM: -1, yM: -0.4, hM: 0.46 }, facing: 'S', approach: { x: 0, y: -1 } },
     ]);
+    // Une place PAR CASE : deux sièges distincts, donc deux abords distincts, hors de l'empreinte 2×1.
+    expect(placesLocalesDuProp(findPropById('table-murale-2-tabourets'), CAP_IDENTITE_PROP, METRES_PAR_CASE)
+      .map((p) => `${p.slot.id}: siège ${p.siege.x},${p.siege.y} abord ${p.abord.x},${p.abord.y}`))
+      .toEqual(['place-1: siège 1,0 abord 1,-1', 'place-2: siège 0,0 abord 0,-1']);
   });
 
   /**
@@ -167,8 +175,14 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
     // le même repère : c'est ce qui rend la comparaison ci-dessous licite sans re-tourner l'ancre.
     const scene = sceneWith(propEntity({ id: 'e-1', ref: id, pos: { x: 3, y: 4 }, facing: CAP_IDENTITE_PROP }));
     const el = buildProps(scene)[0] as { faces: { poly: { x: number; y: number; h: number }[] }[] };
+    // L'ancre MONDE d'une place vient de la règle UNIQUE (`placesLocalesDuProp`), jamais d'un
+    // `pos + anchor/mpt` recalculé ici : la géométrie est posée sur le CENTRE de l'empreinte
+    // (`decorAncre`), et une empreinte de plus d'une case décale ce centre d'une demi-case — la place
+    // se mesurait alors contre un plan de travail qui n'est pas là où le monde le cuit.
+    const placesMonde = new Map(placesLocalesDuProp(findPropById(id), CAP_IDENTITE_PROP, METRES_PAR_CASE)
+      .map((p) => [p.slot.id, { x: 3 + p.ancre.x, y: 4 + p.ancre.y }]));
     for (const slot of findPropById(id)!.seatSlots!) {
-      const ancre = { x: 3 + slot.anchor.xM / METRES_PAR_CASE, y: 4 + slot.anchor.yM / METRES_PAR_CASE };
+      const ancre = placesMonde.get(slot.id)!;
       let ecart = Number.POSITIVE_INFINITY;
       for (const face of el.faces)
         for (let i = 0; i < face.poly.length; i++) {
@@ -211,16 +225,20 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
    * recette de plus s'y déclare avec ses cases mesurées, ou elle sort rouge sans être vue.
    */
   const EMPREINTES_ATTENDUES: Readonly<Record<string, { ns: [number, number]; eo: [number, number] }>> = {
-    // La seule recette MULTI-CASE du catalogue : son plateau de 3,8 m tient sur deux cases en x, une
-    // en y — et les échange au quart de tour. C'est TOUT le socle #1509, sur une ligne.
+    // Les deux recettes MULTI-CASE du catalogue : leur plateau (3,80 m pour la table longue, 3,00 m
+    // pour la murale) tient sur deux cases en x, une en y — et les échange au quart de tour. C'est
+    // TOUT le socle #1509, sur deux lignes. La murale les a rejointes par ré-authoring de ses cotes
+    // (migration `2026-09-03-1509-murale-1x2.mjs`, fait utilisateur du 2026-08-31 : une table contre
+    // un mur fait 1×2), jamais par un `foot` déclaré — qui ne tournerait pas avec le cap.
     'table-2x1': { ns: [2, 1], eo: [1, 2] },
+    'table-murale-2-tabourets': { ns: [2, 1], eo: [1, 2] },
     // Toutes les autres tiennent sur UNE case, à tous les caps. La table ronde n'y tient que parce
     // que ses quatre tabourets sont exclus du corps (sans eux elle mesurerait 2×2 — cf. le contrat de
     // cache de `data/props-integrity.test.ts`).
     ...Object.fromEntries(([
       'tonneau', 'tonneaux-pile', 'caisse', 'coffre', 'urne', 'table', 'chaise', 'banc', 'tabouret',
       'armoire', 'etagere', 'etal-marche', 'cheminee-interieure', 'comptoir-droit', 'comptoir-angle',
-      'table-ronde-4-tabourets', 'table-murale-2-tabourets', 'cheminee', 'enseigne', 'clocheton',
+      'table-ronde-4-tabourets', 'cheminee', 'enseigne', 'clocheton',
       'applique-murale',
     ]).map((id) => [id, { ns: [1, 1], eo: [1, 1] }])),
   };

@@ -20,8 +20,11 @@ import type { Dir4 } from './dir8';
  * effective du meuble — exactement comme la géométrie de sa recette (`gameIso/builders/props.ts`) et
  * comme le foyer de la lampe qu'il porte (`state/vision.ts`). Ce fichier tient les deux faces de
  * cette affirmation :
- *  1. la POPULATION authorée ne bouge pas d'un flottant (toutes ses tables sont 1×1 à l'échelle de
- *     leur scène, où l'ancre du décor EST `pos`) ;
+ *  1. la POPULATION authorée, place par place, au flottant près — valeurs FIGÉES ci-dessous. Les
+ *     tables RONDES y tiennent sur une case, où l'ancre du décor EST `pos` ; les deux tables MURALES
+ *     de la Diligence couvrent DEUX cases depuis le ré-authoring de leurs cotes (#1509 L9′) : leur
+ *     ancre de décor est une demi-case au sud de `pos` (centre de l'empreinte 1×2), et leurs quatre
+ *     places l'ont suivie — chacune tombant dans SA case, ce que ces valeurs figées mesurent ;
  *  2. sur un meuble qui couvre VRAIMENT deux cases, l'ancre de ses places coïncide avec celle que la
  *     géométrie emploie — l'ancre géométrique étant MESURÉE sur les faces émises, jamais recalculée.
  */
@@ -76,10 +79,10 @@ describe('places AUTHORÉES — la population entière, ancre et abord, au flott
       'la-diligence/diligence-salle-table-ronde-1[table-ronde-4-tabourets@S](11,8)/place-2 ancre=(10.520000,8.000000,0.460000) sol=0.000000 cap=E abord=(10,8,0)',
       'la-diligence/diligence-salle-table-ronde-1[table-ronde-4-tabourets@S](11,8)/place-3 ancre=(11.000000,7.520000,0.460000) sol=0.000000 cap=S abord=(11,7,0)',
       'la-diligence/diligence-salle-table-ronde-1[table-ronde-4-tabourets@S](11,8)/place-4 ancre=(11.480000,8.000000,0.460000) sol=0.000000 cap=O abord=(12,8,0)',
-      'la-diligence/diligence-salle-table-murale-1[table-murale-2-tabourets@E](14,11)/place-1 ancre=(13.800000,10.680000,0.460000) sol=0.000000 cap=E abord=(13,10,0)',
-      'la-diligence/diligence-salle-table-murale-1[table-murale-2-tabourets@E](14,11)/place-2 ancre=(13.800000,11.320000,0.460000) sol=0.000000 cap=E abord=(13,12,0)',
-      'la-diligence/diligence-salle-table-murale-2[table-murale-2-tabourets@E](14,16)/place-1 ancre=(13.800000,15.680000,0.460000) sol=0.000000 cap=E abord=(13,15,0)',
-      'la-diligence/diligence-salle-table-murale-2[table-murale-2-tabourets@E](14,16)/place-2 ancre=(13.800000,16.320000,0.460000) sol=0.000000 cap=E abord=(13,17,0)',
+      'la-diligence/diligence-salle-table-murale-1[table-murale-2-tabourets@E](14,11)/place-1 ancre=(13.800000,11.000000,0.460000) sol=0.000000 cap=E abord=(13,11,0)',
+      'la-diligence/diligence-salle-table-murale-1[table-murale-2-tabourets@E](14,11)/place-2 ancre=(13.800000,12.000000,0.460000) sol=0.000000 cap=E abord=(13,12,0)',
+      'la-diligence/diligence-salle-table-murale-2[table-murale-2-tabourets@E](14,16)/place-1 ancre=(13.800000,16.000000,0.460000) sol=0.000000 cap=E abord=(13,16,0)',
+      'la-diligence/diligence-salle-table-murale-2[table-murale-2-tabourets@E](14,16)/place-2 ancre=(13.800000,17.000000,0.460000) sol=0.000000 cap=E abord=(13,17,0)',
       'la-diligence/diligence-salle-table-ronde-2[table-ronde-4-tabourets@S](12,18)/place-1 ancre=(12.000000,18.480000,0.460000) sol=0.000000 cap=N abord=(12,19,0)',
       'la-diligence/diligence-salle-table-ronde-2[table-ronde-4-tabourets@S](12,18)/place-2 ancre=(11.520000,18.000000,0.460000) sol=0.000000 cap=E abord=(11,18,0)',
       'la-diligence/diligence-salle-table-ronde-2[table-ronde-4-tabourets@S](12,18)/place-3 ancre=(12.000000,17.520000,0.460000) sol=0.000000 cap=S abord=(12,17,0)',
@@ -91,7 +94,10 @@ describe('places AUTHORÉES — la population entière, ancre et abord, au flott
     ]);
   });
 
-  it('POURQUOI elle ne bouge pas : à l’échelle de leur scène, ces cinq meubles tiennent sur UNE case', () => {
+  /** Les étendues qui produisent la liste ci-dessus, à l'échelle de LEUR scène : les rondes tiennent
+   *  sur une case, les deux MURALES en couvrent deux depuis le ré-authoring de leurs cotes (#1509 L9′)
+   *  — c'est ce qui pose leurs deux places dans deux cases distinctes, une par siège. */
+  it('POURQUOI elles sont là : à l’échelle de leur scène, la ronde tient sur UNE case et la murale sur DEUX', () => {
     const etendues = new Set<string>();
     for (const sc of scenesCommittees()) {
       for (const e of sc.entities) {
@@ -102,24 +108,25 @@ describe('places AUTHORÉES — la population entière, ancre et abord, au flott
         etendues.add(`${e.ref}@${e.facing ?? 'S'}:${w}x${h}`);
       }
     }
-    expect([...etendues].sort()).toEqual(['table-murale-2-tabourets@E:1x1', 'table-ronde-4-tabourets@S:1x1']);
+    expect([...etendues].sort()).toEqual(['table-murale-2-tabourets@E:1x2', 'table-ronde-4-tabourets@S:1x1']);
   });
 });
 
 /**
- * MEUBLE À PLACES SUR DEUX CASES — le cas que la population n'exerce pas encore.
+ * MEUBLE À PLACES SUR DEUX CASES — le cas, aux QUATRE caps, sur la donnée authorée qui l'exerce.
  *
- * L'empreinte se dérive à l'ÉCHELLE de la scène : le corps de `table-murale-2-tabourets` tient sur
- * une case à 2 m/case (le défaut, LDB 15 l.12) et en couvre deux à 1 m/case — le premier contrat
- * ci-dessous le MESURE. C'est donc la même donnée authorée qui, à une autre échelle, sépare d'une
- * demi-case l'ancrage au coin NO et l'ancrage au centre de l'empreinte.
+ * Le corps de `table-murale-2-tabourets` mesure 3,00 m le long du mur (#1509 L9′) : il couvre deux
+ * cases à l'échelle par défaut du monde (2 m/case, LDB 15 l.12) — le premier contrat ci-dessous le
+ * MESURE. C'est cette empreinte paire qui sépare d'une demi-case l'ancrage au coin NO
+ * (`SceneEntity.pos`) et l'ancrage au centre de l'empreinte, celui que la géométrie emploie.
  */
 describe('meuble à places de DEUX cases — l’ancre des places EST celle de la géométrie', () => {
   const REF = 'table-murale-2-tabourets';
   const ID = 'murale';
   const POS = { x: 5, y: 5 };
-  /** Échelle à laquelle le corps de ce meuble couvre deux cases (cf. l'en-tête ci-dessus). */
-  const MPT = 1;
+  /** Échelle à laquelle le corps de ce meuble couvre deux cases : celle du monde par défaut, la même
+   *  que la Diligence (cf. l'en-tête ci-dessus). */
+  const MPT = 2;
   const CAPS: Dir4[] = ['N', 'E', 'S', 'O'];
 
   const prop = findPropById(REF) as PropData;
@@ -177,7 +184,7 @@ describe('meuble à places de DEUX cases — l’ancre des places EST celle de l
 
   /**
    * ABORDS SYMÉTRIQUES. Les deux places de ce meuble sont l'image l'une de l'autre par l'axe de son
-   * ancre (ancres locales opposées, `xM: ±0,64`) : leurs cases d'abord le sont donc aussi, et leur
+   * ancre (ancres locales opposées, `xM: ±1`) : leurs cases d'abord le sont donc aussi, et leur
    * somme vaut deux fois l'ancre. C'est ce que garantit l'application de `approach` depuis la CASE du
    * siège ; appliqué depuis l'ancre FRACTIONNAIRE du meuble, l'arrondi tombe sur un demi-entier à
    * chaque place d'une empreinte paire et les départage toutes du même côté — mesuré au cap N :

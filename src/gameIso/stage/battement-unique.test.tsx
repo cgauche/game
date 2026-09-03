@@ -57,7 +57,7 @@ const NUIT = 23 * 60; // de jour les flaques retombent à 0, et rien ne vacille
 const LAMPES: LightSource[] = [{ pos: { x: 4, y: 4 }, radiusTiles: 4, srcId: 'brasero' }];
 /** Un décor fouillable à l'écran : le troisième motif. */
 const HALOS: InteractionHalos = {
-  fouilles: [{ id: 'coffre', cell: { x: 3, y: 4, z: 0 }, span: { w: 1, h: 1 }, centre: { x: 3, y: 4 }, scale: 1, hovered: false, visible: true }],
+  fouilles: [{ id: 'coffre', cell: { x: 3, y: 4, z: 0 }, span: { w: 1, h: 1 }, centre: { x: 3, y: 4 }, echelle: { x: 1, y: 1 }, hovered: false, visible: true }],
   pnjs: [],
 };
 /** Câblage de PRODUCTION (`VolumetricWorld`) : AUCUN pilote d'images — l'écran s'abonne lui-même au

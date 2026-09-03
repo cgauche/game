@@ -2791,7 +2791,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 14,
       "y": 12,
       "z": 0,
@@ -3911,7 +3911,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 14,
       "y": 17,
       "z": 0,

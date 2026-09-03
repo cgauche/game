@@ -70,6 +70,7 @@ import { OptionChooser } from '../OptionChooser';
 import { LayerField, LayerChip, sceneLayerZs } from './LayerField';
 import { estCardinal, type Dir8 } from '../../state/dir8';
 import { REF_DECOR_DEFAUT } from '../../data/props.types';
+import { propFootTiles } from '../../state/footprint';
 
 /** Caps OFFERTS au sélecteur d'orientation, dans l'ordre horaire de `DIR8_ORDER` : les huit pour une
  *  entité ordinaire, les quatre CARDINAUX pour un décor volumique (`Dir4`, #1680 ligne 3). Un seul
@@ -1196,6 +1197,27 @@ function EntryRename({ label, caption = 'Nom (référencé par les transitions)'
   );
 }
 
+/**
+ * EMPREINTE de l'instance SÉLECTIONNÉE — les cases que CE décor occupe, à SON cap et à l'échelle de
+ * CETTE scène (`propFootTiles`, la couture unique que lisent la marchabilité, la ligne de vue et le
+ * halo). Rien n'est recalculé ici : l'inspecteur MONTRE ce que le monde applique.
+ *
+ * Au cap réel, donc : la même `table-2x1` annonce 2×1 au sud et 1×2 à l'est, et ses cases suivent le
+ * changement d'orientation fait juste au-dessus (#1509 L7′). L'aperçu de la PALETTE, lui, ne connaît
+ * pas d'instance : il annonce l'empreinte au CAP D'IDENTITÉ (`Palette.tsx`).
+ */
+function EmpreinteDeLInstance({ scene, ent }: { scene: Scene; ent: SceneEntity }) {
+  const cases = propFootTiles(ent.ref, ent.pos, ent.facing, sceneMetresPerTile(scene));
+  const w = Math.max(...cases.map((c) => c.x)) - ent.pos.x + 1;
+  const h = Math.max(...cases.map((c) => c.y)) - ent.pos.y + 1;
+  return (
+    <p className="hint">
+      Empreinte <span className="chip">{w}×{h}</span>{' '}
+      {cases.map((c) => `(${c.x}, ${c.y})`).join(' ')}
+    </p>
+  );
+}
+
 /** Panneau d'une ENTITÉ sélectionnée (personnage / décor / départ héros). */
 function EntityPanel({
   ent,
@@ -1460,6 +1482,7 @@ function EntityPanel({
               ))}
             </select>
           </label>
+          <EmpreinteDeLInstance scene={scene} ent={ent} />
           <SeatAssignmentsField scene={scene} propId={ent.id} onChange={setScene} />
           <label className="ed-check">
             <input

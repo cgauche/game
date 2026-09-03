@@ -188,9 +188,11 @@ export function ringDashes(rK: number, motif: { dashPx: number; gapPx: number } 
  * d'écriture SUIVANT.
  *
  * Primitive PARTAGÉE : les anneaux d'ÉQUIPE (ci-dessous) et les halos d'INTERACTION
- * (`stage/interactHaloPose`) posent le même objet — un cercle plat de largeur constante — et la
- * moindre divergence de convention (le lacet de la corde, le sens de l'angle) donnerait deux anneaux
- * qui ne tournent pas ensemble. L'appelant garde la SATURATION : lui seul sait ce qu'il refuse
+ * (`stage/interactHaloPose`) posent le même objet — une ELLIPSE plate de largeur constante, dont le
+ * cercle est le cas `rMy = rM` — et la moindre divergence de convention (le lacet de la corde, le
+ * sens de l'angle) donnerait deux anneaux qui ne tournent pas ensemble. Le second demi-axe sert au
+ * halo d'un décor dont l'EMPREINTE n'est pas carrée (une table murale 1×2) : il y épouse ses cases au
+ * lieu de déborder du côté court. L'appelant garde la SATURATION : lui seul sait ce qu'il refuse
  * d'entamer.
  */
 export function writeRingChords(
@@ -202,17 +204,23 @@ export function writeRingChords(
   tirets: readonly RingDash[],
   phi0: number,
   teinte?: THREE.Color,
+  rMy: number = rM,
 ): number {
   let n = from;
   for (const tiret of tirets) {
     const phi = tiret.u + phi0;
     const cos = Math.cos(phi);
     const sin = Math.sin(phi);
-    // La corde est TANGENTE au cercle : sa direction de grille est `(−sin φ, cos φ)`, et `rotY(θ)`
-    // envoie +X sur `(cos θ, 0, −sin θ)` (même lacet que le chapelet du lien de mêlée).
-    Q.setFromAxisAngle(AXE_Y, Math.atan2(-cos, -sin));
-    S.set(2 * rM * Math.sin(tiret.span / 2), 1, largeurM);
-    P.set(centre.x + rM * cos, centre.y, centre.z + rM * sin);
+    // La corde est TANGENTE à l'ELLIPSE de demi-axes `(rM, rMy)` : sa direction de grille est
+    // `(−rM sin φ, rMy cos φ)`, et `rotY(θ)` envoie +X sur `(cos θ, 0, −sin θ)` (même lacet que le
+    // chapelet du lien de mêlée). Sa LONGUEUR est la corde entre les deux extrémités du tiret, soit
+    // `2 sin(span/2)` fois la norme de cette tangente. Un anneau CIRCULAIRE (`rMy` absent, le cas de
+    // tous les anneaux d'équipe) y retrouve exactement `2 rM sin(span/2)` et l'angle du cercle.
+    const tx = -rM * sin;
+    const tz = rMy * cos;
+    Q.setFromAxisAngle(AXE_Y, Math.atan2(-tz, tx));
+    S.set(2 * Math.hypot(tx, tz) * Math.sin(tiret.span / 2), 1, largeurM);
+    P.set(centre.x + rM * cos, centre.y, centre.z + rMy * sin);
     if (teinte) mesh.setColorAt(n, teinte);
     mesh.setMatrixAt(n++, M.compose(P, Q, S));
   }
