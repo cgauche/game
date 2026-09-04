@@ -38,8 +38,8 @@ mesure du canal label (qui n'est PAS la cause) : en-tête de `scripts/docs/build
 | `skills` | 48 | 1 | 2 % |
 | `props` | 123 | 0 | 0 % |
 | `vehicles` | 31 | 0 | 0 % |
-| `creatures` | 493 | 351 | 71 % |
-| **Total** | **1093** | **366** | — |
+| `creatures` | 493 | 350 | 71 % |
+| **Total** | **1093** | **365** | — |
 
 ### `traits`
 
@@ -270,7 +270,6 @@ mesure du canal label (qui n'est PAS la cause) : en-tête de `scripts/docs/build
 - `prophete-gris-ancien` — Prophète Gris Ancien
 - `jeune-gobelin` — Jeune Gobelin
 - `eclaireur-gobelin` — Éclaireur Gobelin
-- `archer-gobelin` — Archer Gobelin
 - `guerrier-gobelin` — Guerrier Gobelin
 - `quadrilleur-gobelin` — Quadrilleur Gobelin
 - `plongeur-de-la-mort` — Plongeur de la Mort
@@ -422,4 +421,4 @@ mesure du canal label (qui n'est PAS la cause) : en-tête de `scripts/docs/build
 - `p-tarix-celui-qui-ecrit` — P'tarix, Celui qui écrit
 - `xirat-p-celui-qui-lit` — Xirat'p, Celui qui lit
 
-<!-- sources-empreinte: 25a82c0920af799cb627e1b3ffd1db592c1225f5 (2087 fichiers, 137 dossiers) corps: acd698c7d5950a50d97cca0a8196f96414a1567e -->
+<!-- sources-empreinte: 2b30ee600c1632a3049e6b28ca8a5e31ac4bfac8 (2089 fichiers, 137 dossiers) corps: 71d7456ce20c42e985c07158394d3f2c7c0f6fac -->
