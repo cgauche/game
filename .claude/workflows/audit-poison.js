@@ -101,11 +101,13 @@ const results = await pipeline(
     const fs = (res && res.findings) || []
     if (!fs.length) return []
     return parallel(fs.map(f => () => {
-      const mech = MECHANICAL.has(f.kind)
-      return agent(verifyPrompt(f), {
-        label: `verify:${(f.file || '?').split('/').pop()}${f.line ? ':' + f.line : ''}`, phase: 'Verify',
-        schema: VERDICT, model: mech ? 'haiku' : 'sonnet', effort: mech ? 'low' : 'medium',
-      }).then(v => ({ ...f, verdict: v }))
+      // Deux appels à `model` LITTÉRAL plutôt qu'un ternaire dans l'objet d'options : l'étage d'un
+      // agent se lit à la FORME du script (porte `scripts/ops/workflows.test.mjs`).
+      const etiquette = `verify:${(f.file || '?').split('/').pop()}${f.line ? ':' + f.line : ''}`
+      const verdict = MECHANICAL.has(f.kind)
+        ? agent(verifyPrompt(f), { label: etiquette, phase: 'Verify', schema: VERDICT, model: 'haiku', effort: 'low' })
+        : agent(verifyPrompt(f), { label: etiquette, phase: 'Verify', schema: VERDICT, model: 'sonnet', effort: 'medium' })
+      return verdict.then(v => ({ ...f, verdict: v }))
     }))
   }
 )

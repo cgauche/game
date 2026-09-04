@@ -61,6 +61,11 @@ const ATTENDU = {
     // +1 le 2026-09-04 : `pushes-justifies.mjs` LIT les justificatifs de gate, donc atteint le module
     // qui les écrit ; ses écritures visent `<git-common-dir>/wfrp-justificatifs/`, hors de l'arbre.
     'scripts/guards/lib/justificatif.mjs',
+    // +2 le 2026-09-04 (#1679 L2bis) : `faits-de-palier.mjs` écrit le JSON des faits (`--sortie`,
+    // défaut sous os.tmpdir()) pour qu'un workflow n'ait pas à le recopier dans chaque prompt, et son
+    // test fabrique un dépôt jetable sous os.tmpdir() — aucune écriture DANS l'arbre.
+    'scripts/ops/faits-de-palier.mjs',
+    'scripts/ops/faits-de-palier.test.mjs',
     'scripts/ops/fermer-depuis-main.test.mjs',
     'scripts/ops/knip-exports-ratchet.mjs',
     'scripts/ops/ruleset-evaluate.mjs',

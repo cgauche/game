@@ -164,10 +164,12 @@ export function citesDepuis(depuis) {
   return new Set([...journal.matchAll(FERMETURE_RE)].map((m) => m[2]))
 }
 
-/** Numéros dont le solde est SUIVI par git (jamais un fichier seulement présent sur le disque). */
-export function soldesSuivis() {
+/** Numéros dont le solde est SUIVI par git (jamais un fichier seulement présent sur le disque).
+ *  `cwd` est l'arbre lu : un appelant qui mesure un worktree lit LES SOLDES DE CE WORKTREE — sans ce
+ *  paramètre, un objet de faits mélangeait deux arbres. */
+export function soldesSuivis(cwd = RACINE) {
   return new Set(
-    git(['ls-files', '.claude/soldes']).split('\n').filter(Boolean)
+    execFileSync('git', ['ls-files', '.claude/soldes'], { cwd, encoding: 'utf8', maxBuffer: 1e8 }).split('\n').filter(Boolean)
       .map((p) => p.split('/').pop().replace(/\.md$/, '')),
   )
 }

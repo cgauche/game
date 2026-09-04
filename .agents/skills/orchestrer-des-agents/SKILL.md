@@ -47,7 +47,9 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    couvert par le socle pour ce concept en `fichier:ligne` + la preuve que le nouveau cas en est une
    INSTANCE (une déclaration de plus, même code) et non une VARIANTE à branche (héros/monde,
    terre/mer, mono/multi, solo/coop… — un `if (<type de cas>)` dans un socle EST la variante), et
-   `## Design jugé :` (verdict d'un juge sur le design AVANT le codeur). Un brief contient : périmètre de fichiers exact, primitives cibles nommées,
+   `## Design jugé :` (verdict d'un juge sur le design AVANT le codeur).
+   Le `## Design jugé :` d'un brief de socle est le bloc rendu par le workflow `juge-design-socle` (run cité) ; un juge à la main reste possible pour un brief qui n'est pas un socle.
+   Un brief contient : périmètre de fichiers exact, primitives cibles nommées,
    réfs RAW nues (`LDB 13 l.142` — jamais paraphrasées), le chemin ABSOLU du worktree à utiliser
    tel quel, l'interdit de tout `git checkout/restore/reset/stash/add/commit`, et « ton rendu
    final = données brutes, pas un message ».
@@ -248,6 +250,7 @@ validation de goût (données, gardes, routes d'édition, ré-instruction de vie
 arbitrages se gardent pour la fenêtre de PRÉSENCE.
 **Checkpoint avant épuisement de quota** : commit du carnet + état de vague posé (todo de vague à
 jour, tickets commentés), pour que la relance tienne en une phrase.
+**La revue de palier et la réfutation de fermeture d'un lot se jouent par le workflow `revue-palier`** (mode `refutation` pour la seconde) ; le texte rendu s'écrit sous le nom d'archive qu'il donne (`nomDArchiveDeRevue`).
 
 **Épique : pas de salve d'ouverture.** À l'ouverture, une épique crée SON PREMIER LOT et l'index de
 ses phases EN PROSE ; les enfants suivants naissent quand leur vague se dispatche (contre-modèle
@@ -273,7 +276,7 @@ mesure qui manque DEUX semaines de suite = anomalie à signaler à l'utilisateur
 |---|---|---|---|
 | Lecture / comparaison de masse | `lecteur` | sonnet | medium |
 | Vérification mécanique (existence, famille) | `verif-mecanique` | haiku | low |
-| Code sous spec précise | `codeur` | sonnet | medium |
+| Code sous spec précise | `codeur` | opus | medium |
 | Jugement dur (réfutation, synthèse, archi) | `juge` | opus | medium |
 
 Via le tool Agent, préférer ces quatre types (modèle + effort épinglés au frontmatter) à

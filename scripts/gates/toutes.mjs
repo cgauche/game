@@ -100,9 +100,9 @@ export const ECRIT_LU = {
   },
   'test:ops': {
     ecrit: [],
-    lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', '.github/workflows/', 'knip-exports-baseline.json'],
+    lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', 'scripts/hooks/', '.claude/workflows/', '.github/workflows/', 'knip-exports-baseline.json'],
     raison:
-      'quatre modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
+      'six modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
       '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.url === argv[1]`, l.121 ; seul `--sync` ' +
       'écrirait la baseline, l.94-96), `ruleset-evaluate.mjs` (le corps du ruleset part par un fichier de ' +
       'os.tmpdir(), l.90-97), `fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()) et ' +
@@ -110,7 +110,12 @@ export const ECRIT_LU = {
       'visent `<git-common-dir>/wfrp-justificatifs/` (justificatif.mjs:102-107,179,191-192), soit `.git/`, ' +
       'hors de l’arbre — et `pushes-justifies.test.mjs` n’éprouve que des fonctions PURES, sans disque ; LIT ' +
       '.github/workflows/ parce que `canari.test.mjs:17` et `ruleset-evaluate.test.mjs:13` lisent les ' +
-      'workflows RÉELS, et scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs`',
+      'workflows RÉELS, et scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs` ; depuis ' +
+      '2026-09-04, `faits-de-palier.mjs` écrit le JSON des faits à `--sortie`, sous `os.tmpdir()` par ' +
+      'défaut (`sortieParDefaut`), et crée `<git-common-dir>/wfrp-justificatifs/` par `cheminJustificatifs` ' +
+      '— `.git/`, hors de l’arbre ; `faits-de-palier.test.mjs` fabrique un dépôt jetable sous os.tmpdir() ; ' +
+      'LIT .claude/workflows/ (`workflows.test.mjs` les parse, `revue-palier-texte.test.mjs` joue le script) ' +
+      'et scripts/hooks/ (`validateRevuePalier` de solde-ticket-guard.mjs), sans rien y écrire',
   },
   'test:runner': {
     ecrit: [],
