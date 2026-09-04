@@ -18,7 +18,9 @@ import { bakeQueueLength, queueBakeTask } from '../backends/webgl/atlasBake';
 import { brancherArdoise } from './banc-volumique';
 
 /** Ce que le « fichier précédent » a laissé en file — sa PRÉMISSE : sans tâche enfilée ni tranche
- *  armée, ce banc mesurerait le vide. */
+ *  armée, ce banc mesurerait le vide. Le COMPTE, lui, n'est pas un contrat : le wedge ci-dessous en
+ *  enfile une, et le fichier qui a réellement précédé (ordre de suite variable, `isolate: false`) peut
+ *  en avoir laissé d'autres. */
 let héritée = 0;
 
 beforeEach(() => {
@@ -34,7 +36,7 @@ brancherArdoise();
 
 describe('Banc volumique — l’ardoise se lave aussi EN AMONT', () => {
   it('une file héritée ARMÉE SANS SERVIR ne coince pas le banc : sa propre tâche est servie', async () => {
-    expect(héritée, 'PRÉMISSE : le fichier précédent doit avoir laissé une tâche en file — sinon rien n’est mesuré').toBe(1);
+    expect(héritée, 'PRÉMISSE ≥ 1 : le wedge en enfile une, la suite peut en laisser d’autres — sinon rien n’est mesuré').toBeGreaterThanOrEqual(1);
     vi.stubGlobal('requestIdleCallback', (cb: () => void) => setTimeout(cb, 0));
     let servie = false;
     void queueBakeTask({ value: 1 }, () => { servie = true; return Promise.resolve('tâche de ce banc'); });

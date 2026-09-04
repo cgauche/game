@@ -11,7 +11,7 @@
  * Le `beforeEach` ci-dessous est enregistré AVANT `brancherArdoise()` : il joue le fichier précédent.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { demanderFrames, relacherFrames, subscribeStageFrames } from './stageFrames';
+import { demanderFrames, relacherFrames, resetStageFrames, subscribeStageFrames } from './stageFrames';
 import { brancherArdoise } from './banc-volumique';
 
 /** Le rAF du « fichier précédent » : compté, jamais servi — celui qui meurt avec son environnement. */
@@ -19,6 +19,9 @@ let arméesAilleurs = 0;
 const SOURCE_AILLEURS = Symbol('écran du fichier précédent');
 
 beforeEach(() => {
+  // Le wedge lave l'état hérité pour ARMER lui-même la boucle qu'il abandonne (`armer` sort sur `image`
+  // déjà levé, stageFrames.ts:90 : sans ce lavage, un prédécesseur armé rendrait ce wedge muet).
+  resetStageFrames();
   vi.stubGlobal('requestAnimationFrame', () => { arméesAilleurs += 1; return 1; });
   demanderFrames(SOURCE_AILLEURS);
   vi.unstubAllGlobals();
