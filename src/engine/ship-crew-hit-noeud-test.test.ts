@@ -104,9 +104,12 @@ function posteCrewAttendu(hull: Combatant, crew: Combatant[], rng: RNG): Combata
 describe('coup à l’équipage — le JET vit dans le nœud `test` du Flow (#1657 B2c)', () => {
   it('les porteurs sont LUS par la grammaire partagée, et chacun dit ce qu’il est', () => {
     const tous = coups();
-    expect(tous.length, 'la sonde mesure quelque chose').toBe(11);
+    expect(tous.length, 'la sonde mesure quelque chose').toBe(16);
     expect(tous.filter((c) => c.hit.test).map((c) => c.id)).toEqual([
       'greement-fluvial', 'superstructure-fluvial',
+      // Les CINQ rangées du gréement MDG (l.711/l.714/l.715/l.717/l.718) : « sous peine de tomber »
+      // — leur échec fait CHUTER (op `fall`, hauteur au livre l.684), #1657 B3-2b-c.
+      'vergue-detachee', 'greement-degrade', 'voiles-detruites', 'vergue-brisee', 'mat-brise',
       'coque-degradee', 'gouvernail-endommage', 'quille-dechiquetee', 'gouvernail-brise',
       'bancs-disperses', 'bancs-fracasses', 'canon-detache',
     ]);
@@ -194,7 +197,7 @@ describe('coup à l’équipage — le moteur DÉSIGNE et REND, il ne roule plus
 
   it('ENJEU posé par le producteur : chaque nœud renvoie à SA rangée, dans la catégorie de sa Localisation', () => {
     const mesures = coupsResolus().filter(({ resolu }) => resolu.crewHit?.test);
-    expect(mesures.length, 'la sonde du producteur n’a rien mesuré').toBe(9);
+    expect(mesures.length, 'la sonde du producteur n’a rien mesuré').toBe(14);
     for (const { fichier, jeu, loc, id, resolu } of mesures) {
       const stake = resolu.crewHit!.test!.test.stake;
       expect(stake, `${fichier}/${id} : nœud sans enjeu`).toBeTruthy();

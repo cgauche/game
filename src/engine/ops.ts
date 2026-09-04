@@ -20,6 +20,9 @@ import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, trait
 import { contractDiseaseOnce, aggravateDiseaseSymptom, grantDiseaseSymptom } from './disease';
 import { groupMatch } from './groups';
 import { findTableEntry } from './tables';
+import { applyFall } from './movement';
+import { hullShipSize } from './shipBuild';
+import { findFallTable } from '../data/shipCriticals';
 import { ALL_MAGIC } from './types';
 import type { SkillRef } from './skills';
 import { bypassedAP } from './armourBypass';
@@ -740,6 +743,12 @@ export type GameOp =
    *  l'arme visée (contexte sérialisé `ctx.bladeTrap`). `applyOps` (moteur pur) le laisse INERTE — comme
    *  `grantFreeAttack`/`interruptFocus`/`summon`/`zone`. */
   | { op: 'breakBlade' }
+  /** CHUTE (`LDB 15 l.80`, `l.84`) : la cible tombe de la hauteur que dit une TABLE (`hauteur.table`,
+   *  `ship-criticals.json` → `tablesDeChute`), lue par (Taille de la coque `ctx.hull` × station du
+   *  tombant, `Combatant.shipStation`) — MDG 13 l.678-688. Résolue par `applyFall` (`./movement`), le
+   *  foyer unique de la formule. Table inconnue, coque absente, Taille non couverte ou station sans
+   *  colonne : anomalie NOMMÉE (une chute sans hauteur n'est pas une chute). */
+  | { op: 'fall'; hauteur: { table: { id: string } } }
   /** POUSSÉE POSITIONNELLE (Poussée, LDB 47 p.244) : chaque cible affectée est repoussée en ligne
    *  (direction lanceur→cible) de `meters` mètres jusqu'à l'obstacle ; la collision est journalisée. Op
    *  IMPURE (déplace sur la grille) — INERTE dans applyOps, résolue par combatFlow (`applyCast` : scan
@@ -1099,6 +1108,11 @@ export interface OpsCtx {
   /** Équipage d'une COQUE (`crewIds` résolus en Combattants) — pour les ops de navire : `removeShipPoste`
    *  démancipe le chef de pièce. Passé par `applyHullCritical`. */
   crew?: Combatant[];
+  /** COQUE dont le Critique est en cours de résolution — sa `ship.lengthM` donne la Taille (`MDG 12
+   *  l.122-129`, via `hullShipSize`) que lisent les tables indexées par bateau (op `fall` : hauteur de chute,
+   *  `MDG 13 l.684`). Passée par la porte du coup à l'équipage (`applyCrewHit` en direct, `hullId` de
+   *  l'étape pour la voie cascade). Absente = anomalie nommée par l'op, jamais une hauteur de 0. */
+  hull?: Combatant;
   /** SORT SOURCE en cours d'incantation : tout `ActiveEffect` POSÉ par cet `applyOps` en est marqué
    *  (`ActiveEffect.spell`), pour la DISSIPATION (LDB 46 l.158-162). Posé par `applyCast` (Sorts durables). */
   sourceSpell?: { spellId: string; ni: number; casterId: string; label: string };
@@ -2181,6 +2195,31 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           martyrGuard: ctx.caster.id,
         });
         lines.push(t('op.martyr', { caster: ctx.caster.label, name: target.label, src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'fall': {
+        const table = findFallTable(o.hauteur.table.id);
+        if (!table) throw new Error(`op « fall » : table de hauteur inconnue « ${o.hauteur.table.id} » (tablesDeChute, ship-criticals.json).`);
+        const taille = ctx.hull ? hullShipSize(ctx.hull) : undefined;
+        if (!taille) throw new Error(`op « fall » (« ${table.label} ») : aucune Taille de coque au contexte (ctx.hull) — la hauteur se lit par la Taille du bateau (MDG 12 l.122-129).`);
+        const bande = table.bandes.find((b) => b.tailles.includes(taille));
+        if (!bande) throw new Error(`op « fall » (« ${table.label} ») : aucune bande ne couvre la Taille « ${taille} ».`);
+        const hauteur = target.shipStation === undefined ? undefined : bande.hauteurs[target.shipStation];
+        if (hauteur === undefined) throw new Error(`op « fall » (« ${table.label} ») : ${target.label} n'a pas de colonne de hauteur pour la station « ${target.shipStation ?? '—'} ».`);
+        const metres = resolveFormula(hauteur, ref, rng, ctx.rolled, ctx.indice, ctx.stacks, ctx.engagedAdvantageGap, ctx.woundsDealt);
+        const avant = target.wounds.current;
+        // Les États que la chute POSE se lisent par DIFFÉRENCE — la ligne ne nomme aucun État : c'est
+        // `applyFall` (LDB 15 l.84) qui décide, et ce qu'il pose se dit tel quel.
+        const etatsAvant = new Set((target.conditions ?? []).map((c) => c.id));
+        applyFall(target, metres, rng);
+        const poses = (target.conditions ?? []).filter((c) => !etatsAvant.has(c.id)).map((c) => conditionLabel(c.id));
+        lines.push(t('op.fall', {
+          name: target.label,
+          table: table.label,
+          m: metres,
+          n: avant - target.wounds.current,
+          etats: poses.length ? ` (${poses.join(', ')})` : '',
+        }));
         break;
       }
       case 'summon':

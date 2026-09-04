@@ -242,7 +242,7 @@ export function applyCrewHit(hull: Combatant, crew: Combatant[], crewHit: ShipCr
   const ops = crewHit.ops ?? [];
   const hits: { crewId: string }[] = [];
   for (const sailor of victims) {
-    applyOps(sailor, ops, { rng });
+    applyOps(sailor, ops, { rng, hull });
     hits.push({ crewId: sailor.id });
   }
   return { victims: ids, hits, stationsFermees: fermees };

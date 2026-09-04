@@ -44,7 +44,7 @@ import {
 import { bonus } from '../engine/characteristics';
 import { rollVehicleProblem, mountIncidentEffects } from '../engine/travelTables';
 import { applyOps } from '../engine/ops';
-import { applyFall } from './combatEffects';
+import { applyFall } from '../engine/movement';
 import { applyHealWounds } from '../engine/healing';
 import { declareDisease } from '../engine/disease';
 import { findVehicleById, voyageStakeRef, weather } from '../data';

@@ -1660,7 +1660,7 @@ Note (LDB 15 l.72) : dans la plupart des cas un simple Test d'**Athlétisme** (o
 **Voir aussi** : Mouvement & Course · Désengagement & Fuite · États (À Terre) · Athlétisme / Escalade (compétences) · Talent Grimpeur
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.53-57, l.72-76, l.80-84) → `FallPlan`, `scene`, `ClimbPlan`, `FallModal`, `planJump`, `fall-choice`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, `fall-roll`, +73 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs-scenes/effets.ts`, +32 fichiers
+- `LDB 15` (l.53-57, l.72-76, l.80-84) → `FallPlan`, `scene`, `ClimbPlan`, `FallModal`, `planJump`, `fall-choice`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, `fall-roll`, +75 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs-scenes/effets.ts`, +33 fichiers
 
 ---
 
@@ -1750,7 +1750,7 @@ Un participant dont la **Caractéristique de Mouvement (M)** est supérieure gag
 **Voir aussi** : Désengagement et fuite (Attaque gratuite, +1 Avantage, Calme / Brisé) ; Mouvement & Course (Tableau des Mouvements, M en mètres) ; Saut et Chute ; Tests opposés & Degrés de Réussite (DR).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.88, l.90, l.92, l.93, l.94, l.96, l.98-102, l.106, l.108) → `FallPlan`, `scene`, `assourdi`, `FallModal`, `fall-choice`, `planJump`, `fall-roll`, `pursuitFoeSchema`, `a-terre`, `pursuitPolicySchema`, +32 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/effets.ts`, +19 fichiers
+- `LDB 15` (l.88, l.90, l.92, l.93, l.94, l.96, l.98-102, l.106, l.108) → `FallPlan`, `scene`, `assourdi`, `FallModal`, `fall-choice`, `planJump`, `fall-roll`, `pursuitFoeSchema`, `a-terre`, `pursuitPolicySchema`, +34 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/effets.ts`, +20 fichiers
 - sans code : `NADJ 6` (l.150)
 
 ---
@@ -5890,7 +5890,7 @@ Les Dégâts se réparent **définitivement** sur un Test de **Métier (Construc
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 12` (l.56-64, l.221, l.232-236) → `CollisionShip`, `cargoTone`, `peu-maniable`, `doc`, `renforce`, `resolveCollision`, `scene`, `OverloadPalier`, `robuste`, `hullArmourBonus`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/collision.ts`, +13 fichiers
-- `MDG 13` (l.464, l.569-571, l.575-584, l.605-607, l.612-616, l.618-637, l.641-651) → `sea-perils`, `replisSansExposeSchema`, `woundsFromHit`, `iceberg`, `meleeVsHullBE`, `VolleyShot`, `isArtilleryWeapon`, `debris-marins`, `resolveCollision`, `rocher`, +21 — `src/data/etats.json`, `src/data/river-criticals.json`, `src/data/schemas/defs/river-criticals.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/schemas/defs/ship-criticals.ts`, `src/data/sea-navigation.json`, +18 fichiers
+- `MDG 13` (l.464, l.569-571, l.575-584, l.605-607, l.612-616, l.618-637, l.641-651) → `sea-perils`, `woundsFromHit`, `iceberg`, `meleeVsHullBE`, `VolleyShot`, `isArtilleryWeapon`, `debris-marins`, `resolveCollision`, `rocher`, `bas-fonds`, +21 — `src/data/etats.json`, `src/data/river-criticals.json`, `src/data/schemas/defs/sea-perils.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, +17 fichiers
 
 ## MDG : Coups Critiques sur un navire (Voie d'eau, Éclats, incendies)
 
@@ -5976,7 +5976,7 @@ Chaque table donne des **Blessures (T = effet temporaire), un effet et une Répa
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 12` (l.313) → `moteur-broute`, `fuite-de-vapeur`, `nid-de-pie`, `perte-de-pression`, `feu-eteint`, `rupture-du-reservoir`, `explosion`, `bandValue`, `steam-save-roll`, `SteamBreakdownEntry`, +6 — `src/data/flow-stakes.json`, `src/data/naval-traits.json`, `src/data/schemas/defs/ship-stations.ts`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/ship-stations.json`, `src/data/steam-breakdown.json`, +3 fichiers
-- `MDG 13` (l.588-592, l.596-601, l.656, l.660, l.664, l.668, l.672-676, l.680-688, l.690-692, l.696-702, l.705-718, l.721-744, l.747-756, l.758-766) → `pont`, `CrewTarget`, `replisSansExposeSchema`, `greement`, `woundsFromHit`, `VolleyShot`, `stationAsPoste` ⚠sans-appelant, `avirons`, `isArtilleryWeapon`, `ShipCritEntry`, +26 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/river-criticals.json`, `src/data/schemas/defs/river-criticals.ts`, `src/data/schemas/defs/ship-criticals.ts`, `src/data/schemas/defs/ship-stations.ts`, +21 fichiers
+- `MDG 13` (l.588-592, l.596-601, l.656, l.660, l.664, l.668, l.672-676, l.680-688, l.690-692, l.696-702, l.705-718, l.721-744, l.747-756, l.758-766) → `pont`, `CrewTarget`, `bandeDeChuteSchema`, `greement`, `woundsFromHit`, `VolleyShot`, `stationAsPoste` ⚠sans-appelant, `avirons`, `isArtilleryWeapon`, `ShipCritEntry`, +31 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/river-criticals.json`, `src/data/schemas/defs/ship-criticals.ts`, `src/data/schemas/defs/ship-stations.ts`, `src/data/schemas/grammaire/mecanique.ts`, +23 fichiers
 
 ## MDG : Collisions, Indice de Collision et béliers
 

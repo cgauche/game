@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyFall } from './combatEffects';
+import { applyFall } from '../engine/movement';
 import { hasCondition } from '../engine/conditions';
 import type { RNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';

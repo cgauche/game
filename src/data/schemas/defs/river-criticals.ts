@@ -12,15 +12,10 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { shipCritEntrySchema } from '../grammaire/mecanique';
+import { replisSansExposeSchema } from '../grammaire/valeurs';
 
 export const file = 'river-criticals.json';
 export const famille = 'config';
-
-const replisSansExposeSchema = z.strictObject({
-  /** Localisation qui encaisse le coup quand PERSONNE n'est exposé — `MDG 13 l.584`, `MSRC 07 l.70`. */
-  cible: z.enum(['cargaison', 'greement', 'coque', 'avirons', 'equipements', 'gouvernail', 'superstructure']),
-  maison: z.string().optional(),
-});
 
 
 const doc = document(

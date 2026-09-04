@@ -50,12 +50,15 @@ const AVANT = {
   [SHIP]: { rangees: 35, crewHit: 1, deck: 0, shrapnel: 17 },
 };
 
-/** CARDINAUX exigés sur le RÉSULTAT (design v2 jugé, colonne « après -a »). */
+/** CARDINAUX exigés sur le RÉSULTAT (design v2 jugé, colonne « après -a »), RECALÉS le 2026-09-04 sur
+ *  la colonne « après -c » : le train B3-2b-c a donné leur coup aux 5 rangées du GRÉEMENT (MDG 13
+ *  l.711/l.714/l.715/l.717/l.718). Ces cardinaux se lisent sur l'ARBRE, pas sur l'instant de ce
+ *  script : le rejeu les vérifie au présent (`migrations:replay`). */
 const APRES = {
   [RIVER]: { rangees: 5, crewHit: 4, shrapnel: 0 },
-  [SHIP]: { rangees: 35, crewHit: 7, shrapnel: 17 },
+  [SHIP]: { rangees: 35, crewHit: 12, shrapnel: 17 },
   total: {
-    crewHit: 11, epreuves: 9, certains: 2, stationsPont: 5, stationsAvirons: 3,
+    crewHit: 16, epreuves: 14, certains: 2, stationsPont: 5, stationsAvirons: 3,
     stationsCale: 1, roleTimonier: 1, poste: 1, deckResiduel: 0,
   },
 };

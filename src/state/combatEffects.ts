@@ -6,12 +6,13 @@ import { revealToStep } from './revealStep';
 import { Combatant, CHAR_LABELS, type ModLine } from '../engine/types';
 import { RULE_REF } from '../engine/ruleRefs';
 import { battleRng } from './battleRng';
-import { d10, d100, defaultRNG, roll as rollDice, type RNG } from '../engine/dice';
+import { d10, d100, defaultRNG, roll as rollDice } from '../engine/dice';
 import { petitePriereAnswered } from '../engine/prayer';
 import { applyOps, resolveFormula, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { gainCorruption, corruptionTarget, poseCorruptionPending, testDeCorruption } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
+import { applyFall } from '../engine/movement';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { sceneNpc } from './sceneNpc';
 import { buildActorView } from './combat/flowEval';
@@ -59,7 +60,7 @@ import { exposureWaveBand } from './nightBands';
 import { freeCons, rollStep, hostStep, monoStep, openSequence, pousseSi, type BuiltCascadeStep } from './rollSeam';
 import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
-import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
+import { loseWounds, hasCondition } from '../engine/conditions';
 import { touchActors } from './combatOrParty';
 import { actorIn } from './combatants';
 import { addPossession, type PossessionInput } from './possessionsFlow';
@@ -697,20 +698,6 @@ export const EFFECT_GROUP_ORDER = [
 type EffectHandlerMap = {
   [K in Effect['type']]: EffectHandler<Extract<Effect, { type: K }>>;
 };
-
-/**
- * Chute (LDB 15 l.80-84) appliquée à UN combattant : 3 Dégâts/mètre + 1d10, réduits par le Bonus
- * d'Endurance mais PAS par les PA ; si les Blessures subies dépassent le BE → État À Terre. MUTE `c`.
- * Brique PURE partagée par l'Effet `fall` (repositionnement de groupe) et l'effondrement d'une
- * passerelle en combat (`collapseStructure`) — zéro duplication de la formule.
- */
-export function applyFall(c: Combatant, metres: number, rng: RNG): void {
-  const m = Math.max(0, metres);
-  const be = Math.floor(effectiveChar(c, 'endurance') / 10);
-  const lost = Math.max(0, 3 * m + d10(rng) - be);
-  loseWounds(c, lost);
-  if (lost > be) addCondition(c, 'a-terre');
-}
 
 /** Exécuteur EN COMBAT du flux d'incantation standard (`castSpell`, `state/combatFlow`) pour l'Effet
  *  `castSpell` (#98) — enregistré par `combatFlow` à son chargement : ce module FEUILLE n'importe RIEN

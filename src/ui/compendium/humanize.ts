@@ -26,6 +26,7 @@ import {
   conditionLabel, psychologyLabel, groupLabel, symptomLabel, creatureLabel,
   diseaseLabel, refLabel, qualityRefLabel, talentConcrete,
 } from '../../data';
+import { findFallTable } from '../../data/shipCriticals';
 
 function assertNever(x: never): never {
   throw new Error(`humanize: cas non couvert — ${JSON.stringify(x)}`);
@@ -214,6 +215,22 @@ export function humanizePerSL(p: { every: number; amount: number; onFailure?: bo
 
 /** Effet mécanique (`GameOp`) en verbe d'action JOUEUR (sujet = la cible de l'effet, implicite). SOURCE
  *  UNIQUE joueur des ops. Switch EXHAUSTIF (never en default). */
+/**
+ * Phrase JOUEUR d'une CHUTE (op `fall`) — la hauteur vient de la TABLE, colonne par colonne : rien
+ * n'est écrit en dur ici, une bande ou une station de plus s'y lit d'elle-même. Table inconnue de
+ * l'authoring : son id RESTE visible (un libellé inventé masquerait l'erreur).
+ */
+function humanizeFall(tableId: string): string {
+  const table = findFallTable(tableId);
+  if (!table) return `tombe de la hauteur que dit « ${tableId} »`;
+  const stations = [...new Set(table.bandes.flatMap((b) => Object.keys(b.hauteurs)))];
+  const colonnes = stations.map((id) => {
+    const parBande = table.bandes.map((b) => (b.hauteurs[id] === undefined ? '—' : `${humanizeFormula(b.hauteurs[id])}`));
+    return `${refLabel('shipStations', { id })} ${parBande.join('/')} m`;
+  });
+  return `tombe de la hauteur que dit « ${table.label} » (${colonnes.join(', ')}, selon la Taille du bateau)`;
+}
+
 export function humanizeOp(o: GameOp): string {
   switch (o.op) {
     case 'wounds': return `subit ${humanizeFormula(o.amount)} Blessure(s)${o.ignoreAP === false ? '' : ', ignorant les PA'}${o.bypassArmour === 'metal' ? " (perce l'armure métallique)" : o.bypassArmour === 'nonMagic' ? " (perce l'armure non magique)" : ''}`;
@@ -298,6 +315,7 @@ export function humanizeOp(o: GameOp): string {
     case 'skillDRBonus': return `gagne +${humanizeFormula(o.bonus)} DR ${o.skill ? refLabel('skills', o.skill) : 'aux Tests concernés'}`;
     case 'charDRBonus': return `gagne +${humanizeFormula(o.bonus)} DR aux Tests de ${CHAR_LABELS[o.char]}`;
     case 'crewTestMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} aux Tests d'équipage`;
+    case 'fall': return humanizeFall(o.hauteur.table.id);
     case 'incomingAttackMod': return `impose ${o.amount >= 0 ? '+' : ''}${o.amount} aux attaques qui le visent`;
     case 'incomingAdvantage': return `donne +${o.amount} Avantage à qui l'attaque`;
     // « réduit de 2 par point » (LDB 10 l.1026, Talent) / Indice du Trait (LDB 85 l.302) : le nombre

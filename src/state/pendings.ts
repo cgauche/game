@@ -1344,6 +1344,11 @@ export interface CascadeStepMeta {
    *  groupe) → `applyTriggeredTestBranch`. Absent ⇒ référent = `hero` lui-même (Mâchoires/Contrôle de
    *  la Frénésie : effet auto-porté). */
   casterId?: string;
+  /** COQUE dont le Critique a ouvert cette bande (coup à l'ÉQUIPAGE, `MDG 13`) : les ops de la branche
+   *  la lisent (`OpsCtx.hull` — la Taille du bateau donne la hauteur de chute, `MDG 13 l.684`). Id
+   *  sérialisable, jumeau de `casterId`, résolu par l'applier (`coqueParId` : file de combat OU véhicule
+   *  du trajet). Absent ⇒ la bande n'est pas née d'une coque, et une op qui l'exige le NOMME. */
+  hullId?: string;
   /** Test ÉTENDU de Peur (LDB 21 l.25) : DR déjà cumulé AVANT ce jet, porté PAR LA RANGÉE d'une bande
    *  de Psychologie de combat (`BatchParticipant.meta`) — l'applier y ajoute le DR du jet. */
   prevDR?: number;

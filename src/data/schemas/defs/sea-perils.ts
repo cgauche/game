@@ -5,14 +5,11 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { charKeySchema, difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { charKeySchema, difficultySchema, shipSizeSchema, sourceRefSchema } from '../grammaire/valeurs';
 import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'sea-perils.json';
 export const famille = 'config';
-
-/** `ShipSize` (`src/data/index.ts`). */
-const shipSize = z.enum(['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
 
 /** `SeaHazardDef` (`src/engine/seaPerils.ts`). */
 const seaHazardDef = z.strictObject({
@@ -25,8 +22,8 @@ const seaHazardDef = z.strictObject({
   entanglePenalties: z
     .array(
       z.strictObject({
-        minSize: shipSize.optional(),
-        maxSize: shipSize.optional(),
+        minSize: shipSizeSchema.optional(),
+        maxSize: shipSizeSchema.optional(),
         manDR: z.number(),
         mMod: z.number(),
       }),

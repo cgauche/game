@@ -292,7 +292,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "sea-weather.json", champ: "spec", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "ship-construction.json", champ: "constructionTraits", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "ship-criticals.json", champ: "ops", occurrences: 11, lot: "L2/L3 #1473", date: "2026-09-04" }, // 5 → 11 (#1657 B3-2b-a) : 6 rangées MDG en prose gagnent leur `crewHit` (MDG 13 l.730/734/736/738/751/756)
-  { dataset: "ship-criticals.json", champ: "skill", occurrences: 7, lot: "L2/L3 #1473", date: "2026-09-04" }, // NEUF (#1657 B3-2b-a) : les 6 nœuds MDG + « Canon détaché » nomment l'Athlétisme de leur `note` verbatim
+  { dataset: "ship-criticals.json", champ: "skill", occurrences: 12, lot: "L2/L3 #1473", date: "2026-09-04" }, // NEUF (#1657 B3-2b-a) : les 6 nœuds MDG + « Canon détaché » nomment l’Athlétisme de leur `note` verbatim ; 7 → 12 (#1657 B3-2b-c) : les 5 rangées du gréement (MDG 13 l.711/714/715/717/718)
   { dataset: "ship-stations.json", champ: "requiresTrait", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-04" }, // NEUF (#1657 B3-2b-a) : `ref('navalTrait')` ADOPTÉ, mais la réf ENVELOPPÉE projette sur `id` — même angle mort documenté que `vehicles.json | traits`
   { dataset: "skills.json", champ: "altChar", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "skills.json", champ: "chars", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },

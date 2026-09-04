@@ -412,6 +412,10 @@ const ORPHELINS: string[] = [
   "sea-weather.json#0 (4)",
   "sea-weather.json#1 (5)",
   "sea-weather.json#2 (4)",
+  // La table « Tomber du gréement » (#1657 B3-2b-c, MDG 13 l.684) : un document-table de PLUS, même
+  // angle mort que `criticals.json#0` — ce que le Codex expose, ce sont les RANGÉES de Critiques qui
+  // s'y réfèrent (l'op `fall` de leur échec), jamais la table de hauteurs elle-même.
+  "ship-criticals.json#0 (1)",
 ];
 
 const clesDe = (items: readonly object[]): string =>

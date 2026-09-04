@@ -34,7 +34,9 @@ import { roll as rollDice, type RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import type { CharKey, Difficulty } from './types';
 import type { SkillRef } from './skills';
+import { findVehicleById } from '../data';
 import type { ShipSize, NavalInstall, InstallBand } from '../data';
+import type { Combatant } from './types';
 
 export type PropulsionKind = 'voile' | 'avirons';
 
@@ -105,6 +107,17 @@ export function shipSizeOfLength(lengthM: number): ShipSize {
     );
   }
   return STANDARD_LOOKUP[i].size;
+}
+
+/**
+ * Taille d'une COQUE EN JEU (`Combatant`) — sa longueur vit sur le TYPE de véhicule (`creatureId`,
+ * `vehicles.json`), jamais recopiée sur l'instance : même patron que `hullNavalTraits`
+ * (`./navalTraits`). `undefined` quand la coque n'a pas de profil naval (véhicule non navire, ou
+ * type introuvable) — l'appelant NOMME ce cas. PUR.
+ */
+export function hullShipSize(hull: Combatant): ShipSize | undefined {
+  const lengthM = findVehicleById(hull.creatureId ?? '')?.ship?.lengthM;
+  return lengthM === undefined ? undefined : shipSizeOfLength(lengthM);
 }
 
 export interface ShipBuildSpec {

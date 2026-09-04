@@ -7,16 +7,31 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { gameOpSchema, shipCritEntrySchema } from '../grammaire/mecanique';
+import { formulaSchema, replisSansExposeSchema, shipSizeSchema } from '../grammaire/valeurs';
+import { idDe } from '../grammaire/ref';
 
 export const file = 'ship-criticals.json';
 export const famille = 'config';
 
-const replisSansExposeSchema = z.strictObject({
-  /** Localisation qui encaisse le coup quand PERSONNE n'est exposé — `MDG 13 l.584`, `MSRC 07 l.70`. */
-  cible: z.enum(['cargaison', 'greement', 'coque', 'avirons', 'equipements', 'gouvernail', 'superstructure']),
-  maison: z.string().optional(),
+
+/**
+ * UNE BANDE de la table « Tomber du gréement » (`MDG 13 l.684-688`) : les Tailles de bateau qu'elle
+ * couvre, et la hauteur de chute PAR PRÉSENCE à bord (`ship-stations.json`) — le gréement tombe d'un
+ * jet de dés, le nid-de-pie d'une hauteur fixe, et c'est la clé de STATION qui choisit la colonne
+ * (aucun branchement par id côté moteur). La hauteur est une `Formula` (`src/engine/ops.ts`), la
+ * quantité canonique du moteur : un nombre (12) ou un tirage (`{dice:{n:2,sides:10}}`).
+ */
+const bandeDeChuteSchema = z.strictObject({
+  tailles: z.array(shipSizeSchema).min(1),
+  hauteurs: z.record(idDe('shipStation'), formulaSchema),
 });
 
+/** Table de hauteur de chute, référencée par son id depuis l'op `fall` (`{ hauteur: { table } }`). */
+const tableDeChuteSchema = z.strictObject({
+  id: z.string(),
+  label: z.string(),
+  bandes: z.array(bandeDeChuteSchema).min(1),
+});
 
 const doc = document(
   'ship-criticals',
@@ -25,6 +40,7 @@ const doc = document(
     die: z.string(),
     shrapnelHit: z.array(gameOpSchema),
     replisSansExpose: replisSansExposeSchema,
+    tablesDeChute: z.array(tableDeChuteSchema),
     tables: z.strictObject({
       cargaison: z.array(shipCritEntrySchema),
       greement: z.array(shipCritEntrySchema),
@@ -39,6 +55,10 @@ const doc = document(
     replisSansExpose: {
       label: 'Repli sans équipage exposé',
       hint: 'Localisation qui encaisse le coup à l’Équipage quand aucun marin n’est exposé',
+    },
+    tablesDeChute: {
+      label: 'Tables de hauteur de chute',
+      hint: 'Hauteur dont tombe un membre d’équipage, par Taille de bateau et par présence à bord',
     },
     tables: { label: 'Critiques par Localisation', hint: 'Cinq tables sœurs : cargaison, gréement, coque, avirons, équipements' },
   },

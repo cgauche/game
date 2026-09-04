@@ -268,7 +268,15 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // timonier), et les deux `replisSansExpose` (`cible` maritime, RAW MDG 13 l.584 ; `cible,maison`
 // fluvial, arbitrage du choix que MSRC 07 l.70 laissait au MJ). Deux signatures de `crewHit` du
 // stock partent avec (`crewTarget` textuel).
-const PLAFOND_HORS_STRATE = 1140;
+// 1140 → 1145 (#1657 B3-2b-c) : cinq signatures NEUVES, toutes à la forme CIBLE, toutes MESURÉES —
+// `ship-criticals.json | ops | hauteur,op` (5, l'op `fall` des rangées du gréement),
+// `| hauteur | table` (5, la réf `{id}` de la table de hauteurs), `| bandes | hauteurs,tailles` (3),
+// `| hauteurs | greement,nid-de-pie` (3) et `| greement | dice` (3) — la table « Tomber du gréement »
+// (MDG 13 l.684-688). DETTE NOMMÉE : les deux dernières sont indexées sur des IDS DE STATION
+// (`ship-stations.json`) — leur signature s'allonge, et leur compte croît, à chaque station qui
+// gagne une colonne de hauteur ; c'est le prix de la lecture PAR CLÉ (aucun `if` par station dans
+// le moteur), pas une dérive à migrer.
+const PLAFOND_HORS_STRATE = 1145;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -964,7 +972,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 403 → 391 (#1657 B2a) : les 12 lignes de signature d'op d'`aa-criticals.json` FUSIONNENT
       // dans celles de `criticals.json` — un fichier de moins, les mêmes ops (les occurrences se
       // somment, cf. le cliquet `STRUCTURES_OPS` ci-dessus).
-      'L1c #1468': 391,
+      // … puis 391 → 392 (#1657 B3-2b-c) : l'op `fall` NEUVE — les 5 rangées du gréement font tomber
+      // (MDG 13 l.678-688), hauteur lue en donnée et non authorée au site.
+      'L1c #1468': 392,
       // L1d #1469 : 62 → 61 (#1552) — « La Diligence » CITE désormais son folio à la racine
       // (`ennemi-dans-l-ombre` 12, la référence que son bloc narratif portait déjà en profondeur) ;
       // sa ligne « source | clé absente » est SOLDÉE.
@@ -1688,7 +1698,9 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // (MDG 13 l.730/734/736/738/751/756) posent chacune l'État À Terre de leur échec ; le coup certain
     // du Gouvernail fluvial (MSRC 07 l.86) troque son `shrapnel: 1` contre une op `wounds`, à somme
     // nulle sur ce compte (l'op naît, l'Indice n'en était pas une).
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2263);
+    // #1657 B3-2b-c : +5 ops `fall` (MDG 13 l.678-688) — les 5 rangées du gréement font TOMBER, et la
+    // hauteur se lit dans la table par (Taille de coque × station), jamais authorée au site.
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2268);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le

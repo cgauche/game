@@ -13,6 +13,7 @@ import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '
 import { CHAR_LABELS, CharKey, ArmourBypass } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables, conditionLabel, lightTones } from '../../data';
+import { findFallTable } from '../../data/shipCriticals';
 import { RefField } from '../compendium/RefField';
 import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
@@ -42,6 +43,7 @@ const CHARS = Object.keys(CHAR_LABELS) as CharKey[];
  *  tests (`Object.keys(OP_LABEL)`), sans dupliquer la liste. */
 export const OP_LABEL: Record<GameOp['op'], string> = {
   wounds: 'Blessures (ignore BE/PA)',
+  fall: 'Chute (hauteur lue dans une table)',
   heal: 'Soin (Blessures rendues)',
   healCaster: 'Soin au lanceur',
   condition: 'Poser un État',
@@ -155,7 +157,7 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
  *  qui ne peut afficher que du texte) — vocabulaire LARGE : plusieurs ops apparentées partagent
  *  la même icône (cf. defs/mechanic.ts, « pas une métaphore par op individuelle »). */
 const OP_ICON: Record<GameOp['op'], IconIdInput> = {
-  wounds: 'journal/damage', heal: 'journal/heal', healCaster: 'journal/heal',
+  wounds: 'journal/damage', heal: 'journal/heal', healCaster: 'journal/heal', fall: 'journal/fall',
   condition: 'magic/area', removeCondition: 'magic/gust',
   charMod: 'mechanic/stat-mod', ap: 'mechanic/ward', testMod: 'mechanic/stat-mod',
   skillDRBonus: 'mechanic/stat-mod', charDRBonus: 'mechanic/stat-mod', offTerrainMod: 'mechanic/stat-mod',
@@ -192,7 +194,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
 /** TOUTES les op du vocabulaire, groupées par intention d'auteur. Libellé de groupe = texte SEUL
  *  (titre de rubrique du menu). */
 const OP_GROUPS: [string, GameOp['op'][]][] = [
-  ['Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish', 'kill']],
+  ['Dégâts & soin', ['wounds', 'heal', 'healCaster', 'fall', 'lifeSteal', 'reduceToZero', 'banish', 'kill']],
   ['États', ['condition', 'removeCondition']],
   ['Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'skillDRBonus', 'charDRBonus', 'crewTestMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['Ressources', ['gainResource', 'corruption', 'sinMod', 'corruptionExposure']],
@@ -395,6 +397,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'skillDRBonus': return { op: 'skillDRBonus', bonus: 1 };
     case 'charDRBonus': return { op: 'charDRBonus', char: 'sociabilite', bonus: 1 };
     case 'crewTestMod': return { op: 'crewTestMod', mod: 10 };
+    case 'fall': return { op: 'fall', hauteur: { table: { id: 'tomberDuGreement' } } };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
     case 'offTerrainMod': return { op: 'offTerrainMod', terrain: 'eau', mSet: 1, testDR: -2 };
@@ -516,6 +519,7 @@ export function opSummary(o: GameOp): string {
     case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${o.skill ? refLabel('skills', o.skill) : (findCrewTestTypeById(o.testType ?? '')?.label ?? o.testType)}`;
     case 'charDRBonus': return `+${formulaSummary(o.bonus)} DR ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'crewTestMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
+    case 'fall': return findFallTable(o.hauteur.table.id)?.label ?? o.hauteur.table.id;
     case 'moveMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
     case 'offTerrainMod': return `hors ${o.terrain}${o.mSet != null ? ` : M ${o.mSet}` : ''}${o.testDR ? `, ${o.testDR} DR aux Tests` : ''}`;
     case 'attrMod': return `+${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;

@@ -55,6 +55,19 @@ describe('humanize — registre JOUEUR', () => {
     expect(firstKebab(phrase)).toBeUndefined();
   });
 
+  it('op `fall` : la CHUTE dit sa table, jamais son id de table (#1657, MDG 13 l.678)', () => {
+    const chute = humanizeOp({ op: 'fall', hauteur: { table: { id: 'tomberDuGreement' } } });
+    // La HAUTEUR est dite, colonne par colonne, DÉRIVÉE de la table (MDG 13 l.684-688) — une chip qui
+    // ne dirait que le nom de la table n'apprendrait rien au joueur.
+    expect(chute).toBe(
+      'tombe de la hauteur que dit « Tomber du gréement » (Gréement 1d10/2d10/3d10 m, Nid-de-pie 12/25/40 m, selon la Taille du bateau)',
+    );
+    expect(chute, 'l’id de table a fui à l’écran').not.toContain('tomberDuGreement');
+    expect(chute, 'un id de station a fui à l’écran').not.toContain('nid-de-pie ');
+    // Table inconnue : l'id RESTE visible — un libellé inventé masquerait l'erreur d'authoring.
+    expect(humanizeOp({ op: 'fall', hauteur: { table: { id: 'tomberDeLaLune' } } })).toContain('tomberDeLaLune');
+  });
+
   it('humanizeCondition : négation NATURELLE poussée dans la feuille (pas de « NON( … ) »)', () => {
     const c: Condition = { kind: 'not', of: { kind: 'has', who: 'target', what: 'talent', value: 'magie-des-arcanes', spec: 'feu' } };
     expect(humanizeCondition(c)).toBe('la cible ne possède pas le Talent Magie des Arcanes (Feu)');

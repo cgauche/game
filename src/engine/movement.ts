@@ -1,7 +1,10 @@
 /**
  * Règles de déplacement étendu — Livre de base, ch.15 « Déplacement ».
  */
-import { RNG, defaultRNG } from './dice';
+import { RNG, defaultRNG, d10 } from './dice';
+import { effectiveChar } from './characteristics';
+import { loseWounds, addCondition } from './conditions';
+import type { Combatant } from './types';
 import { rollTest, type TestResult } from './tests';
 
 /**
@@ -147,4 +150,21 @@ export function resolveDeliberateFall(
 export function fallFromTest(t: TestResult, metres: number): { success: boolean; roll: number; target: number; dr: number; effectiveMetres: number } {
   const reduction = Math.max(0, t.sl); // −1 m par DR (positif) ; échec = aucune réduction
   return { success: t.success, roll: t.roll, target: t.target, dr: t.sl, effectiveMetres: Math.max(0, metres - reduction) };
+}
+
+/**
+ * CHUTE appliquée à UN combattant (LDB 15 l.80, l.84) — FOYER UNIQUE de la formule dans tout `src/**` :
+ * 3 Dégâts par mètre + 1d10, réduits par le Bonus d'Endurance et par lui seul ; si les Blessures
+ * subies dépassent le BE, l'État À Terre est posé. MUTE `c`.
+ *
+ * Vit ICI, avec les deux autres briques de chute du chapitre (`resolveDeliberateFall`, `fallFromTest`) :
+ * toute chute du jeu — repositionnement de groupe (Effet `fall`), effondrement d'une passerelle
+ * (`collapseStructure`), incident de monture, op `fall` du gréement (MDG 13 l.678) — s'y applique.
+ */
+export function applyFall(c: Combatant, metres: number, rng: RNG): void {
+  const m = Math.max(0, metres);
+  const be = Math.floor(effectiveChar(c, 'endurance') / 10);
+  const lost = Math.max(0, 3 * m + d10(rng) - be);
+  loseWounds(c, lost);
+  if (lost > be) addCondition(c, 'a-terre');
 }

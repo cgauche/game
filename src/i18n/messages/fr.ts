@@ -281,6 +281,7 @@ export const fr = {
   'op.charModLine': '{name} : {label} ({parts}, {dur}).',
   'op.wounds': '{name} subit {n} Blessure(s){mitig}.',
   'op.heal': '{name} regagne {n} Blessure(s).',
+  'op.fall': '{name} — {table} : chute de {m} m, {n} Blessure(s){etats}.',
   'op.gainAdvantage': '{name} porte son Avantage à {n}.',
   'op.condPerRound': '{name} subira {v} État {cond} par Round ({src}).',
   'op.condTimed': '{name} reçoit {v} État {cond} ({roundsTxt}).',
@@ -1875,6 +1876,7 @@ export const fr = {
   'shipCrit.stationFermee': "Coup à l'Équipage sur {loc}, que ce bateau n'a pas : personne n'est touché.",
   'shipCrit.crewHit': 'Équipage touché : {name} encaisse un Critique — {label}.',
   'shipCrit.crewTakes': "{n} membre(s) d'équipage encaisse(nt) le Critique ({label}).",
+  'cascade.coqueDisparue': 'Conséquence de « {label} » non appliquée : le bateau concerné n’est plus en jeu.',
   'shipCrit.shrapnelHits': 'Éclats {indice} : {n} marin(s) touché(s).',
   'shipCrit.extraHull': '{n} Critique(s) de Coque supplémentaire(s).',
 

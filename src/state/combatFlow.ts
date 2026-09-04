@@ -211,7 +211,7 @@ import {
 import { weaponGroupKey } from '../engine/weaponGroup';
 import { moveReachFor, flyReachable, fleeReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt, climbTraverseFor } from './path';
 import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
-import { resolveRun, chargeReach } from '../engine/movement';
+import { resolveRun, chargeReach, applyFall } from '../engine/movement';
 import type { RNG } from '../engine/dice';
 import { bus, EVT } from './bus';
 import { emitCombatEvent } from './combatEvents';
@@ -244,7 +244,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog, applyFall, registerCastSpellEffect } from './combatEffects';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog, registerCastSpellEffect } from './combatEffects';
 import { teamCommandMod } from './commandTeam';
 // --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
 export * from './combatManeuvers';
@@ -1854,7 +1854,7 @@ function applyHullCriticalToTarget(
     if (coup?.testFlow) {
       const victimes = coup.victims.map((id) => crew.find((c) => c.id === id)).filter(Boolean) as Combatant[];
       pushCombatStep(set, (index) => bandeTriggeredTest(
-        get, set, victimes, coup.testFlow!, `ship-crew-hit-${target.id}-${index}`, { label: coup.label },
+        get, set, victimes, coup.testFlow!, `ship-crew-hit-${target.id}-${index}`, { label: coup.label, hull: target },
       ));
     }
   }

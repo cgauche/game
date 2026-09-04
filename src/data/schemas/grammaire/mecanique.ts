@@ -61,6 +61,11 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     unites: formulaSchema.optional(),
     unitesPerSL: perSLSchema.optional(),
   }),
+  /** `fall` — la hauteur ne s'authore JAMAIS au site : elle se lit dans la table nommée (`MDG 13
+   *  l.684`), par Taille de coque et par station du tombant. La table se désigne par la graphie
+ *  CANONIQUE d'une référence (`{id}`) ; `ref(type)` ne s'applique pas — ces tables n'ont pas de
+ *  dataset à elles, elles vivent DANS le jeu de Critiques qui les imprime. */
+  fall: z.strictObject({ op: z.literal('fall'), hauteur: z.strictObject({ table: z.strictObject({ id: z.string() }) }) }),
   heal: z.strictObject({ op: z.literal('heal'), amount: formulaSchema, perSL: perSLSchema.optional() }),
   healCaster: z.strictObject({ op: z.literal('healCaster'), amount: formulaSchema }),
   kill: z.strictObject({ op: z.literal('kill') }),

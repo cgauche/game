@@ -18,6 +18,60 @@
   "replisSansExpose": {
     "cible": "coque"
   },
+  "tablesDeChute": [
+    {
+      "id": "tomberDuGreement",
+      "label": "Tomber du gréement",
+      "bandes": [
+        {
+          "tailles": [
+            "minuscule",
+            "tres-petite",
+            "petite"
+          ],
+          "hauteurs": {
+            "greement": {
+              "dice": {
+                "n": 1,
+                "sides": 10
+              }
+            },
+            "nid-de-pie": 12
+          }
+        },
+        {
+          "tailles": [
+            "moyenne",
+            "grande"
+          ],
+          "hauteurs": {
+            "greement": {
+              "dice": {
+                "n": 2,
+                "sides": 10
+              }
+            },
+            "nid-de-pie": 25
+          }
+        },
+        {
+          "tailles": [
+            "enorme",
+            "monstrueuse"
+          ],
+          "hauteurs": {
+            "greement": {
+              "dice": {
+                "n": 3,
+                "sides": 10
+              }
+            },
+            "nid-de-pie": 40
+          }
+        }
+      ]
+    }
+  ],
   "tables": {
     "cargaison": [
       {
@@ -94,7 +148,45 @@
         "max": 3,
         "id": "vergue-detachee",
         "label": "Vergue détachée",
-        "note": "L'une des vergues s'est détachée de son mât et pend mollement, retenue par les cordages. Le Mouvement du navire grâce à sa Voile est divisé par deux et les Tests de Voile subissent –1 DR. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de tomber. Réparation : Test étendu de Voile Accessible (+20) pour un total de 30 DR."
+        "note": "L'une des vergues s'est détachée de son mât et pend mollement, retenue par les cordages. Le Mouvement du navire grâce à sa Voile est divisé par deux et les Tests de Voile subissent –1 DR. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de tomber. Réparation : Test étendu de Voile Accessible (+20) pour un total de 30 DR.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "greement",
+              "nid-de-pie"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "accessible"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "fall",
+                    "hauteur": {
+                      "table": {
+                        "id": "tomberDuGreement"
+                      }
+                    }
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       },
       {
         "min": 4,
@@ -116,14 +208,90 @@
         "max": 6,
         "id": "greement-degrade",
         "label": "Gréement dégradé",
-        "note": "Le gréement s'est rompu, s'est coincé ou a été abîmé, les cordes sont toutes emmêlées et doivent être tranchées et remplacées. Les Tests d'Escalade et de Voile subissent –2 DR. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de tomber. Réparation : Test étendu de Voile Intermédiaire (+0) pour un total de 40 DR."
+        "note": "Le gréement s'est rompu, s'est coincé ou a été abîmé, les cordes sont toutes emmêlées et doivent être tranchées et remplacées. Les Tests d'Escalade et de Voile subissent –2 DR. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de tomber. Réparation : Test étendu de Voile Intermédiaire (+0) pour un total de 40 DR.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "greement",
+              "nid-de-pie"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "intermediaire"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "fall",
+                    "hauteur": {
+                      "table": {
+                        "id": "tomberDuGreement"
+                      }
+                    }
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       },
       {
         "min": 7,
         "max": 7,
         "id": "voiles-detruites",
         "label": "Voiles détruites",
-        "note": "Les voiles sont en lambeaux. Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de tomber. Réparation : Test étendu de Métier (Tailleur) Complexe (–10) pour un total de 40 DR."
+        "note": "Les voiles sont en lambeaux. Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de tomber. Réparation : Test étendu de Métier (Tailleur) Complexe (–10) pour un total de 40 DR.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "greement",
+              "nid-de-pie"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "accessible"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "fall",
+                    "hauteur": {
+                      "table": {
+                        "id": "tomberDuGreement"
+                      }
+                    }
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       },
       {
         "min": 8,
@@ -139,7 +307,45 @@
         "id": "vergue-brisee",
         "label": "Vergue brisée",
         "shrapnel": 8,
-        "note": "L'une des vergues s'est brisée. Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Éclats 8. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de tomber. Réparation : Test étendu de Métier (Charpentier) Complexe (–10) pour un total de 50 DR."
+        "note": "L'une des vergues s'est brisée. Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Éclats 8. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de tomber. Réparation : Test étendu de Métier (Charpentier) Complexe (–10) pour un total de 50 DR.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "greement",
+              "nid-de-pie"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "intermediaire"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "fall",
+                    "hauteur": {
+                      "table": {
+                        "id": "tomberDuGreement"
+                      }
+                    }
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       },
       {
         "min": 10,
@@ -147,7 +353,45 @@
         "id": "mat-brise",
         "label": "Mât brisé",
         "shrapnel": 10,
-        "note": "Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Éclats 10. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Complexe (–10) sous peine de tomber. Réparation : Test d'équipage étendu d'Entretien Difficile (–20) pour un total de 80 DR afin d'installer une voile improvisée pouvant propulser le bateau à 25 % de sa vitesse normale. Une réparation totale ne peut être effectuée qu'en atteignant la terre ferme et en remettant totalement en état le vaisseau."
+        "note": "Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Éclats 10. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Complexe (–10) sous peine de tomber. Réparation : Test d'équipage étendu d'Entretien Difficile (–20) pour un total de 80 DR afin d'installer une voile improvisée pouvant propulser le bateau à 25 % de sa vitesse normale. Une réparation totale ne peut être effectuée qu'en atteignant la terre ferme et en remettant totalement en état le vaisseau.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "greement",
+              "nid-de-pie"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "complexe"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "fall",
+                    "hauteur": {
+                      "table": {
+                        "id": "tomberDuGreement"
+                      }
+                    }
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       }
     ],
     "coque": [

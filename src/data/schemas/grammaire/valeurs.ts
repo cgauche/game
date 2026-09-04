@@ -310,6 +310,24 @@ export const moneyPartialSchema = z.strictObject({ gold: z.number().optional(), 
 /** `DiceSpec` (`src/engine/dice.ts`) — jet `{n, sides, plus?}`, partagé par `CountSpec.roll` et `Formula.dice`. */
 export const diceSpecSchema = z.strictObject({ n: z.number(), sides: z.number(), plus: z.number().optional() });
 
+/** `ShipSize` (`src/data/index.ts`) — les sept Tailles de bateau du tableau standard (`MDG 12 l.122-129`),
+ *  dérivées de la LONGUEUR par `shipSizeOfLength` (`src/engine/shipBuild.ts`). Déclarées ICI une fois :
+ *  `ship-construction` (colonne Taille), `sea-perils` (bornes min/max) et `ship-criticals` (bandes de la
+ *  table « Tomber du gréement ») les lisent, aucun ne les réécrit. */
+export const shipSizeSchema = z.enum(['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
+
+/** `ShipLocation` (`src/engine/combat.ts`) — les Localisations de coque des DEUX jeux de Critiques
+ *  (MDG naval : cargaison/gréement/coque/avirons/équipements ; MSRC fluvial : gouvernail/superstructure). */
+export const shipLocationSchema = z.enum(['cargaison', 'greement', 'coque', 'avirons', 'equipements', 'gouvernail', 'superstructure']);
+
+/** Localisation qui encaisse un coup à l'Équipage quand PERSONNE n'est exposé (`MDG 13 l.584` RAW ;
+ *  `MSRC 07 l.70`, arbitrage `maison` du choix que le livre laissait au MJ) — déclarée ICI une fois :
+ *  `ship-criticals` et `river-criticals` la LISENT, aucun ne la réécrit. */
+export const replisSansExposeSchema = z.strictObject({
+  cible: shipLocationSchema,
+  maison: z.string().optional(),
+});
+
 /**
  * UNE VALEUR PAR SAISON — les deux livres de commerce impriment leurs tableaux en quatre colonnes
  * saisonnières (`Season`, `src/engine/travelStages.ts`) : disponibilité d100 (MDG 15 l.406-418, MSRC 13

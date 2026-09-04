@@ -597,7 +597,7 @@ export const STRUCTURES_FORMES = [
   { concept: "test", dataset: "sea-perils.json", champ: "freeTest", signature: "char,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-perils.json", champ: "tourbillonSwim", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-weather.json", champ: "affaler", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "test", dataset: "ship-criticals.json", champ: "test", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 7, lot: "L4 #1463", date: "2026-08-23" }, // « Canon détaché » (MDG 13 l.763) : même passage au nœud `test` du Flow (#1657 B2c). 1 → 7 (#1657 B3-2b-a) : les 6 nœuds MDG neufs testent l'Athlétisme de leur `note` verbatim
+  { concept: "test", dataset: "ship-criticals.json", champ: "test", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 12, lot: "L4 #1463", date: "2026-08-23" }, // « Canon détaché » (MDG 13 l.763) : même passage au nœud `test` du Flow (#1657 B2c). 1 → 7 (#1657 B3-2b-a) : les 6 nœuds MDG neufs testent l'Athlétisme de leur `note` verbatim. 7 → 12 (#1657 B3-2b-c) : les 5 rangées du GRÉEMENT (MDG 13 l.711/714/715/717/718) testent le leur
   { concept: "test", dataset: "spells.json", champ: "crossTest", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "spells.json", champ: "test", signature: "characteristic,difficulty", statut: "historique", strate: "Valeur", occurrences: 5, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "spells.json", champ: "test", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 3, lot: "L4 #1463", date: "2026-08-23" },
@@ -1086,6 +1086,7 @@ export const STRUCTURES_OPS = [
   { op: "exposeDisease", signature: "disease,op", dataset: "traits.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "exposeDisease", signature: "difficultyShift,disease,incubation,op", dataset: "traits.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "exposeDisease", signature: "disease,op", dataset: "qualities.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "fall", signature: "hauteur,op", dataset: "ship-criticals.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" }, // NEUF (#1657 B3-2b-c) : les 5 rangées du gréement font TOMBER (MDG 13 l.678-688) ; la hauteur est une réf `{id}` de table, jamais un nombre authoré
   { op: "freeReroll", signature: "op", dataset: "spells.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "gainAdvantage", signature: "amount,op", dataset: "tavernGames.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "gainAdvantage", signature: "amount,feedOpposingPool,op", dataset: "traits.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },

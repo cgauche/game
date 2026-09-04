@@ -1,7 +1,7 @@
 import shipCriticalsJson from './ship-criticals.json';
 import riverCriticalsJson from './river-criticals.json';
 import type { ShipLocation } from '../engine/combat';
-import type { GameOp } from '../engine/ops';
+import type { GameOp, Formula } from '../engine/ops';
 import type { FlowTestNode } from '../engine/flowCore';
 
 /** QUI encaisse un coup à l'ÉQUIPAGE — les trois désignations imprimées : l'équipage d'une pièce
@@ -64,6 +64,24 @@ export type ShipCritKey = Exclude<ShipLocation, 'equipage'>;
  *  `shrapnel` de l'entrée de Critique (per-entry) ; l'effet, lui, est partagé (per-règle). */
 export const SHRAPNEL_HIT = shipCriticalsJson.shrapnelHit as GameOp[];
 
+/**
+ * UNE BANDE de table de hauteur de chute (« Tomber du gréement », `MDG 13 l.684-688`) : les Tailles de
+ * bateau couvertes, et la hauteur PAR PRÉSENCE à bord — clé = id de `ship-stations.json`, valeur =
+ * `Formula` (un nombre, ou un tirage `{dice}`). La colonne se lit PAR LA CLÉ de station : aucun
+ * branchement par id ne vit dans le moteur.
+ */
+export interface FallHeightBand {
+  tailles: string[];
+  hauteurs: Record<string, Formula>;
+}
+
+/** Table de hauteur de chute — la cible de l'op `fall` (`{ hauteur: { table } }`). */
+export interface FallHeightTable {
+  id: string;
+  label: string;
+  bandes: FallHeightBand[];
+}
+
 const T = shipCriticalsJson.tables as Record<ShipCritKey, ShipCritTable>;
 
 /** Jeu MDG (mer) — ne couvre QUE ses 5 Localisations navales (pas gouvernail/superstructure, fluviales MSRC).
@@ -90,6 +108,8 @@ export interface ShipCritSet {
    *  (« le coup touche la Coque », RAW) et `MSRC 07 l.70` (le livre laisse le choix au MJ ; il n'y a
    *  pas de MJ, l'arbitrage est AUTHORÉ et éditable). Le coup n'est jamais abandonné. */
   replisSansExpose: { cible: ShipCritKey };
+  /** Tables de hauteur de CHUTE que ce jeu imprime (`MDG 13 l.678-688`) — le fleuve n'en a aucune. */
+  tablesDeChute?: FallHeightTable[];
   tables: Partial<Record<ShipCritKey, ShipCritTable>>;
 }
 
@@ -98,6 +118,7 @@ export const SHIP_CRIT_SET: ShipCritSet = {
   id: shipCriticalsJson.id,
   shrapnelHit: SHRAPNEL_HIT,
   replisSansExpose: shipCriticalsJson.replisSansExpose as { cible: ShipCritKey },
+  tablesDeChute: shipCriticalsJson.tablesDeChute as FallHeightTable[],
   tables: SHIP_CRITICAL_TABLES,
 };
 
@@ -114,6 +135,18 @@ const CRIT_SETS: Record<string, ShipCritSet> = Object.fromEntries([SHIP_CRIT_SET
 
 /** Ids des jeux de Critiques RÉELLEMENT chargés — vocabulaire fermé de `hull.criticalTable`. */
 export const SHIP_CRIT_SET_IDS = Object.keys(CRIT_SETS);
+
+/** Toutes les tables de chute des jeux CHARGÉS, indexées par leur id — un jeu qui en authore une la
+ *  rend visible ici sans une ligne de code de plus. */
+const FALL_TABLES = new Map(
+  [SHIP_CRIT_SET, RIVER_CRIT_SET].flatMap((s) => (s.tablesDeChute ?? []).map((t) => [t.id, t] as const)),
+);
+
+/** Table de hauteur de chute par id (op `fall`) — `undefined` si l'authoring en nomme une inconnue,
+ *  que l'appelant NOMME (aucun repli muet : une chute sans hauteur ne serait pas une chute). */
+export function findFallTable(id: string): FallHeightTable | undefined {
+  return FALL_TABLES.get(id);
+}
 
 /** Résout le jeu de Critiques d'une coque par l'id de sa `criticalTable` (`hull.criticalTable`).
  *  Absent/`null` = jeu MDG naval (défaut). Un id INCONNU jette : un repli silencieux résoudrait la

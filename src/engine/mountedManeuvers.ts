@@ -39,7 +39,7 @@ export interface BoardingResult {
   athletisme: TestResult;
   /** Le sauteur a-t-il atteint et gardé sa cible ? */
   aBord: boolean;
-  /** Hauteur de chute à faire subir par l'appelant (`state/combatEffects.applyFall`) — celle de
+  /** Hauteur de chute à faire subir par l'appelant (`engine/movement.applyFall`) — celle de
    *  l'éjecté (`ejecte`) quand la selle est disputée, celle du sauteur sinon. */
   chuteM?: number;
 }

@@ -6,12 +6,11 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { ecartsDeCouverture, plageOuverteSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { ecartsDeCouverture, plageOuverteSchema, shipSizeSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'ship-construction.json';
 export const famille = 'config';
 
-const shipSize = z.enum(['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
 const propulsionRow = z.strictObject({ m: z.number(), crew: z.number() });
 
 const champs = {
@@ -19,7 +18,7 @@ const champs = {
     z.strictObject({
       /** id STABLE = `size` (déjà une clé fermée à 7 valeurs) — identité d'entrée pour le Codex (#422). */
       id: z.string(),
-      size: shipSize,
+      size: shipSizeSchema,
       costGold: z.number(),
       crew: z.number(),
       /** Absent pour les catégories non propulsables à la voile/à la rame (l.133). */

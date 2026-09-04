@@ -36,9 +36,11 @@ const FICHIERS = ['river-criticals.json', 'ship-criticals.json'] as const;
  * RECALÉS le 2026-09-04 : la migration B3-2b-a (#1657) a donné son coup à `gouvernail-fluvial`
  * (MSRC 07 l.86, +1 certain) et à 6 rangées MDG qui ne portaient leur Test qu'en prose `note`
  * (MDG 13 l.730/l.734/l.736/l.738/l.751/l.756 — +6 épreuves à l'Athlétisme, donc +6 `skill`), et la
- * CIBLE est devenue REQUISE (`crewTarget` = `crewHit`).
+ * CIBLE est devenue REQUISE (`crewTarget` = `crewHit`) ; puis B3-2b-c a donné le sien aux 5 rangées
+ * du GRÉEMENT (MDG 13 l.711/l.714/l.715/l.717/l.718 — +5 épreuves à l'Athlétisme, donc +5 `skill`,
+ * dont l'échec fait TOMBER : op `fall`, hauteur au livre MDG 13 l.684).
  */
-const CARDINAUX = { crewHit: 11, epreuves: 9, certains: 2, crewTarget: 11, characteristic: 2, skill: 7 };
+const CARDINAUX = { crewHit: 16, epreuves: 14, certains: 2, crewTarget: 16, characteristic: 2, skill: 12 };
 
 const lire = (f: string) => readFileSync(join(RACINE, 'src', 'data', f), 'utf8');
 const canonique = (v: unknown) => JSON.stringify(v, null, 2);

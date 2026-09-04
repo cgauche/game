@@ -86,10 +86,12 @@ describe('effectSchema — le corpus RÉELLEMENT posé dans les deux racines aut
     // (`river-criticals.json` 2, `ship-criticals.json` 1) portent leur conséquence en FEUILLE
     // `{type:'ops'}`, là où `crewTest.onFail` portait une liste nue. Le coup SANS jet (Rames
     // fluviales, MSRC 07 l.82) garde ses ops nues sous `crewHit.ops` : il ne compte pas ici.
+    // 1113 → 1118 (#1657 B3-2b-c) : les 5 rangées du gréement (MDG 13 l.711/714/715/717/718) posent
+    // l'op `fall` de leur échec — « sous peine de tomber », hauteur au livre (l.684).
     // 1107 → 1113 (#1657 B3-2b-a) : les 6 rangées MDG dont le Test ne vivait qu'en prose `note`
     // (MDG 13 l.730/734/736/738/751/756) posent chacune la feuille `{type:'ops', on:'target'}` de leur
     // branche d'ÉCHEC — l'État À Terre que le livre y inflige.
-    expect(poses.length).toBe(1113);
+    expect(poses.length).toBe(1118);
     const parType = new Set(poses.map((p) => (p.noeud as { type: string }).type));
     expect(parType.size).toBe(30); // 29 variantes authorées + la feuille `ops`
     expect(parType.has('ops')).toBe(true);

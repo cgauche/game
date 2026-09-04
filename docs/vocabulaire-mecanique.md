@@ -50,7 +50,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Blessures, dégâts, Coups Critiques | `wounds`, `heal`, `healCaster`, `preventInfection`, `kill`, `cureCriticalWound`, `reduceToZero`, `critTwice`, `suffocate`, `martyr`, `grantWeapon`, `chain`, `rollThreshold`, `endTransform`, `lifeSteal`, `sbBonus`, `mitigateIncoming`, `attrMod`, `handGate`, `weaponDamageMod`, `critOnRoll` |
 | Caractéristiques et attributs (max de Blessures, Chance…) | `charMod`, `charDamage`, `charDRBonus`, `sbBonus`, `attrMod` |
 | Compétences, Talents, Carrières : octroyer, modifier | `castPenalty`, `grantTalent`, `grantCareerSkill`, `grantCareerTalent`, `grantFreeAttack`, `skillMod`, `skillDRBonus`, `incomingSpellDRMod` |
-| Composition : séquence d'ops, palier, tableau, récurrence | `kill`, `perRound`, `rollThreshold`, `rollTable`, `rollMutation`, `transform` |
+| Composition : séquence d'ops, palier, tableau, récurrence | `kill`, `fall`, `perRound`, `rollThreshold`, `rollTable`, `rollMutation`, `transform` |
 | Corruption, Chaos, mutation, Péché | `corruption`, `sinMod`, `corruptionExposure`, `rollMutation`, `zone`, `attackKeyword`, `moveMod`, `disarm` |
 | Durée, horloge, effet différé, expiration | `charMod`, `gainResource`, `castPenalty`, `statusMod`, `grantReverseToken`, `grantTrait`, `grantTalent`, `augmentWeapon`, `reduceDiseaseDays`, `contractDisease`, `suppressPsych`, `grantNaturalWeapon`, `perRound`, `scheduleRespawn`, `polymorph`, `transform`, `suppressSymptom`, `delayed` |
 | Empoignade, entrave, immobilisation | `condition` |
@@ -63,7 +63,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Mort, retrait du jeu, bannissement | `kill`, `banish`, `suffocate` |
 | Mouvement, allonge, terrain | `moveScale`, `moveMod`, `offTerrainMod`, `attrMod`, `loseTurn`, `actGate` |
 | Narratif, arbitrage non modélisé | `banish`, `narrative` |
-| Navire, coque, équipage, poste d'artillerie | `charDRBonus`, `crewTestMod`, `removeShipPoste`, `teamCommander` |
+| Navire, coque, équipage, poste d'artillerie | `fall`, `charDRBonus`, `crewTestMod`, `removeShipPoste`, `teamCommander` |
 | Objets, possessions, inventaire | `giveTrapping`, `disarm` |
 | Position, zone, poussée, téléportation, rebond | `arrowWard`, `push`, `teleport`, `chain`, `zone`, `delayed` |
 | Psychologie : Peur, Terreur, Frénésie, Animosité, Obsession | `endPsych`, `beginPsych`, `grantTrait`, `grantPsychTrait`, `removePsychTrait`, `grantCareerTalent`, `suppressPsych`, `ignoreAnimosity`, `grantFreeAttack`, `sbBonus` |
@@ -77,7 +77,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Traits de créature : octroyer, retirer | `grantTrait`, `removeTrait`, `grantPsychTrait`, `removePsychTrait`, `suppressPsych`, `polymorph`, `endTransform`, `incomingSpellDRMod`, `moveMod` |
 | Transformation, métamorphose, forme alternative | `polymorph`, `transform`, `endTransform` |
 
-## GameOp — les 107 opérations
+## GameOp — les 108 opérations
 
 | Op | Champs | Résolution | Résolveurs | Donnée | Rôle |
 |---|---|---|---|---|---|
@@ -117,6 +117,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `endPsych` | `type` | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 2 — `psychology.json:frenesie`, `talents.json:controle-de-la-frenesie` | Retire un état PSYCHOLOGIQUE porté (`PsychAffliction.type` — collection `psychState`, DISTINCTE de `conditions` : pas de perte d'Avantage à la pose, LDB 21 ≠ LDB 16). |
 | `endTransform` | `tag` | exécutée | `engine/creatureAttacks.ts`, `state/aiSpellValue.ts` | 1 — `maneuvers.json:forme-humaine-ulric` | Fin de TRANSFORMATION (`transform`) : retire d'un coup tous les effets actifs portant le `tag` (deltas de profil + traits accordés + apparence) et recale les Blessures — retour à la forme de base. |
 | `exposeDisease` | `disease`, `difficultyShift?`, `incubation?` | exécutée | `state/aiSpellValue.ts` | 4 — `qualities.json:infecte`, `traits.json:infecte` … | EXPOSE la cible à une Maladie (`disease` = id de `maladies.json`) → Test de Contraction au bilan de fin de combat (LDB 20 l.25/51). |
+| `fall` | `hauteur` | exécutée | — | 5 — `ship-criticals.json:vergue-detachee`, `ship-criticals.json:greement-degrade` … | CHUTE (`LDB 15 l.80`, `l.84`) : la cible tombe de la hauteur que dit une TABLE (`hauteur.table`, `ship-criticals.json` → `tablesDeChute`), lue par (Taille de la coque `ctx.hull` × station du tombant, `Combatant.shipStation`) — MDG 13 l.678-688. |
 | `freeReroll` | — | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 3 — `spells.json:benediction-de-chance`, `spells.json:methode-essai-erreur` … | « Peut relancer le prochain Test auquel elle échoue » (Bénédiction de Chance, LDB 41) — drapeau consommé à l'usage au point de relance des flux de jet. |
 | `gainAdvantage` | `amount`, `feedOpposingPool?` | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 3 — `tavernGames.json:bras-de-fer`, `tavernGames.json:middenball` … | Porte l'Avantage de la cible à AU MOINS `amount` (jamais réduit). |
 | `gainResource` | `resource`, `amount`, `perSL?`, `temporary?` | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 6 — `spells.json:le-premier-signe-d-amul`, `spells.json:le-second-signe-d-amul` … | Points de Chance OU de Destin accordés (`resource`, LDB 47 — « Les Signes d'Amul », « Que la chance persiste », « Maître du Destin », « Troisième Signe d'Amul ») : incrément immédiat (peut dépasser le maximum — c'est un grant de Sort) ; `temporary` pose un effet actif qui RETIRE les points NON dépensés à l'expiration (rounds OU horloge, engine/grantedResources). |
@@ -189,7 +190,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `wounds` | `amount`, `perSL?`, `onlyGroups?`, `ignoreTB?`, `ignoreAP?`, `bypassArmour?`, `apFrom?`, `min?`, `extraAP?`, `weaponHit?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +9 | 225 — `criticals.json:blessure-spectaculaire`, `criticals.json:coupure-mineure` … | Blessures subies DIRECTEMENT. |
 | `zone` | `shape`, `radiusMeters?`, `lengthMeters?`, `lengthPerSL?`, `blocksLoS?`, `onCross?`, `perRound?`, `crossTest?`, `barrier?`, `gate?`, `noCorruption?` | **inerte au switch** | `engine/overcast.ts`, `state/combatFlow.ts`, `state/zones.ts` | 13 — `spells.json:vol-du-destin`, `spells.json:grands-feux-d-u-zhul` … | ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). |
 
-_107 ops (108 membres d'union avant fusion des formes) — 84 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
+_108 ops (109 membres d'union avant fusion des formes) — 85 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
 
 ### Ops à ZÉRO usage en donnée (7)
 
@@ -305,4 +306,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: 75ff31a14f78470341ac2eec55d67c9113c68f95 (662 fichiers, 16 dossiers) corps: 6ec9a9a7f683adcb3edb24a5e72a3a85282488f9 -->
+<!-- sources-empreinte: 24fa68447a27e7bff9da7673d1339c27e4e8b0a4 (662 fichiers, 16 dossiers) corps: bf78131980bc6db62b1c3742ea465d2baecfb178 -->

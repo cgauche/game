@@ -40,6 +40,18 @@ export function inBattleId(battle: GameState['battle'], id: string | undefined):
 }
 
 /**
+ * COQUE par id — un navire vit dans la file de COMBAT quand il se bat (arbitrage utilisateur
+ * 2026-07-16 : « Les navires sont des combattants »), et dans le PLAN DE TRAJET pendant un voyage
+ * (`travelPlan.vehicle`, la coque transitoire qui encaisse les incidents). Ces deux hôtes sont les
+ * seuls : `actorIn` couvre le premier, le second est hors du groupe. Sert la reconstitution du
+ * contexte d'une étape de cascade née d'un Critique de coque (`meta.hullId` → `OpsCtx.hull`).
+ */
+export function coqueParId(state: GameState, id: string): Combatant | undefined {
+  const vehicule = state.travelPlan?.vehicle;
+  return actorIn(state, id) ?? (vehicule?.id === id ? vehicule : undefined);
+}
+
+/**
  * MENEUR du groupe hors combat : le premier héros encore debout, à défaut le premier du roster. C'est
  * lui que le jeton de groupe DESSINE et fait marcher, et
  * donc lui que suivent la caméra et les lampes portées par le groupe (`state/visionState.ts`

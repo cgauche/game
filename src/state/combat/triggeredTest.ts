@@ -41,7 +41,7 @@ import { registerCascadeApplier } from '../cascade';
 import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep, pushChoice, pousseSi, opposedAttackerLabel, type BuiltCascadeStep } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
-import { inBattleId, actorIn } from '../combatants';
+import { inBattleId, actorIn, coqueParId } from '../combatants';
 import { campSpend } from './advantagePool';
 import { dataLabel } from '../../data';
 import { t } from '../../i18n';
@@ -161,7 +161,7 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
  *    l'y envoyer serait une exception en pleine résolution. */
 export function applyTriggeredTestBranch(
   c: Combatant, t: Pick<TestResult, 'success' | 'sl'>, branches: { onSuccess: Flow; onFail: Flow },
-  exec?: { get: Get; set: SetFn; caster?: Combatant; source?: EffectSource; freeAttack?: ExecCtx['freeAttack']; bladeTrap?: ExecCtx['bladeTrap'] },
+  exec?: { get: Get; set: SetFn; caster?: Combatant; hull?: Combatant; source?: EffectSource; freeAttack?: ExecCtx['freeAttack']; bladeTrap?: ExecCtx['bladeTrap'] },
 ): string[] {
   const branch = t.success ? branches.onSuccess : branches.onFail;
   // Référent des Formules (« votre Force Mentale » — Forêt d'épines LDB 48 l.749) : le LANCEUR d'origine
@@ -171,10 +171,10 @@ export function applyTriggeredTestBranch(
   if (exec && (flowHasImpureOp(branch) || flowHasTest(branch))) {
     // L'ENTITÉ PORTEUSE (`source`) voyage dans la branche : un SECOND Test qui y est enfoui dérive son
     // enjeu de la même entité que le premier (#1262 V2 L6d) — sans ce relais, la branche perdrait le porteur.
-    runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster, label: 'Effet', opsCtx: { sl: t.sl, ...(exec.source ? { source: exec.source } : {}) }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}), ...(exec.bladeTrap ? { bladeTrap: exec.bladeTrap } : {}) }, branch);
+    runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster, label: 'Effet', opsCtx: { sl: t.sl, ...(exec.source ? { source: exec.source } : {}), ...(exec.hull ? { hull: exec.hull } : {}) }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}), ...(exec.bladeTrap ? { bladeTrap: exec.bladeTrap } : {}) }, branch);
     return [];
   }
-  return runPureFlowLines(c, caster, branch, { rng: battleRng(), caster, sl: t.sl });
+  return runPureFlowLines(c, caster, branch, { rng: battleRng(), caster, sl: t.sl, ...(exec?.hull ? { hull: exec.hull } : {}) });
 }
 
 /** IDENTITÉ d'une étape `triggeredTest` — SOURCE UNIQUE des deux fabriques. La SITUATION entre dans
@@ -332,7 +332,7 @@ export function frozenOpposedBatchStep(
  */
 export function simpleBatchTestStep(
   testers: Combatant[], ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow,
-  difficulty: Difficulty, id: string,
+  difficulty: Difficulty, id: string, hullId?: string,
 ): BuiltCascadeStep | undefined {
   const skillLabel = ft.skill ? refLabel('skills', ft.skill) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   const participants: BatchParticipant[] = [];
@@ -349,7 +349,7 @@ export function simpleBatchTestStep(
     id, kind: 'triggeredBatchTest', icon: 'nav/dice', label: dataLabel(ft.label, skillLabel),
     ...(ft.stake ? { stake: ft.stake } : {}),
     ...(ft.menace ? { menace: ft.menace } : {}),
-    meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after },
+    meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after, ...(hullId ? { hullId } : {}) },
   }, participants);
 }
 
@@ -366,11 +366,19 @@ registerCascadeApplier('triggeredBatchTest', (get, set, step) => {
   if (!onSuccess || !onFail || !step.participants) return;
   const casterId = typeof step.meta?.casterId === 'string' ? step.meta.casterId : undefined;
   const caster = casterId ? actorIn(get(), casterId) : undefined;
+  const hullId = typeof step.meta?.hullId === 'string' ? step.meta.hullId : undefined;
+  const hull = hullId ? coqueParId(get(), hullId) : undefined;
+  // La COQUE que l'étape DÉCLARE a disparu de l'état entre le mint et la résolution — une cascade
+  // suspendue (`suspendActiveCascade`) et reprise après la fin du voyage : `travelPlan.vehicle` n'est
+  // plus là, la file de combat non plus. La branche d'échec ne peut pas être calculée (la hauteur de
+  // chute se lit sur la Taille du bateau) : le refus est JOURNALISÉ et NOMMÉ, jamais joué à moitié —
+  // même régime que les gardes d'entrée ci-dessus (l'applier ne lève pas en pleine résolution).
+  if (hullId && !hull) return { consequences: freeCons([t('cascade.coqueDisparue', { label: step.label ?? '' })]) };
   const journal: string[] = [];
   for (const part of step.participants) {
     const hero = actorIn(get(), part.id);
     if (!hero || !part.result) continue;
-    journal.push(...applyTriggeredTestBranch(hero, part.result, { onSuccess, onFail }, { get, set, ...(caster ? { caster } : {}) }));
+    journal.push(...applyTriggeredTestBranch(hero, part.result, { onSuccess, onFail }, { get, set, ...(caster ? { caster } : {}), ...(hull ? { hull } : {}) }));
     syncCombatant(get, set);
     playAfter(get, set, hero, step.meta?.after, step.label ?? 'Effet');
   }
@@ -576,7 +584,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // la success freeAttack / le breakBlade de Piège-lame) est routée vers `runCombatFlow` par
   // `applyTriggeredTestBranch` (cf. flowHasImpureOp) ; une branche PURE retombe sur `runPureFlowLines`
   // (inchangé). `freeAttack`/`bladeTrap` ne sont joints que s'ils existent.
-  const exec = { get: ctx.get, set: ctx.set, ...(ctx.caster ? { caster: ctx.caster } : {}), ...(ctx.opsCtx?.source ? { source: ctx.opsCtx.source } : {}), ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}) };
+  const exec = { get: ctx.get, set: ctx.set, ...(ctx.caster ? { caster: ctx.caster } : {}), ...(ctx.opsCtx?.hull ? { hull: ctx.opsCtx.hull } : {}), ...(ctx.opsCtx?.source ? { source: ctx.opsCtx.source } : {}), ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}) };
   // Ennemi OU héros rapide/auto : jet INLINE + branche + continuation ; ligne de parité.
   // `skillLabel` = la Compétence/Caractéristique RÉELLE (cadre de jet), distincte du `label` de situation.
   const t = rollTest(base, difficulty, battleRng(), penalty);
@@ -802,7 +810,7 @@ export function bandeTriggeredTest(
   const ft = withDerivedStake(node.test, opsCtx?.source);
   return simpleBatchTestStep(
     surfaces, ft, { onSuccess: node.success, onFail: node.fail }, EMPTY_FLOW,
-    resolveTestDifficulty(ft, combatConditionCtx(surfaces[0], opsCtx ?? {})), id,
+    resolveTestDifficulty(ft, combatConditionCtx(surfaces[0], opsCtx ?? {})), id, opsCtx?.hull?.id,
   );
 }
 
