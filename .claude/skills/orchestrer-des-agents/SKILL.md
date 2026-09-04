@@ -147,9 +147,10 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    **Avant tout PUSH, deux règles de plus (vécu 2026-08-31)** : (a) le verdict d'une suite en
    fond se LIT puis se DÉCIDE — jamais un `tail … && git push` enchaîné (le tail sort 0 quel que
    soit le rouge : un push est parti sur 245 rouges de contention) ; (b) rejouer les gates
-   CI-ONLY : `migrations:replay` ne tourne QUE dans la CI et il est EN PLACE (destructif sur un
-   arbre en WIP) — le jouer sur un EXPORT de HEAD (hook pre-push #1613 ; à la main tant qu'il
-   n'existe pas). Trois pushes ont été rouges en CI sans que personne ne le voie. Et deux suites
+   CI-ONLY : `migrations:replay` est EN PLACE (destructif sur un arbre en WIP), donc il se joue sur
+   un EXPORT de HEAD — le hook `pre-push` le fait dès que la plage poussée touche le périmètre des
+   migrations (P1.4), et `npm run migrations:replay:head` le rejoue à la main. Trois pushes ont été
+   rouges en CI sans que personne ne le voie. Et deux suites
    COMPLÈTES simultanées sur la machine (deux sessions) = effondrement de contention garanti
    (245 rouges jsdom, mount WebGL jamais monté) : les suites lourdes se SÉRIALISENT, ping
    inter-session avant lancement.

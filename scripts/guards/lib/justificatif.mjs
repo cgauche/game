@@ -240,7 +240,8 @@ export const CLES_DE_STEP_INERTES = ['name', 'if', 'id']
 export const JOBS_HORS_JUSTIFICATIF = {
   migrations:
     'rejeu EN PLACE des migrations : le jouer sur un arbre de travail réécrit src/data et src/scenes ' +
-    'et rend un verdict faux (#1613) — T1b le vérifie sur un EXPORT de la tête',
+    'et rend un verdict faux (#1613) — le hook pre-push le joue sur un EXPORT de la tête ' +
+    '(scripts/migrations/replay-head.mjs), et non par justificatif',
 }
 
 /**

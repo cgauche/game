@@ -25,7 +25,11 @@ scripts/migrations/         Migrations de donnée REJOUABLES (une par lot, daté
                             courant elles ne réécrivent RIEN. `npm run migrations:replay` (replay.mjs)
                             les rejoue dans l'ordre lexical, EN PLACE, et mesure l'arbre par git diff
                             (suivi) ET git status (non suivi) — toute donnée réécrite ou tout fichier
-                            neuf est ROUGE et NOMMÉ
+                            neuf est ROUGE et NOMMÉ. Sur un arbre en WIP ce rejeu est destructif :
+                            `npm run migrations:replay:head` (replay-head.mjs) le joue sur un EXPORT
+                            jetable de la tête, mesuré par EMPREINTE (`lib/empreinteRejeu.mjs` —
+                            hors dépôt, `git diff` bascule en `--no-index` et rend un faux vert), et
+                            le hook `pre-push` l'arme dès que la plage poussée touche le périmètre
 src/geometry/                Géométrie/simulation PURE partagée `state` ⇄ `gameIso` (#161 : `state` en a
                             besoin pour SA PROPRE logique — curseur de combat, IA, cadence des beats —
                             pas seulement le rendu ; zéro dépendance framework). `iso.ts` : projection

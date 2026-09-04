@@ -1,12 +1,16 @@
 // Hook pre-push : la porte AU PUSH (#1679 L2). Elle LIT, elle ne joue rien — régime utilisateur
 // 2026-09-01 « suite complète + tsc avant push, pas de push sur CI rouge ».
 //
-// Quatre refus, tous nommés, sur la TÊTE de chaque ref poussée (l'unité que la CI juge) :
+// Cinq refus, tous nommés, sur la TÊTE de chaque ref poussée (l'unité que la CI juge) :
 //   1. `origin` ne pointe pas `github.com/cgauche/game` ;
 //   2. une gate de `ci.yml` sans justificatif VERT et PROPRE pour le CONTENU poussé
 //      (`scripts/guards/lib/justificatif.mjs` ; la commande qui le produit est nommée : `npm run gates`) ;
 //   3. push non fast-forward (aucune autorisation d'écraser une histoire poussée) ;
-//   4. dernière CI de `main` en échec — dérogation `WFRP_PUSH_SUR_ROUGE=1` + `WFRP_DEROGATION`
+//   4. le REJEU DES MIGRATIONS sur un EXPORT de la tête est rouge (#1613) — le job `migrations` de
+//      la CI est le seul step qu'aucun justificatif ne couvre (`JOBS_HORS_JUSTIFICATIF` : rejoué EN
+//      PLACE, il réécrit `src/data` et `src/scenes`). Il est donc JOUÉ ici, sur une copie jetable, et
+//      seulement si la plage poussée touche ce qu'il mesure — sinon c'est dit et sauté ;
+//   5. dernière CI de `main` en échec — dérogation `WFRP_PUSH_SUR_ROUGE=1` + `WFRP_DEROGATION`
 //      (raison de 20 caractères au moins), JOURNALISÉE dans
 //      `<git-common-dir>/wfrp-justificatifs/derogations.log` et relue par la revue de palier.
 //      Ce refus-là vaut pour TOUTE ref, branche de travail comprise : c'est la lettre du régime
@@ -27,6 +31,8 @@ import { appendFileSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
+import { PERIMETRE } from '../migrations/replay.mjs'
+import { rejeuSurExport } from '../migrations/replay-head.mjs'
 import {
   cheminJustificatifs,
   cleTree,
@@ -49,6 +55,18 @@ export function refsAPousser(stdin) {
     })
     .filter((r) => r.shaLocal && r.shaLocal !== ZERO)
 }
+
+/** Chemins dont la présence dans une plage poussée ARME le rejeu des migrations : ce que les
+ *  migrations ÉCRIVENT (`PERIMETRE`, importé — jamais recopié) et les migrations elles-mêmes. */
+export const CHEMINS_QUI_ARMENT_LE_REJEU = [...PERIMETRE, 'scripts/migrations']
+
+/** La plage touche-t-elle de quoi armer le rejeu ? Comparaison par SEGMENT : `src/database` n'est
+ *  pas `src/data`. */
+export const armeLeRejeu = (chemins) =>
+  chemins.some((chemin) => {
+    const c = String(chemin).replace(/\\/g, '/')
+    return CHEMINS_QUI_ARMENT_LE_REJEU.some((p) => c === p || c.startsWith(`${p}/`))
+  })
 
 /** Le dépôt de ce projet, en https comme en ssh. */
 export const urlOrigineAcceptee = (url) => /github\.com[:/]cgauche\/game(?:\.git)?$/.test(String(url ?? '').trim())
@@ -84,6 +102,10 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
     execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
   const refus = []
   const notes = []
+  /** Rejeux déjà joués, par sha : un push de deux refs sur le MÊME commit (`main` + une étiquette de
+   *  travail) ne paie pas deux fois les ~17 s de la porte P1.4.
+   *  @type {Map<string, { rouges: string[], chronos: Record<string, number> }>} */
+  const rejeuxJoues = new Map()
 
   const origine = (() => {
     try {
@@ -123,7 +145,10 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
     // (`shaDistant` nul) ne peut écraser aucune histoire — la comparer à `origin/main` refusait
     // toute branche de travail partie d'un point ancien (mesuré).
     if (!shaDistant || shaDistant === ZERO) {
-      notes.push(`${refDistante} n’existe pas encore côté distant : rien à écraser, fast-forward non jugé`)
+      notes.push(
+        `${refDistante} n’existe pas encore côté distant : rien à écraser, fast-forward non jugé — et ` +
+          'le rejeu des migrations se juge sur l’arbre ENTIER, donc il est joué',
+      )
     } else {
       const ancetre = spawnSync('git', ['merge-base', '--is-ancestor', shaDistant, shaLocal], {
         cwd,
@@ -133,6 +158,46 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
         refus.push(
           `push non fast-forward vers ${refDistante} : ${shaDistant.slice(0, 7)} n’est pas un ancêtre de ${shaLocal.slice(0, 7)}`,
         )
+    }
+
+    // REJEU DES MIGRATIONS sur l'export de la tête (#1613). Ce qu'on juge, c'est le CONTENU que la
+    // plage apporte : sur une ref distante NEUVE il n'y a pas de plage, et l'arbre ENTIER du sha en
+    // tient lieu — tout y arrive côté distant. Conséquence assumée et DITE dans la note : une branche
+    // neuve arme toujours le rejeu (l'arbre de ce dépôt porte `src/data`), soit ~17 s au premier push
+    // d'une branche ; les suivants ne paient que si la plage touche le périmètre.
+    const plage = shaDistant && shaDistant !== ZERO ? `${shaDistant}..${shaLocal}` : null
+    const ditPlage = plage ?? `l’arbre entier de ${shaLocal.slice(0, 7)} (ref distante neuve)`
+    const touches = (() => {
+      try {
+        const args = plage ? ['diff', '--name-only', plage] : ['ls-tree', '-r', '--name-only', shaLocal]
+        return git(args).split(/\r?\n/).filter(Boolean)
+      } catch {
+        return null
+      }
+    })()
+    if (touches === null) {
+      refus.push(`${refLocale} → ${refDistante} : contenu de ${ditPlage} illisible — rejeu des migrations non jugé`)
+    } else if (!armeLeRejeu(touches)) {
+      notes.push(`replay sauté : aucun fichier du périmètre des migrations dans ${ditPlage}`)
+    } else {
+      try {
+        // `ecrire: () => {}` : le détail des 88 migrations n'a pas sa place dans un refus de hook —
+        // seuls les rouges sont nommés, et le refus renvoie à `npm run migrations:replay:head`.
+        const rejeu =
+          rejeuxJoues.get(shaLocal) ?? rejeuSurExport({ cwd, sha: shaLocal, ecrire: () => {} })
+        rejeuxJoues.set(shaLocal, rejeu)
+        if (rejeu.rouges.length) {
+          refus.push(`${refLocale} → ${refDistante} : rejeu des migrations ROUGE sur l’export de ${shaLocal.slice(0, 7)}`)
+          for (const r of rejeu.rouges) refus.push(`  · ${r}`)
+          refus.push('  → rejouer et lire le détail : npm run migrations:replay:head')
+        } else {
+          notes.push(
+            `rejeu des migrations vert sur l’export de ${shaLocal.slice(0, 7)} (${rejeu.chronos.total.toFixed(1)}s)`,
+          )
+        }
+      } catch (e) {
+        refus.push(`${refLocale} → ${refDistante} : rejeu des migrations impossible — ${e.message}`)
+      }
     }
   }
 

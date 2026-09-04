@@ -3,10 +3,17 @@
  *
  * Une migration de donnée est REJOUABLE : rejouée sur l'arbre courant, elle ne réécrit RIEN. Cette
  * porte le mesure pour de bon — les scripts de `scripts/migrations/*.mjs` sont rejoués DANS L'ORDRE
- * LEXICAL, EN PLACE (ils lisent `src/data`, `src/scenes` et `Source/` : une copie tmp mesurerait un
- * autre arbre), puis l'arbre est mesuré de DEUX façons complémentaires : `git diff` pour ce qui est
- * SUIVI, `git status --porcelain` pour ce qui ne l'est pas — un fichier CRÉÉ par une migration est
- * invisible à `git diff`, et le rejeu y serait aveugle.
+ * LEXICAL, EN PLACE dans la racine qu'on lui donne (ils lisent `src/data`, `src/scenes` et `Source/`
+ * par leur propre chemin : la racine rejouée est celle de LEUR copie).
+ *
+ * DEUX ARBRES, DEUX MESURES, une même question (« le rejeu a-t-il écrit ? ») :
+ *  - DANS UN DÉPÔT (`npm run migrations:replay`, job `migrations` de la CI) : `git diff` pour ce qui
+ *    est SUIVI, `git status --porcelain` pour ce qui ne l'est pas — un fichier CRÉÉ par une migration
+ *    est invisible à `git diff`, et le rejeu y serait aveugle ;
+ *  - SUR UN EXPORT hors dépôt (`npm run migrations:replay:head`, hook pre-push — #1613) : l'EMPREINTE
+ *    des fichiers du périmètre confrontée aux blobs de la tête (`lib/empreinteRejeu.mjs`). Là, git ne
+ *    connaît aucune histoire : `mesurerParGit` y REFUSE de conclure (`estUnDepot`) au lieu de rendre
+ *    le vert que `git diff` fabrique tout seul hors dépôt.
  *
  * Quatre verdicts, aucun silence :
  *  - un script sans en-tête d'ENTRÉES (JSDoc « Entrées : … » — ce qu'il LIT) est ROUGE : une
@@ -38,14 +45,13 @@
  * La porte ci-dessus rejoue dans l'ordre lexical, quel qu'il soit. Les migrations sont NO-OP
  * TOLÉRANTES À LA FORME : rejouées sur l'état final, elles
  * reconnaissent « déjà migré » et sortent 0 — une migration absente d'`ATTENDU_ROUGE` qui fail-fast
- * sur « forme inattendue » sort ROUGE du rejeu (`replay.mjs:110`).
+ * sur « forme inattendue » sort ROUGE du rejeu.
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 
-const ICI = fileURLToPath(new URL('.', import.meta.url));
 const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 
 /**
@@ -75,11 +81,45 @@ const enTete = (texte) => texte.slice(0, Math.max(0, texte.indexOf('*/')));
 /** Le script DÉCLARE-t-il ses entrées ? (`Entrées :` ou `ENTRÉES (…)` dans son en-tête) */
 const declareSesEntrees = (texte) => /ENTR[ÉE]ES?\s*[:(]/i.test(enTete(texte));
 
+/**
+ * Une migration se RECONNAÎT à son préfixe DATÉ (`<AAAA-MM-JJ>-….mjs`, la convention de nommage du
+ * lot ci-dessus) — 88 des 90 `.mjs` du dossier.
+ */
+const estUneMigration = (nom) => /^\d{4}-\d{2}-\d{2}-.+\.mjs$/.test(nom);
+
+/**
+ * Les seuls `.mjs` du dossier qui ne sont PAS des migrations : les modules de cette porte. Liste
+ * NOMINATIVE, et c'est le point — tout autre `.mjs` sans préfixe daté est ROUGE.
+ *
+ * Deux faux verts successifs ont fait cette règle, tous deux mesurés : sous `f !== 'replay.mjs'`,
+ * `replay-head.mjs` était REJOUÉ comme une migration (rejeu récursif de 15,7 s dont l'exit 0 tenait
+ * lieu de vert) ; sous le seul préfixe daté, une migration NON idempotente mal nommée
+ * (`corrige-props.mjs`) était SAUTÉE en silence — « 0 migration(s) », verdict VERT. Ni jouer ce
+ * qu'on ne sait pas nommer, ni le taire.
+ */
+const MODULES_DE_LA_PORTE = ['replay.mjs', 'replay-head.mjs'];
+
 /** Périmètre ÉCRIT par les migrations : les deux racines de documents, plus l'AUTHORING qui produit
  *  les artefacts de scène (`scripts/arene` + les générateurs des deux campagnes navales et leur lib
  *  partagée, écrits par `give-trapping` et `give-money-enveloppe` — migrer l'artefact sans sa source
- *  serait une demi-migration : les trois projets sont régénérés À L'OCTET par leur `generate.mjs`). */
-const PERIMETRE = ['src/data', 'src/scenes', 'scripts/arene', 'scripts/barge-du-sel', 'scripts/loup-et-saumure', 'scripts/campagne'];
+ *  serait une demi-migration : les trois projets sont régénérés À L'OCTET par leur `generate.mjs`).
+ *  Trois lecteurs, aucune recopie : la mesure par git ci-dessous, l'empreinte de `replay-head.mjs`,
+ *  et le hook `pre-push` (quelle plage poussée arme le rejeu). */
+export const PERIMETRE = ['src/data', 'src/scenes', 'scripts/arene', 'scripts/barge-du-sel', 'scripts/loup-et-saumure', 'scripts/campagne'];
+
+/**
+ * `racine` est-elle DANS un arbre de travail git ?
+ *
+ * Le seul détecteur fiable, et la raison pour laquelle il existe : hors dépôt, `git diff --exit-code
+ * -- <a> <b> …` ne se plaint pas — il bascule en `--no-index`, compare les deux premiers chemins et
+ * prend le reste en pathspec ; aucun de ceux-là n'existant, il rend **0**, soit « rien n'a bougé »
+ * sur un arbre pourtant réécrit (mesuré ; `rev-parse` y rend 128).
+ * @param {string} racine @returns {boolean}
+ */
+export function estUnDepot(racine) {
+  const vu = spawnSync('git', ['rev-parse', '--is-inside-work-tree'], { cwd: racine, encoding: 'utf8' });
+  return vu.status === 0 && (vu.stdout ?? '').trim() === 'true';
+}
 
 /**
  * Fichiers NEUFS (non suivis, `??` de `git status --porcelain`) du périmètre, dans `cwd`.
@@ -99,63 +139,114 @@ export function neufsDe(cwd, perimetre) {
     .filter(Boolean);
 }
 
-function main() {
-  /** État du diff AVANT le rejeu : ce que l'arbre portait déjà n'est pas imputable aux migrations. */
-  const diffAvant = spawnSync('git', ['diff', '--', ...PERIMETRE], { cwd: RACINE, encoding: 'utf8' });
-  /** Idem pour les fichiers NEUFS : un WIP voisin non suivi n'est pas l'œuvre du rejeu. */
-  const neufsAvant = new Set(neufsDe(RACINE, PERIMETRE));
-
-  const scripts = readdirSync(ICI)
-    .filter((f) => f.endsWith('.mjs') && f !== 'replay.mjs')
-    .sort((a, b) => a.localeCompare(b, 'en'));
+/**
+ * JOUE les migrations de `dossier` sur l'arbre `racine`, dans l'ordre lexical. Ne mesure RIEN : le
+ * verdict d'idempotence appartient à l'appelant — `mesurerParGit` dans un dépôt, l'empreinte sur un
+ * export. Les deux racines se séparent pour que le MÊME rejeu serve les deux arbres.
+ * @param {{ racine: string, dossier?: string, ecrire?: (ligne: string) => void }} params
+ * @returns {{ rouges: string[], joues: number }}
+ */
+export function rejouer({ racine, dossier = join(racine, 'scripts', 'migrations'), ecrire = console.log }) {
+  let entrees;
+  try {
+    entrees = readdirSync(dossier).filter((f) => f.endsWith('.mjs'));
+  } catch (e) {
+    return { rouges: [`dossier de migrations illisible : ${dossier} (${e.code ?? e.message})`], joues: 0 };
+  }
+  const scripts = entrees.filter(estUneMigration).sort((a, b) => a.localeCompare(b, 'en'));
+  const horsRejeu = entrees.filter((f) => !estUneMigration(f)).sort((a, b) => a.localeCompare(b, 'en'));
+  const outils = horsRejeu.filter((f) => MODULES_DE_LA_PORTE.includes(f));
+  const inclassables = horsRejeu.filter((f) => !MODULES_DE_LA_PORTE.includes(f));
 
   /** @type {string[]} */
   const rouges = [];
-  console.log(`migrations:replay — ${scripts.length} migration(s), ordre lexical, EN PLACE`);
+  ecrire(`migrations:replay — ${scripts.length} migration(s), ordre lexical, EN PLACE dans ${racine}`);
+  if (outils.length) ecrire(`  (hors rejeu, modules de la porte : ${outils.join(', ')})`);
+  for (const f of inclassables) {
+    ecrire(`  ✗ ${f} — .mjs du dossier des migrations SANS préfixe daté — ni migration, ni module de la porte`);
+    rouges.push(`${f} : .mjs du dossier des migrations sans préfixe daté — ni migration, ni module de la porte`);
+  }
 
   for (const f of scripts) {
-    const texte = readFileSync(join(ICI, f), 'utf8');
+    const texte = readFileSync(join(dossier, f), 'utf8');
     if (!declareSesEntrees(texte)) {
-      console.log(`  ✗ ${f} — en-tête SANS « Entrées : » (ce que le script LIT)`);
+      ecrire(`  ✗ ${f} — en-tête SANS « Entrées : » (ce que le script LIT)`);
       rouges.push(`${f} : en-tête sans déclaration d'ENTRÉES`);
       continue;
     }
     const debut = Date.now();
-    const r = spawnSync(process.execPath, [join(ICI, f)], { cwd: RACINE, encoding: 'utf8' });
+    const r = spawnSync(process.execPath, [join(dossier, f)], { cwd: racine, encoding: 'utf8' });
     const secondes = ((Date.now() - debut) / 1000).toFixed(1);
     const attendu = ATTENDU_ROUGE[f];
     const ok = attendu ? r.status !== 0 : r.status === 0;
-    console.log(`  ${ok ? '✓' : '✗'} ${f} — exit ${r.status} (${secondes}s)${attendu ? ` [rouge ATTENDU : ${attendu}]` : ''}`);
+    ecrire(`  ${ok ? '✓' : '✗'} ${f} — exit ${r.status} (${secondes}s)${attendu ? ` [rouge ATTENDU : ${attendu}]` : ''}`);
     if (ok) continue;
     const queue = `${r.stdout ?? ''}${r.stderr ?? ''}`.trim().split(/\r?\n/).slice(-8).join('\n      ');
-    console.log(`      ${queue}`);
+    ecrire(`      ${queue}`);
     rouges.push(attendu ? `${f} : exit 0 alors que le rouge est déclaré ATTENDU (raison périmée)` : `${f} : exit ${r.status}`);
   }
+  return { rouges, joues: scripts.length };
+}
 
-  const diffApres = spawnSync('git', ['diff', '--exit-code', '--', ...PERIMETRE], { cwd: RACINE, encoding: 'utf8' });
+/**
+ * Mesure « le rejeu a-t-il écrit ? » DANS UN DÉPÔT, par les deux voies de git : `git diff` pour le
+ * suivi, `git status` pour le reste. `diffAvant`/`neufsAvant` = l'état relevé AVANT le rejeu : ce que
+ * l'arbre portait déjà (WIP d'une autre session) n'est pas imputable aux migrations.
+ *
+ * Hors dépôt, cette mesure REFUSE de conclure : rouge NOMMÉ, jamais un « INCHANGÉ » de complaisance.
+ * @param {{ racine: string, perimetre?: readonly string[], diffAvant: string, neufsAvant: Set<string> }} params
+ * @returns {{ rouges: string[], lignes: string[] }}
+ */
+export function mesurerParGit({ racine, perimetre = PERIMETRE, diffAvant, neufsAvant }) {
+  if (!estUnDepot(racine)) {
+    const motif =
+      `mesure git impossible : ${racine} n’est pas un dépôt — un arbre exporté se mesure par EMPREINTE ` +
+      '(scripts/migrations/lib/empreinteRejeu.mjs, `npm run migrations:replay:head`)';
+    return { rouges: [motif], lignes: [motif] };
+  }
+
+  /** @type {string[]} */
+  const rouges = [];
+  /** @type {string[]} */
+  const lignes = [];
+  const diffApres = spawnSync('git', ['diff', '--exit-code', '--', ...perimetre], { cwd: racine, encoding: 'utf8' });
+  const stat = () => spawnSync('git', ['diff', '--stat', '--', ...perimetre], { cwd: racine, encoding: 'utf8' }).stdout ?? '';
 
   if (diffApres.status === 0) {
-    console.log(`\ngit diff --exit-code -- ${PERIMETRE.join(' ')} : rien n’a bougé`);
-  } else if (diffApres.stdout === diffAvant.stdout) {
+    lignes.push(`\ngit diff --exit-code -- ${perimetre.join(' ')} : rien n’a bougé`);
+  } else if (diffApres.stdout === diffAvant) {
     // L'arbre portait DÉJÀ ce diff avant le rejeu (WIP d'une autre session, édition en cours) : le
     // rejeu, lui, n'a rien écrit. En CI l'arbre est propre et `--exit-code` suffit ; ici on mesure la
     // DELTA, seule chose que ce script a le droit d'imputer aux migrations.
-    console.log(`\ngit diff -- ${PERIMETRE.join(' ')} : INCHANGÉ par le rejeu (l’arbre portait déjà ce diff — WIP hors rejeu) :`);
-    console.log(spawnSync('git', ['diff', '--stat', '--', ...PERIMETRE], { cwd: RACINE, encoding: 'utf8' }).stdout ?? '');
+    lignes.push(
+      `\ngit diff -- ${perimetre.join(' ')} : INCHANGÉ par le rejeu (l’arbre portait déjà ce diff — WIP hors rejeu) :`,
+      stat(),
+    );
   } else {
-    console.log('\nDONNÉE RÉÉCRITE par le rejeu — une migration n’est pas idempotente :');
-    console.log(spawnSync('git', ['diff', '--stat', '--', ...PERIMETRE], { cwd: RACINE, encoding: 'utf8' }).stdout ?? '');
-    rouges.push(`git diff : ${PERIMETRE.join('/')} réécrits par le rejeu`);
+    lignes.push('\nDONNÉE RÉÉCRITE par le rejeu — une migration n’est pas idempotente :', stat());
+    rouges.push(`git diff : ${perimetre.join('/')} réécrits par le rejeu`);
   }
 
-  const apparus = neufsDe(RACINE, PERIMETRE).filter((f) => !neufsAvant.has(f));
+  const apparus = neufsDe(racine, perimetre).filter((f) => !neufsAvant.has(f));
   if (apparus.length) {
-    console.log('\nFICHIER(S) NEUF(S) créé(s) par le rejeu — invisibles à `git diff` :');
-    for (const f of apparus) console.log(`  + ${f}`);
+    lignes.push('\nFICHIER(S) NEUF(S) créé(s) par le rejeu — invisibles à `git diff` :', ...apparus.map((f) => `  + ${f}`));
     rouges.push(`git status : ${apparus.length} fichier(s) NEUF(S) créé(s) par le rejeu (${apparus.join(', ')})`);
   } else {
-    console.log(`git status --porcelain -- ${PERIMETRE.join(' ')} : aucun fichier NEUF créé par le rejeu`);
+    lignes.push(`git status --porcelain -- ${perimetre.join(' ')} : aucun fichier NEUF créé par le rejeu`);
   }
+  return { rouges, lignes };
+}
+
+function main() {
+  /** État du diff AVANT le rejeu : ce que l'arbre portait déjà n'est pas imputable aux migrations. */
+  const diffAvant = spawnSync('git', ['diff', '--', ...PERIMETRE], { cwd: RACINE, encoding: 'utf8' }).stdout;
+  /** Idem pour les fichiers NEUFS : un WIP voisin non suivi n'est pas l'œuvre du rejeu. */
+  const neufsAvant = new Set(neufsDe(RACINE, PERIMETRE));
+
+  const { rouges } = rejouer({ racine: RACINE });
+  const mesure = mesurerParGit({ racine: RACINE, perimetre: PERIMETRE, diffAvant, neufsAvant });
+  for (const ligne of mesure.lignes) console.log(ligne);
+  rouges.push(...mesure.rouges);
 
   if (rouges.length) {
     console.error(`\nmigrations:replay ROUGE (${rouges.length}) :\n  - ${rouges.join('\n  - ')}`);
@@ -164,6 +255,6 @@ function main() {
   console.log('migrations:replay — OK');
 }
 
-// Le module est IMPORTABLE (la garde de `neufsDe` le monte) : le rejeu ne part que si ce fichier est
-// le point d'entrée du process.
+// Le module est IMPORTABLE (la garde de `neufsDe` le monte, comme `replay-head.mjs` et le pre-push) :
+// le rejeu ne part que si ce fichier est le point d'entrée du process.
 if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) main();

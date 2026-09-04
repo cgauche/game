@@ -10,8 +10,10 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { readdirSync } from 'node:fs'
 import { cheminJustificatifs, ecrireJustificatif } from '../guards/lib/justificatif.mjs'
-import { jugerPush, refsAPousser, urlOrigineAcceptee } from './pre-push.mjs'
+import { RACINE_DES_EXPORTS } from '../migrations/replay-head.mjs'
+import { armeLeRejeu, jugerPush, refsAPousser, urlOrigineAcceptee } from './pre-push.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 
@@ -341,6 +343,96 @@ test('une gate qui lit docs/ n’est PAS réutilisée après un commit docs/ ; l
   } finally {
     jeter(racine)
   }
+})
+
+// P1.4 (#1613) — le job `migrations` de la CI est le seul qu'aucun justificatif ne couvre : le
+// pre-push le JOUE, sur un EXPORT de la tête, et seulement quand la plage poussée touche ce qu'il
+// mesure. La migration de fixture est NON IDEMPOTENTE (elle réécrit `src/data/props.json`).
+const MIGRATION_NON_IDEMPOTENTE = `/**
+ * FIXTURE : migration NON IDEMPOTENTE.
+ * ENTRÉES : \`src/data/props.json\`.
+ */
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+const ROOT = fileURLToPath(new URL('../../', import.meta.url));
+const f = ROOT + 'src/data/props.json';
+const j = JSON.parse(fs.readFileSync(f, 'utf8'));
+j.__sonde_non_idempotente = Date.now();
+fs.writeFileSync(f, JSON.stringify(j, null, 2) + '\\n');
+`
+
+const exportsRestants = () => (existsSync(RACINE_DES_EXPORTS) ? readdirSync(RACINE_DES_EXPORTS) : [])
+
+test('plage touchant `src/data` + une migration NON IDEMPOTENTE : refus nommant la donnée réécrite', () => {
+  const racine = depot()
+  const g = git(racine)
+  try {
+    const base = g(['rev-parse', 'HEAD'])
+    ecrire(racine, 'src/data/props.json', `${JSON.stringify({ props: [] }, null, 2)}\n`)
+    ecrire(racine, 'scripts/migrations/2026-09-03-fixture.mjs', MIGRATION_NON_IDEMPOTENTE)
+    g(['add', '-A'])
+    g(['commit', '-m', 'donnée + migration'])
+    gatesVertes(racine)
+    const { refus } = jugerPush({ cwd: racine, stdin: pousse(racine, { base }), env: ciVerte(racine) })
+    const dit = refus.join('\n')
+    assert.match(dit, /rejeu des migrations ROUGE sur l’export/)
+    assert.match(dit, /DONNÉE RÉÉCRITE|RÉÉCRITE\(S\)/)
+    assert.match(dit, /src\/data\/props\.json/)
+    assert.match(dit, /npm run migrations:replay:head/)
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('plage touchant `src/data` avec des migrations IDEMPOTENTES : le rejeu passe et sa durée est dite', () => {
+  const racine = depot()
+  const g = git(racine)
+  try {
+    const base = g(['rev-parse', 'HEAD'])
+    ecrire(racine, 'src/data/props.json', `${JSON.stringify({ props: [] }, null, 2)}\n`)
+    ecrire(
+      racine,
+      'scripts/migrations/2026-09-03-idempotente.mjs',
+      ['/** ENTRÉES : `src/data/props.json`. */', "import fs from 'node:fs';", "import { fileURLToPath } from 'node:url';", "const f = fileURLToPath(new URL('../../', import.meta.url)) + 'src/data/props.json';", 'fs.writeFileSync(f, fs.readFileSync(f));', ''].join('\n'),
+    )
+    g(['add', '-A'])
+    g(['commit', '-m', 'donnée + migration idempotente'])
+    gatesVertes(racine)
+    const { refus, notes } = jugerPush({ cwd: racine, stdin: pousse(racine, { base }), env: ciVerte(racine) })
+    assert.deepEqual(refus, [])
+    assert.match(notes.join('\n'), /rejeu des migrations vert sur l’export de [0-9a-f]{7} \(\d+(\.\d+)?s\)/)
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('plage HORS périmètre : le saut est DIT, et aucun export n’est fabriqué', () => {
+  const racine = depot()
+  const g = git(racine)
+  try {
+    const base = g(['rev-parse', 'HEAD'])
+    ecrire(racine, 'src/a.ts', 'export const a = 2\n')
+    g(['add', '-A'])
+    g(['commit', '-m', 'code hors périmètre'])
+    gatesVertes(racine)
+    const avant = exportsRestants()
+    const { refus, notes } = jugerPush({ cwd: racine, stdin: pousse(racine, { base }), env: ciVerte(racine) })
+    assert.deepEqual(refus, [])
+    assert.match(notes.join('\n'), /replay sauté : aucun fichier du périmètre des migrations dans [0-9a-f]{40}\.\.[0-9a-f]{40}/)
+    assert.deepEqual(exportsRestants(), avant, 'un rejeu sauté ne fabrique aucun export')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('armeLeRejeu : le périmètre écrit et `scripts/migrations`, par SEGMENT de chemin', () => {
+  assert.equal(armeLeRejeu(['src/data/props.json']), true)
+  assert.equal(armeLeRejeu(['src/scenes/arene/arene-projet.json']), true)
+  assert.equal(armeLeRejeu(['scripts/migrations/2026-09-03-x.mjs']), true)
+  assert.equal(armeLeRejeu(['scripts/arene/generate.mjs']), true)
+  assert.equal(armeLeRejeu(['src/database/x.ts', 'src/dataset.json']), false)
+  assert.equal(armeLeRejeu(['src/ui/RollShell.tsx', 'docs/raw/combat.md']), false)
+  assert.equal(armeLeRejeu([]), false)
 })
 
 // s4 cas 1 promu — une ref distante INEXISTANTE ne peut être écrasée : le contrôle fast-forward ne
