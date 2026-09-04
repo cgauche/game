@@ -19,6 +19,7 @@ import {
   TIMEOUTS,
   conflitsEntreLanes,
   coutEstime,
+  descendantsDe,
   estRefusDuVerrou,
   fichierDeSortie,
   lanesAJouer,
@@ -28,6 +29,7 @@ import {
   queue,
   spawnBorne,
   refusDeCouverture,
+  tuerArbre,
 } from './toutes.mjs'
 import { gatesRequises } from '../guards/lib/justificatif.mjs'
 import { refusVerrou } from '../test/verrou.mjs'
@@ -138,6 +140,58 @@ test('un enfant qui dépasse son plafond est EXPIRÉ, et son ARBRE tombe avec lu
   } finally {
     rmSync(base, { recursive: true, force: true })
   }
+})
+
+// Sortie `ps -A -o pid=,ppid=` telle que Linux la rend : colonnes alignées à droite, largeur variable.
+// L'arbre posé : 100 → 200 → {300, 301}, 300 → 400 ; 999 est un étranger, 1 est le père de tous.
+const PS_FIXTURE = [
+  '    1     0',
+  '  100     1',
+  '  200   100',
+  '  300   200',
+  '  301   200',
+  '  400   300',
+  '  999     1',
+  'entete illisible',
+  '',
+].join('\n')
+
+test('la descendance se lit dans `ps`, LES FEUILLES D’ABORD', () => {
+  const ordre = descendantsDe(100, PS_FIXTURE)
+  assert.deepEqual(new Set(ordre), new Set([200, 300, 301, 400]), '999 n’est pas de la famille')
+  // Chaque parent vient APRÈS ses enfants : tuer une feuille déjà orpheline est sans effet.
+  assert.ok(ordre.indexOf(400) < ordre.indexOf(300), '400 est fils de 300')
+  assert.ok(ordre.indexOf(300) < ordre.indexOf(200), '300 est fils de 200')
+  assert.ok(ordre.indexOf(301) < ordre.indexOf(200), '301 est fils de 200')
+  assert.deepEqual(descendantsDe(400, PS_FIXTURE), [], 'une feuille n’a pas de descendance')
+  assert.deepEqual(descendantsDe(100, ''), [], 'sans `ps`, on retombe sur le groupe seul')
+})
+
+test('la descendance ne boucle pas sur un `ps` qui se contredit', () => {
+  // Vu en vrai : un processus dont le ppid est lui-même, et un cycle 10 → 11 → 10.
+  assert.deepEqual(descendantsDe(7, '    7     7\n'), [])
+  assert.deepEqual(new Set(descendantsDe(10, '   11    10\n   10    11\n')), new Set([11]))
+})
+
+test('sur POSIX, on tue la DESCENDANCE, puis le fils, puis son groupe', () => {
+  // MORSURE de la CI ubuntu (run 33866600011) : `process.kill(-pid)` seul ne frappe que le groupe du
+  // fils, et un petit-fils `detached` a le SIEN — il survivait. L’ordre est vérifiable ici, sous
+  // Windows ; que les signaux portent, seule la CI POSIX peut le prouver.
+  const tues = []
+  tuerArbre(100, { plateforme: 'linux', lister: () => PS_FIXTURE, tuer: (p) => tues.push(p) })
+  assert.equal(tues.at(-1), -100, 'le GROUPE se tire en dernier : il rattrape ce qui naît après `ps`')
+  assert.equal(tues.at(-2), 100, 'le fils tombe après sa descendance')
+  assert.ok(tues.includes(400) && tues.includes(301), 'les petits-fils doivent tomber')
+  assert.ok(tues.indexOf(400) < tues.indexOf(300), 'les feuilles d’abord')
+  assert.deepEqual(tues.slice(0, -2).sort((a, b) => a - b), [200, 300, 301, 400])
+})
+
+test('sur win32, `taskkill /T` suffit : aucune énumération', () => {
+  let liste = 0
+  tuerArbre(0, { plateforme: 'win32', lister: () => { liste += 1; return PS_FIXTURE } })
+  // PID hors de la plage Windows : `taskkill` le refuse, aucun processus réel n'est visé.
+  tuerArbre(4294967295, { plateforme: 'win32', lister: () => { liste += 1; return PS_FIXTURE }, tuer: () => {} })
+  assert.equal(liste, 0, '`ps` n’existe pas sous Windows, et la filiation y est déjà suivie par taskkill')
 })
 
 test('un enfant qui finit sous son plafond rend son code et sa sortie', async () => {
