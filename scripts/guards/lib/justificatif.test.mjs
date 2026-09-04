@@ -15,6 +15,7 @@ import {
   cleTreeComplete,
   commandeEffective,
   ecrireJustificatif,
+  OBSERVATIONS_MAX,
   fichierDeGate,
   gateSurArbrePlein,
   gatesRequises,
@@ -111,6 +112,74 @@ test('un fichier PAR GATE sous la clé, sans fichier en cours d’écriture, cap
     assert.equal(vuTsc.cleComplete, cleTreeComplete(sha, { cwd: racine }))
     assert.deepEqual(JSON.parse(readFileSync(fichier, 'utf8')), vuTsc)
     assert.equal(lireJustificatif({ cwd: racine, cleTree: cle, gate: 'lint' }), null)
+  } finally {
+    jeter(racine)
+  }
+})
+
+// Un verdict ne se DÉGRADE jamais. Mesuré le 2026-09-03 : sous la clé de `b7227f7b5`, 5 gates
+// portaient `sale:true` à des dates POSTÉRIEURES au push — le travail avait repris après le push et
+// le rejeu de la même gate avait écrasé la preuve du push régulier ; un push contourné en devenait
+// indistinguable a posteriori.
+test('un rejeu SALE n’écrase pas un verdict PROPRE — il est journalisé en observations', () => {
+  const racine = depot()
+  try {
+    const sha = git(racine)(['rev-parse', 'HEAD'])
+    const { cleTree: cle } = ecrireJustificatif({ cwd: racine, gate: 'test', sha, date: '2026-09-03T10:00:00.000Z' })
+    assert.equal(lireJustificatif({ cwd: racine, cleTree: cle, gate: 'test' }).sale, false)
+
+    ecrire(racine, 'b.txt', 'le travail reprend\n')
+    ecrireJustificatif({ cwd: racine, gate: 'test', sha, date: '2026-09-03T12:00:00.000Z' })
+    const apres = lireJustificatif({ cwd: racine, cleTree: cle, gate: 'test' })
+    assert.equal(apres.sale, false, 'le verdict retenu reste PROPRE')
+    assert.equal(apres.date, '2026-09-03T10:00:00.000Z', 'et garde la date du run qui l’a produit')
+    assert.deepEqual(apres.observations.map((o) => [o.date, o.sale]), [['2026-09-03T12:00:00.000Z', true]])
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('les observations sont BORNÉES et dédupliquées — un journal de rejeux, pas une archive', () => {
+  const racine = depot()
+  try {
+    const sha = git(racine)(['rev-parse', 'HEAD'])
+    const { cleTree: cle } = ecrireJustificatif({ cwd: racine, gate: 'test', sha, date: '2026-09-03T08:00:00.000Z' })
+    ecrire(racine, 'b.txt', 'le travail reprend\n')
+    // Deux rejeux dans la MÊME minute : un seul fait, une seule ligne.
+    ecrireJustificatif({ cwd: racine, gate: 'test', sha, date: '2026-09-03T09:00:00.000Z' })
+    ecrireJustificatif({ cwd: racine, gate: 'test', sha, date: '2026-09-03T09:00:59.000Z' })
+    assert.equal(lireJustificatif({ cwd: racine, cleTree: cle, gate: 'test' }).observations.length, 1)
+    // Au-delà du plafond, les plus ANCIENNES partent.
+    for (let i = 0; i < OBSERVATIONS_MAX + 5; i++) {
+      const minute = String(i).padStart(2, '0')
+      ecrireJustificatif({ cwd: racine, gate: 'test', sha, date: `2026-09-03T10:${minute}:00.000Z` })
+    }
+    const vu = lireJustificatif({ cwd: racine, cleTree: cle, gate: 'test' })
+    assert.equal(vu.observations.length, OBSERVATIONS_MAX)
+    assert.equal(vu.observations.at(-1).date, `2026-09-03T10:${String(OBSERVATIONS_MAX + 4).padStart(2, '0')}:00.000Z`)
+    assert.equal(vu.sale, false, 'le verdict retenu n’a toujours pas bugé')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('un rejeu PROPRE remplace un verdict SALE, et un PROPRE plus récent met la date à jour', () => {
+  const racine = depot()
+  try {
+    const sha = git(racine)(['rev-parse', 'HEAD'])
+    ecrire(racine, 'b.txt', 'wip\n')
+    const { cleTree: cle } = ecrireJustificatif({ cwd: racine, gate: 'lint', sha, date: '2026-09-03T10:00:00.000Z' })
+    assert.equal(lireJustificatif({ cwd: racine, cleTree: cle, gate: 'lint' }).sale, true)
+
+    rmSync(join(racine, 'b.txt'))
+    ecrireJustificatif({ cwd: racine, gate: 'lint', sha, date: '2026-09-03T11:00:00.000Z' })
+    const propre = lireJustificatif({ cwd: racine, cleTree: cle, gate: 'lint' })
+    assert.deepEqual([propre.sale, propre.date], [false, '2026-09-03T11:00:00.000Z'], 'sale → propre : le verdict monte')
+
+    ecrireJustificatif({ cwd: racine, gate: 'lint', sha, date: '2026-09-03T12:00:00.000Z' })
+    const rejoue = lireJustificatif({ cwd: racine, cleTree: cle, gate: 'lint' })
+    assert.deepEqual([rejoue.sale, rejoue.date], [false, '2026-09-03T12:00:00.000Z'], 'propre → propre : la date suit')
+    assert.equal(rejoue.observations, undefined, 'rien à journaliser tant qu’aucun verdict n’est écarté')
   } finally {
     jeter(racine)
   }

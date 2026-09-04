@@ -1,6 +1,8 @@
-// Hook PreToolUse(Bash|PowerShell|mcp__lean-ctx__ctx_shell) : l'arbre est PARTAGÉ entre sessions
-// parallèles — toute commande git destructive (qui peut effacer du WIP non commité) exige une
-// confirmation humaine explicite, et tout LIEN posé sur un `node_modules` est REFUSÉ (#1679 L1c).
+// Hook PreToolUse(Bash|PowerShell|mcp__lean-ctx__ctx_shell) : l'arbre principal est PARTAGÉ entre
+// sessions parallèles — une commande git destructive (qui peut effacer du WIP non commité) y exige
+// une confirmation humaine explicite, comme partout où l'arbre visé n'est pas PROUVÉ ; dans un
+// worktree LIÉ dont la commande (ou le canal) prouve le répertoire, les gestes qui ne touchent que
+// le WIP local passent en SILENCE. Tout LIEN posé sur un `node_modules` est REFUSÉ (#1679 L1c).
 // Même arbitrage pour une SUPPRESSION RÉCURSIVE (`rm -r`, `Remove-Item -Recurse`) dont la cible
 // n'est pas jetable (dépendances, artefacts, scratchpad de session).
 //
@@ -20,30 +22,38 @@
 // déclenchaient un `ask` sur une commande qui n'exécute rien (faux positif mesuré 2026-08-03).
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
-import { segmentsProfonds, gitSubcommand, valeurParametre, indexParametre } from './solde-ticket-guard.mjs'
+import {
+  segmentsProfonds, gitSubcommand, valeurParametre, indexParametre,
+  repertoireNommeParLaCommande, estWorktreeLie,
+} from './solde-ticket-guard.mjs'
 
 /** Une option courte parmi `letters` est-elle présente (isolée ou groupée : `-fd`, `-fdx`) ? */
 const hasShortFlag = (args, letters) =>
   args.some((a) => /^-[a-zA-Z]+$/.test(a) && [...a.slice(1)].some((c) => letters.includes(c)))
 
-/** `{ sub, args }` d'un `git` → libellé de la destructivité, ou `null`. */
+/** `{ sub, args }` d'un `git` → `{ what, famille }`, ou `null`. Trois FAMILLES, trois portées :
+ *  `arbre` ne touche que le WIP de l'arbre où la commande s'exécute ; `stash` touche une pile
+ *  PARTAGÉE par tous les worktrees (mesuré : `git rev-parse --git-path refs/stash` rend le même
+ *  chemin depuis l'arbre principal et depuis un worktree lié) ; `push` sort du poste. */
 function destructiveReason({ sub, args }) {
   switch (sub) {
     // `git checkout -- <paths>` / `git checkout .` : écrase l'arbre de travail.
     case 'checkout':
-      return args.includes('--') || args.includes('.') ? 'git checkout de fichiers' : null
+      return args.includes('--') || args.includes('.') ? { what: 'git checkout de fichiers', famille: 'arbre' } : null
     // `--staged` seul ne touche que l'index ; sans lui, l'arbre de travail est écrasé.
     case 'restore':
-      return args.includes('--staged') ? null : "git restore de l'arbre de travail"
+      return args.includes('--staged') ? null : { what: "git restore de l'arbre de travail", famille: 'arbre' }
     case 'reset':
-      return args.includes('--hard') ? 'git reset --hard' : null
+      return args.includes('--hard') ? { what: 'git reset --hard', famille: 'arbre' } : null
     case 'clean':
-      return hasShortFlag(args, 'fdx') || args.some((a) => /^--(force|d)$/.test(a)) ? 'git clean' : null
+      return hasShortFlag(args, 'fdx') || args.some((a) => /^--(force|d)$/.test(a))
+        ? { what: 'git clean', famille: 'arbre' } : null
     // `stash list`/`stash show` sont des LECTURES ; tout le reste déplace ou détruit du WIP.
     case 'stash':
-      return args[0] === 'list' || args[0] === 'show' ? null : 'git stash'
+      return args[0] === 'list' || args[0] === 'show' ? null : { what: 'git stash', famille: 'stash' }
     case 'push':
-      return args.some((a) => a === '-f' || /^--force(-with-lease)?(=|$)/.test(a)) ? 'git push --force' : null
+      return args.some((a) => a === '-f' || /^--force(-with-lease)?(=|$)/.test(a))
+        ? { what: 'git push --force', famille: 'push' } : null
     default:
       return null
   }
@@ -153,14 +163,40 @@ function shaApresSeparateur({ sub, args }) {
 }
 
 /**
- * Décision du hook (PURE, testable). `null` = silence ; `{ decision, reason }` sinon — `ask` pour un
- * git destructif et pour une suppression récursive hors cibles jetables (l'humain arbitre), `deny`
- * pour un lien sur `node_modules` et pour un `git show` dont le commit est passé APRÈS `--` (il rend
- * un résultat FAUX sans le dire). Une commande est visée si l'un de ses SEGMENTS PROFONDS
- * (enchaînements, enrobeurs de tête, sous-shells) l'exécute réellement.
+ * Répertoire où la commande s'exécute, quand il est PROUVÉ : nommé par la commande elle-même
+ * (`git -C <chemin>`, `cd <chemin> &&`) ou transmis par le canal (`tool_input.cwd`, que seul
+ * `ctx_shell` fournit). `null` sinon — le cwd PERSISTANT du canal Bash n'est observable par aucun
+ * hook, et une permission accordée sur un arbre deviné vaudrait pour l'arbre principal.
  */
-export function evaluate(command) {
+export function repertoireProuve(command, cwd = null) {
+  const nomme = repertoireNommeParLaCommande(command, cwd ?? process.cwd())
+  if (nomme) return nomme
+  return cwd ? resolve(cwd) : null
+}
+
+/**
+ * Décision du hook (PURE hors la lecture du `.git` de l'arbre visé, testable). `null` = silence ;
+ * `{ decision, reason }` sinon — `ask` pour un git destructif et pour une suppression récursive hors
+ * cibles jetables (l'humain arbitre), `deny` pour un lien sur `node_modules` et pour un `git show`
+ * dont le commit est passé APRÈS `--` (il rend un résultat FAUX sans le dire). Une commande est
+ * visée si l'un de ses SEGMENTS PROFONDS (enchaînements, enrobeurs de tête, sous-shells) l'exécute
+ * réellement.
+ *
+ * WORKTREE À RÉPERTOIRE PROUVÉ (question utilisateur 2026-09-03 : « Pour les git destructif, on
+ * devrait pouvoir les faire sur les worktree, tu ne pense pas ? ») : `checkout`/`restore`/`reset`/
+ * `clean` ne touchent que le WIP de LEUR arbre — index privé, arbre de travail privé, et
+ * `git clean -fdx` retire le point de reparse d'une jonction `node_modules` sans suivre la jonction
+ * (les trois mesurés en dépôt jetable) — donc SILENCE quand l'arbre visé est PROUVÉ et qu'il est
+ * POSITIVEMENT un worktree lié (`estWorktreeLie` : son `.git` est un FICHIER). « Pas l'arbre
+ * principal » ne suffit pas : un chemin qui ne mène à aucun dépôt répondait pareil, et
+ * `git -C ./.wt-inexistant reset --hard` passait en silence (mesuré 2026-09-04). Sans preuve de
+ * répertoire, `ask` inchangé, et le message dit le geste. `stash` reste `ask` PARTOUT : sa pile est
+ * partagée par tous les worktrees.
+ */
+export function evaluate(command, { cwd = null } = {}) {
   if (!command) return null
+  const vise = repertoireProuve(command, cwd)
+  const worktreeLie = vise !== null && estWorktreeLie(vise)
   for (const segment of segmentsProfonds(command)) {
     const lien = lienNodeModules(segment)
     if (lien) {
@@ -198,15 +234,25 @@ export function evaluate(command) {
           `\`git show <commit> -- <paths>\`.`,
       }
     }
-    const what = destructiveReason(git)
-    if (!what) continue
+    const destructif = destructiveReason(git)
+    if (!destructif) continue
+    const { what, famille } = destructif
+    if (famille === 'arbre' && worktreeLie) continue
+    const geste =
+      famille === 'arbre' && vise === null
+        ? ` Si le geste vise un WORKTREE, préfixe \`git -C <worktree>\` ou \`cd <worktree> &&\` : le hook ` +
+          `verra l'arbre et se taira.`
+        : ''
+    const pile = famille === 'stash'
+      ? ` La pile de stash est PARTAGÉE par tous les worktrees (mesuré) : ce geste-là n'est jamais local.`
+      : ''
     return {
       decision: 'ask',
       reason:
         `⚠ Arbre PARTAGÉ multi-sessions : commande git DESTRUCTIVE détectée (${what}). Les fichiers ` +
         `visés peuvent porter le WIP vivant d'une AUTRE session (near-miss documenté : #126 a failli ` +
         `écraser le travail de la session parallèle par mauvaise attribution du diff). Vérifie ` +
-        `l'attribution (git log, contenu) avant de confirmer.`,
+        `l'attribution (git log, contenu) avant de confirmer.${pile}${geste}`,
     }
   }
   return null
@@ -219,8 +265,15 @@ if (isMain) {
   process.stdin.setEncoding('utf8')
   for await (const chunk of process.stdin) raw += chunk
   let command = ''
-  try { command = String(JSON.parse(raw)?.tool_input?.command ?? '') } catch { /* stdin illisible → silence */ }
-  const decision = evaluate(command)
+  // `tool_input.cwd` : le canal `ctx_shell` transmet le répertoire où la commande s'exécute. C'est
+  // la seule PREUVE de répertoire dont un hook dispose quand la commande n'en nomme aucun.
+  let cwd = null
+  try {
+    const toolInput = JSON.parse(raw)?.tool_input
+    command = String(toolInput?.command ?? '')
+    if (typeof toolInput?.cwd === 'string' && toolInput.cwd) cwd = resolve(process.cwd(), toolInput.cwd)
+  } catch { /* stdin illisible → silence */ }
+  const decision = evaluate(command, { cwd })
   if (decision) {
     console.log(JSON.stringify({
       hookSpecificOutput: {

@@ -1,7 +1,8 @@
 // Hook pre-push : la porte AU PUSH (#1679 L2). Elle LIT, elle ne joue rien — régime utilisateur
 // 2026-09-01 « suite complète + tsc avant push, pas de push sur CI rouge ».
 //
-// Cinq refus, tous nommés, sur la TÊTE de chaque ref poussée (l'unité que la CI juge) :
+// Six refus, tous nommés. Les quatre premiers portent sur la TÊTE de chaque ref poussée (l'unité
+// que la CI juge) :
 //   1. `origin` ne pointe pas `github.com/cgauche/game` ;
 //   2. une gate de `ci.yml` sans justificatif VERT et PROPRE pour le CONTENU poussé
 //      (`scripts/guards/lib/justificatif.mjs` ; la commande qui le produit est nommée : `npm run gates`) ;
@@ -16,6 +17,10 @@
 //      Ce refus-là vaut pour TOUTE ref, branche de travail comprise : c'est la lettre du régime
 //      (« pas de push sur CI rouge »), et un push de branche pendant que main est rouge détourne du
 //      seul travail qui compte alors — remettre main au vert.
+//   5. un STOCK NOMINATIF qui grandit quelque part dans la PLAGE poussée, sans que le message de SON
+//      commit le dise (`scripts/guards/lib/plageStock.mjs`) : les portes de stock du commit et du
+//      DERNIER commit ne voient qu'une tête, et un commit intermédiaire leur échappe (revue de
+//      palier n°2, 2026-09-03 — `429b9a1a2` a traversé les deux, six heures après leur pose).
 //
 // Le fast-forward ne se juge que contre une ref distante EXISTANTE (une ref neuve n'écrase rien).
 //
@@ -41,6 +46,7 @@ import {
   lireJustificatif,
   motifDeRefus,
 } from '../guards/lib/justificatif.mjs'
+import { croissancesDeLaPlage, raisonDeRefusDePlage } from '../guards/lib/plageStock.mjs'
 
 const ZERO = '0'.repeat(40)
 
@@ -199,6 +205,11 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
         refus.push(`${refLocale} → ${refDistante} : rejeu des migrations impossible — ${e.message}`)
       }
     }
+
+    // Stocks nominatifs de la PLAGE poussée : par commit, filtrés par la croissance cumulée.
+    const stocks = croissancesDeLaPlage({ cwd, avant: shaDistant, apres: shaLocal })
+    for (const n of stocks.notes) notes.push(n)
+    if (stocks.refus.length) refus.push(raisonDeRefusDePlage(stocks.refus))
   }
 
   const ci = derniereCourseCi({ cwd, env })

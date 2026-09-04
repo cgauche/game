@@ -42,6 +42,14 @@
 //   `evaluateArbrePrincipal`      `ask` sur un commit hors worktree ;
 //   `evaluateHunksEmportes`       `git commit -- <paths>` qui prendrait l'arbre au lieu de l'index ;
 //   `evaluateStocksQuiGrandissent` stock nominatif qui naît ou grandit sans `CLIQUET:` au message.
+//
+// COÛT, et pourquoi le `timeout: 10` de `.claude/settings.json` (et son miroir `.codex/hooks.json`)
+// reste à 10 s (mesuré 2026-09-04, worst case fabriqué : 49 fichiers / 23 520 insertions dont 12
+// PORTEURS de stock) : `git commit -a` 1,8 s, `git commit -- .` 2,2 s, le rejeu de `429b9a1a2`
+// (23 734 insertions, 5 porteurs) 1,1 s ; `git show <sha> -U0` sur ce commit 0,15 s ; le chargement
+// du compilateur `typescript` (portée de module, à la demande) 0,20 s et le parse de ses 5 porteurs
+// 0,06 s. La marge est d'un facteur 4 sur le pire cas mesuré — un hook expiré ne bloque pas, donc
+// ce chiffre se re-mesure quand la porte s'alourdit, il ne se gonfle pas par précaution.
 import { Buffer } from 'node:buffer'
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -510,45 +518,80 @@ const LONG_VALUE_FLAG_EQ_RE = /^--(message|file|author|date|template|fixup|squas
 // pour un pathspec — le filtrage src/ui retombait à néant, JUGE/anti-esquive restaient muets (#591).
 const SHORT_VALUE_FLAG_RE = /^-([a-zA-Z]*)([mF])(.*)$/
 
+/** Token de REDIRECTION ou d'OPÉRATEUR de shell (`2>&1`, `>`, `>>`, `2>/dev/null`, `<`, `|`, `&&`,
+ *  `;`) : à partir de lui, le segment ne parle plus à `git`, et rien de ce qui suit n'est un
+ *  pathspec. Sans cette borne, `git commit -F msg.txt 2>&1 | tail -3` faisait de `2>&1` un pathspec :
+ *  `analyzeStagedDiff` filtrait sur un chemin inexistant et déclarait ABSENT du diff tout fichier
+ *  cité par le solde (mesuré 2026-09-04 sur un vrai commit de fermeture depuis un worktree). */
+const OPERATEUR_SHELL_RE = /^(?:\d*(?:>>?|>&)|&(?![&>])|&>>?|<<?|\|\|?|&&|;)/
+
 /** Glob non résolu (`*`, `?`, `[`) : la garde ne réimplémente pas le matching de pathspec de git —
  *  un pathspec-glob présent invalide le SCOPING ENTIER de la commande (retombe sur l'index complet,
  *  jamais un silence par filtrage résolu à tort en « aucun fichier »). */
 const PATHSPEC_GLOB_RE = /[*?[]/
 
-/** Pathspecs (chemins positionnels) portés par un `git commit`, extraits de sa STRUCTURE : tout
- *  token du segment qui n'est ni un flag connu ni la valeur d'un flag qui en attend une (séparée OU
- *  collée par `=`/glue court, `--`…) est un pathspec — qu'il précède ou suive le séparateur `--`.
- *  `[]` si la commande n'est pas un `git commit`, si elle ne porte aucun pathspec, OU si un pathspec
- *  porte un glob non résolu — dans tous ces cas le diff STAGÉ ENTIER reste la portée (jamais un
- *  scoping mal résolu qui tairait la garde). */
-export function extractCommitPathspecs(command) {
-  if (!command) return []
+/**
+ * Jetons d'un `git commit`, séparés en OPTIONS (valeurs de flags exclues) et CHEMINS positionnels —
+ * `null` si la commande n'exécute pas de `git commit`. UN SEUL parcours pour les deux lectures : les
+ * pathspecs et la présence de `-a` se décident sur la MÊME grammaire. Séparées, un `-m"ajoute…"`
+ * (valeur GLUÉE au flag court) passait pour un `-a` — la valeur d'un `-m` n'est pas une liste
+ * d'options courtes, et la forme du commit en basculait de `index` à `tout` (mesuré 2026-09-04).
+ */
+function jetonsDuCommit(command) {
   for (const segment of segmentsProfonds(command)) {
     const subIdx = gitCommitSubcommandIndex(segment)
     if (subIdx === -1) continue
-    const paths = []
+    const options = []
+    const chemins = []
     for (let k = subIdx + 1; k < segment.length; k++) {
       const t = segment[k]
+      if (OPERATEUR_SHELL_RE.test(t)) break
       if (t === '--') continue
       if (t.startsWith('--')) {
+        options.push(t.split('=')[0])
         if (LONG_VALUE_FLAG_EQ_RE.test(t)) continue // valeur collée par `=` : rien à consommer
         if (COMMIT_VALUE_FLAGS.has(t)) k += 1 // valeur séparée (token suivant)
         continue
       }
       if (t.startsWith('-')) {
-        if (COMMIT_VALUE_FLAGS.has(t)) { k += 1; continue } // `-c` : valeur séparée
+        if (COMMIT_VALUE_FLAGS.has(t)) { options.push(t); k += 1; continue } // `-c` : valeur séparée
         const m = SHORT_VALUE_FLAG_RE.exec(t)
         if (m) {
+          // Les lettres AVANT `m`/`F` sont les options ; le RÉSIDU est la valeur, jamais une option.
+          options.push(`-${m[1]}${m[2]}`)
           if (m[3] === '') k += 1 // résidu vide : valeur SÉPARÉE (token suivant)
-          // résidu non vide : valeur GLUÉE, déjà dans le token — rien à consommer
+          continue
         }
+        options.push(t)
         continue
       }
-      paths.push(t)
+      chemins.push(t)
     }
-    return paths.some((p) => PATHSPEC_GLOB_RE.test(p)) ? [] : paths
+    return { options, chemins }
   }
-  return []
+  return null
+}
+
+/**
+ * Pathspecs portés par un `git commit`, extraits de sa STRUCTURE : tout token qui n'est ni un flag
+ * connu ni la valeur d'un flag qui en attend une est un chemin — qu'il précède ou suive le
+ * séparateur `--`. `nonResolus` distingue les DEUX silences que la seule liste vide confondait :
+ * « la commande ne nomme aucun chemin » et « elle en nomme, mais avec un joker que cette garde ne
+ * résout pas » (`*`, `?`, `[`, magie `:(glob)`). L'appelant DOIT les traiter différemment : un
+ * pathspec non résolu commite quand même l'ARBRE DE TRAVAIL, et le prendre pour « aucun chemin »
+ * faisait lire l'index — vide — pendant que git emportait la croissance (mesuré 2026-09-04).
+ * @returns {{ chemins: string[], nonResolus: boolean }}
+ */
+export function pathspecsDuCommit(command) {
+  const jetons = command ? jetonsDuCommit(command) : null
+  if (!jetons) return { chemins: [], nonResolus: false }
+  const nonResolus = jetons.chemins.some((p) => PATHSPEC_GLOB_RE.test(p))
+  return { chemins: nonResolus ? [] : jetons.chemins, nonResolus }
+}
+
+/** Les seuls pathspecs RÉSOLUS (`[]` quand il n'y en a pas, ou qu'un joker les rend inutilisables). */
+export function extractCommitPathspecs(command) {
+  return pathspecsDuCommit(command).chemins
 }
 
 // Motif de fermeture repris du closer post-commit (`scripts/git-hooks/post-commit`) : mêmes
@@ -815,7 +858,7 @@ function checkRestesSection(content, ctx) {
 /** « -> corrigé dans ce commit » : la correction se PROUVE à son site (`fichier:ligne`), le fichier
  *  doit être dans le diff STAGÉ et la ligne dans un de ses hunks. Les contrôles dont le contexte
  *  n'est pas fourni (appel PUR) ne se jouent pas — la grammaire, elle, est toujours exigée. */
-function problemesCorrige(queue, rang, { fichiersStages, lignesStagees }) {
+function problemesCorrige(queue, rang, { fichiersEmportes, lignesEmportees }) {
   const problems = []
   const refs = [...String(queue).matchAll(REF_SITE_RE)]
     .map((m) => ({ fichier: m[1].replace(/\\/g, '/'), ligne: Number(m[2]) }))
@@ -824,12 +867,12 @@ function problemesCorrige(queue, rang, { fichiersStages, lignesStagees }) {
     return problems
   }
   for (const ref of refs) {
-    if (fichiersStages && !fichiersStages.some((f) => f.replace(/\\/g, '/') === ref.fichier)) {
-      problems.push(`"corrigé dans ce commit" (ligne ${rang} du bloc) cite ${ref.fichier}, ABSENT du diff stagé de ce commit`)
+    if (fichiersEmportes && !fichiersEmportes.some((f) => f.replace(/\\/g, '/') === ref.fichier)) {
+      problems.push(`"corrigé dans ce commit" (ligne ${rang} du bloc) cite ${ref.fichier}, ABSENT de ce que ce commit emporte`)
       continue
     }
-    if (!lignesStagees) continue
-    const lignes = lignesStagees(ref.fichier)
+    if (!lignesEmportees) continue
+    const lignes = lignesEmportees(ref.fichier)
     if (lignes && !lignes.includes(ref.ligne)) {
       problems.push(`"corrigé dans ce commit" (ligne ${rang} du bloc) cite ${ref.fichier}:${ref.ligne}, hors des lignes que ce commit modifie`)
     }
@@ -900,15 +943,15 @@ function checkRecetteVisuelle(content, { touchesUi, verifierCaptureDe }) {
 /**
  * Valide le CONTENU d'un solde. `today` = date du jour en `YYYY-MM-DD`.
  * Contexte INJECTÉ (le driver le remplit depuis git/le disque, un appel nu ne joue que la grammaire) :
- * `fichiersStages` = chemins du diff stagé ; `lignesStagees(fichier)` = lignes que le commit y
+ * `fichiersEmportes` = chemins que le commit emporte ; `lignesEmportees(fichier)` = lignes que le commit y
  * modifie ; `issuesFermees` = tickets fermés par CE commit ; `touchesUi` = le diff touche un écran ;
  * `verifierCaptureDe(chemin)` = contrôle de la capture de recette (voir `verifierCapture`) ;
  * `commitEstAncetre(sha)` / `fichiersDuCommit(sha)` / `lignesDuCommit(sha, fichier)` = l'histoire
  * git, pour « corrigé par <sha> ».
  */
 export function validateSolde(content, today, {
-  fichiersStages = null,
-  lignesStagees = null,
+  fichiersEmportes = null,
+  lignesEmportees = null,
   issuesFermees = [],
   touchesUi = false,
   verifierCaptureDe = () => ({ ok: true, problemes: [] }),
@@ -927,7 +970,7 @@ export function validateSolde(content, today, {
     problems.push(`"VERIFIE:" trop court (${vMatch[1].trim().length} car., ${MIN_VERIFIE_LEN} requis — décrire concrètement la vérification faite)`)
   }
 
-  problems.push(...checkRestesSection(content, { fichiersStages, lignesStagees, issuesFermees, commitEstAncetre, fichiersDuCommit, lignesDuCommit }))
+  problems.push(...checkRestesSection(content, { fichiersEmportes, lignesEmportees, issuesFermees, commitEstAncetre, fichiersDuCommit, lignesDuCommit }))
   problems.push(...checkRecetteVisuelle(content, { touchesUi, verifierCaptureDe }))
 
   const { problems: refutationProblems, refuted } = checkRefutationSection(content)
@@ -990,15 +1033,20 @@ export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, 
 
   const failures = []
   for (const n of issues) {
-    const staged = readSolde(n)
-    if (!staged && soldeOnDisk(n)) {
+    const emporte = readSolde(n)
+    if (!emporte && soldeOnDisk(n)) {
       failures.push({
         n,
-        problems: [`écrit sur le disque mais NON STAGÉ — \`git add .claude/soldes/${n}.md\` avant de committer`],
+        problems: [
+          `écrit sur le disque mais NON EMPORTÉ par ce commit — \`git add .claude/soldes/${n}.md\` ; et si `
+          + `la commande nomme des chemins (\`git commit … -- <chemins>\`), y AJOUTER `
+          + `\`.claude/soldes/${n}.md\` : un commit par pathspec n'emporte QUE ces chemins-là, la preuve `
+          + 'reste sur le disque et le commit part sans elle',
+        ],
       })
       continue
     }
-    const { ok, problems } = validateSolde(staged, today, { ...contexteSolde, issuesFermees: issues })
+    const { ok, problems } = validateSolde(emporte, today, { ...contexteSolde, issuesFermees: issues })
     if (!ok) failures.push({ n, problems })
   }
   if (failures.length === 0) return null
@@ -1026,21 +1074,10 @@ export function repoRoot(scriptUrl = import.meta.url) {
   return join(dirname(fileURLToPath(scriptUrl)), '..', '..')
 }
 
-/** Lecture du solde d'un ticket depuis le disque, racine du dépôt = emplacement du script. `null`
- *  si absent/illisible. */
-export function readSoldeFile(n, scriptUrl = import.meta.url) {
-  try { return readFileSync(join(repoRoot(scriptUrl), '.claude/soldes', `${n}.md`), 'utf8') } catch { return null }
-}
-
-/** Lecture du solde d'un ticket dans l'INDEX GIT de `dir` (répertoire où le `git commit` s'exécute) :
- *  c'est la version qui partira dans le commit de fermeture, donc la seule qui survivra pour être
- *  relue plus tard. `null` si le fichier n'est pas stagé. */
-export function readStagedSoldeFile(n, dir = process.cwd()) {
-  try {
-    return execSync(`git show :.claude/soldes/${n}.md`, {
-      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
-    })
-  } catch { return null }
+/** Lecture du solde d'un ticket sur le DISQUE de `dir` — le répertoire où le commit s'exécute, comme
+ *  tout ce que ce garde lit. `null` si absent/illisible. */
+export function readSoldeFile(n, dir = process.cwd()) {
+  try { return readFileSync(join(dir, '.claude/soldes', `${n}.md`), 'utf8') } catch { return null }
 }
 
 // ── Compteur de palier : UN fichier par DÉPÔT, partagé par tous ses worktrees ────────────────────
@@ -1092,9 +1129,12 @@ export function readCounterFile(dir = process.cwd()) {
   } catch { return 0 }
 }
 
-/** Lecture de la revue de palier depuis le disque. `null` si absente/illisible. */
-export function readRevuePalierFile(scriptUrl = import.meta.url) {
-  try { return readFileSync(join(repoRoot(scriptUrl), '.claude/soldes/revue-palier.md'), 'utf8') } catch { return null }
+/** Lecture de la revue de palier dans le RÉPERTOIRE où le `git commit` s'exécute (patron des soldes
+ *  et du compteur). Elle était lue dans le dépôt du HOOK, c'est-à-dire l'arbre principal : depuis un
+ *  worktree, une revue présente et commitée était déclarée absente et toute fermeture refusée
+ *  (mesuré 2026-09-04). `null` si absente ou illisible. */
+export function readRevuePalierFile(dir = process.cwd()) {
+  try { return readFileSync(join(dir, '.claude/soldes/revue-palier.md'), 'utf8') } catch { return null }
 }
 
 // ── Anti-esquive (extension 2026-07-14, périmètre tranché #591) ────────────────────────────────────
@@ -1299,10 +1339,10 @@ export function evaluateAmendInvisible({ command, stagedTouchesSrc }) {
   }
 }
 
-/** Lecture d'un fichier de réfutation `ref-<n>` depuis le disque, racine du dépôt = emplacement du
- *  script. `null` si absent/illisible. */
-export function readRefFile(n, scriptUrl = import.meta.url) {
-  try { return readFileSync(join(repoRoot(scriptUrl), '.claude/soldes', `ref-${n}.md`), 'utf8') } catch { return null }
+/** Lecture d'un fichier de réfutation `ref-<n>` sur le DISQUE de `dir` — le répertoire où le commit
+ *  s'exécute. `null` si absent/illisible. */
+export function readRefFile(n, dir = process.cwd()) {
+  try { return readFileSync(join(dir, '.claude/soldes', `ref-${n}.md`), 'utf8') } catch { return null }
 }
 
 // ── Répertoire CIBLE du commit (fix #587) ──────────────────────────────────────────────────────────
@@ -1341,22 +1381,34 @@ function valeurGitDashC(segment) {
   return null
 }
 
-/** Répertoire dans lequel le `git commit` de la commande s'exécute réellement : `git -C <path>` en
- *  priorité, sinon le premier `cd <path>` du pipeline, résolu contre `cwd` (le cwd du process hook).
- *  `cwd` inchangé si ni l'un ni l'autre n'est présent (comportement d'origine hors worktree). */
-export function extractTargetDir(command, cwd = process.cwd(), platform = process.platform) {
-  if (!command) return cwd
+/** Répertoire que la COMMANDE nomme elle-même : `git -C <path>` en priorité, sinon le premier
+ *  `cd <path>` du pipeline, résolu contre `cwd`. `null` si la commande n'en nomme aucun — le
+ *  répertoire n'est alors pas PROUVÉ, et un appelant qui accorde une permission sur la foi de
+ *  l'arbre visé doit le savoir (le cwd persistant du canal Bash n'est observable par aucun hook ;
+ *  seul `ctx_shell` transmet un `tool_input.cwd`). */
+export function repertoireNommeParLaCommande(command, cwd = process.cwd(), platform = process.platform) {
+  if (!command) return null
   const segments = segmentsProfonds(command)
   for (const segment of segments) {
     const dashC = valeurGitDashC(segment)
     if (dashC) return resolve(cwd, versCheminNatif(dashC, platform))
   }
+  // Les `cd` se PLIENT dans l'ordre : `cd <wt> && cd .. && git …` s'exécute dans le PARENT du
+  // worktree, pas dedans. Retenir le premier faisait dire « worktree » à un geste qui n'y est plus
+  // (mesuré 2026-09-04) — chaque `cd` se résout contre le répertoire où le précédent a mené.
+  let courant = null
   for (const segment of segments) {
     if (basenameExecutable(segment[0]) === 'cd' && segment[1]) {
-      return resolve(cwd, versCheminNatif(segment[1], platform))
+      courant = resolve(courant ?? cwd, versCheminNatif(segment[1], platform))
     }
   }
-  return cwd
+  return courant
+}
+
+/** Répertoire dans lequel le `git commit` de la commande s'exécute réellement : celui qu'elle nomme,
+ *  sinon `cwd` inchangé (comportement d'origine hors worktree). */
+export function extractTargetDir(command, cwd = process.cwd(), platform = process.platform) {
+  return repertoireNommeParLaCommande(command, cwd, platform) ?? cwd
 }
 
 // ── Manifest RAW (prévention #434/#487) ────────────────────────────────────────────────────────────
@@ -1378,14 +1430,15 @@ export function manifestTickets(manifestContent) {
 
 /**
  * Décision « fermeture d'un ticket encore présent dans le manifest RAW stagé » (PURE, testable).
- * `readStagedManifest()` renvoie la version STAGÉE de `src/data/raw.manifest.json` (ou `null`).
+ * `readManifestEmporte()` renvoie la version de `src/data/raw.manifest.json` que le commit EMPORTE
+ * (ou `null`).
  * Une fermeture de #N dont l'entrée manifest n'a PAS été retirée dans le même commit = deny.
  * @returns {{ reason: string } | null}
  */
-export function evaluateManifestClosure({ command, readStagedManifest = () => null }) {
+export function evaluateManifestClosure({ command, readManifestEmporte = () => null }) {
   const issues = extractClosedIssues(command)
   if (issues.length === 0) return null
-  const tickets = manifestTickets(readStagedManifest())
+  const tickets = manifestTickets(readManifestEmporte())
   const stuck = issues.filter((n) => tickets.has(n))
   if (stuck.length === 0) return null
   const list = stuck.map((n) => `#${n}`).join(', ')
@@ -1396,17 +1449,6 @@ export function evaluateManifestClosure({ command, readStagedManifest = () => nu
       `fermée à tort. Retirer l'entrée manifest de ${list} et relancer \`npm run raw:implemente\` dans ` +
       `le MÊME commit (régénère le champ Implémente), puis re-committer.`,
   }
-}
-
-/** Lecture de la version STAGÉE (index git) de `src/data/raw.manifest.json`, dans `dir` (répertoire
- *  cible du commit, fix #587 — défaut `cwd` du process, comportement inchangé hors worktree).
- *  `null` si absente/illisible. */
-export function readStagedManifestFile(dir = process.cwd()) {
-  try {
-    return execSync(`git show :${RAW_MANIFEST_PATH}`, {
-      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
-    })
-  } catch { return null }
 }
 
 /** `true` si `path` est COUVERT par le pathspec `ps` (chemin identique, ou `path` sous le dossier
@@ -1433,28 +1475,28 @@ export function estFichierEcran(path) {
   return /^src\/(ui|gameIso)\/.+\.tsx$/.test(p)
 }
 
-/** Analyse du diff STAGED (`git diff --cached --numstat`) : touche-t-il `src/**` ? un ÉCRAN
+/** Analyse du `--numstat` du diff que le commit va produire (`diffDuCommit(...).numstat()`) :
+ *  touche-t-il `src/**` ? un ÉCRAN
  *  (`estFichierEcran`, rendu par `touchesUi`) ?
  *  combien de lignes (insertions+suppressions) au total ? Fichiers binaires (`-\t-\t<path>`)
  *  comptés 0 ligne mais peuvent toucher `src/**`. `''`/erreur git → aucune touche, 0 ligne
  *  (silence, jamais un deny par accident hors dépôt).
  *
- * `pathspecs` (#591 défaut 1, arbre PARTAGÉ) : si la commande `git commit` porte des pathspecs
- * explicites (`git commit -- <paths>` ou chemins positionnels), seuls les fichiers du diff STAGÉ qui
- * matchent ces pathspecs sont regardés — jamais l'INDEX GLOBAL, qui peut porter le lot d'une AUTRE
- * session cohabitant sur le même arbre. `[]` (par défaut, ou commit sans pathspec) = portée
- * INCHANGÉE : l'index entier. */
-export function analyzeStagedDiff(raw, pathspecs = []) {
+ * AUCUN filtrage de pathspec ici (#591 défaut 1, arbre PARTAGÉ) : la restriction au lot de CETTE
+ * commande est déjà faite par git, qui a produit ce `--numstat` en le bornant aux pathspecs
+ * (`diffDuCommit`). La refaire ici avec un matcheur de chemins MAISON aveuglait la garde sur la
+ * forme la plus courante — `git commit -- .` : `.` n'égale aucun chemin et ne préfixe aucun, donc
+ * tout le lot était jeté (mesuré 2026-09-04). Un seul matcheur de pathspec dans ce fichier, et
+ * c'est celui de git. */
+export function analyzeDiffDuCommit(raw) {
   let touchesSrc = false
   let touchesUi = false
   let totalLines = 0
   const fichiers = []
-  const scoped = pathspecs.length > 0
   for (const line of String(raw ?? '').split('\n')) {
     if (!line.trim()) continue
     const [ins, del, ...pathParts] = line.split('\t')
     const path = pathParts.join('\t')
-    if (scoped && !pathspecs.some((ps) => pathMatchesPathspec(path, ps))) continue
     fichiers.push(path)
     totalLines += (Number.parseInt(ins, 10) || 0) + (Number.parseInt(del, 10) || 0)
     if (/^src\//.test(path)) touchesSrc = true
@@ -1463,23 +1505,73 @@ export function analyzeStagedDiff(raw, pathspecs = []) {
   return { touchesSrc, touchesUi, totalLines, fichiers }
 }
 
-/** Lecture du diff STAGED brut (`git diff --cached --numstat`), dans `dir` (répertoire cible du
- *  commit, fix #587 — défaut `cwd` du process, comportement inchangé hors worktree). */
-export function readStagedDiffStat(dir = process.cwd()) {
-  try {
-    return execSync('git diff --cached --numstat', {
-      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
-    })
-  } catch { return '' }
+// ── Le diff que le commit va RÉELLEMENT produire ──────────────────────────────────────────────────
+// `git commit` a trois FORMES, et chacune emporte un contenu différent : avec des pathspecs
+// (`git commit -- <paths>` ou chemins positionnels) c'est l'ARBRE DE TRAVAIL de ces chemins, avec
+// `-a` c'est tout le modifié SUIVI, sinon c'est l'INDEX. Lire l'index dans les deux premiers cas
+// rendait un diff VIDE quand rien n'était stagé, et toute évaluation qui en dépend se taisait —
+// c'est par là que la croissance de stock de `429b9a1a2` est passée (revue de palier n°2, cause
+// prouvée par sonde le 2026-09-03). La forme se décide ICI, une fois, pour toutes les évaluations.
+//
+// `--amend` ne change pas la règle et n'ajoute PAS le diff de HEAD : un amend n'introduit aucun
+// contenu que HEAD ne portait déjà (donc rien de neuf à juger), et le contenu final est de toute
+// façon relu par la porte de PLAGE au pre-push (`scripts/guards/lib/plageStock.mjs`).
+
+/** Forme d'un `git commit` : `pathspec` (arbre des chemins nommés), `tout` (-a), `index`.
+ *  Un pathspec NON RÉSOLU (joker) rend `tout` — git commitera l'arbre de travail, et un diff
+ *  SUR-INCLUSIF (non borné) le voit toujours ; le prendre pour `index` rendait la garde MUETTE. */
+export function formeDuCommit(command) {
+  const { chemins, nonResolus } = pathspecsDuCommit(command)
+  if (nonResolus) return { forme: 'tout', pathspecs: [] }
+  if (chemins.length > 0) return { forme: 'pathspec', pathspecs: chemins }
+  if (aFlagTout(command)) return { forme: 'tout', pathspecs: [] }
+  return { forme: 'index', pathspecs: [] }
 }
 
-/** Diff STAGÉ d'UN fichier à zéro contexte (`git diff --cached -U0 -- <fichier>`), dans `dir`. */
-export function readStagedFileDiff(fichier, dir = process.cwd()) {
-  try {
-    return execFileSync('git', ['diff', '--cached', '-U0', '--', fichier], {
-      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
-    })
-  } catch { return '' }
+/**
+ * Lectures du contenu que `command` va committer dans `dir` : `numstat()` (le stat d'ensemble),
+ * `fichier(f)` (le `-U0` d'un fichier), `contenu(f)`/`avant(f)` (le fichier APRÈS et AVANT le
+ * commit). Toute erreur git rend `''`/`null` — le garde se tait, il ne refuse pas hors dépôt.
+ * Le `HEAD` n'est interrogé que si la forme l'exige (un dépôt sans premier commit n'a que l'index).
+ *
+ * `contenu(f)` suit la forme JUSQU'AU FICHIER, et c'est là que se règle la porte de FERMETURE : sous
+ * `git commit -m "… corrige #N" -- src/x.ts`, un solde stagé mais HORS pathspec n'est PAS emporté —
+ * git garde pour lui le contenu de HEAD. Lire l'index validait une preuve que le commit ne portait
+ * pas (mesuré 2026-09-04). Donc : forme `index` → l'index ; forme `pathspec` → l'arbre de travail
+ * pour un chemin DANS le pathspec, HEAD pour tous les autres ; forme `tout` → l'arbre de travail.
+ */
+export function diffDuCommit(command, dir = process.cwd()) {
+  const { forme, pathspecs } = formeDuCommit(command)
+  const lire = (args) => {
+    try {
+      return execFileSync('git', args, {
+        encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 28,
+      })
+    } catch { return null }
+  }
+  const fichierDeTravail = (f) => {
+    try { return readFileSync(join(dir, f), 'utf8') } catch { return null }
+  }
+  let head = null
+  const aHead = () => (head ??= lire(['rev-parse', '--verify', '--quiet', 'HEAD']) !== null)
+  const contreIndex = () => forme === 'index' || !aHead()
+  const rev = () => (contreIndex() ? ['--cached'] : ['HEAD'])
+  const borne = pathspecs.length ? ['--', ...pathspecs] : []
+  const contenu = (f) => {
+    if (contreIndex()) return lire(['show', `:${f}`])
+    if (forme === 'pathspec' && !pathspecs.some((ps) => pathMatchesPathspec(f, ps))) {
+      return lire(['show', `HEAD:${f}`])
+    }
+    return fichierDeTravail(f)
+  }
+  return {
+    forme,
+    pathspecs,
+    numstat: () => lire(['diff', ...rev(), '--numstat', ...borne]) ?? '',
+    fichier: (f) => lire(['diff', ...rev(), '-U0', '--', f]) ?? '',
+    contenu,
+    avant: (f) => (aHead() ? lire(['show', `HEAD:${f}`]) : null),
+  }
 }
 
 /** Chemins rendus par `git diff --name-only [--cached]` dans `dir`. */
@@ -1502,15 +1594,6 @@ export function fichiersCitantTickets(numeros, dir = process.cwd()) {
       encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
     }).split('\n').map((l) => l.trim()).filter(Boolean)
   } catch { return [] } // aucun match : `git grep` sort en 1
-}
-
-/** Contenu d'un chemin dans l'INDEX de `dir` (`git show :<path>`), `null` s'il n'y est pas. */
-export function readStagedPath(path, dir = process.cwd()) {
-  try {
-    return execFileSync('git', ['show', `:${path}`], {
-      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
-    })
-  } catch { return null }
 }
 
 /** `true` si `sha` est un ANCÊTRE de HEAD dans `dir` (donc réellement dans cette histoire). */
@@ -1537,9 +1620,10 @@ export function fichiersDuCommitGit(sha, dir = process.cwd()) {
 }
 
 /** Diff à ZERO contexte d'un fichier DANS le commit `sha` (`git show <sha> -U0 -- <fichier>`),
- *  `''` si le commit ou le fichier est inconnu. Le commit se place AVANT le séparateur : après, git
- *  le lirait comme un pathspec (`env-git-show-ordre-commit-avant-paths`). */
-export function diffDuCommitGit(sha, fichier, dir = process.cwd()) {
+ *  `''` si le commit ou le fichier est inconnu — le diff d'UN SHA DÉJÀ POSÉ, à ne pas confondre avec
+ *  `diffDuCommit`, qui lit ce que la commande EN COURS va emporter. Le commit se place AVANT le
+ *  séparateur : après, git le lirait comme un pathspec (`env-git-show-ordre-commit-avant-paths`). */
+export function diffDunSha(sha, fichier, dir = process.cwd()) {
   try {
     return execFileSync('git', ['show', '-U0', '--format=', '--no-renames', sha, '--', fichier], {
       encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
@@ -1671,18 +1755,32 @@ export function evaluateFermetureHorsCommit(command, { lire = (p) => readFileSyn
 // `.wt-<ticket>-L<n>`. Un worktree lié porte un `.git` FICHIER (`gitdir: …`), l'arbre principal un
 // `.git` DOSSIER : le fait se lit, il ne se déclare pas.
 
-/** `true` si `dir` (ou un de ses ancêtres) est un arbre git dont le `.git` est un DOSSIER. */
-export function estArbrePrincipal(dir = process.cwd()) {
+/** Nature du premier `.git` trouvé en remontant depuis `dir` : `'dossier'` (arbre principal),
+ *  `'fichier'` (worktree lié), ou `null` — aucun dépôt, ou répertoire illisible. Les trois cas se
+ *  DISTINGUENT : un prédicat booléen confondait « worktree lié » et « pas de dépôt du tout », et une
+ *  permission accordée sur la réponse NÉGATIVE se donnait à un chemin inexistant. */
+export function natureDeLArbre(dir = process.cwd()) {
   let courant = resolve(dir)
   for (;;) {
     const point = join(courant, '.git')
     try {
-      if (existsSync(point)) return statSync(point).isDirectory()
-    } catch { return false }
+      if (existsSync(point)) return statSync(point).isDirectory() ? 'dossier' : 'fichier'
+    } catch { return null }
     const parent = dirname(courant)
-    if (parent === courant) return false
+    if (parent === courant) return null
     courant = parent
   }
+}
+
+/** `true` si `dir` (ou un de ses ancêtres) est un arbre git dont le `.git` est un DOSSIER. */
+export function estArbrePrincipal(dir = process.cwd()) {
+  return natureDeLArbre(dir) === 'dossier'
+}
+
+/** `true` si `dir` (ou un de ses ancêtres) est un WORKTREE LIÉ — preuve POSITIVE, jamais l'absence
+ *  d'arbre principal. */
+export function estWorktreeLie(dir = process.cwd()) {
+  return natureDeLArbre(dir) === 'fichier'
 }
 
 /**
@@ -1690,11 +1788,11 @@ export function estArbrePrincipal(dir = process.cwd()) {
  * une porte bloquante sur un geste ROUTINIER arrêterait le programme en l'absence de l'utilisateur.
  * @returns {{ decision: 'ask', reason: string } | null}
  */
-export function evaluateArbrePrincipal({ command, principal = false, fichiersStages = [] }) {
+export function evaluateArbrePrincipal({ command, principal = false, fichiersEmportes = [] }) {
   if (!command || !isGitCommitCommand(command) || !principal) return null
-  const liste = fichiersStages.length
-    ? `${fichiersStages.length} chemin(s) stagé(s) : ${fichiersStages.slice(0, 8).join(', ')}${fichiersStages.length > 8 ? ' …' : ''}`
-    : 'index vide vu par le garde'
+  const liste = fichiersEmportes.length
+    ? `${fichiersEmportes.length} chemin(s) emporté(s) : ${fichiersEmportes.slice(0, 8).join(', ')}${fichiersEmportes.length > 8 ? ' …' : ''}`
+    : 'aucun chemin emporté vu par le garde'
   return {
     decision: 'ask',
     reason:
@@ -1710,22 +1808,18 @@ export function evaluateArbrePrincipal({ command, principal = false, fichiersSta
 // acf2a447, bb824bafb). Le geste réel est une SÉQUENCE de deux appels — la porte se pose donc sur
 // le commit, jamais sur « les deux dans une commande ».
 
-/** `true` si un segment `git commit` de la commande porte `-a`/`--all` (isolé ou groupé : `-am`). */
+/** `true` si un segment `git commit` de la commande porte `-a`/`--all` (isolé ou groupé : `-am`).
+ *  Les OPTIONS seules sont inspectées (`jetonsDuCommit`) : la valeur d'un `-m` n'en est pas une. */
 function aFlagTout(command) {
-  for (const segment of segmentsProfonds(command)) {
-    const idx = gitCommitSubcommandIndex(segment)
-    if (idx === -1) continue
-    for (const t of segment.slice(idx + 1)) {
-      if (t === '--all') return true
-      if (/^-[a-zA-Z]*a/.test(t) && !t.startsWith('--')) return true
-    }
-  }
-  return false
+  const jetons = command ? jetonsDuCommit(command) : null
+  if (!jetons) return false
+  return jetons.options.some((o) => o === '--all' || (!o.startsWith('--') && /^-[a-zA-Z]*a/.test(o)))
 }
 
 /**
  * Décision « le commit prendra l'ARBRE, pas l'index ». `fichiersModifies` = `git diff --name-only`
- * (non stagé), `fichiersStages` = `git diff --cached --name-only`.
+ * (non stagé), `fichiersStages` = `git diff --cached --name-only`. C'est le SEUL évaluateur dont le
+ * sujet EST l'index : il compare ce que l'index porte à ce que la commande va prendre.
  * @returns {{ decision: 'deny', reason: string } | { contexte: string } | null}
  */
 export function evaluateHunksEmportes({ command, fichiersModifies = [], fichiersStages = [] }) {
@@ -1770,13 +1864,14 @@ export function evaluateHunksEmportes({ command, fichiersModifies = [], fichiers
 
 /**
  * Décision « un stock nominatif a grossi sans que le message le dise ». `command` = texte du
- * message (comme les autres évaluateurs), `diffStage` = diff unifié de l'index (les fichiers
- * porteurs suffisent). Ne se prononce que sur un `git commit`.
+ * message (comme les autres évaluateurs), `diff` = diff unifié de ce que le commit emporte
+ * (les fichiers porteurs suffisent), `images` = les lecteurs de pré/post-image qui décident la
+ * PORTÉE DE MODULE d'une entrée. Ne se prononce que sur un `git commit`.
  * @returns {{ decision: 'deny', reason: string } | null}
  */
-export function evaluateStocksQuiGrandissent({ command, diffStage }) {
-  if (!command || !isGitCommitCommand(command) || !diffStage) return null
-  const restantes = croissancesNonCouvertes({ diff: diffStage, message: command ?? '' })
+export function evaluateStocksQuiGrandissent({ command, diff, images }) {
+  if (!command || !isGitCommitCommand(command) || !diff) return null
+  const restantes = croissancesNonCouvertes({ diff: diff, message: command ?? '' }, images)
   return restantes.length ? { decision: 'deny', reason: raisonDeRefus(restantes) } : null
 }
 
@@ -1818,7 +1913,10 @@ if (isMain) {
   // `cd <autre dépôt> && npm run x` n'y lit pas les scripts de CE dépôt-ci) — même discipline
   // d'ancrage que `targetDir` pour l'index, le message `-F` et l'histoire git.
   ancrerScriptsNpm(targetDir)
-  const { touchesSrc, touchesUi, totalLines, fichiers } = analyzeStagedDiff(readStagedDiffStat(targetDir), extractCommitPathspecs(command))
+  // Le contenu jugé est celui que le commit va EMPORTER, pas l'index : la forme de la commande le
+  // décide (`diffDuCommit`), et toutes les évaluations lisent par cette même porte.
+  const commit = diffDuCommit(command, targetDir)
+  const { touchesSrc, touchesUi, totalLines, fichiers } = analyzeDiffDuCommit(commit.numstat())
 
   // Message `-F <chemin>` : résolu dans le répertoire où le `git commit` s'exécute RÉELLEMENT
   // (targetDir), jamais dans celui d'où part la commande — un `cd wt && git commit -F m.txt`
@@ -1844,36 +1942,41 @@ if (isMain) {
   const decision = evaluate({
     command: text,
     today,
-    readSolde: (n) => readStagedSoldeFile(n, targetDir),
-    soldeOnDisk: (n) => readSoldeFile(n),
+    // Le solde LU est celui que le commit EMPORTE (`commit.contenu`) : sous un commit par pathspec,
+    // un solde stagé hors pathspec reste à la version de HEAD et la preuve ne part pas.
+    readSolde: (n) => commit.contenu(`.claude/soldes/${n}.md`),
+    soldeOnDisk: (n) => readSoldeFile(n, targetDir),
     counter: readCounterFile(targetDir),
     cheminCompteur: cheminCompteurPalier(targetDir),
-    readRevuePalier: readRevuePalierFile,
+    readRevuePalier: () => readRevuePalierFile(targetDir),
     contexteSolde: {
-      fichiersStages: fichiers,
-      lignesStagees: (f) => lignesDeHunks(readStagedFileDiff(f, targetDir)),
+      fichiersEmportes: fichiers,
+      lignesEmportees: (f) => lignesDeHunks(commit.fichier(f)),
       touchesUi,
       verifierCaptureDe: (chemin) => verifierCapture(chemin, { racine: targetDir, mtimeMin: mtimeEcrans }),
       commitEstAncetre: (sha) => commitEstAncetreDeHead(sha, targetDir),
       fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, targetDir),
-      lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDuCommitGit(sha, fichier, targetDir)),
+      lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDunSha(sha, fichier, targetDir)),
     },
   })
+  // TOUT ce que le garde lit sur DISQUE se lit dans le répertoire où le commit s'exécute — comme le
+  // solde stagé, le compteur, le message `-F` et la revue de palier. Lu depuis le dépôt du HOOK, un
+  // fichier de réfutation écrit dans le worktree était invisible, et la porte refusait à tort.
   const antiEsquive = evaluateAntiEsquive({
     command: text,
     stagedTouchesSrc: touchesSrc,
     stagedTotalLines: totalLines,
-    readRefFile,
+    readRefFile: (n) => readRefFile(n, targetDir),
   })
   const juge = evaluateJuge({
     command: text,
     stagedTouchesSrc: touchesSrc,
     stagedTotalLines: totalLines,
     stagedTouchesUi: touchesUi,
-    readRefFile,
+    readRefFile: (n) => readRefFile(n, targetDir),
   })
   const amendInvisible = evaluateAmendInvisible({ command, stagedTouchesSrc: touchesSrc })
-  const manifestClosure = evaluateManifestClosure({ command: text, readStagedManifest: () => readStagedManifestFile(targetDir) })
+  const manifestClosure = evaluateManifestClosure({ command: text, readManifestEmporte: () => commit.contenu(RAW_MANIFEST_PATH) })
   // Corps `--input <chemin>` : résolu là où la commande s'exécute RÉELLEMENT, comme le `-F` du commit.
   const horsCommit = evaluateFermetureHorsCommit(command, {
     lire: (chemin) => readFileSync(resolve(targetDir, chemin), 'utf8'),
@@ -1887,13 +1990,13 @@ if (isMain) {
     tombale = evaluateTombale({
       issuesFermees: fermes,
       fichiers: fichiersCitantTickets(fermes, targetDir),
-      lire: (p) => readStagedPath(p, targetDir),
+      lire: (p) => commit.contenu(p),
     })
   }
   const arbrePrincipal = evaluateArbrePrincipal({
     command,
     principal: estArbrePrincipal(targetDir),
-    fichiersStages: fichiers,
+    fichiersEmportes: fichiers,
   })
   const hunks = evaluateHunksEmportes({
     command,
@@ -1901,12 +2004,13 @@ if (isMain) {
     fichiersStages: readChangedNames(targetDir, { cached: true }),
   })
   // Diff des seuls fichiers PORTEURS de stock : le `-U0` par fichier existe déjà (même lecture que
-  // les preuves au site), et l'index entier ne se relit pas pour une poignée de fichiers. Hors
-  // `git commit`, aucun `git diff` n'est payé.
+  // les preuves au site), et le lot entier ne se relit pas pour une poignée de fichiers. Hors
+  // `git commit`, aucun `git diff` n'est payé — ni le compilateur chargé par les images.
   const porteursDeStock = isGitCommitCommand(text) ? fichiers.filter(estPorteurDeStock) : []
   const stocks = evaluateStocksQuiGrandissent({
     command: text,
-    diffStage: porteursDeStock.map((f) => readStagedFileDiff(f, targetDir)).join('\n'),
+    diff: porteursDeStock.map((f) => commit.fichier(f)).join('\n'),
+    images: { lirePostImage: commit.contenu, lirePreImage: commit.avant },
   })
   const cumul = decisionCumulee([
     decision, antiEsquive, juge, amendInvisible, manifestClosure,

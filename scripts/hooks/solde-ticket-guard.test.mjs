@@ -8,7 +8,6 @@ import { resolve, join } from 'node:path'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
-import { pathToFileURL } from 'node:url'
 import {
   extractClosedIssues,
   validateSolde,
@@ -17,7 +16,7 @@ import {
   extractRefIssues,
   validateRefFile,
   evaluateAntiEsquive,
-  analyzeStagedDiff,
+  analyzeDiffDuCommit,
   extractMessageSources,
   evaluateAmendInvisible,
   manifestTickets,
@@ -28,9 +27,11 @@ import {
   evaluateJuge,
   isGitCommitCommand,
   extractCommitPathspecs,
+  pathspecsDuCommit,
+  formeDuCommit,
+  diffDuCommit,
   repoRoot,
   readSoldeFile,
-  readStagedSoldeFile,
   readRevuePalierFile,
   readRefFile,
   restesItems,
@@ -46,7 +47,7 @@ import {
   evaluateHunksEmportes,
   commitEstAncetreDeHead,
   fichiersDuCommitGit,
-  diffDuCommitGit,
+  diffDunSha,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
 
@@ -361,63 +362,77 @@ test('validateRefFile : section Réfutation trop maigre', () => {
   assert.match(r.problems.join(' ; '), /trop maigre/)
 })
 
-// ── analyzeStagedDiff ────────────────────────────────────────────────────────────────────────────
-test('analyzeStagedDiff : touche src/**, compte les lignes', () => {
+// ── analyzeDiffDuCommit ────────────────────────────────────────────────────────────────────────────
+test('analyzeDiffDuCommit : touche src/**, compte les lignes', () => {
   const raw = '5\t2\tsrc/engine/character.ts\n1\t0\tdocs/plans/truc.md\n'
-  const r = analyzeStagedDiff(raw)
+  const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, true)
   assert.equal(r.totalLines, 8)
 })
 
-test('analyzeStagedDiff : docs-only ne touche pas src', () => {
+test('analyzeDiffDuCommit : docs-only ne touche pas src', () => {
   const raw = '10\t3\tdocs/architecture.md\n'
-  const r = analyzeStagedDiff(raw)
+  const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, false)
 })
 
-test('analyzeStagedDiff : vide/absent → aucune touche, 0 ligne', () => {
-  assert.deepEqual(analyzeStagedDiff(''), { touchesSrc: false, touchesUi: false, totalLines: 0, fichiers: [] })
-  assert.deepEqual(analyzeStagedDiff(undefined), { touchesSrc: false, touchesUi: false, totalLines: 0, fichiers: [] })
+test('analyzeDiffDuCommit : vide/absent → aucune touche, 0 ligne', () => {
+  assert.deepEqual(analyzeDiffDuCommit(''), { touchesSrc: false, touchesUi: false, totalLines: 0, fichiers: [] })
+  assert.deepEqual(analyzeDiffDuCommit(undefined), { touchesSrc: false, touchesUi: false, totalLines: 0, fichiers: [] })
 })
 
-test('analyzeStagedDiff : touche src/ui/** → touchesUi', () => {
+test('analyzeDiffDuCommit : touche src/ui/** → touchesUi', () => {
   const raw = '3\t1\tsrc/ui/RollShell.tsx\n'
-  const r = analyzeStagedDiff(raw)
+  const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, true)
   assert.equal(r.touchesUi, true)
 })
 
-test('analyzeStagedDiff : src/** hors src/ui/** → touchesUi false', () => {
+test('analyzeDiffDuCommit : src/** hors src/ui/** → touchesUi false', () => {
   const raw = '3\t1\tsrc/engine/combat.ts\n'
-  const r = analyzeStagedDiff(raw)
+  const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, true)
   assert.equal(r.touchesUi, false)
 })
 
-// ── analyzeStagedDiff pathspec-scopé (#591 défaut 1, arbre PARTAGÉ) ────────────────────────────────
-test('analyzeStagedDiff : pathspecs fournis → seuls les fichiers matchés comptent (index d\'une autre session ignoré)', () => {
+// ── La restriction au lot de CETTE commande appartient à git (#591 défaut 1, arbre PARTAGÉ) ───────
+// `diffDuCommit` borne déjà le `--numstat` par `-- <pathspecs>`. Refaire ce filtrage ICI avec un
+// matcheur de chemins MAISON aveuglait la garde sur `git commit -- .` (sonde 2026-09-04) : `.`
+// n'égale aucun chemin et n'en préfixe aucun, donc tout le lot était jeté — stock, `touchesSrc` et
+// compte de lignes à zéro sur la forme la plus courante.
+test('analyzeDiffDuCommit : lit le numstat TEL QUEL, sans second filtrage de chemins', () => {
   const raw = [
-    '50\t20\tsrc/ui/RollShell.tsx', // fichier ÉTRANGER (autre session), pas dans le pathspec
+    '50\t20\tsrc/ui/RollShell.tsx',
     '3\t1\tscripts/hooks/solde-ticket-guard.mjs',
     '1\t0\t.claude/settings.json',
   ].join('\n')
-  const r = analyzeStagedDiff(raw, ['scripts/hooks/solde-ticket-guard.mjs', '.claude/settings.json'])
-  assert.equal(r.touchesUi, false)
-  assert.equal(r.touchesSrc, false)
-  assert.equal(r.totalLines, 5)
+  const r = analyzeDiffDuCommit(raw)
+  assert.deepEqual(
+    [r.touchesUi, r.touchesSrc, r.totalLines, r.fichiers.length], [true, true, 75, 3],
+    'le numstat que git a rendu EST la portée : rien ne s’y retranche après coup',
+  )
 })
 
-test('analyzeStagedDiff : pathspec sur un dossier couvre tous ses fichiers', () => {
-  const raw = '3\t1\tsrc/ui/RollShell.tsx\n5\t0\tsrc/engine/combat.ts\n'
-  const r = analyzeStagedDiff(raw, ['src/ui'])
-  assert.equal(r.touchesUi, true)
-  assert.equal(r.touchesSrc, true)
-  assert.equal(r.totalLines, 4)
-})
-
-test('analyzeStagedDiff : pathspecs vide (défaut) → portée INCHANGÉE, index entier', () => {
-  const raw = '3\t1\tsrc/ui/RollShell.tsx\n'
-  assert.deepEqual(analyzeStagedDiff(raw), analyzeStagedDiff(raw, []))
+test('analyzeDiffDuCommit : `git commit -- .` — le lot borné par git est vu ENTIER', () => {
+  const repo = mkdtempSync(join(tmpdir(), 'point-'))
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] })
+    git('init', '-q')
+    git('config', 'user.email', 'sonde@test')
+    git('config', 'user.name', 'sonde')
+    git('config', 'commit.gpgsign', 'false')
+    mkdirSync(join(repo, 'src'), { recursive: true })
+    writeFileSync(join(repo, 'src', 'a.ts'), 'export const a = 1\n', 'utf8')
+    git('add', '-A')
+    git('commit', '-q', '--no-verify', '-m', 'socle')
+    writeFileSync(join(repo, 'src', 'a.ts'), 'export const a = 2\n', 'utf8')
+    for (const ps of ['.', './', 'src', ':/']) {
+      const r = analyzeDiffDuCommit(diffDuCommit(`git commit -m "x" -- ${ps}`, repo).numstat())
+      assert.deepEqual([r.fichiers, r.touchesSrc], [['src/a.ts'], true], `pathspec ${ps} : lot perdu`)
+    }
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
 })
 
 // ── isGitCommitCommand / extractCommitPathspecs (#591 défauts 1 et 3 — parsing STRUCTUREL) ─────────
@@ -459,6 +474,47 @@ test('extractCommitPathspecs : pas un commit → []', () => {
   assert.deepEqual(extractCommitPathspecs('gh issue create --body "git commit -- foo"'), [])
 })
 
+// Mesuré 2026-09-04 sur un vrai commit de fermeture depuis un worktree : `2>&1` passait pour un
+// pathspec, `analyzeDiffDuCommit` filtrait sur un chemin inexistant, et le garde déclarait « ABSENT
+// de ce que ce commit emporte » chaque fichier cité par le solde. Une redirection n'est pas un chemin.
+test('extractCommitPathspecs : une REDIRECTION, un PIPE ou un `&` n\'est jamais un pathspec', () => {
+  const wt = '.wt-1679-L2'
+  assert.deepEqual(extractCommitPathspecs(`git -C "${wt}" commit -q -F "${wt}/msg.txt" 2>&1 | tail -3`), [])
+  assert.deepEqual(extractCommitPathspecs('git commit --file=msg.txt > sortie.log'), [])
+  assert.deepEqual(extractCommitPathspecs('git commit -m x'), [])
+  // Les six formes, chacune après un pathspec RÉEL : lui seul survit à la borne.
+  for (const suffixe of ['2>&1', '> log.txt', '>> log.txt', '< in.txt', '2>/dev/null', '&']) {
+    assert.deepEqual(
+      extractCommitPathspecs(`git commit -m x -- scripts/a.mjs ${suffixe}`), ['scripts/a.mjs'],
+      `suffixe ${suffixe} pris pour un chemin`,
+    )
+  }
+  // Un chemin QUOTÉ qui contient `>` reste un chemin : la borne lit des JETONS, pas des caractères.
+  assert.deepEqual(extractCommitPathspecs('git commit -m x -- "a>b.txt"'), ['a>b.txt'])
+})
+
+// La forme décide le diff, et deux jetons la faisaient basculer à tort (sondes 2026-09-04).
+test('formeDuCommit : un pathspec à JOKER rend `tout` — jamais `index`, qui serait MUET', () => {
+  for (const joker of ['scripts/guards/lib/*.mjs', ':(glob)scripts/**', 'src/?.ts', 'src/[ab].ts']) {
+    const f = formeDuCommit(`git commit -m "x" -- ${joker}`)
+    assert.deepEqual([f.forme, f.pathspecs], ['tout', []], `joker ${joker}`)
+    assert.equal(pathspecsDuCommit(`git commit -m "x" -- ${joker}`).nonResolus, true)
+  }
+  assert.equal(pathspecsDuCommit('git commit -m "x"').nonResolus, false, 'aucun chemin n’est pas un joker')
+  assert.equal(formeDuCommit('git commit -m "x"').forme, 'index')
+})
+
+test('formeDuCommit : la VALEUR d\'un `-m` collé n\'est pas une liste d\'options courtes', () => {
+  assert.equal(formeDuCommit('git commit -m"ajoute deux entrees"').forme, 'index')
+  assert.equal(formeDuCommit('git commit -m"Refonte du stock"').forme, 'index')
+  assert.equal(formeDuCommit('git commit -m "ajoute deux entrees"').forme, 'index')
+  // Les vraies formes de `-a` restent vues, collées ou non.
+  assert.equal(formeDuCommit('git commit -am "x"').forme, 'tout')
+  assert.equal(formeDuCommit('git commit -a -m "x"').forme, 'tout')
+  assert.equal(formeDuCommit('git commit --all -m "x"').forme, 'tout')
+  assert.equal(formeDuCommit('git commit -sam "x"').forme, 'tout')
+})
+
 test('extractCommitPathspecs : --file=<path> ne devient pas un pathspec', () => {
   assert.deepEqual(extractCommitPathspecs('git commit --file=commit-415.txt -- src/ui/Foo.tsx'), ['src/ui/Foo.tsx'])
 })
@@ -477,12 +533,11 @@ test('extractCommitPathspecs : "-cam" (short groupé à 3 lettres) → message e
   assert.deepEqual(extractCommitPathspecs('git commit -cam "feat: refonte truc"'), [])
 })
 
-test('analyzeStagedDiff intégration : "-am" ne filtre PAS le diff à néant (index entier retenu)', () => {
-  const raw = '50\t20\tsrc/ui/RollShell.tsx\n'
-  const pathspecs = extractCommitPathspecs('git commit -am "feat: refonte truc"')
-  const r = analyzeStagedDiff(raw, pathspecs)
-  assert.equal(r.touchesUi, true)
-  assert.equal(r.totalLines, 70)
+test('formeDuCommit : "-am" est un `-a`, et son MESSAGE n\'est pas un pathspec', () => {
+  const f = formeDuCommit('git commit -am "feat: refonte truc"')
+  assert.deepEqual([f.forme, f.pathspecs], ['tout', []])
+  const r = analyzeDiffDuCommit('50\t20\tsrc/ui/RollShell.tsx\n')
+  assert.deepEqual([r.touchesUi, r.totalLines], [true, 70])
 })
 
 // ── glob non résolu : jamais un scoping résolu à tort en "aucun fichier" ────────────────────────────
@@ -901,7 +956,7 @@ test('manifestTickets : null/vide → ensemble vide', () => {
 test('evaluateManifestClosure : fermeture avec entrée manifest présente → bloqué', () => {
   const d = evaluateManifestClosure({
     command: 'git commit -m "corrige #508"',
-    readStagedManifest: () => manifestWith(508),
+    readManifestEmporte: () => manifestWith(508),
   })
   assert.ok(d)
   assert.match(d.reason, /#508/)
@@ -912,7 +967,7 @@ test('evaluateManifestClosure : fermeture avec entrée manifest présente → bl
 test('evaluateManifestClosure : entrée retirée dans le même commit (manifest stagé sans #N) → passe', () => {
   const d = evaluateManifestClosure({
     command: 'git commit -m "corrige #508"',
-    readStagedManifest: () => manifestWith(490), // #508 retiré
+    readManifestEmporte: () => manifestWith(490), // #508 retiré
   })
   assert.equal(d, null)
 })
@@ -920,7 +975,7 @@ test('evaluateManifestClosure : entrée retirée dans le même commit (manifest 
 test('evaluateManifestClosure : commit sans fermeture → intact (silence)', () => {
   const d = evaluateManifestClosure({
     command: 'git commit -m "wip sur #508"',
-    readStagedManifest: () => manifestWith(508),
+    readManifestEmporte: () => manifestWith(508),
   })
   assert.equal(d, null)
 })
@@ -928,7 +983,7 @@ test('evaluateManifestClosure : commit sans fermeture → intact (silence)', () 
 test('evaluateManifestClosure : #N absent du manifest → intact (silence)', () => {
   const d = evaluateManifestClosure({
     command: 'git commit -m "corrige #999"',
-    readStagedManifest: () => manifestWith(508),
+    readManifestEmporte: () => manifestWith(508),
   })
   assert.equal(d, null)
 })
@@ -936,7 +991,7 @@ test('evaluateManifestClosure : #N absent du manifest → intact (silence)', () 
 test('evaluateManifestClosure : multi-fermeture — seuls les tickets encore présents listés', () => {
   const d = evaluateManifestClosure({
     command: 'git commit -m "corrige #508, ferme #999"',
-    readStagedManifest: () => manifestWith(508),
+    readManifestEmporte: () => manifestWith(508),
   })
   assert.ok(d)
   assert.match(d.reason, /#508/)
@@ -1008,13 +1063,13 @@ test('repoRoot : résolu depuis l\'emplacement du script, retrouve la racine du 
   }
 })
 
-test('readSoldeFile/readRevuePalierFile/readRefFile : trouvent leur fichier depuis un cwd différent de la racine', () => {
+// TOUT ce que le garde lit sur DISQUE se lit dans le RÉPERTOIRE où le commit s'exécute, jamais dans
+// le dépôt du HOOK : depuis un worktree, un solde, une revue de palier ou une réfutation écrits là
+// où l'on committe étaient invisibles, et la porte refusait à tort (mesuré 2026-09-04).
+test('readSoldeFile/readRevuePalierFile/readRefFile : lisent le RÉPERTOIRE du commit, pas le dépôt du hook', () => {
   const fakeRepo = mkdtempSync(join(tmpdir(), 'solde-guard-fakerepo-'))
-  const hooksDir = join(fakeRepo, 'scripts', 'hooks')
   const soldesDir = join(fakeRepo, '.claude', 'soldes')
-  mkdirSync(hooksDir, { recursive: true })
   mkdirSync(soldesDir, { recursive: true })
-  const fakeScript = pathToFileURL(join(hooksDir, 'fake.mjs')).href
   writeFileSync(join(soldesDir, '999.md'), 'solde-999')
   writeFileSync(join(soldesDir, 'revue-palier.md'), 'revue-palier')
   writeFileSync(join(soldesDir, 'ref-999.md'), 'ref-999')
@@ -1023,9 +1078,14 @@ test('readSoldeFile/readRevuePalierFile/readRefFile : trouvent leur fichier depu
   const cwd = process.cwd()
   try {
     process.chdir(elsewhere)
-    assert.equal(readSoldeFile(999, fakeScript), 'solde-999')
-    assert.equal(readRevuePalierFile(fakeScript), 'revue-palier')
-    assert.equal(readRefFile(999, fakeScript), 'ref-999')
+    assert.equal(readSoldeFile(999, fakeRepo), 'solde-999')
+    assert.equal(readRevuePalierFile(fakeRepo), 'revue-palier')
+    assert.equal(readRefFile(999, fakeRepo), 'ref-999')
+    // Ailleurs, rien : aucun de ces lecteurs ne retombe sur le dépôt qui porte le script.
+    assert.deepEqual(
+      [readSoldeFile(999, elsewhere), readRevuePalierFile(elsewhere), readRefFile(999, elsewhere)],
+      [null, null, null],
+    )
   } finally {
     process.chdir(cwd)
     rmSync(fakeRepo, { recursive: true, force: true })
@@ -1054,10 +1114,11 @@ test('evaluate : solde conforme sur le DISQUE mais absent de l\'index → deny a
     readSolde: () => null,
     soldeOnDisk: () => solde(),
   })
-  assert.ok(d, 'un solde non stagé disparaîtrait après consommation : la citation du commit mourrait')
+  assert.ok(d, 'un solde non emporté disparaîtrait après consommation : la citation du commit mourrait')
   assert.match(d.reason, /#77/)
-  assert.match(d.reason, /NON STAGÉ/)
+  assert.match(d.reason, /NON EMPORTÉ par ce commit/)
   assert.match(d.reason, /git add \.claude\/soldes\/77\.md/)
+  assert.match(d.reason, /pathspec n'emporte QUE ces chemins/, 'le geste du commit par pathspec est dit')
 })
 
 test('evaluate : ni index ni disque → "fichier absent" (jamais le message de staging)', () => {
@@ -1072,18 +1133,43 @@ test('evaluate : ni index ni disque → "fichier absent" (jamais le message de s
   assert.doesNotMatch(d.reason, /NON STAGÉ/)
 })
 
-test('readStagedSoldeFile : rend le contenu de l\'INDEX, `null` pour un fichier seulement sur disque', () => {
+// Le solde LU est celui que le commit EMPORTE, et cela dépend de la FORME de la commande : un solde
+// stagé est emporté par un commit d'index, PAS par un commit qui nomme d'autres chemins (git y prend
+// HEAD). Lire l'index dans tous les cas validait une preuve qui ne partait pas (sonde 2026-09-04).
+test('diffDuCommit.contenu : le solde EMPORTÉ suit la forme — index oui, hors pathspec non', () => {
   const repo = mkdtempSync(join(tmpdir(), 'solde-guard-index-'))
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] })
     git('init', '-q')
+    git('config', 'user.email', 'sonde@test')
+    git('config', 'user.name', 'sonde')
+    git('config', 'commit.gpgsign', 'false')
     mkdirSync(join(repo, '.claude', 'soldes'), { recursive: true })
+    mkdirSync(join(repo, 'src'), { recursive: true })
+    writeFileSync(join(repo, 'src', 'x.ts'), 'export const a = 1\n', 'utf8')
+    git('add', '-A')
+    git('commit', '-q', '--no-verify', '-m', 'socle')
     writeFileSync(join(repo, '.claude', 'soldes', '77.md'), 'solde-77-stage', 'utf8')
     writeFileSync(join(repo, '.claude', 'soldes', '78.md'), 'solde-78-disque', 'utf8')
     git('add', '--force', '.claude/soldes/77.md')
 
-    assert.equal(readStagedSoldeFile(77, repo), 'solde-77-stage')
-    assert.equal(readStagedSoldeFile(78, repo), null)
+    const index = diffDuCommit('git commit -m "x"', repo)
+    assert.equal(index.contenu('.claude/soldes/77.md'), 'solde-77-stage')
+    assert.equal(index.contenu('.claude/soldes/78.md'), null)
+
+    const parPathspec = diffDuCommit('git commit -m "x" -- src/x.ts', repo)
+    assert.equal(
+      parPathspec.contenu('.claude/soldes/77.md'), null,
+      'stagé mais HORS pathspec : le commit ne l\'emporte pas, il garde la version de HEAD (absente)',
+    )
+    assert.equal(parPathspec.contenu('src/x.ts'), 'export const a = 1\n')
+
+    writeFileSync(join(repo, '.claude', 'soldes', '77.md'), 'solde-77-arbre', 'utf8')
+    const dansLePathspec = diffDuCommit('git commit -m "x" -- .claude/soldes', repo)
+    assert.equal(
+      dansLePathspec.contenu('.claude/soldes/77.md'), 'solde-77-arbre',
+      'DANS le pathspec : c\'est l\'ARBRE DE TRAVAIL qui part, pas l\'index',
+    )
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }
@@ -1125,16 +1211,16 @@ test('validateSolde : « corrigé dans ce commit » sans fichier:ligne → refus
 
 test('validateSolde : « corrigé dans ce commit » citant un fichier HORS du diff stagé → refus (cas #584)', () => {
   const restes = '- chemin mort cité -> corrigé dans ce commit (src/data/schemas/defs/teintesJeu.ts:88)'
-  const r = validateSolde(solde({ restes }), TODAY, { fichiersStages: ['.claude/soldes/584.md'] })
+  const r = validateSolde(solde({ restes }), TODAY, { fichiersEmportes: ['.claude/soldes/584.md'] })
   assert.equal(r.ok, false)
-  assert.match(r.problems.join(' ; '), /teintesJeu\.ts, ABSENT du diff stagé/)
+  assert.match(r.problems.join(' ; '), /teintesJeu\.ts, ABSENT de ce que ce commit emporte/)
 })
 
 test('validateSolde : « corrigé dans ce commit » citant une ligne HORS des hunks → refus', () => {
   const restes = '- chemin mort cité -> corrigé dans ce commit (src/data/schemas/defs/teintesJeu.ts:88)'
   const ctx = {
-    fichiersStages: ['src/data/schemas/defs/teintesJeu.ts'],
-    lignesStagees: () => [12, 13],
+    fichiersEmportes: ['src/data/schemas/defs/teintesJeu.ts'],
+    lignesEmportees: () => [12, 13],
   }
   const r = validateSolde(solde({ restes }), TODAY, ctx)
   assert.equal(r.ok, false)
@@ -1144,8 +1230,8 @@ test('validateSolde : « corrigé dans ce commit » citant une ligne HORS des hu
 test('validateSolde : site cité présent dans le diff ET dans un hunk → passe', () => {
   const restes = '- chemin mort cité -> corrigé dans ce commit (src/data/schemas/defs/teintesJeu.ts:88)'
   const ctx = {
-    fichiersStages: ['src/data/schemas/defs/teintesJeu.ts'],
-    lignesStagees: () => [87, 88, 89],
+    fichiersEmportes: ['src/data/schemas/defs/teintesJeu.ts'],
+    lignesEmportees: () => [87, 88, 89],
   }
   const r = validateSolde(solde({ restes }), TODAY, ctx)
   assert.equal(r.ok, true, r.problems.join(' ; '))
@@ -1322,7 +1408,7 @@ test('estArbrePrincipal : `.git` DOSSIER = principal, `.git` FICHIER = worktree 
 })
 
 test('evaluateArbrePrincipal : `ask` (jamais deny) dans l\'arbre principal, silence en worktree', () => {
-  const d = evaluateArbrePrincipal({ command: 'git commit -m "x"', principal: true, fichiersStages: ['src/a.ts'] })
+  const d = evaluateArbrePrincipal({ command: 'git commit -m "x"', principal: true, fichiersEmportes: ['src/a.ts'] })
   assert.ok(d)
   assert.equal(d.decision, 'ask')
   assert.match(d.reason, /src\/a\.ts/)
@@ -1370,8 +1456,8 @@ test('estFichierEcran : src/ui et src/gameIso, jamais leurs tests', () => {
   assert.equal(estFichierEcran('src/engine/combat.ts'), false)
 })
 
-test('analyzeStagedDiff : src/gameIso/** compte comme écran', () => {
-  const r = analyzeStagedDiff('40\t5\tsrc/gameIso/stage/GameStage3D.tsx\n')
+test('analyzeDiffDuCommit : src/gameIso/** compte comme écran', () => {
+  const r = analyzeDiffDuCommit('40\t5\tsrc/gameIso/stage/GameStage3D.tsx\n')
   assert.equal(r.touchesUi, true)
   assert.deepEqual(r.fichiers, ['src/gameIso/stage/GameStage3D.tsx'])
 })
@@ -1515,9 +1601,9 @@ test('commitEstAncetreDeHead / fichiersDuCommitGit : le cas fondateur #584 tient
   )
   assert.equal(commitEstAncetreDeHead('0000000000000000000000000000000000000000', repoRoot()), false)
   // La LIGNE que le solde #584 cite est bien dans un hunk de ce commit — lue au diff, pas sur parole.
-  const lignes = lignesDeHunks(diffDuCommitGit('4d6e1ff78', 'src/data/schemas/defs/teintesJeu.ts', repoRoot()))
+  const lignes = lignesDeHunks(diffDunSha('4d6e1ff78', 'src/data/schemas/defs/teintesJeu.ts', repoRoot()))
   assert.ok(lignes.includes(88), `lignes vues : ${lignes.join(',')}`)
-  assert.deepEqual(lignesDeHunks(diffDuCommitGit('4d6e1ff78', 'docs/architecture.md', repoRoot())), [])
+  assert.deepEqual(lignesDeHunks(diffDunSha('4d6e1ff78', 'docs/architecture.md', repoRoot())), [])
 })
 
 test('le solde #584 de l\'arbre est CONFORME à sa propre grammaire', () => {
@@ -1532,7 +1618,7 @@ test('le solde #584 de l\'arbre est CONFORME à sa propre grammaire', () => {
   const r = validateSolde(contenu, '2026-09-02', {
     commitEstAncetre: (sha) => commitEstAncetreDeHead(sha, repoRoot()),
     fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, repoRoot()),
-    lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDuCommitGit(sha, fichier, repoRoot())),
+    lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDunSha(sha, fichier, repoRoot())),
   })
   assert.equal(r.ok, true, r.problems.join(' ; '))
 })

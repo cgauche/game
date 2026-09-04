@@ -1,11 +1,21 @@
 // Tests du garde `git-destructive-guard` : `ask` sur un git destructif RÉELLEMENT exécuté, silence
 // sur la même chaîne simplement CITÉE. Lancé par `npm run test:hooks`.
+//
+// Les cas de RÉPERTOIRE PROUVÉ (dernier bloc) montent un vrai dépôt et un vrai worktree lié sous
+// `os.tmpdir()` : la distinction arbre principal / worktree se lit sur le `.git` (dossier vs
+// fichier), elle ne se simule pas.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { evaluate } from './git-destructive-guard.mjs'
 
 const asks = (cmd) => evaluate(cmd) !== null
 const silent = (cmd) => evaluate(cmd) === null
+/** Silence pour une commande jugée avec le `cwd` que le canal transmet. */
+const silent2 = (cmd, cwd) => evaluate(cmd, { cwd }) === null
 
 test('ASK : les commandes destructives réellement exécutées', () => {
   assert.ok(asks('git reset --hard origin/main'))
@@ -24,7 +34,6 @@ test('ASK : les commandes destructives réellement exécutées', () => {
 test('ASK : destructif en 2e maillon d\'un enchaînement, ou via un chemin/call-operator', () => {
   assert.ok(asks('npm test && git reset --hard'))
   assert.ok(asks('& "C:\\Program Files\\Git\\git.exe" stash'))
-  assert.ok(asks('git -C ../worktree reset --hard'))
 })
 
 test('SILENCE : opérations git non destructives', () => {
@@ -167,4 +176,172 @@ test('PÉRIMÈTRE DIT : une cible venue de stdin ou d\'un autre programme n\'est
   assert.ok(silent('find . -name "*.tmp" -exec rm -rf {} ;'))
   // Le même geste, cible ÉCRITE sur la ligne, reste arbitré.
   assert.equal(evaluate('xargs rm -rf src/engine')?.decision, 'ask')
+})
+
+// ── Répertoire PROUVÉ : le worktree lié est libre, l'arbre principal ne l'est pas ─────────────────
+// Question utilisateur 2026-09-03 : « Pour les git destructif, on devrait pouvoir les faire sur les
+// worktree, tu ne pense pas ? ». Gestes mesurés en dépôt jetable (sonde du juge, rejouée ici) :
+// une branche extraite ailleurs est refusée par git lui-même, un `reset --hard` dans un worktree
+// n'atteint pas le WIP de l'arbre principal (index privé), et `git clean -fdx` retire le point de
+// reparse d'une jonction `node_modules` sans suivre la jonction.
+
+/** Un dépôt PRINCIPAL (`.git` dossier) et son worktree LIÉ (`.git` fichier), sous `os.tmpdir()`. */
+function deuxArbres() {
+  const base = mkdtempSync(join(tmpdir(), 'destructif-'))
+  const principal = join(base, 'principal')
+  const lie = join(base, 'wt')
+  const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  execFileSync('git', ['init', '-q', '-b', 'main', principal], { cwd: base, stdio: 'ignore' })
+  git(principal, 'config', 'user.email', 'sonde@test')
+  git(principal, 'config', 'user.name', 'sonde')
+  git(principal, 'config', 'commit.gpgsign', 'false')
+  writeFileSync(join(principal, 'a.txt'), 'v1\n')
+  git(principal, 'add', '-A')
+  git(principal, 'commit', '-q', '--no-verify', '-m', 'socle')
+  git(principal, 'worktree', 'add', '-q', lie, '-b', 'chantier')
+  return { base, principal, lie }
+}
+
+test('D : dans un WORKTREE prouvé par la commande, checkout/restore/reset/clean passent en SILENCE', () => {
+  const { base, principal, lie } = deuxArbres()
+  try {
+    for (const geste of ['reset --hard', 'clean -fdx', 'checkout -- .', 'restore src/a.txt']) {
+      assert.ok(silent(`cd ${lie} && git ${geste}`), `cd <worktree> && git ${geste} : le hook parle encore`)
+      assert.ok(silent(`git -C ${lie} ${geste}`), `git -C <worktree> ${geste} : le hook parle encore`)
+      assert.equal(evaluate(`cd ${principal} && git ${geste}`)?.decision, 'ask', `arbre PRINCIPAL : ${geste}`)
+    }
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+test('D : sans preuve de répertoire, ASK inchangé — et le refus dit le geste qui le lèverait', () => {
+  const nu = evaluate('git reset --hard')
+  assert.equal(nu?.decision, 'ask', 'un reset --hard NU ne prouve aucun arbre : il reste arbitré')
+  assert.match(nu.reason, /git -C <worktree>/)
+  assert.match(nu.reason, /cd <worktree>/)
+})
+
+// Le silence exige une preuve POSITIVE de worktree lié. « Pas l'arbre principal » répondait pareil
+// pour un chemin qui ne mène à AUCUN dépôt : la permission se donnait à une faute de frappe.
+test('D : un chemin qui ne prouve AUCUN worktree lié reste ASK', () => {
+  const dehors = mkdtempSync(join(tmpdir(), 'sans-depot-'))
+  try {
+    assert.equal(evaluate(`git -C ${dehors}/.wt-inexistant reset --hard`)?.decision, 'ask')
+    assert.equal(evaluate(`cd ${dehors} && git reset --hard`)?.decision, 'ask')
+    // Un chemin RELATIF se résout contre le cwd : sous un worktree, `./.wt-inexistant` désigne un
+    // sous-dossier de CE worktree, et le silence y est juste — ce que la porte lit, c'est l'arbre
+    // qui gouverne le chemin, jamais son existence.
+    const { base, lie } = deuxArbres()
+    try {
+      assert.equal(evaluate(`git -C ${lie}/pas-encore-cree reset --hard`), null)
+    } finally {
+      rmSync(base, { recursive: true, force: true })
+    }
+  } finally {
+    rmSync(dehors, { recursive: true, force: true })
+  }
+})
+
+// Les `cd` se PLIENT : le DERNIER dit où la commande s'exécute. Retenir le premier accordait le
+// silence à un geste qui avait quitté le worktree.
+test('D : `cd <wt> && cd .. && git reset --hard` n\'est plus dans le worktree — ASK', () => {
+  const { base, lie } = deuxArbres()
+  try {
+    assert.equal(evaluate(`cd ${lie} && git reset --hard`), null, 'le cas simple doit rester silencieux')
+    assert.equal(evaluate(`cd ${lie} && cd .. && git reset --hard`)?.decision, 'ask')
+    // Et l'inverse : partir d'ailleurs pour ENTRER dans le worktree se lit aussi.
+    assert.equal(evaluate(`cd ${base} && cd wt && git reset --hard`), null)
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+test('D : le canal ctx_shell PROUVE le répertoire par tool_input.cwd', () => {
+  const { base, principal, lie } = deuxArbres()
+  try {
+    assert.ok(silent2('git reset --hard', lie), 'cwd = worktree lié : silence')
+    assert.equal(evaluate('git reset --hard', { cwd: principal })?.decision, 'ask', 'cwd = arbre principal : ask')
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+test('D : `stash` reste ASK dans un worktree — sa pile est PARTAGÉE par tous les arbres', () => {
+  const { base, lie } = deuxArbres()
+  try {
+    const commun = execFileSync('git', ['-C', lie, 'rev-parse', '--git-path', 'refs/stash'], { encoding: 'utf8' })
+    const autre = execFileSync('git', ['-C', join(base, 'principal'), 'rev-parse', '--git-path', 'refs/stash'], {
+      encoding: 'utf8', cwd: base,
+    })
+    assert.equal(
+      commun.trim().replace(/\\/g, '/').split('/').slice(-2).join('/'),
+      autre.trim().replace(/\\/g, '/').split('/').slice(-2).join('/'),
+      'la pile de stash devrait être partagée : sans cela, le `ask` de stash n’aurait plus de raison',
+    )
+    for (const geste of ['stash pop', 'stash drop', 'stash clear', 'stash apply', 'stash push -m wip']) {
+      const d = evaluate(`cd ${lie} && git ${geste}`)
+      assert.equal(d?.decision, 'ask', `git ${geste} en worktree : le hook s’est tu`)
+      assert.match(d.reason, /pile de stash est PARTAG/)
+    }
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+// La PERMISSION accordée en worktree repose sur trois faits de git. Ils se mesurent, ils ne se
+// supposent pas : le jour où l'un d'eux change, c'est ici que ça rougit, pas en production.
+test('D : FONDEMENT — un `reset --hard` en worktree n’atteint pas le WIP de l’arbre principal', () => {
+  const { base, principal, lie } = deuxArbres()
+  try {
+    writeFileSync(join(principal, 'a.txt'), 'WIP-PRINCIPAL\n')
+    writeFileSync(join(lie, 'a.txt'), 'WIP-WORKTREE\n')
+    execFileSync('git', ['-C', lie, 'reset', '--hard'], { stdio: 'ignore' })
+    assert.equal(readFileSync(join(principal, 'a.txt'), 'utf8'), 'WIP-PRINCIPAL\n', 'le WIP du principal a bougé')
+    assert.match(
+      execFileSync('git', ['-C', principal, 'status', '--porcelain'], { encoding: 'utf8' }), /M a\.txt/,
+    )
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+test('D : FONDEMENT — git REFUSE lui-même d’extraire ailleurs la branche que le worktree tient', () => {
+  const { base, principal } = deuxArbres()
+  try {
+    const vu = spawnSync('git', ['-C', principal, 'checkout', 'chantier'], { encoding: 'utf8' })
+    assert.notEqual(vu.status, 0)
+    assert.match(vu.stderr, /is already used by worktree/)
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+test(
+  'D : FONDEMENT — `git clean -fdx` retire le point de reparse d’une jonction, pas sa CIBLE',
+  { skip: process.platform === 'win32' ? false : 'la jonction est un objet NTFS : hors win32, il n’y a rien à mesurer' },
+  () => {
+    const { base, lie } = deuxArbres()
+    try {
+      const partage = join(base, 'node_modules_partage')
+      mkdirSync(partage)
+      writeFileSync(join(partage, 'tresor.txt'), 'NE PAS PERDRE\n')
+      symlinkSync(partage, join(lie, 'node_modules'), 'junction')
+      execFileSync('git', ['-C', lie, 'clean', '-fdx'], { stdio: 'ignore' })
+      assert.equal(existsSync(join(lie, 'node_modules')), false, 'le point de reparse devrait avoir disparu')
+      assert.deepEqual(readdirSync(partage), ['tresor.txt'], 'la CIBLE partagée a été suivie et vidée')
+    } finally {
+      rmSync(base, { recursive: true, force: true })
+    }
+  },
+)
+
+test('D : la jonction node_modules reste DENY, et `push --force` reste ASK, même en worktree prouvé', () => {
+  const { base, lie } = deuxArbres()
+  try {
+    assert.equal(evaluate(`cd ${lie} && ln -s /ailleurs/node_modules node_modules`)?.decision, 'deny')
+    assert.equal(evaluate(`cd ${lie} && git push --force origin main`)?.decision, 'ask')
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
 })

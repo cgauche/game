@@ -1,18 +1,20 @@
-// PORTE A POSTERIORI (node --test, sans réseau) — un STOCK NOMINATIF qui naît ou grandit dans le
-// DERNIER commit sans que son message le dise.
+// PORTE A POSTERIORI (node --test, sans réseau) — un STOCK NOMINATIF qui naît ou grandit dans la
+// PLAGE POUSSÉE sans que le message de son commit le dise.
 //
 // Le garde `solde-ticket-guard` pose la même règle AU COMMIT, mais il vit dans le hook PreToolUse :
 // un commit fait hors de ce canal (autre outil, autre machine, hook non installé) n'y passe pas.
-// Cette mesure relit le commit une fois posé — même règle, même lib (`stocksNominatifs.mjs`), un
-// seul endroit où elle est écrite. Lancée par `npm run test:hooks`.
+// Cette mesure relit les commits une fois posés — même règle, mêmes libs (`stocksNominatifs.mjs`,
+// `plageStock.mjs`), un seul endroit où elle est écrite. Lancée par `npm run test:hooks`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
   croissanceDesStocks, croissancesNonCouvertes, cliquetsDuMessage, estEntreeDeStock, estPorteurDeStock, raisonDeRefus,
 } from '../guards/lib/stocksNominatifs.mjs'
+import { croissancesDeLaPlage, raisonDeRefusDePlage, SHA_NUL } from '../guards/lib/plageStock.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const git = (...args) => execFileSync('git', args, { cwd: RACINE, encoding: 'utf8', maxBuffer: 1e8 })
@@ -38,16 +40,15 @@ function porteEnVigueur() {
   } catch { return false }
 }
 
-/** Message et diff `-U0` du dernier commit, séparés au premier en-tête `diff --git`.
- *  PORTÉE : `git show` d'un commit de FUSION ne rend aucun diff. Une croissance introduite par une
- *  fusion n'est donc vue qu'au commit d'ORIGINE — et là encore, seulement s'il est passé par le
- *  canal PreToolUse : un commit venu d'ailleurs (autre outil, hook non installé) échappe aux DEUX
- *  portes, et sa fusion aussi. */
-function dernierCommit() {
-  exigerHistoireComplete()
-  const brut = git('show', 'HEAD', '--format=%B%x00', '-U0')
-  const coupe = brut.indexOf('\0')
-  return { message: brut.slice(0, coupe), diff: brut.slice(coupe + 1) }
+/** Début de la plage à juger. En CI, l'événement de push le porte (`GITHUB_EVENT_PATH` → `before`) ;
+ *  `origin/main` n'y a PAS de reflog, il ne peut donc pas servir de base. Sans événement lisible, la
+ *  base reste nulle et `croissancesDeLaPlage` juge HEAD seul en le DISANT (jamais un silence). */
+function debutDeLaPlage(env = process.env) {
+  if (!env.GITHUB_EVENT_PATH) return SHA_NUL
+  try {
+    const avant = String(JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, 'utf8'))?.before ?? '')
+    return /^[0-9a-f]{40}$/.test(avant) && avant !== SHA_NUL ? avant : SHA_NUL
+  } catch { return SHA_NUL }
 }
 
 // ── La règle, sur des diffs FABRIQUÉS (ce que la porte voit, et ce qu'elle ne voit pas) ──────────
@@ -145,9 +146,124 @@ test('refus — nomme le fichier, le compte et jusqu à trois exemples', () => {
   assert.match(raison, /CLIQUET: <fichier> \+N/)
 })
 
+// ── PORTÉE DE MODULE : une fixture DANS un test n'est pas un stock ────────────────────────────────
+// Les trois « entrées » de `429b9a1a2` et le `+8` de `572e60b8b` étaient des littéraux écrits dans
+// des corps de `test(...)` — des données locales, pas une dette. Le défaut était celui du LECTEUR
+// (précédent `0d6ddeee1` : la classe se règle au garde, jamais à la fixture).
+
+/** L'entrée telle qu'elle vit dans `enregistreur-lectures.test.mjs` (429b9a1a2), copiée ici. */
+const FIXTURE =
+  "  'scripts/docs/build-systemes.mjs': { cibles: ['docs/systemes.md'], fichiers: ['src/state/store.ts'], dossiers: [] },"
+
+/** Post-image où la fixture vit DANS un corps de test (donnée locale). */
+const POST_LOCALE = [
+  "import { test } from 'node:test'",
+  '',
+  "test('une cible SANS pied est nommée', () => {",
+  '  const par = {',
+  FIXTURE,
+  '  }',
+  '  return par',
+  '})',
+  '',
+].join('\n')
+
+/** Le MÊME littéral, hissé en constante de MODULE : là, c'est un stock. */
+const POST_MODULE = [
+  "import { test } from 'node:test'",
+  '',
+  'const PAR = {',
+  FIXTURE,
+  '}',
+  '',
+  "test('x', () => PAR)",
+  '',
+].join('\n')
+
+/** Diff qui AJOUTE la fixture à la ligne `ligne` du post-image (les `-U0` de git ont cette forme). */
+const diffAjoutA = (fichier, ligne) =>
+  [
+    `diff --git a/${fichier} b/${fichier}`,
+    `--- a/${fichier}`,
+    `+++ b/${fichier}`,
+    `@@ -${ligne},0 +${ligne},1 @@`,
+    `+${FIXTURE}`,
+  ].join('\n')
+
+test('portée — le MÊME littéral compte en constante de module, jamais dans un corps de test', () => {
+  const f = 'scripts/docs/lib/enregistreur-lectures.test.mjs'
+  assert.deepEqual(
+    croissanceDesStocks(diffAjoutA(f, 5), { lirePostImage: () => POST_LOCALE }), [],
+    'une fixture écrite dans un `test(...)` ne s’ajoute à aucune dette',
+  )
+  const [c] = croissanceDesStocks(diffAjoutA(f, 4), { lirePostImage: () => POST_MODULE })
+  assert.deepEqual([c.fichier, c.net], [f, 1])
+})
+
+test('portée — sans lecteur d\'image, ou sans image lisible, l\'entrée COMPTE', () => {
+  const f = 'scripts/docs/lib/enregistreur-lectures.test.mjs'
+  assert.equal(croissanceDesStocks(diffAjoutA(f, 5)).length, 1, 'sans lecteur : comportement inchangé')
+  assert.equal(
+    croissanceDesStocks(diffAjoutA(f, 5), { lirePostImage: () => null }).length, 1,
+    'fichier supprimé ou binaire : la porte perd sa précision, jamais sa vue',
+  )
+})
+
+test('portée — le RETRAIT se juge sur le PRÉ-image : retirer une fixture ne compense pas un ajout', () => {
+  const f = 'scripts/guards/lib/lintStage.test.mjs'
+  const diff = [
+    `diff --git a/${f} b/${f}`,
+    `--- a/${f}`,
+    `+++ b/${f}`,
+    '@@ -5,1 +4,0 @@',
+    `-${FIXTURE}`,
+    '@@ -10,0 +10,1 @@',
+    `+${FIXTURE}`,
+  ].join('\n')
+  const [c] = croissanceDesStocks(diff, { lirePostImage: () => POST_MODULE, lirePreImage: () => POST_LOCALE })
+  assert.deepEqual(
+    [c.ajoutees, c.retirees, c.net], [1, 0, 1],
+    'le retrait d’une FIXTURE locale ne solde pas l’ajout d’une entrée de module',
+  )
+})
+
+// Une règle contournable par trois enveloppes d'une ligne ne garde rien : `export const STOCK =
+// (() => […])()`, `export function stock() { return […] }`, `export const stock = () => […]`
+// rendaient le stock INVISIBLE (sonde 2026-09-04). Seul ce qui vit dans une fonction passée en
+// ARGUMENT d'un appel est local — le corps d'un `test`/`it`/`describe`, pas une déclaration.
+test('portée — aucune ENVELOPPE ne cache un stock de module', () => {
+  const f = 'scripts/guards/lib/xStock.mjs'
+  const E = ["  'src/state/combatFlow.ts',", "  'src/ui/RollShell.tsx',", "  'src/ui/Tabs.tsx',"]
+  const diff = [
+    `diff --git a/${f} b/${f}`, `--- a/${f}`, `+++ b/${f}`, `@@ -2,0 +2,${E.length} @@`, ...E.map((e) => `+${e}`),
+  ].join('\n')
+  const enveloppes = {
+    'const de module': ['export const STOCK = [', ...E, ']'],
+    'IIFE de module': ['export const STOCK = (() => [', ...E, '])()'],
+    'fonction exportée': ['export function stock() { return [', ...E, '] }'],
+    'fléchée exportée': ['export const stock = () => [', ...E, ']'],
+    'objet figé': ['export const STOCK = Object.freeze([', ...E, '])'],
+  }
+  for (const [nom, lignes] of Object.entries(enveloppes)) {
+    const [c] = croissanceDesStocks(diff, { lirePostImage: () => `${lignes.join('\n')}\n` })
+    assert.equal(c?.net, 3, `${nom} : le stock a disparu derrière l'enveloppe`)
+  }
+  const dansUnDescribe = ["describe('x', () => { const S = [", ...E, '] })'].join('\n')
+  assert.deepEqual(
+    croissanceDesStocks(diff, { lirePostImage: () => `${dansUnDescribe}\n` }), [],
+    'un corps de `describe(…)` reste une donnée locale',
+  )
+})
+
+test('portée — un porteur JSON n\'a pas d\'AST : tout y est de module', () => {
+  const f = 'scripts/hooks/ecrans-ui.json'
+  const [c] = croissanceDesStocks(diffAjoutA(f, 3), { lirePostImage: () => '{\n}\n' })
+  assert.deepEqual([c.fichier, c.net], [f, 1])
+})
+
 // ── La mesure sur le dépôt RÉEL ───────────────────────────────────────────────────────────────────
 
-test('CLIQUET stocks : le DERNIER commit ne fait grossir aucun stock en silence', (t) => {
+test('CLIQUET stocks : la PLAGE POUSSÉE ne fait grossir aucun stock en silence', (t) => {
   if (!porteEnVigueur()) {
     t.diagnostic(
       `HEAD (${git('rev-parse', '--short', 'HEAD').trim()}) est ANTÉRIEUR à cette porte : sa lib n'y ` +
@@ -155,10 +271,14 @@ test('CLIQUET stocks : le DERNIER commit ne fait grossir aucun stock en silence'
     )
     return
   }
-  const { message, diff } = dernierCommit()
-  const restantes = croissancesNonCouvertes({ diff, message })
+  exigerHistoireComplete()
+  const { refus, notes, commits } = croissancesDeLaPlage({
+    cwd: RACINE, avant: debutDeLaPlage(), apres: git('rev-parse', 'HEAD').trim(),
+  })
+  for (const n of notes) t.diagnostic(n)
+  if (commits !== undefined) t.diagnostic(`${commits} commit(s) jugé(s)`)
   assert.deepEqual(
-    restantes.map((c) => `${c.fichier} +${c.net}`), [],
-    raisonDeRefus(restantes),
+    refus.map((r) => `${r.sha.slice(0, 9)} ${r.fichier} +${r.net}`), [],
+    raisonDeRefusDePlage(refus),
   )
 })

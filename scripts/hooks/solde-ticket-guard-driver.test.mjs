@@ -142,6 +142,141 @@ test('DRIVER : un stock nominatif qui GRANDIT dans l\'index est refusé, sauf CL
   }
 })
 
+// Le diff jugé suit la FORME de la commande, pas l'index. `git commit -- <chemins>` et
+// `git commit <chemins>` commitent l'ARBRE DE TRAVAIL de ces chemins, `git commit -a` tout le
+// modifié suivi : sans `git add`, le garde ne lisait qu'un index VIDE et se taisait. C'est par là
+// que la croissance de stock de `429b9a1a2` est passée (cause prouvée par sonde le 2026-09-03).
+test('DRIVER : les TROIS formes de commit sont jugées sur ce qu\'elles emportent, sans `git add`', () => {
+  const repo = mkdtempSync(join(tmpdir(), 'solde-forme-'))
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    git('init', '-q')
+    git('config', 'user.email', 'sonde@test')
+    git('config', 'user.name', 'sonde')
+    git('config', 'commit.gpgsign', 'false')
+    mkdirSync(join(repo, 'scripts', 'guards', 'lib'), { recursive: true })
+    const chemin = 'scripts/guards/lib/xStock.mjs'
+    const stock = join(repo, chemin)
+    writeFileSync(stock, 'export const STOCK = [\n]\n', 'utf8')
+    git('add', chemin)
+    git('commit', '-q', '--no-verify', '-m', 'socle')
+
+    // La croissance vit dans l'ARBRE DE TRAVAIL et NULLE PART dans l'index.
+    writeFileSync(stock, ["export const STOCK = [", "  'src/state/combatFlow.ts',", "  'src/ui/RollShell.tsx',", ']', ''].join('\n'), 'utf8')
+    assert.equal(git('diff', '--cached', '--numstat').trim(), '', 'l’index doit rester VIDE : c’est tout le sujet')
+
+    for (const forme of [
+      `git commit -m "deux exemptions de plus" -- ${chemin}`,
+      `git commit -m "deux exemptions de plus" ${chemin}`,
+      'git commit -a -m "deux exemptions de plus"',
+    ]) {
+      const refus = decisionOf(forme, repo)
+      assert.ok(refus, `aucune décision pour « ${forme} » : le garde a lu l’index vide`)
+      assert.equal(refus.decision, 'deny')
+      assert.match(refus.reason, /STOCK NOMINATIF qui NAÎT ou GRANDIT/)
+      assert.match(refus.reason, /scripts\/guards\/lib\/xStock\.mjs : \+2/)
+    }
+
+    // Forme INDEX : rien n'est stagé, donc le commit n'emporte rien — le garde se tait sur les stocks.
+    const index = decisionOf('git commit -m "deux exemptions de plus"', repo)
+    assert.doesNotMatch(index?.reason ?? '', /STOCK NOMINATIF/, 'un index vide n’emporte aucune croissance')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+/** Dépôt jetable portant un stock VIDE commité, et de quoi le faire grandir. */
+function depotAStock() {
+  const repo = mkdtempSync(join(tmpdir(), 'solde-forme-'))
+  const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  git('init', '-q')
+  git('config', 'user.email', 'sonde@test')
+  git('config', 'user.name', 'sonde')
+  git('config', 'commit.gpgsign', 'false')
+  mkdirSync(join(repo, 'scripts', 'guards', 'lib'), { recursive: true })
+  const chemin = 'scripts/guards/lib/xStock.mjs'
+  const vide = 'export const STOCK = [\n]\n'
+  const plein = ["export const STOCK = [", "  'src/state/combatFlow.ts',", "  'src/ui/RollShell.tsx',", ']', ''].join('\n')
+  writeFileSync(join(repo, chemin), vide, 'utf8')
+  git('add', chemin)
+  git('commit', '-q', '--no-verify', '-m', 'socle')
+  return { repo, git, chemin, vide, plein }
+}
+
+// Un pathspec à JOKER : `extractCommitPathspecs` ne le résout pas, mais git, lui, commite l'ARBRE DE
+// TRAVAIL de ce qu'il désigne. Le prendre pour « aucun chemin » faisait lire l'INDEX — vide — et la
+// croissance partait en silence (sonde 2026-09-04, le commit l'emporte réellement).
+test('DRIVER : un pathspec à JOKER ne rend pas le garde MUET', () => {
+  const { repo, chemin, plein } = depotAStock()
+  try {
+    writeFileSync(join(repo, chemin), plein, 'utf8')
+    const refus = decisionOf(`git commit -m "deux de plus" -- 'scripts/guards/lib/*.mjs'`, repo)
+    assert.ok(refus, 'aucune décision : le joker a fait lire l’index vide')
+    assert.equal(refus.decision, 'deny')
+    assert.match(refus.reason, /STOCK NOMINATIF qui NAÎT ou GRANDIT/)
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+// `-m"ajoute…"` : la valeur GLUÉE du flag court contient un `a`, et la lecture des options la prenait
+// pour un `-a` — le commit passait alors pour un `commit -a` et l'index STAGÉ n'était plus lu.
+test('DRIVER : `-m"ajoute…"` collé ne se lit pas comme un `-a` — l\'index stagé reste jugé', () => {
+  const { repo, git, chemin, vide, plein } = depotAStock()
+  try {
+    writeFileSync(join(repo, chemin), plein, 'utf8')
+    git('add', chemin)
+    writeFileSync(join(repo, chemin), vide, 'utf8') // arbre revenu en arrière : seul l'index porte la croissance
+    assert.equal(git('diff', 'HEAD', '--numstat').trim(), '', 'le suivi non stagé doit être VIDE : c’est le sujet')
+    for (const cmd of ['git commit -m"ajoute deux entrees"', 'git commit -m "ajoute deux entrees"']) {
+      const refus = decisionOf(cmd, repo)
+      assert.ok(refus, `aucune décision pour ${cmd}`)
+      assert.match(refus.reason, /STOCK NOMINATIF qui NAÎT ou GRANDIT/, `${cmd} : l’index n’a pas été lu`)
+    }
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+// Le SOLDE lu doit être celui que le commit EMPORTE : sous un commit par pathspec, un solde stagé
+// hors pathspec ne part PAS (git y prend HEAD). Lire l'index validait une preuve absente du commit.
+test('DRIVER : un solde stagé HORS pathspec ne vaut pas preuve — le refus dit pourquoi', () => {
+  const repo = mkdtempSync(join(tmpdir(), 'solde-emporte-'))
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    git('init', '-q')
+    git('config', 'user.email', 'sonde@test')
+    git('config', 'user.name', 'sonde')
+    git('config', 'commit.gpgsign', 'false')
+    mkdirSync(join(repo, '.claude', 'soldes'), { recursive: true })
+    mkdirSync(join(repo, 'src'), { recursive: true })
+    writeFileSync(join(repo, 'src', 'x.ts'), 'export const a = 1\n', 'utf8')
+    git('add', '-A')
+    git('commit', '-q', '--no-verify', '-m', 'socle')
+    writeFileSync(
+      join(repo, '.claude', 'soldes', '4242.md'),
+      ['# solde #4242', 'VERIFIE: la sonde a rejoué le geste et lu la sortie du garde de bout en bout',
+        '## Restes', 'RAS', '## Réfutation', 'verdict: CONFIRMÉ',
+        'la sonde a attaqué le diff et le DoD sans trouver de contre-exemple ce jour', '2026-09-04', ''].join('\n'),
+      'utf8',
+    )
+    writeFileSync(join(repo, 'src', 'x.ts'), 'export const a = 2\n', 'utf8')
+    git('add', '.claude/soldes/4242.md')
+
+    const refus = decisionOf('git commit -m "feat: x (corrige #4242)" -- src/x.ts', repo)
+    assert.ok(refus, 'le solde n’est pas dans le commit : le garde devait parler')
+    assert.equal(refus.decision, 'deny')
+    assert.match(refus.reason, /NON EMPORTÉ par ce commit/)
+    assert.match(refus.reason, /pathspec n'emporte QUE ces chemins/)
+
+    // Le MÊME solde, dans le pathspec : il part, et le garde ne bloque plus sur son absence.
+    const avec = decisionOf('git commit -m "feat: x (corrige #4242)" -- src/x.ts .claude/soldes', repo)
+    assert.doesNotMatch(avec?.reason ?? '', /NON EMPORTÉ/, 'un solde emporté ne se refuse pas')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
 // Volet ANCÊTRE de la même disposition : un sha qui n'est dans AUCUNE histoire de ce dépôt.
 test('DRIVER : « corrigé par <sha> » dont le commit n\'existe pas dans le dépôt cible → refus', () => {
   const repo = mkdtempSync(join(tmpdir(), 'solde-ancetre-'))

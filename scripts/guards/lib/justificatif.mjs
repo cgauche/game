@@ -120,11 +120,36 @@ export function lireJustificatif({ cwd = process.cwd(), cleTree: cle, gate } = {
   }
 }
 
+/** Nombre d'observations conservées : un journal de rejeux, pas une archive. Les plus ANCIENNES
+ *  partent — c'est le rejeu RÉCENT qui explique un justificatif qu'on relit. */
+export const OBSERVATIONS_MAX = 20
+
+/** Journal borné et DÉDUPLIQUÉ : deux rejeux dans la MÊME MINUTE avec le même verdict de propreté
+ *  sont le même fait (une gate relancée en rafale, un script qui boucle) — une seule ligne. */
+function bornerObservations(observations) {
+  const vues = new Set()
+  const uniques = []
+  for (const o of observations) {
+    const cle = `${String(o.date ?? '').slice(0, 16)}|${o.sale}`
+    if (vues.has(cle)) continue
+    vues.add(cle)
+    uniques.push(o)
+  }
+  return uniques.slice(-OBSERVATIONS_MAX)
+}
+
 /**
  * Pose le verdict de `gate` sur le contenu de `sha`. UN FICHIER PAR GATE, rangé sous la clé
  * PARTIELLE et portant AUSSI la clé complète : le lecteur choisit celle qui gouverne la gate
- * (`CLE_DE_GATE`). Écriture ATOMIQUE (fichier temporaire puis renommage) — aucun lire-modifier-écrire
- * partagé entre deux sessions, donc aucune gate perdue par écrasement.
+ * (`CLE_DE_GATE`). Écriture ATOMIQUE (fichier temporaire puis renommage).
+ *
+ * UN VERDICT NE SE DÉGRADE JAMAIS : un `sale:false` déjà posé sur cette clé n'est remplacé que par
+ * un autre `sale:false`. Un rejeu de la MÊME gate sur un arbre SALE (le travail a repris après le
+ * push) écrasait la preuve du push régulier, et un push contourné en devenait indistinguable a
+ * posteriori (mesuré 2026-09-03 : sous la clé de `b7227f7b5`, 5 gates portaient `sale:true` à des
+ * dates POSTÉRIEURES au push). Ce rejeu est désormais JOURNALISÉ dans `observations` et le verdict
+ * retenu ne bouge pas. Ce volet lit avant d'écrire : deux rejeux SIMULTANÉS peuvent perdre une
+ * observation — jamais le verdict retenu, qui ne peut que rester propre.
  */
 export function ecrireJustificatif({
   cwd = process.cwd(),
@@ -137,6 +162,7 @@ export function ecrireJustificatif({
   const cle = cleTree(sha, { cwd })
   const cleComplete = cleTreeComplete(sha, { cwd })
   const salis = perimetreSale({ cwd })
+  const sale = salis.length > 0
   const contenu = {
     gate,
     cleTree: cle,
@@ -144,17 +170,26 @@ export function ecrireJustificatif({
     sha,
     statut,
     date,
-    sale: salis.length > 0,
+    sale,
     salis,
     ...(capture ? { capture } : {}),
   }
   const dossier = join(cheminJustificatifs({ cwd }), cle)
   mkdirSync(dossier, { recursive: true })
   const fichier = join(dossier, fichierDeGate(gate))
+  const precedent = lireJustificatif({ cwd, cleTree: cle, gate })
+  let observations = [...(precedent?.observations ?? [])]
+  let retenu = contenu
+  if (precedent && precedent.sale === false && sale) {
+    observations.push({ date, statut, sale, salis, sha })
+    retenu = { ...precedent }
+  }
+  observations = bornerObservations(observations)
+  if (observations.length) retenu = { ...retenu, observations }
   const temporaire = `${fichier}.${process.pid}.en-cours`
-  writeFileSync(temporaire, `${JSON.stringify(contenu, null, 2)}\n`)
+  writeFileSync(temporaire, `${JSON.stringify(retenu, null, 2)}\n`)
   renameSync(temporaire, fichier)
-  return { fichier, cleTree: cle, cleComplete, salis }
+  return { fichier, cleTree: cle, cleComplete, salis, retenu }
 }
 
 /**

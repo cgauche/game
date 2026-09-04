@@ -171,7 +171,11 @@ test('DRIVER : les gardes de commande décident bien sur un payload ctx_shell (c
   // pas — et un palier atteint denierait tout autant).
   assert.equal(decisionOf('solde-ticket-guard.mjs', 'git commit -m "feat: x (corrige #999999)"'), 'deny')
   assert.equal(decisionOf('issue-label-guard.mjs', 'gh issue create --title "X" --body "y"'), 'deny')
-  assert.equal(decisionOf('git-destructive-guard.mjs', 'git reset --hard origin/main'), 'ask')
+  // `stash` plutôt que `reset --hard` : ce test mesure le CÂBLAGE du driver, et sa décision doit
+  // être la même où qu'il tourne. Un `reset --hard` se tait quand le `cwd` du payload prouve un
+  // worktree LIÉ (c'est la règle du garde) — et `REPO` en est un dès qu'on travaille en worktree.
+  // La pile de stash, elle, est partagée par tous les arbres : `ask` partout, arbre indifférent.
+  assert.equal(decisionOf('git-destructive-guard.mjs', 'git stash pop'), 'ask')
   assert.equal(decisionOf('runner-capture-guard.mjs', 'npx vitest run | tail -20'), 'deny')
 })
 
