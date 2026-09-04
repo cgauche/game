@@ -31,9 +31,10 @@ import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'nod
 import path, { resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { binLocal, envIsole, resoudreOutilLocal } from '../lancer-local.mjs'
+import { execFileResilient } from '../guards/lib/spawnResilient.mjs'
 import {
   avecPied, deltaSourcesLues, empreinteDeLIndex, empreinteDuDisque, existeFichier, fusionnerLectures,
-  hashBlobDisque, ignoresGit, indexGit, lirePied, serialiserSourcesLues,
+  hashBlobDisque, ignoresGit, indexGit, lirePied, motifDeRejeu, serialiserSourcesLues, sha1Corps,
 } from './lib/empreinte-sources.mjs'
 
 /** `{ runner, script, targets, injecte, check }` — `runner` = 'node' | 'tsx' ; `targets` = docs ÉCRITS
@@ -141,11 +142,14 @@ function run({ runner, script }, { cwd, quiet, check, tsxEsm, lectures, cibles }
     env.WFRP_LECTURES_SORTIE = path.join(lectures, 'l')
     env.WFRP_LECTURES_CIBLE = cibles.join(',')
   }
-  execFileSync(process.execPath, args, {
+  // Rejeu si le processus n'a pas DÉMARRÉ : sous quatre lanes de gates, le loader Windows a refusé
+  // d'initialiser `build-implemente.mjs` (3221225794) et `docs:check` est sorti ROUGE en 48,6 s sur
+  // un arbre sain (mesuré le 2026-09-04). Tout autre code reste un vrai verdict.
+  execFileResilient(process.execPath, args, {
     cwd,
     env,
     stdio: quiet ? ['ignore', 'ignore', 'pipe'] : 'inherit',
-  })
+  }, { site: `build-all/${script}` })
 }
 
 /** Un générateur lit au MOINS son propre fichier et une source : en dessous, la mesure a échoué. */
@@ -278,11 +282,15 @@ function verifierEmpreintes(cwd, seulement) {
     console.log('docs:empreinte — aucun doc stagé à confronter à l\'index.')
     return 0
   }
-  // Rien n'est exigible tant que le commit ne porte pas la mécanique : sans `docs/.sources-lues.json`
-  // dans l'index, les docs de l'index sont ceux d'AVANT l'empreinte et n'ont aucun pied à tenir.
+  // FAIL-CLOSED : `docs/.sources-lues.json` DIT quelles sources chaque doc a lues. Sans lui dans
+  // l'index, aucun pied n'est vérifiable — et un 0 rendu ici serait un vert qui ne mesure rien.
   if (auCommit(cwd, SOURCES_LUES) === null) {
-    console.log(`docs:empreinte — ${SOURCES_LUES} n'est pas dans l'index : aucun pied n'est encore au commit, rien à confronter (régime levé par scripts/docs/sources-lues-au-commit.test.mjs, qui exige ce dérivé au commit).`)
-    return 0
+    process.stderr.write(
+      `docs:empreinte — REFUS : ${SOURCES_LUES} n'est pas dans l'index. C'est lui qui porte les sources ` +
+        'mesurées de chaque générateur : sans lui, aucun pied ne peut être confronté.\n' +
+        `  → npm run docs:build, puis stager ${SOURCES_LUES} avec les docs.\n`,
+    )
+    return 1
   }
   const blobs = indexGit(cwd)
   const refus = []
@@ -302,6 +310,21 @@ function verifierEmpreintes(cwd, seulement) {
       const pied = lirePied(texte)
       if (!pied) {
         refus.push(`${cible} : pied « sources-empreinte » absent de l'index — régénérer (npm run docs:build) et stager`)
+        continue
+      }
+      if (pied.corps === null) {
+        refus.push(`${cible} : pied SANS « corps: » (graphie d'avant #1679 T1d) — régénérer (npm run docs:build) et stager`)
+        continue
+      }
+      // Le CORPS que le pied signe contre le corps que l'index porte : un dérivé retouché à la main
+      // a des sources intactes, donc rien d'autre ici ne le verrait.
+      const corps = sha1Corps(texte)
+      if (pied.corps !== corps) {
+        refus.push(
+          `${cible} : CORPS DIVERGENT (pied ${pied.corps.slice(0, 12)}, doc de l'index ${corps.slice(0, 12)}) — ` +
+            'ce dérivé a été édité hors de son générateur\n' +
+            '      → régénérer (npm run docs:build) ; un doc dérivé ne se retouche pas à la main',
+        )
         continue
       }
       if (pied.empreinte === empreinte) continue
@@ -325,9 +348,99 @@ function verifierEmpreintes(cwd, seulement) {
   return 0
 }
 
+/**
+ * Pourquoi `--check` doit tout REJOUER, ou `null` si la mesure de référence est utilisable. La
+ * fraîcheur d'un doc se juge contre `docs/.sources-lues.json` : si ce dérivé n'est pas au commit,
+ * ou si le disque en porte un autre que l'index, la référence elle-même est en doute — FAIL-CLOSED,
+ * on rejoue tout et on le dit, jamais un « frais » prononcé sur une mesure incertaine.
+ */
+export function motifRejeuComplet(auCommitTexte, surDisqueTexte) {
+  if (auCommitTexte === null)
+    return `${SOURCES_LUES} n'est pas dans l'index : aucune fraîcheur n'est jugeable sans lui`
+  if (auCommitTexte !== surDisqueTexte)
+    return `${SOURCES_LUES} du disque diffère de celui de l'index : la mesure de référence a bougé`
+  return null
+}
+
+/**
+ * Générateurs que `--check` peut SAUTER, et pourquoi les autres sont rejoués. Un générateur est
+ * FRAIS quand TOUTES ses cibles portent un pied qui signe les mêmes sources ET leur propre corps.
+ * L'empreinte des sources est exigée ÉGALE DES DEUX CÔTÉS — le DISQUE (ce que le générateur relirait)
+ * et l'INDEX (ce que le commit embarque) : le disque seul laisserait passer une source stagée sans
+ * régénération, l'index seul laisserait passer une source modifiée et non stagée.
+ * REND `{ frais: Map<script, empreinte>, motifs: Map<script, raison> }`.
+ */
+export function fraicheurDesGenerateurs(cwd, blobs, lues, ignores, generateurs = GENERATORS) {
+  const frais = new Map()
+  const motifs = new Map()
+  for (const g of generateurs) {
+    if (g.check === false) continue
+    const entree = lues[g.script]
+    if (!entree) {
+      motifs.set(g.script, `jamais mesuré dans ${SOURCES_LUES}`)
+      continue
+    }
+    const cibles = ciblesSurDisque(g.targets, cwd)
+    // `targets: []` — il n'écrit qu'un BLOC d'un fichier manuscrit, qu'aucun pied ne peut signer :
+    // rien n'est jugeable, donc il est toujours rejoué.
+    if (!cibles.length) {
+      motifs.set(g.script, 'aucune cible signée (il n’injecte qu’un bloc) : rien à juger frais')
+      continue
+    }
+    const dossiers = new Map(entree.dossiers.map((d) => [d, listerDossier(cwd, d)]))
+    const surIndex = empreinteDeLIndex(blobs, {
+      fichiers: entree.fichiers,
+      dossiers: new Map(entree.dossiers.map((d) => [d, []])),
+    })
+    if (surIndex.manquants.length) {
+      motifs.set(g.script, `source(s) que l'index ne porte pas : ${surIndex.manquants.slice(0, 3).join(', ')}`)
+      continue
+    }
+    let surDisque
+    try {
+      surDisque = empreinteDuDisque(cwd, { fichiers: entree.fichiers, dossiers }, ignores).empreinte
+    } catch (e) {
+      motifs.set(g.script, `source illisible sur le disque : ${e.message}`)
+      continue
+    }
+    if (surDisque !== surIndex.empreinte) {
+      motifs.set(g.script, `sources du disque ${surDisque.slice(0, 12)} ≠ index ${surIndex.empreinte.slice(0, 12)}`)
+      continue
+    }
+    let motif = null
+    for (const cible of cibles) {
+      let texte
+      try {
+        texte = readFileSync(path.join(cwd, cible), 'utf8')
+      } catch {
+        motif = `${cible} : absent du disque`
+        break
+      }
+      const m = motifDeRejeu(texte, surIndex.empreinte)
+      if (m) {
+        motif = `${cible} : ${m}`
+        break
+      }
+    }
+    if (motif) motifs.set(g.script, motif)
+    else frais.set(g.script, surIndex.empreinte)
+  }
+  return { frais, motifs }
+}
+
+/** Noms des enfants DIRECTS d'un dossier du disque (vide s'il n'existe pas). */
+function listerDossier(cwd, dossier) {
+  try {
+    return readdirSync(path.join(cwd, dossier))
+  } catch {
+    return []
+  }
+}
+
 function main() {
   const quiet = process.argv.includes('--quiet')
   const check = process.argv.includes('--check')
+  const tout = process.argv.includes('--tout')
   const cwd = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
   const seulement = (() => {
     const i = process.argv.indexOf('--only')
@@ -342,13 +455,41 @@ function main() {
     process.stderr.write(`docs:build — ARRÊT : cible(s) déclarée(s) par DEUX générateurs, le second pied effacerait le premier :\n${doublons.map((d) => `  ${d}`).join('\n')}\n`)
     process.exit(1)
   }
+  // `--check` CIBLÉ : un doc dont le pied signe déjà ces sources ET ce corps n'a rien à apprendre
+  // d'une régénération — c'est la même comparaison, payée en un hash au lieu d'un générateur.
+  // `--tout` la court-circuite : même verdict, coût plein (morsure de déterminisme).
+  const frais = new Map()
+  if (check && !tout) {
+    let surDisque
+    try { surDisque = readFileSync(path.join(cwd, SOURCES_LUES), 'utf8') } catch { surDisque = null }
+    const complet = motifRejeuComplet(auCommit(cwd, SOURCES_LUES), surDisque)
+    if (complet) {
+      console.log(`docs:check — REJEU COMPLET : ${complet}.`)
+    } else {
+      const mesure = fraicheurDesGenerateurs(cwd, indexGit(cwd), lireSourcesLues(cwd), ignores)
+      for (const [script, empreinte] of mesure.frais) frais.set(script, empreinte)
+      for (const [script, motif] of mesure.motifs) console.log(`docs:check — ${script} — rejoué : ${motif}`)
+    }
+  }
   const racineLectures = path.join(cwd, 'node_modules', '.cache', 'lectures-docs', String(process.pid))
   rmSync(racineLectures, { recursive: true, force: true })
   const parGenerateur = {}
+  let sautes = 0
   // Fail-fast : un générateur rouge laisse docs/ à moitié régénéré ; enchaîner les suivants
   // fabriquerait un lot incohérent que le hook annoncerait « à committer ».
   for (const [rang, g] of GENERATORS.entries()) {
     if (check && g.check === false) continue
+    // `--only` ne restreint QUE la vérification : un `docs:build` partiel réécrirait
+    // `.sources-lues.json` avec les seuls générateurs joués, et effacerait la mesure des autres.
+    if (check && seulement && !seulement.has(g.script)) continue
+    if (frais.has(g.script)) {
+      sautes += 1
+      const corps = sha1Corps(readFileSync(path.join(cwd, ciblesSurDisque(g.targets, cwd)[0]), 'utf8'))
+      console.log(
+        `docs:check — ${g.script} — frais (sources ${frais.get(g.script).slice(0, 12)}, corps ${corps.slice(0, 12)}), non rejoué`,
+      )
+      continue
+    }
     const dossier = path.join(racineLectures, String(rang))
     mkdirSync(dossier, { recursive: true })
     // Un générateur relit ce qu'il écrit (son .md en `--check`, le fichier où il injecte un bloc) :
@@ -414,7 +555,9 @@ function main() {
     process.stderr.write(`docs:check — ${SOURCES_LUES} est PÉRIMÉ (les sources MESURÉES d'au moins un générateur ont changé).\n  → relancer \`npm run docs:build\` et committer le résultat.\n`)
     process.exit(1)
   }
-  console.log(`docs:check — OK (${SOURCES_LUES} à jour, ${Object.keys(parGenerateur).length} générateur(s) mesuré(s))`)
+  console.log(
+    `docs:check — OK (${SOURCES_LUES} à jour, ${Object.keys(parGenerateur).length} générateur(s) rejoué(s), ${sautes} frais)`,
+  )
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)

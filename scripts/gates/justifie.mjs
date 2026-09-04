@@ -14,12 +14,16 @@
 // SEULS `npm` et `node` sont lançables ici : un outil nu serait résolu par le PATH, où npm empile les
 // `node_modules/.bin` de tous les arbres ANCÊTRES (#1679 L1c) — les gates passent donc par un script
 // de `package.json`, qui lui-même passe par `scripts/lancer-local.mjs`.
-import { execFileSync, spawnSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { ecrireJustificatif } from '../guards/lib/justificatif.mjs'
+import { execFileResilient } from '../guards/lib/spawnResilient.mjs'
 import { codeEnfant } from '../test/partition.mjs'
 
-const RACINE = fileURLToPath(new URL('../..', import.meta.url))
+// L'arbre SUR LEQUEL la gate est mesurée. `npm run gates` le pose (`WFRP_GATES_RACINE`) : l'enveloppe
+// est un OUTIL, elle peut vivre ailleurs que l'arbre jugé — c'est ce qui rend la politique d'arrêt
+// des lanes mesurable sur un dépôt jetable, sans jamais écrire de justificatif dans le dépôt réel.
+const RACINE = process.env.WFRP_GATES_RACINE ?? fileURLToPath(new URL('../..', import.meta.url))
 
 /** Découpe `<gate> [--capture <fichier>] -- <cmd> [args…]`, ou `null` si la forme n'est pas tenue. */
 export function separerInvocation(argv) {
@@ -58,9 +62,14 @@ if (enfant.error) console.error(`[gate] lancement de ${cmd} impossible : ${enfan
 // L'écriture du justificatif est de la COMPTABILITÉ : son échec (git indisponible une seconde,
 // disque plein) ne change pas le verdict de la gate, qui vient d'être mesuré. Il est DIT, et le
 // pre-push refusera faute de justificatif — jamais un vert de gate travesti en rouge, ni l'inverse.
+// `git rev-parse` passe par le rejeu de `spawnResilient` : sous quatre lanes, le loader Windows a
+// refusé de le démarrer (3221225794) et `typecheck` est sorti VERT en 155,8 s SANS justificatif —
+// une gate payée qui ne justifie aucun push (mesuré le 2026-09-04).
 if (code === 0) {
   try {
-    const sha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: RACINE, encoding: 'utf8' }).trim()
+    const sha = execFileResilient('git', ['rev-parse', 'HEAD'], { cwd: RACINE, encoding: 'utf8' }, {
+      site: `justifie.mjs/${gate}`,
+    }).trim()
     const { fichier, cleTree, salis } = ecrireJustificatif({ cwd: RACINE, gate, sha, capture })
     console.error(
       `[gate] ${gate} VERTE sur ${sha.slice(0, 7)} (contenu ${cleTree.slice(0, 12)}` +

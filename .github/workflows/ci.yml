@@ -54,8 +54,10 @@ jobs:
         run: npm run lint
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm test
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: npm run test:map
+      # Pas de step `test:map` : `scripts/map/**/*.test.ts` est dans le `test.include` de
+      # `vite.config.ts`, donc `npm test` joue déjà `scripts/map/check.test.ts` (18 tests). Le step
+      # les rejouait à l'identique — 37,4 s de CI et de gates pour un second verdict sur les mêmes
+      # 18 tests. Le script `test:map` reste dans package.json : il sert à jouer CE dossier seul.
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}

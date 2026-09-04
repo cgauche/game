@@ -11487,4 +11487,4 @@ La présente licence, une fois publiée, ne peut être amendée. La présente li
  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . Signé ce jour
 
 Magister-Secrétaire Wilhelm Van Der Rijn, Tour de Volans
-<!-- sources-empreinte: 4297259844ad06111a499aa8cb78988ed94d83b0 (127 fichiers, 16 dossiers) -->
+<!-- sources-empreinte: bce590f0fa6cf9fa61580f1417bca1a4c06cd522 (127 fichiers, 16 dossiers) corps: cf1304e68594b57d1a5c403e6899f483b30d0cbd -->

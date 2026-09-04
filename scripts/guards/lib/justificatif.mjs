@@ -106,7 +106,7 @@ export function cheminJustificatifs({ cwd = process.cwd() } = {}) {
 }
 
 /** Nom de FICHIER d'une gate. `:` sépare un flux de données alternatif sous NTFS : `docs:check.json`
- *  y est un nom ILLÉGAL (EINVAL au renommage, mesuré), et 19 des 23 gates en portent un. */
+ *  y est un nom ILLÉGAL (EINVAL au renommage, mesuré), et 18 des 22 gates en portent un. */
 export const fichierDeGate = (gate) => `${encodeURIComponent(gate)}.json`
 
 /** Justificatif d'UNE gate pour une clé partielle donnée, ou `null`. */
@@ -202,7 +202,9 @@ export const CI_SEULEMENT = {
   'npm --prefix server ci':
     'install serveur — à jouer une fois localement, le refus du pre-push le dit',
   "npm run gen && git diff --exit-code -- '*.generated.ts'":
-    'mutant : régénère puis git diff — L3 D1 le jouera sur export',
+    'mutant : régénère puis git diff, donc injouable en gate — mais `npm run gates` le joue tel quel AVANT ' +
+    'ses lanes et REFUSE si un registre bouge (scripts/gates/toutes.mjs), parce que la suite et `build` ' +
+    'appellent tous deux `genAll()` et écriraient les mêmes fichiers en même temps',
   "npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'":
     'mutant : régénère puis git diff — L3 D1 le jouera sur export',
 }

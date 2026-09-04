@@ -9,13 +9,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
   avecPied, ecrireDoc, empreinteDuDisque, empreinteDeLIndex, fusionnerLectures, hashListing,
-  indexGit, lirePied, retirerPied, serialiserSourcesLues,
+  indexGit, lirePied, retirerPied, serialiserSourcesLues, sha1Corps,
 } from './empreinte-sources.mjs'
 import { ciblesNonSignees, refusSourcesInsuffisantes } from '../build-all.mjs'
 import { generateursArmes } from '../../guards/lib/empreinteStage.mjs'
@@ -178,9 +178,21 @@ test('le pied se pose et se retire À L\'OCTET, en un seul exemplaire', () => {
   const corps = '# doc\n\ncontenu\n\n'
   const signe = avecPied(corps, { empreinte: 'a'.repeat(40), fichiers: 3, dossiers: 1 })
   assert.equal(retirerPied(signe), corps)
-  assert.deepEqual(lirePied(signe), { empreinte: 'a'.repeat(40), fichiers: 3, dossiers: 1 })
+  // Le pied signe AUSSI le corps (#1679 T1d) : `avecPied` calcule ce sha1 sur le texte qu'il signe.
+  assert.deepEqual(lirePied(signe), {
+    empreinte: 'a'.repeat(40),
+    fichiers: 3,
+    dossiers: 1,
+    corps: sha1Corps(signe),
+  })
   assert.equal(retirerPied(avecPied(signe, { empreinte: 'b'.repeat(40), fichiers: 1, dossiers: 0 })), corps)
   assert.equal(lirePied(corps), null)
+  // La graphie d'AVANT T1d se relit (son `corps` est `null`) et se RETIRE : une re-signature n'empile
+  // pas deux pieds.
+  const ancien = `${corps}<!-- sources-empreinte: ${'a'.repeat(40)} (3 fichiers, 1 dossiers) -->\n`
+  assert.equal(lirePied(ancien).corps, null)
+  assert.equal(retirerPied(ancien), corps)
+  assert.equal(retirerPied(avecPied(ancien, { empreinte: 'b'.repeat(40), fichiers: 1, dossiers: 0 })), corps)
 })
 
 test('docs/.sources-lues.json est DÉTERMINISTE : l\'ordre de mesure ne le change pas', () => {
@@ -229,7 +241,17 @@ test('une cible SANS pied est nommée par l\'auto-contrôle de fin de générati
     // Un générateur joué SEUL réécrit sa cible : `ecrireDoc` lui rend son pied, la cible reste signée.
     ecrireDoc(doc, '# corps RÉGÉNÉRÉ\n')
     assert.deepEqual(ciblesNonSignees(racine, par), [])
-    assert.match(readFileSync(doc, 'utf8'), /^# corps RÉGÉNÉRÉ\n<!-- sources-empreinte: c{40} \(1 fichiers, 0 dossiers\) -->\n$/)
+    assert.match(
+      readFileSync(doc, 'utf8'),
+      /^# corps RÉGÉNÉRÉ\n<!-- sources-empreinte: c{40} \(1 fichiers, 0 dossiers\) corps: [0-9a-f]{40} -->\n$/,
+    )
+    // Le corps signé SUIT le corps écrit : c'est ce qui rend une édition à la main visible.
+    assert.equal(lirePied(readFileSync(doc, 'utf8')).corps, sha1Corps(readFileSync(doc, 'utf8')))
+    // À rendu IDENTIQUE, `ecrireDoc` n'écrit PAS : la mtime ne bouge pas (les trois rapports d'Atlas
+    // réécrivaient leur .md à chaque run, pendant que la suite lit docs/raw/ dans une autre lane).
+    const avant = statSync(doc).mtimeMs
+    ecrireDoc(doc, '# corps RÉGÉNÉRÉ\n')
+    assert.equal(statSync(doc).mtimeMs, avant, '`ecrireDoc` a réécrit un fichier inchangé')
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }

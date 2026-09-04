@@ -219,7 +219,8 @@ npm run dev          # serveur de dev — http://localhost:5173 sur l'ARBRE PRIN
 npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit
 npm run typecheck:fast # typecheck INCRÉMENTAL (~7-10 s), sortie complète dans node_modules/.cache/typecheck-last.txt — la porte de vérité des gates reste `npm run typecheck` (full)
-npm run gates        # joue les gates de ci.yml manquantes pour le contenu de HEAD et écrit leurs justificatifs — régime : commit FINAL → gates → push (le pre-push refuse sans justificatif vert sur le contenu poussé)
+npm run gates        # joue les gates de ci.yml manquantes pour le contenu de HEAD et écrit leurs justificatifs — régime : commit FINAL → gates → push (le pre-push refuse sans justificatif vert sur le contenu poussé). QUATRE LANES parallèles (suite · types · docs · reste, table `LANES` de scripts/gates/toutes.mjs : un écrivain de l'arbre et ses lecteurs sont TOUJOURS dans la même lane) ; la suite y est bornée par `WFRP_TEST_COEURS` ; série mesurée AVANT T1d = 1020,8 s. Résumé dans l'ordre de ci.yml, une sortie par gate sous node_modules/.cache/gates/
+npm run gates -- --serie   # les mêmes gates en UNE lane, dans l'ordre de ci.yml (diagnostic — même verdict, coût plein) ; `--tout` rejoue même ce qui est justifié, `--liste` n'imprime que le plan
 npm run galleries              # (re)génère toutes les galeries QC -> public/galeries.html (hub)
 # package-lock.json : régénérer TOUJOURS avec npm 10 (`npx --yes npm@10.9.3 install --package-lock-only`) — npm 11 ampute les hoistées @emnapi/*, garde pre-commit #528
 

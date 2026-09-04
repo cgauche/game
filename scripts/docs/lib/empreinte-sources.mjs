@@ -17,23 +17,59 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
-/** Format UNIQUE du pied, dernière ligne du doc généré. */
-export const PIED_RX = /<!-- sources-empreinte: ([0-9a-f]{40}) \((\d+) fichiers, (\d+) dossiers\) -->\n?$/
+const sha1 = (donnee) => createHash('sha1').update(donnee).digest('hex')
 
-/** `{ empreinte, fichiers, dossiers }` du pied, ou `null` si le doc n'en porte pas. */
+/**
+ * Format UNIQUE du pied, dernière ligne du doc généré. Il signe DEUX choses : l'empreinte des
+ * SOURCES lues à la génération, et le sha1 du CORPS signé (le doc sans son pied).
+ * Le corps est signé parce que les sources ne le disent pas : aucune cible n'est mesurée comme
+ * source d'elle-même (0 générateur sur 30, sonde `q3b.mjs` 2026-09-04), si bien qu'un doc dérivé
+ * ÉDITÉ À LA MAIN resterait « frais » par ses seules sources, et pour toujours.
+ * Le groupe `corps` est optionnel À LA LECTURE : les pieds d'avant #1679 T1d ne le portent pas, et
+ * `retirerPied` doit savoir les retirer pour qu'une re-signature n'en empile pas deux.
+ */
+export const PIED_RX =
+  /<!-- sources-empreinte: ([0-9a-f]{40}) \((\d+) fichiers, (\d+) dossiers\)(?: corps: ([0-9a-f]{40}))? -->\n?$/
+
+/** `{ empreinte, fichiers, dossiers, corps }` du pied, ou `null` si le doc n'en porte pas. `corps`
+ *  vaut `null` sur la graphie d'avant T1d : le juge de fraîcheur la traite comme NON signée. */
 export function lirePied(texte) {
   const m = PIED_RX.exec(texte)
-  return m ? { empreinte: m[1], fichiers: Number(m[2]), dossiers: Number(m[3]) } : null
+  return m ? { empreinte: m[1], fichiers: Number(m[2]), dossiers: Number(m[3]), corps: m[4] ?? null } : null
 }
 
 /** Le doc SANS son pied, À L'OCTET — la forme que le générateur produit et compare en `--check`. */
 export const retirerPied = (texte) => texte.replace(PIED_RX, '')
 
-/** Le doc AVEC son pied, en dernière ligne, en un seul exemplaire, le corps INTACT. */
+/** sha1 du CORPS d'un doc : ce que le pied signe, et ce qu'un lecteur recalcule pour savoir si le
+ *  fichier a été touché par autre chose que son générateur. */
+export const sha1Corps = (texte) => sha1(retirerPied(texte))
+
+/** Le doc AVEC son pied, en dernière ligne, en un seul exemplaire, le corps INTACT. `corps` se
+ *  calcule ICI, sur le texte effectivement signé : il ne se passe pas en paramètre, sans quoi un
+ *  appelant pourrait signer un corps qu'il n'écrit pas. */
 export function avecPied(texte, { empreinte, fichiers, dossiers }) {
   const corps = retirerPied(texte)
   if (!corps.endsWith('\n')) throw new Error('empreinte : ce doc ne finit pas par un saut de ligne, le pied y altérerait la dernière ligne')
-  return `${corps}<!-- sources-empreinte: ${empreinte} (${fichiers} fichiers, ${dossiers} dossiers) -->\n`
+  return `${corps}<!-- sources-empreinte: ${empreinte} (${fichiers} fichiers, ${dossiers} dossiers) corps: ${sha1(corps)} -->\n`
+}
+
+/**
+ * Pourquoi ce doc doit être REJOUÉ, ou `null` s'il est frais. Frais = son pied signe les MÊMES
+ * sources (`empreinteSources`, calculée par l'appelant) ET le corps qu'il porte. Les deux sont
+ * nécessaires : les sources seules laisseraient passer une édition à la main du dérivé, le corps
+ * seul laisserait passer une source modifiée.
+ */
+export function motifDeRejeu(texte, empreinteSources) {
+  const pied = lirePied(texte)
+  if (!pied) return 'sans pied « sources-empreinte »'
+  if (pied.corps === null) return 'pied sans « corps: » (graphie d’avant la signature du corps)'
+  if (pied.empreinte !== empreinteSources)
+    return `sources ${pied.empreinte.slice(0, 12)} au pied, ${empreinteSources.slice(0, 12)} mesurées`
+  const corps = sha1Corps(texte)
+  if (pied.corps !== corps)
+    return `corps divergent (pied ${pied.corps.slice(0, 12)}, doc ${corps.slice(0, 12)}) — ce dérivé a été édité hors de son générateur`
+  return null
 }
 
 /**
@@ -41,14 +77,20 @@ export function avecPied(texte, { empreinte, fichiers, dossiers }) {
  * raw:catalogs` en CI, suivi d'un `git diff --exit-code`) réécrit sa cible : sans cela il effacerait
  * la signature posée par `docs:build`, et le dépôt sortirait sale. Le pied redevient juste au
  * prochain `docs:build` ; s'il ment sur un doc STAGÉ, `--empreinte` le nomme.
+ *
+ * N'ÉCRIT QUE SI LE RENDU DIFFÈRE. Les trois rapports d'Atlas réécrivaient leur `.md` à CHAQUE run
+ * (`coverage.mjs:422`, `reconcile.mjs:367`, `reanchor.mjs:344`) pendant que la suite lit ce même
+ * dossier (`src/oversize-search-blindspot.test.ts:86`, `src/data/manual-docs-ratchet.test.ts:30`) :
+ * jouées en LANES parallèles (`scripts/gates/toutes.mjs`), c'était un lecteur sur un fichier en
+ * cours d'écriture. Patron : `scripts/gen-registry.mjs:435,662` (`if (changed) writeFileSync`).
  */
 export function ecrireDoc(chemin, contenu) {
-  let pied
-  try { pied = lirePied(readFileSync(chemin, 'utf8')) } catch { pied = null }
-  writeFileSync(chemin, pied ? avecPied(contenu, pied) : contenu)
+  let actuel
+  try { actuel = readFileSync(chemin, 'utf8') } catch { actuel = null }
+  const pied = actuel === null ? null : lirePied(actuel)
+  const rendu = pied ? avecPied(contenu, pied) : contenu
+  if (actuel !== rendu) writeFileSync(chemin, rendu)
 }
-
-const sha1 = (donnee) => createHash('sha1').update(donnee).digest('hex')
 
 /** Hash de BLOB git du contenu d'un fichier du disque — comparable à la colonne de `git ls-files -s`. */
 export function hashBlobDisque(chemin) {
