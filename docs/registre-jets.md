@@ -58,7 +58,7 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 
 | Fichier | Sites | Nature | Lignes | Justification |
 |---|---|---|---|---|
-| `src/state/combatEffects.ts` | 1 | canonique | 472 | canonique : le corps d'`openSkillTest` (combatEffects.ts:326) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
+| `src/state/combatEffects.ts` | 1 | canonique | 473 | canonique : le corps d'`openSkillTest` (combatEffects.ts:326) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
 | `src/state/combatFlow.ts` | 2 | mixte | 3218, 7547 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
 | `src/state/combatSlice.ts` | 5 | dette | 1985, 2031, 2140, 2591, 2999 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
 | `src/state/interludeFlow.ts` | 1 | dette | 743 | `pendingActivity` du catalogue d'Activités (`openCatalogActivity`) — fabrique UNIQUE de toutes les Activités à jet d'interlude -> #1064. |
@@ -115,11 +115,11 @@ _83 call-sites mesurés dans 20 fichiers, pour 77 exports rouleurs dérivés de 
 
 ## Population AUTHORÉE (donnée, pas code)
 
-**137** nœuds `test` (`{ kind: 'test', test: FlowTest, success, fail }`) dans **14** documents
+**142** nœuds `test` (`{ kind: 'test', test: FlowTest, success, fail }`) dans **14** documents
 de `src/data` et `src/scenes`, **tous ROUTÉS** par la porte. Ce n'est pas un stock : la donnée n'a pas de
 call-site à router.
 
-### Les 137 routés — 3 routeurs mesurés
+### Les 142 routés — 3 routeurs mesurés
 
 - `resolveFlowTest` (`src/state/combat/triggeredTest.ts`) — voie CADENCE-AWARE : ouvre `openSkillTest` (modale influençable) quand l'acteur est piloté.
 - `resolveInlineFlowTest` (`src/state/triggeredEffects.ts`) — jumeau store-free de la branche NON-interactive du précédent (jet résolu inline, journalisé).
@@ -148,7 +148,7 @@ d'atteindre un routeur.
 | `src/data/maneuvers.json` | 2 |
 | `src/data/qualities.json` | 2 |
 | `src/data/river-criticals.json` | 2 |
-| `src/data/ship-criticals.json` | 7 |
+| `src/data/ship-criticals.json` | 12 |
 | `src/data/spells.json` | 46 |
 | `src/data/symptoms.json` | 4 |
 | `src/data/talents.json` | 3 |
@@ -157,7 +157,7 @@ d'atteindre un routeur.
 | `src/scenes/arene/arene-projet.json` | 9 |
 | `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` | 2 |
 
-_137 nœuds authorés dans 14 documents, tous routés._
+_142 nœuds authorés dans 14 documents, tous routés._
 
 ## Rappel — stock du garde d'exclusivité (`rollTest`/`d100`/`TestOutcome.seal` bruts)
 
@@ -181,4 +181,4 @@ reste `ROLL_SEAM_PHASE2_STOCK`. 29 sites dans 14 fichiers.
 | `src/state/travelPostes.ts` | 1 |
 | `src/state/triggeredEffects.ts` | 1 |
 
-<!-- sources-empreinte: cd0c997bc7836f80eea62f77c57b554bf3e140fb (2089 fichiers, 137 dossiers) corps: 988373d149280369f4d1e153719f197e11a91a3a -->
+<!-- sources-empreinte: a1aa85ec157410484fda1223ecdf878848003f13 (2089 fichiers, 137 dossiers) corps: c98095d64eb64e4b0ead33906c9e6510d152bb04 -->
