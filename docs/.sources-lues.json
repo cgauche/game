@@ -5198,6 +5198,7 @@
       "scripts/loup-et-saumure",
       "scripts/map",
       "scripts/migrations",
+      "scripts/migrations/lib",
       "scripts/ops",
       "scripts/ops/sondes",
       "scripts/ops/sondes/audit-2026-09-01",
