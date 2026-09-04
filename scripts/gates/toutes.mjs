@@ -97,11 +97,12 @@ export const ECRIT_LU = {
         'l’arbre a bougé. Le vrai correctif est que cette garde lise son registre d’un chemin injectable ' +
         '(hors périmètre T1d)',
     },
-    lit: ['.claude/', 'docs/', 'scripts/', 'src/', 'tsconfig.json'],
+    lit: ['.claude/', 'docs/', 'scripts/', 'src/', 'Source/', 'tsconfig.json'],
     raison:
       'le reste des fixtures vit sous os.tmpdir() ; LIT docs/ et src/ parce que `enregistreur-lectures.test.mjs` ' +
       'joue de VRAIS générateurs en `--check` (build-index-moteur, build-donnees, build-structures), qui comparent ' +
-      'sans écrire',
+      'sans écrire ; LIT Source/ parce que `idempotence-ordre-des-cles.test.mjs` copie le corpus ENTIER (Source/ compris : ' +
+      'sans lui quatre migrations sortent 1 faute de livres) sous os.tmpdir() avant de rejouer les 89 migrations',
   },
   'test:ops': {
     ecrit: [],

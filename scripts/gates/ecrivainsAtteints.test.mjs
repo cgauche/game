@@ -52,6 +52,7 @@ const ATTENDU = {
     'scripts/hooks/solde-ticket-guard.test.mjs',
     'scripts/hooks/typecheck-fast-wrapper.test.mjs',
     'scripts/migrations/lib/empreinteRejeu.test.mjs',
+    'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
     'scripts/migrations/replay-head.mjs',
     'scripts/raw/build-implemente.mjs',
     'scripts/test/verrou.mjs',
