@@ -1197,7 +1197,7 @@ Notes mécaniques par arme (`AA 08 l.228-260`) :
 **Voir aussi** : Maniement de deux armes (talent, LDB 10) ; Armes (Atouts/Défauts : Inoffensive, Déstabilisante, Empaleuse, Déséquilibrée, Assommante, Enchevêtrement) ; États (Empêtré, Engagé) ; Combat à distance (Projectiles/Lancer, portées) ; Désarmer (talent).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.773) → `useAttackJetProps`, `PendingAttack`, `PendingDualStrike`, `dualAffordance`, `resolveDualSecond`, `dualStrikeTargets`, `defenseModifiers`, `GameState`, `Combatant`, `applyAttackResult`, +11 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
+- `LDB 10` (l.773) → `useAttackJetProps`, `PendingAttack`, `PendingDualStrike`, `dualAffordance`, `resolveDualSecond`, `defenseModifiers`, `dualStrikeTargets`, `GameState`, `Combatant`, `applyAttackResult`, +11 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
 - `LDB 14` (l.101-115, l.134-140, l.142-151, l.153-169, l.171-173) → `GrappleModal`, `areGrappling`, `fr`, `setGrapple`, `isControlledMount`, `RunModal`, `scatter`, `combat-deux-armes`, `combatOrder`, `grappleTierMod`, +88 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +38 fichiers
 - `AA 8` (l.224-261) → `immobilisante-fixe`, `filet-leste`, `gantelet-verrouille`, `cape-2` — `src/data/qualities.json`, `src/data/trappings.json`
 
@@ -4872,7 +4872,7 @@ Si l'arme subit un **Incident de tir** à n'importe quel moment, en résoudre le
 **Voir aussi** : AA : Qualités et Défauts d'armes (Imprécise, Dangereuse, Recharge, Salve, Tir de zone, Explosion, Empaleuse, Perforante, Percutante, Dévastatrice, Pointue, Pointe d'arme) ; LDB 13 : Combat (Tir ciblé, DR, doubles/Critiques) ; LDB 18 : Traumatisme (Localisations, Blessures Critiques au bras) ; LDB 16 : États (*Surpris*, *À Terre*, *En flammes*) ; LDB 14 : Taille (catégories, modificateurs de Taille de cible) ; ADE II : Combat de masse (grandes batailles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 10` (l.3-25, l.28-53, l.55-92, l.94-98, l.101-111, l.113-128, l.131-134, l.136-150, l.152-173, l.175-196, l.198-224, l.227-249, l.254-276) → `ArtilleryMisfireEntry`, `artillery-misfire`, `structure-criticals`, `StructureCritEntry`, `warMachineCrewPenalty`, `rollArtillerySalveMisfire`, `couvertDepuisDifficulte`, `cranDeCouvertEnMoins`, `doc`, `aretesAbritantes`, +49 — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/props.json`, `src/data/qualities.json`, +19 fichiers
+- `AA 10` (l.3-25, l.28-53, l.55-92, l.94-98, l.101-111, l.113-128, l.131-134, l.136-150, l.152-173, l.175-196, l.198-224, l.227-249, l.254-276) → `ArtilleryMisfireEntry`, `artillery-misfire`, `structure-criticals`, `StructureCritEntry`, `warMachineCrewPenalty`, `rollArtillerySalveMisfire`, `couvertDepuisDifficulte`, `cranDeCouvertEnMoins`, `doc`, `aretesAbritantes`, +49 — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/props.json`, `src/data/qualities.json`, +20 fichiers
 
 ---
 
@@ -5687,7 +5687,7 @@ Note spéciale : le **Canon à flammes nain** inflige **2 + DR États *En flamme
 **Voir aussi** : aa-structures-sieges (armes de siège *maniables* d'AA, stats distinctes — Baliste +12 / Recharge 3 vs ici +14 / Recharge 2) ; les entrées Combat (Tests spectaculaires, DR, États En flammes/Empoisonné/Empêtré/Surpris/À Terre/Sans défense) ; Corruption (Facteurs Environnementaux, influence corruptrice) ; Psychologie (Peur/Terreur/Animosité/Haine, Horreurs de la Guerre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 8` (l.13-19, l.24-33, l.34-47, l.48, l.55-56, l.65-110, l.112-135, l.138-178, l.207-225, l.227-270, l.281-304, l.307-321) → `scene`, `insignifiante`, `porte`, `warMachineCrewPenalty`, `MassBattleView`, `RAM_POS`, `desavantagee`, `RAM_CREW`, `porte-blindee`, `egale`, +117 — `src/data/activities.json`, `src/data/index.ts`, `src/data/mass-battle.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +37 fichiers
+- `ADE II 8` (l.13-19, l.24-33, l.34-47, l.48, l.55-56, l.65-110, l.112-135, l.138-178, l.207-225, l.227-270, l.281-304, l.307-321) → `scene`, `insignifiante`, `porte`, `warMachineCrewPenalty`, `MassBattleView`, `RAM_POS`, `desavantagee`, `RAM_CREW`, `porte-blindee`, `egale`, +120 — `src/data/activities.json`, `src/data/index.ts`, `src/data/mass-battle.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +39 fichiers
 - sans code : `ADE II 8` (l.174-175, l.181-186)
 
 ---

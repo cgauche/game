@@ -899,7 +899,7 @@ Réparation permanente : **Test de Métier (Constructeur de navires)** (ou **Mé
 **Voir aussi :** [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.639-651) → `meleeVsHullBE`, `VolleyShot`, `PortView`, `RepairTick`, `sea-navigation`, `isOutOfAction`, `voie-d-eau`, `GameState`, `applyHit` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +3 fichiers
+- `MDG 13` (l.639-651) → `meleeVsHullBE`, `VolleyShot`, `PortView`, `RepairTick`, `sea-navigation`, `isOutOfAction`, `voie-d-eau`, `applyHit`, `GameState` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +3 fichiers
 
 ---
 
