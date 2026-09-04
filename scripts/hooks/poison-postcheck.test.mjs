@@ -46,3 +46,18 @@ test('hors .claude/ et docs/, et sur une ligne INCHANGÉE, le volet se tait', ()
     old_string: 'voir #1591\nautre', new_string: 'voir #1591\nautre chose',
   }), '', 'seules les lignes AJOUTÉES comptent')
 })
+
+test('le périmètre se juge sur le chemin RELATIF à la racine du dépôt, jamais sur une sous-chaîne du chemin absolu', () => {
+  // Un worktree lié vit sous `.claude/worktrees/<agent>/` : par sous-chaîne, tout fichier y serait
+  // une note suivie. Le même défaut se reproduit sans worktree avec un dossier `.claude/` ou `docs/`
+  // NON racine — c'est la forme mordue ici, identique en arbre principal et en worktree.
+  assert.equal(contexteDe({
+    file_path: join(REPO, 'server', '.claude', 'notes.md'), old_string: '', new_string: 'voir #1591\n',
+  }), '', 'un `.claude/` non racine n’est pas le périmètre des notes')
+  assert.equal(contexteDe({
+    file_path: join(REPO, 'src', 'docs', 'notes.md'), old_string: '', new_string: 'voir #1591\n',
+  }), '', 'un `docs/` non racine n’est pas le périmètre des notes')
+  assert.match(contexteDe({
+    file_path: join(REPO, '.claude', 'memory', 'exemple.md'), old_string: '', new_string: 'voir #1591\n',
+  }), /POINTEUR DÉRÉFÉRENCÉ/, 'la mémoire à la racine reste suivie')
+})

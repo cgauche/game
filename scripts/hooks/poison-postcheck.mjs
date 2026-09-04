@@ -24,6 +24,12 @@ try { entree = JSON.parse(raw)?.tool_input ?? {}; } catch { /* stdin illisible �
 const fp = String(entree.file_path ?? entree.path ?? '');
 
 const norm = fp.replace(/\\/g, '/');
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+// Chemin RELATIF à la racine du dépôt qui porte ce hook : le périmètre `.claude/**`/`docs/**` se juge
+// sur lui, jamais sur le chemin absolu — un worktree lié vit lui-même sous `.claude/worktrees/`, et
+// tout fichier y passerait pour une note suivie.
+const rootNorm = root.replace(/\\/g, '/');
+const sousRacine = norm.startsWith(`${rootNorm}/`) ? norm.slice(rootNorm.length + 1) : norm;
 // MÊME périmètre que la suite Vitest et le pre-commit : `estFichierScanne` (source unique,
 // `commentPoison.mjs`) — les deux racines, les quatre extensions, tests compris.
 const coupe = ['/src/', '/scripts/'].map((d) => norm.lastIndexOf(d)).filter((i) => i >= 0).sort((a, b) => b - a)[0];
@@ -34,7 +40,6 @@ const isSrcTs = estFichierScanne(norm);
 const sortie = [];
 
 if (isSrcTs) {
-  const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
   let text;
   try { text = readFileSync(fp.startsWith('/') || /^[A-Za-z]:/.test(fp) ? fp : join(root, fp), 'utf8'); } catch { text = ''; }
   if (text) {
@@ -76,7 +81,7 @@ if (isSrcTs) {
 }
 
 /** Une note documentaire ou de mémoire : le pointeur nu s'y lit sans son ticket. */
-const estNoteSuivie = /(^|\/)(\.claude|docs)\//.test(norm);
+const estNoteSuivie = /^(\.claude|docs)\//.test(sousRacine);
 /** Un titre sur la MÊME ligne : guillemets (droits, français), ou parenthèse explicative. */
 const PORTE_UN_TITRE = /["“”«»()]/;
 /** Un numéro de ticket cité seul (jamais dans une URL, un chemin ou une ancre `issuecomment-…`). */
