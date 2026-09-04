@@ -45,6 +45,7 @@ import { join, resolve } from 'node:path'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
 import {
   cleTree,
+  cleTreeComplete,
   gatesRequises,
   lireJustificatif,
   motifDeRefus,
@@ -587,6 +588,11 @@ export async function principal({
 
   const scripts = JSON.parse(readFileSync(join(racine, 'package.json'), 'utf8')).scripts ?? {}
   const cle = cleTree('HEAD', { cwd: racine })
+  // DEUX clés, comme le pre-push (scripts/git-hooks/pre-push.mjs) : les 12 gates de `CLE_DE_GATE`
+  // lisent `docs/` ou `.claude/`, hors de la clé partielle. Sans la clé complète ici, le lanceur
+  // déclare « déjà justifiée » ce que le push refuse ensuite (mesuré sur fdf62479e : 22 gates
+  // sautées, 11 refusées au push).
+  const cles = { cleTree: cle, cleComplete: cleTreeComplete('HEAD', { cwd: racine }) }
   const gates = gatesRequises({ cwd: racine })
   journal(`[gates] ${gates.length} gate(s) lues dans ci.yml · contenu ${cle.slice(0, 12)}\n`)
 
@@ -609,7 +615,7 @@ export async function principal({
   const aJouer = []
   for (const gate of gates) {
     const vue = lireJustificatif({ cwd: racine, cleTree: cle, gate: gate.nom })
-    const motif = motifDeRefus(vue, gate)
+    const motif = motifDeRefus(vue, gate, cles)
     if (!TOUT && !motif) {
       journal(`[gates] ${gate.nom} — déjà justifiée sur ce contenu\n`)
       continue

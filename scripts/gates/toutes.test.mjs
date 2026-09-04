@@ -31,7 +31,7 @@ import {
   refusDeCouverture,
   tuerArbre,
 } from './toutes.mjs'
-import { gatesRequises } from '../guards/lib/justificatif.mjs'
+import { cleTree, cleTreeComplete, ecrireJustificatif, gatesRequises } from '../guards/lib/justificatif.mjs'
 import { refusVerrou } from '../test/verrou.mjs'
 import { coeurs, repartitionWorkers } from '../test/partition.mjs'
 
@@ -290,8 +290,10 @@ function depotDeGates(gatesFactices) {
   const scripts = { gen: 'node gen.mjs' }
   writeFileSync(join(racine, 'gen.mjs'), '\n')
   for (const g of gatesFactices) {
-    scripts[g.nom] = `node ${g.nom}.mjs`
-    writeFileSync(join(racine, `${g.nom}.mjs`), g.corps)
+    // `:` sépare un flux de données alternatif sous NTFS : `docs:check.mjs` y est un nom illégal.
+    const fichier = `${g.nom.replace(/:/g, '-')}.mjs`
+    scripts[g.nom] = `node ${fichier}`
+    writeFileSync(join(racine, fichier), g.corps)
   }
   writeFileSync(join(racine, 'package.json'), `${JSON.stringify({ name: 'jetable', version: '0.0.0', scripts }, null, 2)}\n`)
   git('init', '-q')
@@ -393,6 +395,50 @@ test('une gate de la phase SÉRIE qui réécrit l’arbre est REFUSÉE, en nomma
     assert.match(sortie, /——— résumé ———/)
     // Le lecteur n'a jamais démarré : l'écrivain a tranché AVANT les lanes, pas sept minutes plus tard.
     assert.match(sortie, /\[gates\] lecteur — sautée/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('un doc committé PÉRIME les gates à clé pleine — le lanceur les redonne à jouer, pas les autres', async () => {
+  // Défaut mesuré sur fdf62479e : `npm run gates` disait « rien à jouer » pour 22 gates, et le
+  // pre-push en refusait 11 (« gate « docs:check » jouée sur un AUTRE arbre »). Le lanceur ne
+  // connaissait que la clé PARTIELLE, qu'un commit de `docs/` ne change pas.
+  const { racine, git } = depotDeGates([
+    { nom: 'docs:check', corps: '\n' },
+    { nom: 'lint', corps: '\n' },
+  ])
+  try {
+    for (const nom of ['docs:check', 'lint']) ecrireJustificatif({ cwd: racine, gate: nom, sha: 'HEAD' })
+    // Un commit qui ne touche QUE `docs/` : la clé partielle ne bouge pas, la clé complète oui.
+    mkdirSync(join(racine, 'docs'), { recursive: true })
+    writeFileSync(join(racine, 'docs', 'note.md'), 'régénéré\n')
+    git('add', '-A')
+    git('commit', '-qm', 'docs seuls')
+    assert.equal(cleTree('HEAD~1', { cwd: racine }), cleTree('HEAD', { cwd: racine }), 'la clé partielle doit être la même')
+    assert.notEqual(
+      cleTreeComplete('HEAD~1', { cwd: racine }),
+      cleTreeComplete('HEAD', { cwd: racine }),
+      'la clé complète doit avoir bougé',
+    )
+
+    const lignes = []
+    const code = await principal({
+      racine,
+      argv: ['node', 'toutes.mjs', '--liste'],
+      journal: (t) => lignes.push(t),
+      lanes: [{ nom: 'a', gates: ['docs:check', 'lint'] }],
+      avant: [],
+      ecritLu: { 'docs:check': { ecrit: [], lit: [] }, lint: { ecrit: [], lit: [] } },
+    })
+    const sortie = lignes.join('')
+    assert.equal(code, 0)
+    assert.match(
+      sortie,
+      /\[gates\] docs:check — gate « docs:check » jouée sur un AUTRE arbre : elle lit docs\/[^\n]*— la rejouer : npm run docs:check/,
+      'une gate de CLE_DE_GATE doit être redonnée à jouer, en se nommant',
+    )
+    assert.match(sortie, /\[gates\] lint — déjà justifiée sur ce contenu/, 'une gate hors table reste justifiée')
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
