@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { emptyScene } from './scene';
+import { emptyScene, setDoorOpen } from './scene';
 import { useGame } from './store';
 import { buildApi } from './devtools';
 import { partyMoneyTotal } from './bourseFlow';
@@ -533,5 +533,48 @@ describe('__wfrp.resumeLastScenario — reprise du dernier scénario après un r
     buildApi().scenario('entrainement', 3);
     expect(buildApi().scenario('scenario-inexistant')).toContain('✗');
     expect(JSON.parse(store.get('wfrp.dev.lastScenario')!)).toEqual({ id: 'entrainement', seed: 3 });
+  });
+});
+
+describe('__wfrp.visibleCount / __wfrp.walls — sondes de brouillard et d’arêtes (#1680)', () => {
+  beforeEach(() => {
+    useGame.setState({ scene: null, battle: null, party: [] });
+  });
+
+  it('hors scène : refus explicite (aucun chiffre fabriqué)', () => {
+    expect(buildApi().visibleCount()).toContain('✗');
+    expect(buildApi().walls()).toContain('✗');
+  });
+
+  it('visibleCount chiffre la vue SANS la confondre avec la carte entière', () => {
+    buildApi().scenario('ecuries-clayonnage', 7);
+    const sc = useGame.getState().scene!;
+    const c = buildApi().visibleCount() as { visible: number; explored: number; total: number };
+    expect(c.total).toBe(sc.dimensions.w * sc.dimensions.h * sc.layers.length);
+    expect(c.visible).toBeGreaterThan(0);
+    expect(c.visible).toBeLessThan(c.total);
+    expect(c.explored).toBe((useGame.getState().explored[sc.id] ?? []).length);
+  });
+
+  it('walls() décompte par structure ; walls(id) rend les arêtes de CETTE structure', () => {
+    buildApi().scenario('ecuries-clayonnage', 7);
+    const sc = useGame.getState().scene!;
+    const parStructure = buildApi().walls() as Record<string, number>;
+    expect(Object.values(parStructure).reduce((a, b) => a + b, 0)).toBe(sc.walls!.length);
+    const clayonnage = buildApi().walls('cloture-en-clayonnage') as { x: number; y: number; side: string; structure: string }[];
+    expect(clayonnage.length).toBe(parStructure['cloture-en-clayonnage']);
+    expect(clayonnage.every((w) => w.structure === 'cloture-en-clayonnage')).toBe(true);
+    // La séparation de box des écuries que la recette vise (aucune fenêtre, aucune porte).
+    expect(clayonnage).toContainEqual(expect.objectContaining({ x: 23, y: 30, side: 'E', window: false, door: false }));
+  });
+
+  it('`closed` rend l’état VIVANT d’une porte (flags de scène), jamais son seul champ authoré', () => {
+    buildApi().scenario('ecuries-clayonnage', 7);
+    const portes = () => buildApi().walls('solide-porte-en-bois') as { x: number; y: number; side: 'N' | 'E'; closed: boolean }[];
+    const p = portes()[0];
+    expect(p.closed).toBe(false);
+    useGame.setState((s) => ({ scene: setDoorOpen(s.scene!, p.x, p.y, p.side, 0, false) }));
+    const relue = portes().find((q) => q.x === p.x && q.y === p.y && q.side === p.side)!;
+    expect(relue.closed).toBe(true);
   });
 });

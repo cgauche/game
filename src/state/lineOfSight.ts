@@ -7,7 +7,7 @@
  * — la classification des décors/créatures est une extrapolation des étalons ; celle des STRUCTURES
  * d'arête est authored et sourcée (`couvertPenalty`, `AA 10 l.23`).
  */
-import { Scene, tileAt, wallBetween, heightAt, sceneMetresPerTile, edgeOf, structureAt, structureIsDown } from './scene';
+import { Scene, tileAt, areteOcculteEntre, heightAt, sceneMetresPerTile, edgeOf, structureAt, structureIsDown } from './scene';
 import { TERRAINS } from './terrain';
 import { findPropById, findStructureById } from '../data';
 import { decorEnCase } from './decorIndex';
@@ -39,12 +39,14 @@ export function tilesBetween(a: Pt, b: Pt): Pt[] {
 const adjacent = (p: Pt, q: Pt): boolean => chebyshev(p, q) <= 1;
 
 /** Un mur d'arête (`Scene.walls`) est-il franchi par la ligne `from`→`to` ? Bloque la vue
- *  (« pas à travers les murs »). Le test PAR ARÊTE est injectable (`edgeBlocks`) : défaut = `wallBetween`
- *  (O(murs), combat) ; la vision passe un prédicat O(1) (Set d'arêtes précalculé) pour les scènes très
- *  murées. Les diagonales ne croisent pas d'arête cardinale. */
+ *  (« pas à travers les murs »). Le test PAR ARÊTE est injectable (`edgeBlocks`) : le défaut interroge
+ *  l'OPACITÉ de l'arête (`areteOcculte`, O(murs), combat) — jamais sa franchissabilité : une Ligne de Vue
+ *  n'a pas à savoir si l'on PASSE, et une herse à barreaux se regarde à travers sans s'ouvrir. La vision
+ *  passe un prédicat O(1) (Set d'arêtes précalculé, même verdict) pour les scènes très murées. Les
+ *  diagonales ne croisent pas d'arête cardinale. */
 export function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0, edgeBlocks?: (ax: number, ay: number, bx: number, by: number) => boolean): boolean {
   if (!scene.walls?.length) return false;
-  const blk = edgeBlocks ?? ((ax, ay, bx, by) => wallBetween(scene, ax, ay, bx, by, z));
+  const blk = edgeBlocks ?? ((ax, ay, bx, by) => areteOcculteEntre(scene, ax, ay, bx, by, z));
   // Supercover de `from` à `to`, extrémités incluses (ce que `tilesBetween`, strictement entre, ne
   // donne pas), parcouru EN PLACE : ce chemin est le plus chaud du brouillard — un rayon par case
   // vue, une case par pas — et n'a besoin d'aucun tableau ni point intermédiaire matérialisé.
@@ -146,7 +148,7 @@ function aretesAbritantes(from: Pt, to: Pt): { x: number; y: number; side: 'N' |
  * FENÊTRE : un cran de moins (`cranDeCouvertEnMoins`). Référence `AA 10 l.122` ; l'application à une
  * croisée est MAISON — extrapolation de Percée : une fenêtre est une ouverture permanente de même
  * nature que la petite brèche que ce critique ouvre, et le canon y dégrade le couvert d'exactement un
- * cran sans rendre la Structure transparente (elle reste occultante, comme l'Enfoncée l.126 le reste).
+ * cran, sans toucher à l'opacité : celle-ci se lit sur la Structure (`occulte`), jamais sur la croisée.
  */
 export function couvertDArete(scene: Scene, from: Pt, to: Pt): CoverClass {
   const z = to.z ?? 0;

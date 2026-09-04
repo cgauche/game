@@ -6935,28 +6935,28 @@
      "x": 21,
      "y": 29,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois",
+     "structure": "cloture-en-clayonnage",
      "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 21,
      "y": 30,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois",
+     "structure": "cloture-en-clayonnage",
      "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 19,
      "y": 32,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois",
+     "structure": "cloture-en-clayonnage",
      "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 19,
      "y": 31,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois",
+     "structure": "cloture-en-clayonnage",
      "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
@@ -6976,14 +6976,14 @@
      "x": 23,
      "y": 29,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois",
+     "structure": "cloture-en-clayonnage",
      "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 23,
      "y": 30,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois",
+     "structure": "cloture-en-clayonnage",
      "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {

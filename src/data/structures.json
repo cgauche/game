@@ -267,6 +267,8 @@
     },
     "traits": [],
     "couvertPenalty": "intermediaire",
+    "occulte": false,
+    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86 chiffre la couverture totale en −30 sur le tir, LDB 85 l.329 ne fait bloquer la Ligne de Vue que par la fumée). AA 10 l.65 fait de la clôture en clayonnage un enclos d’animaux employé « comme couvert » faute de mieux, jamais une fortification : une barrière d'enclos se regarde par-dessus. Elle garde son couvert Intermédiaire et reste INFRANCHISSABLE.",
     "source": {
       "book": "aux-armes",
       "page": 119
@@ -284,6 +286,8 @@
       "B": 20
     },
     "traits": [],
+    "occulte": false,
+    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86 chiffre la couverture totale en −30 sur le tir, LDB 85 l.329 ne fait bloquer la Ligne de Vue que par la fumée). AA 10 l.70 définit la herse comme « une grille de fer » : on voit à travers ses barreaux. Elle n'a aucune Pénalité de Couvert (N/A, AA 10 l.42) et reste INFRANCHISSABLE une fois baissée.",
     "source": {
       "book": "aux-armes",
       "page": 120

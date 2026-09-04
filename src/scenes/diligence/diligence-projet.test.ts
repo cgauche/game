@@ -136,13 +136,20 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
     expect(scene.walls).toHaveLength(668);
     expect(jardin.map((edge) => wallAt(edge)?.structure)).toEqual(new Array(13).fill(clayonnage));
     const mursDesBoxes = boxes.map(wallAt);
-    expect(mursDesBoxes.map((wall) => wall?.structure)).toEqual(new Array(6).fill('mur-a-ossature-en-bois'));
+    // Migration 2026-09-04 (#1680 ligne 15-B) : une séparation de box EST un enclos d'animaux, ce que
+    // la clôture en clayonnage décrit (AA 10 l.65) — ces six arêtes portaient le mur d'HABITATION
+    // d'AA 10 l.76. Leur APPARENCE ne bouge pas (dessin identique au pixel), leur PROFIL AA change en
+    // entier : couvert Complexe → Intermédiaire (la cible abritée PERD son couvert), `occulte: false`,
+    // BE 4/B 20 → BE 2/B 10, `encLimit` 30 → absent. Les quatre deltas sont verrouillés ci-dessous.
+    expect(mursDesBoxes.map((wall) => wall?.structure)).toEqual(new Array(6).fill(clayonnage));
     expect(mursDesBoxes.map((wall) => wall?.appearance))
       .toEqual(new Array(6).fill(cloisonBasse));
 
-    const murOssature = findStructureById('mur-a-ossature-en-bois')!;
+    // L'apparence surchargée reste une APPARENCE, jamais une structure — c'est le sens de la surcharge.
     expect(findStructureById(cloisonBasse)).toBeUndefined();
-    expect(mursDesBoxes.map((wall) => findStructureById(wall!.structure!))).toEqual(new Array(6).fill(murOssature));
+    const structureClayonnage = findStructureById(clayonnage)!;
+    expect(structureClayonnage.occulte).toBe(false);
+    expect(mursDesBoxes.map((wall) => findStructureById(wall!.structure!))).toEqual(new Array(6).fill(structureClayonnage));
 
     const apparenceMur = structureAppearance('mur-a-ossature-en-bois');
     const apparenceCloison = structureAppearance(cloisonBasse);

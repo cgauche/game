@@ -52,7 +52,7 @@ export const ENTITY_ORPHAN_FAMILIES = [
   // bloqué par #1636 — bestiaire du supplément maison `frenchy-bzh` (gardes de ville,
   // gardes de village, milices…), entièrement curé : aucune scène ni rencontre ne le convoque.
   // Ex. `jeune-recrue-du-guet`, `homme-du-guet`, `sergent-du-guet`.
-  { category: 'creatures', book: 'frenchy-bzh', max: 244, note: 'bestiaire frenchy-bzh curé, aucune scène porteuse — bloqué par #1636' },
+  { category: 'creatures', book: 'frenchy-bzh', max: 243, note: 'bestiaire frenchy-bzh curé, aucune scène porteuse — bloqué par #1636' },
   // bloqué par #1637 — bestiaire de Middenheim, curé sans scène middenheimoise.
   // Ex. `spectre-middenheim`, `loup-blanc`, `babrakkos`.
   { category: 'creatures', book: 'middenheim', max: 37, note: 'bestiaire Middenheim curé, aucune scène porteuse — bloqué par #1637' },

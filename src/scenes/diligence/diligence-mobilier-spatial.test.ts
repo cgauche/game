@@ -56,10 +56,14 @@ const POSES = [
 ] as const;
 
 /** Empreinte figée de l'ARCHITECTURE au commit qui précède la pose (83d02a10). Une implantation qui
- *  déplace un mur, une ouverture, un terrain ou une zone fait bouger l'un de ces témoins. */
+ *  déplace un mur, une ouverture, un terrain ou une zone fait bouger l'un de ces témoins.
+ *  `edgeDigest` REMESURÉ le 2026-09-04 (#1680 ligne 15-B) : il hache aussi la STRUCTURE de chaque arête,
+ *  et les six séparations de box des Écuries sont passées de `mur-a-ossature-en-bois` à
+ *  `cloture-en-clayonnage` (AA 10 l.65). La GÉOMÉTRIE est intacte — 668 arêtes, mêmes coordonnées,
+ *  mêmes côtés, mêmes portes et fenêtres : seul le mot de structure change sur six d'entre elles. */
 const TOPOLOGY_BEFORE = {
   walls: 668,
-  edgeDigest: 'a8573f5ba372806b',
+  edgeDigest: 'd67f510056be785a',
   layersDigest: 'bec00d303b88f5cc',
   effectZones: 39,
   effectZonesDigest: '007e9059756e689d',

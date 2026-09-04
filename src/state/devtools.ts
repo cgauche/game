@@ -47,7 +47,8 @@ import { makeShowcaseParty } from '../data/pregens';
 import { hoverTargeting } from './targeting';
 import { maneuverShip } from './shipManeuver';
 import { etageActif, getViewZ, setViewZ } from './viewLevel';
-import { setRevealAll } from './visionState';
+import { setRevealAll, computeStateVisible } from './visionState';
+import { doorIsOpen } from './scene';
 import { rule, setRule, ruleDef, OPTIONAL_RULES, type RuleValue } from '../engine/policy';
 import { houseRulesMutability, resetHouseRule } from './houseRules';
 import { cadence } from '../engine/cadence';
@@ -688,6 +689,48 @@ export function buildApi() {
       const v = on ?? !g().debugLabels;
       useGame.setState({ debugLabels: v });
       return v ? 'labels ON' : 'labels OFF';
+    },
+
+    /** COMPTE de brouillard sur l'état VIVANT : `{visible, explored, total}` — cases actuellement vues
+     *  (`computeStateVisible`, la MÊME dérivation que le rendu : aucune vision recalculée ici), cases
+     *  déjà explorées de la scène courante, et cases construites (dimensions × étages). Chiffrer une
+     *  révélation (une cloison qui laisse voir, une lampe allumée) sans lire la carte au pixel. */
+    visibleCount: () => {
+      const s = g();
+      const sc = s.scene;
+      if (!sc) return '✗ aucune scène';
+      const visible = computeStateVisible({
+        scene: sc, battle: s.battle, party: s.party, partyPos: s.partyPos,
+        gameTime: s.gameTime, lightLevel: s.lightLevel,
+      });
+      return {
+        visible: visible.size,
+        explored: (s.explored[sc.id] ?? []).length,
+        total: sc.dimensions.w * sc.dimensions.h * sc.layers.length,
+      };
+    },
+
+    /** ARÊTES de la scène (`scene.walls`) — lecture seule. Sans argument : décompte par `structure`
+     *  (`Record<id, n>`, les arêtes sans structure comptées sous `(sans structure)`). Avec un id de
+     *  Structure : la liste des arêtes qui la portent (`{x,y,z,side,structure,window,door,closed}` —
+     *  `closed` = état VIVANT de la porte, `doorIsOpen`, jamais le seul champ authoré). */
+    walls: (structure?: string) => {
+      const sc = g().scene;
+      if (!sc) return '✗ aucune scène';
+      const all = sc.walls ?? [];
+      if (structure === undefined) {
+        const parStructure: Record<string, number> = {};
+        for (const w of all) {
+          const k = w.structure ?? '(sans structure)';
+          parStructure[k] = (parStructure[k] ?? 0) + 1;
+        }
+        return parStructure;
+      }
+      return all.filter((w) => w.structure === structure).map((w) => ({
+        x: w.x, y: w.y, z: w.z ?? 0, side: w.side, structure: w.structure,
+        window: !!w.window, door: !!w.door,
+        ...(w.door ? { closed: !doorIsOpen(sc, w) } : {}),
+      }));
     },
 
     /** Survol PROGRAMMATIQUE (combat) : pose la tuile survolée du monde de campagne comme si la souris y

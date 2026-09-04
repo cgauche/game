@@ -274,8 +274,13 @@ export interface StructureData {
    *  Structure (AA 10 l.23, colonne l.28-51) — `undefined` = N/A (aucun couvert : Herse l.42 et Solide
    *  porte en bois l.50 ; les 5 entrées ADE II, dont la table n'a pas cette colonne, ADE II 8 l.282-288). */
   couvertPenalty?: CouvertDifficulty;
+  /** Laisse-t-elle VOIR à travers ? `undefined` = occultante ; seul `false` est écrivable, et il porte
+   *  son `maison` (LDB 14 l.86, LDB 85 l.329). Lu par le seul `areteOcculte` (`state/scene.ts`). */
+  occulte?: false;
   /** Provenance RAW au FOLIO imprimé (ADE II 89 ; AA 119-120) — même forme que `SourceRef`. */
   source: { book: string; page: number };
+  /** Raison MAISON de l’écart au défaut occultant — exigée par le schéma dès que `occulte: false`. */
+  maison?: string;
   desc?: string;
 }
 

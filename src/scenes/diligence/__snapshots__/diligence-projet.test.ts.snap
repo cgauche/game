@@ -18645,7 +18645,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     {
       "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
-      "structure": "mur-a-ossature-en-bois",
+      "structure": "cloture-en-clayonnage",
       "x": 21,
       "y": 29,
     },
@@ -18664,7 +18664,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     {
       "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
-      "structure": "mur-a-ossature-en-bois",
+      "structure": "cloture-en-clayonnage",
       "x": 23,
       "y": 29,
     },
@@ -18786,14 +18786,14 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     {
       "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
-      "structure": "mur-a-ossature-en-bois",
+      "structure": "cloture-en-clayonnage",
       "x": 21,
       "y": 30,
     },
     {
       "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
-      "structure": "mur-a-ossature-en-bois",
+      "structure": "cloture-en-clayonnage",
       "x": 23,
       "y": 30,
     },
@@ -18837,7 +18837,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     {
       "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
-      "structure": "mur-a-ossature-en-bois",
+      "structure": "cloture-en-clayonnage",
       "x": 19,
       "y": 31,
     },
@@ -18881,7 +18881,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     {
       "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
-      "structure": "mur-a-ossature-en-bois",
+      "structure": "cloture-en-clayonnage",
       "x": 19,
       "y": 32,
     },

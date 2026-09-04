@@ -207,6 +207,10 @@ Ordre de préférence STRICT pour exercer un flux :
 > direction ÉCRAN poussée (`screenStepDot`, `src/state/combatCursor.ts`) — le delta `x`/`y` dépend donc de
 > la rotation caméra et de la vue. Vérifier le déplacement par la position lue (`__wfrp.state()`), jamais
 > par un delta attendu en dur.
+> ⚠ **Le `key` du volet Claude_Browser (outil `computer`, action `key`) n'émet pas `event.code`** (mesuré
+> 2026-09-04, listener `keydown` : `code === ''`) alors que TOUTE liaison de `src/state/keybindings.ts` est
+> keyée sur le `code` physique → passer par Playwright
+> (`mcp__plugin_playwright_playwright__browser_press_key`) pour tout déplacement au clavier.
 
 > **Mouvement EN COMBAT au clavier** (piège de recette, mesuré 2026-08-04) : pousser le curseur
 > au-delà de l'allonge de Mouvement normal du combattant n'échoue pas silencieusement — la validation
@@ -238,6 +242,8 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `ascii(z?)` | plan ASCII de la couche (à comparer œil-pour-œil avec l'écran) | `console.log(__wfrp.ascii())` pour l'alignement monospace |
 | `fog(on=false)` | brouillard ON/OFF (diagnostic RENDU sans vision) | bascule GLOBALE — remettre `fog(true)` avant de valider un flux de vision réel |
 | `labels(on?)` | overlay debug de coordonnées sur la carte | bascule ; zéro coût si OFF |
+| `visibleCount()` | `{visible, explored, total}` sur l'état VIVANT — cases VUES (`computeStateVisible`, la dérivation du rendu, composée telle quelle), cases EXPLORÉES de la scène courante, cases construites (dimensions × étages) | lecture seule ; chiffre une révélation (cloison qui laisse voir, lampe allumée) sans lire la carte au pixel. ⚠ `fog(false)` force `visible` = `total` (REVEAL_ALL) — remettre `fog(true)` avant de mesurer |
+| `walls(structure?)` | arêtes de `scene.walls` : sans argument, un DÉCOMPTE par `structure` (`Record<id, n>`, arêtes nues sous `(sans structure)`) ; avec un id de Structure, la liste `{x,y,z,side,structure,window,door,closed}` | lecture seule ; `closed` n'est rendu que pour une PORTE et vaut son état VIVANT (`doorIsOpen`, flags de scène), jamais le seul champ authoré |
 | `go('scene-id', entry?)` | saute vers une scène du projet | scène inconnue → message `✗`, scène inchangée |
 | `fight(encounterId?)` | sans argument : liste les rencontres de la scène ; avec id : lance le combat | — |
 | `store` | store Zustand brut (`getState`/`setState`) | **dernier recours** (doctrine ci-dessus, §3) — ⚠ **`setState` brut peut CORROMPRE l'état sans récupération** (pas de validation/dérivations liées, contrairement aux actions du store) : un état incohérent après un `setState` direct impose un RELOAD complet, pas un simple retour arrière. `store` = LECTURE (`getState()`) ; toute mutation passe par un helper `__wfrp` ou une vraie action du store (`getState().xxx()`), jamais `setState` à la main sur un flux qu'on valide |

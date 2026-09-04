@@ -35,6 +35,9 @@ const doc = document(
     enc: z.number().optional(),
     encLimit: z.number().optional(),
     couvertPenalty: couvertDifficultySchema.optional(),
+    /** Laisse-t-elle VOIR à travers ? `false` seul est écrivable, et il exige son `maison` ; l'état
+     *  occultant est l'ABSENCE du champ — une seule graphie par état (LDB 14 l.86, LDB 85 l.329). */
+    occulte: z.literal(false).optional(),
   },
   {
     kind: { label: 'Nature de la Structure', hint: 'Porte ou Mur, pour la résolution mécanique' },
@@ -52,12 +55,33 @@ const doc = document(
     },
     encLimit: { label: 'Limite d’Encombrement', hint: 'Encombrement maximal que la Structure peut recevoir' },
     couvertPenalty: { label: 'Pénalité de Couvert' },
+    occulte: {
+      label: 'Laisse voir à travers',
+      hint: 'Ne se pose qu’à « faux », et exige un arbitrage maison ; retirer le champ rend la Structure occultante',
+    },
   },
   {
     codex: { keys: ['structures'] },
     edit: { dataset: 'structures' },
   },
-  { exiges: ['source'] },
+  {
+    exiges: ['source'],
+    /**
+     * `occulte: false` ne peut citer aucun folio (LDB 14 l.86, LDB 85 l.329) : il porte son `maison`,
+     * qui nomme le passage dont il est tiré. L'absence du champ reste muette — c'est le défaut, pas une
+     * décision par entrée.
+     */
+    affinerEntree: (entree) =>
+      entree.superRefine((v, ctx) => {
+        const e = v as { id: string; occulte?: unknown; maison?: unknown };
+        if (e.occulte === false && (typeof e.maison !== 'string' || !e.maison))
+          ctx.addIssue({
+            code: 'custom',
+            path: ['maison'],
+            message: `${e.id} : \`occulte: false\` sans \`maison\` — aucun folio ne rend une Structure transparente (LDB 14 l.86), l’arbitrage se nomme.`,
+          });
+      }),
+  },
 );
 
 export const schema = doc.schema;

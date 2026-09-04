@@ -349,10 +349,18 @@ describe('computeVisible — vue INCHANGÉE sur les cartes réelles (empreintes 
       [6, 19, 0, '536:415b1edb'],
       [31, 20, 0, '366:56245c56'],
     ]],
+    // Empreintes REMESURÉES le 2026-09-04 (#1680 ligne 15-B) : 6 des 12 postes voient PLUS LOIN depuis
+    // que l'opacité d'une arête se lit sur sa Structure (`areteOcculte`) et que la clôture en clayonnage
+    // est déclarée `occulte: false` (AA 10 l.65 — un enclos à animaux, jamais une fortification). La
+    // carte en porte 25 : les 13 du jardin potager, les 6 de l'enclos nord (19,0-5 E), et les 6
+    // séparations de box des Écuries migrées ce jour. Elles cessent de couper la Ligne de Vue.
+    // CAUSE UNIQUE MESURÉE : la même scène dont ces 25 arêtes reprennent une structure occultante rend
+    // les DOUZE empreintes d'avant, à l'octet — aucune autre cause. Les 24 postes des deux cartes Arène
+    // sont inchangés (leurs 235 `mur-en-bois` restent opaques).
     ['diligence', diligenceCampaign.scenes[0], [
       [0, 0, 0, '62:75652ee8'],
-      [8, 4, 0, '100:3f7efa4'],
-      [16, 8, 0, '208:a228e0c4'],
+      [8, 4, 0, '172:3302dc25'],
+      [16, 8, 0, '226:d1ab5033'],
       [24, 12, 0, '116:d17fb990'],
       [0, 17, 0, '38:a48e3264'],
       // Poste du couloir de service, derrière la porte (8,20). Empreinte REMESURÉE le 2026-08-23 avec
@@ -362,11 +370,13 @@ describe('computeVisible — vue INCHANGÉE sur les cartes réelles (empreintes 
       // forment le cône (11,15)→(19,0) derrière l'âtre ; la porte de service, la ruelle du tenancier
       // et le sud de la salle restent vus. Les onze autres postes de la carte sont inchangés.
       [8, 21, 0, '42:969c2be4'],
-      [16, 25, 0, '268:2085c87'],
-      [24, 29, 0, '13:a1c27c9e'],
-      [0, 34, 0, '38:a48e3264'],
+      [16, 25, 0, '274:a69b0064'],
+      // Poste au bord des BOX des Écuries, dont les séparations sont les 6 arêtes migrées (21-23, 29-30) :
+      // 13 cases vues → 67. C'est l'écran que la ligne 15-B change — on voit par-dessus les cloisons de box.
+      [24, 29, 0, '67:bc12b454'],
+      [0, 34, 0, '114:d2cd989a'],
       [5, 7, 1, '1276:a3005eaa'],
-      [11, 12, 1, '1359:8abc13f5'],
+      [11, 12, 1, '1378:a00ce914'],
       [17, 17, 1, '1386:72c7a3da'],
     ]],
   ];

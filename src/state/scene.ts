@@ -38,6 +38,10 @@ import type {
   victoryConditionSchema, wallClimbSchema, wallSegSchema, zoneAreaSchema,
 } from '../data/schemas/defs-scenes/scene';
 import type { wallSideSchema } from '../data/schemas/defs-scenes/communs';
+// Seul import runtime de ce module vers `src/data` : l'opacité d'une arête est une propriété de sa
+// STRUCTURE, lue au dataset — même couture que `lineOfSight.ts`. `data/index.ts` ne dépend de `state`
+// qu'en TYPE, donc pas de cycle.
+import { findStructureById } from '../data';
 import type { Dir8 } from './dir8';
 import type { Pt } from './path';
 import { terrainWalkable } from './terrain';
@@ -605,10 +609,27 @@ export function setTileCollapsed<S extends Pick<Scene, 'flags'>>(scene: S, x: nu
 
 /** Une arête est-elle OUVERTE (ne bloque NI passage NI vue) ? Prédicat CANONIQUE unique des deux modes
  *  d'ouverture : porte ouverte OU structure abattue. Sinon l'arête bloque (mur plein, porte fermée,
- *  structure intacte). Les lecteurs de franchissabilité/transparence (`wallBetween`, `buildOpaque`) s'y
- *  branchent — pas de réimplémentation par site. */
+ *  structure intacte). `wallBetween` (franchissabilité) s'y branche directement ; la TRANSPARENCE passe
+ *  par `areteOcculte`, qui compose ce prédicat avec l'opacité déclarée de la Structure. */
 export function wallIsOpen(scene: Pick<Scene, 'flags'>, seg: WallSeg): boolean {
   return (!!seg.door && doorIsOpen(scene, seg)) || (!!seg.structure && structureIsDown(scene, seg));
+}
+
+/** La Structure `id` coupe-t-elle la Ligne de Vue ? Défaut OCCULTANT : une arête sans structure (mur nu
+ *  d'authoring), une structure inconnue du dataset, ou une entrée sans champ `occulte` occultent toutes.
+ *  Seul `occulte: false` — qui exige son `maison` au schéma (`defs/structures.ts`) — laisse voir. */
+function structureOccultante(id?: string): boolean {
+  if (!id) return true;
+  return findStructureById(id)?.occulte !== false;
+}
+
+/** Une arête coupe-t-elle la LIGNE DE VUE ? Frère de `wallIsOpen`, et SEUL prédicat d'opacité d'arête :
+ *  une arête OUVERTE (porte ouverte, structure abattue) laisse voir, et parmi celles qui TIENNENT, seules
+ *  les Structures déclarées `occulte: false` laissent voir (herse à barreaux, clôture d'enclos).
+ *  L’opacité n’est PAS la franchissabilité : une arête non occultante reste infranchissable
+ *  (`wallBetween` ne lit jamais ce prédicat — on voit à travers une herse, on ne la traverse pas). */
+export function areteOcculte(scene: Pick<Scene, 'flags'>, seg: WallSeg): boolean {
+  return !wallIsOpen(scene, seg) && structureOccultante(seg.structure);
 }
 
 /** Arête CANONIQUE (cellule + side N/E) séparant deux cases ADJACENTES en cardinal — null si non
@@ -621,16 +642,33 @@ export function edgeOf(ax: number, ay: number, bx: number, by: number): { x: num
   return null;
 }
 
-/** Un mur sépare-t-il deux cases adjacentes du même étage ? (bloque le passage, pas la case). Un mur
- *  plein bloque toujours ; une PORTE bloque seulement si elle est FERMÉE, une STRUCTURE seulement tant
- *  qu'elle TIENT — les deux modes d'ouverture sont réunis par `wallIsOpen`. */
-export function wallBetween(scene: Scene, ax: number, ay: number, bx: number, by: number, z = 0): boolean {
+/** Une arête séparant deux cases adjacentes du même étage satisfait-elle `prédicat` ? Résolution
+ *  d'arête PARTAGÉE par les deux questions qu'on lui pose — « barre-t-elle le pas ? » et « coupe-t-elle
+ *  la vue ? » : même géométrie (cardinal seul, cf. `edgeOf`), seul le prédicat par segment diffère. */
+function areteEntre(
+  scene: Scene, ax: number, ay: number, bx: number, by: number, z: number,
+  predicat: (seg: WallSeg) => boolean,
+): boolean {
   if (!scene.walls?.length) return false;
   const e = edgeOf(ax, ay, bx, by);
   if (!e) return false;
   return scene.walls.some(
-    (w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && !wallIsOpen(scene, w),
+    (w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && predicat(w),
   );
+}
+
+/** Un mur sépare-t-il deux cases adjacentes du même étage ? (bloque le passage, pas la case). Un mur
+ *  plein bloque toujours ; une PORTE bloque seulement si elle est FERMÉE, une STRUCTURE seulement tant
+ *  qu'elle TIENT — les deux modes d'ouverture sont réunis par `wallIsOpen`. */
+export function wallBetween(scene: Scene, ax: number, ay: number, bx: number, by: number, z = 0): boolean {
+  return areteEntre(scene, ax, ay, bx, by, z, (w) => !wallIsOpen(scene, w));
+}
+
+/** Une arête coupe-t-elle la LIGNE DE VUE entre deux cases adjacentes du même étage ? Pendant exact de
+ *  `wallBetween` pour la VUE — même arête, même géométrie, prédicat `areteOcculte`. Les deux verdicts
+ *  divergent sur une Structure déclarée `occulte: false` : elle barre le pas sans couper la vue. */
+export function areteOcculteEntre(scene: Scene, ax: number, ay: number, bx: number, by: number, z = 0): boolean {
+  return areteEntre(scene, ax, ay, bx, by, z, (w) => areteOcculte(scene, w));
 }
 
 /** Tuiles de PASSERELLE (z=1) marchables situées « au-dessus » d'une arête de structure de sol — la case

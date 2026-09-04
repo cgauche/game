@@ -155,7 +155,7 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.11-13, l.45) → `sceneEntitySchema`, `doc`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique` — `src/data/criticals.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
-- `LDB 85` (l.339-340) → `resizeBySteps`, `taille-modificateurs-en-combat`, `regard-petrifiant`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, `souffle-poison`, `souffle-fumee`, `FLOWS`, +15 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/size.ts`, `src/state/rollFlowSpecs.ts`
+- `LDB 85` (l.339-340) → `doc`, `resizeBySteps`, `StructureData`, `taille-modificateurs-en-combat`, `regard-petrifiant`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, `souffle-poison`, +17 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/structures.json`, `src/data/traits.json`, `src/engine/size.ts`, +2 fichiers
 
 ---
 
@@ -222,7 +222,7 @@ Ces modificateurs s'appliquent **par catégorie d'écart**. Ils sont cumulatifs 
 - `LDB 85 l.339-340` — règle d'agrandissement/réduction.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.276-277, l.339-340) → `StatblockEditor`, `resizeBySteps`, `resolvePsychAI`, `creatureToCombatant`, `taille-modificateurs-en-combat`, `regard-petrifiant`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, +20 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/size.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, +3 fichiers
+- `LDB 85` (l.276-277, l.339-340) → `doc`, `StatblockEditor`, `resizeBySteps`, `resolvePsychAI`, `creatureToCombatant`, `StructureData`, `taille-modificateurs-en-combat`, `regard-petrifiant`, `souffle-feu`, `souffle-froid`, +22 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/structures.json`, `src/data/traits.json`, `src/engine/size.ts`, +6 fichiers
 
 ---
 
@@ -353,7 +353,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `sceneEntitySchema`, `doc`, `SceneEntity`, `critTableKeyFor`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
-- `LDB 85` (l.1-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, +171 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +34 fichiers
+- `LDB 85` (l.1-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `doc`, `affame`, `scenario`, +172 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/schemas/defs/traits.ts`, +36 fichiers
 
 ---
 

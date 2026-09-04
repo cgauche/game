@@ -12,7 +12,7 @@
  * sont canon ; la DONNÉE les porte en mètres et `rayonEnCases` les convertit à l'échelle de la scène
  * (`Scene.metresPerTile`, défaut `LDB 15 l.12`).
  */
-import { Scene, tileAt, heightAt, edgeOf, sceneMetresPerTile, wallIsOpen } from './scene';
+import { Scene, tileAt, heightAt, edgeOf, sceneMetresPerTile, areteOcculte } from './scene';
 import { wallOnSight } from './lineOfSight';
 import { TERRAINS, terrainSolidHeightM } from './terrain';
 import { METRES_PER_LEVEL } from './relief';
@@ -109,13 +109,14 @@ function buildOpaqueUncached(scene: Scene): Occ {
     for (const { x, y } of propFootTiles(e.ref, e.pos, e.facing, sceneMetresPerTile(scene)))
       if (x >= 0 && y >= 0 && x < w && y < h) { g[y * w + x] = 1; topH[y * w + x] = heightAt(scene, x, y, 0) + METRES_PER_LEVEL; }
   }
-  // Arêtes bloquantes (z0) en SET → test O(1) au rayon (au lieu de `scene.walls.some` O(murs) : 171 ms
-  // sur l'Opéra à 999 murs). Toute arête NON ouverte occulte (mur plein, porte fermée, structure intacte ;
-  // `wallIsOpen` faux) ; N/E seulement (les diagonales n'occultent pas une LdV cardinale, cf. wallOnSight).
+  // Arêtes OCCULTANTES (z0) en SET → test O(1) au rayon (au lieu de `scene.walls.some` O(murs) : 171 ms
+  // sur l'Opéra à 999 murs). Le verdict est celui d'`areteOcculte`, exactement comme le défaut de
+  // `wallOnSight` — vision et combat ne divergent jamais sur une arête ; N/E seulement (les diagonales
+  // n'occultent pas une LdV cardinale, cf. wallOnSight).
   const walls = new Set<string>();
   for (const seg of scene.walls ?? []) {
     if ((seg.z ?? 0) !== 0 || (seg.side !== 'N' && seg.side !== 'E')) continue;
-    if (wallIsOpen(scene, seg)) continue;
+    if (!areteOcculte(scene, seg)) continue;
     walls.add(`${seg.x},${seg.y},${seg.side}`);
   }
   return { g, topH, w, h, walls };
