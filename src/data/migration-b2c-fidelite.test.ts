@@ -31,8 +31,14 @@ import { fileURLToPath } from 'node:url';
 const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 const SCRIPT = '2026-09-02-1657-b2c-equipage-noeud-test.mjs';
 const FICHIERS = ['river-criticals.json', 'ship-criticals.json'] as const;
-/** Cardinaux de la migration (sa table `CARDINAUX`) — recopiés ici pour que le test les EXIGE. */
-const CARDINAUX = { crewHit: 4, epreuves: 3, certains: 1, crewTarget: 3, characteristic: 2, skill: 1 };
+/**
+ * Cardinaux de la migration (sa table `CARDINAUX`) — recopiés ici pour que le test les EXIGE.
+ * RECALÉS le 2026-09-04 : la migration B3-2b-a (#1657) a donné son coup à `gouvernail-fluvial`
+ * (MSRC 07 l.86, +1 certain) et à 6 rangées MDG qui ne portaient leur Test qu'en prose `note`
+ * (MDG 13 l.730/l.734/l.736/l.738/l.751/l.756 — +6 épreuves à l'Athlétisme, donc +6 `skill`), et la
+ * CIBLE est devenue REQUISE (`crewTarget` = `crewHit`).
+ */
+const CARDINAUX = { crewHit: 11, epreuves: 9, certains: 2, crewTarget: 11, characteristic: 2, skill: 7 };
 
 const lire = (f: string) => readFileSync(join(RACINE, 'src', 'data', f), 'utf8');
 const canonique = (v: unknown) => JSON.stringify(v, null, 2);

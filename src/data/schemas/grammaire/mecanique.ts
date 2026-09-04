@@ -12,7 +12,7 @@ import type { GameOp } from '../../../engine/ops';
 import type { Condition, EffectOp, Flow } from '../../../engine/flowCore';
 import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption } from './valeurs';
 import { marque } from './slots';
-import { idDe, refOuSpec } from './ref';
+import { idDe, ref, refs, refOuSpec } from './ref';
 
 /** `PerSL` (`src/engine/ops.ts:146`) — échelle « par +N DR » d'un payload d'op. */
 export const perSLSchema = z.strictObject({ every: z.number(), amount: z.number(), onFailure: z.boolean().optional() });
@@ -518,14 +518,32 @@ export const travelTableEntrySchema = z.strictObject({
 });
 
 /**
+ * QUI encaisse un coup à l'ÉQUIPAGE — les trois désignations que les livres impriment, et rien
+ * d'autre :
+ *  - `{ poste: true }` : l'appartenance à une pièce d'artillerie (`MDG 13 l.763`) ;
+ *  - `{ stations }` : la ou les PRÉSENCES nommées (`ship-stations.json`) — `MDG 13 l.680/l.714/
+ *    l.730/l.751`, `MSRC 07 l.78/l.82/l.94`. Une rangée qui frappe deux présences d'une même
+ *    épreuve les liste (`MDG 13 l.680`), elle ne se dédouble pas en deux coups ;
+ *  - `{ role }` : le seul cas où le livre nomme un RÔLE d'équipage (`MSRC 07 l.86`).
+ * Résolution : `applyCrewHit` (`src/engine/shipCritical.ts`) compare l'ÉPINGLAGE du joueur
+ * (`Combatant.shipStation` / `Combatant.shipRole`) — jamais une inférence par Compétence.
+ */
+export const crewTargetSchema = z.union([
+  z.strictObject({ poste: z.literal(true) }),
+  z.strictObject({ stations: refs('shipStation', { min: 1 }) }),
+  z.strictObject({ role: ref('crewRole') }),
+]);
+
+/**
  * `ShipCrewHit` (`src/data/shipCriticals.ts`) — ce qu'un Critique de coque fait à l'ÉQUIPAGE. Le
- * porteur dit QUI encaisse (`crewTarget`) ; l'ISSUE est SOIT une épreuve (le nœud `test` du Flow,
- * dont la branche d'échec porte la conséquence — MDG 13 l.763, MSRC 07 l.78/l.94), SOIT des ops
- * CERTAINES (`ops` — MSRC 07 l.82, où le livre n'appelle aucun jet). Les deux clefs sont EXCLUSIVES.
+ * porteur dit QUI encaisse (`crewTarget`, REQUIS) ; l'ISSUE est SOIT une épreuve (le nœud `test` du
+ * Flow, dont la branche d'échec porte la conséquence — MDG 13 l.763, MSRC 07 l.78/l.94), SOIT des
+ * ops CERTAINES (`ops` — MSRC 07 l.82, où le livre n'appelle aucun jet). Les deux clefs sont
+ * EXCLUSIVES.
  */
 export const shipCrewHitSchema = z
   .strictObject({
-    crewTarget: z.enum(['poste', 'deck']).optional(),
+    crewTarget: crewTargetSchema,
     test: noeudTest(flowSchema, { difficulteRequise: true, echecSeulServi: true }).optional(),
     ops: z.array(gameOpSchema).optional(),
   })

@@ -440,11 +440,16 @@ describe('#270 / #1657 B3-2 — Critique au gréement : le coup à l’équipage
         result: { roll: 90, target: 40, sl: -5, success: false }, interactive: true }] };
   }
 
+  /** MSRC 07 l.78 : « Toute personne présente sur le pont » — la rangée vise la STATION, et personne
+   *  n'y est sans épinglage joueur (`Combatant.shipStation`, aucun défaut inféré). */
+  const surLePont = () => set({ party: get().party.map((x) => ({ ...x, shipStation: 'pont' })) });
+
   it('personnes PILOTÉES PAR UN HUMAIN → UNE bande influençable (une rangée par siège), rien de résolu d’office', () => {
     launch();
     const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
     set({ travelPlan: plan, journal: [] });
     seedBattleRng(1);
+    surLePont();
     const h = get().party[0];
     set({ pendingCascade: riggingFailStep(h.id) as never });
     get().cascadeNext(); // valide l'échec → Critique au gréement
@@ -462,7 +467,7 @@ describe('#270 / #1657 B3-2 — Critique au gréement : le coup à l’équipage
     const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
     set({ travelPlan: plan, journal: [] });
     seedBattleRng(1);
-    set({ party: get().party.map((x) => ({ ...x, aiControlled: true })) });
+    set({ party: get().party.map((x) => ({ ...x, aiControlled: true, shipStation: 'pont' })) });
     const h = get().party[0];
     set({ pendingCascade: riggingFailStep(h.id) as never });
     get().cascadeNext();

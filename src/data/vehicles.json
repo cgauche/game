@@ -241,7 +241,11 @@
         "m": 3,
         "crew": 4
       },
-      "traits": []
+      "traits": [
+        {
+          "id": "cale"
+        }
+      ]
     },
     "purchase": {
       "price": {

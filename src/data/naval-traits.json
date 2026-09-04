@@ -1,5 +1,18 @@
 [
   {
+    "id": "cale",
+    "type": "naval-traits",
+    "label": "Cale",
+    "kind": "trait",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 07 l.94"
+    },
+    "maison": "MSRC 07 l.94 gate le Critique de Superstructure sur « si le bateau dispose d'une cale » sans imprimer de Trait naval ; la cale rejoint le catalogue des Traits navals (hôte UNIQUE de `ship.traits`) plutôt qu'un champ `ship.cale` jumeau. ASSIGNATION : la barge fluviale seule — MSRC 07 l.5 en fait « une barge commerciale » et MSRC 10 l.90 dit du navire marchand qu'il est « doté d'une cale pour le stockage des marchandises » ; MSRC 07 l.70 EXCLUT la barque (« un bateau ouvert (comme une barque) »), et le livre ne tranche pour aucune autre coque. #1657",
+    "desc": "Si le bateau dispose d'une cale, et que cette dernière est touchée, tous les Personnages qui s'y trouvent doivent faire un Test d'**Initiative** ou subir +5 Dégâts à cause des éclats d'échardes. À part ça, le bateau n'est pas affecté."
+  },
+  {
     "id": "peu-maniable",
     "type": "naval-traits",
     "label": "Peu maniable",

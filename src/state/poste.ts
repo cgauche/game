@@ -10,7 +10,7 @@
  */
 import type { SkillRef } from '../engine/skills';
 import type { ActivityDef } from '../engine/activities';
-import type { CrewRoleData } from '../data';
+import type { CrewRoleData, ShipStationData } from '../data';
 
 /** Cardinalité d'assignation d'un poste : `heroExclusive` = chaque héros en tient exactement un (Activité
  *  de voyage, EDOC 8 l.131) ; `slotFilling` = un poste accueille 0..N héros (rôle d'équipage). */
@@ -36,6 +36,20 @@ export function activityAsPoste(def: ActivityDef): Poste {
     skills: def.skills ?? [],
     desc: def.desc,
     cardinality: 'heroExclusive',
+  };
+}
+
+/** Station à bord (`shipStations` — `MDG 13 l.680/l.714/l.730/l.751`, `MSRC 07 l.78/l.82/l.94`) →
+ *  Poste. Une station accueille 0..N personnes ; aucune Compétence ne la qualifie (le livre demande
+ *  qui s'y TROUVE, pas qui sait y servir), donc `skills` reste vide : l'inférence « auto » de la
+ *  surface partagée n'a rien à proposer, et c'est le RAW. */
+export function stationAsPoste(s: ShipStationData): Poste {
+  return {
+    id: s.id,
+    label: s.label,
+    skills: [],
+    desc: s.desc,
+    cardinality: 'slotFilling',
   };
 }
 

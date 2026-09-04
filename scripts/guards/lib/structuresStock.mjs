@@ -424,7 +424,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "sea-shanties.json", champ: "crewOps", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "sea-weather.json", champ: "spec", signature: "projectiles", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "ship-construction.json", champ: "constructionTraits", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "ship-criticals.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "ship-criticals.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" }, // 5 → 11 (#1657 B3-2b-a) : 6 rangées MDG dont le Test ne vivait qu'en prose `note` gagnent leur `crewHit` (MDG 13 l.730/734/736/738/751/756, échec = État À Terre)
   { concept: "reference", dataset: "skills.json", champ: "altChar", signature: "gatedByRule+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "skills.json", champ: "chars", signature: "FM,Int+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "skills.json", champ: "chars", signature: "true", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -597,7 +597,7 @@ export const STRUCTURES_FORMES = [
   { concept: "test", dataset: "sea-perils.json", champ: "freeTest", signature: "char,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-perils.json", champ: "tourbillonSwim", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "sea-weather.json", champ: "affaler", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
-  { concept: "test", dataset: "ship-criticals.json", champ: "test", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" }, // « Canon détaché » (MDG 13 l.763) : même passage au nœud `test` du Flow (#1657 B2c)
+  { concept: "test", dataset: "ship-criticals.json", champ: "test", signature: "difficulty,skill", statut: "historique", strate: "Valeur", occurrences: 7, lot: "L4 #1463", date: "2026-08-23" }, // « Canon détaché » (MDG 13 l.763) : même passage au nœud `test` du Flow (#1657 B2c). 1 → 7 (#1657 B3-2b-a) : les 6 nœuds MDG neufs testent l'Athlétisme de leur `note` verbatim
   { concept: "test", dataset: "spells.json", champ: "crossTest", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "spells.json", champ: "test", signature: "characteristic,difficulty", statut: "historique", strate: "Valeur", occurrences: 5, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "spells.json", champ: "test", signature: "characteristic,difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 3, lot: "L4 #1463", date: "2026-08-23" },
@@ -1004,7 +1004,7 @@ export const STRUCTURES_OPS = [
   { op: "condition", signature: "id,op,unlockBy,value", dataset: "criticals.json", occurrences: 12, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "qualities.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "river-criticals.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "condition", signature: "id,op,value", dataset: "ship-criticals.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "condition", signature: "id,op,value", dataset: "ship-criticals.json", occurrences: 11, lot: "L1c #1468", date: "2026-08-23" }, // 5 → 11 (#1657 B3-2b-a) : 6 rangées MDG dont le Test ne vivait qu'en prose `note` gagnent leur `crewHit` (MDG 13 l.730/734/736/738/751/756, échec = État À Terre)
   { op: "condition", signature: "id,op,value,valuePerSL", dataset: "spells.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "symptoms.json", occurrences: 4, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "escapeStrength,grapple,id,op,unlessCondition,value", dataset: "traits.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },

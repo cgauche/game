@@ -290,7 +290,9 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
     // Le jet est une CARACTÉRISTIQUE (Initiative) : le Codex la nomme — un sujet non-compétence ne
     // s'affiche plus « Automatique (aucun Test) », ce que la lecture par `crewTest.skill` faisait.
     expect(coupSec!.rows.some((r) => r.t === 'kv' && r.k === 'Jet' && r.v === 'Initiative Intermédiaire (+0)')).toBe(true);
-    expect(coupSec!.rows.some((r) => r.t === 'kv' && r.k === 'Cible' && r.v === 'Toute personne sur le pont')).toBe(true);
+    // La CIBLE est une réf de catalogue : le Codex rend le `label` de la station, jamais un ternaire
+    // codé en dur (MSRC 07 l.78 « Toute personne présente sur le pont » → station `pont`).
+    expect(coupSec!.rows.some((r) => r.t === 'kv' && r.k === 'Cible' && r.v === 'Pont')).toBe(true);
     expect(g.sections?.some((s) => s.title === 'Conséquence (échec du Test)')).toBe(true);
   });
 

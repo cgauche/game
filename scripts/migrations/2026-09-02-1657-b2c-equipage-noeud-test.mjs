@@ -37,10 +37,16 @@ const FICHIERS = [
   { nom: 'ship-criticals.json', chemin: path.join(ROOT, 'src/data/ship-criticals.json') },
 ];
 
-/** CARDINAUX attendus sur l'état AVANT, mesurés sur l'arbre `1e14c9922` (2026-09-02). */
+/**
+ * CARDINAUX attendus sur l'état AVANT — mesurés sur l'arbre `1e14c9922` (2026-09-02), RECALÉS le
+ * 2026-09-04 sur l'arbre courant. Ce script n'est pas qu'un rejeu : `migration-b2c-fidelite.test.ts`
+ * s'en sert comme ORACLE, en dé-migrant l'arbre COMMITTÉ pour lui redonner sa pré-image. Ses cardinaux
+ * suivent donc l'arbre, et la migration B3-2b-a (#1657) y a ajouté 1 coup fluvial (`gouvernail-fluvial`,
+ * MSRC 07 l.86) et 6 coups MDG (4 `pont`, 2 `avirons`).
+ */
 const CARDINAUX = {
-  'river-criticals.json': { tables: 5, rangees: 5, crewTest: 3, epreuves: 2, certains: 1, crewTarget: 3, ops: 4, char: 2, skill: 0 },
-  'ship-criticals.json': { tables: 5, rangees: 35, crewTest: 1, epreuves: 1, certains: 0, crewTarget: 0, ops: 1, char: 0, skill: 1 },
+  'river-criticals.json': { tables: 5, rangees: 5, crewTest: 4, epreuves: 2, certains: 2, crewTarget: 4, ops: 5, char: 2, skill: 0 },
+  'ship-criticals.json': { tables: 5, rangees: 35, crewTest: 7, epreuves: 7, certains: 0, crewTarget: 7, ops: 7, char: 0, skill: 7 },
 };
 
 const CLES_CREWTEST = ['skill', 'char', 'difficulty', 'crewTarget', 'onFail'];

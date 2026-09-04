@@ -18,7 +18,7 @@ import { rollTest, evaluateTest, easeDifficulty, bestForcedRoll } from '../engin
 import { rollLine } from './rollSeam';
 import { testValue, partyBest } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
-import { navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, navalNavTestDR } from '../engine/navalTraits';
+import { navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, navalNavTestDR, hullNavalTraits } from '../engine/navalTraits';
 import { cargoOverload } from '../engine/seaVoyage';
 import { exposedCrew } from '../engine/shipCritical';
 import { crewRoleValue, crewTalentDR, moraleBand, capToSuccesMinime, crewTestSuccess } from '../engine/crewMorale';
@@ -148,9 +148,7 @@ export interface ManeuverParams {
 /** `skillDRBonus` ciblé `testType:"manoeuvre"` (#221) — consommé UNIQUEMENT par `deriveManeuver` (barreur solo,
  *  hors Test d'équipage) ; le Test d'équipage l'obtient déjà via `openCrewTestPending`. PUR. */
 function maneuverTestTypeDR(ship: Combatant): number {
-  const vd = ship.creatureId ? findVehicleById(ship.creatureId)?.ship : undefined;
-  const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
-  return navalTestTypeDR(navalTraits, 'manoeuvre');
+  return navalTestTypeDR(hullNavalTraits(ship), 'manoeuvre');
 }
 export function shipManeuverParams(ship: Combatant): ManeuverParams {
   const vd = ship.creatureId ? findVehicleById(ship.creatureId)?.ship : undefined;
@@ -171,7 +169,7 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   // « Coque de course » → op `moveScale` (2×M, MSRC 12 l.27) : facteur MULTIPLICATIF appliqué APRÈS les
   // `moveMod` additifs (ordre canonique d'`effectiveMovement`). Le M de VOYAGE (route.speed/travelSpeed) suit un
   // autre modèle et n'en dépend pas — le 2× ne joue qu'ici, où le M du navire pilote la manœuvre tactique.
-  const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
+  const navalTraits = hullNavalTraits(ship);
   const mult = navalMoveMult(navalTraits);
   return {
     baseM: Math.round(((baseM + navalMoveMod(navalTraits) + place.m + (overload?.mMod ?? 0)) * mult.num) / mult.den),

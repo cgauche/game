@@ -51,6 +51,8 @@ export const TYPES = {
   structure: { dataset: 'structures.json', specsOpen: false },
   career: { dataset: 'careers.json', specsOpen: false },
   navalTrait: { dataset: 'naval-traits.json', specsOpen: false },
+  shipStation: { dataset: 'ship-stations.json', specsOpen: false },
+  crewRole: { dataset: 'crew-roles.json', specsOpen: false },
   table: { dataset: 'tables.json', specsOpen: false },
   maladie: { dataset: 'maladies.json', specsOpen: false },
   symptome: { dataset: 'symptoms.json', specsOpen: false },
@@ -105,9 +107,17 @@ export function idDe<T extends TypeEntite>(type: T): z.ZodType<Id<T>, string> {
   );
 }
 
-/** Liste d'ids nus de `type`. */
-export function refs<T extends TypeEntite>(type: T): z.ZodType<Id<T>[], string[]> {
-  return z.array(idDe(type));
+/**
+ * Liste d'ids nus de `type` — SEULE graphie de « liste de références » de la grammaire (un
+ * `z.array(idDe(...))` écrit au site en serait une seconde, sur le ticket même qui chasse les
+ * divergences de forme). `min` borne la liste quand le porteur EXIGE au moins une référence :
+ * `ShipCrewHit.crewTarget.stations` vise au moins une présence, une liste vide ne désignant
+ * personne. Le retour n'est PAS érasé en `z.ZodType` — sinon `.min()` ne survivrait pas à l'appel,
+ * et le site le réécrirait à la main.
+ */
+export function refs<T extends TypeEntite>(type: T, opts?: { min?: number }): z.ZodArray<z.ZodType<Id<T>, string>> {
+  const liste = z.array(idDe(type));
+  return opts?.min === undefined ? liste : liste.min(opts.min);
 }
 
 /** Référence `{ id }` de `type`, composée FERMÉE avec les champs propres au porteur (`extra`). */

@@ -4,7 +4,7 @@ import { partyMoneyTotal } from '../state/bourseFlow';
 import { findVehicleById, NAVAL_TRAITS, findNavalPortById, crewRoles, type NavalPortData } from '../data';
 import { findCargoById, findCargoEntryById, type PortProfile } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
-import { shipHasNavalTrait } from '../engine/navalTraits';
+import { shipHasNavalTrait, vesselNavalTraits } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';
 import { canAfford, toMoney, priceToMoney, formatMoney } from '../engine/money';
 import { moraleBand } from '../engine/crewMorale';
@@ -135,7 +135,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
   const woundsCur = vessel.wounds?.current ?? woundsMax;
   const missing = woundsMax - woundsCur;
   const foulLevel = vessel.fouling?.level ?? 0;
-  const traits = [...(vd.ship.traits ?? []), ...(vessel.upgrades ?? [])];
+  const traits = vesselNavalTraits(vessel);
   const lissage = shipHasNavalTrait(traits, 'lissage');
   const repairCost = Math.ceil(missing * (lissage ? 1.5 : 1));
   const careenPct = foulingEffects(foulLevel).repairPctOfBase;

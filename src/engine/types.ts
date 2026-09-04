@@ -1513,6 +1513,12 @@ export interface Combatant {
    *  tient lors des Tests d'équipage du navire (MDG 14). Absent ⇒ inféré des compétences (`defaultCrewRole`). Le
    *  joueur l'épingle/le change via l'interface de gestion du navire (`ShipRolesPanel`). Distinct de `travelRole` (voyage). */
   shipRole?: string;
+  /** STATION à bord ÉPINGLÉE (`id` de `ship-stations.json` : pont/gréement/nid-de-pie/avirons/cale) — où
+   *  ce membre se TROUVE quand un Critique de coque frappe une présence (`MDG 13 l.680/l.714/l.730/
+   *  l.751`, `MSRC 07 l.78/l.82/l.94`). AUCUN défaut : sans épinglage, ce membre n'est visé par aucune
+   *  présence. Jamais inféré d'un rôle ni d'une Compétence ; le joueur l'épingle (`setShipStation`).
+   *  Jumeau de `shipRole`, orthogonal à lui. */
+  shipStation?: string;
   /** File transitoire d'attaques gratuites de créature restant à résoudre ce tour (kinds :
    *  morsure/caudale/pietinement) — pilotée par aiCreatureFreeAttacks à travers la modale de défense. */
   pendingFreeAttacks?: string[];

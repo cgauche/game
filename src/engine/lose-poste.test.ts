@@ -52,6 +52,7 @@ describe('op removeShipPoste — Canon perdu (MDG 13 l.765)', () => {
 /** « Canon détaché » authoré en DONNÉE : le nœud `test` du Flow porte le jet ET, dans sa branche
  *  d'ÉCHEC, la conséquence en `GameOp` (branche `success` vide — seul l'échec est servi). */
 const detachTest: ShipCrewHit = {
+  crewTarget: { poste: true },
   test: {
     kind: 'test',
     test: { skill: { id: 'athletisme' }, difficulty: 'intermediaire' },
@@ -62,7 +63,7 @@ const detachTest: ShipCrewHit = {
 
 /** Coup à l'équipage SANS jet (MSRC 07 l.82 « les échardes infligent +5 Dégâts ») — la conséquence est
  *  CERTAINE, c'est le seul cas où `applyCrewHit` applique encore quelque chose. */
-const echardes: ShipCrewHit = { ops: [{ op: 'wounds', amount: 5, ignoreTB: false, ignoreAP: false }] };
+const echardes: ShipCrewHit = { crewTarget: { stations: ['avirons'] }, ops: [{ op: 'wounds', amount: 5, ignoreTB: false, ignoreAP: false }] };
 
 /**
  * « Canon détaché » (MDG 13 l.763-764) : `applyCrewHit` DÉSIGNE l'équipage du poste et REND le nœud
@@ -107,9 +108,9 @@ describe('applyCrewHit — Canon détaché (data-driven, MDG 13 l.763-764)', () 
     expect(applyCrewHit(hull, [mort, ko], detachTest, rngPoste).victims).toEqual([]);
   });
 
-  it('coup CERTAIN (`ops`, MSRC 07 l.82) : appliqué sur place, aucun nœud à ouvrir', () => {
-    const m1 = sailor('m1');
-    const out = applyCrewHit({ id: 'hull' } as unknown as Combatant, [m1], { ...echardes, crewTarget: 'deck' }, rngPoste);
+  it('coup CERTAIN (`ops`, MSRC 07 l.82) : appliqué sur place au rameur ÉPINGLÉ, aucun nœud à ouvrir', () => {
+    const m1 = sailor('m1', { shipStation: 'avirons' });
+    const out = applyCrewHit({ id: 'hull' } as unknown as Combatant, [m1], echardes, rngPoste);
     expect(out.testFlow).toBeUndefined();
     expect(out.hits).toEqual([{ crewId: 'm1' }]);
     expect(m1.wounds.current).toBe(13 - (5 - 3)); // 5 − BE(3) − PA(0) = 2 PB perdus

@@ -7,7 +7,7 @@
  */
 import type { Combatant } from '../engine/types';
 import { collisionIndex, resolveCollision, type CollisionShip, type CollisionDamage } from '../engine/collision';
-import { belierRam } from '../engine/navalTraits';
+import { belierRam, hullNavalTraits } from '../engine/navalTraits';
 import { findVehicleById } from '../data';
 import { applyOps } from '../engine/ops';
 import { defaultRNG, type RNG } from '../engine/dice';
@@ -19,7 +19,7 @@ import { vesselPropulsion } from '../engine/shipBuild';
 function toCollisionShip(hull: Combatant): CollisionShip {
   const vd = hull.creatureId ? findVehicleById(hull.creatureId)?.ship : undefined;
   const m = vesselPropulsion(vd)?.m ?? 0;
-  return { ic: collisionIndex(hull), m, belier: belierRam([...(vd?.traits ?? []), ...(hull.upgrades ?? [])]) };
+  return { ic: collisionIndex(hull), m, belier: belierRam(hullNavalTraits(hull)) };
 }
 
 /**

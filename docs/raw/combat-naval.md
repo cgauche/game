@@ -341,7 +341,7 @@ exposé. Le **corps-à-corps** contre la coque touche auto (Localisation au choi
 **Citation** `l.571` : « inversez le résultat obtenu sur le jet d'attaque… **ou lancez 1d100.** »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.567-584, l.616-637) → `meleeVsHullBE`, `riverLocLabel` ⚠sans-appelant, `PortView`, `resolveVolley`, `RepairTick`, `sea-navigation`, `fr`, `GameState`, `applyHit` — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/seaPerils.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +5 fichiers
+- `MDG 13` (l.567-584, l.616-637) → `replisSansExposeSchema`, `meleeVsHullBE`, `riverLocLabel` ⚠sans-appelant, `ShipCritSet`, `PortView`, `resolveVolley`, `exposedCrew`, `RepairTick`, `applyHullCritical`, `sea-navigation`, +3 — `src/data/river-criticals.json`, `src/data/schemas/defs/river-criticals.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/schemas/defs/ship-criticals.ts`, `src/data/sea-navigation.json`, `src/data/shipCriticals.ts`, +10 fichiers
 
 **État du code.** ✅ localisation 1d100 par gréement (bordée), BE déduit, plancher 0 (vs plancher 1 perso).
 ⬜ petites armes vs artillerie (seuil de Dégâts), corps-à-corps contre coque, table Taille.
@@ -368,7 +368,7 @@ De plus, tous les coups qui touchent une fois que le score de Blessures… est t
 > **réussi** », « tous les coups qui **touchent** ») sur une touche.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.654-674) → `VolleyShot`, `beginShipwreck`, `RepairTick`, `sea-navigation`, `isOutOfAction`, `voie-d-eau`, `finalizeFastVoyage`, `runSeaDay`, `fr`, `checkBattleOver` — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/sea-navigation.json`, `src/data/voyage-stakes.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, +5 fichiers
+- `MDG 13` (l.654-674) → `CrewTarget`, `VolleyShot`, `stationAsPoste` ⚠sans-appelant, `beginShipwreck`, `ShipCrewHitValue`, `crewHitVictims`, `RepairTick`, `applyHullCritical`, `sea-navigation`, `crewTargetSchema`, +8 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/ship-stations.ts`, `src/data/schemas/grammaire/mecanique.ts`, `src/data/sea-navigation.json`, `src/data/shipCriticals.ts`, +13 fichiers
 - `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +74 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +18 fichiers
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques

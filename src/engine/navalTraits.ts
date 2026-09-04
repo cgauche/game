@@ -18,9 +18,9 @@
  * intègrent Renforcé/Solide) → ces Traits-là n'ont PAS de `passive` (desc seule). Man et « Peu maniable » sont
  * en revanche des colonnes DISTINCTES → Peu maniable porte bien son `skillDRBonus` (Voile/Ramer).
  */
-import { findNavalTrait } from '../data';
+import { findNavalTrait, findVehicleById } from '../data';
 import type { GameOp } from './ops';
-import type { DeckCoverClass, DeckPosteSlot, NavalTraitRef } from './types';
+import type { Combatant, DeckCoverClass, DeckPosteSlot, NavalTraitRef } from './types';
 import { couvertLePlusProtecteur } from './cover';
 
 /** Indice (niveau) du Trait naval `id` dans une liste de réfs : `value` de la réf (défaut 1 si présent sans
@@ -28,6 +28,28 @@ import { couvertLePlusProtecteur } from './cover';
 export function navalTraitLevel(traits: NavalTraitRef[] | undefined, id: string): number {
   const ref = (traits ?? []).find((t) => t.id === id);
   return ref ? ref.value ?? 1 : 0;
+}
+
+/**
+ * FOYER UNIQUE de la concaténation « Traits du TYPE puis Améliorations de l'INSTANCE » que MDG 12
+ * l.81/169 distingue (« intégrés à la construction » vs « ajoutées plus tard »). L'ORDRE est porteur :
+ * `navalTraitLevel` rend la PREMIÈRE réf trouvée, donc le Trait du type prime sur une Amélioration
+ * de même id. Les deux porteurs du repo se réduisent au même couple (id de véhicule, améliorations)
+ * et n'ont chacun qu'un ADAPTATEUR ci-dessous — aucun site ne réécrit ce spread. PUR.
+ */
+export function navalTraitsDe(vehicleId: string | undefined, upgrades: NavalTraitRef[] | undefined): NavalTraitRef[] {
+  return [...(findVehicleById(vehicleId ?? '')?.ship?.traits ?? []), ...(upgrades ?? [])];
+}
+
+/** Réfs navales EFFECTIVES d'une COQUE en jeu (`Combatant` : combat, manœuvre, Critiques, spawn). PUR. */
+export function hullNavalTraits(hull: Combatant): NavalTraitRef[] {
+  return navalTraitsDe(hull.creatureId, hull.upgrades);
+}
+
+/** Réfs navales EFFECTIVES du NAVIRE DE CAMPAGNE persisté (`CampaignVessel` : voyage, port, carte).
+ *  Typé STRUCTURELLEMENT — ce module PUR ne connaît pas `src/state`. PUR. */
+export function vesselNavalTraits(vessel: { vehicleId: string; upgrades?: NavalTraitRef[] } | null | undefined): NavalTraitRef[] {
+  return vessel ? navalTraitsDe(vessel.vehicleId, vessel.upgrades) : [];
 }
 
 /** Une coque possède-t-elle ce Trait/Amélioration naval ? (présence de l'id, tout Indice ≥ 1). PUR. */

@@ -46,7 +46,9 @@ const COEXISTENCE: Record<string, number> = {
   'activities.json': 8,
   'creatures.json': 1,
   'etats.json': 1,
-  'naval-traits.json': 1,
+  // 1 → 2 (#1657 B3-2b-a) : le Trait `cale` porte MSRC 10 p.53 (le livre DIT la cale du navire
+  // marchand) ET son `maison` (MSRC 07 l.94 gate le Critique dessus sans imprimer de Trait naval).
+  'naval-traits.json': 2,
   'talents.json': 9,
   'traits.json': 3,
   'trappings.json': 2,

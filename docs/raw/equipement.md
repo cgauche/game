@@ -619,7 +619,7 @@ Procédure pour qu'un Personnage construise (ou fasse construire) son vaisseau, 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (table *Caractéristiques de bateau standard*) · § Navires — profil et Caractéristiques (MDG) · § Traits de navire (MDG) · § Améliorations de navire (MDG).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.108-164) → `BandeOuverte`, `peu-maniable`, `minuscule`, `renforce`, `tres-petite`, `robuste`, `solide`, `petite`, `navalSkillTestDR`, `doc`, +34 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/schemas/defs/vehicles.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, +8 fichiers
+- `MDG 12` (l.108-164) → `BandeOuverte`, `minuscule`, `peu-maniable`, `renforce`, `tres-petite`, `robuste`, `petite`, `solide`, `doc`, `navalSkillTestDR`, +34 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/schemas/defs/vehicles.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, +8 fichiers
 
 ---
 
@@ -642,7 +642,7 @@ Les **Traits** sont intégrés à la construction initiale et, contrairement aux
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Traits dans la colonne *Traits et Améliorations* des exemples) · § Navires — profil et Caractéristiques (MDG) · § Construction navale (MDG).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.167-193) → `peu-maniable`, `minuscule`, `renforce`, `tres-petite`, `robuste`, `solide`, `petite`, `navalSkillTestDR`, `ancre`, `moyenne`, +26 — `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/ship-construction.json`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, `src/i18n/messages/fr.ts`, +2 fichiers
+- `MDG 12` (l.167-193) → `minuscule`, `peu-maniable`, `renforce`, `tres-petite`, `robuste`, `petite`, `solide`, `navalSkillTestDR`, `moyenne`, `ancre`, +26 — `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/ship-construction.json`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, `src/i18n/messages/fr.ts`, +2 fichiers
 
 ---
 
@@ -692,7 +692,7 @@ Modifications ajoutables après coup à un vaisseau ; d'autres figurent dans le 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Coûts/Poids des Améliorations, table *Panne de Vapeur*) · § Navires — profil et Caractéristiques (MDG) · § Pièces d'artillerie navale (MDG) (Sabords & tir).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.195-364) → `SteamSaveModal`, `moteur-broute`, `peu-maniable`, `fuite-de-vapeur`, `CollisionShip`, `renforce`, `doc`, `perte-de-pression`, `hullArmourBonus`, `robuste`, +44 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/schemas/defs/ship-construction.ts`, `src/data/schemas/defs/steam-breakdown.ts`, +17 fichiers
+- `MDG 12` (l.195-364) → `SteamSaveModal`, `moteur-broute`, `fuite-de-vapeur`, `CollisionShip`, `nid-de-pie`, `peu-maniable`, `doc`, `perte-de-pression`, `renforce`, `resolveCollision`, +46 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/schemas/defs/ship-construction.ts`, `src/data/schemas/defs/ship-stations.ts`, +20 fichiers
 
 ---
 
@@ -733,6 +733,6 @@ Si un Défaut ainsi reçu est déjà présent, c'est **–10** supplémentaire �
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (tables *Pièces d'artillerie* et *Munitions pour pièces d'artillerie*) · [`combat.md`](combat.md) (armes à distance, Atouts/Défauts, Portée) · § Améliorations de navire (MDG) (Sabords).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.367-472) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `warMachineCrewPenalty`, `fuite-de-vapeur`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `perte-de-pression`, +24 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/qualities.json`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, +18 fichiers
+- `MDG 12` (l.367-472) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `warMachineCrewPenalty`, `fuite-de-vapeur`, `nid-de-pie`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, +24 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/qualities.json`, `src/data/ship-stations.json`, `src/data/steam-breakdown.json`, +19 fichiers
 - sans code : `MDG 12` (l.377, l.379)
 

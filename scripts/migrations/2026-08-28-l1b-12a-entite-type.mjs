@@ -83,7 +83,7 @@ const CARDINAUX = {
   'maneuvers.json': 20,
   'merchants.json': 6,
   'naval-ports.json': 39,
-  'naval-traits.json': 26,
+  'naval-traits.json': 27,
   'pregens.json': 8,
   // 78→83 : recalé #1624/#1644 (+5 props : cheminee, enseigne, clocheton, applique-murale, banc) — le
   // cardinal est une porte d'IDENTITÉ de dataset, il suit la donnée qu'un train fait croître, dans le
@@ -104,7 +104,8 @@ const CARDINAUX = {
 // 1290→1293 : +2 maladies (#674) +1 trait (#673). Puis 1293→1298 : +5 décors de `props.json` (#1624/#1644).
 // Puis 1298→1338 : +40 décors de `props.json` (#1680 ligne 14, bijection art ⇄ donnée).
 // Puis 1338→1340 : +2 enjeux de `combat-stakes.json` (#1657 B3-1, B3-2).
-const TOTAL_ATTENDU = 1340;
+// Puis 1340→1341 : +1 Trait naval `cale` (#1657 B3-2b-a, MSRC 07 l.94 / MSRC 10 l.90).
+const TOTAL_ATTENDU = 1341;
 
 /**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. L'enveloppe veut

@@ -112,7 +112,11 @@ const CLES: Record<string, string> = {
   "seaShanties": '2bf96225710afb8c',
   "crewRoles": 'b15bfe7c81f93951',
   "crewTestTypes": '9ecd7be284174851',
-  "navalTraits": 'aad18a5e9ac71d9b',
+  // Empreinte recalculée (#1657 B3-2b-a) : le Trait naval `cale` entre au catalogue (MSRC 07 l.94
+  // gate le Critique de Superstructure dessus ; MSRC 10 l.90 le dit du navire marchand).
+  "navalTraits": '23e240c3323a150b',
+  // NEUF (#1657 B3-2b-a) : catalogue FERMÉ des 5 présences à bord que les livres nomment.
+  "shipStations": '4fd49982faa44987',
   "traumas": '1b9923aa47dbaa69',
   "criticalsTete": '2f3e4405abc1be31',
   "criticalsBras": '2888f3a0f39b49c1',
@@ -243,6 +247,7 @@ const FORME: Record<string, string> = {
   "crewRoles": 'desc id label sections source',
   "crewTestTypes": 'id label meta sections source',
   "navalTraits": 'desc id label sections source sub',
+  "shipStations": 'desc id label meta source',
   "traumas": 'desc id label sections source sub',
   "criticalsTete": 'desc id label meta sections source sub',
   "criticalsBras": 'desc id label meta sections source sub',
@@ -503,7 +508,8 @@ describe('Codex — défaut d’enveloppe (#1467 L1b)', () => {
     expect(muets).toEqual(MUETS);
     expect(partiels).toEqual(PARTIELS);
     expect(orphelins).toEqual(ORPHELINS);
-    expect(apparies.length).toBe(107);
+    // 107 → 108 : la catégorie `shipStations` apparie son dataset (#1657 B3-2b-a).
+    expect(apparies.length).toBe(108);
   });
 });
 

@@ -500,9 +500,10 @@
           "files": [
             "crew-roles.json",
             "crew-morale.json",
-            "crew-test-types.json"
+            "crew-test-types.json",
+            "ship-stations.json"
           ],
-          "desc": "Rôles d'équipage · moral · types de Test d'équipage"
+          "desc": "Rôles d'équipage · moral · types de Test d'équipage · stations à bord"
         },
         {
           "files": [

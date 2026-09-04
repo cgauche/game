@@ -7,7 +7,7 @@
  * On édite les VRAIS objets de `src/data/*.json` (rien de transformé) → la donnée stockée reste celle
  * que le moteur lit (DiseaseSymptom / CombatFeature / AdvancementRef / TrappingRef).
  */
-import { RefField } from './RefField';
+import { RefField, type RefFieldCfg } from './RefField';
 import { datasetArray } from '../../data/overrides';
 import { DIFFICULTY_LABELS, CHAR_KEYS, CHAR_LABELS, type Difficulty, type CharKey } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
@@ -24,12 +24,19 @@ import { parseTraitInstance, formatTrait, optionalLabel } from '../../engine/tra
 import { GameOpEditor, newOp } from '../editor/GameOpEditor';
 import { NoeudTestField, noeudTestNeuf, type NoeudTest } from '../editor/FlowEditor';
 import type { GameOp } from '../../engine/ops';
+import type { CrewTarget } from '../../data/shipCriticals';
 import { NumberField } from '../NumberField';
 import { PlageField } from '../PlageField';
 import { OptionChooser } from '../OptionChooser';
 import type { OptionalRule, RuleValue } from '../../engine/policy';
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
+
+/** Cibles du coup à l'équipage : deux catalogues, servis par `RefField` (liste / choix unique). Ces
+ *  cfg vivent AU SITE et non dans `REF_FIELD` — ce registre indexe les champs de PREMIER NIVEAU d'un
+ *  def, or `crewHit.crewTarget` est imbriqué (garde `ref-field-cles.test.ts`). */
+const CFG_STATIONS: RefFieldCfg = { ds: 'shipStations' };
+const CFG_ROLE: RefFieldCfg = { ds: 'crewRoles', single: true };
 
 /** Les quatre colonnes saisonnières d'une cargaison, telles que la grammaire les déclare. */
 type DispoSaisonniere = z.infer<typeof dispoSaisonniereSchema>;
@@ -145,29 +152,59 @@ export function DiseaseDailyTestField({ value, onChange }: { value: DiseaseDaily
     </div>
   );
 }
-/** `ShipCritEntry.crewHit` — ce qu'un Critique de coque fait à l'ÉQUIPAGE (MDG 13 l.763, MSRC 07
- *  l.78/l.82/l.94) : le porteur dit QUI encaisse (`crewTarget`), l'issue est SOIT une épreuve (le
- *  nœud `test`, dont seule la branche d'ÉCHEC est servie par `applyCrewHit`), SOIT des ops CERTAINES
- *  (`ops`). Même bascule que le cycle d'un symptôme — les deux clefs sont EXCLUSIVES au schéma. */
-export type ShipCrewHitValue = { crewTarget?: 'poste' | 'deck'; test?: NoeudTest; ops?: GameOp[] };
+/** `ShipCritEntry.crewHit` — ce qu'un Critique de coque fait à l'ÉQUIPAGE (MDG 13 l.680/l.714/l.730/
+ *  l.751/l.763, MSRC 07 l.78/l.82/l.86/l.94) : le porteur dit QUI encaisse (`crewTarget`, REQUIS),
+ *  l'issue est SOIT une épreuve (le nœud `test`, dont seule la branche d'ÉCHEC est servie par
+ *  `applyCrewHit`), SOIT des ops CERTAINES (`ops`). Deux bascules `OptionChooser` : la CIBLE (poste /
+ *  stations / rôle) et l'ISSUE — les deux clefs d'issue sont EXCLUSIVES au schéma. */
+export type ShipCrewHitValue = { crewTarget: CrewTarget; test?: NoeudTest; ops?: GameOp[] };
+
+/** Mode de désignation LU dans la valeur — la donnée porte la forme, l'atelier ne la devine pas. */
+const modeDeCible = (c: CrewTarget): 'poste' | 'stations' | 'role' =>
+  'poste' in c ? 'poste' : 'role' in c ? 'role' : 'stations';
+
 export function ShipCrewHitField({ value, onChange }: { value: ShipCrewHitValue | undefined; onChange: (v: ShipCrewHitValue | undefined) => void }) {
-  const patch = (p: Partial<ShipCrewHitValue>) => onChange({ ...value, ...p });
+  const patch = (p: Partial<ShipCrewHitValue>) => onChange({ ...value!, ...p });
   const versEpreuve = () => patch({ test: value?.test ?? noeudTestNeuf(), ops: undefined });
   // Le schéma exige une conséquence NON VIDE : la bascule pose une op de départ éditable plutôt
   // qu'un `ops: []` que le save refuserait sans que rien à l'écran ne le dise.
   const versCertain = () => patch({ test: undefined, ops: value?.ops?.length ? value.ops : [newOp('wounds')] });
+  // Chaque mode pose une valeur VALIDE au schéma (`stations` non vide, `role` réel) : une bascule ne
+  // laisse jamais un document que le save refuserait sans rien dire à l'écran.
+  const mode = value ? modeDeCible(value.crewTarget) : 'poste';
+  const versCible = (m: 'poste' | 'stations' | 'role') => patch({
+    crewTarget: m === 'poste' ? { poste: true }
+      : m === 'stations' ? { stations: [String(datasetArray('shipStations')[0]?.id ?? '')] }
+        : { role: { id: String(datasetArray('crewRoles')[0]?.id ?? '') } },
+  });
   return (
     <div className="ed-field">
       <span>Coup à l’équipage — qui encaisse, puis l’issue : un Test à réussir, ou une conséquence certaine</span>
-      <label><input type="checkbox" checked={value != null} onChange={(e) => onChange(e.target.checked ? { crewTarget: 'poste', test: noeudTestNeuf() } : undefined)} /> coup à l’équipage</label>
+      <label><input type="checkbox" checked={value != null} onChange={(e) => onChange(e.target.checked ? { crewTarget: { poste: true }, test: noeudTestNeuf() } : undefined)} /> coup à l’équipage</label>
       {value && (
         <>
-          <div className="tf-row">
-            <select value={value.crewTarget ?? 'poste'} onChange={(e) => patch({ crewTarget: e.target.value as 'poste' | 'deck' })}>
-              <option value="poste">Équipage du poste (tiré au sort)</option>
-              <option value="deck">Toute personne sur le pont</option>
-            </select>
-          </div>
+          <OptionChooser
+            layout="seg"
+            options={[
+              { key: 'cible-poste', label: 'Équipage du poste', selected: mode === 'poste', onSelect: () => versCible('poste') },
+              { key: 'cible-stations', label: 'Stations à bord', selected: mode === 'stations', onSelect: () => versCible('stations') },
+              { key: 'cible-role', label: 'Rôle d’équipage', selected: mode === 'role', onSelect: () => versCible('role') },
+            ]}
+          />
+          {mode === 'stations' && (
+            <RefField
+              cfg={CFG_STATIONS} fieldKey="stations" label="Stations touchées"
+              value={(value.crewTarget as { stations: string[] }).stations.map((id) => ({ id }))}
+              onChange={(v) => patch({ crewTarget: { stations: (v as { id: string }[]).map((r) => r.id) } })}
+            />
+          )}
+          {mode === 'role' && (
+            <RefField
+              cfg={CFG_ROLE} fieldKey="crewRole" label="Rôle touché"
+              value={(value.crewTarget as { role: { id: string } }).role.id}
+              onChange={(v) => patch({ crewTarget: { role: { id: String(v) } } })}
+            />
+          )}
           <OptionChooser
             layout="seg"
             options={[

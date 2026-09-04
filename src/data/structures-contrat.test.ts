@@ -262,7 +262,13 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // (L-1659-1) → 1137, net −4. Ce que ce +1 nomme : la candidature `plage` exclut `plageOuverteSchema`,
 // pourtant nœud DÉCLARÉ de la grammaire — l'y admettre sortirait les TROIS bandes ouvertes du
 // hors-strate d'un coup (le plafond qui en résulte est à MESURER, pas à prédire ici).
-const PLAFOND_HORS_STRATE = 1137;
+// 1137 → 1140 (#1657 B3-2b-a) : cinq signatures NEUVES à la forme CIBLE, toutes nommées —
+// `ship-criticals.json | crewHit | crewTarget,test` et `| crewTarget | poste` (la cible d'un coup
+// devient REQUISE et fermée), `river-criticals.json | crewTarget | role` (MSRC 07 l.86 nomme le
+// timonier), et les deux `replisSansExpose` (`cible` maritime, RAW MDG 13 l.584 ; `cible,maison`
+// fluvial, arbitrage du choix que MSRC 07 l.70 laissait au MJ). Deux signatures de `crewHit` du
+// stock partent avec (`crewTarget` textuel).
+const PLAFOND_HORS_STRATE = 1140;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -1678,7 +1684,11 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // construite en TypeScript (`{op:'wounds', amount}` fabriqué au vol par l'ancien lecteur AA) ;
     // elle descend en DONNÉE avec sa mitigation écrite. 70 rangées la portent (les 6 autres valent
     // « T » et ne posent aucune op).
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2257);
+    // #1657 B3-2b-a : +6 ops authorées — les 6 rangées MDG dont le Test ne vivait qu'en prose `note`
+    // (MDG 13 l.730/734/736/738/751/756) posent chacune l'État À Terre de leur échec ; le coup certain
+    // du Gouvernail fluvial (MSRC 07 l.86) troque son `shrapnel: 1` contre une op `wounds`, à somme
+    // nulle sur ce compte (l'op naît, l'Indice n'en était pas une).
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2263);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le

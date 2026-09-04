@@ -639,7 +639,9 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     //   #1657 B2a : `criticals` fait de même (79 → 80) — les deux racines-objet `criticals`/
     //         `aa-criticals` fusionnent en UNE liste de 8 documents-tables, famille `entite` à charge
     //         `entries` ; le def d'`aa-criticals` meurt, celui de `criticals` entre dans la population.
-    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 80, mesures: 0 });
+    //   #1657 B3-2b-a : `ship-stations` naît SCELLÉ (80 → 81) — catalogue FERMÉ des présences à bord
+    //         que les livres nomment, `exiges: ['desc']` dès sa première écriture.
+    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 81, mesures: 0 });
   });
 
 });
@@ -796,6 +798,11 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     // est donc exigible dès la création. `desc` ne l'est pas (les 6 compagnies de la liste l.27-34
     // n'ont que leur nom au Source — aucune prose à recopier, aucune à inventer).
     'reseau-routier.json · source',
+    // #1657 B3-2b-a — `ship-stations` naît adopté : chacune des 5 présences porte le VERBATIM de la
+    // clause qui la nomme (MDG 13 l.714/730/751, MDG 12 l.303, MSRC 07 l.94), `desc` est donc exigible
+    // dès la création. `source` ne l'est pas au def : c'est déjà l'enveloppe qui refuse une entrée sans
+    // `source` NI `maison`.
+    'ship-stations.json · desc',
   ];
 
   it('la 1ʳᵉ entrée réelle de chaque def adopté est ACCEPTÉE — témoin positif de chaque paire', () => {

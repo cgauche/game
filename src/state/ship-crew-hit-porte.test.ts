@@ -44,9 +44,10 @@ const seaMap: WorldMap = {
   routes: [{ id: 'r1', a: 'A', b: 'B', km: 550, modes: ['mer'], sea: true, seaHeading: 'est' }],
 };
 
-/** Trois PJ à bord, tenus par le siège local (cadence manuelle) — la condition de surfaçage. */
+/** Trois PJ à bord, tenus par le siège local (cadence manuelle) — la condition de surfaçage — et
+ *  ÉPINGLÉS sur le PONT : `greement-fluvial` vise la station (MSRC 07 l.78), pas « tout le monde ». */
 function equipage(): Combatant[] {
-  return makePregens().slice(0, 3);
+  return makePregens().slice(0, 3).map((h) => ({ ...h, shipStation: 'pont' }));
 }
 
 function baseState(party: Combatant[]): void {
@@ -193,12 +194,15 @@ describe('#1657 B3-2 — voyage MARITIME : le coup à l’équipage s’applique
     let bande: CascadeStep | undefined;
     // La Localisation du Critique d'événement est TIRÉE (l'événement dit « une localisation
     // aléatoire ») : on balaie les seeds jusqu'aux Équipements, seule table navale à porter un coup.
+    // Depuis B3-2b-a, PLUSIEURS rangées navales portent un coup à l'équipage : on ne retient que la
+    // fenêtre de `canon-detache`, sinon le balayage rendrait la première rangée venue.
     for (let seed = 1; seed <= 80 && !bande; seed++) {
       seedBattleRng(seed);
       const party = equipage();
       mer(party);
       runSeaDay(get, set);
-      bande = get().pendingCascade?.participants.find((s) => s.kind === 'triggeredBatchTest');
+      const trouvee = get().pendingCascade?.participants.find((s) => s.kind === 'triggeredBatchTest');
+      if (trouvee && resolveStake(trouvee.stake!).rule?.id === 'canon-detache') bande = trouvee;
     }
     expect(bande, 'aucune fenêtre en 80 seeds : le coup à l’équipage reste perdu en mer').toBeTruthy();
     expect(bande!.participants!.map((p) => p.id)).toEqual([get().party[0].id]);
@@ -220,7 +224,7 @@ describe('#1657 B3-2 — la porte SÉPARE : bande pour les sièges, inline JOURN
     wounds: { current: 13, max: 13 }, advantage: 0, movement: 4, bodyShape: 'humanoide',
   }) as unknown as Combatant;
 
-  /** Le nœud RÉEL de `greement-fluvial` (`crewTarget:'deck'`), enjeu posé par le producteur. */
+  /** Le nœud RÉEL de `greement-fluvial` (`crewTarget:{stations:['pont']}`), enjeu posé par le producteur. */
   const noeudGreement = () => rollShipCritical('greement', makeRNG(1), 1, RIVER_CRIT_SET).crewHit!.test!;
 
   it('2 porteurs TENUS + 1 PNJ : DEUX rangées en bande, le PNJ résolu inline et DIT au journal', () => {
@@ -243,7 +247,7 @@ describe('#1657 B3-2 — la porte SÉPARE : bande pour les sièges, inline JOURN
     ]);
   });
 
-  it('`crewTarget:\'poste\'` (MDG 13 l.763) : la victime est le SERVANT tiré au sort — 30 seeds, deux postes', () => {
+  it('`crewTarget:{poste:true}` (MDG 13 l.763) : la victime est le SERVANT tiré au sort — 30 seeds, deux postes', () => {
     const party = makePregens().slice(0, 1);
     const equipage = [party[0], marin()];
     const coque = { id: 'hull', postes: [

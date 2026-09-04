@@ -17,7 +17,7 @@ import {
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
   isNamed, specCatalogOf, specLabel, seasonLabel, SKILL_ACCES_LABEL,
-  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
+  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
   conditionLabel, traitProjectingManeuver,
 } from '../../data';
@@ -44,7 +44,7 @@ import { spellOps, type Flow, type FlowTestNode } from '../../engine/flowCore';
 import type { GameOp } from '../../engine/ops';
 import { noeudAmputation } from '../../engine/critical';
 import { CRIT_TABLE_LOCATION, type CritTableKey, type JeuDeCritique } from '../../data/criticals';
-import type { ShipCritEntry } from '../../data/shipCriticals';
+import type { CrewTarget, ShipCritEntry } from '../../data/shipCriticals';
 import { datasetArray, datasetObject } from '../../data/overrides';
 import type { CritTableEntry, MiscastRowEntry } from '../../data/overrides';
 import type { RuleValue } from '../../engine/policy';
@@ -747,6 +747,14 @@ function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem
   });
 }
 
+/** QUI encaisse, en LIBELLÉS résolus depuis les catalogues (`ship-stations.json`, `crew-roles.json`) —
+ *  la donnée porte des ids, l'affichage vient du `label` de l'entrée. */
+function crewTargetLabel(cible: CrewTarget): string {
+  if ('poste' in cible) return 'Équipage du poste tiré au sort';
+  if ('role' in cible) return refLabel('crewRoles', cible.role);
+  return cible.stations.map((id) => refLabel('shipStations', { id })).join(' · ');
+}
+
 /** Item Codex d'une entrée de Critique de coque (`ShipCritEntry` — MDG 13 navire, MSRC 07 fluvial,
  *  #157 suite) : plage d10 → effet immédiat (`ops`) + coup à l'équipage (`crewHit` : qui encaisse, et
  *  soit l'épreuve du nœud `test` avec les ops de sa branche d'échec, soit les ops certaines), MÊME
@@ -770,7 +778,7 @@ function shipCritEntryItem(e: ShipCritEntry): CodexItem {
             layout: 'list',
             rows: [
               { t: 'kv', k: 'Jet', v: jet ? `${sujet}${jet.difficulty ? ` ${DIFFICULTY_LABELS[jet.difficulty]}` : ''}` : 'Automatique (aucun Test)' } as CodexRow,
-              { t: 'kv', k: 'Cible', v: ch.crewTarget === 'deck' ? 'Toute personne sur le pont' : 'Équipage du poste tiré au sort' } as CodexRow,
+              { t: 'kv', k: 'Cible', v: crewTargetLabel(ch.crewTarget) } as CodexRow,
             ],
           }
         : null,
@@ -2012,6 +2020,12 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => seaShanties.map((s) => depuisEnveloppe(s, {
       meta: facts(fact('Note', s.note ?? null)),
       sections: sections(passiveSection(s.crewOps, 'Effet (équipage)'), passiveSection(s.captainOps, 'Effet (capitaine)')),
+    })),
+  },
+  {
+    key: 'shipStations', label: 'Stations à bord', group: 'Monde',
+    build: () => shipStations.map((st) => depuisEnveloppe(st, {
+      meta: facts(fact('Trait naval requis', st.requiresTrait ? refLabel('navalTraits', st.requiresTrait) : null)),
     })),
   },
   {

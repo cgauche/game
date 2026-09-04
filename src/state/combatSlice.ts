@@ -90,7 +90,7 @@ import { bearingPostes, mostArmedSide } from './shipBattery';
 import { resolveVolley } from '../engine/volley';
 import type { ShipManeuverParticipant } from './pendings';
 import { isVehicle } from '../engine/vehicle';
-import { navalTestTypeDR } from '../engine/navalTraits';
+import { navalTestTypeDR, hullNavalTraits } from '../engine/navalTraits';
 import { crewedFireWeapon, crewedReloadStep } from '../engine/crewedWeapon';
 import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
@@ -173,7 +173,7 @@ function openCrewTestPending(get: Get, ship: Combatant, testTypeId: string): {
   }));
   const saboteur = shipSaboteurDR(ship); // MDG 14 l.45-47 : −1..−5 DR plats
   // #221 : Traits/Améliorations navals ciblant CE type de Test d'équipage (op `skillDRBonus` à `testType`).
-  const traits = [...(findVehicleById(ship.creatureId ?? '')?.ship?.traits ?? []), ...(ship.upgrades ?? [])];
+  const traits = hullNavalTraits(ship);
   const extraDR = saboteur + navalTestTypeDR(traits, testTypeId);
   return {
     participants, essentialRoleId,
@@ -1469,7 +1469,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!bearingPostes(ship, side).length) return false; // aucune pièce chargée sur ce bord → rien à lâcher
       const assignments = shipCrewAssignments(ship, battle.combatants, 'batterie'); // équipage abstrait → rôles tenus (Artilleur ★)
       const undercrew = shipUndercrew(get, ship, battle.combatants);
-      const traits = [...(findVehicleById(ship.creatureId ?? '')?.ship?.traits ?? []), ...(ship.upgrades ?? [])];
+      const traits = hullNavalTraits(ship);
       const extraDR = shipSaboteurDR(ship) + navalTestTypeDR(traits, 'batterie');
       // DR partagé calé sur le chemin JOUEUR (`maneuverCrewTotal`) : Σ contributions (essentiel ×2) + Moral +
       // Manque de bras (−2/tranche) + sabotage/traits ; plafonné à un Succès Minime dès qu'une tranche manque (l.55).

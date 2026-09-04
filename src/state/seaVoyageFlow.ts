@@ -81,7 +81,7 @@ import {
   removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoTotalEnc, cargoOverload, resolveFastVoyage, FAST_VOYAGE_PALIERS,
   type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
-import { navalMoveMod, navalTestTypeDR, navalNavTestDR, shipHasNavalTrait } from '../engine/navalTraits';
+import { navalMoveMod, navalTestTypeDR, navalNavTestDR, shipHasNavalTrait, hullNavalTraits, vesselNavalTraits } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
 import { seaAutoResolves, voyageDayEntry, DEFAULT_VOYAGE_ORDERS, type VoyageOrders, type VoyageCadence } from './voyageCadence';
 import { crewRoleValue, crewTestModParts, moraleBand, crewTalentDR, UNDERCREW_DR, capToSuccesMinime, crewTestSuccess, SUCCES_MINIME_CAP } from '../engine/crewMorale';
@@ -418,12 +418,6 @@ export function spoilVesselCargoOnLeak(get: Get, set: Set): string[] {
   return [t('sv.leakSpoils', { enc: r.removed })];
 }
 
-/** Traits navals EFFECTIFS de la coque (type + Améliorations d'instance). */
-function hullTraits(hull: Combatant) {
-  const vd = findVehicleById(hull.creatureId ?? '')?.ship;
-  return [...(vd?.traits ?? []), ...(hull.upgrades ?? [])];
-}
-
 /** M de VOYAGE du jour (ch.13/15) : M du gréement + Lissage (`navalMoveMod`) + Salissures + événement,
  *  puis EFFET DU VENT (%, Clinfoc — ch.13 l.274/ch.12 l.254). `null` = les voiles n'avancent pas
  *  (Encalminé / Affaler) — Propulsion à vapeur : M 4 constant, insensible au vent (ch.12 l.311). */
@@ -432,7 +426,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
   const sea = plan.sea!;
   const hull = plan.vehicle!;
   const vd = findVehicleById(hull.creatureId ?? '')?.ship;
-  const traits = hullTraits(hull);
+  const traits = hullNavalTraits(hull);
   const vessel = get().vessel;
   if (shipHasNavalTrait(traits, 'propulsion-a-vapeur')) {
     return { m: 4, sail: false, mode: null, label: t('sv.steamMode'), affaler: false }; // MDG 12 l.311
@@ -515,10 +509,10 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   const saboteur = shipSaboteurDR(ship); // MDG 14 l.45-47 : −1..−5 DR plats, aussi en voyage (#214)
   // #221 : Traits/Améliorations navals ciblant CE type de Test d'équipage (op `skillDRBonus` à `testType`,
   // ex. Proue-idole de Stromfels → Poursuite) — agnostique de la compétence tenue par le représentant.
-  const traitDR = navalTestTypeDR(hullTraits(ship), testTypeId);
+  const traitDR = navalTestTypeDR(hullNavalTraits(ship), testTypeId);
   // « Bouteur »/« Gréement de course » modifient le Test de Navigation POUR DIRIGER (MSRC 12 l.66/140) —
   // seul le Test d'équipage de manœuvre (steering) le reçoit, converti en DR (`navalNavTestDR`, ÷10).
-  const navDirDR = testType?.steering ? navalNavTestDR(hullTraits(ship)) : 0;
+  const navDirDR = testType?.steering ? navalNavTestDR(hullNavalTraits(ship)) : 0;
   // MANQUE DE BRAS (MDG 14 l.55) — s'applique à TOUT Test d'équipage, voyage compris : −2 DR par tranche de
   // 10 % manquante ET plafond au Succès Minime. En campagne l'attrition vient des pertes d'équipage
   // (`vessel.crewLost`, MDG 15 l.245) — MÊME couture que le combat (`shipUndercrew`).
@@ -554,7 +548,7 @@ function buildForcePaceStep(get: Get): BuiltCascadeStep | undefined {
   if (!sea.forcePace || sea.paceToday != null) return undefined;
   const hull = plan.vehicle!;
   const vd = findVehicleById(hull.creatureId ?? '')?.ship;
-  if (shipHasNavalTrait(hullTraits(hull), 'propulsion-a-vapeur') || !(vd?.sail || vd?.oars)) return undefined;
+  if (shipHasNavalTrait(hullNavalTraits(hull), 'propulsion-a-vapeur') || !(vd?.sail || vd?.oars)) return undefined;
   const rig: PropulsionKind = vesselPropulsion(vd)!.mode;
   const diff = forcePaceDifficulty(sea.forcePace, rig);
   if (!diff) return undefined;
@@ -809,7 +803,7 @@ function buildSeaDayCascade(get: Get, set: Set): { steps: BuiltCascadeStep[]; lo
   const sea = plan.sea!;
   const effAfterAffaler = effectiveSeaM(get);
   if (sea.sailsDown || effAfterAffaler.m === null) {
-    const anchored = shipHasNavalTrait(hullTraits(plan.vehicle!), 'ancre');
+    const anchored = shipHasNavalTrait(hullNavalTraits(plan.vehicle!), 'ancre');
     const drift = anchored ? 0 : Math.round(seaMilesPerDay(4, true) * (AFFALER_RULES.driftPctOfSpeed / 100));
     tell(get, set, [!sea.sailsDown
       ? t('sv.becalmedLine', { suite: anchored ? t('sv.fragAnchorDown') : t('sv.fragDrift', { drift }) })
@@ -929,7 +923,7 @@ export function buildSeaPlan(
 /** M de CROISIÈRE (hors vent/événement) pour estimer la durée du voyage rapide (l.25) — mêmes milles
  *  que le détaillé (18 × M) : voiles/avirons du gréement, ou M 4 constant à la vapeur (ch.12 l.311). */
 function cruiseM(hull: Combatant): number {
-  if (shipHasNavalTrait(hullTraits(hull), 'propulsion-a-vapeur')) return 4;
+  if (shipHasNavalTrait(hullNavalTraits(hull), 'propulsion-a-vapeur')) return 4;
   const vd = findVehicleById(hull.creatureId ?? '')?.ship;
   return Math.max(1, vesselPropulsion(vd)?.m ?? 1);
 }
@@ -1729,7 +1723,7 @@ registerCascadeApplier('progression', (get, set, step) => {
   const plan = get().travelPlan;
   const hull = plan?.vehicle;
   const rng = battleRng();
-  if (hull && shipHasNavalTrait(hullTraits(hull), 'propulsion-a-vapeur')) {
+  if (hull && shipHasNavalTrait(hullNavalTraits(hull), 'propulsion-a-vapeur')) {
     const triggered = (step.participants ?? []).some((x) => x.result
       && steamBreakdownTriggered({ success: x.result.roll <= x.result.target, sl: x.result.sl, isDouble: isDoubleRoll(x.result.roll) }));
     if (triggered) {
@@ -2600,7 +2594,7 @@ export function portRepairVessel(get: Get, set: Set): string[] {
   const max = vessel.wounds?.max ?? v.hull.char.B;
   const missing = max - (vessel.wounds?.current ?? max);
   if (missing <= 0 && !(vessel.criticals?.length)) return [t('sv.hullIntact')];
-  const lissage = shipHasNavalTrait([...(v.ship?.traits ?? []), ...(vessel.upgrades ?? [])], 'lissage');
+  const lissage = shipHasNavalTrait(vesselNavalTraits(vessel), 'lissage');
   const cost = Math.ceil(missing * (lissage ? 1.5 : 1));
   const costMoney = toMoney({ gold: cost });
   if (!canAfford(partyMoneyTotal(get), costMoney)) return [t('sv.yardTooExpensive', { cost })];

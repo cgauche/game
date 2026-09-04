@@ -130,7 +130,16 @@ const FOLIO_TITLE_RATCHET_MAX = 0;
  * l'extraction coupe autour de l'encadré « LES JUSTICIERS » — même classe que les `<br>` des tables
  * d'Aux Armes ci-dessus. Population qui grandit, pas détecteur qui faiblit.
  */
-const UNRESOLVED_MAX = 775;
+// 775 → 776 (#1657 B3-2b-a). MESURÉ : les 3 irrésolues neuves sont les stations `pont` (p.119),
+// `greement` (p.118) et `avirons` (p.120) de `ship-stations.json` — desc-introuvable ET
+// titre-introuvable. Leur `desc` recolle une CELLULE de tableau MDG 13 que l'extraction coupe par des
+// `<br>` (« se trouve sur le pont, il<br>doit réussir », l.730 ; « se trouve<br>dans le gréement »,
+// l.714 ; « se trouve aux<br>avirons », l.751) : la voie DESC cherche le verbatim d'un seul tenant et
+// ne le retrouve pas. Les garder AVEC leurs `<br>` est exclu — c'est du HTML, que la règle 5 interdit
+// et que `no-html-in-prose.test.ts` refuse (`HTML_TAG` couvre `br`). Les 3 autres entrées du lot
+// (`nid-de-pie` MDG 12 l.303, station `cale` et Trait `cale` MSRC 07 l.94) citent de la PROSE continue
+// et sont RÉSOLUES. Le cliquet est un PLAFOND : le compte réel à l'arbre précédent était sous 775.
+const UNRESOLVED_MAX = 776;
 
 describe('intégrité du folio — voie TITRE de section, et skip BRUYANT de ce qui reste (#1200)', () => {
   const { titleViolations, noteAuthored, unresolved, stats, total } = AUDIT;

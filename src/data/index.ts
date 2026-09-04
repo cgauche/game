@@ -47,6 +47,7 @@ import lieuxServicesJson from './lieux-services.json';
 import seaShantiesJson from './sea-shanties.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
+import shipStationsJson from './ship-stations.json';
 import weaponGroupsJson from './weaponGroups.json';
 import merchantFamiliesJson from './merchantFamilies.json';
 import qualitySubtypesJson from './qualitySubtypes.json';
@@ -2613,6 +2614,19 @@ export interface CrewTestTypeData {
    *  (Traits/Améliorations de coque, MSRC 12 l.66/140) et la gêne d'un empêtrement. */
   steering?: boolean;
 }
+/** PRÉSENCE à bord que les livres NOMMENT (`ship-stations.json`) — seule cible de
+ *  `ShipCrewHit.crewTarget.stations` et de l'épinglage `Combatant.shipStation`. `requiresTrait` gate
+ *  la station sur un Trait naval de la coque (`cale` — MSRC 07 l.94 ; `nid-de-pie` — MDG 12 l.299). */
+export interface ShipStationData {
+  id: string;
+  type: 'ship-stations';
+  label: string;
+  desc: string;
+  requiresTrait?: { id: string };
+}
+export const shipStations = shipStationsJson as ShipStationData[];
+const shipStationById = new Map(shipStations.map((s) => [s.id, s]));
+export const findShipStation = (id: string): ShipStationData | undefined => shipStationById.get(id);
 export const crewRoles = crewRolesJson as CrewRoleData[];
 const crewRoleById = new Map(crewRoles.map((r) => [r.id, r]));
 export const findCrewRoleById = (id: string): CrewRoleData | undefined => crewRoleById.get(id);
@@ -3298,6 +3312,9 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'mutations': return findMutationById(id); // clé de CATÉGORIE Codex (compendium/registry, relations)
     case 'symptoms': return findSymptomById(id);
     case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.label } : undefined;
+    case 'shipStations': return findShipStation(id);
+    case 'crewRoles': return findCrewRoleById(id);
+    case 'navalTraits': return findNavalTrait(id);
     default: return undefined;
   }
 }

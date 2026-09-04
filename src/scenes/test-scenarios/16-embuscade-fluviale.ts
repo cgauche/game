@@ -1,11 +1,18 @@
 import { makeShowcaseParty, PREGEN } from '../../data/pregens';
+import type { Combatant } from '../../engine/types';
 import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
 
-// Équipage EXPOSÉ de la barge amie = 2 héros du groupe (comme la vitrine navale) : sur un Coup Critique de
-// coque « Gréement » ou « Superstructure » (MSRC 7), toute personne SUR LE PONT (`crewTarget:'deck'`)
-// encaisse un Test d'Initiative sous peine de +5 Dégâts (échardes) — ces 2 héros y sont exposés.
+// Équipage de la barge amie = 2 héros du groupe (comme la vitrine navale). Les Critiques de coque MSRC 7
+// visent une PRÉSENCE NOMMÉE, pas « tout le monde » : Gréement (l.78) frappe `{stations:['pont']}`,
+// Superstructure (l.94) frappe `{stations:['cale']}` et n'existe que si la coque porte le Trait naval
+// `cale` — la barge fluviale l'a. Les deux héros sont donc ÉPINGLÉS au pont ci-dessous ; sans épinglage
+// aucune rangée ne les désignerait (`Combatant.shipStation` n'a AUCUN défaut).
 const CREW = [`pregen-${PREGEN.soldat}`, `pregen-${PREGEN.chasseur}`] as const;
+
+/** Le groupe de la vitrine, ses deux membres d'équipage postés SUR LE PONT (MSRC 07 l.78). */
+const makeParty = (): Combatant[] =>
+  makeShowcaseParty().map((h) => (CREW.includes(h.id as (typeof CREW)[number]) ? { ...h, shipStation: 'pont' } : h));
 
 /**
  * Embuscade fluviale (Mort sur le Reik – Compagnon, ch.5 + ch.12-13) — vitrine JOUABLE de la chaîne de
@@ -13,7 +20,8 @@ const CREW = [`pregen-${PREGEN.soldat}`, `pregen-${PREGEN.chasseur}`] as const;
  *  - chaque bateau est une COQUE à PV (`barge-fluviale`/`barque-fluviale`, `hull.propulsion:'fluvial'` +
  *    `locationTable:'navire-fluvial'` + `criticalTable:'river-criticals'`) → un Coup Critique se résout sur
  *    les tables MSRC 7 (Localisation Gréement/Rames/Gouvernail/Coque/Superstructure ; effets États
- *    **Dérive** / **Gouvernail brisé** / **Voie d'eau**, Éclats **+5**), et NON sur les tables navales MDG ;
+ *    **Dérive** / **Gouvernail brisé** / **Voie d'eau**), et NON sur les tables navales MDG — MSRC n'emploie
+ *    JAMAIS le mot-clé « Éclats », le jeu fluvial n'en porte aucun (#1657 B3-2b-a) ;
  *  - des PIRATES fluviaux (ch.12) sont l'ÉQUIPAGE EXPOSÉ de leur barque (`crewIds`) : un Critique « Équipage »
  *    ou les Éclats leur reviennent, comme en mer ;
  *  - une **Anguille du Reik** (bestiaire ch.13 : F65, Morsure +8, Constricteur, Taille Grande) surgit de
@@ -66,7 +74,7 @@ export const scenario: TestScenario = {
     'moteur naval MDG ; équipage exposé lié (crewIds) → Éclats/critique « Équipage » sur de vrais pirates ; ' +
     'bestiaire ch.13 : Anguille du Reik (Constricteur, Morsure +8, Taille Grande).',
   partyNote: 'Groupe d’arène ; 2 héros sont l’équipage exposé de la barge (Éclats / Test d’Initiative de pont)',
-  makeParty: makeShowcaseParty,
+  makeParty,
   scene,
   autoCombat: 'enc-fluvial',
 };

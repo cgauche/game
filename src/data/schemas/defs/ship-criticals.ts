@@ -11,12 +11,20 @@ import { gameOpSchema, shipCritEntrySchema } from '../grammaire/mecanique';
 export const file = 'ship-criticals.json';
 export const famille = 'config';
 
+const replisSansExposeSchema = z.strictObject({
+  /** Localisation qui encaisse le coup quand PERSONNE n'est exposé — `MDG 13 l.584`, `MSRC 07 l.70`. */
+  cible: z.enum(['cargaison', 'greement', 'coque', 'avirons', 'equipements', 'gouvernail', 'superstructure']),
+  maison: z.string().optional(),
+});
+
+
 const doc = document(
   'ship-criticals',
   famille,
   {
     die: z.string(),
     shrapnelHit: z.array(gameOpSchema),
+    replisSansExpose: replisSansExposeSchema,
     tables: z.strictObject({
       cargaison: z.array(shipCritEntrySchema),
       greement: z.array(shipCritEntrySchema),
@@ -28,6 +36,10 @@ const doc = document(
   {
     die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un critique de coque' },
     shrapnelHit: { label: 'Éclats', hint: 'Effets posés sur les occupants touchés par les éclats' },
+    replisSansExpose: {
+      label: 'Repli sans équipage exposé',
+      hint: 'Localisation qui encaisse le coup à l’Équipage quand aucun marin n’est exposé',
+    },
     tables: { label: 'Critiques par Localisation', hint: 'Cinq tables sœurs : cargaison, gréement, coque, avirons, équipements' },
   },
   {

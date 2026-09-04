@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { activityAsPoste, crewRoleAsPoste, type Poste } from './poste';
+import { activityAsPoste, crewRoleAsPoste, stationAsPoste, type Poste } from './poste';
 import { activitiesFor } from '../engine/activities';
-import { crewRoles, findCrewRoleById } from '../data';
+import { crewRoles, findCrewRoleById, findShipStation, shipStations } from '../data';
 
 describe('poste — adaptateurs de projection (donnée-vue commune)', () => {
   it('activityAsPoste projette une Activité de voyage en Poste heroExclusive', () => {
@@ -40,6 +40,30 @@ describe('poste — adaptateurs de projection (donnée-vue commune)', () => {
     const r = findCrewRoleById('mousse')!;
     const p = crewRoleAsPoste(r);
     expect(p.skills.map((s) => s.id)).toEqual(['voile', 'ramer']);
+  });
+
+  it('stationAsPoste projette une STATION à bord en Poste slotFilling, SANS compétence', () => {
+    const st = findShipStation('avirons')!;
+    expect(st).toBeTruthy();
+    const p = stationAsPoste(st);
+    expect(p.id).toBe('avirons');
+    expect(p.label).toBe(st.label);
+    expect(p.icon).toBeUndefined();
+    // Aucune Compétence ne qualifie une PRÉSENCE : le livre demande qui s'y TROUVE (MDG 13 l.751),
+    // pas qui sait y servir — l'inférence « auto » de la surface partagée n'a rien à proposer.
+    expect(p.skills).toEqual([]);
+    expect(p.desc).toBe(st.desc);
+    expect(p.cardinality).toBe('slotFilling');
+  });
+
+  it('les CINQ stations se projettent sans exception, et aucune ne porte de compétence', () => {
+    const postes: Poste[] = shipStations.map(stationAsPoste);
+    expect(postes.map((p) => p.id)).toEqual(['pont', 'greement', 'nid-de-pie', 'avirons', 'cale']);
+    for (const p of postes) {
+      expect(p.label, p.id).toBeTruthy();
+      expect(p.skills, p.id).toEqual([]);
+      expect(p.cardinality, p.id).toBe('slotFilling');
+    }
   });
 
   it('tous les rôles d’équipage se projettent sans exception (id/label stables)', () => {

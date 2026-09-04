@@ -3,20 +3,31 @@
  * p.29). MÊME patron que `ship-criticals.json` (`ShipCritSet`, `src/data/shipCriticals.ts`), PROMU
  * dans `grammaire/mecanique.ts` (`shipCritEntrySchema`/`shipCrewHitSchema`), mais 5 Localisations DISTINCTES
  * (greement/avirons/gouvernail/coque/superstructure — pas de cargaison ni d'équipements côté
- * fluvial) et sans `die` (absent du JSON, à la différence du jeu MDG).
+ * fluvial), sans `die` (absent du JSON, à la différence du jeu MDG) et sans `shrapnelHit` : MSRC
+ * n'emploie JAMAIS le mot-clé « Éclats » — l'unique `shrapnel: 1` du Gouvernail était une
+ * modélisation maison de « +5 Dégâts au timonier » (MSRC 07 l.86), devenue le coup certain
+ * `crewHit {role}` (#1657 B3-2b-a). Une rangée fluviale qui regagnerait un Indice d'Éclats sans
+ * table est une anomalie NOMMÉE par `applyHullCritical` (`src/engine/shipCritical.ts`).
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { gameOpSchema, shipCritEntrySchema } from '../grammaire/mecanique';
+import { shipCritEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'river-criticals.json';
 export const famille = 'config';
+
+const replisSansExposeSchema = z.strictObject({
+  /** Localisation qui encaisse le coup quand PERSONNE n'est exposé — `MDG 13 l.584`, `MSRC 07 l.70`. */
+  cible: z.enum(['cargaison', 'greement', 'coque', 'avirons', 'equipements', 'gouvernail', 'superstructure']),
+  maison: z.string().optional(),
+});
+
 
 const doc = document(
   'river-criticals',
   famille,
   {
-    shrapnelHit: z.array(gameOpSchema),
+    replisSansExpose: replisSansExposeSchema,
     tables: z.strictObject({
       greement: z.array(shipCritEntrySchema),
       avirons: z.array(shipCritEntrySchema),
@@ -26,7 +37,10 @@ const doc = document(
     }),
   },
   {
-    shrapnelHit: { label: 'Éclats', hint: 'Effets posés sur les occupants touchés par les éclats' },
+    replisSansExpose: {
+      label: 'Repli sans équipage exposé',
+      hint: 'Localisation qui encaisse le coup à l’Équipage quand aucun marin n’est exposé',
+    },
     tables: { label: 'Critiques par Localisation', hint: 'Cinq tables sœurs : gréement, avirons, gouvernail, coque, superstructure' },
   },
   {

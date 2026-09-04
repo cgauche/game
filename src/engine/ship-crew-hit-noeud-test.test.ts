@@ -65,9 +65,15 @@ const sailor = (id: string, over: Partial<Combatant> = {}): Combatant =>
     armour: { corps: 0 }, wounds: { current: 40, max: 40, base: 40 }, advantage: 0, ...over,
   }) as unknown as Combatant;
 
+/** Coque RÉELLE (`barge-fluviale`) : elle porte le Trait naval `cale`, donc TOUTES les stations que
+ *  les rangées de ce train visent (pont/avirons/cale) sont OUVERTES à son bord — la désignation se
+ *  mesure sans être masquée par le gate `requiresTrait` (`MSRC 07 l.94`), qui a ses propres morsures. */
 const coqueAvecPostes = (crewIds: string[]): Combatant => {
   const poste: ShipPoste = { item: { uid: 'p1', name: 'Canon' } as never, side: 'tribord', crewIds };
-  return { id: 'hull', postes: [poste, { ...poste, item: { uid: 'p2', name: 'Pierrier' } as never, side: 'babord' }] } as unknown as Combatant;
+  return {
+    id: 'hull', creatureId: 'barge-fluviale',
+    postes: [poste, { ...poste, item: { uid: 'p2', name: 'Pierrier' } as never, side: 'babord' }],
+  } as unknown as Combatant;
 };
 
 /** RNG qui COMPTE ses tirages — l'ordre de consommation est le vrai gate du train. */
@@ -98,10 +104,15 @@ function posteCrewAttendu(hull: Combatant, crew: Combatant[], rng: RNG): Combata
 describe('coup à l’équipage — le JET vit dans le nœud `test` du Flow (#1657 B2c)', () => {
   it('les porteurs sont LUS par la grammaire partagée, et chacun dit ce qu’il est', () => {
     const tous = coups();
-    expect(tous.length, 'la sonde mesure quelque chose').toBe(4);
-    expect(tous.filter((c) => c.hit.test).map((c) => c.id)).toEqual(['greement-fluvial', 'superstructure-fluvial', 'canon-detache']);
-    // MSRC 07 l.82 : « les échardes infligent +5 Dégâts aux rameurs » — aucun Test appelé, donc pas de nœud.
-    expect(tous.filter((c) => c.hit.ops).map((c) => c.id)).toEqual(['rames-fluvial']);
+    expect(tous.length, 'la sonde mesure quelque chose').toBe(11);
+    expect(tous.filter((c) => c.hit.test).map((c) => c.id)).toEqual([
+      'greement-fluvial', 'superstructure-fluvial',
+      'coque-degradee', 'gouvernail-endommage', 'quille-dechiquetee', 'gouvernail-brise',
+      'bancs-disperses', 'bancs-fracasses', 'canon-detache',
+    ]);
+    // Aucun Test appelé par le livre → pas de nœud : MSRC 07 l.82 « les échardes infligent +5 Dégâts
+    // aux rameurs », MSRC 07 l.86 « … au timonier ».
+    expect(tous.filter((c) => c.hit.ops).map((c) => c.id)).toEqual(['rames-fluvial', 'gouvernail-fluvial']);
 
     for (const { fichier, id, hit } of tous) {
       expect(Boolean(hit.test) !== Boolean(hit.ops), `${fichier}/${id} : XOR test ⊕ ops rompu`).toBe(true);
@@ -132,7 +143,14 @@ describe('coup à l’équipage — le JET vit dans le nœud `test` du Flow (#16
     expect(schemaDuCoup.safeParse(avec(reussitePeuplee)).success, 'une branche de réussite peuplée passe').toBe(false);
     expect(schemaDuCoup.safeParse(avec(echecEmbranche)).success, 'un échec embranché passe').toBe(false);
     expect(schemaDuCoup.safeParse({ ...porteur, ops: [] }).success, 'un porteur à la fois épreuve ET certain passe').toBe(false);
-    expect(schemaDuCoup.safeParse({ crewTarget: 'deck' }).success, 'un porteur sans aucune issue passe').toBe(false);
+    expect(schemaDuCoup.safeParse({ crewTarget: { stations: ['pont'] } }).success, 'un porteur sans aucune issue passe').toBe(false);
+    // La CIBLE est REQUISE et FERMÉE : elle se déclare, elle se choisit dans les catalogues, et une
+    // liste de stations en porte au moins une.
+    expect(schemaDuCoup.safeParse({ test: noeud }).success, 'un porteur SANS cible passe').toBe(false);
+    expect(schemaDuCoup.safeParse(avec(noeud) as object && { ...porteur, crewTarget: 'deck' }).success, 'le mot-valise « deck » passe encore').toBe(false);
+    expect(schemaDuCoup.safeParse({ ...porteur, crewTarget: { stations: [] } }).success, 'une liste de stations VIDE passe').toBe(false);
+    expect(schemaDuCoup.safeParse({ ...porteur, crewTarget: { stations: ['gaillard-d-arriere'] } }).success, 'une station hors catalogue passe').toBe(false);
+    expect(schemaDuCoup.safeParse({ ...porteur, crewTarget: { role: 'grand-amiral' } }).success, 'un rôle hors catalogue passe').toBe(false);
   });
 });
 
@@ -142,15 +160,23 @@ describe('coup à l’équipage — le moteur DÉSIGNE et REND, il ne roule plus
       const hit = resolu.crewHit!;
       for (let seed = 1; seed <= 40; seed++) {
         const ids = ['m1', 'm2', 'm3'];
-        const equipage = ids.map((i) => sailor(i));
-        const temoins = ids.map((i) => sailor(i));
+        // Chaque marin est ÉPINGLÉ à la station/au rôle que la rangée vise : la désignation se mesure
+        // sur l'épinglage RÉEL, jamais sur une inférence (MDG 13 l.680, MSRC 07 l.78/l.82/l.86/l.94).
+        const cible = hit.crewTarget;
+        const epingle = (c: Combatant): Combatant => Object.assign(c, 'poste' in cible ? {}
+          : 'role' in cible ? { shipRole: cible.role.id }
+            : { shipStation: cible.stations[0] });
+        const equipage = ids.map((i) => epingle(sailor(i)));
+        const temoins = ids.map((i) => epingle(sailor(i)));
         const rng = rngCompteur(seed);
         const rngTemoin = rngCompteur(seed);
 
         const out = applyCrewHit(coqueAvecPostes(ids), equipage, hit, rng);
-        const attendues = hit.crewTarget === 'deck'
-          ? exposedCrew(temoins)
-          : posteCrewAttendu(coqueAvecPostes(ids), temoins, rngTemoin);
+        const attendues = 'poste' in cible
+          ? posteCrewAttendu(coqueAvecPostes(ids), temoins, rngTemoin)
+          : exposedCrew(temoins).filter((c) => ('role' in cible
+            ? c.shipRole === cible.role.id
+            : c.shipStation !== undefined && cible.stations.includes(c.shipStation)));
 
         expect(out.victims, `${fichier}/${id} seed ${seed} : victimes`).toEqual(attendues.map((c) => c.id));
         expect(rng.tirages, `${fichier}/${id} seed ${seed} : un dé d’ISSUE est encore tiré`).toEqual(rngTemoin.tirages);
@@ -168,7 +194,7 @@ describe('coup à l’équipage — le moteur DÉSIGNE et REND, il ne roule plus
 
   it('ENJEU posé par le producteur : chaque nœud renvoie à SA rangée, dans la catégorie de sa Localisation', () => {
     const mesures = coupsResolus().filter(({ resolu }) => resolu.crewHit?.test);
-    expect(mesures.length, 'la sonde du producteur n’a rien mesuré').toBe(3);
+    expect(mesures.length, 'la sonde du producteur n’a rien mesuré').toBe(9);
     for (const { fichier, jeu, loc, id, resolu } of mesures) {
       const stake = resolu.crewHit!.test!.test.stake;
       expect(stake, `${fichier}/${id} : nœud sans enjeu`).toBeTruthy();

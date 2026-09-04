@@ -396,9 +396,11 @@ describe('références migrées — les 4 populations résolvent contre leur cat
     expect(vus.filter((id) => !CATALOGUES.careers.has(id)), 'carrière d’aperçu hors de careers.json').toEqual([]);
   });
 
-  it('vehicles.json › ship.traits — 19 Traits navals résolus, et AUCUN au bestiaire', () => {
+  // 19 → 20 : la barge fluviale gagne le Trait `cale` (#1657 B3-2b-a — MSRC 07 l.94 gate le Critique
+  // de Superstructure sur « si le bateau dispose d'une cale », MSRC 10 l.90 la dit du navire marchand).
+  it('vehicles.json › ship.traits — 20 Traits navals résolus, et AUCUN au bestiaire', () => {
     const vus = (vehicles as ReadonlyArray<{ ship?: { traits?: ReadonlyArray<{ id: string }> } }>).flatMap((v) => v.ship?.traits ?? []);
-    expect(vus.length, 'la population des Traits de navire a disparu.').toBe(19);
+    expect(vus.length, 'la population des Traits de navire a disparu.').toBe(20);
     expect(vus.filter((t) => !CATALOGUES.navals.has(t.id)), 'Trait de navire hors de naval-traits.json').toEqual([]);
     expect(
       vus.filter((t) => CATALOGUES.traits.has(t.id)),

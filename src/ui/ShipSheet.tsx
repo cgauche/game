@@ -3,6 +3,7 @@ import { useGame } from '../state/store';
 import { findCrewRoleById, findCrewTestTypeById, findVehicleById, findNavalTrait } from '../data';
 import { moraleBand, crewRoleValue } from '../engine/crewMorale';
 import { exposedCrew } from '../engine/shipCritical';
+import { hullNavalTraits } from '../engine/navalTraits';
 import { shipMoraleScore, shipDefaultRoles, BENCHED } from '../state/shipCrew';
 import { useModalA11y } from './Modal';
 import { PortraitTile } from './PortraitTile';
@@ -91,8 +92,7 @@ export function PosteDetail({ hull, poste, combatants, readOnly }: { hull: Comba
 export function ShipInspectBody({ hull, crew, cap }: { hull: Combatant; crew: Combatant[]; cap?: Dir8 }) {
   const vd = hull.creatureId ? findVehicleById(hull.creatureId) : undefined;
   const rig = vd?.hull?.rig;
-  // Traits du TYPE (`ship.traits`) + Améliorations d'INSTANCE (`Combatant.upgrades`, dont la Proue-idole #221).
-  const refs: NavalTraitRef[] = [...(vd?.ship?.traits ?? []), ...(hull.upgrades ?? [])];
+  const refs: NavalTraitRef[] = hullNavalTraits(hull);
   const traits = refs
     .map((ref) => ({ ref, def: findNavalTrait(ref.id) }))
     .filter((t): t is { ref: NavalTraitRef; def: NonNullable<typeof t.def> } => !!t.def);

@@ -6,14 +6,10 @@
     "book": "mort-sur-le-reik-compagnon",
     "page": 29
   },
-  "shrapnelHit": [
-    {
-      "op": "wounds",
-      "amount": 5,
-      "ignoreTB": false,
-      "ignoreAP": false
-    }
-  ],
+  "replisSansExpose": {
+    "cible": "coque",
+    "maison": "MSRC 07 l.70 laisse au MJ le choix entre la coque et la superstructure quand aucun membre d'équipage n'est exposé ; il n'y a pas de MJ (CLAUDE.md règle 7) → arbitrage FIXE et éditable : la coque, comme le fait le RAW maritime (MDG 13 l.584). #1657"
+  },
   "tables": {
     "greement": [
       {
@@ -29,7 +25,11 @@
           }
         ],
         "crewHit": {
-          "crewTarget": "deck",
+          "crewTarget": {
+            "stations": [
+              "pont"
+            ]
+          },
           "test": {
             "kind": "test",
             "test": {
@@ -79,7 +79,11 @@
           }
         ],
         "crewHit": {
-          "crewTarget": "deck",
+          "crewTarget": {
+            "stations": [
+              "avirons"
+            ]
+          },
           "ops": [
             {
               "op": "wounds",
@@ -105,8 +109,22 @@
             "value": 1
           }
         ],
-        "shrapnel": 1,
-        "note": "Le gouvernail vole en éclat, et les échardes infligent +5 Dégâts au timonier. Tant qu'il n'est pas réparé, tous les Tests de **Navigation** pour diriger le bateau sont **Très Difficiles (–30)**."
+        "note": "Le gouvernail vole en éclat, et les échardes infligent +5 Dégâts au timonier. Tant qu'il n'est pas réparé, tous les Tests de **Navigation** pour diriger le bateau sont **Très Difficiles (–30)**.",
+        "crewHit": {
+          "crewTarget": {
+            "role": {
+              "id": "timonier"
+            }
+          },
+          "ops": [
+            {
+              "op": "wounds",
+              "amount": 5,
+              "ignoreTB": false,
+              "ignoreAP": false
+            }
+          ]
+        }
       }
     ],
     "coque": [
@@ -132,7 +150,11 @@
         "id": "superstructure-fluvial",
         "label": "Superstructure",
         "crewHit": {
-          "crewTarget": "deck",
+          "crewTarget": {
+            "stations": [
+              "cale"
+            ]
+          },
           "test": {
             "kind": "test",
             "test": {

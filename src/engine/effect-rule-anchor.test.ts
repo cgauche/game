@@ -146,7 +146,7 @@ const BASELINE: string[] = [
   'engine/shipCritical.ts | ops | { rng }', // conséquence du coup à l'équipage d'un critique de navire (branche d'échec du nœud, ou ops certaines)
   'engine/shipCritical.ts | crit.ops | { rng }', // ops d'un critique de navire
   'engine/shipCritical.ts | crit.ops | { rng, crew }', // ops d'un critique de navire (équipage)
-  'engine/shipCritical.ts | set.shrapnelHit | { rng }', // éclats d'un critique de navire
+  'engine/shipCritical.ts | set.shrapnelHit! | { rng }', // éclats d'un critique de navire (le `!` tient l'anomalie NOMMÉE juste au-dessus : un jeu sans `shrapnelHit` ne peut pas porter d'Éclats)
   'engine/shipCritical.ts | extra.ops | { rng }', // ops d'un critique de navire supplémentaire
   'state/aiSpellValue.ts | [op] | { caster: c, rng: STATIC_RNG }', // simulation d'IA sur un CLONE — jamais affichée au joueur
   'state/combatEffects.ts | e.ops | { rng: battleRng() }', // ops d'un Souffle de zone (effet de scène)

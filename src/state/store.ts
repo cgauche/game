@@ -1461,6 +1461,11 @@ export interface GameState extends RollFlowActionsMap {
   /** Épingle (`role`) ou détache (`null`) le rôle d'ÉQUIPAGE naval d'un marin (`shipRole`) — interface de gestion
    *  du navire. Patche `party` ET `battle.combatants` (l'équipage vit dans la bataille en mer). */
   setShipRole: (crewId: string, role: string | null) => void;
+  /** Épingle (`station`) ou détache (`null`) la STATION à bord d'un marin (`shipStation`, id de
+   *  `ship-stations.json`) — où il se TROUVE quand un Critique frappe une présence (`MDG 13 l.680`,
+   *  `MSRC 07 l.78/l.82/l.94`). Aucun défaut : détaché, il n'est visé par aucune présence. Même patron
+   *  que `setShipRole`. */
+  setShipStation: (crewId: string, station: string | null) => void;
   /** Sélectionne la munition PERSISTANTE d'un poste d'artillerie (`ShipPoste.ammoUid` — boulet/mitraille,
    *  MDG 12 l.410-424), depuis la fiche du navire. `null` → retour au défaut (1re compatible). */
   setPosteAmmo: (shipId: string, posteUid: string, ammoUid: string | null) => void;
@@ -2851,6 +2856,14 @@ export const useGame = create<GameState>((set, get) => ({
   setShipRole: (crewId, role) => {
     const b = get().battle;
     const patch = (c: Combatant) => c.id === crewId ? { ...c, ...(role ? { shipRole: role } : { shipRole: undefined }) } : c;
+    set({
+      party: get().party.map(patch),
+      ...(b ? { battle: { ...b, combatants: b.combatants.map(patch) } } : {}),
+    });
+  },
+  setShipStation: (crewId, station) => {
+    const b = get().battle;
+    const patch = (c: Combatant) => c.id === crewId ? { ...c, ...(station ? { shipStation: station } : { shipStation: undefined }) } : c;
     set({
       party: get().party.map(patch),
       ...(b ? { battle: { ...b, combatants: b.combatants.map(patch) } } : {}),

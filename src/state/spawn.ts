@@ -8,7 +8,7 @@ import { isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry,
 import { findCreatureById, byId, findTalentById, findSpellById, findVehicleById, findTrappingById, specPoolOf, CreatureData, type SkillData, type SkillRef, type TalentRef } from '../data';
 import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
-import { hullArmourBonus } from '../engine/navalTraits';
+import { hullArmourBonus, hullNavalTraits } from '../engine/navalTraits';
 import { requiredTerrains } from '../engine/ops';
 import { CustomStatblock, type Scene, heightAt, tileAt } from './scene';
 import { randomizeChars } from '../engine/statblock';
@@ -411,7 +411,7 @@ export function spawnEnemy(
   // d'INSTANCE (`upgrades`). Self-contained → posé ici (pas de post-pass type `applyShipPostes`). Consommé par
   // les dégâts navals (`applyOps` op `wounds` déduit `armour.corps`).
   if (c.bodyShape === 'vehicule') {
-    const navalTraits = [...(ref ? findVehicleById(ref)?.ship?.traits ?? [] : []), ...(c.upgrades ?? [])];
+    const navalTraits = hullNavalTraits(c);
     const ap = hullArmourBonus(navalTraits);
     if (ap) c.armour.corps = (c.armour.corps ?? 0) + ap;
   }

@@ -15,7 +15,7 @@ import {
   pregens, oups, interludeEvents, peripeties, details, names, allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
-  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS,
+  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, NAVAL_TRAITS,
   WATER_EXPOSURE, navalPorts,
   navalProgression, seaNavigation, seaPerils, seaWeather, shipConstruction,
   disponibilite, riverNavigation,
@@ -164,7 +164,7 @@ const ARRAYS = {
   // Codex (splice en place) reste visible en jeu. Fichier `activities.json` (défaut), racine = le tableau.
   activities: ACTIVITIES,
   // #157 : catalogues de CONTENU app-owned (façade `index.ts` ou module dédié), exposés au Codex.
-  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, navalTraits: NAVAL_TRAITS,
+  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, navalTraits: NAVAL_TRAITS,
   montures: MOUNT_PROFILES, incidentsMonture: MOUNT_INCIDENTS, problemesVehicule: VEHICLE_PROBLEMS,
   tavernGames: TAVERN_GAMES, obsessions: OBSESSIONS as unknown as { min: number; max: number; label: string }[],
   structureCriticals: STRUCTURE_CRITICALS, traumas,

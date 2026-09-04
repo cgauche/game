@@ -119,6 +119,9 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       'actorRefSchema',
       "idDe('career')",
       "idDe('creature')",
+      // +1 site ADOPTÉ (#1657 B3-2b-a) : `grammaire/mecanique.ts › crewTargetSchema.role` désigne le
+      // SEUL rôle d'équipage que le livre nomme comme cible d'un coup (MSRC 07 l.86 « au timonier »).
+      "idDe('crewRole')",
       // +1 site ADOPTÉ (#674, 2026-08-31) : `defs/maladies.ts › mutation.into` désigne la maladie en
       // laquelle une autre se transforme (Rhume commun → Pneumonie, EDOC 08 l.122) et compose
       // `idDe('maladie')` dès sa première écriture, sans passer par un `z.string()`.
@@ -128,7 +131,14 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // L'`idDe('trait')` listé plus bas, lui, est un champ de def (`structures.ts › traits`) : il est
       // sur le chemin de la marche, donc compté.)
       "idDe('maladie')",
+      // 1 → 2 (#1657 B3-2b-a) : `defs/ship-stations.ts › requiresTrait` porte EN DONNÉE le gate d'une
+      // station (`cale` — MSRC 07 l.94 ; `nid-de-pie` — MDG 12 l.299), à côté de `defs/vehicles.ts ›
+      // ship.traits`. Sans ce champ, `shipCritical.ts` brancherait par id de station.
       "idDe('navalTrait')",
+      "idDe('navalTrait')",
+      // +1 site ADOPTÉ (#1657 B3-2b-a) : `grammaire/mecanique.ts › crewTargetSchema.stations` désigne
+      // les PRÉSENCES à bord que les livres nomment (`ship-stations.json`, catalogue FERMÉ).
+      "idDe('shipStation')",
       // … puis 34 → 36 `idDe('skill')` au commit 4bis : les DEUX statblocs adoptent la grammaire —
       // `defs/creatures.ts › skills` et `defs-scenes/communs.ts › skills` composent
       // `refOuSpec('skill', {value})` là où ils redéclaraient chacun leur `{id, spec?, value}`.

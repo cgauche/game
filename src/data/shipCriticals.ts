@@ -4,12 +4,16 @@ import type { ShipLocation } from '../engine/combat';
 import type { GameOp } from '../engine/ops';
 import type { FlowTestNode } from '../engine/flowCore';
 
-/** Ce qu'un Critique de coque fait à l'ÉQUIPAGE. `crewTarget` dit QUI encaisse : `poste` (équipage d'un
- *  poste tiré au sort — MDG 13 l.763, défaut) ou `deck` (toute personne exposée sur le pont — MSRC 07
- *  l.78/l.94). L'ISSUE est SOIT une ÉPREUVE (`test` : le nœud `test` du Flow, sa branche d'échec porte
- *  la conséquence), SOIT des ops CERTAINES (`ops` — MSRC 07 l.82, où le livre n'appelle aucun jet). */
+/** QUI encaisse un coup à l'ÉQUIPAGE — les trois désignations imprimées : l'équipage d'une pièce
+ *  (`MDG 13 l.763`), la ou les PRÉSENCES à bord (`ship-stations.json` — `MDG 13 l.680/l.714/l.730/
+ *  l.751`, `MSRC 07 l.78/l.82/l.94`), ou le RÔLE que le livre nomme (`MSRC 07 l.86`). */
+export type CrewTarget = { poste: true } | { stations: string[] } | { role: { id: string } };
+
+/** Ce qu'un Critique de coque fait à l'ÉQUIPAGE. `crewTarget` (REQUIS) dit QUI encaisse ; l'ISSUE est
+ *  SOIT une ÉPREUVE (`test` : le nœud `test` du Flow, sa branche d'échec porte la conséquence), SOIT
+ *  des ops CERTAINES (`ops` — MSRC 07 l.82, où le livre n'appelle aucun jet). */
 export interface ShipCrewHit {
-  crewTarget?: 'poste' | 'deck';
+  crewTarget: CrewTarget;
   test?: FlowTestNode;
   ops?: GameOp[];
 }
@@ -78,18 +82,30 @@ export const SHIP_CRITICAL_TABLES = {
 export interface ShipCritSet {
   /** id STABLE du jeu — la valeur que porte `hull.criticalTable`. */
   id: string;
-  shrapnelHit: GameOp[];
+  /** Effet des Éclats — le SEUL jeu qui en porte est MDG (mot-clé « Éclats N », ch.13) ; MSRC ne
+   *  l'emploie jamais. Absent ⇒ aucune rangée du jeu ne peut porter d'Indice, et `applyHullCritical`
+   *  le dit par une anomalie nommée plutôt que par un repli muet. */
+  shrapnelHit?: GameOp[];
+  /** Localisation qui encaisse un coup à l'Équipage quand PERSONNE n'est exposé — `MDG 13 l.584`
+   *  (« le coup touche la Coque », RAW) et `MSRC 07 l.70` (le livre laisse le choix au MJ ; il n'y a
+   *  pas de MJ, l'arbitrage est AUTHORÉ et éditable). Le coup n'est jamais abandonné. */
+  replisSansExpose: { cible: ShipCritKey };
   tables: Partial<Record<ShipCritKey, ShipCritTable>>;
 }
 
 /** Jeu MDG (mer, ch.13) — Éclats 9 Dégâts. */
-export const SHIP_CRIT_SET: ShipCritSet = { id: shipCriticalsJson.id, shrapnelHit: SHRAPNEL_HIT, tables: SHIP_CRITICAL_TABLES };
+export const SHIP_CRIT_SET: ShipCritSet = {
+  id: shipCriticalsJson.id,
+  shrapnelHit: SHRAPNEL_HIT,
+  replisSansExpose: shipCriticalsJson.replisSansExpose as { cible: ShipCritKey },
+  tables: SHIP_CRITICAL_TABLES,
+};
 
 /** Jeu MSRC (fleuve, ch.5) — Éclats +5 Dégâts, Localisations Gréement/Rames/Gouvernail/Coque/Superstructure. */
 export const RIVER_CRIT_SET: ShipCritSet = {
   id: riverCriticalsJson.id,
-  shrapnelHit: riverCriticalsJson.shrapnelHit as GameOp[],
-  tables: riverCriticalsJson.tables as Partial<Record<ShipCritKey, ShipCritTable>>,
+  replisSansExpose: riverCriticalsJson.replisSansExpose as { cible: ShipCritKey },
+  tables: riverCriticalsJson.tables as unknown as Partial<Record<ShipCritKey, ShipCritTable>>,
 };
 
 /** Registre des jeux de Critiques de coque, indexé par leur propre `id`. Ajouter un jeu = une entrée

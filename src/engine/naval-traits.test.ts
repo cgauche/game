@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { shipHasNavalTrait, navalTraitLevel, navalPassiveOps, navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, navalNavTestMod, navalNavTestDR, hullArmourBonus, belierRam, navalDeckCover, effectiveDeckPostes } from './navalTraits';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { shipHasNavalTrait, navalTraitLevel, navalTraitsDe, hullNavalTraits, vesselNavalTraits, navalPassiveOps, navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, navalNavTestMod, navalNavTestDR, hullArmourBonus, belierRam, navalDeckCover, effectiveDeckPostes } from './navalTraits';
 import { resolveCollision } from './collision';
 import { installCost } from './shipBuild';
 import navalTraitsData from '../data/naval-traits.json';
@@ -302,5 +305,57 @@ describe('Nouvelles Améliorations MSRC 12 — résolvent au catalogue + coût d
   });
   it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
     expect(installCost(findNavalTrait('allegement')!.install!, 30)).toEqual({ gold: 250, enc: -80 });
+  });
+});
+
+/**
+ * FOYER UNIQUE de la concaténation « Traits du TYPE + Améliorations d'INSTANCE » (MDG 12 l.81/169).
+ *
+ * Le JSDoc de `navalTraitsDe` AFFIRME que personne ne réécrit ce spread ; cette garde le MESURE, sinon
+ * l'affirmation ne serait qu'un commentaire. Les deux porteurs du repo (`Combatant.creatureId` +
+ * `upgrades` ; `CampaignVessel.vehicleId` + `upgrades`) se réduisent au MÊME couple, et n'ont qu'un
+ * ADAPTATEUR chacun — un 3ᵉ site qui recomposerait la liste à la main perdrait l'ORDRE (le Trait du
+ * type prime) sans qu'aucun test métier ne rougisse.
+ */
+describe('navalTraitsDe — foyer UNIQUE de la concaténation type + instance', () => {
+  /** Le spread mesuré : un `...(<x>.traits ?? [])` suivi d'un `...(<y>.upgrades ?? [])`. */
+  const RECOMPOSE = /\.\.\.\([^)]*traits\s*\?\?\s*\[\]\)\s*,\s*\.\.\.\([^)]*upgrades\s*\?\?\s*\[\]\)/;
+
+  it('AUCUN site de `src/**` ne recompose la liste hors du foyer', () => {
+    const racine = fileURLToPath(new URL('..', import.meta.url));
+    const fautifs: string[] = [];
+    const marcher = (dir: string) => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        const p = join(dir, e.name);
+        if (e.isDirectory()) { marcher(p); continue; }
+        if (!/\.tsx?$/.test(e.name) || e.name === 'navalTraits.ts' || e.name.endsWith('naval-traits.test.ts')) continue;
+        readFileSync(p, 'utf8').split('\n').forEach((l, i) => {
+          if (RECOMPOSE.test(l)) fautifs.push(`${p.slice(racine.length).split(sep).join('/')}:${i + 1}`);
+        });
+      }
+    };
+    marcher(racine);
+    expect(
+      fautifs,
+      'site(s) recomposant « Traits du type + Améliorations d’instance » à la main : passer par `hullNavalTraits` ' +
+        '(Combatant) ou `vesselNavalTraits` (CampaignVessel) — l’ORDRE des deux listes est porteur (MDG 12 l.81/169).',
+    ).toEqual([]);
+  });
+
+  it('le détecteur MORD : une recomposition INJECTÉE est vue (sans quoi le vert serait vide)', () => {
+    expect(RECOMPOSE.test('  const t = [...(vd?.traits ?? []), ...(hull.upgrades ?? [])];')).toBe(true);
+    expect(RECOMPOSE.test('  const t = hullNavalTraits(hull);')).toBe(false);
+  });
+
+  it('les deux ADAPTATEURS rendent la MÊME liste pour le même couple, dans l’ordre type → instance', () => {
+    const upgrades = [{ id: 'blindage-fer' }];
+    const hull = { creatureId: 'barge-fluviale', upgrades } as unknown as Parameters<typeof hullNavalTraits>[0];
+    const attendu = [...findVehicleById('barge-fluviale')!.ship!.traits, ...upgrades];
+    expect(hullNavalTraits(hull)).toEqual(attendu);
+    expect(vesselNavalTraits({ vehicleId: 'barge-fluviale', upgrades })).toEqual(attendu);
+    expect(navalTraitsDe('barge-fluviale', upgrades)).toEqual(attendu);
+    // Porteur inconnu / absent : liste vide, jamais une exception.
+    expect(navalTraitsDe(undefined, undefined)).toEqual([]);
+    expect(vesselNavalTraits(null)).toEqual([]);
   });
 });

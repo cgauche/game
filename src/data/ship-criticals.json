@@ -15,6 +15,9 @@
       "ignoreAP": false
     }
   ],
+  "replisSansExpose": {
+    "cible": "coque"
+  },
   "tables": {
     "cargaison": [
       {
@@ -168,7 +171,41 @@
         "id": "coque-degradee",
         "label": "Coque dégradée",
         "shrapnel": 4,
-        "note": "Des trous profonds ont été creusés dans la coque. Éclats 4. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test étendu de Métier (Charpentier) Facile (+40) pour un total de 20 DR afin de nettoyer et de reboucher la coque."
+        "note": "Des trous profonds ont été creusés dans la coque. Éclats 4. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test étendu de Métier (Charpentier) Facile (+40) pour un total de 20 DR afin de nettoyer et de reboucher la coque.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "pont"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "accessible"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "a-terre",
+                    "value": 1
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       },
       {
         "min": 4,
@@ -183,14 +220,82 @@
         "id": "gouvernail-endommage",
         "label": "Gouvernail endommagé",
         "shrapnel": 1,
-        "note": "Le gouvernail est tordu et fissuré. La Caractéristique Man du navire est réduite de 1. Éclats 1. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test étendu de Métier (Charpentier) Intermédiaire (+0) pour un total de 10 DR."
+        "note": "Le gouvernail est tordu et fissuré. La Caractéristique Man du navire est réduite de 1. Éclats 1. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test étendu de Métier (Charpentier) Intermédiaire (+0) pour un total de 10 DR.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "pont"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "accessible"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "a-terre",
+                    "value": 1
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       },
       {
         "min": 6,
         "max": 6,
         "id": "quille-dechiquetee",
         "label": "Quille déchiquetée",
-        "note": "La quille est trouée, ce qui rend le vaisseau globalement moins stable. Tous les Tests de Navigation subissent –1 DR jusqu'à ce qu'elle soit réparée. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : le bateau va devoir être amené en cale sèche ou à un quai sec, puis il faudra réussir un Test étendu de Métier (Charpentier) Intermédiaire (+0) pour un total de 20 DR afin de remettre en état la quille."
+        "note": "La quille est trouée, ce qui rend le vaisseau globalement moins stable. Tous les Tests de Navigation subissent –1 DR jusqu'à ce qu'elle soit réparée. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : le bateau va devoir être amené en cale sèche ou à un quai sec, puis il faudra réussir un Test étendu de Métier (Charpentier) Intermédiaire (+0) pour un total de 20 DR afin de remettre en état la quille.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "pont"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "accessible"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "a-terre",
+                    "value": 1
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       },
       {
         "min": 7,
@@ -198,7 +303,41 @@
         "id": "gouvernail-brise",
         "label": "Gouvernail brisé",
         "shrapnel": 3,
-        "note": "Le gouvernail est détruit. La Caractéristique Man du navire est réduite de 3. Éclats 3. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test d'équipage étendu d'Entretien Difficile (–20) pour un total de 80 DR afin d'installer un gouvernail improvisé. Même avec ce bricolage en place, la Caractéristique Man du navire reste réduite de 1. Une réparation totale ne peut être effectuée qu'en atteignant la terre ferme et en remettant totalement en état le vaisseau."
+        "note": "Le gouvernail est détruit. La Caractéristique Man du navire est réduite de 3. Éclats 3. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test d'équipage étendu d'Entretien Difficile (–20) pour un total de 80 DR afin d'installer un gouvernail improvisé. Même avec ce bricolage en place, la Caractéristique Man du navire reste réduite de 1. Une réparation totale ne peut être effectuée qu'en atteignant la terre ferme et en remettant totalement en état le vaisseau.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "pont"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "accessible"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "a-terre",
+                    "value": 1
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       },
       {
         "min": 8,
@@ -252,7 +391,41 @@
         "max": 2,
         "id": "bancs-disperses",
         "label": "Bancs dispersés",
-        "note": "Les sièges sur lesquels les rameurs s'assoient sont éparpillés par l'impact. Impossible de ramer jusqu'à ce qu'ils soient remis en place. Si un Personnage se trouve aux avirons, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test étendu de Force Facile (+40) pour un total de 10 DR afin de remettre les bancs en ordre."
+        "note": "Les sièges sur lesquels les rameurs s'assoient sont éparpillés par l'impact. Impossible de ramer jusqu'à ce qu'ils soient remis en place. Si un Personnage se trouve aux avirons, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test étendu de Force Facile (+40) pour un total de 10 DR afin de remettre les bancs en ordre.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "avirons"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "accessible"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "a-terre",
+                    "value": 1
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       },
       {
         "min": 3,
@@ -284,7 +457,41 @@
         "id": "bancs-fracasses",
         "label": "Bancs fracassés",
         "shrapnel": 6,
-        "note": "Les sièges sur lesquels les rameurs s'assoient sont détruits. Impossible de ramer jusqu'à ce qu'ils soient remplacés. Éclats 6. Si un Personnage se trouve aux avirons, il doit réussir un Test d'Athlétisme Difficile (–20) sous peine de subir l'État À Terre. Réparation : Test étendu de Métier (Charpentier) Difficile (–20) pour un total de 40 DR."
+        "note": "Les sièges sur lesquels les rameurs s'assoient sont détruits. Impossible de ramer jusqu'à ce qu'ils soient remplacés. Éclats 6. Si un Personnage se trouve aux avirons, il doit réussir un Test d'Athlétisme Difficile (–20) sous peine de subir l'État À Terre. Réparation : Test étendu de Métier (Charpentier) Difficile (–20) pour un total de 40 DR.",
+        "crewHit": {
+          "crewTarget": {
+            "stations": [
+              "avirons"
+            ]
+          },
+          "test": {
+            "kind": "test",
+            "test": {
+              "skill": {
+                "id": "athletisme"
+              },
+              "difficulty": "difficile"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "a-terre",
+                    "value": 1
+                  }
+                ],
+                "on": "target"
+              }
+            }
+          }
+        }
       }
     ],
     "equipements": [
@@ -302,6 +509,9 @@
         "label": "Canon détaché",
         "note": "Les cordages fixant l'un des canons se rompent et il roule dans tous les sens sur le pont. L'équipage du canon doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir un coup infligeant 12 Dégâts. Réparation : Test étendu de Force Accessible (+20) pour un total de 5 DR afin de remettre le canon à sa place.",
         "crewHit": {
+          "crewTarget": {
+            "poste": true
+          },
           "test": {
             "kind": "test",
             "test": {

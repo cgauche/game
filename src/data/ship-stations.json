@@ -1,0 +1,63 @@
+[
+  {
+    "id": "pont",
+    "type": "ship-stations",
+    "label": "Pont",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 119,
+      "note": "MDG 13 l.730"
+    },
+    "desc": "Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre."
+  },
+  {
+    "id": "greement",
+    "type": "ship-stations",
+    "label": "Gréement",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 118,
+      "note": "MDG 13 l.714"
+    },
+    "desc": "Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de tomber."
+  },
+  {
+    "id": "nid-de-pie",
+    "type": "ship-stations",
+    "label": "Nid-de-pie",
+    "requiresTrait": {
+      "id": "nid-de-pie"
+    },
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 99,
+      "note": "MDG 12 l.303"
+    },
+    "desc": "Un Nid-de-pie est une plateforme en bois placée au sommet du mât le plus haut. Un Personnage qui se trouve dans le Nid-de-pie peut effectuer tous les Tests de Perception demandés pour repérer des phénomènes visibles en mer, comme des périls ou la lumière d'un phare."
+  },
+  {
+    "id": "avirons",
+    "type": "ship-stations",
+    "label": "Avirons",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 120,
+      "note": "MDG 13 l.751"
+    },
+    "desc": "Si un Personnage se trouve aux avirons, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre."
+  },
+  {
+    "id": "cale",
+    "type": "ship-stations",
+    "label": "Cale",
+    "requiresTrait": {
+      "id": "cale"
+    },
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 07 l.94"
+    },
+    "desc": "Si le bateau dispose d'une cale, et que cette dernière est touchée, tous les Personnages qui s'y trouvent doivent faire un Test d'**Initiative** ou subir +5 Dégâts à cause des éclats d'échardes."
+  }
+]

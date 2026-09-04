@@ -27,7 +27,7 @@ beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 });
 
-type Rangee = { id: string; label: string; crewHit?: { crewTarget?: string; test?: FlowTestNode; ops?: unknown[] } };
+type Rangee = { id: string; label: string; crewHit?: { crewTarget: { poste?: true; stations?: string[]; role?: string }; test?: FlowTestNode; ops?: unknown[] } };
 const CATEGORIE = 'riverCriticalsGreement';
 
 let container: HTMLDivElement;
@@ -58,7 +58,7 @@ describe('atelier du Codex — le coup à l’équipage porte un nœud `test`, e
     const cible = rangee('greement-fluvial');
     expect(cible.crewHit?.test?.kind, 'la rangée mesurée ne porte pas de nœud `test`').toBe('test');
     expect(cible.crewHit!.test!.test.difficulty, 'difficulté de départ').toBe('intermediaire');
-    expect(cible.crewHit!.crewTarget, 'MSRC 07 l.78 : « Toute personne présente sur le pont »').toBe('deck');
+    expect(cible.crewHit!.crewTarget, 'MSRC 07 l.78 : « Toute personne présente sur le pont »').toEqual({ stations: ['pont'] });
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -91,7 +91,7 @@ describe('atelier du Codex — le coup à l’équipage porte un nœud `test`, e
     expect(apres.crewHit!.test!.test.characteristic, 'le sujet du jet a été perdu').toBe('initiative');
     expect(apres.crewHit!.test!.success, 'la branche RÉUSSITE a été perdue').toEqual({ kind: 'seq', steps: [] });
     expect(apres.crewHit!.test!.fail, 'la branche ÉCHEC a été perdue').toEqual(cible.crewHit!.test!.fail);
-    expect(apres.crewHit!.crewTarget, 'QUI encaisse a été perdu à l’édition').toBe('deck');
+    expect(apres.crewHit!.crewTarget, 'QUI encaisse a été perdu à l’édition').toEqual({ stations: ['pont'] });
     expect(apres.crewHit!.ops, 'le coup a basculé en effet certain').toBeUndefined();
   });
 });
