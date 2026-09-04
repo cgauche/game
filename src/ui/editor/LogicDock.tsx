@@ -591,6 +591,16 @@ function EncountersTab({
               </div>
             );
           })()}
+          <div className="enemy-mount">
+            <label title="Rencontre de siège : l'IA ennemie peut prendre les structures destructibles de la scène (porte, mur) pour cible. Décoché = elle ne vise que les personnages. Aucun défaut dérivé : un objectif « Détruire une structure » ne coche pas cette case.">
+              <input
+                type="checkbox"
+                checked={enc.siege === true}
+                onChange={(e) => upd({ siege: e.target.checked || undefined })}
+              />{' '}
+              Rencontre de siège — l’IA peut prendre les structures pour cible
+            </label>
+          </div>
           <div className="mini-title">À la victoire (récompenses : PX, butin, flag…)</div>
           <FlowEditor flow={enc.onVictory ?? EMPTY_FLOW} onChange={(flow) => upd({ onVictory: flow })} ctx={ctx} />
         </div>

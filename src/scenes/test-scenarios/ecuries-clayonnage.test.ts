@@ -8,6 +8,7 @@ import { useGame } from '../../state/store';
 import { buildAiInput } from '../../state/combatFlow';
 import { chooseEnemyAction } from '../../state/ai';
 import { seedBattleRng } from '../../state/battleRng';
+import { isStructure } from '../../engine/structures';
 
 /**
  * Le banc de RECETTE des écuries : il fige les faits GÉOMÉTRIQUES que la recette navigateur va lire à
@@ -65,6 +66,50 @@ describe('Écuries de la Diligence — voir par-dessus le clayonnage', () => {
     for (const h of HEROS) {
       expect(lineOfSightCover(scene, h, GOBELIN_DERRIERE_MUR, []).blocked).toBe(true);
     }
+  });
+});
+
+/**
+ * HORS SIÈGE — la rencontre des écuries ne déclare PAS `siege` : les 668 structures de la scène
+ * (cloisons de box, murs, portes) existent bel et bien en combattants, mais aucune n'entre dans le
+ * choix de cible de l'IA. Le contrat est POSITIF et NOMMÉ : chacun des trois adversaires vise un
+ * PERSONNAGE, et l'Archer Gobelin — celui que la scène arme d'un arc — TIRE sur `pregen-303`.
+ */
+describe('IA hors siège — aucune décision ne porte sur une structure (écuries)', () => {
+  /** Rejoue l'ouverture de combat des écuries et rend le tour d'IA de chaque ennemi, dans l'ordre du roster. */
+  const decisionsDesEnnemis = () => {
+    seedBattleRng(1234);
+    useGame.setState({ party: scenario.makeParty() });
+    useGame.getState().startScene(scenario.scene);
+    useGame.getState().startCombat('enc-clayonnage');
+    useGame.getState().confirmRoundStart();
+    const b = useGame.getState().battle!;
+    return b.combatants.filter((c) => c.kind === 'enemy').map((e) => {
+      useGame.setState({ battle: { ...useGame.getState().battle!, turn: b.order.indexOf(e.id), acted: false, action: null, movementUsed: 0 } });
+      const input = buildAiInput(e, useGame.getState);
+      const action = chooseEnemyAction(input) as { kind: string; targetId?: string; thenTargetId?: string };
+      const cible = b.combatants.find((c) => c.id === (action.targetId ?? action.thenTargetId));
+      return { ennemi: e, input, action, cible };
+    });
+  };
+
+  it('la rencontre ne déclare AUCUN siège : les structures ne sont pas offertes à l’IA', () => {
+    const enc = scenario.scene.encounters!.find((e) => e.id === 'enc-clayonnage')!;
+    expect(enc.siege).toBeUndefined();
+    const lignes = decisionsDesEnnemis();
+    expect(lignes.length).toBe(3);
+    expect(useGame.getState().battle!.combatants.filter(isStructure).length).toBeGreaterThan(600);
+    for (const { ennemi, input, cible } of lignes) {
+      expect(input.structures ?? [], `${ennemi.label} reçoit des structures en entrée`).toEqual([]);
+      expect(cible, `${ennemi.label} décide sans cible`).toBeTruthy();
+      expect(isStructure(cible!), `${ennemi.label} vise ${cible!.label}`).toBe(false);
+    }
+  });
+
+  it('l’Archer Gobelin TIRE sur Aelindra (pregen-303) — décision nommée, pas « une structure quelconque »', () => {
+    const archer = decisionsDesEnnemis().find((l) => l.ennemi.label === 'Archer Gobelin')!;
+    expect(archer.action.kind).toBe('shoot');
+    expect(archer.action.targetId).toBe('pregen-303');
   });
 });
 

@@ -140,6 +140,12 @@ Six formes (`VictoryCondition`, `src/state/scene.ts`), défaut `allEnemiesDead` 
 sang — la première cible neutralisée clôt le combat, `threshold?` = seuil de Blessures ; le tir est banni
 par défaut, duel). `onVictory` = un `Flow` (aplati en Effets).
 
+`EncounterDef.siege` (booléen, case « Rencontre de siège » du dock Logique) est un champ **SÉPARÉ** :
+il ouvre les structures destructibles de la scène (porte, mur) au choix de cible de l'IA ennemie.
+Défaut littéral `false` — un objectif `destroyStructure` ne l'active PAS. Résolu par `siegeActif`
+(`src/state/combatFlow.ts`), consommé par `buildAiInput` ; sans effet sur les dégâts, l'immunité
+(`structureImmune`) ni le ciblage joueur.
+
 ## 9. Flags et gating
 
 `setFlag` pose un drapeau de scène (`Scene.flags`) ; `flagWhen` (lib) / `when` gatent un choix ou un

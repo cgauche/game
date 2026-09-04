@@ -75,6 +75,8 @@ export interface AuthoredEncounter {
   terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
   /** Objectif de victoire (#197), cf. `EncounterDef.victoryCondition`. Absent = `allEnemiesDead`. */
   victoryCondition?: VictoryCondition;
+  /** Rencontre de SIÈGE, cf. `EncounterDef.siege`. Absent = false (l'IA ne cible aucune structure). */
+  siege?: boolean;
 }
 
 export interface BuiltEncounter {
@@ -125,6 +127,7 @@ export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
   if (a.threat) encounter.threat = a.threat;
   if (a.terrain) encounter.terrain = a.terrain;
   if (a.victoryCondition) encounter.victoryCondition = a.victoryCondition;
+  if (a.siege) encounter.siege = a.siege;
   return { entities, encounter };
 }
 

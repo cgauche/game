@@ -258,6 +258,10 @@ export interface BattleState {
   /** Restriction d'armes à distance de la rencontre (#471, `EncounterDef.banRanged`) — copiée au
    *  démarrage du combat, lue par `resolveAttack`/`firedAttackBlock`. Absent/false = autorisées. */
   banRanged?: boolean;
+  /** Rencontre de SIÈGE (`EncounterDef.siege`) — copiée au démarrage du combat, résolue par
+   *  `siegeActif` et lue par `buildAiInput` (vivier de structures offert à l'IA ennemie).
+   *  Absent/false = pas de siège. */
+  siege?: boolean;
   /** Zones persistantes (L11 — généralise l'ancienne fumée) : fumée du Souffle (blocksLoS),
    *  Mur de feu (onCross), Grands feux d'U'Zhul (perRound)… TTL décrémenté à chaque frontière
    *  de Round (state/zones.ts). */

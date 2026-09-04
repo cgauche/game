@@ -16,6 +16,7 @@ import type { Weapon } from '../../engine/types';
 import { buildTokens } from '../../gameIso/builders/tokens';
 import { isOverhang, capsSolid } from '../../gameIso/builders/floors';
 import { computeStateVisibleAndLight } from '../../state/visionState';
+import { encounterDefSchema } from '../../data/schemas/defs-scenes/scene';
 
 /**
  * Siège à grande échelle (siege-enceinte) — vérif LOGIQUE headless de la Scene PRODUITE par le `MapSpec`.
@@ -175,6 +176,35 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     expect(lineOfSightCover(scene, hero.pos, { x: 8, y: 10 }, []).blocked).toBe(false); // pilonne le champ
   });
 
+  it('la rencontre DÉCLARE le siège (`EncounterDef.siege`) — c’est ce qui ouvre les structures à l’IA', () => {
+    const assaut = scenario.scene.encounters!.find((e) => e.id === 'assaut')!;
+    expect(assaut.siege).toBe(true);
+    // Copié TEL QUEL sur l'état de bataille au démarrage (aucune re-dérivation côté runtime).
+    useGame.setState({ party: scenario.makeParty() });
+    useGame.getState().startScene(scenario.scene);
+    useGame.getState().startCombat('assaut');
+    expect(useGame.getState().battle!.siege).toBe(true);
+  });
+
+  it('SCHÉMA : le défaut du drapeau est LITTÉRAL — absent au parse, jamais matérialisé en `false`', () => {
+    const parsed = encounterDefSchema.parse({ id: 'e', members: [] } as never) as Record<string, unknown>;
+    expect('siege' in parsed).toBe(false);
+    expect((parsed as { siege?: boolean }).siege).toBeUndefined();
+  });
+
+  it('SCHÉMA : DÉCOCHER en éditeur sérialise SANS la clé (une seule graphie de l’absence)', () => {
+    const apresCoche = { id: 'e', members: [], siege: true };
+    const apresDecoche = { ...apresCoche, siege: undefined };
+    expect(encounterDefSchema.parse(apresDecoche as never)).toBeTruthy();
+    expect(JSON.parse(JSON.stringify(apresDecoche))).toEqual({ id: 'e', members: [] });
+    expect(JSON.stringify(apresDecoche).includes('siege')).toBe(false);
+  });
+
+  it('SCHÉMA : le drapeau est BOOLÉEN et se nomme `siege` (zod strict refuse le reste)', () => {
+    expect(() => encounterDefSchema.parse({ id: 'e', members: [], siege: 'oui' } as never)).toThrow();
+    expect(() => encounterDefSchema.parse({ id: 'e', members: [], sieges: true } as never)).toThrow();
+  });
+
   it('BATTERIE assaillante : le canon de siège BRÈCHE la porte tout seul (IA cible la structure)', () => {
     useGame.setState({ party: scenario.makeParty() });
     useGame.getState().startScene(scenario.scene);
@@ -200,6 +230,43 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     expect(action.kind).toBe('shoot');
     const tgt = b.combatants.find((c) => c.id === (action as { targetId: string }).targetId);
     expect(tgt && isStructure(tgt)).toBe(true); // … et c'est bien la STRUCTURE (porte) qui est visée
+  });
+
+  it('CONTRAT NÉGATIF : le MÊME canonnier, siège retiré → aucune structure en entrée, aucune décision de structure', () => {
+    useGame.setState({ party: scenario.makeParty() });
+    useGame.getState().startScene(scenario.scene);
+    useGame.getState().startCombat('assaut');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    // Seul le drapeau change : même scène, même roster, même canonnier servant la même pièce.
+    useGame.setState({ battle: { ...useGame.getState().battle!, siege: undefined } });
+    const b = useGame.getState().battle!;
+    const canonnier = b.combatants.find((c) => c.id === 'brg-canon')!;
+    expect(b.combatants.some(isStructure)).toBe(true); // les structures SONT là, elles ne sont plus offertes
+    const input = buildAiInput(canonnier, useGame.getState);
+    expect(input.structures ?? []).toEqual([]);
+    const action = chooseEnemyAction(input) as { targetId?: string; thenTargetId?: string };
+    const visee = b.combatants.find((c) => c.id === (action.targetId ?? action.thenTargetId));
+    expect(visee ? isStructure(visee) : false).toBe(false);
+  });
+
+  it('AUCUN défaut DÉRIVÉ : un objectif « détruire la structure » sans `siege` ne rend PAS de structures', () => {
+    useGame.setState({ party: scenario.makeParty() });
+    useGame.getState().startScene(scenario.scene);
+    useGame.getState().startCombat('assaut');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const porte = useGame.getState().battle!.combatants.find(isStructure)!;
+    useGame.setState({
+      battle: {
+        ...useGame.getState().battle!,
+        siege: undefined,
+        victoryCondition: { type: 'destroyStructure', edge: porte.structureEdge! },
+      },
+    });
+    const b = useGame.getState().battle!;
+    const canonnier = b.combatants.find((c) => c.id === 'brg-canon')!;
+    expect(buildAiInput(canonnier, useGame.getState).structures ?? []).toEqual([]);
   });
 
   it('DÉFENSEURS : archers PNJ alliés-IA (agissent seuls) ; pièces INERTES servies (hors tour)', () => {

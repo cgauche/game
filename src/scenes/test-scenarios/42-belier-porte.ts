@@ -67,6 +67,8 @@ setEncounters(scene, [
     // consultait exclusivement les ennemis avant #197, ce qui déclarait la victoire dès le gobelin
     // hors d'action alors que la porte tenait toujours (bug du ticket).
     victoryCondition: { type: 'destroyStructure', edge: { x: 5, y: 4, side: 'N' } },
+    // Rencontre de SIÈGE déclarée — champ SÉPARÉ de `victoryCondition` : l'objectif ne l'active pas.
+    siege: true,
     enemies: [
       { ref: 'gobelin', pos: { x: 5, y: 2 }, facing: 'S' }, // index 0 : défenseur
       // index 1 : l'EMPLACEMENT du bélier — affût INERTE 2×2 (branche siège de `spawnEnemy`, `ref` porte un

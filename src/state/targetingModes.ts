@@ -352,10 +352,11 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
   const option = selectedAttackOption(active, battle);
   if (!option) return { kind: 'none' }; // mode non-attaque (cast/heal/…) ou aucune attaque abordable
   if (target.kind === active.kind || isOutOfAction(target)) return { kind: 'none' };
-  // Structure (mur/porte) : cible RÉSERVÉE aux armes de siège — « attaquer un rempart à l'épée » n'a pas de
-  // sens (RAW : Impénétrable imparable sans l'Atout Siège, ADE II 8 ; même gate que l'IA, ai.ts). Si
-  // AUCUNE arme du porteur ne peut l'abîmer → pas de réticule (none) : le survol retombe sur le déplacement
-  // (monter au rempart) au lieu d'un « hors de portée » absurde. Une pièce de siège SERVIE la rend ciblable.
+  // Structure (mur/porte) : le réticule tombe (none) quand AUCUNE arme du porteur ne peut l'abîmer
+  // (`structureImmune` — Impénétrable / Résistant, `ADE II 08 l.296-300` ; même filtre que l'IA, `ai.ts`) :
+  // le survol retombe alors sur le déplacement (monter au rempart) au lieu d'un « hors de portée » absurde.
+  // Une pièce de siège SERVIE la rend ciblable. Chemin JOUEUR : indépendant du drapeau `siege` de la
+  // rencontre, qui ne gouverne que le vivier de l'IA. Pénalité de Taille `AA 10 l.98` non implémentée (#1688).
   if (isStructure(target) && active.weapons.every((w) => structureImmune(w, target))) return { kind: 'none' };
   if (option.targeting === 'trample')
     return (active.advantage ?? 0) >= 1 && !!trampleTarget(battle, active, target.id)

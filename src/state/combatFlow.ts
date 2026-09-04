@@ -382,6 +382,15 @@ export function banRangedActive(battle: BattleState | null | undefined): boolean
   return battle?.banRanged ?? (battle?.victoryCondition?.type === 'firstBlood');
 }
 
+/** Rencontre de SIÈGE effective (`EncounterDef.siege`, arbitrage utilisateur 2026-09-04) — SEUL point
+ *  de résolution, consommé par `buildAiInput` pour offrir (ou non) les structures destructibles au
+ *  choix de cible de l'IA. Défaut LITTÉRAL `false` : contrairement à `banRangedActive`, rien n'est
+ *  dérivé d'un autre champ — ni de `victoryCondition`, ni de la présence d'une structure dans la
+ *  scène. L'auteur déclare le siège, ou il n'y en a pas. */
+export function siegeActif(battle: BattleState | null | undefined): boolean {
+  return battle?.siege === true;
+}
+
 /** Tir héros refusé — LÉGALITÉ de l'arme employée (tir en étant *Engagé*, `LDB 14 l.41` ; armes à distance
  *  bannies de la rencontre) ou RESSOURCE : arme à défaut Recharge non chargée (LDB 62 l.335) ou plus
  *  de munition compatible — `null` si le tir peut partir. Concern ORTHOGONAL à la géométrie (`attackPlan`),
@@ -4873,10 +4882,12 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
       active: isSpellActive(data, enemy, battle),
     });
   }
-  // Structures destructibles (porte/mur) ciblables par les ARMES DE SIÈGE de l'ASSAILLANT (AA 10 l.138). Réservé
-  // aux ENNEMIS (les assaillants brèchent l'enceinte) : un défenseur allié-IA n'attaque pas sa propre porte —
-  // `structureImmune` n'y suffirait pas (une pièce de siège alliée la pourrait). Absent côté allié → aucun candidat.
-  const structures = enemy.kind === 'enemy'
+  // Structures destructibles (porte/mur) offertes au choix de cible de l'IA. DEUX conditions, aucune autre :
+  // la rencontre DÉCLARE le siège (`siegeActif`, défaut littéral false) ET le décideur est ENNEMI — un défenseur
+  // allié-IA n'attaque pas sa propre porte, et `structureImmune` n'y suffirait pas (une pièce de siège alliée la
+  // pourrait). Hors siège ou côté allié → `undefined`, aucun candidat. L'arme qui n'abîme pas la structure est
+  // écartée plus bas (`ai.ts`, `structureImmune`).
+  const structures = enemy.kind === 'enemy' && siegeActif(battle)
     ? battle.combatants.filter((c) => isStructure(c) && !isOutOfAction(c) && c.pos)
     : undefined;
   const smoke = smokeOf(battle);

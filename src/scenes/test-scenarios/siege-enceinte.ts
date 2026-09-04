@@ -252,6 +252,9 @@ export const spec: MapSpec = {
   encounters: [
     {
       id: 'assaut',
+      // Rencontre de SIÈGE déclarée (`EncounterDef.siege`) : sans elle, la batterie assaillante ne verrait
+      // AUCUNE structure et ne brècherait jamais la porte — c'est tout le sujet du scénario.
+      siege: true,
       members: [
         { entityId: 'crew-baliste', side: 'ally', ai: true },
         { entityId: 'crew-canon', side: 'ally', ai: true },

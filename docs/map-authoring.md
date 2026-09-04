@@ -4,7 +4,7 @@
 
 **Périmètre mesuré / angles morts** — sont LUS par AST à `src/state/mapSpec.ts` : les 39
 champs de `MapSpec` (nom, type, 1re phrase de JSDoc), ceux de `WallSpec` (9),
-`CellRecipe` (5) et `EncounterSpec` (10), les
+`CellRecipe` (5) et `EncounterSpec` (11), les
 5 formes de `BindSpec` et les 3 de `ReliefSpec`, et les 10
 étapes de l'ordre de compilation citées au JSDoc de tête. Le harnais QC liste les fonctions
 exportées de `src/state/mapQC.ts`. Les exemples vivants sont MESURÉS par AST sur les 34
@@ -149,6 +149,7 @@ Spec de relief EN COORDONNÉES (repli bas niveau ; préférer `elevate` piloté 
 | `threat?` | `{ camp: 'party' \| 'enemies'; tier: ThreatTier }` | Avantage initial — Menace (AA 11 l.53-65), cf. `EncounterDef.threat`. |
 | `terrain?` | `{ camp: 'party' \| 'enemies'; heavy?: boolean }` | Avantage initial — Terrain (AA 11 l.53-65), cf. `EncounterDef.terrain`. |
 | `victoryCondition?` | `VictoryCondition` | Objectif de victoire (#197), cf. `EncounterDef.victoryCondition`. |
+| `siege?` | `boolean` | Rencontre de SIÈGE, cf. `EncounterDef.siege`. |
 
 ## `seatAssignments` — attabler, à ids FIXES seulement
 
@@ -317,4 +318,4 @@ Sur les 34 documents de `src/scenes/` qui exposent un littéral `MapSpec` :
 | `stations?` | 1 | `src/scenes/test-scenarios/13-bataille-de-masse.ts` |
 
 Champs sans aucun exemple mesuré dans `src/scenes/` : `music?`, `wallStructures?`, `edgeWalls?`, `knownUnsupportedFloor?`, `seatAssignments?`, `restZones?` — leur seule démonstration vit dans `src/state/mapSpec.test.ts`.
-<!-- sources-empreinte: f4c157170adde25492525949dcdce1fadb980373 (57 fichiers, 8 dossiers) corps: d53ac80e618539b80885bda1919acf6068dc7164 -->
+<!-- sources-empreinte: ccc28d80fda6e25a28a18c46834a14fbdd7bb376 (57 fichiers, 8 dossiers) corps: c5204b729fce2386a5e6ffaf3fbffda7ff00a364 -->

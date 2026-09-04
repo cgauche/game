@@ -409,6 +409,15 @@ export const encounterDefSchema = z.strictObject({
    *  (défaut historique). Défaut résolu par `banRangedActive` (SEUL point), consommé par
    *  `resolveAttack`/`firedAttackBlock` (joueur ET IA). */
   banRanged: z.boolean().optional(),
+  /** Rencontre de SIÈGE (arbitrage utilisateur 2026-09-04, #1680) : les STRUCTURES destructibles de la
+   *  scène (porte, mur) entrent dans le choix de cible de l'IA ennemie. Défaut LITTÉRAL `false` —
+   *  absent = pas de siège, AUCUNE dérivation depuis un autre champ (une rencontre
+   *  `victoryCondition: destroyStructure` ne l'active pas d'elle-même). Résolu par `siegeActif`
+   *  (SEUL point), consommé par `buildAiInput`. Le drapeau ne change ni les dégâts ni l'immunité
+   *  (`structureImmune`), ni le ciblage JOUEUR. HOMONYMES sans rapport : `siegesRequis` (sièges de
+   *  coop, `state/netOwnership.ts`), le décor `siege` (fauteuil), l'Atout d'arme `siege`
+   *  (`ADE II 08 l.292`). */
+  siege: z.boolean().optional(),
 });
 
 // ── Couches, zones, murs ────────────────────────────────────────────────────────────────────────

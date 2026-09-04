@@ -148,10 +148,9 @@ export interface EnemyTurnInput {
    *  KIND-AGNOSTIQUE. ABSENT/vide (toute fixture sans emplacement) → aucun candidat (parité golden). */
   servablePostes?: { hullId: string; posteUid: string }[];
   /** Structures destructibles encore debout (porte/mur, `isStructure`), surfacées par l'appelant impur.
-   *  Une arme de SIÈGE les cible (AA 10 l.138 : armes « conçues pour les formations et les grosses cibles
-   *  statiques, pas les cibles individuelles ») — l'Atout Siège (×2 aux structures, `woundsFromHit`) fait
-   *  que la valeur d'une telle attaque est NATURELLEMENT élevée → une pièce de siège PRIORISE la porte,
-   *  tandis qu'une arme ordinaire ne l'abîme pas (`structureImmune` → 0 Blessure → utilité ~0, non choisie).
+   *  Une arme de SIÈGE les cible (`AA 10 l.138`) — l'Atout Siège (×2 aux structures, `woundsFromHit`) fait
+   *  que la valeur d'une telle attaque est NATURELLEMENT élevée → une pièce de siège PRIORISE la porte.
+   *  `structureImmune` écarte les armes qui ne l'abîment pas ; les autres restent candidates.
    *  ABSENT/vide (toute fixture sans structure) → aucun candidat (parité golden). */
   structures?: Combatant[];
   /** Cet ennemi sert un poste d'engin ACTIF (`crewPosteOf`, #196 : bélier, batterie de siège — le naval lie
@@ -1062,12 +1061,13 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   }
 
   // === SIÈGE : cibler les STRUCTURES destructibles (porte/mur) ======================================
-  // AA 10 l.138 : les armes de siège sont « conçues pour attaquer des formations ou de grosses cibles
-  // STATIQUES, et non des cibles individuelles ». L'IA prend donc la porte/le mur pour cible. L'Atout Siège
-  // (×2 aux structures, appliqué dans `woundsFromHit`) rend la valeur d'une telle attaque NATURELLEMENT
-  // élevée → une PIÈCE DE SIÈGE priorise la porte (son rôle), tandis qu'une arme ordinaire ne l'abîme PAS
-  // (`structureImmune` → 0 Blessure → utilité ~0, jamais choisie). Indépendant du vivier héros : une pièce
-  // peut n'avoir QUE la porte en vue (≠ `canShoot`, qui exige un héros tirable). Vide → aucun candidat.
+  // Vivier fourni par l'APPELANT (`buildAiInput`) : non vide seulement en rencontre de siège déclarée et
+  // côté ennemi — `ai.ts` ignore le drapeau. L'Atout Siège (×2 aux structures, `siegeMultiplier` appliqué
+  // dans `woundsFromHit`, `ADE II 08 l.292`) donne à une pièce de siège une utilité d'attaque élevée sur la
+  // porte. `structureImmune` écarte les armes qui ne l'abîment pas (Impénétrable / Résistant, `ADE II 08
+  // l.296-300`) ; les autres restent candidates — la pénalité de Taille de `AA 10 l.98` n'est pas implémentée
+  // (#1688). Indépendant du vivier héros : une pièce peut n'avoir QUE la porte en vue (≠ `canShoot`, qui
+  // exige un héros tirable). Vide → aucun candidat.
   const structureTargets = (input.structures ?? []).filter((st) => st.pos);
   const canFireStruct = !frenzied && hasRanged && !!rangedW && !reloadNeeded && !(adjacentFoes.length > 0 && hasMeleeWeapon);
   for (const st of structureTargets) {

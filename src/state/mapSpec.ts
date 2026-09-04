@@ -152,6 +152,8 @@ export interface EncounterSpec {
   terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
   /** Objectif de victoire (#197), cf. `EncounterDef.victoryCondition`. Absent = `allEnemiesDead`. */
   victoryCondition?: VictoryCondition;
+  /** Rencontre de SIÈGE, cf. `EncounterDef.siege`. Absent = false (l'IA ne cible aucune structure). */
+  siege?: boolean;
 }
 
 /** RECETTE par LETTRE d'une CASE COMPLÈTE (sol + AU PLUS un rôle/structure dessus) — l'authoring unifié
@@ -954,6 +956,7 @@ export function buildScene(spec: MapSpec): Scene {
     const built = buildEncounter({
       id: e.id, enemies: e.enemies ?? [], surprise: e.surprise, onVictory: e.onVictory, hidden: e.hidden,
       maneuverability: e.maneuverability, threat: e.threat, terrain: e.terrain, victoryCondition: e.victoryCondition,
+      siege: e.siege,
     });
     encEntities.push(...built.entities);
     const bound = boundMembers.filter((b) => b.enc === e.id).map((b) => b.member);
