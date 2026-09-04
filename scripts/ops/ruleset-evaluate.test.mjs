@@ -6,8 +6,13 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { corpsDuRuleset, contextesRequis, jobsCi, JOBS_NON_VERIFIANTS, NOM, executer } from './ruleset-evaluate.mjs'
-import { partRefusee, rendu } from './rule-suites.mjs'
+import {
+  corpsDuRuleset, contextesRequis, jobsCi, JOBS_NON_VERIFIANTS, NOM, executer, refusGh, REFUS_EVALUATE,
+} from './ruleset-evaluate.mjs'
+import { partRefusee, rendu, SANS_RULESET } from './rule-suites.mjs'
+
+/** Le refus RÉEL de `gh` : execFileSync lève une erreur qui porte le corps sur `stderr`. */
+const erreurGh = (stderr) => Object.assign(new Error('Command failed: gh api'), { stderr, status: 1 })
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const CI = readFileSync(join(RACINE, '.github', 'workflows', 'ci.yml'), 'utf8')
@@ -95,4 +100,56 @@ test('une suite ANTÉRIEURE à la fenêtre ne compte pas', () => {
 test('aucun push évalué : le vide se DIT, avec la date de pose', () => {
   const texte = rendu(partRefusee([], '2026-09-01'), { depuis: '2026-09-01', pose: '2026-09-04' })
   assert.match(texte, /aucun push évalué depuis le 2026-09-04/)
+})
+
+// Le corps EXACT rendu par GitHub le 2026-09-04 sur `POST /repos/cgauche/game/rulesets`.
+const QUATRE_CENT_VINGT_DEUX =
+  'gh: Enforcement evaluate option is not supported on this plan. Please upgrade to Enterprise to ' +
+  'enable it. (HTTP 422)'
+
+test('le 422 « evaluate hors plan » est NOMMÉ : exit 1, message qui dit les modes possibles', () => {
+  const dit = []
+  const code = executer({
+    argv: [],
+    runner: () => { throw erreurGh(QUATRE_CENT_VINGT_DEUX) },
+    sortie: () => {},
+    journal: (s) => dit.push(s),
+  })
+  assert.equal(code, 1, 'un refus de GitHub ne peut pas rendre un succès')
+  const texte = dit.join('')
+  assert.match(texte, /GitHub refuse `enforcement: evaluate` sur ce plan \(Enterprise seulement\)/)
+  assert.match(texte, /`active` \(bloque\) et `disabled`/)
+  assert.match(texte, /la re-décision est à l’utilisateur/)
+  assert.ok(!/at .*ruleset-evaluate/.test(texte), 'un refus attendu ne se rend pas en stack Node')
+})
+
+test('le refus de plan est reconnu OÙ QU’IL SOIT dans le corps (stdout, stderr, message)', () => {
+  assert.equal(refusGh(erreurGh(QUATRE_CENT_VINGT_DEUX)), REFUS_EVALUATE)
+  assert.equal(refusGh({ stdout: QUATRE_CENT_VINGT_DEUX }), REFUS_EVALUATE)
+  assert.equal(refusGh(new Error(QUATRE_CENT_VINGT_DEUX)), REFUS_EVALUATE)
+})
+
+test('tout AUTRE échec `gh` rend exit 1 en portant son corps — jamais avalé, jamais renommé', () => {
+  const dit = []
+  const code = executer({
+    argv: [],
+    runner: () => { throw erreurGh('gh: Not Found (HTTP 404)') },
+    sortie: () => {},
+    journal: (s) => dit.push(s),
+  })
+  assert.equal(code, 1)
+  assert.match(dit.join(''), /Not Found \(HTTP 404\)/)
+  assert.ok(!dit.join('').includes('Enterprise'), 'un 404 n’est pas un refus de plan')
+})
+
+test('un geste qui ABOUTIT rend 0', () => {
+  assert.equal(executer({ argv: [], runner: () => '[]', sortie: () => {} }), 0)
+  assert.equal(executer({ argv: ['--dry-run'], runner: () => '[]', sortie: () => {} }), 0)
+})
+
+test('sans ruleset, `rule-suites` dit le FAIT et renvoie à sa RAISON', () => {
+  assert.match(SANS_RULESET, /aucun ruleset sur le dépôt/)
+  assert.match(SANS_RULESET, /`evaluate` est refusé sur ce plan GitHub/)
+  assert.match(SANS_RULESET, /scripts\/ops\/ruleset-evaluate\.mjs/)
+  assert.ok(!/npm run ops:ruleset/.test(SANS_RULESET), 'poser le ruleset n’est pas une action offerte ici')
 })

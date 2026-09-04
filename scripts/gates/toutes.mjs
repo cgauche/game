@@ -102,10 +102,13 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', '.github/workflows/', 'knip-exports-baseline.json'],
     raison:
-      'trois modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
+      'quatre modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
       '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.url === argv[1]`, l.121 ; seul `--sync` ' +
       'écrirait la baseline, l.94-96), `ruleset-evaluate.mjs` (le corps du ruleset part par un fichier de ' +
-      'os.tmpdir(), l.90-97) et `fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()) ; LIT ' +
+      'os.tmpdir(), l.90-97), `fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()) et ' +
+      '`justificatif.mjs`, atteint depuis 2026-09-04 par `pushes-justifies.mjs` : ses seules écritures ' +
+      'visent `<git-common-dir>/wfrp-justificatifs/` (justificatif.mjs:102-107,179,191-192), soit `.git/`, ' +
+      'hors de l’arbre — et `pushes-justifies.test.mjs` n’éprouve que des fonctions PURES, sans disque ; LIT ' +
       '.github/workflows/ parce que `canari.test.mjs:17` et `ruleset-evaluate.test.mjs:13` lisent les ' +
       'workflows RÉELS, et scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs`',
   },

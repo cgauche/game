@@ -1,9 +1,15 @@
-// RULESET `main-evaluate` — la protection serveur de `main`, posée en mode ÉVALUATION.
+// RULESET `main-evaluate` — la protection serveur de `main`, décrite en mode ÉVALUATION.
 //
 // Décision utilisateur 3 du plan approuvé (AskUserQuestion 2026-09-01, question « protéger main côté
-// serveur ? ») : aucune protection serveur à ce stade — d'où `enforcement: "evaluate"` : GitHub mesure
-// ce que la règle AURAIT refusé sans jamais refuser. Le passage en `active` est une redécision
-// utilisateur, quand la CI tient (déclencheur mesuré proposé : 20 runs verts consécutifs).
+// serveur ? »), verbatim : « Aucune protection serveur pour l'instant » [entériné 2026-09-01]. D'où `enforcement: "evaluate"` :
+// GitHub mesure ce que la règle AURAIT refusé sans jamais refuser, et le passage en `active` est une
+// redécision utilisateur, quand la CI tient.
+//
+// MESURE du 2026-09-04 : GitHub REFUSE ce mode sur le plan de ce dépôt — l'appel rend HTTP 422
+// « Enforcement evaluate option is not supported on this plan. Please upgrade to Enterprise to enable
+// it. ». Les seuls modes offerts ici sont `active` (qui BLOQUE) et `disabled` : la voie « mesurer
+// d'abord, décider ensuite » n'existe pas sur ce plan, et le choix entre les deux appartient à
+// l'utilisateur. Ce refus est NOMMÉ par `refusGh` — il ne remonte jamais en exception brute.
 // Ce que la règle mesure se lit dans `scripts/ops/rule-suites.mjs`.
 //
 // Usage : `npm run ops:ruleset -- --dry-run` (imprime le corps, n'écrit rien) ou `npm run ops:ruleset`
@@ -72,33 +78,60 @@ export function idExistant(runner = gh) {
   return liste.find((r) => r.name === NOM)?.id ?? null
 }
 
+/** Refus de GitHub sur `enforcement: evaluate` : le plan du dépôt ne l'offre pas (mesuré 2026-09-04). */
+export const REFUS_EVALUATE =
+  '[ruleset] GitHub refuse `enforcement: evaluate` sur ce plan (Enterprise seulement) : les seuls modes ' +
+  'possibles sont `active` (bloque) et `disabled` — la voie « mesurer par evaluate » de la décision 3 ' +
+  'est impossible ici, la re-décision est à l’utilisateur'
+
+/** Ce qu'un échec de `gh` DIT. PUR. Un refus de plan est NOMMÉ ; tout autre échec rend son corps. */
+export function refusGh(erreur) {
+  const corps = [erreur?.stdout, erreur?.stderr, erreur?.message]
+    .filter(Boolean)
+    .map((p) => String(p))
+    .join('\n')
+  if (/not supported on this plan/i.test(corps)) return REFUS_EVALUATE
+  return `[ruleset] échec de l’appel gh : ${corps.trim()}`
+}
+
 /**
  * Le geste, avec son exécutant `gh` INJECTÉ : c'est ainsi que le test vérifie qu'un `--dry-run`
  * n'émet aucun appel, sans réseau ni écriture. `PUT` est la méthode documentée de
  * `PUT /repos/{owner}/{repo}/rulesets/{ruleset_id}` (mise à jour d'un ruleset de dépôt) ; la
  * création passe par `POST /repos/{owner}/{repo}/rulesets`.
+ * REND le code de sortie du processus : 0, ou 1 quand `gh` refuse — le refus part au `journal`.
  */
-export function executer({ argv = [], runner = gh, sortie = (s) => process.stdout.write(s) } = {}) {
+export function executer({
+  argv = [],
+  runner = gh,
+  sortie = (s) => process.stdout.write(s),
+  journal = (s) => process.stderr.write(s),
+} = {}) {
   const dryRun = argv.includes('--dry-run')
   const ci = readFileSync(join(RACINE, '.github', 'workflows', 'ci.yml'), 'utf8')
   const corps = corpsDuRuleset(contextesRequis(ci))
   sortie(`${JSON.stringify(corps, null, 2)}\n`)
   if (dryRun) {
     sortie('[ruleset] --dry-run : rien n’a été écrit sur GitHub\n')
-    return
+    return 0
   }
-  const id = idExistant(runner)
   // `gh api --input` lit un FICHIER : le corps passe par un fichier temporaire hors du dépôt, jamais
   // par stdin (que `stdio[0] = 'ignore'` ferme) ni par une ligne de commande à échapper.
   const fichier = join(tmpdir(), `wfrp-ruleset-${process.pid}.json`)
-  writeFileSync(fichier, JSON.stringify(corps))
   try {
+    const id = idExistant(runner)
+    writeFileSync(fichier, JSON.stringify(corps))
     const cible = id === null ? `repos/${DEPOT}/rulesets` : `repos/${DEPOT}/rulesets/${id}`
     runner(['api', '-X', id === null ? 'POST' : 'PUT', cible, '--input', fichier])
     sortie(`[ruleset] ${NOM} ${id === null ? 'créé' : `mis à jour (id ${id})`} en mode evaluate\n`)
+    return 0
+  } catch (erreur) {
+    journal(`${refusGh(erreur)}\n`)
+    return 1
   } finally {
     rmSync(fichier, { force: true })
   }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) executer({ argv: process.argv.slice(2) })
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1])
+  process.exit(executer({ argv: process.argv.slice(2) }))

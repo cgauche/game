@@ -34,6 +34,14 @@ export function partRefusee(suites, depuis) {
   }
 }
 
+/**
+ * Ce que dit l'ABSENCE de ruleset. Le vide se DIT, et il DIT sa raison : `evaluate` est refusé par
+ * GitHub sur le plan de ce dépôt (HTTP 422, mesuré 2026-09-04), donc aucun ruleset n'y est posé.
+ */
+export const SANS_RULESET =
+  '[rule-suites] aucun ruleset sur le dépôt — `evaluate` est refusé sur ce plan GitHub, voir ' +
+  'scripts/ops/ruleset-evaluate.mjs'
+
 /** Rendu du verdict, y compris quand il n'y a RIEN à dire — un vide se DIT, il ne se tait pas. */
 export function rendu({ total, echecs, part, lignes }, { depuis, pose }) {
   if (total === 0) {
@@ -64,7 +72,7 @@ function main() {
     process.exit(1)
   }
   if (pose === null) {
-    process.stdout.write('[rule-suites] aucun ruleset `main-evaluate` sur le dépôt — rien à mesurer (le poser : npm run ops:ruleset)\n')
+    process.stdout.write(`${SANS_RULESET}\n`)
     return
   }
   process.stdout.write(`${rendu(partRefusee(suites, depuis), { depuis, pose })}\n`)

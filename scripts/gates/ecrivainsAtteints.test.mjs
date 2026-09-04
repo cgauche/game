@@ -58,6 +58,9 @@ const ATTENDU = {
     'scripts/test/verrou.mjs',
   ],
   'test:ops': [
+    // +1 le 2026-09-04 : `pushes-justifies.mjs` LIT les justificatifs de gate, donc atteint le module
+    // qui les écrit ; ses écritures visent `<git-common-dir>/wfrp-justificatifs/`, hors de l'arbre.
+    'scripts/guards/lib/justificatif.mjs',
     'scripts/ops/fermer-depuis-main.test.mjs',
     'scripts/ops/knip-exports-ratchet.mjs',
     'scripts/ops/ruleset-evaluate.mjs',
