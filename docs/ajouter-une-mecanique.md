@@ -64,7 +64,7 @@ Documents porteurs :
 | `src/data/etats.json` | `passive` | `src/data/schemas/defs/etats.ts` | 9 / 21 |
 | `src/data/maladies.json` | `infectionPassive` | `src/data/schemas/defs/maladies.ts` | 1 / 18 |
 | `src/data/mutations.json` | `passive` | `src/data/schemas/defs/mutations.ts` | 84 / 116 |
-| `src/data/naval-traits.json` | `passive` | `src/data/schemas/defs/naval-traits.ts` | 9 / 26 |
+| `src/data/naval-traits.json` | `passive` | `src/data/schemas/defs/naval-traits.ts` | 9 / 27 |
 | `src/data/psychology.json` | `passive` | `src/data/schemas/defs/psychology.ts` | 1 / 9 |
 | `src/data/qualities.json` | `passive` | `src/data/schemas/defs/qualities.ts` | 17 / 59 |
 | `src/data/symptoms.json` | `passive`, `severePassive`, `visiblePassive` | `src/data/schemas/defs/symptoms.ts` | 9 / 18 |
@@ -135,10 +135,10 @@ un chiffre qui s'additionne.
 
 | Interface | Site | Drapeaux déclarés |
 |---|---|---|
-| `TraitCapabilities` | `src/data/index.ts:1635` | 43 |
-| `QualityCapabilities` | `src/data/index.ts:1833` | 26 |
-| `ItemCapabilities` | `src/data/index.ts:1089` | 12 |
-| `SymptomCapabilities` | `src/data/index.ts:1898` | 7 |
+| `TraitCapabilities` | `src/data/index.ts:1636` | 43 |
+| `QualityCapabilities` | `src/data/index.ts:1834` | 26 |
+| `ItemCapabilities` | `src/data/index.ts:1090` | 12 |
+| `SymptomCapabilities` | `src/data/index.ts:1899` | 7 |
 
 Lecture — un seul point d'entrée par portée, chaque canal restant disjoint par nom de capacité :
 
@@ -219,4 +219,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: fe043e8dc5f30c23bc71f48ee233a1a851f737d5 (153 fichiers, 1 dossiers) corps: 3f4f5d674cd1ddd0b0a60c76b080be0408969149 -->
+<!-- sources-empreinte: c2fb9993a844449307c9a9886c4a30eaaa2b871f (154 fichiers, 1 dossiers) corps: b4d53b643b121f1a5c310160b9e754898bb61c14 -->

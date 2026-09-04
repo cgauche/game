@@ -15,12 +15,12 @@
 **Périmètre mesuré et angles morts** — la carte §A vient du manifeste ÉDITORIAL
 `src/data/donnees.manifest.json` (rangement par rubrique, description, homonymes) : rien de tout cela
 ne se devine de l'arbre, un jugement humain reste nécessaire. Ce que ce générateur CALCULE et
-réfute au besoin : (1) bijection stricte manifeste ⇄ `121` fichiers réels de
+réfute au besoin : (1) bijection stricte manifeste ⇄ `122` fichiers réels de
 `src/data/*.json` (un `.json` neuf non cartographié, ou une entrée de manifeste pointant sur un
 fichier disparu, casse la génération) ; (2) nombre d'entrées par fichier (comptage `Array.isArray`,
 `objet à sous-catalogues` sinon — angle mort assumé : cette étiquette ne dit RIEN du contenu réel
 d'un objet à sous-catalogues, juste qu'il n'est pas un tableau plat) ; (3) couverture du contrat de
-schéma zod (`121/121`, cf. §E-bis) ; (4) présence effective sur disque de
+schéma zod (`122/122`, cf. §E-bis) ; (4) présence effective sur disque de
 chaque fichier cité par un cas d'homonyme de §D. Angle mort déclaré : les DESCRIPTIONS de rubrique,
 de fichier et d'homonyme restent du texte manuscrit du manifeste — ce générateur ne les vérifie PAS
 contre le contenu réel des `.json` (une description qui ment sur ce que porte un fichier ne casse
@@ -31,7 +31,7 @@ La colonne **Exposition** de §A est DÉRIVÉE des `exposition` déclarées par 
 (`document(type, famille, champs, meta, exposition)` → `src/data/schemas/exposition-derivee.ts`,
 dumpée par `scripts/docs/lib/dump-exposition.mts`) : clés de catégorie Codex exposées, route
 d'édition (`dataset` / `objet single|record` / `niché` / aucune), ou EXEMPTION motivée
-(`27` fichier(s) exempt(s) sur `121`). Aucune de ces valeurs n'est écrite ici :
+(`27` fichier(s) exempt(s) sur `122`). Aucune de ces valeurs n'est écrite ici :
 un def qui change d'exposition change cette colonne au prochain `npm run docs:donnees`.
 
 ## §A — Carte : où va chaque donnée
@@ -136,12 +136,12 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 ### Naval & fluvial (*Mer des Griffes* · *Mort sur le Reik*)
 | Fichier | Contient | Exposition (Codex — édition) |
 |---|---|---|
-| `naval-traits.json` | **ATTENTION — Tableau mixte** (`kind`: trait/amelioration) des Traits & Améliorations de navire — le **Bélier de proue** (`ram`) ICI (26 entrée(s)) | `navalTraits` — dataset `navalTraits` |
+| `naval-traits.json` | **ATTENTION — Tableau mixte** (`kind`: trait/amelioration) des Traits & Améliorations de navire — le **Bélier de proue** (`ram`) ICI (27 entrée(s)) | `navalTraits` — dataset `navalTraits` |
 | `naval-ports.json` | Index des ports de la Mer des Griffes (MDG 15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde (39 entrée(s)) | `navalPorts` — dataset `navalPorts` |
 | `lieux-services.json` | Vocabulaire des SERVICES de lieu EXTENSIBLES (#343 — auberge/temple/forgeron/guilde…) au-delà du port/marché, consommé PAR RÉFÉRENCE (`MapPlace.services[].kind`) et résolu par `placeServices` — id/label/icône de routage du hub de lieu, app-owned (7 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `naval-progression.json` | Progression navale (modes/vitesse) (objet à sous-catalogues) | `navalProgression` — niché (`navalProgression`) |
 | `ship-construction.json` · `ship-criticals.json` | Construction de navire · critiques de navire (objet à sous-catalogues · objet à sous-catalogues) | `shipHullSizes` · `shipSpeedTraits` · `shipConstructionTraits` — niché (`shipHullSizes` · `shipSpeedTraits` · `shipConstructionTraits`) ; `shipCriticalsCargaison` · `shipCriticalsGreement` · `shipCriticalsCoque` · `shipCriticalsAvirons` · `shipCriticalsEquipements` — niché (`shipCriticalsCargaison` · `shipCriticalsGreement` · `shipCriticalsCoque` · `shipCriticalsAvirons` · `shipCriticalsEquipements`) |
-| `crew-roles.json` · `crew-morale.json` · `crew-test-types.json` | Rôles d'équipage · moral · types de Test d'équipage (9 entrée(s) · objet à sous-catalogues · objet à sous-catalogues) | `crewRoles` — dataset `crewRoles` ; `crewMoraleFactors` · `crewMoraleBands` — niché (`crewMoraleFactors` · `crewMoraleBands`) ; `crewTestTypes` — niché (`crewTestTypes`) |
+| `crew-roles.json` · `crew-morale.json` · `crew-test-types.json` · `ship-stations.json` | Rôles d'équipage · moral · types de Test d'équipage · stations à bord (9 entrée(s) · objet à sous-catalogues · objet à sous-catalogues · 5 entrée(s)) | `crewRoles` — dataset `crewRoles` ; `crewMoraleFactors` · `crewMoraleBands` — niché (`crewMoraleFactors` · `crewMoraleBands`) ; `crewTestTypes` — niché (`crewTestTypes`) ; `shipStations` — dataset `shipStations` |
 | `sea-navigation.json` · `sea-perils.json` · `sea-events.json` · `sea-weather.json` · `sea-cargo.json` | Navigation · périls · événements · météo · cargaison maritimes (objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues) | `seaNavigation` — objet single ; `seaPerils` — objet single ; `seaManannFactors` · `seaBoardEvents` · `seaPortEvents` — niché (`seaManannFactors` · `seaBoardEvents` · `seaPortEvents`) ; `seaWeather` — objet single ; `seaCargo` — niché (`seaCargo`) |
 | `sea-shanties.json` | Chants de marins (`crewOps`) (7 entrée(s)) | `seaShanties` — dataset `seaShanties` |
 | `steam-breakdown.json` | Pannes de navire à vapeur (6 entrée(s)) | `steamBreakdowns` — dataset `steamBreakdowns` |
@@ -257,7 +257,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   `src/data/variants-integrity.test.ts`) — `talents.json` résout quatre champs, UNE CITATION PAR LIGNE,
   chacune à côté du SYMBOLE qu'elle porte (lignes MESURÉES à la génération, `citeLigne`) :
 
-  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1471`
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1479`
   - `test` — `talentTestSLBonus`, `src/engine/magic.ts:359`
   - `max` — `talentMaxById`, `src/engine/careerSlots.ts:326`
   - `combat` — `featuresOf`, `src/engine/combatFeatures/dispatch.ts:52`
@@ -315,7 +315,7 @@ Deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont
 ## §E-bis — Contrat de schéma (`src/data/schemas/`)
 
 Chaque document authoré valide contre un schéma zod **STRICT**, sur les **DEUX racines** de
-documents : `src/data` (catalogues de jeu, **121/121** datasets sous contrat, décompte
+documents : `src/data` (catalogues de jeu, **122/122** datasets sous contrat, décompte
 CALCULÉ des defs présentes dans `src/data/schemas/defs/`) et `src/scenes` (projets de campagne
 `*-projet.json`, defs dans `src/data/schemas/defs-scenes/`).
 
@@ -485,4 +485,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: f255335cc73a05b50d49359c1de6cbf22386c7d5 (346 fichiers, 2 dossiers) corps: da273ab82505974a8b6753eb51088aa5dd6032e1 -->
+<!-- sources-empreinte: 39a08032d69f1a1913026277e10e6ae7fe59ffe3 (348 fichiers, 2 dossiers) corps: d39b81564791ff869f21272ad2ed0d69e24a6772 -->

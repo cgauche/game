@@ -108,7 +108,7 @@ population qui l'exerce vraiment aujourd'hui.
 |---|---|---|---|
 | `src/data/etats.json` | `passive` | `src/data/schemas/defs/etats.ts` | 9 / 21 |
 | `src/data/mutations.json` | `passive` | `src/data/schemas/defs/mutations.ts` | 84 / 116 |
-| `src/data/naval-traits.json` | `passive` | `src/data/schemas/defs/naval-traits.ts` | 9 / 26 |
+| `src/data/naval-traits.json` | `passive` | `src/data/schemas/defs/naval-traits.ts` | 9 / 27 |
 | `src/data/psychology.json` | `passive` | `src/data/schemas/defs/psychology.ts` | 1 / 9 |
 | `src/data/qualities.json` | `passive` | `src/data/schemas/defs/qualities.ts` | 17 / 59 |
 | `src/data/symptoms.json` | `passive`, `severePassive`, `visiblePassive` | `src/data/schemas/defs/symptoms.ts` | 9 / 18 |
@@ -163,4 +163,4 @@ Tout passe par le Compendium in-app (écran Codex) :
   champ à part (§7).
 - **Ajouter une table de Corruption** (un dieu du Chaos) : Codex → Tables de Corruption → une entrée
   dont les plages référencent des mutations EXISTANTES par id.
-<!-- sources-empreinte: 0366daf6b4633f346cad36151ecfd71a6ef0f591 (140 fichiers, 1 dossiers) corps: 41090e16288b88fcf6b7b128a65086c9ad5fd484 -->
+<!-- sources-empreinte: 289fed6ea3a73aa805d3f375a0a0c3c54d701297 (141 fichiers, 1 dossiers) corps: c22df7e7df1142ec6f06cc616885c5231ee95694 -->
