@@ -21,7 +21,7 @@ import type { LightSource } from '../../state/vision';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { InteractionHalos } from '../builders/interactHalos';
 import { GameStage3D, setStageRendererFactory, type StageWalkAnim } from './GameStage3D';
-import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
+import { BancRenderer, brancherArdoise, brancherImagesPilotees, scènes, viderCaptures } from './banc-volumique';
 import { POINT_LIGHT_BUDGET, resolveTone } from './stagePointLights';
 import { battreStageFrames, resetStageFrames } from './stageFrames';
 
@@ -30,19 +30,10 @@ import { battreStageFrames, resetStageFrames } from './stageFrames';
 /** Le canevas de jsdom n'a aucune boîte : la passe de dessin sort sur `!w || !h` sans elle. */
 const TAILLE = { w: 800, h: 600 };
 
-/** Les rAF POSÉS et non encore servis, et le COMPTE des poses — c'est lui qui dit combien de boucles
- *  tournent : une seule pose par image = une seule horloge. */
-let rafs: (() => void)[] = [];
-let posesRaf = 0;
-let horloge = 0;
-
-/** Les images du navigateur, tenues à la main par ce banc — RENDUES à la sortie : la suite partage
- *  ses globales par worker (`isolate: false`), et une horloge d'images laissée derrière nourrirait la
- *  boucle des bancs suivants avec des rappels que personne ne sert plus. */
-const rafAvant = globalThis.requestAnimationFrame;
-const cancelAvant = globalThis.cancelAnimationFrame;
-
 brancherArdoise();
+/** L'horloge du banc et sa file de rAF : les poses disent combien d'HORLOGES tournent, et le banc ne
+ *  mesure ni la vitesse de la machine ni l'ordre des fichiers du worker. */
+const images = brancherImagesPilotees();
 
 /** Scène d'EXTÉRIEUR sous la pluie : c'est elle qui ouvre le semis d'intempéries (le premier motif). */
 const SCENE: Scene = (() => {
@@ -112,13 +103,6 @@ function démonterTout(): void {
   écrans = [];
 }
 
-/** UNE image du navigateur : l'horloge avance, et les rAF posés sont servis — une passe, une seule. */
-function image(avanceMs = 20): void {
-  horloge += avanceMs;
-  const àServir = rafs.splice(0);
-  act(() => àServir.forEach((cb) => cb()));
-}
-
 /** Les trois motifs sont-ils VRAIMENT vivants ? Sans ces prémisses, « une seule boucle » serait vrai
  *  du vide — un écran sans pluie, sans flamme et sans halo n'en ouvre aucune. */
 function prémisses(canevas: HTMLCanvasElement): void {
@@ -134,34 +118,15 @@ beforeAll(() => {
   setStageRendererFactory(() => new BancRenderer());
 });
 
-afterAll(() => {
-  setStageRendererFactory(null);
-  globalThis.requestAnimationFrame = rafAvant;
-  globalThis.cancelAnimationFrame = cancelAvant;
-});
+afterAll(() => setStageRendererFactory(null));
 
 beforeEach(() => {
   viderCaptures();
-  rafs = [];
-  posesRaf = 0;
   commitsReact = 0;
-  // L'horloge d'images se REPOSE à chaque test : un fichier voisin de la même suite peut avoir
-  // stubbé `requestAnimationFrame` (`vi.stubGlobal`), et la remise à l'état d'origine qui suit un
-  // banc emporterait celle-ci si elle n'était posée qu'une fois.
-  globalThis.requestAnimationFrame = ((cb: () => void) => {
-    posesRaf++;
-    rafs.push(cb);
-    return rafs.length;
-  }) as typeof globalThis.requestAnimationFrame;
-  globalThis.cancelAnimationFrame = (() => {}) as typeof globalThis.cancelAnimationFrame;
   // ARDOISE NEUVE du battement : la suite partage ses modules (`isolate: false`) — un écran resté
   // monté dans un autre fichier tiendrait des images sur SON `requestAnimationFrame`, et la boucle ne se
   // réarmerait jamais sur celui de ce banc.
   resetStageFrames();
-  // Horloge PILOTÉE, posée LOIN devant : le module partage son dernier battement avec toute la suite
-  // (`isolate: false`) — une horloge qui repartirait de zéro n'aurait jamais fini de céder.
-  horloge = performance.now() + 1_000_000;
-  vi.spyOn(performance, 'now').mockImplementation(() => horloge);
 });
 
 afterEach(() => {
@@ -176,11 +141,12 @@ describe('Trois motifs continus — une seule horloge (#1378)', () => {
     prémisses(canevas);
 
     const rendusAvant = scènes.length;
-    posesRaf = 0;
+    const posesAvant = images.poses();
     const IMAGES = 6;
-    for (let i = 0; i < IMAGES; i++) image();
+    for (let i = 0; i < IMAGES; i++) images.battre();
 
-    expect(posesRaf, `${posesRaf} rAF posés pour ${IMAGES} images`).toBe(IMAGES);
+    const poses = images.poses() - posesAvant;
+    expect(poses, `${poses} rAF posés pour ${IMAGES} images`).toBe(IMAGES);
     expect(scènes.length - rendusAvant, `${scènes.length - rendusAvant} rendus pour ${IMAGES} images`).toBe(IMAGES);
     // Le compteur applicatif dit ce que le renderer a REÇU : c'est par lui que la recette navigateur
     // lit le même fait sur un canevas qui n'a pas d'arbre.
@@ -195,10 +161,10 @@ describe('Trois motifs continus — une seule horloge (#1378)', () => {
     act(() => battreStageFrames()); // un geste qui tient déjà son horloge fait battre le stage
     expect(scènes.length, 'le battement doit peindre : sans cela la suite serait vraie du vide').toBe(avant + 1);
 
-    image(1); // moins de `MEME_IMAGE_MS` : c'est la MÊME image
+    images.battre(1); // moins de `MEME_IMAGE_MS` : c'est la MÊME image
     expect(scènes.length, 'la boucle continue a repeint une image déjà peinte').toBe(avant + 1);
 
-    image(20); // …et l'image SUIVANTE se peint bien
+    images.battre(20); // …et l'image SUIVANTE se peint bien
     expect(scènes.length).toBe(avant + 2);
     expect(canevas.dataset.rendus).toBe(String(scènes.length));
   });
@@ -207,7 +173,7 @@ describe('Trois motifs continus — une seule horloge (#1378)', () => {
     const canevas = monter();
     prémisses(canevas);
     const IMAGES = 10;
-    posesRaf = 0;
+    const posesAvant = images.poses();
     let aLImage = 0;
     for (let i = 0; i < IMAGES; i++) {
       // Un lacet qui FRANCHIT un cran pose un yaw neuf — le seul commit React que la rotation coûte
@@ -216,11 +182,12 @@ describe('Trois motifs continus — une seule horloge (#1378)', () => {
       act(() => écrans[0].root.render(écran(10 * (i + 1))));
       act(() => battreStageFrames());
       const avant = scènes.length;
-      image();
+      images.battre();
       aLImage += scènes.length - avant;
     }
 
-    expect(posesRaf, `${posesRaf} rAF posés pour ${IMAGES} images de rotation`).toBe(IMAGES);
+    const poses = images.poses() - posesAvant;
+    expect(poses, `${poses} rAF posés pour ${IMAGES} images de rotation`).toBe(IMAGES);
     expect(aLImage, `${aLImage} rendus de boucle pour ${IMAGES} images`).toBe(IMAGES);
   });
 });
@@ -236,11 +203,11 @@ describe('Battement sans hôte — l’écran s’abonne de lui-même', () => {
     expect(Number(canevas.dataset.precip), 'prémisse : il doit pleuvoir, sinon rien ne demande d’image').toBeGreaterThan(0);
 
     const rendusAvant = scènes.length;
-    posesRaf = 0;
+    const posesAvant = images.poses();
     const IMAGES = 6;
-    for (let i = 0; i < IMAGES; i++) image();
+    for (let i = 0; i < IMAGES; i++) images.battre();
 
-    expect(posesRaf, 'la boucle doit être armée : sans elle, « rien ne peint » serait vrai du vide').toBe(IMAGES);
+    expect(images.poses() - posesAvant, 'la boucle doit être armée : sans elle, « rien ne peint » serait vrai du vide').toBe(IMAGES);
     expect(scènes.length - rendusAvant, `${scènes.length - rendusAvant} rendus pour ${IMAGES} images sans anim`).toBe(IMAGES);
     expect(canevas.dataset.rendus).toBe(String(scènes.length));
   });
@@ -255,17 +222,15 @@ describe('Image peinte par un commit — la boucle cède', () => {
   it('commit puis rAF servi 2 ms après : aucun rendu de plus', () => {
     const canevas = monter();
     prémisses(canevas);
-    for (let i = 0; i < 3; i++) image(); // régime établi
+    for (let i = 0; i < 3; i++) images.battre(); // régime établi
 
-    horloge += 20; // image N du navigateur
+    images.avancer(20); // image N du navigateur
     const avant = scènes.length;
     act(() => écrans[0].root.render(écran(10)));
     const aprèsCommit = scènes.length;
     expect(aprèsCommit - avant, 'le commit doit peindre : sans cela il n’y aurait rien à céder').toBeGreaterThan(0);
 
-    horloge += 2; // MOINS de `MEME_IMAGE_MS` : la boucle sert son rAF dans la MÊME image
-    const àServir = rafs.splice(0);
-    act(() => àServir.forEach((cb) => cb()));
+    images.battre(2); // MOINS de `MEME_IMAGE_MS` : la boucle sert son rAF dans la MÊME image
 
     expect(scènes.length - aprèsCommit, 'la boucle a repeint une image que le commit venait de peindre').toBe(0);
   });
@@ -282,14 +247,14 @@ describe('Deux écrans — aucun ne relâche les images de l’autre', () => {
     const c2 = monter();
     expect(Number(c1.dataset.precip), 'prémisse : les deux écrans ont bien leur averse').toBeGreaterThan(0);
     expect(Number(c2.dataset.precip)).toBeGreaterThan(0);
-    image();
+    images.battre();
 
     const { root, hôte } = écrans.shift()!;
     act(() => root.unmount());
     hôte.remove();
 
     const avantC2 = Number(c2.dataset.rendus);
-    image();
+    images.battre();
 
     expect(Number(c2.dataset.rendus) - avantC2, 'le démontage du premier a coupé les images du second').toBe(1);
   });
@@ -299,7 +264,7 @@ describe('Deux écrans — aucun ne relâche les images de l’autre', () => {
     const c2 = monter();
     expect(Number(c1.dataset.precip), 'prémisse : les deux écrans peignent').toBeGreaterThan(0);
     expect(Number(c2.dataset.precip)).toBeGreaterThan(0);
-    image();
+    images.battre();
 
     const { root, hôte } = écrans.shift()!;
     act(() => root.unmount());
@@ -307,7 +272,7 @@ describe('Deux écrans — aucun ne relâche les images de l’autre', () => {
 
     const avant = scènes.length;
     const mortAvant = Number(c1.dataset.rendus);
-    horloge += 20;
+    images.avancer(20);
     act(() => battreStageFrames());
 
     expect(scènes.length - avant, 'un écran démonté peint encore : son abonnement a fui').toBe(1);
@@ -335,7 +300,7 @@ describe('P2 — un motif continu ne commet pas (#1401)', () => {
     const IMAGES = 30;
     const peintsAvant = Number(canevas.dataset.rendus);
     const commitsAvant = commitsReact;
-    for (let i = 0; i < IMAGES; i++) image();
+    for (let i = 0; i < IMAGES; i++) images.battre();
 
     const peints = Number(canevas.dataset.rendus) - peintsAvant;
     // Prémisse : le compteur MORD — le montage, lui, a bien commis ; un zéro par construction (sonde

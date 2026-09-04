@@ -24,7 +24,16 @@ import { fileURLToPath } from 'node:url';
  *     lui emprunter. Il hérite alors des DEUX drapeaux de module qui gouvernent le travail différé de
  *     l'écran (`sliceArmed` du cuiseur, `image` du battement), et les lègue armés au suivant.
  *
- * PÉRIMÈTRE : `src/**` en entier pour les faits 1, 3, 4 et 5 ; `src/gameIso/**` pour le fait 2 (le
+ *  6. AUCUN `.test.` de `src/**` ne pose une horloge d'images en `beforeAll` — ni assignation ni
+ *     espion sur `requestAnimationFrame`, `cancelAnimationFrame` ou `performance.now`. Les espions
+ *     sont rendus AVANT chaque test (`restoreMocks`, `vite.config.ts`), donc APRÈS le `beforeAll` du
+ *     fichier : un voisin du worker qui a espionné le rAF global rend à ce banc celui de jsdom au
+ *     seuil de son premier test (`isolate: false`), et un collecteur posé une fois pour toutes ne
+ *     l'atteint jamais — l'écran arme sa boucle sur un rAF que le banc ne sert pas, et le banc rougit
+ *     sur l'ORDRE DES FICHIERS du worker. La forme canonique est `brancherImagesPilotees()`
+ *     (`banc-volumique.ts`), qui pose l'horloge et le collecteur À CHAQUE TEST.
+ *
+ * PÉRIMÈTRE : `src/**` en entier pour les faits 1, 3, 4, 5 et 6 ; `src/gameIso/**` pour le fait 2 (le
  * harnais est un harnais de rendu ; hors de `gameIso`, `src/test-setup.ts` est le point d'entrée
  * légitime).
  * ANGLE MORT ASSUMÉ : le scan est TEXTUEL, sur les lignes d'`import` (faits 1, 2, 4), sur la forme
@@ -33,7 +42,10 @@ import { fileURLToPath } from 'node:url';
  * fait 5 — le seul signal d'un montage INDIRECT). Un `await import()` dynamique au chemin composé à l'exécution, une ré-exportation du
  * harnais depuis un troisième module, une classe de banc déclarée sans clause `implements` (ou via un
  * alias de type), un appel de `brancherArdoise` enveloppé dans une fonction d'un autre fichier :
- * aucun n'existe aujourd'hui, aucun n'est couvert.
+ * aucun n'existe aujourd'hui, aucun n'est couvert. Fait 6 : le bloc d'un `beforeAll` est borné par
+ * ÉQUILIBRAGE DES PARENTHÈSES depuis son ouverture — une parenthèse en chaîne ou en commentaire DANS ce
+ * bloc fausserait la borne, aucune n'existe ; une horloge posée par une fonction d'un AUTRE fichier
+ * appelée depuis un `beforeAll` lui échappe.
  */
 
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url)); // racine du projet (src/gameIso/stage → ../../..)
@@ -95,6 +107,38 @@ export function renderersDeBanc(source: string, label: string): string[] {
     .map((ligne, i) => ({ n: i + 1, ligne }))
     .filter(({ ligne }) => DECL_RENDERER.test(ligne))
     .map(({ n, ligne }) => `${label}:${n} → ${ligne.trim()}`);
+}
+
+/** Ce qu'un `beforeAll` n'a pas le droit de poser : les trois coutures d'HORLOGE D'IMAGES, en
+ *  assignation (`x.requestAnimationFrame = …`, `performance.now = …`) comme en espion ou en stub
+ *  (`vi.spyOn(performance, 'now')`, `vi.stubGlobal('requestAnimationFrame', …)`). */
+const POSE_HORLOGE = [
+  /\b(requestAnimationFrame|cancelAnimationFrame)\s*=[^=]/,
+  /\bperformance\s*\.\s*now\s*=[^=]/,
+  /\bvi\s*\.\s*(spyOn|stubGlobal)\s*\(\s*[^)]*?['"](requestAnimationFrame|cancelAnimationFrame|now)['"]/,
+];
+
+/**
+ * Les `beforeAll` qui POSENT une horloge d'images, en `fichier:ligne → extrait`. Le bloc d'un
+ * `beforeAll` va de son ouvrante à l'équilibrage de ses parenthèses.
+ */
+export function horlogesEnBeforeAll(source: string, label: string): string[] {
+  const lignes = source.split(/\r?\n/);
+  const out: string[] = [];
+  for (let i = 0; i < lignes.length; i++) {
+    if (!/\bbeforeAll\s*\(/.test(lignes[i])) continue;
+    let profondeur = 0;
+    let ouvert = false;
+    for (let j = i; j < lignes.length; j++) {
+      for (const c of lignes[j]) {
+        if (c === '(') { profondeur++; ouvert = true; }
+        else if (c === ')') profondeur--;
+      }
+      if (POSE_HORLOGE.some((r) => r.test(lignes[j]))) out.push(`${label}:${j + 1} → ${lignes[j].trim()}`);
+      if (ouvert && profondeur <= 0) { i = j; break; }
+    }
+  }
+  return out;
 }
 
 /** Un banc branche-t-il l'ardoise ? (occurrence textuelle de l'appel, pas de l'import seul). */
@@ -203,6 +247,51 @@ describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
     expect(monteurs.length, 'plus aucun banc ne monte l’écran volumique : ce fait serait vrai du vide').toBeGreaterThan(30);
     const sansArdoise = monteurs.filter(({ source }) => !brancheLArdoise(source)).map(({ chemin }) => chemin);
     expect(sansArdoise, 'un banc monte l’écran volumique sur les drapeaux de module ARMÉS du fichier précédent : sa file de cuisson et sa boucle d’images peuvent n’être jamais servies').toEqual([]);
+  });
+
+  it('cas planté : une horloge d’images posée en `beforeAll` est détectée avec son `fichier:ligne` (preuve TDD)', () => {
+    const planté = [
+      'beforeAll(() => {',
+      '  globalThis.requestAnimationFrame = ((cb) => rafs.push(cb));',
+      '});',
+    ].join('\n');
+    expect(horlogesEnBeforeAll(planté, 'planté.ts')).toEqual([
+      'planté.ts:2 → globalThis.requestAnimationFrame = ((cb) => rafs.push(cb));',
+    ]);
+    expect(horlogesEnBeforeAll("beforeAll(() => { vi.spyOn(performance, 'now').mockImplementation(() => h); });", 'p.ts'))
+      .toEqual(["p.ts:1 → beforeAll(() => { vi.spyOn(performance, 'now').mockImplementation(() => h); });"]);
+    expect(horlogesEnBeforeAll("beforeAll(() => { vi.stubGlobal('requestAnimationFrame', (cb) => f.push(cb)); });", 'p.ts')).toHaveLength(1);
+    // …et la MÊME pose en `beforeEach` — la forme canonique — ne déclenche RIEN.
+    expect(horlogesEnBeforeAll('beforeEach(() => { globalThis.requestAnimationFrame = collecteur; });', 'sain.ts')).toEqual([]);
+    // …ni une LECTURE de l’horloge, ni une pose hors du bloc d’un `beforeAll`.
+    expect(horlogesEnBeforeAll('beforeAll(() => { const t0 = performance.now(); });', 'sain.ts')).toEqual([]);
+    expect(horlogesEnBeforeAll('beforeAll(() => setStageRendererFactory(f));\nglobalThis.requestAnimationFrame = x;', 'sain.ts')).toEqual([]);
+  });
+
+  it('AUCUN `.test.` de `src/**` ne pose une horloge d’images en `beforeAll`', () => {
+    const testsDuDepot = sources(SRC)
+      .filter((p) => EST_TEST.test(p) && p !== join(GAME_ISO, 'stage', 'banc-volumique.test.ts'))
+      .map((p) => ({ chemin: relative(ROOT, p).replace(/\\/g, '/'), source: readFileSync(p, 'utf8') }));
+    expect(testsDuDepot.length, 'plus aucun test à scanner : ce fait serait vrai du vide').toBeGreaterThan(500);
+    const fautifs: string[] = [];
+    for (const { chemin, source } of testsDuDepot) fautifs.push(...horlogesEnBeforeAll(source, chemin));
+    expect(
+      fautifs,
+      'une horloge d’images posée en `beforeAll` ne survit pas à `restoreMocks` : la poser PAR TEST (`brancherImagesPilotees`)',
+    ).toEqual([]);
+  });
+
+  it('la forme canonique EXISTE et SERT — sans quoi le fait 6 n’offrirait aucune issue', () => {
+    expect(/export function brancherImagesPilotees\b/.test(readFileSync(HARNAIS, 'utf8')),
+      'la primitive d’images pilotées a disparu du harnais').toBe(true);
+    const clients = bancs().filter(({ source }) => /\bbrancherImagesPilotees\s*\(/.test(source)).map(({ chemin }) => chemin);
+    expect(clients.sort()).toEqual([
+      'src/gameIso/stage/battement-unique.test.tsx',
+      'src/gameIso/stage/chrome-jeton.test.tsx',
+      'src/gameIso/stage/percage-hote.test.tsx',
+      'src/gameIso/stage/walk-frame-loop.test.tsx',
+      'src/gameIso/stage/weather-boucle.test.tsx',
+    ]);
   });
 
   it('PRÉMISSE — le scan voit bien des fichiers : un périmètre vide rendrait les faits gratuits', () => {

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { Profiler, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import { useGame, type BattleState } from '../../state/store';
 import { emptyScene } from '../../state/scene';
@@ -10,7 +10,7 @@ import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory } from './GameStage3D';
-import { BancRenderer, brancherArdoise } from './banc-volumique';
+import { BancRenderer, brancherArdoise, brancherImagesPilotees } from './banc-volumique';
 import { chromeHeadPx } from './TokenChromeOverlay';
 import { viewPolicy } from './viewPolicy';
 import {
@@ -478,35 +478,28 @@ describe('Chrome des jetons — l’ALLURE passe au MATÉRIAU du billboard (#117
  * change image par image, ALORS QU'AUCUN commit React ne se produit.
  */
 describe('Chrome des jetons — la POSITION suit la marche à la FRAME (#1176 P3-0f)', () => {
-  let horloge = 0;
-  let file: FrameRequestCallback[] = [];
+  /** L'horloge du banc et sa file de rAF — le collecteur UNIQUE des bancs d'images du stage. */
+  const images = brancherImagesPilotees();
 
-  beforeEach(() => {
-    horloge = 1000;
-    file = [];
-    vi.spyOn(performance, 'now').mockImplementation(() => horloge);
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => file.push(cb));
-    vi.stubGlobal('cancelAnimationFrame', () => {});
-  });
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   /** Déclenche une marche et EXTRAIT son tick de la file commune (patron `walk-frame-loop`). */
   function marcher(id: string, path: { x: number; y: number }[]): FrameRequestCallback {
-    const avant = file.length;
+    const avant = images.enVol.length;
     bus.emit(EVT.ANIM_MOVE, { id, path });
-    const posés = file.splice(avant);
+    const posés = images.enVol.splice(avant);
     expect(posés).toHaveLength(1);
     return posés[0];
   }
 
   /** Avance l'horloge et rejoue le SEUL tick de marche ; rend celui qu'il reprogramme. */
   function image(tick: FrameRequestCallback, dt: number): FrameRequestCallback {
-    horloge += dt;
-    const avant = file.length;
-    act(() => { tick(horloge); });
-    return file.splice(avant)[0];
+    images.avancer(dt);
+    const avant = images.enVol.length;
+    act(() => { tick(images.maintenant()); });
+    return images.enVol.splice(avant)[0];
   }
 
   const posé = (el: HTMLElement, cid: string) => chromeVolumique(el, cid)!.getAttribute('transform');

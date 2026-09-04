@@ -12,7 +12,7 @@ import * as sceneMeshes from '../backends/webgl/sceneMeshes';
 import { setStageRendererFactory } from './GameStage3D';
 import { battreStageFrames, resetStageFrames } from './stageFrames';
 import { arreterLacet, demarrerLacet, getStageYaw, poserYaw, resetStageYaw } from '../../state/stageYaw';
-import { BancRenderer, brancherArdoise } from './banc-volumique';
+import { BancRenderer, brancherArdoise, brancherImagesPilotees } from './banc-volumique';
 import { VH, VW } from './useStageCamera';
 import { stageYawCorrection } from './stageCam';
 import { poseFromDims, worldToScreen } from './projection';
@@ -50,8 +50,8 @@ function hero(id: string, pos: { x: number; y: number }): Combatant {
 
 let root: Root | null = null;
 let container: HTMLDivElement | null = null;
-let horloge = 0;
-let file: FrameRequestCallback[] = [];
+/** L'horloge du banc et sa file de rAF — le collecteur UNIQUE des bancs d'images du stage. */
+const images = brancherImagesPilotees();
 
 /** Monte le stage et COMPTE les commits de son sous-arbre (aucun rendu = aucun commit). */
 function monter(): { el: HTMLDivElement; commits: () => number } {
@@ -74,29 +74,22 @@ function monter(): { el: HTMLDivElement; commits: () => number } {
 
 /** Déclenche une marche et EXTRAIT son tick de la file commune (cf. en-tête). */
 function marcher(id: string, path: { x: number; y: number }[]): FrameRequestCallback {
-  const avant = file.length;
+  const avant = images.enVol.length;
   bus.emit(EVT.ANIM_MOVE, { id, path });
-  const posés = file.splice(avant);
+  const posés = images.enVol.splice(avant);
   expect(posés).toHaveLength(1);
   return posés[0];
 }
 
 /** Avance l'horloge de `dt` et rejoue le SEUL tick de marche ; rend celui qu'il reprogramme. */
 function image(tick: FrameRequestCallback, dt: number): FrameRequestCallback | null {
-  horloge += dt;
-  const avant = file.length;
-  act(() => { tick(horloge); });
-  return file.splice(avant)[0] ?? null;
+  images.avancer(dt);
+  const avant = images.enVol.length;
+  act(() => { tick(images.maintenant()); });
+  return images.enVol.splice(avant)[0] ?? null;
 }
 
 const transform = (el: HTMLElement) => (el.querySelector('svg.iso-stage > g') as SVGGElement).style.transform;
-
-/** UNE image du battement : l'horloge avance, et les rAF que la boucle a posés sont servis. */
-function imageBattement(dt = 16): void {
-  horloge += dt;
-  const àServir = file.splice(0);
-  act(() => àServir.forEach((cb) => cb(horloge)));
-}
 
 /** Le canevas de jsdom n'a aucune boîte, et la passe de dessin sort sur `!w || !h` : sans cadre, le
  *  compteur d'images peintes ne bougerait jamais et la prémisse « ça peint » serait vraie du vide.
@@ -117,14 +110,6 @@ function harnaisCanevas(): void {
     resetStageFrames();
   });
 }
-
-beforeEach(() => {
-  horloge = 1000;
-  file = [];
-  vi.spyOn(performance, 'now').mockImplementation(() => horloge);
-  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => file.push(cb));
-  vi.stubGlobal('cancelAnimationFrame', () => {});
-});
 
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
@@ -321,7 +306,7 @@ describe('P2 — le lacet tenu ne commet pas par image (#1403)', () => {
 
     act(() => demarrerLacet(1));
     const IMAGES = 40;
-    for (let i = 0; i < IMAGES; i++) imageBattement();
+    for (let i = 0; i < IMAGES; i++) images.battre();
     const parcouru = getStageYaw();
     act(() => arreterLacet());
 
@@ -394,7 +379,7 @@ describe('Lacet — la projection commise concorde avec le lacet vif (#1403)', (
    *  solder de lui-même. Rend le désaccord mesuré à cet instant. */
   function maintenirSousCran(el: HTMLElement): number {
     act(() => demarrerLacet(1));
-    for (let i = 0; i < 15; i++) imageBattement();
+    for (let i = 0; i < 15; i++) images.battre();
     const parcouru = getStageYaw();
     expect(parcouru, `${parcouru}° parcourus : le lacet n’a pas tourné`).toBeGreaterThan(15);
     expect(Math.round(parcouru / 90), `${parcouru}° : un cran a été franchi, le résidu n’est plus sous-cran`).toBe(0);
@@ -471,7 +456,7 @@ describe('Lacet — l’avance précède le dessin dans la même image (#1403)',
       monter();
       act(() => demarrerLacet(1));
       vus.length = 0; // ardoise : les passes du montage et de l'avis de régime précèdent toute avance
-      imageBattement();
+      images.battre();
       // Prémisse — l'image a bien été DESSINÉE : un canevas gelé rendrait le verdict vrai du vide.
       expect(vus.length, 'aucune passe de dessin dans l’image battue').toBeGreaterThan(0);
       expect(vus[0], `le dessin a vu ${vus[0]}° : le lacet d’AVANT l’avance de sa propre image`).toBeGreaterThan(0);

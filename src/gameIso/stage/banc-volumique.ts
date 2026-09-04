@@ -206,6 +206,99 @@ export function brancherArdoise(): void {
   });
 }
 
+/** Écart d'horloge qu'UN battement du banc fait franchir — au-delà de la fenêtre de cession de
+ *  `stageFrames.armer`, qui tient deux battements plus rapprochés pour la MÊME image. */
+const MS_PAR_IMAGE = 16;
+
+/** Ce qu'un banc de BOUCLE tient de ses images : la file de rAF en vol, son compte de poses, son
+ *  horloge, et le battement piloté. */
+export interface ImagesPilotees {
+  /** Les rappels de `requestAnimationFrame` EN VOL — la file elle-même, mutable par le banc : on y
+   *  compte les boucles armées (`stageFrames` n'en arme qu'UNE pour toutes ses sources), et on en
+   *  EXTRAIT un rappel nommé quand c'est LUI que le banc rejoue (le tick d'une marche, qui se
+   *  reprogramme lui-même : `walk-frame-loop`, `chrome-jeton`). */
+  readonly enVol: FrameRequestCallback[];
+  /** Les rAF POSÉS depuis le début du test — c'est lui qui dit combien d'HORLOGES tournent : une pose
+   *  par image = une seule boucle. Cumulatif ; un banc en prend l'écart entre deux points. */
+  poses(): number;
+  /** L'horloge du banc, telle que la production la lit (`performance.now()`) — un banc qui rejoue un
+   *  rappel nommé lui passe cet horodatage, et une DURÉE mesurée s'en prend en écart. */
+  maintenant(): number;
+  /** AVANCE l'horloge du banc sans rien servir — l'image du navigateur passe, les rAF restent en vol. */
+  avancer(ms: number): void;
+  /** UNE image : l'horloge avance de `ms` (par défaut au-delà de la fenêtre de cession), puis les
+   *  rappels armés sont servis avec l'horodatage de cette image. Rend le NOMBRE de rappels servis —
+   *  zéro dit que plus personne ne demande d'image. */
+  battre(ms?: number): number;
+}
+
+/**
+ * IMAGES PILOTÉES — l'horloge du banc et son collecteur de `requestAnimationFrame`, posés dans la
+ * MÊME main, à chaque test. Tout banc qui COMPTE des images du stage passe par ici : deux prémisses
+ * d'ENVIRONNEMENT y sont fermées d'un coup, et aucune ne se voit depuis le banc qui rougit.
+ *
+ *  1. le TEMPS. La boucle CÈDE le pas à toute image déjà peinte (`stageFrames.armer` : elle ne bat que
+ *     si `performance.now()` a dépassé la dernière peinte de plus de `MEME_IMAGE_MS`). Lue sur le MUR,
+ *     cette fenêtre est une prémisse d'environnement, pas une propriété du code : une horloge qui
+ *     n'avance pas entre le commit React et le service du rAF rend la boucle muette, et le banc rougit
+ *     « 0 image » sans qu'aucune ligne de production n'ait bougé (rouge CI du 2026-09-01, run
+ *     33788542747, reproduit en gelant `performance.now`). Le banc PILOTE donc son temps.
+ *  2. la PORTÉE du collecteur, qui se pose À CHAQUE TEST et jamais au montage du fichier. Les espions
+ *     sont rendus AVANT chaque test (`restoreMocks`, `vite.config.ts`) — donc APRÈS le `beforeAll` du
+ *     fichier suivant : un voisin du worker qui a espionné `globalThis.requestAnimationFrame`
+ *     (`halos-interaction.test.tsx:287`) fait rendre à ce banc le rAF de jsdom au seuil de son premier
+ *     test (`isolate: false`), et un collecteur posé en `beforeAll` ne l'atteint pas. L'écran arme
+ *     alors sa boucle sur un rAF que le banc ne servira jamais : `sourcesDeFrames() === 1` pour ZÉRO
+ *     rappel en vol, et le banc rougit sur l'ORDRE DES FICHIERS du worker, pas sur la boucle (mesuré :
+ *     vert sur le fichier seul, rouge sur la paire `halos-interaction` + ce banc, rouge sur
+ *     `src/gameIso/stage` entier). L'ordre INTERNE de ce hook, lui, ne décide de rien (mesuré :
+ *     collecteur posé avant l'horloge, `src/gameIso/stage` entier vert).
+ *
+ * `toFake` ne prend QUE l'horloge : `setTimeout` reste RÉEL pour ce que React et three planifient hors
+ * de la mesure, et le rAF appartient au collecteur.
+ *
+ * PÉRIMÈTRE : les bancs qui COMPTENT les images de l'ÉCRAN volumique. `stageFrames.test.ts` reste sur
+ * son propre collecteur : il éprouve le module de battement seul, en environnement `node` et sans une
+ * ligne de React — son battement ne peut pas passer par l'`act` d'ici, et le harnais volumique
+ * (renderer, caches d'atlas, react-dom, three) n'a rien à faire dans son graphe.
+ */
+export function brancherImagesPilotees(): ImagesPilotees {
+  const enVol: FrameRequestCallback[] = [];
+  let posées = 0;
+  let rafAvant: typeof globalThis.requestAnimationFrame | null = null;
+  let cancelAvant: typeof globalThis.cancelAnimationFrame | null = null;
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['performance'] });
+    enVol.length = 0;
+    posées = 0;
+    rafAvant = globalThis.requestAnimationFrame;
+    cancelAvant = globalThis.cancelAnimationFrame;
+    globalThis.requestAnimationFrame = ((cb: FrameRequestCallback) => {
+      posées += 1;
+      return enVol.push(cb);
+    }) as typeof globalThis.requestAnimationFrame;
+    globalThis.cancelAnimationFrame = (() => undefined) as typeof globalThis.cancelAnimationFrame;
+  });
+  afterEach(() => {
+    if (rafAvant) globalThis.requestAnimationFrame = rafAvant;
+    if (cancelAvant) globalThis.cancelAnimationFrame = cancelAvant;
+    vi.useRealTimers();
+  });
+  return {
+    enVol,
+    poses: () => posées,
+    maintenant: () => performance.now(),
+    avancer: (ms: number) => vi.advanceTimersByTime(ms),
+    battre(ms = MS_PAR_IMAGE): number {
+      vi.advanceTimersByTime(ms);
+      const armés = enVol.splice(0);
+      const horodatage = performance.now();
+      act(() => armés.forEach((cb) => cb(horodatage)));
+      return armés.length;
+    },
+  };
+}
+
 /**
  * Laisse tourner la file CADENCÉE du cuiseur (une rasterisation par tranche d'inactivité) pendant `ms`
  * de mur. `battre` = la pompe d'images du banc, quand il en tient une (`StageWalkAnim.subscribe`).

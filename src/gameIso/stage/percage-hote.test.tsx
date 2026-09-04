@@ -20,7 +20,7 @@ import {
   type StageFrame,
   type StageWalkAnim,
 } from './GameStage3D';
-import { BancRenderer, attendreQuads, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
+import { BancRenderer, attendreQuads, brancherArdoise, brancherImagesPilotees, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import { PERCAGE_DEFINE, PERCAGE_FONDU_MS, PERCAGE_RAYON_PX, percerMateriau, trousPercage } from '../backends/webgl/percageLocal';
 import { centrePercage, clePercage } from './percage';
 import { sourcesDeFrames } from './stageFrames';
@@ -323,44 +323,25 @@ describe('Le centre du trou se reprojette À LA FRAME, hors de tout rendu React 
  * SOURCE parmi les motifs de la scène (#1394), jamais une boucle à lui.
  */
 describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
-  let horloge = 0;
-  let file: FrameRequestCallback[] = [];
-  let nowAvant: (() => number) | null = null;
-
-  /** UNE image d'horloge : `dt` ms plus tard, on sert les rappels d'animation en attente. Rend leur
-   *  nombre — zéro veut dire que plus personne ne demande de frame. */
-  const image = (dt = 16): number => {
-    horloge += dt;
-    const dus = file;
-    file = [];
-    for (const cb of dus) cb(horloge);
-    return dus.length;
-  };
+  /** L'horloge du banc et sa file de rAF — le collecteur UNIQUE des bancs d'images du stage : ce banc
+   *  sert les rappels d'animation image par image, et `battre` rend leur nombre (zéro = plus personne
+   *  ne demande de frame). */
+  const cadence = brancherImagesPilotees();
 
   beforeEach(() => {
-    horloge = 0;
-    file = [];
-    nowAvant = performance.now.bind(performance);
-    performance.now = () => horloge;
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { file.push(cb); return file.length; });
-    vi.stubGlobal('cancelAnimationFrame', () => undefined);
     resetBakeQueue();
-  });
-
-  afterEach(() => {
-    if (nowAvant) performance.now = nowAvant;
   });
 
   it('héros COIFFÉ, personne ne bouge : le rayon ATTEINT sa cible, et en ~PERCAGE_FONDU_MS', async () => {
     await monter(COIFFÉ, entreesDe(COIFFÉ));
     expect(trousPercage()[0].w, 'le fondu n’est pas fini au montage').toBeLessThan(PERCAGE_RAYON_PX);
-    const t0 = horloge;
+    const t0 = cadence.maintenant();
     let images = 0;
-    while (trousPercage()[0].w < PERCAGE_RAYON_PX && images < 200) { image(); images++; }
+    while (trousPercage()[0].w < PERCAGE_RAYON_PX && images < 200) { cadence.battre(); images++; }
     expect(trousPercage()[0].w, 'rayon atteint sans qu’aucun rendu React ni aucune marche ne survienne').toBe(PERCAGE_RAYON_PX);
     // Le fondu est une DURÉE, pas un compte d'images : le battement n'a fait que les fournir.
-    expect(horloge - t0, 'durée du fondu').toBeGreaterThanOrEqual(PERCAGE_FONDU_MS);
-    expect(horloge - t0).toBeLessThanOrEqual(PERCAGE_FONDU_MS + 32);
+    expect(cadence.maintenant() - t0, 'durée du fondu').toBeGreaterThanOrEqual(PERCAGE_FONDU_MS);
+    expect(cadence.maintenant() - t0).toBeLessThanOrEqual(PERCAGE_FONDU_MS + 32);
   });
 
   it('une fois convergé, le fondu RELÂCHE ses images : sa source quitte le battement', async () => {
@@ -370,9 +351,9 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
     // (un corps animé est un motif continu — #1396 —, et il en tient une).
     const sourcesPendant = sourcesDeFrames();
     expect(sourcesPendant, 'prémisse : le fondu ne tient aucune source du battement').toBeGreaterThan(0);
-    expect(image(), 'prémisse : aucune image servie, la mesure serait vraie du vide').toBeGreaterThan(0);
+    expect(cadence.battre(), 'prémisse : aucune image servie, la mesure serait vraie du vide').toBeGreaterThan(0);
     images++;
-    while (trousPercage()[0].w < PERCAGE_RAYON_PX && images < 200) { image(); images++; }
+    while (trousPercage()[0].w < PERCAGE_RAYON_PX && images < 200) { cadence.battre(); images++; }
     expect(trousPercage()[0].w).toBe(PERCAGE_RAYON_PX);
     // Le fondu a RELÂCHÉ ses images. Ce qui reste est le motif de la scène — un corps animé en est un
     // (#1396 : sa planche se choisit par image) —, et la boucle unique n'arme qu'UN rappel pour toutes
@@ -400,13 +381,13 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
     let images = 0;
     let servisMax = 0;
     while (trousPercage()[0].w < PERCAGE_RAYON_PX && images < 200) {
-      servisMax = Math.max(servisMax, image());
+      servisMax = Math.max(servisMax, cadence.battre());
       images++;
     }
     expect(trousPercage()[0].w, 'le fondu n’a pas convergé sous l’averse').toBe(PERCAGE_RAYON_PX);
     expect(servisMax, `${servisMax} rappels d’image servis dans une même image : deux horloges tournent`).toBe(1);
     expect(sourcesDeFrames(), 'le fondu convergé tient encore ses images').toBe(sourcesPendant - 1);
-    expect(image(), 'l’averse, elle, demande toujours son image').toBe(1);
+    expect(cadence.battre(), 'l’averse, elle, demande toujours son image').toBe(1);
   });
 
   it('RAFALE de re-rendus : le rayon monte quand même, malgré les dessins sans quad', async () => {
@@ -414,7 +395,7 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
     await monter(COIFFÉ, entrees);
     const rafale: number[] = [];
     for (let i = 0; i < 12; i++) {
-      horloge += 110; // la cadence mesurée sur l'aperçu : 12 re-rendus espacés de 110 ms
+      cadence.avancer(110); // la cadence mesurée sur l'aperçu : 12 re-rendus espacés de 110 ms
       await rendre(COIFFÉ, entrees, CADRE, 720 + i * 0.001); // ce qui remonte les boards, comme l'aperçu
       rafale.push(trousPercage()[0].w);
     }
@@ -443,7 +424,7 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
     const PAS_MS = 8; // 30 × 8 ms < PERCAGE_FONDU_MS : le fondu est encore EN VOL à la dernière image
     const commitsAvant = commitsReact;
     let servies = 0;
-    for (let i = 0; i < IMAGES; i++) if (image(PAS_MS) > 0) servies++;
+    for (let i = 0; i < IMAGES; i++) if (cadence.battre(PAS_MS) > 0) servies++;
 
     expect(servies, `${servies} images servies sur ${IMAGES} : le fondu a lâché ses images en route`).toBe(IMAGES);
     expect(trousPercage()[0].w, 'le rayon n’a pas avancé : rien n’a été peint').toBeGreaterThan(rayonAvant);
