@@ -47,6 +47,7 @@ import type { Pt } from './path';
 import { terrainWalkable } from './terrain';
 import { entityBlockedAt } from './sceneRules';
 import { type Grade, gradeBetween } from './relief';
+import { aretesA } from './wallIndex';
 
 /** Un terrain est un id de catalogue (cf. src/state/terrain.ts). */
 export type Terrain = string;
@@ -514,7 +515,7 @@ export type WallClimb = z.infer<typeof wallClimbSchema>;
 
 /** Le segment ESCALADABLE sur l'arête (x,y,side,z), ou undefined. */
 export function climbAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {
-  return scene.walls?.find((w) => !!w.climb && w.x === x && w.y === y && w.side === side && (w.z ?? 0) === z);
+  return aretesA(scene, x, y, side, z).find((w) => !!w.climb);
 }
 
 /** Segment ESCALADABLE sur l'arête CANONIQUE (cardinale) séparant deux cases adjacentes `a`/`b`, ou
@@ -545,7 +546,7 @@ export function doorIsOpen(scene: Pick<Scene, 'flags'>, seg: WallSeg): boolean {
 
 /** Le segment de PORTE sur l'arête (x,y,side,z), ou undefined. */
 export function doorAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {
-  return scene.walls?.find((w) => !!w.door && w.x === x && w.y === y && w.side === side && (w.z ?? 0) === z);
+  return aretesA(scene, x, y, side, z).find((w) => !!w.door);
 }
 
 /** Pose l'état OUVERT/FERMÉ d'une porte (flag runtime) — renvoie une NOUVELLE Scène (réf changée →
@@ -579,7 +580,7 @@ export type VictoryCondition = z.infer<typeof victoryConditionSchema>;
 
 /** Le segment portant une STRUCTURE sur l'arête (x,y,side,z), ou undefined. */
 export function structureAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {
-  return scene.walls?.find((w) => !!w.structure && w.x === x && w.y === y && w.side === side && (w.z ?? 0) === z);
+  return aretesA(scene, x, y, side, z).find((w) => !!w.structure);
 }
 
 /** Pose l'état ABATTU/INTACT d'une structure d'arête (flag runtime) — renvoie une NOUVELLE Scène. No-op
@@ -652,9 +653,7 @@ function areteEntre(
   if (!scene.walls?.length) return false;
   const e = edgeOf(ax, ay, bx, by);
   if (!e) return false;
-  return scene.walls.some(
-    (w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z && predicat(w),
-  );
+  return aretesA(scene, e.x, e.y, e.side, z).some(predicat);
 }
 
 /** Un mur sépare-t-il deux cases adjacentes du même étage ? (bloque le passage, pas la case). Un mur

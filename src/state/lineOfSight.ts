@@ -40,10 +40,10 @@ const adjacent = (p: Pt, q: Pt): boolean => chebyshev(p, q) <= 1;
 
 /** Un mur d'arête (`Scene.walls`) est-il franchi par la ligne `from`→`to` ? Bloque la vue
  *  (« pas à travers les murs »). Le test PAR ARÊTE est injectable (`edgeBlocks`) : le défaut interroge
- *  l'OPACITÉ de l'arête (`areteOcculte`, O(murs), combat) — jamais sa franchissabilité : une Ligne de Vue
- *  n'a pas à savoir si l'on PASSE, et une herse à barreaux se regarde à travers sans s'ouvrir. La vision
- *  passe un prédicat O(1) (Set d'arêtes précalculé, même verdict) pour les scènes très murées. Les
- *  diagonales ne croisent pas d'arête cardinale. */
+ *  l'OPACITÉ de l'arête (`areteOcculte` sur l'index d'arêtes `state/wallIndex`, O(1) par pas) — jamais
+ *  sa franchissabilité : une Ligne de Vue n'a pas à savoir si l'on PASSE, et une herse à barreaux se
+ *  regarde à travers sans s'ouvrir. La vision injecte un prédicat dont le verdict est déjà CUIT (Set
+ *  d'arêtes de l'`Occ`, même verdict). Les diagonales ne croisent pas d'arête cardinale. */
 export function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0, edgeBlocks?: (ax: number, ay: number, bx: number, by: number) => boolean): boolean {
   if (!scene.walls?.length) return false;
   const blk = edgeBlocks ?? ((ax, ay, bx, by) => areteOcculteEntre(scene, ax, ay, bx, by, z));
@@ -240,4 +240,35 @@ export const losClear = (scene: Scene, from: Pt, to: Pt, smoke: Pt[] = []): bool
  *  `foes` = la liste d'adversaires PERTINENTS (l'appelant filtre camp/vivacité) ; on ignore les sans-position. */
 export function tileSeenByFoe(scene: Scene, foes: Combatant[], pos: Pt, smoke: Pt[] = []): boolean {
   return foes.some((e) => e.pos && losClear(scene, e.pos, pos, smoke));
+}
+
+/**
+ * MÉMO de Ligne de Vue d'UNE décision (patron `sceneMemo` mais à durée de vie EXPLICITE, pas par
+ * identité de donnée). Un tour d'IA pose la MÊME question `from → to` des dizaines de milliers de
+ * fois : `positionValue` interroge chaque héros depuis chaque case atteignable, et `aiApproachPlan`
+ * REJOUE l'énumération entière à deux budgets de mouvement supérieurs (Charge puis Course). Le mémo
+ * rend la case déjà évaluée sans re-tracer le rayon.
+ *
+ * La SCÈNE et les FUMÉES sont capturées à la CRÉATION, et `occupants` est toujours vide : le mémo ne
+ * peut donc pas répondre pour une autre scène, d'autres fumées ou d'autres occupants — c'est ce qui
+ * borne sa validité, pas une convention d'appel. Sa DURÉE de vie est la décision : les positions, les
+ * `scene.flags` (porte ouverte, structure abattue) et le relief n'y bougent pas. Il ne vit JAMAIS au
+ * niveau du module : aucune fuite entre deux tours, aucune dépendance à l'ordre des tests.
+ */
+export interface LosMemo {
+  /** `lineOfSightCover(scène, from, to, [], fumées)` mémoïsé. */
+  cover(from: Pt, to: Pt): { blocked: boolean; cover: CoverClass };
+  /** `losClear(scène, from, to, fumées)` mémoïsé (même entrée de mémo que `cover`). */
+  clear(from: Pt, to: Pt): boolean;
+}
+
+export function makeLosMemo(scene: Scene, smoke: Pt[] = []): LosMemo {
+  const cache = new Map<string, { blocked: boolean; cover: CoverClass }>();
+  const cover = (from: Pt, to: Pt): { blocked: boolean; cover: CoverClass } => {
+    const k = `${from.x},${from.y},${from.z ?? 0}|${to.x},${to.y},${to.z ?? 0}`;
+    let v = cache.get(k);
+    if (v === undefined) { v = lineOfSightCover(scene, from, to, [], smoke); cache.set(k, v); }
+    return v;
+  };
+  return { cover, clear: (from, to) => !cover(from, to).blocked };
 }

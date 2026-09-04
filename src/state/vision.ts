@@ -109,8 +109,8 @@ function buildOpaqueUncached(scene: Scene): Occ {
     for (const { x, y } of propFootTiles(e.ref, e.pos, e.facing, sceneMetresPerTile(scene)))
       if (x >= 0 && y >= 0 && x < w && y < h) { g[y * w + x] = 1; topH[y * w + x] = heightAt(scene, x, y, 0) + METRES_PER_LEVEL; }
   }
-  // Arêtes OCCULTANTES (z0) en SET → test O(1) au rayon (au lieu de `scene.walls.some` O(murs) : 171 ms
-  // sur l'Opéra à 999 murs). Le verdict est celui d'`areteOcculte`, exactement comme le défaut de
+  // Arêtes OCCULTANTES (z0) en SET : le VERDICT `areteOcculte` y est cuit une fois par `Occ`, donc le
+  // rayon n'a ni index à interroger ni prédicat à jouer. C'est le même verdict que le défaut de
   // `wallOnSight` — vision et combat ne divergent jamais sur une arête ; N/E seulement (les diagonales
   // n'occultent pas une LdV cardinale, cf. wallOnSight).
   const walls = new Set<string>();

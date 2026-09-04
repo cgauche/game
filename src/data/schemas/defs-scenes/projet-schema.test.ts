@@ -120,6 +120,40 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
   });
 });
 
+/**
+ * UNE arête, UN segment (#1624) — l'invariant que l'index d'arêtes (`state/wallIndex.ts`) SUPPOSE
+ * et que ses consommateurs consomment (`aretesA(...)[0]`, `gameIso/builders/roofs.ts`). Mesuré vrai
+ * sur les 65 scènes livrées ; `setEdgeWall` (`state/sceneEdit.ts`) le tient à la POSE, ce banc le
+ * tient à la PORTE — le chemin que prennent l'authoring littéral, les migrations et l'import.
+ */
+describe('sceneSchema — une arête `x,y,side,z` ne porte qu’un segment', () => {
+  const avecMurs = (walls: Jouet[]): Jouet => projet({ scenes: [sceneMinimale({ walls })] });
+
+  it('une arête DUPLIQUÉE est refusée, la clé et le compte NOMMÉS au chemin du doublon', () => {
+    expect(fautes(avecMurs([{ x: 14, y: 6, side: 'E' }, { x: 14, y: 6, side: 'E', door: true }]))).toEqual([
+      'scenes.0.walls.1 :: arête 14,6,E,0 × 2 — une arête ne porte qu\'un segment (index d\'arêtes, state/wallIndex.ts)',
+    ]);
+    // `z` ABSENT et `z: 0` sont la MÊME arête (l'index lit `w.z ?? 0`), et le compte suit le stock.
+    expect(fautes(avecMurs([{ x: 1, y: 2, side: 'N', z: 0 }, { x: 1, y: 2, side: 'N' }, { x: 1, y: 2, side: 'N', window: true }]))).toEqual([
+      'scenes.0.walls.1 :: arête 1,2,N,0 × 3 — une arête ne porte qu\'un segment (index d\'arêtes, state/wallIndex.ts)',
+    ]);
+  });
+
+  it('deux arêtes de la MÊME case sur des `side` différents sont acceptées', () => {
+    expect(projetSchema.safeParse(avecMurs([{ x: 3, y: 3, side: 'N' }, { x: 3, y: 3, side: 'E' }])).success).toBe(true);
+  });
+
+  it('la même clé à des ÉTAGES différents est acceptée (`z` fait partie de l’arête)', () => {
+    expect(projetSchema.safeParse(avecMurs([{ x: 3, y: 3, side: 'N' }, { x: 3, y: 3, side: 'N', z: 1 }])).success).toBe(true);
+  });
+
+  it('la DONNÉE livrée traverse : aucune arête dupliquée dans les scènes de la Diligence', () => {
+    const scenes = (JSON.parse(JSON.stringify(diligenceProjet)) as { scenes: { walls?: Jouet[] }[] }).scenes;
+    expect(scenes.flatMap((s) => s.walls ?? []).length).toBeGreaterThan(0);
+    expect(projetSchema.safeParse(diligenceProjet).success).toBe(true);
+  });
+});
+
 describe('projetSchema — les quatre sémantiques du seam, chacune NOMMÉE', () => {
   it('(a) `activeAxes` référence un axe inconnu de axes.json → rouge nommant l\'index et l\'id', () => {
     expect(fautes(projet({ activeAxes: ['negoce', 'plongee-sous-marine'] }))).toEqual([

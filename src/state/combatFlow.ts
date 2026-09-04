@@ -191,7 +191,7 @@ import { STEP_MAX_M } from './relief';
 import { placeCombatant } from './spawn';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove, riderFearSize, combatGeomOf, attackGeomOf, meleeWeaponInRange, pickAttackWeaponList } from './mount';
-import { lineOfSightCover, losClear, tilesBetween, tileSeenByFoe } from './lineOfSight';
+import { lineOfSightCover, losClear, tilesBetween, tileSeenByFoe, makeLosMemo } from './lineOfSight';
 import { coverModifier, couvertLePlusProtecteur } from '../engine/cover';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, crewPosteOf } from './shipPostes';
 import { isVehicle } from '../engine/vehicle';
@@ -1472,12 +1472,16 @@ export function aiApproachPlan(
   // Charge (portée de Course, sans Test — LDB 15 l.35-37).
   const courseBudget = chargeReach(M, runMultiplier(geom.traits));
   if (courseBudget <= input.movement) return none;
-  const charge = chooseEnemyAction({ ...input, movement: courseBudget });
+  // Les deux ré-énumérations ci-dessous rejouent l'approche à un budget de mouvement SUPÉRIEUR sur la
+  // MÊME géométrie : elles partagent le mémo de Ligne de Vue de la décision (posé par `buildAiInput` ;
+  // un appel PUR sans mémo en reçoit un ici) — une case atteinte aux trois budgets n'est évaluée qu'une fois.
+  const inp: EnemyTurnInput = input.losMemo ? input : { ...input, losMemo: makeLosMemo(input.scene, input.smoke ?? []) };
+  const charge = chooseEnemyAction({ ...inp, movement: courseBudget });
   if (charge.kind === 'move' && atContact(charge)) return { plan: charge, ran: null };
   // Course (LDB 15 l.41) : Test d'Athlétisme/Chevaucher, budget = Marche + Course + DR ; pas d'attaque.
   const r = resolveRun(testValue(enemy, enemy.mountId ? 'chevaucher' : 'athletisme'), M, rng);
   const runBudget = M + r.bonusCases;
-  const run = runBudget > input.movement ? chooseEnemyAction({ ...input, movement: runBudget }) : action;
+  const run = runBudget > input.movement ? chooseEnemyAction({ ...inp, movement: runBudget }) : action;
   if (run.kind === 'move' && (run.to.x !== action.to.x || run.to.y !== action.to.y))
     return { plan: run, ran: { roll: r.roll, budget: runBudget } };
   // La Course ne porte pas plus loin que le plan de Marche : marcher normalement (pas d'Action gâchée).
@@ -4875,9 +4879,13 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
   const structures = enemy.kind === 'enemy'
     ? battle.combatants.filter((c) => isStructure(c) && !isOutOfAction(c) && c.pos)
     : undefined;
+  const smoke = smokeOf(battle);
   return {
     enemy, heroes, scene, blocked, noStop: cannotStopOn(battle, geom), movement, spells,
-    smoke: smokeOf(battle), flying: flyM != null, traverse: climbTraverseFor(enemy.traits), perceived, facing: get().facing, squad,
+    smoke, flying: flyM != null, traverse: climbTraverseFor(enemy.traits), perceived, facing: get().facing, squad,
+    // Mémo de Ligne de Vue de CETTE décision : posé ici parce que c'est ici que la scène et les fumées de
+    // la décision sont fixées, et repassé tel quel aux ré-énumérations d'`aiApproachPlan`.
+    losMemo: makeLosMemo(scene, smoke),
     // « Servir cette pièce » (MDG 12) : postes de siège NON servis adjacents — KIND-AGNOSTIQUE (l'appelant
     // impur a la liste complète des combattants). Vide en scène sans emplacement → aucun candidat (parité golden).
     servablePostes: servablePostes(enemy, battle.combatants).map(({ hull, poste }) => ({ hullId: hull.id, posteUid: poste.item.uid })),

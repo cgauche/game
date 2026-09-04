@@ -28,7 +28,7 @@ import { Scene, sceneMetresPerTile } from './scene';
 import { reachable, flyReachable, manhattan, chebyshev, Pt, type TraverseCapability } from './path';
 import { footprintChebyshev, footprintN, combatDistance } from './footprint';
 import { verticalTiles } from './relief';
-import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
+import { makeLosMemo, type LosMemo } from './lineOfSight';
 import { COVER_ORDER } from '../engine/cover';
 import { rangeBandModifier, outnumberMod, canFireWhileEngaged, type ModLine } from '../engine/combat';
 import { effectiveWeaponRange } from '../engine/weaponDamage';
@@ -167,6 +167,11 @@ export interface EnemyTurnInput {
    *  (`resolveAttack` le refuserait silencieusement, combatFlow.ts:628-631). Ne touche PAS aux sorts offensifs
    *  (NADJ 06 l.181 : la restriction ne vise QUE les projectiles). ABSENT = comportement historique inchangé. */
   banRanged?: boolean;
+  /** MÉMO de Ligne de Vue de la DÉCISION en cours (`makeLosMemo`, `lineOfSight.ts`). L'appelant impur
+   *  (`buildAiInput`) en pose un par décision et `aiApproachPlan` le REPASSE à ses deux ré-énumérations
+   *  (Charge, Course) : une case n'est donc évaluée qu'UNE fois pour toute la décision. ABSENT (tests
+   *  purs) = un mémo local à l'appel est créé — mêmes verdicts, mémoïsation seulement moins large. */
+  losMemo?: LosMemo;
 }
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
@@ -527,6 +532,9 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.33).
   if (hasCondition(enemy, 'en-flammes') && !isFrenzied(enemy)) return forced({ kind: 'recover', state: 'en-flammes' });
   const pos = enemy.pos!;
+  // Ligne de Vue de CE tour : toutes les questions `from → to` de la décision passent par le mémo (le
+  // positionnement en pose des dizaines de milliers, cf. `makeLosMemo`). Verdicts IDENTIQUES à l'appel direct.
+  const los = input.losMemo ?? makeLosMemo(scene, smoke ?? []);
   // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.163/164) ; 1 case par défaut. Diagonale incluse
   // (Chebyshev). Source unique partagée avec le héros et la résolution → symétrie héros/ennemi.
   const mr = meleeReachTiles(enemy.weapons);
@@ -565,7 +573,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const adjacentFoes = heroes.filter(inMelee);
   // Ligne de Vue (LDB 13 l.114) : on ne vise au tir/sort qu'une cible visible. Occupants ignorés
   // ici (une créature ne BLOQUE pas la vue — elle ne donne qu'un couvert imparfait, géré au jet).
-  const visible = (h: Combatant): boolean => losClear(scene, pos, h.pos!, smoke ?? []);
+  const visible = (h: Combatant): boolean => los.clear(pos, h.pos!);
   const shootableHeroes = heroes.filter(visible);
   // PORTÉE (parité avec le gate pré-clic du héros) : un tireur ne vise pas au-delà de la bande
   // Extrême (Portée ×3 — rangeBandModifier null), un lanceur pas au-delà de la portée du sort.
@@ -577,7 +585,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Frénésie (LDB 21 l.33) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
   const frenzied = isFrenzied(enemy);
   // LdV vers un point (centre de ZdE) — réutilisé par le gate `canCast` et l'énumération de zone.
-  const losAt = (pt: Pt): boolean => losClear(scene, pos, pt, smoke ?? []);
+  const losAt = (pt: Pt): boolean => los.clear(pos, pt);
   // Peut-il LANCER un sort offensif ce tour ? (mono-cible en portée+LdV, OU ZdE couvrant ≥2 héros.) Gate
   // le bonus de portée préférée et le sous-bloc de REPOSITION (un lanceur kite). Les ZdE offensives comptent
   // ici (le lanceur a de quoi agir → il ne fonce pas bêtement au contact).
@@ -609,7 +617,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // EXCEPTION (AA 10 l.138) : une pièce de siège peut n'avoir QUE la STRUCTURE en vue (défenseurs cachés
   // derrière le parapet) — elle a alors un vrai coup jouable (brécher la porte), on ne la fait pas errer.
   const shootableStructureInView = hasRanged && !reloadNeeded
-    && (input.structures ?? []).some((st) => st.pos && losClear(scene, pos, { ...structureAimCell(pos, st), z: pos.z }, smoke ?? []));
+    && (input.structures ?? []).some((st) => st.pos && los.clear(pos, { ...structureAimCell(pos, st), z: pos.z }));
   if (heroes.length === 0 && !shootableStructureInView) {
     const closest = [...input.heroes].filter((h) => h.pos).sort((a, b) => manhattan(pos, a.pos!) - manhattan(pos, b.pos!))[0];
     if (!closest) return forced({ kind: 'end' });
@@ -629,11 +637,12 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const fleeMove = (preferHidden = false): EnemyAction => {
     const tiles = [...reach.keys()].map((k) => { const [x, y] = k.split(',').map(Number); return { x, y } as Pt; });
     const distOf = (t: Pt) => Math.min(...heroes.map((h) => chebyshev(t, h.pos!)));
-    const hidden = preferHidden ? tiles.filter((t) => !tileSeenByFoe(scene, heroes, t, smoke ?? [])) : [];
+    const vuePar = (t: Pt): boolean => heroes.some((h) => h.pos && los.clear(h.pos, t));
+    const hidden = preferHidden ? tiles.filter((t) => !vuePar(t)) : [];
     let best = pos;
     let bestDist = distOf(pos);
     // Actuellement à découvert mais une cachette est atteignable → toute cachette vaut mieux que rester vu.
-    if (hidden.length && tileSeenByFoe(scene, heroes, pos, smoke ?? [])) { best = hidden[0]; bestDist = -1; }
+    if (hidden.length && vuePar(pos)) { best = hidden[0]; bestDist = -1; }
     for (const t of (hidden.length ? hidden : tiles)) {
       const d = distOf(t);
       if (d > bestDist) { bestDist = d; best = t; }
@@ -767,7 +776,22 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const heroThreatWeapons = heroes.map((h) => ({
     h, melee: h.weapons?.find((w) => w.type === 'melee'), ranged: h.weapons?.find((w) => w.type === 'ranged'),
   }));
+  // Clé de CASE des mémos de position (`dangerAt`, `coverRank`) : ces deux grandeurs ne dépendent QUE
+  // de la case d'arrivée — les héros, l'escouade et la scène ne bougent pas pendant la décision. Elles
+  // étaient recalculées pour CHAQUE cible : l'énumération d'approche les redemande une fois par cible
+  // (668 structures ciblables sur La Diligence) et `aiApproachPlan` rejoue le tout à trois budgets.
+  const cleCase = (t: Pt): string => `${t.x},${t.y},${t.z ?? 0}`;
+  const memoDanger = new Map<string, number>();
+  const memoCover = new Map<string, number>();
   const dangerAt = (to: Pt): number => {
+    const k = cleCase(to);
+    const vu = memoDanger.get(k);
+    if (vu !== undefined) return vu;
+    const v = dangerBrut(to);
+    memoDanger.set(k, v);
+    return v;
+  };
+  const dangerBrut = (to: Pt): number => {
     const here = { ...enemy, pos: to } as Combatant;
     let total = 0;
     for (const { h, melee, ranged } of heroThreatWeapons) {
@@ -812,6 +836,23 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       return forced({ kind: 'grapple', targetId: partner, resolution });
     }
   }
+  // Meilleur cran de couvert dont la case `from` bénéficie face aux héros (échelle UNIQUE `engine/cover.ts`).
+  const coverRank = (from: Pt): number => {
+    const k = cleCase(from);
+    const vu = memoCover.get(k);
+    if (vu !== undefined) return vu;
+    let meilleur = 0;
+    for (const h of heroes) {
+      const c = los.cover(h.pos!, from);
+      const rang = COVER_ORDER.indexOf(c.cover);
+      if (rang > meilleur) meilleur = rang;
+    }
+    memoCover.set(k, meilleur);
+    return meilleur;
+  };
+  // Couvert de la case COURANTE : référence commune à toutes les cases candidates (`pos` ne bouge pas
+  // pendant la décision) — calculée une fois, jamais par candidat.
+  const coverRankIci = coverRank(pos);
   const positionValue = (to: Pt, target: Combatant): number => {
     let v = 0;
     // Flanc/dos (LDB 14 l.62) : frapper hors du champ de vision avant de la cible (gratuit). Nécessite
@@ -823,21 +864,12 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     }
     // Gain de couvert POUR SOI face à la menace la plus proche : un couvert imparfait/moyen/total à
     // l'arrivée réduit les tirs adverses (lineOfSightCover, direction héros→case). Cran gagné vs case actuelle.
-    const coverRank = (from: Pt): number => {
-      let meilleur = 0;
-      for (const h of heroes) {
-        const c = lineOfSightCover(scene, h.pos!, from, [], smoke ?? []);
-        const rang = COVER_ORDER.indexOf(c.cover); // échelle UNIQUE du couvert (engine/cover.ts)
-        if (rang > meilleur) meilleur = rang;
-      }
-      return meilleur;
-    };
-    const coverDelta = coverRank(to) - coverRank(pos);
+    const coverDelta = coverRank(to) - coverRankIci;
     if (coverDelta > 0) v += Weff.coverGain * coverDelta;
     // Portée préférée : un tireur/lanceur valorise une case d'où il TIRE (cible visible + à portée) sans
     // être au contact ; un combattant de mêlée valorise le contact. Réutilise les gates de portée/LdV.
     const d = chebyshev(to, target.pos!);
-    const seesFrom = losClear(scene, to, target.pos!, smoke ?? []);
+    const seesFrom = los.clear(to, target.pos!);
     if (isShooterOrCaster) {
       const inShootRange = canCast
         ? (castRange == null || d <= castRange)
@@ -1041,7 +1073,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   for (const st of structureTargets) {
     // On vise la FACE exposée de la structure (côté tireur) : c'est par là que la LdV n'est pas coupée par
     // l'arête de la structure elle-même (un canon voit la face de la porte, pas la case derrière elle).
-    const stSeen = losClear(scene, pos, { ...structureAimCell(pos, st), z: pos.z }, smoke ?? []);
+    const stSeen = los.clear(pos, { ...structureAimCell(pos, st), z: pos.z });
     // TIR (pièce de siège qui brèche la porte) — face visible, en portée, et que l'arme peut ABÎMER.
     if (canFireStruct && stSeen && !structureImmune(rangedW!, st)
         && (maxWeaponRange <= 0 || rangeBandModifier(fpDist(st), maxWeaponRange, mpt) != null)) {
@@ -1049,9 +1081,11 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     }
     // MÊLÉE / APPROCHE (bélier ou arme abîmant une porte non-Impénétrable) — auto-touche, pas de défense.
     if (hasMeleeWeapon && meleeWeapon && !structureImmune(meleeWeapon, st)) {
-      if (inMelee(st)) candidates.push({ action: { kind: 'melee', targetId: st.id }, kind: 'melee', utility: attackUtility(st, { kind: 'melee', weapon: meleeWeapon }), targetId: st.id, coord: st.pos! });
+      // Utilité d'attaque de CETTE structure : elle ne dépend pas de la case d'arrivée — une seule fois par cible.
+      const atkSt = attackUtility(st, { kind: 'melee', weapon: meleeWeapon });
+      if (inMelee(st)) candidates.push({ action: { kind: 'melee', targetId: st.id }, kind: 'melee', utility: atkSt, targetId: st.id, coord: st.pos! });
       else if (!committingPrep) for (const { to, posV } of approachCandidates(st)) {
-        const u = attackUtility(st, { kind: 'melee', weapon: meleeWeapon }) + posV - Weff.approachDist * manhattan(to, st.pos!);
+        const u = atkSt + posV - Weff.approachDist * manhattan(to, st.pos!);
         candidates.push({ action: { kind: 'move', to, thenTargetId: st.id }, kind: 'move', utility: u, targetId: st.id, coord: to });
       }
     }

@@ -31,6 +31,7 @@
 import { heightAt, sceneMetresPerTile, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { memoByRef } from '../../state/sceneMemo';
+import { aretesA } from '../../state/wallIndex';
 import { DEFAULT_ROOF_DEFAULTS, effectiveArchitecture, fittedPitchDeg, localCrossSpans } from '../../state/sceneEdit';
 import { roofMaterial } from '../catalog/roofs';
 import { facadeStructureAppearance, facadeWallFeatureAppearance } from '../catalog/facades';
@@ -808,20 +809,22 @@ export const facadeEdges = memoByRef((scene: Scene): ReadonlyMap<string, FacadeE
   return indexed;
 });
 
-/** Murs de scène indexés par ARÊTE et par CASE BORDÉE (`x,y,z`) — mémoïsé par scène. */
-const wallIndexOf = memoByRef((scene: Scene) => {
-  const byEdge = new Map<string, WallSeg>();
+/** Murs de scène indexés par CASE BORDÉE (`x,y,z`) — mémoïsé par scène. L'index par ARÊTE, lui, est le
+ *  PARTAGÉ (`state/wallIndex.ts`, même clé `x,y,side,z` qu'`edgeKey`) : `aretesA` rend la liste des
+ *  segments d'une arête, `[0]` le premier au sens du document. Mesure sur les 65 scènes livrées
+ *  (37 scénarios + 4 campagnes, 3 143 murs) : ZÉRO arête porte plus d'un segment — premier et dernier
+ *  sont le même mur, le verdict est celui d'ici. */
+const wallCellIndexOf = memoByRef((scene: Scene) => {
   const byCell = new Map<string, WallSeg[]>();
   for (const seg of scene.walls ?? []) {
     const z = seg.z ?? 0;
-    byEdge.set(edgeKey(seg), seg);
     const [nx, ny] = WALL_NB[seg.side];
     for (const [x, y] of [[seg.x, seg.y], [seg.x + nx, seg.y + ny]] as [number, number][]) {
       const key = `${x},${y},${z}`;
       (byCell.get(key) ?? byCell.set(key, []).get(key)!).push(seg);
     }
   }
-  return { byEdge, byCell };
+  return { byCell };
 });
 
 /** Apparence RÉSOLUE d'un segment de mur — LA MÊME loi que `wallGeometry` (`walls.ts`) : la façade
@@ -869,14 +872,14 @@ export function closureAppearance(
   bodySpace: Iterable<string>,
 ): string | undefined {
   const facades = facadeEdges(scene);
-  const index = wallIndexOf(scene);
+  const index = wallCellIndexOf(scene);
   for (const edge of edges) {
     const facade = facades.get(edgeKey(edge));
     const routed = facade && facadeWallFeatureAppearance(facade.appearance, 'gable');
     if (routed) return routed;
   }
   for (const edge of edges) {
-    const seg = index.byEdge.get(edgeKey(edge));
+    const seg = aretesA(scene, edge.x, edge.y, edge.side, edge.z)[0];
     if (seg) return segAppearance(scene, facades, seg);
   }
   return dominantAppearance(scene, facades, index, space)

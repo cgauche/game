@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { scenario } from './ecuries-clayonnage';
 import { scenario as diligence } from './diligence';
-import { lineOfSightCover } from '../../state/lineOfSight';
-import { wallBetween, areteOcculteEntre, structureAt } from '../../state/scene';
+import { lineOfSightCover, type LosMemo } from '../../state/lineOfSight';
+import { wallBetween, areteOcculteEntre, structureAt, type Scene } from '../../state/scene';
+import type { Pt } from '../../state/path';
+import { useGame } from '../../state/store';
+import { buildAiInput } from '../../state/combatFlow';
+import { chooseEnemyAction } from '../../state/ai';
+import { seedBattleRng } from '../../state/battleRng';
 
 /**
  * Le banc de RECETTE des écuries : il fige les faits GÉOMÉTRIQUES que la recette navigateur va lire à
@@ -60,5 +65,48 @@ describe('Écuries de la Diligence — voir par-dessus le clayonnage', () => {
     for (const h of HEROS) {
       expect(lineOfSightCover(scene, h, GOBELIN_DERRIERE_MUR, []).blocked).toBe(true);
     }
+  });
+});
+
+/**
+ * Le MÉMO de Ligne de Vue du tour d'IA (`makeLosMemo`, posé par `buildAiInput`) est PORTEUR : sa clé
+ * couple `from` ET `to`, parce que le verdict de LdV n'est pas symétrique (couvert d'adjacence,
+ * `lineOfSightCover`). Les écuries sont la scène où ça se voit : le gobelin de la stalle voisine
+ * pose des dizaines de milliers de questions `from → to` derrière du clayonnage et un mur à
+ * ossature. Contrat POSITIF : avec le mémo réel, la décision est celle du calcul direct ; avec un
+ * mémo dont la clé OUBLIE `from`, elle DIVERGE — le couple est donc bien ce qui porte le verdict.
+ */
+describe('IA — le mémo de Ligne de Vue du tour est PORTEUR (clé from→to)', () => {
+  /** Le mémo FAUTIF : même corps que `makeLosMemo`, clé AMPUTÉE de `from`. */
+  const memoAmnesique = (sc: Scene, smoke: Pt[]): LosMemo => {
+    const cache = new Map<string, ReturnType<typeof lineOfSightCover>>();
+    const cover = (from: Pt, to: Pt) => {
+      const k = `${to.x},${to.y},${to.z ?? 0}`; // OUBLIE `from`
+      let v = cache.get(k);
+      if (v === undefined) { v = lineOfSightCover(sc, from, to, [], smoke); cache.set(k, v); }
+      return v;
+    };
+    return { cover, clear: (f, t) => !cover(f, t).blocked };
+  };
+
+  it('un mémo dont la clé OUBLIE `from` fait DIVERGER la décision du gobelin de la stalle voisine', () => {
+    seedBattleRng(1234);
+    useGame.setState({ party: scenario.makeParty() });
+    useGame.getState().startScene(scenario.scene);
+    useGame.getState().startCombat('enc-clayonnage');
+    useGame.getState().confirmRoundStart();
+    const b = useGame.getState().battle!;
+    const gobelin = b.combatants.find((c) => c.kind === 'enemy' && c.pos!.x === GOBELIN_VOISIN.x && c.pos!.y === GOBELIN_VOISIN.y)!;
+    expect(gobelin).toBeTruthy();
+    useGame.setState({ battle: { ...b, turn: b.order.indexOf(gobelin.id), acted: false, action: null, movementUsed: 0 } });
+    const input = buildAiInput(gobelin, useGame.getState);
+    expect(input.losMemo).toBeTruthy(); // `buildAiInput` pose bien le mémo du tour
+
+    const avecMemoReel = chooseEnemyAction(input);
+    // (a) le mémo réel ne change RIEN au verdict : même décision que le calcul direct (sans mémo).
+    expect(avecMemoReel).toEqual(chooseEnemyAction({ ...input, losMemo: undefined }));
+    // (b) …et la clé from→to est PORTEUSE : l'amputer change la décision.
+    expect(chooseEnemyAction({ ...input, losMemo: memoAmnesique(input.scene, input.smoke ?? []) }))
+      .not.toEqual(avecMemoReel);
   });
 });
