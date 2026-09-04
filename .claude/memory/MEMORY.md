@@ -31,7 +31,7 @@
 - [« Pourquoi pas fait ? » = ORDRE](feedback-un-pourquoi-pas-fait-est-un-ordre.md) · [PLAN APPROUVÉ = exécution SANS relance](feedback-plan-approuve-sexecute-sans-relance.md) · [ÉDITEUR ne connaît pas les HÉROS](feedback-editeur-ne-connait-pas-les-heros.md) · [Signalement de DÉFAUT ≠ correction de spec](feedback-signalement-de-defaut-nest-pas-correction-de-spec.md).
 - [Playtest = thèmes](feedback-playtest-themes-not-points.md) · [vert « Fait » = périmètre](game-playtest-color-fait-is-scoping-decision.md) · [doc RAW avant impl](feedback-raw-reference-doc-before-impl.md) · [rigs vs illustrations](feedback-rigs-vs-illustrations.md).
 - [FR uniquement](game-francais-jamais-anglais.md) · [sources FR élargies](game-source-fr-campagne-custom.md) · [PowerShell](env-use-powershell-not-bash.md) · [débloquer l'autre session](game-cross-session-console-unblock.md) · [pièges background](env-session-background-pieges-outils.md) · [CHARGE](env-charge-machine-un-seul-agent-lourd.md) — `--minWorkers=1` · [git show : commit AVANT --](env-git-show-ordre-commit-avant-paths.md).
-
+- [Arbitrages 2026-09-04 soir](user-arbitrages-2026-09-04-echelle-ia-structures.md) — échelle A RAW (#1507), IA cible des structures en SIÈGE seul sur drapeau de rencontre, décor statique/utilisable (#1687) · [Arbitrages 2026-09-05 matières](user-arbitrages-2026-09-05-materiaux-1686.md) — terrain HORS (#1690), structureAppearance HORS, ids composés, Codex par domaine ; + 4 DÉCISIONS D'INGÉNIERIE (« j'ai juste cliqué sur Recommander »).
 ## Chantiers récents / état
 - **[DIAGNOSTIC DE DÉRIVE 2026-09-01](project-diagnostic-derive-2026-09-01.md)** — 4 verdicts (CI rouge 100 % 3 semaines = portes absentes, pas le doublon ; fan-out ×16 ; règles en prose récidivent ; pertes réelles = lot A2 écran de capacités + WIP .wt-1501) ; 10 propositions EN ATTENTE de décision user.
 - **[#1463 : FERMABLE SOUS DÉCISION (grand juge 2026-09-01)](project-1463-cloture-sous-decision-2026-09-01.md)** — 3 décisions user en attente (#1654 AST 71, #1620 TypeChecker, #1657 concept test) ; ne pas fermer sans ; puis #1388.
@@ -46,7 +46,8 @@
 - [Tenues de carrières](game-tenues-carrieres-arbitrage-2026-07-14.md) · [talents « ou » chips](game-charte-talents-ou-chips-codex-lisibles.md) · [CORPS vs OBJET](game-corps-vs-objet-peau-nest-pas-une-armure.md).
 - [CAMÉRA = BOUCLE, jamais React](game-doctrine-camera-boucle-jamais-react.md) — dette redessin #1371.
 - Chantiers 2026-07, collisions de livres, rig, migrations id/label, jets/combat/hors-combat (LIVRÉS) : [index systèmes livrés](index-systemes-livres.md).
-
+- **[SOCLE VOLUMIQUE #1680 : état 2026-09-05](project-1680-socle-volumique-etat-2026-09-03.md)** — 15-A/15-B/perf IA/IA siège POSÉS ; restent #1644/#1686/#1687/#1688.
+- **[MATIÈRES #1686 : état 2026-09-05](project-1686-materiaux-etat-2026-09-05.md)** — lots 1, 2, 3a-1, 3a-2 POUSSÉS (materials.json, Codex Matières, ids vivants) ; ticket OUVERT jusqu'à #1690 (fan-out ≤ 1) ; leçons de portes.
 ## Rendu iso/POV & rig
 - [AUDIT SOCLE rig](game-rig-socle-audit-2026-07-16.md) · [contrat 3 vues PROD](game-rig-3vues-contrat-prod-chantier.md) · [SQUELETTE = PORTE par plan](game-doctrine-squelette-qualite-porte-par-plan.md).
 - [AUDIT RENDU + SPIKE WebGL](game-audit-moteur-rendu-2026-08-09.md) — GO/NO-GO #1160 EN ATTENTE user. · [ART ÉPURÉ échelle JEU](user-direction-art-epure-echelle-jeu.md).
@@ -78,3 +79,4 @@
 - **[VIEUX TICKET = re-mesure aux règles du jour](feedback-vieux-ticket-se-remesure-aux-regles-du-jour.md)** — 2026-09-03 « ce qui est cité a pu énormément changer » (#918/#1437) : juge de grounding avant tout brief, commentaire RE-MESURE au ticket.
 - **[REPRISE = récupérer les ANALYSES, pas que le WIP](feedback-reprise-chantier-recuperer-les-analyses-pas-que-le-wip.md)** — 2026-09-02 « étonnant que tu n'ai pas récupéré ses analyses » ; journal/tickets/transcript AVANT un juge ; un inventaire = premier jet à réitérer après la première vague.
 - **[UNE SESSION PAR CHANTIER](user-regime-une-session-par-chantier-2026-09-01.md)** — arbre principal = INTÉGRATION seule, trains en worktree, gates avant push, fan-out ≤ 1, aucune vague hors plan sans validation DIRECTE.
+- [SCRATCHPAD PURGÉ en cours de session](env-scratchpad-purge-en-cours-de-session.md) — fichiers de travail sous node_modules/.cache/ · [GARDE-MÉMOIRE du harnais, gates --serie détachées](env-garde-memoire-harnais-gates-serie-detachees.md).
