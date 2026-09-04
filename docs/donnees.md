@@ -83,7 +83,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 | `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (20 entrée(s)) | `effectTables` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
 | `grapple.json` | Lutte / empoignade (objet à sous-catalogues) | `grapple` — objet single |
-| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (84 entrée(s)) | `regles` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
+| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (85 entrée(s)) | `regles` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
 | `reglesOptionnelles.json` | Registre des RÈGLES OPTIONNELLES (« règles maison ») : id STABLE (clé de surcharge, de persistance et de `variants[].when.rule`), libellé/aide/groupe d'affichage, forme du contrôle auto-rendu (`flag`/`param`/`mode`), défaut et bornes, action de jeu attachée — lu par `src/engine/policy.ts` (`rule(id)`), rendu par le panneau in-game (81 entrée(s)) | `reglesOptionnelles` — dataset `reglesOptionnelles` |
 | `damage-types.json` | Types de dégâts (poison, feu, électrique) (4 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `sizes.json` · `encumbranceTiers.json` | Barèmes par Taille (modif. au tir · Enc à bord · côté d'empreinte) · paliers d'Encombrement (objet à sous-catalogues · 4 entrée(s)) | `sizes` — objet single ; `encumbranceTiers` — dataset `encumbranceTiers` |
@@ -102,9 +102,9 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 | `water-exposure.json` | Exposition à l'eau (noyade, maladies) (objet à sous-catalogues) | `waterExposure` — objet single |
 | `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) (objet à sous-catalogues · objet à sous-catalogues) | `obsessions` — niché (`obsessions`) ; `drunkenness` — niché (`drunkenness`) |
 | `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) (15 entrée(s)) | `nightStakes` — dataset `nightStakes` |
-| `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (43 entrée(s)) | `voyageStakes` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
+| `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (42 entrée(s)) | `voyageStakes` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) |
 | `flow-stakes.json` | Enjeu d'un JET DE MODALE MONO (#1117), keyé par l'id de jet `{flow, phase}` — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `flowStakeRef`/`resolveStake` (`src/data/index.ts`) (34 entrée(s)) | `flowStakes` — aucune (exposé en LECTURE seule au Codex (catégorie `flowStakes`) — absent de `CodexEdit.CATEGORY_DATASET`) |
-| `combat-stakes.json` | Enjeu d'une étape de cascade de COMBAT (#1117), keyé par le `kind` de son applier — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `combatStakeRef`/`resolveStake` (`src/data/index.ts`) (35 entrée(s)) | `combatStakes` — aucune (exposé en LECTURE seule au Codex (catégorie `combatStakes`) — absent de `CodexEdit.CATEGORY_DATASET`) |
+| `combat-stakes.json` | Enjeu d'une étape de cascade de COMBAT (#1117), keyé par le `kind` de son applier — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `combatStakeRef`/`resolveStake` (`src/data/index.ts`) (37 entrée(s)) | `combatStakes` — aucune (exposé en LECTURE seule au Codex (catégorie `combatStakes`) — absent de `CodexEdit.CATEGORY_DATASET`) |
 
 ### Objets & équipement
 | Fichier | Contient | Exposition (Codex — édition) |
@@ -257,7 +257,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   `src/data/variants-integrity.test.ts`) — `talents.json` résout quatre champs, UNE CITATION PAR LIGNE,
   chacune à côté du SYMBOLE qu'elle porte (lignes MESURÉES à la génération, `citeLigne`) :
 
-  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1424`
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1471`
   - `test` — `talentTestSLBonus`, `src/engine/magic.ts:359`
   - `max` — `talentMaxById`, `src/engine/careerSlots.ts:326`
   - `combat` — `featuresOf`, `src/engine/combatFeatures/dispatch.ts:52`
@@ -265,7 +265,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 
   `traits.json` ne résout, lui, que deux champs :
 
-  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:556`
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:559`
 
   `passive` et `effects` en sont EXCLUS — le moteur les lit sur
   l'entrée brute (`src/engine/talentEffects.ts`, `src/engine/traits/dispatch.ts`) ; un champ n'entre
@@ -485,4 +485,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: ffb724a53fd2cbcdfae0958666d5175622b78f0d (345 fichiers, 2 dossiers) -->
+<!-- sources-empreinte: ef22ee6b17fcc842f13edaa636d0752562f5823f (346 fichiers, 2 dossiers) -->
