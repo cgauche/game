@@ -65,8 +65,8 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 | `src/state/massBattleFlow.ts` | 1 | dette | 348 | `openBattleActivity` — fabrique PARTAGÉE, atteinte par 6 call-sites (prep ×3/round ×2/resistance) -> #1067 (surfaçage massBattle). |
 | `src/state/medicFlow.ts` | 2 | dette | 176, 202 | `pendingHeal` et `pendingSurgery` du soigneur PNJ hors combat -> #1064. |
 | `src/state/merchantFlow.ts` | 1 | dette | 878 | `pendingAppraise` (Évaluation / Intuition de détection) -> #1064. |
-| `src/state/seaVoyageFlow.ts` | 1 | dette | 2097 | `pendingSteamSave` (`openSteamSave`, Test d'Initiative de l'ingénieur) : le flux a bien sa spec canonique (`rollFlowSpecs.ts` `steamSave`, `makeRollFlow`), c'est la FABRIQUE du pending qui reste montée à la main -> #1474. |
-| `src/state/store.ts` | 1 | canonique | 2672 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
+| `src/state/seaVoyageFlow.ts` | 1 | dette | 2091 | `pendingSteamSave` (`openSteamSave`, Test d'Initiative de l'ingénieur) : le flux a bien sa spec canonique (`rollFlowSpecs.ts` `steamSave`, `makeRollFlow`), c'est la FABRIQUE du pending qui reste montée à la main -> #1474. |
+| `src/state/store.ts` | 1 | canonique | 2677 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
 
 _15 sites mesurés dans 9 fichiers — par nature : 11 dette, 2 canonique, 2 mixte._
 
@@ -115,11 +115,11 @@ _83 call-sites mesurés dans 20 fichiers, pour 77 exports rouleurs dérivés de 
 
 ## Population AUTHORÉE (donnée, pas code)
 
-**131** nœuds `test` (`{ kind: 'test', test: FlowTest, success, fail }`) dans **14** documents
+**137** nœuds `test` (`{ kind: 'test', test: FlowTest, success, fail }`) dans **14** documents
 de `src/data` et `src/scenes`, **tous ROUTÉS** par la porte. Ce n'est pas un stock : la donnée n'a pas de
 call-site à router.
 
-### Les 131 routés — 3 routeurs mesurés
+### Les 137 routés — 3 routeurs mesurés
 
 - `resolveFlowTest` (`src/state/combat/triggeredTest.ts`) — voie CADENCE-AWARE : ouvre `openSkillTest` (modale influençable) quand l'acteur est piloté.
 - `resolveInlineFlowTest` (`src/state/triggeredEffects.ts`) — jumeau store-free de la branche NON-interactive du précédent (jet résolu inline, journalisé).
@@ -148,7 +148,7 @@ d'atteindre un routeur.
 | `src/data/maneuvers.json` | 2 |
 | `src/data/qualities.json` | 2 |
 | `src/data/river-criticals.json` | 2 |
-| `src/data/ship-criticals.json` | 1 |
+| `src/data/ship-criticals.json` | 7 |
 | `src/data/spells.json` | 46 |
 | `src/data/symptoms.json` | 4 |
 | `src/data/talents.json` | 3 |
@@ -157,7 +157,7 @@ d'atteindre un routeur.
 | `src/scenes/arene/arene-projet.json` | 9 |
 | `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` | 2 |
 
-_131 nœuds authorés dans 14 documents, tous routés._
+_137 nœuds authorés dans 14 documents, tous routés._
 
 ## Rappel — stock du garde d'exclusivité (`rollTest`/`d100`/`TestOutcome.seal` bruts)
 
@@ -181,4 +181,4 @@ reste `ROLL_SEAM_PHASE2_STOCK`. 29 sites dans 14 fichiers.
 | `src/state/travelPostes.ts` | 1 |
 | `src/state/triggeredEffects.ts` | 1 |
 
-<!-- sources-empreinte: 87a1aac5e5042dc1ff9c38cae51ad357a6e3dfe4 (2087 fichiers, 137 dossiers) corps: 896f6a2239c6058190b2bee5be170de3b3cc66b0 -->
+<!-- sources-empreinte: cd0c997bc7836f80eea62f77c57b554bf3e140fb (2089 fichiers, 137 dossiers) corps: 988373d149280369f4d1e153719f197e11a91a3a -->
