@@ -25,7 +25,7 @@ export function FateSaveModal() {
 
   return (
     /* Décision DE COMBAT : coquille de jet (voile allégé + ancrage haut) — le coup fatal se lit sous la fenêtre. */
-    <Modal title={<><Icon id="resource/fate" size="sm" /> Le Destin <StakeRule rule={stakeRuleOf(stake)} label="Le Destin" /></>} subject={hero}>
+    <Modal title={<><Icon id="resource/fate" size="sm" /> Le Destin <StakeRule rule={stakeRuleOf(stake)} /></>} subject={hero}>
       <p className="rm-log">
         {p.source === 'hit' ? 'Un coup fatal le frappe !' : 'Ses blessures l’emportent…'} Sacrifier un Point de Destin ?
         (il en reste {fate})

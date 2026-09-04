@@ -106,16 +106,18 @@ describe('RollShell.stake — prop de PREMIER RANG (#1117)', () => {
  * `cascade-subtitle.test.tsx` (montage réel de `CascadeBody`).
  */
 describe('StakeRule — le déclencheur-icône (#1117, arbitrage 2026-08-06)', () => {
-  it('porte le patron partagé, NOMMÉ pour un lecteur d’écran', () => {
-    const html = renderToStaticMarkup(<StakeRule rule={{ category: 'regles', id: 'trauma' }} label="Cauchemars" />);
+  it('porte le patron partagé, NOMMÉ par la FICHE qu’il ouvre', () => {
+    const html = renderToStaticMarkup(<StakeRule rule={{ category: 'regles', id: 'trauma' }} />);
     expect(html, 'le déclencheur-icône partagé, pas un bouton local').toContain('ab-codex-info');
     expect(html, 'l’icône vient du pipeline (journal/info), jamais un caractère bricolé').toContain('<svg');
-    expect(html, 'nom accessible dérivé du libellé d’étape').toContain('aria-label="Règle : Cauchemars"');
+    // Le pas qui l'accueille peut s'appeler « Cauchemars » : le renvoi, lui, mène à la fiche Trauma —
+    // et c'est elle qu'il annonce (#1657 B3-2b-b, `stake-rule-nom-accessible.test.tsx`).
+    expect(html, 'nom accessible dérivé de la FICHE, préfixé de son rôle').toContain('aria-label="Règle : Trauma"');
     expect(html).toContain('role="button"');
     expect(html, 'aucun lien textuel').not.toContain('la règle');
   });
 
   it('sans foyer déclaré, rien n’est rendu (aucune icône morte)', () => {
-    expect(renderToStaticMarkup(<StakeRule label="Cauchemars" />)).toBe('');
+    expect(renderToStaticMarkup(<StakeRule />)).toBe('');
   });
 });

@@ -10,7 +10,6 @@ import { useGame } from '../state/store';
 import { RecapLineRow } from './RecapLine';
 import type { RecapLine } from '../state/recapLine';
 import { StakeNote, StakeRule, hasStakeRule, stakeRuleOf } from './StakeNote';
-import { nodeText } from './compendium/CodexRef';
 import type { StakeRef } from '../data';
 import type { BuiltRollRow } from './rollRowBuild';
 
@@ -183,7 +182,7 @@ export function RollShell({
   // (reconnaissance par IDENTITÉ de composant, `hasStakeRule`).
   const stakeRule = stake ? stakeRuleOf(stake) : undefined;
   const titleNode = stakeRule && !hasStakeRule(title) && !hasStakeRule(subtitle)
-    ? <>{title} <StakeRule rule={stakeRule} label={nodeText(title).trim()} /></>
+    ? <>{title} <StakeRule rule={stakeRule} /></>
     : title;
   // VERROU de comparaison (#990) : dès qu'UNE rangée du panneau porte un jet MASQUÉ, la coquille ne
   // décerne plus rien qui compare les deux jets — ni halo vainqueur/perdant, ni badge « DR net ». Le

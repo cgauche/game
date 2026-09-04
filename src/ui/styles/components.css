@@ -71,6 +71,17 @@
   flex-direction: column;
   gap: 6px;
 }
+/* La RAISON en bulle interpose une enveloppe (l'infobulle partagée, seul enfant `span`) : sans cette
+   règle, l'enveloppe est un `inline` et le bouton cesse de remplir sa boîte — dans une grille
+   d'options, la cellule REFUSÉE devenait plus étroite que ses voisines. Le bouton SANS bulle, lui,
+   est un enfant direct de la colonne flex et s'étirait déjà : ceci aligne les deux cas, chez la
+   primitive, pour tous ses consommateurs. */
+.gated-action > span {
+  display: block;
+}
+.gated-action > span > .btn {
+  width: 100%;
+}
 .gated-action-reason {
   margin: 0;
   opacity: 0.8;

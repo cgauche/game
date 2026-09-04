@@ -52,7 +52,7 @@ export function MultiRollList({ entries }: { entries: NightEntry[] }) {
         return g.group
           // Le RENVOI de règle est accolé au titre de la bande (même affordance que le titre d'étape
           // d'une cascade), l'enjeu se lit dessous — une seule fois pour toute la rubrique.
-          ? <Band key={`g-${gi}`} title={<>{g.group} <StakeRule rule={stake ? stakeRuleOf(stake) : undefined} label={g.group} /></>}>{body}</Band>
+          ? <Band key={`g-${gi}`} title={<>{g.group} <StakeRule rule={stake ? stakeRuleOf(stake) : undefined} /></>}>{body}</Band>
           : <div key={`g-${gi}`}>{body}</div>;
       })}
     </div>

@@ -125,7 +125,7 @@ describe('sous-titre d’étape — il porte la POSITION, jamais le libellé', (
  * `StakeNote.test.tsx`.
  */
 describe('renvoi de règle — accolé au libellé du pas, sur la ligne de titre', () => {
-  it('le titre porte le déclencheur-icône, NOMMÉ pour un lecteur d’écran', () => {
+  it('le titre porte le déclencheur-icône, NOMMÉ par la FICHE qu’il ouvre', () => {
     openStep('Nuit à l’auberge', (id) => ({
       id: 'j1', kind: 'tally', actorId: id, label: 'Cauchemars', rollLabel: 'Résistance',
       stakeRule: { category: 'regles', id: 'trauma' },
@@ -135,7 +135,9 @@ describe('renvoi de règle — accolé au libellé du pas, sur la ligne de titre
     const h3 = host.querySelector('h3')!;
     expect(h3.textContent).toContain('Cauchemars');
     expect(h3.querySelector('.ab-codex-info')).toBeTruthy();
-    expect(h3.querySelector('.ab-codex-info')!.getAttribute('aria-label')).toBe('Règle : Cauchemars');
+    // Le pas s'appelle « Cauchemars », la fiche visée est « Trauma » : le ⓘ annonce la CIBLE, pas son
+    // voisinage — sans quoi il promet une fiche qui n'existe pas (#1657 B3-2b-b).
+    expect(h3.querySelector('.ab-codex-info')!.getAttribute('aria-label')).toBe('Règle : Trauma');
   });
 
   it('pas SANS foyer de règle : le titre reste NU (aucune icône morte)', () => {

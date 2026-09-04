@@ -230,8 +230,8 @@ describe('RollShell — Z3b′ : le renvoi de règle est accolé au titre PAR LA
 
   it('un site qui a DÉJÀ composé sa porte (titre ou sous-titre) n’en reçoit pas une 2ᵉ', () => {
     const rule = stakeRuleOf(stake);
-    const auTitre = render(<RollShell title={<>Course <StakeRule rule={rule} label="Course" /></>} rows={[pendingRow()]} rolled={false} actions={actions} stake={stake} />);
-    const auSousTitre = render(<RollShell title="Course" subtitle={<>étape <StakeRule rule={rule} label="Course" /></>} rows={[pendingRow()]} rolled={false} actions={actions} stake={stake} />);
+    const auTitre = render(<RollShell title={<>Course <StakeRule rule={rule} /></>} rows={[pendingRow()]} rolled={false} actions={actions} stake={stake} />);
+    const auSousTitre = render(<RollShell title="Course" subtitle={<>étape <StakeRule rule={rule} /></>} rows={[pendingRow()]} rolled={false} actions={actions} stake={stake} />);
     expect(auTitre.match(/ab-codex-info/g) ?? []).toHaveLength(1);
     expect(auSousTitre.match(/ab-codex-info/g) ?? []).toHaveLength(1);
   });

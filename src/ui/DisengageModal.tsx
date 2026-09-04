@@ -66,7 +66,7 @@ export function DisengageModal() {
       ? `Dépense ${retreatCost} Avantage(s) de la réserve du camp pour rompre le combat, sans coût d'Action`
       : "Tu as l'Avantage supérieur : pars librement, sans coût d'Action";
     return (
-      <Modal title={<>Se désengager <StakeRule rule={stakeRuleOf(choiceStake)} label="Se désengager" /></>} onClose={cancel}>
+      <Modal title={<>Se désengager <StakeRule rule={stakeRuleOf(choiceStake)} /></>} onClose={cancel}>
         {header}
         {/* Z3b : le MENU dit aussi ce qu'il met en jeu (arbitrage « on fait des jets à l'aveugle ») —
             même primitive que la coquille de jet, l'enjeu venant de la MÊME entrée de donnée. */}

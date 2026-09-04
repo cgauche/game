@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { Combatant } from '../engine/types';
 import type { Poste } from '../state/poste';
-import { OptionChooser, type RollOption } from './OptionChooser';
+import { OptionChooser, type RollGridOption } from './OptionChooser';
 import { CharFrame } from './CharFrame';
+import { Icon } from './Icon';
 
 /**
  * Décision d'épinglage au clic d'un poste (PUR, testable sans DOM) : re-cliquer le poste ÉPINGLÉ le
@@ -24,7 +25,7 @@ export function nextPinned(pinned: string | undefined, clickedPosteId: string): 
  * Composition PURE de primitives existantes (`OptionChooser`), aucun nouveau widget d'assignation.
  */
 export function PostesRoster({
-  title, heroes, postes, currentOf, pinnedOf, onSet, initialOpen = null,
+  title, heroes, postes, currentOf, pinnedOf, onSet, refusOf, initialOpen = null,
 }: {
   title: string;
   heroes: Combatant[];
@@ -35,6 +36,11 @@ export function PostesRoster({
   pinnedOf: (h: Combatant) => string | undefined;
   /** Épingle (`posteId`) ou détache (`null`) le poste d'un héros. */
   onSet: (heroId: string, posteId: string | null) => void;
+  /** RAISON pour laquelle ce poste n'est pas tenable ICI (une station que la coque n'a pas) — le poste
+   *  reste OFFERT, éteint, et dit pourquoi au survol/focus/tap (`RollOption.refus` → `GatedAction`).
+   *  Absent = aucun poste n'est fermé. Jamais un filtrage silencieux : un poste qui disparaît ne
+   *  s'explique pas. */
+  refusOf?: (poste: Poste) => string | undefined;
   /** Seam de test (rendu statique) : id du héros dont la grille d'options est DÉPLIÉE d'emblée. */
   initialOpen?: string | null;
 }) {
@@ -48,16 +54,20 @@ export function PostesRoster({
       {heroes.map((h) => {
         const pinned = pinnedOf(h);
         const current = pinned ?? currentOf(h) ?? undefined;
-        const curLabel = (current && posteById.get(current)?.label) || '— choisir —';
+        const curLabel = current ? posteById.get(current)?.label : undefined;
         const expanded = open === h.id;
-        const options: RollOption[] = postes.map((p) => ({
-          key: p.id,
-          label: p.label,
-          primary: p.id === current,
-          title: p.desc ?? p.label,
-          // Décision d'épinglage PURE (testée) ; puis on replie.
-          onSelect: () => { onSet(h.id, nextPinned(pinned, p.id)); setOpen(null); },
-        }));
+        const options: RollGridOption[] = postes.map((p) => {
+          const refus = refusOf?.(p);
+          return {
+            key: p.id,
+            label: p.label,
+            primary: p.id === current,
+            title: p.desc ?? p.label,
+            ...(refus ? { refus } : {}),
+            // Décision d'épinglage PURE (testée) ; puis on replie.
+            onSelect: () => { onSet(h.id, nextPinned(pinned, p.id)); setOpen(null); },
+          };
+        });
         return (
           <div className="wm-role-item" key={h.id}>
             <div className="wm-role-row">
@@ -70,12 +80,20 @@ export function PostesRoster({
                 className="btn small"
                 aria-expanded={expanded}
                 title={expanded ? 'Replier' : 'Changer de poste'}
+                /* CASE VIDE = AUCUN MOT (arbitrage user 2026-09-04, [[user-arbitrage-case-vide-sans-mot-libre]]
+                   étendu aux rosters) : ni « — choisir — », ni « Libre ». Il reste l'affordance
+                   (le glyphe d'ajout) et un NOM ACCESSIBLE — sans lui, la case serait MUETTE pour
+                   qui ne voit pas l'écran ; il se DÉRIVE du titre du roster, jamais d'un texte par
+                   écran (le roster ne sait pas s'il assigne une station, un poste ou une marche). */
+                {...(curLabel ? null : { 'aria-label': `${title} — ${h.label} : choisir` })}
                 onClick={() => setOpen(expanded ? null : h.id)}
               >
-                {curLabel}
+                {curLabel ?? <Icon id="ui/add" size="sm" />}
               </button>
             </div>
-            {expanded && <OptionChooser options={options} layout="grid" />}
+            {/* Les ids de RAISON sont namespacés PAR LIGNE : N héros × les mêmes postes, ce sont les
+                mêmes clés d'option — un préfixe commun collerait N fois le même id dans le document. */}
+            {expanded && <OptionChooser options={options} layout="grid" idPrefix={`poste-${h.id}`} />}
           </div>
         );
       })}

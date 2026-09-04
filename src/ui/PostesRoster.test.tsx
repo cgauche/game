@@ -76,9 +76,15 @@ describe('PostesRoster — roster héros-first avec disclosure', () => {
     expect(html).not.toContain('(auto)');
   });
 
-  it('poste courant absent → puce « — choisir — »', () => {
+  it('poste courant absent → case VIDE, sans un mot (arbitrage user 2026-09-04)', () => {
     const html = render({ heroes: [hero({ id: 'h1', label: 'Hilda' })], currentOf: () => null });
-    expect(html).toContain('— choisir —');
+    // Ni « — choisir — », ni « Libre » : aucune interface ne meuble une case vide d'un mot. Reste
+    // l'affordance (le glyphe) et le NOM ACCESSIBLE, dérivé du titre du roster — jamais d'un texte
+    // écrit par écran (le roster sert les stations, les postes d'équipage ET les rôles de marche).
+    expect(html).not.toContain('choisir —');
+    expect(html).not.toContain('Libre');
+    expect(html).toContain('aria-label="Rôles de marche — Hilda : choisir"');
+    expect(html, 'la case garde son affordance').toContain('<svg');
   });
 
   it('aucun héros → composant nul', () => {

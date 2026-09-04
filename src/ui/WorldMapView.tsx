@@ -18,11 +18,12 @@ import { Coins } from './Coins';
 import { GatedAction } from './GatedAction';
 import { rule } from '../engine/policy';
 import { forcePaceDifficulty } from '../engine/seaNavigation';
-import { shipHasNavalTrait, vesselNavalTraits } from '../engine/navalTraits';
+import { shipHasNavalTrait, vesselNavalTraits, navalTraitsDe } from '../engine/navalTraits';
 import { vesselPropulsion } from '../engine/shipBuild';
-import { DIFFICULTY_LABELS } from '../engine/types';
+import { DIFFICULTY_LABELS, type NavalTraitRef } from '../engine/types';
 import { TravelRolesPanel } from './TravelRolesPanel';
 import { ShipRolesPanel } from './ShipRolesPanel';
+import { ShipStationsPanel } from './ShipStationsPanel';
 import { OptionChooser } from './OptionChooser';
 import { Icon, IconG } from './Icon';
 import { ScreenShell } from './ScreenShell';
@@ -204,6 +205,15 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const vessel = useGame((s) => s.vessel);
   const vesselData = vessel ? findVehicleById(vessel.vehicleId) : undefined;
   const vesselLabel = vessel?.label ?? vesselData?.label ?? ''; // #230 — nom d'instance prioritaire
+  // COQUE qui portera l'équipage — la seule chose dont l'épinglage des STATIONS a besoin (ses RÉFS
+  // navales gatent `cale`/`nid-de-pie`). Deux porteurs, deux adaptateurs, un seul gate : le navire de
+  // campagne en mer, le bateau du trajet sur une route FLUVIALE jouée (même condition qu'au départ,
+  // `travelFlow.startTravel`). Pas de coque = pas de panneau : il n'y a nulle part où se tenir.
+  const stationsTraits: NavalTraitRef[] | null = mode === 'mer'
+    ? (vessel ? vesselNavalTraits(vessel) : null)
+    : (selRoute?.river && mode !== 'pied' && mode !== 'monture' && findVehicleById(mode)?.ship
+      ? navalTraitsDe(mode, undefined)
+      : null);
   const seaPropulsion = vesselPropulsion(vesselData?.ship);
   const seaM = (vessel?.wounds == null || vessel.wounds.current > 0) ? (seaPropulsion?.m ?? 0) : 0;
   // Forcer le rythme (MDG 13 l.95-107) : +1 M voile/avirons, +2 M avirons seulement — rien à la vapeur (ch.12 l.311).
@@ -590,6 +600,12 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             </div>
           )}
           {mode === 'mer' && vessel ? <ShipRolesPanel /> : rule('travel-etapes') && <TravelRolesPanel />}
+          {/* STATIONS à bord, EMPILÉES sous les postes (maquette validée 2026-09-04) : partout où un
+              bateau porte l'équipage — le navire de campagne en mer, et le bateau du trajet FLUVIAL
+              (même gate qu'au départ, `travelFlow.startTravel`). Le fleuve n'a PAS de roster de
+              postes d'équipage (MSRC 7 ne connaît ni rôles MDG ni Moral) : les stations y sont
+              seules, et c'est ce que le livre demande. */}
+          {stationsTraits && <ShipStationsPanel traits={stationsTraits} />}
           <div className="modal-actions">
             <button type="button" className="btn" onClick={() => setSelId(null)}>Annuler</button>
             <button

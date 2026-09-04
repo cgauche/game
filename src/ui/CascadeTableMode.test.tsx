@@ -138,14 +138,21 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     expect(result()).toMatchObject({ roll: 61, die: 51, id: 'haute' });
   });
 
-  it('ligne HORS D’ATTEINTE sous le `mod` : bouton DÉSACTIVÉ, la raison en `title` (jamais un clic qui ment)', () => {
+  it('ligne HORS D’ATTEINTE sous le `mod` : bouton éteint, la raison LIÉE (jamais un `title` muet)', () => {
     setDesFixes(true);
     openTable(60);
     render();
     const basse = rowButton('Ligne basse')!;
     expect(basse.disabled).toBe(true);
-    expect(basse.title).toContain("Hors d'atteinte");
+    // La raison ne vit plus dans un `title` natif (invisible à l'arbre a11y, inatteignable au doigt) :
+    // N lignes éteintes par la MÊME cause se LIENT au récapitulatif rendu une fois sous la grille —
+    // grammaire de refus UNIQUE de la primitive (`RollOption.refusId` → `GatedAction` forme
+    // `reasonId`), arbitrage user 2026-08-24.
+    expect(basse.title, 'plus de raison en infobulle native').toBe('');
+    const raison = host.querySelector(`#${basse.getAttribute('aria-describedby')}`);
+    expect(raison?.textContent, 'la raison est à l’écran, et le bouton la DÉSIGNE').toContain("hors d'atteinte");
     expect(rowButton('51-100')!.disabled).toBe(false);
+    expect(rowButton('51-100')!.getAttribute('aria-describedby'), 'une ligne atteignable ne désigne aucun refus').toBeNull();
     act(() => { basse.click(); });
     expect(result(), 'une ligne inatteignable ne pose aucun dé').toBeUndefined();
   });

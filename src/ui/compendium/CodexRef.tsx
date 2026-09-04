@@ -85,6 +85,7 @@ export function CodexRef({
   className,
   hideIfUnknown = false,
   ariaLabel,
+  ariaPrefix,
   inline = false,
   instance,
   tooltipOnly = false,
@@ -117,6 +118,11 @@ export function CodexRef({
    *  poser que pour nommer AUTREMENT que la fiche (« Règle : Cauchemars »). Rendu en `aria-label`
    *  SEUL — jamais un `title` : l'infobulle native est proscrite, le popover EST le mécanisme. */
   ariaLabel?: string;
+  /** RÔLE du déclencheur, préfixé au nom DÉRIVÉ de la fiche (« Règle » → « Règle : Chute »). Pour un
+   *  déclencheur-icône dont le nom doit dire à quoi il mène sans que l'appelant ait à connaître le
+   *  libellé de la cible — c'est la primitive qui le résout (`codexLookupById`), et lui seul. Ignoré
+   *  quand `ariaLabel` est posé (il nomme déjà tout) ou quand le contenu porte du texte. */
+  ariaPrefix?: string;
   /** Ref en PLEINE PROSE (hors cadre) : réintroduit l'indice pointillé. Par défaut (libellé déjà
    *  encadré : chip/tag/stat-chip/titre) aucun soulignement — cf. `.codex-ref.codex-inline`. */
   inline?: boolean;
@@ -270,10 +276,13 @@ export function CodexRef({
   // La porte clavier du popover (↓) suit le popover : mise en sourdine, elle n'est ni annoncée ni
   // active — jamais un raccourci qui n'ouvre rien.
   const pinFromWrap = wrap && openFiche && !suppressPopover;
-  // NOM ACCESSIBLE : l'`ariaLabel` explicite prime ; sinon on le DÉRIVE du `label` dès que le
-  // déclencheur ne porte aucun texte (déclencheur-icône). Sans cette dérivation, les déclencheurs
-  // ⓘ du dépôt — qui passent tous un `label` — seraient des boutons MUETS.
-  const accessibleName = ariaLabel ?? (nodeHasText(children ?? label) ? undefined : title);
+  // NOM ACCESSIBLE : l'`ariaLabel` explicite prime ; sinon on le DÉRIVE de la FICHE (`title` =
+  // `item.label`, repli sur `label`) dès que le déclencheur ne porte aucun texte (déclencheur-icône).
+  // Sans cette dérivation, les déclencheurs ⓘ du dépôt seraient des boutons MUETS. `ariaPrefix` y
+  // ajoute le RÔLE du renvoi (« Règle : … ») : le nom dit toujours la CIBLE, jamais le contexte qui
+  // l'entoure — un appelant qui prêtait son propre titre nommait la mauvaise fiche.
+  const derive = ariaPrefix ? `${ariaPrefix} : ${title}` : title;
+  const accessibleName = ariaLabel ?? (nodeHasText(children ?? label) ? undefined : derive);
 
   return (
     <span

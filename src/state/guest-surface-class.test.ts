@@ -158,6 +158,7 @@ const HORS_SURFACE_UI: Record<string, string> = {
   gatherInnInfo: HOTE('auberge (hub de ville)'),
   // ── Navire / rôles / conseil de bord ──────────────────────────────────────────────────────────
   setShipRole: HOTE('rôles de bord'),
+  setShipStation: HOTE('stations à bord'),
   setTravelRole: HOTE('rôles de voyage'),
   setPosteAmmo: HOTE('munitions d’un poste'),
   councilPay: HOTE('paie hebdomadaire (bourse du groupe)'),

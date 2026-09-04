@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { GatedAction } from './GatedAction';
 
 /**
  * Une « option de jet » sélectionnable : libellé + (valeur effective) + disponibilité + action.
@@ -22,12 +23,32 @@ export interface RollOption {
   ghost?: boolean;
   /** Rendu custom à la place de `label value` (ex. portraits de Cible montée). */
   content?: ReactNode;
-  /** id de l'élément qui porte la RAISON visible de l'indisponibilité (patron `GatedAction`) : le
-   *  bouton l'expose en `aria-describedby` — une option éteinte dont le motif ne vit que dans le
-   *  `title` est muette au doigt comme au lecteur d'écran. */
-  describedBy?: string;
   onSelect?: () => void;
 }
+
+/**
+ * Option d'une GRILLE — la seule qui puisse porter sa RAISON DE REFUS. Les deux formes sont celles de
+ * `GatedAction` (l'unique porteur d'une raison de refus du jeu), et il n'y en a pas d'autre :
+ *  - `refus`   : la cause est PROPRE à l'option — rendue au survol/focus/tap, jamais en texte inline
+ *                sous le libellé (arbitrage user 2026-08-24) ;
+ *  - `refusId` : N options éteintes par la MÊME cause, que l'appelant a déjà rendue UNE fois à
+ *                l'écran (le récapitulatif d'une grille de table) — l'option s'y LIE sans dupliquer.
+ * Dans les deux cas le bouton garde `aria-disabled` (jamais `disabled`) et un clic inerte : une
+ * option dont la raison est à ATTEINDRE doit rester focalisable au clavier, à la manette et au doigt.
+ * Une option simplement `disabled` reste MUETTE ; une option `hidden` disparaît sans rien dire.
+ *
+ * Ces deux champs n'existent QUE sur ce type : `seg` et `actions` ne les acceptent pas (le type les
+ * refuse), plutôt que de les avaler en silence.
+ */
+export interface RollGridOption extends RollOption {
+  refus?: string;
+  refusId?: string;
+}
+
+/** Option d'un `seg`/`actions` : la raison de refus y est REFUSÉE PAR LE TYPE (`never`) plutôt
+ *  qu'avalée en silence — ces deux layouts ne bâtissent pas de `.btn` que `GatedAction` puisse
+ *  habiller (le `seg` a sa propre matière), donc la prop n'y aurait aucun porteur. */
+export type RollOptionSansRefus = RollOption & { refus?: never; refusId?: never };
 
 /**
  * Sélecteur d'« options de jet » PARTAGÉ — source unique du choix Parade/Esquive (Défense),
@@ -43,12 +64,18 @@ export function OptionChooser({
   options,
   layout,
   groupLabel,
+  idPrefix = 'opt',
 }: {
-  options: RollOption[];
-  layout: 'seg' | 'grid' | 'actions';
   /** Mini-titre du groupe (surtout layout `seg`) — ex. « Réaction ». */
   groupLabel?: ReactNode;
-}) {
+  /** Préfixe des ids que la grille ÉMET (la copie accessible d'une raison de refus) : deux grilles
+   *  sur le même document servent souvent les MÊMES clés d'option — sans préfixe propre, elles
+   *  collent le même id deux fois. */
+  idPrefix?: string;
+} & (
+  | { layout: 'grid'; options: RollGridOption[] }
+  | { layout: 'seg' | 'actions'; options: RollOptionSansRefus[] }
+)) {
   const shown = options.filter((o) => !o.hidden);
 
   if (layout === 'seg') {
@@ -74,7 +101,18 @@ export function OptionChooser({
   if (layout === 'grid') {
     return (
       <div className="rm-loc-grid">
-        {shown.map((o) => (
+        {(shown as RollGridOption[]).map((o) => (o.refus || o.refusId ? (
+          <GatedAction
+            key={o.key}
+            id={`${idPrefix}-${o.key}`}
+            label={o.content ?? o.label}
+            enabled={false}
+            {...(o.refusId ? { reasonId: o.refusId } : { reason: o.refus! })}
+            onClick={() => {}}
+            primary={false}
+            btnClassName={`small${o.selected ? ' on' : ''}`}
+          />
+        ) : (
           <button
             key={o.key}
             /* `selected` = l'option RETENUE (état, `aria-pressed` + classe `on` — même sémantique
@@ -85,7 +123,6 @@ export function OptionChooser({
             disabled={o.disabled}
             onClick={o.onSelect}
             title={o.title}
-            aria-describedby={o.describedBy}
           >
             {o.content ?? (
               <>
@@ -94,7 +131,7 @@ export function OptionChooser({
               </>
             )}
           </button>
-        ))}
+        )))}
       </div>
     );
   }

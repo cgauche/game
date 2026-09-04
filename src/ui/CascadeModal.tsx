@@ -16,7 +16,7 @@ import { DisengageModal } from './DisengageModal';
 import { ForceDoorModal } from './ForceDoorModal';
 import { CastModal } from './CastModal';
 import { type PanelRowData as PanelRow } from './RollPanel';
-import { OptionChooser, type RollOption } from './OptionChooser';
+import { OptionChooser, type RollGridOption } from './OptionChooser';
 import { NumberField } from './NumberField';
 import { CriticalBody, RevealBody } from './RevealBody';
 import { ModalSubject } from './ModalSubject';
@@ -314,7 +314,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const titleNode = (
     <>
       <Icon id={cur.icon || p.icon || 'nav/dice'} size="sm" /> {modalTitle}
-      {cur.label && stakeRule ? <StakeRule rule={stakeRule} label={modalTitle} /> : null}
+      {cur.label && stakeRule ? <StakeRule rule={stakeRule} /> : null}
     </>
   );
   // ENCADRÉ « Réussite / Échec » en régime CALCULÉ (#1117) : les deux fabriques d'étape
@@ -448,7 +448,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     if (!die.forcedRoll) return { rows: [], lines: null };
     const mod = decl.mod ?? 0;
     const dieMax = tableStepNaturalRange(decl).max;
-    const options: RollOption[] = (tableStepDefs[decl.tableId]?.rows ?? []).map((r) => {
+    const options: RollGridOption[] = (tableStepDefs[decl.tableId]?.rows ?? []).map((r) => {
       const nat = naturalRollForTableRow(decl, r);
       return {
         key: r.id,
@@ -458,9 +458,12 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         disabled: nat == null,
         primary: decl.result?.id === r.id,
         selected: decl.result?.id === r.id, // ligne ÉLUE = état ferré (aria-pressed), pas un simple style
-        describedBy: nat == null ? `${s.id}-unreachable` : undefined,
-        title: nat == null
-          ? `Hors d'atteinte : avec le modificateur ${mod > 0 ? '+' : ''}${mod}, aucun dé de 1 à ${dieMax} ne tombe dans [${r.min}-${r.max}]`
+        /* Refus MUTUALISÉ : les N lignes hors d'atteinte le sont par la MÊME cause (le modificateur),
+           déjà énoncée une fois sous la grille — forme `reasonId` de `GatedAction`, l'unique grammaire
+           de refus de la primitive. Elles gardent ainsi `aria-disabled` (donc le focus clavier/manette
+           et le tap) au lieu du `disabled` muet qu'elles portaient. */
+        ...(nat == null ? { refusId: `${s.id}-unreachable` } : {}),
+        title: nat == null ? undefined
           : `Poser le dé à ${nat}${mod !== 0 ? ` (dé effectif ${nat + mod})` : ''}`,
         onSelect: nat == null ? undefined : () => tableSetForcedRoll(s.id, nat),
       };
@@ -472,9 +475,11 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       rows: [tableRow({ key: `${s.id}:die`, row: { combatant: actorOf(s) }, forcedRoll: die.forcedRoll, fixedMark: die.fixedMark })],
       lines: (
         <>
-          <OptionChooser layout="grid" groupLabel="Choisir la ligne" options={options} />
-          {/* La RAISON du grisage se lit à l'écran, jamais au seul `title` : au doigt et au clavier,
-              une ligne éteinte sans explication est une affordance morte (patron `GatedAction`). */}
+          <OptionChooser layout="grid" groupLabel="Choisir la ligne" options={options} idPrefix={`${s.id}-ligne`} />
+          {/* La RAISON du grisage se lit à l'écran — une seule fois pour toutes les lignes qu'elle
+              éteint, et les options s'y LIENT (`refusId`). C'est le cas STRUCTURANT que `GatedAction`
+              nomme (`raisonInline`/`reasonId`) : ici le refus est ce que la grille a à dire, et le
+              récapitulatif reste plus lisible que N infobulles identiques. */}
           {unreachable > 0 && (
             <p className="hint" id={`${s.id}-unreachable`}>
               {unreachable} ligne{unreachable > 1 ? 's' : ''} grisée{unreachable > 1 ? 's' : ''} : hors d'atteinte avec le modificateur {mod > 0 ? '+' : '−'}{Math.abs(mod)} (dé de 1 à {dieMax}).

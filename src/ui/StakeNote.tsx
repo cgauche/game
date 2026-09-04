@@ -94,17 +94,19 @@ export function OutcomeNote({ onSuccess, onFail, onSuccessBy, onFailBy, realized
  * la compose pour les cascades, `RollShell` l'accole LUI-MÊME au titre de toute modale de jet qui pose
  * un `stake` (Z3b′ tenue par le SOCLE, plus par discipline au site). Rien quand aucun foyer n'est
  * déclaré, ou quand la fiche est inconnue du Codex (`hideIfUnknown`).
- * `label` VIDE : le nom accessible n'est plus imposé — `CodexRef` le dérive du libellé de la fiche
- * (un titre sans texte, purement icônique, n'a rien à prêter).
+ * Le NOM ACCESSIBLE nomme la FICHE VISÉE, jamais le pas qui l'accueille : `CodexRef` le dérive de
+ * l'entrée du Codex et lui préfixe le rôle (`ariaPrefix`). Aucun appelant ne prête plus son titre —
+ * une bande « Initiative » dont l'enjeu est le chavirage s'annonçait « Règle : Initiative » pendant
+ * que le lien menait à « Navigation — Chavirage et redressement ».
  */
-export function StakeRule({ rule, label }: { rule?: { category: string; id: string }; label: string }) {
+export function StakeRule({ rule }: { rule?: { category: string; id: string } }) {
   if (!rule) return null;
   return (
     <CodexRef
       category={rule.category}
       id={rule.id}
-      label={label}
-      {...(label ? { ariaLabel: `Règle : ${label}` } : null)}
+      label=""
+      ariaPrefix="Règle"
       className="ab-codex-info"
       hideIfUnknown
     >

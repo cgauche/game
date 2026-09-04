@@ -24,6 +24,7 @@ import { applyCrewHit, applyHullCritical, rollShipCritical, shipStationOuverte }
 import { makeRNG } from './dice';
 import { SHIP_CRIT_SET, RIVER_CRIT_SET, type ShipCritKey, type ShipCritSet } from '../data/shipCriticals';
 import { shipStations } from '../data';
+import { hullNavalTraits } from './navalTraits';
 import type { Combatant } from './types';
 
 /** Marin minimal — `applyOps` (BE 3, PA 0) et `exposedCrew` (vivant, PB > 0) ont ce qu'il leur faut. */
@@ -91,10 +92,10 @@ describe('coup à l’équipage — la STATION est ÉPINGLÉE, jamais déduite (
       .toEqual(['nid-de-pie ⇐ nid-de-pie', 'cale ⇐ cale']);
     // Toute coque ouvre les présences non gatées ; la barque n'ouvre ni cale ni nid-de-pie.
     for (const s of shipStations) {
-      expect(shipStationOuverte(coque('barque-fluviale'), s.id), `${s.id} sur la barque`).toBe(!s.requiresTrait);
+      expect(shipStationOuverte(hullNavalTraits(coque('barque-fluviale')), s.id), `${s.id} sur la barque`).toBe(!s.requiresTrait);
     }
-    expect(shipStationOuverte(coque('barge-fluviale'), 'cale'), 'la barge commerciale porte le Trait').toBe(true);
-    expect(() => shipStationOuverte(coque('barge-fluviale'), 'gaillard-d-arriere')).toThrow(/station inconnue/);
+    expect(shipStationOuverte(hullNavalTraits(coque('barge-fluviale')), 'cale'), 'la barge commerciale porte le Trait').toBe(true);
+    expect(() => shipStationOuverte(hullNavalTraits(coque('barge-fluviale')), 'gaillard-d-arriere')).toThrow(/station inconnue/);
   });
 
   it('4. aucun marin exposé : le coup RETOMBE sur la Localisation authorée, il n’est plus abandonné', () => {
@@ -116,7 +117,7 @@ describe('coup à l’équipage — la STATION est ÉPINGLÉE, jamais déduite (
     const out = victimes(sansType, [marin('soutier', { shipStation: 'cale' })], 'superstructure', 1, RIVER_CRIT_SET);
     expect(out.victims).toEqual([]);
     expect(out.stationsFermees).toEqual(['cale']);
-    expect(shipStationOuverte(sansType, 'pont'), 'toute coque a un pont').toBe(true);
+    expect(shipStationOuverte(hullNavalTraits(sansType), 'pont'), 'toute coque a un pont').toBe(true);
   });
 
   it('6. cible MIXTE (ouverte + fermée) : la station ouverte touche, la fermée est NOMMÉE — jamais tout ou rien', () => {

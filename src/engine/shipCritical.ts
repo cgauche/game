@@ -20,7 +20,7 @@ import { resolveCritique, jeuDeCritique, type CriticalResolved } from './critica
 import { poserEnjeu, type FlowTestNode } from './flowCore';
 import { combatStakeRef, findShipStation, type StakeRef } from '../data';
 import { hullNavalTraits, shipHasNavalTrait } from './navalTraits';
-import type { Combatant } from './types';
+import type { Combatant, NavalTraitRef } from './types';
 import { SHIP_CRIT_SET, RIVER_CRIT_SET, shipCritSet, type ShipCritSet, type ShipCritKey, type ShipCrewHit, type CrewTarget } from '../data/shipCriticals';
 import { t, type MsgKey } from '../i18n';
 import type { PlayerText } from '../i18n/playerText';
@@ -191,17 +191,20 @@ export interface CrewHitOutcome {
 }
 
 /**
- * La station `id` existe-t-elle À BORD de cette coque ? La DONNÉE porte le gate (`requiresTrait` de
+ * La station `id` existe-t-elle À BORD ? La DONNÉE porte le gate (`requiresTrait` de
  * `ship-stations.json`) : `cale` exige le Trait naval `cale` (`MSRC 07 l.94` « Si le bateau dispose
  * d'une cale »), `nid-de-pie` l'Amélioration du même nom (`MDG 12 l.299`). Aucun branchement par id
  * de station ne vit ici. Station inconnue = anomalie NOMMÉE (l'authoring l'a écrite hors catalogue).
- * PUR.
+ *
+ * Prend les RÉFS NAVALES, pas un porteur — même forme que `shipHasNavalTrait`, et les deux porteurs
+ * du dépôt (coque en jeu `hullNavalTraits`, navire de campagne `vesselNavalTraits`) y entrent par
+ * leur propre adaptateur : l'écran d'appareillage gate ses stations avec CE gate, pas une copie. PUR.
  */
-export function shipStationOuverte(hull: Combatant, id: string): boolean {
+export function shipStationOuverte(traits: NavalTraitRef[] | undefined, id: string): boolean {
   const station = findShipStation(id);
   if (!station) throw new Error(`shipStationOuverte : station inconnue « ${id} » (catalogue ship-stations.json).`);
   if (!station.requiresTrait) return true;
-  return shipHasNavalTrait(hullNavalTraits(hull), station.requiresTrait.id);
+  return shipHasNavalTrait(traits, station.requiresTrait.id);
 }
 
 /**
@@ -218,7 +221,7 @@ export function shipStationOuverte(hull: Combatant, id: string): boolean {
 function crewHitVictims(hull: Combatant, crew: Combatant[], crewTarget: CrewTarget, rng: RNG): { victims: Combatant[]; fermees: string[] } {
   if ('poste' in crewTarget) return { victims: posteCrew(hull, crew, rng), fermees: [] };
   if ('role' in crewTarget) return { victims: exposedCrew(crew).filter((c) => c.shipRole === crewTarget.role.id), fermees: [] };
-  const ouvertes = crewTarget.stations.filter((id) => shipStationOuverte(hull, id));
+  const ouvertes = crewTarget.stations.filter((id) => shipStationOuverte(hullNavalTraits(hull), id));
   return {
     victims: exposedCrew(crew).filter((c) => c.shipStation !== undefined && ouvertes.includes(c.shipStation)),
     fermees: crewTarget.stations.filter((id) => !ouvertes.includes(id)),
