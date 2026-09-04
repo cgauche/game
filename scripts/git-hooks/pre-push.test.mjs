@@ -183,7 +183,7 @@ test('CI de main ROUGE : refus nommant le run et son sha', () => {
   }
 })
 
-test('dérogation motivée sur CI rouge : passe, et la ligne part au JOURNAL', () => {
+test('dérogation motivée sur CI rouge : passe, et la ligne de TENTATIVE part au JOURNAL', () => {
   const racine = depot()
   try {
     const sha = gatesVertes(racine)
@@ -196,7 +196,13 @@ test('dérogation motivée sur CI rouge : passe, et la ligne part au JOURNAL', (
     assert.deepEqual(refus, [])
     assert.match(notes.join('\n'), /DÉROGATION journalisée : correctif de la CI rouge elle-même/)
     const journal = readFileSync(join(cheminJustificatifs({ cwd: racine }), 'derogations.log'), 'utf8')
-    assert.match(journal, new RegExp(`\\t${sha}\\tcorrectif de la CI rouge elle-même\\n$`))
+    assert.match(journal, new RegExp(`\\ttentative\\t${sha}\\tcorrectif de la CI rouge elle-même\\n$`))
+    // Le hook précède le TRANSFERT : deux tentatives pour un seul push abouti sont normales, et le
+    // journal doit le dire de lui-même (mesuré sur `c3692d0f9`, deux lignes, un run).
+    jugerPush({ cwd: racine, stdin: pousse(racine), env })
+    const relu = readFileSync(join(cheminJustificatifs({ cwd: racine }), 'derogations.log'), 'utf8')
+    assert.equal(relu.trim().split('\n').length, 2)
+    assert.ok(relu.trim().split('\n').every((l) => l.split('\t')[1] === 'tentative'))
   } finally {
     jeter(racine)
   }

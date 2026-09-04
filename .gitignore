@@ -48,10 +48,9 @@ scripts/data/.out/
 !.claude/agents/
 !.claude/workflows/
 !.claude/memory/
-# Soldes de fermeture : VERSIONNÉS (les messages de commit les citent par chemin — la preuve doit
-# survivre). Seul le compteur de palier, état local régénéré par le hook post-commit, reste ignoré.
+# Soldes de fermeture et revues de palier : VERSIONNÉS (les messages de commit les citent par chemin,
+# et le palier se mesure sur les revues que porte l'histoire — la preuve doit survivre).
 !.claude/soldes/
-.claude/soldes/.compteur
 
 # Worktrees d'agents posés d'un niveau sous la racine (`.wt-<ticket>/`) : arbres de travail, jamais du
 # contenu du dépôt. Ceux de `.claude/worktrees/` sont déjà couverts par `.claude/*` ci-dessus. #1679 L1c

@@ -6,9 +6,10 @@
 // une gate dont il faut RE-mesurer `ecrit`. Ce cliquet fige la liste, par gate, des scripts atteints
 // qui portent un appel d'écriture — un ajout ARRÊTE la CI en nommant la gate et le module.
 //
-// Le cas fondateur : `test:hooks` mutait `scripts/hooks/ecrans-ui.json`, un fichier COMMITTÉ
-// (`new-src-file-guard.test.mjs`), sans que la table le dise ; le 2026-09-04 son `finally` de remise
-// à l'octet a échoué sous charge et l'arbre est resté sale.
+// Le cas fondateur reste VISIBLE : `new-src-file-guard.test.mjs` porte un appel d'écriture, sur un
+// registre INJECTÉ (`WFRP_REGISTRE_ECRANS`) dont la copie vit sous os.tmpdir(). La sonde le VOIT —
+// elle mesure l'appel, pas sa cible — et c'est pourquoi elle sert : un test qui écrit est un test
+// dont il faut savoir OÙ il écrit.
 //
 // GRAIN : le SCRIPT, pas la ligne — la limite est écrite dans `ecrivainsAtteints.mjs`. Baisser une
 // entrée est libre ; en ajouter une exige de dire ce que la gate écrit.
@@ -48,7 +49,6 @@ const ATTENDU = {
     'scripts/hooks/new-src-file-guard.test.mjs',
     'scripts/hooks/segments-profonds.test.mjs',
     'scripts/hooks/solde-ticket-guard-driver.test.mjs',
-    'scripts/hooks/solde-ticket-guard.mjs',
     'scripts/hooks/solde-ticket-guard.test.mjs',
     'scripts/hooks/typecheck-fast-wrapper.test.mjs',
     'scripts/migrations/lib/empreinteRejeu.test.mjs',
@@ -57,7 +57,11 @@ const ATTENDU = {
     'scripts/raw/build-implemente.mjs',
     'scripts/test/verrou.mjs',
   ],
-  'test:ops': ['scripts/ops/knip-exports-ratchet.mjs'],
+  'test:ops': [
+    'scripts/ops/fermer-depuis-main.test.mjs',
+    'scripts/ops/knip-exports-ratchet.mjs',
+    'scripts/ops/ruleset-evaluate.mjs',
+  ],
   'test:runner': [
     'scripts/lancer-local.test.mjs',
     'scripts/test/run-capture.test.mjs',
@@ -127,7 +131,7 @@ test('la sonde n’est pas AVEUGLE : elle voit les écrivains connus, et ignore 
   )
   assert.ok(
     mesure['test:hooks'].includes('scripts/hooks/new-src-file-guard.test.mjs'),
-    'le cas fondateur (un test qui mute un fichier committé) doit rester visible',
+    'le cas fondateur (un test qui écrit un registre de garde) doit rester visible',
   )
   assert.deepEqual(mesure.typecheck, [], '`tsc --noEmit` n’atteint aucun module écrivain')
   assert.deepEqual(mesure.lint, [], '`eslint` sans `--fix` n’atteint aucun module écrivain')

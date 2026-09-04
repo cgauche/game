@@ -88,17 +88,10 @@ export const ECRIT_LU = {
   },
   'test:hooks': {
     ecrit: [],
-    ecritFerme: {
-      'scripts/hooks/ecrans-ui.json':
-        '`avecEntree` (scripts/hooks/new-src-file-guard.test.mjs:36-46) ajoute une entrée au registre RÉEL puis ' +
-        'le REMET à l’octet en `finally`. Porte FAIBLE, et c’est mesuré : le 2026-09-04 ce `writeFileSync` a ' +
-        'rendu « UNKNOWN: unknown error » sous Windows et le registre est resté modifié (entrée fantôme ' +
-        '« src/ui/FantomeGardeV5.tsx ») — d’où `photoArbre` avant/après les lanes, qui REFUSE le run quand ' +
-        'l’arbre a bougé. Le vrai correctif est que cette garde lise son registre d’un chemin injectable ' +
-        '(hors périmètre T1d)',
-    },
     lit: ['.claude/', 'docs/', 'scripts/', 'src/', 'Source/', 'tsconfig.json'],
     raison:
+      'le registre d’écrans que `new-src-file-guard.test.mjs` éprouve est INJECTABLE (`WFRP_REGISTRE_ECRANS`, ' +
+      'scripts/hooks/new-src-file-guard.mjs:42) et le test en écrit une COPIE sous os.tmpdir() ; ' +
       'le reste des fixtures vit sous os.tmpdir() ; LIT docs/ et src/ parce que `enregistreur-lectures.test.mjs` ' +
       'joue de VRAIS générateurs en `--check` (build-index-moteur, build-donnees, build-structures), qui comparent ' +
       'sans écrire ; LIT Source/ parce que `idempotence-ordre-des-cles.test.mjs` copie le corpus ENTIER (Source/ compris : ' +
@@ -106,10 +99,14 @@ export const ECRIT_LU = {
   },
   'test:ops': {
     ecrit: [],
-    lit: ['src/', 'scripts/ops/', 'knip-exports-baseline.json'],
+    lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', '.github/workflows/', 'knip-exports-baseline.json'],
     raison:
-      'n’importe que des fonctions pures du cliquet ; `main()` est gardé par `import.meta.url === argv[1]` ' +
-      '(scripts/ops/knip-exports-ratchet.mjs:121) et seul `--sync` écrirait la baseline (l.94-96)',
+      'trois modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
+      '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.url === argv[1]`, l.121 ; seul `--sync` ' +
+      'écrirait la baseline, l.94-96), `ruleset-evaluate.mjs` (le corps du ruleset part par un fichier de ' +
+      'os.tmpdir(), l.90-97) et `fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()) ; LIT ' +
+      '.github/workflows/ parce que `canari.test.mjs:17` et `ruleset-evaluate.test.mjs:13` lisent les ' +
+      'workflows RÉELS, et scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs`',
   },
   'test:runner': {
     ecrit: [],
@@ -228,7 +225,7 @@ export const ECRIT_LU = {
  * `ECRIT_LU` reste la vérité mesurée : ce n'est pas parce qu'une gate sort des lanes qu'elle cesse
  * d'écrire.
  */
-export const AVANT_LES_LANES = ['raw:coverage', 'raw:reconcile', 'raw:reanchor', 'test:hooks']
+export const AVANT_LES_LANES = ['raw:coverage', 'raw:reconcile', 'raw:reanchor']
 
 /**
  * Les LANES, nominatives. Une lane est une SÉRIE ; les lanes tournent ensemble. Elles ne portent que
@@ -253,12 +250,15 @@ export const LANES = [
     nom: 'types',
     gates: [
       'typecheck', 'lint', 'deps:unused', 'server:typecheck', 'test:agents', 'test:ops',
-      'test:runner', 'test:recette',
+      'test:runner', 'test:recette', 'test:hooks',
     ],
     raison:
       'lectures du même graphe TypeScript et gates courtes, aucune écriture d’arbre — mesuré à la première ' +
       'exécution complète (2026-09-04) : typecheck 130 s + lint 74 s + deps 15 s ; avec `build` (105 s) en plus ' +
-      'cette lane faisait le mur (342 s contre 192 s pour la suite), d’où son passage dans `docs`',
+      'cette lane faisait le mur (342 s contre 192 s pour la suite), d’où son passage dans `docs`. ' +
+      '`test:hooks` la rejoint : il ne fait plus AUCUNE écriture d’arbre (registre d’écrans injectable), ' +
+      'et ses 50,5 s mesurées (2026-09-04) portent la somme des gates mesurées de cette lane à 269,5 s — ' +
+      'sous le mur de la suite (275,1 s)',
   },
   {
     nom: 'docs',

@@ -10,10 +10,11 @@
 // qui casse `docs/raw/combat.md` réutiliserait un `docs:check` vert, la classe exacte de l'incident
 // 17926d5de.
 //
-// OÙ ILS VIVENT : `<git-common-dir>/wfrp-justificatifs/<cleTree>/<gate>.json` — le MÊME endroit que
-// le compteur de palier de `scripts/git-hooks/post-commit` (`wfrp-palier.compteur`), pour les mêmes
-// raisons : partagé par l'arbre principal et tous ses worktrees, et hors de `node_modules` (que
-// `npm ci` efface). UN FICHIER PAR GATE : deux gates concurrentes n'ont aucun lire-modifier-écrire
+// OÙ ILS VIVENT : `<git-common-dir>/wfrp-justificatifs/<cleTree>/<gate>.json` — partagé par l'arbre
+// principal et tous ses worktrees, et hors de `node_modules` (que `npm ci` efface). Ce partage est
+// JUSTE ici, parce que la clé est le CONTENU jugé : un justificatif écrit depuis un worktree vaut
+// pour le même contenu où qu'il soit. Il ne l'était pas pour le palier, qui comptait des ÉVÉNEMENTS
+// locaux (32 pour 9 commits réels, 2026-09-04) — d'où sa mesure sur l'histoire. UN FICHIER PAR GATE : deux gates concurrentes n'ont aucun lire-modifier-écrire
 // à partager, le renommage atomique suffit.
 //
 // `sale` est mesuré AU MOMENT DE LA GATE, jamais au push : une gate jouée sur un arbre porteur de
@@ -275,6 +276,10 @@ export const CLES_DE_STEP_INERTES = ['name', 'if', 'id']
  * un job neuf est exigé au push tant qu'il n'est pas nommé ici.
  */
 export const JOBS_HORS_JUSTIFICATIF = {
+  fermetures:
+    'ferme sur GitHub les tickets soldés par la plage POUSSÉE, après un `build` vert : il agit APRÈS ' +
+    'la publication et ne mesure rien du contenu — le justifier au push serait circulaire ' +
+    '(scripts/ops/fermer-depuis-main.mjs)',
   migrations:
     'rejeu EN PLACE des migrations : le jouer sur un arbre de travail réécrit src/data et src/scenes ' +
     'et rend un verdict faux (#1613) — le hook pre-push le joue sur un EXPORT de la tête ' +

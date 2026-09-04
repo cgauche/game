@@ -36,10 +36,12 @@ jamais. `npm run dev` imprime celui qu'il sert.
 
 **Sans ce postinstall, 2 familles de mécanismes sont MORTES.**
 
-1. `core.hooksPath` → `scripts/git-hooks` : les hooks `post-commit`, `post-merge`, `post-rewrite`, `pre-commit`, `pre-push` ne tournent plus. Le
-   `pre-commit` porte les gardes anti-poison/anti-dérive de chaque commit ; le `post-commit` ferme
-   automatiquement les issues GitHub citées dans le message (`fixes`/`closes`/`corrige`/`ferme #N`,
-   cf. le commentaire de tête du script).
+1. `core.hooksPath` → `scripts/git-hooks` : les hooks `post-merge`, `post-rewrite`, `pre-commit`, `pre-push` ne tournent plus. Le
+   `pre-commit` porte les gardes anti-poison/anti-dérive de chaque commit ; `post-merge` et
+   `post-rewrite` régénèrent les docs dérivés après une fusion ou un rebase. Le PALIER de revue
+   adversariale se mesure sur l'histoire au moment du commit (`scripts/guards/lib/revuePalier.mjs`),
+   et la fermeture des issues suit la PUBLICATION : job `fermetures` de `.github/workflows/ci.yml`
+   après un `build` vert sur `main`, qui joue `node scripts/ops/fermer-depuis-main.mjs <before>..<sha>`.
 2. Les pilotes de fusion des docs dérivés (`docs-generes`, `docs-catalogue`, `docs-fiche-raw`), déclarés par
    `.gitattributes` et servis par `scripts/git-hooks/merge-docs.mjs` : sans eux, chaque rebase
    rouvre un conflit sur des fichiers que `npm run docs:build` régénère seul.
@@ -53,16 +55,16 @@ une machine quelconque).
 
 Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
 `0 6 * * 1`) rejoue exactement ce chemin en CI, sur un runner propre, en
-24 portes :
+23 portes :
 
 - `npm ci`
 - `npm run agents:check`
 - `npm run test:agents`
 - `npm run test:hooks`
+- `npm run test:ops`
 - `npm run test:docs`
 - `npm run test:recette`
 - `npm run agents:sync`
-- `npm audit --audit-level=high`
 - `npm run gen`
 - `npm run typecheck`
 - `npm run lint`
@@ -77,21 +79,21 @@ Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
 - `npm run raw:check-code-refs`
 - `npm run raw:reanchor`
 - `npm --prefix server ci`
-- `npm --prefix server audit --audit-level=high`
-- `npm --prefix server run typecheck`
+- `npm run server:typecheck`
 
-Dont 3 portes sur le sous-projet `server/` (relay coop, `--prefix server`) :
-`npm --prefix server ci`, `npm --prefix server audit --audit-level=high`, `npm --prefix server run typecheck` — son `node_modules` et son typecheck sont indépendants de ceux de la
+Dont 2 portes sur le sous-projet `server/` (relay coop) :
+`npm --prefix server ci`, `npm run server:typecheck` — son `node_modules` et son typecheck sont indépendants de ceux de la
 racine, un clone frais doit les poser AUSSI.
 
-S'il casse, il ouvre une issue GitHub taguée `canari` — c'est le signal qu'un geste manuel a dévié
-de ce que `npm install` pose seul.
+Son step de résumé poste le rapport en commentaire sur l'issue `canari` la plus ANCIENNE encore
+ouverte — il n'en crée une que s'il n'y en a aucune, et la FERME quand toutes les mesures sont vertes.
+C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 ## 2. Ce que le clone CONTIENT
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 83 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 84 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
@@ -126,9 +128,9 @@ Ne sont pas non plus dans le clone, parce que ce ne sont pas des fichiers :
   workflow_dispatch) ; il build le COMMIT de `main` sur un runner propre. Secret
   Actions `PROD_DEPLOY_KEY` (deploy key SSH) requis côté dépôt ; aucun clone local du dépôt prod
   nécessaire.
-- **Auth `gh` (CLI GitHub)** — credentials locales, nécessaires à la fermeture auto d'issues
-  (`scripts/git-hooks/post-commit`) et à toute commande `gh` manuelle. L'export hebdomadaire, lui,
-  tourne en CI avec son propre token.
+- **Auth `gh` (CLI GitHub)** — credentials locales, nécessaires aux commandes `gh` manuelles et aux
+  gestes `ops:*` joués à la main (`node scripts/ops/fermer-depuis-main.mjs`, `node scripts/ops/fermetures-non-citees.mjs`).
+  La fermeture des issues tourne en CI (job `fermetures`, `GITHUB_TOKEN`), comme l'export hebdomadaire.
 
 ## 4. Archivage des non-versionnés
 
@@ -144,7 +146,7 @@ les non-versionnés locaux, elle ne touche pas au repo.
 
 ## 5. Portes de qualité — où elles vivent, comment vérifier qu'elles tournent
 
-**Hooks Git locaux** (`post-commit`, `post-merge`, `post-rewrite`, `pre-commit`, `pre-push`) : posés par `npm install` via `core.hooksPath`.
+**Hooks Git locaux** (`post-merge`, `post-rewrite`, `pre-commit`, `pre-push`) : posés par `npm install` via `core.hooksPath`.
 Vérifier : `git config core.hooksPath` doit répondre `scripts/git-hooks`. Si vide → hooks MORTS,
 refaire `npm install`.
 
@@ -180,4 +182,4 @@ refaire `npm install`.
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
 porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).
-<!-- sources-empreinte: 0b3acf28ca0172a7c0cf72d455055a289bc2046b (12 fichiers, 9 dossiers) corps: 0ac120eaea54c908e770ec8f39ce83e6ec43eb02 -->
+<!-- sources-empreinte: 783399096532bce0f59b1c0a9b40f60b80e8a5a5 (12 fichiers, 9 dossiers) corps: 25ec9f6505805253b029b5651b05804cb96c9f69 -->

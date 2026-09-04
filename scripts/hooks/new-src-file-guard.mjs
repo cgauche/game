@@ -31,8 +31,15 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve, relative, isAbsolute } from 'node:path'
 
 export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-export const REGISTRE = join(REPO, 'scripts', 'hooks', 'ecrans-ui.json')
+export const REGISTRE_DEFAUT = join(REPO, 'scripts', 'hooks', 'ecrans-ui.json')
 export const JOURNAL = join(REPO, '.claude', 'logs', 'new-src-guard-skips.log')
+
+/** Registre LU par la garde. Le chemin est INJECTABLE (`WFRP_REGISTRE_ECRANS`) pour une seule raison :
+ *  son test doit pouvoir ajouter une entrée sans TOUCHER au fichier committé. Ce qu'il faisait — écrire
+ *  dans l'arbre puis remettre dans un `finally` — a échoué le 2026-09-04 (`UNKNOWN: unknown error`,
+ *  entrée fantôme laissée dans l'arbre, deux tests rouges en cascade et un arbre sale pour toutes les
+ *  gates). Un test ne rend pas l'arbre de travail écrivable : il se donne son propre registre. */
+export const cheminRegistre = (env = process.env) => env.WFRP_REGISTRE_ECRANS || REGISTRE_DEFAUT
 
 /**
  * Chemin relatif à la RACINE DU DÉPÔT, séparateurs POSIX — `null` si le fichier vit hors du dépôt
@@ -163,7 +170,7 @@ async function main() {
     let panne = null
     try {
       const claudeMd = readFileSync(join(REPO, 'CLAUDE.md'), 'utf8')
-      const registre = JSON.parse(readFileSync(REGISTRE, 'utf8'))
+      const registre = JSON.parse(readFileSync(cheminRegistre(), 'utf8'))
       // Le fichier n'existe pas (contrôle ci-dessus) : le stock en chaîne ne le déclare donc pas.
       déclaré = estDeclare(rel, claudeMd, registre, false)
     } catch (e) {

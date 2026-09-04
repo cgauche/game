@@ -1,6 +1,6 @@
 // Tests du SOCLE de reconnaissance de commande partagé par les gardes PreToolUse (#1679 L1a T1) :
 // `segmentsProfonds` (sous-shells + enrobeurs de tête), `extractTargetDir` (répertoire cible réel),
-// le compteur de palier PARTAGÉ entre worktrees, et le contrat de sortie du driver.
+// le refus de PALIER (mesuré sur l'histoire), et le contrat de sortie du driver.
 //
 // Les formes couvertes ici viennent de sondes jouées contre les évaluateurs RÉELS avant écriture :
 // onze formes que le tokenizer voyait déjà par accident, dix-sept qu'il laissait passer (flags avant
@@ -13,7 +13,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
@@ -25,9 +25,6 @@ import {
   extractClosedIssues,
   extractTargetDir,
   versCheminNatif,
-  cheminCompteurPalier,
-  migrerCompteurPalier,
-  readCounterFile,
   decisionCumulee,
   scriptsNpm,
   ancrerScriptsNpm,
@@ -258,8 +255,7 @@ test('extractTargetDir : `git -C` prime sur `cd`, et sans ni l\'un ni l\'autre l
   assert.equal(extractTargetDir('git commit -m x', base, 'linux'), base)
 })
 
-// ── Compteur de palier : UN par dépôt, partagé par tous ses worktrees ─────────────────────────────
-/** Dépôt jetable avec un worktree, pour mesurer le compteur des DEUX côtés. */
+/** Dépôt jetable avec un worktree : le driver s'y joue comme dans un arbre réel. */
 function depotAvecWorktree() {
   const base = mkdtempSync(join(tmpdir(), 'palier-'))
   const principal = join(base, 'principal')
@@ -275,55 +271,6 @@ function depotAvecWorktree() {
   git(principal, 'worktree', 'add', '-q', worktree)
   return { base, principal, worktree }
 }
-
-test('compteur de palier : l\'arbre principal et son worktree lisent LA MÊME valeur', () => {
-  const { base, principal, worktree } = depotAvecWorktree()
-  try {
-    const cheminPrincipal = cheminCompteurPalier(principal)
-    const cheminWorktree = cheminCompteurPalier(worktree)
-    assert.ok(cheminPrincipal, 'aucun compteur résolu dans un dépôt git')
-    assert.equal(resolve(cheminWorktree), resolve(cheminPrincipal), 'deux compteurs distincts : le palier n\'arriverait jamais')
-    writeFileSync(cheminPrincipal, '7', 'utf8')
-    assert.equal(readCounterFile(principal), 7)
-    assert.equal(readCounterFile(worktree), 7)
-  } finally {
-    rmSync(base, { recursive: true, force: true })
-  }
-})
-
-test('compteur de palier : la valeur de l\'ancien fichier d\'ARBRE est REPRISE, puis le fichier disparaît', () => {
-  const { base, principal, worktree } = depotAvecWorktree()
-  try {
-    const ancien = join(principal, '.claude', 'soldes', '.compteur')
-    mkdirSync(dirname(ancien), { recursive: true })
-    writeFileSync(ancien, '9\n', 'utf8')
-
-    migrerCompteurPalier(principal)
-    assert.equal(existsSync(ancien), false, 'deux sources subsistent : la valeur reprise peut diverger')
-    assert.equal(readFileSync(cheminCompteurPalier(principal), 'utf8'), '9')
-    assert.equal(readCounterFile(worktree), 9, 'le worktree ne voit pas la valeur reprise')
-
-    // Un fichier d'arbre qui RÉAPPARAÎT est SUPPRIMÉ, jamais relu : sans cela il restait là pour
-    // toujours, ignoré en silence, prêt à être pris pour la source par le prochain lecteur.
-    writeFileSync(ancien, '1', 'utf8')
-    assert.equal(migrerCompteurPalier(principal), 'purge')
-    assert.equal(existsSync(ancien), false)
-    assert.equal(readCounterFile(principal), 9)
-  } finally {
-    rmSync(base, { recursive: true, force: true })
-  }
-})
-
-test('compteur de palier : hors dépôt git, aucun chemin et une valeur de 0 (jamais un hook en échec)', () => {
-  const dehors = mkdtempSync(join(tmpdir(), 'palier-dehors-'))
-  try {
-    assert.equal(cheminCompteurPalier(dehors), null)
-    assert.equal(readCounterFile(dehors), 0)
-    assert.doesNotThrow(() => migrerCompteurPalier(dehors))
-  } finally {
-    rmSync(dehors, { recursive: true, force: true })
-  }
-})
 
 // ── Driver : le JSON rendu au hook ────────────────────────────────────────────────────────────────
 /** Sortie BRUTE du driver d'un garde pour un payload de hook. */
@@ -356,7 +303,7 @@ test('DRIVER : une décision NULLE ne produit AUCUNE sortie (silence, jamais un 
 test('DRIVER solde : une fermeture sans solde est refusée, et le refus dit l\'ordre stage-puis-commit', () => {
   const { base, principal } = depotAvecWorktree()
   try {
-    writeFileSync(cheminCompteurPalier(principal), '0', 'utf8')
+    // Aucune revue dans l'histoire de ce dépôt : le palier n'a pas d'origine, et c'est le SOLDE qui refuse.
     const out = sortieDriver('solde-ticket-guard.mjs', 'git commit -m "feat: x (corrige #424242)"', principal)
     const { hookSpecificOutput } = JSON.parse(out)
     assert.equal(hookSpecificOutput.permissionDecision, 'deny')
@@ -367,20 +314,31 @@ test('DRIVER solde : une fermeture sans solde est refusée, et le refus dit l\'o
   }
 })
 
-test('refus de PALIER : le message NOMME le fichier compteur lu (la valeur opposée reste vérifiable)', () => {
-  const chemin = join('C:', 'dépôt', '.git', 'wfrp-palier.compteur')
+test('refus de PALIER : le message NOMME la MESURE (compte, tête, archive) — elle se re-vérifie en une commande', () => {
   const d = evaluateSolde({
     command: 'git commit -m "feat: x (corrige #77)"',
     today: '2026-09-02',
     readSolde: () => null,
-    counter: 10,
-    readRevuePalier: () => null,
-    cheminCompteur: chemin,
+    palier: { compte: 11, tete: '2c11fdd9a', chemin: '.claude/soldes/revue-palier-82e95be10.md' },
   })
   assert.ok(d, 'palier atteint sans revue : le refus manque')
   assert.equal(d.decision, 'deny')
-  assert.match(d.reason, /wfrp-palier\.compteur/)
-  assert.ok(d.reason.includes(chemin), 'le refus ne cite pas le chemin RÉELLEMENT lu')
+  assert.match(d.reason, /11 commits de substance depuis 2c11fdd9a/)
+  assert.match(d.reason, /revue-palier-82e95be10\.md/)
+  assert.match(d.reason, /2c11fdd9a\.\.<tête>/, 'le refus doit dire la fenêtre attendue de la revue à écrire')
+  assert.match(d.reason, /revue-palier-2026-09-02-2c11fdd9a\.md/, 'et le NOM du fichier à écrire')
+})
+
+test('refus de PALIER : un palier INMESURABLE refuse aussi — jamais un silence', () => {
+  const d = evaluateSolde({
+    command: 'git commit -m "feat: x (corrige #77)"',
+    today: '2026-09-02',
+    readSolde: () => null,
+    palier: { compte: 0, tete: null, chemin: null, erreur: 'toutes les archives sont orphelines' },
+  })
+  assert.ok(d)
+  assert.match(d.reason, /Palier INMESURABLE/)
+  assert.match(d.reason, /toutes les archives sont orphelines/)
 })
 
 // ── Cumul de refus : la décision la plus stricte l'emporte ──────────────────────────────────

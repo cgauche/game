@@ -13,7 +13,11 @@
 //      seulement si la plage poussée touche ce qu'il mesure — sinon c'est dit et sauté ;
 //   5. dernière CI de `main` en échec — dérogation `WFRP_PUSH_SUR_ROUGE=1` + `WFRP_DEROGATION`
 //      (raison de 20 caractères au moins), JOURNALISÉE dans
-//      `<git-common-dir>/wfrp-justificatifs/derogations.log` et relue par la revue de palier.
+//      `<git-common-dir>/wfrp-justificatifs/derogations.log` et relue par la revue de palier. Ce
+//      journal enregistre une TENTATIVE de push : le hook s'exécute AVANT le transfert et ne sait pas
+//      s'il aboutit — deux lignes identiques peuvent nommer un seul push abouti (mesuré le
+//      2026-09-04 sur `c3692d0f9`, 07:49:58 puis 07:54:50 pour un unique run CI). Un comptage de
+//      dérogations compte donc des tentatives, et chaque ligne le DIT.
 //      Ce refus-là vaut pour TOUTE ref, branche de travail comprise : c'est la lettre du régime
 //      (« pas de push sur CI rouge »), et un push de branche pendant que main est rouge détourne du
 //      seul travail qui compte alors — remettre main au vert.
@@ -223,9 +227,11 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
       if (env.WFRP_PUSH_SUR_ROUGE === '1' && raison.trim().length >= 20) {
         notes.push(`${dit} — DÉROGATION journalisée : ${raison.trim()}`)
         try {
+          // `tentative` : le pre-push précède le transfert. Sans ce mot, le journal se relit comme
+          // une liste de pushes aboutis et tout cardinal qu'on en tire est faux.
           appendFileSync(
             join(cheminJustificatifs({ cwd }), 'derogations.log'),
-            `${new Date().toISOString()}\t${git(['rev-parse', 'HEAD'])}\t${raison.trim()}\n`,
+            `${new Date().toISOString()}\ttentative\t${git(['rev-parse', 'HEAD'])}\t${raison.trim()}\n`,
           )
         } catch (e) {
           notes.push(`journal de dérogation non écrit : ${e.message}`)

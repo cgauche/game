@@ -167,6 +167,23 @@ test('la descendance se lit dans `ps`, LES FEUILLES D’ABORD', () => {
   assert.deepEqual(descendantsDe(100, ''), [], 'sans `ps`, on retombe sur le groupe seul')
 })
 
+test('INVARIANT de la descendance : chaque enfant vient AVANT son parent, quelle que soit sa profondeur', () => {
+  // « Les feuilles d'abord » est plus FAIBLE que ce qui compte : une feuille peu profonde (500, fille
+  // directe de 100) n'a aucune raison de précéder un petit-fils (400). Ce qui doit tenir, c'est que
+  // personne ne soit tué avant sa descendance — sinon un orphelin se ré-attache et survit.
+  const ps = ['  200   100', '  300   200', '  400   300', '  500   100', '  900   999'].join('\n')
+  const ordre = descendantsDe(100, ps)
+  assert.deepEqual(new Set(ordre), new Set([200, 300, 400, 500]))
+  for (const [enfant, parent] of [[200, 100], [300, 200], [400, 300], [500, 100]]) {
+    const iParent = ordre.indexOf(parent)
+    assert.ok(
+      ordre.indexOf(enfant) < iParent || iParent === -1,
+      `${enfant} (fils de ${parent}) est tué APRÈS son parent : ordre ${ordre.join(',')}`,
+    )
+  }
+  assert.ok(!ordre.includes(900), 'un pid HORS de l’arbre ne doit jamais être visé')
+})
+
 test('la descendance ne boucle pas sur un `ps` qui se contredit', () => {
   // Vu en vrai : un processus dont le ppid est lui-même, et un cycle 10 → 11 → 10.
   assert.deepEqual(descendantsDe(7, '    7     7\n'), [])

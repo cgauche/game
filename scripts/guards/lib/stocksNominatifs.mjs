@@ -154,14 +154,25 @@ const ENTETE_INERTE =
  *           lirePreImage?: (chemin: string) => string | null }} [images]
  * @returns {{ fichier: string, ajoutees: number, retirees: number, net: number, exemples: string[] }[]}
  *   trié par fichier ; `exemples` = jusqu'à 3 entrées ajoutées, telles qu'écrites.
+ * @throws {TypeError} si le diff n'est pas une CHAÎNE : la signature est POSITIONNELLE, et un appel
+ *   en objet (`croissanceDesStocks({ diff })`) stringifiait `[object Object]` — donc `[]` sur TOUS
+ *   les commits, y compris sur des croissances réelles. Un juge a publié ce faux zéro le 2026-09-04
+ *   (revue de palier n°4, trouvaille 5) : la lib ne peut pas distinguer un diff vide d'un appel mal
+ *   formé, elle refuse donc de deviner.
  */
 export function croissanceDesStocks(diffU0, { lirePostImage = null, lirePreImage = null } = {}) {
+  if (typeof diffU0 !== 'string') {
+    throw new TypeError(
+      `croissanceDesStocks(diffU0, images) attend le diff en CHAÎNE, reçu ${typeof diffU0} `
+      + '— la signature est POSITIONNELLE : croissanceDesStocks(diff, { lirePostImage, lirePreImage })',
+    );
+  }
   /** @type {Map<string, { ajoutees: { texte: string, ligne: number }[], retirees: number[] }>} */
   const parFichier = new Map();
   let courant = null;
   let numAncien = 0;
   let numNouveau = 0;
-  for (const brute of String(diffU0 ?? '').split('\n')) {
+  for (const brute of diffU0.split('\n')) {
     const ligne = brute.replace(/\r$/, '');
     const entete = /^\+\+\+ (?:b\/)?(.+)$/.exec(ligne);
     if (entete) {

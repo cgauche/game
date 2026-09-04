@@ -5,7 +5,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
 import { resolve, join } from 'node:path'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, readdirSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import {
@@ -32,7 +32,6 @@ import {
   diffDuCommit,
   repoRoot,
   readSoldeFile,
-  readRevuePalierFile,
   readRefFile,
   restesItems,
   restesRoutants,
@@ -48,8 +47,14 @@ import {
   commitEstAncetreDeHead,
   fichiersDuCommitGit,
   diffDunSha,
+  problemesDeRevueNeuve,
+  revuesDuCommit,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
+import {
+  archivesDe, derniereRevueArchivee, estDansHead, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue,
+  revuesNeuves,
+} from '../guards/lib/revuePalier.mjs'
 
 const TODAY = '2026-07-14'
 const VERIFIE_OK = 'VERIFIE: relu le diff complet, lancé npm test et vérifié les 3 fichiers touchés à la main.'
@@ -236,8 +241,10 @@ test('validateSolde : date d\'un autre jour ne compte pas (anti-réchauffé)', (
 })
 
 // ── validateRevuePalier ──────────────────────────────────────────────────────────────────────────
-const revuePalier = ({ verdict = 'CONFIRMÉ', date = TODAY, synth = 'A'.repeat(90) } = {}) =>
-  `verdict: ${verdict}\n${synth}\n\n(${date})\n`
+// Une revue conforme porte sa date en 1re ligne et la fenêtre qu'elle juge : ce sont les deux champs
+// dont l'archiveur d'après commit fait le NOM de l'archive.
+const revuePalier = ({ verdict = 'CONFIRMÉ', date = TODAY, synth = 'A'.repeat(90), fenetre = '0139bd89c..7692b631c' } = {}) =>
+  `# PALIER (${date})\n\nverdict: ${verdict}\n${synth}\n\n\`${fenetre}\`\n`
 
 test('validateRevuePalier : conforme', () => {
   const r = validateRevuePalier(revuePalier(), TODAY)
@@ -258,6 +265,66 @@ test('validateRevuePalier : date absente', () => {
   const r = validateRevuePalier(`verdict: CONFIRMÉ\n${'A'.repeat(90)}\n`, TODAY)
   assert.equal(r.ok, false)
   assert.match(r.problems.join(' ; '), /date du jour/)
+})
+
+test('validateRevuePalier : une revue que l’archiveur ne saurait NOMMER est refusée au commit', () => {
+  const sansFenetre = validateRevuePalier(revuePalier({ fenetre: 'sans la moindre fenêtre' }), TODAY)
+  assert.equal(sansFenetre.ok, false)
+  assert.match(sansFenetre.problems.join(' ; '), /fenêtre `<base>\.\.<tête>`/)
+
+  const dateHorsPremiereLigne = validateRevuePalier(
+    `# Revue adversariale de PALIER\n\nverdict: CONFIRMÉ\n${'A'.repeat(90)}\n\nLe ${TODAY}, fenêtre \`0139bd89c..7692b631c\`.\n`,
+    TODAY,
+  )
+  assert.equal(dateHorsPremiereLigne.ok, false)
+  assert.match(dateHorsPremiereLigne.problems.join(' ; '), /date AAAA-MM-JJ en 1re ligne/)
+})
+
+test('fenetreDeRevue : la DERNIÈRE date de la 1re ligne, la PREMIÈRE fenêtre du corps', () => {
+  // Un titre porte ses numéros de tickets AVANT sa date, et le corps cite d'autres plages que la
+  // sienne : c'est cette lecture-là que l'archiveur et la porte partagent.
+  assert.deepEqual(
+    fenetreDeRevue('# PALIER — 10 fermetures (#1541 → #1616), 2026-09-01\n\n`0139bd89c..7692b631c` puis `aaaaaaa..bbbbbbb`\n'),
+    { date: '2026-09-01', base: '0139bd89c', tete: '7692b631c' },
+  )
+  assert.deepEqual(fenetreDeRevue(''), { date: null, base: null, tete: null })
+  assert.deepEqual(
+    fenetreDeRevue('# PALIER\n\nle 2026-09-01 en 2e ligne ne nomme rien\n'),
+    { date: null, base: null, tete: null },
+  )
+})
+
+// CORPUS RÉEL des revues committées : les trois plus récentes portent leur fenêtre et passent ; les
+// antérieures n'en ont pas — 7 des 10 étaient INARCHIVABLES tout en satisfaisant le palier.
+const revueCommittee = (nom) => readFileSync(join(repoRoot(), '.claude', 'soldes', nom), 'utf8')
+const dateDe = (texte) => /\d{4}-\d{2}-\d{2}/.exec(texte.split('\n', 1)[0])[0]
+
+for (const nom of ['revue-palier-64c09deba.md', 'revue-palier-82e95be10.md', 'revue-palier-d0b44a384.md']) {
+  test(`validateRevuePalier : ${nom} (revue RÉELLE) passe la porte`, () => {
+    const texte = revueCommittee(nom)
+    const r = validateRevuePalier(texte, dateDe(texte))
+    assert.equal(r.ok, true, r.problems.join(' ; '))
+  })
+}
+
+test('validateRevuePalier : revue-palier-1171977cb.md (réelle, SANS fenêtre) est REFUSÉE', () => {
+  const texte = revueCommittee('revue-palier-1171977cb.md')
+  const r = validateRevuePalier(texte, dateDe(texte))
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /fenêtre `<base>\.\.<tête>`/)
+})
+
+test('toute revue ACCEPTÉE par la porte est NOMMABLE par l’archiveur (même corpus)', () => {
+  const revues = readdirSync(join(repoRoot(), '.claude', 'soldes')).filter((f) => f.startsWith('revue-palier-'))
+  assert.ok(revues.length >= 10, `corpus de ${revues.length} revues — la sonde ne mesure que ce qu'elle voit`)
+  for (const nom of revues) {
+    const texte = revueCommittee(nom)
+    if (!validateRevuePalier(texte, dateDe(texte)).ok) continue
+    assert.ok(
+      nomDArchiveDeRevue(texte),
+      `${nom} passe la porte au commit et l’archiveur ne sait pas la nommer — le palier gelait`,
+    )
+  }
 })
 
 // ── evaluate (intégration pure, readSolde/readRevuePalier injectés) ────────────────────────────────
@@ -296,39 +363,353 @@ test('evaluate : verdict RÉFUTÉ → deny même si le reste du solde est confor
   assert.match(d.reason, /réfuté ne se ferme pas/)
 })
 
-test('evaluate : palier <10 sans revue-palier.md → solde seul suffit (silence)', () => {
-  const d = evaluate({ command: 'git commit -m "corrige #9"', today: TODAY, readSolde: () => solde(), counter: 9, readRevuePalier: () => null })
-  assert.equal(d, null)
-})
+// Le palier est une MESURE d'histoire : `compte` commits de substance depuis `tete`, la tete de
+// fenetre de la derniere revue de HEAD (`chemin`). La revue qui le franchit est un fichier AJOUTE par
+// le commit, sous son nom d'archive : c'est `neuves()` qui la rend.
+const PALIER_MESURE = { compte: 12, tete: '2c11fdd9a', chemin: '.claude/soldes/revue-palier-82e95be10.md' }
+const revueEnchainee = (o = {}) => revuePalier({ fenetre: `${PALIER_MESURE.tete}..aaaaaaaaa`, ...o })
+/** Une revue NEUVE stagee, nommee par son contenu (c'est ce que la porte exige). */
+const neuve = (contenu, nom = nomDArchiveDeRevue(contenu)) => [{
+  chemin: `.claude/soldes/${nom}`, nom, contenu,
+}]
 
-test('evaluate : palier >=10 sans revue-palier.md → deny palier, quel que soit le solde', () => {
-  const d = evaluate({ command: 'git commit -m "corrige #9"', today: TODAY, readSolde: () => solde(), counter: 10, readRevuePalier: () => null })
-  assert.ok(d)
-  assert.match(d.reason, /[Pp]alier/)
-  assert.match(d.reason, /fichier absent/)
-})
-
-test('evaluate : palier >=10 + revue-palier.md daté du jour et suffisant → pass (solde encore requis)', () => {
+test('evaluate : palier <10 sans revue neuve -> solde seul suffit (silence)', () => {
   const d = evaluate({
     command: 'git commit -m "corrige #9"',
     today: TODAY,
     readSolde: () => solde(),
-    counter: 12,
-    readRevuePalier: () => revuePalier(),
+    palier: { ...PALIER_MESURE, compte: 9 },
   })
   assert.equal(d, null)
 })
 
-test('evaluate : palier >=10 + revue-palier.md présent mais trop maigre → deny palier', () => {
+test('evaluate : palier >=10 sans revue neuve -> deny palier, quel que soit le solde', () => {
   const d = evaluate({
     command: 'git commit -m "corrige #9"',
     today: TODAY,
     readSolde: () => solde(),
-    counter: 10,
-    readRevuePalier: () => revuePalier({ synth: 'court' }),
+    palier: { ...PALIER_MESURE, compte: 10 },
   })
   assert.ok(d)
   assert.match(d.reason, /[Pp]alier/)
+  // Le refus rend la mesure VERIFIABLE : combien, depuis quoi, d'apres quelle revue -- et il NOMME le
+  // fichier a ecrire, nom compris : c'est le nom qui porte la fenetre.
+  assert.match(d.reason, /10 commits de substance depuis 2c11fdd9a/)
+  assert.match(d.reason, /revue-palier-82e95be10\.md/)
+  assert.match(d.reason, new RegExp(`revue-palier-${TODAY}-2c11fdd9a\\.md`))
+  assert.ok(!/[^-]revue-palier\.md/.test(d.reason), 'aucun fichier « vivant » : la revue nait archivee')
+})
+
+test('evaluate : palier >=10 + revue neuve ENCHAINEE et conforme -> pass (solde encore requis)', () => {
+  const d = evaluate({
+    command: 'git commit -m "corrige #9"',
+    today: TODAY,
+    readSolde: () => solde(),
+    palier: PALIER_MESURE,
+    neuves: () => neuve(revueEnchainee()),
+  })
+  assert.equal(d, null)
+})
+
+test('evaluate : revue neuve dont le CONTENU est trop maigre -> deny nomme', () => {
+  const d = evaluate({
+    command: 'git commit -m "corrige #9"',
+    today: TODAY,
+    readSolde: () => solde(),
+    palier: { ...PALIER_MESURE, compte: 10 },
+    neuves: () => neuve(revueEnchainee({ synth: 'court' })),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /Revue de palier NON CONFORME/)
+  assert.match(d.reason, /trop maigre/)
+})
+
+test('evaluate : revue neuve dont le NOM ne repond pas au CONTENU -> deny qui dit les deux', () => {
+  const contenu = revueEnchainee()
+  const d = evaluate({
+    command: 'git commit -m "corrige #9"',
+    today: TODAY,
+    readSolde: () => solde(),
+    palier: PALIER_MESURE,
+    neuves: () => neuve(contenu, 'revue-palier-2026-01-01-deadbee.md'),
+  })
+  assert.ok(d, 'un nom libre rendrait la suite des revues illisible')
+  assert.match(d.reason, /la revue s'appelle revue-palier-2026-01-01-deadbee\.md/)
+  assert.match(d.reason, new RegExp(`son contenu la nomme ${nomDArchiveDeRevue(contenu)}`))
+})
+
+test('evaluate : revue neuve dont la fenetre NE S’ENCHAINE PAS -> deny, base attendue NOMMEE', () => {
+  const d = evaluate({
+    command: 'git commit -m "corrige #9"',
+    today: TODAY,
+    readSolde: () => solde(),
+    palier: PALIER_MESURE,
+    neuves: () => neuve(revuePalier({ fenetre: '0139bd89c..aaaaaaaaa' })),
+  })
+  assert.ok(d, 'une revue qui saute une tranche d’histoire franchit le palier sans l’avoir jugee')
+  assert.match(d.reason, /sa fenêtre part de 0139bd89c/)
+  assert.match(d.reason, /base attendue : 2c11fdd9a/)
+})
+
+test('evaluate : revue neuve dont la TETE est hors de l’histoire de HEAD -> deny', () => {
+  const d = evaluate({
+    command: 'git commit -m "corrige #9"',
+    today: TODAY,
+    readSolde: () => solde(),
+    palier: PALIER_MESURE,
+    neuves: () => neuve(revueEnchainee()),
+    dansHead: () => false,
+  })
+  assert.ok(d)
+  assert.match(d.reason, /sa tête de fenêtre aaaaaaaaa n'est pas dans l'histoire de HEAD/)
+})
+
+test('evaluate : une revue neuve FAUSSE refuse le commit MEME hors palier et SANS fermeture', () => {
+  // Une revue fausse entree dans l'histoire fausse toutes les mesures suivantes : elle se refuse la
+  // ou elle nait, pas au palier d'apres.
+  const d = evaluate({
+    command: 'git commit -m "chore: pose la revue"',
+    today: TODAY,
+    readSolde: () => null,
+    palier: { ...PALIER_MESURE, compte: 1 },
+    neuves: () => neuve(revuePalier({ fenetre: '0139bd89c..aaaaaaaaa' })),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /Revue de palier NON CONFORME/)
+})
+
+test('evaluate : revue neuve conforme HORS palier -> acceptee (aucune fermeture, silence)', () => {
+  const d = evaluate({
+    command: 'git commit -m "chore: pose la revue"',
+    today: TODAY,
+    readSolde: () => null,
+    palier: { ...PALIER_MESURE, compte: 1 },
+    neuves: () => neuve(revueEnchainee()),
+  })
+  assert.equal(d, null)
+})
+
+test('evaluate : la revue abregee autrement que la precedente reste ENCHAINEE (prefixe de sha)', () => {
+  const d = evaluate({
+    command: 'git commit -m "corrige #9"',
+    today: TODAY,
+    readSolde: () => solde(),
+    palier: { ...PALIER_MESURE, tete: '2c11fdd9a3f4b6c7d8e9f0a1b2c3d4e5f6a7b8c9' },
+    neuves: () => neuve(revueEnchainee()),
+  })
+  assert.equal(d, null)
+})
+
+test('evaluate : palier INMESURABLE -> deny nomme, jamais un silence qui laisse fermer', () => {
+  const d = evaluate({
+    command: 'git commit -m "corrige #9"',
+    today: TODAY,
+    readSolde: () => solde(),
+    palier: { compte: 0, tete: null, chemin: null, erreur: 'aucune des 3 revues archivees ne juge l’histoire de HEAD' },
+  })
+  assert.ok(d)
+  assert.match(d.reason, /Palier INMESURABLE/)
+  assert.match(d.reason, /aucune des 3 revues archivees/)
+})
+
+// -- La MESURE, sur un depot JETABLE ---------------------------------------------------------------
+/** Depot jetable : la revue s'y ecrit DIRECTEMENT sous son nom d'archive, comme dans le dispositif. */
+function depotAvecRevues() {
+  const depot = mkdtempSync(join(tmpdir(), 'palier-mesure-'))
+  const git = (...args) => execFileSync('git', args, { cwd: depot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  git('init', '-q', '-b', 'main')
+  git('config', 'user.email', 'test@example.invalid')
+  git('config', 'user.name', 'test')
+  git('config', 'core.hooksPath', 'hooks-absents')
+  mkdirSync(join(depot, '.claude', 'soldes'), { recursive: true })
+  const commit = (marque, dossier = 'scripts') => {
+    mkdirSync(join(depot, dossier), { recursive: true })
+    writeFileSync(join(depot, dossier, `${marque}.txt`), marque)
+    git('add', '-A')
+    git('commit', '-q', '-m', marque)
+    return git('rev-parse', 'HEAD').trim()
+  }
+  const racine = commit('racine')
+  /** Ecrit la revue sous SON nom d'archive (elle nait archivee) et rend son chemin relatif. */
+  const poser = (base, tete) => {
+    const contenu = `# PALIER (${TODAY})\n\nverdict: CONFIRMÉ\n${'A'.repeat(90)}\n\n\`${base}..${tete}\`\n`
+    const nom = nomDArchiveDeRevue(contenu)
+    writeFileSync(join(depot, '.claude', 'soldes', nom), contenu)
+    return { nom, chemin: `.claude/soldes/${nom}`, contenu }
+  }
+  return { depot, git, commit, racine, poser }
+}
+
+test('mesureDuPalier : compte les commits de substance depuis la derniere revue de HEAD', () => {
+  const { depot, git, commit, racine, poser } = depotAvecRevues()
+  try {
+    poser('0000000', racine)
+    git('add', '-A'); git('commit', '-q', '-m', 'revue de palier')
+    assert.equal(mesureDuPalier(depot).compte, 0, 'un commit hors src/scripts n’est pas de la substance')
+    commit('a'); commit('b')
+    const m = mesureDuPalier(depot)
+    assert.equal(m.compte, 2)
+    assert.equal(m.tete, racine)
+    assert.equal(m.chemin, `.claude/soldes/revue-palier-${TODAY}-0000000.md`)
+    // Le commit que l'index s'apprete a faire compte AUSSI : c'est lui qui franchit le palier.
+    writeFileSync(join(depot, 'scripts', 'c.txt'), 'c')
+    git('add', '-A')
+    assert.equal(mesureDuPalier(depot).compte, 3)
+  } finally { rmSync(depot, { recursive: true, force: true }) }
+})
+
+test('MORSURE : la revue neuve du commit REMET le palier a zero — elle est dans HEAD tout de suite', () => {
+  // Ce que ce test verrouille : la revue entre dans HEAD AVEC le commit qui la porte, donc la mesure
+  // qui suit part de SA tete. Une revue qui ne deviendrait ARCHIVE qu'apres coup laisserait le palier
+  // a 11 des deux cotes du commit, sur la meme tete -- palier franchi, mesure inchangee.
+  const { depot, git, commit, racine, poser } = depotAvecRevues()
+  try {
+    poser('0000000', racine)
+    git('add', '-A'); git('commit', '-q', '-m', 'revue fondatrice')
+    for (let i = 0; i < 11; i += 1) commit(`substance-${i}`)
+    const avant = mesureDuPalier(depot)
+    assert.equal(avant.compte, 11, 'palier atteint')
+
+    const tete = git('rev-parse', 'HEAD').trim()
+    const revue = poser(racine, tete)
+    git('add', '-A')
+    // Vue depuis l'index, la revue est NEUVE : c'est elle que la porte valide.
+    const vues = revuesNeuves(depot)
+    assert.deepEqual(vues.map((r) => r.chemin), [revue.chemin])
+    assert.deepEqual(
+      problemesDeRevueNeuve(vues[0], { today: TODAY, palier: avant, dansHead: (sha) => estDansHead(sha, depot) }),
+      [],
+    )
+
+    git('commit', '-q', '-m', 'chore: revue de palier')
+    const apres = mesureDuPalier(depot)
+    assert.equal(apres.compte, 0, 'le palier REPART : la revue est dans HEAD des son commit')
+    assert.equal(apres.tete, tete)
+    assert.equal(apres.chemin, revue.chemin)
+  } finally { rmSync(depot, { recursive: true, force: true }) }
+})
+
+test('mesureDuPalier : une revue dont la TETE de fenetre est ORPHELINE ne juge rien -- et le DIT', () => {
+  const { depot, git, poser } = depotAvecRevues()
+  try {
+    poser('0000000', '82e95be10')
+    git('add', '-A'); git('commit', '-q', '-m', 'revue orpheline')
+    const m = mesureDuPalier(depot)
+    assert.match(m.erreur, /aucune des 1 revues archivées ne juge l'histoire de HEAD/)
+    assert.match(m.erreur, new RegExp(`revue-palier-${TODAY}-0000000\\.md`))
+  } finally { rmSync(depot, { recursive: true, force: true }) }
+})
+
+test('mesureDuPalier : entre deux revues, la plus PROCHE de HEAD fait reference', () => {
+  const { depot, git, commit, racine, poser } = depotAvecRevues()
+  try {
+    const suivant = commit('a')
+    poser('0000000', racine)
+    poser('1111111', suivant)
+    poser('2222222', '82e95be10')
+    git('add', '-A'); git('commit', '-q', '-m', 'revues')
+    const m = mesureDuPalier(depot)
+    assert.equal(m.chemin, `.claude/soldes/revue-palier-${TODAY}-1111111.md`)
+    assert.equal(m.compte, 0, 'aucun commit de substance depuis la plus recente')
+  } finally { rmSync(depot, { recursive: true, force: true }) }
+})
+
+test('FORME du commit : une revue stagee HORS des pathspecs ne franchit RIEN, et le refus la NOMME', () => {
+  // La forme par pathspec est celle que recommande le regime d'arbre partage : elle n'emporte QUE
+  // les chemins nommes. Une revue laissee dans l'index n'entre alors pas dans l'histoire -- le palier
+  // ne repart pas -- alors que la fermeture, elle, passerait. C'est la porte du COMMIT qui decide de
+  // ce qui compte, jamais l'index nu : meme regle que pour le solde.
+  const { depot, git, commit, racine, poser } = depotAvecRevues()
+  try {
+    poser('0000000', racine)
+    git('add', '-A'); git('commit', '-q', '-m', 'revue fondatrice')
+    for (let i = 0; i < 11; i += 1) commit(`substance-${i}`)
+    const palier = mesureDuPalier(depot)
+    assert.equal(palier.compte, 11, 'palier atteint')
+
+    const tete = git('rev-parse', 'HEAD').trim()
+    const revue = poser(racine, tete)
+    mkdirSync(join(depot, '.claude', 'soldes'), { recursive: true })
+    writeFileSync(join(depot, '.claude', 'soldes', '1.md'), solde())
+    writeFileSync(join(depot, 'scripts', 'b.mjs'), '// b\n')
+    git('add', '-A')
+
+    /** La MEME chaine que le hook : forme du commit -> fichiers emportes -> revues emportees. */
+    const juger = (command) => {
+      const c = diffDuCommit(command, depot)
+      const { fichiers } = analyzeDiffDuCommit(c.numstat())
+      const { emportees, omises } = revuesDuCommit(revuesNeuves(depot), fichiers)
+      return evaluate({
+        command,
+        today: TODAY,
+        readSolde: (n) => c.contenu(`.claude/soldes/${n}.md`),
+        palier,
+        neuves: () => emportees.map((r) => ({ ...r, contenu: c.contenu(r.chemin) ?? r.contenu })),
+        omises: () => omises,
+        dansHead: (sha) => estDansHead(sha, depot),
+      })
+    }
+
+    const omettant = 'git commit -m "corrige #1 : truc" -- scripts/b.mjs .claude/soldes/1.md'
+    const refus = juger(omettant)
+    assert.ok(refus, 'fermeture AUTORISEE alors que la revue ne part pas : le palier ne repartirait pas')
+    assert.match(refus.reason, /Palier atteint/)
+    assert.match(refus.reason, new RegExp(`${revue.chemin.replace(/[.]/g, '\\.')} est écrite et stagée mais NON EMPORTÉE`))
+    assert.match(refus.reason, /par pathspec n'emporte QUE les chemins nommés/)
+
+    assert.equal(juger(`${omettant} ${revue.chemin}`), null, 'la revue nommee dans les pathspecs franchit le palier')
+    assert.equal(juger('git commit -m "corrige #1 : truc"'), null, 'forme INDEX : tout le stage part')
+    assert.equal(juger('git commit -am "corrige #1 : truc"'), null, 'forme -a : tout le suivi modifie part')
+  } finally { rmSync(depot, { recursive: true, force: true }) }
+})
+
+test('revuesDuCommit : le partage stagees/emportees se lit sur les chemins du commit', () => {
+  const stagees = [{ chemin: '.claude/soldes/revue-palier-2026-09-04-abcdef1.md', nom: 'x.md', contenu: 'x' }]
+  assert.deepEqual(revuesDuCommit(stagees, ['.claude/soldes/revue-palier-2026-09-04-abcdef1.md']).omises, [])
+  assert.deepEqual(revuesDuCommit(stagees, ['src/a.ts']).emportees, [])
+  assert.deepEqual(revuesDuCommit(stagees, ['src/a.ts']).omises, [stagees[0].chemin])
+  // Les chemins que git rend sous Windows peuvent porter des antislashs : un seul sens de barre.
+  assert.equal(revuesDuCommit(stagees, ['.claude\\soldes\\revue-palier-2026-09-04-abcdef1.md']).emportees.length, 1)
+  assert.deepEqual(revuesDuCommit(undefined, undefined), { emportees: [], omises: [] })
+})
+
+test('CAS REEL : la CHAINE des revues de HEAD est continue, et chaque tete est dans l’histoire', () => {
+  // Controle POSITIF sur l'arbre reel, lu dans HEAD SEULEMENT (cette gate tourne en lane parallele :
+  // l'index et le disque appartiennent a qui commite). La chaine se remonte de la plus recente vers
+  // sa base ; elle compte 1 maillon tant que la revue du palier courant n'est pas committee, 2 des
+  // qu'elle l'est.
+  const racine = repoRoot()
+  const lireDeHead = (chemin) =>
+    execFileSync('git', ['show', `HEAD:${chemin}`], { cwd: racine, encoding: 'utf8', maxBuffer: 1 << 26 })
+  const archives = archivesDe(racine)
+  assert.ok(archives.length >= 10, `corpus de ${archives.length} revues dans HEAD`)
+  const derniere = derniereRevueArchivee(racine)
+  assert.equal(derniere.etat, 'trouvee', JSON.stringify(derniere))
+
+  const parTete = new Map(archives.filter((a) => a.tete).map((a) => [a.tete, a]))
+  const chaine = [derniere]
+  while (chaine.at(-1).base && parTete.has(chaine.at(-1).base)) chaine.push(parTete.get(chaine.at(-1).base))
+  assert.ok(
+    chaine.length >= 1,
+    `chaine de ${chaine.length} maillon(s) — attendu au moins la derniere revue (${derniere.chemin})`,
+  )
+  for (const maillon of chaine) {
+    assert.ok(
+      estDansHead(maillon.tete, racine),
+      `${maillon.chemin} : sa tete ${maillon.tete} n’est pas dans l’histoire de HEAD`,
+    )
+  }
+  // Les revues ecrites sous la regle en vigueur portent une DATE dans leur nom : pour celles-la, le
+  // nom repond au contenu. Les plus anciennes portent le sha de leur commit consommateur — git a
+  // leur histoire, et c'est leur FENETRE, jamais leur nom, que la mesure lit.
+  const nommeesParLeurFenetre = archives.filter((a) => /revue-palier-\d{4}-\d{2}-\d{2}-/.test(a.chemin))
+  for (const a of nommeesParLeurFenetre) {
+    assert.equal(
+      a.chemin,
+      `.claude/soldes/${nomDArchiveDeRevue(lireDeHead(a.chemin))}`,
+      `${a.chemin} : son nom ne repond pas a son contenu`,
+    )
+  }
 })
 
 // ── extractRefIssues (anti-esquive, extension 2026-07-14) ──────────────────────────────────────────
@@ -494,6 +875,16 @@ test('extractCommitPathspecs : une REDIRECTION, un PIPE ou un `&` n\'est jamais 
 })
 
 // La forme décide le diff, et deux jetons la faisaient basculer à tort (sondes 2026-09-04).
+test('shorts groupés : le PREMIER `m`/`F` décide, comme dans git', () => {
+  // `-mF` est un MESSAGE valant « F » : lu comme « -m booléen puis -F fichier », le garde consommait
+  // le token suivant en pathspec et jugeait un commit sur un fichier qui n'y est pas.
+  assert.deepEqual(extractCommitPathspecs('git commit -mF src/ui/RollShell.tsx'), ['src/ui/RollShell.tsx'])
+  assert.equal(formeDuCommit('git commit -mF').forme, 'index', 'aucun token à consommer après `-mF`')
+  assert.deepEqual(extractCommitPathspecs('git commit -am "corrige #7"'), [])
+  assert.equal(formeDuCommit('git commit -am "corrige #7"').forme, 'tout', '`-am` porte le `-a`')
+  assert.deepEqual(extractCommitPathspecs('git commit -aF msg.txt -- scripts/a.mjs'), ['scripts/a.mjs'])
+})
+
 test('formeDuCommit : un pathspec à JOKER rend `tout` — jamais `index`, qui serait MUET', () => {
   for (const joker of ['scripts/guards/lib/*.mjs', ':(glob)scripts/**', 'src/?.ts', 'src/[ab].ts']) {
     const f = formeDuCommit(`git commit -m "x" -- ${joker}`)
@@ -1046,6 +1437,42 @@ test('extractMessageSources : « -F » en PROSE d un message -m n est pas un fla
   assert.equal(r.text, cmd)
 })
 
+// Le drapeau `-F` ne vaut QUE dans le segment qui exécute `git commit` (mesuré 2026-09-04 : deux
+// refus « message de commit en fichier illisible » sur des commandes qui ne committent rien).
+test('extractMessageSources : le -F de « gh api -X PATCH … -F corps=@fichier » n est PAS un message de commit', () => {
+  const cmd = 'gh api -X PATCH repos/cgauche/game/issues/comments/42 -F body=@rapport.md'
+  const r = extractMessageSources(cmd, { readFile: () => { throw new Error('ne doit jamais être appelé') } })
+  assert.equal(r.fileError, null)
+  assert.equal(r.text, cmd)
+})
+
+test('extractMessageSources : une ligne de todo qui CITE le drapeau ne cherche aucun fichier', () => {
+  const cmd = 'echo "TODO : relire le message passé par -F avant de committer" >> notes.txt'
+  const r = extractMessageSources(cmd, { readFile: () => { throw new Error('ne doit jamais être appelé') } })
+  assert.equal(r.fileError, null)
+})
+
+test('extractMessageSources : « gh issue comment --body-file » n est pas un flag fichier de commit', () => {
+  const cmd = 'gh issue comment 1614 --repo cgauche/game --body-file rapport.md'
+  const r = extractMessageSources(cmd, { readFile: () => { throw new Error('ne doit jamais être appelé') } })
+  assert.equal(r.fileError, null)
+})
+
+test('extractMessageSources : un VRAI git commit -F sur un fichier absent reste REFUSÉ (fail-closed)', () => {
+  const r = extractMessageSources('git commit -F absent.txt', {
+    readFile: () => { throw new Error('ENOENT') },
+  })
+  assert.equal(r.fileError, 'absent.txt')
+})
+
+test('extractMessageSources : le -F d un `git commit` ENCHAÎNÉ derrière un `gh` est bien lu', () => {
+  const r = extractMessageSources('gh issue view 1 --json body && git commit -F msg.txt', {
+    readFile: () => 'corrige #1',
+  })
+  assert.match(r.text, /corrige #1/)
+  assert.equal(r.fileError, null)
+})
+
 // ── repoRoot / read*File : ancrage à l'emplacement du script, pas au cwd du process ────────────────
 // Constat de production : les hooks tournent avec `cwd` = celui de la commande qui les invoque
 // (jamais garanti = racine du dépôt) — `resolve('.claude/soldes', ...)` (relatif à `cwd`) cherchait
@@ -1063,15 +1490,14 @@ test('repoRoot : résolu depuis l\'emplacement du script, retrouve la racine du 
   }
 })
 
-// TOUT ce que le garde lit sur DISQUE se lit dans le RÉPERTOIRE où le commit s'exécute, jamais dans
-// le dépôt du HOOK : depuis un worktree, un solde, une revue de palier ou une réfutation écrits là
-// où l'on committe étaient invisibles, et la porte refusait à tort (mesuré 2026-09-04).
-test('readSoldeFile/readRevuePalierFile/readRefFile : lisent le RÉPERTOIRE du commit, pas le dépôt du hook', () => {
+// TOUT ce que le garde lit se lit dans le RÉPERTOIRE où le commit s'exécute, jamais dans le dépôt du
+// HOOK : depuis un worktree, un solde ou une réfutation écrits là où l'on committe sont invisibles au
+// dépôt qui porte le script, et la porte refuse à tort (mesuré 2026-09-04).
+test('readSoldeFile/readRefFile : lisent le RÉPERTOIRE du commit, pas le dépôt du hook', () => {
   const fakeRepo = mkdtempSync(join(tmpdir(), 'solde-guard-fakerepo-'))
   const soldesDir = join(fakeRepo, '.claude', 'soldes')
   mkdirSync(soldesDir, { recursive: true })
   writeFileSync(join(soldesDir, '999.md'), 'solde-999')
-  writeFileSync(join(soldesDir, 'revue-palier.md'), 'revue-palier')
   writeFileSync(join(soldesDir, 'ref-999.md'), 'ref-999')
 
   const elsewhere = mkdtempSync(join(tmpdir(), 'solde-guard-elsewhere-'))
@@ -1079,12 +1505,11 @@ test('readSoldeFile/readRevuePalierFile/readRefFile : lisent le RÉPERTOIRE du c
   try {
     process.chdir(elsewhere)
     assert.equal(readSoldeFile(999, fakeRepo), 'solde-999')
-    assert.equal(readRevuePalierFile(fakeRepo), 'revue-palier')
     assert.equal(readRefFile(999, fakeRepo), 'ref-999')
     // Ailleurs, rien : aucun de ces lecteurs ne retombe sur le dépôt qui porte le script.
     assert.deepEqual(
-      [readSoldeFile(999, elsewhere), readRevuePalierFile(elsewhere), readRefFile(999, elsewhere)],
-      [null, null, null],
+      [readSoldeFile(999, elsewhere), readRefFile(999, elsewhere)],
+      [null, null],
     )
   } finally {
     process.chdir(cwd)

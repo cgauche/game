@@ -55,9 +55,9 @@ jobs:
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm test
       # Pas de step `test:map` : `scripts/map/**/*.test.ts` est dans le `test.include` de
-      # `vite.config.ts`, donc `npm test` joue déjà `scripts/map/check.test.ts` (18 tests). Le step
-      # les rejouait à l'identique — 37,4 s de CI et de gates pour un second verdict sur les mêmes
-      # 18 tests. Le script `test:map` reste dans package.json : il sert à jouer CE dossier seul.
+      # `vite.config.ts` (l.69), donc `npm test` joue déjà `scripts/map/check.test.ts` (18 tests), et
+      # `src/vi-mock-isolate-guard.test.ts:75-79` verrouille ce miroir DANS LES DEUX SENS. Le script
+      # `test:map` reste dans package.json : il sert à jouer CE dossier seul.
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -100,3 +100,32 @@ jobs:
       - run: npm ci
       - name: Rejeu des migrations (idempotence de la donnée)
         run: npm run migrations:replay
+
+  # Un ticket se ferme quand son correctif est PUBLIÉ, jamais au commit local : AUCUN hook local ne
+  # ferme de ticket, c'est ce job qui le fait (#1685 avait été fermé par 8b52f3a55 avant que ce commit
+  # n'atteigne `main` — revue de palier n°3, 2026-09-04, écart 10). Il dépend de `build` : un ticket
+  # ne se ferme pas sur une CI rouge.
+  fermetures:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      # L'histoire complète : le script lit les MESSAGES de la plage poussée et le solde que chaque
+      # commit EMPORTE (`git show <sha>:.claude/soldes/<N>.md`).
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fermer les tickets soldés par la plage poussée
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          case "$BEFORE" in *[!0]*) ;; *) BEFORE="$(git rev-parse "$SHA^")" ;; esac
+          node scripts/ops/fermer-depuis-main.mjs "$BEFORE..$SHA"

@@ -1,0 +1,32 @@
+{
+  "_entete": [
+    "BASELINE NOMINATIVE DATÉE des tickets FERMÉS SANS commit fermant et SANS solde versionné.",
+    "Mesurée le 2026-09-04 sur la fenêtre closed:>=2026-08-20 (14 j), en croisant l'API GitHub",
+    "(search/issues) avec `git log --since` et `git ls-files .claude/soldes`.",
+    "18 fermetures de la fenêtre ne sont citées par aucun commit fermant ; 4 en sortent par leur label",
+    "`duplicate` (les canaris #906 #1039 #1229 #1352 — le survivant porte le solde) et 2 reçoivent leur",
+    "solde a posteriori dans le commit qui pose ce fichier (#1659, #1673) : restent les 12 ci-dessous.",
+    "`state_reason: not_planned` n'exempte PAS : une fermeture « pas prévu » sans solde est exactement",
+    "la fuite que cette porte mesure. Seul `duplicate` exempte.",
+    "Le cliquet est DÉCROISSANT (`fermetures-non-citees.test.mjs`) : une fermeture NEUVE hors baseline",
+    "est ROUGE ; une entrée qui a depuis un solde suivi ou un commit fermant est ROUGE « entrée périmée :",
+    "retire-la ». Complément, pas doublon, de `scripts/hooks/fermetures-sans-solde.test.mjs`, qui ne lit",
+    "que les MESSAGES DE COMMIT et reste donc aveugle à une fermeture faite hors de tout commit."
+  ],
+  "mesureLe": "2026-09-04",
+  "fenetre": "2026-08-20",
+  "entrees": [
+    { "numero": 1122, "closedAt": "2026-08-30T17:27:06Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "Programme champs libres - deux poches restantes : titres d'etapes de choix (angle mort) + ~350 sites de prose narrative sans cliquet" },
+    { "numero": 1411, "closedAt": "2026-08-23T21:01:36Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "Console jouable : 12 classes perdues au portage ActionBar→console (interludes sans sortie, navire mort, culs-de-sac Détermination/Dissiper, overlays d'intention invisibles)" },
+    { "numero": 1423, "closedAt": "2026-08-20T07:17:44Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "refs: stock LDB 21 dérivé — 14 sites l.34 (règle en l.33), + l.32 et l.36 voisins — invisible à raw-ref-integrity (plages absorbantes)" },
+    { "numero": 1465, "closedAt": "2026-08-23T22:01:51Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "[#1463 L0] Carte des STRUCTURES générée : docs/structures-donnees.md (observé × déclaré, 2 racines) + stock nominatif daté décroissant — le dénominateur du chantier" },
+    { "numero": 1466, "closedAt": "2026-08-26T11:14:50Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "[#1463 L1a] GRAMMAIRE de document + registre à 2 racines + verrous par construction + schéma zod de scène — common.ts meurt, aucune donnée ne change" },
+    { "numero": 1495, "closedAt": "2026-08-26T05:18:10Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "Poison hérité de #1463 L1a : 19 defs citent encore common.ts (supprimé) en commentaire — réfs pendantes à repointer vers grammaire/" },
+    { "numero": 1498, "closedAt": "2026-08-24T11:03:26Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "Cliquet ui-ratchets (xiii) ROUGE sur main : base.css 16 (baseline 15) — une classe mono-consommateur non cataloguée entrée sans recalage" },
+    { "numero": 1539, "closedAt": "2026-08-30T09:39:25Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "CodexEdit ancre les entrées de LISTE par LABEL (entryKey===label, :445) — names y entre en dépendant de l'unicité des libellés, contre la doctrine id/label" },
+    { "numero": 1541, "closedAt": "2026-08-29T06:31:42Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "creatures.title : affordance MORTE porteuse de 53 valeurs réelles — brancher ou statuer" },
+    { "numero": 1593, "closedAt": "2026-08-30T17:29:33Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "Régime d'épique — file d'arbitrages : statuer les 12 épiques, .wt-1501 (67 commits), restes dormants (audit 2026-08-30)" },
+    { "numero": 1660, "closedAt": "2026-09-01T14:49:22Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "Créateur : la famille Gnomes (NADJ) est absente de la grille des races (6 familles / 26 races) alors que species.json la porte avec sa carrière d'aperçu" },
+    { "numero": 1674, "closedAt": "2026-09-01T19:52:02Z", "closedBy": "cgauche", "stateReason": "completed", "titre": "Dette : 14 jets résolus INLINE par le moteur (résistance à un critique, maladie, équipage, météo) sans possibilité de dépenser la Chance" }
+  ]
+}

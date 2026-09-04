@@ -9,12 +9,24 @@ permissions:
   contents: read
   issues: write
 
+# CHAQUE mesure joue, et le VERDICT est agrégé par un seul step. C'est la différence avec `ci.yml`,
+# qui n'a PAS le droit d'utiliser `continue-on-error` : là-bas, chaque step est son propre verdict et
+# un `continue-on-error` rendrait le step VERT ; le patron y est `if: ${{ !cancelled() }}`, qui fait
+# jouer la gate suivante sans rien blanchir. Ici, le canari veut un rapport HEBDOMADAIRE : chaque
+# mesure porte donc `continue-on-error: true` + un `id`, et le step « Résumé » les relit toutes, les
+# poste dans l'issue survivante, puis ÉCHOUE si l'une est rouge. Sans cela, le premier rouge coupait
+# le job : 17 à 22 steps SKIPPÉS par run, mesurés sur les 5 derniers canaris (tous rouges).
+#
+# Les vulnérabilités ne font plus échouer le canari par elles-mêmes : `npm audit --audit-level=high`
+# rendait 1 sur un stock connu et figé (4 des 5 derniers rouges), et un rouge permanent ne mesure
+# plus rien. C'est `scripts/ops/audit-stock.mjs` qui juge, sur l'ÉCART au stock daté.
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # `fetch-depth: 0` : `test:hooks` interroge l’HISTOIRE (voir ci.yml) — le clone superficiel
-      # par défaut rendrait `git log --since` vide et le cliquet des fermetures décoratif.
+      # `fetch-depth: 0` : `test:hooks` et `ops:fermetures-non-citees` interrogent l'HISTOIRE (voir ci.yml) — le
+      # clone superficiel par défaut rendrait `git log --since` vide et les cliquets décoratifs.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -22,30 +34,69 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
-      - run: npm run agents:check
-      - run: npm run test:agents
-      - run: npm run test:hooks
-      - run: npm run test:docs
-      - run: npm run test:recette
+      - id: install
+        run: npm ci
+
+      - id: agents-check
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run agents:check
+      - id: test-agents
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:agents
+      - id: test-hooks
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:hooks
+      - id: test-ops
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:ops
+      - id: test-docs
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:docs
+      - id: test-recette
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:recette
       - name: Idempotence des adaptateurs agents
+        id: agents-idempotence
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: |
-          set -e
           npm run agents:sync
           git diff --exit-code -- AGENTS.md .agents/skills .codex/credo.md
-      - name: Audit sécurité (échoue sur high/critical)
-        run: npm audit --audit-level=high
       # src/data/*.json sont la SOURCE app-owned (commitée) — plus de régénération build:data.
       - name: Dérive des registres générés
         # Glob sur TOUS les fichiers générés, pas les seuls `_registry` : `_ids.generated.ts`,
         # `_registry-scenes.generated.ts` et `qualityId.generated.ts` en tombaient dehors, si bien
         # qu'une recette ajoutée sans `npm run gen` périmait le registre en silence (#1680).
+        id: registres-generes
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run gen && git diff --exit-code -- '*.generated.ts'
-      - run: npm run typecheck
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
-      - run: npm run docs:check
+      - id: typecheck
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run typecheck
+      - id: lint
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run lint
+      - id: test
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm test
+      - id: build
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run build
+      - id: docs-check
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run docs:check
       # Le seul volet des plans datés qui exige le réseau : un `Ticket:` dont TOUTES les issues sont
       # fermées = plan exécuté que la politique `docs/` veut SUPPRIMÉ. `gh issue list --limit N` impose
       # un plafond numérique à re-relever quand le stock grossit (849 ouvertes pour un `--limit 1000`) :
@@ -53,34 +104,178 @@ jobs:
       # L'API `issues` renvoie aussi les pull requests — sans importance ici : la garde ne fait que
       # tester l'APPARTENANCE d'un numéro d'issue à l'ensemble des ouvertes.
       - name: Plans datés — ancre Ticket encore OUVERTE
+        id: plans-dates
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
           gh api --paginate --jq '.[] | {number}' 'repos/{owner}/{repo}/issues?state=open&per_page=100' \
-            | jq -s '.' > /tmp/issues-ouvertes.json
+            < /dev/null | jq -s '.' > /tmp/issues-ouvertes.json
           node scripts/docs/check-plans-anchors.mjs --online /tmp/issues-ouvertes.json
       - name: Fraîcheur des catalogues Atlas RAW
+        id: raw-catalogs
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'
-      - run: npm run raw:coverage
-      - run: npm run raw:reconcile
-      - run: npm run test:raw
-      - run: npm run raw:check-refs
-      - run: npm run raw:check-code-refs
-      - run: npm run raw:reanchor
-      - run: npm --prefix server ci
-      - name: Audit sécurité server (échoue sur high/critical)
-        run: npm --prefix server audit --audit-level=high
-      - run: npm --prefix server run typecheck
-      - name: Ouvrir une issue si le canari est rouge
-        if: failure()
+      - id: raw-coverage
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:coverage
+      - id: raw-reconcile
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:reconcile
+      - id: test-raw
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:raw
+      - id: raw-check-refs
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:check-refs
+      - id: raw-check-code-refs
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:check-code-refs
+      - id: raw-reanchor
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:reanchor
+      - id: server-install
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm --prefix server ci
+      - id: server-typecheck
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.server-install.outcome == 'success' }}
+        run: npm run server:typecheck
+
+      # Les trois mesures d'ÉTAT (le dépôt npm, les fermetures GitHub, le ruleset en évaluation)
+      # écrivent leur rapport dans `$RUNNER_TEMP/canari` : le résumé les recolle dans le commentaire.
+      # `set -o pipefail` est le défaut du shell bash des runners — le `tee` ne masque aucun exit.
+      - name: Stock d'audit (racine + server)
+        id: audit-stock
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.server-install.outcome == 'success' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/canari"
+          node scripts/ops/audit-stock.mjs 2>&1 | tee "$RUNNER_TEMP/canari/audit.txt"
+      - name: Fermetures hors commit
+        id: fermetures
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue create \
-            --title "Canari rouge — environnement ou suite cassés" \
-            --body "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --label canari \
-          || gh issue create \
-            --title "Canari rouge — environnement ou suite cassés" \
-            --body "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          mkdir -p "$RUNNER_TEMP/canari"
+          node scripts/ops/fermetures-non-citees.mjs 2>&1 | tee "$RUNNER_TEMP/canari/fermetures.md"
+      - name: Ruleset en évaluation — pushes qui auraient été refusés
+        id: rule-suites
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/canari"
+          node scripts/ops/rule-suites.mjs 2>&1 | tee "$RUNNER_TEMP/canari/rule-suites.txt"
+
+      # VERDICT AGRÉGÉ : la seule place où `continue-on-error` se paie — le rapport est posté et le
+      # job rougit si une mesure est rouge. `RESULTATS` nomme CHAQUE step de mesure : un step sans
+      # `id`, ou absent d'ici, est rouge au test `scripts/ops/canari.test.mjs`.
+      - name: Résumé du canari
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RESULTATS: |
+            install=${{ steps.install.outcome }}
+            agents-check=${{ steps.agents-check.outcome }}
+            test-agents=${{ steps.test-agents.outcome }}
+            test-hooks=${{ steps.test-hooks.outcome }}
+            test-ops=${{ steps.test-ops.outcome }}
+            test-docs=${{ steps.test-docs.outcome }}
+            test-recette=${{ steps.test-recette.outcome }}
+            agents-idempotence=${{ steps.agents-idempotence.outcome }}
+            registres-generes=${{ steps.registres-generes.outcome }}
+            typecheck=${{ steps.typecheck.outcome }}
+            lint=${{ steps.lint.outcome }}
+            test=${{ steps.test.outcome }}
+            build=${{ steps.build.outcome }}
+            docs-check=${{ steps.docs-check.outcome }}
+            plans-dates=${{ steps.plans-dates.outcome }}
+            raw-catalogs=${{ steps.raw-catalogs.outcome }}
+            raw-coverage=${{ steps.raw-coverage.outcome }}
+            raw-reconcile=${{ steps.raw-reconcile.outcome }}
+            test-raw=${{ steps.test-raw.outcome }}
+            raw-check-refs=${{ steps.raw-check-refs.outcome }}
+            raw-check-code-refs=${{ steps.raw-check-code-refs.outcome }}
+            raw-reanchor=${{ steps.raw-reanchor.outcome }}
+            server-install=${{ steps.server-install.outcome }}
+            server-typecheck=${{ steps.server-typecheck.outcome }}
+            audit-stock=${{ steps.audit-stock.outcome }}
+            fermetures=${{ steps.fermetures.outcome }}
+            rule-suites=${{ steps.rule-suites.outcome }}
+        run: |
+          ROUGES="$(printf '%s\n' "$RESULTATS" | grep -E '=(failure|cancelled)$' || true)"
+          SKIPPES="$(printf '%s\n' "$RESULTATS" | grep -E '=skipped$' || true)"
+          RAPPORT="$RUNNER_TEMP/canari-rapport.md"
+          {
+            echo "## Canari du $(date -u +%Y-%m-%d) — $RUN_URL"
+            echo
+            if [ -n "$ROUGES" ]; then
+              echo "### Mesures ROUGES"
+              printf '%s\n' "$ROUGES" | sed 's/^/- /'
+            else
+              echo "### Toutes les mesures sont vertes"
+            fi
+            if [ -n "$SKIPPES" ]; then
+              echo
+              echo "### Mesures NON JOUÉES (leur prérequis est rouge)"
+              printf '%s\n' "$SKIPPES" | sed 's/^/- /'
+            fi
+            for f in "$RUNNER_TEMP"/canari/*; do
+              [ -f "$f" ] || continue
+              echo
+              echo "<details><summary>$(basename "$f")</summary>"
+              echo
+              echo '```'
+              cat "$f"
+              echo '```'
+              echo
+              echo "</details>"
+            done
+          } > "$RAPPORT"
+          cat "$RAPPORT"
+
+          # Label idempotent : `--force` crée le label s'il manque et le met à jour sinon (mesuré
+          # 2026-09-04 : `canari` n'existe PAS sur le dépôt, et les `--label canari` des runs passés
+          # échouaient donc en silence, repli sur une création SANS label).
+          gh label create canari --description "Rapport hebdomadaire du canari" --color B60205 --force < /dev/null
+
+          # Issue SURVIVANTE = la plus ANCIENNE issue OUVERTE dont le titre commence par « Canari
+          # rouge ». Le rapport y est COMMENTÉ tant qu'elle est ouverte ; une issue n'est CRÉÉE que
+          # s'il n'y en a aucune, et un run tout VERT la FERME : un rapport hebdomadaire vit dans un
+          # fil unique, et le fil se clot quand la mesure ne dit plus rien.
+          SURVIVANTE="$(gh issue list --state open --search 'Canari rouge in:title' \
+            --json number,createdAt,title --jq '[.[] | select(.title | startswith("Canari rouge"))]
+              | sort_by(.createdAt) | .[0].number // empty' < /dev/null)"
+          if [ -n "$SURVIVANTE" ]; then
+            gh issue comment "$SURVIVANTE" --body-file "$RAPPORT" < /dev/null
+            if [ -z "$ROUGES" ]; then
+              gh issue close "$SURVIVANTE" --reason completed < /dev/null
+              echo "canari VERT : rapport posté puis #$SURVIVANTE fermée"
+            else
+              echo "rapport posté sur #$SURVIVANTE"
+            fi
+          elif [ -n "$ROUGES" ]; then
+            gh issue create --title "Canari rouge — environnement ou suite cassés" \
+              --body-file "$RAPPORT" --label canari < /dev/null
+          else
+            echo "canari vert et aucune issue ouverte : rien à ouvrir"
+          fi
+
+          if [ -n "$ROUGES" ]; then
+            echo "canari ROUGE : $(printf '%s\n' "$ROUGES" | wc -l) mesure(s)" >&2
+            exit 1
+          fi

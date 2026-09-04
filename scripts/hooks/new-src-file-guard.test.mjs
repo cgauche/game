@@ -4,11 +4,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
-  estComposantUI, estDeclare, relPath, cheminEntree, maquetteEntree, REGISTRE,
+  estComposantUI, estDeclare, relPath, cheminEntree, maquetteEntree, REGISTRE_DEFAUT, cheminRegistre,
 } from './new-src-file-guard.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -32,16 +33,20 @@ function lanceAvec(tool_input, env = {}) {
 }
 const lance = (file_path, env = {}) => lanceAvec({ file_path }, env)
 
-/** Joue `fn` avec une entrée de plus au registre, puis REMET le fichier à l'octet. */
+/** Joue `fn` sur une COPIE du registre, posée sous `os.tmpdir()` et portant une entrée de plus.
+ *  Le fichier committé `scripts/hooks/ecrans-ui.json` n'est jamais touché : le muter puis le remettre
+ *  dans un `finally` a échoué le 2026-09-04 (`UNKNOWN: unknown error`), laissant une entrée fantôme
+ *  dans l'arbre, deux tests rouges en cascade et un arbre sale pour toutes les gates. */
 function avecEntree(entree, fn) {
-  const brut = readFileSync(REGISTRE, 'utf8')
-  const registre = JSON.parse(brut)
+  const registre = JSON.parse(readFileSync(REGISTRE_DEFAUT, 'utf8'))
   registre.ecrans = [...registre.ecrans, entree]
-  writeFileSync(REGISTRE, JSON.stringify(registre, null, 2) + '\n')
+  const dossier = mkdtempSync(join(tmpdir(), 'wfrp-ecrans-'))
+  const copie = join(dossier, 'ecrans-ui.json')
+  writeFileSync(copie, JSON.stringify(registre, null, 2) + '\n')
   try {
-    return fn()
+    return fn({ WFRP_REGISTRE_ECRANS: copie })
   } finally {
-    writeFileSync(REGISTRE, brut)
+    rmSync(dossier, { recursive: true, force: true })
   }
 }
 
@@ -72,7 +77,7 @@ test('un .tsx NEUF de src/gameIso est BLOQUÉ au même titre (32 .tsx mesurés, 
 })
 
 test('un composant qui EXISTE déjà (édition, pas création) ne déclenche rien', () => {
-  const inscrit = cheminEntree(JSON.parse(readFileSync(REGISTRE, 'utf8')).ecrans[0])
+  const inscrit = cheminEntree(JSON.parse(readFileSync(REGISTRE_DEFAUT, 'utf8')).ecrans[0])
   const r = lance(join(REPO, inscrit))
   assert.equal(r.code, 0)
   assert.equal(r.out.trim(), '')
@@ -81,26 +86,26 @@ test('un composant qui EXISTE déjà (édition, pas création) ne déclenche rie
 
 test('primitive citée par le CLAUDE.md et écran du stock sont tous deux « déclarés »', () => {
   const claudeMd = readFileSync(join(REPO, 'CLAUDE.md'), 'utf8')
-  const registre = JSON.parse(readFileSync(REGISTRE, 'utf8'))
+  const registre = JSON.parse(readFileSync(REGISTRE_DEFAUT, 'utf8'))
   assert.ok(estDeclare('src/ui/NumberField.tsx', claudeMd, registre), 'primitive du CLAUDE.md')
   assert.ok(estDeclare(cheminEntree(registre.ecrans[0]), claudeMd, registre, true), 'écran du stock, déjà dans l’arbre')
   assert.ok(!estDeclare(FANTOME, claudeMd, registre))
 })
 
 test('une entrée en CHAÎNE ne déclare pas un fichier NEUF (le stock du 2026-08-16 ne croît pas)', () => {
-  avecEntree(FANTOME, () => {
-    const r = lance(join(REPO, FANTOME))
+  avecEntree(FANTOME, (env) => {
+    const r = lance(join(REPO, FANTOME), env)
     assert.notEqual(r.code, 0, 'inscrire une chaîne ne remplace pas la maquette validée')
     assert.match(r.err, /NON DÉCLARÉ/)
   })
 })
 
 test('une entrée OBJET SANS maquette est refusée ; AVEC maquette, la création passe', () => {
-  avecEntree({ fichier: FANTOME, maquette: '' }, () => {
-    assert.notEqual(lance(join(REPO, FANTOME)).code, 0, 'objet sans maquette = pas de déclaration')
+  avecEntree({ fichier: FANTOME, maquette: '' }, (env) => {
+    assert.notEqual(lance(join(REPO, FANTOME), env).code, 0, 'objet sans maquette = pas de déclaration')
   })
-  avecEntree({ fichier: FANTOME, maquette: 'validée en présence 2026-09-02 (session L1a)' }, () => {
-    const r = lance(join(REPO, FANTOME))
+  avecEntree({ fichier: FANTOME, maquette: 'validée en présence 2026-09-02 (session L1a)' }, (env) => {
+    const r = lance(join(REPO, FANTOME), env)
     assert.equal(r.code, 0)
     assert.match(r.out, /additionalContext/, 'le rappel anti-réinvention reste injecté')
   })
@@ -109,8 +114,8 @@ test('une entrée OBJET SANS maquette est refusée ; AVEC maquette, la création
 test('une maquette de RÉSERVATION (« TODO ») ne déclare rien', () => {
   for (const marque of ['TODO', 'todo : à dessiner', 'à faire', 'TBD', '—', '?']) {
     assert.equal(maquetteEntree({ fichier: FANTOME, maquette: marque }), '', marque)
-    avecEntree({ fichier: FANTOME, maquette: marque }, () => {
-      assert.notEqual(lance(join(REPO, FANTOME)).code, 0, `réservation acceptée pour maquette : ${marque}`)
+    avecEntree({ fichier: FANTOME, maquette: marque }, (env) => {
+      assert.notEqual(lance(join(REPO, FANTOME), env).code, 0, `réservation acceptée pour maquette : ${marque}`)
     })
   }
   // Une trace qui NOMME où la validation a eu lieu passe, même si elle parle d'un reste à faire.
@@ -170,22 +175,27 @@ test('les DEUX surfaces matchent Write ET mcp__lean-ctx__ctx_patch (sinon la gar
 })
 
 test('registre ILLISIBLE → refus fail-closed dont le corps dit de RÉPARER, pas d’inscrire', () => {
-  const brut = readFileSync(REGISTRE, 'utf8')
-  writeFileSync(REGISTRE, '{ ceci n’est pas du JSON')
+  const dossier = mkdtempSync(join(tmpdir(), 'wfrp-ecrans-'))
+  const casse = join(dossier, 'ecrans-ui.json')
+  writeFileSync(casse, '{ ceci n’est pas du JSON')
   try {
-    const r = lance(join(REPO, FANTOME))
+    const r = lance(join(REPO, FANTOME), { WFRP_REGISTRE_ECRANS: casse })
     assert.notEqual(r.code, 0)
     assert.match(r.err, /ILLISIBLE/)
     assert.match(r.err, /réparer d'abord/)
     assert.doesNotMatch(r.err, /ordre alphabétique/, 'le corps « ajouter une ligne » est inopérant sur un JSON cassé')
   } finally {
-    writeFileSync(REGISTRE, brut)
+    rmSync(dossier, { recursive: true, force: true })
   }
-  assert.equal(readFileSync(REGISTRE, 'utf8'), brut)
+})
+
+test('le registre COMMITTÉ reste le défaut, et rien de ce test ne l’écrit', () => {
+  assert.equal(cheminRegistre({}), REGISTRE_DEFAUT)
+  assert.equal(cheminRegistre({ WFRP_REGISTRE_ECRANS: 'X' }), 'X')
 })
 
 test('le registre est trié, sans doublon SUR LA CLEF NORMALISÉE, et ne cite que des composants existants', () => {
-  const { ecrans } = JSON.parse(readFileSync(REGISTRE, 'utf8'))
+  const { ecrans } = JSON.parse(readFileSync(REGISTRE_DEFAUT, 'utf8'))
   // Le tri/dédoublonnage se fait sur le CHEMIN : deux objets se comparent en « [object Object] »
   // (tri vacueux) et se distinguent par IDENTITÉ dans un Set (doublon invisible) — mesuré.
   const clefs = ecrans.map(cheminEntree)
@@ -201,7 +211,7 @@ test('le registre est trié, sans doublon SUR LA CLEF NORMALISÉE, et ne cite qu
 })
 
 test('CLIQUET : le stock d’entrées en CHAÎNE (207 mesurées le 2026-08-16) décroît, jamais l’inverse', () => {
-  const { ecrans } = JSON.parse(readFileSync(REGISTRE, 'utf8'))
+  const { ecrans } = JSON.parse(readFileSync(REGISTRE_DEFAUT, 'utf8'))
   const chaines = ecrans.filter((e) => typeof e === 'string').length
   assert.ok(chaines <= 207, `stock legacy en hausse : ${chaines} > 207 — un écran NEUF s'inscrit en objet {fichier, maquette}`)
 })

@@ -18,9 +18,9 @@
 // Extension 2026-07-14 (constat utilisateur, verbatim) — « je pensais que tu avais un hook qui te
 // forceait a faire une review reversal, elle ne doit clairement pas marcher » puis « Ou alors
 // seulement sur les tickets ? » : un commit « ref #N » (rattaché SANS fermer) échappait à tout
-// regard adversarial ET n'avançait jamais le compteur de palier. Deux volets : (1) le compteur
-// (`<git-common-dir>/wfrp-palier.compteur`, incrémenté par `scripts/git-hooks/post-commit`) avance sur
-// TOUT commit de substance (diff touche `src/**`/`scripts/**`), pas seulement les fermetures ;
+// regard adversarial ET n'entrait pas dans le palier. Deux volets : (1) le palier se MESURE sur
+// l'histoire (`scripts/guards/lib/revuePalier.mjs` : commits touchant `src`/`scripts` depuis la tête
+// de fenêtre de la dernière revue archivée), donc TOUT commit de substance y entre, fermeture ou pas ;
 // (2) anti-esquive — un commit `ref #N` qui touche `src/**` (≥10 lignes de diff staged) exige lui
 // aussi sa réfutation (ligne `REFUTATION:` dans le message, ou fichier `.claude/soldes/ref-<N>.md`).
 // Le déclencheur reste le TICKET explicitement rattaché (fermeture ou `ref #N`) — un commit sans
@@ -51,35 +51,52 @@
 // 0,06 s. La marge est d'un facteur 4 sur le pire cas mesuré — un hook expiré ne bloque pas, donc
 // ce chiffre se re-mesure quand la porte s'alourdit, il ne se gonfle pas par précaution.
 import { Buffer } from 'node:buffer'
-import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
-import { execFileSync, execSync } from 'node:child_process'
+import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
+import {
+  estDansHead, fenetreDeRevue, memeSha, mesureDuPalier, nomDArchiveDeRevue, problemesDeRevue, revuesNeuves,
+} from '../guards/lib/revuePalier.mjs'
 
 // Message passé par FICHIER (`git commit -F <path>` / `--file <path>` / `--file=<path>`) : le
 // driver stdin ne voit que `tool_input.command` — un message packé dans un fichier externe y est
 // INVISIBLE, ce qui (a) bloque à tort une fermeture légitime (aucun "corrige #N" vu dans la commande)
-// et (b) pire, laisse le closer post-commit (qui LIT le vrai message) fermer un ticket SANS être
-// passé par ce contrôle de solde. Fix découvert en production 2026-07-14.
+// et (b) pire, laisse le closer de publication (qui LIT le vrai message du commit poussé) fermer un
+// ticket SANS être passé par ce contrôle de solde. Fix découvert en production 2026-07-14.
 const FILE_FLAG_RE = /(?:^|\s)(?:-F|--file)(=|\s+)("[^"]*"|'[^']*'|\S+)/
 
-/** Chemin du fichier de message porté par `-F <path>` / `--file <path>` / `--file=<path>` dans la
- *  commande, guillemets simples/doubles retirés. `null` si aucun de ces flags n'est présent.
- *  Sémantique git : `-m` et `-F` sont MUTUELLEMENT EXCLUSIFS (git refuse la combinaison) — un
- *  `-m` présent signifie donc qu'aucun vrai flag fichier n'existe, et toute séquence « -F x »
- *  restante n'est que de la PROSE du message lui-même (faux positif vécu : un message -m citant
- *  « via -F et, » a fait chercher le fichier « et, » — fail-closed sur sa propre annonce). */
+/** Chemin du fichier de message porté par `-F <path>` / `--file <path>` / `--file=<path>` DANS le
+ *  segment qui exécute `git commit` — jamais ailleurs dans la ligne. `null` si aucun de ces flags
+ *  n'y est présent.
+ *  Sémantique git : `-m` et `-F` sont MUTUELLEMENT EXCLUSIFS (git refuse la combinaison) — le
+ *  PREMIER des deux rencontré tranche, et un `-m` signifie donc qu'aucun fichier de message n'existe
+ *  (faux positif vécu : un message -m citant « via -F et, » a fait chercher le fichier « et, »).
+ *  Le SEGMENT est la seconde borne, mesurée le 2026-09-04 : `gh api -X PATCH … -F corps=@fichier`
+ *  (où `-F` est un CHAMP de formulaire, pas un fichier de message) et une ligne de todo qui cite ce
+ *  drapeau étaient refusés « message de commit en fichier illisible » — même classe de défaut que le
+ *  `2>&1` pris pour un pathspec : un drapeau ne vaut que dans le segment de la commande qui le lit. */
 function fileFlagPath(command) {
   if (!command) return null
-  if (MESSAGE_FLAG_RE.test(command)) return null
-  const m = FILE_FLAG_RE.exec(command)
-  if (!m) return null
-  let path = m[2]
-  if ((path.startsWith('"') && path.endsWith('"')) || (path.startsWith("'") && path.endsWith("'"))) {
-    path = path.slice(1, -1)
+  for (const segment of segmentsProfonds(command)) {
+    const subIdx = gitCommitSubcommandIndex(segment)
+    if (subIdx === -1) continue
+    for (let k = subIdx + 1; k < segment.length; k += 1) {
+      const t = segment[k]
+      if (OPERATEUR_SHELL_RE.test(t)) break
+      if (t === '--message' || /^--message=/.test(t)) return null
+      if (t === '--file') return segment[k + 1] ?? null
+      const longEq = /^--file=(.*)$/.exec(t)
+      if (longEq) return longEq[1]
+      const court = t.startsWith('-') && !t.startsWith('--') ? SHORT_VALUE_FLAG_RE.exec(t) : null
+      if (court) {
+        if (court[2] === 'm') return null
+        return court[3] !== '' ? court[3] : segment[k + 1] ?? null
+      }
+    }
   }
-  return path
+  return null
 }
 
 /** Texte COMPLET à analyser pour la fermeture/réfutation : la commande elle-même + le contenu du
@@ -516,7 +533,10 @@ const LONG_VALUE_FLAG_EQ_RE = /^--(message|file|author|date|template|fixup|squas
 // (`-m"a b c"` tokenisé en un seul token `-ma b c` par `tokenizeCommand` — rien à consommer ensuite).
 // Sans cette reconnaissance, le MESSAGE (ou ses mots, avant la fusion de tokenisation) se prenait
 // pour un pathspec — le filtrage src/ui retombait à néant, JUGE/anti-esquive restaient muets (#591).
-const SHORT_VALUE_FLAG_RE = /^-([a-zA-Z]*)([mF])(.*)$/
+// Le groupe des flags booléens EXCLUT `m` et `F` : c'est le PREMIER des deux qui décide, comme dans
+// git. Sur `-mF`, un groupe gourmand lisait `-m` comme booléen et `F` comme drapeau FICHIER, donc
+// consommait le token suivant en pathspec — là où git lit un message valant « F » et ne consomme rien.
+const SHORT_VALUE_FLAG_RE = /^-([a-ln-zA-EG-Z]*)([mF])(.*)$/
 
 /** Token de REDIRECTION ou d'OPÉRATEUR de shell (`2>&1`, `>`, `>>`, `2>/dev/null`, `<`, `|`, `&&`,
  *  `;`) : à partir de lui, le segment ne parle plus à `git`, et rien de ce qui suit n'est un
@@ -594,7 +614,7 @@ export function extractCommitPathspecs(command) {
   return pathspecsDuCommit(command).chemins
 }
 
-// Motif de fermeture repris du closer post-commit (`scripts/git-hooks/post-commit`) : mêmes
+// Motif de fermeture repris du closer de publication (`scripts/ops/fermer-depuis-main.mjs`) : mêmes
 // mots-clefs, mais capturés ICI sur le texte ENTIER de la commande (couvre les here-strings/heredocs
 // `git commit -m "$(cat <<EOF ... EOF)"` où le message est packé dans la commande shell elle-même,
 // ET le texte étendu par `extractMessageSources` quand le message est passé par `-F`).
@@ -983,10 +1003,14 @@ export function validateSolde(content, today, {
   return { ok: problems.length === 0, problems, refuted }
 }
 
-/** Valide `.claude/soldes/revue-palier.md` (revue adversariale de PALIER, cumul de fermetures). */
+/**
+ * Valide le CONTENU d'une revue adversariale de PALIER (cumul de fermetures). La revue doit être
+ * NOMMABLE : sa date et la base de sa fenêtre forment le nom du fichier
+ * (`.claude/soldes/revue-palier-<date>-<base>.md`), et `verdictDeNom` vérifie qu'ils se répondent.
+ */
 export function validateRevuePalier(content, today) {
   if (!content) return { ok: false, problems: ['fichier absent'] }
-  const problems = []
+  const problems = [...problemesDeRevue(content)]
   if (!VERDICT_RE.test(content)) {
     problems.push('ligne "verdict: …" absente')
   }
@@ -1001,33 +1025,110 @@ export function validateRevuePalier(content, today) {
 }
 
 /**
+ * Revues neuves STAGÉES croisées avec ce que le commit EMPORTE. PUR.
+ * Une revue peut être dans l'index sans partir avec le commit : `git commit -- <chemins>` n'emporte
+ * QUE ces chemins-là (forme recommandée en arbre partagé, fiche `git-commits-propres-wip-parallele`),
+ * et `--amend` a le même angle mort. C'est exactement la règle du solde, qui se lit déjà par
+ * `commit.contenu` : la preuve doit PARTIR avec le commit, pas rester dans l'index.
+ * @returns {{ emportees: object[], omises: string[] }}
+ */
+export function revuesDuCommit(stagees, fichiersEmportes) {
+  const emportes = new Set((fichiersEmportes ?? []).map((f) => String(f).replace(/\\/g, '/')))
+  return {
+    emportees: (stagees ?? []).filter((r) => emportes.has(r.chemin)),
+    omises: (stagees ?? []).filter((r) => !emportes.has(r.chemin)).map((r) => r.chemin),
+  }
+}
+
+/**
+ * Verdict sur UNE revue neuve stagée : contenu, NOM, continuité de fenêtre, et tête dans l'histoire.
+ * PUR — `dansHead(sha)` est injecté (c'est la seule lecture git de ce contrôle).
+ * @returns {string[]} problèmes, vide = conforme
+ */
+export function problemesDeRevueNeuve({ nom, contenu }, { today, palier, dansHead = () => true }) {
+  const problemes = [...validateRevuePalier(contenu, today).problems]
+  const attendu = nomDArchiveDeRevue(contenu)
+  if (attendu && nom !== attendu) {
+    problemes.push(`la revue s'appelle ${nom}, son contenu la nomme ${attendu} — le nom PORTE la fenêtre jugée`)
+  }
+  const { base, tete } = fenetreDeRevue(contenu)
+  // Les fenêtres s'ENCHAÎNENT : une revue part où la précédente s'est arrêtée. C'est cet invariant
+  // qui rend la suite des revues continue et vérifiable, quel que soit le nom d'un fichier.
+  if (base && palier.tete && !memeSha(base, palier.tete)) {
+    problemes.push(
+      `sa fenêtre part de ${base}, or la dernière revue de HEAD (${palier.chemin}) s'arrête à `
+      + `${palier.tete} — les fenêtres s'ENCHAÎNENT, base attendue : ${palier.tete}`,
+    )
+  }
+  if (tete && !dansHead(tete)) {
+    problemes.push(`sa tête de fenêtre ${tete} n'est pas dans l'histoire de HEAD — elle juge une histoire absente d'ici`)
+  }
+  return problemes
+}
+
+/**
  * Décision du hook (PURE, testable). `readSolde(n)` renvoie le contenu STAGÉ (index git du commit
  * en cours) de `.claude/soldes/<n>.md`, ou `null`/`''` s'il n'y est pas. `soldeOnDisk(n)` renvoie le
  * contenu du même fichier sur le DISQUE : il ne sert qu'à distinguer « jamais écrit » de « écrit mais
- * non stagé » dans le message. `counter` = valeur courante du compteur de palier PARTAGÉ (commits de
- * substance depuis la dernière revue), `cheminCompteur` son chemin — nommé dans le refus, pour que
- * la valeur opposée soit vérifiable. `readRevuePalier()` renvoie le contenu de
- * `.claude/soldes/revue-palier.md` ou `null`. `contexteSolde` = le contexte injecté de
- * `validateSolde` (diff stagé, hunks, écran touché, contrôle de capture) — `issuesFermees` y est
- * posé ICI, c'est cette décision qui connaît les tickets fermés.
+ * non stagé » dans le message. `palier` = la MESURE de `mesureDuPalier` (scripts/guards/lib/revuePalier.mjs) :
+ * `compte` de commits de substance depuis `tete` (la tête de fenêtre de la dernière revue archivée
+ * dans HEAD, lue dans `chemin`), ou `erreur` quand le palier est INMESURABLE. `neuves()` rend les
+ * revues de palier AJOUTÉES par ce commit et EMPORTÉES par sa forme (`revuesDuCommit`) : ce sont
+ * elles qui franchissent le palier, et une revue neuve non conforme refuse le commit même hors palier
+ * — une revue fausse dans l'histoire fausse toutes les mesures suivantes. `omises()` rend les revues
+ * stagées que la forme du commit laisse en rade : le refus les NOMME. `contexteSolde` = le contexte injecté de
+ * `validateSolde` (diff stagé, hunks, écran touché, contrôle de capture) — `issuesFermees` y est posé
+ * ICI, c'est cette décision qui connaît les tickets fermés.
  * @returns {{ decision: 'deny', reason: string } | null} — non-null = refus, null = silence.
  */
-export function evaluate({ command, today, readSolde, soldeOnDisk = () => null, counter = 0, readRevuePalier = () => null, cheminCompteur = null, contexteSolde = {} }) {
-  const issues = extractClosedIssues(command)
-  if (issues.length === 0) return null
-
-  if (counter >= PALIER) {
-    const { ok, problems } = validateRevuePalier(readRevuePalier(), today)
-    if (!ok) {
+export function evaluate({
+  command, today, readSolde, soldeOnDisk = () => null,
+  palier = { compte: 0, tete: null, chemin: null }, neuves = () => [], omises = () => [],
+  dansHead = () => true,
+  contexteSolde = {},
+}) {
+  const revues = neuves()
+  for (const revue of revues) {
+    const problemes = problemesDeRevueNeuve(revue, { today, palier, dansHead })
+    if (problemes.length) {
       return {
         decision: 'deny',
         reason:
-          `⚠ Palier de ${PALIER} tickets fermés atteint : revue adversariale de PALIER exigée avant ` +
-          `toute nouvelle fermeture — ${problems.join(' ; ')}. Écrire .claude/soldes/revue-palier.md ` +
-          `(ligne "verdict: CONFIRMÉ|PARTIEL|RÉFUTÉ", ≥${MIN_REVUE_PALIER_LEN} caractères de synthèse sur ` +
-          `le CUMUL des ${PALIER} dernières fermetures, date du jour). Compteur lu : ` +
-          `${cheminCompteur ?? COMPTEUR_PALIER} — un seul par dépôt, partagé par tous ses worktrees.`,
+          `⚠ Revue de palier NON CONFORME : ${revue.chemin} — ${problemes.join(' ; ')}. Une revue entre `
+          + "dans l'histoire sous le nom de ce qu'elle juge (`revue-palier-<date>-<base>.md`), avec sa "
+          + `ligne "verdict: CONFIRMÉ|PARTIEL|RÉFUTÉ", ≥${MIN_REVUE_PALIER_LEN} caractères de synthèse sur `
+          + 'le CUMUL, sa date du jour en 1re ligne et sa fenêtre `<base>..<tête>`.',
       }
+    }
+  }
+
+  const issues = extractClosedIssues(command)
+  if (issues.length === 0) return null
+
+  if (palier.erreur) {
+    return {
+      decision: 'deny',
+      reason:
+        `⚠ Palier INMESURABLE, donc aucune fermeture : ${palier.erreur}. Le palier se mesure sur `
+        + "l'HISTOIRE (`git rev-list --count <tête de la dernière revue de HEAD>..HEAD -- src scripts`).",
+    }
+  }
+
+  if (palier.compte >= PALIER && revues.length === 0) {
+    const enRade = omises()
+    return {
+      decision: 'deny',
+      reason:
+        `⚠ Palier atteint : ${palier.compte} commits de substance depuis ${palier.tete} `
+        + `(${palier.chemin}) — revue adversariale de PALIER exigée avant toute nouvelle fermeture. `
+        + (enRade.length
+          ? `${enRade.join(', ')} est écrite et stagée mais NON EMPORTÉE par ce commit : une commande `
+            + `par pathspec n'emporte QUE les chemins nommés — y AJOUTER ${enRade.join(', ')}. `
+          : '')
+        + `Sinon, l'écrire et la STAGER sous .claude/soldes/revue-palier-${today}-${palier.tete}.md `
+        + `(ligne "verdict: CONFIRMÉ|PARTIEL|RÉFUTÉ", ≥${MIN_REVUE_PALIER_LEN} caractères de synthèse sur `
+        + `le CUMUL, date du jour en 1re ligne, fenêtre \`${palier.tete}..<tête>\` — la date et la base `
+        + 'NOMMENT le fichier).',
     }
   }
 
@@ -1078,63 +1179,6 @@ export function repoRoot(scriptUrl = import.meta.url) {
  *  tout ce que ce garde lit. `null` si absent/illisible. */
 export function readSoldeFile(n, dir = process.cwd()) {
   try { return readFileSync(join(dir, '.claude/soldes', `${n}.md`), 'utf8') } catch { return null }
-}
-
-// ── Compteur de palier : UN fichier par DÉPÔT, partagé par tous ses worktrees ────────────────────
-// Le palier compte les commits de substance du DÉPÔT. Porté par un fichier d'ARBRE
-// (`.claude/soldes/.compteur`), chaque worktree tenait son propre compte : le palier n'arrivait
-// jamais. Il vit dans le RÉPERTOIRE GIT COMMUN (`git rev-parse --git-common-dir`) — que l'arbre
-// principal et tous ses worktrees partagent, et qu'aucun index ne suit.
-export const COMPTEUR_PALIER = 'wfrp-palier.compteur'
-const COMPTEUR_PALIER_ARBRE = '.claude/soldes/.compteur'
-
-/** Chemin du compteur de palier partagé, vu depuis `dir`. `null` hors dépôt git. */
-export function cheminCompteurPalier(dir = process.cwd()) {
-  try {
-    const commun = execSync('git rev-parse --git-common-dir', {
-      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim()
-    return commun ? join(resolve(dir, commun), COMPTEUR_PALIER) : null
-  } catch { return null }
-}
-
-/** Reprise du compteur d'ARBRE vers le compteur partagé : au premier passage sa valeur est copiée,
- *  puis le fichier d'arbre supprimé — une seule source subsiste. Un fichier d'arbre qui RÉAPPARAÎT
- *  ensuite (outil, restauration, autre worktree) est supprimé SANS être relu : le partagé fait foi,
- *  et le geste est annoncé sur stderr. Rend ce qui a été fait (`'reprise'`/`'purge'`/`null`). */
-export function migrerCompteurPalier(dir = process.cwd(), partage = cheminCompteurPalier(dir)) {
-  if (!partage) return null
-  const arbre = join(dir, COMPTEUR_PALIER_ARBRE)
-  try {
-    if (!existsSync(arbre)) return null
-    if (existsSync(partage)) {
-      rmSync(arbre, { force: true })
-      process.stderr.write(`solde-ticket-guard: ${COMPTEUR_PALIER_ARBRE} supprimé — ${partage} fait foi\n`)
-      return 'purge'
-    }
-    writeFileSync(partage, readFileSync(arbre, 'utf8').trim(), 'utf8')
-    rmSync(arbre, { force: true })
-    process.stderr.write(`solde-ticket-guard: compteur de palier repris dans ${partage}\n`)
-    return 'reprise'
-  } catch { return null } // un compteur illisible repart de 0 — jamais un hook en échec
-}
-
-/** Valeur du compteur de palier partagé, vu depuis `dir`. `0` si absent/illisible/non numérique. */
-export function readCounterFile(dir = process.cwd()) {
-  const partage = cheminCompteurPalier(dir)
-  if (!partage) return 0
-  try {
-    const n = Number.parseInt(readFileSync(partage, 'utf8').trim(), 10)
-    return Number.isFinite(n) && n >= 0 ? n : 0
-  } catch { return 0 }
-}
-
-/** Lecture de la revue de palier dans le RÉPERTOIRE où le `git commit` s'exécute (patron des soldes
- *  et du compteur). Elle était lue dans le dépôt du HOOK, c'est-à-dire l'arbre principal : depuis un
- *  worktree, une revue présente et commitée était déclarée absente et toute fermeture refusée
- *  (mesuré 2026-09-04). `null` si absente ou illisible. */
-export function readRevuePalierFile(dir = process.cwd()) {
-  try { return readFileSync(join(dir, '.claude/soldes/revue-palier.md'), 'utf8') } catch { return null }
 }
 
 // ── Anti-esquive (extension 2026-07-14, périmètre tranché #591) ────────────────────────────────────
@@ -1321,7 +1365,7 @@ const MESSAGE_FLAG_RE = /(?:^|\s)(?:-m\b|--message\b)/
 
 /**
  * `git commit --amend` sans `-m`/`-F` hérite du message du commit précédent — invisible à ce hook
- * (et au closer post-commit) puisque ni la commande ni un fichier lisible ne le portent. Deny
+ * (et au closer de publication) puisque ni la commande ni un fichier lisible ne le portent. Deny
  * PRUDENT si le diff staged touche `src/**` ; silence sinon (les règles maison découragent déjà
  * l'amend, mais un amend sans substance src ne mérite pas un blocage).
  * @returns {{ reason: string } | null}
@@ -1608,7 +1652,7 @@ export function commitEstAncetreDeHead(sha, dir = process.cwd()) {
 
 /** Chemins touchés par le commit `sha` dans `dir`, `[]` si le sha est inconnu du dépôt.
  *  `--no-renames` : sans lui, un renommage rend UNE ligne `{ancien => nouveau}` qu'aucun chemin cité
- *  ne peut égaler — un solde juste était refusé (mesuré sur le renommage de `.claude/soldes/revue-palier.md`). */
+ *  ne peut égaler — un solde juste est refusé (mesuré sur un renommage dans `.claude/soldes/`, 26be12347). */
 export function fichiersDuCommitGit(sha, dir = process.cwd()) {
   try {
     return execFileSync('git', ['show', '--numstat', '--no-renames', '--pretty=format:', sha], {
@@ -1722,8 +1766,8 @@ export function evaluateFermetureHorsCommit(command, { lire = (p) => readFileSyn
   if (!command) return null
   const parCommit =
     `la fermeture passe par un commit \`corrige #N\` porteur de son solde (.claude/soldes/<N>.md) — ` +
-    `le closer \`scripts/git-hooks/post-commit\` ferme l'issue ET y poste le solde. Fermer à la main ` +
-    `court-circuite le contrôle entier.`
+    `le job \`fermetures\` de ci.yml (\`scripts/ops/fermer-depuis-main.mjs\`) ferme l'issue ET y poste ` +
+    `le solde, après un \`build\` vert sur main. Fermer à la main court-circuite le contrôle entier.`
   for (const segment of segmentsProfonds(command)) {
     const forme = fermetureGh(segment)
     if (forme) {
@@ -1935,10 +1979,10 @@ if (isMain) {
     process.exit(0)
   }
 
-  migrerCompteurPalier(targetDir)
   // Le mtime plancher de la capture de recette est celui du DERNIER fichier d'écran stagé : une
   // capture antérieure au geste montre l'écran d'avant.
   const mtimeEcrans = mtimeMaxDe(fichiers.filter(estFichierEcran), targetDir)
+  const { emportees: revuesEmportees, omises: revuesEnRade } = revuesDuCommit(revuesNeuves(targetDir), fichiers)
   const decision = evaluate({
     command: text,
     today,
@@ -1946,9 +1990,13 @@ if (isMain) {
     // un solde stagé hors pathspec reste à la version de HEAD et la preuve ne part pas.
     readSolde: (n) => commit.contenu(`.claude/soldes/${n}.md`),
     soldeOnDisk: (n) => readSoldeFile(n, targetDir),
-    counter: readCounterFile(targetDir),
-    cheminCompteur: cheminCompteurPalier(targetDir),
-    readRevuePalier: () => readRevuePalierFile(targetDir),
+    palier: mesureDuPalier(targetDir),
+    // La revue qui franchit le palier est celle que ce commit AJOUTE **et** EMPORTE : elle naît sous
+    // son nom d'archive. Une revue posée sur le disque sans être stagée, ou stagée hors des pathspecs
+    // de la commande, ne part pas avec le commit — donc ne franchit rien. Même règle que le solde.
+    neuves: () => revuesEmportees.map((r) => ({ ...r, contenu: commit.contenu(r.chemin) ?? r.contenu })),
+    omises: () => revuesEnRade,
+    dansHead: (sha) => estDansHead(sha, targetDir),
     contexteSolde: {
       fichiersEmportes: fichiers,
       lignesEmportees: (f) => lignesDeHunks(commit.fichier(f)),
@@ -1960,7 +2008,7 @@ if (isMain) {
     },
   })
   // TOUT ce que le garde lit sur DISQUE se lit dans le répertoire où le commit s'exécute — comme le
-  // solde stagé, le compteur, le message `-F` et la revue de palier. Lu depuis le dépôt du HOOK, un
+  // solde stagé, la mesure du palier, le message `-F` et la revue de palier. Lu depuis le dépôt du HOOK, un
   // fichier de réfutation écrit dans le worktree était invisible, et la porte refusait à tort.
   const antiEsquive = evaluateAntiEsquive({
     command: text,

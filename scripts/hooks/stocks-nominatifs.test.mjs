@@ -114,6 +114,16 @@ test('croissance — un stock qui DÉCROÎT ou qui se déplace ne dit rien', () 
   assert.deepEqual(croissanceDesStocks(diffDe('scripts/guards/lib/domResiduStock.mjs', [ENTREE_A], [ENTREE_B])), [])
 })
 
+test('croissance — un diff qui n’est PAS une chaîne LÈVE, et un « 0 » ne peut plus mentir', () => {
+  // Témoin POSITIF d'abord : sans lui, un `[]` prouverait autant que la lib cassée. Le même diff,
+  // passé en OBJET (l'appel qu'un juge a fait le 2026-09-04), doit lever au lieu de rendre [].
+  const diff = diffDe('src/state/flowtest-derived-stake.test.ts', [ENTREE_A, ENTREE_B])
+  assert.ok(croissanceDesStocks(diff).length > 0, 'témoin positif muet : la mesure ne mesure rien')
+  assert.throws(() => croissanceDesStocks({ diff }), /POSITIONNELLE/)
+  assert.throws(() => croissanceDesStocks(undefined), /attend le diff en CHAÎNE/)
+  assert.throws(() => croissanceDesStocks(null), /attend le diff en CHAÎNE/)
+})
+
 test('croissance — hors fichier PORTEUR, la règle se tait', () => {
   assert.deepEqual(croissanceDesStocks(diffDe('src/state/combatFlow.ts', [ENTREE_A, ENTREE_B])), [])
 })

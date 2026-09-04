@@ -4,7 +4,7 @@
 // fermés par message de commit depuis le 2026-08-01 n'ont AUCUN `.claude/soldes/<N>.md` suivi par
 // git : le contrôle a été contourné à l'échelle (fermeture hors commit, message packé, arbre neuf).
 // Le stock est figé NOMINATIVEMENT et ne peut que DÉCROÎTRE — un nom neuf est une fermeture qui vient
-// d'échapper au garde. La mesure lit le MÊME motif que le closer (`scripts/git-hooks/post-commit`).
+// d'échapper au garde. La mesure lit le MÊME motif que le closer (`scripts/ops/fermer-depuis-main.mjs`).
 // Lancé par `npm run test:hooks`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'

@@ -26,14 +26,18 @@ reçoit sa disposition (`-> #X` ticket créé / `corrigé dans ce commit` / `RAS
 ou `RAS` explicite, + section `## Réfutation` (juge adversarial sur le diff/DoD :
 `verdict: CONFIRMÉ|PARTIEL` — un RÉFUTÉ ne se ferme pas). Le hook
 `scripts/hooks/solde-ticket-guard.mjs` (PreToolUse Bash|PowerShell) BLOQUE la fermeture
-sans solde conforme ; le post-commit poste le solde en commentaire de fermeture de
-l'issue. PALIER (2e demande, même jour : « apres un certain nombre de ticket fermé, il
+sans solde conforme ; la fermeture elle-même suit la PUBLICATION — le job `fermetures` de
+`.github/workflows/ci.yml` (`scripts/ops/fermer-depuis-main.mjs`) poste le solde emporté par
+le commit en commentaire et ferme l'issue, après un `build` vert sur `main`. PALIER (2e demande, même jour : « apres un certain nombre de ticket fermé, il
 faudrait lancer une review adversarial. Ou a chaque ticket ... c'est peut etre la même
-régle » → les deux) : compteur de COMMITS DE SUBSTANCE (post-commit incrémente sur tout
-commit touchant src/ ou scripts/ — PAS un compte de fermetures, vérifié à la revue du
-2026-08-19 : palier atteint avec 9 fermetures) ; au palier, plus AUCUNE fermeture sans une
-revue adversariale LARGE du cumul (`revue-palier.md`), puis remise à zéro. ⚠ Trou connu :
-`gh issue close` direct n'est gaté par RIEN (ni solde ni compteur) — #1402. Opposable aux
+régle » → les deux) : le palier se MESURE sur l'histoire — commits touchant `src`/`scripts`
+depuis la tête de fenêtre de la dernière revue ARCHIVÉE (`scripts/guards/lib/revuePalier.mjs`,
+`mesureDuPalier`) — PAS un compte de fermetures, et plus un compteur de fichier (il valait 32
+pour 9 commits réels, incrémenté par les post-commit de 20 worktrees) ; à 10, plus AUCUNE
+fermeture sans une revue adversariale LARGE du cumul, STAGÉE, dont la fenêtre s'ENCHAÎNE sur
+celle de la revue précédente. ⚠ Trou connu : `gh issue close` direct n'est gaté par RIEN au
+moment du geste (#1402) — il est RAPPORTÉ a posteriori par `scripts/ops/fermetures-non-citees.mjs`
+(joué par le canari), et une fermeture hors commit sans solde suivi y est ROUGE. Opposable aux
 sous-agents. Un rendu d'agent qui liste des restes SANS que je les aie soldés = le
 commit ne part pas.
 Cf. [[feedback-audit-obligatoire-avant-annonce-de-fermeture]],

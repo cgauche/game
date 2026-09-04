@@ -61,11 +61,11 @@ const DRIVERS_FUSION = CONFIGS.filter((c) => c.startsWith('merge.') && c.endsWit
   c.slice('merge.'.length, -'.driver'.length),
 )
 
-// Hooks Git : les fichiers SANS extension sont ceux que git invoque par nom.
+// Hooks Git : les fichiers SANS extension sont ceux que git invoque par nom. La liste est DÉRIVÉE du
+// dossier — un hook posé ou retiré change le runbook sans qu'on touche à ce script. Ce qui est exigé,
+// c'est qu'il y en ait, et que `pre-commit` (le seul qui puisse REFUSER un commit) en soit.
 const HOOKS_GIT = entrees('scripts/git-hooks').filter((f) => !f.includes('.'))
-for (const requis of ['pre-commit', 'post-commit']) {
-  if (!HOOKS_GIT.includes(requis)) abandon(`hook Git « ${requis} » absent de scripts/git-hooks/`)
-}
+if (!HOOKS_GIT.includes('pre-commit')) abandon('hook Git « pre-commit » absent de scripts/git-hooks/')
 
 // Hooks de session Claude Code déclarés dans `.claude/settings.json` (versionné).
 const SETTINGS = JSON.parse(readFileSync(chemin('.claude/settings.json'), 'utf8'))
@@ -212,9 +212,11 @@ const FAMILLES_POSTINSTALL = [
     porte: (c) => c === 'core.hooksPath',
     texte: () =>
       `\`core.hooksPath\` → \`scripts/git-hooks\` : les hooks ${listeCode(HOOKS_GIT)} ne tournent plus. Le
-   \`pre-commit\` porte les gardes anti-poison/anti-dérive de chaque commit ; le \`post-commit\` ferme
-   automatiquement les issues GitHub citées dans le message (\`fixes\`/\`closes\`/\`corrige\`/\`ferme #N\`,
-   cf. le commentaire de tête du script).`,
+   \`pre-commit\` porte les gardes anti-poison/anti-dérive de chaque commit ; \`post-merge\` et
+   \`post-rewrite\` régénèrent les docs dérivés après une fusion ou un rebase. Le PALIER de revue
+   adversariale se mesure sur l'histoire au moment du commit (\`scripts/guards/lib/revuePalier.mjs\`),
+   et la fermeture des issues suit la PUBLICATION : job \`fermetures\` de \`.github/workflows/ci.yml\`
+   après un \`build\` vert sur \`main\`, qui joue \`${script('ops:fermer')} <before>..<sha>\`.`,
   },
   {
     porte: (c) => /^merge\..+\.(?:driver|name)$/.test(c),
@@ -234,8 +236,12 @@ for (const c of CONFIGS) {
 const FAMILLES = FAMILLES_POSTINSTALL.filter((f) => CONFIGS.some(f.porte))
 const lignesFamilles = FAMILLES.map((f, i) => `${i + 1}. ${f.texte()}`).join('\n')
 
-/** Portes du canari qui visent le sous-projet `server/` (relay coop) — DÉRIVÉES, jamais nommées. */
-const PORTES_SERVEUR = CANARI.portes.filter((p) => p.includes('--prefix server'))
+/** Une porte vise le sous-projet `server/` sous DEUX formes : l'invocation directe
+ *  (`npm --prefix server ci`) et le script racine qui la délègue (`npm run server:<x>` — package.json
+ *  `server:typecheck` = `npm --prefix server run typecheck`). Ne lire que la première faisait
+ *  sous-compter le bucket, qui annonçait alors 1 porte là où le canari en joue deux. */
+const VISE_SERVEUR = /--prefix\s+server\b|\brun\s+server:/
+const PORTES_SERVEUR = CANARI.portes.filter((p) => VISE_SERVEUR.test(p))
 
 const lignesHooksSession = EVENEMENTS.flatMap((e) =>
   hooksDeSession(e).map(
@@ -339,14 +345,15 @@ ${CANARI.portes.map((p) => `- \`${p}\``).join('\n')}
 
 ${
   PORTES_SERVEUR.length
-    ? `Dont ${PORTES_SERVEUR.length} portes sur le sous-projet \`server/\` (relay coop, \`--prefix server\`) :
+    ? `Dont ${PORTES_SERVEUR.length} porte${PORTES_SERVEUR.length > 1 ? 's' : ''} sur le sous-projet \`server/\` (relay coop) :
 ${listeCode(PORTES_SERVEUR)} — son \`node_modules\` et son typecheck sont indépendants de ceux de la
 racine, un clone frais doit les poser AUSSI.
 
 `
     : ''
-}S'il casse, il ouvre une issue GitHub taguée \`canari\` — c'est le signal qu'un geste manuel a dévié
-de ce que \`npm install\` pose seul.
+}Son step de résumé poste le rapport en commentaire sur l'issue \`canari\` la plus ANCIENNE encore
+ouverte — il n'en crée une que s'il n'y en a aucune, et la FERME quand toutes les mesures sont vertes.
+C'est le signal qu'un geste manuel a dévié de ce que \`npm install\` pose seul.
 
 ## 2. Ce que le clone CONTIENT
 
@@ -383,9 +390,9 @@ Ne sont pas non plus dans le clone, parce que ce ne sont pas des fichiers :
   ${DEPLOY.declencheurs.join(', ')}) ; il build le COMMIT de \`main\` sur un runner propre. Secret
   Actions \`PROD_DEPLOY_KEY\` (deploy key SSH) requis côté dépôt ; aucun clone local du dépôt prod
   nécessaire.
-- **Auth \`gh\` (CLI GitHub)** — credentials locales, nécessaires à la fermeture auto d'issues
-  (\`scripts/git-hooks/post-commit\`) et à toute commande \`gh\` manuelle. L'export hebdomadaire, lui,
-  tourne en CI avec son propre token.
+- **Auth \`gh\` (CLI GitHub)** — credentials locales, nécessaires aux commandes \`gh\` manuelles et aux
+  gestes \`ops:*\` joués à la main (\`${script('ops:fermer')}\`, \`${script('ops:fermetures-non-citees')}\`).
+  La fermeture des issues tourne en CI (job \`fermetures\`, \`GITHUB_TOKEN\`), comme l'export hebdomadaire.
 
 ## 4. Archivage des non-versionnés
 

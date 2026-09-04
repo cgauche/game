@@ -163,6 +163,29 @@ test('les observations sont BORNÉES et dédupliquées — un journal de rejeux,
   }
 })
 
+test('ζ de bout en bout : un rejeu SALE ne DÉGRADE pas le verdict, et le DISQUE le confirme', () => {
+  // La preuve d'un push régulier ne doit pas être destructible par un rejeu fait sur un arbre sale
+  // (revue de palier n°4, sonde ζ). Trois temps : propre → sale → relecture du fichier.
+  const racine = depot()
+  try {
+    const sha = git(racine)(['rev-parse', 'HEAD'])
+    const r1 = ecrireJustificatif({ cwd: racine, gate: 'test', sha, date: '2026-09-04T10:00:00.000Z' })
+    assert.equal(r1.retenu.sale, false)
+
+    ecrire(racine, 'b.txt', 'b\n')
+    const r2 = ecrireJustificatif({ cwd: racine, gate: 'test', sha, date: '2026-09-04T11:00:00.000Z' })
+    assert.equal(r2.retenu.sale, false, 'le verdict retenu a été DÉGRADÉ par un rejeu sur arbre sale')
+    assert.equal(r2.retenu.date, '2026-09-04T10:00:00.000Z', 'le verdict garde la date du run qui l’a produit')
+    assert.deepEqual(r2.retenu.observations[0].salis, ['?? b.txt'], 'le salissement doit être JOURNALISÉ, pas tu')
+
+    const relu = lireJustificatif({ cwd: racine, cleTree: r1.cleTree, gate: 'test' })
+    assert.equal(relu.sale, false, 'le fichier écrit ne dit pas ce que la fonction a rendu')
+    assert.equal(motifDeRefus(relu, { nom: 'test', commande: 'npm test' }), null, 'le push resterait refusé')
+  } finally {
+    jeter(racine)
+  }
+})
+
 test('un rejeu PROPRE remplace un verdict SALE, et un PROPRE plus récent met la date à jour', () => {
   const racine = depot()
   try {
@@ -253,6 +276,20 @@ test('les gates exigées sont les steps RÉELS de ci.yml, le job `migrations` EX
   )
   assert.deepEqual(gates.filter((g) => g.job === 'migrations'), [])
   assert.match(JOBS_HORS_JUSTIFICATIF.migrations, /EN PLACE.*#1613/)
+  // Le job `fermetures` agit APRÈS la publication : il ne mesure rien du contenu poussé, et
+  // l'exiger au push serait circulaire (il ne peut tourner qu'une fois le push fait).
+  assert.deepEqual(gates.filter((g) => g.job === 'fermetures'), [])
+  assert.match(JOBS_HORS_JUSTIFICATIF.fermetures, /APRÈS.*publication.*circulaire/s)
+  assert.match(JOBS_HORS_JUSTIFICATIF.fermetures, /scripts\/ops\/fermer-depuis-main\.mjs/)
+})
+
+test('CARDINAL : les gates de ci.yml, et la part d’entre elles dont le nom porte un « : »', () => {
+  // `fichierDeGate` encode le nom parce que `:` ouvre un flux de données alternatif sous NTFS —
+  // le chiffre cité par son JSDoc se re-mesure ici, il ne se recopie pas.
+  const noms = gatesRequises({ cwd: REPO }).map((g) => g.nom)
+  assert.equal(noms.length, 22, `gates exigées : ${noms.join(', ')}`)
+  assert.equal(noms.filter((n) => n.includes(':')).length, 18)
+  assert.equal(fichierDeGate('docs:check'), 'docs%3Acheck.json')
 })
 
 test('un step d’une forme NON classée fait LEVER (fail-closed), et le message dit quoi faire', () => {
