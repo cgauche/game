@@ -11,7 +11,9 @@
  * plus risqué du lot sans témoin. Ce fichier tient la famille `type`→<clé métier> sur `src/data` ; la
  * famille « bump de FORME » du document de projet (`src/scenes/<c>/<c>-projet.json`) est tenue par sa
  * sœur `src/scenes/migrations-format-projet.test.ts`, même doctrine, `Cas` incompatible (ni `type`,
- * ni cardinal, ni la même indentation de sérialiseur).
+ * ni cardinal, ni la même indentation de sérialiseur). Il tient enfin, au PRÉSENT et sur les `.json`
+ * de `src/data` PARTITIONNÉS SANS RESTE, l'enveloppe `id, type` que les vagues 10 à 12 ont posée
+ * (dernier `describe`) — c'est la SEULE garde de ce contrat, les vagues ne le redoublent pas.
  *
  * RETOUCHER UN SCRIPT DÉJÀ JOUÉ est le geste le plus risqué du lot : ce test le tient. Il exécute les
  * VRAIS fichiers de `scripts/migrations/` — copiés dans un arbre temporaire pour que leur
@@ -27,7 +29,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, copyFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -202,45 +204,40 @@ describe.each(CAS)('migration $script — retouchée pour le `type` d’ENVELOPP
  * déclarée le fait rougir, sans dépendre d'un rejeu.
  */
 describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a bougé', () => {
-  /** `<fichier>` → `type`, recopié de la table `TYPES` de la migration. */
-  const TYPES_12B: Readonly<Record<string, string>> = {
-    'actions.json': 'actions',
-    'activities.json': 'activities',
-    'creatures.json': 'creatures',
-    'night-stakes.json': 'night-stakes',
-    'psychology.json': 'psychology',
-    'raceAppearance.json': 'raceAppearance',
-    'roofMaterials.json': 'roofMaterials',
-    'species.json': 'species',
-    'spells.json': 'spells',
-    'structureAppearance.json': 'structureAppearance',
-    'tavernGames.json': 'tavernGames',
-    'trappings.json': 'trappings',
-  };
+  /**
+   * PÉRIMÈTRE de la vague — ses 12 datasets, recopiés de la table `TYPES` de la migration. Le
+   * `type` attendu, lui, n'est PAS repris : l'enveloppe (`id,type` en tête, `type` = nom de base) est
+   * gardée UNE fois, sur tout `src/data`, par la partition en fin de fichier. Ne reste ici que ce qui
+   * est PROPRE à 12b : son cardinal, sa purge déclarée, le champ qu'elle tue, celui qu'elle GARDE.
+   */
+  const PERIMETRE_12B = [
+    'actions.json',
+    'activities.json',
+    'creatures.json',
+    'night-stakes.json',
+    'psychology.json',
+    'raceAppearance.json',
+    'roofMaterials.json',
+    'species.json',
+    'spells.json',
+    'structureAppearance.json',
+    'tavernGames.json',
+    'trappings.json',
+  ] as const;
   // +1 : Chien de trait, EDOC 07 folio 22, #673.
   const TOTAL_ATTENDU = 1734;
 
   const lu = (f: string) => JSON.parse(readFileSync(join(RACINE, 'src', 'data', f), 'utf8')) as Record<string, unknown>[];
 
-  it(`les 12 datasets totalisent ${TOTAL_ATTENDU} entrées, \`type\` en 2ᵉ position et ACCORDÉ à son document`, () => {
-    const fautes: string[] = [];
-    let total = 0;
-    for (const [f, type] of Object.entries(TYPES_12B)) {
-      const data = lu(f);
-      total += data.length;
-      for (const e of data) {
-        const cles = Object.keys(e);
-        if (cles[0] !== 'id' || cles[1] !== 'type') fautes.push(`${f} ${String(e.id)} : tête ${cles.slice(0, 2).join(',')} ≠ id,type`);
-        if (e.type !== type) fautes.push(`${f} ${String(e.id)} : type ${JSON.stringify(e.type)} ≠ ${JSON.stringify(type)}`);
-      }
-    }
-    expect(fautes, `entrée(s) hors contrat :\n${fautes.slice(0, 10).join('\n')}`).toEqual([]);
-    expect(total).toBe(TOTAL_ATTENDU);
+  it(`les 12 datasets de la vague totalisent ${TOTAL_ATTENDU} entrées`, () => {
+    const parFichier = PERIMETRE_12B.map((f) => `${f}=${lu(f).length}`);
+    const total = PERIMETRE_12B.reduce((n, f) => n + lu(f).length, 0);
+    expect(total, `cardinal du périmètre :\n${parFichier.join('\n')}`).toBe(TOTAL_ATTENDU);
   });
 
   it('AUCUNE `desc` vide ne subsiste, et `species › humains-tileens` n’en porte plus du tout', () => {
     const vides: string[] = [];
-    for (const f of Object.keys(TYPES_12B)) {
+    for (const f of PERIMETRE_12B) {
       for (const e of lu(f)) if (e.desc === '') vides.push(`${f} ${String(e.id)}`);
     }
     expect(vides, 'la chaîne vide est un TROISIÈME état — absente plutôt que vide').toEqual([]);
@@ -257,5 +254,82 @@ describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a boug
     const porteurs = creatures.filter((e) => 'title' in e);
     expect(porteurs.length, '`title` est REQUIS (nullable ≠ optional) : toutes les entrées le portent').toBe(creatures.length);
     expect(porteurs.filter((e) => e.title !== null).length).toBe(53);
+  });
+});
+
+/**
+ * ENVELOPPE `id,type` — la garde EXHAUSTIVE, sur les `.json` de `src/data` PARTITIONNÉS SANS RESTE.
+ *
+ * C'est la SEULE garde de ce contrat : les `describe` ci-dessus ne tiennent que ce qui est propre à
+ * leur vague. Le contrat lui-même est celui de `src/data/schemas/grammaire/sans-livre.ts:22`, que les
+ * vagues 10 à 12 écrivent toutes et que le schéma tient par `z.literal(<type>)`.
+ *
+ * Le périmètre n'est pas une liste recopiée, et il ne se rétrécit pas non plus par un filtre muet :
+ * les fichiers sont PARTITIONNÉS, et la partition « autre » est asservie à VIDE. Un `.json` qui n'est
+ * ni un tableau d'entrées ni une racine à `id` fait rougir tant qu'il n'est pas NOMMÉ ici avec sa
+ * raison — un filtre `Array.isArray` seul laissait 41 racines OBJET hors scan sans le dire, alors que
+ * les 41 satisfont le même contrat, sur la RACINE au lieu de chaque entrée.
+ */
+describe('enveloppe — les `.json` de `src/data`, partitionnés SANS reste', () => {
+  const estObjet = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
+  const FICHIERS = readdirSync(join(RACINE, 'src', 'data'))
+    .filter((f) => f.endsWith('.json'))
+    .sort();
+  const DOCS = FICHIERS.map((f) => [f, JSON.parse(readFileSync(join(RACINE, 'src', 'data', f), 'utf8')) as unknown] as const);
+
+  /** PARTITION 1 — racine TABLEAU d'entrées : le contrat porte sur CHAQUE entrée. */
+  const TABLEAUX = DOCS.filter(([, doc]) => Array.isArray(doc) && doc.length > 0 && doc.every(estObjet)).map(
+    ([f, doc]) => [f, doc as Record<string, unknown>[]] as const,
+  );
+  /** PARTITION 2 — racine OBJET à `id` (familles `config`/`table`) : le contrat porte sur la RACINE. */
+  const OBJETS = DOCS.filter(([, doc]) => estObjet(doc) && typeof doc.id === 'string').map(
+    ([f, doc]) => [f, doc as Record<string, unknown>] as const,
+  );
+  /** PARTITION 3 — le RESTE, asservi à VIDE : mesuré 0/121 le 2026-09-04. */
+  const PARTITIONNES = new Set([...TABLEAUX, ...OBJETS].map(([f]) => f));
+  const AUTRES = FICHIERS.filter((f) => !PARTITIONNES.has(f));
+
+  /** Plancher mesuré le 2026-09-04 : 121 `.json` = 80 tableaux + 41 racines objet + 0 reste. */
+  const PLANCHER = 121;
+
+  /** Le contrat, identique aux deux partitions : tête `id,type`, `type` = nom de base du dataset. */
+  const horsContrat = (fichier: string, doc: Record<string, unknown>, quoi: string): string[] => {
+    const attendu = fichier.replace(/\.json$/, '');
+    const cles = Object.keys(doc);
+    const fautes: string[] = [];
+    if (cles[0] !== 'id' || cles[1] !== 'type') fautes.push(`${fichier} ${quoi} : tête ${cles.slice(0, 2).join(',')} ≠ id,type`);
+    if (doc.type !== attendu) fautes.push(`${fichier} ${quoi} : type ${JSON.stringify(doc.type)} ≠ ${JSON.stringify(attendu)}`);
+    return fautes;
+  };
+
+  it(`les ${PLANCHER} \`.json\` tombent tous dans une partition CONNUE, sans reste`, () => {
+    expect(
+      AUTRES,
+      'ni tableau d’entrées ni racine à `id` : à NOMMER ici avec sa raison, jamais à filtrer en silence',
+    ).toEqual([]);
+    expect(TABLEAUX.length + OBJETS.length + AUTRES.length).toBe(FICHIERS.length);
+    expect(FICHIERS.length).toBeGreaterThanOrEqual(PLANCHER);
+    // Les quatre datasets que le cycle 10⇄12a « tenait » par accident, nommés pour qu'un scan qui
+    // les perdrait ne puisse pas rester vert.
+    const tableaux = TABLEAUX.map(([f]) => f);
+    for (const f of ['props.json', 'raw.manifest.json', 'reliefMaterials.json', 'roofMaterials.json']) {
+      expect(tableaux, `${f} hors de la partition « tableau »`).toContain(f);
+    }
+    // Et trois témoins de la partition OBJET, celle qu'un filtre `Array.isArray` excluait en silence.
+    const objets = OBJETS.map(([f]) => f);
+    for (const f of ['weather.json', 'montures.json', 'donnees.manifest.json']) {
+      expect(objets, `${f} hors de la partition « racine objet »`).toContain(f);
+    }
+  });
+
+  it('racine TABLEAU : chaque ENTRÉE ouvre sur `id`, `type`, et son `type` est le NOM DE BASE', () => {
+    const fautes = TABLEAUX.flatMap(([f, doc]) => doc.flatMap((e) => horsContrat(f, e, String(e.id))));
+    expect(fautes, `entrée(s) hors enveloppe :\n${fautes.slice(0, 10).join('\n')}`).toEqual([]);
+  });
+
+  it('racine OBJET : le DOCUMENT ouvre sur `id`, `type`, et son `type` est le NOM DE BASE', () => {
+    const fautes = OBJETS.flatMap(([f, doc]) => horsContrat(f, doc, '(racine)'));
+    expect(fautes, `document(s) hors enveloppe :\n${fautes.slice(0, 10).join('\n')}`).toEqual([]);
   });
 });

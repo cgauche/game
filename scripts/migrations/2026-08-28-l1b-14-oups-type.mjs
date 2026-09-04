@@ -12,10 +12,13 @@
  *
  * ENTRÉES : `src/data/oups.json` (seule donnée lue et écrite).
  *
- * IDEMPOTENT / NO-OP TOLÉRANT À LA FORME : une entrée qui porte DÉJÀ `type: 'oups'` en 2ᵉ position est
- * reconnue migrée ; rejouée sur l'état final, la migration n'écrit rien et sort 0.
+ * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le CARDINAL de ce que ce script POSSÈDE —
+ * la pose de `type`. Zéro `type` à poser = rien n'est écrit et la sortie est 0, quel que soit l'ordre
+ * des autres clés des entrées : la promotion de `id` et `type` en tête est une normalisation
+ * d'enveloppe, et une égalité à l'octet en ferait une réécriture à elle seule.
  * FAIL-FAST : cardinal ≠ 8 (porte de lecture SEULE, avant toute écriture), racine non-tableau, entrée
- * sans `id` de chaîne, `type` déjà présent mais DIVERGENT → rien n'est écrit, sortie 1.
+ * sans `id` de chaîne, `id` ailleurs qu'en tête (cette vague ne promeut PAS `id`), `type` déjà présent
+ * mais DIVERGENT → rien n'est écrit, sortie 1.
  * FORMATAGE PRÉSERVÉ : le fichier est EXACTEMENT `JSON.stringify(doc, null, 2)`, vérifié AVANT toute
  * écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence.
  */
@@ -47,17 +50,22 @@ if (brut !== `${JSON.stringify(doc, null, 2)}\n` && brut !== JSON.stringify(doc,
 /** Suffixe de fin de fichier tel qu'il est, pour le réécrire à l'identique. */
 const finDeLigne = brut.endsWith('\n') ? '\n' : '';
 
+let poses = 0;
 const sortie = doc.map((e, i) => {
   if (typeof e?.id !== 'string' || !e.id) echoue(`entrée ${i} sans \`id\` de chaîne`);
+  const rangId = Object.keys(e).indexOf('id');
+  if (rangId !== 0) echoue(`entrée ${i} (${e.id}) porte \`id\` au rang ${rangId} — aucune promotion de \`id\` n'est déclarée par cette vague`);
   if (e.type !== undefined && e.type !== TYPE) echoue(`entrée ${i} (${e.id}) porte type « ${e.type} », attendu « ${TYPE} »`);
+  if (!('type' in e)) poses++;
   const { id, type: _ignore, ...reste } = e;
   return { id, type: TYPE, ...reste };
 });
 
-const texte = `${JSON.stringify(sortie, null, 2)}${finDeLigne}`;
-if (texte === brut) {
-  console.log(`= ${FICHIER} — déjà migré (${CARDINAL} entrées), rien à écrire`);
+if (poses === 0) {
+  console.log(`= ${FICHIER} — no-op (0 \`type\` à poser sur ${CARDINAL} entrées)`);
   process.exit(0);
 }
+
+const texte = `${JSON.stringify(sortie, null, 2)}${finDeLigne}`;
 fs.writeFileSync(chemin, texte);
 console.log(`✓ ${FICHIER} — type « ${TYPE} » posé en 2ᵉ clé sur ${CARDINAL} entrées`);

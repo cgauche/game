@@ -24,8 +24,10 @@
  * rangée ajoutée/retirée/réordonnée → sortie 1, rien n'est écrit : on ne pose pas une borne basse
  * sur une table qui n'est plus celle qu'on a lue au Source.
  *
- * IDEMPOTENT : une rangée qui porte déjà le bon `min` est reconnue migrée ; rejouée sur l'état final,
- * la migration n'écrit rien et sort 0.
+ * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le CARDINAL de ce que ce script POSSÈDE —
+ * la pose de la borne basse. Zéro `min` à poser dans un document = rien n'y est écrit et la sortie est
+ * 0, quel que soit l'ordre des clés de ses rangées : `avecMin` replace la `min` déjà présente juste
+ * avant `max`, et une égalité à l'octet ferait de cette normalisation une réécriture à elle seule.
  * FORMATAGE PRÉSERVÉ : chaque fichier est EXACTEMENT `JSON.stringify(doc, null, 2)`, vérifié AVANT
  * toute écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence.
  */
@@ -189,8 +191,10 @@ const avecMin = (o, min) =>
     Object.entries(o).flatMap(([k, v]) => (k === 'max' ? [['min', min], ['max', v]] : k === 'min' ? [] : [[k, v]])),
   );
 
-// ---- ÉCRITURE : `min` juste AVANT `max`, le reste dans son ordre existant.
+// ---- ÉCRITURE : `min` juste AVANT `max`, le reste dans son ordre existant. Le no-op se décide sur
+// le CARDINAL des bornes basses à poser — seul geste que ce script possède.
 {
+  const aPoser = meteo.doc.seasons.reduce((n, s) => n + s.ranges.filter((r) => !('min' in r)).length, 0);
   const apres = {
     ...meteo.doc,
     seasons: meteo.doc.seasons.map((s) => ({
@@ -198,23 +202,22 @@ const avecMin = (o, min) =>
       ranges: s.ranges.map((r, i) => avecMin(r, METEO[s.id][i].min)),
     })),
   };
-  const sortie = JSON.stringify(apres, null, 2);
-  if (sortie === meteo.brut) {
-    rapport.push(`weather.json : no-op (déjà migré, ${CARDINAUX['weather.json'].rangees} rangée(s))`);
+  if (aPoser === 0) {
+    rapport.push(`weather.json : no-op (0 \`min\` à poser sur ${CARDINAUX['weather.json'].rangees} rangée(s))`);
   } else {
-    fs.writeFileSync(meteo.cible, sortie, 'utf8');
-    rapport.push(`weather.json : ${CARDINAUX['weather.json'].rangees} rangée(s) × \`min\` (EDOC 08 l.52-59)`);
+    fs.writeFileSync(meteo.cible, JSON.stringify(apres, null, 2), 'utf8');
+    rapport.push(`weather.json : ${aPoser} rangée(s) × \`min\` (EDOC 08 l.52-59)`);
   }
 }
 
 {
+  const aPoser = augm.doc.filter((b) => !('min' in b)).length;
   const apres = augm.doc.map((b, i) => avecMin(b, AUGMENTATIONS[i].min));
-  const sortie = JSON.stringify(apres, null, 2);
-  if (sortie === augm.brut) {
-    rapport.push(`advancementCosts.json : no-op (déjà migré, ${CARDINAUX['advancementCosts.json'].bandes} bande(s))`);
+  if (aPoser === 0) {
+    rapport.push(`advancementCosts.json : no-op (0 \`min\` à poser sur ${CARDINAUX['advancementCosts.json'].bandes} bande(s))`);
   } else {
-    fs.writeFileSync(augm.cible, sortie, 'utf8');
-    rapport.push(`advancementCosts.json : ${CARDINAUX['advancementCosts.json'].bandes} bande(s) × \`min\` (LDB 07 l.56-70)`);
+    fs.writeFileSync(augm.cible, JSON.stringify(apres, null, 2), 'utf8');
+    rapport.push(`advancementCosts.json : ${aPoser} bande(s) × \`min\` (LDB 07 l.56-70)`);
   }
 }
 

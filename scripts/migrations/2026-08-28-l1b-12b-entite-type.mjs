@@ -35,12 +35,16 @@
  *
  * ENTRÉES : les 12 fichiers de `src/data/` listés dans `TYPES` (seules données lues et écrites).
  *
- * IDEMPOTENT / NO-OP TOLÉRANT À LA FORME : une entrée qui porte DÉJÀ le bon `type` en 2ᵉ position (et
- * dont la `desc` vide est déjà purgée) est reconnue migrée ; rejouée sur l'état final, la migration
- * n'écrit rien et sort 0.
+ * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le CARDINAL des gestes que ce script
+ * POSSÈDE — pose de `type` et purge de la `desc` vide nommée. Zéro geste à poser dans un fichier =
+ * rien n'y est écrit et la sortie est 0, quel que soit l'ordre des AUTRES clés de ses entrées : la
+ * remontée de `type` en 2ᵉ position est une normalisation d'enveloppe, et une égalité à l'octet en
+ * ferait une réécriture à elle seule. La POSITION de `type` n'est PAS une condition du no-op ; elle
+ * est vérifiée après chaque écriture.
  * FAIL-FAST : cardinal inattendu (porte de lecture SEULE, avant toute écriture), racine non-tableau,
- * entrée sans `id` de chaîne, `type` déjà présent mais DIVERGENT, `desc: ""` sur un porteur NON prévu,
- * `group` porté par une créature → rien n'est écrit, sortie 1.
+ * entrée sans `id` de chaîne, `id` ailleurs qu'en TÊTE (cette vague ne promeut PAS `id` : mesuré sur
+ * les 12 fichiers, `id` ouvre partout), `type` déjà présent mais DIVERGENT, `desc: ""` sur un porteur
+ * NON prévu, `group` porté par une créature → rien n'est écrit, sortie 1.
  * FORMATAGE PRÉSERVÉ : chaque fichier est EXACTEMENT `JSON.stringify(doc, null, 2)`, vérifié AVANT
  * toute écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence.
  */
@@ -92,13 +96,6 @@ const CARDINAUX = {
 // 1733→1734 : +1 : Chien de trait, EDOC 07 folio 22, #673.
 const TOTAL_ATTENDU = 1734;
 
-/**
- * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. Mesuré sur
- * TOUTES les entrées des 12 fichiers : AUCUN ne fait exception, `id` ouvre partout. La table reste,
- * vide et nominative : tout fichier dont `id` ne serait pas en tête fait sortir 1.
- */
-const ID_PROMU = {};
-
 /** Le SEUL porteur de `desc: ""` que cette vague purge — `<fichier>` → `<id>` (cf. en-tête). */
 const DESC_VIDE_PURGEE = { 'species.json': 'humains-tileens' };
 
@@ -149,6 +146,7 @@ for (const [fichier, type] of Object.entries(TYPES)) {
   }
 
   const locales = [];
+  let poses = 0;
   const apres = avant.map((e, i) => {
     if (!e || typeof e !== 'object' || Array.isArray(e)) {
       locales.push(`${fichier}[${i}] : entrée non-objet`);
@@ -170,9 +168,18 @@ for (const [fichier, type] of Object.entries(TYPES)) {
       }
       purge = true;
     }
+    // `id` en TÊTE : cette vague ne déclare AUCUNE promotion (mesuré sur les 12 fichiers, `id` ouvre
+    // partout). Un `id` hors tête est donc une anomalie NOMMÉE, portée AVANT la porte de no-op — donc
+    // avant toute écriture, jamais avalie par un no-op muet.
+    const rangId = Object.keys(e).indexOf('id');
+    if (rangId !== 0) {
+      locales.push(`${fichier} ${e.id} : \`id\` au rang ${rangId} — aucune promotion de \`id\` n'est déclarée par cette vague`);
+      return e;
+    }
     // ENVELOPPE : `id` en tête, `type` juste après, puis le reste DANS SON ORDRE D'ORIGINE (les clés
     // sont reprises une à une, jamais par un spread qui remonterait `desc` d'un rang).
     if (purge) descPurgees++;
+    if (purge || !('type' in e)) poses++;
     const sortie = { id: e.id, type };
     for (const [k, v] of Object.entries(e)) {
       if (k === 'id' || k === 'type') continue;
@@ -187,11 +194,16 @@ for (const [fichier, type] of Object.entries(TYPES)) {
     continue;
   }
 
-  const sortie = JSON.stringify(apres, null, 2);
-  if (sortie === brut) {
-    rapport.push(`${fichier} : no-op (déjà migré, ${avant.length} entrée(s))`);
+  // NO-OP SÉMANTIQUE : ce script ne possède que la POSE de `type` et la purge de la `desc` vide
+  // nommée. Aucun des deux à faire = rien à écrire, quel que soit l'ordre des clés du fichier — la
+  // promotion de `id` et `type` en tête est une normalisation d'enveloppe, et une égalité à l'octet
+  // en ferait une réécriture à elle seule.
+  if (poses === 0) {
+    rapport.push(`${fichier} : no-op (0 \`type\` à poser sur ${avant.length} entrée(s))`);
     continue;
   }
+
+  const sortie = JSON.stringify(apres, null, 2);
 
   fs.writeFileSync(cible, sortie, 'utf8');
 
@@ -206,8 +218,8 @@ for (const [fichier, type] of Object.entries(TYPES)) {
     const { type: _t, ...sansType } = d;
     const { type: _t0, ...avantSansType } = avant[i];
     if (avantSansType.desc === '') delete avantSansType.desc;
-    // Comparaison par CLÉ (jamais par l'ordre sérialisé) : la promotion de `id` en tête réordonnerait
-    // légitimement les entrées de `ID_PROMU`, et l'ordre y est vérifié séparément ci-dessous.
+    // Comparaison par CLÉ (jamais par l'ordre sérialisé) : l'ordre est vérifié séparément ci-dessous,
+    // clé à clé, ce qui NOMME un déplacement au lieu de le fondre dans une inégalité de texte.
     const paires = (o) => Object.keys(o).sort().map((k) => `${k}=${JSON.stringify(o[k])}`).join('\u0000');
     if (paires(sansType) !== paires(avantSansType)) {
       echecs.push(`POST ${fichier} ${d.id} : la charge utile a été ALTÉRÉE (autre chose que \`type\` a bougé)`);
@@ -216,11 +228,11 @@ for (const [fichier, type] of Object.entries(TYPES)) {
     const suiteAvant = Object.keys(avantSansType).filter((k) => k !== 'id').join(',');
     const suiteApres = Object.keys(sansType).filter((k) => k !== 'id').join(',');
     if (suiteAvant !== suiteApres) {
-      echecs.push(`POST ${fichier} ${d.id} : l'ORDRE des clés a bougé au-delà de la promotion de \`id\` (${suiteAvant} → ${suiteApres})`);
+      echecs.push(`POST ${fichier} ${d.id} : l'ORDRE des clés a bougé (${suiteAvant} → ${suiteApres})`);
     }
     const rangAvant = Object.keys(avant[i]).indexOf('id');
-    if (rangAvant !== 0 && ID_PROMU[fichier] !== rangAvant) {
-      echecs.push(`POST ${fichier} ${d.id} : \`id\` était au rang ${rangAvant}, promotion NON déclarée`);
+    if (rangAvant !== 0) {
+      echecs.push(`POST ${fichier} ${d.id} : \`id\` était au rang ${rangAvant} — aucune promotion de \`id\` n'est déclarée par cette vague`);
     }
   }
   rapport.push(`${fichier} : ${relu.length} entrée(s) × \`type: "${type}"\``);

@@ -42,10 +42,12 @@
  * touche un fichier déjà migré exige donc de VÉRIFIER ce tri, pas de le supposer. Pour tous les autres
  * scripts du lot, les fichiers écrits sont DISJOINTS et aucun ordre n'est requis.
  *
- * La porte ci-dessus rejoue dans l'ordre lexical, quel qu'il soit. Les migrations sont NO-OP
- * TOLÉRANTES À LA FORME : rejouées sur l'état final, elles
- * reconnaissent « déjà migré » et sortent 0 — une migration absente d'`ATTENDU_ROUGE` qui fail-fast
- * sur « forme inattendue » sort ROUGE du rejeu.
+ * La porte ci-dessus rejoue dans l'ordre lexical, quel qu'il soit. Le NO-OP d'une migration se décide
+ * sur le CARDINAL du geste qu'elle POSSÈDE : zéro geste à faire = rien n'est écrit et la sortie est 0,
+ * quel que soit l'ordre des AUTRES clés du document (banc `lib/idempotence-ordre-des-cles.test.mjs`,
+ * corpus entier renversé). Ce qu'une migration ne possède pas, elle le NOMME : un `id` hors tête sans
+ * promotion déclarée est une anomalie, sortie 1 AVANT toute écriture. Toute migration absente
+ * d'`ATTENDU_ROUGE` qui sort non nul rend le rejeu ROUGE (`replay.mjs:110`).
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -61,7 +63,7 @@ const RACINE = fileURLToPath(new URL('../../', import.meta.url));
  * entrée part avec.
  * @type {Record<string, string>}
  */
-const ATTENDU_ROUGE = {
+export const ATTENDU_ROUGE = {
   '2026-08-23-spec-competence-libelle-vers-id.mjs':
     'ARBITRAGE REQUIS mesuré sur l’arbre sain — 6 occurrences / 3 specs de `creatures.json` sont des CHOIX ' +
     'BORNÉS imprimés au statbloc (metier/« Armurier OU Forgeron » ×1, savoir/« Divinité » ×3, savoir/' +

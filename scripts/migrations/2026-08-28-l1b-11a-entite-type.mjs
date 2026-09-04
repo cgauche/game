@@ -13,10 +13,15 @@
  *
  * ENTRÉES : les 22 fichiers de `src/data/` listés dans `TYPES` (seules données lues et écrites).
  *
- * IDEMPOTENT / NO-OP TOLÉRANT À LA FORME : une entrée qui porte DÉJÀ le bon `type` en 2ᵉ position est
- * reconnue migrée ; rejouée sur l'état final, la migration n'écrit rien et sort 0.
- * FAIL-FAST : racine non-tableau, entrée sans `id` de chaîne, `type` déjà présent mais DIVERGENT,
- * cardinal d'entrées modifié → rien n'est écrit pour ce fichier, sortie 1.
+ * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le CARDINAL du seul geste que ce script
+ * POSSÈDE — la pose de `type`. Zéro `type` à poser dans un fichier = rien n'y est écrit et la sortie
+ * est 0, quel que soit l'ordre des AUTRES clés de ses entrées : la remontée de `type` en 2ᵉ position
+ * est une normalisation d'enveloppe, et une égalité à l'octet en ferait une réécriture à elle seule.
+ * La POSITION de `type` n'est PAS une condition du no-op ; elle est vérifiée après écriture.
+ * FAIL-FAST : racine non-tableau, entrée sans `id` de chaîne, `id` ailleurs qu'en TÊTE (cette vague
+ * ne promeut PAS `id` : sa preuve post-écriture exige la charge utile dans son ordre d'origine),
+ * `type` déjà présent mais DIVERGENT, cardinal d'entrées modifié → rien n'est écrit pour ce fichier,
+ * sortie 1.
  * FORMATAGE PRÉSERVÉ : chaque fichier est EXACTEMENT `JSON.stringify(doc, null, 2)`, vérifié AVANT
  * toute écriture — une forme non canonique fait sortir 1 plutôt que reflower le document en silence.
  */
@@ -134,6 +139,7 @@ for (const [fichier, type] of Object.entries(TYPES)) {
   }
 
   const locales = [];
+  let poses = 0;
   const apres = avant.map((e, i) => {
     if (!e || typeof e !== 'object' || Array.isArray(e)) {
       locales.push(`${fichier}[${i}] : entrée non-objet`);
@@ -147,7 +153,16 @@ for (const [fichier, type] of Object.entries(TYPES)) {
       locales.push(`${fichier} ${e.id} : \`type\` = ${JSON.stringify(e.type)} ≠ ${JSON.stringify(type)}`);
       return e;
     }
+    // `id` en TÊTE : cette vague ne déclare AUCUNE promotion, et sa preuve post-écriture compare la
+    // charge utile SÉRIALISÉE. Un `id` hors tête est donc une anomalie NOMMÉE, portée AVANT la porte
+    // de no-op — donc avant toute écriture, jamais avalie par un no-op muet.
+    const rangId = Object.keys(e).indexOf('id');
+    if (rangId !== 0) {
+      locales.push(`${fichier} ${e.id} : \`id\` au rang ${rangId} — aucune promotion de \`id\` n'est déclarée par cette vague`);
+      return e;
+    }
     // ENVELOPPE : `id` en tête, `type` juste après, puis le reste DANS SON ORDRE EXISTANT.
+    if (!('type' in e)) poses++;
     const { id, type: _ancien, ...reste } = e;
     return { id, type, ...reste };
   });
@@ -157,11 +172,15 @@ for (const [fichier, type] of Object.entries(TYPES)) {
     continue;
   }
 
-  const sortie = JSON.stringify(apres, null, 2);
-  if (sortie === brut) {
-    rapport.push(`${fichier} : no-op (déjà migré, ${avant.length} entrée(s))`);
+  // NO-OP SÉMANTIQUE : ce script ne possède que la POSE de `type`. Aucune à poser = rien à écrire,
+  // quel que soit l'ordre des clés du fichier — la promotion de `id` et `type` en tête est une
+  // normalisation d'enveloppe, et une égalité à l'octet en ferait une réécriture à elle seule.
+  if (poses === 0) {
+    rapport.push(`${fichier} : no-op (0 \`type\` à poser sur ${avant.length} entrée(s))`);
     continue;
   }
+
+  const sortie = JSON.stringify(apres, null, 2);
 
   fs.writeFileSync(cible, sortie, 'utf8');
 

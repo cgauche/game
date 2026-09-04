@@ -193,11 +193,14 @@ const apres = avant.map((e) => {
   return sortie;
 });
 
-const sortie = JSON.stringify(apres, null, 2);
-if (sortie === brut) {
-  console.log(`src/data/props.json : no-op (déjà migré — ${avant.filter((e) => e && e.volume).length} recette(s) au cap d’identité ${CAP_IDENTITE}, ids de place sans côté)`);
+// NO-OP SÉMANTIQUE : ce script ne possède que la ROTATION des recettes et le RENOMMAGE des places.
+// Aucun des deux à faire = rien à écrire, quel que soit l'ordre des clés ou le formatage du fichier.
+if (tournees + renommees === 0) {
+  console.log(`src/data/props.json : no-op (0 rotation, 0 renommage — ${avant.filter((e) => e && e.volume).length} recette(s) au cap d’identité ${CAP_IDENTITE}, ids de place sans côté)`);
   process.exit(0);
 }
+
+const sortie = JSON.stringify(apres, null, 2);
 
 fs.writeFileSync(CIBLE, sortie, 'utf8');
 

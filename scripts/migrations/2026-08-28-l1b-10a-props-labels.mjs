@@ -11,7 +11,9 @@
  *
  * Entrées : `src/data/props.json` (lu et écrit) ; `src/gameIso/catalog/decor/defs/*.ts` (lus seuls).
  *
- * POSITION : `label` s'insère juste après `id`, en 2ᵉ clé de chaque entrée.
+ * POSITION À LA POSE : `label` s'insère juste après `id`. L'enveloppe FINALE du document est celle
+ * qu'écrit la dernière migration datée qui la touche (`2026-08-28-l1b-12a-entite-type.mjs` promeut
+ * `type` en 2ᵉ clé) : ce script ne la réclame pas quand il n'a aucun label à poser.
  * IDEMPOTENT / NO-OP : rejouée sur l'état final, elle recalcule les mêmes labels, n'écrit rien, sort 0.
  * FAIL-FAST : def d'art absente ou `label:` absent/ambigu, entrée sans `id`, label de donnée DIVERGENT
  * d'un label d'art déjà posé → rien n'est écrit, sortie 1.
@@ -39,6 +41,7 @@ if (!Array.isArray(data)) {
 
 const erreurs = [];
 const sortie = [];
+let poses = 0;
 for (const [i, entree] of data.entries()) {
   if (!entree || typeof entree !== 'object' || typeof entree.id !== 'string' || entree.id === '') {
     erreurs.push(`entrée #${i} : \`id\` absent ou non-chaîne`);
@@ -55,6 +58,7 @@ for (const [i, entree] of data.entries()) {
     erreurs.push(`${entree.id} : \`label\` = ${JSON.stringify(entree.label)} ≠ ${JSON.stringify(label)} (def d'art) — arbitrage requis`);
     continue;
   }
+  if (entree.label === undefined) poses++;
   const { id, label: _mort, ...reste } = entree;
   sortie.push({ id, label, ...reste });
 }
@@ -65,8 +69,12 @@ if (erreurs.length) {
   process.exit(1);
 }
 
+// NO-OP SÉMANTIQUE : ce script ne possède que la POSE du `label` dérivé — les labels déjà présents
+// sont vérifiés égaux à leur source par la porte ci-dessus. Aucun à poser = rien à écrire, quel que
+// soit l'ordre des clés : l'insertion de `label` en 2ᵉ clé est une normalisation d'enveloppe, et une
+// égalité à l'octet en ferait une réécriture à elle seule.
 const out = JSON.stringify(sortie, null, 2);
-if (out !== brut) fs.writeFileSync(CIBLE, out, 'utf8');
+if (poses > 0) fs.writeFileSync(CIBLE, out, 'utf8');
 
 // PREUVE post-écriture : autant d'entrées, `label` non vide partout, en 2ᵉ clé, et ACCORDÉ à l'art.
 const apres = JSON.parse(fs.readFileSync(CIBLE, 'utf8'));
@@ -75,7 +83,7 @@ if (apres.length !== data.length) echecs.push(`POST — ${apres.length} entrée(
 for (const e of apres) {
   if (typeof e.label !== 'string' || e.label === '') echecs.push(`POST — ${e.id} : label vide/absent`);
   else if (e.label !== labelDArt(ROOT, e.id)) echecs.push(`POST — ${e.id} : label DÉSACCORDÉ de la def d'art`);
-  if (Object.keys(e).slice(0, 2).join(',') !== 'id,label') echecs.push(`POST — ${e.id} : clés de tête ${Object.keys(e).slice(0, 2).join(',')} ≠ id,label`);
+  if (Object.keys(e)[0] !== 'id') echecs.push(`POST — ${e.id} : première clé ${Object.keys(e)[0]} ≠ id`);
 }
 
 if (echecs.length) {
@@ -84,4 +92,4 @@ if (echecs.length) {
   process.exit(1);
 }
 
-console.log(`${out === brut ? 'no-op' : 'migré'} props.json — ${apres.length} label(s) dérivé(s) des defs d'art`);
+console.log(`${poses === 0 ? 'no-op' : 'migré'} props.json — ${poses} label(s) posé(s), ${apres.length} dérivé(s) des defs d'art`);

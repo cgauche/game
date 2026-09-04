@@ -37,7 +37,9 @@
  *
  * MARQUEUR D'IDEMPOTENCE : la présence de `maison` sur l'entrée. Les quatre volets écrivent le même
  * jeu d'entrées et aucun ne peut aboutir sans le (4) — une entrée à `light`/`cover`/`opaque` SANS
- * `maison` est non migrée, avec `maison` elle l'est. Rejoué sur l'état final, le script n'écrit rien.
+ * `maison` est non migrée, avec `maison` elle l'est. Rejoué sur l'état final, le script
+ * n'écrit rien : le no-op se décide sur les CARDINAUX des quatre volets, jamais sur une égalité à
+ * l'octet du fichier entier.
  *
  * FAIL-FAST (porte de lecture, avant toute écriture) : racine non-tableau, forme non canonique,
  * cardinal d'entrées à règle inattendu, entrée à règle portant DÉJÀ `source` (arbitrage : ce script
@@ -310,11 +312,18 @@ const apres = avant.map((e) => {
   return ordonner(sortie);
 });
 
-const sortieTexte = JSON.stringify(apres, null, 2);
-if (sortieTexte === brut) {
-  console.log(`src/data/props.json : no-op (déjà migré — ${avant.filter(aUneRegle).length} entrée(s) à règle, toutes pourvues de \`maison\`)`);
+// NO-OP SÉMANTIQUE : ce script possède quatre gestes, et rien d'autre. Aucun geste à poser = rien
+// à écrire, quel que soit l'ordre des clés du fichier — `ordonner` normalise l'enveloppe des entrées
+// qu'il TOUCHE, et une égalité à l'octet ferait de cette normalisation une réécriture à elle seule.
+if (recales + allumes + foyers + provenances === 0) {
+  console.log(
+    `src/data/props.json : no-op (${recales} recalage(s), ${allumes} émetteur(s) neuf(s), ${foyers} foyer(s), `
+    + `${provenances} provenance(s) — ${avant.filter(aUneRegle).length} entrée(s) à règle, toutes pourvues de \`maison\`)`,
+  );
   process.exit(0);
 }
+
+const sortieTexte = JSON.stringify(apres, null, 2);
 
 fs.writeFileSync(CIBLE, sortieTexte, 'utf8');
 

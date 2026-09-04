@@ -113,11 +113,14 @@ const apres = avant.map((e) => {
   return reste;
 });
 
-const sortieTexte = JSON.stringify(apres, null, 2);
-if (sortieTexte === brut) {
-  console.log(`src/data/props.json : no-op (déjà migré — ${volumiques.length} recette(s), aucune ne porte \`foot\`)`);
+// NO-OP SÉMANTIQUE : ce script ne possède que le RETRAIT du `foot` des recettes. Aucun à retirer =
+// rien à écrire, quel que soit l'ordre des clés ou le formatage du fichier.
+if (retires === 0) {
+  console.log(`src/data/props.json : no-op (0 \`foot\` à retirer sur ${volumiques.length} recette(s))`);
   process.exit(0);
 }
+
+const sortieTexte = JSON.stringify(apres, null, 2);
 
 fs.writeFileSync(CIBLE, sortieTexte, 'utf8');
 

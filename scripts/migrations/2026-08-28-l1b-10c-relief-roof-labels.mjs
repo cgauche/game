@@ -64,6 +64,7 @@ for (const lot of LOTS) {
   }
   const vus = new Set();
   const sortie = [];
+  let poses = 0;
   let ko = false;
   for (const [i, entree] of data.entries()) {
     if (!entree || typeof entree !== 'object' || typeof entree.id !== 'string' || entree.id === '') {
@@ -83,6 +84,7 @@ for (const lot of LOTS) {
       continue;
     }
     vus.add(entree.id);
+    if (entree.label === undefined) poses++;
     const { id, label: _mort, ...reste } = entree;
     sortie.push({ id, label, ...reste });
   }
@@ -92,7 +94,7 @@ for (const lot of LOTS) {
     ko = true;
   }
   if (ko) continue;
-  ecrits.push({ lot, cible, brut, out: JSON.stringify(sortie, null, 2), n: sortie.length });
+  ecrits.push({ lot, cible, brut, out: JSON.stringify(sortie, null, 2), n: sortie.length, poses });
 }
 
 if (erreurs.length) {
@@ -102,16 +104,20 @@ if (erreurs.length) {
 }
 
 const echecs = [];
-for (const { lot, cible, brut, out, n } of ecrits) {
-  if (out !== brut) fs.writeFileSync(cible, out, 'utf8');
-  // PREUVE post-écriture : cardinal conservé, `label` non vide en 2ᵉ clé, égal à l'arbitrage.
+for (const { lot, cible, out, n, poses } of ecrits) {
+  // NO-OP SÉMANTIQUE : ce script ne possède que la POSE du `label` arbitré — les labels déjà
+  // présents sont vérifiés égaux à l'arbitrage par la porte ci-dessus. Aucun à poser = rien à écrire,
+  // quel que soit l'ordre des clés : l'insertion de `label` en 2ᵉ clé est une normalisation
+  // d'enveloppe, et une égalité à l'octet en ferait une réécriture à elle seule.
+  if (poses > 0) fs.writeFileSync(cible, out, 'utf8');
+  // PREUVE post-écriture : cardinal conservé, `id` en tête, `label` non vide égal à l'arbitrage.
   const apres = JSON.parse(fs.readFileSync(cible, 'utf8'));
   if (apres.length !== n) echecs.push(`POST — ${lot.fichier} : ${apres.length} entrée(s) ≠ ${n}`);
   for (const e of apres) {
     if (e.label !== lot.labels[e.id] || !e.label) echecs.push(`POST — ${lot.fichier} : ${e.id} label ${JSON.stringify(e.label)} ≠ arbitrage`);
-    if (Object.keys(e).slice(0, 2).join(',') !== 'id,label') echecs.push(`POST — ${lot.fichier} : ${e.id} clés de tête ${Object.keys(e).slice(0, 2).join(',')} ≠ id,label`);
+    if (Object.keys(e)[0] !== 'id') echecs.push(`POST — ${lot.fichier} : ${e.id} première clé ${Object.keys(e)[0]} ≠ id`);
   }
-  console.log(`${out === brut ? 'no-op' : 'migré'} ${path.basename(lot.fichier)} — ${apres.length} label(s) arbitré(s)`);
+  console.log(`${poses === 0 ? 'no-op' : 'migré'} ${path.basename(lot.fichier)} — ${poses} label(s) posé(s), ${apres.length} arbitré(s)`);
 }
 
 if (echecs.length) {

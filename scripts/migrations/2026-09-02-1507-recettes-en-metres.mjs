@@ -259,18 +259,21 @@ function opsEnMetres(noeud) {
 }
 
 // ————————————————————————————————— ÉCRITURE —————————————————————————————————
+// NO-OP SÉMANTIQUE : ce script ne possède que les conversions en mètres et la phrase de provenance
+// qui les suit. Aucune à faire = rien à écrire, quel que soit l'ordre des clés ou le formatage des
+// fichiers. `opsEnMetres` compte en rendant : ses sorties se calculent AVANT la porte.
+const sortiesOps = Object.fromEntries(Object.keys(ATTENDU.ops).map((f) => [f, JSON.stringify(opsEnMetres(datasetsOps[f].doc), null, 2)]));
+if (primitivesConverties + ancresConverties + sourcesConverties + provenancesReecrites + opsConverties === 0) {
+  console.log(`src/data : no-op (0 conversion — ${ATTENDU.recettes} recette(s) et ${ATTENDU.sources} source(s) déjà en mètres)`);
+  process.exit(0);
+}
+
 const ecrits = [];
 const sortieProps = JSON.stringify(apresProps, null, 2);
 if (sortieProps !== props.brut) { fs.writeFileSync(chemin('props.json'), sortieProps, 'utf8'); ecrits.push('props.json'); }
 
 for (const f of Object.keys(ATTENDU.ops)) {
-  const sortie = JSON.stringify(opsEnMetres(datasetsOps[f].doc), null, 2);
-  if (sortie !== datasetsOps[f].brut) { fs.writeFileSync(chemin(f), sortie, 'utf8'); ecrits.push(f); }
-}
-
-if (!ecrits.length) {
-  console.log(`src/data : no-op (déjà migré — ${ATTENDU.recettes} recette(s) et ${ATTENDU.sources} source(s) en mètres)`);
-  process.exit(0);
+  if (sortiesOps[f] !== datasetsOps[f].brut) { fs.writeFileSync(chemin(f), sortiesOps[f], 'utf8'); ecrits.push(f); }
 }
 
 // ── PREUVE post-écriture : le facteur est EXACT (diviser par 2 rend la valeur d'entrée, valeur par
