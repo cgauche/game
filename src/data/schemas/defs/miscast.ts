@@ -14,7 +14,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { diceSpecSchema, formulaSinSchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
-import { refOuSpec } from '../grammaire/ref';
+import { idDe, refOuSpec } from '../grammaire/ref';
 
 export const file = 'miscast.json';
 export const famille = 'entite';
@@ -54,6 +54,13 @@ const jsonOpSchema = z.strictObject({
   id: z.string().optional(),
   value: formulaSinSchema.optional(),
   durationRounds: formulaSinSchema.optional(),
+  /** État RÉCURRENT (`GameOp['condition'].perRound`) : l'op est RE-JOUÉE à chaque fin de Round tant
+   *  que l'effet porteur dure (`durationRounds` en dit la durée). `LDB 40 l.75`, `LDB 16 l.117`. */
+  perRound: z.literal(true).optional(),
+  /** Gate d'État de l'op `condition`, recopiée littéralement par `expandOp` (`engine/miscast.ts`) :
+   *  une RÉFÉRENCE à `etats.json`, donc posée par la fabrique. (`id` reste `z.string()` : polymorphe
+   *  dans ce dialecte plat — État, Compétence ou table selon l'`op` de la ligne.) */
+  unlessCondition: idDe('etat').optional(),
   amount: formulaSinSchema.optional(),
   /** Mitigation DÉCLARÉE du `wounds` (garde `wounds-mitigation-declaree`) — recopiée telle quelle
    *  par `expandOp` : « qui ignorent les PA » seuls (Poupée de chiffon, LDB 46) ≠ « qui ignorent le
@@ -67,7 +74,7 @@ const jsonOpSchema = z.strictObject({
   rounds: formulaSinSchema.optional(),
   hours: formulaSinSchema.optional(),
   minutes: formulaSinSchema.optional(),
-  days: z.number().optional(),
+  days: formulaSinSchema.optional(),
   escapeStrength: engineFormulaSchema.optional(),
 });
 

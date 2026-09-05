@@ -45,14 +45,16 @@ import { stepProlonger } from '../rollSeam';
 // ============================================================================================
 
 registerCombatHook({
-  id: 'end-of-round', // effets périodiques d'États — RNG. endOfRound : récupération du Sonné (Test) +
-  // décrément des durées. Dégâts par-round (Empoisonné/En Flammes/Hémorragique) + auto-dissipation
-  // (Aveuglé/Assourdi/Surpris) MIGRÉS en données (effects: onRoundEnd), dispatchés par le DISPATCHER UNIQUE.
+  id: 'end-of-round', // frontière de Round — RNG. endOfRound : rejeu des ops RÉCURRENTES portées par les
+  // effets actifs, puis décrément des durées (effets, États de sort, contrecoups). Ce que les ÉTATS font
+  // en fin de Round (dégâts d'Empoisonné/En Flammes/Hémorragique, Test du Sonné, auto-dissipation
+  // d'Aveuglé/Assourdi/Surpris) vit en DONNÉE (`etats.json`, effects: onRoundEnd) et passe par le
+  // DISPATCHER UNIQUE ci-dessous, pas par `endOfRound`.
   phase: 'onRoundEnd',
   order: 10,
   run: ({ get, set, battle, sink }) => {
     for (const c of battle.combatants) {
-      endOfRound(c, battleRng()).forEach((l) => sink(l, c)); // machinerie : récupération du Sonné + décrément des durées
+      endOfRound(c, battleRng()).forEach((l) => sink(l, c)); // machinerie : ops récurrentes + décrément des durées
       // Dispatch UNIQUE des effets `onRoundEnd` (États : dégâts/dissipation ; Traits/Talents : réactions) —
       // fireTriggers réunit toutes les sources, aucun chemin par-kind. Inerte sans donnée. Pas de réaction
       // de fin de Round pour un combattant HORS COMBAT (un cadavre ne brûle/saigne plus — le dispatcher
@@ -78,10 +80,10 @@ registerCombatHook({
     }
   },
 });
-// (Résistance à l'Empoisonné — LDB 16 l.70-72 : retire 1+DR pions sur succès, puis Exténué quand vidé — n'est
-//  PLUS un hook impératif : c'est un effet `onRoundEnd` à nœud `test` en DONNÉES (etats.json), résolu par le
-//  DISPATCHER UNIQUE — ennemi/auto inline, héros manuel → étape de cascade collectée ci-dessous. Hors combat :
-//  inline générique, cf. outOfCombatUpkeep. Plus de `poisonResistValue`/`poisonResistApply` par-nom.)
+// Résistance à l'Empoisonné (`LDB 16 l.70-72`) : effet `onRoundEnd` à nœud `test` en DONNÉES
+// (`etats.json` — retire 1+DR pions sur succès, puis Exténué quand vidé), résolu par le DISPATCHER
+// UNIQUE : ennemi/auto inline, héros manuel → étape de cascade collectée ci-dessous ; hors combat,
+// inline générique (`outOfCombatUpkeep`).
 registerCombatHook({
   id: 'refresh-wounds', // dissipation d'un buff F/E/FM → recale les Blessures (LDB 85)
   phase: 'onRoundEnd',
@@ -378,7 +380,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   //    chaque État porté dont la donnée déclare un `effects: onRoundEnd` à nœud `test` devient une étape
   //    `triggeredTest` INFLUENÇABLE, bâtie depuis la MÊME donnée que la voie inline (ennemi/auto) et hors-combat
   //    (`simpleTriggeredTestStep`). Les DÉGÂTS périodiques ont DÉJÀ été appliqués par le dispatcher (hook
-  //    `end-of-round`) ; seul le TEST passe en cascade. En TÊTE (physiologique). Plus de `poisonResist` par-nom.
+  //    `end-of-round`) ; seul le TEST passe en cascade. En TÊTE (physiologique).
   steps.push(...collectRoundEndTestSteps(get, c));
   // 0bis) Perte de sang AA (AA 07 l.5) : en mode Aux Armes, à 0 PB avec l'État Hémorragique, Test de Résistance
   //    Intermédiaire chaque Round ou Inconscience — étape INFLUENÇABLE (le hook `aa-bleed-unconscious` saute

@@ -242,7 +242,13 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "merchants.json", champ: "subTypes", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "merchants.json", champ: "categories", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "miscast.json", champ: "onFail", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "miscast.json", champ: "ops", occurrences: 38, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // 38 → 39 (#1653 train A, 2026-09-04) : la rangée 81-87 de la Colère des dieux gagne UNE op qui
+  // désigne un État (la cause récurrente de « Purifier la chair », LDB 40 l.75). Le champ MESURÉ est le
+  // CONTENEUR `ops` (signature de l'objet-op), pas le champ de référence : son `unlessCondition` a bien
+  // ADOPTÉ la fabrique (`idDe('etat')`, `defs/miscast.ts`) et est un slot DÉCLARÉ résolu, sans que la
+  // ligne du porteur se solde — angle mort DIT du volet (`ANGLES_MORTS_SLOTS` : la projection path →
+  // champ retient le dernier segment-clé, jamais le champ porteur observé).
+  { dataset: "miscast.json", champ: "ops", occurrences: 39, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "miscast.json", champ: "skill", occurrences: 26, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "montures.json", champ: "creatureIds", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "mutations.json", champ: "eyes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

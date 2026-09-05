@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { isMenaceId, menaceIds } from '../../../engine/menace';
 import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/types';
 import type { StakeRef } from '../../index';
-import type { GameOp } from '../../../engine/ops';
+import { messageRecurrenceHorloge, type GameOp } from '../../../engine/ops';
 import type { Condition, EffectOp, Flow } from '../../../engine/flowCore';
 import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption } from './valeurs';
 import { marque } from './slots';
@@ -102,10 +102,23 @@ export const OPS_NON_TYPEES: readonly string[] = [
 ];
 
 /**
+ * Refus qui portent sur une op encore LOOSE (`OPS_NON_TYPEES`) : ce que le payload strict dirait s'il
+ * existait, dit AU PARSE plutôt qu'à l'application. Une entrée meurt avec le typage de son op.
+ * — `condition` : `perRound` + durée d'HORLOGE, refusé mot pour mot comme `applyOps` le lève
+ *   (`messageRecurrenceHorloge`, `engine/ops.ts`).
+ */
+function refusLoose(v: Record<string, unknown>, ctx: z.RefinementCtx): void {
+  if (v.op === 'condition' && v.perRound === true && (v.durationMinutes != null || v.durationHours != null)) {
+    ctx.addIssue({ code: 'custom', path: ['perRound'], message: messageRecurrenceHorloge(String(v.id ?? '')) });
+  }
+}
+
+/**
  * Un `GameOp` (`src/engine/ops.ts`) tel qu'il apparaît en DONNÉE. Une op de `OP_DEFS` est validée sur
- * son payload STRICT ; une op de `OPS_NON_TYPEES` garde la forme LOOSE ; une op inconnue des DEUX
- * registres est NOMMÉE en erreur. Ce rouge vit ICI et nulle part ailleurs : la clé `op` est
- * surchargée en donnée (les comparateurs `>=`/`<=`/`==` d'une `Condition` la portent aussi).
+ * son payload STRICT ; une op de `OPS_NON_TYPEES` garde la forme LOOSE (aux refus de `refusLoose`
+ * près) ; une op inconnue des DEUX registres est NOMMÉE en erreur. Ce rouge vit ICI et nulle part
+ * ailleurs : la clé `op` est surchargée en donnée (les comparateurs `>=`/`<=`/`==` d'une `Condition`
+ * la portent aussi).
  */
 export const gameOpSchema: z.ZodType<GameOp> = z.looseObject({ op: z.string() }).superRefine((v, ctx) => {
   const payload = OP_DEFS[v.op];
@@ -114,7 +127,7 @@ export const gameOpSchema: z.ZodType<GameOp> = z.looseObject({ op: z.string() })
     if (!res.success) for (const issue of res.error.issues) ctx.addIssue({ code: 'custom', path: issue.path, message: `GameOp « ${v.op} » : ${issue.message}` });
     return;
   }
-  if (OPS_NON_TYPEES.includes(v.op)) return;
+  if (OPS_NON_TYPEES.includes(v.op)) { refusLoose(v, ctx); return; }
   ctx.addIssue({
     code: 'custom',
     path: ['op'],

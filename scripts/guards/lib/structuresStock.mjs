@@ -373,6 +373,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "miscast.json", champ: "onFail", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "miscast.json", champ: "onFail", signature: "op+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "miscast.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 31, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "miscast.json", champ: "ops", signature: "id,unlessCondition,value+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // NEUF (#1653 train A) : « Purifier la chair » (LDB 40 l.75) gate sa cause récurrente sur l'État qu'elle pose (LDB 16 l.117)
   { concept: "reference", dataset: "miscast.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "miscast.json", champ: "ops", signature: "op+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "mutations.json", champ: "eyes", signature: "G", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -794,7 +795,7 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualitySubtypes.json", chemin: "(entrées)", entrees: 3, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualityTypes.json", chemin: "(entrées)", entrees: 2, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 9, lot: "L1d #1469", date: "2026-08-23" }, // +1 : dette « Option Attraper Froid » (mue pneumonie), EDOC 09 (#674)
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 10, lot: "L1d #1469", date: "2026-08-23" }, // +1 : dette « Option Attraper Froid » (mue pneumonie), EDOC 09 (#674) ; +1 : dette de la Colère des dieux, LDB 40 (#1653)
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "reliefMaterials.json", chemin: "(entrées)", entrees: 6, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "renduMonte.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "river-perils.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
@@ -1015,6 +1016,7 @@ export const STRUCTURES_OPS = [
   { op: "condition", signature: "id,op,value", dataset: "maneuvers.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "durationHours,id,op", dataset: "trappings.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "durationRounds,id,op", dataset: "miscast.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "condition", signature: "durationRounds,id,op,perRound,unlessCondition,value", dataset: "miscast.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" }, // NEUF (#1653 train A) : la cause récurrente de « Purifier la chair », 1d10 Rounds (LDB 40 l.75, LDB 16 l.117)
   { op: "condition", signature: "escapeStrength,id,op,unlessCondition,value", dataset: "qualities.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "escapeStrength,id,op,value", dataset: "miscast.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "escapeStrength,id,op,valuePerSL", dataset: "spells.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },

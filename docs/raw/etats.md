@@ -69,7 +69,7 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.11-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `doc`, `STABLE_COND_KINDS`, `addCondition`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `addClockCondition`, +52 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +18 fichiers
+- `LDB 16` (l.11-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `doc`, `jsonOpSchema`, `STABLE_COND_KINDS`, `addCondition`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, +59 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, `src/engine/combat.ts`, +22 fichiers
 
 ---
 
@@ -199,7 +199,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Empoignade (`combat.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.60-66, l.72) → `combat-fatigue`, `doc`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `describeStateRecovery`, `PendingStateRecovery`, +24 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +16 fichiers
+- `LDB 16` (l.60-66, l.72) → `combat-fatigue`, `doc`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `describeStateRecovery`, `PendingStateRecovery`, +23 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +16 fichiers
 
 ---
 
@@ -226,7 +226,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Exténué, Drogues et poisons (`LDB 71`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-78) → `combat-fatigue`, `doc`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, +22 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +15 fichiers
+- `LDB 16` (l.68-78) → `combat-fatigue`, `doc`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `describeStateRecovery`, +22 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +15 fichiers
 
 ---
 
@@ -311,7 +311,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Inconscient, Traumatisme (`traumatisme.md`), Maladies (`maladies.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.103-109) → `combat-fatigue`, `unstable`, `doc`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `brise`, `needsRecoveryRoll`, `sleepParty`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +13 fichiers
+- `LDB 16` (l.103-109) → `combat-fatigue`, `unstable`, `doc`, `jsonOpSchema`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `opRow`, `brise`, +35 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, `src/engine/combat.ts`, +18 fichiers
 
 ---
 
@@ -335,7 +335,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Hémorragique, Empoisonné, À Terre, Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.111-119) → `combat-fatigue`, `unstable`, `doc`, `STABLE_COND_KINDS`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `brise`, `needsRecoveryRoll`, +32 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +13 fichiers
+- `LDB 16` (l.111-119) → `combat-fatigue`, `unstable`, `doc`, `jsonOpSchema`, `STABLE_COND_KINDS`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `opRow`, +40 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, `src/engine/combat.ts`, +18 fichiers
 
 ---
 
@@ -359,7 +359,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Exténué, Magie (`magie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.123-129) → `doc`, `STABLE_COND_KINDS`, `mouvementIntact`, `useAttackJetProps`, `hitModifiers`, `buildExposureBand`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `combat-helpless-mode`, `pickDoctrine`, +21 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/state/actionRegistry.ts`, +8 fichiers
+- `LDB 16` (l.123-129) → `doc`, `jsonOpSchema`, `STABLE_COND_KINDS`, `mouvementIntact`, `useAttackJetProps`, `hitModifiers`, `opRow`, `replieCausesPersistantes`, `buildExposureBand`, `DOCTRINES`, +29 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +13 fichiers
 
 ---
 
@@ -420,7 +420,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.27-139` — descriptions individuelles
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.15-17, l.27-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `doc`, `STABLE_COND_KINDS`, `addCondition`, `StateRecoveryModal`, `mouvementIntact`, `EnemyAction`, `stopBleedOutcome`, +83 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +29 fichiers
+- `LDB 16` (l.15-17, l.27-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `doc`, `jsonOpSchema`, `STABLE_COND_KINDS`, `addCondition`, `StateRecoveryModal`, `mouvementIntact`, `EnemyAction`, +89 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +33 fichiers
 
 ---
 
@@ -470,18 +470,18 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 
 **LDB 40 (Colère des dieux) — cas complémentaires** :
 - **01-05** : Test de **Résistance Accessible (+20)** sinon gain de **1 État Sonné**. `LDB 40 l.56`
-- **16-20** : **État À Terre** qui ne peut être retiré qu'en réussissant un Test de **Prière Accessible (+20)** (retrait conditionnel liturgique). `LDB 40 l.60-61`
-- **36-40** : Test de **Résistance Accessible (+20)** sinon gain de **1 État Sonné**. `LDB 40 l.70`
-- **41-45** : les **cibles** (pas le lanceur) gagnent l'**État À Terre** et ne peuvent plus être soignées par la divinité pendant 1d10 + Péchés jours. `LDB 40 l.71-72`
-- **51-55** : Test de **Résistance Intermédiaire (+0)** sinon **1 État Sonné**. `LDB 40 l.82`
-- **61-65** : gain de **1 + (Points de Péché) États Hémorragique** (cumul variable selon la piété). `LDB 40 l.86`
-- **66-70** : **État À Terre** + **1 + (Points de Péché) États Aveuglé**, ces États Aveuglé **ne peuvent être retirés que par un Test de Prière Intermédiaire (+0)** (1 + DR États retirés). `LDB 40 l.87-88`
-- **71-75** : Test de **Résistance Complexe (-10)** sinon **1 État Sonné**. `LDB 40 l.90`
-- **81-87** : Test de **Résistance Difficile (-20)** sinon **1 État Sonné** ; si résultat ≤ -4 DR : **1 État Inconscient** qui dure un minimum de **1d10 Rounds** (durée minimum garantie). `LDB 40 l.94-95`
-- **89-95** : gain de **1 + (Points de Péché) États Brisé** (cumul variable selon la piété). `LDB 40 l.99`
-- **101-105** : PB réduits à 0 + **État Inconscient** qui ne peut être retiré **qu'après récupération d'au moins 1 PB** (déjà documenté). `LDB 40 l.101-101`
-- **126-130** : PB réduits à 0 + gain de l'**État Enflammé** (= En flammes). `LDB 40 l.101-101`
-- **131-135** : gain de **1 + (Points de Péché) États Hémorragique chaque matin** jusqu'à accomplissement d'une Pénitence (durée indéfinie/permanente jusqu'à condition remplie). `LDB 40 l.101-101`
+- **16-20** : **État À Terre** qui ne peut être retiré qu'en réussissant un Test de **Prière Accessible (+20)** (retrait conditionnel liturgique). `LDB 40 l.59`
+- **36-40** : Test de **Résistance Accessible (+20)** sinon gain de **1 État Sonné**. `LDB 40 l.63`
+- **41-45** : les **cibles** (pas le lanceur) gagnent l'**État À Terre** et ne peuvent plus être soignées par la divinité pendant 1d10 + Péchés jours. `LDB 40 l.64`
+- **51-55** : Test de **Résistance Intermédiaire (+0)** sinon **1 État Sonné**. `LDB 40 l.68`
+- **61-65** : gain de **1 + (Points de Péché) États Hémorragique** (cumul variable selon la piété). `LDB 40 l.71`
+- **66-70** : **État À Terre** + **1 + (Points de Péché) États Aveuglé**, ces États Aveuglé **ne peuvent être retirés que par un Test de Prière Intermédiaire (+0)** (1 + DR États retirés). `LDB 40 l.72`
+- **71-75** : Test de **Résistance Complexe (-10)** sinon **1 État Sonné**. `LDB 40 l.73`
+- **81-87** : « Effectuez aussi un Test de Résistance Difficile (-20). Sur un échec, vous gagnez 1 État Sonné. Si vous échouez avec -4 DR ou moins, gagnez 1 État Inconscient qui dure un minimum de 1d10 Rounds. » `LDB 40 l.75` — retrait par Détermination : « Si vous dépensez un Point de Détermination pour vous débarrasser d'un État *Inconscient*, mais que vous êtes toujours sujet aux causes de cette inconscience, vous gagnez un nouvel État *Inconscient* à la fin du Round. » `LDB 16 l.117`
+- **89-95** : gain de **1 + (Points de Péché) États Brisé** (cumul variable selon la piété). `LDB 40 l.77`
+- **101-105** : PB réduits à 0 + **État Inconscient** qui ne peut être retiré **qu'après récupération d'au moins 1 PB** (déjà documenté). `LDB 40 l.79`
+- **126-130** : PB réduits à 0 + gain de l'**État Enflammé** (= En flammes). `LDB 40 l.84`
+- **131-135** : gain de **1 + (Points de Péché) États Hémorragique chaque matin** jusqu'à accomplissement d'une Pénitence (durée indéfinie/permanente jusqu'à condition remplie). `LDB 40 l.85`
 
 **Sources RAW** :
 - `EDO App.2 l.129-137` — délire : durées en heures pour Inconscient, Exténué, Sonné
@@ -501,18 +501,19 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 - `LDB 46 l.75` — Contrecoup Majeur Secousse du Chaos : À Terre zone
 - `LDB 46 l.78` — Contrecoup Majeur Terrible affaiblissement : À Terre + Exténué
 - `LDB 46 l.80` — Contrecoup Majeur Contre-réaction : À Terre zone (rayon BFM)
-- `LDB 40 l.56, l.76, l.88, l.96` — Colère des dieux : États Sonné (tests Résistance variés)
-- `LDB 40 l.60-61` — Colère des dieux 16-20 : À Terre non retirable sans Test Prière
-- `LDB 40 l.71-72` — Colère des dieux 41-45 : cibles gains À Terre
-- `LDB 40 l.86` — Colère des dieux 61-65 : 1+Péchés Hémorragique
-- `LDB 40 l.87-88` — Colère des dieux 66-70 : À Terre + Aveuglé non retirables sans Prière
-- `LDB 40 l.94-95` — Colère des dieux 81-87 : Sonné + Inconscient 1d10 Rounds min
-- `LDB 40 l.99` — Colère des dieux 89-95 : 1+Péchés Brisé
-- `LDB 40 l.101-101` — Colère des dieux 126-130 : En flammes
-- `LDB 40 l.101-101` — Colère des dieux 131-135 : Hémorragique quotidien jusqu'à Pénitence
+- `LDB 40 l.56, l.63, l.68, l.73` — Colère des dieux : États Sonné (tests Résistance variés)
+- `LDB 40 l.59` — Colère des dieux 16-20 : À Terre non retirable sans Test Prière
+- `LDB 40 l.64` — Colère des dieux 41-45 : cibles gains À Terre
+- `LDB 40 l.71` — Colère des dieux 61-65 : 1+Péchés Hémorragique
+- `LDB 40 l.72` — Colère des dieux 66-70 : À Terre + Aveuglé non retirables sans Prière
+- `LDB 40 l.75` — Colère des dieux 81-87 : Sonné + « 1 État Inconscient qui dure un minimum de 1d10 Rounds »
+- `LDB 40 l.77` — Colère des dieux 89-95 : 1+Péchés Brisé
+- `LDB 40 l.84` — Colère des dieux 126-130 : En flammes
+- `LDB 40 l.85` — Colère des dieux 131-135 : Hémorragique quotidien jusqu'à Pénitence
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `SinPoints`, `liveTableDecl`, `peche`, `wrath-table`, `sinPointsSchema`, `ALL_MAGIC`, `prayer-conviction`, `miscastOpRow`, `miscast-colere`, +35 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/grammaire/valeurs.ts`, `src/engine/miscast.ts`, +6 fichiers
+- `LDB 16` (l.117) → `doc`, `jsonOpSchema`, `mouvementIntact`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `opRow`, `replieCausesPersistantes`, `buildExposureBand`, `applyIncomingMeleeAdvantage`, +24 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/data/schemas/defs/miscast.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +13 fichiers
+- `LDB 40` (l.56, l.59, l.63, l.64, l.68, l.71, l.72, l.73, l.75, l.77, l.79, l.84, l.85) → `jsonOpSchema`, `NestedTest`, `SinPoints`, `applyTriggeredTestBranch`, `liveTableDecl`, `peche`, `wrath-table`, `GameOp`, `sinPointsSchema`, `ALL_MAGIC`, +39 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/raw.manifest.json` ⚠hors-app, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/miscast.ts`, +10 fichiers
 - `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `miscast-mineure`, `mineure-signe-de-sorciere`, `followsCharacterRules`, `mineure-lait-caille`, `overcastAxes`, `mineure-mildiou`, `MiscastResult`, `mineure-cerumen`, `combat-spell-plus`, `mineure-lueur-occulte`, +101 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +18 fichiers
 
 ---

@@ -72,7 +72,7 @@ Exemple : BE = 4, PB restants = 2, Dégâts = 8 → PB fictifs = −6 → |−6|
 **Voir aussi** : déclenchement du Coup Critique → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) (LDB 13/14) ; tableaux complets → [§ 4](#4-tableaux-des-critiques--renvoi).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.17, l.22-38, l.53) → `criticals-ldb-tete`, `CritEntry`, `isHealable`, `blessure-spectaculaire`, `outOfCombatUpkeep`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `HealWoundsOptions`, `CritEscalation`, +116 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, +20 fichiers
+- `LDB 18` (l.17, l.22-38, l.53) → `criticals-ldb-tete`, `CritEntry`, `isHealable`, `blessure-spectaculaire`, `coupure-mineure`, `outOfCombatUpkeep`, `coup-a-l-il`, `frappe-a-l-oreille`, `HealWoundsOptions`, `CritEscalation`, +116 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, +20 fichiers
 
 ---
 

@@ -23,7 +23,7 @@ import { findTableEntry } from './tables';
 import { rule } from './policy';
 import { findDomainById, combatStakeRef } from '../data';
 import { GameOp, Formula } from './ops';
-import { Difficulty } from './types';
+import { CATEGORY_BY_SOURCE_KIND, type Difficulty, type EffectSource, type EffectSourceKind } from './types';
 import type { SkillRef } from './skills';
 // Type-only (effacé à la compilation, comme `domainAttributes`/`ops` importent déjà `TriggeredEffect`) :
 // le nœud de Test imbriqué d'une entrée de table EST un nœud de Flow `test` — la STRUCTURE de logique
@@ -74,8 +74,8 @@ interface NestedTest {
   difficulty: Difficulty;
   /** Ops appliqués au lanceur sur un ÉCHEC du Test (« ou Sonné »). */
   onFail: GameOp[];
-  /** Palier d'échec aggravé (Purifier la chair LDB 40 l.99-101 : « si vous échouez avec −4 DR ou moins
-   *  → 1 État Inconscient ») — appliqué EN PLUS d'`onFail` via une Condition Flow `slThreshold ≤ dr`. */
+  /** Palier d'échec aggravé (Purifier la chair `LDB 40 l.75`) — appliqué EN PLUS d'`onFail` via une
+   *  Condition Flow `slThreshold ≤ dr`. */
   onFailHard?: { dr: number; ops: GameOp[] };
 }
 
@@ -111,6 +111,9 @@ type JsonOp = {
   id?: string;
   value?: JsonFormula;
   durationRounds?: JsonFormula;
+  /** `GameOp['condition'].perRound` / gate d'État — LITTÉRAUX (pas des formules) : recopiés tels quels. */
+  perRound?: true;
+  unlessCondition?: string;
   /** `GameOp['condition'].escapeStrength` (Empêtré : force de désengagement, ex. Tenue indisciplinée
    *  LDB 46) — déjà une `Formula` runtime valide, jamais sin-paramétrée : copiée telle quelle. */
   escapeStrength?: Formula;
@@ -127,7 +130,7 @@ type JsonOp = {
   rounds?: JsonFormula;
   hours?: JsonFormula;
   minutes?: JsonFormula;
-  days?: number;
+  days?: JsonFormula;
 };
 
 /** Spec d'un test imbriqué telle que stockée dans le JSON (même forme que `NestedTest`, en `JsonOp[]`). */
@@ -190,6 +193,8 @@ function expandOp(op: JsonOp, sin: number): GameOp {
       if (op.durationRounds !== undefined) {
         base.durationRounds = resolveJsonFormula(op.durationRounds, sin);
       }
+      if (op.perRound) base.perRound = true;
+      if (op.unlessCondition !== undefined) base.unlessCondition = op.unlessCondition;
       if (op.escapeStrength !== undefined) {
         base.escapeStrength = op.escapeStrength;
       }
@@ -213,7 +218,7 @@ function expandOp(op: JsonOp, sin: number): GameOp {
       if (op.rounds !== undefined) base.rounds = resolveJsonFormula(op.rounds, sin);
       if (op.hours !== undefined) base.hours = resolveJsonFormula(op.hours, sin);
       if (op.minutes !== undefined) base.minutes = resolveJsonFormula(op.minutes, sin);
-      if (op.days !== undefined) base.days = op.days;
+      if (op.days !== undefined) base.days = resolveJsonFormula(op.days, sin);
       return base as unknown as GameOp;
     }
     default:
@@ -335,6 +340,21 @@ const RUNTIME_ROWS: Record<string, Row[]> = Object.fromEntries(
  *  révisée par VDM : la même table dans les deux jeux. */
 export function miscastTableId(severity: MiscastSeverity): string {
   return (rule('magic-vdm-incantation') === true ? TABLE_IDS_VDM : TABLE_IDS_LDB)[severity];
+}
+
+/** ENTITÉ SOURCE des effets posés par une rangée tirée (`OpsCtx.source` → `ActiveEffect.source`) : la
+ *  RANGÉE elle-même, dans la catégorie Codex que SA table DÉCLARE (`MiscastTableDef.codexCategory`, en
+ *  donnée). Une table de plus n'ajoute aucune ligne ici. Absente quand la table n'expose pas ses lignes
+ *  (aucune fiche à viser : une pastille reliée à rien ne promet rien, arbitrage user 2026-07-18). */
+export function miscastRowSource(tableId: string, rowId: string): EffectSource | undefined {
+  const categorie = MISCAST_TABLES.find((t) => t.id === tableId)?.codexCategory;
+  return categorie && estSourceKind(categorie) ? { kind: categorie, id: rowId } : undefined;
+}
+
+/** La catégorie déclarée est-elle un `kind` de source ? Lu dans la table TOTALE `CATEGORY_BY_SOURCE_KIND`
+ *  (`engine/types.ts`), jamais dans une liste parallèle. */
+function estSourceKind(categorie: string): categorie is EffectSourceKind {
+  return categorie in CATEGORY_BY_SOURCE_KIND;
 }
 
 /** Index CALCULÉ des tables (il SUIT `MISCAST_TABLE_ROWS` au lieu de le figer). */

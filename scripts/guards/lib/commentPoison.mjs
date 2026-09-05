@@ -272,6 +272,19 @@ const NO_MORE_ARTIFACT_RX = new RegExp(
 // aucune restriction de vocabulaire n'est nécessaire ici (locution sans emploi de jeu).
 const OF_YORE_RX = new RegExp('\\bd' + APOS + 'antan\\b', 'i');
 
+// La NATURE révolue d'un site : la négation temporelle dont le complément est le mot `code` lui-même.
+// Le lecteur ne peut pas ouvrir ce qui a disparu, et le contrat courant se dit au présent. Forme
+// ÉTROITE, complément FERMÉ à ce seul mot — population mesurée 2026-09-05 sur `src/**`+`scripts/**`
+// (4253 fichiers) : UN site, reformulé du même geste. Les LITTÉRAUX (formes couvertes, faux positifs
+// écartés) vivent dans `src/comment-poison-guard.test.ts` — jamais ici : le fichier de la garde est
+// lui-même scanné. ANGLE MORT ASSUMÉ, déclaré à l'en-tête du test : la même cessation devant un
+// artefact BACK-TICKÉ n'entre PAS dans la famille (48 sites au même relevé, en majorité des prédicats
+// VIVANTS sur une clé de donnée ou un nœud zod scellé — plus de faux positifs que de sites).
+const NO_MORE_CODE_RX = new RegExp(
+  '\\bn(?:' + APOS + '|e' + GAP + ')(?:est|sont)' + GAP + 'plus' + GAP + 'du' + GAP + 'code\\b',
+  'i',
+);
+
 // Le RAPPEL D'ANCIEN ÉTAT le plus courant du dépôt : la locution de cessation suivie d'un artefact
 // de CODE nommé, sans négation verbale (« … — plus de X », « (plus de X en dur) »). Même exigence
 // que la famille voisine : le complément doit nommer un artefact de code, jamais une ressource de
@@ -362,6 +375,7 @@ export const TOMBSTONE_FAMILIES = [
   { rx: EXTRACTED_FROM_RX, label: 'extrait de X (origine révolue du module)' },
   { rx: NO_MORE_ARTIFACT_RX, label: 'négation temporelle + artefact de code (état révolu)' },
   { rx: OF_YORE_RX, label: 'passé nostalgique (état révolu)' },
+  { rx: NO_MORE_CODE_RX, label: 'n’est plus du code (nature révolue du site)' },
   // #1486 : la locution de cessation NUE devant un artefact de code nommé — 8 vraies tombales sur les
   // 10 sites échantillonnés du 2026-08-23, sur une population de 248 commentaires ; le vocabulaire
   // fermé et les exclusions de quantité/comparaison ramènent cette population aux seuls artefacts.

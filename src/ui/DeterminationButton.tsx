@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Combatant } from '../engine/types';
 import { conditionMeta } from '../gameIso/effectIcons';
+import { conditionLabel } from '../data';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
 import { RULE_REF } from '../engine/ruleRefs';
@@ -36,9 +37,9 @@ export function DeterminationButton({ combatant, onSpend }: { combatant?: Combat
               setOpen(false);
               onSpend(c.id);
             }}
-            title={`Retirer 1 pion ${c.id}`}
+            title={`Retirer 1 pion ${conditionLabel(c.id)}`}
           >
-            <Icon id={conditionMeta(c.id).icon} size="sm" /> {c.id}
+            <Icon id={conditionMeta(c.id).icon} size="sm" /> {conditionLabel(c.id)}
             {c.value > 1 ? ` ×${c.value}` : ''}
           </button>
         ))}

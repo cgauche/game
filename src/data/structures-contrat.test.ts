@@ -974,7 +974,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // somment, cf. le cliquet `STRUCTURES_OPS` ci-dessus).
       // … puis 391 → 392 (#1657 B3-2b-c) : l'op `fall` NEUVE — les 5 rangées du gréement font tomber
       // (MDG 13 l.678-688), hauteur lue en donnée et non authorée au site.
-      'L1c #1468': 392,
+      // … puis 392 → 393 (#1653 train A, 2026-09-04) : la signature `condition {durationRounds, id, op,
+      // perRound, unlessCondition, value}` de « Purifier la chair » (LDB 40 l.75) — INSTANCE des deux
+      // signatures d'op déjà stockées de ce dataset (`condition {durationRounds,id,op}` et
+      // `condition {id,op,value}`), aucune forme neuve : la cause récurrente porte SA durée.
+      'L1c #1468': 393,
       // L1d #1469 : 62 → 61 (#1552) — « La Diligence » CITE désormais son folio à la racine
       // (`ennemi-dans-l-ombre` 12, la référence que son bloc narratif portait déjà en profondeur) ;
       // sa ligne « source | clé absente » est SOLDÉE.
@@ -1051,7 +1055,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // l'enum de la grammaire, un littéral d'enum n'ouvrant jamais de référence.
       // … puis 374 → 373 (#1657 B2c) : la ligne `river-criticals.json › onFail` MEURT à son tour — la
       // conséquence du coup à l'équipage rejoint `› ops` (4 → 5 occurrences), une seule graphie.
-      'L3 #1463': 373,
+      // … puis 373 → 374 (#1653 train A, 2026-09-04) : `miscast.json › ops` gagne la signature
+      // `id,unlessCondition,value+…` — MÊME famille que `id,value+…` déjà stockée (11+31 lignes) :
+      // le gate d'État d'une op récurrente désigne un État par son id NU, comme l'`id` frère.
+      // Elle s'éteindra avec eux (référence d'État à la forme cible), pas avant.
+      'L3 #1463': 374,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
@@ -1700,7 +1708,9 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // nulle sur ce compte (l'op naît, l'Indice n'en était pas une).
     // #1657 B3-2b-c : +5 ops `fall` (MDG 13 l.678-688) — les 5 rangées du gréement font TOMBER, et la
     // hauteur se lit dans la table par (Taille de coque × station), jamais authorée au site.
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2268);
+    // #1653 train A : +1 op authorée — la CAUSE récurrente de « Purifier la chair » (LDB 40 l.75) est une
+    // seconde op `condition` de la même rangée, pas un champ de plus sur la première.
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2269);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le

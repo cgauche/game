@@ -54,6 +54,7 @@ export const TYPES = {
   shipStation: { dataset: 'ship-stations.json', specsOpen: false },
   crewRole: { dataset: 'crew-roles.json', specsOpen: false },
   table: { dataset: 'tables.json', specsOpen: false },
+  etat: { dataset: 'etats.json', specsOpen: false },
   maladie: { dataset: 'maladies.json', specsOpen: false },
   symptome: { dataset: 'symptoms.json', specsOpen: false },
 } as const satisfies Record<string, CibleDeType>;

@@ -41,7 +41,7 @@ import { MORALE_FACTORS, MORALE_BANDS } from '../../engine/crewMorale';
 import { STEAM_BREAKDOWNS } from '../../engine/shipBuild';
 import { traumaLabelOf } from '../../engine/trauma';
 import { spellOps, type Flow, type FlowTestNode } from '../../engine/flowCore';
-import type { GameOp } from '../../engine/ops';
+import { estCausePersistante, type GameOp } from '../../engine/ops';
 import { noeudAmputation } from '../../engine/critical';
 import { CRIT_TABLE_LOCATION, type CritTableKey, type JeuDeCritique } from '../../data/criticals';
 import type { CrewTarget, ShipCritEntry } from '../../data/shipCriticals';
@@ -77,7 +77,7 @@ import { formatMoney, priceToMoney, type Money } from '../../engine/money';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
 import { opRows, tableRows } from './opRows';
-import { humanizeCastBonus } from './humanize';
+import { humanizeCastBonus, CAUSE_PERSISTANTE, replieCausesPersistantes } from './humanize';
 import { reverseGroups, bookContents } from './relations';
 import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL, formatManeuverMeasure } from './maneuverLabels';
 import { slugId } from '../../data/slug';
@@ -989,8 +989,11 @@ function miscastOpRow(o: Record<string, unknown>): CodexRow {
       const label = conditionLabel(id);
       const value = o.value != null ? miscastAmountLabel(o.value) : null;
       const dur = o.durationRounds != null ? `${miscastAmountLabel(o.durationRounds)} Round(s)` : undefined;
+      // CAUSE PERSISTANTE (`LDB 16 l.117`) : la rangée pose UN État et le MAINTIENT — la persistance se
+      // dit au BADGE de SA chip, du mot du journal et de la même forme que l'autre lecteur (`opRows`).
+      const badge = [estCausePersistante(o) ? CAUSE_PERSISTANTE : undefined, dur].filter((s): s is string => !!s).join(' · ') || undefined;
       const show = value && value !== '1' ? `${value} × ${label}` : label;
-      return { t: 'ref', category: 'etats', id, label, show, badge: dur };
+      return { t: 'ref', category: 'etats', id, label, show, badge };
     }
     case 'wounds': {
       // Mitigation DITE par la donnée (`ignoreTB`/`ignoreAP`), aux trois régimes du RAW — LDB 46
@@ -1008,7 +1011,7 @@ function miscastOpRow(o: Record<string, unknown>): CodexRow {
       const dur = o.rounds != null ? `${miscastAmountLabel(o.rounds)} Round(s)`
         : o.hours != null ? `${miscastAmountLabel(o.hours)} heure(s)`
         : o.minutes != null ? `${miscastAmountLabel(o.minutes)} minute(s)`
-        : o.days != null ? `${o.days as number} jour(s)` : undefined;
+        : o.days != null ? `${miscastAmountLabel(o.days)} jour(s)` : undefined;
       const eff = o.blocked ? 'Bloqué' : o.maxZeroDR ? 'DR plafonné à 0' : `${(o.mod as number | undefined) ?? 0}`;
       return skillId
         ? { t: 'ref', category: 'skills', id: skillId, label: refLabel('skills', skill!), show: `${eff}${dur ? ` (${dur})` : ''}` }
@@ -1026,9 +1029,9 @@ function miscastTestSection(t: NonNullable<MiscastRowEntry['test']>): CodexSecti
   const rows: CodexRow[] = [
     { t: 'kv', k: 'Test', v: `${who} ${DIFFICULTY_LABELS[t.difficulty as keyof typeof DIFFICULTY_LABELS]}` },
     { t: 'sub', label: 'Échec' },
-    ...t.onFail.map(miscastOpRow),
+    ...replieCausesPersistantes(t.onFail).map(miscastOpRow),
   ];
-  if (t.onFailHard) rows.push({ t: 'sub', label: `Échec ≤ DR ${t.onFailHard.dr}` }, ...t.onFailHard.ops.map(miscastOpRow));
+  if (t.onFailHard) rows.push({ t: 'sub', label: `Échec ≤ DR ${t.onFailHard.dr}` }, ...replieCausesPersistantes(t.onFailHard.ops).map(miscastOpRow));
   return { title: 'Test imbriqué', layout: 'list', rows };
 }
 
@@ -1039,7 +1042,7 @@ function miscastRowItem(e: MiscastRowEntry): CodexItem {
     sub: `d100 ${e.min}–${e.max}`,
     meta: facts(e.reroll ? fact('Relance', e.reroll === 'majeure' ? 'Cascade → Tableau Majeur' : 'Multiplication (2 tirages Mineurs)') : null),
     sections: sections(
-      e.ops?.length ? { title: 'Effet immédiat', layout: 'list', rows: e.ops.map(miscastOpRow) } : null,
+      e.ops?.length ? { title: 'Effet immédiat', layout: 'list', rows: replieCausesPersistantes(e.ops).map(miscastOpRow) } : null,
       e.test ? miscastTestSection(e.test) : null,
     ),
   });

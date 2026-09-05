@@ -57,6 +57,10 @@ const GARDE = {
       '« provisoire », « compatibilité ascendante » — aucun n’est détecté.',
     'Les motifs « fin du/de la <nom> » et « était <participe> » restent HORS des familles : mesurés le 2026-08-23 à ' +
       '71 et 2 commentaires, pour respectivement 1/10 et 0/2 vraies tombales dans l’échantillon — leur entrée coûterait plus de faux positifs que de sites.',
+    'La cessation devant un artefact BACK-TICKÉ (« plus de `poisonResistValue` ici ») reste HORS de la famille ' +
+      'tombale : mesurée le 2026-09-05 à 48 commentaires de `src/**`+`scripts/**`, en majorité des prédicats VIVANTS ' +
+      '(« une entrée portant déjà `id` et plus de `key` », « le nœud scellé n’expose plus de `.shape` ») — seule la ' +
+      'NATURE révolue (« n’est plus du code ») y entre, à 1 site mesuré.',
   ],
   baseline: {
     fichier: 'scripts/guards/lib/legacyVocabStock.mjs',
@@ -288,6 +292,19 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
   it('cas planté : le passé nostalgique nomme un état révolu, quel que soit son sujet (2026-07-30)', () => {
     expect(tombstonesIn('// DR maximum, plus le plancher 1 d’antan')).toContain('passé nostalgique (état révolu)');
     expect(tombstonesIn("// mêmes couleurs que la palette d'antan.")).toContain('passé nostalgique (état révolu)');
+  });
+
+  it('cas plantés : la NATURE révolue d’un site est une tombale (#1653, 2026-09-05)', () => {
+    const L = 'n’est plus du code (nature révolue du site)';
+    expect(tombstonesIn("// La Résistance à l'Empoisonné n'est PLUS du code moteur : elle vit en donnée.")).toContain(L);
+    expect(tombstonesIn('// Ces deux résolveurs ne sont plus du code : le dispatcher les joue.')).toContain(L);
+    expect(tombstonesIn("/** l'entretien n'est plus du\n *  code impératif. */")).toContain(L);
+  });
+
+  it('faux positifs écartés : le mot `code` au PRÉSENT et la quantité (2026-09-05)', () => {
+    expect(tombstonesIn('// ce module n’est que du code pur : aucune donnée ne s’y cache.')).toEqual([]);
+    expect(tombstonesIn('// le pion n’est plus du groupe du joueur après la capture.')).toEqual([]);
+    expect(tombstonesIn('// le décodage n’accepte plus du texte libre : un id, ou rien.')).toEqual([]);
   });
 
   it('cas planté : un commentaire neutre ne matche aucune famille (contrôle négatif)', () => {

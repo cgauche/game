@@ -10,6 +10,7 @@ import {
   creatures, maladies, maneuvers, mutations, qualities, regles, symptoms, talents, trappings, traits,
 } from '../data';
 import { ACTIVITIES } from '../engine/activities';
+import { MISCAST_TABLES } from '../engine/miscast';
 import { slugId } from '../data/slug';
 import { isFrenzied } from '../engine/psychology';
 import { conditionSeverity } from '../engine/conditions';
@@ -193,6 +194,10 @@ const CATALOGUE_HAS: Record<string, (id: string) => boolean> = {
   maneuvers: byId(maneuvers),
   creatures: byId(creatures),
   activities: byId(ACTIVITIES),
+  // Rangées des tableaux d'Incantation Imparfaite / de Colère des dieux, sous la catégorie que CHAQUE
+  // table déclare en donnée (`MiscastTableDef.codexCategory`) : une table de plus n'ajoute aucune ligne
+  // ici, et une table sans catégorie n'en ouvre aucune (ses lignes n'ont pas de fiche à viser).
+  ...Object.fromEntries(MISCAST_TABLES.flatMap((t) => (t.codexCategory ? [[t.codexCategory, byId(t.entries)] as const] : []))),
 };
 
 /** Catégories fouillées pour un `ActiveEffect.effectId` (ivresse, exposition, chanson de marin…), dans

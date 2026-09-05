@@ -11,6 +11,8 @@ import { SCHEMA_DEFS_SCENES } from '../_registry-scenes.generated';
 import { marqueDe, marquesPosées, marquesRetrouvées, profondeurDe, PROFONDEUR_MAX, slotsDe, defDe, enfantsDe } from './slots';
 import { idDe, ref, refs, pick, specRef } from './ref';
 import { actorRefSchema, conditionSchema, gameOpSchema, OP_DEFS, OPS_NON_TYPEES } from './mecanique';
+import { applyOps, messageRecurrenceHorloge } from '../../../engine/ops';
+import type { Combatant } from '../../../engine/types';
 
 const paths = (schema: unknown) => slotsDe('src/data', 'jouet.json', schema).map((s) => s.path);
 
@@ -130,6 +132,11 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // `gameOpSchema`, hors de la marche des defs — même angle mort que les `idDe('trait')` d'op.
       // L'`idDe('trait')` listé plus bas, lui, est un champ de def (`structures.ts › traits`) : il est
       // sur le chemin de la marche, donc compté.)
+      // +1 site ADOPTÉ (#1653 train A, 2026-09-04) : `defs/miscast.ts › jsonOpSchema.unlessCondition`
+      // — le gate d'État d'une op de rangée désigne une entrée d'`etats.json` (« Purifier la chair »
+      // gate sa cause récurrente sur l'Inconscient qu'elle pose, `LDB 40 l.75`). UNE instance de
+      // fabrique, retrouvée à 3 paths du même dialecte (`ops`, `test.onFail`, `test.onFailHard.ops`).
+      "idDe('etat')",
       "idDe('maladie')",
       // 1 → 2 (#1657 B3-2b-a) : `defs/ship-stations.ts › requiresTrait` porte EN DONNÉE le gate d'une
       // station (`cale` — MSRC 07 l.94 ; `nid-de-pie` — MDG 12 l.299), à côté de `defs/vehicles.ts ›
@@ -243,6 +250,24 @@ describe('OP_DEFS — payload strict par op, repli nominatif, rouge au SITE', ()
   it('une op NON TYPÉE garde la forme loose', () => {
     expect(OPS_NON_TYPEES).toContain('narrative');
     expect(gameOpSchema.safeParse({ op: 'narrative', text: 'un récit', quoiQueCeSoit: 3 }).success).toBe(true);
+  });
+
+  /** `condition` reste LOOSE, mais la combinaison que `applyOps` lève en plein combat (récurrence
+   *  comptée en Rounds vs durée d'HORLOGE) se refuse déjà AU PARSE, du MÊME message. */
+  it('une op LOOSE ne passe pas les refus mesurés : `condition` à `perRound` + durée d’horloge est refusée au PARSE', () => {
+    expect(OPS_NON_TYPEES).toContain('condition');
+    expect(gameOpSchema.safeParse({ op: 'condition', id: 'inconscient', perRound: true, durationRounds: 3 }).success).toBe(true);
+    for (const duree of [{ durationHours: 1 }, { durationMinutes: 30 }]) {
+      const res = gameOpSchema.safeParse({ op: 'condition', id: 'inconscient', perRound: true, ...duree });
+      expect(res.success, JSON.stringify(duree)).toBe(false);
+      expect(res.error!.issues.map((i) => i.path.join('.'))).toContain('perRound');
+      expect(res.error!.issues[0].message).toBe(messageRecurrenceHorloge('inconscient'));
+    }
+    expect(() => applyOps(
+      { id: 'c', label: 'Cobaye', kind: 'hero', characteristics: {}, wounds: { current: 5, max: 5 }, advantage: 0, conditions: [], movement: 4, weapons: [], armour: {}, skills: [], talents: [] } as unknown as Combatant,
+      [{ op: 'condition', id: 'inconscient', perRound: true, durationHours: 1 }],
+      {},
+    ), 'le PARSE et l’APPLICATION disent le même refus').toThrow(messageRecurrenceHorloge('inconscient'));
   });
 
   it('une op inconnue des DEUX registres est NOMMÉE en erreur', () => {

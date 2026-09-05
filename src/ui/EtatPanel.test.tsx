@@ -288,4 +288,20 @@ describe('EtatPanel', () => {
     // …et la pénalité RAW (« pour chaque orteil perdu, −1 Ag et −1 CC ») reste entière au TOTAL.
     expect(traumaCharPenalties(hero, 'agilite').reduce((s, n) => s + n, 0)).toBe(-2);
   });
+
+  /** Cause RÉCURRENTE d'un contrecoup (`op condition perRound` à durée intrinsèque — Purifier la
+   *  chair, `LDB 40 l.75`) : un `ActiveEffect` sans caractéristique se rend comme les autres effets
+   *  actifs — son LIBELLÉ (le nom de la rangée) et sa durée en Rounds. */
+  it('un effet actif à ops récurrentes s’affiche par son libellé et sa durée en Rounds', () => {
+    const hero = mkHero((c) => {
+      c.conditions = [{ id: 'inconscient', value: 1 } as never];
+      c.activeEffects = [{
+        label: 'Purifier la chair', bonus: 0, duration: { scale: 'rounds', left: 4 },
+        opsPerRound: [{ op: 'condition', id: 'inconscient', value: 1, unlessCondition: 'inconscient' }],
+      } as never];
+    });
+    const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
+    expect(html).toContain('Purifier la chair');
+    expect(html).toContain('4 Rounds');
+  });
 });

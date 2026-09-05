@@ -200,7 +200,7 @@ describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé 
 
   it('Sonné « jusqu’à Aide Médicale » (Épaule luxée/Genou démis) : `unlockBy:medicalAid` le retient, l’Aide le retire', () => {
     const c = C({ traumas: [{ label: 'x', location: 'brasD', awaitingMedicalAid: true, restoreDR: 6 }] });
-    addCondition(c, 'sonne', 1, undefined, undefined, 'medicalAid');
+    addCondition(c, 'sonne', 1, undefined, undefined, undefined, undefined, { unlockBy: 'medicalAid' });
     removeCondition(c, 'sonne'); // récupération d’État normale : INERTE (verrouillé)
     expect(hasCondition(c, 'sonne')).toBe(true);
     releaseConditionLocks(c, 'medicalAid'); // Aide reçue → l’acte retire l’État

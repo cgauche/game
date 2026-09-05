@@ -127,7 +127,7 @@ describe('PARITÉ STRICTE des lignes — le canal est additif, il ne touche à a
 describe('sites HORS applyOps — paramètre `emit` (LDB 18 verrous, durées de sort, maladies)', () => {
   it('releaseConditionLocks : un verrou levé notifie la PERTE de son État', () => {
     const c = hero();
-    addCondition(c, COND.hemorragique, 1, undefined, undefined, 'medicalAid');
+    addCondition(c, COND.hemorragique, 1, undefined, undefined, undefined, undefined, { unlockBy: 'medicalAid' });
     const { lines, seen } = withSpy((emit) => releaseConditionLocks(c, 'medicalAid', emit));
     expect(lines).toHaveLength(1);
     expect(seen).toEqual([{ stateId: COND.hemorragique, change: 'loss', targetId: 'h' }]);

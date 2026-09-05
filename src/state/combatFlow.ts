@@ -131,7 +131,7 @@ import { canCastFromGrimoire } from '../engine/grimoire';
 import { effectiveCastingNumber } from '../engine/castingNumber';
 import type { CastingNumberMod } from '../engine/castingNumber';
 import {
-  rollMiscast, componentDowngrade, miscastTableId, miscastRowAt, MISCAST_TABLES, MISCAST_TABLE_ROWS,
+  rollMiscast, componentDowngrade, miscastTableId, miscastRowAt, miscastRowSource, MISCAST_TABLES, MISCAST_TABLE_ROWS,
   type MiscastSeverity, type MiscastResult,
 } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty, hydrateTR } from '../engine/tests';
@@ -4150,6 +4150,10 @@ function finishMiscast(get: Get, set: SetFn, caster: Combatant, ctx: PendingMisc
     rng: battleRng(),
     label: m.label,
     now: get().gameTime,
+    // ANCRAGE DE RÈGLE des effets posés par le contrecoup : la RANGÉE tirée (`m.rowId`, l'autorité de
+    // ligne) dans la catégorie que sa table déclare — sans lui, la pastille d'un effet durable
+    // (« Purifier la chair », `LDB 40 l.75`) s'afficherait nue, sans fiche ni popover.
+    source: miscastRowSource(miscastTableId(severity), m.rowId),
     onCorruption: followsCharacterRules(caster) ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined,
   };
   lines.push(...applyOps(caster, m.ops, opsCtx));

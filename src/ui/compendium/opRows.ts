@@ -7,9 +7,9 @@
  * kind SANS id stable (invocation d'arme nommée, marqueur d'atelier…) ou pointant une catégorie hors
  * Codex tombe en `{t:'text'}`. JAMAIS `opSummary` (résumeur d'ATELIER, `editor/GameOpEditor.tsx`).
  */
-import { slBonus, type GameOp, type Formula, type PerSL } from '../../engine/ops';
+import { slBonus, estCausePersistante, type GameOp, type Formula, type PerSL } from '../../engine/ops';
 import type { CodexRow } from './registry';
-import { humanizeOp, humanizeFormula, humanizePerSL } from './humanize';
+import { humanizeOp, humanizeFormula, humanizePerSL, CAUSE_PERSISTANTE, replieCausesPersistantes } from './humanize';
 import { CHAR_LABELS, HIT_LOCATION_LABELS } from '../../engine/types';
 import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
 import { giveTrappingLabel } from '../../engine/items';
@@ -123,8 +123,13 @@ export function opRow(o: GameOp, ctx?: OpRowCtx): CodexRow {
       const n = resolvedCount(o.value, o.valuePerSL, ctx?.sl);
       const show = n != null ? `${n} × ${label}`
         : o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ${label}` : label;
+      // CAUSE PERSISTANTE (`LDB 16 l.117`) : l'op ne pose pas un État DE PLUS par Round — elle maintient
+      // celui-ci. La chip reste UNE, la persistance est dite au badge, du même mot que le journal.
+      const persistante = estCausePersistante(o);
+      const duree = o.durationRounds != null ? `${humanizeFormula(o.durationRounds)} ${plural(o.durationRounds, 'Round', 'Rounds')}` : undefined;
       const badge = [
-        o.durationRounds != null ? `${humanizeFormula(o.durationRounds)} ${plural(o.durationRounds, 'Round', 'Rounds')}` : o.perRound ? 'par Round' : undefined,
+        persistante ? CAUSE_PERSISTANTE : undefined,
+        duree ?? (!persistante && o.perRound ? 'par Round' : undefined),
         n == null && o.valuePerSL ? humanizePerSL(o.valuePerSL) : undefined,
       ].filter((s): s is string => !!s).join(' · ') || undefined;
       return { t: 'ref', category: 'etats', id: o.id, label, show, badge };
@@ -228,5 +233,5 @@ function opRowsForOp(o: GameOp, depth: number, ctx?: OpRowCtx): CodexRow[] {
 /** Une liste d'ops → SES lignes Codex, dans l'ordre (un `rollTable` s'expanse en ses rangées).
  *  `ctx` : le DR du jet réalisé quand ces lignes sont un VERDICT (cf. `OpRowCtx`). */
 export function opRows(ops: GameOp[], ctx?: OpRowCtx): CodexRow[] {
-  return ops.flatMap((o) => opRowsForOp(o, 0, ctx));
+  return replieCausesPersistantes(ops).flatMap((o) => opRowsForOp(o, 0, ctx));
 }

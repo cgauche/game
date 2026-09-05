@@ -612,6 +612,13 @@ export interface ConditionInstance {
   unlockBy?: ConditionUnlock;
 }
 
+/** Les DEUX verrous de retrait d'un `ConditionInstance`, groupés — argument unique d'`addCondition`
+ *  (prédicat d'état `LDB 18`, acte de soin `LDB 18`). */
+export interface ConditionLocks {
+  lockedUntil?: import('./flowCore').Condition;
+  unlockBy?: ConditionUnlock;
+}
+
 /** Acte de soin qui LÈVE un verrou d'État de Critique (LDB 18). `medicalAid` = une des 3 formes d'Aide
  *  Médicale (Guérison réussie / bandage-cataplasme / sort-prière de soin) ; `surgery` = acte de Chirurgie ;
  *  `magic` = soin magique (qui compte AUSSI comme Aide Médicale, LDB 18 l.311 → lève aussi `medicalAid`). */
@@ -664,7 +671,12 @@ export interface CastPenalty {
 export type EffectSourceKind =
   | 'spell' | 'prayer' | 'talent' | 'trait' | 'trapping' | 'quality' | 'disease' | 'symptom'
   | 'mutation' | 'condition' | 'psychology' | 'maneuver' | 'creature' | 'activity' | 'rule'
-  | 'tavernGame';
+  | 'tavernGame'
+  // Une RANGÉE tirée d'un tableau d'Incantation Imparfaite / de Colère des dieux (`LDB 46`, `LDB 40`) :
+  // l'entité source des effets d'un contrecoup est la LIGNE, dont la fiche Codex vit dans la catégorie
+  // que SA table déclare (`MiscastTableDef.codexCategory`). Le `kind` porte donc le NOM de cette
+  // catégorie, et `miscastRowSource` (`engine/miscast.ts`) est le seul à le fabriquer, depuis la donnée.
+  | 'miscastMinor' | 'miscastMajor' | 'miscastWrath';
 
 /** Catégorie Codex de CHAQUE nature de source — table TOTALE, SOURCE UNIQUE des deux consommateurs :
  *  le routage d'affichage d'une pastille (`chipCodex`, `src/gameIso/effectIcons.ts`) ET la descente de
@@ -676,6 +688,7 @@ export const CATEGORY_BY_SOURCE_KIND: Record<EffectSourceKind, string> = {
   quality: 'qualities', disease: 'maladies', symptom: 'symptoms', mutation: 'mutations',
   condition: 'etats', psychology: 'psychologies', maneuver: 'maneuvers', creature: 'creatures',
   activity: 'activities', rule: 'regles', tavernGame: 'tavernGames',
+  miscastMinor: 'miscastMinor', miscastMajor: 'miscastMajor', miscastWrath: 'miscastWrath',
 };
 
 /**

@@ -71,7 +71,8 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
   return Math.min(stacks, 1 + Math.max(0, dr));
 }
 
-export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition, unlockBy?: import('./types').ConditionUnlock, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number): void {
+export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number, locks?: import('./types').ConditionLocks): void {
+  const { lockedUntil, unlockBy } = locks ?? {};
   if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.7) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
   const existing = c.conditions.find((x) => x.id === name);
   if (existing) {
@@ -111,7 +112,7 @@ export function addTimedCondition(c: Combatant, name: string, value: number, rou
     // sinon : instance non temporisée — elle le reste.
     onConditionGained?.(c, name); // État empilé (gagné) → déclenche `onGainCondition`
   } else {
-    addCondition(c, name, value, escapeStrength, undefined, undefined, escapeThreshold, entangleOnFail, struggleDamage); // (déclenche déjà `onGainCondition`)
+    addCondition(c, name, value, escapeStrength, escapeThreshold, entangleOnFail, struggleDamage); // (déclenche déjà `onGainCondition`)
     c.conditions.find((x) => x.id === name)!.roundsLeft = rounds;
   }
 }
@@ -134,7 +135,7 @@ export function addClockCondition(c: Combatant, name: string, value: number, unt
     // sinon : instance non temporisée — elle le reste.
     onConditionGained?.(c, name); // État empilé (gagné) → déclenche `onGainCondition`
   } else {
-    addCondition(c, name, value, escapeStrength, undefined, undefined, escapeThreshold, entangleOnFail, struggleDamage); // (déclenche déjà `onGainCondition`)
+    addCondition(c, name, value, escapeStrength, escapeThreshold, entangleOnFail, struggleDamage); // (déclenche déjà `onGainCondition`)
     c.conditions.find((x) => x.id === name)!.untilTime = until;
   }
 }
@@ -517,13 +518,6 @@ export function isActionLocked(c: Combatant): boolean {
 }
 
 /**
- * (Résistance à l'Empoisonné — LDB 16 l.70-72 — n'est PLUS du code moteur : c'est un `effects: onRoundEnd`
- *  à nœud `test` dans `etats.json` (retire 1+DR via `removeCondition`, puis Exténué si vidé via `if`/
- *  `condition`), résolu par le DISPATCHER UNIQUE — cadence-aware en combat, inline hors-combat. Plus de
- *  `poisonResistValue`/`poisonResistApply` par-nom ici.)
- */
-
-/**
  * Fin de Round : dégâts périodiques (Hémorragique/Empoisonné/En flammes) et
  * dissipation des États temporaires (LDB 16). Retourne un journal.
  *
@@ -561,6 +555,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG, emit?: Condition
     // il ne se reconstruit pas.
     applyOps(c, e.opsPerRound, {
       label: e.label, rng, source: e.source, sourceSpellId: e.sourceSpellId, effectId: e.effectId, onCondition: emit,
+      rejeuRecurrent: true, // SEUL site qui pose le drapeau : ce qui suit est une RE-pose (`LDB 16 l.117`)
     }).forEach((l) => log.push(l));
   }
   // Décrément des durées (effets/États de sort/contrecoups) — SOURCE UNIQUE extraite, même emplacement

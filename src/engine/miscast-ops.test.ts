@@ -7,11 +7,13 @@ import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
 import { makeRNG } from './dice';
 import { rollMiscast } from './miscast';
-import { applyOps } from './ops';
+import { applyOps, type GameOp } from './ops';
 import {
   castingValue, castBlockedBy, prayerMaxZeroDR, evaluateCasting, castPenaltyMod,
 } from './magic';
-import { endOfRound } from './conditions';
+import { endOfRound, removeCondition, hasCondition, isMagicallyAsleep } from './conditions';
+import { outOfCombatUpkeep } from '../state/outOfCombatUpkeep';
+import type { Flow } from './flowCore';
 
 function hero(p: Partial<Combatant> = {}): Combatant {
   return {
@@ -278,5 +280,131 @@ describe('mitigation déclarée des Blessures — donnée → expandOp → apply
     const nu = hero({ armour: { tete: 3, brasG: 3, brasD: 3, corps: 3, jambeG: 3, jambeD: 3 } });
     applyOps(nu, [{ ...woundsOf('majeure', 'Choc aethyrique'), amount: 6 }], { rng: makeRNG(1) });
     expect(nu.wounds.current).toBe(4); // 6 pleines
+  });
+});
+
+describe('81-87 Purifier la chair — Inconscient tant que la Colère dure (LDB 40 l.75 + LDB 16 l.117)', () => {
+  /** Les ops du palier `onFailHard` (« −4 DR ou moins ») de la rangée, telles que la donnée les déplie. */
+  function opsDuPalier(): ReturnType<typeof rollMiscast>['ops'] {
+    for (let seed = 0; seed < 600; seed++) {
+      const r = rollMiscast('colere', makeRNG(seed), 0);
+      if (!r.label.startsWith('Purifier la chair')) continue;
+      const node: Flow = r.testFlow!;
+      if (node.kind !== 'test' || node.fail.kind !== 'seq') throw new Error('structure de la rangée inattendue');
+      const hard = node.fail.steps[1];
+      if (hard.kind !== 'if' || hard.then.kind !== 'do' || hard.then.effect.type !== 'ops') throw new Error('palier onFailHard introuvable');
+      return hard.then.effect.ops;
+    }
+    throw new Error('rangée « Purifier la chair » introuvable');
+  }
+
+  /** Pose le palier sur un héros à PB > 0, RNG SEMÉ (`battleRng` sème à l'horloge — `test-setup.ts`).
+   *  `label` = celui que le dénouement passe en `OpsCtx` (`m.label` = libellé de la RANGÉE,
+   *  `state/combatFlow.ts` ligne `label: m.label` de `finishMiscast`). */
+  function palier(seed: number) {
+    const c = hero();
+    const log = applyOps(c, opsDuPalier(), { rng: makeRNG(seed), label: 'Purifier la chair' });
+    const cause = (c.activeEffects ?? []).find((e) => e.opsPerRound)!;
+    return { c, cause, log: log.join('\n') };
+  }
+
+  it('l’État est GAGNÉ, et la CAUSE est un effet actif de N Rounds portant le nom de la rangée', () => {
+    const { c, cause, log } = palier(3);
+    const n = cause.duration.scale === 'rounds' ? cause.duration.left : 0;
+    expect(log, 'la POSE dit la RE-PRISE conditionnelle, pas « un État par Round »')
+      .toBe(`Cobaye reçoit 1 État Inconscient.\nCobaye regagnera l'État Inconscient à chaque fin de Round, tant que dure Purifier la chair (${n} Rounds).`);
+    expect(c.wounds.current).toBeGreaterThan(0);
+    expect(c.conditions.find((x) => x.id === 'inconscient')?.value).toBe(1);
+    expect(c.conditions.find((x) => x.id === 'inconscient')?.roundsLeft, 'l’État lui-même n’expire pas (LDB 16 l.117)').toBeUndefined();
+    expect(cause.label, 'ce que le joueur lit dans ses effets actifs').toBe('Purifier la chair');
+    expect(cause.duration.scale).toBe('rounds');
+    expect(n).toBeGreaterThanOrEqual(1);
+    expect(n).toBeLessThanOrEqual(10);
+  });
+
+  it('retiré (Détermination) alors que la cause court : REGAGNÉ à la fin du Round, 1 pion, cause NOMMÉE (LDB 16 l.117)', () => {
+    const { c } = palier(3);
+    removeCondition(c, 'inconscient'); // chemin `battleSpendResolve` : le retrait A LIEU
+    expect(hasCondition(c, 'inconscient')).toBe(false);
+    const log = endOfRound(c, makeRNG(7));
+    expect(c.conditions.find((x) => x.id === 'inconscient')?.value, 'un seul pion — l’État ne se cumule pas (LDB 16 l.115)').toBe(1);
+    expect(log, 'la RE-POSE nomme sa cause').toEqual(['Cobaye regagne 1 État Inconscient : Purifier la chair le tient toujours.']);
+  });
+
+  it('la cause ÉCOULÉE (N fins de Round), un retrait n’est plus suivi d’une re-pose', () => {
+    const { c, cause } = palier(3);
+    const n = cause.duration.scale === 'rounds' ? cause.duration.left : 0;
+    for (let i = 0; i < n; i++) endOfRound(c, makeRNG(7 + i));
+    expect((c.activeEffects ?? []).some((e) => e.opsPerRound), 'la cause a expiré').toBe(false);
+    expect(hasCondition(c, 'inconscient'), 'l’État survit à sa cause (règles normales)').toBe(true);
+    removeCondition(c, 'inconscient');
+    endOfRound(c, makeRNG(99));
+    expect(hasCondition(c, 'inconscient')).toBe(false);
+  });
+
+  /** Le journal suit le DRAPEAU DE REJEU (`OpsCtx.rejeuRecurrent`, posé par `endOfRound` seul), jamais
+   *  la FORME de l'op : 13 ops authorées se gatent déjà sur l'État qu'elles posent (Filet
+   *  `maneuvers.json`, Sommeil/Brisé `spells.json`, qualités, traits) et sont dispatchées AVEC un label. */
+  it('une op gatée sur son propre État, posée HORS rejeu, annonce une POSE (Filet) — et une RE-POSE au rejeu', () => {
+    const c = hero();
+    const filet: GameOp = { op: 'condition', id: 'empetre', value: 1, unlessCondition: 'empetre' };
+    expect(applyOps(c, [filet], { label: 'Filet', rng: makeRNG(1) }), 'PREMIÈRE pose : le gate n’a rien retenu')
+      .toEqual(['Cobaye reçoit 1 État Empêtré.']);
+    removeCondition(c, 'empetre');
+    c.activeEffects = [{ label: 'Filet', bonus: 0, duration: { scale: 'rounds', left: 2 }, opsPerRound: [filet] }];
+    expect(endOfRound(c, makeRNG(1)), 'REJEU de fin de Round : la cause est NOMMÉE')
+      .toContain('Cobaye regagne 1 État Empêtré : Filet le tient toujours.');
+  });
+
+  /** Le drapeau porte sur les ops LITTÉRALES re-jouées, pas sur ce qu'un DÉ atteint sous elles : une
+   *  liste `opsPerRound` qui roule une table pose, à chaque fin de Round, une rangée que le Round
+   *  précédent n'avait pas posée — première pose, journal de POSE (`LDB 16 l.117`). */
+  it('une op gatée atteinte par un dé SOUS le rejeu annonce une POSE, jamais « le tient toujours »', () => {
+    const c = hero();
+    const roulee: GameOp = {
+      op: 'rollTable', die: 'd10',
+      rows: [{ min: 1, max: 10, ops: [{ op: 'condition', id: 'aveugle', value: 1, unlessCondition: 'aveugle' }] }],
+    };
+    c.activeEffects = [{ label: 'Nuée', bonus: 0, duration: { scale: 'rounds', left: 2 }, opsPerRound: [roulee] }];
+    expect(endOfRound(c, makeRNG(4))).toEqual(['Cobaye reçoit 1 État Aveuglé.']);
+  });
+
+  it('ce n’est PAS un sommeil magique (`isMagicallyAsleep` ne s’en empare pas)', () => {
+    const { c } = palier(3);
+    expect(isMagicallyAsleep(c)).toBe(false);
+  });
+
+  it('la récurrence se compte en ROUNDS : `perRound` + durée d’horloge est REFUSÉ nommément', () => {
+    expect(() => applyOps(hero(), [{ op: 'condition', id: 'inconscient', perRound: true, durationMinutes: 30 }], { rng: makeRNG(1), now: 0 }))
+      .toThrow(/« perRound » ne se combine qu'avec « durationRounds »/);
+  });
+
+  it('HORS COMBAT : l’entretien fait expirer la cause (elle ne gèle pas à PB > 0)', () => {
+    const { c, cause } = palier(3);
+    const n = cause.duration.scale === 'rounds' ? cause.duration.left : 0;
+    outOfCombatUpkeep([c], n + 2, makeRNG(5));
+    expect((c.activeEffects ?? []).some((e) => e.opsPerRound)).toBe(false);
+    expect(hasCondition(c, 'inconscient')).toBe(true);
+  });
+});
+
+describe('castPenalty.days — durée en jours FORMULAIRE (`GameOp[\'castPenalty\'].days: Formula`)', () => {
+  it('la donnée réelle à `days` nu traverse la résolution formulaire : « Pensez à vos actes » = 7 jours', () => {
+    let ops: ReturnType<typeof rollMiscast>['ops'] | null = null;
+    for (let seed = 0; seed < 600 && !ops; seed++) {
+      const r = rollMiscast('colere', makeRNG(seed), 0);
+      if (r.label.startsWith('Pensez à vos actes')) ops = r.ops;
+    }
+    expect(ops, 'rangée « Pensez à vos actes » introuvable').toBeTruthy();
+    const c = hero();
+    applyOps(c, ops!, { label: 'Pensez à vos actes', now: 0, rng: makeRNG(1) });
+    expect(c.castPenalties![0].untilTime).toBe(7 * 24 * 60);
+  });
+
+  it('une formule à dés en jours est résolue sous RNG semé : untilTime = (1d10 + 3) × 24 × 60', () => {
+    const attendu = makeRNG(11).int(1, 10); // même graine, même premier tirage que l'op ci-dessous
+    const c = hero();
+    applyOps(c, [{ op: 'castPenalty', skill: { id: 'priere' }, mod: -10, days: { sum: [{ dice: { n: 1, sides: 10 } }, 3] } }], { label: 'Contrecoup à durée en jours', now: 0, rng: makeRNG(11) });
+    expect(c.castPenalties![0].untilTime).toBe((attendu + 3) * 24 * 60);
   });
 });

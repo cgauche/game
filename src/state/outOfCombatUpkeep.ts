@@ -24,6 +24,18 @@ function needsUpkeep(c: Combatant): boolean {
   return c.wounds.current <= 0 || hasCondition(c, 'hemorragique') || hasCondition(c, 'empoisonne') || hasCondition(c, 'en-flammes');
 }
 
+/** Porte-t-il quelque chose que la FRONTIÈRE DE ROUND fait avancer — ops récurrentes à rejouer, durées
+ *  en Rounds à écouler (effets actifs, États de sort, contrecoups d'incantation) ? C'est exactement le
+ *  périmètre d'`endOfRound` (`engine/conditions.ts`) et rien d'autre. Un contrecoup peut naître hors
+ *  combat (`interludeFlow`) : sans ce tic, sa durée en Rounds ne s'écoulerait jamais. Un effet GELÉ en
+ *  attente de prolongation (`awaitingExtension`, `LDB 47 l.311`) ne compte pas : ni sa durée ni ses ops
+ *  n'avancent plus, il ferait tourner la boucle jusqu'à `rounds` pour rien. */
+function hasRoundTick(c: Combatant): boolean {
+  return (c.activeEffects ?? []).some((e) => !e.awaitingExtension && (e.opsPerRound != null || e.duration.scale === 'rounds'))
+    || c.conditions.some((x) => x.roundsLeft != null)
+    || (c.castPenalties ?? []).some((p) => p.roundsLeft != null);
+}
+
 /**
  * Rejoue jusqu'à `rounds` Rounds d'entretien sur les membres du groupe qui en ont besoin. Mute `party`.
  * S'arrête dès que plus personne n'a besoin d'entretien (évite les longues boucles sur de grands sauts de
@@ -34,9 +46,18 @@ export function outOfCombatUpkeep(party: Combatant[], rounds: number, rng: RNG):
   for (let r = 0; r < rounds; r++) {
     let active = false;
     for (const c of party) {
-      if (c.dead || !needsUpkeep(c)) continue;
+      if (c.dead) continue;
+      if (!needsUpkeep(c)) {
+        // TIC SEUL : la frontière de Round avance (ops récurrentes, durées), SANS l'entretien du porteur
+        // en péril (Test de récupération du Sonné, auto-dissipation d'États, agonie) — celui-ci reste
+        // réservé aux quatre causes de `needsUpkeep`.
+        if (!hasRoundTick(c)) continue;
+        active = true;
+        endOfRound(c, rng).forEach((l) => log.push(l));
+        continue;
+      }
       active = true;
-      endOfRound(c, rng).forEach((l) => log.push(l)); // récupération du Sonné (Test) + décrément des durées
+      endOfRound(c, rng).forEach((l) => log.push(l)); // MÊME tic que ci-dessus (ops récurrentes + durées)
       // Dégâts périodiques d'État (Empoisonné/En Flammes/Hémorragique) MIGRÉS en données (effects: onRoundEnd
       // → wounds) : MÊME chemin qu'en combat, ils tickent AUSSI hors-combat. La cible 'self' ne touche pas
       // `battle` (targetsFor) → `get` stub suffit ; pas de `set` (flow sans test interactif hors combat).

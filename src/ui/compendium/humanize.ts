@@ -15,7 +15,7 @@
  */
 import type { Flow, Condition, EffectOp } from '../../state/flow';
 import type { ActorRef, CompareOp, CompareSubject } from '../../engine/flowCore';
-import type { GameOp, Formula } from '../../engine/ops';
+import { estCausePersistante, type GameOp, type Formula } from '../../engine/ops';
 import type { Camp, Relation } from '../../engine/relations';
 import { CHAR_LABELS, HIT_LOCATION_LABELS, type CharKey, type ArmourBypass } from '../../engine/types';
 import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
@@ -231,12 +231,31 @@ function humanizeFall(tableId: string): string {
   return `tombe de la hauteur que dit « ${table.label} » (${colonnes.join(', ')}, selon la Taille du bateau)`;
 }
 
+/** UN terme joueur pour la CAUSE PERSISTANTE (prédicat `estCausePersistante`, `engine/ops.ts`) : le
+ *  même que le journal (`op.condPerRoundUnless`/`op.condRegain`). SOURCE UNIQUE de la formulation,
+ *  composée par les trois lecteurs du Codex (`humanizeOp`, `opRows`, dialecte miscast de `registry`). */
+export const CAUSE_PERSISTANTE = 'regagné à chaque fin de Round';
+
+/** Une rangée qui pose un État PUIS déclare la cause qui le maintient (`LDB 16 l.117`) l'écrit en DEUX
+ *  ops ; elle se LIT en UNE chip — la pose littérale est ABSORBÉE par la cause, qui porte le terme et la
+ *  durée. Pré-passe PARTAGÉE des deux lecteurs de LISTES d'ops (`opRows`, dialecte miscast de
+ *  `registry`), sur la forme MINIMALE commune aux deux dialectes. */
+export function replieCausesPersistantes<T extends { op?: unknown; id?: unknown }>(ops: readonly T[]): T[] {
+  const maintenus = new Set(ops.filter(estCausePersistante).map((o) => o.id));
+  return ops.filter((o) => estCausePersistante(o) || o.op !== 'condition' || !maintenus.has(o.id));
+}
+
 export function humanizeOp(o: GameOp): string {
   switch (o.op) {
     case 'wounds': return `subit ${humanizeFormula(o.amount)} Blessure(s)${o.ignoreAP === false ? '' : ', ignorant les PA'}${o.bypassArmour === 'metal' ? " (perce l'armure métallique)" : o.bypassArmour === 'nonMagic' ? " (perce l'armure non magique)" : ''}`;
     case 'heal': return `récupère ${humanizeFormula(o.amount)} PB`;
     case 'healCaster': return `le lanceur récupère ${humanizeFormula(o.amount)} PB`;
-    case 'condition': return `gagne ${o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ` : ''}l'État ${stateItal(o.id)}${o.valuePerSL ? ` (${humanizePerSL(o.valuePerSL)})` : ''}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}${o.perRound ? ' à chaque Round' : ''}`;
+    case 'condition': {
+      const perSL = o.valuePerSL ? ` (${humanizePerSL(o.valuePerSL)})` : '';
+      const duree = o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : '';
+      if (estCausePersistante(o)) return `gagne l'État ${stateItal(o.id)}${perSL}, ${CAUSE_PERSISTANTE}${duree}`;
+      return `gagne ${o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ` : ''}l'État ${stateItal(o.id)}${perSL}${duree}${o.perRound ? ' à chaque Round' : ''}`;
+    }
     case 'removeCondition': return `perd ${o.id ? `l'État ${stateItal(o.id)}` : 'un État au choix'}${o.valuePerSL ? ` (${humanizePerSL(o.valuePerSL)})` : ''}`;
     case 'endPsych': return `n'est plus sous l'effet de ${psychologyLabel(o.type)}`;
     case 'beginPsych': return `tombe sous ${psychologyLabel(o.type)}${o.cible ? ` (${o.cible})` : ''}${o.indice != null ? ` ${humanizeFormula(o.indice)}` : ''}`;

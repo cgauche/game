@@ -25,7 +25,7 @@ describe('Verrou d’État de Critique — lockedUntil (LDB 18)', () => {
   it('Aveuglé verrouillé tant qu’un Hémorragique subsiste : removeCondition inerte', () => {
     const c = mk();
     addCondition(c, 'hemorragique', 2);
-    addCondition(c, 'aveugle', 1, undefined, noHemo);
+    addCondition(c, 'aveugle', 1, undefined, undefined, undefined, undefined, { lockedUntil: noHemo });
     expect(isConditionLocked(c.conditions.find((x) => x.id === 'aveugle')!, c)).toBe(true);
     removeCondition(c, 'aveugle'); // auto-dissipation / soin : bloqué
     expect(hasCondition(c, 'aveugle')).toBe(true);
@@ -34,7 +34,7 @@ describe('Verrou d’État de Critique — lockedUntil (LDB 18)', () => {
   it('une fois les Hémorragique éliminés, l’Aveuglé se déverrouille et part', () => {
     const c = mk();
     addCondition(c, 'hemorragique', 1);
-    addCondition(c, 'aveugle', 1, undefined, noHemo);
+    addCondition(c, 'aveugle', 1, undefined, undefined, undefined, undefined, { lockedUntil: noHemo });
     removeCondition(c, 'hemorragique'); // Hémorragique = 0
     expect(isConditionLocked(c.conditions.find((x) => x.id === 'aveugle')!, c)).toBe(false);
     removeCondition(c, 'aveugle');
@@ -52,7 +52,7 @@ describe('Verrou d’État de Critique — lockedUntil (LDB 18)', () => {
 describe('Verrou d’acte de soin — unlockBy (LDB 18 : medicalAid / surgery / magic)', () => {
   const withLock = (cond: string, unlockBy: ConditionUnlock): Combatant => {
     const c = mk();
-    addCondition(c, cond, 1, undefined, undefined, unlockBy);
+    addCondition(c, cond, 1, undefined, undefined, undefined, undefined, { unlockBy });
     return c;
   };
 
@@ -99,8 +99,8 @@ describe('Verrou d’acte de soin — unlockBy (LDB 18 : medicalAid / surgery / 
 
   it('op heal SANS sort (potion/objet) = Aide Médicale : lève medicalAid mais PAS un verrou surgery', () => {
     const c = mk();
-    addCondition(c, 'hemorragique', 1, undefined, undefined, 'surgery');
-    addCondition(c, 'sonne', 1, undefined, undefined, 'medicalAid');
+    addCondition(c, 'hemorragique', 1, undefined, undefined, undefined, undefined, { unlockBy: 'surgery' });
+    addCondition(c, 'sonne', 1, undefined, undefined, undefined, undefined, { unlockBy: 'medicalAid' });
     applyOps(c, [{ op: 'heal', amount: 1 }], { label: 'Potion' }); // pas de sourceSpellId → medicalAid
     expect(hasCondition(c, 'sonne')).toBe(false); // verrou medicalAid levé
     expect(hasCondition(c, 'hemorragique')).toBe(true); // verrou surgery INTACT

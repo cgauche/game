@@ -34,8 +34,10 @@ const SRC = fileURLToPath(new URL('..', import.meta.url));
  *  GÉNÉRAL (toute entité) ; `sourceSpellId`/`effectId` restent les canaux spécifiques préexistants. */
 const ANCHOR = /\bsource\b|sourceSpellId|effectId|sourceSpell\b/;
 
-/** Un `OpsCtx` RELAYÉ depuis l'appelant — le site n'est pas l'origine de l'effet, il ne peut pas l'ancrer. */
-const FORWARDED = /\bctx\b|Ctx\b|\binner\b/;
+/** Un `OpsCtx` RELAYÉ depuis l'appelant — le site n'est pas l'origine de l'effet, il ne peut pas l'ancrer.
+ *  `imbrique(…)` est LA dérivation du ctx relayé pour les ops imbriquées (`engine/ops.ts`, un seul site
+ *  de définition) : elle n'ôte que le drapeau de rejeu, l'ancrage y descend intact. */
+const FORWARDED = /\bctx\b|Ctx\b|\binner\b|\bimbrique\(/;
 
 function tsFiles(dir: string): string[] {
   const out: string[] = [];

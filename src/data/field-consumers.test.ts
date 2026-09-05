@@ -229,7 +229,7 @@ const RECOUVRES: readonly (readonly [string, string, string])[] = [
   ['EntityAppearance', 'armurePortee', 'src/state/spawn.ts:427'],
   ['CritEscalation', 'onRepeat', 'src/engine/critical.ts:312'],
   ['Amputation', 'timing', 'src/engine/critical.ts:327, src/ui/compendium/registry.ts:719'],
-  ['FlowTest', 'opposed', 'src/state/combat/triggeredTest.ts:291'],
+  ['FlowTest', 'opposed', 'src/state/combat/triggeredTest.ts:294'],
   ['CountSpec', 'fixed', 'src/data/index.ts:3487'],
   ['CountSpec', 'roll', 'src/data/index.ts:3487'],
   ['TrappingRef', 'label', 'src/engine/possessionGrants.ts:25'],

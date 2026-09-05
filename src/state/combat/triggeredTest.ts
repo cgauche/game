@@ -174,7 +174,10 @@ export function applyTriggeredTestBranch(
     runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster, label: 'Effet', opsCtx: { sl: t.sl, ...(exec.source ? { source: exec.source } : {}), ...(exec.hull ? { hull: exec.hull } : {}) }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}), ...(exec.bladeTrap ? { bladeTrap: exec.bladeTrap } : {}) }, branch);
     return [];
   }
-  return runPureFlowLines(c, caster, branch, { rng: battleRng(), caster, sl: t.sl, ...(exec?.hull ? { hull: exec.hull } : {}) });
+  // L'ENTITÉ PORTEUSE voyage AUSSI par la branche pure : un effet actif y est posé comme partout
+  // ailleurs (`condition` récurrente d'une rangée de Colère, `LDB 40 l.75`), et sans son ancrage la
+  // pastille du joueur s'afficherait nue — les deux branches relaient le MÊME contexte.
+  return runPureFlowLines(c, caster, branch, { rng: battleRng(), caster, sl: t.sl, ...(exec?.source ? { source: exec.source } : {}), ...(exec?.hull ? { hull: exec.hull } : {}) });
 }
 
 /** IDENTITÉ d'une étape `triggeredTest` — SOURCE UNIQUE des deux fabriques. La SITUATION entre dans

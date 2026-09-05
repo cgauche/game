@@ -7,6 +7,7 @@ import type { GameOp } from '../../engine/ops';
 import { newOp, OP_LABEL, OP_REF_FIELDS, opRefValue, opWithRefValue } from '../editor/GameOpEditor';
 import { datasetArray } from '../../data/overrides';
 import { opRow, opRows, tableRows } from './opRows';
+import { humanizeOp } from './humanize';
 import { codexLookupById } from './registry';
 import { characteristics, talents, skills, traits, psychologies, etats, trappings, maladies, symptoms, creatures, mutations, findSymptomById, effectTables } from '../../data';
 import type { CharKey } from '../../engine/types';
@@ -205,6 +206,24 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
     expect(cond3.t).toBe('ref');
     if (cond1.t === 'ref') expect(cond1.badge).toBe('1 Round');
     if (cond3.t === 'ref') expect(cond3.badge).toBe('3 Rounds');
+  });
+
+  /** CAUSE PERSISTANTE (`LDB 16 l.117`) : une op `condition` récurrente GATÉE sur l'État qu'elle pose ne
+   *  dit pas « un État de plus par Round » — elle dit la PERSISTANCE, du même mot que le journal. */
+  it('la chip d’une cause PERSISTANTE dit la persistance, là où un `perRound` nu dit « par Round »', () => {
+    const [etat] = etats;
+    const nu = opRow({ op: 'condition', id: etat.id, perRound: true });
+    const persistante = opRow({ op: 'condition', id: etat.id, perRound: true, unlessCondition: etat.id, durationRounds: 3 });
+    expect(nu.t).toBe('ref');
+    if (nu.t === 'ref') expect(nu.badge).toBe('par Round');
+    expect(persistante.t).toBe('ref');
+    if (persistante.t === 'ref') {
+      expect(persistante.category).toBe('etats');
+      expect(persistante.show, 'UNE chip d’État, pas un compte').toBe(etat.label);
+      expect(persistante.badge).toBe('regagné à chaque fin de Round · 3 Rounds');
+    }
+    expect(humanizeOp({ op: 'condition', id: etat.id, perRound: true, unlessCondition: etat.id, durationRounds: 3 }))
+      .toBe(`gagne l'État *${etat.label}*, regagné à chaque fin de Round pendant 3 Round(s)`);
   });
 
   /** #1224 écart 4 — LDB 21 l.19 : « Sur un succès […] vous ne subirez qu'une pénalité de -20 à vos

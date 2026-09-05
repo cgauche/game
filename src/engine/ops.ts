@@ -355,8 +355,12 @@ export type GameOp =
    *  Sans `ctx.caster`, s'applique à la cible (auto-sort). */
   | { op: 'healCaster'; amount: Formula }
   /** Ajout d'un État nommé (LDB 16). `durationRounds` : État À DURÉE (« qui dure 1d10
-   *  Rounds ») ; `perRound` : État RÉCURRENT — ré-appliqué chaque fin de Round pendant la
-   *  durée du sort (ctx.defaultDurationRounds), via un effet actif porteur. */
+   *  Rounds ») ; `perRound` : État RÉCURRENT — ré-appliqué chaque fin de Round par un effet actif
+   *  porteur, pendant la durée en ROUNDS que l'op porte (`durationRounds`) et, à défaut, pendant celle
+   *  du CONTEXTE (`durationFromCtx` : durée du sort). La récurrence se compte en Rounds : `perRound`
+   *  avec `durationMinutes`/`durationHours` est REFUSÉ à l'application. Les gates
+   *  `onlyIfCondition`/`unlessCondition` voyagent avec l'op récurrente : ils sont évalués à CHAQUE
+   *  fin de Round (`LDB 40 l.75`, `LDB 16 l.117`). */
   | { op: 'condition'; id: string; value?: Formula; durationRounds?: Formula; perRound?: boolean; valuePerSL?: PerSL; onlyGroups?: string[];
       /** Gates d'État (Sommeil, LDB 47 : « Si la cible possède un État À Terre, elle gagne
        *  Inconscient » / sinon « gagnant l'État À Terre ») : appliqué seulement si la cible
@@ -1132,6 +1136,12 @@ export interface OpsCtx {
   onCondition?: ConditionEmit;
   /** Libellé de la source (sort/table) — ActiveEffect.label + journal. */
   label?: string;
+  /** REJEU de fin de Round d'ops récurrentes portées par un effet actif : posé par `endOfRound`
+   *  (`engine/conditions.ts`), jamais par un site d'application. Seul ce drapeau distingue la POSE de
+   *  la RE-POSE — la FORME de l'op ne le dit pas (`LDB 16 l.117`). Il porte sur les ops LITTÉRALES
+   *  re-jouées, et sur elles seules : la dérivation `imbrique` l'ôte à toute descente (table, seuil,
+   *  forme, échelon). */
+  rejeuRecurrent?: boolean;
   /** ENTITÉ SOURCE des ops en cours (sort, talent, trait, objet, maladie, mutation…) — marquée sur TOUT
    *  `ActiveEffect` posé par cet `applyOps` (`ActiveEffect.source`). Ancrage de règle GÉNÉRAL : c'est
    *  elle qui donne sa fiche Codex à une pastille d'effet, quel que soit le TYPE de source (arbitrage
@@ -1224,16 +1234,34 @@ export function durationFromCtx(ctx: OpsCtx): Duration {
   return { scale: 'permanent' };
 }
 
+/**
+ * CAUSE PERSISTANTE (`LDB 16 l.117`) : une op `condition` RÉCURRENTE gatée sur l'État qu'elle pose —
+ * le porteur ne subit pas un État de plus par Round, il le REGAGNE tant que la cause dure. UNIQUE
+ * définition du prédicat : l'application (journal) et les lecteurs du Codex (`ui/compendium/opRows.ts`,
+ * `humanize.ts`, `registry.ts`) l'importent d'ici. Accepte aussi la forme PLATE du dialecte miscast
+ * (`data/miscast.json`, `engine/miscast.ts`), dont les champs portent les mêmes noms.
+ */
+export function estCausePersistante(o: { op?: unknown; id?: unknown; perRound?: unknown; unlessCondition?: unknown }): boolean {
+  return o.op === 'condition' && o.perRound === true && typeof o.id === 'string' && o.unlessCondition === o.id;
+}
+
+/** Message UNIQUE du refus « récurrence à l'horloge » — rendu au PARSE (`data/schemas/grammaire/mecanique.ts`)
+ *  et à l'application (`applyOps`), mot pour mot. */
+export function messageRecurrenceHorloge(id: string): string {
+  return t('op.err.recurrenceHorloge', { id });
+}
+
 /** Applique un effet actif sans cumul : un seul bonus (le meilleur) ET une seule
  *  pénalité (la pire) coexistent par caractéristique (Livre de base l.168). */
 /** Pose un effet actif porteur d'ops RÉCURRENTES (re-jouées chaque fin de Round par `endOfRound`).
- *  Durée = celle du sort (`ctx`), Surincantation de Durée incluse. Les `ops` doivent être round-safe
- *  (valeurs littérales) — pas de résolution de formule/`perSL` au tick. */
-function pushPerRound(target: Combatant, ops: GameOp[], ctx: OpsCtx): void {
+ *  Durée : celle que l'op PORTE (`duration` — « un minimum de 1d10 Rounds » d'une rangée de table,
+ *  `LDB 40 l.75`), sinon celle du sort (`ctx`), Surincantation de Durée incluse. Les `ops` doivent
+ *  être round-safe (valeurs littérales) — pas de résolution de formule/`perSL` au tick. */
+function pushPerRound(target: Combatant, ops: GameOp[], ctx: OpsCtx, duration?: Duration): void {
   target.activeEffects = target.activeEffects ?? [];
   target.activeEffects.push({
     label: ctx.label ?? 'Effet', bonus: 0,
-    duration: durationFromCtx(ctx),
+    duration: duration ?? durationFromCtx(ctx),
     opsPerRound: ops,
   });
 }
@@ -1301,6 +1329,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
   const groupGate = (only?: string[], except?: string[]): boolean =>
     (!only || only.some((g) => groupMatch(g, target.groups ?? [])))
     && (!except || !except.some((g) => groupMatch(g, target.groups ?? [])));
+  // CONTEXTE des ops IMBRIQUÉES (rangée de table, seuil franchi, forme, échelon d'aggravation) —
+  // DÉRIVATION UNIQUE, appelée à chaque descente : le drapeau de REJEU n'y descend pas. Il ne vaut que
+  // pour les ops LITTÉRALES re-jouées par `endOfRound` (`LDB 16 l.117`) ; ce qu'un dé atteint sous elles
+  // est une PREMIÈRE pose, qu'aucune fin de Round n'avait encore posée. Fonction et non constante : le
+  // ctx est vivant pendant la boucle (`ctx.woundsDealt`), un instantané pris ici le figerait.
+  const imbrique = (extra?: Partial<OpsCtx>): OpsCtx => ({ ...ctx, ...extra, rejeuRecurrent: undefined });
   for (const o of ops) {
     if (o.op !== 'charMod') flushCharMods();
     switch (o.op) {
@@ -1363,9 +1397,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'condition': {
         if (!groupGate(o.onlyGroups)) break;
-        // Gates d'État (Sommeil, LDB 47) : l'op ne s'applique que si la cible porte / ne porte pas l'État.
-        if (o.onlyIfCondition && !hasCondition(target, o.onlyIfCondition)) break;
-        if (o.unlessCondition && hasCondition(target, o.unlessCondition)) break;
+        if (o.perRound && (o.durationMinutes != null || o.durationHours != null)) throw new Error(messageRecurrenceHorloge(o.id));
+        // Gates d'État (Sommeil, LDB 47) : l'op ne s'applique que si la cible porte / ne porte pas
+        // l'État — évalués à CHAQUE application. Sous `perRound`, l'application est le REJEU de fin
+        // de Round : les gates partent AVEC l'op récurrente (ci-dessous) et sont évalués là.
+        if (!o.perRound) {
+          if (o.onlyIfCondition && !hasCondition(target, o.onlyIfCondition)) break;
+          if (o.unlessCondition && hasCondition(target, o.unlessCondition)) break;
+        }
         const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.valuePerSL));
         // Force d'évasion (Empêtré « se libérer » — LDB 16 l.66) : résolue MAINTENANT contre le
         // référent (le lanceur pour un sort) et FIGÉE sur l'entrée d'État → le flux de récupération
@@ -1373,24 +1412,40 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const escape = o.escapeStrength != null ? Math.max(0, resolveFormula(o.escapeStrength, ref, rng)) : undefined;
         const threshold = o.escapeThreshold != null ? Math.max(0, resolveFormula(o.escapeThreshold, ref, rng)) : undefined;
         const struggleDamage = o.struggleDamage != null ? Math.max(0, resolveFormula(o.struggleDamage, ref, rng)) : undefined;
+        // Durée PORTÉE par l'op, résolue UNE fois ici : horloge (minutes/heures depuis `ctx.now`) ou
+        // Rounds. Exclusives (cf. JSDoc du champ) — l'horloge prime, aucun dé n'est tiré pour l'autre.
+        const clockMin = o.durationMinutes != null || o.durationHours != null
+          ? Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60)
+          : undefined;
+        const rounds = clockMin == null && o.durationRounds != null ? Math.max(1, resolveFormula(o.durationRounds, ref, rng)) : undefined;
         if (o.perRound) {
           // État récurrent = cas particulier de l'effet récurrent général (op `perRound`) : la
-          // valeur est figée maintenant, l'op `condition` littérale est re-jouée chaque fin de Round.
-          pushPerRound(target, [{ op: 'condition', id: o.id, value: v, ...(escape != null ? { escapeStrength: escape } : {}), ...(threshold != null ? { escapeThreshold: threshold } : {}), ...(o.entangleOnFail ? { entangleOnFail: true } : {}), ...(struggleDamage != null ? { struggleDamage } : {}) }], ctx);
-          lines.push(t('op.condPerRound', { name: target.label, v, cond: conditionLabel(o.id), src: ctx.label ?? 'sort' }));
-        } else if (o.durationMinutes != null || o.durationHours != null) {
+          // valeur est figée maintenant, l'op `condition` littérale est re-jouée chaque fin de Round,
+          // gates compris. L'effet porteur dure ce que l'op déclare, sinon ce que le contexte déclare.
+          const duree: Duration | undefined = rounds != null ? { scale: 'rounds', left: rounds } : undefined;
+          pushPerRound(target, [{ op: 'condition', id: o.id, value: v, ...(o.onlyIfCondition ? { onlyIfCondition: o.onlyIfCondition } : {}), ...(o.unlessCondition ? { unlessCondition: o.unlessCondition } : {}), ...(escape != null ? { escapeStrength: escape } : {}), ...(threshold != null ? { escapeThreshold: threshold } : {}), ...(o.entangleOnFail ? { entangleOnFail: true } : {}), ...(struggleDamage != null ? { struggleDamage } : {}) }], ctx, duree);
+          // CAUSE PERSISTANTE (`LDB 16 l.117`) : l'op se gate sur l'État qu'elle pose — le porteur ne
+          // subit pas un État de plus par Round, il le REGAGNE s'il s'en débarrasse. Journal dédié.
+          lines.push(estCausePersistante(o) && rounds != null
+            ? t('op.condPerRoundUnless', { name: target.label, cond: conditionLabel(o.id), src: ctx.label ?? 'sort', n: rounds })
+            : t('op.condPerRound', { name: target.label, v, cond: conditionLabel(o.id), src: ctx.label ?? 'sort' }));
+        } else if (clockMin != null) {
           // État à durée d'HORLOGE (Belladone/Fleur de lune : sommeil « 1d10+4/5 heures ») — échéance
           // résolue MAINTENANT depuis ctx.now, purgée par purgeClockEffects (patron castPenalty.minutes).
-          const min = Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60);
+          const min = clockMin;
           addClockCondition(target, o.id, v, (ctx.now ?? 0) + min, escape, threshold, o.entangleOnFail, struggleDamage);
           lines.push(t('op.condTimed', { name: target.label, v, cond: conditionLabel(o.id), roundsTxt: min >= 60 ? t('op.frag.hours', { n: Math.round(min / 60), s: min >= 120 ? 's' : '' }) : t('op.frag.min', { n: min }) }));
-        } else if (o.durationRounds != null) {
-          const rounds = Math.max(1, resolveFormula(o.durationRounds, ref, rng));
+        } else if (rounds != null) {
           addTimedCondition(target, o.id, v, rounds, escape, threshold, o.entangleOnFail, struggleDamage);
           lines.push(t('op.condTimed', { name: target.label, v, cond: conditionLabel(o.id), roundsTxt: t('op.frag.roundsCap', { n: rounds, s: rounds > 1 ? 's' : '' }) }));
         } else {
-          addCondition(target, o.id, v, escape, o.lockedUntil, o.unlockBy, threshold, o.entangleOnFail, struggleDamage); // verrous de Critique (LDB 18) : prédicat d'état / acte de soin
-          lines.push(t('op.cond', { name: target.label, v, cond: conditionLabel(o.id) })); // libellé (« Exténué »), cohérent avec removeCond
+          addCondition(target, o.id, v, escape, threshold, o.entangleOnFail, struggleDamage, { lockedUntil: o.lockedUntil, unlockBy: o.unlockBy }); // verrous : prédicat d'état / acte de soin (LDB 18)
+          // REJEU d'une cause persistante (`LDB 16 l.117`) : c'est le DRAPEAU de rejeu qui le dit
+          // (`ctx.rejeuRecurrent`, posé par `endOfRound` seul), jamais la forme de l'op — une première
+          // pose gatée reste une pose. La ligne NOMME la cause, portée par le `ctx.label` relayé.
+          lines.push(ctx.rejeuRecurrent && o.unlessCondition === o.id && ctx.label
+            ? t('op.condRegain', { name: target.label, v, cond: conditionLabel(o.id), src: ctx.label })
+            : t('op.cond', { name: target.label, v, cond: conditionLabel(o.id) })); // libellé (« Exténué »), cohérent avec removeCond
         }
         // Les QUATRE branches ci-dessus poussent EXACTEMENT une ligne nommant `o.id` : la notification
         // se pose ici, une fois, appariée à elle (une 5ᵉ branche future est couverte par construction).
@@ -1963,7 +2018,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // l'échelon `otherwise` ; symptôme ABSENT → rien (l'échelon suivant ne s'ouvre pas).
         const r = aggravateDiseaseSymptom(target, o.disease, o.symptomId, o.severity);
         lines.push(...r.log);
-        if (r.etat === 'deja' && o.otherwise?.length) lines.push(...applyOps(target, o.otherwise, ctx));
+        if (r.etat === 'deja' && o.otherwise?.length) lines.push(...applyOps(target, o.otherwise, imbrique()));
         break;
       }
       case 'grantSymptom': {
@@ -2020,7 +2075,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'rollThreshold': {
         const rolled = roll(1, o.sides, rng);
         for (const th of o.thresholds) {
-          if (rolled >= th.atLeast) lines.push(...applyOps(target, th.ops, { ...ctx, rolled }));
+          if (rolled >= th.atLeast) lines.push(...applyOps(target, th.ops, imbrique({ rolled })));
         }
         break;
       }
@@ -2041,7 +2096,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         for (let i = 0; i < times; i++) {
           const die = roll(1, sides, rng);
           const entry = findTableEntry(rows, die + modifier);
-          lines.push(...applyOps(target, entry.ops, { ...ctx, rolled: die }));
+          lines.push(...applyOps(target, entry.ops, imbrique({ rolled: die })));
         }
         break;
       }
@@ -2243,14 +2298,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'polymorph':
         // Métamorphose : développée en charMod différentiel + grantTrait (auto-restitués) — pure. + override
         // d'APPARENCE le temps de l'effet (morphRef, rendu par la couche rig), restitué à l'expiration.
-        lines.push(...applyOps(target, polymorphOps(target, o.ref), ctx));
+        lines.push(...applyOps(target, polymorphOps(target, o.ref), imbrique()));
         applyActiveEffect(target, { label: ctx.label ?? 'Métamorphose', morphRef: o.ref, bonus: 0, duration: durationFromCtx(ctx) });
         break;
       case 'transform': {
         // Applique les deltas AUTHORÉS sous le LABEL `tag` (déterministe → retrait atomique) et une durée
         // PERMANENTE (forme durable ≠ buff de sort : on efface toute durée héritée du ctx). L'apparence
         // (morphRef) porte le MÊME tag pour être retirée avec le reste par `endTransform`.
-        const inner: OpsCtx = { ...ctx, label: o.tag, effectId: o.tag, defaultDurationRounds: undefined, defaultUntilTime: undefined };
+        const inner: OpsCtx = imbrique({ label: o.tag, effectId: o.tag, defaultDurationRounds: undefined, defaultUntilTime: undefined });
         lines.push(...applyOps(target, o.ops, inner));
         if (o.morphRef) applyActiveEffect(target, { label: o.tag, effectId: o.tag, morphRef: o.morphRef, bonus: 0, duration: { scale: 'permanent' } });
         lines.push(t('op.transform', { name: target.label, tag: o.tag }));
@@ -2445,7 +2500,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // La MÉCANIQUE du résultat d'Ivresse (Bravoure/meilleur ami/belligérant, `drunkenness.json`)
         // est un `GameOp[]` — exécutée ICI (`effectId:'ivresse'` marque les ActiveEffect posés, retirés
         // en bloc par `soberUp`), pas dans `drunkenness.ts` (cycle d'import évité, cf. son en-tête).
-        if (drunkOps?.length) lines.push(...applyOps(target, drunkOps, { ...ctx, effectId: 'ivresse' }));
+        if (drunkOps?.length) lines.push(...applyOps(target, drunkOps, imbrique({ effectId: 'ivresse' })));
         break;
       }
       case 'narrative':
