@@ -56,9 +56,9 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
-import { GitIndisponible, estAncetre } from '../guards/lib/gitPorte.mjs'
+import { GitIndisponible, estDansHead } from '../guards/lib/gitPorte.mjs'
 import {
-  estDansHead, fenetreDeRevue, memeSha, mesureDuPalier, nomDArchiveDeRevue, problemesDeRevue, revuesNeuves,
+  fenetreDeRevue, memeSha, mesureDuPalier, nomDArchiveDeRevue, problemesDeRevue, revuesNeuves,
 } from '../guards/lib/revuePalier.mjs'
 
 // Message passé par FICHIER (`git commit -F <path>` / `--file <path>` / `--file=<path>`) : le
@@ -1645,15 +1645,6 @@ export function fichiersCitantTickets(numeros, dir = process.cwd()) {
   } catch { return [] } // aucun match : `git grep` sort en 1
 }
 
-/** `true` si `sha` est un ANCÊTRE de HEAD dans `dir` (donc réellement dans cette histoire). Un sha
- *  INCONNU est `false` ; une indisponibilité de git JETTE (`GitIndisponible`) — sans quoi le refus
- *  dirait « ce commit n'est pas dans cette histoire » alors que rien n'a été lu. */
-export function commitEstAncetreDeHead(sha, dir = process.cwd()) {
-  const vu = estAncetre(sha, 'HEAD', { cwd: dir })
-  if (!vu.disponible) throw new GitIndisponible(vu.raison)
-  return !vu.absent && vu.valeur === true
-}
-
 /**
  * Le verdict PUR, ou le refus qui NOMME ce que git n'a pas pu lire. Une ascendance indisponible n'est
  * pas un « non » : la conclure ferait refuser un solde juste (ou passer un solde faux) sur rien.
@@ -2022,13 +2013,13 @@ if (isMain) {
     // de la commande, ne part pas avec le commit — donc ne franchit rien. Même règle que le solde.
     neuves: () => revuesDuGeste().emportees.map((r) => ({ ...r, contenu: commit.contenu(r.chemin) ?? r.contenu })),
     omises: () => revuesDuGeste().omises,
-    dansHead: (sha) => estDansHead(sha, targetDir),
+    dansHead: (sha) => estDansHead(sha, { cwd: targetDir }),
     contexteSolde: {
       fichiersEmportes: fichiers,
       lignesEmportees: (f) => lignesDeHunks(commit.fichier(f)),
       touchesUi,
       verifierCaptureDe: (chemin) => verifierCapture(chemin, { racine: targetDir, mtimeMin: mtimeEcrans }),
-      commitEstAncetre: (sha) => commitEstAncetreDeHead(sha, targetDir),
+      commitEstAncetre: (sha) => estDansHead(sha, { cwd: targetDir }),
       fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, targetDir),
       lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDunSha(sha, fichier, targetDir)),
     },

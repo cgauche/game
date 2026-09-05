@@ -62,10 +62,10 @@ test('label `duplicate` : SEUL exemptant — le survivant du doublon porte le so
 })
 
 // L'issue du canari se reconnaît à son TITRE, jamais à son label : les deux issues canari ouvertes
-// (#1493, #1614) ont `labels: []`, donc une exemption par label serait INERTE au premier run vert.
+// (#1493, #1614) ont `labels: []`, donc une exemption par label serait INERTE à la première course verte.
 const CANARI = { titre: `${TITRE_CANARI} — environnement ou suite cassés`, closedBy: FERMEUR_CANARI }
 
-test('issue « Canari rouge » fermée par le CANARI (run vert) : exemptée — le rapport est dans son fil', () => {
+test('issue « Canari rouge » fermée par le CANARI (course verte) : exemptée — le rapport est dans son fil', () => {
   const r = comparerFermetures(BASE_FIXTURE, [fermee(1700, CANARI)], [], [])
   assert.deepEqual(r.rouges, [])
   assert.match(r.rapport[0], /\[canari \(exempté\)\]/)

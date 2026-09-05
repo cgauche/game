@@ -20,7 +20,9 @@
 // `main` ne dépend pas de la ref qu'on pousse). Quatre motifs, DEUX leviers de dérogation, chacun
 // avec sa portée — une seule manette pour quatre refus rendrait indistinguable le franchissement du
 // régime utilisateur et celui d'une panne de lecture :
-//   · `rouge` — la dernière course TERMINÉE de `main` a échoué. Levier `WFRP_PUSH_SUR_ROUGE=1`, et
+//   · `rouge` — la dernière course TERMINÉE de `main` a échoué : `failure`, mais aussi `timed_out` et
+//     `startup_failure` (`ROUGES`) ; `cancelled` n'est ni vert ni rouge et donne une NOTE nommée,
+//     le refus venant alors de l'ancêtre vert. Levier `WFRP_PUSH_SUR_ROUGE=1`, et
 //     lui SEUL : c'est ce refus-là qui porte le régime utilisateur du 2026-09-01. Il vaut pour TOUTE
 //     ref, branche de travail comprise — un push de branche pendant que main est rouge détourne du
 //     seul travail qui compte alors ;
@@ -114,6 +116,15 @@ export const RAISON_MINIMALE = 20
 /** Une course TERMINÉE ? Un stub qui ne dit rien du statut décrit une course finie. */
 const estTerminee = (course) => String(course?.status ?? 'completed') === 'completed'
 
+/** Les conclusions qui disent une course ÉCHOUÉE. `failure` n'est pas la seule : GitHub rend aussi
+ *  `timed_out` (le job a dépassé sa borne) et `startup_failure` (le runner n'a pas démarré). Les
+ *  omettre laissait passer le push sur une CI qui n'est PAS verte — mesuré : refus=0 sur les deux. */
+export const ROUGES = new Set(['failure', 'timed_out', 'startup_failure'])
+
+/** `cancelled` n'est ni vert ni rouge : personne n'a jugé ce contenu. Le refus vient alors de la
+ *  règle de l'ancêtre vert, pas d'un échec qu'on lui prêterait — et la NOTE le dit. */
+export const ANNULEE = 'cancelled'
+
 /**
  * VERDICT sur la CI de `main`. PUR — `relire(limite)` est la seule lecture, injectée.
  *
@@ -157,14 +168,20 @@ export function verdictCi({ courses, teteMain, raisonTete = null, ancetres = [],
       + 'le push ne les attend pas',
     )
   const derniereTerminee = liste.find(estTerminee)
-  if (derniereTerminee && derniereTerminee.conclusion === 'failure') {
+  if (derniereTerminee && ROUGES.has(String(derniereTerminee.conclusion))) {
     nier(
       'rouge',
-      `CI de main en ÉCHEC — course ${derniereTerminee.databaseId} sur ${String(derniereTerminee.headSha ?? '').slice(0, 7)}`,
+      `CI de main en ÉCHEC (${derniereTerminee.conclusion}) — course ${derniereTerminee.databaseId} `
+      + `sur ${String(derniereTerminee.headSha ?? '').slice(0, 7)}`,
       String(derniereTerminee.headSha ?? ''),
     )
     return { refus, notes }
   }
+  if (derniereTerminee && String(derniereTerminee.conclusion) === ANNULEE)
+    notes.push(
+      `dernière course TERMINÉE de main ANNULÉE (course ${derniereTerminee.databaseId} sur `
+      + `${String(derniereTerminee.headSha ?? '').slice(0, 7)}) : ce contenu n'a été jugé ni vert ni rouge`,
+    )
 
   const connus = new Set(ancetres ?? [])
   const porteUnVert = (l) => (l ?? []).some((c) => c?.conclusion === 'success' && connus.has(String(c.headSha ?? '')))

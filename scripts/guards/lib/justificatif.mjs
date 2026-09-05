@@ -63,8 +63,8 @@ function empreinteArbre(entrees, { cwd }) {
   }).trim()
 }
 
-/** Les DEUX clés du contenu de `sha`, en UN seul `git ls-tree` : constructeur des trois lecteurs
- *  (pre-push, lanceur de gates, mesure d'ops). */
+/** Les DEUX clés du contenu de `sha`, en UN seul `git ls-tree` : constructeur UNIQUE des trois
+ *  lecteurs (pre-push, lanceur de gates, mesure d'ops) — une clé ne se calcule pas à part. */
 export function clesDeContenu(sha, { cwd = process.cwd() } = {}) {
   const entrees = entreesArbre(sha, { cwd })
   return {
@@ -72,14 +72,6 @@ export function clesDeContenu(sha, { cwd = process.cwd() } = {}) {
     cleComplete: empreinteArbre(entrees, { cwd }),
   }
 }
-
-/** Clé PARTIELLE : le contenu de l'arbre de `sha` hors `docs/` et `.claude/`. */
-export const cleTree = (sha, { cwd = process.cwd() } = {}) =>
-  empreinteArbre(entreesArbre(sha, { cwd }).filter(dansLaCle), { cwd })
-
-/** Clé COMPLÈTE : l'arbre de `sha` en ENTIER, docs et mémoire compris. */
-export const cleTreeComplete = (sha, { cwd = process.cwd() } = {}) =>
-  empreinteArbre(entreesArbre(sha, { cwd }), { cwd })
 
 /**
  * Gates dont les ENTRÉES vivent sous `docs/` ou `.claude/` : leur justificatif ne vaut que pour un

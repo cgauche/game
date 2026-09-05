@@ -26,7 +26,7 @@ import { spawnSync } from 'node:child_process'
 import { BACKOFFS_MS, MARQUE_REJEU, attendreSync, estEchecDeChargement, rejeux } from './spawnResilient.mjs'
 
 /** Longueur maximale d'une `raison` : elle est DITE dans un refus de hook, une fois. */
-export const RAISON_MAX = 200
+const RAISON_MAX = 200
 
 /** git a répondu. @param {*} valeur */
 export const fait = (valeur) => ({ disponible: true, valeur })
@@ -145,6 +145,20 @@ export function estAncetre(ancetre, descendant, opts = {}) {
   const vu = lireGit(['merge-base', '--is-ancestor', ancetre, descendant], opts)
   if (!vu.disponible || vu.absent) return vu
   return fait(vu.valeur.status === 0)
+}
+
+/**
+ * `sha` est-il dans l'histoire de HEAD (HEAD compris) ? PRÉDICAT BOOLÉEN unique des portes : un sha
+ * INCONNU est `false` (il n'est pas dans cette histoire), une INDISPONIBILITÉ JETTE. Deux portes s'en
+ * servent — la tête de fenêtre d'une revue de palier, et le commit qu'un solde dit correcteur — et
+ * elles ne peuvent pas en avoir deux définitions : la seconde dériverait de la première en silence.
+ * @param {string} sha @param {{cwd?: string}} [opts] @returns {boolean}
+ */
+export function estDansHead(sha, { cwd = process.cwd() } = {}) {
+  if (!sha) return false
+  const vu = estAncetre(sha, 'HEAD', { cwd })
+  if (!vu.disponible) throw new GitIndisponible(vu.raison)
+  return !vu.absent && vu.valeur === true
 }
 
 /**

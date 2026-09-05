@@ -14,8 +14,6 @@ import {
   RAISON_CLE_COMPLETE,
   cheminJustificatifs,
   cleGouvernante,
-  cleTree,
-  cleTreeComplete,
   clesDeContenu,
   commandeEffective,
   ecrireJustificatif,
@@ -85,30 +83,35 @@ test('la clé de contenu ignore `docs/` et `.claude/`, et suit `src/`', () => {
   const racine = depot()
   const g = git(racine)
   try {
-    const depart = cleTree('HEAD', { cwd: racine })
+    const depart = clesDeContenu('HEAD', { cwd: racine }).cleTree
     ecrire(racine, DOC_A, 'doc régénéré\n')
     ecrire(racine, '.claude/memory/b.md', 'fiche neuve\n')
     g(['add', '-A'])
     g(['commit', '-m', 'docs seuls'])
     assert.notEqual(g(['rev-parse', 'HEAD']), g(['rev-parse', 'HEAD~1']))
-    assert.equal(cleTree('HEAD', { cwd: racine }), depart, 'un commit docs-only garde la clé du parent')
+    assert.equal(clesDeContenu('HEAD', { cwd: racine }).cleTree, depart, 'un commit docs-only garde la clé du parent')
     ecrire(racine, 'src/a.ts', 'export const a = 3\n')
     g(['add', '-A'])
     g(['commit', '-m', 'code'])
-    assert.notEqual(cleTree('HEAD', { cwd: racine }), depart)
+    assert.notEqual(clesDeContenu('HEAD', { cwd: racine }).cleTree, depart)
   } finally {
     jeter(racine)
   }
 })
 
-test('`clesDeContenu` rend les DEUX clés, identiques à celles des deux lecteurs unitaires', () => {
+test('`clesDeContenu` rend les DEUX clés d’un même `git ls-tree` : la complète voit `docs/`, la partielle non', () => {
   const racine = depot()
+  const g = git(racine)
   try {
-    const sha = git(racine)(['rev-parse', 'HEAD'])
-    assert.deepEqual(clesDeContenu(sha, { cwd: racine }), {
-      cleTree: cleTree(sha, { cwd: racine }),
-      cleComplete: cleTreeComplete(sha, { cwd: racine }),
-    })
+    const avant = clesDeContenu('HEAD', { cwd: racine })
+    for (const cle of [avant.cleTree, avant.cleComplete]) assert.match(cle, /^[0-9a-f]{40}$/)
+    assert.notEqual(avant.cleTree, avant.cleComplete, 'deux périmètres, deux empreintes')
+    ecrire(racine, DOC_A, 'doc régénéré\n')
+    g(['add', '-A'])
+    g(['commit', '-m', 'docs seuls'])
+    const apres = clesDeContenu('HEAD', { cwd: racine })
+    assert.equal(apres.cleTree, avant.cleTree, 'un commit docs-only ne change pas la clé partielle')
+    assert.notEqual(apres.cleComplete, avant.cleComplete, 'il change la clé complète')
   } finally {
     jeter(racine)
   }
@@ -564,7 +567,7 @@ test('l’enveloppe de gate n’écrit RIEN au rouge, et propage le code de sort
     assert.equal(vu.status, 3, 'le code de sortie de la commande est celui de l’enveloppe')
     // Contrat POSITIF sur le DISQUE : aucun fichier de cette gate, sous aucune clé ni propreté,
     // dans le dossier où un vert l'aurait posé.
-    const dossier = join(cheminJustificatifs({ cwd: REPO }), cleTree('HEAD', { cwd: REPO }))
+    const dossier = join(cheminJustificatifs({ cwd: REPO }), clesDeContenu('HEAD', { cwd: REPO }).cleTree)
     const poses = (existsSync(dossier) ? readdirSync(dossier) : [])
       .map(nomDeJustificatif)
       .filter((n) => n?.gate === 'gate-de-mesure-rouge')

@@ -24,7 +24,7 @@ export const CHEMIN_STOCK = join(RACINE, 'scripts', 'ops', 'audit-stock.json')
 export const SEVERITES_JUGEES = ['high', 'critical']
 
 /** Identifiant GHSA d'une entrée `via` d'objet : `npm audit --json` ne porte que l'URL de l'advisory
- *  (`https://github.com/advisories/GHSA-…`), et c'est le SEUL identifiant stable entre deux runs
+ *  (`https://github.com/advisories/GHSA-…`), et c'est le SEUL identifiant stable entre deux courses
  *  (`source` est un numéro interne au registre). */
 export const ghsaDe = (via) => String(via?.url ?? '').split('/').pop() || null
 

@@ -38,10 +38,10 @@ export const LABEL_EXEMPTANT = 'duplicate'
  *  `Canari rouge in:title`, et un seul terme désigne donc un seul objet. Le label `canari` est une
  *  décoration posée à la création : #1493 et #1614, les deux issues canari OUVERTES, ont
  *  `labels: []` (mesuré 2026-09-04, le label venait d'être créé), et une exemption qui en dépendrait
- *  serait INERTE le jour où le premier run vert ferme la survivante.
+ *  serait INERTE le jour où la première course verte ferme la survivante.
  *  Les DEUX conditions comptent : une issue « Canari rouge » fermée par un humain reste une
  *  fermeture hors commit à solder, et le bot ne blanchit pas les fermetures qu'il fait par ailleurs.
- *  NON PROUVÉ sur ce dépôt : 25 fermetures échantillonnées, 0 par le bot — le premier run réel
+ *  NON PROUVÉ sur ce dépôt : 25 fermetures échantillonnées, 0 par le bot — la première course réelle
  *  tranchera la graphie exacte du `closed_by.login`. */
 export const FERMEUR_CANARI = 'github-actions[bot]'
 export const TITRE_CANARI = 'Canari rouge'

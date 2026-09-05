@@ -44,7 +44,6 @@ import {
   evaluateFermetureHorsCommit,
   evaluateArbrePrincipal,
   evaluateHunksEmportes,
-  commitEstAncetreDeHead,
   fichiersDuCommitGit,
   diffDunSha,
   problemesDeRevueNeuve,
@@ -52,9 +51,9 @@ import {
   revuesDuCommit,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
-import { GitIndisponible } from '../guards/lib/gitPorte.mjs'
+import { GitIndisponible, estDansHead } from '../guards/lib/gitPorte.mjs'
 import {
-  archivesDe, derniereRevueArchivee, estDansHead, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue,
+  archivesDe, derniereRevueArchivee, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue,
   revuesNeuves,
 } from '../guards/lib/revuePalier.mjs'
 
@@ -582,7 +581,7 @@ test('MORSURE : la revue neuve du commit REMET le palier a zero — elle est dan
     const vues = revuesNeuves(depot)
     assert.deepEqual(vues.map((r) => r.chemin), [revue.chemin])
     assert.deepEqual(
-      problemesDeRevueNeuve(vues[0], { today: TODAY, palier: avant, dansHead: (sha) => estDansHead(sha, depot) }),
+      problemesDeRevueNeuve(vues[0], { today: TODAY, palier: avant, dansHead: (sha) => estDansHead(sha, { cwd: depot }) }),
       [],
     )
 
@@ -651,7 +650,7 @@ test('FORME du commit : une revue stagee HORS des pathspecs ne franchit RIEN, et
         palier,
         neuves: () => emportees.map((r) => ({ ...r, contenu: c.contenu(r.chemin) ?? r.contenu })),
         omises: () => omises,
-        dansHead: (sha) => estDansHead(sha, depot),
+        dansHead: (sha) => estDansHead(sha, { cwd: depot }),
       })
     }
 
@@ -700,7 +699,7 @@ test('CAS REEL : la CHAINE des revues de HEAD est continue, et chaque tete est d
   )
   for (const maillon of chaine) {
     assert.ok(
-      estDansHead(maillon.tete, racine),
+      estDansHead(maillon.tete, { cwd: racine }),
       `${maillon.chemin} : sa tete ${maillon.tete} n’est pas dans l’histoire de HEAD`,
     )
   }
@@ -2016,7 +2015,7 @@ test('validateSolde : « corrigé par » sans sha ni site reste hors grammaire',
   assert.match(r.problems.join(' ; '), /item sans disposition valide/)
 })
 
-test('commitEstAncetreDeHead / fichiersDuCommitGit : le cas fondateur #584 tient contre git RÉEL', () => {
+test('estDansHead / fichiersDuCommitGit : le cas fondateur #584 tient contre git RÉEL', () => {
   // Un clone SUPERFICIEL (CI sans `fetch-depth: 0`) ne porte pas 4d6e1ff78 : le test doit dire QUOI
   // corriger, jamais verdir sur une histoire qu'il n'a pas lue.
   assert.equal(
@@ -2024,12 +2023,12 @@ test('commitEstAncetreDeHead / fichiersDuCommitGit : le cas fondateur #584 tient
     'false',
     'dépôt SUPERFICIEL : ce test lit l\'HISTOIRE — poser `fetch-depth: 0` sur le `actions/checkout` du job qui joue `test:hooks`.',
   )
-  assert.equal(commitEstAncetreDeHead('4d6e1ff78', repoRoot()), true)
+  assert.equal(estDansHead('4d6e1ff78', { cwd: repoRoot() }), true)
   assert.ok(
     fichiersDuCommitGit('4d6e1ff78', repoRoot()).includes('src/data/schemas/defs/teintesJeu.ts'),
     '4d6e1ff78 ne touche pas le fichier que le solde #584 lui attribue',
   )
-  assert.equal(commitEstAncetreDeHead('0000000000000000000000000000000000000000', repoRoot()), false)
+  assert.equal(estDansHead('0000000000000000000000000000000000000000', { cwd: repoRoot() }), false)
   // La LIGNE que le solde #584 cite est bien dans un hunk de ce commit — lue au diff, pas sur parole.
   const lignes = lignesDeHunks(diffDunSha('4d6e1ff78', 'src/data/schemas/defs/teintesJeu.ts', repoRoot()))
   assert.ok(lignes.includes(88), `lignes vues : ${lignes.join(',')}`)
@@ -2046,7 +2045,7 @@ test('le solde #584 de l\'arbre est CONFORME à sa propre grammaire', () => {
   )
   const contenu = readFileSync(join(repoRoot(), '.claude', 'soldes', '584.md'), 'utf8')
   const r = validateSolde(contenu, '2026-09-02', {
-    commitEstAncetre: (sha) => commitEstAncetreDeHead(sha, repoRoot()),
+    commitEstAncetre: (sha) => estDansHead(sha, { cwd: repoRoot() }),
     fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, repoRoot()),
     lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDunSha(sha, fichier, repoRoot())),
   })
@@ -2126,13 +2125,13 @@ test('evaluateHunksEmportes : `git commit -a` emporte TOUT le modifié suivi →
 })
 
 // ── L'ASCENDANCE INDISPONIBLE n'est pas un « non » (#1679 L3 T2) ─────────────────────────────────
-// `commitEstAncetreDeHead` rendait `false` sur TOUTE erreur : hors dépôt, git absent ou binaire muet,
-// le refus disait « ce commit n'est pas dans cette histoire » — un motif faux, sur une lecture qui
-// n'avait pas eu lieu.
-test('commitEstAncetreDeHead HORS dépôt : JETTE une indisponibilité nommée, ne rend pas false', () => {
+// `estDansHead` rend `false` pour un sha INCONNU, jamais pour une lecture qui n'a pas eu lieu : sans
+// cela, hors dépôt ou git absent, le refus dirait « ce commit n'est pas dans cette histoire » — un
+// motif faux.
+test('estDansHead HORS dépôt : JETTE une indisponibilité nommée, ne rend pas false', () => {
   const hors = mkdtempSync(join(tmpdir(), 'hors-depot-'))
   try {
-    assert.throws(() => commitEstAncetreDeHead('4d6e1ff78', hors), (e) => {
+    assert.throws(() => estDansHead('4d6e1ff78', { cwd: hors }), (e) => {
       assert.ok(e instanceof GitIndisponible)
       assert.match(e.raison, /not a git repository/i)
       return true

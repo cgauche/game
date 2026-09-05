@@ -31,7 +31,7 @@ import {
   refusDeCouverture,
   tuerArbre,
 } from './toutes.mjs'
-import { cleTree, cleTreeComplete, ecrireJustificatif, gatesRequises } from '../guards/lib/justificatif.mjs'
+import { clesDeContenu, ecrireJustificatif, gatesRequises } from '../guards/lib/justificatif.mjs'
 import { refusVerrou } from '../test/verrou.mjs'
 import { coeurs, repartitionWorkers } from '../test/partition.mjs'
 
@@ -415,12 +415,10 @@ test('un doc committé PÉRIME les gates à clé pleine — le lanceur les redon
     writeFileSync(join(racine, 'docs', 'note.md'), 'régénéré\n')
     git('add', '-A')
     git('commit', '-qm', 'docs seuls')
-    assert.equal(cleTree('HEAD~1', { cwd: racine }), cleTree('HEAD', { cwd: racine }), 'la clé partielle doit être la même')
-    assert.notEqual(
-      cleTreeComplete('HEAD~1', { cwd: racine }),
-      cleTreeComplete('HEAD', { cwd: racine }),
-      'la clé complète doit avoir bougé',
-    )
+    const avant = clesDeContenu('HEAD~1', { cwd: racine })
+    const apres = clesDeContenu('HEAD', { cwd: racine })
+    assert.equal(apres.cleTree, avant.cleTree, 'la clé partielle doit être la même')
+    assert.notEqual(apres.cleComplete, avant.cleComplete, 'la clé complète doit avoir bougé')
 
     const lignes = []
     const code = await principal({

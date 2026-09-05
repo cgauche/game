@@ -50,7 +50,7 @@ export function decisionPour({ etat, commentaires, sha }) {
 /**
  * Une issue déjà fermée par un AUTRE geste s'AVERTIT, elle ne rougit pas : le commit a fait son
  * travail, et rougir le job `fermetures` sur `main` pour cela ferait passer pour cassée une
- * publication saine. `::warning::` est la forme que GitHub Actions remonte à l'annotation du run.
+ * publication saine. `::warning::` est la forme que GitHub Actions remonte à l'annotation de la course.
  * L'échec reste réservé aux défauts réels : API en erreur, ticket inexistant, plage illisible.
  */
 export const avertissementRapportee = (numero, sha) =>

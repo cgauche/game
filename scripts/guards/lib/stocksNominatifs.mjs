@@ -181,10 +181,23 @@ function nommeUnFichier(ts, node) {
       if (NOMME.test(n.text)) vu = true;
       return;
     }
+    // Gabarit à SUBSTITUTION (`` `src/${n}.test.ts` ``) : sa tête suffit à le nommer. La ligne, elle,
+    // est bien vue par le REPLI — ne juger que les littéraux nus rendait l'image AVEUGLE là où la
+    // lecture de secours voyait (mesuré : 2 entrées comptées par le repli, 0 par l'image).
+    if (ts.isTemplateExpression(n)) {
+      if (NOMME.test(n.head.text) || NOMME.test(texteDeGabarit(ts, n))) vu = true;
+      return;
+    }
     ts.forEachChild(n, visiter);
   };
   visiter(node);
   return vu;
+}
+
+/** Le texte d'un gabarit, ses substitutions ÔTÉES (`` `src/${n}.test.ts` `` → `src/.test.ts`) : ce
+ *  qui reste est ce que l'auteur a écrit en dur, et c'est là que vit le chemin. */
+function texteDeGabarit(ts, node) {
+  return [node.head.text, ...node.templateSpans.map((s) => s.literal.text)].join('');
 }
 
 /** La CLÉ d'une propriété, telle qu'écrite, ou `null` si elle est calculée. */

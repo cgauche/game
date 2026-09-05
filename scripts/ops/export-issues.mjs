@@ -1,6 +1,6 @@
 // Export des issues GitHub vers docs/decisions/ — les arbitrages RAW/maison (gabarit #101+) vivent
 // dans les issues GitHub, introuvables hors-ligne. Ce script les mécanise en JSON + index Markdown.
-// Idempotent (tri déterministe par number) : un re-run sans changement produit un diff vide.
+// Idempotent (tri déterministe par number) : une seconde exécution sans changement produit un diff vide.
 // Usage : node scripts/ops/export-issues.mjs (npm run issues:export). Requiert `gh` authentifié.
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'

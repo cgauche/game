@@ -226,12 +226,59 @@ test('push NON fast-forward : refus nommant la ref et les deux shas', () => {
   }
 })
 
+// Sonde du juge de diff (2026-09-05) promue : `failure` n'est pas la seule conclusion d'ÉCHEC que
+// GitHub rend. Mesuré sur la porte AVANT correction : `timed_out` et `startup_failure` donnaient
+// refus=0 — le push passait sur une CI qui n'est pas verte, contre le régime du 2026-09-01.
+for (const conclusion of ['failure', 'timed_out', 'startup_failure']) {
+  test(`CI de main ROUGE (${conclusion}) : refus, et la conclusion est NOMMÉE`, () => {
+    const racine = depot()
+    try {
+      gatesVertes(racine)
+      const env = stubCi(racine, [course(racine, { conclusion, databaseId: 900 })])
+      const { refus } = jugerPush({ cwd: racine, stdin: pousse(racine), env })
+      assert.match(refus.join('\n'), new RegExp(`CI de main en ÉCHEC \\(${conclusion}\\) — course 900`))
+      assert.match(refus.join('\n'), /WFRP_PUSH_SUR_ROUGE=1/)
+    } finally {
+      jeter(racine)
+    }
+  })
+}
+
+test('CI de main ANNULÉE : NOTE nommée — ni vert ni rouge, et le verdict revient à l’ancêtre vert', () => {
+  const racine = depot()
+  const g = git(racine)
+  try {
+    const ancetre = g(['rev-parse', 'HEAD'])
+    ecrire(racine, 'src/a.ts', 'export const a = 2\n')
+    g(['add', '-A'])
+    g(['commit', '-m', 'tete'])
+    const tete = g(['rev-parse', 'HEAD'])
+    g(['update-ref', 'refs/remotes/origin/main', tete])
+    gatesVertes(racine)
+    const annulee = { conclusion: 'cancelled', status: 'completed', databaseId: 900, headSha: tete, createdAt: '2026-09-05T12:00:00Z' }
+    const vert = { conclusion: 'success', status: 'completed', databaseId: 800, headSha: ancetre, createdAt: '2026-09-05T09:00:00Z' }
+
+    const avecAncetre = jugerPush({ cwd: racine, stdin: pousse(racine), env: stubCi(racine, [annulee, vert]) })
+    assert.deepEqual(avecAncetre.refus, [], 'une annulation n’est pas un ÉCHEC : rien à imputer à ce contenu')
+    assert.match(
+      avecAncetre.notes.join('\n'),
+      /ANNULÉE \(course 900 sur [0-9a-f]{7}\) : ce contenu n'a été jugé ni vert ni rouge/,
+    )
+
+    const sansAncetre = jugerPush({ cwd: racine, stdin: pousse(racine), env: stubCi(racine, [annulee]) })
+    assert.match(sansAncetre.refus.join('\n'), /aucun commit de cette histoire n’est porté par une course VERTE/)
+    assert.ok(!sansAncetre.refus.join('\n').includes('en ÉCHEC'), 'une annulation ne se travestit pas en échec')
+  } finally {
+    jeter(racine)
+  }
+})
+
 test('CI de main ROUGE : refus nommant la course et son sha', () => {
   const racine = depot()
   try {
     gatesVertes(racine)
     const { refus } = jugerPush({ cwd: racine, stdin: pousse(racine), env: ciRouge(racine) })
-    assert.match(refus.join('\n'), new RegExp(`CI de main en ÉCHEC — course 33691303703 sur ${teteMain(racine).slice(0, 7)}`))
+    assert.match(refus.join('\n'), new RegExp(`CI de main en ÉCHEC \\(failure\\) — course 33691303703 sur ${teteMain(racine).slice(0, 7)}`))
     assert.match(refus.join('\n'), /WFRP_PUSH_SUR_ROUGE=1/)
   } finally {
     jeter(racine)

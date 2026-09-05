@@ -134,17 +134,10 @@ export function derniereRevueArchivee(cwd = process.cwd()) {
 
 /** L'ascendance de `sha` vis-à-vis de HEAD, en union à trois issues : la tête de fenêtre d'une revue
  *  neuve est un commit que ce dépôt porte, sinon la revue juge une histoire qui n'existe pas ici. Un
- *  sha INCONNU rend `absent` — l'appelant en fait « pas dans cette histoire ». */
+ *  sha INCONNU rend `absent` — l'appelant en fait « pas dans cette histoire ». Le PRÉDICAT booléen
+ *  correspondant est `estDansHead` (`gitPorte.mjs`), partagé avec le garde de solde. */
 export const ascendanceDansHead = (sha, cwd = process.cwd()) =>
   sha ? estAncetre(sha, 'HEAD', { cwd }) : { disponible: true, absent: true }
-
-/** `true` si `sha` est dans l'histoire de HEAD (HEAD compris). Une indisponibilité JETTE : c'est le
- *  seul moyen pour un prédicat booléen de ne pas répondre « non » quand il n'a rien lu. */
-export function estDansHead(sha, cwd = process.cwd()) {
-  const vu = ascendanceDansHead(sha, cwd)
-  if (!vu.disponible) throw new GitIndisponible(vu.raison)
-  return !vu.absent && vu.valeur === true
-}
 
 /** Commits de SUBSTANCE depuis `tete` : ceux qui touchent `src` ou `scripts`, plus celui que l'index
  *  s'apprête à faire s'il en touche aussi (le commit en cours compte pour le palier qu'il franchit). */

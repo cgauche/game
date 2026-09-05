@@ -268,9 +268,9 @@ test('portée — aucune ENVELOPPE ne cache un stock de module', () => {
 })
 
 // ── LA DÉFINITION : porteur = tableau OU objet atteignable depuis une liaison de module ───────────
-// La porte de stock était AVEUGLE aux deux plus gros stocks du dépôt (`slotsStock`,
-// `structuresStock`) : leurs entrées ouvrent la ligne par une accolade. Une entrée se lit désormais
-// sur l'IMAGE, par l'AST, et la forme du littéral ne la cache plus.
+// Une entrée se lit sur l'IMAGE, par l'AST : c'est la POSITION dans le porteur qui la définit, jamais
+// la forme de son littéral. Les deux plus gros stocks du dépôt (`slotsStock`, `structuresStock`)
+// ouvrent leurs lignes par une accolade, et chacune de leurs entrées compte.
 
 /** Les quatre formes de stock du dépôt, et les lignes (1-based) où vivent leurs entrées. */
 const FORMES = {
@@ -454,4 +454,22 @@ test('CLIQUET stocks : la PLAGE POUSSÉE ne fait grossir aucun stock en silence'
     refus.map((r) => `${r.sha.slice(0, 9)} ${r.fichier} +${r.net}`), [],
     raisonDeRefusDePlage(refus),
   )
+})
+
+// Sonde du juge de diff (2026-09-05) promue : un chemin écrit en GABARIT à substitution
+// (`` `src/${n}.test.ts` ``) est une entrée comme une autre. La lecture par IMAGE n'en voyait aucune
+// là où le REPLI en comptait deux — une porte dont la voie précise voit MOINS que sa voie de secours
+// se contourne en changeant de graphie.
+test('portée — une entrée écrite en GABARIT à substitution est vue par l’IMAGE comme par le repli', () => {
+  const f = 'scripts/guards/lib/xTemplate.mjs'
+  const post = ["const n = 'a'", 'export const S = [', '  `src/${n}.test.ts`,', '  `src/${n}b.test.ts`,', ']'].join('\n')
+  const pre = ["const n = 'a'", 'export const S = [', ']'].join('\n')
+  const diff = [
+    `--- a/${f}`, `+++ b/${f}`, '@@ -2,1 +2,3 @@', 'export const S = [',
+    '+  `src/${n}.test.ts`,', '+  `src/${n}b.test.ts`,', ']',
+  ].join('\n')
+  const parImage = croissanceDesStocks(diff, { lirePostImage: () => `${post}\n`, lirePreImage: () => `${pre}\n` })
+  const parRepli = croissanceDesStocks(diff, {})
+  assert.deepEqual(parImage.map((c) => [c.fichier, c.net]), [[f, 2]])
+  assert.deepEqual(parImage.map((c) => c.net), parRepli.map((c) => c.net), 'l’image ne voit pas MOINS que le repli')
 })
