@@ -22,7 +22,7 @@
  */
 import * as THREE from 'three';
 import { expandRecipe, TUFT_FAN } from '../../detail/expand';
-import { hash32, seedStream } from '../../detail/hash';
+import { hash32, seedStream } from '../../../data/hash';
 import type { DetailRecipe } from '../../detail/types';
 import { terrainDetail } from '../../../state/terrain';
 import type { Scene } from '../../../state/scene';

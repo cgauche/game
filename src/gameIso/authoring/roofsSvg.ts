@@ -29,7 +29,7 @@ import {
   type Courses,
   type DetailOpts,
 } from './detailSvg';
-import { hash32, seedStream } from '../detail/hash';
+import { hash32, seedStream } from '../../data/hash';
 import { ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K } from '../detail/expand';
 import { shade, mix } from '../shade';
 import type { DetailRecipe } from '../detail/types';

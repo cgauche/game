@@ -6529,4 +6529,4 @@ Oui, à moins que la Description du Sort n'indique autre chose. Notez que les po
 #### **Bénéficie-t-on des Augmentations de Caractéristiques sous Forme bestiale ?**
 
 Non, le profil de base de la bête concernée devient votre profil principal, peu importe le nombre de PX investis pour améliorer vos Caractéristiques. En revanche, les Augmentations de Compétences peuvent être appliquées.
-<!-- sources-empreinte: bce590f0fa6cf9fa61580f1417bca1a4c06cd522 (127 fichiers, 16 dossiers) corps: 20afcdec86f26d8aa177c93b37e29ce5207baa37 -->
+<!-- sources-empreinte: 2a1a1d9ec2244729b168d89ad55a19b2ae8b7b8d (128 fichiers, 16 dossiers) corps: 20afcdec86f26d8aa177c93b37e29ce5207baa37 -->

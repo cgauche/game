@@ -15,7 +15,7 @@
  * LOD par zoom : < 0.5 fills plats (rendu historique) ; < 0.7 motifs seuls ; ≥ 0.7 motifs + accents.
  * Toute couleur vient de la recette (donnée) ou dérive du fill par `shade` — aucun littéral ici.
  */
-import { hash32, seedStream } from '../detail/hash';
+import { hash32, seedStream } from '../../data/hash';
 import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K, TIMBER_V0, TIMBER_V1, TINT_SPREAD } from '../detail/expand';
 import {
   coursesKey,

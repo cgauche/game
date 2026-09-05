@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hash32, seedStream } from './hash';
+import { hash32, seedStream } from '../../data/hash';
 import { expandRecipe, type DetailExpansion } from './expand';
 import type { DetailRecipe } from './types';
 

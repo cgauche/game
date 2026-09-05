@@ -81,7 +81,7 @@ import { CharStatsGrid } from '../CharStatsGrid';
 import { GameOpChips } from '../GameOpChips';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { bodyHeight } from '../../gameIso/rig/composeRig';
-import { hash32 } from '../../gameIso/detail/hash';
+import { hash32 } from '../../data/hash';
 import { previewHero } from './CreatorSummary';
 import { CreatorStepFrame, StepHeader, Section, XpBadge, type StepZones } from './CreatorStepFrame';
 import { Band } from '../Band';

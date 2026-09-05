@@ -61,7 +61,7 @@ import type { Combatant, Weapon } from '../../../engine/types';
 import { hasLeap } from '../../../engine/traits/dispatch';
 import { combatantRender, combatantTokenScale, entityRender, entityTokenScale, sceneEntityForRender, sizeTokenScale } from '../../sizeScale';
 import { RIG_GROUND_PIVOT, groundStateOf, planGroundPose, rigGroundPose, rigGroundTiltDeg, type GroundState, type Pose } from '../../groundPose';
-import { hash32 } from '../../detail/hash';
+import { hash32 } from '../../../data/hash';
 import { entitySize } from '../../../state/spawn';
 import { sizeFootprint } from '../../../state/footprint';
 import type { View } from '../../rig/facing';

@@ -12,7 +12,7 @@ import {
   groundAccentsSvg,
   type VerticalFaceCtx,
 } from './detailSvg';
-import { hash32 } from '../detail/hash';
+import { hash32 } from '../../data/hash';
 import type { DetailRecipe } from '../detail/types';
 import type { Dims } from '../../geometry/iso';
 

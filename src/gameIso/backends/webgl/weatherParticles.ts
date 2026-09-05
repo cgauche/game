@@ -35,7 +35,7 @@
  */
 import * as THREE from 'three';
 import type { WeatherPrecipDef } from '../../catalog/ambiance';
-import { hash32, seedStream } from '../../detail/hash';
+import { hash32, seedStream } from '../../../data/hash';
 import { heightAt, sceneMetresPerTile, type Scene } from '../../../state/scene';
 import { withRenderRank } from './renderRanks';
 import { materiauPlanTransparent } from './worldMaterials';

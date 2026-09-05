@@ -35,7 +35,7 @@ import { propMaterial } from '../../catalog/propMaterials';
 import { MISSING_TONE } from '../../catalog/missing';
 import { TINT_SPREAD } from '../../detail/expand';
 import { coursesPeriodM, groundPeriodM } from '../../detail/courses';
-import { hash32 } from '../../detail/hash';
+import { hash32 } from '../../../data/hash';
 import type { DetailRecipe } from '../../detail/types';
 import type { Face } from '../../builders/types';
 import { SHADE_CYCLE, type ShadeFamily } from './worldTris';

@@ -107,7 +107,7 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 | `src/gameIso/backends/` | 0 | 1 | le MONDE, cuit en géométrie et rendu par une caméra réelle (three) — LE moteur du jeu en toutes vues |
 | `src/gameIso/builders/` | 12 | 1 | dérivation PURE de la Scène en éléments sémantiques, en espace MONDE (aucun import de caméra ni d’écran) |
 | `src/gameIso/catalog/` | 6 | 6 | catalogues d’apparence : ambiance, décor, dégradés — la couleur y est une DONNÉE |
-| `src/gameIso/detail/` | 4 | 0 | détail de surface (matériaux v2) : recettes dépliées en primitives UV, déterministes au seed |
+| `src/gameIso/detail/` | 3 | 0 | détail de surface (matériaux v2) : recettes dépliées en primitives UV, déterministes au seed |
 | `src/gameIso/fx/` | 5 | 0 | effets de combat — hors périmètre de la garde anti-couleur (couleur d’intention, pas d’identité de matériau) |
 | `src/gameIso/pov/` | 3 | 0 | première personne : caméra, brume, boîtes de billboard, voiles d’écran |
 | `src/gameIso/rig/` | 20 | 25 | art des sujets (bestiaire, équipement, véhicules) — hors périmètre de la garde anti-couleur |
@@ -175,4 +175,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: 1cacb4ac4f56d400ed1259d316edf9a013d90f93 (23 fichiers, 10 dossiers) corps: 6fe9cb125e9b6800d14eadfafa0ff53860413fe4 -->
+<!-- sources-empreinte: fa2ad9f2da76ad3df41884f4aaf987f199ce6bf4 (23 fichiers, 10 dossiers) corps: 5a9d66abda943dc4d378a9340da428173de87257 -->

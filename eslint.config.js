@@ -47,7 +47,7 @@ const VERROU_CONTENEUR = [{
   message: 'Contournement de conteneur (#1318 T2) : caster en `CascadeStep` fait entrer un littéral entier, `label` compris. Passer par une porte du seam (`monoStep`/`tableStep`/`choiceStep`/`quantityStep`/`displayStep`/`bandStep`/`hostStep`).',
 }];
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'public/**', '_site/**', 'src/data/**', '**/*.json', '*.config.*', '.claude/**', 'server/.wrangler/**', '.playwright-mcp/**', '.wt-*/**'] },
+  { ignores: ['dist/**', 'node_modules/**', 'public/**', '_site/**', 'src/data/**/*', '!src/data/source/**', '!src/data/hash.ts', '**/*.json', '*.config.*', '.claude/**', 'server/.wrangler/**', '.playwright-mcp/**', '.wt-*/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

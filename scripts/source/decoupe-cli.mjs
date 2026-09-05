@@ -1,0 +1,54 @@
+// CLI de démonstration de la découpe : liste les sections adressables d'un chapitre, ou rend le
+// texte VERBATIM d'un fragment (blocs ou cellule) avec ses folios et son empreinte.
+// usage: node scripts/source/decoupe-cli.mjs <book> <ch> [--sec <slug> [--occ N]
+//        [--blocks a-b | --row <clé> --col <en-tête>]]
+import { empreinteDe, estErreur, resoudreFragment } from '../../src/data/source/decoupe.ts'
+import { fichierChapitre, lireChapitre } from './lecteur-fs.mjs'
+
+const [book, ch, ...rest] = process.argv.slice(2)
+if (!book || !ch) {
+  console.error(
+    'usage: node scripts/source/decoupe-cli.mjs <book> <ch> [--sec <slug> [--occ N]' +
+    ' [--blocks a-b | --row <clé> --col <en-tête>]]',
+  )
+  process.exit(2)
+}
+const arg = (name) => { const i = rest.indexOf(name); return i >= 0 ? rest[i + 1] : undefined }
+const chapitre = lireChapitre(book, ch)
+if (!chapitre) { console.error(`chapitre introuvable : ${book} ch.${ch}`); process.exit(1) }
+
+const sec = arg('--sec')
+if (sec === undefined) {
+  console.log(`${fichierChapitre(book, ch)}  (${chapitre.sections.length} sections)`)
+  for (const s of chapitre.sections) {
+    const folios = [...new Set([s.folio, ...s.blocks.flatMap((b) => b.folios)].filter((f) => f != null))]
+    console.log(
+      `  l.${String(s.line).padStart(5)}  h${s.level}  ${s.slug || '(preambule)'}#${s.occ}` +
+      `  blocs=${s.blocks.length}${folios.length ? `  folios=${folios.join(',')}` : ''}` +
+      `  « ${s.title} »`,
+    )
+  }
+  process.exit(0)
+}
+
+const secOcc = Number(arg('--occ') ?? 1)
+const section = chapitre.sections.find((s) => s.slug === sec && s.occ === secOcc)
+if (!section) { console.error(`section inconnue : ${sec}#${secOcc}`); process.exit(1) }
+
+const row = arg('--row')
+let frag
+if (row !== undefined) {
+  frag = { kind: 'cellule', sec, secOcc, row, col: arg('--col') ?? '', sum: '' }
+} else {
+  const blocks = arg('--blocks')
+  const [b0, b1] = blocks ? blocks.split('-').map(Number) : [0, section.blocks.length - 1]
+  frag = { kind: 'blocs', sec, secOcc, b0, b1: Number.isFinite(b1) ? b1 : b0, sum: '' }
+}
+// La CLI FABRIQUE l'empreinte (c'est ce qu'on vient chercher pour poser une adresse), puis résout
+// AVEC elle — exactement le chemin que suivra le consommateur de l'adresse.
+const sum = empreinteDe(chapitre, frag)
+if (typeof sum !== 'string') { console.error(`${sum.error} : ${sum.detail}`); process.exit(1) }
+const out = resoudreFragment(chapitre, { ...frag, sum })
+if (estErreur(out)) { console.error(`${out.error} : ${out.detail}`); process.exit(1) }
+console.error(`# folios: ${out.folios.join(',') || '-'}  sum: ${sum}`)
+console.log(out.md)

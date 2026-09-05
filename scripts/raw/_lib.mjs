@@ -8,6 +8,11 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import booksData from '../../src/data/books.json' with { type: 'json' }
+// Normalisation de citation : SOURCE UNIQUE dans `src/data/source/normalize.ts` (module feuille en
+// syntaxe effaçable, chargé tel quel par Node nu comme par vitest). Importée ICI parce que ce
+// fichier s'en sert lui-même (`findAnchor`, `sectionsOf`), et RÉ-EXPORTÉE plus bas pour ses 15
+// consommateurs.
+import { normalize, ELLIPSIS_SENTINEL } from '../../src/data/source/normalize.ts'
 
 // Lecture CRLF-robuste (#604) -- SOURCE UNIQUE de lecture texte pour tout fichier Source/**/docs/raw/** :
 // une reecriture Windows du 2026-07-07 a mutile 202 fichiers en CRLF/mixte (contenu identique, index git
@@ -274,24 +279,7 @@ function findAnchor(lines, locator) {
   return idx < 0 ? null : idx
 }
 
-// Normalisation pour le MATCH EXACT des citations : replie tout le cosmétique (espaces, guillemets,
-// apostrophes, tirets, emphase markdown, casse) MAIS conserve les accents (le match français doit être
-// exact : « blessure » ≠ « blessuré »). \s couvre les espaces insécables (U+00A0 / U+202F).
-// Les ellipses (…, ..., [...], […]) → sentinelle U+2026, point de coupe pour le split des citations.
-const SENT = '…'
-export function normalize(s) {
-  return s
-    .replace(/[*_`]/g, '')                          // emphase / code markdown
-    .replace(/[«»“”„]/g, '')         // guillemets (la frontière est gérée par le parser)
-    .replace(/[’＇´]/g, "'")          // variantes d'apostrophe → '
-    .replace(/\[\s*(?:…|\.\.\.)\s*\]/g, ` ${SENT} `) // [...] / […] (élision)
-    .replace(/\.\.\./g, SENT)                       // ... → sentinelle
-    .replace(/[–—−-]/g, '-')         // tirets (en/em/moins/trait) → -
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase()
-}
-export const ELLIPSIS_SENTINEL = SENT
+export { normalize, ELLIPSIS_SENTINEL }
 
 // --- Exclusions PARTAGÉES de fiches docs/raw (#454 DoD, #585 lot A) ---
 // Deux ensembles nommés (périmètres RÉELLEMENT différents, pas une fusion aveugle) :

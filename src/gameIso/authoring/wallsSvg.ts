@@ -14,7 +14,7 @@ import { wallPartColor, windowLit, type StructureAppearanceDef, type WallPart } 
 import { facadeStructureAppearance } from '../catalog/facades';
 import { shade, spec, SIDE_N, SIDE_LIT, POST_CAP, POST_BASE } from '../shade';
 import { detailOf, coursesOverlaySvg, timberOverlaySvg, verticalAccentsSvg, projTag, type DetailOpts } from './detailSvg';
-import { hash32 } from '../detail/hash';
+import { hash32 } from '../../data/hash';
 import type { Face, GP, WallEl } from '../builders/types';
 import type { WallSide } from '../../state/scene';
 import { projGP, type Pt2 } from './project';

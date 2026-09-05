@@ -21,6 +21,14 @@ src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans 
                               Codex/éditeur. Registres GÉNÉRÉS (`_registry*.generated.ts`,
                               `_ids.generated.ts`) par `npm run gen` — jamais édités à la main.
                               Détail : `docs/donnees.md` §E-bis
+  source/                     Parseur de DÉCOUPE des chapitres de `Source/` (`decoupe.ts` : sections,
+                              blocs, folios, empreinte `sumOf`, résolution d'une adresse `DescRef`) +
+                              `normalize.ts` (normalisation de citation, source unique partagée avec
+                              `scripts/raw/_lib.mjs`). Module PUR : chargé tel quel par Node nu
+                              (`scripts/source/*.mjs`) et par vitest — d'où les imports internes à
+                              extension explicite ; sans entrée/sortie, donc chargeable par le navigateur
+  hash.ts                     Hachage déterministe partagé (`hash32` FNV-1a, `seedStream`) : empreinte
+                              de découpe ET seeds du rendu (`src/gameIso`)
 scripts/migrations/         Migrations de donnée REJOUABLES (une par lot, datée) : rejouées sur l'arbre
                             courant elles ne réécrivent RIEN. `npm run migrations:replay` (replay.mjs)
                             les rejoue dans l'ordre lexical, EN PLACE, et mesure l'arbre par git diff
