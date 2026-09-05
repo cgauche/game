@@ -114,7 +114,7 @@ export const ECRIT_LU = {
       '2026-09-04, `faits-de-palier.mjs` écrit le JSON des faits à `--sortie`, sous `os.tmpdir()` par ' +
       'défaut (`sortieParDefaut`), et crée `<git-common-dir>/wfrp-justificatifs/` par `cheminJustificatifs` ' +
       '— `.git/`, hors de l’arbre ; `faits-de-palier.test.mjs` fabrique un dépôt jetable sous os.tmpdir() ; ' +
-      'LIT .claude/workflows/ (`workflows.test.mjs` les parse, `revue-palier-texte.test.mjs` joue le script) ' +
+      'LIT .claude/workflows/ (`workflows.test.mjs` les parse, `workflows-joues.test.mjs` les joue) ' +
       'et scripts/hooks/ (`validateRevuePalier` de solde-ticket-guard.mjs), sans rien y écrire',
   },
   'test:runner': {

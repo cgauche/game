@@ -40,10 +40,17 @@ Ton rendu = l'objet du schéma, rien d'autre.`
 const LECTURE = {
   type: 'object', additionalProperties: false,
   properties: {
-    invariant: {
-      type: 'object', additionalProperties: false,
-      properties: { verbatim: { type: 'string' }, source: { type: 'string' }, question: { type: 'string' } },
-      required: ['verbatim', 'source'],
+    // REQUIS et au PLURIEL : un brief de socle porte N invariants (six sur le premier brief réel),
+    // et un champ seulement OPTIONNEL est un champ que l'agent omet — deux runs arrêtés sur
+    // « aucun VERBATIM cité » devant un brief qui en portait six (wf_2595703f-917, wf_cd16b62d-d3b).
+    // La QUESTION est requise elle aussi : une citation prouve ce qu'elle RÉPOND.
+    invariants: {
+      type: 'array', minItems: 1,
+      items: {
+        type: 'object', additionalProperties: false,
+        properties: { verbatim: { type: 'string' }, source: { type: 'string' }, question: { type: 'string' } },
+        required: ['verbatim', 'source', 'question'],
+      },
     },
     casCanonique: {
       type: 'array',
@@ -58,7 +65,7 @@ const LECTURE = {
     designJugePresent: { type: 'boolean' },
     manques: { type: 'array', items: { type: 'string' } },
   },
-  required: ['casCanonique', 'perimetre', 'primitives', 'designJugePresent', 'manques'],
+  required: ['invariants', 'casCanonique', 'perimetre', 'primitives', 'designJugePresent', 'manques'],
 }
 
 const DESIGN = {
@@ -93,7 +100,7 @@ const lecture = await agent(`Tu LIS un brief d'agent et tu rends sa structure �
 ${CADRE}
 
 Rends :
-- invariant : le VERBATIM cité par la section \`## Invariant\` (tel quel, jamais reformulé), sa source (fiche/ticket/doctrine + fichier:ligne quand le brief le donne), et la QUESTION à laquelle ce verbatim répondait si le brief la porte. Omets le champ entier si la section manque ou ne cite aucun verbatim.
+- invariants : UN invariant par entrée numérotée de \`## Invariant\` (la section en porte souvent plusieurs) — le verbatim TEL QUEL (jamais reformulé, jamais tronqué à la ponctuation), sa source (fiche/ticket/doctrine + fichier:ligne quand le brief le donne), et la question à laquelle il répondait. Un invariant sans question va AUSSI en \`manques\`, en le nommant par son numéro : une citation prouve ce qu'elle RÉPOND. Liste vide si la section manque ou ne cite aucun verbatim.
 - casCanonique : chaque \`fichier:ligne\` que le brief donne comme cas DÉJÀ couvert par le socle (role = ce que le brief dit qu'il couvre). Liste vide si le brief n'en nomme aucun.
 - perimetre : les chemins de fichiers que le brief autorise à toucher, tels qu'écrits.
 - primitives : les primitives canoniques nommées par le brief.
@@ -109,7 +116,11 @@ if (!lecture) {
 }
 
 const manquesDEntree = []
-if (!lecture.invariant || !lecture.invariant.verbatim) manquesDEntree.push('`## Invariant` : aucun VERBATIM cité (source + question à laquelle il répondait)')
+const invariants = Array.isArray(lecture.invariants) ? lecture.invariants : []
+if (!invariants.some((i) => i && i.verbatim)) manquesDEntree.push('`## Invariant` : aucun VERBATIM cité (source + question à laquelle il répondait)')
+invariants.forEach((i, rang) => {
+  if (i && i.verbatim && !i.question) manquesDEntree.push(`invariant ${rang + 1} sans la question à laquelle il répond — une citation prouve ce qu'elle RÉPOND, jamais ce qu'on lui fait dire`)
+})
 if (!lecture.casCanonique || !lecture.casCanonique.length) manquesDEntree.push('CAS CANONIQUE : aucun `fichier:ligne` que le socle couvre déjà pour ce concept')
 if (lecture.designJugePresent) manquesDEntree.push('le brief porte DÉJÀ un `## Design jugé :` non vide — un re-jugement masqué se refuse, l’orchestrateur tranche')
 if (manquesDEntree.length) {
