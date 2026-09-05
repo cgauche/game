@@ -164,8 +164,14 @@ const LENTILLES_DE_PALIER = [
   },
 ]
 
+// Une lentille par clause de DoD, et le nombre de clauses vient des `args` : le plafond est ici.
+// Au-delà, les clauses ne sont PAS jugées — elles sont nommées au journal et portées par le rendu.
+const CLAUSES_PAR_REVUE = 12
+const clausesJugees = DOD.slice(0, CLAUSES_PAR_REVUE)
+const clausesNonJugees = DOD.slice(CLAUSES_PAR_REVUE)
+
 const LENTILLES_DE_REFUTATION = [
-  ...DOD.map((clause, i) => ({
+  ...clausesJugees.map((clause, i) => ({
     label: `dod-${i + 1}`,
     champs: [],
     consigne: `LENTILLE — CLAUSE DE DoD n°${i + 1}, à RÉFUTER : « ${clause} ».
@@ -192,6 +198,9 @@ Pars du principe que la clause n'est PAS tenue et cherche la preuve de son éche
 const LENTILLES = MODE === 'refutation' ? LENTILLES_DE_REFUTATION : LENTILLES_DE_PALIER
 const parLabel = new Map(LENTILLES.map((l) => [l.label, l]))
 log(`Mode ${MODE} : ${LENTILLES.length} lentille(s) — ${LENTILLES.map((l) => l.label).join(', ')}.`)
+if (clausesNonJugees.length) {
+  log(`${clausesNonJugees.length} clause(s) de DoD AU-DELÀ du plafond de ${CLAUSES_PAR_REVUE} par revue — NON JUGÉE(S) : ${clausesNonJugees.map((c) => `« ${c} »`).join(' · ')}.`)
+}
 log(`Faits embarqués par lentille : ${LENTILLES.map((l) => `${l.label} ${faitsDe(l).length} car.`).join(' · ')} — JSON complet dans ${FAITS_CHEMIN}.`)
 
 const rendus = (await parallel(LENTILLES.map((l) => () => agent(
@@ -210,19 +219,20 @@ const parTitre = new Map()
 const tenues = []
 for (const rendu of rendus) {
   for (const t of rendu.tenues || []) tenues.push(`${rendu.lentille} : ${t}`)
-  for (const t of rendu.trouvailles || []) {
-    const cle = normaliser(t.titre)
-    if (!cle) continue
+  ;(rendu.trouvailles || []).forEach((t, rang) => {
+    const normalise = normaliser(t.titre)
+    const cle = normalise || `sans-titre-${rendu.lentille}-${rang + 1}`
+    if (!normalise) log(`Trouvaille « ${t.titre} » (${rendu.lentille}) : titre sans caractère à normaliser — clé de repli « ${cle} », elle part au réfutateur et au texte avec son titre d'origine.`)
     if (parTitre.has(cle)) {
       const garde = parTitre.get(cle)
       log(`Trouvailles fusionnées sous « ${garde.titre} » (${garde.lentille}) : « ${t.titre} » (${rendu.lentille}), même titre normalisé « ${cle} » — sa preuve, son attendu et sa sonde rejoignent la première, rien n'est jeté.`)
       garde.preuve = `${garde.preuve}\n(lentille ${rendu.lentille}) ${t.preuve}`
       garde.attendu = `${garde.attendu}\n(lentille ${rendu.lentille}) ${t.attendu}`
       if (t.sonde) garde.sondes = [...(garde.sondes || []), t.sonde]
-      continue
+      return
     }
     parTitre.set(cle, { ...t, lentille: rendu.lentille, sondes: t.sonde ? [t.sonde] : [] })
-  }
+  })
 }
 const trouvaillesUniques = [...parTitre.values()]
 
@@ -230,7 +240,12 @@ const trouvaillesUniques = [...parTitre.values()]
 // sur une revue réelle (décision utilisateur 2026-09-05, « 36 agents de réfutation, quel violence »).
 // L'auteur et le réfutateur restent DEUX agents distincts — c'est la contradiction qui vaut, pas le
 // nombre. Au-delà du plafond, les trouvailles suivantes sont RETENUES et DITES : jamais un cap muet.
+// Les items que `pipeline` rend sont des COPIES de ceux qu'on lui donne : un lot s'apparie par sa
+// `lentille`. Un lot dont le réfutateur ne rend rien est un lot PERDU : ses trouvailles sont
+// retenues et dites, jamais perdues.
 const TROUVAILLES_PAR_REFUTATEUR = 12
+const HORS_PLAFOND = `au-delà du plafond de ${TROUVAILLES_PAR_REFUTATEUR} trouvailles par réfutateur`
+const SANS_REFUTATEUR = 'le réfutateur de la lentille n’a pas rendu'
 const parLentille = new Map()
 for (const t of trouvaillesUniques) {
   if (!parLentille.has(t.lentille)) parLentille.set(t.lentille, [])
@@ -247,9 +262,10 @@ for (const lot of lots) {
   if (lot.auDela.length) log(`Lentille ${lot.lentille} : ${lot.auDela.length} trouvaille(s) AU-DELÀ du plafond — non réfutées, retenues telles quelles : ${lot.auDela.map((t) => t.titre).join(' · ')}.`)
 }
 
-// Aucune garde de budget ici : l'unité de `budget.remaining()` n'est pas mesurée sur ce dépôt (la
-// comparer à un nombre d'agents ne mordrait jamais). Elle se posera avec un chiffre, après le premier
-// banc qui donne le coût d'une réfutation.
+// L'unité de `budget.remaining()` n'est pas mesurée sur ce dépôt : aucune garde de budget ne la lit.
+// Ce qui borne ce run se lit ici : 8 lentilles fixes en mode palier, 3 fixes plus CLAUSES_PAR_REVUE
+// clauses en mode réfutation, un réfutateur par lentille à trouvailles, et le plafond de 12
+// trouvailles jugées par réfutateur.
 
 const examinees = (await pipeline(lots, (lot) => agent(
   `RÉFUTATION — ${lot.jugees.length} trouvaille(s) rendue(s) par la lentille « ${lot.lentille} », qu'un AUTRE juge que leur auteur examine. Pars du principe que CHACUNE est FAUSSE et essaie de la réfuter sur pièces.
@@ -262,7 +278,7 @@ ${faitsDe(parLabel.get(lot.lentille) || { label: lot.lentille, champs: [] })}
 
 Rends UN verdict PAR trouvaille, dans \`verdicts\`, chacun portant le \`titre\` REÇU tel quel (c'est lui qui les apparie). confirmee = vrai seulement si la trouvaille est RÉELLE, MATÉRIELLE et ACTUELLE dans l'arbre jugé (re-mesure, ne te fie ni au titre ni à la preuve fournie) ; sinon confirmee = faux et \`preuve\` dit ce qui la réfute. bloquante = vrai si, la trouvaille tenant, elle invalide une FERMETURE ou un solde de la fenêtre — c'est toi qui poses cette marque, pas l'auteur de la trouvaille. Une trouvaille que tu n'examines pas est une trouvaille RETENUE : ne rends pas de verdict que tu n'as pas établi.`,
   { label: `refutation:${lot.lentille}`, phase: 'Réfutation', schema: VERDICTS, agentType: 'juge', model: 'opus' },
-).then((v) => ({ lot, verdicts: (v && v.verdicts) || [] })))).filter(Boolean)
+).then((v) => (v ? { lot, verdicts: v.verdicts || [] } : null)))).filter(Boolean)
 
 const agentsDeRefutation = examinees.length
 agentsJoues += agentsDeRefutation
@@ -282,8 +298,14 @@ for (const { lot, verdicts } of examinees) {
     else refutees.push({ ...trouvaille, refutation: verdict.preuve })
   }
   for (const trouvaille of lot.auDela) {
-    confirmees.push({ ...trouvaille, bloquante: false, refutation: null, nonRefutee: `au-delà du plafond de ${TROUVAILLES_PAR_REFUTATEUR} trouvailles par réfutateur` })
+    confirmees.push({ ...trouvaille, bloquante: false, refutation: null, nonRefutee: HORS_PLAFOND })
   }
+}
+const lotsPerdus = lots.filter((lot) => !examinees.some((e) => e.lot.lentille === lot.lentille))
+for (const lot of lotsPerdus) {
+  const toutes = [...lot.jugees, ...lot.auDela]
+  log(`Lentille ${lot.lentille} : le réfutateur n'a pas rendu — ses ${toutes.length} trouvaille(s) sont RETENUES sans marque bloquante.`)
+  for (const trouvaille of toutes) confirmees.push({ ...trouvaille, bloquante: false, refutation: null, nonRefutee: SANS_REFUTATEUR })
 }
 
 phase('Synthèse')
@@ -293,13 +315,20 @@ phase('Synthèse')
 const sansPlage = (t) => String(t ?? '').replace(/\b([0-9a-f]{7,40})\.\.([0-9a-f]{7,40})\b/g, 'de $1 à $2')
 
 const bloquantes = confirmees.filter((t) => t.bloquante)
-const nonRefutees = confirmees.filter((t) => t.nonRefutee)
+const nonRefuteesHorsPlafond = confirmees.filter((t) => t.nonRefutee === HORS_PLAFOND)
+const retenuesSansRefutateur = confirmees.filter((t) => t.nonRefutee === SANS_REFUTATEUR)
 const verdict = bloquantes.length ? 'RÉFUTÉ' : confirmees.length ? 'PARTIEL' : 'CONFIRMÉ'
 const banc = String((FAITS && FAITS.chainage) || '').startsWith('ignoré')
 
-const lignesDeTrouvaille = confirmees.map((t, i) => sansPlage(
-  `${i + 1}. ${t.bloquante ? '[bloquante] ' : ''}**${t.titre}** (lentille ${t.lentille}) — ${t.preuve} → attendu : ${t.attendu}${t.refutation ? ` · réfutation tentée : ${t.refutation}` : ''}${t.nonRefutee ? ` · NON RÉFUTÉE : ${t.nonRefutee}` : ''}`,
-))
+const lignesDeTrouvaille = confirmees.map((t, i) => {
+  const ligne = sansPlage(
+    `${i + 1}. ${t.bloquante ? '[bloquante] ' : ''}**${t.titre}** (lentille ${t.lentille}) — ${t.preuve} → attendu : ${t.attendu}${t.refutation ? ` · réfutation tentée : ${t.refutation}` : ''}${t.nonRefutee ? ` · NON RÉFUTÉE : ${t.nonRefutee}` : ''}`,
+  )
+  // La SONDE qui établit la trouvaille voyage avec elle : l'orchestrateur la fait promouvoir en test.
+  return (t.sondes || []).length
+    ? `${ligne}\n\n\`\`\`\n${t.sondes.map((s) => sansPlage(s)).join('\n')}\n\`\`\``
+    : ligne
+})
 const lignesDEcart = refutees.map((t) => sansPlage(`- ~~${t.titre}~~ (lentille ${t.lentille}) — écartée : ${t.refutation}`))
 
 const texte = MODE === 'refutation' ? null : [
@@ -312,8 +341,11 @@ const texte = MODE === 'refutation' ? null : [
     ? [`banc: chaînage ignoré (--sans-chainage) — fenêtre déjà jugée par ${((FAITS || {}).revuePrecedente || {}).chemin || 'une revue archivée'} ; ce texte est une MESURE, il ne s’archive pas.`]
     : []),
   '',
-  `${LENTILLES.length} lentilles de juge lancées sur les faits de leur angle, ${rendus.length} rendues, ${trouvaillesUniques.length} trouvailles distinctes, ${confirmees.length} confirmées après réfutation, ${refutees.length} écartées, ${tenues.length} points vérifiés qui tiennent. ${agentsJoues} agents joués : ${rendus.length} de lentille, ${agentsDeRefutation} de réfutation (un par lentille à trouvailles, plafond ${TROUVAILLES_PAR_REFUTATEUR})${nonRefutees.length ? `, ${nonRefutees.length} trouvaille(s) NON RÉFUTÉE(S) au-delà du plafond` : ''}.`,
+  `${LENTILLES.length} lentilles de juge lancées sur les faits de leur angle, ${rendus.length} rendues, ${trouvaillesUniques.length} trouvailles distinctes, ${confirmees.length} confirmées après réfutation, ${refutees.length} écartées, ${tenues.length} points vérifiés qui tiennent. ${agentsJoues} agents joués : ${rendus.length} de lentille, ${agentsDeRefutation} de réfutation (un par lentille à trouvailles, plafond ${TROUVAILLES_PAR_REFUTATEUR})${nonRefuteesHorsPlafond.length ? `, ${nonRefuteesHorsPlafond.length} trouvaille(s) NON RÉFUTÉE(S) au-delà du plafond` : ''}${retenuesSansRefutateur.length ? `, ${retenuesSansRefutateur.length} trouvaille(s) RETENUE(S) dont le réfutateur n’a pas rendu` : ''}.`,
   '',
+  ...(clausesNonJugees.length
+    ? [`${clausesNonJugees.length} clause(s) de DoD NON JUGÉE(S), au-delà du plafond de ${CLAUSES_PAR_REVUE} par revue : ${clausesNonJugees.map((c) => `« ${c} »`).join(' · ')}.`, '']
+    : []),
   '## Trouvailles confirmées',
   '',
   ...(lignesDeTrouvaille.length ? lignesDeTrouvaille : ['Aucune trouvaille n’a survécu à la réfutation.']),
@@ -340,6 +372,7 @@ return {
   trouvailles: confirmees,
   refutees,
   tenues,
+  clausesNonJugees,
   agents: { lentilles: rendus.length, refutation: agentsDeRefutation, total: agentsJoues },
   texte,
 }

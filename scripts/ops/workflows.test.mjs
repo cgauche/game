@@ -185,6 +185,49 @@ export function defautsDuScript(source, fichier) {
     }
     return { texte: '', inconnus: [] };
   }
+  /** L'objet LITTÉRAL d'un schéma, qu'il soit posé au site d'appel ou nommé par une constante. */
+  const objetDuSchema = (n) => {
+    if (!n) return null;
+    if (ts.isObjectLiteralExpression(n)) return n;
+    if (ts.isIdentifier(n)) {
+      const init = constantes.get(n.text);
+      return init && ts.isObjectLiteralExpression(init) ? init : null;
+    }
+    return null;
+  };
+  /** Les clés que le schéma EXIGE à sa racine, ou `null` si la porte ne les lit pas. */
+  const requisDuSchema = (n) => {
+    const obj = objetDuSchema(n);
+    if (!obj) return null;
+    const p = propriete(obj, 'required');
+    if (!p || !ts.isArrayLiteralExpression(p.initializer)) return null;
+    return p.initializer.elements.filter(estTexte).map((e) => e.text);
+  };
+  const collecterAcces = (racine, nom, dans) => {
+    const marcher = (x) => {
+      if (ts.isPropertyAccessExpression(x) && ts.isIdentifier(x.expression) && x.expression.text === nom && ts.isIdentifier(x.name)) dans.add(x.name.text);
+      ts.forEachChild(x, marcher);
+    };
+    marcher(racine);
+  };
+  /** Ce que le script LIT du rendu d'un agent : les accès au paramètre de son `.then`, et ceux de la
+   *  constante à laquelle un `await agent(…)` est lié. Un champ hors schéma n'est jamais rendu. */
+  const clesLuesDuRendu = (appel) => {
+    const lues = new Set();
+    const acces = appel.parent;
+    if (acces && ts.isPropertyAccessExpression(acces) && ts.isIdentifier(acces.name) && acces.name.text === 'then'
+      && acces.parent && ts.isCallExpression(acces.parent)) {
+      const rappel = (acces.parent.arguments ?? [])[0];
+      if (rappel && (ts.isArrowFunction(rappel) || ts.isFunctionExpression(rappel))) {
+        const param = (rappel.parameters ?? [])[0];
+        if (param && ts.isIdentifier(param.name) && rappel.body) collecterAcces(rappel.body, param.name.text, lues);
+      }
+    }
+    if (acces && ts.isAwaitExpression(acces) && acces.parent && ts.isVariableDeclaration(acces.parent) && ts.isIdentifier(acces.parent.name)) {
+      collecterAcces(sf, acces.parent.name.text, lues);
+    }
+    return [...lues];
+  };
   const alerterRunner = (n, texte, ou) => {
     for (const interdit of RUNNERS_INTERDITS) {
       if (String(texte).includes(interdit)) {
@@ -236,8 +279,19 @@ export function defautsDuScript(source, fichier) {
         const phase = litteralOuNull('phase');
         const agentType = litteralOuNull('agentType');
         const modele = litteralOuNull('model');
-        if (!propriete(options, 'schema')) {
+        const schemaProp = propriete(options, 'schema');
+        if (!schemaProp) {
           dire('agent', n, '`schema` absent — le rendu d\'un agent de workflow est un OBJET validé, jamais de la prose à interpréter');
+        } else {
+          const lues = clesLuesDuRendu(n);
+          const requis = requisDuSchema(schemaProp.initializer);
+          if (requis === null) {
+            if (lues.length) dire('schema-lu', schemaProp, `\`schema\` non résolu alors que le script lit \`.${lues.join('`, `.')}\` sur son rendu — la porte ne peut pas confronter les deux`);
+          } else {
+            for (const cle of lues.filter((c) => !requis.includes(c))) {
+              dire('schema-lu', schemaProp, `le script lit \`.${cle}\` sur le rendu de cet agent, absent du \`required\` du schéma (${requis.join(', ') || 'aucune clé'}) — un champ hors schéma n'est pas rendu par le harnais`);
+            }
+          }
         }
         if (!phase.present) {
           dire('agent', n, '`phase` absente — c\'est la clé STABLE de la porte (le `label` est de l\'affichage)');
@@ -300,6 +354,19 @@ test('aucune horloge ni aléa : la reprise d’un run rend le même résultat', 
 
 test('chaque agent déclare son étage : options littérales, phase, schéma, type et modèle', () => {
   assert.deepEqual(parRegle('agent'), []);
+});
+
+test('chaque clé lue sur le rendu d’un agent est EXIGÉE par le schéma de cet agent', () => {
+  assert.deepEqual(parRegle('schema-lu'), []);
+});
+
+test('la porte MORD quand le schéma cesse d’exiger la clé que le script lit', () => {
+  const source = sources.get('juge-design-socle.js');
+  const mute = source.replace("  required: ['verdicts'],", "  required: ['avis'],");
+  assert.notEqual(mute, source, 'la mutation s’applique — sinon ce test ne prouve rien');
+  const vus = defautsDuScript(mute, 'juge-design-socle.js').filter((d) => d.regle === 'schema-lu');
+  assert.equal(vus.length, 1, `défauts vus : ${vus.map((d) => d.message).join(' · ')}`);
+  assert.match(vus[0].message, /le script lit `\.verdicts` sur le rendu de cet agent, absent du `required` du schéma \(avis\)/);
 });
 
 test('les phases employées et les phases déclarées se répondent', () => {

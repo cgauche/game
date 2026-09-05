@@ -71,7 +71,6 @@ const LECTURE = {
 const DESIGN = {
   type: 'object', additionalProperties: false,
   properties: {
-    verdict: { enum: ['TIENT', 'FRAGILE', 'RÉFUTÉ'] },
     bloquants: {
       type: 'array',
       items: {
@@ -82,7 +81,7 @@ const DESIGN = {
     },
     dits: { type: 'array', items: { type: 'string' } },
   },
-  required: ['verdict', 'bloquants', 'dits'],
+  required: ['bloquants', 'dits'],
 }
 
 /** UN verdict par bloquant REÇU, apparié par le `titre` : le réfutateur en juge un LOT. */
@@ -167,7 +166,7 @@ Signale le poison que le design ferait naître ou laisserait vivre : paraphrase 
 ]
 
 const rendusDeDesign = (await parallel(LENTILLES.map((l) => () => agent(
-  `${l.consigne}\n\n${CADRE}\n\n${CONTEXTE}\n\nTu juges SEUL : les autres lentilles ne te sont pas montrées, et tu ne supposes pas ce qu'elles trouvent. Verdict TIENT s'il ne reste aucun bloquant, FRAGILE s'il en reste, RÉFUTÉ si le design ne peut pas être codé tel quel. Sur chaque bloquant, \`structurel\` = vrai si, le bloquant tenant, il ne se corrige pas par une retouche du brief mais force à REPENSER le design. \`dits\` = ce qui mérite d'être dit sans bloquer.`,
+  `${l.consigne}\n\n${CADRE}\n\n${CONTEXTE}\n\nTu juges SEUL : les autres lentilles ne te sont pas montrées, et tu ne supposes pas ce qu'elles trouvent. Le verdict se calcule après la réfutation, hors de ton rendu : tu rends des bloquants et des dits. Sur chaque bloquant, \`structurel\` = vrai si, le bloquant tenant, il ne se corrige pas par une retouche du brief mais force à REPENSER le design. \`dits\` = ce qui mérite d'être dit sans bloquer.`,
   { label: l.label, phase: 'Design', schema: DESIGN, agentType: 'juge', model: 'opus' },
 ).then((r) => (r ? { ...r, lentille: l.label } : null))))).filter(Boolean)
 
@@ -182,19 +181,21 @@ const parTitre = new Map()
 const dits = []
 for (const rendu of rendusDeDesign) {
   for (const d of rendu.dits || []) dits.push(d)
-  for (const b of rendu.bloquants || []) {
-    const cle = normaliser(b.titre)
-    if (!cle) continue
+  ;(rendu.bloquants || []).forEach((b, rang) => {
+    const normalise = normaliser(b.titre)
+    const cle = normalise || `sans-titre-${rendu.lentille}-${rang + 1}`
+    if (!normalise) log(`Bloquant « ${b.titre} » (${rendu.lentille}) : titre sans caractère à normaliser — clé de repli « ${cle} », il part au réfutateur et au bloc avec son titre d'origine.`)
     if (parTitre.has(cle)) {
       const garde = parTitre.get(cle)
       log(`Bloquants fusionnés sous « ${garde.titre} » (${garde.lentille}) : « ${b.titre} » (${rendu.lentille}), même titre normalisé « ${cle} » — sa preuve ET sa correction rejoignent la première, rien n'est jeté.`)
       garde.preuve = `${garde.preuve}\n(lentille ${rendu.lentille}) ${b.preuve}`
       garde.correction = `${garde.correction}\n(lentille ${rendu.lentille}) ${b.correction}`
       garde.structurel = Boolean(garde.structurel) || Boolean(b.structurel)
-      continue
+      if (!garde.auteurs.includes(rendu.lentille)) garde.auteurs.push(rendu.lentille)
+      return
     }
-    parTitre.set(cle, { ...b, lentille: rendu.lentille })
-  }
+    parTitre.set(cle, { ...b, lentille: rendu.lentille, auteurs: [rendu.lentille] })
+  })
 }
 const bloquantsUniques = [...parTitre.values()]
 
@@ -202,7 +203,12 @@ const bloquantsUniques = [...parTitre.values()]
 // porte la lentille B, B → C, C → A. Personne ne réfute ses propres bloquants, et le compte d'agents
 // suit le nombre de LENTILLES, pas celui des bloquants (décision utilisateur 2026-09-05).
 // `structurel` demande DEUX voix : celle de l'auteur ET celle du réfutateur, les deux qui l'ont vu.
+// Les items que `pipeline` rend sont des COPIES de ceux qu'on lui donne : un lot s'apparie par son
+// `auteur`, unique par lentille.
 const BLOQUANTS_PAR_REFUTATEUR = 8
+const HORS_PLAFOND = `au-delà du plafond de ${BLOQUANTS_PAR_REFUTATEUR} bloquants par réfutateur`
+const SANS_REFUTATEUR = 'le réfutateur de la lentille n’a pas rendu'
+const SANS_REFUTATEUR_INDEPENDANT = 'aucune lentille indépendante pour le réfuter'
 const ORDRE = LENTILLES.map((l) => l.label)
 const parLentilleDeDesign = new Map()
 for (const b of bloquantsUniques) {
@@ -210,7 +216,11 @@ for (const b of bloquantsUniques) {
   parLentilleDeDesign.get(b.lentille).push(b)
 }
 const lots = [...parLentilleDeDesign].map(([auteur, tous]) => {
-  const refutateur = ORDRE[(Math.max(0, ORDRE.indexOf(auteur)) + 1) % ORDRE.length]
+  // Un bloquant FUSIONNÉ porte plusieurs auteurs : le réfutateur est le premier candidat de la
+  // rotation qui n'a écrit AUCUN bloquant du lot. Aucun candidat = personne d'indépendant.
+  const auteursDuLot = new Set(tous.flatMap((b) => b.auteurs || [b.lentille]))
+  const depart = Math.max(0, ORDRE.indexOf(auteur))
+  const refutateur = ORDRE.map((_, i) => ORDRE[(depart + 1 + i) % ORDRE.length]).find((c) => !auteursDuLot.has(c)) || null
   return {
     auteur,
     refutateur,
@@ -221,17 +231,22 @@ const lots = [...parLentilleDeDesign].map(([auteur, tous]) => {
     auDela: tous.slice(BLOQUANTS_PAR_REFUTATEUR),
   }
 })
+const lotsAJuger = lots.filter((lot) => lot.refutateur)
+const lotsSansRefutateurIndependant = lots.filter((lot) => !lot.refutateur)
 log(`Phase Design : ${bloquantsUniques.length} bloquant(s) distinct(s), ${dits.length} dit(s). ${agentsJoues} agents joués jusqu'ici.`)
-log(`Réfutation : ${lots.length} agents pour ${bloquantsUniques.length} bloquants (plafond ${BLOQUANTS_PAR_REFUTATEUR} par réfutateur) — ${lots.map((l) => `${l.auteur} → ${l.refutateur}`).join(', ')}.`)
+log(`Réfutation : ${lotsAJuger.length} agents pour ${bloquantsUniques.length} bloquants (plafond ${BLOQUANTS_PAR_REFUTATEUR} par réfutateur) — ${lotsAJuger.map((l) => `${l.auteur} → ${l.refutateur}`).join(', ') || 'aucun lot'}.`)
 for (const lot of lots) {
   if (lot.auDela.length) log(`Lentille ${lot.auteur} : ${lot.auDela.length} bloquant(s) AU-DELÀ du plafond — non réfutés, ils SURVIVENT sans marque structurelle : ${lot.auDela.map((b) => b.titre).join(' · ')}.`)
 }
+for (const lot of lotsSansRefutateurIndependant) {
+  log(`Lentille ${lot.auteur} : ${lot.juges.length + lot.auDela.length} bloquant(s) sans réfutateur INDÉPENDANT (toutes les lentilles en sont auteures) — ils SURVIVENT sans marque structurelle.`)
+}
 
-// Aucune garde de budget ici : l'unité de `budget.remaining()` n'est pas mesurée sur ce dépôt (la
-// comparer à un nombre d'agents ne mordrait jamais). Elle se posera avec un chiffre, après le premier
-// banc qui donne le coût d'une réfutation.
+// L'unité de `budget.remaining()` n'est pas mesurée sur ce dépôt : aucune garde de budget ne la lit.
+// Ce qui borne ce run se lit ici : 3 lentilles de design fixes, un réfutateur par lentille à
+// bloquants, et le plafond de 8 bloquants jugés par réfutateur.
 
-const examines = (await pipeline(lots, (lot) => agent(
+const examines = (await pipeline(lotsAJuger, (lot) => agent(
   `RÉFUTATION — ${lot.juges.length} bloquant(s) rendu(s) par la lentille « ${lot.auteur} ». Tu les examines depuis UNE AUTRE lentille que la leur, la tienne : « ${lot.refutateur} ». Pars du principe que CHACUN est FAUX et essaie de le RÉFUTER sur pièces, dans l'arbre jugé.
 
 TA LENTILLE : ${lot.consigneDuRefutateur}
@@ -242,7 +257,7 @@ ${CADRE}
 
 Rends UN verdict PAR bloquant, dans \`verdicts\`, chacun portant le \`titre\` REÇU tel quel (c'est lui qui les apparie). refute = vrai SEULEMENT si tu établis que le bloquant ne tient pas (la preuve invoquée n'existe pas, dit autre chose, ou le design ne fait pas ce que le bloquant lui prête) — cite fichier:ligne ou la sortie de ta sonde. structurel = vrai si, le bloquant tenant, il ne se corrige pas par une retouche du brief mais force à REPENSER le design. Un bloquant que tu n'examines pas SURVIT : ne rends pas de verdict que tu n'as pas établi.`,
   { label: `refutation:${lot.auteur}→${lot.refutateur}`, phase: 'Réfutation', schema: REFUTATIONS, agentType: 'juge', model: 'opus' },
-).then((v) => ({ lot, verdicts: (v && v.verdicts) || [] })))).filter(Boolean)
+).then((v) => (v ? { lot, verdicts: v.verdicts || [] } : null)))).filter(Boolean)
 
 const agentsDeRefutation = examines.length
 agentsJoues += agentsDeRefutation
@@ -262,22 +277,28 @@ for (const { lot, verdicts } of examines) {
     else survivants.push({ ...bloquant, structurel: Boolean(bloquant.structurel) && Boolean(verdict.structurel), refutations: [verdict] })
   }
   for (const bloquant of lot.auDela) {
-    survivants.push({ ...bloquant, structurel: false, refutations: [], nonRefute: `au-delà du plafond de ${BLOQUANTS_PAR_REFUTATEUR} bloquants par réfutateur` })
+    survivants.push({ ...bloquant, structurel: false, refutations: [], nonRefute: HORS_PLAFOND })
   }
 }
-const lotsPerdus = lots.filter((lot) => !examines.some((e) => e.lot === lot))
+const lotsPerdus = lotsAJuger.filter((lot) => !examines.some((e) => e.lot.auteur === lot.auteur))
 for (const lot of lotsPerdus) {
   log(`Lentille ${lot.auteur} : le réfutateur n'a pas rendu — ses ${lot.juges.length + lot.auDela.length} bloquant(s) SURVIVENT sans marque structurelle.`)
-  for (const b of [...lot.juges, ...lot.auDela]) survivants.push({ ...b, structurel: false, refutations: [] })
+  for (const b of [...lot.juges, ...lot.auDela]) survivants.push({ ...b, structurel: false, refutations: [], nonRefute: SANS_REFUTATEUR })
 }
+for (const lot of lotsSansRefutateurIndependant) {
+  for (const b of [...lot.juges, ...lot.auDela]) survivants.push({ ...b, structurel: false, refutations: [], nonRefute: SANS_REFUTATEUR_INDEPENDANT })
+}
+const lotsSansReponse = lotsPerdus.length + lotsSansRefutateurIndependant.length
 
 phase('Synthèse')
 
-function blocDe(verdict, survivantsDuBloc, ecartesCompte) {
-  const nonRefutes = survivantsDuBloc.filter((b) => b.nonRefute).length
+function blocDe(verdict, survivantsDuBloc, ecartesCompte, lotsSansReponseCompte) {
+  const horsPlafond = survivantsDuBloc.filter((b) => b.nonRefute === HORS_PLAFOND).length
+  const sansRefutateur = survivantsDuBloc.filter((b) => b.nonRefute === SANS_REFUTATEUR).length
+  const sansIndependant = survivantsDuBloc.filter((b) => b.nonRefute === SANS_REFUTATEUR_INDEPENDANT).length
   const lignes = [
-    `**${verdict}** — workflow \`juge-design-socle\`, run \`<runId du lancement, cité par l'orchestrateur>\`, ${DATE}.`,
-    `${survivantsDuBloc.length} bloquant(s) survivant(s), ${ecartesCompte} écarté(s) par réfutation${nonRefutes ? `, ${nonRefutes} NON RÉFUTÉ(S) au-delà du plafond de ${BLOQUANTS_PAR_REFUTATEUR} par réfutateur` : ''}.`,
+    `**${verdict}** — workflow \`juge-design-socle\`, run \`<runId du lancement, cité par l'orchestrateur>\`, ${DATE}${lotsSansReponseCompte ? ` (réfutation incomplète : ${lotsSansReponseCompte} lot(s) sans réfutateur)` : ''}.`,
+    `${survivantsDuBloc.length} bloquant(s) survivant(s), ${ecartesCompte} écarté(s) par réfutation${horsPlafond ? `, ${horsPlafond} NON RÉFUTÉ(S) au-delà du plafond de ${BLOQUANTS_PAR_REFUTATEUR} par réfutateur` : ''}${sansRefutateur ? `, ${sansRefutateur} NON RÉFUTÉ(S) dont le réfutateur n’a pas rendu` : ''}${sansIndependant ? `, ${sansIndependant} NON RÉFUTÉ(S) sans lentille indépendante` : ''}.`,
   ]
   survivantsDuBloc.forEach((b, i) => {
     lignes.push(`${i + 1}. ${b.structurel ? '[structurel] ' : ''}**${b.titre}** (lentille ${b.lentille}) — ${b.preuve} → ${b.correction}${b.nonRefute ? ` · NON RÉFUTÉ : ${b.nonRefute}` : ''}`)
@@ -298,5 +319,6 @@ return {
   lecture,
   agents: { lecture: 1, design: rendusDeDesign.length, refutation: agentsDeRefutation, total: agentsJoues },
   date: DATE,
-  bloc: blocDe(verdict, survivants, ecartes.length),
+  refutationIncomplete: lotsSansReponse > 0,
+  bloc: blocDe(verdict, survivants, ecartes.length, lotsSansReponse),
 }

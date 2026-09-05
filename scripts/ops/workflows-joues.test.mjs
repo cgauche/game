@@ -48,12 +48,24 @@ async function jouer(nomDuScript, argsDuRun, repondre) {
     promptsParLabel.set(`${opts.phase}:${opts.label}`, prompt);
     return Promise.resolve(repondre(prompt, opts));
   };
-  const parallel = (thunks) => Promise.all(thunks.map((t) => t()));
+  // La doublure fait ce que fait le harnais, point par point :
+  //  · `parallel` ne REJETTE jamais — un thunk qui lève rend `null`, comme un agent mort ;
+  //  · `pipeline` dépose à `null` l'item dont une stage lève, et saute ses stages restantes ;
+  //  · les items qui traversent `pipeline` sont des COPIES — une comparaison d'identité y est fausse.
+  const parallel = (thunks) => Promise.all(thunks.map((t) => Promise.resolve().then(t).catch(() => null)));
+  const copie = (v) => (v === undefined ? undefined : structuredClone(v));
   const pipeline = async (items, ...stages) => {
     const out = [];
     for (const item of items) {
-      let courant = item;
-      for (const stage of stages) courant = await stage(courant);
+      let courant = copie(item);
+      for (const stage of stages) {
+        try {
+          courant = copie(await stage(courant));
+        } catch {
+          courant = null;
+          break;
+        }
+      }
       out.push(courant);
     }
     return out;
@@ -86,7 +98,7 @@ const faits = (chainage) => ({
 });
 
 /** `trouvaillesDe(label)` décide ce que rend chaque lentille ; le réfutateur confirme tout ce qu'il reçoit. */
-const jouerRevue = ({ mode = 'palier', chainage = 'vérifié', dod = [], trouvaillesDe = null } = {}) => jouer(
+const jouerRevue = ({ mode = 'palier', chainage = 'vérifié', dod = [], trouvaillesDe = null, refutationDe = null } = {}) => jouer(
   'revue-palier.js',
   { worktree: ARBRE, scratchpad: SONDES, base: BASE, tete: TETE, date: DATE, mode, dod, faits: faits(chainage) },
   (prompt, opts) => {
@@ -98,6 +110,7 @@ const jouerRevue = ({ mode = 'palier', chainage = 'vérifié', dod = [], trouvai
     }
     // Un réfutateur juge un LOT : il rend UN verdict par trouvaille reçue, apparié par le titre.
     const recues = JSON.parse(prompt.slice(prompt.indexOf('TROUVAILLES : ') + 14, prompt.indexOf('\n\nArbre jugé')));
+    if (refutationDe) return refutationDe(opts.label, recues);
     return { verdicts: recues.map((t) => ({ titre: t.titre, confirmee: true, bloquante: false, preuve: 'confirmé sur pièces' })) };
   },
 );
@@ -180,6 +193,60 @@ test('revue-palier, COÛT : chaque lentille ne reçoit QUE les faits de son angl
   assert.equal(fermetures.includes(FAITS_CHEMIN), true, 'le chemin des faits complets est donné pour le reste');
 });
 
+test('revue-palier : un réfutateur qui ne rend rien laisse ses trouvailles RETENUES, dites', async () => {
+  const { rendu, journal } = await jouerRevue({
+    trouvaillesDe: (label) => (['fermetures-soldes', 'cross-os'].includes(label)
+      ? [1, 2].map((n) => ({ titre: `${label} — trouvaille ${n}`, preuve: 'p', attendu: 'a' }))
+      : []),
+    refutationDe: (label, recues) => (label === 'refutation:cross-os'
+      ? null
+      : { verdicts: recues.map((t) => ({ titre: t.titre, confirmee: true, bloquante: false, preuve: 'confirmé sur pièces' })) }),
+  });
+  assert.equal(rendu.agents.refutation, 1, 'le réfutateur qui ne rend rien ne compte pas');
+  assert.equal(rendu.trouvailles.length, 4, 'aucune trouvaille perdue, aucune rendue deux fois');
+  const retenues = rendu.trouvailles.filter((t) => t.nonRefutee);
+  assert.deepEqual(retenues.map((t) => t.titre), ['cross-os — trouvaille 1', 'cross-os — trouvaille 2']);
+  assert.deepEqual(retenues.map((t) => t.nonRefutee), Array(2).fill('le réfutateur de la lentille n’a pas rendu'));
+  assert.deepEqual(retenues.map((t) => t.bloquante), [false, false]);
+  assert.deepEqual(retenues.map((t) => t.refutation), [null, null]);
+  assert.ok(journal.some((l) => /Lentille cross-os : le réfutateur n'a pas rendu — ses 2 trouvaille\(s\)/.test(l)), 'le lot perdu est DIT dans le journal');
+  assert.match(rendu.texte, /\*\*cross-os — trouvaille 1\*\*/, 'le texte rendu les liste');
+  assert.match(rendu.texte, /NON RÉFUTÉE : le réfutateur de la lentille n’a pas rendu/);
+  assert.match(rendu.texte, /2 trouvaille\(s\) RETENUE\(S\) dont le réfutateur n’a pas rendu/);
+});
+
+test('revue-palier : une trouvaille au titre sans caractère à normaliser est RETENUE, sous une clé de repli', async () => {
+  const { rendu, journal } = await jouerRevue({
+    trouvaillesDe: (label) => (label === 'cross-os' ? [{ titre: '???', preuve: 'p', attendu: 'a' }] : []),
+  });
+  assert.equal(rendu.verdict, 'PARTIEL');
+  assert.equal(rendu.trouvailles.length, 1, 'la trouvaille n’est pas jetée');
+  assert.equal(rendu.trouvailles[0].titre, '???', 'elle garde son titre d’origine');
+  assert.ok(journal.some((l) => /titre sans caractère à normaliser — clé de repli « sans-titre-cross-os-1 »/.test(l)), 'la clé de repli est DITE');
+  assert.match(rendu.texte, /\*\*\?\?\?\*\* \(lentille cross-os\)/);
+});
+
+test('revue-palier : la SONDE d’une trouvaille part dans le texte archivé, en bloc de code', async () => {
+  const { rendu } = await jouerRevue({
+    trouvaillesDe: (label) => (label === 'cross-os'
+      ? [{ titre: 'un chemin à barres inversées', preuve: 'p', attendu: 'a', sonde: 'node sonde-chemins.mjs' }]
+      : []),
+  });
+  assert.match(rendu.texte, /```\nnode sonde-chemins\.mjs\n```/, 'le code de la sonde est dans le texte');
+});
+
+test('revue-palier, mode refutation : au-delà de 12 clauses de DoD, les suivantes ne sont PAS jugées et sont nommées', async () => {
+  const dod = Array.from({ length: 30 }, (_, i) => `clause ${i + 1}`);
+  const { rendu, journal, promptsParLabel } = await jouerRevue({ mode: 'refutation', dod });
+  // 12 lentilles de DoD + les 3 lentilles fixes de la réfutation (fermetures, hotfixes, dérogations).
+  assert.deepEqual(rendu.agents, { lentilles: 15, refutation: 0, total: 15 });
+  assert.equal(promptsParLabel.has('Lentilles:dod-12'), true);
+  assert.equal(promptsParLabel.has('Lentilles:dod-13'), false, 'la 13e clause n’est jugée par personne');
+  assert.equal(rendu.clausesNonJugees.length, 18);
+  assert.deepEqual(rendu.clausesNonJugees[0], 'clause 13');
+  assert.ok(journal.some((l) => /18 clause\(s\) de DoD AU-DELÀ du plafond de 12 par revue/.test(l)), 'les non jugées sont DITES');
+});
+
 // ── `juge-design-socle.js` ───────────────────────────────────────────────────────────────────────
 
 /** Les SIX invariants du premier brief de socle réellement soumis (#1679 L3), tels qu'il les porte. */
@@ -202,7 +269,7 @@ const lectureL3 = (invariants) => ({
 });
 
 /** `bloquantsDe(label)` décide ce que rend chaque lentille de design ; le réfutateur ne réfute rien. */
-const jouerJuge = (invariants, bloquantsDe = null) => jouer(
+const jouerJuge = (invariants, bloquantsDe = null, refutationDe = null) => jouer(
   'juge-design-socle.js',
   { brief: BRIEF, worktree: ARBRE, date: DATE, scratchpad: SONDES },
   (prompt, opts) => {
@@ -211,10 +278,11 @@ const jouerJuge = (invariants, bloquantsDe = null) => jouer(
       const bloquants = bloquantsDe
         ? bloquantsDe(opts.label)
         : [{ titre: `Un bloquant de ${opts.label}`, preuve: 'preuve', correction: 'correction', structurel: false }];
-      return { verdict: bloquants.length ? 'FRAGILE' : 'TIENT', bloquants, dits: ['un dit'] };
+      return { bloquants, dits: ['un dit'] };
     }
     // Un réfutateur juge un LOT : UN verdict par bloquant reçu, apparié par le titre.
     const recus = JSON.parse(prompt.slice(prompt.indexOf('BLOQUANTS : ') + 12, prompt.indexOf('\n\nArbre jugé')));
+    if (refutationDe) return refutationDe(opts.label, recus);
     return { verdicts: recus.map((b) => ({ titre: b.titre, refute: false, preuve: 'il tient', structurel: false })) };
   },
 );
@@ -264,8 +332,8 @@ test('juge-design-socle : `structurel` demande les DEUX voix, auteur ET réfutat
       if (opts.phase === 'Lecture') return lectureL3(INVARIANTS_L3);
       if (opts.phase === 'Design') {
         return opts.label === 'trou-de-socle'
-          ? { verdict: 'FRAGILE', bloquants: [{ titre: 'le seul bloquant', preuve: 'p', correction: 'c', structurel: auteurStructurel }], dits: [] }
-          : { verdict: 'TIENT', bloquants: [], dits: [] };
+          ? { bloquants: [{ titre: 'le seul bloquant', preuve: 'p', correction: 'c', structurel: auteurStructurel }], dits: [] }
+          : { bloquants: [], dits: [] };
       }
       const recus = JSON.parse(prompt.slice(prompt.indexOf('BLOQUANTS : ') + 12, prompt.indexOf('\n\nArbre jugé')));
       return { verdicts: recus.map((b) => ({ titre: b.titre, refute: false, preuve: 'p', structurel: refutateurStructurel })) };
@@ -283,9 +351,121 @@ test('juge-design-socle : aucun invariant = ARRÊT nommé, avant tout jugement',
   assert.equal(promptsParLabel.has('Design:trou-de-socle'), false, 'aucun juge n’est dispatché sur un brief non jugeable');
 });
 
+const DEUX_BLOQUANTS = (label) => [1, 2].map((n) => ({ titre: `${label} — bloquant ${n}`, preuve: 'p', correction: 'c', structurel: false }));
+
+test('juge-design-socle : aucun bloquant n’est rendu deux fois quand tous les réfutateurs rendent', async () => {
+  const { rendu } = await jouerJuge(INVARIANTS_L3, DEUX_BLOQUANTS);
+  assert.equal(rendu.agents.refutation, 3);
+  assert.equal(rendu.bloquants.length, 6, '3 lentilles × 2 bloquants, aucun doublon');
+  const titres = rendu.bloquants.map((b) => b.titre);
+  assert.equal(new Set(titres).size, 6, `titres rendus : ${titres.join(' · ')}`);
+  assert.deepEqual(rendu.ecartes, []);
+});
+
+test('juge-design-socle : un réfutateur qui ne rend rien laisse SURVIVRE les bloquants de son lot, une seule fois, dits', async () => {
+  const { rendu, journal } = await jouerJuge(
+    INVARIANTS_L3,
+    DEUX_BLOQUANTS,
+    (label, recus) => (label === 'refutation:trou-de-socle→preuve-par-sonde'
+      ? null
+      : { verdicts: recus.map((b) => ({ titre: b.titre, refute: false, preuve: 'il tient', structurel: false })) }),
+  );
+  assert.equal(rendu.agents.refutation, 2, 'le réfutateur qui ne rend rien ne compte pas');
+  assert.equal(rendu.bloquants.length, 6, 'aucun bloquant perdu, aucun rendu deux fois');
+  const orphelins = rendu.bloquants.filter((b) => b.lentille === 'trou-de-socle');
+  assert.deepEqual(orphelins.map((b) => b.titre), ['trou-de-socle — bloquant 1', 'trou-de-socle — bloquant 2']);
+  assert.deepEqual(orphelins.map((b) => b.structurel), [false, false]);
+  assert.deepEqual(orphelins.map((b) => b.refutations), [[], []]);
+  assert.deepEqual(orphelins.map((b) => b.nonRefute), Array(2).fill('le réfutateur de la lentille n’a pas rendu'));
+  assert.ok(journal.some((l) => /Lentille trou-de-socle : le réfutateur n'a pas rendu — ses 2 bloquant\(s\)/.test(l)), 'le lot perdu est DIT dans le journal');
+  assert.match(rendu.bloc, /2 NON RÉFUTÉ\(S\) dont le réfutateur n’a pas rendu/);
+  assert.equal(/NON RÉFUTÉ\(S\) au-delà du plafond/.test(rendu.bloc), false, 'la clause du plafond ne compte que le plafond');
+  assert.match(rendu.bloc, /NON RÉFUTÉ : le réfutateur de la lentille n’a pas rendu/);
+});
+
 test('juge-design-socle : un invariant SANS sa question = ARRÊT qui le nomme par son rang', async () => {
-  const sansQuestion = INVARIANTS_L3.map((i, rang) => (rang === 1 ? { verbatim: i.verbatim, source: i.source } : i));
+  // Le schéma EXIGE la clé `question` : ce qu'un lecteur rend d'un invariant sans question, c'est une
+  // question VIDE — c'est ce chemin-là que la porte doit arrêter.
+  const sansQuestion = INVARIANTS_L3.map((i, rang) => (rang === 1 ? { verbatim: i.verbatim, source: i.source, question: '' } : i));
   const { rendu } = await jouerJuge(sansQuestion);
   assert.equal(rendu.verdict, 'ARRÊT');
   assert.deepEqual(rendu.manques, ["invariant 2 sans la question à laquelle il répond — une citation prouve ce qu'elle RÉPOND, jamais ce qu'on lui fait dire"]);
+});
+
+test('juge-design-socle : un bloquant au titre sans caractère à normaliser part au réfutateur, sous une clé de repli', async () => {
+  const { rendu, journal } = await jouerJuge(
+    INVARIANTS_L3,
+    (label) => (label === 'trou-de-socle'
+      ? [{ titre: '???', preuve: 'la preuve qui compte', correction: 'c', structurel: true },
+        { titre: '—', preuve: 'p2', correction: 'c2', structurel: true }]
+      : []),
+    (label, recus) => ({ verdicts: recus.map((b) => ({ titre: b.titre, refute: false, preuve: 'il tient', structurel: true })) }),
+  );
+  assert.equal(rendu.bloquants.length, 2, 'aucun bloquant jeté');
+  assert.deepEqual(rendu.bloquants.map((b) => b.titre), ['???', '—'], 'chacun garde son titre d’origine');
+  assert.equal(rendu.verdict, 'RÉFUTÉ', 'les deux voix les disent structurels');
+  assert.deepEqual(
+    journal.filter((l) => /clé de repli/.test(l)).map((l) => l.match(/« (sans-titre-[^ »]+) »/)[1]),
+    ['sans-titre-trou-de-socle-1', 'sans-titre-trou-de-socle-2'],
+    'deux clés DISTINCTES, dites au journal',
+  );
+  assert.match(rendu.bloc, /\*\*\?\?\?\*\* \(lentille trou-de-socle\) — la preuve qui compte/);
+});
+
+test('juge-design-socle : le réfutateur d’un titre fusionné n’est AUCUNE de ses lentilles auteures', async () => {
+  const { promptsParLabel, rendu } = await jouerJuge(
+    INVARIANTS_L3,
+    (label) => (['trou-de-socle', 'preuve-par-sonde'].includes(label)
+      ? [{ titre: 'Le même défaut', preuve: `preuve de ${label}`, correction: `correction de ${label}`, structurel: false }]
+      : []),
+  );
+  assert.deepEqual(
+    [...promptsParLabel.keys()].filter((c) => c.startsWith('Réfutation:')),
+    ['Réfutation:refutation:trou-de-socle→normes-et-poison'],
+    'la lentille auteure du bloquant fusionné est exclue du choix',
+  );
+  assert.equal(rendu.bloquants.length, 1);
+  assert.deepEqual(rendu.bloquants[0].auteurs, ['trou-de-socle', 'preuve-par-sonde']);
+});
+
+test('juge-design-socle : un titre rendu par les TROIS lentilles n’a aucun réfutateur indépendant, et le dit', async () => {
+  const { rendu, journal, promptsParLabel } = await jouerJuge(
+    INVARIANTS_L3,
+    () => [{ titre: 'Le même défaut partout', preuve: 'p', correction: 'c', structurel: true }],
+  );
+  assert.equal([...promptsParLabel.keys()].filter((c) => c.startsWith('Réfutation:')).length, 0, 'aucun agent de réfutation dispatché');
+  assert.equal(rendu.bloquants.length, 1);
+  assert.equal(rendu.bloquants[0].nonRefute, 'aucune lentille indépendante pour le réfuter');
+  assert.equal(rendu.bloquants[0].structurel, false, 'sans seconde voix, aucune marque structurelle');
+  assert.equal(rendu.verdict, 'FRAGILE');
+  assert.equal(rendu.refutationIncomplete, true);
+  assert.ok(journal.some((l) => /sans réfutateur INDÉPENDANT/.test(l)), 'le lot sans réfutateur est DIT');
+  assert.match(rendu.bloc, /NON RÉFUTÉ : aucune lentille indépendante pour le réfuter/);
+});
+
+test('juge-design-socle : un réfutateur qui RÉFUTE tout laisse le design TENIR', async () => {
+  const { rendu } = await jouerJuge(
+    INVARIANTS_L3,
+    null,
+    (label, recus) => ({ verdicts: recus.map((b) => ({ titre: b.titre, refute: true, preuve: 'la preuve invoquée n’existe pas', structurel: false })) }),
+  );
+  assert.equal(rendu.ecartes.length, 3, 'les 3 bloquants sont écartés');
+  assert.equal(rendu.bloquants.length, 0);
+  assert.equal(rendu.verdict, 'TIENT');
+  assert.equal(rendu.refutationIncomplete, false);
+  assert.match(rendu.bloc, /Aucun bloquant n’a survécu à la réfutation\./);
+});
+
+test('juge-design-socle : aucun réfutateur ne rend — le bloc dit la réfutation INCOMPLÈTE', async () => {
+  const { rendu } = await jouerJuge(
+    INVARIANTS_L3,
+    (label) => [{ titre: `bloquant de ${label}`, preuve: 'p', correction: 'c', structurel: true }],
+    () => null,
+  );
+  assert.equal(rendu.agents.refutation, 0);
+  assert.equal(rendu.bloquants.length, 3);
+  assert.equal(rendu.refutationIncomplete, true);
+  assert.deepEqual(rendu.bloquants.map((b) => b.structurel), [false, false, false], 'une réfutation absente ne pose aucune marque');
+  assert.equal(rendu.verdict, 'FRAGILE');
+  assert.match(rendu.bloc.split('\n')[0], /\(réfutation incomplète : 3 lot\(s\) sans réfutateur\)/);
 });
