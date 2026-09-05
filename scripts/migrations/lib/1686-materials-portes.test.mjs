@@ -9,15 +9,19 @@
  * message NOMINATIF, et — pour les rouges — ZÉRO fichier touché (octet, horodatage antidaté, aucun
  * fichier créé ni supprimé).
  *
- * Les trois SOURCES n'existent plus dans l'arbre (la migration les a supprimées) : le banc les tire
- * de `git show HEAD:<rel>`, texte pour texte. La CIBLE de référence est le `src/data/materials.json`
- * de l'arbre — c'est lui que le premier passage doit reproduire à l'octet.
+ * Les trois SOURCES n'existent plus dans l'arbre (la migration les a supprimées) et AUCUNE révision
+ * ne sert de fixture — un banc qui lirait `git show <rev>:` mourrait au commit suivant. Le banc les
+ * RECONSTRUIT par projection INVERSE du `src/data/materials.json` VIVANT : partition par `domain`
+ * dans l'ordre prop/roof/relief, chaque entrée rendue `{ id, type: <ancien type>, label, ...reste }`
+ * sans `domain`, sérialisée sous la forme canonique. La porte (a) est donc un ALLER-RETOUR : la
+ * migration rejouée sur ces sources doit reproduire à l'octet le dataset de l'arbre.
+ * Aucun cardinal n'est récité ici : les comptes attendus se lisent sur le dataset.
  *
  * Ce banc vit sous `lib/` : `replay.mjs` scanne le dossier des migrations à PLAT et n'y admet que
  * des `.mjs` à préfixe DATÉ — un `.test.mjs` posé à côté des migrations y serait rejoué ou refusé.
  */
 import { strict as assert } from 'node:assert';
-import { execFileSync, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -28,21 +32,36 @@ const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATION = '2026-09-05-1686-materials.mjs';
 
 const SOURCES = [
-  { rel: 'src/data/propMaterials.json', domain: 'prop' },
-  { rel: 'src/data/roofMaterials.json', domain: 'roof' },
-  { rel: 'src/data/reliefMaterials.json', domain: 'relief' },
+  { rel: 'src/data/propMaterials.json', domain: 'prop', type: 'propMaterials' },
+  { rel: 'src/data/roofMaterials.json', domain: 'roof', type: 'roofMaterials' },
+  { rel: 'src/data/reliefMaterials.json', domain: 'relief', type: 'reliefMaterials' },
 ];
 const CIBLE = 'src/data/materials.json';
 
 /** Formatage canonique de `src/data/*.json`, EXIGÉ par la migration en entrée comme en sortie. */
 const serialise = (doc) => JSON.stringify(doc, null, 2);
 
-/** Texte des trois sources tel que HEAD le porte (l'arbre ne les a plus). */
-const texteDeHead = (rel) =>
-  execFileSync('git', ['show', `HEAD:${rel}`], { cwd: RACINE, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
-
-const TEXTE_SOURCE = Object.fromEntries(SOURCES.map((s) => [s.rel, texteDeHead(s.rel)]));
 const TEXTE_CIBLE = fs.readFileSync(path.join(RACINE, CIBLE), 'utf8');
+const CIBLE_DOC = JSON.parse(TEXTE_CIBLE);
+
+/**
+ * PROJECTION INVERSE : le document source d'un domaine, tel que la migration l'exige en entrée —
+ * ses entrées dans l'ordre du dataset, `domain` retiré, `type` rendu à l'enveloppe d'origine.
+ */
+const sourceDepuisCible = ({ domain, type }) =>
+  CIBLE_DOC.filter((e) => e.domain === domain).map(({ id, type: _type, label, domain: _domain, ...reste }) => ({
+    id,
+    type,
+    label,
+    ...reste,
+  }));
+
+const DOC_SOURCE = Object.fromEntries(SOURCES.map((s) => [s.rel, sourceDepuisCible(s)]));
+const TEXTE_SOURCE = Object.fromEntries(Object.entries(DOC_SOURCE).map(([rel, doc]) => [rel, serialise(doc)]));
+
+/** Cardinal LU sur le dataset — jamais récité. */
+const CARDINAL = Object.fromEntries(Object.entries(DOC_SOURCE).map(([rel, doc]) => [rel, doc.length]));
+for (const s of SOURCES) assert.ok(CARDINAL[s.rel] > 0, `${s.rel} : projection VIDE — la fixture ne mesure rien`);
 
 /** Horodatage ANTIDATÉ : toute écriture, même à contenu égal, le remonte — le rejeu est mesurable. */
 const ANTIDATE = new Date('2000-01-01T00:00:00Z');
@@ -92,20 +111,23 @@ function rienTouche(racine, avant) {
   return fautes;
 }
 
-/** Les trois sources, parsées depuis HEAD — `mute` les modifie en place avant sérialisation. */
+/** Les trois sources projetées, en copies fraîches — `mute` les modifie en place avant sérialisation. */
 function sourcesMutees(mute) {
   const docs = Object.fromEntries(SOURCES.map((s) => [s.rel, JSON.parse(TEXTE_SOURCE[s.rel])]));
   mute(docs);
   return Object.fromEntries(Object.entries(docs).map(([rel, doc]) => [rel, serialise(doc)]));
 }
 
-test('(a) PREMIER PASSAGE : les 3 sources de HEAD → `materials.json` BYTE-IDENTIQUE à celui de l’arbre', (t) => {
+test('(a) ALLER-RETOUR : les 3 sources projetées → `materials.json` BYTE-IDENTIQUE à celui de l’arbre', (t) => {
   const { racine } = depot({ ...TEXTE_SOURCE });
   t.after(() => efface(racine));
 
   const { code, sortie } = joue(racine);
   assert.equal(code, 0, `sortie ${code} — la fusion doit passer : ${sortie.slice(0, 800)}`);
-  assert.match(sortie, /migré — 16 matière\(s\)/, `la fusion ne DIT pas son compte : ${sortie.slice(0, 800)}`);
+  assert.ok(
+    sortie.includes(`migré — ${CIBLE_DOC.length} matière(s)`),
+    `la fusion ne DIT pas son compte : ${sortie.slice(0, 800)}`,
+  );
 
   const produit = fs.readFileSync(path.join(racine, CIBLE), 'utf8');
   assert.equal(produit, TEXTE_CIBLE, 'le `materials.json` produit diffère à l’octet de celui de l’arbre');
@@ -147,7 +169,11 @@ test('(d) CARDINAL cassé (une entrée retirée d’une source) → sortie 1 NOM
   const { code, sortie } = joue(racine);
   assert.equal(code, 1, `sortie ${code} — un cardinal inattendu doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /propMaterials\.json/, `arrêt sans NOMMER le document fautif : ${sortie.slice(0, 800)}`);
-  assert.match(sortie, /7 entrée\(s\) ≠ 8 attendue\(s\)/, `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 800)}`);
+  const attendu = CARDINAL['src/data/propMaterials.json'];
+  assert.ok(
+    sortie.includes(`${attendu - 1} entrée(s) ≠ ${attendu} attendue(s)`),
+    `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 800)}`,
+  );
   assert.deepEqual(rienTouche(racine, avant), [], 'la migration a écrit ou supprimé alors que l’arrêt précède toute écriture');
 });
 
