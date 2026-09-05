@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 // Lanceur d'un outil INSTALLÉ DANS CET ARBRE (#1679 L1c) : `node scripts/lancer-local.mjs <paquet>
-// -- <bin> [args…]`. npm empile les `node_modules/.bin` de TOUS les dossiers ANCÊTRES sur le PATH du
+// [--cwd <dossier>] -- <bin> [args…]`. npm empile les `node_modules/.bin` de TOUS les dossiers ANCÊTRES sur le PATH du
 // script : depuis un worktree sans `typescript`, `npm run typecheck` jouait le tsc de l'arbre
 // principal et rendait 0 (mesuré 2026-09-02, `npm run typecheck -- --version` → 5.9.3 depuis
 // `.claude/worktrees/agent-ecran`). Deux verrous ici :
 //   · l'outil ABSENT de cet arbre est refusé par `refusOutillageLocal`, qui nomme l'arbre et la cause ;
 //   · l'enfant reçoit un PATH dont le SEUL `node_modules/.bin` est celui de cet arbre — les `.bin`
 //     des ancêtres en sont retirés, donc un sous-processus de l'outil ne peut pas les servir non plus.
+// `--cwd <dossier>` déplace le BASE PATH de l'outil (le dossier depuis lequel il résout ses chemins
+// relatifs et décide de sa portée), quand l'appelant juge un dossier qui n'est pas l'arbre : l'outil,
+// son env isolé et son `.bin` restent, eux, résolus depuis la racine de cet arbre. Sans l'option,
+// l'enfant tourne à la racine.
 // L'exécutable joué est le FICHIER JS déclaré par le champ `bin` du paquet, lancé par `process.execPath`
 // (`shell: false`) : aucun `.cmd` de `node_modules/.bin` n'est traversé, donc aucune règle de citation
 // de cmd.exe sur les arguments, et le même chemin de code sur win32 et sur posix.
@@ -14,15 +18,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execFileSync, spawn } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { separerInvocation } from './guards/lib/invocation.mjs'
 import { refusOutillageLocal } from './outillage-local.mjs'
 import { codeEnfant } from './test/partition.mjs'
-
-/** Découpe `<paquet> -- <bin> [args…]`. REND `null` si la forme n'est pas respectée. */
-export function separerInvocation(argv) {
-  if (argv.indexOf('--') !== 1) return null
-  const [paquet, , bin, ...args] = argv
-  return bin ? { paquet, bin, args } : null
-}
 
 const EST_BIN_NPM = /(^|[\\/])node_modules[\\/]\.bin[\\/]?$/
 
@@ -71,6 +69,8 @@ export function resoudreOutilLocal(racine, paquet, bin) {
  * STDOUT d'un outil de CET ARBRE joué sur un script (`tsx <dumper>`). `npx` est proscrit : il remonte
  * aux arbres ancêtres, et son enfant perd le `cwd`/l'env que l'appelant vient de poser — un
  * enregistreur de lectures ne verrait rien du dumper (#1679 L1b).
+ * L'enfant tourne à la RACINE : `--cwd` est une option de la ligne de commande, et les appelants d'ici
+ * (`docs/build-codex-relations.mjs`, `docs/build-donnees.mjs`) jugent l'arbre lui-même.
  */
 export function sortieOutilLocal(racine, paquet, bin, args) {
   const { entree, refus } = resoudreOutilLocal(racine, paquet, bin)
@@ -88,19 +88,19 @@ export const binLocal = (racine) => path.join(racine, 'node_modules', '.bin')
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const RACINE = fileURLToPath(new URL('..', import.meta.url))
-  const invocation = separerInvocation(process.argv.slice(2))
+  const invocation = separerInvocation(process.argv.slice(2), { options: ['--cwd'] })
   if (!invocation) {
-    console.error('[outillage] usage : node scripts/lancer-local.mjs <paquet> -- <bin> [args…]')
+    console.error('[outillage] usage : node scripts/lancer-local.mjs <paquet> [--cwd <dossier>] -- <bin> [args…]')
     process.exit(2)
   }
-  const { paquet, bin, args } = invocation
+  const { positionnel: paquet, options, reste: [bin, ...args] } = invocation
   const { entree, refus } = resoudreOutilLocal(RACINE, paquet, bin)
   if (refus) {
     console.error(refus)
     process.exit(2)
   }
   const enfant = spawn(process.execPath, [entree, ...args], {
-    cwd: RACINE,
+    cwd: options.cwd ?? RACINE,
     env: envIsole(process.env, binLocal(RACINE)),
     stdio: 'inherit',
     shell: false,

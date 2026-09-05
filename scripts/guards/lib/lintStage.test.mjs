@@ -3,6 +3,7 @@
 // réelle qui décide si un fichier est jugé ou ignoré.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -10,10 +11,12 @@ import { fileURLToPath } from 'node:url'
 import { defautsDeRapport, fichiersALinter, lancerLint } from './lintStage.mjs'
 
 const RACINE = fileURLToPath(new URL('../../..', import.meta.url))
-/** Dossier de fixtures propre à ce processus, sous la racine : hors d'elle, eslint ne résout pas la
- *  config du dépôt et ne jugerait plus rien. */
-const DOSSIER = `.lint-fixtures-${process.pid}`
 const NBSP = String.fromCharCode(0x00a0)
+
+/** Les fixtures vivent en dossier temporaire : `lancerLint` y envoie eslint par `--cwd`, avec la
+ *  config du dépôt passée en argument. L'arbre reste intact pendant que les autres lanes le lisent
+ *  (`eslint .` de la gate `lint` voit tout fichier posé sous la racine : mesuré, status=1). */
+const dossierDeFixtures = () => mkdtempSync(join(tmpdir(), 'lint-fixtures-'))
 
 test('sélection : extensions jugées seulement, et JAMAIS un chemin absent du disque', () => {
   const choisis = fichiersALinter(
@@ -76,48 +79,71 @@ test('FAIL-CLOSED — un rapport pollué par stderr rend un défaut NOMMÉ, jama
 })
 
 test('FAIL-CLOSED — eslint qui échoue SANS rapport (outil absent) est un refus nommé', () => {
-  // Racine sans `node_modules/eslint` : `lancer-local.mjs` refuse (exit 2) et n'écrit rien sur stdout.
+  // Arbre COMPLET du lanceur (ses quatre modules) mais sans `node_modules/eslint` : le refus vient de
+  // la décision d'outillage, jamais d'un import manquant — c'est le refus que la porte doit NOMMER.
   const racine = mkdtempSync(join(tmpdir(), 'lint-sans-outil-'))
   try {
-    mkdirSync(join(racine, 'scripts'), { recursive: true })
-    copyFileSync(join(RACINE, 'scripts', 'lancer-local.mjs'), join(racine, 'scripts', 'lancer-local.mjs'))
+    mkdirSync(join(racine, 'scripts', 'guards', 'lib'), { recursive: true })
+    mkdirSync(join(racine, 'scripts', 'test'), { recursive: true })
+    for (const rel of [
+      ['scripts', 'lancer-local.mjs'],
+      ['scripts', 'outillage-local.mjs'],
+      ['scripts', 'test', 'partition.mjs'],
+      ['scripts', 'guards', 'lib', 'invocation.mjs'],
+    ])
+      copyFileSync(join(RACINE, ...rel), join(racine, ...rel))
     writeFileSync(join(racine, 'a.ts'), 'export const a = 1\n')
     const { defauts } = lancerLint(racine, ['a.ts'])
     assert.equal(defauts.length, 1)
     assert.equal(defauts[0].site, '(lint)')
     assert.match(defauts[0].message, /eslint a échoué sans rapport/)
+    assert.match(defauts[0].message, /n'est pas installé dans cet arbre/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
 })
 
 test('MORSURE — un fichier fautif est refusé, un fichier IGNORÉ par la config ne l’est pas', () => {
-  const dossier = join(RACINE, DOSSIER)
-  const ignore = join(RACINE, 'src', 'data', `.lint-fixture-${process.pid}.ts`)
+  const dossier = dossierDeFixtures()
+  const relIgnore = 'src/data/.lint-fixture.ts'
   try {
-    mkdirSync(dossier, { recursive: true })
+    mkdirSync(join(dossier, 'src', 'data'), { recursive: true })
     // Espace insécable dans le code : `no-irregular-whitespace` (eslint:recommended) le refuse.
     writeFileSync(join(dossier, 'fautif.ts'), `export const a =${NBSP}1\n`)
     writeFileSync(join(dossier, 'sain.ts'), 'export const b = 1\n')
     // `eslint.config.js` ignore `src/data/**` : cité EXPLICITEMENT, il rendrait un avertissement —
     // donc un échec sous `--max-warnings 0` — sans `--no-warn-ignored`.
-    writeFileSync(ignore, `export const c =${NBSP}1\n`)
+    writeFileSync(join(dossier, relIgnore), `export const c =${NBSP}1\n`)
 
-    const relIgnore = `src/data/.lint-fixture-${process.pid}.ts`
-    const { defauts, brut } = lancerLint(RACINE, [`${DOSSIER}/fautif.ts`, `${DOSSIER}/sain.ts`, relIgnore])
+    const { defauts, brut } = lancerLint(RACINE, ['fautif.ts', 'sain.ts', relIgnore], { cwd: dossier })
     assert.ok(defauts.length >= 1, `aucun défaut rendu — sortie brute : ${brut.slice(0, 400)}`)
     assert.deepEqual(
-      defauts.filter((d) => d.site.startsWith(`${DOSSIER}/fautif.ts:`)).map((d) => d.regle),
+      defauts.filter((d) => d.site.startsWith('fautif.ts:')).map((d) => d.regle),
       ['no-irregular-whitespace'],
     )
     assert.deepEqual(defauts.filter((d) => d.site.includes('sain.ts')), [])
-    assert.deepEqual(defauts.filter((d) => d.site.includes('.lint-fixture-')), [])
+    assert.deepEqual(defauts.filter((d) => d.site.includes('lint-fixture')), [])
+
+    // NOMINATIVE : la morsure ne dépose RIEN dans l'arbre que les autres lanes lisent au même moment.
+    // Seuls les chemins de fixture sont regardés — un écrivain d'une autre gate ne rougit pas ce test.
+    const statut = execFileSync('git', ['status', '--porcelain'], { cwd: RACINE, encoding: 'utf8' })
+    assert.deepEqual(statut.split('\n').filter((l) => l.includes('lint-fixture')), [])
   } finally {
     rmSync(dossier, { recursive: true, force: true })
-    rmSync(ignore, { force: true })
   }
 })
 
+test('LIGNE DE PROD (`cwd` = racine) : la config du dépôt juge un fichier réel, et le site lui est relatif', () => {
+  // Ce que joue le pre-commit, mot pour mot : `lancerLint(RACINE, …)` sans `cwd`. Le fichier est jugé
+  // (il est dans le rapport) et ne porte aucun défaut — le couple qu'une config PASSÉE doit rendre
+  // à l'identique d'une config découverte.
+  const rel = 'src/state/rollSeam.ts'
+  const { defauts, stdout } = lancerLint(RACINE, [rel])
+  assert.deepEqual(defauts, [], `défauts inattendus : ${JSON.stringify(defauts)}`)
+  const juges = JSON.parse(stdout).map((f) => String(f.filePath).replace(/\\/g, '/'))
+  assert.deepEqual(juges, [join(RACINE, rel).replace(/\\/g, '/')], 'eslint a bien jugé ce fichier, et lui seul')
+})
+
 test('lot vide : aucun processus lancé, aucun défaut', () => {
-  assert.deepEqual(lancerLint(RACINE, []), { defauts: [], brut: '' })
+  assert.deepEqual(lancerLint(RACINE, []), { defauts: [], brut: '', stdout: '' })
 })

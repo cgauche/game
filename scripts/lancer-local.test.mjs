@@ -10,20 +10,9 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
-import { binLocal, entreeBin, envIsole, pathIsole, resoudreOutilLocal, separerInvocation } from './lancer-local.mjs'
+import { binLocal, entreeBin, envIsole, pathIsole, resoudreOutilLocal } from './lancer-local.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
-
-test('invocation : `<paquet> -- <bin> [args…]`, toute autre forme est refusée', () => {
-  assert.deepEqual(separerInvocation(['typescript', '--', 'tsc', '--noEmit']), {
-    paquet: 'typescript',
-    bin: 'tsc',
-    args: ['--noEmit'],
-  })
-  assert.equal(separerInvocation(['typescript', 'tsc']), null, 'sans séparateur')
-  assert.equal(separerInvocation(['typescript', '--']), null, 'sans exécutable')
-  assert.equal(separerInvocation(['--', 'tsc']), null, 'sans paquet')
-})
 
 test('entrée `bin` : table nommée, forme chaîne (nom du paquet), inconnu', () => {
   assert.equal(entreeBin({ bin: { tsc: './bin/tsc', tsserver: './bin/tsserver' } }, 'tsc'), './bin/tsc')
@@ -55,13 +44,15 @@ test('env de l’enfant : le PATH est posé sur la clé EXISTANTE (win32 écrit 
   assert.equal(env.HOME, '/h')
 })
 
-/** Faux arbre : les trois fichiers du lanceur, et rien d'autre — pas de `node_modules`. */
+/** Faux arbre : les fichiers du lanceur, et rien d'autre — pas de `node_modules`. */
 function fauxArbre() {
   const racine = mkdtempSync(join(tmpdir(), 'lancer-local-'))
   mkdirSync(join(racine, 'scripts', 'test'), { recursive: true })
+  mkdirSync(join(racine, 'scripts', 'guards', 'lib'), { recursive: true })
   copyFileSync(join(ICI, 'lancer-local.mjs'), join(racine, 'scripts', 'lancer-local.mjs'))
   copyFileSync(join(ICI, 'outillage-local.mjs'), join(racine, 'scripts', 'outillage-local.mjs'))
   copyFileSync(join(ICI, 'test', 'partition.mjs'), join(racine, 'scripts', 'test', 'partition.mjs'))
+  copyFileSync(join(ICI, 'guards', 'lib', 'invocation.mjs'), join(racine, 'scripts', 'guards', 'lib', 'invocation.mjs'))
   return racine
 }
 
@@ -130,6 +121,42 @@ test('paquet PRÉSENT : lancé avec ses arguments, PATH isolé, code de sortie p
       [join(racine, 'node_modules', '.bin')],
       'aucun `.bin` d’un autre arbre ne subsiste',
     )
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('`--cwd` : l’enfant tourne dans le dossier demandé, l’outil reste celui de l’arbre', () => {
+  const racine = fauxArbre()
+  const ailleurs = mkdtempSync(join(tmpdir(), 'cwd-demande-'))
+  try {
+    mkdirSync(join(racine, 'node_modules', 'sonde'), { recursive: true })
+    writeFileSync(
+      join(racine, 'node_modules', 'sonde', 'package.json'),
+      JSON.stringify({ name: 'sonde', bin: { sonde: 'sonde.mjs' } }),
+    )
+    writeFileSync(
+      join(racine, 'node_modules', 'sonde', 'sonde.mjs'),
+      'process.stdout.write(JSON.stringify({ cwd: process.cwd(), entree: process.argv[1] }))\n',
+    )
+    const vu = JSON.parse(lancer(racine, ['sonde', '--cwd', ailleurs, '--', 'sonde']).stdout)
+    assert.equal(vu.cwd, ailleurs)
+    assert.equal(vu.entree, join(racine, 'node_modules', 'sonde', 'sonde.mjs'))
+
+    const defaut = JSON.parse(lancer(racine, ['sonde', '--', 'sonde']).stdout)
+    assert.equal(defaut.cwd, racine, 'sans l’option, l’enfant tourne à la racine')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+    rmSync(ailleurs, { recursive: true, force: true })
+  }
+})
+
+test('invocation mal formée : usage NOMMÉ, exit 2, rien n’est lancé', () => {
+  const racine = fauxArbre()
+  try {
+    const r = lancer(racine, ['sonde', '--cwd', '--', 'sonde'])
+    assert.equal(r.status, 2)
+    assert.match(r.stderr, /usage : node scripts\/lancer-local\.mjs <paquet> \[--cwd <dossier>\] -- <bin>/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }

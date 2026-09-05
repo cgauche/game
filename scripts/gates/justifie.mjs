@@ -16,6 +16,7 @@
 // de `package.json`, qui lui-même passe par `scripts/lancer-local.mjs`.
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { separerInvocation } from '../guards/lib/invocation.mjs'
 import { ecrireJustificatif } from '../guards/lib/justificatif.mjs'
 import { execFileResilient } from '../guards/lib/spawnResilient.mjs'
 import { codeEnfant } from '../test/partition.mjs'
@@ -25,24 +26,12 @@ import { codeEnfant } from '../test/partition.mjs'
 // des lanes mesurable sur un dépôt jetable, sans jamais écrire de justificatif dans le dépôt réel.
 const RACINE = process.env.WFRP_GATES_RACINE ?? fileURLToPath(new URL('../..', import.meta.url))
 
-/** Découpe `<gate> [--capture <fichier>] -- <cmd> [args…]`, ou `null` si la forme n'est pas tenue. */
-export function separerInvocation(argv) {
-  const coupure = argv.indexOf('--')
-  if (coupure < 1) return null
-  const [gate, ...options] = argv.slice(0, coupure)
-  const [cmd, ...args] = argv.slice(coupure + 1)
-  if (!gate || !cmd) return null
-  const i = options.indexOf('--capture')
-  const capture = i >= 0 ? options[i + 1] : undefined
-  return { gate, capture, cmd, args }
-}
-
-const invocation = separerInvocation(process.argv.slice(2))
+const invocation = separerInvocation(process.argv.slice(2), { options: ['--capture'] })
 if (!invocation) {
   console.error('[gate] usage : node scripts/gates/justifie.mjs <gate> [--capture <fichier>] -- <cmd> [args…]')
   process.exit(2)
 }
-const { gate, capture, cmd, args } = invocation
+const { positionnel: gate, options: { capture }, reste: [cmd, ...args] } = invocation
 if (cmd !== 'npm' && cmd !== 'node') {
   console.error(
     `[gate] commande refusée : ${cmd} — une gate se joue par « npm run <script> » (le script passe ` +
