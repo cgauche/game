@@ -74,6 +74,67 @@ export const secondarySourceRefSchema = sourceRefSchema.extend({
 export type SecondaryRef = z.infer<typeof secondarySourceRefSchema>;
 
 /**
+ * FRAGMENT DE BLOCS d'une adresse de prose : la suite CONTIGUË `b0..b1` des blocs d'affichage d'une
+ * section de chapitre, plus l'empreinte du texte normalisé qu'elle rend. Forme et sémantique du
+ * parseur `src/data/source/decoupe.ts` (`FragmentBlocs`) — les deux définitions coïncident, et
+ * `grammaire.test.ts` le vérifie AU TYPE.
+ */
+export const fragmentBlocsSchema = z.strictObject({
+  kind: z.literal('blocs'),
+  sec: z.string(),
+  secOcc: z.number().int().min(1),
+  b0: z.number().int().min(0),
+  b1: z.number().int().min(0),
+  sum: z.string().regex(/^[0-9a-f]{16}$/),
+});
+
+/**
+ * FRAGMENT DE CELLULE : une case de table, adressée par clé de LIGNE × en-tête de COLONNE — jamais
+ * par indices, qu'une ré-extraction déplacerait. `row`/`col` sont des CHAÎNES : la clé de ligne d'une
+ * table de d100 (`01-10`) n'est pas un nombre.
+ */
+export const fragmentCelluleSchema = z.strictObject({
+  kind: z.literal('cellule'),
+  sec: z.string(),
+  secOcc: z.number().int().min(1),
+  row: z.string().min(1),
+  col: z.string().min(1),
+  sum: z.string().regex(/^[0-9a-f]{16}$/),
+});
+
+/**
+ * ADRESSE DE PROSE (#1389, épique #1388 §2.2) — ce qu'une entrée porte À LA PLACE de la prose
+ * recopiée du livre : le livre, le chapitre, et jusqu'à TROIS fragments d'un même chapitre.
+ *
+ * Les verrous sont STRUCTURELS : un seul chapitre par construction (`ch` est à la racine), au plus
+ * trois fragments (un montage plus long n'est plus une citation mais une réécriture), et chaque
+ * fragment porte son empreinte `sum` — sans elle, une ré-extraction du livre changerait le texte
+ * rendu en silence. Les verrous de COHÉRENCE (exclusivité avec `desc`, résolubilité du livre,
+ * accord avec `source`) vivent dans `grammaire/prose.ts`, avec le champ qui les porte.
+ */
+export const descRefSchema = z
+  .strictObject({
+    book: z.string().min(1),
+    /** Numéro de chapitre tel que le nomme le fichier d'extraction (`07`, `21`) — deux chiffres. */
+    ch: z.string().regex(/^\d{2}$/),
+    parts: z.array(z.discriminatedUnion('kind', [fragmentBlocsSchema, fragmentCelluleSchema])).min(1).max(3),
+  })
+  .superRefine((v, ctx) => {
+    v.parts.forEach((p, i) => {
+      if (p.kind === 'blocs' && p.b1 < p.b0) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['parts', i, 'b1'],
+          message: `adresse de prose : bornes inversées (\`b1\` ${p.b1} < \`b0\` ${p.b0}) — un fragment de blocs est une suite contiguë.`,
+        });
+      }
+    });
+  });
+
+/** Vue TS de `descRefSchema` — la MÊME forme que `DescRef` du parseur (`src/data/source/decoupe.ts`). */
+export type DescRef = z.infer<typeof descRefSchema>;
+
+/**
  * ENTRÉE DE CATALOGUE DE SPÉCIALISATION (`SpecEntry`, `src/data/index.ts`) — ce qu'une def de
  * Compétence/Talent énumère sous `specs[]` : l'id STABLE manipulé par la logique, son `label` FR
  * d'affichage, l'attestation de l'entrée quand elle vient d'un autre folio (`source`/`alsoIn`), et

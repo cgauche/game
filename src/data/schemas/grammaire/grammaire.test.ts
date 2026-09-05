@@ -11,7 +11,11 @@ import { z } from 'zod';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
 import tablesJson from '../../tables.json';
-import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, META_CHARGE, type Exposition } from './document';
+import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, META_CHARGE, type Exposition, type CleExigible } from './document';
+import { descRefSchema, sourceRefSchema } from './valeurs';
+import { proseAdressable, versDisque } from './prose';
+import { PROSE_INLINE_TOLEREE } from './prose-inline';
+import type { DescRef as DescRefParseur } from '../../source/decoupe';
 import { ref, refs, specRef, pick, typedRef, idDe, cibleDe, estSpecialisable, TYPES, type Id } from './ref';
 import { byId, type SkillData, type TypeResolu } from '../../index';
 import { avancement } from './avancement';
@@ -28,6 +32,11 @@ const UNE_TABLE = tablesJson[0] as { id: string };
 const declareDesSpecs = (e: EntreeASpecs) => !!(e.specs?.length || e.specsSource);
 
 const SOURCE_REELLE = { book: 'livre-de-base', page: 118 };
+/** Livre VF RÉEL dont `books.json` ne porte AUCUN `dir` : rien n'est extrait, donc rien n'est
+ *  adressable — une prose y reste inline légitimement (verrou V3, `grammaire/prose.ts`).
+ *  Fixture SYNTHÉTIQUE : `page: 1` est un remplissage de forme, PAS une citation — aucun folio de ce
+ *  livre n'est allégué ici. Le livre, lui, est bien VF (CLAUDE.md § Sources VF : la VO ne se cite pas). */
+const SOURCE_SANS_EXTRACTION = { book: 'boite-d-initiation', page: 1 };
 const EXPOSITION: Exposition = { codex: { keys: ['talents'] }, edit: { dataset: 'talents.json' } };
 
 describe('document() — enveloppe posée par la fabrique', () => {
@@ -401,7 +410,7 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     // Consommateur mesuré `defs-scenes/narratif.ts:49` : `.partial().optional()` — le sceau le sert.
     expect(entreePartielle.optional().safeParse(undefined).success).toBe(true);
     expect(entreePartielle.optional().safeParse({ max: 2 }).success).toBe(true);
-    expect(cles).toEqual(['id', 'type', 'label', 'labelF', 'desc', 'source', 'alsoIn', 'maison', 'icon', 'max']);
+    expect(cles).toEqual(['id', 'type', 'label', 'labelF', 'desc', 'descRef', 'source', 'alsoIn', 'maison', 'icon', 'max']);
     // Sur un document à `rangee` comme en famille `record`, la charge EST un champ de l'entrée.
     expect(REPLIQUES.rangees.cles).toContain('die');
     expect(REPLIQUES.rangees.cles).toContain('entries');
@@ -844,7 +853,9 @@ describe('document() — verrous d’ENVELOPPE paramétrés (#1467 L1b V-P0c)', 
     const strict = document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
       exiges: ['desc', 'source'],
     });
-    const complet = { ...ENV('fiche-jouet'), desc: 'Une prose.', max: 2 };
+    // La prose INLINE se cite d'un livre SANS extraction : sur un livre extrait, le verrou V3 de
+    // `grammaire/prose.ts` exigerait l'adresse (`descRef`) et masquerait ce que ce test mesure.
+    const complet = { ...ENV('fiche-jouet'), source: SOURCE_SANS_EXTRACTION, desc: 'Une prose.', max: 2 };
     expect(strict.entree.safeParse(complet).success).toBe(true);
     const sansDesc = strict.entree.safeParse({ ...ENV('fiche-jouet'), max: 2 });
     expect(sansDesc.success).toBe(false);
@@ -943,7 +954,9 @@ describe('document() — verrous d’ENVELOPPE paramétrés (#1467 L1b V-P0c)', 
   });
 
   it('les clés EXIGIBLES sont DÉRIVÉES de l’enveloppe : aucune liste parallèle à maintenir', () => {
-    expect([...CLES_EXIGIBLES].sort()).toEqual(CLES_ENVELOPPE.filter((k) => !['id', 'type', 'label', 'variants'].includes(k)).sort());
+    expect([...CLES_EXIGIBLES].sort()).toEqual(
+      CLES_ENVELOPPE.filter((k) => !['id', 'type', 'label', 'variants', 'descRef'].includes(k)).sort(),
+    );
   });
 });
 
@@ -1167,5 +1180,132 @@ describe('avancement() — l’emplacement d’avancement, vocabulaire CLOS', ()
 
   it.each(CAS)('%s → %s', (_nom, valeur, porte, attendu) => {
     expect(porte.safeParse(valeur).success).toBe(attendu);
+  });
+});
+
+describe('prose adressée — forme et verrous (#1389 Lot A, épique #1388)', () => {
+  const ENV = (type: string) => ({ id: 'x', type, label: 'X' });
+  /** Un type de document ABSENT du stock de prose inline : V3 y mord. */
+  const HORS_STOCK = 'fiche-jouet';
+  /** Un type PRÉSENT au stock : sa prose inline reste admise le temps de sa migration. */
+  const [AU_STOCK] = Object.keys(PROSE_INLINE_TOLEREE);
+  const jouet = (type: string, exiges?: readonly CleExigible[]) =>
+    document(type, 'entite', { max: z.number().optional() }, { max: { label: 'Max' } }, EXPOSITION, exiges ? { exiges } : undefined);
+
+  const FRAGMENT = { kind: 'blocs', sec: 'les-tests', secOcc: 1, b0: 0, b1: 2, sum: '0123456789abcdef' } as const;
+  const ADRESSE = { book: 'livre-de-base', ch: '13', parts: [FRAGMENT] };
+  /** Adresse dans un livre RÉEL sans extraction : irrésoluble. */
+  const ADRESSE_IRRESOLUBLE = { ...ADRESSE, book: SOURCE_SANS_EXTRACTION.book };
+
+  it('la FORME de l’adresse est la MÊME que celle du parseur de découpe (aucune 2ᵉ définition)', () => {
+    expectTypeOf<z.infer<typeof descRefSchema>>().toEqualTypeOf<DescRefParseur>();
+  });
+
+  it('une adresse VALIDE est acceptée, et son livre doit être un livre EXTRAIT (V2)', () => {
+    const doc = jouet(HORS_STOCK);
+    expect(doc.entree.safeParse({ ...ENV(HORS_STOCK), source: SOURCE_REELLE, descRef: ADRESSE }).success).toBe(true);
+    const ko = doc.entree.safeParse({ ...ENV(HORS_STOCK), source: SOURCE_SANS_EXTRACTION, descRef: ADRESSE_IRRESOLUBLE });
+    expect(ko.success).toBe(false);
+    expect(ko.error!.issues.map((i) => i.path.join('.'))).toContain('descRef.book');
+    expect(ko.error!.issues.map((i) => i.message).join(' ')).toMatch(/sans extraction/);
+  });
+
+  it('V1 — `desc` ET `descRef` ensemble : un texte, un porteur', () => {
+    const ko = jouet(AU_STOCK).entree.safeParse({
+      ...ENV(AU_STOCK),
+      source: SOURCE_REELLE,
+      desc: 'Une prose.',
+      descRef: ADRESSE,
+    });
+    expect(ko.success).toBe(false);
+    expect(ko.error!.issues.map((i) => i.path.join('.'))).toContain('descRef');
+    expect(ko.error!.issues.map((i) => i.message).join(' ')).toMatch(/un texte, un porteur/);
+  });
+
+  it('V2b — la `source` et l’adresse doivent citer le MÊME livre', () => {
+    const ko = jouet(HORS_STOCK).entree.safeParse({
+      ...ENV(HORS_STOCK),
+      source: { book: 'aux-armes', page: 42 },
+      descRef: ADRESSE,
+    });
+    expect(ko.success).toBe(false);
+    expect(ko.error!.issues.map((i) => i.message).join(' ')).toMatch(/un autre livre que l'adresse/);
+  });
+
+  it('V3 — une prose recopiée d’un livre EXTRAIT est refusée hors stock, admise au stock, `maison` ou pas', () => {
+    const inline = (type: string, extra: Record<string, unknown> = {}) =>
+      jouet(type).entree.safeParse({ ...ENV(type), source: SOURCE_REELLE, desc: 'Une prose du livre.', ...extra });
+    const ko = inline(HORS_STOCK);
+    expect(ko.success).toBe(false);
+    expect(ko.error!.issues.map((i) => i.path.join('.'))).toContain('desc');
+    expect(ko.error!.issues.map((i) => i.message).join(' ')).toMatch(/l'entrée l'ADRESSE/);
+    expect(inline(AU_STOCK).success).toBe(true);
+    // `maison` ne DISPENSE pas : le champ dit ce que le canon ne tranche pas, il ne dit pas d’où
+    // vient le texte — 32 nœuds portent les deux (mesure du 2026-09-05).
+    expect(inline(HORS_STOCK, { maison: 'une raison' }).success).toBe(false);
+    // Un livre SANS extraction n’est pas adressable : sa prose reste inline, hors stock comprise.
+    expect(
+      jouet(HORS_STOCK).entree.safeParse({ ...ENV(HORS_STOCK), source: SOURCE_SANS_EXTRACTION, desc: 'Une prose.' }).success,
+    ).toBe(true);
+  });
+
+  it('V4 — `exiges: [desc]` exige la PROSE, satisfaite par l’un OU l’autre porteur', () => {
+    const strict = jouet(HORS_STOCK, ['desc']);
+    const nue = strict.entree.safeParse({ ...ENV(HORS_STOCK), source: SOURCE_REELLE });
+    expect(nue.success).toBe(false);
+    expect(nue.error!.issues.map((i) => i.path.join('.'))).toContain('desc');
+    expect(nue.error!.issues.map((i) => i.message).join(' ')).toMatch(/prose obligatoire/);
+    expect(strict.entree.safeParse({ ...ENV(HORS_STOCK), source: SOURCE_REELLE, descRef: ADRESSE }).success).toBe(true);
+    expect(strict.entree.safeParse({ ...ENV(HORS_STOCK), source: SOURCE_SANS_EXTRACTION, desc: 'Une prose.' }).success).toBe(true);
+  });
+
+  it('les verrous STRUCTURELS de l’adresse : ≤ 3 fragments, empreinte de 16 hex, bornes ordonnées', () => {
+    const quatre = { ...ADRESSE, parts: [FRAGMENT, FRAGMENT, FRAGMENT, FRAGMENT] };
+    expect(descRefSchema.safeParse(quatre).success).toBe(false);
+    expect(descRefSchema.safeParse({ ...ADRESSE, parts: [] }).success).toBe(false);
+    expect(descRefSchema.safeParse({ ...ADRESSE, parts: [{ ...FRAGMENT, sum: '0123456789ab' }] }).success).toBe(false);
+    expect(descRefSchema.safeParse({ ...ADRESSE, ch: '7' }).success).toBe(false);
+    const inversees = descRefSchema.safeParse({ ...ADRESSE, parts: [{ ...FRAGMENT, b0: 5, b1: 2 }] });
+    expect(inversees.success).toBe(false);
+    expect(inversees.error!.issues.map((i) => i.path.join('.'))).toContain('parts.0.b1');
+    // Le fragment de CELLULE adresse par clé de LIGNE × en-tête de COLONNE, en chaînes.
+    const cellule = { ...ADRESSE, parts: [{ kind: 'cellule', sec: 'table', secOcc: 1, row: '01-10', col: 'Effet', sum: '0123456789abcdef' }] };
+    expect(descRefSchema.safeParse(cellule).success).toBe(true);
+    expect(descRefSchema.safeParse({ ...cellule, parts: [{ ...cellule.parts[0], row: '' }] }).success).toBe(false);
+  });
+
+  it('`proseAdressable` porte la MÊME forme et les MÊMES verrous sur un schéma de RANGÉE', () => {
+    const rangee = proseAdressable(z.strictObject({ roll: z.number(), source: sourceRefSchema.optional() }), {
+      type: HORS_STOCK,
+      site: `${HORS_STOCK}>rangee`,
+      exigeProse: true,
+    });
+    expect(rangee.safeParse({ roll: 1, descRef: ADRESSE }).success).toBe(true);
+    expect(rangee.safeParse({ roll: 1 }).success).toBe(false);
+    const ko = rangee.safeParse({ roll: 1, source: SOURCE_REELLE, desc: 'Une prose du livre.' });
+    expect(ko.success).toBe(false);
+    expect(ko.error!.issues.map((i) => i.message).join(' ')).toContain(`${HORS_STOCK}>rangee`);
+  });
+
+  it('`versDisque` retire le `desc` MATÉRIALISÉ d’un nœud adressé, à toute profondeur, et lui seul', () => {
+    const racine = {
+      id: 'a',
+      desc: 'prose inline conservée',
+      entries: [
+        { id: 'b', descRef: ADRESSE, desc: 'prose matérialisée' },
+        { id: 'c', desc: 'prose inline conservée' },
+        { niche: { descRef: ADRESSE, desc: 'prose matérialisée' } },
+      ],
+    };
+    const disque = versDisque(racine) as typeof racine;
+    expect(disque.desc).toBe('prose inline conservée');
+    expect(disque.entries[0]).toEqual({ id: 'b', descRef: ADRESSE });
+    expect(disque.entries[1]).toEqual({ id: 'c', desc: 'prose inline conservée' });
+    expect((disque.entries[2] as unknown as { niche: unknown }).niche).toEqual({ descRef: ADRESSE });
+    // PURE : l’entrée n’est jamais mutée.
+    expect(racine.entries[0].desc).toBe('prose matérialisée');
+    // Sans aucune adresse, la forme disque est celle de l’entrée, à l’octet.
+    const sansAdresse = { id: 'a', entries: [{ id: 'b', desc: 'prose' }] };
+    expect(JSON.stringify(versDisque(sansAdresse))).toBe(JSON.stringify(sansAdresse));
   });
 });

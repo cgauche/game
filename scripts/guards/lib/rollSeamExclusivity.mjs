@@ -287,6 +287,21 @@ export const AMORCE_DES = ['rollTest', 'd100', 'd10', 'roll', 'rollDice', 'rollE
 export const DES_HORS_PORTE_RX = new RegExp(`\\b(?:${AMORCE_DES.join('|')}|int)\\s*\\(`);
 
 /**
+ * CRITÈRE STRUCTUREL du `.int(` — un dé de RNG porte SA PLAGE (`rng.int(1, 10)`, `base.int(min, max)`,
+ * `battleRng().int(0, l.length - 1)` : `RNG.int(min, max)`, `src/engine/dice.ts:7`). Un `.int()` de
+ * schéma zod ne tire rien et n'a pas d'argument, ou n'en porte qu'un message. Sans ce critère, 18
+ * sites de schéma de `src/data/schemas/**` comptaient comme des dés — mesure du 2026-09-05 :
+ * `defs-scenes/worldmap.ts` 4, `defs/props.ts` 1, `defs/surincantation.ts` 6, `defs/vehicles.ts` 1,
+ * `grammaire/avancement.ts` 1, `grammaire/ref.ts` 1, `grammaire/valeurs.ts` 4 ; et `git grep ".int("`
+ * sur `src/` ne rend AUCUN `.int(` zod porteur d'argument, ni aucun dé `.int()` nu.
+ * @param {import('typescript').CallExpression} node @returns {boolean} */
+function estAppelDeDe(node) {
+  const e = node.expression;
+  return ts.isPropertyAccessExpression(e) && e.name.text === 'int'
+    && node.arguments.length > 0 && !node.arguments.some(ts.isStringLiteralLike);
+}
+
+/**
  * LIAISON des noms importés depuis `src/engine` dans ce fichier : nom LOCAL → nom D'ORIGINE
  * (`import { d10 } from '../engine/dice'` → `d10 → d10` ; `import { roll as rollDice }` →
  * `rollDice → roll`). Deux rôles, un seul passage :
@@ -345,7 +360,7 @@ export function engineDiceRollers(engineFiles) {
           if (ts.isCallExpression(x)) {
             const e = x.expression;
             if (ts.isIdentifier(e)) { calls.add(e.text); if (amorce.has(e.text)) direct = true; }
-            if (ts.isPropertyAccessExpression(e) && e.name.text === 'int') direct = true;
+            if (estAppelDeDe(x)) direct = true;
           }
           ts.forEachChild(x, cv);
         };
@@ -376,7 +391,8 @@ export function engineDiceRollers(engineFiles) {
  * `src/data`, `src/scenes`). Un site = un APPEL, au MÊME socle AST que les familles ci-dessus :
  *  - une PRIMITIVE de dé (`AMORCE_DES`) appelée en direct ;
  *  - un `.int(` de RNG (`rng.int(1, 6)`, `battleRng().int(…)`) — la désignation « lequel ? » tire un
- *    dé comme le reste ;
+ *    dé comme le reste ; l'appel doit porter SA PLAGE (`estAppelDeDe` : au moins un argument, aucun
+ *    littéral chaîne), ce qui écarte le `.int()` de schéma zod, qui ne tire pas ;
  *  - un export de `src/engine` derrière lequel le dé tombe sans franchir d’autre frontière exportée
  *    (`engineDiceRollers` ci-dessus).
  * La forme (S) « position de spec » garde son exclusion STRUCTURELLE (le callback d'une spec de flux
@@ -408,8 +424,7 @@ export function scanDesHorsPorte(relPath, contenu, rollerNames) {
     if (ts.isCallExpression(node) && !inSpecCallback(node)) {
       const e = node.expression;
       const origine = ts.isIdentifier(e) ? duMoteur.get(e.text) : undefined;
-      const nom = origine && noms.has(origine) ? origine
-        : (ts.isPropertyAccessExpression(e) && e.name.text === 'int' ? 'rng.int' : null);
+      const nom = origine && noms.has(origine) ? origine : (estAppelDeDe(node) ? 'rng.int' : null);
       if (nom) {
         const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
         vus.set(`${line}:${nom}`, { line, name: nom });

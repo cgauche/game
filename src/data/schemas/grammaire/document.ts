@@ -16,13 +16,14 @@ import { z } from 'zod';
 import { sourceRefSchema, secondarySourceRefSchema, variantOf } from './valeurs';
 import type { MetaChamp, MetaDesChamps } from './meta';
 import { exigeSource } from './sans-livre';
+import { champsProse, refineProse } from './prose';
 
 /** Les 3 EMBALLAGES de fichier d'un document : liste d'entrées, entrée seule, record clé → valeur.
  *  La CHARGE d'un document (ses rangées, `options.rangee`) est orthogonale à son emballage. */
 export type FamilleDocument = 'entite' | 'config' | 'record';
 
 /** Clés de l'ENVELOPPE — posées par la fabrique, jamais par un def. */
-export const CLES_ENVELOPPE = ['id', 'type', 'label', 'labelF', 'desc', 'source', 'alsoIn', 'variants', 'maison', 'icon'] as const;
+export const CLES_ENVELOPPE = ['id', 'type', 'label', 'labelF', 'desc', 'descRef', 'source', 'alsoIn', 'variants', 'maison', 'icon'] as const;
 export type CleEnveloppe = (typeof CLES_ENVELOPPE)[number];
 
 /**
@@ -36,6 +37,7 @@ export const LIBELLES_ENVELOPPE: Readonly<Record<CleEnveloppe, string>> = {
   label: 'Libellé',
   labelF: 'Libellé (forme féminine)',
   desc: 'Description',
+  descRef: 'Adresse de la prose (livre)',
   source: 'Source',
   alsoIn: 'Aussi publié dans',
   variants: 'Variantes',
@@ -59,8 +61,20 @@ export const META_CHARGE: Readonly<Record<CleCharge, MetaChamp>> = {
 };
 
 /** Clés d'enveloppe qu'un document ne peut pas EXIGER : `id`/`type`/`label` sont déjà requises,
- *  `variants` n'est pas un champ simple (la fabrique le compose depuis `options.variantes`). */
-const NON_EXIGIBLES = ['id', 'type', 'label', 'variants'] as const;
+ *  `variants` n'est pas un champ simple (la fabrique le compose depuis `options.variantes`), et
+ *  `descRef` n'est pas un porteur exigible — l'exigence de PROSE se dit `exiges: ['desc']` et
+ *  s'énonce sur le texte, jamais sur l'un de ses deux porteurs (`grammaire/prose.ts`, V4). */
+const NON_EXIGIBLES = ['id', 'type', 'label', 'variants', 'descRef'] as const;
+
+/** POURQUOI chacune ne l'est pas — par CLÉ : les trois raisons sont différentes, et un message unique
+ *  en dirait une fausse pour deux d'entre elles (`variants` n'est pas requise, `descRef` non plus). */
+const RAISON_NON_EXIGIBLE: Readonly<Record<(typeof NON_EXIGIBLES)[number], string>> = {
+  id: "l'enveloppe la pose déjà requise",
+  type: "l'enveloppe la pose déjà requise",
+  label: "l'enveloppe la pose déjà requise",
+  variants: 'ce n’est pas un champ simple — la fabrique le compose depuis `options.variantes`',
+  descRef: "l'exigence de PROSE se dit `exiges: ['desc']` — jamais sur un porteur (`descRef`)",
+};
 
 /**
  * Clés d'enveloppe qu'un document peut EXIGER (`options.exiges`) — DÉRIVÉES de `CLES_ENVELOPPE`,
@@ -168,6 +182,9 @@ export interface OptionsDocument {
    * EXIGER = requis ET NON VIDE : les clés de chaîne exigées prennent `.min(1)`, `alsoIn` exigé prend
    * `.min(1)` sur son tableau — une exigence satisfaite par `''` ou `[]` ne prouverait rien (`desc` et
    * `maison` portent déjà ce `.min(1)` structurellement : pour elles, `exiges` ne change que l'optionalité).
+   * `desc` EXIGÉE = PROSE exigée, quel qu'en soit le PORTEUR (`desc` inline ou `descRef`) : elle ne
+   * passe pas par l'optionalité du champ mais par le refine V4 de `grammaire/prose.ts` — `descRef`
+   * n'est donc pas exigible (`NON_EXIGIBLES`), il n'y a qu'UNE façon de dire « ce document a une prose ».
    * Ce que l'adoption relâcherait sans cette option est MESURÉ et figé par le test
    * `grammaire.test.ts` « contrats d'enveloppe REQUIS dans les defs `entite` » — mesureur : `shape[k]`
    * dont `safeParse(undefined)` est ROUGE, sur les defs `entite` du registre. Les CHIFFRES vivent
@@ -266,10 +283,11 @@ function enveloppe(type: string, idDocument?: z.ZodType<string>, exiges: readonl
     type: z.literal(type),
     label: z.string().min(1),
     labelF: champEnveloppe(z.string(), requis('labelF'), z.string().min(1)),
-    /** Prose du document — `.min(1)` STRUCTUREL, même classe que le `maison` ci-dessous : une chaîne
-     *  vide est un TROISIÈME état, vu « présent » par `search.ts` et « absent » par `CodexRef`. Absente
-     *  plutôt que vide ou nulle. */
-    desc: champEnveloppe(z.string().min(1), requis('desc')),
+    /** Les DEUX porteurs de la prose — `desc` inline ou `descRef` (l'adresse du passage dans le
+     *  livre) — posés par `grammaire/prose.ts`, avec les verrous qui les gouvernent. Ni l'un ni
+     *  l'autre n'est rendu requis ICI : l'EXIGENCE de prose se dit sur le texte, pas sur un porteur
+     *  (`exiges: ['desc']` → refine V4). */
+    ...champsProse(),
     source: champEnveloppe(sourceRefSchema, requis('source')),
     alsoIn: champEnveloppe(z.array(secondarySourceRefSchema), requis('alsoIn'), z.array(secondarySourceRefSchema).min(1)),
     /**
@@ -345,7 +363,9 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
   }
   for (const [i, k] of exiges.entries()) {
     if ((NON_EXIGIBLES as readonly string[]).includes(k)) {
-      throw new Error(`document('${type}') : « ${k} » n'est pas exigible — l'enveloppe la pose déjà ainsi (clés exigibles : ${CLES_EXIGIBLES.join(', ')}).`);
+      throw new Error(
+        `document('${type}') : « ${k} » n'est pas exigible — ${RAISON_NON_EXIGIBLE[k as (typeof NON_EXIGIBLES)[number]]} (clés exigibles : ${CLES_EXIGIBLES.join(', ')}).`,
+      );
     }
     if (!(CLES_EXIGIBLES as readonly string[]).includes(k)) {
       throw new Error(
@@ -450,7 +470,12 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
           });
         }
       }) as z.ZodObject<z.ZodRawShape>);
-  const affine = affinerEntree ? affinerEntree(avecProvenance) : avecProvenance;
+  // PROSE : les verrous du texte et de son adresse (`grammaire/prose.ts`, V1-V4), au même stade et
+  // pour la même raison que le refine de provenance ci-dessus — PRÉ-sceau, sur l'entrée entière.
+  const avecProse = avecProvenance.superRefine(
+    refineProse({ type, site: type, exigeProse: exiges.includes('desc') }),
+  ) as z.ZodObject<z.ZodRawShape>;
+  const affine = affinerEntree ? affinerEntree(avecProse) : avecProse;
   const entreeScellee: z.ZodType<unknown> = affine.pipe(z.transform((v) => v));
 
   // EMBALLAGE par FAMILLE (#1467) : le dataset est ce que le FICHIER porte — une LISTE d'entrées

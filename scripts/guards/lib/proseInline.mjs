@@ -1,0 +1,111 @@
+// MESURE de la PROSE INLINE recopiée d'un livre EXTRAIT — le dénominateur du chantier #1390.
+// Consommée par `src/data/prose-inline-contrat.test.ts` (contrat bidirectionnel contre le stock
+// `PROSE_INLINE_TOLEREE` de `src/data/schemas/grammaire/prose-inline.ts`) et par le CLI
+// `scripts/source/mesurer-prose-inline.mjs` (table type/compte, avec laquelle le stock se peuple).
+// Patron mesure-en-lib du dépôt (`structures-scan.mts`, `folioIntegrity.mjs`).
+//
+// MASQUE, mot à mot : « nœud portant un `desc` chaîne non vide dont la source EFFECTIVE — son
+// `source.book` propre, sinon le `source.book` de l'ancêtre le plus proche qui en porte un —
+// désigne un livre à `dir` dans `books.json`, `maison` ou pas, à toute profondeur ».
+//
+// PÉRIMÈTRE — les DEUX racines de documents, DONNÉES EN DESCRIPTEURS (`RACINES_PROSE` ci-dessous),
+// aux mêmes motifs que `RACINES` (`scripts/docs/lib/structures-scan.mts`) : `src/data/*.json` (non
+// récursif) et les `*-projet.json` de `src/scenes` (récursif).
+//
+// CLÉ — le `type` du DOCUMENT racine du fichier (`type` de la racine objet, ou de son premier
+// élément quand la racine est une liste), à défaut le nom de base du fichier. C'est la clé que le
+// refine V3 de `grammaire/prose.ts` consulte (`ctx.type in PROSE_INLINE_TOLEREE`) : mesurer autre
+// chose que le `type` rendrait le stock et le verrou aveugles l'un à l'autre.
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/** Racine du dépôt, déduite de l'emplacement de ce module (`scripts/guards/lib`). */
+export const RACINE_DEPOT = path.resolve(fileURLToPath(new URL('../../..', import.meta.url)));
+
+/**
+ * Les DEUX racines de documents, en DESCRIPTEURS ENTIERS (dossier + motif de fichier + récursivité)
+ * — même partition que `RACINES` du scan de structures (`scripts/docs/lib/structures-scan.mts`).
+ * Une racine se donne entière à `mesurerProseInline`, jamais par une CLÉ à résoudre : un identifiant
+ * de racine à résoudre serait un branchement par identité dans du code générique (#842,
+ * `src/ui/registry-id-branch-guard.test.ts`) et une 2ᵉ vérité sur ce que sont ces racines.
+ */
+export const RACINES_PROSE = Object.freeze([
+  Object.freeze({ dossier: 'src/data', suffixe: '.json', recursif: false }),
+  Object.freeze({ dossier: 'src/scenes', suffixe: '-projet.json', recursif: true }),
+]);
+
+/** Ids des livres dont l'extraction FR est sur disque (`dir` non vide) — les seuls adressables. */
+export function livresExtraits(root = RACINE_DEPOT) {
+  const books = JSON.parse(fs.readFileSync(path.join(root, 'src/data/books.json'), 'utf8'));
+  const liste = Array.isArray(books) ? books : books.entries;
+  return new Set(liste.filter((b) => typeof b.dir === 'string' && b.dir.length > 0).map((b) => b.id));
+}
+
+function fichiersDe(dir, suffixe, recursif) {
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      if (recursif) out.push(...fichiersDe(p, suffixe, recursif));
+    } else if (e.name.endsWith(suffixe)) out.push(p);
+  }
+  return out;
+}
+
+/** `type` du DOCUMENT que porte ce fichier — sa déclaration, jamais son nom de fichier quand elle existe. */
+export function typeDuDocument(doc, chemin) {
+  const racine = Array.isArray(doc) ? doc[0] : doc;
+  const t = racine && typeof racine === 'object' ? racine.type : undefined;
+  if (typeof t === 'string' && t.length > 0) return t;
+  return path.basename(chemin).replace(/\.json$/, '');
+}
+
+/**
+ * Mesure la prose inline d'un livre extrait sur les racines DONNÉES (des descripteurs entiers, cf.
+ * `RACINES_PROSE`, jamais des identifiants à résoudre).
+ * Rend `{ [type]: { entrees, noeuds } }` — `noeuds` étant les chemins `fichier › chemin.dans.le.json`,
+ * triés, pour que la garde nomme ce qui dérive au lieu d'imprimer un delta nu.
+ */
+export function mesurerProseInline(racines = RACINES_PROSE, root = RACINE_DEPOT) {
+  const extraits = livresExtraits(root);
+  const parType = new Map();
+  for (const racine of racines) {
+    for (const fichier of fichiersDe(path.join(root, racine.dossier), racine.suffixe, racine.recursif)) {
+      const relatif = path.relative(root, fichier).split(path.sep).join('/');
+      const doc = JSON.parse(fs.readFileSync(fichier, 'utf8'));
+      const type = typeDuDocument(doc, fichier);
+      const trouves = [];
+      const visite = (v, chemin, heritee) => {
+        if (Array.isArray(v)) {
+          v.forEach((x, i) => visite(x, `${chemin}[${i}]`, heritee));
+          return;
+        }
+        if (!v || typeof v !== 'object') return;
+        const propre =
+          v.source && typeof v.source === 'object' && typeof v.source.book === 'string' ? v.source.book : null;
+        const effective = propre ?? heritee;
+        if (typeof v.desc === 'string' && v.desc.length > 0 && effective && extraits.has(effective)) {
+          trouves.push(`${relatif} › ${chemin || '(racine)'}`);
+        }
+        for (const [k, x] of Object.entries(v)) {
+          if (k !== 'source' && x && typeof x === 'object') visite(x, chemin ? `${chemin}.${k}` : k, effective);
+        }
+      };
+      visite(doc, '', null);
+      if (trouves.length) {
+        const acc = parType.get(type) ?? { entrees: 0, noeuds: [] };
+        acc.entrees += trouves.length;
+        acc.noeuds.push(...trouves);
+        parType.set(type, acc);
+      }
+    }
+  }
+  const out = {};
+  for (const type of [...parType.keys()].sort()) {
+    const { entrees, noeuds } = parType.get(type);
+    out[type] = { entrees, noeuds: noeuds.sort() };
+  }
+  return out;
+}

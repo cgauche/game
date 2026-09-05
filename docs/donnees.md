@@ -364,7 +364,7 @@ export const meta = doc.meta;
 
 **L'enveloppe** est posée par la fabrique, jamais redéclarée par un def — une clé d'enveloppe présente
 dans `champs` est une erreur de TYPE *et* d'exécution, qui la nomme. `id`, `type` et `label` sont
-requis ; `labelF`, `desc`, `icon`, `alsoIn` et `variants` optionnels ; la **provenance** est
+requis ; `labelF`, `desc`, `descRef`, `icon`, `alsoIn` et `variants` optionnels ; la **provenance** est
 `source` ∨ `maison`. Leurs libellés FR appartiennent à la fabrique (`LIBELLES_ENVELOPPE`), pas aux defs.
 
 **Provenance** — un raffinement PRÉ-sceau refuse l'entrée qui n'a NI `source` NI `maison` (`maison` =
@@ -375,8 +375,10 @@ pas exigible (vocabulaires d'app, documents dont la source vit en profondeur) so
 
 **`options`** :
 
-- `exiges` — clés d'ENVELOPPE que CE document rend requises ET non vides (`id`/`type`/`label`/`variants`
-  ne sont pas exigibles : la fabrique les pose déjà ainsi).
+- `exiges` — clés d'ENVELOPPE que CE document rend requises ET non vides. `id`/`type`/`label` ne le sont
+  pas (la fabrique les pose déjà requises), `variants` non plus (la fabrique le compose depuis
+  `options.variantes`), ni `descRef` : l'exigence de PROSE se dit `exiges: ['desc']` et se satisfait par
+  l'un OU l'autre porteur (`desc` inline, `descRef` adressée) — jamais sur un porteur.
 - `idDocument` — schéma de l'id quand le catalogue est FERMÉ (patron `characteristics`) ; un schéma qui
   admettrait la chaîne vide est refusé à la déclaration.
 - `variantes` — champs qu'une variante réglée republie (`variantOf`) ; un document sans `variantes`
@@ -485,4 +487,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 49e56131af81f34b0f65a54a8ba39f13e3726995 (347 fichiers, 2 dossiers) corps: 3b22e4dad65c40ae24d233366803a420664c0a45 -->
+<!-- sources-empreinte: f512496be9bad4d842c428e465d5b1bbfacc91f6 (350 fichiers, 2 dossiers) corps: fe0ee3f814cb0691261a25eef0f8b7bb1c700200 -->

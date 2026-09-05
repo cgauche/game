@@ -960,6 +960,24 @@ describe('garde SŒUR « dés hors porte » (#1508) — un dé qui tombe hors de
     expect(scanDesHorsPorte('src/state/x.ts', 'export function f(rng, l) { return l[rng.int(0, l.length - 1)]; }', []).map((s) => s.name)).toEqual(['rng.int']);
   });
 
+  /**
+   * CRITÈRE DU `.int(` — un dé porte SA PLAGE (`RNG.int(min, max)`, `src/engine/dice.ts:7`), un
+   * `.int()` de schéma zod ne porte rien et ne tire rien. Les deux formes réelles du dépôt sont
+   * reprises à l'octet : `src/state/combatSetup.ts:31` (`rng.int(1, 10)` d'Initiative) et
+   * `src/state/etalLot.ts:60` (`base.int(min, max)` de peuplement d'étal) restent VUS ; la forme zod de
+   * `src/data/schemas/grammaire/valeurs.ts:85` ne compte pas.
+   */
+  it('CRITÈRE : un `.int()` de schéma zod n’est pas un dé, un `.int(min, max)` de RNG en est un', () => {
+    const zod = "import { z } from 'zod';\nexport const s = z.strictObject({ n: z.number().int().min(1), m: z.number().int().positive() });\n";
+    expect(scanDesHorsPorte('src/data/schemas/faux.ts', zod, desRollers()), 'un validateur d’entier ne tire aucun dé').toEqual([]);
+    const initiative = 'export function ordre(c, rng) { return rng.int(1, 10) + bonus(c); }\n';
+    expect(scanDesHorsPorte('src/state/x.ts', initiative, desRollers()).map((s) => s.name), 'forme de combatSetup.ts:31').toEqual(['rng.int']);
+    const etal = 'export function lot(base, min, max) { return base.int(min, max); }\n';
+    expect(scanDesHorsPorte('src/state/x.ts', etal, desRollers()).map((s) => s.name), 'forme d’etalLot.ts:60').toEqual(['rng.int']);
+    const battle = 'export function victime(crowd) { return crowd[battleRng().int(0, crowd.length - 1)]; }\n';
+    expect(scanDesHorsPorte('src/state/x.ts', battle, desRollers()).map((s) => s.name), 'forme de combatFlow.ts:800').toEqual(['rng.int']);
+  });
+
   it('zéro faux positif : un `roll` LOCAL (déclencheur de flux, non importé du moteur) n’est pas un dé', () => {
     const ui = "export function Modale({ roll }) { return <button onClick={() => roll()}>Lancer</button>; }";
     expect(scanDesHorsPorte('src/ui/x.tsx', ui, [])).toEqual([]);

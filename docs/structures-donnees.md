@@ -22,7 +22,7 @@ Ce que la mesure ci-dessous **ne voit pas** — un compte n’a de sens qu’ave
 - Le partage d’un SITE tranche entre référence cassée et document embarqué, mais les TELLS de document passent avant le ratio (`label` + `source`, ou `label` + ≥ 2 clés de charge utile) et l’égalité tranche pour le DOCUMENT ; un site à UNE seule valeur est un document, sauf si la clé est `…Id`/`…Ids`/`…Ref`.
 - L’ORDRE DES PASSES est un angle mort déclaré : l’index est complété par les documents EMBARQUÉS (passe 3) AVANT que la résolution ne soit mesurée (passe 4) — un site comme `arene-projet.json › members {entityId}` ne résout que grâce à cet ordre.
 - Une clé dont la valeur est un LITTÉRAL D’ENUM du schéma zod du document n’ouvre jamais de référence (discriminants `kind`/`type`/`class`/`op`…). Depuis #1466 L1a les DEUX racines sont au registre (`SCHEMA_DEFS` + `SCHEMA_DEFS_SCENES`, joints par BASENAME) : les discriminants des scènes sont fermés comme les autres. La fermeture reste bornée à ce que l’introspection atteint — un littéral sous une enveloppe qu’`enfantsDe` ne traverse pas y échappe.
-- Les clés de PROSE `label`/`nom`/`desc`/`title` n’ouvrent jamais de référence ; `text` sous un champ de dotation est l’exception unique (résolution NARRATIVE #624).
+- Les clés de PROSE `label`/`nom`/`desc`/`title` n’ouvrent jamais de référence ; `text` sous un champ de dotation est l’exception unique (résolution NARRATIVE #624). Le porteur ADRESSÉ de la prose (`descRef`, #1389) suit la même règle, `descRef>book` compris : `book` désigne un LIVRE, pas un document indexé — une adresse de prose n’ouvre aucune référence.
 - La strate `Instance` du design v2 (SkillInstance, ItemInstance, saves) est DÉCLARÉE HORS PÉRIMÈTRE, pas absente : elle existe en SNAPSHOTS nommés dans la racine `src/scenes` — `barge-du-sel-projet.json` et `loup-et-saumure-projet.json` sous `scenes[].entities[].postes[].ammo[]` (des `ItemInstance` recopiées par `src/engine/items.ts`). Ces chemins ne sont pas mesurés ; `saves` a en outre sa propre politique de version (`src/state/saves.ts`).
 - Les ABSENCES d’enveloppe ne se comptent que sur les ENTRÉES DE RACINE (`id` et `source` partout, `label` sur les familles `entité`/`table`) : un document EMBARQUÉ n’est jamais sommé de porter un `id`.
 - Le RÉGIME D’ENTRÉES vient de la famille DÉCLARÉE par le schéma zod (`liste` → les éléments, `record` → les valeurs, `config` → le document EST son entrée) ; un document qu’aucune def ne déclare serait classé par sa racine JSON — depuis #1466 L1a il n’y en a plus aucun, les quatre projets de `src/scenes` sont déclarés `config`. La FAMILLE mesurée (`entité`/`table`/`config`/`record`) se déduit du régime : `record` et `config` RECOPIENT la déclaration (régime `valeurs` / `racine`), seule la partition `entité` ⊕ `table` est observée (part des entrées à bornes numériques). Depuis #1467 L1b V-FLIP-RECORD, le régime `valeurs` descend dans `entries` quand le record porte son enveloppe.
@@ -709,6 +709,7 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | prose | `desc` | cible | 41 | activities.json(61) astrology.json(5) axes.json(9) books.json(18) careers.json(108) characteristics.json(19) classes.json(9) creatures.json(196) crew-roles.json(9) domains.json(14) etats.json(21) gods.json(40) … |
 | prose | `text` | divergente | 0 | — |
 | prose | `description` | divergente | 0 | — |
+| adresse de prose | `descRef` | cible (`object`) | 0 | — |
 | type de document | `type` | cible (`string`) | 122 | actions.json(55) activities.json(62) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) calendarMonths.json(12) … |
 | source | `source` | cible (`object`) | 75 | actions.json(12) activities.json(62) advancementCosts.json(15) artillery-misfire.json(1) astrology.json(5) calendarIntercalary.json(6) calendarMonths.json(12) calendarWeekdays.json(8) careerLevels.json(432) careers.json(108) characteristics.json(19) classes.json(9) … |
 | maison | `maison` | cible (`string`) | 17 | actions.json(30) activities.json(8) axes.json(9) creatures.json(1) crew-roles.json(7) etats.json(1) naval-traits.json(3) props.json(41) reglesOptionnelles.json(27) structures.json(2) talents.json(9) traits.json(3) … |
@@ -886,133 +887,133 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 
 #### A. Par défaut — sans lot de peuplement (stock `STRUCTURES_DEFAUT`)
 
-**122** documents portent au moins une clé déclarée jamais observée, **603** clés en tout
+**122** documents portent au moins une clé déclarée jamais observée, **725** clés en tout
 (stock `STRUCTURES_DEFAUT`, `scripts/guards/lib/structuresStock.mjs`, garde `src/data/structures-contrat.test.ts`).
 
 | Document | Clés | Détail |
 |---|---|---|
-| `actions.json` | 4 | `alsoIn` `blocked` `desc` `labelF` |
-| `activities.json` | 3 | `alsoIn` `char` `labelF` |
-| `advancementCosts.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `ambiance.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `arcane-phenomena.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `artillery-misfire.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `astrology.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `axes.json` | 4 | `alsoIn` `icon` `labelF` `source` |
-| `books.json` | 5 | `alsoIn` `icon` `labelF` `maison` `source` |
-| `breath-types.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `calendarIntercalary.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `calendarMonths.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `calendarPhases.json` | 5 | `alsoIn` `desc` `labelF` `maison` `source` |
-| `calendarWeekdays.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `careerLevels.json` | 4 | `alsoIn` `desc` `icon` `maison` |
-| `careers.json` | 3 | `alsoIn` `icon` `maison` |
-| `characteristics.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `classes.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `combat-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `creatures.json` | 2 | `icon` `labelF` |
-| `crew-morale.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `crew-roles.json` | 3 | `alsoIn` `icon` `labelF` |
-| `crew-test-types.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `criticals.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `damage-types.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `details.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `disponibilite.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `domains.json` | 3 | `icon` `labelF` `maison` |
-| `donnees.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `driving-mishap.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `drunkenness.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `encumbranceTiers.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `etats.json` | 2 | `alsoIn` `labelF` |
-| `eyes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `flow-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `gods.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `grapple.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `groups.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `hairs.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `incidents-monture.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `interludeEvents.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `land-cargo.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `lieux-services.json` | 4 | `alsoIn` `labelF` `maison` `source` |
-| `lightLevels.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `lightTones.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `localisation.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `locations.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `maladies.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `maneuvers.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `priority` |
-| `mass-battle.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `materials.json` | 7 | `alsoIn` `desc` `fasciaThickM` `icon` `labelF` `maison` `source` |
-| `merchantFamilies.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `merchants.json` | 8 | `alsoIn` `buyMarkup` `desc` `icon` `labelF` `maison` `restockDays` `source` |
-| `miscast.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `montures.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `mutations.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `mutationTables.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `names.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `naval-ports.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `naval-progression.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `naval-traits.json` | 2 | `icon` `labelF` |
-| `night-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `obsessions.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `oups.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `peripeties.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `pregens.json` | 8 | `age` `alsoIn` `desc` `icon` `labelF` `maison` `source` `weaponChoice` |
-| `primitives.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `problemes-vehicule.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `progression-schemas.derived.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `props.json` | 5 | `alsoIn` `desc` `icon` `labelF` `source` |
-| `psychology.json` | 4 | `alsoIn` `gating` `labelF` `maison` |
-| `qualities.json` | 3 | `icon` `labelF` `maison` |
-| `qualitySubtypes.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `qualityTypes.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `raceAppearance.json` | 9 | `alsoIn` `armD` `armG` `desc` `icon` `labelF` `maison` `scale` `source` |
-| `raw.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `regles.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `reglesOptionnelles.json` | 4 | `alsoIn` `desc` `icon` `labelF` |
-| `rencontres-edoc.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `renduMonte.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `reseau-routier.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `river-criticals.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `river-navigation.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `river-perils.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `sea-cargo.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `sea-events.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `sea-navigation.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `sea-perils.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `sea-shanties.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `sea-weather.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `ship-construction.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `ship-criticals.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `ship-stations.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `sizes.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `skills.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `species.json` | 3 | `icon` `labelF` `maison` |
-| `speciesRace.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `spells.json` | 3 | `icon` `labelF` `maison` |
-| `stars.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `steam-breakdown.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `structure-criticals.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `structureAppearance.json` | 8 | `alsoIn` `bayPanel` `desc` `icon` `labelF` `maison` `relief` `source` |
-| `structures.json` | 3 | `alsoIn` `icon` `labelF` |
-| `surincantation.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `symptoms.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `systemes.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `tables.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `talents.json` | 2 | `icon` `labelF` |
-| `tavernGames.json` | 5 | `alsoIn` `fastSkill` `icon` `labelF` `maison` |
-| `traits.json` | 4 | `appearance` `icon` `labelF` `variants` |
-| `trappings.json` | 3 | `icon` `labelF` `requiresMastery` |
-| `traumas.json` | 3 | `alsoIn` `icon` `labelF` |
-| `vehicles.json` | 3 | `alsoIn` `labelF` `maison` |
-| `vents-tourbillonnants.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `voyage-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `water-exposure.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `weaponGroups.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `weather.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `arene-projet.json` | 6 | `activeAxes` `alsoIn` `auteur` `desc` `labelF` `source` |
-| `barge-du-sel-projet.json` | 6 | `activeAxes` `alsoIn` `auteur` `desc` `labelF` `source` |
-| `diligence-projet.json` | 5 | `activeAxes` `alsoIn` `auteur` `labelF` `maison` |
-| `loup-et-saumure-projet.json` | 6 | `activeAxes` `alsoIn` `auteur` `desc` `labelF` `source` |
+| `actions.json` | 5 | `alsoIn` `blocked` `desc` `descRef` `labelF` |
+| `activities.json` | 4 | `alsoIn` `char` `descRef` `labelF` |
+| `advancementCosts.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `ambiance.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `arcane-phenomena.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `artillery-misfire.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `astrology.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `axes.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `source` |
+| `books.json` | 6 | `alsoIn` `descRef` `icon` `labelF` `maison` `source` |
+| `breath-types.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `calendarIntercalary.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `calendarMonths.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `calendarPhases.json` | 6 | `alsoIn` `desc` `descRef` `labelF` `maison` `source` |
+| `calendarWeekdays.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `careerLevels.json` | 5 | `alsoIn` `desc` `descRef` `icon` `maison` |
+| `careers.json` | 4 | `alsoIn` `descRef` `icon` `maison` |
+| `characteristics.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `classes.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `combat-stakes.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `creatures.json` | 3 | `descRef` `icon` `labelF` |
+| `crew-morale.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `crew-roles.json` | 4 | `alsoIn` `descRef` `icon` `labelF` |
+| `crew-test-types.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `criticals.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `damage-types.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `details.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `disponibilite.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `domains.json` | 4 | `descRef` `icon` `labelF` `maison` |
+| `donnees.manifest.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `driving-mishap.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `drunkenness.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `encumbranceTiers.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `etats.json` | 3 | `alsoIn` `descRef` `labelF` |
+| `eyes.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `flow-stakes.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `gods.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `grapple.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `groups.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `hairs.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `incidents-monture.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `interludeEvents.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `land-cargo.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `lieux-services.json` | 5 | `alsoIn` `descRef` `labelF` `maison` `source` |
+| `lightLevels.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `lightTones.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `localisation.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `locations.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `maladies.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `maneuvers.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `priority` |
+| `mass-battle.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `materials.json` | 8 | `alsoIn` `desc` `descRef` `fasciaThickM` `icon` `labelF` `maison` `source` |
+| `merchantFamilies.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `merchants.json` | 9 | `alsoIn` `buyMarkup` `desc` `descRef` `icon` `labelF` `maison` `restockDays` `source` |
+| `miscast.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `montures.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `mutations.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `mutationTables.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `names.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `naval-ports.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `naval-progression.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `naval-traits.json` | 3 | `descRef` `icon` `labelF` |
+| `night-stakes.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `obsessions.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `oups.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `peripeties.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `pregens.json` | 9 | `age` `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` `weaponChoice` |
+| `primitives.manifest.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `problemes-vehicule.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `progression-schemas.derived.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `props.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `source` |
+| `psychology.json` | 5 | `alsoIn` `descRef` `gating` `labelF` `maison` |
+| `qualities.json` | 4 | `descRef` `icon` `labelF` `maison` |
+| `qualitySubtypes.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `qualityTypes.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `raceAppearance.json` | 10 | `alsoIn` `armD` `armG` `desc` `descRef` `icon` `labelF` `maison` `scale` `source` |
+| `raw.manifest.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `regles.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `reglesOptionnelles.json` | 5 | `alsoIn` `desc` `descRef` `icon` `labelF` |
+| `rencontres-edoc.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `renduMonte.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `reseau-routier.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `river-criticals.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `river-navigation.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `river-perils.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `sea-cargo.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `sea-events.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `sea-navigation.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `sea-perils.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `sea-shanties.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `sea-weather.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `ship-construction.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `ship-criticals.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `ship-stations.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `sizes.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `skills.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `species.json` | 4 | `descRef` `icon` `labelF` `maison` |
+| `speciesRace.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `spells.json` | 4 | `descRef` `icon` `labelF` `maison` |
+| `stars.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `steam-breakdown.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `structure-criticals.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `structureAppearance.json` | 9 | `alsoIn` `bayPanel` `desc` `descRef` `icon` `labelF` `maison` `relief` `source` |
+| `structures.json` | 4 | `alsoIn` `descRef` `icon` `labelF` |
+| `surincantation.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `symptoms.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `systemes.manifest.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `tables.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `talents.json` | 3 | `descRef` `icon` `labelF` |
+| `tavernGames.json` | 6 | `alsoIn` `descRef` `fastSkill` `icon` `labelF` `maison` |
+| `traits.json` | 5 | `appearance` `descRef` `icon` `labelF` `variants` |
+| `trappings.json` | 4 | `descRef` `icon` `labelF` `requiresMastery` |
+| `traumas.json` | 4 | `alsoIn` `descRef` `icon` `labelF` |
+| `vehicles.json` | 4 | `alsoIn` `descRef` `labelF` `maison` |
+| `vents-tourbillonnants.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `voyage-stakes.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `water-exposure.json` | 5 | `alsoIn` `descRef` `icon` `labelF` `maison` |
+| `weaponGroups.json` | 6 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` |
+| `weather.json` | 7 | `alsoIn` `desc` `descRef` `icon` `labelF` `maison` `source` |
+| `arene-projet.json` | 7 | `activeAxes` `alsoIn` `auteur` `desc` `descRef` `labelF` `source` |
+| `barge-du-sel-projet.json` | 7 | `activeAxes` `alsoIn` `auteur` `desc` `descRef` `labelF` `source` |
+| `diligence-projet.json` | 6 | `activeAxes` `alsoIn` `auteur` `descRef` `labelF` `maison` |
+| `loup-et-saumure-projet.json` | 7 | `activeAxes` `alsoIn` `auteur` `desc` `descRef` `labelF` `source` |
 
 #### B. `cible-declaree` — déclaré-avant-posé ASSUMÉ (émission, jamais un stock)
 
@@ -4804,4 +4805,4 @@ pèse **2637** slots sur 2909.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: e407153b17dc8c377e23e99b9cfc224641b51292 (360 fichiers, 11 dossiers) corps: 3163cbfbf8268b5ad95da96f4d767f3e2c746e5a -->
+<!-- sources-empreinte: 96e7b0622440527c372d2e66fefdaa67ede3d154 (363 fichiers, 11 dossiers) corps: 1ff8acf1f57543f3979da2e4f351a08381649202 -->

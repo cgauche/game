@@ -4,7 +4,7 @@
 
 **Périmètre mesuré / angles morts** — sont MESURÉS à chaque génération : les 120 fichiers
 de `src/data/*.json`, les 29 entrées de `src/data/books.json` (dont 18 en VF) et le nom
-RÉEL de leur clé d'abréviation (`abbr`), les 10 clés d'ENVELOPPE et leurs libellés FR
+RÉEL de leur clé d'abréviation (`abbr`), les 11 clés d'ENVELOPPE et leurs libellés FR
 lus par AST dans `src/data/schemas/grammaire/document.ts`, les 3 familles de document, les 5 skills de domaine (existence
 sur disque + `description` lue au frontmatter de leur `SKILL.md`) et les 6 gardes (chemin
 ancré + intitulé de leur `describe(...)`, lu au fichier). **Angles morts** : ce doc est le DÉROULÉ,
@@ -68,7 +68,7 @@ Les 11 autres entrées sont en VO — hors périmètre citable ici (règle 1 de 
 ## 4. L'ENVELOPPE est posée par la fabrique — ne la redéclare jamais
 
 Tout document passe par `document(...)` (`src/data/schemas/grammaire/document.ts`), qui pose SEULE les
-10 clés d'enveloppe ci-dessous : les redéclarer dans les champs du def est une erreur de
+11 clés d'enveloppe ci-dessous : les redéclarer dans les champs du def est une erreur de
 compilation ET d'exécution. Leur libellé FR appartient donc lui aussi à la fabrique.
 
 | Clé | Libellé FR | Un document peut-il l’EXIGER ? |
@@ -78,6 +78,7 @@ compilation ET d'exécution. Leur libellé FR appartient donc lui aussi à la fa
 | `label` | Libellé | — |
 | `labelF` | Libellé (forme féminine) | oui (`options.exiges`) |
 | `desc` | Description | oui (`options.exiges`) |
+| `descRef` | Adresse de la prose (livre) | — |
 | `source` | Source | oui (`options.exiges`) |
 | `alsoIn` | Aussi publié dans | oui (`options.exiges`) |
 | `variants` | Variantes | — |
@@ -119,4 +120,4 @@ JAMAIS un choix d'agent silencieux enterré. Avant de conclure « le moteur ne s
 | `src/data/data-atlas-complete.test.ts` | atlas des données (docs/donnees.md) — complétude |
 | `src/data/maison-sans-source.test.ts` | cliquet « maison sans source » — le régime d’arbitrage ne dérive pas (#1467 L1b) |
 | `src/data/data-wellformed.test.ts` | Intégrité des données src/data/*.json |
-<!-- sources-empreinte: f7bd124ba117312528bdb4f5d8b0a37a89b69372 (17 fichiers, 1 dossiers) corps: 4a22dbff8340e6a58da96385b01027fed75f7b1a -->
+<!-- sources-empreinte: 537d68444fb8c4e3772226be01cea2734f2547a9 (17 fichiers, 1 dossiers) corps: 72377261b352d41a910db81941451de189a90e9f -->
