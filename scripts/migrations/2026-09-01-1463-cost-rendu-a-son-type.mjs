@@ -45,6 +45,13 @@ const RENOMMAGES = [
 const CARDINAL_RENOMMAGES = 83;
 const CARDINAL_RESHAPES = 2;
 
+/** POPULATION courante des nœuds Flow `choice` porteurs d'un coût d'Avantage — ce que la migration
+ *  RETROUVE quand on la rejoue, pas ce qu'elle a reshapé (`CARDINAL_RESHAPES` reste à 2 : le nœud de
+ *  Déstabilisante + l'op `grantFreeAttack`). Une porte de cardinal suit la donnée qu'un train fait
+ *  croître, dans le MÊME train (taxe d'authoring nommée par #1648, patron de `2026-08-28-l1b-11a`).
+ *  1→2 : Taillade (XA), coût `$indice` — #1661. */
+const CHOIX_A_COUT = 2;
+
 const FICHIERS = ['src/data/actions.json', 'src/data/trappings.json', 'src/data/talents.json',
   'src/data/naval-traits.json', 'src/data/qualities.json'];
 
@@ -131,7 +138,7 @@ for (const [f, { data }] of documents) {
     remplace(noeud, sortie);
   }
 }
-if (choix !== 1) anomalies.push(`nœuds Flow \`choice\` porteurs d'un coût : ${choix} vus, 1 attendu`);
+if (choix !== CHOIX_A_COUT) anomalies.push(`nœuds Flow \`choice\` porteurs d'un coût : ${choix} vus, ${CHOIX_A_COUT} attendu(s)`);
 
 // RESHAPE 2 — op `grantFreeAttack` : le sous-objet `cost` est APLATI sur l'op.
 let gratuites = 0;
