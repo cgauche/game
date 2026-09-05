@@ -6,7 +6,7 @@
 `addReverse(...)` de `src/ui/compendium/relations.ts` (catégorie référante, catégorie cible, titre FR de section,
 `fichier:ligne`), l'API publique du même module (AST + 1re phrase de JSDoc), le littéral
 `CODEX_SPECS` de `src/ui/compendium/registry.ts` (126 catégories, leurs groupes et sous-groupes
-`cluster`), et l'`exposition` DÉCLARÉE par les 122 defs de `src/data/schemas/defs/`
+`cluster`), et l'`exposition` DÉCLARÉE par les 120 defs de `src/data/schemas/defs/`
 (dumpée par `scripts/docs/lib/dump-exposition.mts`), les cas NOMMÉS par `src/data/schemas/exposition-contrats.test.ts`, les fonctions
 exportées de `src/ui/compendium/describe.ts` et `src/ui/compendium/humanize.ts`, et le compte d'épigraphes de Carrière dumpé par
 `scripts/docs/lib/dump-epigraphes.mts` (`extractEpigraph` appliqué aux `careers` réelles — aucune
@@ -70,10 +70,10 @@ par `src/data/schemas/exposition-contrats.test.ts`, dont voici les cas, tels que
 Un document neuf se pose donc en DEUX endroits du MÊME commit : son `exposition` au def, sa
 catégorie dans `CODEX_SPECS`.
 
-Sur 122 defs, 27 sont EXEMPTS d'exposition Codex :
+Sur 120 defs, 25 sont EXEMPTS d'exposition Codex :
 
-- `dette` — 2 fichier(s)
-- `vocabulaire-app-interne` — 25 fichier(s)
+- `dette` — 3 fichier(s)
+- `vocabulaire-app-interne` — 22 fichier(s)
 
 ### Index INVERSE — catégorie Codex → document qui la déclare
 
@@ -314,4 +314,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: b2128a8b8aca11ecf25272f4f4ed0aa7392dcc7e (420 fichiers, 0 dossiers) corps: 27b593ec2159f0c1058bbdbc6c67c6a0e36c5d48 -->
+<!-- sources-empreinte: ed556ac6b61acf26c4fed57d571a0df114f9bc95 (417 fichiers, 0 dossiers) corps: a3b40d4663cb08784159a0b655a2f2af88ac1de7 -->

@@ -15,12 +15,12 @@
 **Périmètre mesuré et angles morts** — la carte §A vient du manifeste ÉDITORIAL
 `src/data/donnees.manifest.json` (rangement par rubrique, description, homonymes) : rien de tout cela
 ne se devine de l'arbre, un jugement humain reste nécessaire. Ce que ce générateur CALCULE et
-réfute au besoin : (1) bijection stricte manifeste ⇄ `122` fichiers réels de
+réfute au besoin : (1) bijection stricte manifeste ⇄ `120` fichiers réels de
 `src/data/*.json` (un `.json` neuf non cartographié, ou une entrée de manifeste pointant sur un
 fichier disparu, casse la génération) ; (2) nombre d'entrées par fichier (comptage `Array.isArray`,
 `objet à sous-catalogues` sinon — angle mort assumé : cette étiquette ne dit RIEN du contenu réel
 d'un objet à sous-catalogues, juste qu'il n'est pas un tableau plat) ; (3) couverture du contrat de
-schéma zod (`122/122`, cf. §E-bis) ; (4) présence effective sur disque de
+schéma zod (`120/120`, cf. §E-bis) ; (4) présence effective sur disque de
 chaque fichier cité par un cas d'homonyme de §D. Angle mort déclaré : les DESCRIPTIONS de rubrique,
 de fichier et d'homonyme restent du texte manuscrit du manifeste — ce générateur ne les vérifie PAS
 contre le contenu réel des `.json` (une description qui ment sur ce que porte un fichier ne casse
@@ -31,7 +31,7 @@ La colonne **Exposition** de §A est DÉRIVÉE des `exposition` déclarées par 
 (`document(type, famille, champs, meta, exposition)` → `src/data/schemas/exposition-derivee.ts`,
 dumpée par `scripts/docs/lib/dump-exposition.mts`) : clés de catégorie Codex exposées, route
 d'édition (`dataset` / `objet single|record` / `niché` / aucune), ou EXEMPTION motivée
-(`27` fichier(s) exempt(s) sur `122`). Aucune de ces valeurs n'est écrite ici :
+(`25` fichier(s) exempt(s) sur `120`). Aucune de ces valeurs n'est écrite ici :
 un def qui change d'exposition change cette colonne au prochain `npm run docs:donnees`.
 
 ## §A — Carte : où va chaque donnée
@@ -162,10 +162,10 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 |---|---|---|
 | `raceAppearance.json` | Apparence par race (gabarit, palette, tenue) — rig (21 entrée(s)) | `raceAppearance` — dataset `raceAppearance` |
 | `structureAppearance.json` | Apparence de structure (murs, portes) (18 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (presets de rendu édités au fichier — absent de `CodexEdit.CATEGORY_DATASET`) |
-| `props.json` · `propMaterials.json` | Props de décor et leurs matériaux (123 entrée(s) · 8 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (édité à la PALETTE de décor de l’éditeur de carte, jamais par une catégorie du Codex) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
+| `props.json` | Props de décor (leurs matières vivent dans `materials.json`) (123 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (édité à la PALETTE de décor de l’éditeur de carte, jamais par une catégorie du Codex) |
 | `decorPalette.json` | Palette de couleurs de décor (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (palette d'art éditée au fichier (aucun écran d'atelier ne l'expose)) |
 | `teintesJeu.json` | TEINTES DE JEU du terrain — surbrillances tactiques (portées, zones, bandes de tir, anneaux de cible, halos, télégraphes) et identité d'unité (anneaux réservés, équipes, une couleur par héros), `id → #rrggbb` groupé par préfixe ; servi aux peintres par `src/gameIso/highlightTints.ts` et `src/gameIso/teamColors.ts` (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (palette de rendu éditée au fichier (aucun écran d'atelier ne l'expose)) |
-| `reliefMaterials.json` · `roofMaterials.json` | Matériaux de relief · de toit (4 entrée(s) · 4 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (catalogue de rendu édité au fichier — absent de `CodexEdit.CATEGORY_DATASET`) |
+| `materials.json` | LES matières du monde — un document, le domaine (`prop` décor volumique · `roof` toiture · `relief`) porté par l'entrée (16 entrée(s)) | exempt (dette, #1686) — aucune (aucune route d’édition posée au lot 2 — l’onglet Codex « Matières » du lot 3 de #1686 (arbitrage utilisateur 2026-09-05) est la route prévue, une matière s’y ajoutera et s’y retouchera) |
 | `ambiance.json` · `lightLevels.json` · `lightTones.json` | Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière · TONS de lumière (#1245 : apparence d'une source ponctuelle — couleur, part d'intensité, vacillement ; référencés par `tone`, défaut `flamme`) (objet à sous-catalogues · 5 entrée(s) · 4 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `renduMonte.json` | Réglage MAISON du rendu du couple MONTÉ (#1128) — `harnaisParDefaut` : id du set d'équipement (registre `src/gameIso/rig/quadruped/harnais/`) apposé à une monture PORTÉE dont le record ne déclare pas de `appearance.harnais` (LDB 08 l.557), lu par `DEFAUT_HARNAIS_MONTE` (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 
@@ -315,7 +315,7 @@ Deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont
 ## §E-bis — Contrat de schéma (`src/data/schemas/`)
 
 Chaque document authoré valide contre un schéma zod **STRICT**, sur les **DEUX racines** de
-documents : `src/data` (catalogues de jeu, **122/122** datasets sous contrat, décompte
+documents : `src/data` (catalogues de jeu, **120/120** datasets sous contrat, décompte
 CALCULÉ des defs présentes dans `src/data/schemas/defs/`) et `src/scenes` (projets de campagne
 `*-projet.json`, defs dans `src/data/schemas/defs-scenes/`).
 
@@ -485,4 +485,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 57d5913548b0edecc6c8652687c009c6af7a2e8c (349 fichiers, 2 dossiers) corps: 8689181002344ac442974a9e435ce6be41c00d3c -->
+<!-- sources-empreinte: f91666d1d649128f49cbbfe4f534a65732d6174e (346 fichiers, 2 dossiers) corps: 052afd8e623dc3ea73d9c2814040bca6cfb6c18f -->
