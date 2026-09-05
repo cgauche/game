@@ -1,102 +1,91 @@
-import { useState } from 'react';
 import type { Combatant } from '../engine/types';
-import type { Poste } from '../state/poste';
-import { OptionChooser, type RollGridOption } from './OptionChooser';
-import { CharFrame } from './CharFrame';
-import { Icon } from './Icon';
+import { type Poste, postesOccupes } from '../state/poste';
+import { AssignRow } from './AssignRow';
+import { CodexRef } from './compendium/CodexRef';
 
 /**
  * Décision d'épinglage au clic d'un poste (PUR, testable sans DOM) : re-cliquer le poste ÉPINGLÉ le
- * détache (→ `null`, retour au poste inféré « auto ») ; cliquer un autre poste l'épingle. Source unique
- * de la sémantique clic→`onSet` du roster.
+ * détache (→ `null`) ; cliquer un autre poste l'épingle. Source unique de la sémantique clic→`onSet`.
  */
 export function nextPinned(pinned: string | undefined, clickedPosteId: string): string | null {
   return pinned === clickedPosteId ? null : clickedPosteId;
 }
 
 /**
- * ROSTER héros-first UNIQUE (« chaque héros tient un poste ») — surface partagée du Voyage par Étapes
- * (EDOC 8) ET des Postes d'équipage (MDG 14). Remplace les deux `*View` jumeaux dupliqués
- * (`TravelRolesPanel`/`ShipRolesPanel`) : mêmes primitives, seule la SOURCE (`postes`) et le câblage
- * store changent, injectés par le wrapper.
+ * ROSTER PAR POSTE — surface partagée UNIQUE de « qui tient quoi » : rôles de marche (EDOC 8), postes
+ * d'équipage (MDG 14, carte du monde ET dossier de navire) et stations à bord (MDG 13). Une LIGNE par
+ * poste, dans l'ORDRE DU CATALOGUE, toutes présentes même vides ; les personnes sont des portraits
+ * DANS la case du poste (maquette A validée par l'utilisateur le 2026-09-04).
  *
- * Progressive disclosure : par héros, une PUCE repliée = son poste courant ; clic = déplie la grille
- * `OptionChooser` des postes en dessous — fini le mur de N options × M héros affichées en permanence.
- * Composition PURE de primitives existantes (`OptionChooser`), aucun nouveau widget d'assignation.
+ * LE ROSTER N'AFFICHE QUE L'ÉPINGLAGE (arbitrage user 2026-09-04, « Épinglé seul + "Repos" explicite ») :
+ * aucune inférence n'est montrée, donc aucun marqueur « auto », et RIEN NE GLISSE — retirer un portrait
+ * le DÉSÉPINGLE (`onSet(h, null)`) et il descend au BANC, sans sauter sur une ligne devinée. L'inférence
+ * n'a pas disparu du jeu : elle reste la SEULE affaire des résolveurs (`shipDefaultRoles` pour les Tests
+ * d'équipage, `stageAssignmentFromRoles` pour l'Étape de voyage), et le Test qui la joue montre son
+ * affectation et son rôle essentiel dans SA modale. L'écran d'assignation ne devine plus à sa place.
+ *
+ * Le BANC naît de la MESURE (`postesOccupes`, PURE) : les personnes qu'aucune ligne ne porte. Il est
+ * une ligne du roster comme les autres — présente même vide (rien ne glisse), sans un mot quand elle
+ * l'est. Composition PURE de primitives : `AssignRow` (cases + `[ + ]` en panneau-paramètre borné),
+ * `CodexRef` (le ⓘ qui remplace l'infobulle native), `GatedAction` via `AssignRow` (poste fermé).
  */
 export function PostesRoster({
-  title, heroes, postes, currentOf, pinnedOf, onSet, refusOf, initialOpen = null,
+  title, banc, heroes, postes, pinnedOf, onSet, refusOf, codexCategory,
 }: {
   title: string;
+  /** Libellé de la ligne de BANC (« À la discrétion du Test », « Sans station ») — il dit ce qui
+   *  décide À LA PLACE du joueur pour ces personnes, et c'est propre à chaque roster. */
+  banc: string;
   heroes: Combatant[];
   postes: Poste[];
-  /** Poste EFFECTIF affiché (épinglé, sinon inféré « auto ») — `null` si aucun. */
-  currentOf: (h: Combatant) => string | null;
-  /** Poste ÉPINGLÉ par le joueur (absent = poste inféré, badge « auto »). */
+  /** Poste ÉPINGLÉ par le joueur — la SEULE chose que le roster affiche. */
   pinnedOf: (h: Combatant) => string | undefined;
-  /** Épingle (`posteId`) ou détache (`null`) le poste d'un héros. */
+  /** Épingle (`posteId`) ou déséping le (`null`) le poste d'un héros. */
   onSet: (heroId: string, posteId: string | null) => void;
   /** RAISON pour laquelle ce poste n'est pas tenable ICI (une station que la coque n'a pas) — le poste
-   *  reste OFFERT, éteint, et dit pourquoi au survol/focus/tap (`RollOption.refus` → `GatedAction`).
-   *  Absent = aucun poste n'est fermé. Jamais un filtrage silencieux : un poste qui disparaît ne
-   *  s'explique pas. */
+   *  reste OFFERT, éteint, et dit pourquoi au survol/focus/tap. Jamais un filtrage silencieux : un
+   *  poste qui disparaît ne s'explique pas. */
   refusOf?: (poste: Poste) => string | undefined;
-  /** Seam de test (rendu statique) : id du héros dont la grille d'options est DÉPLIÉE d'emblée. */
-  initialOpen?: string | null;
+  /** Catégorie Codex des postes de ce roster (`crewRoles`, `shipStations`, `activities`) : le LIBELLÉ
+   *  de chaque ligne ouvre SA fiche. Une ligne sans entrée (Repos, banc) reste du texte simple. */
+  codexCategory: string;
 }) {
-  const [open, setOpen] = useState<string | null>(initialOpen);
   if (!heroes.length) return null;
-  const posteById = new Map(postes.map((p) => [p.id, p]));
-
+  const { parPoste, sansPoste } = postesOccupes(heroes, postes, (h) => pinnedOf(h));
+  const ligne = (cle: string, label: string, occupants: Combatant[], p?: Poste) => {
+    const refus = p ? refusOf?.(p) : undefined;
+    return (
+      <div className="pr-ligne" key={cle} data-poste={cle}>
+        <span className="pr-label">
+          {/* Le LIBELLÉ est lui-même la porte du Codex (`CodexRef` sans `wrap` : le texte EST le
+              déclencheur, popover au survol ET au focus) — jamais un ⓘ accolé, affordance parallèle
+              proscrite par le cliquet #1078, et jamais un `title` natif. Sans entrée au catalogue
+              (ligne synthétique Repos, banc) il retombe en texte simple, sans rien perdre. */}
+          {p ? <CodexRef category={codexCategory} id={p.id} label={label} /> : label}
+        </span>
+        {/* Le BANC est un CONSTAT, pas une case d'affectation : ces personnes ne tiennent aucun poste,
+            il n'y a donc ni ajout ni retrait (`canPick`/`retirable` faux sans `p`) — ses portraits sont
+            décoratifs et la ligne ne promet aucun geste. */}
+        <AssignRow
+          assigned={occupants}
+          candidates={p ? heroes.filter((h) => pinnedOf(h) !== p.id) : []}
+          onAssign={(id) => onSet(id, p ? nextPinned(pinnedOf(heroes.find((h) => h.id === id)!), p.id) : null)}
+          onRemove={(id) => onSet(id, null)}
+          intitule={`${title} — ${label} : affecter`}
+          nomRetirer={(c) => `Retirer ${c.label} de ${label}`}
+          canPick={p != null}
+          retirable={p != null}
+          metaDe={(c) => { const cur = pinnedOf(c); const cp = cur ? postes.find((x) => x.id === cur) : undefined; return cp ? `(${cp.label})` : undefined; }}
+          {...(refus ? { refus } : {})}
+        />
+      </div>
+    );
+  };
   return (
-    <div className="wm-roles">
+    <div className="pr-roster">
       <span className="mini-title">{title}</span>
-      {heroes.map((h) => {
-        const pinned = pinnedOf(h);
-        const current = pinned ?? currentOf(h) ?? undefined;
-        const curLabel = current ? posteById.get(current)?.label : undefined;
-        const expanded = open === h.id;
-        const options: RollGridOption[] = postes.map((p) => {
-          const refus = refusOf?.(p);
-          return {
-            key: p.id,
-            label: p.label,
-            primary: p.id === current,
-            title: p.desc ?? p.label,
-            ...(refus ? { refus } : {}),
-            // Décision d'épinglage PURE (testée) ; puis on replie.
-            onSelect: () => { onSet(h.id, nextPinned(pinned, p.id)); setOpen(null); },
-          };
-        });
-        return (
-          <div className="wm-role-item" key={h.id}>
-            <div className="wm-role-row">
-              <CharFrame c={h} variant="identity" size="xs" title={h.label} />
-              <span className="wm-role-name">
-                {h.label}
-                {!pinned && current && <span className="wm-opt-hint"> (auto)</span>}
-              </span>
-              <button
-                className="btn small"
-                aria-expanded={expanded}
-                title={expanded ? 'Replier' : 'Changer de poste'}
-                /* CASE VIDE = AUCUN MOT (arbitrage user 2026-09-04, [[user-arbitrage-case-vide-sans-mot-libre]]
-                   étendu aux rosters) : ni « — choisir — », ni « Libre ». Il reste l'affordance
-                   (le glyphe d'ajout) et un NOM ACCESSIBLE — sans lui, la case serait MUETTE pour
-                   qui ne voit pas l'écran ; il se DÉRIVE du titre du roster, jamais d'un texte par
-                   écran (le roster ne sait pas s'il assigne une station, un poste ou une marche). */
-                {...(curLabel ? null : { 'aria-label': `${title} — ${h.label} : choisir` })}
-                onClick={() => setOpen(expanded ? null : h.id)}
-              >
-                {curLabel ?? <Icon id="ui/add" size="sm" />}
-              </button>
-            </div>
-            {/* Les ids de RAISON sont namespacés PAR LIGNE : N héros × les mêmes postes, ce sont les
-                mêmes clés d'option — un préfixe commun collerait N fois le même id dans le document. */}
-            {expanded && <OptionChooser options={options} layout="grid" idPrefix={`poste-${h.id}`} />}
-          </div>
-        );
-      })}
+      {postes.map((p) => ligne(p.id, p.label, parPoste.get(p.id) ?? [], p))}
+      <div className="pr-banc">{ligne('__banc', banc, sansPoste)}</div>
     </div>
   );
 }

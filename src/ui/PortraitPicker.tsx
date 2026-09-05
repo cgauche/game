@@ -8,7 +8,8 @@ export interface PortraitChoice {
   c: Combatant;
   /** Légende sous le portrait (ex. « cible 46 », « Monture »). */
   caption?: ReactNode;
-  title?: string;
+  /** NOM ACCESSIBLE du portrait (cf. `CharFrame.nom`) — jamais une infobulle écrite ici. */
+  nom?: string;
   disabled?: boolean;
 }
 
@@ -29,7 +30,7 @@ export function PortraitPicker({ choices, selectedId, onPick, variant = 'vital',
 }) {
   return (
     <div className="rm-loc-grid portrait-picker">
-      {choices.map(({ c, caption, title, disabled }) => (
+      {choices.map(({ c, caption, nom, disabled }) => (
         <span key={c.id} className="frame-pick">
           <CharFrame
             c={c}
@@ -37,7 +38,7 @@ export function PortraitPicker({ choices, selectedId, onPick, variant = 'vital',
             size={size}
             selected={selectedId != null && c.id === selectedId}
             onClick={disabled ? undefined : () => onPick(c.id)}
-            title={title}
+            nom={nom}
           />
           {caption != null && <span className="cap">{caption}</span>}
         </span>

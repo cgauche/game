@@ -1288,7 +1288,7 @@ export const fr = {
   'dz.gangreneProgress': '{name} : la Gangrène progresse ({fails} échec(s)).',
   'dz.endStep': 'Fin de « {disease} »',
   // Résidu de Résistance qui survit à l'infection et décroît de 1/jour (MSRC 16 l.138) — chip NOMMÉE
-  // de la ligne de jet, là où la pénalité était fondue dans une valeur maison (#1685).
+  // de la ligne de jet, qui porte la pénalité en clair (#1685).
   'dz.residualMod': 'Séquelle d’infection',
   // Unités d'incubation/durée (`formatDiseaseTime`) et échelle du restant (`formatRemaining`).
   'dz.unitDays': 'jours',

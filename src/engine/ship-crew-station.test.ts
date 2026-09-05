@@ -10,7 +10,7 @@
  *     le pont ne l'est pas — le livre demande qui s'y TROUVE, pas qui sait y servir ;
  *  2. `gouvernail-fluvial` (MSRC 07 l.86 « les échardes infligent +5 Dégâts au timonier », SINGULIER) :
  *     seul le `shipRole` timonier ÉPINGLÉ encaisse ; trois marins à Voile 70 non épinglés ne sont
- *     personne — `defaultCrewRole` en ferait trois timoniers ;
+ *     personne — une affectation déduite des Compétences en ferait trois timoniers ;
  *  3. `superstructure-fluvial` (MSRC 07 l.94 « Si le bateau dispose d'une cale ») : sur une coque sans
  *     le Trait naval `cale`, la station est FERMÉE et personne n'est touché ; sur la barge qui le
  *     porte, seuls les occupants de la cale le sont ;
@@ -61,7 +61,7 @@ describe('coup à l’équipage — la STATION est ÉPINGLÉE, jamais déduite (
 
   it('2. « Gouvernail » fluvial (MSRC 07 l.86) ne touche QUE le timonier ÉPINGLÉ', () => {
     const timonier = marin('timonier', { shipRole: 'timonier' });
-    // Trois marins à Voile 70 : `defaultCrewRole` les ferait tous timoniers (MSRC 07 l.86 dit « au timonier »).
+    // Trois marins à Voile 70 : une déduction par Compétence les ferait tous timoniers (MSRC 07 l.86 dit « au timonier »).
     const voiliers = ['v1', 'v2', 'v3'].map((id) => marin(id, { skills: [{ id: 'voile', value: 70 }] } as unknown as Partial<Combatant>));
 
     const avec = victimes(coque('barge-fluviale'), [timonier, ...voiliers], 'gouvernail', 1, RIVER_CRIT_SET);

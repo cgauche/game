@@ -42,6 +42,20 @@
 .pp-panel .rm-loc-grid button > :nth-child(n + 3) {
   grid-column: 1 / -1;
 }
+/* Un candidat à VISUEL (un PORTRAIT : affecter une personne) : trois colonnes — vignette, nom qui
+   prend la place, méta calée à droite. Sans cela la grille à deux colonnes ci-dessus chasse le NOM
+   contre le bord droit et relègue la méta sur une ligne à elle, sous le portrait (juge vision). */
+.pp-panel .rm-loc-grid button:has(> .pp-visuel) {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+}
+.pp-panel .rm-loc-grid button:has(> .pp-visuel) > .pp-nom { justify-self: start; }
+.pp-panel .rm-loc-grid button:has(> .pp-visuel) > :nth-child(n + 3) {
+  grid-column: auto;
+  justify-self: end;
+}
+.pp-visuel { display: inline-flex; line-height: 0; }
+
 /* La valeur DÉJÀ POSÉE se nomme en toutes lettres, dans l'encre de l'accent : le relief du bouton
    retenu ne se lit pas seul (une couleur seule ne dit rien à qui ne la distingue pas). */
 .pp-panel [data-actuel] {

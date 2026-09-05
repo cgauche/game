@@ -251,16 +251,9 @@
 .wm-provision { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; margin: 6px 0; padding: 6px 10px; border-radius: 6px; background: color-mix(in srgb, var(--shadow-ink) 25%, transparent); }
 .wm-provision-item { display: inline-flex; align-items: center; gap: 5px; }
 .wm-provision-item.short { color: var(--danger-soft); font-weight: 600; }
-/* Rôles de marche (Voyage par Étapes EDOC) : une ligne par héros, nom + grille d'Activités épinglables. */
-.wm-roles { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
-/* Un héros = un bloc : ligne (nom + puce du poste courant repliée) puis, au dépliage, la grille d'options. */
-.wm-role-item { display: flex; flex-direction: column; gap: 6px; }
-.wm-role-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.wm-role-name { font-size: 13px; min-width: 92px; color: var(--gold2); }
 @media (max-width: 560px) {
   .worldmap-panel { padding: 10px; }
   .worldmap-head h2 { font-size: 15px; }
-  .wm-role-row { flex-direction: column; align-items: stretch; }
 }
 /* En-tête mobile compact (#359, généralisé #362) : `.port-purse` porte `margin-left:auto` qui
    consomme le reste de la ligne et rejette le bouton Fermer seul sur sa propre rangée à 360px ; la

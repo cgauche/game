@@ -214,8 +214,9 @@ export function shipStationOuverte(traits: NavalTraitRef[] | undefined, id: stri
  *  - `{poste:true}` : l'équipage d'un poste tiré au sort (`MDG 13 l.763`) ;
  *  - `{stations}` : `Combatant.shipStation` STRICTEMENT égal à l'une des stations OUVERTES à bord
  *    (`MDG 13 l.680/l.714/l.730/l.751`, `MSRC 07 l.78/l.82/l.94`) ;
- *  - `{role}` : `Combatant.shipRole` STRICTEMENT égal (`MSRC 07 l.86` « au timonier », singulier) —
- *    jamais `defaultCrewRole`, qui rendrait trois timoniers pour trois marins à Voile.
+ *  - `{role}` : `Combatant.shipRole` STRICTEMENT égal (`MSRC 07 l.86` « au timonier », singulier) — une
+ *    affectation déduite des Compétences en désignerait autant que de marins à Voile, là où le livre
+ *    n'en frappe qu'UN.
  * PUR ; le RNG ne sert qu'au tirage du poste.
  */
 function crewHitVictims(hull: Combatant, crew: Combatant[], crewTarget: CrewTarget, rng: RNG): { victims: Combatant[]; fermees: string[] } {

@@ -4,10 +4,9 @@
  * dans `grammaire/mecanique.ts` (`shipCritEntrySchema`/`shipCrewHitSchema`), mais 5 Localisations DISTINCTES
  * (greement/avirons/gouvernail/coque/superstructure — pas de cargaison ni d'équipements côté
  * fluvial), sans `die` (absent du JSON, à la différence du jeu MDG) et sans `shrapnelHit` : MSRC
- * n'emploie JAMAIS le mot-clé « Éclats » — l'unique `shrapnel: 1` du Gouvernail était une
- * modélisation maison de « +5 Dégâts au timonier » (MSRC 07 l.86), devenue le coup certain
- * `crewHit {role}` (#1657 B3-2b-a). Une rangée fluviale qui regagnerait un Indice d'Éclats sans
- * table est une anomalie NOMMÉE par `applyHullCritical` (`src/engine/shipCritical.ts`).
+ * n'emploie JAMAIS le mot-clé « Éclats ». Le Gouvernail porte donc un coup CERTAIN à son servant,
+ * `crewHit {role}` (MSRC 07 l.86, #1657 B3-2b-a). Une rangée fluviale qui gagnerait un Indice
+ * d'Éclats sans table est une anomalie NOMMÉE par `applyHullCritical` (`src/engine/shipCritical.ts`).
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';

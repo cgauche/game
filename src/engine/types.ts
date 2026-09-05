@@ -1528,8 +1528,10 @@ export interface Combatant {
    *  initialisée. Absent ⇒ inféré des compétences (`defaultTravelRole`). Le joueur l'épingle/le change. */
   travelRole?: string;
   /** Rôle d'ÉQUIPAGE naval ÉPINGLÉ (`id` de `crew-roles.json` : timonier/artilleur/mousse…) — le poste que ce membre
-   *  tient lors des Tests d'équipage du navire (MDG 14). Absent ⇒ inféré des compétences (`defaultCrewRole`). Le
-   *  joueur l'épingle/le change via l'interface de gestion du navire (`ShipRolesPanel`). Distinct de `travelRole` (voyage). */
+   *  tient lors des Tests d'équipage du navire (MDG 14). ABSENT ⇒ le Test décide : `shipDefaultRoles`
+   *  (`state/shipCrew`) affecte l'équipage au moment du jet, selon le TYPE de Test joué. Aucune surface
+   *  n'affiche d'affectation devinée ; le joueur l'épingle/le change au roster (`ShipRolesPanel`, dont
+   *  la ligne « Repos » pose la valeur `BENCHED`). Distinct de `travelRole` (voyage). */
   shipRole?: string;
   /** STATION à bord ÉPINGLÉE (`id` de `ship-stations.json` : pont/gréement/nid-de-pie/avirons/cale) — où
    *  ce membre se TROUVE quand un Critique de coque frappe une présence (`MDG 13 l.680/l.714/l.730/

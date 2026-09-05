@@ -218,8 +218,8 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
           candidates={available}
           onAssign={(id) => setHero(sceneId, [...postedIds, id])}
           onRemove={(id) => setHero(sceneId, postedIds.filter((x) => x !== id))}
-          max={Infinity}
-          verb="rejoint cette Scène"
+          intitule={`${sc.label} : affecter un Personnage`}
+          nomRetirer={(c) => `Retirer ${c.label} de ${sc.label}`}
           canPick={!resolved && !mb.awaitingNext}
         />
       )}

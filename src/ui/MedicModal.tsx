@@ -166,7 +166,7 @@ export function MedicModal() {
             size="md"
             selected={h.id === medic.patientId}
             onClick={!busy && isHealable(h) ? () => selectPatient(h.id) : undefined}
-            title={isHealable(h) ? h.label : `${h.label} — rien à soigner`}
+            nom={isHealable(h) ? h.label : `${h.label} — rien à soigner`}
           />
         ))}
       </div>

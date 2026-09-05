@@ -35,6 +35,11 @@ const PANNEAU_W = 280;
 export interface ParamOption extends RollOption {
   meta?: ReactNode;
   consequence?: ReactNode;
+  /** VISUEL du candidat, à sa GAUCHE : un portrait quand le paramètre est une PERSONNE (affecter
+   *  quelqu'un à un poste). La rangée devient `[visuel] [nom] [méta]`, composée ICI — un appelant qui
+   *  bricolerait sa propre rangée en `content` verrait son nom chassé à droite et sa méta reléguée
+   *  sous le portrait (la grille de la primitive range par POSITION). */
+  visuel?: ReactNode;
 }
 
 export interface PanneauParametreProps {
@@ -96,11 +101,14 @@ function PanneauBoite({ anchor, intitule, options, onClose, pos }: Omit<PanneauP
   // La valeur DÉJÀ POSÉE (`selected` — la munition en chambre, le Sort déjà entamé) se DIT : le
   // relief seul (`on` d'`OptionChooser`) laissait le candidat courant indiscernable des autres
   // (sonde du juge vision). Le mot vient de la primitive, donc de la même source que la classe.
+  // Un candidat peut porter un VISUEL (portrait) : la rangée est alors `[visuel] [nom] [méta]`, et
+  // c'est la primitive qui la range — le seul choix borné de PERSONNES du jeu reste sur CE mécanisme.
   const rendues: RollOption[] = options.map((o) => ({
     ...o,
     content: (
       <>
-        <span>{o.label}</span>
+        {o.visuel != null ? <span className="pp-visuel">{o.visuel}</span> : null}
+        <span className="pp-nom">{o.label}</span>
         {o.meta != null ? <span className="pp-meta">{o.meta}</span> : null}
         {o.selected ? <span className="pp-meta" data-actuel="">valeur actuelle</span> : null}
         {o.consequence != null ? <span className="pp-meta">{o.consequence}</span> : null}

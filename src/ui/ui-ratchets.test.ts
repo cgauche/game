@@ -101,13 +101,18 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   // des États actifs qui s'enroule ; motif `.bar` non composable ici (chrome de barre d'écran) et
   // `.plaque-fx` scopé DANS `PlaqueRow` (`.plaque-name > .plaque-fx`), même justification que ce dernier.
   'styles/sheet.css': 4,
-  'styles/world-meta.css': 18,
+  // -1 : le roster de postes porte sa matière dans `postes-roster.css`, la feuille de sa primitive.
+  'styles/world-meta.css': 17,
   'styles/city-hub.css': 1,
   'styles/voyage.css': 3,
   // +1 (lot #492 « chevet ») : `.plaque-fx` (chips d'effet net sous le nom, `PlaqueRow.tsx`) — enroule
   // en rangée, motif `.bar` non composable ici (le `.bar` du canon porte fond/bordure/padding d'en-tête,
   // pas d'une puce compacte sous un titre de plaque).
   'styles/plaque-row.css': 1,
+  // +1 : `.pr-cases` (`PostesRoster`/`AssignRow`) — les portraits d'un poste s'enroulent quand ils
+  // débordent de la colonne de cases ; motif `.bar` non composable ici (`.bar` porte fond/bordure/
+  // padding d'une barre d'écran, pas d'une case DANS une rangée de grille).
+  'styles/postes-roster.css': 1,
 };
 
 // ── (viii) Couleurs `fill=`/`stroke=` LITTÉRALES dans le JSX de `src/ui` : un fill/stroke codé en dur
@@ -280,6 +285,7 @@ const DOMAIN_CSS_MODULES = [
   'test-scenarios',
   'combat-console',
   'exploration-dock',
+  'postes-roster',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -342,7 +348,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // (`.bp-spell-ni`, `.ab-spell-meta`) et le masquage `.ab-actor-top:empty` de sa rangée d'Avantage.
   // #1318 E1 : 133 → 132 — `.rm-die-input` meurt, la matière du champ du dé se déclare au CONTENEUR
   // du site (`.rm-die-pick > label > input`), la primitive `NumberField` ne portant aucune classe d'écran.
-  'styles/combat-modals.css': 132,
+  // -5 : le dossier de navire compose le roster PARTAGÉ (`PostesRoster`), qui porte sa matière dans
+  // `postes-roster.css` — `.ship-role`, `.ship-role-head`, `.ship-role-name`, `.ess` et `.crew-remove`
+  // n'ont plus de rendu. Les jumelles `.ship-poste*` (pièces d'artillerie) restent.
+  'styles/combat-modals.css': 127,
   // -35 (110 → 75), mort de la barre v7 : le module ne définit plus AUCUNE classe de la barre
   // (`.action-bar`, `.commencer-btn`, `.coop-ready`, la famille `.ab-*` — cadre acteur, hotbar,
   // slots, tiroirs) ni du cadre actif `ActiveFrame` (`.aframe`, famille `.af-*`, `[data-slot=…]`).
@@ -685,7 +694,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // du marché terrestre. Le site EMPRUNTAIT `.port-purse`, propriété de la primitive `ScreenMeta`
   // (garde `primitive-owners-guard`) : un porteur n'est pas une bourse, la classe est sa sémantique
   // propre et vit dans SON domaine (world-meta), documentée au catalogue de `docs/charte-ui.md`.
-  'styles/world-meta.css': 134,
+  // -4 : la carte du monde n'habille plus le roster de postes — sa matière vit dans
+  // `postes-roster.css`, à côté de la primitive `PostesRoster` que le dossier de navire compose aussi.
+  'styles/world-meta.css': 130,
   'styles/city-hub.css': 18,
   'styles/voyage.css': 30,
   // Galerie design system DEV (#412) — layout d'écran seul (les spécimens composent le canon).
@@ -776,7 +787,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // décider : NI, quantité, progression). La 4ᵉ est `.rm-loc-grid` — non pas une définition neuve
   // mais le SCOPE du canon d'`OptionChooser` dans le panneau (une valeur de paramètre par ligne),
   // même précédent que `.creator-step .rm-loc-grid` (creator.css).
-  'styles/panneau-parametre.css': 4,
+  // +2 (roster par poste, 2026-09-05) : `.pp-visuel`/`.pp-nom` — la rangée d'un candidat PORTEUR
+  // D'UN VISUEL (portrait : affecter une personne) est `[visuel] [nom] [méta]`, rangée par la
+  // PRIMITIVE. Sans ces deux nœuds, la grille positionnelle ci-dessus chassait le nom contre le bord
+  // droit et reléguait la méta sous le portrait, et chaque appelant aurait dû recoder sa rangée.
+  'styles/panneau-parametre.css': 6,
   // Astrolabe de la roue céleste (`CelestialWheel`, migration étape 4 du lot ossature) : les MATIÈRES
   // du cadran aux valeurs du `svg` « 4 — Signe astral » de la planche FINALE. 14 pour 3 qui vivaient
   // dans creator.css : contrepartie ASSUMÉE de la fidélité (l'ancienne roue était un croquis à deux
@@ -786,6 +801,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `stop-color` en attribut `var(--…)` ; la note du moyeu et l'invite du cadran vide partagent
   // `.cw-hub-note`. Le reste est un nœud = une matière, sans descendant décoratif.
   'styles/celestial-wheel.css': 14,
+  // Roster PAR POSTE (`PostesRoster` + sa case `AssignRow`) — module de la primitive (patron
+  // panneau-parametre.css/band.css) : `.pr-roster`, `.pr-ligne`, `.pr-label`, `.pr-banc`,
+  // `.pr-cases`, `.pr-add` (6 matières, une par nœud de la maquette A). La 7ᵉ n'est pas une
+  // définition neuve mais le SCOPE tactile d'une primitive composée (`.ptile` de `PortraitTile`) —
+  // la cible de 44 px de la charte est portée par la feuille qui compose, jamais par une
+  // neutralisation depuis un écran. `.mini-title` (grille du titre) est cataloguée ailleurs.
+  'styles/postes-roster.css': 8,
 };
 
 // ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : le cliquet (xii) ne scanne que les modules

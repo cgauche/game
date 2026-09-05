@@ -332,7 +332,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               size="xs"
               selected={m.id === targetId}
               onClick={() => setTargetId(m.id)}
-              title={m.id === hero.id ? `${m.label} (soi)` : m.label}
+              nom={m.id === hero.id ? `${m.label} (soi)` : m.label}
             />
           ))}
         </div>

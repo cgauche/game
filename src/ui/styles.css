@@ -28,6 +28,7 @@
 @import './styles/merchant.css'; /* marchand (achat/vente/réparation) */
 @import './styles/tavern.css'; /* jeux de taverne (NADJ ch.16) */
 @import './styles/hud.css'; /* HUD plein-champ (frise, dock, journal, menu ☰, monnaie) */
+@import './styles/postes-roster.css'; /* roster PAR POSTE (PostesRoster + case AssignRow) : matière de la primitive partagée — rôles de marche, postes d'équipage, stations à bord */
 @import './styles/world-meta.css'; /* carte du monde, éditeur de carte, sauvegarde, interlude */
 @import './styles/exploration-dock.css'; /* pont d'exploration (ExplorationDock.tsx) : bande basse allégée + rangée d'ouvreurs d'écrans — APRÈS world-meta.css (matière de pont des `.worldmap-btn` du pont) */
 @import './styles/gauges.css'; /* jauges du navire : NotchGauge (crans) + WindRose (rose des vents) */

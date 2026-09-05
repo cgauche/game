@@ -585,12 +585,10 @@
 /* Plan TOP-DOWN (TopoScene) : hauteur DÉFINIE + non-shrink — sinon le parent flex `.sheet-main` l'écrase
  * à ~0 et clippe le plan ; le SVG (100 %×100 %, letterbox `meet`) tient alors tout entier dans la boîte. */
 .topo-panel { flex: 0 0 auto; height: clamp(180px, 34vh, 320px); background: var(--bg2); border-radius: 6px; padding: 6px; }
-.ship-poste, .ship-role { padding: 5px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
+.ship-poste { padding: 5px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
 /* Rangée de poste sélectionnée (lien plan ⇄ équipage) : liseré or à gauche. */
 .ship-poste.selected { box-shadow: inset 3px 0 0 var(--gold); background: rgba(255, 255, 255, 0.04); }
-.ship-role-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.ship-role-name, .ship-poste-name { font-weight: 600; }
-.ship-role-name .ess { color: var(--gold); }
+.ship-poste-name { font-weight: 600; }
 .ship-crew-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; align-items: center; min-height: 22px; }
 /* Maître-détail piloté par le plan (FTL/RTS) : plan à gauche, bande de puces + détail à droite ; s'empile ≤900px. */
 .poste-layout { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
@@ -611,16 +609,6 @@
 /* Point « servi » : plein (or) si au moins un servant, creux sinon. */
 .poste-dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--muted); }
 .poste-dot.manned { background: var(--gold); border-color: var(--gold); }
-/* Portrait d'un marin à un poste : survol → croix rouge ; clic → le retire du poste (équipage disponible). */
-.crew-remove { position: relative; padding: 0; border: none; background: none; cursor: pointer; line-height: 0; }
-.crew-remove::after {
-  content: '✕';
-  position: absolute; inset: 0;
-  display: none; align-items: center; justify-content: center;
-  background: rgba(160, 30, 30, 0.62); color: var(--on-accent); font-weight: 700; border-radius: 50%;
-  pointer-events: none;
-}
-.crew-remove:hover::after { display: flex; }
 /* ── Écran d'équipement (onglet Possessions) : emplacements en CELLULES (loc × couche) + sets ──
    Pas de mannequin (mort, #492 : le rig grand format vit dans la colonne de la fiche). ≥900px :
    2 colonnes (emplacements | sets d'armes) ; ≤900px : empilées. Cibles tactiles via pointer: coarse. */

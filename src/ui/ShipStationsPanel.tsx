@@ -14,8 +14,8 @@ import { PostesRoster } from './PostesRoster';
  * bateau porte l'équipage (mer ET fleuve), gating au point d'appel (`WorldMapView`).
  *
  * AUCUNE inférence : la station est ce que le joueur a ÉPINGLÉ (`Combatant.shipStation`), sans
- * défaut — un héros non posté n'est visé par aucune présence, et le journal le dit. C'est pourquoi
- * `currentOf` et `pinnedOf` rendent la MÊME valeur (pas de badge « auto », il n'y a rien à déduire).
+ * défaut — un héros non posté n'est visé par aucune présence, et le journal le dit. Le roster entier
+ * suit désormais cette règle (arbitrage user 2026-09-04) : les stations n'y sont plus l'exception.
  *
  * Une station que la coque n'a pas (`requiresTrait`) reste OFFERTE et éteinte, sa raison au
  * survol/focus/tap : le gate est celui du moteur (`shipStationOuverte`), jamais une copie d'écran.
@@ -31,11 +31,12 @@ export function ShipStationsPanel({ traits }: {
   return (
     <PostesRoster
       title="Stations à bord"
+      banc="Sans station"
       heroes={heroes}
       postes={shipStations.map(stationAsPoste)}
-      currentOf={(h) => h.shipStation ?? null}
       pinnedOf={(h) => h.shipStation}
       onSet={setShipStation}
+      codexCategory="shipStations"
       refusOf={(p) => {
         if (shipStationOuverte(traits, p.id)) return undefined;
         const requis = findShipStation(p.id)?.requiresTrait?.id;

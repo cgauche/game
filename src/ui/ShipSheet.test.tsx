@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ShipStateBlock, ShipCrewByRole, PosteDetail, ShipInspectBody } from './ShipSheet';
+import { ShipStateBlock, PosteDetail, ShipInspectBody } from './ShipSheet';
 import type { Combatant, SkillInstance } from '../engine/types';
 
 const mk = (id: string, dex: number, skills: { id: string; advances: number; spec?: string }[] = [], shipRole?: string): Combatant =>
@@ -23,19 +23,6 @@ describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
     expect(html).toContain('40/50'); // coque
     expect(html).toContain('Nord');  // cap
     expect(html).toContain('1/1');   // effectif apte/total
-  });
-
-  it('ShipCrewByRole : rôles de manœuvre + essentiel marqué + assignation', () => {
-    const crew = [mk('Anna', 60, [{ id: 'voile', advances: 30 }], 'timonier')];
-    const html = renderToStaticMarkup(<ShipCrewByRole crew={crew} onSet={() => {}} />);
-    // Les 5 rôles de 'manoeuvre' (crew-test-types.json).
-    expect(html).toContain('Timonier');
-    expect(html).toContain('Capitaine');
-    expect(html).toContain('Navigateur');
-    expect(html).toContain('Mousse');
-    expect(html).toContain('Chansonnier');
-    expect(html).toContain('★');           // Timonier essentiel (DR ×2)
-    expect(html).toContain('+ assigner');  // entrée de l'assignation par portrait
   });
 
   it('PosteDetail : le poste sélectionné affiche son bord + son nom + son servant', () => {

@@ -2310,10 +2310,9 @@ registerCascadeApplier('sea-pirate-tribute', (get, set, step) => {
  *  l'entrée est PERSISTÉE sur le navire (`vessel.criticals`) et racontée ; ses effets mécaniques fins
  *  s'appliquent quand la coque redevient un combattant (combat naval).
  *
- *  Le coup à l'ÉQUIPAGE de la rangée (MDG 13 l.763), lui, s'applique ICI — jusqu'à #1657 B3-2 il
- *  n'était JAMAIS joué en voyage (seuls `log` et `note` remontaient) : conséquence certaine appliquée,
- *  ÉPREUVE ouverte par la PORTE canonique (bande pour les héros tenus, voie inline sinon), sur les
- *  personnes exposées à bord. */
+ *  Le coup à l'ÉQUIPAGE de la rangée (MDG 13 l.763) s'applique ICI, en voyage comme en combat :
+ *  conséquence certaine appliquée, ÉPREUVE ouverte par la PORTE canonique (bande pour les héros
+ *  tenus, voie inline sinon), sur les personnes exposées à bord (#1657 B3-2). */
 function applyVesselCritical(get: Get, set: Set, crit: ShipCriticalResolved): void {
   const vessel = get().vessel;
   if (vessel) set({ vessel: { ...vessel, criticals: [...(vessel.criticals ?? []), crit.note] } });

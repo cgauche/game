@@ -25,8 +25,13 @@ import ts from 'typescript';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-/** Fichiers de console possédés par le chantier HUD (spec §1c) — la garde ne parle que d'eux. */
-const CONSOLE_FILES = ['CombatConsole.tsx'];
+/** Fichiers gardés. La console du chantier HUD (spec §1c), plus la chaîne d'ASSIGNATION (roster par
+ *  poste, 2026-09-04) : `PostesRoster` et sa case `AssignRow` composent des portraits et une
+ *  affordance d'ajout dont le nom DOIT vivre dans l'arbre d'accessibilité. `ShipSheet` entre avec
+ *  eux : il compose la même chaîne. Le nom d'une personne voyage par la prop `nom` de `CharFrame`,
+ *  que `PortraitTile` pose en `aria-label` (angle mort déclaré ci-dessus : le `title` d'une
+ *  PRIMITIVE reste son affaire). */
+const CONSOLE_FILES = ['CombatConsole.tsx', 'PostesRoster.tsx', 'AssignRow.tsx', 'PortraitPicker.tsx', 'ShipSheet.tsx'];
 
 /** Sites TOLÉRÉS : `fichier:ligne` → nœud visible qui porte DÉJÀ la même information. VIDE = la loi est
  *  tenue partout. N'ajouter une entrée qu'avec le nœud visible nommé, et la faire DÉCROÎTRE. */
@@ -65,8 +70,8 @@ export function titleProperties(src: string, file: string): string[] {
   return out;
 }
 
-describe('console de combat — aucune information en `title` seul', () => {
-  it('aucun attribut JSX `title` dans les fichiers de console, hors exemption nominative', () => {
+describe('console de combat & chaîne d’assignation — aucune information en `title` seul', () => {
+  it('aucun attribut JSX `title` dans les fichiers gardés, hors exemption nominative', () => {
     const trouves: string[] = [];
     for (const f of CONSOLE_FILES) {
       for (const { site, texte } of titleAttributes(readFileSync(join(UI, f), 'utf8'), f)) {

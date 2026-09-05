@@ -18,11 +18,11 @@ import crewMoraleJson from '../data/crew-morale.json';
 import { findTableEntry } from './tables';
 import { rollExpr, type RNG, defaultRNG } from './dice';
 import { rollTest, easeDifficulty } from './tests';
-import { bestForSkills, bestSkilledOption, actorHasSkill, type SkillRef } from './skills';
+import { bestForSkills, type SkillRef } from './skills';
 import { talentTestSLBonus } from './magic';
 import { skillDRBonus } from './ops';
 import { rule } from './policy';
-import { crewRoles, findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
+import { findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
 import { priceToMoney, toBrass } from './money';
 import { effectRef, type Combatant, type Difficulty } from './types';
 import type { ModLine } from './combat';
@@ -340,24 +340,6 @@ export function crewTalentDR(crew: Combatant, role: CrewRoleData): number {
   if (!used) return 0;
   return talentTestSLBonus(crew, { skill: used.id, spec: used.spec }, (cond) => cond.kind === 'crewTest')
     + skillDRBonus(crew, used.id, used.spec);
-}
-
-/** Rôle d'équipage INFÉRÉ d'un membre (MDG 14) — sur la COMPÉTENCE, comme le RAW :
- *  - le rôle où sa MEILLEURE compétence POSSÉDÉE est la plus haute (« ou s'il est plus **compétent** », MDG 14
- *    l.38-39) — `testValue` (carac + avances). Le membre ne concourt QUE pour les rôles dont il possède une
- *    compétence (on ne rafle pas un poste sur la seule carac nue).
- *  - à défaut → **Mousse**, « rôle par défaut » (MDG 14 l.15/35), s'il sait Voile OU Ramer.
- *  - sinon `null` : un non-marin n'a pas de rôle par défaut, le joueur l'assigne (MDG 14 l.39). PUR. */
-export function defaultCrewRole(crew: Combatant): string | null {
-  // Chaque rôle réduit à ses compétences POSSÉDÉES ; on écarte les rôles sans aucune compétence connue.
-  const eligible = crewRoles
-    .map((role) => ({ id: role.id, skills: role.skills.filter((s) => actorHasSkill(crew, s.id, s.spec)) }))
-    .filter((r) => r.skills.length > 0);
-  const best = bestSkilledOption(crew, eligible);
-  if (best) return best.option.id;
-  const mousse = findCrewRoleById('mousse');
-  if (mousse && mousse.skills.some((s) => actorHasSkill(crew, s.id, s.spec))) return 'mousse';
-  return null;
 }
 
 /**

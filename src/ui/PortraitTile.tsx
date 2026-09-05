@@ -51,9 +51,13 @@ export interface PortraitTileProps {
   reserveStates?: boolean;
   onClick?: () => void;
   title?: string;
+  /** Tuile DÉCORATIVE : rendue en `<span>` muet (`aria-hidden`) au lieu d'un `<button>` — pour une
+   *  tuile posée DANS un contrôle qui porte déjà le geste et le nom (un candidat de panneau-paramètre
+   *  est un bouton : y imbriquer un bouton est du HTML invalide, et le clic devient ambigu). */
+  decoratif?: boolean;
 }
 
-export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, hovered, team, maxStates = 4, reserveStates = false, onClick, title }: PortraitTileProps) {
+export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, hovered, team, maxStates = 4, reserveStates = false, onClick, title, decoratif = false }: PortraitTileProps) {
   const px = CHAR_SIZE_PX[size];
   const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
   // État de FIN (#237) : SOURCE UNIQUE (endState) — distingue mort / inconscient / rendu / hors-combat
@@ -64,15 +68,13 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
   const showPv = showGauge && c.kind === 'hero' && px >= CHAR_SIZE_PX.md;
   // R6 : l'unité active est plus grosse que les autres pour la mettre en évidence.
   const s = active ? Math.round(px * 1.28) : px;
+  const Boite = decoratif ? 'span' : 'button';
   return (
     <div className="ptile-wrap">
-      <button
-        type="button"
+      <Boite
+        {...(decoratif ? { 'aria-hidden': true } : { type: 'button' as const, onClick, title: title ?? c.label, 'aria-label': title ?? c.label })}
         className={`ptile ${active ? 'active' : ''} ${selected ? 'sel' : ''} ${hovered ? 'hov' : ''} ${endMark ? `ko ${endMark.className}` : ''} ${team ? `team-${team}` : ''}`}
         style={{ width: s }}
-        onClick={onClick}
-        title={title ?? c.label}
-        aria-label={title ?? c.label}
       >
         {active && <i className="ptile-caret">▼</i>}
         <span className="ptile-face" style={{ width: s, height: s }}>
@@ -94,7 +96,7 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
             format={() => (showPv ? (c.dead ? <Icon id="journal/death" size="sm" /> : `${c.wounds.current}/${c.wounds.max}`) : null)}
           />
         )}
-      </button>
+      </Boite>
       {variant === 'full' && <StateChips c={c} max={maxStates} reserve={reserveStates} />}
     </div>
   );

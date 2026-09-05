@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { shipCrewAssignments, shipMoraleScore, shipDefaultRoles, crewTestContributors } from './shipCrew';
-import { defaultCrewRole } from '../engine/crewMorale';
 import { traumaById } from '../engine/trauma';
 import type { Combatant, SkillInstance } from '../engine/types';
 import type { Get } from './flowTypes';
@@ -18,33 +17,6 @@ const hull = (crewIds: string[], creatureId = 'cogue'): Combatant =>
   ({ id: 'ship', name: 'Navire', kind: 'npc', bodyShape: 'vehicule', creatureId, crewIds, conditions: [], wounds: { current: 50, max: 50, base: 50 } }) as unknown as Combatant;
 
 const getWith = (vessel: unknown): Get => (() => ({ vessel })) as unknown as Get;
-
-describe('defaultCrewRole — rôle naval inféré de la meilleure COMPÉTENCE (MDG 14 l.38-39)', () => {
-  it('le rôle où sa meilleure compétence POSSÉDÉE est la plus haute (testValue = carac + avances)', () => {
-    // Une seule compétence de marin → son rôle. Compétence = Dex 30 + avances (carac d'instance = Dex).
-    expect(defaultCrewRole(mk('a', 30, [{ id: 'commandement', advances: 40 }]))).toBe('capitaine'); // Cmd 70
-    expect(defaultCrewRole(mk('b', 30, [{ id: 'projectiles', advances: 40, spec: 'poudre-noire' }]))).toBe('artilleur'); // Proj 70
-    // Voile 70 concourt pour Timonier ET Mousse (ex æquo) → Timonier, premier maximum (ordre du catalogue).
-    expect(defaultCrewRole(mk('c', 30, [{ id: 'voile', advances: 40 }]))).toBe('timonier');
-  });
-
-  it('la COMPÉTENCE la plus haute décide entre deux rôles possédés', () => {
-    // Guérison Dex 30 + 50 = 80 (Chirurgien) VS Perception Dex 30 + 30 = 60 (Vigie) → Chirurgien.
-    const soigneur = mk('h', 30, [
-      { id: 'guerison', advances: 50 },
-      { id: 'perception', advances: 30 },
-    ]);
-    expect(defaultCrewRole(soigneur)).toBe('chirurgien');
-  });
-
-  it('Mousse par défaut si le membre sait Ramer/Voile sans autre rôle ; sinon null (le joueur assigne, l.39)', () => {
-    // Ramer n'alimente que le rôle Mousse → Mousse.
-    expect(defaultCrewRole(mk('r', 30, [{ id: 'ramer', advances: 20 }]))).toBe('mousse');
-    // Aucune compétence de marin → pas de rôle par défaut.
-    expect(defaultCrewRole(mk('x', 30, [{ id: 'crochetage', advances: 40 }]))).toBeNull();
-    expect(defaultCrewRole(mk('y', 30, []))).toBeNull();
-  });
-});
 
 describe('shipCrewAssignments — équipage → rôles pour un Test (MDG 14)', () => {
   it('rôle ÉPINGLÉ respecté ; rôle HORS du type de Test exclu', () => {

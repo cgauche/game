@@ -26,11 +26,13 @@ import type { Get, Set as SetFn } from './flowTypes';
 
 /**
  * Assignation de l'équipage APTE d'un navire aux rôles qui contribuent à `testTypeId` (MDG 14). Chaque marin tient
- * son rôle ÉPINGLÉ (`shipRole`) ou INFÉRÉ (`defaultCrewRole`), filtré aux rôles du type de Test (`crew-test-types.json`).
+ * son rôle ÉPINGLÉ (`shipRole`) ; à défaut, c'est CE module qui l'affecte pour le Test (`shipDefaultRoles`),
+ * filtré aux rôles du type de Test (`crew-test-types.json`) — l'inférence vit ICI, et nulle part ailleurs.
  * Au plus UN marin par rôle : en cas de collision, le MEILLEUR pour ce rôle (`crewRoleValue`). PUR.
  */
-/** Marqueur « au repos » : un marin RETIRÉ d'un poste (✕ dans la fiche) revient à l'équipage disponible et n'est PAS
- *  ré-assigné par le défaut (sinon « retirer » serait sans effet pour un rôle déduit). */
+/** Marqueur « au repos » : valeur de `shipRole` qui dit « ce marin ne tient AUCUN rôle ». Épinglée comme un
+ *  poste (ligne « Repos » du roster, `state/poste.reposAsPoste`), elle est respectée telle quelle par
+ *  `shipDefaultRoles` — donc exclue de tout Test d'équipage. */
 export const BENCHED = 'repos';
 
 /** Un marin est-il FORMÉ pour un rôle (possède une de ses compétences) ? PUR. */
