@@ -69,6 +69,9 @@ const CLES: Record<string, string> = {
   "maladies": '25e48bb168ea15e0',
   "symptoms": '2b4e9356d95c9ecd',
   "mutations": 'a507855641eff14a',
+  // #1686 lot 3a-2 : la catégorie « Matières » ouvre (16 items, 3 groupes titrés par le libellé de
+  // valeur du discriminant `domain`) — elle QUITTE du même geste la liste des orphelins ci-dessous.
+  "materials": '904ac73056ba299a',
   "mutationTables": '0d6e17a2d2e12dca',
   "effectTables": '9ae6a346268fcff3',
   "maneuvers": '30d7e463b2575792',
@@ -204,6 +207,7 @@ const FORME: Record<string, string> = {
   "maladies": 'desc id label meta sections source sub',
   "symptoms": 'desc id label sections source',
   "mutations": 'appearance desc group id label sections source sub',
+  "materials": 'group id label meta sub',
   "mutationTables": 'id label sections source sub',
   "effectTables": 'id label sections source sub',
   "maneuvers": 'desc id label meta sections source sub',
@@ -394,10 +398,6 @@ const ORPHELINS: string[] = [
   "criticals.json#0 (8)",
   "donnees.manifest.json#0 (11)",
   "lieux-services.json#0 (7)",
-  // TROIS lignes → UNE (#1686 lot 2) : `propMaterials`/`roofMaterials`/`reliefMaterials` fusionnent en
-  // `materials.json` (8 + 4 + 4 = 16 entrées, inchangées) — même angle mort, une seule matière de
-  // rendu app-owned qu'aucune catégorie du Codex n'expose.
-  "materials.json#0 (16)",
   "miscast.json#0 (5)",
   "primitives.manifest.json#0 (28)",
   "qualityTypes.json#0 (2)",
@@ -513,7 +513,8 @@ describe('Codex — défaut d’enveloppe (#1467 L1b)', () => {
     expect(partiels).toEqual(PARTIELS);
     expect(orphelins).toEqual(ORPHELINS);
     // 107 → 108 : la catégorie `shipStations` apparie son dataset (#1657 B3-2b-a).
-    expect(apparies.length).toBe(108);
+    // 108 → 109 : la catégorie `materials` apparie `materials.json` (#1686 lot 3a-2).
+    expect(apparies.length).toBe(109);
   });
 });
 

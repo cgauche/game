@@ -26,7 +26,11 @@ const doc = document(
     appearance: entityAppearanceSchema.optional(),
   },
   {
-    kind: { label: 'Type de Mutation', hint: 'Physique ou mentale' },
+    kind: {
+      label: 'Type de Mutation',
+      hint: 'Physique ou mentale',
+      valeurs: { physique: 'Physique', mentale: 'Mentale' },
+    },
     passive: { label: 'Effets passifs' },
     effects: { label: 'Effets déclenchés' },
     note: { label: 'Note', hint: 'Note mécanique de l’entrée — ex. bonus de Perception' },

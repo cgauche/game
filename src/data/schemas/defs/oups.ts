@@ -44,7 +44,15 @@ const doc = document(
   {
     min: { label: 'Borne basse du d100' },
     max: { label: 'Borne haute du d100' },
-    kind: { label: 'Effet mécanique', hint: 'misfire = Incident de Tir, HORS table (LDB 14 folio 160)' },
+    kind: {
+      label: 'Effet mécanique',
+      hint: 'misfire = Incident de Tir, HORS table (LDB 14 folio 160)',
+      valeurs: {
+        selfWound: 'Auto-blessure', weaponDamageActLast: 'Arme abîmée + agit en dernier', actionPenalty: 'Malus d’Action',
+        loseMovement: 'Perte de Mouvement', loseAction: 'Perte d’Action', trauma: 'Traumatisme', hitAlly: 'Touche un allié',
+        misfire: 'Incident de Tir',
+      },
+    },
   },
   {
     codex: { keys: ['oups'] },

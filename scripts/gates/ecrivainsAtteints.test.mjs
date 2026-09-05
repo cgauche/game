@@ -56,10 +56,12 @@ const ATTENDU = {
     'scripts/hooks/solde-ticket-guard-driver.test.mjs',
     'scripts/hooks/solde-ticket-guard.test.mjs',
     'scripts/hooks/typecheck-fast-wrapper.test.mjs',
-    // +2 le 2026-09-05 : morsure des portes des deux migrations #1686 (lot 1 ids composés, lot 2
-    // fusion des matières) ; leur dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
+    // +3 le 2026-09-05 : morsure des portes des trois migrations #1686 (lot 1 ids composés, lot 2
+    // fusion des matières, lot 3a-2 purge de `structureAppearance.material`) ; leur dépôt jetable vit
+    // sous `os.tmpdir()`, l'arbre n'est jamais écrit.
     'scripts/migrations/lib/1686-ardoise-portes.test.mjs',
     'scripts/migrations/lib/1686-materials-portes.test.mjs',
+    'scripts/migrations/lib/1686-structure-material-portes.test.mjs',
     'scripts/migrations/lib/empreinteRejeu.test.mjs',
     'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
     'scripts/migrations/replay-head.mjs',

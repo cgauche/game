@@ -16,16 +16,17 @@ import {
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
-  isNamed, specCatalogOf, specLabel, seasonLabel, SKILL_ACCES_LABEL,
+  isNamed, specCatalogOf, specLabel, seasonLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
-  conditionLabel, traitProjectingManeuver,
+  conditionLabel, traitProjectingManeuver, materials,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
 // importés directement d'`engine/massBattle`).
 import type { RaceKey, SourceRef } from '../../data/schemas/grammaire/valeurs';
 import type { EnveloppeDocument } from '../../data/schemas/grammaire/document';
+import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
 import { MOUNT_PROFILES } from '../../engine/mountTravel';
 import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS } from '../../engine/travelTables';
 import type { TravelTableEntry } from '../../engine/travelTables';
@@ -62,7 +63,7 @@ import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
 import { AVAILABILITIES } from '../../engine/types';
 import { ACTIVITIES } from '../../engine/activities';
-import type { ActivityContext, OutcomeBand, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond } from '../../engine/activities';
+import type { OutcomeBand, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond } from '../../engine/activities';
 import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
 import { resolveQualities } from '../../engine/qualities/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
@@ -79,7 +80,9 @@ import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, c
 import { opRows, tableRows } from './opRows';
 import { humanizeCastBonus, CAUSE_PERSISTANTE, replieCausesPersistantes } from './humanize';
 import { reverseGroups, bookContents } from './relations';
-import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL, formatManeuverMeasure } from './maneuverLabels';
+import { formatManeuverMeasure } from './maneuverMeasure';
+import { metaPourFichier, chargeDiscriminee } from '../../data/schemas/validate';
+import { libelleDuChamp } from './editFields';
 import { slugId } from '../../data/slug';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
@@ -226,6 +229,20 @@ const fact = (label: string, value: unknown): CodexFact | null =>
 
 const facts = (...xs: (CodexFact | null)[]): CodexFact[] => xs.filter((x): x is CodexFact => x != null);
 
+/** Valeur d'un champ de charge rendue LISIBLE sans rien inventer : un booléen se lit « oui », une
+ *  valeur simple s'imprime telle quelle. Un champ COMPOSITE (recette de détail) n'a PAS de fait :
+ *  ses sous-clés (`seedScope`, `speckle`…) sont des noms de moteur qu'aucune méta ne nomme en
+ *  français — `MetaChamp` ne couvre que le PREMIER NIVEAU d'un document (`document()` exige une méta
+ *  par clé de `champs`, `libelleDuChamp` rend la clé nue au régime `profondeur`) — et le Codex est un
+ *  écran de RÉFÉRENCE joueur (règle stricte 4). Le champ reste ÉDITABLE à l'atelier, sous-formulaire
+ *  inféré ; c'est le FAIT de fiche qui exige un nom lisible. */
+const valeurDeCharge = (v: unknown): string | null => {
+  if (v == null) return null;
+  if (typeof v === 'boolean') return v ? 'oui' : null;
+  if (typeof v === 'object') return null;
+  return String(v);
+};
+
 const join = (...parts: (string | null | undefined)[]): string | undefined => {
   const s = parts.filter(Boolean).join(' · ');
   return s || undefined;
@@ -349,8 +366,12 @@ const careerStatusRange = (levels: import('../../data').CareerLevelData[]): stri
   return first === last ? first : `${first} → ${last}`;
 };
 
-/** Libellés FR du déclenchement / ciblage d'une Manœuvre (Codex). */
-const WEAPON_GROUP_KIND_LABEL: Record<string, string> = { weapon: 'Groupe d’arme', ammo: 'Munitions', armour: 'Armure', inventory: 'Inventaire' };
+/**
+ * Libellé FR d'une VALEUR d'un champ ÉNUMÉRÉ, par le canal registre (`MetaChamp.valeurs`, #1686) : les
+ * noms des valeurs vivent au def, avec la forme du champ — le Codex les LIT, il n'en tient plus la table.
+ */
+const valeurFR = (fichier: string, champ: string, valeur: string): string =>
+  libelleDeValeur(metaPourFichier(fichier), champ, valeur);
 /** Libellés FR des CAPACITÉS irréductibles d'un Symptôme (drapeaux lus par la machinerie de maladie). */
 const SYMPTOM_CAP_LABEL: Record<string, string> = {
   blocksHealing: 'Bloque la guérison (1 PB)', amputation: 'Gangrène (amputation)',
@@ -359,12 +380,6 @@ const SYMPTOM_CAP_LABEL: Record<string, string> = {
 };
 /** Libellé d'un jet de dés (`{n,d,plus?}`) — « 1d10 », « 2d10+2 ». */
 const diceLabel = formatDice;
-/** Libellés FR des types de résultat « Oups ! » (Maladresse, LDB 12) — affichage (donnée = `kind` STABLE). */
-const OUPS_KIND_LABEL: Record<string, string> = {
-  selfWound: 'Auto-blessure', weaponDamageActLast: 'Arme abîmée + agit en dernier', actionPenalty: 'Malus d’Action',
-  loseMovement: 'Perte de Mouvement', loseAction: 'Perte d’Action', trauma: 'Traumatisme', hitAlly: 'Touche un allié',
-  misfire: 'Incident de Tir',
-};
 /** Libellés FR des CAPACITÉS de Trait (drapeaux booléens lus par le moteur — `TraitCapabilities`).
  *  Les capacités psy (psychType/psychImmune/psychIndice) sont surfacées à part (méta). */
 const TRAIT_CAP_LABEL: Record<string, string> = {
@@ -387,11 +402,6 @@ const QUALITY_CAP_LABEL: Record<string, string> = {
 
 // ── Activités (activities.json) — libellés FR d'affichage, SOURCE UNIQUE partagée par la projection
 //    Codex ci-dessous ET l'éditeur `CodexEdit` (selects). La logique reste keyée par id STABLE. ──
-export const ACTIVITY_CONTEXT_LABEL: Record<ActivityContext, string> = {
-  interlude: 'Entre deux aventures', voyage: 'Voyage (terre)', mer: 'Mer',
-  bataille: 'Bataille — préparation', 'bataille-round': 'Bataille — Scène de Round',
-  auberge: 'Auberge (hub de ville)',
-};
 export const OUTCOME_ON_LABEL: Record<'success' | 'failure' | 'fumble', string> = {
   success: 'Succès', failure: 'Échec', fumble: 'Maladresse',
 };
@@ -922,11 +932,6 @@ const DRUNKENNESS_OUTCOME_LABEL: Record<string, string> = {
   belligerent: 'Tous, un par un', blackout: 'Trou noir (gueule de bois)',
 };
 
-/** Libellés FR des 3 formes de contrôle d'une règle optionnelle (`OptionalRule.kind`,
- *  `src/engine/policy.ts`) — le panneau in-game rend un interrupteur / un nombre / un choix. */
-const RULE_KIND_LABEL: Record<string, string> = {
-  flag: 'Interrupteur', param: 'Nombre', mode: 'Choix',
-};
 
 /** Valeur d'une règle optionnelle rendue LISIBLE (un booléen se lit « Activée »/« Désactivée », pas
  *  « true ») — `RuleValue` est une union fermée booléen | nombre | chaîne. */
@@ -1469,8 +1474,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'skills', label: 'Compétences', group: 'Compétences',
     build: () => skills.map((s) => depuisEnveloppe(s, {
-      sub: join(CHAR_LABELS[s.characteristic], SKILL_ACCES_LABEL[s.acces]),
-      meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Accès', SKILL_ACCES_LABEL[s.acces]), fact('Spécialisations', specsFact('skills', s))),
+      sub: join(CHAR_LABELS[s.characteristic], valeurFR('skills.json', 'acces', s.acces)),
+      meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Accès', valeurFR('skills.json', 'acces', s.acces)), fact('Spécialisations', specsFact('skills', s))),
       sections: sections(...reverseSections('skills', s.id)),
     })),
   },
@@ -1554,7 +1559,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'weaponGroups', label: 'Groupes d’objet', group: 'Équipement',
-    build: () => weaponGroups.map((g) => depuisEnveloppe(g, { sub: WEAPON_GROUP_KIND_LABEL[g.kind], sections: sections(...reverseSections('weaponGroups', g.id)) })),
+    build: () => weaponGroups.map((g) => depuisEnveloppe(g, { sub: valeurFR('weaponGroups.json', 'kind', g.kind), sections: sections(...reverseSections('weaponGroups', g.id)) })),
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
@@ -1613,8 +1618,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'mutations', label: 'Mutations', group: 'Effets',
     build: () => mutations.map((m) => depuisEnveloppe(m, {
-      sub: m.kind === 'physique' ? 'Physique' : 'Mentale',
-      group: m.kind === 'physique' ? 'Physiques' : 'Mentales',
+      sub: valeurFR('mutations.json', 'kind', m.kind),
+      group: valeurFR('mutations.json', 'kind', m.kind),
       appearance: m.appearance,
       // PA / arme naturelle / traits conférés sont désormais des GameOps du `passive` (ap /
       // grantNaturalWeapon / grantTrait) → rendus par passiveSection ; plus de facts/chips dédiés.
@@ -1654,10 +1659,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => maneuvers.map((m) => depuisEnveloppe(m, {
       sub: ATTACK_LABEL[m.kind], desc: traitProjectingManeuver(m.id)?.desc,
       meta: facts(
-        fact('Activation', MANEUVER_ACTIVATION_LABEL[m.activation]),
+        fact('Activation', valeurFR('maneuvers.json', 'activation', m.activation)),
         fact('Coût Av', m.advantageCost),
         fact('Portée', m.range ? formatManeuverMeasure(m.range) : null),
-        fact('Cible', MANEUVER_TARGETING_LABEL[m.targeting]),
+        fact('Cible', valeurFR('maneuvers.json', 'targeting', m.targeting)),
       ),
       sections: sections(...reverseSections('maneuvers', m.id)),
     })),
@@ -1880,7 +1885,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       const range = 'min' in o ? `d100 ${o.min}–${o.max}` : 'Hors table (arme à Poudre noire, jet pair)';
       return depuisEnveloppe(o, {
         sub: range,
-        meta: facts(fact('d100', range), fact('Type', OUPS_KIND_LABEL[o.kind] ?? o.kind)),
+        meta: facts(fact('d100', range), fact('Type', valeurFR('oups.json', 'kind', o.kind))),
       });
     }),
   },
@@ -1898,9 +1903,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // masse ADE II 8). Un Test « posté » (compétence(s) au choix + Difficulté) dont l'issue s'exprime
     // en `onSuccess` (GameOp) et/ou en bandes `outcomes` (table DR → résultat, verbatim + effets).
     build: () => ACTIVITIES.map((a) => depuisEnveloppe(a, {
-      sub: a.contexts.map((c) => ACTIVITY_CONTEXT_LABEL[c] ?? c).join(', '),
+      sub: a.contexts.map((c) => valeurFR('activities.json', 'contexts', c)).join(', '),
       meta: facts(
-        fact('Contextes', a.contexts.map((c) => ACTIVITY_CONTEXT_LABEL[c] ?? c).join(', ')),
+        fact('Contextes', a.contexts.map((c) => valeurFR('activities.json', 'contexts', c)).join(', ')),
         fact('Compétence(s)', a.skills?.length ? a.skills.map((s) => refLabel('skills', { id: s.id, spec: s.spec })).join(' / ') : (a.freeSkill ? 'Au choix (libre)' : null)),
         fact('Caractéristique', a.char ? CHAR_LABELS[a.char] : null),
         fact('Difficulté', a.difficulty ? DIFFICULTY_LABELS[a.difficulty] : null),
@@ -1993,6 +1998,26 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       ),
       sections: sections(chips('Atouts', 'traits', traitLabels(s.traits as unknown as import('../../engine/statEntry').TraitList))),
     })),
+  },
+  {
+    // Matières du monde (#1686) : UN document à DISCRIMINANT (`domain`) — le groupe, le sous-titre et
+    // les champs affichés découlent de la valeur du discriminant, par le canal registre. Aucune table
+    // de libellés ni de clés ici : `MetaChamp.valeurs` nomme les domaines, `chargeDiscriminee` dit ce
+    // que porte le domaine d'une entrée, `libelleDuChamp` nomme chaque champ.
+    key: 'materials', label: 'Matières', group: 'Monde',
+    build: () => {
+      const meta = metaPourFichier('materials.json');
+      return materials.map((m) => {
+        const domaine = libelleDeValeur(meta, 'domain', m.domain);
+        const entree = m as unknown as Record<string, unknown>;
+        const charge = chargeDiscriminee('materials.json', entree)?.duCas ?? [];
+        return depuisEnveloppe(m, {
+          group: domaine,
+          sub: domaine,
+          meta: facts(...charge.map((cle) => fact(libelleDuChamp(cle, { meta }), valeurDeCharge(entree[cle])))),
+        });
+      });
+    },
   },
   {
     key: 'vehicles', label: 'Véhicules', group: 'Monde',
@@ -2431,7 +2456,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       sub: r.group, desc: r.hint,
       meta: facts(
         fact('Réf', r.ref),
-        fact('Contrôle', RULE_KIND_LABEL[r.kind] ?? r.kind),
+        fact('Contrôle', valeurFR('reglesOptionnelles.json', 'kind', r.kind)),
         fact('Défaut', ruleValueLabel(r.default)),
         fact('Valeurs', r.options?.join(' · ') ?? null),
         fact('Bornes', r.kind === 'param' && r.min != null && r.max != null ? `de ${r.min} à ${r.max}${r.step ? ` (pas de ${r.step})` : ''}` : null),

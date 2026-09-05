@@ -1,7 +1,7 @@
 /**
  * Schéma de `structureAppearance.json` — apparence PARTAGÉE d'une structure d'arête (mur/porte),
- * consommée comme `StructureAppearanceDef[]` (`src/gameIso/catalog/structures/types.ts`). `material`
- * observé : 'bois' | 'pierre' (les seules valeurs présentes, alignées sur le type TS).
+ * consommée comme `StructureAppearanceDef[]` (`src/gameIso/catalog/structures/types.ts`). Chaque champ
+ * est une COULEUR ou une mesure que le rendu lit par PARTIE de mur (`wallPartColor`).
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
@@ -45,7 +45,6 @@ const doc = document(
   'structureAppearance',
   famille,
   {
-    material: z.enum(['bois', 'pierre']),
     wallHeightM: z.number().positive().optional(),
     detail: detailRecipeSchema.optional(),
     face: z.string(),
@@ -119,7 +118,6 @@ const doc = document(
       .optional(),
   },
   {
-    material: { label: 'Matériau', hint: 'bois ou pierre' },
     wallHeightM: { label: 'Hauteur de mur', hint: 'En mètres' },
     detail: { label: 'Recette de détail' },
     face: { label: 'Couleur de face', hint: 'Teinte de base du pan de mur' },

@@ -80,6 +80,7 @@ const doc = document(
     acces: {
       label: 'Accès',
       hint: 'De base (testable sans formation) ou Avancée : sans Augmentation, aucun Test n’est possible',
+      valeurs: { base: 'Base', avancee: 'Avancée' },
     },
     specs: { label: 'Spécialisations', hint: 'Liste fermée de spécialisations proposées' },
     specsSource: { label: 'Registre de spécialisations' },

@@ -37,6 +37,59 @@ export function metaPourFichier(file: string): Readonly<Record<string, MetaChamp
   return DEFS_DE_DOCUMENT.find((d) => d.file === file)?.meta;
 }
 
+/** CHARGE d'une entrée d'un document DISCRIMINÉ : le champ discriminant, les clés que porte le CAS de
+ *  cette entrée, et l'union de toutes les clés discriminées du document. */
+export interface ChargeDiscriminee {
+  readonly champ: string;
+  readonly duCas: readonly string[];
+  readonly toutes: readonly string[];
+}
+
+/**
+ * Charge DISCRIMINÉE d'une entrée — `undefined` si le document ne déclare pas de discriminant, ou si
+ * l'entrée n'en porte pas une valeur connue (entrée en cours de saisie). C'est ce que l'atelier
+ * PRÉSENTE d'une entrée (`src/ui/compendium/CodexEdit.tsx`) : sans elle, un document dont les cas ne
+ * partagent aucune clé ferait éditer à chacun l'union des clés de tous les autres.
+ */
+export function chargeDiscriminee(file: string, entree: Record<string, unknown>): ChargeDiscriminee | undefined {
+  const def = DEFS_DE_DOCUMENT.find((d) => d.file === file);
+  const champ = def?.discriminant;
+  const table = def?.chargeParDiscriminant;
+  if (!champ || !table) return undefined;
+  const valeur = entree[champ];
+  const duCas = typeof valeur === 'string' ? table[valeur] : undefined;
+  if (!duCas) return undefined;
+  return { champ, duCas, toutes: [...new Set(Object.values(table).flat())] };
+}
+
+/**
+ * BROUILLON d'une entrée NEUVE d'un document — ce que le DEF DÉTERMINE déjà, posé avant la première
+ * frappe. Deux canaux, tous deux portés par le def, aucun nommant un dataset :
+ *  - le `type` d'ENVELOPPE : la fabrique le pose en `z.literal` (`grammaire/document.ts`, `enveloppe()`),
+ *    il ne se SAISIT pas. Il se lit sur les entrées du document, qui l'ont toutes parsé contre ce
+ *    littéral, et SEULEMENT pour un document à méta (donc bâti par `document()`) — sur un document
+ *    sans handle, `type` est un discriminant de CHARGE utile, pas le type du document (même frontière
+ *    que `libelleDuChamp`, `src/ui/compendium/editFields.ts`).
+ *  - la PREMIÈRE valeur du champ DISCRIMINANT, celle que le `select` de l'atelier affiche en tête
+ *    (ordre des `MetaChamp.valeurs`, que `document()` tient sur l'ordre de l'enum) : un `select` qui
+ *    affiche « Décor » sur un brouillon sans domaine ment à l'écran, refuse au save, et fait présenter
+ *    l'UNION des cas (`chargeDiscriminee` ne reconnaît aucune valeur).
+ */
+export function brouillonNeuf(file: string, entrees: readonly Record<string, unknown>[] = []): Record<string, unknown> {
+  const def = DEFS_DE_DOCUMENT.find((d) => d.file === file);
+  if (!def) return {};
+  const brouillon: Record<string, unknown> = {};
+  const type = def.meta && entrees.find((e) => typeof e?.type === 'string')?.type;
+  if (typeof type === 'string') brouillon.type = type;
+  const champ = def.discriminant;
+  const table = def.chargeParDiscriminant;
+  if (champ && table) {
+    const premiere = Object.keys(def.meta?.[champ]?.valeurs ?? table)[0];
+    if (premiere !== undefined) brouillon[champ] = premiere;
+  }
+  return brouillon;
+}
+
 /** Valide `value` contre le schéma du fichier `file` : `null` si valide, message actionnable
  *  (champ-par-champ) si invalide. Un fichier NON REGISTRÉ est une ERREUR NOMMÉE, jamais un
  *  laissez-passer : tout document des deux racines a son def (`defs/`, `defs-scenes/`). */

@@ -19,7 +19,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { detailRecipeSchema } from '../grammaire/valeurs';
-import { DOMAINES_MATIERE } from '../../materials.types';
+import { DOMAINES_MATIERE, type MaterialDomain } from '../../materials.types';
 
 export const file = 'materials.json';
 export const famille = 'entite';
@@ -32,6 +32,16 @@ export const famille = 'entite';
  * refine AU PARSE : un id du BON dataset mais du MAUVAIS domaine est refusé, nommément.
  */
 export const discriminant = 'domain';
+
+/**
+ * Libellés FR des DOMAINES — les valeurs du champ discriminant, nommées à UN endroit (`MetaChamp.valeurs`,
+ * plus bas) : le Codex en titre ses groupes, le `select` de l'atelier en fait ses options.
+ */
+const LIBELLES_DE_DOMAINE = {
+  prop: 'Décor',
+  roof: 'Toiture',
+  relief: 'Relief',
+} as const satisfies Record<MaterialDomain, string>;
 
 /**
  * Clés de CHARGE par domaine — la déclaration dont le refine tire ses DEUX verdicts (requis manquant,
@@ -49,6 +59,16 @@ const CHARGE_PAR_DOMAINE = {
   },
   relief: { cles: ['built', 'detail', 'face', 'foot', 'slopeTop', 'shadeDark'], requises: ['face'] },
 } as const satisfies Record<(typeof DOMAINES_MATIERE)[number], { cles: readonly string[]; requises: readonly string[] }>;
+
+/**
+ * CHARGE par valeur du DISCRIMINANT, telle que la lit l'atelier (`SchemaDef.chargeParDiscriminant`,
+ * émise par `npm run gen`) : une entrée de matière n'édite que les champs de SON domaine, jamais
+ * l'union des trois. Dérivée de la table ci-dessus — le refine et le formulaire lisent la MÊME
+ * déclaration.
+ */
+export const chargeParDiscriminant: Readonly<Record<string, readonly string[]>> = Object.fromEntries(
+  Object.entries(CHARGE_PAR_DOMAINE).map(([domaine, charge]) => [domaine, charge.cles as readonly string[]]),
+);
 
 /** Toutes les clés de charge du document, dérivées de la table ci-dessus. */
 const CLES_DE_CHARGE = new Set(Object.values(CHARGE_PAR_DOMAINE).flatMap((d) => d.cles as readonly string[]));
@@ -92,6 +112,7 @@ const doc = document(
     domain: {
       label: 'Domaine',
       hint: 'Ce que la matière peint : décor volumique, toiture, relief — les clés admises en dépendent',
+      valeurs: LIBELLES_DE_DOMAINE,
     },
     color: { label: 'Couleur', hint: 'Teinte hexadécimale `#rrggbb` du matériau' },
     roughness: { label: 'Rugosité', hint: 'Réponse mate/brillante à la lumière' },
@@ -126,17 +147,8 @@ const doc = document(
     detail: { label: 'Recette de détail' },
   },
   {
-    codex: {
-      exempt: {
-        kind: 'dette',
-        raison:
-          'exposition Codex DUE, non faite : l’onglet « Matières » PAR DOMAINE est l’arbitrage utilisateur du 2026-09-05 ; le lot 2 fusionne les trois catalogues et pose les libellés FR des 38 champs de charge, le lot 3 ouvre l’onglet et retire cette exemption',
-        ticket: '#1686',
-      },
-    },
-    edit: {
-      none: 'aucune route d’édition posée au lot 2 — l’onglet Codex « Matières » du lot 3 de #1686 (arbitrage utilisateur 2026-09-05) est la route prévue, une matière s’y ajoutera et s’y retouchera',
-    },
+    codex: { keys: ['materials'] },
+    edit: { dataset: 'materials' },
   },
   {
     affinerEntree: (entree) =>

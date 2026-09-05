@@ -2262,9 +2262,6 @@ export const classes = classesJson as ClassData[];
 export const careers = careersJson as CareerData[];
 export const careerLevels = careerLevelsJson as CareerLevelData[];
 export const skills = skillsJson as SkillData[];
-/** Libellés FR de l'ACCÈS d'une Compétence — l'`acces` est un id de logique, il ne s'affiche jamais
- *  nu. Table EXHAUSTIVE par son type de clé : tout membre nouveau sans libellé est un échec `tsc`. */
-export const SKILL_ACCES_LABEL: Record<SkillData['acces'], string> = { base: 'Base', avancee: 'Avancée' };
 export const talents = talentsJson as TalentData[];
 export const etats = etatsJson as EtatData[];
 /** Procédures / options de jeu (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation

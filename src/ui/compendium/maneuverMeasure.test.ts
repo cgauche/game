@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatManeuverMeasure } from './maneuverLabels';
+import { formatManeuverMeasure } from './maneuverMeasure';
 
 describe('formatManeuverMeasure', () => {
   it('bonus de carac seul → « (Bonus de X) m »', () => {

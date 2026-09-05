@@ -49,7 +49,11 @@ const doc = document(
   {
     ref: { label: 'Référence RAW (citation)', hint: 'Localisation la plus précise dont on dispose dans le livre cité' },
     group: { label: 'Groupe d’affichage', hint: 'Regroupement à l’écran des Règles optionnelles' },
-    kind: { label: 'Forme du contrôle', hint: 'Interrupteur / paramètre chiffré / mode à choix' },
+    kind: {
+      label: 'Forme du contrôle',
+      hint: 'Interrupteur / paramètre chiffré / mode à choix',
+      valeurs: { flag: 'Interrupteur', param: 'Nombre', mode: 'Choix' },
+    },
     default: { label: 'Valeur par défaut' },
     options: { label: 'Libellés des choix', hint: 'Pour une règle de type mode' },
     min: { label: 'Minimum réglable', hint: 'Borne basse de saisie du paramètre chiffré' },

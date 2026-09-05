@@ -11,7 +11,8 @@ import { z } from 'zod';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
 import tablesJson from '../../tables.json';
-import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, META_CHARGE, type Exposition, type CleExigible } from './document';
+import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, META_CHARGE, optionsEnum, type Exposition, type CleExigible } from './document';
+import type { MetaChamp } from './meta';
 import { descRefSchema, sourceRefSchema } from './valeurs';
 import { proseAdressable, versDisque } from './prose';
 import { PROSE_INLINE_TOLEREE } from './prose-inline';
@@ -1307,5 +1308,41 @@ describe('prose adressée — forme et verrous (#1389 Lot A, épique #1388)', ()
     // Sans aucune adresse, la forme disque est celle de l’entrée, à l’octet.
     const sansAdresse = { id: 'a', entries: [{ id: 'b', desc: 'prose' }] };
     expect(JSON.stringify(versDisque(sansAdresse))).toBe(JSON.stringify(sansAdresse));
+  });
+});
+
+/**
+ * LIBELLÉS DE VALEURS (#1686 lot 3a-2) — `MetaChamp.valeurs` nomme en FR chaque valeur d'un champ
+ * ÉNUMÉRÉ, là où vit la forme du champ. Deux verrous PAR CONSTRUCTION (la fabrique refuse), puis le
+ * STOCK nominatif DÉCROISSANT de ce qui reste à nommer : c'est lui le moteur de la migration, et il
+ * ne peut pas être tenu autrement — passé `document()`, le nœud est scellé et plus personne ne peut
+ * redemander au schéma quelles valeurs un champ admet (`ENUMS_DE_DOCUMENT`).
+ */
+describe('document() — libellés de VALEURS d’un champ énuméré', () => {
+  const doc = (champs: Record<string, z.ZodTypeAny>, meta: Record<string, MetaChamp>, expo: Exposition = EXPOSITION) =>
+    document('talent', 'entite', champs, meta as never, expo);
+
+  it('accepte `valeurs` qui recouvre EXACTEMENT l’enum, dans son ordre — et le publie dans la méta', () => {
+    const fiche = doc({ voie: z.enum(['a', 'b']) }, { voie: { label: 'Voie', valeurs: { a: 'Aile', b: 'Boue' } } });
+    expect(fiche.meta.voie.valeurs).toEqual({ a: 'Aile', b: 'Boue' });
+  });
+
+  it('refuse un `valeurs` sur un champ qui n’est pas énuméré', () => {
+    expect(() => doc({ voie: z.string() }, { voie: { label: 'Voie', valeurs: { a: 'Aile' } } })).toThrow(/n'est pas ÉNUMÉRÉ/);
+  });
+
+  it('refuse un `valeurs` qui ne recouvre pas son enum — nommément, dans les deux sens', () => {
+    expect(() => doc({ voie: z.enum(['a', 'b']) }, { voie: { label: 'Voie', valeurs: { a: 'Aile' } } })).toThrow(/sans libellé : b/);
+    expect(() => doc({ voie: z.enum(['a']) }, { voie: { label: 'Voie', valeurs: { a: 'Aile', z: 'Zut' } } })).toThrow(/valeurs inconnues de l'enum : z/);
+  });
+
+  it('refuse un `valeurs` dont l’ORDRE diverge de l’enum (c’est l’ordre des options à l’écran)', () => {
+    expect(() => doc({ voie: z.enum(['a', 'b']) }, { voie: { label: 'Voie', valeurs: { b: 'Boue', a: 'Aile' } } })).toThrow(/ORDRE de son enum/);
+  });
+
+  it('voit l’enum À TRAVERS `optional` et `array` (le champ reste un univers fermé)', () => {
+    expect(optionsEnum(z.enum(['a', 'b']).optional())).toEqual(['a', 'b']);
+    expect(optionsEnum(z.array(z.enum(['a', 'b'])))).toEqual(['a', 'b']);
+    expect(optionsEnum(z.string())).toBeUndefined();
   });
 });

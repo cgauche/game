@@ -11,10 +11,11 @@ import { CATEGORY_DATASET_DERIVE, OBJECT_CATEGORY_DERIVE } from '../../data/sche
 import type { SkillRef } from '../../engine/skills';
 import type { SteamBreakdownEntry } from '../../engine/shipBuild';
 import { serializeDataset } from '../../data/serialize';
-import { validateDataset, metaPourFichier } from '../../data/schemas/validate';
+import { validateDataset, metaPourFichier, chargeDiscriminee, brouillonNeuf } from '../../data/schemas/validate';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
-import { entryKey, invalidateCodexLookup, ACTIVITY_CONTEXT_LABEL, OUTCOME_ON_LABEL, BATTLE_COND_LABEL, BATTLE_TARGET_LABEL, BATTLE_SCALE_LABEL, BATTLE_SIDE_LABEL } from './registry';
+import { valeursDuChamp } from '../../data/schemas/grammaire/meta';
+import { entryKey, invalidateCodexLookup, OUTCOME_ON_LABEL, BATTLE_COND_LABEL, BATTLE_TARGET_LABEL, BATTLE_SCALE_LABEL, BATTLE_SIDE_LABEL } from './registry';
 import { ACTIVITY_RESOLVERS, RESOLVER_OWNER, resolversOwnedBy } from '../../engine/activities';
 import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond, ActivityResolver, ResolverOwner } from '../../engine/activities';
 import { weatherCondition } from '../../engine/travelStages';
@@ -36,7 +37,6 @@ import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
 import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
-import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL } from './maneuverLabels';
 import type { ManeuverDef, ManeuverMeasure } from '../../data';
 import { ATTACK_LABEL, type AttackKind } from '../../engine/creatureAttacks';
 import { WeaponField } from '../editor/WeaponField';
@@ -416,11 +416,15 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
     // `isNew` : entrée VIERGE (le save APPEND) ; sinon ancrage par ID STABLE (#1472) — `id` est celui
     // de l'item du navigateur, qui EST l'`id` du document projeté ; `label` reste de l'AFFICHAGE.
     const index = isNew ? -1 : arr.findIndex((e) => String(e.id ?? '') === id);
+    const file = datasetFile(dsKey);
     return {
       entries: arr,
-      initial: arr[index] ?? {},
+      // Une entrée NEUVE part de ce que le def DÉTERMINE (`brouillonNeuf`) : le `type` d'enveloppe et,
+      // pour un document discriminé, la valeur que le `select` affiche en tête — sinon l'écran promet
+      // un cas que l'état ne porte pas (union des champs présentés, refus « Invalid option » au save).
+      initial: arr[index] ?? brouillonNeuf(file, arr as Record<string, unknown>[]),
       index,
-      file: datasetFile(dsKey),
+      file,
       persist: (e) => setDataset(dsKey, (index < 0 ? [...arr, e] : arr.map((x, i) => (i === index ? e : x))) as never),
     };
   }, [obj, categoryKey, label, id, isNew]);
@@ -554,10 +558,20 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   // La méta d'ÉDITION du document arrive par le CANAL REGISTRE (`SchemaDef.meta`, posée par
   // `document()`) — un def qui adopte la fabrique fait apparaître ses libellés FR sans une ligne d'UI.
   const allFields = useMemo(() => inferFields(src.entries as Record<string, unknown>[], { meta: metaPourFichier(src.file) }), [src.entries, src.file]);
+  // Un document DISCRIMINÉ (`SchemaDef.discriminant`) présente la charge du CAS de l'entrée — jamais
+  // l'union des cas (mesuré sur `materials.json` : union 28 clés, 7 portées par une matière `prop`).
+  // Le discriminant lui-même reste à l'écran : c'est en le changeant qu'on change de cas.
+  const charge = useMemo(() => chargeDiscriminee(src.file, entry), [src.file, entry]);
+  // Le `type` d'ENVELOPPE est un `z.literal` posé par la fabrique (`grammaire/document.ts`) : il
+  // s'affiche, il ne se saisit pas. Un document SANS méta n'est pas passé par la fabrique — son `type`
+  // y est un discriminant de CHARGE utile, qui reste éditable (même frontière que `libelleDuChamp`).
+  const typeFige = !!metaPourFichier(src.file);
   const fields = useMemo(() => {
     const handled = dedicatedFieldKeys(categoryKey);
-    return allFields.filter((f) => !handled.has(f.key));
-  }, [allFields, categoryKey]);
+    return allFields
+      .filter((f) => !handled.has(f.key) && (!charge || f.key === charge.champ || charge.duCas.includes(f.key) || !charge.toutes.includes(f.key)))
+      .map((f) => (typeFige && f.key === 'type' ? { ...f, fige: true } : f));
+  }, [allFields, categoryKey, charge, typeFige]);
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); setSchemaError(null); };
   // Erreurs BLOQUANTES avant persist (identité + refs résolvables) — pas de validation des
   // datasets-objet (`details`, fiches de règle : pas d'identité par entrée).
@@ -953,13 +967,10 @@ function TriggeredEffectsField({ value, onChange, label = 'effets déclenchés (
   );
 }
 
-const STAT_LABEL: Record<NonNullable<ManeuverDef['stat']>, string> = { 'capacite-de-combat': 'CC (mêlée)', 'capacite-de-tir': 'CT (distance)' };
-const ADV_MODE_LABEL: Record<NonNullable<ManeuverDef['advantageMode']>, string> = {
-  fixed: 'Coût fixe', variable: 'Au choix (+1 DR/Av)', all: 'Tout l’Avantage',
-};
-const DEFENSE_LABEL: Record<NonNullable<ManeuverDef['defense']>, string> = {
-  esquive: 'Esquive', parade: 'Parade', init: 'Initiative', resist: 'Résistance (cible)', auto: 'Meilleure (auto)',
-};
+/** Options d'un champ ÉNUMÉRÉ d'un document, par le canal registre (`MetaChamp.valeurs`, #1686) :
+ *  l'éditeur dédié d'une manœuvre tire ses `<option>` de la MÊME déclaration que le formulaire
+ *  générique et que le Codex — plus aucune table de libellés par valeur ici. */
+const optionsDe = (fichier: string, champ: string): [string, string][] => Object.entries(valeursDuChamp(metaPourFichier(fichier), champ) ?? {});
 
 /** Éditeur d'une MANŒUVRE (entité de 1ʳᵉ classe, `maneuvers.json`) : son PROFIL (type/activation/coût/
  *  jet/défense/ciblage/portée/magie) + ses effets AUTHORÉS (Dégâts + États en GameOp, via
@@ -1000,13 +1011,13 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
         </label>
         <label className="dr">Activation
           <select value={m.activation ?? 'free'} onChange={(e) => edit('activation', e.target.value as ManeuverDef['activation'])}>
-            {(Object.keys(MANEUVER_ACTIVATION_LABEL) as ManeuverDef['activation'][]).map((a) => <option key={a} value={a}>{MANEUVER_ACTIVATION_LABEL[a]}</option>)}
+            {optionsDe('maneuvers.json', 'activation').map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
         <label className="dr">Coût d’Avantage<NumberField variant="nu" label="Coût d’Avantage" min={0} value={m.advantageCost ?? 0} onChange={(n) => edit('advantageCost', n)} /></label>
         <label className="dr">Avantage
           <select value={m.advantageMode ?? 'fixed'} onChange={(e) => edit('advantageMode', e.target.value === 'fixed' ? undefined : (e.target.value as ManeuverDef['advantageMode']))}>
-            {(Object.keys(ADV_MODE_LABEL) as NonNullable<ManeuverDef['advantageMode']>[]).map((a) => <option key={a} value={a}>{ADV_MODE_LABEL[a]}</option>)}
+            {optionsDe('maneuvers.json', 'advantageMode').map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
       </div>
@@ -1014,18 +1025,18 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
         <label className="dr">Jet d’attaquant
           <select value={m.stat ?? ''} onChange={(e) => edit('stat', e.target.value || undefined)}>
             <option value="">— (aucun)</option>
-            {(Object.keys(STAT_LABEL) as NonNullable<ManeuverDef['stat']>[]).map((s) => <option key={s} value={s}>{STAT_LABEL[s]}</option>)}
+            {optionsDe('maneuvers.json', 'stat').map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
         <label className="dr">Défense
           <select value={m.defense ?? ''} onChange={(e) => edit('defense', e.target.value || undefined)}>
             <option value="">— (aucune)</option>
-            {(Object.keys(DEFENSE_LABEL) as NonNullable<ManeuverDef['defense']>[]).map((d) => <option key={d} value={d}>{DEFENSE_LABEL[d]}</option>)}
+            {optionsDe('maneuvers.json', 'defense').map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
         <label className="dr">Ciblage
           <select value={m.targeting ?? 'melee'} onChange={(e) => edit('targeting', e.target.value as ManeuverDef['targeting'])}>
-            {(Object.keys(MANEUVER_TARGETING_LABEL) as ManeuverDef['targeting'][]).map((t) => <option key={t} value={t}>{MANEUVER_TARGETING_LABEL[t]}</option>)}
+            {optionsDe('maneuvers.json', 'targeting').map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
         <label className="dr"><input type="checkbox" checked={!!m.magic} onChange={(e) => edit('magic', e.target.checked || undefined)} /> Magique</label>
@@ -1417,7 +1428,7 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
 }
 
 // ── Activités (`activities.json`, #168) — Test « posté » + table d'issues `OutcomeBand[]` ────────────
-const ACTIVITY_CONTEXTS = Object.keys(ACTIVITY_CONTEXT_LABEL) as ActivityContext[];
+const ACTIVITY_CONTEXTS = optionsDe('activities.json', 'contexts') as [ActivityContext, string][];
 const OUTCOME_ON_KEYS = Object.keys(OUTCOME_ON_LABEL) as ('success' | 'failure' | 'fumble')[];
 const BATTLE_COND_KEYS = Object.keys(BATTLE_COND_LABEL) as BattleCond[];
 const BATTLE_TARGET_KEYS = Object.keys(BATTLE_TARGET_LABEL) as BattleOutcomeTarget[];
@@ -1434,8 +1445,8 @@ function ActivityTestField({ entry, edit }: { entry: Entry; edit: (key: string, 
     <div className="ed-field">
       <span>contextes où l’Activité est proposable (au moins un)</span>
       <div className="tf-row">
-        {ACTIVITY_CONTEXTS.map((c) => (
-          <label className="dr" key={c}><input type="checkbox" checked={contexts.includes(c)} onChange={() => toggle(c)} /> {ACTIVITY_CONTEXT_LABEL[c]}</label>
+        {ACTIVITY_CONTEXTS.map(([c, l]) => (
+          <label className="dr" key={c}><input type="checkbox" checked={contexts.includes(c)} onChange={() => toggle(c)} /> {l}</label>
         ))}
       </div>
       <span>Test « posté » — compétence(s) « au choix » + caractéristique de repli + Difficulté (laisser vide = Activité SANS Test)</span>
@@ -1766,6 +1777,19 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
       </div>
     );
   }
+  if (kind === 'select' && field.valeurs) {
+    // Choix BORNÉ d'un champ énuméré : options ET libellés viennent du def (`MetaChamp.valeurs`) —
+    // même `<select>` que les autres choix bornés de l'atelier (`ManeuverDefField` ci-dessus).
+    const valeurs = field.valeurs;
+    return (
+      <label className="ed-field"><span>{label}</span>
+        <select value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value || (field.nullable ? null : e.target.value))}>
+          {field.nullable && <option value="">— (aucun)</option>}
+          {Object.keys(valeurs).map((v) => <option key={v} value={v}>{valeurs[v]}</option>)}
+        </select>
+      </label>
+    );
+  }
   if (kind === 'textarea')
     return <label className="ed-field"><span>{label}</span><textarea rows={3} value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value)} /></label>;
   if (kind === 'number')
@@ -1795,6 +1819,9 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
       return <GenericArrayField label={label} value={value as Record<string, unknown>[] | undefined} onChange={onChange as (v: Record<string, unknown>[]) => void} />;
     return <JsonField label={label} value={value} onChange={onChange} />;
   }
+  // `fige` : valeur POSÉE par le def — affichée, jamais saisie (un champ ouvert à la frappe dont une
+  // seule valeur parse est une affordance qui ment).
+  if (field.fige) return <label className="ed-field"><span>{label}</span><input value={(value as string) ?? ''} readOnly /></label>;
   return <label className="ed-field"><span>{label}</span><input value={(value as string) ?? ''} onChange={(e) => onChange(field.nullable && e.target.value === '' ? null : e.target.value)} /></label>;
 }
 

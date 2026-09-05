@@ -47,8 +47,10 @@ describe('apparence de structure (JSON partagé iso/POV)', () => {
     expect(app.face).not.toBe(structureAppearance('mur-en-bois').face);
   });
 
-  it('mur-en-pierre : pierre + parapet ; porte-de-ville : herse 6 barreaux', () => {
-    expect(structureAppearance('mur-en-pierre').material).toBe('pierre');
+  it('mur-en-pierre : arase + parapet crénelé ; porte-de-ville : herse 6 barreaux', () => {
+    // L'apparence dit ce qu'elle PEINT : le couronnement d'arase que `wallPartColor` sert aux parties
+    // `arase`/`merlon`, et le parapet qui les pose — des COULEURS, seul canal que le rendu consulte.
+    expect(structureAppearance('mur-en-pierre').cap).toBeDefined();
     expect(structureAppearance('mur-en-pierre').parapet).toBeDefined();
     expect(structureAppearance('porte-de-ville').door?.herse?.bars).toBe(6);
   });

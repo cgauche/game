@@ -8,10 +8,10 @@
  *
  * Deux RÉGIMES de lecture, tous deux déclarés :
  *  - CI / DEV / test : ce fichier généré, figé au commit — une référence morte casse au parse ;
- *  - ÉDITEUR (`CodexEdit.save` → `validateDataset`) : le registre se RECALCULE depuis les datasets
- *    EN MÉMOIRE, sinon une entité créée au Compendium rendrait rouge toute donnée qui la
- *    référence avant le prochain `npm run gen`. Ce régime est câblé quand la grammaire est
- *    consommée par les defs (#1467).
+ *  - APPLICATION (éditeur compris, `CodexEdit.save` → `validateDataset`) : les ids se lisent sur les
+ *    datasets EN MÉMOIRE, sinon une entité créée au Compendium rendrait rouge toute donnée qui la
+ *    référence avant le prochain `npm run gen`. CÂBLÉ (#1686) : `src/data/overrides.ts` pose la source
+ *    vivante, `src/data/schemas/grammaire/idsVivants.ts` la sert à `ref.ts`.
  */
 export const IDS_PAR_DATASET: Readonly<Record<string, readonly string[]>> = {
   'actions.json': ['aid-team', 'aim', 'attaque', 'battement', 'battery', 'battery-cancel', 'cast-spell', 'charge', 'cleave-end', 'course', 'crew-test-rude-epreuve', 'defend', 'disengage', 'dismount', 'dispel', 'dispel-spell', 'distraire', 'dual-strike-skip', 'end-turn', 'focus-spell', 'free-entangle', 'frenzy', 'gain-advantage', 'heal', 'leave-poste', 'man-poste', 'maneuver-area', 'maneuver-ship', 'mount', 'mouvement', 'overcast-validate', 'pickup', 'place-zone-back', 'posture-tas', 'posture-tir', 'push-engine', 'pushback', 'raise-hand', 'reload', 'resolve-ignore-crit', 'resolve-psych-immune', 'resolve-remove-condition', 'roll-fire', 'round-start', 'select-ammo', 'select-attack', 'self-maneuver', 'ship-reload', 'sing-shanty', 'stand', 'switch-loadout', 'teleport-place', 'undo-move', 'use-item', 'water'],

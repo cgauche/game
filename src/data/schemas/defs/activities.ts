@@ -130,6 +130,11 @@ const doc = document(
     contexts: {
       label: 'Contextes d’offre',
       hint: 'Situations (interlude, voyage, mer, bataille…) où l’Activité est proposée',
+      valeurs: {
+        interlude: 'Entre deux aventures', voyage: 'Voyage (terre)', mer: 'Mer',
+        bataille: 'Bataille — préparation', 'bataille-round': 'Bataille — Scène de Round',
+        auberge: 'Auberge (hub de ville)',
+      },
     },
     skills: { label: 'Compétences du Test' },
     char: { label: 'Caractéristique du Test', hint: 'Utilisée quand aucune Compétence n’est requise' },

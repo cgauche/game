@@ -24,7 +24,11 @@ const doc = document(
     qualities: z.array(qualityRefSchema).optional(),
   },
   {
-    kind: { label: 'Type de Groupe', hint: 'Arme, munition, armure ou inventaire' },
+    kind: {
+      label: 'Type de Groupe',
+      hint: 'Arme, munition, armure ou inventaire',
+      valeurs: { weapon: 'Groupe d’arme', ammo: 'Munitions', armour: 'Armure', inventory: 'Inventaire' },
+    },
     material: {
       label: 'Matériau (armure)',
       hint: 'Matériau typé de l’armure (exemptions de Magie des Arcanes) — présent seulement sur les Groupes d’armure',

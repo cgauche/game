@@ -349,7 +349,7 @@ export const REGISTRIES = [
     type: 'SchemaDef',
     typeFrom: './types',
     fields: ['file', 'schema', 'famille', 'exposition'],
-    optionalFields: ['meta', 'discriminant'],
+    optionalFields: ['meta', 'discriminant', 'chargeParDiscriminant'],
     constFields: { root: "'src/data'" },
   },
   {
@@ -364,7 +364,7 @@ export const REGISTRIES = [
     type: 'SchemaDef',
     typeFrom: './types',
     fields: ['file', 'schema', 'famille', 'exposition'],
-    optionalFields: ['meta', 'discriminant'],
+    optionalFields: ['meta', 'discriminant', 'chargeParDiscriminant'],
     constFields: { root: "'src/scenes'" },
   },
 ];
@@ -677,10 +677,10 @@ function genIds() {
     ` *\n` +
     ` * Deux RÉGIMES de lecture, tous deux déclarés :\n` +
     ` *  - CI / DEV / test : ce fichier généré, figé au commit — une référence morte casse au parse ;\n` +
-    ` *  - ÉDITEUR (\`CodexEdit.save\` → \`validateDataset\`) : le registre se RECALCULE depuis les datasets\n` +
-    ` *    EN MÉMOIRE, sinon une entité créée au Compendium rendrait rouge toute donnée qui la\n` +
-    ` *    référence avant le prochain \`npm run gen\`. Ce régime est câblé quand la grammaire est\n` +
-    ` *    consommée par les defs (#1467).\n` +
+    ` *  - APPLICATION (éditeur compris, \`CodexEdit.save\` → \`validateDataset\`) : les ids se lisent sur les\n` +
+    ` *    datasets EN MÉMOIRE, sinon une entité créée au Compendium rendrait rouge toute donnée qui la\n` +
+    ` *    référence avant le prochain \`npm run gen\`. CÂBLÉ (#1686) : \`src/data/overrides.ts\` pose la source\n` +
+    ` *    vivante, \`src/data/schemas/grammaire/idsVivants.ts\` la sert à \`ref.ts\`.\n` +
     ` */\n` +
     `export const IDS_PAR_DATASET: Readonly<Record<string, readonly string[]>> = {\n` +
     ids.map(([f, l]) => `  ${lit(f)}: [${l.map(lit).join(', ')}],\n`).join('') +

@@ -13,6 +13,7 @@
 import { z } from 'zod';
 import { IDS_PAR_DATASET, IDS_PAR_DISCRIMINANT, SPECS_PAR_DATASET } from '../_ids.generated';
 import { marque } from './slots';
+import { idsVivants, idsVivantsDuDiscriminant } from './idsVivants';
 
 declare const marqueDeType: unique symbol;
 /** Id BRANDÉ par son type — frappé à la porte zod, jamais par un `as` d'appelant. */
@@ -69,12 +70,17 @@ export function cibleDe(type: TypeEntite): string {
 }
 
 function idsDe(type: TypeEntite): readonly string[] {
-  return IDS_PAR_DATASET[cibleDe(type)] ?? [];
+  const dataset = cibleDe(type);
+  // La MÉMOIRE d'abord (`idsVivants`, second régime déclaré par `_ids.generated.ts`) : une entité
+  // créée ou renommée à l'atelier est référençable IMMÉDIATEMENT. Hors application (scripts, gardes,
+  // `npm run gen`), aucune source n'est posée et le fichier généré fait foi.
+  return idsVivants(dataset) ?? IDS_PAR_DATASET[dataset] ?? [];
 }
 
 /**
  * Ids d'une SOUS-LISTE du dataset d'un type : ceux dont le champ DISCRIMINANT du document vaut
- * `valeur` (registre `IDS_PAR_DISCRIMINANT`, `npm run gen` — le def déclare son `discriminant`).
+ * `valeur` — lus en MÉMOIRE quand une source vivante est posée (`idsVivants.ts`), sinon au registre
+ * généré `IDS_PAR_DISCRIMINANT` (`npm run gen` — le def déclare son `discriminant`).
  * FAIL-FAST à la CONSTRUCTION du schéma : un type non discriminé, ou une valeur qu'aucune entrée ne
  * porte, ferait un nœud qui refuse TOUT en silence.
  */
@@ -86,13 +92,15 @@ function idsSousListe(type: TypeEntite, valeur: string): readonly string[] {
       `idDe('${type}', '${valeur}') : ${dataset} ne déclare aucun champ discriminant — poser \`export const discriminant\` sur son def, ou référer le type sans valeur.`,
     );
   }
-  const sousListe = table[valeur];
-  if (!sousListe) {
+  // EXISTENCE de la valeur : le registre GÉNÉRÉ en fait foi (fail-fast à la construction) — une valeur
+  // discriminante est un univers FERMÉ (enum du def), que la mémoire ne peut pas élargir. Le CONTENU de
+  // la sous-liste, lui, se lit vivant : une matière créée à l'atelier est référençable aussitôt.
+  if (!table[valeur]) {
     throw new Error(
       `idDe('${type}', '${valeur}') : « ${valeur} » n'est aucune des valeurs discriminantes de ${dataset} (${Object.keys(table).join(', ')}).`,
     );
   }
-  return sousListe;
+  return idsVivantsDuDiscriminant(dataset, valeur) ?? table[valeur];
 }
 
 /** Catalogue de spécialisations d'UNE entrée (vide = l'entrée n'en déclare aucune). */

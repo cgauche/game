@@ -4,9 +4,9 @@
  * structure intermédiaire — on édite les vrais objets de `src/data`. Consommé par `CodexEdit`.
  */
 import { LIBELLES_ENVELOPPE, type CleEnveloppe } from '../../data/schemas/grammaire/document';
-import type { MetaChamp } from '../../data/schemas/grammaire/meta';
+import { valeursDuChamp, type MetaChamp } from '../../data/schemas/grammaire/meta';
 
-export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'numberList' | 'source' | 'recordNumber' | 'recordText' | 'object' | 'json';
+export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'numberList' | 'source' | 'recordNumber' | 'recordText' | 'object' | 'json' | 'select';
 
 export interface FieldDesc {
   key: string;
@@ -15,6 +15,10 @@ export interface FieldDesc {
   kind: FieldKind;
   /** Le champ est null/absent sur au moins une entrée (autorise le vide). */
   nullable: boolean;
+  /** Valeurs NOMMÉES d'un champ ÉNUMÉRÉ (`kind: 'select'`) — `valeur → libellé FR`, du def. */
+  valeurs?: Readonly<Record<string, string>>;
+  /** Valeur POSÉE par le def (littéral d'enveloppe) : elle s'AFFICHE, elle ne se saisit pas. */
+  fige?: boolean;
 }
 
 function kindOf(key: string, v: unknown): FieldKind {
@@ -105,6 +109,12 @@ export function inferFields(entries: Record<string, unknown>[], regime: RegimeDe
       if (sample === undefined) sample = v;
     }
     const echantillon = Array.isArray(sample) ? elements : sample;
-    return { key, label: libelleDuChamp(key, regime), kind: kindOf(key, echantillon), nullable: sawNull || sample === undefined };
+    // Un champ ÉNUMÉRÉ se rend en `select` : ses options ET leurs libellés viennent du def
+    // (`MetaChamp.valeurs`), jamais de la donnée observée — une valeur qu'aucune entrée ne porte
+    // encore reste proposable, et une valeur inconnue de l'enum n'est pas proposée.
+    const valeurs = regime.niveau === 'profondeur' ? undefined : valeursDuChamp(regime.meta, key);
+    const nullable = sawNull || sample === undefined;
+    if (valeurs) return { key, label: libelleDuChamp(key, regime), kind: 'select' as FieldKind, nullable, valeurs };
+    return { key, label: libelleDuChamp(key, regime), kind: kindOf(key, echantillon), nullable };
   });
 }

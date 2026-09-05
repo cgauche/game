@@ -49,4 +49,12 @@ export interface SchemaDef {
    * n'en étant que la projection figée au commit.
    */
   discriminant?: string;
+  /**
+   * CHARGE du document par VALEUR de son discriminant : les clés de charge admises quand `discriminant`
+   * vaut cette valeur (#1686). OPTIONNEL, porté par les seuls defs qui exportent `chargeParDiscriminant`.
+   * C'est ce que l'atelier PRÉSENTE d'une entrée (`chargeDiscriminee`, `validate.ts`, lue par
+   * `src/ui/compendium/CodexEdit.tsx`) : sans lui, un document disjoint ferait éditer à chaque entrée
+   * l'UNION des clés de toutes les autres.
+   */
+  chargeParDiscriminant?: Readonly<Record<string, readonly string[]>>;
 }

@@ -46,6 +46,8 @@ import seaCargoRawJson from './sea-cargo.json';
 import riverPerilsRawJson from './river-perils.json';
 import crewMoraleRawJson from './crew-morale.json';
 import { DATASET_FICHIER_DERIVE } from './schemas/exposition-derivee';
+import { poserSourceDIdsVivants } from './schemas/grammaire/idsVivants';
+import { DEFS_DE_DOCUMENT } from './schemas/validate';
 import { critiqueEntries, type CritEntry } from './criticals';
 import { SHIP_CRITICAL_TABLES, RIVER_CRIT_SET } from './shipCriticals';
 import type { GameOp } from '../engine/ops';
@@ -158,8 +160,8 @@ const ARRAYS = {
   // Matières du monde (#1686) : UN document, le domaine PORTÉ par l'entrée. Ce binding EST le seam de
   // mutation en place, et c'est lui qui rend vive la lecture des vues par domaine (`matieresDe`,
   // `src/data/index.ts`) : une matière retouchée se voit au rendu sans rechargement. Son def déclare
-  // `exposition.edit` = `none` : la clé n'a donc AUCUNE route de sauvegarde
-  // (`datasetEditable('materials')` est faux, et `dataset-save-parse.test.ts` l'écarte de son scan).
+  // `exposition.edit` = `dataset` (lot 3a-2) : la clé a sa route de sauvegarde vers `materials.json`,
+  // et l'onglet Codex « Matières » l'édite.
   materials,
   pregens, oups, interludeEvents, peripeties, names,
   // Axes de forces/faiblesses (#409) — mécanique MAISON, éditable au Codex comme tout catalogue.
@@ -412,6 +414,34 @@ export function datasetFile(key: DatasetKey): string {
   }
   return fichier;
 }
+
+/**
+ * SOURCE VIVANTE DES IDS (#1686 lot 3a-2) — le second régime de `_ids.generated.ts`, posé ICI parce que
+ * c'est ici que vivent les bindings mutés en place : une entité créée ou renommée à l'atelier est
+ * référençable par la donnée AVANT tout `npm run gen` (`ref.ts` lit ce seam à chaque validation).
+ *
+ * PÉRIMÈTRE : les datasets-TABLEAUX dont un def déclare le fichier (`DATASET_FICHIER_DERIVE`), NICHÉS
+ * EXCLUS — un tableau niché (`mass-battle.json` en porte 5, `criticals.json` 8) n'est pas la liste
+ * d'entrées de son document, et son fichier désigne le PARENT. Un fichier revendiqué par DEUX
+ * datasets non nichés serait une ambiguïté : elle lève, nommément. Hors périmètre, `ref.ts` retombe
+ * sur le registre généré — le régime d'avant, inchangé.
+ */
+const ENTREES_VIVES: Record<string, () => readonly Record<string, unknown>[]> = {};
+for (const cle of DATASET_KEYS) {
+  const fichier = DATASET_FICHIER_DERIVE[cle];
+  if (fichier === undefined || NESTED_ARRAY_ROOT[cle]) continue;
+  if (ENTREES_VIVES[fichier]) {
+    throw new Error(
+      `ids vivants : le fichier '${fichier}' est revendiqué par DEUX datasets-tableaux non nichés — ` +
+        `un fichier, une liste d'entrées : trancher au def (\`exposition.edit\`).`,
+    );
+  }
+  ENTREES_VIVES[fichier] = () => ARRAYS[cle] as unknown as readonly Record<string, unknown>[];
+}
+poserSourceDIdsVivants({
+  entrees: (fichier) => ENTREES_VIVES[fichier]?.(),
+  discriminantDe: (fichier) => DEFS_DE_DOCUMENT.find((d) => d.file === fichier)?.discriminant,
+});
 
 /** Ce dataset a-t-il une route d'ÉDITION déclarée ? (sinon `datasetFile` refuse — #1530) */
 export function datasetEditable(key: DatasetKey): boolean {

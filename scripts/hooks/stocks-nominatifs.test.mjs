@@ -371,8 +371,8 @@ test('repli — sans image, une entrée à ACCOLADE n’est pas vue, et l’en-t
 })
 
 // ── L'INVARIANT sur les porteurs RÉELS : l'image VOIT, et jamais moins que le repli ───────────────
-// Un stock est une DETTE vers zéro : son cardinal décroît (mesuré — #1686 a fait passer `slotsStock`
-// de 339 à 338 et `structuresStock` de 1049 à 1047). Un test qui fige ce cardinal se casse sur le
+// Un stock est une DETTE vers zéro : son cardinal décroît (mesuré — la fusion des matières du monde
+// a fait passer `slotsStock` de 339 à 338 et `structuresStock` de 1049 à 1047). Un test qui fige ce cardinal se casse sur le
 // travail qu'il devrait saluer. Ce qui ne bouge pas, c'est ce que la porte DOIT tenir sur chacun :
 // elle lit des entrées, et sa voie précise n'en voit jamais moins que sa voie de secours — une porte
 // dont l'image voit moins que le repli se contourne en changeant la graphie du littéral.

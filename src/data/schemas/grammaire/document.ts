@@ -304,6 +304,84 @@ function enveloppe(type: string, idDocument?: z.ZodType<string>, exiges: readonl
   };
 }
 
+/**
+ * Options d'un champ ÉNUMÉRÉ, à travers les enveloppes qui ne changent pas son univers de valeurs
+ * (`optional`, `nullable`, `default`, `array`) — `undefined` si le champ n'est pas énuméré. C'est la
+ * lecture dont la fabrique tire son contrôle de `MetaChamp.valeurs` (#1686 lot 3a-2), et par
+ * laquelle l'atelier sait qu'un champ se rend en `select`.
+ */
+export function optionsEnum(noeud: z.ZodTypeAny): readonly string[] | undefined {
+  let n: unknown = noeud;
+  for (let i = 0; i < 8 && n; i++) {
+    const d = (n as { _zod?: { def?: Record<string, unknown> } })._zod?.def;
+    if (!d) return undefined;
+    if (d.type === 'enum') return Object.values(d.entries as Record<string, string>);
+    n = (d.innerType ?? d.element) as unknown;
+  }
+  return undefined;
+}
+
+/** Ce que la fabrique retient d'un champ ÉNUMÉRÉ : ses options, et s'il est NOMMÉ (`MetaChamp.valeurs`). */
+export interface ChampEnumere {
+  readonly options: readonly string[];
+  readonly nomme: boolean;
+}
+
+/** Ce que la fabrique retient des champs ÉNUMÉRÉS d'UN document. */
+export interface EnumsDeDocument {
+  readonly type: string;
+  /** Le document est-il EXPOSÉ au Codex ? Sinon, personne à qui montrer ses valeurs. */
+  readonly codex: boolean;
+  readonly champs: Readonly<Record<string, ChampEnumere>>;
+}
+
+/**
+ * Champs ÉNUMÉRÉS de chaque document — index DÉRIVÉ, peuplé à la construction (aucun def ne le
+ * déclare). Il existe parce que la fabrique SCELLE ses nœuds : passé `document()`, plus personne ne
+ * peut redemander au schéma quelles valeurs un champ admet. C'est la source du stock décroissant des
+ * champs énumérés encore sans libellés de valeurs (`valeurs-de-champ.test.ts`).
+ *
+ * La CLÉ est la méta PUBLIÉE du handle (`SchemaDef.meta`), pas le type : un document SYNTHÉTIQUE bâti
+ * par un test porte le même type qu'un vrai def (`talent`), et la suite tourne sans isolation de
+ * modules — l'identité d'objet est le seul lien qui ne confonde pas les deux.
+ */
+export const ENUMS_DE_DOCUMENT = new WeakMap<object, EnumsDeDocument>();
+
+/**
+ * Contrôle des LIBELLÉS DE VALEURS d'un champ (`MetaChamp.valeurs`, #1686 lot 3a-2) — le verrou par
+ * construction qui remplace les tables `X_LABEL` d'UI : les valeurs nommées sont EXACTEMENT celles de
+ * l'enum, et un champ qui n'est pas énuméré n'en porte aucune. Le champ énuméré est enregistré au
+ * passage dans `ENUMS_DE_DOCUMENT`.
+ */
+function verifieValeurs(type: string, cle: string, champ: z.ZodTypeAny, meta: MetaChamp, enums: Record<string, ChampEnumere>): void {
+  const options = optionsEnum(champ);
+  const valeurs = meta.valeurs;
+  if (valeurs && !options) {
+    throw new Error(
+      `document('${type}') : le champ « ${cle} » porte des \`valeurs\` alors qu'il n'est pas ÉNUMÉRÉ — un libellé par valeur ne se pose que sur un univers fermé.`,
+    );
+  }
+  if (!options) return;
+  enums[cle] = { options, nomme: valeurs !== undefined };
+  if (!valeurs) return;
+  const nommees = Object.keys(valeurs);
+  const manquantes = options.filter((o) => !nommees.includes(o));
+  const etrangeres = nommees.filter((n) => !options.includes(n));
+  if (manquantes.length || etrangeres.length) {
+    throw new Error(
+      `document('${type}') : \`valeurs\` de « ${cle} » ne recouvre pas son enum${manquantes.length ? ` — sans libellé : ${manquantes.join(', ')}` : ''}${etrangeres.length ? ` — valeurs inconnues de l'enum : ${etrangeres.join(', ')}` : ''}.`,
+    );
+  }
+  // ORDRE identique à l'enum : le `select` de l'atelier tire ses options de `valeurs` (l'enum est
+  // scellé), donc l'ordre déclaré ICI est celui que l'écran propose — il ne doit pas diverger de la
+  // déclaration du champ.
+  if (nommees.some((n, i) => n !== options[i])) {
+    throw new Error(
+      `document('${type}') : \`valeurs\` de « ${cle} » ne suit pas l'ORDRE de son enum (attendu : ${options.join(', ')} ; déclaré : ${nommees.join(', ')}).`,
+    );
+  }
+}
+
 function verifieExposition(type: string, exposition: Exposition): void {
   const c = exposition.codex as { keys?: readonly string[]; exempt?: { raison?: string } };
   // Une exemption se MOTIVE : un mot ne dit rien — seuil de motif hérité du garde d'exposition (#1472).
@@ -398,6 +476,8 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
   /** Celles que la fabrique pose RÉELLEMENT sur l'entrée — et dont elle publie la méta FR. */
   const clesPosees = clesCharge.filter((k) => k !== 'die' || deDeTirage);
   const cles = Object.keys(champs);
+  /** Champs énumérés de CE document, remplis au passage du contrôle des libellés de valeurs. */
+  const enums: Record<string, ChampEnumere> = {};
   for (const k of cles) {
     if ((clesCharge as readonly string[]).includes(k)) {
       throw new Error(`document('${type}') : la fabrique pose « ${k} » (charge du document) — retire-le de \`champs\`.`);
@@ -408,6 +488,7 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
     if (!(meta as Record<string, MetaChamp | undefined>)[k]) {
       throw new Error(`document('${type}') : le champ « ${k} » n'a pas de méta d'édition (\`{ label }\` au minimum).`);
     }
+    verifieValeurs(type, k, (champs as Record<string, z.ZodTypeAny>)[k], (meta as Record<string, MetaChamp>)[k], enums);
   }
   for (const k of Object.keys(meta)) {
     if (!cles.includes(k)) {
@@ -482,6 +563,9 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
   // (`entite`), ou l'entrée elle-même (`config`, `record`).
   const dataset: z.ZodType<unknown> = famille === 'entite' ? z.array(entreeScellee) : entreeScellee;
   const schema: z.ZodType<unknown> = affinerDataset ? affinerDataset(dataset) : dataset;
+  const metaPubliee = { ...(meta as Record<string, MetaChamp>), ...Object.fromEntries(clesPosees.map((k) => [k, META_CHARGE[k]])) };
+  const keysCodex = (exposition.codex as { keys?: readonly string[] }).keys;
+  ENUMS_DE_DOCUMENT.set(metaPubliee, { type, codex: Array.isArray(keysCodex) && keysCodex.length > 0, champs: enums });
   return {
     schema,
     entree: entreeScellee,
@@ -489,7 +573,7 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
     cles: clesEntree,
     type,
     famille,
-    meta: { ...(meta as Record<string, MetaChamp>), ...Object.fromEntries(clesPosees.map((k) => [k, META_CHARGE[k]])) },
+    meta: metaPubliee,
     exposition,
     variantes: declarees,
     exiges: [...exiges],

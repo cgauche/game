@@ -106,7 +106,7 @@ describe('RELIEF ÉDITABLE — la surcharge par apparence (et par matériau de t
 describe('SCHÉMA de `structureAppearance.json` — les clés de relief sont CONTRAINTES', () => {
   /** Une entrée minimale valide, sur laquelle greffer le `relief` à éprouver. */
   const entree = (relief?: unknown) => [
-    { id: 'x', type: 'structureAppearance', label: 'X', material: 'bois', face: '#111', post: '#222', ...(relief ? { relief } : {}) },
+    { id: 'x', type: 'structureAppearance', label: 'X', face: '#111', post: '#222', ...(relief ? { relief } : {}) },
   ];
 
   it('la liste de clés du schéma est la MÊME que `WALL_PARTS` (recopie gardée, cf. pureté de src/data)', () => {

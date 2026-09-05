@@ -13,7 +13,6 @@ const MISSING: StructureAppearanceDef = {
   id: MISSING_ID,
   type: 'structureAppearance',
   label: 'Apparence absente du catalogue',
-  material: 'pierre',
   face: MISSING_TONE,
   post: MISSING_TONE_DARK,
 };

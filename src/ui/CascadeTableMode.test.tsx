@@ -144,7 +144,8 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     render();
     const basse = rowButton('Ligne basse')!;
     expect(basse.disabled).toBe(true);
-    // La raison ne vit plus dans un `title` natif (invisible à l'arbre a11y, inatteignable au doigt) :
+    // La raison vit dans l'infobulle partagée de la primitive, jamais dans un `title` natif (invisible à
+    // l'arbre a11y, inatteignable au doigt) :
     // N lignes éteintes par la MÊME cause se LIENT au récapitulatif rendu une fois sous la grille —
     // grammaire de refus UNIQUE de la primitive (`RollOption.refusId` → `GatedAction` forme
     // `reasonId`), arbitrage user 2026-08-24.
