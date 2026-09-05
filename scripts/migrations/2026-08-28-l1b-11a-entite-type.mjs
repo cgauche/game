@@ -91,12 +91,13 @@ const CARDINAUX = {
   'qualitySubtypes.json': 3,
   'qualityTypes.json': 2,
   // 8→9 : dette « Option Attraper Froid » (`deplacement#option-attraper-froid`), EDOC 09, #674.
-  'raw.manifest.json': 9,
+  'raw.manifest.json': 10,
   'reliefMaterials.json': 6,
   'sea-shanties.json': 7,
 };
 // 141→142 : +1, la seule entrée de manifeste ci-dessus. Puis 142→146 : +4 matériaux de décor (#1624/#1644).
-const TOTAL_ATTENDU = 146;
+// Puis 146→147 : +1 entrée de manifeste (dette #1653, Colère des dieux : 6 rangées à dé sans `ops`).
+const TOTAL_ATTENDU = 147;
 
 const echecs = [];
 const rapport = [];
