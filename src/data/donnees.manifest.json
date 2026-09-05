@@ -587,10 +587,9 @@
         },
         {
           "files": [
-            "props.json",
-            "propMaterials.json"
+            "props.json"
           ],
-          "desc": "Props de décor et leurs matériaux"
+          "desc": "Props de décor (leurs matières vivent dans `materials.json`)"
         },
         {
           "files": [
@@ -606,10 +605,9 @@
         },
         {
           "files": [
-            "reliefMaterials.json",
-            "roofMaterials.json"
+            "materials.json"
           ],
-          "desc": "Matériaux de relief · de toit"
+          "desc": "LES matières du monde — un document, le domaine (`prop` décor volumique · `roof` toiture · `relief`) porté par l'entrée"
         },
         {
           "files": [

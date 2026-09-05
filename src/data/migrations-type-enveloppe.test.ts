@@ -194,7 +194,7 @@ describe.each(CAS)('migration $script — retouchée pour le `type` d’ENVELOPP
 });
 
 /**
- * FIDÉLITÉ DE LA VAGUE 12b — la migration `type` n'ajoute QUE `type`, sur toutes les entrées des 12
+ * FIDÉLITÉ DE LA VAGUE 12b — la migration `type` n'ajoute QUE `type`, sur toutes les entrées des
  * derniers datasets `entite` (compte tenu en constante `TOTAL_ATTENDU`, source unique du chiffre), et
  * retire la SEULE `desc: ""` qu'elle DÉCLARE (`species › humains-tileens`).
  *
@@ -205,7 +205,7 @@ describe.each(CAS)('migration $script — retouchée pour le `type` d’ENVELOPP
  */
 describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a bougé', () => {
   /**
-   * PÉRIMÈTRE de la vague — ses 12 datasets, recopiés de la table `TYPES` de la migration. Le
+   * PÉRIMÈTRE de la vague — ses datasets ENCORE DOCUMENTÉS, recopiés de la table `TYPES` de la migration. Le
    * `type` attendu, lui, n'est PAS repris : l'enveloppe (`id,type` en tête, `type` = nom de base) est
    * gardée UNE fois, sur tout `src/data`, par la partition en fin de fichier. Ne reste ici que ce qui
    * est PROPRE à 12b : son cardinal, sa purge déclarée, le champ qu'elle tue, celui qu'elle GARDE.
@@ -217,7 +217,6 @@ describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a boug
     'night-stakes.json',
     'psychology.json',
     'raceAppearance.json',
-    'roofMaterials.json',
     'species.json',
     'spells.json',
     'structureAppearance.json',
@@ -225,11 +224,14 @@ describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a boug
     'trappings.json',
   ] as const;
   // +1 : Chien de trait, EDOC 07 folio 22, #673.
-  const TOTAL_ATTENDU = 1734;
+  // 1734 → 1730, 12 → 11 datasets : `roofMaterials.json` n'existe plus comme DOCUMENT (#1686 lot 2,
+  // les trois catalogues de matières fusionnent en `materials.json`). L'enveloppe de ses 4 entrées est
+  // tenue au PRÉSENT, avec les 12 autres matières, par la partition EXHAUSTIVE en fin de fichier.
+  const TOTAL_ATTENDU = 1730;
 
   const lu = (f: string) => JSON.parse(readFileSync(join(RACINE, 'src', 'data', f), 'utf8')) as Record<string, unknown>[];
 
-  it(`les 12 datasets de la vague totalisent ${TOTAL_ATTENDU} entrées`, () => {
+  it(`les ${PERIMETRE_12B.length} datasets encore documentés de la vague totalisent ${TOTAL_ATTENDU} entrées`, () => {
     const parFichier = PERIMETRE_12B.map((f) => `${f}=${lu(f).length}`);
     const total = PERIMETRE_12B.reduce((n, f) => n + lu(f).length, 0);
     expect(total, `cardinal du périmètre :\n${parFichier.join('\n')}`).toBe(TOTAL_ATTENDU);
@@ -286,12 +288,13 @@ describe('enveloppe — les `.json` de `src/data`, partitionnés SANS reste', ()
   const OBJETS = DOCS.filter(([, doc]) => estObjet(doc) && typeof doc.id === 'string').map(
     ([f, doc]) => [f, doc as Record<string, unknown>] as const,
   );
-  /** PARTITION 3 — le RESTE, asservi à VIDE : mesuré 0/121 le 2026-09-04. */
+  /** PARTITION 3 — le RESTE, asservi à VIDE : mesuré 0/119 le 2026-09-05. */
   const PARTITIONNES = new Set([...TABLEAUX, ...OBJETS].map(([f]) => f));
   const AUTRES = FICHIERS.filter((f) => !PARTITIONNES.has(f));
 
-  /** Plancher mesuré le 2026-09-04 : 121 `.json` = 80 tableaux + 41 racines objet + 0 reste. */
-  const PLANCHER = 121;
+  /** Plancher mesuré le 2026-09-05 : 119 `.json` = 78 tableaux + 41 racines objet + 0 reste
+   *  (121 → 119 : les trois catalogues de matières fusionnent en `materials.json`, #1686 lot 2). */
+  const PLANCHER = 119;
 
   /** Le contrat, identique aux deux partitions : tête `id,type`, `type` = nom de base du dataset. */
   const horsContrat = (fichier: string, doc: Record<string, unknown>, quoi: string): string[] => {
@@ -313,7 +316,7 @@ describe('enveloppe — les `.json` de `src/data`, partitionnés SANS reste', ()
     // Les quatre datasets que le cycle 10⇄12a « tenait » par accident, nommés pour qu'un scan qui
     // les perdrait ne puisse pas rester vert.
     const tableaux = TABLEAUX.map(([f]) => f);
-    for (const f of ['props.json', 'raw.manifest.json', 'reliefMaterials.json', 'roofMaterials.json']) {
+    for (const f of ['props.json', 'raw.manifest.json', 'materials.json']) {
       expect(tableaux, `${f} hors de la partition « tableau »`).toContain(f);
     }
     // Et trois témoins de la partition OBJET, celle qu'un filtre `Array.isArray` excluait en silence.

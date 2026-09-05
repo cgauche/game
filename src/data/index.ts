@@ -37,8 +37,8 @@ import vehiclesJson from './vehicles.json';
 import merchantsJson from './merchants.json';
 import structuresJson from './structures.json';
 import structureAppearanceJson from './structureAppearance.json';
-import reliefMaterialsJson from './reliefMaterials.json';
-import roofMaterialsJson from './roofMaterials.json';
+import materialsJson from './materials.json';
+import type { MaterialDomain, MaterialEntry, MatiereDe, PropMaterialData, ReliefMaterialDef, RoofMaterialDef } from './materials.types';
 import ambianceJson from './ambiance.json';
 import teintesJeuJson from './teintesJeu.json';
 import navalTraitsJson from './naval-traits.json';
@@ -61,9 +61,8 @@ import maneuversJson from './maneuvers.json';
 import domainsJson from './domains.json';
 import lightLevelsJson from './lightLevels.json';
 import lightTonesJson from './lightTones.json';
-import propMaterialsJson from './propMaterials.json';
 import propsJson from './props.json';
-import type { PropData, PropMaterialData } from './props.types';
+import type { PropData } from './props.types';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
 import calendarMonthsJson from './calendarMonths.json';
@@ -2399,11 +2398,18 @@ export const massBattleHazards = massBattleJson.hazards as HazardRow[];
  *  de perdre les 4 autres sections du fichier). Cf. `data/overrides.ts::NESTED_ARRAY_ROOT`. */
 export const massBattleData = massBattleJson;
 
-/** Apparence de RENDU du relief (falaises/rampes/tabliers/piliers/POV) — donnée pure. */
-export const reliefMaterials = reliefMaterialsJson as import('../gameIso/catalog/relief/types').ReliefMaterialDef[];
+/** LES matières du monde (#1686) — donnée pure, UN document, le domaine PORTÉ par l'entrée. */
+export const materials = materialsJson as MaterialEntry[];
 
-/** Apparence de RENDU des toits (matériaux de couverture + plan vu du dessus) — donnée pure. */
-export const roofMaterials = roofMaterialsJson as import('../gameIso/catalog/roofs/types').RoofMaterialDef[];
+/** Les matières d'UN domaine — vue DÉRIVÉE du document, jamais un second catalogue. */
+const matieresDe = <D extends MaterialDomain>(domain: D): MatiereDe<D>[] =>
+  materials.filter((m): m is MatiereDe<D> => m.domain === domain);
+
+/** Apparence de RENDU du relief (falaises/rampes/tabliers/piliers/POV). */
+export const reliefMaterials: ReliefMaterialDef[] = matieresDe('relief');
+
+/** Apparence de RENDU des toits (matières de couverture + plan vu du dessus). */
+export const roofMaterials: RoofMaterialDef[] = matieresDe('roof');
 
 /** AMBIANCE de rendu partagée iso ⇄ POV (ciel/brumes/vignette/voile chaud/filtre d'étage) — donnée pure. */
 export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').AmbianceDef;
@@ -2678,10 +2684,9 @@ export const findPropById = (id: string): PropData | undefined => PROP_BY_ID.get
  *  (`state/validateScene.ts`) la lisent ici — aucun site ne la redevine. `ref` absente = le défaut du
  *  monde (`REF_DECOR_DEFAUT`), la même normalisation que le rendu. */
 export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref ?? REF_DECOR_DEFAUT)?.volume;
-/** Matériaux de rendu des recettes volumiques de décor. Lookup LIVE (le catalogue se mute en place au
- *  Codex/surcharges de campagne, cf. `findLightToneById`) — huit entrées, le balayage ne coûte rien.
+/** Matières de rendu des recettes volumiques de décor — vue dérivée de `materials` par son `domain`.
  *  Unicité des ids sur tout le périmètre des matières : `data/materials-identite.test.ts` (#1686). */
-export const propMaterials = propMaterialsJson as PropMaterialData[];
+export const propMaterials: PropMaterialData[] = matieresDe('prop');
 export const findPropMaterialById = (id: string): PropMaterialData | undefined => propMaterials.find((m) => m.id === id);
 /** Domaines de magie app-owned (LDB 48) — ENTITÉ éditable au Codex (attributs en données : onHit,
  *  projectile, post-incantation). Le RUNTIME résout par `id` STABLE (= `SpellData.domainId`, cf.

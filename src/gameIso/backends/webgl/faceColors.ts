@@ -79,7 +79,7 @@ export interface FaceSurface {
   /** Taille MÉTRIQUE d'une période de texture (m). Absente quand la recette n'a pas d'assises : rien
    *  ne se répète, l'UV monde n'a pas d'échelle propre. */
   uvScaleM?: { u: number; v: number };
-  /** Réponse à la lumière d'un matériau de DÉCOR (`propMaterials.json`) : le seul domaine qui l'authore.
+  /** Réponse à la lumière d'une matière de DÉCOR (`materials.json`, domaine `prop`) : le seul domaine qui l'authore.
    *  Absente ailleurs — les autres surfaces sont lambertiennes, sans rugosité ni métal authorés. */
   pbr?: { roughness: number; metalness: number };
 }

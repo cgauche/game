@@ -34,7 +34,7 @@
 //   - Le RÉGIME D’ENTRÉES vient de la famille DÉCLARÉE par le schéma zod (`liste` → les éléments, `record` → les valeurs, `config` → le document EST son entrée) ; un document qu’aucune def ne déclare serait classé par sa racine JSON — depuis #1466 L1a il n’y en a plus aucun, les quatre projets de `src/scenes` sont déclarés `config`. La FAMILLE mesurée (`entité`/`table`/`config`/`record`) se déduit du régime : `record` et `config` RECOPIENT la déclaration (régime `valeurs` / `racine`), seule la partition `entité` ⊕ `table` est observée (part des entrées à bornes numériques). Depuis #1467 L1b V-FLIP-RECORD, le régime `valeurs` descend dans `entries` quand le record porte son enveloppe.
 //   - Une valeur mesurée hors de sa forme propre est enregistrée sous sa PROJECTION sur le vocabulaire du concept, suffixée `+…` ; de même pour une référence (clés de graphie + clés qui résolvent, charge utile repliée).
 //   - La candidature `plage` est STRUCTURELLE et non plus positionnelle : tout objet portant `min` ET `max` NUMÉRIQUES est candidat, élément d’un TABLEAU comme porté par un CHAMP (#1659, 2026-09-01 — les 5 `{min,max}` hors tableau des 2 racines entrent dans la mesure : `sea-events › params.impressed`, `› params.wrathful`, `tavernGames › pot.targetRange`, `› volley.libre`, `water-exposure › modifiers[].auto`). Ce qui reste hors candidature est le TYPE : une borne non numérique (`null` d’une bande ouverte comprise) n’ouvre pas la plage. `bornes` reste borné au tableau — aucun `{min,max}` hors tableau ne porte `default`/`step`.
-//   - Une paire de bornes encodée en TUPLE `[min,max]` n’est mesurée par AUCUN concept : la mesure ne classe que des OBJETS, un tableau de deux nombres reste une valeur nue. 16 tuples à l’arbre sur 8 sites (2 racines, 2026-09-01 après #1659 L-1659-3 ; 99 sur 18 à l’ouverture de la vague), et AUCUN n’est une plage — tous sont exclus nommément : 14 paramètres de recette de rendu (`detail.courses.blockWM` 9, `detail.speckle.rM` 4, `detail.tufts.hM` 1, sous `structureAppearance.json`/`roofMaterials.json`/`reliefMaterials.json`), `qualities.json › [].capabilities.fumbleDigits` (un ENSEMBLE de chiffres) et `structureAppearance.json › [].door.herse.traverseFracs` (des positions fractionnaires). SORTIES du stock parce que devenues des fourchettes `{min,max}` mesurées par le concept `plage` : les 72 disponibilités saisonnières (`sea-cargo.json › cargoes[].avail` 44, `land-cargo.json › cargoes[].avail` 28, L-1659-2), les 7 `ship-construction.json › standard[].lengthM` et les 4 `stars.json › [].sub` (L-1659-3). L’inventaire de ces 16 vit dans `src/data/plage-bornes-contrat.test.ts` (volet F) : il n’a plus à décroître, il a à ne pas repousser.
+//   - Une paire de bornes encodée en TUPLE `[min,max]` n’est mesurée par AUCUN concept : la mesure ne classe que des OBJETS, un tableau de deux nombres reste une valeur nue. 16 tuples à l’arbre sur 7 sites (2 racines, 2026-09-05 après la fusion des matières #1686 lot 2 ; 8 sites au 2026-09-01 après #1659 L-1659-3, 99 sur 18 à l’ouverture de la vague), et AUCUN n’est une plage — tous sont exclus nommément : 14 paramètres de recette de rendu (`detail.courses.blockWM` 9, `detail.speckle.rM` 4, `detail.tufts.hM` 1, sous `structureAppearance.json`/`materials.json`), `qualities.json › [].capabilities.fumbleDigits` (un ENSEMBLE de chiffres) et `structureAppearance.json › [].door.herse.traverseFracs` (des positions fractionnaires). SORTIES du stock parce que devenues des fourchettes `{min,max}` mesurées par le concept `plage` : les 72 disponibilités saisonnières (`sea-cargo.json › cargoes[].avail` 44, `land-cargo.json › cargoes[].avail` 28, L-1659-2), les 7 `ship-construction.json › standard[].lengthM` et les 4 `stars.json › [].sub` (L-1659-3). L’inventaire de ces 16 vit dans `src/data/plage-bornes-contrat.test.ts` (volet F) : il n’a plus à décroître, il a à ne pas repousser.
 //   - Un concept exprimé en SCALAIRE hors liste (`species: "humain"`) est mesuré sous la forme `id-nu`, sans signature d’objet.
 //   - `kind` est polysémique et n’est pas dédoublonné (Condition, Flow, événement de mer, pion de scène).
 //   - Le classement est ORDONNÉ : une VALEUR (reconnue à son noyau) passe avant une RÉFÉRENCE ; un objet qui recoupe deux concepts n’est compté qu’une fois.
@@ -651,7 +651,7 @@ export const STRUCTURES_DEFAUT = [
   { dataset: "raceAppearance.json", cle: "armD", date: "2026-08-26" },
   { dataset: "raceAppearance.json", cle: "armG", date: "2026-08-26" },
   { dataset: "raceAppearance.json", cle: "scale", date: "2026-08-26" },
-  { dataset: "roofMaterials.json", cle: "fasciaThickM", date: "2026-08-26" },
+  { dataset: "materials.json", cle: "fasciaThickM", date: "2026-08-26" },
   { dataset: "structureAppearance.json", cle: "bayPanel", date: "2026-08-26" },
   { dataset: "structureAppearance.json", cle: "relief", date: "2026-08-26" },
   { dataset: "tavernGames.json", cle: "fastSkill", date: "2026-08-26" },
@@ -781,6 +781,13 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "lightTones.json", chemin: "(entrées)", entrees: 4, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "localisation.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "mass-battle.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
+  // #1443 : `materials.json`, dataset app-owned de rendu. Même classe que `lightTones.json`
+  // ci-dessus (aucune page de livre ne décrit une couleur de matière) : le lot L1d tranche la forme
+  // de `source` d'un document maison pour les deux à la fois. TROIS lignes → UNE (#1686 lot 2, les
+  // catalogues `prop`/`roof`/`relief` fusionnent) ; 8 + 4 + 4 = 16 entrées, inchangées. Deltas des
+  // trois lignes d'origine, repris ici : +1 : albatre, matière de l'urne (#1644) [prop] ;
+  // −2 : riser, sol-inconnu — 0 consommateur, purgés (#1540) [relief].
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "materials.json", chemin: "(entrées)", entrees: 16, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "merchantFamilies.json", chemin: "(entrées)", entrees: 7, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "merchants.json", chemin: "(entrées)", entrees: 6, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "names.json", chemin: "(entrées)", entrees: 7, lot: "L1d #1469", date: "2026-08-23" },
@@ -788,18 +795,12 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "pregens.json", chemin: "(entrées)", entrees: 8, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "primitives.manifest.json", chemin: "(entrées)", entrees: 28, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "progression-schemas.derived.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
-  // #1443 : `propMaterials.json`, dataset app-owned de rendu. Même classe que `lightTones.json`
-  // ci-dessus (aucune page de livre ne décrit une couleur de matériau) : le lot L1d tranche la forme
-  // de `source` d'un document maison pour les deux à la fois.
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "propMaterials.json", chemin: "(entrées)", entrees: 8, lot: "L1d #1469", date: "2026-08-23" }, // +1 : albatre, matière de l'urne (#1644)
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualitySubtypes.json", chemin: "(entrées)", entrees: 3, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualityTypes.json", chemin: "(entrées)", entrees: 2, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 10, lot: "L1d #1469", date: "2026-08-23" }, // +1 : dette « Option Attraper Froid » (mue pneumonie), EDOC 09 (#674) ; +1 : dette de la Colère des dieux, LDB 40 (#1653)
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "reliefMaterials.json", chemin: "(entrées)", entrees: 4, lot: "L1d #1469", date: "2026-08-23" }, // −2 : riser, sol-inconnu — 0 consommateur, purgés (#1540)
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "renduMonte.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "river-perils.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "roofMaterials.json", chemin: "(entrées)", entrees: 4, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "sea-cargo.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "sea-events.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "sea-navigation.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },

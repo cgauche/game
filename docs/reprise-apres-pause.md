@@ -51,7 +51,7 @@ Le partage de la suite (`node scripts/test/run.mjs`) est décidé par `repartiti
 variable d'environnement `WFRP_TEST_COEURS` force ce nombre (seule façon de jouer l'autre chemin sur
 une machine quelconque).
 
-`src/data/*.json` (122 fichiers) est la **SOURCE app-owned** : rien à régénérer après le clone.
+`src/data/*.json` (120 fichiers) est la **SOURCE app-owned** : rien à régénérer après le clone.
 
 Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
 `0 6 * * 1`) rejoue exactement ce chemin en CI, sur un runner propre, en
@@ -92,7 +92,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 ## 2. Ce que le clone CONTIENT
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
-- `src/data/` — données app-owned (122 fichiers JSON commités, éditables au Compendium).
+- `src/data/` — données app-owned (120 fichiers JSON commités, éditables au Compendium).
 - Les gardes de données : `scripts/guards/validate-data.mts` + 84 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
@@ -102,7 +102,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 - Les schémas de données : `src/data/schemas/` (`src/data/schemas/types.ts`,
   `src/data/schemas/validate.ts`, `src/data/schemas/_registry.generated.ts`,
   `src/data/schemas/_ids.generated.ts`, `src/data/schemas/grammaire/` — le vocabulaire partagé —
-  `src/data/schemas/defs/` : 129 fichiers, un par catalogue, et
+  `src/data/schemas/defs/` : 127 fichiers, un par catalogue, et
   `src/data/schemas/defs-scenes/` : 17 fichiers pour les documents de scène).
 - `scripts/art-ref/` — le PIPELINE d'extraction d'images (`extract.py`, `ldb_extract.py`, `ldb_map.py`, `probe.py`) : le code est
   tracké, ses SORTIES (images) ne le sont pas (§ 3).
@@ -182,4 +182,4 @@ refaire `npm install`.
 
 Vérifier qu'elles tournent : onglet Actions du dépôt, ou `gh run list --workflow=canari.yml`. La
 porte à chaque push est `.github/workflows/ci.yml` (« CI », push, pull_request).
-<!-- sources-empreinte: 460b71d526a0dce0bec2c3255bec2353af96587c (12 fichiers, 9 dossiers) corps: 919257eac445f94bc6d2675d0e0fcfe378c7b1e3 -->
+<!-- sources-empreinte: 8b670b9541e4c98bf3bc04343e6734951cfc15d2 (12 fichiers, 9 dossiers) corps: 1ba88e24b14c1014cb1ebcafe553e87d7b63cb6b -->

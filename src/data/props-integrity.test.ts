@@ -23,7 +23,7 @@ describe('props.json — formes strictes de la recette volumique et des places a
     expect(() => propsSchema.parse([{ id: 'x', type: 'props', label: 'X d’épreuve', volume: { capIdentite: 'S', primitives: [{ kind: 'sphere' }] } }])).toThrow();
     expect(validatePropCatalog(
       [{ id: 'x', type: 'props', label: 'X d’épreuve', volume: { capIdentite: 'S', primitives: [{ kind: 'box', center: { xM: 0, yM: 0, hM: 0.5 }, size: { xM: 1, yM: 1, hM: 1 }, material: 'absent' }] } }],
-      [{ id: 'bois-chene', type: 'propMaterials', label: 'Chêne', color: '#5b3a22', roughness: 0.82, metalness: 0 }],
+      [{ id: 'bois-chene', type: 'materials', label: 'Chêne', domain: 'prop', color: '#5b3a22', roughness: 0.82, metalness: 0 }],
       MPT,
     )).toContain('x: matériau inconnu « absent »');
   });
@@ -460,8 +460,8 @@ describe('PROPS_VOLUMIQUES — le registre généré == la mesure sur props.json
   });
 });
 
-describe('propMaterials.json — matériaux du décor', () => {
-  it('porte les matériaux du décor, en couleur hexadécimale et sans émission', () => {
+describe('materials.json, domaine `prop` — les matières du décor', () => {
+  it('porte les matières du décor, en couleur hexadécimale et sans émission', () => {
     expect(propMaterials.map((m) => m.id)).toEqual([
       'bois-chene', 'pierre-atre', 'fer-noirci', 'braises', 'prop-ardoise', 'toile-rouge', 'laiton-dore',
       'albatre',
@@ -472,7 +472,8 @@ describe('propMaterials.json — matériaux du décor', () => {
       expect(m.roughness, m.id).toBeLessThanOrEqual(1);
       expect(m.metalness, m.id).toBeGreaterThanOrEqual(0);
       expect(m.metalness, m.id).toBeLessThanOrEqual(1);
-      expect(Object.keys(m).sort(), m.id).toEqual(['color', 'id', 'label', 'metalness', 'roughness', 'type']);
+      expect(m.domain, m.id).toBe('prop');
+      expect(Object.keys(m).sort(), m.id).toEqual(['color', 'domain', 'id', 'label', 'metalness', 'roughness', 'type']);
     }
   });
 

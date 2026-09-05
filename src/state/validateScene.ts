@@ -19,7 +19,7 @@ import { seatAssignmentDefects } from './seating';
  *  (Mouvement/Blessures, hors `CharKey` — cf. `CustomStatblock` dans `./scene`). */
 const VALID_STATBLOCK_CHAR_KEYS = new Set<string>([...CHAR_KEYS, 'M', 'B']);
 /** Ids POSABLES sur une masse de toit : les matériaux que la DONNÉE déclare couvrants
- *  (`roofMaterials.json`, champ `couverture`) — même source que les sélecteurs de l'éditeur. */
+ *  (`materials.json` domaine `roof`, champ `couverture`) — même source que les sélecteurs de l'éditeur. */
 const ROOF_COVERING_IDS = new Set(roofMaterials.filter((material) => material.couverture).map((material) => material.id));
 
 export interface Warning {

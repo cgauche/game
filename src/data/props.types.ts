@@ -43,6 +43,7 @@
  * `builders/propVolumes.test.ts`.
  */
 import { DIR8_ORDER, estCardinal, type Dir4, type Dir8 } from '../state/dir8';
+import type { PropMaterialData } from './materials.types';
 
 /**
  * Le CAP d'un décor volumique, résolu et VERROUILLÉ. Une entité sans `facing` vaut `S` : le défaut du
@@ -112,7 +113,7 @@ export const REF_DECOR_DEFAUT = 'tonneau';
 export const capDecorAdmis = (estVolumique: boolean, facing: Dir8 | undefined): boolean =>
   !estVolumique || !facing || estCardinal(facing);
 
-/** Id d'un matériau de `propMaterials.json`. */
+/** Id d'une matière de décor — une entrée de `materials.json` de domaine `prop`. */
 export type PropMaterialId = string;
 
 /** Point du repère local d'une recette — MÈTRES sur les trois axes (cf. la RÈGLE D'UNITÉ, en tête). */
@@ -336,9 +337,8 @@ export function aretesNonAppariees(polys: readonly (readonly Sommet3[])[]): { ar
  *  un pas de grille, pas une longueur : il ne se divise par rien. */
 export interface PropSeatSlot { id: string; anchor: PropPoint3; facing: Dir8; approach: { x: number; y: number } }
 
-/** Matériau de rendu d'une primitive : couleur de base + réponse à la lumière. Aucune émission — une
- *  source lumineuse est un `light` de prop/d'instance, jamais un matériau. */
-export interface PropMaterialData { id: string; type: 'propMaterials'; label: string; color: string; roughness: number; metalness: number }
+/** Matière de rendu d'une primitive : une entrée de `materials.json` de domaine `prop`. */
+export type { PropMaterialData };
 
 /**
  * Type de PROP/décor app-owned : couche SÉMANTIQUE (physique `solid`, opacité `opaque`, classe de

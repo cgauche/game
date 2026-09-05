@@ -67,8 +67,8 @@ const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi 
 
 /** Plafond d'un rapport de teinte : un ornement ne peut pas éclaircir sa surface au-delà de ce facteur
  *  (au-dessus, le `gain` écraserait la dynamique de tout le masque pour une poignée de pixels). Mesuré
- *  le 2026-08-09 sur TOUTE la donnée de joints et de colombage (`roofMaterials.json` +
- *  `structureAppearance.json`) : rapport de canal LINÉAIRE maximal 1,443 (joint `#6a531f` sur le pan sud
+ *  le 2026-08-09 sur TOUTE la donnée de joints et de colombage (les matières de toiture de
+ *  `materials.json` + `structureAppearance.json`) : rapport de canal LINÉAIRE maximal 1,443 (joint `#6a531f` sur le pan sud
  *  du chaume `#59461a` ; 1,211 en octets sRGB) — cette borne ne mord sur aucune recette d'aujourd'hui. */
 const TEINTE_MAX = 2;
 

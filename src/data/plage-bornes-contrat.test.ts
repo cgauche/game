@@ -139,7 +139,7 @@ function mesurer(): Mesure {
 
 /**
  * STOCK DÉCROISSANT des paires de bornes écrites en TUPLE `[min, max]` (volet F, #1659) — la sonde A
- * du design jugé du 2026-09-01, promue en test. 16 occurrences sur 8 sites, deux racines (99 sur 18 à
+ * du design jugé du 2026-09-01, promue en test. 16 occurrences sur 7 sites, deux racines (99 sur 18 à
  * l'ouverture de la vague ; L-1659-2 en a soldé 72 et L-1659-3 les 11 dernières, cf. ci-dessous).
  * `exclu` = ce site n'est PAS une paire de bornes, et la chaîne dit pourquoi. Le stock n'a PLUS QUE
  * des EXCLUS : plus une seule paire de bornes du dépôt ne s'écrit en tuple. Ce qui reste ici est donc
@@ -163,10 +163,9 @@ const TUPLES_STOCK: Record<string, { n: number; exclu?: string }> = {
     n: 1,
     exclu: 'positions FRACTIONNAIRES des traverses d’une herse (`[0.4, 0.78]`) : deux points, pas deux bornes — `z.array` dans `defs/structureAppearance.ts`.',
   },
-  'reliefMaterials.json::[].detail.courses.blockWM': { n: 1, exclu: EXCLU_RECETTE },
-  'reliefMaterials.json::[].detail.speckle.rM': { n: 1, exclu: EXCLU_RECETTE },
-  'roofMaterials.json::[].detail.courses.blockWM': { n: 2, exclu: EXCLU_RECETTE },
-  'roofMaterials.json::[].detail.tufts.hM': { n: 1, exclu: EXCLU_RECETTE },
+  'materials.json::[].detail.courses.blockWM': { n: 3, exclu: EXCLU_RECETTE },
+  'materials.json::[].detail.speckle.rM': { n: 1, exclu: EXCLU_RECETTE },
+  'materials.json::[].detail.tufts.hM': { n: 1, exclu: EXCLU_RECETTE },
   'structureAppearance.json::[].detail.courses.blockWM': { n: 6, exclu: EXCLU_RECETTE },
   'structureAppearance.json::[].detail.speckle.rM': { n: 3, exclu: EXCLU_RECETTE },
 };
@@ -238,7 +237,9 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     const exclus = Object.entries(TUPLES_STOCK).filter(([, l]) => l.exclu);
     const cibles = Object.entries(TUPLES_STOCK).filter(([, l]) => !l.exclu);
     expect(exclus.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples EXCLUS a bougé sans qu’une raison soit dite.').toBe(16);
-    expect(exclus.length).toBe(8);
+    // 8 → 7 sites (#1686 lot 2) : les 4 sites de recette de `reliefMaterials.json`/`roofMaterials.json`
+    // deviennent 3 sites de `materials.json` — les 16 occurrences, elles, ne bougent pas.
+    expect(exclus.length).toBe(7);
     expect(cibles.reduce((s, [, l]) => s + l.n, 0), 'un tuple À MIGRER est réapparu : la population est soldée depuis #1659 L-1659-3.').toBe(0);
     expect(cibles.length).toBe(0);
     expect(

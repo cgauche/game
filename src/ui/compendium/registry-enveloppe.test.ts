@@ -394,18 +394,16 @@ const ORPHELINS: string[] = [
   "criticals.json#0 (8)",
   "donnees.manifest.json#0 (11)",
   "lieux-services.json#0 (7)",
+  // TROIS lignes → UNE (#1686 lot 2) : `propMaterials`/`roofMaterials`/`reliefMaterials` fusionnent en
+  // `materials.json` (8 + 4 + 4 = 16 entrées, inchangées) — même angle mort, une seule matière de
+  // rendu app-owned qu'aucune catégorie du Codex n'expose.
+  "materials.json#0 (16)",
   "miscast.json#0 (5)",
   "primitives.manifest.json#0 (28)",
-  // +3 matériaux de recette #1624 (prop-ardoise, toile-rouge, laiton-dore) puis +1 albatre #1644 (la panse
-  // de l'urne) — même angle mort que les 4 existants : matière de rendu app-owned, aucune catégorie du
-  // Codex ne l'expose.
-  "propMaterials.json#0 (8)",
   "qualityTypes.json#0 (2)",
   "raw.manifest.json#0 (10)",
-  "reliefMaterials.json#0 (4)",
   "reseau-routier.json#0 (15)",
   "river-navigation.json#1 (3)",
-  "roofMaterials.json#0 (4)",
   "sea-cargo.json#1 (3)",
   "sea-events.json#3 (5)",
   "sea-navigation.json#0 (5)",

@@ -12,7 +12,7 @@
  * La vue du DESSUS ('top') est la boîte d'empreinte (plan/planEdge) ; l'ÉDITEUR passe `{ plan: true }`
  * pour son plan par-cellule (couverture semi-transparente au travers de laquelle on voit/édite les
  * murs), étiqueté du `label` qu'il fournit — le texte est une ENTRÉE de rendu, jamais une propriété
- * de l'élément. Toute couleur vient du JSON (`roofMaterials.json`) ou de `shade`.
+ * de l'élément. Toute couleur vient du JSON (`materials.json`, domaine `roof`) ou de `shade`.
  */
 import { diamondPath, footprintDepth, isSquareView, tileCenter, type Dims } from '../../geometry/iso';
 import { roofMaterial, type RoofMaterialDef } from '../catalog/roofs';
@@ -58,7 +58,7 @@ function panFill(sh: RoofMaterialDef, part: string): string {
 const TICK_INSET_M = 0.03; // le joint vertical d'un bardeau laisse respirer les lignes de rang
 const WOBBLE_STEP_M = 0.5; // échantillonnage du tremblé de rang (chaume)
 
-// Contrat DATA (`roofMaterials.json`, cf. RoofMaterialDef) : un matériau de couverture définit ses pentes
+// Contrat DATA (`materials.json` domaine `roof`, cf. RoofMaterialDef) : une matière de couverture définit ses pentes
 // N/E/S/O + `line` (rendu iso) et ses champs `plan*` (vue du dessus). Optionnels au TYPE, requis selon le
 // MODE de rendu → les `!` de ce fichier sont garantis par ce contrat, pas par le compilateur.
 /** LIFT de la nappe, en unités de niveau — dérivé de la SEULE vérité d'altitude du pivot, la cote

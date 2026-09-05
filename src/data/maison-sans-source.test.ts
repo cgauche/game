@@ -169,10 +169,10 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     expect(Object.keys(SANS_LIVRE).sort()).toEqual([
       'actions', 'ambiance', 'books', 'breath-types', 'calendarPhases', 'damage-types',
       'decorPalette', 'details', 'donnees.manifest', 'groups', 'lieux-services', 'lightLevels',
-      'lightTones', 'localisation', 'merchantFamilies', 'merchants', 'names', 'pregens',
-      'primitives.manifest', 'progression-schemas.derived', 'propMaterials', 'props',
-      'qualitySubtypes', 'qualityTypes', 'raceAppearance', 'raw.manifest', 'reliefMaterials',
-      'renduMonte', 'roofMaterials', 'sizes', 'speciesRace', 'structureAppearance',
+      'lightTones', 'localisation', 'materials', 'merchantFamilies', 'merchants', 'names', 'pregens',
+      'primitives.manifest', 'progression-schemas.derived', 'props',
+      'qualitySubtypes', 'qualityTypes', 'raceAppearance', 'raw.manifest',
+      'renduMonte', 'sizes', 'speciesRace', 'structureAppearance',
       'systemes.manifest', 'teintesJeu',
     ]);
     // Les deux régimes sont DISJOINTS : une clé dans les deux rendrait l'union ambiguë.
@@ -181,7 +181,8 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     // 50 → 51 : `aa-criticals` rejoint `SOURCE_EN_PROFONDEUR` (#1467 L1b V-FLIP-CONFIG).
     // 51 → 50 : `miscast` en sort (#1467 L1b V-FLIP-TABLE).
     // 50 → 48 : `criticals` et `aa-criticals` en sortent (#1657 B2a) — le régime ne fait que décroître.
-    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(48);
+    // 48 → 46 : `propMaterials`/`reliefMaterials`/`roofMaterials` fusionnent en `materials` (#1686 lot 2).
+    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(46);
   });
 
   it('`maison` est TOUJOURS une chaîne — zéro drapeau booléen, à TOUTE profondeur des deux racines', () => {

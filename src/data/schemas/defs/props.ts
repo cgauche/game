@@ -26,7 +26,7 @@ export const propSize3Schema = z.strictObject({ xM: z.number().finite(), yM: z.n
 const emetSchema = z.literal(true).optional();
 
 /** `PropPrimitive` (`src/data/props.types.ts`) — volume élémentaire d'une recette : caisse droite,
- *  cylindre à N faces, prisme en pente. `material` réfère un id de `propMaterials.json`. */
+ *  cylindre à N faces, prisme en pente. `material` réfère un id de `materials.json` (domaine `prop`). */
 export const propPrimitiveSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('box'), center: propPoint3Schema, size: propSize3Schema, material: z.string().min(1), emet: emetSchema }),
   z.strictObject({

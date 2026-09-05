@@ -96,7 +96,7 @@ describe('validateScene', () => {
   });
 
   /** Une masse de toit ne se coiffe que d'un matériau que la DONNÉE déclare couvrant
-   *  (`roofMaterials.json`, champ `couverture`) : le pseudo-matériau de plan vu du dessus n'en est pas
+   *  (`materials.json` domaine `roof`, champ `couverture`) : le pseudo-matériau de plan vu du dessus n'en est pas
    *  un, et un id inconnu non plus. Les couvertures admises sont LUES au catalogue, jamais récitées. */
   const massesToit = (materiau: string): Scene => {
     const s = base();

@@ -207,7 +207,7 @@ const HORS = SOUS_DOSSIERS.filter((d) => !COUVERTURE.balayees.includes(d.nom)).m
 
 // ── Catalogues de matériaux : population mesurée ─────────────────────────────────────────────────
 
-const CATALOGUES = ['structureAppearance', 'reliefMaterials', 'roofMaterials', 'decorPalette']
+const CATALOGUES = ['structureAppearance', 'materials', 'decorPalette']
   .map((n) => ({ n, p: `src/data/${n}.json` }))
   .filter(({ p }) => existsSync(p))
   .map(({ n, p }) => {

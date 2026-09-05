@@ -1,6 +1,6 @@
 /**
  * Migration #1686 LOT 1 — l'HOMONYME `ardoise` reçoit des ids COMPOSÉS par domaine :
- * `roofMaterials.json` `ardoise` → `toit-ardoise`, `propMaterials.json` `ardoise` → `prop-ardoise`.
+ * domaine `roof` : `ardoise` → `toit-ardoise` ; domaine `prop` : `ardoise` → `prop-ardoise`.
  *
  * Deux catalogues de matières portaient le MÊME id pour deux entrées différentes (une couverture de
  * toit à quatre teintes de pente, une matière de décor à couleur + réponse à la lumière). L'identité
@@ -12,12 +12,12 @@
  * réécrite vers l'entrée de SON domaine (une masse de toit vers la couverture, une primitive de
  * recette volumique vers la matière de décor).
  *
- * Entrées : `src/data/roofMaterials.json`, `src/data/propMaterials.json`, `src/data/props.json`
- * (primitives de recette volumique) et `src/scenes/<c>/<c>-projet.json` (masses de toit) — tous lus
- * et écrits.
+ * Entrées : `src/data/materials.json` (les deux entrées homonymes, une par domaine — le catalogue
+ * unique de matières que rend le lot 2), `src/data/props.json` (primitives de recette volumique) et
+ * `src/scenes/<c>/<c>-projet.json` (masses de toit) — tous lus et écrits.
  *
- * CARDINAUX ATTENDUS, mesurés sur l'arbre au moment de l'écriture (2026-09-05) : 1 entrée de
- * `roofMaterials`, 1 de `propMaterials`, 2 primitives de `props.json`, 3 masses de toit
+ * CARDINAUX ATTENDUS, mesurés sur l'arbre au moment de l'écriture (2026-09-05) : 1 matière de
+ * domaine `roof`, 1 de domaine `prop`, 2 primitives de `props.json`, 3 masses de toit
  * (`arene-projet.json`). Un écart fait sortir 1 AVANT toute écriture.
  * MARQUEUR D'IDEMPOTENCE : l'id des deux entrées de catalogue. Rejouée sur l'arbre migré, la
  * migration n'écrit rien et sort 0.
@@ -53,10 +53,12 @@ function lire(rel, indent, nl) {
   return { cible, rel, brut, doc, indent, nl };
 }
 
-const catalogues = [
-  { ...lire('src/data/roofMaterials.json', 2, false), apres: TOIT, compte: 'catalogueToit' },
-  { ...lire('src/data/propMaterials.json', 2, false), apres: DECOR, compte: 'catalogueDecor' },
-];
+/** Domaine de `materials.json` → l'id COMPOSÉ que l'homonyme y prend, et le cardinal qui le compte. */
+const REGLES = {
+  roof: { apres: TOIT, compte: 'catalogueToit' },
+  prop: { apres: DECOR, compte: 'catalogueDecor' },
+};
+const catalogue = lire('src/data/materials.json', 2, false);
 const props = lire('src/data/props.json', 2, false);
 const projets = fs
   .readdirSync(path.join(ROOT, 'src/scenes'), { withFileTypes: true })
@@ -69,12 +71,12 @@ const projets = fs
 const mesure = { catalogueToit: 0, catalogueDecor: 0, primitives: 0, masses: 0 };
 const dejaFait = { catalogueToit: 0, catalogueDecor: 0, primitives: 0, masses: 0 };
 
-for (const cat of catalogues) {
-  if (!Array.isArray(cat.doc)) echec(`${cat.rel} : racine non-TABLEAU`);
-  for (const e of cat.doc) {
-    if (e?.id === NU) mesure[cat.compte]++;
-    else if (e?.id === cat.apres) dejaFait[cat.compte]++;
-  }
+if (!Array.isArray(catalogue.doc)) echec(`${catalogue.rel} : racine non-TABLEAU`);
+for (const e of catalogue.doc) {
+  const regle = REGLES[e?.domain];
+  if (!regle) continue;
+  if (e.id === NU) mesure[regle.compte]++;
+  else if (e.id === regle.apres) dejaFait[regle.compte]++;
 }
 
 /** Toutes les primitives de recette volumique du catalogue de décor. */
@@ -118,17 +120,17 @@ for (const [k, n] of Object.entries(ATTENDU))
   if (mesure[k] !== n) echec(`${k} : ${mesure[k]} occurrence(s) de \`${NU}\` ≠ ${n} attendue(s)`);
 
 // ── ÉCRITURE ────────────────────────────────────────────────────────────────────────────────────
-for (const cat of catalogues) for (const e of cat.doc) if (e.id === NU) e.id = cat.apres;
+for (const e of catalogue.doc) if (e.id === NU && REGLES[e.domain]) e.id = REGLES[e.domain].apres;
 for (const prim of primitives) if (prim.material === NU) prim.material = DECOR;
 for (const m of masses) if (m.material === NU) m.material = TOIT;
 
-for (const f of [...catalogues, props, ...projets])
+for (const f of [catalogue, props, ...projets])
   fs.writeFileSync(f.cible, JSON.stringify(f.doc, null, f.indent) + (f.nl ? '\n' : ''), 'utf8');
 
 // ── PREUVE POST-ÉCRITURE — 0 id nu, cardinaux composés atteints ─────────────────────────────────
 const apres = { catalogueToit: 0, catalogueDecor: 0, primitives: 0, masses: 0 };
 const nus = [];
-for (const f of [...catalogues, props, ...projets]) {
+for (const f of [catalogue, props, ...projets]) {
   const doc = JSON.parse(fs.readFileSync(f.cible, 'utf8'));
   const compte = (noeud) => {
     if (Array.isArray(noeud)) noeud.forEach(compte);

@@ -37,7 +37,7 @@ const PROJETS = fs
   .map((d) => `src/scenes/${d.name}/${d.name}-projet.json`)
   .filter((rel) => fs.existsSync(path.join(RACINE, rel)));
 
-const DATASETS = ['src/data/roofMaterials.json', 'src/data/propMaterials.json', 'src/data/props.json'];
+const DATASETS = ['src/data/materials.json', 'src/data/props.json'];
 
 /** Horodatage ANTIDATÉ : toute écriture, même à contenu égal, le remonte — le témoin est déterministe. */
 const ANTIDATE = new Date('2000-01-01T00:00:00Z');
@@ -123,8 +123,8 @@ test('PORTE 1 : un porteur `ardoise` HORS masse de toit / primitive → sortie 1
 
 test('PORTE 2 : un cardinal CASSÉ (une seule entrée revenue à l’id nu) → sortie 1 NOMINATIVE, rien d’écrit', (t) => {
   const { racine, avant } = depot((docs) => {
-    const toit = docs['src/data/roofMaterials.json'].find((e) => e.id === 'toit-ardoise');
-    assert.ok(toit, '`toit-ardoise` absent du catalogue de toiture — la fixture ne mesure rien');
+    const toit = docs['src/data/materials.json'].find((e) => e.id === 'toit-ardoise');
+    assert.ok(toit, '`toit-ardoise` absent du catalogue de matières — la fixture ne mesure rien');
     toit.id = 'ardoise';
   });
   t.after(() => efface(racine));

@@ -1,6 +1,7 @@
-/** Matériaux de RENDU des recettes volumiques de décor (`src/data/propMaterials.json`), vus par le
- *  catalogue gameIso — MÊME accès que `reliefMaterial`/`roofMaterial` : le registre par id vit dans
- *  `src/data`, le REPLI VISIBLE (#877) vit ici, avec les autres catalogues de rendu. */
+/** Matières de RENDU des recettes volumiques de décor (les entrées de domaine `prop` de
+ *  `src/data/materials.json`), vues par le catalogue gameIso — MÊME accès que
+ *  `reliefMaterial`/`roofMaterial` : le registre par id vit dans `src/data`, le REPLI VISIBLE (#877)
+ *  vit ici, avec les autres catalogues de rendu. */
 import { propMaterials, type PropMaterialData } from '../../data';
 import { catalogEntry, MISSING_ID, MISSING_LABEL, MISSING_TONE } from './missing';
 
@@ -11,8 +12,9 @@ const MAP: Record<string, PropMaterialData> = Object.fromEntries(propMaterials.m
  *  pas un vernis ni un bronze qu'aucune donnée n'a authorés. */
 const MISSING: PropMaterialData = {
   id: MISSING_ID,
-  type: 'propMaterials',
+  type: 'materials',
   label: MISSING_LABEL,
+  domain: 'prop',
   color: MISSING_TONE,
   roughness: 1,
   metalness: 0,

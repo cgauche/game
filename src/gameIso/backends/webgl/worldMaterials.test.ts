@@ -48,7 +48,7 @@ describe('materiauPlanTransparent', () => {
 
 /**
  * RÉGIME PAR GROUPE DE SURFACE — le monde monte un matériau par groupe, et c'est le GROUPE qui décide
- * lequel : un groupe de décor volumique authore sa rugosité et son métal (`propMaterials.json`), que le
+ * lequel : un groupe de décor volumique authore sa rugosité et son métal (`materials.json`, domaine `prop`), que le
  * lambertien commun n'a pas à offrir. Sans cette sonde, `pbr` pouvait se perdre entre la cuisson et
  * l'écran sans qu'aucun test ne bouge.
  */

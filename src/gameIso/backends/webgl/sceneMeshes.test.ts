@@ -1099,7 +1099,7 @@ describe('GROUPES DE SURFACE — un décor à recette se groupe par MATÉRIAU', 
       expect(g.pbr).toBeDefined();
     }
     expect(groupesProp.find((g) => g.key === 'prop|fer-noirci')!.pbr)
-      .toEqual({ roughness: 0.52, metalness: 0.85 }); // `src/data/propMaterials.json`
+      .toEqual({ roughness: 0.52, metalness: 0.85 }); // `src/data/materials.json`, domaine `prop`
   });
 
   it('deux matériaux ⇒ le décor occupe DEUX plages de picking disjointes dans la géométrie cuite', () => {

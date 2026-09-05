@@ -1,5 +1,5 @@
 /**
- * Migration #1467 L1b V-FLIP-ENTITE-a — les 22 datasets `entite` de la vague 11a reçoivent la clé
+ * Migration #1467 L1b V-FLIP-ENTITE-a — les datasets `entite` de la vague 11a reçoivent la clé
  * d'ENVELOPPE `type` sur chacune de leurs entrées, en DEUXIÈME position (juste après `id`).
  *
  * MOTIF : `document()` pose `type: z.literal(<type>)` en clé REQUISE de l'enveloppe. Un def adopté
@@ -11,7 +11,7 @@
  * n'est pas gardé par une seconde table mais par le SCHÉMA lui-même — `z.literal(<type>)` rend rouge
  * toute entrée dont le `type` diverge (mesuré par mutation M2 du lot).
  *
- * ENTRÉES : les 22 fichiers de `src/data/` listés dans `TYPES` (seules données lues et écrites).
+ * ENTRÉES : les fichiers de `src/data/` listés dans `TYPES` (seules données lues et écrites).
  *
  * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le CARDINAL du seul geste que ce script
  * POSSÈDE — la pose de `type`. Zéro `type` à poser dans un fichier = rien n'y est écrit et la sortie
@@ -54,11 +54,9 @@ const TYPES = {
   'lightTones.json': 'lightTones',
   'merchantFamilies.json': 'merchantFamilies',
   'peripeties.json': 'peripeties',
-  'propMaterials.json': 'propMaterials',
   'qualitySubtypes.json': 'qualitySubtypes',
   'qualityTypes.json': 'qualityTypes',
   'raw.manifest.json': 'raw.manifest',
-  'reliefMaterials.json': 'reliefMaterials',
   'sea-shanties.json': 'sea-shanties',
 };
 
@@ -85,23 +83,20 @@ const CARDINAUX = {
   'lightTones.json': 4,
   'merchantFamilies.json': 7,
   'peripeties.json': 10,
-  // 4→8 : recalé #1624/#1644 (+4 matériaux : prop-ardoise, toile-rouge, laiton-dore, albatre) — le cardinal
-  // est une porte d'IDENTITÉ de dataset, il suit la donnée qu'un train fait croître, dans le MÊME train.
-  'propMaterials.json': 8,
   'qualitySubtypes.json': 3,
   'qualityTypes.json': 2,
   // 8→9 : dette « Option Attraper Froid » (`deplacement#option-attraper-froid`), EDOC 09, #674.
   'raw.manifest.json': 10,
-  // 6→4 : purge #1686 lot 1 des deux entrées MORTES (`riser`, `sol-inconnu` — 0 consommateur de
-  // production mesuré) ; le cardinal est une porte d'IDENTITÉ de dataset, il suit la donnée qu'un train
-  // fait décroître, dans le MÊME train.
-  'reliefMaterials.json': 4,
   'sea-shanties.json': 7,
 };
-// 141→142 : +1, la seule entrée de manifeste ci-dessus. Puis 142→146 : +4 matériaux de décor (#1624/#1644).
+// 141→142 : +1, la seule entrée de manifeste ci-dessus. Puis 142→146 : +4 matières de décor (#1624/#1644).
 // Puis 146→147 : +1 entrée de manifeste (dette #1653, Colère des dieux : 6 rangées à dé sans `ops`).
 // Puis 147→145 : −2 reliefs morts purgés (#1686 lot 1).
-const TOTAL_ATTENDU = 145;
+// Puis 145→133, 22→20 datasets : `propMaterials.json` (8) et `reliefMaterials.json` (4) n'existent plus
+// comme DOCUMENTS — les trois catalogues de matières fusionnent en `materials.json` (#1686 lot 2), dont
+// l'enveloppe est posée par sa propre migration et tenue au PRÉSENT, sur tout `src/data`, par la
+// partition EXHAUSTIVE de `src/data/migrations-type-enveloppe.test.ts`.
+const TOTAL_ATTENDU = 133;
 
 const echecs = [];
 const rapport = [];

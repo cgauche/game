@@ -1,0 +1,252 @@
+[
+  {
+    "id": "bois-chene",
+    "type": "materials",
+    "label": "Chêne",
+    "domain": "prop",
+    "color": "#5b3a22",
+    "roughness": 0.82,
+    "metalness": 0
+  },
+  {
+    "id": "pierre-atre",
+    "type": "materials",
+    "label": "Pierre d'âtre",
+    "domain": "prop",
+    "color": "#6b665e",
+    "roughness": 0.94,
+    "metalness": 0
+  },
+  {
+    "id": "fer-noirci",
+    "type": "materials",
+    "label": "Fer noirci",
+    "domain": "prop",
+    "color": "#2e2f33",
+    "roughness": 0.52,
+    "metalness": 0.85
+  },
+  {
+    "id": "braises",
+    "type": "materials",
+    "label": "Braises",
+    "domain": "prop",
+    "color": "#8c3416",
+    "roughness": 0.7,
+    "metalness": 0
+  },
+  {
+    "id": "prop-ardoise",
+    "type": "materials",
+    "label": "Ardoise",
+    "domain": "prop",
+    "color": "#3d4852",
+    "roughness": 0.72,
+    "metalness": 0
+  },
+  {
+    "id": "toile-rouge",
+    "type": "materials",
+    "label": "Toile rouge",
+    "domain": "prop",
+    "color": "#a8423a",
+    "roughness": 0.95,
+    "metalness": 0
+  },
+  {
+    "id": "laiton-dore",
+    "type": "materials",
+    "label": "Laiton doré",
+    "domain": "prop",
+    "color": "#a8801f",
+    "roughness": 0.42,
+    "metalness": 0.6
+  },
+  {
+    "id": "albatre",
+    "type": "materials",
+    "label": "Albâtre",
+    "domain": "prop",
+    "color": "#c2b79a",
+    "roughness": 0.58,
+    "metalness": 0
+  },
+  {
+    "id": "tuile",
+    "type": "materials",
+    "label": "Tuile",
+    "domain": "roof",
+    "couverture": true,
+    "N": "#a04836",
+    "E": "#732a20",
+    "S": "#531b13",
+    "O": "#8a3527",
+    "line": "#411409",
+    "eaveOverhangM": 0.32,
+    "soffite": "#3d130c",
+    "fasciaDropM": 0.2,
+    "fascia": "#2e0e07",
+    "ridgeCap": "#bf5e46",
+    "detail": {
+      "seedScope": "instance",
+      "courses": {
+        "hM": 0.24,
+        "joint": "#5a1f17",
+        "jointW": 0.03,
+        "stagger": 0.5,
+        "blockWM": [
+          0.35,
+          0.6
+        ],
+        "paletteVar": 0.05
+      }
+    }
+  },
+  {
+    "id": "chaume",
+    "type": "materials",
+    "label": "Chaume",
+    "domain": "roof",
+    "couverture": true,
+    "N": "#b0904a",
+    "E": "#7d642a",
+    "S": "#59461a",
+    "O": "#997c3c",
+    "line": "#463714",
+    "eaveOverhangM": 0.36,
+    "soffite": "#4a3a16",
+    "detail": {
+      "seedScope": "instance",
+      "courses": {
+        "hM": 0.35,
+        "joint": "#6a531f",
+        "jointW": 0.045,
+        "edgeWobble": 0.05
+      },
+      "tufts": {
+        "perM2": 0.7,
+        "hM": [
+          0.3,
+          0.5
+        ],
+        "colors": [
+          "#63501f",
+          "#c4a55e"
+        ]
+      }
+    }
+  },
+  {
+    "id": "toit-ardoise",
+    "type": "materials",
+    "label": "Ardoise",
+    "domain": "roof",
+    "couverture": true,
+    "N": "#63727f",
+    "E": "#3d4852",
+    "S": "#283037",
+    "O": "#4d5964",
+    "line": "#20272d",
+    "eaveOverhangM": 0.24,
+    "soffite": "#222831",
+    "fasciaDropM": 0.16,
+    "fascia": "#171c22",
+    "ridgeCap": "#788896",
+    "detail": {
+      "seedScope": "instance",
+      "courses": {
+        "hM": 0.24,
+        "joint": "#2a323a",
+        "jointW": 0.026,
+        "stagger": 0.5,
+        "blockWM": [
+          0.3,
+          0.5
+        ],
+        "paletteVar": 0.06
+      }
+    }
+  },
+  {
+    "id": "plan",
+    "type": "materials",
+    "label": "Plan (vue de dessus)",
+    "domain": "roof",
+    "planBody": "#6e4f3a",
+    "planEdge": "#241a12",
+    "planInner": "#8a6a4a",
+    "planText": "#f2e6cc"
+  },
+  {
+    "id": "terre",
+    "type": "materials",
+    "label": "Terre",
+    "domain": "relief",
+    "face": "#5a4a33",
+    "foot": "#3e3322",
+    "slopeTop": "#75603f",
+    "shadeDark": 0.56,
+    "detail": {
+      "seedScope": "tile",
+      "courses": {
+        "hM": 0.55,
+        "joint": "#463a26",
+        "jointW": 0.04,
+        "edgeWobble": 0.09
+      },
+      "speckle": {
+        "perM2": 0.5,
+        "rM": [
+          0.03,
+          0.08
+        ],
+        "colors": [
+          "#6f5c3e",
+          "#42361f"
+        ]
+      }
+    }
+  },
+  {
+    "id": "pierre",
+    "type": "materials",
+    "label": "Pierre",
+    "domain": "relief",
+    "built": true,
+    "face": "#6b6f76",
+    "foot": "#4a4e54",
+    "slopeTop": "#878c95",
+    "shadeDark": 0.7,
+    "detail": {
+      "seedScope": "tile",
+      "courses": {
+        "hM": 0.4,
+        "joint": "#3a3c40",
+        "jointW": 0.035,
+        "stagger": 0.5,
+        "blockWM": [
+          0.5,
+          1.1
+        ],
+        "edgeWobble": 0.03,
+        "paletteVar": 0.07
+      }
+    }
+  },
+  {
+    "id": "pilier",
+    "type": "materials",
+    "label": "Pilier",
+    "domain": "relief",
+    "built": true,
+    "face": "#565a61"
+  },
+  {
+    "id": "plafond",
+    "type": "materials",
+    "label": "Plafond",
+    "domain": "relief",
+    "built": true,
+    "face": "#2c2a26"
+  }
+]

@@ -21,7 +21,7 @@ import type { Face } from '../../builders/types';
 /**
  * Les attendus sont LUS DANS LA DONNÉE, pas récités depuis l'implémentation : chaque couleur ci-dessous
  * est le littéral de son entrée (`src/data/structureAppearance.json` « mur-en-bois »,
- * `src/data/reliefMaterials.json` « pierre », `src/data/roofMaterials.json` « tuile »,
+ * `src/data/materials.json` « pierre » (domaine `relief`) et « tuile » (domaine `roof`),
  * `src/state/terrain/defs/herbe.ts`). Un ordre de repli INVERSÉ dans `faceColors.ts` (un `??` retourné)
  * choisirait une autre couleur de la MÊME entrée : le test le voit.
  */
@@ -193,10 +193,10 @@ describe('tintVarFactor — la variance de teinte par case, à l’identité MON
 });
 
 /**
- * DOMAINE `prop` — la surface d'une face de décor volumique vient de `propMaterials.json`, et de rien
+ * DOMAINE `prop` — la surface d'une face de décor volumique vient des matières de ce domaine, et de rien
  * d'autre : sa teinte EST la couleur authorée (aucun ombrage cuit, aucune recette d'appareillage), et
  * sa réponse à la lumière voyage avec elle jusqu'au matériau que le monde monte.
- * Attendus LUS DANS LA DONNÉE : `src/data/propMaterials.json` « bois-chene » et « fer-noirci ».
+ * Attendus LUS DANS LA DONNÉE : `src/data/materials.json` « bois-chene » et « fer-noirci ».
  */
 describe('faceSurface — matériau de DÉCOR volumique (domaine `prop`)', () => {
   const faceProp = (id: string): Face => ({

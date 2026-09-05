@@ -48,9 +48,10 @@ const FORBIDDEN_SEGMENTS: { segment: string; allow: Set<string> }[] = [
   },
   {
     segment: 'gameIso',
-    // `index.ts` : `import('../gameIso/catalog/…').StructureAppearanceDef`/`ReliefMaterialDef`/
-    // `RoofMaterialDef`/`AmbianceDef` — réfs de TYPE INLINE (formes des catalogues de rendu servis
-    // depuis la donnée), élidées à la compilation, aucune dépendance runtime.
+    // `index.ts` : `import('../gameIso/catalog/…').StructureAppearanceDef`/`AmbianceDef` — réfs de
+    // TYPE INLINE (formes des catalogues de rendu servis depuis la donnée), élidées à la
+    // compilation, aucune dépendance runtime. `materials.types.ts` n'a PAS besoin de l'allowlist :
+    // ses réfs à `gameIso` sont des déclarations `import type …`, que le critère structurel élide.
     allow: new Set(['index.ts']),
   },
 ];

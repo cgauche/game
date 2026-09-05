@@ -87,7 +87,7 @@ export function worldSurfaceMaterials(
   const attendues: string[] = [];
   const relèves: Promise<RelèveDeSurface>[] = [];
   const materials = geometry.userData.surfaceGroups.map((g, rang) => {
-    // Un groupe qui authore sa réponse à la lumière (décor volumique, `propMaterials.json`) se monte en
+    // Un groupe qui authore sa réponse à la lumière (décor volumique, `materials.json` domaine `prop`) se monte en
     // matériau à rugosité/métal : le lambertien commun n'a ni l'une ni l'autre à offrir.
     const mat: WorldSurfaceMaterial = !lit
       ? new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })

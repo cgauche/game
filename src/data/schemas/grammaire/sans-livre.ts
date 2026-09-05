@@ -14,9 +14,10 @@
  *
  * Une entrée d'ici n'est PAS un blanc-seing : `axes.json` est resté DEHORS (#1467 L1b V-Src) parce
  * que « pas de livre » et « arbitrage maison » sont deux choses différentes — ses 9 entrées portent
- * désormais `maison`. Mesuré le 2026-08-27 : 49 datasets de `src/data` n'ont aucune provenance de
- * premier niveau, et les 49 sont couverts — 33 ici, 16 dans `SOURCE_EN_PROFONDEUR` (régime DISTINCT,
- * déclaré plus bas) : aucun dataset muet hors régime. Cette liste compte donc 34 clés = ces 33
+ * désormais `maison`. Mesuré le 2026-09-05 (après la fusion des trois catalogues de matières en
+ * `materials`, #1686 lot 2 — 49 → 47) : 47 datasets de `src/data` n'ont aucune provenance de
+ * premier niveau, et les 47 sont couverts — 31 ici, 16 dans `SOURCE_EN_PROFONDEUR` (régime DISTINCT,
+ * déclaré plus bas) : aucun dataset muet hors régime. Cette liste compte donc 32 clés = ces 31
  * muets + `actions`, seule clé dont le dataset porte MALGRÉ TOUT des provenances (12/55 folios).
  *
  * Clé = `type` du document, égal au nom de base de son dataset. Une entrée ne se retire que par le
@@ -30,9 +31,9 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
   props:
     'catalogue des placeables de décor — le DOCUMENT est de l’art (volume, libellé, empreinte, et la solidité physique de l’objet : aucune table ne chiffre qu’un tonneau bloque le passage). Trois de ses CHAMPS sont des règles et ne sont pas couverts par cette exemption : `light` (éclairage, LDB 74 l.43/56/58), `cover` et `opaque` (couvert, LDB 14 l.72/81/86) — les 41 entrées qui en portent un (mesuré le 2026-09-02) exigent `source` OU `maison` À L’ENTRÉE, par `affinerEntree` de `schemas/defs/props.ts`, et les 41 portent leur `maison`',
   raceAppearance: 'configuration de rendu — apparences par race pour le rig, art maison',
-  reliefMaterials: 'configuration de rendu — matériaux de relief (recettes de détail de surface)',
+  materials:
+    'configuration de rendu — LES matières du monde (décor volumique, toiture, relief : couleur, réponse à la lumière, recettes de détail de surface) ; aucun folio n’imprime une teinte de surface',
   renduMonte: 'configuration de rendu — réglages d’assiette de la monture à l’écran',
-  roofMaterials: 'configuration de rendu — matériaux de toiture (recettes de détail de surface)',
   structureAppearance: 'configuration de rendu — apparences de structures bâties',
   teintesJeu: 'configuration de rendu — palette de teintes de l’interface de jeu',
   'donnees.manifest': 'manifeste d’outillage — rubriques de la carte des données, décrit le dépôt',
@@ -56,8 +57,6 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
     'vocabulaire de catégorisation (id+label) — même régime que `damage-types` : paramètre d’un Trait sourcé, jamais une liste imprimée (6/6 sans provenance)',
   localisation:
     'table de dé INVERSÉ (résultat de dé → zone de touche) — vocabulaire structurel du moteur ; les zones sont LDB et déjà tenues par `hitLocationSchema`, l’inversion ne l’est nulle part',
-  propMaterials:
-    'matériaux de RENDU des recettes volumiques de décor (couleur, rugosité, métallicité) — apparence, aucune règle à citer (4/4 sans provenance)',
 
   // (2) INDEX & CATALOGUES D'APPLICATION — l'objet décrit est le dépôt ou son contenu, pas une règle.
   books: 'index d’app des livres eux-mêmes — un livre ne se cite pas lui-même (29/29 sans provenance)',

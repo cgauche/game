@@ -9,8 +9,9 @@ const MAP: Record<string, RoofMaterialDef> = Object.fromEntries(roofMaterials.ma
  *  du dessus, jamais l'apparence d'un autre matériau. */
 const MISSING: RoofMaterialDef = {
   id: MISSING_ID,
-  type: 'roofMaterials',
+  type: 'materials',
   label: MISSING_LABEL,
+  domain: 'roof',
   N: MISSING_TONE,
   E: MISSING_TONE,
   S: MISSING_TONE,

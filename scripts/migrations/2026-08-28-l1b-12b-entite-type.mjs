@@ -1,5 +1,5 @@
 /**
- * Migration #1467 L1b V-FLIP-ENTITE-c — les 12 DERNIERS datasets `entite` reçoivent la clé
+ * Migration #1467 L1b V-FLIP-ENTITE-c — les DERNIERS datasets `entite` reçoivent la clé
  * d'ENVELOPPE `type` sur chacune de leurs entrées, en DEUXIÈME position (juste après `id`).
  *
  * MÊME patron que les vagues 11a/11b/12a (`2026-08-28-l1b-12a-entite-type.mjs`), même contrat :
@@ -33,7 +33,7 @@
  * démon de Slaanesh »…). Détruire de la donnée sourcée est interdit (règle 5) ; le champ reste TEL
  * QUEL et son absence de lecteur est un ticket (#1541), pas une purge.
  *
- * ENTRÉES : les 12 fichiers de `src/data/` listés dans `TYPES` (seules données lues et écrites).
+ * ENTRÉES : les fichiers de `src/data/` listés dans `TYPES` (seules données lues et écrites).
  *
  * IDEMPOTENT / NO-OP SÉMANTIQUE : le no-op se décide sur le CARDINAL des gestes que ce script
  * POSSÈDE — pose de `type` et purge de la `desc` vide nommée. Zéro geste à poser dans un fichier =
@@ -62,7 +62,6 @@ const TYPES = {
   'night-stakes.json': 'night-stakes',
   'psychology.json': 'psychology',
   'raceAppearance.json': 'raceAppearance',
-  'roofMaterials.json': 'roofMaterials',
   'species.json': 'species',
   'spells.json': 'spells',
   'structureAppearance.json': 'structureAppearance',
@@ -84,7 +83,6 @@ const CARDINAUX = {
   'night-stakes.json': 15,
   'psychology.json': 9,
   'raceAppearance.json': 21,
-  'roofMaterials.json': 4,
   'species.json': 27,
   'spells.json': 576,
   'structureAppearance.json': 18,
@@ -94,7 +92,11 @@ const CARDINAUX = {
 };
 // 1730→1733 : +2 créatures (#673) +1 possession (#672), les seuls bumps ci-dessus.
 // 1733→1734 : +1 : Chien de trait, EDOC 07 folio 22, #673.
-const TOTAL_ATTENDU = 1734;
+// 1734→1730, 12→11 datasets : `roofMaterials.json` (4) n'existe plus comme DOCUMENT — les trois
+// catalogues de matières fusionnent en `materials.json` (#1686 lot 2), dont l'enveloppe est posée par sa
+// propre migration et tenue au PRÉSENT, sur tout `src/data`, par la partition EXHAUSTIVE de
+// `src/data/migrations-type-enveloppe.test.ts`.
+const TOTAL_ATTENDU = 1730;
 
 /** Le SEUL porteur de `desc: ""` que cette vague purge — `<fichier>` → `<id>` (cf. en-tête). */
 const DESC_VIDE_PURGEE = { 'species.json': 'humains-tileens' };

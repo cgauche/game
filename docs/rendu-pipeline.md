@@ -8,7 +8,7 @@ de `SceneEl` et les champs de `GP`/`MaterialRef`/`Face`/`ElBase`/`ElStates`
 de sortie, les 9 sous-dossiers de `src/gameIso/` et leur nombre de modules directs, les
 6 clés d'ambiance de `src/data/ambiance.json`, les 7 sections d'une
 `DetailRecipe`, la couverture RÉELLE de la garde anti-couleur (lue dans la garde) et la population
-des 4 catalogues de matériaux. **Angles morts** : ce doc décrit la FORME du
+des 3 catalogues de matériaux. **Angles morts** : ce doc décrit la FORME du
 pipeline, pas le RÉSULTAT — aucune mesure ici ne dit qu'une scène est belle ou juste (c'est le rôle
 de la QC visuelle et des oracles de parité) ; le comptage de modules est NON récursif (un
 sous-dossier n'est pas replié dans le total de son parent) ; le rôle de chaque sous-dossier et la
@@ -160,8 +160,7 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 | Catalogue | Entrées |
 |---|---|
 | `src/data/structureAppearance.json` | 18 |
-| `src/data/reliefMaterials.json` | 4 |
-| `src/data/roofMaterials.json` | 4 |
+| `src/data/materials.json` | 16 |
 | `src/data/decorPalette.json` | 435 |
 
 - **un matériau** (structure / relief / toit) : une entrée dans le catalogue correspondant ci-dessus
@@ -175,4 +174,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: 57677c2e14baef2e7e7f53021540251c0bff005b (23 fichiers, 10 dossiers) corps: c0e84082c6dcfb7c83ebb81bb3e755865add19a9 -->
+<!-- sources-empreinte: 3dbccc2c41a69f85defba5cffa019ce9ffdad278 (22 fichiers, 10 dossiers) corps: 0d68edb6f2661eb591cac2b022de356d564e1a79 -->

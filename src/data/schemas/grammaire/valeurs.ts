@@ -205,7 +205,7 @@ export type Variant = {
 
 /**
  * Recette de détail de surface (`DetailRecipe`, `src/gameIso/detail/types.ts`) — portée par le champ
- * optionnel `detail` de 3 datasets d'apparence (`roofMaterials.json`, `reliefMaterials.json`,
+ * optionnel `detail` de 2 datasets d'apparence (`materials.json` — domaines `roof` et `relief` — et
  * `structureAppearance.json`). Reflet STRICT de l'interface TS (mêmes sous-objets/champs requis).
  */
 export const detailRecipeSchema = z.strictObject({

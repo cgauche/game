@@ -641,7 +641,9 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     //         `entries` ; le def d'`aa-criticals` meurt, celui de `criticals` entre dans la population.
     //   #1657 B3-2b-a : `ship-stations` naît SCELLÉ (80 → 81) — catalogue FERMÉ des présences à bord
     //         que les livres nomment, `exiges: ['desc']` dès sa première écriture.
-    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 81, mesures: 0 });
+    //   #1686 lot 2 : `propMaterials`/`roofMaterials`/`reliefMaterials` fusionnent en UN def
+    //         `materials` (81 → 79) — trois defs SCELLÉS en deviennent un, la population perd 2.
+    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 79, mesures: 0 });
   });
 
 });
@@ -776,8 +778,8 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     // `species` n'exige que `source` : sa 5ᵉ entrée (`humains-tileens`) portait `desc: ""`, purgée
     // par `2026-08-28-l1b-12b-entite-type.mjs` (renvoi nominatif de 3h:25-27) — exiger `desc`
     // refuserait cette entrée. MÊME écart que `talents` à la vague 12, motivé au mesureur ci-dessus.
-    // Les trois catalogues de RENDU (`raceAppearance`, `roofMaterials`, `structureAppearance`)
-    // n'exigent RIEN : ils sont sans livre, et leurs entrées ne portent ni desc ni icon.
+    // Les catalogues de RENDU (`raceAppearance`, `materials`, `structureAppearance`) n'exigent
+    // RIEN : ils sont sans livre, et leurs entrées ne portent ni desc ni icon.
     'actions.json · icon',
     'activities.json · icon',
     'activities.json · source',

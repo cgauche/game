@@ -146,7 +146,8 @@ test('les migrations DATÉES sont NO-OP sur `src/data` ENTIER aux clés renvers�
 
   const data = path.join(racine, 'src/data');
   const jsons = fs.readdirSync(data).filter((f) => f.endsWith('.json'));
-  assert.ok(jsons.length >= 121, `corpus de ${jsons.length} document(s) — la copie n'a pas pris \`src/data\``);
+  // Plancher 121 → 119 (#1686 lot 2) : les trois catalogues de matières fusionnent en `materials.json`.
+  assert.ok(jsons.length >= 119, `corpus de ${jsons.length} document(s) — la copie n'a pas pris \`src/data\``);
 
   /** Le corpus RENVERSÉ, posé et gardé en référence : toute divergence ultérieure est une écriture. */
   const avant = new Map();
