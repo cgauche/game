@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
-import { materials, propMaterials, roofMaterials, reliefMaterials, structureAppearances } from './index';
+import { materials, matieresDe, structureAppearances } from './index';
 import { DOMAINES_MATIERE, type MaterialEntry } from './materials.types';
 import { propMaterial } from '../gameIso/catalog/propMaterials';
 import { roofMaterial } from '../gameIso/catalog/roofs';
@@ -21,14 +21,14 @@ import { TERRAIN_DEFS } from '../state/terrain/_registry.generated';
  * entrées de même id n'y seraient plus séparables du tout.
  *
  * Le contrat est DÉRIVÉ du dataset (aucune liste d'ids récitée ici) et il porte le TIE-BREAK : les
- * trois vues résolvent par `catalogEntry` sur un index construit à l'identique (`Object.fromEntries`),
- * donc un id en double y ferait gagner la DERNIÈRE déclaration en silence. L'unicité gardée ici rend
- * ce départage sans objet, et laisse UN seul chemin de résolution.
+ * trois vues résolvent par `catalogEntry` sur un balayage VIF du document construit à l'identique
+ * (`matieresDe(domaine).find`), donc un id en double y ferait gagner la PREMIÈRE déclaration en
+ * silence. L'unicité gardée ici rend ce départage sans objet, et laisse UN seul chemin de résolution.
  */
 const VUES: { domaine: string; entrees: readonly MaterialEntry[]; resout: (id: string) => { id: string } }[] = [
-  { domaine: 'prop', entrees: propMaterials, resout: propMaterial },
-  { domaine: 'roof', entrees: roofMaterials, resout: roofMaterial },
-  { domaine: 'relief', entrees: reliefMaterials, resout: reliefMaterial },
+  { domaine: 'prop', entrees: matieresDe('prop'), resout: propMaterial },
+  { domaine: 'roof', entrees: matieresDe('roof'), resout: roofMaterial },
+  { domaine: 'relief', entrees: matieresDe('relief'), resout: reliefMaterial },
 ];
 
 /** Ids apparaissant plus d'une fois dans une liste, avec leur cardinal. */
@@ -69,9 +69,9 @@ describe('identité des matières du monde — (domaine, id), id unique sur tout
     const nu = (domaine: string, entrees: readonly { id: string }[], compose: string) =>
       entrees.map((e) => ({ domaine, id: e.id === compose ? 'ardoise' : e.id }));
     const regresse = [
-      ...nu('roof', roofMaterials, 'toit-ardoise'),
-      ...nu('prop', propMaterials, 'prop-ardoise'),
-      ...reliefMaterials.map((e) => ({ domaine: 'relief', id: e.id })),
+      ...nu('roof', matieresDe('roof'), 'toit-ardoise'),
+      ...nu('prop', matieresDe('prop'), 'prop-ardoise'),
+      ...matieresDe('relief').map((e) => ({ domaine: 'relief', id: e.id })),
     ];
     const parId = new Map<string, string[]>();
     for (const e of regresse) parId.set(e.id, [...(parId.get(e.id) ?? []), e.domaine]);
@@ -80,8 +80,8 @@ describe('identité des matières du monde — (domaine, id), id unique sur tout
       'ardoise',
     ]);
     // Et la MÊME logique, jouée sur le dépôt, ne rend rien : c'est ce que les ids composés achètent.
-    expect(roofMaterials.map((e) => e.id)).toContain('toit-ardoise');
-    expect(propMaterials.map((e) => e.id)).toContain('prop-ardoise');
+    expect(matieresDe('roof').map((e) => e.id)).toContain('toit-ardoise');
+    expect(matieresDe('prop').map((e) => e.id)).toContain('prop-ardoise');
     expect(materials.map((e) => e.id)).not.toContain('ardoise');
   });
 });
@@ -103,9 +103,9 @@ const COLLISIONS_HORS_PERIMETRE = [
 
 describe('collisions d’id sur les CINQ domaines — cliquet décroissant', () => {
   const DOMAINES: Record<string, readonly string[]> = {
-    prop: propMaterials.map((e) => e.id),
-    relief: reliefMaterials.map((e) => e.id),
-    roof: roofMaterials.map((e) => e.id),
+    prop: matieresDe('prop').map((e) => e.id),
+    relief: matieresDe('relief').map((e) => e.id),
+    roof: matieresDe('roof').map((e) => e.id),
     structure: structureAppearances.map((e) => e.id),
     terrain: TERRAIN_DEFS.map((e) => e.id),
   };

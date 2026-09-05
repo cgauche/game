@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { roofMaterial } from './index';
-import { roofMaterials } from '../../../data';
+import { matieresDe } from '../../../data';
 import { MISSING_ID, MISSING_TONE } from '../missing';
 
 // Le couplage donnée → rendu (teintes par pan, liseré, rangs) est testé côté backend
 // (`authoring/roofsSvg.test.ts`) ; ici, la DONNÉE seule.
 describe('apparence de toit (JSON pur iso/plan)', () => {
   it('les 4 matériaux sont présents', () => {
-    const ids = roofMaterials.map((m) => m.id).sort();
+    const ids = matieresDe('roof').map((m) => m.id).sort();
     expect(ids).toEqual(['chaume', 'plan', 'toit-ardoise', 'tuile']);
   });
 
@@ -18,7 +18,7 @@ describe('apparence de toit (JSON pur iso/plan)', () => {
   });
 
   it('la COUVERTURE est une DONNÉE : les 3 matériaux de pan la déclarent, le plan vu du dessus ne la porte pas', () => {
-    expect(roofMaterials.filter((m) => m.couverture).map((m) => m.id).sort()).toEqual(['chaume', 'toit-ardoise', 'tuile']);
+    expect(matieresDe('roof').filter((m) => m.couverture).map((m) => m.id).sort()).toEqual(['chaume', 'toit-ardoise', 'tuile']);
     expect(roofMaterial('plan').couverture).toBeUndefined();
   });
 
@@ -64,6 +64,6 @@ describe('apparence de toit (JSON pur iso/plan)', () => {
     const missing = roofMaterial('inconnu');
     expect(missing.id).toBe(MISSING_ID);
     expect([missing.N, missing.E, missing.S, missing.O]).toEqual([MISSING_TONE, MISSING_TONE, MISSING_TONE, MISSING_TONE]);
-    expect(roofMaterials.map((m) => m.id)).not.toContain(MISSING_ID); // hors registre : jamais posable
+    expect(matieresDe('roof').map((m) => m.id)).not.toContain(MISSING_ID); // hors registre : jamais posable
   });
 });

@@ -34,7 +34,7 @@ import { shade, ao, spec } from '../shade';
 import { isSquareView, type Dims } from '../../geometry/iso';
 import { ISO_PX_PER_M } from '../iso';
 import { TERRAIN_DEFS } from '../../state/terrain';
-import { structureAppearances, reliefMaterials } from '../../data';
+import { structureAppearances, matieresDe } from '../../data';
 import { projGP, type Pt2 } from './project';
 import type { GP } from '../builders/types';
 
@@ -115,7 +115,7 @@ function coursesPatternDef(c: Courses, key: string, axis: Axis, eu: Pt2, variant
 /** Recettes d'assises à motifs : toutes les defs de STRUCTURE et de RELIEF qui en portent une. */
 function coursesRecipes(): Map<string, Courses> {
   const out = new Map<string, Courses>();
-  for (const def of [...structureAppearances, ...reliefMaterials]) {
+  for (const def of [...structureAppearances, ...matieresDe('relief')]) {
     const c = def.detail?.courses;
     if (c) out.set(coursesKey(c), c);
   }

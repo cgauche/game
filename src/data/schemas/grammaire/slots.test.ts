@@ -138,6 +138,17 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // fabrique, retrouvée à 3 paths du même dialecte (`ops`, `test.onFail`, `test.onFailHard.ops`).
       "idDe('etat')",
       "idDe('maladie')",
+      // +4 sites ADOPTÉS (#1686 lot 3a-1, 2026-09-05) — les premiers d'un dataset DISCRIMINÉ : la
+      // valeur passée à la fabrique NOMME la sous-liste contre laquelle l'id est refiné au parse
+      // (`IDS_PAR_DISCRIMINANT`, dérivée de l'`export const discriminant` de `defs/materials.ts`).
+      // TROIS instances côté décor (`defs/props.ts` : les 3 branches de `propPrimitiveSchema`, une
+      // fabrique écrite par branche) — ce refine TIENT la référence au matériau, `validatePropCatalog`
+      // ne jugeant que la géométrie —, UNE seule côté scène (`defs-scenes/scene.ts › couvertureSchema`,
+      // partagée par `BuildingMass.material` et `RoofDefaults.material` : une instance, une marque).
+      "idDe('material', 'prop')",
+      "idDe('material', 'prop')",
+      "idDe('material', 'prop')",
+      "idDe('material', 'roof')",
       // 1 → 2 (#1657 B3-2b-a) : `defs/ship-stations.ts › requiresTrait` porte EN DONNÉE le gate d'une
       // station (`cale` — MSRC 07 l.94 ; `nid-de-pie` — MDG 12 l.299), à côté de `defs/vehicles.ts ›
       // ship.traits`. Sans ce champ, `shipCritical.ts` brancherait par id de station.

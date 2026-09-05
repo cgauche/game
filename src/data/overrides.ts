@@ -12,6 +12,7 @@
 import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, lightTones, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
+  materials,
   pregens, oups, interludeEvents, peripeties, details, names, allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
@@ -154,6 +155,12 @@ const rencontresDangereuses = encounterTable('dangereuses');
 const ARRAYS = {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, lightTones, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
+  // Matières du monde (#1686) : UN document, le domaine PORTÉ par l'entrée. Ce binding EST le seam de
+  // mutation en place, et c'est lui qui rend vive la lecture des vues par domaine (`matieresDe`,
+  // `src/data/index.ts`) : une matière retouchée se voit au rendu sans rechargement. Son def déclare
+  // `exposition.edit` = `none` : la clé n'a donc AUCUNE route de sauvegarde
+  // (`datasetEditable('materials')` est faux, et `dataset-save-parse.test.ts` l'écarte de son scan).
+  materials,
   pregens, oups, interludeEvents, peripeties, names,
   // Axes de forces/faiblesses (#409) — mécanique MAISON, éditable au Codex comme tout catalogue.
   axes: allAxes,
@@ -315,8 +322,8 @@ export function setDataset<K extends DatasetKey>(key: K, next: readonly (typeof 
  *  (`setDataset` fonctionne tel quel sur ces clés), mais le CONTENU à sérialiser au save diverge : il
  *  faut réécrire le PARENT ENTIER (`massBattleData`), sous peine d'écraser les tableaux frères — ou
  *  l'enveloppe du document — avec un tableau nu. `datasetSerializeRoot` retombe sur le tableau lui-même
- *  pour toute clé absente d'ici. Le FICHIER, lui, ne vit plus ici : il est DÉRIVÉ du def porteur
- *  (`DATASET_FICHIER_DERIVE`, #1530) — une table de fichiers à la main de plus était une 2ᵉ vérité. */
+ *  pour toute clé absente d'ici. Cette table ne porte QUE la racine à sérialiser : le FICHIER, lui,
+ *  se DÉRIVE du def porteur (`DATASET_FICHIER_DERIVE`, #1530), source unique de `datasetFile`. */
 const NESTED_ARRAY_ROOT: Partial<Record<DatasetKey, { root: () => unknown }>> = {
   massBattleWarMachines: { root: () => massBattleData },
   massBattleStructures: { root: () => massBattleData },

@@ -285,6 +285,19 @@ const NO_MORE_CODE_RX = new RegExp(
   'i',
 );
 
+// Le SITE quitté : la négation temporelle dont le complément est l'adverbe de lieu qui désigne CE
+// fichier. Le lecteur y cherche le contrat courant, pas ce qu'un autre module a repris. Forme
+// ÉTROITE — quatre verbes (état et résidence), complément FERMÉ à l'adverbe de PROXIMITÉ.
+// Population mesurée 2026-09-05 sur `src/**`+`scripts/**` (4278 fichiers, tests compris) : 2 sites,
+// reformulés du même geste. L'adverbe de DISTANCE est exclu par construction : au même relevé, ses
+// 5 sites décrivent tous une absence À L'EXÉCUTION (une entrée de cache libérée, un héros sorti du
+// groupe, un composant démonté) — un état de partie VIVANT, jamais du code disparu.
+// Formes couvertes et faux positifs écartés : LITTÉRAUX dans `src/comment-poison-guard.test.ts`.
+const NO_MORE_HERE_RX = new RegExp(
+  '\\bn(?:' + APOS + '|e' + GAP + ')(?:est|sont|vit|vivent)' + GAP + 'plus' + GAP + 'ici\\b',
+  'i',
+);
+
 // Le RAPPEL D'ANCIEN ÉTAT le plus courant du dépôt : la locution de cessation suivie d'un artefact
 // de CODE nommé, sans négation verbale (« … — plus de X », « (plus de X en dur) »). Même exigence
 // que la famille voisine : le complément doit nommer un artefact de code, jamais une ressource de
@@ -395,6 +408,7 @@ export const TOMBSTONE_FAMILIES = [
   { rx: NO_MORE_ARTIFACT_RX, label: 'négation temporelle + artefact de code (état révolu)' },
   { rx: OF_YORE_RX, label: 'passé nostalgique (état révolu)' },
   { rx: NO_MORE_CODE_RX, label: 'n’est plus du code (nature révolue du site)' },
+  { rx: NO_MORE_HERE_RX, label: 'n’est / ne vit plus ici (site quitté)' },
   // #1486 : la locution de cessation NUE devant un artefact de code nommé — 8 vraies tombales sur les
   // 10 sites échantillonnés du 2026-08-23, sur une population de 248 commentaires ; le vocabulaire
   // fermé et les exclusions de quantité/comparaison ramènent cette population aux seuls artefacts.

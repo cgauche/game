@@ -9,7 +9,7 @@ import { periodTextureData, jointFactor, PERIOD_PX_PER_M } from './periodTexture
 import { coursesPeriod, coursesPeriodM, coursesKey, patternWM, N_VARIANTS } from '../../detail/courses';
 import { facadeStructureAppearance } from '../../catalog/facades';
 import { wallPartColor } from '../../catalog/structures';
-import { roofMaterials } from '../../../data';
+import { matieresDe } from '../../../data';
 import type { DetailRecipe } from '../../detail/types';
 
 /** Une recette d'appareillage RÉELLE, lue dans la DONNÉE : le mur de pierre (`structureAppearance.json`). */
@@ -134,7 +134,7 @@ describe('periodTextureData — AUCUN pan ne se cuit en APLAT, quel que soit le 
   }
 
   it('les 4 pans de chaque matériau de TOIT à assises portent leur joint (un mortier plus CLAIR aussi)', () => {
-    const pans = roofMaterials.filter((m) => (m.detail as DetailRecipe | undefined)?.courses);
+    const pans = matieresDe('roof').filter((m) => (m.detail as DetailRecipe | undefined)?.courses);
     expect(pans.length).toBeGreaterThan(0);
     let mesurés = 0;
     for (const m of pans)

@@ -26,6 +26,7 @@ import { refIndiceSchema } from '../grammaire/reference';
 import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
 import { sceneFlowSchema } from './effets';
 import { PROPS_VOLUMIQUES } from '../_ids.generated';
+import { idDe } from '../grammaire/ref';
 import { capDecorAdmis, REF_DECOR_DEFAUT } from '../../props.types';
 import type { AuthoredShipPoste } from '../../../engine/types';
 import type { OptionalEntry } from '../../../engine/statEntry';
@@ -176,6 +177,17 @@ export const facadeSectionSchema = z.strictObject({
 export const roofProfileSchema = z.enum(['gable', 'hip', 'shed', 'flat']);
 /** Côté d'égout bas (OBLIGATOIRE pour `shed`, ignoré sinon). */
 export const eaveSideSchema = z.enum(['N', 'E', 'S', 'O']);
+/**
+ * Matière de COUVERTURE d'une masse : la porte est la fabrique canonique (`idDe('material', 'roof')`),
+ * qui refine l'id AU PARSE contre la sous-liste `roof` de `materials.json` — une matière de décor ou de
+ * relief posée sur un toit n'entre pas. La FORME DE SORTIE, elle, est DÉCLARÉE `string` et non inférée
+ * (même patron que `RefASpecialisation`, `grammaire/ref.ts`) : `BuildingMass`/`RoofDefaults` sont des
+ * `z.infer` LUS par l'éditeur et par la dérivation, où la matière est une valeur de `<select>` et un
+ * littéral d'authoring — y faire remonter la marque de type imposerait un `as` à chaque site de saisie.
+ * Que la matière COUVRE vraiment un pan (champ `couverture`) reste un sous-filtre de SCÈNE, dit par
+ * `state/validateScene.ts` : le domaine `roof` porte aussi le « plan » vu du dessus.
+ */
+const couvertureSchema: z.ZodType<string, string> = idDe('material', 'roof');
 /** MASSE de bâtiment (#823, remplace `RoofSection` authoré à la main) : l'INTENTION, jamais la
  *  géométrie du toit — `gameIso/builders/roofs.ts` DÉRIVE pans/faîte/noues/croupes par une formule
  *  UNIQUE (`hauteur(case) = hauteurÉgout + distance(case, bord de la masse) × métresParCase ×
@@ -204,7 +216,7 @@ export const buildingMassSchema = z.strictObject({
   /** Pente en DEGRÉS (jamais des mètres par case — c'est cette unité qui a écrasé les toits d'un
    *  facteur deux, #825). */
   pitchDeg: z.number(),
-  material: z.string(),
+  material: couvertureSchema,
   /** Axe de faîtage (gable/hip) — optionnel, défaut = le long axe de la masse ; OBLIGATOIRE si la
    *  masse est carrée (ambigu, fail-fast plutôt que deviner). Sans effet sur `shed`/`flat`. */
   ridge: z.enum(['x', 'y']).optional(),
@@ -231,7 +243,8 @@ export const roofDefaultsSchema = z.strictObject({
    *  dérivation calcule la pente de CHAQUE masse par `fittedPitchDeg` (`sceneEdit.ts`) — pente de
    *  référence rabattue jusqu'à ce que le comble tienne dans `riseMaxStoreys` (#947). */
   pitchDeg: z.number().optional(),
-  material: z.string(),
+  /** Matière de COUVERTURE des masses DÉRIVÉES — même porte que `BuildingMass.material`. */
+  material: couvertureSchema,
   /** Côté d'égout bas des masses dérivées — OBLIGATOIRE dès que `profile` vaut `shed` (le côté bas
    *  d'un appentis est une intention d'AUTEUR, aucun défaut deviné ; même contrat que
    *  `BuildingMass.eaveSide`, que la dérivation recopie depuis ici). Ignoré par les autres profils. */

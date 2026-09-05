@@ -38,7 +38,7 @@ import merchantsJson from './merchants.json';
 import structuresJson from './structures.json';
 import structureAppearanceJson from './structureAppearance.json';
 import materialsJson from './materials.json';
-import type { MaterialDomain, MaterialEntry, MatiereDe, PropMaterialData, ReliefMaterialDef, RoofMaterialDef } from './materials.types';
+import type { MaterialDomain, MaterialEntry, MatiereDe, PropMaterialData, RoofMaterialDef } from './materials.types';
 import ambianceJson from './ambiance.json';
 import teintesJeuJson from './teintesJeu.json';
 import navalTraitsJson from './naval-traits.json';
@@ -2403,15 +2403,23 @@ export const massBattleData = massBattleJson;
 /** LES matières du monde (#1686) — donnée pure, UN document, le domaine PORTÉ par l'entrée. */
 export const materials = materialsJson as MaterialEntry[];
 
-/** Les matières d'UN domaine — vue DÉRIVÉE du document, jamais un second catalogue. */
-const matieresDe = <D extends MaterialDomain>(domain: D): MatiereDe<D>[] =>
+/**
+ * Les matières d'UN domaine — vue DÉRIVÉE du document, jamais un second catalogue, et jamais un
+ * SNAPSHOT : la fonction balaie `materials` À L'APPEL. Le tableau est le seul binding partagé, splicé
+ * en place par `setDataset` (`data/overrides.ts`) ; une vue évaluée au niveau module aurait figé les
+ * entrées d'avant l'édition. Coût mesuré du balayage de 16 entrées au cardinal réel du rendu
+ * (18 026 lookups, 65 scènes) : +4,1 ms contre un index `Map` (#1686 lot 3a-1).
+ * Apparences servies : `prop` (recettes volumiques de décor), `roof` (couvertures + plan vu du
+ * dessus), `relief` (falaises/rampes/tabliers/piliers/POV).
+ */
+export const matieresDe = <D extends MaterialDomain>(domain: D): MatiereDe<D>[] =>
   materials.filter((m): m is MatiereDe<D> => m.domain === domain);
 
-/** Apparence de RENDU du relief (falaises/rampes/tabliers/piliers/POV). */
-export const reliefMaterials: ReliefMaterialDef[] = matieresDe('relief');
-
-/** Apparence de RENDU des toits (matières de couverture + plan vu du dessus). */
-export const roofMaterials: RoofMaterialDef[] = matieresDe('roof');
+/** Matières POSABLES sur une masse de toit : les entrées de domaine `roof` que la DONNÉE déclare
+ *  couvrantes (`couverture`) — SOURCE UNIQUE du validateur de scène (`state/validateScene.ts`) et des
+ *  sélecteurs de l'éditeur (`ui/editor/Inspector.tsx`), qui vivent dans deux couches et ne peuvent pas
+ *  s'importer l'une l'autre. Lecture VIVE, comme `matieresDe`. */
+export const matieresCouvrantes = (): RoofMaterialDef[] => matieresDe('roof').filter((m) => m.couverture);
 
 /** AMBIANCE de rendu partagée iso ⇄ POV (ciel/brumes/vignette/voile chaud/filtre d'étage) — donnée pure. */
 export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').AmbianceDef;
@@ -2686,10 +2694,10 @@ export const findPropById = (id: string): PropData | undefined => PROP_BY_ID.get
  *  (`state/validateScene.ts`) la lisent ici — aucun site ne la redevine. `ref` absente = le défaut du
  *  monde (`REF_DECOR_DEFAUT`), la même normalisation que le rendu. */
 export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref ?? REF_DECOR_DEFAUT)?.volume;
-/** Matières de rendu des recettes volumiques de décor — vue dérivée de `materials` par son `domain`.
- *  Unicité des ids sur tout le périmètre des matières : `data/materials-identite.test.ts` (#1686). */
-export const propMaterials: PropMaterialData[] = matieresDe('prop');
-export const findPropMaterialById = (id: string): PropMaterialData | undefined => propMaterials.find((m) => m.id === id);
+/** Matière de rendu d'une recette volumique de décor, par id — lecture VIVE du document (`matieresDe`),
+ *  jamais un index cuit au chargement. Unicité des ids sur tout le périmètre des matières :
+ *  `data/materials-identite.test.ts` (#1686). */
+export const findPropMaterialById = (id: string): PropMaterialData | undefined => matieresDe('prop').find((m) => m.id === id);
 /** Domaines de magie app-owned (LDB 48) — ENTITÉ éditable au Codex (attributs en données : onHit,
  *  projectile, post-incantation). Le RUNTIME résout par `id` STABLE (= `SpellData.domainId`, cf.
  *  `findDomainById`) ; `domainByLabel`/`findDomain` restent pour l'authoring/affichage. */

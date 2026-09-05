@@ -26,7 +26,7 @@ import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { allMusicDefs } from '../../audio/music';
-import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, roofMaterials, structureAppearances, refEstVolumique } from '../../data';
+import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, structureAppearances, refEstVolumique } from '../../data';
 import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
 
@@ -37,9 +37,6 @@ const ROOF_PROFILES = [
   { id: 'shed' as const, label: 'Appentis (shed) — 1 pan' },
   { id: 'flat' as const, label: 'Terrasse (flat) — plat' },
 ];
-/** Matériaux qui peuvent COUVRIR un pan : ceux que la donnée DÉCLARE couvrants (`couverture`). MÊME
- *  source que la validation de scène (`state/validateScene`) — filtre sur la DONNÉE, jamais sur son id. */
-const COVERING_MATERIALS = roofMaterials.filter((m) => m.couverture);
 /** Cibles d'une ANCRE de bataille (`Scene.stations[].sceneId`) : les Scènes de Round du catalogue
  *  d'Activités (contexte `bataille-round`) — le SEUL espace d'ids que le consommateur sait résoudre
  *  (`state/stations.battleScenesToStations` → `battleSceneById`). Les Scènes du PROJET sont un autre
@@ -420,7 +417,7 @@ export function Inspector({
                 <label className="ed-field">
                   Couverture
                   <select value={roofDefaults.material} onChange={(event) => patchRoofDefaults({ material: event.target.value })}>
-                    {COVERING_MATERIALS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                    {matieresCouvrantes().map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
                   </select>
                 </label>
                 <p className="hint">
@@ -712,7 +709,7 @@ export function Inspector({
                 <label className="ed-field">
                   Matériau
                   <select value={roofSection.material} onChange={(event) => updateRoofSection({ material: event.target.value })}>
-                    {COVERING_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.label}</option>)}
+                    {matieresCouvrantes().map((material) => <option key={material.id} value={material.id}>{material.label}</option>)}
                   </select>
                 </label>
               </Fold>

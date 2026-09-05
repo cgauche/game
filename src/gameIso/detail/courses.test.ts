@@ -12,7 +12,7 @@ import {
   type Courses,
 } from './courses';
 import { TERRAIN_DEFS } from '../../state/terrain';
-import { structureAppearances, reliefMaterials } from '../../data';
+import { structureAppearances, matieresDe } from '../../data';
 
 /**
  * Le TRACÉ DE PÉRIODE est ce qui doit BOUCLER : un motif dont les bords ne se rejoignent pas dessine
@@ -20,18 +20,22 @@ import { structureAppearances, reliefMaterials } from '../../data';
  * (extrémités exactes, aucun joint au bord) et du déterminisme (même seed → même pierre).
  */
 
-/** Toutes les recettes d'assises AUTHORÉES du dépôt — la population que le rendu rencontre. */
-const RECETTES: [string, Courses][] = [...structureAppearances, ...reliefMaterials, ...TERRAIN_DEFS]
-  .map((d) => [d.id, d.detail?.courses] as [string, Courses | undefined])
-  .filter((e): e is [string, Courses] => Boolean(e[1]));
+/** Toutes les recettes d'assises AUTHORÉES du dépôt — la population que le rendu rencontre. Relue à
+ *  CHAQUE appel : `matieresDe` interroge le document VIVANT (`data/overrides`), qu'une retouche au
+ *  Codex remplace ; une vue prise au chargement du module jugerait un catalogue qui n'est plus celui
+ *  du rendu. */
+const RECETTES = (): [string, Courses][] =>
+  [...structureAppearances, ...matieresDe('relief'), ...TERRAIN_DEFS]
+    .map((d) => [d.id, d.detail?.courses] as [string, Courses | undefined])
+    .filter((e): e is [string, Courses] => Boolean(e[1]));
 
 const PIERRE: Courses = { hM: 0.5, joint: '#555', jointW: 0.03, stagger: 0.5, blockWM: [0.6, 1.1], edgeWobble: 0.02, paletteVar: 0.08 };
 const PLANCHE: Courses = { hM: 0.35, joint: '#333', jointW: 0.02 };
 
 describe('la population authorée est bien celle que le test parcourt', () => {
   it('le dépôt porte des recettes d’assises, à blocs comme continues', () => {
-    expect(RECETTES.length).toBeGreaterThan(3);
-    expect(RECETTES.some(([, c]) => c.blockWM)).toBe(true);
+    expect(RECETTES().length).toBeGreaterThan(3);
+    expect(RECETTES().some(([, c]) => c.blockWM)).toBe(true);
   });
 });
 
@@ -50,7 +54,7 @@ describe('patternWM / périodes métriques', () => {
 
 describe('rowBoundaries — les joints verticaux d’un rang', () => {
   it('aucune borne au BORD de période : le bloc y chevauche la couture', () => {
-    for (const [id, c] of RECETTES) {
+    for (const [id, c] of RECETTES()) {
       const W = patternWM(c);
       for (let v = 0; v < 3; v++)
         for (const parity of [0, 1] as const)
@@ -59,7 +63,7 @@ describe('rowBoundaries — les joints verticaux d’un rang', () => {
   });
 
   it('bornes STRICTEMENT croissantes (jamais deux joints superposés)', () => {
-    for (const [id, c] of RECETTES)
+    for (const [id, c] of RECETTES())
       for (const parity of [0, 1] as const) {
         const b = rowBoundaries(c, coursesKey(c), 0, parity);
         expect([id, b]).toEqual([id, [...b].sort((x, y) => x - y)]);
@@ -89,7 +93,7 @@ describe('rowBoundaries — les joints verticaux d’un rang', () => {
 
 describe('coursesPeriod — le tracé d’une période VERTICALE', () => {
   it('les lignes de rang REJOIGNENT leur hauteur de départ : la période boucle sans couture', () => {
-    for (const [id, c] of RECETTES) {
+    for (const [id, c] of RECETTES()) {
       const p = coursesPeriod(c, coursesKey(c), 0);
       for (const l of p.lines) {
         expect([id, l.pts[l.pts.length - 1].u]).toEqual([id, p.wM]);

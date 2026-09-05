@@ -61,6 +61,10 @@ const GARDE = {
       'tombale : mesurée le 2026-09-05 à 48 commentaires de `src/**`+`scripts/**`, en majorité des prédicats VIVANTS ' +
       '(« une entrée portant déjà `id` et plus de `key` », « le nœud scellé n’expose plus de `.shape` ») — seule la ' +
       'NATURE révolue (« n’est plus du code ») y entre, à 1 site mesuré.',
+    'Le SITE quitté n’est mesuré que devant l’adverbe de PROXIMITÉ : l’adverbe de DISTANCE reste HORS de la ' +
+      'famille tombale — 5 sites mesurés le 2026-09-05 (`src/state/partyFlow.ts:767`, `src/state/combat/triggeredTest.ts:375`, ' +
+      '`src/state/poste-ammo.test.ts:159`, `src/gameIso/stage/entree-en-scene-demontage.test.tsx:12`, ' +
+      '`src/gameIso/backends/webgl/cacheBorne.ts:149`), tous une absence À L’EXÉCUTION, aucun une tombale.',
   ],
   baseline: {
     fichier: 'scripts/guards/lib/legacyVocabStock.mjs',
@@ -324,6 +328,19 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     expect(tombstonesIn('// ce module n’est que du code pur : aucune donnée ne s’y cache.')).toEqual([]);
     expect(tombstonesIn('// le pion n’est plus du groupe du joueur après la capture.')).toEqual([]);
     expect(tombstonesIn('// le décodage n’accepte plus du texte libre : un id, ou rien.')).toEqual([]);
+  });
+
+  it('cas plantés : le SITE quitté est une tombale (#1686, 2026-09-05)', () => {
+    const L = 'n’est / ne vit plus ici (site quitté)';
+    expect(tombstonesIn('// Le FICHIER, lui, ne vit plus ici : il est DÉRIVÉ du def porteur.')).toContain(L);
+    expect(tombstonesIn("// Les péripéties d'AUTEUR ne sont plus ici : chacune est SON étape de monde.")).toContain(L);
+    expect(tombstonesIn('/** la conversion n’est plus\n *  ici : le résolveur la porte. */')).toContain(L);
+  });
+
+  it('faux positif écarté : l’adverbe de DISTANCE dit une absence à l’EXÉCUTION (2026-09-05)', () => {
+    expect(tombstonesIn('// en ORPHELIN à sa résolution : son entrée n’est plus là pour le retenir.')).toEqual([]);
+    expect(tombstonesIn('// le coup au boulet n’est plus là')).toEqual([]);
+    expect(tombstonesIn('// ni pose d’état sur un composant qui n’est plus là,')).toEqual([]);
   });
 
   it('cas planté : un commentaire neutre ne matche aucune famille (contrôle négatif)', () => {

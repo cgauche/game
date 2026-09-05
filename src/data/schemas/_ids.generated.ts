@@ -166,3 +166,17 @@ export const SPECS_PAR_DATASET: Readonly<Record<string, Readonly<Record<string, 
  * traversables. Refusé AU PARSE par `sceneEntitySchema` (`defs-scenes/scene.ts`).
  */
 export const PROPS_VOLUMIQUES: readonly string[] = ['applique-murale', 'armoire', 'banc', 'caisse', 'chaise', 'cheminee', 'cheminee-interieure', 'clocheton', 'coffre', 'comptoir-angle', 'comptoir-droit', 'enseigne', 'etagere', 'etal-marche', 'table', 'table-2x1', 'table-murale-2-tabourets', 'table-ronde-4-tabourets', 'tabouret', 'tonneau', 'tonneaux-pile', 'urne'];
+
+/**
+ * SOUS-LISTES d'ids d'un dataset DISCRIMINÉ, par valeur de son champ discriminant (le def le
+ * déclare : `export const discriminant`, cf. `defs/materials.ts`) — la cible du refine de
+ * `idDe(type, valeur)` (`grammaire/ref.ts`). MÉCANISME GÉNÉRIQUE : un autre dataset discriminé
+ * coûte son `export const discriminant`, aucune liste n'est récitée ici.
+ */
+export const IDS_PAR_DISCRIMINANT: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {
+  'materials.json': {
+    'prop': ['albatre', 'bois-chene', 'braises', 'fer-noirci', 'laiton-dore', 'pierre-atre', 'prop-ardoise', 'toile-rouge'],
+    'relief': ['pierre', 'pilier', 'plafond', 'terre'],
+    'roof': ['chaume', 'plan', 'toit-ardoise', 'tuile'],
+  },
+};

@@ -832,10 +832,10 @@ export function continueTravelDayAfterCascade(get: Get, set: Set, done?: Pending
   return true;
 }
 
-// ── APPLIER des PÉRIPÉTIES du jour terrestre (cascade `travelDay`) : tire les péripéties d'auteur
-//    (d100) puis la table d10 RAW, résout les kinds sans jet joueur inline, et INSÈRE le jet
-//    influençable (Survie « éreintant » / Perception « attaque ») quand la péripétie en demande un —
-//    l'ORDRE RNG (d100 auteur → d10 seuil → d10 table → jet) est IDENTIQUE à l'ancien `resolvePerils`.
+// ── APPLIER des PÉRIPÉTIES du jour terrestre (cascade `travelDay`) : joue la table d10 RAW, résout
+//    les kinds sans jet joueur inline, et INSÈRE le jet influençable (Survie « éreintant » /
+//    Perception « attaque ») quand la péripétie en demande un.
+//    ORDRE RNG du jour : d100 auteur → d10 seuil → d10 table → jet.
 
 /** Pose l'INTERRUPTION du jour sur le contexte terrestre (relue par `continueTravelDayAfterCascade`). */
 function markLandInterrupt(get: Get, set: Set, then: TravelThen, destLabel: string): string[] {
@@ -857,8 +857,8 @@ registerCascadeApplier('landPeril', (get, set, step) => {
   const destLabel = String(step.meta?.destLabel ?? '');
   const j: string[] = [];
 
-  // Les péripéties d'AUTEUR ne sont plus ici : chacune est SON étape de monde (`buildAuthorPerilSteps`,
-  // `authorPerils.ts`), poussée AVANT ce pas — leurs dés tombent donc toujours avant la table d10.
+  // 1. Péripéties d'AUTEUR : chacune est SON étape de monde (`buildAuthorPerilSteps`,
+  //    `authorPerils.ts`), poussée AVANT ce pas — leurs dés tombent donc toujours avant la table d10.
 
   // 2. Table d10 RAW (LDB 51 l.210-221). L'entrée à Test (éreintant/attaque) INSÈRE un jet influençable ; les kinds
   //    sans jet (reposant/narratif) sont résolus inline (mêmes sous-jets, même ordre).

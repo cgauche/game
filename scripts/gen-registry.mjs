@@ -542,6 +542,48 @@ export function idsDuDataset(racine, famille) {
   return [...new Set(entrees.map((e) => e.id))].sort();
 }
 
+/**
+ * Champ DISCRIMINANT déclaré par un def (`export const discriminant`), dataset par dataset — aucun
+ * dataset n'est nommé ici : le def possède son discriminant, le générateur ne fait que le lire (même
+ * lecture TEXTUELLE que `file`/`famille`). Un dataset sans cet export n'ouvre aucune sous-liste.
+ */
+export function discriminantsDeclares(dir = 'src/data/schemas/defs') {
+  const parDataset = new Map();
+  for (const f of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
+    const src = readFileSync(join(dir, f), 'utf8');
+    const dataset = src.match(/^export const file = '([^']+)';$/m)?.[1];
+    const champ = src.match(/^export const discriminant = '([^']+)';$/m)?.[1];
+    if (dataset && champ) parDataset.set(dataset, champ);
+  }
+  return parDataset;
+}
+
+/**
+ * Ids d'un dataset GROUPÉS par la valeur de son champ discriminant — la sous-liste contre laquelle
+ * `idDe(type, valeur)` refine. FAIL-FAST nominatif : un def qui déclare un discriminant absent des
+ * entrées (renommé, mal orthographié) rendrait une table VIDE, donc une référence toujours refusée.
+ * @param {unknown} racine racine JSON du dataset
+ * @param {string} champ nom du champ discriminant
+ * @param {string} dataset nom du fichier, pour le message
+ * @returns {Record<string, string[]>} valeur → ids triés
+ */
+export function idsParDiscriminant(racine, champ, dataset) {
+  if (!Array.isArray(racine))
+    throw new Error(`gen-registry: ${dataset} déclare le discriminant « ${champ} » mais sa racine n'est pas une LISTE d'entrées.`);
+  const parValeur = {};
+  for (const e of racine) {
+    if (!e || typeof e !== 'object' || typeof e.id !== 'string') continue;
+    const valeur = e[champ];
+    if (typeof valeur !== 'string')
+      throw new Error(`gen-registry: ${dataset} « ${e.id} » : discriminant « ${champ} » absent ou non textuel — la sous-liste ne peut pas se dériver.`);
+    (parValeur[valeur] ??= []).push(e.id);
+  }
+  if (!Object.keys(parValeur).length)
+    throw new Error(`gen-registry: ${dataset} déclare le discriminant « ${champ} » mais aucune entrée ne le porte.`);
+  for (const valeur of Object.keys(parValeur)) parValeur[valeur] = [...new Set(parValeur[valeur])].sort();
+  return Object.fromEntries(Object.entries(parValeur).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+}
+
 /** Familles DÉCLARÉES par les defs de schéma (`export const famille`), dataset par dataset. */
 function famillesDeclarees() {
   const dir = 'src/data/schemas/defs';
@@ -590,12 +632,16 @@ function genIds() {
     return cacheJson.get(nom);
   };
   const familles = famillesDeclarees();
+  const discriminants = discriminantsDeclares();
+  const sousListes = [];
   for (const f of readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
     let racine;
     try { racine = JSON.parse(readFileSync(join(dir, f), 'utf8')); } catch { continue; }
     const idsDuFichier = idsDuDataset(racine, familles.get(f));
     if (!idsDuFichier) continue;
     ids.push([f, idsDuFichier]);
+    const champ = discriminants.get(f);
+    if (champ) sousListes.push([f, idsParDiscriminant(racine, champ, f)]);
     if (!Array.isArray(racine)) continue;
     const entrees = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string');
     const catalogueDe = (e) => {
@@ -655,7 +701,19 @@ function genIds() {
     ` * ne tourne pas (#1509), et une diagonale poserait son corps en travers de cases restées\n` +
     ` * traversables. Refusé AU PARSE par \`sceneEntitySchema\` (\`defs-scenes/scene.ts\`).\n` +
     ` */\n` +
-    `export const PROPS_VOLUMIQUES: readonly string[] = [${volumiques.map(lit).join(', ')}];\n`;
+    `export const PROPS_VOLUMIQUES: readonly string[] = [${volumiques.map(lit).join(', ')}];\n\n` +
+    `/**\n` +
+    ` * SOUS-LISTES d'ids d'un dataset DISCRIMINÉ, par valeur de son champ discriminant (le def le\n` +
+    ` * déclare : \`export const discriminant\`, cf. \`defs/materials.ts\`) — la cible du refine de\n` +
+    ` * \`idDe(type, valeur)\` (\`grammaire/ref.ts\`). MÉCANISME GÉNÉRIQUE : un autre dataset discriminé\n` +
+    ` * coûte son \`export const discriminant\`, aucune liste n'est récitée ici.\n` +
+    ` */\n` +
+    `export const IDS_PAR_DISCRIMINANT: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {\n` +
+    sousListes
+      .map(([f, parValeur]) =>
+        `  ${lit(f)}: {\n${Object.entries(parValeur).map(([v, l]) => `    ${lit(v)}: [${l.map(lit).join(', ')}],\n`).join('')}  },\n`)
+      .join('') +
+    `};\n`;
   let prev = '';
   try { prev = readFileSync(out, 'utf8'); } catch { /* nouveau */ }
   const changed = prev !== body;

@@ -6,6 +6,7 @@
  */
 import { z } from 'zod';
 import { cell2Schema } from '../grammaire/valeurs';
+import { idDe } from '../grammaire/ref';
 import { document } from '../grammaire/document';
 import { CAP_IDENTITE_PROP, PROP_CYLINDER_SIDES } from '../../props.types';
 
@@ -26,16 +27,18 @@ export const propSize3Schema = z.strictObject({ xM: z.number().finite(), yM: z.n
 const emetSchema = z.literal(true).optional();
 
 /** `PropPrimitive` (`src/data/props.types.ts`) — volume élémentaire d'une recette : caisse droite,
- *  cylindre à N faces, prisme en pente. `material` réfère un id de `materials.json` (domaine `prop`). */
+ *  cylindre à N faces, prisme en pente. `material` réfère un id de `materials.json` DU DOMAINE `prop` :
+ *  la sous-liste discriminée (`idDe('material', 'prop')`) refuse AU PARSE une couverture de toit ou une
+ *  matière de relief posée sur un volume de décor. */
 export const propPrimitiveSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('box'), center: propPoint3Schema, size: propSize3Schema, material: z.string().min(1), emet: emetSchema }),
+  z.strictObject({ kind: z.literal('box'), center: propPoint3Schema, size: propSize3Schema, material: idDe('material', 'prop'), emet: emetSchema }),
   z.strictObject({
     kind: z.literal('cylinder'), center: propPoint3Schema, radiusM: z.number().finite(), heightM: z.number().finite(),
     // CÔTÉS ADMIS : la même source que le type et le validateur de catalogue (`PROP_CYLINDER_SIDES`,
     // `src/data/props.types.ts`) — une union recopiée ici dériverait de l'union TS au premier ajout.
-    sides: z.literal(PROP_CYLINDER_SIDES), material: z.string().min(1), emet: emetSchema,
+    sides: z.literal(PROP_CYLINDER_SIDES), material: idDe('material', 'prop'), emet: emetSchema,
   }),
-  z.strictObject({ kind: z.literal('prism'), center: propPoint3Schema, size: propSize3Schema, slope: z.enum(['x+', 'x-', 'y+', 'y-']), material: z.string().min(1), emet: emetSchema }),
+  z.strictObject({ kind: z.literal('prism'), center: propPoint3Schema, size: propSize3Schema, slope: z.enum(['x+', 'x-', 'y+', 'y-']), material: idDe('material', 'prop'), emet: emetSchema }),
 ]);
 
 /** `PropVolumeRecipe` (`src/data/props.types.ts`) — la recette volumique d'un décor. `capIdentite`

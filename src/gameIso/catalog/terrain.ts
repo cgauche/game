@@ -35,7 +35,7 @@ const MISSING: TerrainDef = {
 /** Terrain par id ; id absent du registre → repli VISIBLE + avertissement DEV. Le seul accès du rendu
  *  au registre : `swatch`, `detail` et `gradient` en sortent tous, donc du MÊME repli. */
 export function terrainDef(id: string): TerrainDef {
-  return catalogEntry(DEF_BY_ID, id, 'terrain', MISSING);
+  return catalogEntry((cle) => DEF_BY_ID[cle], id, 'terrain', MISSING);
 }
 
 /** Id du dégradé d'un terrain ; id absent du registre → repli VISIBLE + avertissement DEV. */

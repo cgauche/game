@@ -10,7 +10,7 @@ import { TERRAIN_DEFS } from '../../../state/terrain';
 import { terrainGradient, MISSING_GRADIENT } from '../../catalog/terrain';
 import { propMaterial } from '../../catalog/propMaterials';
 import { MISSING_ID, MISSING_LABEL, MISSING_TONE, MISSING_TONE_DARK } from '../../catalog/missing';
-import { reliefMaterials, roofMaterials, propMaterials } from '../../../data';
+import { matieresDe } from '../../../data';
 import { buildFloors } from '../../builders/floors';
 import { buildWalls } from '../../builders/walls';
 import { buildRoofs } from '../../builders/roofs';
@@ -242,10 +242,10 @@ describe('faceSurface — REPLI VISIBLE d’un id absent du catalogue (#877)', (
   /** Toutes les teintes qu'une entrée RÉELLE de l'un des quatre registres peut peindre — l'ensemble
    *  dont le repli doit rester dehors. */
   const TEINTES_REELLES = new Set<string>([
-    ...reliefMaterials.flatMap((m) => [m.face, m.foot, m.slopeTop].filter((c): c is string => !!c)),
-    ...roofMaterials.flatMap((m) => [m.N, m.E, m.S, m.O, m.line, m.soffite, m.fascia].filter((c): c is string => !!c)),
+    ...matieresDe('relief').flatMap((m) => [m.face, m.foot, m.slopeTop].filter((c): c is string => !!c)),
+    ...matieresDe('roof').flatMap((m) => [m.N, m.E, m.S, m.O, m.line, m.soffite, m.fascia].filter((c): c is string => !!c)),
     ...TERRAIN_DEFS.map((t) => t.swatch),
-    ...propMaterials.map((m) => m.color),
+    ...matieresDe('prop').map((m) => m.color),
   ]);
 
   /** Les DEUX tons d'alarme : l'entrée de repli d'un registre peint ses parties de STRUCTURE au ton
@@ -275,10 +275,10 @@ describe('faceSurface — REPLI VISIBLE d’un id absent du catalogue (#877)', (
 
   it('l’id de repli n’est CELUI D’AUCUNE entrée réelle des quatre registres', () => {
     const idsReels = [
-      ...reliefMaterials.map((m) => m.id),
-      ...roofMaterials.map((m) => m.id),
+      ...matieresDe('relief').map((m) => m.id),
+      ...matieresDe('roof').map((m) => m.id),
       ...TERRAIN_DEFS.map((t) => t.id),
-      ...propMaterials.map((m) => m.id),
+      ...matieresDe('prop').map((m) => m.id),
     ];
     expect(idsReels).not.toContain(MISSING_ID);
   });

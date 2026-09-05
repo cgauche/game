@@ -23,7 +23,7 @@ const MISSING: StructureAppearanceDef = {
  *  repli VISIBLE + avertissement DEV, jamais l'identité d'une autre apparence. */
 export function structureAppearance(id?: string): StructureAppearanceDef {
   if (!id) return MAP['plain'];
-  return catalogEntry(MAP, id, 'structure', MISSING);
+  return catalogEntry((cle) => MAP[cle], id, 'structure', MISSING);
 }
 
 /** Apparence d'un mur d'arête — SOURCE UNIQUE iso + POV : override visuel, puis structure, puis

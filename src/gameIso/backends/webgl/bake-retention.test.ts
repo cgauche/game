@@ -1,8 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { bakeWorldGeometry, roomZonesByElKey, worldBakeDeps, type BakedWorld } from './sceneMeshes';
 import { memoByRefDeps } from '../../../state/sceneMemo';
 import { sceneMetresPerTile, type Scene } from '../../../state/scene';
 import { scenario } from '../../../scenes/test-scenarios/zones-pieces';
+import { materials, matieresDe } from '../../../data';
+import { setDataset, resetData } from '../../../data/overrides';
+import type { MaterialEntry } from '../../../data/materials.types';
+import { effectiveArchitecture } from '../../../state/sceneEdit';
+import { roofMaterial } from '../../catalog/roofs';
+import { allBuiltinCampaigns } from '../../../scenes/campaign';
+import { testScenarios } from '../../../scenes/test-scenarios';
 
 /**
  * GARDE DE SOUS-DÉCLARATION (#1176, P3-3). La cuisson du monde est RETENUE sur un read-set déclaré
@@ -149,5 +156,95 @@ describe('Zones de pièce — hors du monde CUIT, résolues sur la scène VIVE (
     expect(avant).not.toContain('zone-neuve');
     // …et la cuisson, elle, n'a pas bougé d'un sommet (c'est tout l'intérêt de l'exclusion).
     expect(empreinte(bakeWorldGeometry(muté, mpt))).toEqual(empreinte(bakeWorldGeometry(base, mpt)));
+  });
+});
+
+/**
+ * CHAÎNE DE RE-CUISSON DES MATIÈRES (#1686 lot 3a-1) — le read-set ne se lit pas QUE sur la scène : la
+ * cuisson lit aussi le CATALOGUE (recettes de décor et matières). Une matière retouchée au Codex mute
+ * le document EN PLACE, sans que la scène bouge d'un octet : sans dep sur l'objet de matière, le monde
+ * retenu resterait peint à l'ancienne teinte, et rien ne le signalerait.
+ *
+ * `propRecipeDeps` porte le domaine `prop` ; les deux autres domaines cuits entrent par `matiereDeps`
+ * — les toitures que la SCÈNE nomme, et le domaine `relief` ENTIER (les ids de relief sont écrits dans
+ * `builders/floors.ts`, les recopier ici en ferait une seconde vérité).
+ */
+describe('Cuisson du monde — les MATIÈRES entrent dans le read-set (#1686)', () => {
+  afterEach(() => resetData());
+
+  /** Le document, une entrée retouchée — les AUTRES gardent leur identité d'objet (c'est ce qui rend
+   *  le second contrat discriminant : une matière non référencée ne doit rien recuire). */
+  const editee = (id: string, patch: Partial<MaterialEntry>): MaterialEntry[] =>
+    materials.map((e) => (e.id === id ? ({ ...e, ...patch } as MaterialEntry) : e));
+
+  const couvertureDeLaScene = base.architecture![0].masses[0].material;
+
+  it('la fixture pose bien une masse de toit sur une couverture RÉELLE (sinon rien n’est mesuré)', () => {
+    expect(matieresDe('roof').map((m) => m.id)).toContain(couvertureDeLaScene);
+  });
+
+  it('éditer la couverture que la SCÈNE nomme change les deps — le monde se recuit', () => {
+    const avant = worldBakeDeps(base, mpt);
+    setDataset('materials', editee(couvertureDeLaScene, { N: '#0e0e0e' }));
+    expect(memesDeps(avant, worldBakeDeps(base, mpt))).toBe(false);
+  });
+
+  it('éditer une couverture qu’AUCUNE masse ne pose laisse les deps intactes', () => {
+    const autre = matieresDe('roof').find((m) => m.id !== couvertureDeLaScene)!;
+    const avant = worldBakeDeps(base, mpt);
+    setDataset('materials', editee(autre.id, { N: '#0c0c0c' }));
+    expect(memesDeps(avant, worldBakeDeps(base, mpt))).toBe(true);
+  });
+
+  it('éditer une matière de RELIEF change les deps (le domaine entier est lu par le sol)', () => {
+    const relief = matieresDe('relief').find((m) => m.id === 'pierre')!;
+    const avant = worldBakeDeps(base, mpt);
+    setDataset('materials', editee(relief.id, { face: '#0d0d0d' }));
+    expect(memesDeps(avant, worldBakeDeps(base, mpt))).toBe(false);
+  });
+});
+
+/** TOUTES les scènes LIVRÉES — un scénario du registre généré porte la sienne, une campagne les
+ *  siennes (patron `state/wallIndex.test.ts › scenesLivrees`). La population est DÉRIVÉE : une scène
+ *  neuve entre dans le contrat sans qu'aucune liste ne soit récitée ici. */
+const scenesLivrees = (): { nom: string; scene: Scene }[] => {
+  const out: { nom: string; scene: Scene }[] = [];
+  for (const s of testScenarios) out.push({ nom: `scenario:${s.id}`, scene: s.scene });
+  for (const c of allBuiltinCampaigns) for (const sc of c.scenes ?? []) out.push({ nom: `campagne:${c.id}/${sc.id}`, scene: sc });
+  return out;
+};
+/** Plancher DÉRIVÉ du registre : un scan vide (registre non chargé, campagne sans scène) ne peut pas
+ *  rester vert. */
+const plancherScenes = (): number =>
+  testScenarios.length + allBuiltinCampaigns.reduce((n, c) => n + (c.scenes?.length ?? 0), 0);
+
+/**
+ * SUR-ENSEMBLE DU READ-SET DES TOITURES (#1686 lot 3a-1) — `buildRoofs` résout la couverture de CHAQUE
+ * masse par `roofMaterial(mass.material)` (`builders/roofs.ts`), et les masses qu'il voit sont les
+ * masses EFFECTIVES : celles que l'auteur a écrites ET celles que `deriveArchitectureMasses` calcule
+ * depuis `roofDefaults`. Le read-set, lui, se déclare sur `scene.architecture` (l'intention). La
+ * question que cette garde tranche est donc : l'intention couvre-t-elle, PAR IDENTITÉ D'OBJET, tout
+ * ce que la dérivation fait lire ? Un manquant = une couverture retouchée au Codex qui laisse le
+ * monde retenu peint à l'ancienne teinte, sans que rien ne le signale.
+ *
+ * Le contrat porte sur TOUTES les scènes livrées, parce que c'est l'authoring qui décide ce qu'une
+ * masse dérivée hérite : une seule scène ne mesurerait que sa propre forme d'architecture.
+ */
+describe('Cuisson du monde — les matières de TOIT du read-set couvrent les masses EFFECTIVES (#1686)', () => {
+  it('toute couverture résolue par `buildRoofs` est dans `worldBakeDeps`, sur toutes les scènes livrées', () => {
+    const livrees = scenesLivrees();
+    expect(livrees.length).toBeGreaterThanOrEqual(plancherScenes());
+    const manquants: string[] = [];
+    let masses = 0;
+    for (const { nom, scene } of livrees) {
+      const deps = new Set(worldBakeDeps(scene, sceneMetresPerTile(scene)));
+      for (const body of effectiveArchitecture(scene))
+        for (const mass of body.masses) {
+          masses++;
+          if (!deps.has(roofMaterial(mass.material))) manquants.push(`${nom} · masse ${mass.id} → ${mass.material}`);
+        }
+    }
+    expect(manquants).toEqual([]);
+    expect(masses).toBeGreaterThan(0); // sans masse de toit, la boucle ci-dessus ne prouverait rien
   });
 });

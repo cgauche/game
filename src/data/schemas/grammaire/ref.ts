@@ -11,7 +11,7 @@
  * (`{ref:{id}}`, `{wildcard}`, `{talentId, spec}`…) sont les lots L2/L3 (#1463).
  */
 import { z } from 'zod';
-import { IDS_PAR_DATASET, SPECS_PAR_DATASET } from '../_ids.generated';
+import { IDS_PAR_DATASET, IDS_PAR_DISCRIMINANT, SPECS_PAR_DATASET } from '../_ids.generated';
 import { marque } from './slots';
 
 declare const marqueDeType: unique symbol;
@@ -37,7 +37,8 @@ export interface CibleDeType {
 /**
  * Types d'entité déclarés à la grammaire. La liste est celle des concepts que les lots L2/L3 du
  * chantier migrent (Compétence, puis Talent/Trait/Objet/Sort/Créature/Véhicule/Structure, +
- * Carrière et Trait NAVAL au L-gram-2 #1463) + la TABLE, cible de `pick({ table })`. Un type
+ * Carrière et Trait NAVAL au L-gram-2 #1463) + la TABLE, cible de `pick({ table })`, + la MATIÈRE du
+ * monde (#1686), premier type dont le dataset est DISCRIMINÉ (`idDe('material', 'prop')`). Un type
  * s'ajoute avec le lot qui le migre, jamais « au cas où ».
  */
 export const TYPES = {
@@ -57,6 +58,7 @@ export const TYPES = {
   etat: { dataset: 'etats.json', specsOpen: false },
   maladie: { dataset: 'maladies.json', specsOpen: false },
   symptome: { dataset: 'symptoms.json', specsOpen: false },
+  material: { dataset: 'materials.json', specsOpen: false },
 } as const satisfies Record<string, CibleDeType>;
 
 export type TypeEntite = keyof typeof TYPES;
@@ -68,6 +70,29 @@ export function cibleDe(type: TypeEntite): string {
 
 function idsDe(type: TypeEntite): readonly string[] {
   return IDS_PAR_DATASET[cibleDe(type)] ?? [];
+}
+
+/**
+ * Ids d'une SOUS-LISTE du dataset d'un type : ceux dont le champ DISCRIMINANT du document vaut
+ * `valeur` (registre `IDS_PAR_DISCRIMINANT`, `npm run gen` — le def déclare son `discriminant`).
+ * FAIL-FAST à la CONSTRUCTION du schéma : un type non discriminé, ou une valeur qu'aucune entrée ne
+ * porte, ferait un nœud qui refuse TOUT en silence.
+ */
+function idsSousListe(type: TypeEntite, valeur: string): readonly string[] {
+  const dataset = cibleDe(type);
+  const table = IDS_PAR_DISCRIMINANT[dataset];
+  if (!table) {
+    throw new Error(
+      `idDe('${type}', '${valeur}') : ${dataset} ne déclare aucun champ discriminant — poser \`export const discriminant\` sur son def, ou référer le type sans valeur.`,
+    );
+  }
+  const sousListe = table[valeur];
+  if (!sousListe) {
+    throw new Error(
+      `idDe('${type}', '${valeur}') : « ${valeur} » n'est aucune des valeurs discriminantes de ${dataset} (${Object.keys(table).join(', ')}).`,
+    );
+  }
+  return sousListe;
 }
 
 /** Catalogue de spécialisations d'UNE entrée (vide = l'entrée n'en déclare aucune). */
@@ -90,21 +115,34 @@ export function estSpecialisable(type: TypeEntite, id: string): boolean {
  * Schéma d'un id NU de `type` : refiné contre le registre, brandé `Id<type>` à la sortie. C'est la
  * FEUILLE porteuse de la référence — elle porte la marque que la marche des slots retrouve
  * (`slots.ts`), jamais l'enveloppe `ref()`/`specRef()` qui la compose.
+ *
+ * La liste admise se LIT À CHAQUE VALIDATION (patron de `defs-scenes/projet.ts › idsDAxes`), parce
+ * que le registre a deux régimes déclarés (`_ids.generated.ts`) : le fichier généré figé au commit,
+ * et le RECALCUL en mémoire de l'éditeur (`CodexEdit.save` → `validateDataset`), qui remplace
+ * l'entrée du dataset. Les schémas, eux, se construisent UNE fois au chargement du module : une
+ * lecture faite à la construction rendrait une entité créée au Compendium invalide pour toute donnée
+ * qui la référence. La construction ne fait qu'un contrôle FAIL-FAST de la sous-liste demandée.
  */
-export function idDe<T extends TypeEntite>(type: T): z.ZodType<Id<T>, string> {
+export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<Id<T>, string> {
   const dataset = cibleDe(type);
+  if (valeur !== undefined) idsSousListe(type, valeur);
+  const admis = (): readonly string[] => (valeur === undefined ? idsDe(type) : idsSousListe(type, valeur));
+  const site = valeur === undefined ? `idDe('${type}')` : `idDe('${type}', '${valeur}')`;
   return marque(
     z
       .string()
       .superRefine((v, ctx) => {
-        if (idsDe(type).includes(v)) return;
+        if (admis().includes(v)) return;
         ctx.addIssue({
           code: 'custom',
-          message: `ref('${type}') : id « ${v} » absent de ${dataset} (registre _ids.generated.ts).`,
+          message:
+            valeur === undefined
+              ? `ref('${type}') : id « ${v} » absent de ${dataset} (registre _ids.generated.ts).`
+              : `ref('${type}', '${valeur}') : id « ${v} » hors de la sous-liste « ${valeur} » de ${dataset} (registre _ids.generated.ts).`,
         });
       })
       .transform((v) => v as Id<T>),
-    { espece: 'id', type, site: `idDe('${type}')` },
+    { espece: 'id', type, site },
   );
 }
 

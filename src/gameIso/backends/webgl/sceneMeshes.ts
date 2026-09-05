@@ -26,7 +26,9 @@ import { buildTokens } from '../../builders/tokens';
 import { teamRingDecor } from '../../builders/dynamicMarks';
 import { REF_DECOR_DEFAUT } from '../../../data/props.types';
 import { estPropVolumique, type CellSide, type Face, type PropEl, type RoofEl, type SceneEl, type TokenEl, type WallEl } from '../../builders/types';
-import { findPropById, findPropMaterialById } from '../../../data';
+import { findPropById, findPropMaterialById, matieresDe } from '../../../data';
+import { roofMaterial } from '../../catalog/roofs';
+import { DEFAULT_ROOF_DEFAULTS } from '../../../state/sceneEdit';
 import type { PropVertexRange } from './spriteRaycast';
 import { roofCourseStepM, variantOf } from '../../detail/courses';
 import type { DetailRecipe } from '../../detail/types';
@@ -317,9 +319,9 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  * qu'un champ manquant = un monde périmé à l'écran, invisible autrement.
  * `scene.entities` n'y entre PAS par sa référence : le décor VOLUMIQUE y contribue par une SIGNATURE
  * (`propVolumeSignature`, une chaîne) et par les objets de recette/matériau qu'il fait lire
- * (`propRecipeDeps`). Un tableau d'entités reforgé sans que le mobilier bouge — le cas COURANT du
- * combat (despawn, déplacement forcé) — ne recuit donc rien, et la garde discriminante vit dans
- * `prop-picking.test.ts`.
+ * (`propRecipeDeps`) ; les matières des deux autres domaines cuits y entrent par `matiereDeps`. Un
+ * tableau d'entités reforgé sans que le mobilier bouge — le cas COURANT du combat (despawn,
+ * déplacement forcé) — ne recuit donc rien, et la garde discriminante vit dans `prop-picking.test.ts`.
  * `scene.effectZones` en est ABSENT sciemment : `buildRoofs` le lit (`massRoomZoneIds`), mais il
  * n'entre dans AUCUNE face, aucun sommet, aucun groupe de surface — seulement dans le champ
  * `roomZoneIds`, quel que soit l'élément qui le porte (toit, façade, décor volumique solidaire d'une
@@ -329,7 +331,7 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  */
 export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
   return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.metresPerTile, mpt,
-    propVolumeSignature(scene), ...propRecipeDeps(scene)];
+    propVolumeSignature(scene), ...propRecipeDeps(scene), ...matiereDeps(scene)];
 }
 
 /** Ce que la cuisson retient des ENTITÉS : la signature des seuls décors à recette — id, ref, case,
@@ -356,6 +358,30 @@ function propRecipeDeps(scene: Scene): readonly unknown[] {
     out.push(volume);
     for (const primitive of volume.primitives) out.push(findPropMaterialById(primitive.material));
   }
+  return out;
+}
+
+/**
+ * Ce que la cuisson lit du catalogue des MATIÈRES pour les deux autres domaines du monde — MÊME patron
+ * que `propRecipeDeps` : une dep par OBJET, comparée par identité, si bien qu'une retouche de matière
+ * au Codex change la dep sans que la scène ait bougé.
+ *  - TOITURES : celles que la scène NOMME (`BuildingMass.material`, et le `material` de l'intention
+ *    `roofDefaults` dont les masses DÉRIVÉES héritent — `deriveArchitectureMasses`, `state/sceneEdit.ts`).
+ *    Résolues par le MÊME accès que la cuisson (`roofMaterial`, `builders/roofs.ts`). Une couverture
+ *    qu'aucun corps ne pose ne recuit donc rien.
+ *  - RELIEF : le domaine ENTIER. Les ids que le sol émet sont écrits DANS le builder
+ *    (`builders/floors.ts` : `pilier`, `pierre`, `terre`) — les recopier ici en ferait une seconde
+ *    vérité, muette le jour où le builder en nomme un quatrième. Le domaine, lui, est DÉRIVÉ du
+ *    document : il ne peut pas rater une matière lue. Prix de l'exhaustivité, dit : éditer `plafond`
+ *    (plafond POV, hors cuisson du monde) recuit une fois pour rien.
+ */
+function matiereDeps(scene: Scene): readonly unknown[] {
+  const out: unknown[] = [];
+  for (const body of scene.architecture ?? []) {
+    out.push(roofMaterial((body.roofDefaults ?? DEFAULT_ROOF_DEFAULTS).material));
+    for (const mass of body.masses) out.push(roofMaterial(mass.material));
+  }
+  out.push(...matieresDe('relief'));
   return out;
 }
 

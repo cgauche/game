@@ -2,7 +2,7 @@ import { heightAt, type Scene, type Effect } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, carriedFlows, EMPTY_FLOW } from './flow';
-import { refEstVolumique, stakeSpeaks, REF_DECOR_DEFAUT, roofMaterials } from '../data';
+import { refEstVolumique, stakeSpeaks, REF_DECOR_DEFAUT, matieresCouvrantes } from '../data';
 import { capDecorAdmis } from '../data/props.types';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
 // ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
@@ -19,8 +19,10 @@ import { seatAssignmentDefects } from './seating';
  *  (Mouvement/Blessures, hors `CharKey` — cf. `CustomStatblock` dans `./scene`). */
 const VALID_STATBLOCK_CHAR_KEYS = new Set<string>([...CHAR_KEYS, 'M', 'B']);
 /** Ids POSABLES sur une masse de toit : les matériaux que la DONNÉE déclare couvrants
- *  (`materials.json` domaine `roof`, champ `couverture`) — même source que les sélecteurs de l'éditeur. */
-const ROOF_COVERING_IDS = new Set(roofMaterials.filter((material) => material.couverture).map((material) => material.id));
+ *  (`materials.json` domaine `roof`, champ `couverture`) — même source que les sélecteurs de l'éditeur
+ *  (`matieresCouvrantes`). CALCULÉ À L'APPEL : le document des matières se mute EN PLACE à l'édition,
+ *  un ensemble cuit à l'import refuserait encore une couverture qui vient d'être déclarée. */
+const roofCoveringIds = (): ReadonlySet<string> => new Set(matieresCouvrantes().map((material) => material.id));
 
 export interface Warning {
   level: 'error' | 'warn';
@@ -185,6 +187,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (edge.z !== undefined && edge.z !== z) add('error', 'architecture', refId, `Architecture « ${refId} » : arête sur étage ${edge.z} différent de la section ${z}`, architectureRef);
     };
     dup((s.architecture ?? []).map((body) => body.id), 'architecture', (id) => ({ type: 'architectureBody', id }));
+    const couvertures = roofCoveringIds();
     for (const body of s.architecture ?? []) {
       dup(body.storeys.map((storey) => storey.id), 'architecture', (id) => ({ type: 'architectureStorey', bodyId: body.id, id }));
       dup(body.facades.map((facade) => facade.id), 'architecture', (id) => ({ type: 'facadeSection', bodyId: body.id, id }));
@@ -233,7 +236,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         if (!['gable', 'hip', 'shed', 'flat'].includes(mass.profile)) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : profil invalide`, massRef);
         if (mass.ridge !== undefined && mass.ridge !== 'x' && mass.ridge !== 'y') add('error', 'architecture', mass.id, `Masse « ${mass.id} » : faîtage invalide`, massRef);
         if (mass.profile === 'shed' && !mass.eaveSide) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : profil appentis sans côté d’égout`, massRef);
-        if (!ROOF_COVERING_IDS.has(mass.material))
+        if (!couvertures.has(mass.material))
           add('error', 'architecture', mass.id, `Masse « ${mass.id} » : « ${mass.material} » n’est pas une couverture de toit`, massRef);
         if (!Number.isInteger(mass.levels) || mass.levels < 1) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : niveaux invalides`, massRef);
         if (!Number.isFinite(mass.pitchDeg) || mass.pitchDeg < 5 || mass.pitchDeg > 75) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : pente hors plage`, massRef);

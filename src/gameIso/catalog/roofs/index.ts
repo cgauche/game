@@ -1,9 +1,7 @@
 import type { RoofMaterialDef } from './types';
-import { roofMaterials } from '../../../data';
+import { matieresDe } from '../../../data';
 import { catalogEntry, MISSING_ID, MISSING_LABEL, MISSING_TONE, MISSING_TONE_DARK } from '../missing';
 export type { RoofMaterialDef } from './types';
-
-const MAP: Record<string, RoofMaterialDef> = Object.fromEntries(roofMaterials.map((m) => [m.id, m]));
 
 /** Entrée de REPLI VISIBLE (#877) : une couverture au ton d'alarme sur tous ses pans et sur son plan vu
  *  du dessus, jamais l'apparence d'un autre matériau. */
@@ -23,9 +21,11 @@ const MISSING: RoofMaterialDef = {
   planText: MISSING_TONE,
 };
 
-/** Matériau de toit par id ; id absent du registre → repli VISIBLE + avertissement DEV. */
+/** Matériau de toit par id ; id absent du registre → repli VISIBLE + avertissement DEV. Résolution
+ *  VIVE (`matieresDe`) : le document se mute en place à l'édition, un index cuit à l'import servirait
+ *  encore l'ancienne couverture. */
 export function roofMaterial(id: string): RoofMaterialDef {
-  return catalogEntry(MAP, id, 'toiture', MISSING);
+  return catalogEntry((cle) => matieresDe('roof').find((m) => m.id === cle), id, 'toiture', MISSING);
 }
 
 /** ÉPAISSEUR (m) par défaut d'une planche de rive, quand la def n'en porte pas — MÊME calibrage que les

@@ -25,6 +25,15 @@ export const file = 'materials.json';
 export const famille = 'entite';
 
 /**
+ * CHAMP DISCRIMINANT du document : celui dont la valeur PARTITIONNE ses entrées (ici l'enum
+ * `DOMAINES_MATIERE` du champ `domain`, déclaré juste dessous). Le def POSSÈDE son discriminant — la
+ * fabrique de référence n'en connaît aucun cas particulier. `npm run gen` en dérive la table
+ * `IDS_PAR_DISCRIMINANT` (`schemas/_ids.generated.ts`), contre laquelle `idDe('material', 'prop')`
+ * refine AU PARSE : un id du BON dataset mais du MAUVAIS domaine est refusé, nommément.
+ */
+export const discriminant = 'domain';
+
+/**
  * Clés de CHARGE par domaine — la déclaration dont le refine tire ses DEUX verdicts (requis manquant,
  * clé étrangère). `requises` ⊆ `cles` ; ce qui n'est pas requis est optionnel dans ce domaine.
  */

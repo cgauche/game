@@ -18,6 +18,7 @@ import { avancement } from './avancement';
 import { slotsDe } from './slots';
 import { SANS_LIVRE } from './sans-livre';
 import { SCHEMA_DEFS } from '../_registry.generated';
+import { IDS_PAR_DATASET } from '../_ids.generated';
 
 type EntreeASpecs = { id: string; specs?: { id: string }[]; specsSource?: string };
 const UNE_COMPETENCE = skillsJson[0] as { id: string };
@@ -1012,6 +1013,27 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
     expect(res.success).toBe(false);
     expect(JSON.stringify(res.error?.issues)).toMatch(/spec-hors-pool.*talents\.json/);
     expect(pt.safeParse({ pick: 1, of: [{ pick: 1, of: [{ id: UN_TALENT_A_SPECS.id, spec: 'spec-hors-pool' }] }] }).success).toBe(false);
+  });
+
+  /**
+   * DEUX RÉGIMES, UN SEUL NŒUD (`_ids.generated.ts`) : le fichier généré figé au commit, et le
+   * RECALCUL en mémoire de l'éditeur, qui REMPLACE l'entrée du dataset. Un schéma se construit une
+   * fois au chargement du module, la donnée se valide après ; la liste admise doit donc se lire à la
+   * VALIDATION. Sans quoi une entité créée au Compendium rendrait rouge toute donnée qui la référence.
+   */
+  it('un schéma construit AVANT une mise à jour du registre voit la NOUVELLE liste', () => {
+    const registre = IDS_PAR_DATASET as unknown as Record<string, readonly string[]>;
+    const avant = registre['etats.json'];
+    const noeud = idDe('etat'); // construit AVANT la mise à jour
+    expect(noeud.safeParse('etat-cree-au-compendium').success).toBe(false);
+    try {
+      registre['etats.json'] = [...avant, 'etat-cree-au-compendium']; // ce que fait le recalcul
+      expect(noeud.safeParse('etat-cree-au-compendium').success).toBe(true);
+      expect(idDe('etat').safeParse('etat-cree-au-compendium').success).toBe(true);
+    } finally {
+      registre['etats.json'] = avant;
+    }
+    expect(noeud.safeParse('etat-cree-au-compendium').success).toBe(false);
   });
 
   it('la MARCHE d’un `pick` récursif se coupe sur le nœud lui-même et rend ses slots', () => {

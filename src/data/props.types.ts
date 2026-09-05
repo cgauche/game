@@ -529,12 +529,11 @@ export function placesLocalesDuProp(prop: PropData | undefined, facing: Dir8 | u
   });
 }
 
-/** Anomalies d'UNE primitive : matériau connu, coordonnées finies, dimensions positives, côtés admis,
+/** Anomalies d'UNE primitive : coordonnées finies, dimensions positives, côtés admis,
  *  et FERMETURE en coquille close. La fermeture n'est mesurée que sur une géométrie déjà non ambiguë —
  *  des dimensions folles n'ajouteraient qu'un bruit d'arêtes par-dessus leur propre diagnostic. */
-function erreursDePrimitive(propId: string, primitive: PropPrimitive, materiauxConnus: ReadonlySet<string>): string[] {
+function erreursDePrimitive(propId: string, primitive: PropPrimitive): string[] {
   const errors: string[] = [];
-  if (!materiauxConnus.has(primitive.material)) errors.push(`${propId}: matériau inconnu « ${primitive.material} »`);
   const centre = [primitive.center.xM, primitive.center.yM, primitive.center.hM];
   const dimensions = primitive.kind === 'cylinder'
     ? [primitive.radiusM, primitive.heightM]
@@ -553,17 +552,18 @@ function erreursDePrimitive(propId: string, primitive: PropPrimitive, materiauxC
 }
 
 /**
- * Invariants de CATALOGUE que le schéma seul ne peut pas voir (référence croisée aux matériaux, cohérence
- * géométrique, FERMETURE de chaque primitive en coquille close, côtés admis d'un cylindre, unicité des
- * places). Renvoie la liste des anomalies en français, `[]` = catalogue intègre.
+ * Invariants de CATALOGUE que le schéma seul ne peut pas voir (cohérence géométrique, FERMETURE de
+ * chaque primitive en coquille close, côtés admis d'un cylindre, unicité des places). Renvoie la liste
+ * des anomalies en français, `[]` = catalogue intègre. Ce validateur juge la GÉOMÉTRIE ; la RÉFÉRENCE
+ * au matériau, elle, est tenue AU PARSE par le schéma, contre la sous-liste `prop` de `materials.json`
+ * (`idDe('material', 'prop')`, `schemas/defs/props.ts`).
  *
  * `mpt` — l'ÉCHELLE à laquelle le catalogue est jugé. L'abord d'une place se mesure contre l'empreinte
  * EFFECTIVE (`empreinteDuProp`), qui dépend de l'échelle depuis #1509 : un catalogue intègre à 2 m/case
  * ne l'est pas forcément à 1. Un catalogue n'a pas de scène, donc l'échelle lui est DONNÉE, jamais
  * devinée — et l'anomalie la NOMME, pour qu'un verdict ne se lise jamais hors de son échelle.
  */
-export function validatePropCatalog(entries: readonly PropData[], materials: readonly PropMaterialData[], mpt: number): string[] {
-  const known = new Set(materials.map((m) => m.id));
+export function validatePropCatalog(entries: readonly PropData[], mpt: number): string[] {
   const errors: string[] = [];
   for (const prop of entries) {
     const slots = new Set<string>();
@@ -580,7 +580,7 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
     // moteur n'applique jamais. Le catalogue ne peut donc pas la porter.
     if (prop.opaque && prop.cover !== 'totale')
       errors.push(`${prop.id}: opaque avec cover ${prop.cover ? `« ${prop.cover} »` : 'absent'} — un décor opaque ne rend que « totale » (lineOfSight)`);
-    for (const primitive of prop.volume?.primitives ?? []) errors.push(...erreursDePrimitive(prop.id, primitive, known));
+    for (const primitive of prop.volume?.primitives ?? []) errors.push(...erreursDePrimitive(prop.id, primitive));
     // FOYER D'UNE SOURCE VOLUMIQUE (#1680 ligne 5) — les trois anomalies sont les trois façons dont
     // `emet` et `light` peuvent se contredire, et aucune n'est rattrapable au rendu : une lumière dont
     // le foyer n'est pas DÉCLARÉ se devinerait, et deviner l'ancre d'une lampe est ce que ce lot supprime.

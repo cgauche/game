@@ -1,7 +1,7 @@
 import { flowFromEffects, testFlow, EMPTY_FLOW } from '../state/flow';
 import { describe, it, expect } from 'vitest';
 import { validateScene, type Warning } from './validateScene';
-import { resolveStake, roofMaterials } from '../data';
+import { resolveStake, matieresDe } from '../data';
 import { emptyScene, type Scene } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 import type { WorldMap, MapPlace } from './worldMap';
@@ -113,13 +113,13 @@ describe('validateScene', () => {
     validateScene([massesToit(materiau)]).filter((w) => w.scope === 'architecture' && w.refId === 'toit' && w.level === 'error');
 
   it('architecture : toute couverture DÉCLARÉE par la donnée est admise sur une masse', () => {
-    const couvertures = roofMaterials.filter((m) => m.couverture).map((m) => m.id);
+    const couvertures = matieresDe('roof').filter((m) => m.couverture).map((m) => m.id);
     expect(couvertures.length).toBeGreaterThan(0);
     for (const id of couvertures) expect(erreursDeToit(id), id).toEqual([]);
   });
 
   it('architecture : un matériau SANS `couverture` (plan vu du dessus) est REFUSÉ, nommément', () => {
-    const plan = roofMaterials.find((m) => !m.couverture);
+    const plan = matieresDe('roof').find((m) => !m.couverture);
     expect(plan, 'le catalogue doit porter une entrée non couvrante pour que ce banc morde').toBeDefined();
     const erreurs = erreursDeToit(plan!.id);
     expect(erreurs).toHaveLength(1);
