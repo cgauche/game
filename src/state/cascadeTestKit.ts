@@ -74,6 +74,7 @@ export function avanceEtapeCascade(get: () => GameState): string | undefined {
     if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
     if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
     if (cur.table && !cur.table.result) get().cascadeTableRoll(cur.id);
+    if (cur.de && !cur.de.result) get().cascadeDieRoll(cur.id); // DÉ NU (#1508) : jumeau de la table — sans lui, le kit drainerait à vide sur une étape jamais prête
     const apres = get().pendingCascade?.participants[get().pendingCascade!.cursor];
     if (apres?.options && apres.chosen == null) get().cascadeChoose(apres.id, apres.defaultChoice ?? apres.options[0].key);
   }

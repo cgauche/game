@@ -96,7 +96,7 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
     expect(elfe.rows.map((r) => r.id)).toEqual(['mentale']);
     // Sur TOUT le dé et pour chaque seuil distinct, l'id de ligne EST la nature du moteur.
     for (const sp of ['hauts-elfes', 'nains', 'halflings', HUMAIN]) {
-      const decl = { tableId: mutationNatureTableId(sp), die: 100 };
+      const decl = { tableId: mutationNatureTableId(sp), spec: { n: 1, sides: 100 } };
       for (let die = 1; die <= 100; die++) {
         expect(rollTableStep({ ...decl, forcedRoll: die }, makeRNG(1)).id, `${sp} @${die}`).toBe(mutationKindFor(sp, die));
       }
@@ -166,7 +166,7 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
     const step = useGame.getState().pendingCascade!.participants[0];
     expect(step.kind).toBe('mutationNature');
     expect(stepInteraction(step)).toBe('table'); // dé À POSER → les deux affordances de la modale
-    expect(step.table).toMatchObject({ tableId: mutationNatureTableId(hero.species), die: 100 });
+    expect(step.table).toMatchObject({ tableId: mutationNatureTableId(hero.species), spec: { n: 1, sides: 100 } });
     expect(step.table!.result).toBeUndefined();
     expect(hero.mutations ?? []).toHaveLength(0);
   });

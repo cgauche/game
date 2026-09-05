@@ -692,7 +692,7 @@ function buildTravelDayCascade(
     pousseSi(steps, tableStep({
       id: STAGE_WEATHER_STEP_ID, kind: STAGE_WEATHER_KIND, worldOwner: true, icon: 'travel/wave',
       label: t('step.stageWeather'),
-      table: { tableId: stageWeatherTableId(currentSeason(get)), die: 100 },
+      table: { tableId: stageWeatherTableId(currentSeason(get)), spec: { n: 1, sides: 100 } },
       stake: voyageStakeRef(STAGE_WEATHER_KIND),
     }));
   }

@@ -142,7 +142,7 @@ registerTableStep(INTERLUDE_EVENT_TABLE, {
 
 /** Aucun modificateur : le dé NATUREL est le dé du lookup — c'est aussi ce que `perHero.eventRoll`
  *  persiste, et donc ce que tout lecteur re-résout. */
-const INTERLUDE_EVENT_DECL: CascadeTableDecl = { tableId: INTERLUDE_EVENT_TABLE, die: 100 };
+const INTERLUDE_EVENT_DECL: CascadeTableDecl = { tableId: INTERLUDE_EVENT_TABLE, spec: { n: 1, sides: 100 } };
 
 /** La séquence des tirages est SA propre séquence (`purpose:'interlude'`, doctrine du slot #942 L1) :
  *  l'interlude ne s'ouvre jamais en combat, et aucun autre `purpose` hors-combat ne doit y fusionner. */

@@ -33,9 +33,13 @@
 // `massBattleFlow.ts` (`enemyRoll` passé à `openBattlePending`), qui est le jet de l'ADVERSAIRE d'un
 // Test opposé.
 //
-// ANGLE MORT résiduel de la DÉTECTION (mesuré, fail-open assumé) : un import RENOMMÉ
-// (`import { d100 as des } from '../engine/dice'`) échappe au scan — le motif est reconnu par le nom
-// APPELÉ, sans résolution de liaison. Aucun site du dépôt n'use de cette forme au 2026-07-29.
+// ANGLE MORT résiduel de CE scanner (mesuré, fail-open assumé) : un import RENOMMÉ
+// (`import { d100 as des } from '../engine/dice'`) lui échappe — il reconnaît le nom APPELÉ, sans
+// résoudre la liaison. Le dépôt porte DEUX imports renommés de primitives de dé (`combatEffects.ts:9`
+// et `interludeFlow.ts:16`, `roll as rollDice`) ; aucun ne renomme `rollTest`/`d100`, la population de
+// ce scanner-ci reste donc exacte. La garde SŒUR (#1508), elle, RÉSOUT l'alias
+// (`importsDuMoteur` : nom local → nom d'origine) — elle ne pouvait pas s'en remettre à la coïncidence
+// qui fait tomber `roll as rollDice` sur un autre nom de son amorce.
 import tsModule from 'typescript';
 
 // Liaison LOCALE de l'API du compilateur — FAIT mesuré 2026-08-23 : sous Vitest ce module passe par
@@ -265,6 +269,158 @@ function functionOf(node) {
   return null;
 }
 
+/** AMORCE historique de (D) : ce qui forge un TEST. @type {readonly string[]} */
+export const AMORCE_TEST = ['rollTest', 'd100'];
+
+/**
+ * AMORCE ÉLARGIE (#1508) — ce qui tire PHYSIQUEMENT un dé, Test ou pas : les primitives de
+ * `src/engine/dice.ts` au complet. La garde d'exclusivité (#274) ne connaît que le forgeage d'un
+ * Test ; elle est donc AVEUGLE à une magnitude (`rollDice`), à une dispersion (`d10`), à une
+ * expression authorée (`rollExpr`) et au d100 d'environnement (`deMonde`) — 60 des 75 lignes de dé
+ * de `src/state`+`src/ui` lui étaient invisibles au 2026-09-04.
+ * @type {readonly string[]}
+ */
+export const AMORCE_DES = ['rollTest', 'd100', 'd10', 'roll', 'rollDice', 'rollExpr', 'deMonde'];
+
+/** PRÉ-FILTRE lexical de la garde sœur — strictement plus large que son critère AST (un appel
+ *  `nom(` cite `nom` ; un `rng.int(` cite `int`). @type {RegExp} */
+export const DES_HORS_PORTE_RX = new RegExp(`\\b(?:${AMORCE_DES.join('|')}|int)\\s*\\(`);
+
+/**
+ * LIAISON des noms importés depuis `src/engine` dans ce fichier : nom LOCAL → nom D'ORIGINE
+ * (`import { d10 } from '../engine/dice'` → `d10 → d10` ; `import { roll as rollDice }` →
+ * `rollDice → roll`). Deux rôles, un seul passage :
+ *  - elle distingue une primitive de dé d'un HOMONYME local (`roll`, déclencheur de flux en UI) ;
+ *  - elle ferme l'ALIAS : le dépôt en porte deux (`combatEffects.ts:9`, `interludeFlow.ts:16` —
+ *    `roll as rollDice`), qui ne comptaient jusqu'ici que par la coïncidence d'un alias tombant sur un
+ *    autre nom de l'amorce. Un `d100 as des` ne se serait pas vu.
+ * @returns {Map<string, string>} */
+function importsDuMoteur(sf) {
+  const out = new Map();
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st) || !ts.isStringLiteral(st.moduleSpecifier)) continue;
+    if (!/(^|\/)engine\//.test(st.moduleSpecifier.text)) continue;
+    const b = st.importClause?.namedBindings;
+    if (b && ts.isNamedImports(b)) for (const el of b.elements) out.set(el.name.text, (el.propertyName ?? el.name).text);
+  }
+  return out;
+}
+
+/**
+ * EXPORTS de `src/engine` derrière lesquels UN DÉ TOMBE SANS QU'AUCUNE FRONTIÈRE EXPORTÉE NE SOIT
+ * FRANCHIE (#1508) — `applyFall`, `scatter`, `rollMiscast`, `rollStock`… : le dé tombe là, le nom le
+ * masque, et c'est le CALL-SITE qui décide de la fenêtre.
+ *
+ * LA FRONTIÈRE EST L'EXPORT, pas le nombre de sauts. L'export compte s'il appelle une primitive de
+ * dé (`AMORCE_DES`) ou un `.int(` DANS SON CORPS, **ou** s'il passe par un helper NON EXPORTÉ du
+ * moteur qui, lui, tire : `merchantFlow.rollStock` → `fullStock` (module-local) → `rollDice`, ou
+ * `creation.rollDetailFormula` (module-local) → `roll(n, 10, rng)` derrière `rollAge`/`rollEyes`/
+ * `rollHair`/`rollHeight`. S'arrêter à UN SAUT rendait ces dés INVISIBLES : 10 sites réels manquaient,
+ * dont `merchantFlow.ts` en entier — que `ENGINE_DELEGATED_ROLL_STOCK` classait pourtant déjà en
+ * dette. Deux stocks du même dé ne peuvent pas se contredire.
+ *
+ * CE QU'ELLE N'ASPIRE PAS, et c'est le point : un export qui traverse une AUTRE frontière exportée
+ * n'entre pas. La clôture transitive complète de `engineRollerExports` sous amorce élargie, elle,
+ * remonte jusqu'aux helpers GÉNÉRIQUES (mesuré : `createHero`, `contractDisease`, `rollInitialWealth`,
+ * `spellRangeTiles`, `zdeRadiusTiles`, `durationClockMinutes`…) et fait passer la population de 319
+ * sites où le dé TOMBE à 423 sites « où un dé pourrait tomber » — un stock bâti sur le second ne peut
+ * pas descendre à zéro, ce serait un registre et non une dette.
+ *
+ * `applyOps` compte : il tire DANS SON CORPS (`rng.int` de ses désignations). Son canal a son propre
+ * lot (#1508 T2, `OpsCtx.des`), qui le fera sortir d'ici en une ligne.
+ * @param {{ rel: string, text: string }[]} engineFiles @returns {Set<string>}
+ */
+export function engineDiceRollers(engineFiles) {
+  const amorce = new Set(AMORCE_DES);
+  /** @type {Map<string, { exported: boolean, calls: Set<string>, direct: boolean }>} */
+  const decls = new Map();
+  for (const { rel, text } of engineFiles) {
+    const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true);
+    const visit = (node) => {
+      const fn = functionOf(node);
+      if (fn) {
+        const calls = new Set();
+        let direct = false;
+        const cv = (x) => {
+          if (ts.isCallExpression(x)) {
+            const e = x.expression;
+            if (ts.isIdentifier(e)) { calls.add(e.text); if (amorce.has(e.text)) direct = true; }
+            if (ts.isPropertyAccessExpression(e) && e.name.text === 'int') direct = true;
+          }
+          ts.forEachChild(x, cv);
+        };
+        cv(fn.body);
+        decls.set(fn.name, { exported: fn.exported, calls, direct });
+      }
+      ts.forEachChild(node, visit);
+    };
+    ts.forEachChild(sf, visit);
+  }
+  const roule = new Set();
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const [nom, d] of decls) {
+      if (roule.has(nom)) continue;
+      // La propagation ne franchit QUE des helpers module-locaux : un appelé EXPORTÉ est une frontière
+      // que le call-site verrait lui-même, il n'a pas à contaminer son appelant.
+      const viaLocal = [...d.calls].some((c) => roule.has(c) && decls.get(c) && !decls.get(c).exported);
+      if (d.direct || viaLocal) { roule.add(nom); changed = true; }
+    }
+  }
+  const out = new Set([...roule].filter((n) => decls.get(n).exported && !amorce.has(n)));
+  return out;
+}
+
+/**
+ * GARDE SŒUR (#1508) — TOUT DÉ TIRÉ HORS PORTE, dans un fichier consommateur (`src/state`, `src/ui`,
+ * `src/data`, `src/scenes`). Un site = un APPEL, au MÊME socle AST que les familles ci-dessus :
+ *  - une PRIMITIVE de dé (`AMORCE_DES`) appelée en direct ;
+ *  - un `.int(` de RNG (`rng.int(1, 6)`, `battleRng().int(…)`) — la désignation « lequel ? » tire un
+ *    dé comme le reste ;
+ *  - un export de `src/engine` derrière lequel le dé tombe sans franchir d’autre frontière exportée
+ *    (`engineDiceRollers` ci-dessus).
+ * La forme (S) « position de spec » garde son exclusion STRUCTURELLE (le callback d'une spec de flux
+ * est exécuté PAR la fabrique du seam). La forme (M) ne s'applique PAS : elle blanchit un `d100(`
+ * consommé en seuil ou en table, ce qui était exactement la taxonomie que #1508 annule — sous la
+ * doctrine « tous les jets passent par le même point d'entrée », un seuil est un dé comme un autre.
+ *
+ * Un site est rendu UNE fois (dédupliqué par ligne + nom) : `roll` est à la fois primitive et amorce,
+ * et un helper homonyme ne doit pas compter double.
+ * @param {string} relPath @param {string} contenu @param {Iterable<string>} rollerNames
+ * @returns {{ line: number, name: string }[]}
+ */
+export function scanDesHorsPorte(relPath, contenu, rollerNames) {
+  const noms = new Set([...AMORCE_DES, ...rollerNames]);
+  if (!DES_HORS_PORTE_RX.test(contenu) && !rollerNameRx(noms).test(contenu)) return [];
+  const sf = ts.createSourceFile(
+    relPath, contenu, ts.ScriptTarget.Latest, true,
+    relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  // Un nom ne compte que s'il est IMPORTÉ DU MOTEUR dans CE fichier, et il compte sous son nom
+  // D'ORIGINE. Les primitives de dé portent des noms courants (`roll`) : sans cette condition, 7 sites
+  // d'UI où `roll` est le déclencheur local du flux (`AuContactModal`, `jetProps/*`, `CascadeModal`…)
+  // étaient comptés comme des dés ; et sans la résolution d'ALIAS, un `d100 as des` ne compterait pas
+  // du tout (le dépôt porte deux `roll as rollDice`, cf. `importsDuMoteur`).
+  const duMoteur = importsDuMoteur(sf);
+  /** @type {Map<string, { line: number, name: string }>} */
+  const vus = new Map();
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && !inSpecCallback(node)) {
+      const e = node.expression;
+      const origine = ts.isIdentifier(e) ? duMoteur.get(e.text) : undefined;
+      const nom = origine && noms.has(origine) ? origine
+        : (ts.isPropertyAccessExpression(e) && e.name.text === 'int' ? 'rng.int' : null);
+      if (nom) {
+        const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+        vus.set(`${line}:${nom}`, { line, name: nom });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return [...vus.values()].sort((a, b) => a.line - b.line || a.name.localeCompare(b.name));
+}
+
 /**
  * (D) partie 1 — DÉRIVE la liste des exports de `src/engine` qui roulent : corps appelant `rollTest(`/
  * `d100(` DIRECTEMENT, puis clôture TRANSITIVE (un export qui appelle un rouleur roule aussi). La
@@ -274,7 +430,7 @@ function functionOf(node) {
  * @param {{ rel: string, text: string }[]} engineFiles
  * @returns {Map<string, { file: string, line: number }>} nom exporté → site de déclaration
  */
-export function engineRollerExports(engineFiles) {
+export function engineRollerExports(engineFiles, amorce = AMORCE_TEST) {
   /** @type {Map<string, { file: string, line: number, calls: Set<string>, exported: boolean }>} */
   const decls = new Map();
   for (const { rel, text } of engineFiles) {
@@ -296,11 +452,10 @@ export function engineRollerExports(engineFiles) {
     changed = false;
     for (const [name, d] of decls) {
       if (rollers.has(name)) continue;
-      if (d.calls.has('rollTest') || d.calls.has('d100') || [...d.calls].some((c) => rollers.has(c))) { rollers.add(name); changed = true; }
+      if ([...amorce].some((a) => d.calls.has(a)) || [...d.calls].some((c) => rollers.has(c))) { rollers.add(name); changed = true; }
     }
   }
-  rollers.delete('rollTest');
-  rollers.delete('d100');
+  for (const a of amorce) rollers.delete(a);
   const out = new Map();
   for (const name of [...rollers].sort()) {
     const d = decls.get(name);

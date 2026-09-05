@@ -763,6 +763,12 @@ export const fr = {
   'casc.rowTraceAnon': '{label} : {roll}/{target} → {issue} (DR {dr}).',
   'casc.rowTraceNoDr': '{who} — {label} : {roll}/{target} → {issue}.',
   'casc.rowTraceAnonNoDr': '{label} : {roll}/{target} → {issue}.',
+  // PATRON UNIQUE de la ligne d'un DÉ NU résolu sans fenêtre (#1508) — le dé et le TOTAL qui fait la
+  // conséquence, avec son unité quand la déclaration en porte une. Aucune cible, aucun DR : un dé nu
+  // ne se réussit pas.
+  'casc.dieTrace': '{who} — {label} : dé {roll} → {total}.',
+  'casc.dieTraceAnon': '{label} : dé {roll} → {total}.',
+  'casc.dieTraceLabel': 'Tirage',
   'casc.autoRowHit': 'réussi',
   'casc.autoRowMiss': 'échec',
   'casc.autoRowFallbackLabel': 'Test',

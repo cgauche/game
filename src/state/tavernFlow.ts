@@ -1149,7 +1149,7 @@ for (const jeu of TAVERN_GAMES) {
 /** La DÉCLARATION de tirage d'un tour : les dés de la donnée, jamais un dé écrit ici. */
 function potDecl(game: TavernGame): CascadeTableDecl {
   const dice = game.pot!.dice;
-  return { tableId: potTableId(game.id), dice: dice.count, die: dice.faces };
+  return { tableId: potTableId(game.id), spec: { n: dice.count, sides: dice.faces } };
 }
 
 /** Ce qui RESTE à un joueur : sa bourse, corrigée des mouvements déjà engagés dans la partie (les

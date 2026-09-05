@@ -68,6 +68,8 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   // Mode table (#942 L3) : poser le dé d'une étape à table (champ ou clic sur une ligne) — autorisé par la
   // possession du siège ÉMETTEUR (`intentAllowedFor`) ; l'option « Dés fixés » est CLIENT-SIDE.
   'cascadeTableSetForcedRoll',
+  // DÉ NU (#1508) : les deux mêmes verbes pour l'autre lecture du même dé — même routage de possession.
+  'cascadeDieRoll', 'cascadeDieSetForcedRoll',
   // désengagement : ouverture, jet, appliquer/fuir/annuler
   'disengageConfirmA', 'disengageRoll', 'disengageConfirm', 'disengageFlee', 'disengageCancel',
   // « Au Contact » (LDB 62 l.176) : ouverture, jet, choix du vainqueur

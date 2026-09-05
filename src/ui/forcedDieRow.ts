@@ -15,9 +15,10 @@
  *  - **Dé fixé** — option de confort `des-fixes` (`engine/fixedDie.ts`), gatée par le prédicat
  *    UNIQUE `canFixDie` (option + contrôle du siège). Tout le dé, avant comme après le jet.
  *
- * DEUX PORTEURS de dé, même contrôle : un SLOT DE FLUX (`rowForcedDie`, ci-dessous) et une ÉTAPE À
- * TABLE de cascade (`tableStepForcedDie` — pas de flux de jet : le dé vit dans `step.table`). Les deux
- * dérivations vivent ICI ; une modale n'en compose JAMAIS une à la main.
+ * DEUX PORTEURS de dé, même contrôle : un SLOT DE FLUX (`rowForcedDie`, ci-dessous) et une ÉTAPE de
+ * cascade (`stepForcedDie` — pas de flux de jet : le dé vit sur l'étape, en `step.de` ou en
+ * `step.table` selon sa LECTURE). Les deux dérivations vivent ICI ; une modale n'en compose JAMAIS
+ * une à la main.
  *
  * L'écriture passe TOUJOURS par le délégué de store `<prefix>SetForcedRoll` (jamais
  * `FLOW_HANDLERS[k].setForcedRoll(get,set,…)` en direct) : c'est lui que le routage d'intents coop
@@ -29,7 +30,7 @@ import { canFixDie } from '../state/netOwnership';
 import { withPreRollFixedDie } from '../state/combatFlow';
 import { useGame } from '../state/store';
 import { FIXED_ROLL_MAX } from '../engine/fixedDie';
-import { tableStepNaturalRange, liveTableDecl } from '../state/cascade';
+import { liveTableDecl, liveDeDecl, plageNaturelle, specDeEtape, tableSpec } from '../state/cascade';
 import type { CascadeStep } from '../state/pendings';
 import type { GameState } from '../state/store';
 import type { RollRowProps } from './RollRow';
@@ -160,31 +161,39 @@ export function rowForcedDie(
 }
 
 /**
- * Sélecteur de dé d'une ÉTAPE À TABLE de cascade (#942 L3) — MÊME couture, MÊME contrôle
- * (`ForcedRollPicker`), MÊME gate (`canFixDie`) que les slots de flux ci-dessus ; seul le PORTEUR du dé
- * change (`step.table`, aucun flux de jet). Deux différences de domaine, portées ici et pas au site :
- *  - la borne du champ est celle des DÉS de CE tirage (`tableStepNaturalRange` : `dice` dés de N
- *    faces) — une table à d10 refuse 47, elle ne l'applique pas en silence ;
+ * Sélecteur de dé d'une ÉTAPE de cascade (#942 L3, étendu aux DEUX lectures du dé en #1508) — MÊME
+ * couture, MÊME contrôle (`ForcedRollPicker`), MÊME gate (`canFixDie`) que les slots de flux ci-dessus ;
+ * seul le PORTEUR du dé change (`step.de` ou `step.table`, aucun flux de jet). Deux différences de
+ * domaine, portées ici et pas au site :
+ *  - la borne du champ est celle des DÉS de CE tirage (`plageNaturelle` : `n` dés de `sides` faces)
+ *    — une table à d10 refuse 47, un 2d10 monte à 20 ; jamais un clamp en silence ;
  *  - un dé posé reste RÉ-ÉDITABLE tant que l'étape est courante (parité exacte avec la branche
  *    post-jet d'un slot : `roll` est pré-rempli, la saisie suivante re-pose).
  * `onSet` reçoit le dé NATUREL (le `mod` de la déclaration s'applique au résolveur).
  */
-export function tableStepForcedDie(
+export function stepForcedDie(
   s: GameState,
   step: CascadeStep,
   onSet: (roll: number) => void,
 ): { forcedRoll?: RollRowProps['forcedRoll']; fixedMark?: boolean } {
-  // Déclaration RÉSOLUE (modificateur vivant versé, `liveTableDecl`) : le champ annonce l'opération
-  // que le tirage fera réellement, pas celle figée à l'ouverture de l'étape.
-  const decl = step.table && liveTableDecl(s, step);
+  // Déclaration RÉSOLUE (modificateur vivant versé, `liveTableDecl`/`liveDeDecl`) : le champ annonce
+  // l'opération que le tirage fera réellement, pas celle figée à l'ouverture de l'étape.
+  // UN SEUL CHEMIN DE POSE pour les DEUX porteurs de dé (#1508) : `step.de` d'abord, `step.table`
+  // sinon — une étape n'a jamais les deux (deux dés à jeter dans la même fenêtre n'existe pas).
+  const decl = step.de ? liveDeDecl(s, step) : step.table && liveTableDecl(s, step);
   if (!decl) return {};
   const mark = !!step.fixed;
   if (!canFixDie(s, step.actorId)) return { fixedMark: mark };
-  const max = tableStepNaturalRange(decl).max;
+  // La BORNE se lit sur les DÉS résolus, quel que soit le porteur — une seule expression, deux
+  // résolutions de défaut (le dé nu porte les siens, la table donne le sien).
+  const max = plageNaturelle(step.de ? specDeEtape(decl) : tableSpec(step.table!)).max;
+  // Dé EFFECTIF servi au champ : le dé qui a résolu la LIGNE (table, borné au plancher par le
+  // résolveur) ou le TOTAL (dé nu) — c'est la même grandeur, sous les deux noms de son porteur.
+  const effective = decl.result ? ('die' in decl.result ? decl.result.die : decl.result.total) : null;
   // `roll: null` (dé non posé) = le champ est une OFFRE, vide ; sinon il porte le dé NATUREL courant,
   // éditable en place — poser un dé n'est pas un aller sans retour.
   // `mod` ET le dé EFFECTIF du résolveur (`result.die`) voyagent avec le sélecteur : le champ AFFICHE
   // l'opération et son résultat, sans jamais le recalculer (le plancher de la table n'est connu que du
   // résolveur). Le naturel seul mentirait sur la ligne résolue — même exigence que la borne `max`.
-  return { forcedRoll: { roll: decl.result?.roll ?? null, target: max, max, fixed: true, mod: decl.mod ?? 0, effective: decl.result?.die ?? null, onSet }, fixedMark: mark };
+  return { forcedRoll: { roll: decl.result?.roll ?? null, target: max, max, fixed: true, mod: decl.mod ?? 0, effective, onSet }, fixedMark: mark };
 }

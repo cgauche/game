@@ -25,12 +25,13 @@ import { TableRollLine } from './RollLine';
 import { testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
-import { stepInteraction, stepReady, secondReadOf, tableStepDefs, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
+import { stepInteraction, stepReady, secondReadOf, tableStepDefs, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl, specDeEtape } from '../state/cascade';
+import { formatDice } from '../engine/dice';
 import { opposedAttackerLabel } from '../state/rollSeam';
 import { useOwns } from './ownership';
 import { pursuitOf } from '../state/pursuitFlow';
 import { SequencePanel } from './SequencePanel';
-import { tableStepForcedDie } from './forcedDieRow';
+import { stepForcedDie } from './forcedDieRow';
 import { opposedResponded } from './opposedFrozen';
 import { frozenOpposedRow, tableRow, witnessRow, buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import type { CascadeStep, CascadeRollStep, CascadeRoll, BatchParticipant } from '../state/pendings';
@@ -120,6 +121,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const setAmount = useGame((s) => s.cascadeAmount); // étape « quantité » : pose le nombre saisi
   const tableRoll = useGame((s) => s.cascadeTableRoll); // étape « table » : tire le dé sur le tableau déclaré
   const tableSetForcedRoll = useGame((s) => s.cascadeTableSetForcedRoll); // mode table : POSE le dé (champ ou ligne)
+  const dieRoll = useGame((s) => s.cascadeDieRoll); // étape « de » (#1508) : tire le dé NU
+  const dieSetForcedRoll = useGame((s) => s.cascadeDieSetForcedRoll); // étape « de » : POSE le dé NU
   const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
   const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
   const attackProps = useAttackJetProps(); // étape-jet d'attaque : rendue dans CETTE coquille (une fenêtre)
@@ -201,6 +204,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   /** Ligne de TIRAGE d'une étape à table résolue — dé, opération et ligne atteinte, même présentation
    *  qu'en fenêtre (`TableRollLine`). C'est ce qui rend un tirage LISIBLE au bilan. */
   const tableLineOf = (s: CascadeStep): ReactNode => {
+    // DÉ NU (#1508) : MÊME rangée, même anatomie — le libellé dit ce qui se tire et avec quels dés,
+    // le « résultat » est le TOTAL avec son unité. Aucune primitive neuve : c'est un tirage.
+    const d = s.de?.result;
+    if (d) return <TableRollLine table={dieLineLabel(s)} roll={d.roll} die={d.total} mod={s.de!.mod ?? 0} result={totalLabel(s, d.total)} />;
     const r = s.table?.result;
     if (!r) return undefined;
     return (
@@ -210,6 +217,11 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       />
     );
   };
+  /** Libellé de la rangée d'un DÉ NU : ce qui se tire ET les dés qui le tirent (« Hauteur de chute
+   *  (2d10) ») — sans table à nommer, c'est l'étape et son `DiceSpec` qui disent le tirage. */
+  const dieLineLabel = (s: CascadeStep): string => `${s.label ?? ''} (${formatDice(specDeEtape(s.de!))})`.trim();
+  /** Le TOTAL avec son unité déclarée (« 13 m ») — la valeur qui fait la conséquence. */
+  const totalLabel = (s: CascadeStep, total: number): string => (s.de?.unite ? `${total} ${s.de.unite}` : String(total));
   const rowOf = (s: CascadeStep): PanelRow | null => {
     const a = actorOf(s);
     // Étape BATCH committée : sa conséquence (resultLine, #331) se lit SUR PLACE — note SEULE (pas de
@@ -433,19 +445,27 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     when: 'always',
   }] : [];
 
-  // MODE TABLE (#942 L3) — les DEUX affordances de POSE du dé d'une étape à table, une seule
-  // sémantique (POSER LE DÉ) et un seul délégué : le champ « Fixer le dé » (sélecteur dérivé par la
-  // COUTURE UNIQUE `tableStepForcedDie` — gate `canFixDie`, borne = les faces du dé, valeur
-  // ré-éditable) et la grille des LIGNES (clic = le dé naturel qui atteint cette ligne, `mod`
-  // compris — sinon la ligne cliquée glisserait sous le modificateur). Servies AVANT le tirage comme
-  // APRÈS (l'étape passe alors en interaction `'affichage'`) : un dé posé se corrige, il ne se subit pas.
-  const tableAffordances = (s: CascadeStep): { rows: BuiltRollRow[]; lines: ReactNode } => {
+  // AFFORDANCES DE POSE du dé d'une étape (#942 L3, généralisées aux deux lectures en #1508) — une
+  // seule sémantique (POSER LE DÉ) : le champ « Fixer le dé » (sélecteur dérivé par la COUTURE UNIQUE
+  // `stepForcedDie` — gate `canFixDie`, borne = les dés déclarés, valeur ré-éditable) et, POUR UNE
+  // TABLE SEULEMENT, la grille des LIGNES (clic = le dé naturel qui atteint cette ligne, `mod` compris
+  // — sinon la ligne cliquée glisserait sous le modificateur ; un dé NU n'a pas de ligne à viser).
+  // Servies AVANT le tirage comme APRÈS (l'étape passe alors en interaction `'affichage'`) : un dé
+  // posé se corrige, il ne se subit pas.
+  const affordancesDuDe = (s: CascadeStep): { rows: BuiltRollRow[]; lines: ReactNode } => {
+    // UN SEUL sélecteur pour les DEUX porteurs de dé (#1508) : la couture (`stepForcedDie`) lit
+    // `step.de ?? step.table`, seul le délégué d'écriture diffère.
+    const die = stepForcedDie(useGame.getState(), s, (r) => (s.de ? dieSetForcedRoll(s.id, r) : tableSetForcedRoll(s.id, r)));
+    if (!die.forcedRoll) return { rows: [], lines: null };
+    // Rangée porteuse du SEUL sélecteur — constructeur `tableRow` (ni cible ni DR à pré-afficher,
+    // aucun `onRoll` : ni bouton de rangée, ni « Lancer » hissé, ni cycle d'influence).
+    const rows = [tableRow({ key: `${s.id}:die`, row: { combatant: actorOf(s) }, forcedRoll: die.forcedRoll, fixedMark: die.fixedMark })];
+    // DÉ NU : aucune grille de lignes — il n'y a pas de table où choisir, le total EST la conséquence.
+    if (s.de) return { rows, lines: null };
     // La déclaration servie à l'écran est celle qui TIRERA (`liveTableDecl` : modificateur vivant) —
     // une grille calculée sur un `mod` périmé ferait glisser la ligne cliquée.
     const decl = s.table && liveTableDecl(useGame.getState(), s);
     if (!decl) return { rows: [], lines: null };
-    const die = tableStepForcedDie(useGame.getState(), s, (r) => tableSetForcedRoll(s.id, r));
-    if (!die.forcedRoll) return { rows: [], lines: null };
     const mod = decl.mod ?? 0;
     const dieMax = tableStepNaturalRange(decl).max;
     const options: RollGridOption[] = (tableStepDefs[decl.tableId]?.rows ?? []).map((r) => {
@@ -470,9 +490,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     });
     const unreachable = options.filter((o) => o.disabled).length;
     return {
-      // Rangée porteuse du SEUL sélecteur — constructeur `tableRow` (ni cible ni DR à pré-afficher,
-      // aucun `onRoll` : ni bouton de rangée, ni « Lancer » hissé, ni cycle d'influence).
-      rows: [tableRow({ key: `${s.id}:die`, row: { combatant: actorOf(s) }, forcedRoll: die.forcedRoll, fixedMark: die.fixedMark })],
+      rows,
       lines: (
         <>
           <OptionChooser layout="grid" groupLabel="Choisir la ligne" options={options} idPrefix={`${s.id}-ligne`} />
@@ -495,7 +513,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // naturel reste le DÉFAUT : les affordances de pose (#942 L3) s'ajoutent, ne remplacent rien.
   if (interaction === 'table') {
     const def = tableStepDefs[cur.table!.tableId];
-    const aff = tableAffordances(cur);
+    const aff = affordancesDuDe(cur);
     const tableActions: RollAction[] = [
       { key: 'roll', label: <><Icon id="nav/dice" size="sm" /> Lancer</>, onClick: () => tableRoll(cur.id), when: 'pre' },
       ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
@@ -509,6 +527,29 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         extra={<TableRollLine table={tableLineLabel(def?.label, cur.label, modalTitle)} />}
         setup={aff.lines}
         actions={tableActions}
+        disableEscClose
+        embedded={embedded}
+      />
+    );
+  }
+
+  // DÉ NU (#1508) : dé NON JETÉ dont le TOTAL fera la conséquence — CALQUE de la branche `'table'`
+  // ci-dessus SANS sa grille de lignes (il n'y a pas de table où choisir). Même coquille, même bouton
+  // « Lancer », même sélecteur de pose : un dé de la porte, pas une fenêtre de plus.
+  if (interaction === 'de') {
+    const aff = affordancesDuDe(cur);
+    const dieActions: RollAction[] = [
+      { key: 'roll', label: <><Icon id="nav/dice" size="sm" /> Lancer</>, onClick: () => dieRoll(cur.id), when: 'pre' },
+      ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
+    ];
+    return (
+      <RollShell
+        title={titleNode}
+        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
+        rolled={false}
+        rows={aff.rows}
+        extra={<TableRollLine table={dieLineLabel(cur)} />}
+        actions={dieActions}
         disableEscClose
         embedded={embedded}
       />
@@ -545,7 +586,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const tbl = cur.table?.result;
     // Étape à TABLE déjà tirée : les affordances de POSE restent servies tant que l'étape est
     // COURANTE (le dé se re-pose, la ligne se re-choisit) — le tirage n'est pas un aller sans retour.
-    const aff = tableAffordances(cur);
+    const aff = affordancesDuDe(cur);
     return (
       <RollShell
         title={titleNode}
@@ -566,6 +607,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
             {tbl.lines.slice(1).map((l, i) => <p key={i} className="rm-log">{l}</p>)}
             {aff.lines}
           </>
+        ) : cur.de?.result ? (
+          /* DÉ NU résolu (#1508) : même zone STABLE, même rangée — le total (avec son unité) est le
+             verdict, et la pose reste servie tant que l'étape est courante. */
+          <>{tableLineOf(cur)}{aff.lines}</>
         ) : undefined}
         actions={[continueAction]}
         disableEscClose
@@ -621,9 +666,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // TÊTE, zone stable, et les options se prennent dessous. Jamais deux corps successifs.
     const tblChoix = cur.table?.result;
     // … et la POSE du dé reste servie tant que l'étape est COURANTE, exactement comme à la branche
-    // `affichage` : le tirage n'est pas un aller sans retour. MÊME délégué (`tableAffordances`), donc
+    // `affichage` : le tirage n'est pas un aller sans retour. MÊME délégué (`affordancesDuDe`), donc
     // même sélecteur « Fixer le dé » et même grille de lignes — les voies se prennent dessous.
-    const aff = tableAffordances(cur);
+    const aff = affordancesDuDe(cur);
     let canDevier = true;
     if (dev) {
       const subj = pool.find((c) => c.id === dev.targetId);

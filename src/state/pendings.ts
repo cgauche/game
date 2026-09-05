@@ -4,6 +4,7 @@
  * Le store les ré-exporte (les imports existants `from './store'` restent valides).
  */
 import type { CharKey, Difficulty, HitLocation, Weapon, FireArc, Combatant } from '../engine/types';
+import type { DiceSpec } from '../engine/dice';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
 import type { Dir8 } from './dir8';
@@ -1476,23 +1477,34 @@ export interface BatchParticipant extends RollParticipant {
   second?: CascadeSecondRead;
 }
 
-/** TIRAGE SUR TABLE d'une étape de cascade — la DÉCLARATION, sérialisable (coop) : quelle table
- *  (`tableId`, résolu par le registre `tableStepDefs` de `state/cascade.ts`), sur quel dé (`die`,
- *  défaut = celui de la table), avec quel modificateur appliqué au dé AVANT le lookup (`mod`, même
- *  convention que l'op `rollTable`), et le dé IMPOSÉ éventuel (`forcedRoll` — l'INJECTION : le
- *  `forcedRoll` des résolveurs moteur, dé posé). `result` absent = dé non jeté (interaction `'table'`). */
-/** COMPTEUR de l'acteur lisible comme modificateur vivant d'un tirage sur table (`modPerActor`) —
- *  union FERMÉE de champs numériques de `Combatant` : ajouter un compteur = une entrée ici, jamais un
- *  branchement. Aujourd'hui : les Points de Péché (LDB 40 l.53). */
+/** COMPTEUR de l'acteur lisible comme modificateur vivant d'un tirage — d'un dé NU comme d'un lancer
+ *  sur TABLEAU (`modPerActor`) — union FERMÉE de champs numériques de `Combatant` : ajouter un
+ *  compteur = une entrée ici, jamais un branchement. Aujourd'hui : les Points de Péché (LDB 40 l.53). */
 export type CascadeActorCounter = 'sinPoints';
 
-export interface CascadeTableDecl {
-  tableId: string;
-  die?: number;
-  /** NOMBRE de dés lancés et TOTALISÉS (défaut 1) — « lancez 2d10 et totalisez le résultat affiché
-   *  sur les deux dés » (`NADJ 16 l.17`). Un tirage à N dés n'a ni la même plage (N…N×faces) ni la
-   *  même distribution qu'un dé unique : le nombre est DÉCLARÉ, jamais déduit de la plage de la table. */
-  dice?: number;
+/**
+ * LE DÉ D'UNE ÉTAPE DE CASCADE — la DÉCLARATION, sérialisable (coop) : quels dés (`spec`), quel
+ * modificateur appliqué au naturel (`mod`, `modPerActor`), quel dé IMPOSÉ (`forcedRoll` — dé posé par
+ * un siège, ou injection d'un résolveur moteur), combien de tirages dont on retient le meilleur
+ * (`keepHighest`). `result` absent = dé non jeté (interaction `'de'`).
+ *
+ * FORME UNIQUE des deux LECTURES du dé : nue (le total EST la conséquence — hauteur de chute, unités
+ * d'une amputation, dés de dégâts) et en TABLE (`CascadeTableDecl` ci-dessous, qui l'ÉTEND d'un
+ * `tableId`). Le tirage est le même geste ; seule la lecture diffère.
+ */
+export interface CascadeDeTirage {
+  /**
+   * Les DÉS du tirage (`engine/dice.DiceSpec`, forme canonique partagée avec la Formula `{dice}`).
+   *
+   * OPTIONNEL ICI, REQUIS À LA PORTE — et la raison est la TABLE : une `TableStepDef` déclare déjà les
+   * siens (`die`, d100 par défaut), et les ~20 déclarations de table du dépôt n'ont pas à les répéter
+   * pour que la table reste la source de son propre dé (`cascade.tableSpec` : la déclaration l'emporte,
+   * la table donne son défaut, d100 sinon). Un DÉ NU, lui, n'a aucune table où les prendre : sa porte
+   * les EXIGE au type (`rollSeam.DieStepSpec.spec`, non optionnel) et REFUSE une déclaration non
+   * tirable, et `roulerDe` lève plutôt que de replier en silence — il n'y a donc pas de d100 fantasmé
+   * pour un dé nu, seulement pour une table qui a le sien.
+   */
+  spec?: DiceSpec;
   mod?: number;
   forcedRoll?: number;
   /** Modificateur VIVANT : `factor` × le COMPTEUR `counter` de l'ACTEUR de l'étape, lu à l'instant du
@@ -1503,21 +1515,46 @@ export interface CascadeTableDecl {
    *  l'étape ferait tirer une rafale de Colères au compteur périmé (la 1ʳᵉ expie, la 2ᵉ garderait
    *  l'ancien total). Le `mod` posé à la construction reste ADDITIF (les deux se cumulent). */
   modPerActor?: { counter: CascadeActorCounter; factor: number };
+  /** N tirages NATURELS, dont l'étape retient le PLUS ÉLEVÉ (défaut 1). Déclaré par la situation qui
+   *  multiplie le lancer : Bénédiction de Sauvagerie, LDB 41 l.170 — « Quand votre cible inflige par la
+   *  suite des Blessures Critiques, effectuez deux lancers et choisissez le meilleur résultat. » Le RAW
+   *  confie le tri au porteur béni ; « le plus élevé » est la POLITIQUE appliquée à un choix non
+   *  surfacé (attaquant conduit par l'IA, cadence auto), et la surface joueur de ce choix est portée
+   *  par #982. `forcedRoll` PRIME (un dé POSÉ n'est jamais re-tiré, cf. `roulerDe`). */
+  keepHighest?: number;
+  /** UNITÉ du total, pour la rangée qui le montre (« m », « jours », « Blessures ») — AFFICHAGE pur :
+   *  aucune logique ne la lit. Absente = le total se lit nu. */
+  unite?: string;
+}
+
+/** LE DÉ NU comme déclaration d'ÉTAPE : le tirage, plus SA lecture — ici la plus pauvre, aucune (le
+ *  total EST la conséquence). `CascadeTableDecl` ci-dessous est l'autre lecture du MÊME tirage ; les
+ *  deux ne divergent que par leur `result`, ce qui interdit une intersection naïve (le socle prend
+ *  donc `CascadeDeTirage` en paramètre partout où il ROULE, jamais la déclaration complète). */
+export interface CascadeDeDecl extends CascadeDeTirage {
+  result?: CascadeDeResult | null;
+}
+
+/** Issue d'un dé NU (posée par `roulerDe`) : le dé NATUREL (celui qu'un siège pose, celui que la
+ *  rangée montre) et le TOTAL qui fait la conséquence (`naturel + spec.plus + mod`). */
+export interface CascadeDeResult {
+  roll: number;
+  total: number;
+}
+
+/** TIRAGE SUR TABLE d'une étape de cascade — le MÊME dé (`CascadeDeDecl`), LU en table : le total
+ *  sert de dé EFFECTIF au lookup de `tableId` (registre `tableStepDefs` de `state/cascade.ts`).
+ *  `result` absent = dé non jeté (interaction `'table'`). */
+export type CascadeTableDecl = CascadeDeTirage & {
+  tableId: string;
   /** PLANCHER : le dé effectif est ramené à la PREMIÈRE ligne de la table au lieu de lever. Déclaré
    *  par les tables dont le RAW borne LITTÉRALEMENT par le BAS — Blessures critiques, LDB 18 l.17 :
    *  « vous ôtez -20 à votre résultat sur le Tableau des Critiques avec un résultat minimum de 01 ».
    *  La borne HAUTE n'est PAS couverte (le RAW cité ne donne qu'un minimum) : un dé effectif au-dessus
    *  de la table reste un fail-fast, `clamp` ou non. */
   clamp?: boolean;
-  /** N tirages NATURELS, dont l'étape retient le PLUS ÉLEVÉ (défaut 1). Déclaré par la situation qui
-   *  multiplie le lancer : Bénédiction de Sauvagerie, LDB 41 l.170 — « Quand votre cible inflige par la
-   *  suite des Blessures Critiques, effectuez deux lancers et choisissez le meilleur résultat. » Le RAW
-   *  confie le tri au porteur béni ; « le plus élevé » est la POLITIQUE appliquée à un choix non
-   *  surfacé (attaquant conduit par l'IA, cadence auto), et la surface joueur de ce choix est portée
-   *  par #982. `forcedRoll` PRIME (un dé POSÉ n'est jamais re-tiré, cf. `rollTableStep`). */
-  keepHighest?: number;
   result?: CascadeTableResult | null;
-}
+};
 
 /** Issue d'un tirage sur table (posée par `rollTableStep`) : le dé NATUREL, le dé EFFECTIF qui a servi
  *  au lookup (`roll + mod`), l'id STABLE de la ligne trouvée (toute logique s'y attache — jamais le
@@ -1643,6 +1680,12 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
    *  (rangée `TableRollLine` + lignes de l'entrée). Une étape peut porter `table` ET `reveal` (charge
    *  riche du Critique) : la déclaration du tirage et son rendu détaillé sont deux choses. */
   table?: CascadeTableDecl;
+  /** Étape à DÉ NU (#1508) : un TIRAGE dont le TOTAL est la conséquence (hauteur d'une chute, unités
+   *  d'une amputation, magnitude d'un effet, distance d'une dispersion) est l'interaction `'de'` —
+   *  MÊME dé, MÊME pose, MÊME rangée qu'une table, sans lecture en table. `roulerDe` pose `de.result`
+   *  (dé naturel + total). Le porteur du dé est UNIQUE sur l'étape : `de` et `table` sont deux
+   *  LECTURES du même geste, jamais deux dés à jeter dans la même fenêtre. */
+  de?: CascadeDeDecl;
   /** PROVENANCE du dé de cette étape : SAISI par le joueur (option de confort « Dés fixés »,
    *  `engine/fixedDie.ts`) et non tiré. Écrit par la fabrique de flux pour une étape-JET
    *  (`commit(..,{fixed:true})`) et par `setCascadeTableForcedRoll` pour une étape à TABLE. Lu par la

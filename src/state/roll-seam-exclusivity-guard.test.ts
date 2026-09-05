@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scanRollSeamExclusivity, ROLL_SEAM_RX, scanPendingJetFabrication, engineRollerExports, engineHomonyms, scanEngineDelegatedRoll } from '../../scripts/guards/lib/rollSeamExclusivity.mjs';
-import { rollSeamExcluded, ROLL_SEAM_PHASE2_STOCK, WORLD_DIE_SUBTRACTED_STOCK, PENDING_JET_FABRICATION_STOCK, ENGINE_DELEGATED_ROLL_STOCK, SEAM_CALLERS } from '../../scripts/guards/lib/rollSeamWhitelist.mjs';
+import { scanRollSeamExclusivity, ROLL_SEAM_RX, scanPendingJetFabrication, engineRollerExports, engineHomonyms, scanEngineDelegatedRoll, scanDesHorsPorte, engineDiceRollers } from '../../scripts/guards/lib/rollSeamExclusivity.mjs';
+import { rollSeamExcluded, ROLL_SEAM_PHASE2_STOCK, WORLD_DIE_SUBTRACTED_STOCK, PENDING_JET_FABRICATION_STOCK, ENGINE_DELEGATED_ROLL_STOCK, DES_HORS_PORTE_STOCK, SEAM_CALLERS } from '../../scripts/guards/lib/rollSeamWhitelist.mjs';
 import { scanBattleRngEngineLeak } from '../../scripts/guards/lib/battleRngEngineLeak.mjs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { battleRngEngineLeakExcluded } from '../../scripts/guards/lib/battleRngEngineLeakWhitelist.mjs';
@@ -277,9 +277,12 @@ describe('garde-fou « seam de jet » — exclusivité de rollTest/d100/TestOutc
    * redéfini le périmètre, et le DIRE. Sans cette clause, le test ne vérifiait que la FORME du champ.
    */
   it('complétude : un `why` qui plaide « dé de monde / aucun acteur » cite le lot qui a redéfini le périmètre', () => {
+    // #1508 rejoint #1426 comme lot de référence : il va PLUS LOIN (aucune classe de dé n'est hors
+    // porte, magnitudes et dispersion comprises), donc une justification qui le cite est confrontée
+    // au périmètre le plus récent, pas à l'ancien.
     const PLAIDE = /d[eé]s? de MONDE|aucun acteur/i;
     const orphelines = [...PENDING_JET_FABRICATION_STOCK, ...ENGINE_DELEGATED_ROLL_STOCK]
-      .filter(([, e]) => PLAIDE.test(e.why ?? '') && !/#1426/.test(e.why ?? ''))
+      .filter(([, e]) => PLAIDE.test(e.why ?? '') && !/#(1426|1508)/.test(e.why ?? ''))
       .map(([rel]) => rel);
     expect(
       orphelines,
@@ -856,5 +859,134 @@ describe('CLIQUET 2 — une étape-JET ne se monte plus à la main, même sans a
       if (n < attendu) perimees.push(`${file} : baseline ${attendu}, réel ${n} — ABAISSER`);
     }
     expect(perimees, `Stock périmé (dette déjà résorbée, à refléter) :\n${perimees.join('\n')}`).toEqual([]);
+  });
+});
+
+/**
+ * GARDE SŒUR (#1508) — TOUT DÉ TIRÉ HORS PORTE. Le garde d'exclusivité (#274) ne connaît que le
+ * FORGEAGE d'un Test ; une magnitude (`rollDice`), une dispersion (`d10`), une expression authorée
+ * (`rollExpr`), un d100 d'environnement (`deMonde`) et une désignation (`rng.int`) lui sont
+ * INVISIBLES par construction — c'est ce trou que la sonde de morsure a mesuré (0 site vu sur cinq
+ * cas synthétiques, un seul reconnu).
+ *
+ * La doctrine utilisateur du 2026-09-04 ne laisse aucune classe de dé dehors — « Vu que tous les jets
+ * passé par le même point d'entrée, il est inutile de se demander si le jeu est configuré pour » : ce
+ * qui se mesure ici est donc une DETTE À CIBLE ZÉRO (`DES_HORS_PORTE_STOCK`), pas un registre.
+ */
+describe('garde SŒUR « dés hors porte » (#1508) — un dé qui tombe hors de la porte est compté nominativement', () => {
+  /** Rouleurs DIRECTS de `src/engine` (un hop) — mémoïsés, comme `rollers()`. */
+  let _des: Set<string> | null = null;
+  const desRollers = () => (_des ??= engineDiceRollers(prodFiles('src/engine')));
+
+  /** Mesure du corpus de PRODUCTION hors moteur et hors noyau du seam. */
+  function mesureDesHorsPorte(): Map<string, number> {
+    const m = new Map<string, number>();
+    for (const { rel, text } of prodFiles('src')) {
+      if (rel.startsWith('src/engine/') || SEAM_CORE.has(rel)) continue;
+      const n = scanDesHorsPorte(rel, text, desRollers()).length;
+      if (n > 0) m.set(rel, n);
+    }
+    return m;
+  }
+
+  /**
+   * LA MORSURE (promue de la sonde du juge, `tmp/juge-1508/sonde-morsure.mjs`) — cinq dés
+   * SYNTHÉTIQUES posés dans un applier de `src/state`, identiques à l'octet sauf la primitive. Le
+   * garde d'exclusivité n'en voit qu'UN (le `d100` d'un Test) ; la garde sœur les voit TOUS. Sans ce
+   * contrat, l'élargissement se relirait comme acquis alors qu'il est exactement ce qui manquait.
+   */
+  it('MORSURE : les cinq primitives de dé sont vues par la sœur, là où l’exclusivité n’en voit qu’une', () => {
+    const cas: [string, string][] = [
+      ['d100', "import { d100 } from '../engine/dice';\nexport function f(rng) { return d100(rng); }\n"],
+      ['d10', "import { d10 } from '../engine/dice';\nexport function f(rng) { return d10(rng); }\n"],
+      ['rollDice', "import { rollDice } from '../engine/dice';\nexport function f(rng) { return rollDice({ n: 2, sides: 10 }, rng); }\n"],
+      ['rollExpr', "import { rollExpr } from '../engine/dice';\nexport function f(rng) { return rollExpr('2d10+3', rng); }\n"],
+      ['deMonde', "import { deMonde } from '../engine/dice';\nexport function f(rng) { return deMonde(rng); }\n"],
+    ];
+    const vus = cas.map(([nom, src]) => [nom, scanDesHorsPorte('src/state/faux.ts', src, desRollers()).length] as const);
+    expect(vus, 'chaque primitive de dé compte pour UN site').toEqual([['d100', 1], ['d10', 1], ['rollDice', 1], ['rollExpr', 1], ['deMonde', 1]]);
+    // Le garde d'exclusivité, lui, est aveugle à quatre des cinq (et blanchit même le `d100` nu, qui
+    // n'est ni consommé en seuil ni en table ici : il le compte comme forgeage de Test).
+    const exclusivite = cas.map(([nom, src]) => [nom, scanRollSeamExclusivity('src/state/faux.ts', src).length] as const);
+    expect(exclusivite).toEqual([['d100', 1], ['d10', 0], ['rollDice', 0], ['rollExpr', 0], ['deMonde', 0]]);
+  });
+
+  it('MORSURE : un `d10` NEUF dans un applier de `src/state` est vu (fail-closed)', () => {
+    const regresse = "import { d10 } from '../engine/dice';\nexport function applyChute(c, rng) { c.wounds -= d10(rng); }\n";
+    expect(scanDesHorsPorte('src/state/x.ts', regresse, desRollers()).map((s) => s.name)).toEqual(['d10']);
+  });
+
+  it('MORSURE : un dé SYNTHÉTIQUE ajouté dans `src/engine` sur un chemin d’op est vu par la CLÔTURE', () => {
+    const moteur = [{ rel: 'src/engine/faux.ts', text: "import { d10 } from './dice';\nexport function applyGrosDegats(c, rng) { return d10(rng); }\n" }];
+    expect(engineDiceRollers(moteur).has('applyGrosDegats'), 'un export qui tire dans son corps entre dans la clôture').toBe(true);
+    const appelant = "import { applyGrosDegats } from '../engine/faux';\nexport function f(c, rng) { applyGrosDegats(c, rng); }\n";
+    expect(scanDesHorsPorte('src/state/x.ts', appelant, ['applyGrosDegats']).map((s) => s.name)).toEqual(['applyGrosDegats']);
+  });
+
+  /**
+   * MORSURE DU HELPER PRIVÉ — le dé ne tombe pas dans le corps de l'export, mais dans un helper
+   * MODULE-LOCAL qu'il appelle : c'est la forme RÉELLE de `merchantFlow.rollStock` → `fullStock` →
+   * `rollDice` et de `rollAge`/`rollEyes`/`rollHair`/`rollHeight` → `rollDetailFormula` → `roll`.
+   * Un critère à UN SAUT les rendait invisibles (10 sites réels, dont `merchantFlow.ts` en entier —
+   * que `ENGINE_DELEGATED_ROLL_STOCK` classait pourtant déjà en dette : deux stocks du même dé ne
+   * peuvent pas se contredire). La frontière est l'EXPORT, pas le nombre de sauts.
+   */
+  it('MORSURE : un dé derrière un helper PRIVÉ du moteur entre dans la clôture — et un export intermédiaire l’ARRÊTE', () => {
+    const moteur = [{
+      rel: 'src/engine/faux.ts',
+      text: [
+        "import { roll } from './dice';",
+        'function tirageInterne(rng) { return roll(2, 10, rng); }', // helper MODULE-LOCAL
+        'export function magnitudeCachee(rng) { return tirageInterne(rng); }',
+        'export function viaExport(rng) { return magnitudeCachee(rng); }', // franchit une frontière EXPORTÉE
+      ].join('\n'),
+    }];
+    const rouleurs = engineDiceRollers(moteur);
+    expect(rouleurs.has('magnitudeCachee'), 'le dé tombe derrière un helper privé : l’export compte').toBe(true);
+    expect(rouleurs.has('viaExport'), 'son appelant franchit une frontière EXPORTÉE : il ne contamine plus').toBe(false);
+    expect(rouleurs.has('tirageInterne'), 'un helper non exporté n’est pas un site d’appel visible').toBe(false);
+    const appelant = "import { magnitudeCachee } from '../engine/faux';\nexport function f(rng) { return magnitudeCachee(rng); }\n";
+    expect(scanDesHorsPorte('src/state/x.ts', appelant, rouleurs).map((s) => s.name)).toEqual(['magnitudeCachee']);
+  });
+
+  it('ALIAS résolu : `import { roll as rollDice }` compte sous son nom D’ORIGINE, et un alias inconnu ne se perd plus', () => {
+    const alias = "import { roll as rollDice } from '../engine/dice';\nexport function f(rng) { return rollDice(2, 10, rng); }\n";
+    expect(scanDesHorsPorte('src/state/x.ts', alias, []).map((s) => s.name)).toEqual(['roll']);
+    const aliasDe = "import { d100 as des } from '../engine/dice';\nexport function f(rng) { return des(rng); }\n";
+    expect(scanDesHorsPorte('src/state/x.ts', aliasDe, []).map((s) => s.name), 'un `d100 as des` ne s’échappe plus').toEqual(['d100']);
+  });
+
+  it('un `rng.int(` (désignation « lequel ? ») est un dé comme un autre', () => {
+    expect(scanDesHorsPorte('src/state/x.ts', 'export function f(rng, l) { return l[rng.int(0, l.length - 1)]; }', []).map((s) => s.name)).toEqual(['rng.int']);
+  });
+
+  it('zéro faux positif : un `roll` LOCAL (déclencheur de flux, non importé du moteur) n’est pas un dé', () => {
+    const ui = "export function Modale({ roll }) { return <button onClick={() => roll()}>Lancer</button>; }";
+    expect(scanDesHorsPorte('src/ui/x.tsx', ui, [])).toEqual([]);
+  });
+
+  it('(S) position de spec : un dé dans le callback `resolve` d’une spec de flux reste exclu', () => {
+    const spec = "import { d10 } from '../engine/dice';\nexport const F = makeRollFlow({ resolve: (p) => d10(battleRng()) });";
+    expect(scanDesHorsPorte('src/state/x.ts', spec, [])).toEqual([]);
+  });
+
+  it('le stock « dés hors porte » déclare le compte MESURÉ, à l’unité, dans les DEUX sens', () => {
+    const mesure = mesureDesHorsPorte();
+    const ecarts: string[] = [];
+    for (const [rel, { n }] of DES_HORS_PORTE_STOCK) {
+      const vu = mesure.get(rel) ?? 0;
+      if (vu !== n) ecarts.push(`${rel} : ${vu} site(s) mesuré(s), ${n} déclaré(s)${vu === 0 ? ' — entrée PÉRIMÉE, à retirer' : ''}`);
+    }
+    for (const [rel, n] of mesure) {
+      if (!DES_HORS_PORTE_STOCK.has(rel)) ecarts.push(`${rel} : ${n} dé(s) HORS compteur — router par la porte (rollSeam : dieStep / tableStep / worldStep / openRoll), ou entrer ICI avec sa famille et son train`);
+    }
+    expect(
+      ecarts,
+      `Les dés tirés hors porte ont bougé — dette à cible zéro (#1508), jamais un registre d'équilibre (DES_HORS_PORTE_STOCK, scripts/guards/lib/rollSeamWhitelist.mjs) :\n${ecarts.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('chaque entrée du stock est QUALIFIÉE et cite son lot (aucune ne justifie une règle)', () => {
+    expect(kindDiff(DES_HORS_PORTE_STOCK as Stock, '(dés hors porte)')).toEqual([]);
   });
 });

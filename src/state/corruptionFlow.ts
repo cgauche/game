@@ -193,7 +193,7 @@ function natureStep(hero: Combatant, align: ChaosAlign | undefined, index: numbe
     id: `mutation-nature-${hero.id}-${index}`,
     kind: 'mutationNature', actorId: hero.id, icon: 'nav/mutation',
     label: t('step.dissolution'),
-    table: { tableId: mutationNatureTableId(hero.species), die: 100 },
+    table: { tableId: mutationNatureTableId(hero.species), spec: { n: 1, sides: 100 } },
     mutation: { heroId: hero.id, align },
     stake: combatStakeRef('mutationNature'),
   });
@@ -204,7 +204,7 @@ function mutationTableStep(hero: Combatant, tableId: string, ctx: PendingMutatio
     id: `mutation-table-${tableId}-${hero.id}`,
     kind: 'mutationTable', actorId: hero.id, icon: 'nav/mutation',
     label: stepDetail(t('step.mutation'), mutationTablePlayerLabel(tableId)),
-    table: { tableId, die: 100 },
+    table: { tableId, spec: { n: 1, sides: 100 } },
     mutation: { ...ctx, tableId },
     stake: combatStakeRef('mutationTable'),
   });

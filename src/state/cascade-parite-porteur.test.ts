@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { startCascade, pushStep, registerTableStep, registerCascadeApplier, suspendActiveCascade, resumeSuspendedCascade, stepInteraction, stepReady } from './cascade';
 import { tableStep, displayStep, resolveSurface, surfaceOf, type RollRequest } from './rollSeam';
-import { tableStepForcedDie } from '../ui/forcedDieRow';
+import { stepForcedDie } from '../ui/forcedDieRow';
 import { actorIn } from './combatants';
 import { WORLD_STEP_OWNER, canFixDie, seatInfluences } from './netOwnership';
 import { readFileSync } from 'node:fs';
@@ -52,7 +52,7 @@ type Porteur = 'heros' | 'monde';
 function etapeTable(porteur: Porteur, heroId: string, id = 'parite-1'): CascadeStep {
   const commun = {
     id, kind: 'parite-table', label: fixtureText('Table de parité'),
-    table: { tableId: TABLE, die: 100 },
+    table: { tableId: TABLE, spec: { n: 1, sides: 100 } },
     stake: { key: { dataset: 'combat' as const, kind: 'mutation' } },
   };
   return (porteur === 'heros' ? tableStep({ ...commun, actorId: heroId }) : tableStep({ ...commun, worldOwner: true }))!;
@@ -76,7 +76,7 @@ interface Observation {
   interaction: string;
   prete: boolean;
   tiree: boolean;
-  /** L'affordance de POSE offerte sous le curseur (`forcedDieRow.tableStepForcedDie`, gate `canFixDie`)
+  /** L'affordance de POSE offerte sous le curseur (`forcedDieRow.stepForcedDie`, gate `canFixDie`)
    *  — sans elle, « option de pose ÉTEINTE » et « ACTIVE » rendraient le MÊME vecteur et l'égalité
    *  monde⇄héros ne dirait rien de la pose. */
   pose: boolean;
@@ -133,7 +133,7 @@ function mesure(trace: number[]): Observation {
   const p = get().pendingCascade;
   const st = p ? p.participants[p.cursor] : undefined;
   const avant = curseur();
-  const pose = !!st && !!tableStepForcedDie(get(), st, () => {}).forcedRoll;
+  const pose = !!st && !!stepForcedDie(get(), st, () => {}).forcedRoll;
   get().cascadeNext();
   const obs: Observation = {
     interaction: st ? stepInteraction(st) : 'aucune',

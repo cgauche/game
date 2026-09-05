@@ -50,19 +50,24 @@ export const roll = (n: number, sides: number, rng: RNG = defaultRNG) => {
 };
 
 /**
- * LE DÉ DU MONDE (#1426) — porte UNIQUE de tout tirage que l'ENVIRONNEMENT produit et qui se résout
- * SANS fenêtre de pose : chance d'occurrence d'un péril rejouée dans l'applier de son étape, contenu
- * narratif tiré en conséquence d'un Test déjà joué, descente de sous-table d'un dé déjà posé.
+ * LE d100 DE L'ENVIRONNEMENT — le dé que le MONDE lance (chance d'occurrence d'un péril, contenu
+ * narratif d'une conséquence, descente de sous-table). PRIMITIVE de moteur, pas une porte : elle
+ * roule, elle ne décide de rien (règle 3 du dépôt — le moteur reçoit un rng, il ne surface pas).
  *
- * Sa JUMELLE SURFACÉE est `state/rollSeam.openWorldTest` (une étape que le siège possédant le monde
- * peut poser) ; le tirage en TABLE surfacé est `state/cascade.rollTableStep`. Un site choisit entre
- * ces trois portes — il n'y a pas de quatrième voie : un `d100(` nu dans `src/state`/`src/ui`/
- * `src/data` est une régression, comptée nominativement par `WORLD_DIE_SUBTRACTED_STOCK`
- * (`scripts/guards/lib/rollSeamWhitelist.mjs`).
+ * ELLE NE CLASSE PAS SON DÉ. Aucune catégorie de dé n'échappe à la porte — doctrine utilisateur du
+ * 2026-09-04 : « L'outil peut etre utilisé comme Foundry […] Donc tous les jets de dés sont exposables
+ * si on configure le jeu pour » et « Vu que tous les jets passé par le même point d'entrée, il est
+ * inutile de se demander si le jeu est configuré pour ». Un site n'a donc AUCUNE question à se poser :
+ * il envoie son dé à la porte (`state/rollSeam` — `openWorldTest`, `worldStep`, `tableStep`,
+ * `dieStep`), et c'est elle SEULE qui sait si ce dé s'affiche, se lance ou se fixe (siège qui tient le
+ * monde, option « Dés fixés »).
+ *
+ * Un `deMonde(` appelé depuis un flux est donc une DETTE vers zéro (#1508), jamais une classe
+ * exemptée : les sites restants sont comptés nominativement par `DES_HORS_PORTE_STOCK` et
+ * `ENGINE_DELEGATED_ROLL_STOCK` (`scripts/guards/lib/rollSeamWhitelist.mjs`).
  *
  * Elle vit ICI, dans le moteur PUR (rng injecté), et pas dans le seam : `src/data` en dépend, et une
- * donnée ne peut pas importer le store. Le CONTRAT du canal — l'élément N+1 coûte UNE ligne
- * déclarative, jamais un dé recopié — vaut pour les trois portes.
+ * donnée ne peut pas importer le store.
  */
 export const deMonde = (rng: RNG = defaultRNG): number => d100(rng);
 

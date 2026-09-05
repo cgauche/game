@@ -59,7 +59,7 @@ import { seaAutoResolves } from './voyageCadence';
 import { byId, conditionLabel, dataLabel, type StakeRef } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
 import { rollTest, clampTarget } from '../engine/tests';
-import { defaultRNG, type RNG } from '../engine/dice';
+import { defaultRNG, type RNG, type DiceSpec } from '../engine/dice';
 import type { TestResult } from '../engine/tests';
 import { battleRng } from './battleRng';
 
@@ -1691,6 +1691,76 @@ export function worldStep(spec: WorldStepSpec): BuiltCascadeStep {
     ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   } as BuiltCascadeStep;
+}
+
+/**
+ * DÉCLARATION d'un DÉ NU en ÉTAPE (#1508) — quels dés, ce qu'ils décident, pour qui. Le PENDANT du
+ * `tableStep` pour les tirages dont le TOTAL est la conséquence (hauteur d'une chute, unités d'une
+ * amputation, magnitude d'un effet, distance d'une dispersion) : ni table à lire, ni cible à battre.
+ */
+export interface DieStepSpec {
+  id: string;
+  kind: string;
+  label: PlayerText;
+  icon?: string;
+  /** Les DÉS — REQUIS ici (à la différence de la déclaration persistée, où une table donne les
+   *  siens) : un dé nu sans dés serait une étape prête d'office, validée sans qu'aucun dé ne tombe. */
+  spec: DiceSpec;
+  /** PORTEUR du dé : l'arbitre route la fenêtre à son siège. Absent UNIQUEMENT sur un dé de MONDE
+   *  (`worldOwner`), où aucun personnage n'est concerné — même exclusion que `TableSpec`. */
+  actorId?: string;
+  worldOwner?: boolean;
+  mod?: number;
+  modPerActor?: CascadeTableDecl['modPerActor'];
+  keepHighest?: number;
+  /** Dé IMPOSÉ par le producteur (injection d'un résolveur moteur) — le tirage n'en est pas moins
+   *  posé par la porte : l'étape naît NON RÉSOLUE, la fenêtre la joue. */
+  forcedRoll?: number;
+  /** Unité du total, pour la rangée qui le montre (« m », « jours »). */
+  unite?: string;
+  stake?: StakeRef;
+  meta?: CascadeStepMeta;
+}
+
+/**
+ * CONSTRUCTEUR d'étape à DÉ NU (#1508) — CALQUE de `tableStep` : le dé n'est PAS tombé, l'étape est
+ * l'interaction `'de'` (`cascade.stepInteraction`), et c'est la fenêtre qui le jette (ou le pose,
+ * option « Dés fixés », gate `netOwnership.canFixDie`).
+ *
+ * LES DÉS sont le garde-fou, comme la cible l'est pour un mono : une déclaration à `n`/`sides` non
+ * positifs ne tire rien, et l'étape serait « prête » d'office — la porte la REFUSE (DEV : throw ;
+ * PROD : journalisée, aucun tirage ouvert) plutôt que d'ouvrir une fenêtre sans dé.
+ */
+export function dieStep(spec: DieStepSpec): BuiltCascadeStep | undefined {
+  if (!(spec.spec.n > 0) || !(spec.spec.sides > 0)) {
+    refusePorte(`dé « ${spec.id} » (${spec.kind}) : dés non tirables (${spec.spec.n}d${spec.spec.sides}) `
+      + '— l\'étape serait un pur affichage, validé sans qu\'aucun dé ne tombe. Aucun tirage ouvert.');
+    return undefined;
+  }
+  return {
+    id: spec.id,
+    kind: spec.kind,
+    label: spec.label,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    ...(spec.worldOwner ? { worldOwner: true } : { actorId: spec.actorId }),
+    de: {
+      spec: spec.spec,
+      ...(spec.mod != null ? { mod: spec.mod } : {}),
+      ...(spec.modPerActor ? { modPerActor: spec.modPerActor } : {}),
+      ...(spec.keepHighest != null ? { keepHighest: spec.keepHighest } : {}),
+      ...(spec.forcedRoll != null ? { forcedRoll: spec.forcedRoll } : {}),
+      ...(spec.unite ? { unite: spec.unite } : {}),
+    },
+    ...(spec.stake ? { stake: spec.stake } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  } as BuiltCascadeStep;
+}
+
+/** APPEND d'une étape à DÉ NU dans la séquence en cours (#1508) — patron de `pushReveal` : une
+ *  conséquence à dé s'AJOUTE à la cascade qui la produit (doctrine du slot, `cascade.pushStep`),
+ *  jamais dans une fenêtre neuve. L'index d'append est versé dans l'id pour rester unique. */
+export function pushDie(set: Set, spec: DieStepSpec, purpose: PendingCascade['purpose'] | ((s: GameState) => PendingCascade['purpose'])): void {
+  pushStep(set, (index) => dieStep({ ...spec, id: `${spec.id}-${index}` }), purpose);
 }
 
 /** Les jets qu'une étape peut HÔTER — union fermée de `CascadeStepBase.jet`. */

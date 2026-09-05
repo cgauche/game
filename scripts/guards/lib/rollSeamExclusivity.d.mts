@@ -19,11 +19,25 @@ export function scanPendingJetFabrication(relPath: string, contenu: string): Fin
 /** Registre des chemins de jet (#1066) — famille (D) « roulage délégué à un export de src/engine ». */
 export function engineRollerExports(
   engineFiles: { rel: string; text: string }[],
+  amorce?: readonly string[],
 ): Map<string, { file: string; line: number }>;
 export function engineHomonyms(
   engineFiles: { rel: string; text: string }[],
 ): Map<string, { files: string[]; rollsDirectly: boolean }>;
 export function scanEngineDelegatedRoll(
+  relPath: string,
+  contenu: string,
+  rollerNames: Iterable<string>,
+): { line: number; name: string }[];
+
+/** Garde SŒUR (#1508) — famille (X) « tout dé tiré hors porte » : le SITE OÙ LE DÉ TOMBE. */
+export const AMORCE_TEST: readonly string[];
+export const AMORCE_DES: readonly string[];
+export const DES_HORS_PORTE_RX: RegExp;
+export function engineDiceRollers(
+  engineFiles: { rel: string; text: string }[],
+): Set<string>;
+export function scanDesHorsPorte(
   relPath: string,
   contenu: string,
   rollerNames: Iterable<string>,

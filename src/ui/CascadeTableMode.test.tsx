@@ -669,7 +669,7 @@ describe('Blessure critique — le dé en tête, le Critique, les voies dessous 
 
   /**
    * « Le tirage n'est pas un aller sans retour » — la re-pose du dé reste offerte SUR L'ÉTAPE À VOIES,
-   * exactement comme sur une étape d'affichage : même délégué (`tableAffordances`), donc même champ
+   * exactement comme sur une étape d'affichage : même délégué (`affordancesDuDe`), donc même champ
    * « Dé fixé » et même grille de lignes, tant que l'étape est COURANTE et non validée. Sans ce
    * branchement, le dé de sévérité devenait irrévocable dès qu'une décision Dévier/Subir l'accompagnait.
    */

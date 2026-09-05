@@ -197,7 +197,7 @@ describe('MODE TABLE — poser le dé d’une étape à table (option « Dés fi
     expect(naturalRollForTableRow(decl, tableStepDefs[T].rows[0])).toBe(11);
     expect(naturalRollForTableRow({ tableId: T, mod: 10 }, tableStepDefs[T].rows[1])).toBe(41);
     expect(tableStepDie({ tableId: T })).toBe(100);
-    expect(tableStepDie({ tableId: T, die: 10 })).toBe(10);
+    expect(tableStepDie({ tableId: T, spec: { n: 1, sides: 10 } })).toBe(10);
   });
 
   it('ligne HORS D’ATTEINTE sous le `mod` : aucun dé naturel n’y tombe → `null` (jamais un dé qui glisse)', () => {
@@ -322,7 +322,7 @@ describe('Étape à TABLE — l’enjeu DESCEND à la ligne jouée (#1117)', () 
   /** Étape sur la VRAIE table de Critiques de Structure, portant l'enjeu de son `kind`. */
   const structureStep = (id: string, forcedRoll?: number): CascadeStep => ({
     id, kind: 'stakeSpy', label: fixtureText('Critique de Structure'), icon: 'nav/dice',
-    table: { tableId: STRUCTURE_CRIT_TABLE, die: 100, ...(forcedRoll ? { forcedRoll } : {}) },
+    table: { tableId: STRUCTURE_CRIT_TABLE, spec: { n: 1, sides: 100 }, ...(forcedRoll ? { forcedRoll } : {}) },
     stake: combatStakeRef('structureCritical'),
   });
 
@@ -366,7 +366,7 @@ describe('Étape à TABLE — l’enjeu DESCEND à la ligne jouée (#1117)', () 
   it('table SANS catégorie d’entrées : l’enjeu est rendu TEL QUEL (repli déclaré)', () => {
     const st: CascadeStep = {
       id: 'n1', kind: 'stakeSpy', label: fixtureText('Neutre'), icon: 'nav/dice',
-      table: { tableId: NEUTRE, die: 100, forcedRoll: 50 }, stake: combatStakeRef('structureCritical'),
+      table: { tableId: NEUTRE, spec: { n: 1, sides: 100 }, forcedRoll: 50 }, stake: combatStakeRef('structureCritical'),
     };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [st] });
     useGame.getState().cascadeTableRoll('n1');
@@ -378,7 +378,7 @@ describe('Étape à TABLE — l’enjeu DESCEND à la ligne jouée (#1117)', () 
   it('étape SANS enjeu : le tirage n’en fabrique aucun', () => {
     const st: CascadeStep = {
       id: 'm1', kind: 'stakeSpy', label: fixtureText('Muette'), icon: 'nav/dice',
-      table: { tableId: STRUCTURE_CRIT_TABLE, die: 100, forcedRoll: 40 },
+      table: { tableId: STRUCTURE_CRIT_TABLE, spec: { n: 1, sides: 100 }, forcedRoll: 40 },
     };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [st] });
     useGame.getState().cascadeTableRoll('m1');

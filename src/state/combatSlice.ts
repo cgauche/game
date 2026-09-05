@@ -114,7 +114,7 @@ import { combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
-import { advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, setCascadeAmount, rollCascadeTable, setCascadeTableForcedRoll, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter, poserCurseurCascade } from './cascade';
+import { advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, setCascadeAmount, rollCascadeTable, setCascadeTableForcedRoll, rollCascadeDe, setCascadeDeForcedRoll, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter, poserCurseurCascade } from './cascade';
 import { pursuitAbandon } from './pursuitFlow';
 import { closeSequenceRound } from './sequenceCore';
 import { checkPartyWiped } from './partyWipe';
@@ -3454,6 +3454,9 @@ export function createCombatSlice(get: Get, set: Set) {
     // CLIENT-SIDE (elle arme l'affordance chez celui qui clique, `ui/forcedDieRow.ts`) et un geste reçu
     // par le réseau est autorisé par le SIÈGE ÉMETTEUR (`intentAllowedFor`) — cf. `opSetForcedRoll`.
     cascadeTableSetForcedRoll: (pid: string, roll: number) => setCascadeTableForcedRoll(get, set, pid, roll),
+    // DÉ NU (#1508) : les deux mêmes verbes, le même goulot d'état — seule la LECTURE du dé change.
+    cascadeDieRoll: (pid: string) => rollCascadeDe(get, set, pid),
+    cascadeDieSetForcedRoll: (pid: string, roll: number) => setCascadeDeForcedRoll(get, set, pid, roll),
     cascadeNext: () => dispatchCascadeDone(advanceCascade(get, set)),
     // → BILAN (la modale reste ouverte) : rend `null`, rien à router. Rend une cascade FINALISÉE dans le
     // seul cas où la dernière étape a suspendu la séquence en plein vol (le BILAN n'est pas montrable) —

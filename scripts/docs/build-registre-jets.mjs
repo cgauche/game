@@ -18,11 +18,12 @@ import { fileURLToPath } from 'node:url'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import {
   scanPendingJetFabrication, engineRollerExports, scanEngineDelegatedRoll,
+  engineDiceRollers, scanDesHorsPorte,
 } from '../guards/lib/rollSeamExclusivity.mjs'
 import { scanFlowTestEngineRoll } from '../guards/lib/flowTestEngineRoll.mjs'
 import {
   ROLL_SEAM_CORE, ROLL_SEAM_PHASE2_STOCK,
-  PENDING_JET_FABRICATION_STOCK, ENGINE_DELEGATED_ROLL_STOCK, SEAM_CALLERS,
+  PENDING_JET_FABRICATION_STOCK, ENGINE_DELEGATED_ROLL_STOCK, DES_HORS_PORTE_STOCK, SEAM_CALLERS,
 } from '../guards/lib/rollSeamWhitelist.mjs'
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
@@ -63,6 +64,18 @@ for (const { rel, text } of prodFiles('src/state', 'src/ui')) {
   if (ROLL_SEAM_CORE.has(rel)) continue
   const sites = scanEngineDelegatedRoll(rel, text, rollerNames)
   if (sites.length) delegue.set(rel, sites)
+}
+
+// --- (X) TOUT DÉ TIRÉ HORS PORTE (#1508) ------------------------------------------------------
+// Population de la garde SŒUR : le SITE OÙ LE DÉ TOMBE, hors moteur et hors noyau du seam. Périmètre
+// plus large que (D) — `src/data` et `src/scenes` en font partie (une donnée authorée qui tire son
+// `rng.int` tire un dé comme un flux).
+const desRollers = engineDiceRollers(prodFiles('src/engine'))
+const desHorsPorte = new Map()
+for (const { rel, text } of prodFiles('src')) {
+  if (rel.startsWith('src/engine/') || ROLL_SEAM_CORE.has(rel)) continue
+  const sites = scanDesHorsPorte(rel, text, desRollers)
+  if (sites.length) desHorsPorte.set(rel, sites)
 }
 
 // --- population AUTHORÉE (donnée, pas code) ---------------------------------------------------
@@ -180,6 +193,7 @@ const couverture = []
 for (const [label, stock, mesure] of [
   ['(F) fabrication', PENDING_JET_FABRICATION_STOCK, fabrication],
   ['(D) délégué moteur', ENGINE_DELEGATED_ROLL_STOCK, delegue],
+  ['(X) dés hors porte', DES_HORS_PORTE_STOCK, desHorsPorte],
 ]) {
   for (const [rel, sites] of mesure) {
     const dec = stock.get(rel)
@@ -292,6 +306,29 @@ out += `\n_${total(delegue)} call-sites mesurés dans ${delegue.size} fichiers, 
 out += `> **Nature** (\`kind\`) : \`dette\` = tous les sites doivent disparaître · \`canonique\` = aucun site ne bouge ·\n`
 out += `> \`mixte\` = l'entrée porte les deux natures. Sans ce discriminant, « cette liste décroît » ne veut rien dire.\n`
 out += `> Le tri de population est SOLDÉ (#1070) : \`tri\` n'est plus une valeur acceptée — chaque entrée est qualifiée site par site.\n\n`
+
+// --- (X) dés hors porte ---
+out += `## (X) Tout dé tiré HORS PORTE\n\n`
+out += `Les trois familles ci-dessus ne voient que le **forgeage d'un Test** (\`rollTest\`/\`d100\`/\`TestOutcome.seal\`).\n`
+out += `Une magnitude (\`rollDice\`), une dispersion (\`d10\`), une expression authorée (\`rollExpr\`), le d100\n`
+out += `d'environnement (\`deMonde\`) et une désignation (\`rng.int\`) leur sont invisibles PAR CONSTRUCTION.\n`
+out += `La doctrine utilisateur du 2026-09-04 ne laisse aucune classe de dé dehors — « Vu que tous les jets passé\n`
+out += `par le même point d'entrée, il est inutile de se demander si le jeu est configuré pour » : ce qui suit est\n`
+out += `donc une **dette à cible zéro** (#1508), pas un registre d'équilibre.\n\n`
+out += `Un SITE = un appel **où le dé tombe** : une primitive de \`engine/dice\` IMPORTÉE dans ce fichier, un\n`
+out += `\`.int(\` de RNG, ou un export de \`src/engine\` derrière lequel le dé tombe **sans franchir d'autre\n`
+out += `frontière exportée** (\`engineDiceRollers\` : corps de l'export, ou helper module-local qu'il appelle —\n`
+out += `\`rollStock\` → \`fullStock\` → \`rollDice\`, \`rollAge\` → \`rollDetailFormula\` → \`roll\`). La clôture\n`
+out += `transitive COMPLÈTE, elle, remonterait jusqu'aux helpers génériques (\`createHero\`, \`contractDisease\`,\n`
+out += `\`spellRangeTiles\`, \`zdeRadiusTiles\`, \`durationClockMinutes\`…) : 423 sites « où un dé pourrait tomber »\n`
+out += `au lieu de ceux où il tombe, et un stock qui ne peut plus descendre à zéro.\n`
+out += `Périmètre : hors \`src/engine/**\` et hors \`ROLL_SEAM_CORE\`.\n\n`
+out += `| Fichier | Sites | Nature | Primitives / rouleurs appelés | Justification |\n|---|---|---|---|---|\n`
+for (const [rel, dec] of DES_HORS_PORTE_STOCK) {
+  const noms = [...new Set(desHorsPorte.get(rel).map((s) => s.name))].sort()
+  out += `| \`${rel}\` | ${dec.n} | ${dec.kind} | ${noms.map((n) => `\`${n}\``).join(', ')} | ${esc(dec.why)} |\n`
+}
+out += `\n_${total(desHorsPorte)} dés mesurés dans ${desHorsPorte.size} fichiers, pour ${desRollers.size} exports de \`src/engine\` derrière lesquels un dé tombe sans franchir d'autre frontière exportée — par nature : ${parNature(DES_HORS_PORTE_STOCK)}._\n\n`
 
 // --- population authorée ---
 out += `## Population AUTHORÉE (donnée, pas code)\n\n`

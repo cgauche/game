@@ -1673,7 +1673,7 @@ export function critSeverityDecl(target: Combatant, location: HitLocation, overk
     throw new Error(`critSeverityDecl : tables LDB déclarées sous la variante « combat-aa-blessures » — la sévérité y est résolue sur les tables AA (#974).`);
   }
   return {
-    tableId: CRIT_TABLE_IDS[critTableKeyFor(location)], die: 100,
+    tableId: CRIT_TABLE_IDS[critTableKeyFor(location)], spec: { n: 1, sides: 100 },
     mod: -critSeverityReduction(target, overkill), clamp: true,
     ...(twice ? { keepHighest: 2 } : {}),
   };
@@ -1908,7 +1908,7 @@ export function applyStructureCriticalToTarget(
   //  - celui passé au MOTEUR est le dé EFFECTIF (`rolled.die`) : `rollStructureCritical` refait SON
   //    lookup et n'a aucun concept de `mod` — lui donner le naturel décalerait la ligne mécanique de
   //    celle affichée par l'étape.
-  const table: CascadeTableDecl = { tableId: STRUCTURE_CRIT_TABLE, die: 100, forcedRoll };
+  const table: CascadeTableDecl = { tableId: STRUCTURE_CRIT_TABLE, spec: { n: 1, sides: 100 }, forcedRoll };
   const rolled = rollTableStep(table, battleRng());
   const outcome = rollStructureCritical(battleRng(), rolled.die);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
@@ -4001,7 +4001,7 @@ for (const table of MISCAST_TABLES) {
  *  (LDB 40 l.89) : aucun plafond à borner, et son plancher est 01 (`clamp` inutile, `mod` positif). */
 export function miscastTableDecl(ctx: PendingMiscastStep): CascadeTableDecl {
   return {
-    tableId: miscastTableId(ctx.severity), die: 100,
+    tableId: miscastTableId(ctx.severity), spec: { n: 1, sides: 100 },
     ...(ctx.severity === 'colere' ? { modPerActor: { counter: 'sinPoints' as const, factor: 10 } } : {}),
   };
 }

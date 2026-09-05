@@ -184,7 +184,7 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
     const st = stepAt(0);
     expect(st.kind).toBe('miscastTable');
     expect(stepInteraction(st)).toBe('table'); // dé À POSER → les deux affordances de la modale
-    expect(st.table).toMatchObject({ tableId: 'miscast-majeure', die: 100 });
+    expect(st.table).toMatchObject({ tableId: 'miscast-majeure', spec: { n: 1, sides: 100 } });
     expect(st.table!.mod, 'aucun modificateur hors Colère').toBeUndefined();
     expect(st.table!.result).toBeUndefined();
     expect(hero.conditions).toEqual([]);
@@ -242,7 +242,7 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
     applyMiscast(useGame.getState, useGame.setState, hero, 'colere');
     const st = stepAt(0);
     // Le modificateur est DÉCLARÉ vivant (compteur de l'acteur), pas figé à l'ouverture.
-    expect(st.table).toMatchObject({ tableId: 'miscast-colere', die: 100, modPerActor: { counter: 'sinPoints', factor: 10 } });
+    expect(st.table).toMatchObject({ tableId: 'miscast-colere', spec: { n: 1, sides: 100 }, modPerActor: { counter: 'sinPoints', factor: 10 } });
     expect(hero.sinPoints, 'le Péché expire AVANT le lancer').toBe(1);
     // 95 naturel + 10 = 105 → « Châtiment » (101-105), une ligne INATTEIGNABLE sans Point de Péché.
     poser(st.id, 95);

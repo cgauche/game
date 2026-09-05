@@ -14,4 +14,6 @@ export interface StockEntry {
 }
 export const PENDING_JET_FABRICATION_STOCK: Map<string, StockEntry>;
 export const ENGINE_DELEGATED_ROLL_STOCK: Map<string, StockEntry>;
+/** Garde SŒUR (#1508) — fichier → dés tirés HORS PORTE, dette à cible zéro. */
+export const DES_HORS_PORTE_STOCK: Map<string, StockEntry>;
 export const SEAM_CALLERS: { name: string; file: string; exported: boolean; role: string }[];

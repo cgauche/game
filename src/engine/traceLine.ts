@@ -74,6 +74,31 @@ export function traceLineOf(row: TraceRow | TraceOpposed): string {
   });
 }
 
+/** Structure LUE par le dériveur d'un DÉ NU (#1508) — celle qu'une étape à dé porte déjà
+ *  (`CascadeDeDecl` + `CascadeDeResult`). Ni cible ni DR : un dé nu ne se réussit pas, son TOTAL
+ *  EST la conséquence. */
+export interface TraceDie {
+  /** Porteur du dé (libellé résolu). Absent → le monde tire, le libellé suffit. */
+  who?: string;
+  /** Ce qui se tire (« Hauteur de chute »). Défaut : « Tirage ». */
+  label?: string;
+  roll: number;
+  total: number;
+  /** Unité du total (« m », « jours ») — accolée au total, absente = total nu. */
+  unite?: string;
+}
+
+/** LA ligne de journal d'un DÉ NU résolu sans fenêtre (#1508) — même patron unique que `traceLineOf`
+ *  pour les jets : le socle la DÉRIVE de la structure, aucun site ne l'écrit. */
+export function traceDieLineOf(d: TraceDie): string {
+  return t(d.who ? 'casc.dieTrace' : 'casc.dieTraceAnon', {
+    ...(d.who != null ? { who: d.who } : {}),
+    label: d.label ?? t('casc.dieTraceLabel'),
+    roll: d.roll,
+    total: d.unite ? `${d.total} ${d.unite}` : d.total,
+  });
+}
+
 /** Issue par DÉFAUT d'une opposition, vue du DÉFENSEUR (le jeteur) — table TOTALE sur les trois
  *  verdicts de `resolveOpposed` : aucun `winner` ne peut sortir sans phrase. */
 const OPPOSED_ISSUE_KEY: Record<TraceOpposed['winner'], 'casc.opposedResists' | 'casc.opposedPrevails' | 'casc.opposedTie'> = {

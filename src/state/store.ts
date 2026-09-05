@@ -1148,6 +1148,12 @@ export interface GameState extends RollFlowActionsMap {
    *  est tirée (re-posable tant que l'étape est courante). Délégué NU : l'affordance est armée côté
    *  CLIENT par `canFixDie` (`ui/forcedDieRow.ts`), l'hôte ne re-juge pas le geste d'un invité. */
   cascadeTableSetForcedRoll: (pid: string, roll: number) => void;
+  /** TIRAGE d'un DÉ NU d'étape (#1508) — JUMEAU de `cascadeTableRoll` : même geste, même goulot
+   *  (`cascade.poseSurCourante`), lecture nue au lieu d'une lecture en table. */
+  cascadeDieRoll: (pid: string) => void;
+  /** POSE du dé NATUREL d'une étape à DÉ NU (#1508) — JUMEAU de `cascadeTableSetForcedRoll`, mêmes
+   *  règles (délégué NU, affordance armée côté client par `canFixDie`, re-posable). */
+  cascadeDieSetForcedRoll: (pid: string, roll: number) => void;
   /** « Étape suivante » : valide l'étape courante (conséquence + insertions), avance ; à la fin,
    *  finalise selon `purpose` (reprise de voyage…). */
   cascadeNext: () => void;

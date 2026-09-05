@@ -88,7 +88,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     const gros = 99; // dépassement très supérieur au Bonus d'Endurance → réduction
     expect(critSeverityReduction(H, gros)).toBe(20);
     const decl = critSeverityDecl(H, 'corps', gros);
-    expect(decl).toMatchObject({ tableId: CRIT_TABLE_IDS.corps, die: 100, mod: -20, clamp: true });
+    expect(decl).toMatchObject({ tableId: CRIT_TABLE_IDS.corps, spec: { n: 1, sides: 100 }, mod: -20, clamp: true });
     // Dé naturel 7 sous −20 : le dé effectif est BORNÉ à 01 (jamais une levée hors plage), même ligne
     // que le lookup moteur (qui fait son propre `Math.max(1, …)`).
     const rolled = rollTableStep({ ...decl, forcedRoll: 7 }, makeRNG(1));
@@ -146,7 +146,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     const step = useGame.getState().pendingCascade!.participants[0];
     expect(step.kind).toBe('deviation');
     expect(stepInteraction(step)).toBe('table'); // dé À POSER → les deux affordances de la modale
-    expect(step.table).toMatchObject({ tableId: CRIT_TABLE_IDS.corps, die: 100 });
+    expect(step.table).toMatchObject({ tableId: CRIT_TABLE_IDS.corps, spec: { n: 1, sides: 100 } });
     expect(step.table!.result).toBeUndefined();
     // Aucune mutation de la victime tant que le dé n'est pas posé (parité avec l'offre de Déviation).
     expect(H.wounds.current).toBe(avant.pb);
