@@ -74,4 +74,4 @@
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 17 l.68` | ❌ LOW | « "je ne faillirai pas !" : au lieu de lancer le… » — aucune occurrence |
-<!-- sources-empreinte: e9840f2dac4abc9d491ef179306588c94b73a344 (215 fichiers, 15 dossiers) corps: 08b17e70e0c1b2f77b02b21f7d43e46fd157b129 -->
+<!-- sources-empreinte: 939dd456c4e5036bce406bc8d7c634e6aa1edf4a (215 fichiers, 15 dossiers) corps: 08b17e70e0c1b2f77b02b21f7d43e46fd157b129 -->
