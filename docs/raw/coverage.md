@@ -373,7 +373,7 @@
 | 05 | LA TILÉE ET LES PERSONNAGES TILÉENS | 📖 | 1 (competences.md ×1) |
 | 06 | LE CULTE DE MYRMIDIA | ✅ | 25 (combat.md ×24) |
 | 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ | 46 (combat.md ×41) |
-| 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 100 (combat.md ×99) |
+| 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 101 (combat.md ×100) |
 | 09 | LE COMBAT MONTÉ | ✅ | 24 (combat.md ×23) |
 | 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 97 (combat.md ×92) |
 | 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
@@ -1550,4 +1550,4 @@
 
 - **VDM 09** (Shyish — Domaine de la Mort) :
   - 📖 l.375-536 « Le Labyrinthe de Cristal » — transcrit en catalogue, jamais traité, 0 réf
-<!-- sources-empreinte: 60baf832937f79537cfef8c4aec0ac848b0c3c6e (348 fichiers, 17 dossiers) corps: 3c207f0b3fe9718d4124f40e73f8d030676372c7 -->
+<!-- sources-empreinte: 680eadf3241494375e220d1b3855b236667232ea (348 fichiers, 17 dossiers) corps: 799f244195f2d6733804e14a6ada29155f866f67 -->
