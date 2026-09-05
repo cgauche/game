@@ -13,6 +13,19 @@
 // en EXPRESSIONS RÉGULIÈRES et non en littéraux de chemin : un tableau de chemins écrit ici serait
 // lui-même vu comme un stock par la règle qu'il sert.
 //
+// DÉFINITION. Un PORTEUR est un littéral de TABLEAU ou d'OBJET atteignable depuis une liaison de
+// MODULE — `export const X = …`, `const X = …` de module, IIFE, fonction déclarée puis exportée.
+// Une ENTRÉE vit à la ligne de son PREMIER caractère, et se lit ainsi :
+//   · un ÉLÉMENT de tableau est une entrée si son sous-arbre nomme un fichier — un objet élément
+//     compris —, et l'on n'y descend jamais ;
+//   · une PROPRIÉTÉ d'objet dont la CLÉ nomme un fichier est une entrée, sans descente (le registre
+//     `AUTO_RESOLUS` : `'criticals.json': …`) ;
+//   · sinon, une propriété dont la VALEUR est elle-même un littéral de tableau ou d'objet est une
+//     RUBRIQUE — un porteur imbriqué (`'test:hooks': [ … ]`) : on y descend, on ne la compte pas ;
+//   · toute autre propriété est une entrée si son sous-arbre nomme un fichier.
+// En JSON, tout est de portée module. Aucun seuil de taille : la porte compte des lignes ajoutées et
+// retirées, jamais des stocks.
+//
 // PORTÉE DE MODULE : une entrée ne compte que si elle vit au niveau du MODULE. Un littéral écrit
 // dans un corps de fonction (`test(…)`, `it(…)`, une fabrique) est une DONNÉE LOCALE, pas un stock :
 // il ne survit pas à l'appel qui le porte et ne s'ajoute à aucune dette. La position se décide sur
@@ -20,13 +33,27 @@
 // `429b9a1a2`, les deux faux positifs de `91c928d16` et le `+8` de `572e60b8b` sont tous de cette
 // classe ; précédent `0d6ddeee1` : la classe se règle au garde, jamais à la fixture).
 //
+// DEUX VOIES. NOMINALE : l'image du fichier est lisible, `entreesDeStock` y pose les entrées, et une
+// ligne du diff ne compte que si elle en porte une. REPLI : sans image lisible (fichier supprimé,
+// binaire, dialecte hors `DIALECTE`, appelant qui n'en fournit pas), `estEntreeDeStock` juge la
+// LIGNE seule et l'entrée COMPTE — la porte perd sa précision, jamais sa vue. Les deux appelants de
+// production fournissent l'image (`plageStock.mjs`, `solde-ticket-guard.mjs`).
+//
 // CE QUE LA RÈGLE MESURE MAL, par construction, et qui doit se lire ici plutôt que se découvrir :
 //   · plusieurs entrées sur UNE ligne = SOUS-COMPTAGE (la ligne compte pour une), jamais une cécité :
 //     la croissance reste vue, son ampleur est minorée ;
-//   · un stock dont les entrées ne nomment aucun fichier (id numérique, nom de symbole seul —
-//     `fermetures-sans-solde.test.mjs` en est un) est hors de vue ;
-//   · sans image lisible (fichier supprimé, binaire, appelant qui n'en fournit pas), la portée ne se
-//     décide pas : l'entrée COMPTE — la porte perd sa précision, jamais sa vue ;
+//   · une entrée dont aucun littéral ne nomme un fichier (id numérique, nom de symbole seul) est
+//     hors de vue : `structuresStock.mjs` porte 1088 membres directs de porteurs, 1049 nomment un
+//     fichier — 39 hors de vue (mesuré à `b55d69da7`) ;
+//   · une entrée MULTILIGNE vit à la ligne de son PREMIER caractère : un diff qui n'ajoute que des
+//     lignes internes d'une entrée déjà là ne compte rien (angle mort latent aujourd'hui, que
+//     `scripts/hooks/ecrans-ui.json` deviendra le jour où une entrée y tiendra sur deux lignes) ;
+//   · le REPLI ne voit ni accolade ouvrante ni entrée multiligne : ce qu'il rate, il le rate en
+//     silence, et c'est le prix d'une image illisible ;
+//   · une table de MAPPING qui vit sous un chemin de `PORTEURS` (`entityConsumers.mjs`,
+//     `hors-modal-intent-path.test.ts`) compte comme un stock : la condition de porteur est un
+//     CHEMIN, et une ligne de mapping de plus dans une lib de garde se DÉCLARE par `CLIQUET:` comme
+//     toute autre croissance ;
 //   · les porteurs en `.mts` sont hors périmètre — aucun n'en porte aujourd'hui (mesuré : les 65
 //     `.mts` de `scripts/guards/lib/` sont tous des `.d.mts` générés, et aucun `.mts` de `scripts/`
 //     ne porte 3 entrées littérales) ; le jour où il en naît un, cette liste l'accueille.
@@ -50,6 +77,8 @@ const NOM_NU = String.raw`[\w.-]+\.(?:ts|tsx|mjs|mts|json|md|css)`;
  *  (`'src/ui/X.test.tsx // div'`) tolérés. Sans espace dans le chemin : une PROSE qui cite un
  *  chemin au milieu d'une phrase entre quotes n'est pas une entrée. */
 const JETON = String.raw`['"\`](?:${CHEMIN}|${NOM_NU})(?::[\w.|:-]+)?(?:\s+\/\/\s*[^'"\`]*)?['"\`]`;
+/** Le MÊME jeton, sur le TEXTE d'un littéral de chaîne déjà déquoté par l'AST. */
+const NOMME = new RegExp(String.raw`^(?:${CHEMIN}|${NOM_NU})(?::[\w.|:-]+)?(?:\s+\/\/\s*[^'"\`]*)?$`);
 
 /**
  * Une ENTRÉE littérale de stock, DEUX formes — la ligne entière fait foi dans les deux cas :
@@ -67,13 +96,14 @@ export function estPorteurDeStock(chemin) {
   return PORTEURS.some((re) => re.test(rel));
 }
 
-/** La ligne (sans son marqueur de diff) est-elle une entrée littérale de stock ? */
+/** La ligne (sans son marqueur de diff) est-elle une entrée littérale de stock ? REPLI de la porte :
+ *  il ne se joue que sur un fichier dont l'IMAGE ne se lit pas, et juge la ligne pour elle seule. */
 export function estEntreeDeStock(ligne) {
   const l = String(ligne ?? '');
   return ENTREE_EN_TETE.test(l) || ENTREE_EN_QUEUE.test(l);
 }
 
-// ── Portée de module, décidée par l'AST ───────────────────────────────────────────────────────────
+// ── Ce que porte une IMAGE de fichier, décidé par l'AST ──────────────────────────────────────────
 
 /** Le compilateur TypeScript du dépôt (devDependency, déjà le parseur des générateurs de `docs/`),
  *  chargé À LA DEMANDE : cette lib est importée par le garde PreToolUse, qui s'exécute à CHAQUE
@@ -84,28 +114,30 @@ function typescript() {
   return compilateur;
 }
 
-/** Extension → dialecte à parser. Un `.mjs`/`.cjs` se parse en JS ; hors de cette table (JSON…),
- *  aucun AST n'est demandé : le fichier est plat, tout y est en portée de module. */
-const DIALECTE = { ts: 'TS', mts: 'TS', cts: 'TS', tsx: 'TSX', js: 'JS', mjs: 'JS', cjs: 'JS', jsx: 'JSX' };
+/** Extension → dialecte à parser. Un `.mjs`/`.cjs` se lit en JS, une table `.json` en JSON. Hors de
+ *  cette table, aucune image n'est lue : le REPLI de ligne juge seul. */
+const DIALECTE = { ts: 'TS', mts: 'TS', cts: 'TS', tsx: 'TSX', js: 'JS', mjs: 'JS', cjs: 'JS', jsx: 'JSX', json: 'JSON' };
 
-/**
- * Prédicat « cette ligne (1-based) de `source` est en PORTÉE DE MODULE », ou `null` si le dialecte
- * n'a pas d'AST ici. La portée se lit sur la STRUCTURE, jamais sur l'indentation.
- *
- * Est LOCAL ce qui vit dans une fonction passée en ARGUMENT d'un appel — le corps d'un `test(…)`,
- * d'un `it(…)`, d'un `describe(…)`, d'un `map(…)` : ce qu'on y écrit meurt avec l'appel. Est de
- * MODULE tout le reste, y compris ce qu'une simple enveloppe pourrait sembler cacher : une IIFE
- * (`export const STOCK = (() => [ … ])()`), une fonction ou une flèche DÉCLARÉE puis exportée
- * (`export function stock() { return [ … ] }`). Marquer toute FunctionLike rendait la règle
- * contournable par trois enveloppes d'une ligne (mesuré 2026-09-04) : un stock reste un stock, quelle
- * que soit la façade qui le sert.
- */
-export function porteeDeModule(source, chemin) {
+/** Image parsée d'un fichier, ou `null` si son extension n'a pas de dialecte ici. */
+function imageParsee(source, chemin) {
   const ext = String(chemin ?? '').replace(/\\/g, '/').split('.').pop().toLowerCase();
   if (!DIALECTE[ext]) return null;
   const texte = String(source ?? '');
   const ts = typescript();
   const sf = ts.createSourceFile(String(chemin), texte, ts.ScriptTarget.Latest, true, ts.ScriptKind[DIALECTE[ext]]);
+  return { ts, sf, texte };
+}
+
+/**
+ * Lignes (1-based) qui ne vivent PAS au niveau du module. Est LOCAL ce qui vit dans une fonction
+ * passée en ARGUMENT d'un appel — le corps d'un `test(…)`, d'un `it(…)`, d'un `describe(…)`, d'un
+ * `map(…)` : ce qu'on y écrit meurt avec l'appel. Est de MODULE tout le reste, y compris ce qu'une
+ * simple enveloppe pourrait sembler cacher : une IIFE (`export const STOCK = (() => [ … ])()`), une
+ * fonction ou une flèche DÉCLARÉE puis exportée (`export function stock() { return [ … ] }`).
+ * Marquer toute FunctionLike rendait la règle contournable par trois enveloppes d'une ligne (mesuré
+ * 2026-09-04) : un stock reste un stock, quelle que soit la façade qui le sert.
+ */
+function lignesLocales({ ts, sf, texte }) {
   const locales = new Set();
   const marquer = (node) => {
     const debut = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line;
@@ -125,17 +157,90 @@ export function porteeDeModule(source, chemin) {
     ts.forEachChild(node, visiter);
   };
   ts.forEachChild(sf, visiter);
+  return locales;
+}
+
+/**
+ * Prédicat « cette ligne (1-based) de `source` est en PORTÉE DE MODULE », ou `null` si le dialecte
+ * n'a pas d'AST ici. La portée se lit sur la STRUCTURE, jamais sur l'indentation.
+ */
+export function porteeDeModule(source, chemin) {
+  const img = imageParsee(source, chemin);
+  if (!img) return null;
+  const locales = lignesLocales(img);
   return (ligne) => !locales.has(ligne);
 }
 
-/** Prédicat de portée pour un fichier, à partir d'un lecteur d'image. Sans lecteur, sans image ou
- *  sans dialecte : TOUT compte (la porte perd sa précision, jamais sa vue). */
-function gardeDePortee(lire, fichier) {
-  if (typeof lire !== 'function') return () => true;
+/** Le sous-arbre porte-t-il un littéral de chaîne qui NOMME un fichier ? La CLÉ d'une propriété en
+ *  fait partie : c'est elle que porte le registre `AUTO_RESOLUS` (`'criticals.json': …`). */
+function nommeUnFichier(ts, node) {
+  let vu = false;
+  const visiter = (n) => {
+    if (vu) return;
+    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) {
+      if (NOMME.test(n.text)) vu = true;
+      return;
+    }
+    ts.forEachChild(n, visiter);
+  };
+  visiter(node);
+  return vu;
+}
+
+/** La CLÉ d'une propriété, telle qu'écrite, ou `null` si elle est calculée. */
+function cleDe(ts, prop) {
+  const nom = prop.name;
+  if (!nom) return null;
+  if (ts.isStringLiteral(nom) || ts.isNoSubstitutionTemplateLiteral(nom) || ts.isIdentifier(nom)) return nom.text;
+  return null;
+}
+
+/**
+ * Les ENTRÉES de stock d'une IMAGE de fichier, par ligne croissante — ou `null` si le dialecte n'a
+ * pas d'AST ici (le REPLI de ligne juge alors seul). Voir la DÉFINITION en tête de module.
+ * Deux entrées sur une même ligne n'en font qu'une (sous-comptage assumé).
+ * @param {string} source @param {string} chemin
+ * @returns {{ ligne: number }[] | null}
+ */
+export function entreesDeStock(source, chemin) {
+  const img = imageParsee(source, chemin);
+  if (!img) return null;
+  const { ts, sf } = img;
+  const locales = lignesLocales(img);
+  const ligneDe = (node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+  const lignes = new Set();
+  const litteral = (n) => n && (ts.isArrayLiteralExpression(n) || ts.isObjectLiteralExpression(n));
+  const parcourir = (node) => {
+    if (!litteral(node) || locales.has(ligneDe(node))) {
+      ts.forEachChild(node, parcourir);
+      return;
+    }
+    if (ts.isArrayLiteralExpression(node)) {
+      for (const element of node.elements) if (nommeUnFichier(ts, element)) lignes.add(ligneDe(element));
+      return;
+    }
+    for (const prop of node.properties) {
+      const cle = cleDe(ts, prop);
+      if (cle !== null && NOMME.test(cle)) { lignes.add(ligneDe(prop)); continue; }
+      if (litteral(prop.initializer)) { parcourir(prop.initializer); continue; }
+      if (nommeUnFichier(ts, prop)) lignes.add(ligneDe(prop));
+    }
+  };
+  ts.forEachChild(sf, parcourir);
+  return [...lignes].sort((a, b) => a - b).map((ligne) => ({ ligne }));
+}
+
+/** Lignes d'entrées d'une image de fichier, ou `null` quand l'image ne se lit pas (lecteur absent,
+ *  fichier supprimé, binaire, dialecte inconnu) : le REPLI de ligne juge alors, et l'entrée COMPTE. */
+function lignesDEntrees(lire, fichier) {
+  if (typeof lire !== 'function') return null;
   let source;
-  try { source = lire(fichier); } catch { return () => true; }
-  if (typeof source !== 'string') return () => true;
-  try { return porteeDeModule(source, fichier) ?? (() => true); } catch { return () => true; }
+  try { source = lire(fichier); } catch { return null; }
+  if (typeof source !== 'string') return null;
+  try {
+    const entrees = entreesDeStock(source, fichier);
+    return entrees && new Set(entrees.map((e) => e.ligne));
+  } catch { return null; }
 }
 
 /** En-têtes de diff qui ne portent ni contenu ni numérotation. */
@@ -146,9 +251,11 @@ const ENTETE_INERTE =
  * Croissance NETTE des stocks nominatifs d'un diff unifié (`-U0` ou non : seuls les `+`/`-`
  * comptent). Un fichier n'est rendu que si ses entrées AJOUTÉES dépassent ses entrées RETIRÉES.
  *
- * Les entrées AJOUTÉES sont situées dans le POST-IMAGE (`lirePostImage(chemin)`), les RETIRÉES dans
- * le PRÉ-IMAGE (`lirePreImage(chemin)`) — sans quoi le retrait d'une fixture locale compenserait
- * l'ajout d'une vraie entrée. Les deux lecteurs sont fournis par l'appelant : la lib reste PURE.
+ * Les lignes AJOUTÉES se lisent sur le POST-IMAGE (`lirePostImage(chemin)`), les RETIRÉES sur le
+ * PRÉ-IMAGE (`lirePreImage(chemin)`) — sans quoi le retrait d'une fixture locale compenserait
+ * l'ajout d'une vraie entrée. Une ligne compte quand `entreesDeStock` de l'image correspondante y
+ * pose une entrée ; sans image lisible, `estEntreeDeStock` juge la ligne seule. Les deux lecteurs
+ * sont fournis par l'appelant : la lib reste PURE.
  * @param {string} diffU0
  * @param {{ lirePostImage?: (chemin: string) => string | null,
  *           lirePreImage?: (chemin: string) => string | null }} [images]
@@ -199,19 +306,19 @@ export function croissanceDesStocks(diffU0, { lirePostImage = null, lirePreImage
       continue;
     }
     const numero = ajout ? numNouveau++ : numAncien++;
-    const contenu = ligne.slice(1);
-    if (!estEntreeDeStock(contenu)) continue;
+    const touchee = { texte: ligne.slice(1).trim(), ligne: numero };
     if (!parFichier.has(courant)) parFichier.set(courant, { ajoutees: [], retirees: [] });
     const compte = parFichier.get(courant);
-    if (ajout) compte.ajoutees.push({ texte: contenu.trim(), ligne: numero });
-    else compte.retirees.push(numero);
+    if (ajout) compte.ajoutees.push(touchee);
+    else compte.retirees.push(touchee);
   }
   return [...parFichier]
     .map(([fichier, { ajoutees, retirees }]) => {
-      const enModulePost = gardeDePortee(lirePostImage, fichier);
-      const enModulePre = gardeDePortee(lirePreImage, fichier);
-      const retenues = ajoutees.filter((e) => enModulePost(e.ligne)).map((e) => e.texte);
-      const perdues = retirees.filter((n) => enModulePre(n)).length;
+      const surPost = lignesDEntrees(lirePostImage, fichier);
+      const surPre = lignesDEntrees(lirePreImage, fichier);
+      const estEntree = (entrees) => (t) => (entrees ? entrees.has(t.ligne) : estEntreeDeStock(t.texte));
+      const retenues = ajoutees.filter(estEntree(surPost)).map((t) => t.texte);
+      const perdues = retirees.filter(estEntree(surPre)).length;
       return {
         fichier,
         ajoutees: retenues.length,
@@ -274,6 +381,7 @@ export function raisonDeRefus(croissances) {
     `⛔ STOCK NOMINATIF qui NAÎT ou GRANDIT : ${lignes.join(' || ')}. Un stock nominatif est une ` +
     "DETTE vers zéro, jamais un registre : retirer l'entrée, ou porter la règle dans le socle pour " +
     "qu'aucune entrée ne soit nécessaire. Si la croissance est délibérée, le message de commit la " +
-    'DIT : `CLIQUET: <fichier> +N — <motif>` (motif d’au moins ' + MOTIF_MIN + ' caractères).'
+    'DIT : `CLIQUET: <fichier> +N — <motif>` (motif d’au moins ' + MOTIF_MIN + ' caractères). `+N` '
+    + "compte les ENTRÉES du stock — ses éléments —, jamais ce qu'elles dénombrent."
   );
 }

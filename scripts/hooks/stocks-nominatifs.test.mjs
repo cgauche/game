@@ -12,7 +12,8 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
-  croissanceDesStocks, croissancesNonCouvertes, cliquetsDuMessage, estEntreeDeStock, estPorteurDeStock, raisonDeRefus,
+  croissanceDesStocks, croissancesNonCouvertes, cliquetsDuMessage, entreesDeStock, estEntreeDeStock,
+  estPorteurDeStock, raisonDeRefus,
 } from '../guards/lib/stocksNominatifs.mjs'
 import { croissancesDeLaPlage, raisonDeRefusDePlage, SHA_NUL } from '../guards/lib/plageStock.mjs'
 
@@ -227,9 +228,10 @@ test('portée — le RETRAIT se juge sur le PRÉ-image : retirer une fixture ne 
     `+++ b/${f}`,
     '@@ -5,1 +4,0 @@',
     `-${FIXTURE}`,
-    '@@ -10,0 +10,1 @@',
+    '@@ -4,0 +4,1 @@',
     `+${FIXTURE}`,
   ].join('\n')
+  // La fixture vit à la ligne 5 du PRÉ-image (corps de `test`) et à la ligne 4 du POST (module).
   const [c] = croissanceDesStocks(diff, { lirePostImage: () => POST_MODULE, lirePreImage: () => POST_LOCALE })
   assert.deepEqual(
     [c.ajoutees, c.retirees, c.net], [1, 0, 1],
@@ -265,10 +267,171 @@ test('portée — aucune ENVELOPPE ne cache un stock de module', () => {
   )
 })
 
-test('portée — un porteur JSON n\'a pas d\'AST : tout y est de module', () => {
+// ── LA DÉFINITION : porteur = tableau OU objet atteignable depuis une liaison de module ───────────
+// La porte de stock était AVEUGLE aux deux plus gros stocks du dépôt (`slotsStock`,
+// `structuresStock`) : leurs entrées ouvrent la ligne par une accolade. Une entrée se lit désormais
+// sur l'IMAGE, par l'AST, et la forme du littéral ne la cache plus.
+
+/** Les quatre formes de stock du dépôt, et les lignes (1-based) où vivent leurs entrées. */
+const FORMES = {
+  'tableau de chaînes': {
+    corps: ['const STOCK = [', "  'src/state/combatFlow.ts',", "  'src/ui/Tabs.tsx',", ']'],
+    entrees: [2, 3],
+  },
+  'tableau d’objets': {
+    corps: [
+      'const STOCK = [',
+      "  { dataset: 'src/data/careers.json', n: 3 },",
+      "  { dataset: 'src/data/spells.json', n: 1 },",
+      ']',
+    ],
+    entrees: [2, 3],
+  },
+  'objet à clés-chemins (le cas FONDATEUR)': {
+    corps: [
+      'const AUTO_RESOLUS = {',
+      "  'criticals.json': 'Blessures critiques (LDB 18) : le noeud est auto-résolu.',",
+      "  'src/ui/Tabs.tsx': 'auto-résolu',",
+      '}',
+    ],
+    entrees: [2, 3],
+  },
+  // Une propriété dont la valeur est un littéral est une RUBRIQUE : on y descend, elle ne compte pas.
+  'objet dont les valeurs sont des tableaux': {
+    corps: [
+      'const ECRIVAINS = {',
+      "  'test:hooks': [",
+      "    'scripts/hooks/a.test.mjs',",
+      "    'scripts/hooks/b.test.mjs',",
+      '  ],',
+      '}',
+    ],
+    entrees: [3, 4],
+  },
+  // Une CLÉ qui nomme un fichier est une entrée, et l'on ne descend pas dans sa valeur.
+  'clé-chemin dont la valeur est un objet': {
+    corps: [
+      'const STOCK = {',
+      "  'src/ui/Tabs.tsx': {",
+      "    raison: 'vocabulaire hérité',",
+      "    voir: 'src/ui/App.tsx',",
+      '  },',
+      '}',
+    ],
+    entrees: [2],
+  },
+}
+
+const lignesDe = (source, chemin) => entreesDeStock(source, chemin).map((e) => e.ligne)
+
+test('définition — les quatre formes de stock sont VUES en portée de module', () => {
+  for (const [nom, { corps, entrees }] of Object.entries(FORMES)) {
+    assert.deepEqual(lignesDe(`${corps.join('\n')}\n`, 'scripts/guards/lib/xStock.mjs'), entrees, nom)
+  }
+})
+
+test('définition — les mêmes formes, écrites DANS un test, ne sont aucune entrée', () => {
+  for (const [nom, { corps }] of Object.entries(FORMES)) {
+    const locale = ["test('x', () => {", ...corps.map((l) => `  ${l}`), '})'].join('\n')
+    assert.deepEqual(lignesDe(`${locale}\n`, 'scripts/guards/lib/xStock.mjs'), [], nom)
+  }
+})
+
+test('définition — une entrée MULTILIGNE vit à la ligne de son PREMIER caractère', () => {
+  const corps = [
+    'export const STOCK = [',
+    '  {',
+    "    fichier: 'src/ui/Tabs.tsx',",
+    "    raison: 'vocabulaire hérité',",
+    '  },',
+    ']',
+  ].join('\n')
+  assert.deepEqual(lignesDe(`${corps}\n`, 'scripts/guards/lib/legacyVocabStock.mjs'), [2])
+  assert.equal(estEntreeDeStock('  {'), false, 'le REPLI de ligne ne voit pas une accolade ouvrante')
+})
+
+test('définition — un porteur JSON se lit comme les autres', () => {
   const f = 'scripts/hooks/ecrans-ui.json'
-  const [c] = croissanceDesStocks(diffAjoutA(f, 3), { lirePostImage: () => '{\n}\n' })
+  const table = ['{', '  "ecrans": [', '    "src/ui/App.tsx",', '    "src/ui/Tabs.tsx"', '  ]', '}'].join('\n')
+  assert.deepEqual(lignesDe(`${table}\n`, f), [3, 4], 'les deux écrans ; la rubrique `ecrans` n’en est pas un')
+  const [c] = croissanceDesStocks(diffAjoutA(f, 3), { lirePostImage: () => table })
   assert.deepEqual([c.fichier, c.net], [f, 1])
+})
+
+test('repli — sans image, une entrée à ACCOLADE n’est pas vue, et l’en-tête le dit', () => {
+  const f = 'scripts/guards/lib/legacyVocabStock.mjs'
+  const post = ['export const STOCK = [', '  {', "    fichier: 'src/ui/Tabs.tsx',", '  },', ']'].join('\n')
+  const diff = [
+    `diff --git a/${f} b/${f}`, `--- a/${f}`, `+++ b/${f}`, '@@ -2,0 +2,3 @@',
+    '+  {', "+    fichier: 'src/ui/Tabs.tsx',", '+  },',
+  ].join('\n')
+  assert.deepEqual(croissanceDesStocks(diff), [], 'sans image, le repli de ligne ne voit pas l’accolade')
+  const [c] = croissanceDesStocks(diff, { lirePostImage: () => `${post}\n` })
+  assert.deepEqual([c.fichier, c.net], [f, 1], 'avec l’image, l’entrée multiligne est vue une fois')
+})
+
+// ── COMPTEURS mesurés sur l'arbre : le lecteur d'image dit ce que chaque stock porte ──────────────
+
+test('compteurs — ce que le lecteur d’image lit sur les stocks du dépôt', (t) => {
+  const attendus = [
+    ['scripts/guards/lib/slotsStock.mjs', 339],
+    ['scripts/guards/lib/structuresStock.mjs', 1049],
+    ['scripts/guards/lib/legacyVocabStock.mjs', 35],
+    ['scripts/hooks/ecrans-ui.json', 207],
+  ]
+  // `null` = image illisible ici (dialecte absent de `DIALECTE`) : ZÉRO entrée lue, et le repli de
+  // ligne prendrait seul la main — c'est un compteur, pas une exception.
+  const mesures = attendus.map(([rel]) =>
+    [rel, (entreesDeStock(readFileSync(join(RACINE, rel), 'utf8'), rel) ?? []).length])
+  for (const [rel, n] of mesures) t.diagnostic(`${rel} = ${n} entrée(s)`)
+  assert.deepEqual(mesures, attendus)
+})
+
+// ── La FENÊTRE 2c11fdd9a..f0f9436f5 : ce que la porte aveugle ratait, et ce qu'elle voit ──────────
+
+const FENETRE = { avant: '2c11fdd9a', apres: 'f0f9436f5' }
+const gitOuNull = (...args) => {
+  try { return git(...args) } catch { return null }
+}
+const imagesDe = (avant, apres) => ({
+  lirePostImage: (f) => gitOuNull('show', `${apres}:${f}`),
+  lirePreImage: (f) => gitOuNull('show', `${avant}:${f}`),
+})
+
+test('fenêtre — les deux plus gros stocks du dépôt sont comptés à l’entrée comme à la sortie', () => {
+  const compte = (sha, rel) => entreesDeStock(gitOuNull('show', `${sha}:${rel}`), rel).length
+  const slots = 'scripts/guards/lib/slotsStock.mjs'
+  const structures = 'scripts/guards/lib/structuresStock.mjs'
+  assert.deepEqual([compte(FENETRE.avant, slots), compte(FENETRE.apres, slots)], [336, 339])
+  assert.deepEqual([compte(FENETRE.avant, structures), compte(FENETRE.apres, structures)], [1047, 1046])
+
+  const cumule = git('diff', '-U0', '--no-renames', `${FENETRE.avant}..${FENETRE.apres}`)
+  const croissances = croissanceDesStocks(cumule, imagesDe(FENETRE.avant, FENETRE.apres))
+  const parFichier = new Map(croissances.map((c) => [c.fichier, c]))
+  assert.deepEqual(
+    [parFichier.get(slots)?.ajoutees, parFichier.get(slots)?.retirees, parFichier.get(slots)?.net], [8, 5, 3],
+    'la croissance NETTE de `slotsStock` sur la fenêtre est rendue',
+  )
+  assert.equal(parFichier.has(structures), false, '`structuresStock` DÉCROÎT sur la fenêtre : rien à rendre')
+})
+
+test('fenêtre — les croissances non couvertes de la plage, par commit', (t) => {
+  const { refus } = croissancesDeLaPlage({ cwd: RACINE, ...FENETRE })
+  const vus = refus.map((r) => `${r.sha.slice(0, 9)} ${r.fichier} +${r.net}`)
+  for (const v of vus) t.diagnostic(v)
+  assert.ok(
+    vus.includes('c8d3105ae src/state/flowtest-derived-stake.test.ts +2'),
+    'la croissance du registre `AUTO_RESOLUS` (clés en NOM DE FICHIER) reste rendue',
+  )
+  const ecrivains = refus.find((r) => r.fichier === 'scripts/gates/ecrivainsAtteints.test.mjs')
+  assert.deepEqual(
+    [ecrivains?.sha.slice(0, 9), ecrivains?.net, ecrivains?.declare], ['a9b7edf17', 63, 53],
+    'un stock OBJET dont les valeurs sont des tableaux est rendu — la définition tableau-seul le perdait',
+  )
+  assert.equal(
+    refus.some((r) => r.fichier === 'scripts/guards/lib/structuresStock.mjs'), false,
+    'un stock qui décroît sur la plage n’est jamais refusé',
+  )
 })
 
 // ── La mesure sur le dépôt RÉEL ───────────────────────────────────────────────────────────────────

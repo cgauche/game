@@ -44,12 +44,13 @@ export function refusDeLaPlage({ commits = [], cumule = '', imagesCumul } = {}) 
 export function raisonDeRefusDePlage(refus) {
   const lignes = refus.map((r) => {
     const declare = r.declare === null ? '' : ` (le message annonce \`+${r.declare}\`)`;
-    return `${r.sha.slice(0, 9)} ${r.fichier} +${r.net}${declare} — ex. ${r.exemples.join(' · ')}`
+    return `${r.sha.slice(0, 9)} ${r.fichier} +${r.net} entrée(s)${declare} — ex. ${r.exemples.join(' · ')}`
   })
   return (
     `⛔ STOCK NOMINATIF qui GRANDIT dans la plage poussée : ${lignes.join(' || ')}. Geste : ` +
     '`git rebase -i` pour porter `CLIQUET: <fichier> +N — <motif>` au message du commit fautif, ' +
-    "ou retirer l'entrée (un stock nominatif est une DETTE vers zéro, jamais un registre)."
+    "ou retirer l'entrée (un stock nominatif est une DETTE vers zéro, jamais un registre). `+N` " +
+    "compte les ENTRÉES du stock — ses éléments —, jamais ce qu'elles dénombrent."
   )
 }
 
