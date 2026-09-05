@@ -14,7 +14,7 @@ import { walkFlow } from '../../engine/flowCore';
 import { refLabel } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { TRIGGER_LABEL, onLabel } from './triggerLabels';
-import { humanizeFlowSentence, humanizeOp, humanizeCondition } from './humanize';
+import { humanizeFlowSentence, humanizeOp, humanizeCondition, coutAvantageTexte, flowMuet } from './humanize';
 
 /** Octrois de carrière (`grantCareerSkill`/`grantCareerTalent`) — affichés à part (cross-réf cliquable),
  *  jamais comme « modificateur continu ». Filtrés ici pour ne pas doublonner avec `careerGrantSection`. */
@@ -53,8 +53,10 @@ function flowSummary(f: Flow): string {
       const opp = f.test.opposed ? ` opposé (${f.test.opposed.attackerLabel ?? f.test.opposed.attacker})` : '';
       return `jet${opp} ${who} → réussite : ${flowSummary(f.success)} / échec : ${flowSummary(f.fail)}`;
     }
-    case 'choice':
-      return `choix${f.advantageCost != null ? ` (${f.advantageCost} Av)` : ''} « ${f.prompt} » → oui : ${flowSummary(f.yes)}${f.no ? ` / non : ${flowSummary(f.no)}` : ''}`;
+    case 'choice': {
+      const cout = coutAvantageTexte(f.advantageCost);
+      return `choix${cout ? ` (${cout} Av)` : ''} « ${f.prompt} » → oui : ${flowSummary(f.yes)}${flowMuet(f.no) ? '' : ` / non : ${flowSummary(f.no!)}`}`;
+    }
   }
 }
 

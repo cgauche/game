@@ -58,6 +58,51 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     expect(hemo(foe)?.value).toBe(1);
   });
 
+  /**
+   * SANS routeur cadence-aware (`ctx.set` absent — entretien hors combat), un Flow n'a pas de voie
+   * d'interaction : ses parties PURES jouent, un `choice` n'est pas offert. Un `test` ENFOUI sous un
+   * `choice`, lui, ne doit JAMAIS passer en silence : `runPureFlowLines` n'a aucun `case 'choice'` — il
+   * traverserait le nœud sans rien faire, et la branche de jet serait perdue sans un mot.
+   */
+  it('CHOICE sans routeur : un `test` ENFOUI sous le choix LÈVE (jamais une branche de jet muette)', () => {
+    const porteur = mk({ id: 'po' });
+    const victime = mk({ id: 'vi' });
+    const flow: Flow = {
+      kind: 'choice', prompt: 'Renverser', advantageCost: 2,
+      yes: {
+        kind: 'test',
+        test: { characteristic: 'force', skill: { id: 'athletisme' } },
+        success: { kind: 'seq', steps: [] },
+        fail: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'a-terre' }] } },
+      },
+      no: { kind: 'seq', steps: [] },
+    } as Flow;
+    expect(
+      () => applyTriggeredEffects(noBattle(), porteur, [{ trigger: 'onHit', on: 'victim', flow }], 'onHit', { victim: victime }),
+      'un Test enfoui sous un `choice` a été traversé en SILENCE — aucune branche jouée, aucune levée.',
+    ).toThrow(/routeur cadence-aware/);
+    expect(victime.conditions, 'la cible a subi une conséquence alors qu’aucun jet n’a été joué.').toEqual([]);
+  });
+
+  it('CHOICE sans routeur, cas Taillade (`choice{yes:do}`) : l’État AUTOMATIQUE joue, le choix n’est pas offert, aucune levée', () => {
+    const porteur = mk({ id: 'po' });
+    const victime = mk({ id: 'vi' });
+    const flow: Flow = {
+      kind: 'seq',
+      steps: [
+        { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'hemorragique' }] } },
+        {
+          kind: 'choice', prompt: 'Ouvrir la plaie', advantageCost: 1,
+          yes: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'hemorragique' }] } },
+        },
+      ],
+    } as Flow;
+    porteur.advantage = 5;
+    applyTriggeredEffects(noBattle(), porteur, [{ trigger: 'onCrit', on: 'victim', flow }], 'onCrit', { victim: victime });
+    expect(victime.conditions.find((c) => c.id === 'hemorragique')?.value, 'l’État automatique du Critique manque, ou le choix a été joué GRATUITEMENT.').toBe(1);
+    expect(porteur.advantage, 'un Avantage a été dépensé sans que personne n’ait choisi.').toBe(5);
+  });
+
   it('ATOUT Empaleuse : Critique à DISTANCE pose 1 munition logée (marqueur, LDB 62 l.250, #473) ; PAS en mêlée', () => {
     const archer = mk({ id: 'ar' });
     const foe = mk({ id: 'fo' });

@@ -15,6 +15,7 @@ import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest, spell
 import type { OpsCtx, GameOp } from '../engine/ops';
 import { traceLineOf, testTraceLabel } from '../engine/traceLine';
 import { resolveQualities } from '../engine/qualities/dispatch';
+import { INDICE_TEMPLATE } from '../engine/flowCore';
 import { weaponIdentity } from '../engine/items';
 import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
@@ -74,6 +75,13 @@ function withArg(effects: TriggeredEffect[], arg?: string, value?: number): Trig
       const test = f.test.argDifficulty && diff ? { ...f.test, difficulty: diff } : f.test;
       return { ...f, test, success: visit(f.success), fail: visit(f.fail) };
     }
+    if (f.kind === 'choice') {
+      // Le COÛT d'Avantage d'un `choice` accepte le MÊME template `$indice` que les ops (Taillade : X = son
+      // Indice, `AA 08 l.87`). Sans Indice sur l'instance, il reste tel quel : `resolveFlowChoice` n'offre
+      // alors PAS le nœud (jamais un coût 0). Les branches sont visitées comme toute autre.
+      const cout = f.advantageCost === INDICE_TEMPLATE && value !== undefined ? value : f.advantageCost;
+      return { ...f, advantageCost: cout, yes: visit(f.yes), ...(f.no ? { no: visit(f.no) } : {}) };
+    }
     if (f.kind === 'do' && f.effect.type === 'ops') return { ...f, effect: { ...f.effect, ops: f.effect.ops.map(substOp).filter((o): o is GameOp => o != null) } };
     return f;
   };
@@ -95,7 +103,9 @@ export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSourc
   const out: TriggerSource[] = [];
   if (weapon?.onHitEffects?.length) { const wid = weaponIdentity(weapon); out.push({ effects: withSource(weapon.onHitEffects, { kind: 'trapping', id: wid }), cap: 1, key: `weapon:${wid}`, label: weapon.label }); }
   for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withSource(withArg(d.effects, tr.arg, tr.value), { kind: 'trait', id: tr.id }), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
-  if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'quality', id }), cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
+  // L'Indice de l'instance (`Taillade (1A)` → 1) PARAMÈTRE les effets de la qualité comme l'arg/l'Indice
+  // d'un Trait paramètre les siens — MÊME `withArg`, même convention `$indice`, aucune voie parallèle.
+  if (weapon) for (const { id, indice } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: withSource(withArg(d.effects, undefined, indice), { kind: 'quality', id }), cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
   for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'talent', id: t.talentId }), cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
   // Symptômes ACTIFS des maladies (Crampes abdominales `onOwnTestFailed`, MSRC 16) — insérés APRÈS les
   // Talents et AVANT les États : ils composent comme un Trait/passif du CORPS (source NON-statut, sans
@@ -258,6 +268,29 @@ type TestRouter = (get: Get, set: SetFn, target: Combatant, actor: Combatant, fl
 let testRouter: TestRouter | undefined;
 export function setTriggeredTestRouter(fn: TestRouter): void { testRouter = fn; }
 
+/** Flow INTERACTIF (`flowHasTest`) atteint SANS routeur cadence-aware : un `test` TOP-LEVEL se joue
+ *  inline ; toute autre forme n'a pas de voie d'interaction ici — ses parties PURES jouent (l'État
+ *  automatique d'un Critique de Taillade), le nœud `choice` n'est PAS offert. Un `test` ENFOUI lève
+ *  toujours (`resolveInlineFlowTest`) : une branche de jet muette n'est jamais acceptable. */
+function resoudreSansRouteur(t: Combatant, actor: Combatant, flow: Flow, ctx: OpsCtx, get?: Get): string[] {
+  if (flow.kind === 'test' || !flowHasChoiceSeulement(flow)) return resolveInlineFlowTest(t, flow, ctx, get);
+  return runPureFlowLines(t, actor, flow, ctx);
+}
+
+/** Le Flow ne doit son caractère interactif qu'à des nœuds `choice` (aucun `test` à jouer). */
+function flowHasChoiceSeulement(flow: Flow): boolean {
+  switch (flow.kind) {
+    case 'do': return true;
+    case 'test': return false;
+    // Un `choice` n'est PAS une feuille : ses branches portent souvent LE Test (« Vous pouvez… » →
+    // jet, Déstabilisante). Sans descendre, un `test` enfoui sous un `choice` serait rendu MUET par
+    // `runPureFlowLines`, qui n'a aucun `case 'choice'`.
+    case 'choice': return flowHasChoiceSeulement(flow.yes) && (flow.no ? flowHasChoiceSeulement(flow.no) : true);
+    case 'seq': return flow.steps.every(flowHasChoiceSeulement);
+    case 'if': return flowHasChoiceSeulement(flow.then) && (flow.else ? flowHasChoiceSeulement(flow.else) : true);
+  }
+}
+
 /** Résolution INLINE d'un nœud `test` TOP-LEVEL sans routeur cadence-aware (entretien HORS COMBAT) —
  *  jumeau store-free de la branche NON-interactive de `resolveFlowTest` : jet du Test (`combatTestPenalty`
  *  comme un Test simple), puis branche `success`/`fail` jouée par `runPureFlowLines` (mêmes ops). Un `test`
@@ -395,7 +428,7 @@ export function applyTriggeredEffects(
         // ou le DOUBLE (inline + étape).
         if (ctx.deferInteractiveTest) {
           if (surfaceOf(get, t.id)) continue;
-          lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx, get));
+          lines.push(...resoudreSansRouteur(t, actor, eff.flow, flowCtx, get));
           continue;
         }
         // Hors fin de Round : voie cadence-aware si un routeur est branché (onGainCondition / attaques →
@@ -408,7 +441,7 @@ export function applyTriggeredEffects(
           : eff.flow;
         if (ctx.set && testRouter) { testRouter(get, ctx.set, t, actor, flow, flowCtx); continue; }
         if (eff.optional) continue; // opt-in SANS voie de choix (entretien hors combat) → non exercé
-        lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx, get));
+        lines.push(...resoudreSansRouteur(t, actor, eff.flow, flowCtx, get));
         continue;
       }
       lines.push(...runPureFlowLines(t, actor, eff.flow, flowCtx));

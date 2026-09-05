@@ -14,7 +14,7 @@
  * table id→label parallèle. PUR (structure → string) — testable sans DOM.
  */
 import type { Flow, Condition, EffectOp } from '../../state/flow';
-import type { ActorRef, CompareOp, CompareSubject } from '../../engine/flowCore';
+import { INDICE_TEMPLATE, type ActorRef, type CompareOp, type CompareSubject } from '../../engine/flowCore';
 import { estCausePersistante, type GameOp, type Formula } from '../../engine/ops';
 import type { Camp, Relation } from '../../engine/relations';
 import { CHAR_LABELS, HIT_LOCATION_LABELS, type CharKey, type ArmourBypass } from '../../engine/types';
@@ -236,6 +236,23 @@ function humanizeFall(tableId: string): string {
  *  composée par les trois lecteurs du Codex (`humanizeOp`, `opRows`, dialecte miscast de `registry`). */
 export const CAUSE_PERSISTANTE = 'regagné à chaque fin de Round';
 
+/** MAGNITUDE d'un coût d'Avantage (`Flow` `choice.advantageCost`) telle qu'un JOUEUR la lit. Un coût
+ *  resté TEMPLATE (`INDICE_TEMPLATE`, substitué par `withArg` sur l'instance porteuse) se lit comme le
+ *  livre l'imprime — `AA 08 l.87` « **Taillade (XA) :** … dépenser X Avantages ». SOURCE UNIQUE des deux
+ *  lecteurs de Codex (`humanizeFlow`, `describe::flowSummary`) : un `$indice` ne doit jamais atteindre
+ *  l'écran. `undefined` = pas de coût (l'appelant n'imprime alors rien). */
+export function coutAvantageTexte(cost: number | typeof INDICE_TEMPLATE | undefined): string | undefined {
+  if (cost == null) return undefined;
+  return cost === INDICE_TEMPLATE ? 'X' : String(cost);
+}
+
+/** Un Flow VIDE (`seq` sans étape, ici comme en donnée) ne se dit pas : « ; sinon » suivi de rien est du
+ *  bruit. Prédicat PARTAGÉ par les deux lecteurs, sur la branche `no` d'un `choice` (renoncer = ne rien
+ *  faire, la forme la plus courante en donnée). */
+export function flowMuet(f: Flow | undefined): boolean {
+  return !f || (f.kind === 'seq' && f.steps.length === 0);
+}
+
 /** Une rangée qui pose un État PUIS déclare la cause qui le maintient (`LDB 16 l.117`) l'écrit en DEUX
  *  ops ; elle se LIT en UNE chip — la pose littérale est ABSORBÉE par la cause, qui porte le terme et la
  *  durée. Pré-passe PARTAGÉE des deux lecteurs de LISTES d'ops (`opRows`, dialecte miscast de
@@ -401,8 +418,10 @@ export function humanizeFlow(f: Flow): string {
       const opp = f.test.opposed ? ' opposé' : '';
       return `Jet${opp} de ${who} : en cas de réussite, ${humanizeFlow(f.success)} ; en cas d'échec, ${humanizeFlow(f.fail)}`;
     }
-    case 'choice':
-      return `Au choix${f.advantageCost != null ? ` (${f.advantageCost} Avantage)` : ''} « ${f.prompt} » : si oui, ${humanizeFlow(f.yes)}${f.no ? ` ; sinon ${humanizeFlow(f.no)}` : ''}`;
+    case 'choice': {
+      const cout = coutAvantageTexte(f.advantageCost);
+      return `Au choix${cout ? ` (${cout} Avantage)` : ''} « ${f.prompt} » : si oui, ${humanizeFlow(f.yes)}${flowMuet(f.no) ? '' : ` ; sinon ${humanizeFlow(f.no!)}`}`;
+    }
   }
   return assertNever(f);
 }

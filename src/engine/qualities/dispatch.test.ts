@@ -80,11 +80,20 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
     expect(parryDRAdjust(w(['Déséquilibrée']), w([]))).toBe(-1);
     expect(parryDRAdjust(w(['Défensive']), w(['Déséquilibrée']))).toBe(1);
   });
-  it('Taillade : État Hémorragique sur Critique — canal générique effects:[{trigger:onCrit}] (donnée)', () => {
+  it('Taillade : sur Critique, Hémorragique AUTOMATIQUE puis choix d’un 2ᵉ au prix de l’Indice (AA 08 l.87)', () => {
     const eff = findQualityById('taillade')?.effects?.[0];
     expect(eff?.trigger).toBe('onCrit');
-    const ops = (eff?.flow as { effect?: { ops?: { op: string; name?: string }[] } })?.effect?.ops;
-    expect(ops?.[0]).toMatchObject({ op: 'condition', id: 'hemorragique' });
+    const flow = eff?.flow;
+    expect(flow?.kind, 'la séquence « État automatique puis offre » a disparu').toBe('seq');
+    const steps = flow?.kind === 'seq' ? flow.steps : [];
+    const auto = steps[0]?.kind === 'do' && steps[0].effect.type === 'ops' ? steps[0].effect.ops : undefined;
+    expect(auto?.[0]).toMatchObject({ op: 'condition', id: 'hemorragique' });
+    const choix = steps[1];
+    expect(choix?.kind).toBe('choice');
+    if (choix?.kind !== 'choice') throw new Error('nœud de choix absent');
+    expect(choix.advantageCost).toBe('$indice'); // X = l'Indice imprimé (1A / 2A), jamais un coût figé
+    const sup = choix.yes.kind === 'do' && choix.yes.effect.type === 'ops' ? choix.yes.effect.ops : undefined;
+    expect(sup?.[0]).toMatchObject({ op: 'condition', id: 'hemorragique' });
     expect(findQualityById('taillade')?.capabilities).toBeUndefined(); // plus de capability bespoke
   });
   it('Déstabilisante : effet onHit data-driven — choix (2 Av) → Test opposé Force/Athlétisme → À Terre (effects, donnée)', () => {
@@ -206,45 +215,62 @@ describe('parité — toute qualité d’ARME des données est connue (registre 
 });
 
 /**
- * La SPÉCIALISATION authorée d'un Atout traverse jusqu'à l'affichage (#1463 L-gram-2, défaut adjacent).
- * `Taillade (1A)`/`(2A)` est imprimé ainsi à la colonne Atouts (AA 08 l.136 « Cimeterre … Taillade (1A) »,
- * l.304 « Pertuisane/Fauchard … Taillade (2A) » ; l'Atout lui-même est « **Taillade (XA) :** », l.87).
- * Le rendu passe par l'UNIQUE `qualityRefLabel` → `refConcrete` : rien n'est redéfini ici. Aucune
- * logique ne lit cette spec — l'effet authoré de `taillade` ne joue que l'État automatique.
+ * L'INDICE authoré d'un Atout va de la donnée au COÛT joué ET au libellé imprimé — Taillade (XA) :
+ * « Vous pouvez dépenser X Avantages pour que votre opposant subisse 1 État Hémorragique
+ * supplémentaire » (AA 08 l.87 ; colonne Atouts l.136 « Taillade (1A) », l.304 « Taillade (2A) »).
+ * La FORME du libellé est pilotée par la donnée (`QualityData.indice.unite`), jamais par l'id : sans
+ * unité, le livre accole la valeur nue (LDB 62 l.33 « Protectrice 2 », l.66 « Recharge 1 »).
  */
-describe('spécialisation d’un Atout — elle SURVIT de la donnée à l’affichage', () => {
+describe('Indice d’un Atout — il atteint le COÛT du choix et le libellé IMPRIMÉ', () => {
   const flamberge = findTrappingById('zweihander-flamberge')!;
-  /** Toutes les références d'Atout à SPEC du catalogue — mesurées, jamais listées à la main. */
-  const trappingsAvecSpec = () =>
-    trappings.flatMap((t) => (t.qualities ?? []).filter((q) => q.spec != null).map((q) => ({ id: t.id, q })));
+  /** Toutes les références d'Atout INDICÉ à unité du catalogue — mesurées, jamais listées à la main. */
+  const refsTaillade = () =>
+    trappings.flatMap((t) => (t.qualities ?? []).filter((q) => q.id === 'taillade').map((q) => ({ id: t.id, q })));
 
-  it('la donnée réelle porte la spec, et `resolveQualities` la fait TRAVERSER', () => {
-    expect(flamberge.qualities?.find((q) => q.id === 'taillade')?.spec, 'le porteur de référence a perdu sa spec en donnée').toBe('2A');
+  it('la donnée porte l’Indice, et `resolveQualities` le fait TRAVERSER jusqu’à `indice`', () => {
+    expect(flamberge.qualities?.find((q) => q.id === 'taillade')?.value, 'le porteur de référence a perdu son Indice en donnée').toBe(2);
     const resolue = resolveQualities({ qualities: flamberge.qualities!, subType: flamberge.subType })
       .find((r) => r.id === 'taillade')!;
-    expect(resolue.spec).toBe('2A');
-    expect(qualityRefLabel({ id: resolue.id, spec: resolue.spec, value: resolue.indice })).toBe('Taillade (2A)');
+    expect(resolue.indice).toBe(2);
+    expect(qualityRefLabel({ id: resolue.id, value: resolue.indice })).toBe('Taillade (2A)');
   });
 
-  it('un Atout SANS spec est rendu inchangé (aucune parenthèse inventée), Indice compris', () => {
-    expect(qualityRefLabel({ id: 'devastatrice' })).toBe('Dévastatrice');
+  it('l’UNITÉ vient de la donnée : avec unité → parenthèses, sans unité → valeur nue, sans Indice → rien', () => {
+    expect(findQualityById('taillade')?.indice?.unite, 'l’unité imprimée par AA 08 l.87 a quitté la donnée').toBe('A');
+    expect(findQualityById('solide')?.indice?.unite).toBeUndefined();
+    expect(qualityRefLabel({ id: 'taillade', value: 1 })).toBe('Taillade (1A)');
     expect(qualityRefLabel({ id: 'solide', value: 3 })).toBe('Solide 3');
+    expect(qualityRefLabel({ id: 'devastatrice' })).toBe('Dévastatrice');
   });
 
-  it('la spec survit à la matérialisation en OBJET DE SAC et au round-trip JSON', () => {
+  it('l’Indice survit à la matérialisation en OBJET DE SAC et au round-trip JSON', () => {
     const item = itemFromTrappingById('zweihander-flamberge')!;
     const porte = item.qualities.find((q) => q.id === 'taillade')!;
-    expect(porte.spec, 'la spec est perdue à la matérialisation (`qualityInstance`)').toBe('2A');
+    expect(porte.value, 'l’Indice est perdu à la matérialisation (`qualityInstance`)').toBe(2);
     const relu = JSON.parse(JSON.stringify(item)) as typeof item;
-    expect(relu.qualities.find((q) => q.id === 'taillade')?.spec, 'la spec est perdue à la sauvegarde').toBe('2A');
+    expect(relu.qualities.find((q) => q.id === 'taillade')?.value, 'l’Indice est perdu à la sauvegarde').toBe(2);
     expect(qualityRefLabel(relu.qualities.find((q) => q.id === 'taillade')!)).toBe('Taillade (2A)');
   });
 
-  it('les CINQ références à spec du catalogue rendent leur parenthèse (population mesurée)', () => {
-    const avecSpec = trappingsAvecSpec();
-    expect(avecSpec.length, 'la population des Atouts à spec a disparu : le test ne mesure plus rien.').toBe(5);
-    for (const { id, q } of avecSpec)
-      expect(qualityRefLabel(q), `${id} : la spec ne se rend pas`).toBe(`Taillade (${q.spec})`);
+  it('le libellé imprimé se REPARSE en Indice (aller-retour d’authoring)', () => {
+    expect(parseQualityInstance('Taillade (1A)')).toEqual({ id: 'taillade', value: 1 });
+    expect(parseQualityInstance('Solide 3')).toEqual({ id: 'solide', value: 3 });
+  });
+
+  it('les CINQ armes de Taillade du catalogue portent un Indice et rendent leur parenthèse (population mesurée)', () => {
+    const refs = refsTaillade();
+    expect(refs.length, 'la population des armes de Taillade a disparu : le test ne mesure plus rien.').toBe(5);
+    expect(refs.map(({ q }) => q.value).sort()).toEqual([1, 1, 1, 2, 2]);
+    for (const { id, q } of refs)
+      expect(qualityRefLabel(q), `${id} : l’Indice ne se rend pas`).toBe(`Taillade (${q.value}A)`);
+  });
+
+  it('le COÛT du choix authoré est le TEMPLATE `$indice` (aucun coût figé en donnée)', () => {
+    const flow = findQualityById('taillade')?.effects?.[0]?.flow;
+    expect(flow?.kind).toBe('seq');
+    const choix = flow?.kind === 'seq' ? flow.steps.find((f) => f.kind === 'choice') : undefined;
+    expect(choix, 'le nœud `choice` de Taillade a disparu : le coût en Avantages n’est plus offert').toBeDefined();
+    expect(choix?.kind === 'choice' ? choix.advantageCost : null).toBe('$indice');
   });
 });
 

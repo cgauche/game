@@ -74,10 +74,21 @@ const FORMULA_FIELDS = [
   'durationMinutes', 'durationHours', 'afterMinutes', 'afterHours', 'afterDays', 'forMinutes', 'forHours', 'forDays',
 ];
 
-/** Template d'instance substitué au runtime par `withArg` (state/triggeredEffects) — légitime UNIQUEMENT
- *  dans les `effects` de `traits.json` (`$arg` ← arg d'instance, `$indice` ← Indice). Ailleurs = bug. */
+/** Templates d'instance substitués au runtime par `withArg` (state/triggeredEffects), PAR FICHIER — un
+ *  template n'est légitime que là où le paramètre existe :
+ *  - `traits.json` : `$arg` (arg d'instance, « Venin (Difficile) ») ET `$indice` — un Trait porte les deux.
+ *  - `qualities.json` : `$indice` SEUL. La branche QUALITÉ d'`effectSourcesOf` appelle `withArg(effects,
+ *    undefined, indice)` : une qualité n'a pas d'arg, et un `$arg` y serait DROPPÉ en silence (`substOp`
+ *    rend l'op inerte, le coût d'un `choice` resterait template → nœud non offert).
+ *  Ailleurs = bug.
+ *  PÉRIMÈTRE DÉCLARÉ : la porte est le FICHIER + le chemin `effects`, pas le champ ; un template posé sous
+ *  un autre champ d'`effects` de ces deux fichiers passerait ici et serait DROPPÉ au runtime, pas détecté. */
+const TEMPLATES_PAR_FICHIER: Record<string, readonly string[]> = {
+  'traits.json': ['$arg', '$indice'],
+  'qualities.json': ['$indice'],
+};
 const isTemplate = (v: unknown, file: string, path: string): boolean =>
-  (v === '$arg' || v === '$indice') && file === 'traits.json' && path.includes('effects');
+  typeof v === 'string' && (TEMPLATES_PAR_FICHIER[file] ?? []).includes(v) && path.includes('effects');
 
 /** Un objet est-il une `GameOp` à valider ? `op` string ET PAS de `kind` (les Conditions `compare`/… ont
  *  un `kind` et réutilisent la clé `op` pour un opérateur — jamais une GameOp). */
@@ -162,7 +173,7 @@ describe('Intégrité des données src/data/*.json', () => {
   it('3 — tout champ Formula est une Formule valide (number fini OU objet à clé connue)', () => {
     expect(scan.badFormulas, `Formule(s) invalide(s) — une string ici planterait resolveFormula :\n${fmt(scan.badFormulas)}`).toEqual([]);
   });
-  it("4 — aucune string $… non substituée (sauf template $arg/$indice dans les effects de traits.json)", () => {
+  it("4 — aucune string $… non substituée (sauf template $arg/$indice dans les effects de traits.json / qualities.json)", () => {
     expect(scan.badPlaceholders, `Placeholder(s) $… qui fuiraient au runtime :\n${fmt(scan.badPlaceholders)}`).toEqual([]);
   });
   it('5 — les refs (créature/trait/État/maladie) résolvent', () => {
@@ -190,6 +201,21 @@ describe('Intégrité des données src/data/*.json', () => {
       expect(bad, `${op}.${field} : la garde n'a rien vu`).toHaveLength(1);
       expect(bad[0].path).toBe(`[0].${field}`);
     }
+  });
+  it("4bis — le périmètre de template est PAR FICHIER : `$arg` dans une qualité est un placeholder (contre-épreuve)", () => {
+    const probe = (file: string, gabarit: string) => {
+      const s: Scan = { parseErrors: [], unknownOps: [], badFormulas: [], badPlaceholders: [], badRefs: [], strayImpureOps: [] };
+      walk({ effects: [{ trigger: 'onCrit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'a-terre', durationRounds: gabarit }] } } }] }, file, '', s);
+      return s.badPlaceholders;
+    };
+    expect(probe('traits.json', '$arg'), 'un Trait porte un `$arg` : `withArg` le substitue.').toEqual([]);
+    expect(probe('traits.json', '$indice'), 'un Trait porte un `$indice`.').toEqual([]);
+    expect(probe('qualities.json', '$indice'), 'une qualité porte son Indice (`AA 08 l.87`).').toEqual([]);
+    expect(
+      probe('qualities.json', '$arg'),
+      '`$arg` toléré dans une qualité : la branche QUALITÉ passe `arg: undefined`, il serait DROPPÉ en silence.',
+    ).toHaveLength(1);
+    expect(probe('spells.json', '$indice'), 'un template hors des deux fichiers porteurs doit rester un placeholder.').toHaveLength(1);
   });
   it("6 — extraction des champs TriggeredEffect[] depuis data/index.ts (méta — non vide, effects/onHitEffects présents)", () => {
     expect(TRIGGERED_EFFECT_FIELDS.size).toBeGreaterThan(0);
@@ -219,5 +245,77 @@ describe('Intégrité des données src/data/*.json', () => {
     expect(dupes, `Id(s) d'action en double :\n  ${dupes.join('\n  ')}`).toEqual([]);
     const orphanRule = actions.filter((a) => !!a.rule !== !!a.ruleCategory).map((a) => a.id);
     expect(orphanRule, `Action(s) dont rule et ruleCategory ne vont pas ensemble :\n  ${orphanRule.join('\n  ')}`).toEqual([]);
+  });
+});
+
+/**
+ * Une qualité qui DÉCLARE un Indice (`QualityData.indice`) l'EXIGE sur chacune de ses références.
+ * L'Indice est le paramètre de l'effet authoré : `effectSourcesOf` passe `withArg(effects, undefined,
+ * indice)`, et un `$indice` non substitué rend le nœud porteur inerte — le 2ᵉ Hémorragique de Taillade
+ * n'est jamais offert (`AA 08 l.87`), en silence. Le silence RUNTIME reste la 2ᵉ ligne
+ * (`state/combat/triggeredTest.ts::resolveFlowChoice`, coût resté template → branche `no`) ; ici, la
+ * donnée est refusée AVANT.
+ *
+ * RÈGLE UNIFORME, sans exception par id : la porte est « la qualité déclare `indice` », pas « la qualité
+ * s'appelle Taillade ». Elle vaut donc aussi pour `solide` (qui déclare `indice` sans unité) — au relevé,
+ * les DEUX populations sont déjà conformes, la garde ne migre rien, elle empêche la régression.
+ *
+ * PÉRIMÈTRE : les deux racines AUTHORÉES en JSON — `src/data/*.json` (catalogue `trappings.json`, armes
+ * embarquées de `creatures.json`) et les documents de `src/scenes`. ANGLE MORT nommé : les scénarios de
+ * test écrits en TS (`src/scenes/test-scenarios/*.ts`) ne sont pas parsés ici — le même trou d'entrée que
+ * `scenarios-contrat.test.ts` couvre par ailleurs.
+ */
+describe('Indice d’Atout — une qualité qui déclare `indice` l’exige sur CHAQUE référence', () => {
+  const SCENES_DIR = fileURLToPath(new URL('../scenes', import.meta.url));
+  const jsonSous = (dir: string): string[] => {
+    const out: string[] = [];
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) out.push(...jsonSous(p));
+      else if (e.name.endsWith('.json')) out.push(p);
+    }
+    return out;
+  };
+  const racines = [...files.map((f) => join(DIR, f)), ...jsonSous(SCENES_DIR)];
+
+  /** Ids des qualités qui DÉCLARENT un Indice — lus de la donnée, jamais listés à la main. */
+  const indices = new Set(
+    (JSON.parse(readFileSync(join(DIR, 'qualities.json'), 'utf8')) as { id: string; indice?: unknown }[])
+      .filter((q) => q.indice).map((q) => q.id),
+  );
+
+  /** Toute réf d'Atout posée sous une clé `qualities` des deux racines, avec son chemin. */
+  const refs: { site: string; ref: Record<string, unknown> }[] = [];
+  for (const f of racines) {
+    let data: unknown;
+    try { data = JSON.parse(readFileSync(f, 'utf8')); } catch { continue; }
+    const rel = f.slice(f.lastIndexOf('src')).replace(/\\/g, '/');
+    const visite = (n: unknown, path: string): void => {
+      if (Array.isArray(n)) return n.forEach((v, i) => visite(v, `${path}[${i}]`));
+      if (!n || typeof n !== 'object') return;
+      for (const [k, v] of Object.entries(n as Record<string, unknown>)) {
+        if (k === 'qualities' && Array.isArray(v))
+          v.forEach((q, i) => { if (q && typeof q === 'object') refs.push({ site: `${rel}${path}.qualities[${i}]`, ref: q as Record<string, unknown> }); });
+        visite(v, `${path}.${k}`);
+      }
+    };
+    visite(data, '');
+  }
+
+  it('le scan VOIT les deux populations qu’il prétend garder (sinon un vert vide passerait)', () => {
+    expect(indices.size, 'aucune qualité ne déclare d’Indice : la garde ne mesure plus rien.').toBeGreaterThan(0);
+    expect(refs.length, 'aucune référence d’Atout trouvée dans les deux racines authorées.').toBeGreaterThan(100);
+    expect(refs.filter((r) => indices.has(r.ref.id as string)).length, 'aucune référence vers une qualité INDICÉE.').toBeGreaterThan(0);
+  });
+
+  it('aucune référence vers une qualité INDICÉE sans `value` — le manque est NOMMÉ à son site', () => {
+    const nus = refs
+      .filter((r) => indices.has(r.ref.id as string) && typeof r.ref.value !== 'number')
+      .map((r) => `${r.site} → ${JSON.stringify(r.ref)}`);
+    expect(
+      nus,
+      'Référence(s) vers une qualité qui DÉCLARE un Indice, posée(s) SANS `value` — son effet authoré resterait ' +
+        `inerte au runtime (template non substitué) :\n  ${nus.join('\n  ')}`,
+    ).toEqual([]);
   });
 });

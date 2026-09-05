@@ -276,7 +276,15 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // (`ship-stations.json`) — leur signature s'allonge, et leur compte croît, à chaque station qui
 // gagne une colonne de hauteur ; c'est le prix de la lecture PAR CLÉ (aucun `if` par station dans
 // le moteur), pas une dérive à migrer.
-const PLAFOND_HORS_STRATE = 1145;
+// 1145 → 1148 (#1661) : trois signatures NEUVES, toutes MESURÉES, toutes portées par l'Atout Taillade
+// (`AA 08 l.87`, « Vous pouvez dépenser X Avantages pour que votre opposant subisse 1 État Hémorragique
+// supplémentaire ») — `qualities.json | indice | label,unite` (l'UNITÉ imprimée par le livre avec la
+// valeur, « (1A) », qui pilote `qualityRefLabel`), `| steps | advantageCost,icon,kind,no,prompt,yes`
+// et `| yes | effect,kind` (le nœud `choice` de la grammaire, jusqu'ici vu au seul TOP-LEVEL de
+// Déstabilisante : le mettre dans un `seq` derrière l'État automatique EXPOSE ses deux signatures).
+// Aucune n'est une graphie neuve : ce sont les nœuds DÉCLARÉS de `flowSchema` (`grammaire/mecanique.ts`),
+// que la mesure voit ici à une PROFONDEUR inédite dans `qualities.json` (un `choice` sous un `seq`).
+const PLAFOND_HORS_STRATE = 1148;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -1713,7 +1721,9 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // hauteur se lit dans la table par (Taille de coque × station), jamais authorée au site.
     // #1653 train A : +1 op authorée — la CAUSE récurrente de « Purifier la chair » (LDB 40 l.75) est une
     // seconde op `condition` de la même rangée, pas un champ de plus sur la première.
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2269);
+    // #1661 : +1 op authorée — le 2ᵉ État Hémorragique de Taillade (`AA 08 l.87`), MÊME op `condition`
+    // que l'État automatique du Critique, portée par la branche `yes` du choix.
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2270);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le

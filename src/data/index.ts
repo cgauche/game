@@ -1890,8 +1890,10 @@ export interface QualityData {
   /** Drapeaux/marqueurs de CAPACITÉ irréductibles (résolution combat, artisanat) — migrés des `defs/`,
    *  lus PAR ID par `engine/qualities/dispatch`. Édité au Codex. */
   capabilities?: QualityCapabilities;
-  /** Cette qualité est INDICÉE (LDB 60 p.286) — MÊME forme que `TraitData.indice`. */
-  indice?: { label: string };
+  /** Cette qualité est INDICÉE (LDB 60 p.286) — forme de `TraitData.indice`, plus l'UNITÉ imprimée avec
+   *  la valeur quand le livre en pose une (`AA 08 l.87` « Taillade (XA) » ; `LDB 62 l.66` « Recharge 1 »
+   *  n'en a pas). Lue par `qualityRefLabel`. */
+  indice?: { label: string; unite?: string };
 }
 /** Capacités IRRÉDUCTIBLES d'un symptôme de maladie — drapeaux lus par la machinerie de cycle
  *  (`engine/disease`), pour les comportements non exprimables en GameOp continu. */
@@ -3427,13 +3429,18 @@ export function refLabel(category: string, ref: Ref): PlayerText {
 export function qualityInstance(q: QualityRef): import('../engine/types').QualityInstance {
   return {
     id: q.id,
-    ...(q.spec != null ? { spec: q.spec } : {}),
     ...(q.value != null ? { value: q.value } : {}),
   };
 }
-/** Libellé d'affichage d'une `QualityRef` (ou `QualityInstance` runtime) : « Solide 3 », « Tranchante ». */
+/** Libellé d'affichage d'une `QualityRef` (ou `QualityInstance` runtime) : « Tranchante », « Solide 3 »,
+ *  « Taillade (1A) ». La FORME de l'Indice est pilotée par la DONNÉE (`QualityData.indice.unite`) : sans
+ *  unité, le livre accole la valeur nue (`LDB 62 l.33` « Protectrice 2 », l.66 « Recharge 1 ») ; avec unité,
+ *  il la parenthèse (`AA 08 l.136` « Taillade (1A) », l.304 « Taillade (2A) »). Zéro branche par id. */
 export function qualityRefLabel(q: QualityRef): string {
-  return q.value != null ? `${refLabel('qualities', q)} ${q.value}` : refLabel('qualities', q);
+  const base = refLabel('qualities', q);
+  if (q.value == null) return base;
+  const unite = qualityById.get(q.id)?.indice?.unite;
+  return unite ? `${base} (${q.value}${unite})` : `${base} ${q.value}`;
 }
 /** Libellé d'affichage / CLÉ d'une `SkillInstance` (id+spec → « Langue (Magick) »). Repli sur l'id.
  *  Passe par `refConcrete` : ce texte indexe aussi (avancements, fiche). */

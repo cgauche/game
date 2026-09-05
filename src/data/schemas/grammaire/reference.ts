@@ -38,15 +38,21 @@ export const refSchema = z.strictObject({ id: z.string(), spec: z.string().optio
  *  `times` seule, qu'il attribuerait à ce schéma sur tout littéral à clé `times` unique. */
 export const talentRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), times: z.number().optional() });
 
-/** `QualityRef` (`src/data/index.ts`) — `Ref` + Indice éventuel (« Solide 3 » → `value`). Vue COMMUNE
- *  du joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1) ET du catalogue
- *  `trappings.json` lui-même, qui l'importe (#1463 L-gram-2).
- *  Composée sur la SHAPE de `refSchema`, jamais par `.extend` : la composition par shape est la
- *  GRAPHIE UNIQUE de dérivation dans la grammaire, et le volet `extend` de la garde
- *  (`src/data/grammaire-guard.test.ts`) tient cette uniformité — un `.extend` posé ici serait relevé.
- *  Ce qu'elle ne fait PAS : préserver le registre ni la `.meta()` du récepteur — mesuré zod 4.4.3, le
- *  spread les perd exactement comme `.extend`. Le schéma dérivé se ré-annote donc lui-même. */
-export const qualityRefSchema = z.strictObject({ ...refSchema.shape, value: z.number().optional() });
+/** Référence par id portant une MAGNITUDE, et rien d'autre — forme CANONIQUE de la « référence
+ *  indicée » du dépôt (`scripts/guards/lib/structuresStock.mjs`, signature `id,value` : Traits de
+ *  créature, Atouts de `trappings.json`, Améliorations de navire). UNE graphie pour ce concept : les
+ *  schémas qui l'expriment la RÉFÉRENCENT, ils ne la re-tapent pas (volet `redeclaration` de
+ *  `src/data/grammaire-guard.test.ts`). Elle ne dérive PAS de `refSchema` : ce qu'une magnitude qualifie
+ *  n'est pas une SPÉCIALISATION. */
+export const refIndiceSchema = z.strictObject({ id: z.string(), value: z.number().optional() });
+
+/** `QualityRef` (`src/data/index.ts`) — id + Indice éventuel (« Solide 3 », « Taillade (1A) » →
+ *  `value`). Vue COMMUNE du joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1) ET du
+ *  catalogue `trappings.json` lui-même, qui l'importe (#1463 L-gram-2). C'est la référence INDICÉE
+ *  ci-dessus : ce que le livre imprime entre parenthèses (`AA 08 l.87` « Taillade (XA) ») est une
+ *  MAGNITUDE, portée par `value` et déclarée par la qualité (`QualityData.indice`) ; `spec` y était une
+ *  seconde graphie de la même chose, que rien ne lisait — elle est désormais REFUSÉE au parse. */
+export const qualityRefSchema = refIndiceSchema;
 
 
 /** `TrappingRef` (`src/data/index.ts`) — par id de catalogue (+ quantité, + Atouts ATTACHÉS `qualities`

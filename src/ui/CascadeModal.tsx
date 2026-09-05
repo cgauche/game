@@ -657,10 +657,11 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   }
 
   // CHOIX : le joueur tranche (l'option pilote la conséquence) — pas de jet, pas d'influence. Une
-  // DÉVIATION (P3a) porte le Critique pré-tiré (panneau riche `CriticalBody`) ; « Dévier » exige du PA.
+  // DÉVIATION (P3a) porte le Critique pré-tiré (panneau riche `CriticalBody`). Ce rendu est GÉNÉRIQUE :
+  // il ne connaît aucune clé d'option ; l'indisponibilité d'une voie voyage en `refus` depuis son
+  // producteur (`OptionChooser`/`GatedAction` l'affichent au survol/focus/tap).
   if (interaction === 'choix') {
     const rev = cur.reveal;
-    const dev = cur.deviation;
     // UNE SEULE FENÊTRE (#1426) : l'étape a pu porter un TIRAGE avant sa décision (sévérité d'une
     // Blessure critique). Le dé tombé, la MÊME étape offre ses voies — la ligne de tirage reste en
     // TÊTE, zone stable, et les options se prennent dessous. Jamais deux corps successifs.
@@ -669,12 +670,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // `affichage` : le tirage n'est pas un aller sans retour. MÊME délégué (`affordancesDuDe`), donc
     // même sélecteur « Fixer le dé » et même grille de lignes — les voies se prennent dessous.
     const aff = affordancesDuDe(cur);
-    let canDevier = true;
-    if (dev) {
-      const subj = pool.find((c) => c.id === dev.targetId);
-      const loc = dev.mode === 'melee' ? (dev.res.critLocation ?? dev.res.location ?? 'corps') : dev.location;
-      canDevier = (subj?.armour?.[loc] ?? 0) > 0;
-    }
     const revActor = rev?.actorId ? pool.find((c) => c.id === rev.actorId) : undefined;
     const revSubject = rev?.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
     return (
@@ -701,7 +696,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
               groupLabel={cur.label}
               options={(cur.options ?? []).map((o) => ({
                 key: o.key, label: o.label, title: o.detail,
-                disabled: o.key === 'devier' && !canDevier,
+                ...(o.refus ? { refus: o.refus } : {}),
                 selected: cur.chosen === o.key, primary: cur.chosen === o.key,
                 onSelect: () => choose(cur.id, o.key),
               }))}

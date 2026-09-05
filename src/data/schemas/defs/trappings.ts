@@ -11,7 +11,7 @@ import { availabilitySchema, formulaSchema, moneySchema, sizeCategorySchema } fr
 import { gameOpSchema, flowSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 /** Les Atouts d'un objet passent par la vue COMMUNE `qualityRefSchema` : `quality` n'est PAS un type
  *  de `TYPES` (`grammaire/ref.ts`) — aucune fabrique FK ne le vise, et son ouverture est ancrée
- *  #1615/#1621. La population (438 références, dont 5 à spec `{id:'taillade', spec:'1A'|'2A'}`) est
+ *  #1615/#1621. La population (438 références, dont 5 à Indice `{id:'taillade', value:1|2}`) est
  *  mesurée par `grammaire/formes-partagees.test.ts` à défaut d'être refinée au parse. */
 import { qualityRefSchema } from '../grammaire/reference';
 import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';

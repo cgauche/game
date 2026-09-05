@@ -42,7 +42,7 @@ import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
 import { inBattleId, actorIn, coqueParId } from '../combatants';
-import { campSpend } from './advantagePool';
+import { campSpend, spendableAdvantage } from './advantagePool';
 import { dataLabel } from '../../data';
 import { t } from '../../i18n';
 
@@ -674,9 +674,11 @@ registerCascadeApplier('triggeredTest', (get, set, step, hero) => {
   return { consequences: freeCons(journal) };
 });
 
-/** Le coût d'Avantage d'un nœud `choice` est-il payable par le décideur ? (Coût absent ⇒ gratuit ⇒ oui.) */
-function choiceAffordable(decider: Combatant | undefined, advantageCost?: number): boolean {
-  return advantageCost == null || (decider?.advantage ?? 0) >= advantageCost;
+/** Le coût d'Avantage d'un nœud `choice` est-il payable par le décideur ? (Coût absent ⇒ gratuit ⇒ oui.)
+ *  L'Avantage disponible est lu par `spendableAdvantage` — source unique des gardes d'abordabilité, qui
+ *  rend la réserve du CAMP en mode Avantage de groupe (`AA 11 l.30`) et l'Avantage individuel en LDB. */
+function choiceAffordable(get: Get, decider: Combatant | undefined, advantageCost?: number): boolean {
+  return advantageCost == null || (decider ? spendableAdvantage(get, decider) : 0) >= advantageCost;
 }
 
 /**
@@ -693,11 +695,21 @@ function choiceAffordable(decider: Combatant | undefined, advantageCost?: number
  */
 export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'choice' }>, after: Flow): void {
   const decider = ctx.caster ?? ctx.target;
+  if (typeof node.advantageCost === 'string') {
+    // Coût resté TEMPLATE (`$indice` non substitué : l'instance porteuse n'a pas d'Indice) — le nœud n'est
+    // PAS offert, et surtout jamais rendu GRATUIT. On joue la branche `no` et la continuation, comme un refus.
+    runCombatFlow({ ...ctx }, node.no ?? EMPTY_FLOW);
+    if (after !== EMPTY_FLOW) runCombatFlow({ ...ctx }, after);
+    return;
+  }
   if (ctx.mode === 'combat' && decider && surfaceOf(ctx.get, decider.id)) {
     // Décideur surfacé : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal),
     // routée au siège qui tient le décideur — l'hôte ne tranche ni ne dépense l'Avantage d'autrui.
     // Le coût (en libellé) est joint au « Oui » ; l'option est tranchée par `cascadeChoose`.
     const yesLabel = node.advantageCost != null ? `${node.prompt} (${node.advantageCost} Av)` : node.prompt;
+    // Coût hors de portée : l'option reste PRÉSENTE et porte SA cause (rendue au survol/focus/tap par
+    // `OptionChooser`, jamais inline) — l'applier refuse déjà la dépense, l'écran cesse de le taire.
+    const abordable = choiceAffordable(ctx.get, decider, node.advantageCost);
     // CIBLE de la branche : quand la branche vise une AUTRE unité que le décideur (`on:'victim'` —
     // Déstabilisante : le porteur décide, le Test opposé vise la VICTIME), on sérialise son id pour le
     // restaurer en `ctx.target` côté applier (sinon la branche viserait le décideur → Test sur soi-même).
@@ -705,7 +717,7 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
     pushChoice(ctx.set, {
       id: `triggeredChoice-${decider.id}-${node.prompt}`,
       kind: 'triggeredChoice', actorId: decider.id, icon: node.icon ?? 'ui/think', label: dataLabel(node.prompt),
-      options: [{ key: 'yes', label: dataLabel(yesLabel) }, { key: 'no', label: t('opt.renoncer') }],
+      options: [{ key: 'yes', label: dataLabel(yesLabel), ...(abordable ? {} : { refus: t('opt.avantageInsuffisant', { n: node.advantageCost ?? 0, dispo: spendableAdvantage(ctx.get, decider) }) }) }, { key: 'no', label: t('opt.renoncer') }],
       defaultChoice: 'no',
       meta: {
         choiceYes: node.yes, choiceNo: node.no ?? EMPTY_FLOW, after,
@@ -720,7 +732,7 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
     return;
   }
   // Ennemi / héros rapide-auto : décision INLINE (oui si payable). Dépense le coût puis joue la branche.
-  const yes = choiceAffordable(decider, node.advantageCost);
+  const yes = choiceAffordable(ctx.get, decider, node.advantageCost);
   if (yes && node.advantageCost != null && decider) campSpend(ctx.get, decider, node.advantageCost); // débite la réserve du camp (mode groupe) / le combattant (LDB)
   runCombatFlow({ ...ctx }, yes ? node.yes : (node.no ?? EMPTY_FLOW));
   if (after !== EMPTY_FLOW) runCombatFlow({ ...ctx }, after);
@@ -741,7 +753,7 @@ registerCascadeApplier('triggeredChoice', (get, set, step, hero) => {
   const noFlow = step.meta?.choiceNo;
   const fa = step.meta?.freeAttack;
   const freeAttack = fa && typeof fa === 'object' && 'targetId' in fa ? fa : undefined;
-  const can = yes && (cost == null || (hero.advantage ?? 0) >= cost);
+  const can = yes && choiceAffordable(get, hero, cost);
   if (yes && can && cost != null) { campSpend(get, hero, cost); syncCombatant(get, set); } // débite la réserve du camp (mode groupe) / le combattant (LDB)
   // Le DÉCIDEUR (`hero`) est le `caster` (porteur). La branche vise `choiceTargetId` (la VICTIME, Déstabilisante)
   // si présent, sinon le décideur lui-même (Frappe réactive : Test sur soi). Reconstruit depuis get() — jamais capturé.

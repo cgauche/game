@@ -22,9 +22,11 @@ export interface ParsedQuality {
   indice?: number;
 }
 
-/** Sépare un éventuel Indice de fin (« X 3 » / « X (3) ») du label. */
+/** Sépare un éventuel Indice de fin (« X 3 » / « X (3) » / « X (1A) ») du label. L'UNITÉ qui suit la
+ *  valeur (`QualityData.indice.unite`, rendue par `qualityRefLabel` — `AA 08 l.136` « Taillade (1A) »)
+ *  est absorbée ici : sans ça, un aller-retour prose→structure perdrait l'Indice de Taillade. */
 export function splitIndice(raw: string): { label: string; indice?: number } {
-  const m = raw.trim().match(/^(.*?)\s*\(?(\d+)\)?\s*$/);
+  const m = raw.trim().match(/^(.*?)\s*\(?(\d+)\s*[A-Za-zÀ-ÿ]*\)?\s*$/);
   if (m && m[2] != null && m[1].trim()) return { label: m[1].trim(), indice: parseInt(m[2], 10) };
   return { label: raw.trim() };
 }

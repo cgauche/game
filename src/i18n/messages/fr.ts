@@ -1252,6 +1252,7 @@ export const fr = {
   // Un bouton de choix est du texte joueur au même titre que le titre d'étape (`step.*`) ; il en est
   // séparé parce qu'il se lit en position d'ACTION, pas de situation. ──
   'opt.renoncer': 'Renoncer',
+  'opt.avantageInsuffisant': 'Avantages insuffisants : {n} requis, {dispo} disponible(s).',
   'opt.devier': 'Dévier (−1 PA)',
   'opt.subir': 'Subir',
   'opt.piegerLame': 'Piéger la lame',

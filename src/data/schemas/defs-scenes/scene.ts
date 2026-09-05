@@ -22,6 +22,7 @@
 import { z } from 'zod';
 import { difficultySchema, entityAppearanceSchema, moneyPartialSchema } from '../grammaire/valeurs';
 import { conditionSchema, flowTestSchema, gameOpSchema } from '../grammaire/mecanique';
+import { refIndiceSchema } from '../grammaire/reference';
 import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
 import { sceneFlowSchema } from './effets';
 import { PROPS_VOLUMIQUES } from '../_ids.generated';
@@ -38,8 +39,9 @@ export const restPlacesSchema = z.strictObject({ auberge: z.boolean().optional()
 
 /** `AuthoredShipPoste` (`engine/types.ts`) — pièce d'artillerie MONTÉE, hydratée au spawn. T3-b. */
 export const authoredShipPosteSchema = z.custom<AuthoredShipPoste>();
-/** `NavalTraitRef` (`engine/types.ts`) — Amélioration d'INSTANCE d'un navire (MDG 12). */
-export const navalTraitRefSchema = z.strictObject({ id: z.string(), value: z.number().optional() });
+/** `NavalTraitRef` (`engine/types.ts`) — Amélioration d'INSTANCE d'un navire (MDG 12). C'est la
+ *  référence INDICÉE de la grammaire (`refIndiceSchema`), pas une seconde graphie de sa signature. */
+export const navalTraitRefSchema = refIndiceSchema;
 /** `OptionalEntry` (`engine/statEntry.ts`) — `TraitInstance` OU note composée. T3-b. */
 export const optionalEntrySchema = z.custom<OptionalEntry>();
 /** `SeatOccupant` (`state/seating.ts:53`) — un RANG du groupe (jamais un id de héros) ou un PNJ de la scène. */

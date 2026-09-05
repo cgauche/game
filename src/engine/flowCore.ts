@@ -494,7 +494,13 @@ export type Flow<E = EffectOp> =
   | { kind: 'do'; effect: E }
   | { kind: 'if'; cond: Condition; then: Flow<E>; else?: Flow<E> }
   | { kind: 'test'; test: FlowTest; success: Flow<E>; fail: Flow<E> }
-  | { kind: 'choice'; prompt: string; advantageCost?: number; icon?: string; yes: Flow<E>; no?: Flow<E> };
+  | { kind: 'choice'; prompt: string; advantageCost?: number | IndiceTemplate; icon?: string; yes: Flow<E>; no?: Flow<E> };
+
+/** TEMPLATE d'instance du coût d'Avantage d'un `choice` : l'Indice de l'entité PORTEUSE (Taillade 1A/2A,
+ *  `AA 08 l.87`), substitué par `withArg` (`state/triggeredEffects`) avant exécution. Resté tel quel, le
+ *  nœud n'est PAS offert (`resolveFlowChoice`) — jamais un coût 0. */
+export const INDICE_TEMPLATE = '$indice';
+export type IndiceTemplate = typeof INDICE_TEMPLATE;
 
 /** Le NŒUD `test` seul — la forme UNIQUE du jet en donnée (jet + conséquence des deux branches), telle
  *  qu'un porteur l'épingle hors d'un Flow complet (rangée de Critique, cycle de maladie). */

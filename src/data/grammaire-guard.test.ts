@@ -29,8 +29,7 @@ import { defDe, enfantsDe, PROFONDEUR_MAX } from './schemas/grammaire/slots';
 import * as valeurs from './schemas/grammaire/valeurs';
 import * as reference from './schemas/grammaire/reference';
 import { ref, specRef, pick, typedRef } from './schemas/grammaire/ref';
-import { z } from 'zod';
-import { refSchema, qualityRefSchema } from './schemas/grammaire/reference';
+import { qualityRefSchema } from './schemas/grammaire/reference';
 
 const GARDE = {
   question:
@@ -215,37 +214,33 @@ describe('rejeu des migrations — le verdict VOIT le fichier NEUF (#1466 T3bis-
   });
 });
 
-describe('`qualityRefSchema` — composé sur la SHAPE de `refSchema`, jamais par `.extend`', () => {
-  /** La forme que la composition par shape REMPLACE : `refSchema.extend({ value })`. */
-  const parExtend = refSchema.extend({ value: z.number().optional() });
-
-  it('la composition par SHAPE accepte et refuse EXACTEMENT ce que `.extend` acceptait', () => {
-    const cas: unknown[] = [
-      { id: 'a' },
-      { id: 'a', spec: 's' },
-      { id: 'a', value: 3 },
-      { id: 'a', spec: 's', value: 3 },
-      { id: 'id-totalement-invente-xyz' },
-      { id: 'a', value: 'x' },
-      { id: 1 },
-      {},
-      { value: 3 },
-      { id: 'a', extra: 1 },
-      { id: 'a', spec: 2 },
-      null,
-      [],
-      'a',
-    ];
-    const divergents = cas.filter((c) => parExtend.safeParse(c).success !== qualityRefSchema.safeParse(c).success);
-    expect(divergents, `Cas où la composition par shape DIVERGE de « .extend » :\n${JSON.stringify(divergents)}`).toEqual([]);
-    expect(cas.length, 'le corpus d’équivalence a maigri.').toBe(14);
+/**
+ * `qualityRefSchema` — une référence d'Atout/Défaut est `{id, value?}` et RIEN d'autre. Ce que le livre
+ * imprime entre parenthèses est une MAGNITUDE (`AA 08 l.87` « Taillade (XA) », l.136 « Taillade (1A) »),
+ * pas une spécialisation : elle vit en `value`, et sa FORME d'affichage est déclarée par la qualité
+ * (`QualityData.indice.unite`). La clé `spec` était une seconde graphie de la même chose ; le verrou est
+ * ICI, au parse, pour qu'aucune donnée ne puisse la reposer en silence (#1661).
+ */
+describe('`qualityRefSchema` — `{id, value?}` : la MAGNITUDE est une valeur, jamais une `spec`', () => {
+  it('`spec` est REFUSÉE au parse, et le refus NOMME la clé', () => {
+    const r = qualityRefSchema.safeParse({ id: 'taillade', spec: '1A' });
+    expect(r.success, 'une réf de qualité à `spec` passe encore : la graphie parallèle peut revenir en donnée.').toBe(false);
+    expect(
+      r.success ? '' : JSON.stringify(r.error.issues),
+      'le refus ne nomme pas `spec` — un auteur ne saurait pas quoi corriger.',
+    ).toContain('spec');
+    expect(qualityRefSchema.safeParse({ id: 'taillade', spec: '1A', value: 1 }).success, '`spec` reste refusée même accompagnée de `value`.').toBe(false);
   });
 
-  it('les 3 refus STRUCTURELS tiennent — `strictObject` n’est pas perdu à la composition', () => {
+  it('les formes LÉGITIMES passent — id seul, id + Indice', () => {
+    expect(qualityRefSchema.safeParse({ id: 'tranchante' }).success, 'une qualité sans Indice doit passer.').toBe(true);
+    expect(qualityRefSchema.safeParse({ id: 'taillade', value: 2 }).success, 'la forme PLEINE `{id, value}` doit passer.').toBe(true);
+  });
+
+  it('les 3 refus STRUCTURELS tiennent — `strictObject` n’est pas perdu', () => {
     expect(qualityRefSchema.safeParse({ id: 'a', extra: 1 }).success, 'clé EN TROP acceptée : le `strict` est tombé.').toBe(false);
     expect(qualityRefSchema.safeParse({ value: 3 }).success, '`id` MANQUANT accepté.').toBe(false);
     expect(qualityRefSchema.safeParse({ id: 'a', value: 'x' }).success, '`value` NON NUMÉRIQUE accepté.').toBe(false);
-    expect(qualityRefSchema.safeParse({ id: 'a', spec: 's', value: 3 }).success, 'la forme PLEINE doit passer.').toBe(true);
   });
 });
 

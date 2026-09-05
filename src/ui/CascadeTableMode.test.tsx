@@ -668,6 +668,42 @@ describe('Blessure critique — le dé en tête, le Critique, les voies dessous 
   });
 
   /**
+   * Le rendu des voies est GÉNÉRIQUE : il ne connaît AUCUNE clé d'option. Une voie indisponible ne
+   * l'apprend pas du rendu (« si la clé vaut `devier` et que l'armure est nulle ») mais de son PRODUCTEUR,
+   * qui la marque `refus` — la cause s'affiche alors au survol/focus/tap (arbitrage 2026-08-24, jamais
+   * inline), et le bouton reste atteignable au clavier (`aria-disabled`, jamais `disabled`).
+   * Le PA sacrifiable, lui, est déjà la porte du producteur : sans lui, l'étape n'offre AUCUNE voie
+   * (`deviation-armour.test.ts` — « rien à sacrifier → aucune voie de Déviation »).
+   */
+  it('les voies sont rendues SANS branche par clé : « Dévier » est active, et une voie à `refus` porte sa cause', () => {
+    openCritique();
+    const id = useGame.getState().pendingCascade!.participants[0].id;
+    act(() => { useGame.getState().cascadeTableRoll(id); });
+    render();
+    const devier = boutonTexte('Dévier')!;
+    expect(devier.getAttribute('aria-disabled'), '« Dévier » est rendue refusée alors que l’étape l’OFFRE.').not.toBe('true');
+    expect(devier.hasAttribute('disabled'), 'une voie ne se coupe jamais du clavier par `disabled`.').toBe(false);
+
+    // La MÊME voie, marquée `refus` par son producteur : le rendu la refuse SANS rien savoir de sa clé.
+    const pc = useGame.getState().pendingCascade!;
+    const cur = pc.participants[pc.cursor];
+    act(() => {
+      useGame.setState({
+        pendingCascade: {
+          ...pc,
+          participants: pc.participants.map((s) => (s.id !== cur.id ? s : {
+            ...s, options: (s.options ?? []).map((o) => (o.key !== 'devier' ? o : { ...o, refus: 'Plus aucune pièce à sacrifier à cette localisation.' })),
+          })),
+        } as never,
+      });
+    });
+    render();
+    const refusee = boutonTexte('Dévier')!;
+    expect(refusee.getAttribute('aria-disabled'), 'une voie porteuse d’un `refus` doit être rendue refusée.').toBe('true');
+    expect(refusee.textContent, 'la cause ne doit PAS s’écrire sous le libellé (survol/focus/tap seulement).').not.toContain('Plus aucune pièce');
+  });
+
+  /**
    * « Le tirage n'est pas un aller sans retour » — la re-pose du dé reste offerte SUR L'ÉTAPE À VOIES,
    * exactement comme sur une étape d'affichage : même délégué (`affordancesDuDe`), donc même champ
    * « Dé fixé » et même grille de lignes, tant que l'étape est COURANTE et non validée. Sans ce

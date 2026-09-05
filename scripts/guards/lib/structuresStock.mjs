@@ -406,7 +406,10 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "qualities.json", champ: "passive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "qualities.json", champ: "ops", signature: "disease+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "qualities.json", champ: "ops", signature: "id,unlessCondition,value+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "qualities.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
+  // #1661 : 5 → 6 — la branche `yes` du choix de Taillade pose le 2ᵉ État Hémorragique (`AA 08 l.87`,
+  // « 1 État Hémorragique supplémentaire »). MÊME graphie que l'État automatique déjà compté, une
+  // déclaration de plus — pas une forme neuve.
+  { concept: "reference", dataset: "qualities.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-09-05" },
   { concept: "reference", dataset: "raceAppearance.json", champ: "gabarit", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-30", motif: "référence de GABARIT de rig" },
   { concept: "reference", dataset: "raceAppearance.json", champ: "head", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 7, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "raceAppearance.json", champ: "tenue", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 14, lot: "L3 #1463", date: "2026-08-23" },
@@ -540,7 +543,11 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "trappings.json", champ: "ops", signature: "talentId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "ops", signature: "traitId+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "passive", signature: "tone+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "trappings.json", champ: "qualities", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 115, lot: "L3 #1463", date: "2026-08-23" },
+  // #1661 : 115 → 120 — les CINQ armes de Taillade (`AA 08 l.136/210/304/364/375`) quittent la spec
+  // d'affichage `{id,spec:"1A"}` pour l'Indice `{id,value}` que le moteur LIT (coût en Avantages du 2ᵉ
+  // État Hémorragique). Elles rejoignent la forme déjà majoritaire ici : le stock ne croît que du
+  // côté où les autres Indices vivent déjà, et la graphie `id,spec` disparaît de ce champ.
+  { concept: "reference", dataset: "trappings.json", champ: "qualities", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 120, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "shape", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 43, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "siegeRig", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 18, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "subject", signature: "condition+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
@@ -798,7 +805,7 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualitySubtypes.json", chemin: "(entrées)", entrees: 3, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualityTypes.json", chemin: "(entrées)", entrees: 2, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 10, lot: "L1d #1469", date: "2026-08-23" }, // +1 : dette « Option Attraper Froid » (mue pneumonie), EDOC 09 (#674) ; +1 : dette de la Colère des dieux, LDB 40 (#1653)
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 11, lot: "L1d #1469", date: "2026-08-23" }, // +1 : dette « Option Attraper Froid » (mue pneumonie), EDOC 09 (#674) ; +1 : dette de la Colère des dieux, LDB 40 (#1653) ; +1 : dette du sabre, AA 08 l.190 (#1661)
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "renduMonte.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "river-perils.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "sea-cargo.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
@@ -1004,7 +1011,8 @@ export const STRUCTURES_OPS = [
   { op: "condition", signature: "id,op,value", dataset: "trappings.json", occurrences: 7, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op", dataset: "etats.json", occurrences: 6, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,unlockBy,value", dataset: "criticals.json", occurrences: 12, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "condition", signature: "id,op", dataset: "qualities.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
+  // #1661 : 5 → 6 — le 2ᵉ État Hémorragique de Taillade (`AA 08 l.87`), même op que le 1ᵉʳ.
+  { op: "condition", signature: "id,op", dataset: "qualities.json", occurrences: 6, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "river-criticals.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "ship-criticals.json", occurrences: 11, lot: "L1c #1468", date: "2026-08-23" }, // 5 → 11 (#1657 B3-2b-a) : 6 rangées MDG dont le Test ne vivait qu'en prose `note` gagnent leur `crewHit` (MDG 13 l.730/734/736/738/751/756, échec = État À Terre)
   { op: "condition", signature: "id,op,value,valuePerSL", dataset: "spells.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },

@@ -446,7 +446,7 @@
     "qualities": [
       {
         "id": "taillade",
-        "spec": "1A"
+        "value": 1
       }
     ],
     "desc": "Populaire dans l'est de l'Empire, à Kislev et en Arabie, le cimeterre est doté d'une lame courbe capable d'infliger de terribles blessures tranchantes. Certes, sa forme réduit la capacité de fente et d'estoc de celui qui le manie, ce qui signifie que même si les cimeterres font à peu près la même longueur que les épées droites, ils ont une Allonge plus courte.",
@@ -8756,7 +8756,7 @@
     "qualities": [
       {
         "id": "taillade",
-        "spec": "1A"
+        "value": 1
       }
     ],
     "desc": "Le sabre est similaire au cimeterre, mais un peu plus long et un peu plus droit. Il peut être utilisé à pied avec Corps à Corps (Base), mais dans ce cas, son Atout Taillade (1A) devient Taillade (2A). Les escrimeurs talentueux savent tirer le meilleur parti d'un sabre. S'il est utilisé avec Corps à Corps (Escrime), le sabre conserve son Atout Taillade (1A).",
@@ -9170,7 +9170,7 @@
       },
       {
         "id": "taillade",
-        "spec": "2A"
+        "value": 2
       }
     ],
     "desc": "Les pertuisanes sont des lances à lame épaisse en forme de feuille d'arbre, tandis que les fauchards sont des armes d'hast pourvues d'une lame de coupe ou d'une lame d'épée comme tête. Les deux armes fonctionnent de la même manière, sacrifiant une partie de l'allonge de la lance pour infliger des coups tranchants plus puissants.",
@@ -9265,7 +9265,7 @@
       },
       {
         "id": "taillade",
-        "spec": "2A"
+        "value": 2
       }
     ],
     "desc": "Les célèbres régiments de joueurs d'épée de l'Empire sont armés d'énormes lames d'acier, aussi longues que beaucoup d'armes d'hast. Certains maîtres armuriers rendent même leurs épées encore plus mortelles en leur ajoutant des ondulations et des bords dentelés. Ces armes sont appelées des flamberges et les blessures qu'elles infligent peuvent être plus profondes à cause de leur puissance pour les coups tranchants.",
@@ -9340,7 +9340,7 @@
       },
       {
         "id": "taillade",
-        "spec": "1A"
+        "value": 1
       }
     ],
     "desc": "La flèche barbelée inflige de vilaines blessures par entaille et cause des dommages supplémentaires si elle n'est pas retirée très précautionneusement.",

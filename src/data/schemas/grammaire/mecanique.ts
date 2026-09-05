@@ -9,7 +9,7 @@ import { isMenaceId, menaceIds } from '../../../engine/menace';
 import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/types';
 import type { StakeRef } from '../../index';
 import { messageRecurrenceHorloge, type GameOp } from '../../../engine/ops';
-import type { Condition, EffectOp, Flow } from '../../../engine/flowCore';
+import { INDICE_TEMPLATE, type Condition, type EffectOp, type Flow } from '../../../engine/flowCore';
 import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption } from './valeurs';
 import { marque } from './slots';
 import { idDe, ref, refs, refOuSpec } from './ref';
@@ -454,7 +454,9 @@ export const flowSchema: z.ZodType<Flow<EffectOp>> = z.lazy(() =>
     z.strictObject({
       kind: z.literal('choice'),
       prompt: z.string(),
-      advantageCost: z.number().optional(),
+      // Coût LITTÉRAL, ou TEMPLATE `$indice` (`engine/flowCore::INDICE_TEMPLATE`) — accepté AU PARSE
+      // seulement : `withArg` (`state/triggeredEffects`) le remplace par l'Indice de l'instance porteuse.
+      advantageCost: z.union([z.number(), z.literal(INDICE_TEMPLATE)]).optional(),
       icon: z.string().optional(),
       yes: flowSchema,
       no: flowSchema.optional(),

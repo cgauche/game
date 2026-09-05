@@ -648,10 +648,6 @@
                 ]
               }
             }
-          },
-          "no": {
-            "kind": "seq",
-            "steps": []
           }
         }
       }
@@ -667,27 +663,56 @@
     "label": "Taillade",
     "polarite": "atout",
     "subType": "arme",
-    "desc": "Les armes de Taillade concentrent leur puissance tranchante de manière à ouvrir des blessures béantes. Si vous infligez une Blessure Critique avec cette arme, la cible subit un État Hémorragique en plus de tous les autres effets du Coup Critique. Vous pouvez dépenser X Avantages (l'Indice de Taillade) pour que votre opposant subisse 1 État Hémorragique supplémentaire.",
+    "desc": "Les armes de *Taillade* concentrent leur puissance tranchante de manière à ouvrir des blessures béantes. Si vous infligez une Blessure Critique avec cette arme, la cible subit un État *Hémorragique* en plus de tous les autres effets du Coup Critique. Vous pouvez dépenser X Avantages pour que votre opposant subisse 1 État *Hémorragique* supplémentaire.",
+    "indice": {
+      "label": "Indice",
+      "unite": "A"
+    },
     "source": {
       "book": "aux-armes",
-      "page": 89
+      "page": 89,
+      "note": "AA 08 l.87 — la phrase de dépense n'ouvre aucun déclencheur propre : elle suit « Si vous infligez une Blessure Critique avec cette arme ». Déstabilisante (l.83) en ouvre un, « Après avoir touché votre opposant »."
     },
     "effects": [
       {
         "trigger": "onCrit",
         "on": "victim",
         "flow": {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
-            "on": "target",
-            "ops": [
-              {
-                "op": "condition",
-                "id": "hemorragique"
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "hemorragique"
+                  }
+                ]
               }
-            ]
-          }
+            },
+            {
+              "kind": "choice",
+              "prompt": "Ouvrir la plaie",
+              "icon": "condition/bleeding",
+              "advantageCost": "$indice",
+              "yes": {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "hemorragique"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
         }
       }
     ]

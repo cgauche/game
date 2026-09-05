@@ -279,7 +279,9 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "qualities.json", champ: "escapeStrength", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "qualities.json", champ: "opposed", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "qualities.json", champ: "passive", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-28" },
-  { dataset: "qualities.json", champ: "ops", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // #1661 : 10 → 11 — le 2ᵉ État Hémorragique offert par Taillade (`AA 08 l.87`) est une op de plus
+  // dans le MÊME champ `ops` déjà stocké, pas un champ de référence neuf.
+  { dataset: "qualities.json", champ: "ops", occurrences: 11, lot: "L2/L3 #1473", date: "2026-09-05" },
   { dataset: "qualities.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "raceAppearance.json", champ: "featureKeys", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "raceAppearance.json", champ: "gabarit", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },

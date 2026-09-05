@@ -2346,6 +2346,23 @@ export function applyAttackResult(
   if (weapon.type === 'melee' && !isInanimate(target)) engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13 l.169-171) — jamais avec un objet INANIMÉ
   if (!isInanimate(target)) markAttacked(attacker, target); // trace orientée du Round (LDB 85 l.383, `agressifEnvers`) — tir compris
   const critLog: string[] = [];
+  // Avantage de l'attaquant (LDB 13 l.123, étape « 1 : Lancer pour Toucher ») — crédité AVANT le bloc
+  // Critique (LDB 13 l.177, après les étapes 2 et 3) : un déclencheur `onCrit` lit ainsi la MÊME réserve
+  // que `onHit`, et l'offre à X Avantages qu'il pose (Taillade, AA 08 l.87) est abordable comme le store
+  // l'entend à l'application (`spendableAdvantage` reste l'unique source des deux verdicts).
+  if (res.advantageTo === 'attacker' && !deferAttackerAdvantage) {
+    // Renversement : « au lieu de gagner +1, prendre l'Avantage adverse ». LDB 10 → tout l'Avantage
+    // individuel de la cible (quand c'est mieux que +1) ; variante « Avantage de groupe » (AA 13 l.92-98) →
+    // 1 dans la réserve adverse. Sinon +1 au vainqueur du Test opposé (per-combattant OU réserve du camp).
+    if (weapon.type === 'melee' && stealsOneAdvantage(attacker)) {
+      if (reversalStealOne(get, attacker, target)) critLog.push(tr('cf.reversal', { name: attacker.label }));
+    } else if (weapon.type === 'melee' && hasStealAdvantage(attacker) && (target.advantage ?? 0) > 1) {
+      gainAdvantage(attacker, target.advantage);
+      target.advantage = 0;
+      critLog.push(tr('cf.reversal', { name: attacker.label }));
+    } else campGain(get, attacker);
+    attacker.gainedAdvThisRound = true;
+  }
   // Empoignade (LDB 14 l.159) : « vous ET votre adversaire êtes Empoignés, et votre adversaire gagne
   // l'État *Empêtré* ». Pose APRÈS l'Engagement (les deux Empoignés) ; le bloc de Dégâts ci-dessous est
   // inerte (woundsLost neutralisé plus haut). RAW : pas de Dégâts sur l'initiation.
@@ -2556,22 +2573,8 @@ export function applyAttackResult(
     for (const w of target.weapons ?? []) if (reloadProgressOf(target, w) > 0) setReloadProgress(target, w, 0);
     if ((target.mannedPoste?.reloadProgress ?? 0) > 0) setReloadProgress(target, undefined, 0, target.mannedPoste);
   }
-  // Avantage (LDB Déplacement l.30-40) : +1 au vainqueur du Test opposé / sur une
-  // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
-  // un Test opposé ou en perdant une Blessure.
-  if (res.advantageTo === 'attacker' && !deferAttackerAdvantage) {
-    // Renversement : « au lieu de gagner +1, prendre l'Avantage adverse ». LDB 10 → tout l'Avantage
-    // individuel de la cible (quand c'est mieux que +1) ; variante « Avantage de groupe » (AA 13 l.92-98) →
-    // 1 dans la réserve adverse. Sinon +1 au vainqueur du Test opposé (per-combattant OU réserve du camp).
-    if (weapon.type === 'melee' && stealsOneAdvantage(attacker)) {
-      if (reversalStealOne(get, attacker, target)) critLog.push(tr('cf.reversal', { name: attacker.label }));
-    } else if (weapon.type === 'melee' && hasStealAdvantage(attacker) && (target.advantage ?? 0) > 1) {
-      gainAdvantage(attacker, target.advantage);
-      target.advantage = 0;
-      critLog.push(tr('cf.reversal', { name: attacker.label }));
-    } else campGain(get, attacker);
-    attacker.gainedAdvThisRound = true;
-  }
+  // Avantage (LDB Déplacement l.30-40) : +1 au défenseur vainqueur du Test opposé ; perte de TOUT
+  // l'Avantage en échouant un Test opposé ou en perdant une Blessure.
   if (res.advantageTo === 'defender') {
     // Renversement côté défenseur (même règle qu'à l'attaque : voler l'Avantage adverse, ou +1).
     if (weapon.type === 'melee' && stealsOneAdvantage(target)) {

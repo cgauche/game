@@ -91,7 +91,10 @@ describe('effectSchema — le corpus RÉELLEMENT posé dans les deux racines aut
     // 1107 → 1113 (#1657 B3-2b-a) : les 6 rangées MDG dont le Test ne vivait qu'en prose `note`
     // (MDG 13 l.730/734/736/738/751/756) posent chacune la feuille `{type:'ops', on:'target'}` de leur
     // branche d'ÉCHEC — l'État À Terre que le livre y inflige.
-    expect(poses.length).toBe(1118);
+    // 1118 → 1119 (#1661) : la branche `yes` du `choice` de Taillade pose la feuille `{type:'ops',
+    // on:'target'}` du 2ᵉ État Hémorragique acheté en Avantages (`AA 08 l.87`). Le `no` « renoncer »
+    // n'existe plus en donnée (un `seq` vide ne pose aucune feuille et ne comptait déjà pas).
+    expect(poses.length).toBe(1119);
     const parType = new Set(poses.map((p) => (p.noeud as { type: string }).type));
     expect(parType.size).toBe(30); // 29 variantes authorées + la feuille `ops`
     expect(parType.has('ops')).toBe(true);

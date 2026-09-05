@@ -86,7 +86,9 @@ const CARDINAUX = {
   'qualitySubtypes.json': 3,
   'qualityTypes.json': 2,
   // 8→9 : dette « Option Attraper Froid » (`deplacement#option-attraper-froid`), EDOC 09, #674.
-  'raw.manifest.json': 10,
+  // 9→10 : dette « Colère des dieux » (`religion#colere-des-dieux-declencheur-maladresse`), LDB 40, #1653.
+  // 10→11 : dette « sabre » (`combat#aa-01-tableau-des-armes-a-deux-mains`), AA 08 l.190, #1661.
+  'raw.manifest.json': 11,
   'sea-shanties.json': 7,
 };
 // 141→142 : +1, la seule entrée de manifeste ci-dessus. Puis 142→146 : +4 matières de décor (#1624/#1644).
@@ -96,7 +98,8 @@ const CARDINAUX = {
 // comme DOCUMENTS — les trois catalogues de matières fusionnent en `materials.json` (#1686 lot 2), dont
 // l'enveloppe est posée par sa propre migration et tenue au PRÉSENT, sur tout `src/data`, par la
 // partition EXHAUSTIVE de `src/data/migrations-type-enveloppe.test.ts`.
-const TOTAL_ATTENDU = 133;
+// Puis 133→134 : +1 entrée de manifeste (dette #1661, sabre AA 08 l.190).
+const TOTAL_ATTENDU = 134;
 
 const echecs = [];
 const rapport = [];
