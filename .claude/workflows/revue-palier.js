@@ -1,10 +1,10 @@
 export const meta = {
   name: 'revue-palier',
-  description: "Revue adversariale d'un PALIER (mode `palier`) ou réfutation de la fermeture d'un lot (mode `refutation`) : une lentille de juge par angle, chacune nourrie des SEULS faits dont elle a besoin (le reste attend dans le fichier de faits), chaque trouvaille réfutée sur pièces, synthèse et texte d'archive calculés par le script. args : { worktree, scratchpad, base, tete, date, faits, faitsChemin, mode, dod }.",
+  description: "Revue adversariale d'un PALIER (mode `palier`) ou réfutation de la fermeture d'un lot (mode `refutation`) : une lentille de juge par angle, chacune nourrie des SEULS faits dont elle a besoin (le reste attend dans le fichier de faits), puis UN réfutateur PAR LENTILLE qui juge en un lot toutes les trouvailles de cet angle (plafond 12), synthèse et texte d'archive calculés par le script. args : { worktree, scratchpad, base, tete, date, faits, faitsChemin, mode, dod }.",
   whenToUse: "Quand le palier de commits de substance est atteint (mode `palier`), ou avant de solder un lot dont le DoD est écrit (mode `refutation`). Les faits arrivent de `scripts/ops/faits-de-palier.mjs` : un script de workflow ne lit aucun fichier et ne mesure rien lui-même.",
   phases: [
     { title: 'Lentilles', detail: 'un juge par angle, sur les faits de son angle' },
-    { title: 'Réfutation', detail: 'chaque trouvaille réfutée sur pièces' },
+    { title: 'Réfutation', detail: 'un juge par lentille, ses trouvailles en un lot' },
     { title: 'Synthèse', detail: "verdict et texte d'archive — code pur du script" },
   ],
 }
@@ -97,14 +97,25 @@ const LENTILLE = {
   required: ['trouvailles', 'tenues'],
 }
 
-const VERDICT = {
+/** UN verdict par trouvaille REÇUE, apparié par le `titre` : le réfutateur en juge un LOT. */
+const VERDICTS = {
   type: 'object', additionalProperties: false,
   properties: {
-    confirmee: { type: 'boolean' },
-    preuve: { type: 'string' },
-    bloquante: { type: 'boolean' },
+    verdicts: {
+      type: 'array',
+      items: {
+        type: 'object', additionalProperties: false,
+        properties: {
+          titre: { type: 'string' },
+          confirmee: { type: 'boolean' },
+          bloquante: { type: 'boolean' },
+          preuve: { type: 'string' },
+        },
+        required: ['titre', 'confirmee', 'bloquante', 'preuve'],
+      },
+    },
   },
-  required: ['confirmee', 'preuve', 'bloquante'],
+  required: ['verdicts'],
 }
 
 const LENTILLES_DE_PALIER = [
@@ -185,7 +196,7 @@ log(`Faits embarqués par lentille : ${LENTILLES.map((l) => `${l.label} ${faitsD
 
 const rendus = (await parallel(LENTILLES.map((l) => () => agent(
   `${l.consigne}\n\n${CADRE}\n\n${faitsDe(l)}\n\nTu juges SEUL : les autres lentilles ne te sont pas montrées. \`trouvailles\` = ce qui est MATÉRIEL et prouvé (titre, preuve en fichier:ligne ou sortie de sonde, attendu en une phrase, sonde = le code EXACT si tu en as joué une) ; \`tenues\` = ce que tu as vérifié et qui tient, en une ligne chacune. Zéro trouvaille est un rendu valide.`,
-  { label: l.label, phase: 'Lentilles', schema: LENTILLE, agentType: 'juge' },
+  { label: l.label, phase: 'Lentilles', schema: LENTILLE, agentType: 'juge', model: 'opus' },
 ).then((r) => (r ? { ...r, lentille: l.label } : null))))).filter(Boolean)
 
 let agentsJoues = rendus.length
@@ -214,37 +225,65 @@ for (const rendu of rendus) {
   }
 }
 const trouvaillesUniques = [...parTitre.values()]
-log(`Phase Lentilles : ${trouvaillesUniques.length} trouvaille(s) distincte(s), ${tenues.length} tenue(s). Réfutation : ${trouvaillesUniques.length} agents.`)
+
+// UN réfutateur par LENTILLE, pas par trouvaille : une réfutation par trouvaille faisait 36 agents
+// sur une revue réelle (décision utilisateur 2026-09-05, « 36 agents de réfutation, quel violence »).
+// L'auteur et le réfutateur restent DEUX agents distincts — c'est la contradiction qui vaut, pas le
+// nombre. Au-delà du plafond, les trouvailles suivantes sont RETENUES et DITES : jamais un cap muet.
+const TROUVAILLES_PAR_REFUTATEUR = 12
+const parLentille = new Map()
+for (const t of trouvaillesUniques) {
+  if (!parLentille.has(t.lentille)) parLentille.set(t.lentille, [])
+  parLentille.get(t.lentille).push(t)
+}
+const lots = [...parLentille].map(([lentille, toutes]) => ({
+  lentille,
+  jugees: toutes.slice(0, TROUVAILLES_PAR_REFUTATEUR),
+  auDela: toutes.slice(TROUVAILLES_PAR_REFUTATEUR),
+}))
+log(`Phase Lentilles : ${trouvaillesUniques.length} trouvaille(s) distincte(s), ${tenues.length} tenue(s). ${agentsJoues} agents joués jusqu'ici.`)
+log(`Réfutation : ${lots.length} agents pour ${trouvaillesUniques.length} trouvailles (plafond ${TROUVAILLES_PAR_REFUTATEUR} par réfutateur).`)
+for (const lot of lots) {
+  if (lot.auDela.length) log(`Lentille ${lot.lentille} : ${lot.auDela.length} trouvaille(s) AU-DELÀ du plafond — non réfutées, retenues telles quelles : ${lot.auDela.map((t) => t.titre).join(' · ')}.`)
+}
 
 // Aucune garde de budget ici : l'unité de `budget.remaining()` n'est pas mesurée sur ce dépôt (la
 // comparer à un nombre d'agents ne mordrait jamais). Elle se posera avec un chiffre, après le premier
 // banc qui donne le coût d'une réfutation.
 
-const examinees = (await pipeline(trouvaillesUniques, (t) => agent(
-  `RÉFUTATION — pars du principe que cette trouvaille est FAUSSE et essaie de la réfuter sur pièces.
+const examinees = (await pipeline(lots, (lot) => agent(
+  `RÉFUTATION — ${lot.jugees.length} trouvaille(s) rendue(s) par la lentille « ${lot.lentille} », qu'un AUTRE juge que leur auteur examine. Pars du principe que CHACUNE est FAUSSE et essaie de la réfuter sur pièces.
 
-TROUVAILLE : ${JSON.stringify(t, null, 1)}
+TROUVAILLES : ${JSON.stringify(lot.jugees, null, 1)}
 
 ${CADRE}
 
-${faitsDe(parLabel.get(t.lentille) || { label: t.lentille, champs: [] })}
+${faitsDe(parLabel.get(lot.lentille) || { label: lot.lentille, champs: [] })}
 
-confirmee = vrai seulement si la trouvaille est RÉELLE, MATÉRIELLE et ACTUELLE dans l'arbre jugé (re-mesure, ne te fie ni au titre ni à la preuve fournie) ; sinon confirmee = faux et \`preuve\` dit ce qui la réfute. bloquante = vrai si, la trouvaille tenant, elle invalide une FERMETURE ou un solde de la fenêtre — c'est toi qui poses cette marque, pas l'auteur de la trouvaille.`,
-  { label: `refutation:${t.lentille}`, phase: 'Réfutation', schema: VERDICT, agentType: 'juge' },
-).then((v) => (v ? { trouvaille: t, verdict: v } : { trouvaille: t, verdict: null })))).filter(Boolean)
+Rends UN verdict PAR trouvaille, dans \`verdicts\`, chacun portant le \`titre\` REÇU tel quel (c'est lui qui les apparie). confirmee = vrai seulement si la trouvaille est RÉELLE, MATÉRIELLE et ACTUELLE dans l'arbre jugé (re-mesure, ne te fie ni au titre ni à la preuve fournie) ; sinon confirmee = faux et \`preuve\` dit ce qui la réfute. bloquante = vrai si, la trouvaille tenant, elle invalide une FERMETURE ou un solde de la fenêtre — c'est toi qui poses cette marque, pas l'auteur de la trouvaille. Une trouvaille que tu n'examines pas est une trouvaille RETENUE : ne rends pas de verdict que tu n'as pas établi.`,
+  { label: `refutation:${lot.lentille}`, phase: 'Réfutation', schema: VERDICTS, agentType: 'juge', model: 'opus' },
+).then((v) => ({ lot, verdicts: (v && v.verdicts) || [] })))).filter(Boolean)
 
-for (const e of examinees) if (e.verdict) agentsJoues += 1
+const agentsDeRefutation = examinees.length
+agentsJoues += agentsDeRefutation
 
 const confirmees = []
 const refutees = []
-for (const { trouvaille, verdict } of examinees) {
-  if (!verdict) {
-    log(`Trouvaille « ${trouvaille.titre} » : aucune réfutation rendue — elle est RETENUE sans marque bloquante (une réfutation absente n'écarte rien).`)
-    confirmees.push({ ...trouvaille, bloquante: false, refutation: null })
-    continue
+for (const { lot, verdicts } of examinees) {
+  const parTitreDuLot = new Map(verdicts.map((v) => [normaliser(v.titre), v]))
+  for (const trouvaille of lot.jugees) {
+    const verdict = parTitreDuLot.get(normaliser(trouvaille.titre))
+    if (!verdict) {
+      log(`Trouvaille « ${trouvaille.titre} » (${lot.lentille}) : aucun verdict rendu — elle est RETENUE sans marque bloquante (une réfutation absente n'écarte rien).`)
+      confirmees.push({ ...trouvaille, bloquante: false, refutation: null })
+      continue
+    }
+    if (verdict.confirmee) confirmees.push({ ...trouvaille, bloquante: Boolean(verdict.bloquante), refutation: verdict.preuve })
+    else refutees.push({ ...trouvaille, refutation: verdict.preuve })
   }
-  if (verdict.confirmee) confirmees.push({ ...trouvaille, bloquante: Boolean(verdict.bloquante), refutation: verdict.preuve })
-  else refutees.push({ ...trouvaille, refutation: verdict.preuve })
+  for (const trouvaille of lot.auDela) {
+    confirmees.push({ ...trouvaille, bloquante: false, refutation: null, nonRefutee: `au-delà du plafond de ${TROUVAILLES_PAR_REFUTATEUR} trouvailles par réfutateur` })
+  }
 }
 
 phase('Synthèse')
@@ -254,11 +293,12 @@ phase('Synthèse')
 const sansPlage = (t) => String(t ?? '').replace(/\b([0-9a-f]{7,40})\.\.([0-9a-f]{7,40})\b/g, 'de $1 à $2')
 
 const bloquantes = confirmees.filter((t) => t.bloquante)
+const nonRefutees = confirmees.filter((t) => t.nonRefutee)
 const verdict = bloquantes.length ? 'RÉFUTÉ' : confirmees.length ? 'PARTIEL' : 'CONFIRMÉ'
 const banc = String((FAITS && FAITS.chainage) || '').startsWith('ignoré')
 
 const lignesDeTrouvaille = confirmees.map((t, i) => sansPlage(
-  `${i + 1}. ${t.bloquante ? '[bloquante] ' : ''}**${t.titre}** (lentille ${t.lentille}) — ${t.preuve} → attendu : ${t.attendu}${t.refutation ? ` · réfutation tentée : ${t.refutation}` : ''}`,
+  `${i + 1}. ${t.bloquante ? '[bloquante] ' : ''}**${t.titre}** (lentille ${t.lentille}) — ${t.preuve} → attendu : ${t.attendu}${t.refutation ? ` · réfutation tentée : ${t.refutation}` : ''}${t.nonRefutee ? ` · NON RÉFUTÉE : ${t.nonRefutee}` : ''}`,
 ))
 const lignesDEcart = refutees.map((t) => sansPlage(`- ~~${t.titre}~~ (lentille ${t.lentille}) — écartée : ${t.refutation}`))
 
@@ -272,7 +312,7 @@ const texte = MODE === 'refutation' ? null : [
     ? [`banc: chaînage ignoré (--sans-chainage) — fenêtre déjà jugée par ${((FAITS || {}).revuePrecedente || {}).chemin || 'une revue archivée'} ; ce texte est une MESURE, il ne s’archive pas.`]
     : []),
   '',
-  `${LENTILLES.length} lentilles de juge lancées sur les faits de leur angle, ${rendus.length} rendues, ${trouvaillesUniques.length} trouvailles distinctes, ${confirmees.length} confirmées après réfutation, ${refutees.length} écartées, ${tenues.length} points vérifiés qui tiennent. ${agentsJoues} agents joués.`,
+  `${LENTILLES.length} lentilles de juge lancées sur les faits de leur angle, ${rendus.length} rendues, ${trouvaillesUniques.length} trouvailles distinctes, ${confirmees.length} confirmées après réfutation, ${refutees.length} écartées, ${tenues.length} points vérifiés qui tiennent. ${agentsJoues} agents joués : ${rendus.length} de lentille, ${agentsDeRefutation} de réfutation (un par lentille à trouvailles, plafond ${TROUVAILLES_PAR_REFUTATEUR})${nonRefutees.length ? `, ${nonRefutees.length} trouvaille(s) NON RÉFUTÉE(S) au-delà du plafond` : ''}.`,
   '',
   '## Trouvailles confirmées',
   '',
@@ -300,6 +340,6 @@ return {
   trouvailles: confirmees,
   refutees,
   tenues,
-  agents: agentsJoues,
+  agents: { lentilles: rendus.length, refutation: agentsDeRefutation, total: agentsJoues },
   texte,
 }

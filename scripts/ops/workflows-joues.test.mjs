@@ -85,16 +85,20 @@ const faits = (chainage) => ({
   provenance: { commits: 'script' },
 });
 
-const jouerRevue = ({ mode = 'palier', chainage = 'vérifié', dod = [] } = {}) => jouer(
+/** `trouvaillesDe(label)` décide ce que rend chaque lentille ; le réfutateur confirme tout ce qu'il reçoit. */
+const jouerRevue = ({ mode = 'palier', chainage = 'vérifié', dod = [], trouvaillesDe = null } = {}) => jouer(
   'revue-palier.js',
   { worktree: ARBRE, scratchpad: SONDES, base: BASE, tete: TETE, date: DATE, mode, dod, faits: faits(chainage) },
   (prompt, opts) => {
     if (opts.phase === 'Lentilles') {
+      if (trouvaillesDe) return { trouvailles: trouvaillesDe(opts.label), tenues: [] };
       return opts.label === 'fermetures-soldes'
         ? { trouvailles: [{ titre: 'Un solde qui ne répond pas', preuve: `vu de ${BASE} à ${TETE}`, attendu: 'le solde répond au DoD' }], tenues: ['le reste tient'] }
         : { trouvailles: [], tenues: [`${opts.label} : rien à dire`] };
     }
-    return { confirmee: true, preuve: 'confirmé sur pièces', bloquante: false };
+    // Un réfutateur juge un LOT : il rend UN verdict par trouvaille reçue, apparié par le titre.
+    const recues = JSON.parse(prompt.slice(prompt.indexOf('TROUVAILLES : ') + 14, prompt.indexOf('\n\nArbre jugé')));
+    return { verdicts: recues.map((t) => ({ titre: t.titre, confirmee: true, bloquante: false, preuve: 'confirmé sur pièces' })) };
   },
 );
 
@@ -130,7 +134,37 @@ test('revue-palier, mode refutation : aucun texte de solde n’est fabriqué', a
   assert.equal(rendu.texte, null);
   assert.equal(rendu.mode, 'refutation');
   // 2 clauses de DoD + fermetures + hotfixes + dérogations = 5 lentilles, aucune trouvaille ici.
-  assert.equal(rendu.agents, 5);
+  assert.deepEqual(rendu.agents, { lentilles: 5, refutation: 0, total: 5 });
+});
+
+test('revue-palier : UN réfutateur PAR LENTILLE, pas par trouvaille', async () => {
+  const { rendu, promptsParLabel } = await jouerRevue({
+    trouvaillesDe: (label) => (['fermetures-soldes', 'cross-os'].includes(label)
+      ? [1, 2, 3].map((n) => ({ titre: `${label} — trouvaille ${n}`, preuve: 'p', attendu: 'a' }))
+      : []),
+  });
+  assert.deepEqual(rendu.agents, { lentilles: 8, refutation: 2, total: 10 });
+  assert.deepEqual(
+    [...promptsParLabel.keys()].filter((c) => c.startsWith('Réfutation:')).sort(),
+    ['Réfutation:refutation:cross-os', 'Réfutation:refutation:fermetures-soldes'],
+  );
+  assert.equal(rendu.trouvailles.length, 6, '6 trouvailles jugées par 2 agents');
+});
+
+test('revue-palier : au-delà de 12 trouvailles, une lentille en garde 12 jugées et 3 NON RÉFUTÉES, dites', async () => {
+  const { rendu, journal } = await jouerRevue({
+    trouvaillesDe: (label) => (label === 'poison-des-diffs'
+      ? Array.from({ length: 15 }, (_, i) => ({ titre: `poison ${i + 1}`, preuve: 'p', attendu: 'a' }))
+      : []),
+  });
+  assert.deepEqual(rendu.agents, { lentilles: 8, refutation: 1, total: 9 }, 'UN seul réfutateur pour 15 trouvailles');
+  assert.equal(rendu.trouvailles.length, 15, 'aucune trouvaille n’est perdue');
+  const nonRefutees = rendu.trouvailles.filter((t) => t.nonRefutee);
+  assert.equal(nonRefutees.length, 3, '15 − 12 = 3 au-delà du plafond');
+  assert.deepEqual(nonRefutees.map((t) => t.titre), ['poison 13', 'poison 14', 'poison 15']);
+  assert.ok(journal.some((l) => /3 trouvaille\(s\) AU-DELÀ du plafond/.test(l)), 'le plafond est DIT dans le journal');
+  assert.match(rendu.texte, /3 trouvaille\(s\) NON RÉFUTÉE\(S\) au-delà du plafond/);
+  assert.match(rendu.texte, /NON RÉFUTÉE : au-delà du plafond de 12 trouvailles par réfutateur/);
 });
 
 test('revue-palier, COÛT : chaque lentille ne reçoit QUE les faits de son angle', async () => {
@@ -167,13 +201,21 @@ const lectureL3 = (invariants) => ({
   manques: [],
 });
 
-const jouerJuge = (invariants) => jouer(
+/** `bloquantsDe(label)` décide ce que rend chaque lentille de design ; le réfutateur ne réfute rien. */
+const jouerJuge = (invariants, bloquantsDe = null) => jouer(
   'juge-design-socle.js',
   { brief: BRIEF, worktree: ARBRE, date: DATE, scratchpad: SONDES },
   (prompt, opts) => {
     if (opts.phase === 'Lecture') return lectureL3(invariants);
-    if (opts.phase === 'Design') return { verdict: 'FRAGILE', bloquants: [{ titre: 'Un bloquant', preuve: 'preuve', correction: 'correction' }], dits: ['un dit'] };
-    return { refute: false, preuve: 'il tient', structurel: false };
+    if (opts.phase === 'Design') {
+      const bloquants = bloquantsDe
+        ? bloquantsDe(opts.label)
+        : [{ titre: `Un bloquant de ${opts.label}`, preuve: 'preuve', correction: 'correction', structurel: false }];
+      return { verdict: bloquants.length ? 'FRAGILE' : 'TIENT', bloquants, dits: ['un dit'] };
+    }
+    // Un réfutateur juge un LOT : UN verdict par bloquant reçu, apparié par le titre.
+    const recus = JSON.parse(prompt.slice(prompt.indexOf('BLOQUANTS : ') + 12, prompt.indexOf('\n\nArbre jugé')));
+    return { verdicts: recus.map((b) => ({ titre: b.titre, refute: false, preuve: 'il tient', structurel: false })) };
   },
 );
 
@@ -182,8 +224,56 @@ test('juge-design-socle : un brief qui porte SIX invariants atteint la phase Des
   assert.notEqual(rendu.verdict, 'ARRÊT', `manques rendus : ${(rendu.manques || []).join(' · ')}`);
   assert.equal(rendu.lecture.invariants.length, 6);
   assert.ok(promptsParLabel.has('Design:trou-de-socle'), 'la phase Design est atteinte');
-  assert.ok(promptsParLabel.has('Réfutation:refutation-1'), 'la phase Réfutation est atteinte');
+  assert.ok([...promptsParLabel.keys()].some((c) => c.startsWith('Réfutation:')), 'la phase Réfutation est atteinte');
   assert.equal(rendu.verdict, 'FRAGILE');
+});
+
+test('juge-design-socle : UN réfutateur par lentille, CROISÉ (A→B, B→C, C→A)', async () => {
+  const { rendu, promptsParLabel } = await jouerJuge(INVARIANTS_L3);
+  assert.deepEqual(rendu.agents, { lecture: 1, design: 3, refutation: 3, total: 7 });
+  assert.deepEqual(
+    [...promptsParLabel.keys()].filter((c) => c.startsWith('Réfutation:')),
+    [
+      'Réfutation:refutation:trou-de-socle→preuve-par-sonde',
+      'Réfutation:refutation:preuve-par-sonde→normes-et-poison',
+      'Réfutation:refutation:normes-et-poison→trou-de-socle',
+    ],
+    'aucun juge ne réfute ses propres bloquants',
+  );
+  const croise = promptsParLabel.get('Réfutation:refutation:trou-de-socle→preuve-par-sonde');
+  assert.match(croise, /TA LENTILLE : LENTILLE — PREUVE PAR SONDE/, 'le réfutateur reçoit la consigne de SA lentille');
+  assert.match(croise, /Un bloquant de trou-de-socle/, 'et les bloquants de l’AUTRE');
+});
+
+test('juge-design-socle : au-delà de 8 bloquants, une lentille en garde 8 jugés et 2 NON RÉFUTÉS, dits', async () => {
+  const { rendu, journal } = await jouerJuge(INVARIANTS_L3, (label) => (label === 'trou-de-socle'
+    ? Array.from({ length: 10 }, (_, i) => ({ titre: `trou ${i + 1}`, preuve: 'p', correction: 'c', structurel: false }))
+    : []));
+  assert.deepEqual(rendu.agents, { lecture: 1, design: 3, refutation: 1, total: 5 }, 'UN seul réfutateur pour 10 bloquants');
+  assert.equal(rendu.bloquants.length, 10, 'aucun bloquant n’est perdu');
+  const nonRefutes = rendu.bloquants.filter((b) => b.nonRefute);
+  assert.deepEqual(nonRefutes.map((b) => b.titre), ['trou 9', 'trou 10']);
+  assert.ok(journal.some((l) => /2 bloquant\(s\) AU-DELÀ du plafond/.test(l)), 'le plafond est DIT dans le journal');
+  assert.match(rendu.bloc, /2 NON RÉFUTÉ\(S\) au-delà du plafond de 8 par réfutateur/);
+});
+
+test('juge-design-socle : `structurel` demande les DEUX voix, auteur ET réfutateur', async () => {
+  const rendus = [];
+  for (const [auteurStructurel, refutateurStructurel] of [[true, true], [true, false], [false, true]]) {
+    const { rendu } = await jouer('juge-design-socle.js', { brief: BRIEF, worktree: ARBRE, date: DATE, scratchpad: SONDES }, (prompt, opts) => {
+      if (opts.phase === 'Lecture') return lectureL3(INVARIANTS_L3);
+      if (opts.phase === 'Design') {
+        return opts.label === 'trou-de-socle'
+          ? { verdict: 'FRAGILE', bloquants: [{ titre: 'le seul bloquant', preuve: 'p', correction: 'c', structurel: auteurStructurel }], dits: [] }
+          : { verdict: 'TIENT', bloquants: [], dits: [] };
+      }
+      const recus = JSON.parse(prompt.slice(prompt.indexOf('BLOQUANTS : ') + 12, prompt.indexOf('\n\nArbre jugé')));
+      return { verdicts: recus.map((b) => ({ titre: b.titre, refute: false, preuve: 'p', structurel: refutateurStructurel })) };
+    });
+    rendus.push(rendu);
+  }
+  assert.deepEqual(rendus.map((r) => r.bloquants[0].structurel), [true, false, false]);
+  assert.deepEqual(rendus.map((r) => r.verdict), ['RÉFUTÉ', 'FRAGILE', 'FRAGILE']);
 });
 
 test('juge-design-socle : aucun invariant = ARRÊT nommé, avant tout jugement', async () => {

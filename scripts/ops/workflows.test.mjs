@@ -32,9 +32,12 @@ const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 const DOSSIER = join(RACINE, '.claude', 'workflows');
 const ts = createRequire(import.meta.url)('typescript');
 
-/** Phases de JUGEMENT, déclarées par script : elles portent `agentType: 'juge'` et AUCUN `model`
- *  (le type du dépôt porte son modèle, ses outils et son prompt adversarial —
- *  `.claude/agents/juge.md`). Un script absent de cette table échoue : le régime se déclare. */
+/** Phases de JUGEMENT, déclarées par script : elles portent `agentType: 'juge'` ET `model: 'opus'`,
+ *  les DEUX. Le type porte les outils et le prompt adversarial (`.claude/agents/juge.md`) ; le
+ *  modèle ÉCRIT empêche un sous-agent d'hériter du modèle de session et fait coïncider l'affichage
+ *  avec le fait — des agents EN ATTENTE s'affichaient « Fable » là où les transcripts disaient
+ *  `claude-opus-5` (observation utilisateur 2026-09-05 ; fiche `user-passage-fable-derives-opus`).
+ *  Un script absent de cette table échoue : le régime se déclare. */
 const PHASES_DE_JUGEMENT = {
   'audit-poison.js': [],
   'juge-design-socle.js': ['Design', 'Réfutation'],
@@ -50,6 +53,7 @@ const SANS_TYPE_EPINGLE = [
 
 const TYPES_MECANIQUES = ['lecteur', 'verif-mecanique'];
 const MODELES_MECANIQUES = ['sonnet', 'haiku'];
+const MODELE_DE_JUGEMENT = 'opus';
 const RUNNERS_INTERDITS = ['npm test', 'npm run gates', 'vitest run'];
 
 const scripts = readdirSync(DOSSIER).filter((f) => f.endsWith('.js')).sort();
@@ -249,8 +253,8 @@ export function defautsDuScript(source, fichier) {
             if (agentType.valeur !== 'juge') {
               dire('agent', agentType.noeud, `phase de JUGEMENT \`${phase.valeur}\` : \`agentType: 'juge'\` exigé (lu : ${agentType.present ? `\`${agentType.valeur}\`` : 'absent'})`);
             }
-            if (modele.present) {
-              dire('agent', modele.noeud, `phase de JUGEMENT \`${phase.valeur}\` : aucun \`model\` — le type du dépôt porte le sien (\`.claude/agents/juge.md\`)`);
+            if (modele.valeur !== MODELE_DE_JUGEMENT) {
+              dire('agent', modele.noeud, `phase de JUGEMENT \`${phase.valeur}\` : \`model: '${MODELE_DE_JUGEMENT}'\` exigé AUSSI (lu : ${modele.present ? `\`${modele.valeur}\`` : 'absent'}) — un sous-agent ne tourne jamais sur le modèle de session`);
             }
           } else {
             if (!modele.present || !MODELES_MECANIQUES.includes(modele.valeur)) {

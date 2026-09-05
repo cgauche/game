@@ -1,11 +1,11 @@
 export const meta = {
   name: 'juge-design-socle',
-  description: "Jugement adversarial d'un DESIGN de socle AVANT le codeur : lecture des sections d'ENTRÉE du brief (Invariant, cas canonique), trois lentilles de juge indépendantes, réfutation de chaque bloquant par deux autres juges, synthèse calculée par le script. Rend le bloc à coller sous `## Design jugé :`. args : { brief, worktree, date, scratchpad }.",
+  description: "Jugement adversarial d'un DESIGN de socle AVANT le codeur : lecture des sections d'ENTRÉE du brief (Invariant, cas canonique), trois lentilles de juge indépendantes, puis UN réfutateur PAR LENTILLE qui juge en un lot les bloquants d'une AUTRE lentille que la sienne (A→B, B→C, C→A ; plafond 8), synthèse calculée par le script. Rend le bloc à coller sous `## Design jugé :`. args : { brief, worktree, date, scratchpad }.",
   whenToUse: "Avant de dispatcher un codeur sur un brief de SOCLE (module que plusieurs flux composent, ou branche par type de porteur/entité). Le brief doit DÉJÀ porter son `## Invariant` et son CAS CANONIQUE : ce workflow juge le design, il ne l'écrit pas — et il refuse un brief qui porte déjà un verdict.",
   phases: [
     { title: 'Lecture', detail: "sections d'entrée du brief, rendues en objet" },
     { title: 'Design', detail: 'trois lentilles de juge, indépendantes' },
-    { title: 'Réfutation', detail: 'deux juges tentent de réfuter chaque bloquant' },
+    { title: 'Réfutation', detail: "un juge par lentille, les bloquants d'une autre" },
     { title: 'Synthèse', detail: 'verdict, écartés et bloc — code pur du script' },
   ],
 }
@@ -25,7 +25,7 @@ const manquesDArgs = [
 ].filter(Boolean)
 if (manquesDArgs.length) {
   log(`ARRÊT : ${manquesDArgs.length} argument(s) manquant(s) — ${manquesDArgs.join(' · ')}`)
-  return { verdict: 'ARRÊT', manques: manquesDArgs, bloquants: [], ecartes: [], dits: [], agents: 0, date: DATE }
+  return { verdict: 'ARRÊT', manques: manquesDArgs, bloquants: [], ecartes: [], dits: [], agents: { lecture: 0, design: 0, refutation: 0, total: 0 }, date: DATE }
 }
 
 const CADRE = `Arbre jugé (chemin ABSOLU, à utiliser tel quel) : ${WORKTREE}
@@ -76,8 +76,8 @@ const DESIGN = {
       type: 'array',
       items: {
         type: 'object', additionalProperties: false,
-        properties: { titre: { type: 'string' }, preuve: { type: 'string' }, correction: { type: 'string' } },
-        required: ['titre', 'preuve', 'correction'],
+        properties: { titre: { type: 'string' }, preuve: { type: 'string' }, correction: { type: 'string' }, structurel: { type: 'boolean' } },
+        required: ['titre', 'preuve', 'correction', 'structurel'],
       },
     },
     dits: { type: 'array', items: { type: 'string' } },
@@ -85,14 +85,25 @@ const DESIGN = {
   required: ['verdict', 'bloquants', 'dits'],
 }
 
-const REFUTATION = {
+/** UN verdict par bloquant REÇU, apparié par le `titre` : le réfutateur en juge un LOT. */
+const REFUTATIONS = {
   type: 'object', additionalProperties: false,
   properties: {
-    refute: { type: 'boolean' },
-    preuve: { type: 'string' },
-    structurel: { type: 'boolean' },
+    verdicts: {
+      type: 'array',
+      items: {
+        type: 'object', additionalProperties: false,
+        properties: {
+          titre: { type: 'string' },
+          refute: { type: 'boolean' },
+          preuve: { type: 'string' },
+          structurel: { type: 'boolean' },
+        },
+        required: ['titre', 'refute', 'preuve', 'structurel'],
+      },
+    },
   },
-  required: ['refute', 'preuve', 'structurel'],
+  required: ['verdicts'],
 }
 
 const lecture = await agent(`Tu LIS un brief d'agent et tu rends sa structure — tu ne juges rien, tu ne décides rien.
@@ -112,7 +123,7 @@ Vérifie l'EXISTENCE de chaque \`fichier:ligne\` du cas canonique dans l'arbre j
 
 if (!lecture) {
   log('ARRÊT : la lecture du brief n’a rien rendu — le brief est illisible depuis le harnais.')
-  return { verdict: 'ARRÊT', manques: ['lecture du brief sans rendu'], bloquants: [], ecartes: [], dits: [], agents: 1, date: DATE }
+  return { verdict: 'ARRÊT', manques: ['lecture du brief sans rendu'], bloquants: [], ecartes: [], dits: [], agents: { lecture: 1, design: 0, refutation: 0, total: 1 }, date: DATE }
 }
 
 const manquesDEntree = []
@@ -127,7 +138,7 @@ if (manquesDEntree.length) {
   log(`ARRÊT en phase Lecture : ${manquesDEntree.join(' · ')}. Les manques relevés par le lecteur : ${(lecture.manques || []).join(' · ') || 'aucun'}.`)
   return {
     verdict: 'ARRÊT', manques: manquesDEntree, lecture,
-    bloquants: [], ecartes: [], dits: [], agents: 1, date: DATE,
+    bloquants: [], ecartes: [], dits: [], agents: { lecture: 1, design: 0, refutation: 0, total: 1 }, date: DATE,
     bloc: `**ARRÊT — design non jugé.** Le brief n’est pas jugeable en l’état : ${manquesDEntree.join(' ; ')}.`,
   }
 }
@@ -156,9 +167,9 @@ Signale le poison que le design ferait naître ou laisserait vivre : paraphrase 
 ]
 
 const rendusDeDesign = (await parallel(LENTILLES.map((l) => () => agent(
-  `${l.consigne}\n\n${CADRE}\n\n${CONTEXTE}\n\nTu juges SEUL : les autres lentilles ne te sont pas montrées, et tu ne supposes pas ce qu'elles trouvent. Verdict TIENT s'il ne reste aucun bloquant, FRAGILE s'il en reste, RÉFUTÉ si le design ne peut pas être codé tel quel. \`dits\` = ce qui mérite d'être dit sans bloquer.`,
-  { label: l.label, phase: 'Design', schema: DESIGN, agentType: 'juge' },
-)))).filter(Boolean)
+  `${l.consigne}\n\n${CADRE}\n\n${CONTEXTE}\n\nTu juges SEUL : les autres lentilles ne te sont pas montrées, et tu ne supposes pas ce qu'elles trouvent. Verdict TIENT s'il ne reste aucun bloquant, FRAGILE s'il en reste, RÉFUTÉ si le design ne peut pas être codé tel quel. Sur chaque bloquant, \`structurel\` = vrai si, le bloquant tenant, il ne se corrige pas par une retouche du brief mais force à REPENSER le design. \`dits\` = ce qui mérite d'être dit sans bloquer.`,
+  { label: l.label, phase: 'Design', schema: DESIGN, agentType: 'juge', model: 'opus' },
+).then((r) => (r ? { ...r, lentille: l.label } : null))))).filter(Boolean)
 
 let agentsJoues = 1 + rendusDeDesign.length
 log(`Phase Design : ${rendusDeDesign.length}/${LENTILLES.length} lentilles rendues (${LENTILLES.length - rendusDeDesign.length} agent(s) mort(s), leurs bloquants ne sont pas jugés).`)
@@ -176,60 +187,100 @@ for (const rendu of rendusDeDesign) {
     if (!cle) continue
     if (parTitre.has(cle)) {
       const garde = parTitre.get(cle)
-      log(`Bloquants fusionnés sous « ${garde.titre} » : « ${b.titre} » (même titre normalisé « ${cle} ») — sa preuve ET sa correction rejoignent la première, rien n'est jeté.`)
-      garde.preuve = `${garde.preuve}\n(autre lentille) ${b.preuve}`
-      garde.correction = `${garde.correction}\n(autre lentille) ${b.correction}`
+      log(`Bloquants fusionnés sous « ${garde.titre} » (${garde.lentille}) : « ${b.titre} » (${rendu.lentille}), même titre normalisé « ${cle} » — sa preuve ET sa correction rejoignent la première, rien n'est jeté.`)
+      garde.preuve = `${garde.preuve}\n(lentille ${rendu.lentille}) ${b.preuve}`
+      garde.correction = `${garde.correction}\n(lentille ${rendu.lentille}) ${b.correction}`
+      garde.structurel = Boolean(garde.structurel) || Boolean(b.structurel)
       continue
     }
-    parTitre.set(cle, { ...b })
+    parTitre.set(cle, { ...b, lentille: rendu.lentille })
   }
 }
 const bloquantsUniques = [...parTitre.values()]
-log(`Phase Design : ${bloquantsUniques.length} bloquant(s) distinct(s), ${dits.length} dit(s). Réfutation : ${bloquantsUniques.length * 2} agents.`)
+
+// UN réfutateur par LENTILLE, et CROISÉ : les bloquants de la lentille A partent au réfutateur qui
+// porte la lentille B, B → C, C → A. Personne ne réfute ses propres bloquants, et le compte d'agents
+// suit le nombre de LENTILLES, pas celui des bloquants (décision utilisateur 2026-09-05).
+// `structurel` demande DEUX voix : celle de l'auteur ET celle du réfutateur, les deux qui l'ont vu.
+const BLOQUANTS_PAR_REFUTATEUR = 8
+const ORDRE = LENTILLES.map((l) => l.label)
+const parLentilleDeDesign = new Map()
+for (const b of bloquantsUniques) {
+  if (!parLentilleDeDesign.has(b.lentille)) parLentilleDeDesign.set(b.lentille, [])
+  parLentilleDeDesign.get(b.lentille).push(b)
+}
+const lots = [...parLentilleDeDesign].map(([auteur, tous]) => {
+  const refutateur = ORDRE[(Math.max(0, ORDRE.indexOf(auteur)) + 1) % ORDRE.length]
+  return {
+    auteur,
+    refutateur,
+    // La consigne du RÉFUTATEUR est POSÉE ici, pas rendue par une fonction : le texte qui part reste
+    // lisible à la forme du script (porte `scripts/ops/workflows.test.mjs`).
+    consigneDuRefutateur: (LENTILLES.find((l) => l.label === refutateur) || {}).consigne || '',
+    juges: tous.slice(0, BLOQUANTS_PAR_REFUTATEUR),
+    auDela: tous.slice(BLOQUANTS_PAR_REFUTATEUR),
+  }
+})
+log(`Phase Design : ${bloquantsUniques.length} bloquant(s) distinct(s), ${dits.length} dit(s). ${agentsJoues} agents joués jusqu'ici.`)
+log(`Réfutation : ${lots.length} agents pour ${bloquantsUniques.length} bloquants (plafond ${BLOQUANTS_PAR_REFUTATEUR} par réfutateur) — ${lots.map((l) => `${l.auteur} → ${l.refutateur}`).join(', ')}.`)
+for (const lot of lots) {
+  if (lot.auDela.length) log(`Lentille ${lot.auteur} : ${lot.auDela.length} bloquant(s) AU-DELÀ du plafond — non réfutés, ils SURVIVENT sans marque structurelle : ${lot.auDela.map((b) => b.titre).join(' · ')}.`)
+}
 
 // Aucune garde de budget ici : l'unité de `budget.remaining()` n'est pas mesurée sur ce dépôt (la
 // comparer à un nombre d'agents ne mordrait jamais). Elle se posera avec un chiffre, après le premier
 // banc qui donne le coût d'une réfutation.
 
-const examines = (await pipeline(
-  bloquantsUniques,
-  (b) => parallel([1, 2].map((rang) => () => agent(
-    `RÉFUTATION — pars du principe que ce bloquant est FAUX et essaie de le RÉFUTER sur pièces, dans l'arbre jugé.
+const examines = (await pipeline(lots, (lot) => agent(
+  `RÉFUTATION — ${lot.juges.length} bloquant(s) rendu(s) par la lentille « ${lot.auteur} ». Tu les examines depuis UNE AUTRE lentille que la leur, la tienne : « ${lot.refutateur} ». Pars du principe que CHACUN est FAUX et essaie de le RÉFUTER sur pièces, dans l'arbre jugé.
 
-BLOQUANT : ${JSON.stringify(b, null, 1)}
+TA LENTILLE : ${lot.consigneDuRefutateur}
+
+BLOQUANTS : ${JSON.stringify(lot.juges, null, 1)}
 
 ${CADRE}
 
-refute = vrai SEULEMENT si tu établis que le bloquant ne tient pas (la preuve invoquée n'existe pas, dit autre chose, ou le design ne fait pas ce que le bloquant lui prête) — cite fichier:ligne ou la sortie de ta sonde. structurel = vrai si, le bloquant tenant, il ne se corrige pas par une retouche du brief mais force à REPENSER le design. Tu juges seul ; un autre juge examine le même bloquant sans te voir (tu es le n°${rang}).`,
-    { label: `refutation-${rang}`, phase: 'Réfutation', schema: REFUTATION, agentType: 'juge' },
-  ))).then((v) => ({ bloquant: b, refutations: (v || []).filter(Boolean) })),
-)).filter(Boolean)
+Rends UN verdict PAR bloquant, dans \`verdicts\`, chacun portant le \`titre\` REÇU tel quel (c'est lui qui les apparie). refute = vrai SEULEMENT si tu établis que le bloquant ne tient pas (la preuve invoquée n'existe pas, dit autre chose, ou le design ne fait pas ce que le bloquant lui prête) — cite fichier:ligne ou la sortie de ta sonde. structurel = vrai si, le bloquant tenant, il ne se corrige pas par une retouche du brief mais force à REPENSER le design. Un bloquant que tu n'examines pas SURVIT : ne rends pas de verdict que tu n'as pas établi.`,
+  { label: `refutation:${lot.auteur}→${lot.refutateur}`, phase: 'Réfutation', schema: REFUTATIONS, agentType: 'juge', model: 'opus' },
+).then((v) => ({ lot, verdicts: (v && v.verdicts) || [] })))).filter(Boolean)
 
-for (const e of examines) agentsJoues += e.refutations.length
+const agentsDeRefutation = examines.length
+agentsJoues += agentsDeRefutation
 
 const survivants = []
 const ecartes = []
-for (const { bloquant, refutations } of examines) {
-  const refute = refutations.find((r) => r.refute)
-  if (!refutations.length) log(`Bloquant « ${bloquant.titre} » : aucun réfutateur n'a rendu — il SURVIT (une réfutation absente n'écarte rien).`)
-  if (refute) ecartes.push({ ...bloquant, refutation: refute.preuve })
-  else survivants.push({ ...bloquant, structurel: refutations.length === 2 && refutations.every((r) => r.structurel), refutations })
+for (const { lot, verdicts } of examines) {
+  const parTitreDuLot = new Map(verdicts.map((v) => [normaliser(v.titre), v]))
+  for (const bloquant of lot.juges) {
+    const verdict = parTitreDuLot.get(normaliser(bloquant.titre))
+    if (!verdict) {
+      log(`Bloquant « ${bloquant.titre} » (${lot.auteur}) : aucun verdict rendu — il SURVIT sans marque structurelle (une réfutation absente n'écarte rien).`)
+      survivants.push({ ...bloquant, structurel: false, refutations: [] })
+      continue
+    }
+    if (verdict.refute) ecartes.push({ ...bloquant, refutation: verdict.preuve })
+    else survivants.push({ ...bloquant, structurel: Boolean(bloquant.structurel) && Boolean(verdict.structurel), refutations: [verdict] })
+  }
+  for (const bloquant of lot.auDela) {
+    survivants.push({ ...bloquant, structurel: false, refutations: [], nonRefute: `au-delà du plafond de ${BLOQUANTS_PAR_REFUTATEUR} bloquants par réfutateur` })
+  }
 }
-const jamaisExamines = bloquantsUniques.filter((b) => !examines.some((e) => normaliser(e.bloquant.titre) === normaliser(b.titre)))
-for (const b of jamaisExamines) {
-  log(`Bloquant « ${b.titre} » : réfutation en échec (aucun rendu du stage) — il SURVIT sans marque structurelle.`)
-  survivants.push({ ...b, structurel: false, refutations: [] })
+const lotsPerdus = lots.filter((lot) => !examines.some((e) => e.lot === lot))
+for (const lot of lotsPerdus) {
+  log(`Lentille ${lot.auteur} : le réfutateur n'a pas rendu — ses ${lot.juges.length + lot.auDela.length} bloquant(s) SURVIVENT sans marque structurelle.`)
+  for (const b of [...lot.juges, ...lot.auDela]) survivants.push({ ...b, structurel: false, refutations: [] })
 }
 
 phase('Synthèse')
 
 function blocDe(verdict, survivantsDuBloc, ecartesCompte) {
+  const nonRefutes = survivantsDuBloc.filter((b) => b.nonRefute).length
   const lignes = [
     `**${verdict}** — workflow \`juge-design-socle\`, run \`<runId du lancement, cité par l'orchestrateur>\`, ${DATE}.`,
-    `${survivantsDuBloc.length} bloquant(s) survivant(s), ${ecartesCompte} écarté(s) par réfutation.`,
+    `${survivantsDuBloc.length} bloquant(s) survivant(s), ${ecartesCompte} écarté(s) par réfutation${nonRefutes ? `, ${nonRefutes} NON RÉFUTÉ(S) au-delà du plafond de ${BLOQUANTS_PAR_REFUTATEUR} par réfutateur` : ''}.`,
   ]
   survivantsDuBloc.forEach((b, i) => {
-    lignes.push(`${i + 1}. ${b.structurel ? '[structurel] ' : ''}**${b.titre}** — ${b.preuve} → ${b.correction}`)
+    lignes.push(`${i + 1}. ${b.structurel ? '[structurel] ' : ''}**${b.titre}** (lentille ${b.lentille}) — ${b.preuve} → ${b.correction}${b.nonRefute ? ` · NON RÉFUTÉ : ${b.nonRefute}` : ''}`)
   })
   if (!survivantsDuBloc.length) lignes.push('Aucun bloquant n’a survécu à la réfutation.')
   return lignes.join('\n')
@@ -237,7 +288,7 @@ function blocDe(verdict, survivantsDuBloc, ecartesCompte) {
 
 const structurels = survivants.filter((b) => b.structurel)
 const verdict = structurels.length ? 'RÉFUTÉ' : survivants.length ? 'FRAGILE' : 'TIENT'
-log(`Synthèse : ${verdict} — ${survivants.length} survivant(s) dont ${structurels.length} structurel(s), ${ecartes.length} écarté(s), ${agentsJoues} agents joués.`)
+log(`Synthèse : ${verdict} — ${survivants.length} survivant(s) dont ${structurels.length} structurel(s), ${ecartes.length} écarté(s), ${agentsJoues} agents joués : 1 de lecture, ${rendusDeDesign.length} de design, ${agentsDeRefutation} de réfutation.`)
 
 return {
   verdict,
@@ -245,7 +296,7 @@ return {
   ecartes,
   dits,
   lecture,
-  agents: agentsJoues,
+  agents: { lecture: 1, design: rendusDeDesign.length, refutation: agentsDeRefutation, total: agentsJoues },
   date: DATE,
   bloc: blocDe(verdict, survivants, ecartes.length),
 }
