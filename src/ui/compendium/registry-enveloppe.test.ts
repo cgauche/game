@@ -401,7 +401,9 @@ const ORPHELINS: string[] = [
   "miscast.json#0 (5)",
   "primitives.manifest.json#0 (28)",
   "qualityTypes.json#0 (2)",
-  "raw.manifest.json#0 (10)",
+  // +1 dette « Colère des dieux » #1653, +1 dette « sabre Taillade » #1661 — entrées de manifeste sans
+  // catégorie Codex (même angle mort : dette de règle, jamais une fiche).
+  "raw.manifest.json#0 (11)",
   "reseau-routier.json#0 (15)",
   "river-navigation.json#1 (3)",
   "sea-cargo.json#1 (3)",
