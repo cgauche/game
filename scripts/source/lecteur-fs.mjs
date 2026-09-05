@@ -46,3 +46,12 @@ export function lireChapitre(bookId, ch) {
   _cache.set(key, out)
   return out
 }
+
+/**
+ * OUBLIE le chapitre mémorisé : un `Source/` réécrit sous un processus qui dure (serveur de dev)
+ * doit être relu, sans quoi le lecteur resservirait l'ancien texte. @param {string} bookId
+ * @param {string|number} ch @returns {boolean} `true` si un chapitre était mémorisé.
+ */
+export function oublierChapitre(bookId, ch) {
+  return _cache.delete(`${bookId}|${ch}`)
+}

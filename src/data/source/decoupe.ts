@@ -222,10 +222,15 @@ function toBlocks(lignes: string[], folioIn: number | null): { blocks: Bloc[]; f
 
 /**
  * Parse un chapitre en sections adressables, folio courant roulant compris.
- * @param texte contenu markdown du chapitre, en LF (la lecture CRLF-robuste est l'affaire du lecteur)
+ * @param texte contenu markdown du chapitre, quelles que soient ses fins de ligne
  */
 export function parseChapitre(texte: string): ChapitreParse {
-  const lignes = texte.split('\n');
+  // Fins de ligne ramenées au LF ICI, à l'entrée : ce module est PUR et reçoit son texte de
+  // n'importe quel chargeur (lecteur fs, `fetch` d'un asset, fixture), dont tous ne normalisent pas.
+  // Mesuré sur `21 - Psychologie.md` du livre de base : en CRLF, `HEADING` ne reconnaît aucun titre
+  // (`.` ne franchit pas `\r`, et `$` sans `/m` ne se pose pas devant un `\r` final) — 1 section au
+  // lieu de 17, et l'empreinte du premier bloc passe de `ad420a63fa3b93c2` à `3eef49e6fee82961`.
+  const lignes = texte.replace(/\r\n?/g, '\n').split('\n');
   const sections: Section[] = [];
   const seen = new Map<string, number>();
   let running: number | null = null;

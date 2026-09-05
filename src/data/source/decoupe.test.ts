@@ -69,6 +69,21 @@ function cellule(over: Partial<Omit<FragmentCellule, 'kind'>> = {}, sum?: string
 }
 
 describe('parseChapitre — blocs, folios, sections', () => {
+  // Le module est PUR : son texte vient d'un lecteur fs, d'un `fetch` d'asset ou d'une fixture, et
+  // tous ne rendent pas du LF. La découpe ne peut donc pas dépendre des fins de ligne : mêmes
+  // sections, mêmes blocs, mêmes folios, mêmes empreintes.
+  it('LF et CRLF rendent la MÊME découpe (sections, blocs, folios, empreintes)', () => {
+    const lf = readFileSync(cheminChapitre(LDB, '21'), 'utf8').replace(/\r\n|\r/g, '\n');
+    const enLf = parseChapitre(lf);
+    const enCrlf = parseChapitre(lf.replace(/\n/g, '\r\n'));
+    expect(enLf.sections.length, 'la fixture doit porter plusieurs sections').toBeGreaterThan(5);
+    const image = (c: ChapitreParse) => c.sections.map((s) => ({
+      slug: s.slug, occ: s.occ, title: s.title, level: s.level, folio: s.folio,
+      blocks: s.blocks.map((b) => ({ md: b.md, folio: b.folio, folios: b.folios, sum: sumOf(b.md) })),
+    }));
+    expect(image(enCrlf)).toEqual(image(enLf));
+  });
+
   // `21 - Psychologie.md:45-48` : le folio coupe la phrase mi-mot (« … comme les » / « « ostlanders » … »).
   it('recollage : Préjugé (Cible) rend un paragraphe d\'un seul tenant', () => {
     const sec = sectionOf('21', 'prejuge-cible');

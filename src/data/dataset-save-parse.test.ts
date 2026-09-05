@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { DATASET_KEYS, datasetEditable, datasetFile, datasetSerializeRoot, resetData } from './overrides';
 import { validateDataset } from './schemas/validate';
 import { serializeDataset } from './serialize';
+import { versDisque } from './schemas/grammaire/prose';
 
 /**
  * Garde STRUCTURELLE « la SAUVEGARDE de l'éditeur passe » (#1467 L1b V-FLIP-TABLE, soldée #1530).
@@ -92,6 +93,28 @@ describe('sauvegarde éditeur — chaque clé de dataset résout un fichier REGI
       divergents.sort(),
       'clé(s) dont un save à vide réécrirait le fichier différemment du disque :\n' + divergents.join('\n'),
     ).toEqual([]);
+  });
+
+  it('FORME DISQUE : le `desc` MATÉRIALISÉ d’une entrée adressée ne repart pas au disque, et sans elle le schéma REFUSE', () => {
+    // Le plugin `wfrp:prose-source` injecte `desc` dans le module JSON au chargement ; le schéma, lui,
+    // décrit le DISQUE, où `desc` et `descRef` sont EXCLUSIFS. `datasetSerializeRoot` compose donc
+    // `versDisque` — mesuré ici sur une racine SYNTHÉTIQUE (le magasin vivant n'est jamais écrit par
+    // un test) ; le câblage `datasetSerializeRoot → versDisque` est tenu en LECTURE par le no-op à
+    // l'octet ci-dessus, et mordra sur donnée réelle dès la première famille adressée.
+    const runtime = [{
+      id: 'terreur', type: 'psychology', label: 'Terreur',
+      desc: 'prose matérialisée au chargement du module',
+      descRef: { book: 'livre-de-base', ch: '21', parts: [{ kind: 'blocs', sec: 'terreur', secOcc: 1, b0: 0, b1: 0, sum: '0'.repeat(16) }] },
+      source: { book: 'livre-de-base', page: 190 },
+    }];
+    const disque = versDisque(runtime) as Record<string, unknown>[];
+    expect(disque[0].descRef, 'l’adresse est la SOURCE : elle reste sur le disque').toBeTruthy();
+    expect('desc' in disque[0], 'le `desc` matérialisé serait écrit dans la donnée').toBe(false);
+    expect(runtime[0].desc, 'la forme disque est une COPIE : la racine runtime garde sa prose').toBeTruthy();
+
+    // MORDANT : sans ce passage, c'est la forme RUNTIME qui partirait au disque — et le schéma la refuse.
+    expect(validateDataset('psychology.json', disque)).toBeNull();
+    expect(validateDataset('psychology.json', runtime)).toMatch(/un texte, un porteur/);
   });
 
   it('fail-closed : une racine délibérément fausse est REFUSÉE (l’instrument mord)', () => {

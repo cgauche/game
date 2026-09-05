@@ -26,7 +26,14 @@ src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans 
                               `normalize.ts` (normalisation de citation, source unique partagée avec
                               `scripts/raw/_lib.mjs`). Module PUR : chargé tel quel par Node nu
                               (`scripts/source/*.mjs`) et par vitest — d'où les imports internes à
-                              extension explicite ; sans entrée/sortie, donc chargeable par le navigateur
+                              extension explicite ; sans entrée/sortie, donc chargeable par le navigateur.
+                              Le chemin JOUEUR ne résout RIEN : la prose adressée est MATÉRIALISÉE au
+                              build par le plugin Vite `scripts/source/prose-source-plugin.mjs`, qui
+                              l'injecte sous `desc` dans le module JSON servi. Invariant « hors Vite =
+                              forme disque » : un script Node lit une entrée adressée SANS `desc` — les
+                              consommateurs Node de prose sont inventoriés par
+                              `scripts/source/inventaire-consommateurs-prose.mjs` et câblés sur
+                              `materialiser` (`scripts/source/resoudre.mjs`) à la migration de leur famille
   hash.ts                     Hachage déterministe partagé (`hash32` FNV-1a, `seedStream`) : empreinte
                               de découpe ET seeds du rendu (`src/gameIso`)
 scripts/migrations/         Migrations de donnée REJOUABLES (une par lot, datée) : rejouées sur l'arbre

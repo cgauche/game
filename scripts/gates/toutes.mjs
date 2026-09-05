@@ -167,10 +167,11 @@ export const ECRIT_LU = {
     ecritFerme: {
       'src/_registry.generated.ts': 'même `genAll()` que la suite, même porte : `npm run gen` avant les lanes',
     },
-    lit: ['src/', 'scripts/', 'tsconfig.json', 'vite.config.ts'],
+    lit: ['src/', 'scripts/', 'Source/', 'tsconfig.json', 'vite.config.ts'],
     raison:
       '`gen && tsc -b && vite build` : `tsc -b` sur un projet `noEmit` (tsconfig.json:12) ne produit rien, et ' +
-      '`dist/` n’est lu par aucune gate',
+      '`dist/` n’est lu par aucune gate ; LIT Source/ parce que le plugin `wfrp:prose-source` ' +
+      '(scripts/source/prose-source-plugin.mjs) y résout la prose que les entrées ADRESSENT',
   },
   'docs:check': {
     ecrit: [],

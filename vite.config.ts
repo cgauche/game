@@ -5,6 +5,8 @@ import { fileURLToPath, URL } from 'node:url';
 import { genAll, REGISTRIES } from './scripts/gen-registry.mjs';
 // @ts-expect-error - module ESM JS (pas de types)
 import { ENTETE_RACINE, portDev, portPreview, valeurEnteteRacine } from './scripts/port-dev.mjs';
+// @ts-expect-error - plugin ESM JS (pas de types)
+import { proseSource } from './scripts/source/prose-source-plugin.mjs';
 
 /** Auto-génération des registres « dépose un fichier → intégré » : régénère l'index explicite
  *  au démarrage et à chaque ajout/suppression dans un dossier `defs/` (HMR récupère ensuite). */
@@ -23,7 +25,7 @@ function registryGen() {
 }
 
 export default defineConfig({
-  plugins: [registryGen(), react()],
+  plugins: [registryGen(), proseSource(), react()],
   base: './',
   // Port propre à l'arbre + `strictPort` (#1679 L1c-M6) : sans lui, Vite glisse sur le port suivant
   // quand un autre arbre tient déjà le sien, et une recette lancée sur le port attendu mesure

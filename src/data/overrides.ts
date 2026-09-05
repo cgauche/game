@@ -28,6 +28,7 @@ import {
 // vient déjà d'`engine/massBattle.ts`). Le module JSON est un singleton ESM : cette référence EST la
 // même que celle lue par le moteur → l'édition Codex (splice en place) reste visible en jeu.
 import type { RefASpecialisation } from './schemas/grammaire/ref';
+import { versDisque } from './schemas/grammaire/prose';
 import { ACTIVITIES } from '../engine/activities';
 import { MOUNT_PROFILES } from '../engine/mountTravel';
 import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS, encounterTable } from '../engine/travelTables';
@@ -448,9 +449,15 @@ export function datasetEditable(key: DatasetKey): boolean {
   return DATASET_FICHIER_DERIVE[key] !== undefined;
 }
 /** Racine à SÉRIALISER au save (le tableau lui-même par défaut ; l'objet PARENT entier pour un tableau
- *  niché — ses tableaux frères doivent survivre à l'édition d'un seul). */
+ *  niché — ses tableaux frères doivent survivre à l'édition d'un seul), en FORME DISQUE.
+ *
+ *  `versDisque` est la porte UNIQUE entre la forme RUNTIME (le `desc` d'une entrée adressée est
+ *  matérialisé par le plugin `wfrp:prose-source` au chargement du module JSON) et la forme DISQUE
+ *  (`desc` ⊕ `descRef`, `schemas/grammaire/prose.ts`) : sans elle, un save réécrirait la prose du
+ *  livre DANS la donnée, et le schéma la refuserait. Elle rend une COPIE — le dataset vivant n'est
+ *  jamais amputé. */
 export function datasetSerializeRoot(key: DatasetKey): unknown {
-  return NESTED_ARRAY_ROOT[key]?.root() ?? datasetArray(key);
+  return versDisque(NESTED_ARRAY_ROOT[key]?.root() ?? datasetArray(key));
 }
 
 const isPlainObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
