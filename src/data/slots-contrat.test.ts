@@ -138,6 +138,9 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // est celle, déjà au stock, de `spells | skill` (50), `talents | skill` (123), `miscast | skill`
 // (26)… — 21 datasets portent le MÊME couple : l'adoption est celle de `refOuSpec('skill')` au
 // schéma de `FlowTest`, en L2/L3 #1473, pour tous à la fois.
+// Cliquet DESCENDU 339 → 338 (#1686 lot 3a-1) : `arene-projet.json | material` porte
+// `idDe('material','roof')` (`defs-scenes/scene.ts` `couvertureSchema`, adopté par `BuildingMass.material`
+// et `RoofDefaults.material`) — le champ a son slot déclaré, l'entrée de stock est périmée.
 const DETTE_ADOPTION_MAX = 345;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {

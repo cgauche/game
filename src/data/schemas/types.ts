@@ -40,4 +40,13 @@ export interface SchemaDef {
    * scènes) ; `deriveExposition` (`exposition-derivee.ts`) ne dérive de routes que depuis `SCHEMA_DEFS`.
    */
   exposition?: Exposition;
+  /**
+   * Champ DISCRIMINANT du document — celui dont la valeur PARTITIONNE ses entrées (`domain` pour
+   * `materials.json`, #1686). OPTIONNEL : porté par les seuls defs qui exportent `discriminant`.
+   * Émis par `scripts/gen-registry.mjs` depuis ce MÊME export, qui alimente aussi la table
+   * `IDS_PAR_DISCRIMINANT` (`_ids.generated.ts`) : le registre est la source unique AU RUNTIME du
+   * discriminant d'un dataset (recalcul en mémoire de l'éditeur compris), le fichier généré d'ids
+   * n'en étant que la projection figée au commit.
+   */
+  discriminant?: string;
 }

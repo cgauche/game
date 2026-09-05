@@ -349,7 +349,7 @@ export const REGISTRIES = [
     type: 'SchemaDef',
     typeFrom: './types',
     fields: ['file', 'schema', 'famille', 'exposition'],
-    optionalFields: ['meta'],
+    optionalFields: ['meta', 'discriminant'],
     constFields: { root: "'src/data'" },
   },
   {
@@ -364,7 +364,7 @@ export const REGISTRIES = [
     type: 'SchemaDef',
     typeFrom: './types',
     fields: ['file', 'schema', 'famille', 'exposition'],
-    optionalFields: ['meta'],
+    optionalFields: ['meta', 'discriminant'],
     constFields: { root: "'src/scenes'" },
   },
 ];
