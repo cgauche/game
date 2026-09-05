@@ -55,8 +55,8 @@ troncature se COMPTE ici, elle ne se tait pas.
 
 ### 1bis. Index des ids (le cœur du détecteur)
 
-Identités indexées : **5859** (entrées de racine + documents embarqués) ; libellés
-normalisés : **5090**. Un id vu dans PLUSIEURS datasets rend la résolution
+Identités indexées : **5860** (entrées de racine + documents embarqués) ; libellés
+normalisés : **5091**. Un id vu dans PLUSIEURS datasets rend la résolution
 AMBIGUË (jamais fausse) : **393** collisions, et **3396** ids
 sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
 
@@ -596,7 +596,7 @@ nombre d’entrées qui la portent.
 | `src/data/qualitySubtypes.json` | array | liste | entité | 3 | `id`:string(3) `label`:string(3) `type`:string(3) |
 | `src/data/qualityTypes.json` | array | liste | entité | 2 | `id`:string(2) `label`:string(2) `type`:string(2) |
 | `src/data/raceAppearance.json` | array | liste | entité | 21 | `colors`:object(4) `dropHeadgear`:boolean(1) `extremites`:string(3) `eyes`:object(1) `featureKeys`:array(13) `gabarit`:string(21) `gabaritOverride`:object(6) `head`:string(13) `id`:string(21) `label`:string(21) `legs`:string(3) `palette`:object(20) `paletteF`:object(5) `parts`:object(1) `pose`:object(9) `sex`:string(1) `tenue`:string(21) `type`:string(21) |
-| `src/data/raw.manifest.json` | array | liste | entité | 9 | `bloque`:string(2) `id`:string(9) `label`:string(9) `ticket`:string(7) `type`:string(9) |
+| `src/data/raw.manifest.json` | array | liste | entité | 10 | `bloque`:string(3) `id`:string(10) `label`:string(10) `ticket`:string(8) `type`:string(10) |
 | `src/data/regles.json` | array | liste | entité | 85 | `desc`:string(85) `id`:string(85) `label`:string(85) `source`:object(85) `type`:string(85) |
 | `src/data/reglesOptionnelles.json` | array | liste | entité | 81 | `action`:object(1) `default`:boolean/number/string(81) `group`:string(81) `hint`:string(81) `id`:string(81) `kind`:string(81) `label`:string(81) `maison`:string(27) `max`:number(23) `min`:number(23) `options`:array(12) `ref`:string(81) `source`:object(54) `step`:number(13) `type`:string(81) |
 | `src/data/reliefMaterials.json` | array | liste | entité | 6 | `built`:boolean(4) `detail`:object(2) `face`:string(6) `foot`:string(2) `id`:string(6) `label`:string(6) `shadeDark`:number(2) `slopeTop`:string(2) `type`:string(6) |
@@ -649,7 +649,7 @@ nombre d’entrées qui la portent.
 
 ### 2.2 Fréquence globale des signatures d’entrée
 
-Signatures distinctes d’entrée de document : **608**. Les 40 plus fréquentes :
+Signatures distinctes d’entrée de document : **609**. Les 40 plus fréquentes :
 
 | Signature d’entrée | Entrées |
 |---|---|
@@ -733,7 +733,7 @@ dans le MÊME commit :
 | source | clé absente | 44 |
 
 Documents dont AUCUNE ENTRÉE DE RACINE ne porte `source` : **44** (lot `L1d #1469`) —
-`ambiance.json`(1) `arcane-phenomena.json`(1) `books.json`(29) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `mass-battle.json`(1) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(28) `progression-schemas.derived.json`(1) `propMaterials.json`(8) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(9) `reliefMaterials.json`(6) `renduMonte.json`(1) `river-perils.json`(1) `roofMaterials.json`(4) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
+`ambiance.json`(1) `arcane-phenomena.json`(1) `books.json`(29) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `mass-battle.json`(1) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(28) `progression-schemas.derived.json`(1) `propMaterials.json`(8) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(10) `reliefMaterials.json`(6) `renduMonte.json`(1) `river-perils.json`(1) `roofMaterials.json`(4) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
 
 Le DoD ajouté de #1465 annonçait « 13 datasets sans `source` » : la mesure en trouve
 **44** — le chiffre de 13 n’a pas de porteur dans l’arbre, il ne se recopie pas.
@@ -1104,7 +1104,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | monnaie | `gold,silver` | cible | 3 |
 | prix | `automne,ete,hiver,printemps` | declaree | 17 |
 | prix | `dice` | declaree | 1 |
-| de | `n,sides` | cible | 119 |
+| de | `n,sides` | cible | 120 |
 | de | `n,plus,sides` | cible | 19 |
 | formule | `sum` | cible | 13 |
 | formule | `sinPoints` | cible | 10 |
@@ -1134,16 +1134,16 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **854** (cible 401 · declaree 6 · historique 124 · divergente 323). Objets JSON parcourus : **49175**, dont **32210** portent une forme
+Lignes concept × dataset × champ × forme : **855** (cible 401 · declaree 6 · historique 124 · divergente 324). Objets JSON parcourus : **49179**, dont **32212** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **86**.
 
-Entrées de racine sans concept de valeur : **4032** sur **4113** —
+Entrées de racine sans concept de valeur : **4033** sur **4114** —
 un document n’est ni orphelin ni hors strate : ce compte est le seul porteur de ce qu’aucun concept ne revendique.
 Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause `horsDesignation` du lexique : `activities.json` 51.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-471 ligne(s), 24702 occurrence(s).
+472 ligne(s), 24703 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1397,6 +1397,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `match` | `categorie` | divergente | `merchantFamilies.json` | 3 | — | `axes.json` `merchantFamilies.json` |  |
 | entité | `onFail` | `id,value+…` | divergente | `miscast.json` | 11 | — | `etats.json` |  |
 | entité | `onFail` | `op+…` | divergente | `miscast.json` | 4 | — | `characteristics.json` `systemes.manifest.json` `talents.json` `traits.json` |  |
+| entité | `ops` | `id,unlessCondition,value+…` | divergente | `miscast.json` | 1 | — | `etats.json` `water-exposure.json` |  |
 | entité | `ops` | `id,value+…` | divergente | `miscast.json` | 31 | — | `etats.json` `water-exposure.json` |  |
 | entité | `ops` | `id+…` | divergente | `miscast.json` | 3 | — | `etats.json` `water-exposure.json` |  |
 | entité | `ops` | `op+…` | divergente | `miscast.json` | 4 | — | `characteristics.json` `systemes.manifest.json` `talents.json` `traits.json` |  |
@@ -1737,7 +1738,7 @@ Reconnu par : la clé porteuse `price`
 
 ### 3.5 lancer de dés — `de` (strate Valeur)
 
-19 ligne(s), 138 occurrence(s).
+19 ligne(s), 139 occurrence(s).
 Reconnu par : son noyau `n` `sides`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1750,7 +1751,7 @@ Reconnu par : son noyau `n` `sides`
 | entité | `dice` | `n,plus,sides` | cible | `maladies.json` | 12 | — |  |
 | entité | `dice` | `n,sides` | cible | `maladies.json` | 25 | — |  |
 | entité | `dice` | `n,sides` | cible | `maneuvers.json` | 2 | — |  |
-| entité | `dice` | `n,sides` | cible | `miscast.json` | 24 | — |  |
+| entité | `dice` | `n,sides` | cible | `miscast.json` | 25 | — |  |
 | config | `dice` | `n,sides` | cible | `sea-cargo.json` | 1 | — |  |
 | config | `dice` | `n,sides` | cible | `ship-criticals.json` | 3 | — |  |
 | entité | `dice` | `n,plus,sides` | cible | `spells.json` | 1 | — |  |
@@ -2466,7 +2467,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13103** objets sur **49175** ne sont portés par AUCUNE
+Au-delà des orphelines, **13104** objets sur **49179** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -2835,6 +2836,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `loup-et-saumure-projet.json` | `entryPoints` | `arrivee` | 3 |
 | `loup-et-saumure-projet.json` | `arrivee` | `x,y` | 3 |
 | `miscast.json` | `ops` | `mod,op,rounds,skill` | 3 |
+| `miscast.json` | `durationRounds` | `dice` | 3 |
 | `naval-ports.json` | `surplus` | `pieces-detachees-de-navire` | 3 |
 | `naval-traits.json` | `passive` | `bonus,op,skill` | 3 |
 | `qualities.json` | `capabilities` | `withheldOnRestraint` | 3 |
@@ -2957,7 +2959,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `miscast.json` | `of` | `dice` | 2 |
 | `miscast.json` | `ops` | `hours,mod,op,skill` | 2 |
 | `miscast.json` | `hours` | `dice` | 2 |
-| `miscast.json` | `durationRounds` | `dice` | 2 |
 | `miscast.json` | `ops` | `blocked,minutes,op,skill` | 2 |
 | `miscast.json` | `minutes` | `dice` | 2 |
 | `miscast.json` | `ops` | `op` | 2 |
@@ -3684,7 +3685,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `miscast.ts` | 42 | — | formule | cible | `sum` | `formulaSchema` |
 | `miscast.ts` | 43 | — | — | hors lexique | `times` | `formulaSchema` |
 | `miscast.ts` | 43 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
-| `miscast.ts` | 75 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
+| `miscast.ts` | 82 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
 | `oups.ts` | 39 | — | plage | cible | `max,min+…` | — |
 | `psychology.ts` | 54 | `test` | test | historique | `difficulty,skill` | — |
 | `raceAppearance.ts` | 31 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
@@ -3717,12 +3718,12 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 ## 5. Ops en donnée (strate Ops)
 
 `gameOpSchema` est un `looseObject` (`src/data/schemas/grammaire/mecanique.ts`) : seul `op` est contraint.
-Mesure : **2268** objets portent un `op` = **2210** ops de jeu + **58**
+Mesure : **2269** objets portent un `op` = **2211** ops de jeu + **58**
 Conditions dont l’`op` est un COMPARATEUR (`kind` reconnu par `conditionSchema`, kinds lus par AST).
 **249** Conditions au total, dont **191** sans `op` :
 celles-là n’ont jamais été comptées en op — le retrait des Conditions du compte d’ops vaut
-2268 → 2210, jamais 2268 → 2019.
-Noms d’op distincts : **104**, signatures distinctes : **233**.
+2269 → 2211, jamais 2269 → 2020.
+Noms d’op distincts : **104**, signatures distinctes : **234**.
 
 | `kind` de Condition | Avec `op` | Sans `op` |
 |---|---|---|
@@ -3853,6 +3854,7 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 | `condition` | `id,op,unlessCondition` | `spells.json` | 2 | — |
 | `condition` | `id,op,value` | `tables.json` | 2 | — |
 | `condition` | `durationRounds,id,onlyIfCondition,op` | `spells.json` | 1 | — |
+| `condition` | `durationRounds,id,op,perRound,unlessCondition,value` | `miscast.json` | 1 | — |
 | `condition` | `entangleOnFail,escapeThreshold,id,op,struggleDamage,unlessCondition,value` | `qualities.json` | 1 | — |
 | `condition` | `entangleOnFail,escapeThreshold,id,op,unlessCondition,value` | `qualities.json` | 1 | — |
 | `condition` | `escapeStrength,grapple,id,op` | `maneuvers.json` | 1 | — |
@@ -4162,7 +4164,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **2895** — espèce `id` **258**, espèce `acteur` **2637**.
+Slots déclarés : **2898** — espèce `id` **261**, espèce `acteur` **2637**.
 
 ### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
 
@@ -4202,9 +4204,12 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `maladies.json` | `[].mutation.into` | `into` | `maladie` | liste | 1 | 1 / 1 |
 | `maneuvers.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `merchants.json` | `[].curated[]` | `curated` | `trapping` | liste | 19 | 19 / 19 |
+| `miscast.json` | `[].entries[].ops[].unlessCondition` | `unlessCondition` | `etat` | liste | 0 | 0 / 0 |
 | `miscast.json` | `[].entries[].ops[].skill.id` | `id` | `skill` | liste | 13 | 13 / 13 |
 | `miscast.json` | `[].entries[].test.skill.id` | `id` | `skill` | liste | 13 | 13 / 13 |
+| `miscast.json` | `[].entries[].test.onFail[].unlessCondition` | `unlessCondition` | `etat` | liste | 0 | 0 / 0 |
 | `miscast.json` | `[].entries[].test.onFail[].skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `miscast.json` | `[].entries[].test.onFailHard.ops[].unlessCondition` | `unlessCondition` | `etat` | liste | 1 | 1 / 1 |
 | `miscast.json` | `[].entries[].test.onFailHard.ops[].skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `mutations.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `problemes-vehicule.json` | `entries[].mount.riderTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4636,7 +4641,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `merchants.json` | `categories` | 1 |
 | `merchants.json` | `subTypes` | 5 |
 | `miscast.json` | `onFail` | 15 |
-| `miscast.json` | `ops` | 38 |
+| `miscast.json` | `ops` | 39 |
 | `miscast.json` | `skill` | 26 |
 | `montures.json` | `creatureIds` | 8 |
 | `mutations.json` | `eyes` | 1 |
@@ -4787,7 +4792,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
 Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **2637** slots sur 2895.
+pèse **2637** slots sur 2898.
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
@@ -4795,4 +4800,4 @@ pèse **2637** slots sur 2895.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 1a5f720b0e931ed4c01ae837a1e497ab09616400 (363 fichiers, 11 dossiers) corps: 4eb0b0552a4cb3721affbab1e1c19ae60a4a6328 -->
+<!-- sources-empreinte: cfa1acca947fa94ca72b9744883bcc9881ea5425 (363 fichiers, 11 dossiers) corps: 6c97918b3bb0125da9e461dfe208e9444e335783 -->

@@ -33,7 +33,7 @@
 | 13 | Combat | ✅ | 132 (combat.md ×122) |
 | 14 | OPTION : FRAPPE MORTELLE | ✅ | 141 (combat.md ×136) |
 | 15 | Déplacement | ✅ | 70 (combat.md ×62) |
-| 16 | États | ✅ | 55 (etats.md ×30) |
+| 16 | États | ✅ | 56 (etats.md ×31) |
 | 17 | Destin et Résistance | ✅ | 52 (destin.md ×31) |
 | 18 | Traumatisme | ✅ | 103 (traumatisme.md ×68) |
 | 19 | Corruption | ✅ | 35 (corruption.md ×29) |
@@ -57,7 +57,7 @@
 | 37 | Les dieux elfes | 📖 | catalogue (catalogue-*.md) |
 | 38 | Les dieux halflings | 📖 | catalogue (catalogue-*.md) |
 | 39 | Les dieux du Chaos | 📖 | catalogue (catalogue-*.md) |
-| 40 | Les prières | ✅ | 47 (religion.md ×23) |
+| 40 | Les prières | ✅ | 48 (religion.md ×24) |
 | 41 | Bénédictions | ✅ | 12 (religion.md ×7) |
 | 42 | Miracles | 📖 | 4 (magie.md ×2) |
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
@@ -1550,4 +1550,4 @@
 
 - **VDM 09** (Shyish — Domaine de la Mort) :
   - 📖 l.375-536 « Le Labyrinthe de Cristal » — transcrit en catalogue, jamais traité, 0 réf
-<!-- sources-empreinte: cc3dedd11d28e77c12fdba993261e764f9c1e123 (347 fichiers, 17 dossiers) corps: 71fb595bff2140fc9fb8ebfff998b4be3e428c76 -->
+<!-- sources-empreinte: 1feccf21dc92fa5ffdfd0f860b963f74fff43462 (347 fichiers, 17 dossiers) corps: 3c207f0b3fe9718d4124f40e73f8d030676372c7 -->
