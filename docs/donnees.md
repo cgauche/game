@@ -31,7 +31,7 @@ La colonne **Exposition** de §A est DÉRIVÉE des `exposition` déclarées par 
 (`document(type, famille, champs, meta, exposition)` → `src/data/schemas/exposition-derivee.ts`,
 dumpée par `scripts/docs/lib/dump-exposition.mts`) : clés de catégorie Codex exposées, route
 d'édition (`dataset` / `objet single|record` / `niché` / aucune), ou EXEMPTION motivée
-(`25` fichier(s) exempt(s) sur `120`). Aucune de ces valeurs n'est écrite ici :
+(`24` fichier(s) exempt(s) sur `120`). Aucune de ces valeurs n'est écrite ici :
 un def qui change d'exposition change cette colonne au prochain `npm run docs:donnees`.
 
 ## §A — Carte : où va chaque donnée
@@ -165,7 +165,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 | `props.json` | Props de décor (leurs matières vivent dans `materials.json`) (123 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (édité à la PALETTE de décor de l’éditeur de carte, jamais par une catégorie du Codex) |
 | `decorPalette.json` | Palette de couleurs de décor (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (palette d'art éditée au fichier (aucun écran d'atelier ne l'expose)) |
 | `teintesJeu.json` | TEINTES DE JEU du terrain — surbrillances tactiques (portées, zones, bandes de tir, anneaux de cible, halos, télégraphes) et identité d'unité (anneaux réservés, équipes, une couleur par héros), `id → #rrggbb` groupé par préfixe ; servi aux peintres par `src/gameIso/highlightTints.ts` et `src/gameIso/teamColors.ts` (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (palette de rendu éditée au fichier (aucun écran d'atelier ne l'expose)) |
-| `materials.json` | LES matières du monde — un document, le domaine (`prop` décor volumique · `roof` toiture · `relief`) porté par l'entrée (16 entrée(s)) | exempt (dette, #1686) — aucune (aucune route d’édition posée au lot 2 — l’onglet Codex « Matières » du lot 3 de #1686 (arbitrage utilisateur 2026-09-05) est la route prévue, une matière s’y ajoutera et s’y retouchera) |
+| `materials.json` | LES matières du monde — un document, le domaine (`prop` décor volumique · `roof` toiture · `relief`) porté par l'entrée (16 entrée(s)) | `materials` — dataset `materials` |
 | `ambiance.json` · `lightLevels.json` · `lightTones.json` | Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière · TONS de lumière (#1245 : apparence d'une source ponctuelle — couleur, part d'intensité, vacillement ; référencés par `tone`, défaut `flamme`) (objet à sous-catalogues · 5 entrée(s) · 4 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) ; exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 | `renduMonte.json` | Réglage MAISON du rendu du couple MONTÉ (#1128) — `harnaisParDefaut` : id du set d'équipement (registre `src/gameIso/rig/quadruped/harnais/`) apposé à une monture PORTÉE dont le record ne déclare pas de `appearance.harnais` (LDB 08 l.557), lu par `DEFAUT_HARNAIS_MONTE` (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite) |
 
@@ -257,7 +257,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   `src/data/variants-integrity.test.ts`) — `talents.json` résout quatre champs, UNE CITATION PAR LIGNE,
   chacune à côté du SYMBOLE qu'elle porte (lignes MESURÉES à la génération, `citeLigne`) :
 
-  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1482`
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1487`
   - `test` — `talentTestSLBonus`, `src/engine/magic.ts:359`
   - `max` — `talentMaxById`, `src/engine/careerSlots.ts:326`
   - `combat` — `featuresOf`, `src/engine/combatFeatures/dispatch.ts:52`
@@ -265,7 +265,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 
   `traits.json` ne résout, lui, que deux champs :
 
-  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:559`
+  - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:569`
 
   `passive` et `effects` en sont EXCLUS — le moteur les lit sur
   l'entrée brute (`src/engine/talentEffects.ts`, `src/engine/traits/dispatch.ts`) ; un champ n'entre
@@ -487,4 +487,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: f512496be9bad4d842c428e465d5b1bbfacc91f6 (350 fichiers, 2 dossiers) corps: fe0ee3f814cb0691261a25eef0f8b7bb1c700200 -->
+<!-- sources-empreinte: 03da57769fa3e5a19ac13b12ae23c3c6a29c1a5e (351 fichiers, 2 dossiers) corps: af4fcfa3a20a23a7bbe78e61cff129b022868a80 -->

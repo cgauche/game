@@ -5,7 +5,7 @@
 **Périmètre mesuré / angles morts** — sont LUS aux fichiers réels : les 34 appels
 `addReverse(...)` de `src/ui/compendium/relations.ts` (catégorie référante, catégorie cible, titre FR de section,
 `fichier:ligne`), l'API publique du même module (AST + 1re phrase de JSDoc), le littéral
-`CODEX_SPECS` de `src/ui/compendium/registry.ts` (126 catégories, leurs groupes et sous-groupes
+`CODEX_SPECS` de `src/ui/compendium/registry.ts` (127 catégories, leurs groupes et sous-groupes
 `cluster`), et l'`exposition` DÉCLARÉE par les 120 defs de `src/data/schemas/defs/`
 (dumpée par `scripts/docs/lib/dump-exposition.mts`), les cas NOMMÉS par `src/data/schemas/exposition-contrats.test.ts`, les fonctions
 exportées de `src/ui/compendium/describe.ts` et `src/ui/compendium/humanize.ts`, et le compte d'épigraphes de Carrière dumpé par
@@ -70,14 +70,14 @@ par `src/data/schemas/exposition-contrats.test.ts`, dont voici les cas, tels que
 Un document neuf se pose donc en DEUX endroits du MÊME commit : son `exposition` au def, sa
 catégorie dans `CODEX_SPECS`.
 
-Sur 120 defs, 25 sont EXEMPTS d'exposition Codex :
+Sur 120 defs, 24 sont EXEMPTS d'exposition Codex :
 
-- `dette` — 3 fichier(s)
+- `dette` — 2 fichier(s)
 - `vocabulaire-app-interne` — 22 fichier(s)
 
 ### Index INVERSE — catégorie Codex → document qui la déclare
 
-126 clés de catégorie sont déclarées par les defs. La colonne « Route d'édition »
+127 clés de catégorie sont déclarées par les defs. La colonne « Route d'édition »
 est celle du document porteur, telle que `document()` la déclare.
 
 | Clé de catégorie | Libellé (`CODEX_SPECS`) | Déclarée par | Route d'édition |
@@ -136,6 +136,7 @@ est celle du document porteur, telle que `document()` la déclare.
 | `massBattlePowerEstimate` | Bataille de masse — Estimation de Puissance | `src/data/mass-battle.json` | niché (5 catégorie(s)) |
 | `massBattleStructures` | Bataille de masse — Structures | `src/data/mass-battle.json` | niché (5 catégorie(s)) |
 | `massBattleWarMachines` | Bataille de masse — Machines de guerre | `src/data/mass-battle.json` | niché (5 catégorie(s)) |
+| `materials` | Matières | `src/data/materials.json` | dataset `materials` |
 | `miscastMajor` | Incantations Imparfaites — Majeures | `src/data/miscast.json` | niché (3 catégorie(s)) |
 | `miscastMinor` | Incantations Imparfaites — Mineures | `src/data/miscast.json` | niché (3 catégorie(s)) |
 | `miscastWrath` | Colère des dieux | `src/data/miscast.json` | niché (3 catégorie(s)) |
@@ -264,7 +265,7 @@ Le JSDoc est rapporté en ENTIER : le contrat d'une couture relationnelle tient 
 | `tokenizeLinks` | function | `src/ui/compendium/relations.ts:502` | Tokenise une prose en alternant texte brut et mentions d'entité à LIER (auto-liage du Codex, façon `dev.html`). PUR & locale-scoped (matcher dérivé des libellés de la locale active, jamais une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI et les libellés inconnus/courts — la comparaison est 100 % id-based (`selfId` si l'appelant le connaît, sinon résolu depuis `selfLabel` via `idByLabelCached`, repli des appelants non encore migrés). `selfCategory` (catégorie de la fiche affichante) tranche les homonymes en priorité — cf. `resolveLink`/`PRIORITY_CAT_ORDER`. Seul le vocabulaire de RÈGLES est lié. |
 
 `bookContents` est projeté DANS le `build` (paresseux) de la catégorie Livres
-(`src/ui/compendium/registry.ts:1786`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
+(`src/ui/compendium/registry.ts:1791`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
 items — aucun cycle de projection.
 
 ## Barre de catégories — sous-groupes repliables (`cluster`)
@@ -283,7 +284,7 @@ automatiquement si la catégorie active y vit. Les pastilles restent des `<butto
 | Équipement | 8 | 5 | *Mer & rivière* (3) |
 | Effets | 30 | 12 | *Blessures critiques* (8), *Critiques de navire* (5), *Critiques fluviaux* (5) |
 | Magie | 8 | 8 | — |
-| Monde | 18 | 18 | — |
+| Monde | 19 | 19 | — |
 | Tables | 53 | 16 | *Création de personnage* (7), *Voyage terrestre* (6), *Mer & rivière* (9), *Calendrier* (4), *Bataille de masse* (5), *Rencontres* (3), *Équipage & navire* (3) |
 
 Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_SPECS`, rien d'autre.
@@ -314,4 +315,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: 62a9450dc16d2005830ac8921b9a4b09dd0e49c5 (421 fichiers, 0 dossiers) corps: 50baa300b193ce1e285479db954816cf978f07b8 -->
+<!-- sources-empreinte: 5f7959a3ac5deeb186f0f3a265a1f90d7336fa43 (436 fichiers, 0 dossiers) corps: f6f11048740f297a49dc0e39bd868306d5fdf301 -->
