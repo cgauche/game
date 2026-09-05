@@ -55,9 +55,9 @@ troncature se COMPTE ici, elle ne se tait pas.
 
 ### 1bis. Index des ids (le cœur du détecteur)
 
-Identités indexées : **5860** (entrées de racine + documents embarqués) ; libellés
-normalisés : **5091**. Un id vu dans PLUSIEURS datasets rend la résolution
-AMBIGUË (jamais fausse) : **393** collisions, et **3396** ids
+Identités indexées : **5859** (entrées de racine + documents embarqués) ; libellés
+normalisés : **5089**. Un id vu dans PLUSIEURS datasets rend la résolution
+AMBIGUË (jamais fausse) : **392** collisions, et **3394** ids
 sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
 
 | Id | Datasets |
@@ -142,7 +142,6 @@ sont aussi le libellé d’une entité (faux positif possible sur la résolvabil
 | `animosite` | `psychology.json` `traits.json` |
 | `arbalete` | `trappings.json` `weaponGroups.json` |
 | `arc` | `trappings.json` `weaponGroups.json` |
-| `ardoise` | `propMaterials.json` `roofMaterials.json` |
 | `arene` | `arene-projet.json` `tavernGames.json` |
 | `armes-de-siege` | `mass-battle.json` `weaponGroups.json` |
 | `armure` | `qualitySubtypes.json` `traits.json` |
@@ -599,14 +598,14 @@ nombre d’entrées qui la portent.
 | `src/data/raw.manifest.json` | array | liste | entité | 10 | `bloque`:string(3) `id`:string(10) `label`:string(10) `ticket`:string(8) `type`:string(10) |
 | `src/data/regles.json` | array | liste | entité | 85 | `desc`:string(85) `id`:string(85) `label`:string(85) `source`:object(85) `type`:string(85) |
 | `src/data/reglesOptionnelles.json` | array | liste | entité | 81 | `action`:object(1) `default`:boolean/number/string(81) `group`:string(81) `hint`:string(81) `id`:string(81) `kind`:string(81) `label`:string(81) `maison`:string(27) `max`:number(23) `min`:number(23) `options`:array(12) `ref`:string(81) `source`:object(54) `step`:number(13) `type`:string(81) |
-| `src/data/reliefMaterials.json` | array | liste | entité | 6 | `built`:boolean(4) `detail`:object(2) `face`:string(6) `foot`:string(2) `id`:string(6) `label`:string(6) `shadeDark`:number(2) `slopeTop`:string(2) `type`:string(6) |
+| `src/data/reliefMaterials.json` | array | liste | entité | 4 | `built`:boolean(3) `detail`:object(2) `face`:string(4) `foot`:string(2) `id`:string(4) `label`:string(4) `shadeDark`:number(2) `slopeTop`:string(2) `type`:string(4) |
 | `src/data/rencontres-edoc.json` | object | pipe à la racine | config | 1 | `die`:string(1) `id`:string(1) `label`:string(1) `source`:object(1) `tables`:object(1) `type`:string(1) |
 | `src/data/renduMonte.json` | object | pipe à la racine | config | 1 | `harnaisParDefaut`:string(1) `id`:string(1) `label`:string(1) `type`:string(1) |
 | `src/data/reseau-routier.json` | array | liste | entité | 15 | `desc`:string(9) `effectifMax`:number(1) `effectifMin`:number(1) `effectifRouteReculeeMax`:number(1) `effectifRouteReculeeMin`:number(1) `espacementKm`:number(1) `espacementKmMax`:number(1) `espacementKmMin`:number(1) `etapeChevalJours`:number(1) `etapeDiligenceJours`:number(1) `etapePiedJours`:number(1) `facteurGrandsTroublesMax`:number(1) `facteurGrandsTroublesMin`:number(1) `facteurZoneDangereuse`:number(1) `id`:string(15) `kind`:string(15) `label`:string(15) `largeurMaxM`:number(2) `largeurMinM`:number(2) `prixSurcotePct`:number(1) `source`:object(15) `tarifBrassMax`:number(1) `tarifBrassMin`:number(1) `type`:string(15) |
 | `src/data/river-criticals.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `replisSansExpose`:object(1) `source`:object(1) `tables`:object(1) `type`:string(1) |
 | `src/data/river-navigation.json` | object | pipe à la racine | config | 1 | `capsize`:object(1) `driftNavPenalty`:number(1) `driftPctOfSpeed`:number(1) `echouage`:object(1) `id`:string(1) `label`:string(1) `navBaseDifficulty`:string(1) `outOfControl`:object(1) `rowingAgility`:object(1) `savoirVoiesFluvialesDR`:number(1) `source`:object(1) `tackDifficulty`:string(1) `temporaryRepair`:object(1) `type`:string(1) `windDirections`:array(1) `windEffect`:object(1) `windForces`:array(1) `windTicksPerDay`:number(1) `windTickThreshold`:number(1) |
 | `src/data/river-perils.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `perils`:array(1) `type`:string(1) |
-| `src/data/roofMaterials.json` | array | liste | entité | 4 | `detail`:object(3) `E`:string(3) `eaveOverhangM`:number(3) `fascia`:string(2) `fasciaDropM`:number(2) `id`:string(4) `label`:string(4) `line`:string(3) `N`:string(3) `O`:string(3) `planBody`:string(1) `planEdge`:string(1) `planInner`:string(1) `planText`:string(1) `ridgeCap`:string(2) `S`:string(3) `soffite`:string(3) `type`:string(4) |
+| `src/data/roofMaterials.json` | array | liste | entité | 4 | `couverture`:boolean(3) `detail`:object(3) `E`:string(3) `eaveOverhangM`:number(3) `fascia`:string(2) `fasciaDropM`:number(2) `id`:string(4) `label`:string(4) `line`:string(3) `N`:string(3) `O`:string(3) `planBody`:string(1) `planEdge`:string(1) `planInner`:string(1) `planText`:string(1) `ridgeCap`:string(2) `S`:string(3) `soffite`:string(3) `type`:string(4) |
 | `src/data/sea-cargo.json` | object | pipe à la racine | config | 1 | `buy`:object(1) `cargoes`:array(1) `id`:string(1) `label`:string(1) `opportunite`:object(1) `overload`:object(1) `sell`:object(1) `type`:string(1) |
 | `src/data/sea-events.json` | object | pipe à la racine | config | 1 | `boardEvents`:array(1) `fastVoyage`:object(1) `id`:string(1) `label`:string(1) `manann`:object(1) `portEvents`:array(1) `type`:string(1) |
 | `src/data/sea-navigation.json` | object | pipe à la racine | config | 1 | `epuisement`:object(1) `forcerLeRythme`:array(1) `id`:string(1) `label`:string(1) `longsVoyages`:object(1) `orientation`:object(1) `phares`:object(1) `poursuite`:object(1) `reparation`:object(1) `salissures`:object(1) `type`:string(1) `vitesseMax`:object(1) `workPeriodHours`:object(1) |
@@ -649,7 +648,7 @@ nombre d’entrées qui la portent.
 
 ### 2.2 Fréquence globale des signatures d’entrée
 
-Signatures distinctes d’entrée de document : **609**. Les 40 plus fréquentes :
+Signatures distinctes d’entrée de document : **608**. Les 40 plus fréquentes :
 
 | Signature d’entrée | Entrées |
 |---|---|
@@ -733,7 +732,7 @@ dans le MÊME commit :
 | source | clé absente | 44 |
 
 Documents dont AUCUNE ENTRÉE DE RACINE ne porte `source` : **44** (lot `L1d #1469`) —
-`ambiance.json`(1) `arcane-phenomena.json`(1) `books.json`(29) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `mass-battle.json`(1) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(28) `progression-schemas.derived.json`(1) `propMaterials.json`(8) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(10) `reliefMaterials.json`(6) `renduMonte.json`(1) `river-perils.json`(1) `roofMaterials.json`(4) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
+`ambiance.json`(1) `arcane-phenomena.json`(1) `books.json`(29) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `mass-battle.json`(1) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(28) `progression-schemas.derived.json`(1) `propMaterials.json`(8) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(10) `reliefMaterials.json`(4) `renduMonte.json`(1) `river-perils.json`(1) `roofMaterials.json`(4) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
 
 Le DoD ajouté de #1465 annonçait « 13 datasets sans `source` » : la mesure en trouve
 **44** — le chiffre de 13 n’a pas de porteur dans l’arbre, il ne se recopie pas.
@@ -1134,10 +1133,10 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **855** (cible 401 · declaree 6 · historique 124 · divergente 324). Objets JSON parcourus : **49179**, dont **32212** portent une forme
+Lignes concept × dataset × champ × forme : **855** (cible 401 · declaree 6 · historique 124 · divergente 324). Objets JSON parcourus : **49177**, dont **32212** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **86**.
 
-Entrées de racine sans concept de valeur : **4033** sur **4114** —
+Entrées de racine sans concept de valeur : **4031** sur **4112** —
 un document n’est ni orphelin ni hors strate : ce compte est le seul porteur de ce qu’aucun concept ne revendique.
 Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause `horsDesignation` du lexique : `activities.json` 51.
 
@@ -1188,7 +1187,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `effect` | `trappingId,type` | divergente | `arene-projet.json` | 16 | — | `spells.json` `trappings.json` `weaponGroups.json` |  |
 | config | `effect` | `trappingId,type+…` | divergente | `arene-projet.json` | 2 | — | `trappings.json` |  |
 | config | `effect` | `type+…` | divergente | `arene-projet.json` | 1 | — | `systemes.manifest.json` |  |
-| config | `material` | `id-nu` | historique | `arene-projet.json` | 9 | — | `propMaterials.json` `roofMaterials.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `material` | `id-nu` | historique | `arene-projet.json` | 9 | — | `roofMaterials.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `members` | `entityId` | divergente | `arene-projet.json` | 110 | — | `arene-projet.json` |  |
 | config | `members` | `entityId,ridesEntityId` | divergente | `arene-projet.json` | 2 | — | `arene-projet.json` |  |
 | config | `members` | `entityId+…` | divergente | `arene-projet.json` | 4 | — | `arene-projet.json` |  |
@@ -1420,7 +1419,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `career` | `id-nu` | historique | `pregens.json` | 8 | — | `careers.json` `creatures.json` `groups.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `species` | `id-nu` | historique | `pregens.json` | 8 | — | `obsessions.json` `skills.json` `species.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `light` | `tone+…` | divergente | `props.json` | 6 | — | `lightTones.json` `spells.json` `trappings.json` |  |
-| entité | `primitives` | `material+…` | divergente | `props.json` | 172 | — | `propMaterials.json` `roofMaterials.json` |  |
+| entité | `primitives` | `material+…` | divergente | `props.json` | 172 | — | `propMaterials.json` |  |
 | entité | `becomes` | `id-nu` | historique | `psychology.json` | 1 | — | `mass-battle.json` `psychology.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `failCondition` | `id-nu` | historique | `psychology.json` | 1 | — | `etats.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `ops` | `id+…` | divergente | `psychology.json` | 1 | — | `etats.json` |  |
@@ -2467,7 +2466,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13104** objets sur **49179** ne sont portés par AUCUNE
+Au-delà des orphelines, **13104** objets sur **49177** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -4800,4 +4799,4 @@ pèse **2637** slots sur 2898.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
 
-<!-- sources-empreinte: 13ffb6549f0a8b05b68dcb148d035710c3292ee3 (363 fichiers, 11 dossiers) corps: 6c97918b3bb0125da9e461dfe208e9444e335783 -->
+<!-- sources-empreinte: 85c803e4c2a1ad55587083acad6cf401ecf4bd86 (363 fichiers, 11 dossiers) corps: 2d1202266f49dd1750d8b159fdc04a00d5777dbd -->

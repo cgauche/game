@@ -302,6 +302,24 @@ const CODE_ARTIFACT_NOUN =
 // écartés STRUCTURELLEMENT, jamais par liste de sites.
 const QUANTITE_AVANT =
   '(?<!(?:\\ben|\\bde|\\bnon|\\bau|autant|beaucoup|peu|bien|toujours|encore|tant|jamais|guère|pas)[\\s*/]{1,24})';
+// #1686 : le qualificatif de révolu NU, suivi d'un identifiant de CODE qui CLÔT la ligne — forme
+// d'annotation en fin d'assertion ou de littéral, que les deux familles voisines laissaient passer
+// (l'une exige la parenthèse, l'autre le préfixe à tiret). Deux discriminants cumulés : la cible
+// ressemble à du code (back-ticks, tiret/souligné interne, identifiant chameau, nom de fichier) et
+// rien ne la suit sur la ligne — un complément de phrase ferait retomber le mot dans son sens
+// courant (« un format lisible », « le propriétaire précédent »). Casse SIGNIFICATIVE : le
+// discriminant chameau n'existe que si la majuscule interne compte.
+// Formes couvertes et faux positifs écartés : LITTÉRAUX dans `src/comment-poison-guard.test.ts`.
+const IDENT_CODE =
+  '(?:' + BT + '[\\w./-]+' + BT +
+  '|[A-Za-zÀ-ÿ][\\wÀ-ÿ]*[-_][\\wÀ-ÿ]+(?:[-_][\\wÀ-ÿ]+)*' +
+  '|[a-zà-ÿ]+[A-Z][\\w]*' +
+  '|[\\w-]+\\.[jt]sx?' +
+  ')';
+const ANCIEN_IDENT_EOL_RX = new RegExp(
+  '\\b[Aa]ncien(?:ne|s|nes)?\\s+' + IDENT_CODE + '[ \\t]*(?:\\*+/)?[ \\t]*$',
+  'm',
+);
 const NAMED_ARTIFACT_TOMBSTONE_RX = new RegExp(
   QUANTITE_AVANT + '\\bplus' + GAP + 'd(?:e' + GAP + '|' + APOS + ')' +
     CODE_ARTIFACT_NOUN + 's?(?![\\wÀ-ÿ-])(?!' + GAP + 'que\\b)',
@@ -367,6 +385,7 @@ export const TOMBSTONE_FAMILIES = [
   // vivante (un format de sauvegarde lisible, le propriétaire précédent d'un objet EN JEU).
   // Formes couvertes et faux positifs écartés : LITTÉRAUX dans `src/comment-poison-guard.test.ts`.
   { rx: /\(ancien(?:ne)?s?\b|\(anciennement\b/i, label: 'ancien X (parenthésé — artefact disparu)' },
+  { rx: ANCIEN_IDENT_EOL_RX, label: 'ancien <identifiant> en fin de ligne (artefact disparu)' },
   // #1385 : l'ORIGINE révolue d'un module (« extrait d'X », « extraits de X ») nomme un artefact que
   // le lecteur ne peut plus ouvrir, et que git porte déjà. Discriminant : la source doit RESSEMBLER à
   // du code — back-ticks, identifiant chameau (`IsoStage`, `GameStage3D`) ou nom de fichier `.ts(x)`.

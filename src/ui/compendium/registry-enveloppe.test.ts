@@ -396,13 +396,13 @@ const ORPHELINS: string[] = [
   "lieux-services.json#0 (7)",
   "miscast.json#0 (5)",
   "primitives.manifest.json#0 (28)",
-  // +3 matériaux de recette #1624 (ardoise, toile-rouge, laiton-dore) puis +1 albatre #1644 (la panse
+  // +3 matériaux de recette #1624 (prop-ardoise, toile-rouge, laiton-dore) puis +1 albatre #1644 (la panse
   // de l'urne) — même angle mort que les 4 existants : matière de rendu app-owned, aucune catégorie du
   // Codex ne l'expose.
   "propMaterials.json#0 (8)",
   "qualityTypes.json#0 (2)",
   "raw.manifest.json#0 (10)",
-  "reliefMaterials.json#0 (6)",
+  "reliefMaterials.json#0 (4)",
   "reseau-routier.json#0 (15)",
   "river-navigation.json#1 (3)",
   "roofMaterials.json#0 (4)",

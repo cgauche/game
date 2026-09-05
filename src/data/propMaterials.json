@@ -32,7 +32,7 @@
     "metalness": 0
   },
   {
-    "id": "ardoise",
+    "id": "prop-ardoise",
     "type": "propMaterials",
     "label": "Ardoise",
     "color": "#3d4852",

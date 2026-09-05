@@ -165,7 +165,7 @@ describe('deriveArchitectureMasses — un corps, UN toit (#930)', () => {
 
   it('une croupe DEMANDÉE s’applique aussi sous la portée de pignon', () => {
     const scene = corpsScene(24, [{ x: 2, y: 2, w: 3, h: 16 }], {
-      roofDefaults: { profile: 'hip', pitchDeg: 40, material: 'ardoise' },
+      roofDefaults: { profile: 'hip', pitchDeg: 40, material: 'toit-ardoise' },
     });
     const [masse] = massesOf(scene);
     expect(spanOf(masse)).toBeLessThanOrEqual(gableSpanMaxTiles(scene));
@@ -174,13 +174,13 @@ describe('deriveArchitectureMasses — un corps, UN toit (#930)', () => {
 
   it('un appentis dérivé recopie le côté d’égout DÉCLARÉ par l’auteur', () => {
     const scene = corpsScene(24, [{ x: 2, y: 2, w: 14, h: 18 }], {
-      roofDefaults: { profile: 'shed', pitchDeg: 20, material: 'ardoise', eaveSide: 'S' },
+      roofDefaults: { profile: 'shed', pitchDeg: 20, material: 'toit-ardoise', eaveSide: 'S' },
     });
     for (const mass of massesOf(scene)) expect(mass.eaveSide).toBe('S');
   });
 
   it('l’intention par défaut suit la planche : deux pentes, pente raide, ardoise, un étage de comble', () => {
-    expect(DEFAULT_ROOF_DEFAULTS).toEqual({ profile: 'gable', pitchDeg: 45, material: 'ardoise', riseMaxStoreys: 1 });
+    expect(DEFAULT_ROOF_DEFAULTS).toEqual({ profile: 'gable', pitchDeg: 45, material: 'toit-ardoise', riseMaxStoreys: 1 });
     expect(ROOF_GABLE_SPAN_MAX_M).toBe(8);
   });
 });
@@ -224,7 +224,7 @@ describe('deriveArchitectureMasses — borne de comble (#947)', () => {
 
   it('une pente POSÉE par l’auteur ne s’adapte JAMAIS, même là où elle monte en pyramide', () => {
     const scene = corpsScene(32, [{ x: 2, y: 2, w: 20, h: 26 }], {
-      roofDefaults: { profile: 'hip', pitchDeg: 45, material: 'ardoise' },
+      roofDefaults: { profile: 'hip', pitchDeg: 45, material: 'toit-ardoise' },
     });
     const [masse] = massesOf(scene);
     expect(masse.pitchDeg).toBe(45);
@@ -235,7 +235,7 @@ describe('deriveArchitectureMasses — borne de comble (#947)', () => {
     const emprise = [{ x: 2, y: 2, w: 20, h: 26 }];
     const defaut = massesOf(corpsScene(32, emprise))[0];
     const haut = massesOf(corpsScene(32, emprise, {
-      roofDefaults: { profile: 'hip', material: 'ardoise', riseMaxStoreys: 2 },
+      roofDefaults: { profile: 'hip', material: 'toit-ardoise', riseMaxStoreys: 2 },
     }))[0];
     expect(haut.pitchDeg).toBeGreaterThan(defaut.pitchDeg);
     expect(monteeM(haut)).toBeGreaterThan(borneM);

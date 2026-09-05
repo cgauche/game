@@ -4,6 +4,6 @@ export const building: BuildingDef = {
   id: 'chapelle',
   label: 'Chapelle',
   defaultFoot: { w: 4, h: 5 },
-  roofMaterial: 'ardoise',
+  roofMaterial: 'toit-ardoise',
   features: [{ prop: 'clocheton', anchor: 'ridge' }],
 };

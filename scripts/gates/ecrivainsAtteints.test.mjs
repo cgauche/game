@@ -51,6 +51,9 @@ const ATTENDU = {
     'scripts/hooks/solde-ticket-guard-driver.test.mjs',
     'scripts/hooks/solde-ticket-guard.test.mjs',
     'scripts/hooks/typecheck-fast-wrapper.test.mjs',
+    // +1 le 2026-09-05 : morsure des portes de la migration #1686 ; son dépôt jetable vit sous
+    // `os.tmpdir()`, l'arbre n'est jamais écrit.
+    'scripts/migrations/lib/1686-ardoise-portes.test.mjs',
     'scripts/migrations/lib/empreinteRejeu.test.mjs',
     'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
     'scripts/migrations/replay-head.mjs',

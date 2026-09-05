@@ -2,7 +2,7 @@ import { heightAt, type Scene, type Effect } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, carriedFlows, EMPTY_FLOW } from './flow';
-import { refEstVolumique, stakeSpeaks, REF_DECOR_DEFAUT } from '../data';
+import { refEstVolumique, stakeSpeaks, REF_DECOR_DEFAUT, roofMaterials } from '../data';
 import { capDecorAdmis } from '../data/props.types';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
 // ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
@@ -12,14 +12,15 @@ import { EFFECT_HANDLERS, type EffectHandler, type EffectRefCtx } from './combat
 import { sceneNpc } from './sceneNpc';
 import { placeServices, type WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
-import roofMaterials from '../data/roofMaterials.json';
 import { scenePlanDefects, type PlanDefectAt, type PlanDefectFamily } from './planDefects';
 import { seatAssignmentDefects } from './seating';
 
 /** Clés valides de `CustomStatblock.char` : les 10 `CharKey` (slugs pleins, #311) ∪ `M`/`B`
  *  (Mouvement/Blessures, hors `CharKey` — cf. `CustomStatblock` dans `./scene`). */
 const VALID_STATBLOCK_CHAR_KEYS = new Set<string>([...CHAR_KEYS, 'M', 'B']);
-const ROOF_MATERIAL_IDS = new Set(roofMaterials.map((material) => material.id));
+/** Ids POSABLES sur une masse de toit : les matériaux que la DONNÉE déclare couvrants
+ *  (`roofMaterials.json`, champ `couverture`) — même source que les sélecteurs de l'éditeur. */
+const ROOF_COVERING_IDS = new Set(roofMaterials.filter((material) => material.couverture).map((material) => material.id));
 
 export interface Warning {
   level: 'error' | 'warn';
@@ -232,7 +233,8 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         if (!['gable', 'hip', 'shed', 'flat'].includes(mass.profile)) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : profil invalide`, massRef);
         if (mass.ridge !== undefined && mass.ridge !== 'x' && mass.ridge !== 'y') add('error', 'architecture', mass.id, `Masse « ${mass.id} » : faîtage invalide`, massRef);
         if (mass.profile === 'shed' && !mass.eaveSide) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : profil appentis sans côté d’égout`, massRef);
-        if (!ROOF_MATERIAL_IDS.has(mass.material)) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : matériau invalide`, massRef);
+        if (!ROOF_COVERING_IDS.has(mass.material))
+          add('error', 'architecture', mass.id, `Masse « ${mass.id} » : « ${mass.material} » n’est pas une couverture de toit`, massRef);
         if (!Number.isInteger(mass.levels) || mass.levels < 1) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : niveaux invalides`, massRef);
         if (!Number.isFinite(mass.pitchDeg) || mass.pitchDeg < 5 || mass.pitchDeg > 75) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : pente hors plage`, massRef);
         // INVARIANT d'ALTITUDE — les deux encodages de la même hauteur (l'INDEX d'étage `z` et la COTE

@@ -1,14 +1,17 @@
 /**
- * Migration #1467 L1b V-P0d — les 6 `reliefMaterials.json` et les 4 `roofMaterials.json` reçoivent
- * leur `label`.
+ * Migration #1467 L1b V-P0d — les `reliefMaterials.json` et les `roofMaterials.json` reçoivent leur
+ * `label`.
  *
- * MOTIF : l'enveloppe exige `label` non vide. Contrairement à 10a/10b, ces 10 libellés ne sont
+ * MOTIF : l'enveloppe exige `label` non vide. Contrairement à 10a/10b, ces libellés ne sont
  * DÉRIVABLES d'aucune source mesurée — ils sont ARBITRÉS (#1467 V-P0d). La table ci-dessous EST donc
  * l'arbitrage lui-même, pas la recopie d'une vérité qui vivrait ailleurs. Deux conséquences portées
  * par le lot : les matériaux de couverture prennent le SINGULIER (`Tuile`, et non le `Tuiles` que le
- * doublon codé en dur `ROOF_MATERIALS` affichait), et `riser` reçoit `Contremarche` sous réserve
- * — aucun site n'assigne ce matériau aujourd'hui, la convention de famille reste à confirmer à
- * l'usage (#1540).
+ * doublon codé en dur `ROOF_MATERIALS` affichait).
+ *
+ * TABLE RECALÉE #1686 lot 1, dans le train qui la fait bouger (même doctrine que le cardinal de
+ * `…-11a-entite-type.mjs`) : `ardoise` → `toit-ardoise` (id composé de l'homonyme, le libellé ne bouge
+ * pas), et les deux reliefs MORTS purgés du dataset quittent la table — un label arbitré sans entrée
+ * fait sortir 1.
  *
  * Entrées : `src/data/reliefMaterials.json` et `src/data/roofMaterials.json` (lus et écrits).
  *
@@ -31,9 +34,7 @@ const LOTS = [
       terre: 'Terre',
       pierre: 'Pierre',
       pilier: 'Pilier',
-      riser: 'Contremarche',
       plafond: 'Plafond',
-      'sol-inconnu': 'Sol inconnu',
     },
   },
   {
@@ -41,7 +42,7 @@ const LOTS = [
     labels: {
       tuile: 'Tuile',
       chaume: 'Chaume',
-      ardoise: 'Ardoise',
+      'toit-ardoise': 'Ardoise',
       plan: 'Plan (vue de dessus)',
     },
   },

@@ -217,7 +217,7 @@ export const buildingMassSchema = z.strictObject({
   derived: z.literal(true).optional(),
 });
 /** Intention de toiture pour les masses DÉRIVÉES d'un corps (#829) — réglée dans l'outil Architecture
- *  de l'éditeur ; défaut si absent : `gable`/`ardoise`, pente ADAPTÉE à la portée sous la borne de
+ *  de l'éditeur ; défaut si absent : `gable`/`toit-ardoise`, pente ADAPTÉE à la portée sous la borne de
  *  comble (cf. `DEFAULT_ROOF_DEFAULTS`/`fittedPitchDeg`, `sceneEdit.ts`).
  *  Cette intention s'applique telle quelle à CHAQUE corps : le plancher réel se décompose en
  *  composantes 4-connexes, et chacune reçoit UNE masse (`deriveArchitectureMasses`, `sceneEdit.ts`),

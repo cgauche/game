@@ -1,10 +1,7 @@
 /**
  * Schéma de `reliefMaterials.json` — apparence de RENDU du relief (falaise/rampe/tablier/pilier iso,
- * plafond/riser/sol-repli POV), consommée comme `ReliefMaterialDef[]` (`src/gameIso/catalog/relief/types.ts`).
- *
- * RÉSERVE sur le `label` de `riser` (« Contremarche ») : il suit la convention de nommage de sa
- * famille bâtie, NON confirmée à l'usage — aucun site n'assigne `riser` à une Face, l'entrée est
- * peut-être morte (#1540).
+ * plafond POV), consommée comme `ReliefMaterialDef[]` (`src/gameIso/catalog/relief/types.ts`).
+ * 4 entrées, toutes ASSIGNÉES par un émetteur de Face (#1686 lot 1).
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';

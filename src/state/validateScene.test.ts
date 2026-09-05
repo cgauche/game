@@ -1,8 +1,8 @@
 import { flowFromEffects, testFlow, EMPTY_FLOW } from '../state/flow';
 import { describe, it, expect } from 'vitest';
 import { validateScene, type Warning } from './validateScene';
-import { resolveStake } from '../data';
-import { emptyScene } from './scene';
+import { resolveStake, roofMaterials } from '../data';
+import { emptyScene, type Scene } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 import type { WorldMap, MapPlace } from './worldMap';
 
@@ -93,6 +93,44 @@ describe('validateScene', () => {
     }];
     Object.assign(s.architecture[0].masses[0], patch);
     expect(validateScene([s]).some((w) => w.scope === 'architecture' && w.level === 'error')).toBe(true);
+  });
+
+  /** Une masse de toit ne se coiffe que d'un matériau que la DONNÉE déclare couvrant
+   *  (`roofMaterials.json`, champ `couverture`) : le pseudo-matériau de plan vu du dessus n'en est pas
+   *  un, et un id inconnu non plus. Les couvertures admises sont LUES au catalogue, jamais récitées. */
+  const massesToit = (materiau: string): Scene => {
+    const s = base();
+    s.effectZones = [{ id: 'salle', label: 'Salle', presentation: 'interior', z: 0, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } }];
+    s.architecture = [{
+      id: 'corps', style: 'maison',
+      storeys: [{ id: 'z0', z: 0, parts: [{ id: 'nef', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: ['salle'] }],
+      facades: [],
+      masses: [{ id: 'toit', z: 0, footprint: [{ x: 1, y: 1, w: 2, h: 2 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 42, material: materiau }],
+    }];
+    return s;
+  };
+  const erreursDeToit = (materiau: string) =>
+    validateScene([massesToit(materiau)]).filter((w) => w.scope === 'architecture' && w.refId === 'toit' && w.level === 'error');
+
+  it('architecture : toute couverture DÉCLARÉE par la donnée est admise sur une masse', () => {
+    const couvertures = roofMaterials.filter((m) => m.couverture).map((m) => m.id);
+    expect(couvertures.length).toBeGreaterThan(0);
+    for (const id of couvertures) expect(erreursDeToit(id), id).toEqual([]);
+  });
+
+  it('architecture : un matériau SANS `couverture` (plan vu du dessus) est REFUSÉ, nommément', () => {
+    const plan = roofMaterials.find((m) => !m.couverture);
+    expect(plan, 'le catalogue doit porter une entrée non couvrante pour que ce banc morde').toBeDefined();
+    const erreurs = erreursDeToit(plan!.id);
+    expect(erreurs).toHaveLength(1);
+    expect(erreurs[0].message).toContain(plan!.id);
+    expect(erreurs[0].message).toContain('couverture');
+  });
+
+  it('architecture : un id de matériau inconnu est refusé par la même porte', () => {
+    const erreurs = erreursDeToit('materiau-fantome');
+    expect(erreurs).toHaveLength(1);
+    expect(erreurs[0].message).toContain('materiau-fantome');
   });
 
   it('architecture : un ÉTAGE référençant une zone d’un autre étage (au-dessus OU en-dessous) → erreur', () => {

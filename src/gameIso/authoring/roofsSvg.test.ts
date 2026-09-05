@@ -124,8 +124,8 @@ describe('roofSvg — pans : UNE teinte par pan, par ORIENTATION de la def, stab
   });
 
   it('matériau des params (ardoise) : teintes de SA def', () => {
-    const svg = roofSvg(el({ params: { roofMaterial: 'ardoise' } }), dims);
-    expect(svg).toContain(`fill="${roofMaterial('ardoise').N}"`);
+    const svg = roofSvg(el({ params: { roofMaterial: 'toit-ardoise' } }), dims);
+    expect(svg).toContain(`fill="${roofMaterial('toit-ardoise').N}"`);
     expect(svg).not.toContain(`fill="${tuile.N}"`);
   });
 

@@ -21,7 +21,7 @@ import type { Face } from '../../builders/types';
 /**
  * Les attendus sont LUS DANS LA DONNÉE, pas récités depuis l'implémentation : chaque couleur ci-dessous
  * est le littéral de son entrée (`src/data/structureAppearance.json` « mur-en-bois »,
- * `src/data/reliefMaterials.json` « pierre »/« sol-inconnu », `src/data/roofMaterials.json` « tuile »,
+ * `src/data/reliefMaterials.json` « pierre », `src/data/roofMaterials.json` « tuile »,
  * `src/state/terrain/defs/herbe.ts`). Un ordre de repli INVERSÉ dans `faceColors.ts` (un `??` retourné)
  * choisirait une autre couleur de la MÊME entrée : le test le voit.
  */
@@ -44,7 +44,6 @@ const TUILE = {
   fascia: '#2e0e07',
 };
 const HERBE_SWATCH = '#3d6630';
-const SOL_INCONNU = '#6b6250';
 
 const scene = buildScene(siegeSpec);
 const face = (material: Face['material']): Face => ({ poly: [], material, oriented: false });
@@ -56,7 +55,6 @@ describe('la DONNÉE dit bien ce que le test attend (sinon l’attendu ment)', (
     expect({ face: bois.face, post: bois.post }).toEqual({ face: BOIS.face, post: BOIS.post });
     expect(bois.wood).toMatchObject({ inset: BOIS.inset, frame: BOIS.frame, skirt: BOIS.skirt, cap: BOIS.cap });
     expect(reliefMaterial('pierre')).toMatchObject(PIERRE);
-    expect(reliefMaterial('sol-inconnu').face).toBe(SOL_INCONNU);
     expect(roofMaterial('tuile')).toMatchObject(TUILE);
     expect(TERRAIN_DEFS.find((t) => t.id === 'herbe')?.swatch).toBe(HERBE_SWATCH);
   });
@@ -228,12 +226,11 @@ describe('faceSurface — matériau de DÉCOR volumique (domaine `prop`)', () =>
 });
 
 /**
- * REPLI VISIBLE (#877, `catalog/missing.ts`) — contrat POSITIF des TROIS domaines que `faceSurface`
+ * REPLI VISIBLE (#877, `catalog/missing.ts`) — contrat POSITIF des QUATRE domaines que `faceSurface`
  * résout par un registre indexé (relief, toiture, terrain, matière de décor) : un id absent rend le TON
- * D'ALARME et n'emprunte l'identité d'AUCUNE entrée réelle. C'est le contrat qui manquait : `terrain` et
- * `prop` retombaient sur `reliefMaterial('sol-inconnu').face`, l'identité d'un matériau de relief RÉEL,
- * et le rendu déguisait donc la donnée fautive en sol. La formulation est NÉGATIVE PAR CONSTRUCTION
- * (« aucune entrée réelle ») : elle balaye le registre entier, pas la seule entrée qui servait de repli.
+ * D'ALARME et n'emprunte l'identité d'AUCUNE entrée réelle — une donnée fautive se VOIT au lieu de se
+ * déguiser en sol. La formulation est NÉGATIVE PAR CONSTRUCTION (« aucune entrée réelle ») : elle
+ * balaye le registre entier, jamais une seule entrée nommée.
  */
 describe('faceSurface — REPLI VISIBLE d’un id absent du catalogue (#877)', () => {
   const face = (domain: 'relief' | 'roof' | 'terrain' | 'prop', id: string, part?: string): Face => ({

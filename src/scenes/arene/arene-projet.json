@@ -6162,7 +6162,7 @@
        "levels": 1,
        "profile": "gable",
        "pitchDeg": 30,
-       "material": "ardoise"
+       "material": "toit-ardoise"
       },
       {
        "id": "forge",
@@ -6178,7 +6178,7 @@
        "levels": 1,
        "profile": "gable",
        "pitchDeg": 30,
-       "material": "ardoise"
+       "material": "toit-ardoise"
       },
       {
        "id": "echoppe",
@@ -24477,7 +24477,7 @@
        "levels": 1,
        "profile": "gable",
        "pitchDeg": 28,
-       "material": "ardoise"
+       "material": "toit-ardoise"
       },
       {
        "id": "maison-4",

@@ -721,7 +721,7 @@ export function roofExclusionsByZ(body: ArchitectureBody): Map<number, Set<strin
  *  la planche montre (à 45°, 8 m de portée montent de 4 m = `METRES_PER_LEVEL`) et ne rabat que les
  *  portées qu'elle ne montre pas. La borne se règle par corps (`ArchitectureBody.roofDefaults`). */
 export const DEFAULT_ROOF_DEFAULTS = {
-  profile: 'gable', pitchDeg: 45, material: 'ardoise', riseMaxStoreys: 1,
+  profile: 'gable', pitchDeg: 45, material: 'toit-ardoise', riseMaxStoreys: 1,
 } as const satisfies RoofDefaults;
 
 /** Pente (°) d'une nappe DÉRIVÉE de portée `spanTiles` : la pente de RÉFÉRENCE, rabattue jusqu'à ce

@@ -11,6 +11,7 @@ const MAP: Record<string, StructureAppearanceDef> = Object.fromEntries(structure
 /** Entrée de REPLI VISIBLE (#877) : un mur au ton d'alarme, jamais l'apparence d'une autre structure. */
 const MISSING: StructureAppearanceDef = {
   id: MISSING_ID,
+  type: 'structureAppearance',
   label: 'Apparence absente du catalogue',
   material: 'pierre',
   face: MISSING_TONE,

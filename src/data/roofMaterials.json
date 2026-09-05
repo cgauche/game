@@ -3,6 +3,7 @@
     "id": "tuile",
     "type": "roofMaterials",
     "label": "Tuile",
+    "couverture": true,
     "N": "#a04836",
     "E": "#732a20",
     "S": "#531b13",
@@ -32,6 +33,7 @@
     "id": "chaume",
     "type": "roofMaterials",
     "label": "Chaume",
+    "couverture": true,
     "N": "#b0904a",
     "E": "#7d642a",
     "S": "#59461a",
@@ -61,9 +63,10 @@
     }
   },
   {
-    "id": "ardoise",
+    "id": "toit-ardoise",
     "type": "roofMaterials",
     "label": "Ardoise",
+    "couverture": true,
     "N": "#63727f",
     "E": "#3d4852",
     "S": "#283037",

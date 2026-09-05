@@ -180,8 +180,8 @@ describe('roofPans — cas limites', () => {
 
   it('aucune cellule → vide ; déterministe (deux appels identiques)', () => {
     expect(roofPans(new Set(), 'tuile', undefined, undefined, hip())).toEqual({ faces: [], lines: [] });
-    const a = roofPans(rect(0, 0, 3, 3), 'ardoise', 3, undefined, hip(1));
-    const b = roofPans(rect(0, 0, 3, 3), 'ardoise', 3, undefined, hip(1));
+    const a = roofPans(rect(0, 0, 3, 3), 'toit-ardoise', 3, undefined, hip(1));
+    const b = roofPans(rect(0, 0, 3, 3), 'toit-ardoise', 3, undefined, hip(1));
     expect(a).toEqual(b);
   });
 });
@@ -800,11 +800,11 @@ describe('fermetures de comble — pièces de la NAPPE : matière du mur prolong
   });
 
   it('le pignon prend la matière du MUR qu’il prolonge — un corps à colombage a des pignons à colombage', () => {
-    const els = closures(sceneWith([mass({ material: 'ardoise' })], carryingWalls('mur-a-ossature-en-bois')));
+    const els = closures(sceneWith([mass({ material: 'toit-ardoise' })], carryingWalls('mur-a-ossature-en-bois')));
     expect(els).toHaveLength(2);
     for (const el of els) {
       expect(el.faces[0].material.id).toBe('mur-a-ossature-en-bois');
-      expect(el.faces[0].material.id).not.toBe('ardoise'); // ni la couverture…
+      expect(el.faces[0].material.id).not.toBe('toit-ardoise'); // ni la couverture…
       expect(el.faces[0].material.id).not.toBe('mur-en-pierre'); // …ni un repli sur un id en dur (#877)
     }
   });

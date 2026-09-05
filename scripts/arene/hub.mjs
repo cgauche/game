@@ -435,8 +435,8 @@ const HUB_ARCHITECTURE = [
     ],
     masses: [
       { id: 'taverne', z: 0, footprint: [{ x: 3, y: 3, w: 15, h: 10 }], levels: 1, profile: 'gable', pitchDeg: 30, material: 'tuile' },
-      { id: 'chapelle', z: 0, footprint: [{ x: 34, y: 3, w: 13, h: 11 }], levels: 1, profile: 'gable', pitchDeg: 30, material: 'ardoise' },
-      { id: 'forge', z: 0, footprint: [{ x: 3, y: 27, w: 11, h: 9 }], levels: 1, profile: 'gable', pitchDeg: 30, material: 'ardoise' },
+      { id: 'chapelle', z: 0, footprint: [{ x: 34, y: 3, w: 13, h: 11 }], levels: 1, profile: 'gable', pitchDeg: 30, material: 'toit-ardoise' },
+      { id: 'forge', z: 0, footprint: [{ x: 3, y: 27, w: 11, h: 9 }], levels: 1, profile: 'gable', pitchDeg: 30, material: 'toit-ardoise' },
       { id: 'echoppe', z: 0, footprint: [{ x: 36, y: 27, w: 11, h: 9 }], levels: 1, profile: 'gable', pitchDeg: 38, material: 'chaume' },
     ],
   },

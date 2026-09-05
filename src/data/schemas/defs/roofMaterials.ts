@@ -1,8 +1,8 @@
 /**
  * Schéma de `roofMaterials.json` — apparence de RENDU des toits, consommée comme `RoofMaterialDef[]`
  * (`src/gameIso/catalog/roofs/types.ts`). 4 entrées réelles : 3 matériaux de couverture (tuile/chaume/
- * ardoise, teintes N/E/S/O + `detail` + volume d'avant-toit) et 1 « plan » vu du dessus (`planBody`/
- * `planEdge`/`planInner`/`planText` seulement — pas de N/E/S/O/detail).
+ * toit-ardoise, `couverture: true`, teintes N/E/S/O + `detail` + volume d'avant-toit) et 1 « plan » vu
+ * du dessus (`planBody`/`planEdge`/`planInner`/`planText` seulement — pas de N/E/S/O/detail).
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
@@ -15,6 +15,7 @@ const doc = document(
   'roofMaterials',
   famille,
   {
+    couverture: z.literal(true).optional(),
     detail: detailRecipeSchema.optional(),
     N: z.string().optional(),
     E: z.string().optional(),
@@ -33,6 +34,10 @@ const doc = document(
     ridgeCap: z.string().optional(),
   },
   {
+    couverture: {
+      label: 'Couvre un pan',
+      hint: 'Matériau POSABLE sur une masse de toit — absent : entrée de rendu qui ne couvre rien (vue de dessus)',
+    },
     detail: { label: 'Recette de détail' },
     N: { label: 'Couleur face nord' },
     E: { label: 'Couleur face est' },

@@ -1,5 +1,5 @@
-/** Apparence de RENDU du relief d'environnement (falaise/rampe/tablier/pilier iso, plafond/riser/sol-repli
- *  POV). Donnée pure (`src/data/reliefMaterials.json`) : le renderer ne porte aucun littéral de couleur —
+/** Apparence de RENDU du relief d'environnement (falaise/rampe/tablier/pilier iso, plafond POV).
+ *  Donnée pure (`src/data/reliefMaterials.json`) : le renderer ne porte aucun littéral de couleur —
  *  l'identité du matériau vient d'ici, la lumière/l'ombrage vient de `shade.ts`. */
 import type { DetailRecipe } from '../../detail/types';
 

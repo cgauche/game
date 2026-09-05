@@ -796,7 +796,7 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualityTypes.json", chemin: "(entrées)", entrees: 2, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 10, lot: "L1d #1469", date: "2026-08-23" }, // +1 : dette « Option Attraper Froid » (mue pneumonie), EDOC 09 (#674) ; +1 : dette de la Colère des dieux, LDB 40 (#1653)
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "reliefMaterials.json", chemin: "(entrées)", entrees: 6, lot: "L1d #1469", date: "2026-08-23" },
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "reliefMaterials.json", chemin: "(entrées)", entrees: 4, lot: "L1d #1469", date: "2026-08-23" }, // −2 : riser, sol-inconnu — 0 consommateur, purgés (#1540)
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "renduMonte.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "river-perils.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "roofMaterials.json", chemin: "(entrées)", entrees: 4, lot: "L1d #1469", date: "2026-08-23" },

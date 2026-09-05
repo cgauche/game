@@ -61,23 +61,10 @@
     "face": "#565a61"
   },
   {
-    "id": "riser",
-    "type": "reliefMaterials",
-    "label": "Contremarche",
-    "built": true,
-    "face": "#57534c"
-  },
-  {
     "id": "plafond",
     "type": "reliefMaterials",
     "label": "Plafond",
     "built": true,
     "face": "#2c2a26"
-  },
-  {
-    "id": "sol-inconnu",
-    "type": "reliefMaterials",
-    "label": "Sol inconnu",
-    "face": "#6b6250"
   }
 ]

@@ -252,6 +252,25 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     expect(tombstonesIn('// Rachat par l’ancien maître d’armes de la compagnie (PNJ).')).toEqual([]);
   });
 
+  it('cas planté : un identifiant de code qualifié de révolu et CLÔTURANT la ligne est une tombale (#1686)', () => {
+    const L = 'ancien <identifiant> en fin de ligne (artefact disparu)';
+    expect(tombstonesIn('// ancien stone-dark')).toContain(L);
+    expect(tombstonesIn('const x = 1; // ancien earth-foot-dark')).toContain(L);
+    expect(tombstonesIn('// teinte de pied — ancien `sol-inconnu`')).toContain(L);
+    expect(tombstonesIn('/* ancien wallOnSight */')).toContain(L);
+    expect(tombstonesIn('// ancienne houseWallIso')).toContain(L);
+    expect(tombstonesIn('// anciens riser_foot')).toContain(L);
+    expect(tombstonesIn('// ancien floorsSvg.ts')).toContain(L);
+  });
+
+  it('faux positifs écartés : la ligne CONTINUE après le mot, ou la cible n’est pas du code (#1686)', () => {
+    expect(tombstonesIn("// v3 → v4 : les sauvegardes à l'ancien format sont converties au chargement.")).toEqual([]);
+    expect(tombstonesIn("// Assainit un document authoré à l'ancien schéma (entrées `null`).")).toEqual([]);
+    expect(tombstonesIn('// Le propriétaire précédent du bien reste inscrit au registre de la ville.')).toEqual([]);
+    expect(tombstonesIn('// Rachat par l’ancien maître d’armes')).toEqual([]);
+    expect(tombstonesIn('// une commande passée à l’ancien comptoir')).toEqual([]);
+  });
+
   it('cas planté : la négation TEMPORELLE devant un artefact de code est une tombale (#136, 2026-07-30)', () => {
     const L = 'négation temporelle + artefact de code (état révolu)';
     expect(tombstonesIn("// La Résistance à l'Empoisonné n'a PLUS d'entrée propre : l'étape est générique.")).toContain(L);

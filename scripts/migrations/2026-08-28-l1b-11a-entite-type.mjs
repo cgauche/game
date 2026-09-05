@@ -85,19 +85,23 @@ const CARDINAUX = {
   'lightTones.json': 4,
   'merchantFamilies.json': 7,
   'peripeties.json': 10,
-  // 4→8 : recalé #1624/#1644 (+4 matériaux : ardoise, toile-rouge, laiton-dore, albatre) — le cardinal
+  // 4→8 : recalé #1624/#1644 (+4 matériaux : prop-ardoise, toile-rouge, laiton-dore, albatre) — le cardinal
   // est une porte d'IDENTITÉ de dataset, il suit la donnée qu'un train fait croître, dans le MÊME train.
   'propMaterials.json': 8,
   'qualitySubtypes.json': 3,
   'qualityTypes.json': 2,
   // 8→9 : dette « Option Attraper Froid » (`deplacement#option-attraper-froid`), EDOC 09, #674.
   'raw.manifest.json': 10,
-  'reliefMaterials.json': 6,
+  // 6→4 : purge #1686 lot 1 des deux entrées MORTES (`riser`, `sol-inconnu` — 0 consommateur de
+  // production mesuré) ; le cardinal est une porte d'IDENTITÉ de dataset, il suit la donnée qu'un train
+  // fait décroître, dans le MÊME train.
+  'reliefMaterials.json': 4,
   'sea-shanties.json': 7,
 };
 // 141→142 : +1, la seule entrée de manifeste ci-dessus. Puis 142→146 : +4 matériaux de décor (#1624/#1644).
 // Puis 146→147 : +1 entrée de manifeste (dette #1653, Colère des dieux : 6 rangées à dé sans `ops`).
-const TOTAL_ATTENDU = 147;
+// Puis 147→145 : −2 reliefs morts purgés (#1686 lot 1).
+const TOTAL_ATTENDU = 145;
 
 const echecs = [];
 const rapport = [];

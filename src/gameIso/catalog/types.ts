@@ -27,7 +27,7 @@ export interface BuildingDef {
   id: string;
   label: string;
   defaultFoot: { w: number; h: number };
-  /** Matériau de couverture par DÉFAUT du toit (id `RoofMaterialDef` : 'tuile'/'chaume'/'ardoise') —
+  /** Matériau de couverture par DÉFAUT du toit (id `RoofMaterialDef` : 'tuile'/'chaume'/'toit-ardoise') —
    *  méta portée par la donnée du bâtiment, lue par `styleRoofMaterial` (fin de la table `STYLE_MATERIAL`). */
   roofMaterial: string;
   /** Ornements d'IDENTITÉ VISUELLE du type (clocheton d'une chapelle, cheminée d'une forge, enseigne

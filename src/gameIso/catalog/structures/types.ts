@@ -6,6 +6,7 @@ import type { DetailRecipe } from '../../detail/types';
 
 export interface StructureAppearanceDef {
   id: string;
+  type: 'structureAppearance';
   label: string;
   material: 'bois' | 'pierre';
   /** Hauteur visuelle métrique de la face du mur ; défaut `WALL_H_M`. */

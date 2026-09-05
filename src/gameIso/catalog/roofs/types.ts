@@ -6,8 +6,14 @@ import type { DetailRecipe } from '../../detail/types';
 
 export interface RoofMaterialDef {
   id: string;
+  type: 'roofMaterials';
   /** Nom d'auteur du matériau, affiché tel quel par les sélecteurs de couverture de l'éditeur. */
   label: string;
+  /** Ce matériau COUVRE-t-il un pan ? Seuls ceux-là sont posables sur une masse de toit (sélecteurs de
+   *  l'éditeur, `state/validateScene`). Absent = entrée de rendu qui ne couvre rien : le plan vu du
+   *  dessus n'a ni pente ni égout. UNE seule graphie : le champ vaut `true` ou il est ABSENT — le
+   *  schéma refuse `false` (`src/data/schemas/defs/roofMaterials.ts`). */
+  couverture?: true;
   /** Recette de détail de COUVERTURE (matériaux v2) : `courses` = les rangs (le pas `hM` fixe leur
    *  espacement — source unique builder/backend — `joint` leur couleur ; `blockWM`+`stagger`+
    *  `paletteVar` = bardeaux décalés nuancés ; `edgeWobble` seul = rangs organiques type chaume) ;

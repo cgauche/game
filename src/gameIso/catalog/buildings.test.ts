@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { BUILDINGS_META, styleRoofMaterial } from './buildings';
 
-const MATERIALS = new Set(['tuile', 'chaume', 'ardoise']);
+const MATERIALS = new Set(['tuile', 'chaume', 'toit-ardoise']);
 const EXPECTED_IDS = ['chapelle', 'echoppe', 'forge', 'maison', 'manoir', 'taverne', 'tour'];
 
 describe('méta des bâtiments (registre defs/ réduit au TOIT)', () => {
@@ -25,7 +25,7 @@ describe('méta des bâtiments (registre defs/ réduit au TOIT)', () => {
 
   it('styleRoofMaterial résout la méta du style ; un style hors registre n’en emprunte AUCUNE (#877)', () => {
     expect(styleRoofMaterial('echoppe')).toBe('chaume');
-    expect(styleRoofMaterial('forge')).toBe('ardoise');
+    expect(styleRoofMaterial('forge')).toBe('toit-ardoise');
     expect(styleRoofMaterial('zzz')).toBeUndefined();
   });
 });

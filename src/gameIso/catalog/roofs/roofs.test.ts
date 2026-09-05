@@ -8,17 +8,22 @@ import { MISSING_ID, MISSING_TONE } from '../missing';
 describe('apparence de toit (JSON pur iso/plan)', () => {
   it('les 4 matériaux sont présents', () => {
     const ids = roofMaterials.map((m) => m.id).sort();
-    expect(ids).toEqual(['ardoise', 'chaume', 'plan', 'tuile']);
+    expect(ids).toEqual(['chaume', 'plan', 'toit-ardoise', 'tuile']);
   });
 
   it('résolution par id + teintes de couverture', () => {
     expect(roofMaterial('tuile').N).toBe('#a04836');
     expect(roofMaterial('chaume').N).toBe('#b0904a');
-    expect(roofMaterial('ardoise').N).toBe('#63727f');
+    expect(roofMaterial('toit-ardoise').N).toBe('#63727f');
+  });
+
+  it('la COUVERTURE est une DONNÉE : les 3 matériaux de pan la déclarent, le plan vu du dessus ne la porte pas', () => {
+    expect(roofMaterials.filter((m) => m.couverture).map((m) => m.id).sort()).toEqual(['chaume', 'toit-ardoise', 'tuile']);
+    expect(roofMaterial('plan').couverture).toBeUndefined();
   });
 
   it('les matériaux de couverture portent liseré + recette de rangs (consommés par builder + backend)', () => {
-    for (const id of ['tuile', 'chaume', 'ardoise']) {
+    for (const id of ['tuile', 'chaume', 'toit-ardoise']) {
       const m = roofMaterial(id);
       expect(m.line, id).toBeTruthy();
       expect(m.detail?.courses?.hM ?? 0, id).toBeGreaterThan(0); // pas métrique des rangs (source unique)
@@ -26,14 +31,14 @@ describe('apparence de toit (JSON pur iso/plan)', () => {
     }
     // Bardeaux (blocs décalés nuancés) sur les couvertures rigides ; rangs ORGANIQUES sur le chaume.
     expect(roofMaterial('tuile').detail?.courses?.blockWM).toBeDefined();
-    expect(roofMaterial('ardoise').detail?.courses?.blockWM).toBeDefined();
+    expect(roofMaterial('toit-ardoise').detail?.courses?.blockWM).toBeDefined();
     expect(roofMaterial('chaume').detail?.courses?.blockWM).toBeUndefined();
     expect(roofMaterial('chaume').detail?.courses?.edgeWobble ?? 0).toBeGreaterThan(0);
     expect(roofMaterial('chaume').detail?.tufts).toBeDefined(); // balayage de paille
   });
 
   it('avant-toit (VOLUME) : débord + soffite sur les 3 couvertures ; fascia dure sauf chaume ; couronnement tuile/ardoise', () => {
-    for (const id of ['tuile', 'chaume', 'ardoise']) {
+    for (const id of ['tuile', 'chaume', 'toit-ardoise']) {
       const m = roofMaterial(id);
       expect(m.eaveOverhangM ?? 0, id).toBeGreaterThan(0); // le toit déborde des murs
       expect(m.soffite, id).toBeTruthy(); // ton du dessous ombré
@@ -43,7 +48,7 @@ describe('apparence de toit (JSON pur iso/plan)', () => {
     expect(roofMaterial('chaume').fascia).toBeUndefined();
     expect(roofMaterial('chaume').ridgeCap).toBeUndefined();
     // Tuile & ardoise : fascia dure (planche de rive) + couronnement de faîte.
-    for (const id of ['tuile', 'ardoise']) {
+    for (const id of ['tuile', 'toit-ardoise']) {
       expect(roofMaterial(id).fasciaDropM ?? 0, id).toBeGreaterThan(0);
       expect(roofMaterial(id).fascia, id).toBeTruthy();
       expect(roofMaterial(id).ridgeCap, id).toBeTruthy();

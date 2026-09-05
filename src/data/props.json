@@ -2944,7 +2944,7 @@
             "hM": 1.1
           },
           "slope": "y+",
-          "material": "ardoise"
+          "material": "prop-ardoise"
         },
         {
           "kind": "prism",
@@ -2959,7 +2959,7 @@
             "hM": 1.1
           },
           "slope": "y-",
-          "material": "ardoise"
+          "material": "prop-ardoise"
         },
         {
           "kind": "box",

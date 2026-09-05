@@ -2679,7 +2679,8 @@ export const findPropById = (id: string): PropData | undefined => PROP_BY_ID.get
  *  monde (`REF_DECOR_DEFAUT`), la même normalisation que le rendu. */
 export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref ?? REF_DECOR_DEFAUT)?.volume;
 /** Matériaux de rendu des recettes volumiques de décor. Lookup LIVE (le catalogue se mute en place au
- *  Codex/surcharges de campagne, cf. `findLightToneById`) — quatre entrées, le balayage ne coûte rien. */
+ *  Codex/surcharges de campagne, cf. `findLightToneById`) — huit entrées, le balayage ne coûte rien.
+ *  Unicité des ids sur tout le périmètre des matières : `data/materials-identite.test.ts` (#1686). */
 export const propMaterials = propMaterialsJson as PropMaterialData[];
 export const findPropMaterialById = (id: string): PropMaterialData | undefined => propMaterials.find((m) => m.id === id);
 /** Domaines de magie app-owned (LDB 48) — ENTITÉ éditable au Codex (attributs en données : onHit,

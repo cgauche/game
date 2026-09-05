@@ -160,7 +160,7 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 | Catalogue | Entrées |
 |---|---|
 | `src/data/structureAppearance.json` | 18 |
-| `src/data/reliefMaterials.json` | 6 |
+| `src/data/reliefMaterials.json` | 4 |
 | `src/data/roofMaterials.json` | 4 |
 | `src/data/decorPalette.json` | 435 |
 
@@ -175,4 +175,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: fa2ad9f2da76ad3df41884f4aaf987f199ce6bf4 (23 fichiers, 10 dossiers) corps: 5a9d66abda943dc4d378a9340da428173de87257 -->
+<!-- sources-empreinte: 57677c2e14baef2e7e7f53021540251c0bff005b (23 fichiers, 10 dossiers) corps: c0e84082c6dcfb7c83ebb81bb3e755865add19a9 -->

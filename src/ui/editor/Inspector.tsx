@@ -37,10 +37,9 @@ const ROOF_PROFILES = [
   { id: 'shed' as const, label: 'Appentis (shed) — 1 pan' },
   { id: 'flat' as const, label: 'Terrasse (flat) — plat' },
 ];
-/** Matériaux qui peuvent COUVRIR un pan : ceux qui portent une teinte de pente. Le pseudo-matériau de
- *  plan (couleurs de la vue du dessus, sans pente) n'est pas une couverture — filtre sur la DONNÉE,
- *  jamais sur son id. */
-const COVERING_MATERIALS = roofMaterials.filter((m) => m.N !== undefined);
+/** Matériaux qui peuvent COUVRIR un pan : ceux que la donnée DÉCLARE couvrants (`couverture`). MÊME
+ *  source que la validation de scène (`state/validateScene`) — filtre sur la DONNÉE, jamais sur son id. */
+const COVERING_MATERIALS = roofMaterials.filter((m) => m.couverture);
 /** Cibles d'une ANCRE de bataille (`Scene.stations[].sceneId`) : les Scènes de Round du catalogue
  *  d'Activités (contexte `bataille-round`) — le SEUL espace d'ids que le consommateur sait résoudre
  *  (`state/stations.battleScenesToStations` → `battleSceneById`). Les Scènes du PROJET sont un autre
