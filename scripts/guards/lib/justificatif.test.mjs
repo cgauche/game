@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
 import * as FS from 'node:fs'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -390,36 +390,75 @@ const compterJson = (magasin) =>
     .filter((d) => /^[0-9a-f]{40}$/.test(d))
     .reduce((n, d) => n + readdirSync(join(magasin, d)).filter((f) => f.endsWith('.json')).length, 0)
 
-test('MIGRATION : sur une COPIE du magasin RÉEL, aucune preuve n’est perdue', () => {
-  const source = cheminJustificatifs({ cwd: REPO })
+/** Trois dossiers de clé, en ANCIENNE graphie (un fichier par gate, propreté et statut dans le
+ *  CONTENU). Chacun porte les gates de `ci.yml` au vert, plus les trois cas que la migration doit
+ *  traiter différemment : un ROUGE (effacé), un ILLISIBLE (laissé), un VERT sur arbre SALE (renommé
+ *  en `.sale.json`). Le magasin est FABRIQUÉ : celui du dépôt est écrit en continu par les gates des
+ *  autres sessions et par la gate `test` de ce run — une copie d'un dossier vivant n'est pas une
+ *  fixture, elle est un instantané qui se dément entre deux lectures. */
+function magasinAncienneGraphie(racine, gates) {
+  const magasin = cheminJustificatifs({ cwd: racine })
+  rmSync(magasin, { recursive: true, force: true })
+  const cles = ['a', 'b', 'c'].map((c) => ({ cleTree: c.repeat(40), cleComplete: `${c}0`.repeat(20) }))
+  for (const cle of cles) {
+    const dossier = join(magasin, cle.cleTree)
+    mkdirSync(dossier, { recursive: true })
+    const poser = (gate, contenu) =>
+      writeFileSync(join(dossier, `${segmentDeGate(gate)}.json`), `${JSON.stringify(contenu)}\n`)
+    const socle = { ...cle, sha: 'f'.repeat(40), date: '2026-09-01T00:00:00.000Z', salis: [] }
+    for (const gate of gates) poser(gate, { gate, ...socle, statut: 'vert', sale: false })
+    poser('gate-rouge', { gate: 'gate-rouge', ...socle, statut: 'rouge', sale: false })
+    poser('gate-sale', { gate: 'gate-sale', ...socle, statut: 'vert', sale: true, salis: ['?? src/b.ts'] })
+    writeFileSync(join(dossier, 'illisible.json'), '{ tronqué\n')
+  }
+  writeFileSync(join(magasin, 'derogations.log'), '{"etat":"tentative","motif":"rouge"}\n')
+  return { magasin, cles }
+}
+
+test('MIGRATION : sur un magasin SYNTHÉTIQUE en ancienne graphie, aucune preuve n’est perdue', () => {
   const racine = depot()
   try {
-    const magasin = join(racine, '.git', 'wfrp-justificatifs')
-    rmSync(magasin, { recursive: true, force: true })
-    cpSync(source, magasin, { recursive: true })
-    const noms22 = gatesRequises({ cwd: REPO }).map((g) => g.nom)
+    const gates = gatesRequises({ cwd: REPO }).map((g) => g.nom)
+    const { magasin, cles } = magasinAncienneGraphie(racine, gates)
+    const parDossier = 22 + 3 // les gates de ci.yml, plus rouge + sale + illisible
+    assert.equal(gates.length, 22, 'la fixture décrit les 22 gates de ci.yml')
+
     const avant = propresParDossier(magasin, { graphie: 'toutes' })
-    const completsAvant = [...avant.values()].filter((gates) => noms22.every((n) => gates.has(n))).length
+    const completsAvant = [...avant.values()].filter((g) => gates.every((n) => g.has(n))).length
     const jsonAvant = compterJson(magasin)
+    assert.equal(jsonAvant, cles.length * parDossier)
+    assert.equal(completsAvant, cles.length, 'chaque dossier porte les 22 gates au vert AVANT')
     const derogations = join(magasin, 'derogations.log')
-    const journalAvant = existsSync(derogations) ? readFileSync(derogations) : null
+    const journalAvant = readFileSync(derogations)
 
     const bilan = migrerAncienneGraphie({ cwd: racine, journal: () => {} })
 
-    const apres = propresParDossier(magasin, { graphie: 'courante' })
-    const completsApres = [...apres.values()].filter((gates) => noms22.every((n) => gates.has(n))).length
+    assert.equal(bilan.effaces, cles.length, 'un rouge par dossier, effacé')
+    assert.equal(bilan.illisibles.length, cles.length, 'un illisible par dossier, LAISSÉ en place')
     assert.equal(
-      completsApres,
-      completsAvant,
-      `dossiers ${noms22.length}/${noms22.length} : ${completsAvant} avant, ${completsApres} après — une preuve a disparu`,
+      bilan.renommes,
+      jsonAvant - bilan.effaces - bilan.illisibles.length,
+      'tout ce qui n’est ni rouge ni illisible est renommé — aucune preuve n’est perdue en route',
     )
     assert.equal(compterJson(magasin), jsonAvant - bilan.effaces, 'seuls les rouges disparaissent')
-    assert.deepEqual(bilan.illisibles, [])
-    for (const [dossierCle, gates] of avant)
-      assert.deepEqual([...gates].sort(), [...(apres.get(dossierCle) ?? new Set())].sort(), `dossier ${dossierCle}`)
-    if (journalAvant !== null)
-      assert.deepEqual(readFileSync(derogations), journalAvant, 'derogations.log intact, octet pour octet')
-    assert.equal(migrerAncienneGraphie({ cwd: racine, journal: () => {} }).renommes, 0, 'idempotente')
+
+    const apres = propresParDossier(magasin, { graphie: 'courante' })
+    const completsApres = [...apres.values()].filter((g) => gates.every((n) => g.has(n))).length
+    assert.equal(completsApres, completsAvant, `dossiers 22/22 : ${completsAvant} avant, ${completsApres} après`)
+    for (const [dossierCle, g] of avant)
+      assert.deepEqual([...g].sort(), [...(apres.get(dossierCle) ?? new Set())].sort(), `dossier ${dossierCle}`)
+
+    // Le VERT sur arbre SALE survit, sous un nom qui porte sa saleté : c'est le refus du hook qui la lit.
+    for (const cle of cles) {
+      const poses = readdirSync(join(magasin, cle.cleTree))
+      assert.ok(poses.includes(fichierDeJustificatif({ gate: 'gate-sale', cle: cle.cleTree, sale: true })))
+      assert.ok(poses.includes('illisible.json'), 'un illisible reste lisible par un humain, là où il est')
+    }
+    assert.deepEqual(readFileSync(derogations), journalAvant, 'derogations.log intact, octet pour octet')
+
+    const rejeu = migrerAncienneGraphie({ cwd: racine, journal: () => {} })
+    assert.equal(rejeu.renommes, 0, 'idempotente : un magasin déjà migré est un no-op')
+    assert.equal(rejeu.effaces, 0)
   } finally {
     jeter(racine)
   }

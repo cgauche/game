@@ -370,21 +370,43 @@ test('repli — sans image, une entrée à ACCOLADE n’est pas vue, et l’en-t
   assert.deepEqual([c.fichier, c.net], [f, 1], 'avec l’image, l’entrée multiligne est vue une fois')
 })
 
-// ── COMPTEURS mesurés sur l'arbre : le lecteur d'image dit ce que chaque stock porte ──────────────
-
-test('compteurs — ce que le lecteur d’image lit sur les stocks du dépôt', (t) => {
-  const attendus = [
-    ['scripts/guards/lib/slotsStock.mjs', 339],
-    ['scripts/guards/lib/structuresStock.mjs', 1049],
-    ['scripts/guards/lib/legacyVocabStock.mjs', 35],
-    ['scripts/hooks/ecrans-ui.json', 207],
+// ── L'INVARIANT sur les porteurs RÉELS : l'image VOIT, et jamais moins que le repli ───────────────
+// Un stock est une DETTE vers zéro : son cardinal décroît (mesuré — #1686 a fait passer `slotsStock`
+// de 339 à 338 et `structuresStock` de 1049 à 1047). Un test qui fige ce cardinal se casse sur le
+// travail qu'il devrait saluer. Ce qui ne bouge pas, c'est ce que la porte DOIT tenir sur chacun :
+// elle lit des entrées, et sa voie précise n'en voit jamais moins que sa voie de secours — une porte
+// dont l'image voit moins que le repli se contourne en changeant la graphie du littéral.
+//
+// La liste vit DANS le test : en portée de module, elle serait elle-même un stock nominatif qui naît
+// (mesuré — la porte a mordu ce fichier pour `+4 entrée(s)`). Une fixture est une donnée LOCALE.
+//
+// Elle est NOMMÉE plutôt que dérivée : `estPorteurDeStock` retient 1 786 fichiers suivis, dont la
+// plupart ne portent aucun stock (`image = 0`), et trois des dix plus gros ont `image < repli`
+// (`structures-contrat.test.ts` 1 contre 9, `refs-migrated.test.ts` 0 contre 5) — le repli compte
+// toute LIGNE qui ressemble à une entrée, y compris dans une donnée locale, là où l'image ne compte
+// que les entrées d'un porteur de portée MODULE. L'invariant vaut pour les stocks réels, pas pour un
+// fichier quelconque : un corpus dérivé par la taille le réfuterait sans rien dire de la porte.
+test('porteurs réels — l’image lit des entrées, et jamais moins que le repli de ligne', (t) => {
+  const porteurs = [
+    'scripts/guards/lib/slotsStock.mjs',
+    'scripts/guards/lib/structuresStock.mjs',
+    'scripts/guards/lib/legacyVocabStock.mjs',
+    'scripts/hooks/ecrans-ui.json',
   ]
-  // `null` = image illisible ici (dialecte absent de `DIALECTE`) : ZÉRO entrée lue, et le repli de
-  // ligne prendrait seul la main — c'est un compteur, pas une exception.
-  const mesures = attendus.map(([rel]) =>
-    [rel, (entreesDeStock(readFileSync(join(RACINE, rel), 'utf8'), rel) ?? []).length])
-  for (const [rel, n] of mesures) t.diagnostic(`${rel} = ${n} entrée(s)`)
-  assert.deepEqual(mesures, attendus)
+  for (const rel of porteurs) {
+    const contenu = readFileSync(join(RACINE, rel), 'utf8')
+    // `null` = image illisible (dialecte absent de `DIALECTE`) : ZÉRO entrée lue, et le repli
+    // prendrait seul la main — donc un porteur dont l'image ne rend rien est un DÉFAUT, pas un cas.
+    const parImage = (entreesDeStock(contenu, rel) ?? []).length
+    const parRepli = contenu.split(/\r?\n/).filter((l) => estEntreeDeStock(l)).length
+    t.diagnostic(`${rel} — image ${parImage} entrée(s), repli ${parRepli} ligne(s)`)
+    assert.ok(parImage > 0, `${rel} : l’image ne lit AUCUNE entrée (image ${parImage}, repli ${parRepli})`)
+    assert.ok(
+      parImage >= parRepli,
+      `${rel} : l’image voit MOINS que le repli (image ${parImage}, repli ${parRepli}) — la porte se `
+      + 'contournerait en changeant la graphie du littéral',
+    )
+  }
 })
 
 // ── La FENÊTRE 2c11fdd9a..f0f9436f5 : ce que la porte aveugle ratait, et ce qu'elle voit ──────────
