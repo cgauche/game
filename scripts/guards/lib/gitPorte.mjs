@@ -1,0 +1,167 @@
+// LECTURES GIT DES PORTES — l'hôte UNIQUE de la forme d'union et des commandes git que les portes
+// (pre-push, garde de solde, revue de palier, stocks de plage, faits de palier, closer) exécutent.
+//
+// COMBIEN D'ISSUES A UNE LECTURE GIT ? TROIS, et les confondre a deux ans de conséquences :
+//   1. `{ disponible: true, valeur }`      — git a répondu ;
+//   2. `{ disponible: true, absent: true }` — l'OBJET demandé n'existe pas (`git show` d'une
+//      pre-image de fichier AJOUTÉ rend `128` et `fatal: path 'neuf.txt' exists on disk, but not in
+//      <sha>`). C'est le cas NORMAL de la porte de stock : le classer « git en panne » refuse le
+//      push d'un fichier neuf ;
+//   3. `{ disponible: false, raison }`     — git, le dépôt ou le binaire manquent. Une porte qui
+//      juge là-dessus juge sur rien : elle le DIT au lieu de conclure.
+// Une union à deux branches ne sait pas dire « absent » ; c'est pour cela qu'elle en a trois.
+//
+// `status ≠ 0` avec un stderr VIDE n'est pas un échec : c'est la réponse des PRÉDICATS de git
+// (`merge-base --is-ancestor`, `rev-parse --verify --quiet`, `grep`), qui répondent par leur code de
+// sortie. Ceux-là rendent un `fait` porteur du code.
+//
+// LE SPAWN QUI N'A PAS DÉMARRÉ (`STATUS_DLL_INIT_FAILED`) est REJOUÉ par les primitives de
+// `spawnResilient.mjs` — il n'y a pas deux politiques de rejeu dans ce dépôt. `execFileResilient`
+// n'est pas composable ici : il JETTE, donc il perd le `status` et le `stderr` dont l'union à trois
+// issues a besoin pour distinguer 2. de 3. ; ce sont ses primitives qui sont composées.
+//
+// `fetchOrigin` est à part, et NOMMÉE : elle ÉCRIT des refs. Une lecture et une mutation ne
+// partagent pas un hôte « fail-closed » sans que l'appelant sache laquelle il a jouée.
+import { spawnSync } from 'node:child_process'
+import { BACKOFFS_MS, MARQUE_REJEU, attendreSync, estEchecDeChargement, rejeux } from './spawnResilient.mjs'
+
+/** Longueur maximale d'une `raison` : elle est DITE dans un refus de hook, une fois. */
+export const RAISON_MAX = 200
+
+/** git a répondu. @param {*} valeur */
+export const fait = (valeur) => ({ disponible: true, valeur })
+
+/** L'objet demandé n'existe pas — un fait, pas une panne. */
+export const absent = () => ({ disponible: true, absent: true })
+
+/** Ni git, ni le dépôt, ni le réseau : rien n'a été mesuré. */
+export const indisponible = (raison) => ({ disponible: false, raison: raisonCourte(raison) })
+
+/** L'indisponibilité, JETÉE — la seule façon pour un prédicat BOOLÉEN de ne pas répondre « non »
+ *  quand il n'a rien lu. Se rattrape par son type, et l'appelant NOMME ce qu'il ne peut pas juger. */
+export class GitIndisponible extends Error {
+  constructor(raison) {
+    super(`git indisponible : ${raison}`)
+    this.name = 'GitIndisponible'
+    this.raison = raison
+  }
+}
+
+/**
+ * Première ligne SIGNIFICATIVE d'une sortie d'erreur, bornée. PURE.
+ * @param {string} brut @returns {string}
+ */
+export function raisonCourte(brut) {
+  const ligne = String(brut ?? '')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .find(Boolean) ?? 'raison non dite'
+  return ligne.length > RAISON_MAX ? `${ligne.slice(0, RAISON_MAX - 1)}…` : ligne
+}
+
+/**
+ * Ce que git écrit quand l'OBJET demandé n'existe pas. Une seule liste, ici, testée contre git RÉEL
+ * (`gitPorte.test.mjs`, dépôt jetable) : une seconde liste ailleurs re-classerait le cas normal de la
+ * porte de stock en panne de dépôt.
+ */
+export const MOTIFS_ABSENT = [
+  /does not exist/i,
+  /exists on disk, but not in/i,
+  /Not a valid commit name/i,
+  /Not a valid object name/i,
+  /bad object/i,
+  /bad revision/i,
+  /Invalid revision range/i,
+  /unknown revision or path not in the working tree/i,
+  /ambiguous argument/i,
+  /no such path/i,
+]
+
+/** `true` si ce stderr dit « l'objet demandé n'existe pas ». PUR. */
+export const ditAbsent = (stderr) => MOTIFS_ABSENT.some((re) => re.test(String(stderr ?? '')))
+
+/**
+ * Un fait qui peut manquer : sa valeur OU sa raison d'absence, jamais un silence. Enveloppe les
+ * lectures qui JETTENT (fs, sous-processus de mesure) dans la même union que les lectures git.
+ */
+export function tenter(fn) {
+  try {
+    return fait(fn())
+  } catch (e) {
+    const sortie = [e.stdout, e.stderr].filter(Boolean).map(String).join('\n').trim()
+    return { disponible: false, raison: `${e.message}${sortie ? ` — ${sortie.slice(0, 4000)}` : ''}` }
+  }
+}
+
+/** Lancement avec rejeu du processus qui n'a pas démarré. `spawn`/`attendre` injectables (mesure). */
+function lancer(commande, args, { cwd, spawn = spawnSync, attendre = attendreSync, site = 'gitPorte', journal = process.stderr, timeout } = {}) {
+  for (let essai = 0; ; essai += 1) {
+    const vu = spawn(commande, args, { cwd, encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'pipe'], timeout })
+    if (!estEchecDeChargement(vu?.status) || essai >= BACKOFFS_MS.length) return vu
+    rejeux.total += 1
+    journal.write(`${MARQUE_REJEU} : ${site} — ${commande} (essai ${essai + 2}/${BACKOFFS_MS.length + 1})\n`)
+    attendre(BACKOFFS_MS[essai])
+  }
+}
+
+/**
+ * Classement d'un résultat de `spawnSync` en union à trois issues. PUR.
+ * @returns {{disponible:true, valeur:{status:number, stdout:string, stderr:string}}
+ *   | {disponible:true, absent:true} | {disponible:false, raison:string}}
+ */
+export function classer(vu) {
+  if (!vu) return indisponible('aucun résultat de processus')
+  if (vu.error) return indisponible(vu.error.message)
+  if (vu.signal) return indisponible(`processus tué par le signal ${vu.signal}`)
+  const stderr = String(vu.stderr ?? '')
+  const stdout = String(vu.stdout ?? '')
+  if (vu.status === 0) return fait({ status: 0, stdout, stderr })
+  if (ditAbsent(stderr)) return absent()
+  if (!stderr.trim()) return fait({ status: vu.status, stdout, stderr })
+  return indisponible(stderr)
+}
+
+/**
+ * `git <args>` dans `cwd`, rendu en union à trois issues.
+ * @param {string[]} args
+ * @param {{cwd?:string, spawn?:Function, attendre?:Function, site?:string, timeout?:number}} [opts]
+ */
+export function lireGit(args, opts = {}) {
+  return classer(lancer('git', args, { site: `git ${args[0] ?? ''}`, ...opts }))
+}
+
+/** La sortie d'une lecture réussie, `null` si l'objet est absent ou si le code de sortie n'est pas 0.
+ *  C'est le contrat qu'attendent les lecteurs d'image (`lirePostImage?: (chemin) => string | null`).
+ *  `indisponible` n'a PAS de repli : l'appelant le traite, sinon il juge sur rien. */
+export const sortieOuNull = (union) =>
+  union.disponible && !union.absent && union.valeur.status === 0 ? union.valeur.stdout : null
+
+/**
+ * `<ancetre>` est-il un ancêtre de `<descendant>` ? Le prédicat de git répond par son code de sortie ;
+ * un sha INCONNU rend `absent` (l'appelant décide : « pas dans cette histoire » pour une porte).
+ * @returns {{disponible:true, valeur:boolean}|{disponible:true,absent:true}|{disponible:false,raison:string}}
+ */
+export function estAncetre(ancetre, descendant, opts = {}) {
+  const vu = lireGit(['merge-base', '--is-ancestor', ancetre, descendant], opts)
+  if (!vu.disponible || vu.absent) return vu
+  return fait(vu.valeur.status === 0)
+}
+
+/**
+ * Les `n` derniers commits de `ref`, du plus récent au plus ancien.
+ * @returns {{disponible:true, valeur:string[]}|{disponible:true,absent:true}|{disponible:false,raison:string}}
+ */
+export function commitsDe(ref, n, opts = {}) {
+  const vu = lireGit(['rev-list', '-n', String(n), ref], opts)
+  if (!vu.disponible || vu.absent) return vu
+  if (vu.valeur.status !== 0) return absent()
+  return fait(vu.valeur.stdout.split(/\r?\n/).map((l) => l.trim()).filter(Boolean))
+}
+
+/**
+ * MUTATION de refs : met `refs/remotes/origin/<branche>` à jour. Une panne RÉSEAU rend
+ * `indisponible` — la porte qui l'appelle dit « CI non consultable », elle ne conclut pas.
+ */
+export function fetchOrigin({ branche = 'main', ...opts } = {}) {
+  return lireGit(['fetch', '--quiet', 'origin', branche], { site: 'git fetch', timeout: 60000, ...opts })
+}

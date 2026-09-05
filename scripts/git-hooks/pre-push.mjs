@@ -1,7 +1,7 @@
 // Hook pre-push : la porte AU PUSH (#1679 L2). Elle LIT, elle ne joue rien — régime utilisateur
 // 2026-09-01 « suite complète + tsc avant push, pas de push sur CI rouge ».
 //
-// Six refus, tous nommés. Les quatre premiers portent sur la TÊTE de chaque ref poussée (l'unité
+// Six refus, tous nommés. Les cinq premiers portent sur la TÊTE de chaque ref poussée (l'unité
 // que la CI juge) :
 //   1. `origin` ne pointe pas `github.com/cgauche/game` ;
 //   2. une gate de `ci.yml` sans justificatif VERT et PROPRE pour le CONTENU poussé
@@ -11,20 +11,32 @@
 //      la CI est le seul step qu'aucun justificatif ne couvre (`JOBS_HORS_JUSTIFICATIF` : rejoué EN
 //      PLACE, il réécrit `src/data` et `src/scenes`). Il est donc JOUÉ ici, sur une copie jetable, et
 //      seulement si la plage poussée touche ce qu'il mesure — sinon c'est dit et sauté ;
-//   5. dernière CI de `main` en échec — dérogation `WFRP_PUSH_SUR_ROUGE=1` + `WFRP_DEROGATION`
-//      (raison de 20 caractères au moins), JOURNALISÉE dans
-//      `<git-common-dir>/wfrp-justificatifs/derogations.log` et relue par la revue de palier. Ce
-//      journal enregistre une TENTATIVE de push : le hook s'exécute AVANT le transfert et ne sait pas
-//      s'il aboutit — deux lignes identiques peuvent nommer un seul push abouti (mesuré le
-//      2026-09-04 sur `c3692d0f9`, 07:49:58 puis 07:54:50 pour un unique run CI). Un comptage de
-//      dérogations compte donc des tentatives, et chaque ligne le DIT.
-//      Ce refus-là vaut pour TOUTE ref, branche de travail comprise : c'est la lettre du régime
-//      (« pas de push sur CI rouge »), et un push de branche pendant que main est rouge détourne du
-//      seul travail qui compte alors — remettre main au vert.
 //   5. un STOCK NOMINATIF qui grandit quelque part dans la PLAGE poussée, sans que le message de SON
 //      commit le dise (`scripts/guards/lib/plageStock.mjs`) : les portes de stock du commit et du
 //      DERNIER commit ne voient qu'une tête, et un commit intermédiaire leur échappe (revue de
 //      palier n°2, 2026-09-03 — `429b9a1a2` a traversé les deux, six heures après leur pose).
+//
+// Le sixième porte sur la CI de `main`, LUE UNE FOIS pour tout le push (jamais par ref : la CI de
+// `main` ne dépend pas de la ref qu'on pousse). Quatre motifs, DEUX leviers de dérogation, chacun
+// avec sa portée — une seule manette pour quatre refus rendrait indistinguable le franchissement du
+// régime utilisateur et celui d'une panne de lecture :
+//   · `rouge` — la dernière course TERMINÉE de `main` a échoué. Levier `WFRP_PUSH_SUR_ROUGE=1`, et
+//     lui SEUL : c'est ce refus-là qui porte le régime utilisateur du 2026-09-01. Il vaut pour TOUTE
+//     ref, branche de travail comprise — un push de branche pendant que main est rouge détourne du
+//     seul travail qui compte alors ;
+//   · `non-consultable` — `git fetch`, `origin/main` ou `gh` n'ont rien rendu (hors ligne, jeton) ;
+//   · `perimee` — `gh` sert une liste où AUCUNE course ne porte la tête d'`origin/main`, après une
+//     relecture. La fraîcheur se juge par l'IDENTITÉ, jamais par une horloge : l'âge d'un COMMIT
+//     n'est pas celui de sa course (9,1 min d'écart médian, 673 au maximum — mesure du juge de
+//     design v2-T2, 2026-09-05) ;
+//   · `sans-ancetre` — aucun commit de l'histoire de HEAD n'est porté par une course VERTE.
+//   Les trois derniers se franchissent par `WFRP_PUSH_CI_NON_CONSULTABLE=1`, qui ne franchit JAMAIS
+//   un rouge LU. Les deux leviers exigent `WFRP_DEROGATION` (20 caractères au moins) et écrivent une
+//   ligne JSON dans `<git-common-dir>/wfrp-justificatifs/derogations.log`, relue par la revue de
+//   palier. Ce journal enregistre une TENTATIVE de push : le hook s'exécute AVANT le transfert et ne
+//   sait pas s'il aboutit — deux lignes identiques peuvent nommer un seul push abouti (mesuré le
+//   2026-09-04 sur `c3692d0f9`, 07:49:58 puis 07:54:50 pour une unique course CI). Un comptage de
+//   dérogations compte donc des tentatives, et chaque ligne le DIT.
 //
 // Le fast-forward ne se juge que contre une ref distante EXISTANTE (une ref neuve n'écrase rien).
 //
@@ -32,14 +44,20 @@
 // `git push --dry-run` joue AUSSI ce hook (mesuré : 2 invocations par push réel, 1 par dry-run) :
 // une lecture ne se distingue pas d'un push, la porte juge les deux pareil.
 //
-// MESURE : `gh` est appelé pour la CI de `main`. En test, `WFRP_GH_STUB=<fichier json>` fournit la
-// réponse (même forme que `gh run list --json conclusion,databaseId,headSha`) ; un chemin illisible
-// vaut « CI non consultée », le cas hors-ligne.
-import { execFileSync, spawnSync } from 'node:child_process'
+// COÛT de la lecture des courses (mesuré le 2026-09-05 sur ce dépôt, médiane de trois passes) :
+// `--limit 30` = 1 583 ms, `--limit 300` = 10 732 ms. D'où la lecture en DEUX TEMPS : les 30
+// tranchent rouge, en vol et fraîcheur ; les 300 ne sont lues que si aucune course verte d'un
+// ancêtre n'est dans les 30.
+//
+// MESURE : `WFRP_GH_STUB=<fichier json>` fournit les courses au lieu de `gh` (`coursesCi.mjs`), et
+// dispense du `git fetch` — la consultation d'`origin` vient alors ENTIÈREMENT de la fixture.
 import { appendFileSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
+import { commitsDe, estAncetre, fetchOrigin, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
+import { coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
+import { attendreSync } from '../guards/lib/spawnResilient.mjs'
 import { PERIMETRE } from '../migrations/replay.mjs'
 import { rejeuSurExport } from '../migrations/replay-head.mjs'
 import {
@@ -82,35 +100,93 @@ export const armeLeRejeu = (chemins) =>
 /** Le dépôt de ce projet, en https comme en ssh. */
 export const urlOrigineAcceptee = (url) => /github\.com[:/]cgauche\/game(?:\.git)?$/.test(String(url ?? '').trim())
 
-/** Dernière course CI de `main` : `{ courses }` ou `{ indisponible: raison }`. */
-export function derniereCourseCi({ cwd = process.cwd(), env = process.env } = {}) {
-  if (env.WFRP_GH_STUB) {
-    try {
-      return { courses: JSON.parse(readFileSync(env.WFRP_GH_STUB, 'utf8')) }
-    } catch (e) {
-      return { indisponible: e.message }
-    }
+/** Le levier de dérogation de chaque motif. `rouge` a le SIEN, et il ne franchit que lui. */
+export const LEVIER_DU_MOTIF = {
+  rouge: 'WFRP_PUSH_SUR_ROUGE',
+  'non-consultable': 'WFRP_PUSH_CI_NON_CONSULTABLE',
+  perimee: 'WFRP_PUSH_CI_NON_CONSULTABLE',
+  'sans-ancetre': 'WFRP_PUSH_CI_NON_CONSULTABLE',
+}
+
+/** Longueur minimale d'une raison de dérogation : une manette se motive, ou elle ne vaut rien. */
+export const RAISON_MINIMALE = 20
+
+/** Une course TERMINÉE ? Un stub qui ne dit rien du statut décrit une course finie. */
+const estTerminee = (course) => String(course?.status ?? 'completed') === 'completed'
+
+/**
+ * VERDICT sur la CI de `main`. PUR — `relire(limite)` est la seule lecture, injectée.
+ *
+ * FRAÎCHEUR PAR IDENTITÉ : une liste est CONCLUANTE si et seulement si une course y porte la tête
+ * d'`origin/main`. Sinon elle est relue UNE fois ; toujours pas, et le refus le dit. Aucune horloge
+ * n'entre ici : ce qui est connaissable et monotone, c'est l'identité du commit jugé.
+ *
+ * @param {{ courses: object[], teteMain: string|null, raisonTete?: string|null,
+ *           ancetres?: string[], relire?: (limite: number) => object[] }} p
+ * @returns {{ refus: { motif: string, dit: string, sha: string|null }[], notes: string[] }}
+ */
+export function verdictCi({ courses, teteMain, raisonTete = null, ancetres = [], relire = () => [] }) {
+  const refus = []
+  const notes = []
+  const nier = (motif, dit, sha = null) => refus.push({ motif, dit, sha })
+  if (!teteMain) {
+    nier('non-consultable', `CI de \`main\` non consultable : ${raisonTete ?? 'la tête d’`origin/main` n’a pas pu être lue'}`)
+    return { refus, notes }
   }
-  const vu = spawnSync(
-    'gh',
-    ['run', 'list', '--branch', 'main', '--workflow', 'ci.yml', '--limit', '1', '--json', 'conclusion,databaseId,headSha'],
-    { cwd, encoding: 'utf8', shell: process.platform === 'win32' },
-  )
-  if (vu.error) return { indisponible: vu.error.message }
-  if (vu.status !== 0) return { indisponible: (vu.stderr || '').trim() || `gh a rendu ${vu.status}` }
-  try {
-    return { courses: JSON.parse(vu.stdout) }
-  } catch (e) {
-    return { indisponible: e.message }
+  const porteLaTete = (liste) => (liste ?? []).some((c) => String(c?.headSha ?? '') === teteMain)
+
+  let liste = courses ?? []
+  if (!porteLaTete(liste)) {
+    notes.push(`aucune course ne porte la tête de main ${teteMain.slice(0, 9)} : la liste est relue une fois`)
+    liste = relire(30) ?? []
   }
+  if (!porteLaTete(liste)) {
+    nier(
+      'perimee',
+      `CI de \`main\` non consultable : \`gh\` ne sert aucune course pour la tête de \`main\` ${teteMain.slice(0, 9)} `
+      + '(liste périmée ou course pas encore créée)',
+      teteMain,
+    )
+    return { refus, notes }
+  }
+
+  const enVol = liste.filter((c) => !estTerminee(c))
+  if (enVol.length)
+    notes.push(
+      `${enVol.length} course(s) EN VOL sur main (${enVol.map((c) => String(c.headSha ?? '').slice(0, 7)).join(', ')}) — `
+      + 'le push ne les attend pas',
+    )
+  const derniereTerminee = liste.find(estTerminee)
+  if (derniereTerminee && derniereTerminee.conclusion === 'failure') {
+    nier(
+      'rouge',
+      `CI de main en ÉCHEC — course ${derniereTerminee.databaseId} sur ${String(derniereTerminee.headSha ?? '').slice(0, 7)}`,
+      String(derniereTerminee.headSha ?? ''),
+    )
+    return { refus, notes }
+  }
+
+  const connus = new Set(ancetres ?? [])
+  const porteUnVert = (l) => (l ?? []).some((c) => c?.conclusion === 'success' && connus.has(String(c.headSha ?? '')))
+  if (!porteUnVert(liste)) {
+    const large = relire(300) ?? []
+    if (porteUnVert(large)) notes.push('ancêtre vert trouvé dans les 300 dernières courses (aucun dans les 30)')
+    else
+      nier(
+        'sans-ancetre',
+        'CI de `main` : aucun commit de cette histoire n’est porté par une course VERTE '
+        + '(règle d’ingénierie, revue de palier n°4)',
+        teteMain,
+      )
+  }
+  return { refus, notes }
 }
 
 /** Verdict COMPLET du hook : `{ refus: [], notes: [] }`. Aucune sortie, aucun code — testable. */
 export function jugerPush({ cwd, stdin, env = process.env }) {
-  // stderr IGNORÉ : une commande git qui échoue ici a déjà son refus nommé ; son `fatal:` brut sur
-  // la sortie d'erreur du hook ne ferait que masquer le motif.
-  const git = (args) =>
-    execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+  // Les lectures git passent par l'hôte unique : `null` dit « l'objet n'existe pas », et une
+  // INDISPONIBILITÉ (git absent, hors dépôt) devient un refus NOMMÉ au lieu d'un `fatal:` brut.
+  const lire = (args) => sortieOuNull(lireGit(args, { cwd }))
   const refus = []
   const notes = []
   /** Rejeux déjà joués, par sha : un push de deux refs sur le MÊME commit (`main` + une étiquette de
@@ -118,13 +194,7 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
    *  @type {Map<string, { rouges: string[], chronos: Record<string, number> }>} */
   const rejeuxJoues = new Map()
 
-  const origine = (() => {
-    try {
-      return git(['remote', 'get-url', 'origin'])
-    } catch {
-      return ''
-    }
-  })()
+  const origine = (lire(['remote', 'get-url', 'origin']) ?? '').trim()
   if (!urlOrigineAcceptee(origine))
     refus.push(`origin = « ${origine || '(absent)'} » : ce hook ne connaît que github.com/cgauche/game`)
 
@@ -172,11 +242,15 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
           'le rejeu des migrations se juge sur l’arbre ENTIER, donc il est joué',
       )
     } else {
-      const ancetre = spawnSync('git', ['merge-base', '--is-ancestor', shaDistant, shaLocal], {
-        cwd,
-        stdio: ['ignore', 'pipe', 'ignore'],
-      })
-      if (ancetre.status !== 0)
+      const ancetre = estAncetre(shaDistant, shaLocal, { cwd })
+      if (!ancetre.disponible)
+        refus.push(`${refLocale} → ${refDistante} : ascendance illisible — ${ancetre.raison}`)
+      else if (ancetre.absent)
+        refus.push(
+          `push vers ${refDistante} non jugé : ${shaDistant.slice(0, 7)} est inconnu de ce dépôt — `
+          + 'le fast-forward ne se prouve pas (git fetch origin)',
+        )
+      else if (ancetre.valeur !== true)
         refus.push(
           `push non fast-forward vers ${refDistante} : ${shaDistant.slice(0, 7)} n’est pas un ancêtre de ${shaLocal.slice(0, 7)}`,
         )
@@ -190,12 +264,9 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
     const plage = shaDistant && shaDistant !== ZERO ? `${shaDistant}..${shaLocal}` : null
     const ditPlage = plage ?? `l’arbre entier de ${shaLocal.slice(0, 7)} (ref distante neuve)`
     const touches = (() => {
-      try {
-        const args = plage ? ['diff', '--name-only', plage] : ['ls-tree', '-r', '--name-only', shaLocal]
-        return git(args).split(/\r?\n/).filter(Boolean)
-      } catch {
-        return null
-      }
+      const args = plage ? ['diff', '--name-only', plage] : ['ls-tree', '-r', '--name-only', shaLocal]
+      const vu = lire(args)
+      return vu === null ? null : vu.split(/\r?\n/).filter(Boolean)
     })()
     if (touches === null) {
       refus.push(`${refLocale} → ${refDistante} : contenu de ${ditPlage} illisible — rejeu des migrations non jugé`)
@@ -225,39 +296,78 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
     // Stocks nominatifs de la PLAGE poussée : par commit, filtrés par la croissance cumulée.
     const stocks = croissancesDeLaPlage({ cwd, avant: shaDistant, apres: shaLocal })
     for (const n of stocks.notes) notes.push(n)
+    if (stocks.indisponible)
+      refus.push(`${refLocale} → ${refDistante} : plage \`${stocks.plage}\` illisible : ${stocks.indisponible}`)
     if (stocks.refus.length) refus.push(raisonDeRefusDePlage(stocks.refus))
   }
 
-  const ci = derniereCourseCi({ cwd, env })
-  if (ci.indisponible) {
-    notes.push(`CI de main non consultée : ${ci.indisponible}`)
-  } else {
-    const course = (ci.courses ?? [])[0]
-    if (course && course.conclusion === 'failure') {
-      const dit = `CI de main en ÉCHEC — run ${course.databaseId} sur ${String(course.headSha ?? '').slice(0, 7)}`
-      const raison = String(env.WFRP_DEROGATION ?? '')
-      if (env.WFRP_PUSH_SUR_ROUGE === '1' && raison.trim().length >= 20) {
-        notes.push(`${dit} — DÉROGATION journalisée : ${raison.trim()}`)
-        try {
-          // `tentative` : le pre-push précède le transfert. Sans ce mot, le journal se relit comme
-          // une liste de pushes aboutis et tout cardinal qu'on en tire est faux.
-          appendFileSync(
-            join(cheminJustificatifs({ cwd }), 'derogations.log'),
-            `${new Date().toISOString()}\ttentative\t${git(['rev-parse', 'HEAD'])}\t${raison.trim()}\n`,
-          )
-        } catch (e) {
-          notes.push(`journal de dérogation non écrit : ${e.message}`)
-        }
-      } else {
-        refus.push(dit)
-        refus.push(
-          '  → corriger main, ou déroger EXPLICITEMENT : WFRP_PUSH_SUR_ROUGE=1 WFRP_DEROGATION="<raison de 20 caractères au moins>"',
-        )
-      }
+  // ── CI de `main` : UNE lecture pour tout le push, hors de la boucle des refs ─────────────────
+  const teteLue = teteDeMain({ cwd, env })
+  for (const n of teteLue.notes) notes.push(n)
+  const ancetres = (() => {
+    const vu = commitsDe('HEAD', 1000, { cwd })
+    return vu.disponible && !vu.absent ? vu.valeur : []
+  })()
+  const relire = (limite) => {
+    // 5 s : la course d'un push tout juste fait n'est pas servie à l'instant du hook. Le stub sert
+    // ses listes sans attendre — c'est lui qui compte les appels.
+    if (!env.WFRP_GH_STUB && limite === 30) attendreSync(5000)
+    const vu = coursesCiDeMain({ cwd, env, limit: limite })
+    if (!vu.disponible) {
+      notes.push(`relecture des courses (${limite}) indisponible : ${vu.raison}`)
+      return []
+    }
+    return vu.valeur
+  }
+  const premiere = coursesCiDeMain({ cwd, env, limit: 30 })
+  const ci = premiere.disponible
+    ? verdictCi({ courses: premiere.valeur, teteMain: teteLue.sha, raisonTete: teteLue.raison, ancetres, relire })
+    : verdictCi({ courses: [], teteMain: null, raisonTete: `\`gh\` — ${premiere.raison}` })
+  for (const n of ci.notes) notes.push(n)
+  for (const { motif, dit, sha } of ci.refus) {
+    const levier = LEVIER_DU_MOTIF[motif]
+    const raison = String(env.WFRP_DEROGATION ?? '').trim()
+    if (env[levier] === '1' && raison.length >= RAISON_MINIMALE) {
+      notes.push(`${dit} — DÉROGATION journalisée (${motif}) : ${raison}`)
+      journaliserDerogation({ cwd, motif, sha: sha ?? lire(['rev-parse', 'HEAD'])?.trim() ?? '', raison, notes })
+    } else {
+      refus.push(dit)
+      refus.push(
+        `  → corriger main, ou déroger EXPLICITEMENT : ${levier}=1 `
+        + `WFRP_DEROGATION="<raison de ${RAISON_MINIMALE} caractères au moins>"`,
+      )
     }
   }
 
   return { refus, notes }
+}
+
+/**
+ * La tête d'`origin/main`, RÉFÉRENCE de la fraîcheur. Le `fetch` (mutation de refs) est NOMMÉ, et
+ * n'est pas joué sous stub — la fixture porte alors elle-même l'état d'`origin`.
+ * @returns {{ sha: string|null, raison: string|null, notes: string[] }}
+ */
+export function teteDeMain({ cwd, env = process.env }) {
+  const notes = []
+  if (!env.WFRP_GH_STUB) {
+    const vu = fetchOrigin({ cwd })
+    if (!vu.disponible) return { sha: null, raison: `\`git fetch origin main\` — ${vu.raison}`, notes }
+    if (vu.absent) return { sha: null, raison: '`origin` ne sert pas de branche `main`', notes }
+  }
+  const vu = lireGit(['rev-parse', 'origin/main'], { cwd })
+  if (!vu.disponible) return { sha: null, raison: vu.raison, notes }
+  if (vu.absent || vu.valeur.status !== 0) return { sha: null, raison: '`origin/main` est inconnu de ce dépôt', notes }
+  return { sha: vu.valeur.stdout.trim(), raison: null, notes }
+}
+
+/** Une ligne JSON par TENTATIVE dérogée : un seul objet par ligne, relu par la revue de palier. */
+function journaliserDerogation({ cwd, motif, sha, raison, notes }) {
+  try {
+    const ligne = JSON.stringify({ horodatage: new Date().toISOString(), etat: 'tentative', motif, sha, raison })
+    appendFileSync(join(cheminJustificatifs({ cwd }), 'derogations.log'), `${ligne}\n`)
+  } catch (e) {
+    notes.push(`journal de dérogation non écrit : ${e.message}`)
+  }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {

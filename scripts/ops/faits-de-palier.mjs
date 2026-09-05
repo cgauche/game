@@ -27,8 +27,10 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { derniereRevueArchivee, estDansHead, memeSha } from '../guards/lib/revuePalier.mjs'
+import { ascendanceDansHead, derniereRevueArchivee, memeSha } from '../guards/lib/revuePalier.mjs'
 import { croissancesDeLaPlage } from '../guards/lib/plageStock.mjs'
+import { tenter } from '../guards/lib/gitPorte.mjs'
+import { coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
 import { cheminJustificatifs } from '../guards/lib/justificatif.mjs'
 import { FERMETURE_RE, soldesSuivis } from './fermetures-non-citees.mjs'
 
@@ -114,32 +116,35 @@ export function fermeturesDesCommits(commits, soldes) {
 }
 
 /**
- * Dérogations journalisées par le pre-push. PUR. DEUX graphies vivent dans le journal réel :
- * `<iso>\ttentative\t<sha>\t<raison>` (celle qu'écrit `pre-push.mjs:234`) et `<iso>\t<sha>\t<raison>`
- * (les 6 lignes du journal de cette machine, antérieures au marqueur — mesuré 2026-09-04). Le SHA
- * décide : c'est lui qui rattache la dérogation à la fenêtre, et une ligne sans marqueur reste une
- * dérogation. `shas` MARQUE (`dansLaFenetre`) sans filtrer — le tri revient à `derogationsDeLaFenetre`.
- * @returns {{ horodatage: string, etat: string, sha: string, raison: string, dansLaFenetre: boolean }[]}
+ * Dérogations journalisées par le pre-push. PUR. Le journal porte UNE ligne JSON par tentative
+ * (`{ horodatage, etat, motif, sha, raison }`) : une ligne qui n'est pas un objet JSON n'est pas
+ * devinée, elle est rendue `{ etat: 'illisible', ligne }` et comptée à part.
+ * `shas` MARQUE (`dansLaFenetre`) sans filtrer — le tri revient à `derogationsDeLaFenetre`.
+ * @returns {{ horodatage: string, etat: string, motif: string, sha: string, raison: string,
+ *   dansLaFenetre: boolean }[] }
  */
 export function derogationsDuJournal(texte, shas = null) {
   const fenetre = shas ? new Set([...shas].map(String)) : null
-  const EST_SHA = /^[0-9a-f]{7,40}$/
   return String(texte ?? '')
     .split('\n')
     .map((l) => l.replace(/\r$/, ''))
     .filter(Boolean)
     .map((ligne) => {
-      const champs = ligne.split('\t')
-      const sansMarqueur = EST_SHA.test(champs[1] ?? '')
-      const [horodatage = '', etat, sha, ...reste] = sansMarqueur
-        ? [champs[0], '(sans marqueur)', ...champs.slice(1)]
-        : champs
+      let lu
+      try {
+        lu = JSON.parse(ligne)
+      } catch {
+        return { etat: 'illisible', ligne, dansLaFenetre: false }
+      }
+      if (!lu || typeof lu !== 'object' || Array.isArray(lu)) return { etat: 'illisible', ligne, dansLaFenetre: false }
+      const sha = String(lu.sha ?? '')
       return {
-        horodatage,
-        etat: etat ?? '',
-        sha: sha ?? '',
-        raison: reste.join('\t'),
-        dansLaFenetre: fenetre ? fenetre.has(sha ?? '') : true,
+        horodatage: String(lu.horodatage ?? ''),
+        etat: String(lu.etat ?? ''),
+        motif: String(lu.motif ?? ''),
+        sha,
+        raison: String(lu.raison ?? ''),
+        dansLaFenetre: fenetre ? fenetre.has(sha) : true,
       }
     })
 }
@@ -147,26 +152,30 @@ export function derogationsDuJournal(texte, shas = null) {
 /**
  * Ce que la fenêtre porte VRAIMENT en dérogations. PUR. Une revue juge SA fenêtre : servir le journal
  * entier fait juger des pushes d'un autre palier (6 lignes hors fenêtre servies sur 6, mesuré
- * 2026-09-04). Le NOMBRE des autres reste rendu : leur existence est un fait, leur contenu non.
- * @returns {{ dansLaFenetre: object[], horsFenetre: number }}
+ * 2026-09-04). Le NOMBRE des autres reste rendu : leur existence est un fait, leur contenu non. Les
+ * lignes ILLISIBLES sont comptées à part : les noyer dans « hors fenêtre » ferait passer un journal
+ * corrompu pour un journal d'un autre palier.
+ * @returns {{ dansLaFenetre: object[], horsFenetre: number, illisibles: number }}
  */
 export function derogationsDeLaFenetre(texte, shas) {
   const toutes = derogationsDuJournal(texte, shas)
-  const retenues = toutes.filter((d) => d.dansLaFenetre)
-  return { dansLaFenetre: retenues, horsFenetre: toutes.length - retenues.length }
+  const illisibles = toutes.filter((d) => d.etat === 'illisible')
+  const lisibles = toutes.filter((d) => d.etat !== 'illisible')
+  const retenues = lisibles.filter((d) => d.dansLaFenetre)
+  return {
+    dansLaFenetre: retenues,
+    horsFenetre: lisibles.length - retenues.length,
+    illisibles: illisibles.length,
+  }
 }
 
 /**
- * Courses CI par commit, depuis `gh run list --json headSha,conclusion,status,workflowName`. PUR.
+ * Courses CI par commit, depuis la liste servie par `coursesCiDeMain`. PUR.
  * Un sha sans course est rendu avec `conclusion: null` : « pas de course » est un fait.
  * @returns {{ sha: string, courses: { workflow: string, conclusion: string|null, statut: string|null }[] }[]}
  */
-export function runsParCommit(brutJson, shas) {
-  let courses = []
-  try {
-    const lu = JSON.parse(String(brutJson ?? '[]'))
-    courses = Array.isArray(lu) ? lu : []
-  } catch { courses = [] }
+export function coursesParCommit(servies, shas) {
+  const courses = Array.isArray(servies) ? servies : []
   return [...(shas ?? [])].map((sha) => ({
     sha,
     courses: courses
@@ -183,16 +192,6 @@ export function runsParCommit(brutJson, shas) {
 
 const git = (args, cwd) =>
   execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1 << 28 })
-
-/** Un fait qui peut manquer : sa valeur OU sa raison d'absence, jamais un silence. */
-function tenter(fn) {
-  try {
-    return { disponible: true, valeur: fn() }
-  } catch (e) {
-    const sortie = [e.stdout, e.stderr].filter(Boolean).map(String).join('\n').trim()
-    return { disponible: false, raison: `${e.message}${sortie ? ` — ${sortie.slice(0, 4000)}` : ''}` }
-  }
-}
 
 function main() {
   let options
@@ -219,7 +218,12 @@ function main() {
   const chainage = chaine
     ? 'vérifié'
     : `ignoré (--sans-chainage, banc) — base attendue par l'histoire : ${derniere.tete}, base jouée : ${base}`
-  if (!estDansHead(tete, cwd)) {
+  const ascendance = ascendanceDansHead(tete, cwd)
+  if (!ascendance.disponible) {
+    process.stderr.write(`faits-de-palier : ascendance indisponible — ${ascendance.raison} : \`--tete ${tete}\` n'a pas pu être située dans l'histoire de HEAD.\n`)
+    process.exit(1)
+  }
+  if (ascendance.absent || ascendance.valeur !== true) {
     process.stderr.write(`faits-de-palier : \`--tete ${tete}\` n'est pas dans l'histoire de HEAD — la fenêtre jugerait une histoire que ce dépôt ne porte pas.\n`)
     process.exit(1)
   }
@@ -243,23 +247,21 @@ function main() {
     : tenter(() => execFileSync(process.execPath, [join(RACINE, 'scripts', 'ops', 'audit-stock.mjs')], {
       cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 300000,
     }))
-  const runsCi = horsLigne
-    ? { disponible: false, raison: '`--hors-ligne` : courses CI non consultées' }
-    : tenter(() => runsParCommit(
-      // `--limit 300` : `gh run list` n'a pas de fenêtre de dates, la limite EST la fenêtre. Une plage
-      // dont le plus ancien commit sort des 300 dernières courses de `main` rend `courses: []` —
-      // indiscernable d'un commit jamais couru, et c'est ce que le lecteur doit savoir.
-      execFileSync('gh', ['run', 'list', '--branch', 'main', '--limit', '300', '--json', 'headSha,conclusion,status,workflowName'], {
-        cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 120000,
-      }),
-      shas,
-    ))
+  // `limit: 300` : la lecture des courses n'a pas de fenêtre de dates, la limite EST la fenêtre. Une
+  // plage dont le plus ancien commit sort des 300 dernières courses de `main` rend `courses: []` —
+  // indiscernable d'un commit jamais couru, et c'est ce que le lecteur doit savoir.
+  // `workflow: null` : TOUS les workflows, pas seulement `ci.yml`.
+  const coursesCi = (() => {
+    if (horsLigne) return { disponible: false, raison: '`--hors-ligne` : courses CI non consultées' }
+    const vu = coursesCiDeMain({ cwd, limit: 300, workflow: null })
+    return vu.disponible ? { disponible: true, valeur: coursesParCommit(vu.valeur, shas) } : vu
+  })()
 
   const derogations = tenter(() => {
     const journal = join(cheminJustificatifs({ cwd }), 'derogations.log')
     return existsSync(journal)
       ? derogationsDeLaFenetre(readFileSync(journal, 'utf8'), shas)
-      : { dansLaFenetre: [], horsFenetre: 0 }
+      : { dansLaFenetre: [], horsFenetre: 0, illisibles: 0 }
   })
 
   const texteDeRevue = tenter(() => (revuePrecedente
@@ -279,7 +281,7 @@ function main() {
     fermeturesHorsCommit,
     auditStock,
     derogations,
-    runsCi,
+    coursesCi,
     revuePrecedente: { chemin: revuePrecedente ?? derniere.chemin, ...texteDeRevue },
     provenance: {
       commits: 'script',
@@ -289,7 +291,7 @@ function main() {
       fermeturesHorsCommit: 'gh',
       auditStock: 'npm audit',
       derogations: 'journal local du pre-push',
-      runsCi: 'gh',
+      coursesCi: 'gh',
       revuePrecedente: 'git',
     },
   }

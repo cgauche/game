@@ -16,7 +16,7 @@
 //
 // La lib CALCULE ; le VERDICT appartient à l'appelant (le pre-push refuse, la mesure a posteriori
 // échoue). Elle reste PURE dans son cœur (`refusDeLaPlage`) : les lectures git sont injectées.
-import { execFileSync } from 'node:child_process'
+import { lireGit, sortieOuNull } from './gitPorte.mjs'
 import { croissanceDesStocks, croissancesNonCouvertes } from './stocksNominatifs.mjs'
 
 /** Le sha nul que git écrit sur stdin du pre-push pour une branche NEUVE. */
@@ -58,12 +58,23 @@ export function raisonDeRefusDePlage(refus) {
  * Lecture d'une plage réelle dans `cwd` et refus qu'elle porte.
  * `avant` nul (branche NEUVE, forme observée sur stdin du hook) → `origin/main` : la plage jugée est
  * ce que la branche ajoute au tronc.
+ * `null` = l'OBJET demandé n'existe pas (le contrat des lecteurs d'image) ; une INDISPONIBILITÉ de
+ * git est rendue à part (`indisponible`), et l'appelant la NOMME : une plage illisible ne se juge
+ * pas, elle se dit.
  * @param {{ cwd?: string, avant: string, apres: string,
  *           git?: (args: string[]) => string | null }} p
- * @returns {{ refus: [], notes: string[] }}
+ * @returns {{ refus: [], notes: string[], plage: string, indisponible: string|null, commits?: number }}
  */
 export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } = {}) {
-  const lire = git ?? lecteurGit(cwd)
+  const pannes = []
+  const lire = git ?? ((args) => {
+    const vu = lireGit(args, { cwd })
+    if (!vu.disponible) {
+      pannes.push(vu.raison)
+      return null
+    }
+    return sortieOuNull(vu)
+  })
   const notes = []
   let base = avant
   if (!base || base === SHA_NUL) {
@@ -73,10 +84,13 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
       base = `${apres}^`
     }
   }
-  const liste = lire(['rev-list', '--reverse', '--no-merges', `${base}..${apres}`])
+  const plage = `${base}..${apres}`
+  // `--no-merges` : `git show` ne rend aucun diff propre d'une fusion, et la croissance qu'elle
+  // porte a déjà été jugée sur le commit d'ORIGINE.
+  const liste = lire(['rev-list', '--reverse', '--no-merges', plage])
   if (liste === null) {
-    notes.push(`plage \`${base}..${apres}\` illisible : rien n'est jugé`)
-    return { refus: [], notes }
+    notes.push(`plage \`${plage}\` illisible : rien n'est jugé`)
+    return { refus: [], notes, plage, indisponible: pannes[0] ?? null }
   }
   const shas = liste.split('\n').map((l) => l.trim()).filter(Boolean)
   const commits = shas.map((sha) => ({
@@ -93,16 +107,11 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
     lirePostImage: (f) => lire(['show', `${apres}:${f}`]),
     lirePreImage: (f) => lire(['show', `${base}:${f}`]),
   }
-  return { refus: refusDeLaPlage({ commits, cumule, imagesCumul }), notes, commits: shas.length }
-}
-
-/** Lecteur git par défaut : `null` sur échec (un commit absent n'est pas une erreur de la porte).
- *  Les commits de FUSION sont hors plage (`--no-merges`) — `git show` n'en rend aucun diff, et la
- *  croissance qu'ils portent a été jugée sur le commit d'ORIGINE. */
-function lecteurGit(cwd) {
-  return (args) => {
-    try {
-      return execFileSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'] })
-    } catch { return null }
+  return {
+    refus: refusDeLaPlage({ commits, cumule, imagesCumul }),
+    notes,
+    commits: shas.length,
+    plage,
+    indisponible: pannes[0] ?? null,
   }
 }

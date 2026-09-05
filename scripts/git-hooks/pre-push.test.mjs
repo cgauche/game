@@ -1,8 +1,9 @@
 // Porte au PUSH (#1679 L2) — fixture : un VRAI dépôt jetable, son propre `ci.yml` minimal, un
-// `origin` dont l'URL est celle du dépôt du projet (aucun push n'est joué : le hook est appelé
-// directement, comme git l'appelle, refs sur stdin).
-// La CI de `main` est fournie par `WFRP_GH_STUB=<fichier json>` (même forme que `gh run list --json
-// conclusion,databaseId,headSha`) ; un chemin illisible vaut « gh absent / hors-ligne ».
+// `origin` dont l'URL est celle du dépôt du projet et une ref `refs/remotes/origin/main` (aucun push
+// n'est joué : le hook est appelé directement, comme git l'appelle, refs sur stdin).
+// Les courses de `main` sont fournies par `WFRP_GH_STUB=<fichier json>` (`coursesCi.mjs`), qui
+// dispense aussi du `git fetch` : la fixture porte elle-même l'état d'`origin`. La FRAÎCHEUR se juge
+// par identité — une course doit porter la tête d'`origin/main` —, donc les stubs la nomment.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -19,7 +20,8 @@ import {
   segmentDeGate,
 } from '../guards/lib/justificatif.mjs'
 import { RACINE_DES_EXPORTS } from '../migrations/replay-head.mjs'
-import { armeLeRejeu, jugerPush, refsAPousser, urlOrigineAcceptee } from './pre-push.mjs'
+import { armeLeRejeu, jugerPush, refsAPousser, urlOrigineAcceptee, verdictCi } from './pre-push.mjs'
+import { reinitialiserStub } from '../guards/lib/coursesCi.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 
@@ -53,20 +55,37 @@ function depot() {
   ecrire(racine, DOC_A, 'doc\n')
   g(['add', '-A'])
   g(['commit', '-m', 'fondation'])
+  // `origin/main` : la RÉFÉRENCE de fraîcheur de la porte. Sans elle, la CI est « non consultable »
+  // — ce qui est le verdict juste, mais pas celui que ces cas-là mesurent.
+  g(['update-ref', 'refs/remotes/origin/main', g(['rev-parse', 'HEAD'])])
   return racine
 }
 
 const jeter = (racine) => rmSync(racine, { recursive: true, force: true })
 
-/** Réponse `gh` posée sur disque, rendue en variable d'environnement de mesure. */
-function stubCi(racine, courses) {
+/** Tête d'`origin/main` de la fixture — le sha que les courses doivent porter pour être concluantes. */
+const teteMain = (racine) => git(racine)(['rev-parse', 'origin/main'])
+
+/** Réponse posée sur disque, rendue en variable d'environnement de mesure. Un tableau = la même
+ *  liste à chaque appel ; `{ appels: [...] }` = une liste PAR APPEL. */
+function stubCi(racine, contenu) {
+  reinitialiserStub()
   const fichier = join(racine, 'gh.json')
-  writeFileSync(fichier, JSON.stringify(courses))
+  writeFileSync(fichier, JSON.stringify(contenu))
   return { WFRP_GH_STUB: fichier }
 }
 
-const ciVerte = (racine) => stubCi(racine, [{ conclusion: 'success', databaseId: 1, headSha: 'abc1234' }])
-const ciRouge = (racine) => stubCi(racine, [{ conclusion: 'failure', databaseId: 33691303703, headSha: 'def5678' }])
+const course = (racine, plus = {}) => ({
+  conclusion: 'success',
+  status: 'completed',
+  databaseId: 1,
+  headSha: teteMain(racine),
+  createdAt: '2026-09-05T10:00:00Z',
+  ...plus,
+})
+
+const ciVerte = (racine) => stubCi(racine, [course(racine)])
+const ciRouge = (racine) => stubCi(racine, [course(racine, { conclusion: 'failure', databaseId: 33691303703 })])
 
 /** Toutes les gates du `ci.yml` de la fixture, vertes sur le contenu de HEAD. */
 function gatesVertes(racine) {
@@ -207,12 +226,12 @@ test('push NON fast-forward : refus nommant la ref et les deux shas', () => {
   }
 })
 
-test('CI de main ROUGE : refus nommant le run et son sha', () => {
+test('CI de main ROUGE : refus nommant la course et son sha', () => {
   const racine = depot()
   try {
     gatesVertes(racine)
     const { refus } = jugerPush({ cwd: racine, stdin: pousse(racine), env: ciRouge(racine) })
-    assert.match(refus.join('\n'), /CI de main en ÉCHEC — run 33691303703 sur def5678/)
+    assert.match(refus.join('\n'), new RegExp(`CI de main en ÉCHEC — course 33691303703 sur ${teteMain(racine).slice(0, 7)}`))
     assert.match(refus.join('\n'), /WFRP_PUSH_SUR_ROUGE=1/)
   } finally {
     jeter(racine)
@@ -230,15 +249,19 @@ test('dérogation motivée sur CI rouge : passe, et la ligne de TENTATIVE part a
     }
     const { refus, notes } = jugerPush({ cwd: racine, stdin: pousse(racine), env })
     assert.deepEqual(refus, [])
-    assert.match(notes.join('\n'), /DÉROGATION journalisée : correctif de la CI rouge elle-même/)
+    assert.match(notes.join('\n'), /DÉROGATION journalisée \(rouge\) : correctif de la CI rouge elle-même/)
     const journal = readFileSync(join(cheminJustificatifs({ cwd: racine }), 'derogations.log'), 'utf8')
-    assert.match(journal, new RegExp(`\\ttentative\\t${sha}\\tcorrectif de la CI rouge elle-même\\n$`))
+    const ligne = JSON.parse(journal.trim())
+    assert.equal(ligne.etat, 'tentative')
+    assert.equal(ligne.motif, 'rouge')
+    assert.equal(ligne.sha, sha)
+    assert.equal(ligne.raison, 'correctif de la CI rouge elle-même')
     // Le hook précède le TRANSFERT : deux tentatives pour un seul push abouti sont normales, et le
-    // journal doit le dire de lui-même (mesuré sur `c3692d0f9`, deux lignes, un run).
+    // journal doit le dire de lui-même (mesuré sur `c3692d0f9`, deux lignes, une course).
     jugerPush({ cwd: racine, stdin: pousse(racine), env })
     const relu = readFileSync(join(cheminJustificatifs({ cwd: racine }), 'derogations.log'), 'utf8')
     assert.equal(relu.trim().split('\n').length, 2)
-    assert.ok(relu.trim().split('\n').every((l) => l.split('\t')[1] === 'tentative'))
+    assert.ok(relu.trim().split('\n').every((l) => JSON.parse(l).etat === 'tentative'))
   } finally {
     jeter(racine)
   }
@@ -257,17 +280,103 @@ test('dérogation SANS raison suffisante : refusée comme si elle n’existait p
   }
 })
 
-test('`gh` indisponible : la CI n’est pas consultée — c’est DIT, et le push passe', () => {
+test('`gh` indisponible (hors ligne) : refus NON CONSULTABLE, et son levier propre', () => {
+  // Un push hors ligne ne prouve RIEN de la CI. L'ancien régime le laissait passer en note : la
+  // porte disait alors « pas de rouge vu » là où elle n'avait rien lu.
   const racine = depot()
   try {
     gatesVertes(racine)
-    const { refus, notes } = jugerPush({
+    const { refus } = jugerPush({
       cwd: racine,
       stdin: pousse(racine),
       env: { WFRP_GH_STUB: join(racine, 'gh-absent.json') },
     })
+    assert.match(refus.join('\n'), /CI de `main` non consultable/)
+    assert.match(refus.join('\n'), /WFRP_PUSH_CI_NON_CONSULTABLE=1/)
+    assert.ok(!refus.join('\n').includes('WFRP_PUSH_SUR_ROUGE'), 'le levier du ROUGE ne franchit pas une panne de lecture')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('hors ligne + levier NON CONSULTABLE motivé : passe, et le journal porte le motif mesuré', () => {
+  const racine = depot()
+  try {
+    gatesVertes(racine)
+    const { refus } = jugerPush({
+      cwd: racine,
+      stdin: pousse(racine),
+      env: {
+        WFRP_GH_STUB: join(racine, 'gh-absent.json'),
+        WFRP_PUSH_CI_NON_CONSULTABLE: '1',
+        WFRP_DEROGATION: 'push hors ligne depuis le train, CI relue au retour',
+      },
+    })
     assert.deepEqual(refus, [])
-    assert.match(notes.join('\n'), /CI de main non consultée : /)
+    const ligne = JSON.parse(readFileSync(join(cheminJustificatifs({ cwd: racine }), 'derogations.log'), 'utf8').trim())
+    assert.equal(ligne.motif, 'non-consultable')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('les leviers ne se franchissent PAS l’un l’autre (croisé)', () => {
+  const racine = depot()
+  try {
+    gatesVertes(racine)
+    const motive = 'une raison de vingt caractères au moins, mesurée'
+    // ROUGE lu + levier de la NON-CONSULTATION : refusé.
+    const surRouge = jugerPush({
+      cwd: racine,
+      stdin: pousse(racine),
+      env: { ...ciRouge(racine), WFRP_PUSH_CI_NON_CONSULTABLE: '1', WFRP_DEROGATION: motive },
+    })
+    assert.match(surRouge.refus.join('\n'), /CI de main en ÉCHEC/)
+    // Lecture impossible + levier du ROUGE : refusé aussi.
+    const horsLigne = jugerPush({
+      cwd: racine,
+      stdin: pousse(racine),
+      env: {
+        WFRP_GH_STUB: join(racine, 'gh-absent.json'),
+        WFRP_PUSH_SUR_ROUGE: '1',
+        WFRP_DEROGATION: motive,
+      },
+    })
+    assert.match(horsLigne.refus.join('\n'), /non consultable/)
+  } finally {
+    jeter(racine)
+  }
+})
+
+// Session #1508 (2026-09-05) : « `gh` a servi une liste périmée une fois … le second push, 2 min plus
+// tard, est passé ». La liste servie ne porte PAS la tête de `main` : elle n'est pas concluante, donc
+// elle est RELUE — et c'est la relecture qui décide, jamais une horloge.
+test('liste PÉRIMÉE (#1508) : relue une fois, et le verdict est celui de la RELECTURE', () => {
+  const racine = depot()
+  try {
+    gatesVertes(racine)
+    const env = stubCi(racine, {
+      appels: [
+        [{ conclusion: 'failure', status: 'completed', databaseId: 7, headSha: 'ancien30aout', createdAt: '2026-08-30T09:00:00Z' }],
+        [course(racine)],
+      ],
+    })
+    const { refus, notes } = jugerPush({ cwd: racine, stdin: pousse(racine), env })
+    assert.deepEqual(refus, [], 'la relecture porte la tête de main et elle est VERTE')
+    assert.match(notes.join('\n'), /aucune course ne porte la tête de main [0-9a-f]{9} : la liste est relue une fois/)
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('liste toujours non concluante après relecture : refus PÉRIMÉE qui nomme la tête cherchée', () => {
+  const racine = depot()
+  try {
+    gatesVertes(racine)
+    const env = stubCi(racine, [{ conclusion: 'success', status: 'completed', databaseId: 7, headSha: 'unautre', createdAt: '2026-08-30T09:00:00Z' }])
+    const { refus } = jugerPush({ cwd: racine, stdin: pousse(racine), env })
+    assert.match(refus.join('\n'), new RegExp(`aucune course pour la tête de \`main\` ${teteMain(racine).slice(0, 9)}`))
+    assert.match(refus.join('\n'), /liste périmée ou course pas encore créée/)
   } finally {
     jeter(racine)
   }
@@ -364,6 +473,7 @@ test('une gate qui lit docs/ n’est PAS réutilisée après un commit docs/ ; l
     g(['add', '-A'])
     g(['commit', '-m', 'fondation'])
     const shaA = g(['rev-parse', 'HEAD'])
+    g(['update-ref', 'refs/remotes/origin/main', shaA])
     for (const gate of ['docs:check', 'lint']) ecrireJustificatif({ cwd: racine, gate, sha: shaA })
 
     ecrire(racine, ['docs', 'raw', 'combat.md'].join('/'), 'Atlas CASSÉ — référence morte vers src/inexistant.ts\n')
@@ -500,4 +610,60 @@ test('branche NEUVE non descendante d’origin/main : PASSE, et la note le dit',
   } finally {
     jeter(racine)
   }
+})
+
+// ── verdictCi, PUR : les quatre motifs, la note « en vol », et la lecture en DEUX TEMPS ──────────
+const TETE = 'a'.repeat(40)
+const AIEUL = 'b'.repeat(40)
+
+test('verdictCi : sans tête de main, refus NON CONSULTABLE qui porte la raison lue', () => {
+  const { refus } = verdictCi({ courses: [], teteMain: null, raisonTete: '`git fetch origin main` — hors ligne' })
+  assert.equal(refus.length, 1)
+  assert.equal(refus[0].motif, 'non-consultable')
+  assert.match(refus[0].dit, /hors ligne/)
+})
+
+test('verdictCi : une course EN VOL est une NOTE, jamais un refus (10 % des pushes réels)', () => {
+  const { refus, notes } = verdictCi({
+    courses: [
+      { headSha: TETE, status: 'in_progress', conclusion: null, createdAt: '2026-09-05T11:00:00Z' },
+      { headSha: AIEUL, status: 'completed', conclusion: 'success', createdAt: '2026-09-05T10:00:00Z' },
+    ],
+    teteMain: TETE,
+    ancetres: [TETE, AIEUL],
+  })
+  assert.deepEqual(refus, [])
+  assert.match(notes.join('\n'), /1 course\(s\) EN VOL sur main/)
+})
+
+test('verdictCi : aucun ancêtre vert dans les 30 → les 300 sont lues, et elles tranchent', () => {
+  const enVol = [{ headSha: TETE, status: 'in_progress', conclusion: null, createdAt: '2026-09-05T11:00:00Z' }]
+  const vertLoin = [...enVol, { headSha: AIEUL, status: 'completed', conclusion: 'success', createdAt: '2026-08-01T10:00:00Z' }]
+  const lus = []
+  const trouve = verdictCi({
+    courses: enVol,
+    teteMain: TETE,
+    ancetres: [TETE, AIEUL],
+    relire: (limite) => { lus.push(limite); return limite === 300 ? vertLoin : enVol },
+  })
+  assert.deepEqual(trouve.refus, [])
+  assert.deepEqual(lus, [300], 'la liste des 30 porte la tête : elle n’est pas relue à l’identique')
+  assert.match(trouve.notes.join('\n'), /ancêtre vert trouvé dans les 300/)
+
+  const rien = verdictCi({ courses: enVol, teteMain: TETE, ancetres: [TETE], relire: () => enVol })
+  assert.equal(rien.refus[0].motif, 'sans-ancetre')
+  assert.match(rien.refus[0].dit, /règle d’ingénierie, revue de palier n°4/)
+})
+
+test('verdictCi : le ROUGE se lit sur la dernière course TERMINÉE, pas sur celle qui court', () => {
+  const { refus } = verdictCi({
+    courses: [
+      { headSha: TETE, status: 'in_progress', conclusion: null, createdAt: '2026-09-05T11:00:00Z' },
+      { headSha: AIEUL, status: 'completed', conclusion: 'failure', databaseId: 42, createdAt: '2026-09-05T10:00:00Z' },
+    ],
+    teteMain: TETE,
+    ancetres: [TETE, AIEUL],
+  })
+  assert.equal(refus[0].motif, 'rouge')
+  assert.match(refus[0].dit, /course 42 sur bbbbbbb/)
 })

@@ -32,6 +32,10 @@ test('DRIVER : un message -F est lu dans le répertoire où le commit S\'EXÉCUT
   const base = mkdtempSync(join(tmpdir(), 'solde-guard-'))
   try {
     mkdirSync(join(base, 'wt'))
+    // Deux DÉPÔTS réels : hors dépôt, `git diff --cached` bascule en mode `--no-index` et la porte
+    // refuse (à juste titre) pour ascendance indisponible — ce qui masquerait ce que ce test mesure.
+    for (const d of [base, join(base, 'wt')])
+      execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: d, encoding: 'utf8' })
     // Homonyme ANODIN à la racine : c'est lui qu'un driver résolvant contre le cwd de départ
     // lirait — la fermeture portée par le vrai fichier resterait alors invisible.
     writeFileSync(join(base, 'm2.txt'), 'chore: rien a signaler\n', 'utf8')

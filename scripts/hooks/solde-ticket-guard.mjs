@@ -56,6 +56,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
+import { GitIndisponible, estAncetre } from '../guards/lib/gitPorte.mjs'
 import {
   estDansHead, fenetreDeRevue, memeSha, mesureDuPalier, nomDArchiveDeRevue, problemesDeRevue, revuesNeuves,
 } from '../guards/lib/revuePalier.mjs'
@@ -911,7 +912,7 @@ function problemesCorrige(queue, rang, { fichiersEmportes, lignesEmportees }) {
 function problemesCorrigePar([, sha, fichier, ligne], rang, { commitEstAncetre, fichiersDuCommit, lignesDuCommit }) {
   const problems = []
   const cite = fichier.replace(/\\/g, '/')
-  if (commitEstAncetre && !commitEstAncetre(sha)) {
+  if (commitEstAncetre && commitEstAncetre(sha) !== true) {
     problems.push(`"corrigé par ${sha}" (ligne ${rang} du bloc) cite un commit qui n'est pas un ANCÊTRE de HEAD — la correction annoncée n'est pas dans cette histoire`)
     return problems
   }
@@ -1045,7 +1046,7 @@ export function revuesDuCommit(stagees, fichiersEmportes) {
  * PUR — `dansHead(sha)` est injecté (c'est la seule lecture git de ce contrôle).
  * @returns {string[]} problèmes, vide = conforme
  */
-export function problemesDeRevueNeuve({ nom, contenu }, { today, palier, dansHead = () => true }) {
+export function problemesDeRevueNeuve({ nom, contenu }, { today, palier, dansHead }) {
   const problemes = [...validateRevuePalier(contenu, today).problems]
   const attendu = nomDArchiveDeRevue(contenu)
   if (attendu && nom !== attendu) {
@@ -1060,7 +1061,11 @@ export function problemesDeRevueNeuve({ nom, contenu }, { today, palier, dansHea
       + `${palier.tete} — les fenêtres s'ENCHAÎNENT, base attendue : ${palier.tete}`,
     )
   }
-  if (tete && !dansHead(tete)) {
+  // Aucun lecteur d'ascendance = le contrôle ne se JOUE PAS, et il le DIT. Un défaut `() => true`
+  // rendait « oui » sans avoir rien lu, ce qui est le contraire d'une porte.
+  if (tete && typeof dansHead !== 'function') {
+    problemes.push(`sa tête de fenêtre ${tete} n'a pas pu être vérifiée : aucun lecteur d'ascendance n'a été fourni`)
+  } else if (tete && !dansHead(tete)) {
     problemes.push(`sa tête de fenêtre ${tete} n'est pas dans l'histoire de HEAD — elle juge une histoire absente d'ici`)
   }
   return problemes
@@ -1084,7 +1089,7 @@ export function problemesDeRevueNeuve({ nom, contenu }, { today, palier, dansHea
 export function evaluate({
   command, today, readSolde, soldeOnDisk = () => null,
   palier = { compte: 0, tete: null, chemin: null }, neuves = () => [], omises = () => [],
-  dansHead = () => true,
+  dansHead,
   contexteSolde = {},
 }) {
   const revues = neuves()
@@ -1640,14 +1645,32 @@ export function fichiersCitantTickets(numeros, dir = process.cwd()) {
   } catch { return [] } // aucun match : `git grep` sort en 1
 }
 
-/** `true` si `sha` est un ANCÊTRE de HEAD dans `dir` (donc réellement dans cette histoire). */
+/** `true` si `sha` est un ANCÊTRE de HEAD dans `dir` (donc réellement dans cette histoire). Un sha
+ *  INCONNU est `false` ; une indisponibilité de git JETTE (`GitIndisponible`) — sans quoi le refus
+ *  dirait « ce commit n'est pas dans cette histoire » alors que rien n'a été lu. */
 export function commitEstAncetreDeHead(sha, dir = process.cwd()) {
+  const vu = estAncetre(sha, 'HEAD', { cwd: dir })
+  if (!vu.disponible) throw new GitIndisponible(vu.raison)
+  return !vu.absent && vu.valeur === true
+}
+
+/**
+ * Le verdict PUR, ou le refus qui NOMME ce que git n'a pas pu lire. Une ascendance indisponible n'est
+ * pas un « non » : la conclure ferait refuser un solde juste (ou passer un solde faux) sur rien.
+ * @param {() => ({ decision: string, reason: string } | null)} juger
+ */
+export function jugerOuNommerLIndisponible(juger) {
   try {
-    execFileSync('git', ['merge-base', '--is-ancestor', sha, 'HEAD'], {
-      cwd: dir, stdio: ['ignore', 'ignore', 'ignore'],
-    })
-    return true
-  } catch { return false }
+    return juger()
+  } catch (e) {
+    if (!(e instanceof GitIndisponible)) throw e
+    return {
+      decision: 'deny',
+      reason:
+        `⛔ ascendance indisponible : ${e.raison} — la porte ne peut rien juger de ce que git n'a pas lu. `
+        + 'Geste : rejouer le commit depuis un arbre où git répond.',
+    }
+  }
 }
 
 /** Chemins touchés par le commit `sha` dans `dir`, `[]` si le sha est inconnu du dépôt.
@@ -1982,8 +2005,11 @@ if (isMain) {
   // Le mtime plancher de la capture de recette est celui du DERNIER fichier d'écran stagé : une
   // capture antérieure au geste montre l'écran d'avant.
   const mtimeEcrans = mtimeMaxDe(fichiers.filter(estFichierEcran), targetDir)
-  const { emportees: revuesEmportees, omises: revuesEnRade } = revuesDuCommit(revuesNeuves(targetDir), fichiers)
-  const decision = evaluate({
+  // Lecture PARESSEUSE et unique : elle a lieu DANS le juge, donc une indisponibilité de git y est
+  // rattrapée et NOMMÉE au lieu d'emporter le hook.
+  let revuesVues = null
+  const revuesDuGeste = () => (revuesVues ??= revuesDuCommit(revuesNeuves(targetDir), fichiers))
+  const decision = jugerOuNommerLIndisponible(() => evaluate({
     command: text,
     today,
     // Le solde LU est celui que le commit EMPORTE (`commit.contenu`) : sous un commit par pathspec,
@@ -1994,8 +2020,8 @@ if (isMain) {
     // La revue qui franchit le palier est celle que ce commit AJOUTE **et** EMPORTE : elle naît sous
     // son nom d'archive. Une revue posée sur le disque sans être stagée, ou stagée hors des pathspecs
     // de la commande, ne part pas avec le commit — donc ne franchit rien. Même règle que le solde.
-    neuves: () => revuesEmportees.map((r) => ({ ...r, contenu: commit.contenu(r.chemin) ?? r.contenu })),
-    omises: () => revuesEnRade,
+    neuves: () => revuesDuGeste().emportees.map((r) => ({ ...r, contenu: commit.contenu(r.chemin) ?? r.contenu })),
+    omises: () => revuesDuGeste().omises,
     dansHead: (sha) => estDansHead(sha, targetDir),
     contexteSolde: {
       fichiersEmportes: fichiers,
@@ -2006,7 +2032,7 @@ if (isMain) {
       fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, targetDir),
       lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDunSha(sha, fichier, targetDir)),
     },
-  })
+  }))
   // TOUT ce que le garde lit sur DISQUE se lit dans le répertoire où le commit s'exécute — comme le
   // solde stagé, la mesure du palier, le message `-F` et la revue de palier. Lu depuis le dépôt du HOOK, un
   // fichier de réfutation écrit dans le worktree était invisible, et la porte refusait à tort.

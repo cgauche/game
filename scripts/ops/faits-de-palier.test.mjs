@@ -17,7 +17,7 @@ import {
   fermeturesDesCommits,
   marquerSubstance,
   parserJournal,
-  runsParCommit,
+  coursesParCommit,
   sortieParDefaut,
 } from './faits-de-palier.mjs';
 
@@ -85,54 +85,64 @@ test('fermeturesDesCommits : un numéro cité deux fois par le MÊME commit ne c
   assert.equal(fermeturesDesCommits(commits, []).length, 1);
 });
 
+/** Le séparateur d'enregistrements du journal — une ligne par tentative. */
+const NL = '\n';
+
 test('derogationsDuJournal : chaque tentative journalisée est rendue, la fenêtre est marquée', () => {
   const journal = [
-    '2026-09-03T10:00:00.000Z\ttentative\taaa\tcorrectif de la CI rouge elle-même',
-    '2026-09-04T10:00:00.000Z\ttentative\tzzz\tune autre raison de vingt caractères',
+    JSON.stringify({ horodatage: '2026-09-03T10:00:00.000Z', etat: 'tentative', motif: 'rouge', sha: 'aaa', raison: 'correctif de la CI rouge elle-même' }),
+    JSON.stringify({ horodatage: '2026-09-04T10:00:00.000Z', etat: 'tentative', motif: 'non-consultable', sha: 'zzz', raison: 'une autre raison de vingt caractères' }),
     '',
-  ].join('\n');
+  ].join(NL);
   const lues = derogationsDuJournal(journal, ['aaa']);
   assert.equal(lues.length, 2);
   assert.deepEqual(lues.map((d) => d.dansLaFenetre), [true, false]);
   assert.equal(lues[0].raison, 'correctif de la CI rouge elle-même');
   assert.equal(lues[0].etat, 'tentative');
+  assert.deepEqual(lues.map((d) => d.motif), ['rouge', 'non-consultable']);
 });
 
-test('derogationsDuJournal : la graphie SANS marqueur (journal réel) rattache la ligne à son sha', () => {
-  const ligne = '2026-09-04T12:02:57.887Z\tf3d23dfedd1131b8868584a8ddc53b52bc517ff8\tcorrige le rouge de main (banc météo)';
-  const [lue] = derogationsDuJournal(ligne, ['f3d23dfedd1131b8868584a8ddc53b52bc517ff8']);
-  assert.equal(lue.sha, 'f3d23dfedd1131b8868584a8ddc53b52bc517ff8');
-  assert.equal(lue.etat, '(sans marqueur)');
-  assert.equal(lue.raison, 'corrige le rouge de main (banc météo)');
-  assert.equal(lue.dansLaFenetre, true);
-});
-
-test('derogationsDeLaFenetre : la revue ne reçoit QUE sa fenêtre, le reste est un NOMBRE', () => {
+// Une ligne qui n'est pas un objet JSON n'est pas DEVINÉE : un lecteur qui devine une graphie
+// fabrique des dérogations à partir de n'importe quoi.
+test('derogationsDuJournal : une ligne non JSON est rendue ILLISIBLE, jamais interprétée', () => {
   const journal = [
-    '2026-09-03T10:00:00.000Z\ttentative\taaaaaaaaa\tcorrectif de la CI rouge elle-même',
-    '2026-09-04T10:00:00.000Z\ttentative\tzzzzzzzzz\tune autre raison de vingt caractères',
-    '2026-09-04T11:00:00.000Z\ttentative\tyyyyyyyyy\tencore une autre raison journalisée',
-  ].join('\n');
+    '2026-09-04T12:02:57.887Z	f3d23dfedd1131b8868584a8ddc53b52bc517ff8	corrige le rouge de main (banc météo)',
+    '["pas un objet"]',
+  ].join(NL);
+  const lues = derogationsDuJournal(journal, ['f3d23dfedd1131b8868584a8ddc53b52bc517ff8']);
+  assert.deepEqual(lues.map((d) => d.etat), ['illisible', 'illisible']);
+  assert.equal(lues[0].ligne.startsWith('2026-09-04T12:02:57.887Z'), true);
+  assert.deepEqual(lues.map((d) => d.dansLaFenetre), [false, false]);
+});
+
+test('derogationsDeLaFenetre : la revue ne reçoit QUE sa fenêtre ; hors-fenêtre et ILLISIBLES se comptent à part', () => {
+  const journal = [
+    JSON.stringify({ horodatage: '2026-09-03T10:00:00.000Z', etat: 'tentative', motif: 'rouge', sha: 'aaaaaaaaa', raison: 'correctif de la CI rouge elle-même' }),
+    JSON.stringify({ horodatage: '2026-09-04T10:00:00.000Z', etat: 'tentative', motif: 'perimee', sha: 'zzzzzzzzz', raison: 'une autre raison de vingt caractères' }),
+    JSON.stringify({ horodatage: '2026-09-04T11:00:00.000Z', etat: 'tentative', motif: 'rouge', sha: 'yyyyyyyyy', raison: 'encore une autre raison journalisée' }),
+    'ligne corrompue, ni JSON ni rien',
+  ].join(NL);
   const lues = derogationsDeLaFenetre(journal, ['aaaaaaaaa']);
   assert.equal(lues.dansLaFenetre.length, 1);
   assert.equal(lues.dansLaFenetre[0].sha, 'aaaaaaaaa');
   assert.equal(lues.horsFenetre, 2);
+  assert.equal(lues.illisibles, 1);
 });
 
-test('runsParCommit : un commit sans course est rendu VIDE, jamais omis', () => {
-  const brut = JSON.stringify([
+test('coursesParCommit : un commit sans course est rendu VIDE, jamais omis', () => {
+  const servies = [
     { headSha: 'aaa', conclusion: 'success', status: 'completed', workflowName: 'CI' },
     { headSha: 'aaa', conclusion: 'failure', status: 'completed', workflowName: 'Canari' },
     { headSha: 'ccc', conclusion: 'success', status: 'completed', workflowName: 'CI' },
-  ]);
-  const parSha = runsParCommit(brut, ['aaa', 'bbb']);
+  ];
+  const parSha = coursesParCommit(servies, ['aaa', 'bbb']);
   assert.deepEqual(parSha.map((r) => r.sha), ['aaa', 'bbb']);
   assert.deepEqual(parSha[0].courses.map((c) => c.conclusion), ['success', 'failure']);
   assert.deepEqual(parSha[1].courses, []);
 });
 
-test('runsParCommit : une sortie illisible ne fait pas tomber la mesure', () => {
-  assert.deepEqual(runsParCommit('pas du json', ['aaa']), [{ sha: 'aaa', courses: [] }]);
+test('coursesParCommit : une liste absente ne fait pas tomber la mesure', () => {
+  assert.deepEqual(coursesParCommit(null, ['aaa']), [{ sha: 'aaa', courses: [] }]);
 });
 
 test('soldesSuivis lit l’ARBRE qu’on lui donne (un objet de faits ne mélange pas deux arbres)', () => {

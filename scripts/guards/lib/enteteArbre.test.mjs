@@ -68,3 +68,19 @@ test('le lecteur git est injectable pour la mesure, sans changer la FORME de la 
   }
   assert.equal(enteteArbre('/peu-importe', faux), 'arbre abc1234 « un sujet » + 3 fichier(s) non committé(s)')
 })
+
+// Le filigrane est imprimé JUSTE AVANT les refus d'un hook : s'il jette, il les emporte avec lui
+// (le hook meurt sur un `fatal:` brut, et pas un seul refus nommé n'atteint l'utilisateur).
+test('git INDISPONIBLE (hors dépôt) : ligne DÉGRADÉE nommée, jamais une exception', () => {
+  const hors = mkdtempSync(join(tmpdir(), 'entete-hors-'))
+  try {
+    assert.match(enteteArbre(hors), /^arbre \(git indisponible : .*not a git repository/i)
+  } finally {
+    rmSync(hors, { recursive: true, force: true })
+  }
+})
+
+test('un lecteur injecté qui JETTE ne fait pas tomber le filigrane : la panne est DITE', () => {
+  const ligne = enteteArbre('/peu-importe', () => { throw new Error('git absent du PATH') })
+  assert.equal(ligne, 'arbre (git indisponible : git absent du PATH)')
+})

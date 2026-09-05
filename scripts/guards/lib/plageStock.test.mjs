@@ -129,3 +129,24 @@ test('C : base NULLE sans `origin/main` → HEAD seul, et la porte le DIT (jamai
     rmSync(repo, { recursive: true, force: true })
   }
 })
+
+// TROIS ISSUES, pas deux : `null` dit « l'objet demandé n'existe pas » (une pre-image de fichier
+// AJOUTÉ, cas normal de cette porte) ; une INDISPONIBILITÉ de git est rendue à part, et l'appelant
+// la NOMME. Les confondre refuse le push d'un fichier neuf, ou juge une plage jamais lue.
+test('git INDISPONIBLE : `indisponible` porte la raison, et la plage est NOMMÉE', () => {
+  const hors = mkdtempSync(join(tmpdir(), 'plage-hors-'))
+  try {
+    const vu = croissancesDeLaPlage({ cwd: hors, avant: 'aaaaaaa', apres: 'bbbbbbb' })
+    assert.match(vu.indisponible, /not a git repository/i)
+    assert.equal(vu.plage, 'aaaaaaa..bbbbbbb')
+    assert.deepEqual(vu.refus, [])
+  } finally {
+    rmSync(hors, { recursive: true, force: true })
+  }
+})
+
+test('un lecteur injecté qui rend `null` (objet absent) ne lève AUCUNE indisponibilité', () => {
+  const vu = croissancesDeLaPlage({ avant: 'aaaaaaa', apres: 'bbbbbbb', git: () => null })
+  assert.equal(vu.indisponible, null)
+  assert.match(vu.notes.join(' '), /plage `aaaaaaa\.\.bbbbbbb` illisible/)
+})

@@ -48,9 +48,11 @@ import {
   fichiersDuCommitGit,
   diffDunSha,
   problemesDeRevueNeuve,
+  jugerOuNommerLIndisponible,
   revuesDuCommit,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
+import { GitIndisponible } from '../guards/lib/gitPorte.mjs'
 import {
   archivesDe, derniereRevueArchivee, estDansHead, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue,
   revuesNeuves,
@@ -407,6 +409,7 @@ test('evaluate : palier >=10 + revue neuve ENCHAINEE et conforme -> pass (solde 
     readSolde: () => solde(),
     palier: PALIER_MESURE,
     neuves: () => neuve(revueEnchainee()),
+    dansHead: () => true,
   })
   assert.equal(d, null)
 })
@@ -485,6 +488,7 @@ test('evaluate : revue neuve conforme HORS palier -> acceptee (aucune fermeture,
     readSolde: () => null,
     palier: { ...PALIER_MESURE, compte: 1 },
     neuves: () => neuve(revueEnchainee()),
+    dansHead: () => true,
   })
   assert.equal(d, null)
 })
@@ -496,6 +500,7 @@ test('evaluate : la revue abregee autrement que la precedente reste ENCHAINEE (p
     readSolde: () => solde(),
     palier: { ...PALIER_MESURE, tete: '2c11fdd9a3f4b6c7d8e9f0a1b2c3d4e5f6a7b8c9' },
     neuves: () => neuve(revueEnchainee()),
+    dansHead: () => true,
   })
   assert.equal(d, null)
 })
@@ -2118,4 +2123,41 @@ test('evaluateHunksEmportes : `git commit -a` emporte TOUT le modifié suivi →
   assert.match(d.contexte, /src\/b\.ts/)
   assert.doesNotMatch(d.contexte, /src\/a\.ts/, 'ce que l\'index porte déjà n\'est pas une surprise')
   assert.equal(evaluateHunksEmportes({ command: 'git commit -a -m "x"', fichiersModifies: [], fichiersStages: [] }), null)
+})
+
+// ── L'ASCENDANCE INDISPONIBLE n'est pas un « non » (#1679 L3 T2) ─────────────────────────────────
+// `commitEstAncetreDeHead` rendait `false` sur TOUTE erreur : hors dépôt, git absent ou binaire muet,
+// le refus disait « ce commit n'est pas dans cette histoire » — un motif faux, sur une lecture qui
+// n'avait pas eu lieu.
+test('commitEstAncetreDeHead HORS dépôt : JETTE une indisponibilité nommée, ne rend pas false', () => {
+  const hors = mkdtempSync(join(tmpdir(), 'hors-depot-'))
+  try {
+    assert.throws(() => commitEstAncetreDeHead('4d6e1ff78', hors), (e) => {
+      assert.ok(e instanceof GitIndisponible)
+      assert.match(e.raison, /not a git repository/i)
+      return true
+    })
+  } finally {
+    rmSync(hors, { recursive: true, force: true })
+  }
+})
+
+test('jugerOuNommerLIndisponible : le refus NOMME ce que git n’a pas lu ; toute autre erreur remonte', () => {
+  const vu = jugerOuNommerLIndisponible(() => { throw new GitIndisponible('not a git repository') })
+  assert.equal(vu.decision, 'deny')
+  assert.match(vu.reason, /ascendance indisponible : not a git repository/)
+  assert.equal(jugerOuNommerLIndisponible(() => null), null)
+  assert.throws(() => jugerOuNommerLIndisponible(() => { throw new TypeError('un vrai bug') }), TypeError)
+})
+
+test('problemesDeRevueNeuve SANS lecteur d’ascendance : le contrôle est DIT non joué, jamais présumé vrai', () => {
+  const contenu = revueEnchainee()
+  const [revue] = neuve(contenu)
+  const problemes = problemesDeRevueNeuve(revue, { today: TODAY, palier: PALIER_MESURE })
+  assert.equal(problemes.length, 1)
+  assert.match(problemes[0], /n'a pas pu être vérifiée : aucun lecteur d'ascendance/)
+  assert.deepEqual(
+    problemesDeRevueNeuve(revue, { today: TODAY, palier: PALIER_MESURE, dansHead: () => true }),
+    [],
+  )
 })

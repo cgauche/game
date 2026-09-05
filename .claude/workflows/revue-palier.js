@@ -138,7 +138,7 @@ const LENTILLES_DE_PALIER = [
   },
   {
     label: 'derogations-et-ci',
-    champs: ['derogations', 'runsCi'],
+    champs: ['derogations', 'coursesCi'],
     consigne: `LENTILLE — DÉROGATIONS ET CI. Les dérogations servies sont celles de la FENÊTRE (le compte de celles d'ailleurs est dans \`derogations.horsFenetre\`). Chacune a-t-elle une raison réelle et une suite (le rouge dérogé a-t-il été corrigé ensuite) ? Chaque commit poussé a-t-il une CI verte, et un rouge laissé derrière est-il nommé quelque part ? Un push sur rouge non suivi de correctif est une trouvaille.`,
   },
   {
@@ -190,7 +190,7 @@ Pars du principe que la clause n'est PAS tenue et cherche la preuve de son éche
   },
   {
     label: 'derogations',
-    champs: ['derogations', 'runsCi'],
+    champs: ['derogations', 'coursesCi'],
     consigne: `LENTILLE — DÉROGATIONS. Le lot a-t-il été poussé sous dérogation, et cette dérogation a-t-elle été soldée ?`,
   },
 ]

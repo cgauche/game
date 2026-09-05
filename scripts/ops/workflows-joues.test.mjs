@@ -91,8 +91,8 @@ const faits = (chainage) => ({
   stocks: { disponible: true, valeur: { refus: [], notes: [], commits: 1 } },
   fermeturesHorsCommit: { disponible: false, raison: 'hors ligne' },
   auditStock: { disponible: false, raison: 'hors ligne' },
-  derogations: { disponible: true, valeur: { dansLaFenetre: [], horsFenetre: 6 } },
-  runsCi: { disponible: false, raison: 'hors ligne' },
+  derogations: { disponible: true, valeur: { dansLaFenetre: [], horsFenetre: 6, illisibles: 0 } },
+  coursesCi: { disponible: false, raison: 'hors ligne' },
   revuePrecedente: { chemin: '.claude/soldes/revue-palier-2026-09-04-2c11fdd9a.md', disponible: true, valeur: `# Revue précédente ${MARQUEUR_REVUE}` },
   provenance: { commits: 'script' },
 });

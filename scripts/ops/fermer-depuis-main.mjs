@@ -11,6 +11,7 @@
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { estAncetre } from '../guards/lib/gitPorte.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 export const DEPOT = 'cgauche/game'
@@ -70,12 +71,11 @@ const git = (args, cwd = RACINE) => execFileSync('git', args, { cwd, encoding: '
  */
 export function motifDePlageIllisible(plage, cwd = RACINE) {
   const [base, tete] = plage.split('..')
-  try {
-    git(['merge-base', '--is-ancestor', base, tete], cwd)
-    return null
-  } catch {
+  const vu = estAncetre(base, tete, { cwd })
+  if (!vu.disponible) return `ascendance de ${plage} indisponible : ${vu.raison} — aucune fermeture n'est jugée`
+  if (vu.absent || vu.valeur !== true)
     return `base ${base} inatteignable depuis ${tete} : push non fast-forward sur main, interdit par le pre-push`
-  }
+  return null
 }
 
 /** Commits d'une plage `<a>..<b>`, du plus ancien au plus récent. */

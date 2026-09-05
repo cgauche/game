@@ -10,17 +10,15 @@
 // commandes git, et qui rend la même valeur depuis n'importe quel arbre. Un compteur d'événements
 // compterait ce que chaque worktree fait de son côté (20 sur ce dépôt, dont des trains qui ne
 // rejoignent jamais `main`) : deux worktrees suffisent à en faire un nombre que rien ne recoupe.
-import { execFileSync } from 'node:child_process'
+import { GitIndisponible, estAncetre, lireGit, sortieOuNull } from './gitPorte.mjs'
 
-const git = (args, cwd) =>
-  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 26 })
-
-/** `true` si la commande git rend 0 (les tests de parenté de git répondent par leur code de sortie). */
-const gitVrai = (args, cwd) => {
-  try {
-    git(args, cwd)
-    return true
-  } catch { return false }
+/** Lecture git de ce module : la sortie, ou `''` quand l'objet demandé n'existe pas (un dépôt sans
+ *  HEAD ne porte aucune archive, et ce n'est pas une erreur). Une INDISPONIBILITÉ (git absent, hors
+ *  dépôt) JETTE — `mesureDuPalier` la rend en `erreur` nommée. */
+const git = (args, cwd) => {
+  const vu = lireGit(args, { cwd })
+  if (!vu.disponible) throw new GitIndisponible(vu.raison)
+  return sortieOuNull(vu) ?? ''
 }
 
 const DATE_RE = /\d{4}-\d{2}-\d{2}/g
@@ -82,17 +80,11 @@ export function memeSha(a, b) {
  * @returns {{ chemin: string, date: string|null, base: string|null, tete: string|null }[]}
  */
 export function archivesDe(cwd = process.cwd()) {
-  let suivis
-  try {
-    suivis = git(['ls-tree', '-r', '--name-only', 'HEAD', '--', '.claude/soldes'], cwd).split('\n').filter(Boolean)
-  } catch { return [] } // dépôt sans HEAD : aucune archive, et ce n'est pas une erreur
+  // Dépôt sans HEAD : `git` rend `''` (objet absent), donc aucune archive — et ce n'est pas une erreur.
+  const suivis = git(['ls-tree', '-r', '--name-only', 'HEAD', '--', '.claude/soldes'], cwd).split('\n').filter(Boolean)
   return suivis
     .filter((chemin) => CHEMIN_DE_REVUE_RE.test(chemin))
-    .map((chemin) => {
-      let texte
-      try { texte = git(['show', `HEAD:${chemin}`], cwd) } catch { texte = '' }
-      return { chemin, ...fenetreDeRevue(texte) }
-    })
+    .map((chemin) => ({ chemin, ...fenetreDeRevue(git(['show', `HEAD:${chemin}`], cwd)) }))
 }
 
 /**
@@ -101,18 +93,15 @@ export function archivesDe(cwd = process.cwd()) {
  * @returns {{ chemin: string, nom: string, contenu: string }[]}
  */
 export function revuesNeuves(cwd = process.cwd()) {
-  let ajoutees
-  try {
-    ajoutees = git(['diff', '--cached', '--name-status', '--diff-filter=A', '--', '.claude/soldes'], cwd)
-      .split('\n')
-      .map((ligne) => ligne.split('\t')[1])
-      .filter((chemin) => chemin && CHEMIN_DE_REVUE_RE.test(chemin))
-  } catch { return [] }
-  return ajoutees.map((chemin) => {
-    let contenu
-    try { contenu = git(['show', `:${chemin}`], cwd) } catch { contenu = '' }
-    return { chemin, nom: chemin.split('/').pop(), contenu }
-  })
+  const ajoutees = git(['diff', '--cached', '--name-status', '--diff-filter=A', '--', '.claude/soldes'], cwd)
+    .split('\n')
+    .map((ligne) => ligne.split('\t')[1])
+    .filter((chemin) => chemin && CHEMIN_DE_REVUE_RE.test(chemin))
+  return ajoutees.map((chemin) => ({
+    chemin,
+    nom: chemin.split('/').pop(),
+    contenu: git(['show', `:${chemin}`], cwd),
+  }))
 }
 
 /**
@@ -121,24 +110,41 @@ export function revuesNeuves(cwd = process.cwd()) {
  * du fichier — `.claude/soldes/revue-palier-82e95be10.md` porte dans son NOM un sha orphelin (la
  * version pré-rebase de `112c814b6`), et sa FENÊTRE `7692b631c..2c11fdd9a` est bien dans l'histoire :
  * c'est cette revue-là qui fait référence.
+ * Une ASCENDANCE INDISPONIBLE (git muet) n'est pas « orpheline » : elle a son propre état, et
+ * l'appelant la nomme au lieu de conclure que la revue ne juge rien.
  * @returns {{ etat:'trouvee', chemin:string, date:string|null, base:string|null, tete:string, reste:number }
- *   | { etat:'aucune-archive' } | { etat:'toutes-orphelines', chemins:string[] }}
+ *   | { etat:'aucune-archive' } | { etat:'toutes-orphelines', chemins:string[] }
+ *   | { etat:'ascendance-indisponible', raison:string }}
  */
 export function derniereRevueArchivee(cwd = process.cwd()) {
   const archivees = archivesDe(cwd)
   if (archivees.length === 0) return { etat: 'aucune-archive' }
-  const jugeantes = archivees
-    .filter((r) => r.tete && gitVrai(['merge-base', '--is-ancestor', r.tete, 'HEAD'], cwd))
-    .map((r) => ({ ...r, reste: Number.parseInt(git(['rev-list', '--count', `${r.tete}..HEAD`], cwd).trim(), 10) }))
-    .sort((a, b) => a.reste - b.reste || a.chemin.localeCompare(b.chemin))
+  const jugeantes = []
+  for (const r of archivees) {
+    if (!r.tete) continue
+    const vu = estAncetre(r.tete, 'HEAD', { cwd })
+    if (!vu.disponible) return { etat: 'ascendance-indisponible', raison: vu.raison }
+    if (vu.absent || vu.valeur !== true) continue
+    jugeantes.push({ ...r, reste: Number.parseInt(git(['rev-list', '--count', `${r.tete}..HEAD`], cwd).trim(), 10) })
+  }
+  jugeantes.sort((a, b) => a.reste - b.reste || a.chemin.localeCompare(b.chemin))
   if (jugeantes.length === 0) return { etat: 'toutes-orphelines', chemins: archivees.map((r) => r.chemin) }
   return { etat: 'trouvee', ...jugeantes[0] }
 }
 
-/** `true` si `sha` est dans l'histoire de HEAD (HEAD compris) : la tête de fenêtre d'une revue neuve
- *  est un commit que ce dépôt porte, sinon la revue juge une histoire qui n'existe pas ici. */
-export const estDansHead = (sha, cwd = process.cwd()) =>
-  Boolean(sha) && gitVrai(['merge-base', '--is-ancestor', sha, 'HEAD'], cwd)
+/** L'ascendance de `sha` vis-à-vis de HEAD, en union à trois issues : la tête de fenêtre d'une revue
+ *  neuve est un commit que ce dépôt porte, sinon la revue juge une histoire qui n'existe pas ici. Un
+ *  sha INCONNU rend `absent` — l'appelant en fait « pas dans cette histoire ». */
+export const ascendanceDansHead = (sha, cwd = process.cwd()) =>
+  sha ? estAncetre(sha, 'HEAD', { cwd }) : { disponible: true, absent: true }
+
+/** `true` si `sha` est dans l'histoire de HEAD (HEAD compris). Une indisponibilité JETTE : c'est le
+ *  seul moyen pour un prédicat booléen de ne pas répondre « non » quand il n'a rien lu. */
+export function estDansHead(sha, cwd = process.cwd()) {
+  const vu = ascendanceDansHead(sha, cwd)
+  if (!vu.disponible) throw new GitIndisponible(vu.raison)
+  return !vu.absent && vu.valeur === true
+}
 
 /** Commits de SUBSTANCE depuis `tete` : ceux qui touchent `src` ou `scripts`, plus celui que l'index
  *  s'apprête à faire s'il en touche aussi (le commit en cours compte pour le palier qu'il franchit). */
@@ -164,6 +170,14 @@ export function mesureDuPalier(cwd = process.cwd()) {
     return { compte: 0, tete: null, chemin: null, erreur: `histoire illisible depuis ${cwd} — ${err.message}` }
   }
   if (derniere.etat === 'aucune-archive') return { compte: 0, tete: null, chemin: null }
+  if (derniere.etat === 'ascendance-indisponible') {
+    return {
+      compte: 0,
+      tete: null,
+      chemin: null,
+      erreur: `ascendance indisponible : ${derniere.raison} — le palier ne se mesure pas sans git`,
+    }
+  }
   if (derniere.etat === 'toutes-orphelines') {
     return {
       compte: 0,

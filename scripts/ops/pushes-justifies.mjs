@@ -1,7 +1,7 @@
 // TÊTES DE PUSH × JUSTIFICATIFS DE GATE — chaque contenu poussé sur `main` porte-t-il, sur le disque
 // de ce clone, le verdict VERT de chacune des gates de `ci.yml` ?
 //
-// C'est une MESURE d'ops, pas un test : elle interroge l'HISTOIRE RÉELLE (les runs `gh` du dépôt) et
+// C'est une MESURE d'ops, pas un test : elle interroge l'HISTOIRE RÉELLE (les courses CI du dépôt) et
 // le répertoire git COMMUN (`<git-common-dir>/wfrp-justificatifs/`, partagé par tous les worktrees).
 // Ce que la porte au push garantit à l'instant du push (`scripts/git-hooks/pre-push.mjs`), cette
 // mesure le RELIT après coup, tête par tête : un régime qui tient se lit `22/22` sur chaque ligne.
@@ -21,12 +21,9 @@ import {
   migrerAncienneGraphie,
   motifDeRefus,
 } from '../guards/lib/justificatif.mjs'
+import { coursesCiDeMain } from '../guards/lib/coursesCi.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-
-/** JAMAIS `shell: true` ; `stdio[0] = 'ignore'` est le `< /dev/null` qu'un `gh` de workflow réclame. */
-const gh = (args) =>
-  execFileSync('gh', args, { cwd: RACINE, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] })
 
 /**
  * Croisement PUR : pour chaque tête, les gates dont le justificatif vaut pour SON contenu. Le
@@ -96,15 +93,13 @@ function main() {
   const histoire = git(['rev-list', '--reverse', ...plage]).trim().split(/\r?\n/).filter(Boolean)
   const connus = new Set(histoire)
 
-  let courses = []
-  try {
-    courses = JSON.parse(gh(['run', 'list', '--branch', 'main', '--workflow', 'ci.yml', '--limit', '200', '--json', 'headSha,createdAt']))
-  } catch (err) {
-    // Fail-LOUD : `gh` muet n'est pas « aucun push ».
-    process.stderr.write(`[pushes-justifies] lecture des runs impossible : ${String(err.message).slice(0, 300)}\n`)
+  const lues = coursesCiDeMain({ cwd: RACINE, limit: 200 })
+  if (!lues.disponible) {
+    // Fail-LOUD : une lecture muette n'est pas « aucun push ».
+    process.stderr.write(`[pushes-justifies] lecture des courses impossible : ${String(lues.raison).slice(0, 300)}\n`)
     process.exit(1)
   }
-  const pousses = new Set(tetesDeGh(courses, connus))
+  const pousses = new Set(tetesDeGh(lues.valeur, connus))
   const tetes = histoire
     .filter((sha) => pousses.has(sha))
     .map((sha) => ({

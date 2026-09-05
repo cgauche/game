@@ -36,7 +36,12 @@ const ATTENDU = {
     'scripts/git-hooks/merge-docs.test.mjs',
     'scripts/git-hooks/pre-push.mjs',
     'scripts/git-hooks/pre-push.test.mjs',
+    // +2 le 2026-09-05 (#1679 L3 T2) : les deux tests de l'hôte des lectures git et de la lecture des
+    // courses CI écrivent leurs fixtures (dépôts jetables, fichiers de stub) sous `os.tmpdir()` —
+    // l'arbre n'est jamais touché.
+    'scripts/guards/lib/coursesCi.test.mjs',
     'scripts/guards/lib/enteteArbre.test.mjs',
+    'scripts/guards/lib/gitPorte.test.mjs',
     'scripts/guards/lib/importGraph.test.mjs',
     'scripts/guards/lib/justificatif.mjs',
     'scripts/guards/lib/justificatif.test.mjs',
