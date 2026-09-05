@@ -13,7 +13,7 @@ d'affichage chaque consommateur remplit, et quelles particularités MÉCANIQUES 
 Le contrat lui-même (ce que chaque zone doit porter, et où) est DÉFINI par `docs/charte-ui.md` : ce
 document ne le redéfinit pas, il MESURE qui en consomme quoi.
 
-**Population mesurée : 37 consommateurs** — 48 sites JSX `<RollShell …>` (J) et 6 producteurs de
+**Population mesurée : 37 consommateurs** — 49 sites JSX `<RollShell …>` (J) et 6 producteurs de
 props `ComponentProps<typeof RollShell>` (H, les hooks qui paramètrent la coquille sans la rendre).
 
 ## Zones de COQUILLE (légende des colonnes)
@@ -53,7 +53,7 @@ sa définition vit à la charte. Une prop non encore taguée affiche « — » e
 | `src/ui/AuContactModal.tsx` | `AuContactModal` (J) ×2 | 2 | ✓ | · | · | · | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
 | `src/ui/BargainModal.tsx` | `BargainModalView` (J) | 2 | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/BattementModal.tsx` | `BattementModal` (J) | 1 | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
-| `src/ui/CascadeModal.tsx` | `attack` (J), `CascadeBody` (J) ×8, `defense` (J), `extended` (J), `fumble` (J), `test` (J), `trample` (J) | appel / — / variable / 0 / 2+ | ✓ | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | ✓ | · | ✓ | · | · |
+| `src/ui/CascadeModal.tsx` | `attack` (J), `CascadeBody` (J) ×9, `defense` (J), `extended` (J), `fumble` (J), `test` (J), `trample` (J) | appel / — / variable / 0 / 2+ | ✓ | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | ✓ | · | ✓ | · | · |
 | `src/ui/CastModal.tsx` | `CastModal` (J) | 1 | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
 | `src/ui/CorruptionModal.tsx` | `CorruptionModal` (J) | 1 | ✓ | ✓ | · | · | · | ✓ | · | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | · | ✓ |
 | `src/ui/CrewTestModal.tsx` | `CrewTestModalView` (J) | variable | ✓ | ✓ | · | · | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | ✓ |
@@ -242,4 +242,4 @@ est un angle mort, et les voici :
 - Les **ids de zone** (`Zn`) affichés sont ceux que le JSDoc des props DÉCLARE. Une zone du contrat non
   encore taguée à la primitive n'a pas d'id ici — ce document RELÈVE les ids, il ne les attribue pas.
 
-<!-- sources-empreinte: 50a699390176c73d722472add03fdadabf36b0bd (1966 fichiers, 138 dossiers) corps: aeab18d9398f2db2403c57e0a72b8f16c6bacd51 -->
+<!-- sources-empreinte: 4614b6b6caac49728bedfa1c8b66f747901dfb11 (1966 fichiers, 138 dossiers) corps: b8bb4a1e743862c014ac2b4e1928ffb7b5aabd67 -->
