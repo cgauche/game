@@ -149,7 +149,7 @@ Fichiers de `src/data/` qui portent une clé `"icon"` :
 | `src/data/etats.json` | 12 | — |
 | `src/data/lieux-services.json` | 7 | — |
 | `src/data/psychology.json` | 5 | — |
-| `src/data/qualities.json` | 1 | — |
+| `src/data/qualities.json` | 2 | — |
 | `src/data/reglesOptionnelles.json` | 1 | — |
 | `src/data/talents.json` | 1 | — |
 | `src/data/vehicles.json` | 5 | — |
@@ -214,4 +214,4 @@ emoji, même « juste pour l'instant ».
   vérifier le compteur de fichiers affiché).
 - `npm run typecheck` — un id d'icône authoré en TS hors du registre ne compile pas
   (`IconIdGenerated` est une union fermée).
-<!-- sources-empreinte: 64a9c0b05c023c313bac68ec45c587f7893236b7 (132 fichiers, 2 dossiers) corps: 7bae3a852eaa1ab205a5670b130af6a2611f1d95 -->
+<!-- sources-empreinte: 2a6dfa28a5263061454a3e79b0c6de1e46f7c958 (132 fichiers, 2 dossiers) corps: e02688e6eab83bfaa5a891ead92463b25c8a79e0 -->

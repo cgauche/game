@@ -302,7 +302,7 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
   `livre-de-base`, `archives-de-l-empire-2`, `archives-de-l-empire-1`, `middenheim`, `aux-armes`, `mer-des-griffes`, `vents-de-la-magie`). Aucun champ JSON ajouté : extraction
   structurelle depuis la desc verbatim.
 - **Riders / effets / formules de sort en clair** : les sections rendent d'abord la phrase JOUEUR
-  (`src/ui/compendium/humanize.ts` — switchs EXHAUSTIFS, zéro id brut : `humanizeFormula`, `humanizeCondition`, `humanizePerSL`, `replieCausesPersistantes`, `humanizeOp`, `humanizeFlow`, `humanizeFlowSentence`, `humanizeCastBonus`),
+  (`src/ui/compendium/humanize.ts` — switchs EXHAUSTIFS, zéro id brut : `humanizeFormula`, `humanizeCondition`, `humanizePerSL`, `coutAvantageTexte`, `flowMuet`, `replieCausesPersistantes`, `humanizeOp`, `humanizeFlow`, `humanizeFlowSentence`, `humanizeCastBonus`),
   la forme technique d'atelier restant dépliée dans un bloc « Détail technique » (primitive `.fold`).
 - **Édition** : tout reste éditable au Compendium (DEV) ; les VIEWS ne sont pas éditables
   (`isEditableCategory=false`) — éditer la source.
@@ -314,4 +314,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: ed556ac6b61acf26c4fed57d571a0df114f9bc95 (417 fichiers, 0 dossiers) corps: a3b40d4663cb08784159a0b655a2f2af88ac1de7 -->
+<!-- sources-empreinte: 315e3a581a608f9248c3ce91ee96cb1c53d7295d (417 fichiers, 0 dossiers) corps: 50baa300b193ce1e285479db954816cf978f07b8 -->

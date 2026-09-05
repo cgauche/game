@@ -3,7 +3,7 @@
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-mecanique.mjs` (`npm run docs:mecanique`) — NE PAS ÉDITER À LA MAIN.
 
 **Périmètre mesuré / angles morts** — sont DÉRIVÉS à chaque génération : le SITE réel du lecteur de
-chaque canal (`src/engine/trauma.ts:958`, `src/state/triggeredEffects.ts:430`, `src/engine/capabilities.ts:45`), les
+chaque canal (`src/engine/trauma.ts:958`, `src/state/triggeredEffects.ts:463`, `src/engine/capabilities.ts:45`), les
 20 membres d'`EffectTrigger` et les 6 formes d'`EffectTargeting`
 (`src/engine/flowCore.ts`), les 7 champs de `TriggeredEffect`, les 8 kinds
 de source réunis par `effectSourcesOf`, les 4 interfaces de capacités et leur nombre de
@@ -24,7 +24,7 @@ Toute mécanique — trait de créature, talent, atout d'arme/armure, mutation, 
 | Canal | Ce qu’il porte | Lu par |
 |---|---|---|
 | `passive: GameOp[]` | modificateur CONTINU, sans déclencheur | `passiveMods` (`src/engine/trauma.ts:958`) |
-| `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:430`) |
+| `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (à la touche, en fin de Round…) | `fireTriggers` (`src/state/triggeredEffects.ts:463`) |
 | `capabilities` | drapeau IRRÉDUCTIBLE que le moteur INTERROGE (aucune valeur numérique ni formule) | `hasCapability` (`src/engine/capabilities.ts:45`) |
 
 Chaque champ est du **`GameOp[]`** ou du **`TriggeredEffect[]`** — jamais un type propre à
@@ -74,7 +74,7 @@ Documents porteurs :
 
 ## 3. Canal `effects` — le déclenché
 
-Un `TriggeredEffect` (`src/engine/flowCore.ts:553`) est un Flow d'ops appliqué à `on` quand `trigger` se
+Un `TriggeredEffect` (`src/engine/flowCore.ts:559`) est un Flow d'ops appliqué à `on` quand `trigger` se
 produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'entité.
 
 | Champ | Type | Rôle (JSDoc) |
@@ -87,12 +87,12 @@ produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'enti
 | `optional?` | `boolean` | Effet OPT-IN (RAW « Vous pouvez… » — Contrôle de la Frénésie, LDB 10 l.251-255) : le porteur CHOISIT de le déclencher. |
 | `source?` | `EffectSource` | ENTITÉ SOURCE — JAMAIS authorée : posée à l'ÉNUMÉRATION par `effectSourcesOf` (`src/state/triggeredEffects.ts`), qui seule sait de quelle entité l'effet est tiré. |
 
-### Les 20 déclencheurs (`EffectTrigger`, `src/engine/flowCore.ts:524`)
+### Les 20 déclencheurs (`EffectTrigger`, `src/engine/flowCore.ts:530`)
 
 `onHit` · `onCrit` · `onWoundLoss` · `onSlain` · `onRoundStart` · `onStartled` · `onKill` · `onCharged` · `onGainCondition` · `onCombatStart` · `onCombatEnd` · `onRoundEnd` · `onTurnStart` · `onTurnEnd` · `onDayStart` · `onWake` · `onAttackResolved` · `onCastResolved` · `onMiscast` · `onOwnTestFailed`
 
 
-### Les 6 formes de ciblage (`EffectTargeting`, `src/engine/flowCore.ts:550`)
+### Les 6 formes de ciblage (`EffectTargeting`, `src/engine/flowCore.ts:556`)
 
 - `'self'`
 - `'victim'`
@@ -103,8 +103,8 @@ produit — le MÊME Flow que les sorts, jamais un handler en dur par nom d'enti
 
 ### Le dispatcher unique — `fireTriggers`
 
-`fireTriggers` (`src/state/triggeredEffects.ts:430`) est le **SEUL** point d'entrée pour jouer les effets
-déclenchés d'un combattant. Il réunit ses sources via `effectSourcesOf` (`src/state/triggeredEffects.ts:94`), qui
+`fireTriggers` (`src/state/triggeredEffects.ts:463`) est le **SEUL** point d'entrée pour jouer les effets
+déclenchés d'un combattant. Il réunit ses sources via `effectSourcesOf` (`src/state/triggeredEffects.ts:102`), qui
 énumère aujourd'hui **8 kinds** dans un ordre FIGÉ (déroulé RNG déterministe) :
 `trapping` → `trait` → `quality` → `talent` → `symptom` → `mutation` → `condition` → `psychology`.
 
@@ -138,7 +138,7 @@ un chiffre qui s'additionne.
 | `TraitCapabilities` | `src/data/index.ts:1635` | 43 |
 | `QualityCapabilities` | `src/data/index.ts:1833` | 26 |
 | `ItemCapabilities` | `src/data/index.ts:1089` | 12 |
-| `SymptomCapabilities` | `src/data/index.ts:1898` | 7 |
+| `SymptomCapabilities` | `src/data/index.ts:1900` | 7 |
 
 Lecture — un seul point d'entrée par portée, chaque canal restant disjoint par nom de capacité :
 
@@ -160,9 +160,9 @@ même si un second trait la déclare. C'est de la DONNÉE, jamais un chemin de c
 
 Le drapeau dit qu'une mécanique s'applique ; sa VALEUR (Salve N, Protectrice N, Solide N…) vit sur
 l'INSTANCE portée par l'objet — `QualityInstance.value` (`src/engine/types.ts:358`), que le
-dispatcher runtime expose sous `indice` (`resolveQualities`, `src/engine/qualities/dispatch.ts:57`).
+dispatcher runtime expose sous `indice` (`resolveQualities`, `src/engine/qualities/dispatch.ts:56`).
 La saisie en prose (« Solide 3 ») n'est convertie en instance qu'à l'AUTHORING, par
-`parseQuality` (`src/engine/qualities/normalize.ts:34`) — le runtime ne re-parse jamais un libellé
+`parseQuality` (`src/engine/qualities/normalize.ts:36`) — le runtime ne re-parse jamais un libellé
 (convention `indice:{label}` côté champ d'édition). N'ajoute donc **jamais** un drapeau numéroté
 (`salve3`) : la capacité marque la présence, l'Indice se lit sur l'instance.
 
@@ -219,4 +219,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 37ed6cec77b4373f9ef83e101d7b09031d0abae4 (152 fichiers, 1 dossiers) corps: 5943cd1f787fc8b171743c97be2b73b026daf6e1 -->
+<!-- sources-empreinte: c5addeb88778f21603c6962f0deedd077ee501f3 (152 fichiers, 1 dossiers) corps: fd35b187540f0350f329ef952d91522ad8eb5dfe -->
