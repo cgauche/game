@@ -14,7 +14,13 @@
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { cleTree, gatesRequises, lireJustificatif } from '../guards/lib/justificatif.mjs'
+import {
+  clesDeContenu,
+  gatesRequises,
+  lireJustificatif,
+  migrerAncienneGraphie,
+  motifDeRefus,
+} from '../guards/lib/justificatif.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -23,15 +29,20 @@ const gh = (args) =>
   execFileSync('gh', args, { cwd: RACINE, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] })
 
 /**
- * Croisement PUR : pour chaque tête, les gates dont le justificatif est VERT sur SON contenu.
- * @param {{ sha: string, cleTree: string, sujet?: string }[]} tetes
- * @param {string[]} gates noms des gates exigées
- * @param {Record<string, Record<string, { statut?: string } | null>>} justificatifs par clé de contenu
+ * Croisement PUR : pour chaque tête, les gates dont le justificatif vaut pour SON contenu. Le
+ * verdict est celui du push — `motifDeRefus`, le même juge que le hook : un justificatif pris sur
+ * un arbre SALE ne crédite rien ici non plus (21 des 908 croisements mesurés le 2026-09-04
+ * divergeaient sur ce seul volet).
+ * @param {{ sha: string, sujet?: string }[]} tetes
+ * @param {{ nom: string, commande?: string }[]} gates gates exigées
+ * @param {Record<string, Record<string, object | null>>} justificatifs vues par sha de tête
  */
 export function croiser(tetes, gates, justificatifs) {
   return tetes.map((tete) => {
-    const vus = justificatifs[tete.cleTree] ?? {}
-    const manquantes = gates.filter((gate) => vus[gate]?.statut !== 'vert')
+    const vus = justificatifs[tete.sha] ?? {}
+    const manquantes = gates
+      .filter((gate) => motifDeRefus(vus[gate.nom] ?? null, gate) !== null)
+      .map((gate) => gate.nom)
     return {
       ...tete,
       verts: gates.length - manquantes.length,
@@ -72,6 +83,9 @@ export function tetesDeGh(courses, connus) {
 }
 
 function main() {
+  // Le magasin est partagé avec le lanceur de gates et le hook : la mesure le lit dans la graphie
+  // courante, elle ne le laisse pas à deux graphies.
+  migrerAncienneGraphie({ cwd: RACINE })
   const args = process.argv.slice(2)
   const iDepuis = args.indexOf('--depuis')
   const depuis = iDepuis !== -1 ? args[iDepuis + 1] : null
@@ -95,15 +109,15 @@ function main() {
     .filter((sha) => pousses.has(sha))
     .map((sha) => ({
       sha,
-      cleTree: cleTree(sha, { cwd: RACINE }),
+      cles: clesDeContenu(sha, { cwd: RACINE }),
       sujet: git(['log', '-1', '--format=%s', sha]).trim(),
     }))
 
-  const gates = gatesRequises({ cwd: RACINE }).map((g) => g.nom)
+  const gates = gatesRequises({ cwd: RACINE })
   const justificatifs = {}
   for (const tete of tetes) {
-    justificatifs[tete.cleTree] = Object.fromEntries(
-      gates.map((gate) => [gate, lireJustificatif({ cwd: RACINE, cleTree: tete.cleTree, gate })]),
+    justificatifs[tete.sha] = Object.fromEntries(
+      gates.map((gate) => [gate.nom, lireJustificatif({ cwd: RACINE, gate: gate.nom, cles: tete.cles })]),
     )
   }
   const lignes = croiser(tetes, gates, justificatifs)

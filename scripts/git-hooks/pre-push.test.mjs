@@ -11,7 +11,13 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readdirSync } from 'node:fs'
-import { cheminJustificatifs, ecrireJustificatif } from '../guards/lib/justificatif.mjs'
+import {
+  cheminJustificatifs,
+  clesDeContenu,
+  ecrireJustificatif,
+  fichierDeJustificatif,
+  segmentDeGate,
+} from '../guards/lib/justificatif.mjs'
 import { RACINE_DES_EXPORTS } from '../migrations/replay-head.mjs'
 import { armeLeRejeu, jugerPush, refsAPousser, urlOrigineAcceptee } from './pre-push.mjs'
 
@@ -98,14 +104,44 @@ test('une seule gate manquante : refus qui la NOMME, elle et pas les autres', ()
   }
 })
 
-test('gate ROUGE : refus qui dit le statut', () => {
+test('magasin à l’ANCIENNE graphie : le hook le migre à l’ouverture, puis juge VERT', () => {
   const racine = depot()
   try {
     const sha = git(racine)(['rev-parse', 'HEAD'])
-    ecrireJustificatif({ cwd: racine, gate: 'test', sha, statut: 'rouge' })
+    const cles = clesDeContenu(sha, { cwd: racine })
+    // Ancienne graphie : UN fichier par gate, clé et propreté dans le CONTENU — invisible au lecteur.
+    const dossier = join(cheminJustificatifs({ cwd: racine }), cles.cleTree)
+    mkdirSync(dossier, { recursive: true })
+    for (const gate of ['test', 'typecheck'])
+      writeFileSync(
+        join(dossier, `${segmentDeGate(gate)}.json`),
+        `${JSON.stringify({ gate, cleTree: cles.cleTree, cleComplete: cles.cleComplete, sha, statut: 'vert', date: '2026-09-01T00:00:00.000Z', sale: false, salis: [] })}\n`,
+      )
+
+    const { refus, notes } = jugerPush({ cwd: racine, stdin: pousse(racine), env: ciVerte(racine) })
+    assert.deepEqual(refus, [], 'les preuves sont là : le hook doit les VOIR après migration')
+    assert.match(notes.join('\n'), /2 justificatif\(s\) passé\(s\) à la graphie courante/)
+    assert.deepEqual(
+      readdirSync(dossier).sort(),
+      ['test', 'typecheck'].map((gate) => fichierDeJustificatif({ gate, cle: cles.cleTree, sale: false })).sort(),
+    )
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('justificatif ILLISIBLE : le push est refusé comme s’il manquait, en nommant la gate', () => {
+  // Un justificatif n'existe qu'au VERT (l'enveloppe n'écrit rien au rouge) : ce qui reste à juger
+  // ici, c'est un fichier présent mais illisible — il ne prouve rien, donc il ne crédite rien.
+  const racine = depot()
+  try {
+    const sha = git(racine)(['rev-parse', 'HEAD'])
+    const { fichier } = ecrireJustificatif({ cwd: racine, gate: 'test', sha })
     ecrireJustificatif({ cwd: racine, gate: 'typecheck', sha })
+    writeFileSync(fichier, '{ tronqué\n')
     const { refus } = jugerPush({ cwd: racine, stdin: pousse(racine), env: ciVerte(racine) })
-    assert.match(refus.join('\n'), /gate « test » au statut rouge/)
+    assert.match(refus.join('\n'), /1\/2 gate\(s\)/)
+    assert.match(refus.join('\n'), /gate « test » jamais jouée sur ce contenu/)
   } finally {
     jeter(racine)
   }

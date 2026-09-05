@@ -44,10 +44,11 @@ import { PERIMETRE } from '../migrations/replay.mjs'
 import { rejeuSurExport } from '../migrations/replay-head.mjs'
 import {
   cheminJustificatifs,
-  cleTree,
-  cleTreeComplete,
+  clesDeContenu,
   gatesRequises,
+  justificatifsSousDAutresCles,
   lireJustificatif,
+  migrerAncienneGraphie,
   motifDeRefus,
 } from '../guards/lib/justificatif.mjs'
 import { croissancesDeLaPlage, raisonDeRefusDePlage } from '../guards/lib/plageStock.mjs'
@@ -127,6 +128,13 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
   if (!urlOrigineAcceptee(origine))
     refus.push(`origin = « ${origine || '(absent)'} » : ce hook ne connaît que github.com/cgauche/game`)
 
+  // Le magasin passe à la graphie courante AVANT toute lecture : un magasin resté à l'ancienne
+  // (un fichier par gate, sans clé ni propreté dans le nom) est invisible au lecteur, et le push
+  // serait refusé sur des preuves présentes. Idempotente, elle ne lit que le magasin.
+  const migration = migrerAncienneGraphie({ cwd, journal: (t) => notes.push(t.trim()) })
+  if (migration.renommes)
+    notes.push(`${migration.renommes} justificatif(s) passé(s) à la graphie courante (nom porteur de la clé et de la propreté)`)
+
   let gates = []
   try {
     gates = gatesRequises({ cwd })
@@ -135,9 +143,13 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
   }
 
   for (const { refLocale, shaLocal, refDistante, shaDistant } of refsAPousser(stdin)) {
-    const cles = { cleTree: cleTree(shaLocal, { cwd }), cleComplete: cleTreeComplete(shaLocal, { cwd }) }
-    const vues = gates.map((g) => ({ gate: g, vue: lireJustificatif({ cwd, cleTree: cles.cleTree, gate: g.nom }) }))
-    const manques = vues.map(({ gate, vue }) => motifDeRefus(vue, gate, cles)).filter(Boolean)
+    const cles = clesDeContenu(shaLocal, { cwd })
+    const vues = gates.map((g) => ({ gate: g, vue: lireJustificatif({ cwd, gate: g.nom, cles }) }))
+    const manques = vues
+      .map(({ gate, vue }) =>
+        motifDeRefus(vue, gate, { autresCles: justificatifsSousDAutresCles({ cwd, gate: gate.nom, cles }) }),
+      )
+      .filter(Boolean)
     if (manques.length) {
       refus.push(`${refLocale} → ${refDistante} : ${manques.length}/${gates.length} gate(s) sans justificatif sur ce contenu`)
       for (const m of manques) refus.push(`  · ${m}`)

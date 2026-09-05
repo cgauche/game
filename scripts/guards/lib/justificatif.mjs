@@ -5,37 +5,56 @@
 // DEUX CLÉS, CHOISIES PAR GATE. `cleTree` hache les blobs de l'arbre du commit PRIVÉ de `docs/` et
 // `.claude/` : deux commits qui ne diffèrent que par un doc régénéré ou une fiche mémoire la
 // partagent, et une gate qui ne lit pas ces dossiers vaut pour les deux (7/30 des dernières têtes
-// poussées, mesuré). Mais 12 gates LISENT `docs/` ou `.claude/` (table `CLE_DE_GATE`, chacune avec
-// sa raison) : pour celles-là, la clé est l'arbre PLEIN (`cleTreeComplete`) — sans quoi un commit
-// qui casse `docs/raw/combat.md` réutiliserait un `docs:check` vert, la classe exacte de l'incident
-// 17926d5de.
+// poussées, mesuré). Mais 12 gates LISENT `docs/` ou `.claude/` (table `RAISON_CLE_COMPLETE`,
+// chacune avec sa raison) : pour celles-là, la clé est l'arbre PLEIN (`cleComplete`) — sans quoi un
+// commit qui casse `docs/raw/combat.md` réutiliserait un `docs:check` vert, la classe exacte de
+// l'incident 17926d5de.
 //
-// OÙ ILS VIVENT : `<git-common-dir>/wfrp-justificatifs/<cleTree>/<gate>.json` — partagé par l'arbre
-// principal et tous ses worktrees, et hors de `node_modules` (que `npm ci` efface). Ce partage est
-// JUSTE ici, parce que la clé est le CONTENU jugé : un justificatif écrit depuis un worktree vaut
-// pour le même contenu où qu'il soit. Il ne l'était pas pour le palier, qui comptait des ÉVÉNEMENTS
-// locaux (32 pour 9 commits réels, 2026-09-04) — d'où sa mesure sur l'histoire. UN FICHIER PAR GATE : deux gates concurrentes n'ont aucun lire-modifier-écrire
-// à partager, le renommage atomique suffit.
+// OÙ ILS VIVENT : `<git-common-dir>/wfrp-justificatifs/<cleTree>/<gate>.<cle>.<propre|sale>.json` —
+// partagé par l'arbre principal et tous ses worktrees, et hors de `node_modules` (que `npm ci`
+// efface). Ce partage est JUSTE ici, parce que la clé est le CONTENU jugé : un justificatif écrit
+// depuis un worktree vaut pour le même contenu où qu'il soit. Il ne l'était pas pour le palier, qui
+// comptait des ÉVÉNEMENTS locaux (32 pour 9 commits réels, 2026-09-04) — d'où sa mesure sur
+// l'histoire.
+//
+// UN FICHIER PAR (GATE, CLÉ GOUVERNANTE, PROPRETÉ) : le NOM porte tout ce qui distingue deux
+// verdicts, donc deux fichiers de même nom sont ÉQUIVALENTS. L'écrivain écrit LE SIEN et ne lit
+// rien — aucun lire-modifier-écrire à se disputer, le renommage atomique suffit, et un rejeu sur
+// arbre sale ne peut plus effacer la preuve d'un push régulier (elle porte un autre nom). Le
+// lecteur préfère le PROPRE. Un justificatif n'existe QU'AU VERT : `scripts/gates/justifie.mjs` et
+// `scripts/test/run.mjs` n'écrivent que sur un code de sortie nul.
 //
 // `sale` est mesuré AU MOMENT DE LA GATE, jamais au push : une gate jouée sur un arbre porteur de
 // modifications non committées au périmètre de la clé ne prouve rien sur le contenu poussé. La liste
 // des chemins qui salissent est la MÊME que celle de la clé (`horsCle`), sinon un `docs/` régénéré
 // non stagé — 11 lignes mesurées sur l'arbre principal — refuserait tout push.
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import * as FS from 'node:fs'
 import { join, resolve } from 'node:path'
 
 /** Chemins hors de la clé PARTIELLE : dérivés (`docs/`) et mémoire de session (`.claude/`). UNE
  *  liste, deux lecteurs : `cleTree` et `perimetreSale`. */
 export const horsCle = (chemin) => /^(?:docs|\.claude)\//.test(String(chemin).replace(/\\/g, '/'))
 
-/** Blobs de l'arbre de `sha`, une entrée par ligne, filtrés par `garder`. */
-function empreinteArbre(sha, { cwd, garder }) {
-  const brut = execFileSync('git', ['ls-tree', '-r', '-z', sha], { cwd, encoding: 'utf8', maxBuffer: 1 << 28 })
-  const entrees = brut
+/** Entrées de l'arbre de `sha`, une par élément (`<mode> <type> <sha>\t<chemin>`). */
+function entreesArbre(sha, { cwd }) {
+  return execFileSync('git', ['ls-tree', '-r', '-z', sha], { cwd, encoding: 'utf8', maxBuffer: 1 << 28 })
     .split('\0')
     .filter(Boolean)
-    .filter((e) => garder(e.slice(e.indexOf('\t') + 1)))
+}
+
+const cheminDeEntree = (entree) => entree.slice(entree.indexOf('\t') + 1)
+const dansLaCle = (entree) => !horsCle(cheminDeEntree(entree))
+
+/**
+ * Empreinte (40 hexadécimaux) d'un ENSEMBLE d'entrées d'arbre, par `git hash-object`.
+ * `scripts/docs/lib/empreinte-sources.mjs:98-102` hache lui aussi un ensemble de blobs, en node pur :
+ * son entrée est l'INDEX (`git ls-files -s`) et sa valeur se pose en pied de doc, alors qu'ici
+ * l'entrée est l'arbre d'un COMMIT (`git ls-tree <sha>`) et la valeur est GRAVÉE dans le nom des
+ * fichiers du magasin. Deux entrées, deux durées de vie : les fusionner alignerait un pied de doc
+ * sur un nom de fichier de `.git/`.
+ */
+function empreinteArbre(entrees, { cwd }) {
   return execFileSync('git', ['hash-object', '--stdin'], {
     cwd,
     encoding: 'utf8',
@@ -44,20 +63,31 @@ function empreinteArbre(sha, { cwd, garder }) {
   }).trim()
 }
 
+/** Les DEUX clés du contenu de `sha`, en UN seul `git ls-tree` : constructeur des trois lecteurs
+ *  (pre-push, lanceur de gates, mesure d'ops). */
+export function clesDeContenu(sha, { cwd = process.cwd() } = {}) {
+  const entrees = entreesArbre(sha, { cwd })
+  return {
+    cleTree: empreinteArbre(entrees.filter(dansLaCle), { cwd }),
+    cleComplete: empreinteArbre(entrees, { cwd }),
+  }
+}
+
 /** Clé PARTIELLE : le contenu de l'arbre de `sha` hors `docs/` et `.claude/`. */
 export const cleTree = (sha, { cwd = process.cwd() } = {}) =>
-  empreinteArbre(sha, { cwd, garder: (chemin) => !horsCle(chemin) })
+  empreinteArbre(entreesArbre(sha, { cwd }).filter(dansLaCle), { cwd })
 
 /** Clé COMPLÈTE : l'arbre de `sha` en ENTIER, docs et mémoire compris. */
 export const cleTreeComplete = (sha, { cwd = process.cwd() } = {}) =>
-  empreinteArbre(sha, { cwd, garder: () => true })
+  empreinteArbre(entreesArbre(sha, { cwd }), { cwd })
 
 /**
  * Gates dont les ENTRÉES vivent sous `docs/` ou `.claude/` : leur justificatif ne vaut que pour un
  * arbre IDENTIQUE EN ENTIER. Table NOMINATIVE — une gate absente d'ici est gouvernée par la clé
- * partielle. Chaque raison est mesurée sur le corpus que la gate lit.
+ * partielle. Chaque raison est mesurée sur le corpus que la gate lit, et sert telle quelle dans le
+ * refus « jouée sur un AUTRE arbre ».
  */
-export const CLE_DE_GATE = {
+export const RAISON_CLE_COMPLETE = {
   'agents:check': 'lit .claude/ (credo, skills, agents, settings) — scripts/agents/compat-cli.mjs:16-20',
   'test:hooks': 'lit .claude/ (soldes, settings.json) — scripts/hooks/soldes-stock.test.mjs:16, settings-guard-canaux.test.mjs:27',
   'test:docs': 'lit docs/ et .claude/memory/ — scripts/docs/check-plans-anchors.test.mjs, build-doctrines.test.mjs:1',
@@ -72,8 +102,9 @@ export const CLE_DE_GATE = {
   'raw:reanchor': 'lit docs/raw/',
 }
 
-/** `true` si la gate est gouvernée par la clé COMPLÈTE. */
-export const gateSurArbrePlein = (nom) => nom in CLE_DE_GATE
+/** Clé qui GOUVERNE `gate` — seule expression de la règle : complète pour les gates qui lisent
+ *  `docs/` ou `.claude/`, partielle pour les autres. */
+export const cleGouvernante = (gate, cles) => (gate in RAISON_CLE_COMPLETE ? cles.cleComplete : cles.cleTree)
 
 /** Lignes de `git status --porcelain` dont un chemin est DANS la clé partielle. Un renommage porte
  *  ses deux chemins (`-z` rend le nouveau, puis l'ancien) : l'entrée compte si l'un des deux y est. */
@@ -99,98 +130,172 @@ export function perimetreSale({ cwd = process.cwd() } = {}) {
 }
 
 /** `<git-common-dir>/wfrp-justificatifs/`, créé au besoin. */
-export function cheminJustificatifs({ cwd = process.cwd() } = {}) {
+export function cheminJustificatifs({ cwd = process.cwd(), fs = FS } = {}) {
   const commun = execFileSync('git', ['rev-parse', '--git-common-dir'], { cwd, encoding: 'utf8' }).trim()
   const dossier = join(resolve(cwd, commun), 'wfrp-justificatifs')
-  mkdirSync(dossier, { recursive: true })
+  fs.mkdirSync(dossier, { recursive: true })
   return dossier
 }
 
-/** Nom de FICHIER d'une gate. `:` sépare un flux de données alternatif sous NTFS : `docs:check.json`
- *  y est un nom ILLÉGAL (EINVAL au renommage, mesuré), et 18 des 22 gates en portent un. */
-export const fichierDeGate = (gate) => `${encodeURIComponent(gate)}.json`
+/** Segment de nom de fichier d'une gate. `:` sépare un flux de données alternatif sous NTFS :
+ *  `docs:check.json` y est un nom ILLÉGAL (EINVAL au renommage, mesuré), et 18 des 22 gates en
+ *  portent un. */
+export const segmentDeGate = (gate) => encodeURIComponent(gate)
 
-/** Justificatif d'UNE gate pour une clé partielle donnée, ou `null`. */
-export function lireJustificatif({ cwd = process.cwd(), cleTree: cle, gate } = {}) {
-  const fichier = join(cheminJustificatifs({ cwd }), cle, fichierDeGate(gate))
-  if (!existsSync(fichier)) return null
-  try {
-    return JSON.parse(readFileSync(fichier, 'utf8'))
-  } catch {
-    return null
-  }
+/** Nom de fichier d'un justificatif : le NOM porte la gate, la valeur de la clé GOUVERNANTE et la
+ *  propreté ; le DOSSIER porte la clé partielle. */
+export const fichierDeJustificatif = ({ gate, cle, sale }) =>
+  `${segmentDeGate(gate)}.${cle}.${sale ? 'sale' : 'propre'}.json`
+
+const NOM_DE_JUSTIFICATIF = /^(.+)\.([0-9a-f]{40})\.(propre|sale)\.json$/
+
+/** `{ gate, cle, sale }` lus DANS le nom, ou `null` si ce n'en est pas un — `derogations.log` et
+ *  l'ancienne graphie `<segment>.json` en sont. */
+export function nomDeJustificatif(nom) {
+  const vu = NOM_DE_JUSTIFICATIF.exec(nom)
+  return vu ? { gate: decodeURIComponent(vu[1]), cle: vu[2], sale: vu[3] === 'sale' } : null
 }
 
-/** Nombre d'observations conservées : un journal de rejeux, pas une archive. Les plus ANCIENNES
- *  partent — c'est le rejeu RÉCENT qui explique un justificatif qu'on relit. */
-export const OBSERVATIONS_MAX = 20
+/** `true` si `nom` est un justificatif de la graphie courante. */
+export const estFichierDeJustificatif = (nom) => nomDeJustificatif(nom) !== null
 
-/** Journal borné et DÉDUPLIQUÉ : deux rejeux dans la MÊME MINUTE avec le même verdict de propreté
- *  sont le même fait (une gate relancée en rafale, un script qui boucle) — une seule ligne. */
-function bornerObservations(observations) {
-  const vues = new Set()
-  const uniques = []
-  for (const o of observations) {
-    const cle = `${String(o.date ?? '').slice(0, 16)}|${o.sale}`
-    if (vues.has(cle)) continue
-    vues.add(cle)
-    uniques.push(o)
+/**
+ * Justificatif d'UNE gate pour le contenu décrit par `cles`, ou `null`. `gate` et `cles` sont
+ * OBLIGATOIRES : un appel qui les oublie lirait le dossier d'un autre contenu et créditerait un
+ * push à tort. Le PROPRE prime sur le SALE, et la propreté rendue vient du NOM — un champ `sale`
+ * resté dans le contenu d'un fichier migré est ignoré.
+ */
+export function lireJustificatif({ cwd = process.cwd(), gate, cles, fs = FS } = {}) {
+  if (!gate) throw new Error('lireJustificatif : `gate` est obligatoire')
+  if (!cles?.cleTree || !cles?.cleComplete)
+    throw new Error(
+      'lireJustificatif : `cles` est obligatoire — construis-le par `clesDeContenu(sha, { cwd })`',
+    )
+  const dossier = join(cheminJustificatifs({ cwd, fs }), cles.cleTree)
+  const cle = cleGouvernante(gate, cles)
+  for (const sale of [false, true]) {
+    const fichier = join(dossier, fichierDeJustificatif({ gate, cle, sale }))
+    if (!fs.existsSync(fichier)) continue
+    try {
+      return { ...JSON.parse(fs.readFileSync(fichier, 'utf8')), sale }
+    } catch {
+      continue
+    }
   }
-  return uniques.slice(-OBSERVATIONS_MAX)
+  return null
 }
 
 /**
- * Pose le verdict de `gate` sur le contenu de `sha`. UN FICHIER PAR GATE, rangé sous la clé
- * PARTIELLE et portant AUSSI la clé complète : le lecteur choisit celle qui gouverne la gate
- * (`CLE_DE_GATE`). Écriture ATOMIQUE (fichier temporaire puis renommage).
+ * Existe-t-il, sous la clé partielle de `cles`, un justificatif de `gate` posé sous une AUTRE clé
+ * gouvernante ? La question n'a de sens que pour une gate gouvernée par la clé COMPLÈTE : pour les
+ * autres, la clé du nom EST celle du dossier, donc `false` par construction.
+ */
+export function justificatifsSousDAutresCles({ cwd = process.cwd(), gate, cles, fs = FS } = {}) {
+  if (!(gate in RAISON_CLE_COMPLETE)) return false
+  const cle = cleGouvernante(gate, cles)
+  let noms
+  try {
+    noms = fs.readdirSync(join(cheminJustificatifs({ cwd, fs }), cles.cleTree))
+  } catch {
+    return false
+  }
+  return noms.some((nom) => {
+    const vu = nomDeJustificatif(nom)
+    return vu !== null && vu.gate === gate && vu.cle !== cle
+  })
+}
+
+/**
+ * Pose le verdict VERT de `gate` sur le contenu de `sha`, dans SON fichier : dossier = clé
+ * partielle, nom = (gate, clé gouvernante, propreté). Écriture ATOMIQUE (fichier temporaire puis
+ * renommage) et sans aucune lecture — deux écrivains simultanés n'ont rien à se disputer.
  *
- * UN VERDICT NE SE DÉGRADE JAMAIS : un `sale:false` déjà posé sur cette clé n'est remplacé que par
- * un autre `sale:false`. Un rejeu de la MÊME gate sur un arbre SALE (le travail a repris après le
- * push) écrasait la preuve du push régulier, et un push contourné en devenait indistinguable a
- * posteriori (mesuré 2026-09-03 : sous la clé de `b7227f7b5`, 5 gates portaient `sale:true` à des
- * dates POSTÉRIEURES au push). Ce rejeu est désormais JOURNALISÉ dans `observations` et le verdict
- * retenu ne bouge pas. Ce volet lit avant d'écrire : deux rejeux SIMULTANÉS peuvent perdre une
- * observation — jamais le verdict retenu, qui ne peut que rester propre.
+ * UN VERDICT NE SE DÉGRADE JAMAIS : un rejeu sur arbre SALE écrit un fichier `sale`, à côté du
+ * `propre` qu'il ne touche pas. Le fait qui l'exige est mesuré : sous la clé de `b7227f7b5`, 5 gates
+ * portent `sale:true` à des dates POSTÉRIEURES au push (2026-09-03) — le travail reprend après le
+ * push, et sans nom porteur son rejeu écrase la preuve du push régulier.
  */
 export function ecrireJustificatif({
   cwd = process.cwd(),
   gate,
   sha,
-  statut = 'vert',
   date = new Date().toISOString(),
   capture,
+  fs = FS,
 } = {}) {
-  const cle = cleTree(sha, { cwd })
-  const cleComplete = cleTreeComplete(sha, { cwd })
+  const cles = clesDeContenu(sha, { cwd })
   const salis = perimetreSale({ cwd })
   const sale = salis.length > 0
   const contenu = {
     gate,
-    cleTree: cle,
-    cleComplete,
+    cleTree: cles.cleTree,
+    cleComplete: cles.cleComplete,
     sha,
-    statut,
     date,
-    sale,
     salis,
     ...(capture ? { capture } : {}),
   }
-  const dossier = join(cheminJustificatifs({ cwd }), cle)
-  mkdirSync(dossier, { recursive: true })
-  const fichier = join(dossier, fichierDeGate(gate))
-  const precedent = lireJustificatif({ cwd, cleTree: cle, gate })
-  let observations = [...(precedent?.observations ?? [])]
-  let retenu = contenu
-  if (precedent && precedent.sale === false && sale) {
-    observations.push({ date, statut, sale, salis, sha })
-    retenu = { ...precedent }
-  }
-  observations = bornerObservations(observations)
-  if (observations.length) retenu = { ...retenu, observations }
+  const dossier = join(cheminJustificatifs({ cwd, fs }), cles.cleTree)
+  fs.mkdirSync(dossier, { recursive: true })
+  const fichier = join(dossier, fichierDeJustificatif({ gate, cle: cleGouvernante(gate, cles), sale }))
   const temporaire = `${fichier}.${process.pid}.en-cours`
-  writeFileSync(temporaire, `${JSON.stringify(retenu, null, 2)}\n`)
-  renameSync(temporaire, fichier)
-  return { fichier, cleTree: cle, cleComplete, salis, retenu }
+  fs.writeFileSync(temporaire, `${JSON.stringify(contenu, null, 2)}\n`)
+  fs.renameSync(temporaire, fichier)
+  return { fichier, cleTree: cles.cleTree, cleComplete: cles.cleComplete, salis }
+}
+
+/**
+ * Passe le magasin de l'ancienne graphie (`<segment>.json`, un fichier par gate) à la courante
+ * (`<segment>.<cle>.<propre|sale>.json`). Tout est DANS le contenu — `gate`, `cleTree`,
+ * `cleComplete`, `sale` — donc le renommage se calcule sans git. Un contenu au statut non vert est
+ * EFFACÉ (un justificatif n'existe qu'au vert), un contenu illisible ou sans ses deux clés est
+ * laissé en place et DIT. Idempotente : sur un magasin déjà migré, rien ne bouge. Le magasin est
+ * partagé par tous les worktrees, et rien d'autre que les `.json` d'un dossier de clé n'est touché
+ * (`derogations.log`, à la racine, est hors d'atteinte). REND `{ renommes, effaces, illisibles }`.
+ */
+export function migrerAncienneGraphie({
+  cwd = process.cwd(),
+  fs = FS,
+  journal = (texte) => process.stderr.write(texte),
+} = {}) {
+  const racine = cheminJustificatifs({ cwd, fs })
+  const bilan = { renommes: 0, effaces: 0, illisibles: [] }
+  for (const dossierCle of fs.readdirSync(racine)) {
+    if (!/^[0-9a-f]{40}$/.test(dossierCle)) continue
+    const dossier = join(racine, dossierCle)
+    for (const nom of fs.readdirSync(dossier)) {
+      if (!nom.endsWith('.json') || estFichierDeJustificatif(nom)) continue
+      const fichier = join(dossier, nom)
+      let contenu
+      try {
+        contenu = JSON.parse(fs.readFileSync(fichier, 'utf8'))
+      } catch {
+        bilan.illisibles.push(fichier)
+        continue
+      }
+      if (contenu?.statut && contenu.statut !== 'vert') {
+        fs.rmSync(fichier, { force: true })
+        bilan.effaces += 1
+        continue
+      }
+      const gate = contenu?.gate ?? decodeURIComponent(nom.slice(0, -'.json'.length))
+      if (!contenu?.cleTree || !contenu?.cleComplete) {
+        bilan.illisibles.push(fichier)
+        continue
+      }
+      fs.renameSync(
+        fichier,
+        join(dossier, fichierDeJustificatif({ gate, cle: cleGouvernante(gate, contenu), sale: contenu.sale === true })),
+      )
+      bilan.renommes += 1
+    }
+  }
+  if (bilan.illisibles.length)
+    journal(
+      `[justificatif] ${bilan.illisibles.length} justificatif(s) illisible(s), laissé(s) en place :\n` +
+        `${bilan.illisibles.map((f) => `  ${f}`).join('\n')}\n`,
+    )
+  return bilan
 }
 
 /**
@@ -225,7 +330,7 @@ export function nomDeGate(commande) {
  * REND `[{ job, commande, cles }]`.
  */
 export function stepsCi({ cwd = process.cwd(), fichier } = {}) {
-  const lignes = readFileSync(fichier ?? join(cwd, '.github', 'workflows', 'ci.yml'), 'utf8').split(/\r?\n/)
+  const lignes = FS.readFileSync(fichier ?? join(cwd, '.github', 'workflows', 'ci.yml'), 'utf8').split(/\r?\n/)
   const steps = []
   let job = null
   let courant = null
@@ -319,18 +424,20 @@ export function gatesRequises({ cwd = process.cwd(), fichier } = {}) {
   return gates
 }
 
-/** Verdict d'UNE gate : `null` si elle passe, sinon le motif de refus. `cles` porte les deux clés du
- *  contenu poussé ; celle qui gouverne la gate vient de `CLE_DE_GATE`. */
-export function motifDeRefus(vue, { nom, commande }, cles = null) {
+/**
+ * Verdict d'UNE gate : `null` si elle passe, sinon le motif de refus. `autresCles` vient de
+ * `justificatifsSousDAutresCles` — il distingue « jamais jouée » de « jouée sur un AUTRE arbre »,
+ * et n'est vrai que pour une gate gouvernée par la clé COMPLÈTE.
+ */
+export function motifDeRefus(vue, { nom, commande }, { autresCles = false } = {}) {
+  if (!vue && autresCles)
+    return (
+      `gate « ${nom} » jouée sur un AUTRE arbre : elle ${RAISON_CLE_COMPLETE[nom]}, et ce contenu-là a ` +
+      `changé depuis — la rejouer : ${commande}`
+    )
   if (!vue) return `gate « ${nom} » jamais jouée sur ce contenu — la produire : ${commande}`
-  if (vue.statut !== 'vert') return `gate « ${nom} » au statut ${vue.statut} — la rejouer : ${commande}`
   if (vue.sale)
     return `gate « ${nom} » jouée sur un arbre SALE (${(vue.salis ?? []).join(' · ')}) — committer, puis rejouer : ${commande}`
-  if (cles && gateSurArbrePlein(nom) && vue.cleComplete !== cles.cleComplete)
-    return (
-      `gate « ${nom} » jouée sur un AUTRE arbre : elle ${CLE_DE_GATE[nom]}, et ce contenu-là a changé ` +
-      `depuis — la rejouer : ${commande}`
-    )
   return null
 }
 

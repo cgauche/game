@@ -44,12 +44,14 @@ import { fileURLToPath } from 'node:url'
 import { join, resolve } from 'node:path'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
 import {
-  cleTree,
-  cleTreeComplete,
+  clesDeContenu,
   gatesRequises,
+  justificatifsSousDAutresCles,
   lireJustificatif,
+  migrerAncienneGraphie,
   motifDeRefus,
   perimetreSale,
+  segmentDeGate,
 } from '../guards/lib/justificatif.mjs'
 import {
   compterRejeux,
@@ -107,7 +109,7 @@ export const ECRIT_LU = {
       'écrirait la baseline, l.94-96), `ruleset-evaluate.mjs` (le corps du ruleset part par un fichier de ' +
       'os.tmpdir(), l.90-97), `fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()) et ' +
       '`justificatif.mjs`, atteint depuis 2026-09-04 par `pushes-justifies.mjs` : ses seules écritures ' +
-      'visent `<git-common-dir>/wfrp-justificatifs/` (justificatif.mjs:102-107,179,191-192), soit `.git/`, ' +
+      'visent `<git-common-dir>/wfrp-justificatifs/` (justificatif.mjs:136,239-243,277,286-289), soit `.git/`, ' +
       'hors de l’arbre — et `pushes-justifies.test.mjs` n’éprouve que des fonctions PURES, sans disque ; LIT ' +
       '.github/workflows/ parce que `canari.test.mjs:17` et `ruleset-evaluate.test.mjs:13` lisent les ' +
       'workflows RÉELS, et scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs` ; depuis ' +
@@ -125,7 +127,7 @@ export const ECRIT_LU = {
   'test:docs': {
     ecrit: [],
     lit: ['docs/', '.claude/memory/', 'scripts/docs/'],
-    raison: 'fixtures sous os.tmpdir() ; lit les docs et la mémoire réels (CLE_DE_GATE, justificatif.mjs:62)',
+    raison: 'fixtures sous os.tmpdir() ; lit les docs et la mémoire réels (RAISON_CLE_COMPLETE, justificatif.mjs:90)',
   },
   'deps:unused': {
     ecrit: [],
@@ -310,9 +312,8 @@ export const dossierSorties = (racine) => join(racine, 'node_modules', '.cache',
 /** Durées du dernier run, par gate — la seule source du COÛT ESTIMÉ d'une gate sautée. */
 export const fichierDurees = (racine) => join(dossierSorties(racine), 'durees.json')
 
-/** Nom de FICHIER d'une gate : `:` sépare un flux de données alternatif sous NTFS, où
- *  `docs:check-123.txt` est un nom ILLÉGAL — 18 des 22 gates portent un `:` (patron `fichierDeGate`). */
-export const fichierDeSortie = (gate, pid) => `${encodeURIComponent(gate)}-${pid}.txt`
+/** Nom de FICHIER de la sortie d'une gate, encodé par `segmentDeGate` (justificatif.mjs). */
+export const fichierDeSortie = (gate, pid) => `${segmentDeGate(gate)}-${pid}.txt`
 
 /** Sans borne, `node_modules/.cache/gates` grossit indéfiniment. Les sorties de plus de 7 jours
  *  partent à l'ouverture du run suivant ; un effacement refusé (fichier tenu) ne change aucun
@@ -595,12 +596,16 @@ export async function principal({
   }
 
   const scripts = JSON.parse(readFileSync(join(racine, 'package.json'), 'utf8')).scripts ?? {}
-  const cle = cleTree('HEAD', { cwd: racine })
-  // DEUX clés, comme le pre-push (scripts/git-hooks/pre-push.mjs) : les 12 gates de `CLE_DE_GATE`
-  // lisent `docs/` ou `.claude/`, hors de la clé partielle. Sans la clé complète ici, le lanceur
-  // déclare « déjà justifiée » ce que le push refuse ensuite (mesuré sur fdf62479e : 22 gates
-  // sautées, 11 refusées au push).
-  const cles = { cleTree: cle, cleComplete: cleTreeComplete('HEAD', { cwd: racine }) }
+  // Le magasin passe à la graphie courante AVANT toute lecture : sinon les justificatifs de
+  // l'ancienne (un fichier par gate, sans clé ni propreté dans le nom) seraient invisibles et
+  // chaque gate serait redonnée à jouer.
+  migrerAncienneGraphie({ cwd: racine, journal })
+  // DEUX clés, comme le pre-push (scripts/git-hooks/pre-push.mjs) : les 12 gates de
+  // `RAISON_CLE_COMPLETE` lisent `docs/` ou `.claude/`, hors de la clé partielle. Sans la clé
+  // complète ici, le lanceur déclare « déjà justifiée » ce que le push refuse ensuite (mesuré sur
+  // fdf62479e : 22 gates sautées, 11 refusées au push).
+  const cles = clesDeContenu('HEAD', { cwd: racine })
+  const cle = cles.cleTree
   const gates = gatesRequises({ cwd: racine })
   journal(`[gates] ${gates.length} gate(s) lues dans ci.yml · contenu ${cle.slice(0, 12)}\n`)
 
@@ -622,8 +627,10 @@ export async function principal({
   // un arbre sale.
   const aJouer = []
   for (const gate of gates) {
-    const vue = lireJustificatif({ cwd: racine, cleTree: cle, gate: gate.nom })
-    const motif = motifDeRefus(vue, gate, cles)
+    const vue = lireJustificatif({ cwd: racine, gate: gate.nom, cles })
+    const motif = motifDeRefus(vue, gate, {
+      autresCles: justificatifsSousDAutresCles({ cwd: racine, gate: gate.nom, cles }),
+    })
     if (!TOUT && !motif) {
       journal(`[gates] ${gate.nom} — déjà justifiée sur ce contenu\n`)
       continue

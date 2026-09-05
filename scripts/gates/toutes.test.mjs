@@ -436,7 +436,7 @@ test('un doc committé PÉRIME les gates à clé pleine — le lanceur les redon
     assert.match(
       sortie,
       /\[gates\] docs:check — gate « docs:check » jouée sur un AUTRE arbre : elle lit docs\/[^\n]*— la rejouer : npm run docs:check/,
-      'une gate de CLE_DE_GATE doit être redonnée à jouer, en se nommant',
+      'une gate de RAISON_CLE_COMPLETE doit être redonnée à jouer, en se nommant',
     )
     assert.match(sortie, /\[gates\] lint — déjà justifiée sur ce contenu/, 'une gate hors table reste justifiée')
   } finally {
