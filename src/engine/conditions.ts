@@ -2,7 +2,7 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant, ActiveEffect, ConditionInstance, effectRef, type ModLine, type ConditionEmit } from './types';
+import { Combatant, ActiveEffect, ConditionInstance, effectRef, type ModLine, type ConditionEmit, type ConditionLocks } from './types';
 import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel, skills } from '../data';
@@ -71,7 +71,7 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
   return Math.min(stacks, 1 + Math.max(0, dr));
 }
 
-export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number, locks?: import('./types').ConditionLocks): void {
+export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number, locks?: ConditionLocks): void {
   const { lockedUntil, unlockBy } = locks ?? {};
   if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.7) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
   const existing = c.conditions.find((x) => x.id === name);
