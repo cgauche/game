@@ -3,9 +3,10 @@ import { bakeWorldGeometry, roomZonesByElKey, worldBakeDeps, type BakedWorld } f
 import { memoByRefDeps } from '../../../state/sceneMemo';
 import { sceneMetresPerTile, type Scene } from '../../../state/scene';
 import { scenario } from '../../../scenes/test-scenarios/zones-pieces';
-import { materials, matieresDe } from '../../../data';
+import { materials, matieresDe, terrains } from '../../../data';
 import { setDataset, resetData } from '../../../data/overrides';
 import type { MaterialEntry } from '../../../data/materials.types';
+import type { TerrainDef } from '../../../data/terrains.types';
 import { effectiveArchitecture } from '../../../state/sceneEdit';
 import { roofMaterial } from '../../catalog/roofs';
 import { allBuiltinCampaigns } from '../../../scenes/campaign';
@@ -200,6 +201,29 @@ describe('Cuisson du monde — les MATIÈRES entrent dans le read-set (#1686)', 
     const relief = matieresDe('relief').find((m) => m.id === 'pierre')!;
     const avant = worldBakeDeps(base, mpt);
     setDataset('materials', editee(relief.id, { face: '#0d0d0d' }));
+    expect(memesDeps(avant, worldBakeDeps(base, mpt))).toBe(false);
+  });
+
+  /** Le dataset des TERRAINS (#1690) est lu ENTIER par la cuisson : `swatch`, `detail`, `priority` et
+   *  `solidHeightM` entrent tous dans les faces de sol. Prix DIT du choix, et mesuré par le second
+   *  cas : éditer un terrain qu'aucune couche ne pose recuit quand même. */
+  const editeeT = (id: string, patch: Partial<TerrainDef>): TerrainDef[] =>
+    terrains.map((t) => (t.id === id ? { ...t, ...patch } : t));
+
+  it('éditer un TERRAIN que la scène pose change les deps — le monde se recuit', () => {
+    const pose = base.layers[0].tiles[0];
+    expect(terrains.map((t) => t.id), 'la fixture doit poser un terrain RÉEL').toContain(pose);
+    const avant = worldBakeDeps(base, mpt);
+    setDataset('terrains', editeeT(pose, { swatch: '#0b0b0b' }) as never);
+    expect(memesDeps(avant, worldBakeDeps(base, mpt))).toBe(false);
+  });
+
+  it('le dataset des terrains est lu ENTIER : un terrain qu’aucune couche ne pose recuit AUSSI (prix dit)', () => {
+    const poses = new Set(base.layers.flatMap((l) => l.tiles));
+    const absent = terrains.find((t) => !poses.has(t.id))!;
+    expect(absent, 'la fixture pose tous les terrains — le prix ne serait pas mesurable').toBeDefined();
+    const avant = worldBakeDeps(base, mpt);
+    setDataset('terrains', editeeT(absent.id, { swatch: '#0a0a0a' }) as never);
     expect(memesDeps(avant, worldBakeDeps(base, mpt))).toBe(false);
   });
 });

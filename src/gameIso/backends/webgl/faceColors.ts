@@ -2,7 +2,7 @@
  * SURFACE d'une `Face` du pivot — UNE résolution matériau → (couleur de base, recette de détail, clé de
  * texture, échelle d'UV), par DOMAINE et depuis les MÊMES catalogues que les deux backends écran :
  * structures (`wallPartColor`, partagé avec le POV), relief (`reliefMaterial`), toiture (`roofMaterial`),
- * terrain (`swatch` du registre `TERRAIN_DEFS`). Aucun littéral de couleur ici.
+ * terrain (`swatch` du dataset `src/data/terrains.json`). Aucun littéral de couleur ici.
  *
  * Les DEUX modes d'usage du renderer (unlit = couleur cuite au sommet ; lit = matériau éclairé) partent
  * de CETTE couleur de base : le mode est un choix de MATÉRIAU, pas de couleur, et ne se paramètre donc

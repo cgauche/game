@@ -3,6 +3,7 @@ import { testScenarios } from './index';
 import { validateScene } from '../../state/validateScene';
 import { spawnEnemy } from '../../state/spawn';
 import { enemyRigProfile } from '../../gameIso/rig/enemyProfile';
+import { terrainEntree } from '../../state/terrain';
 
 describe('Batterie de scénarios de test', () => {
   it('couvre au moins 6 scénarios', () => {
@@ -19,6 +20,21 @@ describe('Batterie de scénarios de test', () => {
       if (s.autoCombat) expect(s.scene.encounters.find((e) => e.id === s.autoCombat)).toBeTruthy();
     },
   );
+  /**
+   * FILET des scènes TS (#1690). Le schéma refuse AU PARSE une tuile qui nomme un sol absent de
+   * `terrains.json` (`layerSchema.tiles: idDe('terrain')`), mais les scénarios de test sont
+   * construits EN CODE et ne passent par aucun parse : sans cette garde, un id de sol mort y peindrait
+   * le repli d'alarme sans que rien ne le dise. DÉRIVÉE — aucune liste d'ids récitée.
+   */
+  it('tout id de TERRAIN posé par une scène TS existe dans `terrains.json`', () => {
+    const morts: string[] = [];
+    for (const s of testScenarios)
+      for (const l of s.scene.layers)
+        for (const t of new Set(l.tiles))
+          if (!terrainEntree(t)) morts.push(`${s.id} z=${l.z} : « ${t} »`);
+    expect([...new Set(morts)], `sol(s) absent(s) du dataset : ${morts.join(' | ')}`).toEqual([]);
+  });
+
   it('contient les piliers Embuscade et Magie', () => {
     expect(testScenarios.find((s) => s.id === 'embuscade')).toBeTruthy();
     expect(testScenarios.find((s) => s.id === 'magie')).toBeTruthy();

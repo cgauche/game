@@ -39,8 +39,9 @@ export interface CibleDeType {
  * Types d'entité déclarés à la grammaire. La liste est celle des concepts que les lots L2/L3 du
  * chantier migrent (Compétence, puis Talent/Trait/Objet/Sort/Créature/Véhicule/Structure, +
  * Carrière et Trait NAVAL au L-gram-2 #1463) + la TABLE, cible de `pick({ table })`, + la MATIÈRE du
- * monde (#1686), premier type dont le dataset est DISCRIMINÉ (`idDe('material', 'prop')`). Un type
- * s'ajoute avec le lot qui le migre, jamais « au cas où ».
+ * monde (#1686), premier type dont le dataset est DISCRIMINÉ (`idDe('material', 'prop')`), + le
+ * TERRAIN et le DÉCOR (#1690 : `layer.tiles` résout un terrain, `terrains › overlayProp` un décor).
+ * Un type s'ajoute avec le lot qui le migre, jamais « au cas où ».
  */
 export const TYPES = {
   skill: { dataset: 'skills.json', specsOpen: true },
@@ -63,6 +64,8 @@ export const TYPES = {
   // RÈGLE OPTIONNELLE : cible du terme `{rule}` d'une `Formula` (#1599) — une quantité que le livre ne
   // chiffre pas se lit au registre, l'id résout donc AU PARSE comme toute autre référence.
   regleOptionnelle: { dataset: 'reglesOptionnelles.json', specsOpen: false },
+  terrain: { dataset: 'terrains.json', specsOpen: false },
+  prop: { dataset: 'props.json', specsOpen: false },
 } as const satisfies Record<string, CibleDeType>;
 
 export type TypeEntite = keyof typeof TYPES;

@@ -167,11 +167,11 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
   (id + couleurs par `part` + `detail` optionnelle). Les éléments le référencent par id ; le rendu
   résout les couleurs par `part`.
 - **un ton de décor** : une entrée dans la palette — jamais un hex dans un renderer (§6).
-- **un terrain** : une def sous `src/state/terrain/defs/`, puis `npm run gen`.
+- **un terrain** : une entrée dans `src/data/terrains.json` (règle ET rendu dans la même entrée).
 - **un prop / décor** : une def sous `src/gameIso/catalog/decor/defs/`, puis `npm run gen`. Symétrique →
   un seul dessin ; directionnel → il DÉCLARE ses vues, et la sélection vue + miroir + repli se fait
   dans la MACHINERIE partagée, jamais dans la def.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: 2227ce97f1e31f8d092a9d3321b2043f77d8b6c8 (23 fichiers, 10 dossiers) corps: 0d68edb6f2661eb591cac2b022de356d564e1a79 -->
+<!-- sources-empreinte: 7616fe9a89299eacc24014e65504c8077c307371 (23 fichiers, 10 dossiers) corps: 5f62395a1f93f594a28bfe3a357237181f3b7f62 -->

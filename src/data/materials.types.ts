@@ -18,8 +18,8 @@ import type { MaterialRef } from '../gameIso/builders/types';
  * Domaines de matière que CE dataset porte — SOUS-ENSEMBLE des domaines de `MaterialRef`
  * (`src/gameIso/builders/types.ts`), vérifié PAR CONSTRUCTION : `satisfies` refuse à la compilation
  * un domaine que le pivot du rendu ne déclare pas. Les deux domaines restants sont hors du dataset et
- * le disent nommément dans `materials-identite.test.ts` : `terrain` vit en modules TS (#1690),
- * `structure` porte un dataset d'apparence composite qui RÉFÉRENCE des matières.
+ * le disent nommément dans `materials-identite.test.ts` : `terrain` porte le sien (`terrains.json`,
+ * #1690), `structure` un dataset d'apparence composite qui RÉFÉRENCE des matières.
  */
 export const DOMAINES_MATIERE = ['prop', 'roof', 'relief'] as const satisfies readonly MaterialRef['domain'][];
 export type MaterialDomain = (typeof DOMAINES_MATIERE)[number];

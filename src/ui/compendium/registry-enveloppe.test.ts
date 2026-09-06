@@ -386,6 +386,9 @@ const PARTIELS: string[] = [
   "sea-weather.json#3 (6)",
   "structureAppearance.json#0 (18)",
   "systemes.manifest.json#0 (16)",
+  // Les 25 sols (#1690) : chaque entrée porte sa provenance `maison`, aucune ne porte de `desc`.
+  // L'exposition Codex du dataset est portée par son def en DETTE ticketée (`defs/terrains.ts`).
+  "terrains.json#0 (25)",
   "water-exposure.json#0 (12)",
 ];
 

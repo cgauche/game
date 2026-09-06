@@ -276,7 +276,11 @@ export type EncounterMember = z.infer<typeof encounterMemberSchema>;
 
 export type EncounterDef = z.infer<typeof encounterDefSchema>;
 
-export type Layer = z.infer<typeof layerSchema>;
+/** Une COUCHE. `tiles` est ÉLARGI à `Terrain` (= `string`) : `idDe('terrain')` BRANDE l'id qu'il rend,
+ *  et cette marque est un verdict de PARSE (une tuile hors de `terrains.json` est refusée nommément) —
+ *  l'authoring TS (`asciiMap`, `legend`, `terrainRects`) n'est pas parsé et écrit des chaînes nues.
+ *  Même patron d'élargissement que `EnveloppeDocument` (`grammaire/document.ts`) et `AxesData`. */
+export type Layer = Omit<z.infer<typeof layerSchema>, 'tiles'> & { tiles: Terrain[] };
 
 export type ZoneArea = z.infer<typeof zoneAreaSchema>;
 

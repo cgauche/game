@@ -6,19 +6,20 @@
  */
 import { heightAt, isDescriptiveZone, type Scene, type SceneEffectZone } from './scene';
 import { sceneZoneTiles } from './zones';
-import { TERRAIN_DEFS } from './terrain';
+import { tousLesTerrains } from './terrain';
 import { gradeBetween, METRES_PER_LEVEL } from './relief';
 import { memoByRef } from './sceneMemo';
 import type { CellSide } from './scene';
 
-/** Terrains BÂTIS : ceux dont la def porte `built` (`TerrainDef.built`) — surface construite qui PORTE
- *  l'étage posé dessus (plancher, dallage, pavage, bloc de maçonnerie). */
-export const BUILT_TERRAINS = new Set(TERRAIN_DEFS.filter((t) => t.built).map((t) => t.id));
+/** Terrains BÂTIS : ceux dont l'entrée porte `built` (`TerrainDef.built`) — surface construite qui PORTE
+ *  l'étage posé dessus (plancher, dallage, pavage, bloc de maçonnerie). LU au dataset à l'appel : une
+ *  entrée retouchée à l'atelier change le verdict d'audit sans rechargement. */
+export const builtTerrains = (): Set<string> => new Set(tousLesTerrains().filter((t) => t.built).map((t) => t.id));
 
-/** Sols NUS = complément de `BUILT_TERRAINS` sur le registre des terrains (famille 5, toutes cartes) :
+/** Sols NUS = complément de `builtTerrains()` sur le dataset des terrains (famille 5, toutes cartes) :
  *  sol naturel (`herbe`, `terre`, `route`, `sable`…) comme `vide` (rien du tout). Un terrain déposé
  *  demain sans `built` tombe donc ICI, et un étage posé dessus se signale au lieu de passer en silence. */
-export const GROUND_TERRAINS = new Set(TERRAIN_DEFS.filter((t) => !t.built).map((t) => t.id));
+export const groundTerrains = (): Set<string> => new Set(tousLesTerrains().filter((t) => !t.built).map((t) => t.id));
 
 /** Terrain d'une case, hors bornes / étage absent = `'vide'` (comme la base des couches z>0). */
 export function terrainAt(scene: Scene, x: number, y: number, z: number): string {
@@ -395,7 +396,7 @@ export function auditFacade(
 
 /** Cases de la dalle d'étage `aboveZ` qui PORTENT — critère STRUCTUREL : ce qui reprend la charge, pas
  *  une distance. Trois façons de porter, et seulement trois :
- *  - APPUI DIRECT — le dessous est bâti (`BUILT_TERRAINS`) ;
+ *  - APPUI DIRECT — le dessous est bâti (`builtTerrains()`) ;
  *  - LINTEAU — le long d'un axe (x ou y), la case atteint un appui direct des DEUX côtés sans quitter
  *    la dalle : arche, pont, porte cochère qui enjambe la voie des calèches (`mapSpec.ts`, recette
  *    `gate`). Une travée reprise à ses deux bouts n'a pas de portée à borner ;
@@ -410,7 +411,8 @@ export function auditFacade(
 export function supportedFloorCells(scene: Scene, aboveZ: number, belowZ: number): Set<string> {
   const { w, h } = scene.dimensions;
   const inSlab = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && isFloor(scene, x, y, aboveZ);
-  const builtBelow = (x: number, y: number) => BUILT_TERRAINS.has(terrainAt(scene, x, y, belowZ));
+  const batis = builtTerrains();
+  const builtBelow = (x: number, y: number) => batis.has(terrainAt(scene, x, y, belowZ));
   const slab: [number, number][] = [];
   const direct = new Set<string>();
   for (let y = 0; y < h; y++) {
@@ -673,7 +675,7 @@ export function scenePlanDefects(scene: Scene): PlanDefect[] {
     const perFloor: (Defect | ZoneDefect)[] = [
       ...auditFacade(scene, aboveZ, belowZ, true, zoneIndex),
       ...auditZoneCoverage(scene, aboveZ, belowZ, zoneIndex, supported),
-      ...auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS, supported),
+      ...auditUnsupportedFloor(scene, aboveZ, belowZ, groundTerrains(), supported),
     ];
     for (const d of perFloor) out.push({ family: d.family, at: defectAt(d), grid: d.grid, message: d.message });
   }

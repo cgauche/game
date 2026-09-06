@@ -27,12 +27,7 @@ const STATE_DIR = fileURLToPath(new URL('.', import.meta.url));
 /** Exceptions au balayage runtime — clé = chemin RELATIF complet (pas la seule base : `state/terrain/`
  *  et `state/merchants/` ont chacun un `types.ts`, une clé de base collisionnerait). Raison FACTUELLE
  *  requise (jamais une excuse). */
-const ALLOWLIST = new Set([
-  // `import type { DetailRecipe } from '../../gameIso/detail/types'` — type seul (donnée pure de
-  // recette de surface, zéro dépendance runtime) : `state/terrain/types.ts` TYPE le champ `detail` d'un
-  // `TerrainDef` sans jamais le lire (« la walkability n'en lit rien, seul le rendu la consommera »).
-  'terrain/types.ts',
-]);
+const ALLOWLIST = new Set<string>([]);
 
 /** Tout import (statique `from`, dynamique/inline `import(`, ou side-effect `import '…'`) ciblant un
  *  chemin `…/gameIso/…` (un ou plusieurs `../`). */

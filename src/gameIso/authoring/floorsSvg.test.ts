@@ -4,6 +4,7 @@ import type { FloorEl } from '../builders/types';
 import { emptyScene, type Scene } from '../../state/scene';
 import { floorSvg, floorDepth } from './floorsSvg';
 import { depth, diamondPath, tileCenter, type Dims } from '../../geometry/iso';
+import { terrainGradientId } from '../catalog/terrain';
 
 /**
  * Peintre SVG d'authoring des sols : projette les éléments `floor` du pivot (builders/floors) via la
@@ -30,14 +31,14 @@ describe('floorSvg — losange de base', () => {
   it('tuile plate = un losange au tracé écran de diamondPath ; herbe = VARIANTE de teinte par tuile (matériaux v2)', () => {
     const s = emptyScene(4, 4); // herbe partout
     const svg = floorSvg(elAt(s, 1, 1), dims);
-    expect(svg).toMatch(new RegExp(`^<path d="${diamondPath(1, 1, dims).replace(/([().])/g, '\\$1')}" fill="url\\(#g_grass-v[0-3]\\)" stroke="rgba\\(0,0,0,0.16\\)"/>$`));
+    expect(svg).toMatch(new RegExp(`^<path d="${diamondPath(1, 1, dims).replace(/([().])/g, '\\$1')}" fill="url\\(#${terrainGradientId('herbe')}-v[0-3]\\)" stroke="rgba\\(0,0,0,0.16\\)"/>$`));
     expect(floorSvg(elAt(s, 1, 1), dims)).toBe(svg); // variante stable (hash du monde)
   });
 
   it('LOD 0 (fills plats) : le dégradé de BASE du terrain, sans variante', () => {
     const s = emptyScene(4, 4);
     const svg = floorSvg(elAt(s, 1, 1), dims, { zoom: 0.4 });
-    expect(svg).toBe(`<path d="${diamondPath(1, 1, dims)}" fill="url(#g_grass)" stroke="rgba(0,0,0,0.16)"/>`);
+    expect(svg).toBe(`<path d="${diamondPath(1, 1, dims)}" fill="url(#${terrainGradientId('herbe')})" stroke="rgba(0,0,0,0.16)"/>`);
   });
 
   it('le losange démarre toujours au coin ÉCRAN haut (ordre stable aux 4 rotations)', () => {

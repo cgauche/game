@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, GROUND_TERRAINS, PLAN_DEFECT_FAMILIES, type Defect, type PlanDefectFamilyDef } from '../../src/state/planDefects';
+import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, groundTerrains, PLAN_DEFECT_FAMILIES, type Defect, type PlanDefectFamilyDef } from '../../src/state/planDefects';
 import { locateGrid } from './locate';
 import { findMap, findMaps } from './registry';
 import type { Scene, SceneEffectZone, WallSeg } from '../../src/state/scene';
@@ -173,7 +173,7 @@ describe('mesures INFORMATIVES sur les scènes réelles (non contractuelles — 
   it('La Diligence — aucun défaut de plan ne REMONTE (paquet éditeur `diligence-projet.json`)', () => {
     const scene = diligenceScene();
     const [[aboveZ, belowZ]] = floorPairs(scene);
-    const defects = [...auditFacade(scene, aboveZ, belowZ), ...auditZoneCoverage(scene, aboveZ, belowZ), ...auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS)];
+    const defects = [...auditFacade(scene, aboveZ, belowZ), ...auditZoneCoverage(scene, aboveZ, belowZ), ...auditUnsupportedFloor(scene, aboveZ, belowZ, groundTerrains())];
     for (const [family, plafond] of Object.entries(PLAFONDS_DILIGENCE)) {
       expect(defects.filter((d) => d.family === family).length, `famille « ${family} »`).toBeLessThanOrEqual(plafond);
     }
@@ -243,7 +243,7 @@ describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans
       // Corps bâti x0-x1, appentis x2 : une case de débord au contact du corps — un encorbellement.
       const scene = findMaps(writeProject(dir, { w: 3 }))[0].build();
       const [[aboveZ, belowZ]] = floorPairs(scene);
-      expect(auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS)).toEqual([]);
+      expect(auditUnsupportedFloor(scene, aboveZ, belowZ, groundTerrains())).toEqual([]);
     });
   });
 
@@ -251,7 +251,7 @@ describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans
     withTempDir((dir) => {
       const scene = findMaps(writeProject(dir, { w: 8 }))[0].build();
       const [[aboveZ, belowZ]] = floorPairs(scene);
-      const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS);
+      const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, groundTerrains());
       // Appuis en x0-x1, et rien ne reprend la dalle à l'est : x3..x7 pendent derrière x2, qui tombe avec eux.
       expect(unsupported.map((d) => `${d.x},${d.y}`)).toEqual(['2,0', '3,0', '4,0', '5,0', '6,0', '7,0', '2,1', '3,1', '4,1', '5,1', '6,1', '7,1', '2,2', '3,2', '4,2', '5,2', '6,2', '7,2']);
     });
@@ -261,7 +261,7 @@ describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans
     withTempDir((dir) => {
       const scene = findMaps(writeProject(dir, { detache: true }))[0].build();
       const [[aboveZ, belowZ]] = floorPairs(scene);
-      const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS);
+      const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, groundTerrains());
       expect(unsupported.map((d) => `${d.x},${d.y}`)).toEqual(['2,0', '3,0', '2,1', '3,1', '2,2', '3,2']);
       // CONTRE-PREUVE : une liste de sols restreinte à `herbe`/`terre` ne voit AUCUNE de ces 6 cases —
       // l'assertion ci-dessus mesure bien la couverture du complément, pas un artefact du décor de test.
@@ -270,8 +270,8 @@ describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans
   });
 
   it('`GROUND_TERRAINS` = sols naturels et vide, jamais une surface bâtie', () => {
-    for (const nu of ['herbe', 'terre', 'route', 'sable', 'vide']) expect(GROUND_TERRAINS.has(nu)).toBe(true);
-    for (const bati of ['plancher', 'planches', 'dalle', 'marbre', 'pierre', 'pave', 'mur', 'porte']) expect(GROUND_TERRAINS.has(bati)).toBe(false);
+    for (const nu of ['herbe', 'terre', 'route', 'sable', 'vide']) expect(groundTerrains().has(nu)).toBe(true);
+    for (const bati of ['plancher', 'planches', 'dalle', 'marbre', 'pierre', 'pave', 'mur', 'porte']) expect(groundTerrains().has(bati)).toBe(false);
   });
 });
 

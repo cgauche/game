@@ -139,7 +139,7 @@ function mesurer(): Mesure {
 
 /**
  * STOCK DÉCROISSANT des paires de bornes écrites en TUPLE `[min, max]` (volet F, #1659) — la sonde A
- * du design jugé du 2026-09-01, promue en test. 16 occurrences sur 7 sites, deux racines (99 sur 18 à
+ * du design jugé du 2026-09-01, promue en test. 36 occurrences sur 10 sites, deux racines (99 sur 18 à
  * l'ouverture de la vague ; L-1659-2 en a soldé 72 et L-1659-3 les 11 dernières, cf. ci-dessous).
  * `exclu` = ce site n'est PAS une paire de bornes, et la chaîne dit pourquoi. Le stock n'a PLUS QUE
  * des EXCLUS : plus une seule paire de bornes du dépôt ne s'écrit en tuple. Ce qui reste ici est donc
@@ -166,6 +166,9 @@ const TUPLES_STOCK: Record<string, { n: number; exclu?: string }> = {
   'materials.json::[].detail.courses.blockWM': { n: 3, exclu: EXCLU_RECETTE },
   'materials.json::[].detail.speckle.rM': { n: 1, exclu: EXCLU_RECETTE },
   'materials.json::[].detail.tufts.hM': { n: 1, exclu: EXCLU_RECETTE },
+  'terrains.json::[].detail.courses.blockWM': { n: 6, exclu: EXCLU_RECETTE },
+  'terrains.json::[].detail.speckle.rM': { n: 13, exclu: EXCLU_RECETTE },
+  'terrains.json::[].detail.tufts.hM': { n: 1, exclu: EXCLU_RECETTE },
   'structureAppearance.json::[].detail.courses.blockWM': { n: 6, exclu: EXCLU_RECETTE },
   'structureAppearance.json::[].detail.speckle.rM': { n: 3, exclu: EXCLU_RECETTE },
 };
@@ -228,7 +231,10 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     ).toEqual(attendu);
 
     const total = Object.values(M.tuples).reduce((s, n) => s + n, 0);
-    expect(total, 'stock des tuples en HAUSSE : la liste ne fait que décroître (#1659).').toBeLessThanOrEqual(16);
+    // 16 → 36 (#1690) : le plafond MONTE une fois, parce qu'un DOCUMENT entre dans les deux racines —
+    // les 20 tuples de recette des 25 sols existaient déjà, écrits en modules TS que la mesure ne
+    // voyait pas. Aucun n'est une paire de bornes ; le stock reprend sa décroissance depuis 36.
+    expect(total, 'stock des tuples en HAUSSE : la liste ne fait que décroître (#1659).').toBeLessThanOrEqual(36);
 
     // Le stock a DEUX populations, et le cardinal de chacune se mesure sur le RÉSULTAT — le mot
     // « exclu » ne solde rien : une exclusion porte SA raison. La population À MIGRER est VIDE depuis
@@ -236,10 +242,14 @@ describe('deux bornes : une seule graphie, et rien d’emboîté (#1463 L4, vagu
     // reparaîtrait ici sans raison écrite ferait rougir la comparaison nominative ci-dessus.
     const exclus = Object.entries(TUPLES_STOCK).filter(([, l]) => l.exclu);
     const cibles = Object.entries(TUPLES_STOCK).filter(([, l]) => !l.exclu);
-    expect(exclus.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples EXCLUS a bougé sans qu’une raison soit dite.').toBe(16);
+    // 16 → 36 (#1690) : les 20 tuples de recette des 25 sols ENTRENT dans la mesure — ils existaient
+    // déjà, écrits dans 25 modules TS que les deux racines de documents ne voyaient pas. Même classe
+    // que les 16 autres : paramètres géométriques d'une recette de rendu, lus POSITIONNELLEMENT.
+    expect(exclus.reduce((s, [, l]) => s + l.n, 0), 'le compte des tuples EXCLUS a bougé sans qu’une raison soit dite.').toBe(36);
     // 8 → 7 sites (#1686 lot 2) : les 4 sites de recette de `reliefMaterials.json`/`roofMaterials.json`
     // deviennent 3 sites de `materials.json` — les 16 occurrences, elles, ne bougent pas.
-    expect(exclus.length).toBe(7);
+    // 7 → 10 sites (#1690) : les 3 sites de recette de `terrains.json`.
+    expect(exclus.length).toBe(10);
     expect(cibles.reduce((s, [, l]) => s + l.n, 0), 'un tuple À MIGRER est réapparu : la population est soldée depuis #1659 L-1659-3.').toBe(0);
     expect(cibles.length).toBe(0);
     expect(

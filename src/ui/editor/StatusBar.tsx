@@ -3,7 +3,7 @@
  * dimensions de la scène, et toggles de CALQUES (déplacés de la Palette — ils concernent la vue).
  */
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
-import { TERRAINS } from '../../state/terrain';
+import { terrainLabel } from '../../state/terrain';
 import { Icon } from '../Icon';
 import type { Layers, Pt, Tool } from './editorState';
 import { KIND_LABEL, SIEGE_ENGINES } from './editorState';
@@ -23,7 +23,7 @@ const LAYER_LABEL: Record<keyof Layers, string> = {
 export function toolLabel(tool: Tool): ReactNode {
   switch (tool.mode) {
     case 'select': return '↖ Sélection';
-    case 'tile': return <><Icon id="map-tool/paint" size="sm" /> {TERRAINS[tool.terrain]?.label ?? tool.terrain}</>;
+    case 'tile': return <><Icon id="map-tool/paint" size="sm" /> {terrainLabel(tool.terrain) ?? tool.terrain}</>;
     case 'entity':
       if (tool.kind === 'prop') return <><Icon id="map-tool/prop" size="sm" /> {PROPS[tool.ref ?? '']?.label ?? 'Décor'}</>;
       if (tool.kind === 'personnage') return <><Icon id="map-tool/npc" size="sm" /> {tool.ref ?? 'Villageois'}</>;
@@ -63,7 +63,7 @@ export function StatusBar({
     <div className="editor-status">
       <span className="es-cell">
         {hover ? `(${hover.x}, ${hover.y})` : '(—, —)'}
-        {hoverTerrain ? ` · ${TERRAINS[hoverTerrain]?.label ?? hoverTerrain}` : ''}
+        {hoverTerrain ? ` · ${terrainLabel(hoverTerrain) ?? hoverTerrain}` : ''}
       </span>
       <span className="es-tool">{toolLabel(tool)}</span>
       <span>{dims.w}×{dims.h}</span>

@@ -154,6 +154,9 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // ship.traits`. Sans ce champ, `shipCritical.ts` brancherait par id de station.
       "idDe('navalTrait')",
       "idDe('navalTrait')",
+      // +1 site ADOPTÉ (#1690) : `defs/terrains.ts › overlayProp` désigne le DÉCOR répété sur chaque
+      // tuile d'un terrain (`props.json`) — la seule référence de décor du dépôt qui passe la fabrique.
+      "idDe('prop')",
       // +1 site ADOPTÉ (#1657 B3-2b-a) : `grammaire/mecanique.ts › crewTargetSchema.stations` désigne
       // les PRÉSENCES à bord que les livres nomment (`ship-stations.json`, catalogue FERMÉ).
       // +1 site ADOPTÉ (#1599, 2026-09-06) : `grammaire/valeurs.ts › formulaSchema` — le terme `{rule}`
@@ -179,6 +182,9 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       ...Array.from({ length: 35 }, () => "idDe('skill')"),
       ...Array.from({ length: 4 }, () => "idDe('table')"),
       ...Array.from({ length: 6 }, () => "idDe('talent')"),
+      // +1 site ADOPTÉ (#1690) : `defs-scenes/scene.ts › layerSchema.tiles` résout CHAQUE case de la
+      // grille contre `terrains.json` — 18 154 cellules sur les 4 projets livrés.
+      "idDe('terrain')",
       "idDe('trait')",
       "idDe('trapping')",
     ]);

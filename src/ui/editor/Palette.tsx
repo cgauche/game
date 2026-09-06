@@ -15,7 +15,7 @@ import { CAP_IDENTITE_PROP, empreinteDuProp } from '../../data/props.types';
 import { Icon } from '../Icon';
 import { OptionChooser } from '../OptionChooser';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
-import { TERRAINS } from '../../state/terrain';
+import { terrainIds, terrainLabel } from '../../state/terrain';
 import { propDeclaredFoot } from '../../state/footprint';
 import { REF_DECOR_DEFAUT } from '../../data/props.types';
 import { terrainDef } from '../../gameIso/catalog/terrain';
@@ -28,8 +28,6 @@ import { GatedAction } from '../GatedAction';
 import type { Pt, Tool, ZoneVariant } from './editorState';
 import { SIEGE_ENGINES, planStairFlight } from './editorState';
 import { LayerField, layerLabel } from './LayerField';
-
-const TERRAIN_IDS = Object.keys(TERRAINS);
 
 type Family = 'select' | 'architecture' | 'tile' | 'wall' | 'height' | 'stair' | 'crenellated' | 'personnage' | 'prop' | 'heroStart' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
 
@@ -299,7 +297,7 @@ export function Palette({
             />
             <div className="mini-title">Terrains</div>
             <div className="terrain-palette">
-              {TERRAIN_IDS.map((t) => (
+              {terrainIds().map((t) => (
                 <button
                   key={t}
                   className={`terrain-swatch ${tool.terrain === t ? 'active' : ''}`}
@@ -308,9 +306,9 @@ export function Palette({
                     setLastTerrain(t as Terrain);
                     setTool({ mode: 'tile', terrain: t as Terrain });
                   }}
-                  title={TERRAINS[t].label}
+                  title={terrainLabel(t) ?? t}
                 >
-                  {TERRAINS[t].label}
+                  {terrainLabel(t) ?? t}
                 </button>
               ))}
             </div>

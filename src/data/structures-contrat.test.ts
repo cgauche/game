@@ -284,7 +284,16 @@ const cleOrphelineObservee = (o: Parameters<typeof cleOrpheline>[0]) => cleOrphe
 // Déstabilisante : le mettre dans un `seq` derrière l'État automatique EXPOSE ses deux signatures).
 // Aucune n'est une graphie neuve : ce sont les nœuds DÉCLARÉS de `flowSchema` (`grammaire/mecanique.ts`),
 // que la mesure voit ici à une PROFONDEUR inédite dans `qualities.json` (un `choice` sous un `seq`).
-const PLAFOND_HORS_STRATE = 1148;
+// 1148 → 1156 (#1690, mesuré APRÈS rebase sur 6a30233aa) : les formes de `terrains.json` entrent dans la
+// mesure des deux racines pour la première fois — le registre TS des 25 sols devient un dataset. Dix
+// signatures neuves NOMMÉES par la mesure, +8 net au compte : deux de la rampe de dégradé passée en Record
+// (`stops | 0%,100%` et `| 0%,100%,45%`), quatre nœuds DÉCLARÉS de `detailRecipeSchema`
+// (`detail | courses,seedScope`, `| seedScope,speckle,tintVar`, `| seedScope,tintVar`,
+// `| seedScope,tintVar,tufts`) et quatre recettes (`courses | blockWM,edgeWobble,hM,joint,jointW,
+// paletteVar,stagger`, `courses | blockWM,hM,joint,jointW,paletteVar,stagger`, `speckle | colors,perM2,rM`,
+// `tufts | colors,hM,perM2`) que plus aucun autre document ne porte à l'identique depuis la purge de
+// `structureAppearance.material` (#1686). Aucune graphie neuve : toutes sont la forme CIBLE du lexique.
+const PLAFOND_HORS_STRATE = 1156;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -1086,7 +1095,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // conscience (`LDB 20 l.170`) lit sa durée au registre des règles optionnelles par le terme
       // `{rule}` d'une `Formula`. MÊME graphie que le gate `variants[].when` de `spells.json` (18) et
       // `talents.json` (12), déjà stockée dans ce lot : elle s'éteindra AVEC eux, d'un seul geste.
-      'L3 #1463': 377,
+      // … puis 377 → 378 (#1690, 2026-09-06) : UNE ligne NEUVE, qui n'est pas une dérive de graphie —
+      // `terrains.json › overlayProp` (l'id de décor posé sur chaque tuile, forme CIBLE refinée par
+      // `idDe('prop')`) entre au dénominateur avec son document.
+      'L3 #1463': 378,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

@@ -51,7 +51,7 @@ import { FASCIA_THICK_M, roofMaterial } from '../../catalog/roofs';
 import { wallPartRelief, WALL_PARTS } from '../../catalog/structures';
 import { ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildWalls } from '../../builders/walls';
-import { TERRAIN_DEFS } from '../../../state/terrain';
+import { tousLesTerrains } from '../../../state/terrain';
 import type { Face, SceneEl } from '../../builders/types';
 import { buildScene } from '../../../state/mapSpec';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';
@@ -820,7 +820,7 @@ describe('TEINTE de sommet — la variance par case est CUITE dans `color`', () 
   };
 
   it('la nappe témoin porte bien de l’herbe à variance (sinon la mesure ne pèserait rien)', () => {
-    const herbe = TERRAIN_DEFS.find((t) => t.id === 'herbe')!;
+    const herbe = tousLesTerrains().find((t) => t.id === 'herbe')!;
     expect(herbe.detail?.tintVar).toBeGreaterThan(0);
     expect(worldFaces(nappe).filter((f) => f.face.material.id === 'herbe').length).toBeGreaterThan(50);
   });
@@ -871,7 +871,7 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
   });
 
   it('une face SANS appareillage tombe dans le groupe NU ; une pierre à assises a sa période', () => {
-    const sansAssises = TERRAIN_DEFS.find((t) => !t.detail?.courses)!;
+    const sansAssises = tousLesTerrains().find((t) => !t.detail?.courses)!;
     const nu = faceGroup(wf({ domain: 'terrain', id: sansAssises.id }), mpt);
     const pierre = faceGroup(wf({ domain: 'structure', id: 'mur-en-pierre', part: 'face' }), mpt);
     expect(pierre.kind).toBe('wall');
@@ -882,7 +882,7 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
   });
 
   it('un SOL prend la période élargie du sol, en une seule variante', () => {
-    const c = TERRAIN_DEFS.find((t) => t.detail?.courses)!;
+    const c = tousLesTerrains().find((t) => t.detail?.courses)!;
     const g = faceGroup(wf({ domain: 'terrain', id: c.id }), mpt);
     expect(g.kind).toBe('ground');
     expect(g.variant).toBe(0);

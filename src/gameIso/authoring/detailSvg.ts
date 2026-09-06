@@ -33,7 +33,8 @@ import type { DetailRecipe } from '../detail/types';
 import { shade, ao, spec } from '../shade';
 import { isSquareView, type Dims } from '../../geometry/iso';
 import { ISO_PX_PER_M } from '../iso';
-import { TERRAIN_DEFS } from '../../state/terrain';
+import { tousLesTerrains, terrainEntree } from '../../state/terrain';
+import { terrainGradientId, terrainStopsOrdonnes } from '../catalog/terrain';
 import { structureAppearances, matieresDe } from '../../data';
 import { projGP, type Pt2 } from './project';
 import type { GP } from '../builders/types';
@@ -162,7 +163,7 @@ function groundCoursesPatternDef(c: Courses, key: string, [ex, ey]: [Pt2, Pt2], 
 
 /** Id du motif de SOL appareillé d'un terrain (null : pas de recette d'assises, ou plan dégénéré). */
 export function terrainCoursesPattern(terrainId: string, dims: Dims, mpt: number): string | null {
-  const c = TERRAIN_BY_ID.get(terrainId)?.detail?.courses;
+  const c = terrainEntree(terrainId)?.detail?.courses;
   return c && groundBasis(dims, mpt) ? groundPatternId(coursesKey(c), dims) : null;
 }
 
@@ -172,20 +173,20 @@ export function terrainCoursesPattern(terrainId: string, dims: Dims, mpt: number
  *  `<defs>` de tout stage/panneau affine dès que le LOD ≥ 1. */
 export function detailPatternDefs(dims: Dims, mpt: number): string {
   let out = '';
-  const seenG = new Set<string>();
-  for (const t of TERRAIN_DEFS) {
-    if (!t.detail?.tintVar || seenG.has(t.gradient)) continue;
-    seenG.add(t.gradient);
+  for (const t of tousLesTerrains()) {
+    if (!t.detail?.tintVar) continue;
     for (let k = 0; k < TINT_SPREAD.length; k++) {
       const f = 1 + t.detail.tintVar * TINT_SPREAD[k];
-      const stops = t.stops.map((s) => `<stop offset="${s.off}" stop-color="${shade(s.color, f)}"/>`).join('');
-      out += `<linearGradient id="${t.gradient}-v${k}" x1="0" y1="0" x2="0" y2="1">${stops}</linearGradient>`;
+      const stops = terrainStopsOrdonnes(t.stops)
+        .map(([off, color]) => `<stop offset="${off}" stop-color="${shade(color, f)}"/>`)
+        .join('');
+      out += `<linearGradient id="${terrainGradientId(t.id)}-v${k}" x1="0" y1="0" x2="0" y2="1">${stops}</linearGradient>`;
     }
   }
   const gb = groundBasis(dims, mpt);
   if (gb) {
     const seenT = new Set<string>();
-    for (const t of TERRAIN_DEFS) {
+    for (const t of tousLesTerrains()) {
       const c = t.detail?.courses;
       if (!c || seenT.has(coursesKey(c))) continue;
       seenT.add(coursesKey(c));
@@ -204,15 +205,15 @@ export function detailPatternDefs(dims: Dims, mpt: number): string {
 }
 
 // ── Sol : variance de teinte par tuile (variante de dégradé choisie au hash du monde) ────────────────
-const TERRAIN_BY_ID = new Map(TERRAIN_DEFS.map((t) => [t.id, t]));
 
 /** Id du dégradé de SOL d'une tuile : variante nuancée si la recette du terrain porte `tintVar` (et
  *  LOD ≥ 1), sinon le dégradé de base — le fill reste 1 nœud, la variance est GRATUITE. */
 export function terrainFillGradient(terrainId: string, cell: { x: number; y: number; z: number }, lod: Lod): string | null {
-  const t = TERRAIN_BY_ID.get(terrainId);
+  const t = terrainEntree(terrainId);
   if (!t) return null;
-  if (lod >= 1 && t.detail?.tintVar) return `${t.gradient}-v${hash32('tint', cell.x, cell.y, cell.z) % TINT_SPREAD.length}`;
-  return t.gradient;
+  const g = terrainGradientId(t.id);
+  if (lod >= 1 && t.detail?.tintVar) return `${g}-v${hash32('tint', cell.x, cell.y, cell.z) % TINT_SPREAD.length}`;
+  return g;
 }
 
 // ── Faces VERTICALES (murs, falaises) : motif partagé + accents alignés ──────────────────────────────

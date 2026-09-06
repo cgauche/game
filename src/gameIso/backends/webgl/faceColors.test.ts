@@ -6,8 +6,8 @@ import { TINT_SPREAD } from '../../detail/expand';
 import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';
 import { structureAppearance } from '../../catalog/structures';
-import { TERRAIN_DEFS } from '../../../state/terrain';
-import { terrainGradient, MISSING_GRADIENT } from '../../catalog/terrain';
+import { tousLesTerrains } from '../../../state/terrain';
+import { terrainGradient, terrainGradientId, MISSING_GRADIENT } from '../../catalog/terrain';
 import { propMaterial } from '../../catalog/propMaterials';
 import { MISSING_ID, MISSING_LABEL, MISSING_TONE, MISSING_TONE_DARK } from '../../catalog/missing';
 import { matieresDe } from '../../../data';
@@ -22,7 +22,7 @@ import type { Face } from '../../builders/types';
  * Les attendus sont LUS DANS LA DONNÉE, pas récités depuis l'implémentation : chaque couleur ci-dessous
  * est le littéral de son entrée (`src/data/structureAppearance.json` « mur-en-bois »,
  * `src/data/materials.json` « pierre » (domaine `relief`) et « tuile » (domaine `roof`),
- * `src/state/terrain/defs/herbe.ts`). Un ordre de repli INVERSÉ dans `faceColors.ts` (un `??` retourné)
+ * `src/data/terrains.json` « herbe »). Un ordre de repli INVERSÉ dans `faceColors.ts` (un `??` retourné)
  * choisirait une autre couleur de la MÊME entrée : le test le voit.
  */
 const BOIS = {
@@ -56,7 +56,7 @@ describe('la DONNÉE dit bien ce que le test attend (sinon l’attendu ment)', (
     expect(bois.wood).toMatchObject({ inset: BOIS.inset, frame: BOIS.frame, skirt: BOIS.skirt, cap: BOIS.cap });
     expect(reliefMaterial('pierre')).toMatchObject(PIERRE);
     expect(roofMaterial('tuile')).toMatchObject(TUILE);
-    expect(TERRAIN_DEFS.find((t) => t.id === 'herbe')?.swatch).toBe(HERBE_SWATCH);
+    expect(tousLesTerrains().find((t) => t.id === 'herbe')?.swatch).toBe(HERBE_SWATCH);
   });
 });
 
@@ -102,7 +102,7 @@ describe('faceSurface — chaque domaine résolu par SON catalogue, jamais un li
 
 describe('faceSurface — la RECETTE et l’échelle d’UV viennent de la même def que la couleur', () => {
   it('terrain appareillé : la recette est celle de sa def, l’échelle d’UV est la période de SOL', () => {
-    const dalle = TERRAIN_DEFS.find((t) => t.id === 'dalle')!;
+    const dalle = tousLesTerrains().find((t) => t.id === 'dalle')!;
     const s = faceSurface(face({ domain: 'terrain', id: 'dalle' }));
     expect(s.recipe).toBe(dalle.detail);
     expect(s.uvScaleM).toEqual(groundPeriodM(dalle.detail!.courses!));
@@ -156,7 +156,7 @@ describe('faceSurface — la RECETTE et l’échelle d’UV viennent de la même
 });
 
 describe('tintVarFactor — la variance de teinte par case, à l’identité MONDE', () => {
-  const HERBE = TERRAIN_DEFS.find((t) => t.id === 'herbe')!.detail!;
+  const HERBE = tousLesTerrains().find((t) => t.id === 'herbe')!.detail!;
 
   it('sans `tintVar` : facteur NEUTRE (1) — aucune surface n’est repeinte au hasard', () => {
     expect(tintVarFactor(undefined, { x: 1, y: 2, z: 0 })).toBe(1);
@@ -186,7 +186,7 @@ describe('tintVarFactor — la variance de teinte par case, à l’identité MON
     ]) {
       const id = terrainFillGradient('herbe', cell, 1)!;
       const k = Number(id.slice(id.indexOf('-v') + 2));
-      expect(id).toBe(`g_grass-v${k}`); // la variante que l'affine PEINT
+      expect(id).toBe(`${terrainGradientId('herbe')}-v${k}`); // la variante que l'affine PEINT
       expect(tintVarFactor(HERBE, cell)).toBeCloseTo(1 + HERBE.tintVar! * TINT_SPREAD[k], 12);
     }
   });
@@ -244,7 +244,7 @@ describe('faceSurface — REPLI VISIBLE d’un id absent du catalogue (#877)', (
   const TEINTES_REELLES = new Set<string>([
     ...matieresDe('relief').flatMap((m) => [m.face, m.foot, m.slopeTop].filter((c): c is string => !!c)),
     ...matieresDe('roof').flatMap((m) => [m.N, m.E, m.S, m.O, m.line, m.soffite, m.fascia].filter((c): c is string => !!c)),
-    ...TERRAIN_DEFS.map((t) => t.swatch),
+    ...tousLesTerrains().map((t) => t.swatch),
     ...matieresDe('prop').map((m) => m.color),
   ]);
 
@@ -277,7 +277,7 @@ describe('faceSurface — REPLI VISIBLE d’un id absent du catalogue (#877)', (
     const idsReels = [
       ...matieresDe('relief').map((m) => m.id),
       ...matieresDe('roof').map((m) => m.id),
-      ...TERRAIN_DEFS.map((t) => t.id),
+      ...tousLesTerrains().map((t) => t.id),
       ...matieresDe('prop').map((m) => m.id),
     ];
     expect(idsReels).not.toContain(MISSING_ID);
@@ -285,7 +285,7 @@ describe('faceSurface — REPLI VISIBLE d’un id absent du catalogue (#877)', (
 
   it('un terrain ABSENT ne peint pas non plus le DÉGRADÉ ni la RECETTE d’un terrain réel', () => {
     expect(terrainGradient('terrain-fantome')).toBe(MISSING_GRADIENT);
-    expect(TERRAIN_DEFS.map((t) => t.gradient)).not.toContain(MISSING_GRADIENT);
+    expect(tousLesTerrains().map((t) => terrainGradientId(t.id))).not.toContain(MISSING_GRADIENT);
     expect(faceSurface(face('terrain', 'terrain-fantome')).recipe).toBeUndefined();
   });
 });

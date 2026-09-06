@@ -447,7 +447,9 @@ export const encounterDefSchema = z.strictObject({
  *  la tuile au lift métrique (`metricToLift(height)`) ; le TRI garde `z` (occlusion dessus/dessous). */
 export const layerSchema = z.strictObject({
   z: z.number(),
-  tiles: z.array(z.string()),
+  /** Ids de TERRAIN résolus contre `terrains.json` (#1690) : une tuile qui nomme un sol absent du
+   *  dataset est refusée AU PARSE, nommément, au lieu de peindre le repli d'alarme en silence. */
+  tiles: z.array(idDe('terrain')),
   height: z.array(z.number()).optional(),
   /** CRÉNELURE (RENDU PUR) : parallèle à `tiles` (`y·w+x`). `null` = pas de crénelure ; une chaîne = id de
    *  structure crénelée (`structureAppearance.json`) → le crest builder (`crestGeometry`) en dérive des MERLONS

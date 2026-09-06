@@ -302,15 +302,6 @@ export const REGISTRIES = [
     typeFrom: '../types',
   },
   {
-    // Terrains / sols : 1 terrain = 1 fichier defs/ (méta PURE + viz gradient/swatch unifiés).
-    dir: 'src/state/terrain/defs',
-    out: 'src/state/terrain/_registry.generated.ts',
-    exportName: 'terrain',
-    arrayName: 'TERRAIN_DEFS',
-    type: 'TerrainDef',
-    typeFrom: './types',
-  },
-  {
     // Icônes UI SVG maison (24×24, currentColor — remplacent les emojis) : 1 famille = 1 fichier defs/.
     // + union `IconIdGenerated` des ids déclarés → `IconId` (types.ts) est un VRAI type fermé.
     dir: 'src/ui/icons/defs',

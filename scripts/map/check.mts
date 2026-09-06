@@ -11,7 +11,7 @@
  *                                                           (projet exporté par l'éditeur : COORDONNÉES de case,
  *                                                            aucune grille ASCII n'existant derrière)
  */
-import { auditStairwells, BUILT_TERRAINS, floorPairs, PLAN_DEFECT_FAMILIES, scenePlanDefects, scenesZ, terrainAt, type PlanDefect, type PlanDefectAt, type PlanDefectFamily, type PlanDefectFamilyDef } from '../../src/state/planDefects';
+import { auditStairwells, builtTerrains, floorPairs, PLAN_DEFECT_FAMILIES, scenePlanDefects, scenesZ, terrainAt, type PlanDefect, type PlanDefectAt, type PlanDefectFamily, type PlanDefectFamilyDef } from '../../src/state/planDefects';
 import { locateGrid, snippet, wallCellPos, wallEdgePos, zoneCellPos, type GridLocation } from './locate';
 import { findMaps, MAP_REGISTRY, type MapEntry, type MapSource } from './registry';
 import type { Scene } from '../../src/state/scene';
@@ -218,8 +218,9 @@ function report(entry: MapEntry): void {
     const [aboveZ, belowZ] = pairs[0];
     console.log(`=== Carte de superposition (z${aboveZ} sur z${belowZ}) ===`);
     console.log('# bâti aux deux étages · 1 étage seul · 0 rez bâti seul · , sol praticable · . vide\n');
-    const built = (t: string) => (entry.floorTerrain ? t === entry.floorTerrain : BUILT_TERRAINS.has(t));
-    const pave = (t: string) => (entry.floorTerrain ? t === entry.paveTerrain : t !== 'vide' && !BUILT_TERRAINS.has(t));
+    const batis = builtTerrains();
+    const built = (t: string) => (entry.floorTerrain ? t === entry.floorTerrain : batis.has(t));
+    const pave = (t: string) => (entry.floorTerrain ? t === entry.paveTerrain : t !== 'vide' && !batis.has(t));
     for (let y = 0; y < scene.dimensions.h; y++) {
       let line = '';
       for (let x = 0; x < scene.dimensions.w; x++) {

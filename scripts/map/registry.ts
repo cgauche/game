@@ -40,7 +40,7 @@ export interface MapEntry {
   source?: MapSource;
   /** Terrain « plancher » (bâti au rez) et « pavé » (cour/passage couvert) — pour la carte de
    *  superposition `--carte` uniquement (légende `#`/`1`/`0`/`,`/`.`). Absents (projet exporté) = la
-   *  carte classe le rez par `BUILT_TERRAINS`. */
+   *  carte classe le rez par `builtTerrains()`. */
   floorTerrain?: string;
   paveTerrain?: string;
 }

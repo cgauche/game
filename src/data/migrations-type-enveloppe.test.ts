@@ -292,9 +292,10 @@ describe('enveloppe — les `.json` de `src/data`, partitionnés SANS reste', ()
   const PARTITIONNES = new Set([...TABLEAUX, ...OBJETS].map(([f]) => f));
   const AUTRES = FICHIERS.filter((f) => !PARTITIONNES.has(f));
 
-  /** Plancher mesuré le 2026-09-05 : 119 `.json` = 78 tableaux + 41 racines objet + 0 reste
-   *  (121 → 119 : les trois catalogues de matières fusionnent en `materials.json`, #1686 lot 2). */
-  const PLANCHER = 119;
+  /** Plancher mesuré le 2026-09-06 : 120 `.json` = 79 tableaux + 41 racines objet + 0 reste
+   *  (121 → 119 : les trois catalogues de matières fusionnent en `materials.json`, #1686 lot 2 ;
+   *  119 → 120 : `terrains.json` naît du registre TS des 25 sols, #1690). */
+  const PLANCHER = 120;
 
   /** Le contrat, identique aux deux partitions : tête `id,type`, `type` = nom de base du dataset. */
   const horsContrat = (fichier: string, doc: Record<string, unknown>, quoi: string): string[] => {
@@ -316,7 +317,7 @@ describe('enveloppe — les `.json` de `src/data`, partitionnés SANS reste', ()
     // Les quatre datasets que le cycle 10⇄12a « tenait » par accident, nommés pour qu'un scan qui
     // les perdrait ne puisse pas rester vert.
     const tableaux = TABLEAUX.map(([f]) => f);
-    for (const f of ['props.json', 'raw.manifest.json', 'materials.json']) {
+    for (const f of ['props.json', 'raw.manifest.json', 'materials.json', 'terrains.json']) {
       expect(tableaux, `${f} hors de la partition « tableau »`).toContain(f);
     }
     // Et trois témoins de la partition OBJET, celle qu'un filtre `Array.isArray` excluait en silence.

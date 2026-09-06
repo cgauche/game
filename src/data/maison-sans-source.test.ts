@@ -73,8 +73,15 @@ const TOTAL_GELE = 45;
  * `affinerEntree` (`schemas/defs/props.ts`). Le stock ne CROÎT pas : il devient VISIBLE. Il n'est pas
  * attendu à décroître non plus — aucun folio ne chiffre le couvert d'un tonneau ni le rayon d'un feu
  * de camp ; ce sont des extrapolations d'étalons, et `maison` est leur régime définitif.
+ *
+ * `terrains.json` (25) ENTRE le 2026-09-06 (#1690) par le MÊME chemin : le document est de l'art et
+ * exempté au dataset, mais chacune de ses 25 entrées porte quatre champs de RÈGLE (`walkable`,
+ * `priority`, `opaque`, `built`) que l'exemption ne couvre pas — `maison` y est EXIGÉE (`exiges` de
+ * `schemas/defs/terrains.ts`). Ces règles vivaient NON TAGUÉES dans 25 modules TS : le stock ne
+ * croît pas, il devient visible. Il n'est pas attendu à décroître — aucun folio n'imprime de
+ * catalogue de sols.
  */
-const MASQUES_GELES: Record<string, number> = { 'actions.json': 29, 'props.json': 41 };
+const MASQUES_GELES: Record<string, number> = { 'actions.json': 29, 'props.json': 41, 'terrains.json': 25 };
 
 const lire = (dir: string, f: string): unknown => JSON.parse(readFileSync(join(dir, f), 'utf8'));
 
@@ -176,7 +183,7 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
       'primitives.manifest', 'progression-schemas.derived', 'props',
       'qualitySubtypes', 'qualityTypes', 'raceAppearance', 'raw.manifest',
       'renduMonte', 'sizes', 'speciesRace', 'structureAppearance',
-      'systemes.manifest', 'teintesJeu',
+      'systemes.manifest', 'teintesJeu', 'terrains',
     ]);
     // Les deux régimes sont DISJOINTS : une clé dans les deux rendrait l'union ambiguë.
     const communes = Object.keys(SANS_LIVRE).filter((k) => k in SOURCE_EN_PROFONDEUR);
@@ -185,7 +192,9 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     // 51 → 50 : `miscast` en sort (#1467 L1b V-FLIP-TABLE).
     // 50 → 48 : `criticals` et `aa-criticals` en sortent (#1657 B2a) — le régime ne fait que décroître.
     // 48 → 46 : `propMaterials`/`reliefMaterials`/`roofMaterials` fusionnent en `materials` (#1686 lot 2).
-    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(46);
+    // 46 → 47 : `terrains` entre (#1690) — 25 sols qu'aucun folio n'imprime, dont les 4 champs de
+    // règle par entrée sont couverts, eux, par un `maison` EXIGÉ au def.
+    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(47);
   });
 
   it('`maison` est TOUJOURS une chaîne — zéro drapeau booléen, à TOUTE profondeur des deux racines', () => {

@@ -11,7 +11,7 @@ import {
   GROUND_ROWS,
   type Courses,
 } from './courses';
-import { TERRAIN_DEFS } from '../../state/terrain';
+import { tousLesTerrains } from '../../state/terrain';
 import { structureAppearances, matieresDe } from '../../data';
 
 /**
@@ -25,7 +25,7 @@ import { structureAppearances, matieresDe } from '../../data';
  *  Codex remplace ; une vue prise au chargement du module jugerait un catalogue qui n'est plus celui
  *  du rendu. */
 const RECETTES = (): [string, Courses][] =>
-  [...structureAppearances, ...matieresDe('relief'), ...TERRAIN_DEFS]
+  [...structureAppearances, ...matieresDe('relief'), ...tousLesTerrains()]
     .map((d) => [d.id, d.detail?.courses] as [string, Courses | undefined])
     .filter((e): e is [string, Courses] => Boolean(e[1]));
 

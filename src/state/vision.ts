@@ -14,7 +14,7 @@
  */
 import { Scene, tileAt, heightAt, edgeOf, sceneMetresPerTile, areteOcculte } from './scene';
 import { wallOnSight } from './lineOfSight';
-import { TERRAINS, terrainSolidHeightM } from './terrain';
+import { terrainOpaque, terrainSolidHeightM } from './terrain';
 import { METRES_PER_LEVEL } from './relief';
 import { sceneIsDark } from './sceneRules';
 import { propFootTiles, decorAncre } from './footprint';
@@ -100,7 +100,7 @@ function buildOpaqueUncached(scene: Scene): Occ {
   const topH = new Float32Array(w * h);
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++)
-      if (TERRAINS[tileAt(scene, x, y)]?.opaque) {
+      if (terrainOpaque(tileAt(scene, x, y))) {
         g[y * w + x] = 1;
         topH[y * w + x] = heightAt(scene, x, y, 0) + (terrainSolidHeightM(tileAt(scene, x, y)) || METRES_PER_LEVEL);
       }

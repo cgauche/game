@@ -87,7 +87,7 @@ describe('unions partagées moteur ⇄ schémas de donnée (#1440)', () => {
    *
    * PÉRIMÈTRE MESURÉ (2026-08-26, arbre APRÈS ce lot, scan sur 3438 fichiers) : la recopie que cette garde
    * ferme est celle de l'union COMPLÈTE — les 4 membres re-tapés ensemble. Il en reste 2 : le canon
-   * lui-même et `authoring/detailSvg.ts:63` (exempté ci-dessous).
+   * lui-même et `authoring/detailSvg.ts:64` (exempté ci-dessous).
    *
    * Le seuil GÉNÉRIQUE de `scanUnionRecopies` (≥2 membres) ne convient PAS ici : il rapporte 102 sites, dont
    * 100 ne re-déclarent PAS l'union. Trois familles y coexistent : les SOUS-ENSEMBLES cardinaux `'N','E'`
@@ -102,7 +102,7 @@ describe('unions partagées moteur ⇄ schémas de donnée (#1440)', () => {
      *  `AXIS_OF` mappe les SIX orientations d'arête de la planche (N/S/E/O + les 2 diagonales) vers
      *  ses 4 axes de motif — un vocabulaire de dessin plus large que l'arête de mur, dont l'union
      *  n'est pas le canon (il porte `S` et `O`, que `wallSideSchema` n'a pas). */
-    const EXEMPTIONS = ['src/gameIso/authoring/detailSvg.ts:63'];
+    const EXEMPTIONS = ['src/gameIso/authoring/detailSvg.ts:64'];
     const canon = [{ nom: 'WALL_SIDES', membres: wallSideSchema.options }];
     // `src/engine/types.ts` est FOYER des deux autres canons, donc retiré du corpus commun — il ne
     // l'est PAS de celui-ci : c'est justement l'un des sites qui re-tapait l'arête. On le rajoute.

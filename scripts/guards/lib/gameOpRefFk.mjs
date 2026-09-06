@@ -141,7 +141,7 @@ export const GAMEOP_FIELD_TARGETS = {
   // ── Tables ──
   'rollTable.tableId': { registry: 'effectTables' },
   'rollMutation.table': { registry: 'mutationTables' },
-  // ── Terrain (registre `src/state/terrain/defs/`) ──
+  // ── Terrain (dataset `src/data/terrains.json`) ──
   'offTerrainMod.terrain': { registry: 'terrains' },
   // ── Tons de lumière (lightTones.json) — APPARENCE d'une source, résolue au bord du rendu
   // (`gameIso/stage/stagePointLights.ts::resolveTone`). Absent = `flamme`.

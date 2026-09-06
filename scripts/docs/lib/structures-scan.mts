@@ -29,6 +29,7 @@ import ts from 'typescript';
 import {
   CLES_IDENTITE,
   CLES_PROSE_SANS_REFERENCE,
+  CLES_REFERENCE_SCOPEE,
   CLES_RESERVEES,
   CONCEPTS,
   CONCEPT_REFERENCE,
@@ -498,7 +499,9 @@ export function scannerDonnees(
    * LITTÉRAL D'ENUM du schéma du document (un discriminant `kind`/`type`/`op`… n'est pas une FK).
    */
   const ouvreReference = (dataset: string, k: string, v: string): boolean =>
-    !(CLES_PROSE_SANS_REFERENCE as readonly string[]).includes(k) && !choixDeclares.get(dataset)?.get(k)?.has(v);
+    !(CLES_PROSE_SANS_REFERENCE as readonly string[]).includes(k) &&
+    !(k in CLES_REFERENCE_SCOPEE) &&
+    !choixDeclares.get(dataset)?.get(k)?.has(v);
 
   /** Résolution BRUTE (l'id est indexé quelque part, ou le `{text}` égale un libellé). */
   const resoutIndex = (dataset: string, k: string, v: unknown): boolean =>

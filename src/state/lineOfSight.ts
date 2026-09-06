@@ -8,7 +8,7 @@
  * d'arête est authored et sourcée (`couvertPenalty`, `AA 10 l.23`).
  */
 import { Scene, tileAt, areteOcculteEntre, heightAt, sceneMetresPerTile, edgeOf, structureAt, structureIsDown } from './scene';
-import { TERRAINS } from './terrain';
+import { terrainOpaque } from './terrain';
 import { findPropById, findStructureById } from '../data';
 import { decorEnCase } from './decorIndex';
 import { Pt } from './path';
@@ -99,7 +99,7 @@ export function smokeZone(from: Pt, center: Pt, radius: number): Pt[] {
  *  anti-fuite). N'inclut PAS les murs d'arête (cf. `wallBetween`) : une cloison fine de bâtiment est un
  *  `WallSeg`, pas une tuile opaque. */
 export function tileBlocksSight(scene: Scene, x: number, y: number): boolean {
-  if (TERRAINS[tileAt(scene, x, y)]?.opaque) return true;
+  if (terrainOpaque(tileAt(scene, x, y))) return true;
   const dc = decorEnCase(scene, x, y);
   return !!dc && !!findPropById(dc.ref ?? '')?.opaque;
 }

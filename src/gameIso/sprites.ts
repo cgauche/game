@@ -5,10 +5,10 @@
  */
 import type { Rot } from '../geometry/iso';
 import { propSvg } from './catalog/decor';
-import { MISSING_GRADIENT } from './catalog/terrain';
+import { MISSING_GRADIENT, terrainGradientId, terrainStopsOrdonnes } from './catalog/terrain';
 import { MISSING_TONE, MISSING_TONE_DARK } from './catalog/missing';
 import type { Dir8 } from '../state/dir8';
-import { TERRAIN_DEFS } from '../state/terrain';
+import { tousLesTerrains, type TerrainDef } from '../state/terrain';
 import { rigFxGradients } from './rig/fxGradients';
 
 // Le DÉCOR en billboard (arbre du terrain `bois`, tonneaux…) passe par `propSvg` (catalogue), et le
@@ -49,23 +49,24 @@ export function propSprite(ref?: string, facing?: Dir8, camRot: Rot = 0): string
 }
 
 // --- Définitions partagées (dégradés) -------------------------------------
-/** Dégradés de TERRAIN assemblés depuis le registre (`TerrainDef.stops`) — source unique avec
- *  chaque `defs/<id>.ts`. Plusieurs terrains peuvent partager un `gradient` id → on ne l'émet
- *  qu'une fois (dédup). Tous verticaux (x1=0 y1=0 x2=0 y2=1). */
-const terrainGradients = (() => {
-  const seen = new Set<string>();
-  let out = '';
-  for (const t of TERRAIN_DEFS) {
-    if (seen.has(t.gradient)) continue;
-    seen.add(t.gradient);
-    const stops = t.stops.map((s) => `<stop offset="${s.off}" stop-color="${s.color}"/>`).join('');
-    out += `\n  <linearGradient id="${t.gradient}" x1="0" y1="0" x2="0" y2="1">${stops}</linearGradient>`;
-  }
-  // Dégradé d'ALARME du repli visible (#877) : peint la case d'un terrain absent du registre.
-  out += `\n  <linearGradient id="${MISSING_GRADIENT}" x1="0" y1="0" x2="0" y2="1">`
-    + `<stop offset="0%" stop-color="${MISSING_TONE}"/><stop offset="100%" stop-color="${MISSING_TONE_DARK}"/></linearGradient>`;
-  return out;
-})();
+/** Émetteur PUR des dégradés de TERRAIN (`TerrainDef.stops`) — UN dégradé par terrain, son id DÉRIVÉ
+ *  de l'id du terrain (`terrainGradientId`), donc aucun partage possible ; arrêts émis dans l'ordre
+ *  croissant (`terrainStopsOrdonnes`, source unique). Tous verticaux (x1=0 y1=0 x2=0 y2=1).
+ *  `DEFS` le compose sur le dataset `src/data/terrains.json` via `tousLesTerrains()`. */
+export const degradesDeTerrains = (terrains: readonly TerrainDef[]): string =>
+  terrains
+    .map((t) => {
+      const stops = terrainStopsOrdonnes(t.stops)
+        .map(([off, color]) => `<stop offset="${off}" stop-color="${color}"/>`)
+        .join('');
+      return `\n  <linearGradient id="${terrainGradientId(t.id)}" x1="0" y1="0" x2="0" y2="1">${stops}</linearGradient>`;
+    })
+    .join('');
+
+/** Dégradé d'ALARME du repli visible (#877) : peint la case d'un terrain absent du registre. */
+const degradeAlarme =
+  `\n  <linearGradient id="${MISSING_GRADIENT}" x1="0" y1="0" x2="0" y2="1">`
+  + `<stop offset="0%" stop-color="${MISSING_TONE}"/><stop offset="100%" stop-color="${MISSING_TONE_DARK}"/></linearGradient>`;
 
 /** DEFS globaux = dégradés de TERRAIN (données) + dégradés RIG/FX (`rig/fxGradients`, verbatim). */
-export const DEFS = terrainGradients + rigFxGradients;
+export const DEFS = degradesDeTerrains(tousLesTerrains()) + degradeAlarme + rigFxGradients;

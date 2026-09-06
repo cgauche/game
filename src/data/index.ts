@@ -39,6 +39,8 @@ import structuresJson from './structures.json';
 import structureAppearanceJson from './structureAppearance.json';
 import materialsJson from './materials.json';
 import type { MaterialDomain, MaterialEntry, MatiereDe, PropMaterialData, RoofMaterialDef } from './materials.types';
+import terrainsJson from './terrains.json';
+import type { TerrainDef } from './terrains.types';
 import ambianceJson from './ambiance.json';
 import teintesJeuJson from './teintesJeu.json';
 import navalTraitsJson from './naval-traits.json';
@@ -2410,6 +2412,11 @@ export const massBattleData = massBattleJson;
 
 /** LES matières du monde (#1686) — donnée pure, UN document, le domaine PORTÉ par l'entrée. */
 export const materials = materialsJson as MaterialEntry[];
+
+/** LES terrains du monde (#1690) — règle (franchissabilité, raccord, opacité, bâti) ET rendu (teinte,
+ *  rampe, recette, décor posé, bloc plein) dans UNE entrée. Binding muté EN PLACE par `setDataset`
+ *  (`data/overrides.ts`) : la façade `src/state/terrain` et le catalogue de rendu le lisent VIF. */
+export const terrains = terrainsJson as unknown as TerrainDef[];
 
 /**
  * Les matières d'UN domaine — vue DÉRIVÉE du document, jamais un second catalogue, et jamais un

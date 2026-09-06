@@ -18,7 +18,7 @@ import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
 import { effectTables } from './effectTables';
-import { TERRAINS } from '../state/terrain';
+import { terrainEntree } from '../state/terrain';
 import pregensJson from './pregens.json';
 import { makePregens } from './pregens';
 import interludeEventsJson from './interludeEvents.json';
@@ -1312,7 +1312,7 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     crewTestTypes: (id) => !!findCrewTestTypeById(id),
     mutationTables: (id) => MUTATION_TABLE_IDS.has(id),
     effectTables: (id) => EFFECT_TABLE_IDS.has(id),
-    terrains: (id) => id in TERRAINS,
+    terrains: (id) => terrainEntree(id) !== undefined,
     lightTones: (id) => !!findLightToneById(id),
   };
 

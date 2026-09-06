@@ -2,7 +2,7 @@
 
 > ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-ajouter-donnee.mjs` (`npm run docs:ajouter-donnee`) — NE PAS ÉDITER À LA MAIN.
 
-**Périmètre mesuré / angles morts** — sont MESURÉS à chaque génération : les 120 fichiers
+**Périmètre mesuré / angles morts** — sont MESURÉS à chaque génération : les 121 fichiers
 de `src/data/*.json`, les 29 entrées de `src/data/books.json` (dont 18 en VF) et le nom
 RÉEL de leur clé d'abréviation (`abbr`), les 11 clés d'ENVELOPPE et leurs libellés FR
 lus par AST dans `src/data/schemas/grammaire/document.ts`, les 3 familles de document, les 5 skills de domaine (existence
@@ -33,7 +33,7 @@ d'effet / la résolution que ce guide générique ne connaît pas.
 | une **icône** d’affordance | `ajouter-une-icone` | `src/ui/icons/_registry.generated.ts` | À utiliser quand une affordance a besoin d'une icône, dès qu'on est tenté de mettre un émoji dans l'UI ou une donnée d'affichage, ou quand le garde no-emoji-affordance échoue. |
 | un **livre source** entier | `ajouter-un-livre-source` | `src/data/books.json` | À utiliser quand on intègre un nouveau livre ou supplément WFRP (PDF → Source/ → Atlas → données), quand une abréviation de livre inconnue apparaît dans une réf, ou avant de citer un livre absent de docs/sources-vf.md. |
 
-Sinon (le RESTE de `src/data`, soit 120 fichiers), suis le déroulé ci-dessous.
+Sinon (le RESTE de `src/data`, soit 121 fichiers), suis le déroulé ci-dessous.
 
 ## 1. CHECK-FIRST (anti-doublon) — non négociable
 
@@ -120,4 +120,4 @@ JAMAIS un choix d'agent silencieux enterré. Avant de conclure « le moteur ne s
 | `src/data/data-atlas-complete.test.ts` | atlas des données (docs/donnees.md) — complétude |
 | `src/data/maison-sans-source.test.ts` | cliquet « maison sans source » — le régime d’arbitrage ne dérive pas (#1467 L1b) |
 | `src/data/data-wellformed.test.ts` | Intégrité des données src/data/*.json |
-<!-- sources-empreinte: b4df407fe8cc122e6f71ba4bea7d355855f109fd (18 fichiers, 1 dossiers) corps: 72377261b352d41a910db81941451de189a90e9f -->
+<!-- sources-empreinte: ce5a14fa0a6f99a2028b2be0658474ac4a5ce717 (18 fichiers, 1 dossiers) corps: a46d346bcf873ea712ae687034303eab32e9cda3 -->

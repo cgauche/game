@@ -1,8 +1,8 @@
 /**
  * Garde-fou : AUCUN renderer d'environnement ne porte de littéral de couleur (identité de matériau).
- * Toute couleur vient de la DONNÉE (`src/data/*.json`, defs de terrain) ou de `shade.ts` (la LUMIÈRE :
- * ombre d'orientation, occlusion, spéculaire). `#hex` / `rgb()` littéraux capturent aussi les anciennes
- * tables hex-valuées. Deux niveaux de couverture :
+ * Toute couleur vient de la DONNÉE (`src/data/*.json`, `src/data/terrains.json` compris) ou de
+ * `shade.ts` (la LUMIÈRE : ombre d'orientation, occlusion, spéculaire). `#hex` / `rgb()` littéraux
+ * capturent aussi les tables hex-valuées. Deux niveaux de couverture :
  *   1) balayage RÉCURSIF des arborescences pivot/backend/authoring/pov/catalog/stage — auto-couvre tout NOUVEAU
  *      fichier (aucune liste à tenir à la main) ;
  *   2) les renderers à la RACINE de `gameIso/`, nommés explicitement par FICHIER (`SurcoucheIso.tsx`,
@@ -12,9 +12,9 @@
  *
  * HORS périmètre (couleur LÉGITIME, non balayés) : le rig (`rig/**` = bestiaire/équipement dessinés
  * « à la main »), les FX de combat (`fx/**`), `shade.ts` (helpers de voile lumineux sanctionnés
- * `ao`/`spec`/`warm`), et les defs de
- * terrain (`state/terrain/defs/**` = DONNÉE d'identité matériau, gradient/swatch, au même titre qu'un
- * JSON). Les TOKENS (`stage/TokenChromeOverlay`/`tokenBodyKind`) sont couverts À PART (bloc « chrome ») : leur
+ * `ao`/`spec`/`warm`). L'identité matériau des SOLS (`swatch`, `stops`) vit en donnée
+ * (`src/data/terrains.json`), donc hors de toute arborescence balayée. Les TOKENS
+ * (`stage/TokenChromeOverlay`/`tokenBodyKind`) sont couverts À PART (bloc « chrome ») : leur
  * couleur d'identité vient de teamColors (`ACTIVE_RING`/`hpColor`) ou d'une donnée d'apparence, le reste
  * est du chrome NEUTRE allowlisté ; tout AUTRE hex y est une fuite d'identité de matériau à attraper.
  */

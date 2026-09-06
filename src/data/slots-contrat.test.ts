@@ -141,7 +141,13 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // Cliquet DESCENDU 339 → 338 (#1686 lot 3a-1) : `arene-projet.json | material` porte
 // `idDe('material','roof')` (`defs-scenes/scene.ts` `couvertureSchema`, adopté par `BuildingMass.material`
 // et `RoofDefaults.material`) — le champ a son slot déclaré, l'entrée de stock est périmée.
-const DETTE_ADOPTION_MAX = 345;
+// Cliquet DESCENDU 345 → 341 (#1690) : les QUATRE `<projet>.json | tiles` portent `idDe('terrain')`
+// (`defs-scenes/scene.ts` `layerSchema`) — 18 154 cellules résolues au parse contre `terrains.json` ;
+// les quatre entrées de stock sont périmées et se retirent.
+// Cliquet RECALÉ 334 → 336 après rebase sur 6a30233aa (#1690, 2026-09-06) : la mesure d'avant rebase valait
+// 334 (les 4 `tiles` adoptent `idDe('terrain')`) ; le tronc a ajouté entre-temps 2 entrées de stock
+// (`scripts/guards/lib/slotsStock.mjs`, train #1599 — États portés par un passif). La valeur suit la MESURE.
+const DETTE_ADOPTION_MAX = 336;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

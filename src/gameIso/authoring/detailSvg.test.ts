@@ -13,6 +13,7 @@ import {
   type VerticalFaceCtx,
 } from './detailSvg';
 import { hash32 } from '../../data/hash';
+import { terrainGradientId } from '../catalog/terrain';
 import type { DetailRecipe } from '../detail/types';
 import type { Dims } from '../../geometry/iso';
 
@@ -73,8 +74,8 @@ describe('detailPatternDefs — motifs partagés par (recette × orientation × 
   });
   it('vue du DESSUS : variantes de dégradé + motifs de SOL, mais aucun motif de face VERTICALE', () => {
     const top = detailPatternDefs({ ...dims, view: 'top' }, 2);
-    expect(top).toContain('g_grass-v0');
-    expect(top).toContain('g_grass-v3');
+    expect(top).toContain(`${terrainGradientId('herbe')}-v0`);
+    expect(top).toContain(`${terrainGradientId('herbe')}-v3`);
     expect(top).toContain('-top-g"'); // sol appareillé : le plan du sol reste affine vu du dessus
     expect(top).not.toMatch(/dt-[a-z0-9]+-top-[xyda]\d/); // pas de face verticale en vue carrée
   });
@@ -104,10 +105,10 @@ describe('detailPatternDefs — motifs partagés par (recette × orientation × 
 describe('terrainFillGradient — variance de teinte par tuile', () => {
   it('herbe : variante stable au hash du monde en LOD ≥ 1, dégradé de base en LOD 0, null si terrain inconnu', () => {
     const a = terrainFillGradient('herbe', { x: 3, y: 4, z: 0 }, 2);
-    expect(a).toMatch(/^g_grass-v[0-3]$/);
+    expect(a).toMatch(new RegExp(`^${terrainGradientId('herbe')}-v[0-3]$`));
     expect(terrainFillGradient('herbe', { x: 3, y: 4, z: 0 }, 1)).toBe(a);
-    expect(terrainFillGradient('herbe', { x: 3, y: 4, z: 0 }, 0)).toBe('g_grass');
-    expect(terrainFillGradient('vide', { x: 3, y: 4, z: 0 }, 2)).toBe('g_sol'); // terrain sans `tintVar`
+    expect(terrainFillGradient('herbe', { x: 3, y: 4, z: 0 }, 0)).toBe(terrainGradientId('herbe'));
+    expect(terrainFillGradient('vide', { x: 3, y: 4, z: 0 }, 2)).toBe(terrainGradientId('vide')); // terrain sans `tintVar`
     expect(terrainFillGradient('???', { x: 3, y: 4, z: 0 }, 2)).toBeNull();
   });
 });

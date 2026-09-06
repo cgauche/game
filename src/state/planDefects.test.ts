@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { Scene, SceneEffectZone, WallSeg } from './scene';
-import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, GROUND_TERRAINS, interiorCells, outdoorCells, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOutsideBuildingTiles, type PlanDefectFamily } from './planDefects';
+import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, groundTerrains, interiorCells, outdoorCells, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOutsideBuildingTiles, type PlanDefectFamily } from './planDefects';
 import { perimeterWallSegs } from './sceneEdit.testkit';
 import { validateScene } from './validateScene';
 
@@ -317,29 +317,29 @@ function slabScene(builtAt: string[], slab: string[] = ['1,1', '2,1', '3,1'], zo
 
 describe('APPUI d’une dalle d’étage — porter, ce n’est pas avoir du bâti sous chaque case', () => {
   it('une dalle qui ne repose NULLE PART flotte : toutes ses cases sont signalées', () => {
-    const defects = auditUnsupportedFloor(slabScene([]), 1, 0, GROUND_TERRAINS);
+    const defects = auditUnsupportedFloor(slabScene([]), 1, 0, groundTerrains());
     expect(defects.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1', '3,1']);
   });
 
   it('CONTRE-ÉPREUVE appariée : la MÊME dalle, avec du bâti sous sa case CENTRALE, n’est plus signalée — ses deux rives touchent l’appui', () => {
-    expect(auditUnsupportedFloor(slabScene(['2,1']), 1, 0, GROUND_TERRAINS)).toEqual([]);
+    expect(auditUnsupportedFloor(slabScene(['2,1']), 1, 0, groundTerrains())).toEqual([]);
   });
 
   it('le MÊME appui unique, reporté à un BOUT de la dalle, ne la tient plus : sa case du fond pend derrière l’autre', () => {
-    const defects = auditUnsupportedFloor(slabScene(['3,1']), 1, 0, GROUND_TERRAINS);
+    const defects = auditUnsupportedFloor(slabScene(['3,1']), 1, 0, groundTerrains());
     expect(defects.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1']);
   });
 
   it('une dalle VOISINE mais déconnectée ne prête pas son appui : elle est jugée sur sa propre composante', () => {
     const scene = slabScene(['5,1'], ['1,1', '2,1', '3,1', '5,1']); // (4,1) reste vide : deux composantes
-    const defects = auditUnsupportedFloor(scene, 1, 0, GROUND_TERRAINS);
+    const defects = auditUnsupportedFloor(scene, 1, 0, groundTerrains());
     expect(defects.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1', '3,1']);
   });
 
   it('PORTE COCHÈRE : une travée qui enjambe la voie des calèches, portée de part et d’autre, ne produit aucun défaut', () => {
     // z0 : `route` en x2 (la voie), `plancher` partout ailleurs sur la bande — l'aile enjambe le passage.
     const scene = slabScene(['0,1', '1,1', '3,1', '4,1'], ['0,1', '1,1', '2,1', '3,1', '4,1']);
-    expect(auditUnsupportedFloor(scene, 1, 0, GROUND_TERRAINS)).toEqual([]);
+    expect(auditUnsupportedFloor(scene, 1, 0, groundTerrains())).toEqual([]);
   });
 
   it('ENCORBELLEMENT : une dalle qui déborde au-dessus d’une cour, portée par le bâti, n’est pas « au-dessus du dehors »', () => {
@@ -373,7 +373,7 @@ describe('APPUI d’une dalle d’étage — porter, ce n’est pas avoir du bâ
     const porte = supportedFloorCells(scene, 1, 0);
     expect([...porte]).toEqual(['0,0']); // l'appui porte sa propre case, et rien d'autre ne reprend la charge
 
-    const defects = auditUnsupportedFloor(scene, 1, 0, GROUND_TERRAINS);
+    const defects = auditUnsupportedFloor(scene, 1, 0, groundTerrains());
     expect(defects).toHaveLength(8 * 8 - 1);
     expect(defects.some((d) => d.x === 7 && d.y === 7)).toBe(true); // le coin opposé, à l'autre bout de la dalle
   });
@@ -381,7 +381,7 @@ describe('APPUI d’une dalle d’étage — porter, ce n’est pas avoir du bâ
   it('CONTRE-ÉPREUVE appariée : la MÊME dalle sur une GRILLE de piliers ne produit AUCUN défaut — chaque travée est reprise de part et d’autre, et sa rive touche le pilier d’angle', () => {
     const builtAt: string[] = [];
     for (let y = 0; y < 8; y += 3) for (let x = 0; x < 8; x += 3) builtAt.push(`${x},${y}`);
-    expect(auditUnsupportedFloor(wideSlabScene(builtAt), 1, 0, GROUND_TERRAINS)).toEqual([]);
+    expect(auditUnsupportedFloor(wideSlabScene(builtAt), 1, 0, groundTerrains())).toEqual([]);
   });
 
   /** Bande d'étage continue (y=1) au-dessus d'un rez `plancher` percé d'une VOIE de `route` large de
@@ -407,29 +407,29 @@ describe('APPUI d’une dalle d’étage — porter, ce n’est pas avoir du bâ
   }
 
   it('PORTE COCHÈRE : une voie large de 2 cases, portée des deux côtés, s’enjambe sans défaut', () => {
-    expect(auditUnsupportedFloor(traveeScene(2), 1, 0, GROUND_TERRAINS)).toEqual([]);
+    expect(auditUnsupportedFloor(traveeScene(2), 1, 0, groundTerrains())).toEqual([]);
   });
 
   it('une travée reprise des DEUX côtés ne flotte à AUCUNE largeur — le verdict est structurel, jamais une distance comparée à un seuil (qu’il vaille 3, 10 ou 100)', () => {
     for (const voie of [2, 4, 7, 20, 41, 201]) {
-      expect(auditUnsupportedFloor(traveeScene(voie), 1, 0, GROUND_TERRAINS), `voie de ${voie} cases`).toEqual([]);
+      expect(auditUnsupportedFloor(traveeScene(voie), 1, 0, groundTerrains()), `voie de ${voie} cases`).toEqual([]);
     }
   });
 
   it('ENCORBELLEMENT : une case de débord, au contact du bâti, tient toute seule', () => {
-    expect(auditUnsupportedFloor(porteAFauxScene(1), 1, 0, GROUND_TERRAINS)).toEqual([]);
+    expect(auditUnsupportedFloor(porteAFauxScene(1), 1, 0, groundTerrains())).toEqual([]);
   });
 
   it('PORTE-À-FAUX : dès qu’une case pend derrière une autre, le surplomb ENTIER est signalé, sa case au contact du bâti comprise', () => {
-    const deux = auditUnsupportedFloor(porteAFauxScene(2), 1, 0, GROUND_TERRAINS);
+    const deux = auditUnsupportedFloor(porteAFauxScene(2), 1, 0, groundTerrains());
     expect(deux.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1']);
 
-    const galerie = auditUnsupportedFloor(porteAFauxScene(4), 1, 0, GROUND_TERRAINS);
+    const galerie = auditUnsupportedFloor(porteAFauxScene(4), 1, 0, groundTerrains());
     expect(galerie.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1', '3,1', '4,1']);
   });
 
   it('le verdict ne dépend d’AUCUNE échelle métrique de Scène : mêmes cases signalées à 0,5 m/case comme à 10 m/case (Scène MER)', () => {
-    const flottantes = (scene: Scene) => auditUnsupportedFloor(scene, 1, 0, GROUND_TERRAINS).map((d) => `${d.x},${d.y}`);
+    const flottantes = (scene: Scene) => auditUnsupportedFloor(scene, 1, 0, groundTerrains()).map((d) => `${d.x},${d.y}`);
     for (const metresPerTile of [0.5, 2, 10]) {
       expect(flottantes({ ...porteAFauxScene(2), metresPerTile }), `à ${metresPerTile} m/case`).toEqual(['1,1', '2,1']);
       expect(flottantes({ ...porteAFauxScene(1), metresPerTile }), `à ${metresPerTile} m/case`).toEqual([]);
@@ -438,7 +438,7 @@ describe('APPUI d’une dalle d’étage — porter, ce n’est pas avoir du bâ
   });
 
   it('le message d’auteur nomme les deux façons de reprendre la charge, et le GESTE de correction', () => {
-    const [flottante] = auditUnsupportedFloor(porteAFauxScene(2), 1, 0, GROUND_TERRAINS);
+    const [flottante] = auditUnsupportedFloor(porteAFauxScene(2), 1, 0, groundTerrains());
     expect(flottante.message).toContain('linteau, arche, porte cochère');
     expect(flottante.message).toContain('encorbellement');
     expect(flottante.message).toContain('Pose un appui bâti sous ce surplomb');

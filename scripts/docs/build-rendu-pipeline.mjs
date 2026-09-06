@@ -336,7 +336,7 @@ ${table(CATALOGUES, ['Catalogue', 'Entrées'], (c) => `| \`${c.p}\` | ${c.entree
   (id + couleurs par \`part\` + \`detail\` optionnelle). Les éléments le référencent par id ; le rendu
   résout les couleurs par \`part\`.
 - **un ton de décor** : une entrée dans la palette — jamais un hex dans un renderer (§6).
-- **un terrain** : une def sous \`src/state/terrain/defs/\`, puis \`npm run gen\`.
+- **un terrain** : une entrée dans \`src/data/terrains.json\` (règle ET rendu dans la même entrée).
 - **un prop / décor** : une def sous \`${ISO}/catalog/decor/defs/\`, puis \`npm run gen\`. Symétrique →
   un seul dessin ; directionnel → il DÉCLARE ses vues, et la sélection vue + miroir + repli se fait
   dans la MACHINERIE partagée, jamais dans la def.

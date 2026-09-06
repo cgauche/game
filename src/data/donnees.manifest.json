@@ -611,6 +611,12 @@
         },
         {
           "files": [
+            "terrains.json"
+          ],
+          "desc": "LES terrains de la grille — un document où la RÈGLE (`walkable`, `priority`, `opaque`, `built`) et le RENDU (`swatch`, `stops`, `detail`, `overlayProp`, `solidHeightM`) vivent dans la MÊME entrée ; lu par la façade `src/state/terrain`"
+        },
+        {
+          "files": [
             "ambiance.json",
             "lightLevels.json",
             "lightTones.json"

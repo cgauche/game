@@ -5,16 +5,15 @@ import { DOMAINES_MATIERE, type MaterialEntry } from './materials.types';
 import { propMaterial } from '../gameIso/catalog/propMaterials';
 import { roofMaterial } from '../gameIso/catalog/roofs';
 import { reliefMaterial } from '../gameIso/catalog/relief';
-import { TERRAIN_DEFS } from '../state/terrain/_registry.generated';
+import { terrains } from './index';
 
 /**
  * IDENTITÉ D'UNE MATIÈRE DU MONDE (#1686) — l'identité est le couple (DOMAINE, id), et l'id est
  * UNIQUE dans TOUT le document `materials.json`, dont le périmètre est `prop`, `roof`, `relief`.
  * `MaterialRef.domain` en déclare CINQ (`src/gameIso/builders/types.ts:34` : terrain, relief,
- * structure, roof, prop) ; les deux autres sont hors de ce dataset — `terrain` est déclaré en
- * modules TS (`src/state/terrain/defs`, registre généré) et rejoint le chantier #1690, `structure`
- * porte son propre dataset d'apparence (`structureAppearance.json`), un composite qui RÉFÉRENCE des
- * matières. Leurs collisions d'id VIVANTES sont mesurées et tenues au cliquet en fin de fichier,
+ * structure, roof, prop) ; les deux autres portent chacun SON dataset — `terrain` a le sien
+ * (`terrains.json`, #1690 : règle et rendu dans la même entrée), `structure` un dataset d'apparence
+ * (`structureAppearance.json`), un composite qui RÉFÉRENCE des matières. Leurs collisions d'id VIVANTES sont mesurées et tenues au cliquet en fin de fichier,
  * jamais tues.
  * Un homonyme se COMPOSE (`prop-ardoise` / `toit-ardoise`), il ne se distingue pas par le domaine du
  * lecteur : depuis le lot 2 les trois catalogues sont UN document, donc UN espace de noms, et deux
@@ -107,7 +106,7 @@ describe('collisions d’id sur les CINQ domaines — cliquet décroissant', () 
     relief: matieresDe('relief').map((e) => e.id),
     roof: matieresDe('roof').map((e) => e.id),
     structure: structureAppearances.map((e) => e.id),
-    terrain: TERRAIN_DEFS.map((e) => e.id),
+    terrain: terrains.map((e) => e.id),
   };
 
   it('les domaines mesurés sont EXACTEMENT ceux que `MaterialRef.domain` déclare', () => {

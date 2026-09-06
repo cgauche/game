@@ -655,7 +655,8 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     //         que les livres nomment, `exiges: ['desc']` dès sa première écriture.
     //   #1686 lot 2 : `propMaterials`/`roofMaterials`/`reliefMaterials` fusionnent en UN def
     //         `materials` (81 → 79) — trois defs SCELLÉS en deviennent un, la population perd 2.
-    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 79, mesures: 0 });
+    //   #1690 : `terrains` naît SCELLÉ (79 → 80) — le registre TS des 25 sols devient un dataset.
+    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 80, mesures: 0 });
   });
 
 });
@@ -817,6 +818,11 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     // dès la création. `source` ne l'est pas au def : c'est déjà l'enveloppe qui refuse une entrée sans
     // `source` NI `maison`.
     'ship-stations.json · desc',
+    // #1690 — `terrains` naît adopté : le document est SANS LIVRE (aucun folio n'imprime de catalogue
+    // de sols), mais ses 25 entrées portent chacune quatre champs de RÈGLE (`walkable`, `priority`,
+    // `opaque`, `built`) que l'exemption de document ne couvre pas — `maison` est donc exigée à
+    // l'entrée, même patron que les 41 règles de `props.json` (#1680).
+    'terrains.json · maison',
   ];
 
   it('la 1ʳᵉ entrée réelle de chaque def adopté est ACCEPTÉE — témoin positif de chaque paire', () => {

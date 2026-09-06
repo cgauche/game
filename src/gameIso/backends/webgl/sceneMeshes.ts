@@ -41,6 +41,7 @@ import { BB_W, BB_H } from '../../pov/billboardCore';
 import { povDepth } from '../../pov/camera';
 import { type BillboardKind } from './billboardMath';
 import { DEFS } from '../../sprites';
+import { tousLesTerrains } from '../../../state/terrain';
 import { propSvg } from '../../catalog/decor';
 import { AMBIANCE, METEO_SANS_EFFET, type WeatherLight } from '../../catalog/ambiance';
 import { bonesToSvg } from '../../rig/renderBones';
@@ -319,7 +320,8 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  * qu'un champ manquant = un monde périmé à l'écran, invisible autrement.
  * `scene.entities` n'y entre PAS par sa référence : le décor VOLUMIQUE y contribue par une SIGNATURE
  * (`propVolumeSignature`, une chaîne) et par les objets de recette/matériau qu'il fait lire
- * (`propRecipeDeps`) ; les matières des deux autres domaines cuits y entrent par `matiereDeps`. Un
+ * (`propRecipeDeps`) ; les matières des deux autres domaines cuits y entrent par `matiereDeps`, et
+ * les TERRAINS par `terrainDeps`. Un
  * tableau d'entités reforgé sans que le mobilier bouge — le cas COURANT du combat (despawn,
  * déplacement forcé) — ne recuit donc rien, et la garde discriminante vit dans `prop-picking.test.ts`.
  * `scene.effectZones` en est ABSENT sciemment : `buildRoofs` le lit (`massRoomZoneIds`), mais il
@@ -331,7 +333,7 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  */
 export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
   return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.metresPerTile, mpt,
-    propVolumeSignature(scene), ...propRecipeDeps(scene), ...matiereDeps(scene)];
+    propVolumeSignature(scene), ...propRecipeDeps(scene), ...matiereDeps(scene), ...terrainDeps()];
 }
 
 /** Ce que la cuisson retient des ENTITÉS : la signature des seuls décors à recette — id, ref, case,
@@ -383,6 +385,18 @@ function matiereDeps(scene: Scene): readonly unknown[] {
   }
   out.push(...matieresDe('relief'));
   return out;
+}
+
+/**
+ * Ce que la cuisson lit du dataset des TERRAINS (#1690) — le document ENTIER, une dep par entrée,
+ * comparée par identité : `swatch`, `detail`, `priority` et `solidHeightM` entrent tous dans les
+ * faces de sol (`buildFloors` → `faceSurface`), et l'atelier réécrit l'entrée éditée. Le lire ENTIER
+ * plutôt que « ce que la scène pose » est le MÊME choix que le domaine `relief` ci-dessus : les ids
+ * de terrain vivent dans les couches, et un filtre les recopierait. Prix dit : éditer `neige` recuit
+ * une scène qui n'en pose pas.
+ */
+function terrainDeps(): readonly unknown[] {
+  return tousLesTerrains();
 }
 
 /** READ-SET de `heightAt` (`state/scene.ts`) — la SEULE lecture de scène des passes de billboards

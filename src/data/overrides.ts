@@ -12,7 +12,7 @@
 import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, lightTones, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
-  materials,
+  materials, terrains,
   pregens, oups, interludeEvents, peripeties, details, names, allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
@@ -164,6 +164,11 @@ const ARRAYS = {
   // `exposition.edit` = `dataset` (lot 3a-2) : la clé a sa route de sauvegarde vers `materials.json`,
   // et l'onglet Codex « Matières » l'édite.
   materials,
+  // Terrains du monde (#1690) : UN document, règle et rendu dans la même entrée. Ce binding EST le
+  // seam de mutation en place, et c'est lui qui rend vive la lecture de la façade `src/state/terrain`
+  // et du catalogue `gameIso/catalog/terrain` — tous deux indexent le TABLEAU et revérifient son
+  // contenu à chaque accès (`indexDesTerrains`), un splice étant invisible à l'identité du tableau.
+  terrains,
   pregens, oups, interludeEvents, peripeties, names,
   // Axes de forces/faiblesses (#409) — mécanique MAISON, éditable au Codex comme tout catalogue.
   axes: allAxes,
