@@ -13,7 +13,7 @@ import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '
 import { CHAR_LABELS, CharKey, ArmourBypass } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables, conditionLabel, lightTones } from '../../data';
-import { findFallTable } from '../../data/shipCriticals';
+import { findFallTable, fallTables } from '../../data/shipCriticals';
 import { RefField } from '../compendium/RefField';
 import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
@@ -397,7 +397,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'skillDRBonus': return { op: 'skillDRBonus', bonus: 1 };
     case 'charDRBonus': return { op: 'charDRBonus', char: 'sociabilite', bonus: 1 };
     case 'crewTestMod': return { op: 'crewTestMod', mod: 10 };
-    case 'fall': return { op: 'fall', hauteur: { table: { id: 'tomberDuGreement' } } };
+    // Aucun id EN DUR : la table se choisit, comme une table référencée de `rollTable` (`tableId: ''`).
+    case 'fall': return { op: 'fall', hauteur: { table: { id: '' } } };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
     case 'offTerrainMod': return { op: 'offTerrainMod', terrain: 'eau', mSet: 1, testDR: -2 };
@@ -519,7 +520,7 @@ export function opSummary(o: GameOp): string {
     case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${o.skill ? refLabel('skills', o.skill) : (findCrewTestTypeById(o.testType ?? '')?.label ?? o.testType)}`;
     case 'charDRBonus': return `+${formulaSummary(o.bonus)} DR ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'crewTestMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
-    case 'fall': return findFallTable(o.hauteur.table.id)?.label ?? o.hauteur.table.id;
+    case 'fall': return `hauteur lue dans « ${findFallTable(o.hauteur.table.id)?.label ?? (o.hauteur.table.id || '— table à choisir —')} »`;
     case 'moveMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
     case 'offTerrainMod': return `hors ${o.terrain}${o.mSet != null ? ` : M ${o.mSet}` : ''}${o.testDR ? `, ${o.testDR} DR aux Tests` : ''}`;
     case 'attrMod': return `+${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
@@ -606,6 +607,7 @@ const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'sinMod', 'corruptionExposure', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
   'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation', 'armourPierce', 'light',
+  'fall',
 ]);
 
 /** Rangées d'une op `rollTable` (Vers de carie, MSRC 16 l.90) : `[min,max]` (source unique de fourchette,
@@ -625,8 +627,8 @@ function RollTableRowsField({ rows, onChange }: { rows: { min: number; max: numb
       {rows.map((r, i) => (
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
-            <label className="dr">min<NumberField variant="nu" label="Fourchette — borne basse" width={64} value={r.min} onChange={(min) => set(i, { min })} /></label>
-            <label className="dr">max<NumberField variant="nu" label="Fourchette — borne haute" width={64} value={r.max} onChange={(max) => set(i, { max })} /></label>
+            <label className="dr">de<NumberField variant="nu" label="Fourchette — borne basse" width={64} value={r.min} onChange={(min) => set(i, { min })} /></label>
+            <label className="dr">à<NumberField variant="nu" label="Fourchette — borne haute" width={64} value={r.max} onChange={(max) => set(i, { max })} /></label>
             <button className="btn small" title="Monter" disabled={i === 0} onClick={() => swap(i, i - 1)}>↑</button>
             <button className="btn small" title="Descendre" disabled={i === rows.length - 1} onClick={() => swap(i, i + 1)}>↓</button>
             <button className="btn small danger" title="Supprimer la rangée" onClick={() => onChange(rows.filter((_, j) => j !== i))}>✕</button>
@@ -909,6 +911,14 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
               </select>
             </label>
           </>
+        )}
+        {op.op === 'fall' && (
+          <label className="dr">Table de hauteur
+            <select value={o.hauteur.table.id} onChange={(e) => upd({ hauteur: { table: { id: e.target.value } } })}>
+              {!o.hauteur.table.id && <option value="">— (choisir une table) —</option>}
+              {fallTables.map((t) => (<option key={t.id} value={t.id}>{t.label}</option>))}
+            </select>
+          </label>
         )}
         {op.op === 'rollTable' && (
           <>

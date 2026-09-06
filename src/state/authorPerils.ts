@@ -30,7 +30,7 @@ import type { BuiltCascadeStep } from './stepBrand';
 import { worldStep, freeCons } from './rollSeam';
 import { dataLabel } from '../data';
 import { registerCascadeApplier } from './cascade';
-import { applyEffects, applyEffectsLoot } from './combatEffects';
+import { applyEffects, applyEffectsLoot, jouerFlowEntier } from './combatEffects';
 import { t } from '../i18n';
 
 export const AUTHOR_PERIL_KIND = 'authorPeril';
@@ -90,12 +90,12 @@ registerCascadeApplier(AUTHOR_PERIL_KIND, (get, set, step) => {
     // l'ouverture du combat — est ce qui garantit que leurs dés ne se tirent pas (parité du `break`).
     return { consequences: freeCons(lignes), stopSequence: true };
   }
-  applyEffectsLoot(get, set, peril.effects, peril.label); // trouvaille d'auteur → fenêtre d'attribution
+  jouerFlowEntier(applyEffectsLoot(get, set, peril.effects, peril.label)); // trouvaille d'auteur → fenêtre d'attribution
   return { consequences: freeCons(lignes) };
 });
 
 /** Applique les effets d'un péril SUR-LE-CHAMP (protocole maritime : `resumeTravel` rejoue la traversée). */
 export const applyPerilEffectsNow: PerilInterruptHandler = (get, set, effects) => {
-  applyEffects(get, set, effects);
+  jouerFlowEntier(applyEffects(get, set, effects));
   return [];
 };

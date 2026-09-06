@@ -285,7 +285,7 @@ Une relation établie avec un expert = consultable gratuitement (sans Activité)
 Test **Dressage Accessible (+20)**. Succès → ajouter 1 Compétence à un animal, choisie parmi les Traits **Dressé** (LDB 85 p.339).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.129-130) → `FavorLevel`, `InterludeHeroState`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `grantFavorSchema`, `GameState`, `fr`, `EFFECT_HANDLERS`, `dressage` — `src/data/activities.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/favor.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, +3 fichiers
+- `LDB 23` (l.129-130) → `FavorLevel`, `InterludeHeroState`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `grantFavorSchema`, `GameState`, `fr`, `dressage`, `EFFECT_HANDLERS` — `src/data/activities.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/favor.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, +3 fichiers
 
 ---
 

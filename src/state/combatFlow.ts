@@ -211,7 +211,7 @@ import {
 import { weaponGroupKey } from '../engine/weaponGroup';
 import { moveReachFor, flyReachable, fleeReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt, climbTraverseFor } from './path';
 import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
-import { resolveRun, chargeReach, applyFall } from '../engine/movement';
+import { resolveRun, chargeReach } from '../engine/movement';
 import type { RNG } from '../engine/dice';
 import { bus, EVT } from './bus';
 import { emitCombatEvent } from './combatEvents';
@@ -244,7 +244,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog, registerCastSpellEffect } from './combatEffects';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog, registerCastSpellEffect, registerSuiteCombat, ouvrirChute, cloturer, registerCloture } from './combatEffects';
 import { teamCommandMod } from './commandTeam';
 // --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
 export * from './combatManeuvers';
@@ -1825,20 +1825,22 @@ export function applyCriticalToTarget(
  * La destruction de la coque NE passe PAS par un « Mort » de Critique mais par ses Blessures / l'État Naufrage —
  * on renvoie donc toujours `false`.
  */
-function applyHullCriticalToTarget(
+export function applyHullCriticalToTarget(
   target: Combatant,
   log: string[],
   set: SetFn,
-  opts?: { ctx?: DeviationCtx; suppressReveal?: boolean; get?: Get },
+  opts?: { ctx?: DeviationCtx; suppressReveal?: boolean; get?: Get; forcedLocRoll?: number; forcedCritRoll?: number },
 ): boolean {
-  const { ctx, suppressReveal, get } = opts ?? {};
+  const { ctx, suppressReveal, get, forcedLocRoll, forcedCritRoll } = opts ?? {};
   const hull = findVehicleById(target.creatureId ?? '')?.hull;
   const rig: ShipRig = hull?.rig ?? 'mixte';
   const crew = get && target.crewIds
     ? (target.crewIds.map((id) => actorIn(get(), id)).filter(Boolean) as Combatant[])
     : [];
   // Réfs data-driven : `navire`/`ship-criticals` (MDG, défaut) ou `navire-fluvial`/`river-criticals` (MSRC 7).
-  const outcome = applyHullCritical(target, crew, rig, battleRng(), undefined, undefined, {
+  // Les dés IMPOSÉS sont ceux que le moteur accepte déjà (`applyHullCritical`) : la recette s'en sert
+  // pour atteindre une Localisation VOULUE sans chemin parallèle — le jeu applique le sien.
+  const outcome = applyHullCritical(target, crew, rig, battleRng(), forcedLocRoll, forcedCritRoll, {
     locationTable: hull?.locationTable, criticalTable: hull?.criticalTable,
   });
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
@@ -1941,6 +1943,19 @@ export function applyStructureCriticalToTarget(
  *  → pas de clobber. No-op (réf inchangée pour la scène) si la cible n'a pas d'arête (structure hors scène). */
 export function collapseStructure(get: Get, set: SetFn, target: Combatant): void {
   const e = target.structureEdge;
+  // QUI tombe et de QUELLE hauteur — LU AVANT la transaction, sur la scène et la file courantes : un
+  // updater Zustand est une fonction PURE de l'état, il ne remplit pas un tableau au passage (il peut
+  // être rejoué). Le 1d10 des Dégâts est un dé comme un autre et part à la porte APRÈS (#1508,
+  // `ouvrirChute`) — la transaction ci-dessous ne fait que la brèche, le déplacement et le journal.
+  const avant = get();
+  const tombants = !e || !avant.scene ? [] : parapetTilesAbove(avant.scene, e).flatMap((tl) => {
+    const sc = avant.scene!;
+    // Hauteur de chute = vraie hauteur métrique (relief) de la passerelle (z=tl.z) au-dessus du sol (z=0).
+    const metres = Math.abs(heightAt(sc, tl.x, tl.y, tl.z) - heightAt(sc, tl.x, tl.y, 0));
+    return (avant.battle?.combatants ?? [])
+      .filter((c) => c.id !== target.id && c.pos?.x === tl.x && c.pos?.y === tl.y && (c.pos?.z ?? 0) === 1)
+      .map((c) => ({ id: c.id, metres }));
+  });
   set((s: GameState) => {
     const log = [...(s.battle?.log ?? []), ev('death', structureCollapseLog(target.label), target.id)];
     let combatants = s.battle?.combatants.filter((c) => c.id !== target.id) ?? [];
@@ -1955,8 +1970,6 @@ export function collapseStructure(get: Get, set: SetFn, target: Combatant): void
         combatants = combatants.map((c) => {
           if (c.pos?.x !== tl.x || c.pos?.y !== tl.y || (c.pos?.z ?? 0) !== 1) return c;
           const fallen = { ...c, wounds: { ...c.wounds }, conditions: c.conditions.map((x) => ({ ...x })) };
-          // Hauteur de chute = vraie hauteur métrique (relief) de la passerelle (z=tl.z) au-dessus du sol (z=0).
-          applyFall(fallen, Math.abs(heightAt(sc, tl.x, tl.y, tl.z) - heightAt(sc, tl.x, tl.y, 0)), battleRng());
           placeCombatant(fallen, sc, { x: tl.x, y: tl.y }); // chute au sol (z=0, omis) + hauteur rafraîchie
           log.push(ev('damage', tr('cf.gangwayCollapse', { name: c.label }), c.id));
           return fallen;
@@ -1966,6 +1979,10 @@ export function collapseStructure(get: Get, set: SetFn, target: Combatant): void
     }
     return { scene, battle: s.battle ? { ...s.battle, combatants, log } : s.battle };
   });
+  for (const tb of tombants) {
+    const c = inBattleId(get().battle, tb.id);
+    if (c) ouvrirChute(set, c, tb.metres);
+  }
   clearEngagementOf(get().battle?.combatants ?? [], target.id); // l'attaquant n'est plus Engagé avec la brèche
   bus.emit(EVT.SCENE_DIRTY);
 }
@@ -4328,6 +4345,13 @@ export function castSpell(
 // Effet d'auteur `castSpell` (#98, scene.ts) : EN COMBAT, route par CE flux standard — enregistré ici
 // (pas dans combatEffects.ts, module FEUILLE qui n'importe rien de combatFlow).
 registerCastSpellEffect(castSpell);
+// INJECTION du walker de COMBAT dans la porte des dés (#1508) — `combatEffects` ne peut pas importer
+// `combat/triggeredTest` (cycle), et l'injection depuis CE module-là arriverait TROP TÔT (il est évalué
+// pendant l'init de `combatEffects` : TDZ mesurée sur le holder). Elle se fait donc ICI, au site
+// ÉTABLI des injections de ce sens, où `combatEffects` est entièrement initialisé.
+registerSuiteCombat((get, set, cible, caster, flow, label) => {
+  runCombatFlow({ mode: 'combat', get, set, target: cible, caster: caster ?? cible, label }, flow);
+});
 
 /**
  * Le Sort FIGÉ de `pc` est-il encore dissipable ? GARDE UNIQUE du Contre-sort (`LDB 46 l.156`), lue
@@ -6388,25 +6412,37 @@ export function finishVictory(get: Get, set: SetFn): void {
   // (gearFromEffects). Un giveTrapping ciblé (heroId d'auteur) s'applique directement.
   const { gear, rest: immediate } = gearFromEffects(all.filter((e) => !CONTEXT.has(e.type)));
   const messages = immediate.filter((e) => e.type === 'journal').map((e) => (e as { desc: string }).desc);
-  if (immediate.length) applyEffects(get, set, immediate);
-  const after = get();
+  const issue = immediate.length ? applyEffects(get, set, immediate) : undefined;
   const counts = new Map<string, { label: string; count: number; creatureId?: string }>();
   for (const c of battle.combatants) if (c.kind === 'enemy') {
     const key = c.creatureId ?? c.label; // regroupe par identité bestiaire (id), repli nom (statbloc custom)
     const e = counts.get(key);
     if (e) e.count++; else counts.set(key, { label: c.label, count: 1, creatureId: c.creatureId });
   }
-  set({
-    pendingVictory: {
-      xp: Math.max(0, (after.party[0]?.xp ?? 0) - xpBefore),
-      gold: fromBrass(Math.max(0, toBrass(partyMoneyTotal(get)) - brassBefore)),
+  // L'écran de victoire est la CLÔTURE de ce verbe (#1508) : un Effet `onVictory` qui ouvre un dé à la
+  // porte le ferait s'afficher DEVANT sa conséquence, et ses deltas de PX/bourse se liraient sur l'état
+  // d'AVANT le dé. D'où les deux bornes de départ, relues à la pose de l'écran.
+  cloturer(get, set, issue, [{
+    verbe: 'ouvrirEcranDeVictoire',
+    xpAvant: xpBefore,
+    laitonAvant: brassBefore,
+    ecran: {
       gear: gear.length ? gear : undefined,
       defeated: [...counts.values()].map(({ label, count, creatureId }) => ({ label, count, creatureId })),
       messages: messages.length ? messages : undefined,
       onContinue: deferred.length ? deferred : undefined,
     },
-  });
+  }]);
 }
+registerCloture('ouvrirEcranDeVictoire', (get, set, c) => {
+  set({
+    pendingVictory: {
+      ...c.ecran,
+      xp: Math.max(0, (get().party[0]?.xp ?? 0) - c.xpAvant),
+      gold: fromBrass(Math.max(0, toBrass(partyMoneyTotal(get)) - c.laitonAvant)),
+    },
+  });
+});
 
 /** Continuation à la FERMETURE de la cascade de fin de combat (`combatEndBoundary`) : l'écran de victoire
  *  suit les Tests de fin de combat influencés. Re-dérive l'issue depuis l'état COURANT (une damnation par

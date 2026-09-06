@@ -31,8 +31,8 @@ describe('sceneSchema — les scènes CONSTRUITES par les scénarios de test', (
   const scenes = SCENARIOS.flatMap(scenesDe);
 
   it('le contrat VOIT le corpus qu’il prétend mesurer', () => {
-    expect(SCENARIOS.length).toBe(37);
-    expect(scenes.length).toBe(86);
+    expect(SCENARIOS.length).toBe(38);
+    expect(scenes.length).toBe(87);
     expect(new Set(SCENARIOS.map((s) => s.id)).size).toBe(SCENARIOS.length);
   });
 

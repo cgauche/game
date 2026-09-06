@@ -30,13 +30,14 @@ import { traceLineOf, testTraceLabel } from '../../engine/traceLine';
 import { CHAR_LABELS } from '../../engine/types';
 import type { CharKey, Combatant, Difficulty, EffectSource } from '../../engine/types';
 import { refLabel, derivedStake } from '../../data';
-import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpureOp, flowHasTest, poserEnjeu, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
+import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpureOp, flowHasOpADe, flowHasTest, poserEnjeu, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
 import { condCtx } from '../bourseFlow';
 import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
 import type { FreeAttackFreeze, BladeTrapFreeze, BatchParticipant, OpposedFreeze } from '../pendings';
 import { battleRng } from '../battleRng';
-import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps, drainPendingLog } from '../combatEffects';
+import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps, drainPendingLog,
+  differerLaSuite, jouerFlowEntier, OPS_DIFFEREES } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
 import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep, pushChoice, pousseSi, opposedAttackerLabel, type BuiltCascadeStep } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
@@ -168,7 +169,13 @@ export function applyTriggeredTestBranch(
   // (`exec.caster`) quand il est connu et DIFFÈRE de `c` (zone de Sort posée par un tiers), sinon `c`
   // lui-même (Mâchoires/Contrôle de la Frénésie : effet auto-porté, comportement inchangé).
   const caster = exec?.caster ?? c;
-  if (exec && (flowHasImpureOp(branch) || flowHasTest(branch))) {
+  // TROIS raisons de passer par le walker de COMBAT plutôt que par le chemin PUR : une op IMPURE
+  // (adossée à un hook), un Test imbriqué (cadence-aware), et — #1508 — une op qui DEMANDE UN DÉ à la
+  // porte. Le chemin pur applique par `applyOps` : il tirerait hauteur et Dégâts en silence, alors que
+  // le walker passe par `applyLeafOps`, qui les ANNONCE et défère. C'est ici, et nulle part ailleurs,
+  // que la branche d'un Test déclenché choisit son chemin : les quatre appelants (bande d'équipage,
+  // mono déclenché, traversée de zone, fin de Round) y convergent déjà.
+  if (exec && (flowHasImpureOp(branch) || flowHasTest(branch) || flowHasOpADe(branch))) {
     // L'ENTITÉ PORTEUSE (`source`) voyage dans la branche : un SECOND Test qui y est enfoui dérive son
     // enjeu de la même entité que le premier (#1262 V2 L6d) — sans ce relais, la branche perdrait le porteur.
     runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster, label: 'Effet', opsCtx: { sl: t.sl, ...(exec.source ? { source: exec.source } : {}), ...(exec.hull ? { hull: exec.hull } : {}) }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}), ...(exec.bladeTrap ? { bladeTrap: exec.bladeTrap } : {}) }, branch);
@@ -452,6 +459,7 @@ function playAfter(get: Get, set: SetFn, c: Combatant, after: Flow | undefined, 
  */
 export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
   const stack: Flow[] = [flow];
+  const label = ctx.label ?? '';
   const oc: OpsCtx = { rng: battleRng(), caster: ctx.caster, ...ctx.opsCtx };
   while (stack.length) {
     const node = stack.shift()!;
@@ -475,7 +483,15 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
             if (bladeTrapHook && ctx.bladeTrap) for (const op of node.effect.ops) if (op.op === 'breakBlade') bladeTrapHook(ctx.get, ctx.set, unit, ctx.bladeTrap, ctx.opsCtx?.sl ?? 0);
             // `applyLeafOps` = SOURCE UNIQUE d'application d'une feuille : contexte de FEUILLE
             // (untilTime/label bakés — consommable) + programmation des ops IMPURES `delayed`.
-            const lines = applyLeafOps(ctx.get, ctx.set, unit, node.effect, oc); syncCombatant(ctx.get, ctx.set); queueLines(ctx.get, ctx.set, lines, unit.id);
+            const lines = applyLeafOps(ctx.get, ctx.set, unit, node.effect, oc);
+            // Feuille partie à la PORTE (#1508) : le reste de la pile est SA continuation — MÊME geste
+            // que `case 'test'` ci-dessous, et pour la même raison. Poursuivre ici appliquerait les
+            // nœuds suivants AVANT la conséquence qui attend son dé, inversant l'ordre de l'auteur.
+            if (lines === OPS_DIFFEREES) {
+              differerLaSuite(ctx.set, { kind: 'seq', steps: stack.splice(0) }, 'combat', label);
+              return;
+            }
+            syncCombatant(ctx.get, ctx.set); queueLines(ctx.get, ctx.set, lines, unit.id);
           }
         }
         break;
@@ -521,7 +537,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   if (ctx.mode === 'scene') {
     // Source unique de modale. Personne ne peut tenter (aucun héros vivant) → on reprend directement la
     // continuation de scène via `runFlow` (mirroir du `runFlow.case 'test'` côté combatEffects).
-    if (!openSkillTest(ctx.get, ctx.set, ft, node.success, node.fail, after)) runFlow(ctx.get, ctx.set, after, ctx.label);
+    if (!openSkillTest(ctx.get, ctx.set, ft, node.success, node.fail, after)) jouerFlowEntier(runFlow(ctx.get, ctx.set, after, ctx.label));
     return;
   }
   const c = ctx.target!;

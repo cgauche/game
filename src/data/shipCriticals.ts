@@ -142,6 +142,11 @@ const FALL_TABLES = new Map(
   [SHIP_CRIT_SET, RIVER_CRIT_SET].flatMap((s) => (s.tablesDeChute ?? []).map((t) => [t.id, t] as const)),
 );
 
+/** Les tables de chute des jeux CHARGÉS, dans l'ordre de la donnée — CANDIDATS du champ `fall` de
+ *  l'atelier (`ui/editor/GameOpEditor`). Dérivée du registre : un jeu qui en authore une l'y ajoute
+ *  sans une ligne de code de plus, et l'atelier ne code aucun id. */
+export const fallTables: FallHeightTable[] = [...FALL_TABLES.values()];
+
 /** Table de hauteur de chute par id (op `fall`) — `undefined` si l'authoring en nomme une inconnue,
  *  que l'appelant NOMME (aucun repli muet : une chute sans hauteur ne serait pas une chute). */
 export function findFallTable(id: string): FallHeightTable | undefined {

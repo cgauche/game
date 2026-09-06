@@ -6,6 +6,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { placeCombatant } from './spawn';
 import { testScene } from '../scenes/test-fixture';
+import { draineCascade } from './cascadeTestKit';
 
 /**
  * Câblage de l'ESCALADE (LDB 15 l.53-57) à la géométrie z (#82) : `climbAcross` grimpe une arête
@@ -127,6 +128,9 @@ describe('climbAcross — combat', () => {
     applyEffects(useGame.getState, useGame.setState, [{ type: 'fall', target: 'hero', heroId: H.id, metres: 4, to: { x: 2, y: 1, z: 0 } }]);
     const hc = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(hc.pos).toMatchObject({ x: 2, y: 1 }); // retombé au pied
-    expect(hc.wounds.current).toBeLessThan(before); // 3 Dégâts/m + 1d10 − BE (LDB 15 l.80)
+    // Le 1d10 des Dégâts tombe à la PORTE (#1508) : l'étape à dé nu appendue le montre et le pose.
+    draineCascade(useGame.getState);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current)
+      .toBeLessThan(before); // 3 Dégâts/m + 1d10 − BE (LDB 15 l.80)
   });
 });

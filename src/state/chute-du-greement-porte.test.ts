@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { cascadeAppliers } from './cascade';
+import { draineCascade } from './cascadeTestKit';
 import { seedBattleRng } from './battleRng';
 import { makePregens } from '../data/pregens';
 import { emptyScene } from './scene';
@@ -88,13 +89,24 @@ describe('#1657 B3-2b-c — la chute du gréement traverse la porte avec SA coqu
         ...p, result: { roll: 98, target: p.target!, success: false, sl: -5, crit: false, fumble: false },
       })),
     };
-    const rendu = cascadeAppliers.triggeredBatchTest.apply(get, set, rates, undefined, { steps: [rates], index: 0 });
+    cascadeAppliers.triggeredBatchTest.apply(get, set, rates, undefined, { steps: [rates], index: 0 });
 
+    // #1508 : l'échec n'applique plus la chute — il OUVRE ses dés. La hauteur du gréement est un dé
+    // (2d10), celle du nid-de-pie un ENTIER (aucun dé de hauteur, seuls les Dégâts se tirent) : c'est
+    // déjà lisible sur les étapes ouvertes, AVANT qu'aucune Blessure ne tombe.
+    const ouvertes = get().pendingCascade!.participants.filter((s) => s.kind === 'opsDe');
+    const pourLe = (id: string) => ouvertes.filter((s) => s.actorId === id);
+    expect(pourLe(gabier.id).map((s) => s.de!.spec), 'gréement d’une coque Moyenne = 2d10 m (l.686), puis les Dégâts')
+      .toEqual([{ n: 2, sides: 10 }]);
+    expect(pourLe(vigie.id).map((s) => s.de!.spec), 'nid-de-pie : hauteur FIXE (25 m, l.687) — seuls les Dégâts se tirent')
+      .toEqual([{ n: 1, sides: 10 }]);
+    for (const h of get().party) expect(h.wounds.current, `${h.id} a encaissé AVANT ses dés`).toBe(pvAvant.get(h.id));
+
+    // Les dés tombent (aucun siège ne les pose : le socle les lance) — la hauteur se dit alors au journal.
+    draineCascade(get);
     const de = (id: string) => get().party.find((h) => h.id === id)!;
     const perte = (id: string) => pvAvant.get(id)! - de(id).wounds.current;
-    // La HAUTEUR se lit au journal de la branche : les Blessures, elles, butent à 0 (les prétirés en
-    // ont ~13, une chute de 25 m les couche) — mesurer la perte ne mesurerait plus la hauteur.
-    const dit = JSON.stringify(rendu);
+    const dit = JSON.stringify(get().journal);
     const hauteurDe = (c: Combatant) => Number(new RegExp(`${c.label} — Tomber du gréement : chute de (\\d+) m`).exec(dit)![1]);
     expect(hauteurDe(de(gabier.id)), 'gréement d’une coque Moyenne = 2d10 m (l.686)').toBeGreaterThanOrEqual(2);
     expect(hauteurDe(de(gabier.id))).toBeLessThanOrEqual(20);
@@ -144,9 +156,14 @@ describe('#1657 B3-2b-c — la chute du gréement traverse la porte avec SA coqu
         ...p, result: { roll: 98, target: p.target!, success: false, sl: -5, crit: false, fumble: false },
       })),
     };
-    const rendu = cascadeAppliers.triggeredBatchTest.apply(get, set, rates, undefined, { steps: [rates], index: 0 });
-    const dit = JSON.stringify(rendu);
-    expect(dit, `la coque de la FILE n'a pas été retrouvée : ${dit}`).toMatch(/Tomber du gréement : chute de \d+ m/);
+    cascadeAppliers.triggeredBatchTest.apply(get, set, rates, undefined, { steps: [rates], index: 0 });
+    // La coque de la FILE a bien été retrouvée : sa Taille a donné le dé de hauteur (#1508 — la chute
+    // s'ANNONCE au lieu de s'appliquer, et c'est ce dé qui prouve la lecture de la coque).
+    const ouverte = get().pendingCascade!.participants.find((s) => s.kind === 'opsDe');
+    expect(ouverte, 'aucun dé de chute : la coque de la FILE n’a pas été retrouvée').toBeTruthy();
+    expect(ouverte!.de!.spec, 'coque Moyenne au gréement').toEqual({ n: 2, sides: 10 });
+    draineCascade(get);
+    expect(JSON.stringify(get().journal)).toMatch(/chute de [0-9]+ m/);
     const tombe = get().battle!.combatants.find((c) => c.id === gabier.id)!;
     expect(tombe.wounds.current, 'le gabier n’est pas tombé').toBeLessThan(tombe.wounds.max);
     useGame.setState({ battle: null } as never);
@@ -193,16 +210,27 @@ describe('#1657 B3-2b-c — la chute du gréement traverse la porte avec SA coqu
       shipStation: 'greement',
     } as unknown as Combatant;
 
+    // Le PNJ est ENREGISTRÉ à la file de combat (il est en jeu), mais absent du groupe : personne ne le
+    // tient. La chute doit donc l'ATTEINDRE — un porteur en jeu n'encaisse pas dans le vide.
+    set({ battle: { combatants: [...party, gabier, coque], log: [], round: 1, turn: 0, over: false } } as never);
+
     const bande = bandeTriggeredTest(get, set, [...party, gabier], noeudMatBrise(), 'sonde-inline', { label: 'Mât brisé', hull: coque });
     expect(bande!.participants!.map((p) => p.id), 'le PNJ ne prend PAS de rangée').toEqual(party.map((h) => h.id));
+    // #1508 : la voie inline ANNONCE elle aussi son dé. Aucun siège ne tient ce PNJ → le socle le tire
+    // d'office, et la HAUTEUR ouverte est celle de SA coque (Moyenne = 2d10 m, MDG 13 l.684) : c'est là
+    // que se lit « la même coque », pas dans une valeur déjà encaissée.
+    const hauteur = get().pendingCascade!.participants.find((p) => p.de && p.actorId === 'gabier');
+    expect(hauteur, `la chute n’a ouvert aucun dé : ${JSON.stringify(get().pendingCascade?.participants.map((p) => p.id))}`).toBeTruthy();
+    expect(hauteur!.de!.spec, 'gréement d’une coque Moyenne = 2d10 m').toEqual({ n: 2, sides: 10 });
+    expect(hauteur!.de!.unite).toBe('m');
+    expect(hauteur!.de!.result, 'aucun siège ne le tient : le socle le tire à l’ouverture').not.toBeNull();
 
-    const lignes = get().pendingLogQueue.map((l) => l.line);
-    const chute = lignes.find((l) => /chute de \d+ m/.test(l));
+    const lignes = [...draineCascade(get), ...get().journal];
+    const chute = get().journal.find((l) => /Tomber du gréement/.test(l));
     expect(chute, `la voie inline n’a rien dit de la chute : ${lignes.join(' | ')}`).toBeTruthy();
-    expect(chute).toContain('Tomber du gréement');
-    const metres = Number(/chute de (\d+) m/.exec(chute!)![1]);
-    expect(metres, 'gréement d’une coque Moyenne = 2d10 m').toBeGreaterThanOrEqual(2);
-    expect(metres).toBeLessThanOrEqual(20);
-    expect(200 - gabier.wounds.current, 'la chute n’a infligé aucun Dégât').toBeGreaterThan(0);
+    expect(chute).toMatch(/[0-9]+ m/);
+    const apres = get().battle!.combatants.find((c) => c.id === 'gabier')!;
+    expect(200 - apres.wounds.current, 'la chute est ENCAISSÉE par le PNJ en jeu').toBeGreaterThan(0);
+    expect(hasCondition(apres, 'a-terre'), 'À Terre (LDB 15 l.80)').toBe(true);
   });
 });

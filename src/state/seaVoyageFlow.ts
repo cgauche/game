@@ -40,7 +40,10 @@ import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSabote
 import { buildAuthorPerilSteps, registerPerilInterrupt, applyPerilEffectsNow } from './authorPerils';
 
 /** Id du protocole de reprise MARITIME (effets appliqués SUR-LE-CHAMP, `resumeTravel` rejoue). */
-const SEA_PERIL_INTERRUPT = 'voyage-mer';
+/** Id du PROTOCOLE de reprise maritime (`authorPerils`) : la mer applique les effets d'un péril
+ *  interrupteur sur-le-champ (`resumeTravel` rejoue la traversée). Exporté pour être NOMMÉ par les
+ *  contrats, jamais recopié en littéral. */
+export const SEA_PERIL_INTERRUPT = 'voyage-mer';
 import type { Scene } from './scene';
 import { buildScene } from './mapSpec';
 import type { AuthoredEnemy } from './encounterAuthoring';

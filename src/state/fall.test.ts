@@ -6,6 +6,7 @@ import { makeRNG } from '../engine/dice';
 import { bonus } from '../engine/characteristics';
 import { hasCondition } from '../engine/conditions';
 import type { Effect } from './scene';
+import { draineCascade } from './cascadeTestKit';
 
 /**
  * Effet `fall` — Chute (LDB 15 l.78-84) : 3 Dégâts par mètre + 1d10, réduits par le Bonus
@@ -27,6 +28,9 @@ describe('Effet fall — chute', () => {
     const be = bonus(h.characteristics.endurance);
     const before = h.wounds.current;
     applyEffects(useGame.getState, useGame.setState, [{ type: 'fall', target: 'party', metres: 4 }] as Effect[]);
+    // Le 1d10 des Dégâts est un dé du jeu : il tombe à la PORTE (#1508), en étape à dé nu par tombant.
+    expect(useGame.getState().party[0].wounds.current, 'rien avant le dé').toBe(before);
+    draineCascade(useGame.getState);
     const lost = before - useGame.getState().party[0].wounds.current;
     expect(lost).toBeGreaterThanOrEqual(3 * 4 - be + 1); // 1d10 ≥ 1
     expect(lost).toBeLessThanOrEqual(3 * 4 - be + 10); // 1d10 ≤ 10

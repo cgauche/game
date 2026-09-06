@@ -1756,9 +1756,16 @@ export function dieStep(spec: DieStepSpec): BuiltCascadeStep | undefined {
   } as BuiltCascadeStep;
 }
 
-/** APPEND d'une étape à DÉ NU dans la séquence en cours (#1508) — patron de `pushReveal` : une
- *  conséquence à dé s'AJOUTE à la cascade qui la produit (doctrine du slot, `cascade.pushStep`),
- *  jamais dans une fenêtre neuve. L'index d'append est versé dans l'id pour rester unique. */
+/**
+ * APPEND d'une étape à DÉ NU dans la séquence en cours (#1508) — patron de `pushReveal` : une
+ * conséquence à dé s'AJOUTE à la cascade qui la produit (doctrine du slot, `cascade.pushStep`), jamais
+ * dans une fenêtre neuve.
+ *
+ * Le COMPTEUR MONOTONE de la séquence (`PendingCascade.seq`) est versé dans l'id : c'est lui qui rend
+ * l'étape UNIQUE, et c'est donc cet id qui sert d'identité à une grappe de dés
+ * (`state/combatEffects.groupeDe`). Un compteur, jamais la longueur du tableau : celle-ci recule à
+ * chaque troncature, et re-servirait l'id d'une étape survivante.
+ */
 export function pushDie(set: Set, spec: DieStepSpec, purpose: PendingCascade['purpose'] | ((s: GameState) => PendingCascade['purpose'])): void {
   pushStep(set, (index) => dieStep({ ...spec, id: `${spec.id}-${index}` }), purpose);
 }

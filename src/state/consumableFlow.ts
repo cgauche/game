@@ -20,7 +20,7 @@ import { condCtx } from './bourseFlow';
 import { buildActorView, flowTestGated } from './combat/flowEval';
 import { runCombatFlow, withDerivedStake } from './combat/triggeredTest';
 import { markActed } from './combatFlow';
-import { openSkillTest, runFlow, applyLeafOps, drainPendingLog } from './combatEffects';
+import { openSkillTest, runFlow, applyLeafOps, drainPendingLog, differerLaSuite, jouerFlowEntier, OPS_DIFFEREES } from './combatEffects';
 import { gainCorruption } from './corruptionFlow';
 import { touchActors } from './combatOrParty';
 import { battleRng } from './battleRng';
@@ -58,6 +58,10 @@ function runSceneConsumableFlow(get: Get, set: SetFn, hero: Combatant, flow: Flo
             ...(source ? { source } : {}),
             onCorruption: (n, align) => gainCorruption(get, set, hero, n, align),
           });
+          // Feuille partie à la PORTE (#1508) : le reste de la pile est SA suite, exactement comme
+          // pour un nœud `test` ci-dessous — sans quoi la fin du produit s'appliquerait par-dessus un
+          // dé en vol. Reprise par le walker de SCÈNE : les feuilles bakées y retombent sur `ops`.
+          if (lines === OPS_DIFFEREES) { differerLaSuite(set, { kind: 'seq', steps: stack.splice(0) }, 'scene', label); return; }
           set(touchActors(get()));
           for (const l of lines) get().log(l);
         }
@@ -82,7 +86,7 @@ function runSceneConsumableFlow(get: Get, set: SetFn, hero: Combatant, flow: Flo
         // EST le consommable, et sa fiche Codex porte déjà sa règle verbatim.
         const ft = { ...withDerivedStake(node.test, source), difficulty: resolveTestDifficulty(node.test, cc), noSupport: node.test.noSupport ?? true };
         // Modale RESTREINTE au buveur ; impossible (mort) → continuation directe.
-        if (!openSkillTest(get, set, ft, node.success, node.fail, after, { actorId: hero.id })) runFlow(get, set, after, label);
+        if (!openSkillTest(get, set, ft, node.success, node.fail, after, { actorId: hero.id })) jouerFlowEntier(runFlow(get, set, after, label));
         return;
       }
       case 'choice': {

@@ -25,10 +25,11 @@ import { findVehicleById } from '../data';
 import { startCascade } from './cascade';
 import { routeDistanceLabel } from '../engine/travel';
 import { actorIn, inBattleId } from './combatants';
-import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
+import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects, applyHullCriticalToTarget } from './combatFlow';
+import { shipHitLocation } from '../engine/combat';
 import { setAiTrace } from './ai';
 import { viewYawDeg } from './stageYaw';
-import { gearFromEffects } from './combatEffects';
+import { gearFromEffects, nePeutPasDifferer } from './combatEffects';
 import { pushChoice } from './rollSeam';
 import { trappings, findCreatureById } from '../data';
 import { creatureToCombatant } from './spawn';
@@ -1121,12 +1122,69 @@ export function buildApi() {
       const s = g();
       const hero = heroId ? s.party.find((h) => h.id === heroId) : s.party[0];
       if (!hero) return `✗ héros « ${heroId ?? '(défaut)'} » introuvable — ${s.party.map((h) => h.id).join(', ')}`;
-      applyEffects(() => useGame.getState(), useGame.setState, [{ type: 'giveTrapping', trappingId, heroId: hero.id }]);
+      // Une feuille `giveTrapping` LITTÉRALE ne porte aucun canal de dés (#1508) : la relecture de
+      // l'objet donné qui suit ne peut donc pas passer devant un dé — et si ça changeait, ça lèverait.
+      nePeutPasDifferer(applyEffects(() => useGame.getState(), useGame.setState, [{ type: 'giveTrapping', trappingId, heroId: hero.id }]), 'devtools.giveTrapping');
       const after = useGame.getState().party.find((h) => h.id === hero.id);
       const it = [...(after?.items ?? [])].reverse().find((i) => i.trappingId === trappingId);
       if (!it) return `✗ don échoué (trappingId « ${trappingId} » inconnu au catalogue ?)`;
       if (qty != null) { it.qty = qty; useGame.setState((st) => ({ party: [...st.party] })); }
       return `✓ ${after!.label} reçoit « ${it.label} »${qty != null ? ` ×${qty}` : ''}`;
+    },
+
+    /**
+     * RECETTE : POSTE un membre d'équipage à une station de navire (#1508) — l'action RÉELLE du jeu
+     * (`setShipStation`), pas une écriture parallèle : c'est elle que la fiche de bord appelle.
+     */
+    station: (heroId: string, stationId: string | null) => {
+      const s = g();
+      const hero = s.party.find((h) => h.id === heroId) ?? inBattleId(s.battle, heroId);
+      if (!hero) return `✗ héros « ${heroId} » introuvable — ${s.party.map((h) => h.id).join(', ')}`;
+      useGame.getState().setShipStation(hero.id, stationId);
+      // Le porteur peut n'être QUE dans la file de combat (marin embarqué, pas dans `party`) : relire le
+      // seul `party` rendait « station « — » » alors que l'épinglage venait d'être fait.
+      const s2 = g();
+      const apres = s2.party.find((h) => h.id === hero.id) ?? inBattleId(s2.battle, hero.id);
+      return `✓ ${hero.label} → station « ${apres?.shipStation ?? '—'} »`;
+    },
+
+    /**
+     * RECETTE : inflige un CRITIQUE DE NAVIRE à une Localisation VOULUE (#1508) — pour atteindre en un
+     * geste l'épreuve d'équipage « Tomber du gréement » (MDG 13 l.684-688) et ses dés de chute.
+     *
+     * Le VRAI pipeline s'applique (`applyHullCriticalToTarget` → `applyHullCritical`) : seul le dé de
+     * LOCALISATION est imposé, par la même porte que le moteur expose déjà à ses tests. Le d100 voulu se
+     * CHERCHE sur la fonction PURE de localisation (`shipHitLocation`) — une prédiction, sans effet — et
+     * l'application, elle, reste celle du jeu.
+     */
+    shipCrit: (location = 'greement', opts: { hullId?: string; forcedCritRoll?: number } = {}) => {
+      const s = g();
+      const { hullId, forcedCritRoll } = opts;
+      const estCoque = (c: Combatant): boolean => !!findVehicleById(c.creatureId ?? '')?.hull;
+      const enJeu = (s.battle?.combatants ?? []).filter(estCoque);
+      // Par DÉFAUT, la coque des HÉROS — jamais « la première trouvée » : en combat naval, la première
+      // est souvent le navire ENNEMI, et la recette frappait le mauvais bord. L'ordre de recherche suit
+      // ce que le jeu appelle « notre navire » : la coque du plan de voyage, puis celle qui porte un
+      // héros dans son équipage, puis (à défaut) la seule en jeu. `hullId` tranche explicitement.
+      const desHeros = (c: Combatant): boolean =>
+        (c.crewIds ?? []).some((id) => (s.party.some((h) => h.id === id)) || inBattleId(s.battle, id)?.kind === 'hero');
+      const coque = hullId
+        ? (enJeu.find((c) => c.id === hullId) ?? (s.travelPlan?.vehicle?.id === hullId ? s.travelPlan.vehicle : undefined))
+        : (s.travelPlan?.vehicle ?? enJeu.find(desHeros) ?? (enJeu.length === 1 ? enJeu[0] : undefined));
+      if (!coque) {
+        if (hullId) return `✗ coque « ${hullId} » introuvable — en jeu : ${enJeu.map((c) => c.id).join(', ') || '(aucune)'}`;
+        if (enJeu.length > 1) return `✗ PLUSIEURS coques et aucune n'est celle des héros — nomme-la : shipCrit('${location}', { hullId }) parmi ${enJeu.map((c) => c.id).join(', ')}`;
+        return '✗ aucune COQUE en jeu (lance un scénario naval, ou appareille)';
+      }
+      const gree = findVehicleById(coque.creatureId ?? '')?.hull?.rig ?? 'mixte';
+      const table = findVehicleById(coque.creatureId ?? '')?.hull?.locationTable ?? 'navire';
+      let de: number | undefined;
+      for (let d = 1; d <= 100 && de === undefined; d++) if (shipHitLocation(gree, d, table) === location) de = d;
+      if (de === undefined) return `✗ « ${location} » n'est pas une Localisation de ce gréement (${gree})`;
+      const log: string[] = [];
+      applyHullCriticalToTarget(coque, log, useGame.setState, { get: () => useGame.getState(), forcedLocRoll: de, forcedCritRoll });
+      for (const l of log) useGame.getState().log(l);
+      return [`✓ Critique de navire « ${location} » (d100 imposé ${de}) sur ${coque.label}`, ...log];
     },
 
     /** RECETTE : +PX à tout le groupe (teste l'avancement). */

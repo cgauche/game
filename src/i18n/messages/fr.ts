@@ -282,6 +282,10 @@ export const fr = {
   'op.wounds': '{name} subit {n} Blessure(s){mitig}.',
   'op.heal': '{name} regagne {n} Blessure(s).',
   'op.fall': '{name} — {table} : chute de {m} m, {n} Blessure(s){etats}.',
+  // Les deux DÉS de la chute, tels que la porte les montre (#1508) — la hauteur (MDG 13 l.684) puis les
+  // Dégâts (LDB 15 l.80). Le libellé dit ce que le dé DÉCIDE, l'unité vit sur la déclaration.
+  'op.fall.deHauteur': 'Hauteur de chute — {table}',
+  'op.fall.deDegats': 'Dégâts de chute',
   'op.gainAdvantage': '{name} porte son Avantage à {n}.',
   'op.condPerRound': '{name} subira {v} État {cond} par Round ({src}).',
   'op.condPerRoundUnless': "{name} regagnera l'État {cond} à chaque fin de Round, tant que dure {src} ({n} Rounds).",
@@ -462,9 +466,13 @@ export const fr = {
   'eff.restoreFortune': 'Début de session : Points de Chance regagnés (jusqu’au maximum).',
   'eff.setVessel': 'Le groupe prend possession du navire : {name}.',
   'eff.blast': 'Souffle de zone : {lines}.',
-  'eff.fallTarget': '{name} {lost}{aterre}',
+  // Ce QU'UN tombant encaisse, dit à la résolution de son dé de chute (applier `chuteDe`, #1508) —
+  // même forme que la ligne de l'op `fall`, l'État posé étant lu par différence.
+  'eff.fallTarget': '{name} — chute de {m} m : {lost} Blessure(s){aterre}.',
   'eff.fragATerre': ' (À Terre)',
-  'eff.fall': 'Chute de {m} m : {lines}.',
+  // L'Effet d'auteur ANNONCE la chute ; ce que chacun encaisse se dit à la résolution de SON dé
+  // (étape à dé nu ouverte par `ouvrirChute`, #1508).
+  'eff.fallOuverte': 'Chute de {m} m : {noms}.',
   'eff.diseaseContracted': '{name} a contracté : {disease} (symptômes au repos).',
   'eff.diseaseTitle': 'Maladie — {disease}',
   'eff.criticalSuffered': '{name} subit une Blessure Critique ({kind}, {location}).',
@@ -1887,6 +1895,7 @@ export const fr = {
   'shipCrit.crewHit': 'Équipage touché : {name} encaisse un Critique — {label}.',
   'shipCrit.crewTakes': "{n} membre(s) d'équipage encaisse(nt) le Critique ({label}).",
   'cascade.coqueDisparue': 'Conséquence de « {label} » non appliquée : le bateau concerné n’est plus en jeu.',
+  'cascade.cibleDisparue': 'Conséquence de « {label} » non appliquée : la cible n’est plus en jeu.',
   'shipCrit.shrapnelHits': 'Éclats {indice} : {n} marin(s) touché(s).',
   'shipCrit.extraHull': '{n} Critique(s) de Coque supplémentaire(s).',
 

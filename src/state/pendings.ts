@@ -10,7 +10,7 @@ import type { Pt } from './path';
 import type { Dir8 } from './dir8';
 import type { Effect, Dialogue } from './scene';
 import type { Flow } from './flow';
-import type { GameOp, PairedSense } from '../engine/ops';
+import type { GameOp, OpsCtxGele, PairedSense } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
 import type { AttackResult, DefenseMode, DifficultyComposition, ModLine } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
@@ -1289,8 +1289,66 @@ export interface BladeTrapFreeze {
   defSL: number;
   attackerSL: number;
 }
+/**
+ * CLÔTURE d'un verbe, différée AVEC sa continuation (#1508) — ce que le site allait faire APRÈS son
+ * Flow, écrit en DONNÉE plutôt qu'en instruction.
+ *
+ * Le socle portait déjà le patron sur un Test : `PendingTest.dialogueNext` est une clôture NOMMÉE,
+ * rejouée après le jet. Elle est ici GÉNÉRALISÉE, parce que la même chose vaut d'un dé : l'horloge
+ * d'une fouille tire les effets PROGRAMMÉS et les ticks (Hémorragique, Poison, agonie) — jouée devant
+ * un dé de chute, elle les tire sur des Blessures qui n'ont pas encaissé.
+ *
+ * UNION FERMÉE de verbes SÉRIALISABLES, résolus par un REGISTRE (patron `cascadeAppliers`) : jamais
+ * une fermeture JS. `pendingCascade` est SAUVEGARDÉ (`state/saves.ts`) et voyage sur le réseau — une
+ * clôture qui serait une fonction ne survivrait ni à l'un ni à l'autre.
+ */
+export type Cloture =
+  /** Avancée du dialogue (nœud suivant, ou fermeture) — la clôture de `chooseDialogue`/`resolveTest`. */
+  | { verbe: 'dialogueSuivant'; transition: DialogueTransition }
+  /** Avancée d'horloge d'un verbe (fouille, dialogue) : l'abonné `TIME_ADVANCED` en tire les effets
+   *  PROGRAMMÉS et les ticks — donc APRÈS le dé, sur des Blessures encaissées. */
+  | { verbe: 'avancerHorloge'; minutes: number }
+  /** Décor consommé par sa fouille (`interact.consume`). */
+  | { verbe: 'retirerEntite'; entityId: string }
+  /** Décor fouillé qui RESTE (drapeau `__fouille_<id>`). */
+  | { verbe: 'marquerFouillee'; entityId: string }
+  /** Seam `onOwnTestFailed` d'un Test RATÉ (MSRC 16 l.152) — il APPLIQUE des ops, il attend le dé. */
+  | { verbe: 'testRateDeLActeur'; actorId: string; sl: number }
+  /** Effets PROGRAMMÉS dus au même pas d'horloge et pas encore joués (`fireScheduledEffects`). */
+  | { verbe: 'effetsProgrammes'; restants: ScheduledEffect[] }
+  /** Écran de victoire (`finalizeBattle`), POSÉ après le dé : il ne doit pas s'ouvrir devant lui, et
+   *  ses deltas de PX/bourse se LISENT après l'encaissement — d'où les deux bornes AVANT, pas un total. */
+  | { verbe: 'ouvrirEcranDeVictoire'; ecran: Omit<PendingVictory, 'xp' | 'gold'>; xpAvant: number; laitonAvant: number }
+  /** Teardown de fin de combat : reprise de la bataille de masse puis de la séquence parquée. */
+  | { verbe: 'teardownDeVictoire'; kills: number; batailleDeMasse: boolean };
+
 export interface CascadeStepMeta {
-  [key: string]: number | string | boolean | Flow | GameOp[] | OpposedFreeze | FreeAttackFreeze | BladeTrapFreeze | ManeuverDefenseFreeze | undefined;
+  [key: string]: number | string | boolean | string[] | Flow | GameOp[] | OpsCtxGele | Cloture[] | OpposedFreeze | FreeAttackFreeze | BladeTrapFreeze | ManeuverDefenseFreeze | undefined;
+  /** DÉCLARE que cette étape fait ATTENDRE sa conséquence à un dé (#1508) : le lot/la pile qui l'a
+   *  produite lui confie SA SUITE (`apresFlow`) au lieu de continuer par-dessus le dé en vol. Posé par
+   *  les mints du canal (`opsDe`, `chuteDe`) ; lu par les DEUX walkers de Flow, qui n'ont ainsi aucune
+   *  liste de `kind` à tenir — un troisième kind à dé déclare le même champ et il est servi. */
+  differeLaSuite?: boolean;
+  /** CLÔTURES confiées AVEC la continuation (#1508) — les verbes que le site allait jouer après son
+   *  Flow, en donnée. Rejouées APRÈS `apresFlow`, dans l'ordre du site, à la DERNIÈRE étape de la
+   *  grappe : si le Flow rouvre un dé, elles repartent avec lui. */
+  apresClotures?: Cloture[];
+  /** CONTINUATION confiée par le walker qui a différé — le reste de son lot/de sa pile, en Flow pur
+   *  (sérialisable). Rejouée par l'applier de l'étape APRÈS la conséquence, jamais avant. */
+  apresFlow?: Flow;
+  /** QUEL walker rejoue `apresFlow` : `'scene'` (`runFlow` — lot d'Effets d'auteur) ou `'combat'`
+   *  (`runCombatFlow` — pile d'un Flow d'effet déclenché, qui porte cible/lanceur et la cadence). C'est
+   *  l'identité du PRODUCTEUR (`ExecCtx.mode`, déjà nommée par le socle), pas une classe de situation :
+   *  un lot de scène rejoué par le walker de combat perdrait ses Effets non-`ops`, et l'inverse
+   *  perdrait cible et lanceur. */
+  apresMode?: 'scene' | 'combat';
+  /** CONTEXTE de la feuille d'ops différée, part GELÉE (`engine/ops.gelerOpsCtx` — partition TOTALE
+   *  `OPS_CTX_GELES`). Ce qui n'est pas gelable voyage à côté (`casterId`/`hullId`/`opsDeCrewIds`) ou se
+   *  rebâtit (rng, hook de Corruption, dés). Sans lui, une reprise appliquait la feuille avec un
+   *  contexte AMPUTÉ — `{woundsDealt}` (EDO 11 p.147) y tombait à 0. */
+  opsDeCtx?: OpsCtxGele;
+  /** ÉQUIPAGE (`OpsCtx.crew`) d'une feuille différée, en ids — résolus par `actorIn` à la reprise. */
+  opsDeCrewIds?: string[];
   /** Modificateur PLAT au total d'une étape batch sommée — NEUTRE : le flux propriétaire y verse ses
    *  paramètres DÉJÀ chiffrés (le naval : bande de Moral + Manque de bras + sabotage, MDG 14). */
   aggregateFlatDR?: number;
@@ -1819,6 +1877,20 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
   icon?: string;
   /** Index de l'étape courante dans `participants`. */
   cursor: number;
+  /**
+   * COMPTEUR MONOTONE de poussées de cette séquence (#1508) — la source de l'IDENTITÉ des étapes
+   * appendues (`cascade.pushStep` le sert à la fabrique, `rollSeam.pushDie` en fait son id).
+   *
+   * Un compteur, jamais `participants.length` : la longueur RECULE (troncature `stopSequence`, préfixe
+   * d'une séquence suspendue), et un id déjà porté par un survivant serait re-servi — deux étapes de
+   * même id, et la suite d'un dé accrochée au mauvais porteur. Sérialisé avec la cascade : il traverse
+   * la sauvegarde et le réseau, comme les ids qu'il produit.
+   *
+   * Il vit chez le PILOTE pendant qu'une séquence se joue (`cascade.PiloteDuCommit.seq`) et revient ici
+   * à chaque écriture du slot : le goulot ne le relit pas du store, qu'un pilote peut n'avoir pas encore
+   * écrit — c'est ce qui le garde monotone sur les trois pilotes.
+   */
+  seq?: number;
   /** Journal de la cascade (entretien, conséquences validées) — affiché sous l'étape courante. */
   log: string[];
   /** Finalisation : 'night' (bilan de repos), 'travel' (halte → reprise), 'travelDay' (jets du JOUR de

@@ -7,6 +7,7 @@ import { seedBattleRng } from './battleRng';
 import { hasCondition } from '../engine/conditions';
 import { isWalkable, tileCollapsed, structureIsDown, type Scene, type Terrain } from './scene';
 import { testScene } from '../scenes/test-fixture';
+import { draineCascade } from './cascadeTestKit';
 
 /**
  * Effondrement de PASSERELLE (Lot B) : abattre une STRUCTURE de sol (herse) fait s'effondrer la passerelle
@@ -56,6 +57,9 @@ describe('Effondrement de passerelle quand la structure portante est abattue', (
     seedBattleRng(123);
 
     collapseStructure(useGame.getState, useGame.setState, S);
+    // Le 1d10 des Dégâts de chute de chaque occupant tombe à la PORTE (#1508) : une étape à dé nu
+    // appendue par tombant, que le pilote de fenêtre joue ici.
+    draineCascade(useGame.getState);
 
     const after = useGame.getState();
     // Brèche : structure abattue + retirée du combat.

@@ -38,6 +38,7 @@ import { ev, evLines } from './combatLog';
 import { viewYawDeg } from './stageYaw';
 import { chargeArmee, courseArmee } from './localIntent';
 import { refuserGeste } from './refusVisible';
+import { nePeutPasDifferer } from './combatEffects';
 import type { MovementBlockReason } from './combatFlow';
 import { t, type MsgKey } from '../i18n';
 import { combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, backstabWeapon, attackHandGate, type DefenseMode } from '../engine/combat';
@@ -2305,7 +2306,9 @@ export function createCombatSlice(get: Get, set: Set) {
         }));
       } else if (eff.type === 'giveMoney') {
         label = 'Argent';
-        applyEffects(get, set, [eff]); // bourse party (or/argent/cuivre)
+        // Une feuille `giveMoney` LITTÉRALE ne porte aucun canal de dés : le retrait de la feuille
+        // ramassée qui suit ne peut donc pas passer devant un dé (#1508) — et si ça changeait, ça lèverait.
+        nePeutPasDifferer(applyEffects(get, set, [eff]), 'combatSlice.pickupItem (giveMoney)'); // bourse party
       } else return; // effet non ramassable (journal/document…) : pas grappillable en combat
       // Retire la i-ème feuille `do` du flow de fouille (les props ramassables sont des seq de `do`).
       const flow = ent.interact.flow;

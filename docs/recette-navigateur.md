@@ -483,7 +483,40 @@ modales — Test de scène, Activité d'interlude, jet composite…) tourne sur 
 attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUELLE modale de jet
 (cf. `game-browser-verif-tempo`, closure-sync ci-dessous).
 
+## Chute du gréement — les 3 gestes (#1508)
+
+Scénario d'id **`chute-du-greement`** (« Chute du gréement (dés à la porte) », section **Naval**).
+Il ouvre un combat naval direct : la coque des héros est une cogue (25 m → Taille **moyenne**) portant
+l'Amélioration **Nid-de-pie** ; Ott est au gréement, Nissa au nid-de-pie.
+
+```js
+__wfrp.scenario('chute-du-greement', 11)   // lancement (combat direct)
+__wfrp.prefs('des-fixes', true)            // pour POSER les dés
+
+__wfrp.shipCrit('greement')                // 1. Critique sur la coque des HÉROS (défaut)
+// 2. valider l'étape « Critique de navire » (cascadeNext), puis LANCER chaque rangée d'Athlétisme :
+//    la bande est une étape à RANGÉES — le verbe est cascadeBatchRoll(idDuTesteur), pas cascadeRoll.
+// 3. les étapes de dé de la chute suivent : cascadeDieRoll(id) puis cascadeDieSetForcedRoll(id, v)
+```
+
+Mesuré au rejeu (2026-09-06) : Athlétisme `gabier:60 RATE`, `vigie:86 RATE` → étapes
+« **Hauteur de chute — Tomber du gréement** » (2d10, unité `m`) puis « **Dégâts de chute** » (1d10),
+toutes deux `fixed: true` après pose ; journal « Gabier Ott — Tomber du gréement : chute de **11 m**,
+9 Blessure(s) (À Terre). (dé fixé) » — 11 m est la valeur POSÉE, plus un tirage interne.
+Depuis le **nid-de-pie**, la hauteur est entière (25 m) : une seule étape.
+Coque nommée explicitement : `__wfrp.shipCrit('greement', { hullId: 'cogue-pirate' })`.
+Changer de poste sans passer par la fiche : `__wfrp.station('vigie', 'greement')`.
+
 ## Pièges vécus (corrections d'expérience)
+
+- **Compendium/Atelier : ouvrir le `<summary>` du groupe AVANT de cliquer la sous-catégorie** (vécu
+  2026-09-05, recette #1508 — 5 essais perdus) : les rubriques sont des `<details>` repliés, et un clic
+  sur une sous-catégorie encore masquée ne porte pas. Ouvrir le groupe, relire la bbox, puis cliquer.
+- **Les heredocs du shell mangent un antislash** (même recette) : `<<'EOF'` a rendu `\\` en `\` et cassé
+  des scripts de sonde. Écrire les scripts de recette par `Write`/`ctx_patch`, jamais par heredoc.
+- **Le délai d'amorçage de l'app est RÉGLABLE** : l'option `timeoutMs` du kit
+  (`scripts/recette/lib.mjs`, passée à l'ouverture de l'app ou de la session ; défaut 10 s, inchangé)
+  — sur machine chargée, trois passes ont été perdues sur ce seul plafond.
 
 - **Une position d'écran se relit JUSTE AVANT le clic, après tout geste de caméra** (vécu 2026-08-23,
   recette des pastilles d'entité) : `turn()` (et tout recentrage : ouverture de combat, focale sur

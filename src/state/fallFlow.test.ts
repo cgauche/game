@@ -5,6 +5,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { placeCombatant } from './spawn';
 import { testScene } from '../scenes/test-fixture';
+import { draineCascade } from './cascadeTestKit';
 
 /**
  * Câblage de la chute VOLONTAIRE (LDB 15 l.82) : `fallAcross` ouvre le choix pré-jet (Sauter / Tenter,
@@ -57,6 +58,10 @@ describe('fallAcross — exploration', () => {
     useGame.getState().fallChoose(false);
     expect(useGame.getState().pendingFall).toBeNull();
     expect(useGame.getState().partyPos).toEqual(foot);
+    // Le 1d10 des Dégâts est un DÉ DU JEU (#1508) : il tombe à la porte, en étape à dé nu appendue —
+    // les Blessures se posent à SA résolution, jamais en silence dans le geste.
+    expect(useGame.getState().party[0].wounds.current, 'rien n’est encaissé avant le dé').toBe(before);
+    expect(draineCascade(useGame.getState)).toContain('chuteDe');
     expect(useGame.getState().party[0].wounds.current).toBeLessThan(before); // 3×4m + 1d10 − BE
   });
 
@@ -86,6 +91,7 @@ describe('fallAcross — exploration', () => {
     const p = useGame.getState().pendingFall!;
     useGame.setState({ pendingFall: { ...p, result: { success: true, roll: 40, target: 90, dr: 2, effectiveMetres: 2 } } });
     useGame.getState().fallConfirm();
+    draineCascade(useGame.getState); // le 1d10 tombe à la porte (#1508)
     expect(useGame.getState().party[0].wounds.current).toBeLessThan(before);
   });
 

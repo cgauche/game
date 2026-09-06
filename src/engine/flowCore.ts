@@ -26,7 +26,7 @@ import { toDate } from './clock';
 import type { CharKey, Difficulty, EffectSource, HitLocation } from './types';
 import { relationBetween, type Camp, type Relation } from './relations';
 import { groupMatch } from './groups';
-import type { GameOp, PairedSense } from './ops';
+import { opDemandeUnDe, type GameOp, type PairedSense } from './ops';
 import type { SkillRef } from './skills';
 // Type SEUL (effacé à la compilation — aucun cycle runtime) : `StakeRef` est la forme canonique de la
 // zone d'enjeu, et la redéclarer ici serait la 2ᵉ source du même vocabulaire que #1117 combat.
@@ -761,6 +761,24 @@ const STRAY_IMPURE_OPS = new Set([...HOOK_BACKED_OPS].filter((op) => op !== 'gra
 /** Le Flow porte-t-il une op de `STRAY_IMPURE_OPS` EN DEHORS d'une branche `success`/`fail` de `test` ?
  *  `inTestBranch` (interne, propagé par la récursion) reste vrai tant qu'on n'est pas ressorti d'un nœud
  *  `test` — vérité utilisée par la garde de bien-formation des données (`effects` déclenchés). */
+/**
+ * Le Flow porte-t-il une op qui DEMANDE UN DÉ À LA PORTE (#1508, `ops.opDemandeUnDe`) ? Calque exact de
+ * `flowHasImpureOp` : la même question, posée d'un autre canal.
+ *
+ * Ce que ça décide : une branche de Test qui en porte une NE PEUT PAS se jouer par le chemin PUR
+ * (`runPureFlowLines` → `applyOps`), qui tirerait ses dés en silence — elle passe par le walker de
+ * combat, dont le point d'application ANNONCE ses dés (`applyLeafOps`).
+ */
+export function flowHasOpADe<E = EffectOp>(flow: Flow<E>): boolean {
+  switch (flow.kind) {
+    case 'do': { const e = flow.effect; return isEffectOp(e) && e.ops.some((o) => opDemandeUnDe(o)); }
+    case 'seq': return flow.steps.some((s) => flowHasOpADe(s));
+    case 'if': return flowHasOpADe(flow.then) || (flow.else ? flowHasOpADe(flow.else) : false);
+    case 'test': return flowHasOpADe(flow.success) || flowHasOpADe(flow.fail);
+    case 'choice': return flowHasOpADe(flow.yes) || (flow.no ? flowHasOpADe(flow.no) : false);
+  }
+}
+
 export function flowHasImpureOpOutsideTest<E = EffectOp>(flow: Flow<E>, inTestBranch = false): boolean {
   switch (flow.kind) {
     case 'do': {

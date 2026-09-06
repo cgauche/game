@@ -1,4 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import ts from 'typescript';
+import { useGame } from './store';
+import { CLOTURE_VERBES, jouerLesClotures } from './combatEffects';
+import './combatFlow'; // charge les clôtures que le combat enregistre (`ouvrirEcranDeVictoire`)
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -1008,3 +1012,196 @@ describe('garde SŒUR « dés hors porte » (#1508) — un dé qui tombe hors de
     expect(kindDiff(DES_HORS_PORTE_STOCK as Stock, '(dés hors porte)')).toEqual([]);
   });
 });
+
+// ---------------------------------------------------------------------------------------------
+// #1508 — LE SIGNAL « DIFFÉRÉ » NE TOMBE JAMAIS PAR TERRE
+// ---------------------------------------------------------------------------------------------
+
+/** Les fonctions qui appliquent des Effets/des ops et rendent `Applique` (`state/combatEffects`). */
+const POINTS_DAPPLICATION = ['applyEffects', 'applyEffectsLoot', 'applyLeafOps', 'runFlow'];
+/** Les CONSOMMATEURS nommés — recevoir le retour en argument de l'un d'eux EST le consommer. */
+const CONSOMMATEURS = ['jouerFlowEntier', 'nePeutPasDifferer', 'cloturer'];
+
+/** La FORME d'un appel dont le retour se perd, ou `null` s'il est consommé. Purement syntaxique : les
+ *  formes que le scan ne SAIT PAS trancher sont déclarées en angles morts mesurés, plus bas. */
+function formePerdue(n: ts.CallExpression, sf: ts.SourceFile): string | null {
+  const p = n.parent;
+  // A — instruction nue : `runFlow(…);`
+  if (ts.isExpressionStatement(p)) return 'retour JETÉ (instruction nue)';
+  // D — séquence à virgule : `x = (runFlow(…), 1);` — l'opérande gauche est évalué puis abandonné.
+  if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.CommaToken && p.left === n) return 'retour jeté par une VIRGULE';
+  // G — flèche à CORPS EXPRESSION : la valeur part dans le retour de la flèche, que son appelant ne lit
+  //     pas forcément (`() => void` d'un verbe de store, callback de `forEach`). Le corps de BLOC, lui,
+  //     rend le choix EXPLICITE — c'est celui qu'on exige.
+  if (ts.isArrowFunction(p) && p.body === n) return 'retour jeté dans une FLÈCHE à corps expression (corps de bloc + retour consommé)';
+  // C — argument d'un appel qui n'est pas un consommateur nommé.
+  if (ts.isCallExpression(p) && p.arguments.includes(n)) {
+    const nom = ts.isIdentifier(p.expression) ? p.expression.text : '(appel non nommé)';
+    return CONSOMMATEURS.includes(nom) ? null : `retour passé en ARGUMENT de « ${nom} »`;
+  }
+  // B — capturé dans une variable JAMAIS RELUE : la capture ne consomme rien, seule la lecture le fait.
+  if (ts.isVariableDeclaration(p) && p.initializer === n && ts.isIdentifier(p.name)) {
+    const nom = p.name.text;
+    let lectures = 0;
+    const compte = (x: ts.Node): void => { if (ts.isIdentifier(x) && x.text === nom && x !== p.name) lectures++; ts.forEachChild(x, compte); };
+    compte(sf);
+    if (lectures === 0) return `retour capturé dans « ${nom} », JAMAIS relu`;
+  }
+  return null;
+}
+
+/** Tous les appels PERDUS du corpus de PRODUCTION, par forme. Un test peut ignorer le retour — il
+ *  mesure une couture, il ne joue pas la suite d'une partie : le corpus est donc `prod` seul. */
+function appelsPerdus(): string[] {
+  const out: string[] = [];
+  for (const { rel, text } of corpus()) {
+    if (/\.test\.[tj]sx?$/.test(rel)) continue;
+    if (!POINTS_DAPPLICATION.some((n) => text.includes(`${n}(`))) continue;
+    const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true, /\.tsx$/.test(rel) ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+    const walk = (n: ts.Node): void => {
+      if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && POINTS_DAPPLICATION.includes(n.expression.text)) {
+        const forme = formePerdue(n, sf);
+        if (forme) out.push(`${rel}:${sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1} ${n.expression.text}(…) — ${forme}`);
+      }
+      ts.forEachChild(n, walk);
+    };
+    walk(sf);
+  }
+  return out;
+}
+
+/**
+ * FORME, pas liste de noms (même doctrine que le reste de ce fichier). Une application d'Effets peut
+ * DIFFÉRER (ses dés partent à la porte, #1508) : elle rend alors `OPS_DIFFEREES` et rien n'est encore
+ * joué. Un appelant qui poursuit sans lire ce retour applique sa suite PAR-DESSUS un dé en vol — c'est
+ * l'inversion d'ordre authoré que le canal existe pour empêcher.
+ *
+ * Le TYPE ne peut pas l'imposer, et c'est MESURÉ (2026-09-05, sonde à deux fichiers hors dépôt) :
+ * `tsc --noEmit --strict` accepte une valeur rendue jetée en position d'instruction (sortie 0), et
+ * `@typescript-eslint/no-unused-expressions` aussi (sortie 0 — la règle laisse passer tout appel de
+ * fonction, par construction). TypeScript n'a pas de `must_use` : CE scan tient donc l'invariant.
+ *
+ * TROIS issues admises, et AUCUNE liste de sites : l'appelant lit le retour lui-même (il confie sa
+ * suite, `differerLaSuite`), ou il le passe à un CONSOMMATEUR nommé — `cloturer` (ce qui suit est une
+ * `Cloture`, différée avec la continuation), `jouerFlowEntier` (rien ne suit), `nePeutPasDifferer`
+ * (la donnée appliquée n'a pas de canal de dés — fail-fast si ça change). Écrire le nom EST la
+ * déclaration ; personne n'a besoin d'être cité ici.
+ */
+describe('#1508 — tout point d’application consomme son retour, ou le passe à un consommateur nommé', () => {
+  it('le scan MESURE quelque chose (le corpus porte bien des appels de points d’application)', () => {
+    let vus = 0;
+    for (const { rel, text } of corpus()) {
+      if (/\.test\.[tj]sx?$/.test(rel)) continue;
+      for (const n of POINTS_DAPPLICATION) vus += text.split(`${n}(`).length - 1;
+    }
+    expect(vus, 'aucun appel vu : le scan ne mordrait sur rien').toBeGreaterThan(20);
+  });
+
+  it('QUATRE formes de perte sont reconnues (instruction nue, virgule, flèche à corps expression, argument étranger)', () => {
+    const sonde = (src: string): string[] => {
+      const sf = ts.createSourceFile('x.ts', src, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+      const out: string[] = [];
+      const walk = (n: ts.Node): void => {
+        if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && POINTS_DAPPLICATION.includes(n.expression.text)) {
+          const f = formePerdue(n, sf);
+          if (f) out.push(f);
+        }
+        ts.forEachChild(n, walk);
+      };
+      walk(sf);
+      return out;
+    };
+    expect(sonde('runFlow(g, s, f);'), 'A').toHaveLength(1);
+    expect(sonde('const r = runFlow(g, s, f);'), 'B — capturé, jamais relu').toHaveLength(1);
+    expect(sonde('const r = runFlow(g, s, f); use(r);'), 'B — capturé PUIS lu : consommé').toEqual([]);
+    expect(sonde('console.log(runFlow(g, s, f));'), 'C').toHaveLength(1);
+    expect(sonde('x = (runFlow(g, s, f), 1);'), 'D').toHaveLength(1);
+    expect(sonde('list.forEach((f) => runFlow(g, s, f));'), 'G').toHaveLength(1);
+    expect(sonde('jouerFlowEntier(runFlow(g, s, f));'), 'consommateur nommé').toEqual([]);
+    expect(sonde('cloturer(g, s, runFlow(g, s, f), []);'), 'consommateur nommé').toEqual([]);
+    expect(sonde('nePeutPasDifferer(applyEffects(g, s, e), "site");'), 'consommateur nommé').toEqual([]);
+    expect(sonde('return runFlow(g, s, f);'), 'retour propagé : consommé').toEqual([]);
+  });
+
+  it('aucun appel ne PERD son retour — le signal « différé » ne peut pas mourir en silence', () => {
+    const perdus = appelsPerdus();
+    expect(
+      perdus,
+      'Un appel dont le retour se perd applique sa suite par-dessus un dé en vol (#1508).\n'
+        + 'Trois issues : lire le retour (confier la suite, `differerLaSuite`), ou le passer à\n'
+        + '`cloturer(…)` / `jouerFlowEntier(…)` / `nePeutPasDifferer(…)` (cf. state/combatEffects.ts) :\n'
+        + `${perdus.join('\n')}`,
+    ).toEqual([]);
+  });
+});
+
+/**
+ * Les ANGLES MORTS du scan ci-dessus, MESURÉS et non tus (patron du bloc « angles morts DÉCLARÉS »
+ * plus haut dans ce fichier) : le scan résout les appels PAR NOM APPELÉ, sans liaison. Deux formes lui
+ * échappent donc par construction — et le corpus mesure aujourd'hui ZÉRO occurrence de chacune, ce qui
+ * est la seule raison de les tolérer. Ces deux `it` rougissent le jour où l'une apparaît.
+ */
+describe('#1508 — angles morts du scan, mesurés (alias local, appel par objet)', () => {
+  const sondeVoit = (src: string): number => {
+    const sf = ts.createSourceFile('x.ts', src, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    let n = 0;
+    const walk = (x: ts.Node): void => { if (ts.isCallExpression(x) && ts.isIdentifier(x.expression) && POINTS_DAPPLICATION.includes(x.expression.text)) n++; ts.forEachChild(x, walk); };
+    walk(sf);
+    return n;
+  };
+
+  it('faux négatif ASSUMÉ : un ALIAS local échappe au scan — et le corpus n’en porte aucun', () => {
+    expect(sondeVoit('const jouer = runFlow; jouer(g, s, f);'), 'le scan ne voit que le nom APPELÉ').toBe(0);
+    const alias = corpus().filter(({ rel, text }) => !/\.test\.[tj]sx?$/.test(rel)
+      && POINTS_DAPPLICATION.some((n) => new RegExp(`=\\s*${n}\\s*;`).test(text)));
+    expect(alias.map((f) => f.rel), 'un alias local d’un point d’application : le scan cesserait de mordre dessus').toEqual([]);
+  });
+
+  it('faux négatif ASSUMÉ : la propriété de `jouerFlowEntier` est SÉMANTIQUE, le scan ne la mesure pas', () => {
+    // Le scan mesure la CONSOMMATION du retour, pas la vérité de ce que le nom affirme (« mon appelant
+    // ne continue pas »). Un site qui écrirait `jouerFlowEntier(…)` alors que sa fonction poursuit
+    // passerait — c'est un fait de LECTURE, pas de forme. Ce qui l'a fermé pour toute une classe :
+    // l'appelant d'un applier de cascade EST une séquence qui continue, et depuis que les étapes
+    // poussées s'INSÈRENT derrière l'étape courante (`cascade.poseDansLaSequence`), cette suite-là
+    // passe APRÈS le dé par construction — plus rien à déclarer au site. Le contrat qui le mord :
+    // `chute-a-la-porte.test.ts` (xi).
+    const sf = ts.createSourceFile('x.ts', 'function f() { jouerFlowEntier(runFlow(g, s, x)); autreChose(); }', ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const perdus: string[] = [];
+    const walk = (n: ts.Node): void => {
+      if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && POINTS_DAPPLICATION.includes(n.expression.text)) {
+        const f = formePerdue(n, sf);
+        if (f) perdus.push(f);
+      }
+      ts.forEachChild(n, walk);
+    };
+    walk(sf);
+    expect(perdus, 'le scan voit un retour CONSOMMÉ — il ne peut pas savoir que l’appelant poursuit').toEqual([]);
+  });
+
+  it('faux négatif ASSUMÉ : un appel PAR OBJET échappe au scan — et le corpus n’en porte aucun', () => {
+    expect(sondeVoit('CE.runFlow(g, s, f);'), 'le scan ne lit pas les accès de propriété').toBe(0);
+    const parObjet = corpus().filter(({ rel, text }) => !/\.test\.[tj]sx?$/.test(rel)
+      && POINTS_DAPPLICATION.some((n) => new RegExp(`\\.${n}\\s*\\(`).test(text)));
+    expect(parObjet.map((f) => f.rel), 'un appel par objet/namespace : le scan cesserait de mordre dessus').toEqual([]);
+  });
+});
+
+/**
+ * REGISTRE des CLÔTURES (#1508) : la continuation d'une étape porte un `Flow` ET des `Cloture` — des
+ * VERBES sérialisables (le `pendingCascade` est sauvegardé et voyage sur le réseau). Le registre doit
+ * être TOTAL, sans quoi une clôture se perdrait exactement comme le signal qu'elle répare.
+ */
+describe('#1508 — le registre des clôtures est TOTAL', () => {
+  it('chaque verbe déclaré a son applier (un verbe sans applier LÈVE, nommément)', () => {
+    for (const verbe of CLOTURE_VERBES) {
+      expect(() => jouerLesClotures(useGame.getState, useGame.setState, [{ verbe } as never]),
+        `le verbe « ${verbe} » n’a pas d’applier enregistré`).not.toThrow(/sans applier/);
+    }
+  });
+
+  it('un verbe INCONNU lève au lieu de se perdre en silence', () => {
+    expect(() => jouerLesClotures(useGame.getState, useGame.setState, [{ verbe: 'verbeQuiNExistePas' } as never]))
+      .toThrow(/sans applier/);
+  });
+});
+

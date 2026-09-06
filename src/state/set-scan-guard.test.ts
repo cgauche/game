@@ -134,6 +134,13 @@ const BASELINE = { totalCalls: 749, totalAdHocResets: 302 }; // +1 (#1117 L3 : `
 // combat d'`advanceTime`). Un `set({ scene })` littéral et CONDITIONNEL : la scène n'est réécrite que
 // si un occupant est réellement tombé (sinon même référence). Aucun reset ad hoc de plus.
 // Mesure exacte 744/301).
+// #1508 T2 — le cliquet ne monte PAS, il se remplit : 748/301 à HEAD, 749/301 sur l'arbre, pour une
+// baseline de 749/302. Le +1 de `totalCalls` est le `set((s) => …)` de `combatEffects.differerLaSuite`,
+// la SEULE écriture du canal op → applier : elle confie à l'étape à dé la suite que son lot faisait
+// attendre, quand cette étape est déjà dans le slot (poussée HORS application). Les étapes poussées
+// PENDANT une application n'y passent pas : elles sont annotées dans la fenêtre d'insertion
+// (`cascade.annoterEtapeDeLaFenetre`), sans `set`. `totalCalls` n'a donc plus de mou : le prochain
+// `set` de `src/state/*.ts` fera rougir ce test, ce qui est exactement son office.
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {

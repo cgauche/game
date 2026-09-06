@@ -229,7 +229,7 @@ async function removeProfileDir(profile, attempts = 5, delayMs = 200) {
  * jours des écrans qui rendaient juste à leur largeur de référence (lot « matières & proportions »
  * #393). Une recette MOBILE passe sa largeur explicitement (`setMobileViewport`, 360×740).
  */
-export async function launchSession({ chromePath, width = 1600, height = 900, port, mobile = false } = {}) {
+export async function launchSession({ chromePath, width = 1600, height = 900, port, mobile = false, timeoutMs = 10000 } = {}) {
   const cdpPort = port ?? 9222 + Math.floor(Math.random() * 2000);
   const profile = join(os.tmpdir(), `recette-cdp-profile-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
   mkdirSync(profile, { recursive: true });
@@ -243,7 +243,7 @@ export async function launchSession({ chromePath, width = 1600, height = 900, po
   // Tout échec APRÈS le spawn (avant qu'un `session` ne soit rendu à l'appelant, donc avant qu'il
   // puisse appeler `session.close()`) doit tuer ce Chrome et purger son profil ici — sinon fuite.
   try {
-    const wsUrl = await waitForWsUrl(cdpPort);
+    const wsUrl = await waitForWsUrl(cdpPort, timeoutMs); // même délai réglable que l’amorçage de l’app
     const ws = new WebSocket(wsUrl);
     await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
 
@@ -465,7 +465,9 @@ export async function openApp(url = DEFAULT_URL, opts = {}) {
   const session = await launchSession(opts);
   try {
     await session.rpc('Page.navigate', { url });
-    await waitFor(session, APP_READY, { timeoutMs: 10000 });
+    // Délai d'AMORÇAGE réglable (`timeoutMs`, défaut inchangé) : une machine chargée met plus de 10 s à
+    // peindre le premier écran, et trois passes de recette ont été perdues sur ce seul plafond.
+    await waitFor(session, APP_READY, { timeoutMs: opts.timeoutMs ?? 10000 });
     // ÉTAT PERSISTANT (#1679 L1c) : la recette joue — elle crée des héros, sauvegarde, change des
     // réglages. L'instantané pris ici est remis à la fermeture, pour qu'elle ne laisse rien derrière.
     session.stockageInitial = await instantanerStockage(session);

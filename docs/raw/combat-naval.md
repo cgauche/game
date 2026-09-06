@@ -368,7 +368,7 @@ De plus, tous les coups qui touchent une fois que le score de Blessures… est t
 > **réussi** », « tous les coups qui **touchent** ») sur une touche.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.654-674) → `CrewTarget`, `ShipStationsPanel`, `bandeDeChuteSchema`, `stationAsPoste`, `VolleyShot`, `FallHeightBand`, `beginShipwreck`, `ShipCritSet`, `ShipCrewHitValue`, `applyFall`, +16 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/ship-criticals.ts`, `src/data/schemas/defs/ship-stations.ts`, `src/data/schemas/grammaire/mecanique.ts`, `src/data/sea-navigation.json`, +18 fichiers
+- `MDG 13` (l.654-674) → `CrewTarget`, `ShipStationsPanel`, `bandeDeChuteSchema`, `stationAsPoste`, `VolleyShot`, `FallHeightBand`, `beginShipwreck`, `ShipCritSet`, `scenario`, `ShipCrewHitValue`, +21 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/ship-criticals.ts`, `src/data/schemas/defs/ship-stations.ts`, `src/data/schemas/grammaire/mecanique.ts`, `src/data/sea-navigation.json`, +20 fichiers
 - `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +73 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +18 fichiers
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques

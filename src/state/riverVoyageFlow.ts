@@ -25,7 +25,7 @@
 import type { PlayerText } from '../i18n/playerText';
 import { battleRng } from './battleRng';
 import { minutesUntilNext, DUSK_MINUTE } from '../engine/clock';
-import { applyEffects } from './combatEffects';
+import { applyEffects, nePeutPasDifferer } from './combatEffects';
 import { openRest, placesOfKind } from './restFlow';
 import { placeById, type MapRoute, type WorldMap } from './worldMap';
 import { damageVesselHull, healVesselHull, syncHullWoundsFromVessel, spoilVesselCargoOnLeak } from './seaVoyageFlow';
@@ -526,7 +526,9 @@ registerCascadeApplier(RIVER_EXPOSURE_KIND, (get, set, step) => {
   if (!step.result.success) return { consequences: freeCons([{ text: t('rv.exposureNone'), tone: 'info' }]) };
   const mode = step.meta?.exposureMode as import('../data').WaterExposureMode;
   const source = step.meta?.exposureSource as string | undefined;
-  applyEffects(get, set, [{ type: 'waterExposure', mode, source, target: 'party' }]);
+  // Une feuille `waterExposure` LITTÉRALE ne porte aucun canal de dés (#1508) : le marquage du jour
+  // qui suit ne peut donc pas passer devant un dé — et si ça changeait, ça lèverait ici.
+  nePeutPasDifferer(applyEffects(get, set, [{ type: 'waterExposure', mode, source, target: 'party' }]), 'riverVoyage.exposition');
   marqueExpositionDuJour(get, set);
   return {};
 });

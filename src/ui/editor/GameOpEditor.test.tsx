@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { GameOpEditor, FormulaField, opSummary, newOp, formulaSummary, shapeOf, formulaForShape, OP_LABEL, OP_REF_FIELDS, opMissingRefs, opsMissingRefs } from './GameOpEditor';
 import { datasetArray } from '../../data/overrides';
+import { fallTables } from '../../data/shipCriticals';
 import { lightTones } from '../../data';
 import type { GameOp } from '../../engine/ops';
 
@@ -161,3 +162,44 @@ describe('#1318 E1 — la borne d’une Formula littérale atteint le champ (cal
   });
 });
 
+
+/**
+ * #1508 T2 — L'OP `fall` S'ÉDITE. Elle naissait avec un id de table EN DUR (`tomberDuGreement`) et
+ * n'avait AUCUN champ : l'auteur ne pouvait ni voir ni changer la table dont la hauteur se lit. La
+ * recette navigateur l'a trouvée muette dans l'atelier.
+ */
+/**
+ * ÉCART DIT — `fall` n'entre PAS dans `OP_REF_FIELDS` : ses candidats (`tablesDeChute`) sont un
+ * tableau NICHÉ de `ship-criticals.json` dont la clé de dataset n'est pas encore ouverte. Le fichier en
+ * expose déjà cinq (`overrides.ts:337-342` : `shipCriticalsCargaison`/`Greement`/`Coque`/`Avirons`/
+ * `Equipements`), une par Localisation ; celle des tables de chute reste à ouvrir. Conséquence mesurée :
+ * une op `fall` à table vide n'est pas listée par `opMissingRefs` — le `<select>` la montre « à
+ * choisir », mais le récapitulatif des réfs manquantes l'ignore.
+ */
+describe('GameOpEditor — l’op `fall` a son champ de table (recette #1508)', () => {
+  it('une op `fall` fraîche ne code AUCUN id : la table est à choisir', () => {
+    const fresh = newOp('fall') as Extract<GameOp, { op: 'fall' }>;
+    expect(fresh.hauteur.table.id, 'aucun id en dur — la donnée décide').toBe('');
+    expect(opSummary(fresh)).toContain('table à choisir');
+  });
+
+  it('la rangée expose son SÉLECTEUR de table, peuplé depuis la donnée', () => {
+    const ops: GameOp[] = [newOp('fall')];
+    const html = renderToStaticMarkup(<GameOpEditor ops={ops} onChange={() => {}} />);
+    expect(html).not.toContain('paramètres de l’op'); // l'op a son éditeur dédié, pas le repli JSON
+    expect(html).toContain('Table de hauteur');
+    expect(html).toContain('— (choisir une table) —');
+    for (const t of fallTables) expect(html).toContain(`value="${t.id}"`);
+    expect(fallTables.length, 'la donnée en porte au moins une').toBeGreaterThan(0);
+  });
+
+  it('un id CHOISI est relu dans l’op, et le résumé nomme la MÉCANIQUE puis la table', () => {
+    const table = fallTables[0];
+    const choisie: GameOp = { op: 'fall', hauteur: { table: { id: table.id } } };
+    expect(opSummary(choisie)).toContain('hauteur lue dans');
+    expect(opSummary(choisie)).toContain(table.label);
+    expect(OP_LABEL.fall).toBe('Chute (hauteur lue dans une table)');
+    const html = renderToStaticMarkup(<GameOpEditor ops={[choisie]} onChange={() => {}} />);
+    expect(html).toContain(`value="${table.id}"`);
+  });
+});

@@ -131,7 +131,7 @@ import type {
   PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingFall, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingEtalLot, PendingHeal, PendingSurgery, PendingCorruption,
-  PendingCastOpposition, PendingCascade, ScheduledEffect, DialogueTransition, CascadeStepMeta, CounterDeclaration,
+  PendingCastOpposition, PendingCascade, ScheduledEffect, DialogueTransition, CascadeStepMeta, Cloture, CounterDeclaration,
 } from './pendings';
 import { openEncounterPsych } from './encounterPsychFlow';
 import { toMoney } from '../engine/money';
@@ -168,6 +168,8 @@ import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
 import { applyLandCargoRaid } from './carriers';
 import { suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, extendedTestOutcomeAppliers, curseurPose } from './cascade';
+import { differerLaSuite, jouerFlowEntier, nePeutPasDifferer, cloturer, registerCloture } from './combatEffects';
+import { flowFromEffects } from './flow';
 import { nightBands } from './nightBands';
 import { resultLine, openSequence, hostStep, pousseSi, type BuiltCascadeStep } from './rollSeam';
 import { createCombatSlice } from './combatSlice';
@@ -1661,8 +1663,13 @@ function settleFall(get: Get, set: Set, p: PendingFall, effectiveMetres: number,
   const mover = mode === 'battle' ? (battle ? inBattleId(battle, p.combatantId) : undefined) : get().party.find((h) => h.id === p.combatantId);
   if (!mover) return;
   const m = Math.max(0, effectiveMetres);
+  // Le tour se solde À LA TENTATIVE (LDB 13 l.86-88 : c'est le Test tenté qui consomme l'Action), donc
+  // AVANT l'atterrissage : ce coût ne dépend pas de ce que dira le 1d10 de chute, et rien ne suit alors
+  // l'application (#1508). L'ordre compte : déplacer ce solde après la chute le rendrait tributaire d'un
+  // dé en vol, pour une valeur que le dé ne change pas.
+  soldeDeLAction(get, set, actionSpent);
   if (m > 0) {
-    applyEffects(get, set, [{ type: 'fall', target: 'hero', heroId: p.combatantId, metres: m, to: p.to }]);
+    jouerFlowEntier(applyEffects(get, set, [{ type: 'fall', target: 'hero', heroId: p.combatantId, metres: m, to: p.to }]));
   } else {
     // LDB 15 l.82 : réduit à 0 m ou moins ⇒ AUCUN Dégât — bypass EXPLICITE de l'Effet `fall`
     // (`applyFall(c,0,…)` ne garantit PAS 0 seul, cf. son d10) : simple repositionnement + journal.
@@ -1670,12 +1677,46 @@ function settleFall(get: Get, set: Set, p: PendingFall, effectiveMetres: number,
     if (mode !== 'battle') set({ partyPos: { ...p.to } });
     get().log(t('fall.jumpSafe', { name: mover.label }));
   }
-  if (mode === 'battle' && battle) {
-    const bB = get().battle!;
+}
+
+/** SOLDE de l'Action/du Mouvement d'un tour à la tentative de saut (`settleFall`) — nommé pour être
+ *  joué AVANT l'atterrissage, là où il ne dépend d'aucun dé (LDB 13 l.86-88). */
+function soldeDeLAction(get: () => GameState, set: (s: Partial<GameState>) => void, actionSpent: boolean): void {
+  const bB = get().battle;
+  if (get().mode === 'battle' && bB) {
     set({ battle: { ...bB, acted: actionSpent ? true : bB.acted, action: null, movementUsed: (bB.movementUsed ?? 0) + 1, movedPreAction: bB.movedPreAction || !bB.acted, reachable: new Map(), preview: null } });
   }
   bus.emit(EVT.SCENE_DIRTY);
 }
+
+// ── CLÔTURES du store (#1508) : les verbes que ses sites jouent APRÈS leur Flow, en donnée. Chacun
+//    est enregistré ICI, au patron `cascadeAppliers` — la donnée voyage (sauvegarde, réseau), le code reste.
+registerCloture('avancerHorloge', (get, _set, c) => get().advanceTime(c.minutes));
+registerCloture('retirerEntite', (get, set, c) => removeEntity(get, set, c.entityId));
+registerCloture('marquerFouillee', (_get, set, c) => set((s) => ({ flags: { ...s.flags, [`__fouille_${c.entityId}`]: true } })));
+/** AVANCÉE du dialogue — verbe de CLÔTURE (#1508). Une modale de jet ENCORE ouverte (un Test que la
+ *  suite vient d'ouvrir) reprend la transition à son compte : « le dialogue n'avance jamais sous une
+ *  modale de jet » vaut du Test comme du dé — le dé, lui, est tenu par la mécanique de continuation
+ *  (une clôture ne se joue qu'à la validation de la DERNIÈRE étape de la grappe). */
+registerCloture('dialogueSuivant', (get, set, c) => {
+  const pt = get().pendingTest;
+  if (pt) { set({ pendingTest: { ...pt, dialogueNext: c.transition } }); return; }
+  applyDialogueTransition(get, set, c.transition);
+});
+/** SEAM `onOwnTestFailed` d'un Test RATÉ — verbe de CLÔTURE (#1508) : il APPLIQUE des ops (Crampes
+ *  abdominales → Sonné/À Terre par paliers de DR, MSRC 16 l.152), donc il attend le dé comme le reste. */
+registerCloture('testRateDeLActeur', (get, set, c) => {
+  const cascadeSet = !get().pendingCascade && !get().pendingTest ? set : undefined;
+  const fired = fireOwnTestFailed(get, c.actorId, { sl: c.sl, rng: battleRng(), set: cascadeSet });
+  if (fired.length) fired.forEach((l) => get().log(l));
+  set({ ...touchActors(get()) });
+});
+registerCloture('teardownDeVictoire', (get, set, c) => {
+  if (c.batailleDeMasse) massBattleFlow.massBattleResumeCombat(get, set, c.kills);
+  // Teardown de combat (couture UNIVERSELLE, state/cascade.ts) : résume la cascade SUSPENDUE (ex. le
+  // reste d'une journée de voyage interrompue par un abordage) — APRÈS l'écran de victoire, jamais devant.
+  resumeSuspendedCascade(get, set);
+});
 
 export const useGame = create<GameState>((set, get) => ({
   // Actions de combat inline — extraites dans `combatSlice.ts`, spreadées EN TÊTE (mêmes `get`/`set`).
@@ -1902,7 +1943,9 @@ export const useGame = create<GameState>((set, get) => ({
   interludeEnd: () => interludeFlow.interludeEnd(get, set),
   // Longues Séances de Jeu (LDB 17 l.47) : réutilise l'Effet `restoreFortune` (NE DUPLIQUE PAS la
   // logique — même case que le début de session, qui appelle `engine/fortune.restoreFortune`).
-  restoreFortuneNow: () => applyEffects(get, set, [{ type: 'restoreFortune' }]),
+  // Corps de BLOC, retour CONSOMMÉ (#1508) : une flèche à corps expression typée `() => void` avale le
+  // signal en silence. `restoreFortune` est une donnée LITTÉRALE sans canal de dés — d'où le fail-fast.
+  restoreFortuneNow: () => { nePeutPasDifferer(applyEffects(get, set, [{ type: 'restoreFortune' }]), 'store.restoreFortuneNow'); },
   // TOUS les délégués de jet (mono+multi, 36 flux) en UN spread — dérivés de FLOW_WIRING (fin des 40 spreads épars).
   ...buildRollFlowActions(get, set),
   activityCancel: () => FLOWS.activity.cancel(get, set),
@@ -2204,7 +2247,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (mode === 'exploration') {
       if (!isWalkable(scene, to.x, to.y, to.z ?? 0)) return;
       get().moveParty(to); // monte (optimiste) ; l'échec du Test fera chuter au pied via l'Effet `fall`
-      if (plan.kind === 'test') runFlow(get, set, plan.flow);
+      if (plan.kind === 'test') jouerFlowEntier(runFlow(get, set, plan.flow));
       return;
     }
     if (mode === 'battle') {
@@ -2222,7 +2265,7 @@ export const useGame = create<GameState>((set, get) => ({
         : battle.log;
       set({ battle: { ...battle, log, acted, action: null, movementUsed: (battle.movementUsed ?? 0) + cost, movedPreAction: battle.movedPreAction || !battle.acted, reachable: new Map(), preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
-      if (plan.kind === 'test') runFlow(get, set, plan.flow);
+      if (plan.kind === 'test') jouerFlowEntier(runFlow(get, set, plan.flow));
     }
   },
 
@@ -2335,10 +2378,15 @@ export const useGame = create<GameState>((set, get) => ({
         // Décor INTERACTIF (fouille/ramassage) — canal unique d'Effets (cf. SceneEntity.interact).
         get().log(t('store.searching', { what: ent.label ?? t('store.searchPlaceFallback') }));
         // Logique de fouille (Flow) : butin → fenêtre d'attribution, test → fouille à risque (modale).
-        runFlow(get, set, ent.interact.flow, ent.label ?? t('store.searchTitle'));
-        get().advanceTime(TIME_COST.search); // « tout est horodaté » : fouiller ≈ search min
-        if (ent.interact.consume) removeEntity(get, set, entityId); // butin → le décor disparaît
-        else set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } })); // reste, marqué fouillé
+        // CLÔTURES de la fouille (#1508) : l'horloge (« tout est horodaté » : fouiller ≈ search min)
+        // puis le sort du décor. L'horloge tire les effets PROGRAMMÉS et les ticks — jouée devant un dé
+        // de chute, elle les tirerait sur des Blessures qui n'ont pas encaissé.
+        cloturer(get, set, runFlow(get, set, ent.interact.flow, ent.label ?? t('store.searchTitle')), [
+          { verbe: 'avancerHorloge', minutes: TIME_COST.search },
+          ent.interact.consume // butin → le décor disparaît ; sinon il reste, marqué fouillé
+            ? { verbe: 'retirerEntite', entityId }
+            : { verbe: 'marquerFouillee', entityId },
+        ]);
         return;
       }
     }
@@ -2416,11 +2464,15 @@ export const useGame = create<GameState>((set, get) => ({
     // Logique du choix (effets + branches) → runFlow ; objet/argent reçu = fenêtre d'attribution (titrée du donateur).
     if (choice.flow) {
       const suspended = get().pendingTest;
-      runFlow(get, set, choice.flow, speaker ?? 'Butin');
+      const issue = runFlow(get, set, choice.flow, speaker ?? 'Butin');
       // Le Flow a SUSPENDU sur un Test (`openSkillTest`) : l'avancée du dialogue est portée par le
       // pending et appliquée par `resolveTest` — sinon le nœud suivant coexiste sous la modale de jet.
       const pt = get().pendingTest;
-      if (pt && pt !== suspended) { set({ pendingTest: { ...pt, dialogueNext: transition } }); return; }
+      if (pt && pt !== suspended) { set({ pendingTest: { ...pt, dialogueNext: transition } }); jouerFlowEntier(issue); return; }
+      // MÊME invariant pour un DÉ (#1508) : l'avancée du dialogue est une CLÔTURE — elle attend la
+      // conséquence au lieu de passer devant elle.
+      cloturer(get, set, issue, [{ verbe: 'dialogueSuivant', transition }]);
+      return;
     }
     applyDialogueTransition(get, set, transition);
   },
@@ -2490,12 +2542,17 @@ export const useGame = create<GameState>((set, get) => ({
     const kills = (pv?.defeated ?? []).reduce((n, d) => n + d.count, 0);
     const inMassBattleCombat = !!get().massBattle?.combatScene;
     set({ pendingVictory: null, battle: null, mode: 'exploration' });
-    if (leftoverGear.length) applyEffects(get, set, leftoverGear);
-    if (cont?.length) applyEffects(get, set, cont); // #9 : téléport/dialogue de onVictory APRÈS « Continuer »
-    if (inMassBattleCombat) massBattleFlow.massBattleResumeCombat(get, set, kills);
-    // Teardown de combat (couture UNIVERSELLE, state/cascade.ts) : résume la cascade SUSPENDUE (ex. le
-    // reste d'une journée de voyage interrompue par un abordage) — APRÈS l'écran de victoire, jamais devant.
-    resumeSuspendedCascade(get, set);
+    // DEUX lots à la suite : si le premier ouvre un dé à la porte (#1508), le second est SA suite et
+    // ne doit pas passer devant — il part alors dans la continuation de l'étape ouverte, et le teardown
+    // de combat (couture UNIVERSELLE, state/cascade.ts) est la CLÔTURE qui les suit tous les deux.
+    let issue = leftoverGear.length ? applyEffects(get, set, leftoverGear) : undefined;
+    if (cont?.length) {
+      // #9 : téléport/dialogue de onVictory APRÈS « Continuer ». Si le butin a différé, ce lot-ci est SA
+      // suite — confié tel quel : `differerLaSuite` COMPOSE (le reste du butin est déjà sur l'étape).
+      if (issue) differerLaSuite(set, flowFromEffects(cont), 'scene');
+      else issue = applyEffects(get, set, cont);
+    }
+    cloturer(get, set, issue, [{ verbe: 'teardownDeVictoire', kills, batailleDeMasse: inMassBattleCombat }]);
   },
   /** Ferme l'écran de DÉFAITE. Dans une Scène de COMBAT de bataille de masse (ADE II 08), la défaite
    *  tactique ne met PAS fin à la partie : les héros sont repoussés (soignés, le combat de scène est une
@@ -2525,7 +2582,7 @@ export const useGame = create<GameState>((set, get) => ({
     const pl = get().pendingLoot;
     const leftover = (pl?.gear ?? []).map((g) => g.effect);
     set({ pendingLoot: null });
-    if (leftover.length) applyEffects(get, set, leftover);
+    if (leftover.length) jouerFlowEntier(applyEffects(get, set, leftover));
   },
   assignLootGear: (index, heroId) => assignGearAt(get, set, 'pendingLoot', index, heroId),
   /** Attribue un objet d'équipement du butin de victoire au héros choisi (qualités/skin conservés). */
@@ -2748,27 +2805,18 @@ export const useGame = create<GameState>((set, get) => ({
     // Branche choisie PUIS continuation (suite du `seq` parent d'un nœud `test`) — exécutées par runFlow
     // (butin de Test → fenêtre d'attribution ; if/test imbriqués gérés).
     const branch = effSuccess ? pt.onSuccess : pt.onFailure;
-    runFlow(get, set, { kind: 'seq', steps: [branch ?? EMPTY_FLOW, pt.after ?? EMPTY_FLOW] }, pt.label, pt.sl);
-    // SEAM `onOwnTestFailed` (chemin modal JOUEUR — convergence des Tests de scène/compétence/combat, réf
-    // memory « JAMAIS rollTest inline chemin joueur ») : un Test RATÉ émet le trigger (Crampes abdominales
-    // → Sonné/À Terre/Inconscient par paliers de DR, MSRC 16 l.152). Réussite forcée (Résilience) exclue.
-    // RÉ-ENTRANCE : ce Test EST le sous-Test d'un `onOwnTestFailed` (FM de palier 2) → il ne RÉ-ÉMET PAS.
-    // CADENCE-AWARE : sans modale déjà ouverte, on threade `set` → le FM de palier 2 d'un HÉROS devient une
-    // étape de cascade (combat) OU une modale de jet scène (interlude, `routeTriggeredTest`) ; PNJ → inline.
-    if (!effSuccess && !pt.noOwnTestFailed) {
-      const cascadeSet = !get().pendingCascade && !get().pendingTest ? set : undefined;
-      const fired = fireOwnTestFailed(get, pt.actorId, { sl: pt.sl, rng: battleRng(), set: cascadeSet });
-      if (fired.length) fired.forEach((l) => get().log(l));
-      set({ ...touchActors(get()) });
-    }
-    // Avancée de dialogue différée (un `choice.flow` avait suspendu ICI) : appliquée une fois la
-    // branche + continuation résolue. Si celles-ci ré-ouvrent un Test, on la reporte sur le nouveau
-    // pending (le dialogue n'avance jamais sous une modale de jet).
-    if (pt.dialogueNext) {
-      const nextPt = get().pendingTest;
-      if (nextPt) set({ pendingTest: { ...nextPt, dialogueNext: pt.dialogueNext } });
-      else applyDialogueTransition(get, set, pt.dialogueNext);
-    }
+    const issue = runFlow(get, set, { kind: 'seq', steps: [branch ?? EMPTY_FLOW, pt.after ?? EMPTY_FLOW] }, pt.label, pt.sl);
+    // CLÔTURES du Test (#1508) — elles suivent la branche, et attendent son dé s'il y en a un :
+    //  · SEAM `onOwnTestFailed` (chemin modal JOUEUR — convergence des Tests de scène/compétence/combat,
+    //    réf memory « JAMAIS rollTest inline chemin joueur ») : un Test RATÉ émet le trigger (Crampes
+    //    abdominales → Sonné/À Terre/Inconscient par paliers de DR, MSRC 16 l.152). Réussite forcée
+    //    (Résilience) exclue. RÉ-ENTRANCE : ce Test EST le sous-Test d'un `onOwnTestFailed` (FM de
+    //    palier 2) → il ne RÉ-ÉMET PAS.
+    //  · avancée de dialogue différée (un `choice.flow` avait suspendu ICI).
+    const clotures: Cloture[] = [];
+    if (!effSuccess && !pt.noOwnTestFailed) clotures.push({ verbe: 'testRateDeLActeur', actorId: pt.actorId, sl: pt.sl });
+    if (pt.dialogueNext) clotures.push({ verbe: 'dialogueSuivant', transition: pt.dialogueNext });
+    cloturer(get, set, issue, clotures);
   },
   closeDocument: () => set({ document: null }),
 
@@ -2909,7 +2957,7 @@ export const useGame = create<GameState>((set, get) => ({
     const then = recap?.then;
     if (!then || get().battle) return;
     if (then.kind === 'effects') {
-      applyEffectsLoot(get, set, then.effects, t('eff.flowTitleDiscovery')); // trouvaille d'étape de voyage → fenêtre aussi
+      jouerFlowEntier(applyEffectsLoot(get, set, then.effects, t('eff.flowTitleDiscovery'))); // trouvaille d'étape de voyage → fenêtre aussi
     } else {
       get().transitionTo(then.scene, then.entry);
       get().startCombat(then.encounter, undefined, { noSurprise: then.noSurprise });

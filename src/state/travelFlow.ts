@@ -44,7 +44,7 @@ import {
 import { bonus } from '../engine/characteristics';
 import { rollVehicleProblem, mountIncidentEffects } from '../engine/travelTables';
 import { applyOps } from '../engine/ops';
-import { applyFall } from '../engine/movement';
+import { ouvrirChute } from './combatEffects';
 import { applyHealWounds } from '../engine/healing';
 import { declareDisease } from '../engine/disease';
 import { findVehicleById, voyageStakeRef, weather } from '../data';
@@ -944,7 +944,7 @@ registerCascadeApplier('landPerilPerception', (get, set, step, hero) => {
 /**
  * Applique la journée EN SELLE (EDOC 07 l.142-146) : le moteur PUR `resolveMountedDay` rend la fatigue
  * des bêtes et les Incidents de monte ; ici on APPLIQUE — chute du cavalier (Dégâts de Chute, brique
- * `applyFall`), état persistant sur la Possession (`mountInjury`, SOCLE POSSESSIONS #617/#618), bête
+ * `applyFall`, ouverte à la porte par `ouvrirChute`), état persistant sur la Possession (`mountInjury`, SOCLE POSSESSIONS #617/#618), bête
  * morte/condamnée marquée `destroyed` — et on dégrade la route à pied si le groupe n'est plus monté au
  * complet.
  */
@@ -953,7 +953,7 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
   const lines: string[] = [];
   const injuries = new Map<string, MountInjury>();
   const abandoned = new Set<string>();
-  let fell = false;
+  const chutes: { hero: Combatant; metres: number }[] = [];
   for (const o of outcomes) {
     lines.push(...o.lines);
     for (const mt of o.tests) {
@@ -967,7 +967,10 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
         });
       }
       // Chute de selle (2 mètres, EDOC 07 l.167/l.174) — Dégâts de Chute (LDB 15) via la brique partagée.
-      if (inc.riderFallM) { applyFall(o.mount.hero, inc.riderFallM, battleRng()); fell = true; }
+      // Le 1d10 passe par la PORTE (#1508) : une étape à dé nu du cavalier, appendue à la journée en
+      // cours ; ce qu'il encaisse se dit à la résolution de son dé. Servies APRÈS la boucle, comme les
+      // blessures de monture : la journée finit de se composer avant qu'une fenêtre ne s'ouvre.
+      if (inc.riderFallM) chutes.push({ hero: o.mount.hero, metres: inc.riderFallM });
       if (inc.injury) injuries.set(o.mount.possession.uid, inc.injury);
     }
     // Bête morte (poussée jusqu'à la mort, l.146) ou Patte brisée (« peu d'espoir qu'elle y survive »,
@@ -978,11 +981,8 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
       lines.push(t('tf.mountAbandoned', { name: o.mount.hero.label, mount: possessionLabel(o.mount.possession) }));
     }
   }
-  if (injuries.size || abandoned.size || fell) {
+  if (injuries.size || abandoned.size) {
     set({
-      // `fell` : `applyFall` mute le héros EN PLACE (Blessures) — sans nouvelle référence `party`,
-      // les abonnés Zustand (`useGame(s => s.party)`, HUD/fiche) ne re-rendent pas (#617/#618 Lot 2 revue).
-      ...(fell ? { party: [...get().party] } : {}),
       possessions: get().possessions.map((p) => {
         if (abandoned.has(p.uid)) return { ...p, destroyed: true };
         if (p.nature === 'bete' && injuries.has(p.uid)) return { ...p, mountInjury: injuries.get(p.uid) };
@@ -992,6 +992,7 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
   }
   log(get, set, lines);
   day.lines.push(...toRecapLines(lines));
+  for (const c of chutes) ouvrirChute(set, c.hero, c.metres);
   if (!partyFullyMounted(get().party, get().possessions)) {
     set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
     const l: string = t('tf.notAllMounted');

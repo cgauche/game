@@ -1,7 +1,7 @@
 /**
  * Règles de déplacement étendu — Livre de base, ch.15 « Déplacement ».
  */
-import { RNG, defaultRNG, d10 } from './dice';
+import { RNG, defaultRNG } from './dice';
 import { effectiveChar } from './characteristics';
 import { loseWounds, addCondition } from './conditions';
 import type { Combatant } from './types';
@@ -160,11 +160,15 @@ export function fallFromTest(t: TestResult, metres: number): { success: boolean;
  * Vit ICI, avec les deux autres briques de chute du chapitre (`resolveDeliberateFall`, `fallFromTest`) :
  * toute chute du jeu — repositionnement de groupe (Effet `fall`), effondrement d'une passerelle
  * (`collapseStructure`), incident de monture, op `fall` du gréement (MDG 13 l.678) — s'y applique.
+ *
+ * Le 1d10 entre PAR PARAMÈTRE (#1508) : c'est un dé du jeu comme un autre, il tombe à la porte des jets
+ * (étape à dé nu, affichable/posable), et `applyFall` en est le seul LECTEUR. Ce qui vit ici est la
+ * formule, pas le tirage.
  */
-export function applyFall(c: Combatant, metres: number, rng: RNG): void {
+export function applyFall(c: Combatant, metres: number, d10Chute: number): void {
   const m = Math.max(0, metres);
   const be = Math.floor(effectiveChar(c, 'endurance') / 10);
-  const lost = Math.max(0, 3 * m + d10(rng) - be);
+  const lost = Math.max(0, 3 * m + d10Chute - be);
   loseWounds(c, lost);
   if (lost > be) addCondition(c, 'a-terre');
 }

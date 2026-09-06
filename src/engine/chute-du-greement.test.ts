@@ -6,7 +6,7 @@ import { applyCrewHit, rollShipCritical } from './shipCritical';
 import { applyOps, type GameOp } from './ops';
 import { applyFall } from './movement';
 import { hullShipSize, shipSizeOfLength } from './shipBuild';
-import { makeRNG } from './dice';
+import { makeRNG, roll as rollDes } from './dice';
 import { hasCondition } from './conditions';
 import { SHIP_CRIT_SET, findFallTable, type ShipCritEntry } from '../data/shipCriticals';
 import { findVehicleById, shipConstruction } from '../data';
@@ -237,7 +237,10 @@ describe('« 3 × mètres + 1d10 » n’a qu’UN foyer dans `src/**`', () => {
    *  lignes (« const base = 3 * m; » puis « base + d10(rng) ») échappe au détecteur — il mesure une
    *  LIGNE, pas une expression. */
   const TROIS_PAR_METRE = /(3\s*\*\s*[A-Za-z_$][\w$]*|[A-Za-z_$][\w$]*\s*\*\s*3)/;
-  const D10 = /\bd10\s*\(/;
+  // Le dé de la formule s'écrit en APPEL (`d10(rng)`) comme en VALEUR REÇUE (`d10Chute`, #1508 : le
+  // 1d10 tombe à la porte, `applyFall` le lit) — le détecteur voit le NOM du dé dans les deux cas,
+  // sans quoi une copie de la formule sur un dé posé lui échapperait.
+  const D10 = /\bd10/i;
   const FORMULE = { test: (l: string) => TROIS_PAR_METRE.test(l) && D10.test(l) };
 
   it('AUCUN site hors `engine/movement.ts` ne réécrit la formule', () => {
@@ -260,8 +263,9 @@ describe('« 3 × mètres + 1d10 » n’a qu’UN foyer dans `src/**`', () => {
 
   it('le détecteur MORD : la formule INJECTÉE est vue, DANS LES DEUX ORDRES', () => {
     expect(FORMULE.test('  const lost = Math.max(0, 3 * m + d10(rng) - be);')).toBe(true);
-    expect(FORMULE.test('  applyFall(c, metres, rng);')).toBe(false);
+    expect(FORMULE.test('  applyFall(c, metres, d10Chute);')).toBe(false);
     expect(FORMULE.test('  const lost = Math.max(0, d10(rng) + metres * 3 - be);'), 'ordre inverse').toBe(true);
+    expect(FORMULE.test('  const lost = Math.max(0, 3 * m + d10Chute - be);'), 'sur un dé POSÉ aussi').toBe(true);
     expect(FORMULE.test('  const trois = 3 * facteur;'), 'un ×3 SANS dé n’est pas la chute').toBe(false);
   });
 
@@ -269,7 +273,9 @@ describe('« 3 × mètres + 1d10 » n’a qu’UN foyer dans `src/**`', () => {
     const parLOp = marin('op', { shipStation: 'nid-de-pie' } as Partial<Combatant>);
     const parLaBrique = marin('brique');
     applyOps(parLOp, opsDEchec(10), { rng: makeRNG(7), hull: MOYENNE });
-    applyFall(parLaBrique, 25, makeRNG(7)); // 25 m = la colonne nid-de-pie d'une coque Moyenne
+    // 25 m = la colonne nid-de-pie d'une coque Moyenne (entière : aucun dé de hauteur), et le 1d10 de
+    // Dégâts est le PREMIER tirage de la même graine — la brique reçoit exactement ce que l'op tire.
+    applyFall(parLaBrique, 25, rollDes(1, 10, makeRNG(7)));
     expect(parLOp.wounds.current).toBe(parLaBrique.wounds.current);
     expect(hasCondition(parLOp, 'a-terre')).toBe(hasCondition(parLaBrique, 'a-terre'));
   });

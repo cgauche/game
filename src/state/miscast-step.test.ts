@@ -283,14 +283,24 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
     // Les DEUX étapes sont poussées avant que l'une ne soit résolue (rafale d'un même round).
     applyMiscast(useGame.getState, useGame.setState, hero, 'colere');
     applyMiscast(useGame.getState, useGame.setState, hero, 'colere');
-    expect(steps().filter((s) => s.kind === 'miscastTable')).toHaveLength(2);
-    poser(stepAt(0).id, 1);
-    expect(stepAt(0).table!.result!.die, '1 + 2×10').toBe(21);
+    // Les deux Colères se DÉSIGNENT par leur nature, jamais par leur position : la conséquence d'une
+    // étape s'INSÈRE derrière elle (#1508, `cascade.poseDansLaSequence`), donc la 2ᵉ Colère n'est plus
+    // forcément la 2ᵉ du tableau — et ce qui se joue ici est « la Colère suivante », pas « l'index 1 ».
+    const coleres = () => steps().filter((s) => s.kind === 'miscastTable');
+    expect(coleres()).toHaveLength(2);
+    poser(coleres()[0].id, 1);
+    expect(coleres()[0].table!.result!.die, '1 + 2×10').toBe(21);
     suivant();
     expect(hero.sinPoints).toBe(1);
+    // La CONSÉQUENCE de la 1ʳᵉ Colère se glisse DERRIÈRE elle (#1508) au lieu d'aller en fin de
+    // séquence : c'est une disposition d'INGÉNIERIE (une étape poussée par un applier est sa suite
+    // immédiate), pas une règle — aucun passage source ne prescrit l'ordre entre deux Colères.
+    // Ce que le RAW tient ici est ailleurs, et reste vérifié plus bas : la 2ᵉ se tire au total EXPIÉ.
+    expect(steps().map((s) => s.kind)).toEqual(['miscastTable', 'miscast', 'miscastTable']);
+    suivant();
     // 2ᵉ étape : son modificateur est relu MAINTENANT (1 Péché), pas celui de son ouverture (2).
-    poser(stepAt(1).id, 1);
-    expect(stepAt(1).table!.result!.die, 'la 2ᵉ Colère a tiré au total PÉRIMÉ').toBe(11);
+    poser(coleres()[1].id, 1);
+    expect(coleres()[1].table!.result!.die, 'la 2ᵉ Colère a tiré au total PÉRIMÉ').toBe(11);
     suivant();
     expect(hero.sinPoints, 'la 2ᵉ expiation n’a pas eu lieu').toBe(0);
   });

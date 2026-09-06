@@ -6,6 +6,7 @@ import { seedBattleRng } from '../../state/battleRng';
 import { hasTalent } from '../../engine/magic';
 import type { SkillInstance } from '../../engine/types';
 import { scenario } from './18-effets-scriptes';
+import { draineCascade } from '../../state/cascadeTestKit';
 
 /**
  * « Effets scriptés » (#96/#97) : chaque `it` prouve qu'un déclencheur RÉEL du scénario (dialogue,
@@ -60,6 +61,7 @@ describe('Scénario « Effets scriptés » : moteurs orphelins câblés à un d�
     const before = useGame.getState().party[0].wounds.current;
     seedBattleRng(1);
     runFlow(useGame.getState, useGame.setState, trig.flow);
+    draineCascade(useGame.getState); // le 1d10 des Dégâts de chute passe par la porte (#1508)
     const h = useGame.getState().party[0];
     expect(h.wounds.current).toBeLessThan(before); // 3 Dégâts/m (3 m) + 1d10, réduits par le BE
     expect(h.traumas?.length ?? 0).toBeGreaterThan(0); // Blessure Critique (déchirure) posée

@@ -15,6 +15,7 @@ import { rationCount } from '../engine/provisions';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, ItemInstance } from '../engine/types';
 import type { Possession } from '../engine/possession';
+import { draineCascade } from './cascadeTestKit';
 
 const ration = (uid: string): ItemInstance => ({ uid, label: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 
@@ -678,6 +679,9 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
       const partyRefBefore = useGame.getState().party;
       const woundsBefore = useGame.getState().party[0].wounds.current;
       useGame.getState().startTravel('r1', 'monture', { allure: 'galop' });
+      // Le 1d10 des Dégâts de chute de selle tombe à la PORTE (#1508) : l'étape à dé nu appendue à la
+      // journée est jouée ici, comme n'importe quel jet de la séquence de voyage.
+      draineCascade(useGame.getState);
       const st = useGame.getState();
       const heroAfter = st.party.find((p) => p.id === h.id);
       if (heroAfter && heroAfter.wounds.current < woundsBefore) {

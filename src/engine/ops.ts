@@ -73,6 +73,7 @@ import { woundsFromHit } from './woundsCalc';
 import type { TraitInstance } from './statEntry';
 import type { ChaosAlign, ExposureLevel } from './corruption';
 import { t, type MsgKey } from '../i18n';
+import type { PlayerText } from '../i18n/playerText';
 
 // ---------------------------------------------------------------------------
 // Formules
@@ -1177,6 +1178,19 @@ export interface OpsCtx {
   /** Blessures RÉELLEMENT infligées par le lancement courant (Projectile magique) — base du Vol de
    *  vie (op `lifeSteal`). Posé par la résolution missile avant d'appliquer les ops du lanceur. */
   woundsDealt?: number;
+  /**
+   * DÉS DÉJÀ POSÉS par la porte pour CES ops (#1508) — clé (`cleDeDe`) → valeur du dé, telle que
+   * `demandesDeDes` l'a ANNONCÉE. C'est le CANAL op → applier : le moteur FABRIQUE la demande (quels
+   * dés, pour quoi), la couche `state` OUVRE la fenêtre (étape à dé nu, affichable/lançable/posable) et
+   * REVERSE ici ce qui est tombé. Le dé posé REMPLACE le tirage : aucun rng n'est consommé pour lui.
+   *
+   * Absent (pilote headless : moteur pur, test, résolveur inline) ⇒ l'op tire elle-même, au même
+   * point du rng qu'avant — la porte reste le chemin, jamais une condition de correction.
+   *
+   * Ne DESCEND PAS aux ops imbriquées (`imbrique`) : les clés sont indexées sur le rang de l'op dans
+   * CE tableau, une descente les ferait collisionner avec celles du parent.
+   */
+  des?: ReadonlyMap<string, number>;
   /** Valeur du jet courant d'une op `rollThreshold` — résout les Formula `{rolled}` des ops de palier. */
   rolled?: number;
   /** INDICE de l'attaque naturelle d'une MANŒUVRE en cours (« Morsure +10 ») — résout les Formula
@@ -1300,6 +1314,198 @@ function stampSource(effects: TriggeredEffect[], source?: EffectSource): Trigger
 }
 
 /**
+ * CLÉ d'un dé d'op (#1508) — rang de l'op dans SON tableau + champ qui le porte (`#3.hauteur`).
+ * SOURCE UNIQUE de la clé, et personne ne l'écrit à la main : la DÉCLARATION de l'op (`DES_DUNE_OP`)
+ * nomme ses champs, `demandesDeDes` en dérive les clés qu'elle annonce et le helper `de(…)` d'`applyOps`
+ * en dérive les clés qu'il relit. Le rang suffit à l'unicité (deux ops d'un tableau ne partagent pas de
+ * rang) et le champ nomme le dé, pour que l'étape ouverte dise ce qu'elle décide.
+ */
+export function cleDeDe(rang: number, champ: string): string {
+  return `#${rang}.${champ}`;
+}
+
+/**
+ * DÉ QU'UNE OP DEMANDE À LA PORTE (#1508) — ce que le moteur FABRIQUE pour que la couche `state`
+ * OUVRE : quels dés (`spec`), sous quelle clé les reverser (`cle`, cf. `cleDeDe`), ce qu'ils décident
+ * (`libelle`) et dans quelle unité se lit leur total (`unite` — « m », affichage pur).
+ *
+ * C'est la même forme qu'une déclaration d'étape à dé nu (`state/rollSeam.DieStepSpec`) privée de ce
+ * que seul l'applier sait (le porteur, la séquence d'accueil) : le moteur ne connaît ni sièges ni
+ * fenêtres, il dit le dé.
+ */
+export interface DemandeDe {
+  cle: string;
+  spec: DiceSpec;
+  libelle: PlayerText;
+  unite?: string;
+}
+
+/**
+ * LES DÉS que chaque op du canal déclare, PAR NOM (#1508) — la table qui donne au `champ` son type.
+ * Les deux bouts du canal lisent la MÊME union : le nom demandé par le `case` se vérifie contre les
+ * champs que l'op DÉCLARE, et un nom absent de la table ne compile pas.
+ *
+ * L'op N+1 coûte toujours UNE déclaration : une ligne ici (ses champs) et son entrée dans
+ * `DES_DUNE_OP` — les deux au même endroit, impossibles à désaccorder (le registre est typé par cette
+ * table, une entrée qui déclarerait un autre champ ne compile pas).
+ */
+interface ChampsDOp {
+  fall: 'hauteur' | 'degats';
+}
+
+/** UN dé DÉCLARÉ par une op, avant que son rang ne lui donne sa clé — la forme AUTEUR de `DemandeDe`. */
+interface DeDeclare<C extends string = string> {
+  champ: C;
+  spec: DiceSpec;
+  libelle: PlayerText;
+  unite?: string;
+}
+
+/** Le 1d10 de DÉGÂTS de toute chute (LDB 15 l.80) — une seule écriture, lue par la déclaration de l'op
+ *  `fall`, par le repli headless de son `case`, et par la porte des chutes à hauteur CONNUE
+ *  (`state/combatEffects.ouvrirChute`). */
+export const D10_CHUTE: DiceSpec = { n: 1, sides: 10 };
+
+/**
+ * HAUTEUR déclarée d'une chute d'op `fall` — LECTURE UNIQUE de (table × Taille de coque × station du
+ * tombant), MDG 13 l.684-688. Partagée par la DÉCLARATION (qui annonce le dé) et par le `case 'fall'`
+ * (qui le consomme) : une seconde lecture ferait diverger ce qui est annoncé de ce qui est lu.
+ *
+ * Rend la `Formula` de hauteur ET le libellé de la table. Table inconnue, coque absente, Taille non
+ * couverte, station sans colonne : anomalie NOMMÉE (une chute sans hauteur n'est pas une chute).
+ */
+function hauteurDeChute(o: Extract<GameOp, { op: 'fall' }>, target: Combatant, ctx: OpsCtx): { hauteur: Formula; table: string } {
+  const table = findFallTable(o.hauteur.table.id);
+  if (!table) throw new Error(`op « fall » : table de hauteur inconnue « ${o.hauteur.table.id} » (tablesDeChute, ship-criticals.json).`);
+  const taille = ctx.hull ? hullShipSize(ctx.hull) : undefined;
+  if (!taille) throw new Error(`op « fall » (« ${table.label} ») : aucune Taille de coque au contexte (ctx.hull) — la hauteur se lit par la Taille du bateau (MDG 12 l.122-129).`);
+  const bande = table.bandes.find((b) => b.tailles.includes(taille));
+  if (!bande) throw new Error(`op « fall » (« ${table.label} ») : aucune bande ne couvre la Taille « ${taille} ».`);
+  const hauteur = target.shipStation === undefined ? undefined : bande.hauteurs[target.shipStation];
+  if (hauteur === undefined) throw new Error(`op « fall » (« ${table.label} ») : ${target.label} n'a pas de colonne de hauteur pour la station « ${target.shipStation ?? '—'} ».`);
+  return { hauteur, table: table.label };
+}
+
+/**
+ * DÉCLARATION UNIQUE « quels dés cette op demande à la porte » (#1508) — le registre par `op`, LU aux
+ * DEUX bouts du canal : `demandesDeDes` l'énumère pour ouvrir les étapes, et le helper `de(…)`
+ * d'`applyOps` le relit pour consommer ce qui est tombé. Une op qui rejoint le canal coûte UNE entrée
+ * ici plus un `de(…)` à son `case` : la clé s'écrit à UN endroit, les deux bouts la dérivent.
+ *
+ * Une op ABSENTE d'ici tire encore ses dés sous `applyOps` : c'est la DETTE inventoriée par
+ * `DES_HORS_PORTE_STOCK`, pas une classe de dé exemptée (doctrine utilisateur du 2026-09-04).
+ */
+const DES_DUNE_OP: { [K in keyof ChampsDOp]: (o: Extract<GameOp, { op: K }>, target: Combatant, ctx: OpsCtx) => DeDeclare<ChampsDOp[K]>[] } = {
+  fall: (o, target, ctx): DeDeclare<ChampsDOp['fall']>[] => {
+    const { hauteur, table } = hauteurDeChute(o, target, ctx);
+    return [
+      // Une hauteur ENTIÈRE (nid-de-pie : 12 / 25 / 40 m, MDG 13 l.684) n'est pas un dé : rien à ouvrir.
+      ...(typeof hauteur === 'object' && 'dice' in hauteur
+        ? [{ champ: 'hauteur' as const, spec: hauteur.dice, libelle: t('op.fall.deHauteur', { table }), unite: 'm' }]
+        : []),
+      { champ: 'degats' as const, spec: D10_CHUTE, libelle: t('op.fall.deDegats') },
+    ];
+  },
+};
+
+/**
+ * CETTE OP DEMANDE-T-ELLE UN DÉ À LA PORTE ? (#1508) — lecture du MÊME registre que `demandesDeDes`
+ * (`DES_DUNE_OP`), donc jamais une seconde liste à tenir : une op qui rejoint le canal devient vraie
+ * ici du seul fait de sa déclaration.
+ *
+ * PRÉDICAT PUR et TOTAL : il ne lit ni cible ni contexte, donc il ne LÈVE pas — c'est ce qui permet à
+ * un appelant de DÉCIDER de son chemin (différable ou non) avant d'avoir de quoi annoncer.
+ */
+export function opDemandeUnDe(op: GameOp): boolean {
+  return op.op in DES_DUNE_OP;
+}
+
+/** Les dés DÉCLARÉS par une op à son rang — lecture unique du registre, vue ANONYME (l'énumération n'a
+ *  pas besoin de savoir QUELS champs : elle en dérive les clés). Le `case` qui CONSOMME, lui, lit son
+ *  entrée nominativement (`DES_DUNE_OP.fall`) et garde le type de ses champs. */
+function desDeclaresDe(o: GameOp, target: Combatant, ctx: OpsCtx): DeDeclare[] {
+  const decl = (DES_DUNE_OP as Partial<Record<GameOp['op'], (op: GameOp, t: Combatant, c: OpsCtx) => DeDeclare[]>>)[o.op];
+  return decl ? decl(o, target, ctx) : [];
+}
+
+/**
+ * PARTITION TOTALE des champs d'`OpsCtx` pour le canal op → applier (#1508) — quatre seaux, et un
+ * champ d'`OpsCtx` appartient à EXACTEMENT un.
+ *
+ * Elle existe parce qu'une feuille d'ops DIFFÉRÉE (ses dés ouverts à la porte) se reprend PLUS TARD,
+ * depuis une étape SÉRIALISÉE : son contexte doit traverser une sauvegarde et le réseau. Reconstruire
+ * « les quelques champs dont on se souvient » perdait mesurablement le reste (`{woundsDealt}` d'EDO 11
+ * tombait à 0). La totalité est tenue AU TYPE (`_OpsCtxPartitionTotale` ci-dessous) : ajouter un champ
+ * à `OpsCtx` sans le classer ici ne compile plus — aucune liste à la main ne peut dériver en silence.
+ */
+/** GELÉS : primitifs/données pures, portés VERBATIM par le `meta` de l'étape (sérialisables, coop). */
+export const OPS_CTX_GELES = [
+  'sourceSpell', 'sourceSpellId', 'conjureForm', 'label', 'rejeuRecurrent', 'source', 'effectId',
+  'defaultDurationRounds', 'defaultUntilTime', 'now', 'sl', 'overcastDurationSteps', 'chosenTableRolls',
+  'noReentryOwnTestFailed', 'woundsDealt', 'rolled', 'indice', 'stacks', 'engagedAdvantageGap',
+  'engagedAdvantageLead', 'location', 'attackKind', 'startleCause', 'foeInLoS', 'hiddenFromFoes',
+  'engaged', 'nearestFoeDist', 'weapon',
+] as const;
+/** PAR RÉFÉRENCE : des Combattants — leur ID voyage, l'état les redonne (`actorIn`/`coqueParId`). */
+export const OPS_CTX_PAR_REFERENCE = ['caster', 'hull', 'crew'] as const;
+/** REBÂTIS à la reprise par un chemin NOMMÉ : le rng de la partie, le hook de Corruption branché sur la
+ *  cible, et les dés eux-mêmes (relus sur les étapes sœurs — jamais recopiés). */
+export const OPS_CTX_REBATIS = ['rng', 'onCorruption', 'des'] as const;
+/** HORS CANAL : hooks qu'aucun chemin ne sait rebâtir. Leur PRÉSENCE sur une feuille qui veut différer
+ *  est un fail-fast NOMMÉ (`state/combatEffects`), jamais une perte muette — mesuré : aucune donnée du
+ *  dépôt n'atteint la porte avec l'un d'eux (ils naissent d'`endOfRound`, de l'interlude et du bus de
+ *  triggers, qui n'appellent pas `applyLeafOps`). */
+export const OPS_CTX_HORS_CANAL = ['onCorruptionExposure', 'onCondition', 'onOpposingAdvantage'] as const;
+
+type CleClassee =
+  | (typeof OPS_CTX_GELES)[number] | (typeof OPS_CTX_PAR_REFERENCE)[number]
+  | (typeof OPS_CTX_REBATIS)[number] | (typeof OPS_CTX_HORS_CANAL)[number];
+/** Les champs d'`OpsCtx` qu'AUCUN seau ne réclame — `never` tant que la partition est totale. */
+export type CleOpsCtxNonClassee = Exclude<keyof OpsCtx, CleClassee>;
+/** TOTALITÉ AU TYPE : si `CleOpsCtxNonClassee` cesse d'être `never` (champ ajouté à `OpsCtx` sans seau),
+ *  ce type devient `false` et `tsc` échoue ICI, en nommant le champ. */
+export type _OpsCtxPartitionTotale = [CleOpsCtxNonClassee] extends [never] ? true
+  : ['CHAMP D_OpsCtx NON CLASSÉ — le classer dans OPS_CTX_GELES / _PAR_REFERENCE / _REBATIS / _HORS_CANAL', CleOpsCtxNonClassee];
+const _partitionTotale: _OpsCtxPartitionTotale = true;
+void _partitionTotale;
+
+/** Le CONTEXTE GELÉ d'une feuille différée — la part d'`OpsCtx` qui voyage telle quelle. */
+export type OpsCtxGele = Pick<OpsCtx, (typeof OPS_CTX_GELES)[number]>;
+
+/** GÈLE la part sérialisable d'un `OpsCtx` (champs `undefined` omis — un `meta` snapshoté en JSON ne
+ *  porte pas de trous). Lecture UNIQUE de `OPS_CTX_GELES` : rien à tenir à jour ailleurs. */
+export function gelerOpsCtx(ctx: OpsCtx): OpsCtxGele {
+  const out: Record<string, unknown> = {};
+  for (const k of OPS_CTX_GELES) if (ctx[k] !== undefined) out[k] = ctx[k];
+  return out as OpsCtxGele;
+}
+
+/**
+ * DÉS QUE CES OPS DEMANDENT À LA PORTE (#1508) — ÉNUMÉRATION PURE, ni tirage ni mutation : ce que
+ * l'applier doit OUVRIR en étapes de dé avant d'appeler `applyOps`, et ce qu'il lui reversera dans
+ * `ctx.des`. Le canal op → applier tient dans ce couple : le moteur FABRIQUE, `state` OUVRE (patron
+ * `shipCritical.applyCrewHit`, qui REND son `testFlow` au lieu de le jouer).
+ *
+ * LÈVE sur donnée malformée (table de chute inconnue, coque absente…) AVANT qu'aucune op de la feuille
+ * ne s'applique : c'est voulu, et c'est le même fail-fast que le `case` correspondant — une feuille
+ * dont un dé ne peut être annoncé ne s'applique pas À MOITIÉ.
+ *
+ * NIVEAU 1, et l'état des autres niveaux est MESURÉ, pas supposé : une op à dé IMBRIQUÉE (rangée de
+ * `rollTable`, palier de `rollThreshold`, forme d'un échelon) n'est pas énumérée et ses dés tombent
+ * sous `applyOps` (`imbrique` retire `ctx.des`) ; le walker PUR `state/combatEffects.runPureFlowLines`
+ * appelle `applyOps` hors de la porte. Ces deux chemins sont au solde `DES_HORS_PORTE_STOCK` (comptés
+ * à l'`applyOps` de leurs appelants), qui les porte jusqu'à zéro (#1508). Une récursion ici ne les
+ * couvrirait pas : elle annoncerait des dés que la branche non prise ne tire jamais.
+ *
+ * PÉRIMÈTRE COURANT : seule l'op `fall` déclare ses dés (`DES_DUNE_OP`). Les 134 `{dice}` authored des
+ * autres ops tirent encore sous `applyOps` — même dette, mêmes trains T3-T6.
+ */
+export function demandesDeDes(ops: readonly GameOp[], target: Combatant, ctx: OpsCtx = {}): DemandeDe[] {
+  return ops.flatMap((o, rang) => desDeclaresDe(o, target, ctx)
+    .map((d) => ({ cle: cleDeDe(rang, d.champ), spec: d.spec, libelle: d.libelle, ...(d.unite ? { unite: d.unite } : {}) })));
+}
+
+/**
  * Exécute une liste d'ops sur `target`. Les `charMod` consécutifs d'une même
  * source sont appliqués individuellement mais journalisés en UNE ligne (format
  * historique de l'incantation). Renvoie les lignes de journal.
@@ -1334,8 +1540,23 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
   // pour les ops LITTÉRALES re-jouées par `endOfRound` (`LDB 16 l.117`) ; ce qu'un dé atteint sous elles
   // est une PREMIÈRE pose, qu'aucune fin de Round n'avait encore posée. Fonction et non constante : le
   // ctx est vivant pendant la boucle (`ctx.woundsDealt`), un instantané pris ici le figerait.
-  const imbrique = (extra?: Partial<OpsCtx>): OpsCtx => ({ ...ctx, ...extra, rejeuRecurrent: undefined });
-  for (const o of ops) {
+  //  Les DÉS POSÉS n'y descendent pas non plus : leurs clés (`cleDeDe`) sont indexées sur le rang de
+  //  l'op dans CE tableau, et le rang 0 d'une descente collisionnerait avec le rang 0 du parent.
+  const imbrique = (extra?: Partial<OpsCtx>): OpsCtx => ({ ...ctx, ...extra, rejeuRecurrent: undefined, des: undefined });
+  // LE DÉ D'UNE OP (#1508), seul point de consommation du canal : la valeur POSÉE par la porte pour le
+  // champ DÉCLARÉ (`DES_DUNE_OP`), à défaut le tirage — au même point du rng qu'avant le canal. Le
+  // `case` ne connaît ni la clé ni sa graphie : il nomme son CHAMP, comme la déclaration.
+  //
+  // Le lecteur se FABRIQUE à partir des déclarations (`lecteurDe(rang, declares)`), et c'est ce qui
+  // ferme la faute de frappe : le type des champs vient des SEULES déclarations, le nom demandé s'y
+  // vérifie. Pris dans le MÊME appel, le nom et les déclarations laissent l'inférence les unifier, et
+  // `'degatss'` compile : d'où les deux temps.
+  const lecteurDe = <C extends string>(rang: number, declares: DeDeclare<C>[]) => (champ: C): number => {
+    const d = declares.find((x) => x.champ === champ);
+    if (!d) throw new Error(`op « ${ops[rang]?.op} » : dé « ${champ} » non DÉCLARÉ (DES_DUNE_OP) — la porte ne peut pas l'ouvrir, et il tomberait en silence.`);
+    return ctx.des?.get(cleDeDe(rang, champ)) ?? rollDice(d.spec, rng);
+  };
+  for (const [iOp, o] of ops.entries()) {
     if (o.op !== 'charMod') flushCharMods();
     switch (o.op) {
       case 'wounds': {
@@ -2253,24 +2474,26 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'fall': {
-        const table = findFallTable(o.hauteur.table.id);
-        if (!table) throw new Error(`op « fall » : table de hauteur inconnue « ${o.hauteur.table.id} » (tablesDeChute, ship-criticals.json).`);
-        const taille = ctx.hull ? hullShipSize(ctx.hull) : undefined;
-        if (!taille) throw new Error(`op « fall » (« ${table.label} ») : aucune Taille de coque au contexte (ctx.hull) — la hauteur se lit par la Taille du bateau (MDG 12 l.122-129).`);
-        const bande = table.bandes.find((b) => b.tailles.includes(taille));
-        if (!bande) throw new Error(`op « fall » (« ${table.label} ») : aucune bande ne couvre la Taille « ${taille} ».`);
-        const hauteur = target.shipStation === undefined ? undefined : bande.hauteurs[target.shipStation];
-        if (hauteur === undefined) throw new Error(`op « fall » (« ${table.label} ») : ${target.label} n'a pas de colonne de hauteur pour la station « ${target.shipStation ?? '—'} ».`);
-        const metres = resolveFormula(hauteur, ref, rng, ctx.rolled, ctx.indice, ctx.stacks, ctx.engagedAdvantageGap, ctx.woundsDealt);
+        const { hauteur, table } = hauteurDeChute(o, target, ctx);
+        // Les DEUX dés de la chute (hauteur MDG 13 l.684, Dégâts LDB 15 l.80) passent par la porte quand
+        // un applier les y a ouverts (`demandesDeDes` → étape à dé nu → `ctx.des`) : le dé POSÉ remplace
+        // le tirage, sans consommer de rng. Sans canal (pilote headless), l'op tire aux mêmes points.
+        const declares = DES_DUNE_OP.fall(o, target, ctx);
+        const de = lecteurDe(iOp, declares);
+        // Hauteur ENTIÈRE (nid-de-pie) : aucun dé n'est DÉCLARÉ, la Formule donne le nombre telle quelle.
+        const metres = declares.some((d) => d.champ === 'hauteur')
+          ? de('hauteur')
+          : resolveFormula(hauteur, ref, rng, ctx.rolled, ctx.indice, ctx.stacks, ctx.engagedAdvantageGap, ctx.woundsDealt);
+        const d10Chute = de('degats');
         const avant = target.wounds.current;
         // Les États que la chute POSE se lisent par DIFFÉRENCE — la ligne ne nomme aucun État : c'est
         // `applyFall` (LDB 15 l.84) qui décide, et ce qu'il pose se dit tel quel.
         const etatsAvant = new Set((target.conditions ?? []).map((c) => c.id));
-        applyFall(target, metres, rng);
+        applyFall(target, metres, d10Chute);
         const poses = (target.conditions ?? []).filter((c) => !etatsAvant.has(c.id)).map((c) => conditionLabel(c.id));
         lines.push(t('op.fall', {
           name: target.label,
-          table: table.label,
+          table,
           m: metres,
           n: avant - target.wounds.current,
           etats: poses.length ? ` (${poses.join(', ')})` : '',

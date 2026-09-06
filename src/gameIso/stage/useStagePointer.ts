@@ -27,7 +27,7 @@ import { RANG_MENEUR, seatPoseOf, seatSlotsOf } from '../../state/seating';
 // rôle, sans rebaptiser trente sites de pointeur.
 import { t as message } from '../../i18n';
 import { planJump } from '../../state/jumpMove';
-import { runFlow } from '../../state/combatEffects';
+import { runFlow, jouerFlowEntier } from '../../state/combatEffects';
 import { maxJumpTiles } from '../../engine/movement';
 import { effectiveMovement } from '../../engine/encumbrance';
 import { Combatant } from '../../engine/types';
@@ -189,7 +189,7 @@ export function useStagePointer({
         if (partyLeader) bus.emit(EVT.ANIM_MOVE, { id: partyLeader.id, path: [prev, cur] });
         st.moveParty(cur);
         if (jumpPlan.kind === 'test') {
-          runFlow(useGame.getState, useGame.setState, jumpPlan.flow);
+          jouerFlowEntier(runFlow(useGame.getState, useGame.setState, jumpPlan.flow));
           movingRef.current = false; // on s'arrête au saut : le joueur reclique pour continuer
           return;
         }
