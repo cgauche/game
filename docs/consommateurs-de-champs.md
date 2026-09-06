@@ -137,41 +137,41 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `stake` | 10 | `src/engine/flowCore.ts:815` |
+| `stake` | 10 | `src/engine/flowCore.ts:833` |
 | `skill` | 30 | `src/engine/disease.ts:341` |
-| `sense` | 2 | `src/state/combatEffects.ts:437` |
+| `sense` | 2 | `src/state/combatEffects.ts:923` |
 | `characteristic` | 24 | `src/engine/disease.ts:341` |
 | `difficulty` | 8 | `src/engine/disease.ts:328` |
-| `requireSL` | 2 | `src/state/combatEffects.ts:476` |
-| `label` | 11 | `src/state/combat/triggeredTest.ts:225` |
-| `tool` | 2 | `src/state/combatEffects.ts:439` |
-| `vsGroups` | 5 | `src/state/combatEffects.ts:344` |
-| `vsStatus` | 1 | `src/state/combatEffects.ts:343` |
-| `begging` | 3 | `src/state/combatEffects.ts:348` |
-| `vsCapricieux` | 1 | `src/state/combatEffects.ts:352` |
-| `easierIf` | 11 | `src/state/combatEffects.ts:393` |
+| `requireSL` | 2 | `src/state/combatEffects.ts:962` |
+| `label` | 11 | `src/state/combat/triggeredTest.ts:232` |
+| `tool` | 2 | `src/state/combatEffects.ts:925` |
+| `vsGroups` | 5 | `src/state/combatEffects.ts:830` |
+| `vsStatus` | 1 | `src/state/combatEffects.ts:829` |
+| `begging` | 3 | `src/state/combatEffects.ts:834` |
+| `vsCapricieux` | 1 | `src/state/combatEffects.ts:838` |
+| `easierIf` | 11 | `src/state/combatEffects.ts:879` |
 | `argDifficulty` | 1 | `src/state/triggeredEffects.ts:75` |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:151` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:152` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
 | `gate` | 1 | `src/engine/flowCore.ts:376` |
-| `noSupport` | 4 | `src/state/combat/triggeredTest.ts:796` |
-| `menace` | 7 | `src/state/combat/triggeredTest.ts:235` |
+| `noSupport` | 4 | `src/state/combat/triggeredTest.ts:812` |
+| `menace` | 7 | `src/state/combat/triggeredTest.ts:242` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:370` |
-| `opposed` | 5 | `src/state/combat/triggeredTest.ts:294` |
+| `opposed` | 5 | `src/state/combat/triggeredTest.ts:301` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 2 | `src/state/travelFlow.ts:1145` |
+| `min` | 2 | `src/state/travelFlow.ts:1146` |
 | `max` | 1 | `src/ui/compendium/registry.ts:754` |
 | `id` | 8 | `src/engine/mountTravel.ts:214` |
 | `label` | 8 | `src/engine/mountTravel.ts:198` |
 | `desc` | 1 | `src/state/travelPostes.ts:362` |
 | `stageOutcome` | 1 | `src/state/travelPostes.ts:363` |
 | `vehicleWounds` | 3 | `src/engine/vehicle.ts:59` |
-| `occupantOps` | 3 | `src/state/travelFlow.ts:1149` |
+| `occupantOps` | 3 | `src/state/travelFlow.ts:1150` |
 | `mount` | 2 | `src/engine/mountTravel.ts:199` |
 
 ### `ShipCrewHit` (src/data/shipCriticals.ts)
@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: a7bcc929a12c09215a980ab408d2bfe03d260df0 (2093 fichiers, 173 dossiers) corps: 7a70141bfa2e7b5d44c23f6f66ed61894c8034c0 -->
+<!-- sources-empreinte: 68370e5ba88da9521bf5a76845a47f062ffd54dc (2094 fichiers, 173 dossiers) corps: 1cc14ecdda3c8c752b2887157ce6b4ed479f78c8 -->

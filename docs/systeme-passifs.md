@@ -163,4 +163,4 @@ Tout passe par le Compendium in-app (écran Codex) :
   champ à part (§7).
 - **Ajouter une table de Corruption** (un dieu du Chaos) : Codex → Tables de Corruption → une entrée
   dont les plages référencent des mutations EXISTANTES par id.
-<!-- sources-empreinte: 14bca836a6be113e8b99194ac99524090ea8dde5 (139 fichiers, 1 dossiers) corps: c22df7e7df1142ec6f06cc616885c5231ee95694 -->
+<!-- sources-empreinte: f7dd932169542af852670e1d5b4696658c17b2e5 (139 fichiers, 1 dossiers) corps: c22df7e7df1142ec6f06cc616885c5231ee95694 -->

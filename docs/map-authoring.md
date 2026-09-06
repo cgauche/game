@@ -7,9 +7,9 @@ champs de `MapSpec` (nom, type, 1re phrase de JSDoc), ceux de `WallSpec` (9),
 `CellRecipe` (5) et `EncounterSpec` (11), les
 5 formes de `BindSpec` et les 3 de `ReliefSpec`, et les 10
 étapes de l'ordre de compilation citées au JSDoc de tête. Le harnais QC liste les fonctions
-exportées de `src/state/mapQC.ts`. Les exemples vivants sont MESURÉS par AST sur les 34
+exportées de `src/state/mapQC.ts`. Les exemples vivants sont MESURÉS par AST sur les 35
 documents de `src/scenes/` qui exposent un littéral `MapSpec` (argument de `buildScene(...)` ou objet
-annoté `MapSpec`), sur 35 qui emploient `buildScene`/`MapSpec` (hors `*.test.ts`).
+annoté `MapSpec`), sur 36 qui emploient `buildScene`/`MapSpec` (hors `*.test.ts`).
 **Angles morts** : un champ n'est compté « employé » que posé au PREMIER niveau du littéral — un spec
 construit ailleurs (variable non annotée, fabrique) n'est pas mesuré, et une clé posée par épandage
 (`...preset` — 1 document concerné) échappe à la mesure ; le JSDoc rapporté est la
@@ -279,22 +279,22 @@ Le CONCEPT est éditorial, le chemin est ANCRÉ (un scénario renommé fait éch
 
 ## Où voir quoi — par CHAMP (mesuré)
 
-Sur les 34 documents de `src/scenes/` qui exposent un littéral `MapSpec` :
+Sur les 35 documents de `src/scenes/` qui exposent un littéral `MapSpec` :
 
 | Champ | Documents | Exemples |
 |---|---|---|
-| `size` | 33 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts` … |
-| `id` | 34 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts` … |
-| `label` | 34 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts` … |
-| `desc?` | 30 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts` … |
+| `size` | 34 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts` … |
+| `id` | 35 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts` … |
+| `label` | 35 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts` … |
+| `desc?` | 31 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts` … |
 | `ambiance?` | 12 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/42-belier-porte.ts`, `src/scenes/test-scenarios/43-pastilles-entite.ts`, `src/scenes/test-scenarios/96-presets-edo.ts` … |
 | `weather?` | 2 | `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/scenes/test-scenarios/voyage.ts` |
 | `ambientLight?` | 6 | `src/scenes/test-scenarios/17-metamorphose-ulric.ts`, `src/scenes/test-scenarios/42-belier-porte.ts`, `src/scenes/test-scenarios/43-pastilles-entite.ts`, `src/scenes/test-scenarios/entrainement.ts` … |
-| `metresPerTile?` | 3 | `src/scenes/test-scenarios/42-belier-porte.ts`, `src/scenes/test-scenarios/duel-naval.ts`, `src/scenes/test-scenarios/siege-enceinte.ts` |
-| `startMessage?` | 30 | `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/scenes/test-scenarios/15-commerce-fluvial.ts`, `src/scenes/test-scenarios/16-embuscade-fluviale.ts` … |
+| `metresPerTile?` | 4 | `src/scenes/test-scenarios/21-chute-du-greement.ts`, `src/scenes/test-scenarios/42-belier-porte.ts`, `src/scenes/test-scenarios/duel-naval.ts`, `src/scenes/test-scenarios/siege-enceinte.ts` |
+| `startMessage?` | 31 | `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/scenes/test-scenarios/15-commerce-fluvial.ts`, `src/scenes/test-scenarios/16-embuscade-fluviale.ts` … |
 | `rest?` | 2 | `src/scenes/test-scenarios/echeance.ts`, `src/scenes/test-scenarios/voyage.ts` |
 | `flags?` | 2 | `src/scenes/test-scenarios/opera.ts`, `src/scenes/vitrine-batiments.ts` |
-| `terrain?` | 27 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/scenes/test-scenarios/15-commerce-fluvial.ts` … |
+| `terrain?` | 28 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/scenes/test-scenarios/15-commerce-fluvial.ts` … |
 | `legend?` | 7 | `src/scenes/opera/floorplan.ts`, `src/scenes/test-scenarios/96-presets-edo.ts`, `src/scenes/test-scenarios/embuscade.ts`, `src/scenes/test-scenarios/opera.ts` … |
 | `markerFill?` | 1 | `src/scenes/test-scenarios/siege-enceinte.ts` |
 | `levels?` | 7 | `src/scenes/test-scenarios/96-presets-edo.ts`, `src/scenes/test-scenarios/embuscade.ts`, `src/scenes/test-scenarios/entrainement.ts`, `src/scenes/test-scenarios/opera.ts` … |
@@ -306,16 +306,16 @@ Sur les 34 documents de `src/scenes/` qui exposent un littéral `MapSpec` :
 | `terrainRects?` | 2 | `src/scenes/test-scenarios/zones-pieces.ts`, `src/scenes/vitrine-batiments.ts` |
 | `architecture?` | 2 | `src/scenes/test-scenarios/zones-pieces.ts`, `src/scenes/vitrine-batiments.ts` |
 | `bind?` | 1 | `src/scenes/test-scenarios/siege-enceinte.ts` |
-| `entities?` | 18 | `src/scenes/test-scenarios/18-effets-scriptes.ts`, `src/scenes/test-scenarios/43-pastilles-entite.ts`, `src/scenes/test-scenarios/96-presets-edo.ts`, `src/scenes/test-scenarios/97-enquete-carnet.ts` … |
-| `heroStart?` | 31 | `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/scenes/test-scenarios/15-commerce-fluvial.ts` … |
+| `entities?` | 19 | `src/scenes/test-scenarios/18-effets-scriptes.ts`, `src/scenes/test-scenarios/21-chute-du-greement.ts`, `src/scenes/test-scenarios/43-pastilles-entite.ts`, `src/scenes/test-scenarios/96-presets-edo.ts` … |
+| `heroStart?` | 32 | `src/scenes/test-scenarios/_shared.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/scenes/test-scenarios/15-commerce-fluvial.ts` … |
 | `entryPoints?` | 1 | `src/scenes/opera/floorplan.ts` |
 | `effectZones?` | 1 | `src/scenes/vitrine-batiments.ts` |
 | `zoneMap?` | 1 | `src/scenes/test-scenarios/zones-pieces.ts` |
 | `zoneLegend?` | 1 | `src/scenes/test-scenarios/zones-pieces.ts` |
 | `triggers?` | 13 | `src/scenes/test-scenarios/17-metamorphose-ulric.ts`, `src/scenes/test-scenarios/18-effets-scriptes.ts`, `src/scenes/test-scenarios/95-poursuite-terrestre.ts`, `src/scenes/test-scenarios/97-enquete-carnet.ts` … |
 | `dialogues?` | 10 | `src/scenes/test-scenarios/18-effets-scriptes.ts`, `src/scenes/test-scenarios/96-presets-edo.ts`, `src/scenes/test-scenarios/97-enquete-carnet.ts`, `src/scenes/test-scenarios/98-conditions-etendues.ts` … |
-| `encounters?` | 14 | `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/16-embuscade-fluviale.ts`, `src/scenes/test-scenarios/17-metamorphose-ulric.ts`, `src/scenes/test-scenarios/95-poursuite-terrestre.ts` … |
+| `encounters?` | 15 | `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/scenes/test-scenarios/16-embuscade-fluviale.ts`, `src/scenes/test-scenarios/17-metamorphose-ulric.ts`, `src/scenes/test-scenarios/21-chute-du-greement.ts` … |
 | `stations?` | 1 | `src/scenes/test-scenarios/13-bataille-de-masse.ts` |
 
 Champs sans aucun exemple mesuré dans `src/scenes/` : `music?`, `wallStructures?`, `edgeWalls?`, `knownUnsupportedFloor?`, `seatAssignments?`, `restZones?` — leur seule démonstration vit dans `src/state/mapSpec.test.ts`.
-<!-- sources-empreinte: 1fc8efc2b89ba4775406b558aa87baf11144f64b (57 fichiers, 8 dossiers) corps: c5204b729fce2386a5e6ffaf3fbffda7ff00a364 -->
+<!-- sources-empreinte: f6bb4341762b9c9578c8d1adf44c7cedd7b2c64c (58 fichiers, 8 dossiers) corps: 01c11f30afb7c31dae474065be095756a5a9d243 -->
