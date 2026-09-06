@@ -22,7 +22,9 @@
  *   1. `couvertPenalty` Complexe (−10) → Intermédiaire (+0) : la cible abritée par une de ces arêtes
  *      PERD son couvert (`couvertDArete` rend `imparfaite` avant, `none` après). Une cloison de box à
  *      hauteur de taille n'abritait pas un homme : elle ne le protège plus.
- *   2. `occulte` absent → `false` : l'arête cesse de couper la Ligne de Vue (AA 10 l.65).
+ *   2. `occulte` absent → `false` : l'arête cesse de couper la Ligne de Vue. L'opacité n'est PAS au
+ *      folio : c'est la décision MAISON portée par `cloture-en-clayonnage.maison` (`structures.json`),
+ *      déduite de la nature de la clôture que décrit AA 10 l.65.
  *   3. `char` BE 4 / B 20 → BE 2 / B 10 : au siège, ces six arêtes sont deux fois plus fragiles
  *      (`SiegeHitAreas.tsx` les cible) — une clôture tressée n'encaisse pas comme un colombage.
  *   4. `encLimit` 30 → absent : plus de Limite d'Encombrement (AA ne la donne pas au clayonnage) ;

@@ -351,7 +351,8 @@ describe('computeVisible — vue INCHANGÉE sur les cartes réelles (empreintes 
     ]],
     // Empreintes REMESURÉES le 2026-09-04 (#1680 ligne 15-B) : 6 des 12 postes voient PLUS LOIN depuis
     // que l'opacité d'une arête se lit sur sa Structure (`areteOcculte`) et que la clôture en clayonnage
-    // est déclarée `occulte: false` (AA 10 l.65 — un enclos à animaux, jamais une fortification). La
+    // est déclarée `occulte: false` dans `structures.json`, où son champ `maison` porte la raison :
+    // l'opacité n'est pas au folio, AA 10 l.65 décrit la nature de la clôture et son emploi comme couvert. La
     // carte en porte 25 : les 13 du jardin potager, les 6 de l'enclos nord (19,0-5 E), et les 6
     // séparations de box des Écuries migrées ce jour. Elles cessent de couper la Ligne de Vue.
     // CAUSE UNIQUE MESURÉE : la même scène dont ces 25 arêtes reprennent une structure occultante rend

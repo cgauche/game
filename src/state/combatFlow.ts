@@ -382,7 +382,8 @@ export function banRangedActive(battle: BattleState | null | undefined): boolean
   return battle?.banRanged ?? (battle?.victoryCondition?.type === 'firstBlood');
 }
 
-/** Rencontre de SIÈGE effective (`EncounterDef.siege`, arbitrage utilisateur 2026-09-04) — SEUL point
+/** Rencontre de SIÈGE effective (`EncounterDef.siege` — arbitrage utilisateur du 2026-09-04, verbatims
+ *  au foyer unique : JSDoc de `siege`, `data/schemas/defs-scenes/scene.ts`) — SEUL point
  *  de résolution, consommé par `buildAiInput` pour offrir (ou non) les structures destructibles au
  *  choix de cible de l'IA. Défaut LITTÉRAL `false` : contrairement à `banRangedActive`, rien n'est
  *  dérivé d'un autre champ — ni de `victoryCondition`, ni de la présence d'une structure dans la

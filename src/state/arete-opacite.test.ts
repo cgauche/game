@@ -17,6 +17,7 @@ import { buildOpaque } from './vision';
 import { structures, findStructureById } from '../data';
 import diligenceCampaign from '../scenes/diligence/diligence-projet.json';
 import { schema as schemaStructures } from '../data/schemas/defs/structures';
+import { refsInLine } from '../../scripts/guards/lib/rawRefIntegrity.mjs';
 
 /** Scène 3×3 avec UNE arête `E` en (0,1) — l'arête qui sépare (0,1) de (1,1). */
 const sceneAvec = (seg: Partial<WallSeg>): Scene => {
@@ -29,11 +30,17 @@ describe('areteOcculte — la liste de CE QUI LAISSE VOIR est nominative et sour
   it('exactement deux Structures sont déclarées non occultantes, et chacune porte son `maison`', () => {
     const transparentes = structures.filter((s) => s.occulte === false).map((s) => s.id).sort();
     // Verrou NOMINATIF : un ajout futur passe par CE test, jamais par un `occulte: false` discret.
-    // `herse` = « une grille de fer » (AA 10 l.70) ; `cloture-en-clayonnage` = un enclos à bétail
-    // « employé comme couvert » faute de mieux, jamais une fortification (AA 10 l.65).
     expect(transparentes).toEqual(['cloture-en-clayonnage', 'herse']);
+    // Contrat du schéma (`schemas/defs/structures.ts`) : `occulte: false` ne cite aucun folio, il porte
+    // son `maison`, qui NOMME le passage dont la décision est tirée. Le passage se reconnaît à la
+    // graphie des réfs RAW du dépôt — `refsInLine`, seul lecteur TYPÉ (`.d.mts`) consommable depuis `src`, dérivé de `scripts/raw/_lib.mjs` :
+    // aucun sigle de livre ni numéro de chapitre n'est écrit ici, sans quoi le banc verrouillerait une
+    // attribution au lieu d'un contrat.
     for (const s of structures.filter((s) => s.occulte === false))
-      expect(s.maison, `${s.id} : \`occulte: false\` sans arbitrage nommé`).toEqual(expect.stringContaining('AA 10'));
+      expect(
+        [...refsInLine(s.maison ?? '')].map((r) => r.ref),
+        `${s.id} : \`occulte: false\` dont le \`maison\` ne nomme aucun passage en graphie de réf RAW`,
+      ).not.toHaveLength(0);
   });
 
   it('toutes les AUTRES Structures occultent — aucune n’est muette par omission de lecture', () => {

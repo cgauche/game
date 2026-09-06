@@ -268,7 +268,7 @@
     "traits": [],
     "couvertPenalty": "intermediaire",
     "occulte": false,
-    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86 chiffre la couverture totale en −30 sur le tir, LDB 85 l.329 ne fait bloquer la Ligne de Vue que par la fumée). AA 10 l.65 fait de la clôture en clayonnage un enclos d’animaux employé « comme couvert » faute de mieux, jamais une fortification : une barrière d'enclos se regarde par-dessus. Elle garde son couvert Intermédiaire et reste INFRANCHISSABLE.",
+    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86, LDB 85 l.329). Décision maison déduite de la nature de la clôture que décrit AA 10 l.65 (tressée de minces branches de saule, davantage pour des enclos d’animaux que pour des fortifications) : une barrière d’enclos se regarde par-dessus, elle ne coupe pas la Ligne de Vue. Elle garde son couvert Intermédiaire (AA 10 l.41) et reste INFRANCHISSABLE.",
     "source": {
       "book": "aux-armes",
       "page": 119
@@ -287,7 +287,7 @@
     },
     "traits": [],
     "occulte": false,
-    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86 chiffre la couverture totale en −30 sur le tir, LDB 85 l.329 ne fait bloquer la Ligne de Vue que par la fumée). AA 10 l.70 définit la herse comme « une grille de fer » : on voit à travers ses barreaux. Elle n'a aucune Pénalité de Couvert (N/A, AA 10 l.42) et reste INFRANCHISSABLE une fois baissée.",
+    "maison": "opacité maison : aucun folio ne déclare une Structure transparente (LDB 14 l.86, LDB 85 l.329). Décision maison déduite de AA 10 l.70 (« une grille de fer ») : on voit à travers une grille. Elle n’a aucune Pénalité de Couvert (N/A, AA 10 l.42) et reste INFRANCHISSABLE une fois baissée.",
     "source": {
       "book": "aux-armes",
       "page": 120
