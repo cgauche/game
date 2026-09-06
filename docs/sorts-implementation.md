@@ -834,4 +834,4 @@
 | Vol | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | WAAAGH ! | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Z’Oeils de Mork | 📜 | repli | Non curé : desc journalisée telle quelle. |
-<!-- sources-empreinte: bfc1fdc8afb72d4b2a3a5d3cd80a88908b4782d1 (196 fichiers, 0 dossiers) corps: d86e3684cdc2f4d93e8297cb599a9cfeb390e7de -->
+<!-- sources-empreinte: cd805c9bdd6bf168fb43d61178e3fe0fe8b3652e (196 fichiers, 0 dossiers) corps: d86e3684cdc2f4d93e8297cb599a9cfeb390e7de -->
