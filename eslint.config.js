@@ -46,6 +46,17 @@ const VERROU_CONTENEUR = [{
   ].join(', '),
   message: 'Contournement de conteneur (#1318 T2) : caster en `CascadeStep` fait entrer un littéral entier, `label` compris. Passer par une porte du seam (`monoStep`/`tableStep`/`choiceStep`/`quantityStep`/`displayStep`/`bandStep`/`hostStep`).',
 }];
+/** MUR DU DIALECTE DE PARSE (#1679 L3b) : le `ts.ScriptKind` d'un fichier se déduit de son extension
+ *  par `scriptKindDe` (`scripts/guards/lib/dialecte.mjs`), source unique. Défini ICI parce que DEUX
+ *  blocs le posent : en flat config, le dernier bloc qui déclare une règle REMPLACE ses options — le
+ *  bloc de l'ordre total (plus bas, plus étroit) doit donc le REDIRE, sinon `scripts/guards/lib/**`
+ *  sortirait du mur. Un kind CONSTANT légitime se dit AU SITE (`eslint-disable-next-line` + raison),
+ *  jamais par une exemption de fichier. */
+const VERROU_DIALECTE = [{
+  selector: "MemberExpression[property.name='ScriptKind']",
+  message: 'Dialecte de parse (#1679 L3b) : le `ts.ScriptKind` se déduit de l’extension par `scriptKindDe` (`scripts/guards/lib/dialecte.mjs`) — une table recopiée au site fait lire un `.mts` en TS ici et en JS là, et un scan silencieusement faux ne se voit pas.',
+}];
+
 export default tseslint.config(
   { ignores: ['dist/**', 'node_modules/**', 'public/**', '_site/**', 'src/data/**/*', '!src/data/source/**', '!src/data/hash.ts', '**/*.json', '*.config.*', '.claude/**', 'server/.wrangler/**', '.playwright-mcp/**', '.wt-*/**'] },
   js.configs.recommended,
@@ -170,6 +181,16 @@ export default tseslint.config(
     },
   },
   {
+    // MUR DU DIALECTE DE PARSE (#1679 L3b) : 14 sites choisissaient leur `ts.ScriptKind` par une table
+    // d'extensions recopiée (2 à 3 branches, trois graphies) — une extension neuve entrait en TS ici et
+    // en JS là. La table vit désormais dans `scripts/guards/lib/dialecte.mjs` (`scriptKindDe`), qui porte
+    // son exemption AU SITE avec sa raison : c'est là que la table se lit.
+    files: ['scripts/**'],
+    rules: {
+      'no-restricted-syntax': ['error', ...VERROU_DIALECTE],
+    },
+  },
+  {
     // MUR DE L'ORDRE TOTAL (#1679 L3b, incident #1620) : dans la clôture des générateurs de dérivés,
     // un listing de répertoire passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`)
     // et une comparaison de chaînes par `parUnitesDeCode`. Sans cela le même dépôt rend deux `.md`
@@ -202,7 +223,11 @@ export default tseslint.config(
           message: 'Ordre total (#1679 L3b) : lister un dossier passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`) — un listing brut suit l’ordre du système de fichiers et périme le doc dérivé sur l’autre OS.',
         })),
       }],
+      // `VERROU_DIALECTE` est REDIT ici : en flat config, le dernier bloc qui déclare une règle REMPLACE
+      // ses options — l'omettre désarmerait le mur du dialecte sur `scripts/guards/lib/**`, où vivent 12
+      // des 14 sites migrés.
       'no-restricted-syntax': ['error',
+        ...VERROU_DIALECTE,
         {
           selector: 'MemberExpression[property.name=/^(readdirSync|readdir|opendirSync|opendir|globSync)$/]',
           message: 'Ordre total (#1679 L3b) : lister un dossier passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`) — un listing brut suit l’ordre du système de fichiers et périme le doc dérivé sur l’autre OS.',

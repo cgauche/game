@@ -7,6 +7,7 @@
 // réelle (compilateur TypeScript, pas un grep textuel) — consommé par
 // `src/state/scene-mutation-guard.test.ts`.
 import tsModule from 'typescript';
+import { scriptKindDe } from './dialecte.mjs';
 
 // Liaison LOCALE de l'API du compilateur — FAIT mesuré 2026-08-23 : sous Vitest, ce module est
 // transformé par vite-node et chaque `ts.x` d'un visiteur AST se relit alors sur l'objet d'import du
@@ -104,7 +105,7 @@ function isFunctionLike(node) {
  */
 export function scanSceneMutation(relPath, contenu) {
   const findings = [];
-  const scriptKind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  const scriptKind = scriptKindDe(relPath);
   const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, scriptKind);
   const lineOf = (pos) => sf.getLineAndCharacterOfPosition(pos).line + 1;
   const report = (node) => {

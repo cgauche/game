@@ -1,9 +1,10 @@
 // LA REVUE DE PALIER — comment elle se lit, et comment le palier se mesure.
 //
 // Une revue de palier est un fichier COMMITTÉ, écrit directement sous son nom d'archive
-// `.claude/soldes/revue-palier-<date>-<base>.md` : la date et la base de sa fenêtre `<base>..<tête>`
-// NOMMENT le fichier, et son contenu porte les deux. Un seul objet, à un seul endroit — le nom se
-// déduit du contenu (`nomDArchiveDeRevue`), et la porte au commit vérifie qu'ils se répondent.
+// `.claude/soldes/revue-palier-<date>-<base>-<tête>.md` : la date et les DEUX bornes de sa fenêtre
+// `<base>..<tête>` NOMMENT le fichier, et son contenu les porte. Un seul objet, à un seul endroit — le
+// nom se déduit du contenu (`nomDArchiveDeRevue`), et la porte au commit vérifie qu'ils se répondent.
+// Les archives antérieures gardent leur nom (`nomsDArchiveAcceptes`) : la mesure lit leur FENÊTRE.
 //
 // Le palier se MESURE sur l'histoire : les commits touchant `src`/`scripts` depuis la tête de fenêtre
 // de la dernière revue archivée DANS HEAD. C'est une lecture que n'importe qui refait en deux
@@ -53,17 +54,37 @@ export function problemesDeRevue(texte) {
 }
 
 /**
- * Nom de fichier d'une revue : `revue-palier-<date>-<base>.md`. PUR.
- * Sans fenêtre, la date seule nomme (`revue-palier-<date>.md`) : les revues écrites avant que la
- * porte n'exige la fenêtre restent nommables, et l'histoire garde leurs noms. `dateDeRepli` sert
- * quand la revue elle-même n'en porte aucune ; sans elle et sans date lisible, le retour est `null`.
+ * Nom de fichier d'une revue : `revue-palier-<date>-<base>-<tête>.md`. PUR.
+ * Le nom porte les DEUX bornes de la fenêtre : deux sessions ont archivé le même jour une revue de
+ * même base (2026-09-05, base f0f9436f5, têtes 714df53da et 226a764b6) et le second fichier ne
+ * pouvait pas entrer dans l'histoire — même nom, conflit AA au rebase. Sans tête lisible, la base
+ * seule nomme ; sans fenêtre, la date seule : les revues écrites avant que la porte n'exige la
+ * fenêtre restent nommables. `dateDeRepli` sert quand la revue elle-même n'en porte aucune ; sans
+ * elle et sans date lisible, le retour est `null`.
  * @returns {string|null}
  */
 export function nomDArchiveDeRevue(texte, dateDeRepli = null) {
-  const { date, base } = fenetreDeRevue(texte)
+  const { date, base, tete } = fenetreDeRevue(texte)
   const jour = date ?? dateDeRepli
   if (!jour) return null
-  return base ? `revue-palier-${jour}-${base}.md` : `revue-palier-${jour}.md`
+  if (!base) return `revue-palier-${jour}.md`
+  return tete ? `revue-palier-${jour}-${base}-${tete}.md` : `revue-palier-${jour}-${base}.md`
+}
+
+/**
+ * Tous les noms qu'une revue peut LEGITIMEMENT porter : le nom courant, et les graphies ANTÉRIEURES
+ * que l'histoire porte déjà (base seule, puis date seule). PUR. Les archives déjà committées ne se
+ * renomment pas — c'est leur FENÊTRE, jamais leur nom, que la mesure du palier lit (`archivesDe`
+ * relit chaque contenu). Seule une revue NEUVE est tenue au nom courant.
+ * @returns {string[]}
+ */
+export function nomsDArchiveAcceptes(texte, dateDeRepli = null) {
+  const { date, base } = fenetreDeRevue(texte)
+  const jour = date ?? dateDeRepli
+  if (!jour) return []
+  const courant = nomDArchiveDeRevue(texte, dateDeRepli)
+  const anterieurs = base ? [`revue-palier-${jour}-${base}.md`, `revue-palier-${jour}.md`] : [`revue-palier-${jour}.md`]
+  return [...new Set([courant, ...anterieurs].filter(Boolean))]
 }
 
 /** Deux écritures du MÊME sha : git abrège librement (9 caractères ici, 40 là). Le préfixe décide,

@@ -15,6 +15,7 @@
 //
 // Usage : node scripts/ui/audit-i18n.mjs [--json] [--out <path>]
 import ts from 'typescript';
+import { scriptKindDe } from '../guards/lib/dialecte.mjs';
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -99,7 +100,7 @@ const catalogRefsPerFile = new Map();
 for (const file of files) {
   const rel = relative(ROOT, file).replace(/\\/g, '/');
   const text = readFileSync(file, 'utf8');
-  const scriptKind = file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  const scriptKind = scriptKindDe(file);
   const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind);
 
   const entries = [];

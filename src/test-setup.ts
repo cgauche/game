@@ -66,7 +66,9 @@
  *    React was already rendering », « Should not already be working ») et leurs rendus deviennent VIDES
  *    (#1619). Tout nœud ÉLÉMENT resté enfant de `document.body` après un test échoue AU FICHIER FAUTIF,
  *    sauf ceux du stock d'extinction `scripts/guards/lib/domResiduStock.mjs` (cliquet :
- *    `src/dom-residu-stock.test.ts` ; re-mesure : variable `WFRP_DOM_RESIDU_COLLECTE`).
+ *    `src/dom-residu-stock.test.ts` ; re-mesure : variable `WFRP_DOM_RESIDU_COLLECTE`). Le passage de
+ *    CHAQUE fichier (fui / propre) se note au registre `WFRP_DOM_RESIDU_REGISTRE` : c'est lui qui rend
+ *    une entrée PÉRIMÉE du stock visible à la fin d'une suite complète (`entreesPerimees`).
  */
 import { afterEach, beforeEach, expect, vi } from 'vitest';
 import { appendFileSync } from 'node:fs';
@@ -190,6 +192,25 @@ export function messageResiduDom(
 const COLLECTE_RESIDU = process.env.WFRP_DOM_RESIDU_COLLECTE;
 const residuVus = new Set<string>();
 
+/** Registre de PASSAGE de la barrière (`WFRP_DOM_RESIDU_REGISTRE`, posé par `scripts/test/run.mjs`) :
+ *  une ligne `fichier<TAB>fui|propre` par fichier de test qui a JOUÉ. Sans lui, une entrée du stock
+ *  d'extinction qui ne fuit PLUS reste verte pour toujours — le verdict de péremption se rend APRÈS la
+ *  suite (`entreesPerimees`), le seul moment où « ce fichier a joué et n'a pas fui » est mesurable :
+ *  un fichier de test ne voit pas les autres (workers, deux processus, `isolate:false`, run filtré). */
+const REGISTRE_RESIDU = process.env.WFRP_DOM_RESIDU_REGISTRE;
+const passagesNotes = new Set<string>();
+const noterPassage = (fichier: string, aFui: boolean) => {
+  if (!REGISTRE_RESIDU) return;
+  const ligne = `${fichier}\t${aFui ? 'fui' : 'propre'}`;
+  if (passagesNotes.has(ligne)) return;
+  passagesNotes.add(ligne);
+  try {
+    appendFileSync(REGISTRE_RESIDU, `${ligne}\n`);
+  } catch {
+    /* registre concurrent ou tenu : le verdict de péremption se rendra au run suivant */
+  }
+};
+
 beforeEach(() => {
   useGame.setState(JSON.parse(PRISTINE_STATE) as Partial<GameState>);
   loadRuleOverrides({});
@@ -233,6 +254,7 @@ afterEach(() => {
   // une victime éloignée du même worker. Stock d'extinction : scripts/guards/lib/domResiduStock.mjs.
   if (typeof document !== 'undefined') {
     const residus = residusDom(document.body);
+    if (REGISTRE_RESIDU) noterPassage(cleFichierTest(expect.getState().testPath), residus.length > 0);
     if (residus.length) {
       const fichier = cleFichierTest(expect.getState().testPath);
       if (COLLECTE_RESIDU) {

@@ -211,8 +211,10 @@ export function introspecterDefs(defs: readonly SchemaDef[]): DefIntrospectee[] 
 /**
  * LITTÉRAUX D'ENUM déclarés par un schéma, clé par clé, à TOUTE profondeur de son arbre : une clé
  * dont la valeur est l'un de ces littéraux est un DISCRIMINANT (`kind`, `type`, `class`, `op`…),
- * jamais une référence à une entité — même quand la chaîne collisionne avec l'id d'un document
- * (#1463, arbitrage de design L0 du 2026-08-23, point 3).
+ * jamais une référence à une entité — même quand la chaîne collisionne avec l'id d'un document.
+ * SOURCE consultable, citée verbatim — #1463, commentaire « ## Arbitrages de design L0 (2026-08-23,
+ * orchestrateur — suite à la contre-passe du commit 3a6017ebb) », point 3 : « une clé dont la valeur
+ * est un littéral d'enum zod (`kind/type/class/op`) n'ouvre jamais une référence ».
  */
 export function choixDeclares(defs: readonly SchemaDef[]): Map<string, Map<string, Set<string>>> {
   const out = new Map<string, Map<string, Set<string>>>();

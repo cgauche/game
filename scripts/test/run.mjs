@@ -36,6 +36,8 @@ import {
 import { refusOutillageLocal } from '../outillage-local.mjs'
 import { prendreVerrou, verrouRequis } from './verrou.mjs'
 import { ecrireJustificatif, nomDeGate, suiteComplete } from '../guards/lib/justificatif.mjs'
+import { PEREMPTION_MS, purgerPerimes } from '../guards/lib/purgerPerimes.mjs'
+import { entreesPerimees, messagePeremption } from '../guards/lib/domResiduStock.mjs'
 
 const RACINE = fileURLToPath(new URL('../..', import.meta.url))
 const VITEST = path.join(RACINE, 'node_modules/vitest/vitest.mjs')
@@ -112,6 +114,12 @@ if (verrou.etat === 'refus') {
 }
 if (verrou.avertissement) console.error(verrou.avertissement)
 const ENV = envEnfant(process.env)
+// Registre de PASSAGE de la barrière DOM : chaque worker y note, par fichier de test joué, s'il a fui
+// ou non (`src/test-setup.ts`). Un fichier de test ne peut pas rendre ce verdict — il ne voit pas les
+// autres (deux processus Vitest, N workers, `isolate:false`, run filtré) — donc il se rend ICI, après
+// la suite. Un appelant qui pose déjà la variable garde la sienne (re-mesure à la main).
+const REGISTRE_DOM = path.join(CACHE, `dom-residu-${process.pid}.txt`)
+ENV.WFRP_DOM_RESIDU_REGISTRE = process.env.WFRP_DOM_RESIDU_REGISTRE ?? REGISTRE_DOM
 const CPUS = coeurs(process.env, () => os.availableParallelism?.() ?? os.cpus().length)
 const WORKERS = repartitionWorkers(CPUS)
 // Mode RÉELLEMENT servi : le partage se décide au-delà du seuil, mais se retire encore après coup
@@ -128,24 +136,16 @@ const ecrireCapture = (texte) => {
     process.stderr.write(`[test] capture interrompue : ${e.message}\n`)
   }
 }
-// Une capture PAR RUN, nommée par PID : sans borne, `node_modules/.cache` grossit indéfiniment. Les
-// captures de plus de 7 jours partent à l'ouverture du run suivant — une session en cours garde la
-// sienne (fraîche), et un échec d'effacement (fichier tenu sous Windows) ne change aucun verdict.
-const PEREMPTION_CAPTURES_MS = 7 * 24 * 60 * 60 * 1000
-const purgerCapturesPerimees = () => {
-  const limite = Date.now() - PEREMPTION_CAPTURES_MS
-  for (const nom of fs.existsSync(CACHE) ? fs.readdirSync(CACHE) : []) {
-    if (!/^vitest-run-\d+\.txt$/.test(nom)) continue
-    const cible = path.join(CACHE, nom)
-    try {
-      if (fs.statSync(cible).mtimeMs < limite) fs.rmSync(cible, { force: true })
-    } catch { /* capture concurrente ou tenue : le bornage réessaiera au run suivant */ }
-  }
-}
+/** Motif de nom d'une capture : `vitest-run-<pid>.txt` — une par run, un run en cours garde la sienne. */
+const MOTIF_CAPTURE = /^vitest-run-\d+\.txt$/
+/** Motif de nom d'un registre de passage de la barrière DOM (même règle : un par PID, borné à 7 jours). */
+const MOTIF_REGISTRE_DOM = /^dom-residu-\d+\.txt$/
 
 try {
   fs.mkdirSync(CACHE, { recursive: true })
-  purgerCapturesPerimees()
+  purgerPerimes({ dossier: CACHE, motif: MOTIF_CAPTURE, ageMs: PEREMPTION_MS })
+  purgerPerimes({ dossier: CACHE, motif: MOTIF_REGISTRE_DOM, ageMs: PEREMPTION_MS })
+  fs.rmSync(REGISTRE_DOM, { force: true }) // un PID recyclé ne décide pas du verdict d'un autre run
   fdCapture = fs.openSync(CAPTURE, 'w')
   ecrireCapture(
     enteteCapture({
@@ -338,6 +338,23 @@ const diagnostic = bilanDiagnostic(compteSentinelles, {
 })
 process.stdout.write(diagnostic)
 ecrireCapture(diagnostic)
+// PÉREMPTION DU STOCK DES FUITES DOM — une suite COMPLÈTE VERTE est le seul run où « ce fichier a
+// joué sans fuir » se mesure : le stock est en extinction, une ligne qui ne protège plus rien masque
+// la fuite suivante du même fichier. Jugée AVANT le résumé et le `status:` : ils portent le code de
+// sortie du processus, ils ne peuvent pas dire 0 quand la porte rend 1.
+if (code === 0 && suiteComplete(filtres, ARGV)) {
+  try {
+    const lignes = fs.readFileSync(ENV.WFRP_DOM_RESIDU_REGISTRE, 'utf8').split('\n').filter(Boolean)
+    const message = messagePeremption(entreesPerimees(lignes))
+    if (message) {
+      process.stderr.write(`${message}\n`)
+      ecrireCapture(`${message}\n`)
+      code = 1
+    }
+  } catch (e) {
+    process.stderr.write(`[test] péremption du stock des fuites DOM non jugée : ${e.message}\n`)
+  }
+}
 process.stdout.write(
   resumeLancement({
     statut: code,

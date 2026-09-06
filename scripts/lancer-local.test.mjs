@@ -11,8 +11,10 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
 import { binLocal, entreeBin, envIsole, pathIsole, resoudreOutilLocal } from './lancer-local.mjs'
+import { clotureDImports } from './guards/lib/importGraph.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
+const RACINE = fileURLToPath(new URL('..', import.meta.url)).replace(/[\\/]$/, '')
 
 test('entrée `bin` : table nommée, forme chaîne (nom du paquet), inconnu', () => {
   assert.equal(entreeBin({ bin: { tsc: './bin/tsc', tsserver: './bin/tsserver' } }, 'tsc'), './bin/tsc')
@@ -44,15 +46,31 @@ test('env de l’enfant : le PATH est posé sur la clé EXISTANTE (win32 écrit 
   assert.equal(env.HOME, '/h')
 })
 
-/** Faux arbre : les fichiers du lanceur, et rien d'autre — pas de `node_modules`. */
+/** Modules à copier dans le faux arbre : la CLÔTURE d'imports RELATIFS de `lancer-local.mjs`,
+ *  CALCULÉE (`clotureDImports`, `scripts/guards/lib/importGraph.mjs`) — jamais une liste tenue à la
+ *  main (patron de `scripts/test/run-capture.test.mjs`). Une liste à tenir ne dit rien quand elle
+ *  périme : au premier module partagé neuf, l'enfant meurt en `ERR_MODULE_NOT_FOUND` et les cas
+ *  rougissent sur une cause qui ne se nomme pas. */
+function modulesDuLanceur() {
+  const precedent = process.cwd()
+  process.chdir(RACINE)
+  try {
+    return [...clotureDImports(['scripts/lancer-local.mjs'])].sort()
+  } finally {
+    process.chdir(precedent)
+  }
+}
+
+/** Faux arbre : le lanceur et TOUT ce qu'il importe, et rien d'autre — pas de `node_modules`. */
 function fauxArbre() {
   const racine = mkdtempSync(join(tmpdir(), 'lancer-local-'))
-  mkdirSync(join(racine, 'scripts', 'test'), { recursive: true })
-  mkdirSync(join(racine, 'scripts', 'guards', 'lib'), { recursive: true })
-  copyFileSync(join(ICI, 'lancer-local.mjs'), join(racine, 'scripts', 'lancer-local.mjs'))
-  copyFileSync(join(ICI, 'outillage-local.mjs'), join(racine, 'scripts', 'outillage-local.mjs'))
-  copyFileSync(join(ICI, 'test', 'partition.mjs'), join(racine, 'scripts', 'test', 'partition.mjs'))
-  copyFileSync(join(ICI, 'guards', 'lib', 'invocation.mjs'), join(racine, 'scripts', 'guards', 'lib', 'invocation.mjs'))
+  const modules = modulesDuLanceur()
+  assert.ok(modules.includes('scripts/lancer-local.mjs'), `clôture vide ou sans le lanceur : ${modules.join(', ')}`)
+  for (const rel of modules) {
+    const cible = join(racine, ...rel.split('/'))
+    mkdirSync(dirname(cible), { recursive: true })
+    copyFileSync(join(RACINE, ...rel.split('/')), cible)
+  }
   return racine
 }
 

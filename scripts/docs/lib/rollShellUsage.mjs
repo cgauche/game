@@ -12,10 +12,11 @@
 // prochain build ; aucune colonne n'est écrite à la main.
 import ts from 'typescript'
 import { jsdocBody } from './jsdocUnion.mjs'
+import { scriptKindDe } from '../../guards/lib/dialecte.mjs'
 
 /** Source TypeScript parsée, JSX activé pour les `.tsx`. */
 export function parseSource(rel, text) {
-  return ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true, rel.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS)
+  return ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true, scriptKindDe(rel))
 }
 
 const lineOf = (sf, node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1

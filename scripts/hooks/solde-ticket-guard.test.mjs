@@ -53,7 +53,7 @@ import {
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
 import { GitIndisponible, estDansHead } from '../guards/lib/gitPorte.mjs'
 import {
-  archivesDe, derniereRevueArchivee, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue,
+  archivesDe, derniereRevueArchivee, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue, nomsDArchiveAcceptes,
   revuesNeuves,
 } from '../guards/lib/revuePalier.mjs'
 
@@ -315,6 +315,27 @@ test('validateRevuePalier : revue-palier-1171977cb.md (réelle, SANS fenêtre) e
   assert.match(r.problems.join(' ; '), /fenêtre `<base>\.\.<tête>`/)
 })
 
+// Deux sessions ont archivé le 2026-09-05 une revue de MÊME base (f0f9436f5) : même nom, conflit AA
+// au rebase, la seconde ne pouvait pas entrer dans l'histoire. La fenêtre a pourtant DEUX bornes.
+test('nomDArchiveDeRevue : même date et même base, têtes DIFFÉRENTES → deux noms', () => {
+  const revue = (tete) => `# PALIER — 2026-09-05\n\nfenêtre \`f0f9436f5..${tete}\`\n`
+  assert.equal(nomDArchiveDeRevue(revue('714df53da')), 'revue-palier-2026-09-05-f0f9436f5-714df53da.md')
+  assert.equal(nomDArchiveDeRevue(revue('226a764b6')), 'revue-palier-2026-09-05-f0f9436f5-226a764b6.md')
+  assert.notEqual(nomDArchiveDeRevue(revue('714df53da')), nomDArchiveDeRevue(revue('226a764b6')))
+})
+
+test('nomsDArchiveAcceptes : les graphies ANTÉRIEURES restent reconnues, la courante est la 1re', () => {
+  const texte = '# PALIER — 2026-09-05\n\nfenêtre `f0f9436f5..226a764b6`\n'
+  assert.deepEqual(nomsDArchiveAcceptes(texte), [
+    'revue-palier-2026-09-05-f0f9436f5-226a764b6.md',
+    'revue-palier-2026-09-05-f0f9436f5.md',
+    'revue-palier-2026-09-05.md',
+  ])
+  // Sans fenêtre lisible, la date seule nomme — et c'est le seul nom accepté.
+  assert.deepEqual(nomsDArchiveAcceptes('# PALIER — 2026-09-05\n\nrien\n'), ['revue-palier-2026-09-05.md'])
+  assert.deepEqual(nomsDArchiveAcceptes('# PALIER\n\nrien\n'), [])
+})
+
 test('toute revue ACCEPTÉE par la porte est NOMMABLE par l’archiveur (même corpus)', () => {
   const revues = readdirSync(join(repoRoot(), '.claude', 'soldes')).filter((f) => f.startsWith('revue-palier-'))
   assert.ok(revues.length >= 10, `corpus de ${revues.length} revues — la sonde ne mesure que ce qu'elle voit`)
@@ -554,7 +575,7 @@ test('mesureDuPalier : compte les commits de substance depuis la derniere revue 
     const m = mesureDuPalier(depot)
     assert.equal(m.compte, 2)
     assert.equal(m.tete, racine)
-    assert.equal(m.chemin, `.claude/soldes/revue-palier-${TODAY}-0000000.md`)
+    assert.equal(m.chemin, `.claude/soldes/revue-palier-${TODAY}-0000000-${racine}.md`)
     // Le commit que l'index s'apprete a faire compte AUSSI : c'est lui qui franchit le palier.
     writeFileSync(join(depot, 'scripts', 'c.txt'), 'c')
     git('add', '-A')
@@ -600,7 +621,7 @@ test('mesureDuPalier : une revue dont la TETE de fenetre est ORPHELINE ne juge r
     git('add', '-A'); git('commit', '-q', '-m', 'revue orpheline')
     const m = mesureDuPalier(depot)
     assert.match(m.erreur, /aucune des 1 revues archivées ne juge l'histoire de HEAD/)
-    assert.match(m.erreur, new RegExp(`revue-palier-${TODAY}-0000000\\.md`))
+    assert.match(m.erreur, new RegExp(`revue-palier-${TODAY}-0000000-82e95be10\\.md`))
   } finally { rmSync(depot, { recursive: true, force: true }) }
 })
 
@@ -613,7 +634,7 @@ test('mesureDuPalier : entre deux revues, la plus PROCHE de HEAD fait reference'
     poser('2222222', '82e95be10')
     git('add', '-A'); git('commit', '-q', '-m', 'revues')
     const m = mesureDuPalier(depot)
-    assert.equal(m.chemin, `.claude/soldes/revue-palier-${TODAY}-1111111.md`)
+    assert.equal(m.chemin, `.claude/soldes/revue-palier-${TODAY}-1111111-${suivant}.md`)
     assert.equal(m.compte, 0, 'aucun commit de substance depuis la plus recente')
   } finally { rmSync(depot, { recursive: true, force: true }) }
 })
@@ -705,13 +726,15 @@ test('CAS REEL : la CHAINE des revues de HEAD est continue, et chaque tete est d
   }
   // Les revues ecrites sous la regle en vigueur portent une DATE dans leur nom : pour celles-la, le
   // nom repond au contenu. Les plus anciennes portent le sha de leur commit consommateur — git a
-  // leur histoire, et c'est leur FENETRE, jamais leur nom, que la mesure lit.
+  // leur histoire, et c'est leur FENETRE, jamais leur nom, que la mesure lit. Le nom courant porte
+  // les DEUX bornes (#1679 L3b) ; les graphies anterieures restent acceptees telles quelles — une
+  // archive committee ne se renomme pas.
   const nommeesParLeurFenetre = archives.filter((a) => /revue-palier-\d{4}-\d{2}-\d{2}-/.test(a.chemin))
   for (const a of nommeesParLeurFenetre) {
-    assert.equal(
-      a.chemin,
-      `.claude/soldes/${nomDArchiveDeRevue(lireDeHead(a.chemin))}`,
-      `${a.chemin} : son nom ne repond pas a son contenu`,
+    const acceptes = nomsDArchiveAcceptes(lireDeHead(a.chemin)).map((n) => `.claude/soldes/${n}`)
+    assert.ok(
+      acceptes.includes(a.chemin),
+      `${a.chemin} : son nom ne repond pas a son contenu (accepte : ${acceptes.join(', ')})`,
     )
   }
 })

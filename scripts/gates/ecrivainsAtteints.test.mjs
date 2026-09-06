@@ -51,6 +51,11 @@ const ATTENDU = {
     'scripts/guards/lib/lister.test.mjs',
     'scripts/guards/lib/plageStock.test.mjs',
     'scripts/guards/lib/portePush.test.mjs',
+    // +2 le 2026-09-06 (#1679 L3b) : la purge des dossiers de CACHE (`node_modules/.cache`,
+    // `node_modules/.cache/gates`) est une source unique — elle EFFACE, par construction ; son test
+    // pose et efface ses fichiers sous `os.tmpdir()`. Ni l'une ni l'autre ne touche l'arbre versionné.
+    'scripts/guards/lib/purgerPerimes.mjs',
+    'scripts/guards/lib/purgerPerimes.test.mjs',
     'scripts/hooks/git-destructive-guard.test.mjs',
     'scripts/hooks/inject-project-credo.test.mjs',
     'scripts/hooks/new-src-file-guard.mjs',
@@ -100,7 +105,14 @@ const ATTENDU = {
   'test:recette': ['scripts/recette/lib.mjs'],
   typecheck: [],
   lint: [],
-  test: ['scripts/guards/lib/justificatif.mjs', 'scripts/test/run.mjs', 'scripts/test/verrou.mjs'],
+  // +1 le 2026-09-06 (#1679 L3b) : la purge des captures périmées du lanceur est passée en source
+  // unique — elle efface dans `node_modules/.cache`, jamais dans l'arbre versionné.
+  test: [
+    'scripts/guards/lib/justificatif.mjs',
+    'scripts/guards/lib/purgerPerimes.mjs',
+    'scripts/test/run.mjs',
+    'scripts/test/verrou.mjs',
+  ],
   build: [],
   'docs:check': ['scripts/docs/build-all.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
   'docs:empreinte': ['scripts/docs/build-all.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],

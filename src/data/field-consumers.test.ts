@@ -219,23 +219,27 @@ describe('DÉTERMINISME cross-OS — le rapport ne dépend pas du système de fi
 
 /**
  * CONTRAT POSITIF des champs RECOUVRÉS par le détecteur au `TypeChecker` (#1620) : chacun est nommé
- * avec le `fichier:ligne` de son lecteur. Un « 0/16 faux négatifs » ne prouverait rien (une mesure
+ * avec le `fichier @symbole` de son lecteur. Un « 0/16 faux négatifs » ne prouverait rien (une mesure
  * qui rend zéro partout le satisfait) ; ici, chaque ligne exige une lecture RÉELLE à un site précis,
  * et la disparition du site est rouge sous le nom du champ. `TraitInstance.hidden` y figure parce que
  * `hiddenGroupsOf` ANNOTE `TraitInstance[]` : c'est cette annotation qui rend sa lecture mesurable.
+ *
+ * L'ancre est le SYMBOLE englobant, jamais le numéro de ligne d'un fichier VIVANT : une ligne insérée
+ * en amont par un train étranger déplaçait le site et rougissait cette table sans qu'aucune lecture
+ * ait bougé (payé par 19ce6c342, `src/data/index.ts:3500` → `:3508`).
  */
 const RECOUVRES: readonly (readonly [string, string, string])[] = [
-  ['DetailRecipe', 'tintVar', 'src/gameIso/authoring/detailSvg.ts:177'],
-  ['EntityAppearance', 'armurePortee', 'src/state/spawn.ts:427'],
-  ['CritEscalation', 'onRepeat', 'src/engine/critical.ts:312'],
-  ['Amputation', 'timing', 'src/engine/critical.ts:327'],
-  ['FlowTest', 'opposed', 'src/state/combat/triggeredTest.ts:301'],
-  ['CountSpec', 'fixed', 'src/data/index.ts:3505'],
-  ['CountSpec', 'roll', 'src/data/index.ts:3505'],
-  ['TrappingRef', 'label', 'src/engine/possessionGrants.ts:25'],
-  ['FlowTest', 'argDifficulty', 'src/state/triggeredEffects.ts:75'],
-  ['TravelTableEntry', 'stageOutcome', 'src/state/travelPostes.ts:363'],
-  ['TraitInstance', 'hidden', 'src/engine/groups.ts:57'],
+  ['DetailRecipe', 'tintVar', 'src/gameIso/authoring/detailSvg.ts @detailPatternDefs'],
+  ['EntityAppearance', 'armurePortee', 'src/state/spawn.ts @spawnEnemy'],
+  ['CritEscalation', 'onRepeat', 'src/engine/critical.ts @repeat'],
+  ['Amputation', 'timing', 'src/engine/critical.ts @resolveCritique, src/ui/compendium/registry.ts @meta'],
+  ['FlowTest', 'opposed', 'src/state/combat/triggeredTest.ts @opp'],
+  ['CountSpec', 'fixed', 'src/data/index.ts @count'],
+  ['CountSpec', 'roll', 'src/data/index.ts @count'],
+  ['TrappingRef', 'label', 'src/engine/possessionGrants.ts @possessionGrantsFromRefs'],
+  ['FlowTest', 'argDifficulty', 'src/state/triggeredEffects.ts @test'],
+  ['TravelTableEntry', 'stageOutcome', 'src/state/travelPostes.ts @(module)'],
+  ['TraitInstance', 'hidden', 'src/engine/groups.ts @hiddenGroupsOf'],
 ];
 
 /**
@@ -257,14 +261,16 @@ const ZEROS = [
 describe('contrat POSITIF des champs recouvrés + cliquet des « 0 lecteur »', () => {
   it('chaque champ recouvré a son lecteur MESURÉ au site nommé', () => {
     const mesure = (type: string, champ: string) =>
-      [...new Set((rapport().byType.get(type)?.get(champ) ?? []).map((h: { file: string; line: number }) => `${h.file}:${h.line}`))];
+      [...new Set((rapport().byType.get(type)?.get(champ) ?? []).map((h: { file: string; symbole: string }) => `${h.file} @${h.symbole}`))];
     const constate = RECOUVRES.map(([type, champ, site]) => {
       const sites = mesure(type, champ);
-      return `${type}.${champ} → ${sites.includes(site) ? site : sites.join(', ') || 'AUCUN LECTEUR'}`;
+      const attendus = site.split(', ');
+      const tenus = attendus.every((s) => sites.includes(s));
+      return `${type}.${champ} → ${tenus ? site : sites.join(', ') || 'AUCUN LECTEUR'}`;
     });
     expect(
       constate,
-      'un champ recouvré a perdu son lecteur au site nommé (déplacement de ligne = mettre à jour le site ; disparition = régression)',
+      'un champ recouvré a perdu son lecteur au symbole nommé (disparition = régression du détecteur ; renommage du symbole = mettre à jour l’ancre)',
     ).toEqual(RECOUVRES.map(([type, champ, site]) => `${type}.${champ} → ${site}`));
   }, 150_000);
 

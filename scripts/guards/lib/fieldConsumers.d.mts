@@ -4,6 +4,9 @@ export interface FieldReadHit {
   field: string;
   file: string;
   line: number;
+  /** Déclaration NOMMÉE qui englobe la lecture (`'(module)'` à défaut) : l'ancre STABLE d'un site —
+   *  une ligne insérée en amont déplace `line`, jamais le symbole qui LIT le champ. */
+  symbole: string;
 }
 
 export function listProdFiles(dir: string): string[];

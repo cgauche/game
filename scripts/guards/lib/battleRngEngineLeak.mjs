@@ -34,6 +34,7 @@
 //    silencieusement un résolveur qu'elle n'a pas pu lire — mesuré : au 2026-07-27, tous les imports
 //    `resolveXxx` de `src/state/**` résolvent en un fichier direct (`../engine/<module>`), zéro barrel.
 import tsModule from 'typescript';
+import { scriptKindDe } from './dialecte.mjs';
 
 // Liaison LOCALE de l'API du compilateur — même FAIT mesuré qu'en tête de `sceneMutation.mjs`
 // (2026-08-23) : sous Vitest, un `ts.x` de visiteur AST se relit sur l'objet d'import de vite-node.
@@ -148,7 +149,7 @@ function sourceFileFor(absPath) {
   let sf = sourceFileCache.get(absPath);
   if (sf) return sf;
   const src = readFileSync(absPath, 'utf8');
-  sf = ts.createSourceFile(absPath, src, ts.ScriptTarget.Latest, true, absPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  sf = ts.createSourceFile(absPath, src, ts.ScriptTarget.Latest, true, scriptKindDe(absPath));
   sourceFileCache.set(absPath, sf);
   return sf;
 }

@@ -27,6 +27,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { scriptKindDe } from '../guards/lib/dialecte.mjs';
 
 const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 const DOSSIER = join(RACINE, '.claude', 'workflows');
@@ -67,7 +68,7 @@ const propriete = (obj, nom) => obj.properties.find((p) => ts.isPropertyAssignme
  * @returns {{ regle: string, message: string }[]}
  */
 export function defautsDuScript(source, fichier) {
-  const sf = ts.createSourceFile(fichier, String(source), ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  const sf = ts.createSourceFile(fichier, String(source), ts.ScriptTarget.Latest, true, scriptKindDe(fichier));
   const defauts = [];
   const ligne = (n) => sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1;
   const ligneDePosition = (pos) => sf.getLineAndCharacterOfPosition(Math.min(pos, String(source).length)).line + 1;

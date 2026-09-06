@@ -59,6 +59,7 @@
 //     ne porte 3 entrées littérales) ; le jour où il en naît un, cette liste l'accueille.
 import { createRequire } from 'node:module'
 import { parUnitesDeCode } from './lister.mjs'
+import { scriptKindDe } from './dialecte.mjs'
 
 /** Fichiers susceptibles de porter un stock nominatif. */
 const PORTEURS = [
@@ -115,17 +116,14 @@ function typescript() {
   return compilateur;
 }
 
-/** Extension → dialecte à parser. Un `.mjs`/`.cjs` se lit en JS, une table `.json` en JSON. Hors de
- *  cette table, aucune image n'est lue : le REPLI de ligne juge seul. */
-const DIALECTE = { ts: 'TS', mts: 'TS', cts: 'TS', tsx: 'TSX', js: 'JS', mjs: 'JS', cjs: 'JS', jsx: 'JSX', json: 'JSON' };
-
-/** Image parsée d'un fichier, ou `null` si son extension n'a pas de dialecte ici. */
+/** Image parsée d'un fichier, ou `null` si son extension n'a pas de dialecte (`dialecte.mjs`) :
+ *  aucune image n'est alors lue, le REPLI de ligne juge seul. */
 function imageParsee(source, chemin) {
-  const ext = String(chemin ?? '').replace(/\\/g, '/').split('.').pop().toLowerCase();
-  if (!DIALECTE[ext]) return null;
+  const kind = scriptKindDe(chemin, { inconnu: 'refus' });
+  if (kind === null) return null;
   const texte = String(source ?? '');
   const ts = typescript();
-  const sf = ts.createSourceFile(String(chemin), texte, ts.ScriptTarget.Latest, true, ts.ScriptKind[DIALECTE[ext]]);
+  const sf = ts.createSourceFile(String(chemin), texte, ts.ScriptTarget.Latest, true, kind);
   return { ts, sf, texte };
 }
 

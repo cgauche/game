@@ -10,6 +10,7 @@
 // La lecture du corpus n'est PAS ici : elle vit dans `sourceCorpus.mjs` (`readCorpus`), sa
 // mémoïsation chez l'appelant. Ce module reçoit des fichiers `{ rel, text }` et rend des `Finding`.
 import ts from 'typescript';
+import { scriptKindDe } from './dialecte.mjs';
 
 /** AST par FICHIER, keyé sur l'IDENTITÉ de l'objet : un appelant qui mémoïse son corpus ne paie le
  *  parse qu'une fois pour tous ses scans. Rien ne fuit — la carte lâche avec le corpus. */
@@ -19,7 +20,7 @@ const AST = new WeakMap();
 function ast(file) {
   let sf = AST.get(file);
   if (!sf) {
-    sf = ts.createSourceFile(file.rel, file.text, ts.ScriptTarget.Latest, true, file.rel.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+    sf = ts.createSourceFile(file.rel, file.text, ts.ScriptTarget.Latest, true, scriptKindDe(file.rel));
     AST.set(file, sf);
   }
   return sf;

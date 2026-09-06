@@ -14,6 +14,7 @@
 // reçoit UN fichier (`rel`, `contenu`) et les RÈGLES (signatures + alias, dérivées par l'appelant
 // des schémas eux-mêmes — aucune liste de clés n'est recopiée ici) et rend des trouvailles.
 import ts from 'typescript';
+import { scriptKindDe } from './dialecte.mjs';
 
 /** Fabriques d'objet zod dont l'argument littéral porte une forme DÉCLARÉE. */
 const FABRIQUES_OBJET = new Set(['object', 'strictObject', 'looseObject']);
@@ -133,7 +134,7 @@ function importsDeGrammaire(sf) {
  * @returns {{ ligne: number, symbole: string, champ: string, motif: 'redeclaration'|'alias'|'extend', detail: string }[]}
  */
 export function scan(rel, contenu, regles) {
-  const sf = ts.createSourceFile(rel, contenu, ts.ScriptTarget.Latest, true, rel.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const sf = ts.createSourceFile(rel, contenu, ts.ScriptTarget.Latest, true, scriptKindDe(rel));
   const importes = importsDeGrammaire(sf);
   const local = estModuleGrammaire(rel);
   const alias = new Set(regles.alias);

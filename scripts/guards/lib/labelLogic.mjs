@@ -6,6 +6,7 @@
 // ne divergent jamais.
 import { readFileSync } from 'node:fs';
 import { parUnitesDeCode, listerArbre } from './lister.mjs';
+import { scriptKindDe } from './dialecte.mjs';
 import { join, relative, isAbsolute } from 'node:path';
 import tsModule from 'typescript';
 
@@ -335,10 +336,7 @@ function declareDerivedParams(fn, scopes) {
  * @returns {{ line: number, detail: string, rule: 'label-literal' | 'label-switch' | 'label-record' | 'label-regex' }[]}
  */
 export function scanLabelLiteralCompare(relPath, contenu) {
-  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX
-    : /\.[cm]?js$/.test(relPath) ? ts.ScriptKind.JS
-      : ts.ScriptKind.TS;
-  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
+  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, scriptKindDe(relPath));
   const lines = contenu.split('\n');
   const findings = [];
   const seen = new Set();
@@ -835,7 +833,7 @@ function isExported(node) {
  * @param {string} contenu — contenu de `src/data/index.ts` @returns {Set<string>}
  */
 export function collectLabelEntityResolvers(contenu) {
-  const sf = ts.createSourceFile('index.ts', contenu, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const sf = ts.createSourceFile('index.ts', contenu, ts.ScriptTarget.Latest, true, scriptKindDe('index.ts'));
   const names = new Set();
   const hasLabelFirstParam = (params) => params.length >= 1 && ts.isIdentifier(params[0].name) && params[0].name.text === 'label';
   const visit = (node) => {
@@ -879,8 +877,7 @@ export function scanLabelResolverCalls(relPath, contenu, resolverNames) {
   const local = collectDeclaredNames(contenu);
   const active = new Set([...resolverNames].filter((n) => !local.has(n)));
   if (active.size === 0) return [];
-  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
-  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
+  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, scriptKindDe(relPath));
   const lines = contenu.split('\n');
   const findings = [];
   const visit = (node) => {

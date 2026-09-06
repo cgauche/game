@@ -123,7 +123,7 @@ test('revue-palier, mode palier : le texte PASSE la porte de solde et se NOMME l
   const porte = validateRevuePalier(rendu.texte, DATE);
   assert.deepEqual(porte.problems, []);
   assert.equal(porte.ok, true);
-  assert.equal(nomDArchiveDeRevue(rendu.texte), `revue-palier-${DATE}-${BASE}.md`);
+  assert.equal(nomDArchiveDeRevue(rendu.texte), `revue-palier-${DATE}-${BASE}-${TETE}.md`);
   assert.deepEqual(fenetreDeRevue(rendu.texte), { date: DATE, base: BASE, tete: TETE });
 });
 

@@ -22,6 +22,7 @@
 // `scanRegistryIdBranch`.
 import tsModule from 'typescript';
 import { parUnitesDeCode } from './lister.mjs'
+import { scriptKindDe } from './dialecte.mjs'
 
 /** Liaison LOCALE du compilateur : sous le transformeur SSR de Vitest, chaque `ts.x` d'un import est
  *  une traversée de module (`__vite_ssr_import_N__.default.x`) — sur le visiteur d'AST, chaud, elle
@@ -43,10 +44,7 @@ let _dernierArbre = null;
 /** @param {string} relPath @param {string} contenu @returns {import('typescript').SourceFile} */
 function arbreDe(relPath, contenu) {
   if (_dernierArbre && _dernierArbre.rel === relPath && _dernierArbre.src === contenu) return _dernierArbre.sf;
-  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX
-    : /\.[cm]?js$/.test(relPath) ? ts.ScriptKind.JS // outillage `scripts/**` (.mjs) : même AST, sans annotations
-      : ts.ScriptKind.TS;
-  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
+  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, scriptKindDe(relPath));
   _dernierArbre = { rel: relPath, src: contenu, sf };
   return sf;
 }
@@ -128,15 +126,16 @@ export function isEntryLiteral(node) {
  * chemin du fichier scanné, donc `'./bones'` (rig) et `'../../src/gameIso/rig/bones'` (outillage)
  * ancrent au même module.
  *
- * C'est une liste de TYPES (jamais de fichiers ni de noms de variables), et c'est un choix ASSUMÉ
- * contre le proxy lexical général « l'annotation nomme un type non primitif » : ce proxy est
+ * C'est une liste de TYPES (jamais de fichiers ni de noms de variables), et non le proxy lexical
+ * général « l'annotation nomme un type non primitif » : ce proxy est
  * RÉFUTÉ par le dépôt lui-même — `ConditionId` (`src/engine/types.ts`) et `BodyPlanId`
  * (`src/gameIso/rig/bodyPlan.ts`) sont des alias `= string`, donc OUVERTS ; une liste
  * `const PERSISTENTS: ConditionId[] = ['hemorragique', 'aveugle']` serait exemptée alors qu'elle
  * fige exactement le registre des États. Sans vérificateur de types (le scan est per-fichier), la
  * fermeture d'un type importé ne se PROUVE pas : elle se déclare ici, type par type, module par
  * module — et `tsc` refuse ensuite tout littéral étranger à l'union sous cette annotation.
- * ÉTENDRE CETTE TABLE EST UN ARBITRAGE DE DESIGN, JAMAIS UN GESTE DE CONFORT (contenu figé en test).
+ * Le CONTENU de cette table est figé par un test : une entrée de plus se paie d'une fermeture PROUVÉE
+ * du type (union de littéraux, pas un alias `= string`), et le test la refuse sinon.
  */
 export const VOCABULARY_TYPES = new Map([['BoneId', 'src/gameIso/rig/bones']]);
 

@@ -102,6 +102,23 @@ test('derogationsDuJournal : chaque tentative journalisée est rendue, la fenêt
   assert.deepEqual(lues.map((d) => d.motif), ['rouge', 'non-consultable']);
 });
 
+// La fenêtre d'une revue est faite des commits POUSSÉS : une dérogation attribuée au commit qui l'a
+// CAUSÉE (tête de main, course rouge — un ancêtre déjà publié) sortait de toute fenêtre (#1679 L3b).
+test('derogationsDuJournal : la fenêtre retrouve la dérogation par le commit POUSSÉ, pas par sa cause', () => {
+  const journal = JSON.stringify({
+    horodatage: '2026-09-05T10:00:00.000Z',
+    etat: 'tentative',
+    motif: 'rouge',
+    sha: 'pousse111',
+    shaCause: 'rouge999',
+    raison: 'correctif de la CI rouge elle-même',
+  });
+  const [lue] = derogationsDuJournal(journal, ['pousse111']);
+  assert.equal(lue.dansLaFenetre, true);
+  assert.equal(lue.shaCause, 'rouge999');
+  assert.equal(derogationsDuJournal(journal, ['rouge999'])[0].dansLaFenetre, false);
+});
+
 // Une ligne qui n'est pas un objet JSON n'est pas DEVINÉE : un lecteur qui devine une graphie
 // fabrique des dérogations à partir de n'importe quoi.
 test('derogationsDuJournal : une ligne non JSON est rendue ILLISIBLE, jamais interprétée', () => {

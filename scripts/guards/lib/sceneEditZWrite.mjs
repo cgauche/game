@@ -8,6 +8,7 @@
 // `sceneEdit.ts` qui pousse dans une collection z-portante sans déclarer de paramètre nommé `z`.
 // Module ESM pur — consommé par `src/state/scene-edit-z-write-guard.test.ts`.
 import ts from 'typescript';
+import { scriptKindDe } from './dialecte.mjs';
 
 /** Collections dont l'ÉLÉMENT porte un `z` au modèle (`scene.ts`) — `roofs` (FU-2) et `architecture`
  *  (masses/façades, déjà z-obligatoires en signature) restent HORS de ce périmètre : ce garde ne
@@ -77,7 +78,7 @@ function isExported(node) {
  */
 export function scanSceneEditZWrites(contenu) {
   const findings = [];
-  const sf = ts.createSourceFile('sceneEdit.ts', contenu, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const sf = ts.createSourceFile('sceneEdit.ts', contenu, ts.ScriptTarget.Latest, true, scriptKindDe('sceneEdit.ts'));
   const lineOf = (pos) => sf.getLineAndCharacterOfPosition(pos).line + 1;
 
   for (const stmt of sf.statements) {

@@ -117,11 +117,13 @@ export function fermeturesDesCommits(commits, soldes) {
 
 /**
  * Dérogations journalisées par le pre-push. PUR. Le journal porte UNE ligne JSON par tentative
- * (`{ horodatage, etat, motif, sha, raison }`) : une ligne qui n'est pas un objet JSON n'est pas
- * devinée, elle est rendue `{ etat: 'illisible', ligne }` et comptée à part.
+ * (`{ horodatage, etat, motif, sha, shaCause, raison }`) : une ligne qui n'est pas un objet JSON n'est
+ * pas devinée, elle est rendue `{ etat: 'illisible', ligne }` et comptée à part.
+ * `sha` est le commit POUSSÉ (c'est par lui que la fenêtre retrouve la dérogation) ; `shaCause` est le
+ * commit qui a causé le refus (tête de `main`, commit de la course rouge) — souvent hors fenêtre.
  * `shas` MARQUE (`dansLaFenetre`) sans filtrer — le tri revient à `derogationsDeLaFenetre`.
- * @returns {{ horodatage: string, etat: string, motif: string, sha: string, raison: string,
- *   dansLaFenetre: boolean }[] }
+ * @returns {{ horodatage: string, etat: string, motif: string, sha: string, shaCause: string,
+ *   raison: string, dansLaFenetre: boolean }[] }
  */
 export function derogationsDuJournal(texte, shas = null) {
   const fenetre = shas ? new Set([...shas].map(String)) : null
@@ -143,6 +145,7 @@ export function derogationsDuJournal(texte, shas = null) {
         etat: String(lu.etat ?? ''),
         motif: String(lu.motif ?? ''),
         sha,
+        shaCause: String(lu.shaCause ?? ''),
         raison: String(lu.raison ?? ''),
         dansLaFenetre: fenetre ? fenetre.has(sha) : true,
       }

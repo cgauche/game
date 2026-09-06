@@ -345,6 +345,46 @@ test('`gh` indisponible (hors ligne) : refus NON CONSULTABLE, et son levier prop
   }
 })
 
+// La revue de palier ne sert QUE les dérogations dont le `sha` est DANS sa fenêtre
+// (`faits-de-palier.mjs`, `dansLaFenetre`) : une ligne attribuée au commit de la course rouge — un
+// ancêtre déjà publié — n'est jamais vue par la revue du palier qui contient ce push.
+test('le journal attribue la dérogation au commit POUSSÉ ; la cause va dans `shaCause`', () => {
+  const racine = depot()
+  try {
+    const g = git(racine)
+    const tete = teteMain(racine) // origin/main : le commit que la course rouge porte
+    ecrire(racine, 'src/a.ts', 'export const a = 2\n')
+    g(['add', '-A'])
+    g(['commit', '-m', 'travail local, non publié'])
+    const pousse2 = gatesVertes(racine) // HEAD local, le seul commit réellement poussé
+    assert.notEqual(pousse2, tete, 'la fixture doit POUSSER un commit distinct de la tête de main')
+
+    // Le stub s'écrit dans UN fichier : chaque cas pose le sien AU MOMENT où il joue (les trois
+    // construits d'avance ne rendraient que le dernier écrit).
+    const cas = [
+      ['rouge', () => ({ ...ciRouge(racine), WFRP_PUSH_SUR_ROUGE: '1' })],
+      ['perimee', () => ({ ...stubCi(racine, [course(racine, { headSha: 'c'.repeat(40) })]), WFRP_PUSH_CI_NON_CONSULTABLE: '1' })],
+      ['sans-ancetre', () => ({ ...stubCi(racine, [course(racine, { conclusion: 'cancelled' })]), WFRP_PUSH_CI_NON_CONSULTABLE: '1' })],
+    ]
+    for (const [motif, poser] of cas) {
+      const env = poser()
+      rmSync(join(cheminJustificatifs({ cwd: racine }), 'derogations.log'), { force: true })
+      const { refus } = jugerPush({
+        cwd: racine,
+        stdin: pousse(racine),
+        env: { ...env, WFRP_DEROGATION: `dérogation mesurée pour le motif ${motif}` },
+      })
+      assert.deepEqual(refus, [], motif)
+      const ligne = JSON.parse(readFileSync(join(cheminJustificatifs({ cwd: racine }), 'derogations.log'), 'utf8').trim())
+      assert.equal(ligne.motif, motif)
+      assert.equal(ligne.sha, pousse2, `${motif} : le journal doit porter le commit POUSSÉ`)
+      assert.equal(ligne.shaCause, tete, `${motif} : la cause du refus va dans shaCause`)
+    }
+  } finally {
+    jeter(racine)
+  }
+})
+
 test('hors ligne + levier NON CONSULTABLE motivé : passe, et le journal porte le motif mesuré', () => {
   const racine = depot()
   try {

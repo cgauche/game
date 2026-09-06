@@ -42,6 +42,7 @@
 // qui fait tomber `roll as rollDice` sur un autre nom de son amorce.
 import tsModule from 'typescript';
 import { parUnitesDeCode } from './lister.mjs'
+import { scriptKindDe } from './dialecte.mjs'
 
 // Liaison LOCALE de l'API du compilateur — FAIT mesuré 2026-08-23 : sous Vitest ce module passe par
 // vite-node, et chaque `ts.x` d'un visiteur AST se relit alors sur l'objet d'import du runner. Même
@@ -176,7 +177,7 @@ export function scanRollSeamExclusivity(relPath, contenu, opts = {}) {
   if (!ROLL_SEAM_RX.test(contenu)) return [];
   const sf = ts.createSourceFile(
     relPath, contenu, ts.ScriptTarget.Latest, true,
-    relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    scriptKindDe(relPath),
   );
   const findings = [];
   const visit = (node) => {
@@ -235,7 +236,7 @@ export function scanPendingJetFabrication(relPath, contenu) {
   if (!PENDING_JET_RX.test(contenu)) return [];
   const sf = ts.createSourceFile(
     relPath, contenu, ts.ScriptTarget.Latest, true,
-    relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    scriptKindDe(relPath),
   );
   const findings = [];
   const visit = (node) => {
@@ -411,7 +412,7 @@ export function scanDesHorsPorte(relPath, contenu, rollerNames) {
   if (!DES_HORS_PORTE_RX.test(contenu) && !rollerNameRx(noms).test(contenu)) return [];
   const sf = ts.createSourceFile(
     relPath, contenu, ts.ScriptTarget.Latest, true,
-    relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    scriptKindDe(relPath),
   );
   // Un nom ne compte que s'il est IMPORTÉ DU MOTEUR dans CE fichier, et il compte sous son nom
   // D'ORIGINE. Les primitives de dé portent des noms courants (`roll`) : sans cette condition, 7 sites
@@ -550,7 +551,7 @@ export function scanEngineDelegatedRoll(relPath, contenu, rollerNames) {
   if (!rollerNameRx(names).test(contenu)) return [];
   const sf = ts.createSourceFile(
     relPath, contenu, ts.ScriptTarget.Latest, true,
-    relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    scriptKindDe(relPath),
   );
   const findings = [];
   const visit = (node) => {

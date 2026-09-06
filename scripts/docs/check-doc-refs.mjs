@@ -1,8 +1,11 @@
 // Garde « docs vivantes » — les références vivantes (docs/*.md, hors docs/plans/ & docs/raw/) ne
-// doivent jamais mentir. Deux vérifications déterministes, exit 1 avec la liste fichier:ligne sinon :
+// doivent jamais mentir. Six vérifications déterministes, exit 1 avec la liste fichier:ligne sinon :
 //   1. CHEMINS  — tout `src/…` / `scripts/…` cité existe sur le disque (fichier, dossier ou glob).
 //   2. SYMBOLES — tout appel de fonction backtiqué (`nomCamel(` / `NomPascal(`) se retrouve dans src/.
-//   3. SENS INVERSE — tout chemin `docs/….md` cité par src/ ou scripts/ existe sur le disque.
+//   3. PRIMITIVES — tout symbole de la table « Primitives partagées » (CLAUDE.md) est un EXPORT réel.
+//   4. CATALOGUE CSS — les deux sens entre `docs/charte-ui.md` et `src/ui/styles/*.css`.
+//   5. SENS INVERSE — tout chemin `docs/….md` cité par src/ ou scripts/ existe sur le disque.
+//   6. HOOKS — tout chemin `src/…` / `scripts/…` cité par un hook (git-hooks, hooks) existe.
 // Un métavariable `<…>` qui suit un chemin le tronque au dossier (ex. `src/ui/jetProps/<hook>.tsx`
 // → on valide `src/ui/jetProps/`). Re-run : node scripts/docs/check-doc-refs.mjs (npm run docs:check).
 import { readFileSync, existsSync, statSync } from 'node:fs'
@@ -30,20 +33,35 @@ for (const f of fichiersSources(SRC_DIR, EXTS_SRC)) {
 
 const isDir = (p) => { try { return statSync(p).isDirectory() } catch { return false } }
 
-/** Un chemin cité existe-t-il ? (fichier, dossier, ou glob `*` dont le dossier parent existe & matche). */
+/** Un chemin cité existe-t-il ? (fichier, dossier, ou glob `*` dont le dossier parent existe & matche).
+ *  Un glob RECURSIF (`src/**\/*.test.ts`) ne se vérifie qu'au dossier stable qui précède son premier
+ *  jocker : énumérer l'arbre pour un motif de prose coûterait plus que ce qu'il prouve. */
 function pathExists(tok) {
   if (tok.includes('*')) {
-    const slash = tok.lastIndexOf('/')
-    const dir = tok.slice(0, slash) || '.'
+    const avantJocker = tok.slice(0, tok.indexOf('*'))
+    const slash = avantJocker.lastIndexOf('/')
+    const dir = slash < 0 ? '.' : avantJocker.slice(0, slash) || '.'
     if (!isDir(dir)) return false
-    const rx = new RegExp('^' + tok.slice(slash + 1).replace(/[.]/g, '\\.').replace(/\*/g, '.*') + '$')
+    if (tok.includes('**')) return true
+    const rx = new RegExp('^' + tok.slice(tok.lastIndexOf('/') + 1).replace(/[.]/g, '\\.').replace(/\*/g, '.*') + '$')
     return listerDossier(dir, { absent: 'vide' }).some((n) => rx.test(n))
   }
   return existsSync(tok)
 }
 
+/** Chemin cité dans un texte, tel que le sens 1 le résout : point final de phrase retiré, et
+ *  métavariable `<…>` juste après → tronqué au dossier parent. */
+function cheminCite(text, m) {
+  const tok = m[0].replace(/\.+$/, '')
+  if (text[m.index + m[0].length] !== '<') return tok
+  return tok.includes('/') ? tok.slice(0, tok.lastIndexOf('/') + 1) : tok
+}
+
 const problems = [] // { file, line, kind, tok }
 const lineAt = (text, index) => text.slice(0, index).split('\n').length
+
+/** Chemin de code cité dans un texte quelconque (prose d'un `.md`, commentaire ou chaîne d'un `.mjs`). */
+const CHEMIN_RE = /\b(?:src|scripts)\/[A-Za-z0-9_./*-]+/g
 
 // `listerDossier(DOCS_DIR)` est NON récursif : ne liste que les fichiers .md à plat dans docs/. Les
 // sous-dossiers (docs/plans/, docs/raw/, docs/decisions/…) sont donc déjà hors périmètre par
@@ -54,12 +72,9 @@ for (const file of listerDossier(DOCS_DIR).filter((f) => f.endsWith('.md'))) {
   const text = readFileSync(join(DOCS_DIR, file), 'utf8')
 
   // 1. CHEMINS src/… ou scripts/…
-  const pathRe = /\b(?:src|scripts)\/[A-Za-z0-9_./*-]+/g
   let m
-  while ((m = pathRe.exec(text))) {
-    let tok = m[0].replace(/\.+$/, '') // point de fin de phrase
-    // métavariable `<…>` juste après → chemin tronqué : on valide le dossier parent.
-    if (text[m.index + m[0].length] === '<') tok = tok.includes('/') ? tok.slice(0, tok.lastIndexOf('/') + 1) : tok
+  while ((m = CHEMIN_RE.exec(text))) {
+    const tok = cheminCite(text, m)
     if (!pathExists(tok)) problems.push({ file: rel, line: lineAt(text, m.index), kind: 'chemin mort', tok })
   }
 
@@ -232,6 +247,48 @@ for (const f of [...fichiersSources(SRC_DIR, EXTS_SRC), ...fichiersSources('scri
     if (m[0].startsWith('docs/plans/') || DOC_REF_SITES_EXEMPTS.has(site)) continue
     if (!existsSync(m[0]))
       problems.push({ file: rel, line: lineAt(text, m.index), kind: 'doc citée mais absente', tok: m[0] })
+  }
+}
+
+// 6. LES HOOKS CITENT DU CODE — un hook nomme des fichiers de `src/`/`scripts/` en COMMENTAIRE (les
+// tests-scanners qu'il joue ou exclut, la source d'une whitelist) ou en CHAÎNE ; aucune garde ne
+// confrontait ces noms au disque, et un renommage les laissait mentir en silence. Même résolution
+// que le sens 1 (fichier, dossier, glob, métavariable `<…>`).
+// PÉRIMÈTRE dit : les hooks NON-test. Un `*.test.mjs` de hook monte des dépôts JETABLES et y cite
+// des chemins qui n'ont pas vocation à exister ici (mesuré : 116 des 124 chemins morts du périmètre
+// large sont des fixtures de test) — même raison que l'exclusion `docs/plans/` du sens 5.
+const HOOKS_DIRS = ['scripts/git-hooks', 'scripts/hooks']
+/** Nom de fichier dont le RADICAL fait un seul caractère (`src/ui/X.tsx`, `src/x.ts`, `scripts/x.mjs`) :
+ *  la métavariable de prose du dépôt, jamais un fichier réel. */
+const estMetavariable = (tok) => /(^|\/)[A-Za-z](\.[A-Za-z0-9]+)?$/.test(tok)
+// Exemptions AU SITE (`fichier:ligne|jeton`), jamais au fichier : une occurrence de plus du même
+// jeton AILLEURS dans le fichier reste jugée. Une exemption qui ne matche plus se voit — son site
+// redevient rouge dès que la ligne bouge, et c'est le moment de la re-mesurer.
+const HOOK_SITES_EXEMPTS = new Set([
+  'scripts/git-hooks/pre-push.mjs:94|src/database', // contre-exemple de la comparaison par SEGMENT (`src/database` n’est pas `src/data`)
+])
+// Un hook nomme aussi ses tests-scanners par leur SEUL nom de fichier (`label-logic-guard.test.ts`,
+// EXCLUDED de telle famille) : ce nom se confronte à l'index des tests de `src/`, sinon un renommage
+// laisse la liste mentir. Un MOTIF (`*-guard.test.ts`, `-guard\.test\.ts` d'une regex) n'est pas un nom.
+const TESTS_SRC = new Set(listerArbre(SRC_DIR, { filtre: (r) => /\.test\.tsx?$/.test(r) }).map((r) => r.split('/').pop()))
+const NOM_DE_TEST_RE = /\b[A-Za-z0-9_.-]+\.test\.tsx?\b/g
+for (const dir of HOOKS_DIRS) {
+  for (const rel of listerArbre(dir, { filtre: (r) => r.endsWith('.mjs') && !r.endsWith('.test.mjs') })) {
+    const f = `${dir}/${rel}`
+    const text = readFileSync(f, 'utf8')
+    let m
+    while ((m = CHEMIN_RE.exec(text))) {
+      const tok = cheminCite(text, m)
+      const ligne = lineAt(text, m.index)
+      if (estMetavariable(tok) || HOOK_SITES_EXEMPTS.has(`${f}:${ligne}|${tok}`)) continue
+      if (!pathExists(tok)) problems.push({ file: f, line: ligne, kind: 'chemin cité par un hook, absent du disque', tok })
+    }
+    while ((m = NOM_DE_TEST_RE.exec(text))) {
+      if (text.slice(Math.max(0, m.index - 2), m.index).includes('*')) continue // motif, pas un nom
+      if (text[m.index - 1] === '/') continue // queue d'un CHEMIN, déjà jugé au sens 6
+      if (TESTS_SRC.has(m[0])) continue
+      problems.push({ file: f, line: lineAt(text, m.index), kind: 'test nommé par un hook, absent de src/', tok: m[0] })
+    }
   }
 }
 

@@ -139,7 +139,10 @@ export const ANNULEE = 'cancelled'
 export function verdictCi({ courses, teteMain, raisonTete = null, ancetres = [], relire = () => [] }) {
   const refus = []
   const notes = []
-  const nier = (motif, dit, sha = null) => refus.push({ motif, dit, sha })
+  // `shaCause` = le commit qui CAUSE le refus (la tête de `main`, le commit de la course rouge) —
+  // jamais le commit poussé : celui-là, seul le hook le connaît, et c'est à LUI que le journal
+  // attribue la dérogation (sans quoi la revue du palier qui contient ce push ne la voit pas).
+  const nier = (motif, dit, shaCause = null) => refus.push({ motif, dit, shaCause })
   if (!teteMain) {
     nier('non-consultable', `CI de \`main\` non consultable : ${raisonTete ?? 'la tête d’`origin/main` n’a pas pu être lue'}`)
     return { refus, notes }
@@ -341,12 +344,19 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
     ? verdictCi({ courses: premiere.valeur, teteMain: teteLue.sha, raisonTete: teteLue.raison, ancetres, relire })
     : verdictCi({ courses: [], teteMain: null, raisonTete: `\`gh\` — ${premiere.raison}` })
   for (const n of ci.notes) notes.push(n)
-  for (const { motif, dit, sha } of ci.refus) {
+  for (const { motif, dit, shaCause } of ci.refus) {
     const levier = LEVIER_DU_MOTIF[motif]
     const raison = String(env.WFRP_DEROGATION ?? '').trim()
     if (env[levier] === '1' && raison.length >= RAISON_MINIMALE) {
       notes.push(`${dit} — DÉROGATION journalisée (${motif}) : ${raison}`)
-      journaliserDerogation({ cwd, motif, sha: sha ?? lire(['rev-parse', 'HEAD'])?.trim() ?? '', raison, notes })
+      journaliserDerogation({
+        cwd,
+        motif,
+        sha: lire(['rev-parse', 'HEAD'])?.trim() ?? '',
+        shaCause: shaCause ?? '',
+        raison,
+        notes,
+      })
     } else {
       refus.push(dit)
       refus.push(
@@ -378,9 +388,9 @@ export function teteDeMain({ cwd, env = process.env }) {
 }
 
 /** Une ligne JSON par TENTATIVE dérogée : un seul objet par ligne, relu par la revue de palier. */
-function journaliserDerogation({ cwd, motif, sha, raison, notes }) {
+function journaliserDerogation({ cwd, motif, sha, shaCause, raison, notes }) {
   try {
-    const ligne = JSON.stringify({ horodatage: new Date().toISOString(), etat: 'tentative', motif, sha, raison })
+    const ligne = JSON.stringify({ horodatage: new Date().toISOString(), etat: 'tentative', motif, sha, shaCause, raison })
     appendFileSync(join(cheminJustificatifs({ cwd }), 'derogations.log'), `${ligne}\n`)
   } catch (e) {
     notes.push(`journal de dérogation non écrit : ${e.message}`)

@@ -310,8 +310,24 @@ function cibleDe(ctx, type, home, fields) {
 }
 
 /**
+ * Nom du symbole PORTEUR d'un site : la première déclaration NOMMÉE qui l'englobe (fonction, méthode,
+ * classe, variable, propriété), `'(module)'` à défaut. C'est l'ancre STABLE d'un site : une ligne
+ * insérée plus haut dans le fichier déplace le `line`, jamais le symbole qui LIT le champ.
+ * @returns {string}
+ */
+function symboleEnglobant(node) {
+  for (let n = node; n; n = n.parent) {
+    if (ts.isFunctionDeclaration(n) || ts.isClassDeclaration(n) || ts.isMethodDeclaration(n)
+      || ts.isVariableDeclaration(n) || ts.isPropertyDeclaration(n) || ts.isPropertyAssignment(n)) {
+      if (n.name && ts.isIdentifier(n.name)) return n.name.text
+    }
+  }
+  return '(module)'
+}
+
+/**
  * Sites de lecture de `fields` sur la cible `{ type, home }` (`fieldConsumerTargets.mjs`), à travers
- * `files` (chemins absolus, `listProdFiles`). Rend `[{ field, file, line }]` — `file` relatif à
+ * `files` (chemins absolus, `listProdFiles`). Rend `[{ field, file, line, symbole }]` — `file` relatif à
  * `rootDir`. Le `cache` porte le Program et l'index : le fournir une fois pour toutes les cibles
  * d'un rapport, et le laisser mourir avec l'appel. `programme` INJECTE le Program (fixtures en
  * mémoire de `virtualProgram`) — absent, il est bâti sur `files`.
@@ -340,7 +356,7 @@ export function scanFieldReads(cibleVisee, fields, files, rootDir, cache = new M
       }
       if (!resolue) continue
       if (!propreAuSite && !porteurDe(ctx, site).has(decl)) continue
-      hits.push({ field, file: site.file, line: site.line })
+      hits.push({ field, file: site.file, line: site.line, symbole: symboleEnglobant(site.node) })
     }
   }
   // ORDRE TOTAL du résultat : (fichier en unités de code, ligne NUMÉRIQUE). L'ordre de récolte est

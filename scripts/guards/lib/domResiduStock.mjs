@@ -23,6 +23,37 @@
 // RE-MESURE : `WFRP_DOM_RESIDU_COLLECTE=<fichier> npm test -- <chemins>` n'échoue pas et écrit
 // l'inventaire (`fichier<TAB>nombre<TAB>nœuds`) — c'est ainsi que cette liste se re-établit.
 
+/**
+ * Entrées du stock devenues PÉRIMÉES : le fichier a JOUÉ dans cette suite et n'a PAS fui — sa ligne
+ * ne protège plus rien et doit partir (sans quoi une fuite re-née y passerait inaperçue). Un fichier
+ * qui n'a pas joué (run filtré, suite rouge avant lui) n'est PAS jugé : il est absent du registre.
+ * PURE — le registre est lu par `scripts/test/run.mjs` à la fin d'une suite complète VERTE.
+ * @param {Iterable<string>} lignes lignes `fichier<TAB>fui|propre` du registre de passage.
+ * @param {ReadonlySet<string>} [stock]
+ * @returns {string[]} entrées du stock à retirer, en ordre de stock.
+ */
+export function entreesPerimees(lignes, stock = DOM_RESIDU_STOCK) {
+  const aFui = new Set()
+  const aJoue = new Set()
+  for (const ligne of lignes) {
+    const [fichier, verdict] = String(ligne).split('\t')
+    if (!fichier || !verdict) continue
+    aJoue.add(fichier)
+    if (verdict === 'fui') aFui.add(fichier)
+  }
+  return [...stock].filter((f) => aJoue.has(f) && !aFui.has(f))
+}
+
+/** Message d'échec du verdict de péremption, ou `null` s'il n'y a rien à dire. */
+export function messagePeremption(perimees) {
+  if (!perimees.length) return null
+  return (
+    `Stock des fuites DOM — ${perimees.length} entrée(s) PÉRIMÉE(S) : ces fichiers ont joué SANS fuir.\n`
+    + `Retirer ces lignes de scripts/guards/lib/domResiduStock.mjs (le stock est en EXTINCTION) :\n`
+    + perimees.map((f) => `  ${f}`).join('\n')
+  )
+}
+
 /** @type {ReadonlySet<string>} */
 export const DOM_RESIDU_STOCK = new Set([
   // 2026-09-01 — population MESURÉE en mode collecte sur `src/ui` (250 fichiers) PUIS sur les 49

@@ -91,7 +91,10 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url)).replace(/\/$/, ''
 const SRC_DIR = join(ROOT, 'src')
 const OUT = 'docs/consommateurs-de-champs.md'
 
-type Hit = { file: string; line: number }
+/** `symbole` = déclaration nommée qui ENGLOBE la lecture : l'ancre stable d'un site (le `line` bouge
+ *  au premier ajout de ligne en amont). Le rapport n'en publie que `file:line` — un humain relit un
+ *  site, une garde s'ancre au symbole (`src/data/field-consumers.test.ts`, table `RECOUVRES`). */
+type Hit = { file: string; line: number; symbole: string }
 
 /**
  * Le rapport, EN MÉMOIRE : le `.md` à écrire + les sites mesurés par type et par champ. UN SEUL

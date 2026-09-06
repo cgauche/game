@@ -409,9 +409,19 @@ test('porteurs réels — l’image lit des entrées, et jamais moins que le rep
   }
 })
 
-// ── La FENÊTRE 2c11fdd9a..f0f9436f5 : ce que la porte aveugle ratait, et ce qu'elle voit ──────────
-
-const FENETRE = { avant: '2c11fdd9a', apres: 'f0f9436f5' }
+// ── Les FENÊTRES : ce que la porte aveugle ratait, et ce qu'elle voit ─────────────────────────
+//
+// Chaque fenêtre est une FIXTURE (shas figés) réduite au plus petit intervalle qui porte ENCORE son
+// événement : un `git show` par porteur et par commit, plus un parse AST de chaque image, se paie au
+// commit. La fenêtre unique 2c11fdd9a..f0f9436f5 (27 commits) coûtait 66,5 s à elle seule ; les trois
+// événements qu'elle portait vivent chacun dans UN commit, mesuré (#1679 L3b) :
+//   · `02cc09c04` fait CROÎTRE `slotsStock` (335→336) pendant que `structuresStock` DÉCROÎT (1046→1045) :
+//     les deux plus gros stocks du dépôt, comptés aux deux bornes, un rendu et l'autre pas ;
+//   · `c8d3105ae` fait croître un registre à clés en NOM DE FICHIER (`AUTO_RESOLUS`) ;
+//   · `a9b7edf17` fait croître un stock OBJET dont les valeurs sont des tableaux.
+const FENETRE_STOCKS = { avant: '571f54287', apres: '02cc09c04' }
+const FENETRE_REGISTRE = { avant: '2c11fdd9a', apres: 'c8d3105ae' }
+const FENETRE_STOCK_OBJET = { avant: 'da3acf95c', apres: 'a9b7edf17' }
 const gitOuNull = (...args) => {
   try { return git(...args) } catch { return null }
 }
@@ -424,35 +434,41 @@ test('fenêtre — les deux plus gros stocks du dépôt sont comptés à l’ent
   const compte = (sha, rel) => entreesDeStock(gitOuNull('show', `${sha}:${rel}`), rel).length
   const slots = 'scripts/guards/lib/slotsStock.mjs'
   const structures = 'scripts/guards/lib/structuresStock.mjs'
-  assert.deepEqual([compte(FENETRE.avant, slots), compte(FENETRE.apres, slots)], [336, 339])
-  assert.deepEqual([compte(FENETRE.avant, structures), compte(FENETRE.apres, structures)], [1047, 1046])
+  assert.deepEqual([compte(FENETRE_STOCKS.avant, slots), compte(FENETRE_STOCKS.apres, slots)], [335, 336])
+  assert.deepEqual([compte(FENETRE_STOCKS.avant, structures), compte(FENETRE_STOCKS.apres, structures)], [1046, 1045])
 
-  const cumule = git('diff', '-U0', '--no-renames', `${FENETRE.avant}..${FENETRE.apres}`)
-  const croissances = croissanceDesStocks(cumule, imagesDe(FENETRE.avant, FENETRE.apres))
+  const cumule = git('diff', '-U0', '--no-renames', `${FENETRE_STOCKS.avant}..${FENETRE_STOCKS.apres}`)
+  const croissances = croissanceDesStocks(cumule, imagesDe(FENETRE_STOCKS.avant, FENETRE_STOCKS.apres))
   const parFichier = new Map(croissances.map((c) => [c.fichier, c]))
   assert.deepEqual(
-    [parFichier.get(slots)?.ajoutees, parFichier.get(slots)?.retirees, parFichier.get(slots)?.net], [8, 5, 3],
+    [parFichier.get(slots)?.ajoutees, parFichier.get(slots)?.retirees, parFichier.get(slots)?.net], [2, 1, 1],
     'la croissance NETTE de `slotsStock` sur la fenêtre est rendue',
   )
   assert.equal(parFichier.has(structures), false, '`structuresStock` DÉCROÎT sur la fenêtre : rien à rendre')
 })
 
 test('fenêtre — les croissances non couvertes de la plage, par commit', (t) => {
-  const { refus } = croissancesDeLaPlage({ cwd: RACINE, ...FENETRE })
+  const { refus } = croissancesDeLaPlage({ cwd: RACINE, ...FENETRE_REGISTRE })
   const vus = refus.map((r) => `${r.sha.slice(0, 9)} ${r.fichier} +${r.net}`)
   for (const v of vus) t.diagnostic(v)
   assert.ok(
     vus.includes('c8d3105ae src/state/flowtest-derived-stake.test.ts +2'),
     'la croissance du registre `AUTO_RESOLUS` (clés en NOM DE FICHIER) reste rendue',
   )
+  // Le MÊME commit fait DÉCROÎTRE `structuresStock` (1047 → 1046, mesuré) : la plage le lit et ne le
+  // refuse pas — c'est le contrôle négatif, sur le commit même qui porte le contrôle positif.
+  assert.equal(
+    refus.some((r) => r.fichier === 'scripts/guards/lib/structuresStock.mjs'), false,
+    'un stock qui décroît sur la plage n’est jamais refusé',
+  )
+})
+
+test('fenêtre — un stock OBJET dont les valeurs sont des tableaux est rendu, avec son déclaré', () => {
+  const { refus } = croissancesDeLaPlage({ cwd: RACINE, ...FENETRE_STOCK_OBJET })
   const ecrivains = refus.find((r) => r.fichier === 'scripts/gates/ecrivainsAtteints.test.mjs')
   assert.deepEqual(
     [ecrivains?.sha.slice(0, 9), ecrivains?.net, ecrivains?.declare], ['a9b7edf17', 63, 53],
     'un stock OBJET dont les valeurs sont des tableaux est rendu — la définition tableau-seul le perdait',
-  )
-  assert.equal(
-    refus.some((r) => r.fichier === 'scripts/guards/lib/structuresStock.mjs'), false,
-    'un stock qui décroît sur la plage n’est jamais refusé',
   )
 })
 

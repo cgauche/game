@@ -32,6 +32,11 @@
 // p(rebase forcé) ≈ 2 × durée-des-gates / 45, soit 53 % à 12 min et 19 % à 4,3 min. RACCOURCIR les
 // gates fait davantage que ne ferait le verrou, et ne fait attendre personne.
 //
+// VERROU MACHINE POUR TOUTE LA DURÉE (#1679 L3b) : ce lanceur prend le verrou de suite
+// (`scripts/test/verrou.mjs`, même hôte) avant de jouer quoi que ce soit et le rend à la fin — trois
+// lanes chargent la machine autant qu'une suite. Un second run de gates est REFUSÉ (exit 2) en
+// nommant le PID tenant ; la suite lancée par la lane `suite` ne le reprend pas (jeton de réentrance).
+//
 // `--tout` rejoue tout, justificatif ou pas (mesure du coût plein) ; `--liste` n'imprime que le plan
 // (ce qui serait joué, et pourquoi) sans rien jouer ; `--serie` joue tout en une lane.
 //
@@ -39,7 +44,7 @@
 // écrit le justificatif au vert, et lui seul. Quand un script `<gate>:brut` existe, c'est LUI qui est
 // joué : sans quoi `npm run <gate>` rentrerait dans une deuxième enveloppe et écrirait deux fois.
 import { spawn, spawnSync } from 'node:child_process'
-import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { closeSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join, resolve } from 'node:path'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
@@ -60,6 +65,8 @@ import {
   rejeux,
 } from '../guards/lib/spawnResilient.mjs'
 import { codeEnfant } from '../test/partition.mjs'
+import { PEREMPTION_MS, purgerPerimes } from '../guards/lib/purgerPerimes.mjs'
+import { avecVerrouMachine } from '../test/verrou.mjs'
 const RACINE = fileURLToPath(new URL('../..', import.meta.url))
 /** Dossier de CE script : l'enveloppe `justifie.mjs` vit ici, pas dans l'arbre mesuré. */
 const ICI = fileURLToPath(new URL('.', import.meta.url))
@@ -316,23 +323,8 @@ export const fichierDurees = (racine) => join(dossierSorties(racine), 'durees.js
 /** Nom de FICHIER de la sortie d'une gate, encodé par `segmentDeGate` (justificatif.mjs). */
 export const fichierDeSortie = (gate, pid) => `${segmentDeGate(gate)}-${pid}.txt`
 
-/** Sans borne, `node_modules/.cache/gates` grossit indéfiniment. Les sorties de plus de 7 jours
- *  partent à l'ouverture du run suivant ; un effacement refusé (fichier tenu) ne change aucun
- *  verdict, le bornage réessaiera. Patron `scripts/test/run.mjs`. */
-const PEREMPTION_SORTIES_MS = 7 * 24 * 60 * 60 * 1000
-function purgerSortiesPerimees(racine) {
-  const dossier = dossierSorties(racine)
-  const limite = Date.now() - PEREMPTION_SORTIES_MS
-  for (const nom of existsSync(dossier) ? readdirSync(dossier) : []) {
-    if (!/-\d+\.txt$/.test(nom)) continue
-    const cible = join(dossier, nom)
-    try {
-      if (statSync(cible).mtimeMs < limite) rmSync(cible, { force: true })
-    } catch {
-      /* sortie concurrente ou tenue : le bornage réessaiera au run suivant */
-    }
-  }
-}
+/** Motif de nom d'une sortie de gate : `<segment>-<pid>.txt` (`fichierDeSortie`). */
+const MOTIF_SORTIE = /-\d+\.txt$/
 
 /** Durées du dernier run (`{}` au premier). */
 function lireDurees(racine) {
@@ -673,7 +665,7 @@ export async function principal({
   journal(`[gates] gen — registres à jour en ${secondesDepuis(avantGen).toFixed(1)} s\n`)
 
   mkdirSync(dossierSorties(racine), { recursive: true })
-  purgerSortiesPerimees(racine)
+  purgerPerimes({ dossier: dossierSorties(racine), motif: MOTIF_SORTIE, ageMs: PEREMPTION_MS })
   const durees = lireDurees(racine)
 
   const aJouerParNom = new Map(aJouer.map((g) => [g.nom, g]))
@@ -871,7 +863,7 @@ export async function principal({
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 if (isMain) {
   process.exit(
-    await principal().catch((e) => {
+    await avecVerrouMachine(() => principal(), { cwd: RACINE, journal: (t) => process.stderr.write(t) }).catch((e) => {
       process.stderr.write(`[gates] ARRÊT INATTENDU : ${e?.stack ?? e}\n`)
       return 1
     }),
