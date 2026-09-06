@@ -212,7 +212,7 @@ La Compétence Guérison ne raccourcit pas la Majeure (elle informe seulement qu
 **Voir aussi** : [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.215-231) → `dechirure-jambe-mineure`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `availableHealModes`, `dechirure-jambe-majeure`, `OP_DEFS`, `feuille`, `dechirure-autre-mineure`, `Amputation`, `dechirure-autre-majeure`, +40 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/grammaire/mecanique.ts`, +11 fichiers
+- `LDB 18` (l.215-231) → `dechirure-jambe-mineure`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `availableHealModes`, `OP_DEFS`, `dechirure-jambe-majeure`, `feuille`, `dechirure-autre-mineure`, `Amputation`, `dechirure-autre-majeure`, +40 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/grammaire/mecanique.ts`, +11 fichiers
 
 ---
 
@@ -258,7 +258,7 @@ Toute amputation nécessite une **Chirurgie** pour être traitée. La blessure n
 **Voir aussi** : [Chirurgie](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; États → [etats.md](etats.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.233-285) → `faim`, `cumulSchema`, `isFumble`, `soif`, `dechirure-jambe-mineure`, `recovery`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `TraumaCumul`, `dechirure-jambe-majeure`, +62 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, +13 fichiers
+- `LDB 18` (l.233-285) → `faim`, `cumulSchema`, `isFumble`, `soif`, `dechirure-jambe-mineure`, `recovery`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `TraumaCumul`, `OP_DEFS`, +62 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, +13 fichiers
 
 ---
 
@@ -284,7 +284,7 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 9` (l.255-269) → `carryOverState`, `useDefenseJetProps`, `healDifficulty`, `healWoundsDelta`, `rederiveAttack`, `stopBleedOutcome`, `HealWoundsOptions`, `applyHealWounds`, `defenseSubOf`, `heal-wounds`, +11 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/types.ts`, +4 fichiers
-- `LDB 18` (l.289-300) → `faim`, `cumulSchema`, `soif`, `recovery`, `dechirure-jambe-majeure`, `OP_DEFS`, `exposure`, `dechirure-autre-majeure`, `critEscalationSchema`, `exposure-heat-drop`, +37 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/schemas/grammaire/mecanique.ts`, +12 fichiers
+- `LDB 18` (l.289-300) → `faim`, `cumulSchema`, `soif`, `recovery`, `OP_DEFS`, `dechirure-jambe-majeure`, `exposure`, `dechirure-autre-majeure`, `critEscalationSchema`, `exposure-heat-drop`, +37 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/schemas/grammaire/mecanique.ts`, +12 fichiers
 
 ---
 

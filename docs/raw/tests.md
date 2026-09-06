@@ -499,7 +499,7 @@ En dépensant un Point de Résilience, un personnage peut choisir *lui-même* le
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé), [Tests opposés](#tests-opposés), Destin et Résilience (domaine propre)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.17-25, l.46-48, l.57-61, l.67-68) → `canReroll`, `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `hasMeaningfulOption`, `canActFirst`, `fateSaveOrDie`, +105 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/combat.ts`, `src/engine/critical.ts`, +53 fichiers
+- `LDB 17` (l.17-25, l.46-48, l.57-61, l.67-68) → `ResilienceButton`, `canReroll`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `hasMeaningfulOption`, `canActFirst`, `fateSaveOrDie`, +105 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/combat.ts`, `src/engine/critical.ts`, +53 fichiers
 
 ---
 

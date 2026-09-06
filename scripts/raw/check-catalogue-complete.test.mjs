@@ -4,7 +4,7 @@
 // coverage.mjs). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readdirSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import { catalogueBlocksOf, scanIncompleteChapters } from './check-catalogue-complete.mjs'
 import { sectionsOf, sectionLevelOf, cleanTitle, catalogChaptersOf } from './coverage.mjs'
@@ -76,7 +76,7 @@ test('scanIncompleteChapters : chapitre crédité mais UNE section absente du bl
 
 test('#604 stock réel (Disque RÉEL, tolérance zéro) : 0 violation sur les chapitres réellement crédités', () => {
   const rawDir = 'docs/raw'
-  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
+  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
     .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
   const catalogCh = catalogChaptersOf(docs)
   const blocks = catalogueBlocksOf(docs)

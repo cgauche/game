@@ -17,7 +17,8 @@
 // `dead-refs-baseline.json`) : le stock déjà présent (mesuré, pas 0) est GELÉ — toute HAUSSE
 // échoue ; une baseline devenue trop haute (extraction réparée) doit être ABAISSÉE.
 // Re-run : node scripts/raw/check-folio-continuity.mjs
-import { readdirSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, readText } from './_lib.mjs'
@@ -64,9 +65,8 @@ export function chapterFolioSpan(text) {
 // l'appelle pour son propre compte, le corpus est donc lu DEUX fois par exécution du CLI (312
 // fichiers, coût mesuré négligeable devant la CI). Dossier introuvable → Map vide (hors sujet).
 export function chapterTexts(dir) {
-  let files
-  try { files = readdirSync(dir).filter((f) => CHAPTER_FILE_RE.test(f)) } catch { return new Map() }
-  return new Map(files.sort().map((f) => [f, readText(join(dir, f))]))
+  const files = listerDossier(dir, { absent: 'vide' }).filter((f) => CHAPTER_FILE_RE.test(f))
+  return new Map(files.map((f) => [f, readText(join(dir, f))]))
 }
 
 // Balaie un dossier de livre (fichiers `NN - *.md`) → `[{ abbr, nn, file, from, to, delta, kind, ref }]`.

@@ -5,22 +5,16 @@
 // deux comptages qui pourraient diverger. Même socle JSDoc que `lib/jsdocUnion.mjs` (`jsdocBody`/
 // `firstSentence`), réutilisé tel quel (générique, pas spécifique aux unions).
 import ts from 'typescript'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { listerArbre } from '../../guards/lib/lister.mjs'
 import { jsdocBody, firstSentence } from './jsdocUnion.mjs'
 
 export const ENGINE_ROOT = 'src/engine'
 
 /** Fichiers `.ts` sous `root`, hors `*.test.ts` (mesure de PRODUCTION, jamais de spec). */
-export function walkEngineFiles(root = ENGINE_ROOT, acc = []) {
-  for (const e of readdirSync(root).sort()) {
-    const p = join(root, e).split('\\').join('/')
-    let s
-    try { s = statSync(p) } catch { continue }
-    if (s.isDirectory()) walkEngineFiles(p, acc)
-    else if (e.endsWith('.ts') && !e.endsWith('.test.ts')) acc.push(p)
-  }
-  return acc
+export function fichiersMoteur(root = ENGINE_ROOT) {
+  return listerArbre(root, { filtre: (rel) => rel.endsWith('.ts') && !rel.endsWith('.test.ts') })
+    .map((rel) => `${root}/${rel}`)
 }
 
 const EXPORT_KINDS = new Set([
@@ -73,5 +67,5 @@ function firstSentenceOrNull(body) {
 
 /** Tous les exports publics de `src/engine` (production, hors tests). */
 export function allEngineExports(root = ENGINE_ROOT) {
-  return walkEngineFiles(root).flatMap((f) => fileExports(f))
+  return fichiersMoteur(root).flatMap((f) => fileExports(f))
 }

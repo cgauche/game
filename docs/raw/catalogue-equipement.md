@@ -7485,4 +7485,4 @@ L'apparition est soudaine, en 1 ou 2 jours, et le plus souvent dans un cadre pub
 | 5–7  | Courante galopante                 |
 | 8–9  | Vérole du Tanneur                  |
 | 10   | Flux sanglant                      |
-<!-- sources-empreinte: 2a1a1d9ec2244729b168d89ad55a19b2ae8b7b8d (128 fichiers, 16 dossiers) corps: e1ad871e9ed2e0f0faf8429eb50a9314f7d102cb -->
+<!-- sources-empreinte: b3147f4ac713cd3de1c49303e1c06a7b79826cb4 (129 fichiers, 16 dossiers) corps: e1ad871e9ed2e0f0faf8429eb50a9314f7d102cb -->

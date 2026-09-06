@@ -29,8 +29,14 @@
 // des chemins qui salissent est la MÊME que celle de la clé (`horsCle`), sinon un `docs/` régénéré
 // non stagé — 11 lignes mesurées sur l'arbre principal — refuserait tout push.
 import { execFileSync } from 'node:child_process'
-import * as FS from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { listerDossier } from './lister.mjs'
+
+/** L'accès disque INJECTABLE (paramètre `fs`) : les seuls membres que ce module appelle, jamais le
+ *  namespace entier de `node:fs` — un `import * as fs` rouvrirait le listing brut que le mur d'ordre
+ *  total (#1679 L3b) refuse, et un double de test n'aurait pas à fournir 100 membres pour en piloter un. */
+export const FS = { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync }
 
 /** Chemins hors de la clé PARTIELLE : dérivés (`docs/`) et mémoire de session (`.claude/`). UNE
  *  liste, deux lecteurs : `cleTree` et `perimetreSale`. */
@@ -185,12 +191,7 @@ export function lireJustificatif({ cwd = process.cwd(), gate, cles, fs = FS } = 
 export function justificatifsSousDAutresCles({ cwd = process.cwd(), gate, cles, fs = FS } = {}) {
   if (!(gate in RAISON_CLE_COMPLETE)) return false
   const cle = cleGouvernante(gate, cles)
-  let noms
-  try {
-    noms = fs.readdirSync(join(cheminJustificatifs({ cwd, fs }), cles.cleTree))
-  } catch {
-    return false
-  }
+  const noms = listerDossier(join(cheminJustificatifs({ cwd, fs }), cles.cleTree), { absent: 'vide' })
   return noms.some((nom) => {
     const vu = nomDeJustificatif(nom)
     return vu !== null && vu.gate === gate && vu.cle !== cle
@@ -252,10 +253,10 @@ export function migrerAncienneGraphie({
 } = {}) {
   const racine = cheminJustificatifs({ cwd, fs })
   const bilan = { renommes: 0, effaces: 0, illisibles: [] }
-  for (const dossierCle of fs.readdirSync(racine)) {
+  for (const dossierCle of listerDossier(racine, { absent: 'vide' })) {
     if (!/^[0-9a-f]{40}$/.test(dossierCle)) continue
     const dossier = join(racine, dossierCle)
-    for (const nom of fs.readdirSync(dossier)) {
+    for (const nom of listerDossier(dossier, { absent: 'vide' })) {
       if (!nom.endsWith('.json') || estFichierDeJustificatif(nom)) continue
       const fichier = join(dossier, nom)
       let contenu

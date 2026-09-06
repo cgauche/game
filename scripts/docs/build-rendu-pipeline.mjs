@@ -19,7 +19,8 @@
  *
  *   node scripts/docs/build-rendu-pipeline.mjs
  */
-import { readdirSync, readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, statSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import ts from 'typescript'
 import { emitOrCheck, loadSource, firstSentence, jsdocBody } from './lib/jsdocUnion.mjs'
 import { fileExports } from './lib/engineExports.mjs'
@@ -107,9 +108,8 @@ const DOMAINES = (() => {
 
 // ── Les BUILDERS réellement exportés ─────────────────────────────────────────────────────────────
 
-const LISTE_BUILDERS = readdirSync(BUILDERS)
+const LISTE_BUILDERS = listerDossier(BUILDERS)
   .filter((f) => /\.tsx?$/.test(f) && !f.includes('.test.'))
-  .sort()
   .flatMap((f) =>
     fileExports(`${BUILDERS}/${f}`)
       .filter((e) => (e.kind === 'function' || e.kind === 'const') && /^build/.test(e.name))
@@ -136,15 +136,17 @@ const BUILDERS_MESURES = LISTE_BUILDERS.map((b) => ({ ...b, sortie: sortieDe(b.f
 
 // ── L'arborescence de gameIso : modules DIRECTS par sous-dossier ─────────────────────────────────
 
-const SOUS_DOSSIERS = readdirSync(ISO, { withFileTypes: true })
-  .filter((e) => e.isDirectory())
-  .map((e) => e.name)
-  .sort()
-  .map((nom) => ({
-    nom,
-    n: readdirSync(`${ISO}/${nom}`, { withFileTypes: true }).filter((f) => f.isFile() && /\.tsx?$/.test(f.name) && !f.name.includes('.test.')).length,
-    sous: readdirSync(`${ISO}/${nom}`, { withFileTypes: true }).filter((f) => f.isDirectory()).length,
-  }))
+const estDossier = (p) => statSync(p).isDirectory()
+const SOUS_DOSSIERS = listerDossier(ISO)
+  .filter((nom) => estDossier(`${ISO}/${nom}`))
+  .map((nom) => {
+    const enfants = listerDossier(`${ISO}/${nom}`).map((f) => ({ f, dossier: estDossier(`${ISO}/${nom}/${f}`) }))
+    return {
+      nom,
+      n: enfants.filter((e) => !e.dossier && /\.tsx?$/.test(e.f) && !e.f.includes('.test.')).length,
+      sous: enfants.filter((e) => e.dossier).length,
+    }
+  })
 if (SOUS_DOSSIERS.length < 5) abandon(`moins de 5 sous-dossiers sous ${ISO}/ — l'arborescence a changé`)
 
 /** Rôle de chaque sous-dossier — ÉDITORIAL, mais la CLÉ est ancrée : un dossier renommé (ou neuf)

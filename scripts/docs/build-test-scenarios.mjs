@@ -25,7 +25,8 @@
  * générateur (même patron que les préambules de `build-systemes.mjs`), jamais dans le `.md` lui-même.
  */
 import ts from 'typescript'
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 
@@ -43,9 +44,8 @@ const SECTIONS = [
 
 /** Même filtre que `scripts/gen-registry.mjs` (entrée `test-scenarios`) — SOURCE UNIQUE du périmètre. */
 function scenarioFiles() {
-  return readdirSync(DIR)
+  return listerDossier(DIR)
     .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !/\.test\.tsx?$/.test(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
-    .sort()
 }
 
 /** Évalue une expression de chaîne STATIQUE (littéral, ou concaténation `+` de littéraux/gabarits

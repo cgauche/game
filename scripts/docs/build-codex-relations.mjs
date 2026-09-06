@@ -22,6 +22,7 @@ import { sortieOutilLocal } from '../lancer-local.mjs'
 import ts from 'typescript'
 import { emitOrCheck, loadSource, jsdocBody } from './lib/jsdocUnion.mjs'
 import { fileExports } from './lib/engineExports.mjs'
+import { parUnitesDeCode } from '../guards/lib/lister.mjs'
 
 const OUTIL = 'build-codex-relations'
 const RELATIONS = 'src/ui/compendium/relations.ts'
@@ -154,7 +155,7 @@ for (const a of ARETES) {
   if (!PAR_SOURCE.get(cle).titre && a.titre) PAR_SOURCE.get(cle).titre = a.titre
 }
 const ARETES_FUSIONNEES = [...PAR_SOURCE.values()].sort(
-  (a, b) => a.source.localeCompare(b.source) || a.cible.localeCompare(b.cible),
+  (a, b) => parUnitesDeCode(a.source, b.source) || parUnitesDeCode(a.cible, b.cible),
 )
 
 const LABEL_CAT = new Map(SPECS.map((s) => [s.key, s.label]))
@@ -255,7 +256,7 @@ const lignesContrats = CONTRATS_CAS.map(
 ).join('\n')
 
 const lignesCategories = [...PAR_CATEGORIE.entries()]
-  .sort((a, b) => a[0].localeCompare(b[0]))
+  .sort((a, b) => parUnitesDeCode(a[0], b[0]))
   .map(
     ([cle, v]) =>
       `| \`${cle}\` | ${LABEL_CAT.get(cle) ?? '⚠️ absente de CODEX_SPECS'} | ${v.fichiers
@@ -272,7 +273,7 @@ const lignesClusters = CLUSTERS.map((c) => {
 }).join('\n')
 
 const lignesExemptions = [...EXEMPTIONS.entries()]
-  .sort((a, b) => a[0].localeCompare(b[0]))
+  .sort((a, b) => parUnitesDeCode(a[0], b[0]))
   .map(([kind, fichiers]) => `- \`${kind}\` — ${fichiers.length} fichier(s)`)
   .join('\n')
 

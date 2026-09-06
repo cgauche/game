@@ -169,4 +169,53 @@ export default tseslint.config(
       }],
     },
   },
+  {
+    // MUR DE L'ORDRE TOTAL (#1679 L3b, incident #1620) : dans la clôture des générateurs de dérivés,
+    // un listing de répertoire passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`)
+    // et une comparaison de chaînes par `parUnitesDeCode`. Sans cela le même dépôt rend deux `.md`
+    // différents selon la machine (NTFS trie sans casse, ext4 rend l'ordre d'un hash ; `localeCompare`
+    // suit l'ICU du processus) et la CI rougit MUETTE sur un doc simplement périmé.
+    //
+    // La PORTÉE de ce bloc est vérifiée, pas postulée : `scripts/guards/lib/lister.test.mjs` marche la
+    // clôture d'imports NON bornée de `GENERATORS` ∪ `NON_GENERATOR_CHECKS` (`scripts/docs/build-all.mjs`)
+    // et échoue en NOMMANT tout module atteint qui ne serait sous aucun des globs ci-dessous — la liste
+    // se lit DEPUIS ce fichier, jamais recopiée.
+    //
+    // DEUX règles, parce qu'aucune ne suffit seule (mesuré sur 11 formes d'écriture) :
+    // `no-restricted-imports` prend l'import nommé, l'alias et le namespace ; `no-restricted-syntax`
+    // prend l'accès par membre (`fs.readdirSync`, `fs.promises.readdir`, `(await import('fs')).readdirSync`,
+    // `require('fs').readdirSync`) et la déstructuration. `no-restricted-properties` a été mesurée
+    // INSUFFISANTE : elle ne sait pas exprimer `fs.promises.readdir` (4 formes sur 11 la franchissent).
+    // Exemption au FICHIER pour la source elle-même (précédent `flowOutcomes.ts` ci-dessus, « la source
+    // elle-même ») ; le crochet de l'enregistreur de lectures porte ses exemptions AU SITE, avec leur raison.
+    files: [
+      'scripts/docs/**', 'scripts/raw/**', 'scripts/guards/lib/**',
+      // Les deux racines du registre qui ne vivent dans aucun de ces trois dossiers.
+      'scripts/gen-sorts-doc.mts', 'scripts/data/check-progression-schemas.mjs',
+    ],
+    ignores: ['scripts/guards/lib/lister.mjs'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: ['fs', 'node:fs', 'fs/promises', 'node:fs/promises'].map((name) => ({
+          name,
+          importNames: ['readdirSync', 'readdir', 'opendirSync', 'opendir', 'globSync'],
+          message: 'Ordre total (#1679 L3b) : lister un dossier passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`) — un listing brut suit l’ordre du système de fichiers et périme le doc dérivé sur l’autre OS.',
+        })),
+      }],
+      'no-restricted-syntax': ['error',
+        {
+          selector: 'MemberExpression[property.name=/^(readdirSync|readdir|opendirSync|opendir|globSync)$/]',
+          message: 'Ordre total (#1679 L3b) : lister un dossier passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`) — un listing brut suit l’ordre du système de fichiers et périme le doc dérivé sur l’autre OS.',
+        },
+        {
+          selector: 'ObjectPattern > Property[key.name=/^(readdirSync|readdir|opendirSync|opendir|globSync)$/]',
+          message: 'Ordre total (#1679 L3b) : lister un dossier passe par `listerDossier`/`listerArbre` (`scripts/guards/lib/lister.mjs`) — un listing brut suit l’ordre du système de fichiers et périme le doc dérivé sur l’autre OS.',
+        },
+        {
+          selector: "CallExpression[callee.property.name='localeCompare']",
+          message: 'Ordre total (#1679 L3b) : comparer deux chaînes par `parUnitesDeCode` (`scripts/guards/lib/lister.mjs`) — unités de code, jamais `localeCompare`, dont le verdict suit la locale du processus.',
+        },
+      ],
+    },
+  },
 );

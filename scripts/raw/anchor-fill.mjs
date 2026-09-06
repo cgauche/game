@@ -38,7 +38,8 @@
 //   --dry (défaut) : rapport seul. --apply : réécrit les .md.
 //   --pdf : PDF dont le nom diffère de `<dir>.pdf`. --offset : offset K−folio fourni par
 //   l'appelant (livre VIERGE, aucune ancre à dériver — cf. `folio-bootstrap.mjs`).
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve, dirname } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
@@ -103,8 +104,8 @@ export function compactAnchor(joined, head, min = COMPACT_MIN) {
 
 // ---------- offset (id pypdf 0-based) - (folio imprimé), constant par livre ----------
 export function resolveBookOffset(dir) {
-  let files
-  try { files = readdirSync(dir).filter((f) => CHAPTER_RE.test(f)) } catch { return { ok: false, reason: 'dossier introuvable' } }
+  if (!existsSync(dir)) return { ok: false, reason: 'dossier introuvable' }
+  const files = listerDossier(dir, { absent: 'vide' }).filter((f) => CHAPTER_RE.test(f))
   const offsets = new Set()
   let count = 0
   for (const file of files) {
@@ -314,9 +315,8 @@ export function runBook(abbr, { chapter = null, apply = false, dir: dirOverride,
   const pdfPath = pdfOverride ?? `${dir}.pdf`
   if (!existsSync(pdfPath)) return { abbr, ok: false, reason: `PDF introuvable : ${pdfPath}` }
 
-  let files
-  try { files = readdirSync(dir).filter((f) => CHAPTER_RE.test(f)) } catch { return { abbr, ok: false, reason: 'dossier introuvable' } }
-  files = files.sort()
+  if (!existsSync(dir)) return { abbr, ok: false, reason: 'dossier introuvable' }
+  let files = listerDossier(dir, { absent: 'vide' }).filter((f) => CHAPTER_RE.test(f))
   if (chapter != null) files = files.filter((f) => Number(f.match(CHAPTER_RE)[1]) === Number(chapter))
 
   // Passe 1 (à sec) : détermine les folios manquants de chaque chapitre → K à extraire.

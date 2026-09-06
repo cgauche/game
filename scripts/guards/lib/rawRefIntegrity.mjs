@@ -15,7 +15,8 @@
 //
 // Vocabulaire RÉUTILISÉ de `scripts/raw/_lib.mjs` (source unique) : `ldbRe`/`otherRe`/`span`/
 // `bookOf`/`chapterFile`/`readText`. Périmètre src/ aligné sur `check-code-refs.mjs`.
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
+import { listerArbre } from './lister.mjs'
 import { ldbRe, otherRe, span, refNums, isRangeSuffix, chapterFile, bookOf, readText } from '../../raw/_lib.mjs'
 
 // Réexport des DEUX résolveurs de `_lib.mjs` dont les consommateurs TypeScript ont besoin : une
@@ -134,15 +135,11 @@ export function* refsInLine(ln) {
 
 export const isExcludedSrc = (rel) => rel.startsWith(EXCLUDE_SRC_PREFIX) || SELF_FILES.includes(rel)
 
-function walkSrc(dir, acc = []) {
-  for (const e of readdirSync(dir)) {
-    const p = `${dir}/${e}`
-    let s
-    try { s = statSync(p) } catch { continue }
-    if (s.isDirectory()) { if (e !== 'node_modules') walkSrc(p, acc) }
-    else if (/\.(tsx?|json)$/.test(e)) acc.push(p)
-  }
-  return acc
+function fichiersDuCode(dir) {
+  return listerArbre(dir, {
+    descendre: (rel) => !rel.split('/').includes('node_modules'),
+    filtre: (rel) => /\.(tsx?|json)$/.test(rel),
+  }).map((rel) => `${dir}/${rel}`)
 }
 
 const _chapterLines = new Map() // path -> string[] (une lecture par chapitre, ~15 livres)
@@ -156,7 +153,7 @@ const isExempt = (hit) => SITE_EXEMPTIONS.some((e) => e.file === hit.file && e.r
 /** Scanne `srcDir` et retourne les réfs AVEUGLES : `{ file, row, ref, abbr, nn, lo, hi }`. */
 export function scanBlindRefs(srcDir = SRC_DIR) {
   const blind = []
-  for (const f of walkSrc(srcDir)) {
+  for (const f of fichiersDuCode(srcDir)) {
     const rel = f.split('\\').join('/')
     if (isExcludedSrc(rel)) continue
     const src = readFileSync(f, 'utf8').split('\n')
@@ -197,7 +194,7 @@ export function serializeBaseline(counts) {
 /** File d'AUDIT (non gatée) : réfs pointant une ligne vide, groupées par réf, comptées par sites. */
 export function scanEmptyLineRefs(srcDir = SRC_DIR) {
   const byRef = new Map()
-  for (const f of walkSrc(srcDir)) {
+  for (const f of fichiersDuCode(srcDir)) {
     const rel = f.split('\\').join('/')
     if (isExcludedSrc(rel)) continue
     const src = readFileSync(f, 'utf8').split('\n')

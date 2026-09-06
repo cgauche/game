@@ -5,24 +5,25 @@
 //   3. SENS INVERSE — tout chemin `docs/….md` cité par src/ ou scripts/ existe sur le disque.
 // Un métavariable `<…>` qui suit un chemin le tronque au dossier (ex. `src/ui/jetProps/<hook>.tsx`
 // → on valide `src/ui/jetProps/`). Re-run : node scripts/docs/check-doc-refs.mjs (npm run docs:check).
-import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs'
+import { readFileSync, existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 
 const DOCS_DIR = 'docs'
 const SRC_DIR = 'src'
+const EXTS_SRC = ['.ts', '.tsx', '.js', '.mjs', '.mts', '.json', '.css']
+
+/** Fichiers de `dir` portant une des extensions, en ORDRE TOTAL (hors `node_modules`). */
+function fichiersSources(dir, exts) {
+  return listerArbre(dir, {
+    descendre: (rel) => !rel.split('/').includes('node_modules'),
+    filtre: (rel) => exts.some((x) => rel.endsWith(x)),
+  }).map((rel) => join(dir, rel))
+}
 
 // --- index des identifiants présents dans src/ (= « grep dans src/ ») ---
-function walk(dir, exts, acc = []) {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e)
-    let s; try { s = statSync(p) } catch { continue }
-    if (s.isDirectory()) { if (e !== 'node_modules') walk(p, exts, acc) }
-    else if (exts.some((x) => e.endsWith(x))) acc.push(p)
-  }
-  return acc
-}
 const SRC_IDENTS = new Set()
-for (const f of walk(SRC_DIR, ['.ts', '.tsx', '.js', '.mjs', '.mts', '.json', '.css'])) {
+for (const f of fichiersSources(SRC_DIR, EXTS_SRC)) {
   const text = readFileSync(f, 'utf8')
   for (const m of text.matchAll(/[A-Za-z_$][\w$]*/g)) SRC_IDENTS.add(m[0])
 }
@@ -36,7 +37,7 @@ function pathExists(tok) {
     const dir = tok.slice(0, slash) || '.'
     if (!isDir(dir)) return false
     const rx = new RegExp('^' + tok.slice(slash + 1).replace(/[.]/g, '\\.').replace(/\*/g, '.*') + '$')
-    try { return readdirSync(dir).some((n) => rx.test(n)) } catch { return false }
+    return listerDossier(dir, { absent: 'vide' }).some((n) => rx.test(n))
   }
   return existsSync(tok)
 }
@@ -44,11 +45,11 @@ function pathExists(tok) {
 const problems = [] // { file, line, kind, tok }
 const lineAt = (text, index) => text.slice(0, index).split('\n').length
 
-// readdirSync(DOCS_DIR) est NON récursif : ne liste que les fichiers .md à plat dans docs/. Les
+// `listerDossier(DOCS_DIR)` est NON récursif : ne liste que les fichiers .md à plat dans docs/. Les
 // sous-dossiers (docs/plans/, docs/raw/, docs/decisions/…) sont donc déjà hors périmètre par
 // construction — docs/plans/ (snapshots datés) et docs/decisions/ (export d'issues GitHub, corps
 // citant des chemins historiques ayant le droit d'être morts) n'ont pas besoin d'exclusion explicite.
-for (const file of readdirSync(DOCS_DIR).filter((f) => f.endsWith('.md'))) {
+for (const file of listerDossier(DOCS_DIR).filter((f) => f.endsWith('.md'))) {
   const rel = `${DOCS_DIR}/${file}`
   const text = readFileSync(join(DOCS_DIR, file), 'utf8')
 
@@ -91,7 +92,7 @@ if (existsSync(CLAUDE_MD)) {
   const headerIdx = lines.findIndex((l) => /^\|\s*Besoin\s*\|\s*Primitive/.test(l))
   if (headerIdx >= 0) {
     const EXPORTED_SYMS = new Set()
-    for (const f of walk(SRC_DIR, ['.ts', '.tsx', '.mjs', '.mts'])) {
+    for (const f of fichiersSources(SRC_DIR, ['.ts', '.tsx', '.mjs', '.mts'])) {
       const src = readFileSync(f, 'utf8')
       for (const m of src.matchAll(/export\s+(?:default\s+)?(?:async\s+)?(?:function|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/g)) EXPORTED_SYMS.add(m[1])
       for (const m of src.matchAll(/export\s+(?:const|let|var)\s+([A-Za-z_$][\w$]*)/g)) EXPORTED_SYMS.add(m[1])
@@ -143,7 +144,7 @@ if (existsSync(CHARTE_MD)) {
     if (endIdx < 0) endIdx = lines.length
     const section = lines.slice(startIdx, endIdx).join('\n')
 
-    const CSS_TEXT = walk('src/ui/styles', ['.css']).map((f) => readFileSync(f, 'utf8')).join('\n')
+    const CSS_TEXT = fichiersSources('src/ui/styles', ['.css']).map((f) => readFileSync(f, 'utf8')).join('\n')
 
     // Faux positifs à écarter : extensions de fichier (`CLAUDE.md`…) et motifs jocker cités comme
     // ANTI-exemples exprès NON catalogués (`.voyage-*`, `.char-card*`…, cf. prose de la section).
@@ -222,8 +223,7 @@ const DOC_REF_SITES_EXEMPTS = new Set([
 // Ce fichier-ci est hors du sens 5 : il ÉNONCE les jetons exemptés ci-dessus (même patron que
 // `FICHIERS_DE_LA_GARDE` dans check-plans-anchors.mjs), il ne les cite pas comme documentation.
 const DOC_REF_SELF = 'scripts/docs/check-doc-refs.mjs'
-for (const f of [...walk(SRC_DIR, ['.ts', '.tsx', '.js', '.mjs', '.mts', '.json', '.css']),
-                 ...walk('scripts', ['.ts', '.tsx', '.js', '.mjs', '.mts', '.json', '.css'])]) {
+for (const f of [...fichiersSources(SRC_DIR, EXTS_SRC), ...fichiersSources('scripts', EXTS_SRC)]) {
   const rel = f.replace(/\\/g, '/')
   if (rel === DOC_REF_SELF) continue
   const text = readFileSync(f, 'utf8')
@@ -237,8 +237,8 @@ for (const f of [...walk(SRC_DIR, ['.ts', '.tsx', '.js', '.mjs', '.mts', '.json'
 
 if (problems.length) {
   console.error(`docs:check — ${problems.length} référence(s) morte(s) :`)
-  for (const p of problems.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line))
+  for (const p of problems.sort((a, b) => parUnitesDeCode(a.file, b.file) || a.line - b.line))
     console.error(`  ${p.file}:${p.line}  [${p.kind}]  ${p.tok}`)
   process.exit(1)
 }
-console.log(`docs:check — OK (${readdirSync(DOCS_DIR).filter((f) => f.endsWith('.md')).length} docs vivantes, chemins & symboles vérifiés)`)
+console.log(`docs:check — OK (${listerDossier(DOCS_DIR).filter((f) => f.endsWith('.md')).length} docs vivantes, chemins & symboles vérifiés)`)

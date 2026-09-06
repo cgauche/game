@@ -67,6 +67,7 @@
 //    ne l'est pas. Mesuré au 2026-09-02 : `src/engine/**` ne déclare aucun rouleur sous ces formes —
 //    0 morsure perdue. Les couvrir se fait AU SOCLE, pour les trois gardes à la fois, jamais ici seul.
 import tsModule from 'typescript';
+import { parUnitesDeCode } from './lister.mjs'
 
 // Liaison LOCALE de l'API du compilateur — même FAIT mesuré qu'en tête de `rollSeamExclusivity.mjs`
 // (2026-08-23) : sous Vitest, un `ts.x` de visiteur AST se relit sur l'objet d'import de vite-node.
@@ -274,7 +275,7 @@ export function scanFlowTestEngineRoll(engineFiles) {
       if (nomsFautifs.has(s.name)) out.push({ file: d.file, line: s.line, fn: d.name, fnLine: d.line, famille: 'appelant', name: s.name, detail: s.detail });
     }
   }
-  out.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.famille.localeCompare(b.famille) || a.name.localeCompare(b.name));
+  out.sort((a, b) => parUnitesDeCode(a.file, b.file) || a.line - b.line || parUnitesDeCode(a.famille, b.famille) || parUnitesDeCode(a.name, b.name));
   return out;
 }
 

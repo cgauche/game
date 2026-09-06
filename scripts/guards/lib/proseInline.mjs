@@ -18,6 +18,7 @@
 // chose que le `type` rendrait le stock et le verrou aveugles l'un à l'autre.
 import fs from 'node:fs';
 import path from 'node:path';
+import { listerArbre } from './lister.mjs';
 import { fileURLToPath } from 'node:url';
 
 /** Racine du dépôt, déduite de l'emplacement de ce module (`scripts/guards/lib`). */
@@ -43,15 +44,11 @@ export function livresExtraits(root = RACINE_DEPOT) {
 }
 
 function fichiersDe(dir, suffixe, recursif) {
-  if (!fs.existsSync(dir)) return [];
-  const out = [];
-  for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    const p = path.join(dir, e.name);
-    if (e.isDirectory()) {
-      if (recursif) out.push(...fichiersDe(p, suffixe, recursif));
-    } else if (e.name.endsWith(suffixe)) out.push(p);
-  }
-  return out;
+  return listerArbre(dir, {
+    absent: 'vide',
+    descendre: () => recursif,
+    filtre: (rel) => rel.endsWith(suffixe),
+  }).map((rel) => path.join(dir, rel));
 }
 
 /** `type` du DOCUMENT que porte ce fichier — sa déclaration, jamais son nom de fichier quand elle existe. */

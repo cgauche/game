@@ -7,6 +7,7 @@
 // `innerType`, `getter`, `in`/`out`).
 import type { SchemaDef } from '../../../src/data/schemas/types';
 import { defDe, enfantsDe, type DefZod } from '../../../src/data/schemas/grammaire/slots';
+import { parUnitesDeCode } from '../../guards/lib/lister.mjs';
 
 /**
  * DESCENTE UNIQUE : les enfants d'un nœud, triés par RÔLE selon le SEGMENT de path qu'`enfantsDe`
@@ -204,7 +205,7 @@ export function introspecterDefs(defs: readonly SchemaDef[]): DefIntrospectee[] 
       const tronquee = [racine, note, ...Object.values(cles)].some((t) => t.includes(MARQUE_TRONCATURE));
       return { file, racine, famille, note, cles, tronquee };
     })
-    .sort((a, b) => a.file.localeCompare(b.file));
+    .sort((a, b) => parUnitesDeCode(a.file, b.file));
 }
 
 /**

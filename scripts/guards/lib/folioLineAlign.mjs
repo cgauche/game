@@ -13,7 +13,8 @@
 // `voyage-stakes`, `reglesOptionnelles`…), invisibles de la voie A/B/C.
 //
 // Module ESM pur (`node` nu), consommé par `src/data/folio-line-align.test.ts` (cliquet).
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
+import { listerDossier } from './lister.mjs'
 import { join } from 'node:path'
 
 /** Citation à la ligne : `LDB 12 l.28`, `ADE II 09 l.3`, `AA 07 l.1-185`, `MDG 14 l.13-19`… */
@@ -194,8 +195,7 @@ export function makeChapterReader(books) {
     let res = null
     if (dir) {
       const pad = String(Number(ch)).padStart(2, '0')
-      let f
-      try { f = readdirSync(dir).find((x) => x.startsWith(pad + ' - ') && x.endsWith('.md')) } catch { f = null }
+      const f = listerDossier(dir, { absent: 'vide' }).find((x) => x.startsWith(pad + ' - ') && x.endsWith('.md'))
       if (f) res = readFileSync(join(dir, f), 'utf8').split('\n')
     }
     cache.set(key, res)
@@ -209,7 +209,7 @@ export function auditDataDir(dataDir) {
   const abbrById = new Map(books.map((b) => [b.id, b.abbr]))
   const chapterLines = makeChapterReader(books)
   const entries = []
-  for (const f of readdirSync(dataDir).filter((x) => x.endsWith('.json'))) {
+  for (const f of listerDossier(dataDir).filter((x) => x.endsWith('.json'))) {
     let data
     try { data = JSON.parse(readFileSync(join(dataDir, f), 'utf8')) } catch { continue }
     entries.push(...citedEntries(data, f))

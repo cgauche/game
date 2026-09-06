@@ -6,7 +6,8 @@
 // Cliquet PAR RÉF-CHAPITRE (`scripts/raw/dead-refs-baseline.json`, patron src/ui/ui-ratchets.test.ts) :
 // toute HAUSSE échoue ; une baseline devenue trop haute (réfs réparées) doit être ABAISSÉE.
 // Re-run : node scripts/raw/check-refs.mjs
-import { readdirSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ldbRe, otherRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
@@ -43,7 +44,7 @@ function lineCount(path) {
 /** Parcourt `rawDir` (docs/raw par défaut) et retourne les réfs mortes : `{ doc, row, ref, hi, chapterLines, file }`. */
 export function scanDeadRefs(rawDir = RAWDIR, exclude = EXCLUDE) {
   const dead = []
-  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !exclude.has(f))
+  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !exclude.has(f))
   for (const doc of docs) {
     const lines = readText(join(rawDir, doc)).split('\n')
     lines.forEach((ln, i) => {

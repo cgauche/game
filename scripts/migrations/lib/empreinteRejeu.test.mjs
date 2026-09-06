@@ -11,13 +11,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { blobsDe, comparer, empreinteDe, fichiersDe, rapportDEcart } from './empreinteRejeu.mjs'
 import { PERIMETRE, mesurerParGit } from '../replay.mjs'
-import { RACINE_DES_EXPORTS, effacerExport, rejeuSurExport } from '../replay-head.mjs'
+import { RACINE_DES_EXPORTS, effacerExport, exportsDuProcessus, rejeuSurExport } from '../replay-head.mjs'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 
@@ -83,9 +83,6 @@ function depot(migrations = {}) {
 
 const jeter = (racine) => rmSync(racine, { recursive: true, force: true })
 
-/** Exports laissés derrière par un rejeu : `rejeuSurExport` doit les avoir tous effacés. */
-const exportsRestants = () => (existsSync(RACINE_DES_EXPORTS) ? readdirSync(RACINE_DES_EXPORTS) : [])
-
 test('migration NON IDEMPOTENTE : le rejeu sur EXPORT sort ROUGE et NOMME la donnée réécrite', () => {
   const racine = depot({ '2026-09-03-fixture-non-idempotente.mjs': MIGRATION_NON_IDEMPOTENTE })
   try {
@@ -133,15 +130,34 @@ test('l’export est celui de l’ARBRE du sha : un fichier modifié NON COMMIT�
   }
 })
 
+// La racine des exports est un magasin PARTAGÉ : trois tests la lisent pour dire « rien n'a été
+// laissé derrière ». Mesuré sur `test:hooks` (2026-09-06) : l'export `94fa18f3-13272` d'un pre-push
+// VOISIN, apparu ENTRE les deux lectures, faisait rougir trois tests qui n'avaient rien fabriqué.
+// C'est le PID porté par le nom qui les sépare — et cette séparation se mesure ICI, jamais par
+// l'absence de voisin le jour du run.
+test('un export d’un AUTRE processus est INVISIBLE : la racine est partagée, la lecture ne l’est pas', () => {
+  const etranger = join(RACINE_DES_EXPORTS, 'deadbeef-99999')
+  mkdirSync(etranger, { recursive: true })
+  try {
+    assert.ok(existsSync(etranger), 'la fixture doit être posée sous la racine réelle')
+    assert.deepEqual(exportsDuProcessus(), [], 'le voisin entre dans notre lecture')
+    assert.deepEqual(exportsDuProcessus(99999), ['deadbeef-99999'], 'interrogé par SON pid, le voisin doit se voir')
+  } finally {
+    rmSync(etranger, { recursive: true, force: true })
+  }
+})
+
 test('l’export est EFFACÉ à la fin, même quand le rejeu sort rouge', () => {
   const racine = depot({ '2026-09-03-fixture-non-idempotente.mjs': MIGRATION_NON_IDEMPOTENTE })
   try {
-    const avant = exportsRestants()
+    // Le rejeu tourne DANS CE PROCESSUS : son export porte NOTRE pid. La racine étant partagée, on ne
+    // lit que les nôtres — sinon l'export d'un `pre-push` voisin ferait rougir ce test.
+    const avant = exportsDuProcessus()
     const { dossier, rouges } = rejeuSurExport({ cwd: racine, ecrire: () => {} })
     assert.ok(rouges.length > 0)
     assert.ok(dossier.startsWith(RACINE_DES_EXPORTS), `${dossier} doit vivre sous ${RACINE_DES_EXPORTS}`)
     assert.equal(existsSync(dossier), false)
-    assert.deepEqual(exportsRestants(), avant)
+    assert.deepEqual(exportsDuProcessus(), avant)
   } finally {
     jeter(racine)
   }
@@ -281,7 +297,6 @@ fs.writeFileSync(f, fs.readFileSync(f));
 test('deux rejeux CONCURRENTS sur le même sha : deux exits 0, deux dossiers, tous deux effacés', async () => {
   const racine = depot({ '2026-09-03-lente.mjs': MIGRATION_LENTE })
   const porte = join(ICI, '..', 'replay-head.mjs')
-  const avant = exportsRestants()
   try {
     const lancer = () =>
       new Promise((res) => {
@@ -301,7 +316,14 @@ test('deux rejeux CONCURRENTS sur le même sha : deux exits 0, deux dossiers, to
     assert.ok(dossiers.every(Boolean), `chaque rejeu nomme son export : ${JSON.stringify(dossiers)}`)
     assert.notEqual(dossiers[0], dossiers[1], 'deux rejeux concurrents ne partagent pas un dossier')
     for (const d of dossiers) assert.equal(existsSync(d), false, `${d} doit être effacé`)
-    assert.deepEqual(exportsRestants(), avant)
+    // Les deux exports sont ceux des ENFANTS : leur pid se lit dans le nom du dossier
+    // (`<sha8>-<pid>`). On n'interroge que ces deux processus-là — la racine est partagée, et le
+    // dossier entier porterait aussi les exports d'un `pre-push` voisin.
+    for (const d of dossiers) {
+      const pid = Number(basename(d).split('-').at(-1))
+      assert.ok(Number.isInteger(pid), `${d} ne porte pas le pid de son rejeu`)
+      assert.deepEqual(exportsDuProcessus(pid), [], `le rejeu ${pid} laisse un export derrière lui`)
+    }
   } finally {
     jeter(racine)
   }

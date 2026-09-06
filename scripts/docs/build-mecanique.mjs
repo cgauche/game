@@ -22,7 +22,8 @@
  *
  *   node scripts/docs/build-mecanique.mjs
  */
-import { readdirSync, readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import ts from 'typescript'
 import { emitOrCheck, loadSource, firstSentence, jsdocBody } from './lib/jsdocUnion.mjs'
 
@@ -178,7 +179,7 @@ const CANAUX = [
 
 const PORTEURS = (() => {
   const out = new Map(CANAUX.map((c) => [c.cle, []]))
-  for (const f of readdirSync(DEFS).filter((f) => f.endsWith('.ts') && !f.includes('.test.')).sort()) {
+  for (const f of listerDossier(DEFS).filter((f) => f.endsWith('.ts') && !f.includes('.test.'))) {
     const chemin = `${DEFS}/${f}`
     const { sf, text } = loadSource(chemin)
     const fichierJson = text.match(/export const file = '([^']+)'/)?.[1]

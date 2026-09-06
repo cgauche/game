@@ -46,6 +46,9 @@ const ATTENDU = {
     'scripts/guards/lib/justificatif.mjs',
     'scripts/guards/lib/justificatif.test.mjs',
     'scripts/guards/lib/lintStage.test.mjs',
+    // +1 le 2026-09-05 (#1679 L3b) : la porte de rôle du lecteur à ordre total pose ses dossiers-fixtures
+    // (`mkdtempSync` + `writeFileSync`) sous `os.tmpdir()` — l'arbre n'est jamais écrit.
+    'scripts/guards/lib/lister.test.mjs',
     'scripts/guards/lib/plageStock.test.mjs',
     'scripts/guards/lib/portePush.test.mjs',
     'scripts/hooks/git-destructive-guard.test.mjs',

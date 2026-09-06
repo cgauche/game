@@ -30,7 +30,7 @@
 // aux extensions connues — le recollage peut agglutiner la ligne suivante, jamais raccourcir un vrai chemin.
 //
 // ANGLES MORTS —
-//   - `readdirSync` récursif est PROSCRIT ici : les worktrees d'agents (`.claude/worktrees/agent-*`,
+//   - une marche récursive du disque est PROSCRITE ici : les worktrees d'agents (`.claude/worktrees/agent-*`,
 //     `.wt-*`) portent des copies complètes de `docs/plans/` avec des plans déjà purgés ailleurs ; les
 //     énumérer ferait juger l'arbre d'une autre session. `git ls-files` est la seule vue du dépôt.
 //   - Un plan NON SUIVI (jamais `git add`) échappe aux deux sens : il n'existe pas pour le dépôt.
@@ -65,7 +65,8 @@
 // `--online <issues-ouvertes.json>` (canari, cf. .github/workflows/canari.yml). Comportement couvert
 // par scripts/docs/check-plans-anchors.test.mjs (`npm run test:docs`).
 import { execFileSync } from 'node:child_process'
-import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs'
+import { readFileSync, existsSync, statSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
 const tracked = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
@@ -86,7 +87,7 @@ function pathExists(tok) {
     const dir = abs.slice(0, slash) || '.'
     if (!isDir(dir)) return false
     const rx = new RegExp('^' + abs.slice(slash + 1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*') + '$')
-    try { return readdirSync(dir).some((n) => rx.test(n)) } catch { return false }
+    return listerDossier(dir, { absent: 'vide' }).some((n) => rx.test(n))
   }
   return existsSync(abs)
 }

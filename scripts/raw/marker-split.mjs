@@ -3,7 +3,8 @@
 // Frontières : TITRE-d'abord (on trouve l'en-tête de chapitre dans le markdown Marker au/après sa page
 // de début) avec REPLI sur l'offset de page → gère les chapitres qui partagent une page.
 // Usage : node scripts/raw/marker-split.mjs "<ancien-book-dir>" "<marker-paginé.md>" "<out-dir>"
-import { readdirSync, writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import { readText } from './_lib.mjs'
 
@@ -14,7 +15,7 @@ const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
   .replace(/[*_`#]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
 
 // 1. chapitres depuis les anciens .md : nom de fichier + page de début (marqueur « Page PDF X »)
-const chapters = readdirSync(bookDir)
+const chapters = listerDossier(bookDir)
   .filter((f) => /^\d+ - .+\.md$/.test(f) && f !== '00 - Index.md')
   .map((f) => {
     const nn = f.match(/^(\d+) - /)[1]

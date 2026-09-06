@@ -34,6 +34,7 @@
 //
 // Module ESM pur — consommé par `src/data/refs-migrated.test.ts`.
 import fs from 'node:fs';
+import { parUnitesDeCode, listerArbre } from './lister.mjs';
 import path from 'node:path';
 import ts from 'typescript';
 
@@ -225,7 +226,7 @@ export function gameOpStringFields(root) {
       out.set(`${op}.${prop.name}`, { key: `${op}.${prop.name}`, op, field: prop.name, array });
     }
   }
-  return [...out.values()].sort((a, b) => a.key.localeCompare(b.key));
+  return [...out.values()].sort((a, b) => parUnitesDeCode(a.key, b.key));
 }
 
 /**
@@ -241,15 +242,12 @@ export function auditFieldCoverage(root) {
   return { derived, unclassified, stale };
 }
 
-/** Fichiers `.json` d'un dossier, récursivement. */
+/** Fichiers `.json` d'un dossier, récursivement, en ORDRE TOTAL. */
 export function collectJsonFiles(dir, root) {
-  const out = [];
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, e.name);
-    if (e.isDirectory()) out.push(...collectJsonFiles(p, root));
-    else if (e.name.endsWith('.json')) out.push({ file: norm(path.relative(root, p)), data: JSON.parse(fs.readFileSync(p, 'utf8')) });
-  }
-  return out;
+  return listerArbre(dir, { filtre: (rel) => rel.endsWith('.json') }).map((rel) => {
+    const p = path.join(dir, rel);
+    return { file: norm(path.relative(root, p)), data: JSON.parse(fs.readFileSync(p, 'utf8')) };
+  });
 }
 
 /** Un nœud est-il une `GameOp` ? (`op` string SANS `kind` : les `Condition` de `flowCore` réutilisent

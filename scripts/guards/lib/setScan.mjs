@@ -6,7 +6,8 @@
 // Extraction PURE regex/scan de parenthèses (pas de parseur AST) — suffisant pour un COMPTE, pas
 // pour un refactor : les clés imbriquées profondes ne sont pas déroulées, seul le NIVEAU 1 de
 // l'objet passé à `set(` est lu.
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { listerDossier } from './lister.mjs';
 import { join, relative } from 'node:path';
 
 /** Clés `pending*`/transitoires du manifeste (`state/stateFields.ts`) — lues par REGEX sur le
@@ -87,7 +88,7 @@ export function scanFile(path) {
 export function runSetScan(root) {
   const stateDir = join(root, 'src/state');
   const pendingKeys = stateFieldKeys(stateDir);
-  const files = readdirSync(stateDir)
+  const files = listerDossier(stateDir)
     .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== 'store.ts' && f !== 'stateFields.ts')
     .map((f) => join(stateDir, f));
 

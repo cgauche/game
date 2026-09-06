@@ -11,9 +11,12 @@ import { dirname, join, resolve } from 'node:path';
 // font partie de ce qu'un spécificateur relatif peut désigner ici.
 const EXTS = ['.ts', '.tsx', '.mts', '.mjs', '.cjs', '.js'];
 
-/** Capture les imports/réexports statiques (`from '…'`) ET dynamiques (`import('…')`, ex. `lazy`).
- *  Spécificateur en m[1] (statique) ou m[2] (dynamique). @type {RegExp} */
-export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
+/** Capture les imports/réexports statiques (`from '…'`), dynamiques (`import('…')`, ex. `lazy`) et À
+ *  EFFET DE BORD (`import './x'`, sans `from` — il n'en existe aucun dans la clôture aujourd'hui,
+ *  mais un module ainsi tiré serait invisible de la marche, donc du mur d'ordre total #1679 L3b).
+ *  Spécificateur en m[1] (statique), m[2] (dynamique) ou m[3] (effet de bord, RELATIF seulement).
+ *  @type {RegExp} */
+export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)|\bimport\s+['"](\.[^'"]+)['"]/g;
 
 /** Extensions qu'un spécificateur peut porter LUI-MÊME (le chemin désigne alors le fichier). */
 const EXTS_EXPLICITES = [...EXTS, '.json'];
@@ -36,8 +39,8 @@ export function resolveImport(fromFile, spec) {
 }
 
 /**
- * Enfants `src/` d'un module : ses imports relatifs résolus. `null` = fichier absent (hors closure) ;
- * `[]` = membre sans graphe à lire (`.json`, #487) ou illisible.
+ * Enfants d'un module : TOUS ses imports relatifs résolus, sans borne. `null` = fichier absent (hors
+ * closure) ; `[]` = membre sans graphe à lire (`.json`, #487) ou illisible.
  * @param {string} abs @param {string} rel @returns {string[]|null}
  */
 function enfantsDe(abs, rel) {
@@ -51,22 +54,26 @@ function enfantsDe(abs, rel) {
   }
   const enfants = [];
   for (const m of text.matchAll(IMPORT_RE)) {
-    const resolved = resolveImport(abs, m[1] ?? m[2]);
-    if (resolved && resolved.includes('/src/')) enfants.push(resolved);
+    const resolved = resolveImport(abs, m[1] ?? m[2] ?? m[3]);
+    if (resolved) enfants.push(resolved);
   }
   return enfants;
 }
 
 /**
- * Closure transitive des imports RELATIFS depuis un jeu de modules racines, bornée à `src/`.
- * `cache` (module -> enfants résolus) est PARTAGEABLE entre plusieurs closures d'un MÊME appelant :
+ * MARCHE du graphe d'imports RELATIFS depuis un jeu de modules racines : résolution + parcours
+ * transitif, sans borne. La borne est un PRÉDICAT de l'appelant (`retenir`, appliqué aux ENFANTS —
+ * les racines entrent toujours) : un seul hôte, aucune branche par type d'appelant.
+ * `cache` (module -> enfants résolus) est PARTAGEABLE entre plusieurs marches d'un MÊME appelant :
  * les 16 systèmes de `systemes.manifest.json` visitent 21 197 modules pour 1 859 distincts (mesuré le
- * 2026-08-23) — sans partage, chaque fichier est relu et re-résolu 11 fois. Par défaut le cache naît
- * et meurt avec l'appel : aucun état ne survit entre deux closures indépendantes.
- * @param {string[]} roots @param {Map<string, string[]|null>} [cache]
+ * 2026-08-23) — sans partage, chaque fichier est relu et re-résolu 11 fois. Le cache porte les
+ * enfants NON filtrés : il reste valable quel que soit le prédicat. Par défaut le cache naît et
+ * meurt avec l'appel : aucun état ne survit entre deux marches indépendantes.
+ * @param {string[]} roots
+ * @param {{ retenir?: (abs: string) => boolean, cache?: Map<string, string[]|null> }} [options]
  * @returns {Set<string>} chemins POSIX relatifs à la racine du repo
  */
-export function closureOf(roots, cache = new Map()) {
+export function clotureDImports(roots, { retenir, cache = new Map() } = {}) {
   const seen = new Set();
   const cwdPosix = resolve('.').split('\\').join('/') + '/';
   const stack = [...roots.map((r) => resolve(r).split('\\').join('/'))];
@@ -82,9 +89,19 @@ export function closureOf(roots, cache = new Map()) {
     }
     if (enfants === null) continue;
     seen.add(rel);
-    for (const e of enfants) stack.push(e);
+    for (const e of enfants) if (!retenir || retenir(e)) stack.push(e);
   }
   return seen;
+}
+
+/**
+ * Closure transitive des imports RELATIFS depuis un jeu de modules racines, bornée à `src/` : la
+ * MARCHE ci-dessus, avec le prédicat `src/` posé ici, par l'appelant.
+ * @param {string[]} roots @param {Map<string, string[]|null>} [cache]
+ * @returns {Set<string>} chemins POSIX relatifs à la racine du repo
+ */
+export function closureOf(roots, cache = new Map()) {
+  return clotureDImports(roots, { retenir: (abs) => abs.includes('/src/'), cache });
 }
 
 /**
@@ -96,7 +113,7 @@ export function directImportsOf(fromFile, contenu) {
   const root = resolve('.').split('\\').join('/');
   const found = new Set();
   for (const m of contenu.matchAll(IMPORT_RE)) {
-    const resolved = resolveImport(fromFile, m[1] ?? m[2]);
+    const resolved = resolveImport(fromFile, m[1] ?? m[2] ?? m[3]);
     if (resolved && resolved.includes('/src/')) found.add(resolved.slice(root.length + 1));
   }
   return [...found];

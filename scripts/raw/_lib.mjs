@@ -5,7 +5,8 @@
 // texte pour le match exact des citations. reanchor.mjs dérive sa PROPRE alternation de BOOKS
 // (réfs SANS abréviation LDB séparée : LDB s'y traite comme les autres livres) — pas encore
 // unifiée avec otherRe/ldbRe (#434 défaut 10, périmètre non couvert par ce fichier).
-import { readdirSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import booksData from '../../src/data/books.json' with { type: 'json' }
 // Normalisation de citation : SOURCE UNIQUE dans `src/data/source/normalize.ts` (module feuille en
@@ -134,8 +135,9 @@ export function chapterFile(abbr, nn, range) {
     res = null
     if (dir) {
       const pad = String(Number(nn)).padStart(2, '0')
-      let f
-      try { f = readdirSync(dir).find((x) => x.startsWith(pad + ' - ') && x.endsWith('.md')) } catch { f = null }
+      // Premier-TROUVÉ sur un listing en ordre total = premier-TRIÉ : deux chapitres de même numéro
+      // rendraient le même fichier sur toute machine.
+      const f = listerDossier(dir, { absent: 'vide' }).find((x) => x.startsWith(pad + ' - ') && x.endsWith('.md'))
       if (f) res = { path: join(dir, f), file: f, dir }
     }
     _chapterCache.set(key, res)
@@ -193,9 +195,7 @@ export function folioIndexOf(abbr) {
   const dir = BOOK_DIR.get(abbr)
   const chapters = []
   if (dir) {
-    let files
-    try { files = readdirSync(dir).filter((x) => /^\d+ - .*\.md$/.test(x)).sort() } catch { files = [] }
-    for (const file of files) {
+    for (const file of listerDossier(dir, { absent: 'vide' }).filter((x) => /^\d+ - .*\.md$/.test(x))) {
       const ch = Number(/^(\d+) - /.exec(file)[1])
       const lines = readText(join(dir, file)).split('\n')
       chapters.push({ ch, lines })

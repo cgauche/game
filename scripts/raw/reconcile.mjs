@@ -11,8 +11,9 @@
 //   cités par l'Atlas mais jamais référencés dans le code → l'Atlas décrit une règle hors-code.
 //   (Sens B reste borné au LDB — hors périmètre #434 défaut 9.)
 // Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
@@ -20,14 +21,11 @@ import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
 export const RAWDIR = 'docs/raw'
 
-function walk(dir, exts, acc = []) {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e)
-    let s; try { s = statSync(p) } catch { continue }
-    if (s.isDirectory()) { if (e !== 'node_modules') walk(p, exts, acc) }
-    else if (exts.some((x) => e.endsWith(x))) acc.push(p)
-  }
-  return acc
+function fichiersSources(dir, exts) {
+  return listerArbre(dir, {
+    descendre: (rel) => !rel.split('/').includes('node_modules'),
+    filtre: (rel) => exts.some((x) => rel.endsWith(x)),
+  }).map((rel) => join(dir, rel))
 }
 
 // Regex loose « BOOK NN » par livre CANONIQUE (miroir de `PIVOT_LOOSE_RE`) — construite depuis
@@ -48,8 +46,8 @@ const chKey = (n) => String(Number(n))
 
 /** Calcule la réconciliation CODE↔ATLAS. Pur vis-à-vis de l'écriture de fichier (aucun writeFileSync ici). */
 export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) {
-  const SRC = walk(srcDir, ['.ts', '.tsx', '.json'])
-  const DOCS = readdirSync(rawDir)
+  const SRC = fichiersSources(srcDir, ['.ts', '.tsx', '.json'])
+  const DOCS = listerDossier(rawDir)
     // (#454 DoD, #585 lot A) source unique _lib.mjs — corrige un manque : reanchor.md (rapport
     // généré, réfs illustratives de diagnostic) n'était PAS exclu, seul script des 4 gardes dans ce cas.
     .filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
@@ -220,10 +218,10 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   // === SENS A (14 autres livres) : code → Atlas — miroir du bloc LDB ci-dessus ===
   const hardAOther = []
   const softAOther = []
-  for (const [book, chMap] of [...codeOther].sort((a, b) => a[0].localeCompare(b[0]))) {
+  for (const [book, chMap] of [...codeOther].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
     const looseCh = atlasOtherChLoose.get(book) || new Set()
     const catalogChSet = catalogOtherCh.get(book) || new Set()
-    for (const [ch, refs] of [...chMap].sort((a, b) => Number(a[0]) - Number(b[0]) || a[0].localeCompare(b[0]))) {
+    for (const [ch, refs] of [...chMap].sort((a, b) => Number(a[0]) - Number(b[0]) || parUnitesDeCode(a[0], b[0]))) {
       const uniqLines = [...new Set(refs.map((r) => r.line))].sort((a, b) => a - b)
       if (!looseCh.has(ch)) {
         hardAOther.push({ book, ch, count: refs.length, lines: uniqLines, sample: refs.slice(0, 4) })
@@ -312,7 +310,7 @@ export function renderReport(data) {
   if (!bookStats.size) L.push('_Aucune réf code vers un autre livre._', '')
   else {
     L.push('| Livre | Trous durs (chapitres) | Chapitres à lignes non pinées | Réfs sans chapitre |', '|---|---|---|---|')
-    for (const [book, st] of [...bookStats].sort((a, b) => a[0].localeCompare(b[0])))
+    for (const [book, st] of [...bookStats].sort((a, b) => parUnitesDeCode(a[0], b[0])))
       L.push(`| ${book} | ${st.hard} | ${st.soft} | ${st.noCh} |`)
     L.push('')
   }
@@ -336,7 +334,7 @@ export function renderReport(data) {
 
   L.push('## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d\'unité chapitre à couvrir)', '')
   if (!codeOtherNoCh.size) L.push('_Aucune._', '')
-  else for (const [book, refs] of [...codeOtherNoCh].sort((a, b) => a[0].localeCompare(b[0]))) {
+  else for (const [book, refs] of [...codeOtherNoCh].sort((a, b) => parUnitesDeCode(a[0], b[0]))) {
     L.push(`### ${book} — ${refs.length} réf(s) sans chapitre`)
     for (const r of refs.slice(0, 4)) L.push(`- \`${r.file}:${r.row}\` (l.${r.line}) — ${r.text}`)
     if (refs.length > 4) L.push(`- … +${refs.length - 4} autres`)
@@ -368,7 +366,7 @@ function main() {
   console.log(`Sens A (LDB) : ${data.hardA.length} trous durs · ${data.softA.length} chapitres à lignes non pinées · folios Atlas ignorés ${data.folioIgnored}`)
   const noChapterCount = [...data.codeOtherNoCh.values()].reduce((n, a) => n + a.length, 0)
   console.log(`Sens A (autres livres) : ${data.hardAOther.length} trou(s) dur(s) chapitre-livre · ${data.softAOther.length} chapitre(s)-livre à lignes non pinées · ${noChapterCount} réf(s) sans chapitre (hors mesure)`)
-  for (const [book, st] of [...data.bookStats].sort((a, b) => a[0].localeCompare(b[0])))
+  for (const [book, st] of [...data.bookStats].sort((a, b) => parUnitesDeCode(a[0], b[0])))
     console.log(`  ${book} : ${st.hard} trous durs · ${st.soft} chapitres non pinés · ${st.noCh} réfs sans chapitre`)
   console.log(`Sens B : ${data.nonImpl.length} (non implémenté) · B2 ${data.atlasOnlyBefore.length} → ${data.atlasOnly.length} chapitres Atlas hors-code (${data.atlasOnlyFolioCredited.length} crédités par folio)`)
 }

@@ -22,8 +22,9 @@
 //   4. SITES, RE-MESURÉS sur l'index complété par la passe 3 (les pions de scène sont indexés
 //      AVANT que `members {entityId}` ne soit résolu).
 //   5. MESURE — occurrences de référence, formes de valeur, ops, enveloppe, orphelines, ambiguës.
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync, statSync } from 'node:fs';
+import { basename, join, relative } from 'node:path';
+import { parUnitesDeCode, listerArbre, listerDossier } from '../../guards/lib/lister.mjs';
 import ts from 'typescript';
 import {
   CLES_IDENTITE,
@@ -110,17 +111,14 @@ export function listerDocuments(root: string): Document[] {
   const out: Document[] = [];
   for (const racine of RACINES) {
     const base = join(root, racine.dir);
-    const marche = (dir: string) => {
-      for (const e of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-        const p = join(dir, e.name);
-        if (e.isDirectory()) {
-          if (racine.recursif) marche(p);
-        } else if (e.name.endsWith(racine.suffixe) && !e.name.startsWith('_')) {
-          out.push({ racine: racine.id, chemin: relative(root, p).split('\\').join('/'), nom: e.name });
-        }
-      }
-    };
-    if (statSync(base).isDirectory()) marche(base);
+    if (!statSync(base).isDirectory()) continue;
+    for (const rel of listerArbre(base, {
+      descendre: () => racine.recursif,
+      filtre: (r) => r.endsWith(racine.suffixe) && !basename(r).startsWith('_'),
+    })) {
+      const p = join(base, rel);
+      out.push({ racine: racine.id, chemin: relative(root, p).split('\\').join('/'), nom: basename(rel) });
+    }
   }
   return out.filter((d, i, xs) => xs.findIndex((x) => x.chemin === d.chemin) === i);
 }
@@ -370,8 +368,8 @@ const ajouteCle = (cles: Map<string, CleNiveau1>, k: string, v: unknown) => {
 };
 const trieCles = (cles: Map<string, CleNiveau1>): CleNiveau1[] =>
   [...cles.values()]
-    .sort((a, b) => a.cle.localeCompare(b.cle))
-    .map((c) => ({ ...c, parClasse: [...c.parClasse].sort((a, b) => a.classe.localeCompare(b.classe)) }));
+    .sort((a, b) => parUnitesDeCode(a.cle, b.cle))
+    .map((c) => ({ ...c, parClasse: [...c.parClasse].sort((a, b) => parUnitesDeCode(a.classe, b.classe)) }));
 
 /**
  * Graphies dont la valeur n'est PAS un id (objet enveloppé, texte narratif) : un objet dont la
@@ -942,7 +940,7 @@ export function scannerDonnees(
       cles: documents.find((d) => d.chemin === p.chemin)!.clesNiveau1,
     })),
     ...[...groupes.values()].map(({ groupe, cles }) => ({ ...groupe, cles: trieCles(cles) })),
-  ].sort((a, b) => a.document.localeCompare(b.document) || a.chemin.localeCompare(b.chemin));
+  ].sort((a, b) => parUnitesDeCode(a.document, b.document) || parUnitesDeCode(a.chemin, b.chemin));
 
   const homonymes: Homonyme[] = CLES_RESERVEES.map((cle) => {
     const classes = reservees.get(cle)!;
@@ -951,7 +949,7 @@ export function scannerDonnees(
       classes: [...classes.keys()].sort(),
       total: [...classes.values()].reduce((a, m) => a + [...m.values()].reduce((x, y) => x + y, 0), 0),
       parClasse: [...classes]
-        .sort((a, b) => a[0].localeCompare(b[0]))
+        .sort((a, b) => parUnitesDeCode(a[0], b[0]))
         .map(([c, m]) => ({ classe: c, datasets: [...m].sort((a, b) => b[1] - a[1]).map(([d, n]) => `${d}:${n}`) })),
     };
   }).filter((h) => h.classes.length >= 2);
@@ -963,7 +961,7 @@ export function scannerDonnees(
   const collisions: Collision[] = [...index]
     .filter(([, ds]) => ds.size >= 2)
     .map(([id, ds]) => ({ id, datasets: [...ds].sort() }))
-    .sort((a, b) => b.datasets.length - a.datasets.length || a.id.localeCompare(b.id));
+    .sort((a, b) => b.datasets.length - a.datasets.length || parUnitesDeCode(a.id, b.id));
 
   /** Angle mort MESURÉ : un `label` qui est aussi un id indexé rend la résolution `{text}` ambiguë. */
   const labelsQuiSontDesIds = [...index.keys()].filter((id) => libelles.has(normaliserLibelle(id))).sort();
@@ -973,26 +971,26 @@ export function scannerDonnees(
     index: { ids: index.size, libelles: libelles.size, collisions, labelsQuiSontDesIds },
     /** Valeurs qui ne résolvent QUE vers un dataset hors des cibles majoritaires de leur site. */
     ambigues: [...ambigues.values()].sort(
-      (a, b) => b.occurrences - a.occurrences || a.dataset.localeCompare(b.dataset) || a.valeur.localeCompare(b.valeur),
+      (a, b) => b.occurrences - a.occurrences || parUnitesDeCode(a.dataset, b.dataset) || parUnitesDeCode(a.valeur, b.valeur),
     ),
     groupesEnveloppe,
     enveloppe,
     enveloppeParMotif: [...enveloppeParMotif].sort().map(([k, n]) => ({ role: k.split(' | ')[0], motif: k.split(' | ')[1], documents: n })),
-    clesParDocument: [...clesParDocument].sort((a, b) => a[0].localeCompare(b[0])),
+    clesParDocument: [...clesParDocument].sort((a, b) => parUnitesDeCode(a[0], b[0])),
     formes: [...formes.values()]
       .map(({ ciblesSet, ...f }) => ({ ...f, cibles: [...ciblesSet].sort() }))
       .sort(
         (a, b) =>
-          a.concept.localeCompare(b.concept) ||
-          a.dataset.localeCompare(b.dataset) ||
-          a.champ.localeCompare(b.champ) ||
-          a.signature.localeCompare(b.signature),
+          parUnitesDeCode(a.concept, b.concept) ||
+          parUnitesDeCode(a.dataset, b.dataset) ||
+          parUnitesDeCode(a.champ, b.champ) ||
+          parUnitesDeCode(a.signature, b.signature),
       ),
     /** Champs porteurs de référence MESURÉS : les clés de parent dont au moins un SITE porte
      *  majoritairement des références — jamais une déclaration du lexique, jamais un seuil. */
     champsDeReference: [...champsPorteurs].sort(),
     orphelines: [...orphelines.values()].sort(
-      (a, b) => b.occurrences - a.occurrences || a.dataset.localeCompare(b.dataset) || a.signature.localeCompare(b.signature),
+      (a, b) => b.occurrences - a.occurrences || parUnitesDeCode(a.dataset, b.dataset) || parUnitesDeCode(a.signature, b.signature),
     ),
     homonymes,
     clesEnveloppe: [...clesEnveloppe].sort((a, b) => b[1] - a[1]),
@@ -1003,13 +1001,13 @@ export function scannerDonnees(
       })
       .sort(
         (a, b) =>
-          a.op.localeCompare(b.op) || b.occurrences - a.occurrences || a.signature.localeCompare(b.signature) || a.dataset.localeCompare(b.dataset),
+          parUnitesDeCode(a.op, b.op) || b.occurrences - a.occurrences || parUnitesDeCode(a.signature, b.signature) || parUnitesDeCode(a.dataset, b.dataset),
       ),
     documentsSansSource: documents.filter((d) => !docsAvecSource.has(d.nom)).map((d) => d.nom).sort(),
     totalOps,
     conditions: [...new Set([...conditionsAvecOp.keys(), ...conditionsSansOp.keys()])]
       .map((kind) => ({ kind, avecOp: conditionsAvecOp.get(kind) ?? 0, sansOp: conditionsSansOp.get(kind) ?? 0 }))
-      .sort((a, b) => b.avecOp + b.sansOp - (a.avecOp + a.sansOp) || a.kind.localeCompare(b.kind)),
+      .sort((a, b) => b.avecOp + b.sansOp - (a.avecOp + a.sansOp) || parUnitesDeCode(a.kind, b.kind)),
     totalConditionsAvecOp: [...conditionsAvecOp.values()].reduce((a, b) => a + b, 0),
     totalConditionsSansOp: [...conditionsSansOp.values()].reduce((a, b) => a + b, 0),
     opsComparateurs: [...opsComparateurs]
@@ -1017,10 +1015,10 @@ export function scannerDonnees(
         const [op, kind, dataset] = k.split(' | ');
         return { op, kind, dataset, occurrences };
       })
-      .sort((a, b) => b.occurrences - a.occurrences || a.op.localeCompare(b.op)),
+      .sort((a, b) => b.occurrences - a.occurrences || parUnitesDeCode(a.op, b.op)),
     textes: [...textes]
       .map(([sig, t]) => ({ signature: sig, ...t }))
-      .sort((a, b) => b.occurrences - a.occurrences || a.signature.localeCompare(b.signature)),
+      .sort((a, b) => b.occurrences - a.occurrences || parUnitesDeCode(a.signature, b.signature)),
     parametres: [...parametres]
       .map(([valeur, p]): Parametre => ({
         valeur,
@@ -1029,14 +1027,14 @@ export function scannerDonnees(
         datasets: [...p.datasets].sort(),
         nature: natureParametre(valeur),
       }))
-      .sort((a, b) => b.occurrences - a.occurrences || a.valeur.localeCompare(b.valeur)),
+      .sort((a, b) => b.occurrences - a.occurrences || parUnitesDeCode(a.valeur, b.valeur)),
     regimesPrix: [...regimesPrix].sort((a, b) => b[1] - a[1]),
     objets: {
       vus: objetsVus,
       classes: objetsClasses,
       invisibles: objetsInvisibles,
       racinesSansValeur,
-      racinesDisqualifiees: [...racinesDisqualifiees].map(([dataset, entrees]) => ({ dataset, entrees })).sort((a, b) => b.entrees - a.entrees || a.dataset.localeCompare(b.dataset)),
+      racinesDisqualifiees: [...racinesDisqualifiees].map(([dataset, entrees]) => ({ dataset, entrees })).sort((a, b) => b.entrees - a.entrees || parUnitesDeCode(a.dataset, b.dataset)),
       documentsEmbarques: documentsEmbarques.size,
       entreesDeRacine: prepares.reduce((a, p) => a + p.entrees.length, 0),
     },
@@ -1046,7 +1044,7 @@ export function scannerDonnees(
         const [dataset, champ, sig] = k.split(' | ');
         return { dataset, champ, signature: sig, occurrences };
       })
-      .sort((a, b) => b.occurrences - a.occurrences || a.dataset.localeCompare(b.dataset)),
+      .sort((a, b) => b.occurrences - a.occurrences || parUnitesDeCode(a.dataset, b.dataset)),
   };
 }
 
@@ -1101,12 +1099,12 @@ export function mesurerEnveloppe(groupes: readonly GroupeEnveloppe[]): Divergenc
   }
   return out.sort(
     (a, b) =>
-      a.role.localeCompare(b.role) ||
-      a.cle.localeCompare(b.cle) ||
-      a.motif.localeCompare(b.motif) ||
-      a.detail.localeCompare(b.detail) ||
-      a.document.localeCompare(b.document) ||
-      a.chemin.localeCompare(b.chemin),
+      parUnitesDeCode(a.role, b.role) ||
+      parUnitesDeCode(a.cle, b.cle) ||
+      parUnitesDeCode(a.motif, b.motif) ||
+      parUnitesDeCode(a.detail, b.detail) ||
+      parUnitesDeCode(a.document, b.document) ||
+      parUnitesDeCode(a.chemin, b.chemin),
   );
 }
 
@@ -1127,9 +1125,7 @@ const sourceDe = (fichier: string, texte: () => string) => {
 /** Les fichiers de la GRAMMAIRE partagée (`src/data/schemas/grammaire/`) — un schéma commun y vit,
  *  jamais dans un def. LUS AU DOSSIER : un module de grammaire ajouté est couvert sans liste à tenir. */
 const fichiersGrammaire = (root: string) =>
-  readdirSync(join(root, 'src/data/schemas/grammaire'))
-    .filter((f) => f.endsWith('.ts') && !f.includes('.test.'))
-    .sort();
+  listerDossier(join(root, 'src/data/schemas/grammaire')).filter((f) => f.endsWith('.ts') && !f.includes('.test.'));
 const sourcesGrammaire = (root: string) =>
   fichiersGrammaire(root).map((nom) => {
     const fichier = join(root, 'src/data/schemas/grammaire', nom);
@@ -1263,7 +1259,7 @@ function litterauxDefs(root: string): LitteralDef[] {
   if (cache) return cache;
   const dir = join(root, 'src/data/schemas/defs');
   const out: LitteralDef[] = [];
-  for (const f of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts')).sort()) {
+  for (const f of listerDossier(dir).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))) {
     const chemin = join(dir, f);
     const sf = sourceDe(chemin, () => readFileSync(chemin, 'utf8'));
     for (const lit of litterauxZod(sf, sf)) out.push({ def: f, ...lit });
@@ -1293,7 +1289,7 @@ export function empreintesDefs(root: string) {
           champ: h.champ,
           cles: c.noyau!.filter((k) => h.cles.includes(k)),
         }))
-        .sort((a, b) => a.site.localeCompare(b.site)),
+        .sort((a, b) => parUnitesDeCode(a.site, b.site)),
     };
   });
 }

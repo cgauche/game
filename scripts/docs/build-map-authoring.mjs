@@ -15,7 +15,8 @@
  *
  *   node scripts/docs/build-map-authoring.mjs
  */
-import { readdirSync, readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
+import { listerArbre } from '../guards/lib/lister.mjs'
 import ts from 'typescript'
 import { emitOrCheck, loadSource, jsdocRole, findAlias, aliasDoc } from './lib/jsdocUnion.mjs'
 import { fileExports } from './lib/engineExports.mjs'
@@ -101,16 +102,8 @@ if (!QC.length) abandon(`aucune fonction exportée dans ${MAPQC}`)
 
 // ── Exemples VIVANTS : quel scénario emploie quel champ ──────────────────────────────────────────
 
-function fichiersDeScene(dir, acc = []) {
-  for (const e of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    const p = `${dir}/${e.name}`
-    if (e.isDirectory()) fichiersDeScene(p, acc)
-    else if (e.name.endsWith('.ts') && !e.name.includes('.test.')) acc.push(p)
-  }
-  return acc
-}
-
-const SCENES_SRC = fichiersDeScene(SCENES)
+const SCENES_SRC = listerArbre(SCENES, { filtre: (rel) => rel.endsWith('.ts') && !rel.includes('.test.') })
+  .map((rel) => `${SCENES}/${rel}`)
   .map((f) => ({ f, t: readFileSync(f, 'utf8') }))
   .filter(({ t }) => /\bbuildScene\s*\(|\bMapSpec\b/.test(t))
 if (!SCENES_SRC.length) abandon(`aucun document de ${SCENES}/ n'emploie plus \`buildScene\`/\`MapSpec\``)

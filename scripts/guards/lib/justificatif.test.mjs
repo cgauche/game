@@ -3,13 +3,14 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
-import * as FS from 'node:fs'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { renameSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { listerDossier } from './lister.mjs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   CI_SEULEMENT,
+  FS,
   JOBS_HORS_JUSTIFICATIF,
   RAISON_CLE_COMPLETE,
   cheminJustificatifs,
@@ -125,7 +126,7 @@ test('un fichier PAR (gate, clé gouvernante, propreté), sans fichier en cours 
     ecrireJustificatif({ cwd: racine, gate: 'test', sha, capture: 'node_modules/.cache/vitest-run-1.txt' })
     const { fichier } = ecrireJustificatif({ cwd: racine, gate: 'typecheck', sha })
     assert.deepEqual(
-      readdirSync(join(cheminJustificatifs({ cwd: racine }), cles.cleTree)).sort(),
+      listerDossier(join(cheminJustificatifs({ cwd: racine }), cles.cleTree)),
       [
         fichierDeJustificatif({ gate: 'test', cle: cles.cleTree, sale: false }),
         fichierDeJustificatif({ gate: 'typecheck', cle: cles.cleTree, sale: false }),
@@ -175,11 +176,11 @@ test('deux écrivains SIMULTANÉS : deux fichiers, et le lecteur rend le PROPRE 
       ecrire(racine, 'src/b.ts', 'export const b = 1\n')
       ecrireJustificatif({ cwd: racine, gate: 'lint', sha, fs, date: '2026-09-05T11:00:00.000Z' })
       assert.equal(renommages.length, 2)
-      for (const i of ordre) FS.renameSync(...renommages[i])
+      for (const i of ordre) renameSync(...renommages[i])
 
       const dossier = join(cheminJustificatifs({ cwd: racine }), cles.cleTree)
       assert.deepEqual(
-        readdirSync(dossier).sort(),
+        listerDossier(dossier),
         [
           fichierDeJustificatif({ gate: 'lint', cle: cles.cleTree, sale: false }),
           fichierDeJustificatif({ gate: 'lint', cle: cles.cleTree, sale: true }),
@@ -328,7 +329,7 @@ test('MIGRATION : l’ancienne graphie est RENOMMÉE, les rouges effacés, l’i
     assert.deepEqual([bilan.renommes, bilan.effaces, bilan.illisibles.length], [3, 1, 1])
     assert.match(dits.join(''), /illisible\(s\), laissé\(s\) en place/)
 
-    assert.deepEqual(readdirSync(dossier).sort(), [
+    assert.deepEqual(listerDossier(dossier), [
       'build.json',
       fichierDeJustificatif({ gate: 'docs:check', cle: cles.cleComplete, sale: false }),
       fichierDeJustificatif({ gate: 'lint', cle: cles.cleTree, sale: false }),
@@ -347,9 +348,9 @@ test('MIGRATION : l’ancienne graphie est RENOMMÉE, les rouges effacés, l’i
     )
 
     // IDEMPOTENTE : un magasin déjà migré est un no-op.
-    const empreinteAvant = readdirSync(dossier).sort().join('|')
+    const empreinteAvant = listerDossier(dossier).join('|')
     assert.deepEqual(migrerAncienneGraphie({ cwd: racine, journal: () => {} }).renommes, 0)
-    assert.equal(readdirSync(dossier).sort().join('|'), empreinteAvant)
+    assert.equal(listerDossier(dossier).join('|'), empreinteAvant)
   } finally {
     jeter(racine)
   }
@@ -362,10 +363,10 @@ test('MIGRATION : l’ancienne graphie est RENOMMÉE, les rouges effacés, l’i
  */
 function propresParDossier(magasin, { graphie }) {
   const parDossier = new Map()
-  for (const dossierCle of readdirSync(magasin)) {
+  for (const dossierCle of listerDossier(magasin)) {
     if (!/^[0-9a-f]{40}$/.test(dossierCle)) continue
     const gates = new Set()
-    for (const nom of readdirSync(join(magasin, dossierCle))) {
+    for (const nom of listerDossier(join(magasin, dossierCle))) {
       if (!nom.endsWith('.json')) continue
       const vu = nomDeJustificatif(nom)
       if (vu) {
@@ -386,9 +387,9 @@ function propresParDossier(magasin, { graphie }) {
 }
 
 const compterJson = (magasin) =>
-  readdirSync(magasin)
+  listerDossier(magasin)
     .filter((d) => /^[0-9a-f]{40}$/.test(d))
-    .reduce((n, d) => n + readdirSync(join(magasin, d)).filter((f) => f.endsWith('.json')).length, 0)
+    .reduce((n, d) => n + listerDossier(join(magasin, d)).filter((f) => f.endsWith('.json')).length, 0)
 
 /** Trois dossiers de clé, en ANCIENNE graphie (un fichier par gate, propreté et statut dans le
  *  CONTENU). Chacun porte les gates de `ci.yml` au vert, plus les trois cas que la migration doit
@@ -450,7 +451,7 @@ test('MIGRATION : sur un magasin SYNTHÉTIQUE en ancienne graphie, aucune preuve
 
     // Le VERT sur arbre SALE survit, sous un nom qui porte sa saleté : c'est le refus du hook qui la lit.
     for (const cle of cles) {
-      const poses = readdirSync(join(magasin, cle.cleTree))
+      const poses = listerDossier(join(magasin, cle.cleTree))
       assert.ok(poses.includes(fichierDeJustificatif({ gate: 'gate-sale', cle: cle.cleTree, sale: true })))
       assert.ok(poses.includes('illisible.json'), 'un illisible reste lisible par un humain, là où il est')
     }
@@ -607,7 +608,7 @@ test('l’enveloppe de gate n’écrit RIEN au rouge, et propage le code de sort
     // Contrat POSITIF sur le DISQUE : aucun fichier de cette gate, sous aucune clé ni propreté,
     // dans le dossier où un vert l'aurait posé.
     const dossier = join(cheminJustificatifs({ cwd: REPO }), clesDeContenu('HEAD', { cwd: REPO }).cleTree)
-    const poses = (existsSync(dossier) ? readdirSync(dossier) : [])
+    const poses = listerDossier(dossier, { absent: 'vide' })
       .map(nomDeJustificatif)
       .filter((n) => n?.gate === 'gate-de-mesure-rouge')
     assert.deepEqual(poses, [], 'une gate ROUGE ne laisse aucun justificatif')

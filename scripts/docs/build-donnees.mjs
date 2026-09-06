@@ -6,7 +6,8 @@
 // (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé, exit 1 avec
 // message actionnable si diff — jamais d'écriture en mode --check. Mécanique d'émission partagée :
 // emitOrCheck (scripts/docs/lib/jsdocUnion.mjs), patron `scripts/docs/build-systemes.mjs`.
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { sortieOutilLocal } from '../lancer-local.mjs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 
@@ -33,8 +34,8 @@ function citeLigne(chemin, ancre) {
 }
 
 // --- inventaire réel ---
-const filesOnDisk = readdirSync(DATA_DIR).filter((f) => f.endsWith('.json')).sort()
-const defBasenames = new Set(readdirSync(DEFS_DIR).filter((f) => f.endsWith('.ts')).map((f) => f.replace(/\.ts$/, '')))
+const filesOnDisk = listerDossier(DATA_DIR).filter((f) => f.endsWith('.json'))
+const defBasenames = new Set(listerDossier(DEFS_DIR).filter((f) => f.endsWith('.ts')).map((f) => f.replace(/\.ts$/, '')))
 
 /** Def de schéma d'un `xxx.json` : même basename, points remplacés par des tirets
  *  (`primitives.manifest.json` → `primitives-manifest.ts`, cf. convention _registry.generated.ts). */

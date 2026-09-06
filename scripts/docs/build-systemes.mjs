@@ -5,7 +5,8 @@
 // Re-run : node scripts/docs/build-systemes.mjs (npm run docs:systemes).
 // Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
 // exit 1 avec message actionnable si diff — jamais d'écriture en mode --check.
-import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, existsSync, statSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { resolve } from 'node:path'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
@@ -44,7 +45,7 @@ const orphanPrimitives = PRIMITIVES.filter((p) => !usedByAny.get(p.id))
 
 // --- modules non rattachés à un système (scope : src/state + src/engine, top-level, hors tests) ---
 function topLevelSourceFiles(dir) {
-  return readdirSync(dir)
+  return listerDossier(dir)
     .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
     .map((f) => `${dir}/${f}`)
     .filter((f) => statSync(f).isFile())
@@ -65,7 +66,7 @@ out += `**Périmètre mesuré / angles morts** — la closure d'import est calcu
 out += `parcours RÉGEX des specifiers \`from '…'\`/\`import('…')\`, RÉSOLUS SEULEMENT s'ils sont RELATIFS (\`./\`, \`../\`) — un\n`
 out += `import via alias tsconfig ou paquet npm n'est jamais suivi (\`resolveImport\` renvoie \`null\`), donc invisible ici sans\n`
 out += `que la primitive soit hors d'usage. L'inventaire « modules non rattachés » est lui-même borné : SURFACE de\n`
-out += `\`src/state\`/\`src/engine\` uniquement (\`readdirSync\` non récursif, \`*.test.ts\` exclus) — un fichier niché dans un\n`
+out += `\`src/state\`/\`src/engine\` uniquement (\`listerDossier\` non récursif, \`*.test.ts\` exclus) — un fichier niché dans un\n`
 out += `sous-dossier, ou situé ailleurs (\`src/ui\`, \`src/gameIso\`, \`src/data\`…), n'y apparaît jamais, rattaché ou non.\n\n`
 
 out += `## Sommaire des systèmes\n\n`

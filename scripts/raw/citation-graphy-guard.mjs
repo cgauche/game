@@ -10,8 +10,9 @@
 // Zéro tolérance, PAS de baseline (le stock doit être à 0 après le lot #487) : toute occurrence
 // nouvelle ou survivante fait échouer le test avec la liste `fichier:ligne`.
 // Re-run : node scripts/raw/citation-graphy-guard.mjs
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
+import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { fileURLToPath } from 'node:url'
 import { fieldBlockMask } from './build-implemente.mjs'
 import { otherAbbrAlternation, bookOf, folioRange, chapterBoundaryRiskFor, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
@@ -115,7 +116,7 @@ export const CHAPTER_BOUNDARY_FOLIO_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}
  *  (`folios` = les folios fautifs, avec leur chapitre résolu). Pur (aucune écriture). */
 export function scanMultiFolioSplitViolations(srcDir = SRC_DIR, exts = EXTS) {
   const violations = []
-  for (const f of walk(srcDir, exts)) {
+  for (const f of fichiersSources(srcDir, exts)) {
     const rel = f.replace(/\\/g, '/')
     const isJson = f.endsWith('.json')
     const lines = readFileSync(f, 'utf8').split('\n')
@@ -148,7 +149,7 @@ export function scanMultiFolioSplitViolations(srcDir = SRC_DIR, exts = EXTS) {
  *  Retourne `{ file, row, abbr, ch, folio, text }[]`. Pur (aucune écriture). */
 export function scanChapterBoundaryFolioViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
   const violations = []
-  const srcFiles = walk(srcDir, exts).map((f) => ({ f, isJson: f.endsWith('.json'), isRaw: false }))
+  const srcFiles = fichiersSources(srcDir, exts).map((f) => ({ f, isJson: f.endsWith('.json'), isRaw: false }))
   const docFiles = rawFiles(rawDir, isScannedFiche).map((f) => ({ f, isJson: false, isRaw: true }))
   for (const { f, isJson, isRaw } of [...srcFiles, ...docFiles]) {
     const rel = f.replace(/\\/g, '/')
@@ -171,28 +172,22 @@ export function scanChapterBoundaryFolioViolations(srcDir = SRC_DIR, exts = EXTS
   return violations
 }
 
-function walk(dir, exts, acc = []) {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e)
-    let s
-    try { s = statSync(p) } catch { continue }
-    if (s.isDirectory()) { if (e !== 'node_modules') walk(p, exts, acc) }
-    else if (exts.some((x) => e.endsWith(x))) acc.push(p)
-  }
-  return acc
+function fichiersSources(dir, exts) {
+  return listerArbre(dir, {
+    descendre: (rel) => !rel.split('/').includes('node_modules'),
+    filtre: (rel) => exts.some((x) => rel.endsWith(x)),
+  }).map((rel) => join(dir, rel))
 }
 
 function rawFiles(rawDir, filter) {
-  let names
-  try { names = readdirSync(rawDir).filter(filter) } catch { names = [] }
-  return names.map((n) => join(rawDir, n))
+  return listerDossier(rawDir, { absent: 'vide' }).filter(filter).map((n) => join(rawDir, n))
 }
 
 /** Scanne `srcDir` (défaut `src/`) pour la graphie chapitre-relative. Retourne
  *  `{ file, row, text }[]` — `text` = la ligne tronquée (160c) pour le diagnostic. Pur (aucune écriture). */
 export function scanGraphyViolations(srcDir = SRC_DIR, exts = EXTS) {
   const violations = []
-  for (const f of walk(srcDir, exts)) {
+  for (const f of fichiersSources(srcDir, exts)) {
     const lines = readFileSync(f, 'utf8').split('\n')
     lines.forEach((ln, i) => {
       const re = GRAPHY_RE()
@@ -207,9 +202,7 @@ export function scanGraphyViolations(srcDir = SRC_DIR, exts = EXTS) {
  *  `{ file, row, kind, text }[]` (`kind` ∈ `emdash-range` | `book-no-chapter`). Pur (aucune écriture). */
 export function scanDocsRawViolations(rawDir = RAWDIR) {
   const violations = []
-  let names
-  try { names = readdirSync(rawDir).filter(isScannedFiche) } catch { names = [] }
-  for (const name of names) {
+  for (const name of listerDossier(rawDir, { absent: 'vide' }).filter(isScannedFiche)) {
     const lines = readText(join(rawDir, name)).split('\n')
     lines.forEach((ln, i) => {
       const hit = (re, kind) => { if (re().test(ln)) violations.push({ file: `${rawDir}/${name}`, row: i + 1, kind, text: ln.trim().slice(0, 160) }) }
@@ -226,9 +219,7 @@ export function scanDocsRawViolations(rawDir = RAWDIR) {
  *  Retourne `{ file, row, text }[]`. Pur (aucune écriture). */
 export function scanImplProseViolations(rawDir = RAWDIR) {
   const violations = []
-  let names
-  try { names = readdirSync(rawDir).filter(isImplProseScanned) } catch { names = [] }
-  for (const name of names) {
+  for (const name of listerDossier(rawDir, { absent: 'vide' }).filter(isImplProseScanned)) {
     const lines = readText(join(rawDir, name)).split('\n')
     const { inFieldBlock } = fieldBlockMask(lines)
     lines.forEach((ln, i) => {
@@ -243,7 +234,7 @@ export function scanImplProseViolations(rawDir = RAWDIR) {
  *  Retourne `{ file, row, text }[]`, UNE entrée par occurrence (cliqueté par fichier, cf. `countsByFile`). */
 export function scanChDotViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
   const violations = []
-  const files = [...walk(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
+  const files = [...fichiersSources(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
   for (const f of files) {
     const rel = f.replace(/\\/g, '/')
     const lines = readText(f).split('\n')
@@ -261,7 +252,7 @@ export function scanChDotViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWD
  *  citation, pas de notion de « commentaire »). Retourne `{ file, row, text }[]`. Pur (aucune écriture). */
 export function scanBareFolioViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
   const violations = []
-  for (const f of walk(srcDir, exts)) {
+  for (const f of fichiersSources(srcDir, exts)) {
     const rel = f.replace(/\\/g, '/')
     const isJson = f.endsWith('.json')
     const lines = readFileSync(f, 'utf8').split('\n')
@@ -287,7 +278,7 @@ export function scanBareFolioViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = 
  *  chapitre `<ABRÉV> l.<n>` (`BOOK_NO_CHAPTER_RE`). Retourne `{ file, row, text }[]`. Pur (aucune écriture). */
 export function scanBookNoChapterSrcViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
   const violations = []
-  const files = [...walk(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
+  const files = [...fichiersSources(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
   for (const f of files) {
     const rel = f.replace(/\\/g, '/')
     const lines = readText(f).split('\n')
@@ -303,7 +294,7 @@ export function scanBookNoChapterSrcViolations(srcDir = SRC_DIR, exts = EXTS, ra
  *  (`bookOf` retourne null). Zéro tolérance, PAS de baseline. Retourne `{ file, row, abbr, text }[]`. */
 export function scanUnknownAbbrViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
   const violations = []
-  const files = [...walk(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
+  const files = [...fichiersSources(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
   for (const f of files) {
     const rel = f.replace(/\\/g, '/')
     const lines = readText(f).split('\n')

@@ -27,6 +27,7 @@ import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
+import { parUnitesDeCode } from '../guards/lib/lister.mjs'
 
 const OUTIL = 'build-doctrines'
 const CIBLE = 'CLAUDE.md'
@@ -171,7 +172,7 @@ export function ligneDe({ fichier, texte }, dateAjout = () => '') {
 /** Le bloc entier, marqueurs compris. `fiches` = `[{ fichier, texte }]`, triées par nom de fichier. */
 export function construireBloc(fiches, { dateAjout = () => '' } = {}) {
   const lignes = [...fiches]
-    .sort((a, b) => a.fichier.localeCompare(b.fichier, 'en'))
+    .sort((a, b) => parUnitesDeCode(a.fichier, b.fichier))
     .map((f) => ligneDe(f, dateAjout))
   return [DEBUT, '', TITRE, '', CHAPEAU, '', ...lignes, '', FIN].join('\n')
 }
@@ -191,10 +192,10 @@ export function injecter(contenu, bloc) {
   return `${texte.slice(0, ancre + 1) + bloc}\n\n${texte.slice(ancre + 1)}`
 }
 
-/** Fiches `user-*.md` SUIVIES par git (l'ordre de `readdir` ne décide de rien : `ls-files` trie). */
+/** Fiches `user-*.md` SUIVIES par git (aucun listing de disque ici : `ls-files` trie). */
 export function fichesSuivies(cwd) {
   const sortie = execFileSync('git', ['ls-files', '.claude/memory/user-*.md'], { cwd, encoding: 'utf8' })
-  return sortie.split('\n').map((l) => l.trim()).filter(Boolean).sort((a, b) => a.localeCompare(b, 'en'))
+  return sortie.split('\n').map((l) => l.trim()).filter(Boolean).sort((a, b) => parUnitesDeCode(a, b))
 }
 
 /** Date du commit qui a AJOUTÉ la fiche (`%as` = date d'auteur, forme courte). */

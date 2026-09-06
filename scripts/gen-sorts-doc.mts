@@ -18,6 +18,7 @@ import { spellSupport } from '../src/engine/spellspec';
 import { isMagicMissile } from '../src/engine/magic';
 import { spellOps } from '../src/state/flow';
 import { emitOrCheck } from './docs/lib/jsdocUnion.mjs';
+import { parLibelle } from './guards/lib/lister.mjs';
 
 const ICON = { mecanique: '✅', partiel: '🟡', narratif: '📜' } as const;
 
@@ -54,11 +55,11 @@ for (const s of spells) {
 }
 
 const totals = { mecanique: 0, partiel: 0, narratif: 0, curated: 0 };
-for (const [group, list] of [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, 'fr'))) {
+for (const [group, list] of [...groups.entries()].sort(([a], [b]) => parLibelle(a, b))) {
   lines.push(`## ${group} (${list.length})`, '');
   lines.push('| Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |');
   lines.push('|---|---|---|---|');
-  for (const s of [...list].sort((a, b) => a.label.localeCompare(b.label, 'fr'))) {
+  for (const s of [...list].sort((a, b) => parLibelle(a.label, b.label))) {
     // Les EFFETS (ops) vivent sur `SpellData.effects` (Flow) ; on les extrait par cible.
     const ops = [...spellOps(s.effects, 'target'), ...spellOps(s.effects, 'caster')];
     // Support mécanique = TOUTES les ops (target + caster) : un effet de lanceur (téléportation/poussée/

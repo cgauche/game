@@ -39,9 +39,11 @@ describe('garde-fou « lien mort dans la mémoire persistante »', () => {
     });
     try {
       const problems = scanMemoryLinks(root);
+      // L'ordre est celui de `parUnitesDeCode` (`scripts/guards/lib/lister.mjs`), donc le MÊME sur
+      // toute machine : `MEMORY.md` précède `fiche-vivante.md` (`M` 0x4D < `f` 0x66).
       expect(problems).toEqual([
-        { file: `${MEMORY_DIR}/fiche-vivante.md`, line: 2, kind: 'fiche inexistante', tok: '[[fiche-jamais-ecrite]]' },
         { file: `${MEMORY_DIR}/MEMORY.md`, line: 3, kind: 'fichier absent', tok: 'fiche-fantome.md' },
+        { file: `${MEMORY_DIR}/fiche-vivante.md`, line: 2, kind: 'fiche inexistante', tok: '[[fiche-jamais-ecrite]]' },
       ]);
       expect(formatMemoryLinkProblems(problems)).toContain('fiche-vivante.md:2');
     } finally {

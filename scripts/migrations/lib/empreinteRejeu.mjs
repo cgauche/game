@@ -22,9 +22,7 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-
-/** Ordre TOTAL, en unités de code — jamais `localeCompare`, dont l'ordre suit la machine. */
-const parUnitesDeCode = (a, b) => (a < b ? -1 : a > b ? 1 : 0)
+import { parUnitesDeCode } from '../../guards/lib/lister.mjs'
 
 /**
  * Fichiers du `perimetre` présents dans `dossier`, chemins RELATIFS en `/`, triés en unités de code.

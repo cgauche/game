@@ -795,7 +795,7 @@ describe('worldTris — module PUR : ses imports sont son contrat (#1680)', () =
    *  est masqué, jamais la ligne entière — `const el = document.body; // …` doit rester lisible par
    *  la clause DOM ci-dessous. */
   const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-  const specificateurs = [...CODE.matchAll(IMPORT_RE)].map((m) => m[1] ?? m[2]);
+  const specificateurs = [...CODE.matchAll(IMPORT_RE)].map((m) => m[1] ?? m[2] ?? m[3]);
 
   it('n’importe QUE la géométrie pure et la FORME du pivot', () => {
     expect(specificateurs.length, 'aucun import lu : ce contrat ne mesure plus rien').toBeGreaterThan(0);
@@ -823,8 +823,9 @@ describe('worldTris — module PUR : ses imports sont son contrat (#1680)', () =
   });
 });
 
-/** Une déclaration d'import BARE (`import 'x'`, effet de bord) n'entre pas dans `IMPORT_RE` : un module
- *  pur n'en porte aucune, et la clause le dit à part plutôt que d'élargir le parseur canonique. */
+/** `IMPORT_RE` capture l'import à effet de bord RELATIF (`import './x'`, groupe 3). La clause reste à
+ *  part parce qu'elle vise plus large : un `import 'paquet'` NON relatif, qu'aucun parseur de graphe
+ *  ne résout, reste un effet de bord qu'un module pur ne porte pas. */
 describe('worldTris — aucun import à effet de bord', () => {
   it('zéro `import \'…\'` nu', () => {
     const SRC = readFileSync(fileURLToPath(new URL('./worldTris.ts', import.meta.url)), 'utf8');

@@ -12,8 +12,9 @@
 // registre — un pending de jet monté à la main au call-site, et un helper de `src/engine` qui roule
 // pour le compte d'un flux (`resolveClash` → `rollMightTest` → `rollTest`). Ce registre FIGE la
 // population avant que les lots de re-routage la fassent bouger.
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { listerArbre } from '../guards/lib/lister.mjs'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import {
@@ -31,21 +32,12 @@ const OUT = join(ROOT, 'docs/registre-jets.md')
 const TOOL = 'build-registre-jets'
 const check = process.argv.includes('--check')
 
-/** Fichiers de PRODUCTION (hors tests) d'un dossier, en chemin relatif POSIX. */
+/** Fichiers de PRODUCTION (hors tests) d'un jeu de dossiers, en chemin relatif POSIX, en ORDRE TOTAL. */
 function prodFiles(...dirs) {
-  const out = []
-  const walk = (dir) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e)
-      if (statSync(p).isDirectory()) walk(p)
-      else if (/\.tsx?$/.test(e)) {
-        const rel = relative(ROOT, p).split('\\').join('/')
-        if (!/\.test\.[tj]sx?$/.test(rel)) out.push({ rel, text: readFileSync(p, 'utf8') })
-      }
-    }
-  }
-  for (const d of dirs) walk(join(ROOT, d))
-  return out
+  return dirs.flatMap((d) =>
+    listerArbre(join(ROOT, d), { filtre: (rel) => /\.tsx?$/.test(rel) && !/\.test\.[tj]sx?$/.test(rel) })
+      .map((rel) => ({ rel: `${d}/${rel}`, text: readFileSync(join(ROOT, d, rel), 'utf8') })),
+  )
 }
 
 // --- (F) fabrication d'un pending de jet -----------------------------------------------------
@@ -89,19 +81,12 @@ for (const { rel, text } of prodFiles('src')) {
 // nœud porte son `FlowTest`), soit 78 objets pour 39 nœuds dans `criticals.json` — et elle rate le
 // point : ce qu'un registre de jets dénombre, ce sont les JETS.
 
-/** Fichiers `.json` d'un jeu de dossiers, en chemin relatif POSIX, TRIÉS (ordre total : le rendu ne
- *  dépend pas de l'ordre de `readdirSync`, qui diffère entre NTFS et ext4). */
+/** Fichiers `.json` d'un jeu de dossiers, en chemin relatif POSIX. Chaque dossier est rendu en ordre
+ *  total par `listerArbre` ; le tri final ordonne la CONCATÉNATION des dossiers. */
 function jsonFiles(...dirs) {
-  const out = []
-  const walk = (dir) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e)
-      if (statSync(p).isDirectory()) walk(p)
-      else if (e.endsWith('.json')) out.push(relative(ROOT, p).split('\\').join('/'))
-    }
-  }
-  for (const d of dirs) walk(join(ROOT, d))
-  return out.sort()
+  return dirs
+    .flatMap((d) => listerArbre(join(ROOT, d), { filtre: (rel) => rel.endsWith('.json') }).map((rel) => `${d}/${rel}`))
+    .sort()
 }
 
 /** Nœuds `kind:'test'` d'un document, à toute profondeur. */

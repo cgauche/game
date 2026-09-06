@@ -7,7 +7,8 @@
 // connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel par
 // extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
 // node scripts/raw/build-catalogs.mjs
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, chapterFile as chapterFileLib, readText } from './_lib.mjs'
@@ -82,7 +83,7 @@ function chapterFile(abbr, nn, range) {
 function main() {
 // Fail-fast : sans extraction sur disque, `chapterFile` rend null pour TOUT chapitre et le
 // catalogue s'écrirait VIDE, écrasant le committé. On refuse avant la moindre écriture.
-const dirsVides = BOOKS.filter(([, dir]) => !existsSync(dir) || !readdirSync(dir).some((f) => f.endsWith('.md')))
+const dirsVides = BOOKS.filter(([, dir]) => !existsSync(dir) || !listerDossier(dir).some((f) => f.endsWith('.md')))
 if (dirsVides.length) {
   console.error(`build-catalogs — ${dirsVides.length} extraction(s) Source/ absente(s) ou vide(s) : aucun catalogue écrit.`)
   for (const [abbr, dir] of dirsVides) console.error(`  ${abbr} → ${dir}`)

@@ -17,6 +17,8 @@ import { dirname, join } from 'node:path'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 const GARDE = join(ICI, 'check-plans-anchors.mjs')
+/** Libs que la garde importe en RELATIF : le dépôt jetable doit les porter au même chemin. */
+const LIBS = [['scripts', 'guards', 'lib', 'lister.mjs']]
 
 const git = (base, ...args) => {
   const r = spawnSync('git', args, { cwd: base, encoding: 'utf8' })
@@ -39,6 +41,10 @@ function depot(fichiers = {}) {
   git(base, 'config', 'commit.gpgsign', 'false')
   mkdirSync(join(base, 'scripts', 'docs'), { recursive: true })
   copyFileSync(GARDE, join(base, 'scripts', 'docs', 'check-plans-anchors.mjs'))
+  for (const parts of LIBS) {
+    mkdirSync(join(base, ...parts.slice(0, -1)), { recursive: true })
+    copyFileSync(join(ICI, '..', ...parts.slice(1)), join(base, ...parts))
+  }
   for (const [rel, texte] of Object.entries(fichiers)) ecrire(base, rel, texte)
   git(base, 'add', '-A')
   git(base, 'commit', '-q', '-m', 'socle')

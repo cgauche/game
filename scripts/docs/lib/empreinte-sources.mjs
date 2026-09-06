@@ -14,7 +14,8 @@
 // graphie de fin de ligne — mesuré 2026-09-02 : 6 526 fichiers `i/lf w/lf`, 34 binaires, 0 mixte.
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { readFileSync, statSync, writeFileSync } from 'node:fs'
+import { listerDossier } from '../../guards/lib/lister.mjs'
 import path from 'node:path'
 
 const sha1 = (donnee) => createHash('sha1').update(donnee).digest('hex')
@@ -106,9 +107,7 @@ export function fusionnerLectures(dossier) {
   const fichiers = new Set()
   const ecrits = new Set()
   const dossiers = new Map()
-  let noms
-  try { noms = readdirSync(dossier) } catch { noms = [] }
-  for (const nom of noms.sort()) {
+  for (const nom of listerDossier(dossier, { absent: 'vide' })) {
     if (nom.endsWith('.hooks.jsonl')) {
       for (const rel of readFileSync(path.join(dossier, nom), 'utf8').split('\n')) if (rel) fichiers.add(rel)
       continue

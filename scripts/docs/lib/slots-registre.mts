@@ -11,6 +11,7 @@ import { slotsDe, type Slot } from '../../../src/data/schemas/grammaire/slots';
 import { IDS_PAR_DATASET } from '../../../src/data/schemas/_ids.generated';
 import { TYPES, type TypeEntite } from '../../../src/data/schemas/grammaire/ref';
 import { nomDeDocument, type FormeObservee } from './structures-scan.mjs';
+import { parUnitesDeCode } from '../../guards/lib/lister.mjs';
 
 /**
  * Les defs des DEUX racines, keyées comme le scan key ses documents : par BASENAME. Les defs de
@@ -97,7 +98,7 @@ export function champsSansSlot(formes: readonly FormeObservee[], slots: readonly
     vu.occurrences += f.occurrences;
     observes.set(cle, vu);
   }
-  return [...observes.values()].sort((a, b) => a.dataset.localeCompare(b.dataset) || a.champ.localeCompare(b.champ));
+  return [...observes.values()].sort((a, b) => parUnitesDeCode(a.dataset, b.dataset) || parUnitesDeCode(a.champ, b.champ));
 }
 
 /** Les (dataset, champ) porteurs de références observées ET déclarés par un slot — la JOINTURE. */

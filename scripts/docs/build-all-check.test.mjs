@@ -8,7 +8,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -44,7 +45,7 @@ const SOURCES = { 'g/a.mjs': ['src/a.ts'], 'g/b.mjs': ['src/b.ts'], 'g/bloc.mjs'
 
 /** Empreinte des sources d'un générateur, telle que le DISQUE les porte — ce que le pied signe. */
 function empreinteDe(racine, script) {
-  const lues = { fichiers: SOURCES[script], dossiers: new Map([['src', readdirSync(path.join(racine, 'src'))]]) }
+  const lues = { fichiers: SOURCES[script], dossiers: new Map([['src', listerDossier(path.join(racine, 'src'))]]) }
   return empreinteDuDisque(racine, lues, new Set()).empreinte
 }
 

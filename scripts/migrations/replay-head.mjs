@@ -35,10 +35,22 @@ import { join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PERIMETRE, rejouer } from './replay.mjs'
 import { blobsDe, comparer, empreinteDe, rapportDEcart } from './lib/empreinteRejeu.mjs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 
-/** Racine de TOUS les exports. Le préfixe est court (MAX_PATH) et l'effacement ne s'autorise QUE
- *  sous lui — un `rmSync` récursif ne se pointe pas sur un chemin calculé sans garde-fou. */
+/** Racine de TOUS les exports — PARTAGÉE entre processus. Le préfixe est court (MAX_PATH) et
+ *  l'effacement ne s'autorise QUE sous lui : un `rmSync` récursif ne se pointe pas sur un chemin
+ *  calculé sans garde-fou. */
 export const RACINE_DES_EXPORTS = join(tmpdir(), 'wr')
+
+/** Exports laissés sous la racine par le processus `pid` — le nom d'un export EMBARQUE son PID
+ *  (`<sha8>-<pid>`, cf. `rejeuSurExport`). La racine est PARTAGÉE : un `pre-push` voisin, un
+ *  `migrations:replay:head` à la main, un autre worktree ou un autre fichier de test y écrivent EN
+ *  MÊME TEMPS. Qui lirait le dossier ENTIER jugerait le voisin — mesuré sur `test:hooks` : l'export
+ *  étranger `94fa18f3-13272` faisait rougir trois tests qui n'avaient rien fabriqué. Ordre total
+ *  (`listerDossier`) : le résultat se compare par égalité sans dépendre de l'OS.
+ *  @param {number} [pid] @returns {string[]} */
+export const exportsDuProcessus = (pid = process.pid) =>
+  listerDossier(RACINE_DES_EXPORTS, { absent: 'vide' }).filter((nom) => nom.endsWith(`-${pid}`))
 
 /**
  * Ce que l'export porte, et POURQUOI — le rejeu lit bien au-delà du périmètre qu'il écrit.

@@ -19,6 +19,7 @@
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { classer, fait, indisponible } from './gitPorte.mjs'
+import { parUnitesDeCode } from './lister.mjs'
 
 /** Champs demandés à `gh` : l'union de ce que les trois consommateurs lisent, une seule fois. */
 export const CHAMPS = 'conclusion,createdAt,databaseId,headSha,status,workflowName'
@@ -49,7 +50,7 @@ function listeDuStub(chemin) {
 export function triees(courses) {
   return [...(courses ?? [])]
     .map((c, rang) => ({ c, rang }))
-    .sort((a, b) => String(b.c.createdAt ?? '').localeCompare(String(a.c.createdAt ?? '')) || a.rang - b.rang)
+    .sort((a, b) => parUnitesDeCode(String(b.c.createdAt ?? ''), String(a.c.createdAt ?? '')) || a.rang - b.rang)
     .map(({ c }) => c)
 }
 

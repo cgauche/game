@@ -18,8 +18,9 @@
 // tombe dans AUCUN concept, font échouer la génération — donc la CI (docs:check). Le lexique est
 // forcé de croître avec le vocabulaire.
 import ts from 'typescript'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, basename } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { parLibelle, listerArbre } from '../guards/lib/lister.mjs'
+import { basename } from 'node:path'
 import { loadSource, findAlias, aliasDoc, readUnionMembers, renderFields, emitOrCheck } from './lib/jsdocUnion.mjs'
 
 const OPS_SRC = 'src/engine/ops.ts'
@@ -120,19 +121,17 @@ function applyOpsCases(sf, path) {
 // ---------------------------------------------------------------------------
 // Mesure 2 — modules qui NOMMENT l'op (là où une op hors-`applyOps` est réellement résolue).
 // ---------------------------------------------------------------------------
-function walkFiles(dir, exts, acc = []) {
-  for (const e of readdirSync(dir).sort()) {
-    const p = join(dir, e).split('\\').join('/')
-    let s; try { s = statSync(p) } catch { continue }
-    if (s.isDirectory()) { if (e !== 'node_modules') walkFiles(p, exts, acc) }
-    else if (exts.some((x) => e.endsWith(x)) && !/\.test\.tsx?$/.test(e)) acc.push(p)
-  }
-  return acc
+/** Fichiers de PRODUCTION de `dir` portant une des extensions, en ORDRE TOTAL (hors `node_modules`). */
+function fichiersSources(dir, exts) {
+  return listerArbre(dir, {
+    descendre: (rel) => !rel.split('/').includes('node_modules'),
+    filtre: (rel) => exts.some((x) => rel.endsWith(x)) && !/\.test\.tsx?$/.test(rel),
+  }).map((rel) => `${dir}/${rel}`)
 }
 
 function measureResolvers(opNames) {
   const byOp = new Map(opNames.map((n) => [n, new Set()]))
-  const files = RESOLVER_ROOTS.flatMap((r) => walkFiles(r, ['.ts', '.tsx'])).filter((f) => f !== OPS_SRC)
+  const files = RESOLVER_ROOTS.flatMap((r) => fichiersSources(r, ['.ts', '.tsx'])).filter((f) => f !== OPS_SRC)
   for (const f of files) {
     const text = readFileSync(f, 'utf8')
     // Restreint aux modules du vocabulaire (ils importent/manipulent `GameOp`) : évite qu'un
@@ -172,14 +171,14 @@ function measureDataUsage(opNames) {
     }
   }
 
-  for (const f of walkFiles(DATA_ROOT, ['.json'])) {
+  for (const f of fichiersSources(DATA_ROOT, ['.json'])) {
     let parsed
     try { parsed = JSON.parse(readFileSync(f, 'utf8')) } catch { continue }
     walkJson(parsed, null, f, 0)
   }
   // Données MANUSCRITES sourcées en .ts (criticals, shipCriticals, defs/…) : pas d'`id` remontable
   // sans typage — le fichier suffit à prouver l'usage.
-  for (const f of walkFiles(DATA_ROOT, ['.ts'])) {
+  for (const f of fichiersSources(DATA_ROOT, ['.ts'])) {
     const text = readFileSync(f, 'utf8')
     for (const m of text.matchAll(/\bop:\s*'([A-Za-z][\w]*)'/g)) push(m[1], f, null)
   }
@@ -279,13 +278,13 @@ out += `Les noms d'ops sont en anglais, le projet et ses sources sont en frança
 out += `Elle est DÉRIVÉE (motifs du lexique appliqués au nom + au JSDoc de chaque op) — une op qui ne tombe dans aucun\n`
 out += `concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieurs concepts.\n\n`
 out += `| Concept | Ops |\n|---|---|\n`
-for (const [label, list] of [...opsOfConcept].sort((a, b) => a[0].localeCompare(b[0], 'fr'))) {
+for (const [label, list] of [...opsOfConcept].sort((a, b) => parLibelle(a[0], b[0]))) {
   out += `| ${esc(label)} | ${list.map((n) => `\`${n}\``).join(', ')} |\n`
 }
 
 out += `\n## GameOp — les ${opRows.length} opérations\n\n`
 out += `| Op | Champs | Résolution | Résolveurs | Donnée | Rôle |\n|---|---|---|---|---|---|\n`
-for (const r of [...opRows].sort((a, b) => a.name.localeCompare(b.name))) {
+for (const r of [...opRows].sort((a, b) => parLibelle(a.name, b.name))) {
   const resolution = VERDICT.get(r.name) ?? 'hors switch'
   out += `| \`${r.name}\` | ${renderFields(r.fieldGroups)} | ${resolution === 'exécutée' ? 'exécutée' : `**${resolution}**`} | ${resolverCell(r.name)} | ${usageCell(r.name)} | ${esc(r.role)} |\n`
 }

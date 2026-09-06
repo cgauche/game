@@ -58,6 +58,7 @@
 //     `.mts` de `scripts/guards/lib/` sont tous des `.d.mts` générés, et aucun `.mts` de `scripts/`
 //     ne porte 3 entrées littérales) ; le jour où il en naît un, cette liste l'accueille.
 import { createRequire } from 'node:module'
+import { parUnitesDeCode } from './lister.mjs'
 
 /** Fichiers susceptibles de porter un stock nominatif. */
 const PORTEURS = [
@@ -341,7 +342,7 @@ export function croissanceDesStocks(diffU0, { lirePostImage = null, lirePreImage
       };
     })
     .filter((c) => c.net > 0)
-    .sort((a, b) => a.fichier.localeCompare(b.fichier, 'en'));
+    .sort((a, b) => parUnitesDeCode(a.fichier, b.fichier));
 }
 
 /** Longueur minimale d'un motif de cliquet : sous ce seuil, c'est un tampon, pas une raison. */

@@ -11,6 +11,7 @@
 // compterait ce que chaque worktree fait de son côté (20 sur ce dépôt, dont des trains qui ne
 // rejoignent jamais `main`) : deux worktrees suffisent à en faire un nombre que rien ne recoupe.
 import { GitIndisponible, estAncetre, lireGit, sortieOuNull } from './gitPorte.mjs'
+import { parUnitesDeCode } from './lister.mjs'
 
 /** Lecture git de ce module : la sortie, ou `''` quand l'objet demandé n'existe pas (un dépôt sans
  *  HEAD ne porte aucune archive, et ce n'est pas une erreur). Une INDISPONIBILITÉ (git absent, hors
@@ -127,7 +128,7 @@ export function derniereRevueArchivee(cwd = process.cwd()) {
     if (vu.absent || vu.valeur !== true) continue
     jugeantes.push({ ...r, reste: Number.parseInt(git(['rev-list', '--count', `${r.tete}..HEAD`], cwd).trim(), 10) })
   }
-  jugeantes.sort((a, b) => a.reste - b.reste || a.chemin.localeCompare(b.chemin))
+  jugeantes.sort((a, b) => a.reste - b.reste || parUnitesDeCode(a.chemin, b.chemin))
   if (jugeantes.length === 0) return { etat: 'toutes-orphelines', chemins: archivees.map((r) => r.chemin) }
   return { etat: 'trouvee', ...jugeantes[0] }
 }

@@ -65,7 +65,8 @@
 // (`"id": "…", (?="label")`), la déclaration de l'entité dans SON PROPRE catalogue est retirée par
 // PARSE JSON (suppression de la seule clé top-level `id` avant re-sérialisation) — robuste à
 // n'importe quel ordre/forme de champs, généralisable aux 8 catalogues sans regex par fichier.
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { listerArbre, listerDossier } from './lister.mjs';
 import { join } from 'node:path';
 
 /** Catalogues `src/data/*.json` adressés par `id`, retenus pour la mesure d'orphelines — MÊME
@@ -138,19 +139,21 @@ function isGeneratedFile(path, text) {
   return /GÉNÉRÉ[\s\S]{0,120}?NE PAS ÉDITER/i.test(head);
 }
 
+/** Fichiers `.ts(x)` de PRODUCTION sous `srcDir`, chemins RELATIFS à `srcDir`, en ORDRE TOTAL :
+ *  l'ordre décide de celui des sites `recognized`, donc du `.md` rendu. */
+function fichiersDeProduction(srcDir) {
+  return listerArbre(srcDir, { filtre: (rel) => /\.(ts|tsx)$/.test(rel) && !/\.test\./.test(rel) });
+}
+
 /** Documents de PROJET de scène (`src/scenes/<projet>/<projet>-projet.json`), découverts par
  *  STRUCTURE (tout sous-dossier de `src/scenes`, tout fichier `*-projet.json`) — jamais une liste de
  *  chemins en dur : une liste à tenir manque le prochain projet en silence, fail-OPEN. */
 function sceneProjectFiles(srcDir) {
   const dir = join(srcDir, 'scenes');
-  const out = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    if (!e.isDirectory()) continue;
-    for (const f of readdirSync(join(dir, e.name))) {
-      if (f.endsWith('-projet.json')) out.push(join(dir, e.name, f));
-    }
-  }
-  return out;
+  return listerArbre(dir, {
+    descendre: (rel) => !rel.includes('/'),
+    filtre: (rel) => rel.includes('/') && rel.endsWith('-projet.json'),
+  }).map((rel) => join(dir, rel));
 }
 
 /** FRONTIÈRE « déclaré SIEN » vs « référencé » d'un document de scène — symétrique du
@@ -208,7 +211,7 @@ export function sceneConsumerCorpus(srcDir) {
  *  passe `EXCLUDED_CATEGORY_FILES` pour dériver les comptes bruts des écartés). */
 export function buildConsumerCorpus(dataDir, srcDir, files = CATEGORY_FILES) {
   let corpus = '';
-  const dataFiles = readdirSync(dataDir).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
+  const dataFiles = listerDossier(dataDir).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
   const targetFiles = new Set(Object.values(files));
   for (const f of dataFiles) {
     const raw = readFileSync(join(dataDir, f), 'utf8');
@@ -219,17 +222,11 @@ export function buildConsumerCorpus(dataDir, srcDir, files = CATEGORY_FILES) {
       corpus += raw;
     }
   }
-  const walk = (d) => {
-    for (const e of readdirSync(d, { withFileTypes: true })) {
-      const p = join(d, e.name);
-      if (e.isDirectory()) walk(p);
-      else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name)) {
-        const src = readFileSync(p, 'utf8');
-        if (!isGeneratedFile(p, src)) corpus += stripComments(src);
-      }
-    }
-  };
-  walk(srcDir);
+  for (const rel of fichiersDeProduction(srcDir)) {
+    const p = join(srcDir, rel);
+    const src = readFileSync(p, 'utf8');
+    if (!isGeneratedFile(p, src)) corpus += stripComments(src);
+  }
   corpus += `\n${sceneConsumerCorpus(srcDir)}`;
   return corpus;
 }
@@ -370,16 +367,10 @@ export function computeFieldPredicateConsumers(dataDir, srcDir) {
     }
   };
 
-  const walk = (d) => {
-    for (const e of readdirSync(d, { withFileTypes: true })) {
-      const p = join(d, e.name);
-      if (e.isDirectory()) walk(p);
-      else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name)) {
-        const src = readFileSync(p, 'utf8');
-        if (!isGeneratedFile(p, src)) scanFile(p, src);
-      }
-    }
-  };
-  walk(srcDir);
+  for (const rel of fichiersDeProduction(srcDir)) {
+    const p = join(srcDir, rel);
+    const src = readFileSync(p, 'utf8');
+    if (!isGeneratedFile(p, src)) scanFile(p, src);
+  }
   return { consumed, recognized, skipped };
 }

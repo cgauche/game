@@ -9,7 +9,7 @@ import {
   parseFiche, renderBlock, regenerateFiche, validateManifest, isExcludedSrc, indexCode, isDeadExport,
   GUARD_LEAK_RE, GEN_TAG, NOT_IMPL,
   buildAbbrMap, folioCitationsFromJson, findManifestOrphans, computeAll, computeFolioWinners,
-  headingForTopic, MANIFEST_PATH,
+  headingForTopic, MANIFEST_PATH, ordreDesPuces,
 } from './build-implemente.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
@@ -17,6 +17,26 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const COMMENT_OR_BLANK = /^\s*(?:\/\/|\/\*|\*|$)/
+
+// #1244 — l'ordre des puces d'un champ `**Implémente :**` est TOTAL : deux puces de même
+// (livre, chapitre), venues de deux fichiers, ne peuvent plus garder l'ordre d'insertion (celui de la
+// marche du disque, qui diffère entre NTFS et ext4). Le départage est le TEXTE de la puce, qui porte
+// les fichiers cités. Test de la fonction PURE : aucune lecture disque.
+test('#1244 ordre TOTAL des puces — même (livre, chapitre), deux fichiers : le rendu ne dépend pas de l’ordre d’entrée', () => {
+  const puces = [
+    { book: 'LDB', ch: 5, text: '- `LDB 5` (l.10) → src/engine/aaa.ts' },
+    { book: 'LDB', ch: 5, text: '- `LDB 5` (l.20) → src/state/zzz.ts' },
+    { book: 'LDB', ch: 2, text: '- `LDB 2` (l.1) → src/engine/bbb.ts' },
+  ]
+  const attendu = [
+    '- `LDB 2` (l.1) → src/engine/bbb.ts',
+    '- `LDB 5` (l.10) → src/engine/aaa.ts',
+    '- `LDB 5` (l.20) → src/state/zzz.ts',
+  ]
+  assert.deepEqual([...puces].sort(ordreDesPuces).map((p) => p.text), attendu)
+  assert.deepEqual([...puces].reverse().sort(ordreDesPuces).map((p) => p.text), attendu,
+    'deux puces de même (livre, chapitre) suivent encore l’ordre d’insertion : le départage a sauté')
+})
 
 // --- fabrique d'index depuis des fichiers en mémoire (miroir de indexCode) ---
 function makeIndex(files) {

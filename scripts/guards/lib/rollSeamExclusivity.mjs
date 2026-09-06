@@ -41,6 +41,7 @@
 // (`importsDuMoteur` : nom local → nom d'origine) — elle ne pouvait pas s'en remettre à la coïncidence
 // qui fait tomber `roll as rollDice` sur un autre nom de son amorce.
 import tsModule from 'typescript';
+import { parUnitesDeCode } from './lister.mjs'
 
 // Liaison LOCALE de l'API du compilateur — FAIT mesuré 2026-08-23 : sous Vitest ce module passe par
 // vite-node, et chaque `ts.x` d'un visiteur AST se relit alors sur l'objet d'import du runner. Même
@@ -433,7 +434,7 @@ export function scanDesHorsPorte(relPath, contenu, rollerNames) {
     ts.forEachChild(node, visit);
   };
   ts.forEachChild(sf, visit);
-  return [...vus.values()].sort((a, b) => a.line - b.line || a.name.localeCompare(b.name));
+  return [...vus.values()].sort((a, b) => a.line - b.line || parUnitesDeCode(a.name, b.name));
 }
 
 /**

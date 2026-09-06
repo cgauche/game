@@ -270,4 +270,4 @@ Panneau : onglet « Divers », intertitre « Possessions ».
 | id | Libellé | Forme | Défaut | Valeurs | Référence | Ce que la règle change (`hint` verbatim) |
 |---|---|---|---|---|---|---|
 | `possession-random-chars-on-acquire` | Caractéristiques aléatoires à l’acquisition (bêtes/serviteurs) | `flag` | `true` | `false` · `true` | LDB 77 l.108 · **maison** | À l’acquisition d’une bête ou d’un serviteur (achat, dotation, don), tire une fois ses caractéristiques (−10 + 2d10, ou 1d10 si la Caractéristique vaut 5) — le tirage se FIGE dans `Possession.charsRolled`, seedé sur son uid : jamais relancé (« Elles seront relancées à chaque combat ? Pas fou. »). Désactivé : la possession garde le profil imprimé du catalogue. |
-<!-- sources-empreinte: 84154f06de62637d3a28a2a6030200e9c25f8486 (9 fichiers, 0 dossiers) corps: 0483d01274d7b3294116b8f56d81a7e9c4e9800e -->
+<!-- sources-empreinte: cd4151b5306fef8cc4be4ebee8e7d1a5aa475e2a (10 fichiers, 0 dossiers) corps: 0483d01274d7b3294116b8f56d81a7e9c4e9800e -->

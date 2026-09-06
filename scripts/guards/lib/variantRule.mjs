@@ -4,7 +4,8 @@
 // (gate fantôme = une variante que `rule()` ne peut jamais activer, silencieusement morte). Module
 // ESM pur, exécutable par `node` nu — consommé par `src/data/variants-integrity.test.ts`.
 
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
+import { listerDossier } from './lister.mjs'
 import { join } from 'node:path'
 
 /** Réfs `variants[].when.rule` d'un dataset, à TOUTE profondeur (même patron de walk que
@@ -51,7 +52,7 @@ export function variantRulesOf(data) {
 export function unknownVariantRules(dataDir, knownRuleIds) {
   /** @type {{ key: string, file: string, rule: string }[]} */
   const violations = []
-  const files = readdirSync(dataDir).filter((f) => f.endsWith('.json')).sort()
+  const files = listerDossier(dataDir).filter((f) => f.endsWith('.json'))
   for (const f of files) {
     let data
     try {

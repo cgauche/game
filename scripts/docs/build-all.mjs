@@ -27,10 +27,11 @@
 // deux qui appelaient `npx tsx <dumper>` (`build-donnees.mjs`, `build-codex-relations.mjs`, passés à
 // `resoudreOutilLocal` + `envIsole`, qui transmettent l'env).
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path, { resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { binLocal, envIsole, resoudreOutilLocal } from '../lancer-local.mjs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { execFileResilient } from '../guards/lib/spawnResilient.mjs'
 import {
   avecPied, deltaSourcesLues, empreinteDeLIndex, empreinteDuDisque, existeFichier, fusionnerLectures,
@@ -123,9 +124,9 @@ export function ciblesSurDisque(cibles, cwd) {
     if (!cible.includes('*')) return [cible]
     const dossier = cible.slice(0, cible.lastIndexOf('/'))
     const motif = new RegExp(`^${cible.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`)
-    let noms
-    try { noms = readdirSync(path.join(cwd, dossier)) } catch { noms = [] }
-    return noms.map((n) => `${dossier}/${n}`).filter((p) => motif.test(p)).sort()
+    return listerDossier(path.join(cwd, dossier), { absent: 'vide' })
+      .map((n) => `${dossier}/${n}`)
+      .filter((p) => motif.test(p))
   })
 }
 
@@ -387,7 +388,7 @@ export function fraicheurDesGenerateurs(cwd, blobs, lues, ignores, generateurs =
       motifs.set(g.script, 'aucune cible signée (il n’injecte qu’un bloc) : rien à juger frais')
       continue
     }
-    const dossiers = new Map(entree.dossiers.map((d) => [d, listerDossier(cwd, d)]))
+    const dossiers = new Map(entree.dossiers.map((d) => [d, listerDossier(path.join(cwd, d), { absent: 'vide' })]))
     const surIndex = empreinteDeLIndex(blobs, {
       fichiers: entree.fichiers,
       dossiers: new Map(entree.dossiers.map((d) => [d, []])),
@@ -426,15 +427,6 @@ export function fraicheurDesGenerateurs(cwd, blobs, lues, ignores, generateurs =
     else frais.set(g.script, surIndex.empreinte)
   }
   return { frais, motifs }
-}
-
-/** Noms des enfants DIRECTS d'un dossier du disque (vide s'il n'existe pas). */
-function listerDossier(cwd, dossier) {
-  try {
-    return readdirSync(path.join(cwd, dossier))
-  } catch {
-    return []
-  }
 }
 
 function main() {

@@ -3,7 +3,8 @@
 // build-systemes.mjs : manifest éditorial (src/data/raw.manifest.json) + calcul + mode --check qui
 // régénère en mémoire, compare au committé, exit 1 sans écrire.
 // Re-run : node scripts/raw/build-implemente.mjs (npm run raw:implemente).
-import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { parUnitesDeCode, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ldbRe, otherRe, span, bookOf, BOOKS, esc, folioRange, otherAbbrAlternation, readText, PIVOT_ABBR } from './_lib.mjs'
@@ -315,15 +316,13 @@ export function parseFiche(basename, content) {
   return { fields, anomalies }
 }
 
-function walkSrc(dir, acc = []) {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e)
-    let s
-    try { s = statSync(p) } catch { continue }
-    if (s.isDirectory()) { if (e !== 'node_modules') walkSrc(p, acc) }
-    else if (/\.(tsx?|json)$/.test(e)) acc.push(p)
-  }
-  return acc
+/** Fichiers `.ts(x)`/`.json` sous `dir`, en ORDRE TOTAL : l'ordre des fichiers départage deux puces
+ *  de même (livre, chapitre) au rendu du champ `**Implémente :**` (#1244). */
+function fichiersDuCode(dir) {
+  return listerArbre(dir, {
+    descendre: (rel) => !rel.split('/').includes('node_modules'),
+    filtre: (rel) => /\.(tsx?|json)$/.test(rel),
+  }).map((rel) => join(dir, rel))
 }
 
 /** Index du code : citations non-test / test, lignes des .ts(x) (symboles), textes non-test (appelants).
@@ -335,7 +334,7 @@ export function indexCode(srcDir = SRC_DIR, abbrMap = null) {
   const fileLines = new Map()       // rel -> lines[]  (.ts/.tsx)
   const nonCommentText = new Map()  // rel -> lignes NON-commentaires jointes (non-test, pour les appelants)
   const folioStats = { byBook: new Map(), noAtlas: 0, noPage: 0 }
-  for (const f of walkSrc(srcDir)) {
+  for (const f of fichiersDuCode(srcDir)) {
     const rel = f.replace(/\\/g, '/')
     if (isExcludedSrc(rel)) continue
     const isTest = /\.(test|spec)\./.test(rel)
@@ -416,7 +415,7 @@ export function renderBlock(field, ctx) {
     if (!matchedSpans.length) continue
     bullets.push(buildMatchBullet(g, matchedSpans, [...citMap.values()], { index, closure }))
   }
-  bullets.sort((a, b) => (BOOK_ORDER.get(a.book) ?? 99) - (BOOK_ORDER.get(b.book) ?? 99) || a.ch - b.ch)
+  bullets.sort(ordreDesPuces)
 
   const manifest = manifestByTopic.get(field.topic)
   const manifestBullets = []
@@ -462,7 +461,7 @@ function buildMatchBullet(g, matchedSpans, cits, { index, closure }) {
     }
   }
   const symbols = [...symFirstRow.entries()]
-    .sort((a, b) => a[1].row - b[1].row || a[0].localeCompare(b[0]))
+    .sort((a, b) => a[1].row - b[1].row || parUnitesDeCode(a[0], b[0]))
     .map(([name, info]) => {
       const dead = isDeadExport(name, info.defFile, index)
       return `\`${name}\`${dead ? ' ⚠sans-appelant' : ''}`
@@ -478,9 +477,19 @@ function buildMatchBullet(g, matchedSpans, cits, { index, closure }) {
   return { book: g.book, ch: g.ch, text: `- \`${g.book} ${g.ch}\` (${spans.map(fmtSpan).join(', ')}) → ${after}` }
 }
 
+/** Ordre TOTAL des puces d'un champ `**Implémente :**` : livre (ordre du registre), chapitre, puis le
+ *  TEXTE de la puce — qui porte les fichiers cités. PUR (aucune lecture disque). Sans ce dernier
+ *  départage, deux puces de même (livre, chapitre) issues de deux fichiers gardaient l'ordre
+ *  d'insertion, c'est-à-dire celui de la marche du disque (#1244). Les groupes `sans code` n'ont pas
+ *  de `text` : leur clé `book|ch` est unique, le départage y est inerte. */
+export const ordreDesPuces = (a, b) =>
+  (BOOK_ORDER.get(a.book) ?? 99) - (BOOK_ORDER.get(b.book) ?? 99)
+  || a.ch - b.ch
+  || parUnitesDeCode(a.text ?? '', b.text ?? '')
+
 function renderSansCode(groups) {
   if (!groups.length) return null
-  groups.sort((a, b) => (BOOK_ORDER.get(a.book) ?? 99) - (BOOK_ORDER.get(b.book) ?? 99) || a.ch - b.ch)
+  groups.sort(ordreDesPuces)
   const parts = []
   let count = 0
   let overflow = 0
@@ -550,7 +559,7 @@ export function validateManifest(arr, knownTopics) {
 export function buildContext({ rawDir = RAWDIR, srcDir = SRC_DIR, manifestPath = MANIFEST_PATH, booksPath = BOOKS_JSON_PATH } = {}) {
   const index = indexCode(srcDir, loadAbbrMap(booksPath))
   const closure = closureOf([APP_ROOT_MODULE])
-  const docs = readdirSync(rawDir).filter(isFicheDoc)
+  const docs = listerDossier(rawDir).filter(isFicheDoc)
   const fiches = docs.map((doc) => {
     const content = readText(join(rawDir, doc))
     return { doc, content, parsed: parseFiche(doc, content) }
@@ -608,7 +617,7 @@ function printStats(ctx, { perTopic, anomalies }, touched) {
 
 function printFolioStats(fs) {
   if (!fs) return
-  const rows = [...fs.byBook.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+  const rows = [...fs.byBook.entries()].sort((a, b) => parUnitesDeCode(a[0], b[0]))
   let R = 0, N = 0, A = 0
   for (const [, s] of rows) { R += s.resolved; N += s.notFound; A += s.ambiguous }
   console.log(`folio : ${R} résolus · ${N} introuvables · ${A} ambigus · ${fs.noAtlas} hors-Atlas (slug sans abbr) · ${fs.noPage} sans page`)

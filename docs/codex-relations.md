@@ -141,8 +141,8 @@ est celle du document porteur, telle que `document()` la déclare.
 | `miscastMinor` | Incantations Imparfaites — Mineures | `src/data/miscast.json` | niché (3 catégorie(s)) |
 | `miscastWrath` | Colère des dieux | `src/data/miscast.json` | niché (3 catégorie(s)) |
 | `montures` | Montures (profils de voyage) | `src/data/montures.json` | niché (1 catégorie(s)) |
-| `mutations` | Mutations | `src/data/mutations.json` | dataset `mutations` |
 | `mutationTables` | Tables de Corruption | `src/data/mutationTables.json` | dataset `mutationTables` |
+| `mutations` | Mutations | `src/data/mutations.json` | dataset `mutations` |
 | `names` | Banque de noms | `src/data/names.json` | dataset `names` |
 | `navalPorts` | Ports (Index de la Mer des Griffes) | `src/data/naval-ports.json` | dataset `navalPorts` |
 | `navalProgression` | Progression de navire (DR de Navigation → Mouvement) | `src/data/naval-progression.json` | niché (1 catégorie(s)) |
@@ -231,8 +231,8 @@ ligne = une arête `addReverse(cible, id, référant, titre?)` réellement prés
 | Domaines (`domains`) | États (`etats`) | « Domaines l’infligeant » | `src/ui/compendium/relations.ts:208` |
 | Dieux (`gods`) | Sorts (`spells`) | « Cultes (Bénédictions / Miracles) » | `src/ui/compendium/relations.ts:198` `src/ui/compendium/relations.ts:199` `src/ui/compendium/relations.ts:200` |
 | Lieux (`locations`) | Lieux (`locations`) | « Sous-lieux » | `src/ui/compendium/relations.ts:213` |
-| Mutations (`mutations`) | Traits (`traits`) | « Mutations conférant ce trait » | `src/ui/compendium/relations.ts:189` |
 | Tables de Corruption (`mutationTables`) | Mutations (`mutations`) | « Tables de Corruption la tirant » | `src/ui/compendium/relations.ts:211` |
+| Mutations (`mutations`) | Traits (`traits`) | « Mutations conférant ce trait » | `src/ui/compendium/relations.ts:189` |
 | Qualités (`qualities`) | États (`etats`) | « Qualités d’arme l’infligeant » | `src/ui/compendium/relations.ts:206` |
 | Races (`races`) | Carrières (`careers`) | « Races y accédant » | `src/ui/compendium/relations.ts:124` |
 | Races (`races`) | Compétences (`skills`) | — (titre de repli) | `src/ui/compendium/relations.ts:121` |
@@ -315,4 +315,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: 2853113f4b0565f9e9b88be6076b507878ffe0a0 (436 fichiers, 0 dossiers) corps: f6f11048740f297a49dc0e39bd868306d5fdf301 -->
+<!-- sources-empreinte: e707b5c86316971d2409baeffdcf0aec6f2ed1cc (437 fichiers, 0 dossiers) corps: be9d3ceeae59be3355e6242617cb74666fd0167a -->

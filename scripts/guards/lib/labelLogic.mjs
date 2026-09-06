@@ -4,7 +4,8 @@
 // SOURCE UNIQUE de la composition « map globale de déclarations id-param + résolution du shadowing »
 // (`collectIdParamFnsAcrossDirs`/`effectiveIdParamFns` ci-dessous), pour que les deux consommateurs
 // ne divergent jamais.
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { parUnitesDeCode, listerArbre } from './lister.mjs';
 import { join, relative, isAbsolute } from 'node:path';
 import tsModule from 'typescript';
 
@@ -385,7 +386,7 @@ export function scanLabelLiteralCompare(relPath, contenu) {
   };
 
   ts.forEachChild(sf, visit);
-  findings.sort((a, b) => a.line - b.line || a.rule.localeCompare(b.rule));
+  findings.sort((a, b) => a.line - b.line || parUnitesDeCode(a.rule, b.rule));
   return findings;
 }
 
@@ -697,16 +698,7 @@ export function scanLabelAsIdArg(relPath, contenu, idParamFns) {
  *  @param {string[]} dirs (absolus, ou relatifs à `root` si `root` fourni via `isAbsolute`)
  *  @returns {string[]} chemins absolus */
 function listTsFiles(dirs) {
-  const files = [];
-  const walk = (dir) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) files.push(p);
-    }
-  };
-  for (const d of dirs) walk(d);
-  return files;
+  return dirs.flatMap((d) => listerArbre(d, { filtre: (rel) => /\.tsx?$/.test(rel) }).map((rel) => join(d, rel)));
 }
 
 /** Exclusion PARTAGÉE du scan de corpus (déclaration ET appel) : fichiers de TEST, et

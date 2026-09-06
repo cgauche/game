@@ -14,7 +14,7 @@
 // baseline (à la différence de `check-entity-in-chapter`, dont le stock historique justifiait un
 // cliquet) : toute régression future doit échouer immédiatement, jamais se glisser sous un seuil.
 // Re-run : node scripts/raw/check-catalogue-complete.mjs (npm run raw:check-catalogue-complete).
-import { readdirSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { sectionsOf, sectionLevelOf, catalogChaptersOf, cleanTitle } from './coverage.mjs'
@@ -89,7 +89,7 @@ export function scanIncompleteChapters(catalogCh, blocks) {
 }
 
 function main() {
-  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
+  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
     .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
   const catalogCh = catalogChaptersOf(docs)
   const blocks = catalogueBlocksOf(docs)

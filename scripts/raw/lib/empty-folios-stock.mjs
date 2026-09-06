@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { BOOKS } from '../_lib.mjs'
 import { EMPTY_STOCK_PATH, scanEmptyFoliosInBook } from '../check-folio-continuity.mjs'
 import { extractPages, resolveBookOffset, HAS_LOWER_RE } from '../anchor-fill.mjs'
+import { parUnitesDeCode } from '../../guards/lib/lister.mjs'
 
 // Seuil de caractères utiles au-dessus duquel la page PDF est jugée PORTEUSE de texte. Mesuré sur
 // le corpus (rapport `--dry`) : les pages bénignes plafonnent bas (titre courant + légende), les
@@ -67,7 +68,7 @@ function main() {
     if (!r.ok) { console.log(`## ${abbr} — NON TRIABLE (${r.reason}) : ${scanEmptyFoliosInBook(abbr, dir).length} candidat(s)`); continue }
     toutes.push(...r.mesures)
   }
-  toutes.sort((a, b) => a.ref.localeCompare(b.ref) || a.folio - b.folio)
+  toutes.sort((a, b) => parUnitesDeCode(a.ref, b.ref) || a.folio - b.folio)
   const { perdues, benignes } = trier(toutes, seuil)
 
   console.log(`candidats mesurés : ${toutes.length} — PERDUES ${perdues.length} · bénignes ${benignes.length} (seuil ${seuil} caractères utiles au PDF)`)

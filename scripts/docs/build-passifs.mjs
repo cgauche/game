@@ -19,7 +19,8 @@
  *
  *   node scripts/docs/build-passifs.mjs
  */
-import { readdirSync, readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
+import { parUnitesDeCode, listerDossier } from '../guards/lib/lister.mjs'
 import ts from 'typescript'
 import { emitOrCheck, loadSource, firstSentence } from './lib/jsdocUnion.mjs'
 
@@ -207,7 +208,7 @@ const PRODUCTEURS = (() => {
         role: doc ? plat(firstSentence(doc[0].replace(/^\/\*\*|\*\/$/g, '').split('\n').map((l) => l.replace(/^\s*\*\s?/, '')).join(' ').replace(/\s+/g, ' ').trim())) : null,
       }
     })
-    .sort((a, b) => a.nom.localeCompare(b.nom))
+    .sort((a, b) => parUnitesDeCode(a.nom, b.nom))
 })()
 
 // ── Les documents PORTEURS d'un champ `passive` — lus au def, comptés à la donnée ──────────────────
@@ -216,7 +217,7 @@ const PRODUCTEURS = (() => {
  *  par « assive »). Le def dit le CHAMP, le `.json` dit combien d'entrées l'exercent. */
 const PORTEURS = (() => {
   const out = []
-  for (const f of readdirSync(DEFS).filter((f) => f.endsWith('.ts') && !f.includes('.test.')).sort()) {
+  for (const f of listerDossier(DEFS).filter((f) => f.endsWith('.ts') && !f.includes('.test.'))) {
     const chemin = `${DEFS}/${f}`
     const { text, sf } = loadSource(chemin)
     if (!/\bpassive\b/.test(text)) continue

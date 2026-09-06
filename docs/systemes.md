@@ -9,7 +9,7 @@
 parcours RÉGEX des specifiers `from '…'`/`import('…')`, RÉSOLUS SEULEMENT s'ils sont RELATIFS (`./`, `../`) — un
 import via alias tsconfig ou paquet npm n'est jamais suivi (`resolveImport` renvoie `null`), donc invisible ici sans
 que la primitive soit hors d'usage. L'inventaire « modules non rattachés » est lui-même borné : SURFACE de
-`src/state`/`src/engine` uniquement (`readdirSync` non récursif, `*.test.ts` exclus) — un fichier niché dans un
+`src/state`/`src/engine` uniquement (`listerDossier` non récursif, `*.test.ts` exclus) — un fichier niché dans un
 sous-dossier, ou situé ailleurs (`src/ui`, `src/gameIso`, `src/data`…), n'y apparaît jamais, rattaché ou non.
 
 ## Sommaire des systèmes
@@ -112,4 +112,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 1a19b20936c44f71cfc1735fbdeccb96797ad7fd (1823 fichiers, 2 dossiers) corps: 3db195b92ab34f5685b8521fb9c2b67641976d04 -->
+<!-- sources-empreinte: 01d6bcaba11b6c6b93ffa27fa15438347524e373 (1824 fichiers, 2 dossiers) corps: 8109ad59d4a036e33cbd27321f92205892d06787 -->

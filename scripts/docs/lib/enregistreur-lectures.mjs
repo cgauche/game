@@ -57,11 +57,13 @@ export function installer({ racine, cibles = [] } = {}) {
   const ecrits = new Set()
   const brut = {
     readFileSync: fs.readFileSync,
+    // eslint-disable-next-line no-restricted-syntax -- crochet : il POSE le listing, il ne le consomme pas
     readdirSync: fs.readdirSync,
     openSync: fs.openSync,
     writeFileSync: fs.writeFileSync,
     appendFileSync: fs.appendFileSync,
     promisesReadFile: fs.promises.readFile,
+    // eslint-disable-next-line no-restricted-syntax -- crochet : il POSE le listing, il ne le consomme pas
     promisesReaddir: fs.promises.readdir,
     promisesWriteFile: fs.promises.writeFile,
   }
@@ -85,6 +87,7 @@ export function installer({ racine, cibles = [] } = {}) {
     try {
       const rel = retenu(p)
       if (rel === null || dossiers.has(rel)) return
+      // eslint-disable-next-line no-restricted-syntax -- lecture PRISTINE du crochet : passer par `listerDossier` rappellerait l'enveloppe
       dossiers.set(rel, brut.readdirSync(path.resolve(base, rel)).map(String).sort())
     } catch { /* idem */ }
   }
@@ -92,9 +95,11 @@ export function installer({ racine, cibles = [] } = {}) {
   // Une lecture qui ÉCHOUE n'est pas une source : un `.npmrc` sondé et absent n'a pas de blob à
   // hasher. Chaque enveloppe note APRÈS coup, sur le chemin qui a rendu un résultat.
   fs.readFileSync = function (p, ...a) { const r = brut.readFileSync.call(this, p, ...a); noterFichier(p); return r }
+  // eslint-disable-next-line no-restricted-syntax -- crochet : il POSE le listing, il ne le consomme pas
   fs.readdirSync = function (p, ...a) { const r = brut.readdirSync.call(this, p, ...a); noterDossier(p); return r }
   fs.openSync = function (p, d, ...a) { const r = brut.openSync.call(this, p, d, ...a); (estLecture(d) ? noterFichier : noterEcriture)(p); return r }
   fs.promises.readFile = function (p, ...a) { return brut.promisesReadFile.call(this, p, ...a).then((r) => { noterFichier(p); return r }) }
+  // eslint-disable-next-line no-restricted-syntax -- crochet : il POSE le listing, il ne le consomme pas
   fs.promises.readdir = function (p, ...a) { return brut.promisesReaddir.call(this, p, ...a).then((r) => { noterDossier(p); return r }) }
   fs.writeFileSync = function (p, ...a) { const r = brut.writeFileSync.call(this, p, ...a); noterEcriture(p); return r }
   fs.appendFileSync = function (p, ...a) { const r = brut.appendFileSync.call(this, p, ...a); noterEcriture(p); return r }

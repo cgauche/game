@@ -9,29 +9,42 @@ import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { clotureDImports } from '../guards/lib/importGraph.mjs'
 
-const ICI = dirname(fileURLToPath(import.meta.url))
+const RACINE = fileURLToPath(new URL('../..', import.meta.url)).replace(/[\\/]$/, '')
+
+/** Modules à copier dans le faux dépôt : la CLÔTURE d'imports RELATIFS de `run.mjs`, CALCULÉE
+ *  (`clotureDImports`, `scripts/guards/lib/importGraph.mjs`) — jamais une liste tenue à la main. Une
+ *  liste à tenir ne dit rien quand elle périme : au premier module partagé neuf (`lister.mjs` sous le
+ *  lib de justificatif, #1679 L3b) l'enfant mourait en `ERR_MODULE_NOT_FOUND` AVANT d'écrire sa
+ *  capture, et les sept cas rougissaient sur un `scandir ENOENT` qui ne nommait pas la cause. */
+function modulesDuLanceur() {
+  const precedent = process.cwd()
+  process.chdir(RACINE)
+  try {
+    return [...clotureDImports(['scripts/test/run.mjs'])].sort()
+  } finally {
+    process.chdir(precedent)
+  }
+}
 
 /** Le faux dépôt n'est pas une SUITE : il ne prend pas le verrou machine du lanceur (#1679 L1c-M7),
  *  qui refuserait la vraie suite d'à côté. L'opt-out lui-même est mesuré par `run-isolation.test.mjs`. */
 const SANS_VERROU = { WFRP_SUITE_LOCK: '0' }
 
-/** Faux dépôt : le lanceur et sa logique pure copiés, plus un Vitest de substitution. */
+/** Faux dépôt : le lanceur et TOUT ce qu'il importe, plus un Vitest de substitution.
+ *  Le lanceur pose le justificatif de la gate `test` (#1679 L2) : sa lib fait partie de lui. Le faux
+ *  dépôt n'est pas un dépôt git — l'écriture y échoue et le lanceur le DIT, sans changer son verdict
+ *  ni sa capture (c'est le contrat de `scripts/gates/justifie.mjs`). */
 function fauxDepot(sourceDuFauxVitest) {
   const base = mkdtempSync(join(tmpdir(), 'vitest-run-'))
-  mkdirSync(join(base, 'scripts', 'test'), { recursive: true })
-  for (const nom of ['run.mjs', 'partition.mjs', 'verrou.mjs']) {
-    copyFileSync(join(ICI, nom), join(base, 'scripts', 'test', nom))
+  const modules = modulesDuLanceur()
+  assert.ok(modules.includes('scripts/test/run.mjs'), `clôture vide ou sans le lanceur : ${modules.join(', ')}`)
+  for (const rel of modules) {
+    const cible = join(base, ...rel.split('/'))
+    mkdirSync(dirname(cible), { recursive: true })
+    copyFileSync(join(RACINE, ...rel.split('/')), cible)
   }
-  copyFileSync(join(ICI, '..', 'outillage-local.mjs'), join(base, 'scripts', 'outillage-local.mjs'))
-  // Le lanceur pose le justificatif de la gate `test` (#1679 L2) : sa lib fait partie de lui.
-  // Le faux dépôt n'est pas un dépôt git — l'écriture y échoue et le lanceur le DIT, sans changer
-  // son verdict ni sa capture (c'est le contrat de `scripts/gates/justifie.mjs`).
-  mkdirSync(join(base, 'scripts', 'guards', 'lib'), { recursive: true })
-  copyFileSync(
-    join(ICI, '..', 'guards', 'lib', 'justificatif.mjs'),
-    join(base, 'scripts', 'guards', 'lib', 'justificatif.mjs'),
-  )
   mkdirSync(join(base, 'node_modules', 'vitest'), { recursive: true })
   writeFileSync(join(base, 'node_modules', 'vitest', 'vitest.mjs'), sourceDuFauxVitest, 'utf8')
   return base
@@ -88,8 +101,14 @@ function lance(base, args = [], coeurs) {
     },
   })
   const cache = join(base, 'node_modules', '.cache')
-  const fichiers = readdirSync(cache).filter((n) => /^vitest-run-\d+\.txt$/.test(n))
-  assert.equal(fichiers.length, 1, `captures trouvées : ${fichiers.join(', ')}`)
+  // Le lanceur mort AVANT sa capture ne laisse pas de dossier `.cache` : le `scandir ENOENT` qui suit
+  // ne dirait RIEN de la cause. On rend d'abord ce que l'enfant a écrit sur stderr.
+  const diagnostic = `status=${run.status}\n--- stderr de l'enfant ---\n${run.stderr}\n--- stdout ---\n${run.stdout}`
+  let fichiers
+  try { fichiers = readdirSync(cache).filter((n) => /^vitest-run-\d+\.txt$/.test(n)) } catch (err) {
+    assert.fail(`aucun dossier de capture (${err.code}) — l'enfant n'a pas atteint son écriture.\n${diagnostic}`)
+  }
+  assert.equal(fichiers.length, 1, `captures trouvées : ${fichiers.join(', ')}\n${diagnostic}`)
   return {
     run,
     argv: JSON.parse(readFileSync(trace, 'utf8')),

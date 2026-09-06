@@ -53,7 +53,7 @@ sa définition vit à la charte. Une prop non encore taguée affiche « — » e
 | `src/ui/AuContactModal.tsx` | `AuContactModal` (J) ×2 | 2 | ✓ | · | · | · | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
 | `src/ui/BargainModal.tsx` | `BargainModalView` (J) | 2 | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/BattementModal.tsx` | `BattementModal` (J) | 1 | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
-| `src/ui/CascadeModal.tsx` | `attack` (J), `CascadeBody` (J) ×9, `defense` (J), `extended` (J), `fumble` (J), `test` (J), `trample` (J) | appel / — / variable / 0 / 2+ | ✓ | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | ✓ | · | ✓ | · | · |
+| `src/ui/CascadeModal.tsx` | `CascadeBody` (J) ×9, `attack` (J), `defense` (J), `extended` (J), `fumble` (J), `test` (J), `trample` (J) | appel / — / variable / 0 / 2+ | ✓ | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | ✓ | · | ✓ | · | · |
 | `src/ui/CastModal.tsx` | `CastModal` (J) | 1 | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
 | `src/ui/CorruptionModal.tsx` | `CorruptionModal` (J) | 1 | ✓ | ✓ | · | · | · | ✓ | · | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | · | ✓ |
 | `src/ui/CrewTestModal.tsx` | `CrewTestModalView` (J) | variable | ✓ | ✓ | · | · | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | ✓ |
@@ -68,12 +68,6 @@ sa définition vit à la charte. Une prop non encore taguée affiche « — » e
 | `src/ui/GrappleModal.tsx` | `GrappleModal` (J) ×2 | 2 | ✓ | · | · | · | · | · | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
 | `src/ui/HandGateModal.tsx` | `HandGateModal` (J) | 1 | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/HealModal.tsx` | `HealRollFlow` (J) | 1 | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
-| `src/ui/jetProps/useAttackJetProps.tsx` | `useAttackJetProps` (H) | hook | ✓ | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `src/ui/jetProps/useDefenseJetProps.tsx` | `useDefenseJetProps` (H) | hook | ✓ | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ |
-| `src/ui/jetProps/useExtendedTestJetProps.tsx` | `useExtendedTestJetProps` (H) | hook | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
-| `src/ui/jetProps/useFumbleJetProps.tsx` | `useFumbleJetProps` (H) | hook | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | · | · | · | · | · | · | ✓ | · | · |
-| `src/ui/jetProps/useTestJetProps.tsx` | `useTestJetProps` (H) | hook | ✓ | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | · | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
-| `src/ui/jetProps/useTrampleJetProps.tsx` | `useTrampleJetProps` (H) | hook | ✓ | · | · | · | · | · | ✓ | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/ManeuverModal.tsx` | `ManeuverModal` (J) | 1 | ✓ | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/MedicModal.tsx` | `SurgeryRollFlow` (J) | 1 | ✓ | · | · | ✓ | · | ✓ | · | · | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/ReloadModal.tsx` | `ReloadModalView` (J) | 1 | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
@@ -84,6 +78,12 @@ sa définition vit à la charte. Une prop non encore taguée affiche « — » e
 | `src/ui/StateRecoveryModal.tsx` | `StateRecoveryModalView` (J) | variable | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/SteamSaveModal.tsx` | `SteamSaveModal` (J) | 1 | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | · | ✓ |
 | `src/ui/WardModal.tsx` | `WardModal` (J) | 1 | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
+| `src/ui/jetProps/useAttackJetProps.tsx` | `useAttackJetProps` (H) | hook | ✓ | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `src/ui/jetProps/useDefenseJetProps.tsx` | `useDefenseJetProps` (H) | hook | ✓ | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ |
+| `src/ui/jetProps/useExtendedTestJetProps.tsx` | `useExtendedTestJetProps` (H) | hook | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
+| `src/ui/jetProps/useFumbleJetProps.tsx` | `useFumbleJetProps` (H) | hook | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | · | · | · | · | · | · | ✓ | · | · |
+| `src/ui/jetProps/useTestJetProps.tsx` | `useTestJetProps` (H) | hook | ✓ | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | · | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
+| `src/ui/jetProps/useTrampleJetProps.tsx` | `useTrampleJetProps` (H) | hook | ✓ | · | · | · | · | · | ✓ | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 
 _`✓` = la zone est remplie par au moins un site du fichier ; `·` = jamais. **Sites** : le SYMBOLE englobant
 (fonction/composant qui contient le site) — `(J)` = site JSX, `(H)` = producteur de props, `×n` = n sites
@@ -131,12 +131,6 @@ seraient une colonne vide de bout en bout.
 | `src/ui/GrappleModal.tsx` | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/HandGateModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/HealModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/jetProps/useAttackJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | ✓ | · |
-| `src/ui/jetProps/useDefenseJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | · | · | ✓ | · |
-| `src/ui/jetProps/useExtendedTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | · | · | · | · | · | · | ✓ |
-| `src/ui/jetProps/useFumbleJetProps.tsx` | · | · | · | ✓ | ✓ | · | · | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · | ✓ | · |
-| `src/ui/jetProps/useTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | ✓ | · | ✓ | · | · | · | · |
-| `src/ui/jetProps/useTrampleJetProps.tsx` | ✓ | · | · | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | · | · | · | · | · |
 | `src/ui/ManeuverModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/MedicModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/ReloadModal.tsx` | ✓ | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | ✓ |
@@ -147,6 +141,12 @@ seraient une colonne vide de bout en bout.
 | `src/ui/StateRecoveryModal.tsx` | ✓ | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/SteamSaveModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/WardModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/jetProps/useAttackJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | ✓ | · |
+| `src/ui/jetProps/useDefenseJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | · | · | ✓ | · |
+| `src/ui/jetProps/useExtendedTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | · | · | · | · | · | · | ✓ |
+| `src/ui/jetProps/useFumbleJetProps.tsx` | · | · | · | ✓ | ✓ | · | · | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · | ✓ | · |
+| `src/ui/jetProps/useTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | ✓ | · | ✓ | · | · | · | · |
+| `src/ui/jetProps/useTrampleJetProps.tsx` | ✓ | · | · | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | · | · | · | · | · |
 
 _Zones de rangée jamais consommées : `rollInBar`, `dieCommitRef`, `winner`._
 
@@ -178,12 +178,6 @@ Aucune n'est déclarée par un nom de fichier : chacune est la conjonction de zo
 | `src/ui/GrappleModal.tsx` | ✓ | · | · | · | · | · | · | `Icon`, `OptionChooser`, `VsHeader` |
 | `src/ui/HandGateModal.tsx` | · | · | · | · | · | · | · | `Icon` |
 | `src/ui/HealModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser`, `VsHeader` |
-| `src/ui/jetProps/useAttackJetProps.tsx` | ✓ | · | · | · | · | ✓ | · | `CodexRef`, `CritLocationPicker`, `DeterminationButton`, `Icon`, `VsHeader` |
-| `src/ui/jetProps/useDefenseJetProps.tsx` | ✓ | · | · | · | · | · | · | `CodexRef`, `DeterminationButton`, `Icon`, `OptionChooser`, `VsHeader` |
-| `src/ui/jetProps/useExtendedTestJetProps.tsx` | · | · | · | ✓ | · | · | · | `Icon` |
-| `src/ui/jetProps/useFumbleJetProps.tsx` | · | · | ✓ | · | · | · | · | `Icon`, `TableRollLine` |
-| `src/ui/jetProps/useTestJetProps.tsx` | · | · | · | · | · | · | · | `CodexRef`, `PortraitPicker` |
-| `src/ui/jetProps/useTrampleJetProps.tsx` | · | · | · | · | · | · | · | `Icon`, `VsHeader` |
 | `src/ui/ManeuverModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser` |
 | `src/ui/MedicModal.tsx` | · | · | · | · | · | · | · | `Icon` |
 | `src/ui/ReloadModal.tsx` | · | · | · | ✓ | · | · | · | — |
@@ -194,6 +188,12 @@ Aucune n'est déclarée par un nom de fichier : chacune est la conjonction de zo
 | `src/ui/StateRecoveryModal.tsx` | · | · | · | · | · | · | · | — |
 | `src/ui/SteamSaveModal.tsx` | · | · | · | · | · | · | · | — |
 | `src/ui/WardModal.tsx` | · | · | · | · | · | · | · | `Icon` |
+| `src/ui/jetProps/useAttackJetProps.tsx` | ✓ | · | · | · | · | ✓ | · | `CodexRef`, `CritLocationPicker`, `DeterminationButton`, `Icon`, `VsHeader` |
+| `src/ui/jetProps/useDefenseJetProps.tsx` | ✓ | · | · | · | · | · | · | `CodexRef`, `DeterminationButton`, `Icon`, `OptionChooser`, `VsHeader` |
+| `src/ui/jetProps/useExtendedTestJetProps.tsx` | · | · | · | ✓ | · | · | · | `Icon` |
+| `src/ui/jetProps/useFumbleJetProps.tsx` | · | · | ✓ | · | · | · | · | `Icon`, `TableRollLine` |
+| `src/ui/jetProps/useTestJetProps.tsx` | · | · | · | · | · | · | · | `CodexRef`, `PortraitPicker` |
+| `src/ui/jetProps/useTrampleJetProps.tsx` | · | · | · | · | · | · | · | `Icon`, `VsHeader` |
 
 **Critères mesurés** :
 - **opposé** — `winnerIndex` \| `netSL` (coquille) ou `winner` (rangée) ;
@@ -242,4 +242,4 @@ est un angle mort, et les voici :
 - Les **ids de zone** (`Zn`) affichés sont ceux que le JSDoc des props DÉCLARE. Une zone du contrat non
   encore taguée à la primitive n'a pas d'id ici — ce document RELÈVE les ids, il ne les attribue pas.
 
-<!-- sources-empreinte: 6f30965ba5dc0a537608c38f3fb8f5b29da67ebb (1970 fichiers, 138 dossiers) corps: b8bb4a1e743862c014ac2b4e1928ffb7b5aabd67 -->
+<!-- sources-empreinte: 39aadc1af1702bbcfd9759c76cdbf446f6741b74 (1971 fichiers, 138 dossiers) corps: 57b36478df35e5894c96b83676453b2edc3da833 -->

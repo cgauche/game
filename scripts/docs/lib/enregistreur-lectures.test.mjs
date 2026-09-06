@@ -9,7 +9,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { listerDossier } from '../../guards/lib/lister.mjs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -91,7 +92,7 @@ test('un fichier AJOUTÉ à un dossier lu change l\'empreinte, sans qu\'aucun co
   try {
     mkdirSync(path.join(racine, 'd'))
     writeFileSync(path.join(racine, 'd', 'a.json'), '{}')
-    const lues = () => ({ fichiers: ['d/a.json'], dossiers: new Map([['d', readdirSync(path.join(racine, 'd'))]]) })
+    const lues = () => ({ fichiers: ['d/a.json'], dossiers: new Map([['d', listerDossier(path.join(racine, 'd'))]]) })
     const avant = empreinteDuDisque(racine, lues(), new Set()).empreinte
     writeFileSync(path.join(racine, 'd', 'b.json'), '{}')
     const apres = empreinteDuDisque(racine, lues(), new Set()).empreinte
@@ -124,7 +125,7 @@ function depotFixture() {
 
 /** Signe le doc comme le ferait `build-all` : empreinte des sources TELLES QUE LE DISQUE les porte. */
 function signer(racine) {
-  const lues = { fichiers: ['src/source.ts'], dossiers: new Map([['src', readdirSync(path.join(racine, 'src'))]]) }
+  const lues = { fichiers: ['src/source.ts'], dossiers: new Map([['src', listerDossier(path.join(racine, 'src'))]]) }
   const { empreinte } = empreinteDuDisque(racine, lues, new Set())
   const doc = path.join(racine, 'docs', 'reprise-apres-pause.md')
   writeFileSync(doc, avecPied(readFileSync(doc, 'utf8'), { empreinte, fichiers: 1, dossiers: 1 }))
@@ -207,7 +208,7 @@ test('un fichier NON SUIVI dans un dossier lu écarte l\'empreinte du disque de 
   const { racine, git } = depotFixture()
   try {
     git('add', '-A')
-    const lues = () => ({ fichiers: ['src/source.ts'], dossiers: new Map([['src', readdirSync(path.join(racine, 'src'))]]) })
+    const lues = () => ({ fichiers: ['src/source.ts'], dossiers: new Map([['src', listerDossier(path.join(racine, 'src'))]]) })
     const blobs = indexGit(racine)
     const parLIndex = empreinteDeLIndex(blobs, { fichiers: ['src/source.ts'], dossiers: new Map([['src', []]]) }).empreinte
     assert.equal(empreinteDuDisque(racine, lues(), new Set()).empreinte, parLIndex)

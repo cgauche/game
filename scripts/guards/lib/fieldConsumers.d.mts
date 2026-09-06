@@ -6,7 +6,7 @@ export interface FieldReadHit {
   line: number;
 }
 
-export function listProdFiles(dir: string, out?: string[]): string[];
+export function listProdFiles(dir: string): string[];
 
 /** La cible d'un scan : le type NOMMÉ et le module qui le DÉCLARE (l'identité est la déclaration). */
 export interface FieldScanTarget {

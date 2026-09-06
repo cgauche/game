@@ -15,7 +15,8 @@
  *
  *   node scripts/docs/build-icones.mjs
  */
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import { ALLOWED_CHARS } from '../guards/lib/emojiAffordance.mjs'
 
@@ -54,10 +55,9 @@ for (const { famille, id } of IDS) {
 }
 const FAMILLES = [...PAR_FAMILLE.keys()].sort()
 
-const FICHIERS_DEFS = readdirSync('src/ui/icons/defs')
+const FICHIERS_DEFS = listerDossier('src/ui/icons/defs')
   .filter((f) => f.endsWith('.ts'))
   .map((f) => f.replace(/\.ts$/, ''))
-  .sort()
 for (const f of FAMILLES) {
   if (!FICHIERS_DEFS.includes(f)) abandon(`famille « ${f} » de l'union sans fichier src/ui/icons/defs/${f}.ts`)
 }
@@ -159,9 +159,8 @@ const ID_INPUT = capture(TYPES_TS, /export type IconIdInput = ([^;]+);/, "l'alia
 
 // ── Données JSON porteuses d'une icône ───────────────────────────────────────────────────────────
 
-const DATA_ICONES = readdirSync('src/data')
+const DATA_ICONES = listerDossier('src/data')
   .filter((f) => f.endsWith('.json'))
-  .sort()
   .map((f) => {
     const brut = lire(`src/data/${f}`)
     const refs = new Set(

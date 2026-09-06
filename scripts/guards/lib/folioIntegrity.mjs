@@ -48,7 +48,8 @@
 //   • `noteAuthored` — la sortie par note d'auteur, jamais cliquetée — est empruntée 1 fois
 //     (`maladies.json:infection-du-sang` p.186).
 
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
+import { parUnitesDeCode, listerDossier } from './lister.mjs'
 import { join, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS } from '../../raw/_lib.mjs'
@@ -115,13 +116,7 @@ export function bookDocs(abbr) {
   const docs = []
   if (rel) {
     const dir = join(ROOT, rel)
-    let names
-    try {
-      names = readdirSync(dir).filter((f) => f.endsWith('.md')).sort()
-    } catch {
-      names = []
-    }
-    for (const name of names) {
+    for (const name of listerDossier(dir, { absent: 'vide' }).filter((f) => f.endsWith('.md'))) {
       const raw = readFileSync(join(dir, name), 'utf8')
       const { text, idx } = normMap(raw)
       /** @type {[number, number][]} */
@@ -545,7 +540,7 @@ export function auditSecondaryRef({ book, page, label, quote }) {
 export function auditSecondaries(dataDir) {
   const violations = []
   let total = 0
-  const files = readdirSync(dataDir).filter((f) => f.endsWith('.json') && f !== 'books.json').sort()
+  const files = listerDossier(dataDir).filter((f) => f.endsWith('.json') && f !== 'books.json')
   for (const f of files) {
     let data
     try {
@@ -587,7 +582,7 @@ export function auditFolios(dataDir) {
   const unresolved = []
   const multi = []
   let total = 0
-  const files = readdirSync(dataDir).filter((f) => f.endsWith('.json') && f !== 'books.json').sort()
+  const files = listerDossier(dataDir).filter((f) => f.endsWith('.json') && f !== 'books.json')
   for (const f of files) {
     let data
     try {
@@ -650,7 +645,7 @@ export function auditFolios(dataDir) {
 export function renderStock(violations, entete) {
   const lignes = []
   let fichier = null
-  for (const v of [...violations].sort((a, b) => a.key.localeCompare(b.key))) {
+  for (const v of [...violations].sort((a, b) => parUnitesDeCode(a.key, b.key))) {
     if (v.file !== fichier) {
       fichier = v.file
       lignes.push(`  // ${fichier}`)
@@ -674,7 +669,7 @@ export function renderStock(violations, entete) {
 export function renderTitleStock(violations, entete) {
   const lignes = []
   let fichier = null
-  for (const v of [...violations].sort((a, b) => a.key.localeCompare(b.key))) {
+  for (const v of [...violations].sort((a, b) => parUnitesDeCode(a.key, b.key))) {
     if (v.file !== fichier) {
       fichier = v.file
       lignes.push(`  // ${fichier}`)

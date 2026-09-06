@@ -14,8 +14,9 @@
 // src/data/index-moteur-ratchet.test.ts, jamais deux comptages qui pourraient diverger).
 // Lexique : scripts/docs/lib/engineConcepts.mjs (`FILE_CONCEPTS` + `CROSS_CONCEPTS`).
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
-import { allEngineExports, walkEngineFiles, ENGINE_ROOT } from './lib/engineExports.mjs'
+import { allEngineExports, fichiersMoteur, ENGINE_ROOT } from './lib/engineExports.mjs'
 import { FILE_CONCEPTS, CROSS_CONCEPTS } from './lib/engineConcepts.mjs'
+import { parLibelle } from '../guards/lib/lister.mjs'
 
 const OUT = 'docs/index-moteur.md'
 const TOOL = 'build-index-moteur'
@@ -24,7 +25,7 @@ const TOOL = 'build-index-moteur'
 // GARDE 1 — tout fichier de production de src/engine porte un concept de module. Un fichier neuf
 // sans entrée fait échouer la génération : le lexique est forcé de croître avec le moteur.
 // ---------------------------------------------------------------------------
-const files = walkEngineFiles(ENGINE_ROOT)
+const files = fichiersMoteur(ENGINE_ROOT)
 const missingFileConcepts = files.filter((f) => !FILE_CONCEPTS.has(f))
 if (missingFileConcepts.length) {
   console.error(`${TOOL} — ${missingFileConcepts.length} fichier(s) de src/engine sans concept de module (FILE_CONCEPTS de scripts/docs/lib/engineConcepts.mjs) :`)
@@ -108,8 +109,8 @@ for (const r of rows) {
   for (const c of cs) allConcepts.get(c).push(r)
 }
 out += `| Concept | Exports |\n|---|---|\n`
-for (const [label, list] of [...allConcepts].sort((a, b) => a[0].localeCompare(b[0], 'fr'))) {
-  const sorted = [...list].sort((a, b) => a.name.localeCompare(b.name))
+for (const [label, list] of [...allConcepts].sort((a, b) => parLibelle(a[0], b[0]))) {
+  const sorted = [...list].sort((a, b) => parLibelle(a.name, b.name))
   out += `| ${esc(label)} | ${sorted.map((r) => `\`${r.name}\` (${rel(r.file)}:${r.line})`).join(', ')} |\n`
 }
 

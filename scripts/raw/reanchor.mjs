@@ -19,7 +19,8 @@
 //   - ⛔ PAST-EOF (hors-fichier) : NE PAS doubler — déjà cliqueté par `check-refs.mjs`
 //     (`dead-refs-baseline.json`), sur la borne HAUTE dépliée d'une plage (`span`), un sur-ensemble
 //     de la borne de départ vérifiée ici.
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
@@ -164,8 +165,7 @@ function extractQuote(preceding) {
 const BOOK_DIR = new Map(BOOKS)
 function crossChapter(abbr, head, excludeCh) {
   const dir = BOOK_DIR.get(abbr); if (!dir) return null
-  let files
-  try { files = readdirSync(dir).filter((f) => /^\d+ - .*\.md$/.test(f)) } catch { return null }
+  const files = listerDossier(dir, { absent: 'vide' }).filter((f) => /^\d+ - .*\.md$/.test(f))
   const hits = []
   for (const f of files) {
     const nn = f.match(/^(\d+) - /)[1]
@@ -205,7 +205,7 @@ export function classifyQuote(li, citedStart, rawQuote, findCross) {
 // les réécritures --apply/--remap sur DISQUE (seul effet de bord — pas d'écriture de rapport ici,
 // à charge de l'appelant), et renvoie tally + lignes de rapport + les réfs LOW (pour le cliquet).
 export function scan(rawDir = RAWDIR, { apply = false, remap = false } = {}) {
-  const DOCS = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !isMeta(f))
+  const DOCS = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !isMeta(f))
   const tally = { OK: 0, DRIFT: 0, MEDIUM: 0, LOW: 0, RANGE: 0, 'PAST-EOF': 0, 'NO-SOURCE': 0 }
   let totalRefs = 0, totalQuotes = 0, appliedTotal = 0, remappedTotal = 0
   const lowRows = []   // [{ ref: 'ABBR NN', full, detail }] — unité du cliquet (patron check-refs.mjs)

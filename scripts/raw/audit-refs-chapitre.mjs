@@ -18,8 +18,9 @@
 // `chapterFile`/`bookOf`/`readText`/`PIVOT_ABBR` + les ensembles d'exclusion de fiches. Périmètre de
 // balayage = `src/` + `scripts/` + `docs/`, hors artefacts DATÉS (`docs/plans`, `docs/superpowers`,
 // fiches `epreuve-*`) et hors rapports RÉ-GÉNÉRÉS (`RAWDOC_META_GENERATED`).
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { parUnitesDeCode, listerArbre } from '../guards/lib/lister.mjs'
 import {
   ldbRe, otherRe, refNums, isRangeSuffix, chapterFile, bookOf, readText, PIVOT_ABBR,
   RAWDOC_META_GENERATED, isRawEpreuve,
@@ -29,17 +30,14 @@ export const ROOTS = ['src', 'scripts', 'docs']
 export const SKIP_DIRS = new Set(['node_modules', '.git', 'plans', 'superpowers'])
 export const EXCLUDE_PREFIX = ['src/gameIso/rig/parts/tenues/defs/'] // art de couverture (cf. check-code-refs)
 
-function walk(dir, acc = []) {
-  let entries
-  try { entries = readdirSync(dir) } catch { return acc }
-  for (const e of entries) {
-    const p = join(dir, e)
-    let s
-    try { s = statSync(p) } catch { continue }
-    if (s.isDirectory()) { if (!SKIP_DIRS.has(e)) walk(p, acc) }
-    else if (/\.(tsx?|mjs|mts|json|md)$/.test(e) && !RAWDOC_META_GENERATED.has(e) && !isRawEpreuve(e)) acc.push(p)
-  }
-  return acc
+const nomDe = (rel) => rel.slice(rel.lastIndexOf('/') + 1)
+function fichiersScannes(dir) {
+  return listerArbre(dir, {
+    absent: 'vide',
+    descendre: (rel) => !rel.split('/').some((s) => SKIP_DIRS.has(s)),
+    filtre: (rel) => /\.(tsx?|mjs|mts|json|md)$/.test(rel)
+      && !RAWDOC_META_GENERATED.has(nomDe(rel)) && !isRawEpreuve(nomDe(rel)),
+  }).map((rel) => join(dir, rel))
 }
 
 /** ANCRES jugeables d'une réf : une plage `-fin` reste UN intervalle, les autres formes (`+pts`,
@@ -75,7 +73,7 @@ export function* refsInLine(ln, abbr, nn) {
 export function auditChapter(abbr, nn, roots = ROOTS) {
   const byRef = new Map()
   for (const root of roots) {
-    for (const f of walk(root)) {
+    for (const f of fichiersScannes(root)) {
       const rel = f.split('\\').join('/')
       if (EXCLUDE_PREFIX.some((x) => rel.startsWith(x))) continue
       let src
@@ -112,7 +110,7 @@ function main() {
   const L = readText(cf.path).split('\n')
   const byRef = auditChapter(abbr, nn)
   const first = (ref) => Number(/l\.(\d+)/.exec(ref)[1])
-  const refs = [...byRef.keys()].sort((a, b) => first(a) - first(b) || a.localeCompare(b))
+  const refs = [...byRef.keys()].sort((a, b) => first(a) - first(b) || parUnitesDeCode(a, b))
 
   console.log(`# ${abbr} ${nn} — ${cf.path} (${L.length} lignes)`)
   console.log(`# ${refs.length} réf(s) distincte(s), ${[...byRef.values()].reduce((n, v) => n + v.sites.length, 0)} site(s)`)

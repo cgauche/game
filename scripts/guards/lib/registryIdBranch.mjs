@@ -21,6 +21,7 @@
 // Le détail de ce que la garde ne voit pas est écrit noir sur blanc dans l'en-tête de
 // `scanRegistryIdBranch`.
 import tsModule from 'typescript';
+import { parUnitesDeCode } from './lister.mjs'
 
 /** Liaison LOCALE du compilateur : sous le transformeur SSR de Vitest, chaque `ts.x` d'un import est
  *  une traversée de module (`__vite_ssr_import_N__.default.x`) — sur le visiteur d'AST, chaud, elle
@@ -478,7 +479,7 @@ export function scanRegistryIdBranch(relPath, contenu) {
   };
 
   ts.forEachChild(sf, visit);
-  findings.sort((a, b) => a.line - b.line || a.rule.localeCompare(b.rule));
+  findings.sort((a, b) => a.line - b.line || parUnitesDeCode(a.rule, b.rule));
   return findings;
 }
 

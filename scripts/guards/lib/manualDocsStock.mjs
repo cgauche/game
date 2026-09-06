@@ -4,7 +4,7 @@
 //
 // Périmètre : `docs/*.md` À PLAT (hors sous-dossiers — `docs/plans/`, `docs/raw/`, `docs/decisions/`,
 // `docs/retours/`, `docs/superpowers/`…), même frontière que `scripts/docs/check-doc-refs.mjs`
-// (`readdirSync(DOCS_DIR)` non récursif). Un doc est GÉNÉRÉ quand son ouverture porte, dans ses
+// (`listerDossier(DOCS_DIR)` non récursif). Un doc est GÉNÉRÉ quand son ouverture porte, dans ses
 // premières lignes, un marqueur `GÉNÉRÉ par` (deux formes mesurées dans le dépôt : « ⚠️ Fichier
 // GÉNÉRÉ par … » et « GÉNÉRÉ par `npx tsx …` ») — cf. `src/data/manual-docs-ratchet.test.ts`.
 //

@@ -19,7 +19,8 @@
  *
  *   node scripts/docs/build-ajouter-donnee.mjs
  */
-import { readdirSync, readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import ts from 'typescript'
 import { emitOrCheck, loadSource } from './lib/jsdocUnion.mjs'
 
@@ -40,7 +41,7 @@ const ancre = (p, quoi) => {
 
 // ── Datasets et livres : mesure directe ──────────────────────────────────────────────────────────
 
-const DATASETS = readdirSync(DATA).filter((f) => f.endsWith('.json')).sort()
+const DATASETS = listerDossier(DATA).filter((f) => f.endsWith('.json'))
 if (!DATASETS.length) abandon(`aucun \`${DATA}/*.json\` — la racine de la donnée app-owned a bougé`)
 
 const BOOKS = JSON.parse(readFileSync(`${DATA}/books.json`, 'utf8'))

@@ -9,8 +9,9 @@
 // particularités MÉCANIQUES (multi, table, étendu, opposé) ses zones trahissent. Les zones sont
 // lues à la source (props de `RollShell`, membres de `RollRowProps`) et les consommateurs sont
 // DÉCOUVERTS par le scan : aucune liste de fichiers ni de colonnes n'est écrite à la main.
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { parUnitesDeCode, listerArbre } from '../guards/lib/lister.mjs'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import { shellZones, rowZones, scanRollShellUsage } from './lib/rollShellUsage.mjs'
@@ -22,21 +23,10 @@ const SHELL_FILE = 'src/ui/RollShell.tsx'
 const ROW_FILE = 'src/ui/RollRow.tsx'
 const check = process.argv.includes('--check')
 
-/** Fichiers de PRODUCTION (hors tests) de `src/`, en chemin relatif POSIX. */
+/** Fichiers de PRODUCTION (hors tests) de `src/`, en chemin relatif POSIX, en ORDRE TOTAL. */
 function prodFiles(dir) {
-  const out = []
-  const walk = (d) => {
-    for (const e of readdirSync(d)) {
-      const p = join(d, e)
-      if (statSync(p).isDirectory()) walk(p)
-      else if (/\.tsx?$/.test(e)) {
-        const rel = relative(ROOT, p).split('\\').join('/')
-        if (!/\.test\.[tj]sx?$/.test(rel)) out.push({ rel, text: readFileSync(p, 'utf8') })
-      }
-    }
-  }
-  walk(join(ROOT, dir))
-  return out
+  return listerArbre(join(ROOT, dir), { filtre: (rel) => /\.tsx?$/.test(rel) && !/\.test\.[tj]sx?$/.test(rel) })
+    .map((rel) => ({ rel: `${dir}/${rel}`, text: readFileSync(join(ROOT, dir, rel), 'utf8') }))
 }
 
 // --- zones du contrat, lues à la SOURCE ---------------------------------------------------------
@@ -61,7 +51,7 @@ for (const { rel, text } of prodFiles('src')) {
   }
   consumers.push({ rel, sites, props, spreads, rowKeys, companions })
 }
-consumers.sort((a, b) => a.rel.localeCompare(b.rel))
+consumers.sort((a, b) => parUnitesDeCode(a.rel, b.rel))
 
 if (!consumers.length) {
   console.error(`${TOOL} — AUCUN consommateur mesuré : le scan ne voit plus ni site JSX \`<RollShell\` ni producteur de \`ComponentProps<typeof RollShell>\`.`)
@@ -104,7 +94,7 @@ const sitesParSymbole = (c) => {
     const key = `${s.symbol} ${s.kind}`
     par.set(key, (par.get(key) ?? 0) + 1)
   }
-  return [...par].sort((a, b) => a[0].localeCompare(b[0]))
+  return [...par].sort((a, b) => parUnitesDeCode(a[0], b[0]))
     .map(([k, n]) => {
       const [sym, kind] = k.split(' ')
       return `\`${sym}\` (${kind})${n > 1 ? ` ×${n}` : ''}`

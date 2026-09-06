@@ -19,7 +19,8 @@
 // `assertAgainstBaseline`) pour ne pas diluer la tolérance ZÉRO du contrôle de bornes ci-dessus :
 // baseline nominative par fichier, toute hausse échoue, toute baisse doit l'ABAISSER.
 // Re-run : node scripts/raw/check-code-refs.mjs (npm run raw:check-code-refs).
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
+import { listerArbre } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ldbRe, otherRe, span, chapterFile, bookOf, readText, PIVOT_ABBR } from './_lib.mjs'
@@ -61,15 +62,11 @@ function lineCount(path) {
 
 export const isExcludedSrc = (rel) => rel.startsWith(EXCLUDE_SRC_PREFIX)
 
-function walkSrc(dir, acc = []) {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e)
-    let s
-    try { s = statSync(p) } catch { continue }
-    if (s.isDirectory()) { if (e !== 'node_modules') walkSrc(p, acc) }
-    else if (/\.(tsx?|json)$/.test(e)) acc.push(p)
-  }
-  return acc
+function fichiersDuCode(dir) {
+  return listerArbre(dir, {
+    descendre: (rel) => !rel.split('/').includes('node_modules'),
+    filtre: (rel) => /\.(tsx?|json)$/.test(rel),
+  }).map((rel) => join(dir, rel))
 }
 
 /** Parcourt `srcDir` (src/ par défaut) et retourne les réfs mortes du code :
@@ -77,7 +74,7 @@ function walkSrc(dir, acc = []) {
  *  `kind` ∈ `out-of-bounds` (chapitre résolu, ligne hors borne) | `chapter-not-found` (chapitre absent). */
 export function scanDeadCodeRefs(srcDir = SRC_DIR) {
   const dead = []
-  for (const f of walkSrc(srcDir)) {
+  for (const f of fichiersDuCode(srcDir)) {
     const rel = f.split('\\').join('/')
     if (isExcludedSrc(rel)) continue
     const lines = readFileSync(f, 'utf8').split('\n')
@@ -105,7 +102,7 @@ export function scanDeadCodeRefs(srcDir = SRC_DIR) {
  *  folio). Les réfs hors borne / à chapitre introuvable sont l'affaire de `scanDeadCodeRefs`. */
 export function scanEmptyLineCodeRefs(srcDir = SRC_DIR) {
   const vides = []
-  for (const f of walkSrc(srcDir)) {
+  for (const f of fichiersDuCode(srcDir)) {
     const rel = f.split('\\').join('/')
     if (isExcludedSrc(rel)) continue
     const lines = readFileSync(f, 'utf8').split('\n')

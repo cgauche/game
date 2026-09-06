@@ -1,6 +1,6 @@
 export const ENGINE_ROOT: string;
 
-export function walkEngineFiles(root?: string, acc?: string[]): string[];
+export function fichiersMoteur(root?: string): string[];
 
 export interface EngineExportRow {
   name: string;

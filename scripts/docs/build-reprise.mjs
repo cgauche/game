@@ -16,7 +16,8 @@
  *
  *   node scripts/docs/build-reprise.mjs
  */
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import { repartitionWorkers } from '../test/partition.mjs'
 
@@ -44,13 +45,6 @@ function chemin(p) {
   return p
 }
 
-/** Entrées d'un dossier filtrées par suffixe, triées. */
-function entrees(dir, suffixe = '') {
-  return readdirSync(chemin(dir))
-    .filter((f) => f.endsWith(suffixe))
-    .sort()
-}
-
 // Clés `git config` posées par `postinstall` — dédupliquées sur leur préfixe `<section>.<nom>`.
 const POSTINSTALL = script('postinstall')
 const CONFIGS = [...new Set([...POSTINSTALL.matchAll(/git config ([\w.-]+)/g)].map((m) => m[1]))]
@@ -64,7 +58,7 @@ const DRIVERS_FUSION = CONFIGS.filter((c) => c.startsWith('merge.') && c.endsWit
 // Hooks Git : les fichiers SANS extension sont ceux que git invoque par nom. La liste est DÉRIVÉE du
 // dossier — un hook posé ou retiré change le runbook sans qu'on touche à ce script. Ce qui est exigé,
 // c'est qu'il y en ait, et que `pre-commit` (le seul qui puisse REFUSER un commit) en soit.
-const HOOKS_GIT = entrees('scripts/git-hooks').filter((f) => !f.includes('.'))
+const HOOKS_GIT = listerDossier(chemin('scripts/git-hooks')).filter((f) => !f.includes('.'))
 if (!HOOKS_GIT.includes('pre-commit')) abandon('hook Git « pre-commit » absent de scripts/git-hooks/')
 
 // Hooks de session Claude Code déclarés dans `.claude/settings.json` (versionné).
@@ -148,7 +142,7 @@ function portesNpm(fichier, texte) {
   return portes
 }
 
-const WORKFLOWS = entrees('.github/workflows', '.yml').map((f) => {
+const WORKFLOWS = listerDossier(chemin('.github/workflows')).filter((f) => f.endsWith('.yml')).map((f) => {
   const texte = readFileSync(`.github/workflows/${f}`, 'utf8')
   const nom = (texte.match(/^name:\s*(.+)$/m) ?? [])[1]
   if (!nom) abandon(`.github/workflows/${f} n'a pas de champ « name: »`)
@@ -187,13 +181,13 @@ function seuilPartage() {
 const SEUIL = seuilPartage()
 
 // Comptes d'inventaire du clone.
-const NB_GUARD_LIBS = entrees('scripts/guards/lib', '.mjs').length
-const NB_HOOKS_SESSION = entrees('scripts/hooks', '.mjs').filter((f) => !f.endsWith('.test.mjs')).length
-const NB_DEFS = entrees('src/data/schemas/defs', '.ts').length
-const NB_DEFS_SCENES = entrees('src/data/schemas/defs-scenes', '.ts').length
-const NB_DATA_JSON = entrees('src/data', '.json').length
-const ART_REF = entrees('scripts/art-ref', '.py')
-const DECISIONS = entrees('docs/decisions')
+const NB_GUARD_LIBS = listerDossier(chemin('scripts/guards/lib')).filter((f) => f.endsWith('.mjs')).length
+const NB_HOOKS_SESSION = listerDossier(chemin('scripts/hooks')).filter((f) => f.endsWith('.mjs') && !f.endsWith('.test.mjs')).length
+const NB_DEFS = listerDossier(chemin('src/data/schemas/defs')).filter((f) => f.endsWith('.ts')).length
+const NB_DEFS_SCENES = listerDossier(chemin('src/data/schemas/defs-scenes')).filter((f) => f.endsWith('.ts')).length
+const NB_DATA_JSON = listerDossier(chemin('src/data')).filter((f) => f.endsWith('.json')).length
+const ART_REF = listerDossier(chemin('scripts/art-ref')).filter((f) => f.endsWith('.py'))
+const DECISIONS = listerDossier(chemin('docs/decisions'))
 
 const CANARI = workflow('canari.yml')
 const CI = workflow('ci.yml')

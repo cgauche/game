@@ -19,7 +19,8 @@
 //   - les liens markdown hors `MEMORY.md` (prose de fiche) ne sont pas vérifiés.
 //
 // Module ESM pur — consommé par `src/memory-links-guard.test.ts`.
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
+import { parUnitesDeCode, listerDossier } from './lister.mjs';
 import { join } from 'node:path';
 
 /** Dossier de la mémoire persistante, relatif à la racine du dépôt. */
@@ -29,10 +30,8 @@ export const MEMORY_INDEX = 'MEMORY.md';
 
 /** Les `.md` à plat de `.claude/memory/` — l'INDEX VIVANT (jamais `_archive/`). @returns {string[]} */
 export function liveNotes(root) {
-  return readdirSync(join(root, MEMORY_DIR), { withFileTypes: true })
-    .filter((e) => e.isFile() && e.name.endsWith('.md'))
-    .map((e) => e.name)
-    .sort();
+  const dir = join(root, MEMORY_DIR);
+  return listerDossier(dir).filter((nom) => nom.endsWith('.md') && statSync(join(dir, nom)).isFile());
 }
 
 /** Retire les blocs de code clôturés en PRÉSERVANT le compte de lignes. @returns {string} */
@@ -77,7 +76,7 @@ export function scanMemoryLinks(root) {
     });
   }
 
-  return problems.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.tok.localeCompare(b.tok));
+  return problems.sort((a, b) => parUnitesDeCode(a.file, b.file) || a.line - b.line || parUnitesDeCode(a.tok, b.tok));
 }
 
 /** Rapport `fichier:ligne  [nature]  jeton`, une ligne par lien fautif. @returns {string} */

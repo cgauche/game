@@ -12,7 +12,8 @@
 // supprime plus ses trous de section, il les ÉTIQUETTE (`classifyHole`) — fiche / catalogue / scénario /
 // hors-règle / trou. Le dénominateur de la ligne de résumé est DÉRIVÉ (jamais un compte recopié).
 // Sortie : docs/raw/coverage.md
-import { readdirSync } from 'node:fs'
+import { existsSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, esc, chapterFile, folioSpan, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
@@ -307,7 +308,7 @@ const HOLE_LABEL = { catalogue: 'transcrit en catalogue, jamais traité', scenar
 
 function main() {
   // Profondeur-conscient : on garde chaque fiche séparée pour compter les refs et trouver la fiche PROPRIÉTAIRE.
-  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
+  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
     .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
   // Chapitres crédités par un catalogue : source unique `catalogChaptersOf` (#604 défaut latent —
   // extraite pour être réutilisée par `check-catalogue-complete.mjs`, jamais une resaisie).
@@ -338,14 +339,13 @@ function main() {
   const stubsCites = []
   const info0 = (ab, nn) => chapterFile(ab, nn)?.path ?? `${ab} ${nn}`
   for (const [ab, dir] of BOOKS) {
-    let files
-    try { files = readdirSync(dir).filter((f) => /^\d+ - /.test(f) && f.endsWith('.md')) }
-    catch { out.push(`## ${ab} — ⚠ dossier introuvable (${dir})`, ''); continue }
+    if (!existsSync(dir)) { out.push(`## ${ab} — ⚠ dossier introuvable (${dir})`, ''); continue }
+    const files = listerDossier(dir).filter((f) => /^\d+ - /.test(f) && f.endsWith('.md'))
     let bOk = 0, bCat = 0, bMid = 0, bHole = 0
     const lines2 = ['| Ch. | Titre | État | refs (propriétaire) |', '|---|---|---|---|']
     const detailBlocks = []
     const isPur = SCENARIO_PUR.has(ab)
-    for (const f of files.sort()) {
+    for (const f of files) {
       const nn = f.match(/^(\d+) - /)[1]
       const title = f.replace(/^\d+ - /, '').replace(/\.md$/, '')
       // Le CONTENU tranche (cf. `markerSplitStub`/`chapterTitleOf`) : un nom de fichier `_GoBack` est

@@ -51,33 +51,17 @@ import tsModule from 'typescript'
 // Liaison LOCALE de l'API du compilateur — même FAIT mesuré qu'en tête de `sceneMutation.mjs`
 // (2026-08-23) : sous Vitest, un `ts.x` de visiteur AST se relit sur l'objet d'import de vite-node.
 const ts = tsModule
-import { readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve, sep } from 'node:path'
+import { listerArbre } from './lister.mjs'
 import { repoProgram } from './tsProgram.mjs'
 
-/** Fichiers de PRODUCTION `.ts(x)` sous `dir`, hors `*.test.ts(x)`, en ORDRE TOTAL : tri du chemin
- *  NORMALISÉ (`/`) par UNITÉS DE CODE (`<`/`>`), jamais l'ordre rendu par le système de fichiers
- *  (NTFS trie sans tenir compte de la casse, ext4 rend l'ordre d'un hash) ni `localeCompare` (son
- *  verdict dépend de la locale du processus). L'ordre des RACINES décide de celui de
- *  `program.getSourceFiles()`, donc de l'index des accès, donc du site cité en exemple par le
- *  rapport : sans ordre total, le même dépôt rend deux `.md` différents selon la machine. */
-export function listProdFiles(dir, out = []) {
-  collecterProdFiles(dir, out)
-  out.sort((a, b) => (norm(a) < norm(b) ? -1 : norm(a) > norm(b) ? 1 : 0))
-  return out
-}
-
-function collecterProdFiles(dir, out) {
-  for (const entry of readdirSync(dir)) {
-    const p = join(dir, entry)
-    const st = statSync(p)
-    if (st.isDirectory()) {
-      collecterProdFiles(p, out)
-      continue
-    }
-    if (!/\.tsx?$/.test(entry) || /\.test\.tsx?$/.test(entry)) continue
-    out.push(p)
-  }
+/** Fichiers de PRODUCTION `.ts(x)` sous `dir`, hors `*.test.ts(x)`, en ORDRE TOTAL (`listerArbre`).
+ *  L'ordre des RACINES décide de celui de `program.getSourceFiles()`, donc de l'index des accès,
+ *  donc du site cité en exemple par le rapport : sans ordre total, le même dépôt rend deux `.md`
+ *  différents selon la machine. */
+export function listProdFiles(dir) {
+  return listerArbre(dir, { filtre: (rel) => /\.tsx?$/.test(rel) && !/\.test\.tsx?$/.test(rel) })
+    .map((rel) => join(dir, rel))
 }
 
 /** Chemin en séparateurs `/`. La CASSE n'est pas repliée : les deux côtés de toute comparaison

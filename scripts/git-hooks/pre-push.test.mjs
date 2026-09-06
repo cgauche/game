@@ -7,11 +7,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readdirSync } from 'node:fs'
 import {
   cheminJustificatifs,
   clesDeContenu,
@@ -19,7 +18,7 @@ import {
   fichierDeJustificatif,
   segmentDeGate,
 } from '../guards/lib/justificatif.mjs'
-import { RACINE_DES_EXPORTS } from '../migrations/replay-head.mjs'
+import { exportsDuProcessus } from '../migrations/replay-head.mjs'
 import { armeLeRejeu, jugerPush, refsAPousser, urlOrigineAcceptee, verdictCi } from './pre-push.mjs'
 import { reinitialiserStub } from '../guards/lib/coursesCi.mjs'
 
@@ -560,7 +559,6 @@ j.__sonde_non_idempotente = Date.now();
 fs.writeFileSync(f, JSON.stringify(j, null, 2) + '\\n');
 `
 
-const exportsRestants = () => (existsSync(RACINE_DES_EXPORTS) ? readdirSync(RACINE_DES_EXPORTS) : [])
 
 test('plage touchant `src/data` + une migration NON IDEMPOTENTE : refus nommant la donnée réécrite', () => {
   const racine = depot()
@@ -614,11 +612,13 @@ test('plage HORS périmètre : le saut est DIT, et aucun export n’est fabriqu�
     g(['add', '-A'])
     g(['commit', '-m', 'code hors périmètre'])
     gatesVertes(racine)
-    const avant = exportsRestants()
+    // `jugerPush` joue le rejeu DANS CE PROCESSUS : ses exports portent NOTRE pid. La racine est
+    // partagée — lire le dossier entier ferait juger le pre-push du voisin.
+    const avant = exportsDuProcessus()
     const { refus, notes } = jugerPush({ cwd: racine, stdin: pousse(racine, { base }), env: ciVerte(racine) })
     assert.deepEqual(refus, [])
     assert.match(notes.join('\n'), /replay sauté : aucun fichier du périmètre des migrations dans [0-9a-f]{40}\.\.[0-9a-f]{40}/)
-    assert.deepEqual(exportsRestants(), avant, 'un rejeu sauté ne fabrique aucun export')
+    assert.deepEqual(exportsDuProcessus(), avant, 'un rejeu sauté ne fabrique aucun export')
   } finally {
     jeter(racine)
   }

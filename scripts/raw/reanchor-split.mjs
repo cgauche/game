@@ -7,7 +7,8 @@
 // dans les fichiers-chapitres actuels du même livre, et on réécrit la réf sur le chapitre/ligne trouvés.
 //   node scripts/raw/reanchor-split.mjs            → rapport seul (aucune écriture)
 //   node scripts/raw/reanchor-split.mjs --apply     → réécrit en place docs/raw/*.md
-import { readdirSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { BOOKS, esc, normalize, readText } from './_lib.mjs'
@@ -45,7 +46,7 @@ export function origLinesOf(source) {
 
 export function buildBookIndex(abbr) {
   const dir = new Map(BOOKS).get(abbr)
-  const files = readdirSync(dir).filter((f) => /^\d+ - .*\.md$/.test(f))
+  const files = listerDossier(dir).filter((f) => /^\d+ - .*\.md$/.test(f))
   const index = {}
   for (const f of files) {
     const nn = f.match(/^(\d+) - /)[1]
@@ -168,7 +169,7 @@ export function explainFailure(origKeys, startStr, suffix, bookIndex) {
 
 // ---------- balayage docs/raw + réécriture ----------
 export function scanAndApply(rawDir, exclude, sources, apply) {
-  const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !exclude.has(f))
+  const docs = listerDossier(rawDir).filter((f) => f.endsWith('.md') && !exclude.has(f))
   const rewritten = []
   const unresolved = []
   for (const source of sources) {
