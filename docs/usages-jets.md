@@ -164,7 +164,7 @@ Aucune n'est déclarée par un nom de fichier : chacune est la conjonction de zo
 | `src/ui/BargainModal.tsx` | ✓ | · | · | · | · | · | · | — |
 | `src/ui/BattementModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser`, `VsHeader` |
 | `src/ui/CascadeModal.tsx` | · | · | ✓ | ✓ | · | ✓ | · | `CriticalBody`, `Icon`, `ModalSubject`, `NumberField`, `OptionChooser`, `RecapLineList`, `RevealBody`, `SequencePanel`, `TableRollLine` |
-| `src/ui/CastModal.tsx` | · | · | · | · | ✓ | ✓ | ✓ | `CharFrame`, `Icon`, `OptionChooser`, `RollRow`, `VsHeader` |
+| `src/ui/CastModal.tsx` | · | · | · | · | ✓ | ✓ | ✓ | `CharFrame`, `GatedAction`, `Icon`, `OptionChooser`, `RollRow`, `VsHeader` |
 | `src/ui/CorruptionModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser` |
 | `src/ui/CrewTestModal.tsx` | · | ✓ | · | · | · | · | · | `Icon` |
 | `src/ui/DisengageModal.tsx` | ✓ | · | · | · | · | · | · | — |
@@ -242,4 +242,4 @@ est un angle mort, et les voici :
 - Les **ids de zone** (`Zn`) affichés sont ceux que le JSDoc des props DÉCLARE. Une zone du contrat non
   encore taguée à la primitive n'a pas d'id ici — ce document RELÈVE les ids, il ne les attribue pas.
 
-<!-- sources-empreinte: a6dd567c504ea67861025bdc0ac763e3730e95be (1974 fichiers, 138 dossiers) corps: 57b36478df35e5894c96b83676453b2edc3da833 -->
+<!-- sources-empreinte: 1fae945a3d03b3ffbd87e9bc9bcb9176a3c6fadf (1974 fichiers, 138 dossiers) corps: 11e7590641b0612969a670fbd2edaaa3425111e7 -->
