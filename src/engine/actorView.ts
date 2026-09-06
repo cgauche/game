@@ -1,0 +1,44 @@
+/**
+ * VUE d'acteur (`ActorView`) et CONTEXTE d'évaluation d'une `Condition` — SOURCE UNIQUE, côté moteur.
+ *
+ * Une seule projection d'un Combattant vers l'algèbre `Condition` : Flows de combat, gates d'effet
+ * déclenché et VERROUS d'État (`ConditionInstance.lockedUntil`, LDB 18) évaluent leurs prédicats
+ * contre la MÊME vue. Un sujet que la vue ne porte pas ne s'évalue jamais à une valeur par défaut
+ * muette : il est refusé AU PARSE (`data/schemas/grammaire/mecanique.ts`).
+ *
+ * `state/combat/flowEval.ts` compose ce constructeur et l'enrichit du contexte de RÉSOLUTION (DR,
+ * localisation, géométrie d'arène) que seul le combat connaît.
+ */
+import { type Combatant, type CharKey, CHAR_KEYS } from './types';
+import { effectiveChar } from './characteristics';
+import { SIZE_ORDER, effectiveSize } from './size';
+import { campOf } from './relations';
+import { aggregateCapabilities, chaosDomainOf } from './combatFeatures/dispatch';
+import type { ActorView, ConditionCtx } from './flowCore';
+
+/** Vue d'un combattant pour les Conditions d'acteur (`compare`/`relation`/`has`/`capability`) : PB +
+ *  Taille/Avantage + camp + appartenances (Groupes/Talents/Traits) + valeur d'États par nom + niveau des
+ *  Capacités de combat agrégées. */
+export function buildActorView(c: Combatant | undefined): ActorView | undefined {
+  return c ? {
+    id: c.id, woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
+    advantage: c.advantage ?? 0, camp: campOf(c),
+    groups: c.groups ?? [], talents: (c.talents ?? []).map((t) => ({ id: t.talentId, spec: t.spec })), traits: (c.traits ?? []).map((t) => t.id),
+    conditions: Object.fromEntries((c.conditions ?? []).map((x) => [x.id, x.value ?? 1])), capabilities: aggregateCapabilities(c),
+    ...(chaosDomainOf(c) ? { chaosDomain: chaosDomainOf(c) } : {}),
+    // États psy ACTIFS (un trait ciblé RÉSISTÉ — `active:false` — ne compte pas comme « possédé »).
+    psych: (c.psychState ?? []).filter((p) => p.active !== false).map((p) => p.type),
+    chars: Object.fromEntries(CHAR_KEYS.map((k) => [k, effectiveChar(c, k)])) as Record<CharKey, number>,
+  } : undefined;
+}
+
+/**
+ * Contexte d'évaluation d'un VERROU d'État (`lockedUntil`, LDB 18) : le porteur est à la fois la CIBLE
+ * et le référent du prédicat — un verrou est une propriété de CELUI qui porte l'État. Ce que ce
+ * contexte garantit est exactement ce que le parse admet ; le reste (drapeaux de scène, horloge,
+ * bourse, groupe) est REFUSÉ à l'authoring plutôt qu'évalué faux en silence.
+ */
+export function conditionLockCtx(c: Combatant): ConditionCtx {
+  const vue = buildActorView(c);
+  return { flags: {}, gameTime: 0, target: vue, caster: vue };
+}

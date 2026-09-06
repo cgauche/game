@@ -43,6 +43,8 @@ const doc = document(
      *  croisée hors périmètre d'un seul dataset). */
     stacksReducedBy: z.string().optional(),
     restrictsAction: z.boolean().optional(),
+    /** LDB 16 l.115 (Inconscient), l.37 (À Terre), l.137 (Surpris) — « ne se cumule pas ». */
+    nonCumulable: z.boolean().optional(),
     recover: recoverSchema.optional(),
     /** `EtatData.persistsAfterCombat` (`src/data/index.ts`) — LDB 16 l.56/70/84/92/107/117, LDB 62 l.250. */
     persistsAfterCombat: z.boolean().optional(),
@@ -55,6 +57,7 @@ const doc = document(
     aiThreat: { label: 'Menace pour l’IA', hint: 'Poids pris en compte par l’IA pour évaluer la dangerosité de l’État' },
     perStack: { label: 'Par cumul', hint: 'L’effet se recalcule à chaque palier de cumul, pas une seule fois' },
     stacksReducedBy: { label: 'Cumuls réduits par', hint: 'Capacité de combat qui réduit le nombre de cumuls' },
+    nonCumulable: { label: 'Ne se cumule pas', hint: 'Un seul pion, quelle que soit la cause — le porteur l’a ou ne l’a pas' },
     restrictsAction: {
       label: 'Action verrouillée',
       hint: 'État bloquant (Brisé) : l’IA dépense sa Détermination pour le lever',

@@ -476,8 +476,19 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "disease+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" }, // la conséquence du cycle vit sous la feuille `EffectOp` du nœud `test` (#1657 B2b)
   { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "passive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 23, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "symptoms.json", champ: "severePassive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
+  // #1599 : `severePassive` (6, « char+… ») est mort — les passifs s'indexent PAR PALIER
+  // (`passiveBySeverity`), et le scan nomme le champ PORTEUR : `moderee` (Convulsions −20, LDB 20
+  // l.157) et `grave` (Fièvre : le seul État *Inconscient*, LDB 20 l.170). Aucune ligne « char+… »
+  // sous `grave` : le palier S'AJOUTE à `passive`, il ne recopie pas ses −10.
+  { concept: "reference", dataset: "symptoms.json", champ: "moderee", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-09-05" },
+  { concept: "reference", dataset: "symptoms.json", champ: "grave", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-05" },
+  // #1599 : l'État *Exténué* du Malaise (LDB 20 l.188) s'écrit en op `condition` du canal passif.
+  { concept: "reference", dataset: "symptoms.json", champ: "passive", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-05" },
   { concept: "reference", dataset: "symptoms.json", champ: "visiblePassive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  // #1599, 2026-09-06 : la fenêtre de Détermination (`resolveWindow.minutes`) lit une règle optionnelle
+  // par le terme `{rule}` d'une `Formula` — MÊME graphie que le gate `variants[].when` de
+  // `spells.json`/`talents.json` ci-dessus, donc même statut : elle se soldera avec eux.
+  { concept: "reference", dataset: "symptoms.json", champ: "minutes", signature: "rule", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-09-06" },
   // 3 → 4 (#1657 B2b) : l'État *Sonné* de l'éclatement du Vers du Reik (MSRC 16 l.142) quitte `onFail`
   // — nom menteur pour un effet CERTAIN — et rejoint les ops sous `ops`.
   { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
@@ -990,7 +1001,7 @@ export const STRUCTURES_OPS = [
   { op: "charMod", signature: "char,mod,op", dataset: "mutations.json", occurrences: 55, lot: "L1c #1468", date: "2026-08-23" },
   { op: "charMod", signature: "char,mod,op", dataset: "stars.json", occurrences: 42, lot: "L1c #1468", date: "2026-08-23" },
   { op: "charMod", signature: "char,mod,op", dataset: "spells.json", occurrences: 32, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "charMod", signature: "char,mod,op", dataset: "symptoms.json", occurrences: 30, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "charMod", signature: "char,mod,op", dataset: "symptoms.json", occurrences: 30, lot: "L1c #1468", date: "2026-08-23" }, // INCHANGÉ par #1599 : le palier S'AJOUTE à `passive` au lieu de le remplacer (LDB 20 l.157/l.170), donc aucune liste ne se recopie — la migration ne fait que déplacer les 6 op(s) de `severePassive` vers `passiveBySeverity.moderee`
   { op: "charMod", signature: "char,mod,op", dataset: "traits.json", occurrences: 21, lot: "L1c #1468", date: "2026-08-23" }, // +1 : Trait Entêté (+20 FM), EDOC 07 folio 22 (#673)
   { op: "charMod", signature: "char,mod,op", dataset: "traumas.json", occurrences: 12, lot: "L1c #1468", date: "2026-08-23" },
   { op: "charMod", signature: "char,mod,op", dataset: "talents.json", occurrences: 10, lot: "L1c #1468", date: "2026-08-23" },
@@ -1016,7 +1027,12 @@ export const STRUCTURES_OPS = [
   { op: "condition", signature: "id,op,value", dataset: "river-criticals.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "id,op,value", dataset: "ship-criticals.json", occurrences: 11, lot: "L1c #1468", date: "2026-08-23" }, // 5 → 11 (#1657 B3-2b-a) : 6 rangées MDG dont le Test ne vivait qu'en prose `note` gagnent leur `crewHit` (MDG 13 l.730/734/736/738/751/756, échec = État À Terre)
   { op: "condition", signature: "id,op,value,valuePerSL", dataset: "spells.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "condition", signature: "id,op", dataset: "symptoms.json", occurrences: 4, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "condition", signature: "id,op", dataset: "symptoms.json", occurrences: 4, lot: "L1c #1468", date: "2026-08-23" }, // 4 → 6 (#1599, États portés par un canal passif) puis 6 → 4 : les DEUX États portés déclarent leur fenêtre de Détermination et changent donc de signature (ligne suivante)
+  // #1599, 2026-09-06 : ce qu'un Point de Détermination fait sur l'État qu'une op PASSIVE porte est dit
+  // par l'op elle-même (`resolveWindow`) — fenêtre d'horloge pour la Fièvre (Grave) `LDB 20 l.170`,
+  // refus (`'none'`) pour le Malaise `LDB 20 l.188`. Les deux drapeaux de symptôme qui le disaient
+  // (`determinationSuspends`/`lockedUntilCured`) sont MORTS avec ce lot.
+  { op: "condition", signature: "id,op,resolveWindow", dataset: "symptoms.json", occurrences: 2, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "escapeStrength,grapple,id,op,unlessCondition,value", dataset: "traits.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "escapeStrength,id,op", dataset: "spells.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },
   { op: "condition", signature: "escapeStrength,id,op,value,valuePerSL", dataset: "spells.json", occurrences: 3, lot: "L1c #1468", date: "2026-08-23" },

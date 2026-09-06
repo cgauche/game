@@ -143,16 +143,16 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     openTable(60);
     render();
     const basse = rowButton('Ligne basse')!;
-    expect(basse.disabled).toBe(true);
-    // La raison vit dans l'infobulle partagée de la primitive, jamais dans un `title` natif (invisible à
-    // l'arbre a11y, inatteignable au doigt) :
+    expect(basse.getAttribute('aria-disabled'), 'la ligne éteinte n’est pas marquée refusée').toBe('true');
+    expect(basse.disabled, '`disabled` HTML : la ligne sort du clavier et de la manette').toBe(false);
+    // La raison ne vit plus dans un `title` natif (invisible à l'arbre a11y, inatteignable au doigt) :
     // N lignes éteintes par la MÊME cause se LIENT au récapitulatif rendu une fois sous la grille —
     // grammaire de refus UNIQUE de la primitive (`RollOption.refusId` → `GatedAction` forme
     // `reasonId`), arbitrage user 2026-08-24.
     expect(basse.title, 'plus de raison en infobulle native').toBe('');
     const raison = host.querySelector(`#${basse.getAttribute('aria-describedby')}`);
     expect(raison?.textContent, 'la raison est à l’écran, et le bouton la DÉSIGNE').toContain("hors d'atteinte");
-    expect(rowButton('51-100')!.disabled).toBe(false);
+    expect(rowButton('51-100')!.getAttribute('aria-disabled')).toBeNull();
     expect(rowButton('51-100')!.getAttribute('aria-describedby'), 'une ligne atteignable ne désigne aucun refus').toBeNull();
     act(() => { basse.click(); });
     expect(result(), 'une ligne inatteignable ne pose aucun dé').toBeUndefined();
@@ -342,8 +342,11 @@ describe('Mode table — le dé montré est celui qui RÉSOUT (table à modifica
     setDesFixes(true);
     openTable(-60); // sous −60, aucun dé de 1 à 100 n'atteint [51-100]
     render();
-    const off = rowButtons().filter((b) => b.disabled);
+    // CONTRAT de `GatedAction` : une ligne éteinte porte `aria-disabled` et JAMAIS `disabled` — elle
+    // reste atteignable au clavier/à la manette/au doigt pour que sa raison soit lisible.
+    const off = rowButtons().filter((b) => b.getAttribute('aria-disabled') === 'true');
     expect(off.length, 'aucune ligne grisée : le cas n’est pas exercé').toBeGreaterThan(0);
+    expect(rowButtons().filter((b) => b.disabled), 'une ligne éteinte porte `disabled` (muette au clavier)').toEqual([]);
     expect(host.textContent).toContain('grisée');
     expect(host.textContent).toContain('hors d’atteinte'.replace('’', "'"));
     const noteId = off[0].getAttribute('aria-describedby');

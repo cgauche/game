@@ -42,6 +42,12 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     severity: z.enum(['moderee', 'grave']),
     otherwise: z.array(z.lazy(() => gameOpSchema)).optional(),
   }),
+  attenuateSymptom: z.strictObject({
+    op: z.literal('attenuateSymptom'),
+    disease: idDe('maladie'),
+    symptomId: idDe('symptome'),
+    otherwise: z.array(z.lazy(() => gameOpSchema)).optional(),
+  }),
   grantSymptom: z.strictObject({
     op: z.literal('grantSymptom'),
     disease: idDe('maladie'),
@@ -108,9 +114,33 @@ export const OPS_NON_TYPEES: readonly string[] = [
  *   (`messageRecurrenceHorloge`, `engine/ops.ts`).
  */
 function refusLoose(v: Record<string, unknown>, ctx: z.RefinementCtx): void {
-  if (v.op === 'condition' && v.perRound === true && (v.durationMinutes != null || v.durationHours != null)) {
+  if (v.op !== 'condition') return;
+  if (v.perRound === true && (v.durationMinutes != null || v.durationHours != null)) {
     ctx.addIssue({ code: 'custom', path: ['perRound'], message: messageRecurrenceHorloge(String(v.id ?? '')) });
   }
+  for (const kind of sujetsNonGarantis(v.lockedUntil)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['lockedUntil'],
+      message: `Verrou d'État « ${String(v.id ?? '')} » : la Condition « ${kind} » lit un état que le contexte de verrou ne porte PAS `
+        + "(`conditionLockCtx`, engine/actorView.ts — la vue du seul PORTEUR : Caractéristiques, PB, Taille, Avantage, camp, appartenances, États, Capacités). "
+        + 'Elle serait évaluée FAUSSE en silence : réécrire le verrou sur le porteur, ou étendre le contexte AVANT la donnée.',
+    });
+  }
+}
+
+/** Familles de `Condition` qu'un contexte de VERROU d'État GARANTIT — elles ne lisent que la vue
+ *  d'acteur (`buildActorView`). Tout le reste (drapeaux de scène, horloge, bourse, inventaire de
+ *  groupe, contexte de résolution d'une touche) est absent de ce contexte. */
+const SUJETS_DE_VERROU = new Set(['always', 'compare', 'capability', 'has', 'relation', 'casterChaosDomain']);
+
+/** Les `kind` d'une Condition de verrou que le contexte ne garantit pas (récursif sur `all`/`any`/`not`). */
+function sujetsNonGarantis(cond: unknown): string[] {
+  if (!cond || typeof cond !== 'object') return [];
+  const c = cond as Record<string, unknown>;
+  if (c.kind === 'all' || c.kind === 'any') return (Array.isArray(c.of) ? c.of : []).flatMap(sujetsNonGarantis);
+  if (c.kind === 'not') return sujetsNonGarantis(c.of);
+  return typeof c.kind === 'string' && !SUJETS_DE_VERROU.has(c.kind) ? [c.kind] : [];
 }
 
 /**

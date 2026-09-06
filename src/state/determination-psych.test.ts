@@ -58,16 +58,26 @@ describe('Détermination « ignorer modifs de critique » (LDB 17 l.60) annule l
   });
 });
 
-describe('Détermination annule aussi les pénalités de MALADIE (kind `maladie`, gating dans le collecteur)', () => {
-  // Fièvre (LDB 20 l.135) = −10 aux Tests Physiques/Sociaux ; `characteristics` requis (le collecteur itère ses clés).
+/**
+ * LDB 17 l.59-61, verbatim — les TROIS emplois d'un Point de Détermination :
+ * « - Demeurer immunisé à *Psychologie* jusqu'à la fin du prochain Round. […]
+ *   - Ignorer tous les modificateurs dus à une Blessure critique jusqu'au début du prochain Round.
+ *   - Retirez un État : si vous retirez l'État à Terre, regagnez 1 Point de Blessure lorsque vous vous
+ *     mettez debout. »
+ * Aucun ne touche une MALADIE : le canal `maladie` n'est dans AUCUN annulateur. Ce qu'une dépense peut
+ * faire pour un malade, c'est suspendre le SYMPTÔME qui porte un État (LDB 20 l.170), jamais lever ses
+ * pénalités continues.
+ */
+describe('la Détermination ne lève AUCUNE pénalité de MALADIE (LDB 17 l.59-61)', () => {
+  // Fièvre (LDB 20 l.170) = −10 aux Tests Physiques/Sociaux ; `characteristics` requis (le collecteur itère ses clés).
   const sick = () => C({ characteristics: { force: 30, sociabilite: 30 } as never, diseases: [{ phase: 'active', symptoms: [{ symptomId: 'fievre' }] } as never] });
   it('actif : fièvre = −10 (via le pool passif non-cumul)', () => {
     expect(traumaCharPenalties(sick(), 'force')).toEqual([-10]);
   });
-  it('ignoreCritMods : la pénalité de maladie est annulée (comme un trauma)', () => {
+  it('ignoreCritMods (l.60) : la fièvre garde ses −10 — seul le CRITIQUE est ignoré', () => {
     const c = sick();
     c.activeEffects = [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left: 1 }, ignoreCritMods: true } as never];
-    expect(traumaCharPenalties(c, 'force')).toEqual([]);
+    expect(traumaCharPenalties(c, 'force')).toEqual([-10]);
   });
 });
 

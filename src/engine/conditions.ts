@@ -3,8 +3,9 @@
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
 import { Combatant, ActiveEffect, ConditionInstance, effectRef, type ModLine, type ConditionEmit, type ConditionLocks } from './types';
-import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
-import { tickRound } from './duration';
+import { evalCondition } from './flowCore';
+import { conditionLockCtx } from './actorView';
+import { tickRound, type Duration } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel, skills } from '../data';
 import { slugId } from '../data/slug';
 import { t } from '../i18n';
@@ -13,6 +14,7 @@ import { groupAdvantage } from './advantagePool';
 import { bonus, effectiveChar } from './characteristics';
 import { d100, RNG, defaultRNG } from './dice';
 import { passiveMods, passiveGlobalTestParts, settleHealedCriticals } from './trauma';
+import { memeSource } from './suspension';
 import type { GameOp } from './ops';
 import type { CodexTarget } from './ruleRefs';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
@@ -24,7 +26,7 @@ import { recomputeLoadout } from './items';
 import { refreshWounds } from './characteristics';
 import { restoreSuppressedPsych } from './psychology';
 import { hasActiveFlag } from './activeFlags';
-import { applyOps } from './ops'; // cycle runtime (ops→conditions) : applyOps n'est appelé qu'au tick, jamais à l'init du module
+import { applyOps, resolveWindowDuration } from './ops'; // cycle runtime (ops→conditions) : appelés au tick/à la dépense, jamais à l'init du module
 import { aaDeathByCriticalCount } from './critical'; // cycle runtime (critical→combat→conditions) : appelé seulement dans inDeathCondition, jamais à l'init
 
 /** Les 12 États CANONIQUES (LDB 16) à comportement moteur, par `id` STABLE (slug d'etats.json). Le
@@ -39,6 +41,15 @@ export const COND = {
 
 /** Nombre de pions (cumul) d'un État donné. */
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.id === name)?.value ?? 0;
+
+/** Cet État ne porte-t-il JAMAIS plus d'un pion ? Drapeau de DONNÉE (`etats.json`, `nonCumulable`),
+ *  porté par les trois États que le RAW dit non cumulables — LDB 16 l.115 (Inconscient : « L'État
+ *  *Inconscient* ne se cumule pas – soit vous êtes *Inconscient*, soit vous ne l'êtes pas. »), l.37
+ *  (À Terre), l.137 (Surpris). SOURCE UNIQUE du plafond, lue par la pose NATIVE (`addCondition`) comme
+ *  par la réconciliation des États DÉRIVÉS : deux causes, un seul pion. */
+export function etatNonCumulable(id: string): boolean {
+  return findConditionById(id)?.nonCumulable === true;
+}
 
 /** Marqueurs NARRATIFS hors LDB 16 (PAS des États `etats.json`, cf. `data-wellformed.test`) : Pétrifié
  *  (LDB 85), sans entrée catalogue — sévérité portée ICI, unique exception. */
@@ -60,8 +71,13 @@ export function conditionSeverity(name: string): number {
  * État Sonné »). Absent ⇒ aucune réaction (création de perso, effets hors combat, tests purs).
  */
 let onConditionGained: ((c: Combatant, name: string) => void) | undefined;
-export function setConditionGainedHook(fn: ((c: Combatant, name: string) => void) | undefined): void {
+/** Pose le hook et REND le précédent : un poseur temporaire (sonde, jeu de test) peut ainsi le remettre
+ *  à l'identique au lieu de l'éteindre — le câblage du store est un GLOBAL de module, l'effacer laisse
+ *  le combat sans déclencheur `onGainCondition` pour tout ce qui tourne ensuite dans le même worker. */
+export function setConditionGainedHook(fn: ((c: Combatant, name: string) => void) | undefined): ((c: Combatant, name: string) => void) | undefined {
+  const precedent = onConditionGained;
   onConditionGained = fn;
+  return precedent;
 }
 
 /** Retrait d'États « 1 + DR » borné au nombre de pions présents (LDB 16 : Empêtré l.61,
@@ -71,12 +87,23 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
   return Math.min(stacks, 1 + Math.max(0, dr));
 }
 
+/** EMPILEMENT d'une pose sur un pion DÉJÀ PORTÉ — SOURCE UNIQUE des poseurs (`addCondition`,
+ *  `addTimedCondition`, `addClockCondition` ; le cycle quotidien des maladies passe par le premier).
+ *  Un État `nonCumulable` (LDB 16 l.115/l.37/l.137) n'empile
+ *  RIEN : la pose PREND POSSESSION du pion déjà là (la contribution DÉRIVÉE tombe à 0, le marquage —
+ *  la source affichée — reste), de sorte que le fait passif qui retombe n'emporte plus le pion de
+ *  l'autre cause. */
+function empileSurPionExistant(existing: ConditionInstance, value: number): void {
+  if (!etatNonCumulable(existing.id)) { existing.value += value; return; }
+  if (existing.derivedFrom) existing.derivedFrom = { ...existing.derivedFrom, stacks: 0 };
+}
+
 export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number, locks?: ConditionLocks): void {
   const { lockedUntil, unlockBy } = locks ?? {};
   if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.7) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
   const existing = c.conditions.find((x) => x.id === name);
   if (existing) {
-    existing.value += value;
+    empileSurPionExistant(existing, value);
     // Force d'évasion (Empêtré « se libérer » — LDB 16 l.66) : sur ré-application, on garde la PLUS
     // CONTRAIGNANTE (max), pour qu'un Enchevêtrement ne soit pas affaibli par un État Empêtré « banal »
     // qui s'empile par-dessus (et inversement, un sort plus fort durcit l'évasion).
@@ -103,7 +130,7 @@ export function addTimedCondition(c: Combatant, name: string, value: number, rou
   const existing = c.conditions.find((x) => x.id === name);
   if (existing) {
     if (!groupAdvantage()) c.advantage = 0;
-    existing.value += value;
+    empileSurPionExistant(existing, value);
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     if (escapeThreshold != null) existing.escapeThreshold = Math.max(existing.escapeThreshold ?? 0, escapeThreshold);
     if (entangleOnFail) existing.entangleOnFail = true;
@@ -126,7 +153,7 @@ export function addClockCondition(c: Combatant, name: string, value: number, unt
   const existing = c.conditions.find((x) => x.id === name);
   if (existing) {
     if (!groupAdvantage()) c.advantage = 0; // Perte d'Avantage sur État (LDB 16 l.7) — inerte en mode « Avantage de groupe »
-    existing.value += value;
+    empileSurPionExistant(existing, value);
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     if (escapeThreshold != null) existing.escapeThreshold = Math.max(existing.escapeThreshold ?? 0, escapeThreshold);
     if (entangleOnFail) existing.entangleOnFail = true;
@@ -151,14 +178,10 @@ export function addClockCondition(c: Combatant, name: string, value: number, unt
 export function isConditionLocked(inst: ConditionInstance, c: Combatant): boolean {
   if (inst.unlockBy != null) return true; // verrou d'acte de soin non encore levé (LDB 18)
   if (!inst.lockedUntil) return false;
-  const ctx: ConditionCtx = {
-    // Prédicat d'état du porteur : États par nom (`compare`). Aucun drapeau de trauma (le verrou d'Aide Médicale
-    // est désormais porté par `unlockBy`, plus par `awaitingMedicalAid` d'une séquelle porteuse).
-    flags: {},
-    gameTime: 0,
-    target: { conditions: Object.fromEntries((c.conditions ?? []).map((x) => [x.id, x.value])) } as unknown as ActorView,
-  };
-  return !evalCondition(inst.lockedUntil, ctx);
+  // Le prédicat s'évalue contre la vue COMPLÈTE du porteur (`conditionLockCtx`, source unique partagée
+  // avec les Flows) : PB, Taille, Avantage, camp, appartenances, Caractéristiques, États, Capacités.
+  // Les sujets que ce contexte ne porte pas sont refusés AU PARSE, jamais évalués faux ici.
+  return !evalCondition(inst.lockedUntil, conditionLockCtx(c));
 }
 
 /** Un acte `act` LÈVE-t-il un verrou d'État `unlockBy` (LDB 18) ? Le soin magique compte AUSSI comme Aide
@@ -189,11 +212,20 @@ export function hasSurgeryLockedCondition(c: Combatant): boolean {
   return (c.conditions ?? []).some((x) => x.unlockBy === 'surgery');
 }
 
-export function removeCondition(c: Combatant, name: string, value = 1): void {
+/**
+ * RETRAIT d'État — `porSaSource` réservé à la réconciliation des États DÉRIVÉS : elle EST la source du
+ * pion marqué, elle seule peut donc l'emporter. Tout autre retrait (sommeil, soin, Détermination,
+ * dissipation) s'arrête à la part NATIVE du pion : un État qu'un fait passif toujours vivant porte ne
+ * se retire pas à la main (`LDB 20 l.188` ; le fait le reposerait de toute façon à la réconciliation).
+ */
+function retireEtat(c: Combatant, name: string, value: number, parSaSource: boolean): void {
   const existing = c.conditions.find((x) => x.id === name);
   if (!existing) return;
   if (isConditionLocked(existing, c)) return; // verrou de Critique (LDB 18) : ne part pas tant que sa Condition n'est pas remplie
-  existing.value -= value;
+  const plancher = parSaSource ? 0 : existing.derivedFrom?.stacks ?? 0;
+  const n = Math.min(value, Math.max(0, existing.value - plancher));
+  if (n <= 0) return;
+  existing.value -= n;
   if (existing.value <= 0) c.conditions = c.conditions.filter((x) => x.id !== name);
   // Main ensanglantée (AA 07 l.117) : le Test de Dextérité par Action tient « tant que vous êtes sous
   // l'effet de cet État » → l'Hémorragique épuisé (instance retirée) lève TOUS les gates de main (op
@@ -204,8 +236,145 @@ export function removeCondition(c: Combatant, name: string, value = 1): void {
   settleHealedCriticals(c);
 }
 
+export function removeCondition(c: Combatant, name: string, value = 1): void {
+  retireEtat(c, name, value, false);
+}
+
 export function hasCondition(c: Combatant, name: string): boolean {
   return c.conditions.some((x) => x.id === name);
+}
+
+/** Pions de l'État `name` POSÉS par la réconciliation d'un canal passif (`ConditionInstance.derivedFrom`).
+ *  Lu par les sites qui doivent laisser ces pions-là en place (le sommeil ne dissipe pas un Exténué que
+ *  le Malaise porte, LDB 20 l.188 : « dont vous ne pourrez vous défaire qu'une fois votre maladie guérie »). */
+export function derivedStacks(c: Combatant, name: string): number {
+  return c.conditions.find((x) => x.id === name)?.derivedFrom?.stacks ?? 0;
+}
+
+/** L'op `condition` PASSIVE qui porte l'État `conditionId` chez `c` — retrouvée dans le MÊME
+ *  collecteur que la réconciliation (`passiveMods`), par l'identité de source MÉMORISÉE sur le pion
+ *  (`derivedFrom.src`). Aucun lookup de catalogue : le porteur peut être de N'IMPORTE quelle
+ *  famille (symptôme, État, mutation, trait, objet, talent). */
+function opPorteuseDEtat(c: Combatant, conditionId: string): Extract<GameOp, { op: 'condition' }> | undefined {
+  const src = c.conditions.find((x) => x.id === conditionId)?.derivedFrom?.src;
+  if (!src) return undefined;
+  for (const m of passiveMods(c)) {
+    if (m.op.op !== 'condition' || m.op.id !== conditionId) continue;
+    if (memeSource(m.src, src)) return m.op;
+  }
+  return undefined;
+}
+
+/**
+ * FENÊTRE ouverte par un Point de Détermination sur l'État `conditionId` — `undefined` = REFUS.
+ * SOURCE UNIQUE, PURE (`now` injecté), lue par le store (`spendResolveCondition`) et par la raison
+ * ci-dessous. La fenêtre est celle que l'op PORTEUSE déclare (`ResolveWindow`), quel que soit le type
+ * de son porteur : rien ici ne nomme une famille d'entité.
+ */
+export function fenetreDetermination(c: Combatant, conditionId: string, now: number, rng?: RNG): Duration | undefined {
+  return resolveWindowDuration(opPorteuseDEtat(c, conditionId)?.resolveWindow, c, now, rng);
+}
+
+/**
+ * RAISON pour laquelle un Point de Détermination ne peut RIEN sur cet État — `undefined` = la dépense
+ * est ouverte. Consommée par le store ET par l'UI (l'affordance porte sa raison au survol, jamais un
+ * bouton muet). Le refus est en DONNÉE : l'op porteuse déclare une fenêtre `'none'` (LDB 20 l.188).
+ * Partout ailleurs la dépense passe : État non dérivé → retrait d'un pion (LDB 17 l.61) ; État dérivé
+ * → la source est SUSPENDUE le temps de la fenêtre, et la cause qui tient repose l'État à l'échéance
+ * (LDB 16 l.117).
+ */
+export function raisonRefusDetermination(c: Combatant, conditionId: string): string | undefined {
+  const src = c.conditions.find((x) => x.id === conditionId)?.derivedFrom?.src;
+  if (!src || opPorteuseDEtat(c, conditionId)?.resolveWindow !== 'none') return undefined;
+  return t('cond.refusDeterminationVerrou', { cond: conditionLabel(conditionId), src: refLabel(src.category, { id: src.id }) });
+}
+
+/** RE-ENTRANCE : la pose d'un État déclenche `onGainCondition` (store), qui peut appliquer des ops — dont
+ *  la fin re-appelle la réconciliation. Elle ne se rejoue pas SUR ELLE-MÊME : l'appel externe voit l'état
+ *  final, un appel imbriqué rendrait un journal en double. Le verrou est PAR PORTEUR (identité du
+ *  Combattant) : un déclencheur qui applique des ops à B pendant la réconciliation de A doit voir B
+ *  réconcilié — un drapeau de module l'aurait rendu inerte, et B n'aurait jamais reçu son État. */
+const reconciliationEnCours = new WeakSet<Combatant>();
+
+/**
+ * RÉCONCILIATION des États PORTÉS par un canal PASSIF — SOCLE UNIQUE (#1599).
+ *
+ * FAIT SOURCE : les op `condition` que `passiveMods(c)` émet (donc TOUT porteur passif — symptôme,
+ * État, mutation, trait, objet —, et déjà filtré par les annulateurs `PASSIVE_CANCELLERS`/`modSurvives`
+ * et par la suspension de symptôme `suppressSymptom` : le fait cesse, l'État dérivé part avec lui).
+ * CIBLE : un multiset par id d'État. L'écart avec les pions DÉJÀ dérivés (`derivedFrom.stacks`) est
+ * comblé par `addCondition` / `removeCondition` — jamais par une pose en aveugle.
+ *
+ * Ce que la réconciliation NE touche PAS : les pions NON marqués (un Inconscient de KO à 0 PB, LDB 16
+ * l.94, coexiste avec celui d'une Fièvre (Grave), LDB 20 l.170 — la fièvre qui redescend n'emporte que
+ * le sien) et les États VERROUILLÉS (LDB 18 : `removeCondition` y est inerte, le marquage reste alors
+ * intact plutôt que d'orpheliner des pions).
+ *
+ * IDEMPOTENTE : rejouée sans changement du fait source, elle n'écrit rien et rend un journal vide.
+ * Mute `c`, renvoie le journal ; `emit` reçoit l'appariement ligne↔id (`ConditionChange`).
+ */
+export function syncDerivedConditions(c: Combatant, emit?: ConditionEmit): string[] {
+  if (reconciliationEnCours.has(c)) return [];
+  reconciliationEnCours.add(c);
+  try {
+    return reconcilierEtatsDerives(c, emit);
+  } finally {
+    reconciliationEnCours.delete(c);
+  }
+}
+
+function reconcilierEtatsDerives(c: Combatant, emit?: ConditionEmit): string[] {
+  const cible = new Map<string, { stacks: number; src?: CodexTarget }>();
+  for (const m of passiveMods(c)) {
+    if (m.op.op !== 'condition') continue;
+    const n = typeof m.op.value === 'number' ? m.op.value : 1;
+    const e = cible.get(m.op.id);
+    if (e) e.stacks += n;
+    else cible.set(m.op.id, { stacks: n, ...(m.src ? { src: m.src } : {}) });
+  }
+  const log: string[] = [];
+  // `?? []` : un porteur FORGÉ (coque de navire, sonde de test) peut n'avoir aucune liste d'États — la
+  // réconciliation reste inerte sur lui, elle ne lève pas.
+  const portees = c.conditions ?? [];
+  const ids = new Set([...cible.keys(), ...portees.filter((x) => x.derivedFrom).map((x) => x.id)]);
+  for (const id of ids) {
+    const voulu = cible.get(id);
+    const inst = portees.find((x) => x.id === id);
+    const porte = inst?.derivedFrom;
+    const porteN = porte?.stacks ?? 0;
+    // LDB 16 l.115 (l.37/l.137) : un État `nonCumulable` ne porte qu'UN pion. Le fait passif n'en pose
+    // donc qu'un — et AUCUN si un pion NATIF (KO à 0 PB) occupe déjà la place : les deux causes
+    // partagent le pion, chacune le tient à son tour sans jamais en ajouter un second.
+    let cibleN = voulu?.stacks ?? 0;
+    if (cibleN > 0 && etatNonCumulable(id)) cibleN = (inst?.value ?? 0) - porteN > 0 ? 0 : 1;
+    if (cibleN === porteN) {
+      // Rien à poser ni à retirer, mais le MARQUAGE dit qui porte le fait : le pion natif partagé
+      // reste nommé par le fait tant qu'il dure, et redevient anonyme quand le fait cesse.
+      if (voulu && inst && cibleN === 0 && !porte) inst.derivedFrom = { stacks: 0, ...(voulu.src ? { src: voulu.src } : {}) };
+      else if (!voulu && inst?.derivedFrom) inst.derivedFrom = undefined;
+      continue;
+    }
+    // Le porteur du NOM à l'écran : l'émetteur courant s'il y en a un (pose), sinon celui MÉMORISÉ par
+    // l'instance (retrait — le fait vient de disparaître, il ne peut plus se nommer lui-même).
+    const src = voulu?.src ?? porte?.src;
+    const source = src ? refLabel(src.category, { id: src.id }) : t('cond.derivedSrcFallback');
+    if (cibleN > porteN) {
+      c.conditions = portees; // la liste EXISTE dès qu'on y pose (porteur forgé sans `conditions`)
+      addCondition(c, id, cibleN - porteN);
+      c.conditions.find((x) => x.id === id)!.derivedFrom = { stacks: cibleN, ...(src ? { src } : {}) };
+      log.push(t('cond.derivedGain', { name: c.label, cond: conditionLabel(id), src: source }));
+      emit?.({ stateId: id, change: 'gain', targetId: c.id });
+      continue;
+    }
+    const avant = inst!.value;
+    retireEtat(c, id, porteN - cibleN, true); // la réconciliation EST la source du pion marqué
+    const apres = c.conditions.find((x) => x.id === id);
+    if ((apres?.value ?? 0) === avant) continue; // retrait INERTE (État verrouillé, LDB 18) : le marquage tient
+    if (apres) apres.derivedFrom = cibleN > 0 ? { stacks: cibleN, ...(src ? { src } : {}) } : undefined;
+    log.push(t('cond.derivedLoss', { name: c.label, cond: conditionLabel(id), src: source }));
+    emit?.({ stateId: id, change: 'loss', targetId: c.id });
+  }
+  return log;
 }
 
 /** Sommeil MAGIQUE (sort Sommeil → Inconscient À DURÉE ; Belladone/Fleur de lune → Inconscient d'horloge) :
@@ -649,6 +818,10 @@ export function tickDurations(c: Combatant, emit?: ConditionEmit): string[] {
     for (const p of done) log.push(t('cond.effectExpire', { name: c.label, label: p.label }));
     c.castPenalties = c.castPenalties.filter((p) => !(p.roundsLeft != null && p.roundsLeft <= 0));
   }
+  // Un effet qui vient d'EXPIRER peut avoir porté (ou levé) un fait source d'État dérivé : la fenêtre de
+  // Détermination de LDB 20 l.170 se referme ici, et l'État repart. Point d'appel de la frontière de
+  // Round (`endOfRound` chaîne ici) ET de toute expiration en Rounds — jamais une copie de la logique.
+  syncDerivedConditions(c, emit).forEach((l) => log.push(l));
   return log;
 }
 

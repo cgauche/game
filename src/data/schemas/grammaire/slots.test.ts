@@ -156,6 +156,12 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       "idDe('navalTrait')",
       // +1 site ADOPTÉ (#1657 B3-2b-a) : `grammaire/mecanique.ts › crewTargetSchema.stations` désigne
       // les PRÉSENCES à bord que les livres nomment (`ship-stations.json`, catalogue FERMÉ).
+      // +1 site ADOPTÉ (#1599, 2026-09-06) : `grammaire/valeurs.ts › formulaSchema` — le terme `{rule}`
+      // d'une `Formula` (une quantité que le livre ne chiffre pas, lue au registre des règles
+      // optionnelles : fenêtre de conscience de `LDB 20 l.170`) compose `idDe('regleOptionnelle')`.
+      // La feuille est instanciée UNE fois hors du `z.lazy` : sans cela, chaque composition du schéma
+      // de Formule reposerait la marque (58 instances mesurées) pour UN seul site de référence.
+      "idDe('regleOptionnelle')",
       "idDe('shipStation')",
       // … puis 34 → 36 `idDe('skill')` au commit 4bis : les DEUX statblocs adoptent la grammaire —
       // `defs/creatures.ts › skills` et `defs-scenes/communs.ts › skills` composent

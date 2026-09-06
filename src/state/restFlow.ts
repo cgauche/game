@@ -439,7 +439,7 @@ registerNightBandApplier('diseaseGangrene', (_get, _set, _band, row, hero) => {
 });
 
 registerNightBandApplier('diseasePersist', (_get, _set, _band, row, hero) => {
-  // Fin de Durée : résolution ET réconciliation de l'Exténué « collant » (LDB 20 l.153) en UN geste —
+  // Fin de Durée : résolution ET réconciliation des États portés par un passif (LDB 20 l.188) en UN geste —
   // `applyDiseaseEnd` (engine/rest) est le foyer unique, ici comme dans toute autre voie.
   return { consequences: freeCons(applyDiseaseEnd(hero, String(row.meta?.diseaseName ?? ''), row.result!.success, row.result!.sl, battleRng())) };
 });

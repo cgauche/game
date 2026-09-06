@@ -8,7 +8,7 @@
  * `FormulaField` — JAMAIS de coercition en nombre (la régression historique : un `wounds {dice}` lu
  * « 0 » puis écrasé). Un nouveau type d'op = 1 entrée dans `OP_GROUPS` + 1 défaut dans `newOp`.
  */
-import { Formula, GameOp } from '../../engine/ops';
+import { Formula, GameOp, type ResolveWindow } from '../../engine/ops';
 import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey, ArmourBypass } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
@@ -25,6 +25,7 @@ import { Icon } from '../Icon';
 import { NumberField } from '../NumberField';
 import type { IconIdInput } from '../icons';
 import { TESTS_DE_CORRUPTION, type TestDeCorruption } from '../../data/schemas/grammaire/valeurs';
+import { OPTIONAL_RULES, ruleDef } from '../../engine/policy';
 
 /** Aide à la SAISIE de l'atelier : nature d'Influence que chaque Compétence repousse (`LDB 19 l.29`).
  *  Le `Record` est TOTAL sur l'alphabet — un id de plus impose son libellé ici. */
@@ -109,6 +110,7 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   diseaseTestMod: 'Modif. aux Tests d’une maladie',
   suppressSymptom: 'Suspendre un symptôme',
   aggravateSymptom: 'Aggraver un symptôme',
+  attenuateSymptom: 'Atténuer un symptôme',
   grantSymptom: 'Ajouter un symptôme',
   actGate: 'Test par Round pour agir (drogue)',
   delayed: 'Ops différées (échéance d’horloge)',
@@ -177,7 +179,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   grantTalent: 'mechanic/invoke', grantCareerSkill: 'mechanic/invoke', grantCareerTalent: 'mechanic/invoke',
   augmentWeapon: 'item/weapon', cureDisease: 'medical/infection', reduceDiseaseDays: 'medical/infection',
   preventInfection: 'medical/infection', cureCriticalWound: 'medical/crutch', amputer: 'medical/crutch', diseaseTestMod: 'medical/infection',
-  suppressSymptom: 'medical/infection', aggravateSymptom: 'medical/infection', grantSymptom: 'medical/infection',
+  suppressSymptom: 'medical/infection', aggravateSymptom: 'medical/infection', attenuateSymptom: 'medical/infection', grantSymptom: 'medical/infection',
   actGate: 'ui/wait', delayed: 'ui/wait', suppressPsych: 'mechanic/mind',
   suffocate: 'mechanic/ward', noBreath: 'mechanic/ward', noHunger: 'mechanic/ward', ignoreAnimosity: 'mechanic/ward', weatherWard: 'mechanic/ward',
   damageArmour: 'item/armour', reduceToZero: 'journal/damage', banish: 'magic/area', martyr: 'action/defend',
@@ -202,7 +204,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Invocation & armes', ['summon', 'polymorph', 'transform', 'endTransform', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'removeTrait', 'grantPsychTrait', 'removePsychTrait', 'beginPsych', 'grantTalent', 'augmentWeapon']],
   ['Zones', ['zone']],
   ['Projection & téléportation', ['push', 'teleport', 'chain']],
-  ['Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom', 'aggravateSymptom', 'grantSymptom']],
+  ['Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom', 'aggravateSymptom', 'attenuateSymptom', 'grantSymptom']],
   ['Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
   ['Séquelles & mobilité', ['amputer', 'skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'handGate', 'senseLoss']],
   ['Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
@@ -222,9 +224,13 @@ const OP_MENU_GROUPS: TypeMenuGroup[] = OP_GROUPS.map(([g, keys]) => ({
 // Formules
 // ---------------------------------------------------------------------------
 
-export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled' | 'times';
+/** Règles optionnelles NUMÉRIQUES (`kind: 'param'`) — seules éligibles au terme `{rule}` d'une Formula
+ *  (une règle-interrupteur ou un mode n'a pas de valeur à résoudre). Dérivée du registre, jamais listée. */
+const PARAMS_DE_REGLE = OPTIONAL_RULES.filter((r) => r.kind === 'param');
+
+export type FormulaShape = 'lit' | 'bonus' | 'char' | 'dice' | 'rolled' | 'times' | 'regle';
 export const shapeOf = (f: Formula | undefined): FormulaShape =>
-  typeof f === 'number' || f == null ? 'lit' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'rolled' in f ? 'rolled' : 'times' in f ? 'times' : 'dice';
+  typeof f === 'number' || f == null ? 'lit' : 'bonusOf' in f ? 'bonus' : 'charOf' in f ? 'char' : 'rolled' in f ? 'rolled' : 'times' in f ? 'times' : 'rule' in f ? 'regle' : 'dice';
 
 /** Formule par défaut d'une forme — utilisée au CHANGEMENT de forme. Préserve le littéral courant
  *  quand on bascule vers « Nombre » ; ne touche JAMAIS une formule dont la forme est déjà la bonne. */
@@ -235,6 +241,7 @@ export function formulaForShape(s: FormulaShape, current: Formula | undefined): 
   if (s === 'char') return { charOf: 'force' };
   if (s === 'rolled') return { rolled: true };
   if (s === 'times') return { times: { of: { dice: { n: 1, sides: 10 } }, factor: 10 } }; // « 1d10 × 10 » (LDB 71)
+  if (s === 'regle') return { rule: PARAMS_DE_REGLE[0]?.id ?? '' };
   return { dice: { n: 1, sides: 10 } };
 }
 
@@ -253,6 +260,7 @@ export function formulaSummary(f: Formula | undefined): string {
   if ('stacks' in f) return 'pions';
   if ('engagedAdvantageGap' in f) return 'écart d’Avantage';
   if ('woundsDealt' in f) return 'PB infligés';
+  if ('rule' in f) return ruleDef(f.rule)?.label ?? f.rule;
   if ('sum' in f) return f.sum.map(formulaSummary).join(' + ');
   if ('times' in f) return `${formulaSummary(f.times.of)} × ${formulaSummary(f.times.factor)}`;
   return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
@@ -280,7 +288,14 @@ export function FormulaField({ label, value, onChange, min }: {
           <option value="dice">Dés</option>
           <option value="times">Dés × facteur</option>
           <option value="rolled">Dé du jet (paliers)</option>
+          <option value="regle">Règle optionnelle</option>
         </select>
+        {shape === 'regle' && (
+          <select aria-label="Règle optionnelle" value={typeof value === 'object' && value != null && 'rule' in value ? value.rule : ''}
+            onChange={(e) => onChange({ rule: e.target.value })}>
+            {PARAMS_DE_REGLE.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
+          </select>
+        )}
         {shape === 'lit' && (
           <NumberField variant="nu" label={label ? `${label} — nombre` : 'Nombre'} min={min} value={typeof value === 'number' ? value : 0}
             onChange={onChange} />
@@ -314,6 +329,43 @@ export function FormulaField({ label, value, onChange, min }: {
         )}
       </span>
     </label>
+  );
+}
+
+/** FENÊTRE de Détermination (`ResolveWindow`, `engine/ops`) de l'État qu'une op `condition` porte en
+ *  canal PASSIF — `LDB 17 l.61`. Quatre formes, toutes AUTHORABLES : défaut absent (`LDB 16 l.117`,
+ *  défaut étendu à tout État dérivé), refus (`LDB 20 l.188`), Rounds, minutes d'horloge (`LDB 20 l.170`).
+ *  Les deux durées sont des `Formula` éditées par le MÊME `FormulaField` que toute autre quantité —
+ *  donc un `{rule}` pour une fenêtre non chiffrée (`LDB 20 l.170` « quelques minutes »). */
+export function ResolveWindowField({ value, onChange }: {
+  value: ResolveWindow | undefined;
+  onChange: (w: ResolveWindow | undefined) => void;
+}) {
+  const forme = value === undefined ? 'defaut' : value === 'none' ? 'none' : value.scale;
+  return (
+    <>
+      <label className="dr">Détermination
+        <select aria-label="Fenêtre de Détermination" value={forme}
+          onChange={(e) => {
+            const f = e.target.value;
+            onChange(f === 'defaut' ? undefined
+              : f === 'none' ? 'none'
+                : f === 'rounds' ? { scale: 'rounds', left: 1 }
+                  : { scale: 'clock', minutes: 5 });
+          }}>
+          <option value="defaut">— défaut : jusqu’à la fin du Round —</option>
+          <option value="none">dépense REFUSÉE (l’État tient tant que sa cause dure)</option>
+          <option value="rounds">suspend le fait N Round(s)</option>
+          <option value="clock">suspend le fait N minute(s)</option>
+        </select>
+      </label>
+      {typeof value === 'object' && value.scale === 'rounds' && (
+        <FormulaField label="Rounds de suspension" min={1} value={value.left} onChange={(left) => onChange({ scale: 'rounds', left })} />
+      )}
+      {typeof value === 'object' && value.scale === 'clock' && (
+        <FormulaField label="Minutes de suspension" min={1} value={value.minutes} onChange={(minutes) => onChange({ scale: 'clock', minutes })} />
+      )}
+    </>
   );
 }
 
@@ -365,6 +417,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'diseaseTestMod': return { op: 'diseaseTestMod', amount: 10 };
     case 'suppressSymptom': return { op: 'suppressSymptom', symptomId: '' };
     case 'aggravateSymptom': return { op: 'aggravateSymptom', disease: '', symptomId: '', severity: 'grave' };
+    case 'attenuateSymptom': return { op: 'attenuateSymptom', disease: '', symptomId: '' };
     case 'grantSymptom': return { op: 'grantSymptom', disease: '', symptomId: '' };
     case 'actGate': return { op: 'actGate', char: 'force-mentale' };
     case 'delayed': return { op: 'delayed', afterHours: 1, ops: [] };
@@ -469,6 +522,7 @@ export const OP_REF_FIELDS: Partial<Record<GameOp['op'], readonly OpRefField[]>>
   corruptionExposure: [{ field: 'skill.id', ds: 'skills', label: 'Compétence du Test', required: false }],
   suppressSymptom: [{ field: 'symptomId', ds: 'symptoms', label: 'Symptôme', required: true }],
   aggravateSymptom: [{ field: 'disease', ds: 'maladies', label: 'Maladie', required: true }, { field: 'symptomId', ds: 'symptoms', label: 'Symptôme', required: true }],
+  attenuateSymptom: [{ field: 'disease', ds: 'maladies', label: 'Maladie', required: true }, { field: 'symptomId', ds: 'symptoms', label: 'Symptôme', required: true }],
   grantSymptom: [{ field: 'disease', ds: 'maladies', label: 'Maladie', required: true }, { field: 'symptomId', ds: 'symptoms', label: 'Symptôme', required: true }],
   rollMutation: [{ field: 'table', ds: 'mutationTables', label: 'Table de Corruption', required: true }],
   summon: [{ field: 'ref', ds: 'creatures', label: 'Créature', required: true }],
@@ -561,6 +615,7 @@ export function opSummary(o: GameOp): string {
     case 'diseaseTestMod': return `${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie${o.diseases?.length ? ` (${o.diseases.map((d) => refLabel('maladies', { id: d })).join(', ')})` : ''}`;
     case 'suppressSymptom': return `${refLabel('symptoms', { id: o.symptomId })} suspendu`;
     case 'aggravateSymptom': return `${refLabel('symptoms', { id: o.symptomId })} → ${o.severity} (${refLabel('maladies', { id: o.disease })})`;
+    case 'attenuateSymptom': return `${refLabel('symptoms', { id: o.symptomId })} → échelon inférieur (${refLabel('maladies', { id: o.disease })})`;
     case 'grantSymptom': return `+ ${refLabel('symptoms', { id: o.symptomId })} (${refLabel('maladies', { id: o.disease })})`;
     case 'actGate': return `Test de ${CHAR_LABELS[o.char] ?? o.char} chaque Round pour agir`;
     case 'delayed': return `${o.ops.length} op(s) différée(s)${o.afterDuration ? ' (à la dissipation)' : ''}`;
@@ -773,6 +828,9 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                 <label className="dr"><input type="checkbox" checked={!!o.entangleOnFail} onChange={(e) => upd({ entangleOnFail: e.target.checked || undefined })} /> échec → +1 État (Filets, ZI p.29)</label>
                 <label className="dr"><input type="checkbox" checked={o.struggleDamage != null} onChange={(e) => upd({ struggleDamage: e.target.checked ? 1 : undefined })} /> Dégâts par tentative (ignore armure)</label>
                 {o.struggleDamage != null && <FormulaField label="Dégâts" value={o.struggleDamage} min={0} onChange={(struggleDamage) => upd({ struggleDamage })} />}
+                {/* Ce que la Détermination fait à l'État quand cette op le porte en PASSIF (LDB 17 l.61) :
+                    DIT en donnée, jamais déduit du porteur. Inerte hors canal passif. */}
+                <ResolveWindowField value={o.resolveWindow} onChange={(resolveWindow) => upd({ resolveWindow })} />
               </>
             )}
           </>

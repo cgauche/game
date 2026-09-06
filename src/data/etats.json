@@ -50,6 +50,7 @@
     "type": "etats",
     "label": "À Terre",
     "desc": "Vous vous retrouvez au sol, sans doute parce que vous n'avez plus de Points de Blessure disponibles, que vous avez chuté ou que vous avez été frappé par quelque chose de très gros.\n\nPendant votre tour, votre Mouvement ne peut être utilisé que pour vous relever ou encore ramper de la moitié de votre Mouvement en mètres (Note : s'il ne vous reste plus aucune Blessure, vous ne pouvez que ramper). Vous subissez une pénalité de -20 à tout Test qui implique un déplacement quelconque, et tout adversaire qui tente de vous attaquer en Combat au Corps à corps gagne un bonus de +20 pour vous toucher.\n\nÀ l'inverse de la plupart des États, À Terre ne se cumule pas – soit vous êtes À Terre, soit vous ne l'êtes pas.\n\nVous perdez l'État À Terre lorsque vous vous relevez.",
+    "nonCumulable": true,
     "source": {
       "book": "livre-de-base",
       "page": 167
@@ -566,6 +567,7 @@
     "type": "etats",
     "label": "Inconscient",
     "desc": "Vous êtes KO, inconscient, ou frappé d'incapacité. Vous ne pouvez absolument rien faire de votre tour et n'avez aucune conscience de ce qui vous entoure. Un attaquant qui vous cible gagne le bénéfice de la règle Je ne faillirai pas ! (voir p. 171) sans avoir à dépenser un Point de Résilience ; ou, si le MJ préfère, une attaque en combat rapproché vous tue automatiquement. Toute attaque à distance est également un succès et occasionne les mêmes Dégâts que si le tireur était à bout portant.\n\nL'État Inconscient ne se cumule pas – soit vous êtes Inconscient, soit vous ne l'êtes pas.\n\nRécupérer d'un État Inconscient va bien souvent dépendre des circonstances qui ont causé cette inconscience. Reportez-vous aux Traumatismes à la page 172 pour en savoir plus sur le sujet. Si vous dépensez un Point de Détermination pour vous débarrasser d'un État Inconscient, mais que vous êtes toujours sujet aux causes de cette inconscience, vous gagnez un nouvel État Inconscient à la fin du Round.\n\nLorsque vous vous débarrassez de l'État Inconscient, vous gagnez l'État À Terre et l'État Exténué.",
+    "nonCumulable": true,
     "source": {
       "book": "livre-de-base",
       "page": 169
@@ -696,6 +698,7 @@
     "type": "etats",
     "label": "Surpris",
     "desc": "Vous avez été pris au dépourvu et vous n'êtes absolument pas prêt à réagir à ce qu'il arrive.\n\nVous ne pouvez effectuer ni votre Mouvement ni votre Action pendant ce tour et vous ne pouvez pas vous défendre lors de Tests opposés. Tout adversaire qui tente de vous frapper en Combat au Corps à corps gagne +20 à la CC.\n\nL'État Surpris ne se cumule pas, et donc vous ne pouvez pas en subir plusieurs, même si, techniquement, vous pouvez être surpris plus d'une fois dans un même Round.\n\nÀ la fin de chaque Round, ou après la première tentative effectuée pour vous toucher, vous perdez l'État Surpris.",
+    "nonCumulable": true,
     "source": {
       "book": "livre-de-base",
       "page": 169

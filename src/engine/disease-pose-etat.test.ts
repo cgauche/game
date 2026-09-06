@@ -1,0 +1,54 @@
+/**
+ * Le cycle quotidien d'une maladie POSE ses États par la SOURCE UNIQUE (`addCondition`) — il ne
+ * poussait ses pions à la main. Deux invariants de LDB 16 en dépendent :
+ *  - l.115, verbatim : « L'État *Inconscient* ne se cumule pas – soit vous êtes *Inconscient*, soit
+ *    vous ne l'êtes pas. » ;
+ *  - l.7, verbatim : « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout
+ *    Avantage (voir p. 164). »
+ * Le chemin est le VRAI : `tickDisease` sur une phase active, conséquence `onTick.ops` sans jet.
+ */
+import { describe, it, expect, afterEach } from 'vitest';
+import { Combatant, type UpkeepDeferTest } from './types';
+import { MINUTES_PER_DAY } from './clock';
+import { contractDisease, tickDisease } from './disease';
+import { symptomById } from '../data';
+import { stacks } from './conditions';
+import type { RNG } from './dice';
+
+const seq = (values: number[]): RNG => { let i = 0; return { int: () => values[i++] }; };
+const ignore: UpkeepDeferTest = () => {};
+
+const cobaye = (over: Partial<Combatant> = {}): Combatant =>
+  ({
+    id: 'p', label: 'Cobaye', kind: 'hero',
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 40, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 35 },
+    wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [], items: [],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, weapons: [], diseases: [],
+    ...over,
+  }) as Combatant;
+
+const SONDE = 'sonde-double-ko';
+afterEach(() => { symptomById.delete(SONDE); });
+
+describe('le cycle de maladie pose ses États par la source unique (LDB 16)', () => {
+  it('un `onTick.ops` qui pose DEUX fois l’Inconscient ne rend qu’UN pion (l.115)', () => {
+    // Aucun symptôme LIVRÉ ne pose d'État non cumulable par son cycle : la sonde en déclare un dans
+    // l'index que le moteur interroge (`findSymptomById`), pour que le chemin joué soit le VRAI —
+    // conséquence quotidienne CERTAINE (aucun `test`), posée deux fois.
+    symptomById.set(SONDE, { id: SONDE, label: 'Sonde', onTick: { ops: [{ op: 'condition', id: 'inconscient' }, { op: 'condition', id: 'inconscient' }] } } as never);
+    const c = cobaye({
+      diseases: [{ id: 'dz-sonde', phase: 'active', symptoms: [{ symptomId: SONDE }], minutesLeft: 40 * MINUTES_PER_DAY, durationMinutes: 40 * MINUTES_PER_DAY }] as never,
+    });
+    tickDisease(c, MINUTES_PER_DAY, seq([]), ignore);
+    expect(stacks(c, 'inconscient'), 'l’Inconscient s’est cumulé').toBe(1);
+  });
+
+  it('l’éclatement du Vers du Reik fait perdre TOUT l’Avantage avec l’État Sonné (l.7)', () => {
+    const c = cobaye({ advantage: 3, diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 0 })!] });
+    for (let d = 0; d < 6; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), ignore);
+    expect(c.advantage, 'l’Avantage a été perdu avant l’État').toBe(3);
+    tickDisease(c, MINUTES_PER_DAY, seq([]), ignore); // 7ᵉ jour actif → la cloque éclate, État Sonné
+    expect(stacks(c, 'sonne')).toBe(1);
+    expect(c.advantage, 'l’Avantage a survécu au gain d’État').toBe(0);
+  });
+});

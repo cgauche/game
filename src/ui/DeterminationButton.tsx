@@ -4,6 +4,8 @@ import { conditionMeta } from '../gameIso/effectIcons';
 import { conditionLabel } from '../data';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
+import { GatedAction } from './GatedAction';
+import { raisonRefusDetermination } from '../engine/conditions';
 import { RULE_REF } from '../engine/ruleRefs';
 
 /**
@@ -29,20 +31,32 @@ export function DeterminationButton({ combatant, onSpend }: { combatant?: Combat
         </button>
       </CodexRef>
       {open &&
-        conds.map((c) => (
-          <button
-            key={c.id}
-            className="btn btn-resource"
-            onClick={() => {
-              setOpen(false);
-              onSpend(c.id);
-            }}
-            title={`Retirer 1 pion ${conditionLabel(c.id)}`}
-          >
-            <Icon id={conditionMeta(c.id).icon} size="sm" /> {conditionLabel(c.id)}
-            {c.value > 1 ? ` ×${c.value}` : ''}
-          </button>
-        ))}
+        conds.map((c) => {
+          // Un État que rien ne lève (LDB 20 l.188) reste OFFERT et porte sa raison au survol/focus —
+          // jamais retiré en silence, jamais un bouton muet (arbitrage user 2026-08-24).
+          const refus = raisonRefusDetermination(combatant, c.id);
+          return (
+            <GatedAction
+              key={c.id}
+              id={`determination-${c.id}`}
+              enabled={!refus}
+              reason={refus ?? ''}
+              primary={false}
+              btnClassName="btn-resource"
+              ariaLabel={`Retirer 1 pion ${conditionLabel(c.id)}`}
+              onClick={() => {
+                setOpen(false);
+                onSpend(c.id);
+              }}
+              label={
+                <>
+                  <Icon id={conditionMeta(c.id).icon} size="sm" /> {conditionLabel(c.id)}
+                  {c.value > 1 ? ` ×${c.value}` : ''}
+                </>
+              }
+            />
+          );
+        })}
     </>
   );
 }

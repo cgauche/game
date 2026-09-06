@@ -90,7 +90,8 @@ const CARDINAUX = {
   // MÊME train. Puis 83→123 : #1680 ligne 14, BIJECTION art ⇄ donnée (les 40 defs d'art qui n'avaient
   // pas d'entrée reçoivent la leur ; garde `src/data/props-label-parite.test.ts`).
   'props.json': 123,
-  'reglesOptionnelles.json': 81,
+  // 81→82 : la fenêtre de conscience par Détermination (LDB 20 l.170, durée maison), #1599.
+  'reglesOptionnelles.json': 82,
   'skills.json': 48,
   'steam-breakdown.json': 6,
   'structures.json': 24,
@@ -105,7 +106,8 @@ const CARDINAUX = {
 // Puis 1298→1338 : +40 décors de `props.json` (#1680 ligne 14, bijection art ⇄ donnée).
 // Puis 1338→1340 : +2 enjeux de `combat-stakes.json` (#1657 B3-1, B3-2).
 // Puis 1340→1341 : +1 Trait naval `cale` (#1657 B3-2b-a, MSRC 07 l.94 / MSRC 10 l.90).
-const TOTAL_ATTENDU = 1341;
+// Puis 1341→1342 : +1 règle optionnelle `maladie-conscience-determination-minutes` (#1599, LDB 20 l.170).
+const TOTAL_ATTENDU = 1342;
 
 /**
  * PROMOTION DÉCLARÉE de `id` — `<fichier>` → rang qu'y occupait `id` AVANT la vague. L'enveloppe veut

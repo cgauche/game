@@ -15,9 +15,9 @@
  */
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
-import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition, releaseConditionLocks } from './conditions';
+import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition, releaseConditionLocks, syncDerivedConditions } from './conditions';
 import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel, findTrappingById } from '../data';
-import { contractDiseaseOnce, aggravateDiseaseSymptom, grantDiseaseSymptom } from './disease';
+import { contractDiseaseOnce, aggravateDiseaseSymptom, attenuateDiseaseSymptom, grantDiseaseSymptom, suspendSymptom } from './disease';
 import { groupMatch } from './groups';
 import { findTableEntry } from './tables';
 import { applyFall } from './movement';
@@ -48,6 +48,7 @@ import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjured
 import { polymorphOps } from './polymorph';
 import type { SizeCategory } from './size';
 import type { Duration } from './duration';
+import { rule } from './policy'; // module FEUILLE (registre des règles optionnelles) : terme `{rule}` d'une Formula
 // Type-only (effacé à la compilation) : la FORME unifiée des effets « à la touche » d'une arme
 // enchantée/invoquée = un `TriggeredEffect` (feuille EffectOp — noyau engine pur, jamais de transition),
 // dispatché par `state/triggeredEffects` (pas ici).
@@ -109,7 +110,12 @@ export type Formula =
    *  puis multiplie par `factor`. NB : `10d10` n'est PAS équivalent (distribution différente) — fidélité RAW.
    *  `factor` est lui-même une `Formula` : le PRODUIT DE DEUX FORMULES (« (Force Mentale) × 1d10 minutes »,
    *  VDM 05 — Contact doré) s'écrit `{times:{of:{charOf:'force-mentale'}, factor:{dice:{n:1,sides:10}}}}`. */
-  | { times: { of: Formula; factor: Formula } };
+  | { times: { of: Formula; factor: Formula } }
+  /** VALEUR d'une RÈGLE OPTIONNELLE du registre (`src/data/reglesOptionnelles.json`, lue par
+   *  `rule(id)`) — terme GÉNÉRAL : toute quantité qu'un livre ne chiffre pas (`maison`) reste ÉDITABLE
+   *  au panneau in-game au lieu d'être figée dans le moteur. Une règle non numérique (ou inconnue) vaut
+   *  0, comme toute formule malformée. */
+  | { rule: string };
 
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
  *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
@@ -124,6 +130,7 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   if ('stacks' in f) return stacks ?? 0;
   if ('engagedAdvantageGap' in f) return gap ?? 0;
   if ('woundsDealt' in f) return woundsDealt ?? 0;
+  if ('rule' in f) { const v = rule(f.rule); return typeof v === 'number' && Number.isFinite(v) ? v : 0; }
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap, woundsDealt), 0);
   if ('times' in f) return resolveFormula(f.times.of, ref, rng, rolled, indice, stacks, gap, woundsDealt) * resolveFormula(f.times.factor, ref, rng, rolled, indice, stacks, gap, woundsDealt);
   return rollDice(f.dice, rng);
@@ -132,7 +139,7 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
 /** Clés reconnues d'une `Formula` OBJET — SOURCE UNIQUE, alignée sur l'union `Formula` et sur les
  *  branches de `resolveFormula`. Réutilisée par le garde-fou d'intégrité des données
  *  (`src/data/data-wellformed.test.ts`) pour valider les champs Formula des `GameOp` sans re-coder la liste. */
-export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'woundsDealt', 'sum', 'times'] as const;
+export const FORMULA_OBJECT_KEYS = ['bonusOf', 'charOf', 'dice', 'rolled', 'indiceOf', 'stacks', 'engagedAdvantageGap', 'woundsDealt', 'rule', 'sum', 'times'] as const;
 
 /** Une valeur est-elle une `Formula` VALIDE — résoluble par `resolveFormula` sans planter ? `number` FINI,
  *  ou objet portant exactement une clé connue (`sum` récursif). PUR. Rejette une string (un `'$indice'`
@@ -147,6 +154,30 @@ export function isValidFormula(f: unknown): f is Formula {
     return !!t && typeof t === 'object' && isValidFormula(t.of) && isValidFormula(t.factor);
   }
   return FORMULA_OBJECT_KEYS.some((k) => k in o);
+}
+
+/**
+ * FENÊTRE ouverte par une dépense de Point de Détermination sur l'État qu'une op `condition` PASSIVE
+ * porte (`LDB 17 l.61`) : le fait source est SUSPENDU le temps de cette fenêtre — la réconciliation
+ * retire alors l'État, l'échéance le repose si la cause tient toujours.
+ *  - ABSENTE : `{ scale:'rounds', left:1 }`. `LDB 16 l.117` ne parle QUE de l'État *Inconscient* ;
+ *    le défaut s'étend à tout État dérivé d'un canal passif (valeur maison, éditable par `resolveWindow`).
+ *  - `'none'` : la dépense est REFUSÉE — `LDB 20 l.188`.
+ *  - `rounds`/`clock` : durée AUTHORÉE, chaque terme étant une `Formula` (donc un `{rule}` éditable
+ *    quand le livre ne chiffre pas la fenêtre — `LDB 20 l.170`).
+ * DISTINCTE de `durationRounds`/`durationMinutes`/`durationHours`, qui sont la durée de l'ÉTAT POSÉ.
+ */
+export type ResolveWindow =
+  | 'none'
+  | { scale: 'rounds'; left: Formula }
+  | { scale: 'clock'; minutes: Formula };
+
+/** Résout la fenêtre ci-dessus en `Duration` — `undefined` = REFUS (`'none'`). PURE (`now` injecté). */
+export function resolveWindowDuration(w: ResolveWindow | undefined, ref: Combatant, now: number, rng: RNG = defaultRNG): Duration | undefined {
+  if (w === undefined) return { scale: 'rounds', left: 1 };
+  if (w === 'none') return undefined;
+  if (w.scale === 'rounds') return { scale: 'rounds', left: Math.max(1, resolveFormula(w.left, ref, rng)) };
+  return { scale: 'clock', until: now + Math.max(1, resolveFormula(w.minutes, ref, rng)) };
 }
 
 /** Échelle « par +N DR » d'un sort (LDB 41/42/47 — « +1 par +2 DR », « +DR Dégâts ») :
@@ -171,8 +202,9 @@ export function slBonus(sl: number | undefined, p?: PerSL): number {
  *  consommer le RNG seedable, sous peine de désync du flux déterministe / coop / tests reproductibles, et
  *  d'une magnitude aléatoire). Calque la convention statique de `missileDamage` (valeur écrite). Les dés
  *  rendent leur MOYENNE (`n×(faces+1)/2 + plus`) ; `(X)`/`(Bonus de X)` la valeur réelle (déterministe) ;
- *  `{rolled}` une valeur de référence neutre (le dé moyen d'un d10 ≈ 5,5) ; les axes relationnels (Indice/
- *  stacks/écart d'Avantage) absents au planning → 0. PUR, sans RNG. */
+ *  `{rolled}` une valeur de référence neutre (le dé moyen d'un d10 ≈ 5,5) ; `{rule}` la valeur de la règle,
+ *  comme `resolveFormula` (terme PUR et déterministe : il se score comme il se résout) ; les axes
+ *  relationnels (Indice/stacks/écart d'Avantage/PB infligés) absents au planning → 0. PUR, sans RNG. */
 export function formulaExpectation(f: Formula, ref: Combatant): number {
   if (typeof f === 'number') return f;
   if (typeof f !== 'object' || f === null) return 0; // formule malformée (donnée invalide) → 0, jamais un crash en plein combat
@@ -180,9 +212,10 @@ export function formulaExpectation(f: Formula, ref: Combatant): number {
   if ('charOf' in f) return effectiveChar(ref, f.charOf);
   if ('dice' in f) return f.dice.n * (f.dice.sides + 1) / 2 + (f.dice.plus ?? 0);
   if ('rolled' in f) return 5.5; // référence neutre (dé moyen d'un d10) — jamais tiré
+  if ('rule' in f) { const v = rule(f.rule); return typeof v === 'number' && Number.isFinite(v) ? v : 0; }
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + formulaExpectation(term, ref), 0);
   if ('times' in f) return formulaExpectation(f.times.of, ref) * formulaExpectation(f.times.factor, ref);
-  return 0; // indiceOf / stacks / engagedAdvantageGap : hors contexte au planning
+  return 0; // indiceOf / stacks / engagedAdvantageGap / woundsDealt : hors contexte au planning
 }
 
 /** Somme des bonus de DR à une Compétence (`skillId`) conférés au porteur — op `skillDRBonus` PASSIVE
@@ -393,6 +426,9 @@ export type GameOp =
        *  éliminés » (Tête 46-50) ⇒ `{ kind:'compare', subject:{who:'target',condition:'hemorragique'},
        *  op:'==', value:0 }`. Figé sur l'entrée d'État, évalué par `isConditionLocked`. */
       lockedUntil?: import('./flowCore').Condition;
+      /** Fenêtre de Détermination de l'État que cette op porte en PASSIF (`ResolveWindow` ci-dessus,
+       *  lue par `fenetreDetermination`/`raisonRefusDetermination`). Inerte hors canal passif. */
+      resolveWindow?: ResolveWindow;
       /** VERROU d'ACTE de soin (LDB 18) : l'État posé « ne peut être retiré que par [acte] » (Aveuglé/Sonné/
        *  Inconscient « par Aide Médicale », Hémorragique « par Chirurgie »). Figé sur l'instance, levé par l'acte
        *  nommé (`releaseConditionLocks`) qui RETIRE alors l'État. Évalué par `isConditionLocked`. */
@@ -995,6 +1031,10 @@ export type GameOp =
    *  devient Grave »). `otherwise` = échelon SUIVANT, appliqué quand il n'y a plus rien à aggraver
    *  (symptôme déjà à cette sévérité) — EDOC 08 l.106-108. → `aggravateDiseaseSymptom` (engine/disease). */
   | { op: 'aggravateSymptom'; disease: string; symptomId: string; severity: 'moderee' | 'grave'; otherwise?: GameOp[] }
+  /** ATTÉNUE d'un échelon un symptôme déjà porté (LDB 20 l.159 : « transformant Grave en Modéré et
+   *  Modéré en convulsions normales ») — MIROIR d'`aggravateSymptom`. `otherwise` = ce qui s'applique
+   *  quand il n'y a plus rien à atténuer (symptôme déjà à son échelon de base). → `attenuateDiseaseSymptom`. */
+  | { op: 'attenuateSymptom'; disease: string; symptomId: string; otherwise?: GameOp[] }
   /** AJOUTE un symptôme à une maladie déjà portée (EDOC 08 l.106-108 : « la maladie développe également
    *  le symptôme Toxine »). No-op si le symptôme y figure déjà. → `grantDiseaseSymptom`. */
   | { op: 'grantSymptom'; disease: string; symptomId: string; severity?: 'moderee' | 'grave' }
@@ -2225,12 +2265,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'suppressSymptom': {
         // Suspension d'un symptôme par id (Racine de terre → bubons) — les canaux passive/onTick du
         // symptôme sont ignorés tant que l'effet dure (`symptomSuppressed`), restitués à l'expiration.
-        target.activeEffects = target.activeEffects ?? [];
-        target.activeEffects.push({
-          label: ctx.label ?? 'Effet', bonus: 0,
-          duration: durationFromCtx(ctx),
-          suppressedSymptom: o.symptomId,
-        });
+        suspendSymptom(target, o.symptomId, durationFromCtx(ctx), ctx.label ?? 'Effet');
         lines.push(t('op.suppressSymptom', { name: target.label, symptom: refLabel('symptoms', { id: o.symptomId }), src: ctx.label ?? 'sort' }));
         break;
       }
@@ -2238,6 +2273,15 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // EDOC 08 l.104-108 : échelon d'aggravation. Le symptôme est DÉJÀ à cette sévérité →
         // l'échelon `otherwise` ; symptôme ABSENT → rien (l'échelon suivant ne s'ouvre pas).
         const r = aggravateDiseaseSymptom(target, o.disease, o.symptomId, o.severity);
+        lines.push(...r.log);
+        if (r.etat === 'deja' && o.otherwise?.length) lines.push(...applyOps(target, o.otherwise, imbrique()));
+        break;
+      }
+      case 'attenuateSymptom': {
+        // LDB 20 l.159 : l'échelon REDESCEND d'un cran, À DURÉE (celle que déclare le porteur — même
+        // canal que `suppressSymptom`). Plus rien à atténuer → l'échelon `otherwise` ; symptôme ABSENT
+        // → rien (symétrique exact d'`aggravateSymptom`).
+        const r = attenuateDiseaseSymptom(target, o.disease, o.symptomId, durationFromCtx(ctx), ctx.label ?? 'Effet');
         lines.push(...r.log);
         if (r.etat === 'deja' && o.otherwise?.length) lines.push(...applyOps(target, o.otherwise, imbrique()));
         break;
@@ -2744,5 +2788,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       if (ctx.source && !e.source) e.source = ctx.source;
     }
   }
+  // Toute op qui bouge un fait SOURCE d'État dérivé passe par ici (`aggravateSymptom`/`attenuateSymptom`/
+  // `grantSymptom`/`contractDisease`/`suppressSymptom`…) : la réconciliation clôt l'application, une fois,
+  // au lieu d'être recopiée sur chaque case. IDEMPOTENTE — les descentes imbriquées n'écrivent rien de plus.
+  lines.push(...syncDerivedConditions(target, ctx.onCondition));
   return lines;
 }

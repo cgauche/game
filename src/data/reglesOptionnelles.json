@@ -847,6 +847,20 @@
     "hint": "full = toutes les expositions (RAW) ; situational = pas d’Infection Mineure post-critique, mais Infecté/Maladie conservés (Skavens/Nurgle) ; off = aucune maladie (ni contraction, ni progression, ni contagion)."
   },
   {
+    "id": "maladie-conscience-determination-minutes",
+    "type": "reglesOptionnelles",
+    "label": "Maladie : fenêtre de conscience par Détermination (minutes)",
+    "ref": "LDB 20 l.170",
+    "maison": "LDB 20 l.170 ne chiffre pas « quelques minutes » : durée maison de la fenêtre pendant laquelle le symptôme dépensé est ignoré, ce qui lève l'État qu'il portait (Fièvre (Grave) → Inconscient).",
+    "group": "Maladies",
+    "kind": "param",
+    "default": 5,
+    "min": 1,
+    "max": 60,
+    "step": 1,
+    "hint": "Durée pendant laquelle le SYMPTÔME dépensé est ignoré après la dépense (LDB 20 l.170) — l’État qu’il portait (Inconscient d’une Fièvre Grave) revient à l’échéance ; les autres symptômes de la maladie ne sont pas touchés."
+  },
+  {
     "id": "travel-etapes",
     "type": "reglesOptionnelles",
     "label": "Voyage par Étapes",

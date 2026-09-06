@@ -85,7 +85,7 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.92 / 18 l.380 / 21 l.95)
     expect(hasCondition(c, 'extenue')).toBe(true);
   });
 
-  it('maladie : l’incubation se déclare à l’entretien quotidien et le malaise impose un Exténué « collant » (LDB 20 l.153)', () => {
+  it('maladie : l’incubation se déclare à l’entretien quotidien et le malaise impose un Exténué « collant » (LDB 20 l.188)', () => {
     // Infection Mineure : incubation 1 j, durée 5 j. E 40 → blessé Accessible (cible 60) réussi avec d100=10.
     const c = hero({ wounds: { current: 12, max: 12 }, diseases: [contractDisease('infection-mineure', { int: () => 1 }, { incubation: 1, duration: 5 })!] });
     dailyDiseaseUpkeep(c, { int: () => 10 }, () => {}); // jour 1 (cascade #T3) → symptômes déclarés → +1 Exténué (malaise)

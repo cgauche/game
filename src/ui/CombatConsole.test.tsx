@@ -10,6 +10,8 @@ import { createRoot, type Root } from 'react-dom/client';
 import { useGame, movementRemaining, type BattleState } from '../state/store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
+import { contractDisease } from '../engine/disease';
+import { syncDerivedConditions, stacks } from '../engine/conditions';
 import type { Combatant, ConditionInstance, ItemInstance, ShipPoste, Weapon } from '../engine/types';
 import { itemFromTrappingById, recomputeLoadout, loadoutLabel, loadedAmmo, selectedAmmo, loadWeapon } from '../engine/items';
 import { weaponLoaded } from '../engine/weaponLoad';
@@ -211,6 +213,30 @@ describe('CombatConsole — arche', () => {
     expect(rack.querySelectorAll('.pt-state').length).toBe(1);
     expect(rack.querySelector('.pt-n')!.textContent).toBe('2');
     expect(rack.querySelectorAll('.pt-state, .pt-void').length).toBe(4);
+  });
+
+  /**
+   * Un geste d'État FERMÉ reste un CONTRÔLE qui dit POURQUOI — arbitrage user 2026-08-24 (verbatim) :
+   * « Je n'ai jamais validé ces "textes" impossible a lire sous le nom des capacités, même Rogue
+   * Trader qui est notre interface de départ n'a pas un tel comportement. » : la raison vit au
+   * survol/focus/tap et dans le NOM ACCESSIBLE, jamais inline, et jamais un bouton muet.
+   * Cas : l'Exténué du Malaise (LDB 20 l.188, verbatim : « Gagnez un État *Exténué* dont vous ne
+   * pourrez vous défaire qu'une fois votre maladie guérie. ») — `raisonRefusDetermination` le refuse.
+   */
+  it('une pastille dont la Détermination est REFUSÉE reste atteignable et porte sa raison', () => {
+    const h = hero('h1', 'Gunnar');
+    h.resolve = 2; // la réserve n'est PAS la cause du refus
+    h.conditions = [];
+    h.diseases = [contractDisease('pneumonie', makeRNG(3))!];
+    syncDerivedConditions(h);
+    expect(stacks(h, 'extenue'), 'témoin : le Malaise porte bien son Exténué').toBe(1);
+    monter(h);
+    const rack = niche()!;
+    const bouton = [...rack.querySelectorAll('button.pt-state')].find((b) => (b.getAttribute('aria-label') ?? '').includes('Exténué')) as HTMLButtonElement | undefined;
+    expect(bouton, 'la pastille de l’Exténué n’offre plus aucun contrôle').toBeTruthy();
+    expect(bouton!.disabled, 'un contrôle dont la raison est à ATTEINDRE ne porte jamais `disabled`').toBe(false);
+    expect(bouton!.getAttribute('aria-disabled'), 'le refus n’est pas annoncé').toBe('true');
+    expect(bouton!.getAttribute('aria-label'), 'le nom accessible ne porte pas la raison du refus').toMatch(/Malaise|guérie|maladie/i);
   });
 
   // Géométrie IMMUABLE : une ressource à zéro ne supprime pas sa gouttière (héros Empêtré = Mouvement 0).

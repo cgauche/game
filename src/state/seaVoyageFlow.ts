@@ -76,7 +76,7 @@ import {
 } from '../engine/seaNavigation';
 import { expireOnRespite, exposureTarget, exposureCoatMods, exposureFirstFailChars, isWeatherWarded } from '../engine/exposure';
 import { pursuitOutcome } from '../engine/pursuit';
-import { addCondition } from '../engine/conditions';
+import { addCondition, isOutOfAction } from '../engine/conditions';
 import { effectiveChar } from '../engine/characteristics';
 import { findWhirlpool, pickSeaHazard, strandingOccurs, strandingPenalty, debrisEntangleFor } from '../engine/seaPerils';
 import {
@@ -472,7 +472,7 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   const plan = get().travelPlan;
   const ship = plan?.vehicle;
   if (!ship) return undefined;
-  const party = get().party.filter((h) => !h.dead && !h.outOfRencontre);
+  const party = get().party.filter((h) => !isOutOfAction(h)); // LDB 16 (Inconscient) : un KO ne tient pas de rôle
   if (!party.length) return undefined;
   ship.crewIds = party.map((h) => h.id); // les PJ tiennent les rôles (MDG 14 l.39)
   const contributors = crewTestContributors(ship, party, testTypeId, new Set(party.map((h) => h.id)), opts.sense);
@@ -824,7 +824,8 @@ function buildSeaDayCascade(get: Get, set: Set): { steps: BuiltCascadeStep[]; lo
   const progStep = choiceStep ?? buildVoyageCrewStep(get, 'progression', 'progression');
   if (progStep) steps.push(progStep);
   else {
-    // aucun PJ apte = sous l'effectif minimal (MDG 14 l.55) : Progression au plancher de Manque de bras.
+    // Aucun PJ apte (LDB 16, État Inconscient) = sous l'effectif minimal : Progression au plancher de
+    // Manque de bras (MDG 14 l.55).
     tell(get, set, applySeaProgress(get, set, capToSuccesMinime(UNDERCREW_DR)));
     steps.push(...buildPostProgressionSteps(get, set));
   }
@@ -1996,7 +1997,7 @@ registerCascadeApplier('entretien', (get, set, step) => {
 /** La personne qui « s'occupe du moteur » (MDG 12 l.326) à l'échelle voyage (équipage = les PJ, MDG 14
  *  l.39) : le meilleur au Métier (Ingénieur), sinon le premier PJ en état. */
 export function engineerOf(party: Combatant[]): Combatant | undefined {
-  const apt = party.filter((h) => !h.dead && !h.outOfRencontre);
+  const apt = party.filter((h) => !isOutOfAction(h)); // LDB 16 (Inconscient)
   return partyBest(apt, 'metier', undefined, undefined, 'ingenieur')?.actor ?? apt[0];
 }
 

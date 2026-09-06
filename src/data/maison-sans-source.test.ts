@@ -52,10 +52,13 @@ const BASELINES: Record<string, number> = {
   'axes.json': 9,
   'crew-roles.json': 7,
   'naval-traits.json': 1,
-  'reglesOptionnelles.json': 27,
+  // 27→28 (#1599, 2026-09-05) : la fenêtre de conscience par Détermination — LDB 20 l.170 dit
+  // « pendant quelques minutes » et ne chiffre RIEN. Un arbitrage n'y a remplacé aucun folio : le
+  // folio existe (LDB 189) et ne porte pas de durée.
+  'reglesOptionnelles.json': 28,
 };
 
-const TOTAL_GELE = 44;
+const TOTAL_GELE = 45;
 
 /**
  * Entrées `maison` sans `source` des datasets EXEMPTÉS — gelé au 2026-08-27 (migration 4b), ÉTENDU le

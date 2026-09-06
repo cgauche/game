@@ -1,9 +1,11 @@
 /**
  * Maladies et infections — Livre de base, « Maladies et infections » (20-Maladies et infections.md).
- * Moteur PUR : on NE modélise QUE ce que la source quantifie. Reste sans cycle d'import (les valeurs —
- * Résistance — sont passées par l'appelant ; `trauma.ts` lit `diseasePassiveOps` d'ici). N'importe `ops`
+ * Moteur PUR : on NE modélise QUE ce que la source quantifie. Les valeurs (Résistance) sont passées par
+ * l'appelant ; `trauma.ts` lit `diseasePassiveOps` d'ici. N'importe `ops`
  * qu'en TYPE (`GameOp`), jamais `applyOps` — les conséquences `onFail` sont appliquées CÔTÉ STATE
- * (`restFlow`, via `applyOps`) → pas de cycle ops↔disease.
+ * (`restFlow`, via `applyOps`) → pas de cycle ops↔disease. Seule liaison croisée : `conditions.ts`
+ * (pose d'État par la source unique `addCondition` ici, lecture de `symptomLockedUntilCured` là-bas) —
+ * deux déclarations de fonction hissées, aucune évaluation croisée à l'initialisation des modules.
  *
  * Cycle de vie (l.10-24) : Contraction (Test raté) → Incubation → symptômes ACTIFS → Durée → résolution
  * (capacité `endTest` : Test de fin, sinon guérison naturelle). Incubation/durée RAW en jours, heures OU
@@ -12,16 +14,19 @@
  *
  * SYMPTÔMES = DONNÉE (`symptoms.json`, éditable au Codex), pas un enum. La mécanique vit sur le symptôme
  * en 3 canaux (comme un trait/qualité) — ce module ne fait que les LIRE :
- *  - `passive`/`severePassive` (GameOp `charMod`) : pénalités continues (fièvre −10, convulsions −10/−20…)
- *    → collectées par `diseasePassiveOps` → `passiveMods` (kind 'maladie', annulable par Détermination).
+ *  - `passive`/`passiveBySeverity` (GameOp) : pénalités continues (fièvre −10, convulsions −10/−20) ET
+ *    États PORTÉS (op `condition` — Fièvre (Grave) → Inconscient l.170, Malaise → Exténué l.188)
+ *    → collectées par `diseasePassiveOps` → `passiveMods` (kind 'maladie', annulable par Détermination) ;
+ *    les `condition` y sont MATÉRIALISÉES sur le porteur par `syncDerivedConditions` (engine/conditions).
  *  - `onTick` : cycle quotidien — soit une ÉPREUVE (`test`, le nœud `test` du Flow : jet + conséquence
  *    de la branche `fail`), DIFFÉRÉE en cascade influençable (`diseaseTick`) ; soit une conséquence
  *    CERTAINE (`ops`), appliquée sans jet.
  *  - `capabilities` (drapeaux irréductibles lus par la machinerie de CYCLE ci-dessous) : `blocksHealing`
- *    (Blessé/Gangrène), `amputation` (Gangrène), `stickyExtenue` (Malaise), `contagious` (Toux),
+ *    (Blessé/Gangrène), `amputation` (Gangrène), `contagious` (Toux),
  *    `nausea` (combat), `endTest` (Persistant).
  */
 import { Combatant, Difficulty, UpkeepDeferTest, HitLocation, effectRef, type ConditionEmit, type ModLine, type TestIds } from './types';
+import type { Duration } from './duration';
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice, formatDice } from './dice';
 import { MINUTES_PER_DAY } from './clock';
 import { findTableEntry } from './tables';
@@ -32,11 +37,14 @@ import locJson from '../data/localisation.json';
 const HUMANOID_LOC = (locJson as { personnage: { shapes: Record<string, { min: number; max: number; loc: HitLocation }[]> } }).personnage.shapes.humanoide;
 const rollBlisterLocation = (rng: RNG): HitLocation => findTableEntry(HUMANOID_LOC, roll(1, 100, rng)).loc;
 import { rollTest } from './tests';
-import { maladies, diseaseLabel, findSymptomById, symptomLabel, conditionLabel, type SymptomCapabilities } from '../data';
+import { maladies, diseaseLabel, findSymptomById, symptomLabel, conditionLabel, SYMPTOM_SEVERITIES, type SymptomCapabilities } from '../data';
 import type { GameOp, PassiveMod } from './ops';
 import type { PsychTrait, PsychType } from './psychology';
 import { t, type MsgKey } from '../i18n';
 import { fateSaveOrDie } from './fortune';
+import { addCondition } from './conditions';
+import { sourceSuspended, suspendSource } from './suspension'; // module FEUILLE : suspension GÉNÉRALE d'une source passive
+import type { CodexTarget } from './ruleRefs';
 
 /** Unité d'un temps de maladie (incubation/durée). La base de calcul/stockage reste la MINUTE (`clock.ts`). */
 export type TimeUnit = 'days' | 'hours' | 'minutes';
@@ -68,7 +76,7 @@ export function formatRemaining(minutes: number): string {
 }
 
 /** Instance de symptôme sur une maladie : RÉFÉRENCE un symptôme de `symptoms.json` par `symptomId`,
- *  + `severity`/`difficulty` PAR-INSTANCE (Convulsions Modérée → `severePassive` ; Persistant
+ *  + `severity`/`difficulty` PAR-INSTANCE (Convulsions (Modéré) → `passiveBySeverity.moderee` ; Persistant
  *  (Accessible) → difficulté du Test de fin). La mécanique (passive/onTick/capabilities) vit sur la
  *  DONNÉE du symptôme, lue par les helpers ci-dessous — plus d'enum de kinds en dur. */
 export interface DiseaseSymptom {
@@ -197,18 +205,38 @@ export function contractDisease(
   };
 }
 
-/** GameOp PASSIFS d'une instance de symptôme (sa pénalité continue), scalés par `severity`
- *  (Convulsions Modérée/Grave → `severePassive` −20 au lieu de `passive` −10). Lus par `passiveMods`. */
-export function symptomPassive(inst: DiseaseSymptom): GameOp[] {
+/** GameOp PASSIFS d'une instance de symptôme : `passive` PLUS la liste de CHAQUE palier ATTEINT
+ *  (échelle `SYMPTOM_SEVERITIES`, moderee → grave). Lookup PAR CLÉ, zéro branche par palier.
+ *  Les listes s'AJOUTENT ; la MAGNITUDE portée par un palier est ABSOLUE (LDB 20 l.157), et c'est le
+ *  pool « pire pénalité » d'`effectiveChar` (`engine/characteristics.ts`) qui la fait l'emporter sur
+ *  celle de base — les deux ops coexistent, aucune ne s'efface. Un palier n'a donc à déclarer que ce
+ *  qu'il change : l.170 n'ajoute qu'un État, les −10 de base tiennent sans être recopiés.
+ *  `severity` explicite = la sévérité EFFECTIVE (atténuation l.159) ; défaut = celle de l'instance.
+ *  Lus par `passiveMods` (pénalités) et `syncDerivedConditions` (États portés). */
+export function symptomPassive(inst: DiseaseSymptom, severity: 'moderee' | 'grave' | undefined = inst.severity): GameOp[] {
   const s = findSymptomById(inst.symptomId);
   if (!s) return [];
-  return inst.severity && s.severePassive ? s.severePassive : (s.passive ?? []);
+  const out: GameOp[] = [...(s.passive ?? [])];
+  if (!severity) return out;
+  for (const palier of SYMPTOM_SEVERITIES) {
+    out.push(...(s.passiveBySeverity?.[palier] ?? []));
+    if (palier === severity) break;
+  }
+  return out;
 }
-/** Le symptôme `symptomId` est-il SUSPENDU chez `c` par un effet actif (op `suppressSymptom` —
- *  Racine de terre « annule les effets de bubons », LDB 72 l.28) ? Ses canaux `passive`/`onTick` sont
- *  alors ignorés tant que l'effet dure ; restitués d'office à l'expiration (l'effet quitte la liste). */
+/** Identité Codex d'un symptôme — forme SOURCE du mécanisme général de suspension. */
+const srcSymptome = (symptomId: string): CodexTarget => ({ category: 'symptoms', id: symptomId });
+
+/** Le symptôme `symptomId` est-il SUSPENDU chez `c` ? SPÉCIALISATION mince de `sourceSuspended`
+ *  (`engine/suspension.ts`) : ses canaux `passive`/`onTick` sont ignorés tant que l'effet dure ;
+ *  restitués d'office à l'expiration (l'effet quitte la liste). */
 export function symptomSuppressed(c: Combatant, symptomId: string): boolean {
-  return (c.activeEffects ?? []).some((e) => e.suppressedSymptom === symptomId);
+  return sourceSuspended(c, srcSymptome(symptomId));
+}
+/** SPÉCIALISATION du poseur unique (`suspendSource`) pour l'op `suppressSymptom` — Racine de terre,
+ *  LDB 72 l.28. */
+export function suspendSymptom(c: Combatant, symptomId: string, duration: Duration, label: string, effectId?: string): void {
+  suspendSource(c, srcSymptome(symptomId), duration, label, effectId);
 }
 /** Bonus/malus NOMMÉS d'effets ACTIFS aux Tests liés à la maladie `diseaseName` (op `diseaseTestMod` —
  *  Fleur de lune +30 vs Peste noire, Racine de terre +10, Tonique digestif +20), plus la rampe
@@ -274,7 +302,7 @@ export function diseasePassiveOps(c: Combatant): PassiveMod[] {
     for (const inst of dz.symptoms) {
       if (symptomSuppressed(c, inst.symptomId)) continue;
       const src = { category: 'symptoms', id: inst.symptomId };
-      for (const op of symptomPassive(inst)) out.push({ op, kind: 'maladie', src });
+      for (const op of symptomPassive(inst, severiteEffective(c, dz.id, inst))) out.push({ op, kind: 'maladie', src });
       const sd = findSymptomById(inst.symptomId);
       if (sd?.visiblePassive?.length && dz.blisterLocation && (sd.visibleLocations ?? []).includes(dz.blisterLocation)) {
         for (const op of sd.visiblePassive) out.push({ op, kind: 'maladie', src });
@@ -310,11 +338,13 @@ export type CycleQuotidien =
  * Cycle quotidien d'une instance de symptôme (Blessé/Toxine/Vers) — lecture PURE de la donnée : les
  * ops de la branche `fail` du nœud sont extraites par `spellOps` (`flowCore`), comme `resolveCritique`.
  * `difficulty` ABSENTE = cycle SANS jet : la conséquence `ops` du porteur est certaine. Sinon la
- * Difficulté est celle du nœud, INDEXÉE sur la sévérité portée par L'INSTANCE quand le symptôme le
- * prévoit (`difficultyBySeverity` — Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible).
+ * Difficulté est celle du nœud, INDEXÉE sur la sévérité EFFECTIVE de l'instance quand le symptôme le
+ * prévoit (`difficultyBySeverity` — Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible) : le
+ * paramètre `severite` la porte (`severiteEffective` — LDB 20 l.159, une atténuation en cours
+ * transforme le cycle comme elle transforme les passifs), à défaut celle que l'instance PORTE.
  * `afterDays`/`once` cadencent le cycle sur la phase active (Vers de carie / Vers du Reik, MSRC 16).
  */
-export function symptomOnTick(inst: DiseaseSymptom): CycleQuotidien | undefined {
+export function symptomOnTick(inst: DiseaseSymptom, severite: 'moderee' | 'grave' | undefined = inst.severity): CycleQuotidien | undefined {
   const tick = findSymptomById(inst.symptomId)?.onTick;
   if (!tick) return undefined;
   const cadence = {
@@ -322,7 +352,7 @@ export function symptomOnTick(inst: DiseaseSymptom): CycleQuotidien | undefined 
     ...(tick.once !== undefined ? { once: tick.once } : {}),
   };
   if (!tick.test) return { onFail: tick.ops ?? [], ...cadence };
-  const bySeverity = inst.severity && tick.difficultyBySeverity?.[inst.severity];
+  const bySeverity = severite && tick.difficultyBySeverity?.[severite];
   // `difficulty` REQUISE au schéma du cycle (`noeudTest(…, { difficulteRequise: true })`, defs/symptoms) —
   // `FlowTest` la laisse optionnelle pour les jets dont elle vient d'ailleurs.
   const difficulty = bySeverity || tick.test.test.difficulty!;
@@ -369,19 +399,19 @@ function applyOnFailInline(c: Combatant, onFail: GameOp[], contractOnce: (name: 
       const n = typeof op.amount === 'number' ? op.amount : 0; // burst = 1 Blessure directe (littéral) ; formules → voie différée
       if (n > 0) { c.wounds.current = Math.max(0, c.wounds.current - n); log.push(t('op.wounds', { name: c.label, n, mitig: '' })); }
     } else if (op.op === 'condition') {
-      const ex = c.conditions.find((x) => x.id === op.id);
-      if (ex) ex.value = (ex.value ?? 1) + 1;
-      else c.conditions.push({ id: op.id, value: typeof op.value === 'number' ? op.value : 1 });
-      log.push(t('op.cond', { name: c.label, v: ex ? (ex.value ?? 1) : 1, cond: conditionLabel(op.id) }));
+      // Pose par la SOURCE UNIQUE (LDB 16 l.115 non-cumul, l.7 perte d'Avantage, déclencheur de gain).
+      const valeur = typeof op.value === 'number' ? op.value : 1;
+      addCondition(c, op.id, valeur);
+      log.push(t('op.cond', { name: c.label, v: c.conditions.find((x) => x.id === op.id)?.value ?? valeur, cond: conditionLabel(op.id) }));
       emit?.({ stateId: op.id, change: 'gain', targetId: c.id });
     }
   }
 }
 
-/** Issue d'une tentative d'aggravation — TROIS états distincts, jamais un booléen :
- *  `aggrave` (la sévérité vient d'être portée), `deja` (le symptôme EST là, DÉJÀ à cette sévérité),
- *  `absent` (la maladie ou le symptôme n'est pas porté). `deja` et `absent` ne se confondent pas :
- *  seul `deja` ouvre l'échelon suivant (EDOC 08 l.106-108). */
+/** Issue d'un changement d'ÉCHELON de sévérité (aggravation EDOC 08 l.104, atténuation LDB 20 l.159) —
+ *  TROIS états distincts, jamais un booléen : `aggrave` (l'échelon vient de bouger), `deja` (le symptôme
+ *  EST là, mais l'échelon visé est déjà le sien), `absent` (la maladie ou le symptôme n'est pas porté).
+ *  `deja` et `absent` ne se confondent pas : seul `deja` ouvre l'échelon suivant (EDOC 08 l.106-108). */
 export type IssueAggravation = 'aggrave' | 'deja' | 'absent';
 
 /** Porte la SÉVÉRITÉ `severity` sur l'instance de symptôme `symptomId` de la maladie `diseaseId`
@@ -399,6 +429,49 @@ export function aggravateDiseaseSymptom(
   if (inst.severity === severity) return { etat: 'deja', log: [] };
   dz.symptoms = dz.symptoms.map((s) => (s === inst ? { ...s, severity } : s));
   return { etat: 'aggrave', log: [t('dz.symptomAggravated', { name: c.label, symptom: symptomLabel(symptomId), disease: diseaseLabel(diseaseId) })] };
+}
+
+/** Fait REDESCENDRE d'un échelon la sévérité de l'instance de symptôme `symptomId` de `diseaseId`,
+ *  À DURÉE — LDB 20 l.159 : « certaines herbes rares et autres mélanges alchimiques permettent
+ *  d'atténuer les symptômes pendant une journée, transformant Grave en Modéré et Modéré en convulsions
+ *  normales ». L'instance n'est PAS mutée : un `ActiveEffect` `attenuatedSymptom` porte l'échelon, et
+ *  l'échelon revient à l'expiration (miroir exact de `suspendSource`/`suppressedSource`). Même issue à
+ *  TROIS états qu'`aggravateDiseaseSymptom` — `deja` = plus rien à atténuer (le symptôme est déjà à son
+ *  échelon de base, atténuations en cours comprises). UNE DOSE ACTIVE À LA FOIS par (maladie, symptôme) :
+ *  la source ne cadre qu'une dose, une seconde REMPLACE la première. SOURCE UNIQUE (op `attenuateSymptom`). */
+const ECHELON_INFERIEUR: Record<'moderee' | 'grave', 'moderee' | undefined> = { grave: 'moderee', moderee: undefined };
+export function attenuateDiseaseSymptom(
+  c: Combatant,
+  diseaseId: string,
+  symptomId: string,
+  duration: Duration,
+  label: string,
+): { etat: IssueAggravation; log: string[] } {
+  const dz = (c.diseases ?? []).find((d) => d.id === diseaseId);
+  const inst = dz?.symptoms.find((s) => s.symptomId === symptomId);
+  if (!dz || !inst) return { etat: 'absent', log: [] };
+  if (!severiteEffective(c, diseaseId, inst)) return { etat: 'deja', log: [] };
+  // UNE dose active à la fois (l.159) : une 2ᵉ REMPLACE la précédente, elle ne s'y empile pas.
+  c.activeEffects = [
+    ...(c.activeEffects ?? []).filter((e) => !(e.attenuatedSymptom?.disease === diseaseId && e.attenuatedSymptom?.symptomId === symptomId)),
+    { label, bonus: 0, duration, attenuatedSymptom: { disease: diseaseId, symptomId } },
+  ];
+  return { etat: 'aggrave', log: [t('dz.symptomAttenuated', { name: c.label, symptom: symptomLabel(symptomId), disease: diseaseLabel(diseaseId) })] };
+}
+
+/** Nombre d'ÉCHELONS d'atténuation ACTIFS sur l'instance `symptomId` de `diseaseId` — un par effet
+ *  `attenuatedSymptom` en cours (op `attenuateSymptom`, dose UNIQUE : 0 ou 1). Miroir de `symptomSuppressed`. */
+export function attenuationEchelons(c: Combatant, diseaseId: string, symptomId: string): number {
+  return (c.activeEffects ?? []).filter((e) => !!e.attenuatedSymptom && e.attenuatedSymptom.disease === diseaseId && e.attenuatedSymptom.symptomId === symptomId).length;
+}
+/** SÉVÉRITÉ EFFECTIVE d'une instance de symptôme : celle qu'elle PORTE, redescendue d'un échelon par
+ *  atténuation ACTIVE (LDB 20 l.159 : « permettent d'atténuer les symptômes pendant une journée,
+ *  transformant Grave en Modéré et Modéré en convulsions normales »). L'instance n'est JAMAIS mutée :
+ *  l'échelon revient de lui-même quand l'effet expire. SOURCE UNIQUE lue par `symptomPassive`. */
+export function severiteEffective(c: Combatant, diseaseId: string, inst: DiseaseSymptom): 'moderee' | 'grave' | undefined {
+  let sev = inst.severity;
+  for (let n = attenuationEchelons(c, diseaseId, inst.symptomId); n > 0 && sev; n--) sev = ECHELON_INFERIEUR[sev];
+  return sev;
 }
 
 /** Ajoute une instance de symptôme à une maladie DÉJÀ portée (EDOC 08 l.106-108). No-op si la
@@ -468,12 +541,6 @@ export function rollContraction(
   if (!contractionDue(c, diseaseName)) return [];
   // Bonus d'effets actifs aux Tests liés à CETTE maladie (Fleur de lune +30 vs Peste noire…).
   return applyContraction(c, diseaseName, rollTest(resistVal + activeDiseaseTestMod(c, diseaseName), difficulty, rng).success, rng);
-}
-
-/** Maladies ACTIVES dont un symptôme a la capacité `stickyExtenue` (Malaise, l.188) — chacune impose un
- *  Exténué « collant » (non dissipé par le repos tant que la maladie dure). Lu par `rest.ts`. */
-export function activeMalaiseCount(c: Combatant): number {
-  return (c.diseases ?? []).filter((d) => d.phase === 'active' && diseaseHasCapability(d, 'stickyExtenue')).length;
 }
 
 /** Nombre de maladies actives bloquant la guérison d'1 PB (capacité `blocksHealing` — Blessé + Gangrène). */
@@ -643,7 +710,7 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG, defer: Upke
         const activeDay = dz.activeDaysElapsed;
         for (const inst of dz.symptoms) {
           if (symptomSuppressed(c, inst.symptomId)) continue; // symptôme suspendu (Racine de terre) : pas de Test de cycle
-          const tick = symptomOnTick(inst);
+          const tick = symptomOnTick(inst, severiteEffective(c, dz.id, inst));
           if (!tick) continue;
           // Cadence de phase active : `afterDays` = ne démarre qu'au Jᵉ jour ; `once` = uniquement CE jour-là
           // (Vers du Reik éclate au 7ᵉ ; Vers de carie teste chaque jour ≥ J+7 — MSRC 16 l.90/142).

@@ -60,6 +60,9 @@ export const TYPES = {
   maladie: { dataset: 'maladies.json', specsOpen: false },
   symptome: { dataset: 'symptoms.json', specsOpen: false },
   material: { dataset: 'materials.json', specsOpen: false },
+  // RÈGLE OPTIONNELLE : cible du terme `{rule}` d'une `Formula` (#1599) — une quantité que le livre ne
+  // chiffre pas se lit au registre, l'id résout donc AU PARSE comme toute autre référence.
+  regleOptionnelle: { dataset: 'reglesOptionnelles.json', specsOpen: false },
 } as const satisfies Record<string, CibleDeType>;
 
 export type TypeEntite = keyof typeof TYPES;

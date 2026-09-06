@@ -12,6 +12,7 @@
  */
 import { Combatant, CharKey, CHAR_LABELS, HitLocation, ItemInstance, Trauma, Difficulty, UpkeepDeferTest, Weapon, effectRef, locationLabel, type BodyShape, type ModFamille } from './types';
 import { RNG, defaultRNG } from './dice';
+import type { Duration } from './duration';
 import type { CritEscalation } from '../data/criticals';
 import { poserEnjeu, type FlowTestNode } from './flowCore';
 import type { StakeRef } from '../data';
@@ -20,6 +21,7 @@ import { findById, findConditionById, findPsychologyById, findTrappingById, refL
 import type { CodexTarget } from './ruleRefs';
 import { talentPassiveMods } from './talentEffects';
 import { diseasePassiveOps } from './disease';
+import { sourceSuspended } from './suspension';
 import { hungerCharPenalties, thirstCharPenalties } from './provisions';
 import { drunkCharPenalties } from './drunkenness';
 import { hasActiveFlag } from './activeFlags';
@@ -881,13 +883,25 @@ const PASSIVE_CANCELLERS: Record<PassiveKind, ('determination' | 'painless' | 'p
   mobilite: ['determination', 'painless', 'prosthesis-move'],
   structurel: ['prosthesis-all'],
   sensoriel: [],
-  maladie: ['determination'],
+  maladie: [], // LDB 17 l.59-61 n'ouvre la Détermination QUE sur Psychologie / modificateurs de Critique / retrait d'UN État — la fenêtre de conscience de LDB 20 l.170 suspend la SOURCE qui porte l'État (`suspendSource`), pas le canal
   faim: [], // annulé par `noHunger` (flag de sort) — géré à la source Faim (P2), pas par une prothèse de séquelle
   magique: [], // sort actif : rien ne l'annule (il expire), mais il se combine en POOL non-cumul (≠ `intrinseque` additif)
   etat: [], // État (LDB 16) : annulé NON PAS ici mais par le flag de combat `ignoreStatePenalties` (au consommateur) ; pool non-cumul
   ivresse: [], // Ivresse (LDB 09) : gaté à la SOURCE par le flag `drunkIgnore` (Détermination, 1 Round) ; pool non-cumul
   intrinseque: [],
 };
+
+/** POSEUR UNIQUE de l'annulateur `determination` de la table ci-dessus (`ActiveEffect.ignoreCritMods`,
+ *  LDB 17 l.60 : `{scale:'rounds', left:1}`) — toutes ses dépenses passent par ici, il n'existe donc
+ *  jamais deux effets concurrents : le `effectId` `determination-crit` est REMPLACÉ à chaque pose.
+ *  Le `label` est celui que le JOURNAL doit lire à la dissipation — l'appelant le nomme. */
+export const DETERMINATION_CANCELLER_ID = 'determination-crit';
+export function poseDeterminationCanceller(c: Combatant, duration: Duration, label: string): void {
+  c.activeEffects = [
+    ...(c.activeEffects ?? []).filter((e) => e.effectId !== DETERMINATION_CANCELLER_ID),
+    { label, effectId: DETERMINATION_CANCELLER_ID, bonus: 0, duration, ignoreCritMods: true },
+  ];
+}
 
 /** Le `kind` est-il ADDITIF (sommé dans la base : mutation/qualité, corps/équipement permanent) plutôt que
  *  combiné en POOL non-cumul (trauma/maladie/faim/sort) ? Seuls les `charMod`/`skillMod` distinguent les deux.
@@ -1027,7 +1041,10 @@ export function passiveMods(c: Combatant): PassiveMod[] {
     if (e.moveMod) out.push({ op: { op: 'moveMod', mod: e.moveMod }, kind: 'magique' });
     if (e.maxWeaponHands != null) out.push({ op: { op: 'maxWeaponHands', hands: e.maxWeaponHands }, kind: 'magique' });
   }
-  return out;
+  // SUSPENSION d'une source (`engine/suspension.ts`) : tout ce qu'une source suspendue émet est écarté
+  // ICI, au collecteur unique — aucun consommateur n'a à connaître le mécanisme. Les émetteurs SANS
+  // `src` (séquelles, Faim, Soif, Ivresse) ne sont pas suspendables : rien ne les nomme.
+  return out.filter((m) => !sourceSuspended(c, m.src));
 }
 
 /** Ops PASSIVES de type `op` collectées (kind aplati), filtrées par mode de combinaison quand il importe :

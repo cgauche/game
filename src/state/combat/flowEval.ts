@@ -8,32 +8,18 @@
  * → aucun cycle. Réutilisé par `combatEffects` (runPureFlowLines), `triggeredEffects` (resolveInlineFlowTest)
  * et `combat/triggeredTest` (resolveFlowTest / simpleTriggeredTestStep).
  */
-import { type Combatant, type CharKey, CHAR_KEYS } from '../../engine/types';
-import { effectiveChar } from '../../engine/characteristics';
-import { SIZE_ORDER, effectiveSize } from '../../engine/size';
-import { campOf } from '../../engine/relations';
-import { aggregateCapabilities, chaosDomainOf } from '../../engine/combatFeatures/dispatch';
+import { type Combatant } from '../../engine/types';
+import { buildActorView } from '../../engine/actorView';
 import { immunityTypes } from '../../engine/traits/dispatch';
 import { groupMatch } from '../../engine/groups';
 import type { GameOp, OpsCtx } from '../../engine/ops';
 import { certainFlowOps, evalCondition } from '../../engine/flowCore';
-import { type ActorView, type Condition, type ConditionCtx, type Flow, type FlowTest, flowTestGateOpen, flowHasTest } from '../flow';
+import { type Condition, type ConditionCtx, type Flow, type FlowTest, flowTestGateOpen, flowHasTest } from '../flow';
 
-/** Vue d'un combattant pour les Conditions d'acteur (`compare`/`relation`/`has`/`capability`) : PB +
- *  Taille/Avantage + camp + appartenances (Groupes/Talents/Traits) + valeur d'États par nom + niveau des
- *  Capacités de combat agrégées. SOURCE UNIQUE (combat) — remplace les copies de combatEffects/triggeredTest. */
-export function buildActorView(c: Combatant | undefined): ActorView | undefined {
-  return c ? {
-    id: c.id, woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
-    advantage: c.advantage ?? 0, camp: campOf(c),
-    groups: c.groups ?? [], talents: (c.talents ?? []).map((t) => ({ id: t.talentId, spec: t.spec })), traits: (c.traits ?? []).map((t) => t.id),
-    conditions: Object.fromEntries(c.conditions.map((x) => [x.id, x.value ?? 1])), capabilities: aggregateCapabilities(c),
-    ...(chaosDomainOf(c) ? { chaosDomain: chaosDomainOf(c) } : {}),
-    // États psy ACTIFS (un trait ciblé RÉSISTÉ — `active:false` — ne compte pas comme « possédé »).
-    psych: (c.psychState ?? []).filter((p) => p.active !== false).map((p) => p.type),
-    chars: Object.fromEntries(CHAR_KEYS.map((k) => [k, effectiveChar(c, k)])) as Record<CharKey, number>,
-  } : undefined;
-}
+/** Vue d'un combattant pour les Conditions d'acteur — SOURCE UNIQUE côté MOTEUR
+ *  (`engine/actorView.ts`), partagée avec les VERROUS d'État (`isConditionLocked`). Ré-exportée ici :
+ *  les consommateurs de combat continuent de la prendre à leur porte, sans deuxième implémentation. */
+export { buildActorView };
 
 /** `ConditionCtx` de combat construit d'un combattant + de l'`OpsCtx` de la touche/du Round (géométrie
  *  d'arène, sl/location/woundsDealt…). Pour les résolveurs INLINE sans `ExecCtx` (resolveInlineFlowTest /

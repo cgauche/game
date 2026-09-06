@@ -6,7 +6,7 @@ import type { HitLocation } from './types';
 const tk = (k: 'dechirure' | 'fracture', sv: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, sv, loc), opts, loc);
 import { contractDisease } from './disease';
 import { MINUTES_PER_DAY } from './clock';
-import { stacks } from './conditions';
+import { stacks, syncDerivedConditions } from './conditions';
 import type { Combatant } from './types';
 
 /**
@@ -28,10 +28,10 @@ const sick = (name: string, days = 5) => contractDisease(name, { int: () => 1 },
 
 describe('cureDisease — Amère catharsis (LDB 42)', () => {
   it('purge 1 + ⌊DR/2⌋ maladies (actives d’abord) et rend l’Exténué du malaise', () => {
-    const c = dummy({
-      diseases: [sick('infection-mineure'), sick('blessure-purulente')],
-      conditions: [{ id: 'extenue', value: 2 }], // les 2 malaises « collants »
-    });
+    const c = dummy({ diseases: [sick('infection-mineure'), sick('blessure-purulente')] });
+    // Les deux Malaises PORTENT chacun leur État *Exténué* (LDB 20 l.188) : la réconciliation les pose.
+    syncDerivedConditions(c);
+    expect(stacks(c, 'extenue')).toBe(2);
     applyOps(c, [{ op: 'cureDisease', count: 1, countPerSL: { every: 2, amount: 1 } }], { sl: 2 });
     expect(c.diseases).toHaveLength(0); // 1 + ⌊2/2⌋ = 2 purges
     expect(stacks(c, 'extenue')).toBe(0); // malaise levé → Exténué rendu

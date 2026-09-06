@@ -109,7 +109,16 @@ import type { Scene } from './scene';
 // ne sont plus ceux de la porte : une save de 45 rouvrirait une fenêtre déjà montée dont la cible est
 // celle d'avant (jusqu'à +30 en faveur du joueur sur un héros sous États), sans qu'aucun applier ne
 // puisse la recalculer. La save se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 46;
+// 46 → 47 (#1599) : les États PORTÉS par un canal passif sont désormais MARQUÉS (`ConditionInstance.
+// derivedFrom`) et réconciliés (`syncDerivedConditions`). Une save de 46 porte les mêmes pions SANS
+// marquage : à la première réconciliation, la cible (1) et les pions dérivés comptés (0) divergent — le
+// porteur regagne un Inconscient/Exténué par-dessus celui qu'il a déjà. La save se jette (politique 2).
+// 47 → 48 (#1599) : la suspension d'un fait passif est GÉNÉRALE — l'`ActiveEffect` porte désormais
+// `suppressedSource` (identité Codex) là où il portait `suppressedSymptom` (id nu). Une save de 47 rouvre
+// avec des fenêtres de suspension (Racine de terre, fenêtre de Détermination) que plus aucun lecteur ne
+// voit : le symptôme réémet ses passifs et l'État qu'il porte revient, sans que rien ne le dise. La save
+// se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 48;
 
 export interface SaveMeta {
   version: number;

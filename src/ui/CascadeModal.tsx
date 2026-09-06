@@ -480,8 +480,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         selected: decl.result?.id === r.id, // ligne ÉLUE = état ferré (aria-pressed), pas un simple style
         /* Refus MUTUALISÉ : les N lignes hors d'atteinte le sont par la MÊME cause (le modificateur),
            déjà énoncée une fois sous la grille — forme `reasonId` de `GatedAction`, l'unique grammaire
-           de refus de la primitive. Elles gardent ainsi `aria-disabled` (donc le focus clavier/manette
-           et le tap) au lieu du `disabled` muet qu'elles portaient. */
+           de refus de la primitive. Elles portent ainsi `aria-disabled`, donc le focus clavier/manette
+           et le tap. */
         ...(nat == null ? { refusId: `${s.id}-unreachable` } : {}),
         title: nat == null ? undefined
           : `Poser le dé à ${nat}${mod !== 0 ? ` (dé effectif ${nat + mod})` : ''}`,

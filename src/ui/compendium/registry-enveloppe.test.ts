@@ -159,7 +159,7 @@ const CLES: Record<string, string> = {
   "montures": '753bb5df6cb62fd3',
   "tavernGames": '8abef4f4ee68acfc',
   "obsessions": '335a5d95e4a39469',
-  "reglesOptionnelles": '569e04107faad559',
+  "reglesOptionnelles": '164d4f1ca324c10d', // #1599 : +`maladie-conscience-determination-minutes` (LDB 20 l.170, durée maison)
   "surincantation": '561218369ab9cdfd',
   "structureCriticals": '84e0df29c1ae4e21',
   "artilleryMisfire": 'aa3ad3238b5356f8',
@@ -345,7 +345,7 @@ const T3_DELTAS: Record<string, Record<string, number>> = {
   "seaManannFactors": { source: 26 }, // 26 items — T3 : source +26
   "seaBoardEvents": { desc: 40, source: 40 }, // 40 items — T3 : source +40
   "seaPortEvents": { desc: 18, source: 18 }, // 18 items — T3 : source +18
-  "reglesOptionnelles": { desc: 81, source: 54 }, // 81 items — T3 : source +54
+  "reglesOptionnelles": { desc: 82, source: 54 }, // 82 items (81 + la fenêtre de conscience par Détermination, #1599) — T3 : source +54
   "landCargo": { source: 7 }, // 7 items — T3 : source +7
   "seaCargo": { source: 11 }, // 11 items — T3 : source +11
   "riverPerils": { source: 4 }, // 4 items — T3 : source +4

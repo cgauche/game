@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { summarizeEffects, combatantFlags, chipCodex, type EffectChip } from '../gameIso/effectIcons';
+import { summarizeEffects, combatantFlags, chipCodex, chipNom, type EffectChip } from '../gameIso/effectIcons';
 import type { Combatant } from '../engine/types';
 import { CodexRef } from './compendium/CodexRef';
 import { GatedAction } from './GatedAction';
@@ -10,13 +10,16 @@ import { Icon } from './Icon';
  * d'État sur la PASTILLE (`StateChips`+`GatedAction`) »). La forme ne nomme AUCUNE mécanique :
  * l'appelant fournit le nom accessible et le dispatcher — une `Cell` de la console la satisfait
  * telle quelle, et une autre réaction d'État s'y branchera sans fork.
- * Un geste FERMÉ ne s'y rend pas : l'appelant rend `undefined` (la raison d'un refus ne tient pas
- * dans une alvéole de 15px), et la pastille redevient purement informative.
+ * Un geste FERMÉ reste un CONTRÔLE : il porte sa raison au survol/focus/tap (`CodexRef refus`,
+ * arbitrage user 2026-08-24), reste atteignable (`aria-disabled`, jamais `disabled`) et son clic est
+ * inerte. L'appelant ne rend `undefined` que là où AUCUN geste n'existe (pastille informative).
  */
 interface ChipAction {
   /** Nom ACCESSIBLE du geste : la pastille n'affiche qu'un glyphe, elle n'a aucun texte à lui prêter. */
   label: string;
   run: () => void;
+  /** Raison du REFUS quand le geste existe mais est fermé — portée au survol/focus, jamais inline. */
+  refus?: string;
 }
 
 /**
@@ -83,30 +86,48 @@ export function StateChips({
         if (geste) {
           // Le bouton EST l'alvéole : il arrive NU (`bare`) et garde la matière du rack (`pt-state`).
           // Aucun conteneur — un `<div>` de `GatedAction` romprait le flux inline des alvéoles, d'où
-          // la forme `reasonId`. Une pastille ne rend QUE des gestes OFFERTS (l'appelant écarte les
-          // gestes fermés : leur raison ne tiendrait pas dans une alvéole de 15px).
+          // la forme `reasonId` : la raison d'un refus vit dans l'infobulle du `CodexRef` qui
+          // enveloppe l'alvéole, et dans le NOM ACCESSIBLE du bouton.
           const rid = `pt-act-${v.key}`;
+          const nom = geste.refus ? `${geste.label} — ${geste.refus}` : geste.label;
           const bouton = (
             <GatedAction
               id={rid}
               reasonId={rid}
               label={inner}
-              ariaLabel={geste.label}
-              enabled
+              ariaLabel={nom}
+              enabled={!geste.refus}
               primary={false}
               bare
               btnClassName="pt-state"
               onClick={geste.run}
             />
           );
-          if (!ref) return <Fragment key={v.key}>{bouton}</Fragment>;
+          // Ni règle résolue ni refus : l'alvéole reste NUE (arbitrage user 2026-07-18) — aucune
+          // enveloppe, le nom accessible du bouton porte déjà le libellé de l'effet.
+          if (!ref && !geste.refus) return <Fragment key={v.key}>{bouton}</Fragment>;
           return (
-            <CodexRef key={v.key} category={ref.category} id={ref.id} label={ref.label} instance={ref.instance} wrap>
+            <CodexRef
+              key={v.key}
+              category={ref?.category}
+              id={ref?.id}
+              label={ref?.label ?? v.label}
+              instance={ref?.instance}
+              refus={geste.refus}
+              wrap
+            >
               {bouton}
             </CodexRef>
           );
         }
-        if (!ref) return <span key={v.key} className="pt-state">{inner}</span>;
+        // Pastille informative SANS règle résolue : elle reste NUE à l'œil (arbitrage user
+        // 2026-07-18 — aucun popover, aucune infobulle native), mais jamais MUETTE pour autant : son
+        // NOM (`chipNom`) est son NOM ACCESSIBLE (`role="img"` + `aria-label`), sinon l'icône ne dit
+        // rien du tout à un lecteur d'écran.
+        if (!ref) return <span key={v.key} className="pt-state" role="img" aria-label={chipNom(v)}>{inner}</span>;
+        // Règle résolue : le nom accessible se POSE (`ariaLabel`) au lieu d'être dérivé de la fiche —
+        // le CHIFFRE de l'alvéole (`pt-n`) est du texte : il suffisait à nommer le contrôle, qui
+        // s'annonçait alors « 3 ». MÊME texte que la chip de la fiche (`chipNom`, source unique).
         return (
           <CodexRef
             key={v.key}
@@ -114,6 +135,7 @@ export function StateChips({
             id={ref.id}
             label={ref.label}
             instance={ref.instance}
+            ariaLabel={chipNom(v)}
             className="pt-state"
           >
             {inner}

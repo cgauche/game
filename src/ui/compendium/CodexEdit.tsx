@@ -38,6 +38,7 @@ import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
 import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
 import type { ManeuverDef, ManeuverMeasure } from '../../data';
+import { SYMPTOM_SEVERITIES, SYMPTOM_SEVERITY_LABELS } from '../../data';
 import { ATTACK_LABEL, type AttackKind } from '../../engine/creatureAttacks';
 import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
@@ -312,7 +313,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (CRITICAL_CATEGORIES.includes(categoryKey)) add('traumas', 'test'); // string[] d'ids → TraumaListField (#173) ; `test` → FlowEditor (#1682)
   if (categoryKey === 'steamBreakdowns') add('restart'); // {skill:{id,spec?},difficulty,extendedDR?}[] → éditeur dédié
   add(...opsFieldsOf(categoryKey)); // ops/occupantOps/crewOps/captainOps → GameOpEditor (#157)
-  if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick', 'visiblePassive', 'visibleLocations'); // GameOp[] + test de cycle + gate visibilité → éditeurs dédiés (capabilities = sous-form générique)
+  if (categoryKey === 'symptoms') add('passive', 'passiveBySeverity', 'onTick', 'visiblePassive', 'visibleLocations'); // GameOp[] + test de cycle + gate visibilité → éditeurs dédiés (capabilities = sous-form générique)
   if (categoryKey === 'stars') add('sub');
   if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
   if (categoryKey === 'mutations') add('psychTraits');
@@ -475,7 +476,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   const hasRestartTest = categoryKey === 'steamBreakdowns';
   // Champs `GameOp[]` autres que `passive` (ops/occupantOps/crewOps/captainOps, #157) — même GameOpEditor.
   const opsFields = opsFieldsOf(categoryKey);
-  // Symptôme de maladie : pénalité aggravée `severePassive` (Modérée/Grave) + Test de cycle `onTick`
+  // Symptôme de maladie : passifs `passiveBySeverity` par PALIER + Test de cycle `onTick`
   // (difficulté + conséquence GameOp `onFail`) — éditeurs dédiés au-dessus du formulaire générique.
   const isSymptom = categoryKey === 'symptoms';
   // Règle optionnelle : sa valeur par défaut (et le `when` de son action) sont typées par son `kind`.
@@ -658,12 +659,22 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
             />
           </>
         )}
-        {isSymptom && (
-          <div className="ed-field">
-            <span>modificateurs PASSIFS aggravés — appliqués quand l'instance porte une sévérité (Convulsions Modérée/Grave → −20)</span>
-            <GameOpEditor ops={(entry.severePassive as GameOp[] | undefined) ?? []} onChange={(ops) => edit('severePassive', ops.length ? ops : undefined)} />
-          </div>
-        )}
+        {isSymptom && SYMPTOM_SEVERITIES.map((cle) => {
+          const parPalier = (entry.passiveBySeverity as Record<string, GameOp[] | undefined> | undefined) ?? {};
+          return (
+            <div className="ed-field" key={cle}>
+              <span>modificateurs PASSIFS du palier {SYMPTOM_SEVERITY_LABELS[cle]} — ils S’AJOUTENT aux « Effets passifs » dès que l’instance atteint ce palier ; une pénalité s’y écrit en valeur ABSOLUE, la pire l’emporte (LDB 20 l.157, l.170)</span>
+              <GameOpEditor
+                ops={parPalier[cle] ?? []}
+                onChange={(ops) => {
+                  const suivant = { ...parPalier, [cle]: ops.length ? ops : undefined };
+                  const reste = Object.fromEntries(Object.entries(suivant).filter(([, v]) => v?.length));
+                  edit('passiveBySeverity', Object.keys(reste).length ? reste : undefined);
+                }}
+              />
+            </div>
+          );
+        })}
         {isSymptom && (
           <div className="ed-field">
             <span>passifs conditionnés à la VISIBILITÉ de la lésion (Vers du Reik −10 Soc si visible, MSRC 16 l.140) — actifs seulement si la localisation tirée est cochée ci-dessous</span>

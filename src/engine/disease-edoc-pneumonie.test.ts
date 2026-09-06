@@ -6,6 +6,7 @@ import { MINUTES_PER_DAY } from './clock';
 import { contractDisease, contractDiseaseOnce, tickDisease, aggravateDiseaseSymptom, DISEASE_DEFS } from './disease';
 import { dailyDiseaseUpkeep } from './rest';
 import { applyOps } from './ops';
+import { syncDerivedConditions } from './conditions';
 import { spellOps } from './flowCore';
 import { gameOpSchema } from '../data/schemas/grammaire/mecanique';
 /** La porte, quand le Test différé n'est pas le sujet du test. */const ignore: UpkeepDeferTest = () => {};
@@ -150,6 +151,9 @@ describe('`aggravateSymptom` : TROIS issues distinctes, jamais un booléen (EDOC
     const dz = c.diseases![0];
     dz.symptoms = dz.symptoms.filter((s) => s.symptomId !== 'fievre'); // aucune Fièvre portée
     expect(aggravateDiseaseSymptom(c, 'pneumonie', 'fievre', 'grave').etat).toBe('absent');
+    // L'État *Exténué* que le Malaise PORTE (LDB 20 l.188) est posé d'avance : il n'appartient pas à
+    // la chaîne d'aggravation, et ce test-ci ne juge QU'elle.
+    syncDerivedConditions(c);
     const log = applyOps(c, onFail(), { rng: seq([]) });
     expect(symptomIds(c), 'sans Fièvre, la chaîne ne descend pas jusqu’à Toxine').not.toContain('toxine');
     expect(log, 'rien à journaliser non plus').toEqual([]);

@@ -6,6 +6,7 @@ import { applyOps } from './ops';
 import { CRITIQUE_DOCS } from '../data/criticals';
 import { spellOps } from './flowCore';
 import miscastJson from '../data/miscast.json';
+import { gameOpSchema } from '../data/schemas/grammaire/mecanique';
 
 /** Toutes les rangées de Blessure critique, les 8 documents-tables confondus (LDB + Aux Armes) —
  *  la lecture ne nomme aucune famille : un 9ᵉ tableau y entre sans une ligne. */
@@ -162,5 +163,71 @@ describe('Données — verrous & escapeStrength câblés (RAW)', () => {
       expect(inst.escapeStrength).toBeGreaterThanOrEqual(5);
       expect(inst.escapeStrength).toBeLessThanOrEqual(50);
     }
+  });
+});
+
+/**
+ * CONTEXTE du verrou — une seule projection d'acteur (`conditionLockCtx` → `buildActorView`), la MÊME
+ * que celle des Flows. Un verrou qui compare autre chose que les États du porteur (une
+ * Caractéristique, ses PB, sa Taille) s'évaluait FAUX en silence avant #1599 : la vue tronquée ne
+ * portait que `target.conditions`.
+ */
+describe('le verrou s’évalue contre la vue COMPLÈTE du porteur (#1599)', () => {
+  const forceAuMoins30: Condition = { kind: 'compare', subject: { who: 'target', char: 'force' }, op: '>=', value: 30 };
+
+  it('verrou sur une CARACTÉRISTIQUE : verrouillé tant qu’elle n’atteint pas le seuil', () => {
+    const c = mk();
+    c.characteristics.force = 20;
+    addCondition(c, 'sonne', 1, undefined, undefined, undefined, undefined, { lockedUntil: forceAuMoins30 });
+    expect(isConditionLocked(c.conditions[0], c), 'Force 20 : le verrou doit TENIR').toBe(true);
+    removeCondition(c, 'sonne');
+    expect(hasCondition(c, 'sonne')).toBe(true);
+    c.characteristics.force = 35;
+    expect(isConditionLocked(c.conditions[0], c), 'Force 35 : le verrou doit TOMBER').toBe(false);
+    removeCondition(c, 'sonne');
+    expect(hasCondition(c, 'sonne')).toBe(false);
+  });
+
+  it('verrou sur les PB du porteur (`woundsCurrent`) : lu, jamais rabattu à 0', () => {
+    const c = mk();
+    c.wounds.current = 2;
+    const pbPleins: Condition = { kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 10 };
+    addCondition(c, 'a-terre', 1, undefined, undefined, undefined, undefined, { lockedUntil: pbPleins });
+    expect(isConditionLocked(c.conditions[0], c)).toBe(true);
+    c.wounds.current = 10;
+    expect(isConditionLocked(c.conditions[0], c)).toBe(false);
+  });
+});
+
+/**
+ * VERROU PAR CONSTRUCTION à la donnée : un sujet que le contexte de verrou ne GARANTIT pas (drapeau de
+ * scène, horloge, bourse…) est refusé AU PARSE, nominativement — jamais évalué faux en silence.
+ */
+describe('la donnée ne peut pas authorer un verrou sur un sujet non garanti (#1599)', () => {
+  it('les verrous `lockedUntil` LIVRÉS passent tous la porte', () => {
+    const verrous = rangees().flatMap((e) => JSON.stringify(e).match(/"lockedUntil"/g) ?? []);
+    expect(verrous.length, 'plus aucun verrou `lockedUntil` en donnée : la garde ne mesure rien').toBeGreaterThan(0);
+    for (const e of rangees()) {
+      for (const op of (e as { ops?: unknown[] }).ops ?? []) {
+        const o = op as Record<string, unknown>;
+        if (o.op !== 'condition' || o.lockedUntil == null) continue;
+        expect(gameOpSchema.safeParse(o).success, `verrou refusé sur « ${String(e.id)} »`).toBe(true);
+      }
+    }
+  });
+
+  it('un verrou sur un DRAPEAU de scène est REFUSÉ, en nommant la famille fautive', () => {
+    const res = gameOpSchema.safeParse({ op: 'condition', id: 'sonne', lockedUntil: { kind: 'flag', expr: 'porte-ouverte' } });
+    expect(res.success).toBe(false);
+    expect(res.success ? '' : res.error.issues.map((i) => i.message).join('\n')).toContain('« flag »');
+  });
+
+  it('un verrou sur l’HORLOGE est REFUSÉ, même imbriqué dans un `all`', () => {
+    const res = gameOpSchema.safeParse({
+      op: 'condition', id: 'sonne',
+      lockedUntil: { kind: 'all', of: [noHemo, { kind: 'time', window: { afterHour: 6 } }] },
+    });
+    expect(res.success).toBe(false);
+    expect(res.success ? '' : res.error.issues.map((i) => i.message).join('\n')).toContain('« time »');
   });
 });

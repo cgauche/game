@@ -6,7 +6,6 @@ import { MINUTES_PER_DAY } from './clock';
 import {
   contractDisease,
   tickDisease,
-  activeMalaiseCount,
   diseaseBlesseCount,
   diseasePassiveOps,
   diseasePsychTraits,
@@ -29,7 +28,8 @@ function seq(values: number[]): RNG {
 const ignore: UpkeepDeferTest = () => {};
 
 /** Porteur de sonde — `conditions`/`skills` présents comme sur un vrai Combatant : la guérison
- *  réconcilie l'Exténué « collant » du malaise (`LDB 20 l.153`), elle LIT donc les États. */
+ *  réconcilie les États PORTÉS par les passifs des symptômes (`syncDerivedConditions`), elle LIT
+ *  donc les États. */
 const sick = (over: Partial<Combatant> = {}): Combatant =>
   ({ label: 'Malade', diseases: [], conditions: [], skills: [], ...over }) as Combatant;
 
@@ -87,13 +87,17 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
   });
 
   it('incubation → active : les symptômes se déclarent, puis comptent', () => {
+    // L'État *Exténué* du Malaise (LDB 20 l.188) est un op `condition` du canal PASSIF du symptôme :
+    // il n'est émis que lorsque la maladie est ACTIVE. C'est ce que le collecteur montre ici ; sa
+    // matérialisation sur le porteur est le socle `syncDerivedConditions` (voir `rest.test.ts`).
+    const extenuePorte = (x: Combatant) => diseasePassiveOps(x).filter((m) => m.op.op === 'condition' && m.op.id === 'extenue').length;
     const c = sick({ diseases: [contractDisease('infection-mineure', seq([]), { incubation: 2, duration: 5 })!] });
-    expect(activeMalaiseCount(c)).toBe(0); // incubation = pas encore de symptômes
+    expect(extenuePorte(c)).toBe(0); // incubation = pas encore de symptômes
     const log = tickDisease(c, 2 * MINUTES_PER_DAY, seq([]), ignore);
     expect(c.diseases![0].phase).toBe('active');
     expect(c.diseases![0].minutesLeft).toBe(5 * MINUTES_PER_DAY);
     expect(log.some((l) => /se déclarent/.test(l))).toBe(true);
-    expect(activeMalaiseCount(c)).toBe(1);
+    expect(extenuePorte(c)).toBe(1);
     expect(diseaseBlesseCount(c)).toBe(1);
   });
 

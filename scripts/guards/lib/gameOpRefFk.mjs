@@ -118,6 +118,8 @@ export const GAMEOP_FIELD_TARGETS = {
   'suppressSymptom.symptomId': { registry: 'symptoms' },
   'aggravateSymptom.disease': { registry: 'maladies' },
   'aggravateSymptom.symptomId': { registry: 'symptoms' },
+  'attenuateSymptom.disease': { registry: 'maladies' },
+  'attenuateSymptom.symptomId': { registry: 'symptoms' },
   'grantSymptom.disease': { registry: 'maladies' },
   'grantSymptom.symptomId': { registry: 'symptoms' },
   // ── Possessions / qualités / groupes d'arme ──

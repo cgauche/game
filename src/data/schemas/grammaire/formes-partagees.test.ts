@@ -338,10 +338,10 @@ describe('bornesSchema — les deux bornes d’un réglage vont par paire', () =
     const regles = reglesOptionnelles as ReadonlyArray<Record<string, unknown>>;
     expect(validateDataset('reglesOptionnelles.json', regles)).toBeNull();
     const bornees = regles.filter((r) => typeof r.min === 'number' && typeof r.max === 'number');
-    expect(bornees.length, 'plus aucun réglage borné : la sonde ne mesure rien.').toBe(23);
+    expect(bornees.length, 'plus aucun réglage borné : la sonde ne mesure rien.').toBe(24); // 23→24 (#1599) : la fenêtre de conscience par Détermination (LDB 20 l.170)
     expect(
       bornees.filter((r) => r.kind !== 'param').map((r) => r.id),
-      'un réglage borné n’est pas un paramètre chiffré : la co-présence mesurée 23/23 ne porte plus sur la même population.',
+      'un réglage borné n’est pas un paramètre chiffré : la co-présence mesurée 24/24 ne porte plus sur la même population.',
     ).toEqual([]);
     const i = regles.indexOf(bornees[0]);
     const { max: _absente, ...ampute } = bornees[0];

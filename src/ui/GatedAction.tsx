@@ -17,8 +17,12 @@ import { CodexRef, nodeText } from './compendium/CodexRef';
  *    hors écran dans le conteneur `.gated-action` — forme d'une action isolée, dont la cause
  *    d'indisponibilité lui est propre ;
  *  - `reasonId` : la raison est déjà rendue UNE fois par l'appelant (N actions gatées par la MÊME
- *    cause : les rangées d'un registre sous un même verrou) — l'action s'y LIE sans dupliquer le
- *    texte, et se rend alors SANS conteneur, donc composable dans un contexte inline.
+ *    cause : les rangées d'un registre sous un même verrou, l'infobulle qui enveloppe une alvéole) —
+ *    l'action s'y LIE sans dupliquer le texte, et se rend alors SANS conteneur, donc composable dans
+ *    un contexte inline.
+ *
+ * Dans TOUTES les formes, un contrôle refusé porte `aria-disabled` et JAMAIS `disabled` : il reste
+ * atteignable au clavier, à la manette et au doigt (table des primitives, CLAUDE.md).
  */
 export function GatedAction({
   id,
@@ -71,8 +75,9 @@ export function GatedAction({
   /** RAISON RENDUE EN CLAIR sous le bouton, au lieu de l'infobulle de survol/focus — OPT-IN, réservé
    *  au refus qui est le SEUL signal d'un écran : l'attente d'un invité en coop (écran d'équipe), le
    *  diagnostic d'authoring d'un outil d'éditeur, l'entrée refusée d'une activité. Ailleurs, une case
-   *  fermée reste PROPRE et dit pourquoi au survol (arbitrage user 2026-08-24). Le contrôle garde alors
-   *  son `disabled` HTML : sa raison étant déjà à l'écran, rien n'a besoin de l'atteindre. */
+   *  fermée reste PROPRE et dit pourquoi au survol (arbitrage user 2026-08-24). C'est un choix de
+   *  PLACEMENT du texte, rien d'autre : le contrôle reste `aria-disabled` et atteignable, comme
+   *  toutes les autres formes. */
   raisonInline?: boolean;
   /** Référence sur le BOUTON — pour l'ancrer à ce qu'il ouvre (un panneau-paramètre naît de son
    *  déclencheur, jamais du conteneur qui l'entoure). */
@@ -91,28 +96,31 @@ export function GatedAction({
       className?: never;
     }
 )) {
-  const describedBy = enabled ? undefined : (reasonId ?? `${id}-reason`);
-  // La raison vit-elle dans l'INFOBULLE (défaut) plutôt qu'en clair sous le bouton ?
-  const bulle = !enabled && !!reason && !raisonInline;
-  // Un contrôle dont la raison est à ATTEINDRE ne peut PAS porter `disabled` : l'attribut HTML le
-  // retire de l'ordre de tabulation, rend `.focus()` inopérant, l'exclut du filtre de la manette
-  // (`visibleFocusables`) et lui coupe tout événement de pointeur — la raison ne serait alors lisible
-  // qu'à la souris. Patron ARIA canon : `aria-disabled` + clic INERTE. Le bouton reste focalisable de
-  // nature, donc atteignable au clavier, à la manette, et au doigt (le tap ouvre l'infobulle).
+  // `aria-describedby` ne pointe QUE sur un texte qui existe : sans `reasonId` ni `reason`, l'attribut
+  // désignerait un `<p>` vide — une description fantôme qu'un lecteur d'écran annonce comme un silence.
+  const describedBy = enabled ? undefined : (reasonId ?? (reason ? `${id}-reason` : undefined));
+  // La raison vit dans l'INFOBULLE de CE contrôle quand il la porte lui-même (`reason`) et que
+  // l'appelant ne l'a pas demandée en clair. Les autres formes (`reasonId`) la tiennent ailleurs :
+  // infobulle de l'appelant, ou récapitulatif déjà à l'écran.
+  const bulle = !enabled && !raisonInline && !!reason;
+  // Un contrôle REFUSÉ ne porte JAMAIS `disabled` : l'attribut HTML le retire de l'ordre de
+  // tabulation, rend `.focus()` inopérant, l'exclut du filtre de la manette (`visibleFocusables`) et
+  // lui coupe tout événement de pointeur — sa raison ne serait alors lisible qu'à la souris, et il
+  // disparaîtrait de la navigation. Patron ARIA canon, TOUTES formes confondues : `aria-disabled` +
+  // clic INERTE. Le bouton reste atteignable au clavier, à la manette, et au doigt.
   const arret = arretePointeur ? (e: { stopPropagation: () => void }) => e.stopPropagation() : undefined;
   const button = (
     <button
       type="button"
       ref={btnRef}
       className={`btn ${primary ? 'btn-primary' : ''}${bare ? ' btn-nu' : ''}${tactile ? ' btn-tactile' : ''}${btnClassName ? ` ${btnClassName}` : ''}`}
-      disabled={!enabled && !bulle}
-      aria-disabled={bulle || undefined}
+      aria-disabled={!enabled || undefined}
       aria-label={ariaLabel}
       title={ariaLabel}
       aria-describedby={describedBy}
       onPointerDown={arret}
       onPointerUp={arret}
-      onClick={(e) => { arret?.(e); if (bulle) return; onClick(); }}
+      onClick={(e) => { arret?.(e); if (!enabled) return; onClick(); }}
     >
       {label}
     </button>
@@ -124,8 +132,9 @@ export function GatedAction({
         ? <CodexRef label={ariaLabel ?? nodeText(label)} refus={reason} wrap>{button}</CodexRef>
         : button}
       {/* La raison : EN CLAIR sous le bouton quand l'écran la réclame (`raisonInline`), sinon sa copie
-          HORS ÉCRAN — jamais supprimée, un lecteur d'écran la lit par `aria-describedby` sans survol. */}
-      {!enabled && <p className={raisonInline ? 'gated-action-reason' : 'hors-ecran'} id={`${id}-reason`}>{reason}</p>}
+          HORS ÉCRAN, qu'un lecteur d'écran lit par `aria-describedby` sans survol. Elle est là dès
+          qu'il y a une raison à lire — et le `<p>` comme l'attribut tombent ensemble quand il n'y en a pas. */}
+      {!enabled && !!reason && <p className={raisonInline ? 'gated-action-reason' : 'hors-ecran'} id={`${id}-reason`}>{reason}</p>}
     </div>
   );
 }

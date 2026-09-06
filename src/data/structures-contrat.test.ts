@@ -986,7 +986,12 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // perRound, unlessCondition, value}` de « Purifier la chair » (LDB 40 l.75) — INSTANCE des deux
       // signatures d'op déjà stockées de ce dataset (`condition {durationRounds,id,op}` et
       // `condition {id,op,value}`), aucune forme neuve : la cause récurrente porte SA durée.
-      'L1c #1468': 393,
+      // … puis 393 → 394 (#1599, 2026-09-06) : la signature `condition {id, op, resolveWindow}` — les
+      // DEUX États portés par un canal passif de `symptoms.json` déclarent désormais SUR L'OP ce qu'un
+      // Point de Détermination y fait (fenêtre d'horloge de la Fièvre (Grave), `LDB 20 l.170` ; refus du
+      // Malaise, `l.188`), là où deux drapeaux de SYMPTÔME le disaient. Les 2 occurrences quittent
+      // `condition {id,op}` (6 → 4) : mêmes op, une ligne de plus, ZÉRO drapeau de porteur en moins.
+      'L1c #1468': 394,
       // L1d #1469 : 62 → 61 (#1552) — « La Diligence » CITE désormais son folio à la racine
       // (`ennemi-dans-l-ombre` 12, la référence que son bloc narratif portait déjà en profondeur) ;
       // sa ligne « source | clé absente » est SOLDÉE.
@@ -1070,7 +1075,18 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `id,unlessCondition,value+…` — MÊME famille que `id,value+…` déjà stockée (11+31 lignes) :
       // le gate d'État d'une op récurrente désigne un État par son id NU, comme l'`id` frère.
       // Elle s'éteindra avec eux (référence d'État à la forme cible), pas avant.
-      'L3 #1463': 374,
+      // … puis 374 → 376 (#1599, 2026-09-05) : `symptoms.json › severePassive` MEURT (−1) et les passifs
+      // s'indexent PAR PALIER — le scan nomme le champ PORTEUR, d'où `› moderee {char+…}` (Convulsions
+      // −20, LDB 20 l.157) et `› grave {id+…}` (Fièvre : le seul État *Inconscient*, LDB 20 l.170 — le
+      // palier S'AJOUTE, les −10 de base tiennent sans être recopiés) ; `› passive {id+…}` (+1) est
+      // l'État *Exténué* du Malaise
+      // (l.188), qui cesse d'être un drapeau nommé dans le moteur. MÊMES familles que les lignes voisines
+      // (référence de Caractéristique, référence d'État par id NU) : elles s'éteindront avec elles.
+      // … puis 376 → 377 (#1599, 2026-09-06) : `symptoms.json › minutes {rule}` — la fenêtre de
+      // conscience (`LDB 20 l.170`) lit sa durée au registre des règles optionnelles par le terme
+      // `{rule}` d'une `Formula`. MÊME graphie que le gate `variants[].when` de `spells.json` (18) et
+      // `talents.json` (12), déjà stockée dans ce lot : elle s'éteindra AVEC eux, d'un seul geste.
+      'L3 #1463': 377,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en
@@ -1723,7 +1739,12 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // seconde op `condition` de la même rangée, pas un champ de plus sur la première.
     // #1661 : +1 op authorée — le 2ᵉ État Hémorragique de Taillade (`AA 08 l.87`), MÊME op `condition`
     // que l'État automatique du Critique, portée par la branche `yes` du choix.
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2270);
+    // #1599 : +2 ops authorées — les États PORTÉS par un canal passif s'écrivent en DONNÉE : l'État
+    // *Inconscient* du palier Grave de la Fièvre (LDB 20 l.170) et l'État *Exténué* du Malaise (l.188),
+    // qui cessent d'être des drapeaux nommés dans le moteur. Le palier S'AJOUTANT à `passive` au lieu de
+    // le remplacer, aucune pénalité n'est recopiée : les 6 charMod de `severePassive` se DÉPLACENT vers
+    // `passiveBySeverity.moderee`, le total ne les compte pas deux fois.
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2272);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le

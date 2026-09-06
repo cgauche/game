@@ -15,13 +15,14 @@
  */
 import type { Flow, Condition, EffectOp } from '../../state/flow';
 import { INDICE_TEMPLATE, type ActorRef, type CompareOp, type CompareSubject } from '../../engine/flowCore';
-import { estCausePersistante, type GameOp, type Formula } from '../../engine/ops';
+import { estCausePersistante, type GameOp, type Formula, type ResolveWindow } from '../../engine/ops';
 import type { Camp, Relation } from '../../engine/relations';
 import { CHAR_LABELS, HIT_LOCATION_LABELS, type CharKey, type ArmourBypass } from '../../engine/types';
 import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
 import { giveTrappingLabel } from '../../engine/items';
 import { traumaLabelOf } from '../../engine/trauma';
 import { formatMoney } from '../../engine/money';
+import { rule, ruleDef } from '../../engine/policy';
 import {
   conditionLabel, psychologyLabel, groupLabel, symptomLabel, creatureLabel,
   diseaseLabel, refLabel, qualityRefLabel, talentConcrete,
@@ -61,6 +62,7 @@ export function humanizeFormula(f: Formula): string {
   if ('stacks' in f) return "le nombre de pions de l'État";
   if ('engagedAdvantageGap' in f) return "l'écart d'Avantage avec les ennemis engagés";
   if ('woundsDealt' in f) return 'les Blessures infligées';
+  if ('rule' in f) return `la règle « ${ruleDef(f.rule)?.label ?? f.rule} »`;
   if ('sum' in f) return f.sum.map(humanizeFormula).join(' + ');
   if ('times' in f) return `${humanizeFormula(f.times.of)} × ${f.times.factor}`;
   return assertNever(f);
@@ -262,6 +264,26 @@ export function replieCausesPersistantes<T extends { op?: unknown; id?: unknown 
   return ops.filter((o) => estCausePersistante(o) || o.op !== 'condition' || !maintenus.has(o.id));
 }
 
+/** FENÊTRE de Détermination (`ResolveWindow`, `engine/ops`) de l'État qu'une op `condition` porte en
+ *  PASSIF, telle qu'un JOUEUR la lit (`LDB 17 l.61`). `undefined` = rien à dire de plus que le défaut
+ *  (la phrase ne se charge que d'une fenêtre AUTHORÉE). Une durée d'horloge tirée du registre des règles
+ *  optionnelles se lit en MINUTES, la règle nommée entre parenthèses — jamais « la règle X minute(s) ». */
+export function humanizeResolveWindow(w: ResolveWindow | undefined): string | undefined {
+  if (w === undefined) return undefined;
+  if (w === 'none') return 'la Détermination ne le lève pas tant que sa cause dure';
+  if (w.scale === 'rounds') {
+    return w.left === 1
+      ? 'la Détermination le suspend jusqu’à la fin du Round'
+      : `la Détermination le suspend ${humanizeFormula(w.left)} Round(s)`;
+  }
+  const m = w.minutes;
+  if (typeof m === 'object' && m !== null && 'rule' in m) {
+    const v = rule(m.rule);
+    return `la Détermination le suspend ${typeof v === 'number' ? v : '?'} minute(s) (règle « ${ruleDef(m.rule)?.label ?? m.rule} »)`;
+  }
+  return `la Détermination le suspend ${humanizeFormula(m)} minute(s)`;
+}
+
 export function humanizeOp(o: GameOp): string {
   switch (o.op) {
     case 'wounds': return `subit ${humanizeFormula(o.amount)} Blessure(s)${o.ignoreAP === false ? '' : ', ignorant les PA'}${o.bypassArmour === 'metal' ? " (perce l'armure métallique)" : o.bypassArmour === 'nonMagic' ? " (perce l'armure non magique)" : ''}`;
@@ -270,8 +292,10 @@ export function humanizeOp(o: GameOp): string {
     case 'condition': {
       const perSL = o.valuePerSL ? ` (${humanizePerSL(o.valuePerSL)})` : '';
       const duree = o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : '';
-      if (estCausePersistante(o)) return `gagne l'État ${stateItal(o.id)}${perSL}, ${CAUSE_PERSISTANTE}${duree}`;
-      return `gagne ${o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ` : ''}l'État ${stateItal(o.id)}${perSL}${duree}${o.perRound ? ' à chaque Round' : ''}`;
+      const fenetre = humanizeResolveWindow(o.resolveWindow);
+      const determination = fenetre ? ` — ${fenetre}` : '';
+      if (estCausePersistante(o)) return `gagne l'État ${stateItal(o.id)}${perSL}, ${CAUSE_PERSISTANTE}${duree}${determination}`;
+      return `gagne ${o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ` : ''}l'État ${stateItal(o.id)}${perSL}${duree}${o.perRound ? ' à chaque Round' : ''}${determination}`;
     }
     case 'removeCondition': return `perd ${o.id ? `l'État ${stateItal(o.id)}` : 'un État au choix'}${o.valuePerSL ? ` (${humanizePerSL(o.valuePerSL)})` : ''}`;
     case 'endPsych': return `n'est plus sous l'effet de ${psychologyLabel(o.type)}`;
@@ -375,6 +399,7 @@ export function humanizeOp(o: GameOp): string {
     case 'diseaseTestMod': return `${o.amount >= 0 ? 'gagne' : 'subit'} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie`;
     case 'suppressSymptom': return `voit le symptôme ${symptomLabel(o.symptomId)} suspendu`;
     case 'aggravateSymptom': return `voit le symptôme ${symptomLabel(o.symptomId)} s'aggraver`;
+    case 'attenuateSymptom': return `voit le symptôme ${symptomLabel(o.symptomId)} s'atténuer`;
     case 'grantSymptom': return `développe le symptôme ${symptomLabel(o.symptomId)}`;
     case 'delayed': return `déclenche plus tard : ${o.ops.map(humanizeOp).join(' ; ')}`;
     case 'removeShipPoste': return `perd une pièce d'artillerie`;

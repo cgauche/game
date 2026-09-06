@@ -150,6 +150,6 @@ export const scenario: TestScenario = {
     vehicleId: 'cogue',
     morale: { score: 75, lastMoraleWeek: 0, factors: [] },
     wounds: { current: 15, max: 50 }, // coque mal en point : entretien chaque nuit, encore à réparer à l'arrivée
-    waterLitres: 600,
+    waterLitres: 2900, // 20 tonneaux de 145 L (MDG 14 l.242) — 19 hommes à 3 L/jour, soit ~50 jours d'eau
   },
 };

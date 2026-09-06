@@ -156,7 +156,7 @@ import type { NarratifBlock, OuvertureBlock } from './campaignNarratif';
 import { emptyNarratif } from './campaignNarratif';
 import type { ChapitreDepuis, ChapterRecap } from './chapitreRecap';
 import { snapshotChapitre } from './chapitreRecap';
-import { dayIndex, runDailyUpkeep } from './upkeep';
+import { dayIndex, runDailyUpkeep, purgeSurAvanceDHorloge } from './upkeep';
 import type { DeferredUpkeepTest } from './upkeep';
 import * as travelFlow from './travelFlow';
 import { DEFAULT_VOYAGE_ORDERS } from './voyageCadence';
@@ -2973,6 +2973,11 @@ export const useGame = create<GameState>((set, get) => ({
 // que soit le chemin (advanceTime, rest, travel, sea émettent tous EVT.TIME_ADVANCED) — seam UNIQUE,
 // plus de dépendance à advanceTime seul (bug de recette : repos/voyage sautaient les échéances).
 bus.on(EVT.TIME_ADVANCED, () => fireScheduledEffects(useGame.getState, useGame.setState));
+
+// MÊME couture pour la DISSIPATION des effets à durée d'horloge : `runDailyUpkeep` ne la portait plus
+// seul — le voyage terrestre (`travelFlow`) et la journée de mer (`seaVoyageFlow`) avancent l'horloge
+// et DIFFÈRENT l'entretien à la cascade de nuit, si bien qu'une fenêtre échue y survivait à sa borne.
+bus.on(EVT.TIME_ADVANCED, () => purgeSurAvanceDHorloge(useGame.getState, useGame.setState));
 
 // ── OCCUPATION AU RUNTIME — LA CHAISE SUIT LE CORPS ────────────────────────────────────────────
 // COUTURE UNIQUE, et PAR CONSTRUCTION : elle ne s'accroche pas aux écrivains de `party` (un seul

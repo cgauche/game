@@ -339,14 +339,26 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "steam-breakdown.json", champ: "skill", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-30" },
   { dataset: "structures.json", champ: "traits", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "symptoms.json", champ: "ops", occurrences: 12, lot: "L1b #1467", date: "2026-08-28" }, // 12 : les réfs du cycle (`onTick`) comptent ici, sous la feuille `EffectOp` du nœud `test` (#1657 B2b)
-  { dataset: "symptoms.json", champ: "passive", occurrences: 25, lot: "L1b #1467", date: "2026-08-28" },
+  { dataset: "symptoms.json", champ: "passive", occurrences: 26, lot: "L1b #1467", date: "2026-08-28" }, // 25 → 26 (#1599) : l'État *Exténué* du Malaise (LDB 20 l.188) s'écrit désormais en op `condition` du canal passif
+  // #1599, 2026-09-06 : la fenêtre de Détermination d'une op `condition` PASSIVE (`resolveWindow`,
+  // LDB 20 l.170) vise une règle optionnelle. La fabrique EST adoptée (`idDe('regleOptionnelle')`,
+  // `grammaire/valeurs.ts › formulaSchema`) et l'id résout au parse ; le couple reste ici parce que le
+  // slot n'est pas sur le CHEMIN de la marche : `gameOpSchema` est un `looseObject` + superRefine, donc
+  // aucune référence portée par le payload d'une op n'apparaît en slot déclaré (même angle mort que
+  // `passive`/`ops` ci-dessus). Se solde avec le typage strict de l'op `condition` dans `OP_DEFS`.
+  { dataset: "symptoms.json", champ: "minutes", occurrences: 1, lot: "L1b #1467", date: "2026-09-06" },
+  // #1599 : `severePassive` (6) est mort — les passifs s'indexent PAR PALIER (`passiveBySeverity`), en
+  // le scan nomme le champ PORTEUR : `moderee` (Convulsions −20, LDB 20 l.157) et `grave` (Fièvre : le
+  // seul État *Inconscient*, LDB 20 l.170 — le palier S'AJOUTE, les −10 de base tiennent sans être
+  // recopiés). 6 → 6 + 1.
+  { dataset: "symptoms.json", champ: "moderee", occurrences: 6, lot: "L1b #1467", date: "2026-09-05" },
+  { dataset: "symptoms.json", champ: "grave", occurrences: 1, lot: "L1b #1467", date: "2026-09-05" },
   // #1657 B3-3 : Blessé et Toxine nomment la Compétence de leur RAW (« Test de Résistance », LDB 20
   // l.145/l.212) dans leur nœud `test` — MÊME fabrique `SkillRef` que `criticals | skill` (39) et
   // `spells | skill`, donc MÊME angle mort de projection (une référence ENVELOPPÉE `{id}` projette
   // sur la clé `id`, jamais sur son champ porteur — déclaré en tête de ce fichier) : la ligne ne se
   // solde pas par l'adoption, elle attend `typedRef` (L2 #1473) comme ses 2 sœurs.
   { dataset: "symptoms.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-03" },
-  { dataset: "symptoms.json", champ: "severePassive", occurrences: 6, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "symptoms.json", champ: "visiblePassive", occurrences: 1, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "tables.json", champ: "ops", occurrences: 78, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "tables.json", champ: "skill", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },

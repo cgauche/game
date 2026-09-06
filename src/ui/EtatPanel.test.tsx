@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Combatant } from '../engine/types';
 import { EtatPanel, zoneAfflictions } from './EtatPanel';
 import { traumaById, consolidateAmputations, traumaCharPenalties } from '../engine/trauma';
+import { useGame } from '../state/store';
 import { ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT } from './sheetAlarms';
 
 /** Héros minimal, patron `sheetAlarms.test.ts`/`CharacterSheet.test.tsx` (mkHero). */
@@ -303,5 +304,36 @@ describe('EtatPanel', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
     expect(html).toContain('Purifier la chair');
     expect(html).toContain('4 Rounds');
+  });
+});
+
+/**
+ * Une échéance d'HORLOGE (`Duration.scale === 'clock'`, minutes de `gameTime` ABSOLUES) ne se rend pas
+ * par le mot « durée » : elle dit le TEMPS RESTANT, avec le vocabulaire unique de l'échelle
+ * (`clockLabel`, `engine/duration.ts`) — comme `roundsLabel` dit l'échelle tactique.
+ */
+describe('EtatPanel — une durée d’HORLOGE dit le TEMPS RESTANT', () => {
+  // Rendu SSR : `useSyncExternalStore` sert l'INSTANTANÉ INITIAL du store — l'horloge lue par le
+  // panneau est donc celle du début de campagne, et les échéances se posent RELATIVEMENT à elle.
+  const maintenant = useGame.getInitialState().gameTime;
+
+  it('rend « 4 min » / « 2 h » / « 3 j » selon la grandeur, jamais le mot « durée »', () => {
+    const h = mkHero((c) => {
+      c.activeEffects = [
+        { label: 'Fenêtre de conscience', bonus: 0, duration: { scale: 'clock', until: maintenant + 4 } },
+        { label: 'Contrecoup', bonus: 0, duration: { scale: 'clock', until: maintenant + 61 } },
+        { label: 'Pensez à vos actes', bonus: 0, duration: { scale: 'clock', until: maintenant + 3 * 24 * 60 } },
+      ] as never;
+    });
+    const html = renderToStaticMarkup(<EtatPanel hero={h} />);
+    expect(html, 'le mot « durée » tient encore lieu de reste').not.toContain('· durée');
+    expect(html).toContain('4 min');
+    expect(html).toContain('2 h');
+    expect(html).toContain('3 j');
+  });
+
+  it('un État d’instance à échéance d’horloge (Belladone) dit son reste dans sa rangée', () => {
+    const h = mkHero((c) => { c.conditions = [{ id: 'inconscient', value: 1, untilTime: maintenant + 5 * 60 } as never]; });
+    expect(renderToStaticMarkup(<EtatPanel hero={h} />)).toContain('5 h');
   });
 });

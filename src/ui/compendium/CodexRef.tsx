@@ -12,7 +12,7 @@
  * contexte d'empilement. `pointer-events: none` → pur tooltip, pas de pont de survol ; le clic
  * (déclencheur) ouvre le Codex.
  */
-import { isValidElement, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { isValidElement, useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGame } from '../../state/store';
 import { codexLookup, codexLookupById } from './registry';
@@ -172,6 +172,10 @@ export function CodexRef({
   // popover reste ouvert hors survol, fermé par Échap, clic ailleurs, ou un 2e déclenchement.
   // Hors ces deux modes le popover reste un pur tooltip de survol/focus.
   const [pinned, setPinned] = useState(false);
+  // Le popover est un `role="tooltip"` : il ne DIT rien tant qu'il n'est pas RATTACHÉ à son
+  // déclencheur (règle stricte 4). Le lien ne vaut que lorsqu'il est À L'ÉCRAN — un
+  // `aria-describedby` qui vise un nœud absent ne décrit rien.
+  const tipId = useId();
 
   const cancelHide = useCallback(() => {
     if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
@@ -292,6 +296,7 @@ export function CodexRef({
       role={clickable ? 'button' : undefined}
       aria-expanded={togglePopover ? pinned : undefined}
       {...(accessibleName ? { 'aria-label': accessibleName } : null)}
+      {...(pos ? { 'aria-describedby': tipId } : null)}
       {...(pinFromWrap ? {
         // La porte clavier ne se DEVINE pas : elle s'annonce (lecteur d'écran + infobulle native).
         'aria-keyshortcuts': 'ArrowDown',
@@ -329,6 +334,7 @@ export function CodexRef({
         createPortal(
           <span
             ref={popRef}
+            id={tipId}
             className="codex-pop"
             // Sous `wrap` le popover est ACTIONNABLE (il porte la porte) : il reprend les
             // événements de pointeur que `.codex-pop` neutralise pour le pur tooltip.

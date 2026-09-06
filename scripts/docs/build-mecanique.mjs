@@ -172,7 +172,9 @@ if (CAPACITES.length < 3) abandon(`moins de 3 interfaces de capacités dans ${IN
 // ── Documents PORTEURS, par canal — def zod + population réelle ──────────────────────────────────
 
 const CANAUX = [
-  { cle: 'passive', libelle: '`passive`', test: (k) => /assive$/i.test(k) },
+  // « contient passive », pas « finit par » : le canal peut être INDEXÉ (`passiveBySeverity`, une liste
+  // par palier de sévérité — LDB 20 l.157/l.170).
+  { cle: 'passive', libelle: '`passive`', test: (k) => /passive/i.test(k) },
   { cle: 'effects', libelle: '`effects`', test: (k) => k === 'effects' || k === 'onHitEffects' },
   { cle: 'capabilities', libelle: '`capabilities`', test: (k) => k === 'capabilities' },
 ]

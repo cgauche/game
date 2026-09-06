@@ -33,3 +33,5 @@ coût était déjà payé. Les recettes SÉQUENTIELLES aux codeurs, jamais paral
 
 ## Récidive 2026-08-29 (orchestrateur) — MA faute de dispatch
 J'ai lancé recetteur ET codeur (index.ts/registry.ts) EN PARALLÈLE sur le même arbre : 4 reloads HMR silencieux, un combat perdu, ~25 appels gâchés — en écrivant « arbre au repos » dans le brief de recette. Règle opérationnelle : une recette est un CRÉNEAU EXCLUSIF — aucun codeur dispatché tant qu'elle court, et le recetteur vérifie git diff --stat -- src/ VIDE avant de commencer (STOP sinon).
+
+**Vécu 2026-09-06 (#1599)** : j’ai dispatché un codeur de solde ET un recetteur EN PARALLÈLE sur le même worktree — le recetteur a mesuré une cible mouvante (diff `src/` 65 → 66 fichiers en 10 min, HMR → retour au menu) et s’est arrêté à l’étape 2 : recette perdue. Règle : la recette est SÉQUENTIELLE, après le dernier codeur ; le brief du recetteur exige `git diff --stat -- src/` STABLE (pas seulement non vide) à intervalles ; jamais deux agents écrivant/lisant l’écran sur un arbre en cours d’édition.

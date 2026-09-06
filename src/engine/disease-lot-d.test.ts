@@ -54,6 +54,23 @@ describe('nouveaux symptômes — pénalités (LDB 20 l.99-200)', () => {
     const c = mk({ diseases: [active('fievre-du-rongeur')] });
     expect(pen(c, 'agilite')).toContain(-10);
   });
+  /**
+   * LDB 20 l.157 : « Subissez une pénalité de -10 […] Si le symptôme est indiqué (Modéré), cette pénalité
+   * passe à -20. Si le symptôme est indiqué comme (Grave), vous devez être attaché […] ». Le livre ne
+   * RECHIFFRE pas (Grave) : le palier grave reprend −20 (arbitrage `maison` porté par `symptoms.json`),
+   * faute de quoi aggraver Modéré → Grave ALLÉGERAIT la pénalité.
+   */
+  it('convulsions : (Grave) n’est JAMAIS plus léger que (Modéré)', () => {
+    const par = (severity?: 'moderee' | 'grave'): number => {
+      const dz = active('fievre-du-rongeur');
+      dz.symptoms = dz.symptoms.map((s) => (s.symptomId === 'convulsions' ? { ...s, ...(severity ? { severity } : {}) } : s));
+      const c = mk({ diseases: [dz] });
+      return Math.min(...pen(c, 'agilite'));
+    };
+    expect(par(undefined)).toBe(-10);
+    expect(par('moderee')).toBe(-20);
+    expect(par('grave'), '(Grave) est moins lourd que (Modéré)').toBeLessThanOrEqual(par('moderee'));
+  });
   it('démangeaisons : −10 Sociabilité seulement', () => {
     const c = mk({ diseases: [active('verole-du-tanneur')] });
     expect(pen(c, 'sociabilite')).toContain(-10);

@@ -132,7 +132,10 @@ describe('outil Volée — le refus est ATTEIGNABLE (jamais absorbé)', () => {
     const ui = mountPalette(editorBase(), [...RUN, { x: 2, y: 0 }]);
     await ui.mount();
     const btn = applyButton(ui.container);
-    expect(btn.disabled).toBe(true);
+    // CONTRAT de `GatedAction` : un contrôle refusé porte `aria-disabled`, jamais `disabled` — il reste
+    // atteignable au clavier et à la manette, même quand sa raison est déjà à l'écran.
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(btn.disabled).toBe(false);
     // DIAGNOSTIC D'AUTHORING : la raison reste EN CLAIR sous le bouton (`raisonInline`) — l'auteur
     // corrige sa file d'après ce texte, il ne le découvre pas au survol (exception nommée à l'arbitrage
     // user 2026-08-24, qui vise les cases de jeu).
@@ -147,7 +150,7 @@ describe('outil Volée — le refus est ATTEIGNABLE (jamais absorbé)', () => {
     const ui = mountPalette(editorBase(), RUN, () => { posees += 1; });
     await ui.mount();
     const btn = applyButton(ui.container);
-    expect(btn.disabled).toBe(false);
+    expect(btn.getAttribute('aria-disabled'), 'une file valide ne présente aucun refus').toBeNull();
     expect(ui.container.querySelector('.gated-action-reason')).toBeNull();
     await act(async () => btn.click());
     expect(posees).toBe(1);

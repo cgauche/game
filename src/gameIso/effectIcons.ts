@@ -6,7 +6,7 @@
 import { CHAR_LABELS, CATEGORY_BY_SOURCE_KIND, type ConditionInstance, type ActiveEffect, type CharKey, type Combatant, type EffectSource } from '../engine/types';
 import type { IconId } from '../ui/icons';
 import {
-  conditionLabel, findConditionById, findPsychologyById, findSpellById,
+  conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel,
   creatures, maladies, maneuvers, mutations, qualities, regles, symptoms, talents, trappings, traits,
 } from '../data';
 import { ACTIVITIES } from '../engine/activities';
@@ -38,6 +38,10 @@ export interface EffectChip {
   effectId?: string;
   /** Entité SOURCE de l'effet (`ActiveEffect.source`) — ancrage de règle GÉNÉRAL, tous types confondus. */
   source?: EffectSource;
+  /** Libellé de l'entité qui PORTE cet État (`ConditionInstance.derivedFrom.src`, une `CodexTarget` de
+   *  n'importe quelle famille) — résolu par `refLabel`, jamais une chaîne par famille. Absent sur un
+   *  État natif. Dit par `chipNom` : le nom accessible et l'infobulle nomment la source. */
+  sourceLabel?: string;
   /** id STABLE de l'état-drapeau (clé d'`EffectFlags`) — SEUL moyen d'identifier un drapeau en aval
    *  (routage Codex de `chipCodex`) : le `label` est de l'affichage, jamais une clé de logique. */
   flagId?: FlagId;
@@ -97,7 +101,8 @@ function malusChips(conditions: ConditionInstance[]): EffectChip[] {
   return conditions
     .map((c): EffectChip => {
       const m = conditionMeta(c.id);
-      return { key: `c-${c.id}`, condId: c.id, icon: m.icon, label: conditionLabel(c.id), kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined, indice: c.value };
+      const src = c.derivedFrom?.src;
+      return { key: `c-${c.id}`, condId: c.id, icon: m.icon, label: conditionLabel(c.id), kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined, indice: c.value, ...(src ? { sourceLabel: refLabel(src.category, { id: src.id }) } : {}) };
     })
     .sort((a, b) => b.severity - a.severity);
 }
@@ -163,6 +168,19 @@ export function chipDetail(c: EffectChip): string {
   return parts.join(' · ');
 }
 
+/**
+ * NOM d'une pastille : son libellé, la SOURCE qui la porte quand l'État est dérivé, puis son détail
+ * paramétré. SOURCE UNIQUE du texte qui NOMME une pastille — le nom accessible d'une alvéole (rack du
+ * portrait, chips de la fiche : une alvéole ne rend qu'un glyphe et son chiffre, règle stricte 4) et le
+ * titre d'instance de son popover (`chipCodex`) sont le MÊME texte : une seule forme pour toutes les
+ * vues. Pur.
+ */
+export function chipNom(c: EffectChip): string {
+  const base = c.sourceLabel ? `${c.label} — ${c.sourceLabel}` : c.label;
+  const detail = chipDetail(c);
+  return detail ? `${base} — ${detail}` : base;
+}
+
 /** Cible d'information d'une pastille d'effet, IDENTIQUE pour toute la famille (`EffectChips`,
  *  `StateChips`, section « Effets actifs ») : un seul mécanisme, `CodexRef` — État vers le catalogue
  *  États, buff vers son sort source, et à défaut un popover de secours portant le détail. Jamais
@@ -225,10 +243,10 @@ const FLAG_CODEX: Record<FlagId, { category: string; id: string }> = {
  *  popover, pas de `title`. Aucun repli : une pastille est reliée à une règle, ou elle ne promet rien
  *  (arbitrage user 2026-07-18, « j'aime pas ta fallback »). Pur. */
 export function chipCodex(c: EffectChip): ChipCodex | null {
-  const detail = chipDetail(c);
+  const nom = chipNom(c);
   const at = (category: string, id: string | undefined, instance: string | undefined): ChipCodex | null =>
     id && CATALOGUE_HAS[category]?.(id) ? { category, id, label: c.label, instance } : null;
-  const withDetail = detail ? `${c.label} — ${detail}` : undefined;
+  const withDetail = nom !== c.label ? nom : undefined;
 
   const flag = c.flagId ? FLAG_CODEX[c.flagId] : undefined;
   if (flag) return at(flag.category, flag.id, withDetail ?? c.label);

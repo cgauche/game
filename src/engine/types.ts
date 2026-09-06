@@ -606,6 +606,13 @@ export interface ConditionInstance {
    *  l'acte est ce qui le « soigne »). Tant qu'il est posé, `removeCondition` (récupération naturelle,
    *  auto-dissipation) est INERTE sur cet État. Évalué par `isConditionLocked`. */
   unlockBy?: ConditionUnlock;
+  /** MARQUAGE d'un État DÉRIVÉ d'un canal PASSIF (op `condition` dans `passive`/`passiveBySeverity` —
+   *  LDB 20 l.170 Fièvre (Grave) → Inconscient, l.188 Malaise → Exténué) : combien des `value` pions de
+   *  cette instance ont été posés par la réconciliation (`stacks`), et QUI les porte (`src`, l'entité
+   *  émettrice en ids stables — elle NOMME la ligne de journal). Écrit et lu par `syncDerivedConditions`
+   *  (engine/conditions), SEUL propriétaire : ces pions-là partent quand le fait source cesse, et une
+   *  instance SANS ce champ (KO natif à 0 PB, Sonné d'un coup) n'est jamais touchée par la réconciliation. */
+  derivedFrom?: { stacks: number; src?: CodexTarget };
 }
 
 /** Les DEUX verrous de retrait d'un `ConditionInstance`, groupés — argument unique d'`addCondition`
@@ -914,9 +921,15 @@ export interface ActiveEffect {
    *  Tonique digestif +20…) : sommé par `activeDiseaseTestMod` (engine/disease) aux Tests de
    *  contraction/cycle quotidien/fin de maladie. `diseases` absent = toutes. */
   diseaseTestMod?: { diseases?: string[]; amount: number };
-  /** Symptôme SUSPENDU par id (op `suppressSymptom` — Racine de terre « annule les effets de bubons »,
-   *  LDB 72 l.28) : ses canaux passive/onTick sont ignorés tant que l'effet dure (`symptomSuppressed`). */
-  suppressedSymptom?: string;
+  /** SOURCE passive SUSPENDUE (identité Codex) : tout ce qu'elle émet est ignoré tant que l'effet dure
+   *  — mécanisme général `engine/suspension.ts` (`sourceSuspended`/`suspendSource`), lu par le
+   *  collecteur `passiveMods` et par les cycles de maladie (`symptomSuppressed`). Porteurs : op
+   *  `suppressSymptom` (Racine de terre, LDB 72 l.28) et fenêtre de Détermination (LDB 17 l.61). */
+  suppressedSource?: CodexTarget;
+  /** Symptôme ATTÉNUÉ d'un échelon (op `attenuateSymptom` — LDB 20 l.159, « pendant une journée ») :
+   *  sa sévérité EFFECTIVE redescend tant que l'effet dure (`severiteEffective`), l'instance de
+   *  symptôme n'est jamais mutée. Miroir de `suppressedSource`, nommé par instance de MALADIE. */
+  attenuatedSymptom?: { disease: string; symptomId: string };
   /** GATE d'action par Round (op `actGate` — Racine de mandragore, LDB 71 l.35) : au début du tour du
    *  porteur en combat, un Test de `char` décide s'il garde Action ET Mouvement (réussite) ou UN seul
    *  au choix (échec). Résolu cadence-aware par `resolveActGates` (state/combatFlow). */

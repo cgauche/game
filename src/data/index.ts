@@ -1447,6 +1447,11 @@ export interface EtatData extends StatusData {
    *  partagé par le gate de hotbar (`battleSelectAction`) ET l'IA (dépense PROACTIVE de Détermination pour se
    *  ressaisir) — plus de nom d'État en dur. */
   restrictsAction?: boolean;
+  /** Cet État ne porte JAMAIS plus d'un pion, quelle que soit la cause — LDB 16 l.115 (Inconscient :
+   *  « soit vous êtes *Inconscient*, soit vous ne l'êtes pas »), l.37 (À Terre), l.137 (Surpris).
+   *  Drapeau DÉCLARATIF lu par `addCondition`/`syncDerivedConditions` (engine/conditions) — la pose,
+   *  dérivée ou native, y est bornée à 1 par CONSTRUCTION. */
+  nonCumulable?: boolean;
   /** Cet État SUIT le porteur hors du combat (LDB 16 : Brisé l.57, Empoisonné l.70, En flammes l.77,
    *  Exténué l.91, Hémorragique l.107, Inconscient l.116 ; Munition logée LDB 62 l.250) — par opposition
    *  au transitoire, retiré au teardown. Drapeau DÉCLARATIF lu par `isPersistentCondition`
@@ -1900,15 +1905,15 @@ export interface QualityData {
 export interface SymptomCapabilities {
   blocksHealing?: boolean;   // « Blessé »/Gangrène : bloque la guérison d'1 PB par symptôme (LDB 20 l.145)
   amputation?: boolean;      // Gangrène : Test quotidien, échecs > BE → Localisation perdue (l.176)
-  stickyExtenue?: boolean;   // Malaise : État Exténué collant tant que la maladie dure (l.188)
   contagious?: boolean;      // Toux & éternuements : expose l'entourage (l.206)
   nausea?: boolean;          // Nausée : Sonné sur Test de déplacement raté en combat (l.194)
   endTest?: boolean;         // Persistant : Test de fin de Durée (difficulté portée par l'instance, l.200)
   persistentActive?: boolean; // Vers de carie : la phase active NE guérit JAMAIS naturellement (dégénérescence quotidienne jusqu'à la Mort, MSRC 16 l.90-101)
 }
 /** Symptôme de maladie (LDB 20) — entité de DONNÉE éditable au Codex, mécaniques en GameOp / 3 canaux
- *  (comme un trait/qualité). `passive` = pénalités continues (charMod) ; `severePassive` = variante
- *  appliquée quand l'instance porte `severity` (Convulsions −20) ; `onTick` = Test de cycle quotidien +
+ *  (comme un trait/qualité). `passive` = pénalités continues (charMod) ; `passiveBySeverity` S'AJOUTE à
+ *  `passive` pour chaque palier ATTEINT par l'instance, en magnitude ABSOLUE — la pire pénalité l'emporte
+ *  (LDB 20 l.157/l.170) ; `onTick` = Test de cycle quotidien +
  *  conséquence GameOp appliquée par la cascade (différée/influençable) ; `capabilities` = règles
  *  irréductibles lues par la machinerie de maladie. */
 export interface SymptomData {
@@ -1918,7 +1923,7 @@ export interface SymptomData {
   desc: string;
   source?: SourceRef;
   passive?: import('../engine/ops').GameOp[];
-  severePassive?: import('../engine/ops').GameOp[];
+  passiveBySeverity?: { moderee?: import('../engine/ops').GameOp[]; grave?: import('../engine/ops').GameOp[] };
   /** Effets DÉCLENCHÉS du symptôme (MÊME `TriggeredEffect` que Traits/Atouts/États) — dispatchés par
    *  `fireTriggers` quand le porteur est actif (Crampes abdominales : `onOwnTestFailed` → Sonné/FM/
    *  Inconscient par paliers de `slThreshold`, MSRC 16 l.152-158). Source du dispatcher via
@@ -2326,6 +2331,12 @@ export const symptomById: Map<string, SymptomData> = new Map(symptoms.map((s) =>
 export const findSymptomById = (id: string): SymptomData | undefined => symptomById.get(id);
 /** Libellé FR d'un symptôme par son id (repli sur l'id si inconnu). */
 export const symptomLabel = (id: string): string => symptomById.get(id)?.label ?? id;
+/** Les paliers de SÉVÉRITÉ d'une instance de symptôme, dans l'ordre CROISSANT (LDB 20 l.157 « (Modéré) »,
+ *  l.170 « (Grave) ») — SOURCE UNIQUE de l'énumération (canaux `passiveBySeverity`/`difficultyBySeverity`,
+ *  atelier du Codex). La LOGIQUE reste keyée par ces ids ; `SYMPTOM_SEVERITY_LABELS` n'en donne que
+ *  l'AFFICHAGE. */
+export const SYMPTOM_SEVERITIES = ['moderee', 'grave'] as const;
+export const SYMPTOM_SEVERITY_LABELS: Record<(typeof SYMPTOM_SEVERITIES)[number], string> = { moderee: 'Modérée', grave: 'Grave' };
 /** Libellé d'une INSTANCE de symptôme portée par une maladie : le nom du symptôme, suivi de ce qui
  *  QUALIFIE l'instance — sa sévérité (`LDB 20 l.156-159`, `LDB 20 l.170`) et sa précision imprimée
  *  (`EDO App.2 l.143`, « Gonflement (Visage et tête) »). SOURCE UNIQUE de cette composition : une
@@ -2333,7 +2344,7 @@ export const symptomLabel = (id: string): string => symptomById.get(id)?.label ?
  *  différentes s'affichent à l'identique. Vocabulaire d'affichage aligné sur l'atelier du Codex
  *  (`ui/compendium/StructFields.tsx` — « Modérée »/« Grave »). */
 export const symptomInstanceLabel = (inst: { symptomId: string; severity?: 'moderee' | 'grave'; spec?: string }): string => {
-  const qualifs = [inst.severity === 'grave' ? 'Grave' : inst.severity === 'moderee' ? 'Modérée' : null, inst.spec ?? null].filter(Boolean);
+  const qualifs = [inst.severity ? SYMPTOM_SEVERITY_LABELS[inst.severity] : null, inst.spec ?? null].filter(Boolean);
   return qualifs.length ? `${symptomLabel(inst.symptomId)} (${qualifs.join(', ')})` : symptomLabel(inst.symptomId);
 };
 /** Mutations (entités) + Tables de Corruption (plages d100 → réf), DÉCOUPLÉES (cf. data/mutations.ts) —

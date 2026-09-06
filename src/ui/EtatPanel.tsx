@@ -23,7 +23,7 @@
  */
 import type { ReactNode } from 'react';
 import type { Combatant, HitLocation } from '../engine/types';
-import { roundsLabel, type Duration } from '../engine/duration';
+import { roundsLabel, clockLabel, type Duration } from '../engine/duration';
 import { locationLabel } from '../engine/combat';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { maxEncumbrance, totalEncumbrance } from '../engine/items';
@@ -32,7 +32,7 @@ import { findCritEntrySuffered, critEntryCodexCategory, type CritTableKey } from
 import { corruptionThreshold } from '../engine/corruption';
 import { formatRemaining } from '../engine/disease';
 import { CHAR_LABELS, type ConditionInstance } from '../engine/types';
-import { summarizeEffects } from '../gameIso/effectIcons';
+import { chipNom, summarizeEffects } from '../gameIso/effectIcons';
 import { fortuneMax, resolveMax } from '../engine/talentEffects';
 import { diseaseLabel, findPsychologyById, symptomLabel, symptomInstanceLabel, mutationLabel } from '../data';
 import { datasetArray } from '../data/overrides';
@@ -192,27 +192,32 @@ export function zoneAfflictions(hero: Combatant): { loc: HitLocation; crit: numb
   }));
 }
 
-/** Durée compacte d'un effet actif/contrecoup, pour la valeur de sa `PlaqueRow`. */
-function effectDuration(e: { duration?: Duration; roundsLeft?: number; untilTime?: number }): string {
-  if (e.duration) return e.duration.scale === 'rounds' ? ` · ${roundsLabel(e.duration.left)}` : e.duration.scale === 'clock' ? ' · durée' : '';
-  return e.roundsLeft != null ? ` · ${roundsLabel(e.roundsLeft)}` : e.untilTime != null ? ' · durée' : '';
+/** Durée compacte d'un effet actif/contrecoup, pour la valeur de sa `PlaqueRow`. Une échéance
+ *  d'HORLOGE se dit en TEMPS RESTANT (`clockLabel`, même vocabulaire unique que `roundsLabel` pour
+ *  l'échelle tactique) : « durée » ne disait ni combien ni de quoi. */
+function effectDuration(e: { duration?: Duration; roundsLeft?: number; untilTime?: number }, now: number): string {
+  const horloge = (until: number): string => { const l = clockLabel(until - now); return l ? ` · ${l}` : ''; };
+  if (e.duration) return e.duration.scale === 'rounds' ? ` · ${roundsLabel(e.duration.left)}` : e.duration.scale === 'clock' ? horloge(e.duration.until) : '';
+  return e.roundsLeft != null ? ` · ${roundsLabel(e.roundsLeft)}` : e.untilTime != null ? horloge(e.untilTime) : '';
 }
 
 /** Valeur de la `PlaqueRow` d'un État actif : cumul de pions (`ConditionInstance.value`, ex. 10
  *  Hémorragique) + durée d'instance temporisée (`roundsLeft`/`untilTime` — État posé par un Sort,
- *  ex. Sonné « N Rounds ») — MÊME vocabulaire que `effectDuration` (`roundsLabel` / ` · durée`), sans
+ *  ex. Sonné « N Rounds ») — MÊME vocabulaire que `effectDuration` (`roundsLabel` / `clockLabel`), sans
  *  quoi ces données d'instance restent invisibles hors popover Codex (qui ne porte que la règle
  *  générique, pas l'état vécu du Personnage). `undefined` si l'instance est nue (1 pion, permanente). */
-function conditionValue(cond: ConditionInstance): string | undefined {
+function conditionValue(cond: ConditionInstance, now: number): string | undefined {
   const parts: string[] = [];
   if (cond.value > 1) parts.push(`×${cond.value}`);
   if (cond.roundsLeft != null) parts.push(roundsLabel(cond.roundsLeft));
-  else if (cond.untilTime != null) parts.push('durée');
+  else if (cond.untilTime != null) { const l = clockLabel(cond.untilTime - now); if (l) parts.push(l); }
   return parts.length ? parts.join(' · ') : undefined;
 }
 
 export function EtatPanel({ hero }: { hero: Combatant }) {
   const criticalEntries = criticalEntriesOf(hero);
+  // Horloge de campagne : une échéance `clock` est ABSOLUE — le RESTE se lit contre l'heure courante.
+  const gameTime = useGame((s) => s.gameTime);
 
   // Compteurs de SEUILS (pt.4, #492) : ACTIF (décompté au soin) — pas l'historique `critEntriesSuffered`
   // (`sheetAlarms.ts` porte déjà ce distinguo pour la bande d'alarmes). Mort si actives > BE quand
@@ -268,9 +273,12 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               {active.map((chip) => {
                 if (chip.kind === 'malus') {
                   const cond = chip.condId ? condByName.get(chip.condId) : undefined;
-                  const clock = cond ? conditionValue(cond) : undefined;
+                  const clock = cond ? conditionValue(cond, gameTime) : undefined;
                   return (
-                    <CodexRef key={chip.key} category="etats" id={chip.condId} label={chip.label} className="chip">
+                    // Le NOM de la chip est celui du rack du portrait (`chipNom`) : il dit l'État ET
+                    // l'entité qui le porte quand il est dérivé (`derivedFrom.src`), là où le texte
+                    // visible garde le seul libellé de l'État.
+                    <CodexRef key={chip.key} category="etats" id={chip.condId} label={chip.label} ariaLabel={chipNom(chip)} className="chip">
                       <Icon id={chip.icon as IconIdInput} size="sm" />
                       {chip.label}
                       {clock ? <em className="entity-badge">{clock}</em> : null}
@@ -283,7 +291,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
                 const eff = buffs[buffIdx++];
                 const meta: string[] = [];
                 if (chip.char != null) meta.push(`${(chip.bonus ?? 0) >= 0 ? '+' : ''}${chip.bonus ?? 0} ${CHAR_LABELS[chip.char]}`);
-                const dur = eff ? effectDuration(eff).replace(/^ · /, '') : '';
+                const dur = eff ? effectDuration(eff, gameTime).replace(/^ · /, '') : '';
                 if (dur) meta.push(dur);
                 const metaNode = meta.length ? <em className="entity-badge">{meta.join(' · ')}</em> : null;
                 return (
@@ -303,7 +311,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               })}
               {castPen.map((p, i) => {
                 const val = p.blocked ? 'Incantation bloquée' : p.maxZeroDR ? 'Prière plafonnée à 0 DR' : p.mod != null ? `${p.mod}` : '';
-                const dur = effectDuration(p).replace(/^ · /, '');
+                const dur = effectDuration(p, gameTime).replace(/^ · /, '');
                 const parts = [val, dur].filter(Boolean).join(' · ');
                 return (
                   <CodexRef

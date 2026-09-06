@@ -2239,3 +2239,40 @@ describe('#1341 (site maritime) — `engineerOf` demande la spec Métier par ID,
     expect(partyBest([b, i], 'metier', undefined, undefined, 'Ingénieur')?.actor.id, 'par libellé : le premier venu').toBe(b.id);
   });
 });
+
+/**
+ * MANQUE DE BRAS — MDG 14 l.55, verbatim : « Même en occupant deux rôles, il peut être impossible de
+ * remplir le nombre minimum de membres d'équipage requis. Dans ce cas, les résultats du Test
+ * d'équipage subissent –2 DR et ne peuvent jamais être meilleurs qu'un Succès Minime. »
+ *
+ * Cas LIMITE : AUCUN PJ apte (tous Inconscients — LDB 16 l.115, « Vous ne pouvez absolument rien
+ * faire de votre tour »). Le jour ne se saute pas en silence : il se JOUE au plancher, et la
+ * non-viabilité du groupe est constatée par l'invariant HORS COMBAT (`checkPartyWiped`), qui présente
+ * l'écran de défaite et purge le voyage.
+ */
+describe('aucun PJ apte : la journée se joue au plancher de Manque de bras (MDG 14 l.55)', () => {
+  beforeEach(freshState);
+
+  it('la Progression est journalisée au plancher, sans Test d’équipage posé, puis la défaite est CONSTATÉE', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({
+      travelPlan: plan,
+      party: get().party.map((h) => ({ ...h, conditions: [{ id: 'inconscient', value: 1 }] })),
+      journal: [],
+      partyWiped: false,
+    });
+    runSeaDay(get, set);
+
+    const journal = get().journal.join(' | ');
+    expect(journal, 'la Progression du jour n’est pas journalisée au plancher').toMatch(/Progression du jour[^|]*DR d'équipage -2/);
+    expect(get().pendingCrewTest, 'un Test d’équipage a été posé sans personne pour le tenir').toBeNull();
+    const etapes: CascadeStep[] = get().pendingCascade?.participants ?? [];
+    expect(etapes.some((e) => e.kind === 'progression'), 'une étape de Progression a été posée sans PJ apte').toBe(false);
+
+    // Verrou : l'issue est la DÉFAITE hors combat (`state/partyWipe.ts` — prédicat identique à la
+    // victoire de combat, constatée à la CLÔTURE de la cascade du jour), pas une interruption muette.
+    draineCascade(get, 80);
+    expect(get().partyWiped, 'le groupe entièrement à terre n’est pas constaté non viable').toBe(true);
+    expect(get().travelPlan, 'le voyage a survécu à la défaite').toBeNull();
+  });
+});

@@ -17,6 +17,7 @@ import {
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
   isNamed, specCatalogOf, specLabel, seasonLabel,
+  SYMPTOM_SEVERITIES, SYMPTOM_SEVERITY_LABELS,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, shipStations, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
   conditionLabel, traitProjectingManeuver, materials,
@@ -375,8 +376,8 @@ const valeurFR = (fichier: string, champ: string, valeur: string): string =>
 /** Libellés FR des CAPACITÉS irréductibles d'un Symptôme (drapeaux lus par la machinerie de maladie). */
 const SYMPTOM_CAP_LABEL: Record<string, string> = {
   blocksHealing: 'Bloque la guérison (1 PB)', amputation: 'Gangrène (amputation)',
-  stickyExtenue: 'Exténué collant', contagious: 'Contagieux', nausea: 'Nausée (Sonné)',
-  endTest: 'Test de fin de Durée',
+  contagious: 'Contagieux', nausea: 'Nausée (Sonné)',
+  endTest: 'Test de fin de Durée', persistentActive: 'Ne guérit jamais naturellement',
 };
 /** Libellé d'un jet de dés (`{n,d,plus?}`) — « 1d10 », « 2d10+2 ». */
 const diceLabel = formatDice;
@@ -1588,7 +1589,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         rows: m.symptoms.map((s) => ({
           // `spec` = localisation/précision imprimée de l'instance (« Gonflement (Visage et tête) », EDO 11 p.145).
           t: 'kv', k: `${symptomLabel(s.symptomId)}${s.spec ? ` (${s.spec})` : ''}`,
-          v: [s.severity === 'grave' ? 'Grave' : s.severity === 'moderee' ? 'Modérée' : null, s.difficulty ? `Test ${DIFFICULTY_LABELS[s.difficulty]}` : null].filter(Boolean).join(' · ') || '—',
+          v: [s.severity ? SYMPTOM_SEVERITY_LABELS[s.severity] : null, s.difficulty ? `Test ${DIFFICULTY_LABELS[s.difficulty]}` : null].filter(Boolean).join(' · ') || '—',
         } as CodexRow)),
       }),
     })),
@@ -1598,7 +1599,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => symptoms.map((s) => depuisEnveloppe(s, {
       sections: sections(
         passiveSection(s.passive),
-        passiveSection(s.severePassive, 'Modificateurs (Modérée / Grave)'),
+        ...SYMPTOM_SEVERITIES.map((cle) => passiveSection(s.passiveBySeverity?.[cle], `Modificateurs (${SYMPTOM_SEVERITY_LABELS[cle]})`)),
         s.onTick
           ? {
               title: 'Cycle quotidien', layout: 'list',

@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ActiveEffect, Combatant, ConditionInstance } from '../engine/types';
-import { chipCodex, chipDetail, combatantFlags, summarizeEffects } from '../gameIso/effectIcons';
+import { chipCodex, chipDetail, chipNom, combatantFlags, summarizeEffects } from '../gameIso/effectIcons';
 import { StateChips } from './StateChips';
+import { EtatPanel } from './EtatPanel';
 
 const cond = (name: string, value = 1): ConditionInstance => ({ id: name, value } as ConditionInstance);
 
@@ -117,6 +118,39 @@ describe('StateChips — rack d’alvéoles RÉSERVÉES (mode `reserve`)', () =>
     expect(html).toContain('<b class="pt-n">3</b>');
   });
 
+  /**
+   * A11Y (règle stricte 4) : une alvéole ne rend qu'un glyphe (`<svg aria-hidden>`) — sans nom, elle
+   * est MUETTE pour un lecteur d'écran. « Nue » (arbitrage user 2026-07-18) porte sur ce qui se VOIT
+   * (aucun popover de consolation), pas sur l'arbre d'accessibilité.
+   */
+  it('une pastille informative porte SON LIBELLÉ comme nom accessible, sans rien montrer de plus', () => {
+    const html = renderToStaticMarkup(
+      <StateChips c={mkHero()} max={4} reserve extra={[{ key: 'a-assailli', icon: 'action/attack', label: 'Assailli', kind: 'state', severity: 58, indice: 2 }]} />,
+    );
+    expect(html, 'la pastille informative n’a aucun nom accessible').toContain('aria-label="Assailli"');
+    expect(html, 'un rôle est nécessaire pour que le nom soit lu sur un conteneur générique').toContain('role="img"');
+    expect(html, 'rien de VISIBLE ne s’est ajouté').not.toContain('title=');
+  });
+
+  /**
+   * Un geste d'État REFUSÉ reste un CONTRÔLE (arbitrage user 2026-08-24, verbatim : « Je n'ai jamais
+   * validé ces "textes" impossible a lire sous le nom des capacités, même Rogue Trader qui est notre
+   * interface de départ n'a pas un tel comportement. ») : `aria-disabled` — jamais `disabled`, qui le
+   * sortirait de l'ordre de tabulation et couperait le survol —, raison dans le nom accessible et
+   * dans l'unique infobulle du jeu.
+   */
+  it('un geste REFUSÉ reste atteignable et porte sa raison (jamais `disabled`, jamais inline)', () => {
+    const hero = mkHero((c) => { c.conditions = [cond('extenue')]; });
+    const html = renderToStaticMarkup(
+      <StateChips c={hero} action={() => ({ label: 'Retirer un État : Exténué (1 Détermination)', run: () => {}, refus: 'Le Malaise le maintient jusqu’à la guérison.' })} />,
+    );
+    expect(html, 'le contrôle refusé porte `disabled` — il devient injoignable').not.toContain('disabled=""');
+    expect(html).toContain('aria-disabled="true"');
+    expect(html, 'la raison n’est pas dans le nom accessible').toMatch(/aria-label="[^"]*Malaise[^"]*"/);
+    // L'infobulle EST le `CodexRef` enveloppant (son contenu ne naît qu'au survol/focus, côté client).
+    expect(html, 'la raison n’est pas remise à l’infobulle unique du jeu').toContain('codex-ref');
+  });
+
   it('une pastille `extra` SANS règle résolue reste nue (aucun `CodexRef`, aucune infobulle)', () => {
     const html = renderToStaticMarkup(
       <StateChips c={mkHero()} max={4} reserve extra={[{ key: 'a-assailli', icon: 'action/attack', label: 'Assailli', kind: 'state', severity: 58, indice: 2 }]} />,
@@ -203,5 +237,52 @@ describe('StateChips — effets posés par Caractéristique : UNE pastille compt
     const hero = mkHero((c) => { c.activeEffects = deuxPaliers; });
     const html = renderToStaticMarkup(<StateChips c={hero} max={4} />);
     expect(html.match(/pt-state/g) ?? [], 'une seule pastille pour les 10 effets').toHaveLength(1);
+  });
+});
+
+/**
+ * A11Y (règle stricte 4) — recette navigateur 2026-09-06 : au repos, une alvéole du portrait
+ * n'annonçait que son CHIFFRE (« 1 », « 3 ») : le `<b class="pt-n">` est du texte, il suffisait à
+ * nommer le déclencheur `CodexRef` et coupait la dérivation du libellé de fiche. Le nom se POSE
+ * désormais (`chipNom`, source unique), et la MÊME forme sert la fiche (« Effets actifs ») : une
+ * pastille dit ce qu'elle est, dans les deux vues.
+ *
+ * Un État DÉRIVÉ (`ConditionInstance.derivedFrom.src`, une `CodexTarget`) est NOMMÉ par sa source —
+ * `refLabel` la résout, quelle que soit sa famille : aucune chaîne par type de porteur.
+ */
+describe('StateChips — NOM d’une pastille (portrait ET fiche)', () => {
+  const derive = (): Combatant =>
+    mkHero((c) => {
+      c.conditions = [{ id: 'inconscient', value: 1, derivedFrom: { stacks: 1, src: { category: 'symptoms', id: 'fievre' } } } as unknown as ConditionInstance];
+    });
+
+  it('la pastille RÉSOLUE du portrait porte son libellé, pas son seul chiffre', () => {
+    const html = renderToStaticMarkup(<StateChips c={mkHero((c) => { c.conditions = [cond('assourdi', 3)]; })} max={4} reserve />);
+    expect(html).toContain('<b class="pt-n">3</b>');
+    expect(html, 'la pastille ne s’annonce que par son chiffre').toContain('aria-label="Assourdi — ×3"');
+  });
+
+  it('portrait et fiche nomment le même État de la même façon', () => {
+    const hero = mkHero((c) => { c.conditions = [cond('assourdi')]; });
+    expect(renderToStaticMarkup(<StateChips c={hero} max={4} reserve />)).toContain('aria-label="Assourdi"');
+    expect(renderToStaticMarkup(<EtatPanel hero={hero} />), 'la chip de la fiche porte un AUTRE nom que celle du portrait').toContain('aria-label="Assourdi"');
+  });
+
+  it('un État DÉRIVÉ nomme sa SOURCE — au portrait, à la fiche et dans l’infobulle', () => {
+    const hero = derive();
+    const chip = summarizeEffects(hero.conditions, []).visible[0];
+    expect(chip.sourceLabel).toBe('Fièvre');
+    expect(chipNom(chip)).toBe('Inconscient — Fièvre');
+    // L'infobulle unique du jeu (`CodexRef`) le dit en tête, le libellé catalogue restant en sous-titre.
+    expect(chipCodex(chip)).toMatchObject({ category: 'etats', id: 'inconscient', instance: 'Inconscient — Fièvre' });
+    expect(renderToStaticMarkup(<StateChips c={hero} max={4} reserve />)).toContain('aria-label="Inconscient — Fièvre"');
+    expect(renderToStaticMarkup(<EtatPanel hero={hero} />)).toContain('aria-label="Inconscient — Fièvre"');
+  });
+
+  it('un État NATIF n’invente aucune source', () => {
+    const chip = summarizeEffects([cond('inconscient')], []).visible[0];
+    expect(chip.sourceLabel).toBeUndefined();
+    expect(chipNom(chip)).toBe('Inconscient');
+    expect(renderToStaticMarkup(<StateChips c={mkHero((c) => { c.conditions = [cond('inconscient')]; })} max={4} reserve />)).toContain('aria-label="Inconscient"');
   });
 });

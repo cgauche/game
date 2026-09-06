@@ -229,7 +229,7 @@ describe('racine-de-terre (LDB 72 l.28) — suppressSymptom + diseaseTestMod', (
   it('« annuler les effets de bubons » + « +10 à tous les Tests concernant la maladie » (scopé Peste noire)', () => {
     const c = makeTarget();
     drinkPure(c, 'racine-de-terre');
-    expect(c.activeEffects!.some((e) => e.suppressedSymptom === 'bubons')).toBe(true);
+    expect(c.activeEffects!.some((e) => e.suppressedSource?.category === 'symptoms' && e.suppressedSource.id === 'bubons')).toBe(true);
     expect(c.activeEffects!.some((e) => e.diseaseTestMod?.amount === 10 && e.diseaseTestMod.diseases?.includes('peste-noire'))).toBe(true);
   });
 });

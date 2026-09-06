@@ -278,12 +278,32 @@ describe('parseSave — la version DOIT être la courante', () => {
     // Les lignes des étapes de nuit (maladie, Exposition, Récupération, contagion, convalescence)
     // étaient montées sur une valeur qui ignorait les États (#1685) : une save de 45
     // rouvrirait une fenêtre déjà montée dont la cible n'est plus celle de la porte, qu'aucun applier
-    // ne recalcule. La version courante est 44, et 43 se jette.
-    expect(SAVE_VERSION).toBe(46);
+    // ne recalcule. Elle se jette, comme toute save d'avant ce bump.
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(46);
     expect(parseSave({ ...cur, version: 45 })).toBeNull();
+    expect(parseSave({ ...cur, version: 44 })).toBeNull();
     // La porte qui monte désormais ces lignes est celle de tout le monde : les appliers de nuit
     // servent des étapes dont la valeur vient de `rollStep`/`testValue`.
     expect(Object.keys(cascadeAppliers), 'l’applier du cycle de maladie doit exister').toContain('diseaseTick');
+  });
+
+  it('MESURE du motif de bump 46 → 47 (#1599) : les États PORTÉS par un passif sont désormais MARQUÉS', () => {
+    // Un Inconscient de Fièvre (Grave) / un Exténué de Malaise portent maintenant `derivedFrom`
+    // (`ConditionInstance`), que la réconciliation (`syncDerivedConditions`) compare à la CIBLE émise
+    // par les passifs. Une save de 46 porte les mêmes pions SANS marquage : les pions dérivés comptés
+    // valent 0 alors que la cible vaut 1 → le porteur regagne un second État par-dessus le sien, sans
+    // qu'aucun applier ne puisse le recoller. La save se jette.
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(47);
+    expect(parseSave({ ...cur, version: 46 })).toBeNull();
+  });
+
+  it('MESURE du motif de bump 47 → 48 (#1599) : la SUSPENSION d’un fait passif est générale', () => {
+    // La fenêtre de suspension (Racine de terre, fenêtre de Détermination) nomme désormais sa source par
+    // son identité Codex (`ActiveEffect.suppressedSource`) là où une save de 47 porte un id de symptôme
+    // nu (`suppressedSymptom`) : plus aucun lecteur ne la voit, le fait réémet ses passifs et l'État
+    // qu'il portait revient — en silence. La save se jette.
+    expect(SAVE_VERSION).toBe(48);
+    expect(parseSave({ ...cur, version: 47 })).toBeNull();
   });
 
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {

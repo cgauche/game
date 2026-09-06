@@ -10,7 +10,7 @@
  *    tête — le manuscrit en listait 6 quand le collecteur en a bien davantage (États, psychologies,
  *    Ivresse, Soif, Talents, objets portés… tous absents de sa liste, et son §2 affirmait même que
  *    les États restaient HORS du collecteur) ;
- *  - les documents PORTEURS d'un champ `passive`/`severePassive`, lus au def zod, avec le nombre
+ *  - les documents PORTEURS d'un champ `passive`/`passiveBySeverity`, lus au def zod, avec le nombre
  *    d'entrées qui l'exercent RÉELLEMENT dans le `.json`.
  * La part ÉDITORIALE (frontières, doctrine « un seul format », recettes) vit ICI, en dur.
  *
@@ -213,8 +213,9 @@ const PRODUCTEURS = (() => {
 
 // ── Les documents PORTEURS d'un champ `passive` — lus au def, comptés à la donnée ──────────────────
 
-/** Champs de passif déclarés par un def : `passive`, `severePassive`… (tout champ dont le nom finit
- *  par « assive »). Le def dit le CHAMP, le `.json` dit combien d'entrées l'exercent. */
+/** Champs de passif déclarés par un def : `passive`, `visiblePassive`, `passiveBySeverity`… (tout champ
+ *  dont le nom CONTIENT « passive » — le canal peut être indexé, cf. `passiveBySeverity` qui porte une
+ *  liste PAR PALIER de sévérité). Le def dit le CHAMP, le `.json` dit combien d'entrées l'exercent. */
 const PORTEURS = (() => {
   const out = []
   for (const f of listerDossier(DEFS).filter((f) => f.endsWith('.ts') && !f.includes('.test.'))) {
@@ -245,7 +246,7 @@ const PORTEURS = (() => {
     const cles = champs.properties
       .filter(ts.isPropertyAssignment)
       .map((p) => p.name.getText(sf).replace(/^['"]|['"]$/g, ''))
-      .filter((k) => /assive$/i.test(k))
+      .filter((k) => /passive/i.test(k))
     if (!cles.length) continue
     out.push({ def: chemin, json: `${DATA}/${fichierJson}`, cles })
   }
@@ -253,12 +254,16 @@ const PORTEURS = (() => {
   return out
 })()
 
+/** Une valeur de canal passif est-elle EXERCÉE ? Une liste non vide, ou un canal INDEXÉ
+ *  (`passiveBySeverity`) dont au moins un palier porte une liste non vide. */
+const exerce = (v) => (Array.isArray(v) ? v.length > 0 : !!v && typeof v === 'object' && Object.values(v).some(exerce))
+
 /** Entrées d'un dataset qui exercent RÉELLEMENT un champ de passif non vide. */
 function porteuses(json, cles) {
   if (!existsSync(json)) return null
   const data = JSON.parse(readFileSync(json, 'utf8'))
   const entrees = Array.isArray(data) ? data : Array.isArray(data?.entries) ? data.entries : []
-  const n = entrees.filter((e) => cles.some((k) => Array.isArray(e?.[k]) && e[k].length)).length
+  const n = entrees.filter((e) => cles.some((k) => exerce(e?.[k]))).length
   return { total: entrees.length, n }
 }
 const PORTEURS_MESURES = PORTEURS.map((p) => ({ ...p, pop: porteuses(p.json, p.cles) })).filter((p) => p.pop)

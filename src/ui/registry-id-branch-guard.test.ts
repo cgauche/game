@@ -183,7 +183,11 @@ const RAW_KNOWN: Record<string, number> = {
   // `downgradeTornMuscle`/`traumaDodgePenalty`/`traumaSkillPenalty` lisent la MÊME chose qu'avant, mais
   // la référence de Compétence étant EMBOÎTÉE leur accès passe par `.id`, que ce cliquet BRUT compte.
   // L'Esquive y est NOMMÉE par le RAW (LDB 18 : la mobilité d'un membre pèse sur l'Esquive).
-  'src/engine/trauma.ts': 7, // pénalité de combat PAR MAIN (doigts/main) + crochet entraîné + Esquive nommée au RAW : axes NON couverts par `cumul`
+  // 7 → 8 (#1599) : le poseur UNIQUE de l'annulateur `determination` (`poseDeterminationCanceller`) vient
+  // de `combatSlice.ts` (3 → 2 → 1 ci-dessous) — un DÉPLACEMENT vers le module qui POSSÈDE la table
+  // `PASSIVE_CANCELLERS`, à somme nulle, jamais un site neuf. Le reste : pénalité de combat PAR MAIN
+  // (doigts/main) + crochet entraîné + Esquive nommée au RAW — axes NON couverts par `cumul`.
+  'src/engine/trauma.ts': 8,
   'src/engine/weaponDamage.ts': 1,
   'src/engine/windsOfMagic.ts': 1,
   'src/gameIso/rig/mountedRig.ts': 1,
@@ -199,7 +203,7 @@ const RAW_KNOWN: Record<string, number> = {
   'src/state/combatFlow.ts': 3, // `op.ref === 'self'` hors champ (mot du vocabulaire GameOp, lot Cε)
   'src/state/combatGeometry.ts': 1,
   'src/state/combatManeuvers.ts': 4,
-  'src/state/combatSlice.ts': 2,
+  'src/state/combatSlice.ts': 1, // 2 → 1 (#1599) : la pose de l'annulateur `determination` part chez son propriétaire (`engine/trauma.ts`)
   // RÉVÉLÉ (jamais neuf) par la résolution des constantes de module, L2 #1548 : `q.id === ARME_D_EQUIPE`
   // est un lookup par id stable d'une Qualité au registre — même patron que `healing`/`careerSlots`.
   'src/state/commandTeam.ts': 1,

@@ -6,7 +6,7 @@
  */
 import { z } from 'zod';
 import { AVAILABILITIES, COUVERT_DIFFICULTES, STAKE_FORMS } from '../../../engine/types';
-import { refOuSpec } from './ref';
+import { refOuSpec, idDe } from './ref';
 
 /**
  * Disponibilité (`Availability`, `src/engine/types.ts`) — le schéma DÉRIVE du tuple canon au lieu de
@@ -535,6 +535,11 @@ export const hitLocationSchema = z.enum(['tete', 'brasG', 'brasD', 'corps', 'jam
  *  jet-associé/pions/écart d'Avantage/Blessures/somme/facteur). Dupliqué (avec `bonusOf`/`charOf` en
  *  `z.string()` plutôt que `charKeySchema`) dans `trappings.ts` — resserré ici sur `CharKey` (fidèle
  *  à `src/engine/ops.ts:65`), sans risque pour `trappings.json` (vérifié au parse). */
+/** Feuille de référence du terme `{rule}`, instanciée UNE fois : `formulaSchema` est un `z.lazy` que
+ *  chaque composition ré-évalue — une fabrique appelée DANS le `lazy` poserait une marque par instance
+ *  (58 mesurées), là où le site de référence est UN. */
+const refRegleOptionnelle = idDe('regleOptionnelle');
+
 export const formulaSchema: z.ZodType<unknown> = z.lazy(() =>
   z.union([
     z.number(),
@@ -546,6 +551,9 @@ export const formulaSchema: z.ZodType<unknown> = z.lazy(() =>
     z.strictObject({ stacks: z.literal('self') }),
     z.strictObject({ engagedAdvantageGap: z.literal(true) }),
     z.strictObject({ woundsDealt: z.literal(true) }),
+    // Valeur d'une RÈGLE OPTIONNELLE du registre : référence de la grammaire (`idDe`), donc résolue AU
+    // PARSE. Sa forme NUMÉRIQUE (`kind: 'param'`) est gardée sur la donnée par `data-wellformed.test`.
+    z.strictObject({ rule: refRegleOptionnelle }),
     z.strictObject({ sum: z.array(formulaSchema) }),
     // `factor` est une Formula (PRODUIT de deux formules — « (Force Mentale) × 1d10 minutes », VDM 05).
     z.strictObject({ times: z.strictObject({ of: formulaSchema, factor: formulaSchema }) }),

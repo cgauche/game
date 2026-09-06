@@ -18,7 +18,6 @@ const difficultySchemaLocal = z.enum([
 const symptomCapabilitiesSchema = z.strictObject({
   blocksHealing: z.boolean().optional(),
   amputation: z.boolean().optional(),
-  stickyExtenue: z.boolean().optional(),
   contagious: z.boolean().optional(),
   nausea: z.boolean().optional(),
   endTest: z.boolean().optional(),
@@ -34,7 +33,7 @@ const noeudDuCycle = noeudTest(flowSchema, { difficulteRequise: true, echecSeulS
  * Cycle de PHASE ACTIVE d'un symptôme. Le porteur dit QUAND (`afterDays`/`once`, ordonnancement) et
  * CE QUE la sévérité de l'instance change (`difficultyBySeverity`) ; le JET et sa conséquence vivent
  * dans le nœud `test`. Un cycle SANS jet (MSRC 16 l.142) n'est pas une épreuve : il porte `ops`, la
- * liste de `GameOp` CERTAINS — même graphie que `passive`/`severePassive`/`visiblePassive`.
+ * liste de `GameOp` CERTAINS — même graphie que `passive`/`passiveBySeverity`/`visiblePassive`.
  */
 const onTickSchema = z
   .strictObject({
@@ -73,7 +72,17 @@ const doc = document(
   famille,
   {
     passive: z.array(gameOpSchema).optional(),
-    severePassive: z.array(gameOpSchema).optional(),
+    /** Passifs qui S'AJOUTENT à `passive` dès que l'instance atteint ce palier de sévérité (échelle
+     *  `moderee` → `grave`) — même indexation que `onTick.difficultyBySeverity`. La MAGNITUDE d'une
+     *  pénalité de palier est ABSOLUE (le pool de `effectiveChar` retient la pire, elles ne s'additionnent
+     *  pas) : un palier ne REDIT que ce qu'il change. LDB 20 l.157 (Convulsions Modéré −20), l.170
+     *  (Fièvre Grave : un État, les −10 de base tenant sans être recopiés). */
+    passiveBySeverity: z
+      .strictObject({
+        moderee: z.array(gameOpSchema).optional(),
+        grave: z.array(gameOpSchema).optional(),
+      })
+      .optional(),
     /** Effets DÉCLENCHÉS du symptôme (Crampes abdominales `onOwnTestFailed`, MSRC 16) — MÊME schéma que
      *  Traits/Atouts (`triggeredEffectSchema`) ; source du dispatcher via `effectSourcesOf`. */
     effects: z.array(triggeredEffectSchema).optional(),
@@ -86,7 +95,7 @@ const doc = document(
   },
   {
     passive: { label: 'Effets passifs' },
-    severePassive: { label: 'Effets passifs (Grave)', hint: 'Effets passifs actifs seulement au palier de sévérité Grave' },
+    passiveBySeverity: { label: 'Effets passifs (par palier)', hint: 'Effets passifs qui S’AJOUTENT à « Effets passifs » dès que l’instance atteint ce palier ; une pénalité s’y écrit en valeur ABSOLUE (la pire l’emporte)' },
     effects: { label: 'Effets déclenchés' },
     onTick: {
       label: 'Évolution périodique',

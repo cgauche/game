@@ -66,10 +66,11 @@ import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem, runConsumable } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks, raisonRefusDetermination, fenetreDetermination, syncDerivedConditions } from '../engine/conditions';
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, resolveExtractLodgedAmmo, healDifficulty, applyHealWounds, type HealMode } from '../engine/healing';
 import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
-import { treatTrauma, receiveMedicalAid } from '../engine/trauma';
+import { treatTrauma, receiveMedicalAid, poseDeterminationCanceller } from '../engine/trauma';
+import { suspendSource } from '../engine/suspension';
 import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienDetail } from '../engine/skills';
 import { rollOups } from '../engine/oups';
@@ -359,6 +360,37 @@ const REFUS_DEPLACEMENT: Partial<Record<MovementBlockReason, MsgKey>> = {
   'movement-spent': 'cs.refusMouvementEpuise',
   'no-path': 'cs.refusAucunChemin',
 };
+
+/**
+ * « Retirez un État » par Détermination (LDB 17 l.61) — SOURCE UNIQUE des DEUX dépenses (l'actif du tour,
+ * un porteur par id). Rend `false` quand la dépense n'a RIEN levé : le point n'est alors pas débité.
+ *
+ * Un État PORTÉ par un canal passif (`derivedFrom`) ne se retire pas à la main : le fait le reposerait
+ * aussitôt. On SUSPEND donc la SOURCE qui le porte (`suspendSource`, le même applier que la Racine de
+ * terre — LDB 72 l.28), le temps de la fenêtre que l'op PORTEUSE déclare (`fenetreDetermination`,
+ * `ResolveWindow` en donnée ; défaut LDB 16 l.117) ; la réconciliation retire l'État, et l'expiration
+ * de la fenêtre le repose. Aucune famille d'entité n'est nommée ici.
+ *
+ * Le pion peut être PARTAGÉ avec une cause native (KO à 0 PB — LDB 16 l.115) : ce que la suspension n'a
+ * pas emporté, le retrait de LDB 17 l.61 l'emporte.
+ * Le seul REFUS est celui que la donnée déclare (`raisonRefusDetermination` — l.188).
+ */
+function retireEtatParDetermination(c: Combatant, conditionName: string, now: number): boolean {
+  if (raisonRefusDetermination(c, conditionName)) return false;
+  const avant = stacks(c, conditionName);
+  const src = c.conditions.find((x) => x.id === conditionName)?.derivedFrom?.src;
+  const fenetre = src ? fenetreDetermination(c, conditionName, now) : undefined;
+  if (src && fenetre) {
+    suspendSource(c, src, fenetre, 'Détermination (conscience)', DETERMINATION_CONSCIENCE_ID);
+    syncDerivedConditions(c);
+  }
+  if (stacks(c, conditionName) >= avant) removeCondition(c, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.61
+  return stacks(c, conditionName) < avant;
+}
+
+/** `effectId` de la fenêtre ci-dessus : une nouvelle dépense la REMPLACE (jamais deux fenêtres empilées
+ *  sur le même porteur), et les tests la retrouvent par ce nom. */
+export const DETERMINATION_CONSCIENCE_ID = 'determination-conscience';
 
 /** Actions de combat inline du store — déplacées VERBATIM. Spreadées EN TÊTE du `create`. */
 export function createCombatSlice(get: Get, set: Set) {
@@ -2207,8 +2239,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || (active.resolve ?? 0) <= 0) return;
       if (!active.conditions.some((c) => c.id === conditionName)) return;
+      if (!retireEtatParDetermination(active, conditionName, get().gameTime)) return; // rien à lever : le point n'est pas débité
       active.resolve = (active.resolve ?? 0) - 1;
-      removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.61
       let extra = '';
       if (conditionName === COND.aTerre) {
         applyHealWounds(active, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.61), plafond munition-logée
@@ -2228,8 +2260,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const hero = actorIn(s, combatantId);
       if (!hero || (hero.resolve ?? 0) <= 0) return;
       if (!hero.conditions.some((c) => c.id === conditionName)) return;
+      if (!retireEtatParDetermination(hero, conditionName, s.gameTime)) return; // rien à lever : le point n'est pas débité
       hero.resolve = (hero.resolve ?? 0) - 1;
-      removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.61
       let extra = '';
       if (conditionName === COND.aTerre) {
         applyHealWounds(hero, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.61), plafond munition-logée
@@ -2262,10 +2294,7 @@ export function createCombatSlice(get: Get, set: Set) {
       active.resolve = (active.resolve ?? 0) - 1;
       // Détermination (LDB 17 l.60) : `ActiveEffect` à durée 1 Round (système de Durée unifié) — ignore les
       // modifs de Critique ce Round, expiré au passage de Round, sans flag round-scopé ni hook dédié.
-      active.activeEffects = [
-        ...(active.activeEffects ?? []).filter((e) => e.effectId !== 'determination-crit'),
-        { label: 'Détermination (Critique)', effectId: 'determination-crit', bonus: 0, duration: { scale: 'rounds', left: 1 }, ignoreCritMods: true },
-      ];
+      poseDeterminationCanceller(active, { scale: 'rounds', left: 1 }, 'Détermination (Critique)');
       set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', t('cs.determinationCrit', { name: active.label }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },

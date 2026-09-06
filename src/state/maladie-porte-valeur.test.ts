@@ -27,7 +27,7 @@ import { seedBattleRng, battleRng } from './battleRng';
 import { contractDisease, tickDisease } from '../engine/disease';
 import { porteEntretien, applique } from '../engine/upkeepPorte.testkit';
 import { testValue, skillBaseValue } from '../engine/skills';
-import { addCondition, stacks } from '../engine/conditions';
+import { addCondition, stacks, syncDerivedConditions } from '../engine/conditions';
 import { clampTarget } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS, type Combatant } from '../engine/types';
 import { creditBourse } from './bourseFlow';
@@ -167,16 +167,17 @@ describe('#1685 — le Test de cycle d’une maladie porte la valeur de la PORTE
   });
 
   it('B2 — le HARNAIS de test et la NUIT réelle appliquent la MÊME guérison (Exténué collant compris)', () => {
-    // `applyDiseaseEnd` est le foyer unique : la fin de Durée retire la maladie ET réconcilie l'Exténué
-    // « collant » du malaise (`LDB 20 l.153`). Un kit qui n'en ferait que la moitié mentirait sur ce que
-    // la nuit fait — c'est ce que ce test interdit, en comparant les DEUX chemins sur la même fixture.
+    // `applyDiseaseEnd` est le foyer unique : la fin de Durée retire la maladie ET réconcilie les États
+    // PORTÉS par les passifs de ses symptômes (`LDB 20 l.188`, l'Exténué du Malaise). Un kit qui n'en
+    // ferait que la moitié mentirait sur ce que la nuit fait — c'est ce que ce test interdit, en
+    // comparant les DEUX chemins sur la même fixture.
     const parLeKit = (() => {
       const c = hero({ id: 'kit' });
       const dz = contractDisease('infection-mineure', battleRng(), { incubation: 0, duration: 1 })!;
       c.diseases = [dz];
       const { specs, defer } = porteEntretien();
       tickDisease(c, 24 * 60, battleRng(), defer);
-      addCondition(c, 'extenue', 1); // l'Exténué collant du malaise, posé par l'entretien
+      syncDerivedConditions(c); // l'État que le Malaise PORTE, posé par le socle
       for (const s of specs) applique(c, s, { success: true });
       return { extenue: stacks(c, 'extenue'), maladies: (c.diseases ?? []).length };
     })();
@@ -185,7 +186,7 @@ describe('#1685 — le Test de cycle d’une maladie porte la valeur de la PORTE
       const h = useGame.getState().party[0];
       const dz = contractDisease('infection-mineure', battleRng(), { incubation: 0, duration: 1 })!;
       h.diseases = [dz];
-      addCondition(h, 'extenue', 1);
+      syncDerivedConditions(h);
       useGame.setState((st) => ({ party: [...st.party] }));
       const steps = dort();
       const p = useGame.getState().pendingCascade!;
@@ -201,7 +202,7 @@ describe('#1685 — le Test de cycle d’une maladie porte la valeur de la PORTE
 
     expect(parLeKit.maladies, 'la cure retire la maladie des deux côtés').toBe(0);
     expect(parLaNuit.maladies).toBe(0);
-    expect(parLeKit.extenue, 'l’Exténué collant est réconcilié des DEUX côtés — même foyer').toBe(parLaNuit.extenue);
-    expect(parLaNuit.extenue, 'la guérison retire l’Exténué du malaise (LDB 20 l.153)').toBe(0);
+    expect(parLeKit.extenue, 'l’État porté par le passif est réconcilié des DEUX côtés — même foyer').toBe(parLaNuit.extenue);
+    expect(parLaNuit.extenue, 'la guérison retire l’Exténué du malaise (LDB 20 l.188)').toBe(0);
   });
 });

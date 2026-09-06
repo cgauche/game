@@ -26,7 +26,7 @@ import { SpectatorChip } from './SpectatorChip';
 import { spectatorSeatOfModal } from './ownership';
 import { actorHasSkill } from '../engine/skills';
 import { hasHealSkill, healableTargets } from '../engine/healing';
-import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
+import { canTakeAction, hasCondition, isOutOfAction, raisonRefusDetermination } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { isFrenzied, isFrenzyCapable } from '../engine/psychology';
 import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
@@ -1050,10 +1050,16 @@ export function CombatConsole() {
       label: `${findActionById('resolve-remove-condition')!.label} : ${chip.label} (1 Détermination)`,
       args: { conditionId: chip.condId },
     });
-    // Rack de 15px : la raison d'un geste fermé n'y tiendrait pas sans casser la géométrie de l'arche
-    // (loi 1). Une pastille sans geste offert redevient donc informative — elle ne feint rien.
+    // Un refus qui vient de L'ÉTAT LUI-MÊME (source unique `raisonRefusDetermination` — LDB 20 l.188)
+    // laisse un CONTRÔLE : sa raison se lit au survol/focus/tap (`CodexRef refus` porté par la
+    // pastille) et dans son nom accessible, jamais en texte inline dans un rack de 15px (arbitrage
+    // user 2026-08-24). Une indisponibilité qui ne parle PAS de l'État (réserve vide, hors tour) ne
+    // fait rien dire à la pastille : elle redevient informative.
     const run = geste?.run;
-    return run && !geste!.disabled ? { label: geste!.label, run } : undefined;
+    if (!run) return undefined;
+    const refus = raisonRefusDetermination(active, chip.condId);
+    if (refus) return { label: geste!.label, run, refus };
+    return geste!.disabled ? undefined : { label: geste!.label, run };
   };
 
   // ── PANNEAU-PARAMÈTRE de la Dissipation (spec §1d + zone 10) ───────────────────────────────────

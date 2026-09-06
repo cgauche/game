@@ -1,4 +1,4 @@
-import { summarizeEffects, chipCodex, type EffectFlags } from '../gameIso/effectIcons';
+import { summarizeEffects, chipCodex, chipNom, type EffectFlags } from '../gameIso/effectIcons';
 import type { ConditionInstance, ActiveEffect } from '../engine/types';
 import { roundsLabel } from '../engine/duration';
 import { CodexRef } from './compendium/CodexRef';
@@ -45,6 +45,9 @@ export function EffectChips({
             id={ref.id}
             label={ref.label}
             instance={ref.instance}
+            // MÊME nom que le rack du portrait et que la fiche (`chipNom`) : sans lui, une pastille
+            // qui affiche son compte ou sa durée s'annonçait par ce seul chiffre.
+            ariaLabel={chipNom(c)}
             className={`fx-chip ${c.kind}`}
           >
             {face}

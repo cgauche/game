@@ -18,9 +18,10 @@
  *
  * `purgeClockEffects` (appelé à CHAQUE passage, même sans franchissement de jour) dissipe les effets
  * à durée d'HORLOGE arrivés à échéance : contrecoups d'incantation `castPenalties.untilTime`
- * (LDB 46/40 — « Pensez à vos actes » une semaine, Drain de puissance N minutes…). Avant #T3, cette
- * purge ne vivait que dans `advanceTime` : un contrecoup expiré restait actif après un voyage/repos
- * (qui posent `gameTime` directement).
+ * (LDB 46/40 — « Pensez à vos actes » une semaine, Drain de puissance N minutes…). Sa cadence n'est
+ * PAS l'entretien mais la COUTURE du temps (`purgeSurAvanceDHorloge` ← `EVT.TIME_ADVANCED`, store) :
+ * le voyage terrestre et la journée de mer avancent l'horloge et DIFFÈRENT l'entretien à la cascade
+ * de nuit.
  *
  * N'importe QUE du moteur + battleRng + le bus d'horloge `clockHooks` (pas de cycle avec les flux).
  */
@@ -30,7 +31,7 @@ import { dayIndex } from '../engine/clock';
 import { dailyFoodUpkeep, dailyWaterUpkeep, feedFromMeal } from '../engine/provisions';
 import { testValue } from '../engine/skills';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
-import { loseWounds } from '../engine/conditions';
+import { loseWounds, syncDerivedConditions } from '../engine/conditions';
 import { type CharKey, type Difficulty, type UpkeepDeferTest, type NightTestKind } from '../engine/types';
 import { rollStep } from './rollSeam';
 import type { ModLine } from '../engine/combat';
@@ -55,8 +56,8 @@ export { dayIndex };
 
 /** Purge les effets à durée d'HORLOGE arrivés à échéance (`untilTime` ≤ maintenant) : contrecoups
  *  d'incantation (LDB 46/40) ET buffs de sort à durée en minutes/heures/jours (LDB 47 — cascade #T3).
- *  Appelée par advanceTime (donc à chaque Round de combat) ET par l'entretien quotidien (repos/voyage) ;
- *  couvre le groupe ET les combattants d'une bataille en cours (copies de spawn).
+ *  Appelée par la COUTURE du temps (`purgeSurAvanceDHorloge`, abonnée à `EVT.TIME_ADVANCED`) ET par
+ *  l'entretien quotidien ; couvre le groupe ET les combattants d'une bataille en cours (copies de spawn).
  *  RENVOIE les dissipations (reprises dans le rapport du jour au franchissement). */
 export function purgeClockEffects(get: Get, set: Set): string[] {
   const now = get().gameTime;
@@ -89,9 +90,24 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
       for (const x of conds) expiredLog.push(t('upkeep.condFades', { name: h.label, cond: conditionLabel(x.id) }));
       h.conditions = h.conditions.filter((x) => !(x.untilTime != null && x.untilTime <= now));
     }
+    // Un effet d'HORLOGE qui vient d'expirer peut avoir suspendu un fait source d'État dérivé : la fenêtre
+    // de conscience de LDB 20 l.170 (Détermination) se referme ICI — l'État repart par la réconciliation.
+    expiredLog.push(...syncDerivedConditions(h));
   }
   if (expiredLog.length) { set({ party: [...get().party] }); get().log(expiredLog); }
   return expiredLog;
+}
+
+/** Dissipations d'horloge PRODUITES par la couture du temps (`EVT.TIME_ADVANCED`) et pas encore
+ *  reprises dans un bilan d'entretien — drainées par `runDailyUpkeep`. */
+const dissipationsDHorloge: string[] = [];
+
+/** Purge d'horloge branchée sur la COUTURE UNIQUE de l'avance du temps : tout chemin qui émet
+ *  `EVT.TIME_ADVANCED` (advanceTime, repos, voyage terrestre, journée de mer) dissipe ce qui est
+ *  échu, y compris ceux qui n'appellent PAS `runDailyUpkeep` (le voyage terrestre et la journée de
+ *  mer diffèrent l'entretien à la cascade de nuit). Les lignes attendent le prochain bilan. */
+export function purgeSurAvanceDHorloge(get: Get, set: Set): void {
+  dissipationsDHorloge.push(...purgeClockEffects(get, set));
 }
 
 /** Purge les effets « pour la prochaine aventure » (`ActiveEffect.duration.scale === 'adventure'` —
@@ -143,7 +159,10 @@ export interface DeferredUpkeepTest {
 export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; fedDaily?: boolean; onDeferTest: (t: DeferredUpkeepTest) => void }): string[] {
   // Dissipations d'effets d'horloge : au FRANCHISSEMENT de jour, elles font partie du rapport
   // visible (hors franchissement — rythme combat — le journal et les icônes d'État suffisent).
-  const purged = purgeClockEffects(get, set);
+  // Celles déjà dissipées par la COUTURE du temps depuis le dernier entretien (voyage terrestre,
+  // journée de mer : ces chemins avancent l'horloge sans entretien) y sont REPRISES, sans quoi elles
+  // ne vivraient que dans le journal.
+  const purged = [...dissipationsDHorloge.splice(0), ...purgeClockEffects(get, set)];
   const today = dayIndex(get().gameTime);
   const last = get().lastUpkeepDay;
   if (today <= last) return [];

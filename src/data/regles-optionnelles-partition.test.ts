@@ -32,8 +32,10 @@ type Regle = { id: string; ref?: string; source?: { book: string; page: number }
 
 const REGLES = reglesOptionnelles as Regle[];
 
-/** Partition mesurée au 2026-08-27 : 81 = 54 sourcées + 27 maison, 0 des deux, 0 d'aucune. */
-const PARTITION = { total: 81, source: 54, maison: 27 };
+/** Partition mesurée au 2026-08-27 : 81 = 54 sourcées + 27 maison, 0 des deux, 0 d'aucune.
+ *  Puis 82 = 54 + 28 (#1599, 2026-09-05) : `maladie-conscience-determination-minutes` — LDB 20 l.170
+ *  ne chiffre pas « quelques minutes », la durée est donc MAISON, jamais sourcée. */
+const PARTITION = { total: 82, source: 54, maison: 28 };
 
 /**
  * COEXISTENCE `source` + `maison` (chaîne non vide) sur les entrées de PREMIER niveau de `src/data`,
@@ -50,6 +52,9 @@ const COEXISTENCE: Record<string, number> = {
   // marchand) ET son `maison` (MSRC 07 l.94 gate le Critique dessus sans imprimer de Trait naval).
   'naval-traits.json': 2,
   'structures.json': 2,
+  // +1 (#1599) : le symptôme `convulsions` cite son folio (LDB 188) ET porte en clair l'arbitrage de
+  // son palier Grave — LDB 20 l.157 chiffre −10 (base) et −20 (Modéré) sans jamais rechiffrer Grave.
+  'symptoms.json': 1,
   'talents.json': 9,
   'traits.json': 3,
   'trappings.json': 2,

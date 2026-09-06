@@ -16,7 +16,7 @@ import type { Combatant } from '../engine/types';
 import type { BattleState, GameState } from './store';
 import { canMove, trampleTarget, entityPickables, activeCombatant } from './store';
 import { currentTargetingMode } from './targetingModes';
-import { canTakeAction, isOutOfAction } from '../engine/conditions';
+import { canTakeAction, isOutOfAction, raisonRefusDetermination } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { isFrenzied } from '../engine/psychology';
 import { isVehicle } from '../engine/vehicle';
@@ -138,8 +138,14 @@ export const ACTION_GATES: Record<string, (ctx: ActionCtx) => ActionGate> = {
   'charge-possible': (ctx) => (isEngaged(ctx.active) ? no(t('agate.alreadyEngaged')) : mouvementIntact(ctx)),
   'mouvement-restant': ({ active, battle }) => (canMove(battle, active) ? ok : no(t('agate.noMovementLeft'))),
   desengagement: desengagementGate,
-  'determination-en-reserve': ({ active }) =>
-    (active.resolve ?? 0) > 0 ? ok : no(t('agate.noResolve')),
+  // Deux refus, un seul gate : plus de point en réserve, OU un État que rien ne lève (le fait porteur
+  // le déclare — LDB 20 l.188 ; source unique `raisonRefusDetermination`). `conditionId` absent (dépenses
+  // Psychologie/Critique de LDB 17 l.59-60) : seule la réserve compte.
+  'determination-en-reserve': ({ active, args }) => {
+    if ((active.resolve ?? 0) <= 0) return no(t('agate.noResolve'));
+    const refus = args?.conditionId ? raisonRefusDetermination(active, args.conditionId) : undefined;
+    return refus ? no(refus) : ok;
+  },
   'attaque-libre-frenesie': ({ active }) =>
     hasFreeWeaponAttack(active) ? ok : no(t('agate.noFreeWeaponAttack')),
   'pietinement-gratuit': ({ active, battle }) =>

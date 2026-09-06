@@ -36,7 +36,7 @@ import { creatureToCombatant } from './spawn';
 import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
-import { isOutOfAction, addCondition } from '../engine/conditions';
+import { isOutOfAction, addCondition, syncDerivedConditions } from '../engine/conditions';
 import { contractDisease, tickDisease } from '../engine/disease';
 import { battleRng } from './battleRng';
 import { applyOps } from '../engine/ops';
@@ -1309,6 +1309,9 @@ export function buildApi() {
       // — ils se jouent à la nuit/l'avance d'horloge, par la porte. (Une incubation n'en doit aucun.)
       const dus: string[] = [];
       if (opts?.phase === 'active' && dz.phase === 'incubation') tickDisease(c, dz.minutesLeft, battleRng(), (spec) => dus.push(spec.kind));
+      // Les États PORTÉS par les passifs des symptômes (op `condition` — Fièvre (Grave) → Inconscient)
+      // sont MATÉRIALISÉS par la réconciliation : sans elle, la triche rendrait un état à moitié vrai.
+      syncDerivedConditions(c);
       useGame.setState((st) => ({
         party: [...st.party],
         battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,

@@ -36,6 +36,18 @@ export function roundsLabel(n: number, opts?: { short?: boolean }): string {
   return `${n} Round${n > 1 ? 's' : ''}`;
 }
 
+/** Libellé CANONIQUE d'un RESTE de durée d'HORLOGE, en minutes de `gameTime` — vocabulaire UNIQUE de
+ *  l'échelle `clock`, posé auprès du modèle comme `roundsLabel` l'est pour l'échelle tactique. L'unité
+ *  suit la grandeur (minutes < 1 h, heures < 1 j, sinon jours), arrondie au cran SUPÉRIEUR : une
+ *  fenêtre « moins d'une minute » reste « 1 min » tant qu'elle n'est pas échue. À échéance ou au-delà :
+ *  `undefined` (il n'y a plus de reste à dire — la purge d'horloge va l'emporter). */
+export function clockLabel(minutesLeft: number): string | undefined {
+  if (minutesLeft <= 0) return undefined;
+  if (minutesLeft < 60) return `${Math.ceil(minutesLeft)} min`;
+  if (minutesLeft < 24 * 60) return `${Math.ceil(minutesLeft / 60)} h`;
+  return `${Math.ceil(minutesLeft / (24 * 60))} j`;
+}
+
 /** Avance une durée d'UN Round. Les échelles `clock`/`permanent`/`adventure` sont inertes au tick de Round. */
 export function tickRound(d: Duration): Duration {
   return d.scale === 'rounds' ? { scale: 'rounds', left: d.left - 1 } : d;

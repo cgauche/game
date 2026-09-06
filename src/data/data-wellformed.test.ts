@@ -38,6 +38,7 @@ import { ICON_DEFS } from '../ui/icons';
 import { flowHasImpureOpOutsideTest } from '../engine/flowCore';
 import type { Flow } from '../engine/flowCore';
 import { findCreatureById, findVehicleById, traitById, findConditionById, findDiseaseById, symptomById } from './index';
+import { ruleDef } from '../engine/policy';
 import { TOLERATED } from '../../scripts/guards/lib/gameOpRefFk.mjs';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
@@ -317,5 +318,116 @@ describe('Indice d’Atout — une qualité qui déclare `indice` l’exige sur 
       'Référence(s) vers une qualité qui DÉCLARE un Indice, posée(s) SANS `value` — son effet authoré resterait ' +
         `inerte au runtime (template non substitué) :\n  ${nus.join('\n  ')}`,
     ).toEqual([]);
+  });
+});
+
+/**
+ * Un État PORTÉ par un canal passif (op `condition` dans `passive`/`passiveBySeverity`/`visiblePassive`)
+ * peut venir de N'IMPORTE quel porteur : ce qu'une dépense de Détermination y fait est dit par l'OP
+ * elle-même (`resolveWindow`), plus par un drapeau de son porteur. Ce que cette garde tient encore :
+ * chaque op porteuse doit déclarer une fenêtre DÉCLARABLE — `'none'` (refus, LDB 20 l.188), une durée
+ * authorée (LDB 20 l.170), ou RIEN, auquel cas le défaut de LDB 16 l.117 (un Round) s'applique.
+ */
+describe('États portés par un canal PASSIF — la fenêtre de Détermination est DÉCLARABLE (#1599)', () => {
+  // Tout canal PASSIF, quel que soit le schéma qui le déclare (`passive`, `passiveBySeverity`,
+  // `visiblePassive`, `infectionPassive`…) : la garde se lie à la NOMENCLATURE, pas à une liste qu'un
+  // canal neuf laisserait derrière elle.
+  const estCanalPassif = (cle: string): boolean => /passive/i.test(cle);
+  /** Chaque op `condition` trouvée sous un canal passif : fichier, id de l'entrée, État porté, fenêtre. */
+  const porteurs: { file: string; id: string; cond: string; window: unknown }[] = [];
+  const marche = (node: unknown, file: string, entree: string | undefined): void => {
+    if (Array.isArray(node)) { node.forEach((n) => marche(n, file, entree)); return; }
+    if (!node || typeof node !== 'object') return;
+    const obj = node as Record<string, unknown>;
+    const id = typeof obj.id === 'string' ? obj.id : entree;
+    for (const [k, v] of Object.entries(obj)) {
+      if (estCanalPassif(k)) {
+        const listes: unknown[] = Array.isArray(v) ? [v] : v && typeof v === 'object' ? Object.values(v) : [];
+        for (const ops of listes) {
+          if (!Array.isArray(ops)) continue;
+          for (const op of ops) {
+            if ((op as Record<string, unknown>)?.op === 'condition') porteurs.push({ file, id: id ?? '?', cond: String((op as Record<string, unknown>).id), window: (op as Record<string, unknown>).resolveWindow });
+          }
+        }
+      }
+      marche(v, file, id);
+    }
+  };
+  for (const f of files) {
+    try { marche(JSON.parse(readFileSync(join(DIR, f), 'utf8')), f, undefined); } catch { /* parse déjà rapporté plus haut */ }
+  }
+
+  it('chaque op porteuse déclare une fenêtre de Détermination DÉCLARABLE (ou aucune = défaut l.117)', () => {
+    const declarable = (w: unknown): boolean =>
+      w === undefined || w === 'none'
+      || (!!w && typeof w === 'object'
+        && ((w as Record<string, unknown>).scale === 'rounds' ? isValidFormula((w as Record<string, unknown>).left)
+          : (w as Record<string, unknown>).scale === 'clock' && isValidFormula((w as Record<string, unknown>).minutes)));
+    const fautifs = porteurs
+      .filter((p) => !declarable(p.window))
+      .map((p) => `${p.file} › ${p.id} porte l'État « ${p.cond} » avec une fenêtre illisible : ${JSON.stringify(p.window)} — attendu « none », {scale:'rounds',left:Formula}, {scale:'clock',minutes:Formula}, ou rien (LDB 16 l.117).`);
+    expect(fautifs, 'fenêtre de Détermination non déclarable').toEqual([]);
+  });
+
+  it('le scan VOIT les porteurs du RAW (Fièvre Grave l.170 → Inconscient, Malaise l.188 → Exténué)', () => {
+    const vus = porteurs.filter((p) => p.file === 'symptoms.json').map((p) => `${p.id}→${p.cond}`).sort();
+    expect(vus).toEqual(['fievre→inconscient', 'malaise→extenue']);
+    expect(porteurs.find((p) => p.id === 'malaise')!.window, 'le verrou de l.188 n’est plus en donnée').toBe('none');
+    expect(porteurs.find((p) => p.id === 'fievre')!.window).toEqual({ scale: 'clock', minutes: { rule: 'maladie-conscience-determination-minutes' } });
+  });
+
+  /**
+   * Le moteur ne CHOISIT pas entre deux fenêtres : `fenetreDetermination` lit l'op porteuse trouvée
+   * (`opPorteuseDEtat`, engine/conditions.ts) — la PREMIÈRE. Deux ops `condition` d'une MÊME entité qui
+   * portent le MÊME État avec des fenêtres DIFFÉRENTES rendraient donc le verdict dépendant de l'ordre
+   * des canaux dans le JSON. La donnée ne peut pas diverger : c'est ICI que ça se refuse, nominativement.
+   */
+  it('deux ops porteuses du MÊME État dans la MÊME entité déclarent la MÊME fenêtre', () => {
+    const parCle = new Map<string, { p: (typeof porteurs)[number]; fenetres: Set<string> }>();
+    for (const p of porteurs) {
+      const cle = `${p.file} ${p.id} ${p.cond}`;
+      const vu = parCle.get(cle) ?? { p, fenetres: new Set<string>() };
+      vu.fenetres.add(JSON.stringify(p.window ?? null));
+      parCle.set(cle, vu);
+    }
+    const fautifs = [...parCle.values()]
+      .filter((v) => v.fenetres.size > 1)
+      .map((v) => `${v.p.file} › ${v.p.id} porte l'État « ${v.p.cond} » avec ${v.fenetres.size} fenêtres de Détermination DIFFÉRENTES (${[...v.fenetres].join(' vs ')}) — la fenêtre lue dépendrait de l'ordre des canaux passifs.`);
+    expect(fautifs, 'fenêtre de Détermination divergente pour un même État').toEqual([]);
+  });
+});
+
+/**
+ * Terme `{rule}` d'une `Formula` (`engine/ops.ts`) : la quantité vient du registre des règles
+ * optionnelles. Aucun schéma ne lit un registre — c'est donc ICI que l'id est tenu : il doit exister
+ * ET porter une valeur NUMÉRIQUE (`kind: 'param'`), sans quoi `resolveFormula` rendrait 0 en silence.
+ */
+describe('terme `{rule}` d’une Formula — l’id résout dans le registre des règles optionnelles (#1599)', () => {
+  // La MÊME graphie `{rule:'<id>'}` sert déjà de GATE de variante (`variants[].when`, `data/index.ts`),
+  // où toute forme de règle est légitime (interrupteur, mode). Le terme de Formula, lui, vit sous une
+  // `GameOp` et se RÉSOUT en nombre : c'est ce SITE qui exige une règle `param`.
+  const termes: { file: string; id: string; dansOp: boolean }[] = [];
+  const marche = (node: unknown, file: string, dansOp: boolean): void => {
+    if (Array.isArray(node)) { node.forEach((n) => marche(n, file, dansOp)); return; }
+    if (!node || typeof node !== 'object') return;
+    const obj = node as Record<string, unknown>;
+    const sousOp = dansOp || typeof obj.op === 'string';
+    if (typeof obj.rule === 'string' && Object.keys(obj).length === 1) termes.push({ file, id: obj.rule, dansOp: sousOp });
+    for (const v of Object.values(obj)) marche(v, file, sousOp);
+  };
+  for (const f of files) {
+    try { marche(JSON.parse(readFileSync(join(DIR, f), 'utf8')), f, false); } catch { /* parse déjà rapporté plus haut */ }
+  }
+
+  it('le scan VOIT les deux populations (gate de variante ET terme de Formula)', () => {
+    expect(termes.length, 'aucun `{rule}` trouvé : la garde ne mesure rien').toBeGreaterThan(0);
+    expect(termes.filter((t) => t.dansOp).length, 'aucun terme `{rule}` sous une op').toBeGreaterThan(0);
+  });
+
+  it('chaque `{rule}` authoré vise une règle EXISTANTE ; sous une op, elle est NUMÉRIQUE', () => {
+    const fautifs = termes
+      .filter(({ id, dansOp }) => (dansOp ? ruleDef(id)?.kind !== 'param' : !ruleDef(id)))
+      .map(({ file, id, dansOp }) => `${file} : {rule:'${id}'} — ${dansOp ? "sous une op : règle inconnue ou non numérique (kind='param' attendu)" : 'règle inconnue'} (reglesOptionnelles.json).`);
+    expect(fautifs, 'terme `{rule}` qui ne résout pas').toEqual([]);
   });
 });
